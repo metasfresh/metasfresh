@@ -674,5 +674,20 @@
       ],
       "websocketEndpoint": "/document/143/1000000"
     }
-  ]
+  ],
+  "websocketMessage1": {
+    "windowId": "143",
+    "id": "1000000",
+    "timestamp": "2020-03-18T18:43:40.544+01:00",
+    "stale": true,
+    "includedTabsInfo": {
+      "AD_Tab-187": {
+        "tabid": "AD_Tab-187",
+        "stale": true,
+        "staleRowIds": [
+          "1000111"
+        ]
+      }
+    }
+  }
 }

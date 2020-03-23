@@ -12,6 +12,11 @@ import merge from 'merge';
 import thunk from 'redux-thunk';
 import promiseMiddleware from 'redux-promise';
 import waitForExpect from 'wait-for-expect';
+import { waitFor } from '@testing-library/dom';
+import { createWaitForElement } from 'enzyme-wait';
+
+import http from 'http';
+import StompServer from 'stomp-broker-js';
 
 import { ShortcutProvider } from '../../components/keyshortcuts/ShortcutProvider';
 import CustomRouter from '../../containers/CustomRouter';
@@ -73,8 +78,8 @@ const createInitialState = function(state = {}) {
 }
 
 describe("MasterWindowContainer", () => {
-  describe("'integration' tests:", () => {
-    it("renders without errors", async done => {
+  // describe("'integration' tests:", () => {
+    it("renders without errors", async (done) => {
       const initialState = createInitialState();
       const store = createStore(
         rootReducer,
@@ -144,12 +149,133 @@ describe("MasterWindowContainer", () => {
         wrapper.update();
 
         const html = wrapper.html();
-        setTimeout(() => {
         expect(html).toContain('<table');
-        }, 1000);
+      }, 5000);
 
-        done();
-      }, 8000);
+      done();
     }, 10000);
+
+  describe('websocket tests', () => {
+    let mockServer;
+    let server;
+    
+    beforeEach(() => {
+      server = http.createServer();
+
+      mockServer = new StompServer({
+          server: server,
+          path: '/ws',
+          heartbeat: [2000,2000]
+      });
+
+      server.listen(8080);
+    });
+
+    // afterEach stop server
+    afterEach(() => {
+      server.close();
+    });
+
+    it("renders without errors", async done => {
+      const initialState = createInitialState();
+      const store = createStore(
+        rootReducer,
+        initialState,
+        applyMiddleware(...middleware),
+      );
+      const initialProps = createInitialProps();
+      const windowType = FIXTURES_PROPS.params.windowType;
+      const docId = FIXTURES_PROPS.params.docId;
+      const tabId = layoutFixtures.layout1.tabs[0].tabId;
+      const updatedRows = rowFixtures.updatedRow1;
+      const auth = {
+        initNotificationClient: jest.fn(),
+        initSessionClient: jest.fn(),
+      };
+
+      nock(config.API_URL)
+        .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
+        .get(`/window/${windowType}/${docId}/`)
+        .reply(200, dataFixtures.data1);
+
+      nock(config.API_URL)
+        .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
+        .get(`/window/${windowType}/layout`)
+        .reply(200, layoutFixtures.layout1);
+
+      nock(config.API_URL)
+        .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
+        .get('/userSession')
+        .reply(200, userSessionData);
+
+      nock(config.API_URL)
+        .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
+        .get(`/notifications/websocketEndpoint`)
+        .reply(200, `/notifications/${userSessionData.userProfileId}`);
+
+      nock(config.API_URL)
+        .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
+        .get('/notifications/all?limit=20')
+        .reply(200, notificationsData.data1);
+
+      nock(config.API_URL)
+        .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
+        .get(`/window/${windowType}/${docId}/${tabId}/${updatedRows[0].rowId}/`)
+        .reply(200, updatedRows);
+
+      nock(config.API_URL)
+        .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
+        .get(`/window/${windowType}/${docId}/${tabId}/`)
+        .reply(200, rowFixtures.row_data1);
+
+      nock(config.API_URL)
+        .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
+        .get(`/window/${windowType}/${docId}/${tabId}/?orderBy=+Line`)
+        .reply(200, rowFixtures.row_data1);
+
+      nock(config.API_URL)
+        .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
+        .get(`/window/${windowType}/${docId}/field/DocAction/dropdown`)
+        .reply(200, docActionFixtures.data1);
+
+      const wrapper = mount(
+        <Provider store={store}>
+          <ShortcutProvider hotkeys={{}} keymap={{}} >
+            <CustomRouter history={history} auth={auth}>
+              <MasterWindow {...initialProps} />
+            </CustomRouter>
+          </ShortcutProvider>
+        </Provider>
+      );
+
+      const msg = dataFixtures.websocketMessage1;
+
+      wrapper.update();
+
+      // connection to the server takes some time, so we're waiting for the websocket url to be saved
+      // in the store and then once the connection is open - push a websocket event from
+      // the server
+      await waitFor(() => expect(store.getState().windowHandler.master.websocket).toBeTruthy())
+        .then(() => {
+          setTimeout(() => {
+            mockServer.send(store.getState().windowHandler.master.websocket, {}, JSON.stringify(msg));
+          }, 3000);
+        });
+
+      wrapper.update();
+
+      createWaitForElement('tbody')(wrapper)
+        .then((component) => {
+          expect(wrapper.find('tbody tr').length).toBe(7);
+        });
+
+      // wait for the DOM to be updated
+      await waitFor(() => {
+        wrapper.update();
+        expect(wrapper.find('tbody tr').length).toBe(8);
+      }, { timeout: 5000, interval: 500 });
+
+      done();
+    }, 20000);
   });
 });

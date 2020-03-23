@@ -651,6 +651,7 @@ class TableItem extends Component {
       notSaved,
       caption,
       dataKey,
+      keyProperty,
     } = this.props;
 
     return (
@@ -658,7 +659,7 @@ class TableItem extends Component {
         <tr
           onClick={this.handleClick}
           onDoubleClick={this.handleDoubleClick}
-          className={classnames(`${dataKey}`, {
+          className={classnames(dataKey, keyProperty, {
             'row-selected': isSelected,
             'tr-odd': odd,
             'tr-even': !odd,

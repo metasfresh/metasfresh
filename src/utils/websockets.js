@@ -64,7 +64,13 @@ export function connectWS(topic, onMessageCallback) {
     };
     /*eslint-enable no-console */
 
-    this.sockClient.activate({}, subscribe);
+    // this.sockClient.onUnhandledFrame = (e) => console.log('onUnhandledFrame: ', e);
+    // this.sockClient.onUnhalndedMessage = (e) => console.log('onUnhandledMessage: ', e);
+    // this.sockClient.onUnhandledReceipt = (e) => console.log('onUnhandledReceipt: ', e)
+    // this.sockClient.onWebSocketClose = (e) => console.log('onWebSocketClose: ', e)
+    // this.sockClient.onWebSocketError = (e) => console.log('onWebSocketError: ', e)
+
+    this.sockClient.activate();
   };
 
   const wasConnected = disconnectWS.call(this, connect);

@@ -34,7 +34,7 @@ So if this is a "master" build, but it was invoked by a "feature-branch" build t
 ])
 
 // set nodejs version defined in tool name of NodeJS installations located in Jenkins global plugins
-final NODEJS_TOOL_NAME="nodejs-11"
+final NODEJS_TOOL_NAME="nodejs-13"
 echo "Setting NODEJS_TOOL_NAME=$NODEJS_TOOL_NAME"
 
 timestamps
