@@ -5,6 +5,7 @@ import java.util.Set;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
@@ -35,7 +36,8 @@ import lombok.ToString;
  */
 
 @ToString
-final class ImportGroup<ImportRecordType>
+@VisibleForTesting
+public final class ImportGroup<ImportRecordType>
 {
 	public static <ImportRecordType> ImportGroup<ImportRecordType> newInstance(@NonNull final ImportGroupKey groupKey)
 	{
