@@ -6,8 +6,8 @@ import java.util.List;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Invoice;
 
+import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.DocStatus;
-import de.metas.document.engine.IDocumentBL;
 import de.metas.materialtracking.IMaterialTrackingBL;
 import de.metas.materialtracking.IMaterialTrackingDAO;
 import de.metas.materialtracking.model.I_M_Material_Tracking;
@@ -56,7 +56,7 @@ public class InvoicedSumProvider implements IInvoicedSumProvider
 	public BigDecimal getAlreadyInvoicedNetSum(final I_M_Material_Tracking materialTracking)
 	{
 		final IMaterialTrackingDAO materialTrackingDAO = Services.get(IMaterialTrackingDAO.class);
-		final IDocumentBL docActionBL = Services.get(IDocumentBL.class);
+		final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 
 		final List<I_C_Invoice> invoices = materialTrackingDAO.retrieveReferences(materialTracking, I_C_Invoice.class);
 
@@ -70,7 +70,7 @@ public class InvoicedSumProvider implements IInvoicedSumProvider
 			}
 
 			// note: completed/closed implies that a C_DocType is set.
-			final I_C_DocType docType = invoice.getC_DocType();
+			final I_C_DocType docType = docTypeDAO.getById(invoice.getC_DocType_ID());
 			final String docSubType = docType.getDocSubType();
 
 			if (!IMaterialTrackingBL.C_DocType_INVOICE_DOCSUBTYPE_QI_DownPayment.equals(docSubType)

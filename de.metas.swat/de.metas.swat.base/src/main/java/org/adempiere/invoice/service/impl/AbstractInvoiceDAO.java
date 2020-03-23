@@ -3,6 +3,7 @@ package org.adempiere.invoice.service.impl;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwares;
 import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwaresOutOfTrx;
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /*
@@ -61,6 +62,7 @@ import de.metas.cache.annotation.CacheCtx;
 import de.metas.cache.annotation.CacheTrx;
 import de.metas.document.engine.IDocument;
 import de.metas.invoice.InvoiceId;
+import de.metas.invoice.InvoiceLineId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -338,4 +340,12 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 				.listIds(InvoiceId::ofRepoId)
 				.stream();
 	}
+
+
+	@Override
+	public org.compiere.model.I_C_InvoiceLine getByIdOutOfTrx(@NonNull final InvoiceLineId invoiceLineId)
+	{
+		return loadOutOfTrx(invoiceLineId, I_C_InvoiceLine.class);
+	}
+
 }

@@ -42,15 +42,6 @@ public interface CopyRecordSupport
 	 */
 	void copyRecord(PO po, String trxName);
 
-	/**
-	 * Gets the list with suggested table names for a PO
-	 *
-	 * @param persistence
-	 *            object
-	 * @param grid
-	 *            tab
-	 * @return a list of tables with info
-	 */
 	List<CopyRecordSupportTableInfo> getSuggestedChildren(PO po, List<CopyRecordSupportTableInfo> suggestedChildren);
 
 	default List<CopyRecordSupportTableInfo> getSuggestedChildren(final PO po)
@@ -62,8 +53,6 @@ public interface CopyRecordSupport
 	 * Updates given <code>po</code> and sets the right values for columns that needs special handling.
 	 *
 	 * e.g. this method makes sure columns like Name or Value have an unique value (to not trigger the unique index).
-	 *
-	 * @param to
 	 */
 	void updateSpecialColumnsName(PO to);
 
@@ -80,9 +69,6 @@ public interface CopyRecordSupport
 	/**
 	 * Gets the value to be copied for a column which is calculated and whom value is not desirable to be copied.
 	 *
-	 * @param to
-	 * @param from
-	 * @param columnName
 	 * @return copied value which needs to be set
 	 */
 	Object getValueToCopy(final PO to, final PO from, final String columnName);
@@ -102,8 +88,6 @@ public interface CopyRecordSupport
 	 * <p>
 	 * <b>Important:</b> usually it makes sense to register a listener not here, but by invoking {@link CopyRecordFactory#registerCopyRecordSupport(String, Class)}.
 	 * A listener that is registered there will be added to each CopyRecordSupport instance created by that factory.
-	 *
-	 * @param listener
 	 */
 	void addOnRecordCopiedListener(IOnRecordCopiedListener listener);
 

@@ -38,7 +38,6 @@ import javax.annotation.Nullable;
 
 import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.ad.table.api.IADTableDAO;
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -48,7 +47,6 @@ import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_PricingSystem;
 import org.compiere.model.X_C_DocType;
-import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
@@ -387,6 +385,7 @@ public final class AggregationEngine
 		invoiceHeader.setBill_BPartner_ID(icRecord.getBill_BPartner_ID());
 		invoiceHeader.setBill_Location_ID(getBill_Location_ID(icRecord, updateLocationAndContactForInvoice));
 		invoiceHeader.setBill_User_ID(getBill_User_ID(icRecord, updateLocationAndContactForInvoice));
+		invoiceHeader.setC_BPartner_SalesRep_ID(icRecord.getC_BPartner_SalesRep_ID());
 		invoiceHeader.setC_Order_ID(icRecord.getC_Order_ID());
 		invoiceHeader.setPOReference(icRecord.getPOReference()); // task 07978
 
@@ -681,7 +680,7 @@ public final class AggregationEngine
 			return C_PaymentTerm_ID;
 		}
 		// task 07242: setting the payment term from the given bill partner. Note that C_BP_Group has no payment term columns, so we don't need a BL to fall back to C_BP_Group
-		final I_C_BPartner billPartner = InterfaceWrapperHelper.create(Env.getCtx(), invoiceHeader.getBill_BPartner_ID(), I_C_BPartner.class, ITrx.TRXNAME_None);
+		final I_C_BPartner billPartner = InterfaceWrapperHelper.loadOutOfTrx(invoiceHeader.getBill_BPartner_ID(), I_C_BPartner.class);
 		if (invoiceHeader.isSOTrx())
 		{
 			return billPartner.getC_PaymentTerm_ID();

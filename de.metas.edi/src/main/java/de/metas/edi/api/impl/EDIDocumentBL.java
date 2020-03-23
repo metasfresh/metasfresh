@@ -42,6 +42,9 @@ import org.compiere.model.X_C_DocType;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.aggregation.api.Aggregation;
 import de.metas.aggregation.model.X_C_Aggregation;
+import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.DocStatus;
 import de.metas.edi.api.IEDIDocumentBL;
 import de.metas.edi.api.ValidationState;
@@ -104,7 +107,10 @@ public class EDIDocumentBL implements IEDIDocumentBL
 		}
 
 		feedback.addAll(isValidPartner(invoice.getC_BPartner(), true/* isPartOfInvoiceValidation */));
-		feedback.addAll(isValidBPLocation(invoice.getC_BPartner_Location()));
+
+		final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
+		final org.compiere.model.I_C_BPartner_Location bPartnerLocationRecord = bpartnerDAO.getBPartnerLocationById(BPartnerLocationId.ofRepoId(invoice.getC_BPartner_ID(), invoice.getC_BPartner_Location_ID()));
+		feedback.addAll(isValidBPLocation(bPartnerLocationRecord));
 
 		// TODO not used right now
 		// final IBPartnerOrgBL bpOrgBL = Services.get(IBPartnerOrgBL.class);
@@ -124,9 +130,10 @@ public class EDIDocumentBL implements IEDIDocumentBL
 
 		// task 09182: for return material credit memos, we don't have or need an (imported) EDI ORDERS PoReference
 		// task 09811: guard against NPE when invoice is not yet completed and therefore doesn'T yet have a docType
+		final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 		final I_C_DocType docType = invoice.getC_DocType_ID() > 0
-				? invoice.getC_DocType()
-				: invoice.getC_DocTypeTarget();
+				? docTypeDAO.getById(invoice.getC_DocType_ID())
+				: docTypeDAO.getById(invoice.getC_DocTypeTarget_ID());
 
 		final boolean invoiceIsRMCreditMemo = docType != null
 				&& Services.get(IInvoiceBL.class).isCreditMemo(docType.getDocBaseType())

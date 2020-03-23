@@ -6,8 +6,6 @@ import org.compiere.model.ModelValidator;
 import org.slf4j.MDC.MDCCloseable;
 import org.springframework.stereotype.Component;
 
-import de.metas.contracts.commission.commissioninstance.services.InvoiceCandidateFacadeService;
-import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.logging.TableRecordMDC;
 import lombok.NonNull;
@@ -38,13 +36,11 @@ import lombok.NonNull;
 @Component
 public class C_Invoice_Candidate
 {
-	private final InvoiceCandidateFacadeService invoiceCandidateFacadeService;
+	private final C_Invoice_CandidateFacadeService invoiceCandidateFacadeService;
 
-	public C_Invoice_Candidate(
-			@NonNull final InvoiceCandidateFacadeService invoiceCandidateFacadeService)
+	public C_Invoice_Candidate(@NonNull final C_Invoice_CandidateFacadeService invoiceCandidateFacadeService)
 	{
 		this.invoiceCandidateFacadeService = invoiceCandidateFacadeService;
-
 	}
 
 	@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE, // we aren't interested in "after-new", because prior to the first revalidation, the ICs isn't in a valid state anyways
@@ -58,8 +54,7 @@ public class C_Invoice_Candidate
 	{
 		try (final MDCCloseable icRecordMDC = TableRecordMDC.putTableRecordReference(icRecord))
 		{
-			final InvoiceCandidateId invoiceCandidateId = InvoiceCandidateId.ofRepoId(icRecord.getC_Invoice_Candidate_ID());
-			invoiceCandidateFacadeService.syncICToCommissionInstance(invoiceCandidateId, false/* candidateDeleted */);
+			invoiceCandidateFacadeService.syncICToCommissionInstance(icRecord, false/* candidateDeleted */);
 		}
 	}
 
@@ -68,8 +63,7 @@ public class C_Invoice_Candidate
 	{
 		try (final MDCCloseable icRecordMDC = TableRecordMDC.putTableRecordReference(icRecord))
 		{
-			final InvoiceCandidateId invoiceCandidateId = InvoiceCandidateId.ofRepoId(icRecord.getC_Invoice_Candidate_ID());
-			invoiceCandidateFacadeService.syncICToCommissionInstance(invoiceCandidateId, true/* candidateDeleted */);
+			invoiceCandidateFacadeService.syncICToCommissionInstance(icRecord, true/* candidateDeleted */);
 		}
 	}
 

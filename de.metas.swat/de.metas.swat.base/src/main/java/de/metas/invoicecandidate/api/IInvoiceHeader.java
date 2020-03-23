@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.compiere.model.I_C_DocType;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.money.CurrencyId;
 
@@ -29,8 +30,6 @@ public interface IInvoiceHeader
 
 	/**
 	 * Note: when creating an C_Invoice, this value take precedence over the org of the order specified by {@link #getC_Order_ID()} (if >0).
-	 *
-	 * @return
 	 */
 	int getAD_Org_ID();
 
@@ -40,9 +39,11 @@ public interface IInvoiceHeader
 
 	int getBill_Location_ID();
 
-	int getBill_BPartner_ID();
+	BPartnerId getBill_BPartner_ID();
 
 	int getBill_User_ID();
+
+	BPartnerId getSalesPartnerId();
 
 	// 03805 : add getter for C_Currency_ID
 	CurrencyId getCurrencyId();
@@ -53,7 +54,7 @@ public interface IInvoiceHeader
 	 * @return
 	 */
 	List<IInvoiceCandAggregate> getLines();
-	
+
 	List<I_C_Invoice_Candidate> getAllInvoiceCandidates();
 
 	// 04258: add header and footer

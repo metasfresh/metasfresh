@@ -82,11 +82,11 @@ public class ManualTest
 
 		final List<LocalToRemoteSyncResult> addedCampaignResults = cleverReachClient.syncCampaignsLocalToRemote(ImmutableList.of(campaignToAdd));
 		assertThat(addedCampaignResults).hasSize(1);
-		
+
 		final LocalToRemoteSyncResult localToRemoteSyncResult = addedCampaignResults.get(0);
 		assertThat(localToRemoteSyncResult.getLocalToRemoteStatus()).isEqualTo(LocalToRemoteStatus.INSERTED_ON_REMOTE);
 		assertThat(localToRemoteSyncResult.getSynchedDataRecord()).isInstanceOf(Campaign.class);
-		
+
 		final Campaign addedCampaign = Campaign.cast(localToRemoteSyncResult.getSynchedDataRecord());
 		assertThat(addedCampaign.getRemoteId()).isNotEmpty();
 		assertThat(addedCampaign.getName()).isEqualTo(nameOfCampaignToAdd);
@@ -117,9 +117,9 @@ public class ManualTest
 				.platformId(PLATFORM_ID).build();
 		final Iterator<Receiver> contactPersons = cleverReachClient.retrieveAllReceivers(campaign);
 
-		assertThat(contactPersons).isNotEmpty();
+		assertThat(contactPersons).hasNext();
 	}
-	
+
 	@Test
 	@Ignore
 	public void syncContactPersonsLocalToRemote()

@@ -46,6 +46,7 @@ import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.allocation.api.IAllocationBL;
 import de.metas.allocation.api.IAllocationDAO;
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeBL;
 import de.metas.document.IDocumentLocationBL;
@@ -57,6 +58,7 @@ import de.metas.money.Money;
 import de.metas.order.OrderId;
 import de.metas.payment.reservation.PaymentReservationCaptureRequest;
 import de.metas.payment.reservation.PaymentReservationService;
+import de.metas.pricing.PriceListId;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.pricing.service.ProductPrices;
 import de.metas.product.ProductId;
@@ -130,7 +132,7 @@ public class C_Invoice // 03771
 
 		final Boolean processedPLVFiltering = null; // task 09533: the user doesn't know about PLV's processed flag, so we can't filter by it
 		final I_M_PriceList_Version priceListVersion = priceListDAO
-				.retrievePriceListVersionOrNull(invoice.getM_PriceList(), invoiceDate, processedPLVFiltering); // can be null
+				.retrievePriceListVersionOrNull(PriceListId.ofRepoId(invoice.getM_PriceList_ID()), invoiceDate, processedPLVFiltering); // can be null
 
 		final String trxName = InterfaceWrapperHelper.getTrxName(invoice);
 
@@ -166,8 +168,8 @@ public class C_Invoice // 03771
 		else
 		{
 			// in case the invoice is not linked to an order, take the value from the partner
-
-			final I_C_BPartner partner = invoice.getC_BPartner();
+			final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
+			final I_C_BPartner partner = bpartnerDAO.getById(invoice.getC_BPartner_ID());
 
 			isDiscountPrinted = partner.isDiscountPrinted();
 		}

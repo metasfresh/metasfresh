@@ -157,8 +157,8 @@ public class DunningDocOutboundLogMailRecipientProviderTest
 	private I_C_Invoice createInvoiceRecord(final I_AD_User userRecord)
 	{
 		final I_C_Invoice invoiceRecord2 = newInstance(I_C_Invoice.class);
-		invoiceRecord2.setC_BPartner(bPartnerRecord);
-		invoiceRecord2.setAD_User(userRecord);
+		invoiceRecord2.setC_BPartner_ID(bPartnerRecord.getC_BPartner_ID());
+		invoiceRecord2.setAD_User_ID(userRecord.getAD_User_ID());
 		saveRecord(invoiceRecord2);
 		return invoiceRecord2;
 	}

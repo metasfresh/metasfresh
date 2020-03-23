@@ -15,7 +15,7 @@ public class X_C_Commission_Instance extends org.compiere.model.PO implements I_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 968532036L;
+	private static final long serialVersionUID = 1850947292L;
 
     /** Standard Constructor */
     public X_C_Commission_Instance (Properties ctx, int C_Commission_Instance_ID, String trxName)
@@ -23,7 +23,10 @@ public class X_C_Commission_Instance extends org.compiere.model.PO implements I_
       super (ctx, C_Commission_Instance_ID, trxName);
       /** if (C_Commission_Instance_ID == 0)
         {
+			setBill_BPartner_ID (0);
 			setC_Commission_Instance_ID (0);
+			setCommissionDate (new Timestamp( System.currentTimeMillis() ));
+			setCommissionTrigger_Type (null);
 			setMostRecentTriggerTimestamp (new Timestamp( System.currentTimeMillis() ));
 			setM_Product_Order_ID (0);
 			setPointsBase_Forecasted (BigDecimal.ZERO);
@@ -114,6 +117,130 @@ public class X_C_Commission_Instance extends org.compiere.model.PO implements I_
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	@Override
+	public org.compiere.model.I_C_Invoice getC_Invoice()
+	{
+		return get_ValueAsPO(COLUMNNAME_C_Invoice_ID, org.compiere.model.I_C_Invoice.class);
+	}
+
+	@Override
+	public void setC_Invoice(org.compiere.model.I_C_Invoice C_Invoice)
+	{
+		set_ValueFromPO(COLUMNNAME_C_Invoice_ID, org.compiere.model.I_C_Invoice.class, C_Invoice);
+	}
+
+	/** Set Rechnung.
+		@param C_Invoice_ID 
+		Invoice Identifier
+	  */
+	@Override
+	public void setC_Invoice_ID (int C_Invoice_ID)
+	{
+		if (C_Invoice_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_C_Invoice_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_C_Invoice_ID, Integer.valueOf(C_Invoice_ID));
+	}
+
+	/** Get Rechnung.
+		@return Invoice Identifier
+	  */
+	@Override
+	public int getC_Invoice_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_Invoice_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public org.compiere.model.I_C_InvoiceLine getC_InvoiceLine()
+	{
+		return get_ValueAsPO(COLUMNNAME_C_InvoiceLine_ID, org.compiere.model.I_C_InvoiceLine.class);
+	}
+
+	@Override
+	public void setC_InvoiceLine(org.compiere.model.I_C_InvoiceLine C_InvoiceLine)
+	{
+		set_ValueFromPO(COLUMNNAME_C_InvoiceLine_ID, org.compiere.model.I_C_InvoiceLine.class, C_InvoiceLine);
+	}
+
+	/** Set Rechnungsposition.
+		@param C_InvoiceLine_ID 
+		Rechnungszeile
+	  */
+	@Override
+	public void setC_InvoiceLine_ID (int C_InvoiceLine_ID)
+	{
+		if (C_InvoiceLine_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_C_InvoiceLine_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_C_InvoiceLine_ID, Integer.valueOf(C_InvoiceLine_ID));
+	}
+
+	/** Get Rechnungsposition.
+		@return Rechnungszeile
+	  */
+	@Override
+	public int getC_InvoiceLine_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_InvoiceLine_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Datum.
+		@param CommissionDate 
+		Belegdatum des Provisionsauslösers
+	  */
+	@Override
+	public void setCommissionDate (java.sql.Timestamp CommissionDate)
+	{
+		set_Value (COLUMNNAME_CommissionDate, CommissionDate);
+	}
+
+	/** Get Datum.
+		@return Belegdatum des Provisionsauslösers
+	  */
+	@Override
+	public java.sql.Timestamp getCommissionDate () 
+	{
+		return (java.sql.Timestamp)get_Value(COLUMNNAME_CommissionDate);
+	}
+
+	/** 
+	 * CommissionTrigger_Type AD_Reference_ID=541115
+	 * Reference name: CommissionTrigger_Type
+	 */
+	public static final int COMMISSIONTRIGGER_TYPE_AD_Reference_ID=541115;
+	/** InvoiceCandidate = InvoiceCandidate */
+	public static final String COMMISSIONTRIGGER_TYPE_InvoiceCandidate = "InvoiceCandidate";
+	/** CustomerInvoice = CustomerInvoice */
+	public static final String COMMISSIONTRIGGER_TYPE_CustomerInvoice = "CustomerInvoice";
+	/** CustomerCreditmemo = CustomerCreditmemo */
+	public static final String COMMISSIONTRIGGER_TYPE_CustomerCreditmemo = "CustomerCreditmemo";
+	/** Set Provisionsauslöser.
+		@param CommissionTrigger_Type 
+		Art des Dokuments, dass den Provisionsvorgang ausgelöst hat
+	  */
+	@Override
+	public void setCommissionTrigger_Type (java.lang.String CommissionTrigger_Type)
+	{
+
+		set_Value (COLUMNNAME_CommissionTrigger_Type, CommissionTrigger_Type);
+	}
+
+	/** Get Provisionsauslöser.
+		@return Art des Dokuments, dass den Provisionsvorgang ausgelöst hat
+	  */
+	@Override
+	public java.lang.String getCommissionTrigger_Type () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_CommissionTrigger_Type);
 	}
 
 	@Override
@@ -246,5 +373,24 @@ public class X_C_Commission_Instance extends org.compiere.model.PO implements I_
 		if (bd == null)
 			 return BigDecimal.ZERO;
 		return bd;
+	}
+
+	/** Set Referenz.
+		@param POReference 
+		Referenz-Nummer des Kunden
+	  */
+	@Override
+	public void setPOReference (java.lang.String POReference)
+	{
+		set_Value (COLUMNNAME_POReference, POReference);
+	}
+
+	/** Get Referenz.
+		@return Referenz-Nummer des Kunden
+	  */
+	@Override
+	public java.lang.String getPOReference () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_POReference);
 	}
 }

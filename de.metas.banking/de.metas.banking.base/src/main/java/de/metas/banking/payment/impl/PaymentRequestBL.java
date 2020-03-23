@@ -27,6 +27,7 @@ import java.math.BigDecimal;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BP_BankAccount;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Invoice;
 
 import de.metas.adempiere.model.I_C_PaySelectionLine;
@@ -35,6 +36,7 @@ import de.metas.banking.model.I_C_Payment_Request;
 import de.metas.banking.payment.IPaymentRequestBL;
 import de.metas.banking.payment.IPaymentRequestDAO;
 import de.metas.banking.service.IBankingBPBankAccountDAO;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
@@ -135,10 +137,13 @@ public class PaymentRequestBL implements IPaymentRequestBL
 		{
 			requestForInvoice = InterfaceWrapperHelper.newInstance(I_C_Payment_Request.class, invoice);
 
+			final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
+			final I_C_BPartner bpartner = bpartnerDAO.getById(invoice.getC_BPartner_ID());
+
 			//
 			// Find a default partner account
 			final IBankingBPBankAccountDAO bpBankAccountDAO = Services.get(IBankingBPBankAccountDAO.class);
-			final I_C_BP_BankAccount bpBankAccount = bpBankAccountDAO.retrieveDefaultBankAccount(invoice.getC_BPartner());
+			final I_C_BP_BankAccount bpBankAccount = bpBankAccountDAO.retrieveDefaultBankAccount(bpartner);
 			requestForInvoice.setC_BP_BankAccount(bpBankAccount);
 
 			//

@@ -55,10 +55,15 @@ import de.metas.contracts.model.X_C_Flatrate_Transition;
 import de.metas.contracts.model.X_C_SubscriptionProgress;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.monitoring.adapter.NoopPerformanceMonitoringService;
 import de.metas.util.Services;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = { StartupListener.class, ContractChangePriceQtyService.class, ContractLibraryConfiguration.class })
+@SpringBootTest(classes = {
+		StartupListener.class,
+		ContractChangePriceQtyService.class,
+		ContractLibraryConfiguration.class,
+		NoopPerformanceMonitoringService.class })
 public class ContractChangePriceQtyTest extends AbstractFlatrateTermTest
 {
 	final private IContractsDAO contractsDAO = Services.get(IContractsDAO.class);

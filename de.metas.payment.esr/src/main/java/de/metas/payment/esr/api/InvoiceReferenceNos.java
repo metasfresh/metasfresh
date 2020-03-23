@@ -1,12 +1,11 @@
 package de.metas.payment.esr.api;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.I_AD_Org;
-import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Invoice;
 
 import com.google.common.annotations.VisibleForTesting;
 
+import de.metas.organization.IOrgDAO;
 import de.metas.payment.esr.model.I_C_BP_BankAccount;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
@@ -60,14 +59,14 @@ public class InvoiceReferenceNos
 			@NonNull final I_C_BP_BankAccount bankAccountRecord)
 	{
 		final IBPBankAccountBL bpBankAccountBL = Services.get(IBPBankAccountBL.class);
+		final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
 		final String bankAccount = StringUtils.rpadZero(bpBankAccountBL.retrieveBankAccountNo(bankAccountRecord), 7, "BankAccountNo");
 
-		final I_AD_Org orgRecord = invoiceRecord.getAD_Org();
-		final String org = StringUtils.lpadZero(StringUtils.trunc(orgRecord.getValue(), 3, TruncateAt.STRING_START), 3, "organization");
+		final String orgValue = orgDAO.retrieveOrgValue(invoiceRecord.getAD_Org_ID());
+		final String org = StringUtils.lpadZero(StringUtils.trunc(orgValue, 3, TruncateAt.STRING_START), 3, "organization");
 
-		final I_C_BPartner bPartnerRecord = invoiceRecord.getC_BPartner();
-		final String bpartnerId = Integer.toString(bPartnerRecord.getC_BPartner_ID()); // we can only use the digits
+		final String bpartnerId = Integer.toString(invoiceRecord.getC_BPartner_ID()); // we can only use the digits
 		final String bPartner = StringUtils.lpadZero(StringUtils.trunc(bpartnerId, 8, TruncateAt.STRING_START), 8, "BusinessPartner");
 
 		// note: we take the invoice-ID because the documentNo might contain non-digit characters

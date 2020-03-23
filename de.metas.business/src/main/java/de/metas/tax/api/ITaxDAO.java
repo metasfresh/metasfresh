@@ -27,7 +27,7 @@ import java.sql.Timestamp;
 import java.util.Optional;
 import java.util.Properties;
 
-import org.adempiere.exceptions.TaxNoExemptFoundException;
+import org.adempiere.exceptions.ExemptTaxNotFoundException;
 import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_C_TaxCategory;
 
@@ -57,7 +57,7 @@ public interface ITaxDAO extends ISingletonService
 	boolean retrieveIsTaxExemptSmallBusiness(BPartnerId bPartnerId, Timestamp date);
 
 	/**
-	 * @throws TaxNoExemptFoundException if no tax exempt found
+	 * @throws ExemptTaxNotFoundException if no tax exempt found
 	 */
 	TaxId retrieveExemptTax(OrgId orgId);
 

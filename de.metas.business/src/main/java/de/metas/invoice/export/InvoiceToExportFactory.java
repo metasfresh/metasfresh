@@ -25,6 +25,7 @@ import de.metas.allocation.api.IAllocationDAO;
 import de.metas.attachments.AttachmentEntry;
 import de.metas.attachments.AttachmentEntryService;
 import de.metas.attachments.AttachmentEntryService.AttachmentEntryQuery;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner.service.IBPartnerDAO.BPartnerLocationQuery;
 import de.metas.bpartner.service.IBPartnerDAO.BPartnerLocationQuery.Type;
@@ -141,7 +142,7 @@ public class InvoiceToExportFactory
 
 		return addCustomInvoicePayload(invoiceWithoutEsrInfo);
 	}
-	
+
 	private CurrencyCode extractCurrencyCode(final I_C_Invoice invoiceRecord)
 	{
 		final CurrencyId currencyId = CurrencyId.ofRepoId(invoiceRecord.getC_Currency_ID());
@@ -251,14 +252,16 @@ public class InvoiceToExportFactory
 
 	private BPartner createRecipient(@NonNull final I_C_Invoice invoiceRecord)
 	{
+		final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
+
+		final I_C_BPartner_Location bPartnerLocationRecord = bpartnerDAO.getBPartnerLocationById(BPartnerLocationId.ofRepoId(invoiceRecord.getC_BPartner_ID(), invoiceRecord.getC_BPartner_Location_ID()));
 		final String gln = Check.assumeNotEmpty(
-				invoiceRecord.getC_BPartner_Location().getGLN(), InvoiceNotExportableException.class,
+				bPartnerLocationRecord.getGLN(), InvoiceNotExportableException.class,
 				"The the given invoice's C_BPartner_Location of needs to have a GLN; invoiceBPartnerLocation={}; invoiceRecord={}",
-				invoiceRecord.getC_BPartner_Location(),
+				bPartnerLocationRecord,
 				invoiceRecord);
 
-		final I_C_BPartner bPartnerRecord = invoiceRecord.getC_BPartner();
-		final BPartnerId bPartnerId = BPartnerId.ofRepoId(bPartnerRecord.getC_BPartner_ID());
+		final BPartnerId bPartnerId = BPartnerId.ofRepoId(invoiceRecord.getC_BPartner_ID());
 
 		final BPartner recipient = BPartner.builder()
 				.id(bPartnerId)
@@ -273,7 +276,7 @@ public class InvoiceToExportFactory
 		final I_C_BPartner orgBPartner = bpartnerOrgBL.retrieveLinkedBPartner(invoiceRecord.getAD_Org_ID());
 
 		Check.assumeNotNull(orgBPartner, InvoiceNotExportableException.class,
-				"The given invoice's org needs to have a linked bPartner; org={}; invoiceRecord={};", invoiceRecord.getAD_Org(), invoiceRecord);
+				"The given invoice's org needs to have a linked bPartner; AD_Org_ID={}; invoiceRecord={};", invoiceRecord.getAD_Org_ID(), invoiceRecord);
 
 		final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
 		final BPartnerLocationQuery query = BPartnerLocationQuery

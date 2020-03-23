@@ -153,6 +153,33 @@ public interface I_C_Commission_Overview_V
     public static final String COLUMNNAME_C_Commission_Overview_V_ID = "C_Commission_Overview_V_ID";
 
 	/**
+	 * Set Einstellungsdetail.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setC_CommissionSettingsLine_ID (int C_CommissionSettingsLine_ID);
+
+	/**
+	 * Get Einstellungsdetail.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getC_CommissionSettingsLine_ID();
+
+	public de.metas.contracts.commission.model.I_C_CommissionSettingsLine getC_CommissionSettingsLine();
+
+	public void setC_CommissionSettingsLine(de.metas.contracts.commission.model.I_C_CommissionSettingsLine C_CommissionSettingsLine);
+
+    /** Column definition for C_CommissionSettingsLine_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_Commission_Overview_V, de.metas.contracts.commission.model.I_C_CommissionSettingsLine> COLUMN_C_CommissionSettingsLine_ID = new org.adempiere.model.ModelColumn<I_C_Commission_Overview_V, de.metas.contracts.commission.model.I_C_CommissionSettingsLine>(I_C_Commission_Overview_V.class, "C_CommissionSettingsLine_ID", de.metas.contracts.commission.model.I_C_CommissionSettingsLine.class);
+    /** Column name C_CommissionSettingsLine_ID */
+    public static final String COLUMNNAME_C_CommissionSettingsLine_ID = "C_CommissionSettingsLine_ID";
+
+	/**
 	 * Set Buchauszug.
 	 *
 	 * <br>Type: Search
@@ -178,6 +205,102 @@ public interface I_C_Commission_Overview_V
     public static final org.adempiere.model.ModelColumn<I_C_Commission_Overview_V, de.metas.contracts.commission.model.I_C_Commission_Share> COLUMN_C_Commission_Share_ID = new org.adempiere.model.ModelColumn<I_C_Commission_Overview_V, de.metas.contracts.commission.model.I_C_Commission_Share>(I_C_Commission_Overview_V.class, "C_Commission_Share_ID", de.metas.contracts.commission.model.I_C_Commission_Share.class);
     /** Column name C_Commission_Share_ID */
     public static final String COLUMNNAME_C_Commission_Share_ID = "C_Commission_Share_ID";
+
+	/**
+	 * Set Pauschale - Vertragsperiode.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setC_Flatrate_Term_ID (int C_Flatrate_Term_ID);
+
+	/**
+	 * Get Pauschale - Vertragsperiode.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getC_Flatrate_Term_ID();
+
+    /** Column definition for C_Flatrate_Term_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_Commission_Overview_V, Object> COLUMN_C_Flatrate_Term_ID = new org.adempiere.model.ModelColumn<I_C_Commission_Overview_V, Object>(I_C_Commission_Overview_V.class, "C_Flatrate_Term_ID", null);
+    /** Column name C_Flatrate_Term_ID */
+    public static final String COLUMNNAME_C_Flatrate_Term_ID = "C_Flatrate_Term_ID";
+
+	/**
+	 * Set Provisionsabrechnungskandidat.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setC_Invoice_Candidate_Commission_ID (int C_Invoice_Candidate_Commission_ID);
+
+	/**
+	 * Get Provisionsabrechnungskandidat.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getC_Invoice_Candidate_Commission_ID();
+
+    /** Column definition for C_Invoice_Candidate_Commission_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_Commission_Overview_V, Object> COLUMN_C_Invoice_Candidate_Commission_ID = new org.adempiere.model.ModelColumn<I_C_Commission_Overview_V, Object>(I_C_Commission_Overview_V.class, "C_Invoice_Candidate_Commission_ID", null);
+    /** Column name C_Invoice_Candidate_Commission_ID */
+    public static final String COLUMNNAME_C_Invoice_Candidate_Commission_ID = "C_Invoice_Candidate_Commission_ID";
+
+	/**
+	 * Set Rechnungskandidat.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setC_Invoice_Candidate_ID (int C_Invoice_Candidate_ID);
+
+	/**
+	 * Get Rechnungskandidat.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getC_Invoice_Candidate_ID();
+
+    /** Column definition for C_Invoice_Candidate_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_Commission_Overview_V, Object> COLUMN_C_Invoice_Candidate_ID = new org.adempiere.model.ModelColumn<I_C_Commission_Overview_V, Object>(I_C_Commission_Overview_V.class, "C_Invoice_Candidate_ID", null);
+    /** Column name C_Invoice_Candidate_ID */
+    public static final String COLUMNNAME_C_Invoice_Candidate_ID = "C_Invoice_Candidate_ID";
+
+	/**
+	 * Set Provisionsabrechnung.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setC_Invoice_Commission_ID (int C_Invoice_Commission_ID);
+
+	/**
+	 * Get Provisionsabrechnung.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getC_Invoice_Commission_ID();
+
+	public org.compiere.model.I_C_Invoice getC_Invoice_Commission();
+
+	public void setC_Invoice_Commission(org.compiere.model.I_C_Invoice C_Invoice_Commission);
+
+    /** Column definition for C_Invoice_Commission_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_Commission_Overview_V, org.compiere.model.I_C_Invoice> COLUMN_C_Invoice_Commission_ID = new org.adempiere.model.ModelColumn<I_C_Commission_Overview_V, org.compiere.model.I_C_Invoice>(I_C_Commission_Overview_V.class, "C_Invoice_Commission_ID", org.compiere.model.I_C_Invoice.class);
+    /** Column name C_Invoice_Commission_ID */
+    public static final String COLUMNNAME_C_Invoice_Commission_ID = "C_Invoice_Commission_ID";
 
 	/**
 	 * Set Rechnung.
@@ -209,6 +332,33 @@ public interface I_C_Commission_Overview_V
     public static final String COLUMNNAME_C_Invoice_ID = "C_Invoice_ID";
 
 	/**
+	 * Set Provisionsabrechnungszeile.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setC_InvoiceLine_Commission_ID (int C_InvoiceLine_Commission_ID);
+
+	/**
+	 * Get Provisionsabrechnungszeile.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getC_InvoiceLine_Commission_ID();
+
+	public org.compiere.model.I_C_InvoiceLine getC_InvoiceLine_Commission();
+
+	public void setC_InvoiceLine_Commission(org.compiere.model.I_C_InvoiceLine C_InvoiceLine_Commission);
+
+    /** Column definition for C_InvoiceLine_Commission_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_Commission_Overview_V, org.compiere.model.I_C_InvoiceLine> COLUMN_C_InvoiceLine_Commission_ID = new org.adempiere.model.ModelColumn<I_C_Commission_Overview_V, org.compiere.model.I_C_InvoiceLine>(I_C_Commission_Overview_V.class, "C_InvoiceLine_Commission_ID", org.compiere.model.I_C_InvoiceLine.class);
+    /** Column name C_InvoiceLine_Commission_ID */
+    public static final String COLUMNNAME_C_InvoiceLine_Commission_ID = "C_InvoiceLine_Commission_ID";
+
+	/**
 	 * Set Rechnungsposition.
 	 * Rechnungszeile
 	 *
@@ -236,6 +386,56 @@ public interface I_C_Commission_Overview_V
     public static final org.adempiere.model.ModelColumn<I_C_Commission_Overview_V, org.compiere.model.I_C_InvoiceLine> COLUMN_C_InvoiceLine_ID = new org.adempiere.model.ModelColumn<I_C_Commission_Overview_V, org.compiere.model.I_C_InvoiceLine>(I_C_Commission_Overview_V.class, "C_InvoiceLine_ID", org.compiere.model.I_C_InvoiceLine.class);
     /** Column name C_InvoiceLine_ID */
     public static final String COLUMNNAME_C_InvoiceLine_ID = "C_InvoiceLine_ID";
+
+	/**
+	 * Set Datum.
+	 * Belegdatum des Provisionsauslösers
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setCommissionDate (java.sql.Timestamp CommissionDate);
+
+	/**
+	 * Get Datum.
+	 * Belegdatum des Provisionsauslösers
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.sql.Timestamp getCommissionDate();
+
+    /** Column definition for CommissionDate */
+    public static final org.adempiere.model.ModelColumn<I_C_Commission_Overview_V, Object> COLUMN_CommissionDate = new org.adempiere.model.ModelColumn<I_C_Commission_Overview_V, Object>(I_C_Commission_Overview_V.class, "CommissionDate", null);
+    /** Column name CommissionDate */
+    public static final String COLUMNNAME_CommissionDate = "CommissionDate";
+
+	/**
+	 * Set Provisionsauslöser.
+	 * Art des Dokuments, dass den Provisionsvorgang ausgelöst hat
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setCommissionTrigger_Type (java.lang.String CommissionTrigger_Type);
+
+	/**
+	 * Get Provisionsauslöser.
+	 * Art des Dokuments, dass den Provisionsvorgang ausgelöst hat
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getCommissionTrigger_Type();
+
+    /** Column definition for CommissionTrigger_Type */
+    public static final org.adempiere.model.ModelColumn<I_C_Commission_Overview_V, Object> COLUMN_CommissionTrigger_Type = new org.adempiere.model.ModelColumn<I_C_Commission_Overview_V, Object>(I_C_Commission_Overview_V.class, "CommissionTrigger_Type", null);
+    /** Column name CommissionTrigger_Type */
+    public static final String COLUMNNAME_CommissionTrigger_Type = "CommissionTrigger_Type";
 
 	/**
 	 * Set Auftrag.
@@ -418,27 +618,25 @@ public interface I_C_Commission_Overview_V
     public static final String COLUMNNAME_MostRecentTriggerTimestamp = "MostRecentTriggerTimestamp";
 
 	/**
-	 * Set Produkt.
-	 * Produkt, Leistung, Artikel
+	 * Set Beauftragtes Produkt.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setM_Product_ID (int M_Product_ID);
+	public void setM_Product_Order_ID (int M_Product_Order_ID);
 
 	/**
-	 * Get Produkt.
-	 * Produkt, Leistung, Artikel
+	 * Get Beauftragtes Produkt.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getM_Product_ID();
+	public int getM_Product_Order_ID();
 
-    /** Column name M_Product_ID */
-    public static final String COLUMNNAME_M_Product_ID = "M_Product_ID";
+    /** Column name M_Product_Order_ID */
+    public static final String COLUMNNAME_M_Product_Order_ID = "M_Product_Order_ID";
 
 	/**
 	 * Set % der Basispunkte.
@@ -577,6 +775,31 @@ public interface I_C_Commission_Overview_V
     public static final org.adempiere.model.ModelColumn<I_C_Commission_Overview_V, Object> COLUMN_PointsSum_ToSettle = new org.adempiere.model.ModelColumn<I_C_Commission_Overview_V, Object>(I_C_Commission_Overview_V.class, "PointsSum_ToSettle", null);
     /** Column name PointsSum_ToSettle */
     public static final String COLUMNNAME_PointsSum_ToSettle = "PointsSum_ToSettle";
+
+	/**
+	 * Set Referenz.
+	 * Referenz-Nummer des Kunden
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setPOReference (java.lang.String POReference);
+
+	/**
+	 * Get Referenz.
+	 * Referenz-Nummer des Kunden
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getPOReference();
+
+    /** Column definition for POReference */
+    public static final org.adempiere.model.ModelColumn<I_C_Commission_Overview_V, Object> COLUMN_POReference = new org.adempiere.model.ModelColumn<I_C_Commission_Overview_V, Object>(I_C_Commission_Overview_V.class, "POReference", null);
+    /** Column name POReference */
+    public static final String COLUMNNAME_POReference = "POReference";
 
 	/**
 	 * Set Menge.

@@ -163,6 +163,7 @@ public final class BusinessTestHelper
 	public static I_M_Product createProduct(final String name, final I_C_UOM uom, final BigDecimal weightKg)
 	{
 		final I_M_Product product = newInstanceOutOfTrx(I_M_Product.class);
+		POJOWrapper.setInstanceName(product, name);
 		product.setValue(name);
 		product.setName(name);
 		product.setC_UOM_ID(uom.getC_UOM_ID());

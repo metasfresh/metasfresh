@@ -50,9 +50,18 @@ public class Beneficiary
 		return new Beneficiary(bPartnerId);
 	}
 
+	public static int toRepoId(@Nullable final Beneficiary salesRep)
+	{
+		if (salesRep == null)
+		{
+			return 0;
+		}
+		return salesRep.getBPartnerId().getRepoId();
+	}
+
 	BPartnerId bPartnerId;
 
-	private Beneficiary(BPartnerId bPartnerId)
+	private Beneficiary(@NonNull final BPartnerId bPartnerId)
 	{
 		this.bPartnerId = bPartnerId;
 	}
@@ -62,4 +71,5 @@ public class Beneficiary
 	{
 		return bPartnerId;
 	}
+
 }

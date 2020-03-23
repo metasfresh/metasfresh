@@ -38,9 +38,11 @@ import de.metas.contracts.commission.commissioninstance.businesslogic.Commission
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionInstance;
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionPoints;
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.SalesCommissionShare;
+import de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.CommissionTriggerDocument;
+import de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.CommissionTriggerType;
+import de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.PlainTriggerDocumentId;
 import de.metas.contracts.commission.commissioninstance.services.CommissionInstanceService;
 import de.metas.contracts.commission.commissioninstance.services.CommissionPointsService;
-import de.metas.contracts.commission.commissioninstance.services.CreateForecastCommissionInstanceRequest;
 import de.metas.contracts.commission.model.I_C_Commission_Share;
 import de.metas.logging.LogManager;
 import de.metas.logging.TableRecordMDC;
@@ -50,10 +52,12 @@ import de.metas.pricing.IPricingContext;
 import de.metas.pricing.IPricingResult;
 import de.metas.pricing.rules.IPricingRule;
 import de.metas.product.ProductPrice;
+import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import de.metas.util.lang.Percent;
+import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 
 public class CustomerTradeMarginPricingRule implements IPricingRule
@@ -63,6 +67,8 @@ public class CustomerTradeMarginPricingRule implements IPricingRule
 	private final CustomerTradeMarginService customerTradeMarginService = SpringContextHolder.instance.getBean(CustomerTradeMarginService.class);
 
 	private final CommissionInstanceService commissionInstanceService = SpringContextHolder.instance.getBean(CommissionInstanceService.class);
+
+	private final MoneyService moneyService = SpringContextHolder.instance.getBean(MoneyService.class);
 
 	@Override
 	public boolean applies(IPricingContext pricingCtx, IPricingResult result)
@@ -176,7 +182,7 @@ public class CustomerTradeMarginPricingRule implements IPricingRule
 			}
 		}
 
-		result.setBaseCommissionPointsPerPriceUOM(forecastCommissionInstance.get().getCurrentTriggerData().getForecastedPoints().toBigDecimal());
+		result.setBaseCommissionPointsPerPriceUOM(forecastCommissionInstance.get().getCurrentTriggerData().getForecastedBasePoints().toBigDecimal());
 		result.setTradedCommissionPercent(Percent.of(customerTradeMarginSettings.get().getMarginPercent()));
 
 		result.setPriceStd(priceBeforeApplyingRule.toBigDecimal().subtract(customerTradeMarginPerPriceUOMSum.toBigDecimal()));
@@ -194,19 +200,27 @@ public class CustomerTradeMarginPricingRule implements IPricingRule
 			@NonNull final BPartnerId salesRepId,
 			@NonNull final BPartnerId customerId)
 	{
-		final CreateForecastCommissionInstanceRequest createForecastCommissionPerPriceUOMReq = CreateForecastCommissionInstanceRequest
+		// we need the commission points per one qty of product in pricing UOM
+		final Quantity forecastQty = Quantitys.create(BigDecimal.ONE, productPrice.getUomId());
+		final Money forecastNetAmt = moneyService.multiply(forecastQty, productPrice);
+
+		final CommissionTriggerDocument commissionTriggerDocument = CommissionTriggerDocument
 				.builder()
-				// we need the commission points per one qty of product in pricing UOM
+				.triggerType(CommissionTriggerType.Plain)
 				.orgId(pricingCtx.getOrgId())
-				.forecastQty(Quantitys.create(BigDecimal.ONE, productPrice.getUomId()))
-				.productPrice(productPrice)
-				.customerId(customerId)
-				.salesRepId(salesRepId)
-				.dateOrdered(pricingCtx.getPriceDate())
+				.id(PlainTriggerDocumentId.INSTANCE)
+				.salesRepBPartnerId(salesRepId)
+				.customerBPartnerId(customerId)
 				.productId(pricingCtx.getProductId())
+				.commissionDate(pricingCtx.getPriceDate())
+				.updated(SystemTime.asInstant())
+				.forecastCommissionPoints(CommissionPoints.of(forecastNetAmt.toBigDecimal()))
+				.commissionPointsToInvoice(CommissionPoints.ZERO)
+				.invoicedCommissionPoints(CommissionPoints.ZERO)
+				.tradedCommissionPercent(Percent.ZERO)
 				.build();
 
-		final Optional<CommissionInstance> commissionInstance = commissionInstanceService.computeCommissionInstanceFor(createForecastCommissionPerPriceUOMReq);
+		final Optional<CommissionInstance> commissionInstance = commissionInstanceService.computeCommissionInstanceFor(commissionTriggerDocument);
 		if (!commissionInstance.isPresent())
 		{
 			return Optional.empty();

@@ -15,7 +15,7 @@ public class X_C_Commission_Share extends org.compiere.model.PO implements I_C_C
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1707190182L;
+	private static final long serialVersionUID = -943515666L;
 
     /** Standard Constructor */
     public X_C_Commission_Share (Properties ctx, int C_Commission_Share_ID, String trxName)
@@ -103,6 +103,40 @@ public class X_C_Commission_Share extends org.compiere.model.PO implements I_C_C
 	public int getC_Commission_Instance_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_Commission_Instance_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public de.metas.contracts.commission.model.I_C_CommissionSettingsLine getC_CommissionSettingsLine()
+	{
+		return get_ValueAsPO(COLUMNNAME_C_CommissionSettingsLine_ID, de.metas.contracts.commission.model.I_C_CommissionSettingsLine.class);
+	}
+
+	@Override
+	public void setC_CommissionSettingsLine(de.metas.contracts.commission.model.I_C_CommissionSettingsLine C_CommissionSettingsLine)
+	{
+		set_ValueFromPO(COLUMNNAME_C_CommissionSettingsLine_ID, de.metas.contracts.commission.model.I_C_CommissionSettingsLine.class, C_CommissionSettingsLine);
+	}
+
+	/** Set Einstellungsdetail.
+		@param C_CommissionSettingsLine_ID Einstellungsdetail	  */
+	@Override
+	public void setC_CommissionSettingsLine_ID (int C_CommissionSettingsLine_ID)
+	{
+		if (C_CommissionSettingsLine_ID < 1) 
+			set_Value (COLUMNNAME_C_CommissionSettingsLine_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_CommissionSettingsLine_ID, Integer.valueOf(C_CommissionSettingsLine_ID));
+	}
+
+	/** Get Einstellungsdetail.
+		@return Einstellungsdetail	  */
+	@Override
+	public int getC_CommissionSettingsLine_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_CommissionSettingsLine_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();

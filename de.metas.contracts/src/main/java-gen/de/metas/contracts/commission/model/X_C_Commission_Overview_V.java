@@ -15,7 +15,7 @@ public class X_C_Commission_Overview_V extends org.compiere.model.PO implements 
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -338560102L;
+	private static final long serialVersionUID = -1115295879L;
 
     /** Standard Constructor */
     public X_C_Commission_Overview_V (Properties ctx, int C_Commission_Overview_V_ID, String trxName)
@@ -146,6 +146,40 @@ public class X_C_Commission_Overview_V extends org.compiere.model.PO implements 
 	}
 
 	@Override
+	public de.metas.contracts.commission.model.I_C_CommissionSettingsLine getC_CommissionSettingsLine()
+	{
+		return get_ValueAsPO(COLUMNNAME_C_CommissionSettingsLine_ID, de.metas.contracts.commission.model.I_C_CommissionSettingsLine.class);
+	}
+
+	@Override
+	public void setC_CommissionSettingsLine(de.metas.contracts.commission.model.I_C_CommissionSettingsLine C_CommissionSettingsLine)
+	{
+		set_ValueFromPO(COLUMNNAME_C_CommissionSettingsLine_ID, de.metas.contracts.commission.model.I_C_CommissionSettingsLine.class, C_CommissionSettingsLine);
+	}
+
+	/** Set Einstellungsdetail.
+		@param C_CommissionSettingsLine_ID Einstellungsdetail	  */
+	@Override
+	public void setC_CommissionSettingsLine_ID (int C_CommissionSettingsLine_ID)
+	{
+		if (C_CommissionSettingsLine_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_C_CommissionSettingsLine_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_C_CommissionSettingsLine_ID, Integer.valueOf(C_CommissionSettingsLine_ID));
+	}
+
+	/** Get Einstellungsdetail.
+		@return Einstellungsdetail	  */
+	@Override
+	public int getC_CommissionSettingsLine_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_CommissionSettingsLine_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
 	public de.metas.contracts.commission.model.I_C_Commission_Share getC_Commission_Share()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_Commission_Share_ID, de.metas.contracts.commission.model.I_C_Commission_Share.class);
@@ -174,6 +208,106 @@ public class X_C_Commission_Overview_V extends org.compiere.model.PO implements 
 	public int getC_Commission_Share_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_Commission_Share_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Pauschale - Vertragsperiode.
+		@param C_Flatrate_Term_ID Pauschale - Vertragsperiode	  */
+	@Override
+	public void setC_Flatrate_Term_ID (int C_Flatrate_Term_ID)
+	{
+		if (C_Flatrate_Term_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_C_Flatrate_Term_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_C_Flatrate_Term_ID, Integer.valueOf(C_Flatrate_Term_ID));
+	}
+
+	/** Get Pauschale - Vertragsperiode.
+		@return Pauschale - Vertragsperiode	  */
+	@Override
+	public int getC_Flatrate_Term_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_Flatrate_Term_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Provisionsabrechnungskandidat.
+		@param C_Invoice_Candidate_Commission_ID Provisionsabrechnungskandidat	  */
+	@Override
+	public void setC_Invoice_Candidate_Commission_ID (int C_Invoice_Candidate_Commission_ID)
+	{
+		if (C_Invoice_Candidate_Commission_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_C_Invoice_Candidate_Commission_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_C_Invoice_Candidate_Commission_ID, Integer.valueOf(C_Invoice_Candidate_Commission_ID));
+	}
+
+	/** Get Provisionsabrechnungskandidat.
+		@return Provisionsabrechnungskandidat	  */
+	@Override
+	public int getC_Invoice_Candidate_Commission_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_Invoice_Candidate_Commission_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Rechnungskandidat.
+		@param C_Invoice_Candidate_ID Rechnungskandidat	  */
+	@Override
+	public void setC_Invoice_Candidate_ID (int C_Invoice_Candidate_ID)
+	{
+		if (C_Invoice_Candidate_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_C_Invoice_Candidate_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_C_Invoice_Candidate_ID, Integer.valueOf(C_Invoice_Candidate_ID));
+	}
+
+	/** Get Rechnungskandidat.
+		@return Rechnungskandidat	  */
+	@Override
+	public int getC_Invoice_Candidate_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_Invoice_Candidate_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public org.compiere.model.I_C_Invoice getC_Invoice_Commission()
+	{
+		return get_ValueAsPO(COLUMNNAME_C_Invoice_Commission_ID, org.compiere.model.I_C_Invoice.class);
+	}
+
+	@Override
+	public void setC_Invoice_Commission(org.compiere.model.I_C_Invoice C_Invoice_Commission)
+	{
+		set_ValueFromPO(COLUMNNAME_C_Invoice_Commission_ID, org.compiere.model.I_C_Invoice.class, C_Invoice_Commission);
+	}
+
+	/** Set Provisionsabrechnung.
+		@param C_Invoice_Commission_ID Provisionsabrechnung	  */
+	@Override
+	public void setC_Invoice_Commission_ID (int C_Invoice_Commission_ID)
+	{
+		if (C_Invoice_Commission_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_C_Invoice_Commission_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_C_Invoice_Commission_ID, Integer.valueOf(C_Invoice_Commission_ID));
+	}
+
+	/** Get Provisionsabrechnung.
+		@return Provisionsabrechnung	  */
+	@Override
+	public int getC_Invoice_Commission_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_Invoice_Commission_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
@@ -217,6 +351,40 @@ public class X_C_Commission_Overview_V extends org.compiere.model.PO implements 
 	}
 
 	@Override
+	public org.compiere.model.I_C_InvoiceLine getC_InvoiceLine_Commission()
+	{
+		return get_ValueAsPO(COLUMNNAME_C_InvoiceLine_Commission_ID, org.compiere.model.I_C_InvoiceLine.class);
+	}
+
+	@Override
+	public void setC_InvoiceLine_Commission(org.compiere.model.I_C_InvoiceLine C_InvoiceLine_Commission)
+	{
+		set_ValueFromPO(COLUMNNAME_C_InvoiceLine_Commission_ID, org.compiere.model.I_C_InvoiceLine.class, C_InvoiceLine_Commission);
+	}
+
+	/** Set Provisionsabrechnungszeile.
+		@param C_InvoiceLine_Commission_ID Provisionsabrechnungszeile	  */
+	@Override
+	public void setC_InvoiceLine_Commission_ID (int C_InvoiceLine_Commission_ID)
+	{
+		if (C_InvoiceLine_Commission_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_C_InvoiceLine_Commission_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_C_InvoiceLine_Commission_ID, Integer.valueOf(C_InvoiceLine_Commission_ID));
+	}
+
+	/** Get Provisionsabrechnungszeile.
+		@return Provisionsabrechnungszeile	  */
+	@Override
+	public int getC_InvoiceLine_Commission_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_InvoiceLine_Commission_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
 	public org.compiere.model.I_C_InvoiceLine getC_InvoiceLine()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_InvoiceLine_ID, org.compiere.model.I_C_InvoiceLine.class);
@@ -251,6 +419,44 @@ public class X_C_Commission_Overview_V extends org.compiere.model.PO implements 
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** Set Datum.
+		@param CommissionDate 
+		Belegdatum des Provisionsauslösers
+	  */
+	@Override
+	public void setCommissionDate (java.sql.Timestamp CommissionDate)
+	{
+		set_ValueNoCheck (COLUMNNAME_CommissionDate, CommissionDate);
+	}
+
+	/** Get Datum.
+		@return Belegdatum des Provisionsauslösers
+	  */
+	@Override
+	public java.sql.Timestamp getCommissionDate () 
+	{
+		return (java.sql.Timestamp)get_Value(COLUMNNAME_CommissionDate);
+	}
+
+	/** Set Provisionsauslöser.
+		@param CommissionTrigger_Type 
+		Art des Dokuments, dass den Provisionsvorgang ausgelöst hat
+	  */
+	@Override
+	public void setCommissionTrigger_Type (java.lang.String CommissionTrigger_Type)
+	{
+		set_ValueNoCheck (COLUMNNAME_CommissionTrigger_Type, CommissionTrigger_Type);
+	}
+
+	/** Get Provisionsauslöser.
+		@return Art des Dokuments, dass den Provisionsvorgang ausgelöst hat
+	  */
+	@Override
+	public java.lang.String getCommissionTrigger_Type () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_CommissionTrigger_Type);
 	}
 
 	@Override
@@ -387,26 +593,23 @@ public class X_C_Commission_Overview_V extends org.compiere.model.PO implements 
 		return (java.sql.Timestamp)get_Value(COLUMNNAME_MostRecentTriggerTimestamp);
 	}
 
-	/** Set Produkt.
-		@param M_Product_ID 
-		Produkt, Leistung, Artikel
-	  */
+	/** Set Beauftragtes Produkt.
+		@param M_Product_Order_ID Beauftragtes Produkt	  */
 	@Override
-	public void setM_Product_ID (int M_Product_ID)
+	public void setM_Product_Order_ID (int M_Product_Order_ID)
 	{
-		if (M_Product_ID < 1) 
-			set_ValueNoCheck (COLUMNNAME_M_Product_ID, null);
+		if (M_Product_Order_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_M_Product_Order_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_M_Product_ID, Integer.valueOf(M_Product_ID));
+			set_ValueNoCheck (COLUMNNAME_M_Product_Order_ID, Integer.valueOf(M_Product_Order_ID));
 	}
 
-	/** Get Produkt.
-		@return Produkt, Leistung, Artikel
-	  */
+	/** Get Beauftragtes Produkt.
+		@return Beauftragtes Produkt	  */
 	@Override
-	public int getM_Product_ID () 
+	public int getM_Product_Order_ID () 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_M_Product_ID);
+		Integer ii = (Integer)get_Value(COLUMNNAME_M_Product_Order_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
@@ -524,6 +727,25 @@ public class X_C_Commission_Overview_V extends org.compiere.model.PO implements 
 		if (bd == null)
 			 return BigDecimal.ZERO;
 		return bd;
+	}
+
+	/** Set Referenz.
+		@param POReference 
+		Referenz-Nummer des Kunden
+	  */
+	@Override
+	public void setPOReference (java.lang.String POReference)
+	{
+		set_ValueNoCheck (COLUMNNAME_POReference, POReference);
+	}
+
+	/** Get Referenz.
+		@return Referenz-Nummer des Kunden
+	  */
+	@Override
+	public java.lang.String getPOReference () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_POReference);
 	}
 
 	/** Set Menge.

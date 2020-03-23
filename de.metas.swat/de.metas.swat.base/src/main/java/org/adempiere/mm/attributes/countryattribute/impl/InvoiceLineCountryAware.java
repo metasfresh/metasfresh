@@ -10,18 +10,17 @@ package org.adempiere.mm.attributes.countryattribute.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.countryattribute.ICountryAware;
@@ -32,7 +31,10 @@ import org.compiere.model.I_C_Country;
 import org.compiere.model.I_C_Invoice;
 
 import de.metas.adempiere.model.I_C_InvoiceLine;
+import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.util.Check;
+import de.metas.util.Services;
 
 public class InvoiceLineCountryAware implements ICountryAware
 {
@@ -80,12 +82,15 @@ public class InvoiceLineCountryAware implements ICountryAware
 	{
 		final I_C_Invoice invoice = getInvoice();
 
-		final I_C_BPartner_Location bpLocation = invoice.getC_BPartner_Location();
-		if (bpLocation == null)
+		if (invoice.getC_BPartner_Location_ID() <= 0)
 		{
 			return null;
 		}
-		return bpLocation.getC_Location().getC_Country();
+
+		final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
+		final I_C_BPartner_Location bPartnerLocationRecord = bpartnerDAO.getBPartnerLocationById(BPartnerLocationId.ofRepoId(invoice.getC_BPartner_ID(), invoice.getC_BPartner_Location_ID()));
+
+		return bPartnerLocationRecord.getC_Location().getC_Country();
 	}
 
 	private I_C_Invoice getInvoice()

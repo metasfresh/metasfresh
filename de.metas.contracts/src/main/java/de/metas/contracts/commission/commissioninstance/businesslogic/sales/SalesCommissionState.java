@@ -7,6 +7,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
 import de.metas.contracts.commission.model.X_C_Commission_Fact;
+import de.metas.util.lang.ReferenceListAwareEnum;
 import lombok.Getter;
 import lombok.NonNull;
 
@@ -33,7 +34,7 @@ import lombok.NonNull;
  */
 
 /** Please keep in sync with the respective values of {@code AD_Reference_ID=541042}. */
-public enum SalesCommissionState
+public enum SalesCommissionState implements ReferenceListAwareEnum
 {
 	/** Related to an invoice candidate's open (i.e. not-yet-invoiced) QtyOrdered. */
 	FORECASTED(X_C_Commission_Fact.COMMISSION_FACT_STATE_FORECASTED),
@@ -45,16 +46,16 @@ public enum SalesCommissionState
 	INVOICED(X_C_Commission_Fact.COMMISSION_FACT_STATE_INVOICED);
 
 	private static ImmutableMap<String, SalesCommissionState> recordCode2State = ImmutableMap.of(
-			FORECASTED.getRecordCode(), FORECASTED,
-			INVOICEABLE.getRecordCode(), INVOICEABLE,
-			INVOICED.getRecordCode(), INVOICED);
+			FORECASTED.getCode(), FORECASTED,
+			INVOICEABLE.getCode(), INVOICEABLE,
+			INVOICED.getCode(), INVOICED);
 
 	@Getter
-	private final String recordCode;
+	private final String code;
 
-	private SalesCommissionState(String recordCode)
+	private SalesCommissionState(String code)
 	{
-		this.recordCode = recordCode;
+		this.code = code;
 	}
 
 	public static SalesCommissionState forRecordCode(@NonNull final String recordCode)
@@ -66,7 +67,7 @@ public enum SalesCommissionState
 	{
 		return Arrays.asList(SalesCommissionState.values())
 				.stream()
-				.map(SalesCommissionState::getRecordCode)
+				.map(SalesCommissionState::getCode)
 				.collect(ImmutableList.toImmutableList());
 	}
 }

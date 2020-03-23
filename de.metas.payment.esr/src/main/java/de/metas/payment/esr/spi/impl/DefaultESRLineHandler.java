@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package de.metas.payment.esr.spi.impl;
 
@@ -10,6 +10,7 @@ import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Invoice;
 
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.i18n.IMsgBL;
 import de.metas.payment.esr.ESRConstants;
 import de.metas.payment.esr.dataimporter.ESRDataLoaderUtil;
@@ -20,7 +21,7 @@ import de.metas.util.Services;
 import lombok.NonNull;
 
 /**
- * 
+ *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
@@ -28,6 +29,7 @@ public class DefaultESRLineHandler implements IESRLineHandler
 {
 
 	final private ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+	final private IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 
 	@Override
 	public boolean matchBPartnerOfInvoice(final I_C_Invoice invoice, final I_ESR_ImportLine esrLine)
@@ -36,7 +38,8 @@ public class DefaultESRLineHandler implements IESRLineHandler
 
 		if (sysConfigBL.getBooleanValue(ESRConstants.SYSCONFIG_MATCH_ORG, true))
 		{
-			final I_C_BPartner invoicePartner = invoice.getC_BPartner();
+			final I_C_BPartner invoicePartner = bpartnerDAO.getById(invoice.getC_BPartner_ID());
+
 			if (invoicePartner.getAD_Org_ID() > 0  // task 09852: a partner that has no org at all does not mean an inconsistency and is therefore OK
 					&& invoicePartner.getAD_Org_ID() != esrLine.getAD_Org_ID())
 			{
@@ -61,7 +64,7 @@ public class DefaultESRLineHandler implements IESRLineHandler
 
 	@Override
 	public boolean matchBPartner(
-			@NonNull final I_C_BPartner bPartner, 
+			@NonNull final I_C_BPartner bPartner,
 			@NonNull final I_ESR_ImportLine esrLine)
 	{
 		if (sysConfigBL.getBooleanValue(ESRConstants.SYSCONFIG_MATCH_ORG, true))

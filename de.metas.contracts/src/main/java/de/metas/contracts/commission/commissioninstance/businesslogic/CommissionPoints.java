@@ -115,4 +115,13 @@ public class CommissionPoints
 		final BigDecimal percentagePoints = commissionPercent.computePercentageOf(points, precision);
 		return CommissionPoints.of(percentagePoints);
 	}
+
+	public CommissionPoints negateIf(final boolean condition)
+	{
+		if(condition)
+		{
+			return CommissionPoints.of(points.negate());
+		}
+		return this;
+	}
 }
