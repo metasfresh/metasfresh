@@ -52,10 +52,10 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.allocation.api.IAllocationDAO;
 import de.metas.bpartner.BPartnerId;
 import de.metas.document.engine.DocStatus;
-import de.metas.money.Money;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentId;
 import de.metas.payment.api.IPaymentDAO;
+import de.metas.payment.api.PaymentQuery;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.lang.ExternalId;
@@ -189,17 +189,33 @@ public abstract class AbstractPaymentDAO implements IPaymentDAO
 	public abstract void updateDiscountAndPayment(I_C_Payment payment, int c_Invoice_ID, I_C_DocType c_DocType);
 
 	@Override
-	public ImmutableSet<PaymentId> retrieveAllMatchingPayments(final boolean isReceipt, @NonNull final BPartnerId bPartnerId, @NonNull final Money money)
+	public ImmutableSet<PaymentId> retrievePaymentIds(@NonNull final PaymentQuery query)
 	{
-		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_C_Payment.class)
+		final IQueryBuilder<I_C_Payment> queryBuilder = queryBL.createQueryBuilder(I_C_Payment.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_Payment.COLUMNNAME_DocStatus, DocStatus.Completed)
-				.addEqualsFilter(I_C_Payment.COLUMNNAME_IsReconciled, false)
-				.addEqualsFilter(I_C_Payment.COLUMNNAME_IsReceipt, isReceipt)
-				.addEqualsFilter(I_C_Payment.COLUMNNAME_C_BPartner_ID, bPartnerId)
-				.addEqualsFilter(I_C_Payment.COLUMNNAME_PayAmt, money.toBigDecimal())
-				.addEqualsFilter(I_C_Payment.COLUMNNAME_C_Currency_ID, money.getCurrencyId())
+				.addEqualsFilter(I_C_Payment.COLUMNNAME_DocStatus, query.getDocStatus());
+
+		if (query.getReconciled() != null)
+		{
+			queryBuilder.addEqualsFilter(I_C_Payment.COLUMNNAME_IsReconciled, query.getReconciled());
+		}
+		if (query.getDirection() != null)
+		{
+			queryBuilder.addEqualsFilter(I_C_Payment.COLUMNNAME_IsReceipt, query.getDirection().isReceipt());
+		}
+		if (query.getBpartnerId() != null)
+		{
+			queryBuilder.addEqualsFilter(I_C_Payment.COLUMNNAME_C_BPartner_ID, query.getBpartnerId());
+		}
+		if (query.getPayAmt() != null)
+		{
+			queryBuilder
+					.addEqualsFilter(I_C_Payment.COLUMNNAME_PayAmt, query.getPayAmt().toBigDecimal())
+					.addEqualsFilter(I_C_Payment.COLUMNNAME_C_Currency_ID, query.getPayAmt().getCurrencyId());
+		}
+
+		return queryBuilder
+				.setLimit(query.getLimit())
 				.create()
 				.listIds(PaymentId::ofRepoId);
 	}

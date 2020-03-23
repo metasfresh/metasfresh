@@ -2,6 +2,7 @@ package de.metas.banking.payment.impl;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.Set;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.SpringContextHolder;
@@ -9,30 +10,6 @@ import org.compiere.model.I_C_BankStatement;
 import org.compiere.model.I_C_BankStatementLine;
 import org.compiere.model.I_C_Payment;
 import org.compiere.util.TimeUtil;
-
-/*
- * #%L
- * de.metas.banking.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import com.google.common.collect.ImmutableSet;
 
 import de.metas.banking.api.BankAccountId;
 import de.metas.banking.payment.BankStatementLineMultiPaymentLinkRequest;
@@ -46,11 +23,13 @@ import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.money.MoneyService;
 import de.metas.organization.OrgId;
+import de.metas.payment.PaymentDirection;
 import de.metas.payment.PaymentId;
 import de.metas.payment.TenderType;
 import de.metas.payment.api.DefaultPaymentBuilder;
 import de.metas.payment.api.IPaymentBL;
 import de.metas.payment.api.IPaymentDAO;
+import de.metas.payment.api.PaymentQuery;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -60,7 +39,7 @@ public class BankStatmentPaymentBL implements IBankStatmentPaymentBL
 	private final IBankStatementDAO bankStatementDAO = Services.get(IBankStatementDAO.class);
 
 	@Override
-	public void findOrCreateSinglePaymentAndLink(
+	public void findOrCreateSinglePaymentAndLinkIfPossible(
 			@NonNull final I_C_BankStatement bankStatement,
 			@NonNull final I_C_BankStatementLine bankStatementLine)
 	{
@@ -77,27 +56,40 @@ public class BankStatmentPaymentBL implements IBankStatmentPaymentBL
 			return;
 		}
 
-		final Money statementAmt = extractStatementAmt(bankStatementLine);
-		final boolean expectInboundPayment = statementAmt.signum() >= 0;
-		final Money expectedPaymentAmount = statementAmt.negateIf(!expectInboundPayment);
-
-		final IPaymentDAO paymentDAO = Services.get(IPaymentDAO.class);
-		final ImmutableSet<PaymentId> matchingPayments = paymentDAO.retrieveAllMatchingPayments(expectInboundPayment, bpartnerId, expectedPaymentAmount);
-
-		if (matchingPayments.size() > 1)
+		final Set<PaymentId> eligiblePaymentIds = findEligiblePaymentIds(bankStatementLine, 2);
+		if (eligiblePaymentIds.size() > 1)
 		{
 			// Don't create a new Payment and don't link any of the existing payments if there are multiple payments found.
 			// The user must fix this case manually by choosing the correct Payment
 		}
-		else if (matchingPayments.size() == 1)
+		else if (eligiblePaymentIds.size() == 1)
 		{
-			final PaymentId paymentId = matchingPayments.iterator().next();
+			final PaymentId paymentId = eligiblePaymentIds.iterator().next();
 			linkSinglePayment(bankStatement, bankStatementLine, paymentId);
 		}
 		else
 		{
 			createSinglePaymentAndLink(bankStatement, bankStatementLine);
 		}
+	}
+
+	@Override
+	public Set<PaymentId> findEligiblePaymentIds(@NonNull final I_C_BankStatementLine bankStatementLine, final int limit)
+	{
+		final BPartnerId bpartnerId = BPartnerId.ofRepoId(bankStatementLine.getC_BPartner_ID());
+		final Money statementAmt = extractStatementAmt(bankStatementLine);
+		final PaymentDirection expectedPaymentDirection = PaymentDirection.ofBankStatementAmount(statementAmt);
+		final Money expectedPaymentAmount = statementAmt.negateIf(expectedPaymentDirection.isOutboundPayment());
+
+		final IPaymentDAO paymentDAO = Services.get(IPaymentDAO.class);
+		return paymentDAO.retrievePaymentIds(PaymentQuery.builder()
+				.limit(limit)
+				.docStatus(DocStatus.Completed)
+				.reconciled(false)
+				.direction(expectedPaymentDirection)
+				.bpartnerId(bpartnerId)
+				.payAmt(expectedPaymentAmount)
+				.build());
 	}
 
 	private static Money extractStatementAmt(final I_C_BankStatementLine line)

@@ -202,7 +202,7 @@ class BankStatementPaymentBLTest
 			//
 			bankStatement.setDocStatus(DocStatus.Completed.getCode());
 			final BankStatmentPaymentBL testBankStatementPaymentBL = new BankStatmentPaymentBL();
-			testBankStatementPaymentBL.findOrCreateSinglePaymentAndLink(bankStatement, bsl);
+			testBankStatementPaymentBL.findOrCreateSinglePaymentAndLinkIfPossible(bankStatement, bsl);
 
 			//
 			// Checks
@@ -261,7 +261,7 @@ class BankStatementPaymentBLTest
 			//
 			bankStatement.setDocStatus(DocStatus.Completed.getCode());
 			final BankStatmentPaymentBL testBankStatementBL = new BankStatmentPaymentBL();
-			testBankStatementBL.findOrCreateSinglePaymentAndLink(bankStatement, bsl);
+			testBankStatementBL.findOrCreateSinglePaymentAndLinkIfPossible(bankStatement, bsl);
 
 			//
 			// Checks
@@ -302,7 +302,7 @@ class BankStatementPaymentBLTest
 			//
 			bankStatement.setDocStatus(DocStatus.Completed.getCode());
 			final BankStatmentPaymentBL testBankStatementBL = new BankStatmentPaymentBL();
-			testBankStatementBL.findOrCreateSinglePaymentAndLink(bankStatement, bsl);
+			testBankStatementBL.findOrCreateSinglePaymentAndLinkIfPossible(bankStatement, bsl);
 
 			//
 			// Checks
@@ -334,7 +334,7 @@ class BankStatementPaymentBLTest
 			//
 			bankStatement.setDocStatus(DocStatus.Completed.getCode());
 			final BankStatmentPaymentBL testBankStatementBL = new BankStatmentPaymentBL();
-			testBankStatementBL.findOrCreateSinglePaymentAndLink(bankStatement, bsl);
+			testBankStatementBL.findOrCreateSinglePaymentAndLinkIfPossible(bankStatement, bsl);
 
 			//
 			// Checks

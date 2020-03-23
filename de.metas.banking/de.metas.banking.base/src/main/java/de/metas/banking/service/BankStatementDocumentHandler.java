@@ -105,7 +105,7 @@ public class BankStatementDocumentHandler implements DocumentHandler
 		final StringBuilder documentInfo = new StringBuilder();
 
 		final String bankAccountName = bankStatement.getC_BP_BankAccount().getA_Name();
-		if (!Check.isBlank(bankAccountName))
+		if (Check.isNotBlank(bankAccountName))
 		{
 			documentInfo.append(bankAccountName.trim());
 		}
@@ -257,7 +257,7 @@ public class BankStatementDocumentHandler implements DocumentHandler
 				}
 			}
 
-			bankStatmentPaymentBL.findOrCreateSinglePaymentAndLink(bankStatement, line);
+			bankStatmentPaymentBL.findOrCreateSinglePaymentAndLinkIfPossible(bankStatement, line);
 		}
 
 		//
