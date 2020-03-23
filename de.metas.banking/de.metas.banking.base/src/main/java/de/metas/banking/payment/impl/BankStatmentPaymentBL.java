@@ -1,6 +1,5 @@
 package de.metas.banking.payment.impl;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Set;
 
@@ -76,12 +75,14 @@ public class BankStatmentPaymentBL implements IBankStatmentPaymentBL
 	@Override
 	public Set<PaymentId> findEligiblePaymentIds(@NonNull final I_C_BankStatementLine bankStatementLine, final int limit)
 	{
+		final IPaymentDAO paymentDAO = Services.get(IPaymentDAO.class);
+
 		final BPartnerId bpartnerId = BPartnerId.ofRepoId(bankStatementLine.getC_BPartner_ID());
+
 		final Money statementAmt = extractStatementAmt(bankStatementLine);
 		final PaymentDirection expectedPaymentDirection = PaymentDirection.ofBankStatementAmount(statementAmt);
-		final Money expectedPaymentAmount = statementAmt.negateIf(expectedPaymentDirection.isOutboundPayment());
+		final Money expectedPaymentAmount = expectedPaymentDirection.convertStatementAmtToPayAmt(statementAmt);
 
-		final IPaymentDAO paymentDAO = Services.get(IPaymentDAO.class);
 		return paymentDAO.retrievePaymentIds(PaymentQuery.builder()
 				.limit(limit)
 				.docStatus(DocStatus.Completed)
@@ -167,17 +168,16 @@ public class BankStatmentPaymentBL implements IBankStatmentPaymentBL
 		bankStatementLine.setIsMultiplePaymentOrInvoice(false);
 		bankStatementLine.setIsMultiplePayment(false);
 		bankStatementLine.setC_Payment_ID(payment.getC_Payment_ID());
-		bankStatementLine.setC_Currency_ID(payment.getC_Currency_ID());
 		bankStatementLine.setC_BPartner_ID(payment.getC_BPartner_ID());
 		bankStatementLine.setC_Invoice_ID(payment.getC_Invoice_ID());
 
 		//
-		final BigDecimal negateIfOutboundPayment = payment.isReceipt()
-				? BigDecimal.ONE
-				: BigDecimal.ONE.negate();
-
+		final PaymentDirection paymentDirection = extractPaymentDirection(payment);
+		final Money payAmt = extractPayAmt(payment);
+		final Money trxAmt = paymentDirection.convertPayAmtToStatementAmt(payAmt);
 		// NOTE: don't touch the StmtAmt!
-		bankStatementLine.setTrxAmt(payment.getPayAmt().multiply(negateIfOutboundPayment));
+		bankStatementLine.setC_Currency_ID(trxAmt.getCurrencyId().getRepoId());
+		bankStatementLine.setTrxAmt(trxAmt.toBigDecimal());
 
 		bankStatementDAO.save(bankStatementLine);
 
@@ -189,6 +189,17 @@ public class BankStatmentPaymentBL implements IBankStatmentPaymentBL
 			final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
 			paymentBL.markReconciledAndSave(payment);
 		}
+	}
+
+	private static PaymentDirection extractPaymentDirection(final I_C_Payment payment)
+	{
+		return PaymentDirection.ofReceiptFlag(payment.isReceipt());
+	}
+
+	private Money extractPayAmt(@NonNull final I_C_Payment payment)
+	{
+		final CurrencyId currencyId = CurrencyId.ofRepoId(payment.getC_Currency_ID());
+		return Money.of(payment.getPayAmt(), currencyId);
 	}
 
 	@Override

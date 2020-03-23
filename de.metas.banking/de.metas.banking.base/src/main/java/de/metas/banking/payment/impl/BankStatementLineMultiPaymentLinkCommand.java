@@ -28,6 +28,7 @@ import de.metas.invoice.InvoiceId;
 import de.metas.money.CurrencyId;
 import de.metas.money.MoneyService;
 import de.metas.organization.OrgId;
+import de.metas.payment.PaymentDirection;
 import de.metas.payment.PaymentId;
 import de.metas.payment.api.IPaymentBL;
 import de.metas.payment.api.IPaymentDAO;
@@ -202,12 +203,19 @@ final class BankStatementLineMultiPaymentLinkCommand
 			throw new AdempiereException("Payment " + payment.getDocumentNo() + " was already reconciled");
 		}
 
-		final Amount statementLineAmtExpected = extractPayAmt(payment).negateIfNot(payment.isReceipt());
+		final PaymentDirection paymentDirection = extractPaymentDirection(payment);
+		final Amount payAmt = extractPayAmt(payment);
+		final Amount statementLineAmtExpected = paymentDirection.convertPayAmtToStatementAmt(payAmt);
 		if (!paymentToLink.getStatementLineAmt().isEqualByComparingTo(statementLineAmtExpected))
 		{
 			throw new AdempiereException("Cannot partially reconcile the payment " + payment.getDocumentNo());
 		}
 
+	}
+
+	private static PaymentDirection extractPaymentDirection(final I_C_Payment payment)
+	{
+		return PaymentDirection.ofReceiptFlag(payment.isReceipt());
 	}
 
 	private Amount extractPayAmt(@NonNull final I_C_Payment payment)
