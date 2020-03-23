@@ -33,27 +33,30 @@ Default parent pom with common settings (e.g. java file encoding) to be used by 
 		<!-- this is our default; individual projects might need to specify their own settings -->
 		<metasfresh.java.version>1.8</metasfresh.java.version>
 
-		<!--
-			3.15.0 is currently the latest and greatest. Spring boot declares some 2.x version that 
-			see http://docs.spring.io/spring-boot/docs/1.2.3.RELEASE/reference/htmlsingle/#howto-customize-dependency-versions-with-maven 
-		-->
-		<assertj.version>3.15.0</assertj.version>
-
 		<jasperreports.version>6.5.1</jasperreports.version>
 
 		<itext.version>2.1.7.js6</itext.version>
 		
 		<!-- https://github.com/codecentric/spring-boot-admin -->
 		<spring-boot-admin.version>1.5.0</spring-boot-admin.version>
+		
+		<logstash-logback-encoder.version>6.3</logstash-logback-encoder.version>
 
 		<springfox-swagger.version>2.9.2</springfox-swagger.version>
+
+		<!-- test related versions -->
+		<!--
+			3.15.0 is currently the latest and greatest. Spring boot declares some 2.x version that 
+			see http://docs.spring.io/spring-boot/docs/1.2.3.RELEASE/reference/htmlsingle/#howto-customize-dependency-versions-with-maven 
+		-->
+		<assertj.version>3.15.0</assertj.version>
+		<xmlunit.version>2.6.4</xmlunit.version>
 
 		<mockito.version>2.7.22</mockito.version>
 		
 		<!-- with 5.4.2 we can't run junit tests from eclipse ("no tests found") -->
 		<junit-jupiter.version>5.4.1</junit-jupiter.version>
 
-		<logstash-logback-encoder.version>6.3</logstash-logback-encoder.version>
 
 	</properties>
 
@@ -174,6 +177,20 @@ Default parent pom with common settings (e.g. java file encoding) to be used by 
 				<groupId>org.assertj</groupId>
 				<artifactId>assertj-core</artifactId>
 				<version>${assertj.version}</version>
+				<scope>test</scope>
+			</dependency>
+
+			<dependency>
+				<groupId>org.xmlunit</groupId>
+				<artifactId>xmlunit-core</artifactId>
+				<version>${xmlunit.version}</version>
+				<scope>test</scope>
+			</dependency>
+
+			<dependency>
+				<groupId>org.xmlunit</groupId>
+				<artifactId>xmlunit-assertj</artifactId>
+				<version>${xmlunit.version}</version>
 				<scope>test</scope>
 			</dependency>
 
