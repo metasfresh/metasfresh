@@ -11,7 +11,7 @@ CREATE OR REPLACE FUNCTION report.fresh_pricelist_details_template_report(IN p_c
                 itemproductname         text,
                 qty                     numeric,
                 uomsymbol               text,
-                pricestd                numeric(2),
+                pricestd                numeric,
                 m_productprice_id       integer,
                 c_bpartner_id           numeric,
                 m_hu_pi_item_product_id integer,
@@ -31,12 +31,15 @@ SELECT plc.value                                                                
        plc.productcategory                                                                                                    as productcategory,
        plc.productname                                                                                                        as productname,
        plc.attributes                                                                                                         as attributes,
-       coalesce(hupiv.description, hupip.name)                                                                                as itemproductname,
+       case
+           when coalesce(hupiv.description, hupip.name) is null then plc.uomsymbol
+           else
+               coalesce(hupiv.description, hupip.name) end                                                                    as itemproductname,
        -- if packing instructions exist, we will display the qty one as it refers to one TU (Transportation Unit).
 --        CASE WHEN plc.itemproductname IS NOT NULL THEN 1 ELSE plc.qtycuspertu END AS qty,
        NULL::numeric                                                                                                          as qty,
        plc.uomsymbol                                                                                                          as uomsymbol,
-       plc.pricestd                                                                                                           as pricestd,
+       plc.pricestd::numeric(4)                                                                                               as pricestd,
        plc.M_ProductPrice_ID                                                                                                  as m_productprice_id,
        p_c_bpartner_id                                                                                                        as c_bpartner_id,
        plc.M_HU_PI_Item_Product_ID                                                                                            as m_hu_pi_item_product_id,
@@ -52,6 +55,7 @@ FROM report.fresh_PriceList_Details_Report(p_c_bpartner_id, p_m_pricelist_versio
          LEFT OUTER JOIN M_HU_PI_Item_Product hupip on hupip.M_HU_PI_Item_Product_ID = plc.M_HU_PI_Item_Product_ID
          LEFT OUTER JOIN M_HU_PI_Item hupii on hupii.M_HU_PI_Item_ID = hupip.M_HU_PI_Item_ID
          LEFT OUTER JOIN M_HU_PI_Version hupiv on hupiv.M_HU_PI_Version_ID = hupii.M_HU_PI_Version_ID
+    --          LEFT OUTER JOIN M_PRICELIST prl on prl.m_pricelist_id = p_m_pricelist_version_id
 --
 $BODY$
     LANGUAGE sql STABLE
