@@ -20,3 +20,27 @@ WHERE
 
 
 COMMENT ON VIEW report.fresh_Pricelist_Version_Val_Rule IS 'Returns all currently valid C_PriceList_Version_IDs for all C_BPartner_ID along with the valid-from-date and price list version name';
+
+
+
+
+
+-- Function: report.bpartner_pricelist_version(numeric)
+
+ DROP FUNCTION IF EXISTS report.bpartner_pricelist_version(numeric);
+
+
+ DROP FUNCTION IF EXISTS report.bpartner_pricelist_version(numeric, character);
+
+CREATE OR REPLACE FUNCTION report.bpartner_pricelist_version(c_bpartner_id numeric, p_IsSOTrx character default null)
+  RETURNS numeric AS
+$BODY$
+SELECT M_PriceList_Version_ID 
+FROM Report.fresh_PriceList_Version_Val_Rule plv
+WHERE C_BPartner_ID= $1 AND ValidFrom <= now()
+AND (p_IsSOTrx IS NULL OR p_IsSOTrx = IsSOTrx)
+ORDER BY ValidFrom DESC, Name ASC 
+LIMIT 1$BODY$
+  LANGUAGE sql STABLE
+  COST 100;
+COMMENT ON FUNCTION report.bpartner_pricelist_version(numeric) IS 'Returns the latest, currently valid price list version within the pricing system of a given Partner (or its BP Group)';
