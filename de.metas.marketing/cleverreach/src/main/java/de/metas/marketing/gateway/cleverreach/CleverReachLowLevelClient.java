@@ -1,5 +1,10 @@
 package de.metas.marketing.gateway.cleverreach;
 
+import java.util.Arrays;
+
+import org.adempiere.exceptions.AdempiereException;
+import org.slf4j.MDC;
+import org.slf4j.MDC.MDCCloseable;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
@@ -39,7 +44,7 @@ import lombok.NonNull;
 
 public class CleverReachLowLevelClient
 {
-	public static  CleverReachLowLevelClient createAndLogin(@NonNull final CleverReachConfig cleverReachConfig)
+	public static CleverReachLowLevelClient createAndLogin(@NonNull final CleverReachConfig cleverReachConfig)
 	{
 		final String authToken = login(cleverReachConfig);
 		return new CleverReachLowLevelClient(authToken);
@@ -56,16 +61,30 @@ public class CleverReachLowLevelClient
 
 	private static String login(@NonNull final CleverReachConfig cleverReachConfig)
 	{
+		final String url = BASE_URL + "/login";
 		final Login login = Login.builder()
 				.client_id(cleverReachConfig.getClient_id())
 				.login(cleverReachConfig.getLogin())
 				.password(cleverReachConfig.getPassword())
 				.build();
 
-		final RestTemplate restTemplate = new RestTemplate();
-		final String authToken = restTemplate.postForObject(BASE_URL + "/login", login, String.class);
+		try (final MDCCloseable methodMDC = MDC.putCloseable("httpMethod", "POST");
+				final MDCCloseable urlMDC = MDC.putCloseable("url", url);
+				final MDCCloseable paramValuesMDC = MDC.putCloseable("login", login.withoutPassword().toString()))
+		{
+			final RestTemplate restTemplate = new RestTemplate();
+			final String authToken = restTemplate.postForObject(url, login, String.class);
 
-		return authToken.replaceAll("\"", ""); // the string comes complete within '"' which we need to remove
+			return authToken.replaceAll("\"", ""); // the string comes complete within '"' which we need to remove
+		}
+		catch (final RuntimeException e)
+		{
+			throw AdempiereException.wrapIfNeeded(e)
+					.appendParametersToMessage()
+					.setParameter("httpMethod", "POST")
+					.setParameter("url", url)
+					.setParameter("requestBody", login.withoutPassword());
+		}
 	}
 
 	public <T> T get(
@@ -73,16 +92,29 @@ public class CleverReachLowLevelClient
 			@NonNull final String urlPathAndParams,
 			@NonNull final Object... paramValues)
 	{
-		final RestTemplate restTemplate = createRestTemplate();
-		final HttpEntity<?> entity = new HttpEntity<>(createHeaders());
+		try (final MDCCloseable methodMDC = MDC.putCloseable("httpMethod", "GET");
+				final MDCCloseable urlMDC = MDC.putCloseable("urlPathAndParams", urlPathAndParams);
+				final MDCCloseable paramValuesMDC = MDC.putCloseable("paramValues", Arrays.toString(paramValues)))
+		{
+			final RestTemplate restTemplate = createRestTemplate();
+			final HttpEntity<?> entity = new HttpEntity<>(createHeaders());
 
-		final ResponseEntity<T> groups = restTemplate.exchange(
-				urlPathAndParams,
-				HttpMethod.GET,
-				entity,
-				returnType,
-				paramValues);
-		return groups.getBody();
+			final ResponseEntity<T> groups = restTemplate.exchange(
+					urlPathAndParams,
+					HttpMethod.GET,
+					entity,
+					returnType,
+					paramValues);
+			return groups.getBody();
+		}
+		catch (final RuntimeException e)
+		{
+			throw AdempiereException.wrapIfNeeded(e)
+					.appendParametersToMessage()
+					.setParameter("httpMethod", "GET")
+					.setParameter("urlPathAndParams", urlPathAndParams)
+					.setParameter("paramValues", Arrays.toString(paramValues));
+		}
 	}
 
 	public <I, O> O post(
@@ -90,16 +122,29 @@ public class CleverReachLowLevelClient
 			@NonNull final ParameterizedTypeReference<O> returnType,
 			@NonNull final String url)
 	{
-		final RestTemplate restTemplate = createRestTemplate();
-		final HttpEntity<I> entity = new HttpEntity<>(requestBody, createHeaders());
+		try (final MDCCloseable methodMDC = MDC.putCloseable("httpMethod", "POST");
+				final MDCCloseable urlMDC = MDC.putCloseable("url", url);
+				final MDCCloseable requestBodyMDC = MDC.putCloseable("requestBody", requestBody.toString()))
+		{
+			final RestTemplate restTemplate = createRestTemplate();
+			final HttpEntity<I> entity = new HttpEntity<>(requestBody, createHeaders());
 
-		final ResponseEntity<O> groups = restTemplate.exchange(
-				url,
-				HttpMethod.POST,
-				entity,
-				returnType,
-				ImmutableMap.of());
-		return groups.getBody();
+			final ResponseEntity<O> groups = restTemplate.exchange(
+					url,
+					HttpMethod.POST,
+					entity,
+					returnType,
+					ImmutableMap.of());
+			return groups.getBody();
+		}
+		catch (final RuntimeException e)
+		{
+			throw AdempiereException.wrapIfNeeded(e)
+					.appendParametersToMessage()
+					.setParameter("httpMethod", "POST")
+					.setParameter("url", url)
+					.setParameter("requestBody", requestBody);
+		}
 	}
 
 	public <I, O> O put(
@@ -107,25 +152,48 @@ public class CleverReachLowLevelClient
 			@NonNull final ParameterizedTypeReference<O> returnType,
 			@NonNull final String url)
 	{
-		final RestTemplate restTemplate = createRestTemplate();
-		final HttpEntity<I> entity = new HttpEntity<>(requestBody, createHeaders());
+		try (final MDCCloseable methodMDC = MDC.putCloseable("httpMethod", "PUT");
+				final MDCCloseable urlMDC = MDC.putCloseable("url", url);
+				final MDCCloseable requestBodyMDC = MDC.putCloseable("requestBody", requestBody.toString()))
+		{
+			final RestTemplate restTemplate = createRestTemplate();
+			final HttpEntity<I> entity = new HttpEntity<>(requestBody, createHeaders());
 
-		final ResponseEntity<O> groups = restTemplate.exchange(
-				url,
-				HttpMethod.PUT,
-				entity,
-				returnType,
-				ImmutableMap.of());
-		return groups.getBody();
+			final ResponseEntity<O> groups = restTemplate.exchange(
+					url,
+					HttpMethod.PUT,
+					entity,
+					returnType,
+					ImmutableMap.of());
+			return groups.getBody();
+		}
+		catch (final RuntimeException e)
+		{
+			throw AdempiereException.wrapIfNeeded(e)
+					.appendParametersToMessage()
+					.setParameter("httpMethod", "PUT")
+					.setParameter("url", url)
+					.setParameter("requestBody", requestBody);
+		}
 	}
 
-
-	public void delete(String url)
+	public void delete(@NonNull final String url)
 	{
-		final RestTemplate restTemplate = createRestTemplate();
-		final HttpEntity<?> entity = new HttpEntity<>(createHeaders());
+		try (final MDCCloseable methodMDC = MDC.putCloseable("httpMethod", "DELETE");
+				final MDCCloseable urlMDC = MDC.putCloseable("url", url))
+		{
+			final RestTemplate restTemplate = createRestTemplate();
+			final HttpEntity<?> entity = new HttpEntity<>(createHeaders());
 
-		restTemplate.exchange(url, HttpMethod.DELETE, entity, String.class);
+			restTemplate.exchange(url, HttpMethod.DELETE, entity, String.class);
+		}
+		catch (final RuntimeException e)
+		{
+			throw AdempiereException.wrapIfNeeded(e)
+					.appendParametersToMessage()
+					.setParameter("httpMethod", "DELETE")
+					.setParameter("url", url);
+		}
 	}
 
 	private RestTemplate createRestTemplate()

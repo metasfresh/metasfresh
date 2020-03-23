@@ -80,42 +80,42 @@
 	<pageHeader>
 		<band height="36">
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement x="45" y="18" width="82" height="14" uuid="232dc46c-0f75-44da-8da7-8bc8deb765c6"/>
+				<reportElement x="45" y="18" width="109" height="14" uuid="232dc46c-0f75-44da-8da7-8bc8deb765c6"/>
 				<textElement textAlignment="Left">
 					<font fontName="Arial" size="12"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{locator}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement x="127" y="18" width="92" height="14" uuid="73220d8f-5ca5-46fe-bc5d-21a39d7c9b8a"/>
+				<reportElement x="154" y="18" width="92" height="14" uuid="73220d8f-5ca5-46fe-bc5d-21a39d7c9b8a"/>
 				<textElement textAlignment="Left">
 					<font fontName="Arial" size="12"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{productvalue}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement x="359" y="18" width="60" height="14" uuid="09d8d30f-e669-4f18-a3b7-34e1f07daf93"/>
-				<textElement textAlignment="Left">
+				<reportElement x="396" y="18" width="51" height="14" uuid="09d8d30f-e669-4f18-a3b7-34e1f07daf93"/>
+				<textElement textAlignment="Right">
 					<font fontName="Arial" size="12"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{qty}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement x="415" y="18" width="60" height="14" uuid="be9ebd1e-77bf-42e9-ae08-4d63a004d50b"/>
+				<reportElement x="450" y="18" width="55" height="14" uuid="be9ebd1e-77bf-42e9-ae08-4d63a004d50b"/>
 				<textElement textAlignment="Left">
 					<font fontName="Arial" size="12"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{uom}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement x="206" y="18" width="152" height="14" uuid="c83b1bdd-9e8f-4649-a52c-7c11f8973332"/>
+				<reportElement x="246" y="18" width="152" height="14" uuid="c83b1bdd-9e8f-4649-a52c-7c11f8973332"/>
 				<textElement textAlignment="Left">
 					<font fontName="Arial" size="12"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{productname}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement x="466" y="18" width="118" height="14" uuid="72dfab16-e7ed-4b60-bc9a-362b5f16720e"/>
+				<reportElement x="500" y="18" width="84" height="14" uuid="72dfab16-e7ed-4b60-bc9a-362b5f16720e"/>
 				<textElement textAlignment="Left">
 					<font fontName="Arial" size="12"/>
 				</textElement>
@@ -126,35 +126,36 @@
 	<detail>
 		<band height="22" splitType="Stretch">
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement x="127" y="4" width="92" height="13" uuid="53165b85-7b57-4035-bfc2-da23b0b36399"/>
+				<reportElement x="154" y="4" width="92" height="13" uuid="53165b85-7b57-4035-bfc2-da23b0b36399"/>
 				<textElement textAlignment="Left">
 					<font fontName="Arial"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{productvalue}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement x="359" y="4" width="60" height="13" uuid="57d92e7b-5988-40e1-ba4d-86ca724ab1d9"/>
-				<textElement textAlignment="Center">
+				<reportElement x="396" y="4" width="51" height="13" uuid="57d92e7b-5988-40e1-ba4d-86ca724ab1d9"/>
+				<textElement textAlignment="Right">
 					<font fontName="Arial"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{qtypicked}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement x="416" y="4" width="58" height="13" uuid="577e51fc-b61f-429f-afdb-957a7cf90263"/>
+				<reportElement x="451" y="4" width="53" height="13" uuid="577e51fc-b61f-429f-afdb-957a7cf90263"/>
 				<textElement textAlignment="Left">
 					<font fontName="Arial"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{uomsymbol}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement x="45" y="4" width="82" height="13" uuid="6f58dfd3-920f-4525-8bc8-c97134a907f4"/>
+				<reportElement x="45" y="4" width="109" height="13" uuid="6f58dfd3-920f-4525-8bc8-c97134a907f4"/>
 				<textElement textAlignment="Left">
 					<font fontName="Arial"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{locator}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{locator}
++ ($F{x1}!=null ? ( "\n"+ $R{rack}+" "+ $F{x1} ) : "")]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement x="206" y="4" width="152" height="13" uuid="f0b45d88-3ade-4d7e-a40e-abd8be9af448"/>
+				<reportElement x="246" y="4" width="152" height="13" uuid="f0b45d88-3ade-4d7e-a40e-abd8be9af448"/>
 				<textElement textAlignment="Left">
 					<font fontName="Arial"/>
 				</textElement>
