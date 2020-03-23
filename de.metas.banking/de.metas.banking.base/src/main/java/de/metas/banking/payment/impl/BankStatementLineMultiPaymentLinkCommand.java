@@ -254,7 +254,7 @@ final class BankStatementLineMultiPaymentLinkCommand
 		// Mark payment as reconciled
 		if (doReconcilePayments)
 		{
-			paymentBL.markReconciled(payment);
+			paymentBL.markReconciledAndSave(payment);
 		}
 
 		//

@@ -3,7 +3,6 @@ package de.metas.business;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.junit.Assert.assertNotNull;
 
 import java.math.BigDecimal;
 
@@ -26,6 +25,7 @@ import org.compiere.model.X_C_UOM;
 import de.metas.bpartner.BPartnerId;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.ICurrencyDAO;
+import de.metas.currency.impl.PlainCurrencyDAO;
 import de.metas.money.CurrencyId;
 import de.metas.product.ProductId;
 import de.metas.product.ProductType;
@@ -163,13 +163,8 @@ public final class BusinessTestHelper
 
 	public static CurrencyId getEURCurrencyId()
 	{
-		final String currencyCodeEur = "EUR";
-		final CurrencyCode currencyCode = CurrencyCode.ofThreeLetterCode(currencyCodeEur);
-		final ICurrencyDAO currenciesRepo = Services.get(ICurrencyDAO.class);
-		final CurrencyId currencyId = currenciesRepo.getByCurrencyCode(currencyCode).getId();
-		assertNotNull(currencyId);
-
-		return currencyId;
+		final PlainCurrencyDAO currenciesRepo = (PlainCurrencyDAO)Services.get(ICurrencyDAO.class);
+		return currenciesRepo.getOrCreateByCurrencyCode(CurrencyCode.EUR).getId();
 	}
 
 	/**

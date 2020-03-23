@@ -195,7 +195,7 @@ public class BankStatmentPaymentBL implements IBankStatmentPaymentBL
 		if (bankStatementDocStatus.isCompleted())
 		{
 			final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
-			paymentBL.markReconciled(payment);
+			paymentBL.markReconciledAndSave(payment);
 		}
 	}
 

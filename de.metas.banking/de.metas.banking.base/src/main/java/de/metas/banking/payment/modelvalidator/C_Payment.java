@@ -113,7 +113,7 @@ public class C_Payment
 		if (!bankStatementDAO.isPaymentOnBankStatement(paymentId))
 		{
 			final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
-			paymentBL.markReconciled(payment);
+			paymentBL.markReconciledAndSave(payment);
 
 			final PaymentId reversalId = PaymentId.ofRepoId(payment.getReversal_ID());
 			paymentBL.markReconciled(ImmutableList.of(reversalId));

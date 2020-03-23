@@ -160,10 +160,16 @@ public class PlainCurrencyDAO extends CurrencyDAO
 	@Override
 	public Currency getByCurrencyCode(@NonNull final CurrencyCode currencyCode)
 	{
+		return getOrCreateByCurrencyCode(currencyCode);
+	}
+	
+	public Currency getOrCreateByCurrencyCode(@NonNull final CurrencyCode currencyCode)
+	{
 		return getCurrenciesMap()
 				.getByCurrencyCodeIfExists(currencyCode)
 				.orElseGet(() -> createCurrency(currencyCode));
 	}
+
 
 	public static CurrencyId createCurrencyId(@NonNull final CurrencyCode currencyCode)
 	{

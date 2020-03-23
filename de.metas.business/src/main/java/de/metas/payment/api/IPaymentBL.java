@@ -123,7 +123,7 @@ public interface IPaymentBL extends ISingletonService
 
 	void markReconciled(@NonNull Collection<PaymentId> paymentIds);
 
-	void markReconciled(@NonNull I_C_Payment payment);
+	void markReconciledAndSave(@NonNull I_C_Payment payment);
 
 	void markNotReconciled(@NonNull Collection<PaymentId> paymentIds);
 
