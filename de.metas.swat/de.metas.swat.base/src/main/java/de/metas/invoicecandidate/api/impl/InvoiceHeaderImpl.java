@@ -46,7 +46,7 @@ import lombok.Setter;
 
 	@Getter
 	@Setter
-	private BPartnerId Bill_BPartner_ID;
+	private BPartnerId billBPartnerId;
 
 	private int Bill_User_ID;
 
@@ -88,7 +88,7 @@ import lombok.Setter;
 				+ ", AD_Org_ID=" + AD_Org_ID
 				+ ", M_PriceList_ID=" + M_PriceList_ID
 				+ ", isSOTrx=" + isSOTrx
-				+ ", Bill_BPartner_ID=" + Bill_BPartner_ID
+				+ ", Bill_BPartner_ID=" + BPartnerId.toRepoId(billBPartnerId)
 				+ ", Bill_Location_ID=" + Bill_Location_ID
 				+ ", Bill_User_ID=" + Bill_User_ID
 				+ ", currencyId=" + currencyId

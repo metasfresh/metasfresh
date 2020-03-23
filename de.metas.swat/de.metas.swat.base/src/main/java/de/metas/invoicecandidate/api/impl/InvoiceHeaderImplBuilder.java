@@ -94,7 +94,7 @@ public class InvoiceHeaderImplBuilder
 		invoiceHeader.setDateAcct(getDateAcct());
 
 		// BPartner/Location/User
-		invoiceHeader.setBill_BPartner_ID(BPartnerId.ofRepoId(getBill_BPartner_ID()));
+		invoiceHeader.setBillBPartnerId(BPartnerId.ofRepoId(getBill_BPartner_ID()));
 		invoiceHeader.setBill_Location_ID(getBill_Location_ID());
 		invoiceHeader.setBill_User_ID(getBill_User_ID());
 

@@ -1,5 +1,8 @@
 package de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440;
 
+import static io.github.jsonSnapshot.SnapshotMatcher.expect;
+import static io.github.jsonSnapshot.SnapshotMatcher.start;
+import static io.github.jsonSnapshot.SnapshotMatcher.validateSnapshots;
 import static org.xmlunit.assertj.XmlAssert.assertThat;
 
 import java.io.ByteArrayInputStream;
@@ -8,15 +11,16 @@ import java.io.InputStream;
 
 import javax.xml.transform.stream.StreamSource;
 
+import org.adempiere.test.SnapshotHelper;
+import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.xmlunit.validation.Languages;
 import org.xmlunit.validation.ValidationResult;
 import org.xmlunit.validation.Validator;
-
-import com.google.common.collect.ImmutableMap;
 
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.commons.XmlMode;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.XmlProcessing.ProcessingMod;
@@ -51,6 +55,18 @@ public class Invoice440RequestConversionServiceTest
 {
 
 	private Invoice440RequestConversionService invoice440RequestConversionService;
+
+	@BeforeClass
+	public static void initStatic()
+	{
+		start(SnapshotHelper.SNAPSHOT_CONFIG, SnapshotHelper::toArrayAwareString);
+	}
+
+	@AfterClass
+	public static void afterAll()
+	{
+		validateSnapshots();
+	}
 
 	@Before
 	public void init()
@@ -128,16 +144,8 @@ public class Invoice440RequestConversionServiceTest
 
 		assertXmlIsValid(new ByteArrayInputStream(outputStream.toByteArray()));
 		final String exportXmlString = new String(outputStream.toByteArray());
-		System.out.println(exportXmlString);
 
-		final ImmutableMap<String, String> prefix2Uri = ImmutableMap.of("p", "http://www.forum-datenaustausch.ch/invoice");
-
-		assertThat(exportXmlString).withNamespaceContext(prefix2Uri).nodesByXPath("/p:request")
-				.element(0)
-				.hasAttribute("modus", "test");
-		assertThat(exportXmlString).withNamespaceContext(prefix2Uri).nodesByXPath("//p:request/p:processing/p:transport").hasSize(1).element(0).hasAttribute("from", "1234567890123");
-		assertThat(exportXmlString).withNamespaceContext(prefix2Uri).nodesByXPath("//p:request/p:processing/p:transport/p:via").hasSize(2).element(0).hasAttribute("via", "2099999999999").hasAttribute("sequence_id", "1");
-		assertThat(exportXmlString).withNamespaceContext(prefix2Uri).nodesByXPath("//p:request/p:processing/p:transport/p:via").hasSize(2).element(1).hasAttribute("via", "2234567890123").hasAttribute("sequence_id", "2");
+		expect(exportXmlString).toMatchSnapshot();
 	}
 
 	@Test
@@ -168,13 +176,7 @@ public class Invoice440RequestConversionServiceTest
 		final String exportXmlString = new String(outputStream.toByteArray());
 		System.out.println(exportXmlString);
 
-		final ImmutableMap<String, String> prefix2Uri = ImmutableMap.of("p", "http://www.forum-datenaustausch.ch/invoice");
-
-		assertThat(exportXmlString).withNamespaceContext(prefix2Uri).nodesByXPath("/p:request")
-				.element(0)
-				.hasAttribute("modus", "test");
-		assertThat(exportXmlString).withNamespaceContext(prefix2Uri).nodesByXPath("//p:request/p:processing/p:transport").hasSize(1).element(0).hasAttribute("from", "1234567890123");
-		assertThat(exportXmlString).withNamespaceContext(prefix2Uri).nodesByXPath("//p:request/p:processing/p:transport/p:via").hasSize(1).element(0).hasAttribute("via", "2234567890123").hasAttribute("sequence_id", "1");
+		expect(exportXmlString).toMatchSnapshot();
 	}
 
 	@Test
