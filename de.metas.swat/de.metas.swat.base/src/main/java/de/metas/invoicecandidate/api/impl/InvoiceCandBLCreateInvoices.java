@@ -347,7 +347,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 			invoice.setIsTaxIncluded(invoiceHeader.isTaxIncluded()); // tasks 04119
 
 			invoice.setAD_Org_ID(invoiceHeader.getAD_Org_ID());
-			invoice.setC_BPartner_ID(invoiceHeader.getBill_BPartner_ID().getRepoId());
+			invoice.setC_BPartner_ID(invoiceHeader.getBillBPartnerId().getRepoId());
 			invoice.setC_BPartner_Location_ID(invoiceHeader.getBill_Location_ID());
 			invoice.setAD_User_ID(invoiceHeader.getBill_User_ID());
 			invoice.setC_Currency_ID(invoiceHeader.getCurrencyId().getRepoId()); // 03805

@@ -680,7 +680,7 @@ public final class AggregationEngine
 			return C_PaymentTerm_ID;
 		}
 		// task 07242: setting the payment term from the given bill partner. Note that C_BP_Group has no payment term columns, so we don't need a BL to fall back to C_BP_Group
-		final I_C_BPartner billPartner = InterfaceWrapperHelper.loadOutOfTrx(invoiceHeader.getBill_BPartner_ID(), I_C_BPartner.class);
+		final I_C_BPartner billPartner = InterfaceWrapperHelper.loadOutOfTrx(invoiceHeader.getBillBPartnerId(), I_C_BPartner.class);
 		if (invoiceHeader.isSOTrx())
 		{
 			return billPartner.getC_PaymentTerm_ID();

@@ -3,6 +3,8 @@ package de.metas.contracts.commission.commissioninstance.businesslogic.sales;
 import java.util.Arrays;
 import java.util.Collection;
 
+import org.adempiere.exceptions.AdempiereException;
+
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
@@ -69,5 +71,15 @@ public enum SalesCommissionState implements ReferenceListAwareEnum
 				.stream()
 				.map(SalesCommissionState::getCode)
 				.collect(ImmutableList.toImmutableList());
+	}
+
+	public static SalesCommissionState ofCode(@NonNull final String code)
+	{
+		SalesCommissionState type = recordCode2State.get(code);
+		if (type == null)
+		{
+			throw new AdempiereException("No " + SalesCommissionState.class + " found for code: " + code);
+		}
+		return type;
 	}
 }

@@ -39,7 +39,7 @@ public interface IInvoiceHeader
 
 	int getBill_Location_ID();
 
-	BPartnerId getBill_BPartner_ID();
+	BPartnerId getBillBPartnerId();
 
 	int getBill_User_ID();
 
