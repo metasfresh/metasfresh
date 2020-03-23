@@ -52,6 +52,7 @@ import org.compiere.util.Util;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
+import com.google.common.base.Stopwatch;
 
 import ch.qos.logback.classic.Level;
 import de.metas.JsonObjectMapperHolder;
@@ -114,6 +115,8 @@ public class AdempiereTestHelper
 			return;
 		}
 
+		final Stopwatch stopwatch = Stopwatch.createStarted();
+
 		Adempiere.enableUnitTestMode();
 
 		Check.setDefaultExClass(AdempiereException.class);
@@ -130,10 +133,14 @@ public class AdempiereTestHelper
 		CacheMgt.get().reset();
 
 		staticInitialized = true;
+
+		log("staticInit", "done in " + stopwatch);
 	}
 
 	public void init()
 	{
+		final Stopwatch stopwatch = Stopwatch.createStarted();
+
 		// Make sure context is clear before starting a new test
 		final Properties ctx = setupContext();
 
@@ -191,6 +198,13 @@ public class AdempiereTestHelper
 		JsonObjectMapperHolder.resetSharedJsonObjectMapper();
 
 		createSystemRecords();
+
+		log("init", "done in " + stopwatch + " (NOTE: it might include staticInit time too)");
+	}
+
+	private static void log(final String methodName, final String message)
+	{
+		System.out.println("" + AdempiereTestHelper.class.getSimpleName() + "." + methodName + ": " + message);
 	}
 
 	private static Properties setupContext()
@@ -224,6 +238,8 @@ public class AdempiereTestHelper
 
 	private static void createSystemRecords()
 	{
+		final Stopwatch stopwatch = Stopwatch.createStarted();
+
 		final I_AD_Org allOrgs = newInstance(I_AD_Org.class);
 		allOrgs.setAD_Org_ID(0);
 		save(allOrgs);
@@ -235,6 +251,8 @@ public class AdempiereTestHelper
 		final I_M_AttributeSetInstance noAsi = newInstance(I_M_AttributeSetInstance.class);
 		noAsi.setM_AttributeSetInstance_ID(0);
 		save(noAsi);
+
+		log("createSystemRecords", "done in " + stopwatch);
 	}
 
 	public static void createClientInfo()
