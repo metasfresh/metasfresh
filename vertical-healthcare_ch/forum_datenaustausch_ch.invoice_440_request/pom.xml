@@ -49,7 +49,7 @@
         <dependency>
             <groupId>de.metas.adempiere.adempiere</groupId>
             <artifactId>de.metas.adempiere.adempiere.base</artifactId>
-            <version>${metasfresh.version}</version>
+            <version>${project.version}</version>
             <classifier>tests</classifier>
             <scope>test</scope>
         </dependency>
