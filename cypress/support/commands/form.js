@@ -209,7 +209,7 @@ Cypress.Commands.add('writeIntoStringField', (fieldName, stringValue, modal, rew
     cy.get(path)
       .find('input')
       .type('{selectall}')
-      .clear()
+      .wait(500)
       .type(stringValue)
       .type('{enter}');
   }
@@ -244,6 +244,7 @@ Cypress.Commands.add('writeIntoTextField', (fieldName, stringValue, modal = fals
     const path = createFieldPath(fieldName, modal);
     cy.get(path)
       .find('textarea')
+      .wait(500)
       .type(`${stringValue}{enter}`);
   }
 
@@ -281,7 +282,9 @@ Cypress.Commands.add('writeIntoLookupListField', (fieldName, partialValue, expec
             .get('input')
             // we can't use `clear` here as sometimes it triggers request to the server
             // and then the whole flow becomes flaky
+            .wait(500)
             .type('{selectall}')
+            .wait(500)
             .type(partialValue)
         );
       }
@@ -337,6 +340,41 @@ Cypress.Commands.add('selectInListField', (fieldName, listValue, modal, rewriteU
     // .click();  // -- removed click as dropdown shows up when you clear and type
   
   // no f*cki'n clue why it started going ape shit when there was the correct '.input-dropdown-list-option' here
+  cy.get('.input-dropdown-list')
+    .contains(listValue)
+    .click();
+
+  if (!skipRequest) {
+    cy.waitForFieldValue(`@${patchListFieldAliasName}`, fieldName, listValue);
+  }
+});
+
+/**
+ * Select the given list value in a static list - non editable (you just click on it and select)
+ *
+ * @param {boolean} modal - use true, if the field is in a modal overlay; requered if the underlying window has a field with the same name
+ * @param {boolean} skipRequest - if set to true, cypress won't expect a request to the server and won't wait for it
+ */
+Cypress.Commands.add('selectInListFieldNonEditable', (fieldName, listValue, modal, rewriteUrl = null, skipRequest) => {
+  cy.log(`selectInListFieldNonEditable - fieldName=${fieldName}; listValue=${listValue}; modal=${modal}`);
+
+  const patchListFieldAliasName = `patchListField-${fieldName}-${new Date().getTime()}`;
+  const patchUrlPattern = rewriteUrl || RewriteURL.Generic;
+
+  // here we want to match URLs that don *not* end with "/NEW"
+  if (!skipRequest) {
+    cy.server();
+    cy.route('PATCH', new RegExp(patchUrlPattern)).as(patchListFieldAliasName);
+  }
+  const path = createFieldPath(fieldName, modal);
+
+  cy.get(path)
+    .find('.input-dropdown')
+    .find('.js-input-field')
+    .wait(500)
+    .click()
+    .wait(500);
+
   cy.get('.input-dropdown-list')
     .contains(listValue)
     .click();
