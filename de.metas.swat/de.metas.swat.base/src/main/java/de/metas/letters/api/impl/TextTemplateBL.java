@@ -62,6 +62,7 @@ import de.metas.process.PInstanceId;
 import de.metas.process.ProcessInfo;
 import de.metas.report.client.ReportsClient;
 import de.metas.report.server.OutputType;
+import de.metas.report.server.ReportResult;
 import de.metas.security.permissions.Access;
 import de.metas.util.Services;
 
@@ -187,9 +188,9 @@ public final class TextTemplateBL implements ITextTemplateBL
 		createLetterSpoolRecord(jasperProcessInfo.getPinstanceId(), request, jasperProcessInfo.getAD_Client_ID());
 
 		final ReportsClient reportsClient = ReportsClient.get();
-		final byte[] pdf = reportsClient.report(jasperProcessInfo);
+		final ReportResult report = reportsClient.report(jasperProcessInfo);
 
-		return pdf;
+		return report.getReportContent();
 	}
 
 	private static AdProcessId getJasperProcess_ID(final Letter request)

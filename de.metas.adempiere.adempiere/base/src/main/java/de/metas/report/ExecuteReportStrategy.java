@@ -1,7 +1,10 @@
 package de.metas.report;
 
+import javax.annotation.Nullable;
+
 import de.metas.process.ProcessInfo;
 import de.metas.report.server.OutputType;
+import lombok.NonNull;
 import lombok.ToString;
 import lombok.Value;
 
@@ -29,7 +32,7 @@ import lombok.Value;
 
 /**
  * Implement this interface to a have a report process creating custom binary data.
- *
+ * <p>
  * Common use case: a printformat needs to consist of the "actual" document plus further concatenated documents.
  * To achieve this, you can:
  *
@@ -48,6 +51,26 @@ public interface ExecuteReportStrategy
 	@ToString(exclude = "reportData")
 	public class ExecuteReportResult
 	{
+		public static ExecuteReportResult of(@NonNull final OutputType outputType, @NonNull final byte[] reportData)
+		{
+			return new ExecuteReportResult(null, outputType, reportData);
+		}
+
+		public static ExecuteReportResult of(@NonNull final String filename, @NonNull final OutputType outputType, @NonNull final byte[] reportData)
+		{
+			return new ExecuteReportResult(null, outputType, reportData);
+		}
+
+		private  ExecuteReportResult(@Nullable String filename, OutputType outputType, byte[] reportData)
+		{
+			this.filename = filename;
+			this.outputType = outputType;
+			this.reportData = reportData;
+		}
+
+		@Nullable
+		String filename;
+
 		OutputType outputType;
 
 		byte[] reportData;

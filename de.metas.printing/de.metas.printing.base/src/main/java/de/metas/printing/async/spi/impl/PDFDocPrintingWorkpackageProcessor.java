@@ -43,6 +43,7 @@ import de.metas.process.ProcessInfo;
 import de.metas.process.ProcessInfoParameter;
 import de.metas.report.client.ReportsClient;
 import de.metas.report.server.OutputType;
+import de.metas.report.server.ReportResult;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
@@ -202,9 +203,9 @@ public class PDFDocPrintingWorkpackageProcessor implements IWorkpackageProcessor
 				.build();
 		
 		final ReportsClient reportsClient = ReportsClient.get();
-		final byte[] pdf = reportsClient.report(jasperProcessInfo);
+		final ReportResult reportResult = reportsClient.report(jasperProcessInfo);
 		
-		return pdf;
+		return reportResult.getReportContent();
 
 	}
 

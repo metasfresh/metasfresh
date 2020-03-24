@@ -38,6 +38,8 @@ import de.metas.util.Services;
 
 public class CreateCreditMemoFromInvoice extends JavaProcess
 {
+	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
+
 	private static final String PARA_C_DocType_ID = "C_DocType_ID";
 	private int C_DocType_ID = -1;
 
@@ -74,7 +76,7 @@ public class CreateCreditMemoFromInvoice extends JavaProcess
 				.referenceInvoice(referenceInvoice)
 				.creditedInvoiceReinvoicable(creditedInvoiceReinvoicable).build();
 
-		creditMemo = Services.get(IInvoiceBL.class).creditInvoice(invoice, creditCtx);
+		creditMemo = invoiceBL.creditInvoice(invoice, creditCtx);
 
 		final String documentNo = creditMemo.getDocumentNo();
 
@@ -87,7 +89,7 @@ public class CreateCreditMemoFromInvoice extends JavaProcess
 
 		if (creditMemo.isProcessed())
 		{
-			// we won't zoom to the new credit memo, but instead shown the message
+			// we won't zoom to the new credit memo, but instead show the message
 			addLog(msg);
 		}
 		return msg;

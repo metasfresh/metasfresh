@@ -1,5 +1,14 @@
 package de.metas.report.xls.engine;
 
+import com.google.common.base.MoreObjects;
+import com.google.common.base.Supplier;
+import com.google.common.base.Suppliers;
+import de.metas.util.Check;
+import de.metas.util.StringUtils;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.DBException;
+import org.compiere.util.DB;
+
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
@@ -8,17 +17,8 @@ import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.TreeMap;
-
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.exceptions.DBException;
-import org.compiere.util.DB;
-
-import com.google.common.base.MoreObjects;
-import com.google.common.base.Supplier;
-import com.google.common.base.Suppliers;
-
-import de.metas.util.Check;
 
 /*
  * #%L
@@ -30,14 +30,14 @@ import de.metas.util.Check;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -49,17 +49,11 @@ public class JdbcXlsDataSource implements IXlsDataSource
 		return new JdbcXlsDataSource(sql);
 	}
 
+	private static final String COLUMNNAME_ReportFileName = "ReportFileName";
+
 	private final String sql;
 
-	private final Supplier<Collection<Object>> rowsSupplier = Suppliers.memoize(new Supplier<Collection<Object>>()
-	{
-
-		@Override
-		public Collection<Object> get()
-		{
-			return retrieveRows();
-		}
-	});
+	private final Supplier<Collection<Object>> rowsSupplier = Suppliers.memoize(() -> retrieveRows());
 
 	private JdbcXlsDataSource(final String sql)
 	{
@@ -108,7 +102,7 @@ public class JdbcXlsDataSource implements IXlsDataSource
 		{
 			DB.close(rs, pstmt);
 		}
-		
+
 		return result;
 	}
 
@@ -132,5 +126,30 @@ public class JdbcXlsDataSource implements IXlsDataSource
 		}
 
 		return row;
+	}
+
+	@Override
+	public Optional<String> getSuggestedFilename()
+	{
+		final Collection<Object> rows = getRows();
+		if (rows.isEmpty())
+		{
+			return Optional.empty();
+		}
+
+		@SuppressWarnings("unchecked") final Map<String, Object> row = (Map<String, Object>)rows.iterator().next();
+		final Object reportFileNameObj = row.get(COLUMNNAME_ReportFileName);
+		if (reportFileNameObj == null)
+		{
+			return Optional.empty();
+		}
+
+		final String reportFileName = StringUtils.trimBlankToNull(reportFileNameObj.toString());
+		if (reportFileName == null)
+		{
+			return Optional.empty();
+		}
+
+		return Optional.of(reportFileName);
 	}
 }

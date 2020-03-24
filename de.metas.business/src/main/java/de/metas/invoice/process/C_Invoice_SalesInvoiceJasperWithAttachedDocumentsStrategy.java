@@ -84,7 +84,7 @@ public class C_Invoice_SalesInvoiceJasperWithAttachedDocumentsStrategy implement
 		if (!isPDF)
 		{
 			Loggables.withLogger(logger, Level.WARN).addLog("Concatenating additional PDF-Data is not supported with outputType={}; returning only the jasper data itself.", outputType);
-			return new ExecuteReportResult(outputType, invoiceData);
+			return ExecuteReportResult.of(outputType, invoiceData);
 		}
 
 		final InvoiceId invoiceId = InvoiceId.ofRepoId(processInfo.getRecord_ID());
@@ -104,7 +104,7 @@ public class C_Invoice_SalesInvoiceJasperWithAttachedDocumentsStrategy implement
 
 		final byte[] result = ExecuteReportStrategyUtil.concatenatePDF(invoiceData, additionalPdfData);
 
-		return new ExecuteReportResult(outputType, result);
+		return ExecuteReportResult.of(outputType, result);
 	}
 
 }

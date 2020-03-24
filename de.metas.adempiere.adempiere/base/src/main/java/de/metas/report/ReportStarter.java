@@ -57,7 +57,7 @@ import lombok.Value;
 public abstract class ReportStarter extends JavaProcess
 {
 	// services
-	private static final Logger log = LogManager.getLogger(ReportStarter.class);
+	private static final Logger logger = LogManager.getLogger(ReportStarter.class);
 
 	private static JRReportViewerProvider swingJRReportViewerProvider;
 
@@ -181,8 +181,21 @@ public abstract class ReportStarter extends JavaProcess
 		//
 		// Set report data to process execution result
 		final ProcessExecutionResult processExecutionResult = processInfo.getResult();
-		final String reportFilename = extractReportFilename(processInfo, outputType);
+
 		final String reportContentType = outputType.getContentType();
+
+		final String reportFilename;
+		if (Check.isBlank(result.getFilename()))
+		{
+			reportFilename = result.getFilename();
+			logger.debug("executeReport's result has a non-blank filename={}; -> use it for the exported file", reportFilename);
+		}
+		else
+		{
+			reportFilename = extractReportFilename(processInfo, outputType);
+			logger.debug("executeReport's result has a blank filename; -> use generic filename={} for the exported file", result.getFilename());
+		}
+
 		processExecutionResult.setReportData(result.getReportData(), reportFilename, reportContentType);
 
 		//
@@ -264,7 +277,6 @@ public abstract class ReportStarter extends JavaProcess
 	}
 
 	/**
-	 *
 	 * @return {@link JRReportViewerProvider} or null
 	 */
 	private JRReportViewerProvider getJRReportViewerProviderOrNull()
@@ -283,7 +295,7 @@ public abstract class ReportStarter extends JavaProcess
 	{
 		try
 		{
-			log.info("Doing direct print without preview: {}", reportPrintingInfo);
+			logger.info("Doing direct print without preview: {}", reportPrintingInfo);
 			startProcessDirectPrint(reportPrintingInfo);
 		}
 		catch (final Exception e)
@@ -298,7 +310,9 @@ public abstract class ReportStarter extends JavaProcess
 
 		Excel,
 
-		/** May be used when no invocation to the jasper service is done */
+		/**
+		 * May be used when no invocation to the jasper service is done
+		 */
 		Other
 	}
 
