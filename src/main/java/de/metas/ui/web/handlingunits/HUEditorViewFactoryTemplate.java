@@ -1,3 +1,25 @@
+/*
+ * #%L
+ * metasfresh-webui-api
+ * %%
+ * Copyright (C) 2020 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.ui.web.handlingunits;
 
 import java.util.Collection;
@@ -8,6 +30,9 @@ import java.util.Set;
 import javax.annotation.Nullable;
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 
+import com.google.common.collect.ImmutableSet;
+import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.ui.web.view.SqlViewFactory;
 import org.adempiere.ad.dao.ConstantQueryFilter;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.ISqlQueryFilter;
@@ -68,28 +93,6 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.Value;
 
-/*
- * #%L
- * metasfresh-webui-api
- * %%
- * Copyright (C) 2017 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
 public abstract class HUEditorViewFactoryTemplate implements IViewFactory
 {
 	private static final transient Logger logger = LogManager.getLogger(HUEditorViewFactoryTemplate.class);
@@ -133,7 +136,7 @@ public abstract class HUEditorViewFactoryTemplate implements IViewFactory
 		return viewCustomizersByReferencingTableName.get(referencingTableName);
 	}
 
-	private HUEditorRowIsProcessedPredicate getRowProcessedPredicate(final String referencingTableName)
+	private HUEditorRowIsProcessedPredicate getRowProcessedPredicate(@Nullable final String referencingTableName)
 	{
 		return rowProcessedPredicateByReferencingTableName.getOrDefault(referencingTableName, HUEditorRowIsProcessedPredicates.NEVER);
 	}
@@ -144,7 +147,9 @@ public abstract class HUEditorViewFactoryTemplate implements IViewFactory
 		return sqlViewBindingCache.getOrLoad(key, this::createSqlViewBinding);
 	}
 
-	/** @return HU's standard entity descriptor */
+	/**
+	 * @return HU's standard entity descriptor
+	 */
 	private DocumentEntityDescriptor getHUEntityDescriptor()
 	{
 		return documentDescriptorFactory.getDocumentEntityDescriptor(WEBUI_HU_Constants.WEBUI_HU_Window_ID);
@@ -248,10 +253,12 @@ public abstract class HUEditorViewFactoryTemplate implements IViewFactory
 		return layouts.getOrLoad(key, this::createHUViewLayout);
 	}
 
-	private final ViewLayout createHUViewLayout(final ViewLayoutKey key)
+	private ViewLayout createHUViewLayout(final ViewLayoutKey key)
 	{
 		final WindowId windowId = key.getWindowId();
 		final JSONViewDataType viewDataType = key.getViewDataType();
+
+		final Collection<DocumentFilterDescriptor> all = getViewFilterDescriptors().getAll();
 
 		final ViewLayout.Builder viewLayoutBuilder = ViewLayout.builder()
 				.setWindowId(windowId)
@@ -259,7 +266,7 @@ public abstract class HUEditorViewFactoryTemplate implements IViewFactory
 				.setEmptyResultText(LayoutFactory.HARDCODED_TAB_EMPTY_RESULT_TEXT)
 				.setEmptyResultHint(LayoutFactory.HARDCODED_TAB_EMPTY_RESULT_HINT)
 				.setIdFieldName(HUEditorRow.FIELDNAME_M_HU_ID)
-				.setFilters(getViewFilterDescriptors().getAll())
+				.setFilters(all)
 				//
 				.setHasAttributesSupport(true)
 				.setHasTreeSupport(true)
@@ -313,7 +320,7 @@ public abstract class HUEditorViewFactoryTemplate implements IViewFactory
 			@SuppressWarnings("deprecation") // as long as the deprecated getFilterOnlyIds() is around we can't ignore it
 			final DocumentFilterList stickyFilters = extractStickyFilters(request.getStickyFilters(), request.getFilterOnlyIds());
 			final DocumentFilterDescriptorsProvider filterDescriptors = getViewFilterDescriptors();
-			final DocumentFilterList filters = request.getFiltersUnwrapped(filterDescriptors);
+			final DocumentFilterList userFilters = request.getFiltersUnwrapped(filterDescriptors);
 
 			// Start building the HUEditorView
 			final HUEditorViewBuilder huViewBuilder = HUEditorView.builder()
@@ -322,13 +329,14 @@ public abstract class HUEditorViewFactoryTemplate implements IViewFactory
 					.setViewId(viewId)
 					.setViewType(request.getViewType())
 					.setStickyFilters(stickyFilters)
-					.setFilters(filters)
+					.setFilters(userFilters)
 					.setFilterDescriptors(filterDescriptors)
 					.setReferencingDocumentPaths(referencingTableName, referencingDocumentPaths)
 					.orderBys(sqlViewBinding.getDefaultOrderBys())
 					.setActions(request.getActions())
 					.addAdditionalRelatedProcessDescriptors(request.getAdditionalRelatedProcessDescriptors())
 					.setHUEditorViewRepository(huEditorViewRepository)
+					.setUseAutoFilters(request.isUseAutoFilters())
 					.setParameters(request.getParameters());
 
 			//
@@ -355,6 +363,7 @@ public abstract class HUEditorViewFactoryTemplate implements IViewFactory
 		// nothing on this level
 	}
 
+	@Nullable
 	private String extractReferencingTablename(final Set<DocumentPath> referencingDocumentPaths)
 	{
 		final String referencingTableName;
@@ -372,10 +381,7 @@ public abstract class HUEditorViewFactoryTemplate implements IViewFactory
 	}
 
 	/**
-	 *
-	 * @param requestStickyFilters
-	 * @param huIds {@code null} means "no restriction". Empty means "select none"
-	 * @return
+	 * @param filterOnlyIds {@code null} means "no restriction". Empty means "select none"
 	 */
 	private static DocumentFilterList extractStickyFilters(
 			@NonNull final DocumentFilterList requestStickyFilters,
@@ -454,21 +460,23 @@ public abstract class HUEditorViewFactoryTemplate implements IViewFactory
 				throw new IllegalArgumentException("Barcode parameter is empty: " + filter);
 			}
 
-			final List<Integer> huIds = Services.get(IHandlingUnitsDAO.class).createHUQueryBuilder()
+			final ImmutableSet<HuId> huIds = Services.get(IHandlingUnitsDAO.class).createHUQueryBuilder()
 					.setContext(PlainContextAware.newOutOfTrx())
 					.onlyContextClient(false) // avoid enforcing context AD_Client_ID because it might be that we are not in a user thread (so no context)
 					.setOnlyWithBarcode(barcode)
+					.setOnlyTopLevelHUs(false)
 					.createQueryBuilder()
 					.setOption(IQueryBuilder.OPTION_Explode_OR_Joins_To_SQL_Unions)
 					.create()
-					.listIds();
-
+					.listIds(HuId::ofRepoId);
 			if (huIds.isEmpty())
 			{
 				return ConstantQueryFilter.of(false).getSql();
 			}
 
-			final ISqlQueryFilter sqlQueryFilter = new InArrayQueryFilter<>(I_M_HU.COLUMNNAME_M_HU_ID, huIds);
+			final ImmutableSet<HuId> topLevelHuIds = Services.get(IHandlingUnitsBL.class).getTopLevelHUs(huIds);
+
+			final ISqlQueryFilter sqlQueryFilter = new InArrayQueryFilter<>(I_M_HU.COLUMNNAME_M_HU_ID, topLevelHuIds);
 
 			final String sql = sqlQueryFilter.getSql();
 			sqlParamsOut.collectAll(sqlQueryFilter);
@@ -484,10 +492,8 @@ public abstract class HUEditorViewFactoryTemplate implements IViewFactory
 	@Value(staticConstructor = "of")
 	private static class ViewLayoutKey
 	{
-		@NonNull
-		final WindowId windowId;
+		@NonNull WindowId windowId;
 
-		@NonNull
-		final JSONViewDataType viewDataType;
+		@NonNull JSONViewDataType viewDataType;
 	}
 }

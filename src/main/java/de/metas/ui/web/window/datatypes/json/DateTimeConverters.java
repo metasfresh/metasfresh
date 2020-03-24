@@ -1,5 +1,16 @@
 package de.metas.ui.web.window.datatypes.json;
 
+import com.google.common.annotations.VisibleForTesting;
+import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
+import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
+import de.metas.util.Check;
+import lombok.NonNull;
+import lombok.experimental.UtilityClass;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.util.TimeUtil;
+
+import javax.annotation.Nullable;
+import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -7,19 +18,6 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.function.Function;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.util.TimeUtil;
-
-import com.google.common.annotations.VisibleForTesting;
-
-import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
-import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
-import de.metas.util.Check;
-import lombok.NonNull;
-import lombok.experimental.UtilityClass;
 
 /*
  * #%L
@@ -140,6 +138,21 @@ public final class DateTimeConverters
 		}
 	}
 
+	private static Timestamp fromJdbcTimestampToLocalDateTime(final Object valueObj)
+	{
+		return Timestamp.valueOf((String)valueObj);
+	}
+
+	/*
+	 * Saved User Query records generate the date as jdbc timestamp, and these fail for the formats we use.
+	 * They appear as follows: `2016-06-11 00:00:00.0`.
+	 */
+	private static boolean isPossibleJdbcTimestamp(@NonNull final Object valueObj)
+	{
+		final String s = (String)valueObj;
+		return s.length() == 21 && s.charAt(10) == ' ';
+	}
+
 	public static LocalDate fromObjectToLocalDate(final Object valueObj)
 	{
 		return fromObjectTo(valueObj,
@@ -218,6 +231,11 @@ public final class DateTimeConverters
 			if (json.isEmpty())
 			{
 				return null;
+			}
+			else if (isPossibleJdbcTimestamp(valueObj))
+			{
+				final Timestamp timestamp = fromJdbcTimestampToLocalDateTime(valueObj);
+				return fromObjectConverter.apply(timestamp);
 			}
 			else
 			{

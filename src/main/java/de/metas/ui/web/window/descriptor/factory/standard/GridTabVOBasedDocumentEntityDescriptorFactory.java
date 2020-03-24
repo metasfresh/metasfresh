@@ -58,7 +58,8 @@ import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptor;
 import de.metas.ui.web.window.model.DocumentsRepository;
 import de.metas.ui.web.window.model.IDocumentFieldValueProvider;
 import de.metas.ui.web.window.model.lookup.LabelsLookup;
-import de.metas.ui.web.window.model.lookup.LookupValueByIdSupplier;
+import de.metas.ui.web.window.model.lookup.LookupDataSource;
+import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
 import de.metas.ui.web.window.model.lookup.TimeZoneLookupDescriptor;
 import de.metas.ui.web.window.model.sql.SqlDocumentsRepository;
 import de.metas.util.Check;
@@ -457,7 +458,7 @@ import lombok.NonNull;
 				.setMandatoryLogic(extractMandatoryLogic(gridFieldVO))
 				.setDisplayLogic(gridFieldVO.getDisplayLogic())
 				//
-				.setDefaultFilterInfo(createDefaultFilterDescriptor(gridFieldVO.getDefaultFilterDescriptor(), sqlColumnName, widgetType))
+				.setDefaultFilterInfo(createDefaultFilterDescriptor(gridFieldVO.getDefaultFilterDescriptor(), sqlColumnName, widgetType, fieldBinding.getValueClass(), lookupDescriptorProvider))
 				//
 				.setDataBinding(fieldBinding);
 
@@ -564,16 +565,18 @@ import lombok.NonNull;
 	}
 
 	private DocumentFieldDefaultFilterDescriptor createDefaultFilterDescriptor(
-			final GridFieldDefaultFilterDescriptor gridFieldDefaultFilterInfo,
-			final String fieldName,
-			final DocumentFieldWidgetType widgetType)
+			@Nullable final GridFieldDefaultFilterDescriptor gridFieldDefaultFilterInfo,
+			@NonNull final String fieldName,
+			@NonNull final DocumentFieldWidgetType widgetType,
+			@NonNull final Class<?> valueClass,
+			@Nullable final LookupDescriptorProvider lookupDescriptorProvider)
 	{
 		if (gridFieldDefaultFilterInfo == null)
 		{
 			return null;
 		}
 
-		final Object autoFilterInitialValue = extractAutoFilterInitialValue(gridFieldDefaultFilterInfo, fieldName, widgetType);
+		final Object autoFilterInitialValue = extractAutoFilterInitialValue(gridFieldDefaultFilterInfo, fieldName, widgetType, valueClass, lookupDescriptorProvider);
 
 		return DocumentFieldDefaultFilterDescriptor.builder()
 				//
@@ -590,11 +593,16 @@ import lombok.NonNull;
 				.build();
 	}
 
-	private Object extractAutoFilterInitialValue(final GridFieldDefaultFilterDescriptor gridFieldDefaultFilterInfo, final String fieldName, final DocumentFieldWidgetType widgetType)
+	private Object extractAutoFilterInitialValue(
+			@NonNull final GridFieldDefaultFilterDescriptor gridFieldDefaultFilterInfo,
+			@NonNull final String fieldName,
+			@NonNull final DocumentFieldWidgetType widgetType,
+			@NonNull final Class<?> valueClass,
+			@Nullable final LookupDescriptorProvider lookupDescriptorProvider)
 	{
 		final String autoFilterInitialValueStr = gridFieldDefaultFilterInfo.getDefaultValue();
 
-		if (Check.isEmpty(autoFilterInitialValueStr, true))
+		if (Check.isBlank(autoFilterInitialValueStr))
 		{
 			return null;
 		}
@@ -603,24 +611,29 @@ import lombok.NonNull;
 		{
 			return DocumentFieldDefaultFilterDescriptor.AUTOFILTER_INITIALVALUE_DATE_NOW;
 		}
-		else if (widgetType.getValueClassOrNull() == null) // no default value class are not supported
-		{
-			return null;
-		}
-		else if (widgetType == DocumentFieldWidgetType.Lookup) // lookups are not supported
-		{
-			return null;
-		}
-		else if (widgetType == DocumentFieldWidgetType.List)
-		{
-			return autoFilterInitialValueStr.trim();
-		}
 		else
 		{
-			final Class<?> valueClass = widgetType.getValueClass();
-			final LookupValueByIdSupplier lookupDataSource = null; // does not matter, we already excluded Lookups above
+			final LookupDataSource lookupDataSource = widgetType.isLookup()
+					? createFilterLookupDataSourceOrNull(lookupDescriptorProvider)
+					: null;
 			return DataTypes.convertToValueClass(fieldName, autoFilterInitialValueStr, widgetType, valueClass, lookupDataSource);
 		}
+	}
+
+	private LookupDataSource createFilterLookupDataSourceOrNull(@Nullable final LookupDescriptorProvider lookupDescriptorProvider)
+	{
+		if (lookupDescriptorProvider == null)
+		{
+			return null;
+		}
+
+		final LookupDescriptor lookupDescriptor = lookupDescriptorProvider.provideForFilter().orElse(null);
+		if (lookupDescriptor == null)
+		{
+			return null;
+		}
+
+		return LookupDataSourceFactory.instance.getLookupDataSource(lookupDescriptor);
 	}
 
 	private ButtonFieldActionDescriptor extractButtonFieldActionDescriptor(final String tableName, final String fieldName, final int adProcessId)

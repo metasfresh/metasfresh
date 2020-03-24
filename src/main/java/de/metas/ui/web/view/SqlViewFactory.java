@@ -167,7 +167,7 @@ public class SqlViewFactory implements IViewFactory
 
 		if (request.isUseAutoFilters())
 		{
-			final List<DocumentFilter> autoFilters = createAutoFilters(sqlViewBinding);
+			final List<DocumentFilter> autoFilters = createAutoFilters(sqlViewBinding.getViewFilterDescriptors().getAll());
 			viewBuilder.addFiltersIfAbsent(autoFilters);
 		}
 
@@ -180,7 +180,7 @@ public class SqlViewFactory implements IViewFactory
 		return viewBuilder.build();
 	}
 
-	private final DocumentFilter extractReferencedDocumentFilter(final WindowId targetWindowId, final DocumentPath referencedDocumentPath)
+	private DocumentFilter extractReferencedDocumentFilter(final WindowId targetWindowId, final DocumentPath referencedDocumentPath)
 	{
 		if (referencedDocumentPath == null)
 		{
@@ -198,10 +198,11 @@ public class SqlViewFactory implements IViewFactory
 		}
 	}
 
-	private static List<DocumentFilter> createAutoFilters(final SqlViewBinding sqlViewBinding)
+	/*
+	 * Iterates the given {@code filters} and invokes this factory's createAutoFilter method on each one.
+	 */
+	public static List<DocumentFilter> createAutoFilters(@NonNull final Collection<DocumentFilterDescriptor> filters)
 	{
-		final Collection<DocumentFilterDescriptor> filters = sqlViewBinding.getViewFilterDescriptors().getAll();
-
 		return filters
 				.stream()
 				.filter(DocumentFilterDescriptor::isAutoFilter)
@@ -228,7 +229,7 @@ public class SqlViewFactory implements IViewFactory
 		return filterBuilder.build();
 	}
 
-	private static final DocumentFilterParam createAutoFilterParam(final DocumentFilterParamDescriptor filterParamDescriptor)
+	private static DocumentFilterParam createAutoFilterParam(final DocumentFilterParamDescriptor filterParamDescriptor)
 	{
 		final Object value;
 		if (filterParamDescriptor.isAutoFilterInitialValueIsDateNow())

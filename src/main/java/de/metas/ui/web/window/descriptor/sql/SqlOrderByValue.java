@@ -1,21 +1,3 @@
-package de.metas.ui.web.window.descriptor.sql;
-
-import java.util.Objects;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
-import org.adempiere.ad.expression.api.IStringExpression;
-import org.adempiere.ad.expression.api.impl.ConstantStringExpression;
-import org.compiere.util.Evaluatee;
-
-import de.metas.util.Check;
-import de.metas.util.StringUtils;
-import lombok.Builder;
-import lombok.EqualsAndHashCode;
-import lombok.NonNull;
-import lombok.ToString;
-
 /*
  * #%L
  * metasfresh-webui-api
@@ -37,6 +19,24 @@ import lombok.ToString;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+package de.metas.ui.web.window.descriptor.sql;
+
+import java.util.Objects;
+
+import javax.annotation.Nullable;
+
+import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
+import org.adempiere.ad.expression.api.IStringExpression;
+import org.adempiere.ad.expression.api.impl.ConstantStringExpression;
+import org.compiere.util.Evaluatee;
+
+import de.metas.util.Check;
+import de.metas.util.StringUtils;
+import lombok.Builder;
+import lombok.EqualsAndHashCode;
+import lombok.NonNull;
+import lombok.ToString;
 
 /** Field's SQL expression to be used in ORDER BY constructions */
 @EqualsAndHashCode
@@ -84,7 +84,7 @@ public class SqlOrderByValue
 			this.columnNameFQ = null;
 			this.columnNameAliasFQ = computeColumnNameFQ(this.joinOnTableNameOrAlias, sqlSelectValue.getColumnNameAlias());
 		}
-		else if (!Check.isBlank(columnName))
+		else if (Check.isNotBlank(columnName))
 		{
 			this.sqlSelectDisplayValue = null;
 			this.sqlSelectValue = null;
