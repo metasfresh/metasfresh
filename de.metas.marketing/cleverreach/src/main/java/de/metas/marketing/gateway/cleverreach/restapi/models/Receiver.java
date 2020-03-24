@@ -2,7 +2,9 @@ package de.metas.marketing.gateway.cleverreach.restapi.models;
 
 import java.util.Map;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import de.metas.marketing.base.model.ContactPerson;
 import de.metas.marketing.base.model.ContactPersonRemoteUpdate;
@@ -10,6 +12,7 @@ import de.metas.marketing.base.model.EmailAddress;
 import de.metas.util.lang.CoalesceUtil;
 import lombok.Builder;
 import lombok.NonNull;
+import lombok.Singular;
 import lombok.Value;
 
 /*
@@ -36,7 +39,6 @@ import lombok.Value;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 @Value
-@Builder
 public class Receiver
 {
 	/**
@@ -71,6 +73,46 @@ public class Receiver
 	Map<String, String> global_attributes;
 	Map<String, String> attributes;
 
+	@JsonCreator
+	@Builder
+	public Receiver(
+			@JsonProperty("id") int id,
+			@JsonProperty("email") String email,
+			@JsonProperty("imported") int imported,
+			@JsonProperty("points") int points,
+			@JsonProperty("bounced") int bounced,
+			@JsonProperty("last_ip") String last_ip,
+			@JsonProperty("last_location") String last_location,
+			@JsonProperty("last_client") String last_client,
+			@JsonProperty("groups_id") int groups_id,
+			@JsonProperty("activated") long activated,
+			@JsonProperty("registered") long registered,
+			@JsonProperty("deactivated") long deactivated,
+			@JsonProperty("source") String source,
+			@JsonProperty("active") boolean active,
+			@JsonProperty("stars") int stars,
+			@JsonProperty("global_attributes") @Singular Map<String, String> global_attributes,
+			@JsonProperty("attributes") @Singular Map<String, String> attributes)
+	{
+		this.id = id;
+		this.email = email;
+		this.imported = imported;
+		this.points = points;
+		this.bounced = bounced;
+		this.last_ip = last_ip;
+		this.last_location = last_location;
+		this.last_client = last_client;
+		this.groups_id = groups_id;
+		this.activated = activated;
+		this.registered = registered;
+		this.deactivated = deactivated;
+		this.source = source;
+		this.active = active;
+		this.stars = stars;
+		this.global_attributes = global_attributes;
+		this.attributes = attributes;
+	}
+
 	public ContactPersonRemoteUpdate toContactPersonUpdate()
 	{
 		return ContactPersonRemoteUpdate.builder()
@@ -78,4 +120,5 @@ public class Receiver
 				.address(EmailAddress.of(email, !active))
 				.build();
 	}
+
 }
