@@ -25,6 +25,7 @@ import de.metas.process.ProcessInfoParameter;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.report.client.ReportsClient;
 import de.metas.report.server.OutputType;
+import de.metas.report.server.ReportResult;
 import de.metas.ui.web.pickingV2.packageable.PackageableRow;
 import de.metas.ui.web.pickingV2.productsToPick.rows.ProductsToPickRowsService;
 import de.metas.util.Services;
@@ -109,11 +110,11 @@ public class PackageablesView_PrintPicklist extends PackageablesViewBasedProcess
 			createPickingCandidatesIfNeeded(row);
 
 			// print
-			final byte[] pickList = printPicklist(row);
+			final ReportResult pickList = printPicklist(row);
 
 			// preview
 			getResult().setReportData(
-					pickList,
+					pickList.getReportContent(),
 					buildFilename(row),
 					OutputType.PDF.getContentType());
 
@@ -162,7 +163,7 @@ public class PackageablesView_PrintPicklist extends PackageablesViewBasedProcess
 		}
 	}
 
-	private byte[] printPicklist(@NonNull final PackageableRow row)
+	private ReportResult printPicklist(@NonNull final PackageableRow row)
 	{
 		final PInstanceRequest pinstanceRequest = createPInstanceRequest(row);
 		final PInstanceId pinstanceId = adPInstanceDAO.createADPinstanceAndADPInstancePara(pinstanceRequest);
