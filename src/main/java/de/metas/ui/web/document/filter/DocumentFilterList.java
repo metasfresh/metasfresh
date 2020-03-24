@@ -32,12 +32,12 @@ import lombok.ToString;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -48,26 +48,26 @@ import lombok.ToString;
 @ToString
 public class DocumentFilterList
 {
-	public static final DocumentFilterList ofList(@Nullable final Collection<DocumentFilter> list)
+	public static DocumentFilterList ofList(@Nullable final Collection<DocumentFilter> list)
 	{
 		return list != null && !list.isEmpty()
 				? new DocumentFilterList(Maps.uniqueIndex(list, DocumentFilter::getFilterId))
 				: EMPTY;
 	}
 
-	private static final DocumentFilterList ofMap(@NonNull final Map<String, DocumentFilter> filtersById)
+	private static DocumentFilterList ofMap(@NonNull final Map<String, DocumentFilter> filtersById)
 	{
 		return !filtersById.isEmpty()
 				? new DocumentFilterList(ImmutableMap.copyOf(filtersById))
 				: EMPTY;
 	}
 
-	public static final DocumentFilterList of(@NonNull final DocumentFilter filter)
+	public static DocumentFilterList of(@NonNull final DocumentFilter filter)
 	{
 		return ofList(ImmutableList.of(filter));
 	}
 
-	public static final DocumentFilterList of(@NonNull final DocumentFilter... filters)
+	public static DocumentFilterList of(@NonNull final DocumentFilter... filters)
 	{
 		return ofList(Arrays.asList(filters));
 	}
@@ -198,6 +198,7 @@ public class DocumentFilterList
 		filtersById.values().forEach(consumer);
 	}
 
+	@Nullable
 	public String getParamValueAsString(final String filterId, final String parameterName)
 	{
 		final DocumentFilter filter = getFilterByIdOrNull(filterId);

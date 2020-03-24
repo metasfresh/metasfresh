@@ -158,7 +158,8 @@ public class HUMoveToDirectWarehouseService
 			if (isFailOnFirstError())
 			{
 				throw AdempiereException.wrapIfNeeded(ex)
-						.setParameter("HU", hu);
+						.setParameter("HU", hu)
+						.markAsUserValidationError();
 			}
 
 			final String errmsg = "Error on " + hu.getValue() + ": " + ex.getLocalizedMessage();
