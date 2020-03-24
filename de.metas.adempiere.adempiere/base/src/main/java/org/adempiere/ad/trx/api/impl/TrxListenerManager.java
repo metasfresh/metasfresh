@@ -33,7 +33,7 @@ import org.adempiere.exceptions.AdempiereException;
 
 import org.slf4j.Logger;
 
-import com.google.common.base.Predicates;
+import java.util.Objects;
 
 import de.metas.logging.LogManager;
 import de.metas.util.StringUtils;
@@ -160,7 +160,7 @@ public class TrxListenerManager implements ITrxListenerManager
 		try
 		{
 			listeners.hardList().stream()
-					.filter(Predicates.notNull())
+					.filter(Objects::nonNull)
 					.filter(listener -> timingInfo.equals(listener.getTiming()))
 					.forEach(listener -> fireListener(onError, timingInfo, trx, listener));
 		}

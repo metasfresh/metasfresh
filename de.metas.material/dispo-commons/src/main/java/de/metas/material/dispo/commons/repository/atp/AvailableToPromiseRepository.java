@@ -14,7 +14,7 @@ import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Predicates;
+import java.util.Objects;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.bpartner.BPartnerId;
@@ -126,7 +126,7 @@ public class AvailableToPromiseRepository
 	{
 		return multiQuery.getQueries()
 				.stream()
-				.filter(Predicates.notNull())
+				.filter(Objects::nonNull)
 				.map(AvailableToPromiseSqlHelper::createDBQueryForStockQuery)
 				.reduce(IQuery.unionDistict())
 				.orElse(null);

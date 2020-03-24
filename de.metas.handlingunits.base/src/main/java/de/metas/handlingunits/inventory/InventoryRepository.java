@@ -26,7 +26,7 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Inventory;
 import org.springframework.stereotype.Repository;
 
-import com.google.common.base.Predicates;
+import java.util.Objects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableSet;
@@ -331,7 +331,7 @@ public class InventoryRepository
 	{
 		return lines.stream()
 				.map(InventoryLine::getId)
-				.filter(Predicates.notNull())
+				.filter(Objects::nonNull)
 				.collect(ImmutableSet.toImmutableSet());
 	}
 

@@ -10,7 +10,7 @@ import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.Mutable;
 
-import com.google.common.base.Predicates;
+import java.util.Objects;
 
 import de.metas.async.Async_Constants;
 import de.metas.async.api.IWorkPackageQueue;
@@ -116,7 +116,7 @@ public abstract class AbstractMailDocumentsForSelection extends JavaProcess
 
 		return logsIterator
 				.map(this::retrieveDocumentLogLine)
-				.filter(Predicates.notNull())
+				.filter(Objects::nonNull)
 				.filter(docOutboundLogLine -> isEmailSendable(docOutboundLogLine, collector));
 	}
 

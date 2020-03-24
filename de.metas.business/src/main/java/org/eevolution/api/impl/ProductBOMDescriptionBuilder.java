@@ -9,7 +9,7 @@ import org.eevolution.api.IProductBOMDAO;
 import org.eevolution.model.I_PP_Product_BOM;
 import org.eevolution.model.I_PP_Product_BOMLine;
 
-import com.google.common.base.Predicates;
+import java.util.Objects;
 
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
@@ -66,7 +66,7 @@ final class ProductBOMDescriptionBuilder
 		return bomsRepo.retrieveLines(bom)
 				.stream()
 				.map(this::toBOMLineString)
-				.filter(Predicates.notNull())
+				.filter(Objects::nonNull)
 				.collect(Collectors.joining("\r\n"))
 				.trim();
 	}
