@@ -1,5 +1,7 @@
 package de.metas.procurement.base.order.async;
 
+import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.adempiere.ad.trx.api.ITrx;
@@ -55,9 +57,8 @@ public class PMM_GenerateOrders extends WorkpackageProcessorAdapter
 		{
 			throw new AdempiereException("@NotFound@ @PMM_PurchaseCandidate_ID@");
 		}
-
 		OrdersGenerator.newInstance()
-				.setCandidates(candidates)
+				.setCandidates(getItemsWithQty(candidates))
 				.generate();
 
 		return Result.SUCCESS;
@@ -66,7 +67,18 @@ public class PMM_GenerateOrders extends WorkpackageProcessorAdapter
 	private List<I_PMM_PurchaseCandidate> retrieveItems()
 	{
 		final I_C_Queue_WorkPackage workpackage = getC_Queue_WorkPackage();
-		return Services.get(IQueueDAO.class).retrieveItemsSkipMissing(workpackage, I_PMM_PurchaseCandidate.class, ITrx.TRXNAME_ThreadInherited);
+//		return Services.get(IQueueDAO.class).retrieveItemsSkipMissing(workpackage, I_PMM_PurchaseCandidate.class, ITrx.TRXNAME_ThreadInherited);
+		return Services.get(IQueueDAO.class).retrieveAllItems(workpackage, I_PMM_PurchaseCandidate.class);
+	}
+
+	private List<I_PMM_PurchaseCandidate> getItemsWithQty(List<I_PMM_PurchaseCandidate> candidates) {
+		List<I_PMM_PurchaseCandidate> filteredList = new ArrayList<I_PMM_PurchaseCandidate>();
+		for (int i=0;i<candidates.size();i++) {
+			if (candidates.get(i).getQtyOrdered().compareTo(BigDecimal.ZERO) > 0) {
+				filteredList.add(candidates.get(i));
+			}
+		}
+		return filteredList;
 	}
 
 	@Override
