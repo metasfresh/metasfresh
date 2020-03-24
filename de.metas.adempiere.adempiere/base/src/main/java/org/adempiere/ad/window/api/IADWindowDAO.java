@@ -92,7 +92,6 @@ public interface IADWindowDAO extends ISingletonService
 
 	int getUIElementNextSeqNo(UIElementGroupId uiElementGroupId);
 
-
 	/**
 	 * All parameters are mandatory for now.
 	 *
@@ -101,4 +100,6 @@ public interface IADWindowDAO extends ISingletonService
 	AdWindowId getAdWindowId(String tableName, SOTrx soTrx, AdWindowId defaultValue);
 
 	List<I_AD_Tab_Callout> retrieveTabCallouts(AdTabId tabId);
+
+	AdTabId copyTabToWindow(I_AD_Tab sourceTab, AdWindowId targetWindowId);
 }
