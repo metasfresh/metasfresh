@@ -43,4 +43,4 @@ ORDER BY ValidFrom DESC, Name ASC
 LIMIT 1$BODY$
   LANGUAGE sql STABLE
   COST 100;
-COMMENT ON FUNCTION report.bpartner_pricelist_version(numeric) IS 'Returns the latest, currently valid price list version within the pricing system of a given Partner (or its BP Group)';
+COMMENT ON FUNCTION report.bpartner_pricelist_version(numeric, character) IS 'Returns the latest, currently valid price list version within the pricing system of a given Partner (or its BP Group)';
