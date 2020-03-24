@@ -45,7 +45,7 @@ import de.metas.banking.api.BankAccountId;
 import de.metas.banking.model.BankStatementId;
 import de.metas.banking.model.BankStatementLineId;
 import de.metas.banking.model.I_C_Payment;
-import de.metas.banking.payment.impl.BankStatmentPaymentBL;
+import de.metas.banking.payment.impl.BankStatementPaymentBL;
 import de.metas.banking.service.BankStatementCreateRequest;
 import de.metas.banking.service.BankStatementLineCreateRequest;
 import de.metas.banking.service.IBankStatementDAO;
@@ -201,7 +201,7 @@ class BankStatementPaymentBLTest
 			// call tested method
 			//
 			bankStatement.setDocStatus(DocStatus.Completed.getCode());
-			final BankStatmentPaymentBL testBankStatementPaymentBL = new BankStatmentPaymentBL();
+			final BankStatementPaymentBL testBankStatementPaymentBL = new BankStatementPaymentBL();
 			testBankStatementPaymentBL.findOrCreateSinglePaymentAndLinkIfPossible(bankStatement, bsl);
 
 			//
@@ -260,7 +260,7 @@ class BankStatementPaymentBLTest
 			// call tested method
 			//
 			bankStatement.setDocStatus(DocStatus.Completed.getCode());
-			final BankStatmentPaymentBL testBankStatementBL = new BankStatmentPaymentBL();
+			final BankStatementPaymentBL testBankStatementBL = new BankStatementPaymentBL();
 			testBankStatementBL.findOrCreateSinglePaymentAndLinkIfPossible(bankStatement, bsl);
 
 			//
@@ -301,7 +301,7 @@ class BankStatementPaymentBLTest
 			// call tested method
 			//
 			bankStatement.setDocStatus(DocStatus.Completed.getCode());
-			final BankStatmentPaymentBL testBankStatementBL = new BankStatmentPaymentBL();
+			final BankStatementPaymentBL testBankStatementBL = new BankStatementPaymentBL();
 			testBankStatementBL.findOrCreateSinglePaymentAndLinkIfPossible(bankStatement, bsl);
 
 			//
@@ -333,7 +333,7 @@ class BankStatementPaymentBLTest
 			// call tested method
 			//
 			bankStatement.setDocStatus(DocStatus.Completed.getCode());
-			final BankStatmentPaymentBL testBankStatementBL = new BankStatmentPaymentBL();
+			final BankStatementPaymentBL testBankStatementBL = new BankStatementPaymentBL();
 			testBankStatementBL.findOrCreateSinglePaymentAndLinkIfPossible(bankStatement, bsl);
 
 			//

@@ -23,7 +23,7 @@ import de.metas.acct.api.IFactAcctDAO;
 import de.metas.banking.model.BankStatementId;
 import de.metas.banking.model.BankStatementLineId;
 import de.metas.banking.model.BankStatementLineReference;
-import de.metas.banking.payment.IBankStatmentPaymentBL;
+import de.metas.banking.payment.IBankStatementPaymentBL;
 import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.DocumentHandler;
 import de.metas.document.engine.DocumentTableFields;
@@ -62,7 +62,7 @@ import de.metas.util.StringUtils;
 
 public class BankStatementDocumentHandler implements DocumentHandler
 {
-	private final IBankStatmentPaymentBL bankStatmentPaymentBL = Services.get(IBankStatmentPaymentBL.class);
+	private final IBankStatementPaymentBL bankStatmentPaymentBL = Services.get(IBankStatementPaymentBL.class);
 	private final IBankStatementDAO bankStatementDAO = Services.get(IBankStatementDAO.class);
 	private final IBankStatementBL bankStatementBL = Services.get(IBankStatementBL.class);
 	private final IPaymentBL paymentBL = Services.get(IPaymentBL.class);

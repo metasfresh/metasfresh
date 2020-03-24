@@ -13,7 +13,7 @@ import org.compiere.util.TimeUtil;
 import de.metas.banking.api.BankAccountId;
 import de.metas.banking.payment.BankStatementLineMultiPaymentLinkRequest;
 import de.metas.banking.payment.BankStatementLineMultiPaymentLinkResult;
-import de.metas.banking.payment.IBankStatmentPaymentBL;
+import de.metas.banking.payment.IBankStatementPaymentBL;
 import de.metas.banking.service.IBankStatementBL;
 import de.metas.banking.service.IBankStatementDAO;
 import de.metas.bpartner.BPartnerId;
@@ -32,7 +32,7 @@ import de.metas.payment.api.PaymentQuery;
 import de.metas.util.Services;
 import lombok.NonNull;
 
-public class BankStatmentPaymentBL implements IBankStatmentPaymentBL
+public class BankStatementPaymentBL implements IBankStatementPaymentBL
 {
 	private final IBankStatementBL bankStatementBL = Services.get(IBankStatementBL.class);
 	private final IBankStatementDAO bankStatementDAO = Services.get(IBankStatementDAO.class);

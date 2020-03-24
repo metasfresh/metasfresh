@@ -10,7 +10,7 @@ import de.metas.payment.PaymentId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
 
-public interface IBankStatmentPaymentBL extends ISingletonService
+public interface IBankStatementPaymentBL extends ISingletonService
 {
 	Set<PaymentId> findEligiblePaymentIds(@NonNull I_C_BankStatementLine bankStatementLine, int limit);
 
