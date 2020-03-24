@@ -1,3 +1,25 @@
+/*
+ * #%L
+ * de.metas.handlingunits.base
+ * %%
+ * Copyright (C) 2020 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.handlingunits;
 
 import java.util.Collection;
@@ -6,6 +28,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.function.Predicate;
 
+import com.google.common.collect.ImmutableSet;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IContextAware;
@@ -40,6 +63,8 @@ import de.metas.util.ISingletonService;
 import de.metas.util.Services;
 import lombok.Builder.Default;
 import lombok.NonNull;
+
+import javax.annotation.Nullable;
 
 public interface IHandlingUnitsBL extends ISingletonService
 {
@@ -139,7 +164,6 @@ public interface IHandlingUnitsBL extends ISingletonService
 	boolean isVirtual(I_M_HU hu);
 
 	/**
-	 * @param huItem
 	 * @return {@code true} if the given {@code huItems}'s {@code M_HU_PI_Item_ID} is the "virtual" one, see {@link IHandlingUnitsDAO#getVirtual_HU_PI_Item_ID()}.
 	 */
 	boolean isVirtual(I_M_HU_Item huItem);
@@ -222,6 +246,8 @@ public interface IHandlingUnitsBL extends ISingletonService
 	 * @return top level parent; never return null
 	 */
 	I_M_HU getTopLevelParent(I_M_HU hu);
+
+	ImmutableSet<HuId> getTopLevelHUs(@NonNull Collection<HuId> huIds);
 
 	/**
 	 * Gets top level HUs of given HUs (i.e. the top of hierarchy).
@@ -329,32 +355,31 @@ public interface IHandlingUnitsBL extends ISingletonService
 	 * <p>
 	 * If given HU is a loading unit then given HU will be returned.
 	 *
-	 * @param hu
 	 * @return LU handling unit or null.
 	 */
-	I_M_HU getLoadingUnitHU(I_M_HU hu);
+	@Nullable I_M_HU getLoadingUnitHU(I_M_HU hu);
 
 	/**
 	 * Get the TU of the given (included) HU.
 	 *
 	 * @return TU handling unit or null.
 	 */
-	I_M_HU getTransportUnitHU(I_M_HU hu);
+	@Nullable I_M_HU getTransportUnitHU(I_M_HU hu);
 
 	/**
 	 * Returns the {@link I_M_HU_PI_Version#COLUMNNAME_HU_UnitType} value of the given <code>pi</code>'s version.
 	 *
-	 * @param pi
 	 * @return unit type
 	 */
+	@Nullable
 	String getHU_UnitType(I_M_HU_PI pi);
 
 	/**
 	 * Returns the {@link I_M_HU_PI_Version#COLUMNNAME_HU_UnitType} value of the given <code>hu</code>'s.
 	 *
-	 * @param hu
 	 * @return unit type
 	 */
+	@Nullable
 	String getHU_UnitType(I_M_HU hu);
 
 	/**
@@ -394,13 +419,13 @@ public interface IHandlingUnitsBL extends ISingletonService
 	 */
 	boolean isAggregateHU(I_M_HU hu);
 
-	I_M_HU_PI getPI(I_M_HU hu);
+	@Nullable I_M_HU_PI getPI(I_M_HU hu);
 
 	I_M_HU_PI_Version getPIVersion(I_M_HU hu);
 
-	I_M_HU_PI_Item getPIItem(I_M_HU_Item huItem);
+	@Nullable I_M_HU_PI_Item getPIItem(I_M_HU_Item huItem);
 
-	HuPackingInstructionsVersionId getEffectivePIVersionId(I_M_HU hu);
+	@Nullable HuPackingInstructionsVersionId getEffectivePIVersionId(I_M_HU hu);
 
 	/**
 	 * If the given {@code hu} is a aggregate HU, return the PI version of the HUs that are <i>represented</i> within the aggregate HU.<br>
@@ -414,11 +439,8 @@ public interface IHandlingUnitsBL extends ISingletonService
 	/**
 	 * If the given {@code hu} is a aggregate HU, return the PI of the HUs that are <i>represented</i> within the aggregate HU.<br>
 	 * Otherwise, return the given {@code hu}'s own/direct PI.
-	 *
-	 * @param hu
-	 * @return
 	 */
-	I_M_HU_PI getEffectivePI(I_M_HU hu);
+	@Nullable I_M_HU_PI getEffectivePI(I_M_HU hu);
 
 	static BPartnerId extractBPartnerIdOrNull(final I_M_HU hu)
 	{
