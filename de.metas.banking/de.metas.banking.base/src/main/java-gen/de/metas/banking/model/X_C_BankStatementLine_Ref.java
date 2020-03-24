@@ -15,7 +15,7 @@ public class X_C_BankStatementLine_Ref extends org.compiere.model.PO implements 
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -339778470L;
+	private static final long serialVersionUID = -2118471531L;
 
     /** Standard Constructor */
     public X_C_BankStatementLine_Ref (Properties ctx, int C_BankStatementLine_Ref_ID, String trxName)
@@ -30,6 +30,7 @@ public class X_C_BankStatementLine_Ref extends org.compiere.model.PO implements 
 			setC_Currency_ID (0);
 			setC_Payment_ID (0);
 			setLine (0); // @SQL=SELECT COALESCE(MAX(Line),0)+10 FROM C_BankStatementLine_Ref WHERE C_BankStatementLine_ID=@C_BankStatementLine_ID@
+			setProcessed (false); // N
 			setTrxAmt (BigDecimal.ZERO);
         } */
     }
@@ -262,7 +263,8 @@ public class X_C_BankStatementLine_Ref extends org.compiere.model.PO implements 
 	@Override
 	public void setProcessed (boolean Processed)
 	{
-		throw new IllegalArgumentException ("Processed is virtual column");	}
+		set_ValueNoCheck (COLUMNNAME_Processed, Boolean.valueOf(Processed));
+	}
 
 	/** Get Verarbeitet.
 		@return Checkbox sagt aus, ob der Datensatz verarbeitet wurde. 

@@ -778,13 +778,19 @@ public class InterfaceWrapperHelper
 
 	public static void delete(@NonNull final Object model)
 	{
+		final boolean failIfProcessed = true;
+		delete(model, failIfProcessed);
+	}
+	
+	public static void delete(@NonNull final Object model, final boolean failIfProcessed)
+	{
 		if (POWrapper.isHandled(model))
 		{
-			POWrapper.delete(model);
+			POWrapper.delete(model, failIfProcessed);
 		}
 		else if (POJOWrapper.isHandled(model))
 		{
-			POJOWrapper.delete(model);
+			POJOWrapper.delete(model, failIfProcessed);
 		}
 		else
 		{

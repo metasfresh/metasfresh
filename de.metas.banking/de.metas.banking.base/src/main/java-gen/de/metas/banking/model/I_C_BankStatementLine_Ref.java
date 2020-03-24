@@ -308,11 +308,9 @@ public interface I_C_BankStatementLine_Ref
 	 * Checkbox sagt aus, ob der Datensatz verarbeitet wurde.
 	 *
 	 * <br>Type: YesNo
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: true (lazy loading)
-	 * @deprecated Please don't use it because this is a virtual column
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
 	 */
-	@Deprecated
 	public void setProcessed (boolean Processed);
 
 	/**
@@ -320,11 +318,9 @@ public interface I_C_BankStatementLine_Ref
 	 * Checkbox sagt aus, ob der Datensatz verarbeitet wurde.
 	 *
 	 * <br>Type: YesNo
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: true (lazy loading)
-	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
 	 */
-	@Deprecated
 	public boolean isProcessed();
 
     /** Column definition for Processed */

@@ -756,11 +756,12 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 	public int deleteDirectly()
 	{
 		// NOTE: we cannot issue an SQL command, so we need to delete it one by one
-		return delete();
+		final boolean failIfProcessed = false; // don't fail because we want to be consistent with the SQL version
+		return delete(failIfProcessed);
 	}
 
 	@Override
-	public int delete()
+	public int delete(final boolean failIfProcessed)
 	{
 		final List<T> records = list(modelClass);
 		if (records.isEmpty())
@@ -771,7 +772,7 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 		int countDeleted = 0;
 		for (final Object record : records)
 		{
-			InterfaceWrapperHelper.delete(record);
+			InterfaceWrapperHelper.delete(record, failIfProcessed);
 			countDeleted++;
 		}
 

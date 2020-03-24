@@ -378,7 +378,9 @@ public interface IQuery<T>
 	/**
 	 * Directly execute DELETE FROM database.
 	 * <p>
-	 * Models, won't be loaded so no model validators will be triggered.
+	 * Models, won't be loaded so no model interceptor will be triggered.
+	 * <p>
+	 * Also, models will be deleted even if they were marked as Processed=Y.
 	 * <p>
 	 * NOTE: please call it when you know what are you doing.
 	 *
@@ -388,10 +390,23 @@ public interface IQuery<T>
 
 	/**
 	 * Delete all records which are matched by this query.
+	 * If any record is Processed this method will fail.
 	 *
 	 * @return how many records were deleted
 	 */
-	int delete();
+	default int delete()
+	{
+		final boolean failIfProcessed = true;
+		return delete(failIfProcessed);
+	}
+
+	/**
+	 * Delete all records which are matched by this query.
+	 *
+	 * @param failIfProcessed fail if any of those records are Processed.
+	 * @return how many records were deleted
+	 */
+	int delete(boolean failIfProcessed);
 
 	/**
 	 * @return executor which will assist you to mass-update fields of models which are matched by this query

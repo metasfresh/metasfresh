@@ -190,7 +190,7 @@ public class BankStatementDAO implements IBankStatementDAO
 		queryBL.createQueryBuilder(I_C_BankStatementLine_Ref.class)
 				.addInArrayFilter(I_C_BankStatementLine_Ref.COLUMNNAME_C_BankStatementLine_Ref_ID, lineRefIds)
 				.create()
-				.delete();
+				.delete(/* failIfProcessed */false); // delete even if Processed=Y
 	}
 
 	@Override
