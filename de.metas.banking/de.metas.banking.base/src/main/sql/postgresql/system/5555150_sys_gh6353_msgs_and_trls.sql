@@ -108,3 +108,23 @@ UPDATE AD_Message SET MsgText='Abzugleichender Betrag: {0}',Updated=TO_TIMESTAMP
 UPDATE AD_Message_Trl SET IsTranslated='Y', MsgText='Abzugleichender Betrag: {0}',Updated=TO_TIMESTAMP('2020-03-24 11:47:21','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Message_ID=544970
 ;
 
+-- 2020-03-24T11:30:24.261Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process SET Name='Mit einzelner Zahlung abgleichen',Updated=TO_TIMESTAMP('2020-03-24 13:30:24','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=584643
+;
+
+-- 2020-03-24T11:30:29.657Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Trl SET Name='Mit einzelner Zahlung abgleichen',Updated=TO_TIMESTAMP('2020-03-24 13:30:29','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Process_ID=584643
+;
+
+-- 2020-03-24T11:30:31.913Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Trl SET Name='Mit einzelner Zahlung abgleichen',Updated=TO_TIMESTAMP('2020-03-24 13:30:31','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Process_ID=584643
+;
+
+-- 2020-03-24T11:30:49.298Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Trl SET Name='Reconcile with Single Payment',Updated=TO_TIMESTAMP('2020-03-24 13:30:49','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Process_ID=584643
+;
+
