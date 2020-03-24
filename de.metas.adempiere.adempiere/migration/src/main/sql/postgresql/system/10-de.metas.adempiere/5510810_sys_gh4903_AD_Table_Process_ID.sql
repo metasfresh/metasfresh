@@ -16,8 +16,9 @@ CREATE SEQUENCE AD_TABLE_PROCESS_SEQ INCREMENT 1 MINVALUE 1 MAXVALUE 2147483647 
 
 -- 2019-01-25T17:32:26.948
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-ALTER TABLE AD_Table_Process ADD COLUMN AD_Table_Process_ID numeric(10,0)
-;
+-- addded in a dedicated SQL
+--ALTER TABLE AD_Table_Process ADD COLUMN AD_Table_Process_ID numeric(10,0)
+--;
 
 commit;
 

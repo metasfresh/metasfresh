@@ -10,8 +10,8 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 
 -- 2019-01-25T12:25:13.098
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */ SELECT public.db_alter_table('AD_Table_Process','ALTER TABLE public.AD_Table_Process ADD COLUMN AD_Tab_ID NUMERIC(10)')
-;
+---/* DDL */ SELECT public.db_alter_table('AD_Table_Process','ALTER TABLE public.AD_Table_Process ADD COLUMN AD_Tab_ID NUMERIC(10)')
+--;
 
 -- 2019-01-25T12:25:13.145
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
@@ -60,8 +60,8 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 
 -- 2019-01-25T12:35:15.496
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */ SELECT public.db_alter_table('AD_Table_Process','ALTER TABLE public.AD_Table_Process ADD COLUMN WEBUI_DocumentAction CHAR(1) DEFAULT ''Y'' CHECK (WEBUI_DocumentAction IN (''Y'',''N'')) NOT NULL')
-;
+--/* DDL */ SELECT public.db_alter_table('AD_Table_Process','ALTER TABLE public.AD_Table_Process ADD COLUMN WEBUI_DocumentAction CHAR(1) DEFAULT ''Y'' CHECK (WEBUI_DocumentAction IN (''Y'',''N'')) NOT NULL')
+--;
 
 -- 2019-01-25T12:35:31.417
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
@@ -75,8 +75,8 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 
 -- 2019-01-25T12:35:35.377
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */ SELECT public.db_alter_table('AD_Table_Process','ALTER TABLE public.AD_Table_Process ADD COLUMN WEBUI_ViewAction CHAR(1) DEFAULT ''Y'' CHECK (WEBUI_ViewAction IN (''Y'',''N'')) NOT NULL')
-;
+--/* DDL */ SELECT public.db_alter_table('AD_Table_Process','ALTER TABLE public.AD_Table_Process ADD COLUMN WEBUI_ViewAction CHAR(1) DEFAULT ''Y'' CHECK (WEBUI_ViewAction IN (''Y'',''N'')) NOT NULL')
+--;
 
 -- 2019-01-25T12:35:52.264
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
@@ -90,8 +90,8 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 
 -- 2019-01-25T12:35:54.124
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */ SELECT public.db_alter_table('AD_Table_Process','ALTER TABLE public.AD_Table_Process ADD COLUMN WEBUI_IncludedTabTopAction CHAR(1) DEFAULT ''N'' CHECK (WEBUI_IncludedTabTopAction IN (''Y'',''N'')) NOT NULL')
-;
+--/* DDL */ SELECT public.db_alter_table('AD_Table_Process','ALTER TABLE public.AD_Table_Process ADD COLUMN WEBUI_IncludedTabTopAction CHAR(1) DEFAULT ''N'' CHECK (WEBUI_IncludedTabTopAction IN (''Y'',''N'')) NOT NULL')
+--;
 
 -- 2019-01-25T12:37:00.377
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
@@ -113,7 +113,7 @@ UPDATE AD_Process_Para SET ColumnName='WEBUI_ViewQuickAction', Name='Quick actio
 UPDATE AD_Process_Para SET ColumnName='WEBUI_ViewQuickAction', Name='Quick action', Description=NULL, Help=NULL WHERE AD_Element_ID=543267 AND IsCentrallyMaintained='Y'
 ;
 
-alter table AD_Table_Process rename WEBUI_QuickAction to WEBUI_ViewQuickAction;
+--alter table AD_Table_Process rename WEBUI_QuickAction to WEBUI_ViewQuickAction;
 
 -- 2019-01-25T12:38:27.416
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
@@ -135,7 +135,7 @@ UPDATE AD_Process_Para SET ColumnName='WEBUI_ViewQuickAction_Default', Name='Def
 UPDATE AD_Process_Para SET ColumnName='WEBUI_ViewQuickAction_Default', Name='Default quick action', Description=NULL, Help=NULL WHERE AD_Element_ID=543268 AND IsCentrallyMaintained='Y'
 ;
 
-alter table AD_Table_Process rename WEBUI_QuickAction_Default to WEBUI_ViewQuickAction_Default;
+--alter table AD_Table_Process rename WEBUI_QuickAction_Default to WEBUI_ViewQuickAction_Default;
 
 
 
