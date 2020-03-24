@@ -9,7 +9,7 @@ import org.compiere.model.ModelValidator;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Component;
 
-import com.google.common.base.Predicates;
+import java.util.Objects;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.bpartner.BPartnerId;
@@ -115,7 +115,7 @@ public class M_InOut
 				.stream()
 				.map(I_M_InOutLine::getM_Product_ID)
 				.map(ProductId::ofRepoIdOrNull)
-				.filter(Predicates.notNull())
+				.filter(Objects::nonNull)
 				.collect(ImmutableSet.toImmutableSet());
 	}
 }

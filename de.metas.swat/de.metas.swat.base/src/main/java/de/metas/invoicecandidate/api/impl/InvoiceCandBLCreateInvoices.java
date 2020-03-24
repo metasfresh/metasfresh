@@ -62,7 +62,7 @@ import org.compiere.util.TrxRunnable2;
 import org.slf4j.Logger;
 import org.slf4j.MDC.MDCCloseable;
 
-import com.google.common.base.Predicates;
+import java.util.Objects;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.adempiere.model.I_C_InvoiceLine;
@@ -632,7 +632,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 				final List<String> externalIds = candsForIlVO
 						.stream()
 						.map(I_C_Invoice_Candidate::getExternalLineId)
-						.filter(Predicates.notNull())
+						.filter(Objects::nonNull)
 						.collect(ImmutableList.toImmutableList());
 				invoiceLine.setExternalIds(InvoiceUtil.joinExternalIds(externalIds));
 

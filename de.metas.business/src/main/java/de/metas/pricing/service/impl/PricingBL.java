@@ -39,7 +39,7 @@ import org.compiere.util.DisplayType;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
-import com.google.common.base.Predicates;
+import java.util.Objects;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.adempiere.model.I_C_InvoiceLine;
@@ -497,7 +497,7 @@ public class PricingBL implements IPricingBL
 		final ImmutableList<IPricingRule> rules = pricingRulesRepo.getPricingRules()
 				.stream()
 				.map(this::createPricingRuleNoFail)
-				.filter(Predicates.notNull())
+				.filter(Objects::nonNull)
 				.collect(ImmutableList.toImmutableList());
 
 		return AggregatedPricingRule.of(rules);

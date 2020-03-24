@@ -30,7 +30,7 @@ import org.compiere.model.IQuery;
 import org.compiere.model.MOrderLine;
 import org.slf4j.Logger;
 
-import com.google.common.base.Predicates;
+import java.util.Objects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
@@ -220,7 +220,7 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 	{
 		final Set<OrderAndLineId> orderLineIds = shipmentSchedules.stream()
 				.map(shipmentSchedule -> extractOrderAndLineId(shipmentSchedule))
-				.filter(Predicates.notNull())
+				.filter(Objects::nonNull)
 				.collect(ImmutableSet.toImmutableSet());
 
 		final Map<OrderAndLineId, I_C_OrderLine> orderLines = Services.get(IOrderDAO.class).getOrderLinesByIds(orderLineIds);

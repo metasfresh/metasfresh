@@ -20,7 +20,7 @@ import org.adempiere.util.lang.ITableRecordReference;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.MoreObjects;
-import com.google.common.base.Predicates;
+import java.util.Objects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
@@ -129,7 +129,7 @@ public final class Evaluatees
 	 */
 	public static Evaluatee2 composeNotNulls(@NonNull final Evaluatee... evaluatees)
 	{
-		final ImmutableList<Evaluatee> evaluateesFiltered = Stream.of(evaluatees).filter(Predicates.notNull()).collect(ImmutableList.toImmutableList());
+		final ImmutableList<Evaluatee> evaluateesFiltered = Stream.of(evaluatees).filter(Objects::nonNull).collect(ImmutableList.toImmutableList());
 		Check.assumeNotEmpty(evaluateesFiltered, "At least one evaluatee shall be not null: {}", (Object)evaluatees);
 		
 		return new CompositeEvaluatee(evaluateesFiltered);

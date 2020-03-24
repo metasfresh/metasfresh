@@ -10,7 +10,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.slf4j.Logger;
 
-import com.google.common.base.Predicates;
+import java.util.Objects;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimaps;
 import com.google.common.collect.SetMultimap;
@@ -93,7 +93,7 @@ public class ModelCacheInvalidationService implements IModelCacheInvalidationSer
 		final Set<CacheInvalidateRequest> requests = getRequestFactoriesForModel(model)
 				.stream()
 				.map(requestFactory -> requestFactory.createRequestFromModel(model, timing))
-				.filter(Predicates.notNull())
+				.filter(Objects::nonNull)
 				.collect(Collectors.toCollection(HashSet::new));
 
 		//

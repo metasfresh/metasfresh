@@ -20,7 +20,7 @@ import org.compiere.model.I_C_Postal;
 import org.compiere.model.X_C_Location;
 import org.slf4j.Logger;
 
-import com.google.common.base.Predicates;
+import java.util.Objects;
 
 import de.metas.location.CountryId;
 import de.metas.location.GeographicalCoordinatesWithLocationId;
@@ -166,7 +166,7 @@ public class LocationDAO implements ILocationDAO
 				.listColumns(I_C_Location.COLUMNNAME_C_Location_ID, I_C_Location.COLUMNNAME_Latitude, I_C_Location.COLUMNNAME_Longitude)
 				.stream()
 				.map(row -> toGeographicalCoordinatesWithLocationIdOrNull(row))
-				.filter(Predicates.notNull());
+				.filter(Objects::nonNull);
 	}
 
 	@Nullable

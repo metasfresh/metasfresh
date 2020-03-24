@@ -40,7 +40,7 @@ import org.compiere.model.I_C_UOM;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.google.common.base.Predicates;
+import java.util.Objects;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimaps;
@@ -135,7 +135,7 @@ public final class Quantity implements Comparable<Quantity>
 		Check.assumeNotEmpty(quantities, "The given quantities may not be empty");
 
 		final Iterator<Quantity> quantitiesIterator = Stream.of(quantities)
-				.filter(Predicates.notNull())
+				.filter(Objects::nonNull)
 				.iterator();
 		final ImmutableListMultimap<UomId, Quantity> uomIds2qties = Multimaps.index(quantitiesIterator, Quantity::getUomId);
 		if (uomIds2qties.isEmpty())

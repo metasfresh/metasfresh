@@ -12,7 +12,7 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Order;
 import org.slf4j.Logger;
 
-import com.google.common.base.Predicates;
+import java.util.Objects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
@@ -123,7 +123,7 @@ public class OrderUserNotifications
 		Check.assumeNotEmpty(recipientUserIds, "recipientUserIds is not empty");
 
 		return recipientUserIds.stream()
-				.filter(Predicates.notNull())
+				.filter(Objects::nonNull)
 				.map(recipientUserId -> newUserNotificationRequest()
 						.recipientUserId(recipientUserId)
 						.contentADMessage(adMessageAndParams.getAdMessage())
