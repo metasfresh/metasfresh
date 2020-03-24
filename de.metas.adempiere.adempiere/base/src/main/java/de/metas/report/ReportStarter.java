@@ -180,8 +180,21 @@ public abstract class ReportStarter extends JavaProcess
 		//
 		// Set report data to process execution result
 		final ProcessExecutionResult processExecutionResult = processInfo.getResult();
-		final String reportFilename = result.getFilename() != null ? result.getFilename() : extractReportFilename(processInfo, outputType);
+
 		final String reportContentType = outputType.getContentType();
+
+		final String reportFilename;
+		if (Check.isBlank(result.getFilename()))
+		{
+			reportFilename = result.getFilename();
+			logger.debug("executeReport's result has a non-blank filename={}; -> use it for the exported file", reportFilename);
+		}
+		else
+		{
+			reportFilename = extractReportFilename(processInfo, outputType);
+			logger.debug("executeReport's result has a blank filename; -> use generic filename={} for the exported file", result.getFilename());
+		}
+
 		processExecutionResult.setReportData(result.getReportData(), reportFilename, reportContentType);
 
 		//
