@@ -185,7 +185,7 @@ public abstract class ReportStarter extends JavaProcess
 		final String reportContentType = outputType.getContentType();
 
 		final String reportFilename;
-		if (Check.isBlank(result.getFilename()))
+		if (Check.isNotBlank(result.getFilename()))
 		{
 			reportFilename = result.getFilename();
 			logger.debug("executeReport's result has a non-blank filename={}; -> use it for the exported file", reportFilename);
