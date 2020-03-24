@@ -10,7 +10,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_BPartner;
 import org.slf4j.Logger;
 
-import com.google.common.base.Predicates;
+import java.util.Objects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableSet;
@@ -109,7 +109,7 @@ public class PurchaseCandidateToOrderWorkflow
 
 		final ImmutableSet<PurchaseCandidateId> distinctIds = purchaseCandidates.stream()
 				.map(PurchaseCandidate::getId)
-				.filter(Predicates.notNull())
+				.filter(Objects::nonNull)
 				.collect(ImmutableSet.toImmutableSet());
 
 		if (distinctIds.size() != purchaseCandidates.size())
@@ -147,7 +147,7 @@ public class PurchaseCandidateToOrderWorkflow
 
 		final List<PurchaseOrderItem> purchaseOrderItems = remotePurchaseItems.stream()
 				.map(PurchaseOrderItem::castOrNull)
-				.filter(Predicates.notNull())
+				.filter(Objects::nonNull)
 				.collect(ImmutableList.toImmutableList());
 
 		purchaseOrderFromItemsAggregator

@@ -4,7 +4,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.stream.Stream;
 
-import com.google.common.base.Predicates;
+import java.util.Objects;
 
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostElementId;
@@ -106,7 +106,7 @@ public class BOMCostPrice
 		return getElementPrices()
 				.stream()
 				.map(BOMCostElementPrice::getId)
-				.filter(Predicates.notNull())
+				.filter(Objects::nonNull)
 				.map(idType::cast);
 	}
 }

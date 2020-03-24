@@ -9,7 +9,7 @@ import javax.annotation.Nullable;
 
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 
-import com.google.common.base.Predicates;
+import java.util.Objects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
@@ -104,7 +104,7 @@ public final class BOM
 				.stream()
 				.filter(BOMLine::isInboundBOMCosts)
 				.map(bomLine -> bomLine.getCostAmountOrNull(costElementId))
-				.filter(Predicates.notNull())
+				.filter(Objects::nonNull)
 				.reduce(CostAmount::add);
 
 		return componentsTotalAmt.map(amt -> amt.divide(qty, precision));
@@ -157,7 +157,7 @@ public final class BOM
 	{
 		return streamCostPrices()
 				.flatMap(bomCostPrice -> bomCostPrice.streamIds(idType))
-				.filter(Predicates.notNull())
+				.filter(Objects::nonNull)
 				.collect(ImmutableSet.toImmutableSet());
 	}
 

@@ -10,7 +10,7 @@ import org.compiere.model.I_C_UOM;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
-import com.google.common.base.Predicates;
+import java.util.Objects;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.handlingunits.HuId;
@@ -181,7 +181,7 @@ public class InventoryLineHU
 	{
 		return lineHUs
 				.map(InventoryLineHU::getHuId)
-				.filter(Predicates.notNull())
+				.filter(Objects::nonNull)
 				.collect(ImmutableSet.toImmutableSet());
 	}
 }
