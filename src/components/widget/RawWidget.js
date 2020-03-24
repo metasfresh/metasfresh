@@ -4,7 +4,6 @@ import ReactCSSTransitionGroup from 'react-addons-css-transition-group';
 import { connect } from 'react-redux';
 import classnames from 'classnames';
 import { List as ImmutableList } from 'immutable';
-import _ from 'lodash';
 
 import { RawWidgetPropTypes, RawWidgetDefaultProps } from './PropTypes';
 import { getClassNames, generateMomentObj } from './RawWidgetHelpers';
@@ -57,7 +56,6 @@ export class RawWidget extends Component {
       errorPopup: false,
       tooltipToggled: false,
       clearedFieldWarning: false,
-      currentValue: '',
     };
 
     this.getClassNames = getClassNames.bind(this);
@@ -331,29 +329,6 @@ export class RawWidget extends Component {
   };
 
   /**
-   * @method debouncedChange
-   * @summary debounced function called by the proxy
-   * @param {widgetField} string
-   * @param {targetValue} string
-   */
-  debouncedChange = _.debounce((widgetField, targetValue) => {
-    const { handleChange } = this.props;
-    handleChange(widgetField, targetValue);
-  }, 1000);
-
-  /**
-   * @method proxyChange
-   * @summary function that updates the state currentValue with the value from targetValue
-   * then calls the debounced function. User is seeing what he types faster and handleChange is called debounced
-   * @param {widgetField} string
-   * @param {targetValue} string
-   */
-  proxyChange = (widgetField, targetValue) => {
-    this.setState({ currentValue: targetValue });
-    this.debouncedChange(widgetField, targetValue);
-  };
-
-  /**
    * @method renderErrorPopup
    * @summary ToDo: Describe the method.
    * @param {*} reason
@@ -418,7 +393,6 @@ export class RawWidget extends Component {
     } = this.props;
 
     let widgetValue = data != null ? data : widgetData[0].value;
-    let { currentValue } = this.state;
     const { isEdited } = this.state;
 
     // TODO: API SHOULD RETURN THE SAME PROPERTIES FOR FILTERS
@@ -449,19 +423,14 @@ export class RawWidget extends Component {
       //switched to autocomplete=off instead
       autoComplete: 'off',
       className: 'input-field js-input-field',
-      value: currentValue ? currentValue : widgetValue,
+      value: widgetValue,
       defaultValue,
       placeholder: fields[0].emptyText,
       disabled: readonly,
       onFocus: this.handleFocus,
       tabIndex: tabIndex,
-      onChange: (e) => {
-        if (e.keyCode === 13) {
-          handleChange && handleChange(widgetField, e.target.value);
-        } else {
-          handleChange && this.proxyChange(widgetField, e.target.value);
-        }
-      },
+      onChange: (e) =>
+        handleChange && handleChange(widgetField, e.target.value),
       onBlur: (e) => this.handleBlur(widgetField, e.target.value, id),
       onKeyDown: (e) =>
         this.handleKeyDown(e, widgetField, e.target.value, widgetType),
