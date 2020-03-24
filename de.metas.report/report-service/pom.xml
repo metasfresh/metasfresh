@@ -18,15 +18,20 @@
 		<metasfresh.version>[1,10.0.0]</metasfresh.version>
 	</properties>
 
-	<!-- 
-		Exclude lucene stuff from jasperreports because it's old.
-		Explicitly add them because they might be needed...but with versions implied by spring-boot.
-	-->
 	<dependencies>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-api</artifactId>
+		</dependency>
+
 		<dependency>
 			<groupId>net.sf.jasperreports</groupId>
 			<artifactId>jasperreports</artifactId>
 			<exclusions>
+				<!-- 
+					Exclude lucene stuff from jasperreports because it's old.
+					Explicitly add them because they might be needed...but with versions implied by spring-boot.
+				-->
 				<exclusion>
 					<groupId>org.apache.lucene</groupId>
 					<artifactId>lucene-queryparser</artifactId>
@@ -207,6 +212,15 @@
 							<executable>true</executable>
 							<mainClass>${start-class}</mainClass>
 							
+							<!-- despite the "provided" in the dependency declaration, migration.cli did ended up in the reports's classpath
+								Therefore, we now explicitly exclude it here -->
+							<excludes>
+								<exclude>
+									<groupId>de.metas.migration</groupId>
+									<artifactId>de.metas.migration.cli</artifactId>
+								</exclude>
+							</excludes>
+							
 							<!-- this also provides the super-jar to the successive docker build 
 								Note that the ${docker.build.directory} property  is set by the prepare-docker profile 
 								that is activated by the presence of the scr/main/docker folder -->
@@ -221,7 +235,7 @@
 					</execution>
 
 					<execution>
-						<id>spring-boot-serverRoot-build-info</id>
+						<id>spring-boot-report-service-build-info</id>
 						<goals>
 							<goal>build-info</goal> <!-- create build-info.properties; thanks to https://docs.spring.io/spring-boot/docs/current/reference/html/howto-build.html#howto-build-info -->
 						</goals>
