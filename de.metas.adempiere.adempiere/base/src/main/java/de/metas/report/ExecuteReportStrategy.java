@@ -58,7 +58,7 @@ public interface ExecuteReportStrategy
 
 		public static ExecuteReportResult of(@NonNull final String filename, @NonNull final OutputType outputType, @NonNull final byte[] reportData)
 		{
-			return new ExecuteReportResult(null, outputType, reportData);
+			return new ExecuteReportResult(filename, outputType, reportData);
 		}
 
 		private  ExecuteReportResult(@Nullable String filename, OutputType outputType, byte[] reportData)
