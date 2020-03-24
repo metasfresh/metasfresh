@@ -135,7 +135,6 @@ public class BankStatementBL implements IBankStatementBL
 			if (paymentId != null)
 			{
 				paymentIdsToUnReconcile.add(paymentId);
-
 			}
 
 			bankStatementLine.setC_Payment_ID(-1);
