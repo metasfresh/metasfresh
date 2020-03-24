@@ -51,6 +51,7 @@ import de.metas.process.ProcessInfo.ProcessInfoBuilder;
 import de.metas.report.jasper.client.RemoteServletInvoker;
 import de.metas.report.server.IReportServer;
 import de.metas.report.server.OutputType;
+import de.metas.report.server.ReportResult;
 import de.metas.util.Services;
 import de.metas.util.lang.CoalesceUtil;
 import lombok.NonNull;
@@ -119,10 +120,10 @@ public final class ReportsClient
 			final Language language)
 	{
 		final IReportServer server = serverSupplier.get();
-		final byte[] data = server.report(adProcessId.getRepoId(), pinstanceId.getRepoId(), language.getAD_Language(), OutputType.JasperPrint);
+		final ReportResult reportResult = server.report(adProcessId.getRepoId(), pinstanceId.getRepoId(), language.getAD_Language(), OutputType.JasperPrint);
 		try
 		{
-			final ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(data));
+			final ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(reportResult.getReportContent()));
 			final JasperPrint jasperPrint = (JasperPrint)ois.readObject();
 			return jasperPrint;
 		}
@@ -133,18 +134,18 @@ public final class ReportsClient
 		}
 	}
 
-	private byte[] report(final AdProcessId adProcessId, final PInstanceId pinstanceId, final Language language, final OutputType outputType)
+	private ReportResult report(final AdProcessId adProcessId, final PInstanceId pinstanceId, final Language language, final OutputType outputType)
 	{
 		final IReportServer server = serverSupplier.get();
 		return server.report(adProcessId.getRepoId(), PInstanceId.toRepoId(pinstanceId), language.getAD_Language(), outputType);
 	}
 
-	public byte[] report(final ProcessInfo pi)
+	public ReportResult report(final ProcessInfo pi)
 	{
 		return report(pi, pi.getJRDesiredOutputType());
 	}
 
-	public byte[] report(@NonNull final ProcessInfo pi, @Nullable final OutputType outputType)
+	public ReportResult report(@NonNull final ProcessInfo pi, @Nullable final OutputType outputType)
 	{
 		// Make sure the ProcessInfo is persisted because we will need to access it's data (like AD_Table_ID/Record_ID etc)
 		if (pi.getPinstanceId() == null)
@@ -154,8 +155,7 @@ public final class ReportsClient
 
 		final Language language = extractLanguage(pi);
 		final OutputType outputTypeEffective = CoalesceUtil.coalesce(outputType, pi.getJRDesiredOutputType());
-		final byte[] data = report(pi.getAdProcessId(), pi.getPinstanceId(), language, outputTypeEffective);
-		return data;
+		return report(pi.getAdProcessId(), pi.getPinstanceId(), language, outputTypeEffective);
 	}
 
 	private IReportServer createReportServer()

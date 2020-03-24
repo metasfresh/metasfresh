@@ -1,126 +1,137 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-	<parent>
-		<artifactId>metasfresh-report</artifactId>
-		<groupId>de.metas.report</groupId>
-		<version>10.0.0</version>
-		<relativePath>../pom.xml</relativePath>
-	</parent>
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <parent>
+        <artifactId>metasfresh-report</artifactId>
+        <groupId>de.metas.report</groupId>
+        <version>10.0.0</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
 
-	<modelVersion>4.0.0</modelVersion>
+    <modelVersion>4.0.0</modelVersion>
 
-	<version>10.0.0</version>
-	<artifactId>de.metas.report.jasper.commons</artifactId>
-	<packaging>jar</packaging>
+    <version>10.0.0</version>
+    <artifactId>de.metas.report.jasper.commons</artifactId>
+    <packaging>jar</packaging>
 
-	<properties>
-		<batik.version>1.9</batik.version>
-		<barcode4j.version>2.1</barcode4j.version>
-	</properties>
+    <properties>
+        <batik.version>1.9</batik.version>
+        <barcode4j.version>2.1</barcode4j.version>
+    </properties>
 
-	<dependencies>
-	
-	  <!-- See https://github.com/metasfresh/metasfresh/issues/1918 -->
-		<dependency>
-			<groupId>xerces</groupId>
-			<artifactId>xercesImpl</artifactId>
-			<version>2.11.0</version>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.xmlgraphics</groupId>
-			<artifactId>batik-bridge</artifactId>
-			<version>${batik.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.xmlgraphics</groupId>
-			<artifactId>batik-svg-dom</artifactId>
-			<version>${batik.version}</version>
+    <dependencies>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-annotations</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+        </dependency>
 
-		</dependency>
-		<dependency>
-			<groupId>org.apache.xmlgraphics</groupId>
-			<artifactId>batik-dom</artifactId>
-			<version>${batik.version}</version>
-			<exclusions>
-				<exclusion>
-					<artifactId>xercesImpl</artifactId>
-					<groupId>xerces</groupId>
-				</exclusion>
-			</exclusions>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.xmlgraphics</groupId>
-			<artifactId>batik-gvt</artifactId>
-			<version>${batik.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.xmlgraphics</groupId>
-			<artifactId>batik-util</artifactId>
-			<version>${batik.version}</version>
-		</dependency>
+        <!-- See https://github.com/metasfresh/metasfresh/issues/1918 -->
+        <dependency>
+            <groupId>xerces</groupId>
+            <artifactId>xercesImpl</artifactId>
+            <version>2.11.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.xmlgraphics</groupId>
+            <artifactId>batik-bridge</artifactId>
+            <version>${batik.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.xmlgraphics</groupId>
+            <artifactId>batik-svg-dom</artifactId>
+            <version>${batik.version}</version>
 
-		<dependency>
-			<groupId>org.apache.xmlgraphics</groupId>
-			<artifactId>batik-css</artifactId>
-			<version>${batik.version}</version>
-			<exclusions>
-				<exclusion>
-					<groupId>commons-logging</groupId>
-					<artifactId>commons-logging</artifactId>
-				</exclusion>
-				<!-- batick-css has version 1.3.1 in its dependency tree, but spring-ws-core has 2.5 -->
-				<exclusion>
-					<groupId>commons-io</groupId>
-					<artifactId>commons-io</artifactId>
-				</exclusion>
-			</exclusions>
-		</dependency>
-		<dependency>
-			<groupId>commons-logging</groupId>
-			<artifactId>commons-logging</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>commons-io</groupId>
-			<artifactId>commons-io</artifactId>
-		</dependency>
-		
-		<dependency>
-			<groupId>net.sf.barcode4j</groupId>
-			<artifactId>barcode4j</artifactId>
-			<version>${barcode4j.version}</version>
-			<type>jar</type>
-			<exclusions>
-				<exclusion>
-					<groupId>commons-logging</groupId>
-					<artifactId>commons-logging</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>commons-cli</groupId>
-					<artifactId>commons-cli</artifactId>
-				</exclusion>
-			</exclusions>
-		</dependency>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.xmlgraphics</groupId>
+            <artifactId>batik-dom</artifactId>
+            <version>${batik.version}</version>
+            <exclusions>
+                <exclusion>
+                    <artifactId>xercesImpl</artifactId>
+                    <groupId>xerces</groupId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.xmlgraphics</groupId>
+            <artifactId>batik-gvt</artifactId>
+            <version>${batik.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.xmlgraphics</groupId>
+            <artifactId>batik-util</artifactId>
+            <version>${batik.version}</version>
+        </dependency>
 
-<!--
-Our swing client is currently an uber-jar, and by copying this stuff into it, we run into trouble as described here: 
-http://community.jaspersoft.com/questions/542314/problem-fonts-input-stream-not-found-netsfjasperreportsfontsfontsxml
-Therefore we just add this dependency to both
-	metasfresh-report-service and 
-	de.metas.endcustomer.xxxx.swingui
-		<dependency>
-			<groupId>ar.com.fdvs</groupId>
-			<artifactId>DynamicJasper-core-fonts</artifactId>
-			<version>1.0</version>
-		</dependency>
- -->
- 
-		<dependency>
-			<groupId>org.projectlombok</groupId>
-			<artifactId>lombok</artifactId>
-			<scope>provided</scope>
-		</dependency>
-		
-	</dependencies>
+        <dependency>
+            <groupId>org.apache.xmlgraphics</groupId>
+            <artifactId>batik-css</artifactId>
+            <version>${batik.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>commons-logging</groupId>
+                    <artifactId>commons-logging</artifactId>
+                </exclusion>
+                <!-- batick-css has version 1.3.1 in its dependency tree, but spring-ws-core has 2.5 -->
+                <exclusion>
+                    <groupId>commons-io</groupId>
+                    <artifactId>commons-io</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>commons-logging</groupId>
+            <artifactId>commons-logging</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>net.sf.barcode4j</groupId>
+            <artifactId>barcode4j</artifactId>
+            <version>${barcode4j.version}</version>
+            <type>jar</type>
+            <exclusions>
+                <exclusion>
+                    <groupId>commons-logging</groupId>
+                    <artifactId>commons-logging</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>commons-cli</groupId>
+                    <artifactId>commons-cli</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <!--
+        Our swing client is currently an uber-jar, and by copying this stuff into it, we run into trouble as described here:
+        http://community.jaspersoft.com/questions/542314/problem-fonts-input-stream-not-found-netsfjasperreportsfontsfontsxml
+        Therefore we just add this dependency to both
+            metasfresh-report-service and
+            de.metas.endcustomer.xxxx.swingui
+                <dependency>
+                    <groupId>ar.com.fdvs</groupId>
+                    <artifactId>DynamicJasper-core-fonts</artifactId>
+                    <version>1.0</version>
+                </dependency>
+         -->
+
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+        </dependency>
+    </dependencies>
 
 
 </project>
