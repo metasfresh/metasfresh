@@ -20,7 +20,7 @@ import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.ModelValidationEngine;
 
-import com.google.common.base.Predicates;
+import java.util.Objects;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.impexp.processing.IImportInterceptor;
@@ -199,7 +199,7 @@ public class IFAProductImportProcess extends SimpleImportProcessTemplate<I_I_Pha
 				.listDistinct(I_M_PriceList.COLUMNNAME_M_PriceList_ID)
 				.stream()
 				.map(map -> extractPriceListIdorNull(map))
-				.filter(Predicates.notNull())
+				.filter(Objects::nonNull)
 				.collect(ImmutableSet.toImmutableSet());
 	}
 

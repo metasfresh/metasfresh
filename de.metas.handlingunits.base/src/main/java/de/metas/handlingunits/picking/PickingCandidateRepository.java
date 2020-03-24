@@ -33,7 +33,7 @@ import org.compiere.model.IQuery;
 import org.compiere.model.I_C_UOM;
 import org.springframework.stereotype.Service;
 
-import com.google.common.base.Predicates;
+import java.util.Objects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableSet;
@@ -280,7 +280,7 @@ public class PickingCandidateRepository
 	{
 		final Set<PickingCandidateId> pickingCandidateIds = candidates.stream()
 				.map(PickingCandidate::getId)
-				.filter(Predicates.notNull())
+				.filter(Objects::nonNull)
 				.collect(ImmutableSet.toImmutableSet());
 		if (pickingCandidateIds.isEmpty())
 		{
@@ -489,7 +489,7 @@ public class PickingCandidateRepository
 		final ImmutableList<PickingCandidateId> pickingCandidateIds = pickingCandidates.stream()
 				.filter(PickingCandidate::isPickFromPickingOrder)
 				.map(PickingCandidate::getId)
-				.filter(Predicates.notNull())
+				.filter(Objects::nonNull)
 				.collect(ImmutableList.toImmutableList());
 		if (pickingCandidateIds.isEmpty())
 		{

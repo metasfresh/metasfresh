@@ -19,6 +19,7 @@ import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.X_M_Attribute;
 import org.compiere.util.TimeUtil;
 
+import java.util.Objects;
 import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableSet;
 
@@ -72,7 +73,7 @@ public final class AttributesKeys
 
 		final ImmutableSet<AttributesKeyPart> parts = attributes.stream()
 				.map(attribute -> createAttributesKeyPart(attributeSet, attribute))
-				.filter(Predicates.notNull())
+				.filter(Objects::nonNull)
 				.collect(ImmutableSet.toImmutableSet());
 
 		if (parts.isEmpty())
@@ -157,7 +158,7 @@ public final class AttributesKeys
 				.stream()
 				.filter(additionalFilter)
 				.map(ai -> createAttributesKeyPart(ai))
-				.filter(Predicates.notNull())
+				.filter(Objects::nonNull)
 				.collect(ImmutableSet.toImmutableSet());
 
 		if (parts.isEmpty())

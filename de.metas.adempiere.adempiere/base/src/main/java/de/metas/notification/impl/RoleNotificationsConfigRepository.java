@@ -6,7 +6,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.compiere.model.I_AD_Role;
 import org.compiere.model.I_AD_Role_NotificationGroup;
 
-import com.google.common.base.Predicates;
+import java.util.Objects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
@@ -66,7 +66,7 @@ public class RoleNotificationsConfigRepository implements IRoleNotificationsConf
 				.create()
 				.stream()
 				.map(this::toNotificationGroup)
-				.filter(Predicates.notNull())
+				.filter(Objects::nonNull)
 				.collect(ImmutableList.toImmutableList());
 
 		return RoleNotificationsConfig.builder()
