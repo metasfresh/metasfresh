@@ -111,8 +111,8 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 
 		final List<I_C_PaySelectionLine> paySelectionLines = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_PaySelectionLine.class)
-				.addEqualsFilter(org.compiere.model.I_C_PaySelectionLine.COLUMNNAME_C_PaySelection_ID, getPaySelectionId())
-				.addInArrayOrAllFilter(org.compiere.model.I_C_PaySelectionLine.COLUMNNAME_C_PaySelectionLine_ID, paySelectionLineIdsToUpdate)
+				.addEqualsFilter(I_C_PaySelectionLine.COLUMNNAME_C_PaySelection_ID, getPaySelectionId())
+				.addInArrayOrAllFilter(I_C_PaySelectionLine.COLUMNNAME_C_PaySelectionLine_ID, paySelectionLineIdsToUpdate)
 				.create()
 				.list();
 
@@ -769,11 +769,11 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 	}
 
 	@Override
-	public IPaySelectionUpdater addPaySelectionLinesToUpdate(final Iterable<? extends org.compiere.model.I_C_PaySelectionLine> paySelectionLines)
+	public IPaySelectionUpdater addPaySelectionLinesToUpdate(final Iterable<? extends I_C_PaySelectionLine> paySelectionLines)
 	{
 		assertConfigurable();
 
-		for (final org.compiere.model.I_C_PaySelectionLine paySelectionLine : paySelectionLines)
+		for (final I_C_PaySelectionLine paySelectionLine : paySelectionLines)
 		{
 			paySelectionLineIdsToUpdate.add(paySelectionLine.getC_PaySelectionLine_ID());
 		}

@@ -359,7 +359,7 @@ public class BankStatementDAO implements IBankStatementDAO
 	@Override
 	public BankStatementLineReference createBankStatementLineRef(@NonNull final BankStatementLineRefCreateRequest request)
 	{
-		final I_C_BankStatementLine_Ref record = InterfaceWrapperHelper.newInstance(I_C_BankStatementLine_Ref.class);
+		final I_C_BankStatementLine_Ref record = newInstance(I_C_BankStatementLine_Ref.class);
 
 		record.setAD_Org_ID(request.getOrgId().getRepoId());
 		record.setC_BankStatement_ID(request.getBankStatementId().getRepoId());

@@ -109,7 +109,7 @@ public class C_BankStatementLine
 		}
 
 		final IBankStatementDAO bankStatementDAO = Services.get(IBankStatementDAO.class);
-		final org.compiere.model.I_C_BankStatementLine bslFrom = bankStatementDAO.getLineById(linkedBankStatementLineId);
+		final I_C_BankStatementLine bslFrom = bankStatementDAO.getLineById(linkedBankStatementLineId);
 
 		final BigDecimal trxAmtFrom = bslFrom.getTrxAmt();
 		final CurrencyId trxAmtFromCurrencyId = CurrencyId.ofRepoId(bslFrom.getC_Currency_ID());

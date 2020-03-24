@@ -75,7 +75,7 @@ public class BankStatementBL implements IBankStatementBL
 	}
 
 	@Override
-	public boolean isReconciled(@NonNull final org.compiere.model.I_C_BankStatementLine line)
+	public boolean isReconciled(@NonNull final I_C_BankStatementLine line)
 	{
 		if (line.isMultiplePaymentOrInvoice())
 		{
@@ -99,7 +99,7 @@ public class BankStatementBL implements IBankStatementBL
 	}
 
 	@Override
-	public BigDecimal computeStmtAmtExcludingChargeAmt(final org.compiere.model.I_C_BankStatementLine line)
+	public BigDecimal computeStmtAmtExcludingChargeAmt(final I_C_BankStatementLine line)
 	{
 		return line.getTrxAmt()
 				.add(line.getInterestAmt())

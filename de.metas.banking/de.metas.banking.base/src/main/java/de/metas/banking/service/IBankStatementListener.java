@@ -37,7 +37,5 @@ import lombok.NonNull;
  */
 public interface IBankStatementListener
 {
-	default void onBeforeDeleteBankStatementLineReferences(@NonNull final BankStatementLineReferenceList lineRefs)
-	{
-	}
+	void onBeforeDeleteBankStatementLineReferences(@NonNull BankStatementLineReferenceList lineRefs);
 }
