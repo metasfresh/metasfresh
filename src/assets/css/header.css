@@ -292,7 +292,7 @@
 .subheader-items {
     /* subheader-row's height minus header & break */
     height: calc(100% - 52px);
-    overflow-y: scroll;
+    overflow-y: auto;
 }
 
 .btn-subheader-open {
