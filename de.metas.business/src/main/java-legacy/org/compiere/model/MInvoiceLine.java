@@ -31,6 +31,8 @@ import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import de.metas.adempiere.model.I_C_InvoiceLine;
+import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.bpartner.service.OrgHasNoBPartnerLinkException;
 import de.metas.currency.CurrencyPrecision;
@@ -634,7 +636,8 @@ public class MInvoiceLine extends X_C_InvoiceLine
 
 		//
 		// To
-		final I_C_BPartner_Location toBPLocation = invoice.getC_BPartner_Location();
+		final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
+		final I_C_BPartner_Location toBPLocation = bpartnerDAO.getBPartnerLocationById(BPartnerLocationId.ofRepoId(invoice.getC_BPartner_ID(), invoice.getC_BPartner_Location_ID()));
 
 		final int taxId = Services.get(ITaxBL.class).retrieveTaxIdForCategory(
 				getCtx(),

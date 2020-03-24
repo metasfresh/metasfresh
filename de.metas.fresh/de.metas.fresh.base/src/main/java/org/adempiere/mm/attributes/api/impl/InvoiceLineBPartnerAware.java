@@ -10,12 +10,12 @@ package org.adempiere.mm.attributes.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -30,8 +30,10 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Invoice;
 
 import de.metas.adempiere.model.I_C_InvoiceLine;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.fresh.model.I_C_BPartner;
 import de.metas.util.Check;
+import de.metas.util.Services;
 
 public class InvoiceLineBPartnerAware implements IBPartnerAware
 {
@@ -79,7 +81,9 @@ public class InvoiceLineBPartnerAware implements IBPartnerAware
 	{
 		final I_C_Invoice invoice = getInvoice();
 
-		final I_C_BPartner partner = InterfaceWrapperHelper.create(invoice.getC_BPartner(), I_C_BPartner.class);
+		final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
+
+		final I_C_BPartner partner = InterfaceWrapperHelper.create(bpartnerDAO.getById(invoice.getC_BPartner_ID()), I_C_BPartner.class);
 		if (partner == null)
 		{
 			return null;

@@ -63,7 +63,7 @@ public interface I_C_Commission_Instance
 	 * Geschäftspartner für die Rechnungsstellung
 	 *
 	 * <br>Type: Search
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	public void setBill_BPartner_ID (int Bill_BPartner_ID);
@@ -73,7 +73,7 @@ public interface I_C_Commission_Instance
 	 * Geschäftspartner für die Rechnungsstellung
 	 *
 	 * <br>Type: Search
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	public int getBill_BPartner_ID();
@@ -126,6 +126,114 @@ public interface I_C_Commission_Instance
     public static final org.adempiere.model.ModelColumn<I_C_Commission_Instance, Object> COLUMN_C_Invoice_Candidate_ID = new org.adempiere.model.ModelColumn<I_C_Commission_Instance, Object>(I_C_Commission_Instance.class, "C_Invoice_Candidate_ID", null);
     /** Column name C_Invoice_Candidate_ID */
     public static final String COLUMNNAME_C_Invoice_Candidate_ID = "C_Invoice_Candidate_ID";
+
+	/**
+	 * Set Rechnung.
+	 * Invoice Identifier
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setC_Invoice_ID (int C_Invoice_ID);
+
+	/**
+	 * Get Rechnung.
+	 * Invoice Identifier
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getC_Invoice_ID();
+
+	public org.compiere.model.I_C_Invoice getC_Invoice();
+
+	public void setC_Invoice(org.compiere.model.I_C_Invoice C_Invoice);
+
+    /** Column definition for C_Invoice_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_Commission_Instance, org.compiere.model.I_C_Invoice> COLUMN_C_Invoice_ID = new org.adempiere.model.ModelColumn<I_C_Commission_Instance, org.compiere.model.I_C_Invoice>(I_C_Commission_Instance.class, "C_Invoice_ID", org.compiere.model.I_C_Invoice.class);
+    /** Column name C_Invoice_ID */
+    public static final String COLUMNNAME_C_Invoice_ID = "C_Invoice_ID";
+
+	/**
+	 * Set Rechnungsposition.
+	 * Rechnungszeile
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setC_InvoiceLine_ID (int C_InvoiceLine_ID);
+
+	/**
+	 * Get Rechnungsposition.
+	 * Rechnungszeile
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getC_InvoiceLine_ID();
+
+	public org.compiere.model.I_C_InvoiceLine getC_InvoiceLine();
+
+	public void setC_InvoiceLine(org.compiere.model.I_C_InvoiceLine C_InvoiceLine);
+
+    /** Column definition for C_InvoiceLine_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_Commission_Instance, org.compiere.model.I_C_InvoiceLine> COLUMN_C_InvoiceLine_ID = new org.adempiere.model.ModelColumn<I_C_Commission_Instance, org.compiere.model.I_C_InvoiceLine>(I_C_Commission_Instance.class, "C_InvoiceLine_ID", org.compiere.model.I_C_InvoiceLine.class);
+    /** Column name C_InvoiceLine_ID */
+    public static final String COLUMNNAME_C_InvoiceLine_ID = "C_InvoiceLine_ID";
+
+	/**
+	 * Set Datum.
+	 * Belegdatum des Provisionsauslösers
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setCommissionDate (java.sql.Timestamp CommissionDate);
+
+	/**
+	 * Get Datum.
+	 * Belegdatum des Provisionsauslösers
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.sql.Timestamp getCommissionDate();
+
+    /** Column definition for CommissionDate */
+    public static final org.adempiere.model.ModelColumn<I_C_Commission_Instance, Object> COLUMN_CommissionDate = new org.adempiere.model.ModelColumn<I_C_Commission_Instance, Object>(I_C_Commission_Instance.class, "CommissionDate", null);
+    /** Column name CommissionDate */
+    public static final String COLUMNNAME_CommissionDate = "CommissionDate";
+
+	/**
+	 * Set Provisionsauslöser.
+	 * Art des Dokuments, dass den Provisionsvorgang ausgelöst hat
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setCommissionTrigger_Type (java.lang.String CommissionTrigger_Type);
+
+	/**
+	 * Get Provisionsauslöser.
+	 * Art des Dokuments, dass den Provisionsvorgang ausgelöst hat
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getCommissionTrigger_Type();
+
+    /** Column definition for CommissionTrigger_Type */
+    public static final org.adempiere.model.ModelColumn<I_C_Commission_Instance, Object> COLUMN_CommissionTrigger_Type = new org.adempiere.model.ModelColumn<I_C_Commission_Instance, Object>(I_C_Commission_Instance.class, "CommissionTrigger_Type", null);
+    /** Column name CommissionTrigger_Type */
+    public static final String COLUMNNAME_CommissionTrigger_Type = "CommissionTrigger_Type";
 
 	/**
 	 * Set Auftrag.
@@ -321,6 +429,31 @@ public interface I_C_Commission_Instance
     public static final org.adempiere.model.ModelColumn<I_C_Commission_Instance, Object> COLUMN_PointsBase_Invoiced = new org.adempiere.model.ModelColumn<I_C_Commission_Instance, Object>(I_C_Commission_Instance.class, "PointsBase_Invoiced", null);
     /** Column name PointsBase_Invoiced */
     public static final String COLUMNNAME_PointsBase_Invoiced = "PointsBase_Invoiced";
+
+	/**
+	 * Set Referenz.
+	 * Referenz-Nummer des Kunden
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setPOReference (java.lang.String POReference);
+
+	/**
+	 * Get Referenz.
+	 * Referenz-Nummer des Kunden
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getPOReference();
+
+    /** Column definition for POReference */
+    public static final org.adempiere.model.ModelColumn<I_C_Commission_Instance, Object> COLUMN_POReference = new org.adempiere.model.ModelColumn<I_C_Commission_Instance, Object>(I_C_Commission_Instance.class, "POReference", null);
+    /** Column name POReference */
+    public static final String COLUMNNAME_POReference = "POReference";
 
 	/**
 	 * Get Aktualisiert.

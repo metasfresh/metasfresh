@@ -47,6 +47,7 @@ import org.junit.Rule;
 import org.junit.rules.TestWatcher;
 
 import ch.qos.logback.classic.Level;
+import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.impl.BPartnerBL;
@@ -269,14 +270,14 @@ public abstract class AbstractAggregationEngineTestBase extends AbstractICTestSu
 			assertEquals(messagePrefix + " - Invalid M_PriceList_ID(", priceList.getM_PriceList_ID(), invoice.getM_PriceList_ID());
 		}
 
-		assertEquals(messagePrefix + " - Invalid Bill_BPartner_ID", fromIC.getBill_BPartner_ID(), invoice.getBill_BPartner_ID());
+		assertEquals(messagePrefix + " - Invalid Bill_BPartner_ID", fromIC.getBill_BPartner_ID(), BPartnerId.toRepoId(invoice.getBillBPartnerId()));
 		assertEquals(messagePrefix + " - Invalid Bill_Location_ID", fromIC.getBill_Location_ID(), invoice.getBill_Location_ID());
 
 		// task 08241: we want to aggregate candidates with different Bill_User_IDs into one invoice
 		// this commented-out check is synchronized with ICHeaderAggregationKeyValueHandler
 		// assertEquals(messagePrefix + " - Invalid Bill_User_ID", fromIC.getBill_User_ID(), invoice.getBill_User_ID());
 
-		assertEquals(messagePrefix + " - Invalid C_Currency_ID", CurrencyId.ofRepoId(fromIC.getC_Currency_ID()), invoice.getCurrencyId());
+		assertEquals(messagePrefix + " - Invalid C_Currency_ID", fromIC.getC_Currency_ID(), CurrencyId.toRepoId(invoice.getCurrencyId()));
 		if (invoiceReferencesOrder)
 		{
 			assertEquals(messagePrefix + " - Invalid C_Order_ID", fromIC.getC_Order_ID(), invoice.getC_Order_ID());

@@ -53,6 +53,7 @@ import de.metas.contracts.order.ContractOrderService;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.tax.api.ITaxDAO;
+import de.metas.monitoring.adapter.NoopPerformanceMonitoringService;
 import de.metas.util.Services;
 import lombok.NonNull;
 

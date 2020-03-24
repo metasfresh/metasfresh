@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.compiere.model.I_C_DocType;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
@@ -39,9 +40,11 @@ public interface IInvoiceHeader
 
 	int getBill_Location_ID();
 
-	int getBill_BPartner_ID();
+	BPartnerId getBillBPartnerId();
 
 	int getBill_User_ID();
+
+	BPartnerId getSalesPartnerId();
 
 	// 03805 : add getter for C_Currency_ID
 	CurrencyId getCurrencyId();

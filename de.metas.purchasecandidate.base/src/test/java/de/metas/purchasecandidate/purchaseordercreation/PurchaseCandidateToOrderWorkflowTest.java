@@ -153,8 +153,8 @@ public class PurchaseCandidateToOrderWorkflowTest
 			purchaseOrderFromItemsAggregator.addAll(iterator=withCapture());
 
 			assertThat(iterator).isNotNull();
-			assertThat(iterator.hasNext()).as("iterator is not consumed").isTrue();
-			assertThat(iterator).hasSize(2);
+			assertThat(iterator).as("iterator is not consumed").hasNext();
+			assertThat(iterator).toIterable().hasSize(2);
 		}};	// @formatter:on
 	}
 

@@ -35,6 +35,7 @@ import org.compiere.model.ModelValidator;
 
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.adempiere.model.I_C_InvoiceLine;
+import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.IDocument;
 import de.metas.i18n.IMsgBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
@@ -138,12 +139,13 @@ public class PP_Order
 		}
 
 		final IMsgBL msgBL = Services.get(IMsgBL.class);
+		final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 
 		final StringBuilder sb = new StringBuilder("@Processed@ @C_Invoice_ID@:\n");
 		for (final I_C_Invoice invoice : invoices)
 		{
 			sb
-					.append(invoice.getC_DocType().getName())
+					.append(docTypeDAO.getById(invoice.getC_DocType_ID()).getName())
 					.append(" ")
 					.append(invoice.getDocumentNo());
 		}

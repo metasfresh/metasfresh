@@ -1,5 +1,7 @@
 package de.metas.invoice.callout;
 
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+
 import java.time.ZonedDateTime;
 
 import org.adempiere.ad.callout.annotations.Callout;
@@ -7,7 +9,7 @@ import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.invoice.service.IInvoiceBL;
-import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_M_PriceList;
@@ -17,10 +19,10 @@ import org.springframework.stereotype.Component;
 
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.document.sequence.impl.IDocumentNoInfo;
-import de.metas.interfaces.I_C_BPartner;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
 import de.metas.payment.PaymentRule;
@@ -47,11 +49,13 @@ public class C_Invoice
 			return;
 		}
 
-		final I_C_BPartner partner = InterfaceWrapperHelper.create(invoice.getC_BPartner(), I_C_BPartner.class);
-		if (partner == null)
+		if (invoice.getC_BPartner_ID()<=0)
 		{
 			return;
 		}
+
+		final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
+		final I_C_BPartner partner = bpartnerDAO.getById(invoice.getC_BPartner_ID());
 
 		//
 		// TODO: Maybe replace this with Check.assume()?
@@ -70,8 +74,7 @@ public class C_Invoice
 			return;
 		}
 
-		final I_C_BPartner_Location location = invoice.getC_BPartner_Location();
-		if (location == null)
+		if (invoice.getC_BPartner_Location_ID() <= 0)
 		{
 			return;
 		}
@@ -91,10 +94,12 @@ public class C_Invoice
 			dateInvoiced = SystemTime.asZonedDateTime();
 		}
 
+		final I_C_BPartner_Location bPartnerLocationRecord = bpartnerDAO.getBPartnerLocationById(BPartnerLocationId.ofRepoId(invoice.getC_BPartner_ID(), invoice.getC_BPartner_Location_ID()));
+
 		final IPriceListBL priceListBL = Services.get(IPriceListBL.class);
 		final I_M_PriceList priceListNew = priceListBL.getCurrentPricelistOrNull(
 				pricingSystemId,
-				CountryId.ofRepoId(location.getC_Location().getC_Country_ID()),
+				CountryId.ofRepoId(bPartnerLocationRecord.getC_Location().getC_Country_ID()),
 				dateInvoiced,
 				soTrx);
 		if (priceListNew == null)
@@ -108,9 +113,11 @@ public class C_Invoice
 	@CalloutMethod(columnNames = { I_C_Invoice.COLUMNNAME_C_DocTypeTarget_ID, I_C_Invoice.COLUMNNAME_AD_Org_ID })
 	public void updateFromDocType(final I_C_Invoice invoice, final ICalloutField field)
 	{
+		final I_C_DocType docTypeRecord = loadOutOfTrx(invoice.getC_DocTypeTarget_ID(), I_C_DocType.class);
+
 		final IDocumentNoInfo documentNoInfo = Services.get(IDocumentNoBuilderFactory.class)
 				.createPreliminaryDocumentNoBuilder()
-				.setNewDocType(invoice.getC_DocTypeTarget())
+				.setNewDocType(docTypeRecord)
 				.setOldDocumentNo(invoice.getDocumentNo())
 				.setDocumentModel(invoice)
 				.buildOrNull();

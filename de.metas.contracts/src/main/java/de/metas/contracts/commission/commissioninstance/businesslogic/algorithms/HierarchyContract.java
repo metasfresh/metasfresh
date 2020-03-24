@@ -12,6 +12,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionContract;
+import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionSettingsLineId;
 import de.metas.util.lang.Percent;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
@@ -54,9 +55,25 @@ public class HierarchyContract implements CommissionContract
 
 	int pointsPrecision;
 
+	/** Technically not needed, but useful to help users retain a minimum level of sanity when analyzing why a particular commission was granted */
+	CommissionSettingsLineId commissionSettingsLineId;
+
 	public static boolean isInstance(@NonNull final CommissionContract contract)
 	{
 		return contract instanceof HierarchyContract;
+	}
+
+	public static HierarchyContract castOrNull(@Nullable final CommissionContract contract)
+	{
+		if (contract == null)
+		{
+			return null;
+		}
+		if (contract instanceof HierarchyContract)
+		{
+			return (HierarchyContract)contract;
+		}
+		return null;
 	}
 
 	public static HierarchyContract cast(@Nullable final CommissionContract contract)
@@ -84,12 +101,14 @@ public class HierarchyContract implements CommissionContract
 			@JsonProperty("id") @NonNull final FlatrateTermId id,
 			@JsonProperty("config") @NonNull final HierarchyConfig config,
 			@JsonProperty("percent") @NonNull final Percent commissionPercent,
-			@JsonProperty("pointsPrecision") final int pointsPrecision)
+			@JsonProperty("pointsPrecision") final int pointsPrecision,
+			@JsonProperty("commissionSettingsLineId") @Nullable final CommissionSettingsLineId commissionSettingsLineId)
 	{
 		this.id = id;
 		this.config = config;
 		this.commissionPercent = commissionPercent;
 		this.pointsPrecision = assumeGreaterOrEqualToZero(pointsPrecision, "pointsPrecision");
+		this.commissionSettingsLineId = commissionSettingsLineId;
 	}
 
 	/** Note: add "Hierarchy" as method parameters if and when we have a commission type where it makes a difference. */

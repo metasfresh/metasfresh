@@ -36,7 +36,7 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.exceptions.TaxNoExemptFoundException;
+import org.adempiere.exceptions.ExemptTaxNotFoundException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.IQuery;
@@ -107,7 +107,7 @@ public class TaxDAO implements ITaxDAO
 				.firstId();
 		if (C_Tax_ID <= 0)
 		{
-			throw new TaxNoExemptFoundException(orgId.getRepoId());
+			throw new ExemptTaxNotFoundException(orgId.getRepoId());
 		}
 		return TaxId.ofRepoId(C_Tax_ID);
 	}

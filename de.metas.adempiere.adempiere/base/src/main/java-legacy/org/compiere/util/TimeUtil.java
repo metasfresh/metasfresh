@@ -1852,6 +1852,30 @@ public class TimeUtil
 		}
 	}
 
+	public static Instant max(
+			@Nullable final Instant instant1,
+			@Nullable final Instant instant2)
+	{
+
+		if (instant1 == null)
+		{
+			return instant2;
+		}
+		else if (instant2 == null)
+		{
+			return instant1;
+		}
+		else if (instant1.isAfter(instant2))
+		{
+			return instant1;
+		}
+		else
+		{
+			return instant2;
+		}
+
+	}
+
 	public static boolean isLastDayOfMonth(@NonNull final LocalDate localDate)
 	{
 		final LocalDate lastDayOfMonth = localDate.with(TemporalAdjusters.lastDayOfMonth());
@@ -1914,5 +1938,4 @@ public class TimeUtil
 		}
 		return Instant.ofEpochSecond(seconds, nanos);
 	}
-
 }	// TimeUtil

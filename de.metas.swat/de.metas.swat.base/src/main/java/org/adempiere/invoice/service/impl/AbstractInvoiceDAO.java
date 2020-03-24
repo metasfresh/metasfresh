@@ -44,6 +44,7 @@ import java.util.stream.Stream;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwares;
 import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwaresOutOfTrx;
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /*
@@ -67,6 +68,45 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Date;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Properties;
+import java.util.stream.Stream;
+
+import org.adempiere.ad.dao.ICompositeQueryFilter;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
+import org.adempiere.ad.dao.impl.EqualsQueryFilter;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.invoice.service.IInvoiceBL;
+import org.adempiere.invoice.service.IInvoiceDAO;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.proxy.Cached;
+import org.compiere.model.IQuery;
+import org.compiere.model.I_AD_Org;
+import org.compiere.model.I_Fact_Acct;
+import org.compiere.model.I_M_InOutLine;
+
+import com.google.common.collect.ImmutableSet;
+
+import de.metas.adempiere.model.I_C_Invoice;
+import de.metas.adempiere.model.I_C_InvoiceLine;
+import de.metas.allocation.api.IAllocationDAO;
+import de.metas.bpartner.BPartnerId;
+import de.metas.cache.annotation.CacheCtx;
+import de.metas.cache.annotation.CacheTrx;
+import de.metas.document.engine.IDocument;
+import de.metas.invoice.InvoiceId;
+import de.metas.invoice.InvoiceLineId;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.NonNull;
 
 /**
  * Implements those methods from {@link IInvoiceDAO} that are DB decoupled.
@@ -352,4 +392,12 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 				.listIds(InvoiceId::ofRepoId)
 				.stream();
 	}
+
+
+	@Override
+	public org.compiere.model.I_C_InvoiceLine getByIdOutOfTrx(@NonNull final InvoiceLineId invoiceLineId)
+	{
+		return loadOutOfTrx(invoiceLineId, I_C_InvoiceLine.class);
+}
+
 }

@@ -38,36 +38,36 @@ import de.metas.util.Services;
 public class RMACreateOrder extends JavaProcess
 {
 	private final transient IOrderBL orderBL = Services.get(IOrderBL.class);
-	
+
 	private int rmaId = 0;
     @Override
     protected void prepare()
     {
         rmaId = getRecord_ID();
     }
-    
+
     @Override
     protected String doIt() throws Exception
     {
         // Load RMA
         MRMA rma = new MRMA(getCtx(), rmaId, get_TrxName());
-        
+
         // Load Original Order
         // metas c.ghita@metas.ro
         // load the original metas order
 //        MOrder originalOrder = rma.getOriginalOrder();
         I_C_Order originalOrder = InterfaceWrapperHelper.create(rma.getOriginalOrder(), I_C_Order.class);
-        
+
         if (rma.get_ID() == 0)
         {
             throw new Exception("No RMA defined");
         }
-        
+
         if (originalOrder == null)
         {
             throw new Exception("Could not load the original order");
         }
-        
+
         // Create new order and set the different values based on original order/RMA doc
         MOrder order = new MOrder(getCtx(), 0, get_TrxName());
         order.setAD_Org_ID(rma.getAD_Org_ID());
@@ -89,7 +89,6 @@ public class RMACreateOrder extends JavaProcess
         orderBL.setDocTypeTargetIdAndUpdateDescription(order, originalOrder.getC_DocTypeTarget_ID());
         mOrder.setBPartnerAddress(originalOrder.getBPartnerAddress());
         mOrder.setBillToAddress(originalOrder.getBillToAddress());
-        mOrder.setC_Sponsor_ID(originalOrder.getC_Sponsor_ID());
         mOrder.setFreightCostRule(originalOrder.getFreightCostRule());
         mOrder.setDeliveryViaRule(originalOrder.getDeliveryViaRule());
         mOrder.setFreightAmt(originalOrder.getFreightAmt());
@@ -98,19 +97,19 @@ public class RMACreateOrder extends JavaProcess
         mOrder.setC_PaymentTerm_ID(originalOrder.getC_PaymentTerm_ID());
         mOrder.setRef_RMA_ID(rmaId);
         // end: metas c.ghita@metas.ro
-        
+
         if (!order.save())
         {
             throw new IllegalStateException("Could not create order");
         }
-        
+
         MRMALine lines[] = rma.getLines(true);
-                
+
         for (MRMALine line : lines)
         {
             if (line.getShipLine() != null && line.getShipLine().getC_OrderLine_ID() != 0)
             {
-                // Create order lines if the RMA Doc line has a shipment line 
+                // Create order lines if the RMA Doc line has a shipment line
                 MOrderLine orderLine = new MOrderLine(order);
                 MOrderLine originalOLine = new MOrderLine(getCtx(), line.getShipLine().getC_OrderLine_ID(), null);
                 orderLine.setAD_Org_ID(line.getAD_Org_ID());
@@ -127,20 +126,20 @@ public class RMACreateOrder extends JavaProcess
                 orderLine.setC_Campaign_ID(originalOLine.getC_Campaign_ID());
                 orderLine.setPrice();
                 orderLine.setPrice(line.getAmt());
-                
+
                 if (!orderLine.save())
                 {
                     throw new IllegalStateException("Could not create Order Line");
                 }
             }
         }
-        
+
         rma.setC_Order_ID(order.getC_Order_ID());
         if (!rma.save())
         {
             throw new IllegalStateException("Could not update RMA document");
         }
-        
+
         return "Order Created: " + order.getDocumentNo();
     }
 

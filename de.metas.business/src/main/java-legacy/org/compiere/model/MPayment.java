@@ -938,7 +938,9 @@ public final class MPayment extends X_C_Payment
 		if (getC_Invoice_ID() > 0)  // task 08438: avoid NPE when getting the doctype
 		{
 			final I_C_Invoice invoice = getC_Invoice();
-			final I_C_DocType doctype = invoice.getC_DocType();
+
+			final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
+			final I_C_DocType doctype =docTypeDAO.getById(invoice.getC_DocType_ID());
 
 			if (X_C_DocType.DOCBASETYPE_APCreditMemo.equals(doctype.getDocBaseType()))
 			{

@@ -141,7 +141,11 @@ public class InvoiceLineBL implements IInvoiceLineBL
 
 		if (taxId <= 0)
 		{
+			final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
+
 			final I_C_Invoice invoice = il.getC_Invoice();
+			final I_C_BPartner_Location bPartnerLocationRecord = bpartnerDAO.getBPartnerLocationById(BPartnerLocationId.ofRepoId(invoice.getC_BPartner_ID(), invoice.getC_BPartner_Location_ID()));
+
 			throw TaxNotFoundException.builder()
 					.taxCategoryId(taxCategoryId)
 					.isSOTrx(io.isSOTrx())
@@ -150,7 +154,7 @@ public class InvoiceLineBL implements IInvoiceLineBL
 					.shipToC_Location_ID(locationTo.getC_Location_ID())
 					.billDate(invoice.getDateInvoiced())
 					.billFromCountryId(countryFromId)
-					.billToC_Location_ID(invoice.getC_BPartner_Location().getC_Location_ID())
+					.billToC_Location_ID(bPartnerLocationRecord.getC_Location_ID())
 					.build();
 		}
 
@@ -217,10 +221,10 @@ public class InvoiceLineBL implements IInvoiceLineBL
 		final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
 		final Boolean processedPLVFiltering = null; // task 09533: the user doesn't know about PLV's processed flag, so we can't filter by it
 
-		final I_M_PriceList priceList = invoice.getM_PriceList();
+		final PriceListId priceListId = PriceListId.ofRepoId(invoice.getM_PriceList_ID());
 
 		final I_M_PriceList_Version priceListVersion = priceListDAO.retrievePriceListVersionOrNull(
-				priceList,
+				priceListId,
 				TimeUtil.asZonedDateTime(invoice.getDateInvoiced()),
 				processedPLVFiltering);
 		Check.errorIf(priceListVersion == null, "Missing PLV for M_PriceList and DateInvoiced of {}", invoice);
@@ -359,13 +363,15 @@ public class InvoiceLineBL implements IInvoiceLineBL
 			return null;
 		}
 
-		final I_C_BPartner_Location bPartnerLocation = invoice.getC_BPartner_Location();
-		if (bPartnerLocation.getC_Location_ID() <= 0)
+		if (invoice.getC_BPartner_Location_ID() <= 0)
 		{
 			return null;
 		}
 
-		return CountryId.ofRepoId(bPartnerLocation.getC_Location().getC_Country_ID());
+		final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
+		final I_C_BPartner_Location bPartnerLocationRecord = bpartnerDAO.getBPartnerLocationById(BPartnerLocationId.ofRepoId(invoice.getC_BPartner_ID(), invoice.getC_BPartner_Location_ID()));
+
+		return CountryId.ofRepoId(bPartnerLocationRecord.getC_Location().getC_Country_ID());
 	}
 
 	@Override

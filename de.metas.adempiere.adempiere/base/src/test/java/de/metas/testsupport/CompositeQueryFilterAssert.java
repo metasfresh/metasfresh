@@ -1,8 +1,6 @@
 package de.metas.testsupport;
 
 import static de.metas.testsupport.QueryFilterTestUtil.castOrNull;
-import static org.assertj.core.error.ElementsShouldSatisfy.elementsShouldSatisfyAny;
-
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Collection;
@@ -266,7 +264,7 @@ public class CompositeQueryFilterAssert extends AbstractAssert<CompositeQueryFil
 				return this;
 			}
 		}
-		throw Failures.instance().failure(info, elementsShouldSatisfyAny(actual));
+		throw Failures.instance().failure(info.descriptionText());
 	}
 
 	public CompositeQueryFilterAssert hasNoFilterRegarding(ModelColumn column)

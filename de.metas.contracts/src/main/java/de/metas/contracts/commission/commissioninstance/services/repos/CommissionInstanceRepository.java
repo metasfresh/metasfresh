@@ -10,7 +10,9 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.util.TimeUtil;
 import org.compiere.util.Util.ArrayKey;
 import org.springframework.stereotype.Repository;
@@ -25,20 +27,25 @@ import de.metas.contracts.commission.Beneficiary;
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionConfig;
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionInstance;
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionInstance.CommissionInstanceBuilder;
+import de.metas.contracts.commission.commissioninstance.businesslogic.algorithms.HierarchyContract;
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionInstanceId;
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionPoints;
+import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionSettingsLineId;
 import de.metas.contracts.commission.commissioninstance.businesslogic.hierarchy.HierarchyLevel;
-import de.metas.contracts.commission.commissioninstance.businesslogic.sales.CommissionTriggerData;
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.SalesCommissionFact;
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.SalesCommissionShare;
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.SalesCommissionShare.SalesCommissionShareBuilder;
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.SalesCommissionState;
+import de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.CommissionTriggerData;
+import de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.CommissionTriggerDocumentId;
+import de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.CommissionTriggerType;
 import de.metas.contracts.commission.commissioninstance.services.CommissionConfigFactory;
 import de.metas.contracts.commission.commissioninstance.services.CommissionConfigFactory.ConfigRequestForExistingInstance;
 import de.metas.contracts.commission.commissioninstance.services.repos.CommissionRecordStagingService.CommissionStagingRecords;
 import de.metas.contracts.commission.model.I_C_Commission_Fact;
 import de.metas.contracts.commission.model.I_C_Commission_Instance;
 import de.metas.contracts.commission.model.I_C_Commission_Share;
+import de.metas.invoice.InvoiceLineId;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.organization.OrgId;
@@ -82,7 +89,7 @@ public class CommissionInstanceRepository
 		this.commissionRecordStagingService = commissionInstanceRecordStagingService;
 	}
 
-	public CommissionInstance getForCommissionInstanceId(@NonNull final CommissionInstanceId commissionInstanceId)
+	public CommissionInstance getById(@NonNull final CommissionInstanceId commissionInstanceId)
 	{
 		final CommissionStagingRecords stagingRecords = commissionRecordStagingService.retrieveRecordsForInstanceId(ImmutableList.of(commissionInstanceId));
 
@@ -91,11 +98,11 @@ public class CommissionInstanceRepository
 		return instance;
 	}
 
-	public ImmutableList<CommissionInstance> getForInvoiceCandidateId(@NonNull final InvoiceCandidateId invoiceCandidateId)
+	public ImmutableList<CommissionInstance> getByDocumentId(@NonNull final CommissionTriggerDocumentId commissionTriggerDocumentId)
 	{
-		final CommissionStagingRecords records = commissionRecordStagingService.retrieveRecordsForInvoiceCandidateId(ImmutableList.of(invoiceCandidateId));
+		final CommissionStagingRecords records = commissionRecordStagingService.retrieveRecordsForInvoiceCandidateId(ImmutableList.of(commissionTriggerDocumentId));
 
-		final List<I_C_Commission_Instance> instanceRecords = records.getIcRecordIdToInstanceRecords().get(invoiceCandidateId.getRepoId());
+		final List<I_C_Commission_Instance> instanceRecords = records.getDocumentIdToInstanceRecords().get(commissionTriggerDocumentId);
 		if (instanceRecords.isEmpty())
 		{
 			return ImmutableList.of();
@@ -133,7 +140,7 @@ public class CommissionInstanceRepository
 
 		final CommissionInstanceBuilder instanceBuilder = CommissionInstance.builder()
 				.id(commissionInstanceId)
-				.currentTriggerData(createCommissionTriggerData(instanceRecord));
+				.currentTriggerData(extractCommissionTriggerData(instanceRecord));
 
 		for (final I_C_Commission_Share shareRecord : shareRecords)
 		{
@@ -157,14 +164,20 @@ public class CommissionInstanceRepository
 		return Beneficiary.of(BPartnerId.ofRepoId(c_BPartner_SalesRep_ID));
 	}
 
-	private CommissionTriggerData createCommissionTriggerData(@NonNull final I_C_Commission_Instance instanceRecord)
+	private CommissionTriggerData extractCommissionTriggerData(@NonNull final I_C_Commission_Instance instanceRecord)
 	{
+		final CommissionTriggerType triggerType = CommissionTriggerType.ofCode(instanceRecord.getCommissionTrigger_Type());
+
+		final CommissionTriggerDocumentId triggerDocumentId = CommissionInstanceRepoTools.extractCommissionTriggerDocumentId(instanceRecord);
+
 		return CommissionTriggerData.builder()
 				.orgId(OrgId.ofRepoId(instanceRecord.getAD_Org_ID()))
-				.invoiceCandidateId(InvoiceCandidateId.ofRepoId(instanceRecord.getC_Invoice_Candidate_ID()))
-				.forecastedPoints(CommissionPoints.of(instanceRecord.getPointsBase_Forecasted()))
-				.invoiceablePoints(CommissionPoints.of(instanceRecord.getPointsBase_Invoiceable()))
-				.invoicedPoints(CommissionPoints.of(instanceRecord.getPointsBase_Invoiced()))
+				.triggerType(triggerType)
+				.triggerDocumentId(triggerDocumentId)
+				.triggerDocumentDate(TimeUtil.asLocalDate(instanceRecord.getCommissionDate()))
+				.forecastedBasePoints(CommissionPoints.of(instanceRecord.getPointsBase_Forecasted()))
+				.invoiceableBasePoints(CommissionPoints.of(instanceRecord.getPointsBase_Invoiceable()))
+				.invoicedBasePoints(CommissionPoints.of(instanceRecord.getPointsBase_Invoiced()))
 				.tradedCommissionPercent(Percent.ZERO)
 				.timestamp(TimeUtil.asInstant(instanceRecord.getMostRecentTriggerTimestamp()))
 				.build();
@@ -209,28 +222,50 @@ public class CommissionInstanceRepository
 
 		}
 		final CommissionTriggerData triggerData = instance.getCurrentTriggerData();
-		final InvoiceCandidateId invoiceCandidateId = triggerData.getInvoiceCandidateId();
 
 		final I_C_Commission_Instance commissionInstanceRecord = loadOrNewInstanceRecord(instance.getId());
 
 		if (triggerData.isInvoiceCandidateWasDeleted())
 		{
 			commissionInstanceRecord.setC_Invoice_Candidate_ID(-1);
+			commissionInstanceRecord.setC_Invoice_ID(-1);
+			commissionInstanceRecord.setC_InvoiceLine_ID(-1);
 		}
 		else
 		{
-			commissionInstanceRecord.setC_Invoice_Candidate_ID(invoiceCandidateId.getRepoId());
+			final CommissionTriggerType triggerType = triggerData.getTriggerType();
+			final CommissionTriggerDocumentId triggerDocumentId = triggerData.getTriggerDocumentId();
+			switch (triggerType)
+			{
+				case InvoiceCandidate:
+					final InvoiceCandidateId invoiceCandidateId = InvoiceCandidateId.cast(triggerDocumentId.getRepoIdAware());
+					commissionInstanceRecord.setC_Invoice_Candidate_ID(invoiceCandidateId.getRepoId());
+					propagateAdditionalColumns(invoiceCandidateId, commissionInstanceRecord);
+					break;
+				case SalesInvoice:
+					final InvoiceLineId invoiceLineId = InvoiceLineId.cast(triggerDocumentId.getRepoIdAware());
+					commissionInstanceRecord.setC_InvoiceLine_ID(invoiceLineId.getRepoId());
+					propagateAdditionalColumns(invoiceLineId, commissionInstanceRecord);
+					break;
+				case SalesCreditmemo:
+					final InvoiceLineId creditMemoInvoiceLineId = InvoiceLineId.cast(triggerDocumentId.getRepoIdAware());
+					commissionInstanceRecord.setC_InvoiceLine_ID(creditMemoInvoiceLineId.getRepoId());
+					propagateAdditionalColumns(creditMemoInvoiceLineId, commissionInstanceRecord);
+					break;
+				default:
+					throw new AdempiereException("Unexpected triggerType=" + triggerType);
+			}
+			commissionInstanceRecord.setCommissionTrigger_Type(triggerType.getCode());
 		}
 
 		final OrgId orgId = instance.getCurrentTriggerData().getOrgId();
 
 		commissionInstanceRecord.setAD_Org_ID(orgId.getRepoId());
 		commissionInstanceRecord.setMostRecentTriggerTimestamp(TimeUtil.asTimestamp(triggerData.getTimestamp()));
-		commissionInstanceRecord.setPointsBase_Forecasted(triggerData.getForecastedPoints().toBigDecimal());
-		commissionInstanceRecord.setPointsBase_Invoiceable(triggerData.getInvoiceablePoints().toBigDecimal());
-		commissionInstanceRecord.setPointsBase_Invoiced(triggerData.getInvoicedPoints().toBigDecimal());
-
-		propagateAdditionalColumns(invoiceCandidateId, commissionInstanceRecord);
+		commissionInstanceRecord.setCommissionDate(TimeUtil.asTimestamp(triggerData.getTriggerDocumentDate()));
+		commissionInstanceRecord.setPointsBase_Forecasted(triggerData.getForecastedBasePoints().toBigDecimal());
+		commissionInstanceRecord.setPointsBase_Invoiceable(triggerData.getInvoiceableBasePoints().toBigDecimal());
+		commissionInstanceRecord.setPointsBase_Invoiced(triggerData.getInvoicedBasePoints().toBigDecimal());
 
 		saveRecord(commissionInstanceRecord);
 
@@ -253,15 +288,26 @@ public class CommissionInstanceRepository
 		return commissionInstanceId;
 	}
 
-	/** Set columns that are not needed by/relevant to the domain model but are needed for the the UI. */
 	private void propagateAdditionalColumns(
 			@NonNull final InvoiceCandidateId invoiceCandidateId,
 			@NonNull final I_C_Commission_Instance commissionInstanceRecord)
 	{
 		final I_C_Invoice_Candidate invoiceCandidateRecord = loadOutOfTrx(invoiceCandidateId, I_C_Invoice_Candidate.class);
+		commissionInstanceRecord.setPOReference(invoiceCandidateRecord.getPOReference());
 		commissionInstanceRecord.setBill_BPartner_ID(invoiceCandidateRecord.getBill_BPartner_ID());
 		commissionInstanceRecord.setM_Product_Order_ID(invoiceCandidateRecord.getM_Product_ID());
 		commissionInstanceRecord.setC_Order_ID(invoiceCandidateRecord.getC_Order_ID());
+	}
+
+	private void propagateAdditionalColumns(
+			@NonNull final InvoiceLineId invoiceLineId,
+			@NonNull final I_C_Commission_Instance commissionInstanceRecord)
+	{
+		final I_C_InvoiceLine invoiceLineRecord = loadOutOfTrx(invoiceLineId, I_C_InvoiceLine.class);
+		commissionInstanceRecord.setPOReference(invoiceLineRecord.getC_Invoice().getPOReference());
+		commissionInstanceRecord.setBill_BPartner_ID(invoiceLineRecord.getC_Invoice().getC_BPartner_ID());
+		commissionInstanceRecord.setC_Invoice_ID(invoiceLineRecord.getC_Invoice_ID());
+		commissionInstanceRecord.setM_Product_Order_ID(invoiceLineRecord.getM_Product_ID());
 	}
 
 	private ImmutableMap<SalesCommissionShare, I_C_Commission_Share> syncShareRecords(
@@ -327,6 +373,13 @@ public class CommissionInstanceRepository
 			shareRecordToUse.setLevelHierarchy(share.getLevel().toInt());
 		}
 		shareRecordToUse.setAD_Org_ID(orgId.getRepoId());
+
+		final HierarchyContract hierarchyContract = HierarchyContract.castOrNull(share.getContract());
+		if (hierarchyContract != null)
+		{
+			shareRecordToUse.setC_CommissionSettingsLine_ID(CommissionSettingsLineId.toRepoId(hierarchyContract.getCommissionSettingsLineId()));
+		}
+
 		shareRecordToUse.setC_BPartner_SalesRep_ID(share.getBeneficiary().getBPartnerId().getRepoId());
 		shareRecordToUse.setC_Flatrate_Term_ID(share.getContract().getId().getRepoId());
 		shareRecordToUse.setCommission_Product_ID(share.getCommissionProductId().getRepoId());
