@@ -1,25 +1,8 @@
-package de.metas.ui.web.window.datatypes.json;
-
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.LocalTime;
-import java.time.Month;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
-
-import org.assertj.core.api.AbstractCharSequenceAssert;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
-
-import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
-
 /*
  * #%L
  * metasfresh-webui-api
  * %%
- * Copyright (C) 2019 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -36,6 +19,24 @@ import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+package de.metas.ui.web.window.datatypes.json;
+
+import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
+import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
+import org.assertj.core.api.AbstractCharSequenceAssert;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+
+import java.sql.Timestamp;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.Month;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class DateTimeConvertersTest
 {
@@ -114,5 +115,21 @@ public class DateTimeConvertersTest
 			assertThat(DateTimeConverters.fromObjectToLocalDate(StringLookupValue.of("2019-02-11", "bla bla")))
 					.isEqualTo(LocalDate.of(2019, Month.FEBRUARY, 11));
 		}
+	}
+
+	@Nested
+	class Legacy_FromUserQuery
+	{
+		@Test
+		void jdbcTimestampToLocalDate()
+		{
+			final String jdbcTimestamp = "2016-06-11 00:00:00.0";
+			assertThat(Timestamp.valueOf(jdbcTimestamp).toString()).isEqualTo("2016-06-11 00:00:00.0");
+
+			final DocumentFieldWidgetType widgetType = DocumentFieldWidgetType.LocalDate;
+			final Object valueDate = DateTimeConverters.fromObject(jdbcTimestamp, widgetType);
+			assertThat(valueDate).isEqualTo(LocalDate.of(2016,6,11));
+		}
+
 	}
 }
