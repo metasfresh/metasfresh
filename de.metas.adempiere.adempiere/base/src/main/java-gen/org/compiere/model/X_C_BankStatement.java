@@ -15,7 +15,7 @@ public class X_C_BankStatement extends org.compiere.model.PO implements I_C_Bank
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1754782029L;
+	private static final long serialVersionUID = -353914175L;
 
     /** Standard Constructor */
     public X_C_BankStatement (Properties ctx, int C_BankStatement_ID, String trxName)
@@ -31,6 +31,7 @@ public class X_C_BankStatement extends org.compiere.model.PO implements I_C_Bank
 			setEndingBalance (BigDecimal.ZERO);
 			setIsApproved (false); // N
 			setIsManual (true); // Y
+			setIsReconciled (false); // N
 			setName (null); // @#Date@
 			setPosted (false); // N
 			setProcessed (false);
@@ -432,6 +433,32 @@ public class X_C_BankStatement extends org.compiere.model.PO implements I_C_Bank
 		return false;
 	}
 
+	/** Set Abgeglichen.
+		@param IsReconciled 
+		Zeigt an ob eine Zahlung bereits mit einem Kontoauszug abgeglichen wurde
+	  */
+	@Override
+	public void setIsReconciled (boolean IsReconciled)
+	{
+		set_Value (COLUMNNAME_IsReconciled, Boolean.valueOf(IsReconciled));
+	}
+
+	/** Get Abgeglichen.
+		@return Zeigt an ob eine Zahlung bereits mit einem Kontoauszug abgeglichen wurde
+	  */
+	@Override
+	public boolean isReconciled () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsReconciled);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
 	/** Set Match Statement.
 		@param MatchStatement Match Statement	  */
 	@Override
@@ -464,9 +491,9 @@ public class X_C_BankStatement extends org.compiere.model.PO implements I_C_Bank
 		return (java.lang.String)get_Value(COLUMNNAME_Name);
 	}
 
-	/** Set Verbucht.
+	/** Set Buchungsstatus.
 		@param Posted 
-		Posting status
+		Buchungsstatus
 	  */
 	@Override
 	public void setPosted (boolean Posted)
@@ -474,8 +501,8 @@ public class X_C_BankStatement extends org.compiere.model.PO implements I_C_Bank
 		set_Value (COLUMNNAME_Posted, Boolean.valueOf(Posted));
 	}
 
-	/** Get Verbucht.
-		@return Posting status
+	/** Get Buchungsstatus.
+		@return Buchungsstatus
 	  */
 	@Override
 	public boolean isPosted () 
@@ -492,7 +519,7 @@ public class X_C_BankStatement extends org.compiere.model.PO implements I_C_Bank
 
 	/** Set Verarbeitet.
 		@param Processed 
-		Checkbox sagt aus, ob der Beleg verarbeitet wurde. 
+		Checkbox sagt aus, ob der Datensatz verarbeitet wurde. 
 	  */
 	@Override
 	public void setProcessed (boolean Processed)
@@ -501,7 +528,7 @@ public class X_C_BankStatement extends org.compiere.model.PO implements I_C_Bank
 	}
 
 	/** Get Verarbeitet.
-		@return Checkbox sagt aus, ob der Beleg verarbeitet wurde. 
+		@return Checkbox sagt aus, ob der Datensatz verarbeitet wurde. 
 	  */
 	@Override
 	public boolean isProcessed () 

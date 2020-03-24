@@ -137,9 +137,11 @@ public class BankStatementBL implements IBankStatementBL
 				paymentIdsToUnReconcile.add(paymentId);
 			}
 
-			bankStatementLine.setC_Payment_ID(-1);
+			bankStatementLine.setIsReconciled(false);
 			bankStatementLine.setIsMultiplePaymentOrInvoice(false);
 			bankStatementLine.setIsMultiplePayment(false);
+
+			bankStatementLine.setC_Payment_ID(-1);
 
 			bankStatementDAO.save(bankStatementLine);
 		}

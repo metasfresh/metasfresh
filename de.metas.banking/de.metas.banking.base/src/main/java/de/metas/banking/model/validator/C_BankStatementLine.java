@@ -41,6 +41,8 @@ import de.metas.banking.model.BankStatementId;
 import de.metas.banking.model.BankStatementLineId;
 import de.metas.banking.service.IBankStatementBL;
 import de.metas.banking.service.IBankStatementDAO;
+import de.metas.cache.CacheMgt;
+import de.metas.cache.model.CacheInvalidateMultiRequest;
 import de.metas.document.engine.DocStatus;
 import de.metas.util.Services;
 
@@ -86,7 +88,7 @@ public class C_BankStatementLine
 	public void onAfterNewOrChange(final I_C_BankStatementLine bankStatementLine)
 	{
 		final BankStatementId bankStatementId = BankStatementId.ofRepoId(bankStatementLine.getC_BankStatement_ID());
-		updateStatementDifferenceAndEndingBalance(bankStatementId);
+		updateBankStatementHeader(bankStatementId);
 	}
 
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
@@ -102,12 +104,23 @@ public class C_BankStatementLine
 	public void onAfterDelete(final I_C_BankStatementLine bankStatementLine)
 	{
 		final BankStatementId bankStatementId = BankStatementId.ofRepoId(bankStatementLine.getC_BankStatement_ID());
+		updateBankStatementHeader(bankStatementId);
+	}
+
+	private void updateBankStatementHeader(final BankStatementId bankStatementId)
+	{
 		updateStatementDifferenceAndEndingBalance(bankStatementId);
+		updateBankStatementIsReconciledFlag(bankStatementId);
+
+		CacheMgt.get().resetLocalNowAndBroadcastOnTrxCommit(
+				ITrx.TRXNAME_ThreadInherited,
+				CacheInvalidateMultiRequest.rootRecord(I_C_BankStatement.Table_Name, bankStatementId));
 	}
 
 	@VisibleForTesting
 	protected void updateStatementDifferenceAndEndingBalance(final BankStatementId bankStatementId)
 	{
+		// StatementDifference
 		{
 			final String sql = "UPDATE C_BankStatement bs"
 					+ " SET StatementDifference=(SELECT COALESCE(SUM(StmtAmt),0) FROM C_BankStatementLine bsl "
@@ -116,11 +129,21 @@ public class C_BankStatementLine
 			DB.executeUpdateEx(sql, new Object[] { bankStatementId }, ITrx.TRXNAME_ThreadInherited);
 		}
 
+		// EndingBalance
 		{
 			final String sql = "UPDATE C_BankStatement bs"
 					+ " SET EndingBalance=BeginningBalance+StatementDifference "
 					+ "WHERE C_BankStatement_ID=?";
 			DB.executeUpdateEx(sql, new Object[] { bankStatementId }, ITrx.TRXNAME_ThreadInherited);
 		}
+	}
+
+	@VisibleForTesting
+	protected void updateBankStatementIsReconciledFlag(final BankStatementId bankStatementId)
+	{
+		final String sql = "UPDATE C_BankStatement bs"
+				+ " SET IsReconciled=(CASE WHEN (SELECT COUNT(1) FROM C_BankStatementLine bsl WHERE bsl.C_BankStatement_ID = bs.C_BankStatement_ID AND bsl.IsReconciled = 'N') = 0 THEN 'Y' ELSE 'N' END)"
+				+ " WHERE C_BankStatement_ID=?";
+		DB.executeUpdateEx(sql, new Object[] { bankStatementId }, ITrx.TRXNAME_ThreadInherited);
 	}
 }

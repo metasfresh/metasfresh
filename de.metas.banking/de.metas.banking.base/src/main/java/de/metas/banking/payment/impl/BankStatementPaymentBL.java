@@ -14,7 +14,6 @@ import de.metas.banking.api.BankAccountId;
 import de.metas.banking.payment.BankStatementLineMultiPaymentLinkRequest;
 import de.metas.banking.payment.BankStatementLineMultiPaymentLinkResult;
 import de.metas.banking.payment.IBankStatementPaymentBL;
-import de.metas.banking.service.IBankStatementBL;
 import de.metas.banking.service.IBankStatementDAO;
 import de.metas.bpartner.BPartnerId;
 import de.metas.document.engine.DocStatus;
@@ -34,7 +33,6 @@ import lombok.NonNull;
 
 public class BankStatementPaymentBL implements IBankStatementPaymentBL
 {
-	private final IBankStatementBL bankStatementBL = Services.get(IBankStatementBL.class);
 	private final IBankStatementDAO bankStatementDAO = Services.get(IBankStatementDAO.class);
 
 	@Override
@@ -43,7 +41,7 @@ public class BankStatementPaymentBL implements IBankStatementPaymentBL
 			@NonNull final I_C_BankStatementLine bankStatementLine)
 	{
 		// Bank Statement Line is already reconciled => do nothing
-		if (bankStatementBL.isReconciled(bankStatementLine))
+		if (bankStatementLine.isReconciled())
 		{
 			return;
 		}
@@ -55,7 +53,7 @@ public class BankStatementPaymentBL implements IBankStatementPaymentBL
 			return;
 		}
 
-		final Set<PaymentId> eligiblePaymentIds = findEligiblePaymentIds(bankStatementLine, 2);
+		final Set<PaymentId> eligiblePaymentIds = findEligiblePaymentIds(bankStatementLine, bpartnerId, 2);
 		if (eligiblePaymentIds.size() > 1)
 		{
 			// Don't create a new Payment and don't link any of the existing payments if there are multiple payments found.
@@ -73,11 +71,12 @@ public class BankStatementPaymentBL implements IBankStatementPaymentBL
 	}
 
 	@Override
-	public Set<PaymentId> findEligiblePaymentIds(@NonNull final I_C_BankStatementLine bankStatementLine, final int limit)
+	public Set<PaymentId> findEligiblePaymentIds(
+			@NonNull final I_C_BankStatementLine bankStatementLine,
+			@NonNull final BPartnerId bpartnerId,
+			final int limit)
 	{
 		final IPaymentDAO paymentDAO = Services.get(IPaymentDAO.class);
-
-		final BPartnerId bpartnerId = BPartnerId.ofRepoId(bankStatementLine.getC_BPartner_ID());
 
 		final Money statementAmt = extractStatementAmt(bankStatementLine);
 		final PaymentDirection expectedPaymentDirection = PaymentDirection.ofBankStatementAmount(statementAmt);
@@ -160,13 +159,15 @@ public class BankStatementPaymentBL implements IBankStatementPaymentBL
 			@NonNull final I_C_Payment payment)
 	{
 		// a payment is already linked
-		if (bankStatementBL.isReconciled(bankStatementLine))
+		if (bankStatementLine.isReconciled())
 		{
 			throw new AdempiereException("Linking payment to an already reconciled bank statement line is not allowed");
 		}
 
+		bankStatementLine.setIsReconciled(true);
 		bankStatementLine.setIsMultiplePaymentOrInvoice(false);
 		bankStatementLine.setIsMultiplePayment(false);
+
 		bankStatementLine.setC_Payment_ID(payment.getC_Payment_ID());
 		bankStatementLine.setC_BPartner_ID(payment.getC_BPartner_ID());
 		bankStatementLine.setC_Invoice_ID(payment.getC_Invoice_ID());

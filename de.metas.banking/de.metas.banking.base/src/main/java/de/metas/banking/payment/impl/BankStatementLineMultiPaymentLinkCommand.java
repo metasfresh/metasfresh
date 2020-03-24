@@ -138,7 +138,7 @@ final class BankStatementLineMultiPaymentLinkCommand
 
 	private void assertBankStatementLineIsStillValid(@NonNull final I_C_BankStatementLine bankStatementLine)
 	{
-		if (bankStatementBL.isReconciled(bankStatementLine))
+		if (bankStatementLine.isReconciled())
 		{
 			throw new AdempiereException("Bank statement line is already reconciled");
 		}
@@ -226,8 +226,10 @@ final class BankStatementLineMultiPaymentLinkCommand
 
 	private void markAsMultiplePayments(final I_C_BankStatementLine bankStatementLine)
 	{
+		bankStatementLine.setIsReconciled(true);
 		bankStatementLine.setIsMultiplePaymentOrInvoice(true);
 		bankStatementLine.setIsMultiplePayment(true);
+
 		bankStatementLine.setC_BPartner_ID(-1);
 		bankStatementLine.setC_Payment_ID(-1);
 		bankStatementLine.setC_Invoice_ID(-1);

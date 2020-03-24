@@ -32,13 +32,11 @@ public interface I_C_BankStatement
 	 */
 	public int getAD_Client_ID();
 
-    /** Column definition for AD_Client_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_BankStatement, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_C_BankStatement, org.compiere.model.I_AD_Client>(I_C_BankStatement.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
     /** Column name AD_Client_ID */
     public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
-	 * Set Sektion.
+	 * Set Organisation.
 	 * Organisatorische Einheit des Mandanten
 	 *
 	 * <br>Type: Search
@@ -48,7 +46,7 @@ public interface I_C_BankStatement
 	public void setAD_Org_ID (int AD_Org_ID);
 
 	/**
-	 * Get Sektion.
+	 * Get Organisation.
 	 * Organisatorische Einheit des Mandanten
 	 *
 	 * <br>Type: Search
@@ -57,8 +55,6 @@ public interface I_C_BankStatement
 	 */
 	public int getAD_Org_ID();
 
-    /** Column definition for AD_Org_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_BankStatement, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<I_C_BankStatement, org.compiere.model.I_AD_Org>(I_C_BankStatement.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
     /** Column name AD_Org_ID */
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
@@ -161,8 +157,6 @@ public interface I_C_BankStatement
 	 */
 	public int getC_DocType_ID();
 
-    /** Column definition for C_DocType_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_BankStatement, org.compiere.model.I_C_DocType> COLUMN_C_DocType_ID = new org.adempiere.model.ModelColumn<I_C_BankStatement, org.compiere.model.I_C_DocType>(I_C_BankStatement.class, "C_DocType_ID", org.compiere.model.I_C_DocType.class);
     /** Column name C_DocType_ID */
     public static final String COLUMNNAME_C_DocType_ID = "C_DocType_ID";
 
@@ -191,8 +185,6 @@ public interface I_C_BankStatement
 	 */
 	public int getCreatedBy();
 
-    /** Column definition for CreatedBy */
-    public static final org.adempiere.model.ModelColumn<I_C_BankStatement, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<I_C_BankStatement, org.compiere.model.I_AD_User>(I_C_BankStatement.class, "CreatedBy", org.compiere.model.I_AD_User.class);
     /** Column name CreatedBy */
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
@@ -470,6 +462,31 @@ public interface I_C_BankStatement
     public static final String COLUMNNAME_IsManual = "IsManual";
 
 	/**
+	 * Set Abgeglichen.
+	 * Zeigt an ob eine Zahlung bereits mit einem Kontoauszug abgeglichen wurde
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setIsReconciled (boolean IsReconciled);
+
+	/**
+	 * Get Abgeglichen.
+	 * Zeigt an ob eine Zahlung bereits mit einem Kontoauszug abgeglichen wurde
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public boolean isReconciled();
+
+    /** Column definition for IsReconciled */
+    public static final org.adempiere.model.ModelColumn<I_C_BankStatement, Object> COLUMN_IsReconciled = new org.adempiere.model.ModelColumn<I_C_BankStatement, Object>(I_C_BankStatement.class, "IsReconciled", null);
+    /** Column name IsReconciled */
+    public static final String COLUMNNAME_IsReconciled = "IsReconciled";
+
+	/**
 	 * Set Match Statement.
 	 *
 	 * <br>Type: Button
@@ -516,20 +533,20 @@ public interface I_C_BankStatement
     public static final String COLUMNNAME_Name = "Name";
 
 	/**
-	 * Set Verbucht.
-	 * Posting status
+	 * Set Buchungsstatus.
+	 * Buchungsstatus
 	 *
-	 * <br>Type: Button
+	 * <br>Type: List
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	public void setPosted (boolean Posted);
 
 	/**
-	 * Get Verbucht.
-	 * Posting status
+	 * Get Buchungsstatus.
+	 * Buchungsstatus
 	 *
-	 * <br>Type: Button
+	 * <br>Type: List
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -542,7 +559,7 @@ public interface I_C_BankStatement
 
 	/**
 	 * Set Verarbeitet.
-	 * Checkbox sagt aus, ob der Beleg verarbeitet wurde.
+	 * Checkbox sagt aus, ob der Datensatz verarbeitet wurde.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -552,7 +569,7 @@ public interface I_C_BankStatement
 
 	/**
 	 * Get Verarbeitet.
-	 * Checkbox sagt aus, ob der Beleg verarbeitet wurde.
+	 * Checkbox sagt aus, ob der Datensatz verarbeitet wurde.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -663,8 +680,6 @@ public interface I_C_BankStatement
 	 */
 	public int getUpdatedBy();
 
-    /** Column definition for UpdatedBy */
-    public static final org.adempiere.model.ModelColumn<I_C_BankStatement, org.compiere.model.I_AD_User> COLUMN_UpdatedBy = new org.adempiere.model.ModelColumn<I_C_BankStatement, org.compiere.model.I_AD_User>(I_C_BankStatement.class, "UpdatedBy", org.compiere.model.I_AD_User.class);
     /** Column name UpdatedBy */
     public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
 }

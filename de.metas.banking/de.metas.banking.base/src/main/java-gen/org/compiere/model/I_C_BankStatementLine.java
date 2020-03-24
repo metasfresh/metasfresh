@@ -858,6 +858,31 @@ public interface I_C_BankStatementLine
     public static final String COLUMNNAME_IsMultiplePaymentOrInvoice = "IsMultiplePaymentOrInvoice";
 
 	/**
+	 * Set Abgeglichen.
+	 * Zeigt an ob eine Zahlung bereits mit einem Kontoauszug abgeglichen wurde
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setIsReconciled (boolean IsReconciled);
+
+	/**
+	 * Get Abgeglichen.
+	 * Zeigt an ob eine Zahlung bereits mit einem Kontoauszug abgeglichen wurde
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public boolean isReconciled();
+
+    /** Column definition for IsReconciled */
+    public static final org.adempiere.model.ModelColumn<I_C_BankStatementLine, Object> COLUMN_IsReconciled = new org.adempiere.model.ModelColumn<I_C_BankStatementLine, Object>(I_C_BankStatementLine.class, "IsReconciled", null);
+    /** Column name IsReconciled */
+    public static final String COLUMNNAME_IsReconciled = "IsReconciled";
+
+	/**
 	 * Set Umkehrung.
 	 * This is a reversing transaction
 	 *
@@ -1029,8 +1054,8 @@ public interface I_C_BankStatementLine
     public static final String COLUMNNAME_StatementLineDate = "StatementLineDate";
 
 	/**
-	 * Set Statement amount.
-	 * Statement Amount
+	 * Set Kontoauszug Betrag.
+	 * Kontoauszug Betrag
 	 *
 	 * <br>Type: Amount
 	 * <br>Mandatory: true
@@ -1039,8 +1064,8 @@ public interface I_C_BankStatementLine
 	public void setStmtAmt (java.math.BigDecimal StmtAmt);
 
 	/**
-	 * Get Statement amount.
-	 * Statement Amount
+	 * Get Kontoauszug Betrag.
+	 * Kontoauszug Betrag
 	 *
 	 * <br>Type: Amount
 	 * <br>Mandatory: true

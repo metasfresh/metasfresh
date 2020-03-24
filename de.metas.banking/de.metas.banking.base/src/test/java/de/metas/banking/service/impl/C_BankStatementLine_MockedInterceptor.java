@@ -36,4 +36,10 @@ class C_BankStatementLine_MockedInterceptor extends C_BankStatementLine
 	{
 		// avoid JDBC
 	}
+
+	@Override
+	protected void updateBankStatementIsReconciledFlag(BankStatementId bankStatementId)
+	{
+		// avoid JDBC
+	}
 }

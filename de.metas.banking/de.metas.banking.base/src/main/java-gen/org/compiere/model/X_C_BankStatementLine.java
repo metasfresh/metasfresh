@@ -15,7 +15,7 @@ public class X_C_BankStatementLine extends org.compiere.model.PO implements I_C_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 594331729L;
+	private static final long serialVersionUID = 2099520373L;
 
     /** Standard Constructor */
     public X_C_BankStatementLine (Properties ctx, int C_BankStatementLine_ID, String trxName)
@@ -31,6 +31,7 @@ public class X_C_BankStatementLine extends org.compiere.model.PO implements I_C_
 			setDateAcct (new Timestamp( System.currentTimeMillis() )); // @StatementDate@
 			setInterestAmt (BigDecimal.ZERO);
 			setIsManual (true); // Y
+			setIsReconciled (false); // N
 			setIsReversal (false);
 			setLine (0); // @SQL=SELECT COALESCE(MAX(Line),0)+10 FROM C_BankStatementLine WHERE C_BankStatement_ID=@C_BankStatement_ID@
 			setProcessed (false);
@@ -740,6 +741,32 @@ public class X_C_BankStatementLine extends org.compiere.model.PO implements I_C_
 		return false;
 	}
 
+	/** Set Abgeglichen.
+		@param IsReconciled 
+		Zeigt an ob eine Zahlung bereits mit einem Kontoauszug abgeglichen wurde
+	  */
+	@Override
+	public void setIsReconciled (boolean IsReconciled)
+	{
+		set_Value (COLUMNNAME_IsReconciled, Boolean.valueOf(IsReconciled));
+	}
+
+	/** Get Abgeglichen.
+		@return Zeigt an ob eine Zahlung bereits mit einem Kontoauszug abgeglichen wurde
+	  */
+	@Override
+	public boolean isReconciled () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsReconciled);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
 	/** Set Umkehrung.
 		@param IsReversal 
 		This is a reversing transaction
@@ -893,9 +920,9 @@ public class X_C_BankStatementLine extends org.compiere.model.PO implements I_C_
 		return (java.sql.Timestamp)get_Value(COLUMNNAME_StatementLineDate);
 	}
 
-	/** Set Statement amount.
+	/** Set Kontoauszug Betrag.
 		@param StmtAmt 
-		Statement Amount
+		Kontoauszug Betrag
 	  */
 	@Override
 	public void setStmtAmt (java.math.BigDecimal StmtAmt)
@@ -903,8 +930,8 @@ public class X_C_BankStatementLine extends org.compiere.model.PO implements I_C_
 		set_Value (COLUMNNAME_StmtAmt, StmtAmt);
 	}
 
-	/** Get Statement amount.
-		@return Statement Amount
+	/** Get Kontoauszug Betrag.
+		@return Kontoauszug Betrag
 	  */
 	@Override
 	public java.math.BigDecimal getStmtAmt () 

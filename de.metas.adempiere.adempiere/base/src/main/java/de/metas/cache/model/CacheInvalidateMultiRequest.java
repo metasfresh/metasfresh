@@ -85,6 +85,11 @@ public class CacheInvalidateMultiRequest
 		return of(CacheInvalidateRequest.rootRecord(rootTableName, rootRecordId));
 	}
 
+	public static CacheInvalidateMultiRequest rootRecord(@NonNull final String rootTableName, @NonNull final RepoIdAware rootRecordId)
+	{
+		return of(CacheInvalidateRequest.rootRecord(rootTableName, rootRecordId));
+	}
+
 	public static CacheInvalidateMultiRequest rootRecords(@NonNull final String rootTableName, @NonNull final Set<? extends RepoIdAware> ids)
 	{
 		Check.assumeNotEmpty(ids, "ids is not empty");
