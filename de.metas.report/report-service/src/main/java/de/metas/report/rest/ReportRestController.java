@@ -58,7 +58,6 @@ public class ReportRestController
 			final OutputType outputType = outputStr == null ? IReportServer.DEFAULT_OutputType : OutputType.valueOf(outputStr);
 
 			final ReportResult report = server.report(processId, pinstanceId, adLanguage, outputType);
-			final String reportContentType = report.getOutputType().getContentType();
 			final String reportFilename = extractReportFilename(report);
 
 			final HttpHeaders headers = new HttpHeaders();
@@ -83,7 +82,7 @@ public class ReportRestController
 
 	private String extractReportFilename(final ReportResult report)
 	{
-		if (!Check.isBlank(report.getReportFilename()))
+		if (Check.isNotBlank(report.getReportFilename()))
 		{
 			return report.getReportFilename();
 		}

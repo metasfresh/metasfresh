@@ -80,11 +80,17 @@ public class ProcessExecutionResult
 	 */
 	public enum ShowProcessLogs
 	{
-		/** Always display them */
+		/**
+		 * Always display them
+		 */
 		Always,
-		/** Display them only if the process failed */
+		/**
+		 * Display them only if the process failed
+		 */
 		OnError,
-		/** Never display them */
+		/**
+		 * Never display them
+		 */
 		Never
 	}
 
@@ -92,16 +98,24 @@ public class ProcessExecutionResult
 
 	private PInstanceId pinstanceId;
 
-	/** Summary of Execution */
+	/**
+	 * Summary of Execution
+	 */
 	private String summary = "";
-	/** Execution had an error */
+	/**
+	 * Execution had an error
+	 */
 	private boolean error = false;
 	private transient boolean errorWasReportedToUser = false;
 
-	/** Process timed out */
+	/**
+	 * Process timed out
+	 */
 	private boolean timeout = false;
 
-	/** Log Info */
+	/**
+	 * Log Info
+	 */
 	private transient List<ProcessInfoLog> logs;
 	private ShowProcessLogs showProcessLogsPolicy = ShowProcessLogs.Always;
 
@@ -130,7 +144,9 @@ public class ProcessExecutionResult
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private TableRecordReference recordToSelectAfterExecution = null;
 
-	/** Records to be opened (UI) after this process was successfully executed */
+	/**
+	 * Records to be opened (UI) after this process was successfully executed
+	 */
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private RecordsToOpen recordsToOpen = null;
 
@@ -350,7 +366,9 @@ public class ProcessExecutionResult
 		}
 	}
 
-	/** Sets if the whole window tab shall be refreshed after process execution (applies only when the process was started from a user window) */
+	/**
+	 * Sets if the whole window tab shall be refreshed after process execution (applies only when the process was started from a user window)
+	 */
 	public void setRefreshAllAfterExecution(final boolean refreshAllAfterExecution)
 	{
 		this.refreshAllAfterExecution = refreshAllAfterExecution;
@@ -498,13 +516,13 @@ public class ProcessExecutionResult
 		reportFilename = file.getName();
 		reportContentType = MimeType.getMimeType(reportFilename);
 	}
+
 	public void setReportData(@NonNull final ReportResultData reportResult)
 	{
 		reportData = reportResult.getReportData();
 		reportFilename = reportResult.getReportFilename();
 		reportContentType = reportResult.getReportContentType();
 	}
-    //aici
 
 	public byte[] getReportData()
 	{
@@ -592,7 +610,7 @@ public class ProcessExecutionResult
 			sb.append("</table>");
 		}
 		return sb.toString();
-	}	// getLogInfo
+	}    // getLogInfo
 
 	/**
 	 * Get ASCII Log Info
@@ -606,7 +624,7 @@ public class ProcessExecutionResult
 
 	/**
 	 * Gets current logs.
-	 *
+	 * <p>
 	 * If needed, it will load the logs.
 	 *
 	 * @return logs inner list; never fails
@@ -635,7 +653,7 @@ public class ProcessExecutionResult
 
 	/**
 	 * Get current logs (i.e. logs which were recorded to this instance).
-	 *
+	 * <p>
 	 * This method will not load the logs.
 	 *
 	 * @return current logs
@@ -665,27 +683,27 @@ public class ProcessExecutionResult
 	public void addLog(final int Log_ID, final Timestamp P_Date, final BigDecimal P_Number, final String P_Msg)
 	{
 		addLog(new ProcessInfoLog(Log_ID, P_Date, P_Number, P_Msg));
-	}	// addLog
+	}    // addLog
 
 	public void addLog(final RepoIdAware Log_ID, final Timestamp P_Date, final BigDecimal P_Number, final String P_Msg)
 	{
 		addLog(new ProcessInfoLog(Log_ID != null ? Log_ID.getRepoId() : -1, P_Date, P_Number, P_Msg));
-	}	// addLog
+	}    // addLog
 
 	/**
 	 * Add to Log.
 	 *
-	 * @param P_ID Process ID
-	 * @param P_Date Process Date if <code>null</code> then the current {@link SystemTime} is used.
+	 * @param P_ID     Process ID
+	 * @param P_Date   Process Date if <code>null</code> then the current {@link SystemTime} is used.
 	 * @param P_Number Process Number
-	 * @param P_Msg Process Message
+	 * @param P_Msg    Process Message
 	 */
 	public void addLog(final Timestamp P_Date, final BigDecimal P_Number, final String P_Msg)
 	{
 		final Timestamp timestampToUse = P_Date != null ? P_Date : SystemTime.asTimestamp();
 
 		addLog(new ProcessInfoLog(timestampToUse, P_Number, P_Msg));
-	}	// addLog
+	}    // addLog
 
 	/**
 	 * Add to Log
@@ -840,7 +858,9 @@ public class ProcessExecutionResult
 			}
 		}
 
-		/** @return records to open; never null or empty */
+		/**
+		 * @return records to open; never null or empty
+		 */
 		public List<TableRecordReference> getRecords()
 		{
 			return records;

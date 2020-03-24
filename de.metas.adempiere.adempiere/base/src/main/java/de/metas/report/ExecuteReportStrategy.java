@@ -52,12 +52,10 @@ public interface ExecuteReportStrategy
 	{
 		public ExecuteReportResult(OutputType outputType, byte[] reportData)
 		{
-			this.filename = null;
-			this.outputType = outputType;
-			this.reportData = reportData;
+			this(null, outputType, reportData);
 		}
 
-		public ExecuteReportResult(String filename, OutputType outputType, byte[] reportData)
+		public ExecuteReportResult(@Nullable String filename, OutputType outputType, byte[] reportData)
 		{
 			this.filename = filename;
 			this.outputType = outputType;

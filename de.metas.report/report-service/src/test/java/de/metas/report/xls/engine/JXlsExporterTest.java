@@ -100,7 +100,7 @@ public class JXlsExporterTest
 	}
 
 	@Nested
-	public class getSuggestedFilename
+	public class GetSuggestedFilename
 	{
 		private InputStream jxlsTemplate;
 
