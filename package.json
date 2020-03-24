@@ -107,7 +107,7 @@
     "redux-mock-store": "1.5.4",
     "stomp-broker-js": "1.3.0",
     "stompjs": "2.3.3",
-    "style-loader": "0.23.1",
+    "style-loader": "1.1.3",
     "stylelint": "13.0.0",
     "wait-for-expect": "3.0.2",
     "webpack": "4.2.0",
