@@ -8,7 +8,7 @@ import java.util.Set;
 
 import org.springframework.stereotype.Service;
 
-import com.google.common.base.Predicates;
+import java.util.Objects;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ListMultimap;
 
@@ -87,7 +87,7 @@ public class AvailabilityCheckService
 
 		return vendorIds.stream()
 				.map(vendorId -> createAvailabilityRequestOrNull(vendorId, requestItemsByVendorId.get(vendorId)))
-				.filter(Predicates.notNull())
+				.filter(Objects::nonNull)
 				.collect(ImmutableSet.toImmutableSet());
 	}
 

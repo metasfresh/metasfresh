@@ -10,7 +10,7 @@ import org.compiere.model.I_AD_NotificationGroup;
 import org.compiere.model.I_AD_User_NotificationGroup;
 import org.compiere.model.X_AD_User_NotificationGroup;
 
-import com.google.common.base.Predicates;
+import java.util.Objects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
@@ -80,7 +80,7 @@ public class UserNotificationsConfigRepository implements IUserNotificationsConf
 				.create()
 				.stream(I_AD_User_NotificationGroup.class)
 				.map(notificationsGroupRecord -> toUserNotificationsGroup(notificationsGroupRecord))
-				.filter(Predicates.notNull())
+				.filter(Objects::nonNull)
 				.collect(ImmutableList.toImmutableList());
 
 		final UserNotificationsGroup defaults = UserNotificationsGroup.prepareDefault()

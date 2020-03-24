@@ -56,7 +56,7 @@ import org.compiere.util.Env;
 import org.compiere.util.Evaluatee2;
 import org.slf4j.Logger;
 
-import com.google.common.base.Predicates;
+import java.util.Objects;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.document.engine.IDocument;
@@ -227,7 +227,7 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 
 		return ids.stream()
 				.map(id -> create(ctx, id, modelClass, trxName))
-				.filter(Predicates.notNull())
+				.filter(Objects::nonNull)
 				.collect(ImmutableList.toImmutableList());
 	}
 

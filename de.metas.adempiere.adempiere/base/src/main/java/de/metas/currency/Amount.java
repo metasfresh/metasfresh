@@ -11,7 +11,7 @@ import javax.annotation.Nullable;
 
 import org.adempiere.exceptions.AdempiereException;
 
-import com.google.common.base.Predicates;
+import java.util.Objects;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimaps;
@@ -144,7 +144,7 @@ public final class Amount implements Comparable<Amount>
 		Check.assumeNotEmpty(amounts, "The given moneys may not be empty");
 
 		final Iterator<Amount> moneysIterator = Stream.of(amounts)
-				.filter(Predicates.notNull())
+				.filter(Objects::nonNull)
 				.iterator();
 		final ImmutableListMultimap<CurrencyCode, Amount> amountsByCurrencyCode = Multimaps.index(moneysIterator, Amount::getCurrencyCode);
 		if (amountsByCurrencyCode.isEmpty())

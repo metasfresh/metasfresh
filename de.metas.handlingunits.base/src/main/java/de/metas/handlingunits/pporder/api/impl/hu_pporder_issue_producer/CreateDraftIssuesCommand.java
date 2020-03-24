@@ -12,7 +12,7 @@ import org.eevolution.model.I_PP_Order_BOMLine;
 import org.eevolution.model.X_PP_Order_BOMLine;
 import org.slf4j.Logger;
 
-import com.google.common.base.Predicates;
+import java.util.Objects;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.handlingunits.HuId;
@@ -145,7 +145,7 @@ public class CreateDraftIssuesCommand
 	{
 		final ImmutableList<I_PP_Order_Qty> candidates = issueFromHUs.stream()
 				.map(hu -> createIssueCandidateOrNull(huContext, hu))
-				.filter(Predicates.notNull())
+				.filter(Objects::nonNull)
 				.collect(ImmutableList.toImmutableList());
 
 		if (remainingQtyToIssue != null && remainingQtyToIssue.signum() != 0)

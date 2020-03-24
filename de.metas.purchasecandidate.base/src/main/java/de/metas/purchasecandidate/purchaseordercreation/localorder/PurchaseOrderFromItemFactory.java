@@ -12,7 +12,6 @@ import org.compiere.model.I_C_Order;
 import org.compiere.util.TimeUtil;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
@@ -202,7 +201,7 @@ import lombok.NonNull;
 		final ImmutableSet<Integer> salesOrderIds = purchaseItem2OrderLine.keySet()
 				.stream()
 				.map(PurchaseOrderItem::getSalesOrderId)
-				.filter(Predicates.notNull())
+				.filter(Objects::nonNull)
 				.map(OrderId::getRepoId)
 				.collect(ImmutableSet.toImmutableSet());
 
