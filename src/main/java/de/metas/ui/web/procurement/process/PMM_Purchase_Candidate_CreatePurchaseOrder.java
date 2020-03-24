@@ -41,21 +41,22 @@ import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 @Profile(Profiles.PROFILE_Webui)
 public class PMM_Purchase_Candidate_CreatePurchaseOrder
 		extends ViewBasedProcessTemplate
-		implements IProcessPrecondition
+//		implements IProcessPrecondition
 {
 	private int recordsEnqueued;
-
-	@Override
-	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
-	{
-		final DocumentIdsSelection selectedRowIds = getSelectedRowIds();
-		if (selectedRowIds.isEmpty())
-		{
-			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
-		}
-
-		return ProcessPreconditionsResolution.accept();
-	}
+//
+//	@Override
+//	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
+//	{
+//		final DocumentIdsSelection selectedRowIds = getSelectedRowIds();
+//		if (selectedRowIds.isEmpty())
+//
+//		{
+//			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
+//		}
+//
+//		return ProcessPreconditionsResolution.accept();
+//	}
 
 	@Override
 	protected String doIt() throws Exception
