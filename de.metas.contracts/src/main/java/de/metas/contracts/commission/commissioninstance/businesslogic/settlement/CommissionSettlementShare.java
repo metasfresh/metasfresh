@@ -72,7 +72,7 @@ public class CommissionSettlementShare
 		}
 	}
 
-	public final CommissionSettlementShare addFact(@NonNull final CommissionSettlementFact fact)
+	public CommissionSettlementShare addFact(@NonNull final CommissionSettlementFact fact)
 	{
 		facts.add(fact);
 

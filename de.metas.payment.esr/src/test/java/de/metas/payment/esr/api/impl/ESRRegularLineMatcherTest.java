@@ -122,7 +122,7 @@ public class ESRRegularLineMatcherTest extends ESRTestBase
 		save(account);
 
 		final I_C_Invoice invoice = newInstance(I_C_Invoice.class);
-		invoice.setC_BPartner(bp);
+		invoice.setC_BPartner_ID(bp.getC_BPartner_ID());
 		invoice.setDocumentNo("164363");
 		save(invoice);
 
@@ -165,7 +165,7 @@ public class ESRRegularLineMatcherTest extends ESRTestBase
 		save(account);
 
 		final I_C_Invoice invoice = newInstance(I_C_Invoice.class);
-		invoice.setC_BPartner(bp);
+		invoice.setC_BPartner_ID(bp.getC_BPartner_ID());
 		invoice.setDocumentNo("164363");
 
 		save(invoice);
@@ -209,7 +209,7 @@ public class ESRRegularLineMatcherTest extends ESRTestBase
 		save(account);
 
 		final I_C_Invoice invoice = newInstance(I_C_Invoice.class);
-		invoice.setC_BPartner(bp);
+		invoice.setC_BPartner_ID(bp.getC_BPartner_ID());
 		invoice.setDocumentNo("164363");
 		save(invoice);
 
@@ -255,7 +255,7 @@ public class ESRRegularLineMatcherTest extends ESRTestBase
 		save(esrImport);
 
 		final I_C_Invoice invoice = newInstance(I_C_Invoice.class);
-		invoice.setC_BPartner(bp);
+		invoice.setC_BPartner_ID(bp.getC_BPartner_ID());
 		invoice.setDocumentNo("164363");
 		save(invoice);
 

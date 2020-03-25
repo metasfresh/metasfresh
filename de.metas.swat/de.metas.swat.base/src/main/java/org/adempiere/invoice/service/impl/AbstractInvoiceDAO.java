@@ -3,6 +3,7 @@ package org.adempiere.invoice.service.impl;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwares;
 import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwaresOutOfTrx;
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 import java.math.BigDecimal;
@@ -44,32 +45,11 @@ import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyRepository;
 import de.metas.document.engine.IDocument;
 import de.metas.invoice.InvoiceId;
+import de.metas.invoice.InvoiceLineId;
 import de.metas.money.CurrencyId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
-
-/*
- * #%L
- * de.metas.swat.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
 
 /**
  * Implements those methods from {@link IInvoiceDAO} that are DB decoupled.
@@ -364,5 +344,11 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 				.collect(ImmutableMap.toImmutableMap(
 						record -> InvoiceId.ofRepoId(record.getC_Invoice_ID()),
 						record -> record.getDocumentNo()));
+	}
+
+	@Override
+	public org.compiere.model.I_C_InvoiceLine getByIdOutOfTrx(@NonNull final InvoiceLineId invoiceLineId)
+	{
+		return loadOutOfTrx(invoiceLineId, I_C_InvoiceLine.class);
 	}
 }

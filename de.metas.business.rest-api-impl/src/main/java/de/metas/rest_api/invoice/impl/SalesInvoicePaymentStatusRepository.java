@@ -191,7 +191,7 @@ public class SalesInvoicePaymentStatusRepository
 		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_Invoice.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_Invoice.COLUMN_AD_Org_ID, orgId)
+				.addEqualsFilter(I_C_Invoice.COLUMNNAME_AD_Org_ID, orgId)
 				.addEqualsFilter(I_C_Invoice.COLUMN_IsSOTrx, true)
 				.addEqualsFilter(I_C_Invoice.COLUMN_DocStatus, IDocument.STATUS_Completed)
 				.orderBy(I_C_Invoice.COLUMN_DateInvoiced)

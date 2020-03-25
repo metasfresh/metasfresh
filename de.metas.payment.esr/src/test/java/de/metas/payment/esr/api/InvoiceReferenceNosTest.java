@@ -131,10 +131,10 @@ public class InvoiceReferenceNosTest
 	{
 		final I_C_Invoice invoice = InterfaceWrapperHelper.newInstance(I_C_Invoice.class);
 
-		invoice.setC_DocType(docType);
+		invoice.setC_DocType_ID(docType.getC_DocType_ID());
 		invoice.setIsSOTrx(true);
-		invoice.setAD_Org(org);
-		invoice.setC_BPartner(invoicePartner);
+		invoice.setAD_Org_ID(org.getAD_Org_ID());
+		invoice.setC_BPartner_ID(invoicePartner.getC_BPartner_ID());
 		invoice.setDocumentNo(documentNo);
 
 		InterfaceWrapperHelper.save(invoice);

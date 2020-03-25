@@ -3,7 +3,7 @@ package de.metas.contracts.commission.commissioninstance.businesslogic;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.contracts.commission.commissioninstance.businesslogic.hierarchy.Hierarchy;
-import de.metas.contracts.commission.commissioninstance.businesslogic.sales.CommissionTrigger;
+import de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.CommissionTrigger;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
