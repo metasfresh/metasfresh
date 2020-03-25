@@ -40,26 +40,29 @@ import com.google.common.annotations.VisibleForTesting;
 import de.metas.banking.BankStatementId;
 import de.metas.banking.BankStatementLineId;
 import de.metas.banking.service.IBankStatementBL;
-import de.metas.banking.service.IBankStatementDAO;
 import de.metas.cache.CacheMgt;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
 import de.metas.document.engine.DocStatus;
-import de.metas.util.Services;
+import lombok.NonNull;
 
 @Interceptor(I_C_BankStatementLine.class)
 public class C_BankStatementLine
 {
+	private final IBankStatementBL bankStatementBL;
+
+	public C_BankStatementLine(@NonNull final IBankStatementBL bankStatementBL)
+	{
+		this.bankStatementBL = bankStatementBL;
+	}
+
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
 	public void onBeforeNewOrChange(final I_C_BankStatementLine bankStatementLine, final ModelChangeType changeType)
 	{
-		final IBankStatementBL bankStatementBL = Services.get(IBankStatementBL.class);
-		final IBankStatementDAO bankStatementDAO = Services.get(IBankStatementDAO.class);
-
 		final BankStatementId bankStatementId = BankStatementId.ofRepoId(bankStatementLine.getC_BankStatement_ID());
 
 		if (changeType.isNew())
 		{
-			final I_C_BankStatement bankStatement = Services.get(IBankStatementDAO.class).getById(bankStatementId);
+			final I_C_BankStatement bankStatement = bankStatementBL.getById(bankStatementId);
 			final DocStatus docStatus = DocStatus.ofNullableCodeOrUnknown(bankStatement.getDocStatus());
 			if (docStatus.isCompletedOrClosedOrReversed())
 			{
@@ -75,8 +78,8 @@ public class C_BankStatementLine
 		// Set Line No
 		if (bankStatementLine.getLine() <= 0)
 		{
-			final int lastLineNo = bankStatementDAO.retrieveLastLineNo(bankStatementId);
-			bankStatementLine.setLine(lastLineNo + 10);
+			final int nextLineNo = bankStatementBL.computeNextLineNo(bankStatementId);
+			bankStatementLine.setLine(nextLineNo);
 		}
 
 		final BigDecimal chargeAmt = bankStatementLine.getStmtAmt()
@@ -94,8 +97,6 @@ public class C_BankStatementLine
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
 	public void onBeforeDelete(final I_C_BankStatementLine bankStatementLine)
 	{
-		final IBankStatementBL bankStatementBL = Services.get(IBankStatementBL.class);
-
 		final BankStatementLineId bankStatementLineId = BankStatementLineId.ofRepoId(bankStatementLine.getC_BankStatementLine_ID());
 		bankStatementBL.deleteReferences(bankStatementLineId);
 	}

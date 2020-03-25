@@ -31,7 +31,7 @@ import org.compiere.model.I_C_BankStatementLine;
 import org.compiere.util.TimeUtil;
 
 import de.metas.banking.BankStatementLineId;
-import de.metas.banking.service.IBankStatementDAO;
+import de.metas.banking.service.IBankStatementBL;
 import de.metas.currency.ConversionTypeMethod;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.CurrencyRate;
@@ -108,15 +108,16 @@ public class C_BankStatementLine
 			return;
 		}
 
-		final IBankStatementDAO bankStatementDAO = Services.get(IBankStatementDAO.class);
-		final I_C_BankStatementLine bslFrom = bankStatementDAO.getLineById(linkedBankStatementLineId);
+		final IBankStatementBL bankStatementBL = Services.get(IBankStatementBL.class);
+		final ICurrencyBL currencyConversionBL = Services.get(ICurrencyBL.class);
+		
+		final I_C_BankStatementLine bslFrom = bankStatementBL.getLineById(linkedBankStatementLineId);
 
 		final BigDecimal trxAmtFrom = bslFrom.getTrxAmt();
 		final CurrencyId trxAmtFromCurrencyId = CurrencyId.ofRepoId(bslFrom.getC_Currency_ID());
 
 		final CurrencyId trxAmtCurrencyId = CurrencyId.ofRepoId(bsl.getC_Currency_ID());
 
-		final ICurrencyBL currencyConversionBL = Services.get(ICurrencyBL.class);
 		final CurrencyConversionContext currencyConversionCtx = currencyConversionBL.createCurrencyConversionContext(
 				TimeUtil.asLocalDate(bsl.getValutaDate()),
 				ConversionTypeMethod.Spot,

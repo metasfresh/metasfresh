@@ -4,12 +4,15 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BankStatement;
 import org.compiere.model.I_C_BankStatementLine;
 import org.compiere.model.MPeriod;
 import org.compiere.model.X_C_DocType;
+
+import com.google.common.collect.ImmutableSet;
 
 /*
  * #%L
@@ -47,8 +50,40 @@ import lombok.NonNull;
 
 public class BankStatementBL implements IBankStatementBL
 {
-	private final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
 	private final IBankStatementDAO bankStatementDAO = Services.get(IBankStatementDAO.class);
+	private final IBankStatementListenerService bankStatementListenersService = Services.get(IBankStatementListenerService.class);
+	private final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
+	private final IFactAcctDAO factAcctDAO = Services.get(IFactAcctDAO.class);
+
+	@Override
+	public I_C_BankStatement getById(@NonNull final BankStatementId bankStatementId)
+	{
+		return bankStatementDAO.getById(bankStatementId);
+	}
+
+	@Override
+	public I_C_BankStatementLine getLineById(@NonNull final BankStatementLineId bankStatementLineId)
+	{
+		return bankStatementDAO.getLineById(bankStatementLineId);
+	}
+
+	@Override
+	public List<I_C_BankStatementLine> getLinesByBankStatementId(@NonNull final BankStatementId bankStatementId)
+	{
+		return bankStatementDAO.getLinesByBankStatementId(bankStatementId);
+	}
+
+	@Override
+	public List<I_C_BankStatementLine> getLinesByIds(@NonNull final Set<BankStatementLineId> lineIds)
+	{
+		return bankStatementDAO.getLinesByIds(lineIds);
+	}
+
+	@Override
+	public boolean isPaymentOnBankStatement(@NonNull final PaymentId paymentId)
+	{
+		return bankStatementDAO.isPaymentOnBankStatement(paymentId);
+	}
 
 	@Override
 	public void updateEndingBalance(final I_C_BankStatement bankStatement)
@@ -67,7 +102,7 @@ public class BankStatementBL implements IBankStatementBL
 		final Properties ctx = InterfaceWrapperHelper.getCtx(bankStatement);
 		MPeriod.testPeriodOpen(ctx, bankStatement.getStatementDate(), X_C_DocType.DOCBASETYPE_BankStatement, bankStatement.getAD_Org_ID());
 
-		Services.get(IFactAcctDAO.class).deleteForDocumentModel(bankStatement);
+		factAcctDAO.deleteForDocumentModel(bankStatement);
 
 		bankStatement.setPosted(false);
 		InterfaceWrapperHelper.save(bankStatement);
@@ -109,7 +144,7 @@ public class BankStatementBL implements IBankStatementBL
 	@Override
 	public String getDocumentNo(@NonNull final BankStatementId bankStatementId)
 	{
-		final I_C_BankStatement bankStatement = Services.get(IBankStatementDAO.class).getById(bankStatementId);
+		final I_C_BankStatement bankStatement = bankStatementDAO.getById(bankStatementId);
 		return bankStatement.getDocumentNo();
 	}
 
@@ -147,7 +182,7 @@ public class BankStatementBL implements IBankStatementBL
 
 		//
 		// Check references
-		final BankStatementLineReferenceList lineRefs = bankStatementDAO.retrieveLineReferences(bankStatementLineIds);
+		final BankStatementLineReferenceList lineRefs = bankStatementDAO.getLineReferences(bankStatementLineIds);
 		paymentIdsToUnReconcile.addAll(lineRefs.getPaymentIds());
 
 		deleteReferencesAndNotifyListeners(lineRefs);
@@ -158,7 +193,7 @@ public class BankStatementBL implements IBankStatementBL
 	@Override
 	public void deleteReferences(@NonNull final BankStatementLineId bankStatementLineId)
 	{
-		final BankStatementLineReferenceList lineRefs = bankStatementDAO.retrieveLineReferences(bankStatementLineId);
+		final BankStatementLineReferenceList lineRefs = bankStatementDAO.getLineReferences(bankStatementLineId);
 		deleteReferencesAndNotifyListeners(lineRefs);
 	}
 
@@ -169,9 +204,22 @@ public class BankStatementBL implements IBankStatementBL
 			return;
 		}
 
-		final IBankStatementListenerService bankStatementListenerService = Services.get(IBankStatementListenerService.class);
-		bankStatementListenerService.firePaymentsUnlinkedFromBankStatementLineReferences(lineRefs);
-
+		bankStatementListenersService.firePaymentsUnlinkedFromBankStatementLineReferences(lineRefs);
 		bankStatementDAO.deleteReferencesByIds(lineRefs.getBankStatementLineRefIds());
 	}
+
+	@Override
+	public int computeNextLineNo(@NonNull final BankStatementId bankStatementId)
+	{
+		final int lastLineNo = bankStatementDAO.getLastLineNo(bankStatementId);
+		return lastLineNo / 10 * 10 + 10;
+	}
+
+	@NonNull
+	@Override
+	public ImmutableSet<PaymentId> getLinesPaymentIds(@NonNull final BankStatementId bankStatementId)
+	{
+		return bankStatementDAO.getLinesPaymentIds(bankStatementId);
+	}
+
 }

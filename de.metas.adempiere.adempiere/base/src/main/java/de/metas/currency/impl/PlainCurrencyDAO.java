@@ -66,21 +66,18 @@ public class PlainCurrencyDAO extends CurrencyDAO
 {
 	public PlainCurrencyDAO()
 	{
-		if (Adempiere.isUnitTestMode())
-		{
-			createDefaultConversionTypes();
-		}
-		else
-		{
-			throw new IllegalStateException("Service " + PlainCurrencyDAO.class + " shall be used only for testing");
-		}
+		Adempiere.assertUnitTestMode();
+
+		createDefaultConversionTypes();
 	}
 
 	/**
 	 * Creates all {@link I_C_ConversionType}s (from {@link ConversionTypeMethod}) and sets the {@link ConversionTypeMethod#Spot} as default.
 	 */
-	public void createDefaultConversionTypes()
+	private void createDefaultConversionTypes()
 	{
+		Adempiere.assertUnitTestMode();
+
 		final Properties ctx = Env.getCtx();
 		for (final ConversionTypeMethod type : ConversionTypeMethod.values())
 		{
@@ -118,6 +115,8 @@ public class PlainCurrencyDAO extends CurrencyDAO
 			@NonNull final CurrencyId currencyToId,
 			@NonNull final BigDecimal rate)
 	{
+		Adempiere.assertUnitTestMode();
+
 		final Properties ctx = Env.getCtx();
 		final ClientId clientId = ClientId.ofRepoId(Env.getAD_Client_ID(ctx));
 		final OrgId orgId = OrgId.ofRepoId(Env.getAD_Org_ID(ctx));
@@ -160,24 +159,31 @@ public class PlainCurrencyDAO extends CurrencyDAO
 	@Override
 	public Currency getByCurrencyCode(@NonNull final CurrencyCode currencyCode)
 	{
+		Adempiere.assertUnitTestMode();
+
 		return getOrCreateByCurrencyCode(currencyCode);
 	}
-	
+
 	public Currency getOrCreateByCurrencyCode(@NonNull final CurrencyCode currencyCode)
 	{
+		Adempiere.assertUnitTestMode();
+
 		return getCurrenciesMap()
 				.getByCurrencyCodeIfExists(currencyCode)
 				.orElseGet(() -> createCurrency(currencyCode));
 	}
 
-
 	public static CurrencyId createCurrencyId(@NonNull final CurrencyCode currencyCode)
 	{
+		Adempiere.assertUnitTestMode();
+
 		return createCurrency(currencyCode).getId();
 	}
 
 	public static Currency createCurrency(@NonNull final CurrencyCode currencyCode)
 	{
+		Adempiere.assertUnitTestMode();
+
 		return prepareCurrency()
 				.currencyCode(currencyCode)
 				.build();
@@ -187,34 +193,38 @@ public class PlainCurrencyDAO extends CurrencyDAO
 			@NonNull final CurrencyCode currencyCode,
 			@NonNull final CurrencyPrecision precision)
 	{
+		Adempiere.assertUnitTestMode();
+
 		return prepareCurrency()
 				.currencyCode(currencyCode)
 				.precision(precision)
 				.build();
 	}
-	
-	@Builder(builderMethodName="prepareCurrency", builderClassName="CurrencyBuilder")
+
+	@Builder(builderMethodName = "prepareCurrency", builderClassName = "CurrencyBuilder")
 	private static Currency createCurrency(
 			@NonNull final CurrencyCode currencyCode,
 			@Nullable final CurrencyPrecision precision,
 			@Nullable final CurrencyId currencyId)
 	{
+		Adempiere.assertUnitTestMode();
+
 		final CurrencyPrecision precisionToUse = precision != null ? precision : CurrencyPrecision.TWO;
-		
+
 		final I_C_Currency record = newInstanceOutOfTrx(I_C_Currency.class);
-		
+
 		record.setISO_Code(currencyCode.toThreeLetterCode());
 		record.setCurSymbol(currencyCode.toThreeLetterCode());
 		record.setIsEuro(currencyCode.isEuro());
-		
+
 		record.setStdPrecision(precisionToUse.toInt());
 		record.setCostingPrecision(precisionToUse.toInt() + 2);
-		
-		if(currencyId != null)
+
+		if (currencyId != null)
 		{
 			record.setC_Currency_ID(currencyId.getRepoId());
 		}
-		
+
 		saveRecord(record);
 		POJOWrapper.enableStrictValues(record);
 

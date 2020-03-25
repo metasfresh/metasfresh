@@ -168,7 +168,7 @@ public class BankStatementDocumentHandler implements DocumentHandler
 		MPeriod.testPeriodOpen(Env.getCtx(), bankStatement.getStatementDate(), X_C_DocType.DOCBASETYPE_BankStatement, bankStatement.getAD_Org_ID());
 
 		final BankStatementId bankStatementId = BankStatementId.ofRepoId(bankStatement.getC_BankStatement_ID());
-		final List<I_C_BankStatementLine> lines = bankStatementDAO.retrieveLines(bankStatementId);
+		final List<I_C_BankStatementLine> lines = bankStatementBL.getLinesByBankStatementId(bankStatementId);
 		if (lines.isEmpty())
 		{
 			throw new AdempiereException("@NoLines@");
@@ -193,7 +193,7 @@ public class BankStatementDocumentHandler implements DocumentHandler
 			{
 				// Payment in C_BankStatementLine_Ref are mandatory
 				final BankStatementLineId bankStatementLineId = BankStatementLineId.ofRepoId(line.getC_BankStatementLine_ID());
-				for (final BankStatementLineReference refLine : bankStatementDAO.retrieveLineReferences(bankStatementLineId))
+				for (final BankStatementLineReference refLine : bankStatementDAO.getLineReferences(bankStatementLineId))
 				{
 					if (refLine.getPaymentId() == null)
 					{
@@ -228,7 +228,7 @@ public class BankStatementDocumentHandler implements DocumentHandler
 
 		//
 		final BankStatementId bankStatementId = BankStatementId.ofRepoId(bankStatement.getC_BankStatement_ID());
-		final List<I_C_BankStatementLine> lines = bankStatementDAO.retrieveLines(bankStatementId);
+		final List<I_C_BankStatementLine> lines = bankStatementBL.getLinesByBankStatementId(bankStatementId);
 		for (final I_C_BankStatementLine line : lines)
 		{
 			//
@@ -238,7 +238,7 @@ public class BankStatementDocumentHandler implements DocumentHandler
 				final BankStatementLineId linkedBankStatementLineId = BankStatementLineId.ofRepoIdOrNull(line.getLink_BankStatementLine_ID());
 				if (linkedBankStatementLineId != null)
 				{
-					final I_C_BankStatementLine lineFrom = bankStatementDAO.getLineById(linkedBankStatementLineId);
+					final I_C_BankStatementLine lineFrom = bankStatementBL.getLineById(linkedBankStatementLineId);
 					if (lineFrom.getLink_BankStatementLine_ID() > 0
 							&& lineFrom.getLink_BankStatementLine_ID() != line.getC_BankStatementLine_ID())
 					{
@@ -292,7 +292,7 @@ public class BankStatementDocumentHandler implements DocumentHandler
 		//
 		// Collect payments from bank statement line references
 		paymentIds.addAll(bankStatementDAO
-				.retrieveLineReferences(bankStatementLineIds)
+				.getLineReferences(bankStatementLineIds)
 				.getPaymentIds());
 
 		return paymentIds;
@@ -326,7 +326,7 @@ public class BankStatementDocumentHandler implements DocumentHandler
 		}
 
 		final BankStatementId bankStatementId = BankStatementId.ofRepoId(bankStatement.getC_BankStatement_ID());
-		final List<I_C_BankStatementLine> lines = bankStatementDAO.retrieveLines(bankStatementId);
+		final List<I_C_BankStatementLine> lines = bankStatementBL.getLinesByBankStatementId(bankStatementId);
 
 		bankStatementBL.unlinkPaymentsAndDeleteReferences(lines);
 
@@ -349,7 +349,7 @@ public class BankStatementDocumentHandler implements DocumentHandler
 				final BankStatementLineId linkedBankStatementLineId = BankStatementLineId.ofRepoIdOrNull(line.getLink_BankStatementLine_ID());
 				if (linkedBankStatementLineId != null)
 				{
-					final I_C_BankStatementLine lineFrom = bankStatementDAO.getLineById(linkedBankStatementLineId);
+					final I_C_BankStatementLine lineFrom = bankStatementBL.getLineById(linkedBankStatementLineId);
 					if (lineFrom.getLink_BankStatementLine_ID() == line.getC_BankStatementLine_ID())
 					{
 						lineFrom.setLink_BankStatementLine_ID(-1);

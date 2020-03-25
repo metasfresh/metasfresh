@@ -91,7 +91,7 @@ public class BankStatementDAO implements IBankStatementDAO
 	}
 
 	@Override
-	public List<I_C_BankStatementLine> getLineByIds(@NonNull final Set<BankStatementLineId> lineIds)
+	public List<I_C_BankStatementLine> getLinesByIds(@NonNull final Set<BankStatementLineId> lineIds)
 	{
 		return loadByRepoIdAwares(lineIds, I_C_BankStatementLine.class);
 	}
@@ -100,7 +100,7 @@ public class BankStatementDAO implements IBankStatementDAO
 	@Override
 	public ImmutableSet<PaymentId> getLinesPaymentIds(@NonNull final BankStatementId bankStatementId)
 	{
-		final List<I_C_BankStatementLine> lines = retrieveLines(bankStatementId);
+		final List<I_C_BankStatementLine> lines = getLinesByBankStatementId(bankStatementId);
 		return lines.stream()
 				.map(line -> PaymentId.ofRepoIdOrNull(line.getC_Payment_ID()))
 				.filter(Objects::nonNull)
@@ -120,7 +120,7 @@ public class BankStatementDAO implements IBankStatementDAO
 	}
 
 	@Override
-	public List<I_C_BankStatementLine> retrieveLines(@NonNull final BankStatementId bankStatementId)
+	public List<I_C_BankStatementLine> getLinesByBankStatementId(@NonNull final BankStatementId bankStatementId)
 	{
 		return retrieveLinesQuery(bankStatementId)
 				.create()
@@ -138,13 +138,13 @@ public class BankStatementDAO implements IBankStatementDAO
 	}
 
 	@Override
-	public BankStatementLineReferenceList retrieveLineReferences(@NonNull final BankStatementLineId bankStatementLineId)
+	public BankStatementLineReferenceList getLineReferences(@NonNull final BankStatementLineId bankStatementLineId)
 	{
-		return retrieveLineReferences(ImmutableSet.of(bankStatementLineId));
+		return getLineReferences(ImmutableSet.of(bankStatementLineId));
 	}
 
 	@Override
-	public BankStatementLineReferenceList retrieveLineReferences(@NonNull final Collection<BankStatementLineId> bankStatementLineIds)
+	public BankStatementLineReferenceList getLineReferences(@NonNull final Collection<BankStatementLineId> bankStatementLineIds)
 	{
 		if (bankStatementLineIds.isEmpty())
 		{
@@ -224,7 +224,7 @@ public class BankStatementDAO implements IBankStatementDAO
 	}
 
 	@Override
-	public List<I_C_BankStatement> retrievePostedWithoutFactAcct(final Properties ctx, final Date startTime)
+	public List<I_C_BankStatement> getPostedWithoutFactAcct(final Properties ctx, final Date startTime)
 	{
 		final String trxName = ITrx.TRXNAME_ThreadInherited;
 
@@ -257,7 +257,7 @@ public class BankStatementDAO implements IBankStatementDAO
 	}
 
 	@Override
-	public Optional<BankStatementId> retrieveFirstIdMatching(
+	public Optional<BankStatementId> getFirstIdMatching(
 			@NonNull final BankAccountId orgBankAccountId,
 			@NonNull final LocalDate statementDate,
 			@NonNull final String name,
@@ -312,7 +312,7 @@ public class BankStatementDAO implements IBankStatementDAO
 		}
 		else
 		{
-			final int maxLineNo = retrieveLastLineNo(request.getBankStatementId());
+			final int maxLineNo = getLastLineNo(request.getBankStatementId());
 			record.setLine(maxLineNo + 10);
 		}
 
@@ -398,7 +398,7 @@ public class BankStatementDAO implements IBankStatementDAO
 	}
 
 	@Override
-	public int retrieveLastLineNo(@NonNull final BankStatementId bankStatementId)
+	public int getLastLineNo(@NonNull final BankStatementId bankStatementId)
 	{
 		return queryBL
 				.createQueryBuilder(I_C_BankStatementLine.class)

@@ -18,6 +18,7 @@ import java.util.Set;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.invoice.service.IInvoiceDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.service.ClientId;
@@ -40,6 +41,7 @@ import de.metas.currency.ICurrencyBL;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.currency.exceptions.NoCurrencyRateFoundException;
 import de.metas.document.engine.DocStatus;
+import de.metas.invoice.InvoiceId;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
@@ -49,19 +51,21 @@ import de.metas.payment.TenderType;
 import de.metas.payment.api.DefaultPaymentBuilder;
 import de.metas.payment.api.IPaymentBL;
 import de.metas.payment.api.IPaymentDAO;
+import de.metas.payment.api.PaymentQuery;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 
-/**
- * @author cg
- *
- */
 public class PaymentBL implements IPaymentBL
 {
-	private static final Logger log = LogManager.getLogger(PaymentBL.class);
+	private static final Logger logger = LogManager.getLogger(PaymentBL.class);
 	private final IPaymentDAO paymentDAO = Services.get(IPaymentDAO.class);
 	private final IAllocationBL allocationBL = Services.get(IAllocationBL.class);
+	private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
+	private final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
+	private final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
 	@Override
 	public I_C_Payment getById(@NonNull final PaymentId paymentId)
@@ -81,9 +85,12 @@ public class PaymentBL implements IPaymentBL
 		paymentDAO.save(payment);
 	}
 
-	/**
-	 * Get Invoice Currency
-	 */
+	@Override
+	public ImmutableSet<PaymentId> getPaymentIds(@NonNull final PaymentQuery query)
+	{
+		return paymentDAO.retrievePaymentIds(query);
+	}
+
 	private CurrencyId fetchC_Currency_Invoice_ID(final I_C_Payment payment)
 	{
 		final int C_Invoice_ID = payment.getC_Invoice_ID();
@@ -99,7 +106,7 @@ public class PaymentBL implements IPaymentBL
 		{
 			C_Currency_Invoice_ID = CurrencyId.ofRepoIdOrNull(payment.getC_Order().getC_Currency_ID());
 		}
-		log.debug("C_Currency_Invoice_ID = " + C_Currency_Invoice_ID + ", C_Invoice_ID=" + C_Invoice_ID);
+		logger.debug("C_Currency_Invoice_ID = " + C_Currency_Invoice_ID + ", C_Invoice_ID=" + C_Invoice_ID);
 
 		return C_Currency_Invoice_ID;
 	}
@@ -133,7 +140,7 @@ public class PaymentBL implements IPaymentBL
 				&& invoiceCurrencyId != null
 				&& !currencyId.equals(invoiceCurrencyId))
 		{
-			CurrencyRate = Services.get(ICurrencyBL.class).getRate(
+			CurrencyRate = currencyBL.getRate(
 					invoiceCurrencyId,
 					currencyId,
 					ConvDate,
@@ -146,7 +153,7 @@ public class PaymentBL implements IPaymentBL
 			}
 
 			//
-			final CurrencyPrecision precision = Services.get(ICurrencyDAO.class).getStdPrecision(currencyId);
+			final CurrencyPrecision precision = currencyDAO.getStdPrecision(currencyId);
 			InvoiceOpenAmt = precision.round(InvoiceOpenAmt.multiply(CurrencyRate));
 		}
 
@@ -257,7 +264,6 @@ public class PaymentBL implements IPaymentBL
 				&& invoiceCurrencyId != null
 				&& !currencyId.equals(invoiceCurrencyId))
 		{
-			final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
 			currencyRate = currencyBL.getRate(
 					invoiceCurrencyId,
 					currencyId,
@@ -282,7 +288,7 @@ public class PaymentBL implements IPaymentBL
 		BigDecimal OverUnderAmt = payment.getOverUnderAmt();
 
 		final CurrencyPrecision precision = currencyId != null
-				? Services.get(ICurrencyDAO.class).getStdPrecision(currencyId)
+				? currencyDAO.getStdPrecision(currencyId)
 				: CurrencyPrecision.TWO;
 
 		PayAmt = precision.round(PayAmt.multiply(currencyRate));
@@ -391,8 +397,6 @@ public class PaymentBL implements IPaymentBL
 			alloc = ZERO;
 		}
 
-		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
-
 		BigDecimal total = payment.getPayAmt();
 
 		// metas: tsa: begin: 01955:
@@ -417,7 +421,7 @@ public class PaymentBL implements IPaymentBL
 			payment.setIsAllocated(test);
 		}
 
-		log.debug("Allocated={} ({}={})", test, alloc, total);
+		logger.debug("Allocated={} ({}={})", test, alloc, total);
 		return change;
 	}	// testAllocation
 
@@ -439,7 +443,6 @@ public class PaymentBL implements IPaymentBL
 		final Timestamp dateTS = TimeUtil.asTimestamp(date);
 
 		final Mutable<I_C_AllocationHdr> allocHdrRef = new Mutable<>();
-		final ITrxManager trxManager = Services.get(ITrxManager.class);
 		trxManager.run(ITrx.TRXNAME_ThreadInherited, new TrxRunnableAdapter()
 		{
 
@@ -465,6 +468,19 @@ public class PaymentBL implements IPaymentBL
 		});
 
 		return allocHdrRef.getValue();
+	}
+
+	@Override
+	public void updateDiscountAndPayAmtFromInvoiceIfAny(final I_C_Payment payment)
+	{
+		final InvoiceId invoiceId = InvoiceId.ofRepoIdOrNull(payment.getC_Invoice_ID());
+		if (invoiceId == null)
+		{
+			return;
+		}
+
+		final I_C_Invoice invoice = invoiceDAO.getByIdInTrx(invoiceId);
+		paymentDAO.updateDiscountAndPayment(payment, invoice.getC_Invoice_ID(), invoice.getC_DocType());
 	}
 
 	@Override

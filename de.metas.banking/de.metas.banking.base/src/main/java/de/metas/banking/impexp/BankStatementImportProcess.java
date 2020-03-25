@@ -154,7 +154,7 @@ public class BankStatementImportProcess extends SimpleImportProcessTemplate<I_I_
 				&& statementDate != null
 				&& !Check.isBlank(name))
 		{
-			final BankStatementId bankStatementId = bankStatementDAO.retrieveFirstIdMatching(orgBankAccountId, statementDate, name, DocStatus.Drafted)
+			final BankStatementId bankStatementId = bankStatementDAO.getFirstIdMatching(orgBankAccountId, statementDate, name, DocStatus.Drafted)
 					.orElse(null);
 			if (bankStatementId != null)
 			{

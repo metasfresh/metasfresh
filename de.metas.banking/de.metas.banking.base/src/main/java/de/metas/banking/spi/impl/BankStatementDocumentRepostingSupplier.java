@@ -6,7 +6,7 @@ import java.util.Properties;
 
 import de.metas.acct.spi.IDocumentRepostingSupplier;
 import de.metas.banking.service.IBankStatementDAO;
-import de.metas.util.Services;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -38,10 +38,16 @@ import de.metas.util.Services;
  */
 public class BankStatementDocumentRepostingSupplier implements IDocumentRepostingSupplier
 {
+	private final IBankStatementDAO bankStatementDAO;
+
+	public BankStatementDocumentRepostingSupplier(@NonNull final IBankStatementDAO bankStatementDAO)
+	{
+		this.bankStatementDAO = bankStatementDAO;
+	}
 
 	@Override
 	public List<?> retrievePostedWithoutFactAcct(Properties ctx, Timestamp startTime)
 	{
-		return Services.get(IBankStatementDAO.class).retrievePostedWithoutFactAcct(ctx, startTime);
+		return bankStatementDAO.getPostedWithoutFactAcct(ctx, startTime);
 	}
 }

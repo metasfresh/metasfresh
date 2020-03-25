@@ -225,7 +225,7 @@ public class BankStatementImportProcessTest
 				recordBuilder.trxAmt("100").lineDescription("description for line 1").build(),
 				recordBuilder.trxAmt("33.33").lineDescription("description for line 2").build());
 
-		final List<I_C_BankStatementLine> lines = bankStatementDAO.retrieveLines(bankStatementId);
+		final List<I_C_BankStatementLine> lines = bankStatementDAO.getLinesByBankStatementId(bankStatementId);
 		assertThat(lines).hasSize(2);
 
 		//

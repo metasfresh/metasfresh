@@ -31,7 +31,7 @@ import de.metas.acct.api.PostingType;
 import de.metas.acct.doc.AcctDocContext;
 import de.metas.banking.BankStatementId;
 import de.metas.banking.BankStatementLineReference;
-import de.metas.banking.service.IBankStatementDAO;
+import de.metas.banking.service.IBankStatementBL;
 import de.metas.bpartner.BPartnerId;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
@@ -85,7 +85,7 @@ public class Doc_BankStatement extends Doc<DocLine_BankStatement>
 	{
 		final BankStatementId bankStatementId = BankStatementId.ofRepoId(bankStatement.getC_BankStatement_ID());
 		final List<DocLine_BankStatement> docLines = new ArrayList<>();
-		for (final I_C_BankStatementLine line : Services.get(IBankStatementDAO.class).retrieveLines(bankStatementId))
+		for (final I_C_BankStatementLine line : Services.get(IBankStatementBL.class).getLinesByBankStatementId(bankStatementId))
 		{
 			final DocLine_BankStatement docLine = new DocLine_BankStatement(line, this);
 

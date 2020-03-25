@@ -17,6 +17,7 @@ import de.metas.banking.payment.BankStatementLineMultiPaymentLinkRequest;
 import de.metas.banking.payment.BankStatementLineMultiPaymentLinkResult;
 import de.metas.banking.payment.IBankStatementPaymentBL;
 import de.metas.banking.payment.PaymentLinkResult;
+import de.metas.banking.service.IBankStatementBL;
 import de.metas.banking.service.IBankStatementDAO;
 import de.metas.banking.service.IBankStatementListenerService;
 import de.metas.bpartner.BPartnerId;
@@ -30,7 +31,6 @@ import de.metas.payment.PaymentId;
 import de.metas.payment.TenderType;
 import de.metas.payment.api.DefaultPaymentBuilder;
 import de.metas.payment.api.IPaymentBL;
-import de.metas.payment.api.IPaymentDAO;
 import de.metas.payment.api.PaymentQuery;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -38,10 +38,10 @@ import lombok.NonNull;
 @Component
 public class BankStatementPaymentBL implements IBankStatementPaymentBL
 {
+	private final IBankStatementBL bankStatementBL = Services.get(IBankStatementBL.class);
 	private final IBankStatementDAO bankStatementDAO = Services.get(IBankStatementDAO.class);
 	private final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
-	private final IPaymentDAO paymentDAO = Services.get(IPaymentDAO.class);
-	private final IBankStatementListenerService bankStatementListenerService = Services.get(IBankStatementListenerService.class);
+	private final IBankStatementListenerService bankStatementListenersService = Services.get(IBankStatementListenerService.class);
 	private final MoneyService moneyService;
 
 	public BankStatementPaymentBL(@NonNull final MoneyService moneyService)
@@ -94,7 +94,7 @@ public class BankStatementPaymentBL implements IBankStatementPaymentBL
 		final PaymentDirection expectedPaymentDirection = PaymentDirection.ofBankStatementAmount(statementAmt);
 		final Money expectedPaymentAmount = expectedPaymentDirection.convertStatementAmtToPayAmt(statementAmt);
 
-		return paymentDAO.retrievePaymentIds(PaymentQuery.builder()
+		return paymentBL.getPaymentIds(PaymentQuery.builder()
 				.limit(limit)
 				.docStatus(DocStatus.Completed)
 				.reconciled(false)
@@ -157,7 +157,7 @@ public class BankStatementPaymentBL implements IBankStatementPaymentBL
 			@NonNull final I_C_BankStatementLine bankStatementLine,
 			@NonNull final PaymentId paymentId)
 	{
-		final I_C_Payment payment = paymentDAO.getById(paymentId);
+		final I_C_Payment payment = paymentBL.getById(paymentId);
 		linkSinglePayment(bankStatement, bankStatementLine, payment);
 	}
 
@@ -199,7 +199,7 @@ public class BankStatementPaymentBL implements IBankStatementPaymentBL
 			paymentBL.markReconciledAndSave(payment);
 		}
 
-		bankStatementListenerService.firePaymentLinked(PaymentLinkResult.builder()
+		bankStatementListenersService.firePaymentLinked(PaymentLinkResult.builder()
 				.bankStatementId(BankStatementId.ofRepoId(bankStatementLine.getC_BankStatement_ID()))
 				.bankStatementLineId(BankStatementLineId.ofRepoId(bankStatementLine.getC_BankStatementLine_ID()))
 				.bankStatementLineRefId(null)
@@ -224,8 +224,14 @@ public class BankStatementPaymentBL implements IBankStatementPaymentBL
 	public BankStatementLineMultiPaymentLinkResult linkMultiPayments(@NonNull final BankStatementLineMultiPaymentLinkRequest request)
 	{
 		return BankStatementLineMultiPaymentLinkCommand.builder()
+				.bankStatementBL(bankStatementBL)
+				.bankStatementDAO(bankStatementDAO)
+				.paymentBL(paymentBL)
+				.bankStatementListenersService(bankStatementListenersService)
 				.moneyService(moneyService)
+				//
 				.request(request)
+				//
 				.build()
 				.execute();
 	}

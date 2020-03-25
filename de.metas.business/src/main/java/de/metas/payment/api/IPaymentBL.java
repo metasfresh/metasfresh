@@ -47,6 +47,8 @@ public interface IPaymentBL extends ISingletonService
 
 	void save(I_C_Payment payment);
 
+	Set<PaymentId> getPaymentIds(@NonNull PaymentQuery query);
+
 	DefaultPaymentBuilder newInboundReceiptBuilder();
 
 	DefaultPaymentBuilder newOutboundPaymentBuilder();
@@ -114,10 +116,11 @@ public interface IPaymentBL extends ISingletonService
 	 */
 	I_C_AllocationHdr paymentWriteOff(final I_C_Payment payment, final BigDecimal writeOffAmt, final Date date);
 
+	void updateDiscountAndPayAmtFromInvoiceIfAny(I_C_Payment payment);
+
 	void markReconciled(@NonNull Collection<PaymentId> paymentIds);
 
 	void markReconciledAndSave(@NonNull I_C_Payment payment);
 
 	void markNotReconciled(@NonNull Collection<PaymentId> paymentIds);
-
 }

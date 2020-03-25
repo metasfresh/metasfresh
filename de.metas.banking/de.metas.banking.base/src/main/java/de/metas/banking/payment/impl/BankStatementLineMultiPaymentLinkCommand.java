@@ -33,7 +33,6 @@ import de.metas.payment.PaymentDirection;
 import de.metas.payment.PaymentId;
 import de.metas.payment.api.IPaymentBL;
 import de.metas.util.Check;
-import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 
@@ -63,10 +62,12 @@ final class BankStatementLineMultiPaymentLinkCommand
 {
 	private static final AdMessageKey BANK_STATEMENT_MUST_BE_COMPLETED_OR_IN_PROGRESS_MSG = AdMessageKey.of("de.metas.banking.process.C_BankStatement_AddBpartnerAndPayment.BankStatement_must_be_Completed_or_In_Progress");
 
-	private final IBankStatementBL bankStatementBL = Services.get(IBankStatementBL.class);
-	private final IBankStatementDAO bankStatementDAO = Services.get(IBankStatementDAO.class);
-	private final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
-	private final IBankStatementListenerService listenerService = Services.get(IBankStatementListenerService.class);
+	//
+	// Services
+	private final IBankStatementBL bankStatementBL;
+	private final IBankStatementDAO bankStatementDAO;
+	private final IPaymentBL paymentBL;
+	private final IBankStatementListenerService bankStatementListenersService;
 	private final MoneyService moneyService;
 
 	//
@@ -81,9 +82,18 @@ final class BankStatementLineMultiPaymentLinkCommand
 
 	@Builder
 	private BankStatementLineMultiPaymentLinkCommand(
+			@NonNull final IBankStatementBL bankStatementBL,
+			@NonNull final IBankStatementDAO bankStatementDAO,
+			@NonNull final IPaymentBL paymentBL,
+			@NonNull final IBankStatementListenerService bankStatementListenersService,
 			@NonNull final MoneyService moneyService,
+			//
 			@NonNull final BankStatementLineMultiPaymentLinkRequest request)
 	{
+		this.bankStatementBL = bankStatementBL;
+		this.bankStatementDAO = bankStatementDAO;
+		this.paymentBL = paymentBL;
+		this.bankStatementListenersService = bankStatementListenersService;
 		this.moneyService = moneyService;
 
 		this.request = request;
@@ -92,10 +102,10 @@ final class BankStatementLineMultiPaymentLinkCommand
 	public BankStatementLineMultiPaymentLinkResult execute()
 	{
 		final BankStatementLineId bankStatementLineId = request.getBankStatementLineId();
-		final I_C_BankStatementLine bankStatementLine = bankStatementDAO.getLineById(bankStatementLineId);
+		final I_C_BankStatementLine bankStatementLine = bankStatementBL.getLineById(bankStatementLineId);
 
 		final BankStatementId bankStatementId = BankStatementId.ofRepoId(bankStatementLine.getC_BankStatement_ID());
-		final I_C_BankStatement bankStatement = bankStatementDAO.getById(bankStatementId);
+		final I_C_BankStatement bankStatement = bankStatementBL.getById(bankStatementId);
 
 		final DocStatus docStatus = DocStatus.ofCode(bankStatement.getDocStatus());
 		if (!docStatus.isDraftedInProgressOrCompleted())
@@ -125,7 +135,7 @@ final class BankStatementLineMultiPaymentLinkCommand
 				.payments(linkedPayments)
 				.build();
 
-		listenerService.firePaymentsLinked(result.getPayments());
+		bankStatementListenersService.firePaymentsLinked(result.getPayments());
 
 		bankStatementBL.unpost(bankStatement);
 

@@ -49,11 +49,11 @@ import lombok.NonNull;
 
 public interface IBankStatementDAO extends ISingletonService
 {
-	List<I_C_BankStatementLine> retrieveLines(@NonNull BankStatementId bankStatementId);
+	List<I_C_BankStatementLine> getLinesByBankStatementId(@NonNull BankStatementId bankStatementId);
 
-	BankStatementLineReferenceList retrieveLineReferences(BankStatementLineId bankStatementLineId);
+	BankStatementLineReferenceList getLineReferences(BankStatementLineId bankStatementLineId);
 
-	BankStatementLineReferenceList retrieveLineReferences(@NonNull Collection<BankStatementLineId> bankStatementLineIds);
+	BankStatementLineReferenceList getLineReferences(@NonNull Collection<BankStatementLineId> bankStatementLineIds);
 
 	void deleteReferencesByIds(@NonNull Collection<BankStatementLineRefId> lineRefIds);
 
@@ -71,15 +71,15 @@ public interface IBankStatementDAO extends ISingletonService
 	 * <p>
 	 * Exclude the entries that have trxAmt = 0. These entries will produce 0 in posting
 	 */
-	List<I_C_BankStatement> retrievePostedWithoutFactAcct(Properties ctx, Date startTime);
+	List<I_C_BankStatement> getPostedWithoutFactAcct(Properties ctx, Date startTime);
 
 	I_C_BankStatement getById(@NonNull BankStatementId bankStatementId);
 
-	Optional<BankStatementId> retrieveFirstIdMatching(@NonNull BankAccountId orgBankAccountId, @NonNull LocalDate statementDate, @NonNull String name, @NonNull DocStatus docStatus);
+	Optional<BankStatementId> getFirstIdMatching(@NonNull BankAccountId orgBankAccountId, @NonNull LocalDate statementDate, @NonNull String name, @NonNull DocStatus docStatus);
 
 	I_C_BankStatementLine getLineById(BankStatementLineId lineId);
 
-	List<I_C_BankStatementLine> getLineByIds(@NonNull Set<BankStatementLineId> lineIds);
+	List<I_C_BankStatementLine> getLinesByIds(@NonNull Set<BankStatementLineId> lineIds);
 
 	@NonNull
 	ImmutableSet<PaymentId> getLinesPaymentIds(@NonNull final BankStatementId bankStatementId);
@@ -96,5 +96,5 @@ public interface IBankStatementDAO extends ISingletonService
 
 	void updateBankStatementLinesProcessedFlag(@NonNull BankStatementId bankStatementId, boolean processed);
 
-	int retrieveLastLineNo(@NonNull BankStatementId bankStatementId);
+	int getLastLineNo(@NonNull BankStatementId bankStatementId);
 }

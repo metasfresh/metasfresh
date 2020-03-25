@@ -52,6 +52,7 @@ import de.metas.banking.payment.PaymentLinkResult;
 import de.metas.banking.payment.impl.BankStatementPaymentBL;
 import de.metas.banking.service.BankStatementCreateRequest;
 import de.metas.banking.service.BankStatementLineCreateRequest;
+import de.metas.banking.service.IBankStatementBL;
 import de.metas.banking.service.IBankStatementDAO;
 import de.metas.banking.service.IBankStatementListener;
 import de.metas.banking.service.IBankStatementListenerService;
@@ -87,14 +88,16 @@ class BankStatementPaymentBLTest
 	private BankAccountId euroOrgBankAccountId;
 
 	@BeforeEach
-	void setUp()
+	void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
 		bankStatementListenerService = Services.get(IBankStatementListenerService.class);
 		bankStatementPaymentBL = new BankStatementPaymentBL(new MoneyService(new CurrencyRepository()));
 
+		final IBankStatementBL bankStatementBL = Services.get(IBankStatementBL.class);
+
 		final IModelInterceptorRegistry modelInterceptorRegistry = Services.get(IModelInterceptorRegistry.class);
-		modelInterceptorRegistry.addModelInterceptor(new C_BankStatementLine_MockedInterceptor());
+		modelInterceptorRegistry.addModelInterceptor(new C_BankStatementLine_MockedInterceptor(bankStatementBL));
 
 		createMasterData();
 	}

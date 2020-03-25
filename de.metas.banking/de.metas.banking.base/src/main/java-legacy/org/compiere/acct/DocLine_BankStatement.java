@@ -43,7 +43,6 @@ import de.metas.money.CurrencyConversionTypeId;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentId;
 import de.metas.payment.api.IPaymentBL;
-import de.metas.payment.api.IPaymentDAO;
 import de.metas.util.Services;
 
 /**
@@ -83,7 +82,7 @@ class DocLine_BankStatement extends DocLine<Doc_BankStatement>
 		setBPartnerId(BPartnerId.ofRepoIdOrNull(line.getC_BPartner_ID()));
 
 		final BankStatementLineId bankStatementLineId = BankStatementLineId.ofRepoId(line.getC_BankStatementLine_ID());
-		this._bankStatementLineReferences = ImmutableList.copyOf(bankStatementDAO.retrieveLineReferences(bankStatementLineId));
+		this._bankStatementLineReferences = ImmutableList.copyOf(bankStatementDAO.getLineReferences(bankStatementLineId));
 
 		//
 		// Period
@@ -147,7 +146,7 @@ class DocLine_BankStatement extends DocLine<Doc_BankStatement>
 	public final OrgId getPaymentOrgId(@Nullable final PaymentId paymentId)
 	{
 		final I_C_Payment payment = paymentId != null
-				? Services.get(IPaymentDAO.class).getById(paymentId)
+				? Services.get(IPaymentBL.class).getById(paymentId)
 				: null;
 
 		return getPaymentOrgId(payment);
