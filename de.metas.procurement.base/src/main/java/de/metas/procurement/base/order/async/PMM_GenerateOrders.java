@@ -1,16 +1,16 @@
 package de.metas.procurement.base.order.async;
 
-import java.util.List;
-
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.exceptions.AdempiereException;
-
 import de.metas.async.api.IQueueDAO;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.spi.WorkpackageProcessorAdapter;
 import de.metas.procurement.base.model.I_PMM_PurchaseCandidate;
 import de.metas.procurement.base.order.impl.OrdersGenerator;
 import de.metas.util.Services;
+import org.adempiere.exceptions.AdempiereException;
+
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 
 /*
  * #%L
@@ -38,7 +38,6 @@ import de.metas.util.Services;
  * Generates purchase orders from {@link I_PMM_PurchaseCandidate} by invoking {@link OrdersGenerator}.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 public class PMM_GenerateOrders extends WorkpackageProcessorAdapter
 {
@@ -55,9 +54,8 @@ public class PMM_GenerateOrders extends WorkpackageProcessorAdapter
 		{
 			throw new AdempiereException("@NotFound@ @PMM_PurchaseCandidate_ID@");
 		}
-
 		OrdersGenerator.newInstance()
-				.setCandidates(candidates)
+				.setCandidates(getItemsWithQty(candidates))
 				.generate();
 
 		return Result.SUCCESS;
@@ -66,7 +64,20 @@ public class PMM_GenerateOrders extends WorkpackageProcessorAdapter
 	private List<I_PMM_PurchaseCandidate> retrieveItems()
 	{
 		final I_C_Queue_WorkPackage workpackage = getC_Queue_WorkPackage();
-		return Services.get(IQueueDAO.class).retrieveItemsSkipMissing(workpackage, I_PMM_PurchaseCandidate.class, ITrx.TRXNAME_ThreadInherited);
+		return Services.get(IQueueDAO.class).retrieveAllItems(workpackage, I_PMM_PurchaseCandidate.class);
+	}
+
+	private List<I_PMM_PurchaseCandidate> getItemsWithQty(List<I_PMM_PurchaseCandidate> candidates)
+	{
+		List<I_PMM_PurchaseCandidate> filteredList = new ArrayList<I_PMM_PurchaseCandidate>();
+		for (I_PMM_PurchaseCandidate candidate : candidates)
+		{
+			if (candidate.getQtyOrdered().compareTo(BigDecimal.ZERO) > 0)
+			{
+				filteredList.add(candidate);
+			}
+		}
+		return filteredList;
 	}
 
 	@Override
