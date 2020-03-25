@@ -1,11 +1,14 @@
 import SockJS from 'sockjs-client';
 import { Client } from '@stomp/stompjs';
-
+import { noConnection } from '../actions/WindowActions';
+import { store } from '../containers/App';
+import { getUserSession } from '../api';
 function socketFactory() {
   return new SockJS(config.WS_URL);
 }
 
 export function connectWS(topic, onMessageCallback) {
+  const maxReconnectTimesNo = 4; // -- set here the max number of reconnect times
   // Avoid disconnecting and reconnecting to same topic.
   // IMPORTANT: we assume the "onMessageCallback" is same
   if (this.sockTopic === topic) {
@@ -38,11 +41,28 @@ export function connectWS(topic, onMessageCallback) {
   };
 
   const connect = () => {
+    let reconnectCounter = 0;
     this.sockClient = new Client({
       brokerURL: config.WS_URL,
-      // debug: function(str) {
-      //   console.log('debug: ', str);
-      // },
+      debug(strMessage) {
+        // console.log('debug: ', strMessage);
+        // -- detect reconnect and increment the reconnect counter
+        if (strMessage.includes('reconnect')) {
+          getUserSession()
+            .then(({ data }) => {
+              reconnectCounter =
+                data && !data.loggedIn ? reconnectCounter + 1 : 0;
+            })
+            .catch(() => {
+              reconnectCounter += 1;
+            });
+        }
+        // -- if more than max allowed reconnect times  ->  deactivate
+        if (reconnectCounter > maxReconnectTimesNo) {
+          this.reconnectDelay = 0; // 0 - deactivates the sockClient
+          store.dispatch(noConnection(true));
+        }
+      },
       reconnectDelay: 5000,
       heartbeatIncoming: 4000,
       heartbeatOutgoing: 4000,

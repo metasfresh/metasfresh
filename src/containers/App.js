@@ -30,7 +30,7 @@ import keymap from '../shortcuts/keymap';
 import configureStore from '../store/configureStore';
 
 const hotkeys = generateHotkeys({ keymap, blacklist });
-const store = configureStore(browserHistory);
+export const store = configureStore(browserHistory);
 const history = syncHistoryWithStore(browserHistory, store);
 const APP_PLUGINS = PLUGINS ? PLUGINS : [];
 

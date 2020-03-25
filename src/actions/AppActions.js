@@ -215,7 +215,14 @@ export function loginSuccess(auth) {
             }
           });
         })
-        .catch((e) => e)
+        .catch((e) => {
+          if (e.response) {
+            let { status } = e.response;
+            if (status === 401) {
+              window.location.href = '/';
+            }
+          }
+        })
     );
 
     requests.push(
