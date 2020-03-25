@@ -31,7 +31,6 @@ CREATE OR REPLACE FUNCTION report.Current_Vs_Previous_Pricelist_Comparison_Repor
             )
 AS
 $$
-    --
 WITH PriceListVersionsByValidFrom AS
          (
              SELECT --
@@ -56,19 +55,19 @@ WITH PriceListVersionsByValidFrom AS
                              (SELECT m_pricelist_version_id FROM PriceListVersionsByValidFrom plvv2 WHERE plvv2.rank = 2 AND plvv2.c_bpartner_id = plvv.c_bpartner_id) previousPlv_ID
              FROM PriceListVersionsByValidFrom plvv
              WHERE TRUE
-               --                AND (p_C_BPartner_ID IS NULL or plvv.c_bpartner_id = p_C_BPartner_ID) todo this is the correct query
-               AND plvv.c_bpartner_id IN (2157534, 2156515, 2157468) -- todo:  for testing, as the performance is horrible
+               AND (p_C_BPartner_ID IS NULL OR plvv.c_bpartner_id = p_C_BPartner_ID)
              ORDER BY plvv.c_bpartner_id
          ),
      result AS
          (
-             SELECT (report.fresh_PriceList_Details_Report(
+             SELECT data.*
+             FROM currentAndPreviousPLV plv
+                      INNER JOIN LATERAL report.fresh_PriceList_Details_Report(
                      plv.c_bpartner_id,
                      plv.currentPlv_ID,
                      plv.previousPlv_ID,
                      p_AD_Language
-                 )).*
-             FROM currentAndPreviousPLV plv
+                 ) AS data ON TRUE
          )
 SELECT --
        r.bp_value,
@@ -94,7 +93,6 @@ SELECT --
        r.currency::text,
        r.currency2::text
 FROM result r
-    --
 $$
     LANGUAGE sql STABLE
 ;
@@ -113,8 +111,31 @@ FROM report.Current_Vs_Previous_Pricelist_Comparison_Report(NULL)
 
 
 
-
 -- speed test of view for the test bpartners AND plvv.c_bpartner_id IN (2157534, 2156515, 2157468)
 -- this takes 2 seconds
-select * from RV_fresh_PriceList_Comparison v
-where v.c_bpartner_id IN (2157534, 2156515, 2157468);
+SELECT *
+FROM RV_fresh_PriceList_Comparison v
+WHERE v.c_bpartner_id IN (2157534, 2156515, 2157468)
+;
+
+
+----
+
+SELECT *
+FROM report.fresh_PriceList_Details_Report(
+        2157500,
+        2003337,
+        2002393,
+        'en_US'
+    )
+;
+
+
+
+SELECT (report.fresh_PriceList_Details_Report(
+        2157500,
+        2003337,
+        2002393,
+        'en_US'
+    )).*
+;
