@@ -91,7 +91,7 @@ public class CreateCreditMemoFromInvoice extends JavaProcess
 
 		if (creditMemo.isProcessed())
 		{
-			// we won't zoom to the new credit memo, but instead shown the message
+			// we won't zoom to the new credit memo, but instead show the message
 			addLog(msg);
 		}
 		return msg;

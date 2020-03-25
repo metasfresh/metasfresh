@@ -691,6 +691,7 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 		}
 		final I_C_OrderLine orderLine = create(shipmentSchedule.getC_OrderLine(), I_C_OrderLine.class);
 
+
 		updatePackingInstructionsFromOrderLine(shipmentScheduleToUse, orderLine);
 		updateHUQuantitiesFromOrderLine(shipmentScheduleToUse, orderLine);
 		updatePackingRelatedQtys(shipmentScheduleToUse);

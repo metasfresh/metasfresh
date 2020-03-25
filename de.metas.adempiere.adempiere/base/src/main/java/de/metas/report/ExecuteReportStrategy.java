@@ -1,5 +1,7 @@
 package de.metas.report;
 
+import javax.annotation.Nullable;
+
 import de.metas.process.ProcessInfo;
 import de.metas.report.server.OutputType;
 import lombok.NonNull;

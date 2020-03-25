@@ -1,6 +1,6 @@
-DROP FUNCTION IF EXISTS report.fresh_pricelist_details_template_report(NUMERIC, NUMERIC, CHARACTER VARYING, NUMERIC);
-CREATE OR REPLACE FUNCTION report.fresh_pricelist_details_template_report(IN p_c_bpartner_id NUMERIC, IN p_m_pricelist_version_id NUMERIC, IN p_ad_language CHARACTER VARYING,
-                                                                          IN p_c_bpartner_location_id NUMERIC)
+drop function if exists report.fresh_pricelist_details_template_report(numeric, numeric, character varying, numeric);
+CREATE OR REPLACE FUNCTION report.fresh_pricelist_details_template_report(IN p_c_bpartner_id numeric, IN p_m_pricelist_version_id numeric, IN p_ad_language character varying,
+                                                                          IN p_c_bpartner_location_id numeric)
     RETURNS TABLE
             (
                 prodvalue               text,
@@ -62,4 +62,3 @@ $BODY$
     LANGUAGE sql STABLE
                  COST 100
                  ROWS 1000;
-                 

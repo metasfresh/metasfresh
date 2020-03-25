@@ -180,6 +180,9 @@ public abstract class ReportStarter extends JavaProcess
 		//
 		// Set report data to process execution result
 		final ProcessExecutionResult processExecutionResult = processInfo.getResult();
+
+		final String reportContentType = outputType.getContentType();
+
 		final String reportFilename;
 		if (Check.isNotBlank(result.getFilename()))
 		{
@@ -191,7 +194,7 @@ public abstract class ReportStarter extends JavaProcess
 			reportFilename = extractReportFilename(processInfo, outputType);
 			logger.debug("executeReport's result has a blank filename; -> use generic filename={} for the exported file", result.getFilename());
 		}
-		final String reportContentType = outputType.getContentType();
+
 		processExecutionResult.setReportData(result.getReportData(), reportFilename, reportContentType);
 
 		//
@@ -291,7 +294,7 @@ public abstract class ReportStarter extends JavaProcess
 	{
 		try
 		{
-			log.info("Doing direct print without preview: {}", reportPrintingInfo);
+			logger.info("Doing direct print without preview: {}", reportPrintingInfo);
 			startProcessDirectPrint(reportPrintingInfo);
 		}
 		catch (final Exception e)
