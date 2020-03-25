@@ -46,11 +46,11 @@ public class BankStatementListenerService implements IBankStatementListenerServi
 		final boolean added = listeners.addListener(listener);
 		if (added)
 		{
-			logger.info("Registered listener: " + listener);
+			logger.info("Registered listener: `" + listener + "`");
 		}
 		else
 		{
-			logger.warn("Failed registering listener `" + listener + "` because it was alrady registered: " + listeners);
+			logger.warn("Failed registering listener `" + listener + "` because it was already registered: `" + listeners + "`");
 		}
 	}
 
