@@ -3,9 +3,14 @@ package de.metas.rest_api.invoicecandidates.request;
 import static java.math.BigDecimal.TEN;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.time.LocalDate;
+
 import org.junit.jupiter.api.Test;
 
+import de.metas.rest_api.common.JsonDocTypeInfo;
 import de.metas.rest_api.common.JsonExternalId;
+import de.metas.rest_api.common.JsonInvoiceRule;
+import de.metas.rest_api.common.JsonPrice;
 import de.metas.rest_api.common.JsonSOTrx;
 import de.metas.util.JSONObjectMapper;
 
@@ -35,20 +40,34 @@ class JsonCreateInvoiceCandidatesRequestTest
 {
 
 	@Test
-	void test()
+	void serializeDeserialize()
 	{
-		final JsonCreateInvoiceCandidatesRequestItem minimalItem = JsonCreateInvoiceCandidatesRequestItem.builder()
+		final JsonCreateInvoiceCandidatesRequestItem item = JsonCreateInvoiceCandidatesRequestItem.builder()
+				.billContactIdentifier("billContactIdentifier")
+				.billLocationIdentifier("billLocationIdentifier")
 				.billPartnerIdentifier("val-bpartner-123")
+				.dateOrdered(LocalDate.of(2020, 03, 24))
+				.discountOverride(TEN)
 				.externalHeaderId(JsonExternalId.of("externalHeaderId"))
 				.externalLineId(JsonExternalId.of("externalLineId"))
+				.invoiceDetailItem(JSONInvoiceDetailItem.builder().description("description1").label("label1").seqNo(10).build())
+				.invoiceDetailItem(JSONInvoiceDetailItem.builder().description("description2").label("label2").seqNo(10).build())
+				.invoiceDocType(JsonDocTypeInfo.builder().docBaseType("docBaseType").docSubType("docSubType").build())
+				.invoiceRuleOverride(JsonInvoiceRule.CustomerScheduleAfterDelivery)
+				.lineDescription("lineDescription")
 				.orgCode("orgCode")
+				.poReference("poReference")
+				.presetDateInvoiced(LocalDate.of(2020, 03, 25))
+				.priceEnteredOverride(JsonPrice.builder().currencyCode("currencyCode").priceUomCode("priceUomCode").value(TEN).build())
 				.productIdentifier("val-product-123")
+				.qtyDelivered(TEN)
 				.qtyOrdered(TEN)
+				.uomCode("uomCode")
 				.soTrx(JsonSOTrx.SALES)
 				.build();
 		final JsonCreateInvoiceCandidatesRequest request = JsonCreateInvoiceCandidatesRequest
 				.builder()
-				.item(minimalItem)
+				.item(item)
 				.build();
 
 		final JSONObjectMapper<JsonCreateInvoiceCandidatesRequest> jsonMapper = JSONObjectMapper.forClass(JsonCreateInvoiceCandidatesRequest.class);
@@ -58,5 +77,4 @@ class JsonCreateInvoiceCandidatesRequestTest
 
 		assertThat(deserializedRequest).isEqualTo(request);
 	}
-
 }

@@ -4,6 +4,7 @@ import static de.metas.rest_api.bpartner.SwaggerDocConstants.BPARTNER_IDENTIFIER
 import static de.metas.rest_api.bpartner.SwaggerDocConstants.CONTACT_IDENTIFIER_DOC;
 import static de.metas.rest_api.bpartner.SwaggerDocConstants.LOCATION_IDENTIFIER_DOC;
 import static de.metas.rest_api.bpartner.SwaggerDocConstants.PRODUCT_IDENTIFIER_DOC;
+
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
@@ -22,6 +23,7 @@ import de.metas.rest_api.common.JsonSOTrx;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
 import lombok.NonNull;
+import lombok.Singular;
 import lombok.Value;
 
 /*
@@ -158,7 +160,7 @@ public class JsonCreateInvoiceCandidatesRequestItem
 			@JsonProperty("priceEnteredOverride") @Nullable final JsonPrice priceEnteredOverride,
 			@JsonProperty("discountOverride") @Nullable final BigDecimal discountOverride,
 			@JsonProperty("lineDescription") @Nullable final String lineDescription,
-			@JsonProperty("invoiceDetailItems") @Nullable final List<JSONInvoiceDetailItem> invoiceDetailItems)
+			@JsonProperty("invoiceDetailItems") @Nullable @Singular final List<JSONInvoiceDetailItem> invoiceDetailItems)
 	{
 		this.orgCode = orgCode;
 		this.externalHeaderId = externalHeaderId;

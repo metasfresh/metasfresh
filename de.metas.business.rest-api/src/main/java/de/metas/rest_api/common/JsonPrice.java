@@ -2,8 +2,12 @@ package de.metas.rest_api.common;
 
 import java.math.BigDecimal;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import lombok.Builder;
 import lombok.Value;
 
 /*
@@ -41,4 +45,18 @@ public class JsonPrice
 	@ApiModelProperty(position = 30, required = true, //
 			value = "Identify which unit of measurment this about")
 	String priceUomCode;
+
+	@Builder
+	@JsonCreator
+	public JsonPrice(
+			@JsonProperty("value") final BigDecimal value,
+			@JsonProperty("currencyCode") final String currencyCode,
+			@JsonProperty("priceUomCode") final String priceUomCode)
+	{
+		this.value = value;
+		this.currencyCode = currencyCode;
+		this.priceUomCode = priceUomCode;
+	}
+
+
 }
