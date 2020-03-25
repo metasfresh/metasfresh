@@ -29,12 +29,14 @@ import java.util.Properties;
 
 import org.compiere.util.Env;
 
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.Msg;
 import de.metas.i18n.TranslatableStringBuilder;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.util.Check;
+import lombok.NonNull;
 
 /**
  *
@@ -133,7 +135,7 @@ public class MsgBL implements IMsgBL
 	}
 
 	@Override
-	public ITranslatableString getTranslatableMsgText(final String adMessage, final Object... msgParameters)
+	public ITranslatableString getTranslatableMsgText(@NonNull final AdMessageKey adMessage, final Object... msgParameters)
 	{
 		return new ADMessageTranslatableString(adMessage, msgParameters);
 	}

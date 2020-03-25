@@ -27,11 +27,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableMap;
 
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
+import lombok.NonNull;
 
 public class PlainMsgBL implements IMsgBL
 {
@@ -128,9 +131,16 @@ public class PlainMsgBL implements IMsgBL
 	}
 
 	@Override
-	public ITranslatableString getTranslatableMsgText(final String adMessage, final Object... msgParameters)
+	public ITranslatableString getTranslatableMsgText(@NonNull final AdMessageKey adMessage, final Object... msgParameters)
 	{
-		return TranslatableStrings.constant(adMessage);
+		if (msgParameters == null || msgParameters.length == 0)
+		{
+			return TranslatableStrings.constant(adMessage.toAD_Message());
+		}
+		else
+		{
+			return TranslatableStrings.constant(adMessage.toAD_Message() + " - " + Joiner.on(", ").join(msgParameters));
+		}
 	}
 
 	@Override

@@ -68,4 +68,10 @@ public final class AdMessageKey
 	{
 		return value;
 	}
+
+	public String toAD_MessageWithMarkers()
+	{
+		return "@" + toAD_Message() + "@";
+	}
+
 }

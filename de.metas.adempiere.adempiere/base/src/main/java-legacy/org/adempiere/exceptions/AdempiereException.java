@@ -263,7 +263,7 @@ public class AdempiereException extends RuntimeException
 	public AdempiereException(@NonNull final AdMessageKey messageKey)
 	{
 		this.adLanguage = captureLanguageOnConstructionTime ? Env.getAD_Language() : null;
-		this.messageTrl = Services.get(IMsgBL.class).getTranslatableMsgText(messageKey.toAD_Message());
+		this.messageTrl = Services.get(IMsgBL.class).getTranslatableMsgText(messageKey);
 	}
 
 	public AdempiereException(final String adLanguage, final String adMessage, final Object[] params)

@@ -27,7 +27,10 @@ import java.util.Map;
 
 import java.util.Properties;
 
+import javax.annotation.Nullable;
+
 import de.metas.util.ISingletonService;
+import lombok.NonNull;
 
 public interface IMsgBL extends ISingletonService
 {
@@ -113,12 +116,15 @@ public interface IMsgBL extends ISingletonService
 	ITranslatableString translatable(String text);
 
 	/**
-	 * @param adMessage AD_Message
-	 * @param msgParameters optional AD_Message parameters
 	 * @return AD_Message as translatable string
 	 * @see #translatable(String)
 	 */
-	ITranslatableString getTranslatableMsgText(String adMessage, Object... msgParameters);
+	ITranslatableString getTranslatableMsgText(AdMessageKey adMessage, Object... msgParameters);
+
+	default ITranslatableString getTranslatableMsgText(@NonNull final String adMessage, @Nullable final Object... msgParameters)
+	{
+		return getTranslatableMsgText(AdMessageKey.of(adMessage), msgParameters);
+	}
 
 	/**
 	 * @see #getTranslatableMsgText(String, Object...)
