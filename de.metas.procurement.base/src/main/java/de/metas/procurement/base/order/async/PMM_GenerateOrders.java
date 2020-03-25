@@ -40,7 +40,6 @@ import de.metas.util.Services;
  * Generates purchase orders from {@link I_PMM_PurchaseCandidate} by invoking {@link OrdersGenerator}.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 public class PMM_GenerateOrders extends WorkpackageProcessorAdapter
 {
@@ -67,15 +66,17 @@ public class PMM_GenerateOrders extends WorkpackageProcessorAdapter
 	private List<I_PMM_PurchaseCandidate> retrieveItems()
 	{
 		final I_C_Queue_WorkPackage workpackage = getC_Queue_WorkPackage();
-//		return Services.get(IQueueDAO.class).retrieveItemsSkipMissing(workpackage, I_PMM_PurchaseCandidate.class, ITrx.TRXNAME_ThreadInherited);
 		return Services.get(IQueueDAO.class).retrieveAllItems(workpackage, I_PMM_PurchaseCandidate.class);
 	}
 
-	private List<I_PMM_PurchaseCandidate> getItemsWithQty(List<I_PMM_PurchaseCandidate> candidates) {
+	private List<I_PMM_PurchaseCandidate> getItemsWithQty(List<I_PMM_PurchaseCandidate> candidates)
+	{
 		List<I_PMM_PurchaseCandidate> filteredList = new ArrayList<I_PMM_PurchaseCandidate>();
-		for (int i=0;i<candidates.size();i++) {
-			if (candidates.get(i).getQtyOrdered().compareTo(BigDecimal.ZERO) > 0) {
-				filteredList.add(candidates.get(i));
+		for (I_PMM_PurchaseCandidate candidate : candidates)
+		{
+			if (candidate.getQtyOrdered().compareTo(BigDecimal.ZERO) > 0)
+			{
+				filteredList.add(candidate);
 			}
 		}
 		return filteredList;
