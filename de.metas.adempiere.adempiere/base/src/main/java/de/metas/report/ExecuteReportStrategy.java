@@ -1,12 +1,12 @@
 package de.metas.report;
 
-import javax.annotation.Nullable;
-
 import de.metas.process.ProcessInfo;
 import de.metas.report.server.OutputType;
 import lombok.NonNull;
 import lombok.ToString;
 import lombok.Value;
+
+import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -58,7 +58,7 @@ public interface ExecuteReportStrategy
 
 		public static ExecuteReportResult of(@NonNull final String filename, @NonNull final OutputType outputType, @NonNull final byte[] reportData)
 		{
-			return new ExecuteReportResult(null, outputType, reportData);
+			return new ExecuteReportResult(filename, outputType, reportData);
 		}
 
 		private  ExecuteReportResult(@Nullable String filename, OutputType outputType, byte[] reportData)
