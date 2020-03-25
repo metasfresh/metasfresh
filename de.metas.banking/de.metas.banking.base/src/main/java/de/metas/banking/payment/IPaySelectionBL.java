@@ -9,7 +9,6 @@ import org.compiere.model.I_C_PaySelectionLine;
 
 import de.metas.banking.model.BankStatementAndLineAndRefId;
 import de.metas.banking.model.BankStatementLineId;
-import de.metas.banking.model.I_C_Payment;
 import de.metas.banking.model.PaySelectionId;
 import de.metas.payment.PaymentId;
 import de.metas.util.ISingletonService;
@@ -27,24 +26,6 @@ public interface IPaySelectionBL extends ISingletonService
 	 * For more informations, see {@link #createPaymentIfNeeded(I_C_PaySelectionLine)}.
 	 */
 	void createPayments(I_C_PaySelection paySelection);
-
-	/**
-	 * Creates a payment for given pay selection line, links the payment to line and saves the line.
-	 *
-	 * A payment will be created only if
-	 * <ul>
-	 * <li>was not created before
-	 * <li>line is not linked to a bank statement line ref
-	 * </ul>
-	 *
-	 * @return newly created payment or <code>null</code> if no payment was generated.
-	 */
-	I_C_Payment createPaymentIfNeeded(I_C_PaySelectionLine line);
-
-	/**
-	 * Link given bank statement line reference to pay selection line
-	 */
-	void linkBankStatementLine(@NonNull I_C_PaySelectionLine psl, @NonNull BankStatementAndLineAndRefId bankStatementAndLineAndRefId);
 
 	void linkBankStatementLinesByPaymentIds(@NonNull Map<PaymentId, BankStatementAndLineAndRefId> bankStatementAndLineAndRefIds);
 

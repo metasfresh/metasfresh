@@ -24,6 +24,10 @@ public interface IPaySelectionDAO extends ISingletonService
 {
 	Optional<I_C_PaySelection> getById(PaySelectionId paySelectionId);
 
+	List<I_C_PaySelection> getByIds(Set<PaySelectionId> paySelectionIds);
+
+	void save(@NonNull I_C_PaySelection paySelection);
+
 	void save(@NonNull I_C_PaySelectionLine psl);
 
 	List<I_C_PaySelectionLine> retrievePaySelectionLines(I_C_PaySelection paySelection);
@@ -49,4 +53,6 @@ public interface IPaySelectionDAO extends ISingletonService
 	List<I_C_PaySelectionLine> retrievePaySelectionLines(Collection<PaymentId> paymentIds);
 
 	IQuery<I_C_PaySelectionLine> queryActivePaySelectionLinesByInvoiceId(Set<InvoiceId> invoiceIds);
+
+	void updatePaySelectionTotalAmt(@NonNull PaySelectionId paySelectionId);
 }

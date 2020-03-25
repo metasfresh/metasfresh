@@ -1,16 +1,12 @@
 package de.metas.banking.bankstatement.match.spi.impl;
 
 import org.compiere.model.I_C_PaySelection;
-import org.compiere.model.I_C_PaySelectionLine;
 import org.compiere.model.I_C_Payment;
 import org.compiere.util.Env;
 
 import de.metas.banking.bankstatement.match.spi.IPaymentBatch;
 import de.metas.banking.bankstatement.match.spi.IPaymentBatchProvider;
 import de.metas.banking.bankstatement.match.spi.PaymentBatch;
-import de.metas.banking.model.BankStatementAndLineAndRefId;
-import de.metas.banking.model.PaySelectionId;
-import de.metas.banking.payment.IPaySelectionBL;
 import de.metas.banking.payment.IPaySelectionDAO;
 import de.metas.i18n.IMsgBL;
 import de.metas.payment.PaymentId;
@@ -60,34 +56,5 @@ public class PaySelectionPaymentBatchProvider implements IPaymentBatchProvider
 				.setDate(paySelection.getPayDate())
 				.setPaymentBatchProvider(this)
 				.build();
-	}
-
-	@Override
-	public void linkBankStatementLine(
-			final IPaymentBatch paymentBatch,
-			final BankStatementAndLineAndRefId bankStatementLineRefId,
-			final PaymentId paymentId)
-	{
-		if (paymentId == null)
-		{
-			return;
-		}
-
-		final PaySelectionId paySelectionId = PaySelectionId.ofRepoId(paymentBatch.getRecord().getRecord_ID());
-		final I_C_PaySelection paySelection = Services.get(IPaySelectionDAO.class).getById(paySelectionId).orElse(null);
-		if (paySelection == null)
-		{
-			return;
-		}
-
-		final IPaySelectionDAO paySelectionDAO = Services.get(IPaySelectionDAO.class);
-		final I_C_PaySelectionLine paySelectionLine = paySelectionDAO.retrievePaySelectionLineForPayment(paySelection, paymentId).orElse(null);
-		if (paySelectionLine == null)
-		{
-			return;
-		}
-
-		final IPaySelectionBL paySelectionBL = Services.get(IPaySelectionBL.class);
-		paySelectionBL.linkBankStatementLine(paySelectionLine, bankStatementLineRefId);
 	}
 }

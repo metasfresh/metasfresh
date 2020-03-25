@@ -10,11 +10,13 @@ import java.util.Set;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.IQuery;
 import org.compiere.model.IQuery.Aggregate;
 import org.compiere.model.I_C_PaySelection;
 import org.compiere.model.I_C_PaySelectionLine;
+import org.compiere.util.DB;
 
 import com.google.common.collect.ImmutableList;
 
@@ -36,7 +38,7 @@ public class PaySelectionDAO implements IPaySelectionDAO
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	@Override
-	public Optional<I_C_PaySelection> getById(@NonNull PaySelectionId paySelectionId)
+	public Optional<I_C_PaySelection> getById(@NonNull final PaySelectionId paySelectionId)
 	{
 		// NOTE: use query by ID instead of load because we want to tolerate the case when we are asking for a pay selection which was not already saved by webui
 		final I_C_PaySelection paySelectionRecord = queryBL.createQueryBuilder(I_C_PaySelection.class)
@@ -46,6 +48,27 @@ public class PaySelectionDAO implements IPaySelectionDAO
 				.firstOnlyOrNull(I_C_PaySelection.class);
 
 		return Optional.ofNullable(paySelectionRecord);
+	}
+
+	@Override
+	public List<I_C_PaySelection> getByIds(@NonNull final Set<PaySelectionId> paySelectionIds)
+	{
+		if (paySelectionIds.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
+		return queryBL.createQueryBuilder(I_C_PaySelection.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_C_PaySelection.COLUMNNAME_C_PaySelection_ID, paySelectionIds)
+				.create()
+				.list();
+	}
+
+	@Override
+	public void save(@NonNull final I_C_PaySelection paySelection)
+	{
+		saveRecord(paySelection);
 	}
 
 	@Override
@@ -215,4 +238,16 @@ public class PaySelectionDAO implements IPaySelectionDAO
 				.addOnlyActiveRecordsFilter()
 				.create();
 	}
+
+	@Override
+	public void updatePaySelectionTotalAmt(@NonNull final PaySelectionId paySelectionId)
+	{
+		final String sql = "UPDATE C_PaySelection ps "
+				+ "SET TotalAmt = (SELECT COALESCE(SUM(psl.PayAmt),0) "
+				+ "FROM C_PaySelectionLine psl "
+				+ "WHERE ps.C_PaySelection_ID=psl.C_PaySelection_ID AND psl.IsActive='Y') "
+				+ "WHERE C_PaySelection_ID=?";
+		DB.executeUpdateEx(sql, new Object[] { paySelectionId }, ITrx.TRXNAME_ThreadInherited);
+	}
+
 }

@@ -2,9 +2,6 @@ package de.metas.banking.bankstatement.match.spi;
 
 import org.compiere.model.I_C_Payment;
 
-import de.metas.banking.model.BankStatementAndLineAndRefId;
-import de.metas.payment.PaymentId;
-
 /*
  * #%L
  * de.metas.banking.swingui
@@ -36,12 +33,4 @@ import de.metas.payment.PaymentId;
 public interface IPaymentBatchProvider
 {
 	IPaymentBatch retrievePaymentBatch(final I_C_Payment payment);
-
-	/**
-	 * Link the bank statement line to given payment batch.
-	 *
-	 * @param paymentBatch
-	 * @param bankStatementLineRef
-	 */
-	void linkBankStatementLine(final IPaymentBatch paymentBatch, final BankStatementAndLineAndRefId bankStatementLineRefId, PaymentId paymentId);
 }

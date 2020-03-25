@@ -9,6 +9,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.StringJoiner;
 
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -19,6 +20,7 @@ import org.compiere.model.I_C_PaySelectionLine;
 import org.compiere.model.X_C_BP_BankAccount;
 import org.compiere.util.TimeUtil;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
@@ -28,7 +30,6 @@ import de.metas.banking.api.IBPBankAccountDAO;
 import de.metas.banking.model.BankStatementAndLineAndRefId;
 import de.metas.banking.model.BankStatementId;
 import de.metas.banking.model.BankStatementLineId;
-import de.metas.banking.model.I_C_Payment;
 import de.metas.banking.model.PaySelectionId;
 import de.metas.banking.payment.IPaySelectionBL;
 import de.metas.banking.payment.IPaySelectionDAO;
@@ -50,12 +51,6 @@ public class PaySelectionBL implements IPaySelectionBL
 	private static final String MSG_PaySelectionLines_No_BankAccount = "C_PaySelection_PaySelectionLines_No_BankAccount";
 
 	private final IPaySelectionDAO paySelectionDAO = Services.get(IPaySelectionDAO.class);
-
-	private static boolean isInBankStatement(@NonNull final I_C_PaySelectionLine psl)
-	{
-		return BankStatementId.ofRepoIdOrNull(psl.getC_BankStatement_ID()) != null
-				&& BankStatementLineId.ofRepoIdOrNull(psl.getC_BankStatementLine_ID()) != null;
-	}
 
 	@Override
 	public void updateFromInvoice(final org.compiere.model.I_C_PaySelectionLine psl)
@@ -173,8 +168,18 @@ public class PaySelectionBL implements IPaySelectionBL
 		}
 	}
 
-	@Override
-	public I_C_Payment createPaymentIfNeeded(final I_C_PaySelectionLine line)
+	/**
+	 * Creates a payment for given pay selection line, links the payment to line and saves the line.
+	 *
+	 * A payment will be created only if
+	 * <ul>
+	 * <li>was not created before
+	 * <li>line is not linked to a bank statement line ref
+	 * </ul>
+	 *
+	 * @return newly created payment or <code>null</code> if no payment was generated.
+	 */
+	private org.compiere.model.I_C_Payment createPaymentIfNeeded(final I_C_PaySelectionLine line)
 	{
 		// Skip if a payment was already created
 		if (line.getC_Payment_ID() > 0)
@@ -184,14 +189,14 @@ public class PaySelectionBL implements IPaySelectionBL
 
 		// Skip if this pay selection line is already in a bank statement
 		// because in that case, the payment shall be generated there
-		if (isInBankStatement(line))
+		if (isReconciled(line))
 		{
 			return null;
 		}
 
 		try
 		{
-			final I_C_Payment payment = createPayment(line);
+			final org.compiere.model.I_C_Payment payment = createPayment(line);
 			line.setC_Payment(payment);
 			paySelectionDAO.save(line);
 
@@ -199,7 +204,7 @@ public class PaySelectionBL implements IPaySelectionBL
 		}
 		catch (Exception e)
 		{
-			throw new AdempiereException("Caught " + e + " while trying to create a payment for C_PaySelectionLine " + line, e);
+			throw new AdempiereException("Failed creating payment from " + line, e);
 		}
 	}
 
@@ -211,17 +216,17 @@ public class PaySelectionBL implements IPaySelectionBL
 	 * @param line
 	 * @return generated payment.
 	 */
-	private I_C_Payment createPayment(final I_C_PaySelectionLine line)
+	private org.compiere.model.I_C_Payment createPayment(final I_C_PaySelectionLine line)
 	{
 		final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
 
 		final I_C_PaySelection paySelection = line.getC_PaySelection();
-		final int ownBankAccountId = paySelection.getC_BP_BankAccount_ID();
+		final BankAccountId orgBankAccountId = BankAccountId.ofRepoId(paySelection.getC_BP_BankAccount_ID());
 		final LocalDate payDate = TimeUtil.asLocalDate(paySelection.getPayDate());
 
-		final org.compiere.model.I_C_Payment payment = paymentBL.newBuilderOfInvoice(line.getC_Invoice())
+		return paymentBL.newBuilderOfInvoice(line.getC_Invoice())
 				.adOrgId(OrgId.ofRepoId(line.getAD_Org_ID()))
-				.orgBankAccountId(BankAccountId.ofRepoId(ownBankAccountId))
+				.orgBankAccountId(orgBankAccountId)
 				.dateAcct(payDate)
 				.dateTrx(payDate)
 				.bpartnerId(BPartnerId.ofRepoId(line.getC_BPartner_ID()))
@@ -230,8 +235,6 @@ public class PaySelectionBL implements IPaySelectionBL
 				.discountAmt(line.getDiscountAmt())
 				//
 				.createAndProcess();
-
-		return InterfaceWrapperHelper.create(payment, I_C_Payment.class);
 	}
 
 	@Override
@@ -244,8 +247,14 @@ public class PaySelectionBL implements IPaySelectionBL
 
 		final Set<PaymentId> paymentIds = bankStatementAndLineAndRefIds.keySet();
 
+		final List<I_C_PaySelectionLine> paySelectionLines = paySelectionDAO.retrievePaySelectionLines(paymentIds);
+		if (paySelectionLines.isEmpty())
+		{
+			return;
+		}
+
 		final ImmutableMap<PaymentId, I_C_PaySelectionLine> paySelectionLinesByPaymentId = Maps.uniqueIndex(
-				paySelectionDAO.retrievePaySelectionLines(paymentIds),
+				paySelectionLines,
 				paySelectionLine -> PaymentId.ofRepoId(paySelectionLine.getC_Payment_ID()));
 
 		for (final Map.Entry<PaymentId, I_C_PaySelectionLine> e : paySelectionLinesByPaymentId.entrySet())
@@ -256,19 +265,70 @@ public class PaySelectionBL implements IPaySelectionBL
 
 			linkBankStatementLine(paySelectionLine, bankStatementLineRefId);
 		}
+
+		final ImmutableSet<PaySelectionId> paySelectionIds = extractPaySelectionIds(paySelectionLines);
+		updatePaySelectionReconciledStatus(paySelectionIds);
 	}
 
 	@Override
 	public void unlinkPaySelectionLineFromBankStatement(@NonNull final Collection<BankStatementLineId> bankStatementLineIds)
 	{
-		for (final I_C_PaySelectionLine paySelectionLine : paySelectionDAO.retrievePaySelectionLinesByBankStatementLineIds(bankStatementLineIds))
+		final List<I_C_PaySelectionLine> paySelectionLines = paySelectionDAO.retrievePaySelectionLinesByBankStatementLineIds(bankStatementLineIds);
+		if (paySelectionLines.isEmpty())
 		{
-			unlinkBankStatementFromLine(paySelectionLine);
+			return;
+		}
+
+		unlinkBankStatementFromLine(paySelectionLines);
+
+		final ImmutableSet<PaySelectionId> paySelectionIds = extractPaySelectionIds(paySelectionLines);
+		updatePaySelectionReconciledStatus(paySelectionIds);
+	}
+
+	private static ImmutableSet<PaySelectionId> extractPaySelectionIds(@NonNull final List<I_C_PaySelectionLine> paySelectionLines)
+	{
+		return paySelectionLines.stream()
+				.map(paySelectionLine -> PaySelectionId.ofRepoId(paySelectionLine.getC_PaySelection_ID()))
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	@VisibleForTesting
+	void updatePaySelectionReconciledStatus(@NonNull final Set<PaySelectionId> paySelectionIds)
+	{
+		if (paySelectionIds.isEmpty())
+		{
+			// shall NOT happen
+			return;
+		}
+
+		final ImmutableSet<@NonNull PaySelectionId> notReconciledPaySelectionIds = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_C_PaySelectionLine.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_C_PaySelectionLine.COLUMNNAME_C_PaySelection_ID, paySelectionIds)
+				.addEqualsFilter(I_C_PaySelectionLine.COLUMNNAME_C_BankStatement_ID, null) // not reconciled
+				.create()
+				.listDistinct(I_C_PaySelectionLine.COLUMNNAME_C_PaySelection_ID, Integer.class)
+				.stream()
+				.map(PaySelectionId::ofRepoId)
+				.collect(ImmutableSet.toImmutableSet());
+
+		for (final I_C_PaySelection paySelection : paySelectionDAO.getByIds(paySelectionIds))
+		{
+			final PaySelectionId paySelectionId = PaySelectionId.ofRepoId(paySelection.getC_PaySelection_ID());
+			final boolean isReconciled = !notReconciledPaySelectionIds.contains(paySelectionId);
+
+			paySelection.setIsReconciled(isReconciled);
+			paySelectionDAO.save(paySelection);
 		}
 	}
 
-	@Override
-	public void linkBankStatementLine(
+	@VisibleForTesting
+	static boolean isReconciled(@NonNull final I_C_PaySelectionLine psl)
+	{
+		return BankStatementId.ofRepoIdOrNull(psl.getC_BankStatement_ID()) != null;
+	}
+
+	private void linkBankStatementLine(
 			@NonNull final I_C_PaySelectionLine psl,
 			@NonNull final BankStatementAndLineAndRefId bankStatementAndLineAndRefId)
 	{
@@ -278,12 +338,15 @@ public class PaySelectionBL implements IPaySelectionBL
 		paySelectionDAO.save(psl);
 	}
 
-	private void unlinkBankStatementFromLine(final I_C_PaySelectionLine psl)
+	private void unlinkBankStatementFromLine(@NonNull final Collection<I_C_PaySelectionLine> paySelectionLines)
 	{
-		psl.setC_BankStatement_ID(-1);
-		psl.setC_BankStatementLine_ID(-1);
-		psl.setC_BankStatementLine_Ref_ID(-1);
-		paySelectionDAO.save(psl);
+		for (final I_C_PaySelectionLine psl : paySelectionLines)
+		{
+			psl.setC_BankStatement_ID(-1);
+			psl.setC_BankStatementLine_ID(-1);
+			psl.setC_BankStatementLine_Ref_ID(-1);
+			paySelectionDAO.save(psl);
+		}
 	}
 
 	@Override
@@ -338,7 +401,7 @@ public class PaySelectionBL implements IPaySelectionBL
 
 		for (final I_C_PaySelectionLine paySelectionLine : paySelectionDAO.retrievePaySelectionLines(paySelection))
 		{
-			if (isInBankStatement(paySelectionLine))
+			if (isReconciled(paySelectionLine))
 			{
 
 				final BankStatementId bankStatementId = BankStatementId.ofRepoId(paySelectionLine.getC_BankStatement_ID());

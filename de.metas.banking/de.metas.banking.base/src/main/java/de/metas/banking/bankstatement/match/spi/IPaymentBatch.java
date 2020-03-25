@@ -5,8 +5,6 @@ import java.util.Date;
 import org.adempiere.util.lang.ITableRecordReference;
 
 import de.metas.banking.bankstatement.match.api.IPaymentBatchFactory;
-import de.metas.banking.model.BankStatementAndLineAndRefId;
-import de.metas.payment.PaymentId;
 
 /*
  * #%L
@@ -55,9 +53,4 @@ public interface IPaymentBatch
 	String toString();
 
 	ITableRecordReference getRecord();
-
-	/**
-	 * Link the bank statement line to this payment batch.
-	 */
-	void linkBankStatementLine(BankStatementAndLineAndRefId bankStatementLineRefId, PaymentId paymentId);
 }

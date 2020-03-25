@@ -7,9 +7,7 @@ import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.util.Env;
 
-import de.metas.banking.model.BankStatementAndLineAndRefId;
 import de.metas.i18n.IMsgBL;
-import de.metas.payment.PaymentId;
 import de.metas.util.Services;
 
 /*
@@ -112,21 +110,6 @@ public final class PaymentBatch implements IPaymentBatch
 	public ITableRecordReference getRecord()
 	{
 		return record;
-	}
-
-	@Override
-	public void linkBankStatementLine(final BankStatementAndLineAndRefId bankStatementLineRefId, final PaymentId paymentId)
-	{
-		if (paymentBatchProvider == null)
-		{
-			return;
-		}
-		if (record == null)
-		{
-			return;
-		}
-
-		paymentBatchProvider.linkBankStatementLine(this, bankStatementLineRefId, paymentId);
 	}
 
 	public static final class Builder

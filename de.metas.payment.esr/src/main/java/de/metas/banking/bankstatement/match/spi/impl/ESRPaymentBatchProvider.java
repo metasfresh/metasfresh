@@ -5,8 +5,6 @@ import org.compiere.model.I_C_Payment;
 import de.metas.banking.bankstatement.match.spi.IPaymentBatch;
 import de.metas.banking.bankstatement.match.spi.IPaymentBatchProvider;
 import de.metas.banking.bankstatement.match.spi.PaymentBatch;
-import de.metas.banking.model.BankStatementAndLineAndRefId;
-import de.metas.payment.PaymentId;
 import de.metas.payment.esr.api.IESRImportDAO;
 import de.metas.payment.esr.model.I_ESR_Import;
 import de.metas.util.Services;
@@ -57,11 +55,5 @@ public class ESRPaymentBatchProvider implements IPaymentBatchProvider
 				.setDate(esrImport.getDateDoc())
 				.setPaymentBatchProvider(this)
 				.build();
-	}
-
-	@Override
-	public void linkBankStatementLine(final IPaymentBatch paymentBatch, final BankStatementAndLineAndRefId bankStatementLineRefId, PaymentId paymentId)
-	{
-		// nothing
 	}
 }

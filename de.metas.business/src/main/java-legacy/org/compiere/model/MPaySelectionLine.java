@@ -20,18 +20,9 @@ import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
 
-import org.compiere.util.DB;
-
-/**
- * Payment Selection Line Model
- * 
- * @author Jorg Janke
- * @version $Id: MPaySelectionLine.java,v 1.3 2006/07/30 00:51:03 jjanke Exp $
- */
+@SuppressWarnings("serial")
 public class MPaySelectionLine extends X_C_PaySelectionLine
 {
-	private static final long serialVersionUID = -3486055138810301789L;
-
 	public MPaySelectionLine(Properties ctx, int C_PaySelectionLine_ID, String trxName)
 	{
 		super(ctx, C_PaySelectionLine_ID, trxName);
@@ -53,38 +44,6 @@ public class MPaySelectionLine extends X_C_PaySelectionLine
 	public MPaySelectionLine(Properties ctx, ResultSet rs, String trxName)
 	{
 		super(ctx, rs, trxName);
-	}
-
-	@Override
-	protected boolean beforeSave(boolean newRecord)
-	{
-		setDifferenceAmt(getOpenAmt().subtract(getPayAmt()).subtract(getDiscountAmt()));
-		return true;
-	}
-
-	@Override
-	protected boolean afterSave(boolean newRecord, boolean success)
-	{
-		setHeader();
-		return success;
-	}
-
-	@Override
-	protected boolean afterDelete(boolean success)
-	{
-		setHeader();
-		return success;
-	}
-
-	private void setHeader()
-	{
-		// Update Header
-		String sql = "UPDATE C_PaySelection ps "
-				+ "SET TotalAmt = (SELECT COALESCE(SUM(psl.PayAmt),0) "
-				+ "FROM C_PaySelectionLine psl "
-				+ "WHERE ps.C_PaySelection_ID=psl.C_PaySelection_ID AND psl.IsActive='Y') "
-				+ "WHERE C_PaySelection_ID=" + getC_PaySelection_ID();
-		DB.executeUpdate(sql, get_TrxName());
 	}
 
 	@Override
