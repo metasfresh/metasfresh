@@ -1,10 +1,13 @@
 package de.metas.banking.service.impl;
 
+import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import de.metas.banking.model.BankStatementLineReferenceList;
+import de.metas.banking.payment.PaymentLinkResult;
 import de.metas.banking.service.IBankStatementListener;
 import lombok.NonNull;
+import lombok.ToString;
 
 /*
  * #%L
@@ -28,21 +31,31 @@ import lombok.NonNull;
  * #L%
  */
 
+@ToString
 final class CompositeBankStatementListener implements IBankStatementListener
 {
 	private final CopyOnWriteArrayList<IBankStatementListener> listeners = new CopyOnWriteArrayList<>();
 
-	public void addListener(@NonNull final IBankStatementListener listener)
+	public boolean addListener(@NonNull final IBankStatementListener listener)
 	{
-		listeners.addIfAbsent(listener);
+		return listeners.addIfAbsent(listener);
 	}
 
 	@Override
-	public void onBeforeDeleteBankStatementLineReferences(@NonNull final BankStatementLineReferenceList lineRefs)
+	public void onPaymentsLinked(@NonNull final List<PaymentLinkResult> payments)
 	{
 		for (final IBankStatementListener listener : listeners)
 		{
-			listener.onBeforeDeleteBankStatementLineReferences(lineRefs);
+			listener.onPaymentsLinked(payments);
+		}
+	}
+
+	@Override
+	public void onPaymentsUnlinkedFromBankStatementLineReferences(@NonNull final BankStatementLineReferenceList lineRefs)
+	{
+		for (final IBankStatementListener listener : listeners)
+		{
+			listener.onPaymentsUnlinkedFromBankStatementLineReferences(lineRefs);
 		}
 	}
 }

@@ -1,11 +1,17 @@
 package de.metas.banking.payment;
 
-import com.google.common.collect.ImmutableList;
+import javax.annotation.Nullable;
 
+import org.adempiere.exceptions.AdempiereException;
+
+import de.metas.banking.model.BankStatementAndLineAndRefId;
+import de.metas.banking.model.BankStatementId;
 import de.metas.banking.model.BankStatementLineId;
+import de.metas.banking.model.BankStatementLineRefId;
+import de.metas.money.Money;
+import de.metas.payment.PaymentId;
 import lombok.Builder;
 import lombok.NonNull;
-import lombok.Singular;
 import lombok.Value;
 
 /*
@@ -31,25 +37,38 @@ import lombok.Value;
  */
 
 @Value
-public class BankStatementLineMultiPaymentLinkResult
+@Builder
+public class PaymentLinkResult
 {
 	@NonNull
+	BankStatementId bankStatementId;
+	@NonNull
 	BankStatementLineId bankStatementLineId;
+	@Nullable
+	BankStatementLineRefId bankStatementLineRefId;
 
 	@NonNull
-	ImmutableList<PaymentLinkResult> payments;
+	PaymentId paymentId;
 
-	@Builder
-	private BankStatementLineMultiPaymentLinkResult(
-			@NonNull final BankStatementLineId bankStatementLineId,
-			@NonNull @Singular final ImmutableList<PaymentLinkResult> payments)
+	@NonNull
+	Money statementTrxAmt;
+
+	boolean paymentMarkedAsReconciled;
+
+	public boolean isBankStatementLineReferenceLink()
 	{
-		this.bankStatementLineId = bankStatementLineId;
-		this.payments = payments;
+		return bankStatementLineRefId != null;
 	}
 
-	public boolean isEmpty()
+	public BankStatementAndLineAndRefId getBankStatementAndLineAndRefId()
 	{
-		return payments.isEmpty();
+		if (bankStatementLineRefId == null)
+		{
+			throw new AdempiereException("Payment wasn't link on a bank statement line reference: " + this);
+		}
+		return BankStatementAndLineAndRefId.of(
+				bankStatementId,
+				bankStatementLineId,
+				bankStatementLineRefId);
 	}
 }

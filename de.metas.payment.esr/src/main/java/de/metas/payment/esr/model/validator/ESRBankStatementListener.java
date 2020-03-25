@@ -1,7 +1,14 @@
 package de.metas.payment.esr.model.validator;
 
+import java.util.List;
+
+import com.google.common.collect.ImmutableMap;
+
+import de.metas.banking.model.BankStatementAndLineAndRefId;
 import de.metas.banking.model.BankStatementLineReferenceList;
+import de.metas.banking.payment.PaymentLinkResult;
 import de.metas.banking.service.IBankStatementListener;
+import de.metas.payment.PaymentId;
 import de.metas.payment.esr.api.IESRImportBL;
 import lombok.NonNull;
 
@@ -33,7 +40,7 @@ import lombok.NonNull;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-class ESRBankStatementListener implements IBankStatementListener
+public class ESRBankStatementListener implements IBankStatementListener
 {
 	private final IESRImportBL esrImportBL;
 
@@ -43,7 +50,20 @@ class ESRBankStatementListener implements IBankStatementListener
 	}
 
 	@Override
-	public void onBeforeDeleteBankStatementLineReferences(@NonNull final BankStatementLineReferenceList lineRefs)
+	public void onPaymentsLinked(final List<PaymentLinkResult> payments)
+	{
+		final ImmutableMap<@NonNull PaymentId, BankStatementAndLineAndRefId> bankStatementLineRefIdIndexByPaymentId = payments
+				.stream()
+				.filter(PaymentLinkResult::isBankStatementLineReferenceLink)
+				.collect(ImmutableMap.toImmutableMap(
+						PaymentLinkResult::getPaymentId,
+						PaymentLinkResult::getBankStatementAndLineAndRefId));
+
+		esrImportBL.linkBankStatementLinesByPaymentIds(bankStatementLineRefIdIndexByPaymentId);
+	}
+
+	@Override
+	public void onPaymentsUnlinkedFromBankStatementLineReferences(@NonNull final BankStatementLineReferenceList lineRefs)
 	{
 		esrImportBL.unlinkESRImportLinesFromBankStatement(lineRefs.getBankStatementLineIds());
 	}

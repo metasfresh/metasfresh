@@ -11,10 +11,14 @@ import org.compiere.model.I_C_Payment;
 import org.compiere.util.TimeUtil;
 
 import de.metas.banking.api.BankAccountId;
+import de.metas.banking.model.BankStatementId;
+import de.metas.banking.model.BankStatementLineId;
 import de.metas.banking.payment.BankStatementLineMultiPaymentLinkRequest;
 import de.metas.banking.payment.BankStatementLineMultiPaymentLinkResult;
 import de.metas.banking.payment.IBankStatementPaymentBL;
+import de.metas.banking.payment.PaymentLinkResult;
 import de.metas.banking.service.IBankStatementDAO;
+import de.metas.banking.service.IBankStatementListenerService;
 import de.metas.bpartner.BPartnerId;
 import de.metas.document.engine.DocStatus;
 import de.metas.money.CurrencyId;
@@ -190,6 +194,16 @@ public class BankStatementPaymentBL implements IBankStatementPaymentBL
 			final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
 			paymentBL.markReconciledAndSave(payment);
 		}
+
+		final IBankStatementListenerService bankStatementListenerService = Services.get(IBankStatementListenerService.class);
+		bankStatementListenerService.firePaymentLinked(PaymentLinkResult.builder()
+				.bankStatementId(BankStatementId.ofRepoId(bankStatementLine.getC_BankStatement_ID()))
+				.bankStatementLineId(BankStatementLineId.ofRepoId(bankStatementLine.getC_BankStatementLine_ID()))
+				.bankStatementLineRefId(null)
+				.paymentId(PaymentId.ofRepoId(payment.getC_Payment_ID()))
+				.statementTrxAmt(trxAmt)
+				.paymentMarkedAsReconciled(payment.isReconciled())
+				.build());
 	}
 
 	private static PaymentDirection extractPaymentDirection(final I_C_Payment payment)

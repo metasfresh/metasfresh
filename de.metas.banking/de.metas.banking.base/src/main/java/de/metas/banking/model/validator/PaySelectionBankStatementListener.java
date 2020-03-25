@@ -1,8 +1,15 @@
 package de.metas.banking.model.validator;
 
+import java.util.List;
+
+import com.google.common.collect.ImmutableMap;
+
+import de.metas.banking.model.BankStatementAndLineAndRefId;
 import de.metas.banking.model.BankStatementLineReferenceList;
 import de.metas.banking.payment.IPaySelectionBL;
+import de.metas.banking.payment.PaymentLinkResult;
 import de.metas.banking.service.IBankStatementListener;
+import de.metas.payment.PaymentId;
 import lombok.NonNull;
 
 /*
@@ -33,7 +40,7 @@ import lombok.NonNull;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-class PaySelectionBankStatementListener implements IBankStatementListener
+public class PaySelectionBankStatementListener implements IBankStatementListener
 {
 	private final IPaySelectionBL paySelectionBL;
 
@@ -43,7 +50,20 @@ class PaySelectionBankStatementListener implements IBankStatementListener
 	}
 
 	@Override
-	public void onBeforeDeleteBankStatementLineReferences(@NonNull final BankStatementLineReferenceList lineRefs)
+	public void onPaymentsLinked(final List<PaymentLinkResult> payments)
+	{
+		final ImmutableMap<@NonNull PaymentId, BankStatementAndLineAndRefId> bankStatementAndLineAndRefIds = payments
+				.stream()
+				.filter(PaymentLinkResult::isBankStatementLineReferenceLink)
+				.collect(ImmutableMap.toImmutableMap(
+						PaymentLinkResult::getPaymentId,
+						PaymentLinkResult::getBankStatementAndLineAndRefId));
+
+		paySelectionBL.linkBankStatementLinesByPaymentIds(bankStatementAndLineAndRefIds);
+	}
+
+	@Override
+	public void onPaymentsUnlinkedFromBankStatementLineReferences(@NonNull final BankStatementLineReferenceList lineRefs)
 	{
 		paySelectionBL.unlinkPaySelectionLineFromBankStatement(lineRefs.getBankStatementLineIds());
 	}

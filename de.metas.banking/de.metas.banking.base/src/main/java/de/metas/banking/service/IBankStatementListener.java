@@ -1,6 +1,9 @@
 package de.metas.banking.service;
 
+import java.util.List;
+
 import de.metas.banking.model.BankStatementLineReferenceList;
+import de.metas.banking.payment.PaymentLinkResult;
 import lombok.NonNull;
 
 /*
@@ -37,5 +40,7 @@ import lombok.NonNull;
  */
 public interface IBankStatementListener
 {
-	void onBeforeDeleteBankStatementLineReferences(@NonNull BankStatementLineReferenceList lineRefs);
+	void onPaymentsLinked(List<PaymentLinkResult> payments);
+
+	void onPaymentsUnlinkedFromBankStatementLineReferences(@NonNull BankStatementLineReferenceList lineRefs);
 }

@@ -16,10 +16,11 @@ import de.metas.banking.model.BankStatementLineReference;
 import de.metas.banking.payment.BankStatementLineMultiPaymentLinkRequest;
 import de.metas.banking.payment.BankStatementLineMultiPaymentLinkRequest.PaymentToLink;
 import de.metas.banking.payment.BankStatementLineMultiPaymentLinkResult;
-import de.metas.banking.payment.IPaySelectionBL;
+import de.metas.banking.payment.PaymentLinkResult;
 import de.metas.banking.service.BankStatementLineRefCreateRequest;
 import de.metas.banking.service.IBankStatementBL;
 import de.metas.banking.service.IBankStatementDAO;
+import de.metas.banking.service.IBankStatementListenerService;
 import de.metas.bpartner.BPartnerId;
 import de.metas.currency.Amount;
 import de.metas.document.engine.DocStatus;
@@ -67,7 +68,7 @@ final class BankStatementLineMultiPaymentLinkCommand
 	private final IBankStatementDAO bankStatementDAO = Services.get(IBankStatementDAO.class);
 	private final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
 	private final IPaymentDAO paymentDAO = Services.get(IPaymentDAO.class);
-	private final IPaySelectionBL paySelectionBL = Services.get(IPaySelectionBL.class);
+	private final IBankStatementListenerService listenerService = Services.get(IBankStatementListenerService.class);
 	private final MoneyService moneyService;
 
 	//
@@ -78,7 +79,7 @@ final class BankStatementLineMultiPaymentLinkCommand
 	// State
 	private ImmutableMap<PaymentId, I_C_Payment> paymentsCache; // lazy
 	private boolean doReconcilePayments = false;
-	private final ArrayList<BankStatementLineMultiPaymentLinkResult.PaymentResult> linkedPayments = new ArrayList<>();
+	private final ArrayList<PaymentLinkResult> linkedPayments = new ArrayList<>();
 
 	@Builder
 	private BankStatementLineMultiPaymentLinkCommand(
@@ -126,12 +127,9 @@ final class BankStatementLineMultiPaymentLinkCommand
 				.payments(linkedPayments)
 				.build();
 
-		bankStatementBL.unpost(bankStatement);
+		listenerService.firePaymentsLinked(result.getPayments());
 
-		if (!result.isEmpty())
-		{
-			paySelectionBL.linkBankStatementLinesByPaymentIds(result.getBankStatementLineRefIdIndexByPaymentId());
-		}
+		bankStatementBL.unpost(bankStatement);
 
 		return result;
 	}
@@ -268,10 +266,12 @@ final class BankStatementLineMultiPaymentLinkCommand
 		}
 
 		//
-		linkedPayments.add(BankStatementLineMultiPaymentLinkResult.PaymentResult.builder()
-				.bankStatementLineRefId(lineRef.getId())
+		linkedPayments.add(PaymentLinkResult.builder()
+				.bankStatementId(lineRef.getBankStatementId())
+				.bankStatementLineId(lineRef.getBankStatementLineId())
+				.bankStatementLineRefId(lineRef.getBankStatementLineRefId())
 				.paymentId(lineRef.getPaymentId())
-				.amount(lineRef.getTrxAmt())
+				.statementTrxAmt(lineRef.getTrxAmt())
 				.paymentMarkedAsReconciled(payment.isReconciled())
 				.build());
 	}

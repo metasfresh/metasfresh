@@ -39,7 +39,6 @@ import de.metas.banking.model.BankStatementLineId;
 import de.metas.banking.model.BankStatementLineReferenceList;
 import de.metas.banking.service.IBankStatementBL;
 import de.metas.banking.service.IBankStatementDAO;
-import de.metas.banking.service.IBankStatementListener;
 import de.metas.banking.service.IBankStatementListenerService;
 import de.metas.payment.PaymentId;
 import de.metas.payment.api.IPaymentBL;
@@ -170,8 +169,8 @@ public class BankStatementBL implements IBankStatementBL
 			return;
 		}
 
-		final IBankStatementListener listeners = Services.get(IBankStatementListenerService.class).getListeners();
-		listeners.onBeforeDeleteBankStatementLineReferences(lineRefs);
+		final IBankStatementListenerService bankStatementListenerService = Services.get(IBankStatementListenerService.class);
+		bankStatementListenerService.firePaymentsUnlinkedFromBankStatementLineReferences(lineRefs);
 
 		bankStatementDAO.deleteReferencesByIds(lineRefs.getBankStatementLineRefIds());
 	}
