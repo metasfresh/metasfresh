@@ -36,6 +36,7 @@ import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestWatcher;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Tax;
 import org.compiere.util.TimeUtil;
 import org.junit.jupiter.api.BeforeEach;
@@ -54,6 +55,7 @@ import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.tax.api.ITaxDAO;
 import de.metas.monitoring.adapter.NoopPerformanceMonitoringService;
+import de.metas.monitoring.adapter.PerformanceMonitoringService;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -68,6 +70,8 @@ public class ContractChangePriceQtyTest extends AbstractFlatrateTermTest
 	@BeforeEach
 	public void before()
 	{
+		SpringContextHolder.registerJUnitBean(PerformanceMonitoringService.class, new NoopPerformanceMonitoringService());
+
 		contractsRepository = new ContractChangePriceQtyService();
 		final ContractOrderService contractOrderService = new ContractOrderService();
 
