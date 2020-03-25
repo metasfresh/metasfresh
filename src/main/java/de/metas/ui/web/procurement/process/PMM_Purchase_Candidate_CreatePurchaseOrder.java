@@ -1,10 +1,14 @@
 package de.metas.ui.web.procurement.process;
 
+import org.springframework.context.annotation.Profile;
+
 import de.metas.Profiles;
+import de.metas.process.IProcessPrecondition;
+import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.procurement.base.model.I_PMM_PurchaseCandidate;
 import de.metas.procurement.base.order.async.PMM_GenerateOrders;
 import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
-import org.springframework.context.annotation.Profile;
+import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 
 /*
  * #%L
@@ -32,12 +36,27 @@ import org.springframework.context.annotation.Profile;
  * Mass enqueue {@link I_PMM_PurchaseCandidate} records to be processed and purchase orders to be generated.
  *
  * @author metas-dev <dev@metasfresh.com>
+ *
  */
 @Profile(Profiles.PROFILE_Webui)
 public class PMM_Purchase_Candidate_CreatePurchaseOrder
 		extends ViewBasedProcessTemplate
+//		implements IProcessPrecondition
 {
 	private int recordsEnqueued;
+//
+//	@Override
+//	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
+//	{
+//		final DocumentIdsSelection selectedRowIds = getSelectedRowIds();
+//		if (selectedRowIds.isEmpty())
+//
+//		{
+//			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
+//		}
+//
+//		return ProcessPreconditionsResolution.accept();
+//	}
 
 	@Override
 	protected String doIt() throws Exception
