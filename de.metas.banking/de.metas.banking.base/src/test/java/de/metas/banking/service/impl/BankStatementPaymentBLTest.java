@@ -44,10 +44,10 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
+import de.metas.banking.BankStatementId;
+import de.metas.banking.BankStatementLineId;
+import de.metas.banking.BankStatementLineReferenceList;
 import de.metas.banking.api.BankAccountId;
-import de.metas.banking.model.BankStatementId;
-import de.metas.banking.model.BankStatementLineId;
-import de.metas.banking.model.BankStatementLineReferenceList;
 import de.metas.banking.payment.PaymentLinkResult;
 import de.metas.banking.payment.impl.BankStatementPaymentBL;
 import de.metas.banking.service.BankStatementCreateRequest;

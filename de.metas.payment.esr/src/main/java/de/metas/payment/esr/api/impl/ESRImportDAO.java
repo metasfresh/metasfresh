@@ -49,8 +49,8 @@ import org.compiere.util.Env;
 
 import com.google.common.collect.ImmutableList;
 
-import de.metas.banking.model.BankStatementAndLineAndRefId;
-import de.metas.banking.model.BankStatementLineId;
+import de.metas.banking.BankStatementAndLineAndRefId;
+import de.metas.banking.BankStatementLineId;
 import de.metas.document.refid.api.IReferenceNoDAO;
 import de.metas.document.refid.model.I_C_ReferenceNo;
 import de.metas.document.refid.model.I_C_ReferenceNo_Doc;

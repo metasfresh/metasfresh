@@ -33,8 +33,8 @@ import javax.annotation.Nullable;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Payment;
 
-import de.metas.banking.model.BankStatementAndLineAndRefId;
-import de.metas.banking.model.BankStatementLineId;
+import de.metas.banking.BankStatementAndLineAndRefId;
+import de.metas.banking.BankStatementLineId;
 import de.metas.document.refid.model.I_C_ReferenceNo_Doc;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentId;

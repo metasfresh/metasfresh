@@ -2,7 +2,7 @@ package de.metas.banking.service;
 
 import java.util.List;
 
-import de.metas.banking.model.BankStatementLineReferenceList;
+import de.metas.banking.BankStatementLineReferenceList;
 import de.metas.banking.payment.PaymentLinkResult;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;

@@ -10,9 +10,9 @@ import org.compiere.model.I_C_BankStatementLine;
 import org.compiere.model.I_C_Payment;
 import org.compiere.util.TimeUtil;
 
+import de.metas.banking.BankStatementId;
+import de.metas.banking.BankStatementLineId;
 import de.metas.banking.api.BankAccountId;
-import de.metas.banking.model.BankStatementId;
-import de.metas.banking.model.BankStatementLineId;
 import de.metas.banking.payment.BankStatementLineMultiPaymentLinkRequest;
 import de.metas.banking.payment.BankStatementLineMultiPaymentLinkResult;
 import de.metas.banking.payment.IBankStatementPaymentBL;

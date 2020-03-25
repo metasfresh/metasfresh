@@ -5,7 +5,7 @@ import java.time.LocalDate;
 
 import javax.annotation.Nullable;
 
-import de.metas.banking.model.BankStatementId;
+import de.metas.banking.BankStatementId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.costing.ChargeId;
 import de.metas.money.Money;

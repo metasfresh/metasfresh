@@ -3,7 +3,7 @@ package de.metas.banking.service.impl;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-import de.metas.banking.model.BankStatementLineReferenceList;
+import de.metas.banking.BankStatementLineReferenceList;
 import de.metas.banking.payment.PaymentLinkResult;
 import de.metas.banking.service.IBankStatementListener;
 import lombok.NonNull;

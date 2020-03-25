@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.banking.model;
+package de.metas.banking;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;

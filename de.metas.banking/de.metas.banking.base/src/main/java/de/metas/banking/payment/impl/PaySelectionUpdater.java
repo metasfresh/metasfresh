@@ -36,7 +36,7 @@ import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableSet;
 
-import de.metas.banking.model.PaySelectionId;
+import de.metas.banking.PaySelectionId;
 import de.metas.banking.payment.IPaySelectionDAO;
 import de.metas.banking.payment.IPaySelectionUpdater;
 import de.metas.banking.payment.InvoiceMatchingMode;

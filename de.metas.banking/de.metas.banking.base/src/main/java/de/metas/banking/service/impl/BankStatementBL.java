@@ -34,9 +34,9 @@ import org.compiere.model.X_C_DocType;
  */
 
 import de.metas.acct.api.IFactAcctDAO;
-import de.metas.banking.model.BankStatementId;
-import de.metas.banking.model.BankStatementLineId;
-import de.metas.banking.model.BankStatementLineReferenceList;
+import de.metas.banking.BankStatementId;
+import de.metas.banking.BankStatementLineId;
+import de.metas.banking.BankStatementLineReferenceList;
 import de.metas.banking.service.IBankStatementBL;
 import de.metas.banking.service.IBankStatementDAO;
 import de.metas.banking.service.IBankStatementListenerService;

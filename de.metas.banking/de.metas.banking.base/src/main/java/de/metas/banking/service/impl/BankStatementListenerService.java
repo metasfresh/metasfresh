@@ -6,7 +6,7 @@ import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableList;
 
-import de.metas.banking.model.BankStatementLineReferenceList;
+import de.metas.banking.BankStatementLineReferenceList;
 import de.metas.banking.payment.PaymentLinkResult;
 import de.metas.banking.service.IBankStatementListener;
 import de.metas.banking.service.IBankStatementListenerService;

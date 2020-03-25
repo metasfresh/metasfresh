@@ -33,7 +33,7 @@ import com.google.common.collect.ImmutableMap;
 import de.metas.attachments.AttachmentEntryDataResource;
 import de.metas.attachments.AttachmentEntryId;
 import de.metas.attachments.AttachmentEntryService;
-import de.metas.banking.model.BankStatementId;
+import de.metas.banking.BankStatementId;
 import de.metas.banking.service.IBankStatementDAO;
 import de.metas.document.engine.DocStatus;
 import de.metas.i18n.IMsgBL;

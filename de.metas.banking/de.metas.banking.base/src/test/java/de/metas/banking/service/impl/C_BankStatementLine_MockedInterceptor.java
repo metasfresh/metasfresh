@@ -3,7 +3,7 @@ package de.metas.banking.service.impl;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.compiere.model.I_C_BankStatementLine;
 
-import de.metas.banking.model.BankStatementId;
+import de.metas.banking.BankStatementId;
 import de.metas.banking.model.validator.C_BankStatementLine;
 
 /*

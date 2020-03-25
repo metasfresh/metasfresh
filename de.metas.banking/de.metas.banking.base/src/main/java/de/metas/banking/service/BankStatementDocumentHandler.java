@@ -20,9 +20,9 @@ import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
 import de.metas.acct.api.IFactAcctDAO;
-import de.metas.banking.model.BankStatementId;
-import de.metas.banking.model.BankStatementLineId;
-import de.metas.banking.model.BankStatementLineReference;
+import de.metas.banking.BankStatementId;
+import de.metas.banking.BankStatementLineId;
+import de.metas.banking.BankStatementLineReference;
 import de.metas.banking.payment.IBankStatementPaymentBL;
 import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.DocumentHandler;

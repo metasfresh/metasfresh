@@ -21,7 +21,7 @@ import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.util.Properties;
 
-import de.metas.banking.model.BankStatementId;
+import de.metas.banking.BankStatementId;
 import de.metas.banking.service.IBankStatementDAO;
 import de.metas.util.Services;
 

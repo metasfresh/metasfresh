@@ -4,7 +4,7 @@ import java.sql.Timestamp;
 
 import org.compiere.model.I_C_PaySelection;
 
-import de.metas.banking.model.PaySelectionId;
+import de.metas.banking.PaySelectionId;
 import de.metas.banking.payment.IPaySelectionBL;
 import de.metas.banking.payment.IPaySelectionDAO;
 import de.metas.banking.payment.IPaySelectionUpdater;

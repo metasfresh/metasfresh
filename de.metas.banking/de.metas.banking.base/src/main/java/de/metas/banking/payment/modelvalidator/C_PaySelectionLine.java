@@ -10,7 +10,7 @@ import org.compiere.model.I_C_PaySelection;
 import org.compiere.model.I_C_PaySelectionLine;
 import org.compiere.model.ModelValidator;
 
-import de.metas.banking.model.PaySelectionId;
+import de.metas.banking.PaySelectionId;
 import de.metas.banking.payment.IPaySelectionBL;
 import de.metas.banking.payment.IPaySelectionDAO;
 import de.metas.banking.payment.IPaymentRequestBL;

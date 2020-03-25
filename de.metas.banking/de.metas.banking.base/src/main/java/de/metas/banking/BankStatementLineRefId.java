@@ -1,13 +1,12 @@
-package de.metas.banking.model;
+package de.metas.banking;
 
 import javax.annotation.Nullable;
 
-import de.metas.bpartner.BPartnerId;
-import de.metas.invoice.InvoiceId;
-import de.metas.money.Money;
-import de.metas.organization.OrgId;
-import de.metas.payment.PaymentId;
-import lombok.Builder;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+
+import de.metas.util.Check;
+import de.metas.util.lang.RepoIdAware;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -34,40 +33,32 @@ import lombok.Value;
  */
 
 @Value
-@Builder
-public class BankStatementLineReference
+public class BankStatementLineRefId implements RepoIdAware
 {
+	int repoId;
+
+	private BankStatementLineRefId(final int repoId)
+	{
+		this.repoId = Check.assumeGreaterThanZero(repoId, "C_BankStatementLine_Ref_ID");
+	}
+
+	@Override
+	@JsonValue
+	public int getRepoId()
+	{
+		return repoId;
+	}
+
 	@NonNull
-	BankStatementAndLineAndRefId id;
-
-	OrgId orgId;
-
-	int lineNo;
-
-	@NonNull
-	BPartnerId bpartnerId;
-
-	@NonNull
-	PaymentId paymentId;
+	@JsonCreator
+	public static BankStatementLineRefId ofRepoId(final int repoId)
+	{
+		return new BankStatementLineRefId(repoId);
+	}
 
 	@Nullable
-	InvoiceId invoiceId;
-
-	@NonNull
-	Money trxAmt;
-
-	public BankStatementId getBankStatementId()
+	public static BankStatementLineRefId ofRepoIdOrNull(final int repoId)
 	{
-		return getId().getBankStatementId();
-	}
-
-	public BankStatementLineId getBankStatementLineId()
-	{
-		return getId().getBankStatementLineId();
-	}
-
-	public BankStatementLineRefId getBankStatementLineRefId()
-	{
-		return getId().getBankStatementLineRefId();
+		return repoId > 0 ? ofRepoId(repoId) : null;
 	}
 }

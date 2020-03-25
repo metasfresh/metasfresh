@@ -1,4 +1,4 @@
-package de.metas.banking.model;
+package de.metas.banking;
 
 import java.util.Objects;
 

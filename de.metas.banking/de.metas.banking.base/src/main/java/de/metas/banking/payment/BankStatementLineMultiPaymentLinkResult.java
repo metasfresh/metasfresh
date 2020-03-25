@@ -2,7 +2,7 @@ package de.metas.banking.payment;
 
 import com.google.common.collect.ImmutableList;
 
-import de.metas.banking.model.BankStatementLineId;
+import de.metas.banking.BankStatementLineId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;

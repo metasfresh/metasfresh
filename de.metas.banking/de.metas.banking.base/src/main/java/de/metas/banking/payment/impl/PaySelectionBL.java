@@ -25,12 +25,12 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 
+import de.metas.banking.BankStatementAndLineAndRefId;
+import de.metas.banking.BankStatementId;
+import de.metas.banking.BankStatementLineId;
+import de.metas.banking.PaySelectionId;
 import de.metas.banking.api.BankAccountId;
 import de.metas.banking.api.IBPBankAccountDAO;
-import de.metas.banking.model.BankStatementAndLineAndRefId;
-import de.metas.banking.model.BankStatementId;
-import de.metas.banking.model.BankStatementLineId;
-import de.metas.banking.model.PaySelectionId;
 import de.metas.banking.payment.IPaySelectionBL;
 import de.metas.banking.payment.IPaySelectionDAO;
 import de.metas.banking.payment.IPaySelectionUpdater;
@@ -301,7 +301,7 @@ public class PaySelectionBL implements IPaySelectionBL
 			return;
 		}
 
-		final ImmutableSet<@NonNull PaySelectionId> notReconciledPaySelectionIds = Services.get(IQueryBL.class)
+		final ImmutableSet<de.metas.banking.PaySelectionId> notReconciledPaySelectionIds = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_PaySelectionLine.class)
 				.addOnlyActiveRecordsFilter()
 				.addInArrayFilter(I_C_PaySelectionLine.COLUMNNAME_C_PaySelection_ID, paySelectionIds)

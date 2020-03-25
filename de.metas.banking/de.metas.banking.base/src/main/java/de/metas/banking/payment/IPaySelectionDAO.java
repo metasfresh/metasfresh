@@ -9,9 +9,9 @@ import org.compiere.model.IQuery;
 import org.compiere.model.I_C_PaySelection;
 import org.compiere.model.I_C_PaySelectionLine;
 
-import de.metas.banking.model.BankStatementAndLineAndRefId;
-import de.metas.banking.model.BankStatementLineId;
-import de.metas.banking.model.PaySelectionId;
+import de.metas.banking.BankStatementAndLineAndRefId;
+import de.metas.banking.BankStatementLineId;
+import de.metas.banking.PaySelectionId;
 import de.metas.invoice.InvoiceId;
 import de.metas.payment.PaymentId;
 import de.metas.util.ISingletonService;

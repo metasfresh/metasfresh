@@ -1,9 +1,13 @@
-package de.metas.banking.model;
+package de.metas.banking;
+
+import java.util.Collection;
+import java.util.Objects;
 
 import javax.annotation.Nullable;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
@@ -33,13 +37,13 @@ import lombok.Value;
  */
 
 @Value
-public class BankStatementLineRefId implements RepoIdAware
+public class BankStatementLineId implements RepoIdAware
 {
 	int repoId;
 
-	private BankStatementLineRefId(final int repoId)
+	private BankStatementLineId(final int repoId)
 	{
-		this.repoId = Check.assumeGreaterThanZero(repoId, "C_BankStatementLine_Ref_ID");
+		this.repoId = Check.assumeGreaterThanZero(repoId, "C_BankStatementLine_ID");
 	}
 
 	@Override
@@ -51,14 +55,24 @@ public class BankStatementLineRefId implements RepoIdAware
 
 	@NonNull
 	@JsonCreator
-	public static BankStatementLineRefId ofRepoId(final int repoId)
+	public static BankStatementLineId ofRepoId(final int repoId)
 	{
-		return new BankStatementLineRefId(repoId);
+		return new BankStatementLineId(repoId);
 	}
 
 	@Nullable
-	public static BankStatementLineRefId ofRepoIdOrNull(final int repoId)
+	public static BankStatementLineId ofRepoIdOrNull(final int repoId)
 	{
 		return repoId > 0 ? ofRepoId(repoId) : null;
+	}
+
+	public static ImmutableSet<BankStatementLineId> fromIntSet(@NonNull final Collection<Integer> repoIds)
+	{
+		if (repoIds.isEmpty())
+		{
+			return ImmutableSet.of();
+		}
+
+		return repoIds.stream().map(BankStatementLineId::ofRepoIdOrNull).filter(Objects::nonNull).collect(ImmutableSet.toImmutableSet());
 	}
 }
