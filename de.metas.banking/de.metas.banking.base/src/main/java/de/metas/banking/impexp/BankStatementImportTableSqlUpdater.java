@@ -7,6 +7,7 @@ import java.time.LocalDate;
 import javax.annotation.Nullable;
 
 import org.adempiere.ad.trx.api.ITrx;
+import org.compiere.model.I_C_BP_BankAccount;
 import org.compiere.model.I_C_BankStatement;
 import org.compiere.model.I_I_BankStatement;
 import org.compiere.util.DB;
@@ -14,7 +15,6 @@ import org.slf4j.Logger;
 
 import de.metas.banking.api.BankAccountId;
 import de.metas.banking.model.BankStatementId;
-import de.metas.banking.model.I_C_BP_BankAccount;
 import de.metas.impexp.processing.ImportRecordsSelection;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.logging.LogManager;

@@ -1,6 +1,5 @@
 package de.metas.payment.esr.api.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.create;
 import static org.adempiere.model.InterfaceWrapperHelper.getCtx;
 import static org.adempiere.model.InterfaceWrapperHelper.getTrxName;
 import static org.adempiere.model.InterfaceWrapperHelper.refresh;
@@ -624,14 +623,13 @@ public class ESRImportBL implements IESRImportBL
 
 			final I_C_BP_BankAccount bankAccount = bpBankAccountDAO.getById(line.getESR_Import().getC_BP_BankAccount_ID(), I_C_BP_BankAccount.class);
 
-			final de.metas.banking.model.I_C_Payment paym = create(payment, de.metas.banking.model.I_C_Payment.class);
-			paym.setC_Currency_ID(bankAccount.getC_Currency_ID());
+			payment.setC_Currency_ID(bankAccount.getC_Currency_ID());
 
 			if (sysConfigBL.getBooleanValue(ESRConstants.SYSCONFIG_EAGER_PAYMENT_ALLOCATION, true)) // task 09167: calling with true to preserve the old behavior
 			{
-				paym.setIsAutoAllocateAvailableAmt(true); // task 07783
+				payment.setIsAutoAllocateAvailableAmt(true); // task 07783
 			}
-			paymentBL.save(paym);
+			paymentBL.save(payment);
 			// guard; there was some crappy beforeSave() code in MPayment, there might be more
 			Check.assume(payment.getAD_Org_ID() == line.getAD_Org_ID(), "Payment has the same org as {}", line);
 
@@ -774,11 +772,10 @@ public class ESRImportBL implements IESRImportBL
 				if (importLine.getC_Payment_ID() <= 0)
 				{
 					payment = createUnlinkedPaymentForLine(importLine, sum);
-					final de.metas.banking.model.I_C_Payment paym = create(payment, de.metas.banking.model.I_C_Payment.class);
 
 					if (sysConfigBL.getBooleanValue(ESRConstants.SYSCONFIG_EAGER_PAYMENT_ALLOCATION, true)) // task 09167: calling with true to preserve the old behavior
 					{
-						paym.setIsAutoAllocateAvailableAmt(true); // task 07783
+						payment.setIsAutoAllocateAvailableAmt(true); // task 07783
 					}
 				}
 			}
@@ -853,7 +850,7 @@ public class ESRImportBL implements IESRImportBL
 
 			final boolean ignoreIsAutoAllocateAvailableAmt = true; // task 09167: when processing ESR lines (i.e. from this method) we always allocate the payment to the invoice.
 			Services.get(IAllocationBL.class).autoAllocateSpecificPayment(invoice,
-					create(payment, de.metas.banking.model.I_C_Payment.class),
+					payment,
 					ignoreIsAutoAllocateAvailableAmt);
 			esrImportDAO.save(importLine); // saving, because updateLinesOpenAmt doesn't save the line it was called with
 		});
