@@ -25,8 +25,6 @@ import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.Mutable;
 import org.compiere.model.I_C_AllocationHdr;
 import org.compiere.model.I_C_AllocationLine;
-import org.compiere.model.I_C_BP_Group;
-import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Payment;
 import org.compiere.util.TimeUtil;
@@ -36,8 +34,6 @@ import org.slf4j.Logger;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.allocation.api.IAllocationBL;
-import de.metas.bpartner.BPGroupId;
-import de.metas.bpartner.service.IBPGroupDAO;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.ICurrencyBL;
@@ -49,7 +45,6 @@ import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentId;
-import de.metas.payment.PaymentRule;
 import de.metas.payment.TenderType;
 import de.metas.payment.api.DefaultPaymentBuilder;
 import de.metas.payment.api.IPaymentBL;
@@ -363,21 +358,6 @@ public class PaymentBL implements IPaymentBL
 	public DefaultPaymentBuilder newBuilderOfInvoice(@NonNull final I_C_Invoice invoice)
 	{
 		return DefaultPaymentBuilder.newBuilderOfInvoice(invoice);
-	}
-
-	@Override
-	public PaymentRule getPaymentRuleForBPartner(@NonNull final I_C_BPartner bpartner)
-	{
-		final PaymentRule bpartnerPaymentRule = PaymentRule.ofNullableCode(bpartner.getPaymentRule());
-		if (bpartnerPaymentRule != null)
-		{
-			return bpartnerPaymentRule;
-		}
-		//
-		// No payment rule in BP. Fallback to group.
-		final BPGroupId bpGroupId = BPGroupId.ofRepoId(bpartner.getC_BP_Group_ID());
-		final I_C_BP_Group bpGroup = Services.get(IBPGroupDAO.class).getById(bpGroupId);
-		return PaymentRule.ofNullableCode(bpGroup.getPaymentRule());
 	}
 
 	@Override

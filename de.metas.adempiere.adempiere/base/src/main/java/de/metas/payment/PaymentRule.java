@@ -1,6 +1,9 @@
 package de.metas.payment;
 
 import java.util.Arrays;
+import java.util.Optional;
+
+import javax.annotation.Nullable;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.X_C_Order;
@@ -54,9 +57,14 @@ public enum PaymentRule implements ReferenceListAwareEnum
 		this.code = code;
 	}
 
-	public static PaymentRule ofNullableCode(final String code)
+	public static PaymentRule ofNullableCode(@Nullable final String code)
 	{
 		return code != null ? ofCode(code) : null;
+	}
+
+	public static Optional<PaymentRule> optionalOfCode(@Nullable final String code)
+	{
+		return Optional.ofNullable(ofNullableCode(code));
 	}
 
 	public static PaymentRule ofCode(@NonNull final String code)

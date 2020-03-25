@@ -32,12 +32,10 @@ import java.util.List;
 import java.util.Set;
 
 import org.compiere.model.I_C_AllocationHdr;
-import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Payment;
 
 import de.metas.payment.PaymentId;
-import de.metas.payment.PaymentRule;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
 
@@ -85,11 +83,6 @@ public interface IPaymentBL extends ISingletonService
 	 * @param creditMemoAdjusted True if we want to get absolute values for Credit Memos
 	 */
 	void onPayAmtChange(final I_C_Payment payment, boolean creditMemoAdjusted);
-
-	/**
-	 * @return the payment rule for the BP. If none is set, gets the one of the BP group.
-	 */
-	PaymentRule getPaymentRuleForBPartner(I_C_BPartner bPartner);
 
 	/**
 	 * check if the invoice is allocated with the specified payment
