@@ -239,11 +239,6 @@
 			<groupId>net.logstash.logback</groupId>
 			<artifactId>logstash-logback-encoder</artifactId>
 		</dependency>
-		<!-- we need janino for the conditional that we have in the logback config -->
-		<dependency>
-			<groupId>org.codehaus.janino</groupId>
-			<artifactId>janino</artifactId>
-		</dependency>
 
 		<dependency>
 			<groupId>org.mockito</groupId>

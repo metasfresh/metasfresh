@@ -1,5 +1,12 @@
 package de.metas.ui.web.quickinput.orderline;
 
+import java.util.Optional;
+
+import de.metas.ui.web.quickinput.field.DefaultPackingItemCriteria;
+import de.metas.ui.web.quickinput.field.PackingItemProductFieldHelper;
+import org.adempiere.ad.callout.api.ICalloutField;
+import org.compiere.SpringContextHolder;
+
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.ShipmentAllocationBestBeforePolicy;
@@ -43,18 +50,13 @@ import java.util.Optional;
 
 final class OrderLineQuickInputCallout
 {
-	// private final IHUOrderBL huOrderBL;
 	private final IBPartnerBL bpartnersService;
 	private final PackingItemProductFieldHelper packingItemProductFieldHelper = SpringContextHolder.instance.getBean(PackingItemProductFieldHelper.class);
 
 	@Builder
-	private OrderLineQuickInputCallout(
-			@NonNull final IBPartnerBL bpartnersService
-	// @NonNull final IHUOrderBL huOrderBL
-	)
+	private OrderLineQuickInputCallout(@NonNull final IBPartnerBL bpartnersService)
 	{
 		this.bpartnersService = bpartnersService;
-		// this.huOrderBL = huOrderBL;
 	}
 
 	public void onProductChanged(final ICalloutField calloutField)

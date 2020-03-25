@@ -71,13 +71,6 @@
 	-->
 	<springProperty scope="context" name="LOGSTASH_ENABLED" source="logstash.enabled" defaultValue="false" />
 
-	<!-- Include the config for a logstash appender; see https://github.com/metasfresh/metasfresh/issues/1504 -->
-	<if condition='Boolean.parseBoolean(property("LOGSTASH_ENABLED"))'>
-		<then>
-			<include resource="de/metas/ui/web/logging/STASH.xml" />
-		</then>
-	</if>
-
 	<!-- Configure root logger -->
 	<root level="INFO">
 		<appender-ref ref="CONSOLE" />
@@ -88,12 +81,7 @@
 		<!-- appender-ref ref="FILE-byRemoteAddr" / -->
 		<!-- appender-ref ref="FILE-byLoggedUser" / -->
 		<appender-ref ref="FILE-byLoggedUserAndRemoteAddr" />
-
-		<if condition='Boolean.parseBoolean(property("LOGSTASH_ENABLED"))'>
-			<then>
-				<appender-ref ref="STASH" />
-			</then>
-		</if>
+	
 	</root>
 
 	<!-- see http://codecentric.github.io/spring-boot-admin/1.3.0/#loglevel-management -->
