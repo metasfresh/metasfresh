@@ -17,7 +17,7 @@ import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.base.Predicates;
+import java.util.Objects;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.JsonObjectMapperHolder;
@@ -254,7 +254,7 @@ public class NotificationRepository implements INotificationRepository
 				.create()
 				.stream(I_AD_Note.class)
 				.map(this::toUserNotificationNoFail)
-				.filter(Predicates.notNull())
+				.filter(Objects::nonNull)
 				.collect(ImmutableList.toImmutableList());
 	}
 

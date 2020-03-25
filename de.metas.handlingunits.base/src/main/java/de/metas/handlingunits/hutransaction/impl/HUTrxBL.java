@@ -1,12 +1,8 @@
-package de.metas.handlingunits.hutransaction.impl;
-
-import java.util.ArrayList;
-
 /*
  * #%L
  * de.metas.handlingunits.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -23,6 +19,10 @@ import java.util.ArrayList;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+package de.metas.handlingunits.hutransaction.impl;
+
+import java.util.ArrayList;
 
 import java.util.Date;
 import java.util.HashMap;
@@ -67,6 +67,8 @@ import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+
+import javax.annotation.Nullable;
 
 public class HUTrxBL implements IHUTrxBL
 {
@@ -190,7 +192,7 @@ public class HUTrxBL implements IHUTrxBL
 	}
 
 	@Override
-	public void setParentHU(final IHUContext huContext, final I_M_HU_Item parentHUItem, final I_M_HU hu)
+	public void setParentHU(final IHUContext huContext, @Nullable final I_M_HU_Item parentHUItem, final I_M_HU hu)
 	{
 		final boolean destroyOldParentIfEmptyStorage = true;
 		setParentHU(huContext, parentHUItem, hu, destroyOldParentIfEmptyStorage);
@@ -198,8 +200,8 @@ public class HUTrxBL implements IHUTrxBL
 
 	@Override
 	public void setParentHU(final IHUContext huContext,
-			final I_M_HU_Item parentHUItem,
-			@NonNull final I_M_HU hu,
+			final @Nullable I_M_HU_Item parentHUItem,
+			final @NonNull I_M_HU hu,
 			final boolean destroyOldParentIfEmptyStorage)
 	{
 		// TODO: handle in HUTrx / allocation
@@ -224,15 +226,10 @@ public class HUTrxBL implements IHUTrxBL
 
 	/**
 	 * Actual processing for HU (set parent & rollup incremental)
-	 *
-	 * @param huContext
-	 * @param parentHUItem
-	 * @param hu
-	 * @param destroyOldParentIfEmptyStorage
 	 */
-	private final void setParentHU0(final IHUContext huContext,
-			final I_M_HU_Item parentHUItem,
-			final I_M_HU hu,
+	private void setParentHU0(final IHUContext huContext,
+			@Nullable final I_M_HU_Item parentHUItem,
+			@NonNull final I_M_HU hu,
 			final boolean destroyOldParentIfEmptyStorage)
 	{
 		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
@@ -415,7 +412,7 @@ public class HUTrxBL implements IHUTrxBL
 
 		}
 
-		return ImmutableList.<IHUTransactionCandidate> builder()
+		return ImmutableList.<IHUTransactionCandidate>builder()
 				.addAll(notAggregated)
 				.addAll(transactionsAggregateMap.values())
 				.build();

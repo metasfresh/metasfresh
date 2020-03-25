@@ -118,11 +118,6 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 /* DDL */  select update_Column_Translation_From_AD_Element(577532) 
 ;
 
--- 2020-02-11T22:27:45.947Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */ SELECT public.db_alter_table('AD_Process','ALTER TABLE public.AD_Process ADD COLUMN IsNotifyUserAfterExecution CHAR(1) DEFAULT ''N'' CHECK (IsNotifyUserAfterExecution IN (''Y'',''N'')) NOT NULL')
-;
-
 -- 2020-02-11T22:28:05.345Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,570000,597954,0,245,TO_TIMESTAMP('2020-02-11 23:28:05','YYYY-MM-DD HH24:MI:SS'),100,'Die Benachrichtigung enthält einen Link zum betreffenden Prozess-Revisonsdatensatz.',1,'D','Y','N','N','N','N','N','N','N','Nach Ausführung Nutzer benachrichtigen',TO_TIMESTAMP('2020-02-11 23:28:05','YYYY-MM-DD HH24:MI:SS'),100)

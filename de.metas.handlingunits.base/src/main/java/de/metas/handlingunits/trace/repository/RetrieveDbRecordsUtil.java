@@ -15,7 +15,7 @@ import org.compiere.model.IQuery;
 import org.compiere.util.TimeUtil;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Predicates;
+import java.util.Objects;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.handlingunits.HuId;
@@ -139,7 +139,7 @@ public class RetrieveDbRecordsUtil
 		{
 			return set.stream()
 					.map(dbRecord -> HuId.ofRepoIdOrNull(dbRecord.getVHU_Source_ID()))
-					.filter(Predicates.notNull())
+					.filter(Objects::nonNull)
 					.sorted()
 					.distinct()
 					.collect(ImmutableList.toImmutableList());

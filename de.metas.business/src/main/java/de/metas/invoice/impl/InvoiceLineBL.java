@@ -273,6 +273,8 @@ public class InvoiceLineBL implements IInvoiceLineBL
 
 	private BigDecimal calculateQtyInvoicedInPriceUOM(@NonNull final I_C_InvoiceLine ilRecord)
 	{
+		
+		
 		final BigDecimal qtyEntered = ilRecord.getQtyEntered();
 		Check.assumeNotNull(qtyEntered, "qtyEntered not null; ilRecord={}", ilRecord);
 
@@ -280,6 +282,12 @@ public class InvoiceLineBL implements IInvoiceLineBL
 		if (priceUomId == null)
 		{
 			return qtyEntered;
+		}
+		
+		final UomId uomId = UomId.ofRepoIdOrNull(ilRecord.getC_UOM_ID());
+		if (uomId == null)
+		{
+			return qtyEntered; // the UOM is not yet set. The invoice line is probably new.
 		}
 
 		final ProductId productId = ProductId.ofRepoIdOrNull(ilRecord.getM_Product_ID());

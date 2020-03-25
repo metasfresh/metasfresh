@@ -29,7 +29,7 @@ import org.compiere.model.I_C_Order_CompensationGroup;
 import org.eevolution.api.ProductBOMId;
 import org.springframework.stereotype.Component;
 
-import com.google.common.base.Predicates;
+import java.util.Objects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
@@ -155,7 +155,7 @@ public class OrderGroupRepository implements GroupRepository
 				.listDistinct(I_C_OrderLine.COLUMNNAME_C_Order_ID, I_C_OrderLine.COLUMNNAME_C_Order_CompensationGroup_ID)
 				.stream()
 				.map(map -> extractGroupIdOrNull(map))
-				.filter(Predicates.notNull())
+				.filter(Objects::nonNull)
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
@@ -557,7 +557,7 @@ public class OrderGroupRepository implements GroupRepository
 		final List<OrderLineId> orderLineIds = group.getRegularLines().stream()
 				.map(GroupRegularLine::getRepoId)
 				.map(OrderLineId::ofRepoIdOrNull)
-				.filter(Predicates.notNull())
+				.filter(Objects::nonNull)
 				.collect(ImmutableList.toImmutableList());
 
 		final List<I_C_OrderLine> orderLines = retrieveOrderLineRecords(orderLineIds);

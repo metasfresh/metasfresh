@@ -8,7 +8,7 @@ import javax.annotation.Nullable;
 
 import org.adempiere.exceptions.AdempiereException;
 
-import com.google.common.base.Predicates;
+import java.util.Objects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
@@ -136,7 +136,7 @@ public class PickingCandidate
 
 		return candidates.stream()
 				.map(PickingCandidate::getPickingSlotId)
-				.filter(Predicates.notNull())
+				.filter(Objects::nonNull)
 				.collect(ImmutableSet.toImmutableSet());
 	}
 

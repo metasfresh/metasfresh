@@ -1,5 +1,7 @@
 package de.metas.marketing.gateway.cleverreach;
 
+import static de.metas.util.Check.assumeNotEmpty;
+
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -253,7 +255,7 @@ public class CleverReachClient implements PlatformClient
 		personsWithAndWithoutEmailOrRemoteId.get(false)
 				.stream()
 				.map(p -> RemoteToLocalSyncResult.error(p, errorMessage))
-				.forEach(syncResultsToAddErrorsTo::add);;
+				.forEach(syncResultsToAddErrorsTo::add);
 
 		final List<ContactPerson> personsWithEmailOrRemoteId = personsWithAndWithoutEmailOrRemoteId.get(true);
 		return personsWithEmailOrRemoteId;
@@ -302,7 +304,8 @@ public class CleverReachClient implements PlatformClient
 				.map(Receiver::of)
 				.collect(ImmutableList.toImmutableList());
 
-		final String insertUrl = String.format("/groups.json/%s/receivers/upsert", campaign.getRemoteId());
+		final String groupRemoteId = assumeNotEmpty(campaign.getRemoteId(), "Then given campaign needs to have a RemoteId; campagin={}", campaign);
+		final String insertUrl = String.format("/groups.json/%s/receivers/upsert", groupRemoteId);
 
 		final List<Object> results = getLowLevelClient()
 				.post(receivers,
@@ -357,7 +360,7 @@ public class CleverReachClient implements PlatformClient
 			return !Check.isEmpty((String)resultObj, true);
 		}
 		return false;
-	};
+	}
 
 	@Override
 	public List<LocalToRemoteSyncResult> syncCampaignsLocalToRemote(@NonNull final List<Campaign> campaigns)

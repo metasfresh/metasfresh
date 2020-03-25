@@ -11,7 +11,7 @@ import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 
-import com.google.common.base.Predicates;
+import java.util.Objects;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.dunning_gateway.spi.DunningExportClient;
@@ -51,7 +51,7 @@ public class DunningExportServiceRegistry
 	{
 		dunningExportClientFactoriesByGatewayId = dunningExportClientFactories.orElse(ImmutableList.of())
 				.stream()
-				.filter(Predicates.notNull())
+				.filter(Objects::nonNull)
 				.collect(GuavaCollectors.toImmutableMapByKey(DunningExportClientFactory::getDunningExportProviderId));
 	}
 

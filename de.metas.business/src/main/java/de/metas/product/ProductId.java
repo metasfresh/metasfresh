@@ -10,7 +10,6 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
-import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.adempiere.model.I_M_Product;
@@ -77,7 +76,7 @@ public class ProductId implements RepoIdAware
 	public static Set<Integer> toRepoIds(final Collection<ProductId> productIds)
 	{
 		return productIds.stream()
-				.filter(Predicates.notNull())
+				.filter(Objects::nonNull)
 				.map(ProductId::toRepoId)
 				.collect(ImmutableSet.toImmutableSet());
 	}

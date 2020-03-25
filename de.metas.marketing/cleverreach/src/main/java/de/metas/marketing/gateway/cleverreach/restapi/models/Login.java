@@ -3,6 +3,7 @@ package de.metas.marketing.gateway.cleverreach.restapi.models;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import lombok.Builder;
+import lombok.ToString;
 import lombok.Value;
 
 /*
@@ -30,9 +31,15 @@ import lombok.Value;
 @JsonIgnoreProperties(ignoreUnknown = true)
 @Value
 @Builder
+@ToString
 public class Login
 {
 	String client_id;
 	String login;
 	String password;
+
+	public Login withoutPassword()
+	{
+		return new Login(client_id, login, "******");
+	}
 }

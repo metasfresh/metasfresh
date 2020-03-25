@@ -37,7 +37,7 @@ import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.springframework.stereotype.Component;
 
-import com.google.common.base.Predicates;
+import java.util.Objects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
@@ -150,7 +150,7 @@ public class ShipmentScheduleInvalidateBL implements IShipmentScheduleInvalidate
 		return shipmentScheduleAllocDAO.retrieveAllForInOutLine(inoutLine, I_M_ShipmentSchedule_QtyPicked.class)
 				.stream()
 				.map(alloc -> ShipmentScheduleId.ofRepoIdOrNull(alloc.getM_ShipmentSchedule_ID()))
-				.filter(Predicates.notNull()); // shall not happen
+				.filter(Objects::nonNull); // shall not happen
 	}
 
 	@Override

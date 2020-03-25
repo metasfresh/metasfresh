@@ -18,7 +18,7 @@ import org.compiere.model.I_C_Location;
 import org.compiere.model.I_C_Postal;
 import org.slf4j.Logger;
 
-import com.google.common.base.Predicates;
+import java.util.Objects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
@@ -361,7 +361,7 @@ final class BPartnerCompositesLoader
 				.get(bpartnerId)
 				.stream()
 				.map(record -> ofBankAccountRecordOrNull(record, relatedRecords))
-				.filter(Predicates.notNull())
+				.filter(Objects::nonNull)
 				.collect(ImmutableList.toImmutableList());
 	}
 

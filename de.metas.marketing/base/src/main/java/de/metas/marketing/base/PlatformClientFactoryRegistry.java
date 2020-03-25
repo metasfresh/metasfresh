@@ -5,7 +5,7 @@ import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 
-import com.google.common.base.Predicates;
+import java.util.Objects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
@@ -45,7 +45,7 @@ public class PlatformClientFactoryRegistry
 	{
 		clientFactoriesByGatewayId = platformClientFactories.orElse(ImmutableList.of())
 				.stream()
-				.filter(Predicates.notNull())
+				.filter(Objects::nonNull)
 				.collect(GuavaCollectors.toImmutableMapByKey(PlatformClientFactory::getPlatformGatewayId));
 	}
 

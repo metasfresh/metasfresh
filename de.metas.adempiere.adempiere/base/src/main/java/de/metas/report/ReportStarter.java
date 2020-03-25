@@ -1,15 +1,7 @@
 package de.metas.report;
 
-import org.adempiere.ad.service.ITaskExecutorService;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.print.JRReportViewerProvider;
-import org.compiere.util.Ini;
-import org.slf4j.Logger;
-
-import com.google.common.io.Files;
-
 import ch.qos.logback.classic.Level;
+import com.google.common.io.Files;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.logging.LogManager;
@@ -31,6 +23,12 @@ import lombok.Builder;
 import lombok.Builder.Default;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.ad.service.ITaskExecutorService;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.print.JRReportViewerProvider;
+import org.compiere.util.Ini;
+import org.slf4j.Logger;
 
 /*
  * #%L
@@ -182,7 +180,7 @@ public abstract class ReportStarter extends JavaProcess
 		//
 		// Set report data to process execution result
 		final ProcessExecutionResult processExecutionResult = processInfo.getResult();
-		final String reportFilename = extractReportFilename(processInfo, outputType);
+		final String reportFilename = result.getFilename() != null ? result.getFilename() : extractReportFilename(processInfo, outputType);
 		final String reportContentType = outputType.getContentType();
 		processExecutionResult.setReportData(result.getReportData(), reportFilename, reportContentType);
 
@@ -265,7 +263,6 @@ public abstract class ReportStarter extends JavaProcess
 	}
 
 	/**
-	 *
 	 * @return {@link JRReportViewerProvider} or null
 	 */
 	private JRReportViewerProvider getJRReportViewerProviderOrNull()
@@ -299,7 +296,9 @@ public abstract class ReportStarter extends JavaProcess
 
 		Excel,
 
-		/** May be used when no invocation to the jasper service is done */
+		/**
+		 * May be used when no invocation to the jasper service is done
+		 */
 		Other
 	}
 

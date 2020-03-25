@@ -14,7 +14,6 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
 
 import ch.qos.logback.classic.Level;
@@ -148,7 +147,7 @@ public class MSV3StockAvailabilityService
 		final Stream<MSV3StockAvailability> stockAvailabilityStream = GuavaCollectors
 				.groupByAndStream(stockRecordsStream, StockDataAggregateItem::getProductId)
 				.map(records -> toMSV3StockAvailabilityOrNullIfFailed(serverConfig, records))
-				.filter(Predicates.notNull());
+				.filter(Objects::nonNull);
 
 		return GuavaCollectors
 				.batchAndStream(stockAvailabilityStream, query.getIteratorBatchSize())
@@ -400,7 +399,7 @@ public class MSV3StockAvailabilityService
 		final PZN pzn = getPZNByProductId(productId);
 
 		final List<MSV3ProductExclude> eventItems = Stream.of(bpartnerIds)
-				.filter(Predicates.notNull())
+				.filter(Objects::nonNull)
 				.distinct()
 				.map(bpartnerId -> MSV3ProductExclude.builder()
 						.pzn(pzn)

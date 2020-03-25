@@ -1,14 +1,3 @@
-package de.metas.i18n;
-
-import javax.annotation.Nullable;
-
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonValue;
-
-import de.metas.util.Check;
-import lombok.EqualsAndHashCode;
-import lombok.NonNull;
-
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -31,6 +20,17 @@ import lombok.NonNull;
  * #L%
  */
 
+package de.metas.i18n;
+
+import javax.annotation.Nullable;
+
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+
+import de.metas.util.Check;
+import lombok.EqualsAndHashCode;
+import lombok.NonNull;
+
 /**
  * AD_Message.Value
  */
@@ -46,7 +46,7 @@ public final class AdMessageKey
 	@Nullable
 	public static AdMessageKey ofNullable(@Nullable final String value)
 	{
-		return !Check.isBlank(value) ? of(value) : null;
+		return Check.isNotBlank(value) ? of(value) : null;
 	}
 
 	private final String value;

@@ -1,9 +1,20 @@
 package de.metas.report.jasper.client;
 
-import static de.metas.util.Check.assumeGreaterThanZero;
-import static de.metas.util.Check.assumeNotEmpty;
-import static de.metas.util.Check.assumeNotNull;
-
+import ch.qos.logback.classic.Level;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.ImmutableList;
+import de.metas.JsonObjectMapperHolder;
+import de.metas.logging.LogManager;
+import de.metas.report.server.IReportServer;
+import de.metas.report.server.JsonReportError;
+import de.metas.report.server.OutputType;
+import de.metas.report.server.ReportConstants;
+import de.metas.report.server.ReportResult;
+import de.metas.util.Loggables;
+import de.metas.util.Services;
+import de.metas.util.exceptions.ServiceConnectionException;
+import groovy.transform.ToString;
+import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ISysConfigBL;
 import org.slf4j.Logger;
@@ -17,21 +28,9 @@ import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestClientResponseException;
 import org.springframework.web.client.RestTemplate;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.collect.ImmutableList;
-
-import ch.qos.logback.classic.Level;
-import de.metas.JsonObjectMapperHolder;
-import de.metas.logging.LogManager;
-import de.metas.report.server.IReportServer;
-import de.metas.report.server.JsonReportError;
-import de.metas.report.server.OutputType;
-import de.metas.report.server.ReportConstants;
-import de.metas.util.Loggables;
-import de.metas.util.Services;
-import de.metas.util.exceptions.ServiceConnectionException;
-import groovy.transform.ToString;
-import lombok.NonNull;
+import static de.metas.util.Check.assumeGreaterThanZero;
+import static de.metas.util.Check.assumeNotEmpty;
+import static de.metas.util.Check.assumeNotNull;
 
 @ToString(includes = "reportsRootUrl")
 public class RemoteServletInvoker implements IReportServer
@@ -79,7 +78,7 @@ public class RemoteServletInvoker implements IReportServer
 	}
 
 	@Override
-	public byte[] report(
+	public ReportResult report(
 			final int AD_Process_ID,
 			final int AD_PInstance_ID,
 			@NonNull final String adLanguage,
@@ -107,11 +106,11 @@ public class RemoteServletInvoker implements IReportServer
 
 			final HttpEntity<?> request = new HttpEntity<>(httpHeaders);
 
-			final ResponseEntity<byte[]> response = restTemplate.exchange(
+			final ResponseEntity<ReportResult> response = restTemplate.exchange(
 					reportsUrl,
 					HttpMethod.GET,
 					request,
-					byte[].class);
+					ReportResult.class);
 
 			return response.getBody();
 		}
