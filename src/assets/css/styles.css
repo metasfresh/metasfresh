@@ -41,7 +41,9 @@
 * - 200 < - elements that are over backdrop (header expanded)
 * - 400 - screen-freeze
 */
-
+html {
+    overflow: auto !important;
+}
 
 body {
     background-color: #F8FAFB;

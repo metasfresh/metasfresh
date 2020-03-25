@@ -43,6 +43,7 @@ class TableItem extends Component {
       [this.props.rowId]: this.props,
       lastSelected: null,
       currentPage: null,
+      cellsExtended: false,
     };
   }
 
@@ -88,7 +89,7 @@ class TableItem extends Component {
     const { focusOnFieldName, isSelected } = this.props;
 
     if (multilineText && this.props.isSelected !== prevProps.isSelected) {
-      this.handleCellExtend();
+      this.handleCellExtend(this.props.isSelected);
     }
 
     if (this.props.dataHash !== prevProps.dataHash) {
@@ -337,9 +338,9 @@ class TableItem extends Component {
     activeCell && activeCell.focus();
   };
 
-  handleCellExtend = () => {
+  handleCellExtend = (selected) => {
     this.setState({
-      cellsExtended: !this.state.cellsExtended,
+      cellsExtended: selected,
     });
   };
 
@@ -494,7 +495,6 @@ class TableItem extends Component {
                 handleDoubleClick={this.handleEditProperty}
                 onClickOutside={this.handleClickOutside}
                 onCellChange={this.handleCellValueChange}
-                onCellExtend={this.handleCellExtend}
                 updatedRow={updatedRow || newRow}
                 updateRow={this.updateRow}
                 handleKeyDown={this.handleKeyDown}

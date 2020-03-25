@@ -158,7 +158,6 @@
 
         .with-widget {
             display: flex;
-            align-items: flex-end;
 
             .widget-tooltip {
                 text-align: right;
@@ -225,8 +224,9 @@
 
             &.longtext-cell {
                 word-wrap: break-word;
-                overflow-y: scroll;
+                overflow-y: auto;
                 position: relative;
+                white-space: pre-line;
             }
         }
     }
