@@ -4,11 +4,11 @@ import java.time.LocalDate;
 import java.util.Set;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BankStatement;
 import org.compiere.model.I_C_BankStatementLine;
 import org.compiere.model.I_C_Payment;
 import org.compiere.util.TimeUtil;
+import org.springframework.stereotype.Component;
 
 import de.metas.banking.BankStatementId;
 import de.metas.banking.BankStatementLineId;
@@ -35,9 +35,19 @@ import de.metas.payment.api.PaymentQuery;
 import de.metas.util.Services;
 import lombok.NonNull;
 
+@Component
 public class BankStatementPaymentBL implements IBankStatementPaymentBL
 {
 	private final IBankStatementDAO bankStatementDAO = Services.get(IBankStatementDAO.class);
+	private final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
+	private final IPaymentDAO paymentDAO = Services.get(IPaymentDAO.class);
+	private final IBankStatementListenerService bankStatementListenerService = Services.get(IBankStatementListenerService.class);
+	private final MoneyService moneyService;
+
+	public BankStatementPaymentBL(@NonNull final MoneyService moneyService)
+	{
+		this.moneyService = moneyService;
+	}
 
 	@Override
 	public void findOrCreateSinglePaymentAndLinkIfPossible(
@@ -80,8 +90,6 @@ public class BankStatementPaymentBL implements IBankStatementPaymentBL
 			@NonNull final BPartnerId bpartnerId,
 			final int limit)
 	{
-		final IPaymentDAO paymentDAO = Services.get(IPaymentDAO.class);
-
 		final Money statementAmt = extractStatementAmt(bankStatementLine);
 		final PaymentDirection expectedPaymentDirection = PaymentDirection.ofBankStatementAmount(statementAmt);
 		final Money expectedPaymentAmount = expectedPaymentDirection.convertStatementAmtToPayAmt(statementAmt);
@@ -127,8 +135,6 @@ public class BankStatementPaymentBL implements IBankStatementPaymentBL
 		final boolean inboundPayment = statementAmt.signum() >= 0;
 		final Money payAmount = statementAmt.negateIf(!inboundPayment);
 
-		final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
-
 		final DefaultPaymentBuilder paymentBuilder = inboundPayment
 				? paymentBL.newInboundReceiptBuilder()
 				: paymentBL.newOutboundPaymentBuilder();
@@ -151,7 +157,6 @@ public class BankStatementPaymentBL implements IBankStatementPaymentBL
 			@NonNull final I_C_BankStatementLine bankStatementLine,
 			@NonNull final PaymentId paymentId)
 	{
-		final IPaymentDAO paymentDAO = Services.get(IPaymentDAO.class);
 		final I_C_Payment payment = paymentDAO.getById(paymentId);
 		linkSinglePayment(bankStatement, bankStatementLine, payment);
 	}
@@ -191,11 +196,9 @@ public class BankStatementPaymentBL implements IBankStatementPaymentBL
 		final DocStatus bankStatementDocStatus = DocStatus.ofCode(bankStatement.getDocStatus());
 		if (bankStatementDocStatus.isCompleted())
 		{
-			final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
 			paymentBL.markReconciledAndSave(payment);
 		}
 
-		final IBankStatementListenerService bankStatementListenerService = Services.get(IBankStatementListenerService.class);
 		bankStatementListenerService.firePaymentLinked(PaymentLinkResult.builder()
 				.bankStatementId(BankStatementId.ofRepoId(bankStatementLine.getC_BankStatement_ID()))
 				.bankStatementLineId(BankStatementLineId.ofRepoId(bankStatementLine.getC_BankStatementLine_ID()))
@@ -211,7 +214,7 @@ public class BankStatementPaymentBL implements IBankStatementPaymentBL
 		return PaymentDirection.ofReceiptFlag(payment.isReceipt());
 	}
 
-	private Money extractPayAmt(@NonNull final I_C_Payment payment)
+	private static Money extractPayAmt(@NonNull final I_C_Payment payment)
 	{
 		final CurrencyId currencyId = CurrencyId.ofRepoId(payment.getC_Currency_ID());
 		return Money.of(payment.getPayAmt(), currencyId);
@@ -221,7 +224,7 @@ public class BankStatementPaymentBL implements IBankStatementPaymentBL
 	public BankStatementLineMultiPaymentLinkResult linkMultiPayments(@NonNull final BankStatementLineMultiPaymentLinkRequest request)
 	{
 		return BankStatementLineMultiPaymentLinkCommand.builder()
-				.moneyService(SpringContextHolder.instance.getBean(MoneyService.class))
+				.moneyService(moneyService)
 				.request(request)
 				.build()
 				.execute();

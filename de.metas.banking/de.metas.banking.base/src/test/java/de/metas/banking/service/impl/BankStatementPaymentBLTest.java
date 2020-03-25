@@ -58,10 +58,12 @@ import de.metas.banking.service.IBankStatementListenerService;
 import de.metas.bpartner.BPartnerId;
 import de.metas.business.BusinessTestHelper;
 import de.metas.currency.CurrencyCode;
+import de.metas.currency.CurrencyRepository;
 import de.metas.currency.impl.PlainCurrencyDAO;
 import de.metas.document.engine.DocStatus;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
+import de.metas.money.MoneyService;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentId;
 import de.metas.payment.TenderType;
@@ -75,6 +77,7 @@ class BankStatementPaymentBLTest
 	private final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
 	private final IBankStatementDAO bankStatementDAO = Services.get(IBankStatementDAO.class);
 	private IBankStatementListenerService bankStatementListenerService;
+	private BankStatementPaymentBL bankStatementPaymentBL;
 
 	private final String metasfreshIban = "123456";
 	private final LocalDate statementDate = SystemTime.asLocalDate();
@@ -88,6 +91,7 @@ class BankStatementPaymentBLTest
 	{
 		AdempiereTestHelper.get().init();
 		bankStatementListenerService = Services.get(IBankStatementListenerService.class);
+		bankStatementPaymentBL = new BankStatementPaymentBL(new MoneyService(new CurrencyRepository()));
 
 		final IModelInterceptorRegistry modelInterceptorRegistry = Services.get(IModelInterceptorRegistry.class);
 		modelInterceptorRegistry.addModelInterceptor(new C_BankStatementLine_MockedInterceptor());
@@ -191,8 +195,7 @@ class BankStatementPaymentBLTest
 			// call tested method
 			//
 			bankStatement.setDocStatus(DocStatus.Completed.getCode());
-			final BankStatementPaymentBL testBankStatementPaymentBL = new BankStatementPaymentBL();
-			testBankStatementPaymentBL.linkSinglePayment(bankStatement, bankStatementLine, payment);
+			bankStatementPaymentBL.linkSinglePayment(bankStatement, bankStatementLine, payment);
 
 			assertThat(paymentsLinked).hasSize(1);
 			assertThat(paymentsLinked.get(0)).isEqualTo(PaymentLinkResult.builder()
@@ -282,8 +285,7 @@ class BankStatementPaymentBLTest
 				// call tested method
 				//
 				bankStatement.setDocStatus(DocStatus.Completed.getCode());
-				final BankStatementPaymentBL testBankStatementPaymentBL = new BankStatementPaymentBL();
-				testBankStatementPaymentBL.findOrCreateSinglePaymentAndLinkIfPossible(bankStatement, bsl);
+				bankStatementPaymentBL.findOrCreateSinglePaymentAndLinkIfPossible(bankStatement, bsl);
 
 				//
 				// Checks
@@ -338,8 +340,7 @@ class BankStatementPaymentBLTest
 				// call tested method
 				//
 				bankStatement.setDocStatus(DocStatus.Completed.getCode());
-				final BankStatementPaymentBL testBankStatementBL = new BankStatementPaymentBL();
-				testBankStatementBL.findOrCreateSinglePaymentAndLinkIfPossible(bankStatement, bsl);
+				bankStatementPaymentBL.findOrCreateSinglePaymentAndLinkIfPossible(bankStatement, bsl);
 
 				//
 				// Checks
@@ -376,8 +377,7 @@ class BankStatementPaymentBLTest
 				// call tested method
 				//
 				bankStatement.setDocStatus(DocStatus.Completed.getCode());
-				final BankStatementPaymentBL testBankStatementBL = new BankStatementPaymentBL();
-				testBankStatementBL.findOrCreateSinglePaymentAndLinkIfPossible(bankStatement, bsl);
+				bankStatementPaymentBL.findOrCreateSinglePaymentAndLinkIfPossible(bankStatement, bsl);
 
 				//
 				// Checks
@@ -405,8 +405,7 @@ class BankStatementPaymentBLTest
 				// call tested method
 				//
 				bankStatement.setDocStatus(DocStatus.Completed.getCode());
-				final BankStatementPaymentBL testBankStatementBL = new BankStatementPaymentBL();
-				testBankStatementBL.findOrCreateSinglePaymentAndLinkIfPossible(bankStatement, bsl);
+				bankStatementPaymentBL.findOrCreateSinglePaymentAndLinkIfPossible(bankStatement, bsl);
 
 				//
 				// Checks

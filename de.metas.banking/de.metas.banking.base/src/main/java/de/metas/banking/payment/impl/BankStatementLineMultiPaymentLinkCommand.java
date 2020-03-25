@@ -32,7 +32,6 @@ import de.metas.organization.OrgId;
 import de.metas.payment.PaymentDirection;
 import de.metas.payment.PaymentId;
 import de.metas.payment.api.IPaymentBL;
-import de.metas.payment.api.IPaymentDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.Builder;
@@ -67,7 +66,6 @@ final class BankStatementLineMultiPaymentLinkCommand
 	private final IBankStatementBL bankStatementBL = Services.get(IBankStatementBL.class);
 	private final IBankStatementDAO bankStatementDAO = Services.get(IBankStatementDAO.class);
 	private final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
-	private final IPaymentDAO paymentDAO = Services.get(IPaymentDAO.class);
 	private final IBankStatementListenerService listenerService = Services.get(IBankStatementListenerService.class);
 	private final MoneyService moneyService;
 
@@ -174,7 +172,7 @@ final class BankStatementLineMultiPaymentLinkCommand
 				.map(PaymentToLink::getPaymentId)
 				.collect(ImmutableSet.toImmutableSet());
 
-		return paymentDAO.getByIds(paymentIds)
+		return paymentBL.getByIds(paymentIds)
 				.stream()
 				.collect(ImmutableMap.toImmutableMap(
 						payment -> PaymentId.ofRepoId(payment.getC_Payment_ID()),
