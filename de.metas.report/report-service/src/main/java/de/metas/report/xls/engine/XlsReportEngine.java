@@ -1,13 +1,16 @@
 package de.metas.report.xls.engine;
 
-import java.io.ByteArrayOutputStream;
-import java.io.OutputStream;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeMap;
-
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+import de.metas.process.PInstanceId;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.report.server.AbstractReportEngine;
+import de.metas.report.server.OutputType;
+import de.metas.report.server.ReportContext;
+import de.metas.report.server.ReportResult;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import de.metas.util.lang.CoalesceUtil;
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.IExpressionFactory;
 import org.adempiere.ad.expression.api.IStringExpression;
@@ -17,16 +20,11 @@ import org.compiere.util.Evaluatee;
 import org.compiere.util.Evaluatee2;
 import org.compiere.util.Evaluatees;
 
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
-
-import de.metas.process.PInstanceId;
-import de.metas.process.ProcessInfoParameter;
-import de.metas.report.server.AbstractReportEngine;
-import de.metas.report.server.OutputType;
-import de.metas.report.server.ReportContext;
-import de.metas.util.Check;
-import de.metas.util.Services;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
 
 /*
  * #%L
@@ -57,12 +55,12 @@ public class XlsReportEngine extends AbstractReportEngine
 	private static final String PROPERTY_ProcessParameters = "p";
 
 	@Override
-	public void report(final ReportContext reportContext, final OutputStream out)
+	public ReportResult report(final ReportContext reportContext)
 	{
-		OutputType outputType = reportContext.getOutputType();
-		if (outputType == null)
+		final OutputType outputType = CoalesceUtil.coalesce(reportContext.getOutputType(), OutputType.XLS);
+		if (!OutputType.XLS.equals(outputType))
 		{
-			outputType = OutputType.XLS;
+			throw new AdempiereException("OutputType " + outputType + " is not supported by " + this);
 		}
 
 		final ClassLoader reportClassLoader = createReportClassLoader(reportContext);
@@ -70,60 +68,20 @@ public class XlsReportEngine extends AbstractReportEngine
 		Check.assumeNotEmpty(templateResourceName, "templateResourceName not defined in process: {}", reportContext);
 
 		//
-		// Pick the right output stream
-		final OutputStream xlsOutput;
-		final boolean needsConversion;
-		if (outputType == OutputType.XLS)
-		{
-			xlsOutput = out;
-			needsConversion = false;
-		}
-		else if (outputType == OutputType.PDF)
-		{
-			xlsOutput = new ByteArrayOutputStream();
-			needsConversion = true;
-		}
-		else
-		{
-			throw new AdempiereException("OutputType " + outputType + " not supported by " + this);
-		}
-
-		//
 		// Datasource
 		final IXlsDataSource xlsDataSource = retrieveDataSource(reportContext);
 
 		//
 		// Create the report
-		JXlsExporter.newInstance()
+		return JXlsExporter.newInstance()
 				.setContext(reportContext.getCtx())
 				.setLoader(reportClassLoader)
 				.setProperty(PROPERTY_ProcessParameters, createContextAsMap(reportContext))
 				.setTemplateResourceName(templateResourceName)
-				.setOutput(xlsOutput)
 				.setAD_Language(reportContext.getAD_Language())
 				//
 				.setDataSource(xlsDataSource)
 				.export();
-
-		//
-		// Convert to desired OutputType if needed
-		if (needsConversion)
-		{
-			final byte[] xlsData = ((ByteArrayOutputStream)xlsOutput).toByteArray();
-			convert(xlsData, outputType, out);
-		}
-	}
-
-	private void convert(final byte[] xlsData, final OutputType outputType, final OutputStream out)
-	{
-		if (outputType == OutputType.PDF)
-		{
-			throw new UnsupportedOperationException("Conversion to PDF is not yet implemented");
-		}
-		else
-		{
-			throw new AdempiereException("OutputType " + outputType + " is not supported by " + this);
-		}
 	}
 
 	private IXlsDataSource retrieveDataSource(final ReportContext reportContext)
