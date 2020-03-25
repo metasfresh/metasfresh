@@ -26,6 +26,7 @@ import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.Mutable;
 import org.compiere.model.I_C_AllocationHdr;
 import org.compiere.model.I_C_AllocationLine;
+import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Payment;
 import org.compiere.util.TimeUtil;
@@ -40,6 +41,8 @@ import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.ICurrencyBL;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.currency.exceptions.NoCurrencyRateFoundException;
+import de.metas.document.DocTypeId;
+import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.DocStatus;
 import de.metas.invoice.InvoiceId;
 import de.metas.logging.LogManager;
@@ -66,6 +69,7 @@ public class PaymentBL implements IPaymentBL
 	private final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
+	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 
 	@Override
 	public I_C_Payment getById(@NonNull final PaymentId paymentId)
@@ -478,9 +482,13 @@ public class PaymentBL implements IPaymentBL
 		{
 			return;
 		}
-
 		final I_C_Invoice invoice = invoiceDAO.getByIdInTrx(invoiceId);
-		paymentDAO.updateDiscountAndPayment(payment, invoice.getC_Invoice_ID(), invoice.getC_DocType());
+		if (invoice.getC_DocType_ID() <= 0)
+		{
+			return;
+		}
+		final I_C_DocType docType = docTypeDAO.getById(DocTypeId.ofRepoIdOrNull(invoice.getC_DocType_ID()));
+		paymentDAO.updateDiscountAndPayment(payment, invoice.getC_Invoice_ID(), docType);
 	}
 
 	@Override
