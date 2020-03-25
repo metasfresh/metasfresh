@@ -58,6 +58,13 @@ public class JasperExecuteReportStrategy implements ExecuteReportStrategy
 		final byte[] reportData = reportResult.getReportContent();
 		final String reportFilename = reportResult.getReportFilename();
 
-		return new ExecuteReportResult(reportFilename, outputTypeEffective, reportData);
+		if (Check.isBlank(reportFilename)) // if the report returns some blanks, we ignore them
+		{
+			return ExecuteReportResult.of(outputTypeEffective, reportData);
+		}
+		else
+		{
+			return ExecuteReportResult.of(reportFilename, outputTypeEffective, reportData);
+		}
 	}
 }
