@@ -12,6 +12,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.ObjectUtils;
 import org.compiere.model.I_C_DocType;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.pricing.service.IPriceListDAO;
@@ -45,6 +46,8 @@ public class InvoiceHeaderImplBuilder
 	private int Bill_BPartner_ID;
 	private int Bill_Location_ID;
 	private Set<Integer> Bill_User_IDs = new LinkedHashSet<>(); // avoid NPE
+
+	private int Sales_BPartner_ID;
 
 	// 03805: add attribute C_Currency_ID
 	private int C_Currency_ID;
@@ -92,9 +95,11 @@ public class InvoiceHeaderImplBuilder
 		invoiceHeader.setDateAcct(getDateAcct());
 
 		// BPartner/Location/User
-		invoiceHeader.setBill_BPartner_ID(getBill_BPartner_ID());
+		invoiceHeader.setBillBPartnerId(BPartnerId.ofRepoId(getBill_BPartner_ID()));
 		invoiceHeader.setBill_Location_ID(getBill_Location_ID());
 		invoiceHeader.setBill_User_ID(getBill_User_ID());
+
+		invoiceHeader.setSalesPartnerId(BPartnerId.ofRepoIdOrNull(getSales_BPartner_ID()));
 
 		// Descriptions
 		invoiceHeader.setDescription(getDescription());
@@ -214,6 +219,16 @@ public class InvoiceHeaderImplBuilder
 	public void setBill_BPartner_ID(final int bill_BPartner_ID)
 	{
 		Bill_BPartner_ID = checkOverrideID("Bill_BPartner_ID", Bill_BPartner_ID, bill_BPartner_ID);
+	}
+
+	public int getSales_BPartner_ID()
+	{
+		return Sales_BPartner_ID;
+	}
+
+	public void setC_BPartner_SalesRep_ID(final int sales_BPartner_ID)
+	{
+		Sales_BPartner_ID = checkOverrideID("Sales_BPartner_ID", Sales_BPartner_ID, sales_BPartner_ID);
 	}
 
 	public int getBill_User_ID()

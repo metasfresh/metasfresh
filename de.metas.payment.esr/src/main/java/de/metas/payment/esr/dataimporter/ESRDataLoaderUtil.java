@@ -262,7 +262,9 @@ public class ESRDataLoaderUtil
 
 		if (invoice != null)
 		{
-			final I_C_BPartner invoicePartner = invoice.getC_BPartner();
+			final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
+			final I_C_BPartner invoicePartner = bpartnerDAO.getById(invoice.getC_BPartner_ID());
+
 			final String invoiceDocumentNo = invoice.getDocumentNo();
 			// final I_AD_Org invoiceOrg = InterfaceWrapperHelper.create(ctx, invoice.getAD_Org_ID(), I_AD_Org.class, trxName);
 

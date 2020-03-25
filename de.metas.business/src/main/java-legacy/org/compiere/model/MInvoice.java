@@ -1771,12 +1771,14 @@ public class MInvoice extends X_C_Invoice implements IDocument
 		{
 			final Currency currency = Services.get(ICurrencyDAO.class).getById(CurrencyId.ofRepoId(getC_Currency_ID()));
 			final Currency currencyTo = Services.get(ICurrencyBL.class).getBaseCurrency(ClientId.ofRepoId(getAD_Client_ID()), OrgId.ofRepoId(getAD_Org_ID()));
-			final I_C_BPartner bp = getC_BPartner();
+
+			final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
+			final I_C_BPartner bpartner = bpartnerDAO.getById(getC_BPartner_ID());
 
 			m_processMsg = Services.get(IMsgBL.class).getMsg(getCtx(),
 					ERR_NoBaseConversionBetweenCurrencies,
-					new Object[] { bp.getName(),
-							bp.getValue(),
+					new Object[] { bpartner.getName(),
+							bpartner.getValue(),
 							currency.getCurrencyCode().toThreeLetterCode(),
 							currencyTo.getCurrencyCode().toThreeLetterCode() });
 

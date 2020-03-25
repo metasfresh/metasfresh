@@ -44,6 +44,7 @@ import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.allocation.api.IAllocationDAO;
 import de.metas.bpartner.BPartnerId;
 import de.metas.invoice.InvoiceId;
+import de.metas.invoice.InvoiceLineId;
 import de.metas.util.ISingletonService;
 
 public interface IInvoiceDAO extends ISingletonService
@@ -55,8 +56,6 @@ public interface IInvoiceDAO extends ISingletonService
 	void save(org.compiere.model.I_C_InvoiceLine invoiceLine);
 
 	/**
-	 * @param invoice
-	 * @return
 	 * @throws IllegalArgumentException if invoice is not an {@link MInvoice}
 	 */
 	I_C_InvoiceLine createInvoiceLine(org.compiere.model.I_C_Invoice invoice);
@@ -168,4 +167,6 @@ public interface IInvoiceDAO extends ISingletonService
 	List<org.compiere.model.I_C_Invoice> getByIdsOutOfTrx(Collection<InvoiceId> invoiceIds);
 
 	Stream<InvoiceId> streamInvoiceIdsByBPartnerId(BPartnerId bpartnerId);
+
+	org.compiere.model.I_C_InvoiceLine getByIdOutOfTrx(InvoiceLineId invoiceLineId);
 }

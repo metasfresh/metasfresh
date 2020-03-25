@@ -30,12 +30,12 @@ import de.metas.contracts.commission.commissioninstance.businesslogic.algorithms
 import de.metas.contracts.commission.commissioninstance.businesslogic.algorithms.HierarchyContract;
 import de.metas.contracts.commission.commissioninstance.services.CommissionConfigFactory.ConfigRequestForExistingInstance;
 import de.metas.contracts.commission.commissioninstance.services.CommissionConfigFactory.ConfigRequestForNewInstance;
+import de.metas.contracts.commission.commissioninstance.testhelpers.ConfigLineTestRecord;
+import de.metas.contracts.commission.commissioninstance.testhelpers.ConfigTestRecord;
+import de.metas.contracts.commission.commissioninstance.testhelpers.ContractTestRecord;
+import de.metas.contracts.commission.commissioninstance.testhelpers.ConfigTestRecord.ConfigData;
 import de.metas.contracts.commission.model.I_C_HierarchyCommissionSettings;
-import de.metas.contracts.commission.testhelpers.ConfigLineTestRecord;
-import de.metas.contracts.commission.testhelpers.ConfigTestRecord;
-import de.metas.contracts.commission.testhelpers.ConfigTestRecord.ConfigData;
 import de.metas.contracts.model.I_C_Flatrate_Term;
-import de.metas.contracts.commission.testhelpers.ContractTestRecord;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import io.github.jsonSnapshot.SnapshotMatcher;
@@ -137,8 +137,8 @@ class CommissionConfigFactoryTest
 				.commissionProductId(commissionProduct1Id)
 				.pointsPrecision(3)
 				.subtractLowerLevelCommissionFromBase(true)
-				.configLineTestRecord(ConfigLineTestRecord.builder().seqNo(20).salesProductCategoryId(saleProductCategoryId).percentOfBasePoints("10").build())
-				.configLineTestRecord(ConfigLineTestRecord.builder().seqNo(10).customerBGroupId(customerBPGroudId).percentOfBasePoints("20").build())
+				.configLineTestRecord(ConfigLineTestRecord.builder().name("2ndConfigLine").seqNo(20).salesProductCategoryId(saleProductCategoryId).percentOfBasePoints("10").build())
+				.configLineTestRecord(ConfigLineTestRecord.builder().name("1stConfigLine").seqNo(10).customerBGroupId(customerBPGroudId).percentOfBasePoints("20").build())
 				.contractTestRecord(ContractTestRecord.builder().name("salesRep").parentName("salesSupervisor").date(date).build())
 				.contractTestRecord(ContractTestRecord.builder().name("salesSupervisor").parentName("headOfSales").date(date).build())
 				.contractTestRecord(ContractTestRecord.builder().name("headOfSales").date(date).build())
@@ -155,7 +155,7 @@ class CommissionConfigFactoryTest
 				.customerBPartnerId(endCustomerId)
 				.salesRepBPartnerId(salesRepLvl0Id)
 				.salesProductId(salesProductId)
-				.date(date).build();
+				.commissionDate(date).build();
 		final ImmutableList<CommissionConfig> configs = commissionConfigFactory.createForNewCommissionInstances(contractRequest);
 
 		assertThat(configs).hasSize(1);
@@ -190,8 +190,8 @@ class CommissionConfigFactoryTest
 				.commissionProductId(commissionProduct1Id)
 				.pointsPrecision(3)
 				.subtractLowerLevelCommissionFromBase(true)
-				.configLineTestRecord(ConfigLineTestRecord.builder().seqNo(20).salesProductCategoryId(saleProductCategoryId).percentOfBasePoints("10").build())
-				.configLineTestRecord(ConfigLineTestRecord.builder().seqNo(10).customerBGroupId(customerBPGroudId).percentOfBasePoints("20").build())
+				.configLineTestRecord(ConfigLineTestRecord.builder().name("2ndConfigLine").seqNo(20).salesProductCategoryId(saleProductCategoryId).percentOfBasePoints("10").build())
+				.configLineTestRecord(ConfigLineTestRecord.builder().name("1stConfigLine").seqNo(10).customerBGroupId(customerBPGroudId).percentOfBasePoints("20").build())
 				.contractTestRecord(ContractTestRecord.builder().name("salesRep").parentName("salesSupervisor").date(date).build())
 				.contractTestRecord(ContractTestRecord.builder().name("salesSupervisor").parentName("headOfSales").date(date).build())
 				.contractTestRecord(ContractTestRecord.builder().name("headOfSales").date(date).build())
@@ -205,8 +205,8 @@ class CommissionConfigFactoryTest
 				.commissionProductId(commissionProduct2Id)
 				.pointsPrecision(3)
 				.subtractLowerLevelCommissionFromBase(true)
-				.configLineTestRecord(ConfigLineTestRecord.builder().seqNo(20).salesProductCategoryId(saleProductCategoryId).percentOfBasePoints("10").build())
-				.configLineTestRecord(ConfigLineTestRecord.builder().seqNo(10).customerBGroupId(customerBPGroudId).percentOfBasePoints("20").build())
+				.configLineTestRecord(ConfigLineTestRecord.builder().name("2ndConfigLine").seqNo(20).salesProductCategoryId(saleProductCategoryId).percentOfBasePoints("10").build())
+				.configLineTestRecord(ConfigLineTestRecord.builder().name("1stConfigLine").seqNo(10).customerBGroupId(customerBPGroudId).percentOfBasePoints("20").build())
 				.contractTestRecord(ContractTestRecord.builder().name("salesRep").parentName("salesSupervisor").date(date).build())
 				.contractTestRecord(ContractTestRecord.builder().name("salesSupervisor").parentName("headOfSales").date(date).build())
 				.contractTestRecord(ContractTestRecord.builder().name("headOfSales").date(date).build())
@@ -224,7 +224,7 @@ class CommissionConfigFactoryTest
 				.customerBPartnerId(endCustomerId)
 				.salesRepBPartnerId(salesRepLvl0Id)
 				.salesProductId(salesProductId)
-				.date(date).build();
+				.commissionDate(date).build();
 		final ImmutableList<CommissionConfig> configs = commissionConfigFactory.createForNewCommissionInstances(contractRequest);
 
 		assertThat(configs).hasSize(2);
@@ -241,7 +241,7 @@ class CommissionConfigFactoryTest
 				.pointsPrecision(3)
 				.subtractLowerLevelCommissionFromBase(true)
 				// note: we create an unrelated configLine
-				.configLineTestRecord(ConfigLineTestRecord.builder().seqNo(10).salesProductCategoryId(someOtherProductCategoryId).percentOfBasePoints("20").build())
+				.configLineTestRecord(ConfigLineTestRecord.builder().name("singleConfigLine").seqNo(10).salesProductCategoryId(someOtherProductCategoryId).percentOfBasePoints("20").build())
 				.contractTestRecord(ContractTestRecord.builder().name("salesRep").parentName("salesSupervisor").date(date).build())
 				.contractTestRecord(ContractTestRecord.builder().name("salesSupervisor").parentName("headOfSales").date(date).build())
 				.contractTestRecord(ContractTestRecord.builder().name("headOfSales").date(date).build())
@@ -277,7 +277,7 @@ class CommissionConfigFactoryTest
 				.customerBPartnerId(endCustomerId)
 				.salesRepBPartnerId(salesRepLvl0Id)
 				.salesProductId(salesProductId)
-				.date(date).build();
+				.commissionDate(date).build();
 
 		// invoke method under test
 		final ImmutableList<CommissionConfig> configs = commissionConfigFactory.createForNewCommissionInstances(contractRequest);
@@ -294,8 +294,8 @@ class CommissionConfigFactoryTest
 				.commissionProductId(commissionProduct1Id)
 				.pointsPrecision(3)
 				.subtractLowerLevelCommissionFromBase(true)
-				.configLineTestRecord(ConfigLineTestRecord.builder().seqNo(20).salesProductCategoryId(saleProductCategoryId).percentOfBasePoints("10").build())
-				.configLineTestRecord(ConfigLineTestRecord.builder().seqNo(10).customerBGroupId(customerBPGroudId).percentOfBasePoints("20").build())
+				.configLineTestRecord(ConfigLineTestRecord.builder().name("2ndConfigLine").seqNo(20).salesProductCategoryId(saleProductCategoryId).percentOfBasePoints("10").build())
+				.configLineTestRecord(ConfigLineTestRecord.builder().name("1stConfigLine").seqNo(10).customerBGroupId(customerBPGroudId).percentOfBasePoints("20").build())
 				.contractTestRecord(ContractTestRecord.builder().name("salesRep").parentName("salesSupervisor").date(date).build())
 				.contractTestRecord(ContractTestRecord.builder().name("salesSupervisor").parentName("headOfSales").date(date).build())
 				.contractTestRecord(ContractTestRecord.builder().name("headOfSales").date(date).build())
@@ -310,8 +310,8 @@ class CommissionConfigFactoryTest
 				.commissionProductId(commissionProduct2Id)
 				.pointsPrecision(3)
 				.subtractLowerLevelCommissionFromBase(true)
-				.configLineTestRecord(ConfigLineTestRecord.builder().seqNo(20).salesProductCategoryId(saleProductCategoryId).percentOfBasePoints("10").build())
-				.configLineTestRecord(ConfigLineTestRecord.builder().seqNo(10).customerBGroupId(customerBPGroudId).percentOfBasePoints("20").build())
+				.configLineTestRecord(ConfigLineTestRecord.builder().name("2ndConfigLine").seqNo(20).salesProductCategoryId(saleProductCategoryId).percentOfBasePoints("10").build())
+				.configLineTestRecord(ConfigLineTestRecord.builder().name("1stConfigLine").seqNo(10).customerBGroupId(customerBPGroudId).percentOfBasePoints("20").build())
 				.contractTestRecord(ContractTestRecord.builder().name("salesRep").parentName("salesSupervisor").date(date).build())
 				.contractTestRecord(ContractTestRecord.builder().name("salesSupervisor").parentName("headOfSales").date(date).build())
 				.contractTestRecord(ContractTestRecord.builder().name("headOfSales").date(date).build())

@@ -67,7 +67,9 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.adempiere.model.I_C_Order;
+import de.metas.bpartner.BPartnerId;
 import de.metas.document.DocTypeId;
+import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.IADMessageDAO;
@@ -112,6 +114,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 	private static final transient Logger logger = InvoiceCandidate_Constants.getLogger(InvoiceCandBLCreateInvoices.class);
 
 	private final transient IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+	private final transient IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 	private final transient IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 	private final transient IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 	private final transient IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
@@ -350,11 +353,11 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 			invoice.setIsTaxIncluded(invoiceHeader.isTaxIncluded()); // tasks 04119
 
 			invoice.setAD_Org_ID(invoiceHeader.getOrgId().getRepoId());
-			invoice.setC_BPartner_ID(invoiceHeader.getBill_BPartner_ID());
+			invoice.setC_BPartner_ID(invoiceHeader.getBillBPartnerId().getRepoId());
 			invoice.setC_BPartner_Location_ID(invoiceHeader.getBill_Location_ID());
 			invoice.setAD_User_ID(invoiceHeader.getBill_User_ID());
 			invoice.setC_Currency_ID(invoiceHeader.getCurrencyId().getRepoId()); // 03805
-
+			invoice.setC_BPartner_SalesRep_ID(BPartnerId.toRepoId(invoiceHeader.getSalesPartnerId()));
 			invoiceBL.updateDescriptionFromDocTypeTargetId(invoice, invoiceHeader.getDescription(), invoiceHeader.getDescriptionBottom());
 
 			invoice.setIsSOTrx(header.isSOTrx());
@@ -406,7 +409,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 						trxName);
 
 				// task 08927: we already do the ILAs in here, so we won't need to update them again.
-				InvoiceCandBL.DYNATTR_C_Invoice_Candidates_need_NO_ila_updating_on_Invoice_Complete.setValue(invoice, Boolean.TRUE);
+				InvoiceCandBL.DYNATTR_INVOICING_FROM_INVOICE_CANDIDATES_IS_IN_PROGRESS.setValue(invoice, Boolean.TRUE);
 
 				trxManager.run(trxName, genLines);
 				createdLines.addAll(genLines.getCreatedLines());
@@ -430,7 +433,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 		}
 	}
 
-	private final void setC_DocType(final I_C_Invoice invoice, final IInvoiceHeader invoiceHeader)
+	private void setC_DocType(final I_C_Invoice invoice, @NonNull final IInvoiceHeader invoiceHeader)
 	{
 		final String invoiceHeaderDocBaseType = invoiceHeader.getDocBaseType();
 
@@ -457,7 +460,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 		// and that document type is not a credit memo.
 		{
 			final boolean invoiceHeader_IsCreditMemo = invoiceBL.isCreditMemo(invoiceHeaderDocBaseType);
-			final I_C_DocType invoiceDocType = invoice.getC_DocTypeTarget();
+			final I_C_DocType invoiceDocType = docTypeDAO.getById(invoice.getC_DocTypeTarget_ID());
 			Check.assumeNotNull(invoiceDocType, "invoiceDocType not null"); // shall not happen
 			final String invoiceDocBaseType = invoiceDocType.getDocBaseType();
 			final boolean invoice_IsCreditMemo = invoiceBL.isCreditMemo(invoiceDocBaseType);
