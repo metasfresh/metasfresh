@@ -11,9 +11,11 @@ import javax.annotation.Nullable;
 
 import org.adempiere.exceptions.DBException;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
 
 import de.metas.impexp.excel.service.DataConsumer;
 import de.metas.impexp.excel.service.ExcelExporterService;
+import de.metas.logging.LogManager;
 import de.metas.util.lang.CoalesceUtil;
 import lombok.Builder;
 import lombok.Getter;
@@ -27,6 +29,8 @@ public class JdbcExcelExporter
 		extends AbstractExcelExporter
 		implements DataConsumer<ResultSet>
 {
+	private static final Logger logger = LogManager.getLogger(JdbcExcelExporter.class);
+
 	private final Properties m_ctx;
 	private ResultSet m_resultSet;
 	private List<String> m_columnHeaders;
@@ -60,6 +64,11 @@ public class JdbcExcelExporter
 	@Override
 	public void putHeader(@NonNull final List<String> header)
 	{
+		if (m_columnHeaders != null)
+		{
+			logger.debug("columnHeaders ware already set to the list {}; -> ignore given list {}", m_columnHeaders, header);
+			return;
+		}
 		m_columnHeaders = header;
 	}
 

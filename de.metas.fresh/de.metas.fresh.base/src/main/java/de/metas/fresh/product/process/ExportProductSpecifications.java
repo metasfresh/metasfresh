@@ -60,7 +60,9 @@ public class ExportProductSpecifications extends JavaProcess implements IProcess
 	{
 		final JdbcExcelExporter jdbcExcelExporter = JdbcExcelExporter.builder()
 				.ctx(getCtx())
+				.columnHeaders(getColumnHeaders())
 				.build();
+
 		jdbcExcelExporter.setFontCharset(Font.ANSI_CHARSET);
 
 		excelExporterService.processDataFromSQL(getSql(), jdbcExcelExporter);

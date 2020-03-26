@@ -88,13 +88,13 @@ public class GridTabExcelExporter extends AbstractExcelExporter
 		Lookup lookup = f.getLookup();
 		if (lookup != null)
 		{
-
+			// nothing to do
 		}
 		else if (f.getDisplayType() == DisplayType.Button)
 		{
 			lookup = getButtonLookup(f);
 		}
-		//
+
 		if (lookup != null)
 		{
 			value = lookup.getDisplay(key);
