@@ -29,6 +29,7 @@ package de.metas.payment.sepa.api.impl;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.Env;
 
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.payment.sepa.api.IBBANStructureBL;
 import de.metas.payment.sepa.api.IIBANValidationBL;
@@ -43,6 +44,8 @@ import de.metas.util.Services;
  */
 public class IBANValidationBL implements IIBANValidationBL
 {
+	private static final AdMessageKey MSG_IBAN_REFORMATTED = AdMessageKey.of("IBAN_Reformatted");
+
 	/* package */ IMsgBL msgBL = Services.get(IMsgBL.class);
 
 	public static final String DEFAULT_CHECK_DIGIT = "00";
@@ -151,8 +154,7 @@ public class IBANValidationBL implements IIBANValidationBL
 			final int numericValue = Character.getNumericValue(reformattedIban.charAt(i));
 			if (numericValue < 0 || numericValue > 35)
 			{
-
-				throw new AdempiereException(msgBL.getMsg(Env.getCtx(), "IBAN_Reformatted", new Object[] { reformattedIban, reformattedIban.charAt(i) }));
+				throw new AdempiereException(MSG_IBAN_REFORMATTED, reformattedIban, reformattedIban.charAt(i));
 			}
 			total = (numericValue > 9 ? total * 100 : total * 10) + numericValue;
 

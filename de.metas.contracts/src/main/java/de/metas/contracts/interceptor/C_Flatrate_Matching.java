@@ -1,7 +1,5 @@
 package de.metas.contracts.interceptor;
 
-import java.util.Properties;
-
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
@@ -30,14 +28,11 @@ import org.adempiere.exceptions.AdempiereException;
  */
 
 import org.adempiere.exceptions.FillMandatoryException;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.ModelValidator;
 
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Matching;
 import de.metas.contracts.model.X_C_Flatrate_Conditions;
-import de.metas.i18n.IMsgBL;
-import de.metas.util.Services;
 
 @Interceptor(I_C_Flatrate_Matching.class)
 public class C_Flatrate_Matching
@@ -65,9 +60,7 @@ public class C_Flatrate_Matching
 	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_VOID, ModelValidator.TIMING_BEFORE_CLOSE })
 	public void disallowNotSupportedDocActions(final I_C_Flatrate_Matching matching)
 	{
-		final Properties ctx = InterfaceWrapperHelper.getCtx(matching);
-		final String msg = Services.get(IMsgBL.class).getMsg(ctx, MainValidator.MSG_FLATRATE_DOC_ACTION_NOT_SUPPORTED_0P);
-		throw new AdempiereException(msg);
+		throw new AdempiereException(MainValidator.MSG_FLATRATE_DOC_ACTION_NOT_SUPPORTED_0P);
 	}
 	
 

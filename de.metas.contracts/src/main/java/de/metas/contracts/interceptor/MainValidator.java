@@ -46,6 +46,7 @@ import de.metas.contracts.model.I_I_Flatrate_Term;
 import de.metas.contracts.order.ContractOrderService;
 import de.metas.contracts.spi.impl.FlatrateTermInvoiceCandidateListener;
 import de.metas.contracts.subscription.invoicecandidatehandler.ExcludeSubscriptionOrderLines;
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.impex.api.IInputDataSourceDAO;
 import de.metas.impex.model.I_AD_InputDataSource;
@@ -63,9 +64,9 @@ import lombok.NonNull;
 public class MainValidator extends AbstractModuleInterceptor
 {
 
-	public static final String MSG_FLATRATE_DOC_ACTION_NOT_SUPPORTED_0P = "Flatrate_DocAction_Not_Supported";
+	public static final AdMessageKey MSG_FLATRATE_DOC_ACTION_NOT_SUPPORTED_0P = AdMessageKey.of("Flatrate_DocAction_Not_Supported");
 
-	public static final String MSG_FLATRATE_REACTIVATE_DOC_ACTION_NOT_SUPPORTED_0P = "Flatrate_DocAction_Reactivate_Not_Supported";
+	public static final AdMessageKey MSG_FLATRATE_REACTIVATE_DOC_ACTION_NOT_SUPPORTED_0P = AdMessageKey.of("Flatrate_DocAction_Reactivate_Not_Supported");
 
 	private final ContractOrderService contractOrderService;
 	private final OrderGroupCompensationChangesHandler groupChangesHandler;

@@ -18,6 +18,7 @@ import org.slf4j.Logger;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.document.engine.IDocumentBL;
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.WebuiURLs;
@@ -66,7 +67,7 @@ final class NotificationMessageFormatter
 
 	// Constants
 	private static final String URL_TITLE_SEPARATOR = "><";
-	private static final String MSG_BottomText = "de.metas.notification.email.BottomText";
+	private static final AdMessageKey MSG_BottomText = AdMessageKey.of("de.metas.notification.email.BottomText");
 
 	//
 	// Params
@@ -122,7 +123,7 @@ final class NotificationMessageFormatter
 		return this;
 	}
 
-	public String format(@NonNull final String adMessage, final List<Object> params)
+	public String format(@NonNull final AdMessageKey adMessage, final List<Object> params)
 	{
 		final ReplaceAfterFormatCollector replaceAfterFormat = new ReplaceAfterFormatCollector();
 		final List<Object> adMessageParams = convertMessageParamsToString(params, replaceAfterFormat);

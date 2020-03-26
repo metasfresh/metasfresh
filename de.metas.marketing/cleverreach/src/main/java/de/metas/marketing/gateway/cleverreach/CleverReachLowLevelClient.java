@@ -12,12 +12,15 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
+import de.metas.marketing.gateway.cleverreach.restapi.models.ErrorResponse;
 import de.metas.marketing.gateway.cleverreach.restapi.models.Login;
+import de.metas.util.JSONObjectMapper;
 import lombok.NonNull;
 
 /*
@@ -77,10 +80,9 @@ public class CleverReachLowLevelClient
 
 			return authToken.replaceAll("\"", ""); // the string comes complete within '"' which we need to remove
 		}
-		catch (final RuntimeException e)
+		catch (final HttpClientErrorException e)
 		{
-			throw AdempiereException.wrapIfNeeded(e)
-					.appendParametersToMessage()
+			throw convertException(e)
 					.setParameter("httpMethod", "POST")
 					.setParameter("url", url)
 					.setParameter("requestBody", login.withoutPassword());
@@ -109,8 +111,7 @@ public class CleverReachLowLevelClient
 		}
 		catch (final RuntimeException e)
 		{
-			throw AdempiereException.wrapIfNeeded(e)
-					.appendParametersToMessage()
+			throw convertException(e)
 					.setParameter("httpMethod", "GET")
 					.setParameter("urlPathAndParams", urlPathAndParams)
 					.setParameter("paramValues", Arrays.toString(paramValues));
@@ -139,8 +140,7 @@ public class CleverReachLowLevelClient
 		}
 		catch (final RuntimeException e)
 		{
-			throw AdempiereException.wrapIfNeeded(e)
-					.appendParametersToMessage()
+			throw convertException(e)
 					.setParameter("httpMethod", "POST")
 					.setParameter("url", url)
 					.setParameter("requestBody", requestBody);
@@ -169,8 +169,7 @@ public class CleverReachLowLevelClient
 		}
 		catch (final RuntimeException e)
 		{
-			throw AdempiereException.wrapIfNeeded(e)
-					.appendParametersToMessage()
+			throw convertException(e)
 					.setParameter("httpMethod", "PUT")
 					.setParameter("url", url)
 					.setParameter("requestBody", requestBody);
@@ -189,8 +188,7 @@ public class CleverReachLowLevelClient
 		}
 		catch (final RuntimeException e)
 		{
-			throw AdempiereException.wrapIfNeeded(e)
-					.appendParametersToMessage()
+			throw convertException(e)
 					.setParameter("httpMethod", "DELETE")
 					.setParameter("url", url);
 		}
@@ -211,5 +209,25 @@ public class CleverReachLowLevelClient
 		httpHeaders.set(HttpHeaders.AUTHORIZATION, "Bearer " + authToken);
 
 		return httpHeaders;
+	}
+
+	private static AdempiereException convertException(@NonNull final RuntimeException rte)
+	{
+		if (rte instanceof HttpClientErrorException)
+		{
+			final HttpClientErrorException hcee = (HttpClientErrorException)rte;
+
+			final JSONObjectMapper<ErrorResponse> mapper = JSONObjectMapper.forClass(ErrorResponse.class);
+			final ErrorResponse errorResponse = mapper.readValue(hcee.getResponseBodyAsString());
+
+			return new AdempiereException(errorResponse.getError().getMessage(), hcee)
+					.markAsUserValidationError()
+					.appendParametersToMessage()
+					.setParameter("code", errorResponse.getError().getCode())
+					.setParameter("message", errorResponse.getError().getMessage());
+		}
+
+		return AdempiereException.wrapIfNeeded(rte)
+				.appendParametersToMessage();
 	}
 }

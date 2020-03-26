@@ -15,7 +15,7 @@ public class X_I_BankStatement extends org.compiere.model.PO implements I_I_Bank
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 447556155L;
+	private static final long serialVersionUID = -822624253L;
 
     /** Standard Constructor */
     public X_I_BankStatement (Properties ctx, int I_BankStatement_ID, String trxName)
@@ -134,18 +134,6 @@ public class X_I_BankStatement extends org.compiere.model.PO implements I_I_Bank
 		return (java.lang.String)get_Value(COLUMNNAME_BPartnerValue);
 	}
 
-	@Override
-	public org.compiere.model.I_C_BankStatement getC_BankStatement()
-	{
-		return get_ValueAsPO(COLUMNNAME_C_BankStatement_ID, org.compiere.model.I_C_BankStatement.class);
-	}
-
-	@Override
-	public void setC_BankStatement(org.compiere.model.I_C_BankStatement C_BankStatement)
-	{
-		set_ValueFromPO(COLUMNNAME_C_BankStatement_ID, org.compiere.model.I_C_BankStatement.class, C_BankStatement);
-	}
-
 	/** Set Bankauszug.
 		@param C_BankStatement_ID 
 		Bank Statement of account
@@ -171,18 +159,6 @@ public class X_I_BankStatement extends org.compiere.model.PO implements I_I_Bank
 		return ii.intValue();
 	}
 
-	@Override
-	public org.compiere.model.I_C_BankStatementLine getC_BankStatementLine()
-	{
-		return get_ValueAsPO(COLUMNNAME_C_BankStatementLine_ID, org.compiere.model.I_C_BankStatementLine.class);
-	}
-
-	@Override
-	public void setC_BankStatementLine(org.compiere.model.I_C_BankStatementLine C_BankStatementLine)
-	{
-		set_ValueFromPO(COLUMNNAME_C_BankStatementLine_ID, org.compiere.model.I_C_BankStatementLine.class, C_BankStatementLine);
-	}
-
 	/** Set Auszugs-Position.
 		@param C_BankStatementLine_ID 
 		Line on a statement from this Bank
@@ -203,31 +179,6 @@ public class X_I_BankStatement extends org.compiere.model.PO implements I_I_Bank
 	public int getC_BankStatementLine_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_BankStatementLine_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
-	/** Set Geschäftspartner.
-		@param C_BPartner_ID 
-		Identifies a Business Partner
-	  */
-	@Override
-	public void setC_BPartner_ID (int C_BPartner_ID)
-	{
-		if (C_BPartner_ID < 1) 
-			set_Value (COLUMNNAME_C_BPartner_ID, null);
-		else 
-			set_Value (COLUMNNAME_C_BPartner_ID, Integer.valueOf(C_BPartner_ID));
-	}
-
-	/** Get Geschäftspartner.
-		@return Identifies a Business Partner
-	  */
-	@Override
-	public int getC_BPartner_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_BPartner_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
@@ -302,6 +253,31 @@ public class X_I_BankStatement extends org.compiere.model.PO implements I_I_Bank
 	public int getC_BP_BankAccountTo_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_BP_BankAccountTo_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Geschäftspartner.
+		@param C_BPartner_ID 
+		Identifies a Business Partner
+	  */
+	@Override
+	public void setC_BPartner_ID (int C_BPartner_ID)
+	{
+		if (C_BPartner_ID < 1) 
+			set_Value (COLUMNNAME_C_BPartner_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_BPartner_ID, Integer.valueOf(C_BPartner_ID));
+	}
+
+	/** Get Geschäftspartner.
+		@return Identifies a Business Partner
+	  */
+	@Override
+	public int getC_BPartner_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_BPartner_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
@@ -425,6 +401,43 @@ public class X_I_BankStatement extends org.compiere.model.PO implements I_I_Bank
 		return ii.intValue();
 	}
 
+	@Override
+	public org.compiere.model.I_C_Invoice getC_Invoice()
+	{
+		return get_ValueAsPO(COLUMNNAME_C_Invoice_ID, org.compiere.model.I_C_Invoice.class);
+	}
+
+	@Override
+	public void setC_Invoice(org.compiere.model.I_C_Invoice C_Invoice)
+	{
+		set_ValueFromPO(COLUMNNAME_C_Invoice_ID, org.compiere.model.I_C_Invoice.class, C_Invoice);
+	}
+
+	/** Set Rechnung.
+		@param C_Invoice_ID 
+		Invoice Identifier
+	  */
+	@Override
+	public void setC_Invoice_ID (int C_Invoice_ID)
+	{
+		if (C_Invoice_ID < 1) 
+			set_Value (COLUMNNAME_C_Invoice_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_Invoice_ID, Integer.valueOf(C_Invoice_ID));
+	}
+
+	/** Get Rechnung.
+		@return Invoice Identifier
+	  */
+	@Override
+	public int getC_Invoice_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_Invoice_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
 	/** Set Gebühr.
 		@param ChargeAmt Gebühr	  */
 	@Override
@@ -463,80 +476,6 @@ public class X_I_BankStatement extends org.compiere.model.PO implements I_I_Bank
 		return (java.lang.String)get_Value(COLUMNNAME_ChargeName);
 	}
 
-	@Override
-	public org.compiere.model.I_C_Invoice getC_Invoice()
-	{
-		return get_ValueAsPO(COLUMNNAME_C_Invoice_ID, org.compiere.model.I_C_Invoice.class);
-	}
-
-	@Override
-	public void setC_Invoice(org.compiere.model.I_C_Invoice C_Invoice)
-	{
-		set_ValueFromPO(COLUMNNAME_C_Invoice_ID, org.compiere.model.I_C_Invoice.class, C_Invoice);
-	}
-
-	/** Set Rechnung.
-		@param C_Invoice_ID 
-		Invoice Identifier
-	  */
-	@Override
-	public void setC_Invoice_ID (int C_Invoice_ID)
-	{
-		if (C_Invoice_ID < 1) 
-			set_Value (COLUMNNAME_C_Invoice_ID, null);
-		else 
-			set_Value (COLUMNNAME_C_Invoice_ID, Integer.valueOf(C_Invoice_ID));
-	}
-
-	/** Get Rechnung.
-		@return Invoice Identifier
-	  */
-	@Override
-	public int getC_Invoice_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_Invoice_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
-	@Override
-	public org.compiere.model.I_C_Payment getC_Payment()
-	{
-		return get_ValueAsPO(COLUMNNAME_C_Payment_ID, org.compiere.model.I_C_Payment.class);
-	}
-
-	@Override
-	public void setC_Payment(org.compiere.model.I_C_Payment C_Payment)
-	{
-		set_ValueFromPO(COLUMNNAME_C_Payment_ID, org.compiere.model.I_C_Payment.class, C_Payment);
-	}
-
-	/** Set Zahlung.
-		@param C_Payment_ID 
-		Payment identifier
-	  */
-	@Override
-	public void setC_Payment_ID (int C_Payment_ID)
-	{
-		if (C_Payment_ID < 1) 
-			set_Value (COLUMNNAME_C_Payment_ID, null);
-		else 
-			set_Value (COLUMNNAME_C_Payment_ID, Integer.valueOf(C_Payment_ID));
-	}
-
-	/** Get Zahlung.
-		@return Payment identifier
-	  */
-	@Override
-	public int getC_Payment_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_Payment_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
 	/** Set Zahlung erstellen.
 		@param CreatePayment Zahlung erstellen	  */
 	@Override
@@ -553,16 +492,16 @@ public class X_I_BankStatement extends org.compiere.model.PO implements I_I_Bank
 		return (java.lang.String)get_Value(COLUMNNAME_CreatePayment);
 	}
 
-	/** Set Credit Statement Amount.
-		@param CreditStmtAmt Credit Statement Amount	  */
+	/** Set Auszugsbetrag Haben.
+		@param CreditStmtAmt Auszugsbetrag Haben	  */
 	@Override
 	public void setCreditStmtAmt (java.math.BigDecimal CreditStmtAmt)
 	{
 		set_Value (COLUMNNAME_CreditStmtAmt, CreditStmtAmt);
 	}
 
-	/** Get Credit Statement Amount.
-		@return Credit Statement Amount	  */
+	/** Get Auszugsbetrag Haben.
+		@return Auszugsbetrag Haben	  */
 	@Override
 	public java.math.BigDecimal getCreditStmtAmt () 
 	{
@@ -591,16 +530,16 @@ public class X_I_BankStatement extends org.compiere.model.PO implements I_I_Bank
 		return (java.sql.Timestamp)get_Value(COLUMNNAME_DateAcct);
 	}
 
-	/** Set Debit Statement Amount.
-		@param DebitStmtAmt Debit Statement Amount	  */
+	/** Set Auszugsbetrag Soll.
+		@param DebitStmtAmt Auszugsbetrag Soll	  */
 	@Override
 	public void setDebitStmtAmt (java.math.BigDecimal DebitStmtAmt)
 	{
 		set_Value (COLUMNNAME_DebitStmtAmt, DebitStmtAmt);
 	}
 
-	/** Get Debit Statement Amount.
-		@return Debit Statement Amount	  */
+	/** Get Auszugsbetrag Soll.
+		@return Auszugsbetrag Soll	  */
 	@Override
 	public java.math.BigDecimal getDebitStmtAmt () 
 	{
@@ -876,25 +815,6 @@ public class X_I_BankStatement extends org.compiere.model.PO implements I_I_Bank
 		return (java.sql.Timestamp)get_Value(COLUMNNAME_EftValutaDate);
 	}
 
-	/** Set IBAN.
-		@param IBAN 
-		International Bank Account Number
-	  */
-	@Override
-	public void setIBAN (java.lang.String IBAN)
-	{
-		set_Value (COLUMNNAME_IBAN, IBAN);
-	}
-
-	/** Get IBAN.
-		@return International Bank Account Number
-	  */
-	@Override
-	public java.lang.String getIBAN () 
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_IBAN);
-	}
-
 	/** Set Import - Bankauszug.
 		@param I_BankStatement_ID 
 		Import of the Bank Statement
@@ -918,22 +838,6 @@ public class X_I_BankStatement extends org.compiere.model.PO implements I_I_Bank
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	/** Set IBAN_To.
-		@param IBAN_To IBAN_To	  */
-	@Override
-	public void setIBAN_To (java.lang.String IBAN_To)
-	{
-		set_Value (COLUMNNAME_IBAN_To, IBAN_To);
-	}
-
-	/** Get IBAN_To.
-		@return IBAN_To	  */
-	@Override
-	public java.lang.String getIBAN_To () 
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_IBAN_To);
 	}
 
 	/** Set Import-Fehlermeldung.
@@ -1014,6 +918,41 @@ public class X_I_BankStatement extends org.compiere.model.PO implements I_I_Bank
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** Set IBAN.
+		@param IBAN 
+		International Bank Account Number
+	  */
+	@Override
+	public void setIBAN (java.lang.String IBAN)
+	{
+		set_Value (COLUMNNAME_IBAN, IBAN);
+	}
+
+	/** Get IBAN.
+		@return International Bank Account Number
+	  */
+	@Override
+	public java.lang.String getIBAN () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_IBAN);
+	}
+
+	/** Set IBAN_To.
+		@param IBAN_To IBAN_To	  */
+	@Override
+	public void setIBAN_To (java.lang.String IBAN_To)
+	{
+		set_Value (COLUMNNAME_IBAN_To, IBAN_To);
+	}
+
+	/** Get IBAN_To.
+		@return IBAN_To	  */
+	@Override
+	public java.lang.String getIBAN_To () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_IBAN_To);
 	}
 
 	/** Set Interest Amount.

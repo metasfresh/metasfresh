@@ -96,7 +96,7 @@ public class PharmaBPartnerProductPermissionValidatorTest
 		final I_C_OrderLine cOrderLine = createCOrderLine(mProduct, mWarehouse, cbPartner, cPaymentTerm, cOrder, currencyId, cUom, BigDecimal.ONE, BigDecimal.ONE);
 
 		thrown.expect(AdempiereException.class);
-		thrown.expectMessage(PharmaBPartnerProductPermissionValidator.MSG_NoPrescriptionPermission_Sales);
+		thrown.expectMessage(PharmaBPartnerProductPermissionValidator.MSG_NoPrescriptionPermission_Sales.toAD_Message());
 		orderLineInterceptor.validatebPartnerProductPermissions(cOrderLine);
 	}
 
@@ -143,7 +143,7 @@ public class PharmaBPartnerProductPermissionValidatorTest
 		final I_C_OrderLine cOrderLine = createCOrderLine(mProduct, mWarehouse, cbPartner, cPaymentTerm, cOrder, currencyId, cUom, BigDecimal.ONE, BigDecimal.ONE);
 
 		thrown.expect(AdempiereException.class);
-		thrown.expectMessage(PharmaBPartnerProductPermissionValidator.MSG_NoNarcoticPermission_Sales);
+		thrown.expectMessage(PharmaBPartnerProductPermissionValidator.MSG_NoNarcoticPermission_Sales.toAD_Message());
 		orderLineInterceptor.validatebPartnerProductPermissions(cOrderLine);
 	}
 
@@ -160,7 +160,7 @@ public class PharmaBPartnerProductPermissionValidatorTest
 		final I_C_OrderLine cOrderLine = createCOrderLine(mProduct, mWarehouse, cbPartner, cPaymentTerm, cOrder, currencyId, cUom, BigDecimal.ONE, BigDecimal.ONE);
 
 		thrown.expect(AdempiereException.class);
-		thrown.expectMessage(PharmaBPartnerProductPermissionValidator.MSG_NoNarcoticPermission_Sales);
+		thrown.expectMessage(PharmaBPartnerProductPermissionValidator.MSG_NoNarcoticPermission_Sales.toAD_Message());
 		orderLineInterceptor.validatebPartnerProductPermissions(cOrderLine);
 	}
 
@@ -209,7 +209,7 @@ public class PharmaBPartnerProductPermissionValidatorTest
 		final I_C_OrderLine cOrderLine = createCOrderLine(mProduct, mWarehouse, cbPartner, cPaymentTerm, cOrder, currencyId, cUom, BigDecimal.ONE, BigDecimal.ONE);
 
 		thrown.expect(AdempiereException.class);
-		thrown.expectMessage(PharmaBPartnerProductPermissionValidator.MSG_NoPrescriptionPermission_Purchase);
+		thrown.expectMessage(PharmaBPartnerProductPermissionValidator.MSG_NoPrescriptionPermission_Purchase.toAD_Message());
 		orderLineInterceptor.validatebPartnerProductPermissions(cOrderLine);
 	}
 
@@ -256,7 +256,7 @@ public class PharmaBPartnerProductPermissionValidatorTest
 		final I_C_OrderLine cOrderLine = createCOrderLine(mProduct, mWarehouse, cbPartner, cPaymentTerm, cOrder, currencyId, cUom, BigDecimal.ONE, BigDecimal.ONE);
 
 		thrown.expect(AdempiereException.class);
-		thrown.expectMessage(PharmaBPartnerProductPermissionValidator.MSG_NoNarcoticPermission_Purchase);
+		thrown.expectMessage(PharmaBPartnerProductPermissionValidator.MSG_NoNarcoticPermission_Purchase.toAD_Message());
 		orderLineInterceptor.validatebPartnerProductPermissions(cOrderLine);
 	}
 
@@ -273,7 +273,7 @@ public class PharmaBPartnerProductPermissionValidatorTest
 		final I_C_OrderLine cOrderLine = createCOrderLine(mProduct, mWarehouse, cbPartner, cPaymentTerm, cOrder, currencyId, cUom, BigDecimal.ONE, BigDecimal.ONE);
 
 		thrown.expect(AdempiereException.class);
-		thrown.expectMessage(PharmaBPartnerProductPermissionValidator.MSG_NoNarcoticPermission_Purchase);
+		thrown.expectMessage(PharmaBPartnerProductPermissionValidator.MSG_NoNarcoticPermission_Purchase.toAD_Message());
 		orderLineInterceptor.validatebPartnerProductPermissions(cOrderLine);
 	}
 

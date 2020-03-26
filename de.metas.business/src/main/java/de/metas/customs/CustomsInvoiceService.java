@@ -39,6 +39,7 @@ import de.metas.document.engine.IDocumentBL;
 import de.metas.document.model.impl.PlainDocumentLocation;
 import de.metas.document.sequence.IDocumentNoBuilder;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.inout.IInOutDAO;
@@ -92,7 +93,7 @@ import lombok.NonNull;
 @Service
 public class CustomsInvoiceService
 {
-	public static final String ERR_NoValidLines = "M_InOut_Create_CustomsInvoice_NoValidLines";
+	public static final AdMessageKey ERR_NoValidLines = AdMessageKey.of("M_InOut_Create_CustomsInvoice_NoValidLines");
 
 	private static final Logger logger = LogManager.getLogger(CustomsInvoiceService.class);
 	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);

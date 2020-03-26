@@ -17,6 +17,7 @@ import org.springframework.context.annotation.Profile;
 import de.metas.bpartner.GLN;
 import de.metas.error.AdIssueId;
 import de.metas.error.IErrorManager;
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.ITranslatableString;
 import de.metas.invoice_gateway.spi.model.InvoiceId;
 import de.metas.invoice_gateway.spi.model.imp.ImportInvoiceResponseRequest;
@@ -65,7 +66,7 @@ import lombok.NonNull;
 @Profile(ForumDatenaustauschChConstants.PROFILE)
 public class C_Invoice_ImportInvoiceResponse extends JavaProcess
 {
-	private static final String MSG_NOT_ALL_FILES_IMPORTED = "de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.imp.process.C_Invoice_ImportInvoiceResponse.NotAllFilesImported";
+	private static final AdMessageKey MSG_NOT_ALL_FILES_IMPORTED = AdMessageKey.of("de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.imp.process.C_Invoice_ImportInvoiceResponse.NotAllFilesImported");
 
 	private static final String ATTACHMENT_TAGNAME_AD_PINSTANCE_ID = "ImportAD_PInstance_ID";
 	private static final String ATTACHMENT_TAGNAME_TIME_MILLIS = "ImportTimeMillis";

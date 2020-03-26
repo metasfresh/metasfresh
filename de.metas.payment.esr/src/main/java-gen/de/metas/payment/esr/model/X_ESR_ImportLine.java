@@ -15,7 +15,7 @@ public class X_ESR_ImportLine extends org.compiere.model.PO implements I_ESR_Imp
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -122556249L;
+	private static final long serialVersionUID = 14844844L;
 
     /** Standard Constructor */
     public X_ESR_ImportLine (Properties ctx, int ESR_ImportLine_ID, String trxName)
@@ -124,16 +124,29 @@ public class X_ESR_ImportLine extends org.compiere.model.PO implements I_ESR_Imp
 		return (java.lang.String)get_Value(COLUMNNAME_BPartner_Value);
 	}
 
+	/** Set Bankauszug.
+		@param C_BankStatement_ID 
+		Bank Statement of account
+	  */
 	@Override
-	public org.compiere.model.I_C_BankStatementLine getC_BankStatementLine() throws RuntimeException
+	public void setC_BankStatement_ID (int C_BankStatement_ID)
 	{
-		return get_ValueAsPO(COLUMNNAME_C_BankStatementLine_ID, org.compiere.model.I_C_BankStatementLine.class);
+		if (C_BankStatement_ID < 1) 
+			set_Value (COLUMNNAME_C_BankStatement_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_BankStatement_ID, Integer.valueOf(C_BankStatement_ID));
 	}
 
+	/** Get Bankauszug.
+		@return Bank Statement of account
+	  */
 	@Override
-	public void setC_BankStatementLine(org.compiere.model.I_C_BankStatementLine C_BankStatementLine)
+	public int getC_BankStatement_ID () 
 	{
-		set_ValueFromPO(COLUMNNAME_C_BankStatementLine_ID, org.compiere.model.I_C_BankStatementLine.class, C_BankStatementLine);
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_BankStatement_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	/** Set Auszugs-Position.
@@ -161,18 +174,6 @@ public class X_ESR_ImportLine extends org.compiere.model.PO implements I_ESR_Imp
 		return ii.intValue();
 	}
 
-	@Override
-	public de.metas.banking.model.I_C_BankStatementLine_Ref getC_BankStatementLine_Ref() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_BankStatementLine_Ref_ID, de.metas.banking.model.I_C_BankStatementLine_Ref.class);
-	}
-
-	@Override
-	public void setC_BankStatementLine_Ref(de.metas.banking.model.I_C_BankStatementLine_Ref C_BankStatementLine_Ref)
-	{
-		set_ValueFromPO(COLUMNNAME_C_BankStatementLine_Ref_ID, de.metas.banking.model.I_C_BankStatementLine_Ref.class, C_BankStatementLine_Ref);
-	}
-
 	/** Set Bankstatementline Reference.
 		@param C_BankStatementLine_Ref_ID Bankstatementline Reference	  */
 	@Override
@@ -196,7 +197,7 @@ public class X_ESR_ImportLine extends org.compiere.model.PO implements I_ESR_Imp
 	}
 
 	@Override
-	public org.compiere.model.I_C_BP_BankAccount getC_BP_BankAccount() throws RuntimeException
+	public org.compiere.model.I_C_BP_BankAccount getC_BP_BankAccount()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_BP_BankAccount_ID, org.compiere.model.I_C_BP_BankAccount.class);
 	}
@@ -232,18 +233,6 @@ public class X_ESR_ImportLine extends org.compiere.model.PO implements I_ESR_Imp
 		return ii.intValue();
 	}
 
-	@Override
-	public org.compiere.model.I_C_BPartner getC_BPartner() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_BPartner_ID, org.compiere.model.I_C_BPartner.class);
-	}
-
-	@Override
-	public void setC_BPartner(org.compiere.model.I_C_BPartner C_BPartner)
-	{
-		set_ValueFromPO(COLUMNNAME_C_BPartner_ID, org.compiere.model.I_C_BPartner.class, C_BPartner);
-	}
-
 	/** Set Geschäftspartner.
 		@param C_BPartner_ID 
 		Bezeichnet einen Geschäftspartner
@@ -270,7 +259,7 @@ public class X_ESR_ImportLine extends org.compiere.model.PO implements I_ESR_Imp
 	}
 
 	@Override
-	public org.compiere.model.I_C_Invoice getC_Invoice() throws RuntimeException
+	public org.compiere.model.I_C_Invoice getC_Invoice()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_Invoice_ID, org.compiere.model.I_C_Invoice.class);
 	}
@@ -307,7 +296,7 @@ public class X_ESR_ImportLine extends org.compiere.model.PO implements I_ESR_Imp
 	}
 
 	@Override
-	public org.compiere.model.I_C_Payment getC_Payment() throws RuntimeException
+	public org.compiere.model.I_C_Payment getC_Payment()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_Payment_ID, org.compiere.model.I_C_Payment.class);
 	}
@@ -341,18 +330,6 @@ public class X_ESR_ImportLine extends org.compiere.model.PO implements I_ESR_Imp
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	@Override
-	public de.metas.document.refid.model.I_C_ReferenceNo getC_ReferenceNo() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_ReferenceNo_ID, de.metas.document.refid.model.I_C_ReferenceNo.class);
-	}
-
-	@Override
-	public void setC_ReferenceNo(de.metas.document.refid.model.I_C_ReferenceNo C_ReferenceNo)
-	{
-		set_ValueFromPO(COLUMNNAME_C_ReferenceNo_ID, de.metas.document.refid.model.I_C_ReferenceNo.class, C_ReferenceNo);
 	}
 
 	/** Set Reference No.
@@ -459,7 +436,7 @@ public class X_ESR_ImportLine extends org.compiere.model.PO implements I_ESR_Imp
 	}
 
 	@Override
-	public de.metas.payment.esr.model.I_ESR_Import getESR_Import() throws RuntimeException
+	public de.metas.payment.esr.model.I_ESR_Import getESR_Import()
 	{
 		return get_ValueAsPO(COLUMNNAME_ESR_Import_ID, de.metas.payment.esr.model.I_ESR_Import.class);
 	}
@@ -825,18 +802,6 @@ public class X_ESR_ImportLine extends org.compiere.model.PO implements I_ESR_Imp
 		return (java.lang.String)get_Value(COLUMNNAME_MatchErrorMsg);
 	}
 
-	@Override
-	public org.compiere.model.I_AD_Org getOrg() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_Org_ID, org.compiere.model.I_AD_Org.class);
-	}
-
-	@Override
-	public void setOrg(org.compiere.model.I_AD_Org Org)
-	{
-		set_ValueFromPO(COLUMNNAME_Org_ID, org.compiere.model.I_AD_Org.class, Org);
-	}
-
 	/** Set Organisation.
 		@param Org_ID 
 		Organisatorische Einheit des Mandanten
@@ -880,7 +845,7 @@ public class X_ESR_ImportLine extends org.compiere.model.PO implements I_ESR_Imp
 
 	/** Set Verarbeitet.
 		@param Processed 
-		Checkbox sagt aus, ob der Beleg verarbeitet wurde. 
+		Checkbox sagt aus, ob der Datensatz verarbeitet wurde. 
 	  */
 	@Override
 	public void setProcessed (boolean Processed)
@@ -889,7 +854,7 @@ public class X_ESR_ImportLine extends org.compiere.model.PO implements I_ESR_Imp
 	}
 
 	/** Get Verarbeitet.
-		@return Checkbox sagt aus, ob der Beleg verarbeitet wurde. 
+		@return Checkbox sagt aus, ob der Datensatz verarbeitet wurde. 
 	  */
 	@Override
 	public boolean isProcessed () 

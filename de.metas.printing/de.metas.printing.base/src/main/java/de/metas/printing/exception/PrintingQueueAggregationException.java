@@ -25,22 +25,16 @@ package de.metas.printing.exception;
 
 import org.adempiere.exceptions.AdempiereException;
 
+import de.metas.i18n.AdMessageKey;
 import de.metas.printing.api.IPrintJobLinesAggregator;
 
 /**
  * Exception thrown from {@link IPrintJobLinesAggregator} implementation when failing to aggregate one printing queue item
- * 
- * @author tsa
- * 
  */
+@SuppressWarnings("serial")
 public class PrintingQueueAggregationException extends AdempiereException
 {
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = -7219698533539322159L;
-
-	public static final String MSG = "de.metas.printing.exception.PrintingQueueAggregationException";
+	private static final AdMessageKey MSG = AdMessageKey.of("de.metas.printing.exception.PrintingQueueAggregationException");
 
 	public PrintingQueueAggregationException(final int printingQueueId)
 	{

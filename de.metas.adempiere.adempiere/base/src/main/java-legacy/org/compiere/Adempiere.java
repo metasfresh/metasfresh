@@ -791,5 +791,13 @@ public class Adempiere
 		return unitTestMode;
 	}
 
+	public static void assertUnitTestMode()
+	{
+		if (!isUnitTestMode())
+		{
+			throw new IllegalStateException("JUnit test mode shall be enabled");
+		}
+	}
+
 	private static boolean unitTestMode = false;
 }	// Adempiere

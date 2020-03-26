@@ -87,7 +87,7 @@ public class IFAProductImportProcess_Test
 	{
 		final AdempiereTestHelper adempiereTestHelper = AdempiereTestHelper.get();
 		adempiereTestHelper.init();
-		adempiereTestHelper.setupContext_AD_Client_IfNotSet();
+		AdempiereTestHelper.setupContext_AD_Client_IfNotSet();
 		ctx = Env.getCtx();
 		IFAProductImportTestHelper.createUOM("PCE");
 		createAD_Language();

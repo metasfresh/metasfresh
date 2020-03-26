@@ -30,7 +30,6 @@ import java.util.List;
 import java.util.Properties;
 import java.util.stream.Stream;
 
-import de.metas.currency.Amount;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_InvoiceTax;
@@ -39,13 +38,17 @@ import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.MInvoice;
 import org.compiere.model.MInvoiceLine;
 
+import com.google.common.collect.ImmutableMap;
+
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.allocation.api.IAllocationDAO;
 import de.metas.bpartner.BPartnerId;
+import de.metas.currency.Amount;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.InvoiceLineId;
 import de.metas.util.ISingletonService;
+import lombok.NonNull;
 
 public interface IInvoiceDAO extends ISingletonService
 {
@@ -86,7 +89,7 @@ public interface IInvoiceDAO extends ISingletonService
 	 * @param bPartnerID
 	 * @return the I_C_Invoice object if the value was found, null otherwise
 	 */
-	I_C_Invoice retrieveInvoiceByInvoiceNoAndBPartnerID(Properties ctx, String invoiceNo, int bPartnerID);
+	I_C_Invoice retrieveInvoiceByInvoiceNoAndBPartnerID(Properties ctx, String invoiceNo, BPartnerId bpartnerId);
 
 	/**
 	 * Gets all open invoices for the specific organization.<br>
@@ -167,6 +170,8 @@ public interface IInvoiceDAO extends ISingletonService
 	List<org.compiere.model.I_C_Invoice> getByIdsOutOfTrx(Collection<InvoiceId> invoiceIds);
 
 	Stream<InvoiceId> streamInvoiceIdsByBPartnerId(BPartnerId bpartnerId);
+
+	ImmutableMap<InvoiceId, String> getDocumentNosByInvoiceIds(@NonNull Collection<InvoiceId> invoiceIds);
 
 	org.compiere.model.I_C_InvoiceLine getByIdOutOfTrx(InvoiceLineId invoiceLineId);
 }

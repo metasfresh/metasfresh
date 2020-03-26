@@ -46,7 +46,7 @@ public class Main implements ModelValidator
 {
 	private ModelValidationEngine engine;
 	private int m_AD_Client_ID = -1;
-	private final List<ReferenceNoGeneratorInstanceValidator> docValidators = new ArrayList<ReferenceNoGeneratorInstanceValidator>();
+	private final List<ReferenceNoGeneratorInstanceValidator> docValidators = new ArrayList<>();
 
 	@Override
 	public void initialize(ModelValidationEngine engine, MClient client)
@@ -112,7 +112,7 @@ public class Main implements ModelValidator
 		}
 
 		final ReferenceNoGeneratorInstanceValidator validator = new ReferenceNoGeneratorInstanceValidator(instance);
-		engine.addModelValidator(validator, null);
+		engine.addModelValidator(validator);
 		docValidators.add(validator);
 	}
 

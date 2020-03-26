@@ -1,14 +1,21 @@
 package de.metas.payment.esr.api;
 
-import de.metas.banking.model.I_C_BankStatementLine;
-import de.metas.banking.model.I_C_BankStatementLine_Ref;
+import java.util.Collection;
+import java.util.Map;
+import java.util.Set;
+
+import org.compiere.model.I_C_Invoice;
+import org.compiere.model.I_C_Payment;
+
+import de.metas.banking.BankStatementAndLineAndRefId;
+import de.metas.banking.BankStatementLineId;
+import de.metas.payment.PaymentId;
+import de.metas.payment.esr.ESRImportId;
 import de.metas.payment.esr.actionhandler.IESRActionHandler;
 import de.metas.payment.esr.model.I_ESR_Import;
 import de.metas.payment.esr.model.I_ESR_ImportLine;
-import de.metas.payment.esr.model.validator.ESR_ImportLine;
 import de.metas.util.ISingletonService;
-import org.compiere.model.I_C_Invoice;
-import org.compiere.model.I_C_Payment;
+import lombok.NonNull;
 
 public interface IESRImportBL extends ISingletonService
 {
@@ -108,19 +115,13 @@ public interface IESRImportBL extends ISingletonService
 	 */
 	boolean isProcessed(I_ESR_Import esrImport);
 
-	/**
-	 * Iterate the {@link ESR_ImportLine}s for the given <code>bankStatementLine</code> and set <code>C_BankStatementLine</code> and <code>C_BankStatementLine_Ref</code> to <code>null</code> for each
-	 * of those ESR lines.
-	 *
-	 * @param bankStatementLine
-	 */
-	void unlinkESRImportLinesFor(I_C_BankStatementLine bankStatementLine);
+	void linkESRImportLineToBankStatement(@NonNull I_ESR_ImportLine esrImportLine, @NonNull BankStatementAndLineAndRefId bankStatementLineRefId);
 
-	/**
-	 *
-	 * @param bankStatementLineRef
-	 */
-	void unlinkESRImportLinesFor(I_C_BankStatementLine_Ref bankStatementLineRef);
+	void unlinkESRImportLinesFromBankStatement(Collection<BankStatementLineId> bankStatementLineIds);
 
 	void scheduleESRImportFor(RunESRImportRequest runESRImportRequest);
+
+	Set<PaymentId> getPaymentIds(ESRImportId esrImportId);
+
+	void linkBankStatementLinesByPaymentIds(Map<PaymentId, BankStatementAndLineAndRefId> bankStatementLineRefIdIndexByPaymentId);
 }

@@ -29,6 +29,7 @@ import org.springframework.stereotype.Component;
 
 import de.metas.adempiere.gui.search.IHUPackingAwareBL;
 import de.metas.adempiere.gui.search.impl.OLCandHUPackingAware;
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.ordercandidate.model.I_C_OLCand;
@@ -45,7 +46,7 @@ import lombok.NonNull;
 @Component
 public class OLCandWithUOMForTUsCapacityProvider implements IOLCandWithUOMForTUsCapacityProvider
 {
-	private static final String MSG_TU_UOM_CAPACITY_REQUIRED = "de.metas.handlingunits.ordercandidate.UOMForTUsCapacityRequired";
+	private static final AdMessageKey MSG_TU_UOM_CAPACITY_REQUIRED = AdMessageKey.of("de.metas.handlingunits.ordercandidate.UOMForTUsCapacityRequired");
 
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);

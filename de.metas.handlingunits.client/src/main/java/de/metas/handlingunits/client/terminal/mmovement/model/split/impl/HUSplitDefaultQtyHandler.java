@@ -376,7 +376,7 @@ import de.metas.util.Services;
 			// Reason why we're doing this and not directly throwing an exception in the user's face:
 			// Due to the high number of test cases and low-to-none GUI test coverage, there are cases where auto-detection does not work.
 			// Therefore, we want to skip the initial qty calculation and not interfere with the user's work (albeit a bit annoying that the qtys are not calculated)
-			final AdempiereException ex = new AdempiereException("Developer error: tuKey was null (not detected) for huToSplit value={}", new Object[] { huToSplit.getValue() });
+			final AdempiereException ex = new AdempiereException("Developer error: tuKey was null (not detected) for huToSplit value=" + huToSplit.getValue());
 			logger.error(ex.getLocalizedMessage(), ex);
 
 			return; // protection: log the exception message and do not attempt to calculate any further.
@@ -507,7 +507,7 @@ import de.metas.util.Services;
 		return match;
 	}
 
-	private static enum HUMatchResult
+	private enum HUMatchResult
 	{
 		NoMatch, Match, NoKeySelected
 	}

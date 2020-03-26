@@ -35,6 +35,7 @@ import com.google.common.collect.ImmutableMap;
 
 import ch.qos.logback.classic.Level;
 import de.metas.error.AdIssueId;
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.Language;
@@ -217,12 +218,6 @@ public class AdempiereException extends RuntimeException
 		AdempiereException.captureLanguageOnConstructionTime = true;
 	}
 
-	public static AdempiereException ofADMessage(final String adMessage, final Object... msgParameters)
-	{
-		final ITranslatableString message = Services.get(IMsgBL.class).getTranslatableMsgText(adMessage, msgParameters);
-		return new AdempiereException(message);
-	}
-
 	private static boolean captureLanguageOnConstructionTime = false;
 
 	private final ITranslatableString messageTrl;
@@ -259,7 +254,13 @@ public class AdempiereException extends RuntimeException
 		this.messageTrl = message;
 	}
 
-	public AdempiereException(final String adLanguage, final String adMessage, final Object[] params)
+	public AdempiereException(@NonNull final AdMessageKey messageKey)
+	{
+		this.adLanguage = captureLanguageOnConstructionTime ? Env.getAD_Language() : null;
+		this.messageTrl = Services.get(IMsgBL.class).getTranslatableMsgText(messageKey);
+	}
+
+	public AdempiereException(final String adLanguage, @NonNull final AdMessageKey adMessage, final Object... params)
 	{
 		this.messageTrl = Services.get(IMsgBL.class).getTranslatableMsgText(adMessage, params);
 		this.adLanguage = captureLanguageOnConstructionTime ? adLanguage : null;
@@ -268,7 +269,7 @@ public class AdempiereException extends RuntimeException
 		setParameter("AD_Message", adMessage);
 	}
 
-	public AdempiereException(final String adMessage, final Object[] params)
+	public AdempiereException(final AdMessageKey adMessage, final Object... params)
 	{
 		this(Env.getAD_Language(), adMessage, params);
 	}
@@ -280,11 +281,11 @@ public class AdempiereException extends RuntimeException
 		this.messageTrl = TranslatableStrings.empty();
 	}
 
-	public AdempiereException(final String message, final Throwable cause)
+	public AdempiereException(final String plainMessage, final Throwable cause)
 	{
 		super(cause);
 		this.adLanguage = captureLanguageOnConstructionTime ? Env.getAD_Language() : null;
-		this.messageTrl = TranslatableStrings.constant(message);
+		this.messageTrl = TranslatableStrings.constant(plainMessage);
 	}
 
 	public AdempiereException(@NonNull final ITranslatableString message, final Throwable cause)

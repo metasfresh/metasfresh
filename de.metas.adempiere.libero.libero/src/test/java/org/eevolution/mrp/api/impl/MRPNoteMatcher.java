@@ -8,6 +8,8 @@ import org.compiere.model.I_M_Warehouse;
 import org.compiere.util.Env;
 import org.eevolution.model.I_AD_Note;
 
+import de.metas.i18n.AdMessageId;
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IADMessageDAO;
 import de.metas.material.planning.pporder.LiberoException;
 import de.metas.util.Check;
@@ -84,7 +86,9 @@ public class MRPNoteMatcher implements Predicate<I_AD_Note>
 		}
 		else
 		{
-			this._mrpCodeMessageId = Services.get(IADMessageDAO.class).retrieveIdByValue(Env.getCtx(), mrpCode);
+			this._mrpCodeMessageId = Services.get(IADMessageDAO.class).retrieveIdByValue(Env.getCtx(), AdMessageKey.of(mrpCode))
+					.map(AdMessageId::getRepoId)
+					.orElse(-1);
 			Check.assume(_mrpCodeMessageId > 0, LiberoException.class, "AD_Message_ID > 0 for Value={}", mrpCode);
 		}
 	}

@@ -1696,7 +1696,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 	}
 
 	@Override
-	public int delete()
+	public int delete(final boolean failIfProcessed)
 	{
 		final List<T> records = list(modelClass);
 		if (records.isEmpty())
@@ -1707,7 +1707,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		int countDeleted = 0;
 		for (final Object record : records)
 		{
-			InterfaceWrapperHelper.delete(record);
+			InterfaceWrapperHelper.delete(record, failIfProcessed);
 			countDeleted++;
 		}
 

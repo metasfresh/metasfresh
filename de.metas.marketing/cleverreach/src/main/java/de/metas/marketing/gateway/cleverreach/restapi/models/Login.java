@@ -1,7 +1,5 @@
 package de.metas.marketing.gateway.cleverreach.restapi.models;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-
 import lombok.Builder;
 import lombok.ToString;
 import lombok.Value;
@@ -28,7 +26,6 @@ import lombok.Value;
  * #L%
  */
 
-@JsonIgnoreProperties(ignoreUnknown = true)
 @Value
 @Builder
 @ToString

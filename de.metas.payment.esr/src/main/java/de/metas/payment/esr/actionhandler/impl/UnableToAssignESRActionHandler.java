@@ -40,11 +40,9 @@ public class UnableToAssignESRActionHandler extends AbstractESRActionHandler
 		final I_C_Payment payment = line.getC_Payment();
 		if (null != payment)
 		{
-			final de.metas.banking.model.I_C_Payment paymentExtended = InterfaceWrapperHelper.create(payment, de.metas.banking.model.I_C_Payment.class);
-
 			// 07783 : unset the flag
-			paymentExtended.setIsAutoAllocateAvailableAmt(false);
-			InterfaceWrapperHelper.save(paymentExtended);
+			payment.setIsAutoAllocateAvailableAmt(false);
+			InterfaceWrapperHelper.save(payment);
 		}
 
 		return true;

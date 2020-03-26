@@ -13,15 +13,14 @@ package de.metas.payment.esr.validationRule;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import static de.metas.payment.esr.model.X_ESR_ImportLine.ESR_PAYMENT_ACTION_Allocate_Payment_With_Next_Invoice;
 import static de.metas.payment.esr.model.X_ESR_ImportLine.ESR_PAYMENT_ACTION_Control_Line;
@@ -29,6 +28,7 @@ import static de.metas.payment.esr.model.X_ESR_ImportLine.ESR_PAYMENT_ACTION_Kee
 import static de.metas.payment.esr.model.X_ESR_ImportLine.ESR_PAYMENT_ACTION_Money_Was_Transfered_Back_to_Partner;
 import static de.metas.payment.esr.model.X_ESR_ImportLine.ESR_PAYMENT_ACTION_Unable_To_Assign_Income;
 import static de.metas.payment.esr.model.X_ESR_ImportLine.ESR_PAYMENT_ACTION_Write_Off_Amount;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
 
@@ -36,9 +36,8 @@ import org.adempiere.ad.validationRule.impl.PlainValidationContext;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_Payment;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 import de.metas.payment.esr.ESRValidationRuleTools;
 import de.metas.payment.esr.model.I_ESR_ImportLine;
@@ -46,7 +45,7 @@ import de.metas.payment.esr.model.I_ESR_ImportLine;
 public class ESRPaymentActionValidationRuleTest
 {
 
-	@BeforeClass
+	@BeforeAll
 	public static void staticInit()
 	{
 		AdempiereTestHelper.get().staticInit();
@@ -69,7 +68,7 @@ public class ESRPaymentActionValidationRuleTest
 
 		final boolean accepted = new ESRPaymentActionValidationRule().getPostQueryFilter().accept(plainValidationCtx, null);
 
-		Assert.assertTrue("Action was validated", accepted == false);
+		assertThat(accepted).as("accepted").isFalse();
 	}
 
 	@Test
@@ -81,7 +80,7 @@ public class ESRPaymentActionValidationRuleTest
 
 		final boolean accepted = ESRValidationRuleTools.evaluatePaymentAction(ESR_PAYMENT_ACTION_Write_Off_Amount, plainValidationCtx);
 
-		Assert.assertTrue("Action was validated", accepted == false);
+		assertThat(accepted).as("accepted").isFalse();
 	}
 
 	@Test
@@ -99,16 +98,16 @@ public class ESRPaymentActionValidationRuleTest
 		plainValidationCtx.setValue(invoiceIdStr, "-1");
 
 		boolean accepted = ESRValidationRuleTools.evaluatePaymentAction(ESR_PAYMENT_ACTION_Allocate_Payment_With_Next_Invoice, plainValidationCtx);
-		Assert.assertTrue("Action was not validated", accepted == false);
+		assertThat(accepted).as("accepted").isFalse();
 
 		accepted = ESRValidationRuleTools.evaluatePaymentAction(ESR_PAYMENT_ACTION_Money_Was_Transfered_Back_to_Partner, plainValidationCtx);
-		Assert.assertTrue("Action was not validated", accepted == false);
+		assertThat(accepted).as("accepted").isFalse();
 
 		accepted = ESRValidationRuleTools.evaluatePaymentAction(ESR_PAYMENT_ACTION_Unable_To_Assign_Income, plainValidationCtx);
-		Assert.assertTrue("Action was not validated", accepted == true);
+		assertThat(accepted).as("accepted").isTrue();
 
 		accepted = ESRValidationRuleTools.evaluatePaymentAction(ESR_PAYMENT_ACTION_Control_Line, plainValidationCtx);
-		Assert.assertTrue("Action was validated", accepted == false);
+		assertThat(accepted).as("accepted").isFalse();
 	}
 
 	@Test
@@ -126,16 +125,16 @@ public class ESRPaymentActionValidationRuleTest
 		plainValidationCtx.setValue(invoiceIdStr, "1000001");
 
 		boolean accepted = ESRValidationRuleTools.evaluatePaymentAction(ESR_PAYMENT_ACTION_Allocate_Payment_With_Next_Invoice, plainValidationCtx);
-		Assert.assertTrue("Action was not validated", accepted == true);
+		assertThat(accepted).as("accepted").isTrue();
 
 		accepted = ESRValidationRuleTools.evaluatePaymentAction(ESR_PAYMENT_ACTION_Money_Was_Transfered_Back_to_Partner, plainValidationCtx);
-		Assert.assertTrue("Action was not validated", accepted == true);
+		assertThat(accepted).as("accepted").isTrue();
 
 		accepted = ESRValidationRuleTools.evaluatePaymentAction(ESR_PAYMENT_ACTION_Unable_To_Assign_Income, plainValidationCtx);
-		Assert.assertTrue("Action was not validated", accepted == true);
+		assertThat(accepted).as("accepted").isTrue();
 
 		accepted = ESRValidationRuleTools.evaluatePaymentAction(ESR_PAYMENT_ACTION_Control_Line, plainValidationCtx);
-		Assert.assertTrue("Action was validated", accepted == false);
+		assertThat(accepted).as("accepted").isFalse();
 	}
 
 	@Test
@@ -153,22 +152,22 @@ public class ESRPaymentActionValidationRuleTest
 		plainValidationCtx.setValue(invoiceIdStr, "1000001");
 
 		boolean accepted = ESRValidationRuleTools.evaluatePaymentAction(ESR_PAYMENT_ACTION_Write_Off_Amount, plainValidationCtx);
-		Assert.assertTrue("Action was validated", accepted == false);
+		assertThat(accepted).as("accepted").isFalse();
 
 		accepted = ESRValidationRuleTools.evaluatePaymentAction(ESR_PAYMENT_ACTION_Keep_For_Dunning, plainValidationCtx);
-		Assert.assertTrue("Action was validated", accepted == false);
+		assertThat(accepted).as("accepted").isFalse();
 
 		accepted = ESRValidationRuleTools.evaluatePaymentAction(ESR_PAYMENT_ACTION_Allocate_Payment_With_Next_Invoice, plainValidationCtx);
-		Assert.assertTrue("Action was validated", accepted == false);
+		assertThat(accepted).as("accepted").isFalse();
 
 		accepted = ESRValidationRuleTools.evaluatePaymentAction(ESR_PAYMENT_ACTION_Money_Was_Transfered_Back_to_Partner, plainValidationCtx);
-		Assert.assertTrue("Action was validated", accepted == false);
+		assertThat(accepted).as("accepted").isFalse();
 
 		accepted = ESRValidationRuleTools.evaluatePaymentAction(ESR_PAYMENT_ACTION_Unable_To_Assign_Income, plainValidationCtx);
-		Assert.assertTrue("Action was validated", accepted == false);
+		assertThat(accepted).as("accepted").isFalse();
 
 		accepted = ESRValidationRuleTools.evaluatePaymentAction(ESR_PAYMENT_ACTION_Control_Line, plainValidationCtx);
-		Assert.assertTrue("Action was validated", accepted == false);
+		assertThat(accepted).as("accepted").isFalse();
 	}
 
 	@Test
@@ -186,17 +185,17 @@ public class ESRPaymentActionValidationRuleTest
 		plainValidationCtx.setValue(invoiceIdStr, "1000001");
 
 		boolean accepted = ESRValidationRuleTools.evaluatePaymentAction(ESR_PAYMENT_ACTION_Write_Off_Amount, plainValidationCtx);
-		Assert.assertTrue("Action was not validated", accepted == true);
+		assertThat(accepted).as("accepted").isTrue();
 
 		accepted = ESRValidationRuleTools.evaluatePaymentAction(ESR_PAYMENT_ACTION_Keep_For_Dunning, plainValidationCtx);
-		Assert.assertTrue("Action was not validated", accepted == true);
+		assertThat(accepted).as("accepted").isTrue();
 
 		// metas-ts: talked with mo: that action only makes sense with overpayments (just commenting out because there is no particular task for this change)
 		// accepted = ESRValidationRuleTools.evaluatePaymentAction(ESR_PAYMENT_ACTION_Unable_To_Assign_Income, plainValidationCtx);
-		// Assert.assertTrue("Action was not validated", accepted == true);
+		// assertThat(accepted).as("accepted").isTrue();
 
 		accepted = ESRValidationRuleTools.evaluatePaymentAction(ESR_PAYMENT_ACTION_Control_Line, plainValidationCtx);
-		Assert.assertTrue("Action was validated", accepted == false);
+		assertThat(accepted).as("accepted").isFalse();
 	}
 
 	@Test
@@ -214,16 +213,16 @@ public class ESRPaymentActionValidationRuleTest
 		plainValidationCtx.setValue(invoiceIdStr, "1000001");
 
 		boolean accepted = ESRValidationRuleTools.evaluatePaymentAction(ESR_PAYMENT_ACTION_Write_Off_Amount, plainValidationCtx);
-		Assert.assertTrue("Action was validated", accepted == false);
+		assertThat(accepted).as("accepted").isFalse();
 
 		accepted = ESRValidationRuleTools.evaluatePaymentAction(ESR_PAYMENT_ACTION_Keep_For_Dunning, plainValidationCtx);
-		Assert.assertTrue("Action was validated", accepted == false);
+		assertThat(accepted).as("accepted").isFalse();
 
 		accepted = ESRValidationRuleTools.evaluatePaymentAction(ESR_PAYMENT_ACTION_Unable_To_Assign_Income, plainValidationCtx);
-		Assert.assertTrue("Action was not validated", accepted == true);
+		assertThat(accepted).as("accepted").isTrue();
 
 		accepted = ESRValidationRuleTools.evaluatePaymentAction(ESR_PAYMENT_ACTION_Control_Line, plainValidationCtx);
-		Assert.assertTrue("Action was validated", accepted == false);
+		assertThat(accepted).as("accepted").isFalse();
 	}
 
 	@Test
@@ -242,17 +241,17 @@ public class ESRPaymentActionValidationRuleTest
 
 		boolean accepted = ESRValidationRuleTools.evaluatePaymentAction(ESR_PAYMENT_ACTION_Allocate_Payment_With_Next_Invoice, plainValidationCtx);
 
-		Assert.assertTrue("Action was validated", accepted == false);
+		assertThat(accepted).as("accepted").isFalse();
 
 		accepted = ESRValidationRuleTools.evaluatePaymentAction(ESR_PAYMENT_ACTION_Money_Was_Transfered_Back_to_Partner, plainValidationCtx);
-		Assert.assertTrue("Action was validated", accepted == false);
+		assertThat(accepted).as("accepted").isFalse();
 
 		// metas-ts: talked with mo: that action only makes sense with overpayments (just commenting out because there is no particular task for this change)
 		// accepted = ESRValidationRuleTools.evaluatePaymentAction(ESR_PAYMENT_ACTION_Unable_To_Assign_Income, plainValidationCtx);
-		// Assert.assertTrue("Action was not validated", accepted == true);
+		// assertThat(accepted).as("accepted").isTrue();
 
 		accepted = ESRValidationRuleTools.evaluatePaymentAction(ESR_PAYMENT_ACTION_Control_Line, plainValidationCtx);
-		Assert.assertTrue("Action was validated", accepted == false);
+		assertThat(accepted).as("accepted").isFalse();
 	}
 
 	/**

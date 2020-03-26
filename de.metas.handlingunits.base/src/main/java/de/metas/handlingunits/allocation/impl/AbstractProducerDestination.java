@@ -43,6 +43,7 @@ import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Version;
 import de.metas.handlingunits.util.HUByIdComparator;
 import de.metas.handlingunits.util.HUListCursor;
+import de.metas.i18n.AdMessageKey;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -61,7 +62,7 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 	private final transient IDeveloperModeBL developerModeBL = Services.get(IDeveloperModeBL.class);
 
 	/** Error message which is thrown when the result of allocating to a new HU is ZERO */
-	private static final String MSG_QTY_LOAD_ERROR = "AbstractProducerDestination.load_Error";
+	private static final AdMessageKey MSG_QTY_LOAD_ERROR = AdMessageKey.of("AbstractProducerDestination.load_Error");
 
 	/**
 	 * DynAttr used to flag HUs which were internally created by this producer

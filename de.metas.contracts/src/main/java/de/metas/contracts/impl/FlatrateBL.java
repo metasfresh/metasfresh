@@ -94,6 +94,7 @@ import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.inout.model.I_M_InOutLine;
@@ -125,28 +126,31 @@ import lombok.NonNull;
 public class FlatrateBL implements IFlatrateBL
 {
 
+
 	private static final Logger logger = LogManager.getLogger(FlatrateBL.class);
 
-	private static final String MSG_FLATRATEBL_INVOICING_ENTRY_NOT_CO_3P = "FlatrateBL_InvoicingEntry_Not_CO";
+	private static final AdMessageKey MSG_FLATRATEBL_INVOICING_ENTRY_NOT_CO_3P = AdMessageKey.of("FlatrateBL_InvoicingEntry_Not_CO");
 
-	private static final String MSG_FLATRATEBL_INVOICE_CANDIDATE_TO_RECOMPUTE_1P = "FlatrateBL_InvoicingCand_ToRecompute";
+	private static final AdMessageKey MSG_FLATRATEBL_INVOICE_CANDIDATE_TO_RECOMPUTE_1P = AdMessageKey.of("FlatrateBL_InvoicingCand_ToRecompute");
 
-	private static final String MSG_FLATRATEBL_INVOICE_CANDIDATE_QTY_TO_INVOICE_1P = "FlatrateBL_InvoicingCand_QtyToInvoice";
+	private static final AdMessageKey MSG_FLATRATEBL_INVOICE_CANDIDATE_QTY_TO_INVOICE_1P = AdMessageKey.of("FlatrateBL_InvoicingCand_QtyToInvoice");
 
-	private static final String MSG_DATA_ENTRY_CREATE_FLAT_FEE_4P = "DataEntry_Create_FlatFee";
+	private static final AdMessageKey MSG_DATA_ENTRY_CREATE_FLAT_FEE_4P = AdMessageKey.of("DataEntry_Create_FlatFee");
 
-	private static final String MSG_DATA_ENTRY_CREATE_HOLDING_FEE_3P = "DataEntry_Create_HoldingFee";
+	private static final AdMessageKey MSG_DATA_ENTRY_CREATE_HOLDING_FEE_3P = AdMessageKey.of("DataEntry_Create_HoldingFee");
 
-	private static final String MSG_TERM_NEW_UNCOMPLETED_0P = "FlatrateTerm_New_Uncompleted_Term";
-	private static final String MSG_TERM_NEW_COMPLETED_0P = "FlatrateTerm_New_Completed_Term";
-	private static final String MSG_TERM_NO_NEW_0P = "FlatrateTerm_No_New_Term";
+	private static final AdMessageKey MSG_TERM_NEW_UNCOMPLETED_0P = AdMessageKey.of("FlatrateTerm_New_Uncompleted_Term");
+	private static final AdMessageKey MSG_TERM_NEW_COMPLETED_0P = AdMessageKey.of("FlatrateTerm_New_Completed_Term");
+	private static final AdMessageKey MSG_TERM_NO_NEW_0P = AdMessageKey.of("FlatrateTerm_No_New_Term");
+	
+	private static final AdMessageKey MSG_ORG_WAREHOUSE_MISSING = AdMessageKey.of("de.metas.flatrate.Org.Warehouse_Missing");
 
 	/**
 	 * Message for announcing the user that there are overlapping terms for the term they want to complete
 	 */
-	public static final String MSG_HasOverlapping_Term = "de.metas.flatrate.process.C_Flatrate_Term_Create.OverlappingTerm";
+	public static final AdMessageKey MSG_HasOverlapping_Term = AdMessageKey.of("de.metas.flatrate.process.C_Flatrate_Term_Create.OverlappingTerm");
 
-	public static final String MSG_INFINITE_LOOP = "de.metas.contracts.impl.FlatrateBL.extendContract.InfinitLoopError";
+	public static final AdMessageKey MSG_INFINITE_LOOP = AdMessageKey.of("de.metas.contracts.impl.FlatrateBL.extendContract.InfinitLoopError");
 
 	private final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
 
@@ -1145,7 +1149,7 @@ public class FlatrateBL implements IFlatrateBL
 		final I_C_Flatrate_Transition currentTransition = conditions.getC_Flatrate_Transition();
 
 		I_C_Flatrate_Term termToReferenceInNote = null;
-		String msgValue = null;
+		AdMessageKey msgValue = null;
 
 		if (currentTerm.isAutoRenew() || forceExtend)
 		{
@@ -1213,7 +1217,7 @@ public class FlatrateBL implements IFlatrateBL
 		}
 	}
 
-	private void notifyUser(final I_C_Flatrate_Term currentTerm, final String msgValue)
+	private void notifyUser(@NonNull final I_C_Flatrate_Term currentTerm, @NonNull final AdMessageKey msgValue)
 	{
 		final FlatrateUserNotificationsProducer flatrateGeneratedEventBus = FlatrateUserNotificationsProducer.newInstance();
 
@@ -1530,7 +1534,7 @@ public class FlatrateBL implements IFlatrateBL
 			if (warehousesForOrg.isEmpty())
 			{
 				throw new AdempiereException(
-						"de.metas.flatrate.Org.Warehouse_Missing",
+						MSG_ORG_WAREHOUSE_MISSING,
 						new Object[] { msgBL.translate(ctx, I_AD_Org.COLUMNNAME_AD_Org_ID), InterfaceWrapperHelper.loadOutOfTrx(term.getAD_Org_ID(), I_AD_Org.class) });
 			}
 			warehouseId = warehousesForOrg.get(0).getM_Warehouse_ID();

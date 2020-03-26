@@ -24,6 +24,7 @@ import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Maps;
 
 import de.metas.cache.CCache;
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.location.CountryId;
@@ -67,7 +68,7 @@ public class FreightCostRepository
 	private static final Logger logger = LogManager.getLogger(FreightCostRepository.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-	private static final String MSG_NO_FREIGHT_COST_DETAIL = "freightCost.Order.noFreightCostDetail";
+	private static final AdMessageKey MSG_NO_FREIGHT_COST_DETAIL = AdMessageKey.of("freightCost.Order.noFreightCostDetail");
 
 	private final CCache<Integer, IndexedFreightCosts> freightCostsCache = CCache.<Integer, IndexedFreightCosts> builder()
 			.additionalTableNameToResetFor(I_M_FreightCost.Table_Name)

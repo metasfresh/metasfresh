@@ -224,16 +224,28 @@ public final class TranslatableStringBuilder
 		}
 	}
 
-	public TranslatableStringBuilder appendADMessage(final String adMessage, final Object... msgParameters)
+	public TranslatableStringBuilder appendADMessage(final AdMessageKey adMessage, final Object... msgParameters)
 	{
 		final ITranslatableString value = msgBL.getTranslatableMsgText(adMessage, msgParameters);
 		return append(value);
 	}
 
-	public TranslatableStringBuilder insertFirstADMessage(final String adMessage, final Object... msgParameters)
+	@Deprecated
+	public TranslatableStringBuilder appendADMessage(final String adMessage, final Object... msgParameters)
+	{
+		return appendADMessage(AdMessageKey.of(adMessage), msgParameters);
+	}
+
+	public TranslatableStringBuilder insertFirstADMessage(final AdMessageKey adMessage, final Object... msgParameters)
 	{
 		final ITranslatableString value = msgBL.getTranslatableMsgText(adMessage, msgParameters);
 		return insertFirst(value);
+	}
+
+	@Deprecated
+	public TranslatableStringBuilder insertFirstADMessage(final String adMessage, final Object... msgParameters)
+	{
+		return insertFirstADMessage(AdMessageKey.of(adMessage), msgParameters);
 	}
 
 	public TranslatableStringBuilder appendADElement(final String columnName)

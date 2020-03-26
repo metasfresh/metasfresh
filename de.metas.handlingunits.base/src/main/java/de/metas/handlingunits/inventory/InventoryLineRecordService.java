@@ -45,6 +45,7 @@ import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.handlingunits.storage.impl.PlainProductStorage;
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.inventory.AggregationType;
@@ -83,7 +84,7 @@ import lombok.NonNull;
 public class InventoryLineRecordService
 {
 
-	private static final String MSG_EXISTING_LINES_WITH_DIFFERENT_HU_AGGREGATION_TYPE = "de.metas.handlingunits.inventory.ExistingLinesWithDifferentHUAggregationType";
+	private static final AdMessageKey MSG_EXISTING_LINES_WITH_DIFFERENT_HU_AGGREGATION_TYPE = AdMessageKey.of("de.metas.handlingunits.inventory.ExistingLinesWithDifferentHUAggregationType");
 
 	private InventoryRepository inventoryLineRepository;
 

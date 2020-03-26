@@ -150,7 +150,7 @@ public class TerminateSingleContractTest extends AbstractFlatrateTermTest
 
 		assertThatThrownBy(() -> {
 			contractChangeBL.cancelContract(contract, contractChangeParameters);
-		}).hasMessageContaining(ContractChangeBL.MSG_IS_NOT_ALLOWED_TO_TERMINATE_CURRENT_CONTRACT);
+		}).hasMessageContaining(ContractChangeBL.MSG_IS_NOT_ALLOWED_TO_TERMINATE_CURRENT_CONTRACT.toAD_Message());
 
 	}
 
