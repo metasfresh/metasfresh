@@ -37,6 +37,7 @@ import org.compiere.model.I_C_BPartner;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.invoicecandidate.api.IAggregationBL;
 import de.metas.invoicecandidate.api.IInvoiceCandAggregate;
@@ -79,7 +80,7 @@ public class FreshQuantityDiscountAggregator implements IAggregator
 	private final transient IAggregationBL aggregationBL = Services.get(IAggregationBL.class);
 	private final transient IMsgBL msgBL = Services.get(IMsgBL.class);
 
-	private static final transient String MSG_QualityDiscount = "de.metas.fresh.invoicecandidate.QualityDiscount";
+	private static final transient AdMessageKey MSG_QualityDiscount = AdMessageKey.of("de.metas.fresh.invoicecandidate.QualityDiscount");
 	private final Map<Integer, String> bpartnerId2descriptionPrefix = new HashMap<>();
 
 	/**

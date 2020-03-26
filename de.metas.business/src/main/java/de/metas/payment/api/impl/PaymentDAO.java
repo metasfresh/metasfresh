@@ -1,5 +1,18 @@
 package de.metas.payment.api.impl;
 
+import java.math.BigDecimal;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.DBException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_DocType;
+import org.compiere.model.I_C_Payment;
+import org.compiere.model.X_C_DocType;
+import org.compiere.util.DB;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -23,26 +36,6 @@ package de.metas.payment.api.impl;
  */
 
 import de.metas.payment.PaymentId;
-import de.metas.util.Services;
-import de.metas.util.lang.ExternalId;
-import lombok.NonNull;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.exceptions.DBException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_AllocationLine;
-import org.compiere.model.I_C_DocType;
-import org.compiere.model.I_C_Payment;
-import org.compiere.model.X_C_DocType;
-import org.compiere.util.DB;
-
-import java.math.BigDecimal;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.List;
-import java.util.Optional;
-import java.util.Properties;
 
 public class PaymentDAO extends AbstractPaymentDAO
 {
@@ -54,21 +47,6 @@ public class PaymentDAO extends AbstractPaymentDAO
 				paymentId);
 
 		return amt != null ? amt : BigDecimal.ZERO;
-	}
-
-	@Override
-	public List<I_C_AllocationLine> retrieveAllocationLines(I_C_Payment payment)
-	{
-		final String trxName = InterfaceWrapperHelper.getTrxName(payment);
-		final Properties ctx = InterfaceWrapperHelper.getCtx(payment);
-
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
-		return queryBL
-				.createQueryBuilder(I_C_AllocationLine.class, ctx, trxName)
-				.addEqualsFilter(I_C_AllocationLine.COLUMNNAME_C_Payment_ID, payment.getC_Payment_ID())
-				.create()
-				.list();
-
 	}
 
 	@Override

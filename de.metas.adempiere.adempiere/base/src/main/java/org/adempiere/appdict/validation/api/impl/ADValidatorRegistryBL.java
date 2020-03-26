@@ -51,7 +51,7 @@ import de.metas.util.Services;
 
 public class ADValidatorRegistryBL implements IADValidatorRegistryBL
 {
-	private final Map<Class<?>, IADValidator<?>> validators = new ConcurrentHashMap<Class<?>, IADValidator<?>>();
+	private final Map<Class<?>, IADValidator<?>> validators = new ConcurrentHashMap<>();
 
 	public ADValidatorRegistryBL()
 	{
@@ -67,8 +67,8 @@ public class ADValidatorRegistryBL implements IADValidatorRegistryBL
 		}
 		validators.put(interfaceClass, validator);
 
-		ApplicationDictionaryGenericModelValidator<T> modelValidator = new ApplicationDictionaryGenericModelValidator<T>(interfaceClass, validator);
-		ModelValidationEngine.get().addModelValidator(modelValidator, null);
+		ApplicationDictionaryGenericModelValidator<T> modelValidator = new ApplicationDictionaryGenericModelValidator<>(interfaceClass, validator);
+		ModelValidationEngine.get().addModelValidator(modelValidator);
 	}
 
 	@Override
@@ -100,7 +100,7 @@ public class ADValidatorRegistryBL implements IADValidatorRegistryBL
 	@Override
 	public List<Class<?>> getRegisteredClasses()
 	{
-		return new ArrayList<Class<?>>(validators.keySet());
+		return new ArrayList<>(validators.keySet());
 	}
 
 	@Override

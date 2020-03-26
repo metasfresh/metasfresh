@@ -1,5 +1,7 @@
 package de.metas.payment.esr.api.impl;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 /*
  * #%L
  * de.metas.payment.esr
@@ -22,15 +24,9 @@ package de.metas.payment.esr.api.impl;
  * #L%
  */
 
-import static org.hamcrest.Matchers.comparesEqualTo;
-import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
-
 import java.io.ByteArrayInputStream;
-import java.math.BigDecimal;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import de.metas.payment.esr.ESRTestBase;
 import de.metas.payment.esr.model.I_ESR_Import;
@@ -47,12 +43,8 @@ public class ESRReceiptLineMatcherTest extends ESRTestBase
 
 		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new ByteArrayInputStream(esrImportLineText.getBytes()));
 
-		assertThat("Invalid Control Amt",
-				esrImport.getESR_Control_Amount(),
-				comparesEqualTo(new BigDecimal("920")));
-		assertThat("Invalid ESR_Control_Trx_Qty",
-				esrImport.getESR_Control_Trx_Qty(),
-				comparesEqualTo(new BigDecimal("25")));
+		assertThat(esrImport.getESR_Control_Amount()).isEqualByComparingTo("920");
+		assertThat(esrImport.getESR_Control_Trx_Qty()).isEqualByComparingTo("25");
 
 		// TODO: there needs to be an error because "missing trx lines"
 		// Assert.assertEquals("Invalid TrxType", ESRConstants.ESRTRXTYPE_Receipt, esrImportLine.getESRTrxType());
@@ -70,8 +62,8 @@ public class ESRReceiptLineMatcherTest extends ESRTestBase
 
 		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new ByteArrayInputStream(esrImportLineText.getBytes()));
 
-		assertThat(esrImport.isValid(), is(false));
-		assertThat(esrImport.getDescription(), containsString("ESR_Wrong_Ctrl_Line_Length_[61]"));
+		assertThat(esrImport.isValid()).isFalse();
+		assertThat(esrImport.getDescription()).contains("ESR_Wrong_Ctrl_Line_Length_[61]");
 	}
 
 	@Test
@@ -82,7 +74,7 @@ public class ESRReceiptLineMatcherTest extends ESRTestBase
 
 		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new ByteArrayInputStream(esrImportLineText.getBytes()));
 
-		assertThat("Invalid IsValid", esrImport.isValid(), is(false));
+		assertThat(esrImport.isValid()).isFalse();
 	}
 
 	@Test
@@ -93,7 +85,7 @@ public class ESRReceiptLineMatcherTest extends ESRTestBase
 
 		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new ByteArrayInputStream(esrImportLineText.getBytes()));
 
-		assertThat("Invalid IsValid", esrImport.isValid(), is(false));
+		assertThat(esrImport.isValid()).isFalse();
 	}
 
 }

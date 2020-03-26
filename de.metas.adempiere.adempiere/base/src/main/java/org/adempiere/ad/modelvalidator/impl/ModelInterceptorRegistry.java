@@ -39,7 +39,6 @@ public class ModelInterceptorRegistry implements IModelInterceptorRegistry
 	@Override
 	public void addModelInterceptor(final Object interceptorObj)
 	{
-		final I_AD_Client client = null;  // register it for all clients
-		ModelValidationEngine.get().addModelValidator(interceptorObj, client);
+		ModelValidationEngine.get().addModelValidator(interceptorObj);
 	}
 }

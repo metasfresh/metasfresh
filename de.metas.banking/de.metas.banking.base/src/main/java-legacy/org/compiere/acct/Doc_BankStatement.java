@@ -22,15 +22,16 @@ import java.util.List;
 
 import org.compiere.acct.Fact.FactLineBuilder;
 import org.compiere.model.I_C_BP_BankAccount;
+import org.compiere.model.I_C_BankStatement;
+import org.compiere.model.I_C_BankStatementLine;
 import org.compiere.model.MAccount;
 
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.PostingType;
 import de.metas.acct.doc.AcctDocContext;
-import de.metas.banking.interfaces.I_C_BankStatementLine_Ref;
-import de.metas.banking.model.I_C_BankStatement;
-import de.metas.banking.model.I_C_BankStatementLine;
-import de.metas.banking.service.IBankStatementDAO;
+import de.metas.banking.BankStatementId;
+import de.metas.banking.BankStatementLineReference;
+import de.metas.banking.service.IBankStatementBL;
 import de.metas.bpartner.BPartnerId;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
@@ -80,10 +81,11 @@ public class Doc_BankStatement extends Doc<DocLine_BankStatement>
 		setDocLines(loadLines(bs));
 	}
 
-	private List<DocLine_BankStatement> loadLines(final I_C_BankStatement bs)
+	private List<DocLine_BankStatement> loadLines(final I_C_BankStatement bankStatement)
 	{
+		final BankStatementId bankStatementId = BankStatementId.ofRepoId(bankStatement.getC_BankStatement_ID());
 		final List<DocLine_BankStatement> docLines = new ArrayList<>();
-		for (final I_C_BankStatementLine line : Services.get(IBankStatementDAO.class).retrieveLines(bs, I_C_BankStatementLine.class))
+		for (final I_C_BankStatementLine line : Services.get(IBankStatementBL.class).getLinesByBankStatementId(bankStatementId))
 		{
 			final DocLine_BankStatement docLine = new DocLine_BankStatement(line, this);
 
@@ -377,7 +379,7 @@ public class Doc_BankStatement extends Doc<DocLine_BankStatement>
 		final OrgId bankOrgId = getBankOrgId();	// Bank Account Org
 		final BPartnerId bpartnerId = line.getBPartnerId();
 
-		final List<I_C_BankStatementLine_Ref> lineReferences = line.getReferences();
+		final List<BankStatementLineReference> lineReferences = line.getReferences();
 		if (lineReferences.isEmpty())
 		{
 			fact.createLine()
@@ -391,16 +393,16 @@ public class Doc_BankStatement extends Doc<DocLine_BankStatement>
 		}
 		else
 		{
-			for (final I_C_BankStatementLine_Ref lineRef : lineReferences)
+			for (final BankStatementLineReference lineRef : lineReferences)
 			{
-				final BPartnerId lineRefBPartnerId = BPartnerId.ofRepoIdOrNull(lineRef.getC_BPartner_ID());
+				final BPartnerId lineRefBPartnerId = lineRef.getBpartnerId();
 				fact.createLine()
 						.setDocLine(line)
-						.setSubLine_ID(lineRef.getC_BankStatementLine_Ref_ID())
+						.setSubLine_ID(lineRef.getBankStatementLineRefId().getRepoId())
 						.setAccount(acct_BankInTransit)
-						.setAmtSourceDrOrCr(lineRef.getTrxAmt().negate())
-						.setCurrencyId(CurrencyId.ofRepoId(lineRef.getC_Currency_ID()))
-						.orgId(bankOrgId.isRegular() ? bankOrgId : line.getPaymentOrgId(lineRef.getC_Payment())) // bank org, payment org
+						.setAmtSourceDrOrCr(lineRef.getTrxAmt().toBigDecimal().negate())
+						.setCurrencyId(lineRef.getTrxAmt().getCurrencyId())
+						.orgId(bankOrgId.isRegular() ? bankOrgId : line.getPaymentOrgId(lineRef.getPaymentId())) // bank org, payment org
 						.bpartnerIdIfNotNull(CoalesceUtil.coalesce(lineRefBPartnerId, bpartnerId)) // if the lineref has a C_BPartner, then use it
 						.buildAndAdd();
 			}

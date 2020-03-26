@@ -63,6 +63,7 @@ import de.metas.document.engine.IDocument;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import de.metas.util.lang.RepoIdAware;
 import lombok.NonNull;
 
@@ -1263,9 +1264,15 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 		return values;
 	}
 
-	public static void delete(final Object model)
+	public static void delete(final Object model, final boolean failIfProcessed)
 	{
 		final POJOWrapper wrapper = getWrapper(model);
+
+		if (failIfProcessed && wrapper.isProcessed())
+		{
+			throw new AdempiereException("@CannotDelete@ (@Processed@): " + wrapper);
+		}
+
 		wrapper.getLookupMap().delete(model);
 	}
 
@@ -1838,5 +1845,12 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 			return null;
 		}
 		return wrapper.getModelInternalAccessor();
+	}
+
+	public boolean isProcessed()
+	{
+		return hasColumnName("Processed")
+				? StringUtils.toBoolean(getValue("Processed", Object.class))
+				: false;
 	}
 }

@@ -45,6 +45,7 @@ import de.metas.email.MailService;
 import de.metas.email.mailboxes.ClientEMailConfig;
 import de.metas.email.mailboxes.Mailbox;
 import de.metas.email.mailboxes.UserEMailConfig;
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.Language;
 import de.metas.letter.BoilerPlate;
@@ -80,7 +81,7 @@ public class MailWorkpackageProcessor implements IWorkpackageProcessor
 	private final transient IArchiveEventManager archiveEventManager = Services.get(IArchiveEventManager.class);
 	private final transient IArchiveBL archiveBL = Services.get(IArchiveBL.class);
 	private final transient IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
-	private final transient IADTableDAO tableDAO=Services.get(IADTableDAO.class);
+	private final transient IADTableDAO tableDAO = Services.get(IADTableDAO.class);
 
 	private final transient MailService mailService = SpringContextHolder.instance.getBean(MailService.class);
 	private final transient BoilerPlateRepository boilerPlateRepository = SpringContextHolder.instance.getBean(BoilerPlateRepository.class);
@@ -88,8 +89,8 @@ public class MailWorkpackageProcessor implements IWorkpackageProcessor
 
 	private static final int DEFAULT_SkipTimeoutOnConnectionError = 1000 * 60 * 5; // 5min
 
-	private static final String MSG_EmailSubject = "MailWorkpackageProcessor.EmailSubject";
-	private static final String MSG_EmailMessage = "MailWorkpackageProcessor.EmailMessage";
+	private static final AdMessageKey MSG_EmailSubject = AdMessageKey.of("MailWorkpackageProcessor.EmailSubject");
+	private static final AdMessageKey MSG_EmailMessage = AdMessageKey.of("MailWorkpackageProcessor.EmailMessage");
 
 	@Override
 	public Result processWorkPackage(final I_C_Queue_WorkPackage workpackage, final String localTrxName)

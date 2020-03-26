@@ -53,9 +53,7 @@ public class C_Flatrate_Transition
 	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_VOID, ModelValidator.TIMING_BEFORE_CLOSE })
 	public void disallowNotSupportedDocActions(final I_C_Flatrate_Transition transition)
 	{
-		final Properties ctx = InterfaceWrapperHelper.getCtx(transition);
-		final String msg = Services.get(IMsgBL.class).getMsg(ctx, MainValidator.MSG_FLATRATE_DOC_ACTION_NOT_SUPPORTED_0P);
-		throw new AdempiereException(msg);
+		throw new AdempiereException(MainValidator.MSG_FLATRATE_DOC_ACTION_NOT_SUPPORTED_0P);
 	}
 
 	@DocValidate(timings = ModelValidator.TIMING_BEFORE_REACTIVATE)

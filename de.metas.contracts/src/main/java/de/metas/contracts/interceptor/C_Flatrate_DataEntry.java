@@ -25,7 +25,6 @@ package de.metas.contracts.interceptor;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.List;
-import java.util.Properties;
 
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
@@ -44,7 +43,6 @@ import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_Invoice_Clearing_Alloc;
 import de.metas.contracts.model.X_C_Flatrate_DataEntry;
 import de.metas.contracts.model.X_C_Flatrate_Term;
-import de.metas.i18n.IMsgBL;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
@@ -169,9 +167,7 @@ public class C_Flatrate_DataEntry
 	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_VOID, ModelValidator.TIMING_BEFORE_CLOSE })
 	public void disallowNotSupportedDocActions(final I_C_Flatrate_DataEntry dataEntry)
 	{
-		final Properties ctx = InterfaceWrapperHelper.getCtx(dataEntry);
-		final String msg = Services.get(IMsgBL.class).getMsg(ctx, MainValidator.MSG_FLATRATE_DOC_ACTION_NOT_SUPPORTED_0P);
-		throw new AdempiereException(msg);
+		throw new AdempiereException(MainValidator.MSG_FLATRATE_DOC_ACTION_NOT_SUPPORTED_0P);
 	}
 
 	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_PREPARE })

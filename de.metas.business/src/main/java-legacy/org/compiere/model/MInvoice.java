@@ -70,6 +70,7 @@ import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.document.sequence.IDocumentNoBuilder;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.Msg;
 import de.metas.invoice.IMatchInvBL;
@@ -109,7 +110,7 @@ public class MInvoice extends X_C_Invoice implements IDocument
 	 */
 	private static final long serialVersionUID = 5406556271212363271L;
 
-	private static final String ERR_NoBaseConversionBetweenCurrencies = "NoBaseConversionBetweenCurrencies";
+	private static final AdMessageKey ERR_NoBaseConversionBetweenCurrencies = AdMessageKey.of("NoBaseConversionBetweenCurrencies");
 
 	/**
 	 * Get Payments Of BPartner

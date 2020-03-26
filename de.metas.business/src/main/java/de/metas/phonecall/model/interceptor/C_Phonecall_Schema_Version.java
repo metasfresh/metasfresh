@@ -14,6 +14,7 @@ import org.compiere.util.TimeUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.phonecall.PhonecallSchema;
@@ -50,8 +51,7 @@ import de.metas.util.Services;
 @Component
 public class C_Phonecall_Schema_Version
 {
-
-	private static final String MSG_Existing_Phonecall_Schema_Version_Same_ValidFrom = "C_Phonecall_Schema_Version_ExistingVersionSameValidFrom";
+	private static final AdMessageKey MSG_Existing_Phonecall_Schema_Version_Same_ValidFrom = AdMessageKey.of("C_Phonecall_Schema_Version_ExistingVersionSameValidFrom");
 
 	@Autowired
 	private PhonecallSchemaRepository phonecallSchemaRepo;

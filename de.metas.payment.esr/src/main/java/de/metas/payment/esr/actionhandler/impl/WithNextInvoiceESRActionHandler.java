@@ -1,5 +1,8 @@
 package de.metas.payment.esr.actionhandler.impl;
 
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_Payment;
+
 /*
  * #%L
  * de.metas.payment.esr
@@ -24,10 +27,8 @@ package de.metas.payment.esr.actionhandler.impl;
 
 
 import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_Payment;
+import de.metas.logging.LogManager;
 import de.metas.payment.esr.api.impl.ESRImportBL;
 import de.metas.payment.esr.model.I_ESR_ImportLine;
 
@@ -49,11 +50,9 @@ public class WithNextInvoiceESRActionHandler extends AbstractESRActionHandler
 		final I_C_Payment payment = line.getC_Payment();
 		if (null != payment)
 		{
-			final de.metas.banking.model.I_C_Payment paymentExtended = InterfaceWrapperHelper.create(payment, de.metas.banking.model.I_C_Payment.class);
-
 			// 04193 : Just set the flag, the logic is handled on completion of an invoice.
-			paymentExtended.setIsAutoAllocateAvailableAmt(true);
-			InterfaceWrapperHelper.save(paymentExtended);
+			payment.setIsAutoAllocateAvailableAmt(true);
+			InterfaceWrapperHelper.save(payment);
 		}
 		else
 		{

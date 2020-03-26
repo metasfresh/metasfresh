@@ -13,15 +13,14 @@ package de.metas.cache.interceptor;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
@@ -42,7 +41,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
-import de.metas.util.Check;
+import de.metas.i18n.AdMessageKey;
 import de.metas.util.lang.RepoIdAware;
 import lombok.NonNull;
 
@@ -85,9 +84,10 @@ public final class CacheImmutableClassesIndex
 			.add(Duration.class)
 			.add(Instant.class)
 			//
-			// Some Adempiere types:
+			// Some metasfresh types:
 			.add(NamePair.class)
 			.add(ArrayKey.class)
+			.add(AdMessageKey.class)
 			//
 			// guava immutable stuff
 			.add(ImmutableList.class)
@@ -139,9 +139,8 @@ public final class CacheImmutableClassesIndex
 	 *
 	 * @param immutableClass
 	 */
-	public void registerImmutableClass(final Class<?> immutableClass)
+	public void registerImmutableClass(@NonNull final Class<?> immutableClass)
 	{
-		Check.assumeNotNull(immutableClass, "immutableClass not null");
 		immutableClasses.add(immutableClass);
 	}
 }

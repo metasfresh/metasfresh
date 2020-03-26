@@ -45,6 +45,7 @@ import de.metas.handlingunits.client.terminal.editor.view.HUEditorPanel;
 import de.metas.handlingunits.client.terminal.inventory.model.InventoryHUSelectModel;
 import de.metas.handlingunits.client.terminal.inventory.view.InventoryHUSelectPanel;
 import de.metas.handlingunits.model.I_M_PickingSlot;
+import de.metas.i18n.AdMessageKey;
 
 /**
  * Verdichtung (POS) HU Select View (first window)
@@ -58,8 +59,8 @@ public class AggregateHUSelectPanel extends InventoryHUSelectPanel<AggregateHUSe
 	private static final String ACTION_CloseOpenPickedHUs = "Close_HU";
 	private static final String ACTION_ShowDraftedShipments = "de.metas.handlingunits.client.terminal.aggregate.view.AggregateHUSelectPanel#ShowDraftedShipments";
 
-	private static final String MSG_NoOpenHUsToClose = "de.metas.handlingunits.client.terminal.aggregate.view.AggregateHUSelectPanel#NoOpenHUsToClose";
-	private static final String MSG_ConfirmCloseOpenHUs = "de.metas.handlingunits.client.terminal.aggregate.view.AggregateHUSelectPanel#ConfirmCloseOpenHUs";
+	private static final AdMessageKey MSG_NoOpenHUsToClose = AdMessageKey.of("de.metas.handlingunits.client.terminal.aggregate.view.AggregateHUSelectPanel#NoOpenHUsToClose");
+	private static final AdMessageKey MSG_ConfirmCloseOpenHUs = AdMessageKey.of("de.metas.handlingunits.client.terminal.aggregate.view.AggregateHUSelectPanel#ConfirmCloseOpenHUs");
 
 	public AggregateHUSelectPanel(final AggregateHUSelectModel model)
 	{
@@ -171,7 +172,7 @@ public class AggregateHUSelectPanel extends InventoryHUSelectPanel<AggregateHUSe
 		final int countOpenHUs = pickingSlotsToFree.size();
 		if (countOpenHUs <= 0)
 		{
-			final AdempiereException ex = new AdempiereException(MSG_NoOpenHUsToClose, new Object[] {});
+			final AdempiereException ex = new AdempiereException(MSG_NoOpenHUsToClose);
 			getTerminalFactory().showWarning(this, ITerminalFactory.TITLE_ERROR, ex);
 			return;
 		}

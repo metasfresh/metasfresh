@@ -1,7 +1,10 @@
 package de.metas.banking.service;
 
-import de.metas.banking.model.I_C_BankStatementLine;
-import de.metas.banking.model.I_C_BankStatementLine_Ref;
+import java.util.List;
+
+import de.metas.banking.BankStatementLineReferenceList;
+import de.metas.banking.payment.PaymentLinkResult;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -16,11 +19,11 @@ import de.metas.banking.model.I_C_BankStatementLine_Ref;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -37,13 +40,7 @@ import de.metas.banking.model.I_C_BankStatementLine_Ref;
  */
 public interface IBankStatementListener
 {
-	/**
-	 * @param bankStatementLine
-	 */
-	void onBankStatementLineVoiding(final I_C_BankStatementLine bankStatementLine);
+	void onPaymentsLinked(List<PaymentLinkResult> payments);
 
-	/**
-	 * @param bankStatementLineRef
-	 */
-	void onBankStatementLineRefVoiding(final I_C_BankStatementLine_Ref bankStatementLineRef);
+	void onPaymentsUnlinkedFromBankStatementLineReferences(@NonNull BankStatementLineReferenceList lineRefs);
 }

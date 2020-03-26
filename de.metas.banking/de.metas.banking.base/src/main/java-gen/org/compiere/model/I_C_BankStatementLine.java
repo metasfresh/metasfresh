@@ -36,7 +36,7 @@ public interface I_C_BankStatementLine
     public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
-	 * Set Sektion.
+	 * Set Organisation.
 	 * Organisatorische Einheit des Mandanten
 	 *
 	 * <br>Type: Search
@@ -46,7 +46,7 @@ public interface I_C_BankStatementLine
 	public void setAD_Org_ID (int AD_Org_ID);
 
 	/**
-	 * Get Sektion.
+	 * Get Organisation.
 	 * Organisatorische Einheit des Mandanten
 	 *
 	 * <br>Type: Search
@@ -78,12 +78,6 @@ public interface I_C_BankStatementLine
 	 */
 	public int getC_BankStatement_ID();
 
-	public org.compiere.model.I_C_BankStatement getC_BankStatement();
-
-	public void setC_BankStatement(org.compiere.model.I_C_BankStatement C_BankStatement);
-
-    /** Column definition for C_BankStatement_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_BankStatementLine, org.compiere.model.I_C_BankStatement> COLUMN_C_BankStatement_ID = new org.adempiere.model.ModelColumn<I_C_BankStatementLine, org.compiere.model.I_C_BankStatement>(I_C_BankStatementLine.class, "C_BankStatement_ID", org.compiere.model.I_C_BankStatement.class);
     /** Column name C_BankStatement_ID */
     public static final String COLUMNNAME_C_BankStatement_ID = "C_BankStatement_ID";
 
@@ -113,29 +107,6 @@ public interface I_C_BankStatementLine
     public static final String COLUMNNAME_C_BankStatementLine_ID = "C_BankStatementLine_ID";
 
 	/**
-	 * Set Geschäftspartner.
-	 * Identifies a Business Partner
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setC_BPartner_ID (int C_BPartner_ID);
-
-	/**
-	 * Get Geschäftspartner.
-	 * Identifies a Business Partner
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public int getC_BPartner_ID();
-
-    /** Column name C_BPartner_ID */
-    public static final String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
-
-	/**
 	 * Set Cashbook/Bank account To.
 	 * Cashbook/Bank account To
 	 *
@@ -163,6 +134,29 @@ public interface I_C_BankStatementLine
     public static final org.adempiere.model.ModelColumn<I_C_BankStatementLine, org.compiere.model.I_C_BP_BankAccount> COLUMN_C_BP_BankAccountTo_ID = new org.adempiere.model.ModelColumn<I_C_BankStatementLine, org.compiere.model.I_C_BP_BankAccount>(I_C_BankStatementLine.class, "C_BP_BankAccountTo_ID", org.compiere.model.I_C_BP_BankAccount.class);
     /** Column name C_BP_BankAccountTo_ID */
     public static final String COLUMNNAME_C_BP_BankAccountTo_ID = "C_BP_BankAccountTo_ID";
+
+	/**
+	 * Set Geschäftspartner.
+	 * Identifies a Business Partner
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setC_BPartner_ID (int C_BPartner_ID);
+
+	/**
+	 * Get Geschäftspartner.
+	 * Identifies a Business Partner
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getC_BPartner_ID();
+
+    /** Column name C_BPartner_ID */
+    public static final String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
 
 	/**
 	 * Set Kosten.
@@ -209,29 +203,6 @@ public interface I_C_BankStatementLine
 
     /** Column name C_Currency_ID */
     public static final String COLUMNNAME_C_Currency_ID = "C_Currency_ID";
-
-	/**
-	 * Set Gebühr.
-	 *
-	 * <br>Type: Amount
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setChargeAmt (java.math.BigDecimal ChargeAmt);
-
-	/**
-	 * Get Gebühr.
-	 *
-	 * <br>Type: Amount
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public java.math.BigDecimal getChargeAmt();
-
-    /** Column definition for ChargeAmt */
-    public static final org.adempiere.model.ModelColumn<I_C_BankStatementLine, Object> COLUMN_ChargeAmt = new org.adempiere.model.ModelColumn<I_C_BankStatementLine, Object>(I_C_BankStatementLine.class, "ChargeAmt", null);
-    /** Column name ChargeAmt */
-    public static final String COLUMNNAME_ChargeAmt = "ChargeAmt";
 
 	/**
 	 * Set Rechnung.
@@ -311,14 +282,31 @@ public interface I_C_BankStatementLine
 	 */
 	public int getC_Payment_ID();
 
-	public org.compiere.model.I_C_Payment getC_Payment();
-
-	public void setC_Payment(org.compiere.model.I_C_Payment C_Payment);
-
-    /** Column definition for C_Payment_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_BankStatementLine, org.compiere.model.I_C_Payment> COLUMN_C_Payment_ID = new org.adempiere.model.ModelColumn<I_C_BankStatementLine, org.compiere.model.I_C_Payment>(I_C_BankStatementLine.class, "C_Payment_ID", org.compiere.model.I_C_Payment.class);
     /** Column name C_Payment_ID */
     public static final String COLUMNNAME_C_Payment_ID = "C_Payment_ID";
+
+	/**
+	 * Set Gebühr.
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setChargeAmt (java.math.BigDecimal ChargeAmt);
+
+	/**
+	 * Get Gebühr.
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getChargeAmt();
+
+    /** Column definition for ChargeAmt */
+    public static final org.adempiere.model.ModelColumn<I_C_BankStatementLine, Object> COLUMN_ChargeAmt = new org.adempiere.model.ModelColumn<I_C_BankStatementLine, Object>(I_C_BankStatementLine.class, "ChargeAmt", null);
+    /** Column name ChargeAmt */
+    public static final String COLUMNNAME_ChargeAmt = "ChargeAmt";
 
 	/**
 	 * Get Erstellt.
@@ -347,29 +335,6 @@ public interface I_C_BankStatementLine
 
     /** Column name CreatedBy */
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
-
-	/**
-	 * Set Zahlung erstellen.
-	 *
-	 * <br>Type: Button
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setCreatePayment (java.lang.String CreatePayment);
-
-	/**
-	 * Get Zahlung erstellen.
-	 *
-	 * <br>Type: Button
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.lang.String getCreatePayment();
-
-    /** Column definition for CreatePayment */
-    public static final org.adempiere.model.ModelColumn<I_C_BankStatementLine, Object> COLUMN_CreatePayment = new org.adempiere.model.ModelColumn<I_C_BankStatementLine, Object>(I_C_BankStatementLine.class, "CreatePayment", null);
-    /** Column name CreatePayment */
-    public static final String COLUMNNAME_CreatePayment = "CreatePayment";
 
 	/**
 	 * Set Wechselkurs.
@@ -443,31 +408,6 @@ public interface I_C_BankStatementLine
     public static final org.adempiere.model.ModelColumn<I_C_BankStatementLine, Object> COLUMN_Description = new org.adempiere.model.ModelColumn<I_C_BankStatementLine, Object>(I_C_BankStatementLine.class, "Description", null);
     /** Column name Description */
     public static final String COLUMNNAME_Description = "Description";
-
-	/**
-	 * Set Skonto.
-	 * Calculated amount of discount
-	 *
-	 * <br>Type: Amount
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setDiscountAmt (java.math.BigDecimal DiscountAmt);
-
-	/**
-	 * Get Skonto.
-	 * Calculated amount of discount
-	 *
-	 * <br>Type: Amount
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.math.BigDecimal getDiscountAmt();
-
-    /** Column definition for DiscountAmt */
-    public static final org.adempiere.model.ModelColumn<I_C_BankStatementLine, Object> COLUMN_DiscountAmt = new org.adempiere.model.ModelColumn<I_C_BankStatementLine, Object>(I_C_BankStatementLine.class, "DiscountAmt", null);
-    /** Column name DiscountAmt */
-    public static final String COLUMNNAME_DiscountAmt = "DiscountAmt";
 
 	/**
 	 * Set ELV-Betrag.
@@ -918,29 +858,29 @@ public interface I_C_BankStatementLine
     public static final String COLUMNNAME_IsMultiplePaymentOrInvoice = "IsMultiplePaymentOrInvoice";
 
 	/**
-	 * Set Over/Under Payment.
-	 * Over-Payment (unallocated) or Under-Payment (partial payment)
+	 * Set Abgeglichen.
+	 * Zeigt an ob eine Zahlung bereits mit einem Kontoauszug abgeglichen wurde
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsOverUnderPayment (boolean IsOverUnderPayment);
+	public void setIsReconciled (boolean IsReconciled);
 
 	/**
-	 * Get Over/Under Payment.
-	 * Over-Payment (unallocated) or Under-Payment (partial payment)
+	 * Get Abgeglichen.
+	 * Zeigt an ob eine Zahlung bereits mit einem Kontoauszug abgeglichen wurde
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isOverUnderPayment();
+	public boolean isReconciled();
 
-    /** Column definition for IsOverUnderPayment */
-    public static final org.adempiere.model.ModelColumn<I_C_BankStatementLine, Object> COLUMN_IsOverUnderPayment = new org.adempiere.model.ModelColumn<I_C_BankStatementLine, Object>(I_C_BankStatementLine.class, "IsOverUnderPayment", null);
-    /** Column name IsOverUnderPayment */
-    public static final String COLUMNNAME_IsOverUnderPayment = "IsOverUnderPayment";
+    /** Column definition for IsReconciled */
+    public static final org.adempiere.model.ModelColumn<I_C_BankStatementLine, Object> COLUMN_IsReconciled = new org.adempiere.model.ModelColumn<I_C_BankStatementLine, Object>(I_C_BankStatementLine.class, "IsReconciled", null);
+    /** Column name IsReconciled */
+    public static final String COLUMNNAME_IsReconciled = "IsReconciled";
 
 	/**
 	 * Set Umkehrung.
@@ -1010,37 +950,8 @@ public interface I_C_BankStatementLine
 	 */
 	public int getLink_BankStatementLine_ID();
 
-	public org.compiere.model.I_C_BankStatementLine getLink_BankStatementLine();
-
-	public void setLink_BankStatementLine(org.compiere.model.I_C_BankStatementLine Link_BankStatementLine);
-
-    /** Column definition for Link_BankStatementLine_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_BankStatementLine, org.compiere.model.I_C_BankStatementLine> COLUMN_Link_BankStatementLine_ID = new org.adempiere.model.ModelColumn<I_C_BankStatementLine, org.compiere.model.I_C_BankStatementLine>(I_C_BankStatementLine.class, "Link_BankStatementLine_ID", org.compiere.model.I_C_BankStatementLine.class);
     /** Column name Link_BankStatementLine_ID */
     public static final String COLUMNNAME_Link_BankStatementLine_ID = "Link_BankStatementLine_ID";
-
-	/**
-	 * Set Match Statement.
-	 *
-	 * <br>Type: Button
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setMatchStatement (java.lang.String MatchStatement);
-
-	/**
-	 * Get Match Statement.
-	 *
-	 * <br>Type: Button
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.lang.String getMatchStatement();
-
-    /** Column definition for MatchStatement */
-    public static final org.adempiere.model.ModelColumn<I_C_BankStatementLine, Object> COLUMN_MatchStatement = new org.adempiere.model.ModelColumn<I_C_BankStatementLine, Object>(I_C_BankStatementLine.class, "MatchStatement", null);
-    /** Column name MatchStatement */
-    public static final String COLUMNNAME_MatchStatement = "MatchStatement";
 
 	/**
 	 * Set Memo.
@@ -1066,31 +977,6 @@ public interface I_C_BankStatementLine
     public static final org.adempiere.model.ModelColumn<I_C_BankStatementLine, Object> COLUMN_Memo = new org.adempiere.model.ModelColumn<I_C_BankStatementLine, Object>(I_C_BankStatementLine.class, "Memo", null);
     /** Column name Memo */
     public static final String COLUMNNAME_Memo = "Memo";
-
-	/**
-	 * Set Over/Under Payment.
-	 * Over-Payment (unallocated) or Under-Payment (partial payment) Amount
-	 *
-	 * <br>Type: Amount
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setOverUnderAmt (java.math.BigDecimal OverUnderAmt);
-
-	/**
-	 * Get Over/Under Payment.
-	 * Over-Payment (unallocated) or Under-Payment (partial payment) Amount
-	 *
-	 * <br>Type: Amount
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.math.BigDecimal getOverUnderAmt();
-
-    /** Column definition for OverUnderAmt */
-    public static final org.adempiere.model.ModelColumn<I_C_BankStatementLine, Object> COLUMN_OverUnderAmt = new org.adempiere.model.ModelColumn<I_C_BankStatementLine, Object>(I_C_BankStatementLine.class, "OverUnderAmt", null);
-    /** Column name OverUnderAmt */
-    public static final String COLUMNNAME_OverUnderAmt = "OverUnderAmt";
 
 	/**
 	 * Set Verarbeitet.
@@ -1168,8 +1054,8 @@ public interface I_C_BankStatementLine
     public static final String COLUMNNAME_StatementLineDate = "StatementLineDate";
 
 	/**
-	 * Set Statement amount.
-	 * Statement Amount
+	 * Set Kontoauszug Betrag.
+	 * Kontoauszug Betrag
 	 *
 	 * <br>Type: Amount
 	 * <br>Mandatory: true
@@ -1178,8 +1064,8 @@ public interface I_C_BankStatementLine
 	public void setStmtAmt (java.math.BigDecimal StmtAmt);
 
 	/**
-	 * Get Statement amount.
-	 * Statement Amount
+	 * Get Kontoauszug Betrag.
+	 * Kontoauszug Betrag
 	 *
 	 * <br>Type: Amount
 	 * <br>Mandatory: true
@@ -1269,29 +1155,4 @@ public interface I_C_BankStatementLine
     public static final org.adempiere.model.ModelColumn<I_C_BankStatementLine, Object> COLUMN_ValutaDate = new org.adempiere.model.ModelColumn<I_C_BankStatementLine, Object>(I_C_BankStatementLine.class, "ValutaDate", null);
     /** Column name ValutaDate */
     public static final String COLUMNNAME_ValutaDate = "ValutaDate";
-
-	/**
-	 * Set Write-off Amount.
-	 * Amount to write-off
-	 *
-	 * <br>Type: Amount
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setWriteOffAmt (java.math.BigDecimal WriteOffAmt);
-
-	/**
-	 * Get Write-off Amount.
-	 * Amount to write-off
-	 *
-	 * <br>Type: Amount
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.math.BigDecimal getWriteOffAmt();
-
-    /** Column definition for WriteOffAmt */
-    public static final org.adempiere.model.ModelColumn<I_C_BankStatementLine, Object> COLUMN_WriteOffAmt = new org.adempiere.model.ModelColumn<I_C_BankStatementLine, Object>(I_C_BankStatementLine.class, "WriteOffAmt", null);
-    /** Column name WriteOffAmt */
-    public static final String COLUMNNAME_WriteOffAmt = "WriteOffAmt";
 }

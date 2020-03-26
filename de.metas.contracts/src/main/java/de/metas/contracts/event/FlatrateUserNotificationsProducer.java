@@ -7,6 +7,7 @@ import de.metas.contracts.Contracts_Constants;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.event.Topic;
 import de.metas.event.Type;
+import de.metas.i18n.AdMessageKey;
 import de.metas.logging.LogManager;
 import de.metas.notification.INotificationBL;
 import de.metas.notification.UserNotificationRequest;
@@ -54,7 +55,7 @@ public class FlatrateUserNotificationsProducer
 	public FlatrateUserNotificationsProducer notifyUser(
 			final I_C_Flatrate_Term contract,
 			final UserId recipientUserId,
-			final String message)
+			@NonNull final AdMessageKey message)
 	{
 		if (contract == null)
 		{
@@ -75,9 +76,9 @@ public class FlatrateUserNotificationsProducer
 	}
 
 	private final UserNotificationRequest createFlatrateTermGeneratedEvent(
-			@NonNull final I_C_Flatrate_Term contract, 
-			final UserId recipientUserId, 
-			final String message)
+			@NonNull final I_C_Flatrate_Term contract,
+			final UserId recipientUserId,
+			@NonNull final AdMessageKey message)
 	{
 		if (recipientUserId == null)
 		{
@@ -89,7 +90,7 @@ public class FlatrateUserNotificationsProducer
 
 		return newUserNotificationRequest()
 				.recipientUserId(recipientUserId)
-				.contentADMessage(message)
+				.contentADMessage(message.toAD_Message())
 				.targetAction(TargetRecordAction.ofRecordAndWindow(flatrateTermRef, Contracts_Constants.CONTRACTS_WINDOW_ID))
 				.build();
 	}

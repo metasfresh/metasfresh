@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.location.CountryId;
@@ -44,7 +45,7 @@ public class FreightCostService
 
 	private final FreightCostRepository freightCostRepo;
 
-	private final static String MSG_Order_No_Shipper = "C_Order_NoShipper";
+	private final static AdMessageKey MSG_Order_No_Shipper = AdMessageKey.of("C_Order_NoShipper");
 
 	public FreightCostService(
 			@NonNull final FreightCostRepository freightCostRepo)

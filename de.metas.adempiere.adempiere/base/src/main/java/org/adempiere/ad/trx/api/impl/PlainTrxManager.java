@@ -27,6 +27,7 @@ import java.util.List;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.DBException;
+import org.compiere.Adempiere;
 
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -54,9 +55,16 @@ public class PlainTrxManager extends AbstractTrxManager
 	private boolean failRollbackIfTrxNotStarted = true;
 	private boolean debugTrxLog;
 
+	public PlainTrxManager()
+	{
+		Adempiere.assertUnitTestMode();
+	}
+
 	@Override
 	protected PlainTrx createTrx(String trxName, final boolean autoCommit)
 	{
+		Adempiere.assertUnitTestMode();
+
 		try
 		{
 			return new PlainTrx(this, trxName, autoCommit);

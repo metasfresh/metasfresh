@@ -44,6 +44,8 @@ import org.compiere.model.MOrderLine;
 import org.compiere.model.X_C_DocType;
 import org.slf4j.Logger;
 
+import com.google.common.annotations.VisibleForTesting;
+
 import de.metas.contracts.IContractChangeBL;
 import de.metas.contracts.IContractChangeDAO;
 import de.metas.contracts.IContractsDAO;
@@ -61,6 +63,7 @@ import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
+import de.metas.i18n.AdMessageKey;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
@@ -83,7 +86,8 @@ public class ContractChangeBL implements IContractChangeBL
 
 	private final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
 
-	public static final String MSG_IS_NOT_ALLOWED_TO_TERMINATE_CURRENT_CONTRACT = "de.metas.contracts.isNotAllowedToTerminateCurrentContract";
+	@VisibleForTesting
+	static final AdMessageKey MSG_IS_NOT_ALLOWED_TO_TERMINATE_CURRENT_CONTRACT = AdMessageKey.of("de.metas.contracts.isNotAllowedToTerminateCurrentContract");
 
 	@Override
 	public void cancelContract(
