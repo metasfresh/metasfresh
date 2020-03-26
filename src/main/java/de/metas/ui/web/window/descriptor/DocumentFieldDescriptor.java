@@ -87,6 +87,7 @@ public final class DocumentFieldDescriptor
 	private final String parentLinkFieldName;
 
 	private final DocumentFieldWidgetType widgetType;
+	private final int fieldMaxLength;
 	private final boolean allowShowPassword; // in case widgetType is Password
 	private final ButtonFieldActionDescriptor buttonActionDescriptor;
 	private final BarcodeScannerType barcodeScannerType;
@@ -154,6 +155,7 @@ public final class DocumentFieldDescriptor
 		parentLinkFieldName = builder.parentLinkFieldName;
 
 		widgetType = builder.getWidgetType();
+		fieldMaxLength = builder.getFieldMaxLength();
 
 		widgetSize = builder.getWidgetSize();
 		allowShowPassword = builder.isAllowShowPassword();
@@ -242,6 +244,11 @@ public final class DocumentFieldDescriptor
 	public DocumentFieldWidgetType getWidgetType()
 	{
 		return widgetType;
+	}
+
+	public int getFieldMaxLength()
+	{
+		return fieldMaxLength;
 	}
 
 	public WidgetSize getWidgetSize()
@@ -399,6 +406,7 @@ public final class DocumentFieldDescriptor
 
 		private DocumentFieldWidgetType _widgetType;
 		private WidgetSize _widgetSize;
+		private int _fieldMaxLength;
 		private Class<?> _valueClass;
 		private boolean _allowShowPassword = false; // in case widgetType is Password
 		private BarcodeScannerType _barcodeScannerType;
@@ -630,6 +638,17 @@ public final class DocumentFieldDescriptor
 		public WidgetSize getWidgetSize()
 		{
 			return _widgetSize;
+		}
+
+		public Builder setFieldMaxLength(final int fieldMaxLength)
+		{
+			this._fieldMaxLength = fieldMaxLength;
+			return this;
+		}
+
+		public int getFieldMaxLength()
+		{
+			return _fieldMaxLength;
 		}
 
 		public Builder setAllowShowPassword(final boolean allowShowPassword)

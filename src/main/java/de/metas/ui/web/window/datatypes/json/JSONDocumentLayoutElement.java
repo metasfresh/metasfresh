@@ -104,6 +104,10 @@ public final class JSONDocumentLayoutElement
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private final Integer multilineTextLines;
 
+	@JsonProperty("maxLength")
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	private final Integer maxLength;
+
 	@JsonProperty("buttonProcessId")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private final ProcessId buttonProcessId;
@@ -160,6 +164,7 @@ public final class JSONDocumentLayoutElement
 		description = element.getDescription(adLanguage);
 
 		widgetType = JSONLayoutWidgetType.fromNullable(element.getWidgetType());
+		maxLength = element.getMaxLength() > 0 ? element.getMaxLength() : null;
 		allowShowPassword = element.isAllowShowPassword() ? Boolean.TRUE : null;
 
 		if (element.isMultilineText())
@@ -208,6 +213,7 @@ public final class JSONDocumentLayoutElement
 		allowShowPassword = null;
 		multilineText = null;
 		multilineTextLines = null;
+		maxLength = null;
 		buttonProcessId = null;
 		barcodeScannerType = null;
 

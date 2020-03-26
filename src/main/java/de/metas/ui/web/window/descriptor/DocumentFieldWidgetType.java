@@ -150,9 +150,14 @@ public enum DocumentFieldWidgetType
 		return TYPES_ALL_NUMERIC.contains(this);
 	}
 
+	public final boolean isStrictText()
+	{
+		return this == Text || this == LongText;
+	}
+
 	public final boolean isText()
 	{
-		return this == Text || this == LongText || this == URL || this == Password;
+		return isStrictText() || this == URL || this == Password;
 	}
 
 	public final boolean isButton()

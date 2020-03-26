@@ -434,6 +434,8 @@ import lombok.NonNull;
 				.build();
 
 		final String parentLinkFieldName = isParentLinkColumn ? entityBindings.getSqlParentLinkColumnName() : null;
+		final int fieldMaxLength = widgetType.isStrictText() && gridFieldVO.getFieldLength() > 0 ? gridFieldVO.getFieldLength() : 0;
+		
 		final DocumentFieldDescriptor.Builder fieldBuilder = DocumentFieldDescriptor.builder(sqlColumnName)
 				.setCaption(gridFieldVO.getHeaderTrls(), gridFieldVO.getHeader())
 				.setDescription(gridFieldVO.getDescriptionTrls(), gridFieldVO.getDescription())
@@ -442,6 +444,7 @@ import lombok.NonNull;
 				.setParentLink(isParentLinkColumn, parentLinkFieldName)
 				//
 				.setWidgetType(widgetType)
+				.setFieldMaxLength(fieldMaxLength)
 				.setButtonActionDescriptor(buttonAction)
 				.setLookupDescriptorProvider(lookupDescriptorProvider)
 				.setValueClass(fieldBinding.getValueClass())
