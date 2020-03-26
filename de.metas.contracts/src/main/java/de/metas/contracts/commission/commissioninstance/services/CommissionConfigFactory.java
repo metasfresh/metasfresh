@@ -29,6 +29,7 @@ import de.metas.contracts.IFlatrateDAO.TermsQuery;
 import de.metas.contracts.commission.Beneficiary;
 import de.metas.contracts.commission.CommissionConstants;
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionConfig;
+import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionSettingsLineId;
 import de.metas.contracts.commission.commissioninstance.businesslogic.algorithms.HierarchyConfig;
 import de.metas.contracts.commission.commissioninstance.businesslogic.algorithms.HierarchyConfig.HierarchyConfigBuilder;
 import de.metas.contracts.commission.commissioninstance.businesslogic.algorithms.HierarchyConfigId;
@@ -105,7 +106,7 @@ public class CommissionConfigFactory
 		// don't look up the terms via product; instead, get all commission-terms for the respective sales reps that are currently active
 		final TermsQuery termsQuery = TermsQuery.builder()
 				.billPartnerIds(allBPartnerIds)
-				.dateOrdered(contractRequest.getDate())
+				.dateOrdered(contractRequest.getCommissionDate())
 				.build();
 		final ImmutableList<I_C_Flatrate_Term> commissionTermRecords = flatrateDAO
 				.retrieveTerms(termsQuery)
@@ -210,7 +211,9 @@ public class CommissionConfigFactory
 									if (settingsLineMatches)
 									{
 										logger.debug("Settings line matches; -> commissionPercent={}", settingsLineRecord.getPercentOfBasePoints());
-										contractBuilder.commissionPercent(Percent.of(settingsLineRecord.getPercentOfBasePoints()));
+										contractBuilder
+												.commissionSettingsLineId(CommissionSettingsLineId.ofRepoId(settingsLineRecord.getC_CommissionSettingsLine_ID()))
+												.commissionPercent(Percent.of(settingsLineRecord.getPercentOfBasePoints()));
 										foundMatchingSettingsLine = true;
 										break;
 									}
@@ -302,7 +305,7 @@ public class CommissionConfigFactory
 		ProductId salesProductId;
 
 		@NonNull
-		LocalDate date;
+		LocalDate commissionDate;
 
 		@NonNull
 		Hierarchy commissionHierarchy;

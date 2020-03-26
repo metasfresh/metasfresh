@@ -82,6 +82,7 @@ import de.metas.contracts.model.X_C_Flatrate_Conditions;
 import de.metas.contracts.model.X_C_Flatrate_DataEntry;
 import de.metas.costing.ChargeId;
 import de.metas.document.engine.IDocument;
+import de.metas.i18n.AdMessageKey;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.logging.LogManager;
@@ -96,7 +97,7 @@ import lombok.NonNull;
 
 public class FlatrateDAO implements IFlatrateDAO
 {
-	private static final String MSP_DATA_ENTRY_ERROR_INVOICE_CAND_PROCESSED_3P = "DataEntry_Error_InvoiceCand_Processed";
+	private static final AdMessageKey MSP_DATA_ENTRY_ERROR_INVOICE_CAND_PROCESSED_3P = AdMessageKey.of("DataEntry_Error_InvoiceCand_Processed");
 	private static final Logger logger = LogManager.getLogger(FlatrateDAO.class);
 
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);

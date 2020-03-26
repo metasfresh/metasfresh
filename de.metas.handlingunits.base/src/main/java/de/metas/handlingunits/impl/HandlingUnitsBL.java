@@ -1,3 +1,25 @@
+/*
+ * #%L
+ * de.metas.handlingunits.base
+ * %%
+ * Copyright (C) 2020 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.handlingunits.impl;
 
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
@@ -10,6 +32,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
+import de.metas.util.GuavaCollectors;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -61,6 +84,8 @@ import de.metas.uom.IUOMDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+
+import javax.annotation.Nullable;
 
 public class HandlingUnitsBL implements IHandlingUnitsBL
 {
@@ -157,7 +182,7 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 		// Try to destroy given HU (or some of it's children)
 		final IMutable<Boolean> destroyed = new Mutable<>(false);
 		Services.get(IHUTrxBL.class).createHUContextProcessorExecutor(huContextInitial)
-				.run((IHUContextProcessor)huContext -> {
+				.run(huContext -> {
 					if (destroyIfEmptyStorage(huContext, huToDestroy))
 					{
 						destroyed.setValue(true);
@@ -237,7 +262,7 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 		// services
 		final IHUTrxBL huTrxBL = Services.get(IHUTrxBL.class);
 		huTrxBL.createHUContextProcessorExecutor(huContext)
-				.run((IHUContextProcessor)huContext1 -> {
+				.run(huContext1 -> {
 					for (final I_M_HU hu : hus)
 					{
 						if (isDestroyedRefreshFirst(hu))
@@ -254,12 +279,7 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	@Override
 	public boolean isDestroyed(final I_M_HU hu)
 	{
-		if (!hu.isActive())
-		{
-			return true;
-		}
-
-		return false;
+		return !hu.isActive();
 	}
 
 	@Override
@@ -366,7 +386,7 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 		return isTransportUnit(hu, strict);
 	}
 
-	private final boolean isTransportUnit(final I_M_HU hu, final boolean strict)
+	private boolean isTransportUnit(final I_M_HU hu, final boolean strict)
 	{
 		if (hu == null)
 		{
@@ -393,14 +413,10 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 		}
 
 		// We can consider Virtual HUs as a substitute for TUs
-		if (isVirtual(hu))
-		{
-			return true;
-		}
-
-		return false;
+		return isVirtual(hu);
 	}
 
+	@Nullable
 	@Override
 	public String getHU_UnitType(@NonNull final I_M_HU_PI pi)
 	{
@@ -410,10 +426,10 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 			return null;
 		}
 
-		final String huUnitType = piVersion.getHU_UnitType();
-		return huUnitType;
+		return piVersion.getHU_UnitType();
 	}
 
+	@Nullable
 	@Override
 	public String getHU_UnitType(@NonNull final I_M_HU hu)
 	{
@@ -423,8 +439,7 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 			return null;
 		}
 
-		final String huUnitType = piVersion.getHU_UnitType();
-		return huUnitType;
+		return piVersion.getHU_UnitType();
 	}
 
 	@Override
@@ -460,6 +475,7 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 		}
 
 		final String parentItemType = getItemType(parentItem);
+		//noinspection RedundantIfStatement
 		if (!X_M_HU_PI_Item.ITEMTYPE_Material.equals(parentItemType))
 		{
 			return false;
@@ -516,8 +532,7 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 		Check.assumeNotNull(hu, "hu not null");
 
 		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
-		final boolean topLevel = handlingUnitsDAO.retrieveParentItem(hu) == null;
-		return topLevel;
+		return handlingUnitsDAO.retrieveParentItem(hu) == null;
 	}
 
 	@Override
@@ -544,6 +559,20 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 				.includeAll(false)
 				.build();
 		return getTopLevelHUs(query).get(0);
+	}
+
+	@Override
+	public ImmutableSet<HuId> getTopLevelHUs(final @NonNull Collection<HuId> huIds)
+	{
+		final List<I_M_HU> hus = getByIds(huIds);
+		final TopLevelHusQuery query = TopLevelHusQuery.builder()
+				.hus(ImmutableList.copyOf(hus))
+				.includeAll(false)
+				.build();
+
+		return getTopLevelHUs(query).stream()
+				.map(hu -> HuId.ofRepoId(hu.getM_HU_ID()))
+				.collect(GuavaCollectors.toImmutableSet());
 	}
 
 	@Override
@@ -591,12 +620,14 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 		}
 		else if (isTransportUnit(hu))
 		{
+			@SuppressWarnings("UnnecessaryLocalVariable")
 			final I_M_HU tuHU = hu;
 			final I_M_HU luHU = getLoadingUnitHU(tuHU);
 			return LUTUCUPair.ofTU(tuHU, luHU);
 		}
 		else // virtual or aggregate
 		{
+			@SuppressWarnings("UnnecessaryLocalVariable")
 			final I_M_HU vhu = hu;
 			final I_M_HU tuHU = getTransportUnitHU(vhu);
 			final I_M_HU luHU = tuHU != null ? getLoadingUnitHU(tuHU) : null;
@@ -605,7 +636,7 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	}
 
 	@Override
-	public I_M_HU getLoadingUnitHU(final I_M_HU hu)
+	public @Nullable I_M_HU getLoadingUnitHU(final I_M_HU hu)
 	{
 		Check.assumeNotNull(hu, "hu not null");
 
@@ -707,6 +738,7 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 		return X_M_HU_Item.ITEMTYPE_HUAggregate.equals(parentItem.getItemType());
 	}
 
+	@Nullable
 	@Override
 	public I_M_HU_PI getPI(final I_M_HU hu)
 	{
@@ -721,6 +753,7 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 		return Services.get(IHandlingUnitsDAO.class).retrievePIVersionById(piVersionId);
 	}
 
+	@Nullable
 	@Override
 	public I_M_HU_PI_Item getPIItem(final I_M_HU_Item huItem)
 	{
@@ -729,9 +762,9 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	}
 
 	@Override
-	public HuPackingInstructionsVersionId getEffectivePIVersionId(final I_M_HU hu)
+	public @Nullable HuPackingInstructionsVersionId getEffectivePIVersionId(final I_M_HU hu)
 	{
-		I_M_HU_PI_Version piVersion = getEffectivePIVersion(hu);
+		final I_M_HU_PI_Version piVersion = getEffectivePIVersion(hu);
 		if (piVersion == null)
 		{
 			return null; // this is the case while the aggregate HU is still "under construction" by the HUBuilder and LUTU producer.
@@ -765,7 +798,7 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	}
 
 	@Override
-	public I_M_HU_PI getEffectivePI(final I_M_HU hu)
+	public @Nullable I_M_HU_PI getEffectivePI(final I_M_HU hu)
 	{
 		if (!isAggregateHU(hu))
 		{
@@ -779,8 +812,7 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 			return null; // this is the case while the aggregate HU is still "under construction" by the HUBuilder and LUTU producer.
 		}
 
-		final I_M_HU_PI included_HU_PI = parentPIItem.getIncluded_HU_PI();
-		return included_HU_PI;
+		return parentPIItem.getIncluded_HU_PI();
 	}
 
 	@Override
@@ -808,7 +840,7 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 		final List<I_M_HU> allVHUs = new ArrayList<>();
 		for (final I_M_HU hu : getByIds(huIds))
 		{
-			List<I_M_HU> vhus = getVHUs(hu);
+			final List<I_M_HU> vhus = getVHUs(hu);
 			allVHUs.addAll(vhus);
 		}
 

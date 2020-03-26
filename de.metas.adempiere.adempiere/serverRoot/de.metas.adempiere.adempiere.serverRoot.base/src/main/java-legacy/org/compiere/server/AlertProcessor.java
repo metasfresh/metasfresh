@@ -41,7 +41,7 @@ import org.compiere.util.TimeUtil;
 import org.compiere.util.ValueNamePair;
 import org.springframework.core.io.FileSystemResource;
 
-import com.google.common.base.Predicates;
+import java.util.Objects;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.event.Topic;
@@ -264,7 +264,7 @@ public class AlertProcessor extends AdempiereServer
 
 		final INotificationBL userNotificationsService = Services.get(INotificationBL.class);
 		userIds.stream()
-				.filter(Predicates.notNull())
+				.filter(Objects::nonNull)
 				.map(userId -> UserNotificationRequest.builder()
 						.topic(USER_NOTIFICATIONS_TOPIC)
 						.recipientUserId(userId)

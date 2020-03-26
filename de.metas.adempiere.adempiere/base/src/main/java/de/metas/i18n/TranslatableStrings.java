@@ -20,7 +20,7 @@ import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
 
-import com.google.common.base.Predicates;
+import java.util.Objects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
@@ -69,7 +69,7 @@ public class TranslatableStrings
 		final List<ITranslatableString> trlsList = Stream.of(trls)
 				.flatMap(TranslatableStrings::explodeCollections)
 				.map(TranslatableStrings::toTranslatableStringOrNull)
-				.filter(Predicates.notNull()) // skip nulls
+				.filter(Objects::nonNull) // skip nulls
 				.collect(ImmutableList.toImmutableList());
 
 		return joinList(joiningString, trlsList);

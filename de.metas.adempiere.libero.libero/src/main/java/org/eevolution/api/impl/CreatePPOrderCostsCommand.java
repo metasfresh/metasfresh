@@ -23,7 +23,7 @@ import org.eevolution.costing.OrderBOMCostCalculatorRepository;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
 
-import com.google.common.base.Predicates;
+import java.util.Objects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
@@ -233,7 +233,7 @@ final class CreatePPOrderCostsCommand
 				.getActivities()
 				.stream()
 				.map(this::createCostSegmentForOrderActivityOrNull)
-				.filter(Predicates.notNull())
+				.filter(Objects::nonNull)
 				.collect(ImmutableSet.toImmutableSet());
 	}
 

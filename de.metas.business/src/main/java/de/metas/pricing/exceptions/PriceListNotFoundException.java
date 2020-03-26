@@ -2,6 +2,7 @@ package de.metas.pricing.exceptions;
 
 import org.adempiere.exceptions.AdempiereException;
 
+import de.metas.i18n.AdMessageKey;
 import de.metas.lang.SOTrx;
 
 /*
@@ -36,15 +37,15 @@ public class PriceListNotFoundException extends AdempiereException
 {
 	private static final long serialVersionUID = -6763638806735067636L;
 
-	private static final String MSG_NO_PO_PRICELIST_FOUND = "NoPOPriceListFound";
-	private static final String MSG_NO_SO_PRICELIST_FOUND = "NoSOPriceListFound";
+	private static final AdMessageKey MSG_NO_PO_PRICELIST_FOUND = AdMessageKey.of("NoPOPriceListFound");
+	private static final AdMessageKey MSG_NO_SO_PRICELIST_FOUND = AdMessageKey.of("NoSOPriceListFound");
 
 	public PriceListNotFoundException(final String pricingSystemName, final SOTrx soTrx)
 	{
 		super(getADMessage(soTrx), new Object[] { pricingSystemName });
 	}
 
-	private static final String getADMessage(final SOTrx soTrx)
+	private static final AdMessageKey getADMessage(final SOTrx soTrx)
 	{
 		if (soTrx == null)
 		{

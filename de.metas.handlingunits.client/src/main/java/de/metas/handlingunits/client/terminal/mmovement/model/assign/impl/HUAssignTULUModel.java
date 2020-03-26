@@ -51,6 +51,7 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
+import de.metas.i18n.AdMessageKey;
 import de.metas.util.Check;
 
 /**
@@ -60,12 +61,12 @@ import de.metas.util.Check;
  */
 public class HUAssignTULUModel extends AbstractLTCUModel
 {
-	private static final String ERR_SELECT_ONLY_TUs = "SelectOnlyTUs";
+	private static final AdMessageKey ERR_SELECT_ONLY_TUs = AdMessageKey.of("SelectOnlyTUs");
 
-	private static final String ERR_TU_PARTNER_MATCH = "TUPartnerMatch";
-	private static final String ERR_TU_LOCATION_MATCH = "TULocationMatch";
-	private static final String ERR_TU_LOCATOR_MATCH = "TULocatorMatch";
-	private static final String ERR_TU_HUSTATUS_MATCH = "TUHUStatusMatch";
+	private static final AdMessageKey ERR_TU_PARTNER_MATCH = AdMessageKey.of("TUPartnerMatch");
+	private static final AdMessageKey ERR_TU_LOCATION_MATCH = AdMessageKey.of("TULocationMatch");
+	private static final AdMessageKey ERR_TU_LOCATOR_MATCH = AdMessageKey.of("TULocatorMatch");
+	private static final AdMessageKey ERR_TU_HUSTATUS_MATCH = AdMessageKey.of("TUHUStatusMatch");
 
 	//
 	// Parameters

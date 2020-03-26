@@ -11,7 +11,7 @@ import org.springframework.messaging.MessageHeaders;
 import org.springframework.messaging.MessagingException;
 import org.springframework.util.MultiValueMap;
 
-import com.google.common.base.Predicates;
+import java.util.Objects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
@@ -130,7 +130,7 @@ class InboundEMailMessageHandler implements MessageHandler
 		{
 			return values.stream()
 					.map(v -> convertValueToJson(v))
-					.filter(Predicates.notNull())
+					.filter(Objects::nonNull)
 					.collect(ImmutableList.toImmutableList());
 		}
 	}

@@ -45,7 +45,7 @@ import org.compiere.minigrid.IDColumn;
 import org.compiere.util.KeyNamePair;
 import org.compiere.util.TimeUtil;
 
-import com.google.common.base.Predicates;
+import java.util.Objects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ListMultimap;
@@ -342,7 +342,7 @@ public class FreshPackingMd
 
 		return selectedRows.stream()
 				.map(TableRow::getShipmentScheduleId)
-				.filter(Predicates.notNull()) // shall not be needed
+				.filter(Objects::nonNull) // shall not be needed
 				.collect(ImmutableSet.toImmutableSet());
 	}
 

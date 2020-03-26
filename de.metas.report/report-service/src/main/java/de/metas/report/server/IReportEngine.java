@@ -1,7 +1,5 @@
 package de.metas.report.server;
 
-import java.io.OutputStream;
-
 /*
  * #%L
  * de.metas.report.jasper.server.base
@@ -26,7 +24,5 @@ import java.io.OutputStream;
 
 public interface IReportEngine
 {
-
-	void report(final ReportContext reportContext, OutputStream out);
-
+	ReportResult report(final ReportContext reportContext);
 }

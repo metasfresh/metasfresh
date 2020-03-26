@@ -10,6 +10,7 @@ import org.compiere.model.I_AD_User;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.Language;
@@ -47,8 +48,7 @@ import lombok.NonNull;
 @Component
 public class AD_User
 {
-
-	private final static String MRG_MKTG_Campaign_NewsletterGroup_Missing_For_Org = "MKTG_Campaign_NewsletterGroup_Missing_For_Org";
+	private final static AdMessageKey MRG_MKTG_Campaign_NewsletterGroup_Missing_For_Org = AdMessageKey.of("MKTG_Campaign_NewsletterGroup_Missing_For_Org");
 
 	private final CampaignRepository campaignRepository;
 	private final CampaignService campaignService;

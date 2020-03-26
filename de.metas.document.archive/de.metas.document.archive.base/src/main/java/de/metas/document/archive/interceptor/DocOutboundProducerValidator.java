@@ -44,18 +44,16 @@ import lombok.NonNull;
 		final I_C_Doc_Outbound_Config config = getC_Doc_Outbound_Config();
 		final int adClientId = config.getAD_Client_ID();
 
-		final I_AD_Client client;
 		if (adClientId > 0)
 		{
-			client = Services.get(IClientDAO.class).getById(adClientId);
+			final I_AD_Client client = Services.get(IClientDAO.class).getById(adClientId);
+			modelValidationEngine.addModelValidator(this, client);
 		}
 		else
 		{
 			// register for all clients
-			client = null;
+			modelValidationEngine.addModelValidator(this);
 		}
-
-		modelValidationEngine.addModelValidator(this, client);
 	}
 
 	// NOTE: keep in sync with initialize method

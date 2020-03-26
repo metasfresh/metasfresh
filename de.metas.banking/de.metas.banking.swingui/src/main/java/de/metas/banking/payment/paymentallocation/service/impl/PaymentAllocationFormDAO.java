@@ -291,7 +291,7 @@ public class PaymentAllocationFormDAO implements IPaymentAllocationFormDAO
 		BigDecimal openAmt = rs.getBigDecimal("conv_open");
 		if (openAmt == null)
 		{
-			openAmt = Env.ZERO;
+			openAmt = BigDecimal.ZERO;
 		}
 
 		final BigDecimal multiplierAP = rs.getBigDecimal("multiplierap"); // Vendor=-1, Customer=+1
@@ -312,7 +312,7 @@ public class PaymentAllocationFormDAO implements IPaymentAllocationFormDAO
 		BigDecimal discount = rs.getBigDecimal("discount");
 		if (discount == null)
 		{
-			discount = Env.ZERO;
+			discount = BigDecimal.ZERO;
 		}
 
 		// NOTE: because this takes some time to calculate and it's not always needed, we use a supplier to calculate the value only if needed.
@@ -456,7 +456,7 @@ public class PaymentAllocationFormDAO implements IPaymentAllocationFormDAO
 		BigDecimal discount = rs.getBigDecimal("discount");
 		if (discount == null)
 		{
-			discount = Env.ZERO;
+			discount = BigDecimal.ZERO;
 		}
 
 		return InvoiceCandidateRow.builder()

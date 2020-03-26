@@ -30,6 +30,7 @@ import org.adempiere.mm.attributes.AttributeListValue;
 import org.adempiere.mm.attributes.api.IAttributesBL;
 import org.compiere.util.Env;
 
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.lang.SOTrx;
 import de.metas.util.Services;
@@ -41,10 +42,10 @@ public class AttributeRestrictedException extends AdempiereException
 	 */
 	private static final long serialVersionUID = 7812550089813860111L;
 
-	public static final String MSG = "de.metas.swat.Attribute.attributeRestricted";
+	private static final AdMessageKey MSG = AdMessageKey.of("de.metas.swat.Attribute.attributeRestricted");
 
-	public static final String MSG_SOTransaction = "de.metas.swat.SOTrx";
-	public static final String MSG_POTransaction = "de.metas.swat.POTrx";
+	private static final AdMessageKey MSG_SOTransaction = AdMessageKey.of("de.metas.swat.SOTrx");
+	private static final AdMessageKey MSG_POTransaction = AdMessageKey.of("de.metas.swat.POTrx");
 
 	/**
 	 * 

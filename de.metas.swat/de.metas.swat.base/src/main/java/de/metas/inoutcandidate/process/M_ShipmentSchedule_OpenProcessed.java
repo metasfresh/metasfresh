@@ -10,6 +10,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.apache.commons.collections4.IteratorUtils;
 import org.compiere.util.TrxRunnable;
 
+import de.metas.i18n.AdMessageKey;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.process.IProcessPrecondition;
@@ -47,9 +48,8 @@ public class M_ShipmentSchedule_OpenProcessed extends JavaProcess implements IPr
 	private final transient IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final transient IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
 
-	private static final String MSG_SHIPMENT_SCHEDULES_ALL_NOT_PROCESSED = "M_ShipmentSchedule_OpenProcessed.ShipmentSchedulesAllNotProcessed";
-
-	private static final String MSG_SHIPMENT_SCHEDULES_SKIP_OPEN = "M_ShipmentSchedule_OpenProcessed.SkipOpen_1P";
+	private static final AdMessageKey MSG_SHIPMENT_SCHEDULES_ALL_NOT_PROCESSED = AdMessageKey.of("M_ShipmentSchedule_OpenProcessed.ShipmentSchedulesAllNotProcessed");
+	private static final AdMessageKey MSG_SHIPMENT_SCHEDULES_SKIP_OPEN = AdMessageKey.of("M_ShipmentSchedule_OpenProcessed.SkipOpen_1P");
 
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(@NonNull final IProcessPreconditionsContext context)
@@ -108,14 +108,9 @@ public class M_ShipmentSchedule_OpenProcessed extends JavaProcess implements IPr
 	private void openInTrx(final I_M_ShipmentSchedule shipmentSchedule)
 	{
 		Services.get(ITrxManager.class)
-				.runInNewTrx(new TrxRunnable()
-				{
-					@Override
-					public void run(String localTrxName) throws Exception
-					{
-						InterfaceWrapperHelper.setThreadInheritedTrxName(shipmentSchedule);
-						shipmentScheduleBL.openShipmentSchedule(shipmentSchedule);
-					}
+				.runInNewTrx((TrxRunnable)localTrxName -> {
+					InterfaceWrapperHelper.setThreadInheritedTrxName(shipmentSchedule);
+					shipmentScheduleBL.openShipmentSchedule(shipmentSchedule);
 				});
 	}
 

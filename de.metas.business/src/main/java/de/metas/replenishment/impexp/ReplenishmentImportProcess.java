@@ -12,6 +12,7 @@ import org.compiere.model.I_I_Replenish;
 import org.compiere.model.I_M_Replenish;
 import org.compiere.model.X_I_Replenish;
 
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.impexp.processing.ImportRecordsSelection;
@@ -43,8 +44,7 @@ import lombok.NonNull;
 
 public class ReplenishmentImportProcess extends SimpleImportProcessTemplate<I_I_Replenish>
 {
-
-	private static final String MSG_NoValidRecord = "de.metas.replenishment.impexp.ReplenishmentImportProcess.RecordNotValid";
+	private static final AdMessageKey MSG_NoValidRecord = AdMessageKey.of("de.metas.replenishment.impexp.ReplenishmentImportProcess.RecordNotValid");
 
 	@Override
 	public Class<I_I_Replenish> getImportModelClass()

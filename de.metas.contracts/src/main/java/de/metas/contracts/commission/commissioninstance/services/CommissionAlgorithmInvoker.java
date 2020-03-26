@@ -13,8 +13,8 @@ import de.metas.contracts.commission.commissioninstance.businesslogic.Commission
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionType;
 import de.metas.contracts.commission.commissioninstance.businesslogic.CreateCommissionSharesRequest;
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionInstance.CommissionInstanceBuilder;
-import de.metas.contracts.commission.commissioninstance.businesslogic.sales.CommissionTriggerChange;
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.SalesCommissionShare;
+import de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.CommissionTriggerChange;
 import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
 
@@ -69,7 +69,7 @@ public class CommissionAlgorithmInvoker
 			}
 			return result.build();
 		}
-		catch (Exception e)
+		catch (final Exception e)
 		{
 			throw AdempiereException.wrapIfNeeded(e).setParameter("request", request); // augment&rethrow
 		}

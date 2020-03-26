@@ -1,19 +1,29 @@
 package de.metas.banking.service;
 
-import com.google.common.collect.ImmutableSet;
-import de.metas.banking.interfaces.I_C_BankStatementLine_Ref;
-import de.metas.banking.model.BankStatementId;
-import de.metas.banking.model.IBankStatementLineOrRef;
-import de.metas.payment.PaymentId;
-import de.metas.util.ISingletonService;
-import lombok.NonNull;
+import java.time.LocalDate;
+import java.util.Collection;
+import java.util.Date;
+import java.util.List;
+import java.util.Optional;
+import java.util.Properties;
+import java.util.Set;
+
 import org.compiere.model.I_C_BankStatement;
 import org.compiere.model.I_C_BankStatementLine;
 import org.compiere.model.I_C_Payment;
 
-import java.util.Date;
-import java.util.List;
-import java.util.Properties;
+import com.google.common.collect.ImmutableSet;
+
+import de.metas.banking.BankStatementId;
+import de.metas.banking.BankStatementLineId;
+import de.metas.banking.BankStatementLineRefId;
+import de.metas.banking.BankStatementLineReference;
+import de.metas.banking.BankStatementLineReferenceList;
+import de.metas.banking.api.BankAccountId;
+import de.metas.document.engine.DocStatus;
+import de.metas.payment.PaymentId;
+import de.metas.util.ISingletonService;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -39,39 +49,37 @@ import java.util.Properties;
 
 public interface IBankStatementDAO extends ISingletonService
 {
-	<T extends I_C_BankStatementLine> List<T> retrieveLines(I_C_BankStatement bankStatement, Class<T> clazz);
+	List<I_C_BankStatementLine> getLinesByBankStatementId(@NonNull BankStatementId bankStatementId);
 
-	List<I_C_BankStatementLine_Ref> retrieveLineReferences(I_C_BankStatementLine bankStatementLine);
+	BankStatementLineReferenceList getLineReferences(BankStatementLineId bankStatementLineId);
+
+	BankStatementLineReferenceList getLineReferences(@NonNull Collection<BankStatementLineId> bankStatementLineIds);
+
+	void deleteReferencesByIds(@NonNull Collection<BankStatementLineRefId> lineRefIds);
 
 	/**
-	 * Checks if given payment is present on any {@link I_C_BankStatementLine} or {@link I_C_BankStatementLine_Ref}.
+	 * Checks if given payment is present on any line or line reference.
 	 * <p>
 	 * This method is NOT checking the {@link I_C_Payment#isReconciled()} flag but instead is doing a lookup in bank statement lines.
 	 *
 	 * @return true if given payment is present on any bank statement line or reference.
 	 */
-	boolean isPaymentOnBankStatement(I_C_Payment payment);
+	boolean isPaymentOnBankStatement(PaymentId paymentId);
 
 	/**
 	 * Retrieve all the BankStatement documents that are marked as posted but do not actually have fact accounts.
 	 * <p>
 	 * Exclude the entries that have trxAmt = 0. These entries will produce 0 in posting
 	 */
-	List<I_C_BankStatement> retrievePostedWithoutFactAcct(Properties ctx, Date startTime);
+	List<I_C_BankStatement> getPostedWithoutFactAcct(Properties ctx, Date startTime);
 
-	/**
-	 * @deprecated Please use {@link #getById(BankStatementId)}
-	 */
-	@Deprecated
-	de.metas.banking.model.I_C_BankStatement getById(int id);
+	I_C_BankStatement getById(@NonNull BankStatementId bankStatementId);
 
-	de.metas.banking.model.I_C_BankStatement getById(@NonNull BankStatementId bankStatementId);
+	Optional<BankStatementId> getFirstIdMatching(@NonNull BankAccountId orgBankAccountId, @NonNull LocalDate statementDate, @NonNull String name, @NonNull DocStatus docStatus);
 
-	/**
-	 * @deprecated please use the repoIdAware version
-	 */
-	@Deprecated
-	de.metas.banking.model.I_C_BankStatementLine getLineById(int lineId);
+	I_C_BankStatementLine getLineById(BankStatementLineId lineId);
+
+	List<I_C_BankStatementLine> getLinesByIds(@NonNull Set<BankStatementLineId> lineIds);
 
 	@NonNull
 	ImmutableSet<PaymentId> getLinesPaymentIds(@NonNull final BankStatementId bankStatementId);
@@ -80,5 +88,13 @@ public interface IBankStatementDAO extends ISingletonService
 
 	void save(@NonNull final I_C_BankStatementLine bankStatementLine);
 
-	void save(@NonNull final I_C_BankStatementLine_Ref lineOrRef);
+	BankStatementId createBankStatement(@NonNull BankStatementCreateRequest request);
+
+	BankStatementLineId createBankStatementLine(@NonNull BankStatementLineCreateRequest request);
+
+	BankStatementLineReference createBankStatementLineRef(@NonNull BankStatementLineRefCreateRequest request);
+
+	void updateBankStatementLinesProcessedFlag(@NonNull BankStatementId bankStatementId, boolean processed);
+
+	int getLastLineNo(@NonNull BankStatementId bankStatementId);
 }

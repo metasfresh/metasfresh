@@ -228,10 +228,10 @@ public class DD_Order_MovementBuilder implements IDDOrderMovementBuilder
 		return addMovementLine(ddOrderLineOrAlt, MovementType.Direct, movementQtySrc, movementQtyUOM);
 	}
 
-	private static enum MovementType
+	private enum MovementType
 	{
 		ShipToTransit, ReceiveFromTransit, Direct,
-	};
+	}
 
 	private I_M_MovementLine addMovementLine(final I_DD_OrderLine_Or_Alternative fromDDOrderLineOrAlt,
 			final MovementType movementType,
@@ -261,8 +261,7 @@ public class DD_Order_MovementBuilder implements IDDOrderMovementBuilder
 		{
 			//
 			// Shall not happen; developer error
-			throw new AdempiereException("Invalid I_DD_OrderLine_Or_Alternative implementation passed; Expected {} or {}, but was {}",
-					new Object[] { I_DD_OrderLine.class, I_DD_OrderLine_Alternative.class, fromDDOrderLineOrAlt });
+			throw new AdempiereException("Invalid I_DD_OrderLine_Or_Alternative implementation passed; Expected " + I_DD_OrderLine.class + " or " + I_DD_OrderLine_Alternative.COLUMNNAME_AD_Client_ID + ", but was " + fromDDOrderLineOrAlt);
 		}
 
 		movementLine.setDD_OrderLine(ddOrderLine);

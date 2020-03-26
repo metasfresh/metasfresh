@@ -8,8 +8,8 @@ import java.math.BigDecimal;
 
 import org.adempiere.test.AdempiereTestHelper;
 import org.assertj.core.api.Condition;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import de.metas.payment.camt054_001_06.BatchInformation2;
 import de.metas.payment.camt054_001_06.EntryDetails7;
@@ -46,7 +46,7 @@ public class ESRDataImporterCamt54V06Tests
 			t -> t.getErrorMsgs().isEmpty(),
 			"ESRTransaction has no error messages");
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
@@ -232,7 +232,7 @@ public class ESRDataImporterCamt54V06Tests
 	public void testMissingEsrReference()
 	{
 		final ESRStatement importData = performWithMissingOrAmbigousEsrReference("/camt54_one_ESR_reference_missing.xml");
-		
+
 		assertThat(importData.getTransactions())
 				.as("those nine transactions that have a reference set, also have a non-empty string")
 				.filteredOn(t -> t.getEsrReferenceNumber() != null)
@@ -272,15 +272,14 @@ public class ESRDataImporterCamt54V06Tests
 		return importData;
 	}
 
-	
 	/**
 	 * User this method to quickly run with customer-provided files which we can't share.<br>
 	 * Goal: create a "generic" and sharable test case.
 	 */
-//	@Test
+	// @Test
 	public void otherTest()
 	{
-		
+
 		final InputStream inputStream = getClass().getResourceAsStream("/camt054.xml");
 		assertThat(inputStream).isNotNull();
 
