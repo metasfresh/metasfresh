@@ -1285,7 +1285,7 @@ public class GridField
 	 */
 	public int getFieldLength()
 	{
-		return m_vo.FieldLength;
+		return m_vo.getFieldLength();
 	}
 
 	/**
