@@ -147,18 +147,13 @@ public class ESRTestBase
 		// Make sure esr validator interceptor is registered
 		Services.registerService(IESRImportBL.class, esrImportBL);
 		final ESR_Main_Validator esrValidator = new ESR_Main_Validator();
-		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(esrValidator, client);
+		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(esrValidator);
 
 		//
 		// Prepare needed sequences
 		createDocumentSequence(I_C_BPartner.Table_Name);
 
 		init();
-	}
-
-	public I_AD_Client getAD_Client()
-	{
-		return client;
 	}
 
 	public I_AD_Org getAD_Org()
