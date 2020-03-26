@@ -13,6 +13,7 @@
  *****************************************************************************/
 package de.metas.impexp.excel;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
@@ -78,28 +79,39 @@ public class ArrayExcelExporter extends AbstractExcelExporter
 	}
 
 	@Override
-	public String getHeaderName(final int col)
+	public List<CellValue> getHeaderNames()
 	{
-		String headerName;
+		final List<String> headerNames = new ArrayList<>();
 		if (m_columnHeaders == null || m_columnHeaders.isEmpty())
 		{
-			final Object headerNameObj = m_data.get(0).get(col);
-			headerName = headerNameObj != null ? headerNameObj.toString() : null;
+			// use the next data row; can be the first, but if we add another sheet, it can also be another one.
+			stepToNextRow();
+			for (Object headerNameObj : currentRow)
+			{
+				headerNames.add(headerNameObj != null ? headerNameObj.toString() : null);
+			}
 		}
 		else
 		{
-			headerName = m_columnHeaders.get(col);
+			headerNames.addAll(m_columnHeaders);
 		}
 
-		if (translateHeaders)
+		final ArrayList<CellValue> result = new ArrayList<>();
+		final String adLanguage = getLanguage().getAD_Language();
+		for (final String rawHeaderName : headerNames)
 		{
-			final String adLanguage = getLanguage().getAD_Language();
-			return msgBL.translatable(headerName).translate(adLanguage);
+			final String headerName;
+			if (translateHeaders)
+			{
+				headerName = msgBL.translatable(rawHeaderName).translate(adLanguage);
+			}
+			else
+			{
+				headerName = rawHeaderName;
+			}
+			result.add(CellValues.toCellValue(headerName));
 		}
-		else
-		{
-			return headerName;
-		}
+		return result;
 	}
 
 	@Override
@@ -129,9 +141,14 @@ public class ArrayExcelExporter extends AbstractExcelExporter
 	@Override
 	protected List<CellValue> getNextRow()
 	{
+		stepToNextRow();
+		return CellValues.toCellValues(currentRow);
+	}
+
+	private void stepToNextRow()
+	{
 		currentRow = m_data.get(currentRowNumber);
 		currentRowNumber++;
-		return CellValues.toCellValues(currentRow);
 	}
 
 	@Override

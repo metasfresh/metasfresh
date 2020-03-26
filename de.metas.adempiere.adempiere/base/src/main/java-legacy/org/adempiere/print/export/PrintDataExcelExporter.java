@@ -140,7 +140,17 @@ public class PrintDataExcelExporter
 	}
 
 	@Override
-	public String getHeaderName(final int col)
+	public List<CellValue> getHeaderNames()
+	{
+		final ArrayList<CellValue> result = new ArrayList<>();
+		for (int i = 0; i < getColumnCount(); i++)
+		{
+			result.add(CellValues.toCellValue(getHeaderName(i)));
+		}
+		return result;
+	}
+
+	private String getHeaderName(final int col)
 	{
 		return m_printFormat.getItem(col).getPrintName(getLanguage());
 	}

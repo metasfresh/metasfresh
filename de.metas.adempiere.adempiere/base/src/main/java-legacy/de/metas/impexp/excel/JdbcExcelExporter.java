@@ -66,7 +66,7 @@ public class JdbcExcelExporter
 	{
 		if (m_columnHeaders != null)
 		{
-			logger.debug("columnHeaders ware already set to the list {}; -> ignore given list {}", m_columnHeaders, header);
+			logger.debug("columnHeaders were already set to {}; -> ignore given list {}", m_columnHeaders, header);
 			return;
 		}
 		m_columnHeaders = header;
@@ -113,28 +113,39 @@ public class JdbcExcelExporter
 	}
 
 	@Override
-	public String getHeaderName(final int col)
+	public List<CellValue> getHeaderNames()
 	{
-		String headerName;
+		final List<String> headerNames = new ArrayList<>();
 		if (m_columnHeaders == null || m_columnHeaders.isEmpty())
 		{
-			final Object headerNameObj = getValue(col);
-			headerName = headerNameObj != null ? headerNameObj.toString() : null;
+			// use the next data row; can be the first, but if we add another sheet, it can also be another one.
+			final List<Object> currentRow = getNextRawDataRow();
+			for (Object headerNameObj : currentRow)
+			{
+				headerNames.add(headerNameObj != null ? headerNameObj.toString() : null);
+			}
 		}
 		else
 		{
-			headerName = m_columnHeaders.get(col);
+			headerNames.addAll(m_columnHeaders);
 		}
 
-		if (translateHeaders)
+		final ArrayList<CellValue> result = new ArrayList<>();
+		final String adLanguage = getLanguage().getAD_Language();
+		for (final String rawHeaderName : headerNames)
 		{
-			final String adLanguage = getLanguage().getAD_Language();
-			return msgBL.translatable(headerName).translate(adLanguage);
+			final String headerName;
+			if (translateHeaders)
+			{
+				headerName = msgBL.translatable(rawHeaderName).translate(adLanguage);
+			}
+			else
+			{
+				headerName = rawHeaderName;
+			}
+			result.add(CellValues.toCellValue(headerName));
 		}
-		else
-		{
-			return headerName;
-		}
+		return result;
 	}
 
 	private Object getValue(final int col)
@@ -176,26 +187,26 @@ public class JdbcExcelExporter
 	@Override
 	protected List<CellValue> getNextRow()
 	{
+		return CellValues.toCellValues(getNextRawDataRow());
+	}
+
+	private List<Object> getNextRawDataRow()
+	{
 		try
 		{
-			return getNextRow0();
+			final List<Object> row = new ArrayList<>();
+			for (int col = 1; col <= getColumnCount(); col++)
+			{
+				final Object o = m_resultSet.getObject(col);
+				row.add(o);
+			}
+			noDataAddedYet = false;
+			return row;
 		}
-		catch (SQLException e)
+		catch (final SQLException e)
 		{
 			throw DBException.wrapIfNeeded(e);
 		}
-	}
-
-	private List<CellValue> getNextRow0() throws SQLException
-	{
-		final List<CellValue> row = new ArrayList<>();
-		for (int col = 1; col <= getColumnCount(); col++)
-		{
-			final Object o = m_resultSet.getObject(col);
-			row.add(CellValues.toCellValue(o));
-		}
-		noDataAddedYet = false;
-		return row;
 	}
 
 	@Override

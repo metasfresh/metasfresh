@@ -62,16 +62,16 @@ public class ManualTest
 	public void init()
 	{
   		final CleverReachConfig cleverReachConfig = CleverReachConfig.builder()
-				.client_id("178998")
-				.login("tobias.schoeneberg@metasfresh.com")
-				.password("kK7drDkM")
+				.client_id("")
+				.login("")
+				.password("")
 				.platformId(PLATFORM_ID)
 				.build();
 		cleverReachClient = new CleverReachClient(cleverReachConfig);
 	}
 
 	@Test
-//	@Ignore
+	@Ignore
 	public void createUpdateDeleteCampagin()
 	{
 		// add one campaign

@@ -70,7 +70,8 @@ public class CellValues
 		}
 	}
 
-	public static ArrayList<CellValue> toCellValues(@NonNull final List<Object> row)
+	/** @return a list that could contain {@code null} values */
+	public static ArrayList<CellValue> toCellValues(@NonNull final List<? extends Object> row)
 	{
 		final ArrayList<CellValue> result = new ArrayList<>();
 		for (final Object value : row)
