@@ -11,6 +11,7 @@ import org.compiere.model.ModelValidator;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
 
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.BooleanWithReason;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
@@ -63,7 +64,7 @@ public class M_DiscountSchemaBreak
 {
 	private static final Logger logger = LogManager.getLogger(M_DiscountSchemaBreak.class);
 
-	private static final String MSG_UnderLimitPriceWithExplanation = "UnderLimitPriceWithExplanation";
+	private static final AdMessageKey MSG_UnderLimitPriceWithExplanation = AdMessageKey.of("UnderLimitPriceWithExplanation");
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
 	public void beforeSave(final I_M_DiscountSchemaBreak schemaBreak)

@@ -16,6 +16,7 @@ import de.metas.banking.payment.IPaySelectionDAO;
 import de.metas.banking.payment.IPaymentRequestBL;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.ICurrencyDAO;
+import de.metas.i18n.AdMessageKey;
 import de.metas.money.CurrencyId;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -25,7 +26,7 @@ public class C_PaySelectionLine
 {
 	public static final transient C_PaySelectionLine instance = new C_PaySelectionLine();
 
-	private static final String MSG_PaySelectionLine_Invoice_InvalidCurrency = "PaySelectionLine.Invoice.InvalidCurrency";
+	private static final AdMessageKey MSG_PaySelectionLine_Invoice_InvalidCurrency = AdMessageKey.of("PaySelectionLine.Invoice.InvalidCurrency");
 
 	private C_PaySelectionLine()
 	{

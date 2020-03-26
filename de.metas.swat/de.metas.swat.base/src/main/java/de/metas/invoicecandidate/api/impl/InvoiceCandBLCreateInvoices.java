@@ -35,6 +35,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 
@@ -62,7 +63,6 @@ import org.compiere.util.TrxRunnable2;
 import org.slf4j.Logger;
 import org.slf4j.MDC.MDCCloseable;
 
-import java.util.Objects;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.adempiere.model.I_C_InvoiceLine;
@@ -70,6 +70,8 @@ import de.metas.adempiere.model.I_C_Order;
 import de.metas.document.DocTypeId;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
+import de.metas.i18n.AdMessageId;
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IADMessageDAO;
 import de.metas.i18n.IMsgBL;
 import de.metas.invoice.IMatchInvBL;
@@ -104,8 +106,8 @@ import lombok.NonNull;
 
 public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 {
-	private static final String MSG_INVOICE_CAND_BL_PROCESSING_ERROR_0P = "InvoiceCandBL_Processing_Error";
-	private static final String MSG_INVOICE_CAND_BL_PROCESSING_ERROR_DESC_1P = "InvoiceCandBL_Processing_Error_Desc";
+	private static final AdMessageKey MSG_INVOICE_CAND_BL_PROCESSING_ERROR_0P = AdMessageKey.of("InvoiceCandBL_Processing_Error");
+	private static final AdMessageKey MSG_INVOICE_CAND_BL_PROCESSING_ERROR_DESC_1P = AdMessageKey.of("InvoiceCandBL_Processing_Error_Desc");
 
 	//
 	// Services
@@ -970,7 +972,9 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 				if (userId != USERINCHARGE_NA)
 				{
 					note = create(ctx, I_AD_Note.class, ITrx.TRXNAME_None);
-					note.setAD_Message_ID(msgDAO.retrieveIdByValue(ctx, MSG_INVOICE_CAND_BL_PROCESSING_ERROR_0P));
+					note.setAD_Message_ID(msgDAO.retrieveIdByValue(ctx, MSG_INVOICE_CAND_BL_PROCESSING_ERROR_0P)
+							.map(AdMessageId::getRepoId)
+							.orElse(-1));
 
 					note.setAD_User_ID(userId);
 

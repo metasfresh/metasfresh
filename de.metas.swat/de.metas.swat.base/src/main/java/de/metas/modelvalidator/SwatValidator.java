@@ -86,6 +86,7 @@ import de.metas.cache.model.IModelCacheService;
 import de.metas.cache.model.ITableCacheConfig;
 import de.metas.cache.model.ITableCacheConfig.TrxLevel;
 import de.metas.document.ICounterDocBL;
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IADMessageDAO;
 import de.metas.i18n.IMsgBL;
 import de.metas.inout.model.I_M_InOutLine;
@@ -115,7 +116,7 @@ import de.metas.util.Services;
  */
 public class SwatValidator implements ModelValidator
 {
-	private static final String MSG_ORG_ADEMPIERE_UTIL_CHECK_EXCEPTION_HEADER_MESSAGE = "org.adempiere.util.Check.ExceptionHeaderMessage";
+	private static final AdMessageKey MSG_ORG_ADEMPIERE_UTIL_CHECK_EXCEPTION_HEADER_MESSAGE = AdMessageKey.of("org.adempiere.util.Check.ExceptionHeaderMessage");
 
 	private static final String SYSCONFIG_ORG_ADEMPIERE_UTIL_CHECK_THROW_EXCEPTION = "org.adempiere.util.Check.ThrowException";
 	private static final String SYSCONFIG_C3P0 = "com.mchange.v2.c3p0.ComboPooledDataSource.";

@@ -1,5 +1,7 @@
 package de.metas.i18n.impl;
 
+import java.util.Optional;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -37,6 +39,8 @@ import org.compiere.model.X_AD_Message;
 import org.compiere.util.Env;
 
 import de.metas.cache.annotation.CacheCtx;
+import de.metas.i18n.AdMessageId;
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IADMessageDAO;
 import de.metas.util.Services;
 
@@ -44,63 +48,60 @@ public class ADMessageDAO implements IADMessageDAO
 {
 	@Override
 	@Cached(cacheName = I_AD_Message.Table_Name + "#by#" + I_AD_Message.COLUMNNAME_Value)
-	public I_AD_Message retrieveByValue(@CacheCtx final Properties ctx, final String value)
+	public Optional<I_AD_Message> retrieveByValue(@CacheCtx final Properties ctx, final AdMessageKey value)
 	{
 		final IQueryBuilder<I_AD_Message> queryBuilder = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_AD_Message.class, ctx, ITrx.TRXNAME_None);
 
 		final ICompositeQueryFilter<I_AD_Message> filters = queryBuilder.getCompositeFilter();
-		filters.addEqualsFilter(I_AD_Message.COLUMNNAME_Value, value);
+		filters.addEqualsFilter(I_AD_Message.COLUMNNAME_Value, value.toAD_Message());
 		filters.addOnlyActiveRecordsFilter();
 
-		return queryBuilder.create()
-				.firstOnly(I_AD_Message.class);
+		return Optional.ofNullable(queryBuilder.create()
+				.firstOnly(I_AD_Message.class));
 	}
 
 	@Override
-	public int retrieveIdByValue(@CacheCtx final Properties ctx, final String value)
+	public Optional<AdMessageId> retrieveIdByValue(final Properties ctx, final AdMessageKey value)
 	{
-		final I_AD_Message msg = retrieveByValue(ctx, value);
-		if (msg == null)
-			return 0;
-		return msg.getAD_Message_ID();
+		return retrieveByValue(ctx, value)
+				.map(message -> AdMessageId.ofRepoId(message.getAD_Message_ID()));
 
 	}
 
 	@Override
 	@Cached(cacheName = I_AD_Message.Table_Name + "#by#" + I_AD_Message.COLUMNNAME_AD_Message_ID)
-	public I_AD_Message retrieveById(@CacheCtx final Properties ctx, final int adMessageId)
+	public Optional<I_AD_Message> retrieveById(@CacheCtx final Properties ctx, final AdMessageId adMessageId)
 	{
-		if (adMessageId <= 0)
+		if (adMessageId == null)
 		{
 			return null;
 		}
 
-		return InterfaceWrapperHelper.create(ctx, adMessageId, I_AD_Message.class, ITrx.TRXNAME_None);
-	}
-	
-	@Override
-	public boolean isMessageExists(final String adMessage)
-	{
-		final int adMessageId = retrieveIdByValue(Env.getCtx(), adMessage);
-		return adMessageId > 0;
+		return Optional.ofNullable(InterfaceWrapperHelper.loadOutOfTrx(adMessageId, I_AD_Message.class));
 	}
 
 	@Override
-	public void createUpdateMessage(final String adMessageKey, final Consumer<I_AD_Message> adMessageUpdater)
+	public boolean isMessageExists(final AdMessageKey adMessage)
+	{
+		return retrieveIdByValue(Env.getCtx(), adMessage).isPresent();
+	}
+
+	@Override
+	public void createUpdateMessage(final AdMessageKey adMessageKey, final Consumer<I_AD_Message> adMessageUpdater)
 	{
 		try
 		{
 			I_AD_Message adMessage = Services.get(IQueryBL.class)
 					.createQueryBuilder(I_AD_Message.class)
-					.addEqualsFilter(I_AD_Message.COLUMNNAME_Value, adMessageKey)
+					.addEqualsFilter(I_AD_Message.COLUMNNAME_Value, adMessageKey.toAD_Message())
 					.create()
 					.firstOnly(I_AD_Message.class);
 
 			if (adMessage == null)
 			{
 				adMessage = InterfaceWrapperHelper.newInstance(I_AD_Message.class);
-				adMessage.setValue(adMessageKey);
+				adMessage.setValue(adMessageKey.toAD_Message());
 				adMessage.setMsgType(X_AD_Message.MSGTYPE_Information);
 				adMessage.setEntityType("U"); // User maintained
 			}

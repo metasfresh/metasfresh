@@ -69,6 +69,7 @@ import de.metas.bpartner.service.IBPartnerBL.RetrieveContactRequest.ContactType;
 import de.metas.bpartner.service.IBPartnerBL.RetrieveContactRequest.IfNotFound;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.document.IDocTypeDAO;
+import de.metas.i18n.AdMessageKey;
 import de.metas.inout.InOutId;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.IAggregationBL;
@@ -126,7 +127,7 @@ public final class AggregationEngine
 
 	private final transient IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 
-	private static final String ERR_INVOICE_CAND_PRICE_LIST_MISSING_2P = "InvoiceCand_PriceList_Missing";
+	private static final AdMessageKey ERR_INVOICE_CAND_PRICE_LIST_MISSING_2P = AdMessageKey.of("InvoiceCand_PriceList_Missing");
 
 	//
 	// Parameters
@@ -463,19 +464,25 @@ public final class AggregationEngine
 		return CoalesceUtil.coalesceSuppliers(
 				() -> {
 					if (dateInvoicedParam != null)
+					{
 						logger.debug("computeDateInvoiced - returning aggregator's dateInvoicedParam={} as dateInvoiced", dateInvoicedParam);
+					}
 					return dateInvoicedParam;
 				},
 				() -> {
 					final LocalDate result = TimeUtil.asLocalDate(ic.getPresetDateInvoiced());
 					if (result != null)
+					{
 						logger.debug("computeDateInvoiced - returning ic's presetDateInvoiced={} as dateInvoiced", result);
+					}
 					return result;
 				},
 				() -> {
 					final LocalDate result = TimeUtil.asLocalDate(ic.getDateInvoiced());
 					if (result != null)
+					{
 						logger.debug("computeDateInvoiced - returning ic's dateInvoiced={} as dateInvoiced", result);
+					}
 					return result;
 				},
 				() -> {
@@ -489,19 +496,25 @@ public final class AggregationEngine
 		return CoalesceUtil.coalesceSuppliers(
 				() -> {
 					if (dateAcctParam != null)
+					{
 						logger.debug("computeDateAcct - returning aggregator's dateAcctParam={} as dateAcct", dateAcctParam);
+					}
 					return dateAcctParam;
 				},
 				() -> {
 					final LocalDate result = TimeUtil.asLocalDate(ic.getPresetDateInvoiced());
 					if (result != null)
+					{
 						logger.debug("computeDateAcct - returning ic's presetDateInvoiced={} as dateAcct", result);
+					}
 					return result;
 				},
 				() -> {
 					final LocalDate result = TimeUtil.asLocalDate(ic.getDateAcct());
 					if (result != null)
+					{
 						logger.debug("computeDateAcct - returning ic's dateAcct={} as dateAcct", result);
+					}
 					return result;
 				},
 				() -> {

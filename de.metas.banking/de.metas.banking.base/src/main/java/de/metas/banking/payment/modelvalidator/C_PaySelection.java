@@ -41,6 +41,7 @@ import de.metas.banking.payment.IPaySelectionDAO;
 import de.metas.banking.service.IBankingBL;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.ICurrencyDAO;
+import de.metas.i18n.AdMessageKey;
 import de.metas.money.CurrencyId;
 import de.metas.util.Services;
 
@@ -49,7 +50,7 @@ public class C_PaySelection
 {
 	public static final transient C_PaySelection instance = new C_PaySelection();
 
-	private static final String MSG_PaySelection_CannotChangeBPBankAccount_InvalidCurrency = "PaySelection.CannotChangeBPBankAccount.InvalidCurrency";
+	private static final AdMessageKey MSG_PaySelection_CannotChangeBPBankAccount_InvalidCurrency = AdMessageKey.of("PaySelection.CannotChangeBPBankAccount.InvalidCurrency");
 
 	private C_PaySelection()
 	{

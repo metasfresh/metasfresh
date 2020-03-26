@@ -39,53 +39,53 @@ import lombok.NonNull;
 public class PlainMsgBL implements IMsgBL
 {
 	@Override
-	public String getMsg(final String adLanguage, final String message)
+	public String getMsg(final String adLanguage, @NonNull final AdMessageKey message)
 	{
-		return adLanguage + "_" + message;
+		return adLanguage + "_" + message.toAD_Message();
 	}
 
 	@Override
-	public String getMsg(final String adLanguage, final String message, final Object[] params)
+	public String getMsg(final String adLanguage, @NonNull final AdMessageKey message, final Object[] params)
 	{
-		return adLanguage + "_" + message + "_" + Arrays.toString(params);
+		return adLanguage + "_" + message.toAD_Message() + "_" + Arrays.toString(params);
 	}
 
 	@Override
-	public String getMsg(final String adLanguage, final String message, final List<Object> params)
+	public String getMsg(final String adLanguage, @NonNull final AdMessageKey message, final List<Object> params)
 	{
-		return adLanguage + "_" + message + "_" + params;
+		return adLanguage + "_" + message.toAD_Message() + "_" + params;
 	}
 
 	@Override
-	public String getMsg(final Properties ctx, final String adMessage)
+	public String getMsg(final Properties ctx, @NonNull final AdMessageKey adMessage)
 	{
-		return adMessage;
+		return adMessage.toAD_Message();
 	}
 
 	@Override
-	public String getMsg(final Properties ctx, final String adMessage, final boolean text)
+	public String getMsg(final Properties ctx, @NonNull final AdMessageKey adMessage, final boolean text)
 	{
-		return adMessage + "_" + (text ? "Text" : "Tooltip");
+		return adMessage.toAD_Message() + "_" + (text ? "Text" : "Tooltip");
 	}
 
 	@Override
-	public String getMsg(final Properties ctx, final String adMessage, final Object[] params)
+	public String getMsg(final Properties ctx, @NonNull final AdMessageKey adMessage, final Object[] params)
 	{
 		if (params == null || params.length == 0)
 		{
-			return adMessage;
+			return adMessage.toAD_Message();
 		}
 		return adMessage + "_" + Arrays.toString(params);
 	}
 
 	@Override
-	public String getMsg(final String adMessage, final List<Object> params)
+	public String getMsg(@NonNull final AdMessageKey adMessage, final List<Object> params)
 	{
 		if (params == null || params.isEmpty())
 		{
-			return adMessage;
+			return adMessage.toAD_Message();
 		}
-		return adMessage + "_" + params;
+		return adMessage.toAD_Message() + "_" + params;
 	}
 
 	@Override

@@ -1,5 +1,7 @@
 package de.metas.i18n;
 
+import java.util.Optional;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -13,15 +15,14 @@ package de.metas.i18n;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.Properties;
 import java.util.function.Consumer;
@@ -33,21 +34,14 @@ import de.metas.util.ISingletonService;
 
 public interface IADMessageDAO extends ISingletonService
 {
+	Optional<I_AD_Message> retrieveByValue(Properties ctx, AdMessageKey value);
 
-	/**
-	 * 
-	 * @param ctx
-	 * @param value
-	 * @return {@link I_AD_Message} or <code>null</code> if not found
-	 */
-	I_AD_Message retrieveByValue(Properties ctx, String value);
+	Optional<I_AD_Message> retrieveById(Properties ctx, AdMessageId adMessageId);
 
-	I_AD_Message retrieveById(Properties ctx, int adMessageId);
-	
-	default String retrieveValueById(final int adMessageId)
+	default Optional<AdMessageKey> retrieveValueById(final AdMessageId adMessageId)
 	{
-		final I_AD_Message adMessage = retrieveById(Env.getCtx(), adMessageId);
-		return adMessage != null ? adMessage.getValue() : null;
+		return retrieveById(Env.getCtx(), adMessageId)
+				.map(message -> AdMessageKey.of(message.getValue()));
 	}
 
 	/**
@@ -57,14 +51,14 @@ public interface IADMessageDAO extends ISingletonService
 	 * @param value AD_Message.Value
 	 * @return AD_Message_ID
 	 */
-	int retrieveIdByValue(Properties ctx, String value);
-	
-	default int retrieveIdByValue(final String value)
+	Optional<AdMessageId> retrieveIdByValue(Properties ctx, AdMessageKey value);
+
+	default Optional<AdMessageId> retrieveIdByValue(final AdMessageKey value)
 	{
 		return retrieveIdByValue(Env.getCtx(), value);
 	}
-	
-	boolean isMessageExists(String adMessage);
 
-	void createUpdateMessage(String adMessage, Consumer<I_AD_Message> adMessageUpdater);
+	boolean isMessageExists(AdMessageKey adMessage);
+
+	void createUpdateMessage(AdMessageKey adMessage, Consumer<I_AD_Message> adMessageUpdater);
 }

@@ -119,6 +119,7 @@ import de.metas.invoicecandidate.InvoiceCandidateIds;
 import de.metas.invoicecandidate.api.IAggregationBL;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
+import de.metas.invoicecandidate.api.IInvoiceCandDAO.InvoiceableInvoiceCandIdResult;
 import de.metas.invoicecandidate.api.IInvoiceCandInvalidUpdater;
 import de.metas.invoicecandidate.api.IInvoiceCandidateEnqueuer;
 import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
@@ -128,7 +129,6 @@ import de.metas.invoicecandidate.api.InvoiceCandidateMultiQuery;
 import de.metas.invoicecandidate.api.InvoiceCandidateMultiQuery.InvoiceCandidateMultiQueryBuilder;
 import de.metas.invoicecandidate.api.InvoiceCandidateQuery;
 import de.metas.invoicecandidate.api.InvoiceCandidate_Constants;
-import de.metas.invoicecandidate.api.IInvoiceCandDAO.InvoiceableInvoiceCandIdResult;
 import de.metas.invoicecandidate.async.spi.impl.InvoiceCandWorkpackageProcessor;
 import de.metas.invoicecandidate.exceptions.InconsistentUpdateExeption;
 import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
@@ -1660,7 +1660,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			final InconsistentUpdateExeption iue = (InconsistentUpdateExeption)e;
 			final Properties ctx = InterfaceWrapperHelper.getCtx(ic);
 			note = new MNote(ctx,
-					iue.getAD_Message_Value(),
+					iue.getAdMessageHeadLine().toAD_Message(),
 					iue.getAdUserToNotifyId(),
 					ITrx.TRXNAME_None // save it out-of-trx
 			);

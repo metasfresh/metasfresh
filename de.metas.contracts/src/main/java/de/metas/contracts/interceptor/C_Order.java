@@ -53,6 +53,7 @@ import de.metas.contracts.subscription.ISubscriptionBL;
 import de.metas.contracts.subscription.ISubscriptionDAO;
 import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeBL;
+import de.metas.i18n.AdMessageKey;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.logging.LogManager;
@@ -67,7 +68,7 @@ public class C_Order
 {
 	private static final Logger logger = LogManager.getLogger(C_Order.class);
 
-	private static final String MSG_ORDER_DATE_ORDERED_CHANGE_FORBIDDEN_1P = "Order_DateOrdered_Change_Forbidden";
+	private static final AdMessageKey MSG_ORDER_DATE_ORDERED_CHANGE_FORBIDDEN_1P = AdMessageKey.of("Order_DateOrdered_Change_Forbidden");
 
 	@ModelChange( //
 			timings = ModelValidator.TYPE_BEFORE_CHANGE, //

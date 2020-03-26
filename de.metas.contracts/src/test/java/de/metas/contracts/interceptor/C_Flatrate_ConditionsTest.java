@@ -62,7 +62,7 @@ public class C_Flatrate_ConditionsTest
 				.isThrownBy(() -> {
 					C_Flatrate_Conditions.INSTANCE.onTransitionChange(conditions);
 				})
-				.withMessageContaining(C_Flatrate_Conditions.MSG_CONDITIONS_ERROR_INVALID_TRANSITION_2P)
+				.withMessageContaining(C_Flatrate_Conditions.MSG_CONDITIONS_ERROR_INVALID_TRANSITION_2P.toAD_Message())
 				.withNoCause();
 	}
 
@@ -84,7 +84,7 @@ public class C_Flatrate_ConditionsTest
 
 		assertThatThrownBy(() -> {
 			C_Flatrate_Conditions.INSTANCE.beforeComplete(conditions);
-		}).hasMessage(C_Flatrate_Conditions.MSG_CONDITIONS_ERROR_TRANSITION_NOT_CO_0P);
+		}).hasMessage(C_Flatrate_Conditions.MSG_CONDITIONS_ERROR_TRANSITION_NOT_CO_0P.toAD_Message());
 	}
 
 	@Test

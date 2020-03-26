@@ -29,6 +29,7 @@ import de.metas.handlingunits.picking.PickingCandidateStatus;
 import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleDAO;
 import de.metas.handlingunits.sourcehu.HuId2SourceHUsService;
 import de.metas.handlingunits.sourcehu.SourceHUsService;
+import de.metas.i18n.AdMessageKey;
 import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.util.Services;
 import lombok.Builder;
@@ -66,8 +67,8 @@ import lombok.NonNull;
  */
 public class UnProcessPickingCandidateCommand
 {
-	private static final String MSG_WEBUI_PICKING_WRONG_HU_STATUS_3P = "WEBUI_Picking_Wrong_HU_Status";
-	private static final String MSG_WEBUI_PICKING_ALREADY_SHIPPED_2P = "WEBUI_Picking_Already_Shipped";
+	private static final AdMessageKey MSG_WEBUI_PICKING_WRONG_HU_STATUS_3P = AdMessageKey.of("WEBUI_Picking_Wrong_HU_Status");
+	private static final AdMessageKey MSG_WEBUI_PICKING_ALREADY_SHIPPED_2P = AdMessageKey.of("WEBUI_Picking_Already_Shipped");
 
 	private final transient IHUShipmentScheduleDAO huShipmentScheduleDAO = Services.get(IHUShipmentScheduleDAO.class);
 

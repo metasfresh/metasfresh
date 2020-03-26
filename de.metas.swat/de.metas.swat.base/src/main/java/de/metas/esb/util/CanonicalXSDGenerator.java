@@ -78,6 +78,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.xml.sax.SAXException;
 
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
@@ -107,8 +108,8 @@ public class CanonicalXSDGenerator
 	private static final String XSD_NAME = "name";
 	private static final String XSD_TYPE = "type";
 
-	private static final String ERROR_ESB_AD_REFERENCE_VALUE_NON_ASCII_3P = "ESB_AD_Reference_Value_Non_Ascii";
-	private static final String ERROR_ESB_AD_REFERENCE_VALUE_MISSING_3P = "ESB_AD_Reference_Value_Missing";
+	private static final AdMessageKey ERROR_ESB_AD_REFERENCE_VALUE_NON_ASCII_3P = AdMessageKey.of("ESB_AD_Reference_Value_Non_Ascii");
+	private static final AdMessageKey ERROR_ESB_AD_REFERENCE_VALUE_MISSING_3P = AdMessageKey.of("ESB_AD_Reference_Value_Missing");
 
 	public static String NAME_TypeSuffix = "Type";
 	public static String JAXB_AttributeSuffix = "Attr";
@@ -489,13 +490,10 @@ public class CanonicalXSDGenerator
 		if (column.getAD_Reference_Value_ID() <= 0)
 		{
 			final Properties ctx = InterfaceWrapperHelper.getCtx(column);
-
-			final String msg = msgBL.getMsg(ctx, ERROR_ESB_AD_REFERENCE_VALUE_MISSING_3P,
-					new Object[] { msgBL.translate(ctx, I_AD_Column.COLUMNNAME_AD_Reference_Value_ID),
-							column.getColumnName(),
-							Services.get(IADTableDAO.class).retrieveTableName(column.getAD_Table_ID())
-					});
-			throw new AdempiereException(msg);
+			throw new AdempiereException(ERROR_ESB_AD_REFERENCE_VALUE_MISSING_3P,
+					msgBL.translate(ctx, I_AD_Column.COLUMNNAME_AD_Reference_Value_ID),
+					column.getColumnName(),
+					Services.get(IADTableDAO.class).retrieveTableName(column.getAD_Table_ID()));
 		}
 	}
 

@@ -22,21 +22,24 @@
 
 package de.metas.attachments.listener;
 
+import java.util.Collection;
+
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.I_AD_Table_AttachmentListener;
+import org.compiere.util.Env;
+import org.springframework.stereotype.Service;
+
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
+
 import de.metas.attachments.AttachmentEntry;
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IADMessageDAO;
 import de.metas.javaclasses.IJavaClassBL;
 import de.metas.notification.INotificationBL;
 import de.metas.notification.UserNotificationRequest;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.model.I_AD_Table_AttachmentListener;
-import org.compiere.util.Env;
-import org.springframework.stereotype.Service;
-
-import java.util.Collection;
 
 @Service
 public class TableAttachmentListenerService
@@ -55,7 +58,7 @@ public class TableAttachmentListenerService
 	{
 		return attachmentEntry.getLinkedRecords()
 				.stream()
-		        .map(linkedRecord -> notifyAttachmentListenersFor(linkedRecord, attachmentEntry))
+				.map(linkedRecord -> notifyAttachmentListenersFor(linkedRecord, attachmentEntry))
 				.flatMap(Collection::stream)
 				.collect(ImmutableList.toImmutableList());
 	}
@@ -64,8 +67,7 @@ public class TableAttachmentListenerService
 	{
 		return tableAttachmentListenerRepository.getById(tableRecordReference.getAdTableId())
 				.stream()
-				.map(listenerSettings ->
-				{
+				.map(listenerSettings -> {
 					final AttachmentListener attachmentListener = javaClassBL.newInstance(listenerSettings.getListenerJavaClassId());
 
 					final AttachmentListenerConstants.ListenerWorkStatus status = attachmentListener.afterPersist(attachmentEntry, tableRecordReference);
@@ -81,19 +83,19 @@ public class TableAttachmentListenerService
 	 * Notifies the user about the process finalizing work if {@link AttachmentListenerSettings#isSendNotification()}
 	 *
 	 * @param attachmentListenerSettings data from {@link I_AD_Table_AttachmentListener}
-	 * @param tableRecordReference       reference of the table
+	 * @param tableRecordReference reference of the table
 	 */
 	@VisibleForTesting
 	void notifyUser(final AttachmentListenerSettings attachmentListenerSettings,
-					final TableRecordReference tableRecordReference,
-					final AttachmentListenerConstants.ListenerWorkStatus listenerWorkStatus)
+			final TableRecordReference tableRecordReference,
+			final AttachmentListenerConstants.ListenerWorkStatus listenerWorkStatus)
 	{
 		if (attachmentListenerSettings.isSendNotification())
 		{
-			final String adMessageContent = adMessageDAO.retrieveValueById( attachmentListenerSettings.getAdMessageId().getRepoId() );
+			AdMessageKey adMessageContent = adMessageDAO.retrieveValueById(attachmentListenerSettings.getAdMessageId()).orElse(null);
 
 			final UserNotificationRequest userNotificationRequest = UserNotificationRequest.builder()
-					.contentADMessage(adMessageContent)
+					.contentADMessage(adMessageContent != null ? adMessageContent.toAD_Message() : null)
 					.contentADMessageParam(listenerWorkStatus.getValue())
 					.recipientUserId(Env.getLoggedUserId())
 					.targetAction(UserNotificationRequest.TargetRecordAction.of(tableRecordReference))

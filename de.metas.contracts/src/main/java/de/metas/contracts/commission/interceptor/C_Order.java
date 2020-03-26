@@ -22,6 +22,7 @@ import com.google.common.collect.ImmutableSet;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.organization.OrgId;
@@ -55,7 +56,7 @@ import lombok.NonNull;
 @Interceptor(I_C_Order.class)
 public class C_Order
 {
-	private static final String MSG_CUSTOMER_NEEDS_SALES_PARTNER = "de.metas.contracts.commission.salesOrder.MissingSalesPartner";
+	private static final AdMessageKey MSG_CUSTOMER_NEEDS_SALES_PARTNER = AdMessageKey.of("de.metas.contracts.commission.salesOrder.MissingSalesPartner");
 
 	private final IBPartnerDAO bpartnerDAO;
 

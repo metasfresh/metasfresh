@@ -60,6 +60,7 @@ import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IModelTranslationMap;
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
@@ -76,6 +77,8 @@ public class GeneralCopyRecordSupport implements CopyRecordSupport
 	public static final String COLUMNNAME_Value = "Value";
 	public static final String COLUMNNAME_Name = "Name";
 	public static final String COLUMNNAME_IsActive = "IsActive";
+
+	private static final AdMessageKey MSG_CopiedOn = AdMessageKey.of("CopiedOn");
 
 	private String _keyColumn = null;
 	private PO _parentPO = null;
@@ -229,7 +232,7 @@ public class GeneralCopyRecordSupport implements CopyRecordSupport
 		final String username = Services.get(IUserDAO.class).retrieveUserFullname(Env.getAD_User_ID(ctx));
 
 		final String language = Env.getAD_Language(ctx);
-		final String msg = "(" + msgBL.getMsg(language, "CopiedOn", new String[] { timestampStr }) + " " + username + ")";
+		final String msg = "(" + msgBL.getMsg(language, MSG_CopiedOn, new String[] { timestampStr }) + " " + username + ")";
 
 		final String oldValue = (String)to.get_Value(columnName);
 		to.set_CustomColumn(columnName, oldValue + msg);

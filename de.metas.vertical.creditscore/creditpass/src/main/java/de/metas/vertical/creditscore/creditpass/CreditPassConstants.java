@@ -1,5 +1,7 @@
 package de.metas.vertical.creditscore.creditpass;
 
+import de.metas.i18n.AdMessageKey;
+
 /*
  * #%L
  * de.metas.vertical.creditscore.creditpass
@@ -43,16 +45,16 @@ public final class CreditPassConstants
 
 	public static final String DEFAULT_RESULT_TEXT = "Default result";
 
-	public static final String CREDITPASS_NOTIFICATION_MESSAGE_KEY = "CreditpassNotificationMessage";
+	public static final AdMessageKey CREDITPASS_NOTIFICATION_MESSAGE_KEY = AdMessageKey.of("CreditpassNotificationMessage");
 
-	public static final String CREDITPASS_STATUS_SUCCESS_MESSAGE_KEY = "CreditpassStatus.Success";
+	public static final AdMessageKey CREDITPASS_STATUS_SUCCESS_MESSAGE_KEY = AdMessageKey.of("CreditpassStatus.Success");
 
-	public static final String CREDITPASS_STATUS_FAILURE_MESSAGE_KEY = "CreditpassStatus.Failure";
+	public static final AdMessageKey CREDITPASS_STATUS_FAILURE_MESSAGE_KEY = AdMessageKey.of("CreditpassStatus.Failure");
 
-	public static final String CREDITPASS_REQUEST_NEEDED_MESSAGE_KEY = "CreditpassStatus.RequestNeeded";
+	public static final AdMessageKey CREDITPASS_REQUEST_NEEDED_MESSAGE_KEY = AdMessageKey.of("CreditpassStatus.RequestNeeded");
 
-	public static final String CREDITPASS_REQUEST_NOT_NEEDED_MESSAGE_KEY = "CreditpassStatus.RequestNotNeeded";
+	public static final AdMessageKey CREDITPASS_REQUEST_NOT_NEEDED_MESSAGE_KEY = AdMessageKey.of("CreditpassStatus.RequestNotNeeded");
 
-	public static final String ORDER_COMPLETED_CREDITPASS_ERROR = "OrderCompleted.CreditpassError";
+	public static final AdMessageKey ORDER_COMPLETED_CREDITPASS_ERROR = AdMessageKey.of("OrderCompleted.CreditpassError");
 
 }

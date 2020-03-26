@@ -36,6 +36,7 @@ import de.metas.contracts.model.I_C_Flatrate_DataEntry;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_Invoice_Clearing_Alloc;
 import de.metas.contracts.model.X_C_Flatrate_DataEntry;
+import de.metas.i18n.AdMessageKey;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.exceptions.InconsistentUpdateExeption;
@@ -46,9 +47,8 @@ import de.metas.util.Services;
 @Interceptor(I_C_Invoice_Candidate.class)
 public class C_Invoice_Candidate
 {
-	public static final String MSG_DATA_ENTRY_ERROR_ALREADY_COMPLETED_0P = "DataEntry_Error_AlreadyCompleted";
-
-	public static final String MSG_DATA_ENTRY_ERROR_ALREADY_COMPLETED_TEXT_2P = "DataEntry_Error_AlreadyCompleted_Text";
+	private static final AdMessageKey MSG_DATA_ENTRY_ERROR_ALREADY_COMPLETED_0P = AdMessageKey.of("DataEntry_Error_AlreadyCompleted");
+	private static final AdMessageKey MSG_DATA_ENTRY_ERROR_ALREADY_COMPLETED_TEXT_2P = AdMessageKey.of("DataEntry_Error_AlreadyCompleted_Text");
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW })
 	public void closeDirectly(final I_C_Invoice_Candidate invoiceCand)

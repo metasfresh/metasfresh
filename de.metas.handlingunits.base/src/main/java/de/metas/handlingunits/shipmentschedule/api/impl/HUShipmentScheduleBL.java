@@ -443,9 +443,7 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 		final int shipmentCount = shipments.size();
 		if (shipmentCount > 1)
 		{
-			final Exception ex = new AdempiereException("More than 1 open shipment found for schedule {}. Returning the first one (out of {}).",
-					new Object[] { shipmentSchedule, shipmentCount });
-			logger.warn(ex.getLocalizedMessage());
+			logger.warn("More than 1 open shipment found for schedule {}. Returning the first one (out of {}).", shipmentSchedule, shipmentCount);
 		}
 
 		return shipments.iterator().next();

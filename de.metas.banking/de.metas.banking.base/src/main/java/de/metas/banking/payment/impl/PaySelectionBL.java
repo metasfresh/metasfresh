@@ -38,6 +38,7 @@ import de.metas.banking.payment.IPaymentRequestBL;
 import de.metas.banking.service.IBankStatementBL;
 import de.metas.bpartner.BPartnerId;
 import de.metas.document.engine.IDocument;
+import de.metas.i18n.AdMessageKey;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentId;
 import de.metas.payment.TenderType;
@@ -47,8 +48,8 @@ import lombok.NonNull;
 
 public class PaySelectionBL implements IPaySelectionBL
 {
-	private static final String MSG_CannotReactivate_PaySelectionLineInBankStatement_2P = "CannotReactivate_PaySelectionLineInBankStatement";
-	private static final String MSG_PaySelectionLines_No_BankAccount = "C_PaySelection_PaySelectionLines_No_BankAccount";
+	private static final AdMessageKey MSG_CannotReactivate_PaySelectionLineInBankStatement_2P = AdMessageKey.of("CannotReactivate_PaySelectionLineInBankStatement");
+	private static final AdMessageKey MSG_PaySelectionLines_No_BankAccount = AdMessageKey.of("C_PaySelection_PaySelectionLines_No_BankAccount");
 
 	private final IPaySelectionDAO paySelectionDAO = Services.get(IPaySelectionDAO.class);
 

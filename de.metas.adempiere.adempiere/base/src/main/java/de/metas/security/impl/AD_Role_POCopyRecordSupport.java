@@ -9,6 +9,7 @@ import org.compiere.model.GridField;
 import org.compiere.model.PO;
 import org.compiere.util.Env;
 
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.user.api.IUserDAO;
 import de.metas.util.Services;
@@ -37,7 +38,7 @@ import de.metas.util.Services;
 
 public class AD_Role_POCopyRecordSupport extends GeneralCopyRecordSupport
 {
-	private static final String MSG_AD_Role_Name_Unique = "AD_Role_Unique_Name";
+	private static final AdMessageKey MSG_AD_Role_Name_Unique = AdMessageKey.of("AD_Role_Unique_Name");
 	private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMdd:HH:mm:ss");
 
 	@Override

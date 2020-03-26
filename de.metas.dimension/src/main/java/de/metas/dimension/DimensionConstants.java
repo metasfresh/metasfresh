@@ -1,5 +1,7 @@
 package de.metas.dimension;
 
+import de.metas.i18n.AdMessageKey;
+
 /*
  * #%L
  * de.metas.dimension
@@ -48,6 +50,6 @@ public final class DimensionConstants
 	/**
 	 * Message for non or empty attribute value.
 	 */
-	public static final String MSG_NoneOrEmpty = "NoneOrEmpty";
+	public static final AdMessageKey MSG_NoneOrEmpty = AdMessageKey.of("NoneOrEmpty");
 
 }

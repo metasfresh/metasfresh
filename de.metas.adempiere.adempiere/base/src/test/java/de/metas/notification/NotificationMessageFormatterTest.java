@@ -3,18 +3,22 @@ package de.metas.notification;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.text.MessageFormat;
+import java.util.HashMap;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.i18n.impl.PlainMsgBL;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -62,7 +66,11 @@ public class NotificationMessageFormatterTest
 		final NotificationMessageFormatter formatter = NotificationMessageFormatter.newInstance()
 				.html(true);
 
-		final String result = formatter.format("the url is {0}.", ImmutableList.<Object> of("http://www.metasfresh.com"));
+		final AdMessageKey adMessage = AdMessageKey.of("TestMessage");
+		mockedMsgBL.putMsgText(adMessage, "the url is {0}.");
+		final String result = formatter.format(
+				adMessage,
+				ImmutableList.<Object> of("http://www.metasfresh.com"));
 		assertThat(result).isEqualTo("the url is <a href=\"http://www.metasfresh.com\">http://www.metasfresh.com</a>.");
 	}
 
@@ -72,18 +80,39 @@ public class NotificationMessageFormatterTest
 		final NotificationMessageFormatter formatter = NotificationMessageFormatter.newInstance()
 				.html(true);
 
-		final String result = formatter.format("the url is {0}.", ImmutableList.<Object> of(
-				NotificationMessageFormatter.createUrlWithTitle("http://www.metasfresh.com", "metas gmbH") //
-		));
+		final AdMessageKey adMessage = AdMessageKey.of("TestMessage");
+		mockedMsgBL.putMsgText(adMessage, "the url is {0}.");
+		final String result = formatter.format(
+				adMessage,
+				ImmutableList.<Object> of(
+						NotificationMessageFormatter.createUrlWithTitle("http://www.metasfresh.com", "metas gmbH") //
+				));
 		assertThat(result).isEqualTo("the url is <a href=\"http://www.metasfresh.com\">metas gmbH</a>.");
 	}
 
 	private static final class MockedMsgBL extends PlainMsgBL
 	{
-		@Override
-		public ITranslatableString getTranslatableMsgText(final String adMessage, final Object... msgParameters)
+		private final HashMap<AdMessageKey, String> msgTexts = new HashMap<>();
+
+		public void putMsgText(@NonNull final AdMessageKey adMessage, @NonNull final String msgText)
 		{
-			final String msgText = adMessage;
+			msgTexts.put(adMessage, msgText);
+		}
+
+		private String getMsgText(final AdMessageKey adMessage)
+		{
+			final String msgText = msgTexts.get(adMessage);
+			if (msgText == null)
+			{
+				throw new AdempiereException("No MsgText registered for " + adMessage + " in " + this);
+			}
+			return msgText;
+		}
+
+		@Override
+		public ITranslatableString getTranslatableMsgText(@NonNull final AdMessageKey adMessage, final Object... msgParameters)
+		{
+			final String msgText = getMsgText(adMessage);
 			return TranslatableStrings.constant(MessageFormat.format(msgText, msgParameters));
 		}
 	}

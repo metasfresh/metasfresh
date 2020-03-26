@@ -40,6 +40,7 @@ import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_Flatrate_Transition;
 import de.metas.contracts.model.X_C_Flatrate_Conditions;
 import de.metas.contracts.model.X_C_Flatrate_Transition;
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -49,11 +50,11 @@ public class C_Flatrate_Conditions
 {
 	public static C_Flatrate_Conditions INSTANCE = new C_Flatrate_Conditions();
 
-	public static final String MSG_CONDITIONS_ERROR_INVALID_TRANSITION_2P = "Conditions_Error_Invalid_Transition";
-	public static final String MSG_CONDITIONS_ERROR_ALREADY_IN_USE_0P = "Conditions_Error_AlreadyInUse";
-	public static final String MSG_CONDITIONS_ERROR_MATCHING_MISSING_0P = "Conditions_Error_MatchingMissing";
-	public static final String MSG_CONDITIONS_ERROR_TRANSITION_NOT_CO_0P = "Conditions_Error_Transition_Not_Completed";
-	public static final String MSG_CONDITIONS_ERROR_ORDERLESS_SUBSCRIPTION_NOT_SUPPORTED_0P = "Conditions_Error_Subscription_Not_Supported"; // 03204
+	public static final AdMessageKey MSG_CONDITIONS_ERROR_INVALID_TRANSITION_2P = AdMessageKey.of("Conditions_Error_Invalid_Transition");
+	public static final AdMessageKey MSG_CONDITIONS_ERROR_ALREADY_IN_USE_0P = AdMessageKey.of("Conditions_Error_AlreadyInUse");
+	public static final AdMessageKey MSG_CONDITIONS_ERROR_MATCHING_MISSING_0P = AdMessageKey.of("Conditions_Error_MatchingMissing");
+	public static final AdMessageKey MSG_CONDITIONS_ERROR_TRANSITION_NOT_CO_0P = AdMessageKey.of("Conditions_Error_Transition_Not_Completed");
+	public static final AdMessageKey MSG_CONDITIONS_ERROR_ORDERLESS_SUBSCRIPTION_NOT_SUPPORTED_0P = AdMessageKey.of("Conditions_Error_Subscription_Not_Supported"); // 03204
 
 	private C_Flatrate_Conditions()
 	{
@@ -101,7 +102,7 @@ public class C_Flatrate_Conditions
 	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_VOID, ModelValidator.TIMING_BEFORE_CLOSE })
 	public void prohibitVoidAndClose(final I_C_Flatrate_Conditions cond)
 	{
-		throw new AdempiereException("@" + MainValidator.MSG_FLATRATE_DOC_ACTION_NOT_SUPPORTED_0P + "@");
+		throw new AdempiereException(MainValidator.MSG_FLATRATE_DOC_ACTION_NOT_SUPPORTED_0P);
 	}
 
 	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_COMPLETE })
@@ -119,7 +120,7 @@ public class C_Flatrate_Conditions
 			final List<I_C_Flatrate_Matching> matchings = flatrateDB.retrieveFlatrateMatchings(cond);
 			if (matchings.isEmpty())
 			{
-				throw new AdempiereException("@" + MSG_CONDITIONS_ERROR_MATCHING_MISSING_0P + "@");
+				throw new AdempiereException(MSG_CONDITIONS_ERROR_MATCHING_MISSING_0P);
 			}
 
 		}
@@ -127,9 +128,7 @@ public class C_Flatrate_Conditions
 		final boolean hasHoCompletedTransition = cond.getC_Flatrate_Transition_ID() <= 0 || !X_C_Flatrate_Transition.DOCSTATUS_Completed.equals(cond.getC_Flatrate_Transition().getDocStatus());
 		if (hasHoCompletedTransition)
 		{
-			final Properties ctx = InterfaceWrapperHelper.getCtx(cond);
-			// note that the message itself contains the string '@C_Flatrate_Transition_ID@'
-			throw new AdempiereException(Services.get(IMsgBL.class).getMsg(ctx, MSG_CONDITIONS_ERROR_TRANSITION_NOT_CO_0P));
+			throw new AdempiereException(MSG_CONDITIONS_ERROR_TRANSITION_NOT_CO_0P);
 		}
 	}
 
@@ -141,7 +140,7 @@ public class C_Flatrate_Conditions
 		final List<I_C_Flatrate_Term> terms = flatrateDB.retrieveTerms(cond);
 		if (!terms.isEmpty())
 		{
-			throw new AdempiereException("@" + MSG_CONDITIONS_ERROR_ALREADY_IN_USE_0P + "@");
+			throw new AdempiereException(MSG_CONDITIONS_ERROR_ALREADY_IN_USE_0P);
 		}
 	}
 }

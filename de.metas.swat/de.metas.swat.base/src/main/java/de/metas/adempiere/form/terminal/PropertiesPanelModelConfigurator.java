@@ -107,7 +107,7 @@ public class PropertiesPanelModelConfigurator implements IPropertiesPanelModelCo
 		}
 		else
 		{
-			throw new AdempiereException("Unsupported configuration value for Boolean: {} (Expected Y/N)", new Object[] { value }); // internal error
+			throw new AdempiereException("Unsupported configuration value for Boolean: "+value+" (Expected Y/N)"); // internal error
 		}
 	}
 

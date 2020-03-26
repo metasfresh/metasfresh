@@ -5,8 +5,10 @@ import java.time.LocalDate;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_BPartner_Location;
+
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.contracts.model.I_C_Flatrate_Term;
+import de.metas.i18n.AdMessageKey;
 import de.metas.lang.SOTrx;
 import de.metas.pricing.IEditablePricingContext;
 import de.metas.pricing.IPricingResult;
@@ -57,8 +59,8 @@ import lombok.Value;
 @Builder
 public class FlatrateTermPricing
 {
-	private static final String MSG_FLATRATEBL_PRICE_MISSING_2P = "FlatrateBL_Price_Missing";
-	private static final String MSG_FLATRATEBL_PRICE_LIST_MISSING_2P = "FlatrateBL_PriceList_Missing";
+	private static final AdMessageKey MSG_FLATRATEBL_PRICE_MISSING_2P = AdMessageKey.of("FlatrateBL_Price_Missing");
+	private static final AdMessageKey MSG_FLATRATEBL_PRICE_LIST_MISSING_2P = AdMessageKey.of("FlatrateBL_PriceList_Missing");
 
 	@NonNull
 	I_C_Flatrate_Term term;

@@ -13,36 +13,34 @@ package de.metas.banking.payment.modelvalidator;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.List;
 
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_PaySelectionLine;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.ModelValidator;
 
 import de.metas.banking.model.I_C_Payment_Request;
 import de.metas.banking.payment.IPaySelectionDAO;
-import de.metas.i18n.IMsgBL;
+import de.metas.i18n.AdMessageKey;
 import de.metas.invoice.InvoiceId;
 import de.metas.util.Services;
 
 @Interceptor(I_C_Payment_Request.class)
 public class C_Payment_Request
 {
-	private static final String MSG_C_PAYMENT_REQUEST_C_INVOICE_STILL_REFERENCED_FROM_C_PAY_SELECTION_LINE = "C_Payment_Request_C_Invoice_Still_referenced_from_C_PaySelectionLine";
+	private static final AdMessageKey MSG_C_PAYMENT_REQUEST_C_INVOICE_STILL_REFERENCED_FROM_C_PAY_SELECTION_LINE = AdMessageKey.of("C_Payment_Request_C_Invoice_Still_referenced_from_C_PaySelectionLine");
 
 	public static final C_Payment_Request instance = new C_Payment_Request();
 
@@ -56,8 +54,7 @@ public class C_Payment_Request
 	 * @param paymentRequest
 	 * @task 08596
 	 */
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE }
-			, ifColumnsChanged = { I_C_Payment.COLUMNNAME_IsActive })
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = { I_C_Payment.COLUMNNAME_IsActive })
 	public void checkDeactivationAllowed(final I_C_Payment_Request paymentRequest)
 	{
 		final InvoiceId invoiceId = InvoiceId.ofRepoIdOrNull(paymentRequest.getC_Invoice_ID());
@@ -73,10 +70,6 @@ public class C_Payment_Request
 		}
 
 		final I_C_PaySelectionLine paySelectionLine = paySelectionLines.get(0); // only showing the first, there shouldn't be >1 anyways
-		throw new AdempiereException(
-				Services.get(IMsgBL.class).getMsg(InterfaceWrapperHelper.getCtx(paymentRequest),
-						MSG_C_PAYMENT_REQUEST_C_INVOICE_STILL_REFERENCED_FROM_C_PAY_SELECTION_LINE,
-						new Object[] { paySelectionLine.getC_PaySelection().getName(), paySelectionLine.getLine() }
-						));
+		throw new AdempiereException(MSG_C_PAYMENT_REQUEST_C_INVOICE_STILL_REFERENCED_FROM_C_PAY_SELECTION_LINE, paySelectionLine.getC_PaySelection().getName(), paySelectionLine.getLine());
 	}
 }
