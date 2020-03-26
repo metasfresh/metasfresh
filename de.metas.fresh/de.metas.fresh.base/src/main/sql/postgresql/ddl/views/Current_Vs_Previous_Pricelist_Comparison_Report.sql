@@ -1,9 +1,13 @@
 DROP FUNCTION IF EXISTS report.Current_Vs_Previous_Pricelist_Comparison_Report(IN p_C_BPartner_ID numeric, IN p_AD_Language text)
 ;
 
+DROP FUNCTION IF EXISTS report.Current_Vs_Previous_Pricelist_Comparison_Report(IN p_C_BPartner_ID numeric, IN p_IsSoTrx text, IN p_AD_Language text)
+;
+
 -- todo add bpartner group as well
 CREATE OR REPLACE FUNCTION report.Current_Vs_Previous_Pricelist_Comparison_Report(IN p_C_BPartner_ID numeric,
-                                                                                  IN p_AD_Language   text = 'en_US')
+                                                                                  IN p_IsSoTrx       text = 'Y',
+                                                                                  IN p_AD_Language   TEXT = 'en_US')
     RETURNS TABLE
             (
                 bp_value                  text,
@@ -33,19 +37,22 @@ AS
 $$
 WITH PriceListVersionsByValidFrom AS
          (
-             SELECT --
-                    plv.c_bpartner_id,
-                    row_number() OVER (PARTITION BY plv.c_bpartner_id ORDER BY plv.validfrom DESC, plv.m_pricelist_version_id DESC) rank,
-                    plv.m_pricelist_version_id,
-                    plv.validfrom,
-                    plv.name,
-                    plv.issotrx
-             FROM Report.Fresh_PriceList_Version_Val_Rule plv
-             WHERE TRUE
-               AND plv.issotrx = 'Y'
-             ORDER BY TRUE,
-                      plv.validfrom DESC,
-                      plv.m_pricelist_version_id DESC
+             SELECT t.*
+             FROM (SELECT --
+                          plv.c_bpartner_id,
+                          row_number() OVER (PARTITION BY plv.c_bpartner_id ORDER BY plv.validfrom DESC, plv.m_pricelist_version_id DESC) rank,
+                          plv.m_pricelist_version_id,
+                          plv.validfrom,
+                          plv.name-- ,
+                          --                     plv.issotrx
+                   FROM Report.Fresh_PriceList_Version_Val_Rule plv
+                   WHERE TRUE
+                     --                      AND plv.issotrx = p_IsSoTrx
+                     AND (p_C_BPartner_ID IS NULL OR plv.c_bpartner_id = p_C_BPartner_ID)
+                   ORDER BY TRUE,
+                            plv.validfrom DESC,
+                            plv.m_pricelist_version_id DESC) t
+             WHERE t.rank <= 2
          ),
      currentAndPreviousPLV AS
          (
@@ -54,20 +61,18 @@ WITH PriceListVersionsByValidFrom AS
                              (SELECT m_pricelist_version_id FROM PriceListVersionsByValidFrom plvv2 WHERE plvv2.rank = 1 AND plvv2.c_bpartner_id = plvv.c_bpartner_id) currentPlv_ID,
                              (SELECT m_pricelist_version_id FROM PriceListVersionsByValidFrom plvv2 WHERE plvv2.rank = 2 AND plvv2.c_bpartner_id = plvv.c_bpartner_id) previousPlv_ID
              FROM PriceListVersionsByValidFrom plvv
-             WHERE TRUE
-               AND (p_C_BPartner_ID IS NULL OR plvv.c_bpartner_id = p_C_BPartner_ID)
              ORDER BY plvv.c_bpartner_id
          ),
      result AS
          (
-             SELECT data.*
+             SELECT t.*
              FROM currentAndPreviousPLV plv
                       INNER JOIN LATERAL report.fresh_PriceList_Details_Report(
                      plv.c_bpartner_id,
                      plv.currentPlv_ID,
                      plv.previousPlv_ID,
                      p_AD_Language
-                 ) AS data ON TRUE
+                 ) AS t ON TRUE
          )
 SELECT --
        r.bp_value,
