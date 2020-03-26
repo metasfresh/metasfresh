@@ -1,14 +1,15 @@
 package de.metas.marketing.gateway.cleverreach.restapi.models;
 
-import lombok.Builder;
-import lombok.ToString;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import lombok.Value;
 
 /*
  * #%L
- * de.metas.marketing
+ * marketing-cleverreach
  * %%
- * Copyright (C) 2018 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -27,16 +28,19 @@ import lombok.Value;
  */
 
 @Value
-@Builder
-@ToString
-public class Login
+public class Error
 {
-	String client_id;
-	String login;
-	String password;
+	String code;
 
-	public Login withoutPassword()
+	String message;
+
+	@JsonCreator
+	public Error(
+			@JsonProperty("code") final String code,
+			@JsonProperty("message") final String message)
 	{
-		return new Login(client_id, login, "******");
+		this.code = code;
+		this.message = message;
 	}
+
 }

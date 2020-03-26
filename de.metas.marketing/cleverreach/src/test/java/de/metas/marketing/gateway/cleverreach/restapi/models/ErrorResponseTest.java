@@ -1,14 +1,15 @@
 package de.metas.marketing.gateway.cleverreach.restapi.models;
 
-import lombok.Builder;
-import lombok.ToString;
-import lombok.Value;
+import static org.assertj.core.api.Assertions.assertThat;
+import org.junit.jupiter.api.Test;
+
+import de.metas.util.JSONObjectMapper;
 
 /*
  * #%L
- * de.metas.marketing
+ * marketing-cleverreach
  * %%
- * Copyright (C) 2018 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -26,17 +27,18 @@ import lombok.Value;
  * #L%
  */
 
-@Value
-@Builder
-@ToString
-public class Login
+class ErrorResponseTest
 {
-	String client_id;
-	String login;
-	String password;
 
-	public Login withoutPassword()
+	@Test
+	void deserializeErrorResponse()
 	{
-		return new Login(client_id, login, "******");
+		final String errorMsg = "{ \"error\": { \"code\": 404,\"message\": \"Not Found\" } }";
+
+		final JSONObjectMapper<ErrorResponse> mapper = JSONObjectMapper.forClass(ErrorResponse.class);
+		final ErrorResponse errorREsponse = mapper.readValue(errorMsg);
+
+		assertThat(errorREsponse.getError().getCode()).isEqualTo("404");
+		assertThat(errorREsponse.getError().getMessage()).isEqualTo("Not Found");
 	}
 }
