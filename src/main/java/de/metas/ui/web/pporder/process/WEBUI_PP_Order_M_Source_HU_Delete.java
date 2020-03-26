@@ -46,7 +46,7 @@ public class WEBUI_PP_Order_M_Source_HU_Delete
 		final PPOrderLineRow pickingSlotRow = getSingleSelectedRow();
 		if (!pickingSlotRow.isSourceHU())
 		{
-			return ProcessPreconditionsResolution.rejectWithInternalReason(MSG_WEBUI_PICKING_SELECT_SOURCE_HU);
+			return ProcessPreconditionsResolution.rejectWithInternalReason(msgBL.getTranslatableMsgText(MSG_WEBUI_PICKING_SELECT_SOURCE_HU));
 		}
 
 		return ProcessPreconditionsResolution.accept();

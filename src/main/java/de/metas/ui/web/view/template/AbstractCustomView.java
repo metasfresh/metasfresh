@@ -2,6 +2,7 @@ package de.metas.ui.web.view.template;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -26,6 +27,7 @@ import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.IViewRow;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.ViewResult;
+import de.metas.ui.web.view.ViewRowIdsSelection;
 import de.metas.ui.web.view.ViewRowsOrderBy;
 import de.metas.ui.web.view.event.ViewChangesCollector;
 import de.metas.ui.web.view.json.JSONViewDataType;
@@ -276,13 +278,30 @@ public abstract class AbstractCustomView<T extends IViewRow> implements IView
 	 * Also supports {@link DocumentIdsSelection#ALL}, because there won't be too many lines at one time.
 	 */
 	@Override
-	public final Stream<T> streamByIds(final DocumentIdsSelection rowIds)
+	public final Stream<T> streamByIds(@NonNull final DocumentIdsSelection rowIds)
 	{
 		if (rowIds.isAll())
 		{
 			return getRows().stream();
 		}
-		return rowIds.stream().map(this::getById);
+		else if (rowIds.isEmpty())
+		{
+			return Stream.empty();
+		}
+		else
+		{
+			return rowIds.stream().map(this::getById);
+		}
+	}
+
+	public final Stream<T> streamByIds(@NonNull final ViewRowIdsSelection selection)
+	{
+		if (!Objects.equals(getViewId(), selection.getViewId()))
+		{
+			throw new AdempiereException("Selection has invalid viewId: " + selection
+					+ "\nExpected viewId: " + getViewId());
+		}
+		return streamByIds(selection.getRowIds());
 	}
 
 	@Override

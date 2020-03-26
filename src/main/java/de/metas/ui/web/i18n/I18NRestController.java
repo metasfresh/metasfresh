@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.google.common.base.Splitter;
 
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IADMessageDAO;
 import de.metas.i18n.ILanguageBL;
 import de.metas.i18n.IMsgBL;
@@ -28,7 +29,6 @@ import de.metas.printing.esb.base.util.Check;
 import de.metas.ui.web.config.WebConfig;
 import de.metas.ui.web.session.UserSession;
 import de.metas.util.Services;
-
 import lombok.NonNull;
 
 /*
@@ -114,7 +114,7 @@ public class I18NRestController
 
 	private final void importMessage(final Map.Entry<String, String> entry)
 	{
-		final String adMessageKey = AD_MESSAGE_PREFIX + entry.getKey();
+		final AdMessageKey adMessageKey = AdMessageKey.of(AD_MESSAGE_PREFIX + entry.getKey());
 		final String msgText = entry.getValue();
 
 		Services.get(IADMessageDAO.class).createUpdateMessage(adMessageKey, adMessage -> {
@@ -122,24 +122,24 @@ public class I18NRestController
 			adMessage.setMsgText(msgText);
 			adMessage.setIsActive(true);
 			adMessage.setEntityType(ENTITY_TYPE);
-			
+
 			POTrlRepository.instance.setTrlUpdateModeAsUpdateIdenticalTrls(adMessage, true);
 		});
 	}
 
-	private static interface ADMessageFilter
+	private interface ADMessageFilter
 	{
 		/**
 		 * @param adMessageKey AD_Message before any keyMapper was applied
 		 * @return true if accepted
 		 */
 		boolean acceptMessageKey(String adMessageKey);
-	};
+	}
 
 	private static final class MessagesTreeLoader
 	{
 
-		public static final MessagesTreeLoader newInstance()
+		public static MessagesTreeLoader newInstance()
 		{
 			return new MessagesTreeLoader();
 		}
@@ -186,7 +186,7 @@ public class I18NRestController
 		}
 
 		@SuppressWarnings("unchecked")
-		private static final void addMessageToTree(final Map<String, Object> tree, final String key, final String value)
+		private static void addMessageToTree(final Map<String, Object> tree, final String key, final String value)
 		{
 			final List<String> keyParts = Splitter.on('.').splitToList(key);
 

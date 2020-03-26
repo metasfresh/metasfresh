@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 
 import de.metas.elasticsearch.indexer.IESModelIndexer;
 import de.metas.elasticsearch.indexer.IESModelIndexersRegistry;
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.ui.web.document.filter.DocumentFilterDescriptor;
@@ -54,7 +55,7 @@ public class FullTextSearchDocumentFilterDescriptorsProviderFactory implements D
 	private final IESModelIndexersRegistry esModelIndexersRegistry = Services.get(IESModelIndexersRegistry.class);
 	private final Client elasticsearchClient;
 
-	private static final String MSG_FULL_TEXT_SEARCH_CAPTION = "Search";
+	private static final AdMessageKey MSG_FULL_TEXT_SEARCH_CAPTION = AdMessageKey.of("Search");
 	private static final int SORT_NO = 30000;
 
 	public FullTextSearchDocumentFilterDescriptorsProviderFactory(

@@ -22,9 +22,16 @@
 
 package de.metas.ui.web.inout.process;
 
+import java.util.List;
+
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.SpringContextHolder;
+
 import com.google.common.collect.ImmutableList;
+
 import de.metas.document.engine.DocStatus;
 import de.metas.handlingunits.model.I_M_InOut;
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutId;
@@ -36,10 +43,6 @@ import de.metas.shipping.model.ShipperTransportationId;
 import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.SpringContextHolder;
-
-import java.util.List;
 
 @SuppressWarnings("NullableProblems")
 public class M_InOut_AddToTransportationOrderProcess_GridView extends ViewBasedProcessTemplate implements IProcessPrecondition
@@ -47,7 +50,7 @@ public class M_InOut_AddToTransportationOrderProcess_GridView extends ViewBasedP
 	@Param(parameterName = "M_ShipperTransportation_ID", mandatory = true)
 	private I_M_ShipperTransportation transportationOrder;
 
-	public static final String ALL_SELECTED_SHIPMENTS_SHOULD_BE_COMPLETED_MSG = "de.metas.ui.web.inout.process.M_InOut_AddToTransportationOrderProcess.AllSelectedShipmentsShouldBeCompleted";
+	public static final AdMessageKey ALL_SELECTED_SHIPMENTS_SHOULD_BE_COMPLETED_MSG = AdMessageKey.of("de.metas.ui.web.inout.process.M_InOut_AddToTransportationOrderProcess.AllSelectedShipmentsShouldBeCompleted");
 
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable()

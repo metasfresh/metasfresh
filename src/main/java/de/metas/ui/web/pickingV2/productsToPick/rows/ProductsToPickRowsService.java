@@ -16,6 +16,7 @@ import de.metas.handlingunits.picking.PickingCandidateService;
 import de.metas.handlingunits.picking.requests.PickRequest;
 import de.metas.handlingunits.picking.requests.PickRequest.IssueToPickingOrderRequest;
 import de.metas.handlingunits.reservation.HUReservationService;
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.ui.web.pickingV2.config.PickingConfigRepositoryV2;
@@ -56,8 +57,8 @@ public class ProductsToPickRowsService
 	private final HUReservationService huReservationService;
 	private final PickingCandidateService pickingCandidateService;
 	
-	private static final String MSG_TYPE_UNALLOCATED = "de.metas.ui.web.pickingV2.productsToPick.rows.ProductsToPickRowsService.UnAllocated_Type_Error";
-	private static final String MSG_TYPE_NOT_SUPPORTED = "de.metas.ui.web.pickingV2.productsToPick.rows.ProductsToPickRowsService.TypeRow_NotSupported";
+	private static final AdMessageKey MSG_TYPE_UNALLOCATED = AdMessageKey.of("de.metas.ui.web.pickingV2.productsToPick.rows.ProductsToPickRowsService.UnAllocated_Type_Error");
+	private static final AdMessageKey MSG_TYPE_NOT_SUPPORTED = AdMessageKey.of("de.metas.ui.web.pickingV2.productsToPick.rows.ProductsToPickRowsService.TypeRow_NotSupported");
 
 	public ProductsToPickRowsService(
 			@NonNull final PickingConfigRepositoryV2 pickingConfigRepo,

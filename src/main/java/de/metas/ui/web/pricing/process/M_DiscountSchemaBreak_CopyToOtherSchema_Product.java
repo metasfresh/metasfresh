@@ -8,6 +8,7 @@ import org.compiere.model.I_M_DiscountSchema;
 import org.compiere.model.I_M_DiscountSchemaBreak;
 import org.compiere.model.I_M_Product;
 
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.ITranslatableString;
 import de.metas.pricing.conditions.PricingConditionsId;
 import de.metas.pricing.conditions.service.IPricingConditionsRepository;
@@ -47,7 +48,7 @@ import lombok.NonNull;
 
 public class M_DiscountSchemaBreak_CopyToOtherSchema_Product extends ViewBasedProcessTemplate implements IProcessPrecondition, IProcessDefaultParametersProvider
 {
-	private static final String MSG = "de.metas.ui.web.pricing.process.M_DiscountSchemaBreak_CopyToOtherSchema_Product.NoSingleProduct";
+	private static final AdMessageKey MSG = AdMessageKey.of("de.metas.ui.web.pricing.process.M_DiscountSchemaBreak_CopyToOtherSchema_Product.NoSingleProduct");
 
 	private final IPricingConditionsRepository pricingConditionsRepo = Services.get(IPricingConditionsRepository.class);
 

@@ -12,6 +12,7 @@ import de.metas.dataentry.DataEntryListValueId;
 import de.metas.dataentry.FieldType;
 import de.metas.dataentry.data.DataEntryCreatedUpdatedInfo;
 import de.metas.dataentry.data.DataEntryRecord;
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
@@ -49,7 +50,7 @@ import lombok.NonNull;
 @Service
 public class DataEntryWebuiTools
 {
-	private final String MSG_CREATED_UPDATED_INFO_6P = "de.metas.dataentry_Created_Updated_Info";
+	private final AdMessageKey MSG_CREATED_UPDATED_INFO_6P = AdMessageKey.of("de.metas.dataentry_Created_Updated_Info");
 
 	private UserRepository userRepository;
 

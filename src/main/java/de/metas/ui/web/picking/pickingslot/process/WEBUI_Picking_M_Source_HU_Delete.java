@@ -44,7 +44,7 @@ public class WEBUI_Picking_M_Source_HU_Delete extends PickingSlotViewBasedProces
 		final PickingSlotRow pickingSlotRow = getSingleSelectedRow();
 		if (!pickingSlotRow.isPickingSourceHURow())
 		{
-			return ProcessPreconditionsResolution.rejectWithInternalReason(MSG_WEBUI_PICKING_SELECT_SOURCE_HU);
+			return ProcessPreconditionsResolution.rejectWithInternalReason(msgBL.getTranslatableMsgText(MSG_WEBUI_PICKING_SELECT_SOURCE_HU));
 		}
 
 		return ProcessPreconditionsResolution.accept();

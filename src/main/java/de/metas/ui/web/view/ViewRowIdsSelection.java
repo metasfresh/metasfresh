@@ -68,4 +68,9 @@ public final class ViewRowIdsSelection
 		this.viewId = viewId;
 		this.rowIds = rowIds != null ? rowIds : DocumentIdsSelection.EMPTY;
 	}
+
+	public boolean isEmpty()
+	{
+		return rowIds.isEmpty();
+	}
 }

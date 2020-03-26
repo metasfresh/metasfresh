@@ -14,6 +14,7 @@ import org.springframework.stereotype.Component;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.ui.web.document.filter.DocumentFilterDescriptor;
@@ -66,7 +67,7 @@ public class StandardDocumentFilterDescriptorsProviderFactory implements Documen
 	private static final int SORT_NO_DefaultDate = Integer.MIN_VALUE;
 
 	private static final String FILTER_ID_Default = "default";
-	private static final String MSG_DefaultFilterName = "default";
+	private static final AdMessageKey MSG_DefaultFilterName = AdMessageKey.of("default");
 	private static final int SORT_NO_Default = 10000;
 
 	private static final String FACET_FILTER_ID_PREFIX = "facet-";

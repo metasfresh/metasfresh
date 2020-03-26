@@ -1,13 +1,11 @@
-package de.metas.ui.web.payment_allocation;
+package de.metas.ui.web.bankstatement_reconciliation;
 
-import java.time.ZonedDateTime;
 import java.util.List;
+import java.util.Map;
 
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 import org.compiere.model.I_C_Payment;
 
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.payment.PaymentId;
@@ -22,7 +20,7 @@ import lombok.NonNull;
  * #%L
  * metasfresh-webui-api
  * %%
- * Copyright (C) 2019 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -40,39 +38,36 @@ import lombok.NonNull;
  * #L%
  */
 
-public class PaymentRows implements IRowsData<PaymentRow>
+public class PaymentToReconcileRows implements IRowsData<PaymentToReconcileRow>
 {
-	public static PaymentRows cast(final IRowsData<PaymentRow> rows)
+	public static PaymentToReconcileRows cast(final IRowsData<PaymentToReconcileRow> rowsData)
 	{
-		return (PaymentRows)rows;
+		return (PaymentToReconcileRows)rowsData;
 	}
 
-	private final PaymentAndInvoiceRowsRepo repository;
-	private final ZonedDateTime evaluationDate;
-	private final SynchronizedRowsIndexHolder<PaymentRow> rowsHolder;
+	private final BankStatementLineAndPaymentsToReconcileRepository repository;
+	private final SynchronizedRowsIndexHolder<PaymentToReconcileRow> rowsHolder;
 
 	@Builder
-	private PaymentRows(
-			@NonNull final PaymentAndInvoiceRowsRepo repository,
-			@NonNull final List<PaymentRow> initialRows,
-			@NonNull final ZonedDateTime evaluationDate)
+	private PaymentToReconcileRows(
+			@NonNull final BankStatementLineAndPaymentsToReconcileRepository repository,
+			@NonNull final List<PaymentToReconcileRow> rows)
 	{
 		this.repository = repository;
-		this.evaluationDate = evaluationDate;
-		rowsHolder = SynchronizedRowsIndexHolder.of(initialRows);
+		rowsHolder = SynchronizedRowsIndexHolder.of(rows);
 	}
 
 	@Override
-	public ImmutableMap<DocumentId, PaymentRow> getDocumentId2TopLevelRows()
+	public Map<DocumentId, PaymentToReconcileRow> getDocumentId2TopLevelRows()
 	{
 		return rowsHolder.getDocumentId2TopLevelRows();
 	}
 
 	@Override
-	public DocumentIdsSelection getDocumentIdsToInvalidate(final TableRecordReferenceSet recordRefs)
+	public DocumentIdsSelection getDocumentIdsToInvalidate(TableRecordReferenceSet recordRefs)
 	{
 		return recordRefs.streamIds(I_C_Payment.Table_Name, PaymentId::ofRepoId)
-				.map(PaymentRow::convertPaymentIdToDocumentId)
+				.map(PaymentToReconcileRow::convertPaymentIdToDocumentId)
 				.filter(rowsHolder.isRelevantForRefreshingByDocumentId())
 				.collect(DocumentIdsSelection.toDocumentIdsSelection());
 	}
@@ -81,27 +76,15 @@ public class PaymentRows implements IRowsData<PaymentRow>
 	public void invalidateAll()
 	{
 		invalidate(DocumentIdsSelection.ALL);
-		// nothing
 	}
 
 	@Override
 	public void invalidate(final DocumentIdsSelection rowIds)
 	{
 		final ImmutableSet<PaymentId> paymentIds = rowsHolder
-				.getRecordIdsToRefresh(rowIds, PaymentRow::convertDocumentIdToPaymentId);
+				.getRecordIdsToRefresh(rowIds, PaymentToReconcileRow::convertDocumentIdToPaymentId);
 
-		final List<PaymentRow> newRows = repository.getPaymentRowsListByPaymentId(paymentIds, evaluationDate);
+		final List<PaymentToReconcileRow> newRows = repository.getPaymentToReconcileRowsByIds(paymentIds);
 		rowsHolder.compute(rows -> rows.replacingRows(rowIds, newRows));
-	}
-
-	public void addPayment(@NonNull final PaymentId paymentId)
-	{
-		final PaymentRow row = repository.getPaymentRowByPaymentId(paymentId, evaluationDate).orElse(null);
-		if (row == null)
-		{
-			throw new AdempiereException("@PaymentNotOpen@");
-		}
-
-		rowsHolder.compute(rows -> rows.addingRow(row));
 	}
 }

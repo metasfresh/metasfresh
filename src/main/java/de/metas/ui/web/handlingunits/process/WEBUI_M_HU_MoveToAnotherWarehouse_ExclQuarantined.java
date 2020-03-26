@@ -7,6 +7,7 @@ import org.compiere.Adempiere;
 
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.quarantine.HULotNumberQuarantineService;
+import de.metas.i18n.AdMessageKey;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.handlingunits.HUEditorRowFilter.Select;
 
@@ -34,7 +35,7 @@ import de.metas.ui.web.handlingunits.HUEditorRowFilter.Select;
 
 public class WEBUI_M_HU_MoveToAnotherWarehouse_ExclQuarantined extends WEBUI_M_HU_MoveToAnotherWarehouse_Helper
 {
-	public static final String MSG_WEBUI_HUs_IN_Quarantine = "WEBUI_HUs_IN_Quarantine";
+	public static final AdMessageKey MSG_WEBUI_HUs_IN_Quarantine = AdMessageKey.of("WEBUI_HUs_IN_Quarantine");
 
 	private final transient HULotNumberQuarantineService lotNumberQuarantineService = Adempiere.getBean(HULotNumberQuarantineService.class);
 

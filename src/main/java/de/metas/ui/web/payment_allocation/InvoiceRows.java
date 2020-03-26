@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.lang.SynchronizedMutable;
 import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 import org.compiere.model.I_C_Invoice;
 
@@ -13,6 +12,7 @@ import com.google.common.collect.ImmutableSet;
 
 import de.metas.invoice.InvoiceId;
 import de.metas.ui.web.view.template.IRowsData;
+import de.metas.ui.web.view.template.SynchronizedRowsIndexHolder;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import lombok.Builder;
@@ -49,7 +49,7 @@ public class InvoiceRows implements IRowsData<InvoiceRow>
 
 	private final PaymentAndInvoiceRowsRepo repository;
 	private final ZonedDateTime evaluationDate;
-	private final SynchronizedMutable<ImmutableRowsIndex<InvoiceRow>> rowsHolder;
+	private final SynchronizedRowsIndexHolder<InvoiceRow> rowsHolder;
 
 	@Builder
 	private InvoiceRows(
@@ -59,23 +59,21 @@ public class InvoiceRows implements IRowsData<InvoiceRow>
 	{
 		this.repository = repository;
 		this.evaluationDate = evaluationDate;
-		rowsHolder = SynchronizedMutable.of(ImmutableRowsIndex.of(initialRows));
+		rowsHolder = SynchronizedRowsIndexHolder.of(initialRows);
 	}
 
 	@Override
 	public Map<DocumentId, InvoiceRow> getDocumentId2TopLevelRows()
 	{
-		final ImmutableRowsIndex<InvoiceRow> rows = rowsHolder.getValue();
-		return rows.getDocumentId2TopLevelRows();
+		return rowsHolder.getDocumentId2TopLevelRows();
 	}
 
 	@Override
 	public DocumentIdsSelection getDocumentIdsToInvalidate(final TableRecordReferenceSet recordRefs)
 	{
-		final ImmutableRowsIndex<InvoiceRow> rows = rowsHolder.getValue();
 		return recordRefs.streamIds(I_C_Invoice.Table_Name, InvoiceId::ofRepoId)
 				.map(InvoiceRow::convertInvoiceIdToDocumentId)
-				.filter(rows::isRelevantForRefreshing)
+				.filter(rowsHolder.isRelevantForRefreshingByDocumentId())
 				.collect(DocumentIdsSelection.toDocumentIdsSelection());
 	}
 
@@ -89,7 +87,6 @@ public class InvoiceRows implements IRowsData<InvoiceRow>
 	public void invalidate(final DocumentIdsSelection rowIds)
 	{
 		final ImmutableSet<InvoiceId> invoiceIds = rowsHolder
-				.getValue()
 				.getRecordIdsToRefresh(rowIds, InvoiceRow::convertDocumentIdToInvoiceId);
 
 		final List<InvoiceRow> newRows = repository.getInvoiceRowsListByInvoiceId(invoiceIds, evaluationDate);

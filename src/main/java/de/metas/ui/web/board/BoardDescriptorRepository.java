@@ -653,7 +653,7 @@ public class BoardDescriptorRepository
 		else if (widgetType.isBoolean())
 		{
 			final boolean valueBoolean = DisplayType.toBoolean(value);
-			return Services.get(IMsgBL.class).getTranslatableMsgText(valueBoolean ? "Y" : "N");
+			return Services.get(IMsgBL.class).getTranslatableMsgText(valueBoolean);
 		}
 
 		return TranslatableStrings.constant(value.toString());

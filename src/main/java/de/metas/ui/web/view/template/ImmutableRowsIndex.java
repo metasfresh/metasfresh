@@ -1,4 +1,4 @@
-package de.metas.ui.web.payment_allocation;
+package de.metas.ui.web.view.template;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -40,7 +40,7 @@ import lombok.NonNull;
  * #L%
  */
 
-final class ImmutableRowsIndex<T extends IViewRow>
+public final class ImmutableRowsIndex<T extends IViewRow>
 {
 	public static <T extends IViewRow> ImmutableRowsIndex<T> of(@NonNull final List<T> rows)
 	{

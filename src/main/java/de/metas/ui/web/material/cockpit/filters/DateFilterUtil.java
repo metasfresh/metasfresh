@@ -2,6 +2,7 @@ package de.metas.ui.web.material.cockpit.filters;
 
 import org.compiere.util.Env;
 
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.DocumentFilterDescriptor;
@@ -39,7 +40,7 @@ import lombok.experimental.UtilityClass;
 @UtilityClass
 class DateFilterUtil
 {
-	private static final String MSG_FILTER_CAPTION = "Date";
+	private static final AdMessageKey MSG_FILTER_CAPTION = AdMessageKey.of("Date");
 
 	public static DocumentFilterDescriptor createFilterDescriptor()
 	{

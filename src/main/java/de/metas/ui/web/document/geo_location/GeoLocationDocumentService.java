@@ -16,6 +16,7 @@ import org.springframework.stereotype.Component;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.document.archive.model.I_C_BPartner;
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.ui.web.document.filter.DocumentFilter;
@@ -64,7 +65,7 @@ public class GeoLocationDocumentService implements DocumentFilterDescriptorsProv
 
 	private static final int SORT_NO = 40000;
 
-	private static final String MSG_FILTER_CAPTION = "LocationAreaSearch";
+	private static final AdMessageKey MSG_FILTER_CAPTION = AdMessageKey.of("LocationAreaSearch");
 	private static final String SYS_CONFIG_ENABLE_GEO_LOCATION_SEARCH = "de.metas.ui.web.document.geo_location.filter_enabled";
 
 	private static final GeoLocationDocumentDescriptor DESCRIPTOR_FOR_LocationId = GeoLocationDocumentDescriptor.builder()

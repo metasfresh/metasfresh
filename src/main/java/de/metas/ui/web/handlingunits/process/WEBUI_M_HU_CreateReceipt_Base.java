@@ -25,6 +25,7 @@ import de.metas.handlingunits.model.I_M_ReceiptSchedule;
 import de.metas.handlingunits.receiptschedule.IHUReceiptScheduleBL;
 import de.metas.handlingunits.receiptschedule.IHUReceiptScheduleBL.CreateReceiptsParameters;
 import de.metas.handlingunits.receiptschedule.IHUReceiptScheduleBL.CreateReceiptsParameters.CreateReceiptsParametersBuilder;
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.process.IProcessPrecondition;
@@ -70,7 +71,8 @@ public abstract class WEBUI_M_HU_CreateReceipt_Base
 		extends WEBUI_M_HU_Receipt_Base
 		implements IProcessPrecondition
 {
-	private static final String MSG_ScanRequired = "securPharm.scanRequiredError";
+	private static final AdMessageKey MSG_ScanRequired = AdMessageKey.of("securPharm.scanRequiredError");
+	private static final AdMessageKey MSG_MissingMandatoryHUAttribute = AdMessageKey.of("WEBUI_Receipt_Missing_Mandatory_HU_Attribute");
 
 	@Autowired
 	private IViewsRepository viewsRepo;
@@ -114,7 +116,7 @@ public abstract class WEBUI_M_HU_CreateReceipt_Base
 			{
 				final I_M_Attribute attribute = attributeDAO.retrieveAttributeByValue(mandatoryAttributeName);
 				final I_M_Attribute translatedAttribute = InterfaceWrapperHelper.translate(attribute, I_M_Attribute.class);
-				final ITranslatableString msg = msgBL.getTranslatableMsgText("WEBUI_Receipt_Missing_Mandatory_HU_Attribute", translatedAttribute.getName());
+				final ITranslatableString msg = msgBL.getTranslatableMsgText(MSG_MissingMandatoryHUAttribute, translatedAttribute.getName());
 				return ProcessPreconditionsResolution.reject(msg);
 			}
 		}

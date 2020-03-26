@@ -4,6 +4,7 @@ import java.util.Optional;
 
 import org.adempiere.exceptions.AdempiereException;
 
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.ITranslatableString;
 import de.metas.pricing.conditions.PricingConditionsBreak;
 import de.metas.pricing.conditions.PricingConditionsBreakId;
@@ -41,7 +42,7 @@ import lombok.NonNull;
 
 public class PricingConditionsView_SaveEditableRow extends PricingConditionsViewBasedProcess
 {
-	private static final String MSG_BPARTNER_HAS_NO_PRICING_CONDITIONS = "de.metas.ui.web.order.pricingconditions.C_BPartnerHasNoPricingConditions";
+	private static final AdMessageKey MSG_BPARTNER_HAS_NO_PRICING_CONDITIONS = AdMessageKey.of("de.metas.ui.web.order.pricingconditions.C_BPartnerHasNoPricingConditions");
 	private final IPricingConditionsRepository pricingConditionsRepo = Services.get(IPricingConditionsRepository.class);
 
 	@Override

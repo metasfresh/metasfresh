@@ -14,6 +14,7 @@ import org.compiere.model.I_M_Product_Category;
 
 import com.google.common.base.Predicates;
 
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.material.cockpit.model.I_MD_Cockpit;
 import de.metas.ui.web.document.filter.DocumentFilter;
@@ -53,7 +54,7 @@ import lombok.experimental.UtilityClass;
 @UtilityClass
 public class ProductFilterUtil
 {
-	private static final String MSG_FILTER_CAPTION = "Product";
+	private static final AdMessageKey MSG_FILTER_CAPTION = AdMessageKey.of("Product");
 
 	public static DocumentFilterDescriptor createFilterDescriptor()
 	{
