@@ -62,18 +62,19 @@ public class ManualTest
 	public void init()
 	{
   		final CleverReachConfig cleverReachConfig = CleverReachConfig.builder()
-				.client_id("")
-				.login("")
-				.password("")
+				.client_id("178998")
+				.login("tobias.schoeneberg@metasfresh.com")
+				.password("kK7drDkM")
 				.platformId(PLATFORM_ID)
 				.build();
 		cleverReachClient = new CleverReachClient(cleverReachConfig);
 	}
 
 	@Test
-	@Ignore
+//	@Ignore
 	public void createUpdateDeleteCampagin()
 	{
+		// add one campaign
 		final String nameOfCampaignToAdd = appendSystemTime("test-name1");
 		final Campaign campaignToAdd = Campaign.builder()
 				.name(nameOfCampaignToAdd)
@@ -87,18 +88,24 @@ public class ManualTest
 		assertThat(localToRemoteSyncResult.getLocalToRemoteStatus()).isEqualTo(LocalToRemoteStatus.INSERTED_ON_REMOTE);
 		assertThat(localToRemoteSyncResult.getSynchedDataRecord()).isInstanceOf(Campaign.class);
 
+
+//		final List<LocalToRemoteSyncResult> addedCampaignResults2 = cleverReachClient.syncCampaignsLocalToRemote(ImmutableList.of(campaignToAdd));
+//		assertThat(addedCampaignResults2).hasSize(1);
+
+
 		final Campaign addedCampaign = Campaign.cast(localToRemoteSyncResult.getSynchedDataRecord());
 		assertThat(addedCampaign.getRemoteId()).isNotEmpty();
 		assertThat(addedCampaign.getName()).isEqualTo(nameOfCampaignToAdd);
 
-		final Campaign campaignToUpdate = addedCampaign.toBuilder().name("testcampaign-name2").build();
+		// now change its name
+		final Campaign campaignToUpdate = addedCampaign.toBuilder().name("").remoteId(addedCampaign.getRemoteId()+10).build();
 		final List<LocalToRemoteSyncResult> updatedCampaignResults = cleverReachClient.syncCampaignsLocalToRemote(ImmutableList.of(campaignToUpdate));
 		assertThat(updatedCampaignResults).hasSize(1);
 		assertThat(updatedCampaignResults.get(0).getLocalToRemoteStatus()).isEqualTo(LocalToRemoteStatus.UPDATED_ON_REMOTE);
 
 		final Campaign updatedCampaign = Campaign.cast(updatedCampaignResults.get(0).getSynchedDataRecord());
 		assertThat(updatedCampaign.getRemoteId()).isEqualTo(addedCampaign.getRemoteId());
-		assertThat(updatedCampaign.getName()).isEqualTo("testcampaign-name2");
+		assertThat(updatedCampaign.getName()).isEqualTo("testcampaign-name2 ");
 
 		cleverReachClient.deleteCampaign(updatedCampaign);
 	}

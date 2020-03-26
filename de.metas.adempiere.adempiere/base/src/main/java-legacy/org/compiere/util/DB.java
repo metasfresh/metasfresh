@@ -102,28 +102,28 @@ import lombok.experimental.UtilityClass;
  *
  * @author Jorg Janke
  * @author Ashley Ramdass (Posterita)
- * <li>Modifications: removed static references to database connection and instead always get a new connection from database pool manager which manages all
- * connections set rw/ro properties for the connection accordingly.
+ *         <li>Modifications: removed static references to database connection and instead always get a new connection from database pool manager which manages all
+ *         connections set rw/ro properties for the connection accordingly.
  * @author Teo Sarca, SC ARHIPAC SERVICE SRL
- * <li>BF [ 1647864 ] WAN: delete record error
- * <li>FR [ 1884435 ] Add more DB.getSQLValue helper methods
- * <li>FR [ 1904460 ] DB.executeUpdate should handle
- * Boolean params
- * <li>BF [ 1962568 ] DB.executeUpdate should handle null params
- * <li>FR [ 1984268 ] DB.executeUpdateEx should throw DBException
- * <li>FR [ 1986583 ] Add DB.executeUpdateEx(String,
- * Object[], String)
- * <li>BF [ 2030233 ] Remove duplicate code from DB class
- * <li>FR [ 2107062 ] Add more DB.getKeyNamePairs methods
- * <li>FR [ 2448461 ] Introduce DB.getSQLValue*Ex methods
- * <li>FR
- * [ 2781053 ] Introduce DB.getValueNamePairs
- * <li>FR [ 2818480 ] Introduce DB.createT_Selection helper method
- * https://sourceforge.net/tracker/?func=detail&aid=2818480&group_id=176962&atid=879335
+ *         <li>BF [ 1647864 ] WAN: delete record error
+ *         <li>FR [ 1884435 ] Add more DB.getSQLValue helper methods
+ *         <li>FR [ 1904460 ] DB.executeUpdate should handle
+ *         Boolean params
+ *         <li>BF [ 1962568 ] DB.executeUpdate should handle null params
+ *         <li>FR [ 1984268 ] DB.executeUpdateEx should throw DBException
+ *         <li>FR [ 1986583 ] Add DB.executeUpdateEx(String,
+ *         Object[], String)
+ *         <li>BF [ 2030233 ] Remove duplicate code from DB class
+ *         <li>FR [ 2107062 ] Add more DB.getKeyNamePairs methods
+ *         <li>FR [ 2448461 ] Introduce DB.getSQLValue*Ex methods
+ *         <li>FR
+ *         [ 2781053 ] Introduce DB.getValueNamePairs
+ *         <li>FR [ 2818480 ] Introduce DB.createT_Selection helper method
+ *         https://sourceforge.net/tracker/?func=detail&aid=2818480&group_id=176962&atid=879335
  * @author Teo Sarca, teo.sarca@gmail.com
- * <li>BF [ 2873324 ] DB.TO_NUMBER should be a static method https://sourceforge.net/tracker/?func=detail&aid=2873324&group_id=176962&atid=879332
- * <li>FR [
- * 2873891 ] DB.getKeyNamePairs should use trxName https://sourceforge.net/tracker/?func=detail&aid=2873891&group_id=176962&atid=879335
+ *         <li>BF [ 2873324 ] DB.TO_NUMBER should be a static method https://sourceforge.net/tracker/?func=detail&aid=2873324&group_id=176962&atid=879332
+ *         <li>FR [
+ *         2873891 ] DB.getKeyNamePairs should use trxName https://sourceforge.net/tracker/?func=detail&aid=2873891&group_id=176962&atid=879335
  * @version $Id: DB.java,v 1.8 2006/10/09 00:22:29 jjanke Exp $ ---
  */
 @UtilityClass
@@ -418,7 +418,7 @@ public final class DB
 	 * Create new Connection. The connection must be closed explicitly by the application
 	 *
 	 * @param autoCommit auto commit
-	 * @param trxLevel   - Connection.TRANSACTION_READ_UNCOMMITTED, Connection.TRANSACTION_READ_COMMITTED, Connection.TRANSACTION_REPEATABLE_READ, or Connection.TRANSACTION_READ_COMMITTED.
+	 * @param trxLevel - Connection.TRANSACTION_READ_UNCOMMITTED, Connection.TRANSACTION_READ_COMMITTED, Connection.TRANSACTION_REPEATABLE_READ, or Connection.TRANSACTION_READ_COMMITTED.
 	 * @return Connection connection
 	 */
 	public static Connection createConnection(final boolean autoCommit, final int trxLevel)
@@ -466,7 +466,7 @@ public final class DB
 	 *
 	 * @param autoCommit auto commit
 	 * @param readOnly
-	 * @param trxLevel   - Connection.TRANSACTION_READ_UNCOMMITTED, Connection.TRANSACTION_READ_COMMITTED, Connection.TRANSACTION_REPEATABLE_READ, or Connection.TRANSACTION_READ_COMMITTED.
+	 * @param trxLevel - Connection.TRANSACTION_READ_UNCOMMITTED, Connection.TRANSACTION_READ_COMMITTED, Connection.TRANSACTION_REPEATABLE_READ, or Connection.TRANSACTION_READ_COMMITTED.
 	 */
 	public static Connection createConnection(final boolean autoCommit, final boolean readOnly, final int trxLevel)
 	{
@@ -528,7 +528,6 @@ public final class DB
 		}
 		return "No Database";
 	}    // getDatabaseInfo
-	// @formatter:off
 
 	/**************************************************************************
 	 * Prepare Call
@@ -611,6 +610,38 @@ public final class DB
 	}    // prepareStatement
 
 	/**
+	 * @return a prepared statement that will internally fetch only 1000 rows at a time, in order not to overuse local memory.
+	 *
+	 * @see https://jdbc.postgresql.org/documentation/head/query.html
+	 */
+	public static PreparedStatement prepareStatementForDataExport(
+			@NonNull final String sqlSelect,
+			@Nullable final ImmutableList<Object> sqlParams)
+	{
+		try
+		{
+			// disabling trx timeout, as this might be a long-running process
+			DB.getConstraints().setTrxTimeoutSecs(-1, false);
+
+			final Connection conn = DB.createConnection(false, Connection.TRANSACTION_READ_COMMITTED); // autoCommit = false
+
+			// Make sure connection's autoCommit is false, else setFetchSize won't work at least with postgresql-jdbc driver
+			Check.assume(!conn.getAutoCommit(), "JDBC connection's AutoCommit flag shall be false");
+			final PreparedStatement pstmt = conn.prepareStatement(sqlSelect);
+
+			Check.assume(pstmt.getResultSetType() == ResultSet.TYPE_FORWARD_ONLY, "Prepared statement's ResultSetType shall be TYPE_FORWARD_ONLY");
+
+			pstmt.setFetchSize(1000);
+			DB.setParameters(pstmt, sqlParams);
+			return pstmt;
+		}
+		catch (SQLException e)
+		{
+			throw DBException.wrapIfNeeded(e);
+		}
+	}
+
+	/**
 	 * Create Read Only Statement
 	 *
 	 * @return Statement
@@ -658,7 +689,7 @@ public final class DB
 	 * @param stmt   statements
 	 * @param params parameters list; if null or empty list, no parameters are set
 	 */
-	public static void setParameters(final PreparedStatement stmt, final List<?> params)
+	public static void setParameters(@NonNull final PreparedStatement stmt, @Nullable final List<?> params)
 			throws SQLException
 	{
 		if (params == null || params.size() == 0)

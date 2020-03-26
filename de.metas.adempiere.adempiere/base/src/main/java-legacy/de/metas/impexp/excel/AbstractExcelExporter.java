@@ -25,6 +25,7 @@ import java.sql.Timestamp;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Properties;
 
 import javax.annotation.Nullable;
@@ -116,14 +117,9 @@ public abstract class AbstractExcelExporter
 	 */
 	public abstract int getDisplayType(int row, int col);
 
-	/**
-	 * Get cell value
-	 *
-	 * @param row row index
-	 * @param col column index
-	 * @return cell value
-	 */
-	protected abstract CellValue getValueAt(int row, int col);
+	protected abstract List<CellValue> getNextRow();
+
+	protected abstract boolean hasNextRow();
 
 	/**
 	 * Check if there is a page break on given cell
@@ -423,10 +419,10 @@ public abstract class AbstractExcelExporter
 	private void autoSizeColumnsWidth(final Sheet sheet, final int lastColumnIndex)
 	{
 		// #5922
-		// This is needed since we changed from 'poi.version 3.12'  to 'poi.version 3.15'.
+		// This is needed since we changed from 'poi.version 3.12' to 'poi.version 3.15'.
 		if (sheet instanceof SXSSFSheet)
 		{
-			final SXSSFSheet sxssfSheet = (SXSSFSheet) sheet;
+			final SXSSFSheet sxssfSheet = (SXSSFSheet)sheet;
 			sxssfSheet.trackAllColumnsForAutoSizing();
 		}
 
@@ -575,15 +571,18 @@ public abstract class AbstractExcelExporter
 
 		Sheet sheet = createTableSheet();
 		String sheetName = null;
-		//
 		int colnumMax = 0;
-		for (int rownum = 0, xls_rownum = 1; rownum < getRowCount(); rownum++, xls_rownum++)
+		int xls_rownum = 1;
+
+		while (hasNextRow())
 		{
 			boolean isPageBreak = false;
-			final Row row = sheet.createRow(xls_rownum);
+			final Row excelRow = sheet.createRow(xls_rownum);
+
+			final List<CellValue> sourceRow = getNextRow();
 			// for all columns
 			int colnum = 0;
-			for (int col = 0; col < getColumnCount(); col++)
+			for (int col = 0; col < sourceRow.size(); col++)
 			{
 				if (colnum > colnumMax)
 				{
@@ -592,7 +591,7 @@ public abstract class AbstractExcelExporter
 				//
 				if (isColumnPrinted(col))
 				{
-					final Cell cell = row.createCell(colnum);
+					final Cell cell = excelRow.createCell(colnum);
 
 					// 03917: poi-3.7 doesn't have this method anymore
 					// cell.setEncoding(Cell.ENCODING_UTF_16); // Bug-2017673 - Export Report as Excel - Bad Encoding
@@ -602,11 +601,11 @@ public abstract class AbstractExcelExporter
 					CellValue cellValue;
 					try
 					{
-						cellValue = getValueAt(rownum, col);
+						cellValue = sourceRow.get(col);
 					}
 					catch (final Exception ex)
 					{
-						logger.warn("Failed extracting cell value at row={}, col={}. Considering it null.", rownum, col, ex);
+						logger.warn("Failed extracting cell value at row={}, col={}. Considering it null.", xls_rownum, col, ex);
 						cellValue = null;
 					}
 
@@ -645,10 +644,10 @@ public abstract class AbstractExcelExporter
 						}
 					}
 					//
-					cell.setCellStyle(getStyle(rownum, col));
+					cell.setCellStyle(getStyle(xls_rownum - 1, col));
 
 					// Page break
-					if (isPageBreak(rownum, col))
+					if (isPageBreak(xls_rownum - 1, col))
 					{
 						isPageBreak = true;
 						sheetName = fixString(cell.getRichStringCellValue().getString());
@@ -673,6 +672,8 @@ public abstract class AbstractExcelExporter
 				xls_rownum = 0;
 				isPageBreak = false;
 			}
+
+			xls_rownum++;
 		}	// for all rows
 
 		//

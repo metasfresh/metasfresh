@@ -8,13 +8,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.poi.ss.usermodel.Font;
-import org.compiere.Adempiere;
 import org.compiere.Adempiere.RunMode;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
 
-import de.metas.impexp.excel.ArrayExcelExporter;
+import de.metas.impexp.excel.JdbcExcelExporter;
 import de.metas.impexp.excel.service.ExcelExporterService;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
@@ -53,20 +53,19 @@ public class ExportProductSpecifications extends JavaProcess implements IProcess
 {
 
 	private final static String tableName = "\"de.metas.fresh\".product_specifications_v";
-	final ExcelExporterService excelExporterService = Adempiere.getBean(ExcelExporterService.class);
+	private final ExcelExporterService excelExporterService = SpringContextHolder.instance.getBean(ExcelExporterService.class);
 
 	@Override
 	protected String doIt() throws Exception
 	{
-
-		final List<List<Object>> data = excelExporterService.getDataFromSQL(getSql());
-		final File tempFile = ArrayExcelExporter.builder()
+		final JdbcExcelExporter jdbcExcelExporter = JdbcExcelExporter.builder()
 				.ctx(getCtx())
-				.data(data)
-				.columnHeaders(getColumnHeaders())
-				.build()
-				.setFontCharset(Font.ANSI_CHARSET)
-				.exportToTempFile();
+				.build();
+		jdbcExcelExporter.setFontCharset(Font.ANSI_CHARSET);
+
+		excelExporterService.processDataFromSQL(getSql(), jdbcExcelExporter);
+
+		final File tempFile = jdbcExcelExporter.getResultFile();
 
 		final boolean backEndOrSwing = Ini.getRunMode() == RunMode.BACKEND || Ini.isSwingClient();
 
@@ -126,7 +125,7 @@ public class ExportProductSpecifications extends JavaProcess implements IProcess
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(final IProcessPreconditionsContext context)
 	{
-		if(!context.isSingleSelection())
+		if (!context.isSingleSelection())
 		{
 			return ProcessPreconditionsResolution.rejectBecauseNotSingleSelection();
 		}

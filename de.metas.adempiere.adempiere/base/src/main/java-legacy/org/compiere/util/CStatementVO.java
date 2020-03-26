@@ -57,7 +57,6 @@ public class CStatementVO implements Serializable
 	 */
 	public CStatementVO(final int resultSetType, final int resultSetConcurrency, final String sql, final String trxName)
 	{
-		super();
 		m_resultSetType = resultSetType;
 		m_resultSetConcurrency = resultSetConcurrency;
 		m_sql = sql;

@@ -14,7 +14,9 @@
 package org.adempiere.print.export;
 
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import javax.annotation.Nullable;
 import javax.print.attribute.standard.MediaSizeName;
@@ -38,7 +40,7 @@ import lombok.NonNull;
 
 /**
  * Export PrintData to Excel (XLS) file
- * 
+ *
  * @author Teo Sarca, SC ARHIPAC SERVICE SRL
  *         <li>BF [ 1939010 ] Excel Export ERROR - java.sql.Date - integrated Mario Grigioni's fix
  *         <li>BF [ 1974309 ] Exporting a report to XLS is not setting page format
@@ -48,6 +50,7 @@ public class PrintDataExcelExporter
 {
 	private final PrintData m_printData;
 	private final MPrintFormat m_printFormat;
+	private int rowNumber = 0;
 
 	@Builder
 	private PrintDataExcelExporter(
@@ -98,8 +101,7 @@ public class PrintDataExcelExporter
 		//
 	}
 
-	@Override
-	public CellValue getValueAt(final int row, final int col)
+	private CellValue getValueAt(final int row, final int col)
 	{
 		PrintDataElement pde = getPDE(row, col);
 		Object value = null;
@@ -228,4 +230,22 @@ public class PrintDataExcelExporter
 		//
 	}
 
+	@Override
+	protected List<CellValue> getNextRow()
+	{
+		final ArrayList<CellValue> result = new ArrayList<>();
+		for (int i = 0; i < getColumnCount(); i++)
+		{
+			result.add(getValueAt(rowNumber, i));
+		}
+
+		rowNumber++;
+		return result;
+	}
+
+	@Override
+	protected boolean hasNextRow()
+	{
+		return rowNumber < getRowCount();
+	}
 }

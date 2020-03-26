@@ -2,10 +2,15 @@ package de.metas.impexp.excel;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
+
+import javax.annotation.Nullable;
 
 import org.compiere.util.DisplayType;
 
+import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 
 /*
@@ -65,7 +70,17 @@ public class CellValues
 		}
 	}
 
-	public static final CellValue toCellValue(final Object value)
+	public static ArrayList<CellValue> toCellValues(@NonNull final List<Object> row)
+	{
+		final ArrayList<CellValue> result = new ArrayList<>();
+		for (final Object value : row)
+		{
+			result.add(toCellValue(value));
+		}
+		return result;
+	}
+
+	public static final CellValue toCellValue(@Nullable final Object value)
 	{
 		if (value == null)
 		{
@@ -124,4 +139,5 @@ public class CellValues
 			return CellValue.ofString(value.toString());
 		}
 	}
+
 }

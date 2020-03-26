@@ -9,7 +9,6 @@ import java.util.List;
 
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.impl.StringExpressionCompiler;
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
 import org.compiere.util.DB;
 import org.compiere.util.Evaluatee;
@@ -43,12 +42,23 @@ import lombok.NonNull;
 @Service
 public class ExcelExporterService
 {
-	public List<List<Object>> getDataFromSQL(final String sql)
+	/** Like {@link #processDataFromSQL(String, DataConsumer)}, just with an empty evaluator. */
+	public void processDataFromSQL(
+			@NonNull final String sql,
+			@NonNull final DataConsumer<ResultSet> dataConsumer)
 	{
-		return getDataFromSQL(sql, Evaluatees.empty());
+		processDataFromSQL(sql, Evaluatees.empty(), dataConsumer);
 	}
 
-	public List<List<Object>> getDataFromSQL(@NonNull final String sql, @NonNull final Evaluatee evalCtx)
+	/**
+	 * Execute the given query and add the result to the given {@code dataConsumer}.
+	 *
+	 * @param evalCtx can be used to replace expressions like e.g. {@code @C_BPartner_ID/0@} from the given {@code sql}.
+	 */
+	public void processDataFromSQL(
+			@NonNull final String sql,
+			@NonNull final Evaluatee evalCtx,
+			@NonNull final DataConsumer<ResultSet> dataConsumer)
 	{
 		final String sqlParsed = StringExpressionCompiler.instance
 				.compile(sql)
@@ -58,36 +68,22 @@ public class ExcelExporterService
 		ResultSet rs = null;
 		try
 		{
-			pstmt = DB.prepareStatement(sqlParsed, ITrx.TRXNAME_ThreadInherited);
+			pstmt = DB.prepareStatementForDataExport(sqlParsed, null/* sqlParams */);
 			rs = pstmt.executeQuery();
 
-			final List<List<Object>> data = new ArrayList<>();
 			final ResultSetMetaData meta = rs.getMetaData();
 
 			// always show excel header, even if there are no rows
-			final List<Object> header = new ArrayList<>();
+			final List<String> header = new ArrayList<>();
 			for (int col = 1; col <= meta.getColumnCount(); col++)
 			{
 				final String columnName = meta.getColumnLabel(col);
 				header.add(columnName);
 			}
-			data.add(header);
 
-			// iterate over the rows (possibly none returned)
-			while (rs.next())
-			{
-				final List<Object> row = new ArrayList<>();
-				for (int col = 1; col <= meta.getColumnCount(); col++)
-				{
-
-					final Object o = rs.getObject(col);
-					row.add(o);
-				}    // for all columns
-
-				data.add(row);
-			}
-
-			return data;
+			// we need to do the consuming right here, while the resultset is open.
+			dataConsumer.putHeader(header);
+			dataConsumer.putResult(rs);
 		}
 		catch (final SQLException ex)
 		{

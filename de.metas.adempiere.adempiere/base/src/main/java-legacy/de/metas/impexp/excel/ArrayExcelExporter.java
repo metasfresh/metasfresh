@@ -38,6 +38,9 @@ public class ArrayExcelExporter extends AbstractExcelExporter
 	private final List<String> m_columnHeaders;
 	private final boolean translateHeaders;
 
+	private List<Object> currentRow;
+	private int currentRowNumber = 0;
+
 	@Builder
 	private ArrayExcelExporter(
 			@Nullable final ExcelFormat excelFormat,
@@ -68,10 +71,9 @@ public class ArrayExcelExporter extends AbstractExcelExporter
 	}
 
 	@Override
-	public int getDisplayType(final int row, final int col)
+	public int getDisplayType(final int IGNORED, final int col)
 	{
-		final List<Object> dataRow = m_data.get(row + 1);
-		final Object value = dataRow.get(col);
+		final Object value = currentRow.get(col);
 		return CellValues.extractDisplayTypeFromValue(value);
 	}
 
@@ -107,14 +109,6 @@ public class ArrayExcelExporter extends AbstractExcelExporter
 	}
 
 	@Override
-	public CellValue getValueAt(final int row, final int col)
-	{
-		final List<Object> dataRow = m_data.get(row + 1);
-		final Object value = dataRow.get(col);
-		return CellValues.toCellValue(value);
-	}
-
-	@Override
 	public boolean isColumnPrinted(final int col)
 	{
 		return true;
@@ -130,5 +124,19 @@ public class ArrayExcelExporter extends AbstractExcelExporter
 	public boolean isPageBreak(final int row, final int col)
 	{
 		return false;
+	}
+
+	@Override
+	protected List<CellValue> getNextRow()
+	{
+		currentRow = m_data.get(currentRowNumber);
+		currentRowNumber++;
+		return CellValues.toCellValues(currentRow);
+	}
+
+	@Override
+	protected boolean hasNextRow()
+	{
+		return currentRowNumber < m_data.size();
 	}
 }
