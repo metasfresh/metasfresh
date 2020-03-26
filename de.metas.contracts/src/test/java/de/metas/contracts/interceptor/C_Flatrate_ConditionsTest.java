@@ -72,7 +72,7 @@ public class C_Flatrate_ConditionsTest
 		final I_C_Flatrate_Conditions conditions = newInstance(I_C_Flatrate_Conditions.class);
 		assertThatThrownBy(() -> {
 			C_Flatrate_Conditions.INSTANCE.prohibitVoidAndClose(conditions);
-		}).hasMessage("@" + MainValidator.MSG_FLATRATE_DOC_ACTION_NOT_SUPPORTED_0P + "@");
+		}).hasMessage(MainValidator.MSG_FLATRATE_DOC_ACTION_NOT_SUPPORTED_0P.toAD_Message());
 	}
 
 	@Test
@@ -101,7 +101,7 @@ public class C_Flatrate_ConditionsTest
 
 		assertThatThrownBy(() -> {
 			C_Flatrate_Conditions.INSTANCE.beforeReactivate(conditions);
-		}).hasMessage("@" + C_Flatrate_Conditions.MSG_CONDITIONS_ERROR_ALREADY_IN_USE_0P + "@");
+		}).hasMessage(C_Flatrate_Conditions.MSG_CONDITIONS_ERROR_ALREADY_IN_USE_0P.toAD_Message());
 	}
 
 }
