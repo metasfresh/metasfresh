@@ -1,13 +1,16 @@
-DROP FUNCTION IF EXISTS report.Current_Vs_Previous_Pricelist_Comparison_Report(IN p_C_BPartner_ID numeric, IN p_AD_Language text)
+DROP FUNCTION IF EXISTS report.Current_Vs_Previous_Pricelist_Comparison_Report(p_C_BPartner_ID numeric, p_AD_Language text)
 ;
 
-DROP FUNCTION IF EXISTS report.Current_Vs_Previous_Pricelist_Comparison_Report(IN p_C_BPartner_ID numeric, IN p_IsSoTrx text, IN p_AD_Language text)
+DROP FUNCTION IF EXISTS report.Current_Vs_Previous_Pricelist_Comparison_Report(p_C_BPartner_ID numeric, p_IsSoTrx text, p_AD_Language text)
 ;
 
--- todo add bpartner group as well
-CREATE OR REPLACE FUNCTION report.Current_Vs_Previous_Pricelist_Comparison_Report(IN p_C_BPartner_ID numeric,
-                                                                                  IN p_IsSoTrx       text = 'Y',
-                                                                                  IN p_AD_Language   TEXT = 'en_US')
+DROP FUNCTION IF EXISTS report.Current_Vs_Previous_Pricelist_Comparison_Report(p_C_BPartner_ID numeric, p_C_BP_Group_ID numeric, p_IsSoTrx text, p_AD_Language text)
+;
+
+CREATE OR REPLACE FUNCTION report.Current_Vs_Previous_Pricelist_Comparison_Report(p_C_BPartner_ID numeric = NULL,
+                                                                                  p_C_BP_Group_ID numeric = NULL,
+                                                                                  p_IsSoTrx       text = 'Y',
+                                                                                  p_AD_Language   TEXT = 'en_US')
     RETURNS TABLE
             (
                 bp_value                  text,
@@ -31,7 +34,9 @@ CREATE OR REPLACE FUNCTION report.Current_Vs_Previous_Pricelist_Comparison_Repor
                 m_attributesetinstance_id integer,
                 m_hu_pi_item_product_id   integer,
                 currency                  text,
-                currency2                 text
+                currency2                 text,
+                validFromPLV1             timestamp,
+                validFromPLV2             timestamp
             )
 AS
 $$
@@ -40,15 +45,13 @@ WITH PriceListVersionsByValidFrom AS
              SELECT t.*
              FROM (SELECT --
                           plv.c_bpartner_id,
-                          row_number() OVER (PARTITION BY plv.c_bpartner_id ORDER BY plv.validfrom DESC, plv.m_pricelist_version_id DESC) rank,
                           plv.m_pricelist_version_id,
-                          plv.validfrom,
-                          plv.name-- ,
-                          --                     plv.issotrx
+                          row_number() OVER (PARTITION BY plv.c_bpartner_id ORDER BY plv.validfrom DESC, plv.m_pricelist_version_id DESC) rank
                    FROM Report.Fresh_PriceList_Version_Val_Rule plv
                    WHERE TRUE
-                     --                      AND plv.issotrx = p_IsSoTrx
+                     AND plv.issotrx = p_IsSoTrx
                      AND (p_C_BPartner_ID IS NULL OR plv.c_bpartner_id = p_C_BPartner_ID)
+                     AND (p_C_BP_Group_ID IS NULL OR plv.c_bpartner_id IN (SELECT DISTINCT b.c_bpartner_id FROM c_bpartner b WHERE b.c_bp_group_id = p_C_BP_Group_ID))
                    ORDER BY TRUE,
                             plv.validfrom DESC,
                             plv.m_pricelist_version_id DESC) t
@@ -65,7 +68,9 @@ WITH PriceListVersionsByValidFrom AS
          ),
      result AS
          (
-             SELECT t.*
+             SELECT t.*,
+                    (SELECT mplv.validfrom FROM m_pricelist_version mplv WHERE mplv.m_pricelist_version_id = plv.currentPlv_ID)  validFromPLV1,
+                    (SELECT mplv.validfrom FROM m_pricelist_version mplv WHERE mplv.m_pricelist_version_id = plv.previousPlv_ID) validFromPLV2
              FROM currentAndPreviousPLV plv
                       INNER JOIN LATERAL report.fresh_PriceList_Details_Report(
                      plv.c_bpartner_id,
@@ -96,8 +101,13 @@ SELECT --
        r.m_attributesetinstance_id,
        r.m_hu_pi_item_product_id,
        r.currency::text,
-       r.currency2::text
+       r.currency2::text,
+       r.validFromPLV1,
+       r.validFromPLV2
 FROM result r
+ORDER BY TRUE,
+         r.bp_value,
+         r.value
 $$
     LANGUAGE sql STABLE
 ;
