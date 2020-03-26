@@ -11,10 +11,11 @@ import org.slf4j.Logger;
 import org.slf4j.MDC.MDCCloseable;
 
 import ch.qos.logback.classic.Level;
-import de.metas.contracts.commission.commissioninstance.services.InvoiceCandidateFacadeService;
+import de.metas.contracts.commission.commissioninstance.interceptor.C_Invoice_CandidateFacadeService;
 import de.metas.error.AdIssueId;
 import de.metas.error.IErrorManager;
 import de.metas.invoicecandidate.InvoiceCandidateId;
+import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.logging.LogManager;
 import de.metas.logging.TableRecordMDC;
@@ -54,9 +55,11 @@ public class C_Invoice_Candidate_CreateOrUpdateCommissionInstance
 		extends JavaProcess
 		implements IProcessPrecondition
 {
-	private final InvoiceCandidateFacadeService invoiceCandidateFacadeService = SpringContextHolder.instance.getBean(InvoiceCandidateFacadeService.class);
+	private final C_Invoice_CandidateFacadeService invoiceCandidateFacadeService = SpringContextHolder.instance.getBean(C_Invoice_CandidateFacadeService.class);
 
 	private final IErrorManager errorManager = Services.get(IErrorManager.class);
+	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	private static final Logger logger = LogManager.getLogger(C_Invoice_Candidate_CreateOrUpdateCommissionInstance.class);
 
@@ -71,7 +74,7 @@ public class C_Invoice_Candidate_CreateOrUpdateCommissionInstance
 	}
 
 	@Override
-	@RunOutOfTrx // each invoice candidate is processed in its own transaction
+	@RunOutOfTrx // each invoice is processed in its own transaction
 	protected String doIt() throws Exception
 	{
 		final IQueryFilter<I_C_Invoice_Candidate> selectedICsFilter = getProcessInfo().getQueryFilterOrElseFalse();
@@ -79,15 +82,15 @@ public class C_Invoice_Candidate_CreateOrUpdateCommissionInstance
 
 		Loggables.withLogger(logger, Level.DEBUG).addLog("Processing sales order InvoiceCandidates");
 		final Iterator<InvoiceCandidateId> salesOrderIcIds = createInvoiceCandidateIdIterator(selectedICsFilter);
-		final Result salesOrderIcResult = processInvoiceCandidates(salesOrderIcIds);
-		Loggables.withLogger(logger, Level.DEBUG).addLog("Processed {} InvoiceCandidates; anyException={}", salesOrderIcResult.getCounter(), salesOrderIcResult.isAnyException());
+		final Result result = processInvoiceCandidates(salesOrderIcIds);
+		Loggables.withLogger(logger, Level.DEBUG).addLog("Processed {} InvoiceCandidates; anyException={}", result.getCounter(), result.isAnyException());
 
 		return MSG_OK;
 	}
 
 	private Iterator<InvoiceCandidateId> createInvoiceCandidateIdIterator(@NonNull final IQueryFilter<I_C_Invoice_Candidate> selectedICsFilter)
 	{
-		final IQueryBuilder<I_C_Invoice_Candidate> queryBuilder = Services.get(IQueryBL.class)
+		final IQueryBuilder<I_C_Invoice_Candidate> queryBuilder = queryBL
 				.createQueryBuilder(I_C_Invoice_Candidate.class)
 				.addOnlyActiveRecordsFilter()
 				.filter(selectedICsFilter);
@@ -111,7 +114,9 @@ public class C_Invoice_Candidate_CreateOrUpdateCommissionInstance
 			{
 				trxManager.runInNewTrx(() -> {
 					logger.debug("Processing invoiceCandidate");
-					invoiceCandidateFacadeService.syncICToCommissionInstance(invoiceCandidateId, false/* candidateDeleted */);
+
+					final I_C_Invoice_Candidate invoiceCandidateRecord = invoiceCandDAO.getById(invoiceCandidateId);
+					invoiceCandidateFacadeService.syncICToCommissionInstance(invoiceCandidateRecord, false/* candidateDeleted */);
 				});
 				counter++;
 			}

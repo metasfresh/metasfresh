@@ -60,6 +60,7 @@ import de.metas.banking.BankStatementLineId;
 import de.metas.banking.api.BankAccountId;
 import de.metas.banking.api.IBPBankAccountDAO;
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.calendar.IPeriodBL;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
@@ -103,6 +104,7 @@ public class ESRImportBL implements IESRImportBL
 	private final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	private final IBPBankAccountDAO bpBankAccountDAO = Services.get(IBPBankAccountDAO.class);
+	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 
 	/**
 	 * @task https://github.com/metasfresh/metasfresh/issues/2118
@@ -918,7 +920,11 @@ public class ESRImportBL implements IESRImportBL
 
 			// check partners first
 			final BPartnerId esrPartnerId = BPartnerId.ofRepoIdOrNull(line.getC_BPartner_ID());
-			final I_C_BPartner invPartner = line.getC_Invoice_ID() > 0 ? line.getC_Invoice().getC_BPartner() : null;
+			final I_C_BPartner invPartner = line.getC_Invoice_ID() > 0
+					? bpartnerDAO.getById(line.getC_Invoice().getC_BPartner_ID())
+					: null;
+
+
 			final I_C_BPartner paymentPartner = line.getC_Payment_ID() > 0 ? InterfaceWrapperHelper.load(line.getC_Payment().getC_BPartner_ID(), I_C_BPartner.class) : null;
 			if (esrPartnerId != null)
 			{
@@ -1248,6 +1254,7 @@ public class ESRImportBL implements IESRImportBL
 		}
 	}
 
+	@Override
 	public void scheduleESRImportFor(final RunESRImportRequest runESRImportRequest)
 	{
 		final AttachmentEntry fromAttachmentEntry = attachmentEntryService.getById(runESRImportRequest.getAttachmentEntryId());

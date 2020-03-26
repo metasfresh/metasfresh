@@ -1,6 +1,6 @@
-drop function if exists report.fresh_pricelist_details_template_report(numeric, numeric, character varying, numeric);
-CREATE OR REPLACE FUNCTION report.fresh_pricelist_details_template_report(IN p_c_bpartner_id numeric, IN p_m_pricelist_version_id numeric, IN p_ad_language character varying,
-                                                                          IN p_c_bpartner_location_id numeric)
+DROP FUNCTION IF EXISTS report.fresh_pricelist_details_template_report(NUMERIC, NUMERIC, CHARACTER VARYING, NUMERIC);
+CREATE OR REPLACE FUNCTION report.fresh_pricelist_details_template_report(IN p_c_bpartner_id NUMERIC, IN p_m_pricelist_version_id NUMERIC, IN p_ad_language CHARACTER VARYING,
+                                                                          IN p_c_bpartner_location_id NUMERIC)
     RETURNS TABLE
             (
                 prodvalue               text,
@@ -18,6 +18,7 @@ CREATE OR REPLACE FUNCTION report.fresh_pricelist_details_template_report(IN p_c
                 uom_x12de355            text,
                 c_bpartner_location_id  numeric,
                 qtycuspertu             numeric,
+                m_product_id            integer,
                 bp_value                text,
                 bp_name                 text,
                 reportfilename          text
@@ -42,6 +43,7 @@ SELECT plc.value                                                                
        case when plc.m_hu_pi_item_product_id is not null then 'COLI' else plc.uom_x12de355 end                      as uom_x12de355,
        p_c_bpartner_location_id                                                                                     as c_bpartner_location_id,
        plc.qtycuspertu                                                                                              as qtycuspertu,
+       plc.m_product_id                                                                                             as m_product_id,
        plc.BP_Value                                                                                                 as bp_value,
        plc.BP_Name                                                                                                  as bp_name,
        CONCAT(bp_value, '_', bp_name, '_', case when prlv.isactive = 'Y' then prlv.validfrom else null end, '.xls') as reportfilename
@@ -60,3 +62,4 @@ $BODY$
     LANGUAGE sql STABLE
                  COST 100
                  ROWS 1000;
+                 

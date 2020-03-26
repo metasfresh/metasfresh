@@ -46,6 +46,7 @@ import de.metas.allocation.api.IAllocationDAO;
 import de.metas.bpartner.BPartnerId;
 import de.metas.currency.Amount;
 import de.metas.invoice.InvoiceId;
+import de.metas.invoice.InvoiceLineId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
 
@@ -58,8 +59,6 @@ public interface IInvoiceDAO extends ISingletonService
 	void save(org.compiere.model.I_C_InvoiceLine invoiceLine);
 
 	/**
-	 * @param invoice
-	 * @return
 	 * @throws IllegalArgumentException if invoice is not an {@link MInvoice}
 	 */
 	I_C_InvoiceLine createInvoiceLine(org.compiere.model.I_C_Invoice invoice);
@@ -173,4 +172,6 @@ public interface IInvoiceDAO extends ISingletonService
 	Stream<InvoiceId> streamInvoiceIdsByBPartnerId(BPartnerId bpartnerId);
 
 	ImmutableMap<InvoiceId, String> getDocumentNosByInvoiceIds(@NonNull Collection<InvoiceId> invoiceIds);
+
+	org.compiere.model.I_C_InvoiceLine getByIdOutOfTrx(InvoiceLineId invoiceLineId);
 }

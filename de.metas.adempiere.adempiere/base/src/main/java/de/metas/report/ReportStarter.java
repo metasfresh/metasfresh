@@ -294,7 +294,7 @@ public abstract class ReportStarter extends JavaProcess
 	{
 		try
 		{
-			log.info("Doing direct print without preview: {}", reportPrintingInfo);
+			logger.info("Doing direct print without preview: {}", reportPrintingInfo);
 			startProcessDirectPrint(reportPrintingInfo);
 		}
 		catch (final Exception e)
