@@ -8,6 +8,8 @@ import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.TimeUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
 import java.sql.Timestamp;
@@ -44,6 +46,8 @@ import java.util.function.Function;
 @UtilityClass
 public final class DateTimeConverters
 {
+	private static final Logger logger = LoggerFactory.getLogger(DateTimeConverters.class);
+
 	private static JSONDateConfig getConfig()
 	{
 		return JSONDateConfig.DEFAULT;
@@ -138,18 +142,24 @@ public final class DateTimeConverters
 		}
 	}
 
-	private static Timestamp fromJdbcTimestampToLocalDateTime(final Object valueObj)
+	@NonNull
+	private static Timestamp fromPossibleJdbcTimestamp(@NonNull final String s)
 	{
-		return Timestamp.valueOf((String)valueObj);
+		return Timestamp.valueOf(s);
 	}
 
-	/*
-	 * Saved User Query records generate the date as jdbc timestamp, and these fail for the formats we use.
+	/**
+	 * This method tries to guess if the string has JDBC format, so it is parsable by Timestamp.valueOf(String)
+	 * <p>
+	 * IMPORTANT: possible does not mean 100% sure, however impossible means 100% sure this string is not in JDBC format.
+	 * <p>
+	 * Background: Saved User Query records generate the date as jdbc timestamp, and these fail for the formats we use.
 	 * They appear as follows: `2016-06-11 00:00:00.0`.
+	 *
+	 * @return true if the given string *might* be in JDBC format, false if the given string is NOT in JDBC format.
 	 */
-	private static boolean isPossibleJdbcTimestamp(@NonNull final Object valueObj)
+	private static boolean isPossibleJdbcTimestamp(@NonNull final String s)
 	{
-		final String s = (String)valueObj;
 		return s.length() == 21 && s.charAt(10) == ' ';
 	}
 
@@ -210,6 +220,7 @@ public final class DateTimeConverters
 				.toInstant();
 	}
 
+	@Nullable
 	private static <T> T fromObjectTo(
 			final Object valueObj,
 			@NonNull final Class<T> type,
@@ -232,10 +243,18 @@ public final class DateTimeConverters
 			{
 				return null;
 			}
-			else if (isPossibleJdbcTimestamp(valueObj))
+			if (isPossibleJdbcTimestamp(json))
 			{
-				final Timestamp timestamp = fromJdbcTimestampToLocalDateTime(valueObj);
-				return fromObjectConverter.apply(timestamp);
+				try
+				{
+					final Timestamp timestamp = fromPossibleJdbcTimestamp(json);
+					return fromObjectConverter.apply(timestamp);
+				}
+				catch (final Exception e)
+				{
+					logger.warn("Error while converting possible JDBC Timestamp `{}` to java.sql.Timestamp", json, e);
+					return fromJsonConverer.apply(json);
+				}
 			}
 			else
 			{
