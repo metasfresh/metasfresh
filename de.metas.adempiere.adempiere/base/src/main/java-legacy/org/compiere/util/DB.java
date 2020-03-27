@@ -616,7 +616,7 @@ public final class DB
 	 */
 	public static PreparedStatement prepareStatementForDataExport(
 			@NonNull final String sqlSelect,
-			@Nullable final List<Object> sqlParams/* not ImmutableList because list elements might be null */)
+			@Nullable final List<?> sqlParams/* not ImmutableList because list elements might be null */)
 	{
 		try
 		{
