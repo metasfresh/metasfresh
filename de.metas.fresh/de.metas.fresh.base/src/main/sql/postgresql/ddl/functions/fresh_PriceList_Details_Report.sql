@@ -50,22 +50,22 @@ SELECT --
        plc.HasAltPrice,
        plc.UOMSymbol,
        plc.UOM_X12DE355::text,
-       CASE WHEN $4 = 'fr_CH' THEN Replace(plc.Attributes, 'AdR', 'DLR') ELSE plc.Attributes END AS Attributes,
+       CASE WHEN p_ad_language = 'fr_CH' THEN Replace(plc.Attributes, 'AdR', 'DLR') ELSE plc.Attributes END AS Attributes,
        plc.M_ProductPrice_ID::integer,
        plc.M_AttributeSetInstance_ID::integer,
        plc.M_HU_PI_Item_Product_ID::integer,
        plc.currency                                                                              AS currency,
        plc.currency2                                                                             AS currency2
 FROM RV_fresh_PriceList_Comparison plc
-         LEFT OUTER JOIN M_Product_Trl pt ON plc.M_Product_ID = pt.M_Product_ID AND AD_Language = $4 AND pt.isActive = 'Y'
+         LEFT OUTER JOIN M_Product_Trl pt ON plc.M_Product_ID = pt.M_Product_ID AND AD_Language = p_ad_language AND pt.isActive = 'Y'
          LEFT OUTER JOIN C_BPartner bp ON plc.C_BPartner_ID = bp.C_BPartner_ID AND bp.isActive = 'Y'
          LEFT OUTER JOIN C_BPartner_Product bpp ON bp.C_BPartner_ID = bpp.C_BPartner_ID AND plc.M_Product_ID = bpp.M_Product_ID AND bpp.isActive = 'Y'
 WHERE TRUE
-  AND plc.C_BPartner_ID = $1
-  AND plc.M_Pricelist_Version_ID = $2
-  AND plc.Alt_Pricelist_Version_ID = coalesce($3, plc.m_pricelist_version_id)
+  AND plc.C_BPartner_ID = p_c_bpartner_id
+  AND plc.M_Pricelist_Version_ID = p_m_pricelist_version_id
+  AND plc.Alt_Pricelist_Version_ID = coalesce(p_alt_pricelist_version_id, plc.m_pricelist_version_id)
   AND CASE
-          WHEN $3 IS NOT NULL
+          WHEN p_alt_pricelist_version_id IS NOT NULL
               THEN PriceStd != 0
               ELSE PriceStd != 0 OR AltPriceStd != 0
       END
