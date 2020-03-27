@@ -74,6 +74,7 @@ public class ManualTest
 	@Ignore
 	public void createUpdateDeleteCampagin()
 	{
+		// add one campaign
 		final String nameOfCampaignToAdd = appendSystemTime("test-name1");
 		final Campaign campaignToAdd = Campaign.builder()
 				.name(nameOfCampaignToAdd)
@@ -87,11 +88,13 @@ public class ManualTest
 		assertThat(localToRemoteSyncResult.getLocalToRemoteStatus()).isEqualTo(LocalToRemoteStatus.INSERTED_ON_REMOTE);
 		assertThat(localToRemoteSyncResult.getSynchedDataRecord()).isInstanceOf(Campaign.class);
 
+
 		final Campaign addedCampaign = Campaign.cast(localToRemoteSyncResult.getSynchedDataRecord());
 		assertThat(addedCampaign.getRemoteId()).isNotEmpty();
 		assertThat(addedCampaign.getName()).isEqualTo(nameOfCampaignToAdd);
 
-		final Campaign campaignToUpdate = addedCampaign.toBuilder().name("testcampaign-name2").build();
+		// now change its name
+		final Campaign campaignToUpdate = addedCampaign.toBuilder().name("testcampaign-name2").remoteId(addedCampaign.getRemoteId()).build();
 		final List<LocalToRemoteSyncResult> updatedCampaignResults = cleverReachClient.syncCampaignsLocalToRemote(ImmutableList.of(campaignToUpdate));
 		assertThat(updatedCampaignResults).hasSize(1);
 		assertThat(updatedCampaignResults.get(0).getLocalToRemoteStatus()).isEqualTo(LocalToRemoteStatus.UPDATED_ON_REMOTE);

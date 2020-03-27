@@ -523,7 +523,6 @@ public final class DB
 		}
 		return "No Database";
 	}	// getDatabaseInfo
-// @formatter:off
 //	/**************************************************************************
 //	 * Check database Version with Code version
 //	 *
@@ -729,6 +728,35 @@ public final class DB
 	}	// prepareStatement
 
 	/**
+	 * @return a prepared statement that will internally fetch only 1000 rows at a time, in order not to overuse local memory.
+	 *
+	 * @see https://jdbc.postgresql.org/documentation/head/query.html
+	 */
+	public static PreparedStatement prepareStatementForDataExport(
+			@NonNull final String sqlSelect,
+			@Nullable final List<?> sqlParams/* not ImmutableList because list elements might be null */)
+	{
+		try
+		{
+			final Connection conn = DB.createConnection(false, Connection.TRANSACTION_READ_COMMITTED); // autoCommit = false
+
+			// Make sure connection's autoCommit is false, else setFetchSize won't work at least with postgresql-jdbc driver
+			Check.assume(!conn.getAutoCommit(), "JDBC connection's AutoCommit flag shall be false");
+			final PreparedStatement pstmt = conn.prepareStatement(sqlSelect);
+
+			Check.assume(pstmt.getResultSetType() == ResultSet.TYPE_FORWARD_ONLY, "Prepared statement's ResultSetType shall be TYPE_FORWARD_ONLY");
+
+			pstmt.setFetchSize(1000);
+			DB.setParameters(pstmt, sqlParams);
+			return pstmt;
+		}
+		catch (final SQLException e)
+		{
+			throw DBException.wrapIfNeeded(e);
+		}
+	}
+
+	/**
 	 * Create Read Only Statement
 	 *
 	 * @return Statement
@@ -776,7 +804,7 @@ public final class DB
 	 * @param stmt statements
 	 * @param params parameters list; if null or empty list, no parameters are set
 	 */
-	public static void setParameters(PreparedStatement stmt, List<?> params)
+	public static void setParameters(@NonNull final PreparedStatement stmt, @Nullable final List<?> params)
 			throws SQLException
 	{
 		if (params == null || params.size() == 0)
@@ -3019,8 +3047,8 @@ public final class DB
 
 	/**
 	 * @param sqlStatement	SQL statement to be executed
-	 * @param parameters	Parameters to be used in the {@param sqlStatement}
-	 * @param trxName		transaction name
+	 * @param parameters Parameters to be used in the {@param sqlStatement}
+	 * @param trxName transaction name
 	 * @return each resulted row as a {@link List<String>}
 	 */
 	public static ImmutableList<List<String>> getSQL_ResultRowsAsListsOfStrings(final String sqlStatement, final List<Object> parameters, final String trxName)
