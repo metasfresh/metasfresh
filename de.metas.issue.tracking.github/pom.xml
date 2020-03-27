@@ -12,6 +12,11 @@
     <groupId>de.metas.issue.tracking</groupId>
     <artifactId>de.metas.issue.tracking.github</artifactId>
 
+    <properties>
+        <migration-sql-basedir></migration-sql-basedir>
+        <metasfresh.version>[1,10.0.0]</metasfresh.version>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>org.slf4j</groupId>
