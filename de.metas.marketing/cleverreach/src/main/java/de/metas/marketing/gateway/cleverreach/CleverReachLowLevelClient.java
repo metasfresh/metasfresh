@@ -71,12 +71,19 @@ public class CleverReachLowLevelClient
 				.password(cleverReachConfig.getPassword())
 				.build();
 
+		final HttpHeaders httpHeaders = new HttpHeaders();
+		httpHeaders.setAccept(ImmutableList.of(MediaType.APPLICATION_JSON));
+		httpHeaders.setContentType(MediaType.APPLICATION_JSON);
+
 		try (final MDCCloseable methodMDC = MDC.putCloseable("httpMethod", "POST");
 				final MDCCloseable urlMDC = MDC.putCloseable("url", url);
 				final MDCCloseable paramValuesMDC = MDC.putCloseable("login", login.withoutPassword().toString()))
 		{
 			final RestTemplate restTemplate = new RestTemplate();
-			final String authToken = restTemplate.postForObject(url, login, String.class);
+			final String authToken = restTemplate.postForObject(
+					url,
+					new HttpEntity<>(login, httpHeaders),
+					String.class);
 
 			return authToken.replaceAll("\"", ""); // the string comes complete within '"' which we need to remove
 		}
