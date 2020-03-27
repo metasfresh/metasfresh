@@ -62,3 +62,30 @@ $BODY$
     LANGUAGE sql STABLE
                  COST 100
                  ROWS 1000;
+
+-- 2020-03-26T17:22:12.638Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Val_Rule (AD_Client_ID,AD_Org_ID,AD_Val_Rule_ID,Code,Created,CreatedBy,EntityType,IsActive,Name,Type,Updated,UpdatedBy) VALUES (0,0,540493,'EXISTS ( select 1 from Report.Fresh_PriceList_Version_Val_Rule plv
+where M_PriceList_Version.M_PriceList_Version_ID=plv.M_PriceList_Version_ID
+ AND plv.C_BPartner_ID=@C_BPartner_ID@ and plv.issotrx = ''Y'') ',TO_TIMESTAMP('2020-03-26 19:22:12','YYYY-MM-DD HH24:MI:SS'),100,'U','Y','Fresh_SO_PriceList_Version_of_BPartner','S',TO_TIMESTAMP('2020-03-26 19:22:12','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2020-03-26T17:24:14.428Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET AD_Val_Rule_ID=NULL,Updated=TO_TIMESTAMP('2020-03-26 19:24:14','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_Para_ID=541645
+;
+
+-- 2020-03-26T17:24:23.291Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET AD_Val_Rule_ID=540493,Updated=TO_TIMESTAMP('2020-03-26 19:24:23','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_Para_ID=541645
+;
+
+-- 2020-03-26T17:27:26.218Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET AD_Val_Rule_ID=540243,Updated=TO_TIMESTAMP('2020-03-26 19:27:26','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_Para_ID=541645
+;
+
+-- 2020-03-26T17:27:42.723Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET AD_Val_Rule_ID=540493,Updated=TO_TIMESTAMP('2020-03-26 19:27:42','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_Para_ID=541733
+;
