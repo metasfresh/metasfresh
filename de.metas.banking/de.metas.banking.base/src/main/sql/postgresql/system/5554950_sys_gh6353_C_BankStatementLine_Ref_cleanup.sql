@@ -165,7 +165,7 @@ DELETE FROM AD_Field WHERE AD_Field_ID=589361
 
 -- 2020-03-20T11:51:47.348Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-ALTER TABLE C_BankStatementLine_Ref DROP COLUMN IF EXISTS CreatePayment
+SELECT public.db_alter_table('C_BankStatementLine_Ref', 'ALTER TABLE C_BankStatementLine_Ref DROP COLUMN IF EXISTS CreatePayment')
 ;
 
 -- 2020-03-20T11:51:47.484Z

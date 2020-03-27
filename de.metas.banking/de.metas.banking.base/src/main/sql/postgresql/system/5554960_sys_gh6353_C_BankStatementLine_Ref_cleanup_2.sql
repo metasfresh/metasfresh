@@ -60,7 +60,7 @@ DELETE FROM AD_Field WHERE AD_Field_ID=589368
 
 -- 2020-03-20T11:58:03.674Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-ALTER TABLE C_BankStatementLine_Ref DROP COLUMN IF EXISTS OverUnderAmt
+SELECT public.db_alter_table('C_BankStatementLine_Ref',  'ALTER TABLE C_BankStatementLine_Ref DROP COLUMN IF EXISTS OverUnderAmt')
 ;
 
 -- 2020-03-20T11:58:03.687Z
@@ -140,7 +140,7 @@ DELETE FROM AD_Field WHERE AD_Field_ID=589367
 
 -- 2020-03-20T11:58:22.237Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-ALTER TABLE C_BankStatementLine_Ref DROP COLUMN IF EXISTS IsOverUnderPayment
+SELECT public.db_alter_table('C_BankStatementLine_Ref',  'ALTER TABLE C_BankStatementLine_Ref DROP COLUMN IF EXISTS IsOverUnderPayment')
 ;
 
 -- 2020-03-20T11:58:22.243Z
@@ -220,7 +220,7 @@ DELETE FROM AD_Field WHERE AD_Field_ID=589366
 
 -- 2020-03-20T11:58:37.346Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-ALTER TABLE C_BankStatementLine_Ref DROP COLUMN IF EXISTS DiscountAmt
+SELECT public.db_alter_table('C_BankStatementLine_Ref',  'ALTER TABLE C_BankStatementLine_Ref DROP COLUMN IF EXISTS DiscountAmt')
 ;
 
 -- 2020-03-20T11:58:37.348Z
@@ -300,7 +300,7 @@ DELETE FROM AD_Field WHERE AD_Field_ID=589369
 
 -- 2020-03-20T11:58:55.292Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-ALTER TABLE C_BankStatementLine_Ref DROP COLUMN IF EXISTS WriteOffAmt
+SELECT public.db_alter_table('C_BankStatementLine_Ref',  'ALTER TABLE C_BankStatementLine_Ref DROP COLUMN IF EXISTS WriteOffAmt')
 ;
 
 -- 2020-03-20T11:58:55.296Z
