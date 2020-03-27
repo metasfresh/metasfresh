@@ -13,8 +13,13 @@ import org.adempiere.exceptions.DBException;
 import org.compiere.util.DB;
 import org.compiere.util.Evaluatee;
 import org.compiere.util.Evaluatees;
+import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
+import ch.qos.logback.classic.Level;
+import de.metas.logging.LogManager;
+import de.metas.util.ILoggable;
+import de.metas.util.Loggables;
 import lombok.NonNull;
 
 /*
@@ -42,6 +47,8 @@ import lombok.NonNull;
 @Service
 public class ExcelExporterService
 {
+	private static final Logger logger = LogManager.getLogger(ExcelExporterService.class);
+
 	/** Like {@link #processDataFromSQL(String, DataConsumer)}, just with an empty evaluator. */
 	public void processDataFromSQL(
 			@NonNull final String sql,
@@ -64,13 +71,16 @@ public class ExcelExporterService
 				.compile(sql)
 				.evaluate(evalCtx, OnVariableNotFound.Fail);
 
+		final ILoggable loggable = Loggables.withLogger(logger, Level.DEBUG);
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		try
 		{
+			loggable.addLog("Execute SQL={}", sqlParsed);
 			pstmt = DB.prepareStatementForDataExport(sqlParsed, null/* sqlParams */);
 			rs = pstmt.executeQuery();
 
+			loggable.addLog("Execute SQL done; push data to dataConsumer={}", dataConsumer);
 			final ResultSetMetaData meta = rs.getMetaData();
 
 			// always show excel header, even if there are no rows
@@ -84,6 +94,8 @@ public class ExcelExporterService
 			// we need to do the consuming right here, while the resultset is open.
 			dataConsumer.putHeader(header);
 			dataConsumer.putResult(rs);
+
+			loggable.addLog("Push data to dataConsumer done");
 		}
 		catch (final SQLException ex)
 		{

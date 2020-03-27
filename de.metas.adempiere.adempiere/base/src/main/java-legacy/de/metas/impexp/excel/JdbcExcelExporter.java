@@ -20,11 +20,13 @@ import de.metas.util.lang.CoalesceUtil;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.ToString;
 
 /**
  * DataConsumer that consumes a jdbc-{@link ResultSet} towards an excel file.
  * What it does is providing an {@link AbstractExcelExporter} that can be "filled" by {@link ExcelExporterService} from an open {@link ResultSet}.
  */
+@ToString(exclude = { "m_ctx", "m_resultSet", "m_columnHeaders" }) // exclude some fields, not sure if this is the best choice
 public class JdbcExcelExporter
 		extends AbstractExcelExporter
 		implements DataConsumer<ResultSet>
