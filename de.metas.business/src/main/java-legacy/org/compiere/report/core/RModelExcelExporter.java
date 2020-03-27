@@ -13,6 +13,9 @@
  *****************************************************************************/
 package org.compiere.report.core;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import javax.annotation.Nullable;
 
 import de.metas.impexp.excel.AbstractExcelExporter;
@@ -31,6 +34,7 @@ public class RModelExcelExporter
 		extends AbstractExcelExporter
 {
 	private final RModel m_model;
+	private int rowNumber = 0;
 
 	@Builder
 	private RModelExcelExporter(
@@ -55,7 +59,17 @@ public class RModelExcelExporter
 	}
 
 	@Override
-	public String getHeaderName(final int col)
+	public List<CellValue> getHeaderNames()
+	{
+		final ArrayList<CellValue> result = new ArrayList<>();
+		for (int i = 0; i < getColumnCount(); i++)
+		{
+			result.add(CellValues.toCellValue(getHeaderName(i)));
+		}
+		return result;
+	}
+
+	private String getHeaderName(final int col)
 	{
 		return m_model.getRColumn(col).getColHeader();
 	}
@@ -66,8 +80,7 @@ public class RModelExcelExporter
 		return m_model.getRowCount();
 	}
 
-	@Override
-	public CellValue getValueAt(final int row, final int col)
+	private CellValue getValueAt(final int row, final int col)
 	{
 		final Object valueObj = m_model.getValueAt(row, col);
 		final int displayType = getDisplayType(row, col);
@@ -90,5 +103,24 @@ public class RModelExcelExporter
 	public boolean isPageBreak(final int row, final int col)
 	{
 		return false;
+	}
+
+	@Override
+	protected List<CellValue> getNextRow()
+	{
+		final ArrayList<CellValue> result = new ArrayList<>();
+		for (int i = 0; i < getColumnCount(); i++)
+		{
+			result.add(getValueAt(rowNumber, i));
+		}
+
+		rowNumber++;
+		return result;
+	}
+
+	@Override
+	protected boolean hasNextRow()
+	{
+		return rowNumber < getRowCount();
 	}
 }

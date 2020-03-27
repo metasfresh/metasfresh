@@ -13,7 +13,9 @@
  *****************************************************************************/
 package de.metas.impexp.excel;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 import javax.annotation.Nullable;
 
@@ -33,13 +35,15 @@ import lombok.NonNull;
 
 /**
  * Excel Exporter Adapter for GridTab
- * 
+ *
  * @author Teo Sarca, www.arhipac.ro
  *         <li>FR [ 1943731 ] Window data export functionality
  */
 public class GridTabExcelExporter extends AbstractExcelExporter
 {
 	private final GridTab m_tab;
+
+	private int rowNumber = 0;
 
 	@Builder
 	private GridTabExcelExporter(
@@ -65,7 +69,17 @@ public class GridTabExcelExporter extends AbstractExcelExporter
 	}
 
 	@Override
-	public String getHeaderName(final int col)
+	public List<CellValue> getHeaderNames()
+	{
+		final ArrayList<CellValue> result = new ArrayList<>();
+		for (int i = 0; i < getColumnCount(); i++)
+		{
+			result.add(CellValues.toCellValue(getHeaderName(i)));
+		}
+		return result;
+	}
+
+	private String getHeaderName(final int col)
 	{
 		return m_tab.getField(col).getHeader();
 	}
@@ -76,8 +90,7 @@ public class GridTabExcelExporter extends AbstractExcelExporter
 		return m_tab.getRowCount();
 	}
 
-	@Override
-	public CellValue getValueAt(final int row, final int col)
+	private CellValue getValueAt(final int row, final int col)
 	{
 		final GridField f = m_tab.getField(col);
 		final Object key = m_tab.getValue(row, f.getColumnName());
@@ -85,13 +98,13 @@ public class GridTabExcelExporter extends AbstractExcelExporter
 		Lookup lookup = f.getLookup();
 		if (lookup != null)
 		{
-			;
+			// nothing to do
 		}
 		else if (f.getDisplayType() == DisplayType.Button)
 		{
 			lookup = getButtonLookup(f);
 		}
-		//
+
 		if (lookup != null)
 		{
 			value = lookup.getDisplay(key);
@@ -171,5 +184,24 @@ public class GridTabExcelExporter extends AbstractExcelExporter
 		//
 		m_buttonLookups.put(mField.getColumnName(), lookup);
 		return lookup;
+	}
+
+	@Override
+	protected List<CellValue> getNextRow()
+	{
+		final ArrayList<CellValue> result = new ArrayList<>();
+		for (int i = 0; i < getColumnCount(); i++)
+		{
+			result.add(getValueAt(rowNumber, i));
+		}
+
+		rowNumber++;
+		return result;
+	}
+
+	@Override
+	protected boolean hasNextRow()
+	{
+		return rowNumber < getRowCount();
 	}
 }

@@ -25,6 +25,7 @@ import java.sql.Timestamp;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Properties;
 
 import javax.annotation.Nullable;
@@ -51,11 +52,13 @@ import org.slf4j.Logger;
 
 import com.google.common.annotations.VisibleForTesting;
 
+import ch.qos.logback.classic.Level;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.Language;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
+import de.metas.util.Loggables;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.AccessLevel;
@@ -99,13 +102,7 @@ public abstract class AbstractExcelExporter
 	 */
 	public abstract boolean isColumnPrinted(int col);
 
-	/**
-	 * Get column header name
-	 *
-	 * @param col column index
-	 * @return header name
-	 */
-	public abstract String getHeaderName(int col);
+	public abstract List<CellValue> getHeaderNames();
 
 	/**
 	 * Get cell display type (see {@link DisplayType})
@@ -116,14 +113,9 @@ public abstract class AbstractExcelExporter
 	 */
 	public abstract int getDisplayType(int row, int col);
 
-	/**
-	 * Get cell value
-	 *
-	 * @param row row index
-	 * @param col column index
-	 * @return cell value
-	 */
-	protected abstract CellValue getValueAt(int row, int col);
+	protected abstract List<CellValue> getNextRow();
+
+	protected abstract boolean hasNextRow();
 
 	/**
 	 * Check if there is a page break on given cell
@@ -423,10 +415,10 @@ public abstract class AbstractExcelExporter
 	private void autoSizeColumnsWidth(final Sheet sheet, final int lastColumnIndex)
 	{
 		// #5922
-		// This is needed since we changed from 'poi.version 3.12'  to 'poi.version 3.15'.
+		// This is needed since we changed from 'poi.version 3.12' to 'poi.version 3.15'.
 		if (sheet instanceof SXSSFSheet)
 		{
-			final SXSSFSheet sxssfSheet = (SXSSFSheet) sheet;
+			final SXSSFSheet sxssfSheet = (SXSSFSheet)sheet;
 			sxssfSheet.trackAllColumnsForAutoSizing();
 		}
 
@@ -483,33 +475,27 @@ public abstract class AbstractExcelExporter
 		return sheet;
 	}
 
-	private void createTableHeader(final Sheet sheet)
+	private void createTableHeader(@NonNull final Sheet sheet)
 	{
-		int colnumMax = 0;
-
 		final Row row = sheet.createRow(0);
-		// for all columns
-		int colnum = 0;
-		for (int col = 0; col < getColumnCount(); col++)
-		{
-			if (colnum > colnumMax)
-			{
-				colnumMax = colnum;
-			}
 
-			//
+		final List<CellValue> headerNames = getHeaderNames();
+		// for all columns
+		int printedCol = 0;
+		for (int col = 0; col < headerNames.size(); col++)
+		{
 			if (isColumnPrinted(col))
 			{
-				final Cell cell = row.createCell(colnum);
-				// header row
+				final Cell cell = row.createCell(printedCol);
+
+				// header style!
 				final CellStyle style = getHeaderStyle(col);
 				cell.setCellStyle(style);
-				final String str = fixString(getHeaderName(col));
 
-				// poi37, poi301 compatibility issue
-				cell.setCellValue(str);
+				final CellValue cellValue = headerNames.get(col);
+				setCellToValue(cell, cellValue);
 
-				colnum++;
+				printedCol++;
 			}	// printed
 		}	// for all columns
 		// m_workbook.setRepeatingRowsAndColumns(m_sheetCount, 0, 0, 0, 0);
@@ -571,28 +557,29 @@ public abstract class AbstractExcelExporter
 	{
 		markAsExecuted();
 
-		final Workbook workbook = getWorkbook();
+		Sheet currentSheet = createTableSheet();
+		String currentSheetName = null;
+		int colnunmMax = 0;
+		int xls_rownum = 1; // xls_rownum=0 is occupied be the header row
 
-		Sheet sheet = createTableSheet();
-		String sheetName = null;
-		//
-		int colnumMax = 0;
-		for (int rownum = 0, xls_rownum = 1; rownum < getRowCount(); rownum++, xls_rownum++)
+		while (hasNextRow())
 		{
 			boolean isPageBreak = false;
-			final Row row = sheet.createRow(xls_rownum);
+			final Row excelRow = currentSheet.createRow(xls_rownum);
+
+			final List<CellValue> sourceRow = getNextRow();
 			// for all columns
 			int colnum = 0;
-			for (int col = 0; col < getColumnCount(); col++)
+			for (int col = 0; col < sourceRow.size(); col++)
 			{
-				if (colnum > colnumMax)
+				if (colnum > colnunmMax)
 				{
-					colnumMax = colnum;
+					colnunmMax = colnum;
 				}
 				//
 				if (isColumnPrinted(col))
 				{
-					final Cell cell = row.createCell(colnum);
+					final Cell cell = excelRow.createCell(colnum);
 
 					// 03917: poi-3.7 doesn't have this method anymore
 					// cell.setEncoding(Cell.ENCODING_UTF_16); // Bug-2017673 - Export Report as Excel - Bad Encoding
@@ -602,56 +589,26 @@ public abstract class AbstractExcelExporter
 					CellValue cellValue;
 					try
 					{
-						cellValue = getValueAt(rownum, col);
+						cellValue = sourceRow.get(col);
 					}
 					catch (final Exception ex)
 					{
-						logger.warn("Failed extracting cell value at row={}, col={}. Considering it null.", rownum, col, ex);
+						Loggables.withLogger(logger, Level.DEBUG).addLog("Failed extracting cell value at row={}, col={}. Considering it null.", xls_rownum, col, ex);
 						cellValue = null;
 					}
 
 					//
 					// Update the excel cell
-					if (cellValue == null)
-					{
-						// nothing
-					}
-					else if (cellValue.isDate())
-					{
-						cell.setCellValue(cellValue.dateValue());
-					}
-					else if (cellValue.isNumber())
-					{
-						cell.setCellValue(cellValue.doubleValue());
-					}
-					else if (cellValue.isBoolean())
-					{
-						final CreationHelper creationHelper = workbook.getCreationHelper();
+					setCellToValue(cell, cellValue);
 
-						final String value = convertBooleanToString(cellValue.booleanValue());
-						cell.setCellValue(creationHelper.createRichTextString(value));
-					}
-					else
-					{
-						final CreationHelper creationHelper = workbook.getCreationHelper();
-
-						final String value = fixString(cellValue.stringValue());	// formatted
-						cell.setCellValue(creationHelper.createRichTextString(value));
-
-						final Hyperlink hyperlink = createHyperlinkIfURL(value);
-						if (hyperlink != null)
-						{
-							cell.setHyperlink(hyperlink);
-						}
-					}
 					//
-					cell.setCellStyle(getStyle(rownum, col));
+					cell.setCellStyle(getStyle(xls_rownum - 1, col));
 
 					// Page break
-					if (isPageBreak(rownum, col))
+					if (isPageBreak(xls_rownum - 1, col))
 					{
 						isPageBreak = true;
-						sheetName = fixString(cell.getRichStringCellValue().getString());
+						currentSheetName = fixString(cell.getRichStringCellValue().getString());
 					}
 					//
 					colnum++;
@@ -659,30 +616,68 @@ public abstract class AbstractExcelExporter
 			}	// for all columns
 
 			//
-			if (xls_rownum >= excelFormat.getLastRowIndex())
+			if (xls_rownum >= excelFormat.getLastRowIndex() && hasNextRow())
 			{
-				isPageBreak = true;
+				isPageBreak = true; // for the next row we will need a new sheet
 			}
 
 			//
 			// Page Break
 			if (isPageBreak)
 			{
-				closeTableSheet(sheet, sheetName, colnumMax);
-				sheet = createTableSheet();
+				closeTableSheet(currentSheet, currentSheetName, colnunmMax);
+				currentSheet = createTableSheet();
 				xls_rownum = 0;
 				isPageBreak = false;
 			}
+
+			xls_rownum++;
 		}	// for all rows
 
 		//
-		closeTableSheet(sheet, sheetName, colnumMax);
+		closeTableSheet(currentSheet, currentSheetName, colnunmMax);
 
 		//
 		// Workbook Info
 		logger.debug("Exported to workbook: {} sheets, {} styles used", m_sheetCount, cellStyles.size());
 
 		return workbook;
+	}
+
+	private void setCellToValue(@NonNull final Cell cell, @Nullable final CellValue cellValue)
+	{
+		if (cellValue == null)
+		{
+			// nothing
+		}
+		else if (cellValue.isDate())
+		{
+			cell.setCellValue(cellValue.dateValue());
+		}
+		else if (cellValue.isNumber())
+		{
+			cell.setCellValue(cellValue.doubleValue());
+		}
+		else if (cellValue.isBoolean())
+		{
+			final CreationHelper creationHelper = workbook.getCreationHelper();
+
+			final String value = convertBooleanToString(cellValue.booleanValue());
+			cell.setCellValue(creationHelper.createRichTextString(value));
+		}
+		else
+		{
+			final CreationHelper creationHelper = workbook.getCreationHelper();
+
+			final String value = fixString(cellValue.stringValue());	// formatted
+			cell.setCellValue(creationHelper.createRichTextString(value));
+
+			final Hyperlink hyperlink = createHyperlinkIfURL(value);
+			if (hyperlink != null)
+			{
+				cell.setHyperlink(hyperlink);
+			}
+		}
 	}
 
 	private Hyperlink createHyperlinkIfURL(@Nullable final String str)
