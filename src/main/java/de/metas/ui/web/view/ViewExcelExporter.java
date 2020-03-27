@@ -1,6 +1,7 @@
 package de.metas.ui.web.view;
 
 import java.time.ZoneId;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
@@ -62,6 +63,7 @@ import lombok.NonNull;
 	private final RowsSupplier rows;
 	private final ViewLayout layout;
 	private final JSONOptions jsonOpts;
+	private int rowNumber = 0;
 
 	@Builder
 	private ViewExcelExporter(
@@ -141,7 +143,17 @@ import lombok.NonNull;
 	}
 
 	@Override
-	public String getHeaderName(final int col)
+	public List<CellValue> getHeaderNames()
+	{
+		final ArrayList<CellValue> result = new ArrayList<>();
+		for (int i = 0; i < getColumnCount(); i++)
+		{
+			result.add(CellValues.toCellValue(getHeaderName(i)));
+		}
+		return result;
+	}
+
+	private String getHeaderName(final int col)
 	{
 		return layout.getElements().get(col).getCaption(getLanguage().getAD_Language());
 	}
@@ -152,8 +164,7 @@ import lombok.NonNull;
 		return getWidgetType(columnIndex).getDisplayType();
 	}
 
-	@Override
-	public CellValue getValueAt(final int rowIndex, final int columnIndex)
+	private CellValue getValueAt(final int rowIndex, final int columnIndex)
 	{
 		final String fieldName = getFieldName(columnIndex);
 
@@ -304,5 +315,24 @@ import lombok.NonNull;
 		{
 			return rows.size();
 		}
+	}
+
+	@Override
+	protected List<CellValue> getNextRow()
+	{
+		final ArrayList<CellValue> result = new ArrayList<>();
+		for (int i = 0; i < getColumnCount(); i++)
+		{
+			result.add(getValueAt(rowNumber, i));
+		}
+
+		rowNumber++;
+		return result;
+	}
+
+	@Override
+	protected boolean hasNextRow()
+	{
+		return rowNumber < getRowCount();
 	}
 }
