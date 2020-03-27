@@ -37,8 +37,6 @@ import org.compiere.util.DB;
 import org.compiere.util.Trx;
 import org.slf4j.Logger;
 
-import com.google.common.collect.ImmutableList;
-
 import de.metas.data.export.api.IExportDataSource;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
@@ -61,7 +59,7 @@ public class JdbcExportDataSource implements IExportDataSource
 	 * SQL Where Clause to be used, not actually needed, it's just for reference
 	 */
 	private final String sqlWhereClause;
-	private final ImmutableList<Object> sqlParams;
+	private final List<Object> sqlParams;
 
 	private Connection conn = null;
 	private PreparedStatement pstmt = null;
@@ -74,14 +72,14 @@ public class JdbcExportDataSource implements IExportDataSource
 			final String sqlSelect,
 			final String sqlCount,
 			final String sqlWhereClause,
-			final List<Object> sqlParams)
+			final List<Object> sqlParams/* not ImmutableList because list elements might be null */)
 	{
 		this.fields = Collections.unmodifiableList(new ArrayList<String>(fields));
 		this.sqlFields = Collections.unmodifiableList(new ArrayList<String>(sqlFields));
 		this.sqlSelect = sqlSelect;
 		this.sqlCount = sqlCount;
 		this.sqlWhereClause = sqlWhereClause;
-		this.sqlParams = sqlParams == null ? null : ImmutableList.copyOf(sqlParams);
+		this.sqlParams = sqlParams == null ? null : Collections.unmodifiableList(new ArrayList<>(sqlParams));
 	}
 
 	/**
@@ -110,6 +108,9 @@ public class JdbcExportDataSource implements IExportDataSource
 		boolean ok = false;
 		try
 		{
+			// disabling trx timeout, as this might be a long-running process
+			DB.getConstraints().setTrxTimeoutSecs(-1, false);
+
 			pstmt = DB.prepareStatementForDataExport(sqlSelect, sqlParams);
 			rs = pstmt.executeQuery();
 			ok = true;
