@@ -334,21 +334,21 @@ public class JsonRetrieverService
 			@NonNull final BPartnerContact contact,
 			@Nullable final Language language)
 	{
-		final MetasfreshId metasfreshId = MetasfreshId.of(contact.getId());
-		final MetasfreshId metasfreshBPartnerId = MetasfreshId.of(contact.getId().getBpartnerId());
-
-		final JsonChangeInfo jsonChangeInfo = createJsonChangeInfo(contact.getChangeLog(), CONTACT_FIELD_MAP);
-
-		final BPartnerContactType contactType = contact.getContactType();
-
-		String greetingTrl = null;
-		if (contact.getGreetingId() != null)
-		{
-			final Greeting greeting = greetingRepository.getByIdAndLang(contact.getGreetingId(), language);
-			greetingTrl = greeting.getGreeting();
-		}
 		try
 		{
+			final MetasfreshId metasfreshId = MetasfreshId.of(contact.getId());
+			final MetasfreshId metasfreshBPartnerId = MetasfreshId.of(contact.getId().getBpartnerId());
+
+			final JsonChangeInfo jsonChangeInfo = createJsonChangeInfo(contact.getChangeLog(), CONTACT_FIELD_MAP);
+
+			final BPartnerContactType contactType = contact.getContactType();
+
+			String greetingTrl = null;
+			if (contact.getGreetingId() != null)
+			{
+				final Greeting greeting = greetingRepository.getByIdAndLang(contact.getGreetingId(), language);
+				greetingTrl = greeting.getGreeting();
+			}
 			return JsonResponseContact.builder()
 					.active(contact.isActive())
 					.email(contact.getEmail())
@@ -364,14 +364,14 @@ public class JsonRetrieverService
 					.mobilePhone(contact.getMobilePhone())
 					.fax(contact.getFax())
 					.description(contact.getDescription())
-					.defaultContact(contactType.getDefaultContactNotNull())
-					.billToDefault(contactType.getBillToDefaultNotNull())
-					.shipToDefault(contactType.getShipToDefaultNotNull())
-					.sales(contactType.getSalesNotNull())
-					.salesDefault(contactType.getSalesDefaultNotNull())
-					.purchase(contactType.getPurchaseNotNull())
-					.purchaseDefault(contactType.getPurchaseDefaultNotNull())
-					.subjectMatter(contactType.getSubjectMatterNotNull())
+					.defaultContact(contactType.getIsDefaultContactOr(false))
+					.billToDefault(contactType.getIsBillToDefaultOr(false))
+					.shipToDefault(contactType.getIsShipToDefaultOr(false))
+					.sales(contactType.getIsSalesOr(false))
+					.salesDefault(contactType.getIsSalesDefaultOr(false))
+					.purchase(contactType.getIsPurchaseOr(false))
+					.purchaseDefault(contactType.getIsPurchaseDefaultOr(false))
+					.subjectMatter(contactType.getIsSubjectMatterOr(false))
 					.changeInfo(jsonChangeInfo)
 					.build();
 		}
@@ -385,11 +385,11 @@ public class JsonRetrieverService
 
 	private static JsonResponseLocation toJson(@NonNull final BPartnerLocation location)
 	{
-		final JsonChangeInfo jsonChangeInfo = createJsonChangeInfo(location.getChangeLog(), LOCATION_FIELD_MAP);
-
-		final BPartnerLocationType locationType = location.getLocationType();
 		try
 		{
+			final JsonChangeInfo jsonChangeInfo = createJsonChangeInfo(location.getChangeLog(), LOCATION_FIELD_MAP);
+
+			final BPartnerLocationType locationType = location.getLocationType();
 			return JsonResponseLocation.builder()
 					.active(location.isActive())
 					.name(location.getName())
@@ -407,10 +407,10 @@ public class JsonRetrieverService
 					.poBox(location.getPoBox())
 					.postal(location.getPostal())
 					.region(location.getRegion())
-					.shipTo(locationType.getShipToNotNull())
-					.shipToDefault(locationType.getShipToDefaultNotNull())
-					.billTo(locationType.getBillToNotNull())
-					.billToDefault(locationType.getBillToDefaultNotNull())
+					.shipTo(locationType.getIsShipToOr(false))
+					.shipToDefault(locationType.getIsShipToDefaultOr(false))
+					.billTo(locationType.getIsBillToOr(false))
+					.billToDefault(locationType.getIsBillToDefaultOr(false))
 					.changeInfo(jsonChangeInfo)
 					.build();
 		}
