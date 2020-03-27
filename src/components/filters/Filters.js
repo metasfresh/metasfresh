@@ -469,7 +469,9 @@ class Filters extends Component {
         parameter && isActive && currentFilter && currentFilter.parameters[0];
       const filterType = unannotatedFilter.parameters
         ? unannotatedFilter.parameters.find(
-            filter => filter.parameterName === activeParameter.parameterName
+            filter =>
+              activeParameter &&
+              filter.parameterName === activeParameter.parameterName
           )
         : parameter && parameter.widgetType;
 
