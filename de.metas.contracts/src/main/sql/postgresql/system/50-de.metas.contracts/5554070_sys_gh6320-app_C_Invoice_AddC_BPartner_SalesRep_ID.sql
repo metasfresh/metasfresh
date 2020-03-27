@@ -15,7 +15,8 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 
 -- 2020-03-06T13:19:54.186Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */ SELECT public.db_alter_table('C_Invoice','ALTER TABLE public.C_Invoice ADD COLUMN IsSalesPartnerRequired CHAR(1) DEFAULT ''N'' CHECK (IsSalesPartnerRequired IN (''Y'',''N'')) NOT NULL')
+--/* DDL */ SELECT public.db_alter_table('C_Invoice','ALTER TABLE public.C_Invoice ADD COLUMN IsSalesPartnerRequired CHAR(1) DEFAULT ''N'' CHECK (IsSalesPartnerRequired IN (''Y'',''N'')) NOT NULL')
+ALTER TABLE public.C_Invoice ADD COLUMN IsSalesPartnerRequired CHAR(1) DEFAULT 'N' CHECK (IsSalesPartnerRequired IN ('Y','N')) NOT NULL;
 ;
 -- 2020-03-06T15:37:49.403Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator

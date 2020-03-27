@@ -40,12 +40,14 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 
 -- 2020-03-05T16:53:57.656Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */ SELECT public.db_alter_table('C_Invoice','ALTER TABLE public.C_Invoice ADD COLUMN SalesPartnerCode VARCHAR(100)')
+--/* DDL */ SELECT public.db_alter_table('C_Invoice','ALTER TABLE public.C_Invoice ADD COLUMN SalesPartnerCode VARCHAR(100)')
+ALTER TABLE public.C_Invoice ADD COLUMN SalesPartnerCode VARCHAR(100);
 ;
 
 -- 2020-03-05T16:54:13.643Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */ SELECT public.db_alter_table('C_Invoice','ALTER TABLE public.C_Invoice ADD COLUMN C_BPartner_SalesRep_ID NUMERIC(10)')
+--/* DDL */ SELECT public.db_alter_table('C_Invoice','ALTER TABLE public.C_Invoice ADD COLUMN C_BPartner_SalesRep_ID NUMERIC(10)')
+ALTER TABLE public.C_Invoice ADD COLUMN C_BPartner_SalesRep_ID NUMERIC(10)
 ;
 
 -- 2020-03-05T16:54:14.268Z
