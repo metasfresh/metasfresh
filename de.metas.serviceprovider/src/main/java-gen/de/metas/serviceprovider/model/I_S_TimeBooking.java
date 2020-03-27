@@ -80,6 +80,31 @@ public interface I_S_TimeBooking
     public static final String COLUMNNAME_AD_User_Performing_ID = "AD_User_Performing_ID";
 
 	/**
+	 * Set Bemerkungen.
+	 * Kommentar oder zusätzliche Information
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setComments (java.lang.String Comments);
+
+	/**
+	 * Get Bemerkungen.
+	 * Kommentar oder zusätzliche Information
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getComments();
+
+    /** Column definition for Comments */
+    public static final org.adempiere.model.ModelColumn<I_S_TimeBooking, Object> COLUMN_Comments = new org.adempiere.model.ModelColumn<I_S_TimeBooking, Object>(I_S_TimeBooking.class, "Comments", null);
+    /** Column name Comments */
+    public static final String COLUMNNAME_Comments = "Comments";
+
+	/**
 	 * Get Erstellt.
 	 * Datum, an dem dieser Eintrag erstellt wurde
 	 *
@@ -179,31 +204,31 @@ public interface I_S_TimeBooking
     public static final String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Issue.
+	 * Set Aufwands-Issue.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setS_Issue_ID (int S_Issue_ID);
+	public void setS_Effort_Issue_ID (int S_Effort_Issue_ID);
 
 	/**
-	 * Get Issue.
+	 * Get Aufwands-Issue.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getS_Issue_ID();
+	public int getS_Effort_Issue_ID();
 
-	public de.metas.serviceprovider.model.I_S_Issue getS_Issue();
+	public de.metas.serviceprovider.model.I_S_Effort_Issue getS_Effort_Issue();
 
-	public void setS_Issue(de.metas.serviceprovider.model.I_S_Issue S_Issue);
+	public void setS_Effort_Issue(de.metas.serviceprovider.model.I_S_Effort_Issue S_Effort_Issue);
 
-    /** Column definition for S_Issue_ID */
-    public static final org.adempiere.model.ModelColumn<I_S_TimeBooking, de.metas.serviceprovider.model.I_S_Issue> COLUMN_S_Issue_ID = new org.adempiere.model.ModelColumn<I_S_TimeBooking, de.metas.serviceprovider.model.I_S_Issue>(I_S_TimeBooking.class, "S_Issue_ID", de.metas.serviceprovider.model.I_S_Issue.class);
-    /** Column name S_Issue_ID */
-    public static final String COLUMNNAME_S_Issue_ID = "S_Issue_ID";
+    /** Column definition for S_Effort_Issue_ID */
+    public static final org.adempiere.model.ModelColumn<I_S_TimeBooking, de.metas.serviceprovider.model.I_S_Effort_Issue> COLUMN_S_Effort_Issue_ID = new org.adempiere.model.ModelColumn<I_S_TimeBooking, de.metas.serviceprovider.model.I_S_Effort_Issue>(I_S_TimeBooking.class, "S_Effort_Issue_ID", de.metas.serviceprovider.model.I_S_Effort_Issue.class);
+    /** Column name S_Effort_Issue_ID */
+    public static final String COLUMNNAME_S_Effort_Issue_ID = "S_Effort_Issue_ID";
 
 	/**
 	 * Set S_TimeBooking.

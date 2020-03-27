@@ -1,24 +1,24 @@
 package de.metas.serviceprovider.model;
 
 
-/** Generated Interface for S_Issue
+/** Generated Interface for S_Milestone
  *  @author Adempiere (generated) 
  */
 @SuppressWarnings("javadoc")
-public interface I_S_Issue 
+public interface I_S_Milestone 
 {
 
-    /** TableName=S_Issue */
-    public static final String Table_Name = "S_Issue";
+    /** TableName=S_Milestone */
+    public static final String Table_Name = "S_Milestone";
 
-    /** AD_Table_ID=541442 */
+    /** AD_Table_ID=541461 */
 //    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
 //    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
 
-    /** AccessLevel = 1 - Org
+    /** AccessLevel = 3 - Client - Org
      */
-//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(1);
+//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(3);
 
     /** Load Meta Data */
 
@@ -59,54 +59,6 @@ public interface I_S_Issue
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set Rechnungspartner.
-	 * Geschäftspartner für die Rechnungsstellung
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setBill_BPartner_ID (int Bill_BPartner_ID);
-
-	/**
-	 * Get Rechnungspartner.
-	 * Geschäftspartner für die Rechnungsstellung
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public int getBill_BPartner_ID();
-
-    /** Column name Bill_BPartner_ID */
-    public static final String COLUMNNAME_Bill_BPartner_ID = "Bill_BPartner_ID";
-
-	/**
-	 * Set Budgetiert.
-	 * Ursprünglich geplanter oder erwarteter Aufwand.
-	 *
-	 * <br>Type: Number
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setBudgetedEffort (java.math.BigDecimal BudgetedEffort);
-
-	/**
-	 * Get Budgetiert.
-	 * Ursprünglich geplanter oder erwarteter Aufwand.
-	 *
-	 * <br>Type: Number
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.math.BigDecimal getBudgetedEffort();
-
-    /** Column definition for BudgetedEffort */
-    public static final org.adempiere.model.ModelColumn<I_S_Issue, Object> COLUMN_BudgetedEffort = new org.adempiere.model.ModelColumn<I_S_Issue, Object>(I_S_Issue.class, "BudgetedEffort", null);
-    /** Column name BudgetedEffort */
-    public static final String COLUMNNAME_BudgetedEffort = "BudgetedEffort";
-
-	/**
 	 * Get Erstellt.
 	 * Datum, an dem dieser Eintrag erstellt wurde
 	 *
@@ -117,7 +69,7 @@ public interface I_S_Issue
 	public java.sql.Timestamp getCreated();
 
     /** Column definition for Created */
-    public static final org.adempiere.model.ModelColumn<I_S_Issue, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_S_Issue, Object>(I_S_Issue.class, "Created", null);
+    public static final org.adempiere.model.ModelColumn<I_S_Milestone, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_S_Milestone, Object>(I_S_Milestone.class, "Created", null);
     /** Column name Created */
     public static final String COLUMNNAME_Created = "Created";
 
@@ -137,7 +89,7 @@ public interface I_S_Issue
 	/**
 	 * Set Beschreibung.
 	 *
-	 * <br>Type: TextLong
+	 * <br>Type: Text
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -146,60 +98,16 @@ public interface I_S_Issue
 	/**
 	 * Get Beschreibung.
 	 *
-	 * <br>Type: TextLong
+	 * <br>Type: Text
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	public java.lang.String getDescription();
 
     /** Column definition for Description */
-    public static final org.adempiere.model.ModelColumn<I_S_Issue, Object> COLUMN_Description = new org.adempiere.model.ModelColumn<I_S_Issue, Object>(I_S_Issue.class, "Description", null);
+    public static final org.adempiere.model.ModelColumn<I_S_Milestone, Object> COLUMN_Description = new org.adempiere.model.ModelColumn<I_S_Milestone, Object>(I_S_Milestone.class, "Description", null);
     /** Column name Description */
     public static final String COLUMNNAME_Description = "Description";
-
-	/**
-	 * Set Einheit.
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setEffort_UOM_ID (int Effort_UOM_ID);
-
-	/**
-	 * Get Einheit.
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public int getEffort_UOM_ID();
-
-    /** Column name Effort_UOM_ID */
-    public static final String COLUMNNAME_Effort_UOM_ID = "Effort_UOM_ID";
-
-	/**
-	 * Set Geschätzter Aufwand.
-	 *
-	 * <br>Type: Integer
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setEstimatedEffort (int EstimatedEffort);
-
-	/**
-	 * Get Geschätzter Aufwand.
-	 *
-	 * <br>Type: Integer
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public int getEstimatedEffort();
-
-    /** Column definition for EstimatedEffort */
-    public static final org.adempiere.model.ModelColumn<I_S_Issue, Object> COLUMN_EstimatedEffort = new org.adempiere.model.ModelColumn<I_S_Issue, Object>(I_S_Issue.class, "EstimatedEffort", null);
-    /** Column name EstimatedEffort */
-    public static final String COLUMNNAME_EstimatedEffort = "EstimatedEffort";
 
 	/**
 	 * Set External ID.
@@ -220,7 +128,7 @@ public interface I_S_Issue
 	public java.lang.String getExternalId();
 
     /** Column definition for ExternalId */
-    public static final org.adempiere.model.ModelColumn<I_S_Issue, Object> COLUMN_ExternalId = new org.adempiere.model.ModelColumn<I_S_Issue, Object>(I_S_Issue.class, "ExternalId", null);
+    public static final org.adempiere.model.ModelColumn<I_S_Milestone, Object> COLUMN_ExternalId = new org.adempiere.model.ModelColumn<I_S_Milestone, Object>(I_S_Milestone.class, "ExternalId", null);
     /** Column name ExternalId */
     public static final String COLUMNNAME_ExternalId = "ExternalId";
 
@@ -245,34 +153,32 @@ public interface I_S_Issue
 	public boolean isActive();
 
     /** Column definition for IsActive */
-    public static final org.adempiere.model.ModelColumn<I_S_Issue, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_S_Issue, Object>(I_S_Issue.class, "IsActive", null);
+    public static final org.adempiere.model.ModelColumn<I_S_Milestone, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_S_Milestone, Object>(I_S_Milestone.class, "IsActive", null);
     /** Column name IsActive */
     public static final String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Issue-URL.
-	 * URL der Issue, z.B. auf github
+	 * Set Fälligkeitsdatum.
 	 *
-	 * <br>Type: URL
+	 * <br>Type: Date
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setIssueURL (java.lang.String IssueURL);
+	public void setMilestone_DueDate (java.sql.Timestamp Milestone_DueDate);
 
 	/**
-	 * Get Issue-URL.
-	 * URL der Issue, z.B. auf github
+	 * Get Fälligkeitsdatum.
 	 *
-	 * <br>Type: URL
+	 * <br>Type: Date
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getIssueURL();
+	public java.sql.Timestamp getMilestone_DueDate();
 
-    /** Column definition for IssueURL */
-    public static final org.adempiere.model.ModelColumn<I_S_Issue, Object> COLUMN_IssueURL = new org.adempiere.model.ModelColumn<I_S_Issue, Object>(I_S_Issue.class, "IssueURL", null);
-    /** Column name IssueURL */
-    public static final String COLUMNNAME_IssueURL = "IssueURL";
+    /** Column definition for Milestone_DueDate */
+    public static final org.adempiere.model.ModelColumn<I_S_Milestone, Object> COLUMN_Milestone_DueDate = new org.adempiere.model.ModelColumn<I_S_Milestone, Object>(I_S_Milestone.class, "Milestone_DueDate", null);
+    /** Column name Milestone_DueDate */
+    public static final String COLUMNNAME_Milestone_DueDate = "Milestone_DueDate";
 
 	/**
 	 * Set Name.
@@ -293,13 +199,13 @@ public interface I_S_Issue
 	public java.lang.String getName();
 
     /** Column definition for Name */
-    public static final org.adempiere.model.ModelColumn<I_S_Issue, Object> COLUMN_Name = new org.adempiere.model.ModelColumn<I_S_Issue, Object>(I_S_Issue.class, "Name", null);
+    public static final org.adempiere.model.ModelColumn<I_S_Milestone, Object> COLUMN_Name = new org.adempiere.model.ModelColumn<I_S_Milestone, Object>(I_S_Milestone.class, "Name", null);
     /** Column name Name */
     public static final String COLUMNNAME_Name = "Name";
 
 	/**
 	 * Set Verarbeitet.
-	 * Checkbox sagt aus, ob der Beleg verarbeitet wurde.
+	 * Checkbox sagt aus, ob der Datensatz verarbeitet wurde.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -309,7 +215,7 @@ public interface I_S_Issue
 
 	/**
 	 * Get Verarbeitet.
-	 * Checkbox sagt aus, ob der Beleg verarbeitet wurde.
+	 * Checkbox sagt aus, ob der Datensatz verarbeitet wurde.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -318,32 +224,32 @@ public interface I_S_Issue
 	public boolean isProcessed();
 
     /** Column definition for Processed */
-    public static final org.adempiere.model.ModelColumn<I_S_Issue, Object> COLUMN_Processed = new org.adempiere.model.ModelColumn<I_S_Issue, Object>(I_S_Issue.class, "Processed", null);
+    public static final org.adempiere.model.ModelColumn<I_S_Milestone, Object> COLUMN_Processed = new org.adempiere.model.ModelColumn<I_S_Milestone, Object>(I_S_Milestone.class, "Processed", null);
     /** Column name Processed */
     public static final String COLUMNNAME_Processed = "Processed";
 
 	/**
-	 * Set Issue.
+	 * Set Meilenstein.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setS_Issue_ID (int S_Issue_ID);
+	public void setS_Milestone_ID (int S_Milestone_ID);
 
 	/**
-	 * Get Issue.
+	 * Get Meilenstein.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getS_Issue_ID();
+	public int getS_Milestone_ID();
 
-    /** Column definition for S_Issue_ID */
-    public static final org.adempiere.model.ModelColumn<I_S_Issue, Object> COLUMN_S_Issue_ID = new org.adempiere.model.ModelColumn<I_S_Issue, Object>(I_S_Issue.class, "S_Issue_ID", null);
-    /** Column name S_Issue_ID */
-    public static final String COLUMNNAME_S_Issue_ID = "S_Issue_ID";
+    /** Column definition for S_Milestone_ID */
+    public static final org.adempiere.model.ModelColumn<I_S_Milestone, Object> COLUMN_S_Milestone_ID = new org.adempiere.model.ModelColumn<I_S_Milestone, Object>(I_S_Milestone.class, "S_Milestone_ID", null);
+    /** Column name S_Milestone_ID */
+    public static final String COLUMNNAME_S_Milestone_ID = "S_Milestone_ID";
 
 	/**
 	 * Get Aktualisiert.
@@ -356,7 +262,7 @@ public interface I_S_Issue
 	public java.sql.Timestamp getUpdated();
 
     /** Column definition for Updated */
-    public static final org.adempiere.model.ModelColumn<I_S_Issue, Object> COLUMN_Updated = new org.adempiere.model.ModelColumn<I_S_Issue, Object>(I_S_Issue.class, "Updated", null);
+    public static final org.adempiere.model.ModelColumn<I_S_Milestone, Object> COLUMN_Updated = new org.adempiere.model.ModelColumn<I_S_Milestone, Object>(I_S_Milestone.class, "Updated", null);
     /** Column name Updated */
     public static final String COLUMNNAME_Updated = "Updated";
 
@@ -394,7 +300,7 @@ public interface I_S_Issue
 	public java.lang.String getValue();
 
     /** Column definition for Value */
-    public static final org.adempiere.model.ModelColumn<I_S_Issue, Object> COLUMN_Value = new org.adempiere.model.ModelColumn<I_S_Issue, Object>(I_S_Issue.class, "Value", null);
+    public static final org.adempiere.model.ModelColumn<I_S_Milestone, Object> COLUMN_Value = new org.adempiere.model.ModelColumn<I_S_Milestone, Object>(I_S_Milestone.class, "Value", null);
     /** Column name Value */
     public static final String COLUMNNAME_Value = "Value";
 }

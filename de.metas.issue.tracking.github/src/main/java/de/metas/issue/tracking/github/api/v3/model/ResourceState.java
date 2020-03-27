@@ -1,15 +1,6 @@
-package de.metas.serviceprovider;
-
-import java.time.Duration;
-
-import de.metas.bpartner.BPartnerId;
-import de.metas.product.ProductId;
-import lombok.Builder;
-import lombok.Value;
-
 /*
  * #%L
- * de.metas.serviceprovider.base
+ * de.metas.issue.tracking.github
  * %%
  * Copyright (C) 2019 metas GmbH
  * %%
@@ -29,15 +20,18 @@ import lombok.Value;
  * #L%
  */
 
-@Value
-@Builder
-public class Issue
+package de.metas.issue.tracking.github.api.v3.model;
+
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+
+@AllArgsConstructor
+@Getter
+public enum ResourceState
 {
+	CLOSED("closed"),
+	OPEN("open"),
+	ALL("all");
 
-	IssueId id;
-	BPartnerId billBPartnerId;
-
-	ProductId productId;
-
-	Duration timeEffort;
+	private final String value;
 }

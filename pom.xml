@@ -194,6 +194,7 @@
 		<module>de.metas.vertical.pharma.securpharm</module>
 
 		<module>vertical-healthcare_ch</module>
+		<module>de.metas.issue.tracking.github</module>
 
 	</modules>
 

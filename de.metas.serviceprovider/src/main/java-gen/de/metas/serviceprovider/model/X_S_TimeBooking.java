@@ -14,7 +14,7 @@ public class X_S_TimeBooking extends org.compiere.model.PO implements I_S_TimeBo
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1604655305L;
+	private static final long serialVersionUID = 287070766L;
 
     /** Standard Constructor */
     public X_S_TimeBooking (Properties ctx, int S_TimeBooking_ID, String trxName)
@@ -25,7 +25,7 @@ public class X_S_TimeBooking extends org.compiere.model.PO implements I_S_TimeBo
 			setAD_User_Performing_ID (0);
 			setEffortHours (0); // 0
 			setEffortMinutes (0); // 0
-			setS_Issue_ID (0);
+			setS_Effort_Issue_ID (0);
 			setS_TimeBooking_ID (0);
         } */
     }
@@ -67,6 +67,25 @@ public class X_S_TimeBooking extends org.compiere.model.PO implements I_S_TimeBo
 		return ii.intValue();
 	}
 
+	/** Set Bemerkungen.
+		@param Comments 
+		Kommentar oder zusätzliche Information
+	  */
+	@Override
+	public void setComments (java.lang.String Comments)
+	{
+		set_Value (COLUMNNAME_Comments, Comments);
+	}
+
+	/** Get Bemerkungen.
+		@return Kommentar oder zusätzliche Information
+	  */
+	@Override
+	public java.lang.String getComments () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_Comments);
+	}
+
 	/** Set Stunden.
 		@param EffortHours Stunden	  */
 	@Override
@@ -106,34 +125,34 @@ public class X_S_TimeBooking extends org.compiere.model.PO implements I_S_TimeBo
 	}
 
 	@Override
-	public de.metas.serviceprovider.model.I_S_Issue getS_Issue()
+	public de.metas.serviceprovider.model.I_S_Effort_Issue getS_Effort_Issue()
 	{
-		return get_ValueAsPO(COLUMNNAME_S_Issue_ID, de.metas.serviceprovider.model.I_S_Issue.class);
+		return get_ValueAsPO(COLUMNNAME_S_Effort_Issue_ID, de.metas.serviceprovider.model.I_S_Effort_Issue.class);
 	}
 
 	@Override
-	public void setS_Issue(de.metas.serviceprovider.model.I_S_Issue S_Issue)
+	public void setS_Effort_Issue(de.metas.serviceprovider.model.I_S_Effort_Issue S_Effort_Issue)
 	{
-		set_ValueFromPO(COLUMNNAME_S_Issue_ID, de.metas.serviceprovider.model.I_S_Issue.class, S_Issue);
+		set_ValueFromPO(COLUMNNAME_S_Effort_Issue_ID, de.metas.serviceprovider.model.I_S_Effort_Issue.class, S_Effort_Issue);
 	}
 
-	/** Set Issue.
-		@param S_Issue_ID Issue	  */
+	/** Set Aufwands-Issue.
+		@param S_Effort_Issue_ID Aufwands-Issue	  */
 	@Override
-	public void setS_Issue_ID (int S_Issue_ID)
+	public void setS_Effort_Issue_ID (int S_Effort_Issue_ID)
 	{
-		if (S_Issue_ID < 1) 
-			set_ValueNoCheck (COLUMNNAME_S_Issue_ID, null);
+		if (S_Effort_Issue_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_S_Effort_Issue_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_S_Issue_ID, Integer.valueOf(S_Issue_ID));
+			set_ValueNoCheck (COLUMNNAME_S_Effort_Issue_ID, Integer.valueOf(S_Effort_Issue_ID));
 	}
 
-	/** Get Issue.
-		@return Issue	  */
+	/** Get Aufwands-Issue.
+		@return Aufwands-Issue	  */
 	@Override
-	public int getS_Issue_ID () 
+	public int getS_Effort_Issue_ID () 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_S_Issue_ID);
+		Integer ii = (Integer)get_Value(COLUMNNAME_S_Effort_Issue_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
