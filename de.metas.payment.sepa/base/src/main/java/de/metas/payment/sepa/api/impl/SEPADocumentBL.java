@@ -17,10 +17,10 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_PaySelection;
 import org.compiere.util.MimeType;
 
-import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.payment.PaymentRule;
-import de.metas.payment.api.IPaymentBL;
 import de.metas.payment.sepa.api.ISEPABankAccountBL;
 import de.metas.payment.sepa.api.ISEPADocument;
 import de.metas.payment.sepa.api.ISEPADocumentBL;
@@ -68,7 +68,8 @@ public class SEPADocumentBL implements ISEPADocumentBL
 				continue;
 			}
 
-			if (!ignorePaymentRule && doc.getC_BPartner_ID() > 0 && !isSEPAEligible(doc.getC_BPartner_ID()))
+			final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(doc.getC_BPartner_ID());
+			if (!ignorePaymentRule && bpartnerId != null && !isSEPAEligible(bpartnerId))
 			{
 				// We ignore documents from BPartners that aren't eligible for SEPA direct debit.
 				continue;
@@ -84,7 +85,7 @@ public class SEPADocumentBL implements ISEPADocumentBL
 			line.setIBAN(doc.getIBAN());
 			line.setSEPA_MandateRefNo(doc.getMandateRefNo());
 			line.setSwiftCode(doc.getSwiftCode());
-			line.setC_BPartner_ID(doc.getC_BPartner_ID());
+			line.setC_BPartner_ID(BPartnerId.toRepoId(bpartnerId));
 			line.setSEPA_Export(export);
 
 			// TODO: Change to AD_Message.
@@ -149,6 +150,7 @@ public class SEPADocumentBL implements ISEPADocumentBL
 		header.setDescription(null); // TODO: Add description.
 		header.setProcessed(false);
 		header.setPaymentDate(SystemTime.asDayTimestamp()); // TODO: Is this correct?
+		header.setSEPA_CreditorName(orgBP.getName());
 		header.setSEPA_CreditorIdentifier(sepaBankAccount.getSEPA_CreditorIdentifier());
 
 		InterfaceWrapperHelper.save(header);
@@ -171,11 +173,11 @@ public class SEPADocumentBL implements ISEPADocumentBL
 		return paymentDate;
 	}
 
-	private boolean isSEPAEligible(final int bpartnerId)
+	private boolean isSEPAEligible(final BPartnerId bpartnerId)
 	{
-		final I_C_BPartner bpartner = Services.get(IBPartnerDAO.class).getById(bpartnerId);
-		final PaymentRule paymentRule = Services.get(IPaymentBL.class).getPaymentRuleForBPartner(bpartner);
-		return paymentRule.isDirectDebit();
+		final IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
+		final PaymentRule paymentRule = bpartnerBL.getPaymentRuleForBPartner(bpartnerId).orElse(null);
+		return paymentRule != null && paymentRule.isDirectDebit();
 	}
 
 	@Override

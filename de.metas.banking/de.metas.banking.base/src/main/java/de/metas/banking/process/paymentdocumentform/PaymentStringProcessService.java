@@ -22,21 +22,13 @@
 
 package de.metas.banking.process.paymentdocumentform;
 
-import de.metas.adempiere.model.I_C_Invoice;
-import de.metas.banking.model.I_C_Payment_Request;
-import de.metas.banking.payment.IPaymentRequestBL;
-import de.metas.banking.payment.IPaymentRequestDAO;
-import de.metas.banking.payment.IPaymentString;
-import de.metas.banking.payment.IPaymentStringBL;
-import de.metas.banking.payment.IPaymentStringDataProvider;
-import de.metas.i18n.IMsgBL;
-import de.metas.i18n.ITranslatableString;
-import de.metas.interfaces.I_C_BP_Relation;
-import de.metas.logging.LogManager;
-import de.metas.process.IProcessPreconditionsContext;
-import de.metas.process.ProcessPreconditionsResolution;
-import de.metas.util.Services;
-import lombok.NonNull;
+import java.math.BigDecimal;
+import java.util.Comparator;
+import java.util.Optional;
+import java.util.Properties;
+
+import javax.annotation.Nullable;
+
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.invoice.service.IInvoiceBL;
@@ -50,20 +42,31 @@ import org.compiere.util.Env;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.Nullable;
-import java.math.BigDecimal;
-import java.util.Comparator;
-import java.util.Optional;
-import java.util.Properties;
+import de.metas.adempiere.model.I_C_Invoice;
+import de.metas.banking.model.I_C_Payment_Request;
+import de.metas.banking.payment.IPaymentRequestBL;
+import de.metas.banking.payment.IPaymentRequestDAO;
+import de.metas.banking.payment.IPaymentString;
+import de.metas.banking.payment.IPaymentStringBL;
+import de.metas.banking.payment.IPaymentStringDataProvider;
+import de.metas.i18n.AdMessageKey;
+import de.metas.i18n.IMsgBL;
+import de.metas.i18n.ITranslatableString;
+import de.metas.interfaces.I_C_BP_Relation;
+import de.metas.logging.LogManager;
+import de.metas.process.IProcessPreconditionsContext;
+import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.util.Services;
+import lombok.NonNull;
 
 @Service
 public class PaymentStringProcessService
 {
 	private static final transient Logger log = LogManager.getLogger(PaymentStringProcessService.class);
-	private static final String MSG_INVOICE_IS_NOT_COMPLETED = "de.metas.banking.process.paymentdocumentform.AlmightyKeeperOfEverything.InvoiceIsNotCompleted";
-	private static final String MSG_NO_INVOICE_SELECTED = "de.metas.banking.process.paymentdocumentform.AlmightyKeeperOfEverything.NoInvoiceSelected";
-	private static final String MSG_PAYMENT_REQUEST_FOR_INVOICE_ALREADY_EXISTS_EXCEPTION = "PaymentAllocationForm.PaymentRequestForInvoiceAlreadyExistsException";
-	private static final String MSG_COULD_NOT_CREATE_PAYMENT_REQUEST = "de.metas.banking.process.paymentdocumentform.AlmightyKeeperOfEverything.CouldNotCreatePaymentRequest";
+	private static final AdMessageKey MSG_INVOICE_IS_NOT_COMPLETED = AdMessageKey.of("de.metas.banking.process.paymentdocumentform.AlmightyKeeperOfEverything.InvoiceIsNotCompleted");
+	private static final AdMessageKey MSG_NO_INVOICE_SELECTED = AdMessageKey.of("de.metas.banking.process.paymentdocumentform.AlmightyKeeperOfEverything.NoInvoiceSelected");
+	private static final AdMessageKey MSG_PAYMENT_REQUEST_FOR_INVOICE_ALREADY_EXISTS_EXCEPTION = AdMessageKey.of("PaymentAllocationForm.PaymentRequestForInvoiceAlreadyExistsException");
+	private static final AdMessageKey MSG_COULD_NOT_CREATE_PAYMENT_REQUEST = AdMessageKey.of("de.metas.banking.process.paymentdocumentform.AlmightyKeeperOfEverything.CouldNotCreatePaymentRequest");
 
 	private final IPaymentStringBL paymentStringBL = Services.get(IPaymentStringBL.class);
 	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);

@@ -1,7 +1,41 @@
+/*
+ * #%L
+ * report-service
+ * %%
+ * Copyright (C) 2020 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.report.rest;
 
-import java.util.Map;
-
+import de.metas.Profiles;
+import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.Language;
+import de.metas.logging.LogManager;
+import de.metas.report.server.IReportServer;
+import de.metas.report.server.JsonReportError;
+import de.metas.report.server.LocalReportServer;
+import de.metas.report.server.OutputType;
+import de.metas.report.server.ReportResult;
+import de.metas.util.Check;
+import de.metas.util.GuavaCollectors;
+import de.metas.util.lang.ReferenceListAwareEnum;
+import de.metas.util.lang.RepoIdAware;
+import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.Null;
 import org.compiere.util.Trace;
@@ -18,19 +52,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import de.metas.Profiles;
-import de.metas.i18n.ITranslatableString;
-import de.metas.i18n.Language;
-import de.metas.logging.LogManager;
-import de.metas.report.server.IReportServer;
-import de.metas.report.server.JsonReportError;
-import de.metas.report.server.LocalReportServer;
-import de.metas.report.server.OutputType;
-import de.metas.util.Check;
-import de.metas.util.GuavaCollectors;
-import de.metas.util.lang.ReferenceListAwareEnum;
-import de.metas.util.lang.RepoIdAware;
-import lombok.NonNull;
+import java.util.Map;
 
 @RestController
 @RequestMapping(value = ReportRestController.ENDPOINT)
@@ -56,19 +78,18 @@ public class ReportRestController
 				final MDCCloseable c3 = MDC.putCloseable("output", String.valueOf(outputStr)))
 		{
 			final OutputType outputType = outputStr == null ? IReportServer.DEFAULT_OutputType : OutputType.valueOf(outputStr);
-			final String reportContentType = outputType.getContentType();
-			final String reportFilename = "report." + outputType.getFileExtension();
 
-			final byte[] reportData = server.report(processId, pinstanceId, adLanguage, outputType);
+			final ReportResult report = server.report(processId, pinstanceId, adLanguage, outputType);
+			final String reportFilename = extractReportFilename(report);
 
 			final HttpHeaders headers = new HttpHeaders();
-			headers.setContentType(MediaType.parseMediaType(reportContentType));
+			headers.setContentType(MediaType.APPLICATION_JSON);
 			headers.set(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + reportFilename + "\"");
 			headers.setCacheControl("must-revalidate, post-check=0, pre-check=0");
 
 			return ResponseEntity.ok()
 					.headers(headers)
-					.body(reportData);
+					.body(report);
 		}
 		catch (final Throwable ex)
 		{
@@ -81,11 +102,24 @@ public class ReportRestController
 		}
 	}
 
+	private String extractReportFilename(final ReportResult report)
+	{
+		if (Check.isNotBlank(report.getReportFilename()))
+		{
+			return report.getReportFilename();
+		}
+		else
+		{
+			final OutputType outputType = report.getOutputType();
+			return "report." + outputType.getFileExtension();
+		}
+	}
+
 	private static JsonReportError toJsonReportError(final Throwable throwable, final String adLanguage)
 	{
 		final Throwable cause = AdempiereException.extractCause(throwable);
 
-		final String adLanguageEffective = !Check.isBlank(adLanguage)
+		final String adLanguageEffective = Check.isNotBlank(adLanguage)
 				? adLanguage
 				: Language.getBaseAD_Language();
 

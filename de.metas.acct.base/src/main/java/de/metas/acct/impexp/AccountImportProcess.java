@@ -27,7 +27,6 @@ import org.compiere.model.X_AD_Tree;
 import org.compiere.model.X_C_Element;
 import org.compiere.model.X_I_ElementValue;
 
-import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.acct.api.AccountDimension;
@@ -305,7 +304,7 @@ public class AccountImportProcess extends SimpleImportProcessTemplate<I_I_Elemen
 				.listDistinct(I_AD_Tree.COLUMNNAME_AD_Tree_ID)
 				.stream()
 				.map(map -> extractTreeIdOrNull(map))
-				.filter(Predicates.notNull())
+				.filter(Objects::nonNull)
 				.collect(ImmutableSet.toImmutableSet());
 	}
 

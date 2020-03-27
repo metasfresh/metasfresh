@@ -31,6 +31,7 @@ import de.metas.bpartner.composite.BPartnerComposite;
 import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
 import de.metas.currency.CurrencyRepository;
 import de.metas.greeting.GreetingRepository;
+import de.metas.rest_api.bpartner.impl.JsonRequestConsolidateService;
 import de.metas.rest_api.bpartner.impl.MockLogEntriesRepository;
 import de.metas.rest_api.common.JsonExternalId;
 import de.metas.rest_api.utils.BPartnerCompositeLookupKey;
@@ -82,6 +83,7 @@ class JsonRetrieverServiceTest
 		final BPartnerCompositeRepository bpartnerCompositeRepository = new BPartnerCompositeRepository(new MockLogEntriesRepository());
 
 		final JsonServiceFactory jsonServiceFactory = new JsonServiceFactory(
+				new JsonRequestConsolidateService(),
 				new BPartnerQueryService(),
 				bpartnerCompositeRepository,
 				new BPGroupRepository(),

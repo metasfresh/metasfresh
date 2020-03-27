@@ -16,6 +16,7 @@ import org.compiere.util.TimeUtil;
 import org.compiere.util.TrxRunnable2;
 import org.slf4j.Logger;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.dunning.api.IDunningBL;
 import de.metas.dunning.api.IDunningContext;
 import de.metas.dunning.api.IDunningDAO;
@@ -67,7 +68,7 @@ public class InvoiceSourceBL implements IInvoiceSourceBL
 	{
 		final IDunningDAO dunningDAO = Services.get(IDunningDAO.class);
 
-		final I_C_Dunning dunning = dunningDAO.retrieveDunningForBPartner(invoiceRecord.getC_BPartner());
+		final I_C_Dunning dunning = dunningDAO.retrieveDunningForBPartner(BPartnerId.ofRepoId(invoiceRecord.getC_BPartner_ID()));
 		if (dunning != null)
 		{
 			return dunning;

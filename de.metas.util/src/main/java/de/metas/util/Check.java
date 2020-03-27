@@ -1,10 +1,8 @@
-package de.metas.util;
-
 /*
  * #%L
  * de.metas.util
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -21,6 +19,8 @@ package de.metas.util;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+package de.metas.util;
 
 import java.lang.reflect.Constructor;
 import java.math.BigDecimal;
@@ -670,7 +670,7 @@ public final class Check
 	 * @param trimWhitespaces trim whitespaces
 	 * @return true if >= 1 char
 	 */
-	public static boolean isEmpty(final String str, final boolean trimWhitespaces)
+	public static boolean isEmpty(@Nullable final String str, final boolean trimWhitespaces)
 	{
 		if (str == null)
 		{

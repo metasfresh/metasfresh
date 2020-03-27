@@ -20,7 +20,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import de.metas.Profiles;
-import de.metas.bpartner.composite.BPartnerContact;
 import de.metas.rest_api.bpartner.ContactRestEndpoint;
 import de.metas.rest_api.bpartner.impl.bpartnercomposite.JsonServiceFactory;
 import de.metas.rest_api.bpartner.impl.bpartnercomposite.jsonpersister.JsonPersisterService;
@@ -29,9 +28,8 @@ import de.metas.rest_api.bpartner.request.JsonRequestContactUpsertItem;
 import de.metas.rest_api.bpartner.response.JsonResponseContact;
 import de.metas.rest_api.bpartner.response.JsonResponseContactList;
 import de.metas.rest_api.bpartner.response.JsonResponseUpsert;
-import de.metas.rest_api.bpartner.response.JsonResponseUpsertItem;
 import de.metas.rest_api.bpartner.response.JsonResponseUpsert.JsonResponseUpsertBuilder;
-import de.metas.rest_api.common.MetasfreshId;
+import de.metas.rest_api.bpartner.response.JsonResponseUpsertItem;
 import de.metas.rest_api.common.SyncAdvise;
 import de.metas.rest_api.common.SyncAdvise.IfExists;
 import de.metas.rest_api.common.SyncAdvise.IfNotExists;
@@ -73,13 +71,16 @@ public class ContactRestController implements ContactRestEndpoint
 
 	private final BPartnerEndpointService bpartnerEndpointService;
 	private final JsonServiceFactory jsonServiceFactory;
+	private final JsonRequestConsolidateService jsonRequestConsolidateService;
 
 	public ContactRestController(
 			@NonNull final BPartnerEndpointService bpIbPartnerEndpointservice,
-			@NonNull final JsonServiceFactory jsonServiceFactory)
+			@NonNull final JsonServiceFactory jsonServiceFactory,
+			@NonNull final JsonRequestConsolidateService jsonRequestConsolidateService)
 	{
 		this.bpartnerEndpointService = bpIbPartnerEndpointservice;
 		this.jsonServiceFactory = jsonServiceFactory;
+		this.jsonRequestConsolidateService = jsonRequestConsolidateService;
 	}
 
 	@ApiResponses(value = {
@@ -139,20 +140,14 @@ public class ContactRestController implements ContactRestEndpoint
 
 		final JsonPersisterService persister = jsonServiceFactory.createPersister();
 
-		for (final JsonRequestContactUpsertItem requestItem : contacts.getRequestItems())
+		final JsonRequestContactUpsert consolidatedContacts = jsonRequestConsolidateService.consolidateWithIdentifier(contacts);
+
+		for (final JsonRequestContactUpsertItem requestItem : consolidatedContacts.getRequestItems())
 		{
-			final BPartnerContact bpartnerContact = persister.persist(
+			final JsonResponseUpsertItem responseItem = persister.persist(
 					IdentifierString.of(requestItem.getContactIdentifier()),
 					requestItem.getContact(),
 					syncAdvise);
-
-			final MetasfreshId metasfreshId = MetasfreshId.of(bpartnerContact.getId());
-
-			final JsonResponseUpsertItem responseItem = JsonResponseUpsertItem
-					.builder()
-					.identifier(requestItem.getContactIdentifier())
-					.metasfreshId(metasfreshId)
-					.build();
 			response.responseItem(responseItem);
 		}
 		return new ResponseEntity<>(response.build(), HttpStatus.CREATED);

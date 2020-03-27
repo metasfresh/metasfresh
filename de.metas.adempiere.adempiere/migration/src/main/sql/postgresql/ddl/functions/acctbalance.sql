@@ -1,3 +1,19 @@
+/*
+Take care if you want to use `AcctBalance` when calculating an account balance (saldo) in a report.
+It could be that the report result is okay, but the user sees it wrong because it is not
+    similar with the results of `acctBalanceToDate` which is used in the report `Saldobilanz`.
+
+It's not a problem of correctness, but of consistency with what the user expects: `acctBalanceToDate` directly uses `debit - credit`,
+it doesn't take into account account type and account sign like `acctBalance` does.
+
+If in doubt, please ask mark, and give him the link below.
+
+
+More explanations in https://github.com/metasfresh/metasfresh/issues/6121#issuecomment-598564338
+*/
+
+
+
 -- DROP FUNCTION acctbalance(numeric, numeric, numeric);
 
 CREATE OR REPLACE FUNCTION acctbalance(p_account_id numeric, p_amtdr numeric, p_amtcr numeric)
@@ -10,7 +26,7 @@ DECLARE
 
 BEGIN
 	    v_balance := p_AmtDr - p_AmtCr;
-	    --  
+	    --
 	    IF (p_Account_ID > 0) THEN
 	        SELECT AccountType, AccountSign
 	          INTO v_AccountType, v_AccountSign
@@ -36,7 +52,7 @@ BEGIN
 	EXCEPTION WHEN OTHERS THEN
 	    -- In case Acct not found
     	RETURN  p_AmtDr - p_AmtCr;
-	
+
 END;
 
 $BODY$

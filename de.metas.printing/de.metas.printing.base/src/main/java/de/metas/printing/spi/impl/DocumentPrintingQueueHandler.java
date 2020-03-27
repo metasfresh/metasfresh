@@ -14,6 +14,7 @@ import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
 import de.metas.adempiere.model.I_C_Invoice;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.document.archive.model.I_AD_Archive;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
@@ -210,7 +211,10 @@ public class DocumentPrintingQueueHandler extends PrintingQueueHandlerAdapter
 		queueItem.setC_BPartner_ID(invoice.getC_BPartner_ID());
 		queueItem.setC_BPartner_Location_ID(invoice.getC_BPartner_Location_ID());
 
-		final int documentCopies = invoice.getC_BPartner().getDocumentCopies();
+		final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
+		final I_C_BPartner partner = bpartnerDAO.getById(invoice.getC_BPartner_ID());
+
+		final int documentCopies = partner.getDocumentCopies();
 		if (documentCopies > 0)
 		{
 			// updating to the partner's preference

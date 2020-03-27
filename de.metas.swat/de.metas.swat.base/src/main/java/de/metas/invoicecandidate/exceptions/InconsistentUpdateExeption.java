@@ -13,15 +13,14 @@ package de.metas.invoicecandidate.exceptions;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.Properties;
 
@@ -29,6 +28,10 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_AD_User;
 import org.compiere.util.Env;
+
+import de.metas.i18n.AdMessageKey;
+import lombok.Getter;
+import lombok.NonNull;
 
 /**
  * Model validators can throw this exception if they want to prohibit an update that would lead to inconsistencies. If
@@ -47,17 +50,18 @@ public class InconsistentUpdateExeption extends AdempiereException
 
 	private final I_AD_User userToNotify;
 
-	private final String adMessageHeadLineValue;
+	@Getter
+	private final AdMessageKey adMessageHeadLine;
 
 	public InconsistentUpdateExeption(
-			final String adMessageHeadLineValue,
-			final String adMessageValue,
+			@NonNull final AdMessageKey adMessageHeadLine,
+			@NonNull final AdMessageKey adMessage,
 			final Object[] messageParams,
 			final I_AD_User userToNotify)
 	{
-		super(getLanguage(userToNotify), adMessageValue, messageParams);
+		super(getLanguage(userToNotify), adMessage, messageParams);
 
-		this.adMessageHeadLineValue = adMessageHeadLineValue;
+		this.adMessageHeadLine = adMessageHeadLine;
 		this.userToNotify = userToNotify;
 	}
 
@@ -79,10 +83,5 @@ public class InconsistentUpdateExeption extends AdempiereException
 	public int getAdUserToNotifyId()
 	{
 		return userToNotify.getAD_User_ID();
-	}
-
-	public String getAD_Message_Value()
-	{
-		return adMessageHeadLineValue;
 	}
 }

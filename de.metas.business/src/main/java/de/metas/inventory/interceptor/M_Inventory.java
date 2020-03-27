@@ -13,6 +13,7 @@ import de.metas.document.DocBaseAndSubType;
 import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeDAO;
 import de.metas.event.IEventBusFactory;
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.inventory.AggregationType;
@@ -47,7 +48,7 @@ import de.metas.util.Services;
 @Component
 public class M_Inventory
 {
-	public static final String MSG_NOT_ALL_LINES_COUNTED = "de.metas.inventory.interceptor.NotAllLinesCounted";
+	public static final AdMessageKey MSG_NOT_ALL_LINES_COUNTED = AdMessageKey.of("de.metas.inventory.interceptor.NotAllLinesCounted");
 
 	@Init
 	public void onInit()

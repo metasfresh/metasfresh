@@ -88,6 +88,7 @@ final class ChangeLogUtil
 			.put(I_AD_User.COLUMNNAME_C_BPartner_ID, BPartnerContact.BPARTNER_ID)
 			.put(I_AD_User.COLUMNNAME_EMail, BPartnerContact.EMAIL)
 			.put(I_AD_User.COLUMNNAME_ExternalId, BPartnerContact.EXTERNAL_ID)
+			.put(I_AD_User.COLUMNNAME_Value, BPartnerContact.VALUE)
 			.put(I_AD_User.COLUMNNAME_Firstname, BPartnerContact.FIRST_NAME)
 			.put(I_AD_User.COLUMNNAME_Lastname, BPartnerContact.LAST_NAME)
 			.put(I_AD_User.COLUMNNAME_Name, BPartnerContact.NAME)

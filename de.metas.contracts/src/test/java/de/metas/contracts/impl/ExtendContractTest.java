@@ -132,7 +132,7 @@ public class ExtendContractTest extends AbstractFlatrateTermTest
 		assertThatThrownBy(() -> {
 			Services.get(IFlatrateBL.class).extendContractAndNotifyUser(context);
 		}).isInstanceOf(AdempiereException.class)
-				.hasMessageContaining(FlatrateBL.MSG_INFINITE_LOOP);
+				.hasMessageContaining(FlatrateBL.MSG_INFINITE_LOOP.toAD_Message());
 	}
 
 	private I_C_Flatrate_Term prepareContractForTest(final String autoExtension)

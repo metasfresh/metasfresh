@@ -42,6 +42,7 @@ import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.I_C_Country;
 import org.compiere.model.I_M_Attribute;
 
+import de.metas.i18n.AdMessageKey;
 import de.metas.lang.SOTrx;
 import de.metas.util.Services;
 
@@ -49,7 +50,7 @@ public class Country2CountryAwareAttributeService implements ICountryAwareAttrib
 {
 	public static final transient Country2CountryAwareAttributeService instance = new Country2CountryAwareAttributeService();
 
-	private static final String MSG_NoCountryAttribute = "de.metas.swat.CountryAttribute.error";
+	private static final AdMessageKey MSG_NoCountryAttribute = AdMessageKey.of("de.metas.swat.CountryAttribute.error");
 
 	private Country2CountryAwareAttributeService()
 	{

@@ -31,6 +31,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.cache.CCache;
+import de.metas.currency.Amount;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
@@ -393,7 +394,7 @@ public final class Msg
 		final Message message = getMessage(adLanguageToUse, adMessage);
 		return format(adLanguageToUse, message, args);
 	}	// getMsg
-	
+
 	private static String format(@NonNull final String adLanguage, @NonNull final Message message, @Nullable final Object[] args)
 	{
 		final String messageStr = message.getMsgTextAndTip();
@@ -414,27 +415,32 @@ public final class Msg
 		}
 		return retStr;
 	}
-	
+
 	private static void normalizeArgsBeforeFormat(final Object[] args, final String adLanguage)
 	{
-		if(args == null || args.length == 0)
+		if (args == null || args.length == 0)
 		{
 			return;
 		}
-		
+
 		for (int i = 0; i < args.length; i++)
 		{
 			final Object arg = args[i];
 			final Object argNorm;
-			if(arg instanceof ITranslatableString)
+			if (arg instanceof ITranslatableString)
 			{
 				argNorm = ((ITranslatableString)arg).translate(adLanguage);
+			}
+			else if (arg instanceof Amount)
+			{
+				final Amount amount = (Amount)arg;
+				argNorm = TranslatableStrings.amount(amount).translate(adLanguage);
 			}
 			else
 			{
 				argNorm = arg;
 			}
-			
+
 			args[i] = argNorm;
 		}
 	}

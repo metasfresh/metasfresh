@@ -4,13 +4,13 @@
 
 CREATE OR REPLACE VIEW report.fresh_Pricelist_Version_Val_Rule AS 
 SELECT 
-	plv.m_pricelist_version_id, ps.c_bpartner_id, plv.validfrom, plv.name
+	plv.m_pricelist_version_id, ps.c_bpartner_id, plv.validfrom, plv.name, ps.IsSOTrx
 FROM 
 	( 
-		SELECT bp.C_BPartner_ID, COALESCE( bp.M_PricingSystem_ID, bpg.M_PricingSystem_ID ) AS M_PricingSystem_ID
+		SELECT bp.C_BPartner_ID, COALESCE( bp.M_PricingSystem_ID, bpg.M_PricingSystem_ID ) AS M_PricingSystem_ID, 'Y':: character as IsSOTrx
 		FROM C_BPartner bp LEFT OUTER JOIN C_BP_Group bpg ON bp.C_BP_Group_ID = bpg.C_BP_Group_ID
 	UNION	
-		SELECT bp.C_BPartner_ID, COALESCE( bp.PO_PricingSystem_ID, bpg.PO_PricingSystem_ID ) AS M_PricingSystem_ID
+		SELECT bp.C_BPartner_ID, COALESCE( bp.PO_PricingSystem_ID, bpg.PO_PricingSystem_ID ) AS M_PricingSystem_ID, 'N'::character as IsSOTrx
 		FROM C_BPartner bp LEFT OUTER JOIN C_BP_Group bpg ON bp.C_BP_Group_ID = bpg.C_BP_Group_ID
 	) ps
 	LEFT OUTER JOIN M_PriceList pl ON ps.M_PricingSystem_ID = pl.M_PricingSystem_ID

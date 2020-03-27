@@ -1,6 +1,7 @@
 package de.metas.document.archive.mailrecipient.process;
 
 import java.util.Iterator;
+import java.util.Objects;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
@@ -10,8 +11,6 @@ import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.Mutable;
 
-import com.google.common.base.Predicates;
-
 import de.metas.async.Async_Constants;
 import de.metas.async.api.IWorkPackageQueue;
 import de.metas.async.processor.IWorkPackageQueueFactory;
@@ -20,6 +19,7 @@ import de.metas.document.archive.async.spi.impl.MailWorkpackageProcessor;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log_Line;
 import de.metas.document.archive.process.ProblemCollector;
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.ITranslatableString;
 import de.metas.process.JavaProcess;
 import de.metas.process.PInstanceId;
@@ -34,9 +34,9 @@ import lombok.NonNull;
  */
 public abstract class AbstractMailDocumentsForSelection extends JavaProcess
 {
-	private static final String MSG_No_DocOutboundLog_Selection = "AbstractMailDocumentsForSelection.No_DocOutboundLog_Selection";
+	private static final AdMessageKey MSG_No_DocOutboundLog_Selection = AdMessageKey.of("AbstractMailDocumentsForSelection.No_DocOutboundLog_Selection");
 
-	private static final String MSG_EMPTY_AD_Archive_ID = "SendMailsForSelection.EMPTY_AD_Archive_ID";
+	private static final AdMessageKey MSG_EMPTY_AD_Archive_ID = AdMessageKey.of("SendMailsForSelection.EMPTY_AD_Archive_ID");
 
 	private static final String PARA_OnlyNotSentMails = "OnlyNotSentMails";
 
@@ -116,7 +116,7 @@ public abstract class AbstractMailDocumentsForSelection extends JavaProcess
 
 		return logsIterator
 				.map(this::retrieveDocumentLogLine)
-				.filter(Predicates.notNull())
+				.filter(Objects::nonNull)
 				.filter(docOutboundLogLine -> isEmailSendable(docOutboundLogLine, collector));
 	}
 
@@ -158,7 +158,7 @@ public abstract class AbstractMailDocumentsForSelection extends JavaProcess
 		{
 			final I_C_Doc_Outbound_Log docOutBoundLogRecord = logLine.getC_Doc_Outbound_Log();
 			Loggables.addLog(msgBL.getMsg(getCtx(), MSG_EMPTY_AD_Archive_ID, new Object[] { docOutBoundLogRecord.getDocumentNo() }));
-			collector.collectException(MSG_EMPTY_AD_Archive_ID, docOutBoundLogRecord.getDocumentNo());
+			collector.collectException(MSG_EMPTY_AD_Archive_ID.toAD_Message(), docOutBoundLogRecord.getDocumentNo());
 			return false;
 		}
 

@@ -27,8 +27,8 @@ import java.util.Properties;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.compiere.model.I_C_BP_BankAccount;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_Bank;
 
-import de.metas.banking.model.I_C_Bank;
 import de.metas.util.ISingletonService;
 
 /**

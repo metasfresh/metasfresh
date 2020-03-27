@@ -14,6 +14,7 @@ import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.order.model.I_C_Order;
 import de.metas.contracts.subscription.ISubscriptionBL;
 import de.metas.document.engine.DocStatus;
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -42,7 +43,7 @@ import lombok.NonNull;
 
 public class ExtendContractOrder
 {
-	private static final String MSG_EXTEND_CONTRACT_ALREADY_PROLONGED = "de.metas.contracts.subscription.impl.subscriptioncommands.ExtendContractOrder";
+	private static final AdMessageKey MSG_EXTEND_CONTRACT_ALREADY_PROLONGED = AdMessageKey.of("de.metas.contracts.subscription.impl.subscriptioncommands.ExtendContractOrder");
 	
 	public static I_C_Order extend(@NonNull final I_C_Order existentOrder )
 	{

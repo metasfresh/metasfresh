@@ -10,18 +10,17 @@ package de.metas.data.export.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -31,22 +30,22 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.NoSuchElementException;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
-import de.metas.util.Check;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
 import org.compiere.util.DB;
 import org.compiere.util.Trx;
+import org.slf4j.Logger;
 
 import de.metas.data.export.api.IExportDataSource;
+import de.metas.logging.LogManager;
+import de.metas.util.Check;
 
 /**
  * JDBC implementation of {@link IExportDataSource}
- * 
+ *
  * @author tsa
- * 
+ *
  */
 public class JdbcExportDataSource implements IExportDataSource
 {
@@ -73,21 +72,21 @@ public class JdbcExportDataSource implements IExportDataSource
 			final String sqlSelect,
 			final String sqlCount,
 			final String sqlWhereClause,
-			final List<Object> sqlParams)
+			final List<Object> sqlParams/* not ImmutableList because list elements might be null */)
 	{
 		this.fields = Collections.unmodifiableList(new ArrayList<String>(fields));
 		this.sqlFields = Collections.unmodifiableList(new ArrayList<String>(sqlFields));
 		this.sqlSelect = sqlSelect;
 		this.sqlCount = sqlCount;
 		this.sqlWhereClause = sqlWhereClause;
-		this.sqlParams = sqlParams == null ? null : Collections.unmodifiableList(new ArrayList<Object>(sqlParams));
+		this.sqlParams = sqlParams == null ? null : Collections.unmodifiableList(new ArrayList<>(sqlParams));
 	}
 
 	/**
 	 * Gets the ResultSet to be used.
-	 * 
+	 *
 	 * NOTE: the result set is cached in class properties, so you can invoke this method as many times as you want, only the first time the ResultSet will actually fetched from database.
-	 * 
+	 *
 	 * @return result set to be used. Never returns NULL.
 	 * @throws DBException on any error
 	 * @throws AdempiereException if the result set was opened and then closed (i.e. we already iterated this data source).
@@ -112,15 +111,7 @@ public class JdbcExportDataSource implements IExportDataSource
 			// disabling trx timeout, as this might be a long-running process
 			DB.getConstraints().setTrxTimeoutSecs(-1, false);
 
-			conn = DB.createConnection(false, Connection.TRANSACTION_READ_COMMITTED); // autoCommit = false
-
-			// Make sure connection's autoCommit is false, else setFetchSize won't work at least with postgresql-jdbc driver
-			Check.assume(!conn.getAutoCommit(), "JDBC Connection's AutoCommit flag shall be false");
-
-			pstmt = conn.prepareStatement(sqlSelect);
-			pstmt.setFetchSize(100);
-
-			DB.setParameters(pstmt, sqlParams);
+			pstmt = DB.prepareStatementForDataExport(sqlSelect, sqlParams);
 			rs = pstmt.executeQuery();
 			ok = true;
 		}
@@ -142,9 +133,9 @@ public class JdbcExportDataSource implements IExportDataSource
 
 	/**
 	 * Retrieve next row from ResultSet.
-	 * 
+	 *
 	 * If there is no row available (ResultSet reached the end) then null is returned
-	 * 
+	 *
 	 * @return row as list of Objects or null
 	 */
 	private List<Object> retrieveNextOrNull()

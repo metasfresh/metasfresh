@@ -74,7 +74,7 @@ public class AcctModuleInterceptor extends AbstractModuleInterceptor
 		}
 
 		Services.registerService(IProductActivityProvider.class, Services.get(IProductAcctDAO.class));
-		
+
 		Services.get(IImportProcessFactory.class).registerImportProcess(I_I_ElementValue.class, AccountImportProcess.class);
 	}
 
@@ -87,7 +87,7 @@ public class AcctModuleInterceptor extends AbstractModuleInterceptor
 		engine.addModelValidator(new de.metas.acct.model.validator.C_AcctSchema_Element(), client);
 
 		engine.addModelValidator(new de.metas.acct.model.validator.C_BP_BankAccount(), client); // 08354
-		engine.addModelValidator(new de.metas.acct.model.validator.C_ElementValue(), client);
+		// engine.addModelValidator(new de.metas.acct.model.validator.C_ElementValue(), client); // spring component
 		engine.addModelValidator(new de.metas.acct.model.validator.C_ValidCombination(), client);
 		engine.addModelValidator(new de.metas.acct.model.validator.GL_Journal(), client);
 		engine.addModelValidator(new de.metas.acct.model.validator.GL_JournalLine(), client);

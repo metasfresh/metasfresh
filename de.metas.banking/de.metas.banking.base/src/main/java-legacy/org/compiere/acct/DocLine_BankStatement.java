@@ -19,6 +19,8 @@ package org.compiere.acct;
 import java.math.BigDecimal;
 import java.util.List;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BankStatementLine;
@@ -29,7 +31,8 @@ import org.compiere.util.TimeUtil;
 
 import com.google.common.collect.ImmutableList;
 
-import de.metas.banking.interfaces.I_C_BankStatementLine_Ref;
+import de.metas.banking.BankStatementLineId;
+import de.metas.banking.BankStatementLineReference;
 import de.metas.banking.service.IBankStatementDAO;
 import de.metas.bpartner.BPartnerId;
 import de.metas.currency.ConversionTypeMethod;
@@ -38,6 +41,8 @@ import de.metas.currency.ICurrencyBL;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.organization.OrgId;
+import de.metas.payment.PaymentId;
+import de.metas.payment.api.IPaymentBL;
 import de.metas.util.Services;
 
 /**
@@ -63,15 +68,10 @@ class DocLine_BankStatement extends DocLine<Doc_BankStatement>
 	{
 		super(InterfaceWrapperHelper.getPO(line), doc);
 
-		final I_C_Payment payment = line.getC_Payment();
-		if (payment == null || payment.getC_Payment_ID() <= 0)
-		{
-			this._payment = null;
-		}
-		else
-		{
-			this._payment = payment;
-		}
+		final PaymentId paymentId = PaymentId.ofRepoIdOrNull(line.getC_Payment_ID());
+		this._payment = paymentId != null
+				? Services.get(IPaymentBL.class).getById(paymentId)
+				: null;
 		m_IsReversal = line.isReversal();
 		//
 		m_StmtAmt = line.getStmtAmt();
@@ -81,7 +81,8 @@ class DocLine_BankStatement extends DocLine<Doc_BankStatement>
 		setDateDoc(TimeUtil.asLocalDate(line.getValutaDate()));
 		setBPartnerId(BPartnerId.ofRepoIdOrNull(line.getC_BPartner_ID()));
 
-		this._bankStatementLineReferences = ImmutableList.copyOf(bankStatementDAO.retrieveLineReferences(line));
+		final BankStatementLineId bankStatementLineId = BankStatementLineId.ofRepoId(line.getC_BankStatementLine_ID());
+		this._bankStatementLineReferences = ImmutableList.copyOf(bankStatementDAO.getLineReferences(bankStatementLineId));
 
 		//
 		// Period
@@ -93,7 +94,7 @@ class DocLine_BankStatement extends DocLine<Doc_BankStatement>
 
 	}   // DocLine_Bank
 
-	private final List<I_C_BankStatementLine_Ref> _bankStatementLineReferences;
+	private final List<BankStatementLineReference> _bankStatementLineReferences;
 	/** Reversal Flag */
 	private final boolean m_IsReversal;
 	private final I_C_Payment _payment;
@@ -102,7 +103,7 @@ class DocLine_BankStatement extends DocLine<Doc_BankStatement>
 	private final BigDecimal m_StmtAmt;
 	private final BigDecimal m_InterestAmt;
 
-	public final List<I_C_BankStatementLine_Ref> getReferences()
+	public final List<BankStatementLineReference> getReferences()
 	{
 		return _bankStatementLineReferences;
 	}
@@ -130,14 +131,25 @@ class DocLine_BankStatement extends DocLine<Doc_BankStatement>
 	}	// getAD_Org_ID
 
 	/** @return C_Payment.AD_Org_ID (if any); fallback to {@link #getAD_Org_ID()} */
-	public final OrgId getPaymentOrgId(final I_C_Payment paymentToUseOrNull)
+	public final OrgId getPaymentOrgId(@Nullable final I_C_Payment payment)
 	{
-		if (paymentToUseOrNull != null)
+		if (payment != null)
 		{
-			return OrgId.ofRepoId(paymentToUseOrNull.getAD_Org_ID());
+			return OrgId.ofRepoId(payment.getAD_Org_ID());
 		}
-		return super.getOrgId();
+		else
+		{
+			return super.getOrgId();
+		}
+	}
 
+	public final OrgId getPaymentOrgId(@Nullable final PaymentId paymentId)
+	{
+		final I_C_Payment payment = paymentId != null
+				? Services.get(IPaymentBL.class).getById(paymentId)
+				: null;
+
+		return getPaymentOrgId(payment);
 	}
 
 	/**

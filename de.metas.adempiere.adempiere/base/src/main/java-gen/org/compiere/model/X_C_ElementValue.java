@@ -14,7 +14,7 @@ public class X_C_ElementValue extends org.compiere.model.PO implements I_C_Eleme
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1733127012L;
+	private static final long serialVersionUID = -1304206948L;
 
     /** Standard Constructor */
     public X_C_ElementValue (Properties ctx, int C_ElementValue_ID, String trxName)
@@ -121,18 +121,6 @@ public class X_C_ElementValue extends org.compiere.model.PO implements I_C_Eleme
 		return (java.lang.String)get_Value(COLUMNNAME_AccountType);
 	}
 
-	@Override
-	public org.compiere.model.I_C_Activity getC_Activity() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_Activity_ID, org.compiere.model.I_C_Activity.class);
-	}
-
-	@Override
-	public void setC_Activity(org.compiere.model.I_C_Activity C_Activity)
-	{
-		set_ValueFromPO(COLUMNNAME_C_Activity_ID, org.compiere.model.I_C_Activity.class, C_Activity);
-	}
-
 	/** Set Kostenstelle.
 		@param C_Activity_ID 
 		Kostenstelle
@@ -159,7 +147,7 @@ public class X_C_ElementValue extends org.compiere.model.PO implements I_C_Eleme
 	}
 
 	@Override
-	public org.compiere.model.I_C_BP_BankAccount getC_BP_BankAccount() throws RuntimeException
+	public org.compiere.model.I_C_BP_BankAccount getC_BP_BankAccount()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_BP_BankAccount_ID, org.compiere.model.I_C_BP_BankAccount.class);
 	}
@@ -195,18 +183,6 @@ public class X_C_ElementValue extends org.compiere.model.PO implements I_C_Eleme
 		return ii.intValue();
 	}
 
-	@Override
-	public org.compiere.model.I_C_Currency getC_Currency() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_Currency_ID, org.compiere.model.I_C_Currency.class);
-	}
-
-	@Override
-	public void setC_Currency(org.compiere.model.I_C_Currency C_Currency)
-	{
-		set_ValueFromPO(COLUMNNAME_C_Currency_ID, org.compiere.model.I_C_Currency.class, C_Currency);
-	}
-
 	/** Set Währung.
 		@param C_Currency_ID 
 		The Currency for this record
@@ -233,7 +209,7 @@ public class X_C_ElementValue extends org.compiere.model.PO implements I_C_Eleme
 	}
 
 	@Override
-	public org.compiere.model.I_C_Element getC_Element() throws RuntimeException
+	public org.compiere.model.I_C_Element getC_Element()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_Element_ID, org.compiere.model.I_C_Element.class);
 	}
@@ -292,18 +268,6 @@ public class X_C_ElementValue extends org.compiere.model.PO implements I_C_Eleme
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	@Override
-	public org.compiere.model.I_C_Tax getC_Tax() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_Tax_ID, org.compiere.model.I_C_Tax.class);
-	}
-
-	@Override
-	public void setC_Tax(org.compiere.model.I_C_Tax C_Tax)
-	{
-		set_ValueFromPO(COLUMNNAME_C_Tax_ID, org.compiere.model.I_C_Tax.class, C_Tax);
 	}
 
 	/** Set Steuer.
@@ -501,9 +465,7 @@ public class X_C_ElementValue extends org.compiere.model.PO implements I_C_Eleme
 	}
 
 	/** Set Name.
-		@param Name 
-		Alphanumeric identifier of the entity
-	  */
+		@param Name Name	  */
 	@Override
 	public void setName (java.lang.String Name)
 	{
@@ -511,12 +473,48 @@ public class X_C_ElementValue extends org.compiere.model.PO implements I_C_Eleme
 	}
 
 	/** Get Name.
-		@return Alphanumeric identifier of the entity
-	  */
+		@return Name	  */
 	@Override
 	public java.lang.String getName () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_Name);
+	}
+
+	@Override
+	public org.compiere.model.I_C_ElementValue getParent()
+	{
+		return get_ValueAsPO(COLUMNNAME_Parent_ID, org.compiere.model.I_C_ElementValue.class);
+	}
+
+	@Override
+	public void setParent(org.compiere.model.I_C_ElementValue Parent)
+	{
+		set_ValueFromPO(COLUMNNAME_Parent_ID, org.compiere.model.I_C_ElementValue.class, Parent);
+	}
+
+	/** Set Parent.
+		@param Parent_ID 
+		Parent of Entity
+	  */
+	@Override
+	public void setParent_ID (int Parent_ID)
+	{
+		if (Parent_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_Parent_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_Parent_ID, Integer.valueOf(Parent_ID));
+	}
+
+	/** Get Parent.
+		@return Parent of Entity
+	  */
+	@Override
+	public int getParent_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_Parent_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	/** Set Buchen "Ist".
@@ -621,6 +619,28 @@ public class X_C_ElementValue extends org.compiere.model.PO implements I_C_Eleme
 			return "Y".equals(oo);
 		}
 		return false;
+	}
+
+	/** Set Reihenfolge.
+		@param SeqNo 
+		Zur Bestimmung der Reihenfolge der Einträge; die kleinste Zahl kommt zuerst
+	  */
+	@Override
+	public void setSeqNo (int SeqNo)
+	{
+		set_ValueNoCheck (COLUMNNAME_SeqNo, Integer.valueOf(SeqNo));
+	}
+
+	/** Get Reihenfolge.
+		@return Zur Bestimmung der Reihenfolge der Einträge; die kleinste Zahl kommt zuerst
+	  */
+	@Override
+	public int getSeqNo () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_SeqNo);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	/** Set Gültig ab.

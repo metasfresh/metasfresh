@@ -26,6 +26,7 @@ package de.metas.printing.process;
  */
 
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.trx.api.ITrx;
 import org.compiere.model.IQuery;
 import org.slf4j.Logger;
 
@@ -49,7 +50,7 @@ public class C_Print_Job_Create extends AbstractPrintJobCreate
 	protected int createSelection()
 	{
 		final IQuery<I_C_Printing_Queue> query = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_C_Printing_Queue.class)
+				.createQueryBuilder(I_C_Printing_Queue.class, ITrx.TRXNAME_None) // right now, PrintingQueueBL.createPrintingQueueSources(Properties, IPrintingQueueQuery) is also selecting out-of-trx
 				.addOnlyActiveRecordsFilter()
 				.filter(getProcessInfo().getQueryFilterOrElseFalse())
 				.addEqualsFilter(I_C_Printing_Queue.COLUMNNAME_Processed, false)

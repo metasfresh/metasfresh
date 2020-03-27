@@ -43,6 +43,7 @@ import org.slf4j.MDC.MDCCloseable;
 
 import com.google.common.collect.ImmutableList;
 
+import ch.qos.logback.classic.Level;
 import de.metas.adempiere.service.IPrinterRoutingDAO;
 import de.metas.async.api.IAsyncBatchBL;
 import de.metas.async.api.IWorkPackageQueue;
@@ -69,6 +70,7 @@ import de.metas.printing.model.I_C_Printing_Queue;
 import de.metas.printing.model.X_C_Print_Job_Instructions;
 import de.metas.process.PInstanceId;
 import de.metas.util.Check;
+import de.metas.util.Loggables;
 import de.metas.util.Services;
 import de.metas.util.collections.IteratorChain;
 import de.metas.util.collections.IteratorUtils;
@@ -79,10 +81,6 @@ import lombok.NonNull;
 import lombok.Value;
 import lombok.experimental.Delegate;
 
-/**
- * @author cg
- *
- */
 public class PrintJobBL implements IPrintJobBL
 {
 	public final static int DEFAULT_MAX_JOBPRINTLINES = 500;
@@ -99,8 +97,6 @@ public class PrintJobBL implements IPrintJobBL
 
 	/**
 	 * Allows it to set maxLinesPerJob from outside (intended use is for testing). If set, then this value overrides the <code>AD_SysConfig</code> setting {@value #SYSCONFIG_MAX_LINES_PER_JOB}.
-	 *
-	 * @return
 	 */
 	public int getMaxLinesPerJob()
 	{
@@ -128,48 +124,51 @@ public class PrintJobBL implements IPrintJobBL
 			while (it.hasNext())
 			{
 				final I_C_Printing_Queue item = it.next();
-				if (source.isPrinted(item))
+				try (final MDCCloseable itemMDC = TableRecordMDC.putTableRecordReference(item))
 				{
-					// Item was printed in meantime. Skip it
-					// (i.e. it was processed as a related item)
-					continue;
-				}
-
-				final Iterator<I_C_Printing_Queue> relatedItems = source.createRelatedItemsIterator(item);
-
-				// task: 08958: note that that all items' related items have the same copies value as item
-				@SuppressWarnings("resource")
-				final PeekIterator<I_C_Printing_Queue> currentItems = IteratorUtils.asPeekIterator(
-						new IteratorChain<I_C_Printing_Queue>()
-								.addIterator(new SingletonIterator<>(item))
-								.addIterator(relatedItems));
-				try
-				{
-					skipPrinted(source, currentItems);
-
-					while (currentItems.hasNext())
+					if (source.isPrinted(item))
 					{
-						final List<I_C_Print_Job_Instructions> printJobInstructions = createPrintJobInstructionsAndPrintJobs(source,
-								currentItems,
-								printingQueueProcessingInfo,
-								trxName);
-						if (printJobInstructions.isEmpty())
-						{
-							break;
-						}
-						else
-						{
-							pdfPrintingJobInstructions.addAll(collectPDFPrintJobInstructions(printJobInstructions));
-						}
-
-						printJobCount++;
-
-						skipPrinted(source, currentItems);
+						logger.debug("According to IPrintingQueueSource, C_Printing_Queue is already printed, maybe in meantime; -> skipping");// (i.e. it was processed as a related item)
+						continue;
 					}
-				}
-				finally
-				{
-					IteratorUtils.close(currentItems);
+
+					final Iterator<I_C_Printing_Queue> relatedItems = source.createRelatedItemsIterator(item);
+
+					// task: 08958: note that that all items' related items have the same copies value as item
+					@SuppressWarnings("resource")
+					final PeekIterator<I_C_Printing_Queue> currentItems = IteratorUtils.asPeekIterator(
+							new IteratorChain<I_C_Printing_Queue>()
+									.addIterator(new SingletonIterator<>(item))
+									.addIterator(relatedItems));
+					try
+					{
+						skipPrinted(source, currentItems);
+
+						while (currentItems.hasNext())
+						{
+							final List<I_C_Print_Job_Instructions> printJobInstructions = createPrintJobInstructionsAndPrintJobs(source,
+									currentItems,
+									printingQueueProcessingInfo,
+									trxName);
+							Loggables.withLogger(logger, Level.DEBUG).addLog("Created {} C_Print_Job_Instructions for related C_Printing_Queues", printJobInstructions.size());
+							if (printJobInstructions.isEmpty())
+							{
+								break;
+							}
+							else
+							{
+								pdfPrintingJobInstructions.addAll(collectPDFPrintJobInstructions(printJobInstructions));
+							}
+
+							printJobCount++;
+
+							skipPrinted(source, currentItems);
+						}
+					}
+					finally
+					{
+						IteratorUtils.close(currentItems);
+					}
 				}
 			}
 			return printJobCount;

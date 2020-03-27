@@ -11,7 +11,7 @@ import org.compiere.Adempiere;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Repository;
 
-import com.google.common.base.Predicates;
+import java.util.Objects;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.cache.CCache;
@@ -78,7 +78,7 @@ public class InboundEMailConfigRepository
 
 		return ids.stream()
 				.map(allConfigsIndexById::get)
-				.filter(Predicates.notNull())
+				.filter(Objects::nonNull)
 				.collect(ImmutableList.toImmutableList());
 	}
 

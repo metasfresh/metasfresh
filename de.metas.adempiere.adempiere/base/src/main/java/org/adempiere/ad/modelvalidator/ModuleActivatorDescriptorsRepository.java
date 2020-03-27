@@ -5,7 +5,7 @@ import org.compiere.model.I_AD_ModelValidator;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
 
-import com.google.common.base.Predicates;
+import java.util.Objects;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.util.Check;
@@ -48,7 +48,7 @@ public class ModuleActivatorDescriptorsRepository
 				.create()
 				.stream()
 				.map(record -> toModelInterceptorDescriptorOrNull(record))
-				.filter(Predicates.notNull())
+				.filter(Objects::nonNull)
 				.collect(ImmutableList.toImmutableList());
 
 		return ModuleActivatorDescriptorsCollection.of(descriptors);

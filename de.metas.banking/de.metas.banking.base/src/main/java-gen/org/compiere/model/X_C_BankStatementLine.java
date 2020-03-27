@@ -15,7 +15,7 @@ public class X_C_BankStatementLine extends org.compiere.model.PO implements I_C_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1727600090L;
+	private static final long serialVersionUID = 2099520373L;
 
     /** Standard Constructor */
     public X_C_BankStatementLine (Properties ctx, int C_BankStatementLine_ID, String trxName)
@@ -31,7 +31,7 @@ public class X_C_BankStatementLine extends org.compiere.model.PO implements I_C_
 			setDateAcct (new Timestamp( System.currentTimeMillis() )); // @StatementDate@
 			setInterestAmt (BigDecimal.ZERO);
 			setIsManual (true); // Y
-			setIsOverUnderPayment (false); // N
+			setIsReconciled (false); // N
 			setIsReversal (false);
 			setLine (0); // @SQL=SELECT COALESCE(MAX(Line),0)+10 FROM C_BankStatementLine WHERE C_BankStatement_ID=@C_BankStatement_ID@
 			setProcessed (false);
@@ -56,18 +56,6 @@ public class X_C_BankStatementLine extends org.compiere.model.PO implements I_C_
       org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
     }
-
-	@Override
-	public org.compiere.model.I_C_BankStatement getC_BankStatement()
-	{
-		return get_ValueAsPO(COLUMNNAME_C_BankStatement_ID, org.compiere.model.I_C_BankStatement.class);
-	}
-
-	@Override
-	public void setC_BankStatement(org.compiere.model.I_C_BankStatement C_BankStatement)
-	{
-		set_ValueFromPO(COLUMNNAME_C_BankStatement_ID, org.compiere.model.I_C_BankStatement.class, C_BankStatement);
-	}
 
 	/** Set Bankauszug.
 		@param C_BankStatement_ID 
@@ -119,31 +107,6 @@ public class X_C_BankStatementLine extends org.compiere.model.PO implements I_C_
 		return ii.intValue();
 	}
 
-	/** Set Geschäftspartner.
-		@param C_BPartner_ID 
-		Identifies a Business Partner
-	  */
-	@Override
-	public void setC_BPartner_ID (int C_BPartner_ID)
-	{
-		if (C_BPartner_ID < 1) 
-			set_Value (COLUMNNAME_C_BPartner_ID, null);
-		else 
-			set_Value (COLUMNNAME_C_BPartner_ID, Integer.valueOf(C_BPartner_ID));
-	}
-
-	/** Get Geschäftspartner.
-		@return Identifies a Business Partner
-	  */
-	@Override
-	public int getC_BPartner_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_BPartner_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
 	@Override
 	public org.compiere.model.I_C_BP_BankAccount getC_BP_BankAccountTo()
 	{
@@ -176,6 +139,31 @@ public class X_C_BankStatementLine extends org.compiere.model.PO implements I_C_
 	public int getC_BP_BankAccountTo_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_BP_BankAccountTo_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Geschäftspartner.
+		@param C_BPartner_ID 
+		Identifies a Business Partner
+	  */
+	@Override
+	public void setC_BPartner_ID (int C_BPartner_ID)
+	{
+		if (C_BPartner_ID < 1) 
+			set_Value (COLUMNNAME_C_BPartner_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_BPartner_ID, Integer.valueOf(C_BPartner_ID));
+	}
+
+	/** Get Geschäftspartner.
+		@return Identifies a Business Partner
+	  */
+	@Override
+	public int getC_BPartner_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_BPartner_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
@@ -229,25 +217,6 @@ public class X_C_BankStatementLine extends org.compiere.model.PO implements I_C_
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	/** Set Gebühr.
-		@param ChargeAmt Gebühr	  */
-	@Override
-	public void setChargeAmt (java.math.BigDecimal ChargeAmt)
-	{
-		set_Value (COLUMNNAME_ChargeAmt, ChargeAmt);
-	}
-
-	/** Get Gebühr.
-		@return Gebühr	  */
-	@Override
-	public java.math.BigDecimal getChargeAmt () 
-	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_ChargeAmt);
-		if (bd == null)
-			 return BigDecimal.ZERO;
-		return bd;
 	}
 
 	@Override
@@ -324,18 +293,6 @@ public class X_C_BankStatementLine extends org.compiere.model.PO implements I_C_
 		return ii.intValue();
 	}
 
-	@Override
-	public org.compiere.model.I_C_Payment getC_Payment()
-	{
-		return get_ValueAsPO(COLUMNNAME_C_Payment_ID, org.compiere.model.I_C_Payment.class);
-	}
-
-	@Override
-	public void setC_Payment(org.compiere.model.I_C_Payment C_Payment)
-	{
-		set_ValueFromPO(COLUMNNAME_C_Payment_ID, org.compiere.model.I_C_Payment.class, C_Payment);
-	}
-
 	/** Set Zahlung.
 		@param C_Payment_ID 
 		Payment identifier
@@ -361,20 +318,23 @@ public class X_C_BankStatementLine extends org.compiere.model.PO implements I_C_
 		return ii.intValue();
 	}
 
-	/** Set Zahlung erstellen.
-		@param CreatePayment Zahlung erstellen	  */
+	/** Set Gebühr.
+		@param ChargeAmt Gebühr	  */
 	@Override
-	public void setCreatePayment (java.lang.String CreatePayment)
+	public void setChargeAmt (java.math.BigDecimal ChargeAmt)
 	{
-		set_Value (COLUMNNAME_CreatePayment, CreatePayment);
+		set_Value (COLUMNNAME_ChargeAmt, ChargeAmt);
 	}
 
-	/** Get Zahlung erstellen.
-		@return Zahlung erstellen	  */
+	/** Get Gebühr.
+		@return Gebühr	  */
 	@Override
-	public java.lang.String getCreatePayment () 
+	public java.math.BigDecimal getChargeAmt () 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_CreatePayment);
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_ChargeAmt);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
 	}
 
 	/** Set Wechselkurs.
@@ -432,28 +392,6 @@ public class X_C_BankStatementLine extends org.compiere.model.PO implements I_C_
 	public java.lang.String getDescription () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_Description);
-	}
-
-	/** Set Skonto.
-		@param DiscountAmt 
-		Calculated amount of discount
-	  */
-	@Override
-	public void setDiscountAmt (java.math.BigDecimal DiscountAmt)
-	{
-		set_Value (COLUMNNAME_DiscountAmt, DiscountAmt);
-	}
-
-	/** Get Skonto.
-		@return Calculated amount of discount
-	  */
-	@Override
-	public java.math.BigDecimal getDiscountAmt () 
-	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_DiscountAmt);
-		if (bd == null)
-			 return BigDecimal.ZERO;
-		return bd;
 	}
 
 	/** Set ELV-Betrag.
@@ -803,23 +741,23 @@ public class X_C_BankStatementLine extends org.compiere.model.PO implements I_C_
 		return false;
 	}
 
-	/** Set Over/Under Payment.
-		@param IsOverUnderPayment 
-		Over-Payment (unallocated) or Under-Payment (partial payment)
+	/** Set Abgeglichen.
+		@param IsReconciled 
+		Zeigt an ob eine Zahlung bereits mit einem Kontoauszug abgeglichen wurde
 	  */
 	@Override
-	public void setIsOverUnderPayment (boolean IsOverUnderPayment)
+	public void setIsReconciled (boolean IsReconciled)
 	{
-		set_Value (COLUMNNAME_IsOverUnderPayment, Boolean.valueOf(IsOverUnderPayment));
+		set_Value (COLUMNNAME_IsReconciled, Boolean.valueOf(IsReconciled));
 	}
 
-	/** Get Over/Under Payment.
-		@return Over-Payment (unallocated) or Under-Payment (partial payment)
+	/** Get Abgeglichen.
+		@return Zeigt an ob eine Zahlung bereits mit einem Kontoauszug abgeglichen wurde
 	  */
 	@Override
-	public boolean isOverUnderPayment () 
+	public boolean isReconciled () 
 	{
-		Object oo = get_Value(COLUMNNAME_IsOverUnderPayment);
+		Object oo = get_Value(COLUMNNAME_IsReconciled);
 		if (oo != null) 
 		{
 			 if (oo instanceof Boolean) 
@@ -877,18 +815,6 @@ public class X_C_BankStatementLine extends org.compiere.model.PO implements I_C_
 		return ii.intValue();
 	}
 
-	@Override
-	public org.compiere.model.I_C_BankStatementLine getLink_BankStatementLine()
-	{
-		return get_ValueAsPO(COLUMNNAME_Link_BankStatementLine_ID, org.compiere.model.I_C_BankStatementLine.class);
-	}
-
-	@Override
-	public void setLink_BankStatementLine(org.compiere.model.I_C_BankStatementLine Link_BankStatementLine)
-	{
-		set_ValueFromPO(COLUMNNAME_Link_BankStatementLine_ID, org.compiere.model.I_C_BankStatementLine.class, Link_BankStatementLine);
-	}
-
 	/** Set Linked Statement Line.
 		@param Link_BankStatementLine_ID Linked Statement Line	  */
 	@Override
@@ -911,22 +837,6 @@ public class X_C_BankStatementLine extends org.compiere.model.PO implements I_C_
 		return ii.intValue();
 	}
 
-	/** Set Match Statement.
-		@param MatchStatement Match Statement	  */
-	@Override
-	public void setMatchStatement (java.lang.String MatchStatement)
-	{
-		set_Value (COLUMNNAME_MatchStatement, MatchStatement);
-	}
-
-	/** Get Match Statement.
-		@return Match Statement	  */
-	@Override
-	public java.lang.String getMatchStatement () 
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_MatchStatement);
-	}
-
 	/** Set Memo.
 		@param Memo 
 		Memo Text
@@ -944,28 +854,6 @@ public class X_C_BankStatementLine extends org.compiere.model.PO implements I_C_
 	public java.lang.String getMemo () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_Memo);
-	}
-
-	/** Set Over/Under Payment.
-		@param OverUnderAmt 
-		Over-Payment (unallocated) or Under-Payment (partial payment) Amount
-	  */
-	@Override
-	public void setOverUnderAmt (java.math.BigDecimal OverUnderAmt)
-	{
-		set_Value (COLUMNNAME_OverUnderAmt, OverUnderAmt);
-	}
-
-	/** Get Over/Under Payment.
-		@return Over-Payment (unallocated) or Under-Payment (partial payment) Amount
-	  */
-	@Override
-	public java.math.BigDecimal getOverUnderAmt () 
-	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_OverUnderAmt);
-		if (bd == null)
-			 return BigDecimal.ZERO;
-		return bd;
 	}
 
 	/** Set Verarbeitet.
@@ -1032,9 +920,9 @@ public class X_C_BankStatementLine extends org.compiere.model.PO implements I_C_
 		return (java.sql.Timestamp)get_Value(COLUMNNAME_StatementLineDate);
 	}
 
-	/** Set Statement amount.
+	/** Set Kontoauszug Betrag.
 		@param StmtAmt 
-		Statement Amount
+		Kontoauszug Betrag
 	  */
 	@Override
 	public void setStmtAmt (java.math.BigDecimal StmtAmt)
@@ -1042,8 +930,8 @@ public class X_C_BankStatementLine extends org.compiere.model.PO implements I_C_
 		set_Value (COLUMNNAME_StmtAmt, StmtAmt);
 	}
 
-	/** Get Statement amount.
-		@return Statement Amount
+	/** Get Kontoauszug Betrag.
+		@return Kontoauszug Betrag
 	  */
 	@Override
 	public java.math.BigDecimal getStmtAmt () 
@@ -1093,27 +981,5 @@ public class X_C_BankStatementLine extends org.compiere.model.PO implements I_C_
 	public java.sql.Timestamp getValutaDate () 
 	{
 		return (java.sql.Timestamp)get_Value(COLUMNNAME_ValutaDate);
-	}
-
-	/** Set Write-off Amount.
-		@param WriteOffAmt 
-		Amount to write-off
-	  */
-	@Override
-	public void setWriteOffAmt (java.math.BigDecimal WriteOffAmt)
-	{
-		set_Value (COLUMNNAME_WriteOffAmt, WriteOffAmt);
-	}
-
-	/** Get Write-off Amount.
-		@return Amount to write-off
-	  */
-	@Override
-	public java.math.BigDecimal getWriteOffAmt () 
-	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_WriteOffAmt);
-		if (bd == null)
-			 return BigDecimal.ZERO;
-		return bd;
 	}
 }

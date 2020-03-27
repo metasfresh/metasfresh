@@ -75,7 +75,7 @@ import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
-import com.google.common.base.Predicates;
+import java.util.Objects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
@@ -1504,9 +1504,9 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 		}
 
 		final ImmutableSet<InvoiceCandidateId> icIds = ics.stream()
-				.filter(Predicates.notNull())
+				.filter(Objects::nonNull)
 				.map(ic -> InvoiceCandidateId.ofRepoIdOrNull(ic.getC_Invoice_Candidate_ID()))
-				.filter(Predicates.notNull())
+				.filter(Objects::nonNull)
 				.distinct()
 				.collect(ImmutableSet.toImmutableSet());
 		if (icIds.isEmpty())

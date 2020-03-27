@@ -9,7 +9,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.compiere.model.I_C_UOM_Conversion;
 import org.slf4j.Logger;
 
-import com.google.common.base.Predicates;
+import java.util.Objects;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.cache.CCache;
@@ -49,7 +49,7 @@ public class UOMConversionDAO implements IUOMConversionDAO
 				.create()
 				.stream()
 				.map(record -> toUOMConversionOrNull(record))
-				.filter(Predicates.notNull())
+				.filter(Objects::nonNull)
 				.collect(ImmutableList.toImmutableList());
 
 		return UOMConversionsMap.builder()
@@ -71,7 +71,7 @@ public class UOMConversionDAO implements IUOMConversionDAO
 				.create()
 				.stream(I_C_UOM_Conversion.class)
 				.map(record -> toUOMConversionOrNull(record))
-				.filter(Predicates.notNull())
+				.filter(Objects::nonNull)
 				.collect(ImmutableList.toImmutableList());
 
 		return UOMConversionsMap.builder()

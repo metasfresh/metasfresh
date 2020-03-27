@@ -6,7 +6,7 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
-import com.google.common.base.Predicates;
+import java.util.Objects;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
@@ -68,7 +68,7 @@ public class ShipmentScheduleId implements RepoIdAware
 			return ImmutableSet.of();
 		}
 
-		return repoIds.stream().map(ShipmentScheduleId::ofRepoIdOrNull).filter(Predicates.notNull()).collect(ImmutableSet.toImmutableSet());
+		return repoIds.stream().map(ShipmentScheduleId::ofRepoIdOrNull).filter(Objects::nonNull).collect(ImmutableSet.toImmutableSet());
 	}
 
 	int repoId;

@@ -8,7 +8,7 @@ import javax.annotation.Nullable;
 
 import org.adempiere.mm.attributes.AttributeId;
 
-import com.google.common.base.Predicates;
+import java.util.Objects;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.handlingunits.HuId;
@@ -117,7 +117,7 @@ final class HUAttributeChanges
 		final ImmutableList<AttributesKeyPart> parts = attributes.values()
 				.stream()
 				.map(keyPartExtractor)
-				.filter(Predicates.notNull())
+				.filter(Objects::nonNull)
 				.collect(ImmutableList.toImmutableList());
 
 		return AttributesKey.ofParts(parts);

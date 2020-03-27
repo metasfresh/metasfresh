@@ -10,6 +10,7 @@ import org.adempiere.service.ISysConfigBL;
 import org.compiere.util.Env;
 import org.springframework.stereotype.Service;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.bpartner.GLN;
@@ -55,7 +56,8 @@ import lombok.NonNull;
  */
 
 @Service
-class BPartnerEndpointService
+@VisibleForTesting
+public class BPartnerEndpointService
 {
 	public static final String SYSCFG_BPARTNER_PAGE_SIZE = "de.metas.rest_api.bpartner.PageSize";
 	private final JsonRetrieverService jsonRetriever;

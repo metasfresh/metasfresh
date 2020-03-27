@@ -1,10 +1,19 @@
-DROP FUNCTION IF EXISTS ProfitAndLossReport(IN p_startDate timestamp, IN p_endDate timestamp, IN p_compareWithPrevious1Year boolean, IN p_compareWithPrevious3Years boolean);
-DROP FUNCTION IF EXISTS ProfitAndLossReport(IN p_startDate timestamp, IN p_endDate timestamp);
-DROP FUNCTION IF EXISTS ProfitAndLossReport(IN p_startDate timestamp, IN p_endDate timestamp, p_ExcludeEmptyLines text);
+DROP FUNCTION IF EXISTS ProfitAndLossReport(IN p_startDate timestamp, IN p_endDate timestamp, IN p_compareWithPrevious1Year boolean, IN p_compareWithPrevious3Years boolean)
+;
 
-CREATE OR REPLACE FUNCTION ProfitAndLossReport(IN p_startDate timestamp,
-                                               IN p_endDate timestamp,
-                                               p_ExcludeEmptyLines text = 'Y')
+DROP FUNCTION IF EXISTS ProfitAndLossReport(IN p_startDate timestamp, IN p_endDate timestamp)
+;
+
+DROP FUNCTION IF EXISTS ProfitAndLossReport(IN p_startDate timestamp, IN p_endDate timestamp, p_ExcludeEmptyLines text)
+;
+
+DROP FUNCTION IF EXISTS ProfitAndLossReport(IN p_startDate timestamp, IN p_endDate timestamp, IN p_AD_Org_ID numeric, IN p_ExcludeEmptyLines text)
+;
+
+CREATE OR REPLACE FUNCTION ProfitAndLossReport(IN p_startDate         timestamp,
+                                               IN p_endDate           timestamp,
+                                               IN p_AD_Org_ID         numeric,
+                                               IN p_ExcludeEmptyLines text = 'Y')
     RETURNS TABLE
             (
                 AccountValue            text,
@@ -20,12 +29,12 @@ $BODY$
 WITH data AS
          (
              SELECT--
-                   ev.value                                                                                                                       AccountValue,
-                   ev.name                                                                                                                        AccountName,
-                   ProfitAndLossBalanceForAccountInPeriod(ev.c_elementvalue_id, p_startDate - '3 Year'::interval, p_endDate - '3 Year'::interval) balance_three_years_ago,
-                   ProfitAndLossBalanceForAccountInPeriod(ev.c_elementvalue_id, p_startDate - '2 Year'::interval, p_endDate - '2 Year'::interval) balance_two_years_ago,
-                   ProfitAndLossBalanceForAccountInPeriod(ev.c_elementvalue_id, p_startDate - '1 Year'::interval, p_endDate - '1 Year'::interval) balance_one_year_ago,
-                   ProfitAndLossBalanceForAccountInPeriod(ev.c_elementvalue_id, p_startDate, p_endDate)                                           current_balance
+                   ev.value                                                                                                                                    AccountValue,
+                   ev.name                                                                                                                                     AccountName,
+                   ProfitAndLossBalanceForAccountInPeriod(ev.c_elementvalue_id, p_startDate - '3 Year'::interval, p_endDate - '3 Year'::interval, p_AD_Org_ID) balance_three_years_ago,
+                   ProfitAndLossBalanceForAccountInPeriod(ev.c_elementvalue_id, p_startDate - '2 Year'::interval, p_endDate - '2 Year'::interval, p_AD_Org_ID) balance_two_years_ago,
+                   ProfitAndLossBalanceForAccountInPeriod(ev.c_elementvalue_id, p_startDate - '1 Year'::interval, p_endDate - '1 Year'::interval, p_AD_Org_ID) balance_one_year_ago,
+                   ProfitAndLossBalanceForAccountInPeriod(ev.c_elementvalue_id, p_startDate, p_endDate, p_AD_Org_ID)                                           current_balance
              FROM c_elementvalue ev
              WHERE TRUE
                AND ev.accounttype IN ('E', 'R')
@@ -63,7 +72,8 @@ ORDER BY d.AccountValue
     ;
 $BODY$
     LANGUAGE sql
-    STABLE;
+    STABLE
+;
 
--- test: SELECT * FROM ProfitAndLossReport('1993-01-01'::Timestamp, '2992-01-01'::Timestamp);
--- test SELECT * FROM ProfitAndLossReport('2018-01-01'::Timestamp, '2018-07-01'::Timestamp);
+-- test: SELECT * FROM ProfitAndLossReport('1993-01-01'::Timestamp, '2992-01-01'::Timestamp, 1000000);
+-- test SELECT * FROM ProfitAndLossReport('2018-01-01'::Timestamp, '2018-07-01'::Timestamp, 1000000);

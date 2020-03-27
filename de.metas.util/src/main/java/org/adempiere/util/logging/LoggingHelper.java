@@ -92,6 +92,5 @@ public final class LoggingHelper
 
 	private LoggingHelper()
 	{
-		super();
 	}
 }

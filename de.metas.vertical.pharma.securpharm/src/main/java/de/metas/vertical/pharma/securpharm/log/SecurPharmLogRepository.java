@@ -12,7 +12,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
 
-import com.google.common.base.Predicates;
+import java.util.Objects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -78,7 +78,7 @@ public class SecurPharmLogRepository
 
 		final Set<SecurPharmLogId> existingLogIds = logs.stream()
 				.map(SecurPharmLog::getId)
-				.filter(Predicates.notNull())
+				.filter(Objects::nonNull)
 				.collect(ImmutableSet.toImmutableSet());
 		final ImmutableMap<SecurPharmLogId, I_M_Securpharm_Log> existingLogRecords = retrieveLogRecordsByIds(existingLogIds);
 

@@ -46,6 +46,7 @@ import lombok.Setter;
 public class BPartnerContact
 {
 	public static final String ID = "id";
+	public static final String VALUE = "value";
 	public static final String BPARTNER_ID = "bpartnerId";
 	public static final String EXTERNAL_ID = "externalId";
 	public static final String ACTIVE = "active";
@@ -68,6 +69,8 @@ public class BPartnerContact
 	private BPartnerId bpartnerId;
 
 	private ExternalId externalId;
+
+	private String value;
 
 	private boolean active;
 
@@ -106,6 +109,7 @@ public class BPartnerContact
 	private BPartnerContact(
 			@Nullable final BPartnerContactId id,
 			@Nullable final ExternalId externalId,
+			@Nullable final String value,
 			@Nullable final Boolean active,
 			@Nullable final String name,
 			@Nullable final String firstName,
@@ -123,8 +127,9 @@ public class BPartnerContact
 		setId(id);
 
 		this.externalId = externalId;
+		this.value = value;
 
-		this.newsletter = coalesce(active, false);
+		this.newsletter = coalesce(newsletter, false);
 		this.fax = fax;
 		this.mobilePhone = mobilePhone;
 		this.description = description;

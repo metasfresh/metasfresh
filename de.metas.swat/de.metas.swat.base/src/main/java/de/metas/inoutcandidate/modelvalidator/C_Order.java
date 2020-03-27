@@ -6,6 +6,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.ModelValidator;
 
+import de.metas.i18n.AdMessageKey;
 import de.metas.inoutcandidate.api.IShipmentConstraintsBL;
 import de.metas.util.Services;
 
@@ -34,7 +35,7 @@ import de.metas.util.Services;
 @Interceptor(I_C_Order.class)
 public class C_Order
 {
-	private static final String MSG_CannotCompleteOrder_DeliveryStop = "CannotCompleteOrder_DeliveryStop";
+	private static final AdMessageKey MSG_CannotCompleteOrder_DeliveryStop = AdMessageKey.of("CannotCompleteOrder_DeliveryStop");
 
 	@DocValidate(timings = ModelValidator.TIMING_BEFORE_PREPARE)
 	public void assertNotDeliveryStopped(final I_C_Order order)
@@ -50,7 +51,7 @@ public class C_Order
 		final boolean isDeliveryStop = deliveryStopShipmentConstraintId > 0;
 		if (isDeliveryStop)
 		{
-			throw new AdempiereException(MSG_CannotCompleteOrder_DeliveryStop, new Object[] {});
+			throw new AdempiereException(MSG_CannotCompleteOrder_DeliveryStop);
 		}
 	}
 }

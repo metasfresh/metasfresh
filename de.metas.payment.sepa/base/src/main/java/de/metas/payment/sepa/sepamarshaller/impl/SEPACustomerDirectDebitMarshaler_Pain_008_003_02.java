@@ -155,8 +155,7 @@ public class SEPACustomerDirectDebitMarshaler_Pain_008_003_02 implements SEPAMar
 			// Initiating party
 			{
 				final PartyIdentificationSEPA1 initiatingParty = new PartyIdentificationSEPA1();
-				initiatingParty.setNm(sepaDocument.getSEPA_CreditorIdentifier());
-				groupHeader.setInitgPty(initiatingParty);
+				initiatingParty.setNm(sepaDocument.getSEPA_CreditorName());
 				groupHeader.setInitgPty(initiatingParty);
 			}
 		}
@@ -203,31 +202,31 @@ public class SEPACustomerDirectDebitMarshaler_Pain_008_003_02 implements SEPAMar
 			final I_SEPA_Export sepaHdr,
 			final I_SEPA_Export_Line line)
 	{
-		final PaymentInstructionInformationSDD paymentInformation = new PaymentInstructionInformationSDD();
+		final PaymentInstructionInformationSDD pmtInf = new PaymentInstructionInformationSDD();
 
 		// PaymentInformationIdentification: A system-generated internal code.
 		{
 			// Current index of this payment instruction information
 			final int currentIndex = customerDirectDebitInitiation.getPmtInf().size() + 1;
 			final String pmtInfId = customerDirectDebitInitiation.getGrpHdr().getMsgId() + "-" + currentIndex;
-			paymentInformation.setPmtInfId(pmtInfId);
+			pmtInf.setPmtInfId(pmtInfId);
 		}
 
 		// Payment method: Hard-coded value of DD.
-		paymentInformation.setPmtMtd(PaymentMethod2Code.DD);
+		pmtInf.setPmtMtd(PaymentMethod2Code.DD);
 
 		// Number of transactions: Hard-coded with a value of 1. You can inform only one payment per payment information block.
-		paymentInformation.setNbOfTxs("1");
+		pmtInf.setNbOfTxs("1");
 
 		//
 		// Control Sum: This is the total amount of the collection.
 		// NOTE: because NumberOfTransactions is ONE, we can assume this is the line Amount, but we will update it later
-		paymentInformation.setCtrlSum(null);
+		pmtInf.setCtrlSum(null);
 
 		// Payment Type Information (PmtTpInf)
 		{
 			final PaymentTypeInformationSDD pmtTpInf = new PaymentTypeInformationSDD();
-			paymentInformation.setPmtTpInf(pmtTpInf);
+			pmtInf.setPmtTpInf(pmtTpInf);
 
 			// Service Level: Hard-coded value of SEPA.
 			{
@@ -258,21 +257,21 @@ public class SEPACustomerDirectDebitMarshaler_Pain_008_003_02 implements SEPAMar
 		//
 		// RequestedCollectionDate: Due date of the collection
 		final Date dueDate = Services.get(ISEPADocumentBL.class).getDueDate(line);
-		paymentInformation.setReqdColltnDt(newXMLGregorianCalendar(dueDate));
+		pmtInf.setReqdColltnDt(newXMLGregorianCalendar(dueDate));
 
 		//
 		// Creditor BPartner (Cdtr)
 		// NOTE: actually it's same as GroupHeader's initiating party
 		{
-			final PartyIdentificationSEPA5 creditorId = convertPartyIdentificationSEPA5(customerDirectDebitInitiation.getGrpHdr().getInitgPty());
-			paymentInformation.setCdtr(creditorId);
+			final PartyIdentificationSEPA5 cdtr = convertPartyIdentificationSEPA5(customerDirectDebitInitiation.getGrpHdr().getInitgPty());
+			pmtInf.setCdtr(cdtr);
 		}
 
 		//
 		// Creditor BPartner Account
 		{
 			final CashAccountSEPA1 cdtrAcct = new CashAccountSEPA1();
-			paymentInformation.setCdtrAcct(cdtrAcct);
+			pmtInf.setCdtrAcct(cdtrAcct);
 
 			final AccountIdentificationSEPA id = new AccountIdentificationSEPA();
 			id.setIBAN(sepaHdr.getIBAN());
@@ -283,7 +282,7 @@ public class SEPACustomerDirectDebitMarshaler_Pain_008_003_02 implements SEPAMar
 		// Creditor Agent (i.e. Bank)
 		{
 			final BranchAndFinancialInstitutionIdentificationSEPA3 creditorAgt = new BranchAndFinancialInstitutionIdentificationSEPA3();
-			paymentInformation.setCdtrAgt(creditorAgt);
+			pmtInf.setCdtrAgt(creditorAgt);
 
 			final FinancialInstitutionIdentificationSEPA3 finInstnId = new FinancialInstitutionIdentificationSEPA3();
 			finInstnId.setBIC(sepaHdr.getSwiftCode());
@@ -292,25 +291,25 @@ public class SEPACustomerDirectDebitMarshaler_Pain_008_003_02 implements SEPAMar
 
 		// Charge Bearer Type
 		// Hard-coded value of SLEV.
-		paymentInformation.setChrgBr(ChargeBearerTypeSEPACode.SLEV);
+		pmtInf.setChrgBr(ChargeBearerTypeSEPACode.SLEV);
 
 		//
 		// Direct Debit Transaction Information
 		{
-			final DirectDebitTransactionInformationSDD directDebitTrxInfo = createDirectDebitTransactionInformation(paymentInformation, line);
-			paymentInformation.getDrctDbtTxInf().add(directDebitTrxInfo);
+			final DirectDebitTransactionInformationSDD directDebitTrxInfo = createDirectDebitTransactionInformation(pmtInf, line);
+			pmtInf.getDrctDbtTxInf().add(directDebitTrxInfo);
 
 			//
 			// UPDATE: Payment Information's Control Sum
 			// NOTE: we have only one line
-			paymentInformation.setCtrlSum(directDebitTrxInfo.getInstdAmt().getValue());
+			pmtInf.setCtrlSum(directDebitTrxInfo.getInstdAmt().getValue());
 		}
 
 		{
-			paymentInformation.setCdtrSchmeId(convertPartyIdentificationSEPA3(sepaHdr));
+			pmtInf.setCdtrSchmeId(convertPartyIdentificationSEPA3(sepaHdr));
 		}
 
-		return paymentInformation;
+		return pmtInf;
 	}
 
 	private DirectDebitTransactionInformationSDD createDirectDebitTransactionInformation(
@@ -433,7 +432,7 @@ public class SEPACustomerDirectDebitMarshaler_Pain_008_003_02 implements SEPAMar
 		return partyIdCopy;
 	}
 
-	private PartyIdentificationSEPA3 convertPartyIdentificationSEPA3(final I_SEPA_Export sepaHeader)
+	private PartyIdentificationSEPA3 convertPartyIdentificationSEPA3(@NonNull final I_SEPA_Export sepaHeader)
 	{
 		final PartyIdentificationSEPA3 partyIdCopy = new PartyIdentificationSEPA3();
 		final PartySEPA2 partySEPA = new PartySEPA2();
@@ -446,7 +445,7 @@ public class SEPACustomerDirectDebitMarshaler_Pain_008_003_02 implements SEPAMar
 		prvtId.setOthr(othr);
 
 		final RestrictedPersonIdentificationSchemeNameSEPA schemeNm = new RestrictedPersonIdentificationSchemeNameSEPA();
-		othr.setId(sepaHeader.getIBAN());
+		othr.setId(sepaHeader.getSEPA_CreditorIdentifier());
 		othr.setSchmeNm(schemeNm);
 		schemeNm.setPrtry(IdentificationSchemeNameSEPA.valueOf("SEPA"));
 
