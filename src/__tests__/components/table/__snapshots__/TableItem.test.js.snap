@@ -2,7 +2,7 @@
 
 exports[`Table row (TableItem) output matches snapshot 1`] = `
 <tr
-  className="row-1 tr-odd"
+  className="row-1 1000003 tr-odd"
   onClick={[Function]}
   onDoubleClick={[Function]}
 >

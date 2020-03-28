@@ -384,8 +384,9 @@ class TableCell extends PureComponent {
               <WidgetTooltip
                 widget={tooltipWidget}
                 data={tooltipData}
+                fieldName={item.field}
                 isToggled={tooltipToggled}
-                onToggle={(val) => this.widgetTooltipToggle(item.field, val)}
+                onToggle={this.widgetTooltipToggle}
               />
             )}
           </div>
@@ -422,7 +423,6 @@ TableCell.propTypes = {
   handleDoubleClick: PropTypes.func,
   onClickOutside: PropTypes.func,
   onCellChange: PropTypes.func,
-  onCellExtend: PropTypes.func,
   isEdited: PropTypes.bool,
   isGerman: PropTypes.bool,
   entity: PropTypes.any,
