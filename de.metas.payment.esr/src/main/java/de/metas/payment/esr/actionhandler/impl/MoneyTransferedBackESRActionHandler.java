@@ -98,7 +98,7 @@ public class MoneyTransferedBackESRActionHandler extends AbstractESRActionHandle
 						.payAmt(transferedBackAmt)
 						.currencyId(CurrencyId.ofRepoId(linePayment.getC_Currency_ID()))
 						.tenderType(TenderType.DirectDeposit)
-						.bpBankAccountId(BankAccountId.ofRepoId(linePayment.getC_BP_BankAccount_ID()))
+						.orgBankAccountId(BankAccountId.ofRepoId(linePayment.getC_BP_BankAccount_ID()))
 						.dateAcct(dateTrx)
 						.dateTrx(dateTrx)
 						.createAndProcess();

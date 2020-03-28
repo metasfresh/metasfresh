@@ -193,14 +193,14 @@ final class BPartnerEndpointAdapter
 	{
 		// There can be just one response item, because we have just one request item;
 		final JsonResponseBPartnerCompositeUpsertItem jsonResponseBPartnerUpsert = CollectionUtils.singleElement(response.getBody().getResponseItems());
-		final MetasfreshId bpartnerMetasfreshId = jsonResponseBPartnerUpsert.getJsonResponseBPartnerUpsertItem().getMetasfreshId();
+		final MetasfreshId bpartnerMetasfreshId = jsonResponseBPartnerUpsert.getResponseBPartnerItem().getMetasfreshId();
 		final BPartnerId bpartnerId = BPartnerId.ofRepoId(bpartnerMetasfreshId.getValue());
 		final BPartnerInfoBuilder result = BPartnerInfo
 				.builder()
 				.bpartnerId(bpartnerId);
-		if (!jsonResponseBPartnerUpsert.getJsonResponseLocationUpsertItems().isEmpty())
+		if (!jsonResponseBPartnerUpsert.getResponseLocationItems().isEmpty())
 		{
-			final JsonResponseUpsertItem locationUpsert = CollectionUtils.singleElement(jsonResponseBPartnerUpsert.getJsonResponseLocationUpsertItems());
+			final JsonResponseUpsertItem locationUpsert = CollectionUtils.singleElement(jsonResponseBPartnerUpsert.getResponseLocationItems());
 			result.bpartnerLocationId(BPartnerLocationId.ofRepoId(bpartnerId, locationUpsert.getMetasfreshId().getValue()));
 		}
 		else
@@ -215,9 +215,9 @@ final class BPartnerEndpointAdapter
 				result.bpartnerLocationId(BPartnerLocationId.ofRepoId(bpartnerId, location.get().getMetasfreshId().getValue()));
 			}
 		}
-		if (!jsonResponseBPartnerUpsert.getJsonResponseContactUpsertItems().isEmpty())
+		if (!jsonResponseBPartnerUpsert.getResponseContactItems().isEmpty())
 		{
-			final JsonResponseUpsertItem contactUpsert = CollectionUtils.singleElement(jsonResponseBPartnerUpsert.getJsonResponseContactUpsertItems());
+			final JsonResponseUpsertItem contactUpsert = CollectionUtils.singleElement(jsonResponseBPartnerUpsert.getResponseContactItems());
 			result.contactId(BPartnerContactId.ofRepoId(bpartnerId, contactUpsert.getMetasfreshId().getValue()));
 		}
 

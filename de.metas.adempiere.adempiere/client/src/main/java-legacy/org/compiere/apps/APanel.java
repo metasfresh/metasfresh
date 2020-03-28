@@ -1413,7 +1413,7 @@ public class APanel extends CPanel
 		{
 			StringBuilder sb = new StringBuilder();
 			String msg = e.getMessage();
-			if (msg != null && msg.length() > 0)
+			if (msg != null && msg.length() > 0 && !Check.isEmpty(e.getAD_Message()))
 			{
 				sb.append(Services.get(IMsgBL.class).getMsg(m_ctx, e.getAD_Message()));
 			}

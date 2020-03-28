@@ -32,7 +32,7 @@ public class PrintAllShipmentsDocumentsStrategy implements ExecuteReportStrategy
 		final ImmutableList<PdfDataProvider> pdfDataToConcat = retrievePdfDataToConcat(shipperTransportationId);
 		final byte[] data = concatenatePDFs(pdfDataToConcat);
 
-		return new ExecuteReportResult(outputType, data);
+		return ExecuteReportResult.of(outputType, data);
 	}
 
 	@NonNull

@@ -190,7 +190,7 @@ public class JsonPersisterService
 		{
 			final JsonResponseBPartnerCompositeUpsertItemBuilder itemBuilder = JsonResponseBPartnerCompositeUpsertItem
 					.builder()
-					.jsonResponseBPartnerUpsertItem(jsonResponseBPartnerUpsertItemBuilder.build());
+					.responseBPartnerItem(jsonResponseBPartnerUpsertItemBuilder.build());
 
 			final ImmutableList<JsonResponseUpsertItem> contactUpsertItems = jsonResponseContactUpsertItems
 					.values()
@@ -211,9 +211,9 @@ public class JsonPersisterService
 					.collect(ImmutableList.toImmutableList());
 
 			return itemBuilder
-					.jsonResponseContactUpsertItems(contactUpsertItems)
-					.jsonResponseLocationUpsertItems(locationUpsertItems)
-					.jsonResponseBankAccountUpsertItems(bankAccountUpsertItems)
+					.responseContactItems(contactUpsertItems)
+					.responseLocationItems(locationUpsertItems)
+					.responseBankAccountItems(bankAccountUpsertItems)
 					.build();
 		}
 

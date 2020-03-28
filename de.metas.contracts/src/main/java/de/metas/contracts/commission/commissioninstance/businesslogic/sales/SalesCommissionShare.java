@@ -50,10 +50,8 @@ import lombok.Singular;
 public class SalesCommissionShare
 {
 	/** can be null if this share was not yet persisted. */
-	@Setter(AccessLevel.NONE)
 	private final SalesCommissionShareId id;
 
-	@Setter(AccessLevel.NONE)
 	private final CommissionConfig config;
 
 	private final HierarchyLevel level;

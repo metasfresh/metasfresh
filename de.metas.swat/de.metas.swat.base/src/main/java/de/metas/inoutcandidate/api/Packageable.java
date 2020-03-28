@@ -12,7 +12,7 @@ import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.WarehouseTypeId;
 
-import com.google.common.base.Predicates;
+import java.util.Objects;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.bpartner.BPartnerId;
@@ -120,7 +120,7 @@ public class Packageable
 
 		final ImmutableList<T> values = packageables.stream()
 				.map(mapper)
-				.filter(Predicates.notNull())
+				.filter(Objects::nonNull)
 				.distinct()
 				.collect(ImmutableList.toImmutableList());
 

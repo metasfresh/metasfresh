@@ -34,6 +34,8 @@ import de.metas.inoutcandidate.api.IShipmentScheduleHandlerBL;
 import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.monitoring.adapter.NoopPerformanceMonitoringService;
+import de.metas.monitoring.adapter.PerformanceMonitoringService;
 import de.metas.user.UserRepository;
 import de.metas.util.Services;
 
@@ -67,18 +69,19 @@ public class FlatrateTermImportProcess_SimpleCase_Test extends AbstractFlatrateT
 	@BeforeEach
 	public void before()
 	{
-		SpringContextHolder.registerJUnitBean(new GreetingRepository());
 		helper.setupModuleInterceptors_Contracts_Full();
 
 		//
-		SpringContextHolder.registerJUnitBean(new ShipmentScheduleSubscriptionReferenceProvider());
-		
 		inOutCandHandlerBL = Services.get(IShipmentScheduleHandlerBL.class);
 
 		iinvoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 
 		final BPartnerBL bpartnerBL = new BPartnerBL(new UserRepository());
 		Services.registerService(IBPartnerBL.class, bpartnerBL);
+
+		SpringContextHolder.registerJUnitBean(new ShipmentScheduleSubscriptionReferenceProvider());
+		SpringContextHolder.registerJUnitBean(new GreetingRepository());
+		SpringContextHolder.registerJUnitBean(PerformanceMonitoringService.class, new NoopPerformanceMonitoringService());
 		SpringContextHolder.registerJUnitBean(IBPartnerBL.class, bpartnerBL);
 	}
 

@@ -16,6 +16,7 @@ import org.springframework.stereotype.Component;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner_product.IBPartnerProductDAO;
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.organization.OrgId;
@@ -48,7 +49,7 @@ import de.metas.util.Services;
 @Component
 public class C_BPartner_Product
 {
-	private final static String MSG_C_BPartner_Product_Duplicate_ASI = "C_BPartner_Product_Duplicate_ASI";
+	private final static AdMessageKey MSG_C_BPartner_Product_Duplicate_ASI = AdMessageKey.of("C_BPartner_Product_Duplicate_ASI");
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = I_C_BPartner_Product.COLUMNNAME_M_AttributeSetInstance_ID)
 	public void onASISet(final I_C_BPartner_Product bpProduct)

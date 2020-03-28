@@ -38,7 +38,7 @@ import org.compiere.Adempiere;
 import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
-import com.google.common.base.Predicates;
+import java.util.Objects;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -199,7 +199,7 @@ public final class CacheMgt
 			multiRequest.getTableNamesEffective()
 					.stream()
 					.map(cacheResetListenersByTableName::get)
-					.filter(Predicates.notNull())
+					.filter(Objects::nonNull)
 					.flatMap(listeners -> listeners.stream())
 					.forEach(listener -> fireCacheResetListenerNoFail(listener, multiRequest));
 		}
@@ -582,7 +582,7 @@ public final class CacheMgt
 		{
 			return caches.values()
 					.stream()
-					.filter(Predicates.notNull());
+					.filter(Objects::nonNull);
 		}
 
 		public long computeTotalSize()

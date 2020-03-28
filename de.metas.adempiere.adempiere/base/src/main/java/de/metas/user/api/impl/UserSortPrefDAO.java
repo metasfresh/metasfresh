@@ -26,11 +26,6 @@ package de.metas.user.api.impl;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
-import de.metas.user.api.IUserSortPrefDAO;
-import de.metas.util.Check;
-import de.metas.util.Services;
 
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
@@ -47,6 +42,12 @@ import org.compiere.model.I_AD_User_SortPref_Hdr;
 import org.compiere.model.I_AD_User_SortPref_Line;
 import org.compiere.model.I_AD_User_SortPref_Line_Product;
 import org.compiere.model.X_AD_User_SortPref_Hdr;
+import org.slf4j.Logger;
+
+import de.metas.logging.LogManager;
+import de.metas.user.api.IUserSortPrefDAO;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * User default sorting preferences for sequencing in Application Windows (applies to all types of windows)
@@ -142,7 +143,7 @@ public class UserSortPrefDAO implements IUserSortPrefDAO
 		}
 		else
 		{
-			throw new AdempiereException("Action not recognized: {}", new Object[] { action });
+			throw new AdempiereException("Action not recognized: " + action);
 		}
 		return queryBuilder;
 	}

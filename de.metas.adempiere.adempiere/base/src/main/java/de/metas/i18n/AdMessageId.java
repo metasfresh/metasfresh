@@ -22,27 +22,28 @@
 
 package de.metas.i18n;
 
+import javax.annotation.Nullable;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
+
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
 import lombok.NonNull;
 import lombok.Value;
-
-import javax.annotation.Nullable;
 
 @Value
 public class AdMessageId implements RepoIdAware
 {
 	int repoId;
 
-	@JsonCreator
 	private AdMessageId(final int repoId)
 	{
 		this.repoId = Check.assumeGreaterThanZero(repoId, "AD_Message_Id");
 	}
 
 	@NonNull
+	@JsonCreator
 	public static AdMessageId ofRepoId(final int repoId)
 	{
 		return new AdMessageId(repoId);
@@ -58,5 +59,10 @@ public class AdMessageId implements RepoIdAware
 	public int getRepoId()
 	{
 		return repoId;
+	}
+
+	public static int toRepoId(@Nullable final AdMessageId id)
+	{
+		return id != null ? id.getRepoId() : -1;
 	}
 }

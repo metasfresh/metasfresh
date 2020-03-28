@@ -85,7 +85,9 @@ node('agent && linux')
 		// and therefore, the jenkins information would not be added to the build.properties info file.
 		withEnv(["MF_VERSION=${MF_VERSION}"])
 		{
-		withMaven(jdk: 'java-8', maven: 'maven-3.5.4', mavenLocalRepo: '.repository', mavenOpts: '-Xmx1536M')
+
+		// disable automatic fingerprinting and archiving by artifactsPublisher, because in particular the archiving takes up too much space on the jenkins server.
+		withMaven(jdk: 'java-8', maven: 'maven-3.5.4', mavenLocalRepo: '.repository', mavenOpts: '-Xmx1536M', options: [artifactsPublisher(disabled: true)])
 		{
 			// Note: we can't build the "main" and "esb" stuff in parallel, because the esb stuff depends on (at least!) de.metas.printing.api
       stage('Set versions and build metasfresh')

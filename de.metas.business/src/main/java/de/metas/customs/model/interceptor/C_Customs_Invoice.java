@@ -12,6 +12,7 @@ import org.springframework.stereotype.Component;
 
 import de.metas.customs.CustomsInvoiceId;
 import de.metas.customs.CustomsInvoiceRepository;
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.product.ProductId;
@@ -42,7 +43,7 @@ import de.metas.util.Services;
 @Component
 public class C_Customs_Invoice
 {
-	private static final String MSG_C_Customs_Invoice_Tariff_NotSet = "C_Customs_Invoice_Tariff_NotSet";
+	private static final AdMessageKey MSG_C_Customs_Invoice_Tariff_NotSet = AdMessageKey.of("C_Customs_Invoice_Tariff_NotSet");
 
 	@DocValidate(timings = ModelValidator.TIMING_BEFORE_COMPLETE)
 	public void doNotCompleteUnlessCustomsTariff(final I_C_Customs_Invoice customsInvoiceRecord)

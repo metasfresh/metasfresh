@@ -39,6 +39,7 @@ import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.i18n.AdMessageId;
 import de.metas.i18n.Language;
 import de.metas.logging.LogManager;
 import de.metas.process.AdProcessId;
@@ -820,7 +821,7 @@ public class GridTabVO implements Evaluatee, Serializable
 	/** Deafault Where */
 	private String DefaultWhereClause;
 	public boolean IsRefreshAllOnActivate = false; // metas-2009_0021_AP1_CR050
-	public int AD_Message_ID = 0; //metas-us092
+	public AdMessageId AD_Message_ID = null; //metas-us092
 	/** Check if the parents of this tab have changed */// 01962
 	public boolean IsCheckParentsChanged = true;
 	/** Max records to be queried (overrides the settings from AD_Role) */
@@ -852,7 +853,7 @@ public class GridTabVO implements Evaluatee, Serializable
 		}
 
 		vo.IsRefreshAllOnActivate = "Y".equals(rs.getString("IsRefreshAllOnActivate")); // metas-2009_0021_AP1_CR050
-		vo.AD_Message_ID = rs.getInt("AD_Message_ID"); // metas-us092
+		vo.AD_Message_ID = AdMessageId.ofRepoIdOrNull(rs.getInt("AD_Message_ID")); // metas-us092
 		vo.IsCheckParentsChanged = "Y".equals(rs.getString("IsCheckParentsChanged")); // 01962
 
 		vo.MaxQueryRecords = rs.getInt("MaxQueryRecords");

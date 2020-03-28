@@ -1,18 +1,7 @@
 package de.metas.pricing.service;
 
-import java.util.Optional;
-import java.util.Set;
-import java.util.function.Predicate;
-import java.util.stream.Stream;
-
-import javax.annotation.Nullable;
-
-import org.compiere.model.I_M_PriceList;
-
-import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
 import de.metas.pricing.PriceListId;
@@ -25,6 +14,14 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
 import lombok.Value;
+import org.compiere.model.I_M_PriceList;
+
+import javax.annotation.Nullable;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
+import java.util.function.Predicate;
+import java.util.stream.Stream;
 
 /*
  * #%L
@@ -68,7 +65,7 @@ public class PriceListsCollection
 		return getPriceLists()
 				.stream()
 				.map(priceList -> extractCountryIdOrNull(priceList))
-				.filter(Predicates.notNull())
+				.filter(Objects::nonNull)
 				.collect(ImmutableSet.toImmutableSet());
 	}
 

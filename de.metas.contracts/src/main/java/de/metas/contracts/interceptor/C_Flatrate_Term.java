@@ -521,7 +521,7 @@ public class C_Flatrate_Term
 		final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
 
 		final boolean overlappingIsOK = flatrateBL.isAllowedToOverlapWithOtherTerms(term);
-		if(overlappingIsOK)
+		if (overlappingIsOK)
 		{
 			return; // nothing to do
 		}
@@ -529,7 +529,7 @@ public class C_Flatrate_Term
 		final boolean hasOverlappingTerms = flatrateBL.hasOverlappingTerms(term);
 		if (hasOverlappingTerms)
 		{
-			throw AdempiereException.ofADMessage(FlatrateBL.MSG_HasOverlapping_Term, term.getC_Flatrate_Term_ID(), term.getBill_BPartner().getValue());
+			throw new AdempiereException(FlatrateBL.MSG_HasOverlapping_Term, new Object[] { term.getC_Flatrate_Term_ID(), term.getBill_BPartner().getValue() });
 		}
 	}
 
@@ -601,7 +601,7 @@ public class C_Flatrate_Term
 		if (orderId == null)
 		{
 			return;
-}
+		}
 
 		if (InterfaceWrapperHelper.isNew(term) && !contractsDAO.termHasAPredecessor(term))
 		{

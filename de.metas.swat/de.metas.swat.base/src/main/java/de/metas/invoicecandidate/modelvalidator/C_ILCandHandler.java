@@ -71,7 +71,7 @@ public class C_ILCandHandler
 						.setCreateInvoiceCandidates(handler.isCreateMissingCandidatesAutomatically())
 						.setCreateInvoiceCandidatesTiming(handler.getAutomaticallyCreateMissingCandidatesDocTiming())
 						.build();
-				engine.addModelValidator(modelInterceptor, null);
+				engine.addModelValidator(modelInterceptor);
 			}
 		}
 	}

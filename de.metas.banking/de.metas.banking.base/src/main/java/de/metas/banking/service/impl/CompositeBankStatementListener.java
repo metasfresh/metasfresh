@@ -1,11 +1,13 @@
 package de.metas.banking.service.impl;
 
+import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-import de.metas.banking.model.I_C_BankStatementLine;
-import de.metas.banking.model.I_C_BankStatementLine_Ref;
+import de.metas.banking.BankStatementLineReferenceList;
+import de.metas.banking.payment.PaymentLinkResult;
 import de.metas.banking.service.IBankStatementListener;
-import de.metas.util.Check;
+import lombok.NonNull;
+import lombok.ToString;
 
 /*
  * #%L
@@ -20,41 +22,40 @@ import de.metas.util.Check;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
+@ToString
 final class CompositeBankStatementListener implements IBankStatementListener
 {
 	private final CopyOnWriteArrayList<IBankStatementListener> listeners = new CopyOnWriteArrayList<>();
 
-	public void addListener(final IBankStatementListener listener)
+	public boolean addListener(@NonNull final IBankStatementListener listener)
 	{
-		Check.assumeNotNull(listener, "listener not null");
-		listeners.addIfAbsent(listener);
+		return listeners.addIfAbsent(listener);
 	}
 
 	@Override
-	public void onBankStatementLineVoiding(final I_C_BankStatementLine bankStatementLine)
+	public void onPaymentsLinked(@NonNull final List<PaymentLinkResult> payments)
 	{
 		for (final IBankStatementListener listener : listeners)
 		{
-			listener.onBankStatementLineVoiding(bankStatementLine);
+			listener.onPaymentsLinked(payments);
 		}
 	}
 
 	@Override
-	public void onBankStatementLineRefVoiding(final I_C_BankStatementLine_Ref bankStatementLineRef)
+	public void onPaymentsUnlinkedFromBankStatementLineReferences(@NonNull final BankStatementLineReferenceList lineRefs)
 	{
 		for (final IBankStatementListener listener : listeners)
 		{
-			listener.onBankStatementLineRefVoiding(bankStatementLineRef);
+			listener.onPaymentsUnlinkedFromBankStatementLineReferences(lineRefs);
 		}
 	}
-
 }

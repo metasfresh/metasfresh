@@ -13,7 +13,7 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
-import com.google.common.base.Predicates;
+import java.util.Objects;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
 
@@ -74,7 +74,7 @@ public final class EMailAddress
 				.splitToList(emailsListStr)
 				.stream()
 				.map(EMailAddress::ofNullableString)
-				.filter(Predicates.notNull())
+				.filter(Objects::nonNull)
 				.collect(ImmutableList.toImmutableList());
 	}
 

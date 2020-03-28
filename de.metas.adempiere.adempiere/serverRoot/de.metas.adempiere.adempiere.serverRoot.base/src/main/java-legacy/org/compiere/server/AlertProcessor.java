@@ -29,7 +29,7 @@ import java.util.Set;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.service.ISysConfigBL;
-import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.MAlert;
 import org.compiere.model.MAlertProcessor;
 import org.compiere.model.MAlertProcessorLog;
@@ -41,13 +41,13 @@ import org.compiere.util.TimeUtil;
 import org.compiere.util.ValueNamePair;
 import org.springframework.core.io.FileSystemResource;
 
-import com.google.common.base.Predicates;
+import java.util.Objects;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.event.Topic;
 import de.metas.i18n.Msg;
-import de.metas.impexp.excel.ArrayExcelExporter;
 import de.metas.impexp.excel.ExcelFormats;
+import de.metas.impexp.excel.JdbcExcelExporter;
 import de.metas.impexp.excel.service.ExcelExporterService;
 import de.metas.logging.MetasfreshLastError;
 import de.metas.notification.INotificationBL;
@@ -264,7 +264,7 @@ public class AlertProcessor extends AdempiereServer
 
 		final INotificationBL userNotificationsService = Services.get(INotificationBL.class);
 		userIds.stream()
-				.filter(Predicates.notNull())
+				.filter(Objects::nonNull)
 				.map(userId -> UserNotificationRequest.builder()
 						.topic(USER_NOTIFICATIONS_TOPIC)
 						.recipientUserId(userId)
@@ -347,22 +347,22 @@ public class AlertProcessor extends AdempiereServer
 	 */
 	private String getExcelReport(final MAlertRule rule, final String sql, final Collection<File> attachments) throws Exception
 	{
-		final ExcelExporterService excelExporterService = Adempiere.getBean(ExcelExporterService.class);
+		final ExcelExporterService excelExporterService = SpringContextHolder.instance.getBean(ExcelExporterService.class);
 
-		final List<List<Object>> data = excelExporterService.getDataFromSQL(sql);
-		if (data.size() <= 1)
+		final File file = rule.createReportFile(ExcelFormats.getDefaultFileExtension());
+
+		final JdbcExcelExporter jdbcExcelExporter = JdbcExcelExporter.builder()
+				.ctx(getCtx())
+				.resultFile(file)
+				.build();
+
+		excelExporterService.processDataFromSQL(sql, jdbcExcelExporter);
+
+		if(jdbcExcelExporter.isNoDataAddedYet())
 		{
-			// if there's just the header and no other rows
 			return null;
 		}
 
-		//
-		final File file = rule.createReportFile(ExcelFormats.getDefaultFileExtension());
-		ArrayExcelExporter.builder()
-				.ctx(getCtx())
-				.data(data)
-				.build()
-				.exportToFile(file);
 		attachments.add(file);
 
 		final String msg = rule.getName() + " (@SeeAttachment@ " + file.getName() + ")" + Env.NL;

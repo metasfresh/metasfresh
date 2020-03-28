@@ -19,12 +19,12 @@ import de.metas.contracts.commission.commissioninstance.businesslogic.CreateComm
 import de.metas.contracts.commission.commissioninstance.businesslogic.hierarchy.Hierarchy;
 import de.metas.contracts.commission.commissioninstance.businesslogic.hierarchy.HierarchyLevel;
 import de.metas.contracts.commission.commissioninstance.businesslogic.hierarchy.HierarchyNode;
-import de.metas.contracts.commission.commissioninstance.businesslogic.sales.CommissionTrigger;
-import de.metas.contracts.commission.commissioninstance.businesslogic.sales.CommissionTriggerChange;
-import de.metas.contracts.commission.commissioninstance.businesslogic.sales.CommissionTriggerData;
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.SalesCommissionFact;
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.SalesCommissionShare;
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.SalesCommissionState;
+import de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.CommissionTrigger;
+import de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.CommissionTriggerChange;
+import de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.CommissionTriggerData;
 import de.metas.contracts.commission.model.I_C_Commission_Share;
 import de.metas.contracts.commission.model.I_C_HierarchyCommissionSettings;
 import de.metas.logging.LogManager;
@@ -84,9 +84,9 @@ public class HierachyAlgorithm implements CommissionAlgorithm
 
 			createAndAddFacts(shares,
 					triggerData.getTimestamp(),
-					triggerData.getForecastedPoints(),
-					triggerData.getInvoiceablePoints(),
-					triggerData.getInvoicedPoints(),
+					triggerData.getForecastedBasePoints(),
+					triggerData.getInvoiceableBasePoints(),
+					triggerData.getInvoicedBasePoints(),
 					triggerData.getTradedCommissionPercent());
 
 			result.addAll(shares);
@@ -135,9 +135,9 @@ public class HierachyAlgorithm implements CommissionAlgorithm
 		final CommissionInstance instanceToChange = change.getInstanceToUpdate();
 		final CommissionTriggerData newTriggerData = change.getNewCommissionTriggerData();
 
-		final CommissionPoints forecastedBase = newTriggerData.getForecastedPoints();
-		final CommissionPoints toInvoiceBase = newTriggerData.getInvoiceablePoints();
-		final CommissionPoints invoicedBase = newTriggerData.getInvoicedPoints();
+		final CommissionPoints forecastedBase = newTriggerData.getForecastedBasePoints();
+		final CommissionPoints toInvoiceBase = newTriggerData.getInvoiceableBasePoints();
+		final CommissionPoints invoicedBase = newTriggerData.getInvoicedBasePoints();
 
 		final ImmutableList<SalesCommissionShare> sharesToChange = instanceToChange.getShares();
 

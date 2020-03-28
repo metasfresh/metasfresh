@@ -22,6 +22,8 @@ import java.util.Properties;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.util.DB;
 
+import de.metas.i18n.AdMessageId;
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IADMessageDAO;
 import de.metas.util.Services;
 
@@ -90,8 +92,14 @@ public class MNote extends X_AD_Note
 	 */
 	public MNote (Properties ctx, String AD_MessageValue, int AD_User_ID, String trxName) 
 	{
-		this (ctx, Services.get(IADMessageDAO.class).retrieveIdByValue(ctx, AD_MessageValue), AD_User_ID, trxName);
+		this (ctx, retrieveAdMessageRepoIdByValue(ctx, AD_MessageValue), AD_User_ID, trxName);
 	}	//	MNote
+	
+	private static int retrieveAdMessageRepoIdByValue(final Properties ctx, final String adMessage)
+	{
+		final AdMessageId adMessageId = Services.get(IADMessageDAO.class).retrieveIdByValue(ctx, AdMessageKey.of(adMessage)).orElse(null);
+		return AdMessageId.toRepoId(adMessageId);
+	}
 
 	/**
 	 * 	Create Note
@@ -125,7 +133,7 @@ public class MNote extends X_AD_Note
 	public MNote (Properties ctx, String AD_MessageValue, int AD_User_ID, 
 		int AD_Client_ID, int AD_Org_ID, String trxName) 
 	{
-		this (ctx, Services.get(IADMessageDAO.class).retrieveIdByValue(ctx, AD_MessageValue), AD_User_ID, trxName);
+		this (ctx, retrieveAdMessageRepoIdByValue(ctx, AD_MessageValue), AD_User_ID, trxName);
 		setClientOrg(AD_Client_ID, AD_Org_ID);
 	}	//	MNote
 
@@ -140,7 +148,9 @@ public class MNote extends X_AD_Note
 		int AD_Message_ID = DB.getSQLValue(null,
 			"SELECT AD_Message_ID FROM AD_Message WHERE Value=?", AD_Message);
 		if (AD_Message_ID != -1)
+		{
 			super.setAD_Message_ID(AD_Message_ID);
+		}
 		else
 		{
 			super.setAD_Message_ID(240); //	Error
@@ -156,10 +166,14 @@ public class MNote extends X_AD_Note
 	@Override
 	public void setAD_Message_ID (int AD_Message_ID)
 	{
-		if (AD_Message_ID == 0)
-			super.setAD_Message_ID(Services.get(IADMessageDAO.class).retrieveIdByValue(getCtx(), "NoMessageFound"));
+		if (AD_Message_ID <= 0)
+		{
+			super.setAD_Message_ID(retrieveAdMessageRepoIdByValue(getCtx(), "NoMessageFound"));
+		}
 		else
+		{
 			super.setAD_Message_ID(AD_Message_ID);
+		}
 	}	//	setAD_Message_ID
 
 	/**

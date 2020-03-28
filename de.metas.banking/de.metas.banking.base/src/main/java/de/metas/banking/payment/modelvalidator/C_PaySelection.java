@@ -31,16 +31,17 @@ import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_BP_BankAccount;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_PaySelection;
+import org.compiere.model.I_C_PaySelectionLine;
 import org.compiere.model.ModelValidator;
 
-import de.metas.adempiere.model.I_C_PaySelectionLine;
-import de.metas.banking.model.I_C_BP_BankAccount;
 import de.metas.banking.payment.IPaySelectionDAO;
 import de.metas.banking.service.IBankingBL;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.ICurrencyDAO;
+import de.metas.i18n.AdMessageKey;
 import de.metas.money.CurrencyId;
 import de.metas.util.Services;
 
@@ -49,7 +50,7 @@ public class C_PaySelection
 {
 	public static final transient C_PaySelection instance = new C_PaySelection();
 
-	private static final String MSG_PaySelection_CannotChangeBPBankAccount_InvalidCurrency = "PaySelection.CannotChangeBPBankAccount.InvalidCurrency";
+	private static final AdMessageKey MSG_PaySelection_CannotChangeBPBankAccount_InvalidCurrency = AdMessageKey.of("PaySelection.CannotChangeBPBankAccount.InvalidCurrency");
 
 	private C_PaySelection()
 	{
@@ -67,7 +68,7 @@ public class C_PaySelection
 	{
 		final I_C_BP_BankAccount bankAccount = InterfaceWrapperHelper.create(paySelection.getC_BP_BankAccount(), I_C_BP_BankAccount.class);
 
-		final List<I_C_PaySelectionLine> paySelectionLines = Services.get(IPaySelectionDAO.class).retrievePaySelectionLines(paySelection, I_C_PaySelectionLine.class);
+		final List<I_C_PaySelectionLine> paySelectionLines = Services.get(IPaySelectionDAO.class).retrievePaySelectionLines(paySelection);
 		if (paySelectionLines.isEmpty())
 		{
 			return;

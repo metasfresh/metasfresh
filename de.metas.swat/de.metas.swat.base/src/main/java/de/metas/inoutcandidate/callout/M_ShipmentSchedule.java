@@ -25,20 +25,21 @@ package de.metas.inoutcandidate.callout;
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.api.ICalloutField;
+import org.compiere.util.Env;
 
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.compiere.util.Env;
 
 @Callout(I_M_ShipmentSchedule.class)
 public class M_ShipmentSchedule
 {
-	private static final String MSG_QTY_ORDERED_OVERRIDE_HINT = "M_ShipmentSchedule.QtyOrdered_Override_MayNotEqual_QtyDelivered_Hint";
-	private static final String MSG_QTY_ORDERED_OVERRIDE = "M_ShipmentSchedule.QtyOrdered_Override_MayNotEqual_QtyDelivered";
+	private static final AdMessageKey MSG_QTY_ORDERED_OVERRIDE_HINT = AdMessageKey.of("M_ShipmentSchedule.QtyOrdered_Override_MayNotEqual_QtyDelivered_Hint");
+	private static final AdMessageKey MSG_QTY_ORDERED_OVERRIDE = AdMessageKey.of("M_ShipmentSchedule.QtyOrdered_Override_MayNotEqual_QtyDelivered");
 	public static final M_ShipmentSchedule instance = new M_ShipmentSchedule();
 
 	@CalloutMethod(columnNames = { //
@@ -62,7 +63,7 @@ public class M_ShipmentSchedule
 			final ITranslatableString info = Services.get(IMsgBL.class)
 					.getTranslatableMsgText(MSG_QTY_ORDERED_OVERRIDE_HINT);
 			field.fireDataStatusEEvent(
-					MSG_QTY_ORDERED_OVERRIDE,
+					MSG_QTY_ORDERED_OVERRIDE.toAD_Message(),
 					info.translate(Env.getAD_Language()),
 					true);
 

@@ -9,10 +9,11 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Invoice;
+import org.compiere.model.I_C_PaySelectionLine;
 
-import de.metas.adempiere.model.I_C_PaySelectionLine;
 import de.metas.banking.payment.PaySelectionTrxType;
 import de.metas.bpartner.service.IBPartnerOrgBL;
+import de.metas.i18n.AdMessageKey;
 import de.metas.payment.api.IPaymentDAO;
 import de.metas.payment.sepa.api.SEPAProtocol;
 import de.metas.payment.sepa.interfaces.I_C_BP_BankAccount;
@@ -47,7 +48,8 @@ import lombok.NonNull;
 
 class CreateSEPAExportFromPaySelectionCommand
 {
-	private static final String ERR_C_BP_BankAccount_BankNotSet = "de.metas.payment.sepa.C_BP_BankAccount_BankNotSet";
+	private static final AdMessageKey ERR_C_BP_BankAccount_BankNotSet = AdMessageKey.of("de.metas.payment.sepa.C_BP_BankAccount_BankNotSet");
+	
 	private final IPaymentDAO paymentsRepo = Services.get(IPaymentDAO.class);
 	private final IBPartnerOrgBL partnerOrgBL = Services.get(IBPartnerOrgBL.class);
 

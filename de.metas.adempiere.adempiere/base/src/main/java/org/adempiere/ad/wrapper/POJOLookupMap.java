@@ -38,6 +38,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+import javax.annotation.Nullable;
 import javax.management.InstanceAlreadyExistsException;
 import javax.management.InstanceNotFoundException;
 import javax.management.MBeanRegistrationException;
@@ -825,7 +826,14 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 	private final Map<String, CompositeModelInterceptor> tableName2interceptors = new HashMap<>();
 
 	@Override
-	public void addModelValidator(Object interceptorObj, I_AD_Client client)
+	public void addModelValidator(@NonNull final Object interceptorObj, @Nullable final I_AD_Client client)
+	{
+		Check.assumeNull(client, "client shall be null but it was {}", client);
+		addModelValidator(interceptorObj);
+	}
+
+	@Override
+	public void addModelValidator(@NonNull final Object interceptorObj)
 	{
 		Check.assumeNotNull(interceptorObj, "interceptorObj not null");
 		if (interceptorObj instanceof ModelValidator)

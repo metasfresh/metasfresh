@@ -29,11 +29,11 @@ import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.ModelValidator;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.payment.esr.ESRConstants;
 import de.metas.payment.esr.api.IESRImportBL;
 import de.metas.payment.esr.model.I_ESR_ImportLine;
@@ -109,7 +109,9 @@ public class ESR_ImportLine
 
 		final I_C_Payment payment = esrImportLine.getC_Payment();
 
-		handlePayment(esrImportLine.getC_BPartner(), payment);
+		handlePayment(
+				BPartnerId.ofRepoIdOrNull(esrImportLine.getC_BPartner_ID()),
+				payment);
 
 	}
 
@@ -119,7 +121,7 @@ public class ESR_ImportLine
 	 * @param newPartner
 	 * @param payment
 	 */
-	private void handlePayment(I_C_BPartner newPartner, I_C_Payment payment)
+	private void handlePayment(final BPartnerId newPartnerId, final I_C_Payment payment)
 	{
 		if (payment == null)
 		{
@@ -131,14 +133,14 @@ public class ESR_ImportLine
 		Services.get(IESRImportBL.class).reverseAllocationForPayment(payment);
 		InterfaceWrapperHelper.save(payment);
 
-		if (newPartner == null)
+		if (newPartnerId == null)
 		{
 			// We never let payments without BPartner set because we use the traceability of payments
 			return;
 		}
 
 		// If the BPartner was changes we also change the BPartner of the payment
-		payment.setC_BPartner_ID(newPartner.getC_BPartner_ID());
+		payment.setC_BPartner_ID(newPartnerId.getRepoId());
 	}
 
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE,

@@ -117,13 +117,13 @@ import de.metas.util.Check;
 		return rowSet;
 
 	}
-	
+
 	@Override
 	public final ResultSet executeQuery() throws SQLException
 	{
 		return getStatementImpl().executeQuery();
 	}
-	
+
 	@Override
 	public ResultSet executeQueryAndLogMigationScripts() throws SQLException
 	{

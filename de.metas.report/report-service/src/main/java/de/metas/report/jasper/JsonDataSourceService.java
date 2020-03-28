@@ -21,6 +21,7 @@ import org.compiere.util.Evaluatee;
 import org.compiere.util.Evaluatees;
 import org.springframework.stereotype.Service;
 
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.process.ProcessParams;
@@ -64,7 +65,7 @@ import net.sf.jasperreports.engine.JRException;
 @Service
 public class JsonDataSourceService
 {
-	private static final String MSG_URLnotValid = "URLnotValid";
+	private static final AdMessageKey MSG_URLnotValid = AdMessageKey.of("URLnotValid");
 
 	private final UserAuthTokenRepository userAuthTokenRepo;
 	private final JsonDataSourceRepository repository;

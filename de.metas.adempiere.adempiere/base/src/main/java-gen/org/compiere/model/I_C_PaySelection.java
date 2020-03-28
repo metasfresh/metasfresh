@@ -289,6 +289,31 @@ public interface I_C_PaySelection
     public static final String COLUMNNAME_IsApproved = "IsApproved";
 
 	/**
+	 * Set Abgeglichen.
+	 * Zeigt an ob eine Zahlung bereits mit einem Kontoauszug abgeglichen wurde
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setIsReconciled (boolean IsReconciled);
+
+	/**
+	 * Get Abgeglichen.
+	 * Zeigt an ob eine Zahlung bereits mit einem Kontoauszug abgeglichen wurde
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public boolean isReconciled();
+
+    /** Column definition for IsReconciled */
+    public static final org.adempiere.model.ModelColumn<I_C_PaySelection, Object> COLUMN_IsReconciled = new org.adempiere.model.ModelColumn<I_C_PaySelection, Object>(I_C_PaySelection.class, "IsReconciled", null);
+    /** Column name IsReconciled */
+    public static final String COLUMNNAME_IsReconciled = "IsReconciled";
+
+	/**
 	 * Set Name.
 	 *
 	 * <br>Type: String

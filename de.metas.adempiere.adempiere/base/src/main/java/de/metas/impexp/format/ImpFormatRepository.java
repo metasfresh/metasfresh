@@ -8,11 +8,13 @@ import org.compiere.model.I_AD_ImpFormat;
 import org.compiere.model.I_AD_ImpFormat_Row;
 import org.springframework.stereotype.Repository;
 
-import com.google.common.base.Predicates;
+
 import com.google.common.collect.ImmutableList;
 
 import de.metas.util.Services;
 import lombok.NonNull;
+
+import java.util.Objects;
 
 /*
  * #%L
@@ -80,7 +82,7 @@ public class ImpFormatRepository
 				.create()
 				.stream(I_AD_ImpFormat_Row.class)
 				.map(this::toImpFormatRowOrNull)
-				.filter(Predicates.notNull())
+				.filter(Objects::nonNull)
 				.collect(ImmutableList.toImmutableList());
 	}
 
