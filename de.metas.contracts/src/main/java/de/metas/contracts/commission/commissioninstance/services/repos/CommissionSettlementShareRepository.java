@@ -24,6 +24,7 @@ import de.metas.contracts.commission.model.I_C_Commission_Fact;
 import de.metas.contracts.commission.model.I_C_Commission_Share;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.organization.OrgId;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -96,8 +97,14 @@ public class CommissionSettlementShareRepository
 		commissionShareRecord.setPointsSum_Settled(settlementShare.getSettledPointsSum().toBigDecimal());
 		saveRecord(commissionShareRecord);
 
+		final OrgId orgId = OrgId.ofRepoId(commissionShareRecord.getAD_Org_ID());
+
 		final ImmutableList<I_C_Commission_Fact> factRecords = retrieveFactRecords(commissionShareRecord);
-		createNewFactRecords(settlementShare.getFacts(), settlementShare.getSalesCommissionShareId().getRepoId(), factRecords);
+		createNewFactRecords(
+				settlementShare.getFacts(),
+				settlementShare.getSalesCommissionShareId().getRepoId(),
+				orgId,
+				factRecords);
 	}
 
 	private ImmutableList<I_C_Commission_Fact> retrieveFactRecords(@NonNull final I_C_Commission_Share shareRecord)
@@ -115,6 +122,7 @@ public class CommissionSettlementShareRepository
 	private void createNewFactRecords(
 			@NonNull final ImmutableList<CommissionSettlementFact> facts,
 			final int commissionShareRecordId,
+			@NonNull final OrgId orgId,
 			@NonNull final ImmutableList<I_C_Commission_Fact> preexistingFactRecords)
 	{
 		final ImmutableMap<ArrayKey, I_C_Commission_Fact> idAndTypeAndTimestampToFactRecord = Maps.uniqueIndex(
@@ -130,6 +138,7 @@ public class CommissionSettlementShareRepository
 				continue;
 			}
 			final I_C_Commission_Fact factRecord = newInstance(I_C_Commission_Fact.class);
+			factRecord.setAD_Org_ID(orgId.getRepoId());
 			factRecord.setC_Commission_Share_ID(commissionShareRecordId);
 			factRecord.setC_Invoice_Candidate_Commission_ID(fact.getSettlementInvoiceCandidateId().getRepoId());
 			factRecord.setCommissionPoints(fact.getPoints().toBigDecimal());

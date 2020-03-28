@@ -26,7 +26,7 @@ package de.metas.adempiere.process;
  */
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.exceptions.DBMoreThenOneRecordsFoundException;
+import org.adempiere.exceptions.DBMoreThanOneRecordsFoundException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BP_Relation;
 import org.compiere.model.I_C_Order;
@@ -181,7 +181,7 @@ public class CreateBPRelationFromDocument extends JavaProcess
 					.setOnlyActiveRecords(true)
 					.firstOnly(I_C_BP_Relation.class);
 		}
-		catch (final DBMoreThenOneRecordsFoundException e)
+		catch (final DBMoreThanOneRecordsFoundException e)
 		{
 			log.warn("More then one relation found for bpartnerId=" + bpartnerId + "bpLocationId=" + bpLocationId + ", bpRelationId=" + bpRelationId + ", locRelationId=" + locRelationId);
 			relation = null;

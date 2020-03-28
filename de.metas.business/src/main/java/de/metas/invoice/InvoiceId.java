@@ -4,7 +4,7 @@ import java.util.Collection;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
-import com.google.common.base.Predicates;
+import java.util.Objects;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.util.Check;
@@ -78,7 +78,7 @@ public class InvoiceId implements RepoIdAware
 			return ImmutableSet.of();
 		}
 
-		return repoIds.stream().map(InvoiceId::ofRepoIdOrNull).filter(Predicates.notNull()).collect(ImmutableSet.toImmutableSet());
+		return repoIds.stream().map(InvoiceId::ofRepoIdOrNull).filter(Objects::nonNull).collect(ImmutableSet.toImmutableSet());
 	}
 
 	public static ImmutableSet<Integer> toIntSet(@NonNull final Collection<InvoiceId> ids)

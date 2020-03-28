@@ -4,7 +4,6 @@ import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.ZERO;
 import static org.adempiere.model.InterfaceWrapperHelper.create;
 import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 
 import java.math.BigDecimal;
@@ -82,8 +81,8 @@ import lombok.NonNull;
  */
 
 /**
-  * Creates an maintains commission settlement invoice candidates.
-  */
+ * Creates an maintains commission settlement invoice candidates.
+ */
 public class CommissionShareHandler extends AbstractInvoiceCandidateHandler
 {
 	private final transient IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
@@ -309,13 +308,10 @@ public class CommissionShareHandler extends AbstractInvoiceCandidateHandler
 				.add(commissionShareRecord.getPointsSum_Invoiceable())
 				.add(commissionShareRecord.getPointsSum_Invoiced());
 
-		final int commissionTriggerIcRecordId = commissionShareRecord.getC_Commission_Instance().getC_Invoice_Candidate_ID();
-		final I_C_Invoice_Candidate commissionTriggerIcRecord = loadOutOfTrx(commissionTriggerIcRecordId, I_C_Invoice_Candidate.class);
-
 		ic.setQtyEntered(allPoints);
 		ic.setC_UOM_ID(uomId.getRepoId());
 		ic.setQtyOrdered(allPoints);
-		ic.setDateOrdered(commissionTriggerIcRecord.getDateOrdered());
+		ic.setDateOrdered(commissionShareRecord.getC_Commission_Instance().getCommissionDate());
 		ic.setC_Order_ID(-1);
 	}
 

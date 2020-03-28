@@ -186,11 +186,15 @@ public class ColumnBL implements IColumnBL
 	public boolean getDefaultIsCalculatedByColumnName(@NonNull final String columnName)
 	{
 		if (columnName.equalsIgnoreCase("Value")
-				|| columnName.equalsIgnoreCase("DocumentNo"))
+				|| columnName.equalsIgnoreCase("DocumentNo")
+				|| columnName.equalsIgnoreCase("DocStatus")
+				|| columnName.equalsIgnoreCase("Docaction")
+				|| columnName.equalsIgnoreCase("Processed")
+				|| columnName.equalsIgnoreCase("Processing"))
 		{
 			return true;
 		}
 		return false;
 	}
-	
+
 }

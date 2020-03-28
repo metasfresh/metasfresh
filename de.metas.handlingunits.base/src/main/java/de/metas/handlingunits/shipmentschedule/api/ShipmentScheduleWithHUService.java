@@ -44,6 +44,7 @@ import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.shipmentschedule.api.impl.ShipmentScheduleQtyPickedProductStorage;
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
@@ -98,7 +99,7 @@ public class ShipmentScheduleWithHUService
 
 	private static final String SYSCFG_PICK_AVAILABLE_HUS_ON_THE_FLY = "de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHUService.PickAvailableHUsOnTheFly";
 
-	private static final String MSG_NoQtyPicked = "MSG_NoQtyPicked";
+	private static final AdMessageKey MSG_NoQtyPicked = AdMessageKey.of("MSG_NoQtyPicked");
 
 	@Value
 	@Builder

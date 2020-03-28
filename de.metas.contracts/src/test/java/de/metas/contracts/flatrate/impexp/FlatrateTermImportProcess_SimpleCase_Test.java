@@ -27,12 +27,15 @@ import de.metas.contracts.model.I_I_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Conditions;
 import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Transition;
+import de.metas.greeting.GreetingRepository;
 import de.metas.impexp.format.ImportTableDescriptorRepository;
 import de.metas.impexp.processing.DBFunctionsRepository;
 import de.metas.inoutcandidate.api.IShipmentScheduleHandlerBL;
 import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.monitoring.adapter.NoopPerformanceMonitoringService;
+import de.metas.monitoring.adapter.PerformanceMonitoringService;
 import de.metas.user.UserRepository;
 import de.metas.util.Services;
 
@@ -69,13 +72,16 @@ public class FlatrateTermImportProcess_SimpleCase_Test extends AbstractFlatrateT
 		helper.setupModuleInterceptors_Contracts_Full();
 
 		//
-		SpringContextHolder.registerJUnitBean(new ShipmentScheduleSubscriptionReferenceProvider());
 		inOutCandHandlerBL = Services.get(IShipmentScheduleHandlerBL.class);
 
 		iinvoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 
 		final BPartnerBL bpartnerBL = new BPartnerBL(new UserRepository());
 		Services.registerService(IBPartnerBL.class, bpartnerBL);
+
+		SpringContextHolder.registerJUnitBean(new ShipmentScheduleSubscriptionReferenceProvider());
+		SpringContextHolder.registerJUnitBean(new GreetingRepository());
+		SpringContextHolder.registerJUnitBean(PerformanceMonitoringService.class, new NoopPerformanceMonitoringService());
 		SpringContextHolder.registerJUnitBean(IBPartnerBL.class, bpartnerBL);
 	}
 

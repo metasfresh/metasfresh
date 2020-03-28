@@ -1,7 +1,5 @@
 package de.metas.document.archive.storage.attachments.process;
 
-import lombok.NonNull;
-
 import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Stream;
@@ -16,18 +14,20 @@ import de.metas.attachments.AttachmentEntryService;
 import de.metas.attachments.AttachmentEntryService.AttachmentEntryQuery;
 import de.metas.attachments.storeattachment.StoreAttachmentService;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
+import de.metas.i18n.AdMessageKey;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.process.SelectionSize;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 public class C_Doc_Outbound_Log_StoreAttachments
 		extends JavaProcess
 		implements IProcessPrecondition
 {
-	private static final String MSG_EMPTY_SELECTION = "C_Doc_Outbound_Log_StoreAttachments.No_DocOutboundLog_Selection";
+	private static final AdMessageKey MSG_EMPTY_SELECTION = AdMessageKey.of("C_Doc_Outbound_Log_StoreAttachments.No_DocOutboundLog_Selection");
 
 	private final transient AttachmentEntryService attachmentEntryService = SpringContextHolder.instance.getBean(AttachmentEntryService.class);
 	private final transient StoreAttachmentService storeAttachmentService = SpringContextHolder.instance.getBean(StoreAttachmentService.class);

@@ -42,6 +42,7 @@ import org.adempiere.util.proxy.impl.JavaAssistInterceptor;
 import org.adempiere.util.reflect.TestingClassInstanceProvider;
 import org.compiere.Adempiere;
 import org.compiere.model.I_AD_Client;
+import org.compiere.model.I_AD_ClientInfo;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.util.Env;
@@ -51,6 +52,7 @@ import org.compiere.util.Util;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
+import com.google.common.base.Stopwatch;
 
 import ch.qos.logback.classic.Level;
 import de.metas.JsonObjectMapperHolder;
@@ -113,6 +115,8 @@ public class AdempiereTestHelper
 			return;
 		}
 
+		final Stopwatch stopwatch = Stopwatch.createStarted();
+
 		Adempiere.enableUnitTestMode();
 
 		Check.setDefaultExClass(AdempiereException.class);
@@ -129,10 +133,14 @@ public class AdempiereTestHelper
 		CacheMgt.get().reset();
 
 		staticInitialized = true;
+
+		log("staticInit", "done in " + stopwatch);
 	}
 
 	public void init()
 	{
+		final Stopwatch stopwatch = Stopwatch.createStarted();
+
 		// Make sure context is clear before starting a new test
 		final Properties ctx = setupContext();
 
@@ -190,6 +198,13 @@ public class AdempiereTestHelper
 		JsonObjectMapperHolder.resetSharedJsonObjectMapper();
 
 		createSystemRecords();
+
+		log("init", "done in " + stopwatch + " (NOTE: it might include staticInit time too)");
+	}
+
+	private static void log(final String methodName, final String message)
+	{
+		System.out.println("" + AdempiereTestHelper.class.getSimpleName() + "." + methodName + ": " + message);
 	}
 
 	private static Properties setupContext()
@@ -201,7 +216,7 @@ public class AdempiereTestHelper
 		return ctx;
 	}
 
-	public void setupContext_AD_Client_IfNotSet()
+	public static void setupContext_AD_Client_IfNotSet()
 	{
 		final Properties ctx = Env.getCtx();
 
@@ -223,6 +238,8 @@ public class AdempiereTestHelper
 
 	private static void createSystemRecords()
 	{
+		final Stopwatch stopwatch = Stopwatch.createStarted();
+
 		final I_AD_Org allOrgs = newInstance(I_AD_Org.class);
 		allOrgs.setAD_Org_ID(0);
 		save(allOrgs);
@@ -234,11 +251,30 @@ public class AdempiereTestHelper
 		final I_M_AttributeSetInstance noAsi = newInstance(I_M_AttributeSetInstance.class);
 		noAsi.setM_AttributeSetInstance_ID(0);
 		save(noAsi);
+
+		log("createSystemRecords", "done in " + stopwatch);
+	}
+
+	public static void createClientInfo()
+	{
+		final Properties ctx = Env.getCtx();
+
+		final int clientId = Env.getAD_Client_ID(ctx);
+		if (clientId <= 0)
+		{
+			return;
+		}
+
+		final IContextAware contextProvider = PlainContextAware.newOutOfTrx(ctx);
+
+		final I_AD_ClientInfo clientInfo = InterfaceWrapperHelper.newInstance(I_AD_ClientInfo.class, contextProvider);
+		InterfaceWrapperHelper.setValue(clientInfo, I_AD_ClientInfo.COLUMNNAME_AD_Client_ID, clientId);
+		InterfaceWrapperHelper.save(clientInfo);
 	}
 
 	/**
 	 * Create JSON serialization function to be used by {@link SnapshotMatcher#start(SnapshotConfig, Function)}.
-	 * 
+	 *
 	 * The function is using our {@link JsonObjectMapperHolder#newJsonObjectMapper()} with a pretty printer.
 	 */
 	public static Function<Object, String> createSnapshotJsonFunction()

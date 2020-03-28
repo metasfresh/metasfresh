@@ -7,14 +7,14 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_Bank;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.X_C_DocType;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.attachments.AttachmentEntryService;
-import de.metas.banking.model.I_C_Bank;
 import de.metas.payment.esr.api.impl.ESRImportBL;
 import de.metas.payment.esr.model.I_C_BP_BankAccount;
 import de.metas.util.Services;
@@ -46,7 +46,7 @@ public class InvoiceReferenceNosTest
 {
 	private ESRImportBL esrImportBL;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
@@ -131,10 +131,10 @@ public class InvoiceReferenceNosTest
 	{
 		final I_C_Invoice invoice = InterfaceWrapperHelper.newInstance(I_C_Invoice.class);
 
-		invoice.setC_DocType(docType);
+		invoice.setC_DocType_ID(docType.getC_DocType_ID());
 		invoice.setIsSOTrx(true);
-		invoice.setAD_Org(org);
-		invoice.setC_BPartner(invoicePartner);
+		invoice.setAD_Org_ID(org.getAD_Org_ID());
+		invoice.setC_BPartner_ID(invoicePartner.getC_BPartner_ID());
 		invoice.setDocumentNo(documentNo);
 
 		InterfaceWrapperHelper.save(invoice);

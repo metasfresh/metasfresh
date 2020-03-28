@@ -74,7 +74,7 @@ public class C_DunningDoc_JasperWithInvoicePDFsStrategy implements ExecuteReport
 		if (!isPDF)
 		{
 			Loggables.withLogger(logger, Level.WARN).addLog("Concatenating additional PDF-Data is not supported with outputType={}; returning only the jasper data itself.", outputType);
-			return new ExecuteReportResult(outputType, dunningDocData);
+			return ExecuteReportResult.of(outputType, dunningDocData);
 		}
 
 		final DunningService dunningService = SpringContextHolder.instance.getBean(DunningService.class);
@@ -83,7 +83,7 @@ public class C_DunningDoc_JasperWithInvoicePDFsStrategy implements ExecuteReport
 		final List<PdfDataProvider> additionalDataItemsToAttach = retrieveAdditionalDataItems(dunnedInvoices);
 		final byte[] data = ExecuteReportStrategyUtil.concatenatePDF(dunningDocData, additionalDataItemsToAttach);
 
-		return new ExecuteReportResult(outputType, data);
+		return ExecuteReportResult.of(outputType, data);
 	}
 
 	private List<PdfDataProvider> retrieveAdditionalDataItems(@NonNull final List<I_C_Invoice> dunnedInvoices)

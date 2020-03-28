@@ -56,6 +56,7 @@ import com.google.common.annotations.VisibleForTesting;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner_product.IBPartnerProductDAO;
+import de.metas.i18n.AdMessageKey;
 import de.metas.javaclasses.IJavaClassBL;
 import de.metas.javaclasses.IJavaClassDAO;
 import de.metas.javaclasses.model.I_AD_JavaClass;
@@ -78,7 +79,7 @@ public class AttributesBL implements IAttributesBL
 
 	@VisibleForTesting
 	static final String SYSCONFIG_AttributeAction = "de.metas.swat.AttributeAction";
-	private static final String MSG_NoAttributeGenerator = "de.metas.swat.Attribute.generatorError";
+	private static final AdMessageKey MSG_NoAttributeGenerator = AdMessageKey.of("de.metas.swat.Attribute.generatorError");
 
 	private static final MathContext DEFAULT_MATHCONTEXT = new MathContext(2, RoundingMode.HALF_UP);
 

@@ -25,6 +25,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BP_BankAccount;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_PaySelection;
+import org.compiere.model.I_C_PaySelectionLine;
 import org.compiere.model.POInfo;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
@@ -35,7 +36,7 @@ import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableSet;
 
-import de.metas.adempiere.model.I_C_PaySelectionLine;
+import de.metas.banking.PaySelectionId;
 import de.metas.banking.payment.IPaySelectionDAO;
 import de.metas.banking.payment.IPaySelectionUpdater;
 import de.metas.banking.payment.InvoiceMatchingMode;
@@ -110,8 +111,8 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 
 		final List<I_C_PaySelectionLine> paySelectionLines = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_PaySelectionLine.class)
-				.addEqualsFilter(org.compiere.model.I_C_PaySelectionLine.COLUMNNAME_C_PaySelection_ID, getC_PaySelection_ID())
-				.addInArrayOrAllFilter(org.compiere.model.I_C_PaySelectionLine.COLUMNNAME_C_PaySelectionLine_ID, paySelectionLineIdsToUpdate)
+				.addEqualsFilter(I_C_PaySelectionLine.COLUMNNAME_C_PaySelection_ID, getPaySelectionId())
+				.addInArrayOrAllFilter(I_C_PaySelectionLine.COLUMNNAME_C_PaySelectionLine_ID, paySelectionLineIdsToUpdate)
 				.create()
 				.list();
 
@@ -609,7 +610,7 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 	private void cacheInvalidationForCurrentPaySelection()
 	{
 		modelCacheInvalidationService.invalidate(
-				CacheInvalidateMultiRequest.fromTableNameAndRecordId(I_C_PaySelection.Table_Name, getC_PaySelection_ID()),
+				CacheInvalidateMultiRequest.fromTableNameAndRecordId(I_C_PaySelection.Table_Name, getPaySelectionId().getRepoId()),
 				ModelCacheInvalidationTiming.CHANGE);
 	}
 
@@ -738,9 +739,9 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 		return _paySelection;
 	}
 
-	private int getC_PaySelection_ID()
+	private PaySelectionId getPaySelectionId()
 	{
-		return getC_PaySelection().getC_PaySelection_ID();
+		return PaySelectionId.ofRepoId(getC_PaySelection().getC_PaySelection_ID());
 	}
 
 	private Integer _nextLineNo = null;
@@ -749,7 +750,7 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 	{
 		if (_nextLineNo == null)
 		{
-			final int lastLineNo = paySelectionsRepo.retrieveLastPaySelectionLineNo(getC_PaySelection_ID());
+			final int lastLineNo = paySelectionsRepo.retrieveLastPaySelectionLineNo(getPaySelectionId());
 			_nextLineNo = lastLineNo + 10;
 		}
 
@@ -768,11 +769,11 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 	}
 
 	@Override
-	public IPaySelectionUpdater addPaySelectionLinesToUpdate(final Iterable<? extends org.compiere.model.I_C_PaySelectionLine> paySelectionLines)
+	public IPaySelectionUpdater addPaySelectionLinesToUpdate(final Iterable<? extends I_C_PaySelectionLine> paySelectionLines)
 	{
 		assertConfigurable();
 
-		for (final org.compiere.model.I_C_PaySelectionLine paySelectionLine : paySelectionLines)
+		for (final I_C_PaySelectionLine paySelectionLine : paySelectionLines)
 		{
 			paySelectionLineIdsToUpdate.add(paySelectionLine.getC_PaySelectionLine_ID());
 		}

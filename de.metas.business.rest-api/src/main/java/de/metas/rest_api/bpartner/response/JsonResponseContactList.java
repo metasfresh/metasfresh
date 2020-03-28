@@ -8,6 +8,7 @@ import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.rest_api.common.JsonPagingDescriptor;
+import io.swagger.annotations.ApiModel;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
@@ -35,6 +36,7 @@ import lombok.Value;
  * #L%
  */
 
+@ApiModel("Resonse to a request for contact master data.")
 @Value
 public class JsonResponseContactList
 {

@@ -31,6 +31,7 @@ import de.metas.document.sequence.DocSequenceId;
 import de.metas.document.sequence.IDocumentNoBuilder;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.document.sequenceno.CustomSequenceNoProvider;
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.logging.LogManager;
@@ -54,7 +55,7 @@ class DocumentNoBuilder implements IDocumentNoBuilder
 	private final transient IDocumentSequenceDAO documentSequenceDAO = Services.get(IDocumentSequenceDAO.class);
 	final IMsgBL msgBL = Services.get(IMsgBL.class);
 
-	private static final String MSG_PROVIDER_NOT_APPLICABLE = "de.metas.document.CustomSequenceNotProviderNoApplicable";
+	private static final AdMessageKey MSG_PROVIDER_NOT_APPLICABLE = AdMessageKey.of("de.metas.document.CustomSequenceNotProviderNoApplicable");
 
 	private static final int QUERY_TIME_OUT = MSequence.QUERY_TIME_OUT;
 	private static final transient SimpleDateFormatThreadLocal DATEFORMAT_CalendarYear = new SimpleDateFormatThreadLocal("yyyy");

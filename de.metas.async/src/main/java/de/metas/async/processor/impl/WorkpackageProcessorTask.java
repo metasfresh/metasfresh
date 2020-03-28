@@ -201,7 +201,7 @@ import lombok.NonNull;
 			}
 			else
 			{
-				throw new IllegalStateException("Result " + resultRef.getValue() + " not supported for " + workPackage);
+				throw new IllegalStateException("Result " + resultRef.getValue() + " not supported for workPackage=" + workPackage);
 			}
 		}
 		catch (final DBDeadLockDetectedException e)

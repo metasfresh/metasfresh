@@ -11,7 +11,6 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
-import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.util.Check;
@@ -81,6 +80,11 @@ public class CacheInvalidateMultiRequest
 	}
 
 	public static CacheInvalidateMultiRequest rootRecord(@NonNull final String rootTableName, final int rootRecordId)
+	{
+		return of(CacheInvalidateRequest.rootRecord(rootTableName, rootRecordId));
+	}
+
+	public static CacheInvalidateMultiRequest rootRecord(@NonNull final String rootTableName, @NonNull final RepoIdAware rootRecordId)
 	{
 		return of(CacheInvalidateRequest.rootRecord(rootTableName, rootRecordId));
 	}
@@ -188,7 +192,7 @@ public class CacheInvalidateMultiRequest
 	{
 		return requests.stream()
 				.map(CacheInvalidateRequest::getRootRecordOrNull)
-				.filter(Predicates.notNull())
+				.filter(Objects::nonNull)
 				.collect(TableRecordReferenceSet.collect());
 	}
 }

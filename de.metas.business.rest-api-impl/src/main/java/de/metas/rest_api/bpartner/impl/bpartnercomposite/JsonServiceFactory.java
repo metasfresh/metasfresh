@@ -7,6 +7,7 @@ import de.metas.bpartner.BPGroupRepository;
 import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
 import de.metas.currency.CurrencyRepository;
 import de.metas.greeting.GreetingRepository;
+import de.metas.rest_api.bpartner.impl.JsonRequestConsolidateService;
 import de.metas.rest_api.bpartner.impl.bpartnercomposite.jsonpersister.JsonPersisterService;
 import de.metas.rest_api.utils.BPartnerQueryService;
 import de.metas.util.lang.UIDStringUtil;
@@ -37,6 +38,7 @@ import lombok.NonNull;
 @Service
 public class JsonServiceFactory
 {
+	private final JsonRequestConsolidateService jsonRequestConsolidateService;
 	private final BPartnerQueryService bpartnerQueryService;
 	private final BPartnerCompositeRepository bpartnerCompositeRepository;
 	private final BPGroupRepository bpGroupRepository;
@@ -45,6 +47,7 @@ public class JsonServiceFactory
 	private final CurrencyRepository currencyRepository;
 
 	public JsonServiceFactory(
+			@NonNull final JsonRequestConsolidateService jsonRequestConsolidateService,
 			@NonNull final BPartnerQueryService bpartnerQueryService,
 			@NonNull final BPartnerCompositeRepository bpartnerCompositeRepository,
 			@NonNull final BPGroupRepository bpGroupRepository,
@@ -52,6 +55,7 @@ public class JsonServiceFactory
 			@NonNull final RecordChangeLogRepository recordChangeLogRepository,
 			@NonNull final CurrencyRepository currencyRepository)
 	{
+		this.jsonRequestConsolidateService = jsonRequestConsolidateService;
 		this.bpartnerQueryService = bpartnerQueryService;
 		this.greetingRepository = greetingRepository;
 		this.recordChangeLogRepository = recordChangeLogRepository;
@@ -67,6 +71,7 @@ public class JsonServiceFactory
 
 		return new JsonPersisterService(
 				jsonRetrieverService,
+				jsonRequestConsolidateService,
 				bpartnerCompositeRepository,
 				bpGroupRepository,
 				currencyRepository,

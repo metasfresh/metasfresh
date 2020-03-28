@@ -26,12 +26,6 @@ package org.adempiere.ui.spi.impl;
 import java.text.DateFormat;
 import java.text.NumberFormat;
 import java.util.Properties;
-import org.slf4j.Logger;
-
-import de.metas.i18n.IADMessageDAO;
-import de.metas.i18n.IMsgBL;
-import de.metas.logging.LogManager;
-import de.metas.util.Services;
 
 import org.adempiere.ui.api.IGridTabSummaryInfo;
 import org.adempiere.ui.api.StringGridTabSummaryInfo;
@@ -42,6 +36,12 @@ import org.compiere.model.GridTabVO;
 import org.compiere.model.GridTable;
 import org.compiere.model.I_AD_Message;
 import org.compiere.util.DisplayType;
+import org.slf4j.Logger;
+
+import de.metas.i18n.IADMessageDAO;
+import de.metas.i18n.IMsgBL;
+import de.metas.logging.LogManager;
+import de.metas.util.Services;
 
 /**
  * Default provider of {@link IGridTabSummaryInfo}.
@@ -68,13 +68,13 @@ public class DefaultGridTabSummaryInfoProvider implements IGridTabSummaryInfoPro
 		final int currentRow = gridTab.getCurrentRowNoCheck(); // NOTE: we are getting current row without checking because in some cases we got "Row index out of range" exception
 
 		// metas: Method was changed to enable dynamic status line messages.
-		if (gridTabVO.AD_Message_ID <= 0) // Does the Tab have a message?
+		if (gridTabVO.AD_Message_ID == null) // Does the Tab have a message?
 		{
 			return IGridTabSummaryInfo.NULL;
 		}
 
 		// Get message
-		I_AD_Message msg = Services.get(IADMessageDAO.class).retrieveById(ctx, gridTabVO.AD_Message_ID);
+		I_AD_Message msg = Services.get(IADMessageDAO.class).retrieveById(ctx, gridTabVO.AD_Message_ID).get();
 		final String messageName = msg.getValue();
 
 		// Fill message
@@ -111,8 +111,10 @@ public class DefaultGridTabSummaryInfoProvider implements IGridTabSummaryInfoPro
 					}
 				}
 
-				if (value == null) // Field empty?
+				if (value == null)
+				{
 					outStr.append("");
+				}
 				else
 				{
 					// Format string depending on DisplayType
@@ -129,10 +131,14 @@ public class DefaultGridTabSummaryInfoProvider implements IGridTabSummaryInfoPro
 						final DateFormat fmt = DisplayType.getDateFormat(dt);
 						valueStr = fmt.format(value);
 					}
-					else if (DisplayType.isLookup(dt) && field.getLookup() != null) // Lookup
+					else if (DisplayType.isLookup(dt) && field.getLookup() != null)
+					{
 						valueStr = field.getLookup().getDisplay(value); // Quick and Dirty solution, does not work in every case!
+					}
 					else
+					{
 						valueStr = value.toString();
+					}
 
 					outStr.append(valueStr);
 				}

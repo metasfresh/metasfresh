@@ -3,7 +3,7 @@ package de.metas.util.lang;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
-import com.google.common.base.Predicates;
+import java.util.Objects;
 
 import de.metas.util.Check;
 import lombok.NonNull;
@@ -84,7 +84,7 @@ public class CoalesceUtil
 	@SafeVarargs
 	public static final <T> T coalesceSuppliers(final Supplier<T>... values)
 	{
-		return firstValidValue(Predicates.notNull(), values);
+		return firstValidValue(Objects::nonNull, values);
 	}
 
 	@SafeVarargs

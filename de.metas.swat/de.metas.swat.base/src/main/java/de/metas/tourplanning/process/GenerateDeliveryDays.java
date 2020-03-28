@@ -31,8 +31,11 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.util.TimeUtil;
 
+import de.metas.process.IProcessPrecondition;
+import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
+import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.tourplanning.api.IDeliveryDayGenerator;
 import de.metas.tourplanning.api.ITourBL;
 import de.metas.tourplanning.model.I_M_Tour;
@@ -42,7 +45,7 @@ import de.metas.util.Services;
 /**
  * @author cg
  */
-public class GenerateDeliveryDays extends JavaProcess
+public class GenerateDeliveryDays extends JavaProcess implements IProcessPrecondition
 {
 	//
 	// Services
@@ -56,6 +59,17 @@ public class GenerateDeliveryDays extends JavaProcess
 	private Timestamp p_DateTo = null;
 	private I_M_Tour p_tour = null;
 
+	@Override
+	public ProcessPreconditionsResolution checkPreconditionsApplicable(final IProcessPreconditionsContext context)
+	{
+		if(!context.isSingleSelection())
+		{
+			return ProcessPreconditionsResolution.rejectBecauseNotSingleSelection();
+		}
+
+		return ProcessPreconditionsResolution.accept();
+	}
+	
 	@Override
 	protected void prepare()
 	{

@@ -5,6 +5,7 @@ import java.util.function.Predicate;
 import org.adempiere.ad.dao.IQueryBL;
 import org.compiere.SpringContextHolder;
 
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.ITranslatableString;
 import de.metas.material.dispo.commons.RequestMaterialOrderService;
 import de.metas.material.dispo.model.I_MD_Candidate;
@@ -46,7 +47,7 @@ import de.metas.util.Services;
  */
 public class MD_Candidate_Request_MaterialDocument extends JavaProcess implements IProcessPrecondition
 {
-	private static final String MSG_MISSING_PRODUCTION_OR_DISTRIBUTRION_RECORDS = "de.metas.material.dispo.MD_Candidate_Request_MaterialDocument_No_Matching_Records_Selected";
+	private static final AdMessageKey MSG_MISSING_PRODUCTION_OR_DISTRIBUTRION_RECORDS = AdMessageKey.of("de.metas.material.dispo.MD_Candidate_Request_MaterialDocument_No_Matching_Records_Selected");
 
 	private final RequestMaterialOrderService service = SpringContextHolder.instance.getBean(RequestMaterialOrderService.class);
 

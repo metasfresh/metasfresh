@@ -8,6 +8,7 @@ import org.compiere.model.ModelValidator;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.sourcehu.ISourceHuDAO;
+import de.metas.i18n.AdMessageKey;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -34,10 +35,10 @@ public class M_HU
 		}
 	}
 
+	@SuppressWarnings("serial")
 	public static final class SourceHuMayNotBeRemovedException extends AdempiereException
 	{
-		private static final long serialVersionUID = -7002396154928421269L;
-		private static final String MSG_CANNOT_MOVE_SOURCE_HU_1P = "CANNOT_MOVE_SOURCE_HU";
+		private static final AdMessageKey MSG_CANNOT_MOVE_SOURCE_HU_1P = AdMessageKey.of("CANNOT_MOVE_SOURCE_HU");
 
 		private SourceHuMayNotBeRemovedException(final I_M_HU hu)
 		{

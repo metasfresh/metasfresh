@@ -34,7 +34,7 @@ public interface IADProcessDAO extends ISingletonService
 	 * @param ctx
 	 * @param AD_Form_ID
 	 * @return
-	 * @throws org.adempiere.exceptions.DBMoreThenOneRecordsFoundException if more than one process references the given AD_Form_ID
+	 * @throws org.adempiere.exceptions.DBMoreThanOneRecordsFoundException if more than one process references the given AD_Form_ID
 	 */
 	I_AD_Process retrieveProcessByForm(Properties ctx, int AD_Form_ID);
 

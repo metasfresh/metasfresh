@@ -17,7 +17,6 @@ import org.compiere.print.ReportEngine;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
-import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.bpartner.BPartnerId;
@@ -185,7 +184,7 @@ public class HUReportExecutor
 	{
 		return hus.stream()
 				.map(HUToReport::getHUId)
-				.filter(Predicates.notNull())
+				.filter(Objects::nonNull)
 				.collect(ImmutableSet.toImmutableSet());
 	}
 

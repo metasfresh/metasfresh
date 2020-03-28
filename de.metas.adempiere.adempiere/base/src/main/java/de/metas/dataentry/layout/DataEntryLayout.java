@@ -9,7 +9,7 @@ import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.exceptions.AdempiereException;
 
-import com.google.common.base.Predicates;
+import java.util.Objects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
@@ -92,7 +92,7 @@ public class DataEntryLayout
 	{
 		return tabs.stream()
 				.map(tab -> tab.getSubTabByIdIfPresent(subTabId).orElse(null))
-				.filter(Predicates.notNull())
+				.filter(Objects::nonNull)
 				.findFirst()
 				.orElseThrow(() -> new AdempiereException("@NotFound@ " + subTabId + " in " + this));
 	}

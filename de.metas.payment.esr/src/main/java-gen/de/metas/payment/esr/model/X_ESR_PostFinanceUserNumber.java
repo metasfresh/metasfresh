@@ -14,7 +14,7 @@ public class X_ESR_PostFinanceUserNumber extends org.compiere.model.PO implement
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1288909553L;
+	private static final long serialVersionUID = 124623897L;
 
     /** Standard Constructor */
     public X_ESR_PostFinanceUserNumber (Properties ctx, int ESR_PostFinanceUserNumber_ID, String trxName)
@@ -44,7 +44,7 @@ public class X_ESR_PostFinanceUserNumber extends org.compiere.model.PO implement
     }
 
 	@Override
-	public org.compiere.model.I_C_BP_BankAccount getC_BP_BankAccount() throws RuntimeException
+	public org.compiere.model.I_C_BP_BankAccount getC_BP_BankAccount()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_BP_BankAccount_ID, org.compiere.model.I_C_BP_BankAccount.class);
 	}

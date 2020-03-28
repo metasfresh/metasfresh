@@ -268,7 +268,7 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 			groupHeaderSCT.setCtrlSum(BigDecimal.ZERO);
 
 			final PartyIdentification32CHNameAndId initgPty = objectFactory.createPartyIdentification32CHNameAndId();
-			initgPty.setNm(sepaDocument.getSEPA_CreditorIdentifier());
+			initgPty.setNm(sepaDocument.getSEPA_CreditorName());
 
 			final ContactDetails2CH ctctDtls = objectFactory.createContactDetails2CH();
 			ctctDtls.setNm("metasfresh");

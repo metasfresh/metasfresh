@@ -6,7 +6,6 @@ import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.ModelValidator;
-import org.compiere.util.Env;
 import org.springframework.stereotype.Component;
 
 import de.metas.contracts.ConditionsId;
@@ -14,6 +13,7 @@ import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_RefundConfig;
 import de.metas.contracts.model.X_C_Flatrate_Conditions;
 import de.metas.contracts.refund.RefundConfigRepository;
+import de.metas.i18n.AdMessageKey;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -73,6 +73,6 @@ public class C_Flatrate_Conditions
 			return;
 		}
 
-		throw new AdempiereException(Env.getAD_Language(Env.getCtx()), "Conditions_Error_RefundConfigMissing", new Object[0]);
+		throw new AdempiereException(AdMessageKey.of("Conditions_Error_RefundConfigMissing"));
 	}
 }

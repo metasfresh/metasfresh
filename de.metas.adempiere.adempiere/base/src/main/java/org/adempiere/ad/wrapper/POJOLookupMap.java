@@ -38,6 +38,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+import javax.annotation.Nullable;
 import javax.management.InstanceAlreadyExistsException;
 import javax.management.InstanceNotFoundException;
 import javax.management.MBeanRegistrationException;
@@ -58,7 +59,7 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.wrapper.jmx.JMXPOJOLookupMap;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.exceptions.DBMoreThenOneRecordsFoundException;
+import org.adempiere.exceptions.DBMoreThanOneRecordsFoundException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IMutable;
 import org.adempiere.util.lang.Mutable;
@@ -600,7 +601,7 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 			return null;
 		}
 
-		throw new DBMoreThenOneRecordsFoundException("More than one record were found for " + clazz + ", filtered by " + filter + ": " + result);
+		throw new DBMoreThanOneRecordsFoundException("More than one record was found for " + clazz + ", filtered by " + filter + ": " + result);
 	}
 
 	public <T> T getFirst(Class<T> clazz, IQueryFilter<T> filter, final Comparator<T> orderByComparator)
@@ -825,7 +826,14 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 	private final Map<String, CompositeModelInterceptor> tableName2interceptors = new HashMap<>();
 
 	@Override
-	public void addModelValidator(Object interceptorObj, I_AD_Client client)
+	public void addModelValidator(@NonNull final Object interceptorObj, @Nullable final I_AD_Client client)
+	{
+		Check.assumeNull(client, "client shall be null but it was {}", client);
+		addModelValidator(interceptorObj);
+	}
+
+	@Override
+	public void addModelValidator(@NonNull final Object interceptorObj)
 	{
 		Check.assumeNotNull(interceptorObj, "interceptorObj not null");
 		if (interceptorObj instanceof ModelValidator)

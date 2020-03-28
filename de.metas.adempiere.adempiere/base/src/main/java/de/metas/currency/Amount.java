@@ -2,12 +2,16 @@ package de.metas.currency;
 
 import java.math.BigDecimal;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Iterator;
+import java.util.function.Function;
 import java.util.stream.Stream;
+
+import javax.annotation.Nullable;
 
 import org.adempiere.exceptions.AdempiereException;
 
-import com.google.common.base.Predicates;
+import java.util.Objects;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimaps;
@@ -56,6 +60,16 @@ public final class Amount implements Comparable<Amount>
 		return new Amount(value, currencyCode);
 	}
 
+	public static Amount of(final int value, @NonNull CurrencyCode currencyCode)
+	{
+		return of(BigDecimal.valueOf(value), currencyCode);
+	}
+
+	public static Amount of(@NonNull final String value, @NonNull final CurrencyCode currencyCode)
+	{
+		return of(new BigDecimal(value), currencyCode);
+	}
+
 	public static Amount zero(@NonNull final CurrencyCode currencyCode)
 	{
 		return new Amount(BigDecimal.ZERO, currencyCode);
@@ -76,6 +90,14 @@ public final class Amount implements Comparable<Amount>
 		return value;
 	}
 
+	public static void assertSameCurrency(@NonNull final Amount amount1, @NonNull final Amount amount2)
+	{
+		if (!amount1.getCurrencyCode().equals(amount2.getCurrencyCode()))
+		{
+			throw new AdempiereException("Amounts shall have the same currency: " + Arrays.asList(amount1, amount2));
+		}
+	}
+
 	public static void assertSameCurrency(final Amount... amounts)
 	{
 		if (amounts == null || amounts.length == 0)
@@ -93,12 +115,36 @@ public final class Amount implements Comparable<Amount>
 		}
 	}
 
+	public static <T> void assertSameCurrency(
+			@NonNull final Collection<T> objects,
+			@NonNull final Function<T, Amount> amountExtractor)
+	{
+		if (objects.isEmpty())
+		{
+			return;
+		}
+
+		CurrencyCode expectedCurrencyCode = null;
+		for (final T object : objects)
+		{
+			final Amount amount = amountExtractor.apply(object);
+			if (expectedCurrencyCode == null)
+			{
+				expectedCurrencyCode = amount.getCurrencyCode();
+			}
+			else if (!expectedCurrencyCode.equals(amount.getCurrencyCode()))
+			{
+				throw new AdempiereException("Extracted amount `" + amount + "` of object `" + object + "` was expected to be in " + expectedCurrencyCode);
+			}
+		}
+	}
+
 	public static CurrencyCode getCommonCurrencyCodeOfAll(@NonNull final Amount... amounts)
 	{
 		Check.assumeNotEmpty(amounts, "The given moneys may not be empty");
 
 		final Iterator<Amount> moneysIterator = Stream.of(amounts)
-				.filter(Predicates.notNull())
+				.filter(Objects::nonNull)
 				.iterator();
 		final ImmutableListMultimap<CurrencyCode, Amount> amountsByCurrencyCode = Multimaps.index(moneysIterator, Amount::getCurrencyCode);
 		if (amountsByCurrencyCode.isEmpty())
@@ -120,6 +166,16 @@ public final class Amount implements Comparable<Amount>
 		return getAsBigDecimal().compareTo(other.getAsBigDecimal());
 	}
 
+	public boolean isEqualByComparingTo(@Nullable final Amount other)
+	{
+		if (other == null)
+		{
+			return false;
+		}
+		return other.currencyCode.equals(currencyCode)
+				&& other.value.compareTo(value) == 0;
+	}
+
 	public boolean valueComparingEqualsTo(@NonNull final BigDecimal other)
 	{
 		return getAsBigDecimal().compareTo(other) == 0;
@@ -135,9 +191,14 @@ public final class Amount implements Comparable<Amount>
 		return getAsBigDecimal().signum();
 	}
 
+	public boolean isZero()
+	{
+		return signum() == 0;
+	}
+
 	public Amount negate()
 	{
-		return signum() == 0
+		return isZero()
 				? this
 				: new Amount(value.negate(), currencyCode);
 	}
@@ -147,4 +208,40 @@ public final class Amount implements Comparable<Amount>
 		return condition ? negate() : this;
 	}
 
+	public Amount negateIfNot(final boolean condition)
+	{
+		return !condition ? negate() : this;
+	}
+
+	public Amount add(@NonNull final Amount amtToAdd)
+	{
+		assertSameCurrency(this, amtToAdd);
+
+		if (amtToAdd.isZero())
+		{
+			return this;
+		}
+		else if (isZero())
+		{
+			return amtToAdd;
+		}
+		else
+		{
+			return new Amount(value.add(amtToAdd.value), currencyCode);
+		}
+	}
+
+	public Amount subtract(@NonNull final Amount amtToSubtract)
+	{
+		assertSameCurrency(this, amtToSubtract);
+
+		if (amtToSubtract.isZero())
+		{
+			return this;
+		}
+		else
+		{
+			return new Amount(value.subtract(amtToSubtract.value), currencyCode);
+		}
+	}
 }

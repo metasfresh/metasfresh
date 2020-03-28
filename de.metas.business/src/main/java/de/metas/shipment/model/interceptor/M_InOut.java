@@ -8,6 +8,7 @@ import org.compiere.model.ModelValidator;
 import org.slf4j.MDC.MDCCloseable;
 import org.springframework.stereotype.Component;
 
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.inout.InOutId;
@@ -43,7 +44,7 @@ import lombok.NonNull;
 @Component
 public class M_InOut
 {
-	private static final String ERR_ShipmentDeclaration = "de.metas.shipment.model.interceptor.M_InOut.ERR_ShipmentDeclaration";
+	private static final AdMessageKey ERR_ShipmentDeclaration = AdMessageKey.of("de.metas.shipment.model.interceptor.M_InOut.ERR_ShipmentDeclaration");
 
 	private final ShipmentDeclarationCreator shipmentDeclarationCreator;
 	private final ShipmentDeclarationRepository shipmentDeclarationRepo;

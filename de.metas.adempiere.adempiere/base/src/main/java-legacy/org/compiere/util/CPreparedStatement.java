@@ -22,7 +22,7 @@ import java.sql.SQLException;
 
 /**
  * Interface to wrap PreparedStatement
- * 
+ *
  * @author Low Heng Sin
  *
  */
@@ -30,8 +30,8 @@ public interface CPreparedStatement extends CStatement, PreparedStatement
 {
 	/**
 	 * Same as {@link #executeQuery()} but it will log migration scripts too (if they are enabled).
-	 * 
+	 *
 	 * Please note, {@link #executeQuery()} does not log migration scripts because usually they are SELECTs which does not change the database, so no migration scripts shall be logged.
 	 */
 	ResultSet executeQueryAndLogMigationScripts() throws SQLException;
-}	// CPreparedStatement
+}

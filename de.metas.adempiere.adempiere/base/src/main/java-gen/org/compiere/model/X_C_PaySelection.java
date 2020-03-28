@@ -15,7 +15,7 @@ public class X_C_PaySelection extends org.compiere.model.PO implements I_C_PaySe
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1432519166L;
+	private static final long serialVersionUID = 134777688L;
 
     /** Standard Constructor */
     public X_C_PaySelection (Properties ctx, int C_PaySelection_ID, String trxName)
@@ -28,6 +28,7 @@ public class X_C_PaySelection extends org.compiere.model.PO implements I_C_PaySe
 			setDocAction (null); // CO
 			setDocStatus (null); // DR
 			setIsApproved (false);
+			setIsReconciled (false); // N
 			setName (null); // @#Date@
 			setPayDate (new Timestamp( System.currentTimeMillis() )); // @#Date@
 			setProcessed (false);
@@ -268,6 +269,32 @@ public class X_C_PaySelection extends org.compiere.model.PO implements I_C_PaySe
 	public boolean isApproved () 
 	{
 		Object oo = get_Value(COLUMNNAME_IsApproved);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
+	/** Set Abgeglichen.
+		@param IsReconciled 
+		Zeigt an ob eine Zahlung bereits mit einem Kontoauszug abgeglichen wurde
+	  */
+	@Override
+	public void setIsReconciled (boolean IsReconciled)
+	{
+		set_Value (COLUMNNAME_IsReconciled, Boolean.valueOf(IsReconciled));
+	}
+
+	/** Get Abgeglichen.
+		@return Zeigt an ob eine Zahlung bereits mit einem Kontoauszug abgeglichen wurde
+	  */
+	@Override
+	public boolean isReconciled () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsReconciled);
 		if (oo != null) 
 		{
 			 if (oo instanceof Boolean) 

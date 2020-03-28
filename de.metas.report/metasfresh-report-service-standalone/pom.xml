@@ -96,6 +96,13 @@
 			</exclusions>
 		</dependency>
 
+		<!-- Logging  -->
+		<dependency>
+			<groupId>net.logstash.logback</groupId>
+			<artifactId>logstash-logback-encoder</artifactId>
+		</dependency>
+
+		<!-- Q/R code-->
 		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
@@ -123,6 +130,15 @@
 
 							<executable>true</executable>
 							<mainClass>${start-class}</mainClass>
+							
+							<!-- despite the "provided" in the dependency declaration, migration.cli did ended up in the reports's classpath
+								Therefore, we now explicitly exclude it here -->
+							<excludes>
+								<exclude>
+									<groupId>de.metas.migration</groupId>
+									<artifactId>de.metas.migration.cli</artifactId>
+								</exclude>
+							</excludes>
 							
 							<!-- this also provides the super-jar to the successive docker build 
 								Note that the ${docker.build.directory} property  is set by the prepare-docker profile 

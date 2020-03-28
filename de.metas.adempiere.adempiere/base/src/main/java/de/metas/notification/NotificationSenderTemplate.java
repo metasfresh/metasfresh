@@ -37,6 +37,7 @@ import de.metas.email.mailboxes.ClientEMailConfig;
 import de.metas.email.mailboxes.Mailbox;
 import de.metas.event.IEventBusFactory;
 import de.metas.event.Topic;
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import de.metas.notification.UserNotificationRequest.TargetAction;
@@ -283,7 +284,10 @@ public class NotificationSenderTemplate
 		if (!Check.isEmpty(request.getSubjectADMessage()))
 		{
 			final String adLanguage = request.getADLanguageOrGet(Env::getADLanguageOrBaseLanguage);
-			return msgBL.getMsg(adLanguage, request.getSubjectADMessage(), request.getSubjectADMessageParams());
+			return msgBL.getMsg(
+					adLanguage,
+					AdMessageKey.of(request.getSubjectADMessage()),
+					request.getSubjectADMessageParams());
 		}
 
 		return "";
@@ -318,7 +322,7 @@ public class NotificationSenderTemplate
 			return prepareMessageFormatter(request)
 					.html(html)
 					.adLanguage(request.getADLanguageOrGet(Env::getADLanguageOrBaseLanguage))
-					.format(request.getContentADMessage(), request.getContentADMessageParams());
+					.format(AdMessageKey.of(request.getContentADMessage()), request.getContentADMessageParams());
 		}
 
 		return "";

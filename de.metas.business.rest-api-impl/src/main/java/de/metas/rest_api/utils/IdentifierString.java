@@ -15,6 +15,7 @@ import com.fasterxml.jackson.annotation.JsonValue;
 import de.metas.bpartner.GLN;
 import de.metas.rest_api.common.JsonExternalId;
 import de.metas.rest_api.common.MetasfreshId;
+import de.metas.rest_api.exception.InvalidIdentifierException;
 import de.metas.util.Check;
 import de.metas.util.lang.ExternalId;
 import de.metas.util.lang.RepoIdAware;
@@ -69,75 +70,77 @@ public class IdentifierString
 	@Getter(AccessLevel.NONE)
 	String value;
 
+	String rawIdentifierString;
+
 	public static final String PREFIX_EXTERNAL_ID = "ext-";
 	public static final String PREFIX_VALUE = "val-";
 	public static final String PREFIX_INTERNALNAME = "int-";
 	public static final String PREFIX_GLN = "gln-";
 
-	public static final IdentifierString ofOrNull(@Nullable final String value)
+	public static final IdentifierString ofOrNull(@Nullable final String rawIdentifierString)
 	{
-		if (isEmpty(value, true))
+		if (isEmpty(rawIdentifierString, true))
 		{
 			return null;
 		}
-		return of(value);
+		return of(rawIdentifierString);
 	}
 
 	@JsonCreator
-	public static final IdentifierString of(@NonNull final String value)
+	public static final IdentifierString of(@NonNull final String rawIdentifierString)
 	{
-		assumeNotEmpty("Parameter may not be empty", value);
-		if (value.toLowerCase().startsWith(PREFIX_EXTERNAL_ID))
+		assumeNotEmpty("Parameter may not be empty", rawIdentifierString);
+		if (rawIdentifierString.toLowerCase().startsWith(PREFIX_EXTERNAL_ID))
 		{
-			final String externalId = value.substring(4).trim();
+			final String externalId = rawIdentifierString.substring(4).trim();
 			if (externalId.isEmpty())
 			{
-				throw new AdempiereException("Invalid external ID: `" + value + "`");
+				throw new AdempiereException("Invalid external ID: `" + rawIdentifierString + "`");
 			}
-			return new IdentifierString(Type.EXTERNAL_ID, externalId);
+			return new IdentifierString(Type.EXTERNAL_ID, externalId, rawIdentifierString);
 		}
-		else if (value.toLowerCase().startsWith(PREFIX_VALUE))
+		else if (rawIdentifierString.toLowerCase().startsWith(PREFIX_VALUE))
 		{
-			final String valueString = value.substring(4).trim();
+			final String valueString = rawIdentifierString.substring(4).trim();
 			if (valueString.isEmpty())
 			{
-				throw new AdempiereException("Invalid value: `" + value + "`");
+				throw new AdempiereException("Invalid value: `" + rawIdentifierString + "`");
 			}
-			return new IdentifierString(Type.VALUE, valueString);
+			return new IdentifierString(Type.VALUE, valueString, rawIdentifierString);
 		}
-		else if (value.toLowerCase().startsWith(PREFIX_INTERNALNAME))
+		else if (rawIdentifierString.toLowerCase().startsWith(PREFIX_INTERNALNAME))
 		{
-			final String valueString = value.substring(4).trim();
+			final String valueString = rawIdentifierString.substring(4).trim();
 			if (valueString.isEmpty())
 			{
-				throw new AdempiereException("Invalid inernal name: `" + value + "`");
+				throw new AdempiereException("Invalid inernal name: `" + rawIdentifierString + "`");
 			}
-			return new IdentifierString(Type.INTERNALNAME, valueString);
+			return new IdentifierString(Type.INTERNALNAME, valueString, rawIdentifierString);
 		}
-		else if (value.toLowerCase().startsWith(PREFIX_GLN))
+		else if (rawIdentifierString.toLowerCase().startsWith(PREFIX_GLN))
 		{
-			final String glnString = value.substring(4).trim();
+			final String glnString = rawIdentifierString.substring(4).trim();
 			if (glnString.isEmpty())
 			{
-				throw new AdempiereException("Invalid GLN: `" + value + "`");
+				throw new AdempiereException("Invalid GLN: `" + rawIdentifierString + "`");
 			}
-			return new IdentifierString(Type.GLN, glnString);
+			return new IdentifierString(Type.GLN, glnString, rawIdentifierString);
 		}
 		else
 		{
 			try
 			{
-				final int repoId = Integer.parseInt(value);
+				final int repoId = Integer.parseInt(rawIdentifierString);
 				if (repoId <= 0) // there is an AD_User with AD_User_ID=0, but we don't want the endpoint to provide it anyways
 				{
-					throw new InvalidIdentifierException(value);
+					throw new InvalidIdentifierException(rawIdentifierString);
 				}
 
-				return new IdentifierString(Type.METASFRESH_ID, value);
+				return new IdentifierString(Type.METASFRESH_ID, rawIdentifierString, rawIdentifierString);
 			}
 			catch (final NumberFormatException ex)
 			{
-				throw new InvalidIdentifierException(value, ex);
+				throw new InvalidIdentifierException(rawIdentifierString, ex);
 			}
 		}
 	}
@@ -145,15 +148,17 @@ public class IdentifierString
 	public static IdentifierString ofRepoId(final int repoId)
 	{
 		Check.assumeGreaterOrEqualToZero(repoId, "repoId");
-		return new IdentifierString(Type.METASFRESH_ID, String.valueOf(repoId));
+		return new IdentifierString(Type.METASFRESH_ID, String.valueOf(repoId), String.valueOf(repoId));
 	}
 
 	private IdentifierString(
 			@NonNull final Type type,
-			@NonNull final String value)
+			@NonNull final String value,
+			@NonNull final String rawIdentifierString)
 	{
 		this.type = type;
 		this.value = assumeNotEmpty(value, "Parameter value may not be empty");
+		this.rawIdentifierString = rawIdentifierString;
 	}
 
 	/**
@@ -238,7 +243,7 @@ public class IdentifierString
 
 	public String asValue()
 	{
-		Check.assume(Type.VALUE.equals(type), "The type of this instace needs to be {}; this={}", Type.VALUE, this);
+		Check.assume(Type.VALUE.equals(type), "The type of this instance needs to be {}; this={}", Type.VALUE, this);
 
 		return value;
 	}
