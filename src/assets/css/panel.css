@@ -94,7 +94,8 @@
 }
 
 .panel-bordered-force {
-    overflow: auto;
+    overflow-x: auto;
+    overflow-y: hidden;
 }
 
 .panel-primary {

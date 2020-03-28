@@ -426,11 +426,10 @@ class Lookup extends Component {
                 >
                   <WidgetTooltip
                     widget={item}
+                    fieldName={item.field}
                     data={itemByProperty}
                     isToggled={widgetTooltipToggled}
-                    onToggle={(val) =>
-                      this.widgetTooltipToggle(item.field, val)
-                    }
+                    onToggle={this.widgetTooltipToggle}
                   />
                 </div>
               );
