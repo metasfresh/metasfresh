@@ -22,13 +22,13 @@
 
 package de.metas.issue.tracking.github.api.v3.service.rest.info;
 
-import com.sun.istack.internal.Nullable;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.ToString;
 import lombok.Value;
 import org.springframework.util.MultiValueMap;
 
+import javax.annotation.Nullable;
 import java.util.List;
 
 @Value
