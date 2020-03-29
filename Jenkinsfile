@@ -120,7 +120,9 @@ node('agent && linux')
 				"CHANGE_URL=${env.CHANGE_URL}",
 				"BUILD_NUMBER=${env.BUILD_NUMBER}"])
 		{
-		withMaven(jdk: 'java-8', maven: 'maven-3.5.0', mavenLocalRepo: '.repository')
+
+		// disable automatic fingerprinting and archiving by artifactsPublisher, because in particular the archiving takes up too much space on the jenkins server.
+		withMaven(jdk: 'java-8', maven: 'maven-3.5.4', mavenLocalRepo: '.repository', mavenOpts: '-Xmx1536M', options: [artifactsPublisher(disabled: true)])
 		{
 			// create our config instance to be used further on
 			final MvnConf mvnConf = new MvnConf(

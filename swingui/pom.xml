@@ -109,7 +109,7 @@
 
 		<dependency>
 			<groupId>de.metas.report</groupId>
-			<artifactId>report-service</artifactId>
+			<artifactId>metasfresh-report-service</artifactId>
 			<version>${metasfresh.version}</version>
 			<scope>provided</scope>
 			<exclusions> <!-- we need this exclusion when running from eclipse -->
