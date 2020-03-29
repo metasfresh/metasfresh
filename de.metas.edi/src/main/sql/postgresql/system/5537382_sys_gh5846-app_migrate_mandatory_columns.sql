@@ -4,7 +4,8 @@
 UPDATE EDI_DesadvLine_Pack p 
 SET Updated='2020-01-10 08:01:14.325932+01', UpdatedBy=99, C_UOM_ID=(select C_UOM_ID from EDI_DesadvLine l where l.EDI_DesadvLine_ID=p.EDI_DesadvLine_ID)
 WHERE p.C_UOM_ID IS NULL;
-INSERT INTO t_alter_column values('edi_desadvline_pack','C_UOM_ID',null,'NOT NULL',null); --DONE
+-- has to be done later, to avoid "cannot ALTER TABLE "edi_desadvline_pack" because it has pending trigger events"
+-- INSERT INTO t_alter_column values('edi_desadvline_pack','C_UOM_ID',null,'NOT NULL',null); --DONE
 
 --/* DDL */ SELECT public.db_alter_table('EDI_DesadvLine_Pack','ALTER TABLE public.EDI_DesadvLine_Pack ADD COLUMN M_InOutLine_ID NUMERIC(10)')
 UPDATE EDI_DesadvLine_Pack p 
@@ -74,30 +75,9 @@ UPDATE edi_desadvline_pack SET MovementQty=0 WHERE MovementQty Is NULL;
 UPDATE AD_Column SET IsMandatory='Y',Updated=TO_TIMESTAMP('2020-01-10 09:33:56','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=569695
 ;
 
--- 2020-01-10T08:33:56.914Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO t_alter_column values('edi_desadvline_pack','MovementQty','NUMERIC',null,null)
-;
-
--- 2020-01-10T08:33:56.915Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO t_alter_column values('edi_desadvline_pack','MovementQty',null,'NOT NULL',null)
-;
-
-
 -- 2020-01-10T07:15:43.133Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 UPDATE AD_Column SET IsMandatory='N',Updated=TO_TIMESTAMP('2020-01-10 08:15:43','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=569696
-;
-
--- 2020-01-10T07:15:43.745Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO t_alter_column values('edi_desadvline_pack','M_InOutLine_ID','NUMERIC(10)',null,null)
-;
-
--- 2020-01-10T07:15:43.749Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO t_alter_column values('edi_desadvline_pack','M_InOutLine_ID',null,'NULL',null)
 ;
 
 -- 2020-01-10T08:08:50.002Z
@@ -130,14 +110,4 @@ UPDATE AD_Column SET IsMandatory='N', TechnicalNote='we have this column (also i
 * we have legacy systems with EDI-Desadv-Lines that are not referenced by any inout lines (10s out of 100000s but still).
 * technically we don''t need it to be mandtory right now.
 * in future we might allow packs (EDI-Infos to be send) to be created Ad-Hoc, without an inout.',Updated=TO_TIMESTAMP('2020-01-10 09:27:09','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=569697
-;
-
--- 2020-01-10T08:27:15.747Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO t_alter_column values('edi_desadvline_pack','M_InOut_ID','NUMERIC(10)',null,null)
-;
-
--- 2020-01-10T08:27:15.748Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO t_alter_column values('edi_desadvline_pack','M_InOut_ID',null,'NULL',null)
 ;
