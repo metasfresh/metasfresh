@@ -24,10 +24,12 @@ package de.metas.issue.tracking.github.api.v3.model;
 
 import lombok.Builder;
 import lombok.NonNull;
+import lombok.ToString;
 import lombok.Value;
 
 @Value
 @Builder
+@ToString(exclude = "oAuthToken")
 public class FetchIssueByIdRequest
 {
 	@NonNull

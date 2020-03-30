@@ -189,6 +189,29 @@ public interface I_S_ExternalIssueDetail
     public static final String COLUMNNAME_S_Effort_Issue_ID = "S_Effort_Issue_ID";
 
 	/**
+	 * Set S_ExternalIssueDetail.
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setS_ExternalIssueDetail_ID (int S_ExternalIssueDetail_ID);
+
+	/**
+	 * Get S_ExternalIssueDetail.
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getS_ExternalIssueDetail_ID();
+
+    /** Column definition for S_ExternalIssueDetail_ID */
+    public static final org.adempiere.model.ModelColumn<I_S_ExternalIssueDetail, Object> COLUMN_S_ExternalIssueDetail_ID = new org.adempiere.model.ModelColumn<I_S_ExternalIssueDetail, Object>(I_S_ExternalIssueDetail.class, "S_ExternalIssueDetail_ID", null);
+    /** Column name S_ExternalIssueDetail_ID */
+    public static final String COLUMNNAME_S_ExternalIssueDetail_ID = "S_ExternalIssueDetail_ID";
+
+	/**
 	 * Set Art.
 	 *
 	 * <br>Type: String

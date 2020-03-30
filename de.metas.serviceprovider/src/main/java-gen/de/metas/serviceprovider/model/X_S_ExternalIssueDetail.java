@@ -14,7 +14,7 @@ public class X_S_ExternalIssueDetail extends org.compiere.model.PO implements I_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -159184492L;
+	private static final long serialVersionUID = -1334748245L;
 
     /** Standard Constructor */
     public X_S_ExternalIssueDetail (Properties ctx, int S_ExternalIssueDetail_ID, String trxName)
@@ -121,6 +121,28 @@ public class X_S_ExternalIssueDetail extends org.compiere.model.PO implements I_
 	public int getS_Effort_Issue_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_S_Effort_Issue_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set S_ExternalIssueDetail.
+		@param S_ExternalIssueDetail_ID S_ExternalIssueDetail	  */
+	@Override
+	public void setS_ExternalIssueDetail_ID (int S_ExternalIssueDetail_ID)
+	{
+		if (S_ExternalIssueDetail_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_S_ExternalIssueDetail_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_S_ExternalIssueDetail_ID, Integer.valueOf(S_ExternalIssueDetail_ID));
+	}
+
+	/** Get S_ExternalIssueDetail.
+		@return S_ExternalIssueDetail	  */
+	@Override
+	public int getS_ExternalIssueDetail_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_S_ExternalIssueDetail_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();

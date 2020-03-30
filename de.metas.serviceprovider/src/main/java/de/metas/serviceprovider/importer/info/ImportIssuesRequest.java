@@ -28,12 +28,14 @@ import de.metas.serviceprovider.external.project.ExternalProjectType;
 import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
+import lombok.ToString;
 import lombok.Value;
 
 import javax.annotation.Nullable;
 
 @Value
 @Builder
+@ToString(exclude = "oAuthToken")
 public class ImportIssuesRequest
 {
 	@NonNull

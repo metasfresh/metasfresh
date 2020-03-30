@@ -29,7 +29,7 @@ import lombok.Getter;
 @Getter
 public enum ExternalIssueDetailType
 {
-	LABEL("label");
+	LABEL("Label");
 
 	private final String value;
 
