@@ -573,11 +573,6 @@ UPDATE AD_Process SET JasperReport='@PREFIX@de/metas/reports/pricelist/report_Ta
 UPDATE AD_Process SET JasperReport='',Updated=TO_TIMESTAMP('2020-03-30 18:44:57','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=584676
 ;
 
--- 2020-03-30T15:46:34.930Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE AD_Process SET JasperReport='@PREFIX@de/metas/reports/pricelist/report_TabularView2.jasper',Updated=TO_TIMESTAMP('2020-03-30 18:46:34','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=584676
-;
-
 -- 2020-03-30T15:47:58.821Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 UPDATE AD_Menu SET Action='P',Updated=TO_TIMESTAMP('2020-03-30 18:47:58','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Menu_ID=540756
