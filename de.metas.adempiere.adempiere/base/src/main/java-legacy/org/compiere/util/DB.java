@@ -62,6 +62,7 @@ import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.sql.IStatementsFactory;
 import org.adempiere.sql.impl.StatementsFactory;
+import org.adempiere.util.lang.ImmutablePair;
 import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 import org.adempiere.util.trxConstraints.api.ITrxConstraints;
 import org.adempiere.util.trxConstraints.api.ITrxConstraintsBL;
@@ -610,30 +611,35 @@ public final class DB
 	}    // prepareStatement
 
 	/**
-	 * @return a prepared statement that will internally fetch only 1000 rows at a time, in order not to overuse local memory.
+	 * @return a connection and prepared statement that will internally fetch only 1000 rows at a time, in order not to overuse local memory.
+	 * Please make sure to close them both!
 	 *
 	 * @see https://jdbc.postgresql.org/documentation/head/query.html
 	 */
-	public static PreparedStatement prepareStatementForDataExport(
+	public static ImmutablePair<Connection, PreparedStatement> prepareConnectionAndStatementForDataExport(
 			@NonNull final String sqlSelect,
 			@Nullable final List<?> sqlParams/* not ImmutableList because list elements might be null */)
 	{
+		Connection conn = null;
+		PreparedStatement pstmt = null;
 		try
 		{
-			final Connection conn = DB.createConnection(false, Connection.TRANSACTION_READ_COMMITTED); // autoCommit = false
+			conn = DB.createConnection(false, Connection.TRANSACTION_READ_COMMITTED); // autoCommit = false
 
 			// Make sure connection's autoCommit is false, else setFetchSize won't work at least with postgresql-jdbc driver
 			Check.assume(!conn.getAutoCommit(), "JDBC connection's AutoCommit flag shall be false");
-			final PreparedStatement pstmt = conn.prepareStatement(sqlSelect);
+			pstmt = conn.prepareStatement(sqlSelect);
 
 			Check.assume(pstmt.getResultSetType() == ResultSet.TYPE_FORWARD_ONLY, "Prepared statement's ResultSetType shall be TYPE_FORWARD_ONLY");
 
 			pstmt.setFetchSize(1000);
 			DB.setParameters(pstmt, sqlParams);
-			return pstmt;
+			return ImmutablePair.of(conn, pstmt);
 		}
-		catch (SQLException e)
+		catch (final SQLException e)
 		{
+			close(pstmt); // make sure to return our resources if things went south
+			close(conn);
 			throw DBException.wrapIfNeeded(e);
 		}
 	}
