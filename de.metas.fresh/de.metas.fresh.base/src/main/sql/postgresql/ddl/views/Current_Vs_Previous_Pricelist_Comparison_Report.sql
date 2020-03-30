@@ -30,7 +30,9 @@ CREATE OR REPLACE FUNCTION report.Current_Vs_Previous_Pricelist_Comparison_Repor
                 currency                  text,
                 currency2                 text,
                 validFromPLV1             timestamp,
-                validFromPLV2             timestamp
+                validFromPLV2             timestamp,
+                namePLV1                  text,
+                namePLV2                  text
             )
 AS
 $$
@@ -41,6 +43,7 @@ WITH PriceListVersionsByValidFrom AS
                           plv.c_bpartner_id,
                           plv.m_pricelist_version_id,
                           plv.validfrom,
+                          plv.name,
                           row_number() OVER (PARTITION BY plv.c_bpartner_id ORDER BY plv.validfrom DESC, plv.m_pricelist_version_id DESC) rank
                    FROM Report.Fresh_PriceList_Version_Val_Rule plv
                    WHERE TRUE
@@ -55,12 +58,15 @@ WITH PriceListVersionsByValidFrom AS
          ),
      currentAndPreviousPLV AS
          (
+             -- implementation detail: all these sub-selects would be better implemented with a pivot. Unfortunately i cant understand how pivots work.
              SELECT DISTINCT --
                              plvv.c_bpartner_id,
-                             (SELECT plvv2.m_pricelist_version_id FROM PriceListVersionsByValidFrom plvv2 WHERE plvv2.rank = 1 AND plvv2.c_bpartner_id = plvv.c_bpartner_id) currentPlv_ID,
-                             (SELECT plvv2.m_pricelist_version_id FROM PriceListVersionsByValidFrom plvv2 WHERE plvv2.rank = 2 AND plvv2.c_bpartner_id = plvv.c_bpartner_id) previousPlv_ID,
+                             (SELECT plvv2.m_pricelist_version_id FROM PriceListVersionsByValidFrom plvv2 WHERE plvv2.rank = 1 AND plvv2.c_bpartner_id = plvv.c_bpartner_id) PLV1_ID,
+                             (SELECT plvv2.m_pricelist_version_id FROM PriceListVersionsByValidFrom plvv2 WHERE plvv2.rank = 2 AND plvv2.c_bpartner_id = plvv.c_bpartner_id) PLV2_ID,
                              (SELECT plvv2.validfrom FROM PriceListVersionsByValidFrom plvv2 WHERE plvv2.rank = 1 AND plvv2.c_bpartner_id = plvv.c_bpartner_id)              validFromPLV1,
-                             (SELECT plvv2.validfrom FROM PriceListVersionsByValidFrom plvv2 WHERE plvv2.rank = 2 AND plvv2.c_bpartner_id = plvv.c_bpartner_id)              validFromPLV2
+                             (SELECT plvv2.validfrom FROM PriceListVersionsByValidFrom plvv2 WHERE plvv2.rank = 2 AND plvv2.c_bpartner_id = plvv.c_bpartner_id)              validFromPLV2,
+                             (SELECT plvv2.name FROM PriceListVersionsByValidFrom plvv2 WHERE plvv2.rank = 1 AND plvv2.c_bpartner_id = plvv.c_bpartner_id)                   namePLV1,
+                             (SELECT plvv2.name FROM PriceListVersionsByValidFrom plvv2 WHERE plvv2.rank = 2 AND plvv2.c_bpartner_id = plvv.c_bpartner_id)                   namePLV2
              FROM PriceListVersionsByValidFrom plvv
              ORDER BY plvv.c_bpartner_id
          ),
@@ -68,12 +74,14 @@ WITH PriceListVersionsByValidFrom AS
          (
              SELECT t.*,
                     plv.validFromPLV1,
-                    plv.validFromPLV2
+                    plv.validFromPLV2,
+                    plv.namePLV1,
+                    plv.namePLV2
              FROM currentAndPreviousPLV plv
                       INNER JOIN LATERAL report.fresh_PriceList_Details_Report(
                      plv.c_bpartner_id,
-                     plv.currentPlv_ID,
-                     plv.previousPlv_ID,
+                     plv.PLV1_ID,
+                     plv.PLV2_ID,
                      p_AD_Language
                  ) AS t ON TRUE
          )
@@ -101,7 +109,9 @@ SELECT --
        r.currency::text,
        r.currency2::text,
        r.validFromPLV1,
-       r.validFromPLV2
+       r.validFromPLV2,
+       r.namePLV1,
+       r.namePLV2
 FROM result r
 ORDER BY TRUE,
          r.bp_value,
