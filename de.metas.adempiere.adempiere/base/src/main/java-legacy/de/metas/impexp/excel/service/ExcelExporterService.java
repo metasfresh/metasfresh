@@ -1,5 +1,6 @@
 package de.metas.impexp.excel.service;
 
+import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
@@ -10,6 +11,7 @@ import java.util.List;
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.impl.StringExpressionCompiler;
 import org.adempiere.exceptions.DBException;
+import org.adempiere.util.lang.ImmutablePair;
 import org.compiere.util.DB;
 import org.compiere.util.Evaluatee;
 import org.compiere.util.Evaluatees;
@@ -72,12 +74,17 @@ public class ExcelExporterService
 				.evaluate(evalCtx, OnVariableNotFound.Fail);
 
 		final ILoggable loggable = Loggables.withLogger(logger, Level.DEBUG);
+		Connection conn = null;
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		try
 		{
 			loggable.addLog("Execute SQL={}", sqlParsed);
-			pstmt = DB.prepareStatementForDataExport(sqlParsed, null/* sqlParams */);
+
+			final ImmutablePair<Connection, PreparedStatement> connAndStmt = DB.prepareConnectionAndStatementForDataExport(sqlParsed, null/* sqlParams */);
+			conn = connAndStmt.getLeft();
+			pstmt = connAndStmt.getRight();
+
 			rs = pstmt.executeQuery();
 
 			loggable.addLog("Execute SQL done; push data to dataConsumer={}", dataConsumer);
@@ -103,8 +110,10 @@ public class ExcelExporterService
 		finally
 		{
 			DB.close(rs, pstmt);
+			DB.close(conn);
 			rs = null;
 			pstmt = null;
+			conn = null;
 		}
 	}
 }
