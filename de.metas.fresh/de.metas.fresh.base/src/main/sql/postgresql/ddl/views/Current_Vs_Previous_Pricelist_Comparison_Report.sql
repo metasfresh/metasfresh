@@ -32,7 +32,8 @@ CREATE OR REPLACE FUNCTION report.Current_Vs_Previous_Pricelist_Comparison_Repor
                 validFromPLV1             timestamp,
                 validFromPLV2             timestamp,
                 namePLV1                  text,
-                namePLV2                  text
+                namePLV2                  text,
+                bpl_name                  text
             )
 AS
 $$
@@ -76,7 +77,8 @@ WITH PriceListVersionsByValidFrom AS
                     plv.validFromPLV1,
                     plv.validFromPLV2,
                     plv.namePLV1,
-                    plv.namePLV2
+                    plv.namePLV2,
+                    (SELECT bpl.name FROM c_bpartner_location bpl WHERE bpl.c_bpartner_id = plv.c_bpartner_id) bpl_name
              FROM currentAndPreviousPLV plv
                       INNER JOIN LATERAL report.fresh_PriceList_Details_Report(
                      plv.c_bpartner_id,
@@ -111,7 +113,8 @@ SELECT --
        r.validFromPLV1,
        r.validFromPLV2,
        r.namePLV1,
-       r.namePLV2
+       r.namePLV2,
+       r.bpl_name
 FROM result r
 ORDER BY TRUE,
          r.bp_value,
