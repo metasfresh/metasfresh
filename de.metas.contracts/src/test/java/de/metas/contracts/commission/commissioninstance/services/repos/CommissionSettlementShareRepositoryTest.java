@@ -16,6 +16,7 @@ import static io.github.jsonSnapshot.SnapshotMatcher.validateSnapshots;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.util.TimeUtil;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -28,19 +29,20 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionPoints;
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.SalesCommissionShareId;
+import de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.CommissionTriggerType;
 import de.metas.contracts.commission.commissioninstance.businesslogic.settlement.CommissionSettlementFact;
 import de.metas.contracts.commission.commissioninstance.businesslogic.settlement.CommissionSettlementShare;
 import de.metas.contracts.commission.commissioninstance.businesslogic.settlement.CommissionSettlementState;
+import de.metas.contracts.commission.commissioninstance.testhelpers.CommissionFactTestRecord;
+import de.metas.contracts.commission.commissioninstance.testhelpers.CommissionInstanceTestRecord;
+import de.metas.contracts.commission.commissioninstance.testhelpers.CommissionShareTestRecord;
+import de.metas.contracts.commission.commissioninstance.testhelpers.ConfigLineTestRecord;
+import de.metas.contracts.commission.commissioninstance.testhelpers.ConfigTestRecord;
+import de.metas.contracts.commission.commissioninstance.testhelpers.ContractTestRecord;
+import de.metas.contracts.commission.commissioninstance.testhelpers.CommissionInstanceTestRecord.CreateCommissionInstanceResult;
+import de.metas.contracts.commission.commissioninstance.testhelpers.ConfigTestRecord.ConfigData;
 import de.metas.contracts.commission.model.I_C_Commission_Fact;
 import de.metas.contracts.commission.model.I_C_Commission_Share;
-import de.metas.contracts.commission.testhelpers.CommissionFactTestRecord;
-import de.metas.contracts.commission.testhelpers.CommissionInstanceTestRecord;
-import de.metas.contracts.commission.testhelpers.CommissionInstanceTestRecord.CreateCommissionInstanceResult;
-import de.metas.contracts.commission.testhelpers.ConfigTestRecord.ConfigData;
-import de.metas.contracts.commission.testhelpers.CommissionShareTestRecord;
-import de.metas.contracts.commission.testhelpers.ConfigLineTestRecord;
-import de.metas.contracts.commission.testhelpers.ConfigTestRecord;
-import de.metas.contracts.commission.testhelpers.ContractTestRecord;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.organization.OrgId;
@@ -113,7 +115,7 @@ class CommissionSettlementShareRepositoryTest
 		saveRecord(settlementICRecord);
 		final InvoiceCandidateId settlementInvoiceCandidateId = InvoiceCandidateId.ofRepoId(settlementICRecord.getC_Invoice_Candidate_ID());
 		final ConfigData configData = ConfigTestRecord.builder()
-				.configLineTestRecord(ConfigLineTestRecord.builder().seqNo(10).percentOfBasePoints("10").build())
+				.configLineTestRecord(ConfigLineTestRecord.builder().name("singleConfigLine").seqNo(10).percentOfBasePoints("10").build())
 				.subtractLowerLevelCommissionFromBase(true)
 				.commissionProductId(commissionProductId)
 				.contractTestRecord(ContractTestRecord.builder().name("C_BPartner_SalesRep_1_ID").build())
@@ -123,15 +125,17 @@ class CommissionSettlementShareRepositoryTest
 		final Entry<BPartnerId, FlatrateTermId> bpartnerIdAndFlatrateTermId = CollectionUtils.singleElement(configData.getBpartnerId2FlatrateTermId().entrySet());
 
 		final CreateCommissionInstanceResult commissionInstanceResult = CommissionInstanceTestRecord.builder()
-				.AD_ORG_ID(OrgId.ofRepoId(5))
-				.C_INVOICE_CANDIDATE_ID(InvoiceCandidateId.ofRepoId(10))
+				.orgId(OrgId.ofRepoId(5))
+				.invoiceCandidateId(InvoiceCandidateId.ofRepoId(10))
+				.triggerType(CommissionTriggerType.InvoiceCandidate)
+				.triggerDocumentDate(TimeUtil.parseTimestamp("2020-03-21"))
 				.pointsBase_Forecasted("999")
 				.pointsBase_Invoiceable("999")
 				.pointsBase_Invoiced("999")
 				.commissionShareTestRecord(
 						CommissionShareTestRecord.builder()
 								.commissionProductId(commissionProductId)
-								.C_BPartner_SalesRep_ID(bpartnerIdAndFlatrateTermId.getKey())
+								.salesRepBPartnerId(bpartnerIdAndFlatrateTermId.getKey())
 								.flatrateTermId(bpartnerIdAndFlatrateTermId.getValue())
 								.levelHierarchy(10)
 								.pointsSum_ToSettle("10") // shall be overridden by the facts' sum
@@ -179,7 +183,7 @@ class CommissionSettlementShareRepositoryTest
 		final InvoiceCandidateId settlementInvoiceCandidateId = InvoiceCandidateId.ofRepoId(settlementICRecord.getC_Invoice_Candidate_ID());
 
 		final ConfigData configData = ConfigTestRecord.builder()
-				.configLineTestRecord(ConfigLineTestRecord.builder().seqNo(10).percentOfBasePoints("10").build())
+				.configLineTestRecord(ConfigLineTestRecord.builder().name("singleConfigLine").seqNo(10).percentOfBasePoints("10").build())
 				.subtractLowerLevelCommissionFromBase(true)
 				.contractTestRecord(ContractTestRecord.builder().name("C_BPartner_SalesRep_1_ID").build())
 				.commissionProductId(commissionProductId)
@@ -189,15 +193,17 @@ class CommissionSettlementShareRepositoryTest
 		final Entry<BPartnerId, FlatrateTermId> bpartnerIdAndFlatrateTermId = CollectionUtils.singleElement(configData.getBpartnerId2FlatrateTermId().entrySet());
 
 		final CreateCommissionInstanceResult commissionInstanceResult = CommissionInstanceTestRecord.builder()
-				.AD_ORG_ID(OrgId.ofRepoId(5))
-				.C_INVOICE_CANDIDATE_ID(InvoiceCandidateId.ofRepoId(10))
+				.orgId(OrgId.ofRepoId(5))
+				.invoiceCandidateId(InvoiceCandidateId.ofRepoId(10))
+				.triggerType(CommissionTriggerType.InvoiceCandidate)
+				.triggerDocumentDate(TimeUtil.parseTimestamp("2020-03-21"))
 				.pointsBase_Forecasted("999")
 				.pointsBase_Invoiceable("999")
 				.pointsBase_Invoiced("999")
 				.commissionShareTestRecord(
 						CommissionShareTestRecord.builder()
 								.commissionProductId(commissionProductId)
-								.C_BPartner_SalesRep_ID(bpartnerIdAndFlatrateTermId.getKey())
+								.salesRepBPartnerId(bpartnerIdAndFlatrateTermId.getKey())
 								.flatrateTermId(bpartnerIdAndFlatrateTermId.getValue())
 								.levelHierarchy(10)
 								.build())

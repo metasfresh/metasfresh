@@ -25,16 +25,23 @@ package de.metas.banking.model.validator;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
+import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_I_BankStatement;
 
 import de.metas.acct.posting.IDocumentRepostingSupplierService;
 import de.metas.banking.impexp.BankStatementImportProcess;
 import de.metas.banking.model.I_I_Datev_Payment;
+import de.metas.banking.payment.IPaySelectionBL;
 import de.metas.banking.payment.impexp.DatevPaymentImportProcess;
+import de.metas.banking.service.IBankStatementBL;
+import de.metas.banking.service.IBankStatementDAO;
 import de.metas.banking.service.IBankStatementListenerService;
+import de.metas.banking.service.ICashStatementBL;
 import de.metas.banking.spi.impl.BankStatementDocumentRepostingSupplier;
 import de.metas.impexp.processing.IImportProcessFactory;
+import de.metas.payment.api.IPaymentBL;
+import de.metas.util.Check;
 import de.metas.util.Services;
 
 /**
@@ -46,45 +53,56 @@ import de.metas.util.Services;
 public class Banking extends AbstractModuleInterceptor
 {
 	@Override
-	protected void onInit(IModelValidationEngine engine, I_AD_Client client)
+	protected void onInit(final IModelValidationEngine engine, final I_AD_Client client)
 	{
 		super.onInit(engine, client);
 
-		//
-		// Register default bank statement listeners
-		Services.get(IBankStatementListenerService.class).addListener(PaySelectionBankStatementListener.instance);
+		final IPaySelectionBL paySelectionBL = Services.get(IPaySelectionBL.class);
+		final IBankStatementListenerService bankStatementListenerService = Services.get(IBankStatementListenerService.class);
+		final IImportProcessFactory importProcessFactory = Services.get(IImportProcessFactory.class);
 
-		Services.get(IImportProcessFactory.class).registerImportProcess(I_I_Datev_Payment.class, DatevPaymentImportProcess.class);
+		bankStatementListenerService.addListener(new PaySelectionBankStatementListener(paySelectionBL));
 
-		Services.get(IImportProcessFactory.class).registerImportProcess(I_I_BankStatement.class, BankStatementImportProcess.class);
+		importProcessFactory.registerImportProcess(I_I_Datev_Payment.class, DatevPaymentImportProcess.class);
+		importProcessFactory.registerImportProcess(I_I_BankStatement.class, BankStatementImportProcess.class);
 	}
 
 	@Override
 	protected void onAfterInit()
 	{
+		final IBankStatementDAO bankStatementDAO = Services.get(IBankStatementDAO.class);
 
 		// Register the Document Reposting Handler
 		final IDocumentRepostingSupplierService documentBL = Services.get(IDocumentRepostingSupplierService.class);
-		documentBL.registerSupplier(new BankStatementDocumentRepostingSupplier());
+		documentBL.registerSupplier(new BankStatementDocumentRepostingSupplier(bankStatementDAO));
 	}
 
 	@Override
-	protected void registerInterceptors(IModelValidationEngine engine, I_AD_Client client)
+	protected void registerInterceptors(final IModelValidationEngine engine, final I_AD_Client client)
 	{
+		Check.assumeNull(client, "client shall be null but it was {}");
+		registerInterceptors(engine);
+	}
+
+	private void registerInterceptors(final IModelValidationEngine engine)
+	{
+		final IBankStatementBL bankStatementBL = Services.get(IBankStatementBL.class);
+		final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
+		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+		final ICashStatementBL cashStatementBL = Services.get(ICashStatementBL.class);
+
 		// Bank statement:
 		{
-			engine.addModelValidator(de.metas.banking.model.validator.C_BankStatement.instance, client);
-			engine.addModelValidator(de.metas.banking.model.validator.C_BankStatementLine.instance, client);
-			engine.addModelValidator(de.metas.banking.model.validator.C_BankStatementLine_Ref.instance, client);
+			engine.addModelValidator(new de.metas.banking.model.validator.C_BankStatementLine(bankStatementBL));
 		}
 
 		// de.metas.banking.payment sub-module (code moved from swat main validator)
 		{
-			engine.addModelValidator(de.metas.banking.payment.modelvalidator.C_Payment.instance, client); // 04203
-			engine.addModelValidator(de.metas.banking.payment.modelvalidator.C_PaySelection.instance, client); // 04203
-			engine.addModelValidator(de.metas.banking.payment.modelvalidator.C_PaySelectionLine.instance, client); // 04203
-			engine.addModelValidator(de.metas.banking.payment.modelvalidator.C_Payment_Request.instance, client); // 08596
-			engine.addModelValidator(de.metas.banking.payment.modelvalidator.C_AllocationHdr.instance, client); // 08972
+			engine.addModelValidator(new de.metas.banking.payment.modelvalidator.C_Payment(bankStatementBL, paymentBL, sysConfigBL, cashStatementBL)); // 04203
+			engine.addModelValidator(de.metas.banking.payment.modelvalidator.C_PaySelection.instance); // 04203
+			engine.addModelValidator(de.metas.banking.payment.modelvalidator.C_PaySelectionLine.instance); // 04203
+			engine.addModelValidator(de.metas.banking.payment.modelvalidator.C_Payment_Request.instance); // 08596
+			engine.addModelValidator(de.metas.banking.payment.modelvalidator.C_AllocationHdr.instance); // 08972
 		}
 	}
 
@@ -94,7 +112,5 @@ public class Banking extends AbstractModuleInterceptor
 		calloutsRegistry.registerAnnotatedCallout(de.metas.banking.callout.C_BankStatement.instance);
 		calloutsRegistry.registerAnnotatedCallout(de.metas.banking.payment.callout.C_PaySelectionLine.instance);
 		calloutsRegistry.registerAnnotatedCallout(de.metas.banking.callout.C_BankStatementLine.instance);
-		calloutsRegistry.registerAnnotatedCallout(de.metas.banking.callout.C_BankStatementLine_Ref.instance);
-
 	}
 }

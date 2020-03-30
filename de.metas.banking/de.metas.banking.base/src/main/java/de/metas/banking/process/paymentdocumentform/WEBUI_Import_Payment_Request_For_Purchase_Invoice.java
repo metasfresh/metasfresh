@@ -22,11 +22,21 @@
 
 package de.metas.banking.process.paymentdocumentform;
 
+import java.math.BigDecimal;
+
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.invoice.service.IInvoiceDAO;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_BP_BankAccount;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_Invoice;
+
 import de.metas.banking.model.I_C_Payment_Request;
 import de.metas.banking.payment.IPaymentString;
 import de.metas.banking.payment.IPaymentStringDataProvider;
 import de.metas.banking.payment.spi.exception.PaymentStringParseException;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.invoice.InvoiceId;
@@ -38,14 +48,6 @@ import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.invoice.service.IInvoiceDAO;
-import org.compiere.SpringContextHolder;
-import org.compiere.model.I_C_BP_BankAccount;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_Invoice;
-
-import java.math.BigDecimal;
 
 /**
  * IProcessParametersCallout is used to update frontend data from backend inside "onParameterChanged. Nice!
@@ -83,7 +85,7 @@ public class WEBUI_Import_Payment_Request_For_Purchase_Invoice extends JavaProce
 	private final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
 
 	// trl
-	private static final String MSG_CouldNotFindOrCreateBPBankAccount = "de.metas.payment.CouldNotFindOrCreateBPBankAccount";
+	private static final AdMessageKey MSG_CouldNotFindOrCreateBPBankAccount = AdMessageKey.of("de.metas.payment.CouldNotFindOrCreateBPBankAccount");
 
 	@Override
 	protected String doIt() throws Exception

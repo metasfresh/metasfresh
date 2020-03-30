@@ -15,6 +15,7 @@ import org.compiere.model.I_M_Product;
 
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner_product.IBPartnerProductDAO;
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductDAO;
@@ -60,9 +61,9 @@ public class CreatePOFromSOsAggregationKeyBuilder extends AbstractOrderLineAggre
 
 	private static final String SYSCONFIG_ON_MISSING_C_B_PARTNER_PRODUCT = "de.metas.order.C_Order_CreatePOFromSOs.OnMissing_C_BPartner_Product";
 
-	private static final String MSG_VENDOR_MISMATCH = "de.metas.order.C_Order_CreatePOFromSOs.VendorMismatch";
+	private static final AdMessageKey MSG_VENDOR_MISMATCH = AdMessageKey.of("de.metas.order.C_Order_CreatePOFromSOs.VendorMismatch");
 
-	private static final String MSG_MISSING_C_B_PARTNER_PRODUCT_ID = "de.metas.order.C_Order_CreatePOFromSOs.Missing_C_BPartner_Product_ID";
+	private static final AdMessageKey MSG_MISSING_C_B_PARTNER_PRODUCT_ID = AdMessageKey.of("de.metas.order.C_Order_CreatePOFromSOs.Missing_C_BPartner_Product_ID");
 
 	/* package */static final String KEY_SKIP = "SKIP_SALES_ORDER_LINE";
 

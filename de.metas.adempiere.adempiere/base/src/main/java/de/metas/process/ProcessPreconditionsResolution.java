@@ -8,6 +8,7 @@ import org.adempiere.exceptions.AdempiereException;
 
 import com.google.common.base.MoreObjects;
 
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
@@ -44,12 +45,12 @@ public final class ProcessPreconditionsResolution
 	/**
 	 * {@code AD_Message} value that is used by {@link #rejectBecauseNotSingleSelection()}. This constant can also be used with {@link #rejectWithInternalReason(String)}.
 	 */
-	public static final String MSG_ONLY_ONE_SELECTED_ROW_ALLOWED = "ProcessPreconditionsResolution_OnlyOneSelectedRowAllowed";
+	public static final AdMessageKey MSG_ONLY_ONE_SELECTED_ROW_ALLOWED = AdMessageKey.of("ProcessPreconditionsResolution_OnlyOneSelectedRowAllowed");
 
 	/**
 	 * {@code AD_Message} value that is used by {@link #rejectBecauseNoSelection()}. This constant can also be used with {@link #rejectWithInternalReason(String)}.
 	 */
-	public static final String MSG_NO_ROWS_SELECTED = "ProcessPreconditionsResolution_NoRowsSelected";
+	public static final AdMessageKey MSG_NO_ROWS_SELECTED = AdMessageKey.of("ProcessPreconditionsResolution_NoRowsSelected");
 
 	public static ProcessPreconditionsResolution accept()
 	{
@@ -110,8 +111,13 @@ public final class ProcessPreconditionsResolution
 			return REJECTED_UnknownReason;
 		}
 
-		final boolean accepted = false;
 		final ITranslatableString reason = TranslatableStrings.constant(reasonStr);
+		return rejectWithInternalReason(reason);
+	}
+
+	public static ProcessPreconditionsResolution rejectWithInternalReason(@NonNull final ITranslatableString reason)
+	{
+		final boolean accepted = false;
 		final boolean internal = true;
 		final ProcessCaptionMapper captionMapper = null;
 		return new ProcessPreconditionsResolution(accepted, reason, internal, captionMapper);

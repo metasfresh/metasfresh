@@ -33,18 +33,17 @@ import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.CopyRecordFactory;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
-import org.compiere.model.I_C_DocType;
-import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.ModelValidator;
 
-import de.metas.banking.service.IBankStatementDAO;
+import com.google.common.collect.ImmutableList;
+
+import de.metas.banking.service.IBankStatementBL;
 import de.metas.banking.service.ICashStatementBL;
+import de.metas.payment.PaymentId;
 import de.metas.payment.api.IPaymentBL;
-import de.metas.payment.api.IPaymentDAO;
-import de.metas.util.Services;
+import lombok.NonNull;
 
 /**
  * @author cg
@@ -53,7 +52,22 @@ import de.metas.util.Services;
 @Interceptor(I_C_Payment.class)
 public class C_Payment
 {
-	public static final transient C_Payment instance = new C_Payment();
+	private final IBankStatementBL bankStatementBL;
+	private final IPaymentBL paymentBL;
+	private final ISysConfigBL sysConfigBL;
+	private final ICashStatementBL cashStatementBL;
+
+	public C_Payment(
+			@NonNull final IBankStatementBL bankStatementBL,
+			@NonNull final IPaymentBL paymentBL,
+			@NonNull final ISysConfigBL sysConfigBL,
+			@NonNull final ICashStatementBL cashStatementBL)
+	{
+		this.bankStatementBL = bankStatementBL;
+		this.paymentBL = paymentBL;
+		this.sysConfigBL = sysConfigBL;
+		this.cashStatementBL = cashStatementBL;
+	}
 
 	@Init
 	public void init(final IModelValidationEngine engine)
@@ -62,27 +76,22 @@ public class C_Payment
 		CopyRecordFactory.enableForTableName(I_C_Payment.Table_Name);
 	}
 
-	private C_Payment()
-	{
-		super();
-	}
-
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = { I_C_Payment.COLUMNNAME_C_Currency_ID, I_C_Payment.COLUMNNAME_C_ConversionType_ID })
 	public void onCurrencyChange(final I_C_Payment payment)
 	{
-		Services.get(IPaymentBL.class).onCurrencyChange(payment);
+		paymentBL.onCurrencyChange(payment);
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = I_C_Payment.COLUMNNAME_IsOverUnderPayment)
 	public void onIsOverUnderPaymentChange(final I_C_Payment payment)
 	{
-		Services.get(IPaymentBL.class).onIsOverUnderPaymentChange(payment, true);
+		paymentBL.onIsOverUnderPaymentChange(payment, true);
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = I_C_Payment.COLUMNNAME_PayAmt)
 	public void onPayAmtChange(final I_C_Payment payment)
 	{
-		Services.get(IPaymentBL.class).onPayAmtChange(payment, true);
+		paymentBL.onPayAmtChange(payment, true);
 	}
 
 	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_VOID })
@@ -91,7 +100,8 @@ public class C_Payment
 		//
 		// Make sure we are not allowing a payment, which is on bank statement, to be voided.
 		// It shall be reversed if really needed.
-		if (Services.get(IBankStatementDAO.class).isPaymentOnBankStatement(payment))
+		final PaymentId paymentId = PaymentId.ofRepoId(payment.getC_Payment_ID());
+		if (bankStatementBL.isPaymentOnBankStatement(paymentId))
 		{
 			throw new AdempiereException("@void.payment@");
 		}
@@ -103,45 +113,36 @@ public class C_Payment
 	{
 		//
 		// Auto-reconcile the payment and it's reversal if the payment is not present on bank statements
-		if (!Services.get(IBankStatementDAO.class).isPaymentOnBankStatement(payment))
+		final PaymentId paymentId = PaymentId.ofRepoId(payment.getC_Payment_ID());
+		if (!bankStatementBL.isPaymentOnBankStatement(paymentId))
 		{
-			payment.setIsReconciled(true);
-			InterfaceWrapperHelper.save(payment);
+			paymentBL.markReconciledAndSave(payment);
 
-			final I_C_Payment reversal = payment.getReversal();
-			reversal.setIsReconciled(true);
-			InterfaceWrapperHelper.save(reversal);
+			final PaymentId reversalId = PaymentId.ofRepoId(payment.getReversal_ID());
+			paymentBL.markReconciled(ImmutableList.of(reversalId));
 		}
 	}
 
 	@DocValidate(timings = { ModelValidator.TIMING_AFTER_COMPLETE })
 	public void createCashStatementLineIfNeeded(final I_C_Payment payment)
 	{
-		if (!Services.get(IPaymentBL.class).isCashTrx(payment))
+		if (!paymentBL.isCashTrx(payment))
 		{
 			return;
 		}
 
-		if (!Services.get(ISysConfigBL.class).getBooleanValue("CASH_AS_PAYMENT", true, payment.getAD_Client_ID()))
+		if (!sysConfigBL.getBooleanValue("CASH_AS_PAYMENT", true, payment.getAD_Client_ID()))
 		{
 			return;
 		}
 
-		Services.get(ICashStatementBL.class).createCashStatementLine(payment);
+		cashStatementBL.createCashStatementLine(payment);
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = { I_C_Payment.COLUMNNAME_DateTrx })
 	public void onDateChange(final I_C_Payment payment)
 	{
-		final I_C_Invoice invoice = payment.getC_Invoice();
-		if (invoice == null)
-		{
-			return;
-		}
-		else
-		{
-			Services.get(IPaymentDAO.class).updateDiscountAndPayment(payment, invoice.getC_Invoice_ID(), invoice.getC_DocType());
-		}
+		paymentBL.updateDiscountAndPayAmtFromInvoiceIfAny(payment);
 	}
 
 }

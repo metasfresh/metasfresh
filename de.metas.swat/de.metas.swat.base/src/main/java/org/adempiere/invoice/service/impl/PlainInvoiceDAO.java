@@ -30,6 +30,7 @@ import java.util.Properties;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
+import org.compiere.Adempiere;
 import org.compiere.model.I_C_AllocationHdr;
 import org.compiere.model.I_C_AllocationLine;
 import org.compiere.model.I_C_InvoiceTax;
@@ -48,6 +49,11 @@ import de.metas.util.TypedAccessor;
 public class PlainInvoiceDAO extends AbstractInvoiceDAO
 {
 	private final POJOLookupMap db = POJOLookupMap.get();
+
+	public PlainInvoiceDAO()
+	{
+		Adempiere.assertUnitTestMode();
+	}
 
 	public POJOLookupMap getDB()
 	{
@@ -86,6 +92,8 @@ public class PlainInvoiceDAO extends AbstractInvoiceDAO
 
 	private List<I_C_AllocationLine> retrieveAllocationLines(final org.compiere.model.I_C_Invoice invoice)
 	{
+		Adempiere.assertUnitTestMode();
+
 		return db.getRecords(I_C_AllocationLine.class, pojo -> {
 			if (pojo == null)
 			{
@@ -104,6 +112,8 @@ public class PlainInvoiceDAO extends AbstractInvoiceDAO
 
 	private BigDecimal retrieveAllocatedAmt(final org.compiere.model.I_C_Invoice invoice, final TypedAccessor<BigDecimal> amountAccessor)
 	{
+		Adempiere.assertUnitTestMode();
+
 		final Properties ctx = InterfaceWrapperHelper.getCtx(invoice);
 
 		BigDecimal sum = BigDecimal.ZERO;
@@ -136,6 +146,8 @@ public class PlainInvoiceDAO extends AbstractInvoiceDAO
 
 	public BigDecimal retrieveWriteOffAmt(final org.compiere.model.I_C_Invoice invoice)
 	{
+		Adempiere.assertUnitTestMode();
+
 		return retrieveAllocatedAmt(invoice, o -> {
 			final I_C_AllocationLine line = (I_C_AllocationLine)o;
 			return line.getWriteOffAmt();

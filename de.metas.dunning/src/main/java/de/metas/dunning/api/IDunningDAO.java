@@ -26,8 +26,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 
-import org.compiere.model.I_C_BPartner;
-
+import de.metas.bpartner.BPartnerId;
 import de.metas.dunning.interfaces.I_C_Dunning;
 import de.metas.dunning.interfaces.I_C_DunningLevel;
 import de.metas.dunning.model.I_C_DunningDoc;
@@ -66,11 +65,8 @@ public interface IDunningDAO extends ISingletonService
 	 * <li>if BP's group has a dunning assigned, that dunning will be returned
 	 * <li>else return NULL
 	 * </ul>
-	 *
-	 * @param bpartner
-	 * @return
 	 */
-	I_C_Dunning retrieveDunningForBPartner(final I_C_BPartner bpartner);
+	I_C_Dunning retrieveDunningForBPartner(final BPartnerId bpartnerId);
 
 	/**
 	 * Retrieves default dunning for given organization.

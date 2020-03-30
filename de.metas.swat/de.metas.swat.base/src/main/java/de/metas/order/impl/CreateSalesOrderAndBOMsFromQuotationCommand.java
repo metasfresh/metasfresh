@@ -43,6 +43,7 @@ import de.metas.document.DocTypeId;
 import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
+import de.metas.i18n.AdMessageKey;
 import de.metas.material.planning.IProductPlanningDAO;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderDAO;
@@ -98,6 +99,9 @@ import lombok.Value;
 
 public final class CreateSalesOrderAndBOMsFromQuotationCommand
 {
+	private static final AdMessageKey MSG_NoQuotationGrouppingProductFoundForLines = AdMessageKey.of("NoQuotationGrouppingProductFoundForLines");
+	private static final AdMessageKey MSG_MoreThanOneQuotationGrouppingProductLinesFound = AdMessageKey.of("MoreThanOneQuotationGrouppingProductLinesFound");
+
 	//
 	// Services
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
@@ -240,7 +244,7 @@ public final class CreateSalesOrderAndBOMsFromQuotationCommand
 				.collect(ImmutableList.toImmutableList());
 		if (quotationGroupProductLines.isEmpty())
 		{
-			throw new AdempiereException("NoQuotationGrouppingProductFoundForLines", new Object[] { extractLineNosAsString(quotationLines) });
+			throw new AdempiereException(MSG_NoQuotationGrouppingProductFoundForLines, new Object[] { extractLineNosAsString(quotationLines) });
 		}
 		else if (quotationGroupProductLines.size() == 1)
 		{
@@ -248,7 +252,7 @@ public final class CreateSalesOrderAndBOMsFromQuotationCommand
 		}
 		else
 		{
-			throw new AdempiereException("MoreThanOneQuotationGrouppingProductLinesFound", new Object[] { extractLineNosAsString(quotationGroupProductLines) });
+			throw new AdempiereException(MSG_MoreThanOneQuotationGrouppingProductLinesFound, new Object[] { extractLineNosAsString(quotationGroupProductLines) });
 		}
 	}
 

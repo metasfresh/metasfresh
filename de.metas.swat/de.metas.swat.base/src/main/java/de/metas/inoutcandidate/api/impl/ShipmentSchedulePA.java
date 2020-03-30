@@ -10,6 +10,7 @@ import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Stream;
@@ -30,12 +31,13 @@ import org.compiere.model.IQuery;
 import org.compiere.model.MOrderLine;
 import org.slf4j.Logger;
 
-import java.util.Objects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.cache.CacheMgt;
+import de.metas.cache.model.CacheInvalidateMultiRequest;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
@@ -59,6 +61,10 @@ import lombok.NonNull;
 public class ShipmentSchedulePA implements IShipmentSchedulePA
 {
 	private final static Logger logger = LogManager.getLogger(ShipmentSchedulePA.class);
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+	/** When mass cache invalidation, above this threshold we will invalidate ALL shipment schedule records instead of particular IDS */
+	private static final int CACHE_INVALIDATE_ALL_THRESHOLD = 200;
 
 	/**
 	 * Order by clause used to fetch {@link I_M_ShipmentSchedule}s.
@@ -144,7 +150,7 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 
 	private IQueryBuilder<I_M_ShipmentSchedule> getByOrderLineIdQuery(@NonNull final OrderLineId orderLineId)
 	{
-		return Services.get(IQueryBL.class)
+		return queryBL
 				.createQueryBuilder(I_M_ShipmentSchedule.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_AD_Table_ID, InterfaceWrapperHelper.getTableId(I_C_OrderLine.class))
@@ -155,7 +161,7 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 	@Override
 	public Set<ShipmentScheduleId> retrieveUnprocessedIdsByOrderId(@NonNull final OrderId orderId)
 	{
-		return Services.get(IQueryBL.class)
+		return queryBL
 				.createQueryBuilder(I_M_ShipmentSchedule.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_ShipmentSchedule.COLUMN_Processed, false)
@@ -167,7 +173,7 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 	@Override
 	public List<I_M_ShipmentSchedule> retrieveUnprocessedForRecord(@NonNull final TableRecordReference recordRef)
 	{
-		return Services.get(IQueryBL.class).createQueryBuilder(I_M_ShipmentSchedule.class)
+		return queryBL.createQueryBuilder(I_M_ShipmentSchedule.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_ShipmentSchedule.COLUMN_Processed, false)
 				.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_AD_Table_ID, recordRef.getAD_Table_ID())
@@ -195,7 +201,6 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 
 		// 2.
 		// Load the scheds the are pointed to by our marked M_ShipmentSchedule_Recompute records
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		final List<I_M_ShipmentSchedule> shipmentSchedules = queryBL
 				.createQueryBuilder(I_M_ShipmentSchedule.class)
 				.addOnlyActiveRecordsFilter()
@@ -252,7 +257,7 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 	@Override
 	public void setIsDiplayedForProduct(@NonNull final ProductId productId, final boolean displayed)
 	{
-		Services.get(IQueryBL.class)
+		queryBL
 				.createQueryBuilder(I_M_ShipmentSchedule.class)
 				.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_M_Product_ID, productId)
 				.create()
@@ -266,7 +271,7 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 			@NonNull final BPartnerId bpartnerId,
 			final boolean allowConsolidateInOut)
 	{
-		return Services.get(IQueryBL.class)
+		return queryBL
 				.createQueryBuilder(I_M_ShipmentSchedule.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_Processed, false)
@@ -298,8 +303,6 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 			final PInstanceId selectionId,
 			final boolean invalidate)
 	{
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
-
 		//
 		// Create the selection which we will need to update
 		final IQueryBuilder<I_M_ShipmentSchedule> selectionQueryBuilder = queryBL
@@ -321,7 +324,7 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 
 		//
 		// Update our new selection
-		queryBL.createQueryBuilder(I_M_ShipmentSchedule.class)
+		final int countUpdated = queryBL.createQueryBuilder(I_M_ShipmentSchedule.class)
 				.setOnlySelection(selectionToUpdateId)
 				.create()
 				.updateDirectly()
@@ -329,11 +332,65 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 				.execute();
 
 		//
+		// Cache invalidate
+		// We have to do this even if invalidate=false
+		cacheInvalidateBySelectionId(selectionToUpdateId, countUpdated);
+
+		//
 		// Invalidate the inout candidates which we updated
 		if (invalidate)
 		{
 			final IShipmentScheduleInvalidateRepository invalidSchedulesRepo = Services.get(IShipmentScheduleInvalidateRepository.class);
 			invalidSchedulesRepo.invalidateSchedulesForSelection(selectionToUpdateId);
+		}
+	}
+
+	private void cacheInvalidateBySelectionId(
+			@NonNull final PInstanceId selectionId,
+			final long estimatedSize)
+	{
+		final CacheInvalidateMultiRequest request;
+		if (estimatedSize < 0)
+		{
+			// unknown estimated size
+			request = CacheInvalidateMultiRequest.allRecordsForTable(I_M_ShipmentSchedule.Table_Name);
+		}
+		else if (estimatedSize == 0)
+		{
+			// no records
+			// unknown estimated size
+			request = null;
+		}
+		else if (estimatedSize <= CACHE_INVALIDATE_ALL_THRESHOLD)
+		{
+			// relatively small amount of records
+			// => fetch and reset individually
+			final ImmutableSet<ShipmentScheduleId> shipmentScheduleIds = queryBL.createQueryBuilder(I_M_ShipmentSchedule.class)
+					.setOnlySelection(selectionId)
+					.create()
+					.listIds(ShipmentScheduleId::ofRepoId);
+			if (!shipmentScheduleIds.isEmpty())
+			{
+				request = CacheInvalidateMultiRequest.rootRecords(I_M_ShipmentSchedule.Table_Name, shipmentScheduleIds);
+			}
+			else
+			{
+				// no records found => do nothing
+				request = null;
+			}
+		}
+		else
+		{
+			// large amount of records
+			// => instead of fetching all IDs better invalidate the whole table
+			request = CacheInvalidateMultiRequest.allRecordsForTable(I_M_ShipmentSchedule.Table_Name);
+		}
+
+		//
+		// Perform the actual cache invalidation
+		if (request != null)
+		{
+			CacheMgt.get().resetLocalNowAndBroadcastOnTrxCommit(ITrx.TRXNAME_ThreadInherited, request);
 		}
 	}
 
@@ -379,7 +436,7 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 	@Override
 	public IQueryBuilder<I_M_ShipmentSchedule> createQueryForShipmentScheduleSelection(final Properties ctx, final IQueryFilter<I_M_ShipmentSchedule> userSelectionFilter)
 	{
-		final IQueryBuilder<I_M_ShipmentSchedule> queryBuilder = Services.get(IQueryBL.class)
+		final IQueryBuilder<I_M_ShipmentSchedule> queryBuilder = queryBL
 				.createQueryBuilder(I_M_ShipmentSchedule.class, ctx, ITrx.TRXNAME_None)
 				.filter(userSelectionFilter)
 				.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_Processed, false)
@@ -456,7 +513,7 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 			logger.debug("given parameter referencedRecord is null; nothing to delete");
 			return;
 		}
-		final int deletedCount = Services.get(IQueryBL.class)
+		final int deletedCount = queryBL
 				.createQueryBuilder(I_M_ShipmentSchedule.class)
 				.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_AD_Table_ID, referencedRecord.getAD_Table_ID())
 				.addEqualsFilter(I_M_ShipmentSchedule.COLUMN_Record_ID, referencedRecord.getRecord_ID())
@@ -474,7 +531,7 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 			return ImmutableSet.of();
 		}
 
-		return Services.get(IQueryBL.class)
+		return queryBL
 				.createQueryBuilder(I_M_ShipmentSchedule.class)
 				.addInArrayFilter(I_M_ShipmentSchedule.COLUMN_M_ShipmentSchedule_ID, shipmentScheduleIds)
 				.create()
@@ -493,8 +550,6 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 	@Override
 	public ImmutableList<I_M_ShipmentSchedule> getByReferences(@NonNull final ImmutableList<TableRecordReference> recordRefs)
 	{
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
-
 		final IQueryBuilder<I_M_ShipmentSchedule> queryBuilder = queryBL
 				.createQueryBuilder(I_M_ShipmentSchedule.class)
 				.setJoinOr()

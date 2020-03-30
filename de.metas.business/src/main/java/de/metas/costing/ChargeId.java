@@ -1,11 +1,7 @@
 package de.metas.costing;
 
-import java.util.Collection;
-import java.util.Set;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
-import com.google.common.collect.ImmutableSet;
 
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
@@ -49,22 +45,14 @@ public class ChargeId implements RepoIdAware
 		return repoId > 0 ? new ChargeId(repoId) : null;
 	}
 
-	public static Set<ChargeId> ofRepoIds(final Collection<Integer> repoIds)
+	public static int toRepoId(final ChargeId id)
 	{
-		return repoIds.stream()
-				.filter(repoId -> repoId != null && repoId > 0)
-				.map(ChargeId::ofRepoId)
-				.collect(ImmutableSet.toImmutableSet());
-	}
-
-	public static int toRepoId(final ChargeId productId)
-	{
-		return productId != null ? productId.getRepoId() : -1;
+		return id != null ? id.getRepoId() : -1;
 	}
 
 	private ChargeId(final int repoId)
 	{
-		this.repoId = Check.assumeGreaterThanZero(repoId, "productId");
+		this.repoId = Check.assumeGreaterThanZero(repoId, "C_Charge_ID");
 	}
 
 	@Override
@@ -73,5 +61,4 @@ public class ChargeId implements RepoIdAware
 	{
 		return repoId;
 	}
-
 }

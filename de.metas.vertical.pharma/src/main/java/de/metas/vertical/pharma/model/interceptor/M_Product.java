@@ -6,6 +6,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.util.Services;
@@ -37,7 +38,7 @@ import de.metas.vertical.pharma.model.I_M_Product;
 @Component
 public class M_Product
 {
-	private final static String ERR_Invalid_PZN = "de.metas.vertical.pharma.model.interceptor.M_Product.Invalid_PZN";
+	private final static AdMessageKey ERR_Invalid_PZN = AdMessageKey.of("de.metas.vertical.pharma.model.interceptor.M_Product.Invalid_PZN");
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = {
 			I_M_Product.COLUMNNAME_Value,

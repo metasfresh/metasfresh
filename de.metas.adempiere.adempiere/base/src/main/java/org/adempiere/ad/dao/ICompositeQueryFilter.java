@@ -303,17 +303,13 @@ public interface ICompositeQueryFilter<T> extends IQueryFilter<T>
 
 	/**
 	 * Add a group of filters
-	 *
-	 * @param filters
-	 * @return this
 	 */
 	ICompositeQueryFilter<T> addFilters(List<IQueryFilter<T>> filters);
 
 	/**
-	 * Unboxes and add the filters contained in the <code>compositeFilter</code>.
+	 * Unboxes and adds the filters contained in the <code>compositeFilter</code>.
 	 * If it could not be unboxed (e.g. because JOIN method does not match) the composite filter is added as is.
-	 *
-	 * @param compositeFilter
+	 * Note that by "unboxing" we mean getting the filters included in the given {@code compositeFilter} and adding them to this instance directly, rather than adding the given {@code compositeFilter} itself.
 	 */
 	ICompositeQueryFilter<T> addFiltersUnboxed(ICompositeQueryFilter<T> compositeFilter);
 

@@ -13,28 +13,26 @@ package de.metas.inoutcandidate.modelvalidator;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.util.Collections;
 import java.util.List;
-import java.util.Properties;
 
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.ModelValidator;
 
 import de.metas.document.exception.DocumentActionException;
+import de.metas.i18n.AdMessageKey;
 import de.metas.inoutcandidate.api.IReceiptScheduleBL;
 import de.metas.inoutcandidate.api.IReceiptScheduleDAO;
 import de.metas.inoutcandidate.api.IReceiptScheduleProducerFactory;
@@ -48,11 +46,9 @@ import de.metas.util.Services;
 @Validator(I_C_Order.class)
 public class C_Order_ReceiptSchedule
 {
-	public static final String ERR_NoReactivationIfReceiptsCreated = "ERR_NoReactivationIfReceiptsCreated";
-
-	public static final String ERR_NoReactivationIfProcessedReceiptSchedules = "ERR_NoReactivationIfProcessedReceiptSchedules";
-
-	public static final String ERR_NoVoidIfProcessedReceiptSchedules = "ERR_NoVoidIfProcessedReceiptSchedules";
+	private static final AdMessageKey ERR_NoReactivationIfReceiptsCreated = AdMessageKey.of("ERR_NoReactivationIfReceiptsCreated");
+	private static final AdMessageKey ERR_NoReactivationIfProcessedReceiptSchedules = AdMessageKey.of("ERR_NoReactivationIfProcessedReceiptSchedules");
+	private static final AdMessageKey ERR_NoVoidIfProcessedReceiptSchedules = AdMessageKey.of("ERR_NoVoidIfProcessedReceiptSchedules");
 
 	public static boolean isEligibleForReceiptSchedule(final I_C_Order order)
 	{
@@ -116,8 +112,6 @@ public class C_Order_ReceiptSchedule
 
 	/**
 	 * Never reactivate a purchase order that already has created receipts.
-	 * 
-	 * @param order
 	 */
 	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_REACTIVATE })
 	public void reactivateIfNoReceipts(final I_C_Order order)
@@ -132,8 +126,7 @@ public class C_Order_ReceiptSchedule
 		// Throw exception if at least one (even partial) receipt is linked to this order
 		if (hasReceipts)
 		{
-			final Properties ctx = InterfaceWrapperHelper.getCtx(order);
-			throw new DocumentActionException(ctx, ERR_NoReactivationIfReceiptsCreated, null);
+			throw new DocumentActionException(ERR_NoReactivationIfReceiptsCreated);
 		}
 
 	}
@@ -166,9 +159,7 @@ public class C_Order_ReceiptSchedule
 
 		if (hasProcessedReceiptSchedules(order))
 		{
-			final Properties ctx = InterfaceWrapperHelper.getCtx(order);
-
-			throw new DocumentActionException(ctx, ERR_NoReactivationIfProcessedReceiptSchedules, null);
+			throw new DocumentActionException(ERR_NoReactivationIfProcessedReceiptSchedules);
 
 		}
 	}
@@ -183,9 +174,7 @@ public class C_Order_ReceiptSchedule
 
 		if (hasProcessedReceiptSchedules(order))
 		{
-			final Properties ctx = InterfaceWrapperHelper.getCtx(order);
-
-			throw new DocumentActionException(ctx, ERR_NoVoidIfProcessedReceiptSchedules, null);
+			throw new DocumentActionException(ERR_NoVoidIfProcessedReceiptSchedules);
 
 		}
 	}
@@ -218,7 +207,7 @@ public class C_Order_ReceiptSchedule
 		{
 			return;
 		}
-		
+
 		// services
 		final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 		final IReceiptScheduleDAO receiptScheduleDAO = Services.get(IReceiptScheduleDAO.class);

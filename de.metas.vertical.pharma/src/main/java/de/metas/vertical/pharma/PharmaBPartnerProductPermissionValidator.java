@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 import com.google.common.annotations.VisibleForTesting;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.lang.SOTrx;
@@ -46,12 +47,16 @@ import lombok.NonNull;
 @Component
 public class PharmaBPartnerProductPermissionValidator implements IOrderLineInputValidator
 {
-	private final static String MSG_NoPharmaShipmentPermission_Sales = "de.metas.vertical.pharma.PharmaOrderLineQuickInputValidator.NoPharmaShipmentPermissions";
-	@VisibleForTesting final static String MSG_NoPrescriptionPermission_Sales = "de.metas.vertical.pharma.PharmaOrderLineQuickInputValidator.NoPrescriptionPermission";
-	@VisibleForTesting final static String MSG_NoNarcoticPermission_Sales = "de.metas.vertical.pharma.PharmaOrderLineQuickInputValidator.NoNarcoticPermissions";
+	private final static AdMessageKey MSG_NoPharmaShipmentPermission_Sales = AdMessageKey.of("de.metas.vertical.pharma.PharmaOrderLineQuickInputValidator.NoPharmaShipmentPermissions");
+	@VisibleForTesting
+	final static AdMessageKey MSG_NoPrescriptionPermission_Sales = AdMessageKey.of("de.metas.vertical.pharma.PharmaOrderLineQuickInputValidator.NoPrescriptionPermission");
+	@VisibleForTesting
+	final static AdMessageKey MSG_NoNarcoticPermission_Sales = AdMessageKey.of("de.metas.vertical.pharma.PharmaOrderLineQuickInputValidator.NoNarcoticPermissions");
 
-	@VisibleForTesting final static String MSG_NoNarcoticPermission_Purchase = "de.metas.vertical.pharma.PharmaPurchaseOrderLineInputValidator.NoNarcoticPermission";
-	@VisibleForTesting final static String MSG_NoPrescriptionPermission_Purchase = "de.metas.vertical.pharma.PharmaPurchaseOrderLineInputValidator.NoPrescriptionPermission";
+	@VisibleForTesting
+	final static AdMessageKey MSG_NoNarcoticPermission_Purchase = AdMessageKey.of("de.metas.vertical.pharma.PharmaPurchaseOrderLineInputValidator.NoNarcoticPermission");
+	@VisibleForTesting
+	final static AdMessageKey MSG_NoPrescriptionPermission_Purchase = AdMessageKey.of("de.metas.vertical.pharma.PharmaPurchaseOrderLineInputValidator.NoPrescriptionPermission");
 
 	private final PharmaBPartnerRepository pharmaBPartnerRepo;
 	private final PharmaProductRepository pharmaProductRepo;
@@ -71,7 +76,7 @@ public class PharmaBPartnerProductPermissionValidator implements IOrderLineInput
 	 */
 	@Override
 	public OrderLineInputValidatorResults validate(
-			@NonNull final BPartnerId bpartnerId, 
+			@NonNull final BPartnerId bpartnerId,
 			@NonNull final ProductId productId,
 			@NonNull final SOTrx soTrx)
 	{

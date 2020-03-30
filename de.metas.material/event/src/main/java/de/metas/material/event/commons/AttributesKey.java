@@ -21,6 +21,7 @@ import com.google.common.base.Joiner;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.i18n.AdMessageKey;
 import de.metas.util.Check;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
@@ -60,11 +61,11 @@ public final class AttributesKey
 	private static final Splitter ATTRIBUTEVALUEIDS_SPLITTER = Splitter.on(ATTRIBUTES_KEY_DELIMITER).omitEmptyStrings().trimResults();
 
 	public static final AttributesKey ALL = AttributesKey.ofAttributeValueIds(-1000);
-	public static final String MSG_ATTRIBUTES_KEY_ALL = "de.metas.material.dispo.<ALL_ATTRIBUTES_KEYS>";
+	public static final AdMessageKey MSG_ATTRIBUTES_KEY_ALL = AdMessageKey.of("de.metas.material.dispo.<ALL_ATTRIBUTES_KEYS>");
 
 	/** This key's meaning depends on the other keys it comes with. */
 	public static final AttributesKey OTHER = AttributesKey.ofAttributeValueIds(-1001);
-	public static final String MSG_ATTRIBUTES_KEY_OTHER = "de.metas.material.dispo.<OTHER_ATTRIBUTES_KEYS>";
+	public static final AdMessageKey MSG_ATTRIBUTES_KEY_OTHER = AdMessageKey.of("de.metas.material.dispo.<OTHER_ATTRIBUTES_KEYS>");
 
 	public static final AttributesKey NONE = AttributesKey.ofAttributeValueIds(-1002);
 
