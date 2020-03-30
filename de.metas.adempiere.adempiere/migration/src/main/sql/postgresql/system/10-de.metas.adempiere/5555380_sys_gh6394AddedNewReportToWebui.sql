@@ -522,4 +522,90 @@ DELETE FROM AD_Menu WHERE AD_Menu_ID=541445
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 DELETE FROM AD_TreeNodeMM n WHERE Node_ID=541445 AND EXISTS (SELECT * FROM AD_Tree t WHERE t.AD_Tree_ID=n.AD_Tree_ID AND t.AD_Table_ID=116)
 ;
+-- 2020-03-30T11:39:51.773Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process SET SQLStatement='SELECT * FROM report.Current_Vs_Previous_Pricelist_Comparison_Report();
+',Updated=TO_TIMESTAMP('2020-03-30 14:39:51','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=584676
+;
+
+-- 2020-03-30T12:07:34.693Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process SET JasperReport='@PREFIX@de/metas/reports/pricelist/report_TabularView2.jasper',Updated=TO_TIMESTAMP('2020-03-30 15:07:34','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=584676
+;
+
+-- 2020-03-30T12:07:46.077Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM  AD_Process_Para_Trl WHERE AD_Process_Para_ID=541778
+;
+
+-- 2020-03-30T12:07:46.085Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM AD_Process_Para WHERE AD_Process_Para_ID=541778
+;
+
+-- 2020-03-30T12:07:54.142Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process SET SQLStatement='',Updated=TO_TIMESTAMP('2020-03-30 15:07:54','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=584676
+;
+
+-- 2020-03-30T12:09:25.526Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process SET JasperReport='@PREFIX@de/metas/reports/pricelist/report2.jasper',Updated=TO_TIMESTAMP('2020-03-30 15:09:25','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=584676
+;
+
+-- 2020-03-30T15:18:46.112Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process SET JasperReport='@PREFIX@de/metas/reports/pricelist/report_TabularView2.jasper',Updated=TO_TIMESTAMP('2020-03-30 18:18:46','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=584676
+;
+
+-- 2020-03-30T15:19:05.907Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process SET JasperReport='',Updated=TO_TIMESTAMP('2020-03-30 18:19:05','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=584676
+;
+
+-- 2020-03-30T15:40:35.922Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process SET JasperReport='@PREFIX@de/metas/reports/pricelist/report_TabularView2.jasper',Updated=TO_TIMESTAMP('2020-03-30 18:40:35','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=584676
+;
+
+-- 2020-03-30T15:44:57.106Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process SET JasperReport='',Updated=TO_TIMESTAMP('2020-03-30 18:44:57','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=584676
+;
+
+-- 2020-03-30T15:46:34.930Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process SET JasperReport='@PREFIX@de/metas/reports/pricelist/report_TabularView2.jasper',Updated=TO_TIMESTAMP('2020-03-30 18:46:34','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=584676
+;
+
+-- 2020-03-30T15:47:58.821Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Menu SET Action='P',Updated=TO_TIMESTAMP('2020-03-30 18:47:58','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Menu_ID=540756
+;
+
+-- 2020-03-30T15:48:37.837Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Menu SET Action='R',Updated=TO_TIMESTAMP('2020-03-30 18:48:37','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Menu_ID=540756
+;
+
+-- 2020-03-30T15:49:02.024Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET SeqNo=30,Updated=TO_TIMESTAMP('2020-03-30 18:49:02','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_Para_ID=541779
+;
+
+-- 2020-03-30T16:40:47.968Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Trl SET Name='Pircelist Comparison New-Last',Updated=TO_TIMESTAMP('2020-03-30 19:40:47','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Process_ID=584676
+;
+
+-- 2020-03-30T16:40:52.612Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Trl SET IsTranslated='Y', Name='Pircelist Comparison New-Last',Updated=TO_TIMESTAMP('2020-03-30 19:40:52','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Process_ID=584676
+;
+
+-- 2020-03-30T16:40:55.236Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Trl SET Name='Pircelist Comparison New-Last',Updated=TO_TIMESTAMP('2020-03-30 19:40:55','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='nl_NL' AND AD_Process_ID=584676
+;
+
 
