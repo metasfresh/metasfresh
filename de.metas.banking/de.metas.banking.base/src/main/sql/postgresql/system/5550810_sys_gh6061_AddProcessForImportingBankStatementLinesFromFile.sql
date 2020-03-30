@@ -1,3 +1,18 @@
+DO
+$$
+    BEGIN
+        IF exists(SELECT m.ad_migrationscript_id
+                   FROM ad_migrationscript m
+                   WHERE m.filename = 'todo5550810_sys_gh6061_AddProcessForImportingBankStatementLinesFromFile.sql')
+        THEN
+            RAISE NOTICE 'Migration already run. Nothing to do here.';
+        ELSE
+            RAISE NOTICE 'Migration not run. Running now';
+
+
+
+
+
 -- 2020-01-31T09:04:03.568Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 INSERT INTO AD_Process (AccessLevel,AD_Client_ID,AD_Org_ID,AD_Process_ID,AllowProcessReRun,Classname,CopyFromProcess,Created,CreatedBy,EntityType,IsActive,IsApplySecuritySettings,IsBetaFunctionality,IsDirectPrint,IsOneInstanceOnly,IsReport,IsServerProcess,IsTranslateExcelHeaders,IsUseBPartnerLanguage,LockWaitTimeout,Name,RefreshAllAfterExecution,ShowHelp,Type,Updated,UpdatedBy,Value) VALUES ('7',0,0,584647,'Y','de.metas.banking.process.C_BankStatement_ImportAttachment','N',TO_TIMESTAMP('2020-01-31 11:04:03','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','N','N','N','N','N','N','Y','Y',0,'Import Attachment','N','N','Java',TO_TIMESTAMP('2020-01-31 11:04:03','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.banking.process.C_BankStatement_ImportAttachment')
@@ -57,3 +72,10 @@ UPDATE AD_Process_Trl SET IsTranslated='Y', Name='Anhang Importieren',Updated=TO
 UPDATE AD_Process_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2020-01-31 13:27:43','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Process_ID=584647
 ;
 
+
+
+
+        END IF;
+    END
+$$
+;
