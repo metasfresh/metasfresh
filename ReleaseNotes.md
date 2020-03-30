@@ -10,6 +10,26 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 5.144
+## Features
+* metasfresh
+  * [#6403](https://github.com/metasfresh/metasfresh/issues/6403) Avoid memory problems while exporting big datasets to excel
+  * [#6393](https://github.com/metasfresh/metasfresh/issues/6393) Generating delivery days for >1 tour not working
+
+* metasfresh-webui-api
+  * [#1394](https://github.com/metasfresh/metasfresh-webui-api/issues/1394) layout element: provide maxLength for Text and LongText fields
+
+## Fixes
+* metasfresh
+  * [#6364](https://github.com/metasfresh/metasfresh/issues/6364) Fixes/ adjustments: Excel Sales Order adjustments
+  * [#6376](https://github.com/metasfresh/metasfresh/issues/6376) Avoid empty text for packing material in Product specifications
+  * [#6382](https://github.com/metasfresh/metasfresh/issues/6382) Identifiers are swapped for Requests and Invoices
+  * [#6390](https://github.com/metasfresh/metasfresh/issues/6390) Fix User Queries with dates throwing error
+  * [#6405](https://github.com/metasfresh/metasfresh/issues/6405) Shipment dispo: cache invalidate when mass updating the records
+
+* metasfresh-webui-frontend
+  * [#2556](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2556) make sure the view filters are displayed exactly in the same order we have them in the layout
+
 # metasfresh 5.143
 ## Features
 * metasfresh
