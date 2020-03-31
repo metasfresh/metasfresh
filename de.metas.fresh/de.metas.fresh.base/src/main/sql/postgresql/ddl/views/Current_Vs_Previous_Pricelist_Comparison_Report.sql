@@ -78,7 +78,7 @@ WITH PriceListVersionsByValidFrom AS
                     plv.validFromPLV2,
                     plv.namePLV1,
                     plv.namePLV2,
-                    (SELECT bpl.name FROM c_bpartner_location bpl WHERE bpl.c_bpartner_id = plv.c_bpartner_id) bpl_name
+                    (SELECT bpl.name FROM c_bpartner_location bpl WHERE bpl.c_bpartner_id = plv.c_bpartner_id ORDER BY bpl.isbilltodefault DESC LIMIT 1) bpl_name
              FROM currentAndPreviousPLV plv
                       INNER JOIN LATERAL report.fresh_PriceList_Details_Report(
                      plv.c_bpartner_id,
