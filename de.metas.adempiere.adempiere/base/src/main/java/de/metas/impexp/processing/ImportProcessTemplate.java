@@ -38,6 +38,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
 import ch.qos.logback.classic.Level;
+import de.metas.adempiere.model.I_M_Product;
 import de.metas.cache.CacheMgt;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
 import de.metas.error.AdIssueId;
@@ -702,6 +703,8 @@ public abstract class ImportProcessTemplate<ImportRecordType> implements IImport
 		final DataImportConfigId dataImportConfigId = extractDataImportConfigIdOrNull(importRecord);
 		final Optional<Integer> recordId = InterfaceWrapperHelper.getValue(importRecord, getImportKeyColumnName());
 		functions.forEach(function -> DBFunctionHelper.doDBFunctionCall(function, dataImportConfigId, recordId.orElse(0)));
+		
+		CacheMgt.get().reset(getTargetTableName());
 	}
 
 	private DataImportConfigId extractDataImportConfigIdOrNull(@NonNull final ImportRecordType importRecord)

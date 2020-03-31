@@ -47,7 +47,6 @@ import org.slf4j.Logger;
 import com.google.common.collect.ImmutableMap;
 
 import de.metas.adempiere.model.I_M_Product;
-import de.metas.cache.CacheMgt;
 import de.metas.impexp.processing.IImportInterceptor;
 import de.metas.impexp.processing.ImportRecordsSelection;
 import de.metas.impexp.processing.SimpleImportProcessTemplate;
@@ -280,7 +279,7 @@ public class ProductImportProcess extends SimpleImportProcessTemplate<I_I_Produc
 		product.setManufacturer_ID(importRecord.getManufacturer_ID());
 		product.setM_Product_Category_ID(importRecord.getM_Product_Category_ID());
 		product.setProductType(importRecord.getProductType());
-		product.setImageURL(importRecord.getImageURL());
+		product.setImageURL(importRecord.getImageURL());	
 		product.setDescriptionURL(importRecord.getDescriptionURL());
 		product.setIsSold(importRecord.isSold());
 		product.setIsStocked(importRecord.isStocked());
@@ -289,9 +288,4 @@ public class ProductImportProcess extends SimpleImportProcessTemplate<I_I_Produc
 		return product;
 	}	// MProduct
 	
-	@Override
-	protected void afterImport() 
-	{
-		CacheMgt.get().reset(I_M_Product.Table_Name);
-	}
 }
