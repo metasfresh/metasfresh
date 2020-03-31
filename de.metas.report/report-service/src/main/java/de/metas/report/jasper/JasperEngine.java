@@ -531,7 +531,7 @@ public class JasperEngine extends AbstractReportEngine
 
 			return ReportResult.builder()
 					.outputType(outputType)
-					.reportContentBase64(out.toString())
+					.reportContentBase64(Util.encodeBase64(out.toByteArray()))
 					.build();
 		}
 		else if (OutputType.XML == outputType)
@@ -541,7 +541,7 @@ public class JasperEngine extends AbstractReportEngine
 
 			return ReportResult.builder()
 					.outputType(outputType)
-					.reportContentBase64(out.toString())
+					.reportContentBase64(Util.encodeBase64(out.toByteArray()))
 					.build();
 		}
 		else if (OutputType.JasperPrint == outputType)
@@ -566,7 +566,7 @@ public class JasperEngine extends AbstractReportEngine
 
 		return ReportResult.builder()
 				.outputType(OutputType.JasperPrint)
-				.reportContentBase64(out.toString())
+				.reportContentBase64(Util.encodeBase64(out.toByteArray()))
 				.build();
 	}
 
@@ -602,7 +602,7 @@ public class JasperEngine extends AbstractReportEngine
 
 		return ReportResult.builder()
 				.outputType(OutputType.XLS)
-				.reportContentBase64(out.toString())
+				.reportContentBase64(Util.encodeBase64(out.toByteArray()))
 				.build();
 	}
 }
