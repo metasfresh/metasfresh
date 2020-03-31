@@ -109,3 +109,7 @@ export const DATE_FIELD_FORMATS = {
 export const TIME_FIELD_TYPES = ['Time'];
 
 export const TIME_REGEX_TEST = /^\d\d:\d\d$/;
+
+export const PROCESS_NAME = 'process';
+
+export const LOCATION_SEARCH_NAME = 'location-area-search';

@@ -1,25 +1,7 @@
 import { post, get } from 'axios';
 
-import { getData } from './global';
+import { getData } from './view';
 import { parseToDisplay } from '../utils/documentListHelper';
-
-export function initLayout(
-  entity,
-  docType,
-  tabId,
-  subentity = null,
-  docId = null,
-  isAdvanced,
-  list,
-  supportTree
-) {
-  return get(`${config.API_URL}/${entity}/${docType}${
-    docId ? `/${docId}` : ''
-  }${tabId ? `/${tabId}` : ''}${subentity ? `/${subentity}` : ''}/layout${
-    isAdvanced ? '?advanced=true' : ''
-  }${list ? `?viewType=${list}` : ''}${supportTree ? '&supportTree=true' : ''}
-  `);
-}
 
 /**
  * @param attributeType 'pattribute' or 'address'

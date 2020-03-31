@@ -117,7 +117,7 @@ export function getItemsByProperty(arr, prop, value) {
   let ret = [];
 
   arr &&
-    arr.map((item) => {
+    arr.forEach((item) => {
       if (item[prop] === value) {
         ret.push(item);
       }

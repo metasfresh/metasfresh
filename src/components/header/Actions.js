@@ -388,11 +388,11 @@ const mapStateToProps = (state, props) => {
 
   if (includedView && includedView.viewId) {
     result.childViewId = includedView.viewId;
-    result.childViewSelectedIds = getSelection({
+    result.childViewSelectedIds = getSelectionInstant(
       state,
-      windowType: includedView.windowType,
-      viewId: includedView.viewId,
-    });
+      { windowType: includedView.windowType, viewId: includedView.viewId },
+      state.windowHandler.selectionsHash
+    );
   }
 
   return result;

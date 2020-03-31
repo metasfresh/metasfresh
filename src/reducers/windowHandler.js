@@ -1,5 +1,5 @@
 import update from 'immutability-helper';
-import { Map, List, Set } from 'immutable';
+import { Map as iMap, List as iList, Set as iSet } from 'immutable';
 import { get, forEach, difference } from 'lodash';
 import { createSelector } from 'reselect';
 import uuid from 'uuid/v4';
@@ -41,6 +41,8 @@ import {
   REMOVE_TABLE_ITEMS_SELECTION,
   SELECT_TABLE_ITEMS,
   SET_LATEST_NEW_DOCUMENT,
+  SET_RAW_MODAL_DESCRIPTION,
+  SET_RAW_MODAL_TITLE,
   SORT_TAB,
   TOGGLE_OVERLAY,
   UNSELECT_TAB,
@@ -62,6 +64,8 @@ import {
 
 export const initialState = {
   connectionError: false,
+
+  // TODO: this should be moved to a separate `modalHandler`
   modal: {
     visible: false,
     type: '',
@@ -71,7 +75,7 @@ export const initialState = {
     viewId: null,
     layout: {},
     data: {},
-    rowData: Map(),
+    rowData: iMap(),
     modalTitle: '',
     modalType: '',
     isAdvanced: false,
@@ -90,16 +94,22 @@ export const initialState = {
     visible: false,
     data: null,
   },
+
+  // TODO: this should be moved to a separate `modalHandler`
   rawModal: {
     visible: false,
     windowType: null,
     viewId: null,
+    title: '',
+    description: '',
   },
   pluginModal: {
     visible: false,
     type: '',
     id: null,
   },
+
+  // this only feeds data to details view now
   master: {
     layout: {
       activeTab: null,
@@ -108,7 +118,7 @@ export const initialState = {
 
     // rowData is an immutable Map with tabId's as keys, and Lists as values.
     // List's elements are plain objects for now
-    rowData: Map(),
+    rowData: iMap(),
     saveStatus: {},
     validStatus: {},
     includedTabsInfo: {},
@@ -120,6 +130,7 @@ export const initialState = {
       error: false,
     },
   },
+
   quickActions: {},
   indicator: 'saved',
   allowShortcut: true,
@@ -162,12 +173,6 @@ export const getSelectionInstant = createSelector(
   (items) => items
 );
 
-export const getSelection = ({ state, windowId, viewId }) => {
-  const windowTypeSelections = state.windowHandler.selections[windowId];
-  const id = viewId || windowId;
-
-  return (windowTypeSelections && windowTypeSelections[id]) || NO_SELECTION;
-};
 export const getSelectionDirect = (selections, windowId, viewId) => {
   const windowTypeSelections = selections[windowId];
 
@@ -204,13 +209,21 @@ export default function windowHandler(state = initialState, action) {
           childViewSelectedIds: action.childViewSelectedIds,
         },
       };
-    case OPEN_PLUGIN_MODAL:
+    case UPDATE_MODAL:
       return {
         ...state,
-        pluginModal: {
-          visible: true,
-          type: action.payload.type,
-          id: action.payload.id,
+        modal: {
+          ...state.modal,
+          rowId: action.rowId,
+          dataId: action.dataId,
+        },
+      };
+    case CLOSE_MODAL:
+      return {
+        ...state,
+        modal: {
+          ...state.modal,
+          ...initialState.modal,
         },
       };
     case OPEN_RAW_MODAL:
@@ -222,15 +235,6 @@ export default function windowHandler(state = initialState, action) {
           windowId: action.windowId,
           viewId: action.viewId,
           profileId: action.profileId,
-        },
-      };
-    case UPDATE_MODAL:
-      return {
-        ...state,
-        modal: {
-          ...state.modal,
-          rowId: action.rowId,
-          dataId: action.dataId,
         },
       };
     case UPDATE_RAW_MODAL: {
@@ -248,6 +252,22 @@ export default function windowHandler(state = initialState, action) {
         return state;
       }
     }
+    case SET_RAW_MODAL_TITLE:
+      return {
+        ...state,
+        rawModal: {
+          ...state.rawModal,
+          title: action.payload.title,
+        },
+      };
+    case SET_RAW_MODAL_DESCRIPTION:
+      return {
+        ...state,
+        rawModal: {
+          ...state.rawModal,
+          description: action.payload.description,
+        },
+      };
     case CLOSE_RAW_MODAL:
       return {
         ...state,
@@ -259,24 +279,13 @@ export default function windowHandler(state = initialState, action) {
           profileId: null,
         },
       };
-
-    case CLOSE_PROCESS_MODAL:
-      if (state.modal.modalType === 'process') {
-        return {
-          ...state,
-          modal: {
-            ...state.modal,
-            ...initialState.modal,
-          },
-        };
-      }
-      return state;
-    case CLOSE_MODAL:
+    case OPEN_PLUGIN_MODAL:
       return {
         ...state,
-        modal: {
-          ...state.modal,
-          ...initialState.modal,
+        pluginModal: {
+          visible: true,
+          type: action.payload.type,
+          id: action.payload.id,
         },
       };
     case CLOSE_PLUGIN_MODAL:
@@ -288,6 +297,17 @@ export default function windowHandler(state = initialState, action) {
           id: null,
         },
       };
+    case CLOSE_PROCESS_MODAL:
+      if (state.modal.modalType === 'process') {
+        return {
+          ...state,
+          modal: {
+            ...state.modal,
+            ...initialState.modal,
+          },
+        };
+      }
+      return state;
     case TOGGLE_OVERLAY:
       return {
         ...state,
@@ -316,9 +336,9 @@ export default function windowHandler(state = initialState, action) {
           data: action.data,
           docId: action.docId,
           layout: {},
-          rowData: Map(),
+          rowData: iMap(),
           saveStatus: action.saveStatus,
-          standardActions: Set(action.standardActions),
+          standardActions: iSet(action.standardActions),
           validStatus: action.validStatus,
           includedTabsInfo: action.includedTabsInfo,
           websocket: action.websocket,
@@ -341,7 +361,7 @@ export default function windowHandler(state = initialState, action) {
         master: {
           ...state.master,
           data: {},
-          rowData: Map(),
+          rowData: iMap(),
           docId: undefined,
         },
       };
@@ -382,11 +402,11 @@ export default function windowHandler(state = initialState, action) {
       });
     /* eslint-disable no-case-declarations */
     case ADD_ROW_DATA:
-      let addRowData = Map();
+      let addRowData = iMap();
 
       for (const [key, item] of Object.entries(action.data)) {
         const arrayItem = item.length ? item : [];
-        addRowData = addRowData.set(key, List(arrayItem));
+        addRowData = addRowData.set(key, iList(arrayItem));
       }
 
       return {
@@ -457,8 +477,8 @@ export default function windowHandler(state = initialState, action) {
       // added rows
       forEach(changed, (value, key) => rows.push(value));
 
-      let addRowData = Map();
-      addRowData = addRowData.set(tabId, List(rows));
+      let addRowData = iMap();
+      addRowData = addRowData.set(tabId, iList(rows));
 
       return {
         ...state,
@@ -488,9 +508,9 @@ export default function windowHandler(state = initialState, action) {
       if (typeof action.value === 'string') {
         value = action.value;
       } else if (action.property === 'standardActions') {
-        // TODO: Evaluate if standardActions of type Set
+        // TODO: Evaluate if standardActions of type iSet
         // is worth this extra check
-        value = Set(action.value);
+        value = iSet(action.value);
       } else {
         value = Object.assign(
           {},

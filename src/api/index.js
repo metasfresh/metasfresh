@@ -1,6 +1,4 @@
-import { getData, patchRequest } from './global';
 import {
-  initLayout,
   getAttributesInstance,
   topActionsRequest,
   getZoomIntoWindow,
@@ -11,6 +9,9 @@ import {
   getProcessData,
 } from './window';
 import {
+  getData,
+  getLayout,
+  patchRequest,
   getViewLayout,
   getViewRowsByIds,
   browseViewRequest,
@@ -40,8 +41,8 @@ import {
 
 export {
   getData,
+  getLayout,
   patchRequest,
-  initLayout,
   getAttributesInstance,
   topActionsRequest,
   getZoomIntoWindow,

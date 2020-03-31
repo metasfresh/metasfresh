@@ -1,5 +1,50 @@
-import { post, get, delete as del } from 'axios';
-import { getQueryString, cleanupFilter } from '../utils';
+import { post, get, patch, delete as del } from 'axios';
+import {
+  getQueryString,
+  cleanupFilter,
+  createPatchRequestPayload,
+} from '../utils';
+
+export function getData(
+  entity,
+  docType,
+  docId,
+  tabId,
+  rowId,
+  subentity,
+  subentityId,
+  isAdvanced,
+  orderBy,
+  viewId
+) {
+  return get(
+    `${config.API_URL}/${entity}/${docType}${viewId ? `/${viewId}` : ''}${
+      docId ? `/${docId}` : ''
+    }${tabId ? `/${tabId}` : ''}${rowId ? `/${rowId}` : ''}${
+      subentity ? `/${subentity}` : ''
+    }${subentityId ? `/${subentityId}` : ''}/${
+      isAdvanced ? `?advanced=true` : ''
+    }${orderBy ? `?orderBy=${orderBy}` : ''}`
+  );
+}
+
+export function getLayout(
+  entity,
+  docType,
+  tabId,
+  subentity = null,
+  docId = null,
+  isAdvanced,
+  list,
+  supportTree
+) {
+  return get(`${config.API_URL}/${entity}/${docType}${
+    docId ? `/${docId}` : ''
+  }${tabId ? `/${tabId}` : ''}${subentity ? `/${subentity}` : ''}/layout${
+    isAdvanced ? '?advanced=true' : ''
+  }${list ? `?viewType=${list}` : ''}${supportTree ? '&supportTree=true' : ''}
+  `);
+}
 
 export function getViewLayout(windowId, viewType, viewProfileId = null) {
   return get(
@@ -12,6 +57,42 @@ export function getViewLayout(windowId, viewType, viewProfileId = null) {
 export function getViewRowsByIds(windowId, viewId, docIds) {
   return get(
     `${config.API_URL}/documentView/${windowId}/${viewId}/byIds?ids=${docIds}`
+  );
+}
+
+export function patchRequest({
+  // HOTFIX: before refactoring all calls explicity set docId to `null`
+  // instead of `undefined` so default value 'NEW' was never used!
+  docId,
+  docType,
+  entity,
+  isAdvanced,
+  property,
+  rowId,
+  subentity,
+  subentityId,
+  tabId,
+  value,
+  viewId,
+  isEdit,
+}) {
+  let payload =
+    docId !== 'NEW' ? createPatchRequestPayload(property, value) : [];
+
+  return patch(
+    config.API_URL +
+      '/' +
+      entity +
+      (docType ? '/' + docType : '') +
+      (viewId ? '/' + viewId : '') +
+      (docId ? '/' + docId : '') +
+      (tabId ? '/' + tabId : '') +
+      (rowId ? '/' + rowId : '') +
+      (subentity ? '/' + subentity : '') +
+      (subentityId ? '/' + subentityId : '') +
+      (isAdvanced ? '?advanced=true' : '') +
+      (isEdit ? '/edit' : ''),
+    payload
   );
 }
 
@@ -28,24 +109,6 @@ export function browseViewRequest({
     }/documentView/${windowId}/${viewId}?firstRow=${pageLength *
       (page - 1)}&pageLength=${pageLength}${
       orderBy ? `&orderBy=${orderBy}` : ''
-    }`
-  );
-}
-
-export function locationSearchRequest({ windowId, viewId }) {
-  return get(
-    `${config.API_URL}/documentView/${windowId}/${viewId}/geoLocations?limit=0`
-  );
-}
-
-export function locationConfigRequest() {
-  return get(`${config.API_URL}/geolocation/config`);
-}
-
-export function deleteView(windowId, viewId, action) {
-  return del(
-    `${config.API_URL}/documentView/${windowId}/${viewId}${
-      action ? `?action=${action}` : ''
     }`
   );
 }
@@ -90,6 +153,24 @@ export function filterViewRequest(windowId, viewId, filters) {
   return post(`${config.API_URL}/documentView/${windowId}/${viewId}/filter`, {
     filters,
   });
+}
+
+export function locationSearchRequest({ windowId, viewId }) {
+  return get(
+    `${config.API_URL}/documentView/${windowId}/${viewId}/geoLocations?limit=0`
+  );
+}
+
+export function locationConfigRequest() {
+  return get(`${config.API_URL}/geolocation/config`);
+}
+
+export function deleteView(windowId, viewId, action) {
+  return del(
+    `${config.API_URL}/documentView/${windowId}/${viewId}${
+      action ? `?action=${action}` : ''
+    }`
+  );
 }
 
 export function deleteStaticFilter(windowId, viewId, filterId) {

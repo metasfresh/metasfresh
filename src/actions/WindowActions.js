@@ -41,6 +41,8 @@ import {
   REMOVE_TABLE_ITEMS_SELECTION,
   SELECT_TABLE_ITEMS,
   SET_LATEST_NEW_DOCUMENT,
+  SET_RAW_MODAL_DESCRIPTION,
+  SET_RAW_MODAL_TITLE,
   SHOW_SPINNER,
   SORT_TAB,
   TOGGLE_OVERLAY,
@@ -58,11 +60,12 @@ import {
   UPDATE_ROW_STATUS,
   UPDATE_TAB_ROWS_DATA,
 } from '../constants/ActionTypes';
+import { PROCESS_NAME } from '../constants/Constants';
 
 import {
   getData,
   patchRequest,
-  initLayout,
+  getLayout,
   topActionsRequest,
   getProcessData,
   getTab,
@@ -150,6 +153,28 @@ export function updateRawModal(windowType, data) {
     type: UPDATE_RAW_MODAL,
     windowId: windowType,
     data: { ...data },
+  };
+}
+
+/**
+ * @method setRawModalTitle
+ * @summary Action creator that sets the title on the rawModal
+ */
+export function setRawModalTitle(title, windowType) {
+  return {
+    type: SET_RAW_MODAL_TITLE,
+    payload: { windowType, title },
+  };
+}
+
+/**
+ * @method setRawModalDescription
+ * @summary Action creator that sets the description on the rawModal
+ */
+export function setRawModalDescription(description, windowType) {
+  return {
+    type: SET_RAW_MODAL_DESCRIPTION,
+    payload: { windowType, description },
   };
 }
 
@@ -661,7 +686,7 @@ export function createWindow(
           dispatch(getWindowBreadcrumb(windowId));
         }
 
-        return initLayout('window', windowId, tabId, null, null, isAdvanced)
+        return getLayout('window', windowId, tabId, null, null, isAdvanced)
           .then((response) =>
             dispatch(initLayoutSuccess(response.data, getScope(isModal)))
           )
@@ -994,12 +1019,12 @@ export function updatePropertyValue(
       dispatch(
         updateRowFieldProperty(property, { value }, tabid, rowid, 'master')
       );
-      if (isModal && entity !== 'process') {
+      if (isModal && entity !== PROCESS_NAME) {
         dispatch(updateDataFieldProperty(property, { value }, 'modal'));
       }
     } else {
       dispatch(updateDataFieldProperty(property, { value }, getScope(isModal)));
-      if (isModal && entity !== 'process') {
+      if (isModal && entity !== PROCESS_NAME) {
         //update the master field too if exist
         dispatch(updateDataFieldProperty(property, { value }, 'master'));
       }
@@ -1157,7 +1182,7 @@ export function createProcess({
         let response;
 
         try {
-          response = await initLayout('process', processType);
+          response = await getLayout(PROCESS_NAME, processType);
 
           await dispatch(setProcessSaved());
 
@@ -1211,7 +1236,7 @@ export function handleProcessResponse(response, type, id) {
 
             break;
           case 'openReport':
-            openFile('process', type, id, 'print', action.filename);
+            openFile(PROCESS_NAME, type, id, 'print', action.filename);
 
             break;
           case 'openDocument':

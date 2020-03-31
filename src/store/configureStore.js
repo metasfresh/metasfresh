@@ -4,10 +4,16 @@ import { createStore } from 'redux-dynamic-reducer';
 import thunk from 'redux-thunk';
 import promiseMiddleware from 'redux-promise';
 
+import navigationMiddleware from './customMiddlewares';
 import rootReducer from '../reducers';
 
 export default function configureStore(history) {
-  const middleware = [thunk, promiseMiddleware, routerMiddleware(history)];
+  const middleware = [
+    thunk,
+    promiseMiddleware,
+    navigationMiddleware,
+    routerMiddleware(history),
+  ];
   const store = createStore(
     null,
     compose(

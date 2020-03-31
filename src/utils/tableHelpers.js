@@ -21,6 +21,7 @@ export function constructorFn(props) {
   const { defaultSelected, rowEdited } = props;
 
   this.state = {
+    // TODO: Maybe we sholud move this to redux ?
     selected:
       defaultSelected && defaultSelected !== null
         ? defaultSelected

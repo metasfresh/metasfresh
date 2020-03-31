@@ -39,12 +39,11 @@ class TablePagination extends PureComponent {
   };
 
   handleSubmit = (e, value, pages) => {
-    const { handleChangePage } = this.props;
     if (e.key === 'Enter') {
       e.preventDefault();
 
       if (value <= pages && value > 0) {
-        handleChangePage(Number(value));
+        this.handleChangePage(Number(value));
         this.setState({
           value: '',
           secondDotsState: false,
@@ -113,7 +112,7 @@ class TablePagination extends PureComponent {
   };
 
   renderFirstPartPagination = (pagination, pages) => {
-    const { handleChangePage, compressed } = this.props;
+    const { compressed } = this.props;
     const { firstDotsState, value } = this.state;
 
     pagination.push(
@@ -122,7 +121,7 @@ class TablePagination extends PureComponent {
         key={1}
         onClick={() => {
           this.resetGoToPage();
-          handleChangePage(1);
+          this.handleChangePage(1);
         }}
       >
         <a
@@ -151,7 +150,7 @@ class TablePagination extends PureComponent {
   };
 
   renderLastPartPagination = (pagination, pages) => {
-    const { handleChangePage, compressed } = this.props;
+    const { compressed } = this.props;
     const { secondDotsState, value } = this.state;
 
     pagination.push(
@@ -173,7 +172,7 @@ class TablePagination extends PureComponent {
         key={9999}
         onClick={() => {
           this.resetGoToPage();
-          handleChangePage(pages);
+          this.handleChangePage(pages);
         }}
       >
         <a
@@ -188,7 +187,7 @@ class TablePagination extends PureComponent {
   };
 
   renderPaginationContent = (pagination, page, start, end) => {
-    const { handleChangePage, compressed } = this.props;
+    const { compressed } = this.props;
 
     for (let i = start; i <= end; i++) {
       pagination.push(
@@ -199,7 +198,7 @@ class TablePagination extends PureComponent {
           key={i}
           onClick={() => {
             this.resetGoToPage();
-            handleChangePage(i);
+            this.handleChangePage(i);
           }}
         >
           <a
@@ -259,7 +258,7 @@ class TablePagination extends PureComponent {
   };
 
   renderArrow = (left, pages, page) => {
-    const { compressed, handleChangePage } = this.props;
+    const { compressed } = this.props;
     let disabled = false;
 
     if (left) {
@@ -282,7 +281,7 @@ class TablePagination extends PureComponent {
           onClick={() => {
             if (!disabled) {
               this.resetGoToPage();
-              handleChangePage(left ? 'down' : 'up');
+              this.handleChangePage(left ? 'down' : 'up');
             }
           }}
         >
@@ -293,25 +292,26 @@ class TablePagination extends PureComponent {
   };
 
   paginationShortcuts = () => {
-    const {
-      size,
-      pageLength,
-      disablePaginationShortcuts,
-      handleChangePage,
-    } = this.props;
-
+    const { size, pageLength, disablePaginationShortcuts } = this.props;
     const pages = size ? Math.ceil(size / pageLength) : 0;
 
     return (
       !disablePaginationShortcuts && {
-        handleFirstPage: () => handleChangePage(1),
+        handleFirstPage: () => this.handleChangePage(1),
         handleLastPage: () =>
-          handleChangePage(size ? Math.ceil(size / pageLength) : 0),
-        handleNextPage: () => handleChangePage('up'),
-        handlePrevPage: () => handleChangePage('down'),
+          this.handleChangePage(size ? Math.ceil(size / pageLength) : 0),
+        handleNextPage: () => this.handleChangePage('up'),
+        handlePrevPage: () => this.handleChangePage('down'),
         pages: pages,
       }
     );
+  };
+
+  handleChangePage = (pages) => {
+    const { onDeselectAll, onChangePage } = this.props;
+
+    onChangePage(pages);
+    onDeselectAll();
   };
 
   render() {
@@ -377,17 +377,18 @@ class TablePagination extends PureComponent {
 }
 
 TablePagination.propTypes = {
+  pageLength: PropTypes.number.isRequired,
+  size: PropTypes.number.isRequired,
+  page: PropTypes.number.isRequired,
+  rowLength: PropTypes.number.isRequired,
+  compressed: PropTypes.bool,
   selected: PropTypes.array,
+  disablePaginationShortcuts: PropTypes.bool,
+  queryLimitHit: PropTypes.bool,
   handleSelectAll: PropTypes.func,
   handleSelectRange: PropTypes.func,
-  handleChangePage: PropTypes.func,
-  rowLength: PropTypes.number.isRequired,
-  compressed: PropTypes.any, // TODO: Looks like it's not used
-  size: PropTypes.number.isRequired,
-  queryLimitHit: PropTypes.bool,
-  pageLength: PropTypes.number.isRequired,
-  disablePaginationShortcuts: PropTypes.bool,
-  page: PropTypes.number.isRequired,
+  onChangePage: PropTypes.func,
+  onDeselectAll: PropTypes.func,
 };
 
 export default TablePagination;

@@ -65,6 +65,12 @@ class Table extends Component {
     }
   }
 
+  UNSAFE_componentWillReceiveProps(nextProps) {
+    if (this.state.rows.length && !nextProps.cols) {
+      this.setState({ rows: [] });
+    }
+  }
+
   componentDidUpdate(prevProps, prevState) {
     const {
       dispatch,
@@ -80,6 +86,7 @@ class Table extends Component {
       tabId,
       isModal,
       hasIncluded,
+      page,
     } = this.props;
     const { selected, rows } = this.state;
     const selectedEqual = _.isEqual(prevState.selected, selected);
@@ -93,6 +100,11 @@ class Table extends Component {
     }
 
     if (rows && !_.isEqual(prevState.rows, rows)) {
+      this.setState({
+        collapsedRows: [],
+        collapsedParentsRows: [],
+      });
+
       if (isModal && !hasIncluded) {
         let firstRow = rows[0];
 
@@ -106,6 +118,11 @@ class Table extends Component {
           }
         }
       }
+    } else if (page !== prevProps.page) {
+      this.setState({
+        collapsedRows: [],
+        collapsedParentsRows: [],
+      });
     }
 
     if (mainTable && open) {
@@ -135,8 +152,15 @@ class Table extends Component {
         this.setState({ selected: [] });
       }
 
+      this.setState({
+        collapsedRows: [],
+        collapsedParentsRows: [],
+      });
+
       const firstLoad =
-        prevProps.rowData.get(`${tabId}`).size && rowData.get(`${tabId}`).size
+        prevProps.rowData.get(`${tabId}`) &&
+        prevProps.rowData.get(`${tabId}`).size &&
+        rowData.get(`${tabId}`).size
           ? false
           : true;
 
@@ -209,6 +233,7 @@ class Table extends Component {
 
     if (indentSupported && rowData.get(`${tabId}`).size) {
       rowsData = getRowsData(rowData.get(`${tabId}`));
+
       let stateChange = {
         rows: rowsData,
         pendingInit: !rowsData,
@@ -225,6 +250,7 @@ class Table extends Component {
       this.setState(stateChange, () => {
         const { rows } = this.state;
         const firstRow = rows[0];
+
         let updatedParentsRows = [...this.state.collapsedParentsRows];
         let updatedRows = [...this.state.collapsedRows];
 
@@ -248,7 +274,7 @@ class Table extends Component {
 
         let mapCollapsed = [];
 
-        if (collapsible && rows && rows.length && selectFirst) {
+        if (collapsible && rows && rows.length) {
           rows.map((row) => {
             if (row.indent.length >= expandedDepth && row.includedDocuments) {
               mapCollapsed = mapCollapsed.concat(collapsedMap(row));
@@ -1018,7 +1044,9 @@ class Table extends Component {
       dataHash,
     } = this.state;
 
-    if (!rows || !rows.length) return null;
+    if (!rows || !rows.length || (!cols || !cols.length) || (!rows && !cols)) {
+      return null;
+    }
 
     this.rowRefs = {};
 
@@ -1152,6 +1180,7 @@ class Table extends Component {
       hasIncluded,
       blurOnIncludedView,
       toggleState,
+      spinnerVisible,
     } = this.props;
 
     const {
@@ -1274,7 +1303,7 @@ class Table extends Component {
               <tfoot ref={(c) => (this.tfoot = c)} />
             </table>
 
-            {this.renderEmptyInfo(rowData, tabId)}
+            {!spinnerVisible && this.renderEmptyInfo(rowData, tabId)}
           </div>
 
           {
@@ -1294,16 +1323,14 @@ class Table extends Component {
                 queryLimitHit,
                 disablePaginationShortcuts,
               }}
-              handleChangePage={(pages) => {
-                this.deselectAllProducts();
-                handleChangePage(pages);
-              }}
+              onChangePage={handleChangePage}
               selected={selected || [undefined]}
               pageLength={pageLength}
               rowLength={rows ? rows.length : 0}
               handleSelectAll={this.selectAll}
               handleSelectRange={this.selectRangeProduct}
               deselect={this.deselectAllProducts}
+              onDeselectAll={this.deselectAllProducts}
             />
           </div>
         )}
@@ -1364,9 +1391,10 @@ const mapStateToProps = (state) => ({
   allowShortcut: state.windowHandler.allowShortcut,
   allowOutsideClick: state.windowHandler.allowOutsideClick,
   modalVisible: state.windowHandler.modal.visible,
-  isGerman: state.appHandler.me.language
-    ? state.appHandler.me.language.key.includes('de')
-    : false,
+  isGerman:
+    state.appHandler.me.language && state.appHandler.me.language.key
+      ? state.appHandler.me.language.key.includes('de')
+      : false,
 });
 
 const clickOutsideConfig = {

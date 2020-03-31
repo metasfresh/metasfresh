@@ -1,13 +1,17 @@
 import PropTypes from 'prop-types';
-import { push } from 'react-router-redux';
-import { Map } from 'immutable';
+import { Map as iMap } from 'immutable';
 import Moment from 'moment-timezone';
 import currentDevice from 'current-device';
 
 import { getItemsByProperty, nullToEmptyStrings } from './index';
-import { getSelection, getSelectionInstant } from '../reducers/windowHandler';
+import { getSelectionInstant } from '../reducers/windowHandler';
+import { viewState } from '../reducers/viewHandler';
 import { TIME_REGEX_TEST } from '../constants/Constants';
 
+/**
+ * @typedef {object} Props Component props
+ * @prop {object} DLpropTypes
+ */
 const DLpropTypes = {
   // from parent
   windowType: PropTypes.string.isRequired,
@@ -17,38 +21,81 @@ const DLpropTypes = {
   updateParentSelectedIds: PropTypes.func,
 
   // from @connect
-  dispatch: PropTypes.func.isRequired,
   selections: PropTypes.object.isRequired,
   childSelected: PropTypes.array.isRequired,
   parentSelected: PropTypes.array.isRequired,
   selected: PropTypes.array.isRequired,
   isModal: PropTypes.bool,
+
+  // from @react-router
+  location: PropTypes.object.isRequired,
 };
 
-const DLmapStateToProps = (state, props) => ({
-  selections: state.windowHandler.selections,
-  selected: getSelectionInstant(
-    state,
-    { ...props, windowId: props.windowType, viewId: props.defaultViewId },
-    state.windowHandler.selectionsHash
-  ),
-  childSelected:
-    props.includedView && props.includedView.windowType
-      ? getSelection({
+/**
+ * @typedef {object} Props Component context
+ * @prop {object} DLcontextTypes
+ */
+const DLmapStateToProps = (state, { location, ...props }) => {
+  const { query } = location;
+  let master = state.viewHandler.views[props.windowType];
+
+  if (!master) {
+    master = viewState;
+  }
+
+  const sort = master.sort ? master.sort : query.sort;
+  const page = master.page ? master.page : parseInt(query.page);
+  let viewId = master.viewId ? master.viewId : query.viewId;
+
+  if (props.defaultViewId) {
+    viewId = props.defaultViewId;
+  }
+
+  if (location.hash === '#notification') {
+    viewId = null;
+  }
+
+  return {
+    page,
+    sort,
+    viewId,
+    reduxData: master,
+    layout: master.layout,
+    refType: query.refType,
+    refId: query.refId,
+    refTabId: query.refTabId,
+    selections: state.windowHandler.selections,
+    selected: getSelectionInstant(
+      state,
+      { ...props, windowId: props.windowType, viewId },
+      state.windowHandler.selectionsHash
+    ),
+    childSelected:
+      props.includedView && props.includedView.windowType
+        ? getSelectionInstant(
+            state,
+            {
+              ...props,
+              windowId: props.includedView.windowType,
+              viewId: props.includedView.viewId,
+            },
+            state.windowHandler.selectionsHash
+          )
+        : NO_SELECTION,
+    parentSelected: props.parentWindowType
+      ? getSelectionInstant(
           state,
-          windowType: props.includedView.windowType,
-          viewId: props.includedView.viewId,
-        })
+          {
+            ...props,
+            windowId: props.parentWindowType,
+            viewId: props.parentDefaultViewId,
+          },
+          state.windowHandler.selectionsHash
+        )
       : NO_SELECTION,
-  parentSelected: props.parentWindowType
-    ? getSelection({
-        state,
-        windowType: props.parentWindowType,
-        viewId: props.parentDefaultViewId,
-      })
-    : NO_SELECTION,
-  modal: state.windowHandler.modal,
-});
+    modal: state.windowHandler.modal,
+  };
+};
 
 const NO_SELECTION = [];
 const NO_VIEW = {};
@@ -61,7 +108,7 @@ if (currentDevice.type === 'mobile' || currentDevice.type === 'tablet') {
 }
 
 const filtersToMap = function(filtersArray) {
-  let filtersMap = Map();
+  let filtersMap = iMap();
 
   if (filtersArray && filtersArray.length) {
     filtersArray.forEach((filter) => {
@@ -89,23 +136,18 @@ const doesSelectionExist = function({
   let rows = [];
 
   data &&
-    data.result &&
-    data.result.map((item) => {
+    data.length &&
+    data.map((item) => {
       rows = rows.concat(mapIncluded(item));
     });
 
   return (
     data &&
-    data.size &&
-    data.result &&
+    data.length &&
     selected &&
     selected[0] &&
     getItemsByProperty(rows, 'id', selected[0]).length
   );
-};
-
-const redirectToNewDocument = (dispatch, windowType) => {
-  dispatch(push(`/window/${windowType}/new`));
 };
 
 const getSortingQuery = (asc, field) => (asc ? '+' : '-') + field;
@@ -118,7 +160,6 @@ export {
   PANEL_WIDTHS,
   GEO_PANEL_STATES,
   getSortingQuery,
-  redirectToNewDocument,
   filtersToMap,
   doesSelectionExist,
 };

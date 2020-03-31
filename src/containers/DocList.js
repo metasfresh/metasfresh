@@ -19,16 +19,6 @@ import Overlay from '../components/app/Overlay';
  * @extends Component
  */
 class DocList extends Component {
-  state = {
-    modalTitle: '',
-    modalDescription: '',
-    notfound: false,
-  };
-
-  /**
-   * @method componentDidMount
-   * @summary ToDo: Describe the method.
-   */
   componentDidMount = () => {
     const { dispatch, windowType, latestNewDocument, query } = this.props;
 
@@ -46,10 +36,6 @@ class DocList extends Component {
     }
   };
 
-  /**
-   * @method componentDidUpdate
-   * @summary ToDo: Describe the method.
-   */
   componentDidUpdate = (prevProps) => {
     const { dispatch, windowType } = this.props;
 
@@ -69,30 +55,6 @@ class DocList extends Component {
   };
 
   /**
-   * @method setModalTitle
-   * @summary ToDo: Describe the method.
-   */
-  setModalTitle = (title) => {
-    this.setState({ modalTitle: title });
-  };
-
-  /**
-   * @method setModalDescription
-   * @summary ToDo: Describe the method.
-   */
-  setModalDescription = (desc) => {
-    this.setState({ modalDescription: desc });
-  };
-
-  /**
-   * @method setNotFound
-   * @summary ToDo: Describe the method.
-   */
-  setNotFound = (isNotFound) => {
-    this.setState({ notfound: isNotFound });
-  };
-
-  /**
    * @method handleUpdateParentSelectedIds
    * @summary ToDo: Describe the method.
    */
@@ -100,10 +62,6 @@ class DocList extends Component {
     this.masterDocumentList.updateQuickActions(childSelection);
   };
 
-  /**
-   * @method render
-   * @summary ToDo: Describe the method.
-   */
   render() {
     const {
       windowType,
@@ -117,7 +75,6 @@ class DocList extends Component {
       processStatus,
       includedView,
     } = this.props;
-    const { modalTitle, notfound, modalDescription } = this.state;
     let refRowIds = [];
 
     if (query && query.refRowIds) {
@@ -137,14 +94,9 @@ class DocList extends Component {
         breadcrumb={breadcrumb}
         windowType={windowType}
         query={query}
-        notfound={notfound}
         indicator={indicator}
-        modalTitle={modalTitle}
         processStatus={processStatus}
         includedView={includedView}
-        setModalTitle={this.setModalTitle}
-        setModalDescription={this.setModalDescription}
-        modalDescription={modalDescription}
         showIndicator={!modal.visible && !rawModal.visible}
         masterDocumentList={this.masterDocumentList}
       >
@@ -162,12 +114,6 @@ class DocList extends Component {
             type="grid"
             updateUri={this.updateUriCallback}
             windowType={windowType}
-            defaultViewId={query.viewId}
-            defaultSort={query.sort}
-            defaultPage={parseInt(query.page)}
-            refType={query.refType}
-            refId={query.refId}
-            refTabId={query.refTabId}
             refRowIds={refRowIds}
             includedView={includedView}
             inBackground={rawModal.visible}
@@ -175,8 +121,6 @@ class DocList extends Component {
             fetchQuickActionsOnInit
             processStatus={processStatus}
             disablePaginationShortcuts={modal.visible || rawModal.visible}
-            setNotFound={this.setNotFound}
-            notfound={notfound}
           />
 
           {includedView &&
@@ -217,7 +161,7 @@ class DocList extends Component {
  * @prop {string} pathname
  * @prop {object} pluginModal
  * @prop {string} processStatus
- * @prop {object} query
+ * @prop {object} query - routing query
  * @prop {object} rawModal
  * @prop {object} windowType
  */

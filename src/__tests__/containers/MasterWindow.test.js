@@ -26,6 +26,7 @@ import appHandler, { initialState as appHandlerState } from '../../reducers/appH
 import windowHandler, { initialState as windowHandlerState } from '../../reducers/windowHandler';
 import menuHandler, { initialState as menuHandlerState } from '../../reducers/menuHandler';
 import listHandler, { initialState as listHandlerState } from '../../reducers/listHandler';
+import viewHandler, { initialState as viewHandlerState } from '../../reducers/viewHandler';
 
 import fixtures from "../../../test_setup/fixtures/master_window.json";
 import dataFixtures from '../../../test_setup/fixtures/master_window/data.json';
@@ -54,6 +55,7 @@ const createInitialProps = function(additionalProps = {}) {
 const rootReducer = combineReducers({
   appHandler,
   listHandler,
+  viewHandler,
   menuHandler,
   windowHandler,
   pluginsHandler,
@@ -67,6 +69,7 @@ const createInitialState = function(state = {}) {
       appHandler: { ...appHandlerState },
       windowHandler: { ...windowHandlerState },
       listHandler: { ...listHandlerState },
+      viewHandler: { ...viewHandlerState },
       menuHandler: { ...menuHandlerState },
       pluginsHandler: { ...pluginsHandlerState },
       routing: { ...fixtures.state1.routing },

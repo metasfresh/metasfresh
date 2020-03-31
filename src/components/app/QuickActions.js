@@ -17,7 +17,6 @@ import Tooltips from '../tooltips/Tooltips.js';
 import QuickActionsDropdown from './QuickActionsDropdown';
 
 const initialState = {
-  actions: [],
   isDropdownOpen: false,
   btnTooltip: false,
   listTooltip: false,
@@ -84,7 +83,7 @@ export class QuickActions extends Component {
   UNSAFE_componentWillReceiveProps = (nextProps) => {
     const { selected, viewId, windowType } = this.props;
 
-    if (!nextProps.viewId) {
+    if (!nextProps.viewId && viewId) {
       return this.props.onInvalidViewId();
     }
 
@@ -219,7 +218,7 @@ export class QuickActions extends Component {
    * @param {*} parentView
    * @param {*} resolve
    * @param {*} reject
-   * @todo Write the documentation
+   * @todo Rewrite this as an action creator
    */
   async fetchActions(
     windowId,

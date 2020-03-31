@@ -202,20 +202,6 @@ class Inbox extends Component {
 }
 
 /**
- * @method routerInbox
- * @summary ToDo: Describe the method
- * @param {object} state
- * @param {object} props
- * @todo Write the documentation
- */
-const routerInbox = withRouter(
-  connect((state, props) => ({
-    modalVisible: state.windowHandler.modal.visible,
-    location: props.router.location,
-  }))(Inbox)
-);
-
-/**
  * @method addClickOutsideHandler
  * @summary ToDo: Describe the method
  * @param {*} Child
@@ -260,5 +246,12 @@ Inbox.propTypes = {
 };
 
 Inbox.defaultProps = {};
+
+const routerInbox = withRouter(
+  connect((state, props) => ({
+    modalVisible: state.windowHandler.modal.visible,
+    location: props.router.location,
+  }))(Inbox)
+);
 
 export default onClickOutside(addClickOutsideHandler(routerInbox));
