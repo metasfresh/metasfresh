@@ -6,6 +6,7 @@ import de.metas.async.spi.WorkpackageProcessorAdapter;
 import de.metas.procurement.base.model.I_PMM_PurchaseCandidate;
 import de.metas.procurement.base.order.impl.OrdersGenerator;
 import de.metas.util.Services;
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 
 import java.math.BigDecimal;
@@ -64,7 +65,7 @@ public class PMM_GenerateOrders extends WorkpackageProcessorAdapter
 	private List<I_PMM_PurchaseCandidate> retrieveItems()
 	{
 		final I_C_Queue_WorkPackage workpackage = getC_Queue_WorkPackage();
-		return Services.get(IQueueDAO.class).retrieveAllItems(workpackage, I_PMM_PurchaseCandidate.class);
+		return Services.get(IQueueDAO.class).retrieveItemsSkipMissing(workpackage, I_PMM_PurchaseCandidate.class, ITrx.TRXNAME_ThreadInherited);
 	}
 
 	private List<I_PMM_PurchaseCandidate> getItemsWithQty(List<I_PMM_PurchaseCandidate> candidates)
