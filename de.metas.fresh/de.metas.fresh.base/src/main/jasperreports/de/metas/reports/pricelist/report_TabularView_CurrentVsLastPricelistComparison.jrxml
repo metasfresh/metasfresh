@@ -6,7 +6,7 @@
 	<property name="ireport.zoom" value="1.241842646118328"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="metasfresh\de.metas.fresh\de.metas.fresh.base\src\main\jasperreports\dev.xml"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="jasperreports\dev.xml"/>
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<property name="com.jaspersoft.studio.unit." value="pixel"/>
 	<property name="com.jaspersoft.studio.unit.pageHeight" value="pixel"/>
@@ -133,21 +133,21 @@
 				<textField>
 					<reportElement key="textField-16" x="37" y="96" width="133" height="12" forecolor="#000000" uuid="c6318e08-fa7a-4683-a880-3bc41fd8deaf"/>
 					<textElement markup="none">
-						<font size="9" isBold="false"/>
+						<font fontName="Arial" size="9" isBold="false"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$R{BPartner}]]></textFieldExpression>
 				</textField>
 				<textField>
 					<reportElement key="textField-16" x="169" y="96" width="134" height="12" forecolor="#000000" uuid="c6318e08-fa7a-4683-a880-3bc41fd8deaf"/>
 					<textElement markup="none">
-						<font size="9" isBold="false"/>
+						<font fontName="Arial" size="9" isBold="false"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{bp_value}]]></textFieldExpression>
 				</textField>
 				<textField>
 					<reportElement key="textField-16" x="364" y="0" width="188" height="12" forecolor="#000000" uuid="c6318e08-fa7a-4683-a880-3bc41fd8deaf"/>
 					<textElement markup="none">
-						<font size="9" isBold="true"/>
+						<font fontName="Arial" size="9" isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{bp_name}]]></textFieldExpression>
 				</textField>
@@ -160,14 +160,14 @@
 						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement textAlignment="Left">
-						<font size="9" isBold="false"/>
+						<font fontName="Arial" size="9" isBold="false"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$R{Date}]]></textFieldExpression>
 				</textField>
 				<textField>
 					<reportElement key="textField-20" x="423" y="80" width="91" height="12" forecolor="#000000" uuid="0945443b-def7-4253-a6e1-6a6d932f115c"/>
 					<textElement textAlignment="Right" markup="none">
-						<font size="9" isBold="false"/>
+						<font fontName="Arial" size="9" isBold="false"/>
 					</textElement>
 					<textFieldExpression><![CDATA[new SimpleDateFormat("dd.MM.yyyy").format(new java.util.Date())]]></textFieldExpression>
 				</textField>
@@ -180,35 +180,35 @@
 						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement textAlignment="Left">
-						<font size="9" isBold="false"/>
+						<font fontName="Arial" size="9" isBold="false"/>
 					</textElement>
 					<textFieldExpression><![CDATA[( $R{price_validity})]]></textFieldExpression>
 				</textField>
 				<textField>
 					<reportElement key="textField-20" x="423" y="96" width="91" height="12" forecolor="#000000" uuid="fdf874a4-3c0e-44a3-93bb-9fbe92aea8e9"/>
 					<textElement textAlignment="Right" markup="none">
-						<font size="9" isBold="false"/>
+						<font fontName="Arial" size="9" isBold="false"/>
 					</textElement>
 					<textFieldExpression><![CDATA[new SimpleDateFormat("dd.MM.yyyy").format($F{validfromplv1})]]></textFieldExpression>
 				</textField>
 				<textField>
 					<reportElement key="textField-16" x="37" y="84" width="133" height="12" forecolor="#000000" uuid="ef32425f-72eb-4296-a44d-40c2cd66ed1b"/>
 					<textElement markup="none">
-						<font size="9" isBold="true"/>
+						<font fontName="Arial" size="9" isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$R{Pricelist}]]></textFieldExpression>
 				</textField>
 				<textField>
 					<reportElement key="textField-16" x="364" y="12" width="188" height="12" forecolor="#000000" uuid="bff4119c-bfcb-49d8-87e8-65aa6782a448"/>
 					<textElement markup="none">
-						<font size="9" isBold="true"/>
+						<font fontName="Arial" size="9" isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{bpl_name}]]></textFieldExpression>
 				</textField>
 				<textField>
 					<reportElement key="textField-16" x="169" y="84" width="179" height="12" forecolor="#000000" uuid="1f2b7aa1-e820-49af-beda-2942a3a679f8"/>
 					<textElement markup="none">
-						<font size="9" isBold="true"/>
+						<font fontName="Arial" size="9" isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{nameplv1}]]></textFieldExpression>
 				</textField>
@@ -323,14 +323,6 @@
 	<title>
 		<band height="200">
 			<subreport isUsingCache="true">
-				<reportElement key="subreport-4" x="0" y="31" width="595" height="85" uuid="c2089bf4-b6cd-4b4b-af38-3117ff12e76b"/>
-				<subreportParameter name="org_id">
-					<subreportParameterExpression><![CDATA[new BigDecimal(1000000)]]></subreportParameterExpression>
-				</subreportParameter>
-				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
-				<subreportExpression><![CDATA["de/metas/docs/generics/report_logo.jasper"]]></subreportExpression>
-			</subreport>
-			<subreport isUsingCache="true">
 				<reportElement key="subreport-8" x="0" y="100" width="225" height="100" uuid="c5d77fa4-7184-4f47-a49b-955bd96be83c"/>
 				<subreportParameter name="org_id">
 					<subreportParameterExpression><![CDATA[new BigDecimal(1000000)]]></subreportParameterExpression>
@@ -340,6 +332,14 @@
 				</subreportParameter>
 				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
 				<subreportExpression><![CDATA["de/metas/docs/generics/report_orgblock.jasper"]]></subreportExpression>
+			</subreport>
+			<subreport isUsingCache="true">
+				<reportElement key="subreport-4" x="0" y="31" width="595" height="85" uuid="45686b08-5564-415f-85da-91f50a1ce8f5"/>
+				<subreportParameter name="org_id">
+					<subreportParameterExpression><![CDATA[new BigDecimal(1000000)]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression><![CDATA["de/metas/docs/generics/report_logo.jasper"]]></subreportExpression>
 			</subreport>
 		</band>
 	</title>
@@ -467,7 +467,7 @@
 					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
-				<textElement textAlignment="Right">
+				<textElement textAlignment="Right" markup="html">
 					<font size="9" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$V{PAGE_NUMBER} + "/ "]]></textFieldExpression>
@@ -480,7 +480,7 @@
 					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
-				<textElement textAlignment="Left">
+				<textElement textAlignment="Left" markup="html">
 					<font size="9" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA["" + $V{PAGE_NUMBER}]]></textFieldExpression>
