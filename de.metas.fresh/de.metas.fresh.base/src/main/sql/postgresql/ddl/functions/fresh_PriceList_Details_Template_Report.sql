@@ -40,7 +40,7 @@ SELECT plc.value                                                                
        plc.M_ProductPrice_ID                                                                                                       as m_productprice_id,
        p_c_bpartner_id                                                                                                             as c_bpartner_id,
        plc.M_HU_PI_Item_Product_ID                                                                                                 as m_hu_pi_item_product_id,
-       case when plc.m_hu_pi_item_product_id is not null then ''COLI'' else plc.uom_x12de355 end                                   as uom_x12de355,
+       case when plc.m_hu_pi_item_product_id is not null then 'COLI' else plc.uom_x12de355 end                                   as uom_x12de355,
        p_c_bpartner_location_id                                                                                                    as c_bpartner_location_id,
        plc.qtycuspertu                                                                                                             as qtycuspertu,
        plc.m_product_id                                                                                                            as m_product_id,
