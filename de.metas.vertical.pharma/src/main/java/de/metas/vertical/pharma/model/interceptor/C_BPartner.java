@@ -6,6 +6,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.util.Check;
@@ -44,8 +45,8 @@ import de.metas.vertical.pharma.model.I_C_BPartner;
 @Component
 public class C_BPartner
 {
-	private static final String ERR_NarcoticPermissions_Valid_BTM = "de.metas.vertical.pharma.model.interceptor.C_BPartner.NarcoticPermissions_Valid_BTM";
-	private static final String ERR_InvalidBTM = "de.metas.vertical.pharma.model.interceptor.C_BPartner.Invalid_BTM";
+	private static final AdMessageKey ERR_NarcoticPermissions_Valid_BTM = AdMessageKey.of("de.metas.vertical.pharma.model.interceptor.C_BPartner.NarcoticPermissions_Valid_BTM");
+	private static final AdMessageKey ERR_InvalidBTM = AdMessageKey.of("de.metas.vertical.pharma.model.interceptor.C_BPartner.Invalid_BTM");
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = {
 			I_C_BPartner.COLUMNNAME_IsCustomer,

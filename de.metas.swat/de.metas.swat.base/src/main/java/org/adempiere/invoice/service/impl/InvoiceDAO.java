@@ -142,5 +142,4 @@ public class InvoiceDAO extends AbstractInvoiceDAO
 
 		return result;
 	}
-
 }

@@ -1,5 +1,6 @@
 package org.adempiere.ad.table.process;
 
+import org.adempiere.ad.migration.logger.MigrationScriptFileLoggerHolder;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.window.api.IADWindowDAO;
@@ -77,12 +78,11 @@ public class AD_Column_Delete extends JavaProcess
 		final String tableName = Services.get(IADTableDAO.class).retrieveTableName(adColumn.getAD_Table_ID());
 		final String columnName = adColumn.getColumnName();
 
-		executeDDL("ALTER TABLE " + tableName + " DROP COLUMN IF EXISTS " + columnName);
-	}
-
-	private final void executeDDL(final String sql)
-	{
-		DB.executeUpdateEx(sql, ITrx.TRXNAME_ThreadInherited);
-		addLog("DDL: " + sql);
+		final String sqlStatement = "ALTER TABLE " + tableName + " DROP COLUMN IF EXISTS " + columnName;
+		final String sql = MigrationScriptFileLoggerHolder.DDL_PREFIX + "SELECT public.db_alter_table("
+				+ DB.TO_STRING(tableName) + ","
+				+ DB.TO_STRING(sqlStatement) + ")";
+		final Object[] sqlParams = null; // IMPORTANT: don't use any parameters because we want to log this command to migration script file
+		DB.executeFunctionCallEx(ITrx.TRXNAME_ThreadInherited, sql, sqlParams);
 	}
 }

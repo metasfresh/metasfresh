@@ -8,8 +8,8 @@ import java.math.BigDecimal;
 
 import org.adempiere.test.AdempiereTestHelper;
 import org.assertj.core.api.Condition;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import de.metas.payment.camt054_001_06.BatchInformation2;
 import de.metas.payment.camt054_001_06.EntryDetails7;
@@ -46,7 +46,7 @@ public class ESRDataImporterCamt54V02Tests
 			t -> t.getErrorMsgs().isEmpty(),
 			"ESRTransaction has no error messages");
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();

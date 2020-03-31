@@ -803,21 +803,20 @@ public class POWrapper implements InvocationHandler, IInterfaceWrapper
 		}
 	}
 
-	public static void delete(final Object o)
+	/**
+	 * @param model
+	 * @param force if true then the Processed flag will be ignored
+	 */
+	public static void delete(@NonNull final Object model, final boolean failIfProcessed)
 	{
-		if (o == null)
-		{
-			throw new IllegalArgumentException("model is null");
-		}
-
-		final PO po = getPO(o);
+		final PO po = getPO(model);
 		if (po != null)
 		{
-			boolean force = false;
+			boolean force = !failIfProcessed;
 
 			// If the Processed column is a virtual column then we have to NOT check and enforce it,
 			// because the caller has no option to unset it.
-			if (po.getPOInfo().isVirtualColumn("Processed"))
+			if (!force && po.getPOInfo().isVirtualColumn("Processed"))
 			{
 				force = true;
 			}
@@ -826,7 +825,7 @@ public class POWrapper implements InvocationHandler, IInterfaceWrapper
 		}
 		else
 		{
-			throw new ModelClassNotSupportedException(o);
+			throw new ModelClassNotSupportedException(model);
 		}
 	}
 

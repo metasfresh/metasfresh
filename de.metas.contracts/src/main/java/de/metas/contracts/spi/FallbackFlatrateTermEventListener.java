@@ -13,6 +13,7 @@ import de.metas.contracts.model.I_C_Flatrate_DataEntry;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_Invoice_Clearing_Alloc;
 import de.metas.contracts.model.X_C_Flatrate_DataEntry;
+import de.metas.i18n.AdMessageKey;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -47,7 +48,7 @@ import lombok.NonNull;
  */
 public class FallbackFlatrateTermEventListener implements IFlatrateTermEventListener
 {
-	private static final String MSG_TERM_ERROR_ENTRY_ALREADY_CO_2P = "Term_Error_Entry_Already_CO";
+	private static final AdMessageKey MSG_TERM_ERROR_ENTRY_ALREADY_CO_2P = AdMessageKey.of("Term_Error_Entry_Already_CO");
 
 	@Override
 	@OverridingMethodsMustInvokeSuper

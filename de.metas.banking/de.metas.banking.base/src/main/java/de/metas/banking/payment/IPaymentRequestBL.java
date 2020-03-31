@@ -1,8 +1,8 @@
 package de.metas.banking.payment;
 
 import org.compiere.model.I_C_Invoice;
+import org.compiere.model.I_C_PaySelectionLine;
 
-import de.metas.adempiere.model.I_C_PaySelectionLine;
 import de.metas.banking.model.I_C_Payment_Request;
 import de.metas.util.ISingletonService;
 

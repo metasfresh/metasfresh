@@ -180,6 +180,13 @@ public enum DocStatus implements ReferenceListAwareEnum
 				|| this == Invalid;
 	}
 
+	public boolean isDraftedInProgressOrCompleted()
+	{
+		return this == Drafted
+				|| this == InProgress
+				|| this == Completed;
+	}
+
 	public boolean isNotProcessed()
 	{
 		return isDraftedInProgressOrInvalid()

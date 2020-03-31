@@ -1,14 +1,18 @@
 package de.metas.i18n.impl;
 
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.ILanguageBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.Msg;
 import de.metas.util.Services;
+import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 
 /*
@@ -24,23 +28,22 @@ import lombok.NonNull;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
-@lombok.EqualsAndHashCode
+@EqualsAndHashCode
 final class ADMessageTranslatableString implements ITranslatableString
 {
-	private final String adMessage;
+	private final AdMessageKey adMessage;
 	private final List<Object> msgParameters;
 
-	ADMessageTranslatableString(@NonNull final String adMessage, final Object... msgParameters)
+	ADMessageTranslatableString(@NonNull final AdMessageKey adMessage, final Object... msgParameters)
 	{
 		this.adMessage = adMessage;
 		if (msgParameters == null || msgParameters.length == 0)
@@ -49,26 +52,28 @@ final class ADMessageTranslatableString implements ITranslatableString
 		}
 		else
 		{
-			this.msgParameters = ImmutableList.copyOf(msgParameters);
+			// NOTE: avoid using ImmutableList because there might be null parameters
+			this.msgParameters = Collections.unmodifiableList(Arrays.asList(msgParameters));
 		}
 	}
 
 	@Override
+	@Deprecated
 	public String toString()
 	{
-		return adMessage;
+		return adMessage.toAD_Message();
 	}
 
 	@Override
 	public String translate(final String adLanguage)
 	{
-		return Msg.getMsg(adLanguage, adMessage, msgParameters.toArray());
+		return Msg.getMsg(adLanguage, adMessage.toAD_Message(), msgParameters.toArray());
 	}
 
 	@Override
 	public String getDefaultValue()
 	{
-		return "@" + adMessage + "@";
+		return adMessage.toAD_MessageWithMarkers();
 	}
 
 	@Override

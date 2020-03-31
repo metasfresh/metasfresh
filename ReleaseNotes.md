@@ -10,6 +10,39 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 5.144
+## Features
+* metasfresh
+  * [#6403](https://github.com/metasfresh/metasfresh/issues/6403) Avoid memory problems while exporting big datasets to excel
+  * [#6393](https://github.com/metasfresh/metasfresh/issues/6393) Generating delivery days for >1 tour not working
+
+* metasfresh-webui-api
+  * [#1394](https://github.com/metasfresh/metasfresh-webui-api/issues/1394) layout element: provide maxLength for Text and LongText fields
+
+## Fixes
+* metasfresh
+  * [#6364](https://github.com/metasfresh/metasfresh/issues/6364) Fixes/ adjustments: Excel Sales Order adjustments
+  * [#6376](https://github.com/metasfresh/metasfresh/issues/6376) Avoid empty text for packing material in Product specifications
+  * [#6382](https://github.com/metasfresh/metasfresh/issues/6382) Identifiers are swapped for Requests and Invoices
+  * [#6390](https://github.com/metasfresh/metasfresh/issues/6390) Fix User Queries with dates throwing error
+  * [#6405](https://github.com/metasfresh/metasfresh/issues/6405) Shipment dispo: cache invalidate when mass updating the records
+
+* metasfresh-webui-frontend
+  * [#2556](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2556) make sure the view filters are displayed exactly in the same order we have them in the layout
+
+# metasfresh 5.143
+## Features
+* metasfresh
+  * [#6346](https://github.com/metasfresh/metasfresh/issues/6346) Recording of customer complaints from Documents in the Shipment window
+  * [#6354](https://github.com/metasfresh/metasfresh/issues/6354) Create a process that allows to set a parent folder for an account
+
+## Fixes
+* metasfresh
+  * [#6348](https://github.com/metasfresh/metasfresh/issues/6348) NPE when reactivating Sales Order
+  * [#6359](https://github.com/metasfresh/metasfresh/issues/6359) NPE in invoice batch entry for partners allowed to campaign prices
+  * [#6363](https://github.com/metasfresh/metasfresh/issues/6363) Sales Order: Other product not found in Pricelist
+  * [#6370](https://github.com/metasfresh/metasfresh/issues/6370) Paymentterm not taken properly when creating order from Phoneschedule
+
 # metasfresh 5.142
 ## Features
 * metasfresh

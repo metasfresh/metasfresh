@@ -32,41 +32,152 @@ public interface I_C_PaySelectionLine
 	 */
 	public int getAD_Client_ID();
 
-	public org.compiere.model.I_AD_Client getAD_Client();
-
-    /** Column definition for AD_Client_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_PaySelectionLine, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_C_PaySelectionLine, org.compiere.model.I_AD_Client>(I_C_PaySelectionLine.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
     /** Column name AD_Client_ID */
     public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
-	 * Set Sektion.
+	 * Set Organisation.
 	 * Organisatorische Einheit des Mandanten
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	public void setAD_Org_ID (int AD_Org_ID);
 
 	/**
-	 * Get Sektion.
+	 * Get Organisation.
 	 * Organisatorische Einheit des Mandanten
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	public int getAD_Org_ID();
 
-	public org.compiere.model.I_AD_Org getAD_Org();
-
-	public void setAD_Org(org.compiere.model.I_AD_Org AD_Org);
-
-    /** Column definition for AD_Org_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_PaySelectionLine, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<I_C_PaySelectionLine, org.compiere.model.I_AD_Org>(I_C_PaySelectionLine.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
     /** Column name AD_Org_ID */
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+
+	/**
+	 * Set Bankauszug.
+	 * Bank Statement of account
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setC_BankStatement_ID (int C_BankStatement_ID);
+
+	/**
+	 * Get Bankauszug.
+	 * Bank Statement of account
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getC_BankStatement_ID();
+
+    /** Column name C_BankStatement_ID */
+    public static final String COLUMNNAME_C_BankStatement_ID = "C_BankStatement_ID";
+
+	/**
+	 * Set Auszugs-Position.
+	 * Position auf einem Bankauszug zu dieser Bank
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setC_BankStatementLine_ID (int C_BankStatementLine_ID);
+
+	/**
+	 * Get Auszugs-Position.
+	 * Position auf einem Bankauszug zu dieser Bank
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getC_BankStatementLine_ID();
+
+    /** Column name C_BankStatementLine_ID */
+    public static final String COLUMNNAME_C_BankStatementLine_ID = "C_BankStatementLine_ID";
+
+	/**
+	 * Set Bankstatementline Reference.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setC_BankStatementLine_Ref_ID (int C_BankStatementLine_Ref_ID);
+
+	/**
+	 * Get Bankstatementline Reference.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getC_BankStatementLine_Ref_ID();
+
+    /** Column definition for C_BankStatementLine_Ref_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_PaySelectionLine, Object> COLUMN_C_BankStatementLine_Ref_ID = new org.adempiere.model.ModelColumn<I_C_PaySelectionLine, Object>(I_C_PaySelectionLine.class, "C_BankStatementLine_Ref_ID", null);
+    /** Column name C_BankStatementLine_Ref_ID */
+    public static final String COLUMNNAME_C_BankStatementLine_Ref_ID = "C_BankStatementLine_Ref_ID";
+
+	/**
+	 * Set Bankverbindung.
+	 * Bank Account of the Business Partner
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setC_BP_BankAccount_ID (int C_BP_BankAccount_ID);
+
+	/**
+	 * Get Bankverbindung.
+	 * Bank Account of the Business Partner
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getC_BP_BankAccount_ID();
+
+	public org.compiere.model.I_C_BP_BankAccount getC_BP_BankAccount();
+
+	public void setC_BP_BankAccount(org.compiere.model.I_C_BP_BankAccount C_BP_BankAccount);
+
+    /** Column definition for C_BP_BankAccount_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_PaySelectionLine, org.compiere.model.I_C_BP_BankAccount> COLUMN_C_BP_BankAccount_ID = new org.adempiere.model.ModelColumn<I_C_PaySelectionLine, org.compiere.model.I_C_BP_BankAccount>(I_C_PaySelectionLine.class, "C_BP_BankAccount_ID", org.compiere.model.I_C_BP_BankAccount.class);
+    /** Column name C_BP_BankAccount_ID */
+    public static final String COLUMNNAME_C_BP_BankAccount_ID = "C_BP_BankAccount_ID";
+
+	/**
+	 * Set Geschäftspartner.
+	 * Bezeichnet einen Geschäftspartner
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setC_BPartner_ID (int C_BPartner_ID);
+
+	/**
+	 * Get Geschäftspartner.
+	 * Bezeichnet einen Geschäftspartner
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getC_BPartner_ID();
+
+    /** Column name C_BPartner_ID */
+    public static final String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
 
 	/**
 	 * Set Währung.
@@ -92,14 +203,6 @@ public interface I_C_PaySelectionLine
 	@Deprecated
 	public int getC_Currency_ID();
 
-	@Deprecated
-	public org.compiere.model.I_C_Currency getC_Currency();
-
-	@Deprecated
-	public void setC_Currency(org.compiere.model.I_C_Currency C_Currency);
-
-    /** Column definition for C_Currency_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_PaySelectionLine, org.compiere.model.I_C_Currency> COLUMN_C_Currency_ID = new org.adempiere.model.ModelColumn<I_C_PaySelectionLine, org.compiere.model.I_C_Currency>(I_C_PaySelectionLine.class, "C_Currency_ID", org.compiere.model.I_C_Currency.class);
     /** Column name C_Currency_ID */
     public static final String COLUMNNAME_C_Currency_ID = "C_Currency_ID";
 
@@ -240,8 +343,6 @@ public interface I_C_PaySelectionLine
 	 */
 	public int getCreatedBy();
 
-    /** Column definition for CreatedBy */
-    public static final org.adempiere.model.ModelColumn<I_C_PaySelectionLine, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<I_C_PaySelectionLine, org.compiere.model.I_AD_User>(I_C_PaySelectionLine.class, "CreatedBy", org.compiere.model.I_AD_User.class);
     /** Column name CreatedBy */
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
@@ -317,6 +418,62 @@ public interface I_C_PaySelectionLine
     public static final org.adempiere.model.ModelColumn<I_C_PaySelectionLine, Object> COLUMN_DiscountAmt = new org.adempiere.model.ModelColumn<I_C_PaySelectionLine, Object>(I_C_PaySelectionLine.class, "DiscountAmt", null);
     /** Column name DiscountAmt */
     public static final String COLUMNNAME_DiscountAmt = "DiscountAmt";
+
+	/**
+	 * Set Has Open Credit Memo.
+	 * Has Open Credit Memo Invoices
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	public void setHasOpenCreditMemos (boolean HasOpenCreditMemos);
+
+	/**
+	 * Get Has Open Credit Memo.
+	 * Has Open Credit Memo Invoices
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
+	 */
+	@Deprecated
+	public boolean isHasOpenCreditMemos();
+
+    /** Column definition for HasOpenCreditMemos */
+    public static final org.adempiere.model.ModelColumn<I_C_PaySelectionLine, Object> COLUMN_HasOpenCreditMemos = new org.adempiere.model.ModelColumn<I_C_PaySelectionLine, Object>(I_C_PaySelectionLine.class, "HasOpenCreditMemos", null);
+    /** Column name HasOpenCreditMemos */
+    public static final String COLUMNNAME_HasOpenCreditMemos = "HasOpenCreditMemos";
+
+	/**
+	 * Set Has Open Outgoing payments.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	public void setHasOpenOutgoingPayments (boolean HasOpenOutgoingPayments);
+
+	/**
+	 * Get Has Open Outgoing payments.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
+	 */
+	@Deprecated
+	public boolean isHasOpenOutgoingPayments();
+
+    /** Column definition for HasOpenOutgoingPayments */
+    public static final org.adempiere.model.ModelColumn<I_C_PaySelectionLine, Object> COLUMN_HasOpenOutgoingPayments = new org.adempiere.model.ModelColumn<I_C_PaySelectionLine, Object>(I_C_PaySelectionLine.class, "HasOpenOutgoingPayments", null);
+    /** Column name HasOpenOutgoingPayments */
+    public static final String COLUMNNAME_HasOpenOutgoingPayments = "HasOpenOutgoingPayments";
 
 	/**
 	 * Set Aktiv.
@@ -442,6 +599,29 @@ public interface I_C_PaySelectionLine
     public static final String COLUMNNAME_OpenAmt = "OpenAmt";
 
 	/**
+	 * Set Offene Zahlungszuordnung.
+	 *
+	 * <br>Type: Button
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setOpenPaymentAllocationForm (java.lang.String OpenPaymentAllocationForm);
+
+	/**
+	 * Get Offene Zahlungszuordnung.
+	 *
+	 * <br>Type: Button
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getOpenPaymentAllocationForm();
+
+    /** Column definition for OpenPaymentAllocationForm */
+    public static final org.adempiere.model.ModelColumn<I_C_PaySelectionLine, Object> COLUMN_OpenPaymentAllocationForm = new org.adempiere.model.ModelColumn<I_C_PaySelectionLine, Object>(I_C_PaySelectionLine.class, "OpenPaymentAllocationForm", null);
+    /** Column name OpenPaymentAllocationForm */
+    public static final String COLUMNNAME_OpenPaymentAllocationForm = "OpenPaymentAllocationForm";
+
+	/**
 	 * Set Zahlungsbetrag.
 	 * Amount being paid
 	 *
@@ -492,6 +672,31 @@ public interface I_C_PaySelectionLine
     public static final String COLUMNNAME_PaymentRule = "PaymentRule";
 
 	/**
+	 * Set Referenz.
+	 * Bezug für diesen Eintrag
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setReference (java.lang.String Reference);
+
+	/**
+	 * Get Referenz.
+	 * Bezug für diesen Eintrag
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getReference();
+
+    /** Column definition for Reference */
+    public static final org.adempiere.model.ModelColumn<I_C_PaySelectionLine, Object> COLUMN_Reference = new org.adempiere.model.ModelColumn<I_C_PaySelectionLine, Object>(I_C_PaySelectionLine.class, "Reference", null);
+    /** Column name Reference */
+    public static final String COLUMNNAME_Reference = "Reference";
+
+	/**
 	 * Get Aktualisiert.
 	 * Date this record was updated
 	 *
@@ -516,8 +721,6 @@ public interface I_C_PaySelectionLine
 	 */
 	public int getUpdatedBy();
 
-    /** Column definition for UpdatedBy */
-    public static final org.adempiere.model.ModelColumn<I_C_PaySelectionLine, org.compiere.model.I_AD_User> COLUMN_UpdatedBy = new org.adempiere.model.ModelColumn<I_C_PaySelectionLine, org.compiere.model.I_AD_User>(I_C_PaySelectionLine.class, "UpdatedBy", org.compiere.model.I_AD_User.class);
     /** Column name UpdatedBy */
     public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
 }

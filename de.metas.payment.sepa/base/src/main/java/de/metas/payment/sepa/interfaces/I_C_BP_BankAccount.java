@@ -23,7 +23,7 @@ package de.metas.payment.sepa.interfaces;
  */
 
 
-public interface I_C_BP_BankAccount extends de.metas.banking.model.I_C_BP_BankAccount
+public interface I_C_BP_BankAccount extends org.compiere.model.I_C_BP_BankAccount
 {
 	// @formatter:off
 	String COLUMNNAME_SEPA_CREDITORIDENTIFIER = "SEPA_CreditorIdentifier";

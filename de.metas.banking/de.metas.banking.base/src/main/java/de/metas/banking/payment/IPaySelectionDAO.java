@@ -1,54 +1,58 @@
 package de.metas.banking.payment;
 
+import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import org.compiere.model.IQuery;
-import org.compiere.model.I_C_BankStatementLine;
 import org.compiere.model.I_C_PaySelection;
-import org.compiere.model.I_C_Payment;
+import org.compiere.model.I_C_PaySelectionLine;
 
-import de.metas.adempiere.model.I_C_Invoice;
-import de.metas.adempiere.model.I_C_PaySelectionLine;
-import de.metas.banking.model.I_C_BankStatementLine_Ref;
+import de.metas.banking.BankStatementAndLineAndRefId;
+import de.metas.banking.BankStatementLineId;
+import de.metas.banking.PaySelectionId;
 import de.metas.invoice.InvoiceId;
+import de.metas.payment.PaymentId;
 import de.metas.util.ISingletonService;
+import lombok.NonNull;
 
 /**
  * @author al
  */
 public interface IPaySelectionDAO extends ISingletonService
 {
-	<T extends I_C_PaySelectionLine> List<T> retrievePaySelectionLines(I_C_PaySelection paySelection, Class<T> clazz);
+	Optional<I_C_PaySelection> getById(PaySelectionId paySelectionId);
+
+	List<I_C_PaySelection> getByIds(Set<PaySelectionId> paySelectionIds);
+
+	void save(@NonNull I_C_PaySelection paySelection);
+
+	void save(@NonNull I_C_PaySelectionLine psl);
+
+	List<I_C_PaySelectionLine> retrievePaySelectionLines(I_C_PaySelection paySelection);
+
+	List<I_C_PaySelectionLine> retrievePaySelectionLines(PaySelectionId paySelectionId);
 
 	int retrievePaySelectionLinesCount(I_C_PaySelection paySelection);
 
-	int retrieveLastPaySelectionLineNo(int paySelectionId);
+	int retrieveLastPaySelectionLineNo(PaySelectionId paySelectionId);
 
-	List<I_C_PaySelectionLine> retrievePaySelectionLinesMatchingInvoice(I_C_PaySelection paySelection, I_C_Invoice invoice);
+	List<I_C_PaySelectionLine> retrievePaySelectionLinesByBankStatementLineId(BankStatementLineId bankStatementLineId);
 
-	boolean isPaySelectionLineMatchInvoice(I_C_PaySelection paySelection, I_C_Invoice invoice);
+	List<I_C_PaySelectionLine> retrievePaySelectionLinesByBankStatementLineIds(Collection<BankStatementLineId> bankStatementLineIds);
 
-	List<de.metas.banking.model.I_C_PaySelectionLine> retrievePaySelectionLines(I_C_BankStatementLine bankStatementLine);
+	Optional<I_C_PaySelectionLine> retrievePaySelectionLine(BankStatementAndLineAndRefId bankStatementLineAndRefId);
 
-	de.metas.banking.model.I_C_PaySelectionLine retrievePaySelectionLine(I_C_BankStatementLine_Ref bankStatementLineRef);
+	List<I_C_PaySelectionLine> retrievePaySelectionLines(InvoiceId invoiceId);
 
-	/**
-	 * Returns the given invoice's <code>C_PaySelectionLine</code>s
-	 *
-	 * @param invoice
-	 * @return
-	 */
-	List<I_C_PaySelectionLine> retrievePaySelectionLines(org.compiere.model.I_C_Invoice invoice);
+	Optional<I_C_PaySelection> retrieveProcessedPaySelectionContainingPayment(PaymentId paymentId);
 
-	/**
-	 * @return processed pay selection which contains given payment
-	 */
-	I_C_PaySelection retrievePaySelection(I_C_Payment payment);
+	Optional<I_C_PaySelectionLine> retrievePaySelectionLineForPayment(I_C_PaySelection paySelection, PaymentId paymentId);
 
-	I_C_PaySelection retrievePaySelectionById(int paySelectionID);
-
-	de.metas.banking.model.I_C_PaySelectionLine retrievePaySelectionLineForPayment(I_C_PaySelection paySelection, int paymentId);
+	List<I_C_PaySelectionLine> retrievePaySelectionLines(Collection<PaymentId> paymentIds);
 
 	IQuery<I_C_PaySelectionLine> queryActivePaySelectionLinesByInvoiceId(Set<InvoiceId> invoiceIds);
+
+	void updatePaySelectionTotalAmt(@NonNull PaySelectionId paySelectionId);
 }

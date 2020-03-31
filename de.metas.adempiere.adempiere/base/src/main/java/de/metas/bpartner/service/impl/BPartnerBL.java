@@ -23,6 +23,7 @@ package de.metas.bpartner.service.impl;
  */
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
@@ -46,6 +47,7 @@ import org.springframework.stereotype.Service;
 import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
 
+import de.metas.bpartner.BPGroupId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.ShipmentAllocationBestBeforePolicy;
@@ -60,6 +62,7 @@ import de.metas.location.CountryId;
 import de.metas.location.ILocationBL;
 import de.metas.location.impl.AddressBuilder;
 import de.metas.organization.OrgId;
+import de.metas.payment.PaymentRule;
 import de.metas.user.User;
 import de.metas.user.UserId;
 import de.metas.user.UserRepository;
@@ -655,5 +658,22 @@ public class BPartnerBL implements IBPartnerBL
 		final I_C_BPartner bpartner = getById(bpartnerId);
 		final ShipmentAllocationBestBeforePolicy bestBeforePolicy = ShipmentAllocationBestBeforePolicy.ofNullableCode(bpartner.getShipmentAllocation_BestBefore_Policy());
 		return bestBeforePolicy != null ? bestBeforePolicy : ShipmentAllocationBestBeforePolicy.Expiring_First;
+	}
+
+	@Override
+	public Optional<PaymentRule> getPaymentRuleForBPartner(@NonNull final BPartnerId bpartnerId)
+	{
+		final I_C_BPartner bpartner = bpartnersRepo.getById(bpartnerId);
+		final Optional<PaymentRule> bpartnerPaymentRule = PaymentRule.optionalOfCode(bpartner.getPaymentRule());
+		if (bpartnerPaymentRule.isPresent())
+		{
+			return bpartnerPaymentRule;
+		}
+		//
+		// No payment rule in BP. Fallback to group.
+		final BPGroupId bpGroupId = BPGroupId.ofRepoId(bpartner.getC_BP_Group_ID());
+		final IBPGroupDAO bpGroupDAO = Services.get(IBPGroupDAO.class);
+		final I_C_BP_Group bpGroup = bpGroupDAO.getById(bpGroupId);
+		return PaymentRule.optionalOfCode(bpGroup.getPaymentRule());
 	}
 }

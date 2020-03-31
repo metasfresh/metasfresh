@@ -42,6 +42,7 @@ import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.I_C_Country;
 import org.compiere.model.I_M_Attribute;
 
+import de.metas.i18n.AdMessageKey;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
 import de.metas.util.Check;
@@ -50,7 +51,7 @@ import de.metas.util.Services;
 public class InAusLandAttributeBL implements IInAusLandAttributeBL
 {
 
-	private static final String MSG_NoInAusLandAttribute = "de.metas.fresh.InAuslandAttribute.error";
+	private static final AdMessageKey MSG_NoInAusLandAttribute = AdMessageKey.of("de.metas.fresh.InAuslandAttribute.error");
 
 	/**
 	 * Switzerland's C_Country_ID.

@@ -1,6 +1,6 @@
 package de.metas.banking.model.validator;
 
-import static org.adempiere.model.InterfaceWrapperHelper.save;
+import java.math.BigDecimal;
 
 /*
  * #%L
@@ -27,79 +27,124 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 import org.adempiere.ad.modelvalidator.ModelChangeType;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_Payment;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.exceptions.FillMandatoryException;
+import org.compiere.model.I_C_BankStatement;
+import org.compiere.model.I_C_BankStatementLine;
 import org.compiere.model.ModelValidator;
+import org.compiere.util.DB;
 
-import de.metas.banking.interfaces.I_C_BankStatementLine;
-import de.metas.banking.model.I_C_BankStatementLine_Ref;
-import de.metas.banking.payment.IBankStatmentPaymentBL;
+import com.google.common.annotations.VisibleForTesting;
+
+import de.metas.banking.BankStatementId;
+import de.metas.banking.BankStatementLineId;
 import de.metas.banking.service.IBankStatementBL;
-import de.metas.banking.service.IBankStatementDAO;
-import de.metas.banking.service.IBankStatementListenerService;
-import de.metas.payment.PaymentId;
-import de.metas.payment.api.IPaymentDAO;
-import de.metas.util.Services;
+import de.metas.cache.CacheMgt;
+import de.metas.cache.model.CacheInvalidateMultiRequest;
+import de.metas.document.engine.DocStatus;
+import lombok.NonNull;
 
 @Interceptor(I_C_BankStatementLine.class)
 public class C_BankStatementLine
 {
-	public static final C_BankStatementLine instance = new C_BankStatementLine();
+	private final IBankStatementBL bankStatementBL;
 
-	private C_BankStatementLine()
+	public C_BankStatementLine(@NonNull final IBankStatementBL bankStatementBL)
 	{
-		super();
+		this.bankStatementBL = bankStatementBL;
 	}
 
-	/**
-	 *
-	 * @param bankStatementLine
-	 * @param timing
-	 * @task US025b
-	 */
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = I_C_BankStatementLine.COLUMNNAME_C_Payment_ID)
-	public void updatePaymentDependentFields(final I_C_BankStatementLine bankStatementLine, final int timing)
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
+	public void onBeforeNewOrChange(final I_C_BankStatementLine bankStatementLine, final ModelChangeType changeType)
 	{
-		final IPaymentDAO paymentDAO = Services.get(IPaymentDAO.class);
+		final BankStatementId bankStatementId = BankStatementId.ofRepoId(bankStatementLine.getC_BankStatement_ID());
 
-		//
-		// Do nothing if we are dealing with a new line which does not have an C_Payment_ID
-		final ModelChangeType changeType = ModelChangeType.valueOf(timing);
-		int paymentRecordId = bankStatementLine.getC_Payment_ID();
-
-		if (changeType.isNew() && paymentRecordId <= 0)
+		if (changeType.isNew())
 		{
-			return;
+			final I_C_BankStatement bankStatement = bankStatementBL.getById(bankStatementId);
+			final DocStatus docStatus = DocStatus.ofNullableCodeOrUnknown(bankStatement.getDocStatus());
+			if (docStatus.isCompletedOrClosedOrReversed())
+			{
+				throw new AdempiereException("@ParentComplete@ @C_BankStatementLine_ID@");
+			}
 		}
 
-		final IBankStatmentPaymentBL bankStatmentPaymentBL = Services.get(IBankStatmentPaymentBL.class);
-		bankStatmentPaymentBL.setC_Payment(bankStatementLine, bankStatementLine.getC_Payment());
-
-		if (paymentRecordId > 0)
+		if (bankStatementLine.getChargeAmt().signum() != 0 && bankStatementLine.getC_Charge_ID() <= 0)
 		{
-			final I_C_Payment payment = paymentDAO.getById(PaymentId.ofRepoId(paymentRecordId));
-
-			payment.setIsReconciled(true);
-			save(payment);
+			throw new FillMandatoryException(I_C_BankStatementLine.COLUMNNAME_C_Charge_ID);
 		}
 
+		// Set Line No
+		if (bankStatementLine.getLine() <= 0)
+		{
+			final int nextLineNo = bankStatementBL.computeNextLineNo(bankStatementId);
+			bankStatementLine.setLine(nextLineNo);
+		}
+
+		final BigDecimal chargeAmt = bankStatementLine.getStmtAmt()
+				.subtract(bankStatementBL.computeStmtAmtExcludingChargeAmt(bankStatementLine));
+		bankStatementLine.setChargeAmt(chargeAmt);
 	}
 
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_DELETE })
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE })
+	public void onAfterNewOrChange(final I_C_BankStatementLine bankStatementLine)
+	{
+		final BankStatementId bankStatementId = BankStatementId.ofRepoId(bankStatementLine.getC_BankStatement_ID());
+		updateBankStatementHeader(bankStatementId);
+	}
+
+	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
 	public void onBeforeDelete(final I_C_BankStatementLine bankStatementLine)
 	{
-		//
-		// Notify listeners that our bank statement line will become void (i.e. we are deleting it)
-		Services.get(IBankStatementListenerService.class)
-				.getListeners()
-				.onBankStatementLineVoiding(bankStatementLine);
+		final BankStatementLineId bankStatementLineId = BankStatementLineId.ofRepoId(bankStatementLine.getC_BankStatementLine_ID());
+		bankStatementBL.deleteReferences(bankStatementLineId);
+	}
 
-		//
-		// Delete all bank statement line references
-		for (final I_C_BankStatementLine_Ref lineRef : Services.get(IBankStatementDAO.class).retrieveLineReferences(bankStatementLine))
+	@ModelChange(timings = ModelValidator.TYPE_AFTER_DELETE)
+	public void onAfterDelete(final I_C_BankStatementLine bankStatementLine)
+	{
+		final BankStatementId bankStatementId = BankStatementId.ofRepoId(bankStatementLine.getC_BankStatement_ID());
+		updateBankStatementHeader(bankStatementId);
+	}
+
+	private void updateBankStatementHeader(final BankStatementId bankStatementId)
+	{
+		updateStatementDifferenceAndEndingBalance(bankStatementId);
+		updateBankStatementIsReconciledFlag(bankStatementId);
+
+		CacheMgt.get().resetLocalNowAndBroadcastOnTrxCommit(
+				ITrx.TRXNAME_ThreadInherited,
+				CacheInvalidateMultiRequest.rootRecord(I_C_BankStatement.Table_Name, bankStatementId));
+	}
+
+	@VisibleForTesting
+	protected void updateStatementDifferenceAndEndingBalance(final BankStatementId bankStatementId)
+	{
+		// StatementDifference
 		{
-			IBankStatementBL.DYNATTR_DisableBankStatementLineRecalculateFromReferences.setValue(lineRef, true);
-			InterfaceWrapperHelper.delete(lineRef);
+			final String sql = "UPDATE C_BankStatement bs"
+					+ " SET StatementDifference=(SELECT COALESCE(SUM(StmtAmt),0) FROM C_BankStatementLine bsl "
+					+ "WHERE bsl.C_BankStatement_ID=bs.C_BankStatement_ID AND bsl.IsActive='Y') "
+					+ "WHERE C_BankStatement_ID=?";
+			DB.executeUpdateEx(sql, new Object[] { bankStatementId }, ITrx.TRXNAME_ThreadInherited);
 		}
+
+		// EndingBalance
+		{
+			final String sql = "UPDATE C_BankStatement bs"
+					+ " SET EndingBalance=BeginningBalance+StatementDifference "
+					+ "WHERE C_BankStatement_ID=?";
+			DB.executeUpdateEx(sql, new Object[] { bankStatementId }, ITrx.TRXNAME_ThreadInherited);
+		}
+	}
+
+	@VisibleForTesting
+	protected void updateBankStatementIsReconciledFlag(final BankStatementId bankStatementId)
+	{
+		final String sql = "UPDATE C_BankStatement bs"
+				+ " SET IsReconciled=(CASE WHEN (SELECT COUNT(1) FROM C_BankStatementLine bsl WHERE bsl.C_BankStatement_ID = bs.C_BankStatement_ID AND bsl.IsReconciled = 'N') = 0 THEN 'Y' ELSE 'N' END)"
+				+ " WHERE C_BankStatement_ID=?";
+		DB.executeUpdateEx(sql, new Object[] { bankStatementId }, ITrx.TRXNAME_ThreadInherited);
 	}
 }

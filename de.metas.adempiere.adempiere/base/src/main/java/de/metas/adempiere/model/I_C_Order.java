@@ -11,12 +11,6 @@ public interface I_C_Order extends org.compiere.model.I_C_Order, I_OrderOrInOut,
 	String FREIGHTCOSTRULE_Versandkostenpauschale = "P";
 
 	//@formatter:off
-	String COLUMNNAME_C_Sponsor_ID = "C_Sponsor_ID";
-	int getC_Sponsor_ID();
-	void setC_Sponsor_ID(int C_Sponsor_ID);
-	//@formatter:off
-
-	//@formatter:off
 	String COLUMNNAME_Ref_RMA_ID = "Ref_RMA_ID";
 	int getRef_RMA_ID();
 	void setRef_RMA_ID(int Ref_RMA_ID);
@@ -50,18 +44,21 @@ public interface I_C_Order extends org.compiere.model.I_C_Order, I_OrderOrInOut,
 
 	//@formatter:off
 	String COLUMNNAME_HandOver_Partner_ID = "HandOver_Partner_ID";
+	@Override
 	int getHandOver_Partner_ID();
 	void setHandOver_Partner_ID(int HandOver_Partner_ID);
 	//@formatter:on
 
 	//@formatter:off
 	String COLUMNNAME_HandOver_Location_ID = "HandOver_Location_ID";
+	@Override
 	int getHandOver_Location_ID();
 	void setHandOver_Location_ID(int HandOver_Location_ID);
 	//@formatter:on
-	
+
 	//@formatter:off
 	String COLUMNNAME_HandOver_User_ID = "HandOver_User_ID";
+	@Override
 	int getHandOver_User_ID();
 	void setHandOver_User_ID(int HandOver_User_ID);
 	//@formatter:on
@@ -71,10 +68,12 @@ public interface I_C_Order extends org.compiere.model.I_C_Order, I_OrderOrInOut,
 	boolean getIsUseHandOver_Location();
 	void setIsUseHandOver_Location(boolean IsUseHandOver_Location);
 	//@formatter:on
-	
+
 	//@formatter:off
 	String COLUMNNAME_HandOverAddress = "HandOverAddress";
+	@Override
 	String getHandOverAddress();
+	@Override
 	void setHandOverAddress(String address);
 	//@formatter:on
 }

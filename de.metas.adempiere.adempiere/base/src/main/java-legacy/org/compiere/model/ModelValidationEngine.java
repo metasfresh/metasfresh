@@ -266,7 +266,7 @@ public class ModelValidationEngine implements IModelValidationEngine
 					continue;
 				}
 
-				addModelValidator(springInterceptor, /* client */null);
+				addModelValidator(springInterceptor);
 			}
 			currentClassName = null;
 
@@ -382,7 +382,7 @@ public class ModelValidationEngine implements IModelValidationEngine
 				final Class<?> clazz = classLoader.loadClass(className);
 				moduleActivator = clazz.newInstance();
 			}
-			addModelValidator(moduleActivator, (I_AD_Client)null);
+			addModelValidator(moduleActivator);
 
 			//
 			// Load swing module activation (if any)
@@ -393,7 +393,7 @@ public class ModelValidationEngine implements IModelValidationEngine
 				if (swingModuleActivatorClass != null)
 				{
 					final Object moduleActivatorSwing = swingModuleActivatorClass.newInstance();
-					addModelValidator(moduleActivatorSwing, (I_AD_Client)null);
+					addModelValidator(moduleActivatorSwing);
 				}
 			}
 		}
@@ -478,9 +478,8 @@ public class ModelValidationEngine implements IModelValidationEngine
 	 */
 	public String loginComplete(int AD_Client_ID, int AD_Org_ID, int AD_Role_ID, int AD_User_ID)
 	{
-		for (int i = 0; i < m_validators.size(); i++)
+		for (ModelValidator validator : m_validators)
 		{
-			ModelValidator validator = m_validators.get(i);
 			if (appliesFor(validator, AD_Client_ID))
 			{
 				String error = validator.login(AD_Org_ID, AD_Role_ID, AD_User_ID);
@@ -546,9 +545,9 @@ public class ModelValidationEngine implements IModelValidationEngine
 	private List<IUserLoginListener> getUserLoginListener(final int adClientId)
 	{
 		final List<IUserLoginListener> listeners = new ArrayList<>();
-		for (int i = 0; i < m_validators.size(); i++)
+		for (ModelValidator m_validator : m_validators)
 		{
-			final ModelValidator validator = m_validators.get(i);
+			final ModelValidator validator = m_validator;
 
 			if (!(validator instanceof IUserLoginListener))
 			{
@@ -1434,6 +1433,13 @@ public class ModelValidationEngine implements IModelValidationEngine
 		{
 			return getPropertyName(tableName, listener.getAD_Client_ID());
 		}
+	}
+
+	@Override
+	public void addModelValidator(@NonNull final Object validator)
+	{
+		final I_AD_Client client = null;
+		addModelValidator(validator, client);
 	}
 
 	@Override

@@ -42,6 +42,7 @@ import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
 import de.metas.edi.async.spi.impl.EDIWorkpackageProcessor;
 import de.metas.edi.model.I_EDI_Document;
 import de.metas.edi.model.I_EDI_Document_Extension;
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.ITranslatableString;
 import de.metas.logging.LogManager;
 import de.metas.process.IProcessPrecondition;
@@ -61,7 +62,7 @@ import de.metas.util.Services;
  */
 public class EDIExportDocOutboundLog extends JavaProcess implements IProcessPrecondition
 {
-	private static final String MSG_No_DocOutboundLog_Selection = "C_Doc_Outbound_Log.No_DocOutboundLog_Selection";
+	private static final AdMessageKey MSG_No_DocOutboundLog_Selection = AdMessageKey.of("C_Doc_Outbound_Log.No_DocOutboundLog_Selection");
 
 	private static final transient Logger logger = LogManager.getLogger(EDIExportDocOutboundLog.class);
 

@@ -2,13 +2,12 @@ package de.metas.payment.esr.api.impl;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.ByteArrayInputStream;
 
 import org.compiere.util.Env;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import de.metas.document.refid.model.I_C_ReferenceNo_Type;
 import de.metas.payment.esr.ESRConstants;
@@ -45,11 +44,10 @@ public class ESRReverseBookingLineMatcherTest extends ESRTestBase
 		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new ByteArrayInputStream(esrImportLineText.getBytes()));
 		I_ESR_ImportLine esrImportLine = ESRTestUtil.retrieveSingleLine(esrImport);
 
-		assertEquals("Invalid TrxType", ESRConstants.ESRTRXTYPE_ReverseBooking, esrImportLine.getESRTrxType());
-		assertEquals("Valid IsValid", false, esrImportLine.isValid());
-		assertNotNull("ErrorMsg not null", esrImportLine.getMatchErrorMsg());
-		assertEquals("Invalid Processed", false, esrImportLine.isProcessed());
+		assertThat(esrImportLine.getESRTrxType()).isEqualTo(ESRConstants.ESRTRXTYPE_ReverseBooking);
+		assertThat(esrImportLine.isValid()).isFalse();
+		assertThat(esrImportLine.getMatchErrorMsg()).isNotNull();
+		assertThat(esrImportLine.isProcessed()).isFalse();
 	}
-
 
 }

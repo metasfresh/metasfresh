@@ -77,7 +77,10 @@ public class AllAvailableSingletonServicesTest
 			.skipServiceInterface(de.metas.bpartner.service.IBPartnerBL.class, "spring component")
 			.skipServiceInterface(de.metas.ordercandidate.api.IOLCandBL.class, "spring component")
 			.skipServiceInterface(de.metas.edi.api.IDesadvBL.class, "spring component")
-			.skipServiceInterface(de.metas.handlingunits.attributes.sscc18.ISSCC18CodeBL.class, "spring component");
+			.skipServiceInterface(de.metas.handlingunits.attributes.sscc18.ISSCC18CodeBL.class, "spring component")
+			.skipServiceInterface(de.metas.banking.payment.IBankStatementPaymentBL.class, "spring component")
+	//
+	;
 
 	@BeforeEach
 	public void beforeEach()

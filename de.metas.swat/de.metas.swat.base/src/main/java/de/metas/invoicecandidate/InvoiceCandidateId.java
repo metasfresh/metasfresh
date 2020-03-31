@@ -1,5 +1,7 @@
 package de.metas.invoicecandidate;
 
+import javax.annotation.Nullable;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 
@@ -32,6 +34,11 @@ import lombok.Value;
 @Value
 public class InvoiceCandidateId implements RepoIdAware
 {
+	public static InvoiceCandidateId cast(@Nullable final RepoIdAware repoIdAware)
+	{
+		return (InvoiceCandidateId)repoIdAware;
+	}
+
 	@JsonCreator
 	public static InvoiceCandidateId ofRepoId(final int repoId)
 	{

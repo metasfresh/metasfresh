@@ -22,11 +22,25 @@
 
 package de.metas.pricing.process;
 
+import java.io.IOException;
+import java.math.BigDecimal;
+import java.nio.charset.StandardCharsets;
+import java.util.List;
+
+import javax.annotation.Nullable;
+
+import org.adempiere.exceptions.AdempiereException;
+import org.apache.commons.io.IOUtils;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_AD_AttachmentEntry;
+import org.compiere.model.X_M_DiscountSchemaLine;
+
 import de.metas.attachments.AttachmentEntryDataResource;
 import de.metas.attachments.AttachmentEntryId;
 import de.metas.attachments.AttachmentEntryService;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.pricing.conditions.PricingConditionsId;
@@ -46,17 +60,6 @@ import de.metas.util.NumberUtils;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
 import lombok.NonNull;
-import org.adempiere.exceptions.AdempiereException;
-import org.apache.commons.io.IOUtils;
-import org.compiere.SpringContextHolder;
-import org.compiere.model.I_AD_AttachmentEntry;
-import org.compiere.model.X_M_DiscountSchemaLine;
-
-import javax.annotation.Nullable;
-import java.io.IOException;
-import java.math.BigDecimal;
-import java.nio.charset.StandardCharsets;
-import java.util.List;
 
 /**
  * Import Price List Schema Lines from an attachment.
@@ -69,7 +72,7 @@ public class ImportPriceListSchemaLinesFromAttachment extends JavaProcess implem
 	@Param(parameterName = I_AD_AttachmentEntry.COLUMNNAME_AD_AttachmentEntry_ID, mandatory = true)
 	private AttachmentEntryId p_AD_AttachmentEntry_ID;
 
-	public static final String MSG_PRICE_LIST_SCHEMA_SHOULD_HAVE_NO_LINES = "de.metas.pricing.process.ImportPriceListSchemaLinesFromAttachment.PriceListSchemaShouldHaveNoLines";
+	public static final AdMessageKey MSG_PRICE_LIST_SCHEMA_SHOULD_HAVE_NO_LINES = AdMessageKey.of("de.metas.pricing.process.ImportPriceListSchemaLinesFromAttachment.PriceListSchemaShouldHaveNoLines");
 
 	private static final int INDEX_SeqNo = 0;
 	private static final int INDEX_Product = 1;

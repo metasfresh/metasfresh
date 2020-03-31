@@ -26,24 +26,28 @@ package de.metas.payment.api;
  */
 
 import java.math.BigDecimal;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
 import org.compiere.model.I_C_AllocationHdr;
-import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Payment;
 
 import de.metas.payment.PaymentId;
-import de.metas.payment.PaymentRule;
 import de.metas.util.ISingletonService;
+import lombok.NonNull;
 
 public interface IPaymentBL extends ISingletonService
 {
 	I_C_Payment getById(PaymentId paymentId);
 
 	List<I_C_Payment> getByIds(Set<PaymentId> paymentIds);
+
+	void save(I_C_Payment payment);
+
+	Set<PaymentId> getPaymentIds(@NonNull PaymentQuery query);
 
 	DefaultPaymentBuilder newInboundReceiptBuilder();
 
@@ -83,11 +87,6 @@ public interface IPaymentBL extends ISingletonService
 	void onPayAmtChange(final I_C_Payment payment, boolean creditMemoAdjusted);
 
 	/**
-	 * @return the payment rule for the BP. If none is set, gets the one of the BP group.
-	 */
-	PaymentRule getPaymentRuleForBPartner(I_C_BPartner bPartner);
-
-	/**
 	 * check if the invoice is allocated with the specified payment
 	 * 
 	 * @param payment
@@ -116,4 +115,12 @@ public interface IPaymentBL extends ISingletonService
 	 * @return generated and completed allocation
 	 */
 	I_C_AllocationHdr paymentWriteOff(final I_C_Payment payment, final BigDecimal writeOffAmt, final Date date);
+
+	void updateDiscountAndPayAmtFromInvoiceIfAny(I_C_Payment payment);
+
+	void markReconciled(@NonNull Collection<PaymentId> paymentIds);
+
+	void markReconciledAndSave(@NonNull I_C_Payment payment);
+
+	void markNotReconciled(@NonNull Collection<PaymentId> paymentIds);
 }

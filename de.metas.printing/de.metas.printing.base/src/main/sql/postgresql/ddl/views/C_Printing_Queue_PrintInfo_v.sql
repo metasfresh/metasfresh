@@ -2,6 +2,7 @@ DROP VIEW IF EXISTS C_Printing_Queue_PrintInfo_v;
 
 CREATE OR REPLACE VIEW C_Printing_Queue_PrintInfo_v AS
 SELECT
+	(pq.C_Printing_Queue_ID +)C_Printing_Queue_PrintInfo_v_ID
 	pq.C_Printing_Queue_ID,
 	pp.AD_Session_ID AS AD_Session_PrintPackage_ID,
 	pq.AD_Archive_ID,

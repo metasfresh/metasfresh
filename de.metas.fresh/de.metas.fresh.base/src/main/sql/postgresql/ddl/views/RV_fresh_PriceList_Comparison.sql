@@ -44,9 +44,13 @@ SELECT
 	
 FROM M_ProductPrice pp
 
-INNER JOIN M_Product p ON pp.M_Product_ID = p.M_Product_ID AND p.isActive = 'Y'
-INNER JOIN C_BPartner bp ON TRUE
-INNER JOIN M_Product_Category pc ON p.M_Product_Category_ID = pc.M_Product_Category_ID AND pc.isActive = 'Y'
+	INNER JOIN M_Product p ON pp.M_Product_ID = p.M_Product_ID AND p.isActive = 'Y'
+	
+	/** Get all BPartner and Product combinations. 
+	 * IMPORTANT: Never use the query without BPartner Filter active
+	 */
+	INNER JOIN C_BPartner bp ON TRUE
+	INNER JOIN M_Product_Category pc ON p.M_Product_Category_ID = pc.M_Product_Category_ID AND pc.isActive = 'Y'
 INNER JOIN C_UOM uom ON pp.C_UOM_ID = uom.C_UOM_ID AND uom.isActive = 'Y'
 
 

@@ -21,6 +21,7 @@ import org.compiere.model.MInvoice;
 import org.compiere.model.MPeriod;
 
 import de.metas.acct.api.IFactAcctDAO;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner.service.IBPartnerStatisticsUpdater;
 import de.metas.bpartner.service.IBPartnerStatisticsUpdater.BPartnerStatisticsUpdateRequest;
 import de.metas.process.JavaProcess;
@@ -49,7 +50,7 @@ public class InvoiceCalculateTax extends JavaProcess
 			final String name = para.getParameterName();
 			if (para.getParameter() == null)
 			{
-				;
+				
 			}
 			else if (name.equals(PARAM_C_Invoice_ID))
 			{
@@ -74,8 +75,8 @@ public class InvoiceCalculateTax extends JavaProcess
 
 	public static void recalculateTax(final MInvoice invoice)
 	{
-
-		final I_C_BPartner partner = invoice.getC_BPartner();
+		final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
+		final I_C_BPartner partner = bpartnerDAO.getById(invoice.getC_BPartner_ID());
 
 		//
 		// Delete accounting /UnPost

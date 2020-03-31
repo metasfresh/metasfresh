@@ -5,6 +5,7 @@ import java.util.List;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ISysConfigBL;
 
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.interfaces.I_C_OrderLine;
@@ -42,9 +43,9 @@ public class OrderLinePricingConditions implements IOrderLinePricingConditions
 {
 	private static final String SYSCONFIG_NoPriceConditionsColorName = "de.metas.order.NoPriceConditionsColorName";
 	private static final String SYSCONFIG_TemporaryPriceConditionsColorName = "de.metas.order.TemporaryPriceConditionsColorName";
-	private static final String MSG_NoPricingConditionsError = "de.metas.order.NoPricingConditionsError";
+	private static final AdMessageKey MSG_NoPricingConditionsError = AdMessageKey.of("de.metas.order.NoPricingConditionsError");
 
-	private static enum HasPricingConditions
+	private enum HasPricingConditions
 	{
 		NO,
 
