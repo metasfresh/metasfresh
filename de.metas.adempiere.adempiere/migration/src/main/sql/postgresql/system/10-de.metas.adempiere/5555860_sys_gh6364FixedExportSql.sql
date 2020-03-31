@@ -62,3 +62,9 @@ $BODY$
     LANGUAGE sql STABLE
                  COST 100
                  ROWS 1000;
+
+
+--- removing old no longer needed action
+delete from ad_table_process where ad_process_id = 541229;
+delete from ad_process_para where ad_process_id = 541229;
+delete from ad_process where ad_process_id = 541229;
