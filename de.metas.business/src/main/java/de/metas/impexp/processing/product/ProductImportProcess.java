@@ -287,4 +287,10 @@ public class ProductImportProcess extends SimpleImportProcessTemplate<I_I_Produc
 
 		return product;
 	}	// MProduct
+	
+	@Override
+	protected void afterImport() 
+	{
+		CacheMgt.get().reset(I_M_Product.Table_Name);
+	}
 }
