@@ -39,7 +39,7 @@ import lombok.NonNull;
 
 public class CleverReachLowLevelClient
 {
-	public static  CleverReachLowLevelClient createAndLogin(@NonNull final CleverReachConfig cleverReachConfig)
+	public static CleverReachLowLevelClient createAndLogin(@NonNull final CleverReachConfig cleverReachConfig)
 	{
 		final String authToken = login(cleverReachConfig);
 		return new CleverReachLowLevelClient(authToken);
@@ -62,8 +62,14 @@ public class CleverReachLowLevelClient
 				.password(cleverReachConfig.getPassword())
 				.build();
 
+		final HttpHeaders httpHeaders = new HttpHeaders();
+		httpHeaders.setAccept(ImmutableList.of(MediaType.APPLICATION_JSON));
+		httpHeaders.setContentType(MediaType.APPLICATION_JSON);
+
 		final RestTemplate restTemplate = new RestTemplate();
-		final String authToken = restTemplate.postForObject(BASE_URL + "/login", login, String.class);
+		final String authToken = restTemplate.postForObject(BASE_URL + "/login",
+				new HttpEntity<>(login, httpHeaders),
+				String.class);
 
 		return authToken.replaceAll("\"", ""); // the string comes complete within '"' which we need to remove
 	}
@@ -118,7 +124,6 @@ public class CleverReachLowLevelClient
 				ImmutableMap.of());
 		return groups.getBody();
 	}
-
 
 	public void delete(String url)
 	{

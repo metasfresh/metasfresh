@@ -1,3 +1,4 @@
+41DROP FUNCTION IF EXISTS report.fresh_pricelist_details_template_report(NUMERIC, NUMERIC, CHARACTER VARYING, NUMERIC);
 drop function if exists report.fresh_pricelist_details_template_report(numeric, numeric, character varying, numeric);
 CREATE OR REPLACE FUNCTION report.fresh_pricelist_details_template_report(IN p_c_bpartner_id numeric, IN p_m_pricelist_version_id numeric, IN p_ad_language character varying,
                                                                           IN p_c_bpartner_location_id numeric)
@@ -33,7 +34,7 @@ SELECT plc.value                                                                
        plc.productcategory                                                                                          as productcategory,
        plc.productname                                                                                              as productname,
        plc.attributes                                                                                               as attributes,
-       coalesce(hupiv.description, hupip.name, plc.uomsymbol)                                                       as itemproductname,
+       coalesce(hupip.name, hupiv.description, plc.uomsymbol)                                                             as itemproductname,
        NULL::numeric                                                                                                as qty,
        plc.uomsymbol                                                                                                as uomsymbol,
        round(plc.pricestd, cur.stdprecision)                                                                        as pricestd,

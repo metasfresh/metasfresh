@@ -13,7 +13,6 @@ import org.assertj.core.api.Condition;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
-
 import com.google.common.collect.ImmutableList;
 
 import de.metas.marketing.base.model.Campaign;
@@ -61,17 +60,16 @@ public class ManualTest
 	@Before
 	public void init()
 	{
-  		final CleverReachConfig cleverReachConfig = CleverReachConfig.builder()
-				.client_id("")
-				.login("")
-				.password("")
+		final CleverReachConfig cleverReachConfig = CleverReachConfig.builder()
+				.client_id("178998")
+				.login("tobias.schoeneberg@metasfresh.com")
+				.password("tn2TIOs8")
 				.platformId(PLATFORM_ID)
 				.build();
 		cleverReachClient = new CleverReachClient(cleverReachConfig);
 	}
 
 	@Test
-	@Ignore
 	public void createUpdateDeleteCampagin()
 	{
 		final String nameOfCampaignToAdd = appendSystemTime("test-name1");
@@ -82,11 +80,11 @@ public class ManualTest
 
 		final List<LocalToRemoteSyncResult> addedCampaignResults = cleverReachClient.syncCampaignsLocalToRemote(ImmutableList.of(campaignToAdd));
 		assertThat(addedCampaignResults).hasSize(1);
-		
+
 		final LocalToRemoteSyncResult localToRemoteSyncResult = addedCampaignResults.get(0);
 		assertThat(localToRemoteSyncResult.getLocalToRemoteStatus()).isEqualTo(LocalToRemoteStatus.INSERTED_ON_REMOTE);
 		assertThat(localToRemoteSyncResult.getSynchedDataRecord()).isInstanceOf(Campaign.class);
-		
+
 		final Campaign addedCampaign = Campaign.cast(localToRemoteSyncResult.getSynchedDataRecord());
 		assertThat(addedCampaign.getRemoteId()).isNotEmpty();
 		assertThat(addedCampaign.getName()).isEqualTo(nameOfCampaignToAdd);
@@ -119,7 +117,7 @@ public class ManualTest
 
 		assertThat(contactPersons).isNotEmpty();
 	}
-	
+
 	@Test
 	@Ignore
 	public void syncContactPersonsLocalToRemote()
