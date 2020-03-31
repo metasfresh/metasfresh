@@ -33,6 +33,7 @@ import java.util.NoSuchElementException;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
+import org.adempiere.util.lang.ImmutablePair;
 import org.compiere.util.DB;
 import org.compiere.util.Trx;
 import org.slf4j.Logger;
@@ -111,7 +112,10 @@ public class JdbcExportDataSource implements IExportDataSource
 			// disabling trx timeout, as this might be a long-running process
 			DB.getConstraints().setTrxTimeoutSecs(-1, false);
 
-			pstmt = DB.prepareStatementForDataExport(sqlSelect, sqlParams);
+			final ImmutablePair<Connection, PreparedStatement> connAndStmt = DB.prepareConnectionAndStatementForDataExport(sqlSelect, sqlParams);
+			conn = connAndStmt.getLeft();
+			pstmt = connAndStmt.getRight();
+
 			rs = pstmt.executeQuery();
 			ok = true;
 		}
