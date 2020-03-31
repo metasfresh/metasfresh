@@ -1,8 +1,8 @@
 package org.adempiere.service.impl;
 
-import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -16,9 +16,11 @@ import org.compiere.util.TrxRunnable;
 import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
@@ -359,29 +361,50 @@ public class SysConfigBL implements ISysConfigBL
 
 		final Properties ctx = Env.getCtx();
 
-		Services.get(ITrxManager.class).runInNewTrx(new TrxRunnable()
-		{
-			@Override
-			public void run(final String localTrxName) throws Exception
+		Services.get(ITrxManager.class).runInNewTrx((TrxRunnable)localTrxName -> {
+			I_AD_SysConfig sysConfig = Services.get(ISysConfigDAO.class).retrieveSysConfig(ctx, name, clientId.getRepoId(), orgId.getRepoId(), localTrxName);
+			if (sysConfig == null)
 			{
-				I_AD_SysConfig sysConfig = Services.get(ISysConfigDAO.class).retrieveSysConfig(ctx, name, clientId.getRepoId(), orgId.getRepoId(), localTrxName);
-				if (sysConfig == null)
-				{
-					sysConfig = InterfaceWrapperHelper.create(ctx, I_AD_SysConfig.class, localTrxName);
-					InterfaceWrapperHelper.setValue(sysConfig, I_AD_SysConfig.COLUMNNAME_AD_Client_ID, clientId.getRepoId());
-					sysConfig.setName(name);
-					sysConfig.setAD_Org_ID(orgId.getRepoId());
-				}
-				sysConfig.setValue(value);
-				InterfaceWrapperHelper.save(sysConfig);
+				sysConfig = InterfaceWrapperHelper.create(ctx, I_AD_SysConfig.class, localTrxName);
+				InterfaceWrapperHelper.setValue(sysConfig, I_AD_SysConfig.COLUMNNAME_AD_Client_ID, clientId.getRepoId());
+				sysConfig.setName(name);
+				sysConfig.setAD_Org_ID(orgId.getRepoId());
 			}
+			sysConfig.setValue(value);
+			InterfaceWrapperHelper.save(sysConfig);
 		});
 	}
 
-	@Override
-	public List<String> getNamesForPrefix(final String prefix, final int adClientId, final int adOrgId)
+	private Set<String> getNamesForPrefix(final String prefix, final int adClientId, final int adOrgId)
 	{
-		return Services.get(ISysConfigDAO.class).retrieveNamesForPrefix(prefix, adClientId, adOrgId);
+		final ISysConfigDAO sysConfigDAO = Services.get(ISysConfigDAO.class);
+
+		return ImmutableSet.<String> builder()
+				.addAll(sysConfigDAO.retrieveNamesForPrefix(prefix, adClientId, adOrgId))
+				.addAll(getSystemPropertyNamesForPrefix(prefix))
+				.build();
+	}
+
+	private Set<String> getSystemPropertyNamesForPrefix(final String prefix)
+	{
+		Check.assumeNotEmpty(prefix, "prefix is not empty");
+
+		ImmutableSet.Builder<String> result = ImmutableSet.builder();
+		for (final Object keyObj : System.getProperties().keySet())
+		{
+			if (keyObj == null)
+			{
+				continue;
+			}
+
+			final String key = keyObj.toString();
+			if (key.startsWith(prefix))
+			{
+				result.add(key);
+			}
+		}
+
+		return result.build();
 	}
 
 	@Override
@@ -395,7 +418,7 @@ public class SysConfigBL implements ISysConfigBL
 	@Cached(cacheName = I_AD_SysConfig.Table_Name + "#ValuesForPrefix", expireMinutes = Cached.EXPIREMINUTES_Never)
 	public Map<String, String> getValuesForPrefix(final String prefix, final boolean removePrefix, final int adClientId, final int adOrgId)
 	{
-		final List<String> paramNames = getNamesForPrefix(prefix, adClientId, adOrgId);
+		final Set<String> paramNames = getNamesForPrefix(prefix, adClientId, adOrgId);
 		final ImmutableMap.Builder<String, String> result = ImmutableMap.builder();
 		for (final String paramName : paramNames)
 		{
