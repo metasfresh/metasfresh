@@ -23,9 +23,12 @@
 package de.metas.serviceprovider.external.project;
 
 import de.metas.organization.OrgId;
+import de.metas.project.ProjectId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+
+import javax.annotation.Nullable;
 
 @Value
 @Builder
@@ -42,4 +45,7 @@ public class ExternalProjectReference
 
 	@NonNull
 	OrgId orgId;
+
+	@Nullable
+	ProjectId projectId;
 }

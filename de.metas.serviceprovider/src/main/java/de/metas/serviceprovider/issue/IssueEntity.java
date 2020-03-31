@@ -20,59 +20,78 @@
  * #L%
  */
 
-package de.metas.serviceprovider.budgetissue;
+package de.metas.serviceprovider.issue;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.organization.OrgId;
+import de.metas.project.ProjectId;
 import de.metas.serviceprovider.external.issuedetails.ExternalIssueDetail;
 import de.metas.serviceprovider.milestone.MilestoneId;
 import de.metas.uom.UomId;
 import de.metas.user.UserId;
-import de.metas.util.Check;
 import de.metas.util.NumberUtils;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NonNull;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
-import java.util.List;
 
 @Data
-@Builder
-public class BudgetIssue
+@Builder(toBuilder = true)
+public class IssueEntity
 {
-	private BudgetIssueId budgetIssueId;
+	@Nullable
+	private IssueId issueId;
+
+	@Nullable
+	private ProjectId projectId;
 
 	@NonNull
 	private OrgId orgId;
 
-	private BigDecimal estimatedEffort;
-
-	private BigDecimal budgetedEffort;
+	@Nullable
+	private MilestoneId milestoneId;
 
 	@NonNull
 	private UomId effortUomId;
 
-	private MilestoneId milestoneId;
+	@Nullable
+	private BigDecimal estimatedEffort;
 
+	@Nullable
+	private BigDecimal budgetedEffort;
+
+	@Nullable
 	private String description;
 
 	@NonNull
 	private String name;
 
 	@NonNull
-	private BudgetIssueType type;
+	private String searchKey;
+
+	@NonNull
+	private IssueType type;
 
 	private boolean processed;
 
+	private boolean isEffortIssue;
+
+	@Nullable
 	private UserId assigneeId;
 
+	@Nullable
 	private String externalIssueId;
+	@Nullable
 	private String externalIssueNo;
+	@Nullable
 	private String externalIssueURL;
 
-	private List<ExternalIssueDetail> externalIssueDetails;
+	@NonNull
+	private ImmutableList<ExternalIssueDetail> externalIssueDetails;
 
-	public void setEstimatedEffortIfNull(final BigDecimal estimatedEffort)
+	public void setEstimatedEffortIfNull(@Nullable final BigDecimal estimatedEffort)
 	{
 		if ( NumberUtils.asBigDecimal(this.estimatedEffort,BigDecimal.ZERO).equals(BigDecimal.ZERO) )
 		{
@@ -80,7 +99,7 @@ public class BudgetIssue
 		}
 	}
 
-	public void setBudgetedEffortIfNull(final BigDecimal budgetedEffort)
+	public void setBudgetedEffortIfNull(@Nullable final BigDecimal budgetedEffort)
 	{
 		if ( NumberUtils.asBigDecimal(this.budgetedEffort,BigDecimal.ZERO).equals(BigDecimal.ZERO) )
 		{
@@ -88,23 +107,7 @@ public class BudgetIssue
 		}
 	}
 
-	public void setMilestoneIdIfNull(final MilestoneId milestoneId)
-	{
-		if (this.milestoneId == null)
-		{
-			this.milestoneId = milestoneId;
-		}
-	}
-
-	public void setDescriptionIfNull(final String description)
-	{
-		if (Check.isEmpty(this.description))
-		{
-			this.description = description;
-		}
-	}
-
-	public void setAssigneeIdIfNull(final UserId assigneeId)
+	public void setAssigneeIdIfNull(@Nullable final UserId assigneeId)
 	{
 		if (this.assigneeId == null)
 		{

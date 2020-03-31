@@ -135,60 +135,6 @@ public interface I_S_ExternalIssueDetail
     public static final String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Budget-Issue.
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setS_Budget_Issue_ID (int S_Budget_Issue_ID);
-
-	/**
-	 * Get Budget-Issue.
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public int getS_Budget_Issue_ID();
-
-	public de.metas.serviceprovider.model.I_S_Budget_Issue getS_Budget_Issue();
-
-	public void setS_Budget_Issue(de.metas.serviceprovider.model.I_S_Budget_Issue S_Budget_Issue);
-
-    /** Column definition for S_Budget_Issue_ID */
-    public static final org.adempiere.model.ModelColumn<I_S_ExternalIssueDetail, de.metas.serviceprovider.model.I_S_Budget_Issue> COLUMN_S_Budget_Issue_ID = new org.adempiere.model.ModelColumn<I_S_ExternalIssueDetail, de.metas.serviceprovider.model.I_S_Budget_Issue>(I_S_ExternalIssueDetail.class, "S_Budget_Issue_ID", de.metas.serviceprovider.model.I_S_Budget_Issue.class);
-    /** Column name S_Budget_Issue_ID */
-    public static final String COLUMNNAME_S_Budget_Issue_ID = "S_Budget_Issue_ID";
-
-	/**
-	 * Set Aufwands-Issue.
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setS_Effort_Issue_ID (int S_Effort_Issue_ID);
-
-	/**
-	 * Get Aufwands-Issue.
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public int getS_Effort_Issue_ID();
-
-	public de.metas.serviceprovider.model.I_S_Effort_Issue getS_Effort_Issue();
-
-	public void setS_Effort_Issue(de.metas.serviceprovider.model.I_S_Effort_Issue S_Effort_Issue);
-
-    /** Column definition for S_Effort_Issue_ID */
-    public static final org.adempiere.model.ModelColumn<I_S_ExternalIssueDetail, de.metas.serviceprovider.model.I_S_Effort_Issue> COLUMN_S_Effort_Issue_ID = new org.adempiere.model.ModelColumn<I_S_ExternalIssueDetail, de.metas.serviceprovider.model.I_S_Effort_Issue>(I_S_ExternalIssueDetail.class, "S_Effort_Issue_ID", de.metas.serviceprovider.model.I_S_Effort_Issue.class);
-    /** Column name S_Effort_Issue_ID */
-    public static final String COLUMNNAME_S_Effort_Issue_ID = "S_Effort_Issue_ID";
-
-	/**
 	 * Set S_ExternalIssueDetail.
 	 *
 	 * <br>Type: ID
@@ -210,6 +156,33 @@ public interface I_S_ExternalIssueDetail
     public static final org.adempiere.model.ModelColumn<I_S_ExternalIssueDetail, Object> COLUMN_S_ExternalIssueDetail_ID = new org.adempiere.model.ModelColumn<I_S_ExternalIssueDetail, Object>(I_S_ExternalIssueDetail.class, "S_ExternalIssueDetail_ID", null);
     /** Column name S_ExternalIssueDetail_ID */
     public static final String COLUMNNAME_S_ExternalIssueDetail_ID = "S_ExternalIssueDetail_ID";
+
+	/**
+	 * Set Issue.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setS_Issue_ID (int S_Issue_ID);
+
+	/**
+	 * Get Issue.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getS_Issue_ID();
+
+	public de.metas.serviceprovider.model.I_S_Issue getS_Issue();
+
+	public void setS_Issue(de.metas.serviceprovider.model.I_S_Issue S_Issue);
+
+    /** Column definition for S_Issue_ID */
+    public static final org.adempiere.model.ModelColumn<I_S_ExternalIssueDetail, de.metas.serviceprovider.model.I_S_Issue> COLUMN_S_Issue_ID = new org.adempiere.model.ModelColumn<I_S_ExternalIssueDetail, de.metas.serviceprovider.model.I_S_Issue>(I_S_ExternalIssueDetail.class, "S_Issue_ID", de.metas.serviceprovider.model.I_S_Issue.class);
+    /** Column name S_Issue_ID */
+    public static final String COLUMNNAME_S_Issue_ID = "S_Issue_ID";
 
 	/**
 	 * Set Art.

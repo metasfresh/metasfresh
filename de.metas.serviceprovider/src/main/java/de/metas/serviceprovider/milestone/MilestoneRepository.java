@@ -37,11 +37,9 @@ public class MilestoneRepository
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-	public MilestoneId store(@NonNull final Milestone milestone)
+	public void save(@NonNull final Milestone milestone)
 	{
-		final I_S_Milestone record = milestone.getMilestoneId() != null
-				? InterfaceWrapperHelper.load(milestone.getMilestoneId(), I_S_Milestone.class)
-				: InterfaceWrapperHelper.newInstance(I_S_Milestone.class);
+		final I_S_Milestone record = InterfaceWrapperHelper.loadOrNew(milestone.getMilestoneId(), I_S_Milestone.class);
 
 		if (milestone.getDueDate() != null)
 		{
@@ -55,10 +53,11 @@ public class MilestoneRepository
 		record.setProcessed(milestone.isProcessed());
 
 		record.setExternalId(milestone.getExternalId());
+		record.setExternalUrl(milestone.getExternalURL());
 
-		InterfaceWrapperHelper.save(record);
+		InterfaceWrapperHelper.saveRecord(record);
 
-		return MilestoneId.ofRepoId(record.getS_Milestone_ID());
+		milestone.setMilestoneId(MilestoneId.ofRepoId(record.getS_Milestone_ID()));
 	}
 
 	public Optional<MilestoneId> getRepoIdByExternalId(@NonNull final String externalId)

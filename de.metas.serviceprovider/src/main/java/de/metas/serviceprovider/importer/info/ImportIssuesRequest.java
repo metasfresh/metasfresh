@@ -24,6 +24,7 @@ package de.metas.serviceprovider.importer.info;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.organization.OrgId;
+import de.metas.project.ProjectId;
 import de.metas.serviceprovider.external.project.ExternalProjectType;
 import de.metas.util.Check;
 import lombok.Builder;
@@ -52,6 +53,9 @@ public class ImportIssuesRequest
 
 	@NonNull
 	private OrgId orgId;
+
+	@Nullable
+	private ProjectId projectId;
 
 	@Nullable
 	ImmutableList<String> issueNoList;

@@ -24,6 +24,7 @@ package de.metas.serviceprovider.external.project;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.organization.OrgId;
+import de.metas.project.ProjectId;
 import de.metas.serviceprovider.model.I_S_ExternalProjectReference;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -39,7 +40,8 @@ public class ExternalProjectRepository
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-	public ImmutableList<ExternalProjectReference> loadExternalProjectsBySystem(@NonNull final ExternalSystem externalSystem)
+	@NonNull
+	public ImmutableList<ExternalProjectReference> getByExternalSystem(@NonNull final ExternalSystem externalSystem)
 	{
 		return queryBL.createQueryBuilder(I_S_ExternalProjectReference.class)
 				.addOnlyActiveRecordsFilter()
@@ -51,12 +53,14 @@ public class ExternalProjectRepository
 				.collect(ImmutableList.toImmutableList());
 	}
 
+	@NonNull
 	public ExternalProjectReference getById(@NonNull final ExternalProjectReferenceId externalProjectReferenceId)
 	{
 		final I_S_ExternalProjectReference record = InterfaceWrapperHelper.load(externalProjectReferenceId, I_S_ExternalProjectReference.class);
 		return buildExternalProjectReference(record);
 	}
 
+	@NonNull
 	private ExternalProjectReference buildExternalProjectReference(@NonNull final I_S_ExternalProjectReference record)
 	{
 		final Optional<ExternalProjectType> externalProjectType = ExternalProjectType.getTypeByValue(record.getProjectType());
@@ -74,6 +78,7 @@ public class ExternalProjectRepository
 				.projectOwner(record.getExternalProjectOwner())
 				.externalProjectType(externalProjectType.get())
 				.orgId(OrgId.ofRepoId(record.getAD_Org_ID()))
+				.projectId(ProjectId.ofRepoIdOrNull(record.getC_Project_ID()))
 				.build();
 	}
 }

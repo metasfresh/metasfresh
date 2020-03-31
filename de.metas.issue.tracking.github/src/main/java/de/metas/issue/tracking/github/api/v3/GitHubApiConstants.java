@@ -63,8 +63,8 @@ public interface GitHubApiConstants
 	@AllArgsConstructor
 	@Getter
 	enum LabelType{
-		BUDGET(Pattern.compile("^bud:([0-9]+\\.?[0-9]?)$")),
-		ESTIMATION(Pattern.compile("^est:([0-9]+\\.?[0-9]?)$"));
+		BUDGET(Pattern.compile("^bud:([0-9]+\\.?[0-9]*)$")),
+		ESTIMATION(Pattern.compile("^est:([0-9]+\\.?[0-9]*)$"));
 
 		private final Pattern pattern;
 	}

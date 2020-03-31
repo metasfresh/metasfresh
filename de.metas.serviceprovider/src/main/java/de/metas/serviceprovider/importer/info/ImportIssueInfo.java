@@ -22,56 +22,72 @@
 
 package de.metas.serviceprovider.importer.info;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.organization.OrgId;
+import de.metas.project.ProjectId;
 import de.metas.serviceprovider.external.issuedetails.ExternalIssueDetail;
 import de.metas.serviceprovider.external.project.ExternalProjectType;
 import de.metas.serviceprovider.milestone.Milestone;
 import de.metas.uom.UomId;
 import de.metas.user.UserId;
+import de.metas.util.StringUtils;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
-import java.util.List;
 
 @Value
 @Builder
 public class ImportIssueInfo
 {
-	@NonNull
-	private OrgId orgId;
+	@Nullable
+	ProjectId projectId;
 
 	@NonNull
-	private ExternalProjectType externalProjectType;
-
-	private BigDecimal estimation;
-
-	private BigDecimal budget;
+	OrgId orgId;
 
 	@NonNull
-	private UomId effortUomId;
+	ExternalProjectType externalProjectType;
+
+	@Nullable
+	BigDecimal estimation;
+
+	@Nullable
+	BigDecimal budget;
 
 	@NonNull
-	private String name;
-
-	private String description;
-
-	private boolean processed;
-
-	private UserId assigneeId;
+	UomId effortUomId;
 
 	@NonNull
-	private String externalIssueId;
+	String name;
 
-	private String externalIssueNo;
+	@Nullable
+	String description;
 
-	private String externalIssueURL;
+	boolean processed;
+
+	@Nullable
+	UserId assigneeId;
+
+	@NonNull
+	String externalIssueId;
+
+	@Nullable
+	String externalIssueNo;
+
+	@Nullable
+	String externalIssueURL;
 
 	@Nullable
 	Milestone milestone;
 
-	@Nullable
-	List<ExternalIssueDetail> externalIssueDetails;
+	@NonNull
+	ImmutableList<ExternalIssueDetail> externalIssueDetails;
+
+	public String getSearchKey()
+	{
+		return StringUtils.nullToEmpty(getExternalIssueNo()).concat(" ").concat(getName()).trim();
+	}
 }

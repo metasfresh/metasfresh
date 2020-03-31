@@ -25,14 +25,12 @@ package de.metas.serviceprovider.importer;
 import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
 import de.metas.logging.LogManager;
-import de.metas.serviceprovider.budgetissue.BudgetIssue;
-import de.metas.serviceprovider.budgetissue.BudgetIssueRepository;
-import de.metas.serviceprovider.budgetissue.BudgetIssueType;
-import de.metas.serviceprovider.effortissue.EffortIssue;
-import de.metas.serviceprovider.effortissue.EffortIssueRepository;
 import de.metas.serviceprovider.external.project.ExternalProjectType;
 import de.metas.serviceprovider.importer.info.ImportIssueInfo;
 import de.metas.serviceprovider.importer.info.ImportIssuesRequest;
+import de.metas.serviceprovider.issue.IssueEntity;
+import de.metas.serviceprovider.issue.IssueRepository;
+import de.metas.serviceprovider.issue.IssueType;
 import de.metas.serviceprovider.milestone.Milestone;
 import de.metas.serviceprovider.milestone.MilestoneId;
 import de.metas.serviceprovider.milestone.MilestoneRepository;
@@ -55,19 +53,18 @@ public class IssueImporterService
 
 	private final ImportIssuesQueue importIssuesQueue;
 	private final MilestoneRepository milestoneRepository;
-	private final BudgetIssueRepository budgetIssueRepository;
-	private final EffortIssueRepository effortIssueRepository;
+	private final IssueRepository issueRepository;
 	private final ITrxManager trxManager =  Services.get(ITrxManager.class);
 
-	public IssueImporterService(final ImportIssuesQueue importIssuesQueue, final MilestoneRepository milestoneRepository, final BudgetIssueRepository budgetIssueRepository, final EffortIssueRepository effortIssueRepository)
+	public IssueImporterService(final ImportIssuesQueue importIssuesQueue, final MilestoneRepository milestoneRepository, final IssueRepository issueRepository)
 	{
 		this.importIssuesQueue = importIssuesQueue;
 		this.milestoneRepository = milestoneRepository;
-		this.budgetIssueRepository = budgetIssueRepository;
-		this.effortIssueRepository = effortIssueRepository;
+		this.issueRepository = issueRepository;
 	}
 
-	public void importIssues(final ImmutableList<ImportIssuesRequest> requestList, final ImportService importService)
+	public void importIssues(@NonNull final ImmutableList<ImportIssuesRequest> requestList,
+			                 @NonNull final ImportService importService)
 	{
 		final CompletableFuture completableFuture =
 				CompletableFuture.runAsync(() -> importService.start(requestList));
@@ -83,24 +80,30 @@ public class IssueImporterService
 	{
 		try
 		{
-			if (ExternalProjectType.BUDGET.equals(importIssueInfo.getExternalProjectType()))
+			if (importIssueInfo.getMilestone() != null)
 			{
-				importBudgetIssue(importIssueInfo);
+				importMilestone(importIssueInfo.getMilestone());
 			}
-			else
-			{
-				importEffortIssue(importIssueInfo);
-			}
+
+			final Optional<IssueEntity> existingEffortIssue =
+					issueRepository.getEntityByExternalId(importIssueInfo.getExternalIssueId());
+
+			final IssueEntity issueEntity;
+			issueEntity = existingEffortIssue
+					.map(issue -> mergeIssueInfoWithEntity(importIssueInfo, issue))
+					.orElseGet(() -> buildIssue(importIssueInfo));
+
+			issueRepository.save(issueEntity);
 		}
 		catch (final Exception e)
 		{
 			Loggables.withLogger(log, Level.ERROR)
-					.addLog(IMPORT_LOG_MESSAGE_PREFIX +"*** Error while importing issue: {}, errorMessage: {}",importIssueInfo.toString(), e.getMessage(), e);
+					.addLog(" {} *** Error while importing issue: {}, errorMessage: {}",
+							IMPORT_LOG_MESSAGE_PREFIX, importIssueInfo.toString(), e.getMessage(), e);
 		}
 	}
 
-	@NonNull
-	private Optional<MilestoneId> importMilestone(@NonNull final Milestone milestone)
+	private void importMilestone(@NonNull final Milestone milestone)
 	{
 		if (milestone.getExternalId() != null)
 		{
@@ -108,135 +111,59 @@ public class IssueImporterService
 					.ifPresent(milestone::setMilestoneId);
 		}
 
-		final MilestoneId milestoneId = milestoneRepository.store(milestone);
-
-		return Optional.of(milestoneId);
+		milestoneRepository.save(milestone);
 	}
 
-	private void importBudgetIssue(@NonNull final ImportIssueInfo importIssueInfo)
-	{
-		if (importIssueInfo.getMilestone() != null)
-		{
-			final Optional<MilestoneId> milestoneId = importMilestone(importIssueInfo.getMilestone());
-			milestoneId.ifPresent(id -> importIssueInfo.getMilestone().setMilestoneId(id));
-		}
-
-		final Optional<BudgetIssue> existingBudgetIssue =
-				budgetIssueRepository.getEntityByExternalId(importIssueInfo.getExternalIssueId());
-
-		final BudgetIssue budgetIssue;
-		budgetIssue = existingBudgetIssue
-				.map(issue -> updateExistingBudgetIssue(issue, importIssueInfo))
-				.orElseGet(() -> buildBudgetIssue(importIssueInfo));
-
-		budgetIssueRepository.store(budgetIssue);
-	}
-
-	private BudgetIssue updateExistingBudgetIssue(@NonNull final BudgetIssue existingBudgetIssue,
-			                                      @NonNull final ImportIssueInfo importIssueInfo)
-	{
-		if (importIssueInfo.getMilestone() != null
-				&& importIssueInfo.getMilestone().getMilestoneId() != null)
-		{
-			existingBudgetIssue.setMilestoneIdIfNull(importIssueInfo.getMilestone().getMilestoneId());
-		}
-		existingBudgetIssue.setAssigneeIdIfNull(importIssueInfo.getAssigneeId());
-		existingBudgetIssue.setDescriptionIfNull(importIssueInfo.getDescription());
-		existingBudgetIssue.setBudgetedEffortIfNull(importIssueInfo.getBudget());
-		existingBudgetIssue.setEstimatedEffortIfNull(importIssueInfo.getEstimation());
-
-		existingBudgetIssue.setExternalIssueId(importIssueInfo.getExternalIssueId());
-		existingBudgetIssue.setExternalIssueNo(importIssueInfo.getExternalIssueNo());
-		existingBudgetIssue.setExternalIssueURL(importIssueInfo.getExternalIssueURL());
-		existingBudgetIssue.setExternalIssueDetails(importIssueInfo.getExternalIssueDetails());
-
-		return existingBudgetIssue;
-	}
-
-	private BudgetIssue buildBudgetIssue(@NonNull final ImportIssueInfo importIssueInfo)
+	@NonNull
+	private IssueEntity buildIssue(@NonNull final ImportIssueInfo importIssueInfo)
 	{
 		final MilestoneId milestoneId = importIssueInfo.getMilestone() != null
 				? importIssueInfo.getMilestone().getMilestoneId()
 				: null;
 
-		return BudgetIssue.builder()
-				.name(importIssueInfo.getName())
-				.description(importIssueInfo.getDescription())
+		return IssueEntity.builder()
+				.orgId(importIssueInfo.getOrgId())
+				.projectId(importIssueInfo.getProjectId())
 				.assigneeId(importIssueInfo.getAssigneeId())
 				.milestoneId(milestoneId)
-				.type(BudgetIssueType.EXTERNAL)
+				.name(importIssueInfo.getName())
+				.searchKey( importIssueInfo.getSearchKey() )
+				.description(importIssueInfo.getDescription())
+				.type(IssueType.EXTERNAL)
+				.isEffortIssue(ExternalProjectType.EFFORT.equals(importIssueInfo.getExternalProjectType()))
+				.processed(importIssueInfo.isProcessed())
+				.estimatedEffort(importIssueInfo.getEstimation())
+				.budgetedEffort(importIssueInfo.getBudget())
+				.effortUomId(importIssueInfo.getEffortUomId())
 				.externalIssueId(importIssueInfo.getExternalIssueId())
 				.externalIssueNo(importIssueInfo.getExternalIssueNo())
 				.externalIssueURL(importIssueInfo.getExternalIssueURL())
-				.effortUomId(importIssueInfo.getEffortUomId())
-				.estimatedEffort(importIssueInfo.getEstimation())
-				.budgetedEffort(importIssueInfo.getBudget())
-				.processed(importIssueInfo.isProcessed())
-				.orgId(importIssueInfo.getOrgId())
 				.externalIssueDetails(importIssueInfo.getExternalIssueDetails())
 				.build();
 	}
 
-	private void importEffortIssue(@NonNull final ImportIssueInfo importIssueInfo)
+	@NonNull
+	private IssueEntity mergeIssueInfoWithEntity(@NonNull final ImportIssueInfo importIssueInfo,
+											     @NonNull final IssueEntity existingEffortIssue)
 	{
-		if (importIssueInfo.getMilestone() != null)
-		{
-			final Optional<MilestoneId> milestoneId = importMilestone(importIssueInfo.getMilestone());
-			milestoneId.ifPresent(milestoneId1 -> importIssueInfo.getMilestone().setMilestoneId(milestoneId1));
-		}
-
-		final Optional<EffortIssue> existingEffortIssue =
-				effortIssueRepository.getEntityByExternalId(importIssueInfo.getExternalIssueId());
-
-		final EffortIssue effortIssue;
-		effortIssue = existingEffortIssue
-				.map(issue -> updateExistingEffortIssue(importIssueInfo, issue))
-				.orElseGet(() -> buildEffortIssue(importIssueInfo));
-
-		effortIssueRepository.store(effortIssue);
-	}
-
-	private EffortIssue buildEffortIssue(@NonNull final ImportIssueInfo importIssueInfo)
-	{
-		final MilestoneId milestoneId = importIssueInfo.getMilestone() != null
-				? importIssueInfo.getMilestone().getMilestoneId()
-				: null;
-
-		return EffortIssue.builder()
-				.name(importIssueInfo.getName())
+		final IssueEntity mergedIssueEntity = existingEffortIssue.toBuilder()
 				.description(importIssueInfo.getDescription())
-				.assigneeId(importIssueInfo.getAssigneeId())
-				.milestoneId(milestoneId)
 				.externalIssueId(importIssueInfo.getExternalIssueId())
 				.externalIssueNo(importIssueInfo.getExternalIssueNo())
 				.externalIssueURL(importIssueInfo.getExternalIssueURL())
-				.estimatedEffort(importIssueInfo.getEstimation())
-				.budgetedEffort(importIssueInfo.getBudget())
-				.effortUomId(importIssueInfo.getEffortUomId())
-				.processed(importIssueInfo.isProcessed())
-				.orgId(importIssueInfo.getOrgId())
-				.externalIssueDetailList(importIssueInfo.getExternalIssueDetails())
+				.externalIssueDetails(importIssueInfo.getExternalIssueDetails())
 				.build();
-	}
 
-	private EffortIssue updateExistingEffortIssue(@NonNull final ImportIssueInfo importIssueInfo,
-			                                      @NonNull final EffortIssue existingEffortIssue)
-	{
-		if (importIssueInfo.getMilestone() != null
-				&& importIssueInfo.getMilestone().getMilestoneId() != null)
+	if (importIssueInfo.getMilestone() != null && importIssueInfo.getMilestone().getMilestoneId() != null)
 		{
-			existingEffortIssue.setMilestoneIdIfNull(importIssueInfo.getMilestone().getMilestoneId());
+			mergedIssueEntity.setMilestoneId(importIssueInfo.getMilestone().getMilestoneId());
 		}
-		existingEffortIssue.setAssigneeIdIfNull(importIssueInfo.getAssigneeId());
-		existingEffortIssue.setDescriptionIfNull(importIssueInfo.getDescription());
-		existingEffortIssue.setBudgetedEffortIfNull(importIssueInfo.getBudget());
-		existingEffortIssue.setEstimatedEffortIfNull(importIssueInfo.getEstimation());
 
-		existingEffortIssue.setExternalIssueId(importIssueInfo.getExternalIssueId());
-		existingEffortIssue.setExternalIssueNo(importIssueInfo.getExternalIssueNo());
-		existingEffortIssue.setExternalIssueURL(importIssueInfo.getExternalIssueURL());
-		existingEffortIssue.setExternalIssueDetailList(importIssueInfo.getExternalIssueDetails());
+		mergedIssueEntity.setAssigneeIdIfNull(importIssueInfo.getAssigneeId());
+		mergedIssueEntity.setBudgetedEffortIfNull(importIssueInfo.getBudget());
+		mergedIssueEntity.setEstimatedEffortIfNull(importIssueInfo.getEstimation());
 
-		return existingEffortIssue;
+		return mergedIssueEntity;
 	}
+
 }

@@ -16,9 +16,9 @@ public interface I_S_ExternalProjectReference
 
 //    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
 
-    /** AccessLevel = 4 - System
+    /** AccessLevel = 1 - Org
      */
-//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(4);
+//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(1);
 
     /** Load Meta Data */
 

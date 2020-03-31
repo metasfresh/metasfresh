@@ -133,6 +133,31 @@ public interface I_S_Milestone
     public static final String COLUMNNAME_ExternalId = "ExternalId";
 
 	/**
+	 * Set External URL.
+	 * Link to the external resource.
+	 *
+	 * <br>Type: URL
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setExternalUrl (java.lang.String ExternalUrl);
+
+	/**
+	 * Get External URL.
+	 * Link to the external resource.
+	 *
+	 * <br>Type: URL
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getExternalUrl();
+
+    /** Column definition for ExternalUrl */
+    public static final org.adempiere.model.ModelColumn<I_S_Milestone, Object> COLUMN_ExternalUrl = new org.adempiere.model.ModelColumn<I_S_Milestone, Object>(I_S_Milestone.class, "ExternalUrl", null);
+    /** Column name ExternalUrl */
+    public static final String COLUMNNAME_ExternalUrl = "ExternalUrl";
+
+	/**
 	 * Set Aktiv.
 	 * Der Eintrag ist im System aktiv
 	 *

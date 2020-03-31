@@ -5,38 +5,39 @@ import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
 
-/** Generated Model for S_Budget_Issue
+/** Generated Model for S_Issue
  *  @author Adempiere (generated) 
  */
 @SuppressWarnings("javadoc")
-public class X_S_Budget_Issue extends org.compiere.model.PO implements I_S_Budget_Issue, org.compiere.model.I_Persistent 
+public class X_S_Issue extends org.compiere.model.PO implements I_S_Issue, org.compiere.model.I_Persistent 
 {
 
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 284204116L;
+	private static final long serialVersionUID = 80795629L;
 
     /** Standard Constructor */
-    public X_S_Budget_Issue (Properties ctx, int S_Budget_Issue_ID, String trxName)
+    public X_S_Issue (Properties ctx, int S_Issue_ID, String trxName)
     {
-      super (ctx, S_Budget_Issue_ID, trxName);
-      /** if (S_Budget_Issue_ID == 0)
+      super (ctx, S_Issue_ID, trxName);
+      /** if (S_Issue_ID == 0)
         {
-			setBudget_Issue_Type (null);
-			setBudgetedEffort (BigDecimal.ZERO); // 0
 			setCurrentEffort (0); // 0
 			setEffort_UOM_ID (0);
 			setEstimatedEffort (BigDecimal.ZERO); // 0
 			setIsApproved (false); // N
+			setIsEffortIssue (false); // N
+			setIssueType (null); // N
 			setName (null);
 			setProcessed (false); // N
-			setS_Budget_Issue_ID (0);
+			setS_Issue_ID (0);
+			setValue (null);
         } */
     }
 
     /** Load Constructor */
-    public X_S_Budget_Issue (Properties ctx, ResultSet rs, String trxName)
+    public X_S_Issue (Properties ctx, ResultSet rs, String trxName)
     {
       super (ctx, rs, trxName);
     }
@@ -73,32 +74,6 @@ public class X_S_Budget_Issue extends org.compiere.model.PO implements I_S_Budge
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	/** 
-	 * Budget_Issue_Type AD_Reference_ID=541105
-	 * Reference name: Budget_Issue_Type
-	 */
-	public static final int BUDGET_ISSUE_TYPE_AD_Reference_ID=541105;
-	/** Internal = Internal */
-	public static final String BUDGET_ISSUE_TYPE_Internal = "Internal";
-	/** External = External */
-	public static final String BUDGET_ISSUE_TYPE_External = "External";
-	/** Set Typ.
-		@param Budget_Issue_Type Typ	  */
-	@Override
-	public void setBudget_Issue_Type (java.lang.String Budget_Issue_Type)
-	{
-
-		set_Value (COLUMNNAME_Budget_Issue_Type, Budget_Issue_Type);
-	}
-
-	/** Get Typ.
-		@return Typ	  */
-	@Override
-	public java.lang.String getBudget_Issue_Type () 
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_Budget_Issue_Type);
 	}
 
 	/** Set Budgetiert.
@@ -285,6 +260,55 @@ public class X_S_Budget_Issue extends org.compiere.model.PO implements I_S_Budge
 		return false;
 	}
 
+	/** Set Effort issue.
+		@param IsEffortIssue Effort issue	  */
+	@Override
+	public void setIsEffortIssue (boolean IsEffortIssue)
+	{
+		set_Value (COLUMNNAME_IsEffortIssue, Boolean.valueOf(IsEffortIssue));
+	}
+
+	/** Get Effort issue.
+		@return Effort issue	  */
+	@Override
+	public boolean isEffortIssue () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsEffortIssue);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
+	/** 
+	 * IssueType AD_Reference_ID=541105
+	 * Reference name: Budget_Issue_Type
+	 */
+	public static final int ISSUETYPE_AD_Reference_ID=541105;
+	/** Internal = Internal */
+	public static final String ISSUETYPE_Internal = "Internal";
+	/** External = External */
+	public static final String ISSUETYPE_External = "External";
+	/** Set Type.
+		@param IssueType Type	  */
+	@Override
+	public void setIssueType (java.lang.String IssueType)
+	{
+
+		set_Value (COLUMNNAME_IssueType, IssueType);
+	}
+
+	/** Get Type.
+		@return Type	  */
+	@Override
+	public java.lang.String getIssueType () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_IssueType);
+	}
+
 	/** Set Issue-URL.
 		@param IssueURL 
 		URL der Issue, z.B. auf github
@@ -346,164 +370,78 @@ public class X_S_Budget_Issue extends org.compiere.model.PO implements I_S_Budge
 		return false;
 	}
 
-	/** Set Budget-Issue.
-		@param S_Budget_Issue_ID Budget-Issue	  */
+	/** Set Issue.
+		@param S_Issue_ID Issue	  */
 	@Override
-	public void setS_Budget_Issue_ID (int S_Budget_Issue_ID)
+	public void setS_Issue_ID (int S_Issue_ID)
 	{
-		if (S_Budget_Issue_ID < 1) 
-			set_ValueNoCheck (COLUMNNAME_S_Budget_Issue_ID, null);
+		if (S_Issue_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_S_Issue_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_S_Budget_Issue_ID, Integer.valueOf(S_Budget_Issue_ID));
+			set_ValueNoCheck (COLUMNNAME_S_Issue_ID, Integer.valueOf(S_Issue_ID));
 	}
 
-	/** Get Budget-Issue.
-		@return Budget-Issue	  */
+	/** Get Issue.
+		@return Issue	  */
 	@Override
-	public int getS_Budget_Issue_ID () 
+	public int getS_Issue_ID () 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_S_Budget_Issue_ID);
+		Integer ii = (Integer)get_Value(COLUMNNAME_S_Issue_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
 	}
 
 	@Override
-	public de.metas.serviceprovider.model.I_S_Budget_Issue getS_Budget_Issue_Parent()
+	public de.metas.serviceprovider.model.I_S_Milestone getS_Milestone()
 	{
-		return get_ValueAsPO(COLUMNNAME_S_Budget_Issue_Parent_ID, de.metas.serviceprovider.model.I_S_Budget_Issue.class);
+		return get_ValueAsPO(COLUMNNAME_S_Milestone_ID, de.metas.serviceprovider.model.I_S_Milestone.class);
 	}
 
 	@Override
-	public void setS_Budget_Issue_Parent(de.metas.serviceprovider.model.I_S_Budget_Issue S_Budget_Issue_Parent)
+	public void setS_Milestone(de.metas.serviceprovider.model.I_S_Milestone S_Milestone)
 	{
-		set_ValueFromPO(COLUMNNAME_S_Budget_Issue_Parent_ID, de.metas.serviceprovider.model.I_S_Budget_Issue.class, S_Budget_Issue_Parent);
+		set_ValueFromPO(COLUMNNAME_S_Milestone_ID, de.metas.serviceprovider.model.I_S_Milestone.class, S_Milestone);
 	}
 
-	/** Set Übergeordnete Issue.
-		@param S_Budget_Issue_Parent_ID 
-		Hinweis: Nur Issues, die eine übergeordnete Issue haben, können "Intern" sein.
+	/** Set Meilenstein.
+		@param S_Milestone_ID Meilenstein	  */
+	@Override
+	public void setS_Milestone_ID (int S_Milestone_ID)
+	{
+		if (S_Milestone_ID < 1) 
+			set_Value (COLUMNNAME_S_Milestone_ID, null);
+		else 
+			set_Value (COLUMNNAME_S_Milestone_ID, Integer.valueOf(S_Milestone_ID));
+	}
+
+	/** Get Meilenstein.
+		@return Meilenstein	  */
+	@Override
+	public int getS_Milestone_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_S_Milestone_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Suchschlüssel.
+		@param Value 
+		Suchschlüssel für den Eintrag im erforderlichen Format - muss eindeutig sein
 	  */
 	@Override
-	public void setS_Budget_Issue_Parent_ID (int S_Budget_Issue_Parent_ID)
+	public void setValue (java.lang.String Value)
 	{
-		if (S_Budget_Issue_Parent_ID < 1) 
-			set_Value (COLUMNNAME_S_Budget_Issue_Parent_ID, null);
-		else 
-			set_Value (COLUMNNAME_S_Budget_Issue_Parent_ID, Integer.valueOf(S_Budget_Issue_Parent_ID));
+		set_Value (COLUMNNAME_Value, Value);
 	}
 
-	/** Get Übergeordnete Issue.
-		@return Hinweis: Nur Issues, die eine übergeordnete Issue haben, können "Intern" sein.
+	/** Get Suchschlüssel.
+		@return Suchschlüssel für den Eintrag im erforderlichen Format - muss eindeutig sein
 	  */
 	@Override
-	public int getS_Budget_Issue_Parent_ID () 
+	public java.lang.String getValue () 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_S_Budget_Issue_Parent_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
-	@Override
-	public de.metas.serviceprovider.model.I_S_Milestone getS_Budgeted_Milestone()
-	{
-		return get_ValueAsPO(COLUMNNAME_S_Budgeted_Milestone_ID, de.metas.serviceprovider.model.I_S_Milestone.class);
-	}
-
-	@Override
-	public void setS_Budgeted_Milestone(de.metas.serviceprovider.model.I_S_Milestone S_Budgeted_Milestone)
-	{
-		set_ValueFromPO(COLUMNNAME_S_Budgeted_Milestone_ID, de.metas.serviceprovider.model.I_S_Milestone.class, S_Budgeted_Milestone);
-	}
-
-	/** Set Budget Meilenstein.
-		@param S_Budgeted_Milestone_ID Budget Meilenstein	  */
-	@Override
-	public void setS_Budgeted_Milestone_ID (int S_Budgeted_Milestone_ID)
-	{
-		if (S_Budgeted_Milestone_ID < 1) 
-			set_Value (COLUMNNAME_S_Budgeted_Milestone_ID, null);
-		else 
-			set_Value (COLUMNNAME_S_Budgeted_Milestone_ID, Integer.valueOf(S_Budgeted_Milestone_ID));
-	}
-
-	/** Get Budget Meilenstein.
-		@return Budget Meilenstein	  */
-	@Override
-	public int getS_Budgeted_Milestone_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_S_Budgeted_Milestone_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
-	@Override
-	public de.metas.serviceprovider.model.I_S_Milestone getS_Current_Milestone()
-	{
-		return get_ValueAsPO(COLUMNNAME_S_Current_Milestone_ID, de.metas.serviceprovider.model.I_S_Milestone.class);
-	}
-
-	@Override
-	public void setS_Current_Milestone(de.metas.serviceprovider.model.I_S_Milestone S_Current_Milestone)
-	{
-		set_ValueFromPO(COLUMNNAME_S_Current_Milestone_ID, de.metas.serviceprovider.model.I_S_Milestone.class, S_Current_Milestone);
-	}
-
-	/** Set Aktueller Meilenstein.
-		@param S_Current_Milestone_ID Aktueller Meilenstein	  */
-	@Override
-	public void setS_Current_Milestone_ID (int S_Current_Milestone_ID)
-	{
-		if (S_Current_Milestone_ID < 1) 
-			set_Value (COLUMNNAME_S_Current_Milestone_ID, null);
-		else 
-			set_Value (COLUMNNAME_S_Current_Milestone_ID, Integer.valueOf(S_Current_Milestone_ID));
-	}
-
-	/** Get Aktueller Meilenstein.
-		@return Aktueller Meilenstein	  */
-	@Override
-	public int getS_Current_Milestone_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_S_Current_Milestone_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
-	@Override
-	public de.metas.serviceprovider.model.I_S_Milestone getS_Planned_Milestone()
-	{
-		return get_ValueAsPO(COLUMNNAME_S_Planned_Milestone_ID, de.metas.serviceprovider.model.I_S_Milestone.class);
-	}
-
-	@Override
-	public void setS_Planned_Milestone(de.metas.serviceprovider.model.I_S_Milestone S_Planned_Milestone)
-	{
-		set_ValueFromPO(COLUMNNAME_S_Planned_Milestone_ID, de.metas.serviceprovider.model.I_S_Milestone.class, S_Planned_Milestone);
-	}
-
-	/** Set Geplanter Meilenstein.
-		@param S_Planned_Milestone_ID Geplanter Meilenstein	  */
-	@Override
-	public void setS_Planned_Milestone_ID (int S_Planned_Milestone_ID)
-	{
-		if (S_Planned_Milestone_ID < 1) 
-			set_Value (COLUMNNAME_S_Planned_Milestone_ID, null);
-		else 
-			set_Value (COLUMNNAME_S_Planned_Milestone_ID, Integer.valueOf(S_Planned_Milestone_ID));
-	}
-
-	/** Get Geplanter Meilenstein.
-		@return Geplanter Meilenstein	  */
-	@Override
-	public int getS_Planned_Milestone_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_S_Planned_Milestone_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return (java.lang.String)get_Value(COLUMNNAME_Value);
 	}
 }

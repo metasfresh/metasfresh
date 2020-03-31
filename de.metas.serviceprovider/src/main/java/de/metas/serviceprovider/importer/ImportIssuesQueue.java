@@ -56,7 +56,7 @@ public class ImportIssuesQueue
 
 			queue.drainTo(issues);
 
-			log.debug(IMPORT_LOG_MESSAGE_PREFIX + " drained {} issues for processing!", issues.size());
+			log.debug(" {} drained {} issues for processing!", IMPORT_LOG_MESSAGE_PREFIX, issues.size());
 		}
 		catch (final InterruptedException e)
 		{

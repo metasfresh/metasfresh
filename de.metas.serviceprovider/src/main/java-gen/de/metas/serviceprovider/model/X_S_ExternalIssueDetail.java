@@ -14,7 +14,7 @@ public class X_S_ExternalIssueDetail extends org.compiere.model.PO implements I_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1334748245L;
+	private static final long serialVersionUID = 984006963L;
 
     /** Standard Constructor */
     public X_S_ExternalIssueDetail (Properties ctx, int S_ExternalIssueDetail_ID, String trxName)
@@ -58,74 +58,6 @@ public class X_S_ExternalIssueDetail extends org.compiere.model.PO implements I_
 		return (java.lang.String)get_Value(COLUMNNAME_DetailValue);
 	}
 
-	@Override
-	public de.metas.serviceprovider.model.I_S_Budget_Issue getS_Budget_Issue()
-	{
-		return get_ValueAsPO(COLUMNNAME_S_Budget_Issue_ID, de.metas.serviceprovider.model.I_S_Budget_Issue.class);
-	}
-
-	@Override
-	public void setS_Budget_Issue(de.metas.serviceprovider.model.I_S_Budget_Issue S_Budget_Issue)
-	{
-		set_ValueFromPO(COLUMNNAME_S_Budget_Issue_ID, de.metas.serviceprovider.model.I_S_Budget_Issue.class, S_Budget_Issue);
-	}
-
-	/** Set Budget-Issue.
-		@param S_Budget_Issue_ID Budget-Issue	  */
-	@Override
-	public void setS_Budget_Issue_ID (int S_Budget_Issue_ID)
-	{
-		if (S_Budget_Issue_ID < 1) 
-			set_Value (COLUMNNAME_S_Budget_Issue_ID, null);
-		else 
-			set_Value (COLUMNNAME_S_Budget_Issue_ID, Integer.valueOf(S_Budget_Issue_ID));
-	}
-
-	/** Get Budget-Issue.
-		@return Budget-Issue	  */
-	@Override
-	public int getS_Budget_Issue_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_S_Budget_Issue_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
-	@Override
-	public de.metas.serviceprovider.model.I_S_Effort_Issue getS_Effort_Issue()
-	{
-		return get_ValueAsPO(COLUMNNAME_S_Effort_Issue_ID, de.metas.serviceprovider.model.I_S_Effort_Issue.class);
-	}
-
-	@Override
-	public void setS_Effort_Issue(de.metas.serviceprovider.model.I_S_Effort_Issue S_Effort_Issue)
-	{
-		set_ValueFromPO(COLUMNNAME_S_Effort_Issue_ID, de.metas.serviceprovider.model.I_S_Effort_Issue.class, S_Effort_Issue);
-	}
-
-	/** Set Aufwands-Issue.
-		@param S_Effort_Issue_ID Aufwands-Issue	  */
-	@Override
-	public void setS_Effort_Issue_ID (int S_Effort_Issue_ID)
-	{
-		if (S_Effort_Issue_ID < 1) 
-			set_Value (COLUMNNAME_S_Effort_Issue_ID, null);
-		else 
-			set_Value (COLUMNNAME_S_Effort_Issue_ID, Integer.valueOf(S_Effort_Issue_ID));
-	}
-
-	/** Get Aufwands-Issue.
-		@return Aufwands-Issue	  */
-	@Override
-	public int getS_Effort_Issue_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_S_Effort_Issue_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
 	/** Set S_ExternalIssueDetail.
 		@param S_ExternalIssueDetail_ID S_ExternalIssueDetail	  */
 	@Override
@@ -143,6 +75,40 @@ public class X_S_ExternalIssueDetail extends org.compiere.model.PO implements I_
 	public int getS_ExternalIssueDetail_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_S_ExternalIssueDetail_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public de.metas.serviceprovider.model.I_S_Issue getS_Issue()
+	{
+		return get_ValueAsPO(COLUMNNAME_S_Issue_ID, de.metas.serviceprovider.model.I_S_Issue.class);
+	}
+
+	@Override
+	public void setS_Issue(de.metas.serviceprovider.model.I_S_Issue S_Issue)
+	{
+		set_ValueFromPO(COLUMNNAME_S_Issue_ID, de.metas.serviceprovider.model.I_S_Issue.class, S_Issue);
+	}
+
+	/** Set Issue.
+		@param S_Issue_ID Issue	  */
+	@Override
+	public void setS_Issue_ID (int S_Issue_ID)
+	{
+		if (S_Issue_ID < 1) 
+			set_Value (COLUMNNAME_S_Issue_ID, null);
+		else 
+			set_Value (COLUMNNAME_S_Issue_ID, Integer.valueOf(S_Issue_ID));
+	}
+
+	/** Get Issue.
+		@return Issue	  */
+	@Override
+	public int getS_Issue_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_S_Issue_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();

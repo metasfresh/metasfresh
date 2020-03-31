@@ -14,7 +14,7 @@ public class X_S_Milestone extends org.compiere.model.PO implements I_S_Mileston
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 60437802L;
+	private static final long serialVersionUID = -899828235L;
 
     /** Standard Constructor */
     public X_S_Milestone (Properties ctx, int S_Milestone_ID, String trxName)
@@ -74,6 +74,25 @@ public class X_S_Milestone extends org.compiere.model.PO implements I_S_Mileston
 	public java.lang.String getExternalId () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_ExternalId);
+	}
+
+	/** Set External URL.
+		@param ExternalUrl 
+		Link to the external resource. 
+	  */
+	@Override
+	public void setExternalUrl (java.lang.String ExternalUrl)
+	{
+		set_Value (COLUMNNAME_ExternalUrl, ExternalUrl);
+	}
+
+	/** Get External URL.
+		@return Link to the external resource. 
+	  */
+	@Override
+	public java.lang.String getExternalUrl () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_ExternalUrl);
 	}
 
 	/** Set Fälligkeitsdatum.

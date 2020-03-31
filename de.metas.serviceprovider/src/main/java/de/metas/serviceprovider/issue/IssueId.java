@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.serviceprovider.effortissue;
+package de.metas.serviceprovider.issue;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
@@ -31,24 +31,24 @@ import lombok.Value;
 import javax.annotation.Nullable;
 
 @Value
-public class EffortIssueId implements RepoIdAware
+public class IssueId implements RepoIdAware
 {
 	int repoId;
 
 	@JsonCreator
-	public static EffortIssueId ofRepoId(final int repoId)
+	public static IssueId ofRepoId(final int repoId)
 	{
-		return new EffortIssueId(repoId);
+		return new IssueId(repoId);
 	}
 
-	public static EffortIssueId ofRepoIdOrNull(@Nullable final Integer repoId)
+	public static IssueId ofRepoIdOrNull(@Nullable final Integer repoId)
 	{
-		return repoId != null && repoId > 0 ? new EffortIssueId(repoId) : null;
+		return repoId != null && repoId > 0 ? new IssueId(repoId) : null;
 	}
 
-	private EffortIssueId(final int repoId)
+	private IssueId(final int repoId)
 	{
-		this.repoId = Check.assumeGreaterThanZero(repoId, "S_Effort_Issue_ID");
+		this.repoId = Check.assumeGreaterThanZero(repoId, "S_Issue_ID");
 	}
 
 	@JsonValue

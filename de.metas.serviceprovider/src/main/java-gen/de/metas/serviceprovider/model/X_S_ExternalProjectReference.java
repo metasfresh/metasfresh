@@ -14,7 +14,7 @@ public class X_S_ExternalProjectReference extends org.compiere.model.PO implemen
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1230846556L;
+	private static final long serialVersionUID = 1251623490L;
 
     /** Standard Constructor */
     public X_S_ExternalProjectReference (Properties ctx, int S_ExternalProjectReference_ID, String trxName)
@@ -152,8 +152,8 @@ public class X_S_ExternalProjectReference extends org.compiere.model.PO implemen
 	public static final int PROJECTTYPE_AD_Reference_ID=541118;
 	/** Budget = Budget */
 	public static final String PROJECTTYPE_Budget = "Budget";
-	/** Development = Development */
-	public static final String PROJECTTYPE_Development = "Development";
+	/** Development = Effort */
+	public static final String PROJECTTYPE_Development = "Effort";
 	/** Set Project type.
 		@param ProjectType 
 		Specifies the type of a project. ( e.g. Budget, Development )

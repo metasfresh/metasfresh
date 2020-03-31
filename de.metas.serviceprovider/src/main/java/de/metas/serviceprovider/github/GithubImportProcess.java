@@ -24,26 +24,32 @@ package de.metas.serviceprovider.github;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.process.JavaProcess;
+import de.metas.process.Param;
 import de.metas.serviceprovider.external.project.ExternalProjectReference;
 import de.metas.serviceprovider.external.project.ExternalProjectReferenceId;
 import de.metas.serviceprovider.external.project.ExternalProjectRepository;
 import de.metas.serviceprovider.importer.IssueImporterService;
 import de.metas.serviceprovider.importer.info.ImportIssuesRequest;
+import de.metas.serviceprovider.model.I_S_ExternalProjectReference;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.SpringContextHolder;
+
+import javax.annotation.Nullable;
+import java.util.stream.Stream;
 
 import static de.metas.serviceprovider.external.project.ExternalSystem.GITHUB;
 import static de.metas.serviceprovider.github.GithubImporterConstants.GitHubImporterSysConfig.ACCESS_TOKEN;
 
 public class GithubImportProcess extends JavaProcess
 {
-	private final String PARAM_NAME_EXTERNAL_PROJECT_REFERENCE_ID = "S_ExternalProjectReference_ID";
-	private final String PARAM_NAME_ISSUE_NO = "IssueNumbers";
-
+	@Param(parameterName = I_S_ExternalProjectReference.COLUMNNAME_S_ExternalProjectReference_ID)
 	private int externalProjectReferenceId;
-	private ImmutableList<String> issueNoList;
+
+	@Param(parameterName = "IssueNumbers")
+	private String issueNumbers;
 
 	private final ExternalProjectRepository externalProjectRepository = SpringContextHolder.instance.getBean(ExternalProjectRepository.class);
 	private final IssueImporterService issueImporterService = SpringContextHolder.instance.getBean(IssueImporterService.class);
@@ -51,54 +57,54 @@ public class GithubImportProcess extends JavaProcess
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
 
-	@Override protected String doIt() throws Exception
+	@Override
+	protected String doIt() throws Exception
 	{
-		getParameters().forEach(param -> {
-			if (param.getParameterName().equalsIgnoreCase(PARAM_NAME_EXTERNAL_PROJECT_REFERENCE_ID))
-			{
-				externalProjectReferenceId = param.getParameterAsInt();
-			}
-			else if (param.getParameterName().equalsIgnoreCase(PARAM_NAME_ISSUE_NO))
-			{
-				issueNoList = Check.isNotBlank(param.getParameterAsString())
-						? ImmutableList.copyOf(param.getParameterAsString().split(","))
-						: ImmutableList.of();
-			}
-		});
-
 		final ImmutableList<ImportIssuesRequest> importIssuesRequests =
 				importAll() ?  buildRequestsForAllRepos()
-							:  ImmutableList.of(buildSpecificRequest(externalProjectReferenceId, issueNoList));
+							:  ImmutableList.of(buildSpecificRequest(externalProjectReferenceId, issueNumbers));
 
 		issueImporterService.importIssues(importIssuesRequests, githubImporterService);
 
 		return MSG_OK;
 	}
 
+	@NonNull
 	private ImmutableList<ImportIssuesRequest> buildRequestsForAllRepos()
 	{
-		return externalProjectRepository.loadExternalProjectsBySystem(GITHUB)
+		return externalProjectRepository.getByExternalSystem(GITHUB)
 				.stream()
 				.map(externalProject -> buildImportIssueRequest(externalProject, ImmutableList.of()))
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	private ImportIssuesRequest buildSpecificRequest(final int externalProjectReferenceId, final ImmutableList<String> issueNoList)
+	@NonNull
+	private ImportIssuesRequest buildSpecificRequest(final int externalProjectReferenceId,
+													@Nullable final String issueNumbers)
 	{
 		final ExternalProjectReference externalProject =
 				externalProjectRepository.getById(ExternalProjectReferenceId.ofRepoId(externalProjectReferenceId));
 
+		final ImmutableList<String> issueNoList = Check.isNotBlank(issueNumbers)
+				? Stream.of( issueNumbers.split(",") )
+						.filter(Check::isNotBlank)
+						.map(String::trim)
+						.collect(ImmutableList.toImmutableList())
+				: ImmutableList.of();
+
 		return buildImportIssueRequest(externalProject, issueNoList);
 	}
 
-	private ImportIssuesRequest buildImportIssueRequest(final ExternalProjectReference externalProjectReference,
-			final ImmutableList<String> issueNoList)
+	@NonNull
+	private ImportIssuesRequest buildImportIssueRequest(@NonNull final ExternalProjectReference externalProjectReference,
+														@NonNull final ImmutableList<String> issueNoList)
 	{
 		return ImportIssuesRequest.builder()
 				.externalProjectType(externalProjectReference.getExternalProjectType())
 				.repoId(externalProjectReference.getExternalProjectReference())
 				.repoOwner(externalProjectReference.getProjectOwner())
 				.orgId(externalProjectReference.getOrgId())
+				.projectId(externalProjectReference.getProjectId())
 				.oAuthToken(sysConfigBL.getValue(ACCESS_TOKEN.getName()))
 				.issueNoList(issueNoList)
 				.build();
@@ -106,6 +112,6 @@ public class GithubImportProcess extends JavaProcess
 
 	private boolean importAll()
 	{
-		return externalProjectReferenceId == 0 && issueNoList.isEmpty();
+		return externalProjectReferenceId == 0 && Check.isBlank(issueNumbers);
 	}
 }

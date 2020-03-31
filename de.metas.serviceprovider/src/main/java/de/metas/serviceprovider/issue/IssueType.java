@@ -1,10 +1,6 @@
-package de.metas.serviceprovider;
-
-import de.metas.product.ProductId;
-
 /*
  * #%L
- * de.metas.contracts
+ * de.metas.serviceprovider.base
  * %%
  * Copyright (C) 2019 metas GmbH
  * %%
@@ -24,8 +20,29 @@ import de.metas.product.ProductId;
  * #L%
  */
 
+package de.metas.serviceprovider.issue;
 
-public class ServiceProviderConstants
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NonNull;
+
+import java.util.Optional;
+import java.util.stream.Stream;
+
+@AllArgsConstructor
+@Getter
+public enum IssueType
 {
-	public static final ProductId SERVICE_PRODUCT_ID = ProductId.ofRepoId(123);
+	INTERNAL("Internal"),
+	EXTERNAL("External");
+
+	private final String value;
+
+	@NonNull
+	public static Optional<IssueType> getTypeByValue(final String value)
+	{
+		return Stream.of(values())
+				.filter(v -> v.getValue().equalsIgnoreCase(value))
+				.findFirst();
+	}
 }

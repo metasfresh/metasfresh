@@ -54,7 +54,6 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -100,7 +99,8 @@ public class GithubImporterService implements ImportService
 					importIssues(request);
 				}
 			});
-			log.info(IMPORT_LOG_MESSAGE_PREFIX + " GithubImporterService#start() finished work in {} sec. ", stopWatch.stop().elapsed(TimeUnit.SECONDS));
+			Loggables.withLogger(log, Level.INFO).addLog(" {} GithubImporterService#start() finished work in {} sec. ",
+					IMPORT_LOG_MESSAGE_PREFIX, stopWatch.stop());
 		}
 		catch (final Exception ex)
 		{
@@ -120,7 +120,7 @@ public class GithubImporterService implements ImportService
 
 		while (areRemainingIssues)
 		{
-			log.info(IMPORT_LOG_MESSAGE_PREFIX + "Retrieving issues from repoId:{}, owner:{}, chunkIndex: {}", importIssuesRequest.getRepoId(),
+			log.info(" {} Retrieving issues from repoId:{}, owner:{}, chunkIndex: {}", IMPORT_LOG_MESSAGE_PREFIX, importIssuesRequest.getRepoId(),
 					importIssuesRequest.getRepoOwner(), chunkIndex);
 
 			final RetrieveIssuesRequest retrieveIssuesRequest = RetrieveIssuesRequest.builder()
@@ -171,11 +171,12 @@ public class GithubImporterService implements ImportService
 				.description(issue.getBody())
 				.processed(ResourceState.CLOSED.getValue().equals(issue.getState()))
 				.orgId(importIssuesRequest.getOrgId())
+				.projectId(importIssuesRequest.getProjectId())
 				.effortUomId(HOUR_UOM_ID);
 
 		if (issue.getGithubMilestone() != null)
 		{
-			importInfoBuilder.milestone(buildMilestone(issue.getGithubMilestone()));
+			importInfoBuilder.milestone(buildMilestone(issue.getGithubMilestone(), importIssuesRequest.getOrgId()));
 		}
 
 		if (issue.getAssignee() != null)
@@ -190,16 +191,18 @@ public class GithubImporterService implements ImportService
 		return importInfoBuilder.build();
 	}
 
-	private Milestone buildMilestone(@NonNull final GithubMilestone githubMilestone)
+	@NonNull
+	private Milestone buildMilestone(@NonNull final GithubMilestone githubMilestone, @NonNull final OrgId orgId)
 	{
 		return Milestone.builder()
 				.name(githubMilestone.getTitle())
 				.description(githubMilestone.getDescription())
+				.externalURL(githubMilestone.getHtmlUrl())
 				.externalId(githubMilestone.getId())
 				.processed(ResourceState.CLOSED.getValue().equals(githubMilestone.getState()))
 				.dueDate(githubMilestone.getDueDate())
 				.value(githubMilestone.getTitle())
-				.orgId(OrgId.ANY)
+				.orgId(orgId)
 				.build();
 	}
 
@@ -231,9 +234,8 @@ public class GithubImporterService implements ImportService
 
 		importIssueInfoBuilder.budget(budget);
 		importIssueInfoBuilder.estimation(estimation);
-		importIssueInfoBuilder.externalIssueDetails(externalIssueDetailList);
+		importIssueInfoBuilder.externalIssueDetails(ImmutableList.copyOf(externalIssueDetailList));
 	}
-
 
 	@NonNull
 	private BigDecimal getValueFromLabel(final Label label, final Pattern valuePattern)
@@ -253,13 +255,13 @@ public class GithubImporterService implements ImportService
 			throw new AdempiereException("The import is already running!");
 		}
 
-		log.debug(IMPORT_LOG_MESSAGE_PREFIX + " GithubImporterService: lock acquired, starting the import!");
+		log.debug(" {} GithubImporterService: lock acquired, starting the import!", IMPORT_LOG_MESSAGE_PREFIX);
 	}
 
 	private void releaseLock()
 	{
 		lock.unlock();
 
-		log.debug(IMPORT_LOG_MESSAGE_PREFIX + " GithubImporterService: lock released!");
+		log.debug(" {} GithubImporterService: lock released!", IMPORT_LOG_MESSAGE_PREFIX);
 	}
 }

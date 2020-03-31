@@ -45,12 +45,6 @@
         </dependency>
 
         <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-configuration-processor</artifactId>
-            <optional>true</optional>
-        </dependency>
-
-        <dependency>
             <groupId>de.metas.util</groupId>
             <artifactId>de.metas.util</artifactId>
             <version>${metasfresh.version}</version>

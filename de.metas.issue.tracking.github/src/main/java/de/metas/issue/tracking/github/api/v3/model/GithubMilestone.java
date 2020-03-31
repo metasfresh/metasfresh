@@ -40,7 +40,7 @@ public class GithubMilestone
 {
 	String id;
 
-	Integer number;
+	String htmlUrl;
 
 	String title;
 
@@ -53,14 +53,14 @@ public class GithubMilestone
 	@Builder
 	@JsonIgnoreProperties(ignoreUnknown = true)
 	public GithubMilestone(@JsonProperty("id") final String id,
-			@JsonProperty("number") final Integer number,
+			@JsonProperty("html_url") final String htmlUrl,
 			@JsonProperty("title") final String title,
 			@JsonProperty("description") final String description,
 			@JsonProperty("state") final String state,
 			@JsonProperty("due_on") final String dueDate)
 	{
 		this.id = id;
-		this.number = number;
+		this.htmlUrl = htmlUrl;
 		this.title = title;
 		this.description = description;
 		this.state = state;
