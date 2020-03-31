@@ -47,6 +47,7 @@ import org.slf4j.Logger;
 import com.google.common.collect.ImmutableMap;
 
 import de.metas.adempiere.model.I_M_Product;
+import de.metas.cache.CacheMgt;
 import de.metas.impexp.processing.IImportInterceptor;
 import de.metas.impexp.processing.ImportRecordsSelection;
 import de.metas.impexp.processing.SimpleImportProcessTemplate;
