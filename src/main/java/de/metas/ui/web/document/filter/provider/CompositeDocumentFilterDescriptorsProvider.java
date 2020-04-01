@@ -1,6 +1,7 @@
 package de.metas.ui.web.document.filter.provider;
 
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
 
 import com.google.common.collect.ImmutableList;
@@ -72,6 +73,7 @@ final class CompositeDocumentFilterDescriptorsProvider implements DocumentFilter
 				.stream()
 				.map(provider -> provider.getAll())
 				.flatMap(descriptors -> descriptors.stream())
+				.sorted(Comparator.comparing(DocumentFilterDescriptor::getSortNo))
 				.collect(GuavaCollectors.toImmutableMapByKey(descriptor -> descriptor.getFilterId())) // make sure each filterId is unique!
 				.values();
 	}

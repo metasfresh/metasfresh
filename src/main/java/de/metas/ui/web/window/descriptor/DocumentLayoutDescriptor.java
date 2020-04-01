@@ -20,9 +20,11 @@ import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.view.descriptor.ViewLayout;
+import de.metas.ui.web.window.datatypes.DebugProperties;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.exceptions.DocumentLayoutDetailNotFoundException;
 import de.metas.util.Check;
+import lombok.Getter;
 import lombok.NonNull;
 
 /*
@@ -79,7 +81,8 @@ public final class DocumentLayoutDescriptor
 	private final Map<DetailId, DocumentLayoutDetailDescriptor> allDetails;
 
 	/** Misc debugging properties */
-	private final Map<String, String> debugProperties;
+	@Getter
+	private final DebugProperties debugProperties;
 
 	private DocumentLayoutDescriptor(@NonNull final Builder builder)
 	{
@@ -102,7 +105,7 @@ public final class DocumentLayoutDescriptor
 		allDetails = ImmutableMap.copyOf(builder.buildAllDetails());
 		sideListView = builder.getSideList();
 
-		debugProperties = ImmutableMap.copyOf(builder.debugProperties);
+		debugProperties = DebugProperties.ofNullableMap(builder.debugProperties);
 	}
 
 	@Override
@@ -174,11 +177,6 @@ public final class DocumentLayoutDescriptor
 		}
 
 		return detail;
-	}
-
-	public Map<String, String> getDebugProperties()
-	{
-		return debugProperties;
 	}
 
 	public static final class Builder

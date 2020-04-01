@@ -1,8 +1,6 @@
 package de.metas.ui.web.window.model.lookup;
 
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 import org.adempiere.ad.service.impl.LookupDAO.SQLNamePairIterator;
@@ -19,6 +17,7 @@ import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.window.WindowConstants;
+import de.metas.ui.web.window.datatypes.DebugProperties;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
@@ -175,12 +174,12 @@ public class GenericSqlLookupDataSourceFetcher implements LookupDataSourceFetche
 
 		try (final SQLNamePairIterator data = new SQLNamePairIterator(sqlForFetching, numericKey, entityTypeIndex))
 		{
-			Map<String, String> debugProperties = null;
+			DebugProperties debugProperties = null;
 			if (WindowConstants.isProtocolDebugging())
 			{
-				debugProperties = new LinkedHashMap<>();
-				debugProperties.put("debug-sql", sqlForFetching);
-				debugProperties.put("debug-params", evalCtx.toString());
+				debugProperties = DebugProperties.EMPTY
+						.withProperty("debug-sql", sqlForFetching)
+						.withProperty("debug-params", evalCtx.toString());
 			}
 
 			final LookupValuesList values = data.fetchAll()

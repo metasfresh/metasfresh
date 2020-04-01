@@ -1,6 +1,7 @@
 package de.metas.ui.web.document.filter.json;
 
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -59,7 +60,11 @@ public final class JSONDocumentFilterDescriptor
 			return ImmutableList.of();
 		}
 
-		final ImmutableList<JSONDocumentFilterDescriptor> defaultFiltersList = filters.stream()
+		final ImmutableList<DocumentFilterDescriptor> filtersOrdered = filters.stream()
+				.sorted(Comparator.comparing(DocumentFilterDescriptor::getSortNo))
+				.collect(ImmutableList.toImmutableList());
+
+		final ImmutableList<JSONDocumentFilterDescriptor> defaultFiltersList = filtersOrdered.stream()
 				.filter(filter -> !filter.isFrequentUsed())
 				.map(filter -> new JSONDocumentFilterDescriptor(filter, options))
 				.collect(ImmutableList.toImmutableList());
@@ -68,7 +73,7 @@ public final class JSONDocumentFilterDescriptor
 				: null;
 
 		final ImmutableList.Builder<JSONDocumentFilterDescriptor> result = ImmutableList.builder();
-		for (final DocumentFilterDescriptor filter : filters)
+		for (final DocumentFilterDescriptor filter : filtersOrdered)
 		{
 			if (filter.isFrequentUsed())
 			{
@@ -135,7 +140,9 @@ public final class JSONDocumentFilterDescriptor
 
 		includedFilters = null;
 
-		debugProperties = filter.getDebugProperties();
+		debugProperties = filter.getDebugProperties()
+				.withProperty("sortNo", filter.getSortNo())
+				.toMap();
 	}
 
 	/** Filters group constructor */

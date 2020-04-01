@@ -16,6 +16,7 @@ import de.metas.i18n.ITranslatableString;
 import de.metas.ui.web.document.filter.DocumentFilterDescriptor;
 import de.metas.ui.web.document.filter.DocumentFilterInlineRenderMode;
 import de.metas.ui.web.document.filter.DocumentFilterParamDescriptor;
+import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsConstants;
 import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProvider;
 import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProviderFactory;
 import de.metas.ui.web.document.filter.provider.ImmutableDocumentFilterDescriptorsProvider;
@@ -56,7 +57,6 @@ public class FullTextSearchDocumentFilterDescriptorsProviderFactory implements D
 	private final Client elasticsearchClient;
 
 	private static final AdMessageKey MSG_FULL_TEXT_SEARCH_CAPTION = AdMessageKey.of("Search");
-	private static final int SORT_NO = 30000;
 
 	public FullTextSearchDocumentFilterDescriptorsProviderFactory(
 			@NonNull final org.elasticsearch.client.Client elasticsearchClient)
@@ -87,7 +87,7 @@ public class FullTextSearchDocumentFilterDescriptorsProviderFactory implements D
 
 		final DocumentFilterDescriptor filterDescriptor = DocumentFilterDescriptor.builder()
 				.setFilterId(FullTextSearchSqlDocumentFilterConverter.FILTER_ID)
-				.setSortNo(SORT_NO)
+				.setSortNo(DocumentFilterDescriptorsConstants.SORT_NO_FULL_TEXT_SEARCH)
 				.setDisplayName(caption)
 				.setFrequentUsed(true)
 				.setInlineRenderMode(DocumentFilterInlineRenderMode.INLINE_PARAMETERS)

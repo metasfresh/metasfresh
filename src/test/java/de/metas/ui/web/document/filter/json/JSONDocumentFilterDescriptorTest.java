@@ -53,12 +53,14 @@ public class JSONDocumentFilterDescriptorTest
 
 		private DocumentFilterDescriptor newFilter(
 				final String filterId,
-				final boolean frequent)
+				final boolean frequent,
+				final int sortNo)
 		{
 			return DocumentFilterDescriptor.builder()
 					.setFilterId(filterId)
 					.setDisplayName(filterId)
 					.setFrequentUsed(frequent)
+					.setSortNo(sortNo)
 					.build();
 		}
 
@@ -74,9 +76,9 @@ public class JSONDocumentFilterDescriptorTest
 		public void someNotFrequentFilters()
 		{
 			final ImmutableList<DocumentFilterDescriptor> filters = ImmutableList.of(
-					newFilter("default1", NOT_FREQUENT),
-					newFilter("default2", NOT_FREQUENT),
-					newFilter("default3", NOT_FREQUENT));
+					newFilter("default1", NOT_FREQUENT, 1),
+					newFilter("default2", NOT_FREQUENT, 2),
+					newFilter("default3", NOT_FREQUENT, 3));
 
 			final List<JSONDocumentFilterDescriptor> jsonFilters = JSONDocumentFilterDescriptor.ofCollection(filters, options);
 			assertThat(jsonFilters).hasSize(1);
@@ -86,31 +88,51 @@ public class JSONDocumentFilterDescriptorTest
 			assertThat(jsonFilters.get(0).getIncludedFilters().get(2).getFilterId()).isEqualTo("default3");
 		}
 
-		@Test
-		public void oneFrequentFilter_someNotFrequentFilters_someFrequentFilters()
+		@Nested
+		public class oneFrequentFilter_someNotFrequentFilters_someFrequentFilters
 		{
-			final ImmutableList<DocumentFilterDescriptor> filters = ImmutableList.of(
-					newFilter("default-date", FREQUENT),
-					newFilter("default1", NOT_FREQUENT),
-					newFilter("default2", NOT_FREQUENT),
-					newFilter("default3", NOT_FREQUENT),
-					newFilter("facet1", FREQUENT),
-					newFilter("facet2", FREQUENT),
-					newFilter("facet3", FREQUENT));
+			@Test
+			public void orderedFilters()
+			{
+				test(ImmutableList.of(
+						newFilter("default-date", FREQUENT, 1),
+						newFilter("default1", NOT_FREQUENT, 2),
+						newFilter("default2", NOT_FREQUENT, 3),
+						newFilter("default3", NOT_FREQUENT, 4),
+						newFilter("facet1", FREQUENT, 5),
+						newFilter("facet2", FREQUENT, 6),
+						newFilter("facet3", FREQUENT, 7)));
+			}
 
-			final List<JSONDocumentFilterDescriptor> jsonFilters = JSONDocumentFilterDescriptor.ofCollection(filters, options);
-			assertThat(jsonFilters).hasSize(5);
+			@Test
+			public void shuffledFilters()
+			{
+				test(ImmutableList.of(
+						newFilter("facet2", FREQUENT, 6),
+						newFilter("default1", NOT_FREQUENT, 2),
+						newFilter("default2", NOT_FREQUENT, 3),
+						newFilter("default3", NOT_FREQUENT, 4),
+						newFilter("default-date", FREQUENT, 1),
+						newFilter("facet1", FREQUENT, 5),
+						newFilter("facet3", FREQUENT, 7)));
+			}
 
-			assertThat(jsonFilters.get(0).getFilterId()).isEqualTo("default-date");
+			private void test(final List<DocumentFilterDescriptor> filters)
+			{
+				final List<JSONDocumentFilterDescriptor> jsonFilters = JSONDocumentFilterDescriptor.ofCollection(filters, options);
+				assertThat(jsonFilters).hasSize(5);
 
-			assertThat(jsonFilters.get(1).getFilterId()).isNull();
-			assertThat(jsonFilters.get(1).getIncludedFilters().get(0).getFilterId()).isEqualTo("default1");
-			assertThat(jsonFilters.get(1).getIncludedFilters().get(1).getFilterId()).isEqualTo("default2");
-			assertThat(jsonFilters.get(1).getIncludedFilters().get(2).getFilterId()).isEqualTo("default3");
+				assertThat(jsonFilters.get(0).getFilterId()).isEqualTo("default-date");
 
-			assertThat(jsonFilters.get(2).getFilterId()).isEqualTo("facet1");
-			assertThat(jsonFilters.get(3).getFilterId()).isEqualTo("facet2");
-			assertThat(jsonFilters.get(4).getFilterId()).isEqualTo("facet3");
+				assertThat(jsonFilters.get(1).getFilterId()).isNull();
+				assertThat(jsonFilters.get(1).getIncludedFilters().get(0).getFilterId()).isEqualTo("default1");
+				assertThat(jsonFilters.get(1).getIncludedFilters().get(1).getFilterId()).isEqualTo("default2");
+				assertThat(jsonFilters.get(1).getIncludedFilters().get(2).getFilterId()).isEqualTo("default3");
+
+				assertThat(jsonFilters.get(2).getFilterId()).isEqualTo("facet1");
+				assertThat(jsonFilters.get(3).getFilterId()).isEqualTo("facet2");
+				assertThat(jsonFilters.get(4).getFilterId()).isEqualTo("facet3");
+			}
 		}
 	}
 }

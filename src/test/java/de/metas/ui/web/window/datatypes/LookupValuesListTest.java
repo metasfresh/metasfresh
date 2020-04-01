@@ -2,8 +2,6 @@ package de.metas.ui.web.window.datatypes;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.function.Predicate;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -12,7 +10,6 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 
 import de.metas.product.ProductId;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
@@ -77,7 +74,7 @@ public class LookupValuesListTest
 	{
 		assertThat(LookupValuesList.EMPTY.isEmpty()).isTrue();
 		assertThat(LookupValuesList.EMPTY.getValues()).isEmpty();
-		assertThat(LookupValuesList.EMPTY.getDebugProperties()).isEmpty();
+		assertThat(LookupValuesList.EMPTY.getDebugProperties().toMap()).isEmpty();
 	}
 
 	@Nested
@@ -124,10 +121,10 @@ public class LookupValuesListTest
 		public void ignore_debugProperties()
 		{
 			final LookupValuesList list1 = Stream.<LookupValue> empty()
-					.collect(LookupValuesList.collect(ImmutableMap.of("key1", "value1")));
+					.collect(LookupValuesList.collect(DebugProperties.EMPTY.withProperty("key1", "value1")));
 
 			final LookupValuesList list2 = Stream.<LookupValue> empty()
-					.collect(LookupValuesList.collect(ImmutableMap.of("key1", "value2")));
+					.collect(LookupValuesList.collect(DebugProperties.EMPTY.withProperty("key1", "value2")));
 
 			assertThat(list1).isEqualTo(list2);
 		}
@@ -147,7 +144,7 @@ public class LookupValuesListTest
 		@Test
 		public void withoutDebugProperties_2()
 		{
-			final Map<String, String> debugProperties = null;
+			final DebugProperties debugProperties = null;
 			final LookupValuesList list = Stream.<LookupValue> empty()
 					.collect(LookupValuesList.collect(debugProperties));
 			assertThat(list).isSameAs(LookupValuesList.EMPTY);
@@ -156,7 +153,7 @@ public class LookupValuesListTest
 		@Test
 		public void withoutDebugProperties_3()
 		{
-			final Map<String, String> debugProperties = new HashMap<>();
+			final DebugProperties debugProperties = DebugProperties.EMPTY;
 			final LookupValuesList list = Stream.<LookupValue> empty().collect(LookupValuesList.collect(debugProperties));
 			assertThat(list).isSameAs(LookupValuesList.EMPTY);
 		}
@@ -164,8 +161,7 @@ public class LookupValuesListTest
 		@Test
 		public void withDebugProperties_1()
 		{
-			final Map<String, String> debugProperties = new HashMap<>();
-			debugProperties.put("something", "something");
+			final DebugProperties debugProperties = DebugProperties.EMPTY.withProperty("something", "something");
 
 			final LookupValuesList list = Stream.<LookupValue> empty().collect(LookupValuesList.collect(debugProperties));
 
@@ -175,21 +171,6 @@ public class LookupValuesListTest
 			assertThat(list.getValues()).isEmpty();
 
 			assertThat(list.getDebugProperties()).isEqualTo(debugProperties);
-			assertThat(list.getDebugProperties()).isNotSameAs(debugProperties);
-		}
-
-		@Test
-		public void withDebugProperties_usingImmutableDebugPropertiesMap()
-		{
-			final Map<String, String> debugProperties = ImmutableMap.of("something", "something");
-
-			final LookupValuesList list = Stream.<LookupValue> empty().collect(LookupValuesList.collect(debugProperties));
-
-			assertThat(list).isEqualTo(LookupValuesList.EMPTY);
-			assertThat(list).isNotSameAs(LookupValuesList.EMPTY);
-			assertThat(list.isEmpty()).isFalse();
-			assertThat(list.getValues()).isEmpty();
-
 			assertThat(list.getDebugProperties()).isSameAs(debugProperties);
 		}
 	}

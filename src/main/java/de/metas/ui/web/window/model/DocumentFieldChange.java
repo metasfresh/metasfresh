@@ -86,7 +86,7 @@ public final class DocumentFieldChange
 
 	private DocumentFieldWarning fieldWarning;
 
-	private Map<String, Object> debugProperties;
+	private LinkedHashMap<String, Object> debugProperties;
 
 	private DocumentFieldChange(final String fieldName, final boolean key, final boolean publicField, final boolean advancedField, final DocumentFieldWidgetType widgetType)
 	{

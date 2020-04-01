@@ -23,6 +23,7 @@ import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.DocumentFilterDescriptor;
 import de.metas.ui.web.document.filter.DocumentFilterParam;
 import de.metas.ui.web.document.filter.DocumentFilterParamDescriptor;
+import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsConstants;
 import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProvider;
 import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProviderFactory;
 import de.metas.ui.web.document.filter.provider.ImmutableDocumentFilterDescriptorsProvider;
@@ -62,8 +63,6 @@ public class GeoLocationDocumentService implements DocumentFilterDescriptorsProv
 {
 	private final transient IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final transient ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
-
-	private static final int SORT_NO = 40000;
 
 	private static final AdMessageKey MSG_FILTER_CAPTION = AdMessageKey.of("LocationAreaSearch");
 	private static final String SYS_CONFIG_ENABLE_GEO_LOCATION_SEARCH = "de.metas.ui.web.document.geo_location.filter_enabled";
@@ -168,7 +167,7 @@ public class GeoLocationDocumentService implements DocumentFilterDescriptorsProv
 
 		return DocumentFilterDescriptor.builder()
 				.setFilterId(GeoLocationFilterConverter.FILTER_ID)
-				.setSortNo(SORT_NO)
+				.setSortNo(DocumentFilterDescriptorsConstants.SORT_NO_GEO_LOCATION)
 				.setDisplayName(caption)
 				//
 				.addParameter(DocumentFilterParamDescriptor.builder()

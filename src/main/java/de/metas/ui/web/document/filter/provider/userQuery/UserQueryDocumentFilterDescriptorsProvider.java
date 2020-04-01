@@ -22,6 +22,7 @@ import de.metas.ui.web.document.filter.DocumentFilterDescriptor;
 import de.metas.ui.web.document.filter.DocumentFilterParam;
 import de.metas.ui.web.document.filter.DocumentFilterParam.Operator;
 import de.metas.ui.web.document.filter.DocumentFilterParamDescriptor;
+import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsConstants;
 import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProvider;
 import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
@@ -56,16 +57,12 @@ class UserQueryDocumentFilterDescriptorsProvider implements DocumentFilterDescri
 	private static final Logger logger = LogManager.getLogger(UserQueryDocumentFilterDescriptorsProvider.class);
 
 	private final UserQueryRepository repository;
-	private final int sortNoStart;
 
 	private final Supplier<ImmutableMap<String, DocumentFilterDescriptor>> filtersSupplier = CachedSuppliers.renewOnCacheReset(this::retrieveAllByFilterId);
 
-	public UserQueryDocumentFilterDescriptorsProvider(
-			@NonNull final UserQueryRepository repository,
-			final int sortNoStart)
+	public UserQueryDocumentFilterDescriptorsProvider(@NonNull final UserQueryRepository repository)
 	{
 		this.repository = repository;
-		this.sortNoStart = sortNoStart;
 	}
 
 	@Override
@@ -85,7 +82,7 @@ class UserQueryDocumentFilterDescriptorsProvider implements DocumentFilterDescri
 		final ArrayList<DocumentFilterDescriptor> filters = new ArrayList<>();
 		for (final IUserQuery userQuery : repository.getUserQueries())
 		{
-			final int sortNo = sortNoStart + filters.size() + 1;
+			final int sortNo = DocumentFilterDescriptorsConstants.SORT_NO_USER_QUERY_START + filters.size() + 1;
 			final DocumentFilterDescriptor filter = createFilterDescriptorOrNull(userQuery, sortNo);
 			if (filter != null)
 			{
