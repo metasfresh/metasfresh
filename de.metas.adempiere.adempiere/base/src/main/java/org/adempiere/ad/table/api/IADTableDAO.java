@@ -192,4 +192,6 @@ public interface IADTableDAO extends ISingletonService
 	int getTypeaheadMinLength(String tableName);
 
 	List<I_AD_Table> retrieveAllImportTables();
+
+	List<ColumnSqlSourceDescriptor> retrieveColumnSqlSourceDescriptors();
 }

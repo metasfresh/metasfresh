@@ -1,19 +1,14 @@
 package de.metas.cache.model;
 
-import java.util.Set;
+import java.util.List;
 
-import org.compiere.model.I_AD_User;
-import org.compiere.model.I_C_BPartner;
+import org.adempiere.ad.table.api.ColumnSqlSourceDescriptor;
+import org.adempiere.ad.table.api.IADTableDAO;
 import org.slf4j.Logger;
-
-import com.google.common.collect.ImmutableSet;
 
 import de.metas.cache.CacheMgt;
 import de.metas.logging.LogManager;
 import de.metas.util.Services;
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Value;
 
 /*
  * #%L
@@ -44,22 +39,9 @@ public class ColumnSqlCacheInvalidateRequestInitializer
 		new ColumnSqlCacheInvalidateRequestInitializer().initialize();
 	}
 
-	@Value
-	@Builder
-	private static class ColumnSqlSourceDescriptor
-	{
-		@NonNull
-		String targetTableName;
-
-		@NonNull
-		String sourceTableName;
-
-		@NonNull
-		String sqlToGetTargetRecordIdBySourceRecordId;
-	}
-
 	private static final Logger logger = LogManager.getLogger(ColumnSqlCacheInvalidateRequestInitializer.class);
 	private final IModelCacheInvalidationService registry = Services.get(IModelCacheInvalidationService.class);
+	private final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
 	private final CacheMgt cacheMgt = CacheMgt.get();
 
 	private ColumnSqlCacheInvalidateRequestInitializer()
@@ -68,14 +50,13 @@ public class ColumnSqlCacheInvalidateRequestInitializer
 
 	private void initialize()
 	{
-		final Set<ColumnSqlSourceDescriptor> descriptors = retrieveColumnSqlSourceDescriptors();
+		final List<ColumnSqlSourceDescriptor> descriptors = adTableDAO.retrieveColumnSqlSourceDescriptors();
 		logger.info("Found {} descriptors to be registered", descriptors.size());
 
 		for (final ColumnSqlSourceDescriptor descriptor : descriptors)
 		{
 			register(descriptor);
 		}
-
 	}
 
 	private void register(final ColumnSqlSourceDescriptor descriptor)
@@ -87,16 +68,5 @@ public class ColumnSqlCacheInvalidateRequestInitializer
 				.targetTableName(descriptor.getTargetTableName())
 				.sqlToGetTargetRecordIdBySourceRecordId(descriptor.getSqlToGetTargetRecordIdBySourceRecordId())
 				.build());
-	}
-
-	private final Set<ColumnSqlSourceDescriptor> retrieveColumnSqlSourceDescriptors()
-	{
-		// FIXME: hardcoded prototype
-		return ImmutableSet.of(
-				ColumnSqlSourceDescriptor.builder()
-						.targetTableName(I_C_BPartner.Table_Name)
-						.sourceTableName(I_AD_User.Table_Name)
-						.sqlToGetTargetRecordIdBySourceRecordId("select C_BPartner_ID from AD_User u where u.AD_User_ID=@Record_ID@ AND u.IsActive='Y' AND u.IsDefaultContact='Y'")
-						.build());
 	}
 }

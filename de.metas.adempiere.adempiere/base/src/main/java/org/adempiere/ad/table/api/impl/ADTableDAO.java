@@ -42,6 +42,7 @@ import org.adempiere.ad.dao.impl.UpperCaseQueryFilterModifier;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.service.ISequenceDAO;
 import org.adempiere.ad.table.api.AdTableId;
+import org.adempiere.ad.table.api.ColumnSqlSourceDescriptor;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.window.api.IADWindowDAO;
@@ -49,6 +50,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.compiere.Adempiere;
 import org.compiere.model.I_AD_Column;
 import org.compiere.model.I_AD_Element;
+import org.compiere.model.I_AD_SQLColumn_SourceTableColumn;
 import org.compiere.model.I_AD_Table;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
@@ -335,5 +337,27 @@ public class ADTableDAO implements IADTableDAO
 				.stream()
 				.filter(table -> table.getTableName().startsWith("I_")) // required because "I_%" could match "IMP_blabla" too
 				.collect(ImmutableList.toImmutableList());
+	}
+
+	@Override
+	public List<ColumnSqlSourceDescriptor> retrieveColumnSqlSourceDescriptors()
+	{
+		return queryBL.createQueryBuilderOutOfTrx(I_AD_SQLColumn_SourceTableColumn.class)
+				.addOnlyActiveRecordsFilter()
+				.orderBy(I_AD_SQLColumn_SourceTableColumn.COLUMNNAME_AD_Column_ID)
+				.orderBy(I_AD_SQLColumn_SourceTableColumn.COLUMNNAME_AD_SQLColumn_SourceTableColumn_ID)
+				.create()
+				.stream()
+				.map(this::toColumnSqlSourceDescriptor)
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	private ColumnSqlSourceDescriptor toColumnSqlSourceDescriptor(final I_AD_SQLColumn_SourceTableColumn record)
+	{
+		return ColumnSqlSourceDescriptor.builder()
+				.targetTableName(retrieveTableName(record.getAD_Table_ID()))
+				.sourceTableName(retrieveTableName(record.getSource_Table_ID()))
+				.sqlToGetTargetRecordIdBySourceRecordId(record.getSQL_GetTargetRecordIdBySourceRecordId())
+				.build();
 	}
 }
