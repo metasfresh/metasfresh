@@ -56,7 +56,7 @@ public class PMM_GenerateOrders extends WorkpackageProcessorAdapter
 			throw new AdempiereException("@NotFound@ @PMM_PurchaseCandidate_ID@");
 		}
 		OrdersGenerator.newInstance()
-				.setCandidates(getItemsWithQty(candidates))
+				.setCandidates(candidates)
 				.generate();
 
 		return Result.SUCCESS;
@@ -66,19 +66,6 @@ public class PMM_GenerateOrders extends WorkpackageProcessorAdapter
 	{
 		final I_C_Queue_WorkPackage workpackage = getC_Queue_WorkPackage();
 		return Services.get(IQueueDAO.class).retrieveItemsSkipMissing(workpackage, I_PMM_PurchaseCandidate.class, ITrx.TRXNAME_ThreadInherited);
-	}
-
-	private List<I_PMM_PurchaseCandidate> getItemsWithQty(List<I_PMM_PurchaseCandidate> candidates)
-	{
-		List<I_PMM_PurchaseCandidate> filteredList = new ArrayList<I_PMM_PurchaseCandidate>();
-		for (I_PMM_PurchaseCandidate candidate : candidates)
-		{
-			if (candidate.getQtyOrdered().compareTo(BigDecimal.ZERO) > 0)
-			{
-				filteredList.add(candidate);
-			}
-		}
-		return filteredList;
 	}
 
 	@Override
