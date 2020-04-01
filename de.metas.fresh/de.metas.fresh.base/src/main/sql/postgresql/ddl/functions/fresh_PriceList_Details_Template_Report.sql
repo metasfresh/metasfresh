@@ -1,5 +1,3 @@
-
-
 DROP FUNCTION IF EXISTS report.fresh_pricelist_details_template_report(NUMERIC, NUMERIC, CHARACTER VARYING, NUMERIC);
 CREATE OR REPLACE FUNCTION report.fresh_pricelist_details_template_report(IN p_c_bpartner_id NUMERIC, IN p_m_pricelist_version_id NUMERIC, IN p_ad_language CHARACTER VARYING,
                                                                           IN p_c_bpartner_location_id NUMERIC)
