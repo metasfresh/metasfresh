@@ -6,7 +6,6 @@
 	<property name="ireport.zoom" value="1.241842646118328"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="jasperreports\dev.xml"/>
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<property name="com.jaspersoft.studio.unit." value="pixel"/>
 	<property name="com.jaspersoft.studio.unit.pageHeight" value="pixel"/>
@@ -17,6 +16,7 @@
 	<property name="com.jaspersoft.studio.unit.rightMargin" value="pixel"/>
 	<property name="com.jaspersoft.studio.unit.columnWidth" value="pixel"/>
 	<property name="com.jaspersoft.studio.unit.columnSpacing" value="pixel"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="jasperreports\dev.xml"/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
 	<import value="net.sf.jasperreports.engine.data.*"/>
@@ -109,14 +109,14 @@
 	<field name="nameplv1" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="nameplv1"/>
 	</field>
-	<field name="nameplv2" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.label" value="nameplv2"/>
-	</field>
 	<field name="validfromplv1" class="java.sql.Timestamp">
 		<property name="com.jaspersoft.studio.field.label" value="validfromplv1"/>
 	</field>
 	<field name="validfromplv2" class="java.sql.Timestamp">
 		<property name="com.jaspersoft.studio.field.label" value="validfromplv2"/>
+	</field>
+	<field name="ad_org_id" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="ad_org_id"/>
 	</field>
 	<variable name="LINE_COUNT" class="java.lang.Number" calculation="Count">
 		<variableExpression><![CDATA[1]]></variableExpression>
@@ -325,7 +325,7 @@
 			<subreport isUsingCache="true">
 				<reportElement key="subreport-8" x="0" y="100" width="225" height="100" uuid="c5d77fa4-7184-4f47-a49b-955bd96be83c"/>
 				<subreportParameter name="org_id">
-					<subreportParameterExpression><![CDATA[new BigDecimal(1000000)]]></subreportParameterExpression>
+					<subreportParameterExpression><![CDATA[$F{ad_org_id}]]></subreportParameterExpression>
 				</subreportParameter>
 				<subreportParameter name="IsSOTrx">
 					<subreportParameterExpression><![CDATA["Y"]]></subreportParameterExpression>
@@ -336,7 +336,7 @@
 			<subreport isUsingCache="true">
 				<reportElement key="subreport-4" x="0" y="31" width="595" height="85" uuid="45686b08-5564-415f-85da-91f50a1ce8f5"/>
 				<subreportParameter name="org_id">
-					<subreportParameterExpression><![CDATA[new BigDecimal(1000000)]]></subreportParameterExpression>
+					<subreportParameterExpression><![CDATA[$F{ad_org_id}]]></subreportParameterExpression>
 				</subreportParameter>
 				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
 				<subreportExpression><![CDATA["de/metas/docs/generics/report_logo.jasper"]]></subreportExpression>
