@@ -61,6 +61,4 @@ FROM report.fresh_PriceList_Details_Report(p_c_bpartner_id, p_m_pricelist_versio
 
 
 $BODY$
-    LANGUAGE sql STABLE
-                 COST 100
-                 ROWS 1000;
+    LANGUAGE sql STABLE;
