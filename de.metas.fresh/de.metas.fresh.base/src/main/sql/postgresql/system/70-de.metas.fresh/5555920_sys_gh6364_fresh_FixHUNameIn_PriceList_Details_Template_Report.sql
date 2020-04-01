@@ -33,7 +33,7 @@ SELECT plc.value                                                                
        plc.productcategory                                                                                                as productcategory,
        plc.productname                                                                                                    as productname,
        plc.attributes                                                                                                     as attributes,
-       replace(hupip.name, hupiv.name,  pi.Name)                                                                          as itemproductname,
+       replace(hupip.name, hupiv.name,  pi.Name)                                                                           as itemproductname,
        NULL::numeric                                                                                                      as qty,
        plc.uomsymbol                                                                                                      as uomsymbol,
        round(plc.pricestd, cur.stdprecision)                                                                              as pricestd,
