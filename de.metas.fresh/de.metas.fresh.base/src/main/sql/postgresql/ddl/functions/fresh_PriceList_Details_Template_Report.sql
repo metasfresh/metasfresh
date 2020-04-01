@@ -33,7 +33,7 @@ SELECT plc.value                                                                
        plc.productcategory                                                                                                as productcategory,
        plc.productname                                                                                                    as productname,
        plc.attributes                                                                                                     as attributes,
-       coalesce(hupiv.description, hupip.name, plc.uomsymbol)                                                             as itemproductname,
+       coalesce(hupip.name, hupiv.description, plc.uomsymbol)                                                             as itemproductname,
        NULL::numeric                                                                                                      as qty,
        plc.uomsymbol                                                                                                      as uomsymbol,
        round(plc.pricestd, cur.stdprecision)                                                                              as pricestd,

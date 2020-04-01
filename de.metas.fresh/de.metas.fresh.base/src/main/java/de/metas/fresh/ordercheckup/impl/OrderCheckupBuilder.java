@@ -38,6 +38,7 @@ import de.metas.fresh.ordercheckup.OrderCheckupBarcode;
 import de.metas.product.ResourceId;
 import de.metas.user.UserId;
 import de.metas.util.Check;
+import lombok.NonNull;
 
 /**
  * {@link I_C_Order_MFGWarehouse_Report} builder.
@@ -141,11 +142,10 @@ public class OrderCheckupBuilder
 		return _order;
 	}
 
-	public OrderCheckupBuilder addOrderLine(final I_C_OrderLine orderLine)
+	public OrderCheckupBuilder addOrderLine(@NonNull final I_C_OrderLine orderLine)
 	{
 		assertNotBuilt();
 
-		Check.assumeNotNull(orderLine, "orderLine not null");
 		Check.assume(getC_Order().getC_Order_ID() == orderLine.getC_Order_ID(), "order line shall be part of provided order");
 		_orderLines.add(orderLine);
 		return this;
