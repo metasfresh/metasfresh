@@ -79,12 +79,6 @@ class ForecastDocumentHandler implements DocumentHandler
 	}
 
 	@Override
-	public String prepareIt(final DocumentTableFields docFields)
-	{
-		return IDocument.STATUS_InProgress;
-	}
-
-	@Override
 	public String completeIt(final DocumentTableFields docFields)
 	{
 		final I_M_Forecast forecast = extractForecast(docFields);

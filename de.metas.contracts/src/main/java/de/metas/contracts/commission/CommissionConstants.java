@@ -1,6 +1,5 @@
 package de.metas.contracts.commission;
 
-import de.metas.product.ProductId;
 import lombok.experimental.UtilityClass;
 
 /*
@@ -28,8 +27,6 @@ import lombok.experimental.UtilityClass;
 @UtilityClass
 public class CommissionConstants
 {
-	public static final ProductId COMMISSION_PRODUCT_ID = ProductId.ofRepoId(540420);
-
 	public static final String COMMISSION_DOC_SUBTYPE_VALUE = "CA";
 	public static final String COMMISSION_DOC_SUBTYPE_VALUENAME = "CommissionSettlement";
 

@@ -8,6 +8,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Optional;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
@@ -154,11 +156,14 @@ public class DunningDocOutboundLogMailRecipientProviderTest
 		return userRecord;
 	}
 
-	private I_C_Invoice createInvoiceRecord(final I_AD_User userRecord)
+	private I_C_Invoice createInvoiceRecord(@Nullable final I_AD_User userRecord)
 	{
 		final I_C_Invoice invoiceRecord2 = newInstance(I_C_Invoice.class);
-		invoiceRecord2.setC_BPartner(bPartnerRecord);
-		invoiceRecord2.setAD_User(userRecord);
+		invoiceRecord2.setC_BPartner_ID(bPartnerRecord.getC_BPartner_ID());
+		if (userRecord != null)
+		{
+			invoiceRecord2.setAD_User_ID(userRecord.getAD_User_ID());
+		}
 		saveRecord(invoiceRecord2);
 		return invoiceRecord2;
 	}

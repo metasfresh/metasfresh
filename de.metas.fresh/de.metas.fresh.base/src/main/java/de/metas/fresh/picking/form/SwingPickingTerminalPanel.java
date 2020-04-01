@@ -80,6 +80,7 @@ import de.metas.fresh.picking.BPartnerKey;
 import de.metas.fresh.picking.BPartnerKeyLayout;
 import de.metas.fresh.picking.DeliveryDateKey;
 import de.metas.fresh.picking.DeliveryDateKeyLayout;
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import de.metas.picking.terminal.form.swing.IPickingTerminalPanel;
@@ -106,7 +107,7 @@ public class SwingPickingTerminalPanel implements ITerminalBasePanel, IPickingTe
 
 	private static final Logger logger = LogManager.getLogger(SwingPickingTerminalPanel.class);
 
-	private static final String TITLE_PACKAGE_TERMINAL = "PackageTerminal";
+	private static final AdMessageKey TITLE_PACKAGE_TERMINAL = AdMessageKey.of("PackageTerminal");
 
 	private static final String CARDNAME_WAREHOUSE_PICKING = "WAREHOUSE_PICKING";
 	private static final String CARDNAME_RESULT = "RESULT";
@@ -141,20 +142,14 @@ public class SwingPickingTerminalPanel implements ITerminalBasePanel, IPickingTe
 		}
 	};
 
-	private final PropertyChangeListener barcodeSearchFieldListener = new PropertyChangeListener()
-	{
-
-		@Override
-		public void propertyChange(final PropertyChangeEvent evt)
+	private final PropertyChangeListener barcodeSearchFieldListener = evt -> {
+		final String eventName = evt.getPropertyName();
+		if (ITerminalTextField.PROPERTY_ActionPerformed.equals(eventName)
+				|| ITerminalTextField.PROPERTY_TextChanged.equals(eventName)
+				|| ITerminalTextField.PROPERTY_FocusLost.equals(eventName))
 		{
-			final String eventName = evt.getPropertyName();
-			if (ITerminalTextField.PROPERTY_ActionPerformed.equals(eventName)
-					|| ITerminalTextField.PROPERTY_TextChanged.equals(eventName)
-					|| ITerminalTextField.PROPERTY_FocusLost.equals(eventName))
-			{
-				final String barcode = barcodeSearchField.getValue();
-				onBarcodeSearch(barcode);
-			}
+			final String barcode = barcodeSearchField.getValue();
+			onBarcodeSearch(barcode);
 		}
 	};
 
@@ -734,14 +729,7 @@ public class SwingPickingTerminalPanel implements ITerminalBasePanel, IPickingTe
 
 			//
 			// Reset Product Search Field
-			SwingUtilities.invokeLater(new Runnable()
-			{
-				@Override
-				public void run()
-				{
-					resetProductSearchField();
-				}
-			});
+			SwingUtilities.invokeLater(() -> resetProductSearchField());
 		}
 		finally
 		{
@@ -799,7 +787,7 @@ public class SwingPickingTerminalPanel implements ITerminalBasePanel, IPickingTe
 		}
 	}
 
-	static enum ResetFilters
+	enum ResetFilters
 	{
 		No, Yes, IfNoResult,
 	}

@@ -23,6 +23,7 @@ import de.metas.security.permissions.bpartner_hierarchy.handlers.BPartnerDepende
 import de.metas.security.permissions.bpartner_hierarchy.handlers.BPartnerDependentDocumentHandlersMap;
 import de.metas.security.permissions.record_access.PermissionIssuer;
 import de.metas.security.permissions.record_access.RecordAccess;
+import de.metas.security.permissions.record_access.RecordAccessCopyRequest;
 import de.metas.security.permissions.record_access.RecordAccessFeature;
 import de.metas.security.permissions.record_access.RecordAccessGrantRequest;
 import de.metas.security.permissions.record_access.RecordAccessRevokeRequest;
@@ -114,6 +115,7 @@ public class BPartnerHierarchyRecordAccessHandler implements RecordAccessHandler
 					.principal(Principal.userId(event.getOldSalesRepId()))
 					.revokeAllPermissions(true)
 					.issuer(PermissionIssuer.AUTO_BP_HIERARCHY)
+					.requestedBy(event.getChangedBy())
 					.build());
 		}
 
@@ -125,6 +127,7 @@ public class BPartnerHierarchyRecordAccessHandler implements RecordAccessHandler
 					.permission(Access.READ)
 					.permission(Access.WRITE)
 					.issuer(PermissionIssuer.AUTO_BP_HIERARCHY)
+					.requestedBy(event.getChangedBy())
 					.build());
 		}
 	}
@@ -162,7 +165,13 @@ public class BPartnerHierarchyRecordAccessHandler implements RecordAccessHandler
 			return;
 		}
 
-		service.copyAccess(documentRef, grantFrom, revokeFrom);
+		service.copyAccess(RecordAccessCopyRequest.builder()
+				.target(documentRef)
+				.grantFrom(grantFrom)
+				.revokeFrom(revokeFrom)
+				.issuer(PermissionIssuer.AUTO_BP_HIERARCHY)
+				.requestedBy(event.getUpdatedBy())
+				.build());
 	}
 
 	@Override
@@ -179,6 +188,8 @@ public class BPartnerHierarchyRecordAccessHandler implements RecordAccessHandler
 							.principal(access.getPrincipal())
 							.permission(access.getPermission())
 							.issuer(PermissionIssuer.AUTO_BP_HIERARCHY)
+							.requestedBy(access.getCreatedBy())
+							.parentAccess(access)
 							.build())
 					.forEach(service::grantAccess);
 		}
@@ -198,6 +209,7 @@ public class BPartnerHierarchyRecordAccessHandler implements RecordAccessHandler
 							.principal(access.getPrincipal())
 							.permission(access.getPermission())
 							.issuer(PermissionIssuer.AUTO_BP_HIERARCHY)
+							.requestedBy(access.getCreatedBy())
 							.build())
 					.forEach(service::revokeAccess);
 		}

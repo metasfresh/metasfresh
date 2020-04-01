@@ -695,14 +695,21 @@ public class OrderBL implements IOrderBL
 				.bpartnerId(bpartnerId)
 				.build();
 		final I_C_BPartner_Location billtoLocation = bPartnerDAO.retrieveBPartnerLocation(query);
-
 		if (billtoLocation == null)
 		{
 			return false;
 		}
 
-		order.setBill_BPartner_ID(billtoLocation.getC_BPartner_ID());
+		final int oldBPartnerId = order.getBill_BPartner_ID();
+		final int newBPartnerId = billtoLocation.getC_BPartner_ID();
+		order.setBill_BPartner_ID(newBPartnerId);
+		
 		order.setBill_Location_ID(billtoLocation.getC_BPartner_Location_ID());
+
+		if (newBPartnerId != oldBPartnerId)
+		{
+			order.setBill_User_ID(-1);
+		}
 
 		return true; // found it
 	}

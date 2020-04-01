@@ -1,7 +1,12 @@
 package de.metas.banking.service.impl;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwares;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.Collection;
 import java.util.Date;
 
 /*
@@ -28,14 +33,10 @@ import java.util.Date;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Properties;
+import java.util.Set;
 
-import com.google.common.collect.ImmutableSet;
-import de.metas.banking.model.BankStatementId;
-import de.metas.banking.model.IBankStatementLineOrRef;
-import de.metas.payment.PaymentId;
-import de.metas.util.GuavaCollectors;
-import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
@@ -43,45 +44,65 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BankStatement;
 import org.compiere.model.I_C_BankStatementLine;
-import org.compiere.model.I_C_Payment;
 import org.compiere.model.I_Fact_Acct;
-import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 
-import de.metas.banking.interfaces.I_C_BankStatementLine_Ref;
+import com.google.common.collect.ImmutableSet;
+
+import de.metas.banking.BankStatementAndLineAndRefId;
+import de.metas.banking.BankStatementId;
+import de.metas.banking.BankStatementLineId;
+import de.metas.banking.BankStatementLineRefId;
+import de.metas.banking.BankStatementLineReference;
+import de.metas.banking.BankStatementLineReferenceList;
+import de.metas.banking.api.BankAccountId;
+import de.metas.banking.model.I_C_BankStatementLine_Ref;
+import de.metas.banking.service.BankStatementCreateRequest;
+import de.metas.banking.service.BankStatementLineCreateRequest;
+import de.metas.banking.service.BankStatementLineRefCreateRequest;
 import de.metas.banking.service.IBankStatementDAO;
+import de.metas.bpartner.BPartnerId;
+import de.metas.costing.ChargeId;
+import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
+import de.metas.invoice.InvoiceId;
+import de.metas.money.CurrencyId;
+import de.metas.money.Money;
+import de.metas.payment.PaymentId;
+import de.metas.util.Check;
+import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 public class BankStatementDAO implements IBankStatementDAO
 {
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
 	@Override
-	@Deprecated
-	public de.metas.banking.model.I_C_BankStatement getById(int id)
+	public I_C_BankStatement getById(@NonNull final BankStatementId bankStatementId)
 	{
-		return load(id, de.metas.banking.model.I_C_BankStatement.class);
+		return load(bankStatementId, I_C_BankStatement.class);
 	}
 
 	@Override
-	public de.metas.banking.model.I_C_BankStatement getById(@NonNull final BankStatementId bankStatementId)
+	public I_C_BankStatementLine getLineById(@NonNull final BankStatementLineId lineId)
 	{
-		return load(bankStatementId, de.metas.banking.model.I_C_BankStatement.class);
+		return load(lineId, I_C_BankStatementLine.class);
 	}
 
-	@Deprecated
 	@Override
-	public de.metas.banking.model.I_C_BankStatementLine getLineById(int lineId)
+	public List<I_C_BankStatementLine> getLinesByIds(@NonNull final Set<BankStatementLineId> lineIds)
 	{
-		return load(lineId, de.metas.banking.model.I_C_BankStatementLine.class);
+		return loadByRepoIdAwares(lineIds, I_C_BankStatementLine.class);
 	}
 
 	@NonNull
 	@Override
 	public ImmutableSet<PaymentId> getLinesPaymentIds(@NonNull final BankStatementId bankStatementId)
 	{
-		final de.metas.banking.model.I_C_BankStatement bankStatement = getById(bankStatementId);
-		final List<de.metas.banking.model.I_C_BankStatementLine> lines = retrieveLines(bankStatement, de.metas.banking.model.I_C_BankStatementLine.class);
+		final List<I_C_BankStatementLine> lines = getLinesByBankStatementId(bankStatementId);
 		return lines.stream()
-				.map(l -> PaymentId.ofRepoIdOrNull(l.getC_Payment_ID()))
+				.map(line -> PaymentId.ofRepoIdOrNull(line.getC_Payment_ID()))
 				.filter(Objects::nonNull)
 				.collect(GuavaCollectors.toImmutableSet());
 	}
@@ -99,61 +120,85 @@ public class BankStatementDAO implements IBankStatementDAO
 	}
 
 	@Override
-	public void save(final @NonNull I_C_BankStatementLine_Ref lineOrRef)
+	public List<I_C_BankStatementLine> getLinesByBankStatementId(@NonNull final BankStatementId bankStatementId)
 	{
-		InterfaceWrapperHelper.save(lineOrRef);
-	}
-
-	@Override
-	public <T extends I_C_BankStatementLine> List<T> retrieveLines(final I_C_BankStatement bankStatement, final Class<T> clazz)
-	{
-		return retrieveLinesQuery(bankStatement)
+		return retrieveLinesQuery(bankStatementId)
 				.create()
-				.list(clazz);
+				.list();
 	}
 
-	private IQueryBuilder<I_C_BankStatementLine> retrieveLinesQuery(final I_C_BankStatement bankStatement)
+	private IQueryBuilder<I_C_BankStatementLine> retrieveLinesQuery(final BankStatementId bankStatementId)
 	{
-		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_C_BankStatementLine.class, bankStatement)
+		return queryBL
+				.createQueryBuilder(I_C_BankStatementLine.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_BankStatementLine.COLUMNNAME_C_BankStatement_ID, bankStatement.getC_BankStatement_ID())
-				//
-				.orderBy()
-				.addColumn(I_C_BankStatementLine.COLUMNNAME_Line)
-				.addColumn(I_C_BankStatementLine.COLUMNNAME_C_BankStatementLine_ID)
-				.endOrderBy();
+				.addEqualsFilter(I_C_BankStatementLine.COLUMNNAME_C_BankStatement_ID, bankStatementId)
+				.orderBy(I_C_BankStatementLine.COLUMNNAME_Line)
+				.orderBy(I_C_BankStatementLine.COLUMNNAME_C_BankStatementLine_ID);
 	}
 
 	@Override
-	public List<I_C_BankStatementLine_Ref> retrieveLineReferences(final org.compiere.model.I_C_BankStatementLine bankStatementLine)
+	public BankStatementLineReferenceList getLineReferences(@NonNull final BankStatementLineId bankStatementLineId)
 	{
-		return retrieveLineReferencesQuery(bankStatementLine)
+		return getLineReferences(ImmutableSet.of(bankStatementLineId));
+	}
+
+	@Override
+	public BankStatementLineReferenceList getLineReferences(@NonNull final Collection<BankStatementLineId> bankStatementLineIds)
+	{
+		if (bankStatementLineIds.isEmpty())
+		{
+			return BankStatementLineReferenceList.EMPTY;
+		}
+
+		return queryBL
+				.createQueryBuilder(I_C_BankStatementLine_Ref.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_C_BankStatementLine_Ref.COLUMNNAME_C_BankStatementLine_ID, bankStatementLineIds)
+				.orderBy(I_C_BankStatementLine_Ref.COLUMNNAME_C_BankStatementLine_ID)
+				.orderBy(I_C_BankStatementLine_Ref.COLUMNNAME_Line)
+				.orderBy(I_C_BankStatementLine_Ref.COLUMNNAME_C_BankStatementLine_Ref_ID)
 				.create()
-				.list(I_C_BankStatementLine_Ref.class);
+				.stream(I_C_BankStatementLine_Ref.class)
+				.map(record -> toBankStatementLineReference(record))
+				.collect(BankStatementLineReferenceList.collector());
 	}
 
-	public IQueryBuilder<I_C_BankStatementLine_Ref> retrieveLineReferencesQuery(final org.compiere.model.I_C_BankStatementLine bankStatementLine)
+	private static BankStatementLineReference toBankStatementLineReference(final I_C_BankStatementLine_Ref record)
 	{
-		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_C_BankStatementLine_Ref.class, bankStatementLine)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_BankStatementLine_Ref.COLUMNNAME_C_BankStatementLine_ID, bankStatementLine.getC_BankStatementLine_ID())
-				.orderBy()
-				.addColumn(I_C_BankStatementLine_Ref.COLUMNNAME_Line)
-				.addColumn(I_C_BankStatementLine_Ref.COLUMNNAME_C_BankStatementLine_Ref_ID)
-				.endOrderBy();
+		return BankStatementLineReference.builder()
+				.id(BankStatementAndLineAndRefId.ofRepoIds(
+						record.getC_BankStatement_ID(),
+						record.getC_BankStatementLine_ID(),
+						record.getC_BankStatementLine_Ref_ID()))
+				.lineNo(record.getLine())
+				.bpartnerId(BPartnerId.ofRepoId(record.getC_BPartner_ID()))
+				.paymentId(PaymentId.ofRepoId(record.getC_Payment_ID()))
+				.invoiceId(InvoiceId.ofRepoIdOrNull(record.getC_Invoice_ID()))
+				.trxAmt(Money.of(record.getTrxAmt(), CurrencyId.ofRepoId(record.getC_Currency_ID())))
+				.build();
 	}
 
 	@Override
-	public boolean isPaymentOnBankStatement(final I_C_Payment payment)
+	public void deleteReferencesByIds(@NonNull final Collection<BankStatementLineRefId> lineRefIds)
 	{
-		final int paymentId = payment.getC_Payment_ID();
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
+		if (lineRefIds.isEmpty())
+		{
+			return;
+		}
 
+		queryBL.createQueryBuilder(I_C_BankStatementLine_Ref.class)
+				.addInArrayFilter(I_C_BankStatementLine_Ref.COLUMNNAME_C_BankStatementLine_Ref_ID, lineRefIds)
+				.create()
+				.delete(/* failIfProcessed */false); // delete even if Processed=Y
+	}
+
+	@Override
+	public boolean isPaymentOnBankStatement(@NonNull final PaymentId paymentId)
+	{
 		//
 		// Check if payment is on any bank statement line reference, processed or not
-		final boolean hasBankStatementLineRefs = queryBL.createQueryBuilder(I_C_BankStatementLine_Ref.class, payment)
+		final boolean hasBankStatementLineRefs = queryBL.createQueryBuilder(I_C_BankStatementLine_Ref.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_BankStatementLine_Ref.COLUMNNAME_C_Payment_ID, paymentId)
 				.create()
@@ -165,9 +210,9 @@ public class BankStatementDAO implements IBankStatementDAO
 
 		//
 		// Check if payment is on any bank statement line, processed or not
-		final boolean hasBankStatementLines = queryBL.createQueryBuilder(I_C_BankStatementLine.class, payment)
+		final boolean hasBankStatementLines = queryBL.createQueryBuilder(I_C_BankStatementLine.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_BankStatementLine.COLUMN_C_Payment_ID, paymentId)
+				.addEqualsFilter(I_C_BankStatementLine.COLUMNNAME_C_Payment_ID, paymentId)
 				.create()
 				.anyMatch();
 		if (hasBankStatementLines)
@@ -179,16 +224,14 @@ public class BankStatementDAO implements IBankStatementDAO
 	}
 
 	@Override
-	public List<I_C_BankStatement> retrievePostedWithoutFactAcct(final Properties ctx, final Date startTime)
+	public List<I_C_BankStatement> getPostedWithoutFactAcct(final Properties ctx, final Date startTime)
 	{
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
-
 		final String trxName = ITrx.TRXNAME_ThreadInherited;
 
 		// Exclude the entries that have trxAmt = 0. These entries will produce 0 in posting
 		final IQueryBuilder<I_C_BankStatementLine> queryBuilder = queryBL.createQueryBuilder(I_C_BankStatementLine.class, ctx, trxName)
 				.addOnlyActiveRecordsFilter()
-				.addNotEqualsFilter(I_C_BankStatementLine.COLUMNNAME_TrxAmt, Env.ZERO);
+				.addNotEqualsFilter(I_C_BankStatementLine.COLUMNNAME_TrxAmt, BigDecimal.ZERO);
 
 		// Check if there are fact accounts created for each document
 		final IQueryBuilder<I_Fact_Acct> factAcctQuery = queryBL.createQueryBuilder(I_Fact_Acct.class, ctx, trxName)
@@ -211,7 +254,157 @@ public class BankStatementDAO implements IBankStatementDAO
 				.addNotInSubQueryFilter(I_C_BankStatement.COLUMNNAME_C_BankStatement_ID, I_Fact_Acct.COLUMNNAME_Record_ID, factAcctQuery.create()) // has no accounting
 				.create()
 				.list(I_C_BankStatement.class);
-
 	}
 
+	@Override
+	public Optional<BankStatementId> getFirstIdMatching(
+			@NonNull final BankAccountId orgBankAccountId,
+			@NonNull final LocalDate statementDate,
+			@NonNull final String name,
+			@NonNull final DocStatus docStatus)
+	{
+		Check.assumeNotEmpty(name, "name is not empty");
+
+		return Optional.ofNullable(queryBL.createQueryBuilder(I_C_BankStatement.class)
+				.addEqualsFilter(I_C_BankStatement.COLUMNNAME_C_BP_BankAccount_ID, orgBankAccountId)
+				.addEqualsFilter(I_C_BankStatement.COLUMNNAME_StatementDate, statementDate)
+				.addEqualsFilter(I_C_BankStatement.COLUMNNAME_Name, name)
+				.addEqualsFilter(I_C_BankStatement.COLUMNNAME_DocStatus, docStatus.getCode())
+				.create()
+				.firstId(BankStatementId::ofRepoIdOrNull));
+	}
+
+	@Override
+	public BankStatementId createBankStatement(@NonNull final BankStatementCreateRequest request)
+	{
+		final I_C_BankStatement record = newInstance(I_C_BankStatement.class);
+
+		record.setEndingBalance(BigDecimal.ZERO);
+		record.setAD_Org_ID(request.getOrgId().getRepoId());
+		record.setC_BP_BankAccount_ID(request.getOrgBankAccountId().getRepoId());
+		record.setName(request.getName());
+		record.setDescription(request.getDescription());
+		record.setStatementDate(TimeUtil.asTimestamp(request.getStatementDate()));
+
+		final BankStatementCreateRequest.ElectronicFundsTransfer eft = request.getEft();
+		if (eft != null)
+		{
+			record.setEftStatementDate(TimeUtil.asTimestamp(eft.getStatementDate()));
+			record.setEftStatementReference(eft.getStatementReference());
+		}
+
+		save(record);
+
+		return BankStatementId.ofRepoId(record.getC_BankStatement_ID());
+	}
+
+	@Override
+	public BankStatementLineId createBankStatementLine(@NonNull final BankStatementLineCreateRequest request)
+	{
+		final I_C_BankStatementLine record = newInstance(I_C_BankStatementLine.class);
+		record.setC_BankStatement_ID(request.getBankStatementId().getRepoId());
+		record.setAD_Org_ID(request.getOrgId().getRepoId());
+
+		record.setLine(request.getLineNo());
+		if (request.getLineNo() > 0)
+		{
+			record.setLine(request.getLineNo());
+		}
+		else
+		{
+			final int maxLineNo = getLastLineNo(request.getBankStatementId());
+			record.setLine(maxLineNo + 10);
+		}
+
+		record.setC_BPartner_ID(BPartnerId.toRepoId(request.getBpartnerId()));
+		record.setImportedBillPartnerName(request.getImportedBillPartnerName());
+		record.setImportedBillPartnerIBAN(request.getImportedBillPartnerIBAN());
+
+		record.setReferenceNo(request.getReferenceNo());
+		record.setDescription(request.getLineDescription());
+		record.setMemo(request.getMemo());
+
+		record.setStatementLineDate(TimeUtil.asTimestamp(request.getStatementLineDate()));
+		record.setDateAcct(TimeUtil.asTimestamp(request.getDateAcct()));
+		record.setValutaDate(TimeUtil.asTimestamp(request.getValutaDate()));
+
+		record.setC_Currency_ID(request.getStatementAmt().getCurrencyId().getRepoId());
+		record.setStmtAmt(request.getStatementAmt().toBigDecimal());
+		record.setTrxAmt(request.getTrxAmt().toBigDecimal());
+		record.setChargeAmt(request.getChargeAmt().toBigDecimal());
+		record.setInterestAmt(request.getInterestAmt().toBigDecimal());
+		record.setC_Charge_ID(ChargeId.toRepoId(request.getChargeId()));
+
+		final BankStatementLineCreateRequest.ElectronicFundsTransfer eft = request.getEft();
+		if (eft != null)
+		{
+			record.setEftTrxID(eft.getTrxId());
+			record.setEftTrxType(eft.getTrxType());
+			record.setEftCheckNo(eft.getCheckNo());
+			record.setEftReference(eft.getReference());
+			record.setEftMemo(eft.getMemo());
+			record.setEftPayee(eft.getPayee());
+			record.setEftPayeeAccount(eft.getPayeeAccount());
+			record.setEftStatementLineDate(TimeUtil.asTimestamp(eft.getStatementLineDate()));
+			record.setEftValutaDate(TimeUtil.asTimestamp(eft.getValutaDate()));
+			record.setEftCurrency(eft.getCurrency());
+			record.setEftAmt(eft.getAmt());
+		}
+
+		save(record);
+
+		return BankStatementLineId.ofRepoId(record.getC_BankStatementLine_ID());
+	}
+
+	@Override
+	public BankStatementLineReference createBankStatementLineRef(@NonNull final BankStatementLineRefCreateRequest request)
+	{
+		final I_C_BankStatementLine_Ref record = newInstance(I_C_BankStatementLine_Ref.class);
+
+		record.setAD_Org_ID(request.getOrgId().getRepoId());
+		record.setC_BankStatement_ID(request.getBankStatementId().getRepoId());
+		record.setC_BankStatementLine_ID(request.getBankStatementLineId().getRepoId());
+		record.setLine(request.getLineNo());
+
+		record.setC_BPartner_ID(request.getBpartnerId().getRepoId());
+		record.setC_Payment_ID(request.getPaymentId().getRepoId());
+		record.setC_Invoice_ID(InvoiceId.toRepoId(request.getInvoiceId()));
+
+		// we store the psl's discount amount, because if we create a payment from this line, then we don't want the psl's Discount to end up as a mere underpayment.
+		record.setC_Currency_ID(request.getTrxAmt().getCurrencyId().getRepoId());
+		record.setTrxAmt(request.getTrxAmt().toBigDecimal());
+
+		InterfaceWrapperHelper.saveRecord(record);
+
+		return toBankStatementLineReference(record);
+	}
+
+	@Override
+	public void updateBankStatementLinesProcessedFlag(@NonNull final BankStatementId bankStatementId, final boolean processed)
+	{
+		queryBL.createQueryBuilder(I_C_BankStatementLine.class)
+				.addEqualsFilter(I_C_BankStatementLine.COLUMNNAME_C_BankStatement_ID, bankStatementId)
+				.create()
+				.updateDirectly()
+				.addSetColumnValue(I_C_BankStatementLine.COLUMNNAME_Processed, processed)
+				.execute();
+
+		queryBL.createQueryBuilder(I_C_BankStatementLine_Ref.class)
+				.addEqualsFilter(I_C_BankStatementLine_Ref.COLUMNNAME_C_BankStatement_ID, bankStatementId)
+				.create()
+				.updateDirectly()
+				.addSetColumnValue(I_C_BankStatementLine_Ref.COLUMNNAME_Processed, processed)
+				.execute();
+	}
+
+	@Override
+	public int getLastLineNo(@NonNull final BankStatementId bankStatementId)
+	{
+		return queryBL
+				.createQueryBuilder(I_C_BankStatementLine.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_BankStatementLine.COLUMNNAME_C_BankStatement_ID, bankStatementId)
+				.create()
+				.maxInt(I_C_BankStatementLine.COLUMNNAME_Line);
+	}
 }

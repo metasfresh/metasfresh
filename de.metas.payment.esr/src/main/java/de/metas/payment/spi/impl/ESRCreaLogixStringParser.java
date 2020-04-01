@@ -22,13 +22,13 @@ package de.metas.payment.spi.impl;
  * #L%
  */
 
-
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
+import de.metas.payment.esr.api.impl.ESRBPBankAccountDAO;
 import org.apache.commons.lang.StringUtils;
 
 import de.metas.banking.payment.IPaymentString;
@@ -68,6 +68,8 @@ public final class ESRCreaLogixStringParser extends AbstractESRPaymentStringPars
 	 * <li>47-54 is account (teilnehmernummer)</li>
 	 * <li>55 is checksum</li>
 	 * </ul>
+	 * <p>
+	 * Note to developer, should be kept in sync with {@link ESRBPBankAccountDAO#createMatchingESRAccountNumbers(java.lang.String)}
 	 */
 	@Override
 	public IPaymentString parse(final Properties ctx, final String paymentTextOriginal) throws IndexOutOfBoundsException
@@ -160,10 +162,9 @@ public final class ESRCreaLogixStringParser extends AbstractESRPaymentStringPars
 		if (referenceNumberLength != 27)
 		{
 			// add some leading 0, until we got length 27
-			final String missingZeros = StringUtils.repeat("0", 27-referenceNumberLength);
+			final String missingZeros = StringUtils.repeat("0", 27 - referenceNumberLength);
 			referenceNumber = missingZeros + referenceNumber; //  see #4392
 		}
-
 
 		final Timestamp paymentDate = null;
 		final Timestamp accountDate = null;

@@ -606,7 +606,7 @@ public abstract class AbstractAttributeValue implements IAttributeValue
 
 		throw new InvalidAttributeValueException("Invalid list value '" + value + "' (" + value.getClass() + ") for " + attribute + "."
 				+ " Available values are: " + getAvailableValues()
-				+ "\n Normalized value: " + valueNormalized);
+				+ "\n Normalized form of the value: " + valueNormalized);
 	}
 
 	private static final String extractKey(final Map<String, String> keyNamePairAsMap, final I_M_Attribute attribute)

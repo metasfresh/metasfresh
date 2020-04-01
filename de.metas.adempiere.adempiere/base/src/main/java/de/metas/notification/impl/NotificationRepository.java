@@ -1,6 +1,7 @@
 package de.metas.notification.impl;
 
 import java.util.List;
+import java.util.Objects;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -17,12 +18,13 @@ import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.JsonObjectMapperHolder;
 import de.metas.attachments.AttachmentEntryCreateRequest;
 import de.metas.attachments.AttachmentEntryService;
+import de.metas.i18n.AdMessageId;
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IADMessageDAO;
 import de.metas.logging.LogManager;
 import de.metas.notification.INotificationRepository;
@@ -66,7 +68,7 @@ public class NotificationRepository implements INotificationRepository
 	private static final Logger logger = LogManager.getLogger(NotificationRepository.class);
 
 	/** AD_Message to be used when there was no AD_Message provided */
-	private static final String DEFAULT_AD_MESSAGE = "webui.window.notification.caption";
+	private static final AdMessageKey DEFAULT_AD_MESSAGE = AdMessageKey.of("webui.window.notification.caption");
 
 	private final ObjectMapper jsonMapper = JsonObjectMapperHolder.sharedJsonObjectMapper();
 
@@ -86,17 +88,17 @@ public class NotificationRepository implements INotificationRepository
 
 		//
 		// contentADMessage -> AD_Message
-		int adMessageId = -1;
-		final String detailADMessage = request.getContentADMessage();
-		if (!Check.isEmpty(detailADMessage, true))
+		AdMessageId adMessageId = null;
+		final AdMessageKey detailADMessage = AdMessageKey.ofNullable(request.getContentADMessage());
+		if (detailADMessage != null)
 		{
-			adMessageId = Services.get(IADMessageDAO.class).retrieveIdByValue(detailADMessage);
+			adMessageId = Services.get(IADMessageDAO.class).retrieveIdByValue(detailADMessage).orElse(null);
 		}
-		if (adMessageId <= 0)
+		if (adMessageId == null)
 		{
-			adMessageId = Services.get(IADMessageDAO.class).retrieveIdByValue(DEFAULT_AD_MESSAGE);
+			adMessageId = Services.get(IADMessageDAO.class).retrieveIdByValue(DEFAULT_AD_MESSAGE).orElse(null);
 		}
-		notificationPO.setAD_Message_ID(adMessageId);
+		notificationPO.setAD_Message_ID(AdMessageId.toRepoId(adMessageId));
 
 		//
 		// contentADMessageParams
@@ -181,15 +183,15 @@ public class NotificationRepository implements INotificationRepository
 
 		//
 		// detailADMessage
-		final int detailADMessageId = notificationPO.getAD_Message_ID();
-		if (detailADMessageId > 0)
+		final AdMessageId detailADMessageId = AdMessageId.ofRepoIdOrNull(notificationPO.getAD_Message_ID());
+		if (detailADMessageId != null)
 		{
-			final String detailADMessage = Services.get(IADMessageDAO.class).retrieveValueById(detailADMessageId);
-			builder.detailADMessage(detailADMessage);
+			final AdMessageKey detailADMessage = Services.get(IADMessageDAO.class).retrieveValueById(detailADMessageId).orElse(null);
+			builder.detailADMessage(detailADMessage != null ? detailADMessage.toAD_Message() : null);
 		}
 		else
 		{
-			builder.detailADMessage(DEFAULT_AD_MESSAGE);
+			builder.detailADMessage(DEFAULT_AD_MESSAGE.toAD_Message());
 		}
 
 		//
@@ -254,7 +256,7 @@ public class NotificationRepository implements INotificationRepository
 				.create()
 				.stream(I_AD_Note.class)
 				.map(this::toUserNotificationNoFail)
-				.filter(Predicates.notNull())
+				.filter(Objects::nonNull)
 				.collect(ImmutableList.toImmutableList());
 	}
 

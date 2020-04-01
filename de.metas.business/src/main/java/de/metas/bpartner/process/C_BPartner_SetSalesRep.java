@@ -85,6 +85,7 @@ public class C_BPartner_SetSalesRep extends JavaProcess implements IProcessPreco
 				.bpartnerId(bpartnerId)
 				.oldSalesRepId(oldSalesRepId)
 				.newSalesRepId(newSalesRepId)
+				.changedBy(getUserId())
 				.build());
 
 		return MSG_OK;

@@ -71,6 +71,13 @@ public class RecordAccessTest
 				.principal(Principal.userId(UserId.METASFRESH))
 				.permission(Access.WRITE)
 				.issuer(PermissionIssuer.MANUAL)
+				.createdBy(UserId.ofRepoId(111))
+				.description("some description")
+				//
+				.id(RecordAccessId.ofRepoId(333))
+				.parentId(RecordAccessId.ofRepoId(444))
+				.rootId(RecordAccessId.ofRepoId(555))
+				//
 				.build());
 	}
 

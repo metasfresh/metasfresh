@@ -4,12 +4,14 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
 import javax.annotation.Nullable;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -44,6 +46,8 @@ import de.metas.security.permissions.bpartner_hierarchy.handlers.impl.OrderBPart
 import de.metas.security.permissions.bpartner_hierarchy.handlers.impl.PaymentBPartnerDependentDocumentHandler;
 import de.metas.security.permissions.bpartner_hierarchy.handlers.impl.RequestBPartnerDependentDocumentHandler;
 import de.metas.security.permissions.bpartner_hierarchy.handlers.impl.UserBPartnerDependentDocumentHandler;
+import de.metas.security.permissions.record_access.PermissionIssuer;
+import de.metas.security.permissions.record_access.RecordAccess;
 import de.metas.security.permissions.record_access.RecordAccessConfigService;
 import de.metas.security.permissions.record_access.RecordAccessFeature;
 import de.metas.security.permissions.record_access.RecordAccessService;
@@ -51,6 +55,7 @@ import de.metas.security.permissions.record_access.handlers.RecordAccessChangeEv
 import de.metas.security.permissions.record_access.handlers.RecordAccessHandler;
 import de.metas.user.UserGroupRepository;
 import de.metas.user.UserId;
+import de.metas.util.lang.RepoIdAware;
 import lombok.NonNull;
 
 /*
@@ -215,6 +220,42 @@ public class BPartnerHierarchyRecordAccessHandlerTest
 		}
 	}
 
+	private RecordAccess getRecordAccess(final String tableName, RepoIdAware recordId, final Access permission)
+	{
+		final TableRecordReference recordRef = TableRecordReference.of(tableName, recordId);
+		return getRecordAccess(recordRef, permission);
+	}
+
+	private RecordAccess getRecordAccess(final TableRecordReference recordRef, final Access permission)
+	{
+		final ImmutableList<RecordAccess> recordAccesses = recordAccessService.getAccessesByRecordAndIssuer(recordRef, PermissionIssuer.AUTO_BP_HIERARCHY)
+				.stream()
+				.filter(recordAccess -> permission.equals(recordAccess.getPermission()))
+				.collect(ImmutableList.toImmutableList());
+		if (recordAccesses.isEmpty())
+		{
+			throw new AdempiereException("No record access found for " + recordRef + " and " + permission);
+		}
+		else if (recordAccesses.size() == 1)
+		{
+			return recordAccesses.get(0);
+		}
+		else
+		{
+			throw new AdempiereException("More than one record access found for " + recordRef + " and " + permission + ": " + recordAccesses);
+		}
+	}
+
+	private List<RecordAccess> getAllRecordAccess(final TableRecordReference[] recordRefs)
+	{
+		final ArrayList<RecordAccess> result = new ArrayList<>();
+		for (final TableRecordReference recordRef : recordRefs)
+		{
+			result.addAll(recordAccessService.getAccessesByRecordAndIssuer(recordRef, PermissionIssuer.AUTO_BP_HIERARCHY));
+		}
+		return result;
+	}
+
 	@Test
 	public void bpartnerHierarchyFeatureIsEnabled()
 	{
@@ -251,13 +292,45 @@ public class BPartnerHierarchyRecordAccessHandlerTest
 		bpHierarchyRecordAccessHandler.onBPartnerSalesRepChanged(BPartnerSalesRepChangedEvent.builder()
 				.bpartnerId(rootBPartnerId)
 				.newSalesRepId(salesRepId)
+				.changedBy(UserId.ofRepoId(222))
 				.build());
 		assertReadWritePermission(salesRepId, allRecordRefs);
+
+		//
+		// Make sure all access records have the right CreatedBy
+		for (final RecordAccess access : getAllRecordAccess(allRecordRefs))
+		{
+			assertThat(access.getCreatedBy()).isEqualTo(UserId.ofRepoId(222));
+		}
+
+		//
+		// Make sure the Parent_ID and Root_ID are correctly set
+		for (final Access permission : Arrays.asList(Access.READ, Access.WRITE))
+		{
+			final RecordAccess rootBPartner_access = getRecordAccess(I_C_BPartner.Table_Name, rootBPartnerId, permission);
+			assertThat(rootBPartner_access.getRootId()).isEqualTo(rootBPartner_access.getId());
+			assertThat(rootBPartner_access.getParentId()).isNull();
+
+			final RecordAccess childBPartner_access = getRecordAccess(I_C_BPartner.Table_Name, bpartnerId, permission);
+			assertThat(childBPartner_access.getRootId()).isEqualTo(rootBPartner_access.getId());
+			assertThat(childBPartner_access.getParentId()).isEqualTo(rootBPartner_access.getId());
+
+			// i=0 => rootBPartner
+			// i=1 => childBPartner
+			for (int i = 2; i < allRecordRefs.length; i++)
+			{
+				final TableRecordReference recordRef = allRecordRefs[i];
+				final RecordAccess record_access = getRecordAccess(recordRef, permission);
+				assertThat(record_access.getRootId()).isEqualTo(rootBPartner_access.getId());
+				assertThat(record_access.getParentId()).isEqualTo(childBPartner_access.getId());
+			}
+		}
 
 		bpHierarchyRecordAccessHandler.onBPartnerSalesRepChanged(BPartnerSalesRepChangedEvent.builder()
 				.bpartnerId(rootBPartnerId)
 				.oldSalesRepId(salesRepId)
 				.newSalesRepId(null)
+				.changedBy(UserId.ofRepoId(111))
 				.build());
 		assertNoReadWritePermission(salesRepId, allRecordRefs);
 	}

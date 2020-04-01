@@ -1,22 +1,24 @@
-/*******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution *
- * Copyright (C) 1999-2006 Adempiere, Inc. All Rights Reserved. *
- * This program is free software; you can redistribute it and/or modify it *
- * under the terms version 2 of the GNU General Public License as published *
- * by the Free Software Foundation. This program is distributed in the hope *
- * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. *
- * See the GNU General Public License for more details. *
- * You should have received a copy of the GNU General Public License along *
- * with this program; if not, write to the Free Software Foundation, Inc., *
- * 59 Temple Place, Suite 330, Boston, MA *
- * 02111-1307 USA. *
- * *
- * Copyright (C) 2007 Low Heng Sin hengsin@avantz.com *
- * Contributor(s): *
- * Teo Sarca, www.arhipac.ro *
- * __________________________________________ *
- ******************************************************************************/
+/*
+ * #%L
+ * de.metas.adempiere.adempiere.base
+ * %%
+ * Copyright (C) 2020 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
 package org.adempiere.ad.dao.impl;
 
 import java.math.BigDecimal;
@@ -42,7 +44,7 @@ import org.adempiere.ad.dao.ISqlQueryUpdater;
 import org.adempiere.ad.persistence.TableModelLoader;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
-import org.adempiere.exceptions.DBMoreThenOneRecordsFoundException;
+import org.adempiere.exceptions.DBMoreThanOneRecordsFoundException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.text.TokenizedStringBuilder;
 import org.compiere.Adempiere;
@@ -490,7 +492,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 			{
 				if (throwExIfMoreThenOneFound)
 				{
-					throw new DBMoreThenOneRecordsFoundException(this.toString());
+					throw new DBMoreThanOneRecordsFoundException(this.toString());
 				}
 				else
 				{
@@ -1245,7 +1247,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		if (useOrderByClause)
 		{
 			final String orderBy = getOrderBy();
-			if (!Check.isBlank(orderBy))
+			if (Check.isNotBlank(orderBy))
 			{
 				sqlBuffer.append("\n ORDER BY ").append(orderBy);
 			}
@@ -1694,7 +1696,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 	}
 
 	@Override
-	public int delete()
+	public int delete(final boolean failIfProcessed)
 	{
 		final List<T> records = list(modelClass);
 		if (records.isEmpty())
@@ -1705,7 +1707,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		int countDeleted = 0;
 		for (final Object record : records)
 		{
-			InterfaceWrapperHelper.delete(record);
+			InterfaceWrapperHelper.delete(record, failIfProcessed);
 			countDeleted++;
 		}
 

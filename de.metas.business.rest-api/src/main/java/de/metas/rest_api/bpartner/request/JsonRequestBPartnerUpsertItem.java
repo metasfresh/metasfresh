@@ -34,7 +34,7 @@ import lombok.Value;
  */
 
 @Value
-@Builder
+@Builder(toBuilder = true)
 @ApiModel(description = "Contains an external id and the actual bpartner to insert or update. The response will contain the given external id.")
 public class JsonRequestBPartnerUpsertItem
 {
@@ -42,7 +42,7 @@ public class JsonRequestBPartnerUpsertItem
 			position = 10,
 			value = BPARTNER_IDENTIFIER_DOC) //
 	@NonNull
-	final String bpartnerIdentifier;
+	String bpartnerIdentifier;
 
 	@ApiModelProperty(allowEmptyValue = false, //
 			position = 20,
@@ -52,8 +52,8 @@ public class JsonRequestBPartnerUpsertItem
 
 	@JsonCreator
 	public JsonRequestBPartnerUpsertItem(
-			@NonNull @JsonProperty("bpartnerIdentifier") String bpartnerIdentifier,
-			@NonNull @JsonProperty("bpartnerComposite") JsonRequestComposite bpartnerComposite)
+			@NonNull @JsonProperty("bpartnerIdentifier") final String bpartnerIdentifier,
+			@NonNull @JsonProperty("bpartnerComposite") final JsonRequestComposite bpartnerComposite)
 	{
 		this.bpartnerIdentifier = bpartnerIdentifier;
 		this.bpartnerComposite = bpartnerComposite;

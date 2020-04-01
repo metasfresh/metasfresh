@@ -28,3 +28,9 @@ $BODY$
 $BODY$
 LANGUAGE sql STABLE
 ;
+
+
+COMMENT ON FUNCTION getCostPrice(numeric, numeric, numeric) IS
+    '  -- TEST :
+SELECT M_Product_ID, getCostPrice(M_Product_ID, 1000000, 1000000) from M_Product; '
+;

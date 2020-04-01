@@ -27,14 +27,18 @@ import java.util.Map;
 
 import java.util.Properties;
 
+import javax.annotation.Nullable;
+
 import org.compiere.util.Env;
 
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.Msg;
 import de.metas.i18n.TranslatableStringBuilder;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.util.Check;
+import lombok.NonNull;
 
 /**
  *
@@ -45,45 +49,48 @@ import de.metas.util.Check;
 public class MsgBL implements IMsgBL
 {
 	@Override
-	public String getMsg(final String adLanguage, final String message)
+	public String getMsg(final String adLanguage, @NonNull final AdMessageKey message)
 	{
-		return Msg.getMsg(adLanguage, message);
+		return Msg.getMsg(adLanguage, message.toAD_Message());
 	}
 
 	@Override
-	public String getMsg(final String adLanguage, final String message, final Object[] params)
+	public String getMsg(final String adLanguage, @NonNull final AdMessageKey message, final Object[] params)
 	{
-		return Msg.getMsg(adLanguage, message, params);
+		return Msg.getMsg(adLanguage, message.toAD_Message(), params);
 	}
 
 	@Override
-	public String getMsg(final String adLanguage, final String message, final List<Object> params)
+	public String getMsg(final String adLanguage, @NonNull final AdMessageKey message, final List<Object> params)
 	{
-		return Msg.getMsg(adLanguage, message, params != null && !params.isEmpty() ? params.toArray() : null);
+		return Msg.getMsg(
+				adLanguage,
+				message.toAD_Message(),
+				params != null && !params.isEmpty() ? params.toArray() : null);
 	}
 
 	@Override
-	public String getMsg(final Properties ctx, final String adMessage)
+	public String getMsg(final Properties ctx, @NonNull final AdMessageKey adMessage)
 	{
-		return Msg.getMsg(ctx, adMessage);
+		return Msg.getMsg(ctx, adMessage.toAD_Message());
 	}
 
 	@Override
-	public String getMsg(final Properties ctx, final String adMessage, final Object[] params)
+	public String getMsg(final Properties ctx, @NonNull final AdMessageKey adMessage, @Nullable final Object[] params)
 	{
-		return Msg.getMsg(ctx, adMessage, params);
+		return Msg.getMsg(ctx, adMessage.toAD_Message(), params);
 	}
 
 	@Override
-	public String getMsg(final String adMessage, final List<Object> params)
+	public String getMsg(final AdMessageKey adMessage, final List<Object> params)
 	{
 		return getMsg(Env.getCtx(), adMessage, params != null && !params.isEmpty() ? params.toArray() : null);
 	}
 
 	@Override
-	public String getMsg(final Properties ctx, final String adMessage, final boolean text)
+	public String getMsg(final Properties ctx, @NonNull final AdMessageKey adMessage, final boolean text)
 	{
-		return Msg.getMsg(ctx, adMessage, text);
+		return Msg.getMsg(ctx, adMessage.toAD_Message(), text);
 	}
 
 	@Override
@@ -133,7 +140,7 @@ public class MsgBL implements IMsgBL
 	}
 
 	@Override
-	public ITranslatableString getTranslatableMsgText(final String adMessage, final Object... msgParameters)
+	public ITranslatableString getTranslatableMsgText(@NonNull final AdMessageKey adMessage, final Object... msgParameters)
 	{
 		return new ADMessageTranslatableString(adMessage, msgParameters);
 	}

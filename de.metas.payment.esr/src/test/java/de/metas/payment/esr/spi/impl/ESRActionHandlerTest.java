@@ -2,6 +2,8 @@ package de.metas.payment.esr.spi.impl;
 
 import static org.adempiere.model.InterfaceWrapperHelper.refresh;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /*
  * #%L
@@ -25,14 +27,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
  * #L%
  */
 
-import static org.hamcrest.Matchers.comparesEqualTo;
-import static org.hamcrest.Matchers.greaterThan;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.notNullValue;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
-
 import java.math.BigDecimal;
 
 import org.adempiere.ad.wrapper.POJOLookupMap;
@@ -42,7 +36,7 @@ import org.compiere.model.I_C_AllocationHdr;
 import org.compiere.model.I_C_AllocationLine;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Payment;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import de.metas.payment.esr.ESRTestBase;
 import de.metas.payment.esr.actionhandler.impl.DunningESRActionHandler;
@@ -62,7 +56,7 @@ public class ESRActionHandlerTest extends ESRTestBase
 	@Test
 	public void testDunningESRAction()
 	{
-		final I_ESR_ImportLine esrImportLine = setupESR_ImportLine("000120686", "10", false, "000000010501536417000120686", /*"536417000120686",*/ "01-059931-0", "15364170", "40", false);
+		final I_ESR_ImportLine esrImportLine = setupESR_ImportLine("000120686", "10", false, "000000010501536417000120686", /* "536417000120686", */ "01-059931-0", "15364170", "40", false);
 		final I_ESR_Import esrImport = esrImportLine.getESR_Import();
 
 		esrImportBL.evaluateLine(esrImportLine.getESR_Import(), esrImportLine);
@@ -80,8 +74,8 @@ public class ESRActionHandlerTest extends ESRTestBase
 		refresh(esrImport, true);
 		refresh(esrImportLine, true);
 		// Mark for dunning does nothing other than set the line to processed.
-		assertTrue("Import should be processed", esrImport.isProcessed());
-		assertTrue("Line should be processed", esrImportLine.isProcessed());
+		assertTrue(esrImport.isProcessed(), "Import should be processed");
+		assertTrue(esrImportLine.isProcessed(), "Line should be processed");
 
 	}
 
@@ -91,7 +85,7 @@ public class ESRActionHandlerTest extends ESRTestBase
 	@Test
 	public void testUnableToAssignAction()
 	{
-		final I_ESR_ImportLine esrImportLine = setupESR_ImportLine("000120686", "10", false, "000000010501536417000120686", /*"536417000120686",*/ "01-059931-0", "15364170", "40", false);
+		final I_ESR_ImportLine esrImportLine = setupESR_ImportLine("000120686", "10", false, "000000010501536417000120686", /* "536417000120686", */ "01-059931-0", "15364170", "40", false);
 		final I_ESR_Import esrImport = esrImportLine.getESR_Import();
 
 		esrImportBL.evaluateLine(esrImportLine.getESR_Import(), esrImportLine);
@@ -107,8 +101,8 @@ public class ESRActionHandlerTest extends ESRTestBase
 
 		refresh(esrImport, true);
 		refresh(esrImportLine, true);
-		assertTrue("Import should be processed", esrImport.isProcessed());
-		assertTrue("Line should be processed", esrImportLine.isProcessed());
+		assertTrue(esrImport.isProcessed(), "Import should be processed");
+		assertTrue(esrImportLine.isProcessed(), "Line should be processed");
 	}
 
 	/**
@@ -122,20 +116,22 @@ public class ESRActionHandlerTest extends ESRTestBase
 				"000120686", /* invoice doc number */
 				"10" /* invoice grandtotal */,
 				false, /* isInvoicePaid */
-				"000000010501536417000120686", /* complete ESR reference incl check digit*/
+				"000000010501536417000120686", /* complete ESR reference incl check digit */
 				"01-059931-0", /* ESR account number */
 				"15364170",
 				"40", /* esr transaction amount */
 				false /* createAllocation */);
 
 		esrImportBL.evaluateLine(esrImportLine.getESR_Import(), esrImportLine);
-		assertThat(esrImportLine.getC_Invoice(), notNullValue());
-		assertThat(esrImportLine.getC_Invoice().getGrandTotal(), comparesEqualTo(new BigDecimal("10"))); // guard
+		assertThat(esrImportLine.getC_Invoice()).isNotNull();
+		assertThat(esrImportLine.getC_Invoice().getGrandTotal()).isEqualByComparingTo("10"); // guard
 
 		final I_ESR_Import esrImport = esrImportLine.getESR_Import();
 		esrImportBL.process(esrImport);
 
-		assertThat("Expecting one payment after esrImportBL.process()", POJOLookupMap.get().getRecords(I_C_Payment.class).size(), is(1));
+		assertThat(POJOLookupMap.get().getRecords(I_C_Payment.class))
+				.as("Expecting one payment after esrImportBL.process()")
+				.hasSize(1);
 
 		esrImportLine.setESR_Payment_Action(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Money_Was_Transfered_Back_to_Partner);
 		save(esrImportLine);
@@ -147,12 +143,12 @@ public class ESRActionHandlerTest extends ESRTestBase
 		refresh(esrImport, true);
 		refresh(esrImportLine, true);
 
-		assertTrue("Import should be processed", esrImport.isProcessed());
-		assertTrue("Line should be processed", esrImportLine.isProcessed());
+		assertTrue(esrImport.isProcessed(), "Import should be processed");
+		assertTrue(esrImportLine.isProcessed(), "Line should be processed");
 
-		assertEquals("Incorrect number of payments", 3, POJOLookupMap.get().getRecords(I_C_Payment.class).size());
-		assertEquals("Incorrect number of allocations", 2, POJOLookupMap.get().getRecords(I_C_AllocationHdr.class).size());
-		assertEquals("Incorrect number of allocation lines", 3, POJOLookupMap.get().getRecords(I_C_AllocationLine.class).size());
+		assertThat(POJOLookupMap.get().getRecords(I_C_Payment.class)).hasSize(3);
+		assertThat(POJOLookupMap.get().getRecords(I_C_AllocationHdr.class)).hasSize(2);
+		assertThat(POJOLookupMap.get().getRecords(I_C_AllocationLine.class)).hasSize(3);
 
 		final BigDecimal firstAmount = POJOLookupMap.get().getRecords(I_C_Payment.class).get(0).getPayAmt();
 		final BigDecimal secondAmount = POJOLookupMap.get().getRecords(I_C_Payment.class).get(1).getPayAmt();
@@ -162,21 +158,21 @@ public class ESRActionHandlerTest extends ESRTestBase
 		final BigDecimal thirdOverUnder = POJOLookupMap.get().getRecords(I_C_Payment.class).get(2).getOverUnderAmt();
 
 		// Check values for payments.
-		assertTrue("First payment has the wrong amount", (firstAmount.compareTo(new BigDecimal(40)) == 0));
-		assertTrue("Second payment has the wrong amount", (secondAmount.compareTo(new BigDecimal(40)) == 0));
-		assertTrue("Third payment has the wrong amount", (thirdAmount.compareTo(new BigDecimal(30)) == 0));
-		assertTrue("First over/under has the wrong amount", (firstOverUnder.compareTo(new BigDecimal(0)) == 0));
-		assertTrue("Second over/under has the wrong amount", (secondOverUnder.compareTo(new BigDecimal(30)) == 0));
-		assertTrue("Third over/under has the wrong amount", (thirdOverUnder.compareTo(new BigDecimal(0)) == 0));
+		assertThat(firstAmount).isEqualByComparingTo("40");
+		assertThat(secondAmount).isEqualByComparingTo("40");
+		assertThat(thirdAmount).isEqualByComparingTo("30");
+		assertThat(firstOverUnder).isEqualByComparingTo("0");
+		assertThat(secondOverUnder).isEqualByComparingTo("30");
+		assertThat(thirdOverUnder).isEqualByComparingTo("0");
 
 		final BigDecimal firstAllocLineAmount = POJOLookupMap.get().getRecords(I_C_AllocationLine.class).get(0).getAmount();
 		final BigDecimal secondAllocLineAmount = POJOLookupMap.get().getRecords(I_C_AllocationLine.class).get(1).getAmount();
 		final BigDecimal thirdAllocLineAmount = POJOLookupMap.get().getRecords(I_C_AllocationLine.class).get(2).getAmount();
 
 		// Check values for allocation lines.
-		assertThat("First allocation has the wrong amount", firstAllocLineAmount, comparesEqualTo(new BigDecimal(10)));
-		assertThat("Second allocation has the wrong amount", secondAllocLineAmount, comparesEqualTo(new BigDecimal(30)));
-		assertThat("Third allocation has the wrong amount", thirdAllocLineAmount, comparesEqualTo(new BigDecimal(-30)));
+		assertThat(firstAllocLineAmount).isEqualByComparingTo("10");
+		assertThat(secondAllocLineAmount).isEqualByComparingTo("30");
+		assertThat(thirdAllocLineAmount).isEqualByComparingTo("-30");
 	}
 
 	@Test
@@ -200,7 +196,7 @@ public class ESRActionHandlerTest extends ESRTestBase
 		save(esrImportLine);
 
 		final I_C_Payment payment = POJOLookupMap.get().getRecords(I_C_Payment.class).get(0);
-		assertThat(payment.getPayAmt(), comparesEqualTo(new BigDecimal("40"))); // guard
+		assertThat(payment.getPayAmt()).isEqualByComparingTo("40"); // guard
 
 		// We need to register the action handler
 		esrImportBL.registerActionHandler(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Write_Off_Amount, new WriteoffESRActionHandler());
@@ -209,33 +205,32 @@ public class ESRActionHandlerTest extends ESRTestBase
 		refresh(esrImport, true);
 		refresh(esrImportLine, true);
 
-		assertTrue("Import should be processed", esrImport.isProcessed());
-		assertTrue("Line should be processed", esrImportLine.isProcessed());
+		assertTrue(esrImport.isProcessed(), "Import should be processed");
+		assertTrue(esrImportLine.isProcessed(), "Line should be processed");
 
-		assertEquals("Incorrect number of allocations", 2, POJOLookupMap.get().getRecords(I_C_AllocationHdr.class).size());
-		assertEquals("Incorrect number of allocation lines", 2, POJOLookupMap.get().getRecords(I_C_AllocationLine.class).size());
+		assertThat(POJOLookupMap.get().getRecords(I_C_AllocationHdr.class)).hasSize(2);
+		assertThat(POJOLookupMap.get().getRecords(I_C_AllocationLine.class)).hasSize(2);
 
 		// testAllocation sets the invoice isPaid status, if appropriate. Here, we test that it does not modify it a second time.
 		// testAllocation is called the first time on esrImportBL.process.
 		final boolean ignoreProcessed = false;
 		Services.get(IInvoiceBL.class).testAllocation(invoice, ignoreProcessed);
 		save(invoice);
-		assertTrue("Invoice " + invoice + " shall be allocated", invoice.isPaid());
+		assertTrue(invoice.isPaid(), "Invoice " + invoice + " shall be allocated");
 
 		final I_C_AllocationLine firstAllocationLine = POJOLookupMap.get().getRecords(I_C_AllocationLine.class).get(0);
 		final I_C_AllocationLine secondAllocationLine = POJOLookupMap.get().getRecords(I_C_AllocationLine.class).get(1);
 
 		// Test the invoice and allocations.
-		assertThat("Invoice doesn't have the correct total", invoice.getGrandTotal(), comparesEqualTo(new BigDecimal("50"))); // guard this is the granttotal we set above. should still be the same
-		assertThat("First allocation line doesn't have the correct total", firstAllocationLine.getAmount(), comparesEqualTo(new BigDecimal("40"))); // guard: this is the allocation line we created
-																																					 // above. amoutn should be unchanged
+		assertThat(invoice.getGrandTotal()).isEqualByComparingTo("50"); // guard this is the granttotal we set above. should still be the same
+		assertThat(firstAllocationLine.getAmount()).isEqualByComparingTo("40"); // guard: this is the allocation line we created. above. amount should be unchanged
 
 		final BigDecimal openAmt = Services.get(IInvoiceDAO.class).retrieveOpenAmt(invoice);
-		assertThat("Invoice still has an open amount", openAmt, comparesEqualTo(BigDecimal.ZERO));
-		assertTrue("Invoice hasn't been paid", invoice.isPaid());
-		assertThat("Second allocation line doesn't have the correct total", secondAllocationLine.getAmount(), comparesEqualTo(BigDecimal.ZERO));
-		assertThat("Second allocation line doesn't have the correct writeoff", secondAllocationLine.getWriteOffAmt(), comparesEqualTo(new BigDecimal("10")));
-		assertThat("Second allocation line doesn't reference our invoice", secondAllocationLine.getC_Invoice_ID(), greaterThan(0));
-		assertThat("Second allocation line references a payment", secondAllocationLine.getC_Payment_ID(), is(0));
+		assertThat(openAmt).isZero();
+		assertThat(invoice.isPaid()).as("invoice is paid").isTrue();
+		assertThat(secondAllocationLine.getAmount()).isZero();
+		assertThat(secondAllocationLine.getWriteOffAmt()).isEqualByComparingTo("10");
+		assertThat(secondAllocationLine.getC_Invoice_ID()).isGreaterThan(0);
+		assertThat(secondAllocationLine.getC_Payment_ID()).isLessThanOrEqualTo(0);
 	}
 }

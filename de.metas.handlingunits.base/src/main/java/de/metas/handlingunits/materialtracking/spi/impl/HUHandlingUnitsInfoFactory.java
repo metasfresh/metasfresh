@@ -22,7 +22,6 @@ package de.metas.handlingunits.materialtracking.spi.impl;
  * #L%
  */
 
-
 import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.List;
@@ -44,19 +43,18 @@ import de.metas.handlingunits.model.I_M_InOutLine;
 import de.metas.handlingunits.model.I_PP_Cost_Collector;
 import de.metas.handlingunits.model.I_PP_Order;
 import de.metas.handlingunits.model.I_PP_Order_BOMLine;
+import de.metas.inout.IInOutBL;
 import de.metas.materialtracking.IHandlingUnitsInfo;
 import de.metas.materialtracking.IHandlingUnitsInfoWritableQty;
 import de.metas.materialtracking.spi.IHandlingUnitsInfoFactory;
-import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 public class HUHandlingUnitsInfoFactory implements IHandlingUnitsInfoFactory
 {
 	@Override
-	public IHandlingUnitsInfo createFromModel(final Object model)
+	public IHandlingUnitsInfo createFromModel(@NonNull final Object model)
 	{
-		Check.assumeNotNull(model, "model not null"); // shall not happen
-
 		if (InterfaceWrapperHelper.isInstanceOf(model, I_M_InOutLine.class))
 		{
 			final I_M_InOutLine inoutLine = InterfaceWrapperHelper.create(model, I_M_InOutLine.class);
@@ -89,7 +87,8 @@ public class HUHandlingUnitsInfoFactory implements IHandlingUnitsInfoFactory
 			// TODO: shall we just return null or throw exception?
 		}
 
-		final int qtyTU = inoutLine.getQtyEnteredTU().intValueExact();
+		final IInOutBL inOutBL = Services.get(IInOutBL.class);
+		final int qtyTU = inOutBL.negateIfReturnMovmenType(inoutLine, inoutLine.getQtyEnteredTU()).intValueExact();
 
 		return new HUHandlingUnitsInfo(tuPI, qtyTU);
 	}

@@ -2,7 +2,7 @@ package de.metas.purchasecandidate.grossprofit;
 
 import java.util.Set;
 
-import com.google.common.base.Predicates;
+import java.util.Objects;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.order.OrderAndLineId;
@@ -50,7 +50,7 @@ public class PurchaseProfitInfoRequest
 			@NonNull final Quantity qtyToPurchase,
 			@NonNull final VendorProductInfo vendorProductInfo)
 	{
-		this.salesOrderAndLineIds = salesOrderAndLineIds.stream().filter(Predicates.notNull()).collect(ImmutableSet.toImmutableSet());
+		this.salesOrderAndLineIds = salesOrderAndLineIds.stream().filter(Objects::nonNull).collect(ImmutableSet.toImmutableSet());
 		this.qtyToPurchase = qtyToPurchase;
 		this.vendorProductInfo = vendorProductInfo;
 	}

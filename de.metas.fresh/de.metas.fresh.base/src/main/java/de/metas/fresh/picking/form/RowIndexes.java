@@ -2,7 +2,7 @@ package de.metas.fresh.picking.form;
 
 import java.util.function.Function;
 
-import com.google.common.base.Predicates;
+import java.util.Objects;
 import com.google.common.collect.ImmutableSet;
 
 import lombok.EqualsAndHashCode;
@@ -83,7 +83,7 @@ public final class RowIndexes
 
 		return indexes.stream()
 				.map(mapper)
-				.filter(Predicates.notNull())
+				.filter(Objects::nonNull)
 				.collect(ImmutableSet.toImmutableSet());
 	}
 }

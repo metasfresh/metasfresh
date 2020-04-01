@@ -51,7 +51,7 @@ public class JsonRequestContactUpsert
 	SyncAdvise syncAdvise;
 
 	@JsonCreator
-	@Builder
+	@Builder(toBuilder = true)
 	public JsonRequestContactUpsert(
 			@Singular @JsonProperty("requestItems") final List<JsonRequestContactUpsertItem> requestItems,
 			@Nullable @JsonProperty("syncAdvise") final SyncAdvise syncAdvise)

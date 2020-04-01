@@ -1,9 +1,10 @@
 package de.metas.rest_api.ordercandidates.impl;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import java.io.IOException;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import de.metas.rest_api.ordercandidates.request.JsonOLCandCreateBulkRequest;
 import de.metas.util.JSONObjectMapper;
@@ -22,11 +23,11 @@ import lombok.NonNull;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -51,6 +52,6 @@ public class JsonOLCandCreateBulkRequestTest
 		final Object objDeserialized = jsonObjectMapper.readValue(json);
 		// System.out.println("object deserialized: " + objDeserialized);
 
-		Assert.assertEquals(obj, objDeserialized);
+		assertThat(objDeserialized).isEqualTo(obj);
 	}
 }

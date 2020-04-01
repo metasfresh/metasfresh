@@ -65,27 +65,19 @@ public interface IInvoiceCandAggregate
 	 * <li>the method also sets the qty allocated between the given ic and il to be the {@link IInvoiceLineRW#getQtysToInvoice() QtysToInvoice} value of the given <code>il</code>. See
 	 * {@link #getAllocatedQty(I_C_Invoice_Candidate, IInvoiceLineRW)}.
 	 * </ul>
-	 *
-	 * @param ic
-	 * @param il
 	 */
-	void addAssociation(I_C_Invoice_Candidate ic, IInvoiceLineRW il);
+	void addAssociation(I_C_Invoice_Candidate ic, IInvoiceLineRW il, StockQtyAndUOMQty qtyAllocatedToAdd);
 
 	/**
 	 * Adds <code>ic</code> to <code>il</code> association if not already exists
 	 *
-	 * @param ic invoice candidate
-	 * @param il invoice line
 	 * @return <code>true</code> if association was created; <code>false</code> if association was not created because already exists
 	 * @see #isAssociated(I_C_Invoice_Candidate, IInvoiceLineRW)
 	 * @see #addAssociation(I_C_Invoice_Candidate, IInvoiceLineRW)
 	 */
-	boolean addAssociationIfNotExists(I_C_Invoice_Candidate ic, IInvoiceLineRW il);
+	boolean addAssociationIfNotExists(I_C_Invoice_Candidate ic, IInvoiceLineRW il, StockQtyAndUOMQty qtyAllocatedToAdd);
 
 	/**
-	 *
-	 * @param ic
-	 * @param il
 	 * @return <code>true</code> isf the given <code>ic</code> was already associated with the given <code>il</code>
 	 *
 	 * @see #addAssociation(I_C_Invoice_Candidate, IInvoiceLineRW)
@@ -99,11 +91,8 @@ public interface IInvoiceCandAggregate
 	 * Update IC to IL allocated quantity by adding <code>qtyAllocatedToAdd</code>.
 	 *
 	 * This method assumes an IC-IL association already exists and we are just adjusting the quantity which was allocated.
-	 *
-	 * @param ic invoice candidate
-	 * @param il invoice line
 	 */
-	void addAllocatedQty(final I_C_Invoice_Candidate ic, final IInvoiceLineRW il, final StockQtyAndUOMQty qtyAllocatedToAdd);
+	void addAllocatedQty(I_C_Invoice_Candidate ic, IInvoiceLineRW il, StockQtyAndUOMQty qtyAllocatedToAdd);
 
 	/**
 	 * Negate amounts on all lines

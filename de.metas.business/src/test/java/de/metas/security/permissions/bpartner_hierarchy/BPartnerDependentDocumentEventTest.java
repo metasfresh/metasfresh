@@ -9,6 +9,7 @@ import org.junit.Test;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.security.permissions.bpartner_hierarchy.handlers.BPartnerDependentDocument;
+import de.metas.user.UserId;
 import de.metas.util.JSONObjectMapper;
 
 /*
@@ -52,12 +53,14 @@ public class BPartnerDependentDocumentEventTest
 				.documentRef(TableRecordReference.of("DummyTable", 1))
 				.newBPartnerId(BPartnerId.ofRepoId(1))
 				.oldBPartnerId(null)
+				.updatedBy(UserId.ofRepoId(666))
 				.build()));
 
 		testSerializeDeserialize(BPartnerDependentDocumentEvent.bpartnerChanged(BPartnerDependentDocument.builder()
 				.documentRef(TableRecordReference.of("DummyTable", 1))
 				.newBPartnerId(BPartnerId.ofRepoId(2))
 				.oldBPartnerId(BPartnerId.ofRepoId(1))
+				.updatedBy(UserId.ofRepoId(666))
 				.build()));
 
 	}

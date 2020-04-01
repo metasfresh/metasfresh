@@ -13,11 +13,11 @@ package org.adempiere.ad.trx.api.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -30,8 +30,11 @@ import org.junit.Assert;
 import org.junit.Ignore;
 
 import de.metas.util.Check;
+import lombok.NonNull;
+import lombok.ToString;
 
 @Ignore
+@ToString(exclude = { "trxManager" })
 public class MockedTrxRunnable extends TrxRunnableAdapter
 {
 	private final ITrxManager trxManager;
@@ -42,11 +45,8 @@ public class MockedTrxRunnable extends TrxRunnableAdapter
 
 	private Runnable doFinallyRunnable = null;
 
-	public MockedTrxRunnable(final ITrxManager trxManager)
+	public MockedTrxRunnable(@NonNull final ITrxManager trxManager)
 	{
-		super();
-
-		Check.assumeNotNull(trxManager, "trxManager not null");
 		this.trxManager = trxManager;
 	}
 

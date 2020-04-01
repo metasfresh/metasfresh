@@ -27,14 +27,16 @@ import java.math.BigDecimal;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BP_BankAccount;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Invoice;
+import org.compiere.model.I_C_PaySelectionLine;
 
-import de.metas.adempiere.model.I_C_PaySelectionLine;
 import de.metas.allocation.api.IAllocationDAO;
 import de.metas.banking.model.I_C_Payment_Request;
 import de.metas.banking.payment.IPaymentRequestBL;
 import de.metas.banking.payment.IPaymentRequestDAO;
 import de.metas.banking.service.IBankingBPBankAccountDAO;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
@@ -49,7 +51,7 @@ public class PaymentRequestBL implements IPaymentRequestBL
 	public I_C_Payment_Request createNewFromTemplate(final I_C_Payment_Request request)
 	{
 		final I_C_Payment_Request clone = InterfaceWrapperHelper.newInstance(I_C_Payment_Request.class, request);
-		clone.setC_BP_BankAccount(request.getC_BP_BankAccount());
+		clone.setC_BP_BankAccount_ID(request.getC_BP_BankAccount_ID());
 		clone.setAmount(request.getAmount());
 		clone.setReference(request.getReference());
 		clone.setFullPaymentString(request.getFullPaymentString()); // FRESH-318
@@ -135,11 +137,14 @@ public class PaymentRequestBL implements IPaymentRequestBL
 		{
 			requestForInvoice = InterfaceWrapperHelper.newInstance(I_C_Payment_Request.class, invoice);
 
+			final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
+			final I_C_BPartner bpartner = bpartnerDAO.getById(invoice.getC_BPartner_ID());
+
 			//
 			// Find a default partner account
 			final IBankingBPBankAccountDAO bpBankAccountDAO = Services.get(IBankingBPBankAccountDAO.class);
-			final I_C_BP_BankAccount bpBankAccount = bpBankAccountDAO.retrieveDefaultBankAccount(invoice.getC_BPartner());
-			requestForInvoice.setC_BP_BankAccount(bpBankAccount);
+			final I_C_BP_BankAccount bpBankAccount = bpBankAccountDAO.retrieveDefaultBankAccount(bpartner);
+			requestForInvoice.setC_BP_BankAccount_ID(bpBankAccount.getC_BP_BankAccount_ID());
 
 			//
 			// Assume the invoice grand total for payment request amount

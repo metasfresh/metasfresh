@@ -15,6 +15,7 @@ import org.springframework.stereotype.Repository;
 import de.metas.attachments.AttachmentEntryCreateRequest;
 import de.metas.attachments.AttachmentEntryService;
 import de.metas.attachments.AttachmentTags;
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.invoice_gateway.spi.model.InvoiceId;
@@ -48,8 +49,8 @@ import lombok.NonNull;
 @Repository
 public class InvoiceResponseRepo
 {
-	private static final String MSG_INVOICE_NOT_FOUND_2P = "de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.imp.InvoiceResponseRepo_Invoice_Not_Found";
-	private static final String MSG_INVOICE_NOT_FOUND_BY_ID_1P = "de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.imp.InvoiceResponseRepo_Invoice_Not_Found_By_Id";
+	private static final AdMessageKey MSG_INVOICE_NOT_FOUND_2P = AdMessageKey.of("de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.imp.InvoiceResponseRepo_Invoice_Not_Found");
+	private static final AdMessageKey MSG_INVOICE_NOT_FOUND_BY_ID_1P = AdMessageKey.of("de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.imp.InvoiceResponseRepo_Invoice_Not_Found_By_Id");
 
 	private final AttachmentEntryService attachmentEntryService;
 

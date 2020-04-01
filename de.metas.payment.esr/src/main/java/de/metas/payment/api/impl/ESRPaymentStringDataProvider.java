@@ -24,6 +24,8 @@ package de.metas.payment.api.impl;
 
 import java.util.List;
 
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.service.IBPartnerDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IContextAware;
 
@@ -80,7 +82,9 @@ public class ESRPaymentStringDataProvider extends AbstractPaymentStringDataProvi
 		bpBankAccount.setC_Currency_ID(currency.getId().getRepoId());
 		bpBankAccount.setIsEsrAccount(true); // ..because we are creating this from an ESR string
 		bpBankAccount.setIsACH(true);
-		bpBankAccount.setA_Name(bpBankAccount.getC_BPartner().getName());
+		final String bPartnerName = Services.get(IBPartnerDAO.class).getBPartnerNameById(BPartnerId.ofRepoId(bpartnerId));
+		bpBankAccount.setA_Name(bPartnerName);
+		bpBankAccount.setName(bPartnerName);
 
 		bpBankAccount.setAccountNo(paymentString.getInnerAccountNo());
 		bpBankAccount.setESR_RenderedAccountNo(paymentString.getPostAccountNo());

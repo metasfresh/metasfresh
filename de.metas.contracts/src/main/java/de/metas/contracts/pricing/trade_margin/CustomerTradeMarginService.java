@@ -22,21 +22,35 @@
 
 package de.metas.contracts.pricing.trade_margin;
 
+import java.util.Map;
+import java.util.Optional;
+
+import org.slf4j.Logger;
+import org.slf4j.MDC;
+import org.slf4j.MDC.MDCCloseable;
+import org.springframework.stereotype.Service;
+
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+
 import de.metas.bpartner.BPartnerId;
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionContract;
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionPoints;
 import de.metas.contracts.commission.commissioninstance.businesslogic.algorithms.HierarchyContract;
+import de.metas.contracts.commission.commissioninstance.businesslogic.hierarchy.HierarchyLevel;
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.SalesCommissionShare;
+import de.metas.contracts.commission.model.I_C_Commission_Share;
+import de.metas.logging.LogManager;
+import de.metas.logging.TableRecordMDC;
 import de.metas.util.lang.Percent;
 import lombok.NonNull;
-import org.springframework.stereotype.Service;
-
-import java.util.Optional;
 
 @Service
 public class CustomerTradeMarginService
 {
+
+	private static final Logger logger = LogManager.getLogger(CustomerTradeMarginService.class);
+
 	private final CustomerTradeMarginRepository customerTradeMarginRepository;
 
 	public CustomerTradeMarginService(final CustomerTradeMarginRepository customerTradeMarginRepository)
@@ -49,34 +63,58 @@ public class CustomerTradeMarginService
 		return customerTradeMarginRepository.getBestMatchForCriteria(customerTradeMarginSearchCriteria);
 	}
 
-	public Optional<CommissionPoints> getTradedCommissionPointsFor( @NonNull final CustomerTradeMarginSettings customerTradeMarginSettings,
-													          		@NonNull final ImmutableList<SalesCommissionShare> commissionShares,
-			                                                  		@NonNull final CommissionContract commissionContract )
+	public Map<SalesCommissionShare, CommissionPoints> getTradedCommissionPointsFor(
+			@NonNull final CustomerTradeMarginSettings customerTradeMarginSettings,
+			@NonNull final ImmutableList<SalesCommissionShare> commissionShares)
 	{
-		final Optional<SalesCommissionShare> salesCommissionShare = commissionShares
-				.stream()
-				.filter(share -> BPartnerId.equals( share.getBeneficiary().getBPartnerId(), customerTradeMarginSettings.getSalesRepId() ) )
-				.findFirst();
-
-		if ( !salesCommissionShare.isPresent() )
+		try (final MDCCloseable methodMDC = MDC.putCloseable("method", "CustomerTradeMarginService.getTradedCommissionPointsFor"))
 		{
-			return Optional.empty();
+			ImmutableMap.Builder<SalesCommissionShare, CommissionPoints> result = ImmutableMap.builder();
+
+			for (final SalesCommissionShare commissionShare : commissionShares)
+			{
+				try (final MDCCloseable commissionShareMDC = TableRecordMDC.putTableRecordReference(I_C_Commission_Share.Table_Name, commissionShare.getId()))
+				{
+					if (!HierarchyLevel.ZERO.equals(commissionShare.getLevel()))
+					{
+						logger.debug("commission-share has level=0; -> skipping");
+						continue;
+					}
+
+					if (!BPartnerId.equals(commissionShare.getBeneficiary().getBPartnerId(), customerTradeMarginSettings.getSalesRepId()))
+					{
+						logger.debug("commission-share has beneficiary-bpartner-id={} which is != {}; -> skipping",
+								commissionShare.getBeneficiary().getBPartnerId().getRepoId(), customerTradeMarginSettings.getSalesRepId().getRepoId());
+						continue;
+					}
+
+					final CommissionPoints salesRepCommissionPoints = commissionShare.getForecastedPointsSum();
+					if (salesRepCommissionPoints.isZero())
+					{
+						logger.debug("commission-share has zero forecasted commission points; -> skipping");
+						continue;
+					}
+
+					final CommissionContract commissionContract = commissionShare.getContract();
+					if (!HierarchyContract.isInstance(commissionContract))
+					{
+						logger.debug("commission-share's contract is not a HierarchyContract; -> skipping; commissionContract={}", commissionContract);
+						continue;
+					}
+
+					final int commissionPointsPrecision = HierarchyContract.cast(commissionContract).getPointsPrecision();
+
+					final CommissionPoints tradedCommissionPoints = salesRepCommissionPoints
+							.computePercentageOf(
+									Percent.of(customerTradeMarginSettings.getMarginPercent()),
+									commissionPointsPrecision);
+
+					logger.debug("put commission-share with tradedCommissionPoints={} to the overall result", tradedCommissionPoints);
+					result.put(commissionShare, tradedCommissionPoints);
+				}
+			}
+
+			return result.build();
 		}
-
-		final CommissionPoints salesRepCommissionPoints = salesCommissionShare.get().getForecastedPointsSum();
-
-		if ( salesRepCommissionPoints.isZero() )
-		{
-			return Optional.empty();
-		}
-
-		final int commissionPointsPrecision = HierarchyContract.cast(commissionContract).getPointsPrecision();
-
-		final CommissionPoints tradedCommissionPoints = salesRepCommissionPoints
-				.computePercentageOf(
-					Percent.of( customerTradeMarginSettings.getMarginPercent() ),
-					commissionPointsPrecision );
-
-		return Optional.of(tradedCommissionPoints);
 	}
 }

@@ -1284,6 +1284,27 @@ public final class Env
 		setContext(ctx, CTXNAME_AD_User_ID, userId.getRepoId());
 	}
 
+	public static IAutoCloseable temporaryChangeLoggedUserId(@NonNull final UserId userId)
+	{
+		return temporaryChangeLoggedUserId(getCtx(), userId);
+	}
+
+	public static IAutoCloseable temporaryChangeLoggedUserId(final Properties ctx, @NonNull final UserId userId)
+	{
+		final UserId previousUserId = UserId.ofRepoIdOrNull(getContextAsInt(ctx, CTXNAME_AD_User_ID, -1));
+
+		setContext(ctx, CTXNAME_AD_User_ID, userId.getRepoId());
+
+		if (previousUserId != null)
+		{
+			return () -> setContext(ctx, CTXNAME_AD_User_ID, previousUserId.getRepoId());
+		}
+		else
+		{
+			return () -> setContext(ctx, CTXNAME_AD_User_ID, (String)null);
+		}
+	}
+
 	public static void setSalesRepId(final Properties ctx, @NonNull final UserId userId)
 	{
 		setContext(ctx, CTXNAME_SalesRep_ID, userId.getRepoId());
@@ -2492,7 +2513,7 @@ public final class Env
 	{
 		return getLocalDate(getCtx());
 	}
-	
+
 	public static ZonedDateTime getZonedDateTime(final Properties ctx)
 	{
 		return TimeUtil.asZonedDateTime(getDate(ctx));
@@ -2502,7 +2523,6 @@ public final class Env
 	{
 		return getZonedDateTime(getCtx());
 	}
-
 
 	/**
 	 * @return value or <code>null</code> if the value was not present and value initializer was null

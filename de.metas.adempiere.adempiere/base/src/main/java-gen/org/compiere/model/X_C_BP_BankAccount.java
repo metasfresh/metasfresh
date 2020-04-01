@@ -14,7 +14,7 @@ public class X_C_BP_BankAccount extends org.compiere.model.PO implements I_C_BP_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1708192350L;
+	private static final long serialVersionUID = -9742192L;
 
     /** Standard Constructor */
     public X_C_BP_BankAccount (Properties ctx, int C_BP_BankAccount_ID, String trxName)
@@ -22,9 +22,8 @@ public class X_C_BP_BankAccount extends org.compiere.model.PO implements I_C_BP_
       super (ctx, C_BP_BankAccount_ID, trxName);
       /** if (C_BP_BankAccount_ID == 0)
         {
-			setA_Name (null);
-			setC_BP_BankAccount_ID (0);
 			setC_BPartner_ID (0);
+			setC_BP_BankAccount_ID (0);
 			setC_Currency_ID (0);
 			setIsACH (true); // Y
         } */
@@ -44,6 +43,25 @@ public class X_C_BP_BankAccount extends org.compiere.model.PO implements I_C_BP_
       org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
     }
+
+	/** Set Konto-Nr..
+		@param AccountNo 
+		Account Number
+	  */
+	@Override
+	public void setAccountNo (java.lang.String AccountNo)
+	{
+		set_Value (COLUMNNAME_AccountNo, AccountNo);
+	}
+
+	/** Get Konto-Nr..
+		@return Account Number
+	  */
+	@Override
+	public java.lang.String getAccountNo () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_AccountNo);
+	}
 
 	/** Set Ort.
 		@param A_City 
@@ -81,6 +99,31 @@ public class X_C_BP_BankAccount extends org.compiere.model.PO implements I_C_BP_
 	public java.lang.String getA_Country () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_A_Country);
+	}
+
+	/** Set Ansprechpartner.
+		@param AD_User_ID 
+		User within the system - Internal or Business Partner Contact
+	  */
+	@Override
+	public void setAD_User_ID (int AD_User_ID)
+	{
+		if (AD_User_ID < 0) 
+			set_Value (COLUMNNAME_AD_User_ID, null);
+		else 
+			set_Value (COLUMNNAME_AD_User_ID, Integer.valueOf(AD_User_ID));
+	}
+
+	/** Get Ansprechpartner.
+		@return User within the system - Internal or Business Partner Contact
+	  */
+	@Override
+	public int getAD_User_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_AD_User_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	/** Set EMail.
@@ -140,9 +183,9 @@ public class X_C_BP_BankAccount extends org.compiere.model.PO implements I_C_BP_
 		return (java.lang.String)get_Value(COLUMNNAME_A_Ident_SSN);
 	}
 
-	/** Set Name.
+	/** Set Name auf Kreditkarte.
 		@param A_Name 
-		Name on Credit Card or Account holder
+		Name auf Kreditkarte oder des Kontoeigners
 	  */
 	@Override
 	public void setA_Name (java.lang.String A_Name)
@@ -150,8 +193,8 @@ public class X_C_BP_BankAccount extends org.compiere.model.PO implements I_C_BP_
 		set_Value (COLUMNNAME_A_Name, A_Name);
 	}
 
-	/** Get Name.
-		@return Name on Credit Card or Account holder
+	/** Get Name auf Kreditkarte.
+		@return Name auf Kreditkarte oder des Kontoeigners
 	  */
 	@Override
 	public java.lang.String getA_Name () 
@@ -214,68 +257,6 @@ public class X_C_BP_BankAccount extends org.compiere.model.PO implements I_C_BP_
 	public java.lang.String getA_Zip () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_A_Zip);
-	}
-
-	/** Set Konto-Nr..
-		@param AccountNo 
-		Account Number
-	  */
-	@Override
-	public void setAccountNo (java.lang.String AccountNo)
-	{
-		set_Value (COLUMNNAME_AccountNo, AccountNo);
-	}
-
-	/** Get Konto-Nr..
-		@return Account Number
-	  */
-	@Override
-	public java.lang.String getAccountNo () 
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_AccountNo);
-	}
-
-	@Override
-	public org.compiere.model.I_AD_User getAD_User() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_AD_User_ID, org.compiere.model.I_AD_User.class);
-	}
-
-	@Override
-	public void setAD_User(org.compiere.model.I_AD_User AD_User)
-	{
-		set_ValueFromPO(COLUMNNAME_AD_User_ID, org.compiere.model.I_AD_User.class, AD_User);
-	}
-
-	/** Set Ansprechpartner.
-		@param AD_User_ID 
-		User within the system - Internal or Business Partner Contact
-	  */
-	@Override
-	public void setAD_User_ID (int AD_User_ID)
-	{
-		if (AD_User_ID < 0)
-		{
-			set_Value (COLUMNNAME_AD_User_ID, null);
-		}
-		else
-		{
-			set_Value (COLUMNNAME_AD_User_ID, Integer.valueOf(AD_User_ID));
-		}
-	}
-
-	/** Get Ansprechpartner.
-		@return User within the system - Internal or Business Partner Contact
-	  */
-	@Override
-	public int getAD_User_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_AD_User_ID);
-		if (ii == null)
-		{
-			return 0;
-		}
-		return ii.intValue();
 	}
 
 	/** 
@@ -343,7 +324,7 @@ public class X_C_BP_BankAccount extends org.compiere.model.PO implements I_C_BP_
 	}
 
 	@Override
-	public org.compiere.model.I_C_Bank getC_Bank() throws RuntimeException
+	public org.compiere.model.I_C_Bank getC_Bank()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_Bank_ID, org.compiere.model.I_C_Bank.class);
 	}
@@ -361,14 +342,10 @@ public class X_C_BP_BankAccount extends org.compiere.model.PO implements I_C_BP_
 	@Override
 	public void setC_Bank_ID (int C_Bank_ID)
 	{
-		if (C_Bank_ID < 1)
-		{
+		if (C_Bank_ID < 1) 
 			set_Value (COLUMNNAME_C_Bank_ID, null);
-		}
-		else
-		{
+		else 
 			set_Value (COLUMNNAME_C_Bank_ID, Integer.valueOf(C_Bank_ID));
-		}
 	}
 
 	/** Get Bank.
@@ -379,53 +356,8 @@ public class X_C_BP_BankAccount extends org.compiere.model.PO implements I_C_BP_
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_Bank_ID);
 		if (ii == null)
-		{
-			return 0;
-		}
+			 return 0;
 		return ii.intValue();
-	}
-
-	/** Set Bankverbindung.
-		@param C_BP_BankAccount_ID 
-		Bank Account of the Business Partner
-	  */
-	@Override
-	public void setC_BP_BankAccount_ID (int C_BP_BankAccount_ID)
-	{
-		if (C_BP_BankAccount_ID < 1)
-		{
-			set_ValueNoCheck (COLUMNNAME_C_BP_BankAccount_ID, null);
-		}
-		else
-		{
-			set_ValueNoCheck (COLUMNNAME_C_BP_BankAccount_ID, Integer.valueOf(C_BP_BankAccount_ID));
-		}
-	}
-
-	/** Get Bankverbindung.
-		@return Bank Account of the Business Partner
-	  */
-	@Override
-	public int getC_BP_BankAccount_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_BP_BankAccount_ID);
-		if (ii == null)
-		{
-			return 0;
-		}
-		return ii.intValue();
-	}
-
-	@Override
-	public org.compiere.model.I_C_BPartner getC_BPartner() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_BPartner_ID, org.compiere.model.I_C_BPartner.class);
-	}
-
-	@Override
-	public void setC_BPartner(org.compiere.model.I_C_BPartner C_BPartner)
-	{
-		set_ValueFromPO(COLUMNNAME_C_BPartner_ID, org.compiere.model.I_C_BPartner.class, C_BPartner);
 	}
 
 	/** Set Geschäftspartner.
@@ -435,14 +367,10 @@ public class X_C_BP_BankAccount extends org.compiere.model.PO implements I_C_BP_
 	@Override
 	public void setC_BPartner_ID (int C_BPartner_ID)
 	{
-		if (C_BPartner_ID < 1)
-		{
+		if (C_BPartner_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_C_BPartner_ID, null);
-		}
-		else
-		{
+		else 
 			set_ValueNoCheck (COLUMNNAME_C_BPartner_ID, Integer.valueOf(C_BPartner_ID));
-		}
 	}
 
 	/** Get Geschäftspartner.
@@ -453,9 +381,32 @@ public class X_C_BP_BankAccount extends org.compiere.model.PO implements I_C_BP_
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_BPartner_ID);
 		if (ii == null)
-		{
-			return 0;
-		}
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Bankverbindung.
+		@param C_BP_BankAccount_ID 
+		Bank Account of the Business Partner
+	  */
+	@Override
+	public void setC_BP_BankAccount_ID (int C_BP_BankAccount_ID)
+	{
+		if (C_BP_BankAccount_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_C_BP_BankAccount_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_C_BP_BankAccount_ID, Integer.valueOf(C_BP_BankAccount_ID));
+	}
+
+	/** Get Bankverbindung.
+		@return Bank Account of the Business Partner
+	  */
+	@Override
+	public int getC_BP_BankAccount_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_BP_BankAccount_ID);
+		if (ii == null)
+			 return 0;
 		return ii.intValue();
 	}
 
@@ -466,14 +417,10 @@ public class X_C_BP_BankAccount extends org.compiere.model.PO implements I_C_BP_
 	@Override
 	public void setC_Currency_ID (int C_Currency_ID)
 	{
-		if (C_Currency_ID < 1)
-		{
+		if (C_Currency_ID < 1) 
 			set_Value (COLUMNNAME_C_Currency_ID, null);
-		}
-		else
-		{
+		else 
 			set_Value (COLUMNNAME_C_Currency_ID, Integer.valueOf(C_Currency_ID));
-		}
 	}
 
 	/** Get Währung.
@@ -484,9 +431,7 @@ public class X_C_BP_BankAccount extends org.compiere.model.PO implements I_C_BP_
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_Currency_ID);
 		if (ii == null)
-		{
-			return 0;
-		}
+			 return 0;
 		return ii.intValue();
 	}
 
@@ -508,9 +453,7 @@ public class X_C_BP_BankAccount extends org.compiere.model.PO implements I_C_BP_
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_CreditCardExpMM);
 		if (ii == null)
-		{
-			return 0;
-		}
+			 return 0;
 		return ii.intValue();
 	}
 
@@ -532,9 +475,7 @@ public class X_C_BP_BankAccount extends org.compiere.model.PO implements I_C_BP_
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_CreditCardExpYY);
 		if (ii == null)
-		{
-			return 0;
-		}
+			 return 0;
 		return ii.intValue();
 	}
 
@@ -669,13 +610,53 @@ public class X_C_BP_BankAccount extends org.compiere.model.PO implements I_C_BP_
 		Object oo = get_Value(COLUMNNAME_IsACH);
 		if (oo != null) 
 		{
-			 if (oo instanceof Boolean)
-			{
-				return ((Boolean)oo).booleanValue();
-			} 
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
 			return "Y".equals(oo);
 		}
 		return false;
+	}
+
+	/** Set Standard.
+		@param IsDefault 
+		Default value
+	  */
+	@Override
+	public void setIsDefault (boolean IsDefault)
+	{
+		set_Value (COLUMNNAME_IsDefault, Boolean.valueOf(IsDefault));
+	}
+
+	/** Get Standard.
+		@return Default value
+	  */
+	@Override
+	public boolean isDefault () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsDefault);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
+	/** Set Name.
+		@param Name Name	  */
+	@Override
+	public void setName (java.lang.String Name)
+	{
+		set_Value (COLUMNNAME_Name, Name);
+	}
+
+	/** Get Name.
+		@return Name	  */
+	@Override
+	public java.lang.String getName () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_Name);
 	}
 
 	/** 

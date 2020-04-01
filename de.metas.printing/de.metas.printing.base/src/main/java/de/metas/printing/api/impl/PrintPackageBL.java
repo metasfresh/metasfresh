@@ -13,15 +13,14 @@ package de.metas.printing.api.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.Iterator;
 import java.util.Properties;
@@ -162,7 +161,6 @@ public class PrintPackageBL implements IPrintPackageBL
 		return new PrintJobLinesAggregator(printPackageCtx, jobInstructions);
 	}
 
-
 	@Override
 	public IPrintPackageCtx createEmptyInitialCtx()
 	{
@@ -171,14 +169,16 @@ public class PrintPackageBL implements IPrintPackageBL
 	}
 
 	@Override
-	public IPrintPackageCtx createInitialCtx(final Properties ctx)
+	public IPrintPackageCtx createInitialCtx(@NonNull final Properties ctx)
 	{
 		final PrintPackageCtx printCtx = new PrintPackageCtx();
 
 		final MFSession session = Services.get(ISessionBL.class).getCurrentSession(ctx);
 		if (session == null)
 		{
-			throw new AdempiereException("@NotFound@ @AD_Session_ID@");
+			throw new AdempiereException("The given ctx has no session.")
+					.appendParametersToMessage()
+					.setParameter("ctx", ctx);
 		}
 		logger.debug("Session: {}", session);
 
@@ -192,7 +192,7 @@ public class PrintPackageBL implements IPrintPackageBL
 	}
 
 	@Override
-	public String getHostKeyOrNull(final Properties ctx)
+	public String getHostKeyOrNull(@NonNull final Properties ctx)
 	{
 		// Check session
 		final MFSession session = Services.get(ISessionBL.class).getCurrentSession(ctx);

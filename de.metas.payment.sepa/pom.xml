@@ -1,5 +1,7 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+	<modelVersion>4.0.0</modelVersion>
+
 	<parent>
 		<artifactId>de.metas.parent</artifactId>
 		<groupId>de.metas</groupId>
@@ -7,74 +9,15 @@
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
-	<modelVersion>4.0.0</modelVersion>
+	<version>10.0.0</version> <!-- needed by versions:set during the jenkins build -->
 	<groupId>de.metas.payment.sepa</groupId>
 	<artifactId>de.metas.payment.sepa</artifactId>
-	<packaging>jar</packaging>
+	<packaging>pom</packaging>
 
-	<description>SEPA Payments</description>
-
-	<properties>
-		<migration-sql-basedir></migration-sql-basedir>
-	</properties>
-
-	<dependencies>
-		<!-- payment.esr contains e.g. IBPBankAccountBL which is also used in payment.sepa -->
-		<dependency>
-			<groupId>de.metas.payment.esr</groupId>
-			<artifactId>de.metas.payment.esr</artifactId>
-			<version>10.0.0</version>
-		</dependency>
-
-		<dependency>
-			<groupId>de.metas.swat</groupId>
-			<artifactId>de.metas.swat.base</artifactId>
-			<version>10.0.0</version>
-		</dependency>
-
-		<dependency>
-			<groupId>de.metas.document</groupId>
-			<artifactId>de.metas.document.refid</artifactId>
-			<version>10.0.0</version>
-		</dependency>
-
-		<dependency>
-			<groupId>de.metas.adempiere.adempiere</groupId>
-			<artifactId>de.metas.adempiere.adempiere.base</artifactId>
-			<version>10.0.0</version>
-			<classifier>tests</classifier>
-			<scope>test</scope>
-		</dependency>
-		
-		<dependency>
-			<groupId>org.projectlombok</groupId>
-			<artifactId>lombok</artifactId>
-			<scope>provided</scope>
-		</dependency>
-
-	</dependencies>
-
-	<build>
-		<plugins>
-			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>jaxb2-maven-plugin</artifactId>
-				<executions>
-
-					<execution>
-						<id>generate-de.metas.payment.sepa.jaxb.sct.pain_001_01_03_ch_02</id>
-						<goals>
-							<goal>xjc</goal>
-						</goals>
-						<configuration>
-							<clearOutputDir>true</clearOutputDir>
-							<sources>src/main/xsd/pain.001.001.03.ch.02.xsd</sources>
-							<packageName>de.metas.payment.sepa.jaxb.sct.pain_001_001_03_ch_02</packageName>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-		</plugins>
-	</build>
+	<modules>
+		<module>base</module>
+		<module>schema-pain_001_01_03_ch_02</module>
+		<module>schema-pain_008_003_02</module>
+	</modules>
 
 </project>

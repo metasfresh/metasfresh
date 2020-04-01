@@ -80,7 +80,7 @@ final class DocLine_MatchPO extends DocLine<Doc_MatchPO>
 	}
 
 	/** @return PO cost amount in accounting schema currency */
-	public CostAmount getPOCostAmount(final AcctSchema as)
+	CostAmount getPOCostAmount(final AcctSchema as)
 	{
 		final I_C_OrderLine orderLine = getOrderLine();
 		final ProductPrice poCostPrice = getOrderLineCostPrice();
@@ -109,7 +109,7 @@ final class DocLine_MatchPO extends DocLine<Doc_MatchPO>
 				.roundToPrecisionIfNeeded(as.getCosting().getCostingPrecision());
 	}
 
-	public CostAmount getStandardCosts(final AcctSchema acctSchema)
+	CostAmount getStandardCosts(final AcctSchema acctSchema)
 	{
 		final ICostingService costDetailService = SpringContextHolder.instance.getBean(ICostingService.class);
 
@@ -131,7 +131,7 @@ final class DocLine_MatchPO extends DocLine<Doc_MatchPO>
 		return costPrice.multiply(getQty());
 	}
 
-	public AggregatedCostAmount createCostDetails(final AcctSchema as)
+	AggregatedCostAmount createCostDetails(final AcctSchema as)
 	{
 		final I_M_InOutLine receiptLine = getReceiptLine();
 		Check.assumeNotNull(receiptLine, "Parameter receiptLine is not null");
@@ -183,24 +183,24 @@ final class DocLine_MatchPO extends DocLine<Doc_MatchPO>
 		return uomConversionsBL.convertProductPriceToUom(costPrice, getProductStockingUOMId(), precision);
 	}
 
-	public int getReceipt_InOutLine_ID()
+	int getReceipt_InOutLine_ID()
 	{
 		return getModel(I_M_MatchPO.class).getM_InOutLine_ID();
 	}
 
-	public I_M_InOutLine getReceiptLine()
+	I_M_InOutLine getReceiptLine()
 	{
 		return getModel(I_M_MatchPO.class).getM_InOutLine();
 	}
 
-	public boolean isReturnTrx()
+	boolean isReturnTrx()
 	{
 		final I_M_InOutLine receiptLine = getReceiptLine();
 		final I_M_InOut inOut = receiptLine.getM_InOut();
 		return X_M_InOut.MOVEMENTTYPE_VendorReturns.equals(inOut.getMovementType());
 	}
 
-	public int getM_MatchPO_ID()
+	private int getM_MatchPO_ID()
 	{
 		return get_ID();
 	}

@@ -15,6 +15,7 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.Adempiere;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BP_BankAccount;
 import org.compiere.model.I_C_BPartner_Location;
@@ -45,6 +46,7 @@ import de.metas.interfaces.I_C_BPartner;
 import de.metas.location.CountryId;
 import de.metas.location.ICountryDAO;
 import de.metas.location.impl.PostalQueryFilter;
+import de.metas.security.PermissionServiceFactories;
 import de.metas.util.Services;
 import de.metas.util.lang.ExternalId;
 import lombok.NonNull;
@@ -137,6 +139,7 @@ final class BPartnerCompositeSaver
 
 		bpartnerRecord.setValue(bpartner.getValue());
 
+		assertCanCreateOrUpdate(bpartnerRecord);
 		saveRecord(bpartnerRecord);
 
 		final BPartnerId bpartnerId = BPartnerId.ofRepoId(bpartnerRecord.getC_BPartner_ID());
@@ -290,11 +293,14 @@ final class BPartnerCompositeSaver
 
 		if (anyLocationChange)
 		{
+			assertCanCreateOrUpdate(locationRecord);
 			saveRecord(locationRecord);
 			bpartnerLocationRecord.setC_Location_ID(locationRecord.getC_Location_ID());
 		}
 
 		Services.get(IBPartnerBL.class).setAddress(bpartnerLocationRecord);
+
+		assertCanCreateOrUpdate(bpartnerLocationRecord);
 		saveRecord(bpartnerLocationRecord);
 
 		final BPartnerLocationId bpartnerLocationId = BPartnerLocationId.ofRepoId(bpartnerLocationRecord.getC_BPartner_ID(), bpartnerLocationRecord.getC_BPartner_Location_ID());
@@ -363,7 +369,9 @@ final class BPartnerCompositeSaver
 
 		bpartnerContactRecord.setC_Greeting_ID(GreetingId.toRepoIdOr(bpartnerContact.getGreetingId(), 0));
 
+		assertCanCreateOrUpdate(bpartnerContactRecord);
 		saveRecord(bpartnerContactRecord);
+
 		final BPartnerContactId bpartnerContactId = BPartnerContactId.ofRepoId(bpartnerId, bpartnerContactRecord.getAD_User_ID());
 
 		bpartnerContact.setId(bpartnerContactId);
@@ -395,11 +403,24 @@ final class BPartnerCompositeSaver
 		record.setC_Currency_ID(bankAccount.getCurrencyId().getRepoId());
 		record.setIsActive(bankAccount.isActive());
 
+		assertCanCreateOrUpdate(record);
 		saveRecord(record);
 
 		final BPartnerBankAccountId id = BPartnerBankAccountId.ofRepoId(bpartnerId, record.getC_BP_BankAccount_ID());
 
 		bankAccount.setId(id);
+	}
+
+	private void assertCanCreateOrUpdate(@NonNull final Object record)
+	{
+		if (Adempiere.isUnitTestMode())
+		{
+			return;
+		}
+		PermissionServiceFactories
+				.currentContext()
+				.createPermissionService()
+				.assertCanCreateOrUpdate(record);
 	}
 
 }

@@ -70,8 +70,11 @@ import org.slf4j.MDC;
 
 import com.google.common.annotations.VisibleForTesting;
 
+import ch.qos.logback.classic.Level;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
+import de.metas.util.ILoggable;
+import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -770,7 +773,10 @@ public abstract class AbstractTrxManager implements ITrxManager
 		// we catch Throwable and not only Exceptions because java.lang.AssertionError is not an Exception
 		catch (final Throwable runException)
 		{
-			logger.warn("AbstractTrxManager.call0 - caught {} with message={}", runException.getClass(), runException.getMessage());
+			final ILoggable loggable = Loggables.withLogger(logger, Level.WARN);
+			loggable.addLog("AbstractTrxManager.call0 - caught {} with message={}",
+					runException.getClass(), runException.getMessage(),
+					runException /* note that some ILoggable implementations can handle this additional parameter; the others can be expected to ignore it */);
 
 			// Call custom exception handler to advice us what to do
 			exceptionToThrow = runException;
@@ -801,7 +807,7 @@ public abstract class AbstractTrxManager implements ITrxManager
 				{
 					if (savepoint == null)
 					{
-						logger.warn("AbstractTrxManager.call0 - savePoint==null, so probably a problem happend when we tried to create the savepoint; trxRunConfig={}", cfg);
+						loggable.addLog("AbstractTrxManager.call0 - savePoint==null, so probably a problem happend when we tried to create the savepoint; trxRunConfig={}", cfg);
 					}
 					else
 					{
@@ -815,7 +821,7 @@ public abstract class AbstractTrxManager implements ITrxManager
 							final TrxException rollbackEx = new TrxException("Failed to rollback to savepoint"
 									+ "\nSavepoint: " + savepoint
 									+ "\nTrx: " + trx);
-							logger.warn("Failed to rollback to savepoint. Going forward...", rollbackEx);
+							loggable.addLog("Failed to rollback to savepoint. Going forward...", rollbackEx);
 						}
 					}
 
@@ -883,7 +889,7 @@ public abstract class AbstractTrxManager implements ITrxManager
 						final String errmsg = "There was an exception while rolling back to savepoint. Going forward."
 								+ "\n Trx: " + trx
 								+ "\n Savepoint: " + savepoint;
-						logger.warn(errmsg, e);
+						Loggables.withLogger(logger, Level.WARN).addLog(errmsg, e);
 					}
 				}
 				savepoint = null;
@@ -1181,7 +1187,7 @@ public abstract class AbstractTrxManager implements ITrxManager
 
 		final String trxNameOld = threadLocalTrx.get();
 		threadLocalTrx.set(trxName);
-		
+
 		MDC.put("TrxName", trxName);
 
 		return trxNameOld;

@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package de.metas.impexp.parser;
 
@@ -15,6 +15,7 @@ import com.google.common.io.ByteSource;
 import com.google.common.io.Files;
 import com.google.common.io.LineProcessor;
 
+import de.metas.util.Check;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 
@@ -28,12 +29,12 @@ import lombok.experimental.UtilityClass;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -72,6 +73,7 @@ final class FileImportReader
 	{
 		private boolean openQuote = false;
 		private boolean closedQuote = false;
+		private boolean quoteOpenRightNow = false;
 		private final List<String> loadedDataLines = new ArrayList<>();
 
 		@Override
@@ -88,17 +90,19 @@ final class FileImportReader
 				else
 				{
 					openQuote = true;
+					quoteOpenRightNow = true;
 				}
 			}
 			//
 			// if open quote , add this line to the previous
-			if (openQuote && !loadedDataLines.isEmpty())
+			if (openQuote && !quoteOpenRightNow && !loadedDataLines.isEmpty() && Check.isNotBlank(loadedDataLines.get(loadedDataLines.size() - 1)))
 			{
 				addLine(line);
 			}
 			else
 			{
 				loadedDataLines.add(line);
+				quoteOpenRightNow = false;
 			}
 
 			//
@@ -107,13 +111,14 @@ final class FileImportReader
 			{
 				openQuote = false;
 				closedQuote = false;
+				quoteOpenRightNow = false;
 			}
 			return true;
 		}
 
 		/**
 		 * add current line to the previous one
-		 * 
+		 *
 		 * @param line
 		 */
 		private void addLine(@NonNull final String line)
@@ -122,7 +127,10 @@ final class FileImportReader
 			final int index = loadedDataLines.size() - 1;
 			previousLine.append(loadedDataLines.get(index));
 			// append the new line, because the char exists
-			previousLine.append("\n");
+			if (Check.isNotBlank(previousLine.toString()))
+			{
+				previousLine.append("\n");
+			}
 			previousLine.append(line);
 			//
 			// now remove the line and add the new line
@@ -141,7 +149,7 @@ final class FileImportReader
 	 * Read file that has at least on filed with multiline text
 	 * <br>
 	 * Assumes the <code>TEXT_DELIMITER</code> is not encountered in the field
-	 * 
+	 *
 	 * @param file
 	 * @param charset
 	 * @return
@@ -159,7 +167,7 @@ final class FileImportReader
 
 	/**
 	 * Read file that has not any multi-line text
-	 * 
+	 *
 	 * @param file
 	 * @param charset
 	 * @return
@@ -177,7 +185,7 @@ final class FileImportReader
 
 	/**
 	 * Build the preview from the loaded lines
-	 * 
+	 *
 	 * @param lines
 	 * @return
 	 */

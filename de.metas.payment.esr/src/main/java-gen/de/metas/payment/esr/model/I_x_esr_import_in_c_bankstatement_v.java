@@ -32,39 +32,29 @@ public interface I_x_esr_import_in_c_bankstatement_v
 	 */
 	public int getAD_Client_ID();
 
-	public org.compiere.model.I_AD_Client getAD_Client();
-
-    /** Column definition for AD_Client_ID */
-    public static final org.adempiere.model.ModelColumn<I_x_esr_import_in_c_bankstatement_v, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_x_esr_import_in_c_bankstatement_v, org.compiere.model.I_AD_Client>(I_x_esr_import_in_c_bankstatement_v.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
     /** Column name AD_Client_ID */
     public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
-	 * Set Sektion.
+	 * Set Organisation.
 	 * Organisatorische Einheit des Mandanten
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	public void setAD_Org_ID (int AD_Org_ID);
 
 	/**
-	 * Get Sektion.
+	 * Get Organisation.
 	 * Organisatorische Einheit des Mandanten
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	public int getAD_Org_ID();
 
-	public org.compiere.model.I_AD_Org getAD_Org();
-
-	public void setAD_Org(org.compiere.model.I_AD_Org AD_Org);
-
-    /** Column definition for AD_Org_ID */
-    public static final org.adempiere.model.ModelColumn<I_x_esr_import_in_c_bankstatement_v, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<I_x_esr_import_in_c_bankstatement_v, org.compiere.model.I_AD_Org>(I_x_esr_import_in_c_bankstatement_v.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
     /** Column name AD_Org_ID */
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
@@ -88,12 +78,6 @@ public interface I_x_esr_import_in_c_bankstatement_v
 	 */
 	public int getC_BankStatement_ID();
 
-	public org.compiere.model.I_C_BankStatement getC_BankStatement();
-
-	public void setC_BankStatement(org.compiere.model.I_C_BankStatement C_BankStatement);
-
-    /** Column definition for C_BankStatement_ID */
-    public static final org.adempiere.model.ModelColumn<I_x_esr_import_in_c_bankstatement_v, org.compiere.model.I_C_BankStatement> COLUMN_C_BankStatement_ID = new org.adempiere.model.ModelColumn<I_x_esr_import_in_c_bankstatement_v, org.compiere.model.I_C_BankStatement>(I_x_esr_import_in_c_bankstatement_v.class, "C_BankStatement_ID", org.compiere.model.I_C_BankStatement.class);
     /** Column name C_BankStatement_ID */
     public static final String COLUMNNAME_C_BankStatement_ID = "C_BankStatement_ID";
 
@@ -122,8 +106,6 @@ public interface I_x_esr_import_in_c_bankstatement_v
 	 */
 	public int getCreatedBy();
 
-    /** Column definition for CreatedBy */
-    public static final org.adempiere.model.ModelColumn<I_x_esr_import_in_c_bankstatement_v, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<I_x_esr_import_in_c_bankstatement_v, org.compiere.model.I_AD_User>(I_x_esr_import_in_c_bankstatement_v.class, "CreatedBy", org.compiere.model.I_AD_User.class);
     /** Column name CreatedBy */
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 

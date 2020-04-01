@@ -317,7 +317,7 @@ public class GridFieldVO implements Serializable
 				}
 				else if (columnName.equalsIgnoreCase("FieldLength"))
 				{
-					vo.FieldLength = rs.getInt(i);
+					vo.fieldLength = rs.getInt(i);
 				}
 				else if (columnName.equalsIgnoreCase("VFormat"))
 				{
@@ -514,9 +514,9 @@ public class GridFieldVO implements Serializable
 			vo.displayType = rs.getInt("AD_Reference_ID");
 			vo.IsMandatory = "Y".equals(rs.getString("IsMandatory"));
 			vo.IsMandatoryDB = vo.IsMandatory;
-			vo.FieldLength = rs.getInt("FieldLength");
+			vo.fieldLength = rs.getInt("FieldLength");
 			vo.layoutConstraints = GridFieldLayoutConstraints.builder()
-					.setDisplayLength(vo.FieldLength)
+					.setDisplayLength(vo.fieldLength)
 					.build();
 			vo.DefaultValue = rs.getString("DefaultValue");
 			vo.DefaultValue2 = rs.getString("DefaultValue2");
@@ -573,7 +573,7 @@ public class GridFieldVO implements Serializable
 		voTo.displayType = vo.displayType;
 		voTo.IsMandatory = vo.IsMandatory;
 		voTo.IsMandatoryDB = vo.IsMandatoryDB;
-		voTo.FieldLength = vo.FieldLength;
+		voTo.fieldLength = vo.fieldLength;
 		voTo.layoutConstraints = vo.layoutConstraints.copy();
 		voTo.DefaultValue = vo.DefaultValue2;
 		voTo.VFormat = vo.VFormat;
@@ -748,7 +748,7 @@ public class GridFieldVO implements Serializable
 	/** Order By */
 	public int SortNo = 0;
 	/** Field Length */
-	public int FieldLength = 0;
+	private int fieldLength = 0;
 	/** Format enforcement */
 	public String VFormat = "";
 	private String formatPattern = "";
@@ -986,7 +986,7 @@ public class GridFieldVO implements Serializable
 		clone.defaultFilterDescriptor = defaultFilterDescriptor;
 		clone.autocomplete = autocomplete;
 		clone.SortNo = SortNo;
-		clone.FieldLength = FieldLength;
+		clone.fieldLength = fieldLength;
 		clone.VFormat = VFormat;
 		clone.ValueMin = ValueMin;
 		clone.ValueMax = ValueMax;
@@ -1516,6 +1516,11 @@ public class GridFieldVO implements Serializable
 	public boolean isEncryptedColumn()
 	{
 		return IsEncryptedColumn;
+	}
+	
+	public int getFieldLength()
+	{
+		return fieldLength;
 	}
 
 	public int getSortNo()

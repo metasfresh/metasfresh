@@ -1,5 +1,6 @@
 package org.adempiere.ad.trx.api.impl;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /*
@@ -41,6 +42,7 @@ import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.util.TrxRunnable;
 import org.junit.Assert;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import de.metas.util.Services;
@@ -657,4 +659,44 @@ public class TrxManagerTest
 				.hasMessageContaining("ThreadInherited transaction shall NOT be set at this point");
 	}
 
+	@Nested
+	public class runInThreadInheritedTrx
+	{
+		private void assertRealTrxName(final String lastTrxName)
+		{
+			assertThat(lastTrxName).isNotNull();
+			assertThat(lastTrxName).isNotEqualTo(ITrx.TRXNAME_ThreadInherited);
+		}
+
+		@Test
+		public void notRunningInTrxYet()
+		{
+			final MockedTrxRunnable trxRunnable = new MockedTrxRunnable(trxManager);
+			assertThat(trxRunnable.getLastTrxNameEffective()).isNull();
+
+			trxManager.assertThreadInheritedTrxNotExists();
+
+			trxManager.runInThreadInheritedTrx(trxRunnable);
+
+			assertRealTrxName(trxRunnable.getLastTrxNameEffective());
+		}
+
+		@Test
+		public void alreadyRunningInTrx()
+		{
+			final MockedTrxRunnable trxRunnable = new MockedTrxRunnable(trxManager);
+			assertThat(trxRunnable.getLastTrxNameEffective()).isNull();
+
+			// Simulate already running transaction
+			trxManager.get("AlreadyRunningTrx", OnTrxMissingPolicy.CreateNew);
+			trxManager.setThreadInheritedTrxName("AlreadyRunningTrx");
+			trxManager.assertThreadInheritedTrxExists();
+
+			trxManager.runInThreadInheritedTrx(trxRunnable);
+			System.out.println(trxRunnable);
+
+			assertThat(trxRunnable.getLastTrxNameEffective()).isEqualTo("AlreadyRunningTrx");
+		}
+
+	}
 }

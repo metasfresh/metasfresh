@@ -26,13 +26,10 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.util.Env;
+import org.slf4j.Logger;
 
-import de.metas.adempiere.form.IClientUI;
-import de.metas.adempiere.form.IClientUIInstance;
-import de.metas.notification.INotificationBL;
-import de.metas.notification.UserNotificationRequest;
-import de.metas.printing.Printing_Constants;
+import ch.qos.logback.classic.Level;
+import de.metas.logging.LogManager;
 import de.metas.printing.api.IPrintJobBL;
 import de.metas.printing.api.IPrintJobBL.ContextForAsyncProcessing;
 import de.metas.printing.api.IPrintingQueueBL;
@@ -41,6 +38,7 @@ import de.metas.printing.api.IPrintingQueueSource;
 import de.metas.printing.model.I_C_Print_Job;
 import de.metas.printing.model.I_C_Printing_Queue;
 import de.metas.process.JavaProcess;
+import de.metas.util.Loggables;
 import de.metas.util.Services;
 
 /**
@@ -51,7 +49,12 @@ import de.metas.util.Services;
  */
 public abstract class AbstractPrintJobCreate extends JavaProcess
 {
+
+	private static final Logger logger = LogManager.getLogger(AbstractPrintJobCreate.class);
+
 	private final static String MSG_INVOICE_GENERATE_NO_PRINTING_QUEUE_0P = "CreatePrintJobs_No_Printing_Queue_Selected";
+
+	private final IPrintJobBL printJobBL = Services.get(IPrintJobBL.class);
 
 	/**
 	 * Create {@link I_C_Printing_Queue} selection by using {@link #getAD_PInstance_ID()} as current instance
@@ -69,44 +72,24 @@ public abstract class AbstractPrintJobCreate extends JavaProcess
 
 		final List<IPrintingQueueSource> sources = createPrintingQueueSources(ctxToUse);
 
-		final IClientUIInstance clientUI = Services.get(IClientUI.class).createInstance();
-
 		for (final IPrintingQueueSource source : sources)
 		{
-			final Runnable runnable = new Runnable()
+			try
 			{
-				@Override
-				public void run()
-				{
+				final ContextForAsyncProcessing printJobContext = ContextForAsyncProcessing.builder()
+						.adPInstanceId(getPinstanceId())
+						.build();
 
-					try
-					{
-						final ContextForAsyncProcessing printJobContext = ContextForAsyncProcessing.builder()
-								.adPInstanceId(getPinstanceId())
-								.build();
-
-						Services.get(IPrintJobBL.class).createPrintJobs(source, printJobContext);
-					}
-					catch (final Exception ex)
-					{
-						log.error("Failed creating print job for {}", source, ex);
-						Services.get(INotificationBL.class).send(UserNotificationRequest.builder()
-								.topic(Printing_Constants.USER_NOTIFICATIONS_TOPIC)
-								.recipientUserId(Env.getLoggedUserId(getCtx()))
-								.contentPlain(ex.getLocalizedMessage())
-								.build());
-					}
-
-				}
-			};
-
-			// FIXME: use some thread pool executors
-			final Thread thread = clientUI.createUserThread(runnable, Thread.currentThread().getName() + "_PrintJobsProducer");
-			thread.setDaemon(true);
-			thread.start();
+				printJobBL.createPrintJobs(source, printJobContext);
+			}
+			catch (final RuntimeException ex)
+			{
+				Loggables.withLogger(logger, Level.WARN).addLog("Failed creating print job for IPrintingQueueSource={}; exteption={}", source, ex);
+				throw ex;
+			}
 		}
 
-		return "@Started@";
+		return MSG_OK;
 	}
 
 	// each one with their own users to print user to print

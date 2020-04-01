@@ -10,6 +10,80 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 5.144
+## Features
+* metasfresh
+  * [#6403](https://github.com/metasfresh/metasfresh/issues/6403) Avoid memory problems while exporting big datasets to excel
+  * [#6393](https://github.com/metasfresh/metasfresh/issues/6393) Generating delivery days for >1 tour not working
+
+* metasfresh-webui-api
+  * [#1394](https://github.com/metasfresh/metasfresh-webui-api/issues/1394) layout element: provide maxLength for Text and LongText fields
+
+## Fixes
+* metasfresh
+  * [#6364](https://github.com/metasfresh/metasfresh/issues/6364) Fixes/ adjustments: Excel Sales Order adjustments
+  * [#6376](https://github.com/metasfresh/metasfresh/issues/6376) Avoid empty text for packing material in Product specifications
+  * [#6382](https://github.com/metasfresh/metasfresh/issues/6382) Identifiers are swapped for Requests and Invoices
+  * [#6390](https://github.com/metasfresh/metasfresh/issues/6390) Fix User Queries with dates throwing error
+  * [#6405](https://github.com/metasfresh/metasfresh/issues/6405) Shipment dispo: cache invalidate when mass updating the records
+
+* metasfresh-webui-frontend
+  * [#2556](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2556) make sure the view filters are displayed exactly in the same order we have them in the layout
+
+# metasfresh 5.143
+## Features
+* metasfresh
+  * [#6346](https://github.com/metasfresh/metasfresh/issues/6346) Recording of customer complaints from Documents in the Shipment window
+  * [#6354](https://github.com/metasfresh/metasfresh/issues/6354) Create a process that allows to set a parent folder for an account
+
+## Fixes
+* metasfresh
+  * [#6348](https://github.com/metasfresh/metasfresh/issues/6348) NPE when reactivating Sales Order
+  * [#6359](https://github.com/metasfresh/metasfresh/issues/6359) NPE in invoice batch entry for partners allowed to campaign prices
+  * [#6363](https://github.com/metasfresh/metasfresh/issues/6363) Sales Order: Other product not found in Pricelist
+  * [#6370](https://github.com/metasfresh/metasfresh/issues/6370) Paymentterm not taken properly when creating order from Phoneschedule
+
+# metasfresh 5.142
+## Features
+* metasfresh
+  * [#6298](https://github.com/metasfresh/metasfresh/issues/6298) Migrate `AD_Org_ID` process parameter to `Search` from whatever it is now
+  * [#6311](https://github.com/metasfresh/metasfresh/issues/6311) Rename jasper report Revisionsstelle Geschäftspartner to Stammdaten Mutationsprotokoll
+  * [#6328](https://github.com/metasfresh/metasfresh/issues/6328) ESR Import + processing autom. after upload via drag&drop
+
+## Fixes
+* metasfresh
+  * [#6231](https://github.com/metasfresh/metasfresh/issues/6231) UOM related error in invoice candidate updates
+  * [#6331](https://github.com/metasfresh/metasfresh/issues/6331) The Greeting of the contact is not translated in address block
+
+* metasfresh-webui-frontend
+  * [#2640](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2640) DevTools failed to parse SourceMap error
+
+# metasfresh 5.141
+## Features
+* metasfresh
+  * [#6190](https://github.com/metasfresh/metasfresh/issues/6190) Jasper Report: Summary and balance list - Summen- und Saldenliste
+  * [#6283](https://github.com/metasfresh/metasfresh/issues/6283) Implement SEPA Direct Debit
+  * [#6289](https://github.com/metasfresh/metasfresh/issues/6289) Bankstatement improvements
+  * [#6291](https://github.com/metasfresh/metasfresh/issues/6291) User in generated invoice must be active
+
+* metasfresh-parent
+  * [#42](https://github.com/metasfresh/metasfresh-parent/pull/42) Use binary git after a test which i made yesterday
+
+# metasfresh 5.140
+## Features
+* metasfresh
+  * [#6191](https://github.com/metasfresh/metasfresh/issues/6191) Jasper: Customer Top Revenue
+  * [#6255](https://github.com/metasfresh/metasfresh/issues/6255) Create functions for easily creating default accounts fro M_Produc_category, M_Product, C_BP_Group and C_Bpartner
+
+## Fixes
+* metasfresh
+  * [#6214](https://github.com/metasfresh/metasfresh/issues/6214) Jasper Report: Customer/ Vendor Kontenblatt (Account details)
+  * [#6263](https://github.com/metasfresh/metasfresh/issues/6263) Error logging dunnings in DocOutBoundLog
+  * [#6277](https://github.com/metasfresh/metasfresh/issues/6277) Issues with payment endpoint
+
+* metasfresh-webui-frontend
+  * [#2626](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2626) Again: Orderlines only displayed after refresh
+
 # metasfresh 5.139
 ## Features
 * metasfresh

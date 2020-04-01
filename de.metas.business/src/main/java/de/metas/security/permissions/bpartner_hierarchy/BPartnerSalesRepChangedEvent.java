@@ -47,6 +47,9 @@ public class BPartnerSalesRepChangedEvent
 	@Nullable
 	UserId newSalesRepId;
 
+	@NonNull
+	UserId changedBy;
+
 	public boolean isSalesRepChanged()
 	{
 		return !UserId.equals(oldSalesRepId, newSalesRepId);

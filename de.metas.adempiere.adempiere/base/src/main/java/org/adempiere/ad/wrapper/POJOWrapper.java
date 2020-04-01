@@ -56,13 +56,14 @@ import org.compiere.util.Env;
 import org.compiere.util.Evaluatee2;
 import org.slf4j.Logger;
 
-import com.google.common.base.Predicates;
+import java.util.Objects;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.document.engine.IDocument;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import de.metas.util.lang.RepoIdAware;
 import lombok.NonNull;
 
@@ -85,6 +86,11 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 	private static final AtomicLong nextInstanceId = new AtomicLong(0);
 
 	private static final String DYNATTR_IsJustCreated = POJOWrapper.class.getName() + "#IsJustCreated";
+
+	static final String COLUMNNAME_Created = "Created";
+	static final String COLUMNNAME_CreatedBy = "CreatedBy";
+	static final String COLUMNNAME_Updated = "Updated";
+	static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
 
 	public static <T> T create(final Properties ctx, final Class<T> cl)
 	{
@@ -221,10 +227,9 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 
 		return ids.stream()
 				.map(id -> create(ctx, id, modelClass, trxName))
-				.filter(Predicates.notNull())
+				.filter(Objects::nonNull)
 				.collect(ImmutableList.toImmutableList());
 	}
-
 
 	/**
 	 * If the given <code>cl</code> has a table name (see {@link #getTableNameOrNull(Class)}), then this method makes sure that there is also an <code>I_AD_Table</code> POJO. This can generally be
@@ -690,6 +695,11 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 				// value = idForNewModel(propertyNameLowerCase);
 				value = ID_ZERO;
 			}
+			else if (propertyNameLowerCase.equalsIgnoreCase(COLUMNNAME_CreatedBy)
+					|| propertyNameLowerCase.equals(COLUMNNAME_UpdatedBy))
+			{
+				value = ID_MINUS_ONE;
+			}
 			else
 			{
 				value = DEFAULT_VALUE_int;
@@ -984,7 +994,7 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 		return getValue(propertyName, returnType, strictValues);
 	}
 
-	private Object getValue(final String propertyName, final Class<?> returnType, final boolean enforceStrictValues)
+	Object getValue(final String propertyName, final Class<?> returnType, final boolean enforceStrictValues)
 	{
 		final Map<String, Object> values = getInnerValues();
 
@@ -1254,9 +1264,15 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 		return values;
 	}
 
-	public static void delete(final Object model)
+	public static void delete(final Object model, final boolean failIfProcessed)
 	{
 		final POJOWrapper wrapper = getWrapper(model);
+
+		if (failIfProcessed && wrapper.isProcessed())
+		{
+			throw new AdempiereException("@CannotDelete@ (@Processed@): " + wrapper);
+		}
+
 		wrapper.getLookupMap().delete(model);
 	}
 
@@ -1275,7 +1291,22 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 			return true;
 		}
 
-		final Object value = wrapper.getValue(columnName, Object.class);
+		return wrapper.isNull(columnName);
+	}
+
+	public boolean isNull(final String columnName)
+	{
+		return isNull(columnName, strictValues);
+	}
+
+	boolean isNullNotStrict(final String columnName)
+	{
+		return isNull(columnName, false /* enforceStrictValues */);
+	}
+
+	private boolean isNull(final String columnName, final boolean enforceStrictValues)
+	{
+		final Object value = getValue(columnName, Object.class, enforceStrictValues);
 		if (value == null)
 		{
 			return true;
@@ -1587,7 +1618,7 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 			final int valueInt = Integer.parseInt(value.toString());
 			return Integer.max(valueInt, idForNewModel(columnName));
 		}
-		else if(value instanceof RepoIdAware)
+		else if (value instanceof RepoIdAware)
 		{
 			return ((RepoIdAware)value).getRepoId();
 		}
@@ -1814,5 +1845,12 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 			return null;
 		}
 		return wrapper.getModelInternalAccessor();
+	}
+
+	public boolean isProcessed()
+	{
+		return hasColumnName("Processed")
+				? StringUtils.toBoolean(getValue("Processed", Object.class))
+				: false;
 	}
 }

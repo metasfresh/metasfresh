@@ -22,6 +22,7 @@ import org.adempiere.ad.trx.api.TrxCallable;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_OrderLine;
@@ -249,6 +250,10 @@ public abstract class AbstractDocumentBL implements IDocumentBL
 			if (POJOWrapper.isHandled(documentObj))
 			{
 				documentObjToUse = documentObj;
+			}
+			else if (documentObj instanceof TableRecordReference)
+			{
+				documentObjToUse = ((TableRecordReference)documentObj).getModel();
 			}
 			else
 			{

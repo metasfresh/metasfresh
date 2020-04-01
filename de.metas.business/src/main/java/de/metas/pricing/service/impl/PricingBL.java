@@ -39,7 +39,7 @@ import org.compiere.util.DisplayType;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
-import com.google.common.base.Predicates;
+import java.util.Objects;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.adempiere.model.I_C_InvoiceLine;
@@ -113,18 +113,17 @@ public class PricingBL implements IPricingBL
 		pricingCtx.setBPartnerId(bPartnerId);
 		pricingCtx.setConvertPriceToContextUOM(true); // backward compatibility
 
-		if (quantity != null)
-		{
-			if (quantity.signum() != 0)
-			{
-				pricingCtx.setQty(quantity.toBigDecimal());
-			}
-			pricingCtx.setUomId(quantity.getUomId());
-		}
-		else
+
+		if (quantity == null)
 		{
 			pricingCtx.setQty(BigDecimal.ONE);
 		}
+		else
+		{
+			pricingCtx.setQty(quantity.isZero() ? BigDecimal.ONE: quantity.toBigDecimal());
+			pricingCtx.setUomId(quantity.getUomId());
+		}
+
 		pricingCtx.setSOTrx(soTrx);
 
 		return pricingCtx;
@@ -381,6 +380,15 @@ public class PricingBL implements IPricingBL
 			logger.info("Setting to context: CurrencyId={} from M_PriceList={}", priceList.getC_Currency_ID(), priceList);
 			pricingCtx.setCurrencyId(CurrencyId.ofRepoId(priceList.getC_Currency_ID()));
 		}
+
+		// set pricing system from pricelist
+		if (pricingCtx.getPriceListId() != null && pricingCtx.getPricingSystemId() == null)
+		{
+			final I_M_PriceList priceList = priceListDAO.getById(pricingCtx.getPriceListId());
+			logger.info("Setting to context: PricingSystemId={} from M_PriceList={}", priceList.getM_PricingSystem_ID(), priceList);
+			pricingCtx.setPricingSystemId(PricingSystemId.ofRepoId(priceList.getM_PricingSystem_ID()));
+
+		}
 	}
 
 	private void setPrecisionAndPriceScales(
@@ -489,7 +497,7 @@ public class PricingBL implements IPricingBL
 		final ImmutableList<IPricingRule> rules = pricingRulesRepo.getPricingRules()
 				.stream()
 				.map(this::createPricingRuleNoFail)
-				.filter(Predicates.notNull())
+				.filter(Objects::nonNull)
 				.collect(ImmutableList.toImmutableList());
 
 		return AggregatedPricingRule.of(rules);

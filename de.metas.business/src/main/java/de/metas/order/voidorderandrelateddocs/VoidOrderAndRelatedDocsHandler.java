@@ -5,6 +5,7 @@ import org.compiere.util.Env;
 
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.document.engine.DocStatus;
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.order.IOrderDAO;
@@ -44,7 +45,7 @@ import lombok.Value;
  */
 public interface VoidOrderAndRelatedDocsHandler
 {
-	String Msg_OrderDocumentCancelNotAllowed_4P = "de.metas.order.Msg_OrderDocumentCancelNotAllowed";
+	AdMessageKey Msg_OrderDocumentCancelNotAllowed_4P = AdMessageKey.of("de.metas.order.Msg_OrderDocumentCancelNotAllowed");
 
 	/** The implementors' returned keys determine which implementor is invoked for which sorts of records. */
 	RecordsToHandleKey getRecordsToHandleKey();

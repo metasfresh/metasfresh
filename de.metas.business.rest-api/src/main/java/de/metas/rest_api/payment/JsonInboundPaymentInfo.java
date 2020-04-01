@@ -23,9 +23,11 @@
 package de.metas.rest_api.payment;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import de.metas.rest_api.bpartner.SwaggerDocConstants;
-import de.metas.rest_api.common.JsonExternalId;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
 import lombok.NonNull;
@@ -39,6 +41,7 @@ import java.time.LocalDate;
 @Builder
 @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY, getterVisibility = JsonAutoDetect.Visibility.NONE, isGetterVisibility = JsonAutoDetect.Visibility.NONE, setterVisibility = JsonAutoDetect.Visibility.NONE)
 @JsonInclude(JsonInclude.Include.NON_NULL)
+@JsonDeserialize(builder = JsonInboundPaymentInfo.JsonInboundPaymentInfoBuilder.class)
 public class JsonInboundPaymentInfo
 {
 	@ApiModelProperty(required = true, //
@@ -78,5 +81,12 @@ public class JsonInboundPaymentInfo
 			value = "If this is sent, it is used for both `accounting date` and `payment date`.")
 	@Nullable
 	LocalDate transactionDate;
+
+	@JsonIgnoreProperties(ignoreUnknown = true) // the annotation to ignore properties should be set on the deserializer method (on the builder), and not on the base class
+	@JsonPOJOBuilder(withPrefix = "")
+	public static class JsonInboundPaymentInfoBuilder
+	{
+	}
+
 }
 

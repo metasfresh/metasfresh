@@ -13,7 +13,7 @@ import org.adempiere.service.ClientId;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
 
-import com.google.common.base.Predicates;
+import java.util.Objects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSetMultimap;
@@ -336,7 +336,7 @@ public class CostingService implements ICostingService
 		return getCostingMethodHandlers(costingMethod)
 				.stream()
 				.map(handler -> handler.calculateSeedCosts(costSegment, orderLineId))
-				.filter(Predicates.notNull())
+				.filter(Objects::nonNull)
 				.filter(Optional::isPresent)
 				.map(Optional::get)
 				.reduce(CostAmount::add);

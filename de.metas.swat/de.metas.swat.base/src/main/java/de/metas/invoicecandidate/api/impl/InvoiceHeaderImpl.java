@@ -7,6 +7,7 @@ import org.compiere.model.I_C_DocType;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.invoicecandidate.api.IInvoiceCandAggregate;
 import de.metas.invoicecandidate.api.IInvoiceHeader;
 import de.metas.invoicecandidate.api.IInvoiceLineRW;
@@ -18,12 +19,6 @@ import de.metas.util.Check;
 import lombok.Getter;
 import lombok.Setter;
 
-/**
- * Default implementation for {@link IInvoiceHeader}
- *
- * @author tsa
- *
- */
 /* package */class InvoiceHeaderImpl implements IInvoiceHeader
 {
 	/** @return builder */
@@ -52,9 +47,15 @@ import lombok.Setter;
 
 	private int Bill_Location_ID;
 
-	private int Bill_BPartner_ID;
+	@Getter
+	@Setter
+	private BPartnerId billBPartnerId;
 
 	private int Bill_User_ID;
+
+	@Getter
+	@Setter
+	private BPartnerId salesPartnerId;
 
 	// 03805: add attribute C_Currency_ID
 	@Getter
@@ -89,7 +90,7 @@ import lombok.Setter;
 				+ ", AD_Org_ID=" + OrgId.toRepoId(orgId)
 				+ ", M_PriceList_ID=" + M_PriceList_ID
 				+ ", isSOTrx=" + isSOTrx
-				+ ", Bill_BPartner_ID=" + Bill_BPartner_ID
+				+ ", Bill_BPartner_ID=" + BPartnerId.toRepoId(billBPartnerId)
 				+ ", Bill_Location_ID=" + Bill_Location_ID
 				+ ", Bill_User_ID=" + Bill_User_ID
 				+ ", currencyId=" + currencyId
@@ -157,12 +158,6 @@ import lombok.Setter;
 	}
 
 	@Override
-	public int getBill_BPartner_ID()
-	{
-		return Bill_BPartner_ID;
-	}
-
-	@Override
 	public int getBill_User_ID()
 	{
 		return Bill_User_ID;
@@ -206,11 +201,6 @@ import lombok.Setter;
 	public void setBill_Location_ID(final int bill_Location_ID)
 	{
 		Bill_Location_ID = bill_Location_ID;
-	}
-
-	public void setBill_BPartner_ID(final int bill_BPartner_ID)
-	{
-		Bill_BPartner_ID = bill_BPartner_ID;
 	}
 
 	public void setBill_User_ID(final int bill_User_ID)

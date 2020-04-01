@@ -10,7 +10,7 @@ import java.util.stream.Stream;
 
 import org.adempiere.exceptions.AdempiereException;
 
-import com.google.common.base.Predicates;
+import java.util.Objects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
@@ -104,7 +104,7 @@ public final class PackingItemParts implements Iterable<PackingItemPart>
 	public <T> Optional<T> mapReduce(@NonNull final Function<PackingItemPart, T> mapper)
 	{
 		final ImmutableSet<T> result = map(mapper)
-				.filter(Predicates.notNull())
+				.filter(Objects::nonNull)
 				.collect(ImmutableSet.toImmutableSet());
 
 		if (result.isEmpty())

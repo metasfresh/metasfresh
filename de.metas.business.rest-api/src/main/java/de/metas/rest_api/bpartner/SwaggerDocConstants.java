@@ -39,6 +39,12 @@ public class SwaggerDocConstants
 			+ "* or something like `ext-<C_BPartner_Location_ID.ExternalId>`\n"
 			+ "* or something like `gln-<C_BPartner_Location_ID.GLN>`\n";
 
+	public static final String DATASOURCE_IDENTIFIER_DOC = "An identifier can be\n"
+			+ "* a plain `<AD_InputDataSource_ID>`\n"
+			+ "* or something like `int-<AD_InputDataSource.InternalName>`\n"
+			+ "* or something like `val-<AD_InputDataSource.Value>`\n"
+			+ "* or something like `ext-<AD_InputDataSource.ExternalId>`\n";
+
 	public static final String PRODUCT_IDENTIFIER_DOC = "Identifier of the product in question. Can be\n"
 			+ "* a plain `<M_Product_ID>`\n"
 			+ "* or something like `ext-<M_Product_ID.ExternalId>`\n"

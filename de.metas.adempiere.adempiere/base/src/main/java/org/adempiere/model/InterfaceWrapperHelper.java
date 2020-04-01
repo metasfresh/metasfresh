@@ -778,13 +778,19 @@ public class InterfaceWrapperHelper
 
 	public static void delete(@NonNull final Object model)
 	{
+		final boolean failIfProcessed = true;
+		delete(model, failIfProcessed);
+	}
+	
+	public static void delete(@NonNull final Object model, final boolean failIfProcessed)
+	{
 		if (POWrapper.isHandled(model))
 		{
-			POWrapper.delete(model);
+			POWrapper.delete(model, failIfProcessed);
 		}
 		else if (POJOWrapper.isHandled(model))
 		{
-			POJOWrapper.delete(model);
+			POJOWrapper.delete(model, failIfProcessed);
 		}
 		else
 		{
@@ -803,8 +809,6 @@ public class InterfaceWrapperHelper
 	}
 
 	/**
-	 *
-	 * @param model
 	 * @return underlying {@link PO} or null
 	 */
 	public static <T extends PO> T getPO(final Object model)
@@ -1260,7 +1264,7 @@ public class InterfaceWrapperHelper
 	 * @param columnName
 	 * @return value of [columnName]_Override or [columnName]; <b>might return null</b>, so don't blindly use as int.
 	 * @throws AdempiereException if neither the "normal" value nor the override value is available.
-	 * 
+	 *
 	 * @deprecated Favor using the actual getters. It's easier to trace/debug later.
 	 */
 	@Deprecated

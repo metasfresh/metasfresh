@@ -2,8 +2,8 @@ package de.metas.banking.payment.callout;
 
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
+import org.compiere.model.I_C_PaySelectionLine;
 
-import de.metas.banking.model.I_C_PaySelectionLine;
 import de.metas.banking.payment.IPaySelectionBL;
 import de.metas.util.Services;
 

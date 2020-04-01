@@ -33,7 +33,7 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
-import com.google.common.base.Predicates;
+import java.util.Objects;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.acct.api.AcctSchemaElementType;
@@ -106,9 +106,9 @@ public class MReportTree
 				orgId.getRepoId());
 
 		return Stream.of(childOrgIds)
-				.filter(Predicates.notNull())
+				.filter(Objects::nonNull)
 				.map(OrgId::ofRepoIdOrNull)
-				.filter(Predicates.notNull())
+				.filter(Objects::nonNull)
 				.collect(ImmutableSet.toImmutableSet());
 	}
 

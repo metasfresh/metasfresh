@@ -85,7 +85,9 @@ node('agent && linux')
 		// and therefore, the jenkins information would not be added to the build.properties info file.
 		withEnv(["MF_VERSION=${MF_VERSION}"])
 		{
-		withMaven(jdk: 'java-8', maven: 'maven-3.5.4', mavenLocalRepo: '.repository', mavenOpts: '-Xmx1536M')
+
+		// disable automatic fingerprinting and archiving by artifactsPublisher, because in particular the archiving takes up too much space on the jenkins server.
+		withMaven(jdk: 'java-8', maven: 'maven-3.5.4', mavenLocalRepo: '.repository', mavenOpts: '-Xmx1536M', options: [artifactsPublisher(disabled: true)])
 		{
 			// Note: we can't build the "main" and "esb" stuff in parallel, because the esb stuff depends on (at least!) de.metas.printing.api
       stage('Set versions and build metasfresh')
@@ -131,25 +133,15 @@ node('agent && linux')
 		{
 			final def misc = new de.metas.jenkins.Misc();
 
-			final DockerConf materialDispoDockerConf = new DockerConf(
-				'metasfresh-material-dispo', // artifactName
+			final DockerConf reportDockerConf = new DockerConf(
+				'metasfresh-report', // artifactName
 				MF_UPSTREAM_BRANCH, // branchName
 				MF_VERSION, // versionSuffix
-				'de.metas.material/dispo-service/target/docker' // workDir
+				'de.metas.report/metasfresh-report-service-standalone/target/docker' // workDir
 			);
-			final String publishedMaterialDispoDockerImageName = dockerBuildAndPush(materialDispoDockerConf)
-
-			final DockerConf reportDockerConf = materialDispoDockerConf
-				.withArtifactName('metasfresh-report')
-				.withWorkDir('de.metas.report/report-service/target/docker');
 			final String publishedReportDockerImageName = dockerBuildAndPush(reportDockerConf)
 
-			final DockerConf printDockerConf = materialDispoDockerConf
-				.withArtifactName('metasfresh-print')
-				.withWorkDir('de.metas.printing.rest-api-impl/target/docker');
-			final String publishedPrintDockerImageName = dockerBuildAndPush(printDockerConf)
-
-			final DockerConf msv3ServerDockerConf = materialDispoDockerConf
+			final DockerConf msv3ServerDockerConf = reportDockerConf
 				.withArtifactName('de.metas.vertical.pharma.msv3.server')
 				.withWorkDir('de.metas.vertical.pharma.msv3.server/target/docker');
 			final String publishedMsv3ServerImageName =dockerBuildAndPush(msv3ServerDockerConf)
@@ -158,8 +150,6 @@ node('agent && linux')
 			<h3>Docker</h3>
 			This build created the following deployable docker images 
 			<ul>
-			<li><code>${publishedMaterialDispoDockerImageName}</code></li>
-			<li><code>${publishedPrintDockerImageName}</code></li>
 			<li><code>${publishedMsv3ServerImageName}</code></li>
 			</ul>
 			<p>
@@ -376,7 +366,8 @@ Map invokeDownStreamJobs(
 	final def misc = new de.metas.jenkins.Misc();
 	final String jobName = misc.getEffectiveDownStreamJobName(jobFolderName, upstreamBranch);
 
-	final buildResult = build job: jobName,
+	final buildResult = build job: jobName, 
+		propagate: false,
 		parameters: [
 			string(name: 'MF_UPSTREAM_BRANCH', value: upstreamBranch),
 			string(name: 'MF_UPSTREAM_BUILDNO', value: buildId), // can be used together with the upstream branch name to construct this upstream job's URL

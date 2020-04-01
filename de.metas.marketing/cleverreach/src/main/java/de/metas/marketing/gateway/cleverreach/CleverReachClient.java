@@ -1,5 +1,7 @@
 package de.metas.marketing.gateway.cleverreach;
 
+import static de.metas.util.Check.assumeNotEmpty;
+
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -19,6 +21,7 @@ import java.util.stream.StreamSupport;
 import javax.annotation.Nullable;
 
 import org.adempiere.util.email.EmailValidator;
+import org.slf4j.MDC.MDCCloseable;
 import org.springframework.core.ParameterizedTypeReference;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -28,12 +31,14 @@ import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimaps;
 
+import de.metas.logging.TableRecordMDC;
 import de.metas.marketing.base.model.Campaign;
 import de.metas.marketing.base.model.CampaignRemoteUpdate;
 import de.metas.marketing.base.model.ContactPerson;
 import de.metas.marketing.base.model.ContactPersonRemoteUpdate;
 import de.metas.marketing.base.model.DataRecord;
 import de.metas.marketing.base.model.EmailAddress;
+import de.metas.marketing.base.model.I_MKTG_Campaign;
 import de.metas.marketing.base.model.LocalToRemoteSyncResult;
 import de.metas.marketing.base.model.PlatformId;
 import de.metas.marketing.base.model.RemoteToLocalSyncResult;
@@ -253,7 +258,7 @@ public class CleverReachClient implements PlatformClient
 		personsWithAndWithoutEmailOrRemoteId.get(false)
 				.stream()
 				.map(p -> RemoteToLocalSyncResult.error(p, errorMessage))
-				.forEach(syncResultsToAddErrorsTo::add);;
+				.forEach(syncResultsToAddErrorsTo::add);
 
 		final List<ContactPerson> personsWithEmailOrRemoteId = personsWithAndWithoutEmailOrRemoteId.get(true);
 		return personsWithEmailOrRemoteId;
@@ -302,7 +307,8 @@ public class CleverReachClient implements PlatformClient
 				.map(Receiver::of)
 				.collect(ImmutableList.toImmutableList());
 
-		final String insertUrl = String.format("/groups.json/%s/receivers/upsert", campaign.getRemoteId());
+		final String groupRemoteId = assumeNotEmpty(campaign.getRemoteId(), "Then given campaign needs to have a RemoteId; campagin={}", campaign);
+		final String insertUrl = String.format("/groups.json/%s/receivers/upsert", groupRemoteId);
 
 		final List<Object> results = getLowLevelClient()
 				.post(receivers,
@@ -357,7 +363,7 @@ public class CleverReachClient implements PlatformClient
 			return !Check.isEmpty((String)resultObj, true);
 		}
 		return false;
-	};
+	}
 
 	@Override
 	public List<LocalToRemoteSyncResult> syncCampaignsLocalToRemote(@NonNull final List<Campaign> campaigns)
@@ -368,7 +374,10 @@ public class CleverReachClient implements PlatformClient
 
 		for (final Campaign campaign : campaignsWithCorrectPlatformId)
 		{
-			syncResults.add(createOrUpdateGroup(campaign));
+			try (final MDCCloseable campaignMDC = TableRecordMDC.putTableRecordReference(I_MKTG_Campaign.Table_Name, campaign.getCampaignId()))
+			{
+				syncResults.add(createOrUpdateGroup(campaign));
+			}
 		}
 		return syncResults.build();
 	}

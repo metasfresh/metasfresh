@@ -26,7 +26,7 @@ public interface IReportServer
 {
 	OutputType DEFAULT_OutputType = OutputType.PDF;
 
-	byte[] report(int AD_Process_ID, int AD_PInstance_ID, String adLanguage, OutputType outputType);
+	ReportResult report(int AD_Process_ID, int AD_PInstance_ID, String adLanguage, OutputType outputType);
 
 	/** Resets server's cache */
 	void cacheReset();

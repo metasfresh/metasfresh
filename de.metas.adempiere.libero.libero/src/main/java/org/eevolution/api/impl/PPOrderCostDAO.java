@@ -21,7 +21,7 @@ import org.eevolution.api.PPOrderCostTrxType;
 import org.eevolution.api.PPOrderCosts;
 import org.eevolution.model.I_PP_Order_Cost;
 
-import com.google.common.base.Predicates;
+import java.util.Objects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
@@ -92,7 +92,7 @@ public class PPOrderCostDAO implements IPPOrderCostDAO
 		final Set<PPOrderCostId> repoIdsToUpdate = orderCosts.toCollection()
 				.stream()
 				.map(PPOrderCost::getId)
-				.filter(Predicates.notNull()) // there might be new entries which still have null ids
+				.filter(Objects::nonNull) // there might be new entries which still have null ids
 				.collect(ImmutableSet.toImmutableSet());
 		final List<I_PP_Order_Cost> recordsToDelete = new ArrayList<>();
 		for (final PPOrderCostId repoId : ImmutableSet.copyOf(existingRecordsById.keySet()))
