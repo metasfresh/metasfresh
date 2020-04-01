@@ -50,8 +50,6 @@ import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.quantity.Quantitys;
-import de.metas.quantity.StockQtyAndUOMQty;
-import de.metas.quantity.StockQtyAndUOMQtys;
 import de.metas.tax.api.ITaxBL;
 import de.metas.tax.api.ITaxDAO;
 import de.metas.uom.UomId;
@@ -304,13 +302,18 @@ public class CommissionShareHandler extends AbstractInvoiceCandidateHandler
 	{
 		final UomId uomId = productBL.getStockUOMId(ic.getM_Product_ID());
 
-		final BigDecimal allPoints = commissionShareRecord.getPointsSum_Forecasted()
-				.add(commissionShareRecord.getPointsSum_Invoiceable())
-				.add(commissionShareRecord.getPointsSum_Invoiced());
+		// Right now, only invoiced sales transactions are commission-worthy.
+		// We can later add a tick-box in the commission settings to make this configurable.
+		// Also note that for non-item products (which is usually the case for commission products), we have QtyInvoicable := QtyOrdered,
+		// which is why we don't include the forecasted and invoiceable quantities in the ordered qty
+		final BigDecimal ordered = commissionShareRecord.getPointsSum_Invoiced()
+		// .add(commissionShareRecord.getPointsSum_Invoiceable())
+		// .add(commissionShareRecord.getPointsSum_Forecasted())
+		;
 
-		ic.setQtyEntered(allPoints);
+		ic.setQtyEntered(ordered);
 		ic.setC_UOM_ID(uomId.getRepoId());
-		ic.setQtyOrdered(allPoints);
+		ic.setQtyOrdered(ordered); // we use the commission product's stock uom, so no uom conversion is needed
 		ic.setDateOrdered(commissionShareRecord.getC_Commission_Instance().getCommissionDate());
 		ic.setC_Order_ID(-1);
 	}
@@ -335,12 +338,8 @@ public class CommissionShareHandler extends AbstractInvoiceCandidateHandler
 		// .add(commissionShareRecord.getPointsSum_Invoiceable())
 		;
 
-		final StockQtyAndUOMQty stockAndUom = StockQtyAndUOMQtys.createConvert(delivered,
-				ProductId.ofRepoId(ic.getM_Product_ID()),
-				UomId.ofRepoId(ic.getC_UOM_ID()));
-
-		ic.setQtyDelivered(stockAndUom.getStockQty().toBigDecimal());
-		ic.setQtyDeliveredInUOM(stockAndUom.getStockQty().toBigDecimal());
+		ic.setQtyDelivered(delivered);
+		ic.setQtyDeliveredInUOM(delivered);  // we use the commission product's stock uom, so no uom conversion is needed
 
 		ic.setDeliveryDate(ic.getDateOrdered());
 		ic.setM_InOut_ID(-1);
