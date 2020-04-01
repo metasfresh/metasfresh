@@ -710,6 +710,7 @@ class DocumentListContainer extends Component {
     viewId,
     forceClose,
   } = {}) => {
+    const { setListIncludedView, closeListIncludedView } = this.props;
     this.setState(
       {
         isShowIncluded: !!showIncludedView,

@@ -146,6 +146,7 @@ export default class DocumentList extends Component {
       hasIncluded,
       selectionValid,
       onRedirectToNewDocument,
+      onShowIncludedViewOnSelect,
     } = this.props;
     const { rowData, size, staticFilters, orderBy, queryLimitHit } = reduxData;
     const { rowEdited, clickOutsideLock, toggleWidth } = this.state;
@@ -354,7 +355,7 @@ export default class DocumentList extends Component {
                 defaultSelected={selected}
                 refreshSelection={refreshSelection}
                 queryLimitHit={queryLimitHit}
-                showIncludedViewOnSelect={this.showIncludedViewOnSelect}
+                showIncludedViewOnSelect={onShowIncludedViewOnSelect}
                 openIncludedViewOnSelect={
                   layout.includedView && layout.includedView.openOnSelect
                 }
