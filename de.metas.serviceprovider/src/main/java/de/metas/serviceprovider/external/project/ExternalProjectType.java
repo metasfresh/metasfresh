@@ -28,12 +28,15 @@ import lombok.Getter;
 import java.util.Arrays;
 import java.util.Optional;
 
+import static de.metas.serviceprovider.model.X_S_ExternalProjectReference.PROJECTTYPE_Budget;
+import static de.metas.serviceprovider.model.X_S_ExternalProjectReference.PROJECTTYPE_Development;
+
 @AllArgsConstructor
 @Getter
 public enum ExternalProjectType
 {
-	EFFORT("Effort"),
-	BUDGET("Budget");
+	EFFORT(PROJECTTYPE_Development),
+	BUDGET(PROJECTTYPE_Budget);
 
 	private final String value;
 

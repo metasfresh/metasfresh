@@ -25,11 +25,13 @@ package de.metas.serviceprovider.external.project;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
+import static de.metas.serviceprovider.model.X_S_ExternalProjectReference.EXTERNALSYSTEM_Github;
+
 @AllArgsConstructor
 @Getter
 public enum ExternalSystem
 {
-	GITHUB("Github");
+	GITHUB(EXTERNALSYSTEM_Github);
 
 	private final String value;
 }

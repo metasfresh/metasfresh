@@ -29,12 +29,15 @@ import lombok.NonNull;
 import java.util.Optional;
 import java.util.stream.Stream;
 
+import static de.metas.serviceprovider.model.X_S_Issue.ISSUETYPE_External;
+import static de.metas.serviceprovider.model.X_S_Issue.ISSUETYPE_Internal;
+
 @AllArgsConstructor
 @Getter
 public enum IssueType
 {
-	INTERNAL("Internal"),
-	EXTERNAL("External");
+	INTERNAL(ISSUETYPE_Internal),
+	EXTERNAL(ISSUETYPE_External);
 
 	private final String value;
 

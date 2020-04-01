@@ -117,7 +117,7 @@ public class IssueRepository
 				.issueId(IssueId.ofRepoId(record.getS_Issue_ID()))
 				.effortUomId(UomId.ofRepoId(record.getEffort_UOM_ID()))
 				.milestoneId(MilestoneId.ofRepoIdOrNull(record.getS_Milestone_ID()))
-				.assigneeId(UserId.ofRepoIdOrNullISystem(record.getAD_User_ID()))
+				.assigneeId(UserId.ofRepoIdOrNullIfSystem(record.getAD_User_ID()))
 				.name(record.getName())
 				.searchKey(record.getValue())
 				.description(record.getDescription())
