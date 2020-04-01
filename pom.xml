@@ -156,6 +156,8 @@
 
 		<module>de.metas.swat</module>
 
+		<module>de.metas.serviceprovider</module>
+
 		<module>de.metas.shipper.gateway.commons</module>
 		<module>de.metas.shipper.gateway.spi</module>
 		<module>de.metas.shipper.gateway.go</module>
@@ -189,6 +191,7 @@
 		<module>de.metas.vertical.pharma.securpharm</module>
 
 		<module>vertical-healthcare_ch</module>
+		<module>de.metas.issue.tracking.github</module>
 
 	</modules>
 

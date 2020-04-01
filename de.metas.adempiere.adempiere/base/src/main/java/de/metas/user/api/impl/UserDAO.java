@@ -284,4 +284,14 @@ public class UserDAO implements IUserDAO
 				.create()
 				.listIds(UserId::ofRepoId);
 	}
+
+	@Nullable
+	public UserId retrieveUserIdByLogin(@NonNull final String login)
+	{
+		return Services.get(IQueryBL.class)
+				.createQueryBuilderOutOfTrx(I_AD_User.class)
+				.addEqualsFilter(I_AD_User.COLUMNNAME_Login, login)
+				.create()
+				.firstId(UserId::ofRepoIdOrNull);
+	}
 }

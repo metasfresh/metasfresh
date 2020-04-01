@@ -238,7 +238,9 @@ public interface IBPartnerDAO extends ISingletonService
 	 * Performs an non-strict search (e.g. if BP has only one address, it returns it even if it's not flagged as the default ShipTo address).
 	 *
 	 * @return bp location or null
+	 * @deprecated please consider using {@link #retrieveBPartnerLocation(BPartnerLocationQuery)} instead
 	 */
+	@Deprecated
 	I_C_BPartner_Location getDefaultShipToLocation(BPartnerId bpartnerId);
 
 	CountryId getDefaultShipToLocationCountryIdOrNull(BPartnerId bpartnerId);
@@ -276,8 +278,16 @@ public interface IBPartnerDAO extends ISingletonService
 
 	Map<BPartnerId, Integer> retrieveAllDiscountSchemaIdsIndexedByBPartnerId(BPartnerType bpartnerType);
 
+	/**
+	 * @deprecated please consider using {@link #retrieveBPartnerLocation(BPartnerLocationQuery)} instead
+	 */
+	@Deprecated
 	BPartnerLocationId getBilltoDefaultLocationIdByBpartnerId(BPartnerId bpartnerId);
 
+	/**
+	 * @deprecated please consider using {@link #retrieveBPartnerLocation(BPartnerLocationQuery)} instead
+	 */
+	@Deprecated
 	BPartnerLocationId getShiptoDefaultLocationIdByBpartnerId(BPartnerId bpartnerId);
 
 	String getBPartnerNameById(BPartnerId bpartnerId);
