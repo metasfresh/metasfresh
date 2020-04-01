@@ -25,7 +25,10 @@ package org.compiere.model;
 
 import java.util.Properties;
 
+import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
+
+import de.metas.util.Services;
 
 public class CalloutEXP_Format extends CalloutEngine
 {
@@ -34,7 +37,7 @@ public class CalloutEXP_Format extends CalloutEngine
 		I_EXP_Format format = InterfaceWrapperHelper.create(mTab, I_EXP_Format.class);
 		if (format.getAD_Table_ID() > 0)
 		{
-			String tableName = MTable.getTableName(ctx, format.getAD_Table_ID());
+			String tableName = Services.get(IADTableDAO.class).retrieveTableName(format.getAD_Table_ID());
 			format.setValue(tableName);
 			format.setName(tableName);
 		}
@@ -58,7 +61,9 @@ public class CalloutEXP_Format extends CalloutEngine
 			line.setValue(columnName);
 			line.setName(columnName);
 			if (column.isMandatory())
+			{
 				line.setIsMandatory(true);
+			}
 		}
 		return "";
 	}

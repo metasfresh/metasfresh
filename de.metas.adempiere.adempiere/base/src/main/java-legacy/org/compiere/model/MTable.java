@@ -20,11 +20,7 @@ package org.compiere.model;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Optional;
 import java.util.Properties;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
@@ -34,21 +30,17 @@ import org.adempiere.ad.migration.logger.MigrationScriptFileLoggerHolder;
 import org.adempiere.ad.persistence.TableModelClassLoader;
 import org.adempiere.ad.persistence.TableModelLoader;
 import org.adempiere.ad.service.ISequenceDAO;
+import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.ad.table.api.IADTableDAO;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.ad.wrapper.POJOLookupMap;
-import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.ad.table.api.impl.TableIdsCache;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.util.LegacyAdapters;
 import org.compiere.util.DB;
-import org.compiere.util.Env;
-import org.slf4j.Logger;
 
-import de.metas.cache.CCache;
 import de.metas.cache.model.impl.TableRecordCacheLocal;
-import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 /**
  * Persistent Table Model
@@ -66,178 +58,61 @@ import de.metas.util.Services;
  *         https://sourceforge.net/tracker/?func=detail&aid=3133032&group_id=176962&atid=879332
  * @version $Id: MTable.java,v 1.3 2006/07/30 00:58:04 jjanke Exp $
  */
+@SuppressWarnings("serial")
 public class MTable extends X_AD_Table
 {
 	/**
-	 *
+	 * @deprecated Please use {@link IADTableDAO#retrieveTable(AdTableId)}
 	 */
-	private static final long serialVersionUID = -2367316254623142732L;
-
-	/**
-	 * Get Table from Cache
-	 *
-	 * @param ctx context
-	 * @param AD_Table_ID id
-	 * @return MTable
-	 */
+	@Deprecated
 	public static MTable get(final Properties ctx, final int AD_Table_ID)
 	{
-		try
-		{
-			s_cacheLock.lock();
-
-			MTable retValue = s_cache.get(AD_Table_ID);
-			if (retValue != null && Env.isSame(retValue.getCtx(), ctx))
-			{
-				return retValue;
-			}
-			retValue = new MTable(ctx, AD_Table_ID, ITrx.TRXNAME_None);
-			if (retValue.get_ID() > 0)
-			{
-				final String tableName = retValue.getTableName();
-
-				s_cache.put(AD_Table_ID, retValue);
-				s_cacheTableNameUC2Table.put(tableName.toUpperCase(), retValue);
-
-				// metas
-				if (s_cacheTableName2Id != null)
-				{
-					s_cacheTableName2Id.put(tableName, retValue.getAD_Table_ID());
-				}
-			}
-			return retValue;
-		}
-		finally
-		{
-			s_cacheLock.unlock();
-		}
-	}	// get
+		final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
+		final I_AD_Table table = adTableDAO.retrieveTable(AD_Table_ID);
+		return LegacyAdapters.convertToPO(table);
+	}
 
 	/**
-	 * Get Table from Cache
-	 *
-	 * @param ctx context
-	 * @param tableName case insensitive table name
-	 * @return Table
+	 * @deprecated Please use {@link IADTableDAO#retrieveTable(String)}
 	 */
+	@Deprecated
 	public static MTable get(final Properties ctx, final String tableName)
 	{
 		if (tableName == null)
 		{
 			return null;
 		}
-
-		try
-		{
-			s_cacheLock.lock();
-
-			final String tableNameUC = tableName.toUpperCase();
-
-			//
-			// Check cache
-			MTable retValue = s_cacheTableNameUC2Table.get(tableNameUC);
-			if (retValue != null && retValue.getCtx() == ctx)
-			{
-				return retValue;
-			}
-
-			//
-			// Load from database
-			final String sql = "SELECT * FROM AD_Table WHERE UPPER(TableName)=?";
-			PreparedStatement pstmt = null;
-			ResultSet rs = null;
-			try
-			{
-				pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_None);
-				pstmt.setString(1, tableNameUC);
-				rs = pstmt.executeQuery();
-				if (rs.next())
-				{
-					retValue = new MTable(ctx, rs, ITrx.TRXNAME_None);
-				}
-			}
-			catch (Exception e)
-			{
-				s_log.error(sql, e);
-			}
-			finally
-			{
-				DB.close(rs, pstmt);
-				rs = null;
-				pstmt = null;
-			}
-
-			if (retValue != null)
-			{
-				final int adTableId = retValue.getAD_Table_ID();
-				s_cache.put(adTableId, retValue);
-				s_cacheTableNameUC2Table.put(tableNameUC, retValue);
-
-				// metas
-				if (s_cacheTableName2Id != null)
-				{
-					s_cacheTableName2Id.put(retValue.getTableName(), adTableId);
-				}
-			}
-			return retValue;
-		}
-		finally
-		{
-			s_cacheLock.unlock();
-		}
-	}	// get
+		
+		final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
+		final I_AD_Table table = adTableDAO.retrieveTable(tableName);
+		return LegacyAdapters.convertToPO(table);
+	}
 
 	/**
-	 * Get Table Name
-	 *
-	 * @param ctx context
-	 * @param AD_Table_ID table
-	 * @return table name
 	 * @deprecated Please use {@link IADTableDAO#retrieveTableName(int)}
 	 */
 	@Deprecated
-	public static String getTableName(Properties ctx, int AD_Table_ID)
+	@NonNull
+	public static String getTableName(final Properties ctx_NOTUSED, @NonNull final AdTableId adTableId)
 	{
-		if (org.compiere.Adempiere.isUnitTestMode())
+		return TableIdsCache.instance.getTableName(adTableId);
+	}
+
+	/**
+	 * @deprecated Please use {@link IADTableDAO#retrieveTableId(String)}
+	 */
+	@Deprecated
+	public static int getTable_ID(String tableName)
+	{
+		if (Check.isBlank(tableName))
 		{
-			for (final Map.Entry<String, Integer> e : staticTableIds.entrySet())
-			{
-				if (e.getValue() == AD_Table_ID)
-				{
-					return e.getKey();
-				}
-			}
-			
-			//
-			I_AD_Table adTable = POJOLookupMap.get().lookup("AD_Table", AD_Table_ID);
-			if(adTable != null)
-			{
-				String tableName = adTable.getTableName();
-				if(Check.isEmpty(tableName, true))
-				{
-					throw new AdempiereException("No TableName set for "+adTable);
-				}
-				return tableName;
-			}
-			
-			//
-			throw new AdempiereException("No TableName found for AD_Table_ID=" + AD_Table_ID);
+			return -1;
 		}
 
-		return MTable.get(ctx, AD_Table_ID).getTableName();
-	}	// getTableName
-
-	/** Cache */
-	private static final CCache<Integer, MTable> s_cache = new CCache<>("AD_Table", 500, 0);
-	private static final CCache<String, MTable> s_cacheTableNameUC2Table = new CCache<>("AD_Table", 500, 0);
-	private static final ReentrantLock s_cacheLock = new ReentrantLock();
-
-	/** Static Logger */
-	private static Logger s_log = LogManager.getLogger(MTable.class);
-
-	/** EntityTypes */
-	// metas: tsa: load entity types only when they are needed, else database decoupled testing is not possible. See EntityTypeNames class.
-	// private static MEntityType[] entityTypes = null;
+		return TableIdsCache.instance.getTableId(tableName)
+				.map(AdTableId::getRepoId)
+				.orElse(-1);
+	}
 
 	/**************************************************************************
 	 * Standard Constructor
@@ -342,9 +217,9 @@ public class MTable extends X_AD_Table
 	@Deprecated
 	public MColumn getColumn(String columnName)
 	{
-		final IADTableDAO tableDAO = Services.get(IADTableDAO.class);
+		final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
 
-		final I_AD_Column column = tableDAO.retrieveColumnOrNull(getTableName(), columnName);
+		final I_AD_Column column = adTableDAO.retrieveColumnOrNull(getTableName(), columnName);
 		return LegacyAdapters.convertToPO(column);
 	}	// getColumn
 
@@ -434,7 +309,8 @@ public class MTable extends X_AD_Table
 		// but when the migration script will be executed on target customer database, their sequences will be wrongly changed (08607)
 		if (success && newRecord)
 		{
-			Services.get(ISequenceDAO.class).createTableSequenceChecker(getCtx())
+			final ISequenceDAO sequenceDAO = Services.get(ISequenceDAO.class);
+			sequenceDAO.createTableSequenceChecker(getCtx())
 					.setFailOnFirstError(true)
 					.setSequenceRangeCheck(false)
 					.setTable(this)
@@ -444,7 +320,8 @@ public class MTable extends X_AD_Table
 
 		if (!newRecord && is_ValueChanged(COLUMNNAME_TableName))
 		{
-			Services.get(IADTableDAO.class).onTableNameRename(this);
+			final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
+			adTableDAO.onTableNameRename(this);
 		}
 
 		return success;
@@ -471,7 +348,7 @@ public class MTable extends X_AD_Table
 				continue; // virtual column
 			}
 
-			if(sqlColumns.length() > 0)
+			if (sqlColumns.length() > 0)
 			{
 				sqlColumns.append(", ");
 			}
@@ -492,14 +369,13 @@ public class MTable extends X_AD_Table
 				sqlConstraints.append(", ").append(constraint);
 			}
 		}
-		
+
 		final StringBuilder sql = new StringBuilder(MigrationScriptFileLoggerHolder.DDL_PREFIX + "CREATE TABLE ")
 				.append("public.") // schema
 				.append(getTableName())
 				.append(" (")
 				.append(sqlColumns);
 
-		
 		// Multi Column PK
 		if (!hasPK && hasParents)
 		{
@@ -515,92 +391,6 @@ public class MTable extends X_AD_Table
 
 		return sql.toString();
 	}	// getSQLCreate
-
-	// globalqss
-	/**
-	 * Grant independence to GenerateModel from AD_Table_ID. This method works <b>case insensitive</b>.
-	 *
-	 * @param String tableName
-	 * @return int retValue
-	 * @deprecated Please use {@link IADTableDAO#retrieveTableId(String)}
-	 */
-	@Deprecated
-	public static int getTable_ID(String tableName)
-	{
-		if (Check.isEmpty(tableName, true))
-		{
-			return -1;
-		}
-
-		// metas-ts: adding a unit testing mode, where a table id is returned without DB access.
-		// Note: this method is called from every model interface generated by the model generator class.
-		if (org.compiere.Adempiere.isUnitTestMode())
-		{
-			// ignoring case, because in DLM we also deal with all-lowercase table names, and it should not matter anyways
-			// also note that we don't store the upper or lowercase tableName because what we put into the map is returned by the getTableName(int) method
-			final Optional<Entry<String, Integer>> entry = staticTableIds.entrySet().stream()
-					.filter(e -> e.getKey().equalsIgnoreCase(tableName))
-					.findFirst();
-			if (entry.isPresent())
-			{
-				return entry.get().getValue();
-			}
-
-			final int returnValue = ++nextTableId;
-			setStaticTableId(tableName, returnValue);
-			return returnValue;
-		}
-		// metas end
-
-		Integer retValue = 0;
-		if (s_cacheTableName2Id != null)
-		{
-			// Can happen to have s_cacheTableName2Id null when for example we load I_AD_Table interface
-			retValue = s_cacheTableName2Id.get(tableName);
-		}
-		if (retValue != null && retValue > 0)
-		{
-			return retValue;
-		}
-
-		final String SQL = "SELECT AD_Table_ID FROM AD_Table WHERE lower(TableName) = ?";
-		PreparedStatement pstmt = null;
-		ResultSet rs = null;
-		try
-		{
-			pstmt = DB.prepareStatement(SQL, null);
-			pstmt.setString(1, tableName.toLowerCase());
-			rs = pstmt.executeQuery();
-			if (rs.next())
-			{
-				retValue = rs.getInt(1);
-			}
-		}
-		catch (Exception e)
-		{
-			s_log.error(SQL, e);
-			retValue = -1;
-		}
-		finally
-		{
-			DB.close(rs, pstmt);
-			rs = null;
-			pstmt = null;
-		}
-
-		if (retValue != null && retValue > 0)
-		{
-			if (s_cacheTableName2Id != null)
-			{
-				s_cacheTableName2Id.put(tableName, retValue);
-			}
-			return retValue;
-		}
-		else
-		{
-			return -1;
-		}
-	}
 
 	/**
 	 * Create query to retrieve one or more PO.
@@ -626,17 +416,4 @@ public class MTable extends X_AD_Table
 		sb.append(get_ID()).append("-").append(getTableName()).append("]");
 		return sb.toString();
 	}	// toString
-
-	//
-	// metas-ts
-	private static final Map<String, Integer> staticTableIds = new HashMap<>();
-	private static int nextTableId = 0;
-	private static final CCache<String, Integer> s_cacheTableName2Id = new CCache<>(Table_Name + "#TableName2ID", 200, 0); // metas
-
-	public static void setStaticTableId(final String name, final int id)
-	{
-		staticTableIds.put(name, id);
-	}
-	// metas end
-
 }	// MTable

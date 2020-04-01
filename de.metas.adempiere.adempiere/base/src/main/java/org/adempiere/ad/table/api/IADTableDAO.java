@@ -23,10 +23,12 @@ package org.adempiere.ad.table.api;
  */
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_AD_Column;
 import org.compiere.model.I_AD_Element;
@@ -124,11 +126,9 @@ public interface IADTableDAO extends ISingletonService
 	 */
 	boolean isExistingTable(String tableName);
 
+	Optional<AdWindowId> retrieveWindowId(String tableName);
+
 	/**
-	 * Retrieves the default window name of given table.
-	 *
-	 * @param ctx
-	 * @param tableName
 	 * @return default window name, in context language.
 	 */
 	String retrieveWindowName(Properties ctx, String tableName);
@@ -151,6 +151,11 @@ public interface IADTableDAO extends ISingletonService
 	IQueryBuilder<I_AD_Column> retrieveColumnQueryBuilder(String tableName, String columnName, String trxnameThreadinherited);
 
 	I_AD_Table retrieveTable(AdTableId tableId);
+
+	default I_AD_Table retrieveTable(final int adTableId)
+	{
+		return retrieveTable(AdTableId.ofRepoId(adTableId));
+	}
 
 	/**
 	 * Return the table with the given name. Use {@link org.compiere.model.MTable} under the hood,

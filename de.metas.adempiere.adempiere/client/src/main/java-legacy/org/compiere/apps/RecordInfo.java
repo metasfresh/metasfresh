@@ -36,10 +36,12 @@ import org.adempiere.ad.table.ComposedRecordId;
 import org.adempiere.ad.table.RecordChangeLog;
 import org.adempiere.ad.table.RecordChangeLogEntry;
 import org.adempiere.ad.table.RecordChangeLogRepository;
+import org.adempiere.ad.table.api.AdTableId;
+import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.Adempiere;
 import org.compiere.grid.VTable;
-import org.compiere.model.MTable;
+import org.compiere.model.I_AD_Table;
 import org.compiere.swing.CDialog;
 import org.compiere.swing.CPanel;
 import org.compiere.swing.CScrollPane;
@@ -94,7 +96,7 @@ public class RecordInfo extends CDialog
 			final String summaryInfo = buildSummaryInfo(changeLog);
 			final DefaultTableModel logEntriesTableModel = createLogEntriesTableModel(changeLog);
 
-			setTitle(buildTitle(adTableId));
+			setTitle(buildTitle(AdTableId.ofRepoIdOrNull(adTableId)));
 			initLayout(summaryInfo, logEntriesTableModel);
 
 			AEnv.positionCenterWindow(owner, this);
@@ -144,15 +146,15 @@ public class RecordInfo extends CDialog
 		confirmPanel.setActionListener(this);
 	}	// jbInit
 
-	private String buildTitle(final int adTableId)
+	private String buildTitle(final AdTableId adTableId)
 	{
 		final StringBuilder title = new StringBuilder();
 
 		title.append(msgBL.getMsg(Env.getCtx(), "Who"));
 
-		if (adTableId > 0)
+		if (adTableId != null)
 		{
-			final MTable table = MTable.get(Env.getCtx(), adTableId);
+			final I_AD_Table table = Services.get(IADTableDAO.class).retrieveTable(adTableId);
 			title.append(" - ").append(table.getName());
 		}
 
