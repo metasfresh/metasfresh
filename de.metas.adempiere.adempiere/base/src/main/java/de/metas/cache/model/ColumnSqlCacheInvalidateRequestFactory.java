@@ -1,14 +1,12 @@
 package de.metas.cache.model;
 
 import java.util.List;
-import java.util.Set;
 
 import javax.annotation.Nullable;
 
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.ad.expression.api.impl.StringExpressionCompiler;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.util.DB;
 import org.compiere.util.Evaluatee;
 import org.compiere.util.Evaluatees;
@@ -70,10 +68,10 @@ public class ColumnSqlCacheInvalidateRequestFactory implements ModelCacheInvalid
 
 	@Override
 	public List<CacheInvalidateRequest> createRequestsFromModel(
-			@NonNull final Object sourceModel,
+			@NonNull final ICacheSourceModel sourceModel,
 			@NonNull final ModelCacheInvalidationTiming timing_NOTNUSED)
 	{
-		final int sourceRecordId = InterfaceWrapperHelper.getId(sourceModel);
+		final int sourceRecordId = sourceModel.getRecordId();
 		return createRequestsFromSourceRecordId(sourceRecordId);
 	}
 
@@ -91,7 +89,7 @@ public class ColumnSqlCacheInvalidateRequestFactory implements ModelCacheInvalid
 		}
 		else
 		{
-			final Set<Integer> targetRecordIds = getTargetRecordIds(sourceRecordId);
+			final ImmutableSet<Integer> targetRecordIds = getTargetRecordIds(sourceRecordId);
 			return targetRecordIds.stream()
 					.map(targetRecordId -> CacheInvalidateRequest.rootRecord(targetTableName, targetRecordId))
 					.collect(ImmutableList.toImmutableList());

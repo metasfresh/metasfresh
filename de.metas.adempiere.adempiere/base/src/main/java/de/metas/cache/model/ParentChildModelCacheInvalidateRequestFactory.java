@@ -4,14 +4,11 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
-import org.adempiere.model.InterfaceWrapperHelper;
-
 import com.google.common.collect.ImmutableList;
 
-import de.metas.util.Check;
+import de.metas.util.StringUtils;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
-import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
 
@@ -39,12 +36,11 @@ import lombok.ToString;
 
 @EqualsAndHashCode
 @ToString
-@Getter
 final class ParentChildModelCacheInvalidateRequestFactory implements ModelCacheInvalidateRequestFactory
 {
 	private final String rootTableName;
 	private final String childTableName;
-	private final String childKeyColumnName;
+	private final String childKeyColumnNameOrNull;
 	private final String childLinkColumnName;
 
 	@Builder
@@ -56,20 +52,24 @@ final class ParentChildModelCacheInvalidateRequestFactory implements ModelCacheI
 	{
 		this.rootTableName = rootTableName;
 		this.childTableName = childTableName;
-		this.childKeyColumnName = !Check.isEmpty(childKeyColumnName, true) ? childKeyColumnName : null;
+		this.childKeyColumnNameOrNull = StringUtils.trimBlankToNull(childKeyColumnName);
 		this.childLinkColumnName = childLinkColumnName;
 	}
 
 	@Override
-	public List<CacheInvalidateRequest> createRequestsFromModel(final Object model, final ModelCacheInvalidationTiming timing)
+	public List<CacheInvalidateRequest> createRequestsFromModel(
+			final ICacheSourceModel model,
+			final ModelCacheInvalidationTiming timing)
 	{
-		final int rootRecordId = getValueAsInt(model, childLinkColumnName);
+		final int rootRecordId = model.getValueAsInt(childLinkColumnName, -1);
 		if (rootRecordId < 0)
 		{
 			return ImmutableList.of();
 		}
 
-		final int childRecordId = getValueAsInt(model, childKeyColumnName);
+		final int childRecordId = childKeyColumnNameOrNull != null
+				? model.getValueAsInt(childKeyColumnNameOrNull, -1)
+				: -1;
 		if (childRecordId >= 0)
 		{
 			return ImmutableList.of(CacheInvalidateRequest.builder()
@@ -80,27 +80,6 @@ final class ParentChildModelCacheInvalidateRequestFactory implements ModelCacheI
 		else
 		{
 			return ImmutableList.of(CacheInvalidateRequest.rootRecord(rootTableName, rootRecordId));
-		}
-	}
-
-	private static int getValueAsInt(@NonNull final Object model, @Nullable final String columnName)
-	{
-		if (columnName == null)
-		{
-			return -1;
-		}
-		final Object valueObj = InterfaceWrapperHelper.getValueOrNull(model, columnName);
-		if (valueObj == null)
-		{
-			return -1;
-		}
-		else if (valueObj instanceof Integer)
-		{
-			return ((Integer)valueObj).intValue();
-		}
-		else
-		{
-			return -1;
 		}
 	}
 }

@@ -2,9 +2,6 @@ package de.metas.cache.model;
 
 import javax.annotation.Nullable;
 
-import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
-import org.adempiere.util.lang.impl.TableRecordReference;
-
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
 
@@ -38,19 +35,16 @@ import lombok.NonNull;
  */
 public interface IModelCacheInvalidationService extends ISingletonService
 {
-	ModelDynAttributeAccessor<Object, TableRecordReference> //
-	ATTR_RootRecordReference = new ModelDynAttributeAccessor<>(IModelCacheInvalidationService.class.getName(), "RootRecordReference", TableRecordReference.class);
-
 	void register(String tableName, ModelCacheInvalidateRequestFactory requestFactory);
 
 	@Nullable
-	CacheInvalidateMultiRequest createRequest(Object model, ModelCacheInvalidationTiming timing);
+	CacheInvalidateMultiRequest createRequestOrNull(ICacheSourceModel model, ModelCacheInvalidationTiming timing);
 
 	void invalidate(CacheInvalidateMultiRequest request, ModelCacheInvalidationTiming timing);
 
-	default void invalidateForModel(@NonNull final Object model, @NonNull final ModelCacheInvalidationTiming timing)
+	default void invalidateForModel(@NonNull final ICacheSourceModel model, @NonNull final ModelCacheInvalidationTiming timing)
 	{
-		final CacheInvalidateMultiRequest request = createRequest(model, timing);
+		final CacheInvalidateMultiRequest request = createRequestOrNull(model, timing);
 		if (request == null)
 		{
 			return;
@@ -58,5 +52,4 @@ public interface IModelCacheInvalidationService extends ISingletonService
 
 		invalidate(request, timing);
 	}
-
 }
