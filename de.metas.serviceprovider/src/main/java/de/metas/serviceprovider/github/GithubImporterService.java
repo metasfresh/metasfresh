@@ -23,6 +23,7 @@
 package de.metas.serviceprovider.github;
 
 import ch.qos.logback.classic.Level;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 import de.metas.issue.tracking.github.api.v3.model.FetchIssueByIdRequest;
@@ -52,6 +53,7 @@ import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.locks.ReentrantLock;
@@ -112,7 +114,8 @@ public class GithubImporterService implements ImportService
 		}
 	}
 
-	private void importIssues(@NonNull final ImportIssuesRequest importIssuesRequest )
+	@VisibleForTesting
+	protected void importIssues(@NonNull final ImportIssuesRequest importIssuesRequest )
 	{
 		int chunkIndex = 1;
 
@@ -200,7 +203,7 @@ public class GithubImporterService implements ImportService
 				.externalURL(githubMilestone.getHtmlUrl())
 				.externalId(githubMilestone.getId())
 				.processed(ResourceState.CLOSED.getValue().equals(githubMilestone.getState()))
-				.dueDate(githubMilestone.getDueDate())
+				.dueDate(githubMilestone.getDueDate() != null ? Instant.parse(githubMilestone.getDueDate()) : null)
 				.value(githubMilestone.getTitle())
 				.orgId(orgId)
 				.build();
@@ -224,7 +227,7 @@ public class GithubImporterService implements ImportService
 
 				final ExternalIssueDetail externalIssueDetail = ExternalIssueDetail.builder()
 						.type(LABEL)
-						.detailValue(label.getName())
+						.value(label.getName())
 						.orgId(orgId)
 						.build();
 

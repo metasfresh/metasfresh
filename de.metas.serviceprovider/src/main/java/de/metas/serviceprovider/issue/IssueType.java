@@ -42,7 +42,7 @@ public enum IssueType
 	public static Optional<IssueType> getTypeByValue(final String value)
 	{
 		return Stream.of(values())
-				.filter(v -> v.getValue().equalsIgnoreCase(value))
+				.filter(v -> v.getValue().equals(value))
 				.findFirst();
 	}
 }

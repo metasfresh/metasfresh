@@ -28,27 +28,27 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import lombok.Builder;
 import lombok.Value;
 
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-
-import static de.metas.issue.tracking.github.api.v3.GitHubApiConstants.UTC_TIMEZONE;
-
 @Value
 @JsonDeserialize(builder = GithubMilestone.GithubMilestoneBuilder.class)
 public class GithubMilestone
 {
+	@JsonProperty("id")
 	String id;
 
+	@JsonProperty("html_url")
 	String htmlUrl;
 
+	@JsonProperty("title")
 	String title;
 
+	@JsonProperty("description")
 	String description;
 
+	@JsonProperty("state")
 	String state;
 
-	LocalDateTime dueDate;
+	@JsonProperty("due_on")
+	String dueDate;
 
 	@Builder
 	@JsonIgnoreProperties(ignoreUnknown = true)
@@ -64,9 +64,7 @@ public class GithubMilestone
 		this.title = title;
 		this.description = description;
 		this.state = state;
-		this.dueDate = dueDate != null
-				? Instant.parse(dueDate).atZone(ZoneId.of(UTC_TIMEZONE)).toLocalDateTime()
-				: null;
+		this.dueDate = dueDate;
 	}
 }
 

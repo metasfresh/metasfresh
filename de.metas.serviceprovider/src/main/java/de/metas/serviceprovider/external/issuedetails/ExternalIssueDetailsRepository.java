@@ -23,16 +23,19 @@
 package de.metas.serviceprovider.external.issuedetails;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.organization.OrgId;
 import de.metas.serviceprovider.issue.IssueId;
 import de.metas.serviceprovider.model.I_S_ExternalIssueDetail;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Repository
@@ -40,22 +43,30 @@ public class ExternalIssueDetailsRepository
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-	@NonNull
-	public I_S_ExternalIssueDetail of(@NonNull final IssueId issueId, @NonNull final ExternalIssueDetail externalIssueDetail)
+	public ImmutableList<ExternalIssueDetail> getByIssueId(@NonNull final IssueId issueId)
 	{
-		final I_S_ExternalIssueDetail record = InterfaceWrapperHelper.newInstance(I_S_ExternalIssueDetail.class);
+		return getRecordsByIssueId(issueId)
+				.stream()
+				.map(this::of)
+				.collect(ImmutableList.toImmutableList());
+	}
 
-		record.setS_Issue_ID(issueId.getRepoId());
+	public void persistIssueDetails(@NonNull final IssueId issueId,
+									@NonNull final ImmutableList<ExternalIssueDetail> externalIssueDetails)
+	{
+		final ImmutableList<I_S_ExternalIssueDetail> newIssueDetails =
+				externalIssueDetails
+						.stream()
+						.map(detail -> of(issueId, detail))
+						.collect(ImmutableList.toImmutableList());
 
-		record.setDetailValue(externalIssueDetail.getDetailValue());
-		record.setType(externalIssueDetail.getType().getValue());
-		record.setAD_Org_ID(externalIssueDetail.getOrgId().getRepoId());
+		final ImmutableList<I_S_ExternalIssueDetail> existingIssueDetails = getRecordsByIssueId(issueId);
 
-		return record;
+		persistIssueDetails(newIssueDetails, existingIssueDetails);
 	}
 
 	@NonNull
-	public ImmutableList<I_S_ExternalIssueDetail> getByIssueId(@NonNull final IssueId issueId)
+	private ImmutableList<I_S_ExternalIssueDetail> getRecordsByIssueId(@NonNull final IssueId issueId)
 	{
 		return queryBL.createQueryBuilder(I_S_ExternalIssueDetail.class)
 				.addOnlyActiveRecordsFilter()
@@ -66,7 +77,38 @@ public class ExternalIssueDetailsRepository
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	public void persistIssueDetails(@NonNull final List<I_S_ExternalIssueDetail> newDetails,
+	@NonNull
+	private I_S_ExternalIssueDetail of(@NonNull final IssueId issueId, @NonNull final ExternalIssueDetail externalIssueDetail)
+	{
+		final I_S_ExternalIssueDetail record = InterfaceWrapperHelper.newInstance(I_S_ExternalIssueDetail.class);
+
+		record.setS_Issue_ID(issueId.getRepoId());
+
+		record.setDetailValue(externalIssueDetail.getValue());
+		record.setType(externalIssueDetail.getType().getValue());
+		record.setAD_Org_ID(externalIssueDetail.getOrgId().getRepoId());
+
+		return record;
+	}
+
+	private ExternalIssueDetail of(@NonNull final I_S_ExternalIssueDetail record)
+	{
+		final Optional<ExternalIssueDetailType> externalIssueDetailType = ExternalIssueDetailType.getTypeByValue(record.getType());
+
+		if(!externalIssueDetailType.isPresent())
+		{
+			throw new AdempiereException("No ExternalIssueDetailType found!").appendParametersToMessage()
+					.setParameter("I_S_ExternalIssueDetail", record);
+		}
+
+		return ExternalIssueDetail.builder()
+				.type(externalIssueDetailType.get())
+				.value(record.getDetailValue())
+				.orgId(OrgId.ofRepoId(record.getAD_Org_ID()))
+				.build();
+	}
+
+	private void persistIssueDetails(@NonNull final List<I_S_ExternalIssueDetail> newDetails,
 			                        @NonNull final List<I_S_ExternalIssueDetail> existingDetails)
 	{
 

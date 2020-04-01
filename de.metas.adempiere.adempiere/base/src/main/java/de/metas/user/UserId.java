@@ -125,7 +125,8 @@ public class UserId implements RepoIdAware
 		return !isSystemUser();
 	}
 
-	public static UserId ofNullableRepoId(final int repoId)
+	@Nullable
+	public static UserId ofRepoIdOrNullISystem(final int repoId)
 	{
 		return repoId > 0 ? ofRepoId(repoId) : null;
 	}

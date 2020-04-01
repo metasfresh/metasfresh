@@ -22,12 +22,10 @@
 
 package de.metas.serviceprovider.issue;
 
-import com.google.common.collect.ImmutableList;
 import de.metas.organization.OrgId;
-import de.metas.serviceprovider.external.issuedetails.ExternalIssueDetail;
+import de.metas.project.ProjectId;
 import de.metas.serviceprovider.external.issuedetails.ExternalIssueDetailsRepository;
 import de.metas.serviceprovider.milestone.MilestoneId;
-import de.metas.serviceprovider.model.I_S_ExternalIssueDetail;
 import de.metas.serviceprovider.model.I_S_Issue;
 import de.metas.uom.UomId;
 import de.metas.user.UserId;
@@ -53,7 +51,6 @@ public class IssueRepository
 		this.externalIssueDetailsRepository = externalIssueDetailsRepository;
 	}
 
-	@NonNull
 	public void save(final IssueEntity issueEntity)
 	{
 		final I_S_Issue record;
@@ -75,6 +72,7 @@ public class IssueRepository
 		record.setS_Milestone_ID(NumberUtils.asInt(issueEntity.getMilestoneId(), -1));
 		record.setEstimatedEffort(issueEntity.getEstimatedEffort());
 		record.setBudgetedEffort(issueEntity.getBudgetedEffort());
+		record.setEffort_UOM_ID(issueEntity.getEffortUomId().getRepoId());
 
 		record.setExternalId(issueEntity.getExternalIssueId());
 		record.setExternalIssueNo(issueEntity.getExternalIssueNo());
@@ -84,7 +82,9 @@ public class IssueRepository
 
 		final IssueId issueId = IssueId.ofRepoId(record.getS_Issue_ID());
 
-		persistIssueDetails(issueId, issueEntity.getExternalIssueDetails());
+		issueEntity.setIssueId(issueId);
+
+		externalIssueDetailsRepository.persistIssueDetails(issueId, issueEntity.getExternalIssueDetails());
 	}
 
 	@NonNull
@@ -113,11 +113,13 @@ public class IssueRepository
 
 		return IssueEntity.builder()
 				.orgId(OrgId.ofRepoId(record.getAD_Org_ID()))
+				.projectId(ProjectId.ofRepoId(record.getC_Project_ID()))
 				.issueId(IssueId.ofRepoId(record.getS_Issue_ID()))
 				.effortUomId(UomId.ofRepoId(record.getEffort_UOM_ID()))
 				.milestoneId(MilestoneId.ofRepoIdOrNull(record.getS_Milestone_ID()))
-				.assigneeId(UserId.ofNullableRepoId(record.getAD_User_ID()))
+				.assigneeId(UserId.ofRepoIdOrNullISystem(record.getAD_User_ID()))
 				.name(record.getName())
+				.searchKey(record.getValue())
 				.description(record.getDescription())
 				.type(issueType.get())
 				.processed(record.isProcessed())
@@ -127,21 +129,7 @@ public class IssueRepository
 				.externalIssueId(record.getExternalId())
 				.externalIssueNo(record.getExternalIssueNo())
 				.externalIssueURL(record.getIssueURL())
+				.externalIssueDetails(externalIssueDetailsRepository.getByIssueId(IssueId.ofRepoId(record.getS_Issue_ID())))
 				.build();
-	}
-
-	private void persistIssueDetails(@NonNull final IssueId issueId,
-									@NonNull final ImmutableList<ExternalIssueDetail> externalIssueDetails)
-	{
-		final ImmutableList<I_S_ExternalIssueDetail> newIssueDetails =
-				externalIssueDetails
-					.stream()
-					.map(detail -> externalIssueDetailsRepository.of(issueId, detail))
-					.collect(ImmutableList.toImmutableList());
-
-		final ImmutableList<I_S_ExternalIssueDetail> existingIssueDetails = externalIssueDetailsRepository
-				.getByIssueId(issueId);
-
-		externalIssueDetailsRepository.persistIssueDetails(newIssueDetails, existingIssueDetails);
 	}
 }

@@ -39,5 +39,5 @@ public class ExternalIssueDetail
 	ExternalIssueDetailType type;
 
 	@NonNull
-	String detailValue;
+	String value;
 }

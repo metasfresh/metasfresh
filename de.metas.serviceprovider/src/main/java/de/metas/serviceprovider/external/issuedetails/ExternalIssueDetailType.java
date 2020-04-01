@@ -24,6 +24,10 @@ package de.metas.serviceprovider.external.issuedetails;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NonNull;
+
+import java.util.Optional;
+import java.util.stream.Stream;
 
 @AllArgsConstructor
 @Getter
@@ -32,5 +36,13 @@ public enum ExternalIssueDetailType
 	LABEL("Label");
 
 	private final String value;
+
+	@NonNull
+	public static Optional<ExternalIssueDetailType> getTypeByValue(final String value)
+	{
+		return Stream.of(values())
+				.filter(v -> v.getValue().equals(value))
+				.findFirst();
+	}
 
 }

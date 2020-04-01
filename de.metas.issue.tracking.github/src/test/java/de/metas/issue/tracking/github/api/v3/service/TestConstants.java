@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.serviceprovider.base
+ * de.metas.issue.tracking.github
  * %%
  * Copyright (C) 2019 metas GmbH
  * %%
@@ -20,43 +20,15 @@
  * #L%
  */
 
-package de.metas.serviceprovider.milestone;
+package de.metas.issue.tracking.github.api.v3.service;
 
-import de.metas.organization.OrgId;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NonNull;
-
-import javax.annotation.Nullable;
-import java.time.Instant;
-
-@Data
-@Builder
-public class Milestone
+public interface TestConstants
 {
-	@NonNull
-	private OrgId orgId;
-
-	@Nullable
-	private MilestoneId milestoneId;
-
-	@Nullable
-	private String externalId;
-
-	@Nullable
-	private String externalURL;
-
-	@Nullable
-	private String description;
-
-	@NonNull
-	private String name;
-
-	@NonNull
-	private String value;
-
-	@Nullable
-	private Instant dueDate;
-
-	private boolean processed;
+	String MOCK_NAME = "name";
+	String MOCK_DESCRIPTION = "description";
+	String MOCK_EXTERNAL_ID = "externalId";
+	String MOCK_EXTERNAL_URL = "externalURL";
+	String MOCK_EXTERNAL_ISSUE_NO = "externalIssueNo";
+	String MOCK_DATE_ISO_8601 = "2020-03-16T14:37:53Z";
+	String MOCK_VALUE = "value";
 }

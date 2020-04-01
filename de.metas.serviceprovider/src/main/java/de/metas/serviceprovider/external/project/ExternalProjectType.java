@@ -32,15 +32,15 @@ import java.util.Optional;
 @Getter
 public enum ExternalProjectType
 {
-	EFFORT("effort"),
-	BUDGET("budget");
+	EFFORT("Effort"),
+	BUDGET("Budget");
 
 	private final String value;
 
 	public static Optional<ExternalProjectType> getTypeByValue( final String value )
 	{
 		return Arrays.stream(values())
-				.filter(projectType -> projectType.getValue().equalsIgnoreCase(value))
+				.filter(projectType -> projectType.getValue().equals(value))
 				.findFirst();
 	}
 }

@@ -43,7 +43,7 @@ public class MilestoneRepository
 
 		if (milestone.getDueDate() != null)
 		{
-			record.setMilestone_DueDate(Timestamp.valueOf(milestone.getDueDate()));
+			record.setMilestone_DueDate(Timestamp.from(milestone.getDueDate()));
 		}
 
 		record.setAD_Org_ID(milestone.getOrgId().getRepoId());
