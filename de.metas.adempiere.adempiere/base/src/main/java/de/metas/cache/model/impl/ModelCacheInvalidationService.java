@@ -91,7 +91,7 @@ public class ModelCacheInvalidationService implements IModelCacheInvalidationSer
 	@Override
 	public CacheInvalidateMultiRequest createRequest(@NonNull final Object model, @NonNull final ModelCacheInvalidationTiming timing)
 	{
-		final Set<CacheInvalidateRequest> requests = getRequestFactoriesForModel(model)
+		final HashSet<CacheInvalidateRequest> requests = getRequestFactoriesForModel(model)
 				.stream()
 				.map(requestFactory -> requestFactory.createRequestsFromModel(model, timing))
 				.filter(Predicates.notNull())
