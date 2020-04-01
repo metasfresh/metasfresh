@@ -344,7 +344,18 @@
 		</band>
 	</title>
 	<pageHeader>
-		<band height="116" splitType="Stretch"/>
+		<band height="116" splitType="Stretch">
+			<subreport isUsingCache="true">
+				<reportElement key="subreport-4" x="0" y="0" width="595" height="85" uuid="1c1e4c3b-2d81-4dab-8ba8-ab4ec82a59da">
+					<printWhenExpression><![CDATA[$V{PAGE_NUMBER} > 1]]></printWhenExpression>
+				</reportElement>
+				<subreportParameter name="org_id">
+					<subreportParameterExpression><![CDATA[new BigDecimal(1000000)]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression><![CDATA["de/metas/docs/generics/report_logo.jasper"]]></subreportExpression>
+			</subreport>
+		</band>
 	</pageHeader>
 	<detail>
 		<band height="16" splitType="Stretch">
@@ -472,7 +483,7 @@
 				</textElement>
 				<textFieldExpression><![CDATA[$V{PAGE_NUMBER} + "/ "]]></textFieldExpression>
 			</textField>
-			<textField evaluationTime="Report" pattern="" isBlankWhenNull="false">
+			<textField evaluationTime="Master" pattern="" isBlankWhenNull="false">
 				<reportElement key="textField-64" x="536" y="25" width="15" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="342602a8-2434-4675-be8b-2350fe69d96a"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
