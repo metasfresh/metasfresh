@@ -1,3 +1,42 @@
+-- 2020-04-02T09:51:39.497Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_TreeNodeMM SET Parent_ID=540754, SeqNo=0, Updated=now(), UpdatedBy=100 WHERE  Node_ID=541452 AND AD_Tree_ID=10
+;
+
+-- 2020-04-02T10:09:33.651Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process SET Value='CurrentVsPreviousPricelistComparison', Name='Current Vs Last Pricelist Comparison',Updated=TO_TIMESTAMP('2020-04-02 13:09:33','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=584680
+;
+
+-- 2020-04-02T10:09:33.672Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Menu SET IsActive='Y', Name='Current Vs Last Pricelist Comparison', Description='',Updated=TO_TIMESTAMP('2020-04-02 13:09:33','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Menu_ID=541452
+;
+
+-- 2020-04-02T10:09:55.940Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process SET Name='Current Vs Previous Pricelist Comparison',Updated=TO_TIMESTAMP('2020-04-02 13:09:55','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=584680
+;
+
+-- 2020-04-02T10:09:55.943Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Menu SET IsActive='Y', Name='Current Vs Previous Pricelist Comparison', Description='',Updated=TO_TIMESTAMP('2020-04-02 13:09:55','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Menu_ID=541452
+;
+
+-- 2020-04-02T10:12:45.749Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET PrintName='Current vs Previous Pricelist Comparison Report', Name='Current vs Previous Pricelist Comparison Report',Updated=TO_TIMESTAMP('2020-04-02 13:12:45','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='nl_NL' AND AD_Element_ID=577626
+;
+
+-- 2020-04-02T10:12:45.751Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(577626,'nl_NL') 
+;
+
+
+
+
+
 DROP FUNCTION IF EXISTS report.Current_Vs_Previous_Pricelist_Comparison_Report(p_C_BPartner_ID numeric, p_C_BP_Group_ID numeric, p_IsSoTrx text, p_AD_Language text)
 ;
 
@@ -125,20 +164,3 @@ ORDER BY TRUE,
 $$
     LANGUAGE sql STABLE
 ;
-
-
-/*
-How to run
-
-- All Bpartners
-
-SELECT *
-FROM report.Current_Vs_Previous_Pricelist_Comparison_Report()
-;
-
-- Specific Bpartner
-
-SELECT *
-FROM report.Current_Vs_Previous_Pricelist_Comparison_Report(2156515)
-;
- */
