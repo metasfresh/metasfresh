@@ -34,6 +34,11 @@ UPDATE AD_Element_Trl SET PrintName='Current vs Previous Pricelist Comparison Re
 ;
 
 
+-- 2020-04-02T13:48:52.860Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET DefaultValue='Y',Updated=TO_TIMESTAMP('2020-04-02 16:48:52','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_Para_ID=541789
+;
+
 
 
 
