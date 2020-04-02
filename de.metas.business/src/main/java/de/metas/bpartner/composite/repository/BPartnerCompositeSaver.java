@@ -88,8 +88,8 @@ final class BPartnerCompositeSaver
 
 			throw new AdempiereException("Can't save an invalid bpartnerComposite")
 					.appendParametersToMessage()
-					.setParameter("bpartnerComposite", bpartnerComposite)
-					.setParameter("errors", errors);
+					.setParameter("errors", errors)
+					.setParameter("bpartnerComposite", bpartnerComposite);
 		}
 
 		final BPartner bpartner = bpartnerComposite.getBpartner();

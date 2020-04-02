@@ -1,8 +1,12 @@
+package de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger;
+
+import de.metas.util.lang.RepoIdAware;
+
 /*
  * #%L
  * de.metas.serviceprovider.base
  * %%
- * Copyright (C) 2019 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,6 +24,7 @@
  * #L%
  */
 
+<<<<<<< HEAD:de.metas.serviceprovider/src/main/java/de/metas/serviceprovider/external/project/ExternalProjectReference.java
 package de.metas.serviceprovider.external.project;
 
 import de.metas.organization.OrgId;
@@ -48,4 +53,20 @@ public class ExternalProjectReference
 
 	@Nullable
 	ProjectId projectId;
+=======
+public class PlainTriggerDocumentId implements CommissionTriggerDocumentId
+{
+	public static PlainTriggerDocumentId INSTANCE = new PlainTriggerDocumentId();
+
+	private PlainTriggerDocumentId()
+	{
+	}
+
+	@Override
+	public RepoIdAware getRepoIdAware()
+	{
+		throw new UnsupportedOperationException();
+	}
+
+>>>>>>> origin/5.134_grave_goldstine:de.metas.contracts/src/main/java/de/metas/contracts/commission/commissioninstance/businesslogic/sales/commissiontrigger/PlainTriggerDocumentId.java
 }

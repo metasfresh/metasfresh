@@ -4,16 +4,12 @@ import java.util.Optional;
 
 import javax.annotation.Nullable;
 
-import org.adempiere.exceptions.AdempiereException;
-
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
-import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
 import lombok.Builder;
 import lombok.Data;
-import lombok.NonNull;
 
 /*
  * #%L
@@ -86,35 +82,24 @@ public class BPartnerLocationType
 		}
 	}
 
-	/** Use this method only if the values can't be {@code null}, e.g. because this instance is coming straight from {@link BPartnerCompositeRepository}. */
-	public boolean getShipToNotNull()
+	public boolean getIsShipToOr(final boolean defaultValue)
 	{
-		return shipTo.orElseThrow(() -> createException("shipTo may not be null"));
+		return shipTo.orElse(defaultValue);
 	}
 
-	/** Use this method only if the values can't be {@code null}, e.g. because this instance is coming straight from {@link BPartnerCompositeRepository}. */
-	public boolean getShipToDefaultNotNull()
+	public boolean getIsShipToDefaultOr(final boolean defaultValue)
 	{
-		return shipToDefault.orElseThrow(() -> createException("shipToDefault may not be null"));
+		return shipToDefault.orElse(defaultValue);
 	}
 
-	/** Use this method only if the values can't be {@code null}, e.g. because this instance is coming straight from {@link BPartnerCompositeRepository}. */
-	public boolean getBillToNotNull()
+	public boolean getIsBillToOr(final boolean defaultValue)
 	{
-		return billTo.orElseThrow(() -> createException("billTo may not be null"));
+		return billTo.orElse(defaultValue);
 	}
 
-	/** Use this method only if the values can't be {@code null}, e.g. because this instance is coming straight from {@link BPartnerCompositeRepository}. */
-	public boolean getBillToDefaultNotNull()
+	public boolean getIsBillToDefaultOr(final boolean defaultValue)
 	{
-		return billToDefault.orElseThrow(() -> createException("billToDefault may not be null"));
-	}
-
-	private AdempiereException createException(@NonNull final String message)
-	{
-		return new AdempiereException(message)
-				.appendParametersToMessage()
-				.setParameter("bpartnerLocationType", this);
+		return billToDefault.orElse(defaultValue);
 	}
 
 	public void setBillToDefault(boolean billToDefault)

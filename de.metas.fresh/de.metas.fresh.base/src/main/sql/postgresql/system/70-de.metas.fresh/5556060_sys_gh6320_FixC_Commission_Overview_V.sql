@@ -4,7 +4,7 @@ SELECT
 	-- ROW_NUMBER() OVER ( ORDER BY ci.C_Commission_Instance_ID, cs.C_Commission_Share_ID) AS C_Commission_Overview_V_ID,
 	-- Make sure that every view record has a unique and stable ID
 	CASE
-		WHEN ila_settlement.C_Invoice_Line_Alloc_ID IS NOT NULL THEN (ila_settlement.C_Invoice_Line_Alloc_ID * 10) + 1
+		WHEN il_settlement.C_InvoiceLine_ID IS NOT NULL THEN (il_settlement.C_InvoiceLine_ID * 10) + 1
 		WHEN ic_settlement.C_Invoice_Candidate_ID IS NOT NULL THEN (ic_settlement.C_Invoice_Candidate_ID * 10) + 2
 		WHEN cs.C_Commission_Share_ID IS NOT NULL THEN (cs.C_Commission_Share_ID * 10) + 3
 		ELSE (ci.C_Commission_Instance_ID * 10) + 4
