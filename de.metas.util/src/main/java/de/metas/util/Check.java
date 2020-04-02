@@ -642,7 +642,7 @@ public final class Check
 		return false;
 	}
 
-	public static boolean isEmpty(final String str)
+	public static boolean isEmpty(@Nullable final String str)
 	{
 		return isEmpty(str, false);
 	}
