@@ -1,5 +1,7 @@
 package de.metas.ordercandidate.spi.impl;
 
+import static de.metas.util.lang.CoalesceUtil.firstGreaterThanZero;
+
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Properties;
@@ -108,6 +110,12 @@ public class DefaultOLCandValidator implements IOLCandValidator
 	@Override
 	public void validate(@NonNull final I_C_OLCand olCand)
 	{
+		if (firstGreaterThanZero(olCand.getM_Product_Override_ID(), olCand.getM_Product_ID()) <= 0)
+		{
+			final String msg = "@FillMandatory@ @M_Product_ID@";
+			throw new AdempiereException(msgBL.parseTranslatableString(msg));
+		}
+
 		handleUOMForTUIfRequired(olCand); // get QtyItemCapacity from de.metas.handlingunit if required
 
 		validateLocation(olCand);
@@ -227,7 +235,6 @@ public class DefaultOLCandValidator implements IOLCandValidator
 		final IPricingResult pricingResult = getPricingResult(olCand);
 		final BigDecimal priceInternal = pricingResult.getPriceStd();
 		final UomId priceUOMInternalId = pricingResult.getPriceUomId();
-
 
 		// note: the customer's price remains as it is in the "PriceEntered" column
 		// set the internal pricing info for the user's information
