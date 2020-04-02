@@ -9,8 +9,6 @@ import de.metas.util.Services;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 
-import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.List;
 
 /*
