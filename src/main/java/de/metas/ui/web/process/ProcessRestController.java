@@ -4,8 +4,11 @@ import java.util.Collection;
 import java.util.List;
 import java.util.stream.Stream;
 
+import org.compiere.model.I_AD_PInstance;
+import org.compiere.model.I_AD_Process;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
+import org.slf4j.MDC.MDCCloseable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -24,6 +27,8 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 
 import de.metas.logging.LogManager;
+import de.metas.logging.TableRecordMDC;
+import de.metas.process.PInstanceId;
 import de.metas.process.ProcessClassInfo;
 import de.metas.ui.web.cache.ETagResponseEntityBuilder;
 import de.metas.ui.web.config.WebConfig;
@@ -156,18 +161,22 @@ public class ProcessRestController
 			@PathVariable("processId") final String adProcessIdStr,
 			final WebRequest request)
 	{
-		userSession.assertLoggedIn();
-
 		final ProcessId processId = ProcessId.fromJson(adProcessIdStr);
-		final IProcessInstancesRepository instancesRepository = getRepository(processId);
-		final ProcessDescriptor descriptor = instancesRepository.getProcessDescriptor(processId);
 
-		return ETagResponseEntityBuilder.ofETagAware(request, descriptor)
-				.includeLanguageInETag()
-				.cacheMaxAge(userSession.getHttpCacheMaxAge())
-				.map(ProcessDescriptor::getLayout)
-				.jsonLayoutOptions(this::newJsonLayoutOptions)
-				.toLayoutJson(JSONProcessLayout::of);
+		try (final MDCCloseable processMDC = TableRecordMDC.putTableRecordReference(I_AD_Process.Table_Name, processId.toAdProcessId()))
+		{
+			userSession.assertLoggedIn();
+
+			final IProcessInstancesRepository instancesRepository = getRepository(processId);
+			final ProcessDescriptor descriptor = instancesRepository.getProcessDescriptor(processId);
+
+			return ETagResponseEntityBuilder.ofETagAware(request, descriptor)
+					.includeLanguageInETag()
+					.cacheMaxAge(userSession.getHttpCacheMaxAge())
+					.map(ProcessDescriptor::getLayout)
+					.jsonLayoutOptions(this::newJsonLayoutOptions)
+					.toLayoutJson(JSONProcessLayout::of);
+		}
 	}
 
 	@PostMapping("/{processId}")
@@ -175,40 +184,45 @@ public class ProcessRestController
 			@PathVariable("processId") final String processIdStr,
 			@RequestBody final JSONCreateProcessInstanceRequest jsonRequest)
 	{
-		userSession.assertLoggedIn();
+		final ProcessId processId = ProcessId.fromJson(processIdStr);
 
-		final ViewRowIdsSelection viewRowIdsSelection = jsonRequest.getViewRowIdsSelection();
-		final ViewId viewId = viewRowIdsSelection != null ? viewRowIdsSelection.getViewId() : null;
-		final DocumentIdsSelection viewSelectedRowIds = viewRowIdsSelection != null ? viewRowIdsSelection.getRowIds() : DocumentIdsSelection.EMPTY;
-
-		// Get the effective singleDocumentPath, i.e.
-		// * if provided, use it
-		// * if not provided and we have a single selected row in the view, ask the view's row to provide the effective document path
-		DocumentPath singleDocumentPath = jsonRequest.getSingleDocumentPath();
-		if (singleDocumentPath == null && viewSelectedRowIds.isSingleDocumentId())
+		try (final MDCCloseable processMDC = TableRecordMDC.putTableRecordReference(I_AD_Process.Table_Name, processId.toAdProcessId()))
 		{
-			final IView view = viewsRepo.getView(viewId);
-			singleDocumentPath = view.getById(viewSelectedRowIds.getSingleDocumentId()).getDocumentPath();
+			userSession.assertLoggedIn();
+
+			final ViewRowIdsSelection viewRowIdsSelection = jsonRequest.getViewRowIdsSelection();
+			final ViewId viewId = viewRowIdsSelection != null ? viewRowIdsSelection.getViewId() : null;
+			final DocumentIdsSelection viewSelectedRowIds = viewRowIdsSelection != null ? viewRowIdsSelection.getRowIds() : DocumentIdsSelection.EMPTY;
+
+			// Get the effective singleDocumentPath, i.e.
+			// * if provided, use it
+			// * if not provided and we have a single selected row in the view, ask the view's row to provide the effective document path
+			DocumentPath singleDocumentPath = jsonRequest.getSingleDocumentPath();
+			if (singleDocumentPath == null && viewSelectedRowIds.isSingleDocumentId())
+			{
+				final IView view = viewsRepo.getView(viewId);
+				singleDocumentPath = view.getById(viewSelectedRowIds.getSingleDocumentId()).getDocumentPath();
+			}
+
+			final CreateProcessInstanceRequest request = CreateProcessInstanceRequest.builder()
+					.processId(processId)
+					.singleDocumentPath(singleDocumentPath)
+					.selectedIncludedDocumentPaths(jsonRequest.getSelectedIncludedDocumentPaths())
+					.viewRowIdsSelection(viewRowIdsSelection)
+					.parentViewRowIdsSelection(jsonRequest.getParentViewRowIdsSelection())
+					.childViewRowIdsSelection(jsonRequest.getChildViewRowIdsSelection())
+					.build();
+			// Validate request's AD_Process_ID
+			// (we are not using it, but just for consistency)
+			request.assertProcessIdEquals(jsonRequest.getProcessId());
+
+			final IProcessInstancesRepository instancesRepository = getRepository(request.getProcessId());
+
+			return Execution.callInNewExecution("pinstance.create", () -> {
+				final IProcessInstanceController processInstance = instancesRepository.createNewProcessInstance(request);
+				return JSONProcessInstance.of(processInstance, newJsonOptions());
+			});
 		}
-
-		final CreateProcessInstanceRequest request = CreateProcessInstanceRequest.builder()
-				.processId(ProcessId.fromJson(processIdStr))
-				.singleDocumentPath(singleDocumentPath)
-				.selectedIncludedDocumentPaths(jsonRequest.getSelectedIncludedDocumentPaths())
-				.viewRowIdsSelection(viewRowIdsSelection)
-				.parentViewRowIdsSelection(jsonRequest.getParentViewRowIdsSelection())
-				.childViewRowIdsSelection(jsonRequest.getChildViewRowIdsSelection())
-				.build();
-		// Validate request's AD_Process_ID
-		// (we are not using it, but just for consistency)
-		request.assertProcessIdEquals(jsonRequest.getProcessId());
-
-		final IProcessInstancesRepository instancesRepository = getRepository(request.getProcessId());
-
-		return Execution.callInNewExecution("pinstance.create", () -> {
-			final IProcessInstanceController processInstance = instancesRepository.createNewProcessInstance(request);
-			return JSONProcessInstance.of(processInstance, newJsonOptions());
-		});
 	}
 
 	@GetMapping("/{processId}/{pinstanceId}")
@@ -216,14 +230,18 @@ public class ProcessRestController
 			@PathVariable("processId") final String processIdStr,
 			@PathVariable("pinstanceId") final String pinstanceIdStr)
 	{
-		userSession.assertLoggedIn();
-
 		final ProcessId processId = ProcessId.fromJson(processIdStr);
 		final DocumentId pinstanceId = DocumentId.of(pinstanceIdStr);
 
-		final IProcessInstancesRepository instancesRepository = getRepository(processId);
+		try (final MDCCloseable pinstanceMDC = TableRecordMDC.putTableRecordReference(I_AD_PInstance.Table_Name, PInstanceId.ofRepoIdOrNull(pinstanceId.toIntOr(-1)));
+				final MDCCloseable processMDC = TableRecordMDC.putTableRecordReference(I_AD_Process.Table_Name, processId.toAdProcessId()))
+		{
+			userSession.assertLoggedIn();
 
-		return instancesRepository.forProcessInstanceReadonly(pinstanceId, processInstance -> JSONProcessInstance.of(processInstance, newJsonOptions()));
+			final IProcessInstancesRepository instancesRepository = getRepository(processId);
+
+			return instancesRepository.forProcessInstanceReadonly(pinstanceId, processInstance -> JSONProcessInstance.of(processInstance, newJsonOptions()));
+		}
 	}
 
 	@PatchMapping("/{processId}/{pinstanceId}")
@@ -233,84 +251,94 @@ public class ProcessRestController
 			, @RequestBody final List<JSONDocumentChangedEvent> events //
 	)
 	{
-		userSession.assertLoggedIn();
-		Check.assumeNotEmpty(events, "events is not empty");
-
 		final ProcessId processId = ProcessId.fromJson(processIdStr);
 		final DocumentId pinstanceId = DocumentId.of(pinstanceIdStr);
 
-		final IProcessInstancesRepository instancesRepository = getRepository(processId);
+		try (final MDCCloseable pinstanceMDC = TableRecordMDC.putTableRecordReference(I_AD_PInstance.Table_Name, PInstanceId.ofRepoIdOrNull(pinstanceId.toIntOr(-1)));
+				final MDCCloseable processMDC = TableRecordMDC.putTableRecordReference(I_AD_Process.Table_Name, processId.toAdProcessId()))
+		{
+			userSession.assertLoggedIn();
+			Check.assumeNotEmpty(events, "events is not empty");
 
-		return Execution.callInNewExecution("", () -> {
+			final IProcessInstancesRepository instancesRepository = getRepository(processId);
 
-			final IDocumentChangesCollector changesCollector = Execution.getCurrentDocumentChangesCollectorOrNull(); // get our collector to fill with the changes that we will record
+			return Execution.callInNewExecution("", () -> {
 
-			instancesRepository.forProcessInstanceWritable(pinstanceId, changesCollector, processInstance -> {
+				final IDocumentChangesCollector changesCollector = Execution.getCurrentDocumentChangesCollectorOrNull(); // get our collector to fill with the changes that we will record
 
-				processInstance.processParameterValueChanges(events, REASON_Value_DirectSetFromCommitAPI);
-				return null; // void
+				instancesRepository.forProcessInstanceWritable(pinstanceId, changesCollector, processInstance -> {
+
+					processInstance.processParameterValueChanges(events, REASON_Value_DirectSetFromCommitAPI);
+					return null; // void
+				});
+				return JSONDocument.ofEvents(changesCollector, newJsonDocumentOptions());
 			});
-			return JSONDocument.ofEvents(changesCollector, newJsonDocumentOptions());
-		});
+		}
 	}
 
 	@GetMapping(value = "/{processId}/{pinstanceId}/start")
 	public JSONProcessInstanceResult startProcess(
-			@PathVariable("processId") final String processIdStr //
-			, @PathVariable("pinstanceId") final String pinstanceIdStr //
-	)
+			@PathVariable("processId") final String processIdStr,
+			@PathVariable("pinstanceId") final String pinstanceIdStr)
 	{
-		userSession.assertLoggedIn();
-
 		final ProcessId processId = ProcessId.fromJson(processIdStr);
 		final DocumentId pinstanceId = DocumentId.of(pinstanceIdStr);
 
-		final IProcessInstancesRepository instancesRepository = getRepository(processId);
+		try (final MDCCloseable pinstanceMDC = TableRecordMDC.putTableRecordReference(I_AD_PInstance.Table_Name, PInstanceId.ofRepoIdOrNull(pinstanceId.toIntOr(-1)));
+				final MDCCloseable processMDC = TableRecordMDC.putTableRecordReference(I_AD_Process.Table_Name, processId.toAdProcessId()))
+		{
+			userSession.assertLoggedIn();
 
-		return Execution.prepareNewExecution()
-				.outOfTransaction()
-				.execute(() -> {
-					return instancesRepository.forProcessInstanceWritable(pinstanceId, NullDocumentChangesCollector.instance, processInstance -> {
-						final ProcessInstanceResult result = processInstance.startProcess(ProcessExecutionContext.builder()
-								.ctx(Env.getCtx())
-								.adLanguage(userSession.getAD_Language())
-								.viewsRepo(viewsRepo)
-								.documentsCollection(documentsCollection)
-								.build());
-						return JSONProcessInstanceResult.of(result);
+			final IProcessInstancesRepository instancesRepository = getRepository(processId);
+
+			return Execution.prepareNewExecution()
+					.outOfTransaction()
+					.execute(() -> {
+						return instancesRepository.forProcessInstanceWritable(pinstanceId, NullDocumentChangesCollector.instance, processInstance -> {
+							final ProcessInstanceResult result = processInstance.startProcess(ProcessExecutionContext.builder()
+									.ctx(Env.getCtx())
+									.adLanguage(userSession.getAD_Language())
+									.viewsRepo(viewsRepo)
+									.documentsCollection(documentsCollection)
+									.build());
+							return JSONProcessInstanceResult.of(result);
+						});
 					});
-				});
+		}
 	}
 
 	@ApiOperation("Retrieves and serves a report that was previously created by a reporting process.")
 	@GetMapping("/{processId}/{pinstanceId}/print/{filename:.*}")
 	public ResponseEntity<byte[]> getReport(
-			@PathVariable("processId") final String processIdStr //
-			, @PathVariable("pinstanceId") final String pinstanceIdStr //
-			, @PathVariable("filename") final String filename //
-	)
+			@PathVariable("processId") final String processIdStr,
+			@PathVariable("pinstanceId") final String pinstanceIdStr,
+			@PathVariable("filename") final String filename)
 	{
-		userSession.assertLoggedIn();
-
 		final ProcessId processId = ProcessId.fromJson(processIdStr);
 		final DocumentId pinstanceId = DocumentId.of(pinstanceIdStr);
 
-		final IProcessInstancesRepository instancesRepository = getRepository(processId);
-		final ProcessInstanceResult executionResult = instancesRepository.forProcessInstanceReadonly(pinstanceId, processInstance -> processInstance.getExecutionResult());
+		try (final MDCCloseable pinstanceMDC = TableRecordMDC.putTableRecordReference(I_AD_PInstance.Table_Name, PInstanceId.ofRepoIdOrNull(pinstanceId.toIntOr(-1)));
+				final MDCCloseable processMDC = TableRecordMDC.putTableRecordReference(I_AD_Process.Table_Name, processId.toAdProcessId()))
+		{
+			userSession.assertLoggedIn();
 
-		final OpenReportAction action = executionResult.getAction(OpenReportAction.class);
-		final String reportFilename = action.getFilename();
-		final String reportContentType = action.getContentType();
-		final byte[] reportData = action.getReportData();
+			final IProcessInstancesRepository instancesRepository = getRepository(processId);
+			final ProcessInstanceResult executionResult = instancesRepository.forProcessInstanceReadonly(pinstanceId, processInstance -> processInstance.getExecutionResult());
 
-		final String reportFilenameEffective = CoalesceUtil.coalesce(filename, reportFilename, "");
+			final OpenReportAction action = executionResult.getAction(OpenReportAction.class);
+			final String reportFilename = action.getFilename();
+			final String reportContentType = action.getContentType();
+			final byte[] reportData = action.getReportData();
 
-		final HttpHeaders headers = new HttpHeaders();
-		headers.setContentType(MediaType.parseMediaType(reportContentType));
-		headers.set(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + reportFilenameEffective + "\"");
-		headers.setCacheControl("must-revalidate, post-check=0, pre-check=0");
-		final ResponseEntity<byte[]> response = new ResponseEntity<>(reportData, headers, HttpStatus.OK);
-		return response;
+			final String reportFilenameEffective = CoalesceUtil.coalesce(filename, reportFilename, "");
+
+			final HttpHeaders headers = new HttpHeaders();
+			headers.setContentType(MediaType.parseMediaType(reportContentType));
+			headers.set(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + reportFilenameEffective + "\"");
+			headers.setCacheControl("must-revalidate, post-check=0, pre-check=0");
+			final ResponseEntity<byte[]> response = new ResponseEntity<>(reportData, headers, HttpStatus.OK);
+			return response;
+		}
 	}
 
 	@GetMapping("/{processId}/{pinstanceId}/field/{parameterName}/typeahead")
@@ -321,15 +349,19 @@ public class ProcessRestController
 			, @RequestParam(name = "query", required = true) final String query //
 	)
 	{
-		userSession.assertLoggedIn();
-
 		final ProcessId processId = ProcessId.fromJson(processIdStr);
 		final DocumentId pinstanceId = DocumentId.of(pinstanceIdStr);
 
-		final IProcessInstancesRepository instancesRepository = getRepository(processId);
+		try (final MDCCloseable pinstanceMDC = TableRecordMDC.putTableRecordReference(I_AD_PInstance.Table_Name, PInstanceId.ofRepoIdOrNull(pinstanceId.toIntOr(-1)));
+				final MDCCloseable processMDC = TableRecordMDC.putTableRecordReference(I_AD_Process.Table_Name, processId.toAdProcessId()))
+		{
+			userSession.assertLoggedIn();
 
-		return instancesRepository.forProcessInstanceReadonly(pinstanceId, processInstance -> processInstance.getParameterLookupValuesForQuery(parameterName, query))
-				.transform(this::toJSONLookupValuesList);
+			final IProcessInstancesRepository instancesRepository = getRepository(processId);
+
+			return instancesRepository.forProcessInstanceReadonly(pinstanceId, processInstance -> processInstance.getParameterLookupValuesForQuery(parameterName, query))
+					.transform(this::toJSONLookupValuesList);
+		}
 	}
 
 	private JSONLookupValuesList toJSONLookupValuesList(final LookupValuesList lookupValuesList)
@@ -344,15 +376,19 @@ public class ProcessRestController
 			, @PathVariable("parameterName") final String parameterName //
 	)
 	{
-		userSession.assertLoggedIn();
-
 		final ProcessId processId = ProcessId.fromJson(processIdStr);
 		final DocumentId pinstanceId = DocumentId.of(pinstanceIdStr);
 
-		final IProcessInstancesRepository instancesRepository = getRepository(processId);
+		try (final MDCCloseable pinstanceMDC = TableRecordMDC.putTableRecordReference(I_AD_PInstance.Table_Name, PInstanceId.ofRepoIdOrNull(pinstanceId.toIntOr(-1)));
+				final MDCCloseable processMDC = TableRecordMDC.putTableRecordReference(I_AD_Process.Table_Name, processId.toAdProcessId()))
+		{
+			userSession.assertLoggedIn();
 
-		return instancesRepository.forProcessInstanceReadonly(pinstanceId, processInstance -> processInstance.getParameterLookupValues(parameterName))
-				.transform(this::toJSONLookupValuesList);
+			final IProcessInstancesRepository instancesRepository = getRepository(processId);
+
+			return instancesRepository.forProcessInstanceReadonly(pinstanceId, processInstance -> processInstance.getParameterLookupValues(parameterName))
+					.transform(this::toJSONLookupValuesList);
+		}
 	}
 
 	public void cacheReset()

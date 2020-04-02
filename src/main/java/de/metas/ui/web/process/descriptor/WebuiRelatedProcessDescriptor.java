@@ -6,12 +6,15 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 
 import org.adempiere.util.lang.ExtendedMemorizingSupplier;
+import org.compiere.model.I_AD_Process;
+import org.slf4j.MDC.MDCCloseable;
 
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.i18n.ITranslatableString;
+import de.metas.logging.TableRecordMDC;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.process.RelatedProcessDescriptor.DisplayPlace;
 import de.metas.ui.web.process.ProcessId;
@@ -145,8 +148,11 @@ public final class WebuiRelatedProcessDescriptor
 
 	public boolean isEnabledOrNotSilent()
 	{
-		final ProcessPreconditionsResolution preconditionsResolution = getPreconditionsResolution();
-		return preconditionsResolution.isAccepted() || !preconditionsResolution.isInternal();
+		try (final MDCCloseable processMDC = TableRecordMDC.putTableRecordReference(I_AD_Process.Table_Name, processId.toAdProcessId()))
+		{
+			final ProcessPreconditionsResolution preconditionsResolution = getPreconditionsResolution();
+			return preconditionsResolution.isAccepted() || !preconditionsResolution.isInternal();
+		}
 	}
 
 	public boolean isInternal()
