@@ -580,7 +580,7 @@ RawLookup.propTypes = {
   parameterName: PropTypes.string,
   mandatory: PropTypes.bool,
   windowType: PropTypes.string,
-  dataId: PropTypes.string,
+  dataId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   tabId: PropTypes.string,
   rowId: PropTypes.string,
   entity: PropTypes.any,

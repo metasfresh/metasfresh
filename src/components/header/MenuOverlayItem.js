@@ -161,7 +161,7 @@ class MenuOverlayItem extends Component {
       query,
       printChildren,
       favorite,
-      updateData,
+      onUpdateData,
       transparentBookmarks,
     } = this.props;
 
@@ -177,7 +177,7 @@ class MenuOverlayItem extends Component {
         {!query && (
           <BookmarkButton
             isBookmark={favorite}
-            {...{ updateData, nodeId, transparentBookmarks }}
+            {...{ onUpdateData, nodeId, transparentBookmarks }}
           >
             <span
               className={children ? 'menu-overlay-expand' : 'menu-overlay-link'}
@@ -261,7 +261,7 @@ MenuOverlayItem.propTypes = {
   caption: PropTypes.string,
   printChildren: PropTypes.any,
   favorite: PropTypes.bool,
-  updateData: PropTypes.func,
+  onUpdateData: PropTypes.func,
   transparentBookmarks: PropTypes.bool,
   children: PropTypes.node,
 };

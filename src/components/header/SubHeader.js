@@ -374,7 +374,7 @@ class SubHeader extends Component {
             isBookmark={currentNode && currentNode.favorite}
             nodeId={currentNode && currentNode.nodeId}
             transparentBookmarks={!!siteName}
-            updateData={this.handleUpdateBreadcrumb}
+            onUpdateData={this.handleUpdateBreadcrumb}
           >
             <span
               title={currentNode ? currentNode.caption : siteName}

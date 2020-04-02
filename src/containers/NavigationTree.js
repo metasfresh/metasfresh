@@ -330,7 +330,7 @@ class NavigationTree extends Component {
                 printChildren={true}
                 showBookmarks={true}
                 openModal={this.openModal}
-                updateData={this.updateData}
+                onUpdateData={this.updateData}
                 onKeyDown={this.handleKeyDown}
                 handleClickOnFolder={this.handleDeeper}
                 handleRedirect={this.handleRedirect}

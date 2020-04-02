@@ -808,6 +808,7 @@ export function patch(
       const data =
         response.data instanceof Array ? response.data : [response.data];
       const dataItem = data[0];
+
       await dispatch(
         mapDataToState(data, isModal, rowId, id, windowType, isAdvanced)
       );
@@ -940,7 +941,7 @@ function updateRow(row, scope) {
   };
 }
 
-function mapDataToState(data, isModal, rowId, id, windowType, isAdvanced) {
+function mapDataToState(data, isModal, rowId) {
   return (dispatch) => {
     const dataArray = typeof data.splice === 'function' ? data : [data];
 
@@ -962,12 +963,6 @@ function mapDataToState(data, isModal, rowId, id, windowType, isAdvanced) {
           // Update directly to a row by the widget in cell
           dispatch(updateRow(parsedItem, 'master'));
         } else {
-          // Update by a modal
-          item.rowId && dispatch(updateRow(parsedItem, 'master'));
-
-          // Advanced edit
-          isAdvanced && dispatch(updateData(parsedItem, 'master'));
-
           dispatch(updateData(parsedItem, getScope(isModal && index === 0)));
         }
       }

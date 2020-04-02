@@ -600,7 +600,7 @@ Lookup.propTypes = {
   windowType: PropTypes.string,
   parameterName: PropTypes.string,
   entity: PropTypes.any,
-  dataId: PropTypes.string,
+  dataId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   tabId: PropTypes.string,
   subentity: PropTypes.any,
   subentityId: PropTypes.string,
