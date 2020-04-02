@@ -1,8 +1,11 @@
 package de.metas.procurement.base.order.async;
 
-import java.math.BigDecimal;
-import java.util.List;
-
+import de.metas.async.processor.IWorkPackageQueueFactory;
+import de.metas.lock.api.ILockCommand;
+import de.metas.lock.api.ILockManager;
+import de.metas.lock.api.LockOwner;
+import de.metas.procurement.base.model.I_PMM_PurchaseCandidate;
+import de.metas.util.Services;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
@@ -10,12 +13,8 @@ import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.IQuery;
 import org.compiere.util.Env;
 
-import de.metas.async.processor.IWorkPackageQueueFactory;
-import de.metas.lock.api.ILockCommand;
-import de.metas.lock.api.ILockManager;
-import de.metas.lock.api.LockOwner;
-import de.metas.procurement.base.model.I_PMM_PurchaseCandidate;
-import de.metas.util.Services;
+import java.math.BigDecimal;
+import java.util.List;
 
 /*
  * #%L
@@ -41,9 +40,8 @@ import de.metas.util.Services;
 
 /**
  * Mass enqueue {@link I_PMM_PurchaseCandidate} records to be processed and purchase orders to be generated.
- * 
- * @author metas-dev <dev@metasfresh.com>
  *
+ * @author metas-dev <dev@metasfresh.com>
  */
 public class PMM_GenerateOrdersEnqueuer
 {
@@ -78,7 +76,9 @@ public class PMM_GenerateOrdersEnqueuer
 		return this;
 	}
 
-	/** @return number of records enqueued */
+	/**
+	 * @return number of records enqueued
+	 */
 	public int enqueue()
 	{
 		final IQuery<I_PMM_PurchaseCandidate> query = createRecordsToProcessQuery();
