@@ -43,6 +43,7 @@ import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.service.ISequenceDAO;
 import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.ad.table.api.ColumnSqlSourceDescriptor;
+import org.adempiere.ad.table.api.ColumnSqlSourceDescriptor.FetchTargetRecordsMethod;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.window.api.IADWindowDAO;
@@ -52,6 +53,7 @@ import org.compiere.model.I_AD_Column;
 import org.compiere.model.I_AD_Element;
 import org.compiere.model.I_AD_SQLColumn_SourceTableColumn;
 import org.compiere.model.I_AD_Table;
+import org.compiere.model.X_AD_SQLColumn_SourceTableColumn;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
@@ -142,6 +144,7 @@ public class ADTableDAO implements IADTableDAO
 	@Override
 	public String retrieveColumnName(final int adColumnId)
 	{
+		Check.assumeGreaterThanZero(adColumnId, "adColumnId");
 		return DB.getSQLValueStringEx(ITrx.TRXNAME_None, "SELECT ColumnName FROM AD_Column WHERE AD_Column_ID=?", adColumnId);
 	}
 
@@ -354,10 +357,37 @@ public class ADTableDAO implements IADTableDAO
 
 	private ColumnSqlSourceDescriptor toColumnSqlSourceDescriptor(final I_AD_SQLColumn_SourceTableColumn record)
 	{
-		return ColumnSqlSourceDescriptor.builder()
-				.targetTableName(retrieveTableName(record.getAD_Table_ID()))
-				.sourceTableName(retrieveTableName(record.getSource_Table_ID()))
-				.sqlToGetTargetRecordIdBySourceRecordId(record.getSQL_GetTargetRecordIdBySourceRecordId())
-				.build();
+		final String targetTableName = retrieveTableName(record.getAD_Table_ID());
+		final String sourceTableName = retrieveTableName(record.getSource_Table_ID());
+		final String fetchTargetRecordsMethod = record.getFetchTargetRecordsMethod();
+
+		if (X_AD_SQLColumn_SourceTableColumn.FETCHTARGETRECORDSMETHOD_SQL.equals(fetchTargetRecordsMethod))
+		{
+			return ColumnSqlSourceDescriptor.builder()
+					.targetTableName(targetTableName)
+					.sourceTableName(sourceTableName)
+					.fetchTargetRecordsMethod(FetchTargetRecordsMethod.SQL)
+					.sqlToGetTargetRecordIdBySourceRecordId(record.getSQL_GetTargetRecordIdBySourceRecordId())
+					.build();
+		}
+		else if (X_AD_SQLColumn_SourceTableColumn.FETCHTARGETRECORDSMETHOD_LinkColumn.equals(fetchTargetRecordsMethod))
+		{
+			return ColumnSqlSourceDescriptor.builder()
+					.targetTableName(targetTableName)
+					.sourceTableName(sourceTableName)
+					.fetchTargetRecordsMethod(FetchTargetRecordsMethod.LINK_COLUMN)
+					.linkColumnName(retrieveColumnName(record.getLink_Column_ID()))
+					.build();
+		}
+		else
+		{
+			throw new AdempiereException("Unknown " + I_AD_SQLColumn_SourceTableColumn.COLUMNNAME_FetchTargetRecordsMethod + ": " + fetchTargetRecordsMethod);
+		}
+	}
+
+	@Override
+	public void validate(@NonNull final I_AD_SQLColumn_SourceTableColumn record)
+	{
+		toColumnSqlSourceDescriptor(record); // shall throw exception if not valid
 	}
 }

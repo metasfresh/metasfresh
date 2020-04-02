@@ -14,7 +14,7 @@ public class X_AD_SQLColumn_SourceTableColumn extends org.compiere.model.PO impl
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 433738036L;
+	private static final long serialVersionUID = -1560371965L;
 
     /** Standard Constructor */
     public X_AD_SQLColumn_SourceTableColumn (Properties ctx, int AD_SQLColumn_SourceTableColumn_ID, String trxName)
@@ -25,8 +25,8 @@ public class X_AD_SQLColumn_SourceTableColumn extends org.compiere.model.PO impl
 			setAD_Column_ID (0);
 			setAD_SQLColumn_SourceTableColumn_ID (0);
 			setAD_Table_ID (0); // @AD_Table_ID@
+			setFetchTargetRecordsMethod (null); // L
 			setSource_Table_ID (0);
-			setSQL_GetTargetRecordIdBySourceRecordId (null);
         } */
     }
 
@@ -124,6 +124,66 @@ public class X_AD_SQLColumn_SourceTableColumn extends org.compiere.model.PO impl
 	public int getAD_Table_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_AD_Table_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** 
+	 * FetchTargetRecordsMethod AD_Reference_ID=541123
+	 * Reference name: FetchTargetRecordsMethod
+	 */
+	public static final int FETCHTARGETRECORDSMETHOD_AD_Reference_ID=541123;
+	/** SQL = S */
+	public static final String FETCHTARGETRECORDSMETHOD_SQL = "S";
+	/** Link Column = L */
+	public static final String FETCHTARGETRECORDSMETHOD_LinkColumn = "L";
+	/** Set Fetch Target Records Method.
+		@param FetchTargetRecordsMethod Fetch Target Records Method	  */
+	@Override
+	public void setFetchTargetRecordsMethod (java.lang.String FetchTargetRecordsMethod)
+	{
+
+		set_Value (COLUMNNAME_FetchTargetRecordsMethod, FetchTargetRecordsMethod);
+	}
+
+	/** Get Fetch Target Records Method.
+		@return Fetch Target Records Method	  */
+	@Override
+	public java.lang.String getFetchTargetRecordsMethod () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_FetchTargetRecordsMethod);
+	}
+
+	@Override
+	public org.compiere.model.I_AD_Column getLink_Column()
+	{
+		return get_ValueAsPO(COLUMNNAME_Link_Column_ID, org.compiere.model.I_AD_Column.class);
+	}
+
+	@Override
+	public void setLink_Column(org.compiere.model.I_AD_Column Link_Column)
+	{
+		set_ValueFromPO(COLUMNNAME_Link_Column_ID, org.compiere.model.I_AD_Column.class, Link_Column);
+	}
+
+	/** Set Link Column.
+		@param Link_Column_ID Link Column	  */
+	@Override
+	public void setLink_Column_ID (int Link_Column_ID)
+	{
+		if (Link_Column_ID < 1) 
+			set_Value (COLUMNNAME_Link_Column_ID, null);
+		else 
+			set_Value (COLUMNNAME_Link_Column_ID, Integer.valueOf(Link_Column_ID));
+	}
+
+	/** Get Link Column.
+		@return Link Column	  */
+	@Override
+	public int getLink_Column_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_Link_Column_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();

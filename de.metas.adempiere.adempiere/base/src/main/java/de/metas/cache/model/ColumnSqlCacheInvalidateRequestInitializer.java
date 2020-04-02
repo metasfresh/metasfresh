@@ -175,10 +175,7 @@ public class ColumnSqlCacheInvalidateRequestInitializer
 			tableNamesToEnableRemoveCacheInvalidation.add(descriptor.getSourceTableName());
 			tableNamesToEnableRemoveCacheInvalidation.add(descriptor.getTargetTableName());
 
-			factoriesByTableName.put(descriptor.getSourceTableName(), ColumnSqlCacheInvalidateRequestFactory.builder()
-					.targetTableName(descriptor.getTargetTableName())
-					.sqlToGetTargetRecordIdBySourceRecordId(descriptor.getSqlToGetTargetRecordIdBySourceRecordId())
-					.build());
+			factoriesByTableName.put(descriptor.getSourceTableName(), ColumnSqlCacheInvalidateRequestFactories.ofDescriptor(descriptor));
 
 			return this;
 		}

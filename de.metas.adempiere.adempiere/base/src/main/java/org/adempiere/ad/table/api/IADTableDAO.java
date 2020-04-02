@@ -32,6 +32,7 @@ import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_AD_Column;
 import org.compiere.model.I_AD_Element;
+import org.compiere.model.I_AD_SQLColumn_SourceTableColumn;
 import org.compiere.model.I_AD_Table;
 
 import de.metas.util.ISingletonService;
@@ -194,4 +195,6 @@ public interface IADTableDAO extends ISingletonService
 	List<I_AD_Table> retrieveAllImportTables();
 
 	List<ColumnSqlSourceDescriptor> retrieveColumnSqlSourceDescriptors();
+
+	void validate(I_AD_SQLColumn_SourceTableColumn record);
 }

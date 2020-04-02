@@ -162,6 +162,29 @@ public interface I_AD_SQLColumn_SourceTableColumn
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
+	 * Set Fetch Target Records Method.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setFetchTargetRecordsMethod (java.lang.String FetchTargetRecordsMethod);
+
+	/**
+	 * Get Fetch Target Records Method.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getFetchTargetRecordsMethod();
+
+    /** Column definition for FetchTargetRecordsMethod */
+    public static final org.adempiere.model.ModelColumn<I_AD_SQLColumn_SourceTableColumn, Object> COLUMN_FetchTargetRecordsMethod = new org.adempiere.model.ModelColumn<I_AD_SQLColumn_SourceTableColumn, Object>(I_AD_SQLColumn_SourceTableColumn.class, "FetchTargetRecordsMethod", null);
+    /** Column name FetchTargetRecordsMethod */
+    public static final String COLUMNNAME_FetchTargetRecordsMethod = "FetchTargetRecordsMethod";
+
+	/**
 	 * Set Aktiv.
 	 * Der Eintrag ist im System aktiv
 	 *
@@ -185,6 +208,33 @@ public interface I_AD_SQLColumn_SourceTableColumn
     public static final org.adempiere.model.ModelColumn<I_AD_SQLColumn_SourceTableColumn, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_AD_SQLColumn_SourceTableColumn, Object>(I_AD_SQLColumn_SourceTableColumn.class, "IsActive", null);
     /** Column name IsActive */
     public static final String COLUMNNAME_IsActive = "IsActive";
+
+	/**
+	 * Set Link Column.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setLink_Column_ID (int Link_Column_ID);
+
+	/**
+	 * Get Link Column.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getLink_Column_ID();
+
+	public org.compiere.model.I_AD_Column getLink_Column();
+
+	public void setLink_Column(org.compiere.model.I_AD_Column Link_Column);
+
+    /** Column definition for Link_Column_ID */
+    public static final org.adempiere.model.ModelColumn<I_AD_SQLColumn_SourceTableColumn, org.compiere.model.I_AD_Column> COLUMN_Link_Column_ID = new org.adempiere.model.ModelColumn<I_AD_SQLColumn_SourceTableColumn, org.compiere.model.I_AD_Column>(I_AD_SQLColumn_SourceTableColumn.class, "Link_Column_ID", org.compiere.model.I_AD_Column.class);
+    /** Column name Link_Column_ID */
+    public static final String COLUMNNAME_Link_Column_ID = "Link_Column_ID";
 
 	/**
 	 * Set Source Column.
@@ -238,7 +288,7 @@ public interface I_AD_SQLColumn_SourceTableColumn
 	 * Set SQL to get Target Record IDs by Source Record IDs.
 	 *
 	 * <br>Type: TextLong
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	public void setSQL_GetTargetRecordIdBySourceRecordId (java.lang.String SQL_GetTargetRecordIdBySourceRecordId);
@@ -247,7 +297,7 @@ public interface I_AD_SQLColumn_SourceTableColumn
 	 * Get SQL to get Target Record IDs by Source Record IDs.
 	 *
 	 * <br>Type: TextLong
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	public java.lang.String getSQL_GetTargetRecordIdBySourceRecordId();

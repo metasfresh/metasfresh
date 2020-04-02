@@ -2,7 +2,9 @@ package org.adempiere.ad.table.api;
 
 import javax.annotation.Nullable;
 
-import de.metas.util.StringUtils;
+import org.adempiere.exceptions.AdempiereException;
+
+import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -38,17 +40,43 @@ public class ColumnSqlSourceDescriptor
 	@NonNull
 	String sourceTableName;
 
+	public enum FetchTargetRecordsMethod
+	{
+		LINK_COLUMN, SQL
+	}
+
+	FetchTargetRecordsMethod fetchTargetRecordsMethod;
+
 	String sqlToGetTargetRecordIdBySourceRecordId;
+	String linkColumnName;
 
 	@Builder
 	private ColumnSqlSourceDescriptor(
 			@NonNull final String targetTableName,
 			@NonNull final String sourceTableName,
-			@Nullable final String sqlToGetTargetRecordIdBySourceRecordId)
+			@NonNull final FetchTargetRecordsMethod fetchTargetRecordsMethod,
+			@Nullable final String sqlToGetTargetRecordIdBySourceRecordId,
+			@Nullable final String linkColumnName)
 	{
 		this.targetTableName = targetTableName;
 		this.sourceTableName = sourceTableName;
-		this.sqlToGetTargetRecordIdBySourceRecordId = StringUtils.trimBlankToNull(sqlToGetTargetRecordIdBySourceRecordId);
+		this.fetchTargetRecordsMethod = fetchTargetRecordsMethod;
+		if (fetchTargetRecordsMethod == FetchTargetRecordsMethod.LINK_COLUMN)
+		{
+			Check.assumeNotEmpty(linkColumnName, "linkColumnName is not empty");
+			this.linkColumnName = linkColumnName;
+			this.sqlToGetTargetRecordIdBySourceRecordId = null;
+		}
+		else if (fetchTargetRecordsMethod == FetchTargetRecordsMethod.SQL)
+		{
+			Check.assumeNotEmpty(sqlToGetTargetRecordIdBySourceRecordId, "sqlToGetTargetRecordIdBySourceRecordId is not empty");
+			this.linkColumnName = null;
+			this.sqlToGetTargetRecordIdBySourceRecordId = sqlToGetTargetRecordIdBySourceRecordId;
+		}
+		else
+		{
+			throw new AdempiereException("Unknown fetch method: " + fetchTargetRecordsMethod);
+		}
 	}
 
 }
