@@ -341,6 +341,7 @@ export default class DocumentList extends Component {
                 readonly={true}
                 supportOpenRecord={layout.supportOpenRecord}
                 onRowEdited={this.setTableRowEdited}
+                updateQuickActions={this.updateQuickActions}
                 keyProperty="id"
                 onDoubleClick={onRedirectToDocument}
                 handleChangePage={onChangePage}
