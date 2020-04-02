@@ -2,7 +2,10 @@ package de.metas.event;
 
 import java.util.function.Consumer;
 
-import de.metas.util.Check;
+import org.slf4j.MDC.MDCCloseable;
+
+import de.metas.event.impl.EventMDC;
+import lombok.NonNull;
 
 /**
  * Forwarding {@link IEventBus} template implementation.
@@ -14,10 +17,8 @@ abstract class ForwardingEventBus implements IEventBus
 {
 	private final IEventBus delegate;
 
-	public ForwardingEventBus(final IEventBus delegate)
+	public ForwardingEventBus(@NonNull final IEventBus delegate)
 	{
-		super();
-		Check.assumeNotNull(delegate, "delegate not null");
 		this.delegate = delegate;
 	}
 
@@ -63,16 +64,18 @@ abstract class ForwardingEventBus implements IEventBus
 	}
 
 	@Override
-	@Deprecated
-	public void subscribeWeak(final IEventListener listener)
+	public void unsubscribe(final IEventListener listener)
 	{
-		delegate().subscribeWeak(listener);
+		delegate().unsubscribe(listener);
 	}
 
 	@Override
 	public void postEvent(final Event event)
 	{
-		delegate().postEvent(event);
+		try (final MDCCloseable mdc = EventMDC.putEvent(event))
+		{
+			delegate().postEvent(event);
+		}
 	}
 
 	@Override
