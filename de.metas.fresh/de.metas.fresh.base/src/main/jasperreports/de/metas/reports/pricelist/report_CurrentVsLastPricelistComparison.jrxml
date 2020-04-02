@@ -145,7 +145,7 @@
 						<subreportParameterExpression><![CDATA[$F{ad_org_id}]]></subreportParameterExpression>
 					</subreportParameter>
 					<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
-					<subreportExpression><![CDATA["de/metas/reports/pricelist/report_bpblock.jasper"]]></subreportExpression>
+					<subreportExpression><![CDATA["de/metas/docs/generics/report_bpblock_short.jasper"]]></subreportExpression>
 				</subreport>
 			</band>
 			<band height="40" splitType="Stretch">
