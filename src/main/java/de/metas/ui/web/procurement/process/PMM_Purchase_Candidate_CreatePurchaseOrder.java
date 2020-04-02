@@ -1,7 +1,5 @@
 package de.metas.ui.web.procurement.process;
 
-import org.springframework.context.annotation.Profile;
-
 import de.metas.Profiles;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.ProcessPreconditionsResolution;
@@ -9,6 +7,15 @@ import de.metas.procurement.base.model.I_PMM_PurchaseCandidate;
 import de.metas.procurement.base.order.async.PMM_GenerateOrders;
 import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
+import de.metas.ui.web.window.model.sql.SqlOptions;
+import de.metas.util.Services;
+import org.adempiere.ad.dao.ICompositeQueryFilter;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.impl.CompareQueryFilter;
+import org.adempiere.ad.dao.impl.TypedSqlQueryFilter;
+import org.springframework.context.annotation.Profile;
+
+import java.math.BigDecimal;
 
 /*
  * #%L
@@ -36,22 +43,24 @@ import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
  * Mass enqueue {@link I_PMM_PurchaseCandidate} records to be processed and purchase orders to be generated.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 @Profile(Profiles.PROFILE_Webui)
 public class PMM_Purchase_Candidate_CreatePurchaseOrder
 		extends ViewBasedProcessTemplate
 		implements IProcessPrecondition
+
 {
+
 	private int recordsEnqueued;
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	@Override
 	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
 	{
-		final DocumentIdsSelection selectedRowIds = getSelectedRowIds();
-		if (selectedRowIds.isEmpty())
+		// only showing the action if there are rows in the view
+		if (getView().size() <= 0)
 		{
-			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
+			return ProcessPreconditionsResolution.reject();
 		}
 
 		return ProcessPreconditionsResolution.accept();
@@ -60,8 +69,15 @@ public class PMM_Purchase_Candidate_CreatePurchaseOrder
 	@Override
 	protected String doIt() throws Exception
 	{
+		final SqlOptions sqlOptions = SqlOptions.usingTableName(I_PMM_PurchaseCandidate.Table_Name);
+		final String sqlWhereClause = getView().getSqlWhereClause(DocumentIdsSelection.ALL, sqlOptions);
+
+		final ICompositeQueryFilter<I_PMM_PurchaseCandidate> i_pmm_purchaseCandidateICompositeQueryFilter = queryBL.createCompositeQueryFilter(I_PMM_PurchaseCandidate.class)
+				.addCompareFilter(I_PMM_PurchaseCandidate.COLUMNNAME_QtyOrdered, CompareQueryFilter.Operator.GREATER, BigDecimal.ZERO)
+				.addFilter(TypedSqlQueryFilter.of(sqlWhereClause));
+
 		recordsEnqueued = PMM_GenerateOrders.prepareEnqueuing()
-				.filter(getProcessInfo().getQueryFilterOrElseFalse())
+				.filter(i_pmm_purchaseCandidateICompositeQueryFilter)
 				.enqueue();
 		return MSG_OK;
 	}
