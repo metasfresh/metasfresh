@@ -161,6 +161,7 @@ export default function viewHandler(state = initialState, action) {
           orderBy,
           queryLimit,
           queryLimitHit,
+          staticFilters,
         },
       } = action.payload;
 
@@ -179,6 +180,7 @@ export default function viewHandler(state = initialState, action) {
         windowId,
         orderBy,
         page,
+        staticFilters,
         queryLimit,
         queryLimitHit,
         rowData: iMap({ [`${action.payload.tabId || 1}`]: iList(result) }),

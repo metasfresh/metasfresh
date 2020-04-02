@@ -25,6 +25,6 @@ export default class FiltersStatic extends PureComponent {
 }
 
 FiltersStatic.propTypes = {
-  data: PropTypes.object,
+  data: PropTypes.array,
   clearFilters: PropTypes.func,
 };
