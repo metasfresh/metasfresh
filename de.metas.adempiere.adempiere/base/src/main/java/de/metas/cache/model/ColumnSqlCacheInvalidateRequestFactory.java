@@ -11,11 +11,11 @@ import org.compiere.util.DB;
 import org.compiere.util.Evaluatee;
 import org.compiere.util.Evaluatees;
 
+import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.util.Check;
-import groovy.transform.ToString;
 import lombok.Builder;
 import lombok.NonNull;
 
@@ -41,7 +41,6 @@ import lombok.NonNull;
  * #L%
  */
 
-@ToString
 public class ColumnSqlCacheInvalidateRequestFactory implements ModelCacheInvalidateRequestFactory
 {
 	private final String targetTableName;
@@ -64,6 +63,16 @@ public class ColumnSqlCacheInvalidateRequestFactory implements ModelCacheInvalid
 		{
 			this.sqlToGetTargetRecordIdBySourceRecordId = StringExpressionCompiler.instance.compile(sqlToGetTargetRecordIdBySourceRecordId);
 		}
+	}
+
+	@Override
+	public String toString()
+	{
+		return MoreObjects.toStringHelper(this)
+				.omitNullValues()
+				.add("targetTableName", targetTableName)
+				.add("sqlToGetTargetRecordIdBySourceRecordId", sqlToGetTargetRecordIdBySourceRecordId != null ? sqlToGetTargetRecordIdBySourceRecordId.getExpressionString() : null)
+				.toString();
 	}
 
 	@Override

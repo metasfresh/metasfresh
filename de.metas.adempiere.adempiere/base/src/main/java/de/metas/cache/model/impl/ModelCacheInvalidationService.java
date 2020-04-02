@@ -3,7 +3,7 @@ package de.metas.cache.model.impl;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Collectors;
 
 import org.adempiere.ad.trx.api.ITrx;
@@ -12,14 +12,13 @@ import org.slf4j.Logger;
 
 import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Multimaps;
-import com.google.common.collect.SetMultimap;
 
 import de.metas.cache.CacheMgt;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
 import de.metas.cache.model.CacheInvalidateRequest;
 import de.metas.cache.model.DirectModelCacheInvalidateRequestFactory;
 import de.metas.cache.model.ICacheSourceModel;
+import de.metas.cache.model.IModelCacheInvalidateRequestFactoryGroup;
 import de.metas.cache.model.IModelCacheInvalidationService;
 import de.metas.cache.model.IModelCacheService;
 import de.metas.cache.model.ModelCacheInvalidateRequestFactory;
@@ -57,15 +56,15 @@ public class ModelCacheInvalidationService implements IModelCacheInvalidationSer
 
 	private static final ImmutableSet<ModelCacheInvalidateRequestFactory> DEFAULT_REQUEST_FACTORIES = ImmutableSet.of(DirectModelCacheInvalidateRequestFactory.instance);
 
-	private final SetMultimap<String, ModelCacheInvalidateRequestFactory> requestFactoriesByTableName = Multimaps.newSetMultimap(new ConcurrentHashMap<>(), ConcurrentHashMap::newKeySet);
+	private final CopyOnWriteArrayList<IModelCacheInvalidateRequestFactoryGroup> factoryGroups = new CopyOnWriteArrayList<>();
 
 	@Override
-	public void register(@NonNull final String tableName, @NonNull final ModelCacheInvalidateRequestFactory requestFactory)
+	public void registerFactoryGroup(@NonNull final IModelCacheInvalidateRequestFactoryGroup factoryGroup)
 	{
-		requestFactoriesByTableName.put(tableName, requestFactory);
-		logger.info("Registered for {}: {}", tableName, requestFactory);
+		factoryGroups.add(factoryGroup);
+		logger.info("Registered {}", factoryGroup);
 
-		CacheMgt.get().enableRemoteCacheInvalidationForTableName(tableName);
+		CacheMgt.get().enableRemoteCacheInvalidationForTableNamesGroup(factoryGroup.getTableNamesToEnableRemoveCacheInvalidation());
 	}
 
 	@Override
@@ -135,7 +134,9 @@ public class ModelCacheInvalidationService implements IModelCacheInvalidationSer
 
 	private Set<ModelCacheInvalidateRequestFactory> getRequestFactoriesByTableName(@NonNull final String tableName)
 	{
-		final Set<ModelCacheInvalidateRequestFactory> factories = requestFactoriesByTableName.get(tableName);
+		final Set<ModelCacheInvalidateRequestFactory> factories = factoryGroups.stream()
+				.flatMap(factoryGroup -> factoryGroup.getFactoriesByTableName(tableName).stream())
+				.collect(ImmutableSet.toImmutableSet());
 		return factories != null && !factories.isEmpty() ? factories : DEFAULT_REQUEST_FACTORIES;
 	}
 }

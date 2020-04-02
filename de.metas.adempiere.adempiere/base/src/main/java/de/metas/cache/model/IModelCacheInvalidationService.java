@@ -35,7 +35,7 @@ import lombok.NonNull;
  */
 public interface IModelCacheInvalidationService extends ISingletonService
 {
-	void register(String tableName, ModelCacheInvalidateRequestFactory requestFactory);
+	void registerFactoryGroup(@NonNull IModelCacheInvalidateRequestFactoryGroup factoryGroup);
 
 	@Nullable
 	CacheInvalidateMultiRequest createRequestOrNull(ICacheSourceModel model, ModelCacheInvalidationTiming timing);

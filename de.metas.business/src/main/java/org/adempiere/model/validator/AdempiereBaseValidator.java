@@ -54,6 +54,7 @@ import de.metas.async.spi.impl.NotifyAsyncBatch;
 import de.metas.bpartner.product.callout.C_BPartner_Product;
 import de.metas.cache.CCache.CacheMapType;
 import de.metas.cache.CacheMgt;
+import de.metas.cache.TableNamesGroup;
 import de.metas.cache.model.ColumnSqlCacheInvalidateRequestInitializer;
 import de.metas.cache.model.IModelCacheService;
 import de.metas.cache.model.ITableCacheConfig;
@@ -140,7 +141,6 @@ public final class AdempiereBaseValidator extends AbstractModuleInterceptor
 		engine.addModelValidator(de.metas.process.model.interceptor.AD_Process.instance, client); // FRESH-727
 
 		engine.addModelValidator(de.metas.system.interceptor.AD_System.INSTANCE, client);
-
 
 		//
 		// Currency
@@ -285,11 +285,11 @@ public final class AdempiereBaseValidator extends AbstractModuleInterceptor
 				.register();
 
 		final CacheMgt cacheMgt = CacheMgt.get();
-
-		Services.get(IADTableDAO.class)
-				.getTableNamesWithRemoteCacheInvalidation()
-				.stream()
-				.forEach(cacheMgt::enableRemoteCacheInvalidationForTableName);
+		final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
+		cacheMgt.enableRemoteCacheInvalidationForTableNamesGroup(TableNamesGroup.builder()
+				.groupId("tablesWithRemoteCacheInvalidationFlagSet")
+				.tableNames(adTableDAO.getTableNamesWithRemoteCacheInvalidation())
+				.build());
 
 		// task 09304: now that we can, let's also invalidate the cached UOM conversions.
 		cacheMgt.enableRemoteCacheInvalidationForTableName(I_C_UOM.Table_Name);
