@@ -363,3 +363,146 @@ UPDATE AD_Process_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2020-04-02 09:0
 UPDATE AD_Process SET Name='Allocate Payment',Updated=TO_TIMESTAMP('2020-04-02 09:05:00','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=540554
 ;
 
+
+-- some more fields
+
+-- 2020-04-02T07:07:44.812Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element SET ColumnName='BankStatementLine',Updated=TO_TIMESTAMP('2020-04-02 10:07:44','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=1001846
+;
+
+-- 2020-04-02T07:07:44.828Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET ColumnName='BankStatementLine', Name='Auszugs-Position', Description='Position auf einem Bankauszug zu dieser Bank', Help='Die "Auszugs-Position" bezeichnet eine eindeutige Transaktion (Einzahlung, Auszahlung, Auslage/Gebühr) für den definierten Zeitraum bei dieser Bank.' WHERE AD_Element_ID=1001846
+;
+
+-- 2020-04-02T07:07:44.828Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName='BankStatementLine', Name='Auszugs-Position', Description='Position auf einem Bankauszug zu dieser Bank', Help='Die "Auszugs-Position" bezeichnet eine eindeutige Transaktion (Einzahlung, Auszahlung, Auslage/Gebühr) für den definierten Zeitraum bei dieser Bank.', AD_Element_ID=1001846 WHERE UPPER(ColumnName)='BANKSTATEMENTLINE' AND IsCentrallyMaintained='Y' AND AD_Element_ID IS NULL
+;
+
+-- 2020-04-02T07:07:44.830Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName='BankStatementLine', Name='Auszugs-Position', Description='Position auf einem Bankauszug zu dieser Bank', Help='Die "Auszugs-Position" bezeichnet eine eindeutige Transaktion (Einzahlung, Auszahlung, Auslage/Gebühr) für den definierten Zeitraum bei dieser Bank.' WHERE AD_Element_ID=1001846 AND IsCentrallyMaintained='Y'
+;
+
+-- 2020-04-02T07:08:30.380Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2020-04-02 10:08:30','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Element_ID=1001846
+;
+
+-- 2020-04-02T07:08:30.405Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(1001846,'de_CH')
+;
+
+-- 2020-04-02T07:08:54.803Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2020-04-02 10:08:54','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Element_ID=1001846
+;
+
+-- 2020-04-02T07:08:54.805Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(1001846,'de_DE')
+;
+
+-- 2020-04-02T07:08:54.829Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_ad_element_on_ad_element_trl_update(1001846,'de_DE')
+;
+
+-- 2020-04-02T07:15:44.701Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element SET PrintName='Write-off Amount',Updated=TO_TIMESTAMP('2020-04-02 10:15:44','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=1450
+;
+
+-- 2020-04-02T07:15:44.706Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_PrintFormatItem pi SET PrintName='Write-off Amount', Name='Write-off Amount' WHERE IsCentrallyMaintained='Y' AND EXISTS (SELECT * FROM AD_Column c  WHERE c.AD_Column_ID=pi.AD_Column_ID AND c.AD_Element_ID=1450)
+;
+
+-- 2020-04-02T07:16:05.145Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET PrintName='Write-off Amount', IsTranslated='Y',Updated=TO_TIMESTAMP('2020-04-02 10:16:05','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_GB' AND AD_Element_ID=1450
+;
+
+-- 2020-04-02T07:16:05.148Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(1450,'en_GB')
+;
+
+-- 2020-04-02T07:16:17.733Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET PrintName='Write-off',Updated=TO_TIMESTAMP('2020-04-02 10:16:17','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_GB' AND AD_Element_ID=1450
+;
+
+-- 2020-04-02T07:16:17.734Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(1450,'en_GB')
+;
+
+-- 2020-04-02T07:16:26.465Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Abschreiben',Updated=TO_TIMESTAMP('2020-04-02 10:16:26','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Element_ID=1450
+;
+
+-- 2020-04-02T07:16:26.467Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(1450,'de_DE')
+;
+
+-- 2020-04-02T07:16:26.502Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_ad_element_on_ad_element_trl_update(1450,'de_DE')
+;
+
+-- 2020-04-02T07:16:26.504Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET ColumnName='WriteOffAmt', Name='Abschreiben', Description='Amount to write-off', Help='The Write Off Amount indicates the amount to be written off as uncollectible.' WHERE AD_Element_ID=1450
+;
+
+-- 2020-04-02T07:16:26.506Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName='WriteOffAmt', Name='Abschreiben', Description='Amount to write-off', Help='The Write Off Amount indicates the amount to be written off as uncollectible.', AD_Element_ID=1450 WHERE UPPER(ColumnName)='WRITEOFFAMT' AND IsCentrallyMaintained='Y' AND AD_Element_ID IS NULL
+;
+
+-- 2020-04-02T07:16:26.507Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName='WriteOffAmt', Name='Abschreiben', Description='Amount to write-off', Help='The Write Off Amount indicates the amount to be written off as uncollectible.' WHERE AD_Element_ID=1450 AND IsCentrallyMaintained='Y'
+;
+
+-- 2020-04-02T07:16:26.508Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Abschreiben', Description='Amount to write-off', Help='The Write Off Amount indicates the amount to be written off as uncollectible.' WHERE (AD_Column_ID IN (SELECT AD_Column_ID FROM AD_Column WHERE AD_Element_ID=1450) AND AD_Name_ID IS NULL ) OR (AD_Name_ID = 1450)
+;
+
+-- 2020-04-02T07:16:26.527Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_PrintFormatItem pi SET PrintName='Abschreiben', Name='Abschreiben' WHERE IsCentrallyMaintained='Y' AND EXISTS (SELECT * FROM AD_Column c  WHERE c.AD_Column_ID=pi.AD_Column_ID AND c.AD_Element_ID=1450)
+;
+
+-- 2020-04-02T07:16:26.541Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab SET Name='Abschreiben', Description='Amount to write-off', Help='The Write Off Amount indicates the amount to be written off as uncollectible.', CommitWarning = NULL WHERE AD_Element_ID = 1450
+;
+
+-- 2020-04-02T07:16:26.544Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_WINDOW SET Name='Abschreiben', Description='Amount to write-off', Help='The Write Off Amount indicates the amount to be written off as uncollectible.' WHERE AD_Element_ID = 1450
+;
+
+-- 2020-04-02T07:16:26.545Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Menu SET   Name = 'Abschreiben', Description = 'Amount to write-off', WEBUI_NameBrowse = NULL, WEBUI_NameNew = NULL, WEBUI_NameNewBreadcrumb = NULL WHERE AD_Element_ID = 1450
+;
+
+-- 2020-04-02T07:16:32.426Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET Name='Abschreiben',Updated=TO_TIMESTAMP('2020-04-02 10:16:32','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Element_ID=1450
+;
+
+-- 2020-04-02T07:16:32.427Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(1450,'de_CH')
+;
+
