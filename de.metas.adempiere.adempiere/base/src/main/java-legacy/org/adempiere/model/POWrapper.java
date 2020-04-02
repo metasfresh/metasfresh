@@ -629,7 +629,7 @@ public class POWrapper implements InvocationHandler, IInterfaceWrapper
 		final int firstValidId = getFirstValidIdByColumnName(columnName);
 		if (id < firstValidId)
 		{
-			return null;
+			return -1;
 		}
 
 		return id;
