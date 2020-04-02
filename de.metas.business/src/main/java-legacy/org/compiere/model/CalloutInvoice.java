@@ -32,6 +32,7 @@ import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 
+import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.service.BPartnerCreditLimitRepository;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.logging.MetasfreshLastError;
@@ -162,7 +163,8 @@ public class CalloutInvoice extends CalloutEngine
 
 				// Location
 				int bpartnerLocationId = rs.getInt("C_BPartner_Location_ID");
-				int contactUserId = rs.getInt("AD_User_ID");
+				BPartnerContactId contactUserId = BPartnerContactId.ofRepoIdOrNull(bPartnerID, rs.getInt("AD_User_ID"));
+
 
 				// overwritten by InfoBP selection - works only if InfoWindow
 				// was used otherwise creates error (uses last value, may belong to different BP)
@@ -174,15 +176,15 @@ public class CalloutInvoice extends CalloutEngine
 						bpartnerLocationId = locFromContextId;
 					}
 
-					final int contactFromContextId = calloutField.getTabInfoContextAsInt("AD_User_ID");
-					if (contactFromContextId > 0)
+					final BPartnerContactId contactFromContextId = BPartnerContactId.ofRepoIdOrNull(bPartnerID, calloutField.getTabInfoContextAsInt("AD_User_ID"));
+					if (contactFromContextId != null)
 					{
 						contactUserId = contactFromContextId;
 					}
 				}
 
 				invoice.setC_BPartner_Location_ID(bpartnerLocationId);
-				invoice.setAD_User_ID(contactUserId);
+				invoice.setAD_User_ID(BPartnerContactId.toRepoId(contactUserId));
 
 				// CreditAvailable
 				if (isSOTrx)
