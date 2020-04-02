@@ -54,7 +54,7 @@ FROM C_Commission_Instance ci
 	LEFT JOIN C_Invoice_Candidate ic_sales ON ic_sales.C_Invoice_Candidate_ID=ci.C_Invoice_Candidate_ID
 	LEFT JOIN C_InvoiceLine il_sales ON il_sales.C_InvoiceLine_ID=ci.C_InvoiceLine_ID
 	LEFT JOIN C_Commission_Share cs ON cs.C_Commission_Instance_ID=ci.C_Commission_Instance_ID
-		LEFT JOIN C_Invoice_Candidate ic_settlement ON ic_settlement.C_Invoice_Candidate_ID=cs.C_Commission_Share_ID AND ic_settlement.AD_Table_ID=get_table_id('C_Commission_Share')
+		LEFT JOIN C_Invoice_Candidate ic_settlement ON ic_settlement.Record_ID=cs.C_Commission_Share_ID AND ic_settlement.AD_Table_ID=get_table_id('C_Commission_Share')
 			LEFT JOIN C_Invoice_Line_Alloc ila_settlement ON ila_settlement.C_Invoice_Candidate_ID=ic_settlement.C_Invoice_Candidate_ID
 				LEFT JOIN C_InvoiceLine il_settlement ON il_settlement.C_InvoiceLine_ID=ila_settlement.C_InvoiceLine_ID
 --LIMIT 10
