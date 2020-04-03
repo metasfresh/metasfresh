@@ -37,6 +37,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
+import de.metas.bpartner.BPartnerContactId;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryOrderBy;
@@ -385,7 +386,7 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 		{
 			queryBuilder.addEqualsFilter(org.compiere.model.I_M_InOut.COLUMNNAME_C_BPartner_ID, shipmentScheduleEffectiveValuesBL.getBPartnerId(shipmentSchedule));
 			queryBuilder.addEqualsFilter(org.compiere.model.I_M_InOut.COLUMNNAME_C_BPartner_Location_ID, shipmentScheduleEffectiveValuesBL.getBPartnerLocationId(shipmentSchedule));
-			queryBuilder.addEqualsFilter(org.compiere.model.I_M_InOut.COLUMNNAME_AD_User_ID, shipmentScheduleEffectiveValuesBL.getAD_User_ID(shipmentSchedule));
+			queryBuilder.addEqualsFilter(org.compiere.model.I_M_InOut.COLUMNNAME_AD_User_ID, BPartnerContactId.toRepoId(shipmentScheduleEffectiveValuesBL.getADUserID(shipmentSchedule)));
 		}
 
 		//

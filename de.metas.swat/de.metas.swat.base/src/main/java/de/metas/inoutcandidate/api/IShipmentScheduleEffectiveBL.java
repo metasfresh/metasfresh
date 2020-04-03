@@ -25,6 +25,8 @@ package de.metas.inoutcandidate.api;
 import java.math.BigDecimal;
 import java.time.ZonedDateTime;
 
+import de.metas.bpartner.BPartnerContactId;
+import lombok.NonNull;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_BPartner_Location;
@@ -36,6 +38,8 @@ import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.order.DeliveryRule;
 import de.metas.util.ISingletonService;
+
+import javax.annotation.Nullable;
 
 /**
  * Returns the "effective" values for a given shipment schedules when it has both an "original" and an "override" column.
@@ -73,7 +77,8 @@ public interface IShipmentScheduleEffectiveBL extends ISingletonService
 
 	I_AD_User getAD_User(I_M_ShipmentSchedule sched);
 
-	int getAD_User_ID(I_M_ShipmentSchedule sched);
+	@Nullable
+	BPartnerContactId getADUserID(@NonNull I_M_ShipmentSchedule sched);
 
 	/**
 	 * @return the effective {@code QtyOrdered}. Where it's coming from is determined from different values and flags of the given {@code sched}.
