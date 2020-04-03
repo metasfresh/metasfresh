@@ -127,19 +127,3 @@ $$
     LANGUAGE sql STABLE
 ;
 
-
-/*
-How to run
-
-- All Bpartners
-
-SELECT *
-FROM report.Current_Vs_Previous_Pricelist_Comparison_Report()
-;
-
-- Specific Bpartner
-
-SELECT *
-FROM report.Current_Vs_Previous_Pricelist_Comparison_Report(2156515)
-;
- */
