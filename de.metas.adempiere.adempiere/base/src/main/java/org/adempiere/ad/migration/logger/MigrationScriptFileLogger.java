@@ -50,7 +50,7 @@ import lombok.NonNull;
 
 /**
  * SQL migration script file logger.
- * 
+ *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
@@ -138,9 +138,8 @@ public class MigrationScriptFileLogger
 		};
 	};
 
-	private MigrationScriptFileLogger(final String dbType)
+	private MigrationScriptFileLogger(@NonNull final String dbType)
 	{
-		super();
 		this.dbType = dbType;
 	}
 
@@ -159,7 +158,7 @@ public class MigrationScriptFileLogger
 		close();
 	}
 
-	private static final Path createPath(final String dbType)
+	private static final Path createPath(@NonNull final String dbType)
 	{
 		final int adClientId = 0;
 		final int scriptId = MSequence.getNextID(adClientId, I_AD_MigrationScript.Table_Name) * 10;
@@ -216,10 +215,10 @@ public class MigrationScriptFileLogger
 
 	/**
 	 * Appends given SQL statement.
-	 * 
+	 *
 	 * If this method is called within a database transaction then the SQL statement will not be written to file directly,
 	 * but it will be collected and written when the transaction is committed.
-	 * 
+	 *
 	 * @param sqlStatement
 	 */
 	public synchronized void appendSqlStatement(final String sqlStatement)
@@ -249,7 +248,7 @@ public class MigrationScriptFileLogger
 
 	/**
 	 * Close underling file.
-	 * 
+	 *
 	 * Next time, {@link #appendSqlStatement(String)} will be called, a new file will be created, so it's safe to call this method as many times as needed.
 	 */
 	public synchronized void close()

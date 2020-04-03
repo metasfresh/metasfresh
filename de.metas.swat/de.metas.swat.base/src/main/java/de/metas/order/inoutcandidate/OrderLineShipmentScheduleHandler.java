@@ -12,6 +12,9 @@ import java.util.Properties;
 
 import javax.annotation.Nullable;
 
+import com.google.maps.errors.OverDailyLimitException;
+import de.metas.bpartner.BPartnerContactId;
+import de.metas.callcenter.form.CalloutR_Group;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.impl.TypedSqlQueryFilter;
 import org.adempiere.ad.trx.api.ITrx;
@@ -183,8 +186,8 @@ public class OrderLineShipmentScheduleHandler extends ShipmentScheduleHandler
 
 		Check.assume(orderLine.getM_Product_ID() > 0, "{} has M_Product_ID set", orderLine);
 		shipmentSchedule.setM_Product_ID(orderLine.getM_Product_ID());
-
-		shipmentSchedule.setAD_User_ID(orderLine.getAD_User_ID());
+		final BPartnerContactId adUserId = BPartnerContactId.ofRepoIdOrNull(orderLine.getC_BPartner_ID(), orderLine.getAD_User_ID());
+		shipmentSchedule.setAD_User_ID(BPartnerContactId.toRepoId(adUserId));
 
 		shipmentSchedule.setAD_Org_ID(orderLine.getAD_Org_ID());
 
