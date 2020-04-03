@@ -44,9 +44,6 @@
 	<field name="bp_name" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="bp_name"/>
 	</field>
-	<field name="bpl_name" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.label" value="bpl_name"/>
-	</field>
 	<field name="productcategory" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="productcategory"/>
 	</field>
@@ -107,20 +104,23 @@
 	<field name="currency2" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="currency2"/>
 	</field>
-	<field name="nameplv1" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.label" value="nameplv1"/>
-	</field>
 	<field name="validfromplv1" class="java.sql.Timestamp">
 		<property name="com.jaspersoft.studio.field.label" value="validfromplv1"/>
 	</field>
 	<field name="validfromplv2" class="java.sql.Timestamp">
 		<property name="com.jaspersoft.studio.field.label" value="validfromplv2"/>
 	</field>
-	<field name="ad_org_id" class="java.math.BigDecimal">
-		<property name="com.jaspersoft.studio.field.label" value="ad_org_id"/>
+	<field name="nameplv1" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="nameplv1"/>
+	</field>
+	<field name="nameplv2" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="nameplv2"/>
 	</field>
 	<field name="c_bpartner_location_id" class="java.math.BigDecimal">
 		<property name="com.jaspersoft.studio.field.label" value="c_bpartner_location_id"/>
+	</field>
+	<field name="ad_org_id" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="ad_org_id"/>
 	</field>
 	<variable name="LINE_COUNT" class="java.lang.Number" calculation="Count">
 		<variableExpression><![CDATA[1]]></variableExpression>
