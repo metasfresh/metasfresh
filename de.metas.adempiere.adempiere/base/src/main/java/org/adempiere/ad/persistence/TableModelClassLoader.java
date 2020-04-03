@@ -29,20 +29,18 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutionException;
 
+import org.adempiere.ad.table.api.impl.TableIdsCache;
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.I_AD_Table;
 import org.compiere.model.MAccount;
 import org.compiere.model.MGLCategory;
 import org.compiere.model.MKCategory;
 import org.compiere.model.MProjectTypePhase;
 import org.compiere.model.MProjectTypeTask;
 import org.compiere.model.MRequestCategory;
-import org.compiere.model.MTable;
 import org.compiere.model.MTree_Base;
 import org.compiere.model.M_Element;
 import org.compiere.model.M_Registration;
 import org.compiere.model.PO;
-import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -240,20 +238,22 @@ public class TableModelClassLoader
 		int index = className.indexOf('_');
 		if (index > 0)
 		{
-			if (index < 3)		// AD_, A_
+			if (index < 3)
+			{
 				className = className.substring(index + 1);
 			/*
 			 * DELETEME: this part is useless - teo_sarca, [ 1648850 ] else { String prefix = className.substring(0,index); if (prefix.equals("Fact")) // keep custom prefix className =
 			 * className.substring(index+1); }
 			 */
+			}
 		}
 		// Remove underlines
 		className = StringUtils.replace(className, "_", "");
 
 		// Search packages
-		for (int i = 0; i < s_packages.length; i++)
+		for (String s_package : s_packages)
 		{
-			StringBuffer name = new StringBuffer(s_packages[i]).append(".M").append(className);
+			StringBuilder name = new StringBuilder(s_package).append(".M").append(className);
 			Class<?> clazz = loadModelClassForClassname(name.toString());
 			if (clazz != null)
 			{
@@ -296,13 +296,7 @@ public class TableModelClassLoader
 	@VisibleForTesting
 	String getEntityTypeForTableName(final String tableName)
 	{
-		final I_AD_Table table = MTable.get(Env.getCtx(), tableName);
-		if (table == null)
-		{
-			throw new AdempiereException("@NotFound@ @AD_Table_ID@: " + tableName);
-		}
-		final String entityType = table.getEntityType();
-		return entityType;
+		return TableIdsCache.instance.getEntityType(tableName);
 	}
 
 	/**

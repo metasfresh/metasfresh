@@ -1,5 +1,7 @@
 package org.adempiere.ad.table.api;
 
+import java.util.Objects;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 
@@ -60,5 +62,10 @@ public class AdTableId implements RepoIdAware
 	public int getRepoId()
 	{
 		return repoId;
+	}
+
+	public static boolean equals(final AdTableId o1, final AdTableId o2)
+	{
+		return Objects.equals(o1, o2);
 	}
 }

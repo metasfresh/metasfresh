@@ -24,12 +24,12 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Properties;
 
+import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.MLookupFactory;
 import org.compiere.model.MLookupFactory.LanguageInfo;
 import org.compiere.model.MQuery;
-import org.compiere.model.MTable;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
@@ -44,6 +44,7 @@ import de.metas.logging.LogManager;
 import de.metas.security.IUserRolePermissions;
 import de.metas.security.permissions.Access;
 import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * Data Engine.
@@ -85,7 +86,9 @@ public class DataEngine
 	 */
 	public DataEngine (Language language, String trxName){
 		if (language != null)
+		{
 			m_language = language;
+		}
 		m_trxName = trxName;
 	}	//	DataEngine
 
@@ -142,7 +145,9 @@ public class DataEngine
 		m_summary = summary;
 
 		if (format == null)
+		{
 			throw new IllegalStateException ("No print format");
+		}
 		String tableName = null;
 		String reportName = format.getName();
 		//
@@ -166,7 +171,9 @@ public class DataEngine
 					// Add WhereClause restriction from AD_ReportView - teo_sarca BF [ 1761891 ]
 					String whereClause = rs.getString(4);
 					if (!Check.isEmpty(whereClause))
+					{
 						query.addRestriction(whereClause);
+					}
 				}
 			}
 			catch (SQLException e)
@@ -182,20 +189,24 @@ public class DataEngine
 		}
 		else
 		{
-			tableName = MTable.getTableName(ctx, format.getAD_Table_ID());
+			tableName = Services.get(IADTableDAO.class).retrieveTableName(format.getAD_Table_ID());
 		}
 		if (tableName == null)
 		{
 			log.error("Not found Format=" + format);
 			return null;
 		}
-		if (format.isTranslationView() && tableName.toLowerCase().endsWith("_v"))	//	_vt not just _v
+		if (format.isTranslationView() && tableName.toLowerCase().endsWith("_v"))
+		{
 			tableName += "t";
+		}
 		format.setTranslationViewQuery (query);
 		//
 		PrintData pd = getPrintDataInfo (ctx, format, query, reportName, tableName);
 		if (pd == null)
+		{
 			return null;
+		}
 		loadPrintData(pd, format);
 		return pd;
 	}	//	getPrintData
@@ -218,22 +229,22 @@ public class DataEngine
 		log.info(reportName + " - " + m_language.getAD_Language());
 		log.debug("TableName=" + tableName + ", Query=" + query);
 		log.debug("Format=" + format);
-		ArrayList<PrintDataColumn> columns = new ArrayList<PrintDataColumn>();
+		ArrayList<PrintDataColumn> columns = new ArrayList<>();
 		m_group = new PrintDataGroup();
 
 		//	Order Columns (identified by non zero/null SortNo)
 		int[] orderAD_Column_IDs = format.getOrderAD_Column_IDs();
-		ArrayList<String> orderColumns = new ArrayList<String>(orderAD_Column_IDs.length);
-		for (int i = 0; i < orderAD_Column_IDs.length; i++)
+		ArrayList<String> orderColumns = new ArrayList<>(orderAD_Column_IDs.length);
+		for (int orderAD_Column_ID : orderAD_Column_IDs)
 		{
-			log.trace("Order AD_Column_ID=" + orderAD_Column_IDs[i]);
+			log.trace("Order AD_Column_ID=" + orderAD_Column_ID);
 			orderColumns.add("");		//	initial value overwritten with fully qualified name
 		}
 
 		//	Direct SQL w/o Reference Info
 		StringBuffer sqlSELECT = new StringBuffer("SELECT ");
 		StringBuffer sqlFROM = new StringBuffer(" FROM ").append(tableName);
-		ArrayList<String> groupByColumns = new ArrayList<String>();
+		ArrayList<String> groupByColumns = new ArrayList<>();
 		//
 		boolean IsGroupedBy = false;
 		//
@@ -277,7 +288,9 @@ public class DataEngine
 				String ColumnName = rs.getString(2);
 				String ColumnSQL = rs.getString(24);
 				if (ColumnSQL == null)
+				{
 					ColumnSQL = "";
+				}
 				int AD_Reference_ID = rs.getInt(3);
 				int AD_Reference_Value_ID = rs.getInt(4);
 				//  ColumnInfo
@@ -288,30 +301,52 @@ public class DataEngine
 				//  SQL GroupBy
 				boolean IsGroupFunction = "Y".equals(rs.getString(9));
 				if (IsGroupFunction)
+				{
 					IsGroupedBy = true;
+				}
 				String FunctionColumn = rs.getString(10);
 				if (FunctionColumn == null)
+				{
 					FunctionColumn = "";
+				}
 				//	Breaks/Column Functions
 				if ("Y".equals(rs.getString(11)))
+				{
 					m_group.addGroupColumn(ColumnName);
+				}
 				if ("Y".equals(rs.getString(12)))
+				{
 					m_group.addFunction(ColumnName, PrintDataFunction.F_SUM);
+				}
 				if ("Y".equals(rs.getString(13)))
+				{
 					m_group.addFunction(ColumnName, PrintDataFunction.F_MEAN);
+				}
 				if ("Y".equals(rs.getString(14)))
+				{
 					m_group.addFunction(ColumnName, PrintDataFunction.F_COUNT);
-				if ("Y".equals(rs.getString(18)))	//	IsMinCalc
+				}
+				if ("Y".equals(rs.getString(18)))
+				{
 					m_group.addFunction(ColumnName, PrintDataFunction.F_MIN);
-				if ("Y".equals(rs.getString(19)))	//	IsMaxCalc
+				}
+				if ("Y".equals(rs.getString(19)))
+				{
 					m_group.addFunction(ColumnName, PrintDataFunction.F_MAX);
-				if ("Y".equals(rs.getString(22)))	//	IsVarianceCalc
+				}
+				if ("Y".equals(rs.getString(22)))
+				{
 					m_group.addFunction(ColumnName, PrintDataFunction.F_VARIANCE);
-				if ("Y".equals(rs.getString(23)))	//	IsDeviationCalc
+				}
+				if ("Y".equals(rs.getString(23)))
+				{
 					m_group.addFunction(ColumnName, PrintDataFunction.F_DEVIATION);
-				if ("Y".equals(rs.getString(20)))	//	isRunningTotal
+				}
+				if ("Y".equals(rs.getString(20)))
+				{
 					//	RunningTotalLines only once - use max
 					m_runningTotalLines = Math.max(m_runningTotalLines, rs.getInt(21));
+				}
 
 				//	General Info
 				boolean IsPrinted = "Y".equals(rs.getString(15));
@@ -336,7 +371,7 @@ public class DataEngine
 				// not printed Sort Columns
 				else if (!IsPrinted)
 				{
-					;
+					
 				}
 				//	-- Parent, TableDir (and unqualified Search) --
 				else if ( (IsParent && DisplayType.isLookup(AD_Reference_ID))
@@ -362,7 +397,9 @@ public class DataEngine
 					//	TableName
 					String table = ColumnName;
 					if (table.endsWith("_ID"))
+					{
 						table = table.substring(0, table.length()-3);
+					}
 					//  DisplayColumn
 					String display = ColumnName;
 					//	=> (..) AS AName, Table.ID,
@@ -393,7 +430,9 @@ public class DataEngine
 					String display = tr.DisplayColumn;
 					//	=> A.Name AS AName, Table.ID,
 					if (tr.IsValueDisplayed)
+					{
 						sqlSELECT.append(m_synonym).append(".Value||'-'||");
+					}
 					sqlSELECT.append(m_synonym).append(".").append(display);
 					sqlSELECT.append(" AS ").append(m_synonym).append(display).append(",")
 						.append(lookupSQL).append(" AS ").append(ColumnName).append(",");
@@ -403,9 +442,13 @@ public class DataEngine
 
 					//	=> x JOIN table A ON (x.KeyColumn=A.Key)
 					if (IsMandatory)
+					{
 						sqlFROM.append(" INNER JOIN ");
+					}
 					else
+					{
 						sqlFROM.append(" LEFT OUTER JOIN ");
+					}
 					sqlFROM.append(tr.TableName).append(" ").append(m_synonym).append(" ON (")
 						.append(lookupSQL).append("=")
 						.append(m_synonym).append(".").append(tr.KeyColumn).append(")");
@@ -430,9 +473,13 @@ public class DataEngine
 						orderName = m_synonym + "Name";
 						//	=> x JOIN AD_Ref_List A ON (x.KeyColumn=A.Value AND A.AD_Reference_ID=123)
 						if (IsMandatory)
+						{
 							sqlFROM.append(" INNER JOIN ");
+						}
 						else
+						{
 							sqlFROM.append(" LEFT OUTER JOIN ");
+						}
 						sqlFROM.append("AD_Ref_List ").append(m_synonym).append(" ON (")
 							.append(lookupSQL).append("=").append(m_synonym).append(".Value")
 							.append(" AND ").append(m_synonym).append(".AD_Reference_ID=").append(AD_Reference_Value_ID).append(")");
@@ -447,17 +494,25 @@ public class DataEngine
 						//	LEFT OUTER JOIN AD_Ref_List XA ON (AD_Table.EntityType=XA.Value AND XA.AD_Reference_ID=245)
 						//	LEFT OUTER JOIN AD_Ref_List_Trl A ON (XA.AD_Ref_List_ID=A.AD_Ref_List_ID AND A.AD_Language='de_DE')
 						if (IsMandatory)
+						{
 							sqlFROM.append(" INNER JOIN ");
+						}
 						else
+						{
 							sqlFROM.append(" LEFT OUTER JOIN ");
+						}
 						sqlFROM.append(" AD_Ref_List X").append(m_synonym).append(" ON (")
 							.append(lookupSQL).append("=X")
 							.append(m_synonym).append(".Value AND X").append(m_synonym).append(".AD_Reference_ID=").append(AD_Reference_Value_ID)
 							.append(")");
 						if (IsMandatory)
+						{
 							sqlFROM.append(" INNER JOIN ");
+						}
 						else
+						{
 							sqlFROM.append(" LEFT OUTER JOIN ");
+						}
 						sqlFROM.append(" AD_Ref_List_Trl ").append(m_synonym).append(" ON (X")
 							.append(m_synonym).append(".AD_Ref_List_ID=").append(m_synonym).append(".AD_Ref_List_ID")
 							.append(" AND ").append(m_synonym).append(".AD_Language='").append(m_language.getAD_Language()).append("')");
@@ -510,11 +565,15 @@ public class DataEngine
 						key = "M_AttributeSetInstance_ID";
 						display = "Description";
 						if (LogManager.isLevelFine())
+						{
 							display += "||'{'||" + m_synonym + ".M_AttributeSetInstance_ID||'}'";
+						}
 						synonym = "Description";
 					}
 					if (synonym == null)
+					{
 						synonym = display;
+					}
 
 					//	=> A.Name AS AName, table.ID,
 					sqlSELECT.append(m_synonym).append(".").append(display).append(" AS ")
@@ -525,9 +584,13 @@ public class DataEngine
 					orderName = m_synonym + synonym;
 					//	=> x JOIN table A ON (table.ID=A.Key)
 					if (IsMandatory)
+					{
 						sqlFROM.append(" INNER JOIN ");
+					}
 					else
+					{
 						sqlFROM.append(" LEFT OUTER JOIN ");
+					}
 					sqlFROM.append(table).append(" ").append(m_synonym).append(" ON (")
 						.append(lookupSQL).append("=")
 						.append(m_synonym).append(".").append(key).append(")");
@@ -545,7 +608,9 @@ public class DataEngine
 					//	=> ColumnSQL AS ColumnName
 						sqlSELECT.append(ColumnSQL).append(" AS ").append(ColumnName).append(",");
 						if (!IsGroupFunction)
+						{
 							groupByColumns.add(ColumnSQL);
+						}
 						orderName = ColumnName;		//	no prefix for synonym
 					}
 					else if (index == -1)
@@ -555,7 +620,9 @@ public class DataEngine
 						sb.append(tableName).append(".").append(ColumnName);
 						sqlSELECT.append(sb).append(",");
 						if (!IsGroupFunction)
+						{
 							groupByColumns.add(sb.toString());
+						}
 					}
 					else
 					{
@@ -566,7 +633,9 @@ public class DataEngine
 							.append(FunctionColumn.substring(index+1));
 						sqlSELECT.append(sb).append(" AS ").append(ColumnName).append(",");
 						if (!IsGroupFunction)
+						{
 							groupByColumns.add(sb.toString());
+						}
 						orderName = ColumnName;		//	no prefix for synonym
 					}
 					pdc = new PrintDataColumn(AD_Column_ID, ColumnName,
@@ -590,7 +659,9 @@ public class DataEngine
 
 				//
 				if (pdc == null || (!IsPrinted && !IsKey))
+				{
 					continue;
+				}
 
 				pdc.setFormatPattern(formatPattern);
 				columns.add(pdc);
@@ -622,7 +693,9 @@ public class DataEngine
 		{
 			hasLevelNo = true;
 			if (sqlSELECT.indexOf("LevelNo") == -1)
+			{
 				sqlSELECT.append("LevelNo,");
+			}
 		}
 
 		/**
@@ -639,8 +712,10 @@ public class DataEngine
 			for (int i = 0; i < query.getRestrictionCount(); i++)
 			{
 				String q = query.getWhereClause (i);
-				if (q.indexOf("AD_PInstance_ID") != -1)	//	ignore all other Parameters
+				if (q.indexOf("AD_PInstance_ID") != -1)
+				{
 					finalSQL.append (q);
+				}
 			}	//	for all restrictions
 		}
 		else
@@ -650,16 +725,22 @@ public class DataEngine
 			{
 				finalSQL.append (" WHERE ");
 				if (!query.getTableName ().equals (tableName))
+				{
 					query.setTableName (tableName);
+				}
 				finalSQL.append (query.getWhereClause (true));
 			}
 			//	Access Restriction
 			final IUserRolePermissions role = Env.getUserRolePermissions(ctx);
 			if (role.getRoleId().isSystem() && !Ini.isSwingClient())
+			{
 				;	//	System Access
+			}
 			else
+			{
 				finalSQL = new StringBuffer (role.addAccessSQL (finalSQL.toString (),
 					tableName, IUserRolePermissions.SQL_FULLYQUALIFIED, Access.READ));
+			}
 		}
 
 		//	Add GROUP BY clause
@@ -668,9 +749,13 @@ public class DataEngine
 			for (int i = 0; i < groupByColumns.size(); i++)
 			{
 				if (i == 0)
+				{
 					finalSQL.append(" GROUP BY ");
+				}
 				else
+				{
 					finalSQL.append(",");
+				}
 				finalSQL.append(groupByColumns.get(i));
 			}
 		}
@@ -681,12 +766,18 @@ public class DataEngine
 			for (int i = 0; i < orderColumns.size(); i++)
 			{
 				if (i == 0)
+				{
 					finalSQL.append(" ORDER BY ");
+				}
 				else
+				{
 					finalSQL.append(",");
+				}
 				String by = orderColumns.get(i);
 				if (by == null || by.length() == 0)
+				{
 					by = String.valueOf(i+1);
+				}
 				finalSQL.append(by);
 			}
 		}	//	order by
@@ -720,14 +811,20 @@ public class DataEngine
 			length++;
 		}
 		else
+		{
 			cc++;
+		}
 		//
 		m_synonym = String.valueOf(cc);
 		if (length == 1)
+		{
 			return;
+		}
 		m_synonym += String.valueOf(cc);
 		if (length == 2)
+		{
 			return;
+		}
 		m_synonym += String.valueOf(cc);
 	}	//	synonymNext
 
@@ -739,7 +836,9 @@ public class DataEngine
 	public static TableReference getTableReference (int AD_Reference_Value_ID)
 	{
 		if (AD_Reference_Value_ID <= 0)
+		{
 			throw new IllegalArgumentException("AD_Reference_Value_ID <= 0");
+		}
 		//
 		TableReference tr = new TableReference();
 		//
@@ -814,9 +913,13 @@ public class DataEngine
 			while (rs.next())
 			{
 				if (hasLevelNo)
+				{
 					levelNo = rs.getInt("LevelNo");
+				}
 				else
+				{
 					levelNo = 0;
+				}
 				//	Check Group Change ----------------------------------------
 				if (m_group.getGroupColumnCount() > 1)	//	one is GRANDTOTAL_
 				{
@@ -825,14 +928,16 @@ public class DataEngine
 					{
 						PrintDataColumn group_pdc = pd.getColumnInfo()[i];
 						if (!m_group.isGroupColumn(group_pdc.getColumnName()))
+						{
 							continue;
+						}
 
 						//	Group change
 						Object value = m_group.groupChange(group_pdc.getColumnName(), rs.getObject(group_pdc.getAlias()));
 						if (value != null)	//	Group change
 						{
 							char[] functions = m_group.getFunctions(group_pdc.getColumnName());
-							for (int f = 0; f < functions.length; f++)
+							for (char function : functions)
 							{
 								printRunningTotal(pd, levelNo, rowNo++);
 								pd.addRow(true, levelNo);
@@ -846,17 +951,19 @@ public class DataEngine
 									{
 										String valueString = value.toString();
 										if (value instanceof Timestamp)
+										{
 											valueString = DisplayType.getDateFormat(pdc.getDisplayType(), m_language).format(value);
-										valueString	+= PrintDataFunction.getFunctionSymbol(functions[f]);
+										}
+										valueString	+= PrintDataFunction.getFunctionSymbol(function);
 										pd.addNode(new PrintDataElement(pdc.getColumnName(),
 											valueString, DisplayType.String, false, pdc.isPageBreak(), pdc.getFormatPattern()));
 									}
-									else if (m_group.isFunctionColumn(pdc.getColumnName(), functions[f]))
+									else if (m_group.isFunctionColumn(pdc.getColumnName(), function))
 									{
 										pd.addNode(new PrintDataElement(pdc.getColumnName(),
 											m_group.getValue(group_pdc.getColumnName(),
-												pdc.getColumnName(), functions[f]),
-											PrintDataFunction.getFunctionDisplayType(functions[f], pdc.getDisplayType()),
+												pdc.getColumnName(), function),
+											PrintDataFunction.getFunctionDisplayType(function, pdc.getDisplayType()),
 												false, pdc.isPageBreak(), pdc.getFormatPattern()));
 									}
 								}	//	 for all columns
@@ -876,7 +983,9 @@ public class DataEngine
 
 				/** Report Summary FR [ 2011569 ]**/
 				if(!m_summary)
+				{
 					pd.addRow(false, levelNo);
+				}
 				int counter = 1;
 				//	get columns
 				for (int i = 0; i < pd.getColumnInfo().length; i++)
@@ -982,7 +1091,9 @@ public class DataEngine
 								{
 									obj = ((String)obj).trim();
 									if (((String)obj).length() == 0)
+									{
 										obj = null;
+									}
 								}
 								if (obj != null)
 								{
@@ -994,7 +1105,9 @@ public class DataEngine
 										pde = new PrintDataElement(pdc.getColumnName(), s, pdc.getDisplayType(), pdc.getFormatPattern());
 									}
 									else
+									{
 										pde = new PrintDataElement(pdc.getColumnName(), obj, pdc.getDisplayType(), pdc.getFormatPattern());
+									}
 								}
 							}
 						}	//	Value only
@@ -1003,7 +1116,9 @@ public class DataEngine
 					{
 						/** Report Summary FR [ 2011569 ]**/
 						if(!m_summary)
+						{
 							pd.addNode(pde);
+						}
 						m_group.addValue(pde.getColumnName(), pde.getFunctionValue());
 					}
 				}	//	for all columns
@@ -1028,12 +1143,14 @@ public class DataEngine
 			{
 				PrintDataColumn group_pdc = pd.getColumnInfo()[i];
 				if (!m_group.isGroupColumn(group_pdc.getColumnName()))
+				{
 					continue;
+				}
 				Object value = m_group.groupChange(group_pdc.getColumnName(), new Object());
 				if (value != null)	//	Group change
 				{
 					char[] functions = m_group.getFunctions(group_pdc.getColumnName());
-					for (int f = 0; f < functions.length; f++)
+					for (char function : functions)
 					{
 						printRunningTotal(pd, levelNo, rowNo++);
 						pd.addRow(true, levelNo);
@@ -1045,17 +1162,19 @@ public class DataEngine
 							{
 								String valueString = value.toString();
 								if (value instanceof Timestamp)
+								{
 									valueString = DisplayType.getDateFormat(pdc.getDisplayType(), m_language).format(value);
-								valueString	+= PrintDataFunction.getFunctionSymbol(functions[f]);
+								}
+								valueString	+= PrintDataFunction.getFunctionSymbol(function);
 								pd.addNode(new PrintDataElement(pdc.getColumnName(),
 									valueString, DisplayType.String, pdc.getFormatPattern()));
 							}
-							else if (m_group.isFunctionColumn(pdc.getColumnName(), functions[f]))
+							else if (m_group.isFunctionColumn(pdc.getColumnName(), function))
 							{
 								pd.addNode(new PrintDataElement(pdc.getColumnName(),
 									m_group.getValue(group_pdc.getColumnName(),
-										pdc.getColumnName(), functions[f]),
-									PrintDataFunction.getFunctionDisplayType(functions[f],
+										pdc.getColumnName(), function),
+									PrintDataFunction.getFunctionDisplayType(function,
 											pdc.getDisplayType()),pdc.getFormatPattern()));
 							}
 						}
@@ -1069,7 +1188,7 @@ public class DataEngine
 		if (m_group.isGroupColumn(PrintDataGroup.TOTAL))
 		{
 			char[] functions = m_group.getFunctions(PrintDataGroup.TOTAL);
-			for (int f = 0; f < functions.length; f++)
+			for (char function : functions)
 			{
 				printRunningTotal(pd, levelNo, rowNo++);
 				pd.addRow(true, levelNo);
@@ -1080,23 +1199,25 @@ public class DataEngine
 					if (c == 0)		//	put Function in first Column
 					{
 						String name = "";
-						if (!format.getTableFormat().isPrintFunctionSymbols())		//	Translate Sum, etc.
-							name = Msg.getMsg(format.getLanguage(), PrintDataFunction.getFunctionName(functions[f]));
-						name += PrintDataFunction.getFunctionSymbol(functions[f]);	//	Symbol
+						if (!format.getTableFormat().isPrintFunctionSymbols())
+						{
+							name = Msg.getMsg(format.getLanguage(), PrintDataFunction.getFunctionName(function));
+						}
+						name += PrintDataFunction.getFunctionSymbol(function);	//	Symbol
 						pd.addNode(new PrintDataElement(pdc.getColumnName(), name.trim(),
 								DisplayType.String, pdc.getFormatPattern()));
 					}
-					else if (m_group.isFunctionColumn(pdc.getColumnName(), functions[f]))
+					else if (m_group.isFunctionColumn(pdc.getColumnName(), function))
 					{
 						// metas: 03656: Use the format pattern (which can be DateFormat or NumberFormat) only if the display type wasn't changed
 						final int displayType = pdc.getDisplayType();
-						final int functionDisplayType = PrintDataFunction.getFunctionDisplayType(functions[f], pdc.getDisplayType());
+						final int functionDisplayType = PrintDataFunction.getFunctionDisplayType(function, pdc.getDisplayType());
 						final boolean displayTypeCategoryChanged = DisplayType.isNumeric(displayType) != DisplayType.isNumeric(functionDisplayType)
 								&& DisplayType.isDate(displayType) != DisplayType.isDate(functionDisplayType);
 						final String formatPattern = displayTypeCategoryChanged ? null : pdc.getFormatPattern();
 
 						pd.addNode(new PrintDataElement(pdc.getColumnName(),
-							m_group.getValue(PrintDataGroup.TOTAL, pdc.getColumnName(), functions[f]),
+							m_group.getValue(PrintDataGroup.TOTAL, pdc.getColumnName(), function),
 							functionDisplayType, formatPattern));
 					}
 				}	//	for all columns
@@ -1107,14 +1228,20 @@ public class DataEngine
 		if (pd.getRowCount() == 0)
 		{
 			if (LogManager.isLevelFiner())
+			{
 				log.warn("NO Rows - ms=" + (System.currentTimeMillis()-m_startTime)
 					+ " - " + pd.getSQL());
+			}
 			else
+			{
 				log.warn("NO Rows - ms=" + (System.currentTimeMillis()-m_startTime));
+			}
 		}
 		else
+		{
 			log.info("Rows=" + pd.getRowCount()
 				+ " - ms=" + (System.currentTimeMillis()-m_startTime));
+		}
 	}	//	loadPrintData
 
 	/**
@@ -1125,18 +1252,24 @@ public class DataEngine
 	 */
 	private void printRunningTotal (PrintData pd, int levelNo, int rowNo)
 	{
-		if (m_runningTotalLines < 1)	//	-1 = none
+		if (m_runningTotalLines < 1)
+		{
 			return;
+		}
 		log.debug("(" + m_runningTotalLines + ") - Row=" + rowNo
 			+ ", mod=" + rowNo % m_runningTotalLines);
 		if (rowNo % m_runningTotalLines != 0)
+		{
 			return;
+		}
 
 		log.debug("Row=" + rowNo);
 		PrintDataColumn pdc = null;
 		int start = 0;
-		if (rowNo == 0)	//	no page break on page 1
+		if (rowNo == 0)
+		{
 			start = 1;
+		}
 		for (int rt = start; rt < 2; rt++)
 		{
 			pd.addRow (true, levelNo);

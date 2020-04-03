@@ -1,8 +1,7 @@
 package de.metas.cache;
 
-import java.util.Set;
-import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Function;
 
 import org.adempiere.ad.dao.cache.CacheInvalidateMultiRequestSerializer;
 import org.slf4j.Logger;
@@ -59,7 +58,7 @@ final class CacheInvalidationRemoteHandler implements IEventListener
 	private static final String EVENT_PROPERTY = CacheInvalidateRequest.class.getSimpleName();
 
 	private final AtomicBoolean _initalized = new AtomicBoolean(false);
-	private final CopyOnWriteArraySet<String> tableNamesToBroadcast = new CopyOnWriteArraySet<>();
+	private ImmutableTableNamesGroupsIndex _tableNamesToBroadcastIndex = ImmutableTableNamesGroupsIndex.EMPTY;
 
 	private final CacheInvalidateMultiRequestSerializer jsonSerializer = new CacheInvalidateMultiRequestSerializer();
 
@@ -92,17 +91,37 @@ final class CacheInvalidationRemoteHandler implements IEventListener
 	 *
 	 * @param tableName
 	 */
-	public void enableForTableName(final String tableName)
+	public void enableForTableName(@NonNull final String tableName)
 	{
-		Check.assumeNotEmpty(tableName, "tableName not empty");
-
 		enable();
-		tableNamesToBroadcast.add(tableName);
+		changeTableNamesToBroadcastIndex(tableNamesToBroadcast -> tableNamesToBroadcast.addingToDefaultGroup(tableName));
 	}
 
-	public Set<String> getTableNamesToBroadcast()
+	/**
+	 * Enable cache invalidation broadcasting for given table names.
+	 *
+	 * @param tableName
+	 */
+	public void enableForTableNamesGroup(@NonNull final TableNamesGroup group)
 	{
-		return ImmutableSet.copyOf(tableNamesToBroadcast);
+		enable();
+		changeTableNamesToBroadcastIndex(index -> index.replacingGroup(group));
+		logger.info("Enabled for {}", group);
+	}
+
+	private synchronized void changeTableNamesToBroadcastIndex(@NonNull final Function<ImmutableTableNamesGroupsIndex, ImmutableTableNamesGroupsIndex> mapper)
+	{
+		_tableNamesToBroadcastIndex = mapper.apply(_tableNamesToBroadcastIndex);
+	}
+
+	private ImmutableTableNamesGroupsIndex getTableNamesToBroadcastIndex()
+	{
+		return _tableNamesToBroadcastIndex;
+	}
+
+	public ImmutableSet<String> getTableNamesToBroadcast()
+	{
+		return getTableNamesToBroadcastIndex().getTableNames();
 	}
 
 	/**
@@ -143,8 +162,9 @@ final class CacheInvalidationRemoteHandler implements IEventListener
 
 	private boolean isAllowBroadcast(final CacheInvalidateRequest request)
 	{
-		return tableNamesToBroadcast.contains(request.getRootTableName())
-				|| tableNamesToBroadcast.contains(request.getChildTableName());
+		final ImmutableTableNamesGroupsIndex index = this.getTableNamesToBroadcastIndex();
+		return index.containsTableName(request.getRootTableName())
+				|| index.containsTableName(request.getChildTableName());
 	}
 
 	/**

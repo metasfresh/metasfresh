@@ -278,8 +278,7 @@ public class ExportHelper
 			throws Exception
 	{
 		final I_AD_Client client = Services.get(IClientDAO.class).retriveClient(exportFormat.getCtx(), m_AD_Client_ID);
-		final MTable table = MTable.get(exportFormat.getCtx(), exportFormat.getAD_Table_ID());
-		log.debug("Table = " + table);
+		final String tableName = Services.get(IADTableDAO.class).retrieveTableName(exportFormat.getAD_Table_ID());
 
 		// metas: begin: build where clause
 		final StringBuffer whereClause = new StringBuffer("1=1");
@@ -293,7 +292,7 @@ public class ExportHelper
 		}
 		// metas: end
 
-		final Collection<PO> records = new Query(exportFormat.getCtx(), table.getTableName(), whereClause.toString(), exportFormat.get_TrxName())
+		final Collection<PO> records = new Query(exportFormat.getCtx(), tableName, whereClause.toString(), exportFormat.get_TrxName())
 				.setOnlyActiveRecords(true)
 				.setRequiredAccess(racCtx.isApplyAccessFilter() ? Access.READ : null)
 				.setLimit(racCtx.getLimit())

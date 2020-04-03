@@ -1,6 +1,8 @@
 package de.metas.cache.model;
 
-import org.adempiere.model.InterfaceWrapperHelper;
+import java.util.List;
+
+import com.google.common.collect.ImmutableList;
 
 /*
  * #%L
@@ -33,15 +35,17 @@ public final class DirectModelCacheInvalidateRequestFactory implements ModelCach
 	}
 
 	@Override
-	public CacheInvalidateRequest createRequestFromModel(final Object model, final ModelCacheInvalidationTiming timing)
+	public List<CacheInvalidateRequest> createRequestsFromModel(
+			final ICacheSourceModel model,
+			final ModelCacheInvalidationTiming timing_NOTUSED)
 	{
-		final int recordId = InterfaceWrapperHelper.getId(model);
+		final int recordId = model.getRecordId();
 		if (recordId < 0)
 		{
-			return null;
+			return ImmutableList.of();
 		}
 
-		final String tableName = InterfaceWrapperHelper.getModelTableName(model);
-		return CacheInvalidateRequest.rootRecord(tableName, recordId);
+		final String tableName = model.getTableName();
+		return ImmutableList.of(CacheInvalidateRequest.rootRecord(tableName, recordId));
 	}
 }

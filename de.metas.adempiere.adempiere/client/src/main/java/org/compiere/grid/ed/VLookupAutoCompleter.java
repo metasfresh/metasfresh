@@ -27,8 +27,6 @@ package org.compiere.grid.ed;
 
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -48,6 +46,7 @@ import org.adempiere.ad.validationRule.impl.CompositeValidationRule;
 import org.adempiere.db.DBConstants;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.apps.search.FieldAutoCompleter;
+import org.compiere.model.I_AD_Table;
 import org.compiere.model.MColumn;
 import org.compiere.model.MLookupFactory;
 import org.compiere.model.MLookupInfo;
@@ -59,7 +58,6 @@ import org.compiere.util.NamePair;
 import org.compiere.util.ValueNamePair;
 import org.slf4j.Logger;
 
-import de.metas.autocomplete.model.I_AD_Table;
 import de.metas.logging.LogManager;
 import de.metas.security.IUserRolePermissions;
 import de.metas.security.permissions.Access;
@@ -107,14 +105,7 @@ import de.metas.util.Services;
 
 		//
 		// When editor value is changed (i.e. on focus lost) hide the popup
-		editor.addVetoableChangeListener(new VetoableChangeListener()
-		{
-			@Override
-			public void vetoableChange(PropertyChangeEvent evt) throws PropertyVetoException
-			{
-				hidePopup();
-			}
-		});
+		editor.addVetoableChangeListener((VetoableChangeListener)evt -> hidePopup());
 
 		//
 		// When editor's editing component has lost focus, hide the popup

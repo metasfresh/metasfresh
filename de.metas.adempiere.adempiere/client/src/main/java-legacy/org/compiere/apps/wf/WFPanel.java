@@ -33,9 +33,9 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextPane;
 
 import org.adempiere.ad.element.api.AdWindowId;
+import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.images.Images;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.plaf.AdempierePLAF;
 import org.compiere.apps.AEnv;
 import org.compiere.apps.AMenu;
@@ -45,7 +45,6 @@ import org.compiere.apps.form.FormFrame;
 import org.compiere.apps.form.FormPanel;
 import org.compiere.model.I_AD_Workflow;
 import org.compiere.model.MQuery;
-import org.compiere.model.MTable;
 import org.compiere.model.X_AD_Workflow;
 import org.compiere.swing.CButton;
 import org.compiere.swing.CComboBox;
@@ -558,7 +557,7 @@ public class WFPanel extends CPanel
 	{
 		if (m_WF_Window_ID == null)
 		{
-			m_WF_Window_ID = AdWindowId.ofRepoIdOrNull(MTable.get(m_ctx, InterfaceWrapperHelper.getTableId(I_AD_Workflow.class)).getAD_Window_ID());
+			m_WF_Window_ID = Services.get(IADTableDAO.class).retrieveWindowId(I_AD_Workflow.Table_Name).orElse(null);
 		}
 		if (m_WF_Window_ID == null)
 		{

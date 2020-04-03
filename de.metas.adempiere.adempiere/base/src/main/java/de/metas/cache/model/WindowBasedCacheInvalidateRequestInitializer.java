@@ -4,6 +4,7 @@ import static de.metas.util.Check.isEmpty;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.HashSet;
 import java.util.Set;
 
 import javax.annotation.Nullable;
@@ -12,10 +13,11 @@ import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.DB;
 import org.slf4j.Logger;
 
+import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
-import de.metas.cache.CacheMgt;
+import de.metas.cache.TableNamesGroup;
 import de.metas.logging.LogManager;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
@@ -54,7 +56,6 @@ public class WindowBasedCacheInvalidateRequestInitializer
 
 	private static final Logger logger = LogManager.getLogger(WindowBasedCacheInvalidateRequestInitializer.class);
 	private final IModelCacheInvalidationService registry = Services.get(IModelCacheInvalidationService.class);
-	private final CacheMgt cacheMgt = CacheMgt.get();
 
 	private WindowBasedCacheInvalidateRequestInitializer()
 	{
@@ -62,54 +63,11 @@ public class WindowBasedCacheInvalidateRequestInitializer
 
 	private void initialize()
 	{
-		final Set<ParentChildInfo> parentChildInfos = retrieveParentChildInfos();
-		logger.info("Found {} parentChildInfo instances to be registered", parentChildInfos.size());
+		final ImmutableModelCacheInvalidateRequestFactoryGroup factoryGroup = new ImmutableFactoryGroupBuilder()
+				.addAll(retrieveParentChildInfos())
+				.build();
 
-		for (final ParentChildInfo info : parentChildInfos)
-		{
-			registerParentTable(info);
-			registerChildTable(info);
-		}
-
-	}
-
-	private void registerParentTable(final ParentChildInfo info)
-	{
-		final String parentTableName = info.getParentTableName();
-
-		registry.register(parentTableName, DirectModelCacheInvalidateRequestFactory.instance);
-
-		if (info.isParentNeedsRemoteCacheInvalidation())
-		{
-			cacheMgt.enableRemoteCacheInvalidationForTableName(parentTableName);
-		}
-	}
-
-	private void registerChildTable(final ParentChildInfo info)
-	{
-		final String childTableName = info.getChildTableName();
-		if (isEmpty(childTableName, true))
-		{
-			return;
-		}
-
-		try
-		{
-			final ParentChildModelCacheInvalidateRequestFactory factory = info.toGenericModelCacheInvalidateRequestFactoryOrNull();
-			if (factory != null)
-			{
-				registry.register(childTableName, factory);
-			}
-		}
-		catch (final Exception ex)
-		{
-			logger.warn("Failed registering model cache invalidate for {}: {}", childTableName, info, ex);
-		}
-
-		if (info.isChildNeedsRemoteCacheInvalidation())
-		{
-			cacheMgt.enableRemoteCacheInvalidationForTableName(childTableName);
-		}
+		registry.registerFactoryGroup(factoryGroup);
 	}
 
 	private final Set<ParentChildInfo> retrieveParentChildInfos()
@@ -180,6 +138,76 @@ public class WindowBasedCacheInvalidateRequestInitializer
 			catch (final Exception ex)
 			{
 				throw new AdempiereException("Failed creating " + ParentChildModelCacheInvalidateRequestFactory.class.getSimpleName() + " for " + this, ex);
+			}
+		}
+	}
+
+	private static class ImmutableFactoryGroupBuilder
+	{
+		private final HashSet<String> tableNamesToEnableRemoveCacheInvalidation = new HashSet<>();
+		private final HashMultimap<String, ModelCacheInvalidateRequestFactory> factoriesByTableName = HashMultimap.create();
+
+		public ImmutableModelCacheInvalidateRequestFactoryGroup build()
+		{
+			return ImmutableModelCacheInvalidateRequestFactoryGroup.builder()
+					.factoriesByTableName(factoriesByTableName)
+					.tableNamesToEnableRemoveCacheInvalidation(TableNamesGroup.builder()
+							.groupId(WindowBasedCacheInvalidateRequestInitializer.class.getSimpleName())
+							.tableNames(tableNamesToEnableRemoveCacheInvalidation)
+							.build())
+					.build();
+		}
+
+		public ImmutableFactoryGroupBuilder addAll(@NonNull final Set<ParentChildInfo> parentChildInfos)
+		{
+			for (final ParentChildInfo info : parentChildInfos)
+			{
+				add(info);
+			}
+			return this;
+		}
+
+		public ImmutableFactoryGroupBuilder add(@NonNull final ParentChildInfo info)
+		{
+			addForParentTable(info);
+			addForChildTable(info);
+			return this;
+		}
+
+		private void addForParentTable(final ParentChildInfo info)
+		{
+			final String parentTableName = info.getParentTableName();
+
+			factoriesByTableName.put(parentTableName, DirectModelCacheInvalidateRequestFactory.instance);
+
+			// NOTE: always invalidate parent table name, even if info.isParentNeedsRemoteCacheInvalidation() is false
+			tableNamesToEnableRemoveCacheInvalidation.add(parentTableName);
+		}
+
+		private void addForChildTable(final ParentChildInfo info)
+		{
+			final String childTableName = info.getChildTableName();
+			if (isEmpty(childTableName, true))
+			{
+				return;
+			}
+
+			try
+			{
+				final ParentChildModelCacheInvalidateRequestFactory factory = info.toGenericModelCacheInvalidateRequestFactoryOrNull();
+				if (factory != null)
+				{
+					factoriesByTableName.put(childTableName, factory);
+				}
+			}
+			catch (final Exception ex)
+			{
+				logger.warn("Failed to create model cache invalidate for {}: {}", childTableName, info, ex);
+			}
+
+			if (info.isChildNeedsRemoteCacheInvalidation())
+			{
+				tableNamesToEnableRemoveCacheInvalidation.add(childTableName);
 			}
 		}
 	}

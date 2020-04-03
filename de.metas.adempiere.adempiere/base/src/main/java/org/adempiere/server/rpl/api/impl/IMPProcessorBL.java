@@ -29,6 +29,7 @@ import java.util.Properties;
 
 import javax.annotation.Nullable;
 
+import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
@@ -44,6 +45,7 @@ import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.AdempiereProcessor;
 import org.compiere.model.I_AD_Column;
+import org.compiere.model.I_AD_Ref_Table;
 import org.compiere.model.I_EXP_FormatLine;
 import org.compiere.model.I_IMP_ProcessorLog;
 import org.compiere.model.I_IMP_ProcessorParameter;
@@ -219,32 +221,27 @@ public class IMPProcessorBL implements IIMPProcessorBL
 			final IImportHelper impHelper = createImportHelper(ctx);
 
 			final StringBuilder result = new StringBuilder();
-			Services.get(ITrxManager.class).run(ITrx.TRXNAME_None, new TrxRunnable()
-			{
-				@Override
-				public void run(final String localTrxName) throws Exception
+			Services.get(ITrxManager.class).run(ITrx.TRXNAME_None, (TrxRunnable)localTrxName -> {
+				try
 				{
-					try
+					impHelper.importXMLDocument(result, document, localTrxName);
+					countSuccess[0]++;
+
+					log.info("" + plog + " - Result: " + result);
+
+					InterfaceWrapperHelper.refresh(plog, localTrxName); // change plog's trxname to 'localTrxName'
+					markResolved(plog);
+				}
+				catch (final ReplicationException e)
+				{
+					InterfaceWrapperHelper.refresh(plog, localTrxName); // change plog's trxname to 'localTrxName'
+					refreshLogException(plog, e);
+
+					if (failfast)
 					{
-						impHelper.importXMLDocument(result, document, localTrxName);
-						countSuccess[0]++;
-
-						log.info("" + plog + " - Result: " + result);
-
-						InterfaceWrapperHelper.refresh(plog, localTrxName); // change plog's trxname to 'localTrxName'
-						markResolved(plog);
+						throw e;
 					}
-					catch (final ReplicationException e)
-					{
-						InterfaceWrapperHelper.refresh(plog, localTrxName); // change plog's trxname to 'localTrxName'
-						refreshLogException(plog, e);
-
-						if (failfast)
-						{
-							throw e;
-						}
-						countFail[0]++;
-					}
+					countFail[0]++;
 				}
 			});
 		}
@@ -429,11 +426,10 @@ public class IMPProcessorBL implements IIMPProcessorBL
 		{
 			final int referenceId = adReferenceValueId;
 
-			final MRefTable refTable = MRefTable.get(ctx, referenceId);
-			final MColumn embeddedKeyColumn = MColumn.get(ctx, refTable.getAD_Key());
+			final I_AD_Ref_Table refTable = MRefTable.get(ctx, referenceId);
+			final I_AD_Column embeddedKeyColumn = MColumn.get(ctx, refTable.getAD_Key());
 
-			final MTable embeddedTable = MTable.get(ctx, refTable.getAD_Table_ID());
-			embeddedTableName = embeddedTable.getTableName();
+			embeddedTableName = Services.get(IADTableDAO.class).retrieveTableName(refTable.getAD_Table_ID());
 			embeddedKeyColumnName = embeddedKeyColumn.getColumnName();
 		}
 		else if (displayType == DisplayType.TableDir

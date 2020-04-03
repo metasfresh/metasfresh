@@ -29,6 +29,7 @@ package org.adempiere.appdict.validation.model.validator;
 import java.util.List;
 import java.util.Properties;
 
+import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_AD_Column;
 import org.compiere.model.I_AD_Field;
@@ -37,7 +38,6 @@ import org.compiere.model.I_AD_Tab;
 import org.compiere.model.MClient;
 import org.compiere.model.MColumn;
 import org.compiere.model.MSequence;
-import org.compiere.model.MTable;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.PO;
@@ -48,6 +48,7 @@ import org.slf4j.Logger;
 import de.metas.logging.LogManager;
 import de.metas.security.RoleId;
 import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * @author tsa
@@ -123,7 +124,7 @@ public class ApplicationDictionary implements ModelValidator
 
 	private void updateTabFieldColumns(Properties ctx, I_AD_Tab tab, String trxName)
 	{
-		final String tableName = MTable.getTableName(ctx, tab.getAD_Table_ID());
+		final String tableName = Services.get(IADTableDAO.class).retrieveTableName(tab.getAD_Table_ID());
 		final List<I_AD_Field> fields = new Query(ctx, I_AD_Field.Table_Name, I_AD_Field.COLUMNNAME_AD_Tab_ID + "=?", trxName)
 				.setParameters(tab.getAD_Tab_ID())
 				.setOrderBy(I_AD_Field.COLUMNNAME_SeqNo)
