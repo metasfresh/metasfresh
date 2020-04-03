@@ -7,7 +7,6 @@ import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
 import org.adempiere.service.ClientId;
-import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_C_ConversionType;
 import org.compiere.model.I_C_Period;
@@ -79,26 +78,26 @@ public class AcctModuleInterceptor extends AbstractModuleInterceptor
 	}
 
 	@Override
-	protected void registerInterceptors(final IModelValidationEngine engine, final I_AD_Client client)
+	protected void registerInterceptors(final IModelValidationEngine engine)
 	{
-		// engine.addModelValidator(new de.metas.acct.model.validator.C_AcctSchema(), client); // spring component
-		engine.addModelValidator(new de.metas.acct.model.validator.C_AcctSchema_GL(), client);
-		engine.addModelValidator(new de.metas.acct.model.validator.C_AcctSchema_Default(), client);
-		engine.addModelValidator(new de.metas.acct.model.validator.C_AcctSchema_Element(), client);
+		// engine.addModelValidator(new de.metas.acct.model.validator.C_AcctSchema()); // spring component
+		engine.addModelValidator(new de.metas.acct.model.validator.C_AcctSchema_GL());
+		engine.addModelValidator(new de.metas.acct.model.validator.C_AcctSchema_Default());
+		engine.addModelValidator(new de.metas.acct.model.validator.C_AcctSchema_Element());
 
-		engine.addModelValidator(new de.metas.acct.model.validator.C_BP_BankAccount(), client); // 08354
-		// engine.addModelValidator(new de.metas.acct.model.validator.C_ElementValue(), client); // spring component
-		engine.addModelValidator(new de.metas.acct.model.validator.C_ValidCombination(), client);
-		engine.addModelValidator(new de.metas.acct.model.validator.GL_Journal(), client);
-		engine.addModelValidator(new de.metas.acct.model.validator.GL_JournalLine(), client);
-		engine.addModelValidator(new de.metas.acct.model.validator.GL_JournalBatch(), client);
+		engine.addModelValidator(new de.metas.acct.model.validator.C_BP_BankAccount()); // 08354
+		// engine.addModelValidator(new de.metas.acct.model.validator.C_ElementValue()); // spring component
+		engine.addModelValidator(new de.metas.acct.model.validator.C_ValidCombination());
+		engine.addModelValidator(new de.metas.acct.model.validator.GL_Journal());
+		engine.addModelValidator(new de.metas.acct.model.validator.GL_JournalLine());
+		engine.addModelValidator(new de.metas.acct.model.validator.GL_JournalBatch());
 		//
-		engine.addModelValidator(new de.metas.acct.model.validator.C_TaxDeclaration(), client);
+		engine.addModelValidator(new de.metas.acct.model.validator.C_TaxDeclaration());
 		//
-		engine.addModelValidator(new de.metas.acct.model.validator.M_MatchInv(), client);
+		engine.addModelValidator(new de.metas.acct.model.validator.M_MatchInv());
 		//
-		engine.addModelValidator(new de.metas.acct.model.validator.GL_Distribution(), client);
-		engine.addModelValidator(new de.metas.acct.model.validator.GL_DistributionLine(), client);
+		engine.addModelValidator(new de.metas.acct.model.validator.GL_Distribution());
+		engine.addModelValidator(new de.metas.acct.model.validator.GL_DistributionLine());
 	}
 
 	@Override

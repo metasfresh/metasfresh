@@ -34,7 +34,6 @@ import org.adempiere.ui.api.IGridTabSummaryInfoFactory;
 import org.adempiere.util.agg.key.IAggregationKeyRegistry;
 import org.compiere.apps.search.dao.IInvoiceHistoryDAO;
 import org.compiere.apps.search.dao.impl.HUInvoiceHistoryDAO;
-import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.eevolution.model.I_DD_OrderLine;
@@ -118,77 +117,73 @@ public final class Main extends AbstractModuleInterceptor
 	}
 
 	@Override
-	protected void onInit(final IModelValidationEngine engine, final I_AD_Client client)
+	protected void registerInterceptors(@NonNull final IModelValidationEngine engine)
 	{
-		super.onInit(engine, client);
+		engine.addModelValidator(new de.metas.handlingunits.model.validator.M_HU_PI());
+		engine.addModelValidator(new de.metas.handlingunits.model.validator.M_HU_PI_Version());
+		engine.addModelValidator(new de.metas.handlingunits.model.validator.M_HU_PI_Item());
+		engine.addModelValidator(new de.metas.handlingunits.model.validator.C_OrderLine());
+		engine.addModelValidator(new de.metas.handlingunits.model.validator.DD_Order());
+		engine.addModelValidator(new de.metas.handlingunits.model.validator.DD_OrderLine());
+		engine.addModelValidator(new de.metas.handlingunits.model.validator.M_HU_PI_Item_Product());
+		engine.addModelValidator(new de.metas.handlingunits.model.validator.C_Order());
+		engine.addModelValidator(new de.metas.handlingunits.model.validator.C_Order_Line_Alloc());
+		engine.addModelValidator(de.metas.handlingunits.model.validator.M_Movement.instance);
+		engine.addModelValidator(de.metas.handlingunits.model.validator.M_HU.INSTANCE);
+		engine.addModelValidator(new de.metas.handlingunits.model.validator.M_HU_Attribute());
+		engine.addModelValidator(de.metas.handlingunits.model.validator.M_HU_Storage.INSTANCE);
+		engine.addModelValidator(new de.metas.handlingunits.model.validator.M_HU_Assignment());
+		engine.addModelValidator(new de.metas.handlingunits.model.validator.M_HU_LUTU_Configuration());
+		engine.addModelValidator(new de.metas.handlingunits.model.validator.M_Product());
+		engine.addModelValidator(new de.metas.handlingunits.model.validator.M_ProductPrice());
+		engine.addModelValidator(new de.metas.handlingunits.model.validator.M_ForecastLine());
 
-		final IProgramaticCalloutProvider programaticCalloutProvider = Services.get(IProgramaticCalloutProvider.class);
-
-		registerFactories();
-		registerServices();
-
-		registerTabCallouts(Services.get(ITabCalloutFactory.class));
-
-		registerHUSSAggregationKeyDependencies();
-
-		setupPricing();
-
-		//
-		// Register model validators
-		engine.addModelValidator(new de.metas.handlingunits.model.validator.M_HU_PI(), client);
-		engine.addModelValidator(new de.metas.handlingunits.model.validator.M_HU_PI_Version(), client);
-		engine.addModelValidator(new de.metas.handlingunits.model.validator.M_HU_PI_Item(), client);
-		engine.addModelValidator(new de.metas.handlingunits.model.validator.C_OrderLine(), client);
-		engine.addModelValidator(new de.metas.handlingunits.model.validator.DD_Order(), client);
-		engine.addModelValidator(new de.metas.handlingunits.model.validator.DD_OrderLine(), client);
-		engine.addModelValidator(new de.metas.handlingunits.model.validator.M_HU_PI_Item_Product(), client);
-		engine.addModelValidator(new de.metas.handlingunits.model.validator.C_Order(), client);
-		engine.addModelValidator(new de.metas.handlingunits.model.validator.C_Order_Line_Alloc(), client);
-		engine.addModelValidator(de.metas.handlingunits.model.validator.M_Movement.instance, client);
-		engine.addModelValidator(de.metas.handlingunits.model.validator.M_HU.INSTANCE, client);
-		engine.addModelValidator(new de.metas.handlingunits.model.validator.M_HU_Attribute(), client);
-		engine.addModelValidator(de.metas.handlingunits.model.validator.M_HU_Storage.INSTANCE, client);
-		engine.addModelValidator(new de.metas.handlingunits.model.validator.M_HU_Assignment(), client);
-		engine.addModelValidator(new de.metas.handlingunits.model.validator.M_HU_LUTU_Configuration(), client);
-		engine.addModelValidator(new de.metas.handlingunits.model.validator.M_Product(), client);
-		engine.addModelValidator(new de.metas.handlingunits.model.validator.M_ProductPrice(), client);
-		engine.addModelValidator(new de.metas.handlingunits.model.validator.M_ForecastLine(), client);
-
-		engine.addModelValidator(de.metas.handlingunits.hutransaction.interceptor.M_HU.INSTANCE, client);
+		engine.addModelValidator(de.metas.handlingunits.hutransaction.interceptor.M_HU.INSTANCE);
 
 		// #484 HU tracing
-		engine.addModelValidator(de.metas.handlingunits.trace.interceptor.HUTraceModuleInterceptor.INSTANCE, client);
+		engine.addModelValidator(de.metas.handlingunits.trace.interceptor.HUTraceModuleInterceptor.INSTANCE);
 
 		// M_Package integration
-		engine.addModelValidator(new M_ShippingPackage(), client);
+		engine.addModelValidator(new M_ShippingPackage());
 
-		engine.addModelValidator(new M_InOutLine(), client);
-		engine.addModelValidator(new C_Invoice_Line_Alloc(), client);
-		engine.addModelValidator(new C_Invoice_Candidate(), client);
-		engine.addModelValidator(new M_PickingSlot_HU(), client);
-		engine.addModelValidator(new C_InvoiceLine(), client);
+		engine.addModelValidator(new M_InOutLine());
+		engine.addModelValidator(new C_Invoice_Line_Alloc());
+		engine.addModelValidator(new C_Invoice_Candidate());
+		engine.addModelValidator(new M_PickingSlot_HU());
+		engine.addModelValidator(new C_InvoiceLine());
 
 		// 06833: M_ReceiptSchedule destruction shall automatically destroy HUs
-		engine.addModelValidator(new de.metas.handlingunits.receiptschedule.model.validator.M_ReceiptSchedule(), client);
+		engine.addModelValidator(new de.metas.handlingunits.receiptschedule.model.validator.M_ReceiptSchedule());
 
 		// 09502: sync material tracking changes with already created planning-HUs
-		engine.addModelValidator(new de.metas.handlingunits.materialtracking.model.validator.M_ReceiptSchedule(), client);
+		engine.addModelValidator(new de.metas.handlingunits.materialtracking.model.validator.M_ReceiptSchedule());
 
 		//
 		// 08743: M_ShipperTransportation
-		engine.addModelValidator(new M_ShipperTransportation(), client);
+		engine.addModelValidator(new M_ShipperTransportation());
 
-		engine.addModelValidator(de.metas.handlingunits.sourcehu.interceptor.M_HU.INSTANCE, client);
+		engine.addModelValidator(de.metas.handlingunits.sourcehu.interceptor.M_HU.INSTANCE);
 
-		// engine.addModelValidator(de.metas.handlingunits.material.interceptor.M_Transaction.INSTANCE, client); // converted to spring component
+		// engine.addModelValidator(de.metas.handlingunits.material.interceptor.M_Transaction.INSTANCE); // converted to spring component
 
+		// Shipment
+		// engine.addModelValidator(new M_ShipmentSchedule()); // now created&registered by spring
+		engine.addModelValidator(new M_ShipmentSchedule_QtyPicked());
+
+		//
+		// Manufacturing
+		engine.addModelValidator(new PP_Cost_Collector());
+
+		// https://github.com/metasfresh/metasfresh/issues/2298
+		engine.addModelValidator(de.metas.handlingunits.picking.interceptor.M_HU.INSTANCE);
+	}
+	
+	@Override
+	protected void registerCallouts(@NonNull final IProgramaticCalloutProvider programaticCalloutProvider)
+	{
 		//
 		// 08255: M_ShipmentSchedule update qtys
 		programaticCalloutProvider.registerAnnotatedCallout(de.metas.handlingunits.inoutcandidate.callout.M_ShipmentSchedule.instance);
-
-		// Shipment
-		// engine.addModelValidator(new M_ShipmentSchedule(), client); // now created&registered by spring
-		engine.addModelValidator(new M_ShipmentSchedule_QtyPicked(), client);
 
 		programaticCalloutProvider.registerAnnotatedCallout(de.metas.handlingunits.inout.callout.M_InOutLine.instance);
 
@@ -197,13 +192,19 @@ public final class Main extends AbstractModuleInterceptor
 
 		// invoice line callout
 		programaticCalloutProvider.registerAnnotatedCallout(de.metas.handlingunits.callout.C_InvoiceLine.instance);
+	}
 
-		//
-		// Manufacturing
-		engine.addModelValidator(new PP_Cost_Collector(), client);
+	@Override
+	protected void onAfterInit()
+	{
+		registerFactories();
+		registerServices();
 
-		// https://github.com/metasfresh/metasfresh/issues/2298
-		engine.addModelValidator(de.metas.handlingunits.picking.interceptor.M_HU.INSTANCE, client);
+		registerTabCallouts(Services.get(ITabCalloutFactory.class));
+
+		registerHUSSAggregationKeyDependencies();
+
+		setupPricing();
 
 		//
 		// Tour Planning

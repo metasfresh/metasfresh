@@ -2,7 +2,6 @@ package de.metas.rfq.model.interceptor;
 
 import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
-import org.compiere.model.I_AD_Client;
 
 /*
  * #%L
@@ -35,15 +34,15 @@ import org.compiere.model.I_AD_Client;
 public class RfQModuleActivator extends AbstractModuleInterceptor
 {
 	@Override
-	protected void registerInterceptors(IModelValidationEngine engine, I_AD_Client client)
+	protected void registerInterceptors(IModelValidationEngine engine)
 	{
-		engine.addModelValidator(new de.metas.rfq.model.interceptor.C_RfQ_Topic(), client);
+		engine.addModelValidator(new de.metas.rfq.model.interceptor.C_RfQ_Topic());
 
-		engine.addModelValidator(new de.metas.rfq.model.interceptor.C_RfQ(), client);
-		engine.addModelValidator(new de.metas.rfq.model.interceptor.C_RfQLine(), client);
+		engine.addModelValidator(new de.metas.rfq.model.interceptor.C_RfQ());
+		engine.addModelValidator(new de.metas.rfq.model.interceptor.C_RfQLine());
 
-		engine.addModelValidator(new de.metas.rfq.model.interceptor.C_RfQResponse(), client);
-		engine.addModelValidator(new de.metas.rfq.model.interceptor.C_RfQResponseLine(), client);
-		engine.addModelValidator(new de.metas.rfq.model.interceptor.C_RfQResponseLineQty(), client);
+		engine.addModelValidator(new de.metas.rfq.model.interceptor.C_RfQResponse());
+		engine.addModelValidator(new de.metas.rfq.model.interceptor.C_RfQResponseLine());
+		engine.addModelValidator(new de.metas.rfq.model.interceptor.C_RfQResponseLineQty());
 	}
 }
