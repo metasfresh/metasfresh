@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.MTable;
@@ -63,7 +64,7 @@ public class CreateMissingReferenceNo extends JavaProcess
 			String name = para.getParameterName();
 			if (para.getParameter() == null)
 			{
-				;
+				
 			}
 			else if (name.equals("IsTest"))
 			{
@@ -104,7 +105,7 @@ public class CreateMissingReferenceNo extends JavaProcess
 			}
 			if (count_ok != 0 || count_skipped != 0)
 			{
-				final String tableName = MTable.getTableName(getCtx(), adTableId);
+				final String tableName = Services.get(IADTableDAO.class).retrieveTableName(adTableId);
 				addLog("Table " + tableName + ": " + count_ok + " reference numbers generated; " + count_skipped + " skipped.");
 			}
 
@@ -134,7 +135,7 @@ public class CreateMissingReferenceNo extends JavaProcess
 		final MTable table = MTable.get(getCtx(), adTableId);
 
 		int count = 0;
-		final List<Integer> checkedReferenceNoTypes = new ArrayList<Integer>();
+		final List<Integer> checkedReferenceNoTypes = new ArrayList<>();
 		for (final IReferenceNoGeneratorInstance generatorInstance : generatorInstances)
 		{
 			final int referenceNoTypeId = generatorInstance.getType().getC_ReferenceNo_Type_ID();
@@ -217,7 +218,7 @@ public class CreateMissingReferenceNo extends JavaProcess
 
 	private static Map<Integer, List<IReferenceNoGeneratorInstance>> groupByTableId(final List<IReferenceNoGeneratorInstance> generatorInstances)
 	{
-		final Map<Integer, List<IReferenceNoGeneratorInstance>> map = new HashMap<Integer, List<IReferenceNoGeneratorInstance>>();
+		final Map<Integer, List<IReferenceNoGeneratorInstance>> map = new HashMap<>();
 
 		for (final IReferenceNoGeneratorInstance generatorInstance : generatorInstances)
 		{
@@ -226,7 +227,7 @@ public class CreateMissingReferenceNo extends JavaProcess
 				List<IReferenceNoGeneratorInstance> list = map.get(adTableId);
 				if (list == null)
 				{
-					list = new ArrayList<IReferenceNoGeneratorInstance>();
+					list = new ArrayList<>();
 					map.put(adTableId, list);
 				}
 				list.add(generatorInstance);

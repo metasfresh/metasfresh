@@ -56,14 +56,16 @@ import javax.swing.JPopupMenu;
 import javax.swing.table.DefaultTableModel;
 
 import org.adempiere.ad.session.ISessionDAO;
+import org.adempiere.ad.table.api.AdTableId;
+import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.validationRule.IValidationRule;
 import org.compiere.grid.VTable;
 import org.compiere.model.GridField;
+import org.compiere.model.I_AD_Table;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.MColumn;
 import org.compiere.model.MLookup;
 import org.compiere.model.MLookupFactory;
-import org.compiere.model.MTable;
 import org.compiere.swing.CDialog;
 import org.compiere.swing.CMenuItem;
 import org.compiere.swing.CPanel;
@@ -92,7 +94,7 @@ public class FieldRecordInfo extends CDialog
 	/** The Menu Icon               */
 	private static Icon s_icon = new ImageIcon(org.compiere.Adempiere.class.getResource("images/ChangeLog16.png"));
 	
-	private int AD_Table_ID;
+	private AdTableId AD_Table_ID;
 	private int AD_Column_ID;
 	private int Record_ID;
 
@@ -108,7 +110,7 @@ public class FieldRecordInfo extends CDialog
 	{
 		super (owner, title, true);
 		
-		this.AD_Table_ID = AD_Table_ID;
+		this.AD_Table_ID = AdTableId.ofRepoIdOrNull(AD_Table_ID);
 		this.AD_Column_ID = AD_Column_ID;
 		this.Record_ID = Record_ID;
 		
@@ -135,7 +137,7 @@ public class FieldRecordInfo extends CDialog
 	/**	Logger			*/
 	protected Logger		log = LogManager.getLogger(getClass());
 	/** The Data		*/
-	private Vector<Vector<String>>	m_data = new Vector<Vector<String>>();
+	private Vector<Vector<String>>	m_data = new Vector<>();
 	
 	/** Date Time Format		*/
 	private SimpleDateFormat	m_dateTimeFormat = DisplayType.getDateFormat
@@ -181,9 +183,9 @@ public class FieldRecordInfo extends CDialog
 	private boolean dynInit(String title)
 	{
 		//	Title
-		if (AD_Table_ID != 0)
+		if (AD_Table_ID != null)
 		{
-			MTable table1 = MTable.get (Env.getCtx(), AD_Table_ID);
+			I_AD_Table table1 = Services.get(IADTableDAO.class).retrieveTable(AD_Table_ID);
 			setTitle(title + " - " + table1.getName());
 		}
 
@@ -195,7 +197,9 @@ public class FieldRecordInfo extends CDialog
 		}
 		
 		if (Record_ID == 0)
+		{
 			return false;
+		}
 		
 		//	Data
 		String sql = "SELECT AD_Column_ID, Updated, UpdatedBy, OldValue, NewValue "
@@ -207,7 +211,7 @@ public class FieldRecordInfo extends CDialog
 		try
 		{
 			pstmt = DB.prepareStatement (sql, null);
-			pstmt.setInt (1, AD_Table_ID);
+			pstmt.setInt (1, AdTableId.toRepoId(AD_Table_ID));
 			pstmt.setInt (2, Record_ID);
 			pstmt.setInt (3, AD_Column_ID);
 			rs = pstmt.executeQuery ();
@@ -227,7 +231,7 @@ public class FieldRecordInfo extends CDialog
 		}
 		
 		//
-		Vector<String> columnNames = new Vector<String>();
+		Vector<String> columnNames = new Vector<>();
 		columnNames.add(Msg.translate(Env.getCtx(), "NewValue"));
 		columnNames.add(Msg.translate(Env.getCtx(), "OldValue"));
 		columnNames.add(Msg.translate(Env.getCtx(), "UpdatedBy"));
@@ -249,21 +253,27 @@ public class FieldRecordInfo extends CDialog
 	private void addLine (int AD_Column_ID, Timestamp Updated, int UpdatedBy,
 		String OldValue, String NewValue)
 	{
-		Vector<String> line = new Vector<String>();
+		Vector<String> line = new Vector<>();
 		//	Column
 		MColumn column = MColumn.get (Env.getCtx(), AD_Column_ID);
 		//
 		if (OldValue != null && OldValue.equals(ISessionDAO.CHANGELOG_NullValue))
+		{
 			OldValue = null;
+		}
 		String showOldValue = OldValue;
 		if (NewValue != null && NewValue.equals(ISessionDAO.CHANGELOG_NullValue))
+		{
 			NewValue = null;
+		}
 		String showNewValue = NewValue;
 		//
 		try
 		{
 			if (DisplayType.isText (column.getAD_Reference_ID ()))
+			{
 				;
+			}
 			else if (column.getAD_Reference_ID() == DisplayType.YesNo)
 			{
 				if (OldValue != null)
@@ -280,39 +290,59 @@ public class FieldRecordInfo extends CDialog
 			else if (column.getAD_Reference_ID() == DisplayType.Amount)
 			{
 				if (OldValue != null)
+				{
 					showOldValue = m_amtFormat
 						.format (new BigDecimal (OldValue));
+				}
 				if (NewValue != null)
+				{
 					showNewValue = m_amtFormat
 						.format (new BigDecimal (NewValue));
+				}
 			}
 			else if (column.getAD_Reference_ID() == DisplayType.Integer)
 			{
 				if (OldValue != null)
+				{
 					showOldValue = m_intFormat.format (new Integer (OldValue));
+				}
 				if (NewValue != null)
+				{
 					showNewValue = m_intFormat.format (new Integer (NewValue));
+				}
 			}
 			else if (DisplayType.isNumeric (column.getAD_Reference_ID ()))
 			{
 				if (OldValue != null)
+				{
 					showOldValue = m_numberFormat.format (new BigDecimal (OldValue));
+				}
 				if (NewValue != null)
+				{
 					showNewValue = m_numberFormat.format (new BigDecimal (NewValue));
+				}
 			}
 			else if (column.getAD_Reference_ID() == DisplayType.Date)
 			{
 				if (OldValue != null)
+				{
 					showOldValue = m_dateFormat.format (Timestamp.valueOf (OldValue));
+				}
 				if (NewValue != null)
+				{
 					showNewValue = m_dateFormat.format (Timestamp.valueOf (NewValue));
+				}
 			}
 			else if (column.getAD_Reference_ID() == DisplayType.DateTime)
 			{
 				if (OldValue != null)
+				{
 					showOldValue = m_dateTimeFormat.format (Timestamp.valueOf (OldValue));
+				}
 				if (NewValue != null)
+				{
 					showNewValue = m_dateTimeFormat.format (Timestamp.valueOf (NewValue));
+				}
 			}
 			else if (DisplayType.isLookup(column.getAD_Reference_ID ()))
 			{
@@ -327,18 +357,24 @@ public class FieldRecordInfo extends CDialog
 					Object key = OldValue; 
 					NamePair pp = lookup.get(key);
 					if (pp != null)
+					{
 						showOldValue = pp.getName();
+					}
 				}
 				if (NewValue != null)
 				{
 					Object key = NewValue; 
 					NamePair pp = lookup.get(key);
 					if (pp != null)
+					{
 						showNewValue = pp.getName();
+					}
 				}
 			}
 			else if (DisplayType.isLOB (column.getAD_Reference_ID ()))
+			{
 				;
+			}
 		}
 		catch (Exception e)
 		{

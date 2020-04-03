@@ -183,26 +183,6 @@ public final class POInfo implements Serializable
 	private static final CCache<Integer, Optional<POInfo>> s_cache = new CCache<>(CACHE_PREFIX, 200);
 	private static final CCache<String, Optional<POInfo>> s_cacheByTableNameUC = new CCache<>(CACHE_PREFIX + "#ByTableName", 200);
 
-	private POInfo(final String tableName, final String trxName)
-	{
-		super();
-
-		m_TableName = tableName;
-		loadInfo(trxName);
-	}   // PInfo
-
-	/**************************************************************************
-	 * Create Persistent Info
-	 *
-	 * @param AD_Table_ID AD_ Table_ID
-	 * @param trxName transaction name
-	 */
-	private POInfo(final int AD_Table_ID, final String trxName)
-	{
-		m_AD_Table_ID = AD_Table_ID;
-		loadInfo(trxName);
-	}   // PInfo
-
 	/** Table_ID */
 	private int m_AD_Table_ID = 0;
 	/** Table Name */
@@ -239,6 +219,18 @@ public final class POInfo implements Serializable
 	private String sqlSelect;
 
 	private POTrlInfo trlInfo;
+
+	private POInfo(final String tableName, final String trxName)
+	{
+		m_TableName = tableName;
+		loadInfo(trxName);
+	}   // PInfo
+
+	private POInfo(final int AD_Table_ID, final String trxName)
+	{
+		m_AD_Table_ID = AD_Table_ID;
+		loadInfo(trxName);
+	}   // PInfo
 
 	/**
 	 * Load Table/Column Info into this instance. If the select returns no result, nothing is loaded and no error is raised.

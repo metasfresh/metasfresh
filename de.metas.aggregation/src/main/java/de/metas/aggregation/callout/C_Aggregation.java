@@ -26,7 +26,8 @@ package de.metas.aggregation.callout;
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.api.ICalloutField;
-import org.compiere.model.I_AD_Table;
+import org.adempiere.ad.table.api.AdTableId;
+import org.adempiere.ad.table.api.impl.TableIdsCache;
 
 import de.metas.aggregation.model.I_C_Aggregation;
 
@@ -41,7 +42,8 @@ public class C_Aggregation
 			return;
 		}
 
-		final I_AD_Table table = aggregation.getAD_Table();
-		aggregation.setEntityType(table.getEntityType());
+		final AdTableId adTableId = AdTableId.ofRepoId(aggregation.getAD_Table_ID());
+		final String entityType = TableIdsCache.instance.getEntityType(adTableId);
+		aggregation.setEntityType(entityType);
 	}
 }

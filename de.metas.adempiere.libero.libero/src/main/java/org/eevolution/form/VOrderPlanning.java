@@ -16,8 +16,6 @@
 
 package org.eevolution.form;
 
-import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
-
 /*
  * #%L
  * de.metas.adempiere.libero.libero
@@ -65,6 +63,8 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 
+import org.adempiere.ad.element.api.AdWindowId;
+import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.images.Images;
 import org.compiere.apps.ADialog;
@@ -351,10 +351,10 @@ public class VOrderPlanning extends CPanel
 			m_frame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 			// System.out.println("Row ...ID " + row);
 			int rows[] = p_table.getSelectedRows();
-			for (int r = 0; r < rows.length; r++)
+			for (int row2 : rows)
 			{
 
-				IDColumn id = (IDColumn)p_table.getValueAt(rows[r], 0);
+				IDColumn id = (IDColumn)p_table.getValueAt(row2, 0);
 				if (id != null && id.isSelected())
 				{
 					final PPOrderId ppOrderId = PPOrderId.ofRepoId(id.getRecord_ID());
@@ -384,7 +384,9 @@ public class VOrderPlanning extends CPanel
 	{
 
 		if (m_frame != null)
+		{
 			m_frame.dispose();
+		}
 		m_frame = null;
 	}
 
@@ -420,7 +422,7 @@ public class VOrderPlanning extends CPanel
 
 	private String find()
 	{
-		int AD_Window_ID = MTable.get(Env.getCtx(), getTableId(I_C_Order.class)).getAD_Window_ID();
+		AdWindowId AD_Window_ID = Services.get(IADTableDAO.class).retrieveWindowId(I_C_Order.Table_Name).get(); 
 		int AD_Tab_ID = getTab_ID(AD_Window_ID, "Order");
 		//
 		Find find = Find.builder()
@@ -435,9 +437,13 @@ public class VOrderPlanning extends CPanel
 				.buildFindDialog();
 		MQuery query = find.getQuery();
 		if (query != null)
+		{
 			return query.getWhereClause();
+		}
 		else
+		{
 			return "";
+		}
 	}
 
 	// begin e-evolution vpj-cd
@@ -447,7 +453,7 @@ public class VOrderPlanning extends CPanel
 	 *	@param String TabName
 	 *	@return int retValue
 	 */
-	private static int getTab_ID(int AD_Window_ID , String TabName) {
+	private static int getTab_ID(AdWindowId AD_Window_ID , String TabName) {
 		String SQL = "SELECT AD_Tab_ID FROM AD_Tab WHERE AD_Window_ID= ?  AND Name = ?";
 		return DB.getSQLValueEx(ITrx.TRXNAME_None, SQL, AD_Window_ID, TabName);
 	}
@@ -578,9 +584,13 @@ public class VOrderPlanning extends CPanel
 
 		confirmPanel.getOKButton().setEnabled(true);
 		if (hasHistory())
+		{
 			confirmPanel.getHistoryButton().setEnabled(enable);
+		}
 		if (hasZoom())
+		{
 			confirmPanel.getZoomButton().setEnabled(enable);
+		}
 	}   // enableButtons
 
 	/**************************************************************************
@@ -590,7 +600,9 @@ public class VOrderPlanning extends CPanel
 	{
 		// ignore when running
 		if (m_worker != null && m_worker.isAlive())
+		{
 			return;
+		}
 		m_worker = new Worker();
 		m_worker.start();
 	}   // executeQuery
@@ -612,34 +624,50 @@ public class VOrderPlanning extends CPanel
 		for (int i = 0; i < layout.length; i++)
 		{
 			if (i > 0)
+			{
 				sql.append(", ");
+			}
 			sql.append(layout[i].getColSQL());
 			// adding ID column
 			if (layout[i].isIDcol())
+			{
 				sql.append(",").append(layout[i].getIDcolSQL());
+			}
 			// add to model
 			p_table.addColumn(layout[i].getColHeader());
 			if (layout[i].isColorColumn())
+			{
 				p_table.setColorColumn(i);
+			}
 			if (layout[i].getColClass() == IDColumn.class)
+			{
 				m_keyColumnIndex = i;
+			}
 		}
 		// set editors (two steps)
 		for (int i = 0; i < layout.length; i++)
+		{
 			p_table.setColumnClass(i, layout[i].getColClass(), layout[i].isReadOnly(), layout[i].getColHeader());
+		}
 
 		sql.append(" FROM ").append(from);
 		//
 		if (!staticWhere.equals(""))
+		{
 			sql.append(" WHERE ").append(staticWhere);
+		}
 
 		m_sqlMain = sql.toString();
 		m_sqlAdd = "";
 		if (orderBy != null && orderBy.length() > 0)
+		{
 			m_sqlAdd = " ORDER BY " + orderBy;
+		}
 
 		if (m_keyColumnIndex == -1)
+		{
 			log.error("Info.prepareTable - No KeyColumn - " + sql);
+		}
 
 		// Table Selection
 		p_table.setRowSelectionAllowed(true);
@@ -665,9 +693,13 @@ public class VOrderPlanning extends CPanel
 		{
 			Object data = p_table.getModel().getValueAt(row, m_keyColumnIndex);
 			if (data instanceof IDColumn)
+			{
 				data = ((IDColumn)data).getRecord_ID();
+			}
 			if (data instanceof Integer)
+			{
 				return (Integer)data;
+			}
 		}
 		return null;
 	}   // getSelectedRowKey
@@ -711,7 +743,9 @@ public class VOrderPlanning extends CPanel
 			StringBuffer sql = new StringBuffer(m_sqlMain);
 			String dynWhere = find();
 			if (dynWhere.length() > 0)
+			 {
 				sql.append(" AND " + dynWhere);   // includes first AND
+			}
 			sql.append(m_sqlAdd);
 			String xSql = Msg.parseTranslation(Env.getCtx(), sql.toString());	// Variables
 			xSql = Env.getUserRolePermissions().addAccessSQL(xSql, getTableName(),
@@ -741,15 +775,25 @@ public class VOrderPlanning extends CPanel
 							p_table.setColumnReadOnly(0, false);
 						}
 						else if (c == Boolean.class)
+						{
 							data = new Boolean("Y".equals(rs.getString(colIndex)));
+						}
 						else if (c == Timestamp.class)
+						{
 							data = rs.getTimestamp(colIndex);
+						}
 						else if (c == BigDecimal.class)
+						{
 							data = rs.getBigDecimal(colIndex);
+						}
 						else if (c == Double.class)
+						{
 							data = new Double(rs.getDouble(colIndex));
+						}
 						else if (c == Integer.class)
+						{
 							data = new Integer(rs.getInt(colIndex));
+						}
 						else if (c == KeyNamePair.class)
 						{
 							String display = rs.getString(colIndex);
@@ -758,7 +802,9 @@ public class VOrderPlanning extends CPanel
 							colOffset++;
 						}
 						else
+						{
 							data = rs.getString(colIndex);
+						}
 						// store
 						p_table.setValueAt(data, row, col);
 					}
