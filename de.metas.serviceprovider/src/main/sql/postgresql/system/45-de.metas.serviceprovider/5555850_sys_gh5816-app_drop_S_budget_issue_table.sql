@@ -12,5 +12,11 @@ DELETE FROM  AD_Table_Trl WHERE AD_Table_ID=541460
 DELETE FROM AD_Table WHERE AD_Table_ID=541460
 ;
 
-DROP TABLE IF EXISTS S_BUDGET_ISSUE CASCADE
+DROP TABLE IF EXISTS S_BUDGET_ISSUE
+;
+
+ALTER TABLE s_externalissuedetail drop column if exists s_effort_issue_id
+;
+
+ALTER TABLE s_externalissuedetail drop column if exists s_budget_issue_id
 ;

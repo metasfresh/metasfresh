@@ -51,7 +51,7 @@ public class ImportIssuesQueue
 
 		try
 		{
-			final Optional<ImportIssueInfo> importIssueInfo = Optional.ofNullable(queue.poll(1, TimeUnit.MINUTES));
+			final Optional<ImportIssueInfo> importIssueInfo = Optional.ofNullable(queue.poll(2, TimeUnit.SECONDS));
 			importIssueInfo.ifPresent(issues::add);
 
 			queue.drainTo(issues);

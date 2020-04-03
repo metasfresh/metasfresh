@@ -443,7 +443,16 @@ DELETE FROM  AD_Table_Trl WHERE AD_Table_ID=541442
 DELETE FROM AD_Table WHERE AD_Table_ID=541442
 ;
 
-DROP TABLE IF EXISTS S_EFFORT_ISSUE CASCADE
+ALTER TABLE s_externalissuedetail drop constraint if exists seffortissue_sexternalissuedetail
+;
+
+ALTER TABLE s_externalissuedetail drop constraint if exists sbudgetissue_sexternalissuedetail
+;
+
+ALTER TABLE s_timebooking drop constraint if exists sissue_stimebooking
+;
+
+DROP TABLE IF EXISTS S_EFFORT_ISSUE
 ;
 
 -- 2020-03-30T15:56:53.121Z
