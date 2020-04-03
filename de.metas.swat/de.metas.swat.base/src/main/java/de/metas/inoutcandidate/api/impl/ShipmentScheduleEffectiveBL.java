@@ -3,6 +3,7 @@ package de.metas.inoutcandidate.api.impl;
 import java.math.BigDecimal;
 import java.time.ZonedDateTime;
 
+import de.metas.bpartner.BPartnerContactId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
@@ -26,6 +27,8 @@ import de.metas.util.Services;
 import de.metas.util.lang.CoalesceUtil;
 import de.metas.util.time.SystemTime;
 import lombok.NonNull;
+
+import javax.annotation.Nullable;
 
 public class ShipmentScheduleEffectiveBL implements IShipmentScheduleEffectiveBL
 {
@@ -132,15 +135,18 @@ public class ShipmentScheduleEffectiveBL implements IShipmentScheduleEffectiveBL
 		}
 	}
 
+	@Nullable
 	@Override
-	public int getAD_User_ID(final I_M_ShipmentSchedule sched)
+	public BPartnerContactId getBPartnerContactID(final @NonNull I_M_ShipmentSchedule sched)
 	{
-		return sched.getAD_User_Override_ID() > 0 ? sched.getAD_User_Override_ID() : sched.getAD_User_ID();
-
+		final int adUserIdRepo = sched.getAD_User_Override_ID() > 0 ? sched.getAD_User_Override_ID() : sched.getAD_User_ID();
+		final int cBPartnerIdRepo = sched.getC_BPartner_Override_ID() > 0 ? sched.getC_BPartner_Override_ID() : sched.getC_BPartner_ID();
+		return BPartnerContactId.ofRepoIdOrNull(cBPartnerIdRepo, adUserIdRepo);
 	}
 
+	@Deprecated
 	@Override
-	public I_AD_User getAD_User(final I_M_ShipmentSchedule sched)
+	public I_AD_User getBPartnerContact(final I_M_ShipmentSchedule sched)
 	{
 		final I_AD_User user = sched.getAD_User_Override_ID() <= 0 ? InterfaceWrapperHelper.loadOutOfTrx(sched.getAD_User_ID(), I_AD_User.class) : InterfaceWrapperHelper.loadOutOfTrx(sched.getAD_User_Override_ID(), I_AD_User.class);
 		return user;

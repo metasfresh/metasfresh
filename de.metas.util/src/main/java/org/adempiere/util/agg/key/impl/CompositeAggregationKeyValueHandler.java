@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
+import lombok.NonNull;
 import org.adempiere.util.agg.key.IAggregationKeyValueHandler;
 import org.adempiere.util.lang.ObjectUtils;
 import org.apache.commons.lang3.builder.CompareToBuilder;
@@ -67,7 +68,7 @@ import org.apache.commons.lang3.builder.CompareToBuilder;
 	}
 
 	@Override
-	public List<Object> getValues(final Object model)
+	public List<Object> getValues(@NonNull final Object model)
 	{
 		final List<Object> values = new ArrayList<Object>();
 		for (final IAggregationKeyValueHandler<Object> aggregationKeyValueHandler : aggregationKeyValueHandlers)
