@@ -26,7 +26,6 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Types;
 import java.time.Duration;
-import java.time.ZonedDateTime;
 import java.util.List;
 
 import javax.sql.DataSource;
@@ -45,7 +44,9 @@ import org.slf4j.Logger;
 
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
+import com.google.common.collect.ImmutableList;
 import com.mchange.v2.c3p0.ComboPooledDataSource;
+import com.mchange.v2.resourcepool.BasicResourcePool_MetasfreshObserver;
 
 import de.metas.connection.impl.DB_PostgreSQL_ConnectionCustomizer;
 import de.metas.logging.LogManager;
@@ -72,7 +73,7 @@ public class DB_PostgreSQL implements AdempiereDatabase
 	private static final String CONFIG_CheckoutTimeout_SwingClient = "org.compiere.db.DB_PostgreSQL.CheckoutTimeout";
 
 	private static final String CONFIG_UnreturnedConnectionTimeoutMillis = "db.postgresql.unreturnedConnectionTimeoutMillis";
-	private static final int CONFIG_UnreturnedConnectionTimeoutMillis_DefaultValue = 0;
+	private static final Duration CONFIG_UnreturnedConnectionTimeoutMillis_DefaultValue = Duration.ofHours(2);
 
 	/**
 	 * Statement Converter for external use (i.e. returned by {@link #getConvert()}.
@@ -316,18 +317,13 @@ public class DB_PostgreSQL implements AdempiereDatabase
 		sb.append("\n").append(getStatus());
 		sb.append("]");
 		return sb.toString();
-	}   // toString
+	}
 
-	/**
-	 * Get Status
-	 *
-	 * @return status info
-	 */
 	@Override
 	public String getStatus()
 	{
-		final ComboPooledDataSource m_ds = getDataSourceOrNull();
-		if (m_ds == null)
+		final ComboPooledDataSource dataSource = getDataSourceOrNull();
+		if (dataSource == null)
 		{
 			return "No datasource";
 		}
@@ -335,10 +331,29 @@ public class DB_PostgreSQL implements AdempiereDatabase
 		final StringBuilder sb = new StringBuilder();
 		try
 		{
-			sb.append("# Connections: ").append(m_ds.getNumConnections());
-			sb.append(" , # Busy Connections: ").append(m_ds.getNumBusyConnections()).append("/").append(m_maxBusyConnectionsThreshold);
-			sb.append(" , # Idle Connections: ").append(m_ds.getNumIdleConnections());
-			sb.append(" , # Orphaned Connections: ").append(m_ds.getNumUnclosedOrphanedConnections());
+			sb.append("# Connections: ").append(dataSource.getNumConnections());
+			sb.append(" , # Busy Connections: ").append(dataSource.getNumBusyConnections()).append("/").append(m_maxBusyConnectionsThreshold);
+			sb.append(" , # Idle Connections: ").append(dataSource.getNumIdleConnections());
+			sb.append(" , # Orphaned Connections: ").append(dataSource.getNumUnclosedOrphanedConnections());
+
+			if (dataSource.isDebugUnreturnedConnectionStackTraces())
+			{
+				try
+				{
+					int index = 1;
+					final List<String> connectionInfos = getAquiredConnectionInfos(dataSource);
+					for (final String info : connectionInfos)
+					{
+						sb.append("\n\t\t " + index + ": " + info);
+						index++;
+					}
+				}
+				catch (final Exception ex)
+				{
+					log.warn("Failed fetching connections debug info. Ignored.", ex);
+				}
+
+			}
 		}
 		catch (Exception e)
 		{
@@ -469,10 +484,9 @@ public class DB_PostgreSQL implements AdempiereDatabase
 
 				final Thread currentThread = Thread.currentThread();
 				log.warn(numConnections + " busy connections found (>= " + maxBusyconnectionsThreshold + "). Running finalizations..."
-						+ "\n                              Thread: " + currentThread.getName() + " (ID=" + currentThread.getId() + ")"
-						+ "\n                     Status(initial): " + statusBefore
-						+ "\n Status(after finalizations started): " + statusAfter
-						+ "\n                                Time: " + ZonedDateTime.now());
+						+ "\n # Thread: " + currentThread.getName() + " (ID=" + currentThread.getId() + ")"
+						+ "\n # Status(initial): " + statusBefore
+						+ "\n # Status(after finalizations started): " + statusAfter);
 			}
 
 			connOk = true;
@@ -596,7 +610,7 @@ public class DB_PostgreSQL implements AdempiereDatabase
 			//
 			// Timeout unreturned connections
 			// i.e. kill them and get them back to the pool.
-			final Duration unreturnedConnectionTimeout = Duration.ofMillis(SystemUtils.getSystemProperty(CONFIG_UnreturnedConnectionTimeoutMillis, CONFIG_UnreturnedConnectionTimeoutMillis_DefaultValue));
+			final Duration unreturnedConnectionTimeout = getUnreturnedConnectionTimeout();
 			if (unreturnedConnectionTimeout.getSeconds() > 0)
 			{
 				// IMPORTANT: unreturnedConnectionTimeout is in seconds, see https://www.mchange.com/projects/c3p0/#unreturnedConnectionTimeout
@@ -615,6 +629,13 @@ public class DB_PostgreSQL implements AdempiereDatabase
 		{
 			throw new DBNoConnectionException("Could not initialise C3P0 Datasource", ex);
 		}
+	}
+
+	private static Duration getUnreturnedConnectionTimeout()
+	{
+		return Duration.ofMillis(SystemUtils.getSystemProperty(
+				CONFIG_UnreturnedConnectionTimeoutMillis,
+				(int)CONFIG_UnreturnedConnectionTimeoutMillis_DefaultValue.toMillis()));
 	}
 
 	private final void closeDataSource()
@@ -1030,5 +1051,11 @@ public class DB_PostgreSQL implements AdempiereDatabase
 	public String getRowIdSql(final String tableName)
 	{
 		return "oid";
+	}
+
+	private static List<String> getAquiredConnectionInfos(final ComboPooledDataSource dataSource) throws Exception
+	{
+		final List<String> infos = BasicResourcePool_MetasfreshObserver.getAquiredConnectionInfos(dataSource);
+		return infos != null ? infos : ImmutableList.of();
 	}
 }   // DB_PostgreSQL
