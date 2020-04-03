@@ -32,9 +32,9 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
+import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.MTable;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.junit.Assert;
@@ -51,6 +51,7 @@ import de.metas.dunning.interfaces.I_C_Dunning;
 import de.metas.dunning.interfaces.I_C_DunningLevel;
 import de.metas.dunning.invoice.api.impl.DunnableDocBuilder;
 import de.metas.dunning.model.I_C_Dunning_Candidate;
+import de.metas.util.Services;
 
 /**
  * NOTE:
@@ -669,7 +670,7 @@ public class DefaultDunningCandidateProducerTest extends DunningTestBase
 		Assert.assertEquals("Invalid candidate - AD_Client_ID: " + candidate, fromDoc.getAD_Client_ID(), candidate.getAD_Client_ID());
 		Assert.assertEquals("Invalid candidate - AD_Org_ID: " + candidate, fromDoc.getAD_Org_ID(), candidate.getAD_Org_ID());
 
-		assertThat("Invalid candidate - AD_Table_ID: " + candidate,fromDoc.getTableName(), equalToIgnoringCase(MTable.getTableName(getCtx(), candidate.getAD_Table_ID())));
+		assertThat("Invalid candidate - AD_Table_ID: " + candidate,fromDoc.getTableName(), equalToIgnoringCase(Services.get(IADTableDAO.class).retrieveTableName(candidate.getAD_Table_ID())));
 		Assert.assertEquals("Invalid candidate - Record_ID: " + candidate, fromDoc.getRecordId(), candidate.getRecord_ID());
 		Assert.assertEquals("Invalid candidate - C_DunningLevel: " + candidate, context.getC_DunningLevel(), candidate.getC_DunningLevel());
 		Assert.assertEquals("Invalid candidate - Processed: " + candidate, false, candidate.isProcessed());

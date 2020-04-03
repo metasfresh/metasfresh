@@ -35,7 +35,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_AD_Column;
-import org.compiere.model.MTable;
 import org.compiere.model.X_AD_Column;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
@@ -127,8 +126,7 @@ public class ColumnEncryption extends JavaProcess
 			}
 
 			final int adColumnId = column.getAD_Column_ID();
-			final MTable adTable = MTable.get(getCtx(), column.getAD_Table_ID());
-			final String tableName = adTable.getTableName();
+			final String tableName = Services.get(IADTableDAO.class).retrieveTableName(column.getAD_Table_ID());
 
 			// Check if the encryption exceeds the current length.
 			final int oldLength = column.getFieldLength();

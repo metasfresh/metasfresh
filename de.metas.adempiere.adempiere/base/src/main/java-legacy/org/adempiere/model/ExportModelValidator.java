@@ -29,6 +29,8 @@
 
 package org.adempiere.model;
 
+import org.adempiere.ad.table.api.IADTableDAO;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -56,14 +58,15 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.process.rpl.exp.ExportHelper;
 import org.compiere.model.MClient;
 import org.compiere.model.MReplicationStrategy;
-import org.compiere.model.MTable;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.PO;
 import org.compiere.model.X_AD_ReplicationDocument;
 import org.compiere.model.X_AD_ReplicationTable;
 import org.slf4j.Logger;
+
 import de.metas.logging.LogManager;
+import de.metas.util.Services;
 
 
 /**
@@ -151,8 +154,8 @@ public class ExportModelValidator implements ModelValidator
 				if (X_AD_ReplicationTable.REPLICATIONTYPE_Merge.equals(rplTable.getReplicationType())
 					|| X_AD_ReplicationTable.REPLICATIONTYPE_Reference.equals(rplTable.getReplicationType())) 
 				{
-					MTable table = MTable.get (client.getCtx(), rplTable.getAD_Table_ID());
-					engine.addModelChange(table.getTableName(), this);
+					final String tableName = Services.get(IADTableDAO.class).retrieveTableName(rplTable.getAD_Table_ID());
+					engine.addModelChange(tableName, this);
 				}
 			}
 		}
@@ -163,9 +166,8 @@ public class ExportModelValidator implements ModelValidator
 				if (X_AD_ReplicationDocument.REPLICATIONTYPE_Merge.equals(rplDocument.getReplicationType())
 					|| X_AD_ReplicationDocument.REPLICATIONTYPE_Reference.equals(rplDocument.getReplicationType())) 
 				{
-					//MDocType docType = MDocType.get(client.getCtx(), rplDocuments[i].getC_DocType_ID());
-					MTable table = MTable.get (client.getCtx(), rplDocument.getAD_Table_ID());			
-					engine.addDocValidate(table.getTableName(), this);
+					final String tableName = Services.get(IADTableDAO.class).retrieveTableName(rplDocument.getAD_Table_ID());
+					engine.addDocValidate(tableName, this);
 				}
 			}
 		}

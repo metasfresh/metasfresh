@@ -32,6 +32,7 @@ import javax.swing.JComponent;
 import javax.swing.LookAndFeel;
 
 import org.adempiere.ad.element.api.AdWindowId;
+import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.plaf.AdempierePLAF;
 import org.adempiere.plaf.VEditorDialogButtonAlign;
@@ -47,11 +48,11 @@ import org.compiere.apps.AEnv;
 import org.compiere.apps.AWindow;
 import org.compiere.grid.ed.menu.EditorContextPopupMenu;
 import org.compiere.model.GridField;
+import org.compiere.model.I_M_Locator;
 import org.compiere.model.MLocator;
 import org.compiere.model.MLocatorLookup;
 import org.compiere.model.MQuery;
 import org.compiere.model.MQuery.Operator;
-import org.compiere.model.MTable;
 import org.compiere.swing.CTextField;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
@@ -555,18 +556,12 @@ public class VLocator extends JComponent
 		m_text.addMouseListener(l);
 	}
 
-	/**
-	 * Action - Zoom
-	 */
 	@Override
 	public void actionZoom()
 	{
-		AdWindowId adWindowId = AdWindowId.ofRepoId(MTable.get(Env.getCtx(), MLocator.Table_Name).getAD_Window_ID());
-		if (adWindowId == null)
-		 {
-			adWindowId = AdWindowId.ofRepoId(139);	// hardcoded window Warehouse & Locators
-		}
-		log.info("");
+		final IADTableDAO tableDAO = Services.get(IADTableDAO.class);
+		final AdWindowId adWindowId = tableDAO.retrieveWindowId(I_M_Locator.Table_Name)
+				.orElse(AdWindowId.ofRepoId(139)); // hardcoded window Warehouse & Locators
 		//
 		setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 		AWindow frame = new AWindow();

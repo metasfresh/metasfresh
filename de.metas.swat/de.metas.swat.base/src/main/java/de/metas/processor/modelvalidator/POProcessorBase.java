@@ -1,7 +1,6 @@
 package de.metas.processor.modelvalidator;
 
 import org.compiere.model.MClient;
-import org.compiere.model.MTable;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.PO;
@@ -60,8 +59,7 @@ public class POProcessorBase implements ModelValidator
 		final IPOProcessor processor = Services.get(IPOProcessorBL.class).retrieveProcessorForPO(po);
 		if (processor == null)
 		{
-			final String msg =
-					"Unable to process '" + po + "'; Missing IOLCandCreator implmentation for table '" + MTable.getTableName(po.getCtx(), po.get_Table_ID()) + "'";
+			final String msg = "Unable to process '" + po + "'; Missing IOLCandCreator implmentation for table '" + po.get_TableName() + "'";
 			logger.warn(msg);
 			return msg;
 		}

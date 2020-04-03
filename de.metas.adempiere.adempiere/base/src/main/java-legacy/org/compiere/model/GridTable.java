@@ -40,6 +40,7 @@ import javax.swing.event.TableModelListener;
 import javax.swing.table.AbstractTableModel;
 
 import org.adempiere.ad.persistence.TableModelLoader;
+import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.model.CopyRecordFactory;
@@ -63,6 +64,7 @@ import de.metas.organization.OrgId;
 import de.metas.security.IUserRolePermissions;
 import de.metas.security.permissions.Access;
 import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * Grid Table Model for JDBC access including buffering.
@@ -128,7 +130,7 @@ public class GridTable extends AbstractTableModel
 		m_WindowNo = WindowNo;
 		m_TabNo = TabNo;
 		m_withAccessControl = withAccessControl;
-		m_virtual = virtual && MTable.get(ctx, AD_Table_ID).isHighVolume(); // metas: is this metas change?
+		m_virtual = virtual && Services.get(IADTableDAO.class).retrieveTable(AD_Table_ID).isHighVolume(); // metas: is this metas change?
 	}	// MTable
 
 	private static final Logger log = LogManager.getLogger(GridTable.class);
@@ -805,19 +807,19 @@ public class GridTable extends AbstractTableModel
 		if (finalCall)
 		{
 			DataStatusListener evl[] = listenerList.getListeners(DataStatusListener.class);
-			for (int i = 0; i < evl.length; i++)
+			for (DataStatusListener element : evl)
 			{
-				listenerList.remove(DataStatusListener.class, evl[i]);
+				listenerList.remove(DataStatusListener.class, element);
 			}
 			TableModelListener ev2[] = listenerList.getListeners(TableModelListener.class);
-			for (int i = 0; i < ev2.length; i++)
+			for (TableModelListener element : ev2)
 			{
-				listenerList.remove(TableModelListener.class, ev2[i]);
+				listenerList.remove(TableModelListener.class, element);
 			}
 			VetoableChangeListener vcl[] = m_vetoableChangeSupport.getVetoableChangeListeners();
-			for (int i = 0; i < vcl.length; i++)
+			for (VetoableChangeListener element : vcl)
 			{
-				m_vetoableChangeSupport.removeVetoableChangeListener(vcl[i]);
+				m_vetoableChangeSupport.removeVetoableChangeListener(element);
 			}
 		}
 
@@ -870,9 +872,9 @@ public class GridTable extends AbstractTableModel
 	private void dispose()
 	{
 		// MFields
-		for (int i = 0; i < m_fields.size(); i++)
+		for (GridField m_field : m_fields)
 		{
-			m_fields.get(i).dispose();
+			m_field.dispose();
 		}
 		m_fields.clear();
 		m_fields = null;
@@ -977,9 +979,9 @@ public class GridTable extends AbstractTableModel
 			m_cacheStart = m_cacheEnd = -1;
 
 			// release sort memory
-			for (int i = 0; i < m_sort.size(); i++)
+			for (MSort element : m_sort)
 			{
-				m_sort.get(i).data = null;
+				element.data = null;
 			}
 		}
 		// update UI
@@ -2055,7 +2057,9 @@ public class GridTable extends AbstractTableModel
 	public boolean dataDelete(int row)
 	{
 		if (row < 0)
+		{
 			return false;
+		}
 
 		// Tab R/O
 		if (m_readOnly)
@@ -2137,7 +2141,9 @@ public class GridTable extends AbstractTableModel
 				log.error(sql.toString(), e);
 				String msg = "DeleteError";
 				if (DBException.isChildRecordFoundError(e))
+				{
 					msg = "DeleteErrorDependent";
+				}
 				fireDataStatusEEvent(msg, e.getLocalizedMessage(), true);
 				return false;
 			}
@@ -2168,9 +2174,9 @@ public class GridTable extends AbstractTableModel
 		if (!m_virtual)
 		{
 			// Correct pointer in Sort
-			for (int i = 0; i < m_sort.size(); i++)
+			for (MSort element : m_sort)
 			{
-				MSort ptr = m_sort.get(i);
+				MSort ptr = element;
 				if (ptr.index > bufferRow)
 				{
 					ptr.index--;	// move up
@@ -2281,7 +2287,9 @@ public class GridTable extends AbstractTableModel
 	public void dataRefresh(int row)
 	{
 		if (row < 0 || m_sort.size() == 0 || m_inserting)
+		{
 			return;
+		}
 
 		// MSort sort = m_sort.get(row); // not used
 		Object[] rowData = getDataAtRow(row);
@@ -2616,9 +2624,9 @@ public class GridTable extends AbstractTableModel
 	private void fireDataStatusChanged(DataStatusEvent e)
 	{
 		DataStatusListener[] listeners = listenerList.getListeners(DataStatusListener.class);
-		for (int i = 0; i < listeners.length; i++)
+		for (DataStatusListener listener : listeners)
 		{
-			listeners[i].dataStatusChanged(e);
+			listener.dataStatusChanged(e);
 		}
 	}	// fireDataStatusChanged
 
@@ -2858,7 +2866,9 @@ public class GridTable extends AbstractTableModel
 		public void run()
 		{
 			if (m_rs == null)
+			{
 				return;
+			}
 
 			try
 			{
@@ -3368,9 +3378,13 @@ public class GridTable extends AbstractTableModel
 		m_buffer = new ArrayList<>(m_rowCount + 10);
 		m_sort = new ArrayList<>(m_rowCount + 10);
 		if (m_rowCount > 0)
+		{
 			m_loader.start();
+		}
 		else
+		{
 			m_loader.close();
+		}
 		m_open = true;
 		//
 		m_changed = false;

@@ -30,15 +30,16 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
+import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.MiscUtils;
 import org.compiere.minigrid.ColumnInfo;
 import org.compiere.model.GridTab;
+import org.compiere.model.I_AD_Column;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_R_ContactInterest;
 import org.compiere.model.Lookup;
-import org.compiere.model.MColumn;
 import org.compiere.model.MGroup;
 import org.compiere.model.MLookupFactory;
 import org.compiere.model.MQuery;
@@ -122,11 +123,11 @@ public class CallCenterModel
 			+")";
 		try
 		{
-			final MColumn c = MTable.get(m_ctx, I_R_Group_Prospect.Table_ID).getColumn(I_R_Group_Prospect.COLUMNNAME_R_Group_ID);
+			final I_AD_Column c = Services.get(IADTableDAO.class).retrieveColumn(I_R_Group_Prospect.Table_Name, I_R_Group_Prospect.COLUMNNAME_R_Group_ID);
 			m_bundlesLookup = MLookupFactory.get(m_ctx, m_windowNo,
 					0,								// Column_ID,
 					DisplayType.Table,				//AD_Reference_ID,
-					c.get_TableName(),
+					I_R_Group_Prospect.Table_Name,
 					c.getColumnName(),				// ColumnName
 					c.getAD_Reference_Value_ID(),	// AD_Reference_Value_ID,
 					false,							// IsParent,
@@ -151,7 +152,9 @@ public class CallCenterModel
 	public GridTab getContactsGridTab()
 	{
 		if (m_mTab != null)
+		{
 			return m_mTab;
+		}
 		m_mTab = MiscUtils.getGridTabForTableAndWindow(m_ctx, m_windowNo, getAD_Window_ID(), I_RV_R_Group_Prospect.Table_ID, true);
 		return m_mTab;
 	}
@@ -159,7 +162,9 @@ public class CallCenterModel
 	public GridTab getRequestUpdatesGridTab()
 	{
 		if (m_mTabRequestUpdates != null)
+		{
 			return m_mTabRequestUpdates;
+		}
 		m_mTabRequestUpdates = MiscUtils.getGridTabForTableAndWindow(m_ctx, m_windowNo, getAD_Window_ID(), I_R_RequestUpdate.Table_ID, true);
 		return m_mTabRequestUpdates;
 	}
@@ -167,7 +172,9 @@ public class CallCenterModel
 	public GridTab getOtherRequestsGridTab()
 	{
 		if (m_mTabOtherRequests != null)
+		{
 			return m_mTabOtherRequests;
+		}
 		m_mTabOtherRequests = MiscUtils.getGridTabForTableAndWindow(m_ctx, m_windowNo, getAD_Window_ID(), InterfaceWrapperHelper.getTableId(I_R_Request.class), true);
 		return m_mTabOtherRequests;
 	}
@@ -175,7 +182,9 @@ public class CallCenterModel
 	public GridTab getContactInterestGridTab()
 	{
 		if (m_mTabInterestArea != null)
+		{
 			return m_mTabInterestArea;
+		}
 		m_mTabInterestArea = MiscUtils.getGridTabForTableAndWindow(m_ctx, m_windowNo, getAD_Window_ID(), I_R_ContactInterest.Table_ID, true);
 		return m_mTabInterestArea;
 	}
@@ -183,7 +192,9 @@ public class CallCenterModel
 	public I_RV_R_Group_Prospect getRV_R_Group_Prospect(boolean refresh)
 	{
 		if (refresh)
+		{
 			m_mTab.dataRefresh();
+		}
 		I_RV_R_Group_Prospect contact = InterfaceWrapperHelper.create(m_mTab, I_RV_R_Group_Prospect.class);
 		return contact;
 	}
@@ -283,7 +294,9 @@ public class CallCenterModel
 	public String getBundleInfo(int R_Group_ID)
 	{
 		if (R_Group_ID <= 0)
+		{
 			return "";
+		}
 
 		final String sql = "SELECT rs.Value, count(*), rs.SeqNo"
 			+" FROM R_Group_Prospect rgp"
@@ -314,7 +327,9 @@ public class CallCenterModel
 				else
 				{
 					if (info.length() > 0)
+					{
 						info.append(", ");
+					}
 					info.append(count).append(" ").append(name);
 				}
 				count_all += count;
@@ -334,7 +349,9 @@ public class CallCenterModel
 		{
 			String name = Msg.translate(m_ctx, "de.metas.callcenter.NewContacts");
 			if (info.length() > 0)
+			{
 				info.insert(0, ", ");
+			}
 			info.insert(0, count_new+" "+name);
 		}
 		// All records
@@ -433,9 +450,13 @@ public class CallCenterModel
 		MGroup group = MGroup.get(Env.getCtx(), contact.getR_Group_ID());
 		String summary = group.getDescription();
 		if (Check.isEmpty(summary))
+		{
 			summary = group.getHelp();
+		}
 		if (Check.isEmpty(summary))
+		{
 			summary = group.getName();
+		}
 		request.setSummary(summary);
 		request.setR_RequestType_ID(getDefault_RequestType_ID());
 		request.setR_Category_ID(group.get_ValueAsInt(BundleUtil.R_Group_R_Category_ID));
@@ -444,7 +465,9 @@ public class CallCenterModel
 	public void setContactPhoneNo(de.metas.callcenter.model.I_R_Request request, ContactPhoneNo phoneNo)
 	{
 		if (phoneNo == null)
+		{
 			return;
+		}
 		if (!Check.isEmpty(phoneNo.getPhoneNo()))
 		{
 			request.setCCM_PhoneActual(phoneNo.getPhoneNo());
@@ -458,7 +481,9 @@ public class CallCenterModel
 	public static String toString(I_RV_R_Group_Prospect c)
 	{
 		if (c == null)
+		{
 			return "null";
+		}
 		StringBuffer sb = new StringBuffer();
 		sb.append("RV_R_Group_Prospect[")
 		.append("C_BPartner_ID="+c.getBPValue()+"/"+c.getC_BPartner_ID())
@@ -470,15 +495,21 @@ public class CallCenterModel
 	public List<ContactPhoneNo> getContactPhoneNumbers()
 	{
 		final I_RV_R_Group_Prospect prospect = getRV_R_Group_Prospect(false);
-		final ArrayList<ContactPhoneNo> list = new ArrayList<ContactPhoneNo>();
+		final ArrayList<ContactPhoneNo> list = new ArrayList<>();
 		if (prospect == null)
+		{
 			return list;
+		}
 		for (final I_AD_User contact : Services.get(IBPartnerDAO.class).retrieveContacts(prospect.getC_BPartner()))
 		{
 			if (!Check.isEmpty(contact.getPhone(), true))
+			{
 				list.add(new ContactPhoneNo(contact.getPhone(), contact.getName(), contact.getAD_User_ID()));
+			}
 			if (!Check.isEmpty(contact.getPhone2(), true))
+			{
 				list.add(new ContactPhoneNo(contact.getPhone2(), contact.getName(), contact.getAD_User_ID()));
+			}
 		}
 		return list;
 	}
