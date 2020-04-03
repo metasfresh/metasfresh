@@ -70,17 +70,14 @@ export function discardNewDocument({ windowType, documentId } = {}) {
 }
 
 export function getTab(tabId, windowType, docId, orderBy) {
-  return getData(
-    'window',
-    windowType,
-    docId,
-    tabId,
-    null,
-    null,
-    null,
-    null,
-    orderBy
-  ).then(
+  return getData({
+    entity: 'window',
+    docType: windowType,
+    docId: docId,
+    tabId: tabId,
+    rowId: null, // all rows
+    orderBy: orderBy,
+  }).then(
     (res) =>
       res.data &&
       res.data.map((row) => ({

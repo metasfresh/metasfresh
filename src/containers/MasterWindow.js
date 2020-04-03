@@ -63,64 +63,50 @@ class MasterWindowContainer extends Component {
   async onWebsocketEvent(event) {
     const { includedTabsInfo, stale } = event;
 
+    const activeTab = includedTabsInfo
+      ? Object.values(includedTabsInfo).find((tabInfo) =>
+          this.isActiveTab(tabInfo.tabId)
+        )
+      : null;
+
+    // Document header got staled
     if (stale) {
-      // some tabs data got updated/row was added
-      if (includedTabsInfo) {
-        const rowsRequests = this.getTabRowsRequests(includedTabsInfo);
+      const { params, fireUpdateData } = this.props;
 
-        // wait for all the rows requests to finish
-        return await Promise.all(rowsRequests).then((res) => {
-          this.mergeDataIntoIncludedTabs(res);
-        });
-      } else {
-        this.fireFullUpdateData();
+      fireUpdateData({
+        windowId: params.windowType,
+        documentId: params.docId,
+        doNotFetchIncludedTabs: true,
+      });
+    }
+
+    // Active included tab got staled
+    if (activeTab) {
+      // Full tab got staled
+      if (activeTab.stale) {
+        this.refreshActiveTab();
       }
-    }
-
-    if (includedTabsInfo) {
-      const tabIds = Object.keys(includedTabsInfo);
-      this.refreshActiveTab(tabIds);
-    }
-  }
-
-  fireFullUpdateData() {
-    const { params, fireUpdateData } = this.props;
-
-    fireUpdateData(
-      'window',
-      params.windowType,
-      params.docId,
-      null,
-      null,
-      null,
-      null
-    );
-  }
-
-  getTabRowsRequests(includedTabsInfo) {
-    const requests = [];
-
-    forEach(includedTabsInfo, (tab, tabId) => {
-      if (this.isActiveTab(tabId)) {
-        const { staleRowIds } = tab;
+      // Some included rows got staled
+      else {
+        const { staleRowIds } = activeTab;
         staleRowIds.forEach((rowId) => {
-          requests.push(this.getTabRow(tabId, rowId));
+          this.getTabRow(activeTab.tabId, rowId).then((res) => {
+            this.mergeDataIntoIncludedTab(res);
+          });
         });
       }
-    });
-
-    return requests;
+    }
   }
 
   getTabRow(tabId, rowId) {
     const { params } = this.props;
-    return getData(
-      'window',
-      params.windowType,
-      params.docId,
-      tabId,
-      rowId
-    ).catch(() => ({ rowId, tabId }));
+    return getData({
+      entity: 'window',
+      docType: params.windowType,
+      docId: params.docId,
+      tabId: tabId,
+      rowId: rowId,
+    }).catch(() => ({ rowId, tabId }));
   }
 
   isActiveTab(tabId) {
@@ -128,81 +114,74 @@ class MasterWindowContainer extends Component {
     return tabId === master.layout.activeTab;
   }
 
-  mergeDataIntoIncludedTabs(responses) {
+  mergeDataIntoIncludedTab(response) {
     const { updateTabRowsData } = this.props;
     const changedTabs = {};
 
-    responses.forEach((response) => {
-      const { data } = response;
-      let rowsById = null;
-      let removedRows = null;
-      let tabId;
+    const { data } = response;
+    let rowsById = null;
+    let removedRows = null;
+    let tabId;
 
-      // removed row
-      if (!data) {
-        removedRows = removedRows || {};
-        removedRows[response.rowId] = true;
-        tabId = !tabId && response.tabId;
-      } else {
-        rowsById = rowsById || {};
-        const rowZero = data[0];
-        tabId = !tabId && rowZero.tabId;
+    // removed row
+    if (!data) {
+      removedRows = removedRows || {};
+      removedRows[response.rowId] = true;
+      tabId = !tabId && response.tabId;
+    } else {
+      rowsById = rowsById || {};
+      const rowZero = data[0];
+      tabId = !tabId && rowZero.tabId;
 
-        data.forEach((row) => {
-          rowsById[row.rowId] = { ...row };
-        });
-      }
+      data.forEach((row) => {
+        rowsById[row.rowId] = { ...row };
+      });
+    }
 
-      changedTabs[tabId] = get(changedTabs, `${tabId}`, {});
+    changedTabs[tabId] = get(changedTabs, `${tabId}`, {});
 
-      if (rowsById) {
-        changedTabs[tabId].changed = {
-          ...get(changedTabs, `${tabId}.changed`, {}),
-          ...rowsById,
-        };
-      }
-      if (removedRows) {
-        changedTabs[tabId].removed = {
-          ...get(changedTabs, `${tabId}.removed`, {}),
-          ...removedRows,
-        };
-      }
-    });
+    if (rowsById) {
+      changedTabs[tabId].changed = {
+        ...get(changedTabs, `${tabId}.changed`, {}),
+        ...rowsById,
+      };
+    }
+    if (removedRows) {
+      changedTabs[tabId].removed = {
+        ...get(changedTabs, `${tabId}.removed`, {}),
+        ...removedRows,
+      };
+    }
 
     forEach(changedTabs, (rowsChanged, tabId) => {
       updateTabRowsData('master', tabId, rowsChanged);
     });
   }
 
-  refreshActiveTab(tabIds) {
+  refreshActiveTab() {
     const { master, params, addRowData } = this.props;
 
-    tabIds.forEach((tabId) => {
-      const tabLayout =
-        master.layout.tabs &&
-        master.layout.tabs.filter((tab) => tab.tabId === tabId)[0];
-      if (
-        tabLayout &&
-        tabLayout.queryOnActivate &&
-        master.layout.activeTab !== tabId
-      ) {
-        return;
+    const activeTabId = master.layout.activeTab;
+    if (!activeTabId) {
+      return;
+    }
+
+    const tabLayout =
+      master.layout.tabs &&
+      master.layout.tabs.filter((tab) => tab.tabId === activeTabId)[0];
+
+    const orderBy = tabLayout.orderBy;
+    let sortingOrder = null;
+    if (orderBy && orderBy.length) {
+      const ordering = orderBy[0];
+      sortingOrder = (ordering.ascending ? '+' : '-') + ordering.fieldName;
+    }
+
+    getTab(activeTabId, params.windowType, master.docId, sortingOrder).then(
+      (tab) => {
+        addRowData({ [activeTabId]: tab }, 'master');
       }
-
-      const orderBy = tabLayout.orderBy;
-      let sortingOrder = null;
-
-      if (orderBy && orderBy.length) {
-        const ordering = orderBy[0];
-        sortingOrder = (ordering.ascending ? '+' : '-') + ordering.fieldName;
-      }
-
-      getTab(tabId, params.windowType, master.docId, sortingOrder).then(
-        (tab) => {
-          addRowData({ [tabId]: tab }, 'master');
-        }
-      );
-    });
+    );
   }
 
   componentWillUnmount() {

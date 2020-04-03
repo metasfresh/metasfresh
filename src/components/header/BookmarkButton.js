@@ -46,7 +46,7 @@ export default class BookmarkButton extends Component {
    * @summary ToDo: Describe the method.
    */
   handleClick = () => {
-    const { nodeId, updateData } = this.props;
+    const { nodeId, onUpdateData } = this.props;
     const { isBookmark } = this.state;
 
     patchRequest({
@@ -58,8 +58,8 @@ export default class BookmarkButton extends Component {
     }).then((response) => {
       this.setState({ isBookmark: !isBookmark });
 
-      if (updateData) {
-        updateData(response.data);
+      if (onUpdateData) {
+        onUpdateData(response.data);
       }
     });
   };
@@ -104,7 +104,7 @@ export default class BookmarkButton extends Component {
  * @prop {*} [alwaysShowed]
  * @prop {*} [transparentBookmarks]
  * @prop {*} [nodeId]
- * @prop {*} [updateData]
+ * @prop {*} [onUpdateData]
  * @prop {*} [isBookmark]
  */
 BookmarkButton.propTypes = {
@@ -112,6 +112,6 @@ BookmarkButton.propTypes = {
   alwaysShowed: PropTypes.any,
   transparentBookmarks: PropTypes.any,
   nodeId: PropTypes.any,
-  updateData: PropTypes.any,
+  onUpdateData: PropTypes.any,
   isBookmark: PropTypes.any,
 };
