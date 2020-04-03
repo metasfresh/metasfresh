@@ -36,6 +36,7 @@ import java.util.Properties;
 
 import javax.annotation.Nullable;
 
+import de.metas.bpartner.BPartnerContactId;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -279,8 +280,9 @@ public class OrderLineBL implements IOrderLineBL
 			final BPartnerLocationId deliveryLocationId = Services.get(IOrderBL.class).getShipToLocationId(order);
 			ol.setC_BPartner_Location_ID(BPartnerLocationId.toRepoId(deliveryLocationId));
 
-			final int contactId = order.getDropShip_User_ID() > 0 ? order.getDropShip_User_ID() : order.getAD_User_ID();
-			ol.setAD_User_ID(contactId);
+			final int contactIdRepo = order.getDropShip_User_ID() > 0 ? order.getDropShip_User_ID() : order.getAD_User_ID();
+			final BPartnerContactId contactId = BPartnerContactId.ofRepoIdOrNull(bpartnerId, contactIdRepo);
+			ol.setAD_User_ID(BPartnerContactId.toRepoId(contactId));
 		}
 
 		return ol;
@@ -291,16 +293,17 @@ public class OrderLineBL implements IOrderLineBL
 	{
 		ol.setAD_Org_ID(order.getAD_Org_ID());
 		final boolean isDropShip = order.isDropShip();
-		final int C_BPartner_ID = isDropShip && order.getDropShip_BPartner_ID() > 0 ? order.getDropShip_BPartner_ID() : order.getC_BPartner_ID();
+		final int C_BPartner_ID = (isDropShip && order.getDropShip_BPartner_ID() > 0) ? order.getDropShip_BPartner_ID() : order.getC_BPartner_ID();
 		ol.setC_BPartner_ID(C_BPartner_ID);
 
-		final int C_BPartner_Location_ID = isDropShip && order.getDropShip_Location_ID() > 0 ? order.getDropShip_Location_ID() : order.getC_BPartner_Location_ID();
+		final int C_BPartner_Location_ID = (isDropShip && order.getDropShip_Location_ID() > 0) ? order.getDropShip_Location_ID() : order.getC_BPartner_Location_ID();
 		ol.setC_BPartner_Location_ID(C_BPartner_Location_ID);
 
 		// metas: begin: copy AD_User_ID
 		final de.metas.interfaces.I_C_OrderLine oline = InterfaceWrapperHelper.create(ol, de.metas.interfaces.I_C_OrderLine.class);
-		final int AD_User_ID = isDropShip && order.getDropShip_User_ID() > 0 ? order.getDropShip_User_ID() : order.getAD_User_ID();
-		oline.setAD_User_ID(AD_User_ID);
+		final int adUserIdRepo = (isDropShip && order.getDropShip_User_ID() > 0) ? order.getDropShip_User_ID() : order.getAD_User_ID();
+		final BPartnerContactId AD_User_ID = BPartnerContactId.ofRepoIdOrNull(C_BPartner_ID, adUserIdRepo);
+		oline.setAD_User_ID(BPartnerContactId.toRepoId(AD_User_ID));
 		// metas: end
 
 		oline.setM_PriceList_Version_ID(0); // the current PLV might be add or'd with the new order's PL.
@@ -459,7 +462,7 @@ public class OrderLineBL implements IOrderLineBL
 		}
 
 		orderLine.setM_AttributeSetInstance_ID(AttributeSetInstanceId.NONE.getRepoId());
-	}	// setM_Product_ID
+	}    // setM_Product_ID
 
 	@Override
 	public I_M_PriceList_Version getPriceListVersion(I_C_OrderLine orderLine)
