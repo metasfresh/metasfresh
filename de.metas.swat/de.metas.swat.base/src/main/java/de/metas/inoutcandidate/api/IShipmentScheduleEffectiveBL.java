@@ -43,9 +43,6 @@ import javax.annotation.Nullable;
 
 /**
  * Returns the "effective" values for a given shipment schedules when it has both an "original" and an "override" column.
- *
- * @author ts
- *
  */
 // TODO 06178: clean up the method names (both ID and Object getters are fine, but the names should be alligned)
 public interface IShipmentScheduleEffectiveBL extends ISingletonService
@@ -75,10 +72,14 @@ public interface IShipmentScheduleEffectiveBL extends ISingletonService
 
 	BPartnerLocationId getBPartnerLocationId(I_M_ShipmentSchedule sched);
 
-	I_AD_User getAD_User(I_M_ShipmentSchedule sched);
+	/**
+	 * @deprecated please use {@link #getBPartnerContactID(I_M_ShipmentSchedule)} as this returns BAD data!
+	 */
+	@Deprecated
+	I_AD_User getBPartnerContact(I_M_ShipmentSchedule sched);
 
 	@Nullable
-	BPartnerContactId getADUserID(@NonNull I_M_ShipmentSchedule sched);
+	BPartnerContactId getBPartnerContactID(@NonNull I_M_ShipmentSchedule sched);
 
 	/**
 	 * @return the effective {@code QtyOrdered}. Where it's coming from is determined from different values and flags of the given {@code sched}.

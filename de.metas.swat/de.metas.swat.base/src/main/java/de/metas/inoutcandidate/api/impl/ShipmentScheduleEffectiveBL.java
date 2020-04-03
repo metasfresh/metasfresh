@@ -137,16 +137,16 @@ public class ShipmentScheduleEffectiveBL implements IShipmentScheduleEffectiveBL
 
 	@Nullable
 	@Override
-	public BPartnerContactId getADUserID(final @NonNull I_M_ShipmentSchedule sched)
+	public BPartnerContactId getBPartnerContactID(final @NonNull I_M_ShipmentSchedule sched)
 	{
 		final int adUserIdRepo = sched.getAD_User_Override_ID() > 0 ? sched.getAD_User_Override_ID() : sched.getAD_User_ID();
 		final int cBPartnerIdRepo = sched.getC_BPartner_Override_ID() > 0 ? sched.getC_BPartner_Override_ID() : sched.getC_BPartner_ID();
 		return BPartnerContactId.ofRepoIdOrNull(cBPartnerIdRepo, adUserIdRepo);
 	}
 
+	@Deprecated
 	@Override
-	// TODO remove this in the future
-	public I_AD_User getAD_User(final I_M_ShipmentSchedule sched)
+	public I_AD_User getBPartnerContact(final I_M_ShipmentSchedule sched)
 	{
 		final I_AD_User user = sched.getAD_User_Override_ID() <= 0 ? InterfaceWrapperHelper.loadOutOfTrx(sched.getAD_User_ID(), I_AD_User.class) : InterfaceWrapperHelper.loadOutOfTrx(sched.getAD_User_Override_ID(), I_AD_User.class);
 		return user;

@@ -323,7 +323,7 @@ public class InOutProducerFromShipmentScheduleWithHU
 			final BPartnerLocationId bpLocationId = shipmentScheduleEffectiveValuesBL.getBPartnerLocationId(shipmentSchedule);
 			shipment.setC_BPartner_ID(bpartnerId.getRepoId());
 			shipment.setC_BPartner_Location_ID(bpLocationId.getRepoId());
-			shipment.setAD_User_ID(BPartnerContactId.toRepoId(shipmentScheduleEffectiveValuesBL.getADUserID(shipmentSchedule)));
+			shipment.setAD_User_ID(BPartnerContactId.toRepoId(shipmentScheduleEffectiveValuesBL.getBPartnerContactID(shipmentSchedule)));
 		}
 
 		//
