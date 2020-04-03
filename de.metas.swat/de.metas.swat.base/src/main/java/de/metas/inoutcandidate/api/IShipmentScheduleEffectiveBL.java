@@ -73,13 +73,13 @@ public interface IShipmentScheduleEffectiveBL extends ISingletonService
 	BPartnerLocationId getBPartnerLocationId(I_M_ShipmentSchedule sched);
 
 	/**
-	 * @deprecated please use {@link #getBPartnerContactID(I_M_ShipmentSchedule)} as this returns BAD data!
+	 * @deprecated please use {@link #getBPartnerContactId(I_M_ShipmentSchedule)} as this returns BAD data!
 	 */
 	@Deprecated
 	I_AD_User getBPartnerContact(I_M_ShipmentSchedule sched);
 
 	@Nullable
-	BPartnerContactId getBPartnerContactID(@NonNull I_M_ShipmentSchedule sched);
+	BPartnerContactId getBPartnerContactId(@NonNull I_M_ShipmentSchedule sched);
 
 	/**
 	 * @return the effective {@code QtyOrdered}. Where it's coming from is determined from different values and flags of the given {@code sched}.

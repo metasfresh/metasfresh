@@ -386,7 +386,7 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 		{
 			queryBuilder.addEqualsFilter(org.compiere.model.I_M_InOut.COLUMNNAME_C_BPartner_ID, shipmentScheduleEffectiveValuesBL.getBPartnerId(shipmentSchedule));
 			queryBuilder.addEqualsFilter(org.compiere.model.I_M_InOut.COLUMNNAME_C_BPartner_Location_ID, shipmentScheduleEffectiveValuesBL.getBPartnerLocationId(shipmentSchedule));
-			final BPartnerContactId adUserID = shipmentScheduleEffectiveValuesBL.getBPartnerContactID(shipmentSchedule);
+			final BPartnerContactId adUserID = shipmentScheduleEffectiveValuesBL.getBPartnerContactId(shipmentSchedule);
 			if (adUserID != null)
 			{
 				queryBuilder.addEqualsFilter(org.compiere.model.I_M_InOut.COLUMNNAME_AD_User_ID, BPartnerContactId.toRepoId(adUserID));

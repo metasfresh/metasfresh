@@ -64,7 +64,7 @@ public class ShipmentScheduleKeyValueHandler implements IAggregationKeyValueHand
 			values.add(sched.getC_Order_ID());
 		}
 		values.add(shipmentScheduleEffectiveBL.getWarehouseId(sched));
-		final BPartnerContactId adUserID = shipmentScheduleEffectiveBL.getBPartnerContactID(sched);
+		final BPartnerContactId adUserID = shipmentScheduleEffectiveBL.getBPartnerContactId(sched);
 		if (adUserID != null)
 		{
 			values.add(BPartnerContactId.toRepoId(adUserID));
