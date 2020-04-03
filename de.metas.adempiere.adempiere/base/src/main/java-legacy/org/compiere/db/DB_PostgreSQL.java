@@ -122,8 +122,7 @@ public class DB_PostgreSQL implements AdempiereDatabase
 
 	/** Logger */
 	private static final Logger log = LogManager.getLogger(DB_PostgreSQL.class);
-
-	private int m_maxbusyconnectionsThreshold = 0;
+	private int m_maxBusyConnectionsThreshold = 0;
 
 	/**
 	 * PostgreSQL Database
@@ -337,7 +336,7 @@ public class DB_PostgreSQL implements AdempiereDatabase
 		try
 		{
 			sb.append("# Connections: ").append(m_ds.getNumConnections());
-			sb.append(" , # Busy Connections: ").append(m_ds.getNumBusyConnections()).append("/").append(m_maxbusyconnectionsThreshold);
+			sb.append(" , # Busy Connections: ").append(m_ds.getNumBusyConnections()).append("/").append(m_maxBusyConnectionsThreshold);
 			sb.append(" , # Idle Connections: ").append(m_ds.getNumIdleConnections());
 			sb.append(" , # Orphaned Connections: ").append(m_ds.getNumUnclosedOrphanedConnections());
 		}
@@ -454,7 +453,8 @@ public class DB_PostgreSQL implements AdempiereDatabase
 			conn.setTransactionIsolation(transactionIsolation);
 
 			final int numConnections = m_ds.getNumBusyConnections();
-			if (numConnections >= m_maxbusyconnectionsThreshold && m_maxbusyconnectionsThreshold > 0)
+			final int maxBusyconnectionsThreshold = this.m_maxBusyConnectionsThreshold;
+			if (numConnections >= maxBusyconnectionsThreshold && maxBusyconnectionsThreshold > 0)
 			{
 				// metas-ts: i think running the finalizer won't be a big help, but anyways, exhausting the connection pool is usually an issue
 				// suggestions to consider:
@@ -468,7 +468,7 @@ public class DB_PostgreSQL implements AdempiereDatabase
 				final String statusAfter = getStatus();
 
 				final Thread currentThread = Thread.currentThread();
-				log.warn(numConnections + " busy connections found (>= " + m_maxbusyconnectionsThreshold + "). Running finalizations..."
+				log.warn(numConnections + " busy connections found (>= " + maxBusyconnectionsThreshold + "). Running finalizations..."
 						+ "\n                              Thread: " + currentThread.getName() + " (ID=" + currentThread.getId() + ")"
 						+ "\n                     Status(initial): " + statusBefore
 						+ "\n Status(after finalizations started): " + statusAfter
@@ -531,17 +531,13 @@ public class DB_PostgreSQL implements AdempiereDatabase
 			{
 				if (!_dataSourceInitialized)
 				{
-					_dataSource = createDataSource(connection);
-					if (_dataSource != null)
-					{
-						m_maxbusyconnectionsThreshold = (int)(_dataSource.getMaxPoolSize() * 0.80);
-						_dataSourceInitialized = true;
-					}
-					else
-					{
-						m_maxbusyconnectionsThreshold = 0;
-						_dataSourceInitialized = false;
-					}
+					final ComboPooledDataSource dataSource = this._dataSource = createDataSource(connection);
+					log.info("Data source: {}", dataSource.toString(/* show_config */true));
+
+					final int maxBusyConnectionsThreshold = this.m_maxBusyConnectionsThreshold = (int)(dataSource.getMaxPoolSize() * 0.80);
+					log.info("MaxBusyConnectionsThreshold={}", maxBusyConnectionsThreshold);
+
+					_dataSourceInitialized = true;
 				}
 			}
 		}
@@ -554,8 +550,9 @@ public class DB_PostgreSQL implements AdempiereDatabase
 	 * NOTE: this method never throws exception but just logs it.
 	 *
 	 * @param connection
-	 * @return {@link DataSource} or <code>null</code> if it cannot be created
+	 * @return {@link DataSource}
 	 */
+	@NonNull
 	private ComboPooledDataSource createDataSource(final CConnection connection)
 	{
 		try
@@ -585,7 +582,6 @@ public class DB_PostgreSQL implements AdempiereDatabase
 				cpds.setMaxPoolSize(20);
 				cpds.setMaxIdleTimeExcessConnections(1200);
 				cpds.setMaxIdleTime(900);
-				m_maxbusyconnectionsThreshold = 15;
 			}
 			else
 			{
@@ -595,7 +591,6 @@ public class DB_PostgreSQL implements AdempiereDatabase
 				// cpds.setMaxPoolSize(150);
 				cpds.setMaxIdleTimeExcessConnections(1200);
 				cpds.setMaxIdleTime(1200);
-				m_maxbusyconnectionsThreshold = 120;
 			}
 
 			//
@@ -604,7 +599,7 @@ public class DB_PostgreSQL implements AdempiereDatabase
 			final Duration unreturnedConnectionTimeout = Duration.ofMillis(SystemUtils.getSystemProperty(CONFIG_UnreturnedConnectionTimeoutMillis, CONFIG_UnreturnedConnectionTimeoutMillis_DefaultValue));
 			if (unreturnedConnectionTimeout.getSeconds() > 0)
 			{
-				// IMPORTANT: unreturnedConnectionTimeout is in seconds, see https://www.mchange.com/projects/c3p0/#unreturnedConnectionTimeout 
+				// IMPORTANT: unreturnedConnectionTimeout is in seconds, see https://www.mchange.com/projects/c3p0/#unreturnedConnectionTimeout
 				cpds.setUnreturnedConnectionTimeout((int)unreturnedConnectionTimeout.getSeconds());
 				cpds.setDebugUnreturnedConnectionStackTraces(true);
 			}
@@ -705,9 +700,10 @@ public class DB_PostgreSQL implements AdempiereDatabase
 		{
 			return "1" + IXName;
 		}
-		else {
+		else
+		{
 			return "0";
-		// jz temp, modify later from user.constraints
+			// jz temp, modify later from user.constraints
 		}
 	}
 
