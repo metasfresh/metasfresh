@@ -70,6 +70,7 @@ public class ManualTest
 	}
 
 	@Test
+	@Ignore
 	public void createUpdateDeleteCampagin()
 	{
 		// add one campaign
