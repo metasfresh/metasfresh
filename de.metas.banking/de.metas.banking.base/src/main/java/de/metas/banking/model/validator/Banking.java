@@ -41,7 +41,6 @@ import de.metas.banking.service.ICashStatementBL;
 import de.metas.banking.spi.impl.BankStatementDocumentRepostingSupplier;
 import de.metas.impexp.processing.IImportProcessFactory;
 import de.metas.payment.api.IPaymentBL;
-import de.metas.util.Check;
 import de.metas.util.Services;
 
 /**
@@ -78,13 +77,7 @@ public class Banking extends AbstractModuleInterceptor
 	}
 
 	@Override
-	protected void registerInterceptors(final IModelValidationEngine engine, final I_AD_Client client)
-	{
-		Check.assumeNull(client, "client shall be null but it was {}");
-		registerInterceptors(engine);
-	}
-
-	private void registerInterceptors(final IModelValidationEngine engine)
+	protected void registerInterceptors(final IModelValidationEngine engine)
 	{
 		final IBankStatementBL bankStatementBL = Services.get(IBankStatementBL.class);
 		final IPaymentBL paymentBL = Services.get(IPaymentBL.class);

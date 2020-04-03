@@ -8,10 +8,8 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.Adempiere;
 import org.compiere.model.I_M_Cost;
 import org.compiere.model.ModelValidator;
-import org.springframework.stereotype.Component;
 
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.costing.CostElement;
@@ -21,7 +19,7 @@ import de.metas.costing.ICostElementRepository;
 import de.metas.costing.IProductCostingBL;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
-import de.metas.util.Services;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -45,15 +43,25 @@ import de.metas.util.Services;
  * #L%
  */
 
-@Component
 @Interceptor(I_M_Cost.class)
-public class M_Cost
+class M_Cost
 {
+	private final ICostElementRepository costElementRepository;
+	private final IProductCostingBL productCostingBL;
+
+	public M_Cost(
+			@NonNull final ICostElementRepository costElementRepository,
+			@NonNull final IProductCostingBL productCostingBL)
+	{
+		this.costElementRepository = costElementRepository;
+		this.productCostingBL = productCostingBL;
+	}
+
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
 	public void beforeSave(final I_M_Cost costRecord)
 	{
 		final CostElementId costElementId = CostElementId.ofRepoId(costRecord.getM_CostElement_ID());
-		final CostElement costElement = Adempiere.getBean(ICostElementRepository.class).getById(costElementId);
+		final CostElement costElement = costElementRepository.getById(costElementId);
 		final boolean userEntry = InterfaceWrapperHelper.isUIAction(costRecord);
 
 		// Check if data entry makes sense
@@ -61,7 +69,7 @@ public class M_Cost
 		{
 			final ProductId productId = ProductId.ofRepoId(costRecord.getM_Product_ID());
 			final AcctSchemaId acctSchemaId = AcctSchemaId.ofRepoId(costRecord.getC_AcctSchema_ID());
-			final CostingLevel costingLevel = Services.get(IProductCostingBL.class).getCostingLevel(productId, acctSchemaId);
+			final CostingLevel costingLevel = productCostingBL.getCostingLevel(productId, acctSchemaId);
 			final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNone(costRecord.getM_AttributeSetInstance_ID());
 			if (CostingLevel.Client.equals(costingLevel))
 			{

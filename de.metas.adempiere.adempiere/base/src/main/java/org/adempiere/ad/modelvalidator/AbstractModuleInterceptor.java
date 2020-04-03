@@ -37,6 +37,7 @@ import de.metas.event.IEventBusFactory;
 import de.metas.event.Topic;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 /**
  * To be extended by module/project main interceptors.
@@ -95,11 +96,17 @@ public abstract class AbstractModuleInterceptor extends AbstractModelInterceptor
 
 	/**
 	 * Called onInit to register module interceptors
-	 *
-	 * @param engine
-	 * @param client
 	 */
-	protected void registerInterceptors(final IModelValidationEngine engine, final I_AD_Client client)
+	protected void registerInterceptors(@NonNull final IModelValidationEngine engine, final I_AD_Client client)
+	{
+		Check.assumeNull(client, "client shall be null but it was {}", client);
+		registerInterceptors(engine, client);
+	}
+
+	/**
+	 * Called onInit to register module interceptors
+	 */
+	protected void registerInterceptors(@NonNull final IModelValidationEngine engine)
 	{
 		// nothing on this level
 	}
