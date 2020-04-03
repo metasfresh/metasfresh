@@ -181,7 +181,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 
 		final I_C_BPartner bpartner = shipmentScheduleEffectiveValuesBL.getBPartner(sched);
 		final I_C_BPartner_Location location = shipmentScheduleEffectiveValuesBL.getBPartnerLocation(sched);
-		final I_AD_User user = shipmentScheduleEffectiveValuesBL.getAD_User(sched);
+		final I_AD_User user = shipmentScheduleEffectiveValuesBL.getBPartnerContact(sched);
 
 		final IBPartnerBL bPartnerBL = Services.get(IBPartnerBL.class);
 		final String address = bPartnerBL.mkFullAddress(

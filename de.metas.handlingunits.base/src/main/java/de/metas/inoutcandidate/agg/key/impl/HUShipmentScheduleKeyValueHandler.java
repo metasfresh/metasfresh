@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import lombok.NonNull;
 import org.adempiere.util.agg.key.IAggregationKeyValueHandler;
 
 import de.metas.handlingunits.IHUShipperTransportationBL;
@@ -45,7 +46,7 @@ public class HUShipmentScheduleKeyValueHandler implements IAggregationKeyValueHa
 	private static final String VERSION = "1";
 
 	@Override
-	public List<Object> getValues(final ShipmentScheduleWithHU schedWithHU)
+	public List<Object> getValues(@NonNull final ShipmentScheduleWithHU schedWithHU)
 	{
 		final List<Object> values = new ArrayList<>();
 

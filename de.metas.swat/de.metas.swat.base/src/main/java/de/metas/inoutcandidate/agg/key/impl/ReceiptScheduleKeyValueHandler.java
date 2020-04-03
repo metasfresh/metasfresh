@@ -26,6 +26,7 @@ package de.metas.inoutcandidate.agg.key.impl;
 import java.util.ArrayList;
 import java.util.List;
 
+import lombok.NonNull;
 import org.adempiere.util.agg.key.IAggregationKeyValueHandler;
 
 import de.metas.inoutcandidate.api.IReceiptScheduleBL;
@@ -40,7 +41,7 @@ import de.metas.util.Services;
 public class ReceiptScheduleKeyValueHandler implements IAggregationKeyValueHandler<I_M_ReceiptSchedule>
 {
 	@Override
-	public List<Object> getValues(final I_M_ReceiptSchedule rs)
+	public List<Object> getValues(@NonNull final I_M_ReceiptSchedule rs)
 	{
 		final IReceiptScheduleBL receiptScheduleBL = Services.get(IReceiptScheduleBL.class);
 

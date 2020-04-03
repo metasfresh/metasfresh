@@ -10,22 +10,23 @@ package de.metas.inoutcandidate.agg.key.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.util.ArrayList;
 import java.util.List;
 
+import de.metas.bpartner.BPartnerContactId;
+import lombok.NonNull;
 import org.adempiere.util.agg.key.IAggregationKeyValueHandler;
 import org.adempiere.util.lang.ObjectUtils;
 
@@ -46,7 +47,7 @@ public class ShipmentScheduleKeyValueHandler implements IAggregationKeyValueHand
 	private static final String VERSION = "1";
 
 	@Override
-	public List<Object> getValues(final I_M_ShipmentSchedule sched)
+	public List<Object> getValues(@NonNull final I_M_ShipmentSchedule sched)
 	{
 		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
 		final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
@@ -63,7 +64,11 @@ public class ShipmentScheduleKeyValueHandler implements IAggregationKeyValueHand
 			values.add(sched.getC_Order_ID());
 		}
 		values.add(shipmentScheduleEffectiveBL.getWarehouseId(sched));
-		values.add(shipmentScheduleEffectiveBL.getAD_User_ID(sched));
+		final BPartnerContactId adUserID = shipmentScheduleEffectiveBL.getBPartnerContactID(sched);
+		if (adUserID != null)
+		{
+			values.add(BPartnerContactId.toRepoId(adUserID));
+		}
 		values.add(sched.getAD_Org_ID());
 
 		return values;
