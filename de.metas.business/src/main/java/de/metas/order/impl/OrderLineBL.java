@@ -302,8 +302,8 @@ public class OrderLineBL implements IOrderLineBL
 		// metas: begin: copy AD_User_ID
 		final de.metas.interfaces.I_C_OrderLine oline = InterfaceWrapperHelper.create(ol, de.metas.interfaces.I_C_OrderLine.class);
 		final int adUserIdRepo = (isDropShip && order.getDropShip_User_ID() > 0) ? order.getDropShip_User_ID() : order.getAD_User_ID();
-		final BPartnerContactId AD_User_ID = BPartnerContactId.ofRepoIdOrNull(C_BPartner_ID, adUserIdRepo);
-		oline.setAD_User_ID(BPartnerContactId.toRepoId(AD_User_ID));
+		final BPartnerContactId adUserId = BPartnerContactId.ofRepoIdOrNull(C_BPartner_ID, adUserIdRepo);
+		oline.setAD_User_ID(BPartnerContactId.toRepoId(adUserId));
 		// metas: end
 
 		oline.setM_PriceList_Version_ID(0); // the current PLV might be add or'd with the new order's PL.

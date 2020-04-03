@@ -97,7 +97,7 @@ public class DocumentPrintingQueueHandler extends PrintingQueueHandlerAdapter
 		{
 			logger.debug("Setting column of C_Printing_Queue {} from DocAction-PO {} that is referenced by AD_Archive {}: [AD_User_ID={}]",
 					new Object[] { queueItem, archiveRerencedModel, archive, document.getDoc_User_ID() });
-			queueItem.setAD_User_ID(document.getDoc_User_ID());
+			queueItem.setAD_User_ID(document.getDoc_User_ID());  // TODO tbp: not sure if here i should use BPartnerContactId
 		}
 
 		final Properties ctx = InterfaceWrapperHelper.getCtx(queueItem);

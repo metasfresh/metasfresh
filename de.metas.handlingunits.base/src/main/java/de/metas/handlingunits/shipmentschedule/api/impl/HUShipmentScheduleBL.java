@@ -169,7 +169,7 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 
 		// Create ShipmentSchedule Qty Picked record
 		final de.metas.inoutcandidate.model.I_M_ShipmentSchedule_QtyPicked //
-		schedQtyPicked = shipmentScheduleAllocBL.createNewQtyPickedRecord(sched, stockQtyAndCatchQty);
+				schedQtyPicked = shipmentScheduleAllocBL.createNewQtyPickedRecord(sched, stockQtyAndCatchQty);
 
 		// mark this as an 'anonymousOnTheFly` pick
 		schedQtyPicked.setIsAnonymousHuPickedOnTheFly(anonymousHuPickedOnTheFly);
@@ -386,7 +386,11 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 		{
 			queryBuilder.addEqualsFilter(org.compiere.model.I_M_InOut.COLUMNNAME_C_BPartner_ID, shipmentScheduleEffectiveValuesBL.getBPartnerId(shipmentSchedule));
 			queryBuilder.addEqualsFilter(org.compiere.model.I_M_InOut.COLUMNNAME_C_BPartner_Location_ID, shipmentScheduleEffectiveValuesBL.getBPartnerLocationId(shipmentSchedule));
-			queryBuilder.addEqualsFilter(org.compiere.model.I_M_InOut.COLUMNNAME_AD_User_ID, BPartnerContactId.toRepoId(shipmentScheduleEffectiveValuesBL.getADUserID(shipmentSchedule)));
+			final BPartnerContactId adUserID = shipmentScheduleEffectiveValuesBL.getADUserID(shipmentSchedule);
+			if (adUserID != null)
+			{
+				queryBuilder.addEqualsFilter(org.compiere.model.I_M_InOut.COLUMNNAME_AD_User_ID, BPartnerContactId.toRepoId(adUserID));
+			}
 		}
 
 		//
@@ -689,7 +693,6 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 
 		}
 		final I_C_OrderLine orderLine = create(shipmentSchedule.getC_OrderLine(), I_C_OrderLine.class);
-
 
 		updatePackingInstructionsFromOrderLine(shipmentScheduleToUse, orderLine);
 		updateHUQuantitiesFromOrderLine(shipmentScheduleToUse, orderLine);
