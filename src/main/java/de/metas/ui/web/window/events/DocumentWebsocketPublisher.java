@@ -115,11 +115,6 @@ public class DocumentWebsocketPublisher
 		forCollector(collector -> collector.staleRootDocument(windowId, documentId));
 	}
 
-	public void staleTab(final WindowId windowId, final DocumentId documentId, final DetailId tabId)
-	{
-		forCollector(collector -> collector.staleTab(windowId, documentId, tabId));
-	}
-
 	public void staleTabs(final WindowId windowId, final DocumentId documentId, final Set<DetailId> tabIds)
 	{
 		forCollector(collector -> collector.staleTabs(windowId, documentId, tabIds));

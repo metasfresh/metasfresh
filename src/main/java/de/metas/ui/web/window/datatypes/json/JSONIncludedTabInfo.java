@@ -53,7 +53,7 @@ public final class JSONIncludedTabInfo
 		return new JSONIncludedTabInfo(tabId);
 	}
 
-	@JsonProperty("tabid")
+	@JsonProperty("tabId")
 	private final String tabIdJson;
 	@JsonIgnore
 	private final DetailId tabId;
@@ -121,14 +121,9 @@ public final class JSONIncludedTabInfo
 		allowDeleteReason = reason;
 	}
 
-	public void setStale()
+	public void markAllRowsStaled()
 	{
 		stale = Boolean.TRUE;
-	}
-
-	public boolean isStale()
-	{
-		return stale != null && stale.booleanValue();
 	}
 
 	public void staleRows(@NonNull final DocumentIdsSelection rowIds)
@@ -140,14 +135,11 @@ public final class JSONIncludedTabInfo
 		}
 		else if (rowIds.isAll())
 		{
-			setStale();
+			markAllRowsStaled();
 		}
 		else
 		{
 			staleRowIds.addAll(rowIds.toSet());
-
-			// FIXME: atm staling included rows is not supported on frontend, so we are invalidating the whole tab.
-			setStale();
 		}
 	}
 
