@@ -35,7 +35,7 @@ import org.slf4j.Logger;
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
 
-import de.metas.cache.model.IModelCacheInvalidationService;
+import de.metas.cache.model.POCacheSourceModel;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.session.UserSession;
@@ -632,7 +632,7 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 
 		//
 		final TableRecordReference rootRecordReference = extractRootRecordReference(document);
-		IModelCacheInvalidationService.ATTR_RootRecordReference.setValue(po, rootRecordReference);
+		POCacheSourceModel.setRootRecordReference(po, rootRecordReference);
 
 		return po;
 	}

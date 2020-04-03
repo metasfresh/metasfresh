@@ -51,12 +51,16 @@ public class JSONDocumentOptions
 
 	@Getter
 	private final JSONOptions jsonOpts;
-	private final boolean showAdvancedFields;
-	private final String dataFieldsListStr;
-	private final Supplier<JSONDocumentPermissions> documentPermissionsSupplier;
 
+	private final String showOnlyFieldsListStr;
 	private Predicate<IDocumentFieldView> _documentFieldFilter; // lazy
 	private Predicate<DocumentFieldChange> _documentFieldChangeFilter; // lazy
+
+	@Getter
+	private final boolean doNotFetchIncludedTabs;
+	private final boolean showAdvancedFields;
+
+	private final Supplier<JSONDocumentPermissions> documentPermissionsSupplier;
 
 	private static final transient Splitter FIELDS_LIST_SPLITTER = Splitter.on(",")
 			.trimResults()
@@ -65,12 +69,14 @@ public class JSONDocumentOptions
 	@Builder
 	private JSONDocumentOptions(
 			@NonNull final UserSession userSession,
+			@Nullable final String showOnlyFieldsListStr,
 			final boolean showAdvancedFields,
-			@Nullable final String dataFieldsListStr)
+			final boolean doNotFetchIncludedTabs)
 	{
 		this.jsonOpts = JSONOptions.of(userSession);
+		this.showOnlyFieldsListStr = showOnlyFieldsListStr;
 		this.showAdvancedFields = showAdvancedFields;
-		this.dataFieldsListStr = dataFieldsListStr;
+		this.doNotFetchIncludedTabs = doNotFetchIncludedTabs;
 		this.documentPermissionsSupplier = createPermissionsSupplier(userSession);
 	}
 
@@ -105,7 +111,7 @@ public class JSONDocumentOptions
 	{
 		final Predicate<IDocumentFieldView> filter = showAdvancedFields ? FILTER_DocumentFieldView_ALL_PUBLIC_FIELDS : FILTER_DocumentFieldView_BASIC_PUBLIC_FIELDS;
 
-		final Set<String> dataFieldNamesSet = Check.isEmpty(dataFieldsListStr, true) ? ImmutableSet.of() : ImmutableSet.copyOf(FIELDS_LIST_SPLITTER.splitToList(dataFieldsListStr));
+		final Set<String> dataFieldNamesSet = Check.isEmpty(showOnlyFieldsListStr, true) ? ImmutableSet.of() : ImmutableSet.copyOf(FIELDS_LIST_SPLITTER.splitToList(showOnlyFieldsListStr));
 		if (dataFieldNamesSet.isEmpty() || dataFieldNamesSet.contains("*"))
 		{
 			return filter;
@@ -128,7 +134,7 @@ public class JSONDocumentOptions
 	{
 		final Predicate<DocumentFieldChange> filter = showAdvancedFields ? FILTER_DocumentFieldChange_ALL_PUBLIC_FIELDS : FILTER_DocumentFieldChange_BASIC_PUBLIC_FIELDS;
 
-		final Set<String> dataFieldNamesSet = Check.isEmpty(dataFieldsListStr, true) ? ImmutableSet.of() : ImmutableSet.copyOf(FIELDS_LIST_SPLITTER.splitToList(dataFieldsListStr));
+		final Set<String> dataFieldNamesSet = Check.isEmpty(showOnlyFieldsListStr, true) ? ImmutableSet.of() : ImmutableSet.copyOf(FIELDS_LIST_SPLITTER.splitToList(showOnlyFieldsListStr));
 		if (dataFieldNamesSet.isEmpty() || dataFieldNamesSet.contains("*"))
 		{
 			return filter;
