@@ -127,7 +127,7 @@ describe("MasterWindowContainer", () => {
 
       nock(config.API_URL)
         .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
-        .get(`/window/${windowType}/${docId}/${tabId}/?orderBy=+Line`)
+        .get(`/window/${windowType}/${docId}/${tabId}/?orderBy=%2BLine`)
         .reply(200, rowFixtures.row_data1);
 
       nock(config.API_URL)
@@ -220,23 +220,30 @@ describe("MasterWindowContainer", () => {
 
       nock(config.API_URL)
         .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
-        .get(`/window/${windowType}/${docId}/${tabId}/${updatedRows[0].rowId}/`)
-        .reply(200, updatedRows);
-
-      nock(config.API_URL)
-        .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
         .get(`/window/${windowType}/${docId}/${tabId}/`)
         .reply(200, rowFixtures.row_data1);
 
       nock(config.API_URL)
         .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
-        .get(`/window/${windowType}/${docId}/${tabId}/?orderBy=+Line`)
+        .get(`/window/${windowType}/${docId}/${tabId}/?orderBy=%2BLine`)
         .reply(200, rowFixtures.row_data1);
 
       nock(config.API_URL)
         .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
         .get(`/window/${windowType}/${docId}/field/DocAction/dropdown`)
         .reply(200, docActionFixtures.data1);
+
+      // after update
+
+      nock(config.API_URL)
+        .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
+        .get(`/window/${windowType}/${docId}/${tabId}/${updatedRows[0].rowId}/`)
+        .reply(200, updatedRows);
+
+      nock(config.API_URL)
+        .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
+        .get(`/window/${windowType}/${docId}/?noTabs=true`)
+        .reply(200, dataFixtures.data1);
 
       const wrapper = mount(
         <Provider store={store}>

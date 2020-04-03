@@ -1,6 +1,54 @@
 import { post, get, delete as del } from 'axios';
 import { getQueryString, cleanupFilter } from '../utils';
 
+export function getData({
+  entity,
+  docType,
+  docId,
+  tabId,
+  rowId,
+  subentity,
+  subentityId,
+  orderBy,
+  viewId,
+  fetchAdvancedFields,
+  doNotFetchIncludedTabs,
+}) {
+  let queryParams = getQueryString({
+    advanced: fetchAdvancedFields,
+    noTabs: doNotFetchIncludedTabs,
+    orderBy: orderBy,
+  });
+
+  return get(
+    `${config.API_URL}/${entity}/${docType}${viewId ? `/${viewId}` : ''}${
+      docId ? `/${docId}` : ''
+    }${tabId ? `/${tabId}` : ''}${rowId ? `/${rowId}` : ''}${
+      subentity ? `/${subentity}` : ''
+    }${subentityId ? `/${subentityId}` : ''}/${
+      queryParams ? `?${queryParams}` : ''
+    }`
+  );
+}
+
+export function getLayout(
+  entity,
+  docType,
+  tabId,
+  subentity = null,
+  docId = null,
+  isAdvanced,
+  list,
+  supportTree
+) {
+  return get(`${config.API_URL}/${entity}/${docType}${
+    docId ? `/${docId}` : ''
+  }${tabId ? `/${tabId}` : ''}${subentity ? `/${subentity}` : ''}/layout${
+    isAdvanced ? '?advanced=true' : ''
+  }${list ? `?viewType=${list}` : ''}${supportTree ? '&supportTree=true' : ''}
+  `);
+}
+
 export function getViewLayout(windowId, viewType, viewProfileId = null) {
   return get(
     `${config.API_URL}/documentView/${windowId}/layout?viewType=${viewType}${
