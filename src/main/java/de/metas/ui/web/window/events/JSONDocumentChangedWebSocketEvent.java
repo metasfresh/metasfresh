@@ -5,8 +5,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
-import javax.annotation.Nullable;
-
 import org.adempiere.exceptions.AdempiereException;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
@@ -59,35 +57,20 @@ import lombok.ToString;
  *
  */
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
-@ToString
 @EqualsAndHashCode
+@ToString
 final class JSONDocumentChangedWebSocketEvent implements WebsocketEndpointAware
 {
 	public static JSONDocumentChangedWebSocketEvent rootDocument(final WindowId windowId, final DocumentId documentId)
 	{
-		final String tabId = null;
-		final DocumentId rowId = null;
-		return new JSONDocumentChangedWebSocketEvent(windowId, documentId, tabId, rowId);
+		return new JSONDocumentChangedWebSocketEvent(windowId, documentId);
 	}
 
 	@JsonProperty("windowId")
 	private final WindowId windowId;
 
 	@JsonProperty("id")
-	private final DocumentId documentId;
-
-	@JsonProperty("tabId")
-	@JsonInclude(JsonInclude.Include.NON_EMPTY)
-	private final String tabId;
-	//
-	@JsonProperty("tabid")
-	@JsonInclude(JsonInclude.Include.NON_EMPTY)
-	@Deprecated
-	private final String tabid;
-
-	@JsonProperty("rowId")
-	@JsonInclude(JsonInclude.Include.NON_EMPTY)
-	private final DocumentId rowId;
+	private final DocumentId id;
 
 	/** Event's timestamp. */
 	@JsonProperty("timestamp")
@@ -101,31 +84,22 @@ final class JSONDocumentChangedWebSocketEvent implements WebsocketEndpointAware
 	/** {@link JSONIncludedTabInfo}s indexed by tabId */
 	@JsonProperty("includedTabsInfo")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
-	// @JsonSerialize(using = JsonMapAsValuesListSerializer.class) // serialize as Map (see #288)
 	private Map<String, JSONIncludedTabInfo> includedTabsInfoByTabId;
 
 	private JSONDocumentChangedWebSocketEvent(
 			@NonNull final WindowId windowId,
-			@NonNull final DocumentId id,
-			@Nullable final String tabId,
-			@Nullable final DocumentId rowId)
+			@NonNull final DocumentId id)
 	{
 		this.windowId = windowId;
-		this.documentId = id;
-		this.tabId = tabId;
-		tabid = tabId;
-		this.rowId = rowId;
+		this.id = id;
 
 		timestamp = DateTimeConverters.toJson(SystemTime.asInstant(), SystemTime.zoneId());
 	}
 
-	private JSONDocumentChangedWebSocketEvent(JSONDocumentChangedWebSocketEvent from)
+	private JSONDocumentChangedWebSocketEvent(@NonNull final JSONDocumentChangedWebSocketEvent from)
 	{
 		windowId = from.windowId;
-		documentId = from.documentId;
-		tabId = from.tabId;
-		tabid = from.tabid;
-		rowId = from.rowId;
+		id = from.id;
 		timestamp = from.timestamp;
 
 		stale = from.stale;
@@ -142,7 +116,7 @@ final class JSONDocumentChangedWebSocketEvent implements WebsocketEndpointAware
 		return new JSONDocumentChangedWebSocketEvent(this);
 	}
 
-	void setStale()
+	void markRootDocumentAsStaled()
 	{
 		stale = Boolean.TRUE;
 	}
@@ -180,17 +154,12 @@ final class JSONDocumentChangedWebSocketEvent implements WebsocketEndpointAware
 	@JsonIgnore
 	public String getWebsocketEndpoint()
 	{
-		return WebSocketConfig.buildDocumentTopicName(windowId, documentId);
-	}
-
-	public void staleTab(@NonNull final DetailId tabId)
-	{
-		getIncludedTabInfo(tabId).setStale();
+		return WebSocketConfig.buildDocumentTopicName(windowId, id);
 	}
 
 	public void staleTabs(@NonNull final Collection<DetailId> tabIds)
 	{
-		tabIds.stream().map(this::getIncludedTabInfo).forEach(JSONIncludedTabInfo::setStale);
+		tabIds.stream().map(this::getIncludedTabInfo).forEach(JSONIncludedTabInfo::markAllRowsStaled);
 	}
 
 	public void staleIncludedRows(@NonNull final DetailId tabId, @NonNull final DocumentIdsSelection rowIds)
@@ -201,9 +170,7 @@ final class JSONDocumentChangedWebSocketEvent implements WebsocketEndpointAware
 	void mergeFrom(@NonNull final JSONDocumentChangedWebSocketEvent from)
 	{
 		if (!Objects.equals(windowId, from.windowId)
-				|| !Objects.equals(documentId, from.documentId)
-				|| !Objects.equals(tabId, from.tabId)
-				|| !Objects.equals(rowId, from.rowId))
+				|| !Objects.equals(id, from.id))
 		{
 			throw new AdempiereException("Cannot merge events because they are not matching")
 					.setParameter("from", from)

@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.Predicate;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -204,19 +206,25 @@ public class WindowRestController
 	}
 
 	@GetMapping("/{windowId}/{documentId}")
-	public List<JSONDocument> getData(
+	public List<JSONDocument> getRootDocuments(
 			@PathVariable("windowId") final String windowIdStr,
 			@PathVariable("documentId") final String documentIdStr,
 			@RequestParam(name = PARAM_FieldsList, required = false) @ApiParam("comma separated field names") final String fieldsListStr,
-			@RequestParam(name = PARAM_Advanced, required = false, defaultValue = PARAM_Advanced_DefaultValue) final boolean advanced)
+			@RequestParam(name = PARAM_Advanced, required = false, defaultValue = PARAM_Advanced_DefaultValue) final boolean advanced,
+			@RequestParam(name = "noTabs", required = false, defaultValue = "false") final boolean noTabs)
 	{
 		final WindowId windowId = WindowId.fromJson(windowIdStr);
 		final DocumentPath documentPath = DocumentPath.rootDocumentPath(windowId, documentIdStr);
-		return getData(documentPath, fieldsListStr, advanced, DocumentQueryOrderByList.EMPTY);
+		final JSONDocumentOptions jsonOpts = newJSONDocumentOptions()
+				.showOnlyFieldsListStr(fieldsListStr)
+				.showAdvancedFields(advanced)
+				.doNotFetchIncludedTabs(noTabs)
+				.build();
+		return getData(documentPath, DocumentQueryOrderByList.EMPTY, jsonOpts);
 	}
 
 	@GetMapping("/{windowId}/{documentId}/{tabId}")
-	public List<JSONDocument> getData(
+	public List<JSONDocument> getIncludedTabRows(
 			@PathVariable("windowId") final String windowIdStr,
 			@PathVariable("documentId") final String documentIdStr,
 			@PathVariable("tabId") final String tabIdStr,
@@ -241,11 +249,17 @@ public class WindowRestController
 		}
 
 		final DocumentQueryOrderByList orderBys = DocumentQueryOrderByList.parse(orderBysListStr);
-		return getData(documentPath, fieldsListStr, advanced, orderBys);
+
+		final JSONDocumentOptions jsonOpts = newJSONDocumentOptions()
+				.showOnlyFieldsListStr(fieldsListStr)
+				.showAdvancedFields(advanced)
+				.build();
+
+		return getData(documentPath, orderBys, jsonOpts);
 	}
 
 	@GetMapping("/{windowId}/{documentId}/{tabId}/{rowId}")
-	public List<JSONDocument> getData(
+	public List<JSONDocument> getIncludedTabRow(
 			@PathVariable("windowId") final String windowIdStr //
 			, @PathVariable("documentId") final String documentIdStr //
 			, @PathVariable("tabId") final String tabIdStr //
@@ -256,17 +270,20 @@ public class WindowRestController
 	{
 		final WindowId windowId = WindowId.fromJson(windowIdStr);
 		final DocumentPath documentPath = DocumentPath.includedDocumentPath(windowId, documentIdStr, tabIdStr, rowIdStr);
-		return getData(documentPath, fieldsListStr, advanced, DocumentQueryOrderByList.EMPTY);
+		final JSONDocumentOptions jsonOpts = newJSONDocumentOptions()
+				.showOnlyFieldsListStr(fieldsListStr)
+				.showAdvancedFields(advanced)
+				.build();
+
+		return getData(documentPath, DocumentQueryOrderByList.EMPTY, jsonOpts);
 	}
 
-	private List<JSONDocument> getData(final DocumentPath documentPath, final String fieldsListStr, final boolean advanced, final DocumentQueryOrderByList orderBys)
+	private List<JSONDocument> getData(
+			@NonNull final DocumentPath documentPath,
+			@Nullable final DocumentQueryOrderByList orderBys,
+			@NonNull final JSONDocumentOptions jsonOpts)
 	{
 		userSession.assertLoggedIn();
-
-		final JSONDocumentOptions jsonOpts = newJSONDocumentOptions()
-				.showAdvancedFields(advanced)
-				.dataFieldsListStr(fieldsListStr)
-				.build();
 
 		return documentCollection.forRootDocumentReadonly(documentPath, rootDocument -> {
 			List<Document> documents;

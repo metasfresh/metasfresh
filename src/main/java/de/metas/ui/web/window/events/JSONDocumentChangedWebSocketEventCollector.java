@@ -83,7 +83,7 @@ final class JSONDocumentChangedWebSocketEventCollector
 	public void staleRootDocument(final WindowId windowId, final DocumentId documentId)
 	{
 		final JSONDocumentChangedWebSocketEvent event = getCreateEvent(windowId, documentId);
-		event.setStale();
+		event.markRootDocumentAsStaled();
 	}
 
 	public void staleTab(final WindowId windowId, final DocumentId documentId, final DetailId tabId)

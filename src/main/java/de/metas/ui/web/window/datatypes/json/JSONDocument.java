@@ -29,6 +29,7 @@ import de.metas.ui.web.window.model.DocumentStandardAction;
 import de.metas.ui.web.window.model.DocumentValidStatus;
 import de.metas.ui.web.window.model.IDocumentChangesCollector;
 import de.metas.ui.web.window.model.IIncludedDocumentsCollection;
+import lombok.NonNull;
 import lombok.ToString;
 
 /*
@@ -65,7 +66,7 @@ import lombok.ToString;
 @ToString(callSuper = true)
 public final class JSONDocument extends JSONDocumentBase
 {
-	public static JSONDocument ofDocument(final Document document, final JSONDocumentOptions options)
+	public static JSONDocument ofDocument(@NonNull final Document document, @NonNull final JSONDocumentOptions options)
 	{
 		final JSONDocument jsonDocument = new JSONDocument(document.getDocumentPath());
 
@@ -106,11 +107,14 @@ public final class JSONDocument extends JSONDocumentBase
 
 		//
 		// Included tabs info
-		document.getIncludedDocumentsCollections()
-				.stream()
-				.map(JSONDocument::createIncludedTabInfo)
-				.peek(jsonIncludedTabInfo -> options.getDocumentPermissions().apply(document, jsonIncludedTabInfo))
-				.forEach(jsonDocument::addIncludedTabInfo);
+		if (!options.isDoNotFetchIncludedTabs())
+		{
+			document.getIncludedDocumentsCollections()
+					.stream()
+					.map(JSONDocument::createIncludedTabInfo)
+					.peek(jsonIncludedTabInfo -> options.getDocumentPermissions().apply(document, jsonIncludedTabInfo))
+					.forEach(jsonDocument::addIncludedTabInfo);
+		}
 
 		//
 		// Available standard actions
@@ -133,7 +137,7 @@ public final class JSONDocument extends JSONDocumentBase
 		final JSONIncludedTabInfo tabInfo = JSONIncludedTabInfo.newInstance(includedDocumentsCollection.getDetailId());
 		if (includedDocumentsCollection.isStale())
 		{
-			tabInfo.setStale();
+			tabInfo.markAllRowsStaled();
 		}
 
 		final LogicExpressionResult allowCreateNew = includedDocumentsCollection.getAllowCreateNewDocument();
@@ -257,7 +261,7 @@ public final class JSONDocument extends JSONDocumentBase
 		final JSONIncludedTabInfo tabInfo = JSONIncludedTabInfo.newInstance(includedDetailInfo.getDetailId());
 		if (includedDetailInfo.isStale())
 		{
-			tabInfo.setStale();
+			tabInfo.markAllRowsStaled();
 		}
 
 		final LogicExpressionResult allowCreateNew = includedDetailInfo.getAllowNew();
