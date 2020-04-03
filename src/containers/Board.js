@@ -78,7 +78,10 @@ class Board extends Component {
   init = () => {
     const { boardId } = this.props;
 
-    getData('board', boardId)
+    getData({
+      entity: 'board',
+      docType: boardId,
+    })
       .then((res) => {
         this.setState(
           {

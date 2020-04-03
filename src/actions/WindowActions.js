@@ -572,30 +572,24 @@ export function initWindow(windowType, docId, tabId, rowId = null, isAdvanced) {
         });
       } else if (rowId) {
         //Existing row document
-        return getData(
-          'window',
-          windowType,
-          docId,
-          tabId,
-          rowId,
-          null,
-          null,
-          isAdvanced
-        ).catch((e) => {
+        return getData({
+          entity: 'window',
+          docType: windowType,
+          docId: docId,
+          tabId: tabId,
+          rowId: rowId,
+          fetchAdvancedFields: isAdvanced,
+        }).catch((e) => {
           return e;
         });
       } else {
         //Existing master document
-        return getData(
-          'window',
-          windowType,
-          docId,
-          null,
-          null,
-          null,
-          null,
-          isAdvanced
-        ).catch((e) => {
+        return getData({
+          entity: 'window',
+          docType: windowType,
+          docId: docId,
+          fetchAdvancedFields: isAdvanced,
+        }).catch((e) => {
           dispatch(getWindowBreadcrumb(windowType));
           dispatch(
             initDataSuccess({
@@ -843,18 +837,15 @@ export function patch(
       await dispatch(indicatorState('error'));
       await dispatch({ type: PATCH_FAILURE, symbol });
 
-      const response = await getData(
-        entity,
-        windowType,
-        id,
-        tabId,
-        rowId,
-        null,
-        null,
-        isAdvanced,
-        null,
-        viewId
-      );
+      const response = await getData({
+        entity: entity,
+        docType: windowType,
+        docId: id,
+        tabId: tabId,
+        rowId: rowId,
+        fetchAdvancedFields: isAdvanced,
+        viewId: viewId,
+      });
 
       await dispatch(
         mapDataToState(
@@ -870,30 +861,36 @@ export function patch(
   };
 }
 
-export function fireUpdateData(
-  entity,
-  windowType,
-  id,
+export function fireUpdateData({
+  windowId,
+  documentId,
   tabId,
   rowId,
   isModal,
-  isAdvanced
-) {
+  fetchAdvancedFields,
+  doNotFetchIncludedTabs,
+}) {
   return (dispatch) => {
-    getData(entity, windowType, id, tabId, rowId, null, null, isAdvanced).then(
-      (response) => {
-        dispatch(
-          mapDataToState(
-            response.data,
-            isModal,
-            rowId,
-            id,
-            windowType,
-            isAdvanced
-          )
-        );
-      }
-    );
+    getData({
+      entity: 'window',
+      docType: windowId,
+      docId: documentId,
+      tabId: tabId,
+      rowId: rowId,
+      fetchAdvancedFields: fetchAdvancedFields,
+      doNotFetchIncludedTabs: doNotFetchIncludedTabs,
+    }).then((response) => {
+      dispatch(
+        mapDataToState(
+          response.data,
+          isModal,
+          rowId,
+          documentId,
+          windowId,
+          fetchAdvancedFields
+        )
+      );
+    });
   };
 }
 
