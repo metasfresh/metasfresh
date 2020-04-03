@@ -26,6 +26,8 @@ package de.metas.inoutcandidate.agg.key.impl;
 import java.util.ArrayList;
 import java.util.List;
 
+import de.metas.bpartner.BPartnerContactId;
+import lombok.NonNull;
 import org.adempiere.util.agg.key.IAggregationKeyValueHandler;
 import org.adempiere.util.lang.ObjectUtils;
 
@@ -46,7 +48,7 @@ public class ShipmentScheduleKeyValueHandler implements IAggregationKeyValueHand
 	private static final String VERSION = "1";
 
 	@Override
-	public List<Object> getValues(final I_M_ShipmentSchedule sched)
+	public List<Object> getValues(@NonNull final I_M_ShipmentSchedule sched)
 	{
 		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
 		final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
