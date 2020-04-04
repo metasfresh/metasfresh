@@ -32,12 +32,10 @@ import java.util.Set;
 import java.util.function.IntFunction;
 
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
-import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.logging.LoggingHelper;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_BP_BankAccount;
@@ -59,27 +57,17 @@ import de.metas.acct.api.AccountId;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaGeneralLedger;
 import de.metas.acct.api.AcctSchemaId;
-import de.metas.acct.api.IAccountDAO;
-import de.metas.acct.api.IFactAcctDAO;
-import de.metas.acct.api.IFactAcctListenersService;
-import de.metas.acct.api.IPostingRequestBuilder.PostImmediate;
-import de.metas.acct.api.IPostingService;
 import de.metas.acct.doc.AcctDocContext;
+import de.metas.acct.doc.AcctDocRequiredServicesFacade;
 import de.metas.acct.doc.PostingException;
-import de.metas.banking.api.IBPBankAccountDAO;
 import de.metas.bpartner.BPartnerId;
-import de.metas.cache.model.CacheInvalidateMultiRequest;
-import de.metas.cache.model.IModelCacheInvalidationService;
-import de.metas.cache.model.ModelCacheInvalidationTiming;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.CurrencyPrecision;
-import de.metas.currency.ICurrencyBL;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.currency.exceptions.NoCurrencyRateFoundException;
 import de.metas.document.engine.IDocument;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.BooleanWithReason;
-import de.metas.i18n.IMsgBL;
 import de.metas.lang.SOTrx;
 import de.metas.location.LocationId;
 import de.metas.logging.LogManager;
@@ -91,9 +79,9 @@ import de.metas.product.acct.api.ActivityId;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.NumberUtils;
-import de.metas.util.Services;
 import de.metas.util.lang.CoalesceUtil;
 import de.metas.util.lang.RepoIdAware;
+import lombok.Getter;
 import lombok.NonNull;
 
 /**
@@ -160,18 +148,8 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 {
 	private final String SYSCONFIG_CREATE_NOTE_ON_ERROR = "org.compiere.acct.Doc.createNoteOnPostError";
 
-	// services
-	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
-	private final IMsgBL msgBL = Services.get(IMsgBL.class);
-	protected final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
-	private final ICurrencyBL currencyConversionBL = Services.get(ICurrencyBL.class);
-	private final ITrxManager trxManager = Services.get(ITrxManager.class);
-	private final IFactAcctDAO factAcctDAO = Services.get(IFactAcctDAO.class);
-	private final IAccountDAO accountDAO = Services.get(IAccountDAO.class);
-	private final IFactAcctListenersService factAcctListenersService = Services.get(IFactAcctListenersService.class);
-	private final IModelCacheInvalidationService modelCacheInvalidationService = Services.get(IModelCacheInvalidationService.class);
-	private final IBPBankAccountDAO bpBankAccountDAO = Services.get(IBPBankAccountDAO.class);
-	private final IPostingService postingService = Services.get(IPostingService.class);
+	@Getter
+	protected final AcctDocRequiredServicesFacade services;
 
 	/** AR Invoices - ARI */
 	public static final String DOCTYPE_ARInvoice = X_C_DocType.DOCBASETYPE_ARInvoice;
@@ -235,10 +213,8 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 	 */
 	protected Doc(@NonNull final AcctDocContext ctx, final String defaultDocBaseType)
 	{
-		//
-		// Accounting schemas
-		Check.assumeNotEmpty(ctx.getAcctSchemas(), "ass not empty");
-		acctSchemas = ImmutableList.copyOf(ctx.getAcctSchemas());
+		services = ctx.getServices();
+		acctSchemas = ctx.getAcctSchemas();
 
 		//
 		// Document model
@@ -381,7 +357,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 
 		//
 		// Do the actual posting
-		trxManager.runInThreadInheritedTrx(new TrxRunnable2()
+		services.runInThreadInheritedTrx(new TrxRunnable2()
 		{
 			PostingException postingException;
 
@@ -397,7 +373,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 				final PostingException postingException = newPostingException(e);
 				this.postingException = postingException;
 
-				final boolean createNote = sysConfigBL.getBooleanValue(SYSCONFIG_CREATE_NOTE_ON_ERROR, false, getAD_Client_ID(), getAD_Org_ID());
+				final boolean createNote = services.getSysConfigBooleanValue(SYSCONFIG_CREATE_NOTE_ON_ERROR);
 				if (createNote)
 				{
 					createErrorNote(postingException);
@@ -524,7 +500,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 
 		//
 		// Fire event: BEFORE_POST
-		factAcctListenersService.fireBeforePost(getPO());
+		services.fireBeforePostEvent(getPO());
 
 		//
 		// Save facts
@@ -542,7 +518,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 
 		//
 		// Fire event: AFTER_POST
-		factAcctListenersService.fireAfterPost(getPO());
+		services.fireAfterPostEvent(getPO());
 
 		//
 		// Execute after document posted code
@@ -568,7 +544,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 	private final int deleteAcct()
 	{
 		final Object documentPO = getPO();
-		return factAcctDAO.deleteForDocumentModel(documentPO);
+		return services.deleteFactAcctByDocumentModel(documentPO);
 	}	// deleteAcct
 
 	/**
@@ -769,10 +745,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 
 	private void fireDocumentChanged()
 	{
-		modelCacheInvalidationService.invalidate(
-				CacheInvalidateMultiRequest.fromTableNameAndRecordId(get_TableName(), get_ID()),
-				ModelCacheInvalidationTiming.CHANGE);
-
+		services.fireDocumentChanged(get_TableName(), get_ID());
 	}
 
 	/**************************************************************************
@@ -968,14 +941,14 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 				continue;
 			}
 
-			final CurrencyConversionContext conversionCtx = currencyConversionBL.createCurrencyConversionContext(
+			final CurrencyConversionContext conversionCtx = services.createCurrencyConversionContext(
 					getDateAcct(),
 					getCurrencyConversionTypeId(),
 					getClientId(),
 					getOrgId());
 			try
 			{
-				currencyConversionBL.getCurrencyRate(conversionCtx, currencyId, acctCurrencyId);
+				services.getCurrencyRate(conversionCtx, currencyId, acctCurrencyId);
 			}
 			catch (final NoCurrencyRateFoundException e)
 			{
@@ -1408,17 +1381,17 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 			return null;
 		}
 
-		return accountDAO.getById(accountId);
+		return services.getAccountById(accountId);
 	}	// getAccount
 
 	protected final MAccount getRealizedGainAcct(final AcctSchema as)
 	{
-		return accountDAO.getById(as.getDefaultAccounts().getRealizedGainAcctId());
+		return services.getAccountById(as.getDefaultAccounts().getRealizedGainAcctId());
 	}
 
 	protected final MAccount getRealizedLossAcct(final AcctSchema as)
 	{
-		return accountDAO.getById(as.getDefaultAccounts().getRealizedLossAcctId());
+		return services.getAccountById(as.getDefaultAccounts().getRealizedLossAcctId());
 	}
 
 	@Override
@@ -1531,7 +1504,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 			return ICurrencyDAO.DEFAULT_PRECISION.toInt();
 		}
 
-		_currencyPrecision = currencyDAO.getStdPrecision(currencyId);
+		_currencyPrecision = services.getCurrencyStandardPrecision(currencyId);
 		return _currencyPrecision.toInt();
 	}
 
@@ -1657,7 +1630,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		}
 		if (bpBankAccount == null || bpBankAccount.getC_BP_BankAccount_ID() != bpBankAccountId)
 		{
-			bpBankAccount = bpBankAccountDAO.getById(bpBankAccountId);
+			bpBankAccount = services.getBPBankAccountById(bpBankAccountId);
 		}
 		return bpBankAccount;
 	}
@@ -1936,7 +1909,8 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 			note.setRecord(po.get_Table_ID(), po.get_ID());
 			note.setReference(toString());	// Document
 
-			final StringBuilder text = new StringBuilder(msgBL.getMsg(ctx, AD_MessageValue));
+			final StringBuilder text = new StringBuilder();
+			text.append(services.translate(AD_MessageValue).translate(adLanguage));
 			final String p_Error = ex.getDetailMessage().translate(adLanguage);
 			if (!Check.isEmpty(p_Error, true))
 			{
@@ -1994,16 +1968,10 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 			return;
 		}
 
+		final ClientId clientId = getClientId();
 		for (final Object document : documentModels)
 		{
-			postingService.newPostingRequest()
-					.setClientId(getClientId())
-					.setDocumentFromModel(document) // the document to be posted
-					.setFailOnError(false) // don't fail because we don't want to fail the main document posting because one of it's depending documents are failing
-					.setPostImmediate(PostImmediate.Yes) // yes, post it immediate
-					.setForce(false) // don't force it
-					.setPostWithoutServer() // post directly (don't contact the server) because we want to post on client or server like the main document
-					.postIt(); // do it!
+			services.postImmediateNoFail(document, clientId);
 		}
 	}
 }   // Doc

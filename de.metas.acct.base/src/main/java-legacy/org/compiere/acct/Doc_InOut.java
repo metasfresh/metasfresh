@@ -22,8 +22,6 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.adempiere.service.ISysConfigBL;
-import org.compiere.Adempiere;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_MatchInv;
@@ -37,7 +35,6 @@ import de.metas.acct.api.PostingType;
 import de.metas.acct.api.ProductAcctType;
 import de.metas.acct.doc.AcctDocContext;
 import de.metas.costing.CostAmount;
-import de.metas.costing.ICostingService;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.InOutLineId;
@@ -65,8 +62,6 @@ import de.metas.util.Services;
  */
 public class Doc_InOut extends Doc<DocLine_InOut>
 {
-	private final ICostingService costDetailService = Adempiere.getBean(ICostingService.class);
-	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	private final IInOutBL inOutBL = Services.get(IInOutBL.class);
 	private final IMatchInvDAO matchInvDAO = Services.get(IMatchInvDAO.class);
 
@@ -105,7 +100,6 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 			}
 
 			final DocLine_InOut docLine = DocLine_InOut.builder()
-					.costDetailService(costDetailService)
 					.doc(this)
 					.inoutLine(inoutLine)
 					.build();
@@ -408,7 +402,7 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 
 	private final void postDependingMatchInvsIfNeeded()
 	{
-		if (!sysConfigBL.getBooleanValue(SYSCONFIG_PostMatchInvs, DEFAULT_PostMatchInvs))
+		if (!services.getSysConfigBooleanValue(SYSCONFIG_PostMatchInvs, DEFAULT_PostMatchInvs))
 		{
 			return;
 		}
@@ -442,7 +436,7 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 		}
 
 		final CurrencyId currencyId = costs.getCurrencyId();
-		final CurrencyPrecision precision = currencyDAO.getStdPrecision(currencyId);
+		final CurrencyPrecision precision = services.getCurrencyStandardPrecision(currencyId);
 		return precision.round(costs.getValue());
 	}
 }   // Doc_InOut

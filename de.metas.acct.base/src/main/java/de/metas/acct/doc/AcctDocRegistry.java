@@ -23,17 +23,22 @@ public class AcctDocRegistry
 	private static final Logger logger = LogManager.getLogger(AcctDocRegistry.class);
 
 	private final AggregatedAcctDocProvider docProviders;
+	private final AcctDocRequiredServicesFacade acctDocRequiredServices;
 
-	public AcctDocRegistry(final List<IAcctDocProvider> acctDocProviders)
+	public AcctDocRegistry(
+			@NonNull final List<IAcctDocProvider> acctDocProviders,
+			@NonNull final AcctDocRequiredServicesFacade acctDocRequiredServices)
 	{
 		docProviders = new AggregatedAcctDocProvider(acctDocProviders);
 		logger.info("Using: {}", docProviders);
+
+		this.acctDocRequiredServices = acctDocRequiredServices;
 	}
 
 	@NonNull
 	public Doc<?> get(@NonNull final List<AcctSchema> acctSchemas, @NonNull final TableRecordReference documentRef)
 	{
-		final Doc<?> doc = docProviders.getOrNull(acctSchemas, documentRef);
+		final Doc<?> doc = docProviders.getOrNull(acctDocRequiredServices, acctSchemas, documentRef);
 		if (doc == null)
 		{
 			throw new PostingExecutionException("No accountable document found: " + documentRef);
@@ -65,13 +70,16 @@ public class AcctDocRegistry
 		}
 
 		@Override
-		public Doc<?> getOrNull(final List<AcctSchema> acctSchemas, final TableRecordReference documentRef)
+		public Doc<?> getOrNull(
+				@NonNull final AcctDocRequiredServicesFacade services,
+				@NonNull final List<AcctSchema> acctSchemas,
+				@NonNull final TableRecordReference documentRef)
 		{
 			try
 			{
 				for (final IAcctDocProvider provider : providers)
 				{
-					final Doc<?> acctDoc = provider.getOrNull(acctSchemas, documentRef);
+					final Doc<?> acctDoc = provider.getOrNull(services, acctSchemas, documentRef);
 					if (acctDoc != null)
 					{
 						return acctDoc;

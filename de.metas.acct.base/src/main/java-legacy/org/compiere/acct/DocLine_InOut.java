@@ -13,7 +13,6 @@ import de.metas.costing.CostAmount;
 import de.metas.costing.CostDetailCreateRequest;
 import de.metas.costing.CostDetailReverseRequest;
 import de.metas.costing.CostingDocumentRef;
-import de.metas.costing.ICostingService;
 import de.metas.inout.InOutLineId;
 import de.metas.order.OrderLineId;
 import de.metas.organization.OrgId;
@@ -45,20 +44,15 @@ import lombok.NonNull;
 
 class DocLine_InOut extends DocLine<Doc_InOut>
 {
-	private final ICostingService costDetailService;
-
 	/** Outside Processing */
 	private Integer ppCostCollectorId = null;
 
 	@Builder
 	private DocLine_InOut(
-			@NonNull final ICostingService costDetailService,
 			@NonNull final I_M_InOutLine inoutLine,
 			@NonNull final Doc_InOut doc)
 	{
 		super(InterfaceWrapperHelper.getPO(inoutLine), doc);
-
-		this.costDetailService = costDetailService;
 
 		final Quantity qty = Quantity.of(inoutLine.getMovementQty(), getProductStockingUOM());
 		setQty(qty, doc.isSOTrx());
@@ -129,7 +123,7 @@ class DocLine_InOut extends DocLine<Doc_InOut>
 	{
 		if (isReversalLine())
 		{
-			return costDetailService.createReversalCostDetails(CostDetailReverseRequest.builder()
+			return services.createReversalCostDetails(CostDetailReverseRequest.builder()
 					.acctSchemaId(as.getId())
 					.reversalDocumentRef(CostingDocumentRef.ofReceiptLineId(get_ID()))
 					.initialDocumentRef(CostingDocumentRef.ofReceiptLineId(getReversalLine_ID()))
@@ -139,7 +133,7 @@ class DocLine_InOut extends DocLine<Doc_InOut>
 		}
 		else
 		{
-			return costDetailService.createCostDetail(
+			return services.createCostDetail(
 					CostDetailCreateRequest.builder()
 							.acctSchemaId(as.getId())
 							.clientId(getClientId())
@@ -159,7 +153,7 @@ class DocLine_InOut extends DocLine<Doc_InOut>
 	{
 		if (isReversalLine())
 		{
-			return costDetailService.createReversalCostDetails(CostDetailReverseRequest.builder()
+			return services.createReversalCostDetails(CostDetailReverseRequest.builder()
 					.acctSchemaId(as.getId())
 					.reversalDocumentRef(CostingDocumentRef.ofShipmentLineId(get_ID()))
 					.initialDocumentRef(CostingDocumentRef.ofShipmentLineId(getReversalLine_ID()))
@@ -169,7 +163,7 @@ class DocLine_InOut extends DocLine<Doc_InOut>
 		}
 		else
 		{
-			return costDetailService.createCostDetail(
+			return services.createCostDetail(
 					CostDetailCreateRequest.builder()
 							.acctSchemaId(as.getId())
 							.clientId(getClientId())

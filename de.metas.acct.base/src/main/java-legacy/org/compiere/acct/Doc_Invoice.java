@@ -173,7 +173,8 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 			final BigDecimal lineIncludedTaxAmt = docLine.getIncludedTaxAmt();
 			if (lineIncludedTaxAmt.signum() != 0)
 			{
-				final DocTax docTax = getDocTaxOrNull(docLine.getC_Tax_ID());
+				final TaxId taxId = docLine.getTaxId().orElse(null);
+				final DocTax docTax = getDocTaxOrNull(taxId);
 				if (docTax != null)
 				{
 					docTax.addIncludedTax(lineIncludedTaxAmt);
@@ -207,7 +208,8 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 				final BigDecimal diff = docTax.getIncludedTaxDifference();
 				for (final DocLine_Invoice docLine : docLines)
 				{
-					if (docLine.getC_Tax_ID() == docTax.getC_Tax_ID())
+					final TaxId taxId = docLine.getTaxId().orElse(null);
+					if (taxId != null && taxId.getRepoId() == docTax.getC_Tax_ID())
 					{
 						docLine.setLineNetAmtDifference(diff);
 						break;
@@ -259,11 +261,16 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 		return retValue;
 	}
 
-	final DocTax getDocTaxOrNull(final int taxId)
+	final DocTax getDocTaxOrNull(final TaxId taxId)
 	{
+		if (taxId == null)
+		{
+			return null;
+		}
+
 		return getTaxes()
 				.stream()
-				.filter(docTax -> docTax.getC_Tax_ID() == taxId)
+				.filter(docTax -> docTax.getC_Tax_ID() == taxId.getRepoId())
 				.findFirst()
 				.orElse(null);
 	}

@@ -13,24 +13,23 @@ package de.metas.acct.doc;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 
 import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.IQuery.Aggregate;
 import org.compiere.acct.DocLine;
 import org.compiere.acct.Doc_Invoice;
+import org.compiere.model.IQuery.Aggregate;
 import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.model.I_M_MatchInv;
 import org.compiere.model.MTax;
@@ -41,6 +40,7 @@ import de.metas.invoice.IMatchInvDAO;
 import de.metas.logging.LogManager;
 import de.metas.quantity.Quantity;
 import de.metas.tax.api.ITaxBL;
+import de.metas.tax.api.TaxId;
 import de.metas.util.Services;
 
 public class DocLine_Invoice extends DocLine<Doc_Invoice>
@@ -69,10 +69,10 @@ public class DocLine_Invoice extends DocLine<Doc_Invoice>
 		BigDecimal priceList = invoiceLine.getPriceList();
 
 		// Correct included Tax
-		final int C_Tax_ID = getC_Tax_ID();
-		if (isTaxIncluded() && C_Tax_ID > 0)
+		final TaxId taxId = getTaxId().orElse(null);
+		if (taxId != null && isTaxIncluded())
 		{
-			final MTax tax = MTax.get(Env.getCtx(), C_Tax_ID);
+			final MTax tax = MTax.get(Env.getCtx(), taxId.getRepoId());
 			if (!tax.isZeroTax())
 			{
 				final int taxPrecision = doc.getStdPrecision();

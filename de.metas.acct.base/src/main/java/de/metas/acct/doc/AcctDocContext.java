@@ -2,7 +2,10 @@ package de.metas.acct.doc;
 
 import java.util.List;
 
+import com.google.common.collect.ImmutableList;
+
 import de.metas.acct.api.AcctSchema;
+import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -34,7 +37,24 @@ import lombok.Value;
 public class AcctDocContext
 {
 	@NonNull
-	List<AcctSchema> acctSchemas;
+	AcctDocRequiredServicesFacade services;
+
+	@NonNull
+	ImmutableList<AcctSchema> acctSchemas;
+
 	@NonNull
 	Object documentModel;
+
+	@Builder
+	private AcctDocContext(
+			@NonNull final AcctDocRequiredServicesFacade services,
+			@NonNull final List<AcctSchema> acctSchemas,
+			@NonNull final Object documentModel)
+	{
+		Check.assumeNotEmpty(acctSchemas, "acctSchemas is not empty");
+
+		this.services = services;
+		this.acctSchemas = ImmutableList.copyOf(acctSchemas);
+		this.documentModel = documentModel;
+	}
 }

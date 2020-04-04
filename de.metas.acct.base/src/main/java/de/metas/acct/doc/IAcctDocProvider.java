@@ -50,5 +50,8 @@ public interface IAcctDocProvider
 	 * @return Document or <code>null</code> if there is no such accountable document for given AD_Table_ID/Record_ID
 	 * @throws PostingExecutionException if the document could not be created
 	 */
-	Doc<?> getOrNull(List<AcctSchema> acctSchemas, TableRecordReference documentRef);
+	Doc<?> getOrNull(
+			AcctDocRequiredServicesFacade services,
+			List<AcctSchema> acctSchemas,
+			TableRecordReference documentRef);
 }

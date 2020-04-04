@@ -21,6 +21,7 @@ import java.time.LocalDate;
 import java.util.Optional;
 import java.util.function.IntFunction;
 
+import javax.annotation.Nullable;
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 
 import org.adempiere.ad.trx.api.ITrx;
@@ -29,7 +30,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
-import org.compiere.model.I_M_Product_Category_Acct;
 import org.compiere.model.MAccount;
 import org.compiere.model.MCharge;
 import org.compiere.model.PO;
@@ -42,23 +42,19 @@ import com.google.common.base.MoreObjects;
 import de.metas.acct.api.AccountId;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaId;
-import de.metas.acct.api.IAccountDAO;
-import de.metas.acct.api.IProductAcctDAO;
 import de.metas.acct.api.ProductAcctType;
+import de.metas.acct.doc.AcctDocRequiredServicesFacade;
 import de.metas.acct.doc.PostingException;
-import de.metas.acct.tax.ITaxAcctBL;
 import de.metas.acct.tax.TaxAcctType;
 import de.metas.bpartner.BPartnerId;
 import de.metas.costing.CostingLevel;
 import de.metas.costing.CostingMethod;
-import de.metas.costing.IProductCostingBL;
 import de.metas.location.LocationId;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
 import de.metas.order.OrderLineId;
 import de.metas.organization.OrgId;
-import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.quantity.Quantity;
@@ -66,7 +62,6 @@ import de.metas.tax.api.TaxId;
 import de.metas.uom.UomId;
 import de.metas.util.NumberUtils;
 import de.metas.util.Optionals;
-import de.metas.util.Services;
 import de.metas.util.lang.CoalesceUtil;
 import de.metas.util.lang.RepoIdAware;
 import lombok.NonNull;
@@ -83,11 +78,7 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 {
 	// services
 	private final Logger logger = LogManager.getLogger(getClass());
-	protected final IProductBL productBL = Services.get(IProductBL.class);
-	private final IProductAcctDAO productAcctDAO = Services.get(IProductAcctDAO.class);
-	private final IProductCostingBL productCostingBL = Services.get(IProductCostingBL.class);
-	private final ITaxAcctBL taxAcctBL = Services.get(ITaxAcctBL.class);
-	private final IAccountDAO accountDAO = Services.get(IAccountDAO.class);
+	protected final AcctDocRequiredServicesFacade services;
 
 	/** Persistent Object */
 	private final PO p_po;
@@ -125,15 +116,16 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 	private Optional<CurrencyId> _currencyId;
 	private Optional<CurrencyConversionTypeId> currencyConversionTypeIdHolder;
 	private int m_C_Period_ID = -1;
-	/** C_Tax_ID (override) */
-	private Integer m_C_Tax_ID = null;
-	/** Is Tax Included ? */
+	private Optional<TaxId> _taxId = null;
 	private boolean _taxIncluded = false;
 
 	private int m_ReversalLine_ID = 0;
 
-	public DocLine(@NonNull final PO linePO, @NonNull final DT doc)
+	public DocLine(
+			@NonNull final PO linePO,
+			@NonNull final DT doc)
 	{
+		this.services = doc.getServices();
 		p_po = linePO;
 		m_doc = doc;
 
@@ -434,14 +426,14 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 			return getAccountDefault(acctType, as);
 		}
 
-		final AccountId accountId = productAcctDAO.getProductAcct(as.getId(), productId, acctType).orElse(null);
+		final AccountId accountId = services.getProductAcct(as.getId(), productId, acctType).orElse(null);
 		if (accountId == null)
 		{
-			final String productName = productBL.getProductName(productId);
+			final String productName = services.getProductName(productId);
 			throw newPostingException().setAcctSchema(as).setDetailMessage("No Product Account for account type " + acctType + " and product " + productName);
 		}
 
-		return accountDAO.getById(accountId);
+		return services.getAccountById(accountId);
 	}
 
 	/**
@@ -453,22 +445,19 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 	 */
 	private final MAccount getAccountDefault(final ProductAcctType acctType, final AcctSchema as)
 	{
-		final I_M_Product_Category_Acct pcAcct = productAcctDAO.retrieveDefaultProductCategoryAcct(as);
-		final Integer validCombinationId = InterfaceWrapperHelper.getValueOrNull(pcAcct, acctType.getColumnName());
-		if (validCombinationId == null || validCombinationId <= 0)
+		final AccountId accountId = services.getProductDefaultAcct(as.getId(), acctType).orElse(null);
+		if (accountId == null)
 		{
 			throw newPostingException().setAcctSchema(as).setDetailMessage("No Default Account for account type: " + acctType);
 		}
 
-		return accountDAO.getById(validCombinationId);
+		return services.getAccountById(accountId);
 	}
 
 	private final Optional<MAccount> getTaxAccount(@NonNull final TaxAcctType taxAcctType, final AcctSchemaId acctSchemaId)
 	{
-		final TaxId taxId = TaxId.ofRepoIdOrNull(getC_Tax_ID());
-		return taxId != null
-				? taxAcctBL.getAccountIfExists(taxId, acctSchemaId, taxAcctType)
-				: Optional.empty();
+		final TaxId taxId = getTaxId().orElse(null);
+		return services.getTaxAccount(acctSchemaId, taxId, taxAcctType);
 	}
 
 	/**
@@ -555,7 +544,7 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 
 		// NOTE: we are considering the product as Item only if it's stockable.
 		// Before changing this logic, pls evaluate the Doc_Invoice which is booking on P_InventoryClearing account when the product is stockable
-		return productBL.isStocked(product);
+		return services.isProductStocked(product);
 	}
 
 	public final boolean isService()
@@ -565,12 +554,12 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 
 	public final CostingMethod getProductCostingMethod(final AcctSchema as)
 	{
-		return productCostingBL.getCostingMethod(getProductId(), as);
+		return services.getCostingMethod(getProductId(), as);
 	}
 
 	public final CostingLevel getProductCostingLevel(final AcctSchema as)
 	{
-		return productCostingBL.getCostingLevel(getProductId(), as);
+		return services.getCostingLevel(getProductId(), as);
 	}
 
 	public final AttributeSetInstanceId getAttributeSetInstanceId()
@@ -608,7 +597,7 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 			final ProductId productId = getProductId();
 			if (productId != null)
 			{
-				_product = productBL.getById(productId);
+				_product = services.getProductById(productId);
 			}
 		}
 		return _product;
@@ -616,17 +605,15 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 
 	protected final I_C_UOM getProductStockingUOM()
 	{
-		return productBL.getStockUOM(getProductId());
+		return services.getProductStockingUOM(getProductId());
 	}
 
 	protected final UomId getProductStockingUOMId()
 	{
-		return productBL.getStockUOMId(getProductId());
+		return services.getProductStockingUOMId(getProductId());
 	}
 
 	/**
-	 * Get Revenue Recognition
-	 *
 	 * @return C_RevenueRecognition_ID or 0
 	 */
 	public final int getC_RevenueRecognition_ID()
@@ -701,18 +688,19 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 		return getValueAsString("Description");
 	}
 
-	public final int getC_Tax_ID()
+	public final Optional<TaxId> getTaxId()
 	{
-		if (m_C_Tax_ID == null)
+		Optional<TaxId> taxId = this._taxId;
+		if (taxId == null)
 		{
-			m_C_Tax_ID = getValue("C_Tax_ID");
+			taxId = this._taxId = TaxId.optionalOfRepoId(getValue("C_Tax_ID"));
 		}
-		return m_C_Tax_ID;
+		return taxId;
 	}
 
-	public final void setC_Tax_ID(final int taxId)
+	public final void setTaxId(@Nullable final TaxId taxId)
 	{
-		m_C_Tax_ID = taxId;
+		_taxId = Optional.ofNullable(taxId);
 	}
 
 	public final int getLine()

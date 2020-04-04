@@ -35,6 +35,7 @@ import de.metas.acct.gljournal.IGLJournalLineBL;
 import de.metas.acct.gljournal.IGLJournalLineDAO;
 import de.metas.acct.tax.ITaxAccountable;
 import de.metas.quantity.Quantity;
+import de.metas.tax.api.TaxId;
 import de.metas.uom.IUOMDAO;
 import de.metas.util.Services;
 
@@ -208,7 +209,7 @@ public class Doc_GLJournal extends Doc<DocLine_GLJournal>
 			final DocLine_GLJournal docLine_TaxAmt = createDocLine(glJournalLine);
 			docLine_TaxAmt.setAmountDrOrCr(autoTaxRecord.getTaxAmt(), isTaxOnDebit);
 			docLine_TaxAmt.setAccount(autoTaxRecord.getTax_Acct());
-			docLine_TaxAmt.setC_Tax_ID(autoTaxRecord.getC_Tax_ID());
+			docLine_TaxAmt.setTaxId(TaxId.ofRepoIdOrNull(autoTaxRecord.getC_Tax_ID()));
 			docLines.add(docLine_TaxAmt);
 		}
 
@@ -219,7 +220,7 @@ public class Doc_GLJournal extends Doc<DocLine_GLJournal>
 	{
 		final DocLine_GLJournal docLine = new DocLine_GLJournal(glJournalLine, this);
 		docLine.setC_ConversionType_ID(glJournalLine.getC_ConversionType_ID());
-		docLine.setC_Tax_ID(0); // avoid setting C_Tax_ID by default
+		docLine.setTaxId(null); // avoid setting C_Tax_ID by default
 		docLine.setAcctSchemaId(acctSchemaId);
 
 		final Quantity qty = extractQty(glJournalLine);

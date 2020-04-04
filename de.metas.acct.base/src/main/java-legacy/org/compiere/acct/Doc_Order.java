@@ -114,17 +114,17 @@ public class Doc_Order extends Doc<DocLine_Order>
 			BigDecimal priceList = orderLine.getPriceList();
 
 			// Correct included Tax
-			final int C_Tax_ID = docLine.getC_Tax_ID();
-			if (docLine.isTaxIncluded() && C_Tax_ID > 0)
+			final TaxId taxId = docLine.getTaxId().orElse(null);
+			if (docLine.isTaxIncluded() && taxId != null)
 			{
-				final MTax tax = MTax.get(Env.getCtx(), C_Tax_ID);
+				final MTax tax = MTax.get(Env.getCtx(), taxId.getRepoId());
 				if (!tax.isZeroTax())
 				{
 					final BigDecimal lineNetAmtTax = taxBL.calculateTax(tax, lineNetAmt, true, getStdPrecision());
 					lineNetAmt = lineNetAmt.subtract(lineNetAmtTax);
 					for (final DocTax docTax : getDocTaxes())
 					{
-						if (docTax.getC_Tax_ID() == C_Tax_ID)
+						if (docTax.getC_Tax_ID() == taxId.getRepoId())
 						{
 							docTax.addIncludedTax(lineNetAmtTax);
 							break;

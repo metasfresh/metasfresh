@@ -1,18 +1,21 @@
 package org.compiere.acct;
 
+import java.math.BigDecimal;
+
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_InventoryLine;
+
 import de.metas.acct.api.AcctSchema;
-import de.metas.costing.*;
+import de.metas.costing.CostAmount;
+import de.metas.costing.CostDetailCreateRequest;
+import de.metas.costing.CostDetailReverseRequest;
+import de.metas.costing.CostingDocumentRef;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.IUOMDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.Adempiere;
-import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_InventoryLine;
-
-import java.math.BigDecimal;
 
 /*
  * #%L
@@ -58,8 +61,9 @@ public class DocLine_Inventory extends DocLine<Doc_Inventory>
 			qty = qtyCount.subtract(qtyBook);
 		}
 
-		//calculate the cost price considering qty in inventory UOM
-		if (qty.signum() > 0) {
+		// calculate the cost price considering qty in inventory UOM
+		if (qty.signum() > 0)
+		{
 			this.costPrice = inventoryLine.getCostPrice().multiply(qty);
 		}
 
@@ -70,11 +74,9 @@ public class DocLine_Inventory extends DocLine<Doc_Inventory>
 
 	public CostAmount getCreateCosts(final AcctSchema as)
 	{
-		final ICostingService costDetailService = Adempiere.getBean(ICostingService.class);
-
 		if (isReversalLine())
 		{
-			return costDetailService.createReversalCostDetails(CostDetailReverseRequest.builder()
+			return services.createReversalCostDetails(CostDetailReverseRequest.builder()
 					.acctSchemaId(as.getId())
 					.reversalDocumentRef(CostingDocumentRef.ofInventoryLineId(get_ID()))
 					.initialDocumentRef(CostingDocumentRef.ofInventoryLineId(getReversalLine_ID()))
@@ -84,7 +86,7 @@ public class DocLine_Inventory extends DocLine<Doc_Inventory>
 		}
 		else
 		{
-			return costDetailService.createCostDetail(
+			return services.createCostDetail(
 					CostDetailCreateRequest.builder()
 							.acctSchemaId(as.getId())
 							.clientId(getClientId())
@@ -101,8 +103,8 @@ public class DocLine_Inventory extends DocLine<Doc_Inventory>
 	}
 
 	/**
-	 * @param qty				inventory quantity
-	 * @param inventoryUOMId	UOM used for the inventory process
+	 * @param qty inventory quantity
+	 * @param inventoryUOMId UOM used for the inventory process
 	 * @return inventory quantity in the unit of measurement used for stocking.
 	 */
 	private Quantity getQuantityInStockingUOM(final BigDecimal qty, final int inventoryUOMId)
