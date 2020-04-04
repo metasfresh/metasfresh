@@ -121,7 +121,7 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 
 	/** @return zero (always balanced) */
 	@Override
-	public BigDecimal getBalance()
+	protected BigDecimal getBalance()
 	{
 		return BigDecimal.ZERO;
 	}
@@ -145,7 +145,7 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 	 * @return Fact
 	 */
 	@Override
-	public List<Fact> createFacts(final AcctSchema as)
+	protected List<Fact> createFacts(final AcctSchema as)
 	{
 		setC_Currency_ID(as.getCurrencyId());
 

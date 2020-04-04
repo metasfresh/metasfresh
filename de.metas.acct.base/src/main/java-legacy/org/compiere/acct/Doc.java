@@ -81,6 +81,7 @@ import de.metas.util.Check;
 import de.metas.util.NumberUtils;
 import de.metas.util.lang.CoalesceUtil;
 import de.metas.util.lang.RepoIdAware;
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NonNull;
 
@@ -148,7 +149,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 {
 	private final String SYSCONFIG_CREATE_NOTE_ON_ERROR = "org.compiere.acct.Doc.createNoteOnPostError";
 
-	@Getter
+	@Getter(AccessLevel.PROTECTED)
 	protected final AcctDocRequiredServicesFacade services;
 
 	/** AR Invoices - ARI */
@@ -315,7 +316,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		return InterfaceWrapperHelper.create(getPO(), modelClass);
 	}
 
-	public final void setDocLines(final List<DocLineType> docLines)
+	protected final void setDocLines(final List<DocLineType> docLines)
 	{
 		this.docLines = docLines;
 	}
@@ -816,7 +817,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 			try
 			{
 				pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_None);
-				pstmt.setInt(1, getAD_Client_ID());
+				pstmt.setInt(1, getClientId().getRepoId());
 				pstmt.setString(2, m_DocumentType);
 				rsDT = pstmt.executeQuery();
 				if (rsDT.next())
@@ -845,7 +846,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 			try
 			{
 				pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_None);
-				pstmt.setInt(1, getAD_Client_ID());
+				pstmt.setInt(1, getClientId().getRepoId());
 				rsDT = pstmt.executeQuery();
 				if (rsDT.next())
 				{
@@ -977,12 +978,12 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		}
 		if (m_period == null)
 		{
-			m_period = MPeriod.get(Env.getCtx(), TimeUtil.asTimestamp(getDateAcct()), getAD_Org_ID());
+			m_period = MPeriod.get(Env.getCtx(), TimeUtil.asTimestamp(getDateAcct()), getOrgId().getRepoId());
 		}
 
 		// Is Period Open?
 		if (m_period != null
-				&& m_period.isOpen(getDocumentType(), TimeUtil.asTimestamp(getDateAcct()), getAD_Org_ID()))
+				&& m_period.isOpen(getDocumentType(), TimeUtil.asTimestamp(getDateAcct()), getOrgId().getRepoId()))
 		{
 			m_C_Period_ID = m_period.getC_Period_ID();
 		}
@@ -1400,29 +1401,17 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		return getPO().toString();
 	}
 
-	@Deprecated
-	public final int getAD_Client_ID()
+	protected final ClientId getClientId()
 	{
-		return getPO().getAD_Client_ID();
+		return ClientId.ofRepoId(getPO().getAD_Client_ID());
 	}
 
-	public final ClientId getClientId()
+	protected final OrgId getOrgId()
 	{
-		return ClientId.ofRepoId(getAD_Client_ID());
+		return OrgId.ofRepoId(getPO().getAD_Org_ID());
 	}
 
-	@Deprecated
-	public final int getAD_Org_ID()
-	{
-		return getPO().getAD_Org_ID();
-	}
-
-	public final OrgId getOrgId()
-	{
-		return OrgId.ofRepoId(getAD_Org_ID());
-	}
-
-	public String getDocumentNo()
+	protected String getDocumentNo()
 	{
 		if (m_DocumentNo == null)
 		{
@@ -1436,12 +1425,12 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		return m_DocumentNo;
 	}
 
-	public final String getDocStatus()
+	protected final String getDocStatus()
 	{
 		return m_DocStatus;
 	}
 
-	public final String getDescription()
+	protected final String getDescription()
 	{
 		if (m_Description == null)
 		{
@@ -1454,7 +1443,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		return m_Description;
 	}
 
-	public final CurrencyId getCurrencyId()
+	protected final CurrencyId getCurrencyId()
 	{
 		if (_currencyId == null)
 		{
@@ -1476,7 +1465,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		setC_Currency_ID(currencyId);
 	}
 
-	public final boolean isMultiCurrency()
+	protected final boolean isMultiCurrency()
 	{
 		return m_MultiCurrency;
 	}
@@ -1486,7 +1475,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		m_MultiCurrency = mc;
 	}
 
-	public final CurrencyConversionTypeId getCurrencyConversionTypeId()
+	protected final CurrencyConversionTypeId getCurrencyConversionTypeId()
 	{
 		return CurrencyConversionTypeId.ofRepoIdOrNull(getValueAsIntOrZero("C_ConversionType_ID"));
 	}
@@ -1508,17 +1497,17 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		return _currencyPrecision.toInt();
 	}
 
-	public final int getGL_Category_ID()
+	protected final int getGL_Category_ID()
 	{
 		return m_GL_Category_ID;
 	}
 
-	public final int getGL_Budget_ID()
+	protected final int getGL_Budget_ID()
 	{
 		return getValueAsIntOrZero("GL_Budget_ID");
 	}
 
-	public final LocalDate getDateAcct()
+	protected final LocalDate getDateAcct()
 	{
 		return CoalesceUtil.coalesceSuppliers(
 				() -> _dateAcct,
@@ -1533,7 +1522,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		_dateAcct = TimeUtil.asLocalDate(dateAcct);
 	}
 
-	public final LocalDate getDateDoc()
+	protected final LocalDate getDateDoc()
 	{
 		return CoalesceUtil.coalesceSuppliers(
 				() -> _dateDoc,
@@ -1554,7 +1543,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		_dateDoc = dateDoc;
 	}
 
-	public final boolean isPosted()
+	private final boolean isPosted()
 	{
 		final Boolean posted = getValueAsBoolean("Posted", null);
 		if (posted == null)
@@ -1572,7 +1561,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 				() -> SOTrx.PURCHASE.toBoolean());
 	}
 
-	public final int getC_DocType_ID()
+	protected final int getC_DocType_ID()
 	{
 		final int docTypeId = getValueAsIntOrZero("C_DocType_ID");
 		if (docTypeId > 0)
@@ -1585,12 +1574,12 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		return docTypeTargetId;
 	}
 
-	public final int getC_Charge_ID()
+	protected final int getC_Charge_ID()
 	{
 		return getValueAsIntOrZero("C_Charge_ID");
 	}
 
-	public final UserId getSalesRepId()
+	protected final UserId getSalesRepId()
 	{
 		return getValueAsIdOrNull("SalesRep_ID", UserId::ofRepoIdOrNull);
 	}
@@ -1635,7 +1624,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		return bpBankAccount;
 	}
 
-	public final int getC_CashBook_ID()
+	protected final int getC_CashBook_ID()
 	{
 		if (m_C_CashBook_ID == -1)
 		{
@@ -1653,7 +1642,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		m_C_CashBook_ID = C_CashBook_ID;
 	}
 
-	public final WarehouseId getWarehouseId()
+	protected final WarehouseId getWarehouseId()
 	{
 		return getValueAsIdOrNull("M_Warehouse_ID", WarehouseId::ofRepoIdOrNull);
 	}
@@ -1663,7 +1652,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 	 *
 	 * @return BPartner
 	 */
-	public final BPartnerId getBPartnerId()
+	protected final BPartnerId getBPartnerId()
 	{
 		if (_bpartnerId == null)
 		{
@@ -1677,22 +1666,22 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		_bpartnerId = Optional.ofNullable(bpartnerId);
 	}
 
-	public final int getC_BPartner_Location_ID()
+	protected final int getC_BPartner_Location_ID()
 	{
 		return getValueAsIntOrZero("C_BPartner_Location_ID");
 	}
 
-	public final int getC_Project_ID()
+	protected final int getC_Project_ID()
 	{
 		return getValueAsIntOrZero("C_Project_ID");
 	}
 
-	public final int getC_SalesRegion_ID()
+	protected final int getC_SalesRegion_ID()
 	{
 		return getValueAsIntOrZero("C_SalesRegion_ID");
 	}
 
-	public final int getBP_C_SalesRegion_ID()
+	protected final int getBP_C_SalesRegion_ID()
 	{
 		if (m_BP_C_SalesRegion_ID == -1)
 		{
@@ -1713,42 +1702,42 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		m_BP_C_SalesRegion_ID = C_SalesRegion_ID;
 	}
 
-	public final ActivityId getActivityId()
+	protected final ActivityId getActivityId()
 	{
 		return ActivityId.ofRepoIdOrNull(getValueAsIntOrZero("C_Activity_ID"));
 	}
 
-	public final int getC_Campaign_ID()
+	protected final int getC_Campaign_ID()
 	{
 		return getValueAsIntOrZero("C_Campaign_ID");
 	}
 
-	public final ProductId getProductId()
+	protected final ProductId getProductId()
 	{
 		return getValueAsIdOrNull("M_Product_ID", ProductId::ofRepoIdOrNull);
 	}
 
-	public final OrgId getOrgTrxId()
+	protected final OrgId getOrgTrxId()
 	{
 		return getValueAsIdOrNull("AD_OrgTrx_ID", OrgId::ofRepoIdOrNull);
 	}
 
-	public final LocationId getLocationFromId()
+	protected final LocationId getLocationFromId()
 	{
 		return locationFromId;
 	}
 
-	public final LocationId getLocationToId()
+	protected final LocationId getLocationToId()
 	{
 		return locationToId;
 	}
 
-	public final int getUser1_ID()
+	protected final int getUser1_ID()
 	{
 		return getValueAsIntOrZero("User1_ID");
 	}
 
-	public final int getUser2_ID()
+	protected final int getUser2_ID()
 	{
 		return getValueAsIntOrZero("User2_ID");
 	}
@@ -1905,7 +1894,13 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 			final Properties ctx = Env.getCtx();
 			final String adLanguage = Env.getAD_Language(ctx);
 
-			final MNote note = new MNote(ctx, AD_MessageValue.toAD_Message(), AD_User_ID, getAD_Client_ID(), getAD_Org_ID(), ITrx.TRXNAME_None);
+			final MNote note = new MNote(
+					ctx,
+					AD_MessageValue.toAD_Message(),
+					AD_User_ID,
+					getClientId().getRepoId(),
+					getOrgId().getRepoId(),
+					ITrx.TRXNAME_None);
 			note.setRecord(po.get_Table_ID(), po.get_ID());
 			note.setReference(toString());	// Document
 
