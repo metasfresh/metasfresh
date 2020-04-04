@@ -61,7 +61,7 @@ class M_Cost
 	public void beforeSave(final I_M_Cost costRecord)
 	{
 		final CostElementId costElementId = CostElementId.ofRepoId(costRecord.getM_CostElement_ID());
-		final CostElement costElement = costElementRepository.getById(costElementId);
+		final CostElement costElement = costElementRepository.getByIdIfExists(costElementId).orElse(null);
 		final boolean userEntry = InterfaceWrapperHelper.isUIAction(costRecord);
 
 		// Check if data entry makes sense

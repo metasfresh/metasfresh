@@ -375,7 +375,7 @@ public class CostingService implements ICostingService
 			@NonNull final CostDetailReverseRequest reversalRequest)
 	{
 		final CostElementId costElementId = costDetail.getCostElementId();
-		final CostElement costElement = costElementsRepo.getById(costElementId);
+		final CostElement costElement = costElementsRepo.getByIdIfExists(costElementId).orElse(null);
 		if (costElement == null)
 		{
 			// cost element was disabled in meantime

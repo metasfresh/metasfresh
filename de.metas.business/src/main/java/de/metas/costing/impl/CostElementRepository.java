@@ -2,6 +2,7 @@ package de.metas.costing.impl;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -78,9 +79,17 @@ public class CostElementRepository implements ICostElementRepository
 	}
 
 	@Override
-	public CostElement getById(final CostElementId costElementId)
+	public Optional<CostElement> getByIdIfExists(@NonNull final CostElementId costElementId)
 	{
-		return getIndexedCostElements().getByIdOrNull(costElementId);
+		return getIndexedCostElements().getById(costElementId);
+	}
+
+	@Override
+	@NonNull
+	public CostElement getById(@NonNull final CostElementId costElementId)
+	{
+		return getByIdIfExists(costElementId)
+				.orElseThrow(() -> new AdempiereException("No active cost element found for " + costElementId));
 	}
 
 	@Override
@@ -206,9 +215,9 @@ public class CostElementRepository implements ICostElementRepository
 			costElementsById = Maps.uniqueIndex(costElements, CostElement::getId);
 		}
 
-		public CostElement getByIdOrNull(final CostElementId id)
+		public Optional<CostElement> getById(final CostElementId id)
 		{
-			return costElementsById.get(id);
+			return Optional.ofNullable(costElementsById.get(id));
 		}
 
 		public Stream<CostElement> streamForClientId(@NonNull final ClientId clientId)
