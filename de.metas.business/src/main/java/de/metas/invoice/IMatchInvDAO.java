@@ -23,6 +23,7 @@ package de.metas.invoice;
  */
 
 import java.util.List;
+import java.util.Set;
 
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.compiere.model.I_C_InvoiceLine;
@@ -30,8 +31,10 @@ import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_MatchInv;
 
+import de.metas.inout.InOutLineId;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.util.ISingletonService;
+import lombok.NonNull;
 
 public interface IMatchInvDAO extends ISingletonService
 {
@@ -39,32 +42,23 @@ public interface IMatchInvDAO extends ISingletonService
 
 	/**
 	 * Retrieves the (active) records that reference the given invoice line.
-	 *
-	 * @param il
-	 * @return
 	 */
 	List<I_M_MatchInv> retrieveForInvoiceLine(I_C_InvoiceLine il);
 
 	/**
 	 * Retrieves the (active) records that reference the given invoice line.
-	 *
-	 * @param il
-	 * @return query builder
 	 */
 	IQueryBuilder<I_M_MatchInv> retrieveForInvoiceLineQuery(I_C_InvoiceLine il);
 
 	/**
 	 * Retrieves the (active) records that reference the given inout line.
-	 *
-	 * @param iol
-	 * @return
 	 */
 	List<I_M_MatchInv> retrieveForInOutLine(I_M_InOutLine iol);
 
+	List<I_M_MatchInv> retrieveProcessedButNotPostedForInOutLines(@NonNull Set<InOutLineId> inoutLineIds);
+
 	/**
 	 * Retrieves all (active or not) {@link I_M_MatchInv} records of given {@link I_M_InOut}.
-	 *
-	 * @param inout
 	 */
 	List<I_M_MatchInv> retrieveForInOut(I_M_InOut inout);
 
@@ -83,9 +77,6 @@ public interface IMatchInvDAO extends ISingletonService
 	 * i.e. aggregates all (active) {@link I_M_MatchInv} records referencing the given <code>invoiceLine</code> and returns their <code>Qty</code> sum.
 	 *
 	 * NOTE: the quantity is NOT credit memo adjusted, NOR IsSOTrx adjusted.
-	 *
-	 * @param invoiceLine
-	 * @return quantity matched
 	 */
 	StockQtyAndUOMQty retrieveQtyMatched(I_C_InvoiceLine invoiceLine);
 

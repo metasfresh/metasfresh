@@ -24,6 +24,7 @@ package de.metas.invoice.impl;
 
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -33,6 +34,9 @@ import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_MatchInv;
 
+import com.google.common.collect.ImmutableList;
+
+import de.metas.inout.InOutLineId;
 import de.metas.invoice.IMatchInvDAO;
 import de.metas.product.ProductId;
 import de.metas.quantity.StockQtyAndUOMQty;
@@ -44,6 +48,8 @@ import lombok.NonNull;
 
 public class MatchInvDAO implements IMatchInvDAO
 {
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
 	@Override
 	public I_M_MatchInv getById(final int matchInvId)
 	{
@@ -62,8 +68,7 @@ public class MatchInvDAO implements IMatchInvDAO
 	@Override
 	public IQueryBuilder<I_M_MatchInv> retrieveForInvoiceLineQuery(final I_C_InvoiceLine il)
 	{
-		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_M_MatchInv.class, il)
+		return queryBL.createQueryBuilder(I_M_MatchInv.class, il)
 				.addEqualsFilter(I_M_MatchInv.COLUMNNAME_C_InvoiceLine_ID, il.getC_InvoiceLine_ID())
 				.addOnlyActiveRecordsFilter()
 				//
@@ -77,7 +82,7 @@ public class MatchInvDAO implements IMatchInvDAO
 	@Override
 	public List<I_M_MatchInv> retrieveForInOutLine(final I_M_InOutLine iol)
 	{
-		final IQueryBuilder<I_M_MatchInv> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_M_MatchInv.class, iol)
+		final IQueryBuilder<I_M_MatchInv> queryBuilder = queryBL.createQueryBuilder(I_M_MatchInv.class, iol)
 				.addEqualsFilter(I_M_MatchInv.COLUMNNAME_M_InOutLine_ID, iol.getM_InOutLine_ID())
 				.addOnlyActiveRecordsFilter();
 
@@ -90,9 +95,27 @@ public class MatchInvDAO implements IMatchInvDAO
 	}
 
 	@Override
+	public List<I_M_MatchInv> retrieveProcessedButNotPostedForInOutLines(@NonNull final Set<InOutLineId> inoutLineIds)
+	{
+		if (inoutLineIds.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
+		return queryBL
+				.createQueryBuilder(I_M_MatchInv.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_M_MatchInv.COLUMN_M_InOutLine_ID, inoutLineIds)
+				.addEqualsFilter(I_M_MatchInv.COLUMN_Processed, true)
+				.addNotEqualsFilter(I_M_MatchInv.COLUMN_Posted, true)
+				.create()
+				.list();
+	}
+
+	@Override
 	public List<I_M_MatchInv> retrieveForInOut(final I_M_InOut inout)
 	{
-		return Services.get(IQueryBL.class).createQueryBuilder(I_M_InOutLine.class, inout)
+		return queryBL.createQueryBuilder(I_M_InOutLine.class, inout)
 				.addEqualsFilter(I_M_InOutLine.COLUMN_M_InOut_ID, inout.getM_InOut_ID())
 				// .addOnlyActiveRecordsFilter() // all of them because maybe we want to delete them
 				//
@@ -111,7 +134,7 @@ public class MatchInvDAO implements IMatchInvDAO
 			@NonNull final I_M_InOutLine iol,
 			@NonNull final StockQtyAndUOMQty initialQtys)
 	{
-		final List<I_M_MatchInv> matchInvRecords = Services.get(IQueryBL.class).createQueryBuilder(I_M_MatchInv.class, iol)
+		final List<I_M_MatchInv> matchInvRecords = queryBL.createQueryBuilder(I_M_MatchInv.class, iol)
 				.addEqualsFilter(I_M_MatchInv.COLUMNNAME_M_InOutLine_ID, iol.getM_InOutLine_ID())
 				.addOnlyActiveRecordsFilter()
 				.create()
@@ -139,7 +162,7 @@ public class MatchInvDAO implements IMatchInvDAO
 
 		StockQtyAndUOMQty result = StockQtyAndUOMQtys.createZero(resultProductId, UomId.ofRepoId(invoiceLine.getC_UOM_ID()));
 
-		final List<I_M_MatchInv> matchInvRecords = Services.get(IQueryBL.class).createQueryBuilder(I_M_MatchInv.class, invoiceLine)
+		final List<I_M_MatchInv> matchInvRecords = queryBL.createQueryBuilder(I_M_MatchInv.class, invoiceLine)
 				.addEqualsFilter(I_M_MatchInv.COLUMNNAME_C_InvoiceLine_ID, invoiceLine.getC_InvoiceLine_ID())
 				.addOnlyActiveRecordsFilter()
 				.create()
@@ -166,7 +189,7 @@ public class MatchInvDAO implements IMatchInvDAO
 		Check.assumeNotNull(inoutLine, "inoutLine not null");
 		final int inoutLineId = inoutLine.getM_InOutLine_ID();
 
-		return Services.get(IQueryBL.class).createQueryBuilder(I_M_MatchInv.class, ctx, trxName)
+		return queryBL.createQueryBuilder(I_M_MatchInv.class, ctx, trxName)
 				.addEqualsFilter(I_M_MatchInv.COLUMN_C_InvoiceLine_ID, invoiceLineId)
 				.addEqualsFilter(I_M_MatchInv.COLUMN_M_InOutLine_ID, inoutLineId)
 				.addOnlyActiveRecordsFilter()

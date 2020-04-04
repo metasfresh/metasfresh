@@ -2,7 +2,6 @@ package org.compiere.acct;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.Adempiere;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.MAccount;
@@ -19,6 +18,8 @@ import de.metas.inout.InOutLineId;
 import de.metas.order.OrderLineId;
 import de.metas.organization.OrgId;
 import de.metas.quantity.Quantity;
+import lombok.Builder;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -44,17 +45,28 @@ import de.metas.quantity.Quantity;
 
 class DocLine_InOut extends DocLine<Doc_InOut>
 {
-	private final ICostingService costDetailService = Adempiere.getBean(ICostingService.class);
+	private final ICostingService costDetailService;
 
 	/** Outside Processing */
 	private Integer ppCostCollectorId = null;
 
-	public DocLine_InOut(final I_M_InOutLine inoutLine, final Doc_InOut doc)
+	@Builder
+	private DocLine_InOut(
+			@NonNull final ICostingService costDetailService,
+			@NonNull final I_M_InOutLine inoutLine,
+			@NonNull final Doc_InOut doc)
 	{
 		super(InterfaceWrapperHelper.getPO(inoutLine), doc);
 
+		this.costDetailService = costDetailService;
+
 		final Quantity qty = Quantity.of(inoutLine.getMovementQty(), getProductStockingUOM());
 		setQty(qty, doc.isSOTrx());
+	}
+
+	public InOutLineId getInOutLineId()
+	{
+		return InOutLineId.ofRepoId(get_ID());
 	}
 
 	private final int getPP_Cost_Collector_ID()

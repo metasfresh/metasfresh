@@ -1,17 +1,19 @@
 package de.metas.inout;
 
-import de.metas.pricing.IPricingContext;
-import de.metas.pricing.IPricingResult;
-import de.metas.quantity.StockQtyAndUOMQty;
-import de.metas.util.ISingletonService;
+import java.math.BigDecimal;
+import java.util.List;
+
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_MatchInv;
 import org.compiere.model.I_M_PricingSystem;
 
-import java.math.BigDecimal;
-import java.util.List;
+import de.metas.pricing.IPricingContext;
+import de.metas.pricing.IPricingResult;
+import de.metas.quantity.StockQtyAndUOMQty;
+import de.metas.util.ISingletonService;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -42,6 +44,8 @@ import java.util.List;
  */
 public interface IInOutBL extends ISingletonService
 {
+	List<I_M_InOutLine> getLines(@NonNull I_M_InOut inout);
+
 	/**
 	 * @return the quantity, with {@link StockQtyAndUOMQty#getUOMQtyOpt()} being present <b>only</b> if the given line effectively has a catch quantity.
 	 */
@@ -129,6 +133,7 @@ public interface IInOutBL extends ISingletonService
 	boolean isReturnMovementType(String movementType);
 
 	BigDecimal negateIfReturnMovmenType(I_M_InOutLine iol, BigDecimal qty);
+
 	/**
 	 * Sort the given inOut's lines by their referenced order lines and configured sorting criteria.
 	 *
