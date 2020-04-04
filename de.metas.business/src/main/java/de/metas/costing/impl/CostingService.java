@@ -100,8 +100,12 @@ public class CostingService implements ICostingService
 		this.costDetailsRepo = costDetailsRepo;
 		this.costElementsRepo = costElementsRepo;
 		this.currentCostsRepo = currentCostsRepo;
-		this.costingMethodHandlers = costingMethodHandlers.stream()
-				.collect(ImmutableSetMultimap.toImmutableSetMultimap(CostingMethodHandler::getCostingMethod, Function.identity()));
+
+		this.costingMethodHandlers = costingMethodHandlers
+				.stream()
+				.collect(ImmutableSetMultimap.toImmutableSetMultimap(
+						CostingMethodHandler::getCostingMethod,
+						Function.identity()));
 		logger.info("Costing method handlers: {}", this.costingMethodHandlers);
 	}
 
