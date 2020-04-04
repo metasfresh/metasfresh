@@ -181,7 +181,7 @@ public class ManufacturingStandardCostingMethodHandler implements CostingMethodH
 				.changingCosts(true)
 				.previousAmounts(CostDetailPreviousAmounts.of(currentCosts)));
 
-		final CostDetailCreateResult result = utils.createCostDetailCreateResult(costDetail, request);
+		final CostDetailCreateResult result = utils.toCostDetailCreateResult(costDetail);
 
 		currentCosts.addToCurrentQtyAndCumulate(qty, amt, utils.getQuantityUOMConverter());
 		currentCostsRepo.save(currentCosts);
@@ -213,7 +213,7 @@ public class ManufacturingStandardCostingMethodHandler implements CostingMethodH
 				.changingCosts(true)
 				.previousAmounts(CostDetailPreviousAmounts.of(currentCosts)));
 
-		final CostDetailCreateResult result = utils.createCostDetailCreateResult(costDetail, request);
+		final CostDetailCreateResult result = utils.toCostDetailCreateResult(costDetail);
 
 		currentCosts.addToCurrentQtyAndCumulate(qty, amt, utils.getQuantityUOMConverter());
 		currentCostsRepo.save(currentCosts);
@@ -236,7 +236,7 @@ public class ManufacturingStandardCostingMethodHandler implements CostingMethodH
 				.changingCosts(true)
 				.previousAmounts(CostDetailPreviousAmounts.of(currentCosts)));
 
-		final CostDetailCreateResult result = utils.createCostDetailCreateResult(costDetail, request);
+		final CostDetailCreateResult result = utils.toCostDetailCreateResult(costDetail);
 
 		currentCosts.addToCurrentQtyAndCumulate(qty, amt, utils.getQuantityUOMConverter());
 		currentCostsRepo.save(currentCosts);

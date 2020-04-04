@@ -8,7 +8,6 @@ import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
-import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
@@ -18,14 +17,12 @@ import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_MatchInv;
 import org.compiere.util.DB;
-import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Component;
 
 import com.google.common.collect.ImmutableList;
 
 import de.metas.acct.api.AcctSchema;
-import de.metas.acct.api.IAcctSchemaDAO;
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostDetail;
 import de.metas.costing.CostDetailAdjustment;
@@ -49,7 +46,6 @@ import de.metas.order.OrderLineId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantity;
-import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -79,6 +75,11 @@ import lombok.NonNull;
 @Component
 public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 {
+	private final IMatchInvDAO matchInvoicesRepo = Services.get(IMatchInvDAO.class);
+	private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
+	private final IInOutDAO inoutsRepo = Services.get(IInOutDAO.class);
+	private final ICurrencyBL currencyConversionBL = Services.get(ICurrencyBL.class);
+
 	public AveragePOCostingMethodHandler(@NonNull final CostingMethodHandlerUtils utils)
 	{
 		super(utils);
@@ -100,24 +101,16 @@ public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 	protected CostDetailCreateResult createCostForMatchInvoice(final CostDetailCreateRequest request)
 	{
 		final Quantity qty = request.getQty();
-		final UomId qtyUOMId = UomId.ofRepoId(qty.getUOMId());
+		final UomId qtyUOMId = qty.getUomId();
 
 		final int matchInvId = request.getDocumentRef().getRecordId();
 		final CostAmount costPrice = getPOCostPriceForMatchInv(matchInvId)
-				.map(price -> convertToUOM(price, qtyUOMId))
+				.map(price -> utils.convertToUOM(price, qtyUOMId))
 				.orElseThrow(() -> new AdempiereException("Cannot fetch PO cost price for " + request))
 				.transform(CostAmount::ofProductPrice);
 		final CostAmount amt = costPrice.multiply(qty);
 
 		return utils.createCostDetailRecordNoCostsChanged(request.withAmount(amt));
-	}
-
-	private ProductPrice convertToUOM(final ProductPrice costPrice, final UomId uomId)
-	{
-		final IUOMConversionBL uomConversionsBL = Services.get(IUOMConversionBL.class);
-
-		final CurrencyPrecision precision = utils.getCostingPrecision(costPrice.getCurrencyId());
-		return uomConversionsBL.convertProductPriceToUom(costPrice, uomId, precision);
 	}
 
 	@Override
@@ -128,7 +121,7 @@ public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 
 		final InOutLineId receiptInOutLineId = InOutLineId.ofRepoId(request.getDocumentRef().getRecordId());
 		final CostAmount costPrice = getPOCostPriceForReceiptInOutLine(receiptInOutLineId)
-				.map(price -> convertToUOM(price, qtyUOMId))
+				.map(price -> utils.convertToUOM(price, qtyUOMId))
 				.map(CostAmount::ofProductPrice)
 				.orElseGet(() -> utils.getCurrentCostPrice(request).toCostAmount());
 		final CostAmount amt = costPrice.multiply(qty);
@@ -163,7 +156,6 @@ public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 			final CostDetailCreateRequest requestEffective = request.withAmount(amt);
 			result = utils.createCostDetailRecordWithChangedCosts(requestEffective, currentCosts);
 
-			// aaa;
 			currentCosts.addToCurrentQtyAndCumulate(qty, amt, utils.getQuantityUOMConverter());
 		}
 
@@ -192,9 +184,6 @@ public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 
 	private Optional<ProductPrice> getPOCostPriceForMatchInv(final int matchInvId)
 	{
-		final IMatchInvDAO matchInvoicesRepo = Services.get(IMatchInvDAO.class);
-		final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
-
 		final I_M_MatchInv matchInv = matchInvoicesRepo.getById(matchInvId);
 		return Optional.of(matchInv)
 				.map(I_M_MatchInv::getC_InvoiceLine)
@@ -204,23 +193,19 @@ public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 
 	private Optional<ProductPrice> getPOCostPriceForReceiptInOutLine(final InOutLineId receiptInOutLineId)
 	{
-		final IInOutDAO inoutsRepo = Services.get(IInOutDAO.class);
-
 		final I_M_InOutLine receiptLine = inoutsRepo.getLineById(receiptInOutLineId);
 		return Optional.of(receiptLine)
 				.map(I_M_InOutLine::getC_OrderLine)
-				.map(Services.get(IOrderLineBL.class)::getCostPrice);
+				.map(orderLineBL::getCostPrice);
 	}
 
 	@Override
 	public Optional<CostAmount> calculateSeedCosts(final CostSegment costSegment, final OrderLineId orderLineId_NOTUSED)
 	{
-		final ICurrencyBL currencyConversionBL = Services.get(ICurrencyBL.class);
-		final Properties ctx = Env.getCtx();
 		final int productId = costSegment.getProductId().getRepoId();
 		final int AD_Org_ID = costSegment.getOrgId().getRepoId();
 		final int M_AttributeSetInstance_ID = costSegment.getAttributeSetInstanceId().getRepoId();
-		final AcctSchema acctSchema = Services.get(IAcctSchemaDAO.class).getById(costSegment.getAcctSchemaId());
+		final AcctSchema acctSchema = utils.getAcctSchemaById(costSegment.getAcctSchemaId());
 		final CurrencyId acctCurencyId = acctSchema.getCurrencyId();
 		final CurrencyPrecision costingPrecision = acctSchema.getCosting().getCostingPrecision();
 

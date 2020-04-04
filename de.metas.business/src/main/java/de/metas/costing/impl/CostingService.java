@@ -2,6 +2,7 @@ package de.metas.costing.impl;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
@@ -13,7 +14,6 @@ import org.adempiere.service.ClientId;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
 
-import java.util.Objects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSetMultimap;
@@ -370,7 +370,9 @@ public class CostingService implements ICostingService
 		return createCostResult(costElementResults);
 	}
 
-	private Stream<CostDetailCreateResult> createReversalCostDetailsAndStream(final CostDetail costDetail, final CostDetailReverseRequest reversalRequest)
+	private Stream<CostDetailCreateResult> createReversalCostDetailsAndStream(
+			@NonNull final CostDetail costDetail,
+			@NonNull final CostDetailReverseRequest reversalRequest)
 	{
 		final CostElementId costElementId = costDetail.getCostElementId();
 		final CostElement costElement = costElementsRepo.getById(costElementId);
@@ -380,7 +382,7 @@ public class CostingService implements ICostingService
 			return Stream.empty();
 		}
 
-		final CostDetailCreateRequest request = createCostDetailCreateRequestFromReversalRequest(reversalRequest, costDetail, costElement);
+		final CostDetailCreateRequest request = toCostDetailCreateRequestFromReversalRequest(reversalRequest, costDetail, costElement);
 		return getCostingMethodHandlers(costElement.getCostingMethod(), request.getDocumentRef())
 				.stream()
 				.map(handler -> handler.createOrUpdateCost(request))
@@ -388,7 +390,7 @@ public class CostingService implements ICostingService
 				.map(Optional::get);
 	}
 
-	private static final CostDetailCreateRequest createCostDetailCreateRequestFromReversalRequest(
+	private static final CostDetailCreateRequest toCostDetailCreateRequestFromReversalRequest(
 			@NonNull final CostDetailReverseRequest reversalRequest,
 			@NonNull final CostDetail costDetail,
 			@NonNull final CostElement costElement)
