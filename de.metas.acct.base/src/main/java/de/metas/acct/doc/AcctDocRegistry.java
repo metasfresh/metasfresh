@@ -30,9 +30,15 @@ public class AcctDocRegistry
 		logger.info("Using: {}", docProviders);
 	}
 
-	public Doc<?> getOrNull(@NonNull final List<AcctSchema> acctSchemas, @NonNull final TableRecordReference documentRef)
+	@NonNull
+	public Doc<?> get(@NonNull final List<AcctSchema> acctSchemas, @NonNull final TableRecordReference documentRef)
 	{
-		return docProviders.getOrNull(acctSchemas, documentRef);
+		final Doc<?> doc = docProviders.getOrNull(acctSchemas, documentRef);
+		if (doc == null)
+		{
+			throw new PostingExecutionException("No accountable document found: " + documentRef);
+		}
+		return doc;
 	}
 
 	public Set<String> getDocTableNames()

@@ -50,6 +50,10 @@ import lombok.Value;
 
 public class ProductCostingBL implements IProductCostingBL
 {
+	private final IProductDAO productDAO = Services.get(IProductDAO.class);
+	private final IAcctSchemaDAO acctSchemaDAO = Services.get(IAcctSchemaDAO.class);
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
 	private final CCache<ProductCategoryAcctKey, ProductCategoryAcct> productCategoryAcctCache = CCache.<ProductCategoryAcctKey, ProductCategoryAcct> builder()
 			.tableName(I_M_Product_Category_Acct.Table_Name)
 			.cacheMapType(CacheMapType.LRU)
@@ -73,15 +77,15 @@ public class ProductCostingBL implements IProductCostingBL
 	@Override
 	public CostingLevel getCostingLevel(final ProductId productId, final AcctSchemaId acctSchemaId)
 	{
-		final I_M_Product product = Services.get(IProductDAO.class).getById(productId);
-		final AcctSchema acctSchema = Services.get(IAcctSchemaDAO.class).getById(acctSchemaId);
+		final I_M_Product product = productDAO.getById(productId);
+		final AcctSchema acctSchema = acctSchemaDAO.getById(acctSchemaId);
 		return getCostingLevel(product, acctSchema);
 	}
 
 	@Override
 	public CostingLevel getCostingLevel(final ProductId productId, final AcctSchema acctSchema)
 	{
-		final I_M_Product product = Services.get(IProductDAO.class).getById(productId);
+		final I_M_Product product = productDAO.getById(productId);
 		return getCostingLevel(product, acctSchema);
 	}
 
@@ -101,15 +105,15 @@ public class ProductCostingBL implements IProductCostingBL
 	@Override
 	public CostingMethod getCostingMethod(final ProductId productId, final AcctSchemaId acctSchemaId)
 	{
-		final I_M_Product product = Services.get(IProductDAO.class).getById(productId);
-		final AcctSchema acctSchema = Services.get(IAcctSchemaDAO.class).getById(acctSchemaId);
+		final I_M_Product product = productDAO.getById(productId);
+		final AcctSchema acctSchema = acctSchemaDAO.getById(acctSchemaId);
 		return getCostingMethod(product, acctSchema);
 	}
 
 	@Override
 	public CostingMethod getCostingMethod(final ProductId productId, final AcctSchema acctSchema)
 	{
-		final I_M_Product product = Services.get(IProductDAO.class).getById(productId);
+		final I_M_Product product = productDAO.getById(productId);
 		return getCostingMethod(product, acctSchema);
 	}
 
@@ -124,7 +128,7 @@ public class ProductCostingBL implements IProductCostingBL
 		// NOTE: because we currently have some bugs with "ctx" on server side, we are not filtering the query by AD_Client_ID
 		// but we just rely on M_Product_Category_ID/C_AcctSchema_ID.
 
-		final IQuery<I_M_Product_Category_Acct> query = Services.get(IQueryBL.class)
+		final IQuery<I_M_Product_Category_Acct> query = queryBL
 				.createQueryBuilderOutOfTrx(I_M_Product_Category_Acct.class)
 				.addEqualsFilter(I_M_Product_Category_Acct.COLUMNNAME_M_Product_Category_ID, key.getProductCategoryId())
 				.addEqualsFilter(I_M_Product_Category_Acct.COLUMNNAME_C_AcctSchema_ID, key.getAcctSchemaId())
@@ -137,7 +141,7 @@ public class ProductCostingBL implements IProductCostingBL
 		// We are asing the MProductCategory to create all that are missing
 		if (productCategoryAcct == null)
 		{
-			final I_M_Product_Category pc = InterfaceWrapperHelper.loadOutOfTrx(key.getProductCategoryId(), I_M_Product_Category.class);
+			final I_M_Product_Category pc = productDAO.getProductCategoryById(key.getProductCategoryId());
 			InterfaceWrapperHelper.getPO(pc).insert_Accounting(
 					I_M_Product_Category_Acct.Table_Name,
 					I_C_AcctSchema_Default.Table_Name,

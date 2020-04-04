@@ -175,12 +175,7 @@ import lombok.ToString;
 		{
 			final List<AcctSchema> ass = Services.get(IAcctSchemaDAO.class).getAllByClient(clientId);
 
-			final Doc<?> doc = docFactory.getOrNull(ass, documentRef);
-			if (doc == null)
-			{
-				throw new PostingExecutionException("No accountable document found: " + this);
-			}
-
+			final Doc<?> doc = docFactory.get(ass, documentRef);
 			final boolean repost = true;
 			doc.post(force, repost);
 		}

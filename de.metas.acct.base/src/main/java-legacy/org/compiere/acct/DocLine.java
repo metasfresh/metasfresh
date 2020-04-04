@@ -59,7 +59,6 @@ import de.metas.money.CurrencyId;
 import de.metas.order.OrderLineId;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductBL;
-import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.quantity.Quantity;
@@ -83,12 +82,12 @@ import lombok.NonNull;
 public class DocLine<DT extends Doc<? extends DocLine<?>>>
 {
 	// services
-	private final transient Logger logger = LogManager.getLogger(getClass());
-	protected final transient IProductBL productBL = Services.get(IProductBL.class);
-	private final transient IProductAcctDAO productAcctDAO = Services.get(IProductAcctDAO.class);
-	private final transient IProductCostingBL productCostingBL = Services.get(IProductCostingBL.class);
+	private final Logger logger = LogManager.getLogger(getClass());
+	protected final IProductBL productBL = Services.get(IProductBL.class);
+	private final IProductAcctDAO productAcctDAO = Services.get(IProductAcctDAO.class);
+	private final IProductCostingBL productCostingBL = Services.get(IProductCostingBL.class);
 	private final ITaxAcctBL taxAcctBL = Services.get(ITaxAcctBL.class);
-	private final transient IAccountDAO accountDAO = Services.get(IAccountDAO.class);
+	private final IAccountDAO accountDAO = Services.get(IAccountDAO.class);
 
 	/** Persistent Object */
 	private final PO p_po;
@@ -438,7 +437,7 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 		final AccountId accountId = productAcctDAO.getProductAcct(as.getId(), productId, acctType).orElse(null);
 		if (accountId == null)
 		{
-			final String productName = Services.get(IProductBL.class).getProductName(productId);
+			final String productName = productBL.getProductName(productId);
 			throw newPostingException().setAcctSchema(as).setDetailMessage("No Product Account for account type " + acctType + " and product " + productName);
 		}
 
@@ -609,7 +608,7 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 			final ProductId productId = getProductId();
 			if (productId != null)
 			{
-				_product = Services.get(IProductDAO.class).getById(productId);
+				_product = productBL.getById(productId);
 			}
 		}
 		return _product;

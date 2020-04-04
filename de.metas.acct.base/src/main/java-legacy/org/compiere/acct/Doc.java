@@ -77,6 +77,7 @@ import de.metas.currency.ICurrencyBL;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.currency.exceptions.NoCurrencyRateFoundException;
 import de.metas.document.engine.IDocument;
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.BooleanWithReason;
 import de.metas.i18n.IMsgBL;
 import de.metas.lang.SOTrx;
@@ -160,13 +161,17 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 	private final String SYSCONFIG_CREATE_NOTE_ON_ERROR = "org.compiere.acct.Doc.createNoteOnPostError";
 
 	// services
-	private final transient ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
-	protected final transient IMsgBL msgBL = Services.get(IMsgBL.class);
-	protected final transient ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
-	protected final transient ICurrencyBL currencyConversionBL = Services.get(ICurrencyBL.class);
-	private final transient ITrxManager trxManager = Services.get(ITrxManager.class);
-	protected final transient IFactAcctDAO factAcctDAO = Services.get(IFactAcctDAO.class);
-	protected final transient IAccountDAO accountDAO = Services.get(IAccountDAO.class);
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+	private final IMsgBL msgBL = Services.get(IMsgBL.class);
+	protected final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
+	private final ICurrencyBL currencyConversionBL = Services.get(ICurrencyBL.class);
+	private final ITrxManager trxManager = Services.get(ITrxManager.class);
+	private final IFactAcctDAO factAcctDAO = Services.get(IFactAcctDAO.class);
+	private final IAccountDAO accountDAO = Services.get(IAccountDAO.class);
+	private final IFactAcctListenersService factAcctListenersService = Services.get(IFactAcctListenersService.class);
+	private final IModelCacheInvalidationService modelCacheInvalidationService = Services.get(IModelCacheInvalidationService.class);
+	private final IBPBankAccountDAO bpBankAccountDAO = Services.get(IBPBankAccountDAO.class);
+	private final IPostingService postingService = Services.get(IPostingService.class);
 
 	/** AR Invoices - ARI */
 	public static final String DOCTYPE_ARInvoice = X_C_DocType.DOCBASETYPE_ARInvoice;
@@ -519,7 +524,6 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 
 		//
 		// Fire event: BEFORE_POST
-		final IFactAcctListenersService factAcctListenersService = Services.get(IFactAcctListenersService.class);
 		factAcctListenersService.fireBeforePost(getPO());
 
 		//
@@ -765,7 +769,6 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 
 	private void fireDocumentChanged()
 	{
-		final IModelCacheInvalidationService modelCacheInvalidationService = Services.get(IModelCacheInvalidationService.class);
 		modelCacheInvalidationService.invalidate(
 				CacheInvalidateMultiRequest.fromTableNameAndRecordId(get_TableName(), get_ID()),
 				ModelCacheInvalidationTiming.CHANGE);
@@ -1654,7 +1657,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		}
 		if (bpBankAccount == null || bpBankAccount.getC_BP_BankAccount_ID() != bpBankAccountId)
 		{
-			bpBankAccount = Services.get(IBPBankAccountDAO.class).getById(bpBankAccountId);
+			bpBankAccount = bpBankAccountDAO.getById(bpBankAccountId);
 		}
 		return bpBankAccount;
 	}
@@ -1923,13 +1926,13 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 			DB.getConstraints().setOnlyAllowedTrxNamePrefixes(false).incMaxTrx(1);
 
 			final PostingStatus postingStatus = ex.getPostingStatus(PostingStatus.Error);
-			final String AD_MessageValue = postingStatus.getAD_Message();
+			final AdMessageKey AD_MessageValue = postingStatus.getAD_Message();
 			final PO po = getPO();
 			final int AD_User_ID = po.getUpdatedBy();
 			final Properties ctx = Env.getCtx();
 			final String adLanguage = Env.getAD_Language(ctx);
 
-			final MNote note = new MNote(ctx, AD_MessageValue, AD_User_ID, getAD_Client_ID(), getAD_Org_ID(), ITrx.TRXNAME_None);
+			final MNote note = new MNote(ctx, AD_MessageValue.toAD_Message(), AD_User_ID, getAD_Client_ID(), getAD_Org_ID(), ITrx.TRXNAME_None);
 			note.setRecord(po.get_Table_ID(), po.get_ID());
 			note.setReference(toString());	// Document
 
@@ -1970,16 +1973,11 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 	/**
 	 * Post immediate given list of documents.
 	 *
-	 * NOTE:
-	 * <ul>
-	 * <li>this method won't fail if any of the documents's posting is failing, because we don't want to prevent the main document posting because of this
-	 * </ul>
-	 *
-	 * @param documentModels
+	 * IMPORTANT: This method won't fail if any of the documents's posting is failing, because we don't want to prevent the main document posting because of this.
 	 */
 	protected final void postDependingDocuments(final List<?> documentModels)
 	{
-		if (documentModels == null)
+		if (documentModels == null || documentModels.isEmpty())
 		{
 			return; // nothing to do
 		}
@@ -1987,8 +1985,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		// task 08643: the list of documentModels might originate from a bag (i.e. InArrayFilter does not filter at all when given an empty set of values).
 		// so we assume that if there are >=200 items, it's that bug and there are not really that many documentModels.
 		// Note: we fixed the issue in the method's current callers (Doc_InOut and Doc_Invoice).
-		//
-		if (documentModels != null && documentModels.size() >= 200)
+		if (documentModels.size() >= 200)
 		{
 			final PostingException ex = newPostingException()
 					.setDocument(this)
@@ -1996,8 +1993,6 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 			log.warn("Got to many depending documents to post. Skip posting depending documents.", ex);
 			return;
 		}
-
-		final IPostingService postingService = Services.get(IPostingService.class);
 
 		for (final Object document : documentModels)
 		{

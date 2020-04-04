@@ -15,6 +15,7 @@ import de.metas.costing.CostDetailCreateRequest;
 import de.metas.costing.CostDetailReverseRequest;
 import de.metas.costing.CostingDocumentRef;
 import de.metas.costing.ICostingService;
+import de.metas.inout.InOutLineId;
 import de.metas.order.OrderLineId;
 import de.metas.organization.OrgId;
 import de.metas.quantity.Quantity;
@@ -43,6 +44,8 @@ import de.metas.quantity.Quantity;
 
 class DocLine_InOut extends DocLine<Doc_InOut>
 {
+	private final ICostingService costDetailService = Adempiere.getBean(ICostingService.class);
+
 	/** Outside Processing */
 	private Integer ppCostCollectorId = null;
 
@@ -112,8 +115,6 @@ class DocLine_InOut extends DocLine<Doc_InOut>
 
 	public CostAmount getCreateReceiptCosts(final AcctSchema as)
 	{
-		final ICostingService costDetailService = Adempiere.getBean(ICostingService.class);
-
 		if (isReversalLine())
 		{
 			return costDetailService.createReversalCostDetails(CostDetailReverseRequest.builder()
@@ -144,8 +145,6 @@ class DocLine_InOut extends DocLine<Doc_InOut>
 
 	public CostAmount getCreateShipmentCosts(final AcctSchema as)
 	{
-		final ICostingService costDetailService = Adempiere.getBean(ICostingService.class);
-
 		if (isReversalLine())
 		{
 			return costDetailService.createReversalCostDetails(CostDetailReverseRequest.builder()
