@@ -33,7 +33,6 @@ import lombok.Value;
  */
 
 @Value
-@Builder
 public class AcctDocContext
 {
 	@NonNull
