@@ -84,7 +84,9 @@ public class CostingService implements ICostingService
 {
 	private static final Logger logger = LogManager.getLogger(CostingService.class);
 
+	private final IAcctSchemaDAO acctSchemasRepo = Services.get(IAcctSchemaDAO.class);
 	private final IProductCostingBL productCostingBL = Services.get(IProductCostingBL.class);
+	private final ICurrencyBL currencyConversionBL = Services.get(ICurrencyBL.class);
 	private final ICostDetailRepository costDetailsRepo;
 	private final ICostElementRepository costElementsRepo;
 	private final ICurrentCostsRepository currentCostsRepo;
@@ -111,13 +113,11 @@ public class CostingService implements ICostingService
 
 	private AcctSchema getAcctSchemaById(final AcctSchemaId acctSchemaId)
 	{
-		final IAcctSchemaDAO acctSchemasRepo = Services.get(IAcctSchemaDAO.class);
 		return acctSchemasRepo.getById(acctSchemaId);
 	}
 
 	private List<AcctSchema> getAllAcctSchemaByClientId(final ClientId clientId)
 	{
-		final IAcctSchemaDAO acctSchemasRepo = Services.get(IAcctSchemaDAO.class);
 		return acctSchemasRepo.getAllByClient(clientId);
 	}
 
@@ -186,7 +186,6 @@ public class CostingService implements ICostingService
 			return request;
 		}
 
-		final ICurrencyBL currencyConversionBL = Services.get(ICurrencyBL.class);
 		final CurrencyConversionContext conversionCtx = currencyConversionBL.createCurrencyConversionContext(
 				request.getDate(),
 				request.getCurrencyConversionTypeId(),
