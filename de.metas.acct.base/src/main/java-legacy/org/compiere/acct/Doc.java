@@ -345,16 +345,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 	 */
 	public final void post(final boolean force, final boolean repost)
 	{
-		//
-		// Lock Document
-		try
-		{
-			lock(force, repost);
-		}
-		catch (final Exception ex)
-		{
-			throw newPostingException(ex);
-		}
+		lock(force, repost);
 
 		//
 		// Do the actual posting
@@ -464,39 +455,16 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		//
 		// Create Fact per AcctSchema
 		final List<Fact> facts = new ArrayList<>();
-		// for all Accounting Schema
+		for (final AcctSchema acctSchema : acctSchemas)
 		{
-			for (final AcctSchema acctSchema : acctSchemas)
+			if (isSkipPosting(acctSchema))
 			{
-				// if acct schema has "only" org, skip
-				boolean skip = false;
-				if (acctSchema.isPostOnlyForSomeOrgs())
-				{
-					// Header Level Org
-					skip = acctSchema.isDisallowPostingForOrg(getOrgId());
-					// Line Level Org
-					final List<DocLineType> docLines = getDocLines();
-					if (docLines != null)
-					{
-						for (int line = 0; skip && line < docLines.size(); line++)
-						{
-							skip = acctSchema.isDisallowPostingForOrg(docLines.get(line).getOrgId());
-							if (!skip)
-							{
-								break;
-							}
-						}
-					}
-				}
-				if (skip)
-				{
-					continue;
-				}
-
-				// post
-				final List<Fact> factsForAcctSchema = postLogic(acctSchema);
-				facts.addAll(factsForAcctSchema);
+				continue;
 			}
+
+			// post
+			final List<Fact> factsForAcctSchema = postLogic(acctSchema);
+			facts.addAll(factsForAcctSchema);
 		}
 
 		//
@@ -505,36 +473,48 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 
 		//
 		// Save facts
-		// p_Status = postCommit (p_Status);
 		for (final Fact fact : facts)
 		{
-			// Skip null facts
-			if (fact == null)
-			{
-				continue;
-			}
-
 			fact.save();
 		}
 
 		//
 		// Fire event: AFTER_POST
 		services.fireAfterPostEvent(getPO());
-
-		//
 		// Execute after document posted code
 		afterPost();
 
 		//
 		// Dispose facts
-		// Dispose lines
 		for (Fact fact : facts)
 		{
-			if (fact != null)
+			fact.dispose();
+		}
+	}
+
+	private boolean isSkipPosting(final AcctSchema acctSchema)
+	{
+		// if acct schema has "only" org, skip
+		boolean skip = false;
+		if (acctSchema.isPostOnlyForSomeOrgs())
+		{
+			// Header Level Org
+			skip = acctSchema.isDisallowPostingForOrg(getOrgId());
+			// Line Level Org
+			final List<DocLineType> docLines = getDocLines();
+			if (docLines != null)
 			{
-				fact.dispose();
+				for (int line = 0; skip && line < docLines.size(); line++)
+				{
+					skip = acctSchema.isDisallowPostingForOrg(docLines.get(line).getOrgId());
+					if (!skip)
+					{
+						break;
+					}
+				}
 			}
 		}
+		return skip;
 	}
 
 	/**
@@ -548,12 +528,6 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		return services.deleteFactAcctByDocumentModel(documentPO);
 	}	// deleteAcct
 
-	/**
-	 * Posting logic for Accounting Schema
-	 *
-	 * @param acctSchema Accounting Schema
-	 * @return
-	 */
 	private final List<Fact> postLogic(final AcctSchema acctSchema)
 	{
 		// rejectUnbalanced
@@ -587,100 +561,111 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 					.setDetailMessage("No facts");
 		}
 
+		//
+		// Process facts: validate, GL distribution, balance etc
 		for (final Fact fact : facts)
 		{
-			if (fact == null)
-			{
-				throw newPostingException()
-						.setAcctSchema(acctSchema)
-						.setPostingStatus(PostingStatus.Error)
-						.setDetailMessage("No fact");
-			}
+			processFacts(fact);
+		}
 
-			// check accounts
-			final BooleanWithReason checkAccountsResult = fact.checkAccounts();
-			if (checkAccountsResult.isFalse())
-			{
-				throw newPostingException()
-						.setAcctSchema(acctSchema)
-						.setPostingStatus(PostingStatus.InvalidAccount)
-						.setDetailMessage(checkAccountsResult.getReason())
-						.setFact(fact);
-			}
-
-			// distribute
-			try
-			{
-				fact.distribute();
-			}
-			catch (final Exception e)
-			{
-				throw newPostingException(e)
-						.setAcctSchema(acctSchema)
-						.setPostingStatus(PostingStatus.Error)
-						.setFact(fact)
-						.setDetailMessage("Fact distribution error: " + e.getLocalizedMessage());
-			}
-
-			// Balance source amounts
-			if (fact.isSingleCurrency() && !fact.isSourceBalanced())
-			{
-				fact.balanceSource();
-				if (!fact.isSourceBalanced())
-				{
-					throw newPostingException()
-							.setAcctSchema(acctSchema)
-							.setPostingStatus(PostingStatus.NotBalanced)
-							.setFact(fact)
-							.setDetailMessage("Source amounts not balanced");
-				}
-			}
-
-			// balanceSegments
-			if (!fact.isSegmentBalanced())
-			{
-				fact.balanceSegments();
-				if (!fact.isSegmentBalanced())
-				{
-					throw newPostingException()
-							.setAcctSchema(acctSchema)
-							.setPostingStatus(PostingStatus.NotBalanced)
-							.setFact(fact)
-							.setDetailMessage("Segment not balanced");
-				}
-			}
-
-			// balanceAccounting
-			if (!fact.isAcctBalanced())
-			{
-				fact.balanceAccounting();
-				if (!fact.isAcctBalanced())
-				{
-					throw newPostingException()
-							.setAcctSchema(acctSchema)
-							.setPostingStatus(PostingStatus.NotBalanced)
-							.setFact(fact)
-							.setDetailMessage("Accountable amounts not balanced");
-				}
-			}
-		}	// for all facts
-
-		// return STATUS_Posted;
 		return facts;
 	}   // postLogic
+
+	private void processFacts(final Fact fact)
+	{
+		if (fact == null)
+		{
+			throw newPostingException()
+					// .setAcctSchema(acctSchema)
+					.setPostingStatus(PostingStatus.Error)
+					.setDetailMessage("No fact");
+		}
+
+		final AcctSchema acctSchema = fact.getAcctSchema();
+
+		// check accounts
+		final BooleanWithReason checkAccountsResult = fact.checkAccounts();
+		if (checkAccountsResult.isFalse())
+		{
+			throw newPostingException()
+					.setAcctSchema(acctSchema)
+					.setPostingStatus(PostingStatus.InvalidAccount)
+					.setDetailMessage(checkAccountsResult.getReason())
+					.setFact(fact);
+		}
+
+		// distribute
+		try
+		{
+			fact.distribute();
+		}
+		catch (final Exception e)
+		{
+			throw newPostingException(e)
+					.setAcctSchema(acctSchema)
+					.setPostingStatus(PostingStatus.Error)
+					.setFact(fact)
+					.setDetailMessage("Fact distribution error: " + e.getLocalizedMessage());
+		}
+
+		// Balance source amounts
+		if (fact.isSingleCurrency() && !fact.isSourceBalanced())
+		{
+			fact.balanceSource();
+			if (!fact.isSourceBalanced())
+			{
+				throw newPostingException()
+						.setAcctSchema(acctSchema)
+						.setPostingStatus(PostingStatus.NotBalanced)
+						.setFact(fact)
+						.setDetailMessage("Source amounts not balanced");
+			}
+		}
+
+		// balanceSegments
+		if (!fact.isSegmentBalanced())
+		{
+			fact.balanceSegments();
+			if (!fact.isSegmentBalanced())
+			{
+				throw newPostingException()
+						.setAcctSchema(acctSchema)
+						.setPostingStatus(PostingStatus.NotBalanced)
+						.setFact(fact)
+						.setDetailMessage("Segment not balanced");
+			}
+		}
+
+		// balanceAccounting
+		if (!fact.isAcctBalanced())
+		{
+			fact.balanceAccounting();
+			if (!fact.isAcctBalanced())
+			{
+				throw newPostingException()
+						.setAcctSchema(acctSchema)
+						.setPostingStatus(PostingStatus.NotBalanced)
+						.setFact(fact)
+						.setDetailMessage("Accountable amounts not balanced");
+			}
+		}
+	}
 
 	/**
 	 * Lock document
 	 *
 	 * @param force force posting
 	 * @param repost true if is document re-posting; i.e. it will assume the document was not already posted
-	 * @throws AdempiereException in case of failure
+	 * @throws PostingException
 	 */
 	private final void lock(final boolean force, final boolean repost)
 	{
+		final String tableName = get_TableName();
+		final int recordId = get_ID();
+
 		final StringBuilder sql = new StringBuilder("UPDATE ");
-		sql.append(get_TableName()).append(" SET Processing='Y' WHERE ")
-				.append(get_TableName()).append("_ID=").append(get_ID())
+		sql.append(tableName).append(" SET Processing='Y' WHERE ")
+				.append(tableName).append("_ID=").append(recordId)
 				.append(" AND Processed='Y' AND IsActive='Y'");
 		if (!force)
 		{
@@ -903,8 +888,6 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 
 	/**
 	 * Makes sure the document is convertible from it's currency to accounting currency.
-	 *
-	 * @param acctSchema accounting schema
 	 */
 	private final void checkConvertible(final AcctSchema acctSchema)
 	{
@@ -912,7 +895,6 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		final CurrencyId docCurrencyId = getCurrencyId();
 		if (docCurrencyId == null)
 		{
-			log.debug("(none) - {}", this);
 			return;
 		}
 
