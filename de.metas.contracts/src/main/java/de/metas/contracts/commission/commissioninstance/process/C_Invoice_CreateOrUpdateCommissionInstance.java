@@ -116,7 +116,7 @@ public class C_Invoice_CreateOrUpdateCommissionInstance
 					logger.debug("Processing invoiceCandidate");
 
 					final I_C_Invoice invoiceRecord = invoiceDAO.getByIdInTrx(invoiceId);
-					invoiceFacadeService.syncIinvoiceToCommissionInstance(invoiceRecord);
+					invoiceFacadeService.syncInvoiceToCommissionInstance(invoiceRecord);
 				});
 				counter++;
 			}

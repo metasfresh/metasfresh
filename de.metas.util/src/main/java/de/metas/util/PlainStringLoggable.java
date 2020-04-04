@@ -30,7 +30,8 @@ import com.google.common.collect.ImmutableList;
 
 /**
  * An {@link ILoggable} which collects the given log messages into one string.
- * 
+ * Use {@link Loggables#newPlainStringLoggable()} to obtain an instance.
+ *
  * @author metas-dev <dev@metasfresh.com>
  *
  */

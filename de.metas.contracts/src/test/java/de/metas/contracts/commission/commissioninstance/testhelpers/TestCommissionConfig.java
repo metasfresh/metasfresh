@@ -51,7 +51,7 @@ import lombok.Value;
 
 @Value
 @Builder
-public class ConfigTestRecord
+public class TestCommissionConfig
 {
 	@Default
 	int pointsPrecision = 2;
@@ -63,10 +63,10 @@ public class ConfigTestRecord
 	Boolean subtractLowerLevelCommissionFromBase;
 
 	@Singular
-	List<ContractTestRecord> contractTestRecords;
+	List<TestCommissionContract> contractTestRecords;
 
 	@Singular
-	List<ConfigLineTestRecord> configLineTestRecords;
+	List<TestCommissionConfigLine> configLineTestRecords;
 
 	public ConfigData createConfigData()
 	{
@@ -82,7 +82,7 @@ public class ConfigTestRecord
 		saveRecord(conditionsRecord);
 
 		ImmutableMap.Builder<String, CommissionSettingsLineId> name2CommissionSettingsLineId = ImmutableMap.builder();
-		for (final ConfigLineTestRecord configLineTestRecord : configLineTestRecords)
+		for (final TestCommissionConfigLine configLineTestRecord : configLineTestRecords)
 		{
 			final IPair<String, CommissionSettingsLineId> configLineResult = configLineTestRecord.createConfigLineData(settingsRecord.getC_HierarchyCommissionSettings_ID());
 			name2CommissionSettingsLineId.put(configLineResult.getLeft(), configLineResult.getRight());
@@ -93,24 +93,26 @@ public class ConfigTestRecord
 		final ImmutableMap.Builder<String, BPartnerId> name2bpartnerId = ImmutableMap.builder();
 
 		final HashMap<String, I_C_BPartner> name2bpartnerRecord = new HashMap<>(); // used just locally in this method
-		for (final ContractTestRecord contractTestRecord : contractTestRecords)
+		for (final TestCommissionContract contractTestRecord : contractTestRecords)
 		{
-			final I_C_Flatrate_Term termRecord = contractTestRecord.createContractData(conditionsRecord.getC_Flatrate_Conditions_ID(), commissionProductId);
+			final I_C_Flatrate_Term termRecord = contractTestRecord.createContractData(
+					conditionsRecord.getC_Flatrate_Conditions_ID(),
+					commissionProductId);
 			bpartnerId2flatrateTermId.put(
 					BPartnerId.ofRepoId(termRecord.getBill_BPartner_ID()),
 					FlatrateTermId.ofRepoId(termRecord.getC_Flatrate_Term_ID()));
 
-			name2bpartnerRecord.put(contractTestRecord.getName(), termRecord.getBill_BPartner());
-			name2bpartnerId.put(contractTestRecord.getName(), BPartnerId.ofRepoId(termRecord.getBill_BPartner_ID()));
+			name2bpartnerRecord.put(contractTestRecord.getSalesRepName(), termRecord.getBill_BPartner());
+			name2bpartnerId.put(contractTestRecord.getSalesRepName(), BPartnerId.ofRepoId(termRecord.getBill_BPartner_ID()));
 		}
 
 		// link sales reps into their hierarchy
-		for (final ContractTestRecord contractTestRecord : contractTestRecords)
+		for (final TestCommissionContract contractTestRecord : contractTestRecords)
 		{
-			if (!isEmpty(contractTestRecord.getParentName(), true))
+			if (!isEmpty(contractTestRecord.getParentSalesRepName(), true))
 			{
-				final I_C_BPartner child = name2bpartnerRecord.get(contractTestRecord.getName());
-				final I_C_BPartner parent = name2bpartnerRecord.get(contractTestRecord.getParentName());
+				final I_C_BPartner child = name2bpartnerRecord.get(contractTestRecord.getSalesRepName());
+				final I_C_BPartner parent = name2bpartnerRecord.get(contractTestRecord.getParentSalesRepName());
 				child.setC_BPartner_SalesRep_ID(parent.getC_BPartner_ID());
 				saveRecord(child);
 			}

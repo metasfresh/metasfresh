@@ -40,7 +40,7 @@ import lombok.Value;
 
 @Value
 @Builder
-public class CommissionFactTestRecord
+public class TestCommissionFact
 {
 	@NonNull
 	Long timestamp;
