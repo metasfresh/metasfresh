@@ -55,6 +55,9 @@ import lombok.NonNull;
 @Component
 public class CostElementRepository implements ICostElementRepository
 {
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IADReferenceDAO adReferenceDAO = Services.get(IADReferenceDAO.class);
+
 	private final CCache<Integer, IndexedCostElements> cache = CCache.<Integer, IndexedCostElements> builder()
 			.tableName(I_M_CostElement.Table_Name)
 			.initialCapacity(1)
@@ -67,7 +70,7 @@ public class CostElementRepository implements ICostElementRepository
 
 	private IndexedCostElements retrieveIndexedCostElements()
 	{
-		final ImmutableList<CostElement> costElements = Services.get(IQueryBL.class)
+		final ImmutableList<CostElement> costElements = queryBL
 				.createQueryBuilder(I_M_CostElement.class)
 				.addOnlyActiveRecordsFilter()
 				.orderBy(I_M_CostElement.COLUMN_M_CostElement_ID)
@@ -119,7 +122,7 @@ public class CostElementRepository implements ICostElementRepository
 		final I_M_CostElement newCostElementPO = InterfaceWrapperHelper.newInstanceOutOfTrx(I_M_CostElement.class);
 		InterfaceWrapperHelper.setValue(newCostElementPO, I_M_CostElement.COLUMNNAME_AD_Client_ID, clientId.getRepoId());
 		newCostElementPO.setAD_Org_ID(Env.CTXVALUE_AD_Org_ID_Any);
-		String name = Services.get(IADReferenceDAO.class).retrieveListNameTrl(CostingMethod.AD_REFERENCE_ID, costingMethod.getCode());
+		String name = adReferenceDAO.retrieveListNameTrl(CostingMethod.AD_REFERENCE_ID, costingMethod.getCode());
 		if (Check.isEmpty(name, true))
 		{
 			name = costingMethod.name();

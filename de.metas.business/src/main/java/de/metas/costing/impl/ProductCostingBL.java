@@ -50,9 +50,9 @@ import lombok.Value;
 
 public class ProductCostingBL implements IProductCostingBL
 {
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IProductDAO productDAO = Services.get(IProductDAO.class);
 	private final IAcctSchemaDAO acctSchemaDAO = Services.get(IAcctSchemaDAO.class);
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	private final CCache<ProductCategoryAcctKey, ProductCategoryAcct> productCategoryAcctCache = CCache.<ProductCategoryAcctKey, ProductCategoryAcct> builder()
 			.tableName(I_M_Product_Category_Acct.Table_Name)
