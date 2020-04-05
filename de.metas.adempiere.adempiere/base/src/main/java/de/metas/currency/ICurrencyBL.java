@@ -32,6 +32,7 @@ import org.adempiere.service.ClientId;
 import de.metas.currency.exceptions.NoCurrencyRateFoundException;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
+import de.metas.money.Money;
 import de.metas.organization.OrgId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
@@ -52,7 +53,7 @@ public interface ICurrencyBL extends ISingletonService
 
 	CurrencyConversionContext createCurrencyConversionContext(
 			@Nullable LocalDate convDate,
-			@Nullable ConversionTypeMethod conversionType, 
+			@Nullable ConversionTypeMethod conversionType,
 			@NonNull ClientId clientId,
 			@NonNull OrgId orgId);
 
@@ -138,6 +139,14 @@ public interface ICurrencyBL extends ISingletonService
 			CurrencyId currencyFromId,
 			CurrencyId currencyToId);
 
+	default CurrencyConversionResult convert(
+			@NonNull final CurrencyConversionContext conversionCtx,
+			@NonNull final Money amt,
+			@NonNull final CurrencyId currencyToId)
+	{
+		return convert(conversionCtx, amt.toBigDecimal(), amt.getCurrencyId(), currencyToId);
+	}
+
 	/**
 	 * @return currency Rate or null
 	 */
@@ -150,7 +159,7 @@ public interface ICurrencyBL extends ISingletonService
 			OrgId orgId);
 
 	BigDecimal getRate(
-			CurrencyConversionContext conversionCtx, 
+			CurrencyConversionContext conversionCtx,
 			CurrencyId currencyFromId,
 			CurrencyId currencyToId);
 

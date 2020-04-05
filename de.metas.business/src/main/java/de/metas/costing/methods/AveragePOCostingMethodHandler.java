@@ -34,13 +34,14 @@ import de.metas.costing.CostPrice;
 import de.metas.costing.CostSegment;
 import de.metas.costing.CostingMethod;
 import de.metas.costing.CurrentCost;
+import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.CurrencyPrecision;
-import de.metas.currency.ICurrencyBL;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutLineId;
 import de.metas.invoice.IMatchInvDAO;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
+import de.metas.money.Money;
 import de.metas.order.IOrderLineBL;
 import de.metas.order.OrderLineId;
 import de.metas.organization.OrgId;
@@ -78,7 +79,6 @@ public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 	private final IMatchInvDAO matchInvoicesRepo = Services.get(IMatchInvDAO.class);
 	private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
 	private final IInOutDAO inoutsRepo = Services.get(IInOutDAO.class);
-	private final ICurrencyBL currencyConversionBL = Services.get(ICurrencyBL.class);
 
 	public AveragePOCostingMethodHandler(@NonNull final CostingMethodHandlerUtils utils)
 	{
@@ -263,25 +263,26 @@ public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 					continue;
 				}
 				// Assumption: everything is matched
-				BigDecimal price = rs.getBigDecimal(4);
-				if (price == null || price.signum() == 0)
+				BigDecimal priceBD = rs.getBigDecimal(4);
+				if (priceBD == null || priceBD.signum() == 0)
 				{
-					price = rs.getBigDecimal(5);			// Actual
+					priceBD = rs.getBigDecimal(5);			// Actual
 				}
-				final CurrencyId C_Currency_ID = CurrencyId.ofRepoId(rs.getInt(6));
-				final LocalDate DateAcct = TimeUtil.asLocalDate(rs.getTimestamp(7));
-				final CurrencyConversionTypeId C_ConversionType_ID = CurrencyConversionTypeId.ofRepoIdOrNull(rs.getInt(8));
-				final ClientId Client_ID = ClientId.ofRepoId(rs.getInt(9));
-				final OrgId Org_ID = OrgId.ofRepoId(rs.getInt(10));
-				final BigDecimal cost = currencyConversionBL.convert(
-						price,
-						C_Currency_ID,
-						acctCurencyId,
-						DateAcct,
-						C_ConversionType_ID,
-						Client_ID,
-						Org_ID);
-				//
+				final Money price = Money.of(priceBD, CurrencyId.ofRepoId(rs.getInt(6)));
+				final LocalDate dateAcct = TimeUtil.asLocalDate(rs.getTimestamp(7));
+				final CurrencyConversionTypeId conversionTypeId = CurrencyConversionTypeId.ofRepoIdOrNull(rs.getInt(8));
+				final ClientId clientId = ClientId.ofRepoId(rs.getInt(9));
+				final OrgId orgId = OrgId.ofRepoId(rs.getInt(10));
+
+				final CurrencyConversionContext conversionCtx = utils.createCurrencyConversionContext(
+						dateAcct,
+						conversionTypeId,
+						clientId,
+						orgId);
+
+				final BigDecimal cost = utils.convert(conversionCtx, price, acctCurencyId)
+						.getAmount();
+
 				final BigDecimal oldAverageAmt = newAverageAmt;
 				final BigDecimal averageCurrent = oldStockQty.multiply(oldAverageAmt);
 				final BigDecimal averageIncrease = matchQty.multiply(cost);

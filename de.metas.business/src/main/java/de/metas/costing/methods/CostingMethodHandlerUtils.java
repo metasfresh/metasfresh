@@ -1,8 +1,10 @@
 package de.metas.costing.methods;
 
+import java.time.LocalDate;
 import java.util.Optional;
 import java.util.stream.Stream;
 
+import org.adempiere.service.ClientId;
 import org.springframework.stereotype.Service;
 
 import de.metas.acct.api.AcctSchema;
@@ -29,7 +31,10 @@ import de.metas.currency.CurrencyConversionResult;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.CurrencyRepository;
 import de.metas.currency.ICurrencyBL;
+import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
+import de.metas.money.Money;
+import de.metas.organization.OrgId;
 import de.metas.product.ProductPrice;
 import de.metas.quantity.QuantityUOMConverter;
 import de.metas.uom.IUOMConversionBL;
@@ -47,12 +52,12 @@ import lombok.NonNull;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -218,22 +223,39 @@ public class CostingMethodHandlerUtils
 		final CurrencyConversionContext conversionCtx = createCurrencyConversionContext(request)
 				.withPrecision(acctSchema.getCosting().getCostingPrecision());
 
-		final CurrencyConversionResult result = currencyBL.convert(
+		final CurrencyConversionResult result = convert(
 				conversionCtx,
-				amt.getValue(),
-				amt.getCurrencyId(),
+				amt.toMoney(),
 				acctCurrencyId);
 
 		return CostAmount.of(result.getAmount(), acctCurrencyId);
 	}
 
+	public CurrencyConversionResult convert(CurrencyConversionContext conversionCtx, Money price, CurrencyId acctCurencyId)
+	{
+		return currencyBL.convert(conversionCtx, price, acctCurencyId);
+	}
+
 	private CurrencyConversionContext createCurrencyConversionContext(final CostDetailCreateRequest request)
 	{
-		return currencyBL.createCurrencyConversionContext(
+		return createCurrencyConversionContext(
 				request.getDate(),
 				request.getCurrencyConversionTypeId(),
 				request.getClientId(),
 				request.getOrgId());
+	}
+
+	public CurrencyConversionContext createCurrencyConversionContext(
+			final LocalDate dateAcct,
+			final CurrencyConversionTypeId conversionTypeId,
+			final ClientId clientId,
+			final OrgId orgId)
+	{
+		return currencyBL.createCurrencyConversionContext(
+				dateAcct,
+				conversionTypeId,
+				clientId,
+				orgId);
 	}
 
 	public Stream<CostDetail> streamAllCostDetailsAfter(final CostDetail costDetail)
