@@ -1,9 +1,9 @@
 package de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger;
 
-import java.util.List;
 import java.util.Optional;
 
 import org.slf4j.Logger;
+import org.slf4j.MDC.MDCCloseable;
 import org.springframework.stereotype.Service;
 
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionInstance;
@@ -12,7 +12,9 @@ import de.metas.contracts.commission.commissioninstance.services.CommissionInsta
 import de.metas.contracts.commission.commissioninstance.services.CommissionInstanceService;
 import de.metas.contracts.commission.commissioninstance.services.CommissionTriggerFactory;
 import de.metas.contracts.commission.commissioninstance.services.repos.CommissionInstanceRepository;
+import de.metas.contracts.commission.model.I_C_Commission_Instance;
 import de.metas.logging.LogManager;
+import de.metas.logging.TableRecordMDC;
 import lombok.NonNull;
 
 /*
@@ -68,35 +70,53 @@ public class CommissionTriggerDocumentService
 			@NonNull final CommissionTriggerDocument commissionTriggerDocument,
 			final boolean candidateDeleted)
 	{
-		final List<CommissionInstance> instances = commissionInstanceRepository.getByDocumentId(commissionTriggerDocument.getId());
-		if (instances.isEmpty())
+		final Optional<CommissionInstance> instance = commissionInstanceRepository.getByDocumentId(commissionTriggerDocument.getId());
+		if (!instance.isPresent())
 		{
-			if (candidateDeleted)
-			{
-				logger.debug("commissionTriggerDocument with id={} has no instances and candidateDeleted=true; -> doing nothing", commissionTriggerDocument.getId().getRepoIdAware().getRepoId());
-				return; // nothing to do
-			}
-
-			// initially create commission data for the given invoice candidate;
-			// createdInstance might be not present, if there are no matching contracts and/or settings
-			final Optional<CommissionInstance> createdInstance = commissionInstanceService.computeCommissionInstanceFor(commissionTriggerDocument);
-			if (createdInstance.isPresent())
-			{
-				commissionInstanceRepository.save(createdInstance.get());
-			}
-			else
-			{
-				logger.debug("No existing or newly created instances; -> doing nothing");
-			}
+			createNewInstance(commissionTriggerDocument, candidateDeleted);
 			return;
 		}
+		updateInstance(commissionTriggerDocument, candidateDeleted, instance.get());
+	}
 
-		// update existing commission data
-		logger.debug("commissionTriggerDocument with id={} has {} instances (candidateDeleted={}); -> iterating them to update them;",
-				commissionTriggerDocument.getId().getRepoIdAware().getRepoId(), instances.size(), candidateDeleted);
+	private void createNewInstance(
+			@NonNull final CommissionTriggerDocument commissionTriggerDocument,
+			final boolean candidateDeleted)
+	{
+		final int repoId = commissionTriggerDocument.getId().getRepoIdAware().getRepoId(); // will be used in logging
 
-		for (final CommissionInstance instance : instances)
+		if (candidateDeleted)
 		{
+			logger.debug("commissionTriggerDocument with id={} has no instances and candidateDeleted=true; -> doing nothing", repoId);
+			return; // nothing to do
+		}
+
+		// initially create commission data for the given invoice candidate;
+		// createdInstance might be not present, if there are no matching contracts and/or settings
+		final Optional<CommissionInstance> createdInstance = commissionInstanceService.createCommissionInstance(commissionTriggerDocument);
+		if (createdInstance.isPresent())
+		{
+			commissionInstanceRepository.save(createdInstance.get());
+		}
+		else
+		{
+			logger.debug("No existing or newly-created instances for the commissionTriggerDocument with id={}; -> doing nothing", repoId);
+		}
+	}
+
+	private void updateInstance(
+			@NonNull final CommissionTriggerDocument commissionTriggerDocument,
+			final boolean candidateDeleted,
+			@NonNull final CommissionInstance instance)
+	{
+		try (final MDCCloseable instanceMDC = TableRecordMDC.putTableRecordReference(I_C_Commission_Instance.Table_Name, instance.getId()))
+		{
+			final int repoId = commissionTriggerDocument.getId().getRepoIdAware().getRepoId(); // will be used in logging
+
+			// update existing commission data
+			logger.debug("commissionTriggerDocument with id={} has an instance (candidateDeleted={}); -> updating its commission shares;",
+					repoId, candidateDeleted);
+
 			final CommissionTrigger trigger = commissionTriggerFactory.createForDocument(commissionTriggerDocument, candidateDeleted);
 
 			final CommissionTriggerData newTriggerData = trigger.getCommissionTriggerData();
@@ -104,10 +124,22 @@ public class CommissionTriggerDocumentService
 					.instanceToUpdate(instance)
 					.newCommissionTriggerData(newTriggerData)
 					.build();
-			commissionAlgorithmInvoker.applyTriggerChangeToSharesOfInstance(change);
+			commissionAlgorithmInvoker.updateCommissionShares(change);
 
 			instance.setCurrentTriggerData(newTriggerData);
+
+			if (candidateDeleted)
+			{
+				commissionInstanceRepository.save(instance);
+				return; // we are done
+			}
+
+			logger.debug("creating missing commission shares as needed;", repoId, candidateDeleted);
+
+			commissionInstanceService.createAndAddMissingShares(instance, commissionTriggerDocument);
+
 			commissionInstanceRepository.save(instance);
 		}
 	}
+
 }

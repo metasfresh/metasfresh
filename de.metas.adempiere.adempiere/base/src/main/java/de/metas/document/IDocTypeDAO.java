@@ -70,7 +70,7 @@ public interface IDocTypeDAO extends ISingletonService
 	 */
 	Optional<String> getDocBaseTypeCounter(String docBaseType);
 
-	I_C_DocType createDocType(DocTypeCreateRequest request);
+	DocTypeId createDocType(DocTypeCreateRequest request);
 
 	@Value
 	@Builder

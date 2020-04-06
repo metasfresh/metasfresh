@@ -1,6 +1,7 @@
 package de.metas.contracts.commission.commissioninstance.businesslogic;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.contracts.commission.commissioninstance.businesslogic.hierarchy.Hierarchy;
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.CommissionTrigger;
@@ -44,4 +45,21 @@ public class CreateCommissionSharesRequest
 
 	@NonNull
 	Hierarchy hierarchy;
+
+	public CreateCommissionSharesRequest withoutConfigs(@NonNull final ImmutableSet<CommissionConfig> existingConfigs)
+	{
+		if (existingConfigs.isEmpty())
+		{
+			return this;
+		}
+
+		final ImmutableList<CommissionConfig> remainingConfigs = configs.stream()
+				.filter(config -> !existingConfigs.contains(config))
+				.collect(ImmutableList.toImmutableList());
+
+		return CreateCommissionSharesRequest.builder()
+				.configs(remainingConfigs)
+				.trigger(trigger)
+				.hierarchy(hierarchy).build();
+	}
 }
