@@ -170,7 +170,7 @@ public final class LogManager
 		s_currentLevel = level;
 	}
 
-	public static final boolean setLoggerLevel(final Logger logger, final Level level)
+	public static boolean setLoggerLevel(final Logger logger, final Level level)
 	{
 		if (logger == null)
 		{
@@ -198,18 +198,18 @@ public final class LogManager
 		return false;
 	}
 
-	public static final boolean setLoggerLevel(final Logger logger, final String levelStr)
+	public static boolean setLoggerLevel(final Logger logger, final String levelStr)
 	{
 		final Level level = asLogbackLevel(levelStr);
 		return setLoggerLevel(logger, level);
 	}
 
-	public static final boolean setLoggerLevel(final Class<?> clazz, final Level level)
+	public static boolean setLoggerLevel(final Class<?> clazz, final Level level)
 	{
 		return setLoggerLevel(getLogger(clazz), level);
 	}
 
-	public static final boolean setLoggerLevel(final String loggerName, final Level level)
+	public static boolean setLoggerLevel(final String loggerName, final Level level)
 	{
 		return setLoggerLevel(getLogger(loggerName), level);
 	}
@@ -228,25 +228,6 @@ public final class LogManager
 
 		return null;
 	}
-
-	// private static final boolean isOwnLogger(final Logger logger)
-	// {
-	// final String loggerName = logger.getName();
-	// if (loggerName == null || loggerName.isEmpty())
-	// {
-	// return false;
-	// }
-	//
-	// for (final String loggerPrefix : OWNLOGGERS_NAME_PREFIXES)
-	// {
-	// if (loggerName.startsWith(loggerPrefix))
-	// {
-	// return true;
-	// }
-	// }
-	//
-	// return false;
-	// }
 
 	private static final List<String> OWNLOGGERS_NAME_PREFIXES = ImmutableList.of("de.metas", "org.adempiere", "org.compiere", "org.eevolution");
 
@@ -270,7 +251,7 @@ public final class LogManager
 	/**
 	 * @return current log level or <code>null</code> if not initialized
 	 */
-	public static final Level getLevel()
+	public static Level getLevel()
 	{
 		return s_currentLevel;
 	}
@@ -336,7 +317,7 @@ public final class LogManager
 		// mgr.reset();
 	}	// shutdown
 
-	public static final File getActiveLogFile()
+	public static File getActiveLogFile()
 	{
 		return MetasfreshFileLoggerHelper.get().getActiveFileOrNull();
 	}
@@ -356,7 +337,7 @@ public final class LogManager
 		MetasfreshFileLoggerHelper.get().flushActiveLogFile();
 	}
 
-	public static final void rotateLogFile()
+	public static void rotateLogFile()
 	{
 		MetasfreshFileLoggerHelper.get().rotateLogFile();
 	}
@@ -403,7 +384,7 @@ public final class LogManager
 	/**
 	 * @return {@link Level} or null
 	 */
-	public static final ch.qos.logback.classic.Level asLogbackLevel(String levelStr)
+	public static ch.qos.logback.classic.Level asLogbackLevel(String levelStr)
 	{
 		if (Check.isEmpty(levelStr, true))
 		{
@@ -439,7 +420,7 @@ public final class LogManager
 		return null;
 	}
 
-	private static final ch.qos.logback.classic.Level asLogbackLevel(final java.util.logging.Level julLevel)
+	private static ch.qos.logback.classic.Level asLogbackLevel(final java.util.logging.Level julLevel)
 	{
 		if (julLevel == null)
 		{
@@ -536,7 +517,7 @@ public final class LogManager
 			}
 			System.out.println(" * " + currentLogger.getName() + "(" + System.identityHashCode(currentLogger) + "): " + currentLoggerInfo);
 		};
-		
+
 		System.out.println("\nDumping all log levels starting from " + logger);
 		forAllLevelsUpToRoot(logger, dumpLevel);
 	}

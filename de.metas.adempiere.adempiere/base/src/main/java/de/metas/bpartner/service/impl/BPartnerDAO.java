@@ -503,7 +503,7 @@ public class BPartnerDAO implements IBPartnerDAO
 	@Override
 	public CountryId getBPartnerLocationCountryId(@NonNull final BPartnerLocationId bpartnerLocationId)
 	{
-		final I_C_BPartner_Location bpLocation = getBPartnerLocationById(bpartnerLocationId);
+		final I_C_BPartner_Location bpLocation = getBPartnerLocationById(bpartnerLocationId); // TODO retrieve it even if inactive
 		return CountryId.ofRepoId(bpLocation.getC_Location().getC_Country_ID());
 	}
 

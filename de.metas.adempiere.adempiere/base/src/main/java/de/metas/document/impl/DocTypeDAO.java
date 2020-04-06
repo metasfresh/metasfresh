@@ -1,5 +1,7 @@
 package de.metas.document.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -35,11 +37,12 @@ import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DocTypeNotFoundException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.I_AD_Sequence;
 import org.compiere.model.I_C_DocBaseType_Counter;
 import org.compiere.model.I_C_DocType;
-import org.compiere.model.MDocType;
+import org.compiere.model.I_GL_Category;
 import org.compiere.model.MSequence;
 import org.compiere.util.Env;
 
@@ -51,6 +54,7 @@ import de.metas.cache.annotation.CacheTrx;
 import de.metas.document.DocBaseAndSubType;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
+import de.metas.document.IDocTypeBL;
 import de.metas.document.IDocTypeDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -261,7 +265,7 @@ public class DocTypeDAO implements IDocTypeDAO
 	}
 
 	@Override
-	public I_C_DocType createDocType(final DocTypeCreateRequest request)
+	public DocTypeId createDocType(final DocTypeCreateRequest request)
 	{
 		final Properties ctx = request.getCtx();
 		final String trxName = ITrx.TRXNAME_ThreadInherited;
@@ -283,7 +287,14 @@ public class DocTypeDAO implements IDocTypeDAO
 			docNoSequenceId = -1;
 		}
 
-		final MDocType dt = new MDocType(ctx, request.getDocBaseType(), name, trxName);
+		final I_C_DocType dt = newInstance(I_C_DocType.class);
+		dt.setAD_Org_ID(0);
+		dt.setDocBaseType(request.getDocBaseType());
+		dt.setName(name);
+		dt.setPrintName(name);
+		dt.setGL_Category_ID(retrieveDefaultGL_Category_ID());
+
+//		final MDocType dt = new MDocType(ctx, request.getDocBaseType(), name, trxName);
 		dt.setEntityType(request.getEntityType());
 		if (request.getAdOrgId() > 0)
 		{
@@ -331,11 +342,28 @@ public class DocTypeDAO implements IDocTypeDAO
 		}
 		else
 		{
-			dt.setIsSOTrx();
+			final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
+			final boolean isSOTrx = docTypeBL.isSOTrx(request.getDocBaseType());
+			dt.setIsSOTrx(isSOTrx);
 		}
 
 		InterfaceWrapperHelper.save(dt);
-		return dt;
+		return DocTypeId.ofRepoId(dt.getC_DocType_ID());
+	}
+
+	/**
+	 * Set Default GL Category
+	 */
+	private int retrieveDefaultGL_Category_ID()
+	{
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_GL_Category.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_GL_Category.COLUMNNAME_AD_Client_ID, ClientId.METASFRESH.getRepoId())
+				.orderByDescending(I_GL_Category.COLUMNNAME_IsDefault)
+				.orderBy(I_GL_Category.COLUMNNAME_GL_Category_ID)
+				.create()
+				.firstId();
 	}
 
 	@Override

@@ -40,7 +40,7 @@ import lombok.Value;
 
 @Value
 @Builder
-public class CommissionShareTestRecord
+public class TestCommissionShare
 {
 	@NonNull
 	BPartnerId salesRepBPartnerId;
@@ -73,7 +73,7 @@ public class CommissionShareTestRecord
 	ProductId commissionProductId;
 
 	@Singular
-	List<CommissionFactTestRecord> commissionFactTestRecords;
+	List<TestCommissionFact> commissionFactTestRecords;
 
 	public int createCommissionData(final int C_Commission_Instance_ID)
 	{
@@ -91,7 +91,7 @@ public class CommissionShareTestRecord
 
 		saveRecord(shareRecord);
 
-		for (final CommissionFactTestRecord commissionFactTestRecord : commissionFactTestRecords)
+		for (final TestCommissionFact commissionFactTestRecord : commissionFactTestRecords)
 		{
 			commissionFactTestRecord.createCommissionData(shareRecord.getC_Commission_Share_ID());
 		}

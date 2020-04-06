@@ -260,7 +260,7 @@ public class PricingBL implements IPricingBL
 			final PricingSystemId pricingSystemId = bpartnerDAO.retrievePricingSystemIdOrNull(pricingCtx.getBPartnerId(), pricingCtx.getSoTrx());
 			if (pricingSystemId == null)
 			{
-				throw new AdempiereException("BPartner has no assigned pricing system")
+				throw new AdempiereException("BPartnerId=" + pricingCtx.getBPartnerId().getRepoId() + " has no assigned " + pricingCtx.getSoTrx() + " pricingSystem")
 						.appendParametersToMessage()
 						.setParameter("pricingCtx", pricingCtx);
 			}

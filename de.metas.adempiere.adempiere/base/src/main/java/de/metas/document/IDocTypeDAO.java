@@ -92,7 +92,7 @@ public interface IDocTypeDAO extends ISingletonService
 	 */
 	String retrieveDocBaseTypeCounter(Properties ctx, String docBaseType);
 
-	I_C_DocType createDocType(DocTypeCreateRequest request);
+	DocTypeId createDocType(DocTypeCreateRequest request);
 
 	@Value
 	@Builder

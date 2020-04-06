@@ -54,7 +54,7 @@ public class C_Invoice
 					trxManager.runInNewTrx(() -> {
 						try (final MDCCloseable icRecordMDC = TableRecordMDC.putTableRecordReference(invoiceRecord))
 						{
-							invoiceFacadeService.syncIinvoiceToCommissionInstance(invoiceRecord);
+							invoiceFacadeService.syncInvoiceToCommissionInstance(invoiceRecord);
 						}
 					});
 				});
