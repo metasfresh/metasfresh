@@ -1,13 +1,15 @@
-/**
- * 
- */
-package de.metas.autocomplete.model;
+package de.metas.cache.model;
+
+import java.util.Set;
+
+import de.metas.cache.TableNamesGroup;
+import lombok.NonNull;
 
 /*
  * #%L
- * de.metas.adempiere.adempiere.client
+ * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -16,23 +18,18 @@ package de.metas.autocomplete.model;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
-/**
- * @author teo_sarca
- *
- */
-public interface I_AD_Table extends org.compiere.model.I_AD_Table
+public interface IModelCacheInvalidateRequestFactoryGroup
 {
-    public static final String COLUMNNAME_ACTriggerLength = "ACTriggerLength";
-	public void setACTriggerLength (int ACTriggerLength);
-	public int getACTriggerLength();
+	TableNamesGroup getTableNamesToEnableRemoveCacheInvalidation();
+
+	Set<ModelCacheInvalidateRequestFactory> getFactoriesByTableName(@NonNull String tableName);
 }

@@ -73,6 +73,7 @@ public class CommissionTriggerDocumentService
 		{
 			if (candidateDeleted)
 			{
+				logger.debug("commissionTriggerDocument with id={} has no instances and candidateDeleted=true; -> doing nothing", commissionTriggerDocument.getId().getRepoIdAware().getRepoId());
 				return; // nothing to do
 			}
 
@@ -85,12 +86,15 @@ public class CommissionTriggerDocumentService
 			}
 			else
 			{
-				logger.debug("No existing or newly created instances ; -> doing nothing");
+				logger.debug("No existing or newly created instances; -> doing nothing");
 			}
 			return;
 		}
 
 		// update existing commission data
+		logger.debug("commissionTriggerDocument with id={} has {} instances (candidateDeleted={}); -> iterating them to update them;",
+				commissionTriggerDocument.getId().getRepoIdAware().getRepoId(), instances.size(), candidateDeleted);
+
 		for (final CommissionInstance instance : instances)
 		{
 			final CommissionTrigger trigger = commissionTriggerFactory.createForDocument(commissionTriggerDocument, candidateDeleted);

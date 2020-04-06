@@ -39,6 +39,7 @@ import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 
+import de.metas.bpartner.BPartnerContactId;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -357,7 +358,8 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 			invoice.setAD_Org_ID(invoiceHeader.getOrgId().getRepoId());
 			invoice.setC_BPartner_ID(invoiceHeader.getBillBPartnerId().getRepoId());
 			invoice.setC_BPartner_Location_ID(invoiceHeader.getBill_Location_ID());
-			invoice.setAD_User_ID(invoiceHeader.getBill_User_ID());
+			final BPartnerContactId adUserId = BPartnerContactId.ofRepoIdOrNull(invoiceHeader.getBillBPartnerId(), invoiceHeader.getBill_User_ID());
+			invoice.setAD_User_ID(BPartnerContactId.toRepoId(adUserId));
 			invoice.setC_Currency_ID(invoiceHeader.getCurrencyId().getRepoId()); // 03805
 			invoice.setC_BPartner_SalesRep_ID(BPartnerId.toRepoId(invoiceHeader.getSalesPartnerId()));
 			invoiceBL.updateDescriptionFromDocTypeTargetId(invoice, invoiceHeader.getDescription(), invoiceHeader.getDescriptionBottom());

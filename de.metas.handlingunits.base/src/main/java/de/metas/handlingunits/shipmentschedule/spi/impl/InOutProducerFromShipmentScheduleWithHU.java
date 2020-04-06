@@ -32,6 +32,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import de.metas.bpartner.BPartnerContactId;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.processor.api.FailTrxItemExceptionHandler;
 import org.adempiere.ad.trx.processor.api.ITrxItemExceptionHandler;
@@ -66,7 +67,6 @@ import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
 import de.metas.handlingunits.shipmentschedule.api.IInOutProducerFromShipmentScheduleWithHU;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHU;
 import de.metas.i18n.BooleanWithReason;
-import de.metas.handlingunits.shipmentschedule.spi.impl.ShipmentLineNoInfo;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutLineId;
 import de.metas.inout.event.InOutUserNotificationsProducer;
@@ -323,7 +323,7 @@ public class InOutProducerFromShipmentScheduleWithHU
 			final BPartnerLocationId bpLocationId = shipmentScheduleEffectiveValuesBL.getBPartnerLocationId(shipmentSchedule);
 			shipment.setC_BPartner_ID(bpartnerId.getRepoId());
 			shipment.setC_BPartner_Location_ID(bpLocationId.getRepoId());
-			shipment.setAD_User_ID(shipmentScheduleEffectiveValuesBL.getAD_User_ID(shipmentSchedule));
+			shipment.setAD_User_ID(BPartnerContactId.toRepoId(shipmentScheduleEffectiveValuesBL.getBPartnerContactId(shipmentSchedule)));
 		}
 
 		//

@@ -394,6 +394,7 @@ public final class AggregationEngine
 		invoiceHeader.setBill_Location_ID(billBPLocationId.getRepoId());
 		invoiceHeader.setBill_User_ID(BPartnerContactId.toRepoId(billContactId));
 		invoiceHeader.setC_BPartner_SalesRep_ID(icRecord.getC_BPartner_SalesRep_ID());
+		invoiceHeader.setC_BPartner_SalesRep_ID(icRecord.getC_BPartner_SalesRep_ID());
 		invoiceHeader.setC_Order_ID(icRecord.getC_Order_ID());
 		invoiceHeader.setPOReference(icRecord.getPOReference()); // task 07978
 

@@ -7,6 +7,7 @@ import de.metas.marketing.base.model.PlatformId;
 import de.metas.marketing.cleverreach.model.I_MKTG_CleverReach_Config;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -33,7 +34,7 @@ import de.metas.util.Services;
 @Repository
 public class CleverReachConfigRepository
 {
-	public CleverReachConfig getById(final PlatformId plaformId)
+	public CleverReachConfig getById(@NonNull final PlatformId plaformId)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		final int platformRepoId = plaformId.getRepoId();
@@ -45,7 +46,8 @@ public class CleverReachConfigRepository
 				.create()
 				.firstOnly(I_MKTG_CleverReach_Config.class);
 
-		Check.errorIf(configRecord == null, "Unable to load MKTG_CleverReach_Config for platformRepoId={}", platformRepoId);
+		// TODO add AD_message
+		Check.errorIf(configRecord == null, "Unable to load MKTG_CleverReach_Config for MKTG_Platform_ID={}", platformRepoId);
 
 		return CleverReachConfig.builder()
 				.client_id(configRecord.getCustomerNo())

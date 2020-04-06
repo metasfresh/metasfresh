@@ -145,10 +145,14 @@ public class BPartner
 		this.changeLog = changeLog;
 	}
 
-	/** empty list means valid */
+	/** Only active bpartners are actually validated. Empty list means "valid" */
 	public ImmutableList<ITranslatableString> validate()
 	{
 		final ImmutableList.Builder<ITranslatableString> result = ImmutableList.builder();
+		if (!isActive())
+		{
+			return result.build();
+		}
 
 		// A missing "bpartner.value" is probably(=>can't be determined here) acceptable because
 		// for a new BPartner, org.compiere.model.PO.saveNew() will *most probably* create a new value on the fly (can be switched off, but usually makes no sense).

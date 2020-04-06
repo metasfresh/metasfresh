@@ -26,7 +26,7 @@ package de.metas.processor.api.impl;
 import java.util.List;
 import java.util.Properties;
 
-import org.compiere.model.MTable;
+import org.adempiere.ad.table.api.IADTableDAO;
 import org.compiere.model.PO;
 import org.compiere.model.Query;
 import org.compiere.util.Env;
@@ -35,6 +35,7 @@ import org.compiere.util.Util;
 import de.metas.adempiere.model.I_AD_POProcessor;
 import de.metas.processor.api.IPOProcessorBL;
 import de.metas.processor.spi.IPOProcessor;
+import de.metas.util.Services;
 
 public class POProcessorBL implements IPOProcessorBL
 {
@@ -70,7 +71,7 @@ public class POProcessorBL implements IPOProcessorBL
 	@Override
 	public String getSourceTableName(I_AD_POProcessor processorDef)
 	{
-		return MTable.getTableName(Env.getCtx(), processorDef.getAD_Table_Source_ID());
+		return Services.get(IADTableDAO.class).retrieveTableName(processorDef.getAD_Table_Source_ID());
 	}
 
 }
