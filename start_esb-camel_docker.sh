@@ -1,4 +1,5 @@
-﻿#title           :start_esb-camel.sh
+﻿#!/bin/bash
+#title           :start_esb-camel.sh
 #
 #description     :initial start script for Docker container 
 #
