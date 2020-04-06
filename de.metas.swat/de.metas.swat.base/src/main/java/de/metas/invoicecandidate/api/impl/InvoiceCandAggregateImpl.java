@@ -22,7 +22,6 @@ package de.metas.invoicecandidate.api.impl;
  * #L%
  */
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -156,13 +155,10 @@ public class InvoiceCandAggregateImpl implements IInvoiceCandAggregate
 	}
 
 	@Override
-	public void addAssociation(final I_C_Invoice_Candidate ic, final IInvoiceLineRW il)
-	{
-		addAssociation(ic, ic.getC_Invoice_Candidate_ID(), il, il.getQtysToInvoice());
-	}
-
-	@Override
-	public final boolean addAssociationIfNotExists(final I_C_Invoice_Candidate ic, final IInvoiceLineRW il)
+	public final boolean addAssociationIfNotExists(
+			@NonNull final I_C_Invoice_Candidate ic,
+			@NonNull final IInvoiceLineRW il,
+			@NonNull final StockQtyAndUOMQty qtysInvoiced)
 	{
 		// Check if association already exists
 		if (isAssociated(ic, il))
@@ -171,8 +167,18 @@ public class InvoiceCandAggregateImpl implements IInvoiceCandAggregate
 		}
 
 		// Add association
-		addAssociation(ic, il);
+		addAssociation(ic, il, qtysInvoiced);
 		return true;
+	}
+
+
+	@Override
+	public void addAssociation(
+			@NonNull final I_C_Invoice_Candidate ic,
+			@NonNull final IInvoiceLineRW il,
+			@NonNull final StockQtyAndUOMQty qtysInvoice)
+	{
+		addAssociation(ic, ic.getC_Invoice_Candidate_ID(), il, qtysInvoice);
 	}
 
 	/**
@@ -181,16 +187,14 @@ public class InvoiceCandAggregateImpl implements IInvoiceCandAggregate
 	 * Note that this method with the extra 'icId' parameter is here because I was not able to write unit tests with mocks of I_C_Invoice_Candidate that returned the correct C_Invoice_Candidate_ID
 	 * value. In the end I decided to give the C_Invoice_Candidate_ID value as another parameter.
 	 *
-	 * @param ic
 	 * @param icId the value that would be returned by <code>ic.C_Invoice_Candidate_ID()</code> if the method was called with a proper <code>I_C_Invoice_Candidate</code>.
-	 * @param il
 	 * @see IInvoiceCandAggregate#addAssociation(I_C_Invoice_Candidate, IInvoiceLineRW)
 	 */
-	void addAssociation(
+	private void addAssociation(
 			@NonNull final I_C_Invoice_Candidate ic,
 			final int icId,
 			@NonNull final IInvoiceLineRW il,
-			final StockQtyAndUOMQty allocatedQty)
+			@NonNull final StockQtyAndUOMQty allocatedQty)
 	{
 		Check.assume(icId > 0, "Param 'ic' has C_Invoice_Candidate_ID>0");
 
@@ -267,14 +271,14 @@ public class InvoiceCandAggregateImpl implements IInvoiceCandAggregate
 	}
 
 	@Override
-	public StockQtyAndUOMQty getAllocatedQty(I_C_Invoice_Candidate ic, IInvoiceLineRW il)
+	public StockQtyAndUOMQty getAllocatedQty(@NonNull final I_C_Invoice_Candidate ic, @NonNull final IInvoiceLineRW il)
 	{
 		return getAllocatedQty(ic, ic.getC_Invoice_Candidate_ID(), il);
 	}
 
 	/**
 	 * This method does the actual work for {@link #getAllocatedQty(I_C_Invoice_Candidate, IInvoiceLineRW)}. For an explanation of why the method is here, see
-	 * {@link #addAssociation(I_C_Invoice_Candidate, int, IInvoiceLineRW, BigDecimal)}.
+	 * {@link #addAssociation(I_C_Invoice_Candidate, int, IInvoiceLineRW, StockQtyAndUOMQty)}.
 	 */
 	StockQtyAndUOMQty getAllocatedQty(final I_C_Invoice_Candidate ic, final int icId, final IInvoiceLineRW il)
 	{

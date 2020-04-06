@@ -11,7 +11,6 @@ import de.metas.pricing.IEditablePricingContext;
 import de.metas.pricing.IPricingContext;
 import de.metas.pricing.IPricingResult;
 import de.metas.pricing.PriceListId;
-import de.metas.pricing.exceptions.ProductNotOnPriceListException;
 import de.metas.pricing.rules.IPricingRule;
 import de.metas.pricing.service.IPricingBL;
 import de.metas.util.Services;
@@ -22,8 +21,8 @@ import lombok.NonNull;
  * <p>
  * If that is given, then the rule creates a pricing context of it's own and calls the pricing engine with that "alternative" pricing context.
  * The rule's own pricing context contains the {@link I_C_Flatrate_Conditions}'s pricing system.
- * 
- * 
+ *
+ *
  */
 public class SubscriptionPricingRule implements IPricingRule
 {
@@ -76,7 +75,7 @@ public class SubscriptionPricingRule implements IPricingRule
 
 		final IEditablePricingContext subscriptionPricingCtx = copyPricingCtxButInsertPriceList(pricingCtx, subscriptionPriceList);
 
-		final IPricingResult subscriptionPricingResult = invokePricingEngine(subscriptionPricingCtx);
+		final IPricingResult subscriptionPricingResult = invokePricingEngine(subscriptionPricingCtx.setFailIfNotCalculated());
 
 		copySubscriptionResultIntoResult(subscriptionPricingResult, result);
 
@@ -120,16 +119,12 @@ public class SubscriptionPricingRule implements IPricingRule
 		final IPricingBL pricingBL = Services.get(IPricingBL.class);
 		final IPricingResult subscriptionPricingResult = pricingBL.calculatePrice(subscriptionPricingCtx);
 
-		if (!subscriptionPricingResult.isCalculated())
-		{
-			throw new ProductNotOnPriceListException(subscriptionPricingCtx);
-		}
 		return subscriptionPricingResult;
 	}
 
 	/**
 	 * copy the results of our internal call into 'result'
-	 * 
+	 *
 	 * @param subscriptionPricingResult
 	 * @param result
 	 */

@@ -8,11 +8,14 @@ import java.util.Set;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.Adempiere;
 import org.compiere.model.I_AD_Role_Record_Access_Config;
 import org.compiere.model.X_AD_Role_Record_Access_Config;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.cache.CCache;
@@ -71,6 +74,17 @@ public class RecordAccessConfigService
 	public CompositeRecordAccessHandler getAllHandlers()
 	{
 		return allHandlers;
+	}
+
+	@VisibleForTesting
+	public void setAllHandlers(@NonNull final List<RecordAccessHandler> handlers)
+	{
+		if (!Adempiere.isUnitTestMode())
+		{
+			throw new AdempiereException("Not JUnit testing mode");
+		}
+
+		this.allHandlers = CompositeRecordAccessHandler.of(handlers);
 	}
 
 	public RecordAccessConfig getByRoleId(@NonNull final RoleId roleId)

@@ -75,7 +75,6 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
-import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -460,7 +459,7 @@ public class BPartnerDAO implements IBPartnerDAO
 				.stream()
 				.map(I_C_BPartner_Location::getC_Location_ID)
 				.map(LocationId::ofRepoIdOrNull)
-				.filter(Predicates.notNull())
+				.filter(Objects::nonNull)
 				.collect(ImmutableSet.toImmutableSet());
 
 		final ILocationDAO locationRepos = Services.get(ILocationDAO.class);
@@ -503,7 +502,7 @@ public class BPartnerDAO implements IBPartnerDAO
 	@Override
 	public CountryId getBPartnerLocationCountryId(@NonNull final BPartnerLocationId bpartnerLocationId)
 	{
-		final I_C_BPartner_Location bpLocation = getBPartnerLocationById(bpartnerLocationId);
+		final I_C_BPartner_Location bpLocation = getBPartnerLocationById(bpartnerLocationId); // TODO retrieve it even if inactive
 		return CountryId.ofRepoId(bpLocation.getC_Location().getC_Country_ID());
 	}
 
@@ -1391,11 +1390,11 @@ public class BPartnerDAO implements IBPartnerDAO
 	}
 
 	@Override
-	public Stream<BPartnerId> streamChildBPartnerIds(@NonNull final BPartnerId parentPartnerId)
+	public Stream<BPartnerId> streamBPartnerIdsBySalesRepBPartnerId(@NonNull final BPartnerId salesRepBPartnerId)
 	{
 		return Services.get(IQueryBL.class)
 				.createQueryBuilderOutOfTrx(I_C_BPartner.class)
-				.addEqualsFilter(I_C_BPartner.COLUMNNAME_BPartner_Parent_ID, parentPartnerId)
+				.addEqualsFilter(I_C_BPartner.COLUMNNAME_C_BPartner_SalesRep_ID, salesRepBPartnerId)
 				.addOnlyActiveRecordsFilter()
 				.create()
 				.listIds(BPartnerId::ofRepoId)

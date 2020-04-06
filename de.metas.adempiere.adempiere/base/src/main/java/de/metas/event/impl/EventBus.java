@@ -32,6 +32,7 @@ import javax.annotation.Nullable;
 import org.compiere.Adempiere;
 import org.compiere.SpringContextHolder;
 import org.slf4j.Logger;
+import org.slf4j.MDC;
 import org.slf4j.MDC.MDCCloseable;
 
 import com.google.common.base.MoreObjects;
@@ -231,7 +232,7 @@ final class EventBus implements IEventBus
 			{
 				eventToPost = event.withStatusWasLogged();
 
-				final EventLogService eventLogService = SpringContextHolder.instance.getBean(EventLogService.class);
+			final EventLogService eventLogService = SpringContextHolder.instance.getBean(EventLogService.class);
 				eventLogService.saveEvent(eventToPost, this);
 			}
 			else
@@ -328,6 +329,10 @@ final class EventBus implements IEventBus
 						.newErrorLogEntry(eventListener.getClass(), ex)
 						.createAndStore();
 			}
+			else
+			{
+				logger.warn("Got exception will invoking {} with {}", eventListener, event, ex);
+		}
 		}
 		finally
 		{

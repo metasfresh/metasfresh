@@ -35,7 +35,6 @@ import org.compiere.model.I_M_PromotionLine;
 import org.compiere.model.I_M_PromotionReward;
 import org.compiere.model.MOrder;
 import org.compiere.model.MOrderLine;
-import org.compiere.model.MTable;
 import org.compiere.model.Query;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
@@ -114,13 +113,13 @@ public class PromotionRule {
 		OrderLineComparator olComparator = new OrderLineComparator(orderLineIndex);
 		//distribute order lines
 		for (Map.Entry<Integer, List<Integer>> entry : promotions.entrySet()) {
-			Query query = new Query(Env.getCtx(), MTable.get(order.getCtx(), I_M_PromotionDistribution.Table_ID),
+			Query query = new Query(Env.getCtx(), I_M_PromotionDistribution.Table_Name,
 					"M_PromotionDistribution.M_Promotion_ID = ? AND M_PromotionDistribution.IsActive = 'Y'", order.get_TrxName());
 			query.setParameters(new Object[]{entry.getKey()});
 			query.setOrderBy("SeqNo");
 			List<MPromotionDistribution> list = query.list(MPromotionDistribution.class);
 
-			Query rewardQuery = new Query(Env.getCtx(), MTable.get(order.getCtx(), I_M_PromotionReward.Table_ID),
+			Query rewardQuery = new Query(Env.getCtx(), I_M_PromotionReward.Table_Name,
 					"M_PromotionReward.M_Promotion_ID = ? AND M_PromotionReward.IsActive = 'Y'", order.get_TrxName());
 			rewardQuery.setParameters(new Object[]{entry.getKey()});
 			rewardQuery.setOrderBy("SeqNo");
@@ -622,7 +621,7 @@ public class PromotionRule {
 	 * @throws SQLException
 	 */
 	private static List<Integer> findPromotionLine(int promotion_ID, MOrder order) throws SQLException {
-		Query query = new Query(Env.getCtx(), MTable.get(order.getCtx(), I_M_PromotionLine.Table_ID), " M_PromotionLine.M_Promotion_ID = ? AND M_PromotionLine.IsActive = 'Y'", order.get_TrxName());
+		Query query = new Query(Env.getCtx(), I_M_PromotionLine.Table_Name, " M_PromotionLine.M_Promotion_ID = ? AND M_PromotionLine.IsActive = 'Y'", order.get_TrxName());
 		query.setParameters(new Object[]{promotion_ID});
 		List<MPromotionLine>plist = query.list(MPromotionLine.class);
 		//List<M_PromotionLine_ID>

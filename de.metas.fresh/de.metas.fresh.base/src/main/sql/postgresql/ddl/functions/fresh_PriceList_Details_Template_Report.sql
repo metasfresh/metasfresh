@@ -1,4 +1,4 @@
-41DROP FUNCTION IF EXISTS report.fresh_pricelist_details_template_report(NUMERIC, NUMERIC, CHARACTER VARYING, NUMERIC);
+DROP FUNCTION IF EXISTS report.fresh_pricelist_details_template_report(NUMERIC, NUMERIC, CHARACTER VARYING, NUMERIC);
 drop function if exists report.fresh_pricelist_details_template_report(numeric, numeric, character varying, numeric);
 CREATE OR REPLACE FUNCTION report.fresh_pricelist_details_template_report(IN p_c_bpartner_id numeric, IN p_m_pricelist_version_id numeric, IN p_ad_language character varying,
                                                                           IN p_c_bpartner_location_id numeric)
@@ -47,7 +47,7 @@ SELECT plc.value                                                                
        plc.m_product_id                                                                                             as m_product_id,
        plc.BP_Value                                                                                                 as bp_value,
        plc.BP_Name                                                                                                  as bp_name,
-       CONCAT(bp_value, '_', bp_name, '_', case when prlv.isactive = 'Y' then prlv.validfrom else null end, '.xls') as reportfilename
+       CONCAT(bp_value, '_', bp_name, '_', case when prlv.isactive = 'Y' then prlv.validfrom::date else null end, '.xls') as reportfilename
 
 FROM report.fresh_PriceList_Details_Report(p_c_bpartner_id, p_m_pricelist_version_id, NULL, p_ad_language) plc
          LEFT OUTER JOIN M_HU_PI_Item_Product hupip on hupip.M_HU_PI_Item_Product_ID = plc.M_HU_PI_Item_Product_ID

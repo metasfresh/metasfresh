@@ -17,6 +17,7 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
+import ch.qos.logback.classic.Level;
 import de.metas.i18n.ADLanguageList;
 import de.metas.i18n.ILanguageDAO;
 import de.metas.logging.LogManager;
@@ -149,7 +150,7 @@ public class LanguageDAO implements ILanguageDAO
 			}
 		}
 
-		Loggables.addLog("@Deleted@=" + deleteNo + " - @Inserted@=" + insertNo);
+		Loggables.withLogger(logger, Level.DEBUG).addLog("@Deleted@=" + deleteNo + " - @Inserted@=" + insertNo);
 	}
 
 	@Override

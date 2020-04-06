@@ -14,15 +14,20 @@ import java.util.Objects;
 import java.util.TreeSet;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.slf4j.Logger;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
+
+import ch.qos.logback.classic.Level;
+
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.Profiles;
+import de.metas.logging.LogManager;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.Candidate.CandidateBuilder;
 import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
@@ -79,6 +84,8 @@ import lombok.NonNull;
 @Profile(Profiles.PROFILE_MaterialDispo)
 public class TransactionEventHandler implements MaterialEventHandler<AbstractTransactionEvent>
 {
+	private static final Logger logger = LogManager.getLogger(TransactionEventHandler.class);
+
 	private final CandidateChangeService candidateChangeHandler;
 	private final CandidateRepositoryRetrieval candidateRepository;
 	private final PostMaterialEventService postMaterialEventService;
@@ -155,7 +162,7 @@ public class TransactionEventHandler implements MaterialEventHandler<AbstractTra
 		final Flag pickDirectlyIfFeasible = extractPickDirectlyIfFeasible(candidate);
 		if (!pickDirectlyIfFeasible.isTrue())
 		{
-			Loggables.addLog("Not posting PickingRequestedEvent: this event's candidate has pickDirectlyIfFeasible={}; candidate={}",
+			Loggables.withLogger(logger, Level.DEBUG).addLog("Not posting PickingRequestedEvent: this event's candidate has pickDirectlyIfFeasible={}; candidate={}",
 					pickDirectlyIfFeasible, candidate);
 			return;
 		}
@@ -164,7 +171,7 @@ public class TransactionEventHandler implements MaterialEventHandler<AbstractTra
 		final boolean noShipmentScheduleForPicking = demandDetail == null || demandDetail.getShipmentScheduleId() <= 0;
 		if (noShipmentScheduleForPicking)
 		{
-			Loggables.addLog("Not posting PickingRequestedEvent: this event's candidate has no shipmentScheduleId; candidate={}",
+			Loggables.withLogger(logger, Level.DEBUG).addLog("Not posting PickingRequestedEvent: this event's candidate has no shipmentScheduleId; candidate={}",
 					candidate);
 			return;
 		}
@@ -173,7 +180,7 @@ public class TransactionEventHandler implements MaterialEventHandler<AbstractTra
 		final boolean noHUsToPick = huOnHandQtyChangeDescriptors == null || huOnHandQtyChangeDescriptors.isEmpty();
 		if (noHUsToPick)
 		{
-			Loggables.addLog("Not posting PickingRequestedEvent: this event has no HuOnHandQtyChangeDescriptors");
+			Loggables.withLogger(logger, Level.DEBUG).addLog("Not posting PickingRequestedEvent: this event has no HuOnHandQtyChangeDescriptors");
 			return;
 		}
 

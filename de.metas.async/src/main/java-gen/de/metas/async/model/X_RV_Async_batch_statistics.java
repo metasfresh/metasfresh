@@ -1,19 +1,3 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 /** Generated Model - DO NOT CHANGE */
 package de.metas.async.model;
 
@@ -30,7 +14,7 @@ public class X_RV_Async_batch_statistics extends org.compiere.model.PO implement
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 918920663L;
+	private static final long serialVersionUID = 978755859L;
 
     /** Standard Constructor */
     public X_RV_Async_batch_statistics (Properties ctx, int RV_Async_batch_statistics_ID, String trxName)
@@ -55,18 +39,6 @@ public class X_RV_Async_batch_statistics extends org.compiere.model.PO implement
       org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
     }
-
-	@Override
-	public org.compiere.model.I_AD_Table getAD_Table() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_AD_Table_ID, org.compiere.model.I_AD_Table.class);
-	}
-
-	@Override
-	public void setAD_Table(org.compiere.model.I_AD_Table AD_Table)
-	{
-		set_ValueFromPO(COLUMNNAME_AD_Table_ID, org.compiere.model.I_AD_Table.class, AD_Table);
-	}
 
 	/** Set DB-Tabelle.
 		@param AD_Table_ID 
@@ -94,7 +66,7 @@ public class X_RV_Async_batch_statistics extends org.compiere.model.PO implement
 	}
 
 	@Override
-	public de.metas.async.model.I_C_Async_Batch getC_Async_Batch() throws RuntimeException
+	public de.metas.async.model.I_C_Async_Batch getC_Async_Batch()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_Async_Batch_ID, de.metas.async.model.I_C_Async_Batch.class);
 	}
@@ -128,7 +100,7 @@ public class X_RV_Async_batch_statistics extends org.compiere.model.PO implement
 	}
 
 	@Override
-	public de.metas.async.model.I_C_Queue_PackageProcessor getC_Queue_PackageProcessor() throws RuntimeException
+	public de.metas.async.model.I_C_Queue_PackageProcessor getC_Queue_PackageProcessor()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_Queue_PackageProcessor_ID, de.metas.async.model.I_C_Queue_PackageProcessor.class);
 	}

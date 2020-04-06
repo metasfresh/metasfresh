@@ -27,6 +27,9 @@ import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.Collection;
+import java.util.Optional;
+
+import de.metas.util.lang.ReferenceListAwareEnums;
 
 /**
  * Generic readonly parameters. Use {@link IParamsBL#createParams(java.util.Map)} to get yours.
@@ -66,9 +69,11 @@ public interface IParams
 	/** @return {@link BigDecimal} value or <code>null</code> if parameter is missing or cannot be converted to {@link BigDecimal} */
 	BigDecimal getParameterAsBigDecimal(String parameterName);
 
-	default <T extends Enum<T>> T getParameterAsEnum(final String parameterName, final Class<T> enumType, final T defaultValueWhenNull)
+	default <T extends Enum<T>> Optional<T> getParameterAsEnum(final String parameterName, final Class<T> enumType)
 	{
 		final String value = getParameterAsString(parameterName);
-		return value != null ? Enum.valueOf(enumType, value) : defaultValueWhenNull;
+		return value != null
+				? Optional.of(ReferenceListAwareEnums.ofEnumCode(value, enumType))
+				: Optional.empty();
 	}
 }

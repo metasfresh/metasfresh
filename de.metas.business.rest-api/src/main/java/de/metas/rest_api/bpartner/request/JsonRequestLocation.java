@@ -1,17 +1,16 @@
 package de.metas.rest_api.bpartner.request;
 
 import static de.metas.rest_api.bpartner.SwaggerDocConstants.PARENT_SYNC_ADVISE_DOC;
+
 import javax.annotation.Nullable;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import de.metas.rest_api.common.JsonExternalId;
 import de.metas.rest_api.common.SyncAdvise;
-
-import com.fasterxml.jackson.annotation.JsonProperty;
-
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
@@ -43,18 +42,22 @@ import lombok.Value;
 @Value
 public class JsonRequestLocation
 {
-	@ApiModelProperty(allowEmptyValue = true, //
-			dataType = "java.lang.String", //
+	@ApiModelProperty(dataType = "java.lang.String", //
 			value = "This translates to `C_BPartner_Location.ExternalId`.\n"
 					+ "Needs to be unique over all business partners (not only the one this location belongs to).")
 	JsonExternalId externalId;
 
-	@ApiModelProperty(required = false, value = "If not specified but required (e.g. because a new location is created), then `true` is assumed")
+	@ApiModelProperty("If not specified but required (e.g. because a new location is created), then `true` is assumed")
 	@JsonInclude(Include.NON_NULL)
 	Boolean active;
 
+	@ApiModelProperty("This translates to `C_BPartner_Location.Name`")
 	@JsonInclude(Include.NON_EMPTY)
 	String name;
+
+	@ApiModelProperty("This translates to `C_BPartner_Location.BPartnerName`")
+	@JsonInclude(Include.NON_EMPTY)
+	String bpartnerName;
 
 	@JsonInclude(Include.NON_EMPTY)
 	String address1;
@@ -71,12 +74,11 @@ public class JsonRequestLocation
 	@JsonInclude(Include.NON_EMPTY)
 	String poBox;
 
-	@ApiModelProperty(allowEmptyValue = false, //
-			value = "If specified, then metasfresh will attempt to lookup the `C_Postal` record.\n"
-					+ "If there is one matching postal record, the system **will ignore** the following properties and instead use the postal record's values:\n"
-					+ "* countryCode\n"
-					+ "* city\n"
-					+ "* region\n")
+	@ApiModelProperty("If specified, then metasfresh will attempt to lookup the `C_Postal` record.\n"
+			+ "If there is one matching postal record, the system **will ignore** the following properties and instead use the postal record's values:\n"
+			+ "* countryCode\n"
+			+ "* city\n"
+			+ "* region\n")
 	@JsonInclude(Include.NON_EMPTY)
 	String postal;
 
@@ -132,6 +134,7 @@ public class JsonRequestLocation
 			@JsonProperty("gln") @Nullable final String gln,
 			@JsonProperty("externalId") @Nullable final JsonExternalId externalId,
 			@JsonProperty("name") @Nullable final String name,
+			@JsonProperty("bpartnerName") @Nullable final String bpartnerName,
 			@JsonProperty("active") @Nullable final Boolean active,
 			@JsonProperty("address1") @Nullable final String address1,
 			@JsonProperty("address2") @Nullable final String address2,
@@ -153,6 +156,8 @@ public class JsonRequestLocation
 		this.externalId = externalId;
 
 		this.name = name;
+
+		this.bpartnerName = bpartnerName;
 
 		this.active = active;
 

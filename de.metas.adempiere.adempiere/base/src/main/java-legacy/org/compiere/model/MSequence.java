@@ -257,7 +257,9 @@ public class MSequence extends X_AD_Sequence
 	private static int nextID(Connection conn, int AD_Sequence_ID, boolean adempiereSys)
 	{
 		if (conn == null || AD_Sequence_ID == 0)
+		{
 			return -3;
+		}
 		//
 		int retValue = -1;
 		String sqlUpdate = "{call nextID(?,?,?)}";
@@ -300,7 +302,9 @@ public class MSequence extends X_AD_Sequence
 			int incrementNo, String calendarYear)
 	{
 		if (conn == null || AD_Sequence_ID == 0)
+		{
 			return -3;
+		}
 		//
 		int retValue = -1;
 		String sqlUpdate = "{call nextIDByYear(?,?,?,?)}";
@@ -366,7 +370,9 @@ public class MSequence extends X_AD_Sequence
 				s_log.debug("Add: " + tableName);
 				MSequence seq = new MSequence(ctx, AD_Client_ID, tableName, trxName);
 				if (seq.save())
+				{
 					counter++;
+				}
 				else
 				{
 					s_log.error("Not created - AD_Client_ID=" + AD_Client_ID
@@ -648,7 +654,9 @@ public class MSequence extends X_AD_Sequence
 		for (String exceptionTable : exceptionTables)
 		{
 			if (tableName.equalsIgnoreCase(exceptionTable))
+			{
 				return true;
+			}
 		}
 
 		// If MigrationLogger is ignoring it, for sure we don't need a Centralized ID
@@ -671,7 +679,9 @@ public class MSequence extends X_AD_Sequence
 	{
 		boolean adempiereSys = Ini.isPropertyBool(Ini.P_ADEMPIERESYS);
 		if (adempiereSys && AD_Client_ID > 11)
+		{
 			adempiereSys = false;
+		}
 		return adempiereSys;
 	}
 

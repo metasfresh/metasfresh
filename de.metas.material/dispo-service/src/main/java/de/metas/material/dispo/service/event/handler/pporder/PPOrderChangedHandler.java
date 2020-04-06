@@ -6,6 +6,7 @@ import java.util.Collection;
 import java.util.List;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.slf4j.Logger;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
@@ -13,8 +14,10 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 
+import ch.qos.logback.classic.Level;
 import de.metas.Profiles;
 import de.metas.document.engine.DocStatus;
+import de.metas.logging.LogManager;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.businesscase.DemandDetail;
 import de.metas.material.dispo.commons.candidate.businesscase.Flag;
@@ -54,6 +57,8 @@ import lombok.NonNull;
 @Profile(Profiles.PROFILE_MaterialDispo)
 public class PPOrderChangedHandler implements MaterialEventHandler<PPOrderChangedEvent>
 {
+	private static final Logger logger = LogManager.getLogger(PPOrderChangedHandler.class);
+
 	private final CandidateRepositoryRetrieval candidateRepositoryRetrieval;
 	private final CandidateChangeService candidateChangeService;
 
@@ -95,7 +100,7 @@ public class PPOrderChangedHandler implements MaterialEventHandler<PPOrderChange
 		// Line candidates (demands, supplies)
 		if (event.isJustCompleted())
 		{
-			Loggables.addLog("PPOrder was just completed; create the demand and supply candidates for ppOrder lines");
+			Loggables.withLogger(logger, Level.DEBUG).addLog("PPOrder was just completed; create the demand and supply candidates for ppOrder lines");
 
 			PPOrderLineCandidatesCreateCommand.builder()
 					.candidateChangeService(candidateChangeService)

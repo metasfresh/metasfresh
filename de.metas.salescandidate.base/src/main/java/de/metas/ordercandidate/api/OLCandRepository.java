@@ -121,7 +121,7 @@ public class OLCandRepository
 			final BPartnerInfo bpartner = request.getDropShipBPartner();
 			olCandPO.setDropShip_BPartner_ID(BPartnerId.toRepoId(bpartner.getBpartnerId()));
 			olCandPO.setDropShip_Location_ID(BPartnerLocationId.toRepoId(bpartner.getBpartnerLocationId()));
-			// olCandPO.setDropShip_User_ID(bpartner.getContactId());
+			olCandPO.setDropShip_User_ID(BPartnerContactId.toRepoId(bpartner.getContactId()));
 		}
 
 		if (request.getHandOverBPartner() != null)
@@ -129,7 +129,7 @@ public class OLCandRepository
 			final BPartnerInfo bpartner = request.getHandOverBPartner();
 			olCandPO.setHandOver_Partner_ID(BPartnerId.toRepoId(bpartner.getBpartnerId()));
 			olCandPO.setHandOver_Location_ID(BPartnerLocationId.toRepoId(bpartner.getBpartnerLocationId()));
-			// olCandPO.setHandOver_User_ID(bpartner.getContactId());
+			olCandPO.setHandOver_User_ID(BPartnerContactId.toRepoId(bpartner.getContactId()));
 		}
 
 		if (!Check.isEmpty(request.getPoReference(), true))

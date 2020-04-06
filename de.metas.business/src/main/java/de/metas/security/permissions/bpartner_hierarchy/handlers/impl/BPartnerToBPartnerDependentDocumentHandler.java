@@ -7,10 +7,13 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_BPartner;
 import org.springframework.stereotype.Component;
 
+import com.google.common.annotations.VisibleForTesting;
+
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.security.permissions.bpartner_hierarchy.handlers.BPartnerDependentDocument;
 import de.metas.security.permissions.bpartner_hierarchy.handlers.BPartnerDependentDocumentHandler;
+import de.metas.user.UserId;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -37,7 +40,8 @@ import lombok.NonNull;
  */
 
 @Component
-class BPartnerToBPartnerDependentDocumentHandler implements BPartnerDependentDocumentHandler
+@VisibleForTesting
+public class BPartnerToBPartnerDependentDocumentHandler implements BPartnerDependentDocumentHandler
 {
 
 	@Override
@@ -54,8 +58,9 @@ class BPartnerToBPartnerDependentDocumentHandler implements BPartnerDependentDoc
 
 		return BPartnerDependentDocument.builder()
 				.documentRef(TableRecordReference.of(documentObj))
-				.newBPartnerId(BPartnerId.ofRepoIdOrNull(bpartnerRecord.getBPartner_Parent_ID()))
-				.oldBPartnerId(BPartnerId.ofRepoIdOrNull(bpartnerRecordOld.getBPartner_Parent_ID()))
+				.newBPartnerId(BPartnerId.ofRepoIdOrNull(bpartnerRecord.getC_BPartner_SalesRep_ID()))
+				.oldBPartnerId(BPartnerId.ofRepoIdOrNull(bpartnerRecordOld.getC_BPartner_SalesRep_ID()))
+				.updatedBy(UserId.ofRepoIdOrSystem(bpartnerRecord.getUpdatedBy()))
 				.build();
 	}
 
@@ -63,7 +68,7 @@ class BPartnerToBPartnerDependentDocumentHandler implements BPartnerDependentDoc
 	public Stream<TableRecordReference> streamRelatedDocumentsByBPartnerId(@NonNull final BPartnerId bpartnerId)
 	{
 		return Services.get(IBPartnerDAO.class)
-				.streamChildBPartnerIds(bpartnerId)
+				.streamBPartnerIdsBySalesRepBPartnerId(bpartnerId)
 				.map(childBPartnerId -> TableRecordReference.of(I_C_BPartner.Table_Name, childBPartnerId));
 	}
 }

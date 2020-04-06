@@ -60,10 +60,12 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Properties;
 
+import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 
 import de.metas.cache.CCache;
 import de.metas.util.Check;
+import de.metas.util.Services;
 
 
 /**
@@ -205,7 +207,7 @@ public class MEXPFormat extends X_EXP_Format {
 	// metas: tsa: remove throws SQLException
 	public static MEXPFormat getFormatByAD_Client_IDAD_Table_IDAndVersion(Properties ctx, int AD_Client_ID, int AD_Table_ID, String version, String trxName)
 	{
-		String key = new String(MTable.getTableName(ctx, AD_Table_ID)+version);
+		String key = new String(Services.get(IADTableDAO.class).retrieveTableName(AD_Table_ID) + version);
 		MEXPFormat retValue=null;
 
 		if(trxName == null)

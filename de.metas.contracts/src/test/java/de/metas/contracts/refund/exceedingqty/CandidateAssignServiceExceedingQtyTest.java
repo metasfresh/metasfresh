@@ -7,8 +7,8 @@ import java.math.BigDecimal;
 
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.lang.IPair;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import de.metas.contracts.refund.AssignCandidatesRequest;
 import de.metas.contracts.refund.AssignableInvoiceCandidate;
@@ -51,7 +51,7 @@ public class CandidateAssignServiceExceedingQtyTest
 
 	private RefundTestTools refundTestTools;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();

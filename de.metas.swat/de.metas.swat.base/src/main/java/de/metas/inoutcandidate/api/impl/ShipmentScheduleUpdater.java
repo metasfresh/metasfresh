@@ -33,7 +33,6 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Stream;
 
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.inout.util.DeliveryGroupCandidate;
 import org.adempiere.inout.util.DeliveryGroupCandidateGroupId;
@@ -273,7 +272,7 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 		// * update HeaderAggregationKey
 		for (final OlAndSched olAndSched : olsAndScheds)
 		{
-			try (final MDCCloseable mdcClosable = ShipmentSchedulesMDC.withShipmentScheduleId(olAndSched.getShipmentScheduleId()))
+			try (final MDCCloseable mdcClosable = ShipmentSchedulesMDC.putShipmentScheduleId(olAndSched.getShipmentScheduleId()))
 			{
 				final I_M_ShipmentSchedule sched = olAndSched.getSched();
 
@@ -292,8 +291,7 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 		final ShipmentSchedulesDuringUpdate firstRun = generate_FirstRun(ctx, olsAndScheds);
 		firstRun.updateCompleteStatusAndSetQtyToZeroWhereNeeded();
 
-		final int removeCnt = applyCandidateProcessors(ctx, firstRun);
-		logger.info("{} records were discarded by candidate processors", removeCnt);
+		applyCandidateProcessors(ctx, firstRun);
 
 		// evaluate the processor's result: lines that have been discarded won't
 		// be delivered and won't be validated in the second run.
@@ -428,7 +426,7 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 			@NonNull final Properties ctx,
 			@NonNull final List<OlAndSched> lines)
 	{
-		try (final MDCCloseable mdcClosable = ShipmentSchedulesMDC.withShipmentScheduleUpdateRunNo(1))
+		try (final MDCCloseable mdcClosable = ShipmentSchedulesMDC.putShipmentScheduleUpdateRunNo(1))
 		{
 			final ShipmentSchedulesDuringUpdate firstRun = new ShipmentSchedulesDuringUpdate();
 			return generate(ctx, lines, firstRun);
@@ -440,7 +438,7 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 			@NonNull final List<OlAndSched> lines,
 			@NonNull final ShipmentSchedulesDuringUpdate firstRun)
 	{
-		try (final MDCCloseable mdcClosable = ShipmentSchedulesMDC.withShipmentScheduleUpdateRunNo(2))
+		try (final MDCCloseable mdcClosable = ShipmentSchedulesMDC.putShipmentScheduleUpdateRunNo(2))
 		{
 			return generate(ctx, lines, firstRun);
 		}
@@ -460,28 +458,32 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 		// Iterate and try to allocate the QtyOnHand
 		for (final OlAndSched olAndSched : lines)
 		{
-			try (final MDCCloseable mdcClosable = ShipmentSchedulesMDC.withShipmentScheduleId(olAndSched.getShipmentScheduleId()))
+			try (final MDCCloseable mdcClosable = ShipmentSchedulesMDC.putShipmentScheduleId(olAndSched.getShipmentScheduleId()))
 			{
 				final I_M_ShipmentSchedule sched = olAndSched.getSched();
 
 				final DeliveryRule deliveryRule = shipmentScheduleEffectiveBL.getDeliveryRule(sched);
+				logger.debug("DeliveryRule={}", deliveryRule);
 
-				//
 				// QtyRequired
 				final BigDecimal qtyRequired;
 				if (olAndSched.getQtyOverride() != null)
 				{
-					qtyRequired = olAndSched.getQtyOverride().subtract(ShipmentScheduleQtysHelper.computeQtyToDeliverOverrideFulFilled(olAndSched));
+					final BigDecimal qtyToDeliverOverrideFulFilled = ShipmentScheduleQtysHelper.computeQtyToDeliverOverrideFulFilled(olAndSched);
+					qtyRequired = olAndSched.getQtyOverride().subtract(qtyToDeliverOverrideFulFilled);
+					logger.debug("QtyOverride={} is set; QtyToDeliverOverrideFulFilled={}; => QtyRequired={}", olAndSched.getQtyOverride(), qtyToDeliverOverrideFulFilled, qtyRequired);
 				}
 				else if (deliveryRule.isManual())
 				{
 					// lines with ruleManual need to be scheduled explicitly using QtyToDeliver_Override
 					qtyRequired = BigDecimal.ZERO;
+					logger.debug("DeliveryRule={}; => qtyRequired={}", deliveryRule, qtyRequired);
 				}
 				else
 				{
 					final BigDecimal qtyDelivered = shipmentScheduleAllocDAO.retrieveQtyDelivered(sched);
 					qtyRequired = olAndSched.getQtyOrdered().subtract(qtyDelivered);
+					logger.debug("QtyOrdered={}; QtyDelivered={}; => qtyRequired={}", olAndSched.getQtyOrdered(), qtyDelivered, qtyRequired);
 				}
 
 				//
@@ -491,8 +493,9 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 				final BigDecimal qtyPickedOrOnDraftShipment;
 				{
 					// task 08123: we also take those numbers into account that are *not* on an M_InOutLine yet, but are nonetheless picked
-					final Quantity stockingQty = shipmentScheduleAllocBL.retrieveQtyPickedAndUnconfirmed(sched);
-					qtyPickedOrOnDraftShipment = stockingQty.toBigDecimal();
+					final Quantity qtyPickedAndUnconfirmed = shipmentScheduleAllocBL.retrieveQtyPickedAndUnconfirmed(sched);
+					logger.debug("QtyPickedAndUnconfirmed={}", qtyPickedAndUnconfirmed);
+					qtyPickedOrOnDraftShipment = qtyPickedAndUnconfirmed.toBigDecimal();
 
 					// Update shipment schedule's fields
 					sched.setQtyPickList(qtyPickedOrOnDraftShipment);
@@ -501,7 +504,7 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 				//
 				// QtyToDeliver: qtyRequired - qtyPickList (non negative!)
 				final BigDecimal qtyToDeliver = ShipmentScheduleQtysHelper.computeQtyToDeliver(qtyRequired, qtyPickedOrOnDraftShipment);
-
+				logger.debug("QtyToDeliver={}", qtyToDeliver);
 				final ProductId productId = olAndSched.getProductId();
 				if (!productsService.isStocked(productId))
 				{
@@ -723,7 +726,7 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 		if (isAllowConsolidateShipment(bpartnerId))
 		{
 			// see if there is an existing shipment for this location and shipper
-			candidate = candidates.getInOutForShipper(scheduleSourceDoc.getShipperId(), warehouseId, bpartnerAddress);
+			candidate = candidates.getGroupForShipper(scheduleSourceDoc.getShipperId(), warehouseId, bpartnerAddress);
 		}
 		else
 		{
@@ -839,9 +842,9 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 		}
 	}
 
-	private int applyCandidateProcessors(final Properties ctx, final IShipmentSchedulesDuringUpdate candidates)
+	private void applyCandidateProcessors(final Properties ctx, final IShipmentSchedulesDuringUpdate candidates)
 	{
-		return candidateProcessors.doUpdateAfterFirstPass(ctx, candidates, ITrx.TRXNAME_ThreadInherited);
+		candidateProcessors.doUpdateAfterFirstPass(ctx, candidates);
 	}
 
 	/**
@@ -904,7 +907,7 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 
 	private Stream<IShipmentScheduleSegment> extractPickingBOMsStorageSegments(final OlAndSched olAndSched)
 	{
-		try (final MDCCloseable mdcClosable = ShipmentSchedulesMDC.withShipmentScheduleId(olAndSched.getShipmentScheduleId()))
+		try (final MDCCloseable mdcClosable = ShipmentSchedulesMDC.putShipmentScheduleId(olAndSched.getShipmentScheduleId()))
 		{
 			final PickingBOMsReversedIndex pickingBOMsReversedIndex = pickingBOMService.getPickingBOMsReversedIndex();
 

@@ -7,6 +7,8 @@ import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.Adempiere;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
+import org.slf4j.MDC;
+import org.slf4j.MDC.MDCCloseable;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Service;
 
@@ -59,18 +61,20 @@ public class MetasfreshEventListener
 		public void onEvent(@NonNull final IEventBus eventBus, @NonNull final Event event)
 		{
 			final MaterialEvent lightWeightEvent = materialEventConverter.toMaterialEvent(event);
-			logger.info("Received MaterialEvent={}", lightWeightEvent);
-
-			//
-			// make sure that every record we create has the correct AD_Client_ID and AD_Org_ID
-			final Properties temporaryCtx = Env.copyCtx(Env.getCtx());
-
-			Env.setClientId(temporaryCtx, lightWeightEvent.getEventDescriptor().getClientId());
-			Env.setOrgId(temporaryCtx, lightWeightEvent.getEventDescriptor().getOrgId());
-
-			try (final IAutoCloseable c = Env.switchContext(temporaryCtx))
+			try (final MDCCloseable eventMDC = MDC.putCloseable("MaterialEventClass", lightWeightEvent.getClass().getName()))
 			{
-				invokeListenerInTrx(lightWeightEvent);
+				logger.info("Received MaterialEvent={}", lightWeightEvent);
+
+				// make sure that every record we create has the correct AD_Client_ID and AD_Org_ID
+				final Properties temporaryCtx = Env.copyCtx(Env.getCtx());
+
+				Env.setClientId(temporaryCtx, lightWeightEvent.getEventDescriptor().getClientId());
+				Env.setOrgId(temporaryCtx, lightWeightEvent.getEventDescriptor().getOrgId());
+
+				try (final IAutoCloseable ctx = Env.switchContext(temporaryCtx))
+				{
+					invokeListenerInTrx(lightWeightEvent);
+				}
 			}
 		}
 

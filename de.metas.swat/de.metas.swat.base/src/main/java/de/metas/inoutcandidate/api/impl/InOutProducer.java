@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
+import de.metas.bpartner.BPartnerContactId;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.processor.api.ITrxItemProcessorContext;
 import org.adempiere.mm.attributes.api.AttributeConstants;
@@ -439,11 +440,11 @@ public class InOutProducer implements IInOutProducer
 		{
 			final int bpartnerId = receiptScheduleBL.getC_BPartner_Effective_ID(rs);
 			final int bpartnerLocationId = receiptScheduleBL.getC_BPartner_Location_Effective_ID(rs);
-			final int bpartnerContactId = receiptScheduleBL.getAD_User_Effective_ID(rs);
+			final BPartnerContactId bpartnerContactId = receiptScheduleBL.getBPartnerContactID(rs);
 
 			receiptHeader.setC_BPartner_ID(bpartnerId);
 			receiptHeader.setC_BPartner_Location_ID(bpartnerLocationId);
-			receiptHeader.setAD_User_ID(bpartnerContactId);
+			receiptHeader.setAD_User_ID(bpartnerContactId.toRepoId(bpartnerContactId));
 		}
 
 		//

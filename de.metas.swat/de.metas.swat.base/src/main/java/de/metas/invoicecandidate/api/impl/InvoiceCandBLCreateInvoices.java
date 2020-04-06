@@ -35,9 +35,11 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 
+import de.metas.bpartner.BPartnerContactId;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -62,14 +64,17 @@ import org.compiere.util.TrxRunnable2;
 import org.slf4j.Logger;
 import org.slf4j.MDC.MDCCloseable;
 
-import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.adempiere.model.I_C_Order;
+import de.metas.bpartner.BPartnerId;
 import de.metas.document.DocTypeId;
+import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
+import de.metas.i18n.AdMessageId;
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IADMessageDAO;
 import de.metas.i18n.IMsgBL;
 import de.metas.invoice.IMatchInvBL;
@@ -104,14 +109,15 @@ import lombok.NonNull;
 
 public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 {
-	private static final String MSG_INVOICE_CAND_BL_PROCESSING_ERROR_0P = "InvoiceCandBL_Processing_Error";
-	private static final String MSG_INVOICE_CAND_BL_PROCESSING_ERROR_DESC_1P = "InvoiceCandBL_Processing_Error_Desc";
+	private static final AdMessageKey MSG_INVOICE_CAND_BL_PROCESSING_ERROR_0P = AdMessageKey.of("InvoiceCandBL_Processing_Error");
+	private static final AdMessageKey MSG_INVOICE_CAND_BL_PROCESSING_ERROR_DESC_1P = AdMessageKey.of("InvoiceCandBL_Processing_Error_Desc");
 
 	//
 	// Services
 	private static final transient Logger logger = InvoiceCandidate_Constants.getLogger(InvoiceCandBLCreateInvoices.class);
 
 	private final transient IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+	private final transient IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 	private final transient IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 	private final transient IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 	private final transient IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
@@ -350,11 +356,12 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 			invoice.setIsTaxIncluded(invoiceHeader.isTaxIncluded()); // tasks 04119
 
 			invoice.setAD_Org_ID(invoiceHeader.getOrgId().getRepoId());
-			invoice.setC_BPartner_ID(invoiceHeader.getBill_BPartner_ID());
+			invoice.setC_BPartner_ID(invoiceHeader.getBillBPartnerId().getRepoId());
 			invoice.setC_BPartner_Location_ID(invoiceHeader.getBill_Location_ID());
-			invoice.setAD_User_ID(invoiceHeader.getBill_User_ID());
+			final BPartnerContactId adUserId = BPartnerContactId.ofRepoIdOrNull(invoiceHeader.getBillBPartnerId(), invoiceHeader.getBill_User_ID());
+			invoice.setAD_User_ID(BPartnerContactId.toRepoId(adUserId));
 			invoice.setC_Currency_ID(invoiceHeader.getCurrencyId().getRepoId()); // 03805
-
+			invoice.setC_BPartner_SalesRep_ID(BPartnerId.toRepoId(invoiceHeader.getSalesPartnerId()));
 			invoiceBL.updateDescriptionFromDocTypeTargetId(invoice, invoiceHeader.getDescription(), invoiceHeader.getDescriptionBottom());
 
 			invoice.setIsSOTrx(header.isSOTrx());
@@ -406,7 +413,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 						trxName);
 
 				// task 08927: we already do the ILAs in here, so we won't need to update them again.
-				InvoiceCandBL.DYNATTR_C_Invoice_Candidates_need_NO_ila_updating_on_Invoice_Complete.setValue(invoice, Boolean.TRUE);
+				InvoiceCandBL.DYNATTR_INVOICING_FROM_INVOICE_CANDIDATES_IS_IN_PROGRESS.setValue(invoice, Boolean.TRUE);
 
 				trxManager.run(trxName, genLines);
 				createdLines.addAll(genLines.getCreatedLines());
@@ -430,7 +437,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 		}
 	}
 
-	private final void setC_DocType(final I_C_Invoice invoice, final IInvoiceHeader invoiceHeader)
+	private void setC_DocType(final I_C_Invoice invoice, @NonNull final IInvoiceHeader invoiceHeader)
 	{
 		final String invoiceHeaderDocBaseType = invoiceHeader.getDocBaseType();
 
@@ -457,7 +464,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 		// and that document type is not a credit memo.
 		{
 			final boolean invoiceHeader_IsCreditMemo = invoiceBL.isCreditMemo(invoiceHeaderDocBaseType);
-			final I_C_DocType invoiceDocType = invoice.getC_DocTypeTarget();
+			final I_C_DocType invoiceDocType = docTypeDAO.getById(invoice.getC_DocTypeTarget_ID());
 			Check.assumeNotNull(invoiceDocType, "invoiceDocType not null"); // shall not happen
 			final String invoiceDocBaseType = invoiceDocType.getDocBaseType();
 			final boolean invoice_IsCreditMemo = invoiceBL.isCreditMemo(invoiceDocBaseType);
@@ -632,7 +639,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 				final List<String> externalIds = candsForIlVO
 						.stream()
 						.map(I_C_Invoice_Candidate::getExternalLineId)
-						.filter(Predicates.notNull())
+						.filter(Objects::nonNull)
 						.collect(ImmutableList.toImmutableList());
 				invoiceLine.setExternalIds(InvoiceUtil.joinExternalIds(externalIds));
 
@@ -852,7 +859,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 				.alwaysUseDefaultHeaderAggregationKeyBuilder(invoicingParams != null && invoicingParams.isConsolidateApprovedICs())
 				.dateInvoicedParam(invoicingParams != null ? invoicingParams.getDateInvoiced() : null)
 				.dateAcctParam(invoicingParams != null ? invoicingParams.getDateAcct() : null)
-				.updateLocationAndContactForInvoice(invoicingParams != null ? invoicingParams.isUpdateLocationAndContactForInvoice() : false)
+				.useDefaultBillLocationAndContactIfNotOverride(invoicingParams != null ? invoicingParams.isUpdateLocationAndContactForInvoice() : false)
 				.build();
 	}
 
@@ -970,7 +977,9 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 				if (userId != USERINCHARGE_NA)
 				{
 					note = create(ctx, I_AD_Note.class, ITrx.TRXNAME_None);
-					note.setAD_Message_ID(msgDAO.retrieveIdByValue(ctx, MSG_INVOICE_CAND_BL_PROCESSING_ERROR_0P));
+					note.setAD_Message_ID(msgDAO.retrieveIdByValue(ctx, MSG_INVOICE_CAND_BL_PROCESSING_ERROR_0P)
+							.map(AdMessageId::getRepoId)
+							.orElse(-1));
 
 					note.setAD_User_ID(userId);
 

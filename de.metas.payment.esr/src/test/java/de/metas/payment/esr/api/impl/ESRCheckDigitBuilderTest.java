@@ -1,5 +1,10 @@
 package de.metas.payment.esr.api.impl;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
 /*
  * #%L
  * de.metas.payment.esr
@@ -21,10 +26,6 @@ package de.metas.payment.esr.api.impl;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-import static org.junit.Assert.assertEquals;
-
-import org.junit.Before;
-import org.junit.Test;
 
 import de.metas.attachments.AttachmentEntryService;
 
@@ -33,7 +34,7 @@ public class ESRCheckDigitBuilderTest
 
 	private ESRImportBL esrImportBL;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		final AttachmentEntryService attachmentEntryService = AttachmentEntryService.createInstanceForUnitTesting();
@@ -43,60 +44,60 @@ public class ESRCheckDigitBuilderTest
 	@Test
 	public void esrDigit01052601()
 	{
-		assertEquals(1, esrImportBL.calculateESRCheckDigit("01052601")); // 01-52601-1
+		assertThat(esrImportBL.calculateESRCheckDigit("01052601")).isEqualTo(1); // 01-52601-1
 	}
 
 	@Test
 	public void esrDigit01049165()
 	{
-		assertEquals(2, esrImportBL.calculateESRCheckDigit("01049165")); // 01-49165-2
+		assertThat(esrImportBL.calculateESRCheckDigit("01049165")).isEqualTo(2); // 01-49165-2
 	}
 
 	@Test
 	public void esrDigit01062967()
 	{
-		assertEquals(6, esrImportBL.calculateESRCheckDigit("01062967")); // 01-62967-6
+		assertThat(esrImportBL.calculateESRCheckDigit("01062967")).isEqualTo(6); // 01-62967-6
 	}
 
 	// Example taken from http://www.tkb.ch/download/online/BESR-Handbuch.pdf
 	@Test
 	public void esrDigit01001852()
 	{
-		assertEquals(7, esrImportBL.calculateESRCheckDigit("01001852")); // 01-1852-7
+		assertThat(esrImportBL.calculateESRCheckDigit("01001852")).isEqualTo(7); // 01-1852-7
 	}
 
 	@Test
 	public void esrDigit00018310019779911119()
 	{
-		assertEquals(6, esrImportBL.calculateESRCheckDigit("31001400018310019779911119"));
+		assertThat(esrImportBL.calculateESRCheckDigit("31001400018310019779911119")).isEqualTo(6);
 	}
 
 	// Example taken from http://www.tkb.ch/download/online/BESR-Handbuch.pdf "Belegartcode 01 (BESR)", seems to be wrong,
 	// because all other work, only this one doesn't
 	public void esrDigit0100000292001()
 	{
-		assertEquals(1, esrImportBL.calculateESRCheckDigit("010000029200"));
+		assertThat(esrImportBL.calculateESRCheckDigit("010000029200")).isEqualTo(1);
 	}
 
 	// Example taken from http://www.tkb.ch/download/online/BESR-Handbuch.pdf
 	@Test
 	public void esrDigit04()
 	{
-		assertEquals(2, esrImportBL.calculateESRCheckDigit("04"));
+		assertThat(esrImportBL.calculateESRCheckDigit("04")).isEqualTo(2);
 	}
 
 	// Example taken from http://www.tkb.ch/download/online/BESR-Handbuch.pdf
 	@Test
 	public void esrDigit0100003949753()
 	{
-		assertEquals(3, esrImportBL.calculateESRCheckDigit("010000394975"));
+		assertThat(esrImportBL.calculateESRCheckDigit("010000394975")).isEqualTo(3);
 	}
 
 	// Example taken from http://www.tkb.ch/download/online/BESR-Handbuch.pdf
 	@Test
 	public void esrDigit310739205008005400199307134()
 	{
-		assertEquals(4, esrImportBL.calculateESRCheckDigit("31073920500800540019930713"));
+		assertThat(esrImportBL.calculateESRCheckDigit("31073920500800540019930713")).isEqualTo(4);
 	}
 
 	/**
@@ -110,7 +111,7 @@ public class ESRCheckDigitBuilderTest
 		final int checkDigit = esrImportBL.calculateESRCheckDigit("010001456".substring(0, 8));
 		final String lastchar = "010001456".substring(8);
 
-		assertEquals(6, checkDigit);
-		assertEquals("6", lastchar);
+		assertThat(checkDigit).isEqualTo(6);
+		assertThat(lastchar).isEqualTo("6");
 	}
 }

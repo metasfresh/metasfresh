@@ -22,10 +22,13 @@ import org.compiere.model.I_AD_UI_ElementField;
 import org.compiere.model.I_AD_UI_ElementGroup;
 import org.compiere.model.I_AD_UI_Section;
 import org.compiere.model.I_AD_Window;
+import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Ordering;
 
+import ch.qos.logback.classic.Level;
+import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
@@ -41,12 +44,12 @@ import lombok.NonNull;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -55,7 +58,9 @@ import lombok.NonNull;
 
 public final class WindowUIElementsGenerator
 {
-	public static final WindowUIElementsGenerator forConsumer(final IWindowUIElementsGeneratorConsumer consumer)
+	private static final Logger logger = LogManager.getLogger(WindowUIElementsGenerator.class);
+
+	public static WindowUIElementsGenerator forConsumer(final IWindowUIElementsGeneratorConsumer consumer)
 	{
 		return new WindowUIElementsGenerator(consumer);
 	}
@@ -99,9 +104,9 @@ public final class WindowUIElementsGenerator
 		this.consumer = consumer;
 	}
 
-	private final void log(final String msg, final Object... msgParameters)
+	private void log(final String msg, final Object... msgParameters)
 	{
-		Loggables.addLog(msg, msgParameters);
+		Loggables.withLogger(logger, Level.DEBUG).addLog(msg, msgParameters);
 	}
 
 	public void generate(final I_AD_Window adWindow)
@@ -223,7 +228,7 @@ public final class WindowUIElementsGenerator
 		}
 	}
 
-	public final void migrateDetailTab(final I_AD_Tab detailTab)
+	public void migrateDetailTab(final I_AD_Tab detailTab)
 	{
 		if (windowDAO.hasUISections(detailTab))
 		{

@@ -75,6 +75,11 @@ public enum DeliveryRule implements ReferenceListAwareEnum
 		return type != null ? type.getCode() : null;
 	}
 
+	public boolean isCompleteOrder()
+	{
+		return COMPLETE_ORDER.equals(this);
+	}
+
 	public boolean isCompleteOrderOrLine()
 	{
 		return COMPLETE_ORDER.equals(this)

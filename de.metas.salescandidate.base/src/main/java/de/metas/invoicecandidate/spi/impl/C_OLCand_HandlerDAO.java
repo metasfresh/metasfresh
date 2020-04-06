@@ -52,7 +52,9 @@ class C_OLCand_HandlerDAO
 		//
 		// Only which are for our data source
 		final IInputDataSourceDAO inputDataSourceDAO = Services.get(IInputDataSourceDAO.class);
-		final I_AD_InputDataSource dataSource = inputDataSourceDAO.retrieveInputDataSource(ctx, InvoiceCandidate_Constants.DATA_DESTINATION_INTERNAL_NAME, true, trxName);
+		final I_AD_InputDataSource dataSource = inputDataSourceDAO.retrieveInputDataSource(ctx, InvoiceCandidate_Constants.DATA_DESTINATION_INTERNAL_NAME,
+				false/* the record might be deactivated if that case simply never happens on a particular machting */,
+				trxName);
 		queryBuilder.addEqualsFilter(I_C_OLCand.COLUMN_AD_DataDestination_ID, dataSource.getAD_InputDataSource_ID());
 
 		//

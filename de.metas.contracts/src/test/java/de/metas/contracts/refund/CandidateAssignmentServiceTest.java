@@ -21,9 +21,9 @@ import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.compiere.model.I_C_UOM;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -75,6 +75,7 @@ import lombok.Value;
  * #L%
  */
 
+@ExtendWith(AdempiereTestWatcher.class)
 public class CandidateAssignmentServiceTest
 {
 	private static final BigDecimal TWO = new BigDecimal("2");
@@ -90,9 +91,6 @@ public class CandidateAssignmentServiceTest
 
 	private static final LocalDate NOW = LocalDate.now();
 
-	@Rule
-	public AdempiereTestWatcher adempiereTestWatcher = new AdempiereTestWatcher();
-
 	private AssignableInvoiceCandidateRepository assignableInvoiceCandidateRepository;
 
 	private CandidateAssignmentService invoiceCandidateAssignmentService;
@@ -101,7 +99,7 @@ public class CandidateAssignmentServiceTest
 	private RefundInvoiceCandidateRepository refundInvoiceCandidateRepository;
 	private RefundContractRepository refundContractRepository;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();

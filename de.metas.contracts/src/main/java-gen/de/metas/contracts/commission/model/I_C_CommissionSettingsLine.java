@@ -59,36 +59,28 @@ public interface I_C_CommissionSettingsLine
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set Geschäftspartnergruppe.
-	 * Geschäftspartnergruppe
+	 * Set Kunde.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setC_BP_Group_ID (int C_BP_Group_ID);
+	public void setC_BPartner_Customer_ID (int C_BPartner_Customer_ID);
 
 	/**
-	 * Get Geschäftspartnergruppe.
-	 * Geschäftspartnergruppe
+	 * Get Kunde.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getC_BP_Group_ID();
+	public int getC_BPartner_Customer_ID();
 
-	public org.compiere.model.I_C_BP_Group getC_BP_Group();
-
-	public void setC_BP_Group(org.compiere.model.I_C_BP_Group C_BP_Group);
-
-    /** Column definition for C_BP_Group_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_CommissionSettingsLine, org.compiere.model.I_C_BP_Group> COLUMN_C_BP_Group_ID = new org.adempiere.model.ModelColumn<I_C_CommissionSettingsLine, org.compiere.model.I_C_BP_Group>(I_C_CommissionSettingsLine.class, "C_BP_Group_ID", org.compiere.model.I_C_BP_Group.class);
-    /** Column name C_BP_Group_ID */
-    public static final String COLUMNNAME_C_BP_Group_ID = "C_BP_Group_ID";
+    /** Column name C_BPartner_Customer_ID */
+    public static final String COLUMNNAME_C_BPartner_Customer_ID = "C_BPartner_Customer_ID";
 
 	/**
-	 * Set C_CommissionSettingsLine.
+	 * Set Einstellungsdetail.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -97,7 +89,7 @@ public interface I_C_CommissionSettingsLine
 	public void setC_CommissionSettingsLine_ID (int C_CommissionSettingsLine_ID);
 
 	/**
-	 * Get C_CommissionSettingsLine.
+	 * Get Einstellungsdetail.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -166,6 +158,33 @@ public interface I_C_CommissionSettingsLine
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
+	 * Set Kundengruppe.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setCustomer_Group_ID (int Customer_Group_ID);
+
+	/**
+	 * Get Kundengruppe.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getCustomer_Group_ID();
+
+	public org.compiere.model.I_C_BP_Group getCustomer_Group();
+
+	public void setCustomer_Group(org.compiere.model.I_C_BP_Group Customer_Group);
+
+    /** Column definition for Customer_Group_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_CommissionSettingsLine, org.compiere.model.I_C_BP_Group> COLUMN_Customer_Group_ID = new org.adempiere.model.ModelColumn<I_C_CommissionSettingsLine, org.compiere.model.I_C_BP_Group>(I_C_CommissionSettingsLine.class, "Customer_Group_ID", org.compiere.model.I_C_BP_Group.class);
+    /** Column name Customer_Group_ID */
+    public static final String COLUMNNAME_Customer_Group_ID = "Customer_Group_ID";
+
+	/**
 	 * Set Aktiv.
 	 * Der Eintrag ist im System aktiv
 	 *
@@ -189,6 +208,56 @@ public interface I_C_CommissionSettingsLine
     public static final org.adempiere.model.ModelColumn<I_C_CommissionSettingsLine, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_C_CommissionSettingsLine, Object>(I_C_CommissionSettingsLine.class, "IsActive", null);
     /** Column name IsActive */
     public static final String COLUMNNAME_IsActive = "IsActive";
+
+	/**
+	 * Set Kunde bzw. Gruppe ausschließen.
+	 * Wenn eine Kundegruppe oder ein Kunde ausgewählt ist, entscheided dieses Feld, ob es ein Ein- oder Ausschlusskriterium ist
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setIsExcludeBPGroup (boolean IsExcludeBPGroup);
+
+	/**
+	 * Get Kunde bzw. Gruppe ausschließen.
+	 * Wenn eine Kundegruppe oder ein Kunde ausgewählt ist, entscheided dieses Feld, ob es ein Ein- oder Ausschlusskriterium ist
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public boolean isExcludeBPGroup();
+
+    /** Column definition for IsExcludeBPGroup */
+    public static final org.adempiere.model.ModelColumn<I_C_CommissionSettingsLine, Object> COLUMN_IsExcludeBPGroup = new org.adempiere.model.ModelColumn<I_C_CommissionSettingsLine, Object>(I_C_CommissionSettingsLine.class, "IsExcludeBPGroup", null);
+    /** Column name IsExcludeBPGroup */
+    public static final String COLUMNNAME_IsExcludeBPGroup = "IsExcludeBPGroup";
+
+	/**
+	 * Set Produktkategorie ausschließen.
+	 * Wenn eine Produktkategorie ausgewählt ist, entscheided dieses Feld, ob diese Kategorie ein Ein- oder Ausschlusskriterium ist
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setIsExcludeProductCategory (boolean IsExcludeProductCategory);
+
+	/**
+	 * Get Produktkategorie ausschließen.
+	 * Wenn eine Produktkategorie ausgewählt ist, entscheided dieses Feld, ob diese Kategorie ein Ein- oder Ausschlusskriterium ist
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public boolean isExcludeProductCategory();
+
+    /** Column definition for IsExcludeProductCategory */
+    public static final org.adempiere.model.ModelColumn<I_C_CommissionSettingsLine, Object> COLUMN_IsExcludeProductCategory = new org.adempiere.model.ModelColumn<I_C_CommissionSettingsLine, Object>(I_C_CommissionSettingsLine.class, "IsExcludeProductCategory", null);
+    /** Column name IsExcludeProductCategory */
+    public static final String COLUMNNAME_IsExcludeProductCategory = "IsExcludeProductCategory";
 
 	/**
 	 * Set Produkt Kategorie.
@@ -217,7 +286,7 @@ public interface I_C_CommissionSettingsLine
 	 * Set % der Basispunkte.
 	 *
 	 * <br>Type: Quantity
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	public void setPercentOfBasePoints (java.math.BigDecimal PercentOfBasePoints);
@@ -226,7 +295,7 @@ public interface I_C_CommissionSettingsLine
 	 * Get % der Basispunkte.
 	 *
 	 * <br>Type: Quantity
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	public java.math.BigDecimal getPercentOfBasePoints();

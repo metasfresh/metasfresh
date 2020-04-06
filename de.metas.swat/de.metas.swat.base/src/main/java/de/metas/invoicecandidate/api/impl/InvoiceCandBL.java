@@ -5,9 +5,11 @@ package de.metas.invoicecandidate.api.impl;
 
 import static de.metas.util.Check.assume;
 import static de.metas.util.Check.assumeGreaterThanZero;
+import static de.metas.util.lang.CoalesceUtil.firstGreaterThanZero;
 import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.ZERO;
 import static org.adempiere.model.InterfaceWrapperHelper.getValueOrNull;
+import static org.adempiere.model.InterfaceWrapperHelper.isNull;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
@@ -45,6 +47,8 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
+
+import javax.annotation.Nullable;
 
 import org.adempiere.ad.dao.ICompositeQueryUpdater;
 import org.adempiere.ad.dao.IQueryBL;
@@ -101,6 +105,7 @@ import de.metas.currency.Currency;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.ICurrencyBL;
 import de.metas.currency.ICurrencyDAO;
+import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
 import de.metas.i18n.IMsgBL;
@@ -115,6 +120,7 @@ import de.metas.invoicecandidate.InvoiceCandidateIds;
 import de.metas.invoicecandidate.api.IAggregationBL;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
+import de.metas.invoicecandidate.api.IInvoiceCandDAO.InvoiceableInvoiceCandIdResult;
 import de.metas.invoicecandidate.api.IInvoiceCandInvalidUpdater;
 import de.metas.invoicecandidate.api.IInvoiceCandidateEnqueuer;
 import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
@@ -124,7 +130,6 @@ import de.metas.invoicecandidate.api.InvoiceCandidateMultiQuery;
 import de.metas.invoicecandidate.api.InvoiceCandidateMultiQuery.InvoiceCandidateMultiQueryBuilder;
 import de.metas.invoicecandidate.api.InvoiceCandidateQuery;
 import de.metas.invoicecandidate.api.InvoiceCandidate_Constants;
-import de.metas.invoicecandidate.api.IInvoiceCandDAO.InvoiceableInvoiceCandIdResult;
 import de.metas.invoicecandidate.async.spi.impl.InvoiceCandWorkpackageProcessor;
 import de.metas.invoicecandidate.exceptions.InconsistentUpdateExeption;
 import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
@@ -144,13 +149,16 @@ import de.metas.order.OrderLineId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.pricing.InvoicableQtyBasedOn;
+import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.conditions.PricingConditions;
 import de.metas.pricing.conditions.PricingConditionsBreak;
 import de.metas.pricing.conditions.PricingConditionsBreakQuery;
+import de.metas.pricing.conditions.PricingConditionsId;
 import de.metas.pricing.conditions.service.IPricingConditionsRepository;
 import de.metas.pricing.exceptions.ProductNotOnPriceListException;
 import de.metas.pricing.service.IPriceListBL;
+import de.metas.pricing.service.IPriceListDAO;
 import de.metas.process.PInstanceId;
 import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
@@ -191,7 +199,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	private static final String SYS_Config_C_Invoice_Candidate_Close_PartiallyInvoiced = "C_Invoice_Candidate_Close_PartiallyInvoiced";
 
 	// task 08927
-	/* package */static final ModelDynAttributeAccessor<org.compiere.model.I_C_Invoice, Boolean> DYNATTR_C_Invoice_Candidates_need_NO_ila_updating_on_Invoice_Complete = new ModelDynAttributeAccessor<>(Boolean.class);
+	/* package */static final ModelDynAttributeAccessor<org.compiere.model.I_C_Invoice, Boolean> DYNATTR_INVOICING_FROM_INVOICE_CANDIDATES_IS_IN_PROGRESS = new ModelDynAttributeAccessor<>(Boolean.class);
 
 	/**
 	 * Note: we only use this internally; by having it as timestamp, we avoid useless conversions between it and {@link LocalDate}
@@ -911,43 +919,72 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	}
 
 	@Override
+	public CurrencyPrecision extractPricePrecision(@NonNull final I_C_Invoice_Candidate icRecord)
+	{
+		final I_M_PriceList pricelist = extractPriceListOrNull(icRecord);
+
+		if (pricelist != null && !isNull(pricelist, I_M_PriceList.COLUMNNAME_PricePrecision) && pricelist.getPricePrecision() >= 0)
+		{
+			return CurrencyPrecision.ofInt(pricelist.getPricePrecision());
+		}
+
+		// fall back: get the precision from the currency
+		final CurrencyPrecision result = getPrecisionFromCurrency(icRecord);
+		logger.debug("C_Invoice_Candidate has no M_PriceList with a PricePrecision; -> return currency's precision={}", result);
+		return result;
+	}
+
+	private I_M_PriceList extractPriceListOrNull(@NonNull final I_C_Invoice_Candidate icRecord)
+	{
+		final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
+		final IPriceListBL priceListBL = Services.get(IPriceListBL.class);
+		final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
+
+		if (icRecord.getM_PriceList_Version_ID() > 0)
+		{
+			final I_M_PriceList result = priceListDAO.getPriceListByPriceListVersionId(PriceListVersionId.ofRepoId(icRecord.getM_PriceList_Version_ID()));
+			logger.debug("C_Invoice_Candidate has M_PriceList_Version_ID={}; -> return M_PriceList={}", icRecord.getM_PriceList_Version_ID(), result);
+			return result;
+		}
+		else if (icRecord.getM_PricingSystem_ID() > 0)
+		{
+			// take the precision from the bpartner price list
+			final I_C_BPartner_Location partnerLocation = bpartnerDAO.getBPartnerLocationById(
+					BPartnerLocationId.ofRepoIdOrNull(
+							icRecord.getBill_BPartner_ID(),
+							firstGreaterThanZero(icRecord.getBill_Location_Override_ID(), icRecord.getBill_Location_ID())));
+
+			if (partnerLocation == null)
+			{
+				logger.debug("C_Invoice_Candidate has M_PricingSystem_ID={}, but no partnerLocation; -> return M_PriceList=null", icRecord.getM_PricingSystem_ID());
+				return null;
+			}
+
+			final ZonedDateTime date = TimeUtil.asZonedDateTime(icRecord.getDateOrdered());
+			final SOTrx soTrx = SOTrx.ofBoolean(icRecord.isSOTrx());
+
+			final I_M_PriceList result = priceListBL
+					.getCurrentPricelistOrNull(
+							PricingSystemId.ofRepoIdOrNull(icRecord.getM_PricingSystem_ID()),
+							CountryId.ofRepoId(partnerLocation.getC_Location().getC_Country_ID()),
+							date,
+							soTrx);
+			logger.debug("C_Invoice_Candidate has M_PricingSystem_ID={}, effective C_BPartner_Location_ID={}, DateOrdered={} and SOTrx={}; -> return M_PriceList={}",
+					icRecord.getM_PricingSystem_ID(), partnerLocation.getC_BPartner_Location_ID(), date, icRecord.isSOTrx(), result);
+			return result;
+		}
+
+		logger.debug("C_Invoice_Candidate has neither M_PriceList_Version_ID nor M_PricingSystem_ID; -> return M_PriceList=null");
+		return null;
+	}
+
+	@Override
 	public CurrencyPrecision getPrecisionFromCurrency(@NonNull final I_C_Invoice_Candidate ic)
 	{
 		final CurrencyId currencyId = CurrencyId.ofRepoIdOrNull(ic.getC_Currency_ID());
 		return currencyId != null
 				? Services.get(ICurrencyDAO.class).getStdPrecision(currencyId)
 				: CurrencyPrecision.TWO;
-	}
-
-	@Override
-	public CurrencyPrecision getPrecisionFromPricelist(final I_C_Invoice_Candidate ic)
-	{
-		final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
-
-		// take the precision from the bpartner price list
-		final I_C_BPartner_Location partnerLocation = bpartnerDAO.getBPartnerLocationById(
-				BPartnerLocationId.ofRepoIdOrNull(ic.getBill_BPartner_ID(), ic.getBill_Location_ID()));
-
-		if (partnerLocation != null)
-		{
-			final ZonedDateTime date = TimeUtil.asZonedDateTime(ic.getDateOrdered());
-			final SOTrx soTrx = SOTrx.ofBoolean(ic.isSOTrx());
-
-			final I_M_PriceList pricelist = Services.get(IPriceListBL.class)
-					.getCurrentPricelistOrNull(
-							PricingSystemId.ofRepoIdOrNull(ic.getM_PricingSystem_ID()),
-							CountryId.ofRepoId(partnerLocation.getC_Location().getC_Country_ID()),
-							date,
-							soTrx);
-
-			if (pricelist != null)
-			{
-				return CurrencyPrecision.ofInt(pricelist.getPricePrecision());
-			}
-		}
-
-		// fall back: get the precision from the currency
-		return getPrecisionFromCurrency(ic);
 	}
 
 	@Override
@@ -1085,10 +1122,10 @@ public class InvoiceCandBL implements IInvoiceCandBL
 
 	@Override
 	public I_C_Invoice_Line_Alloc createUpdateIla(
-			final I_C_Invoice_Candidate invoiceCand,
-			final I_C_InvoiceLine invoiceLine,
-			final StockQtyAndUOMQty qtysInvoiced,
-			final String note)
+			@NonNull final I_C_Invoice_Candidate invoiceCand,
+			@NonNull final I_C_InvoiceLine invoiceLine,
+			@NonNull final StockQtyAndUOMQty qtysInvoiced,
+			@Nullable final String note)
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(invoiceCand);
 		Check.assume(Env.getAD_Client_ID(ctx) == invoiceCand.getAD_Client_ID(), "AD_Client_ID of " + invoiceCand + " and of its CTX are the same");
@@ -1181,7 +1218,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		}
 		else
 		{
-			final CurrencyPrecision precision = getPrecisionFromPricelist(ic);
+			final CurrencyPrecision precision = extractPricePrecision(ic);
 			final ProductPrice priceEntered = getPriceEnteredEffective(ic);
 			final Percent discount = getDiscount(ic);
 
@@ -1395,10 +1432,9 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	}
 
 	@Override
-	public void handleCompleteForInvoice(final org.compiere.model.I_C_Invoice invoice)
+	public void handleCompleteForInvoice(@NonNull final org.compiere.model.I_C_Invoice invoice)
 	{
-		if (!DYNATTR_C_Invoice_Candidates_need_NO_ila_updating_on_Invoice_Complete.isNull(invoice)
-				&& DYNATTR_C_Invoice_Candidates_need_NO_ila_updating_on_Invoice_Complete.getValue(invoice))
+		if (isCreatedByInvoicingJustNow(invoice))
 		{
 			return; // nothing to do for us
 		}
@@ -1492,8 +1528,10 @@ public class InvoiceCandBL implements IInvoiceCandBL
 				final String note;
 				if (isCreditMemo)
 				{
+					final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
+
 					// task 08927
-					note = "@C_DocType_ID@=" + invoice.getC_DocType().getName() + ", @IsCreditedInvoiceReinvoicable@=" + creditMemoReinvoicable;
+					note = "@C_DocType_ID@=" + docTypeDAO.getById(invoice.getC_DocType_ID()).getName() + ", @IsCreditedInvoiceReinvoicable@=" + creditMemoReinvoicable;
 					if (creditMemoReinvoicable)
 					{
 						qtysInvoiced = StockQtyAndUOMQtys
@@ -1516,6 +1554,17 @@ public class InvoiceCandBL implements IInvoiceCandBL
 
 			}
 		}
+	}
+
+	@Override
+	public boolean isCreatedByInvoicingJustNow(@NonNull final org.compiere.model.I_C_Invoice invoice)
+	{
+		if (!DYNATTR_INVOICING_FROM_INVOICE_CANDIDATES_IS_IN_PROGRESS.isNull(invoice)
+				&& DYNATTR_INVOICING_FROM_INVOICE_CANDIDATES_IS_IN_PROGRESS.getValue(invoice))
+		{
+			return true; // nothing to do for us
+		}
+		return false;
 	}
 
 	@Override
@@ -1624,7 +1673,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			final InconsistentUpdateExeption iue = (InconsistentUpdateExeption)e;
 			final Properties ctx = InterfaceWrapperHelper.getCtx(ic);
 			note = new MNote(ctx,
-					iue.getAD_Message_Value(),
+					iue.getAdMessageHeadLine().toAD_Message(),
 					iue.getAdUserToNotifyId(),
 					ITrx.TRXNAME_None // save it out-of-trx
 			);
@@ -1670,7 +1719,9 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	}
 
 	@Override
-	public void setError(final I_C_Invoice_Candidate ic, final String errorMsg, final I_AD_Note note, final boolean askForDeleteRegeneration)
+	public void setError(
+			@NonNull final I_C_Invoice_Candidate ic,
+			final String errorMsg, final I_AD_Note note, final boolean askForDeleteRegeneration)
 	{
 		final String errorMessageToUse;
 		if (!askForDeleteRegeneration)
@@ -1822,40 +1873,49 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		final IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
 		final IProductDAO productsRepo = Services.get(IProductDAO.class);
 
-		final int discountSchemaId = bpartnerBL.getDiscountSchemaId(BPartnerId.ofRepoId(ic.getBill_BPartner_ID()), SOTrx.ofBoolean(ic.isSOTrx()));
-		if (discountSchemaId <= 0)
+		final PricingConditionsId pricingConditionsId = PricingConditionsId.ofRepoIdOrNull(bpartnerBL.getDiscountSchemaId(BPartnerId.ofRepoId(ic.getBill_BPartner_ID()), SOTrx.ofBoolean(ic.isSOTrx())));
+		if (pricingConditionsId == null)
 		{
 			// do nothing
 			return;
 		}
 
-		BigDecimal qty = ic.getQtyToInvoice();
-		if (qty.signum() < 0)
+		final BigDecimal qualityDiscountPercentage;
+		final PricingConditions pricingConditions = pricingConditionsRepo.getPricingConditionsById(pricingConditionsId);
+		if(pricingConditions.isBreaksDiscountType())
 		{
-			final org.compiere.model.I_M_InOut inout = ic.getM_InOut();
-
-			if (inout != null)
+			BigDecimal qty = ic.getQtyToInvoice();
+			if (qty.signum() < 0)
 			{
-				if (Services.get(IInOutBL.class).isReturnMovementType(inout.getMovementType()))
+				final org.compiere.model.I_M_InOut inout = ic.getM_InOut();
+
+				if (inout != null)
 				{
-					qty = qty.negate();
+					if (Services.get(IInOutBL.class).isReturnMovementType(inout.getMovementType()))
+					{
+						qty = qty.negate();
+					}
 				}
 			}
+
+			final BigDecimal priceActual = ic.getPriceActual();
+			final ProductId productId = ProductId.ofRepoId(ic.getM_Product_ID());
+			final ProductAndCategoryAndManufacturerId product = productsRepo.retrieveProductAndCategoryAndManufacturerByProductId(productId);
+
+			final PricingConditionsBreak appliedBreak = pricingConditions.pickApplyingBreak(PricingConditionsBreakQuery.builder()
+					.attributes(attributes)
+					.product(product)
+					.qty(qty)
+					.price(priceActual)
+					.build());
+
+			qualityDiscountPercentage = appliedBreak != null ? appliedBreak.getQualityDiscountPercentage() : null;
 		}
-
-		final BigDecimal priceActual = ic.getPriceActual();
-		final ProductId productId = ProductId.ofRepoId(ic.getM_Product_ID());
-		final ProductAndCategoryAndManufacturerId product = productsRepo.retrieveProductAndCategoryAndManufacturerByProductId(productId);
-
-		final PricingConditions pricingConditions = pricingConditionsRepo.getPricingConditionsById(discountSchemaId);
-		final PricingConditionsBreak appliedBreak = pricingConditions.pickApplyingBreak(PricingConditionsBreakQuery.builder()
-				.attributes(attributes)
-				.product(product)
-				.qty(qty)
-				.price(priceActual)
-				.build());
-
-		final BigDecimal qualityDiscountPercentage = appliedBreak != null ? appliedBreak.getQualityDiscountPercentage() : null;
+		else
+		{
+			qualityDiscountPercentage = null;
+		}
+		
 		ic.setQualityDiscountPercent_Override(qualityDiscountPercentage);
 	}
 
@@ -2008,15 +2068,16 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			return;
 		}
 
-		invoiceCandDAO.retrieveInvoiceCandidatesForInOutLine(receiptLine)
-				.stream()
-				.forEach(cand -> setCandInDispute(cand));
-	}
-
-	private void setCandInDispute(final I_C_Invoice_Candidate cand)
-	{
-		cand.setIsInDispute(true);
-		save(cand);
+		final List<I_C_Invoice_Candidate> icRecords = invoiceCandDAO.retrieveInvoiceCandidatesForInOutLine(receiptLine);
+		for (final I_C_Invoice_Candidate icRecord : icRecords)
+		{
+			try (final MDCCloseable icRecordMDC = TableRecordMDC.putTableRecordReference(icRecord))
+			{
+				logger.debug("Set IsInDispute=true because ic bleongs to M_InOutLine_ID={}", receiptLine.getM_InOutLine_ID());
+				icRecord.setIsInDispute(true);
+				save(icRecord);
+			}
+		}
 	}
 
 	public void setQtyAndDateForFreightCost(@NonNull final I_C_Invoice_Candidate icRecord)

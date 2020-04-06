@@ -47,8 +47,6 @@ public final class PurchaseCandidateUpdatedHandler
 		extends PurchaseCandidateCreatedOrUpdatedHandler<PurchaseCandidateUpdatedEvent>
 {
 	/**
-	 *
-	 * @param candidateChangeHandler
 	 * @param candidateService needed in case we directly request a {@link PpOrderSuggestedEvent}'s proposed PP_Order to be created.
 	 */
 	public PurchaseCandidateUpdatedHandler(

@@ -1,6 +1,5 @@
 package org.adempiere.ad.table;
 
-import static de.metas.util.Check.assume;
 import static org.adempiere.model.InterfaceWrapperHelper.getValueOrNull;
 
 import java.sql.ResultSet;
@@ -239,9 +238,6 @@ public class RecordChangeLogEntryLoader
 			@NonNull final TableRecordReference recordRef,
 			@NonNull final ImmutableList<I_C_Location> unOrderedLocationRecords)
 	{
-		// Also if there was only only one C_Location_ID changelog, we have already 2 I_C_Locations, because we also got the first changelog's oldValue.
-		assume(unOrderedLocationRecords.size() >= 2, "Parameter 'unOrderedLocationRecords' needs to contain at least 2 items; unOrderedLocationRecords={}", unOrderedLocationRecords);
-
 		final POInfo poInfo = POInfo.getPOInfo(I_C_Location.Table_Name);
 		final ImmutableList.Builder<RecordRefWithLogEntry> result = ImmutableList.builder();
 

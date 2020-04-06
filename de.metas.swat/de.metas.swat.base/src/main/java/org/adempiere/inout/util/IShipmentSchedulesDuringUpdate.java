@@ -38,7 +38,7 @@ public interface IShipmentSchedulesDuringUpdate
 	 * @return the inOut with the given parameters
 	 * @throws IllegalStateException if no inOut with the given bPartnerLocationId and shipperId has been added
 	 */
-	DeliveryGroupCandidate getInOutForShipper(Optional<ShipperId> shipperId, WarehouseId warehouseId, String bPartnerAddress);
+	DeliveryGroupCandidate getGroupForShipper(Optional<ShipperId> shipperId, WarehouseId warehouseId, String bPartnerAddress);
 
 	void addLine(DeliveryLineCandidate deliveryLineCandidate);
 

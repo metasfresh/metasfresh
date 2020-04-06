@@ -1,16 +1,19 @@
 package de.metas.contracts.commission.commissioninstance.services.repos;
 
 import static de.metas.util.lang.CoalesceUtil.coalesce;
+
 import java.util.Collection;
 import java.util.List;
 
 import javax.annotation.Nullable;
 
+import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.compiere.model.IQuery;
 import org.springframework.stereotype.Service;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
@@ -20,13 +23,16 @@ import com.google.common.collect.Multimaps;
 
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionInstanceId;
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.SalesCommissionState;
+import de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.CommissionTriggerDocumentId;
+import de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.salesinvoicecandidate.SalesInvoiceCandidateDocumentId;
+import de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.salesinvoiceline.SalesInvoiceLineDocumentId;
 import de.metas.contracts.commission.commissioninstance.services.repos.CommissionRecordStagingService.CommissionStagingRecords.CommissionStagingRecordsBuilder;
 import de.metas.contracts.commission.model.I_C_Commission_Fact;
 import de.metas.contracts.commission.model.I_C_Commission_Instance;
 import de.metas.contracts.commission.model.I_C_Commission_Share;
-import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
+import de.metas.util.lang.RepoIdAware;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -56,9 +62,10 @@ import lombok.NonNull;
 
 /** This service is intended exclusively for {@link CommissionInstanceRepository}, to avoid n+1 problems. */
 @Service
-class CommissionRecordStagingService
+@VisibleForTesting
+public class CommissionRecordStagingService
 {
-	final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	CommissionStagingRecords retrieveRecordsForInstanceId(@NonNull final Collection<CommissionInstanceId> commissionInstanceIds)
 	{
@@ -68,11 +75,35 @@ class CommissionRecordStagingService
 		return retrieveRecords(instanceQueryBuilder.create());
 	}
 
-	CommissionStagingRecords retrieveRecordsForInvoiceCandidateId(@NonNull final Collection<InvoiceCandidateId> invoiceCandidateIds)
+	CommissionStagingRecords retrieveRecordsForInvoiceCandidateId(@NonNull final Collection<CommissionTriggerDocumentId> commissionTriggerDocumentIds)
 	{
 		// ------------------ I_C_Commission_Instance
-		final IQueryBuilder<I_C_Commission_Instance> instanceQueryBuilder = createInstanceQueryBuilder()
-				.addInArrayFilter(I_C_Commission_Instance.COLUMN_C_Invoice_Candidate_ID, invoiceCandidateIds);
+		final IQueryBuilder<I_C_Commission_Instance> instanceQueryBuilder = createInstanceQueryBuilder();
+
+		final ImmutableListMultimap<Class<? extends CommissionTriggerDocumentId>, CommissionTriggerDocumentId> classToIds = Multimaps.index(commissionTriggerDocumentIds, CommissionTriggerDocumentId::getClass);
+
+		final ICompositeQueryFilter<I_C_Commission_Instance> inArrayfilters = queryBL
+				.createCompositeQueryFilter(I_C_Commission_Instance.class)
+				.setJoinOr();
+
+		if (classToIds.containsKey(SalesInvoiceCandidateDocumentId.class))
+		{
+			final ImmutableList<RepoIdAware> invoiceCandidateIds = classToIds.get(SalesInvoiceCandidateDocumentId.class)
+					.stream()
+					.map(CommissionTriggerDocumentId::getRepoIdAware)
+					.collect(ImmutableList.toImmutableList());
+			inArrayfilters.addInArrayFilter(I_C_Commission_Instance.COLUMN_C_Invoice_Candidate_ID, invoiceCandidateIds);
+		}
+		if (classToIds.containsKey(SalesInvoiceLineDocumentId.class))
+		{
+			final ImmutableList<RepoIdAware> invoiceLineIds = classToIds.get(SalesInvoiceLineDocumentId.class)
+					.stream()
+					.map(CommissionTriggerDocumentId::getRepoIdAware)
+					.collect(ImmutableList.toImmutableList());
+			inArrayfilters.addInArrayFilter(I_C_Commission_Instance.COLUMN_C_InvoiceLine_ID, invoiceLineIds);
+		}
+
+		instanceQueryBuilder.filter(inArrayfilters);
 
 		return retrieveRecords(instanceQueryBuilder.create());
 	}
@@ -91,12 +122,14 @@ class CommissionRecordStagingService
 		// ------------------ I_C_Commission_Instance
 		final List<I_C_Commission_Instance> instanceRecords = instanceRecordQuery.list();
 
-		final ImmutableListMultimap<Integer, I_C_Commission_Instance> icRecordIdToInstanceRecords = Multimaps.index(instanceRecords, I_C_Commission_Instance::getC_Invoice_Candidate_ID);
+		final ImmutableMap<CommissionTriggerDocumentId, I_C_Commission_Instance> documentIdToInstanceRecords = Maps.uniqueIndex(
+				instanceRecords,
+				CommissionInstanceRepoTools::extractCommissionTriggerDocumentId);
 		final ImmutableMap<Integer, I_C_Commission_Instance> instanceRecordIdToInstance = Maps.uniqueIndex(instanceRecords, I_C_Commission_Instance::getC_Commission_Instance_ID);
 		final ImmutableSet<Integer> intanceRecordIds = instanceRecordIdToInstance.keySet();
 
 		final CommissionStagingRecordsBuilder commissionRecords = CommissionStagingRecords.builder()
-				.icRecordIdToInstanceRecords(icRecordIdToInstanceRecords)
+				.documentIdToInstanceRecords(documentIdToInstanceRecords)
 				.instanceRecordIdToInstance(instanceRecordIdToInstance);
 
 		// ------------------ I_C_Commission_Share
@@ -136,7 +169,7 @@ class CommissionRecordStagingService
 	{
 		final static CommissionStagingRecords EMPTY = CommissionStagingRecords.builder().build();
 
-		ImmutableListMultimap<Integer, I_C_Commission_Instance> icRecordIdToInstanceRecords;
+		ImmutableMap<CommissionTriggerDocumentId, I_C_Commission_Instance> documentIdToInstanceRecords;
 		ImmutableMap<Integer, I_C_Commission_Instance> instanceRecordIdToInstance;
 
 		@Getter(AccessLevel.NONE)
@@ -147,12 +180,12 @@ class CommissionRecordStagingService
 
 		@Builder
 		private CommissionStagingRecords(
-				@Nullable final ImmutableListMultimap<Integer, I_C_Commission_Instance> icRecordIdToInstanceRecords,
+				@Nullable final ImmutableMap<CommissionTriggerDocumentId, I_C_Commission_Instance> documentIdToInstanceRecords,
 				@Nullable final ImmutableMap<Integer, I_C_Commission_Instance> instanceRecordIdToInstance,
 				@Nullable final ImmutableListMultimap<Integer, I_C_Commission_Share> instanceRecordIdToShareRecords,
 				@Nullable final ImmutableListMultimap<Integer, I_C_Commission_Fact> shareRecordIdToFactRecords)
 		{
-			this.icRecordIdToInstanceRecords = coalesce(icRecordIdToInstanceRecords, ImmutableListMultimap.of());
+			this.documentIdToInstanceRecords = coalesce(documentIdToInstanceRecords, ImmutableMap.of());
 			this.instanceRecordIdToInstance = coalesce(instanceRecordIdToInstance, ImmutableMap.of());
 			this.instanceRecordIdToShareRecords = coalesce(instanceRecordIdToShareRecords, ImmutableListMultimap.of());
 			this.shareRecordIdToSalesFactRecords = coalesce(shareRecordIdToFactRecords, ImmutableListMultimap.of());

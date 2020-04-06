@@ -13,7 +13,6 @@ import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import de.metas.product.ProductAndCategoryAndManufacturerId;
 import de.metas.util.Check;
 import de.metas.util.lang.Percent;
-
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -78,6 +77,11 @@ public class PricingConditions
 		this.breaks = breaks;
 	}
 
+	public boolean isBreaksDiscountType()
+	{
+		return PricingConditionsDiscountType.BREAKS.equals(discountType);
+	}
+
 	/**
 	 * Pick the first break that applies based on product, category and attribute instance
 	 * 
@@ -111,7 +115,11 @@ public class PricingConditions
 
 	private BigDecimal extractBreakValue(final PricingConditionsBreakQuery query)
 	{
-		if (breakValueType == BreakValueType.QUANTITY)
+		if (!isBreaksDiscountType())
+		{
+			throw new AdempiereException("DiscountType shall be Breaks: " + this);
+		}
+		else if (breakValueType == BreakValueType.QUANTITY)
 		{
 			return query.getQty();
 		}

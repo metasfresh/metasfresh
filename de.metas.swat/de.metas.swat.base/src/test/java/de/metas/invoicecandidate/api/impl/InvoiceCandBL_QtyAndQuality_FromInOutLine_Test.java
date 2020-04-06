@@ -104,8 +104,7 @@ public class InvoiceCandBL_QtyAndQuality_FromInOutLine_Test // extends AbstractI
 	@Test
 	public void test1_noCatchWeight()
 	{
-		final StockQtyAndUOMQty qtys_100 = StockQtyAndUOMQtys.create(
-				new BigDecimal("100"), productId, null, null);
+		final StockQtyAndUOMQty qtys_100 = StockQtyAndUOMQtys.ofQtyInStockUOM(new BigDecimal("100"), productId);
 
 		final I_M_InOutLine inoutLine01 = new InOutLineExpectation<>(null, context)
 				.stockQtyAndMaybeCatchQty(qtys_100)

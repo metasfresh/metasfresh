@@ -1,5 +1,6 @@
 package org.adempiere.invoice.service.impl;
 
+import static de.metas.util.Check.assumeNotNull;
 import static de.metas.util.lang.CoalesceUtil.firstGreaterThanZero;
 
 /*
@@ -39,7 +40,6 @@ import java.util.Set;
 
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.invoice.service.IInvoiceCreditContext;
@@ -49,6 +49,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.comparator.ComparatorChain;
 import org.adempiere.util.lang.ImmutablePair;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_Payment;
@@ -72,6 +73,7 @@ import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.allocation.api.IAllocationBL;
 import de.metas.allocation.api.IAllocationDAO;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
@@ -193,7 +195,13 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		}
 		//
 		// TODO: What happens when we have multiple DocTypes per DocBaseType and nothing was selected by the user?
-		return Services.get(IDocTypeDAO.class).getDocTypeId(ctx, docBaseType, invoice.getAD_Client_ID(), invoice.getAD_Org_ID(), ITrx.TRXNAME_None);
+		return Services.get(IDocTypeDAO.class).getDocTypeId(
+				DocTypeQuery.builder()
+						.docBaseType(docBaseType)
+						.adClientId(invoice.getAD_Client_ID())
+						.adOrgId(invoice.getAD_Org_ID())
+						.build())
+				.getRepoId();
 	}
 
 	public static final IDocCopyHandler<org.compiere.model.I_C_Invoice, org.compiere.model.I_C_InvoiceLine> defaultDocCopyHandler = new DefaultDocCopyHandler<>(org.compiere.model.I_C_Invoice.class, org.compiere.model.I_C_InvoiceLine.class);
@@ -630,13 +638,16 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 			return;
 		}
 
-		if (invoice.getC_BPartner() == null)
+		if (invoice.getC_BPartner_ID() <= 0)
 		{
 			// nothing to do
 			return;
 		}
 
-		final String adLanguage = CoalesceUtil.coalesce(invoice.getC_BPartner().getAD_Language(), Env.getAD_Language());
+		final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
+		final I_C_BPartner bPartner = bpartnerDAO.getById(invoice.getC_BPartner_ID());
+
+		final String adLanguage = CoalesceUtil.coalesce(bPartner.getAD_Language(), Env.getAD_Language());
 
 		final IModelTranslationMap docTypeTrl = InterfaceWrapperHelper.getModelTranslationMap(docType);
 		final ITranslatableString description = docTypeTrl.getColumnTrl(I_C_DocType.COLUMNNAME_Description, docType.getDescription());
@@ -1151,22 +1162,23 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	@Override
 	public final I_C_DocType getC_DocType(final org.compiere.model.I_C_Invoice invoice)
 	{
+		final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 		if (invoice.getC_DocType_ID() > 0)
 		{
-			return invoice.getC_DocType();
+			return docTypeDAO.getById(invoice.getC_DocType_ID());
 		}
 		else if (invoice.getC_DocTypeTarget_ID() > 0)
 		{
-			return invoice.getC_DocTypeTarget();
+			return docTypeDAO.getById(invoice.getC_DocTypeTarget_ID());
 		}
 
 		return null;
 	}
 
 	@Override
-	public final boolean isCreditMemo(final org.compiere.model.I_C_Invoice invoice)
+	public final boolean isCreditMemo(@NonNull final org.compiere.model.I_C_Invoice invoice)
 	{
-		final I_C_DocType docType = getC_DocType(invoice);
+		final I_C_DocType docType = assumeNotNull(getC_DocType(invoice), "The given C_Invoice_ID={} needs to have a C_DocType",invoice.getC_Invoice_ID());
 		final String docBaseType = docType.getDocBaseType();
 		return isCreditMemo(docBaseType);
 	}
@@ -1295,11 +1307,19 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	@Override
 	public final de.metas.adempiere.model.I_C_Invoice adjustmentCharge(final org.compiere.model.I_C_Invoice invoice, final String docSubType)
 	{
-		final Properties ctx = InterfaceWrapperHelper.getCtx(invoice);
 		final String docbasetype = X_C_DocType.DOCBASETYPE_ARInvoice;
-		final int targetDocTypeID = Services.get(IDocTypeDAO.class).getDocTypeId(ctx, docbasetype, docSubType, invoice.getAD_Client_ID(), invoice.getAD_Org_ID(), ITrx.TRXNAME_None);
+		final DocTypeId targetDocTypeID = Services.get(IDocTypeDAO.class).getDocTypeId(DocTypeQuery.builder()
+				.docBaseType(docbasetype)
+				.docSubType(docSubType)
+				.adClientId(invoice.getAD_Client_ID())
+				.adOrgId(invoice.getAD_Org_ID())
+				.build());
 		final I_C_Invoice adjustmentCharge = InterfaceWrapperHelper.create(
-				copyFrom(invoice, SystemTime.asTimestamp(), targetDocTypeID, invoice.isSOTrx(),
+				copyFrom(
+						invoice, 
+						SystemTime.asTimestamp(), 
+						targetDocTypeID.getRepoId(), 
+						invoice.isSOTrx(),
 						false, // counter == false
 						true, // setOrderRef == true
 						true, // setInvoiceRef == true
@@ -1335,7 +1355,8 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		final String docSubType;
 		if (invoice.getC_DocTypeTarget_ID() > 0)
 		{
-			docSubType = invoice.getC_DocTypeTarget().getDocSubType();
+			final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
+			docSubType = docTypeDAO.getById(invoice.getC_DocTypeTarget_ID()).getDocSubType();
 		}
 		else
 		{

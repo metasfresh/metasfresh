@@ -4,12 +4,9 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
-import javax.annotation.Nullable;
 
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
@@ -17,14 +14,15 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_User_Record_Access;
 import org.compiere.util.DB;
+import org.compiere.util.Env;
 import org.springframework.stereotype.Service;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.event.IEventBus;
@@ -32,12 +30,12 @@ import de.metas.event.IEventBusFactory;
 import de.metas.security.Principal;
 import de.metas.security.RoleId;
 import de.metas.security.permissions.Access;
+import de.metas.security.permissions.record_access.RecordAccess.RecordAccessBuilder;
 import de.metas.security.permissions.record_access.handlers.RecordAccessChangeEvent;
 import de.metas.security.permissions.record_access.handlers.RecordAccessChangeEventDispatcher;
 import de.metas.user.UserGroupId;
 import de.metas.user.UserGroupRepository;
 import de.metas.user.UserId;
-import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -92,35 +90,37 @@ public class RecordAccessService
 				.recordRef(request.getRecordRef())
 				.principal(request.getPrincipal())
 				.permissions(request.getPermissions())
+				.issuer(request.getIssuer())
 				.build();
 
-		final HashMap<RecordAccess, I_AD_User_Record_Access> existingRecords = query(query)
+		final ImmutableSet<RecordAccessId> existingRecordIds = query(query)
 				.create()
-				.stream()
-				.collect(GuavaCollectors.toMapByKey(HashMap::new, record -> toUserGroupRecordAccess(record)));
+				.listIds(RecordAccessId::ofRepoId);
+		deleteByIds(existingRecordIds, request.getRequestedBy());
 
-		final List<RecordAccess> accesses = toUserGroupRecordAccessesList(request);
-		for (final RecordAccess access : accesses)
-		{
-			save(access, existingRecords.get(access));
-		}
+		final List<RecordAccess> accessesToSave = toUserGroupRecordAccessesList(request);
+		saveNew(accessesToSave);
 
-		fireEvent(RecordAccessChangeEvent.accessGrants(accesses));
+		fireEvent(RecordAccessChangeEvent.accessGrants(accessesToSave));
 	}
 
 	private static List<RecordAccess> toUserGroupRecordAccessesList(@NonNull final RecordAccessGrantRequest request)
 	{
-		final ImmutableList.Builder<RecordAccess> result = ImmutableList.builder();
-		for (final Access permission : request.getPermissions())
-		{
-			result.add(RecordAccess.builder()
-					.recordRef(request.getRecordRef())
-					.principal(request.getPrincipal())
-					.permission(permission)
-					.build());
-		}
+		final RecordAccessBuilder recordAccessBuilder = RecordAccess.builder()
+				.recordRef(request.getRecordRef())
+				.principal(request.getPrincipal())
+				.issuer(request.getIssuer())
+				.createdBy(request.getRequestedBy())
+				.description(request.getDescription())
+				.parentId(request.getParentAccessId())
+				.rootId(request.getRootAccessId());
 
-		return result.build();
+		return request.getPermissions()
+				.stream()
+				.map(permission -> recordAccessBuilder
+						.permission(permission)
+						.build())
+				.collect(ImmutableList.toImmutableList());
 	}
 
 	public void revokeAccess(@NonNull final RecordAccessRevokeRequest request)
@@ -129,117 +129,56 @@ public class RecordAccessService
 				.recordRef(request.getRecordRef())
 				.principal(request.getPrincipal())
 				.permissions(request.isRevokeAllPermissions() ? ImmutableSet.of() : request.getPermissions())
+				.issuer(request.getIssuer())
 				.build();
-		final List<I_AD_User_Record_Access> accessRecords = query(query)
+		final List<I_AD_User_Record_Access> existingAccessRecords = query(query)
 				.create()
 				.list();
 
-		final Set<Integer> repoIds = extractRepoIds(accessRecords);
-		deleteByIds(repoIds);
+		final Set<RecordAccessId> existingAccessRecordIds = extractIds(existingAccessRecords);
+		deleteByIds(existingAccessRecordIds, request.getRequestedBy());
 
-		final ImmutableSet<RecordAccess> accesses = toUserGroupRecordAccessesSet(accessRecords);
+		final ImmutableSet<RecordAccess> accesses = toUserGroupRecordAccessesSet(existingAccessRecords);
 		fireEvent(RecordAccessChangeEvent.accessRevokes(accesses));
 	}
 
-	public void copyAccess(
-			@NonNull final TableRecordReference target,
-			@Nullable final TableRecordReference grantFrom,
-			@Nullable final TableRecordReference revokeFrom)
+	public void copyAccess(@NonNull final RecordAccessCopyRequest request)
 	{
-		if (grantFrom == null && revokeFrom == null)
-		{
-			return;
-		}
-
-		//
-		final HashSet<RecordAccess> accessGrants = new HashSet<>();
-		final HashMap<RecordAccess, Integer> accessRevokes = new HashMap<>();
-
-		//
-		// Fetch existing accesses of our target record
-		final ImmutableMap<RecordAccess, I_AD_User_Record_Access> existingTargetAccessRecords = queryByRecord(target)
-				.create()
-				.stream()
-				.collect(GuavaCollectors.toImmutableMapByKey(record -> toUserGroupRecordAccess(record)));
-
-		//
-		// Revoke accesses
-		if (revokeFrom != null)
-		{
-			final List<RecordAccess> fromAccesses = queryByRecord(revokeFrom)
-					.create()
-					.stream()
-					.map(record -> toUserGroupRecordAccess(record))
-					.collect(ImmutableList.toImmutableList());
-			for (final RecordAccess fromAccess : fromAccesses)
-			{
-				final RecordAccess targetAccess = fromAccess.withRecordRef(target);
-				final I_AD_User_Record_Access targetAccessRecord = existingTargetAccessRecords.get(targetAccess);
-				if (targetAccessRecord != null)
-				{
-					accessRevokes.put(targetAccess, targetAccessRecord.getAD_User_Record_Access_ID());
-				}
-			}
-		}
-
-		//
-		// Grant accesses
-		if (grantFrom != null)
-		{
-			final List<RecordAccess> fromAccesses = queryByRecord(grantFrom)
-					.create()
-					.stream()
-					.map(record -> toUserGroupRecordAccess(record))
-					.collect(ImmutableList.toImmutableList());
-			for (final RecordAccess fromAccess : fromAccesses)
-			{
-				final RecordAccess targetAccess = fromAccess.withRecordRef(target);
-
-				final boolean wasJustRevoked = accessRevokes.remove(targetAccess) != null;
-
-				if (!existingTargetAccessRecords.containsKey(targetAccess)
-						&& !wasJustRevoked)
-				{
-					accessGrants.add(targetAccess);
-				}
-			}
-		}
-
-		//
-		// Stop here if nothing changed
-		if (accessGrants.isEmpty() && accessRevokes.isEmpty())
-		{
-			return;
-		}
-
-		//
-		// Persist to database
-		{
-			accessGrants.forEach(access -> save(access, null));
-			deleteByIds(accessRevokes.values());
-		}
-
-		//
-		// Fire event
-		fireEvent(RecordAccessChangeEvent.builder()
-				.accessGrants(accessGrants)
-				.accessRevokes(accessRevokes.keySet())
-				.build());
+		new RecordAccessCopyCommand(this, request).run();
 	}
 
-	private void save(@NonNull final RecordAccess access, @Nullable final I_AD_User_Record_Access existingAccessRecord)
+	void saveNew(@NonNull final Collection<RecordAccess> accessList)
 	{
-		final I_AD_User_Record_Access accessRecord = existingAccessRecord != null ? existingAccessRecord : newRecord();
+		accessList.forEach(this::saveNew);
+	}
+
+	void saveNew(@NonNull final RecordAccess access)
+	{
+		if (access.getId() != null)
+		{
+			throw new AdempiereException("Expected to be new: " + access);
+		}
+
+		final I_AD_User_Record_Access accessRecord = newInstance(I_AD_User_Record_Access.class);
 		updateRecord(accessRecord, access);
-		if (!InterfaceWrapperHelper.hasChanges(accessRecord))
+
+		try (final IAutoCloseable c = Env.temporaryChangeLoggedUserId(access.getCreatedBy()))
 		{
-			return;
+			saveRecord(accessRecord);
 		}
 
-		saveRecord(accessRecord);
+		final RecordAccessId id = extractId(accessRecord);
+		access.setId(id);
+
+		if (access.getRootId() == null)
+		{
+			accessRecord.setRoot_ID(id.getRepoId());
+			saveRecord(accessRecord);
+			access.setRootId(id);
+		}
 	}
 
-	private void fireEvent(@NonNull final RecordAccessChangeEvent event)
+	void fireEvent(@NonNull final RecordAccessChangeEvent event)
 	{
 		if (event.isEmpty())
 		{
@@ -250,21 +189,20 @@ public class RecordAccessService
 				.runAfterCommit(() -> eventBus.postObject(event));
 	}
 
-	@VisibleForTesting
-	Set<RecordAccess> getAccessesByRecord(@NonNull final TableRecordReference recordRef)
+	public ImmutableList<RecordAccess> getAccessesByRecordAndIssuer(
+			@NonNull final TableRecordReference recordRef,
+			@NonNull final PermissionIssuer issuer)
 	{
-		return queryByRecord(recordRef)
+		final RecordAccessQuery query = RecordAccessQuery.builder()
+				.recordRef(recordRef)
+				.issuer(issuer)
+				.build();
+
+		return query(query)
 				.create()
 				.stream()
 				.map(record -> toUserGroupRecordAccess(record))
-				.collect(ImmutableSet.toImmutableSet());
-	}
-
-	private IQueryBuilder<I_AD_User_Record_Access> queryByRecord(@NonNull final TableRecordReference recordRef)
-	{
-		return query(RecordAccessQuery.builder()
-				.recordRef(recordRef)
-				.build());
+				.collect(ImmutableList.toImmutableList());
 	}
 
 	private IQueryBuilder<I_AD_User_Record_Access> query(@NonNull final RecordAccessQuery query)
@@ -272,6 +210,8 @@ public class RecordAccessService
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		final IQueryBuilder<I_AD_User_Record_Access> queryBuilder = queryBL.createQueryBuilder(I_AD_User_Record_Access.class);
 
+		//
+		// Records
 		final ImmutableSet<TableRecordReference> recordRefs = query.getRecordRefs();
 		if (!recordRefs.isEmpty())
 		{
@@ -281,17 +221,21 @@ public class RecordAccessService
 			{
 				recordRefsFilter.addCompositeQueryFilter()
 						.setJoinAnd()
-						.addEqualsFilter(I_AD_User_Record_Access.COLUMN_AD_Table_ID, recordRef.getAD_Table_ID())
-						.addEqualsFilter(I_AD_User_Record_Access.COLUMN_Record_ID, recordRef.getRecord_ID());
+						.addEqualsFilter(I_AD_User_Record_Access.COLUMNNAME_AD_Table_ID, recordRef.getAD_Table_ID())
+						.addEqualsFilter(I_AD_User_Record_Access.COLUMNNAME_Record_ID, recordRef.getRecord_ID());
 			}
 		}
 
+		//
+		// Permissions
 		final ImmutableSet<Access> permissions = query.getPermissions();
 		if (!permissions.isEmpty())
 		{
-			queryBuilder.addInArrayFilter(I_AD_User_Record_Access.COLUMN_Access, permissions);
+			queryBuilder.addInArrayFilter(I_AD_User_Record_Access.COLUMNNAME_Access, permissions);
 		}
 
+		//
+		// Principals
 		if (!query.getPrincipals().isEmpty())
 		{
 			final Set<UserId> userIds = new HashSet<>();
@@ -319,21 +263,24 @@ public class RecordAccessService
 						.setJoinOr();
 				if (!userIds.isEmpty())
 				{
-					principalsFilter.addInArrayFilter(I_AD_User_Record_Access.COLUMN_AD_User_ID, userIds);
+					principalsFilter.addInArrayFilter(I_AD_User_Record_Access.COLUMNNAME_AD_User_ID, userIds);
 				}
 				if (!userGroupIds.isEmpty())
 				{
-					principalsFilter.addInArrayFilter(I_AD_User_Record_Access.COLUMN_AD_UserGroup_ID, userGroupIds);
+					principalsFilter.addInArrayFilter(I_AD_User_Record_Access.COLUMNNAME_AD_UserGroup_ID, userGroupIds);
 				}
 			}
 		}
 
-		return queryBuilder;
-	}
+		//
+		// Issuer
+		if (query.getIssuer() != null)
+		{
+			queryBuilder.addEqualsFilter(I_AD_User_Record_Access.COLUMNNAME_PermissionIssuer, query.getIssuer().getCode());
+		}
 
-	private I_AD_User_Record_Access newRecord()
-	{
-		return newInstance(I_AD_User_Record_Access.class);
+		//
+		return queryBuilder;
 	}
 
 	private void updateRecord(@NonNull final I_AD_User_Record_Access toRecord, @NonNull final RecordAccess from)
@@ -344,20 +291,28 @@ public class RecordAccessService
 		toRecord.setAccess(from.getPermission().getCode());
 		toRecord.setAD_User_ID(UserId.toRepoId(from.getPrincipal().getUserId()));
 		toRecord.setAD_UserGroup_ID(UserGroupId.toRepoId(from.getPrincipal().getUserGroupId()));
+		toRecord.setPermissionIssuer(from.getIssuer().getCode());
+		toRecord.setDescription(from.getDescription());
+
+		toRecord.setRoot_ID(RecordAccessId.toRepoId(from.getRootId()));
+		toRecord.setParent_ID(RecordAccessId.toRepoId(from.getParentId()));
 	}
 
-	private void deleteByIds(final Collection<Integer> repoIds)
+	void deleteByIds(final Collection<RecordAccessId> ids, @NonNull final UserId requestedBy)
 	{
-		if (repoIds.isEmpty())
+		if (ids.isEmpty())
 		{
 			return;
 		}
 
-		Services.get(IQueryBL.class)
-				.createQueryBuilder(I_AD_User_Record_Access.class)
-				.addInArrayFilter(I_AD_User_Record_Access.COLUMN_AD_User_Record_Access_ID, repoIds)
-				.create()
-				.delete();
+		try (final IAutoCloseable c = Env.temporaryChangeLoggedUserId(requestedBy))
+		{
+			Services.get(IQueryBL.class)
+					.createQueryBuilder(I_AD_User_Record_Access.class)
+					.addInArrayFilter(I_AD_User_Record_Access.COLUMNNAME_AD_User_Record_Access_ID, ids)
+					.create()
+					.delete();
+		}
 	}
 
 	private static ImmutableSet<RecordAccess> toUserGroupRecordAccessesSet(final Collection<I_AD_User_Record_Access> accessRecords)
@@ -367,7 +322,25 @@ public class RecordAccessService
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
-	private static RecordAccess toUserGroupRecordAccess(final I_AD_User_Record_Access record)
+	@VisibleForTesting
+	static RecordAccess toUserGroupRecordAccess(final I_AD_User_Record_Access record)
+	{
+		return RecordAccess.builder()
+				.recordRef(TableRecordReference.of(record.getAD_Table_ID(), record.getRecord_ID()))
+				.principal(extractPrincipal(record))
+				.permission(extractPermission(record))
+				.issuer(PermissionIssuer.ofCode(record.getPermissionIssuer()))
+				.createdBy(UserId.ofRepoId(record.getCreatedBy()))
+				.description(record.getDescription())
+				//
+				.id(extractId(record))
+				.parentId(RecordAccessId.ofRepoIdOrNull(record.getParent_ID()))
+				.rootId(RecordAccessId.ofRepoIdOrNull(record.getRoot_ID()))
+				//
+				.build();
+	}
+
+	static Principal extractPrincipal(@NonNull final I_AD_User_Record_Access record)
 	{
 		final UserId userId = InterfaceWrapperHelper.isNull(record, I_AD_User_Record_Access.COLUMNNAME_AD_User_ID)
 				? null
@@ -377,19 +350,27 @@ public class RecordAccessService
 				? null
 				: UserGroupId.ofRepoId(record.getAD_UserGroup_ID());
 
-		return RecordAccess.builder()
-				.recordRef(TableRecordReference.of(record.getAD_Table_ID(), record.getRecord_ID()))
-				.principal(Principal.builder()
-						.userId(userId)
-						.userGroupId(userGroupId)
-						.build())
-				.permission(Access.ofCode(record.getAccess()))
+		return Principal.builder()
+				.userId(userId)
+				.userGroupId(userGroupId)
 				.build();
 	}
 
-	private static ImmutableSet<Integer> extractRepoIds(final Collection<I_AD_User_Record_Access> accessRecords)
+	static Access extractPermission(final I_AD_User_Record_Access record)
 	{
-		return accessRecords.stream().map(I_AD_User_Record_Access::getAD_User_Record_Access_ID).collect(ImmutableSet.toImmutableSet());
+		return Access.ofCode(record.getAccess());
+	}
+
+	private static ImmutableSet<RecordAccessId> extractIds(final Collection<I_AD_User_Record_Access> accessRecords)
+	{
+		return accessRecords.stream()
+				.map(record -> extractId(record))
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	private static RecordAccessId extractId(final I_AD_User_Record_Access record)
+	{
+		return RecordAccessId.ofRepoId(record.getAD_User_Record_Access_ID());
 	}
 
 	public String buildUserGroupRecordAccessSqlWhereClause(

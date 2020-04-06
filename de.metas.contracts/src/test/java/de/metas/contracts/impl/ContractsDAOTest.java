@@ -9,8 +9,8 @@ import java.util.List;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.util.TimeUtil;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import de.metas.contracts.impl.ContractsTestBase.FixedTimeSource;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
@@ -42,8 +42,7 @@ import de.metas.util.time.SystemTime;
 
 public class ContractsDAOTest
 {
-
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();

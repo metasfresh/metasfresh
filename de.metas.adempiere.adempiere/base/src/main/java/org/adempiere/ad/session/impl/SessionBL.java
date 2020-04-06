@@ -35,15 +35,19 @@ import org.compiere.model.I_AD_Session;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
+import org.slf4j.Logger;
 
 import de.metas.adempiere.form.IClientUI;
 import de.metas.cache.CCache;
+import de.metas.logging.LogManager;
 import de.metas.security.IUserRolePermissions;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 public class SessionBL implements ISessionBL
 {
-	/** Sessions */
+	private static final Logger logger = LogManager.getLogger(SessionBL.class);
+
 	private static CCache<Integer, MFSession> s_sessions = CCache.newLRUCache(I_AD_Session.Table_Name, 100, 0);
 
 	private final InheritableThreadLocal<Boolean> disableChangeLogsThreadLocal = new InheritableThreadLocal<Boolean>()
@@ -56,9 +60,10 @@ public class SessionBL implements ISessionBL
 	};
 
 	@Override
-	public MFSession getCurrentSession(final Properties ctx)
+	public MFSession getCurrentSession(@NonNull final Properties ctx)
 	{
 		final int AD_Session_ID = Env.getContextAsInt(ctx, Env.CTXNAME_AD_Session_ID);
+		logger.debug("The given ctx has {}={}", Env.CTXNAME_AD_Session_ID, AD_Session_ID);
 		return getSessionById(ctx, AD_Session_ID);
 	}
 
@@ -71,11 +76,11 @@ public class SessionBL implements ISessionBL
 		if (session == null)
 		{
 			session = createMFSession(ctx);
-			
+
 			final IHostIdentifier localHost = NetUtils.getLocalHost();
 			session.setRemote_Addr(localHost.getIP(), localHost.getHostName());
 			session.updateContext(ctx);
-			
+
 			s_sessions.put(session.getAD_Session_ID(), session);
 		}
 		return session;
@@ -85,7 +90,7 @@ public class SessionBL implements ISessionBL
 	private MFSession createMFSession(final Properties ctx)
 	{
 		final I_AD_Session sessionPO = InterfaceWrapperHelper.create(ctx, I_AD_Session.class, ITrx.TRXNAME_None);
-		sessionPO.setProcessed (false);
+		sessionPO.setProcessed(false);
 
 		//
 		// Set Client Info if available - 04442
@@ -102,14 +107,13 @@ public class SessionBL implements ISessionBL
 		sessionPO.setDescription(Adempiere.getBuildVersion() + "_" + Adempiere.getDateVersion() + " " + Adempiere.getImplementationVersion());
 		sessionPO.setAD_Role_ID(Env.getAD_Role_ID(ctx));
 		sessionPO.setLoginDate(Env.getDate(ctx));
-		
+
 		// gh #1274: don't invoke hostkeyBL now, because depending on the host key storage
 		// we might not yet be ready to get the host key from the storage
 		sessionPO.setHostKey(MFSession.HOSTKEY_NOT_YET_DETERMINED);
-		
+
 		return new MFSession(sessionPO);
 	}
-
 
 	@Override
 	public MFSession getSessionById(final Properties ctx, final int AD_Session_ID)
@@ -130,7 +134,7 @@ public class SessionBL implements ISessionBL
 				// No session found for given AD_Session_ID, a warning shall be already logged
 				return null;
 			}
-			
+
 			session = new MFSession(sessionPO);
 			s_sessions.put(session.getAD_Session_ID(), session);
 		}
@@ -168,7 +172,7 @@ public class SessionBL implements ISessionBL
 			// no currently running session
 			return;
 		}
-		
+
 		final boolean alreadyDestroyed = session.isDestroyed();
 
 		// Fire BeforeLogout event only if current session is not yet closes(i.e. processed)
@@ -179,7 +183,7 @@ public class SessionBL implements ISessionBL
 
 		session.setDestroyed();
 		Env.removeContext(ctx, Env.CTXNAME_AD_Session_ID);
-		
+
 		s_sessions.remove(session.getAD_Session_ID());
 
 		// Fire AfterLogout event only if current session was closed right now

@@ -4,19 +4,27 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
+import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.test.AdempiereTestWatcher;
+import org.compiere.model.I_AD_Issue;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import com.google.common.collect.ImmutableList;
 
 import de.metas.async.QueueWorkPackageId;
 import de.metas.async.api.IWorkpackageLogsRepository;
 import de.metas.async.api.WorkpackageLogEntry;
+import de.metas.error.AdIssueId;
 import de.metas.user.UserId;
 import lombok.Setter;
 
@@ -42,8 +50,15 @@ import lombok.Setter;
  * #L%
  */
 
+@ExtendWith(AdempiereTestWatcher.class)
 public class WorkpackageLoggableTest
 {
+	@BeforeEach
+	public void beforeEach()
+	{
+		AdempiereTestHelper.get().init();
+	}
+
 	@Test
 	public void addLog_and_flush()
 	{
@@ -97,6 +112,35 @@ public class WorkpackageLoggableTest
 		assertThat(logsRepository.getLogMessagesFlushed()).isEqualTo(ImmutableList.of());
 	}
 
+	@Test
+	public void addLog_with_Throwable()
+	{
+		final MockedWorkpackageLogsRepository logsRepository = new MockedWorkpackageLogsRepository();
+		final WorkpackageLoggable loggable = WorkpackageLoggable.builder()
+				.logsRepository(logsRepository)
+				.workpackageId(QueueWorkPackageId.ofRepoId(1))
+				.adClientId(ClientId.METASFRESH)
+				.userId(UserId.METASFRESH)
+				.bufferSize(5)
+				.build();
+
+		final AdempiereException exception = new AdempiereException("test exception");
+		assertThat(exception.getAdIssueId()).isNull();
+
+		loggable.addLog("Message with param1={} and an exception", 1, exception);
+		final AdIssueId adIssueId = exception.getAdIssueId();
+		assertThat(adIssueId).isNotNull();
+
+		loggable.flush();
+		final WorkpackageLogEntry logEntry = logsRepository.getFirstLogEntryFlushed().get();
+		assertThat(logEntry.getMessage()).isEqualTo("Message with param1=1 and an exception");
+		assertThat(logEntry.getAdIssueId()).isEqualTo(adIssueId);
+
+		final I_AD_Issue adIssueRecord = InterfaceWrapperHelper.load(adIssueId, I_AD_Issue.class);
+		assertThat(adIssueRecord).isNotNull();
+		assertThat(adIssueRecord.getIssueSummary()).isEqualTo("test exception");
+	}
+
 	private static class MockedWorkpackageLogsRepository implements IWorkpackageLogsRepository
 	{
 		private final ArrayList<List<WorkpackageLogEntry>> logEntriesFlushed = new ArrayList<>();
@@ -127,6 +171,13 @@ public class WorkpackageLoggableTest
 							.map(WorkpackageLogEntry::getMessage)
 							.collect(Collectors.toList()))
 					.collect(Collectors.toList());
+		}
+
+		public Optional<WorkpackageLogEntry> getFirstLogEntryFlushed()
+		{
+			return logEntriesFlushed.stream()
+					.flatMap(List::stream)
+					.findFirst();
 		}
 	}
 }

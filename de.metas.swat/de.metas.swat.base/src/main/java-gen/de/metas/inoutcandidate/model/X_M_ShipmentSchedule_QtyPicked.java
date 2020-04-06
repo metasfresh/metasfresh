@@ -15,7 +15,7 @@ public class X_M_ShipmentSchedule_QtyPicked extends org.compiere.model.PO implem
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1183144845L;
+	private static final long serialVersionUID = -771578003L;
 
     /** Standard Constructor */
     public X_M_ShipmentSchedule_QtyPicked (Properties ctx, int M_ShipmentSchedule_QtyPicked_ID, String trxName)
@@ -23,7 +23,7 @@ public class X_M_ShipmentSchedule_QtyPicked extends org.compiere.model.PO implem
       super (ctx, M_ShipmentSchedule_QtyPicked_ID, trxName);
       /** if (M_ShipmentSchedule_QtyPicked_ID == 0)
         {
-			setisAnonymousHuPickedOnTheFly (false); // N
+			setIsAnonymousHuPickedOnTheFly (false); // N
 			setM_ShipmentSchedule_QtyPicked_ID (0);
 			setProcessed (false); // N
 			setQtyPicked (BigDecimal.ZERO); // 0
@@ -87,11 +87,11 @@ public class X_M_ShipmentSchedule_QtyPicked extends org.compiere.model.PO implem
 	}
 
 	/** Set Anonymous HU Picked On the Fly.
-		@param isAnonymousHuPickedOnTheFly Anonymous HU Picked On the Fly	  */
+		@param IsAnonymousHuPickedOnTheFly Anonymous HU Picked On the Fly	  */
 	@Override
-	public void setisAnonymousHuPickedOnTheFly (boolean isAnonymousHuPickedOnTheFly)
+	public void setIsAnonymousHuPickedOnTheFly (boolean IsAnonymousHuPickedOnTheFly)
 	{
-		set_Value (COLUMNNAME_isAnonymousHuPickedOnTheFly, Boolean.valueOf(isAnonymousHuPickedOnTheFly));
+		set_Value (COLUMNNAME_IsAnonymousHuPickedOnTheFly, Boolean.valueOf(IsAnonymousHuPickedOnTheFly));
 	}
 
 	/** Get Anonymous HU Picked On the Fly.
@@ -99,7 +99,7 @@ public class X_M_ShipmentSchedule_QtyPicked extends org.compiere.model.PO implem
 	@Override
 	public boolean isAnonymousHuPickedOnTheFly () 
 	{
-		Object oo = get_Value(COLUMNNAME_isAnonymousHuPickedOnTheFly);
+		Object oo = get_Value(COLUMNNAME_IsAnonymousHuPickedOnTheFly);
 		if (oo != null) 
 		{
 			 if (oo instanceof Boolean) 

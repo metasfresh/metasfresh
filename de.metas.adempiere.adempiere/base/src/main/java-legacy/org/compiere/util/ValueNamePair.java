@@ -18,10 +18,12 @@ package org.compiere.util;
 
 import java.util.Objects;
 
+import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
@@ -31,20 +33,21 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  * @version $Id: ValueNamePair.java,v 1.2 2006/07/30 00:52:23 jjanke Exp $
  */
 @Immutable
+@SuppressWarnings("serial")
 public final class ValueNamePair extends NamePair
 {
-	private static final long serialVersionUID = -8315081335749462163L;
+	public static final ValueNamePair EMPTY = new ValueNamePair("", "", null/* help */);
 
+	private final ValueNamePairValidationInformation m_validationInformation;
 
-	public static final ValueNamePair of(
+	public static ValueNamePair of(
 			@JsonProperty("v") final String value,
 			@JsonProperty("n") final String name)
 	{
-		return of(value, name, null/*help*/);
+		return of(value, name, null/* help */);
 	}
 
-	@JsonCreator
-	public static final ValueNamePair of(
+	public static ValueNamePair of(
 			@JsonProperty("v") final String value,
 			@JsonProperty("n") final String name,
 			@JsonProperty("description") final String description)
@@ -56,7 +59,21 @@ public final class ValueNamePair extends NamePair
 		return new ValueNamePair(value, name, description);
 	}
 
-	public static final ValueNamePair EMPTY = new ValueNamePair("", "", null/* help */);
+	@JsonCreator
+	public static ValueNamePair of(
+			@JsonProperty("v") final String value,
+			@JsonProperty("n") final String name,
+			@JsonProperty("description") final String description,
+			@JsonProperty("validationInformation") @Nullable final ValueNamePairValidationInformation validationInformation)
+	{
+		if (Objects.equals(value, EMPTY.getValue())
+				&& Objects.equals(name, EMPTY.getName())
+				&& validationInformation == null)
+		{
+			return EMPTY;
+		}
+		return new ValueNamePair(value, name, description, validationInformation);
+	}
 
 	/**
 	 * Construct KeyValue Pair
@@ -68,9 +85,23 @@ public final class ValueNamePair extends NamePair
 	{
 		super(name, help);
 		m_value = value == null ? "" : value;
+		m_validationInformation = null;
 	}   // ValueNamePair
 
-	/** The Value */
+	public ValueNamePair(
+			final String value, 
+			final String name, 
+			final String help, 
+			@Nullable final ValueNamePairValidationInformation validationInformation)
+	{
+		super(name, help);
+		m_value = value == null ? "" : value;
+		m_validationInformation = validationInformation;
+	}   // ValueNamePair
+
+	/**
+	 * The Value
+	 */
 	private final String m_value;
 
 	/**
@@ -82,7 +113,20 @@ public final class ValueNamePair extends NamePair
 	public String getValue()
 	{
 		return m_value;
-	}	// getValue
+	}    // getValue
+
+	/**
+	 * Get Validation Message
+	 *
+	 * @return Validation Message
+	 */
+
+	@JsonProperty("validationInformation")
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	public ValueNamePairValidationInformation getValidationInformation()
+	{
+		return m_validationInformation;
+	}
 
 	/**
 	 * Get ID
@@ -94,7 +138,7 @@ public final class ValueNamePair extends NamePair
 	public String getID()
 	{
 		return m_value;
-	}	// getID
+	}    // getID
 
 	@Override
 	public boolean equals(final Object obj)
@@ -108,20 +152,16 @@ public final class ValueNamePair extends NamePair
 		{
 			final ValueNamePair other = (ValueNamePair)obj;
 			return Objects.equals(this.m_value, other.m_value)
-					&& Objects.equals(this.getName(), other.getName());
+					&& Objects.equals(this.getName(), other.getName())
+					&& Objects.equals(this.m_validationInformation, other.m_validationInformation);
 		}
 		return false;
-	}	// equals
+	}    // equals
 
-	/**
-	 * Return Hashcode of value
-	 *
-	 * @return hascode
-	 */
 	@Override
 	public int hashCode()
 	{
 		return m_value.hashCode();
 	}   // hashCode
 
-}	// KeyValuePair
+}    // KeyValuePair

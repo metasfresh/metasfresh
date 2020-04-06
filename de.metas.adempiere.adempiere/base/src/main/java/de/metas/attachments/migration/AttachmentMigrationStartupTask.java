@@ -23,14 +23,19 @@ package de.metas.attachments.migration;
  */
 
 import org.adempiere.ad.housekeeping.spi.IStartupHouseKeepingTask;
+import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
 
+import ch.qos.logback.classic.Level;
+import de.metas.logging.LogManager;
 import de.metas.util.Loggables;
 import lombok.NonNull;
 
 @Component
 public class AttachmentMigrationStartupTask implements IStartupHouseKeepingTask
 {
+	private static final Logger logger = LogManager.getLogger(AttachmentMigrationStartupTask.class);
+
 	private final AttachmentMigrationService migrateAttachmentService;
 
 	public AttachmentMigrationStartupTask(@NonNull final AttachmentMigrationService migrateAttachmentService)
@@ -41,7 +46,7 @@ public class AttachmentMigrationStartupTask implements IStartupHouseKeepingTask
 	@Override
 	public void executeTask()
 	{
-		Loggables.addLog("Checking if there are still AD_Attachment records.");
-		 migrateAttachmentService.isExistRecordsToMigrateCheckDB();
+		Loggables.withLogger(logger, Level.DEBUG).addLog("Checking if there are still AD_Attachment records.");
+		migrateAttachmentService.isExistRecordsToMigrateCheckDB();
 	}
 }

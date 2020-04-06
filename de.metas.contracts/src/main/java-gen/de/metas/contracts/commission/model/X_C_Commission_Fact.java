@@ -15,7 +15,7 @@ public class X_C_Commission_Fact extends org.compiere.model.PO implements I_C_Co
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 270076088L;
+	private static final long serialVersionUID = 1757201916L;
 
     /** Standard Constructor */
     public X_C_Commission_Fact (Properties ctx, int C_Commission_Fact_ID, String trxName)
@@ -80,8 +80,8 @@ public class X_C_Commission_Fact extends org.compiere.model.PO implements I_C_Co
 		set_ValueFromPO(COLUMNNAME_C_Commission_Share_ID, de.metas.contracts.commission.model.I_C_Commission_Share.class, C_Commission_Share);
 	}
 
-	/** Set C_Commission_Share.
-		@param C_Commission_Share_ID C_Commission_Share	  */
+	/** Set Buchauszug.
+		@param C_Commission_Share_ID Buchauszug	  */
 	@Override
 	public void setC_Commission_Share_ID (int C_Commission_Share_ID)
 	{
@@ -91,8 +91,8 @@ public class X_C_Commission_Fact extends org.compiere.model.PO implements I_C_Co
 			set_ValueNoCheck (COLUMNNAME_C_Commission_Share_ID, Integer.valueOf(C_Commission_Share_ID));
 	}
 
-	/** Get C_Commission_Share.
-		@return C_Commission_Share	  */
+	/** Get Buchauszug.
+		@return Buchauszug	  */
 	@Override
 	public int getC_Commission_Share_ID () 
 	{

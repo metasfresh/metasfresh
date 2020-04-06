@@ -1,6 +1,7 @@
 package de.metas.document.archive.mailrecipient.process;
 
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
+import de.metas.i18n.AdMessageKey;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.ProcessPreconditionsResolution;
@@ -12,7 +13,7 @@ public class C_Doc_Outbound_Log_SendPDFMails
 		extends AbstractMailDocumentsForSelection
 		implements IProcessPrecondition
 {
-	private static final String MSG_EMPTY_MailTo = "SendMailsForSelection.EMPTY_MailTo";
+	private static final AdMessageKey MSG_EMPTY_MailTo = AdMessageKey.of("SendMailsForSelection.EMPTY_MailTo");
 
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(@NonNull final IProcessPreconditionsContext context)

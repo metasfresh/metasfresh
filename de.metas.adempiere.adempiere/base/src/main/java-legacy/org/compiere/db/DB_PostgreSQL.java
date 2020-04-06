@@ -563,7 +563,7 @@ public class DB_PostgreSQL implements AdempiereDatabase
 			System.setProperty("com.mchange.v2.log.MLog", com.mchange.v2.log.slf4j.Slf4jMLog.class.getName());
 			// System.setProperty("com.mchange.v2.log.FallbackMLog.DEFAULT_CUTOFF_LEVEL", "ALL");
 			final ComboPooledDataSource cpds = new ComboPooledDataSource();
-			cpds.setDataSourceName("AdempiereDS");
+			cpds.setDataSourceName("metasfreshDS");
 			cpds.setDriverClass(DRIVER);
 			// loads the jdbc driver
 			cpds.setJdbcUrl(getConnectionURL(connection));

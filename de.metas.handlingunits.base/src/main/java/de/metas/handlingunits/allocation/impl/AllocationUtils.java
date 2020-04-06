@@ -42,7 +42,6 @@ import de.metas.handlingunits.allocation.IAllocationResult;
 import de.metas.handlingunits.hutransaction.IHUTransactionAttribute;
 import de.metas.handlingunits.hutransaction.IHUTransactionCandidate;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
-import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
@@ -144,54 +143,18 @@ public final class AllocationUtils
 	public static IAllocationRequest createQtyRequest(
 			final IHUContext huContext,
 			final I_M_Product product,
-			final BigDecimal qty,
+			final BigDecimal qtyBD,
 			final I_C_UOM uom,
 			final ZonedDateTime date,
 			final Object referenceModel)
 	{
-		final boolean forceQtyAllocation = false;
-		return createQtyRequest(huContext, product, qty, uom, date, referenceModel, forceQtyAllocation);
-	}
-
-	/**
-	 *
-	 * @param huContext
-	 * @param product
-	 * @param qty
-	 * @param uom
-	 * @param date
-	 * @param referenceModel May be <code>null</code>. Data record (e.g. M_receiptSchedule) from which the allocation originates.
-	 * @param forceQtyAllocation true if we shall allocate the qty even if the destination is already full.
-	 * @return
-	 */
-	public static IAllocationRequest createQtyRequest(
-			final IHUContext huContext,
-			final I_M_Product product,
-			final BigDecimal qty,
-			final I_C_UOM uom,
-			final ZonedDateTime date,
-			final Object referenceModel,
-			final boolean forceQtyAllocation)
-	{
-		final Quantity quantity = new Quantity(qty, uom);
-		return createQtyRequest(huContext, product, quantity, date, referenceModel, forceQtyAllocation);
-	}
-
-	public static IAllocationRequest createQtyRequest(
-			final IHUContext huContext,
-			final I_M_Product product,
-			final Quantity qty,
-			final ZonedDateTime date,
-			final Object referenceModel,
-			final boolean forceQtyAllocation)
-	{
 		return createAllocationRequestBuilder()
 				.setHUContext(huContext)
 				.setProduct(product)
-				.setQuantity(qty)
+				.setQuantity(new Quantity(qtyBD, uom))
 				.setDate(date)
 				.setFromReferencedModel(referenceModel)
-				.setForceQtyAllocation(forceQtyAllocation)
+				.setForceQtyAllocation(false)
 				.create();
 	}
 
@@ -219,13 +182,9 @@ public final class AllocationUtils
 			final Object referenceModel,
 			final boolean forceQtyAllocation)
 	{
-		final I_M_Product product = productId != null
-				? Services.get(IProductDAO.class).getById(productId)
-				: null;
-
 		return createAllocationRequestBuilder()
 				.setHUContext(huContext)
-				.setProduct(product)
+				.setProduct(productId)
 				.setQuantity(qty)
 				.setDate(date)
 				.setFromReferencedModel(referenceModel)

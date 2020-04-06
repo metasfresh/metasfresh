@@ -49,11 +49,15 @@ import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantitys;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.quantity.StockQtyAndUOMQtys;
+import de.metas.rest_api.bpartner.impl.bpartnercomposite.BPartnerCompositeRestUtils;
 import de.metas.rest_api.common.JsonDocTypeInfo;
 import de.metas.rest_api.common.JsonExternalId;
 import de.metas.rest_api.common.JsonInvoiceRule;
 import de.metas.rest_api.common.JsonPrice;
 import de.metas.rest_api.common.MetasfreshId;
+import de.metas.rest_api.exception.InvalidEntityException;
+import de.metas.rest_api.exception.MissingPropertyException;
+import de.metas.rest_api.exception.MissingResourceException;
 import de.metas.rest_api.invoicecandidates.request.JsonCreateInvoiceCandidatesRequest;
 import de.metas.rest_api.invoicecandidates.request.JsonCreateInvoiceCandidatesRequestItem;
 import de.metas.rest_api.invoicecandidates.response.JsonCreateInvoiceCandidatesResponse;
@@ -64,10 +68,7 @@ import de.metas.rest_api.utils.BPartnerQueryService;
 import de.metas.rest_api.utils.CurrencyService;
 import de.metas.rest_api.utils.DocTypeService;
 import de.metas.rest_api.utils.IdentifierString;
-import de.metas.rest_api.utils.InvalidEntityException;
 import de.metas.rest_api.utils.JsonExternalIds;
-import de.metas.rest_api.utils.MissingPropertyException;
-import de.metas.rest_api.utils.MissingResourceException;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
@@ -258,7 +259,7 @@ public class CreateInvoiceCandidatesService
 			candidate.lineDescription(item.getLineDescription().trim());
 		}
 
-		//invoice detail items
+		// invoice detail items
 		if (CollectionUtils.isNotEmpty(item.getInvoiceDetailItems()))
 		{
 			final List<InvoiceDetailItem> invoiceDetailItems = item.getInvoiceDetailItems()
@@ -410,7 +411,7 @@ public class CreateInvoiceCandidatesService
 		else
 		{
 			final BPartnerLocation location = bpartnerComposite
-					.extractLocation(l -> matches(billLocationIdentifier, l))
+					.extractLocation(BPartnerCompositeRestUtils.createLocationFilterFor(billLocationIdentifier))
 					.orElseThrow(() -> MissingResourceException.builder().resourceName("billLocation").resourceIdentifier(billLocationIdentifier.toJson()).parentResource(item).build());
 			bpartnerInfo.bpartnerLocationId(location.getId());
 		}
@@ -424,51 +425,13 @@ public class CreateInvoiceCandidatesService
 		{
 			// extract the composite's location that has the given billContactIdentifier
 			final BPartnerContact contact = bpartnerComposite
-					.extractContact(c -> matches(billContactIdentifier, c))
+					.extractContact(BPartnerCompositeRestUtils.createContactFilterFor(billContactIdentifier))
 					.orElseThrow(() -> MissingResourceException.builder().resourceName("billContact").resourceIdentifier(billContactIdentifier.toJson()).parentResource(item).build());
 
 			bpartnerInfo.contactId(contact.getId());
 		}
 
 		candidate.billPartnerInfo(bpartnerInfo.build());
-	}
-
-	private boolean matches(
-			@NonNull final IdentifierString locationIdentifier,
-			@NonNull final BPartnerLocation location)
-	{
-		switch (locationIdentifier.getType())
-		{
-			case EXTERNAL_ID:
-				return locationIdentifier.asExternalId().equals(location.getExternalId());
-			case GLN:
-				return locationIdentifier.asGLN().equals(location.getGln());
-			case METASFRESH_ID:
-				return locationIdentifier.asMetasfreshId().equals(MetasfreshId.of(location.getId()));
-			case VALUE:
-				throw new AdempiereException("value not supported for locations"); // TODO polish
-			default:
-				throw new AdempiereException("Unexpected type; locationIdentifier=" + locationIdentifier);
-		}
-	}
-
-	private boolean matches(
-			@NonNull final IdentifierString contactIdentifier,
-			@NonNull final BPartnerContact contact)
-	{
-		switch (contactIdentifier.getType())
-		{
-			case EXTERNAL_ID:
-				return contactIdentifier.asExternalId().equals(contact.getExternalId());
-			case GLN:
-				throw new AdempiereException("GLN not supported for contacts"); // TODO polish
-			case METASFRESH_ID:
-				return contactIdentifier.asMetasfreshId().equals(MetasfreshId.of(contact.getId()));
-			case VALUE:
-				throw new AdempiereException("Value not supported for contacts"); // TODO polish
-			default:
-				throw new AdempiereException("Unexpected type; contactIdentifier=" + contactIdentifier);
-		}
 	}
 
 	private void syncDiscountOverrideToCandidate(
@@ -546,10 +509,10 @@ public class CreateInvoiceCandidatesService
 
 	private CurrencyId lookupCurrencyId(@NonNull final JsonPrice jsonPrice)
 	{
-		final CurrencyId result = currencyService.getCurrencyId(jsonPrice.getPriceUomCode());
+		final CurrencyId result = currencyService.getCurrencyId(jsonPrice.getCurrencyCode());
 		if (result == null)
 		{
-			throw MissingResourceException.builder().resourceName("uom").resourceIdentifier(jsonPrice.getPriceUomCode()).parentResource(jsonPrice).build();
+			throw MissingResourceException.builder().resourceName("currency").resourceIdentifier(jsonPrice.getPriceUomCode()).parentResource(jsonPrice).build();
 		}
 		return result;
 	}

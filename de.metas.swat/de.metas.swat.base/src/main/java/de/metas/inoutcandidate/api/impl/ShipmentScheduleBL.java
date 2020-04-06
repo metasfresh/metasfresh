@@ -1,5 +1,6 @@
 package de.metas.inoutcandidate.api.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.createOld;
 import static org.adempiere.model.InterfaceWrapperHelper.isNull;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
@@ -76,6 +77,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.ShipmentAllocationBestBeforePolicy;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.freighcost.FreightCostRule;
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.IInOutDAO;
@@ -121,7 +123,7 @@ import lombok.NonNull;
 @Service
 public class ShipmentScheduleBL implements IShipmentScheduleBL
 {
-	private static final String MSG_SHIPMENT_SCHEDULE_ALREADY_PROCESSED = "ShipmentScheduleAlreadyProcessed";
+	private static final AdMessageKey MSG_SHIPMENT_SCHEDULE_ALREADY_PROCESSED = AdMessageKey.of("ShipmentScheduleAlreadyProcessed");
 
 	private static final String SYS_Config_M_ShipmentSchedule_Close_PartiallyShipped = "M_ShipmentSchedule_Close_PartiallyShipped";
 
@@ -179,7 +181,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 
 		final I_C_BPartner bpartner = shipmentScheduleEffectiveValuesBL.getBPartner(sched);
 		final I_C_BPartner_Location location = shipmentScheduleEffectiveValuesBL.getBPartnerLocation(sched);
-		final I_AD_User user = shipmentScheduleEffectiveValuesBL.getAD_User(sched);
+		final I_AD_User user = shipmentScheduleEffectiveValuesBL.getBPartnerContact(sched);
 
 		final IBPartnerBL bPartnerBL = Services.get(IBPartnerBL.class);
 		final String address = bPartnerBL.mkFullAddress(
@@ -283,23 +285,41 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 	}
 
 	@Override
-	public void closeShipmentSchedule(@NonNull final I_M_ShipmentSchedule schedule)
+	public void closeShipmentSchedule(@NonNull final I_M_ShipmentSchedule scheduleRecord)
 	{
-		schedule.setIsClosed(true);
-		save(schedule);
+		scheduleRecord.setIsClosed(true);
+		save(scheduleRecord);
 	}
 
 	@Override
-	public void openShipmentSchedule(@NonNull final I_M_ShipmentSchedule shipmentSchedule)
+	public void openShipmentSchedule(@NonNull final I_M_ShipmentSchedule shipmentScheduleRecord)
 	{
-		Check.errorUnless(shipmentSchedule.isClosed(), "The given shipmentSchedule is not closed; shipmentSchedule={}", shipmentSchedule);
+		Check.errorUnless(shipmentScheduleRecord.isClosed(), "The given shipmentSchedule is not closed; shipmentSchedule={}", shipmentScheduleRecord);
 
-		shipmentSchedule.setIsClosed(false);
+		shipmentScheduleRecord.setIsClosed(false);
 
-		Services.get(IShipmentScheduleHandlerBL.class).updateShipmentScheduleFromReferencedRecord(shipmentSchedule);
-		updateQtyOrdered(shipmentSchedule);
+		Services.get(IShipmentScheduleHandlerBL.class).updateShipmentScheduleFromReferencedRecord(shipmentScheduleRecord);
+		updateQtyOrdered(shipmentScheduleRecord);
 
-		save(shipmentSchedule);
+		save(shipmentScheduleRecord);
+	}
+
+	@Override
+	public boolean isJustOpened(@NonNull final I_M_ShipmentSchedule shipmentScheduleRecord)
+	{
+		final boolean isClosed = shipmentScheduleRecord.isClosed();
+		if (isClosed)
+		{
+			return false;
+		}
+
+		final boolean wasClosed = createOld(shipmentScheduleRecord, I_M_ShipmentSchedule.class).isClosed();
+		if (!wasClosed)
+		{
+			return false;
+		}
+
+		return true; // was closed, but is now open
 	}
 
 	@Override

@@ -86,9 +86,9 @@ public class HUReceiptLineCandidatesBuilderTest
 	{
 		uomRecord.setStdPrecision(0); // NOTE: Stuck/Each has precision=0
 
-		final StockQtyAndUOMQty qty_8 = StockQtyAndUOMQtys.create(new BigDecimal("8.00"), productId, null, null);
-		final StockQtyAndUOMQty qty_5_6 = StockQtyAndUOMQtys.create(new BigDecimal("5.6"), productId, null, null);
-		final StockQtyAndUOMQty qty_2_4 = StockQtyAndUOMQtys.create(new BigDecimal("2.4"), productId, null, null);
+		final StockQtyAndUOMQty qty_8 = StockQtyAndUOMQtys.ofQtyInStockUOM(new BigDecimal("8.00"), productId);
+		final StockQtyAndUOMQty qty_5_6 = StockQtyAndUOMQtys.ofQtyInStockUOM(new BigDecimal("5.6"), productId);
+		final StockQtyAndUOMQty qty_2_4 = StockQtyAndUOMQtys.ofQtyInStockUOM(new BigDecimal("2.4"), productId);
 
 		//
 		// Create HUReceiptLinePartCandidate
@@ -135,11 +135,11 @@ public class HUReceiptLineCandidatesBuilderTest
 	{
 		uomRecord.setStdPrecision(3); // NOTE: Kg has precision at least 3.
 
-		final StockQtyAndUOMQty qty_2_500 = StockQtyAndUOMQtys.create(new BigDecimal("2.500"), productId, null, null);
-		final StockQtyAndUOMQty qty_0_125 = StockQtyAndUOMQtys.create(new BigDecimal("0.125"), productId, null, null);
-		final StockQtyAndUOMQty qty_105 = StockQtyAndUOMQtys.create(new BigDecimal("105"), productId, null, null);
-		final StockQtyAndUOMQty qty_10_50 = StockQtyAndUOMQtys.create(new BigDecimal("10.50"), productId, null, null);
-		final StockQtyAndUOMQty qty_94_50 = StockQtyAndUOMQtys.create(new BigDecimal("94.50"), productId, null, null);
+		final StockQtyAndUOMQty qty_2_500 = StockQtyAndUOMQtys.ofQtyInStockUOM(new BigDecimal("2.500"), productId);
+		final StockQtyAndUOMQty qty_0_125 = StockQtyAndUOMQtys.ofQtyInStockUOM(new BigDecimal("0.125"), productId);
+		final StockQtyAndUOMQty qty_105 = StockQtyAndUOMQtys.ofQtyInStockUOM(new BigDecimal("105"), productId);
+		final StockQtyAndUOMQty qty_10_50 = StockQtyAndUOMQtys.ofQtyInStockUOM(new BigDecimal("10.50"), productId);
+		final StockQtyAndUOMQty qty_94_50 = StockQtyAndUOMQtys.ofQtyInStockUOM(new BigDecimal("94.50"), productId);
 
 		final QualityExpectations<Object> partsExpectations = QualityExpectations.newInstance()
 				.receiptSchedule(receiptSchedule);
@@ -195,13 +195,13 @@ public class HUReceiptLineCandidatesBuilderTest
 	{
 		uomRecord.setStdPrecision(3); // NOTE: Kg has precision at least 3.
 
-		final StockQtyAndUOMQty qty_430 = StockQtyAndUOMQtys.create(new BigDecimal(430), productId, null, null);
-		final StockQtyAndUOMQty qty_80 = StockQtyAndUOMQtys.create(new BigDecimal(510-430), productId, null, null);
-		final StockQtyAndUOMQty qty_70 = StockQtyAndUOMQtys.create(new BigDecimal(500-430), productId, null, null);
+		final StockQtyAndUOMQty qty_430 = StockQtyAndUOMQtys.ofQtyInStockUOM(new BigDecimal(430), productId);
+		final StockQtyAndUOMQty qty_80 = StockQtyAndUOMQtys.ofQtyInStockUOM(new BigDecimal(510-430), productId);
+		final StockQtyAndUOMQty qty_70 = StockQtyAndUOMQtys.ofQtyInStockUOM(new BigDecimal(500-430), productId);
 
-		final StockQtyAndUOMQty qty_4450 = StockQtyAndUOMQtys.create(new BigDecimal(4450), productId, null, null); // = 510 + 500 + 8*430
-		final StockQtyAndUOMQty qty_75_5 = StockQtyAndUOMQtys.create(new BigDecimal("75.5"), productId, null, null);  // = 510*5% + 500*10%
-		final StockQtyAndUOMQty qty_4374_5 = StockQtyAndUOMQtys.create(new BigDecimal("4374.5"), productId, null, null);  // = 4450 - 75.5
+		final StockQtyAndUOMQty qty_4450 = StockQtyAndUOMQtys.ofQtyInStockUOM(new BigDecimal(4450), productId); // = 510 + 500 + 8*430
+		final StockQtyAndUOMQty qty_75_5 = StockQtyAndUOMQtys.ofQtyInStockUOM(new BigDecimal("75.5"), productId);  // = 510*5% + 500*10%
+		final StockQtyAndUOMQty qty_4374_5 = StockQtyAndUOMQtys.ofQtyInStockUOM(new BigDecimal("4374.5"), productId);  // = 4450 - 75.5
 
 		final QualityExpectations<Object> partsExpectations = QualityExpectations.newInstance();
 		//@formatter:off
@@ -254,13 +254,13 @@ public class HUReceiptLineCandidatesBuilderTest
 	{
 		uomRecord.setStdPrecision(3); // NOTE: Kg has precision at least 3.
 
-		final StockQtyAndUOMQty qty_430 = StockQtyAndUOMQtys.create(new BigDecimal(430), productId, null, null);
-		final StockQtyAndUOMQty qty_5 = StockQtyAndUOMQtys.create(new BigDecimal(435 - 430), productId, null, null);
-		final StockQtyAndUOMQty qty_minus_5 = StockQtyAndUOMQtys.create(new BigDecimal(425 - 430), productId, null, null);
+		final StockQtyAndUOMQty qty_430 = StockQtyAndUOMQtys.ofQtyInStockUOM(new BigDecimal(430), productId);
+		final StockQtyAndUOMQty qty_5 = StockQtyAndUOMQtys.ofQtyInStockUOM(new BigDecimal(435 - 430), productId);
+		final StockQtyAndUOMQty qty_minus_5 = StockQtyAndUOMQtys.ofQtyInStockUOM(new BigDecimal(425 - 430), productId);
 
-		final StockQtyAndUOMQty qty_4300 = StockQtyAndUOMQtys.create(new BigDecimal(4300), productId, null, null); // = (430 + 5) + (430 - 5) + 8*430
-		final StockQtyAndUOMQty qty_64_25 = StockQtyAndUOMQtys.create(new BigDecimal("64.25"), productId, null, null);  // = (430 + 5)*5% + (430 - 5)*10%
-		final StockQtyAndUOMQty qty_4235_75 = StockQtyAndUOMQtys.create(new BigDecimal("4235.75"), productId, null, null); // = 4300 - 64.25
+		final StockQtyAndUOMQty qty_4300 = StockQtyAndUOMQtys.ofQtyInStockUOM(new BigDecimal(4300), productId); // = (430 + 5) + (430 - 5) + 8*430
+		final StockQtyAndUOMQty qty_64_25 = StockQtyAndUOMQtys.ofQtyInStockUOM(new BigDecimal("64.25"), productId);  // = (430 + 5)*5% + (430 - 5)*10%
+		final StockQtyAndUOMQty qty_4235_75 = StockQtyAndUOMQtys.ofQtyInStockUOM(new BigDecimal("4235.75"), productId); // = 4300 - 64.25
 
 		final QualityExpectations<Object> partsExpectations = QualityExpectations.newInstance();
 		//@formatter:off

@@ -11,6 +11,7 @@ import org.adempiere.exceptions.AdempiereException;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.contracts.refund.RefundConfig.RefundMode;
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.product.ProductId;
@@ -45,10 +46,10 @@ import lombok.experimental.UtilityClass;
 @UtilityClass
 public class RefundConfigs
 {
-	private static final String MSG_REFUND_CONFIG_SAME_REFUND_INVOICE_TYPE = "de.metas.constracts.refund.C_Flatrate_RefundConfig_SameRefundInvoiceType";
-	private static final String MSG_REFUND_CONFIG_SAME_INVOICE_SCHEDULE = "de.metas.constracts.refund.C_Flatrate_RefundConfig_SameInvoiceSchedule";
-	private static final String MSG_REFUND_CONFIG_SAME_REFUND_MODE = "de.metas.constracts.refund.C_Flatrate_RefundConfig_SameRefundMode";
-	private static final String MSG_REFUND_CONFIG_SAME_REFUND_BASE = "de.metas.constracts.refund.C_Flatrate_RefundConfig_SameRefundBase";
+	private static final AdMessageKey MSG_REFUND_CONFIG_SAME_REFUND_INVOICE_TYPE = AdMessageKey.of("de.metas.constracts.refund.C_Flatrate_RefundConfig_SameRefundInvoiceType");
+	private static final AdMessageKey MSG_REFUND_CONFIG_SAME_INVOICE_SCHEDULE = AdMessageKey.of("de.metas.constracts.refund.C_Flatrate_RefundConfig_SameInvoiceSchedule");
+	private static final AdMessageKey MSG_REFUND_CONFIG_SAME_REFUND_MODE = AdMessageKey.of("de.metas.constracts.refund.C_Flatrate_RefundConfig_SameRefundMode");
+	private static final AdMessageKey MSG_REFUND_CONFIG_SAME_REFUND_BASE = AdMessageKey.of("de.metas.constracts.refund.C_Flatrate_RefundConfig_SameRefundBase");
 
 	public ImmutableList<RefundConfig> sortByMinQtyAsc(@NonNull final List<RefundConfig> refundConfigs)
 	{

@@ -6551,7 +6551,7 @@ INSERT INTO AD_Field_Trl (AD_Field_ID, AD_Language,  AD_Client_ID, AD_Org_ID, Is
 
 -- 2019-08-21T19:50:59.255Z
 -- URL zum Konzept
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Name_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IncludedTabHeight,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,3434,583227,1002463,0,541854,0,TO_TIMESTAMP('2019-08-21 21:50:59','YYYY-MM-DD HH24:MI:SS'),100,'Identifiziert die (Liefer-) Adresse des Geschäftspartners',14,'U','Identifiziert die Adresse des Geschäftspartners',0,'Y','N','N','N','N','N','N','N','Standort',90,0,1,1,TO_TIMESTAMP('2019-08-21 21:50:59','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Name_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IncludedTabHeight,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,3434,583227,189,0,541854,0,TO_TIMESTAMP('2019-08-21 21:50:59','YYYY-MM-DD HH24:MI:SS'),100,'Identifiziert die (Liefer-) Adresse des Geschäftspartners',14,'U','Identifiziert die Adresse des Geschäftspartners',0,'Y','N','N','N','N','N','N','N','Standort',90,0,1,1,TO_TIMESTAMP('2019-08-21 21:50:59','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2019-08-21T19:50:59.258Z
@@ -6561,7 +6561,7 @@ INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTran
 
 -- 2019-08-21T19:50:59.260Z
 -- URL zum Konzept
-/* DDL */  select update_FieldTranslation_From_AD_Name_Element(1002463) 
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(189) 
 ;
 
 -- 2019-08-21T19:50:59.261Z
@@ -6971,7 +6971,7 @@ INSERT INTO AD_Field_Trl (AD_Field_ID, AD_Language,  AD_Client_ID, AD_Org_ID, Is
 
 -- 2019-08-21T19:51:01.030Z
 -- URL zum Konzept
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Name_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IncludedTabHeight,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,2959,583239,1002361,0,541854,226,TO_TIMESTAMP('2019-08-21 21:51:00','YYYY-MM-DD HH24:MI:SS'),100,'Adresse oder Anschrift',26,'U','Das Feld "Adresse" definiert die Adressangaben eines Standortes.',0,'Y','Y','Y','N','N','N','N','N','Anschrift',60,60,1,1,TO_TIMESTAMP('2019-08-21 21:51:00','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Name_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IncludedTabHeight,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,2959,583239,202,0,541854,226,TO_TIMESTAMP('2019-08-21 21:51:00','YYYY-MM-DD HH24:MI:SS'),100,'Adresse oder Anschrift',26,'U','Das Feld "Adresse" definiert die Adressangaben eines Standortes.',0,'Y','Y','Y','N','N','N','N','N','Anschrift',60,60,1,1,TO_TIMESTAMP('2019-08-21 21:51:00','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2019-08-21T19:51:01.031Z
@@ -6981,7 +6981,7 @@ INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTran
 
 -- 2019-08-21T19:51:01.032Z
 -- URL zum Konzept
-/* DDL */  select update_FieldTranslation_From_AD_Name_Element(1002361) 
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(202) 
 ;
 
 -- 2019-08-21T19:51:01.036Z

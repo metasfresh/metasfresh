@@ -324,7 +324,6 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 			finally
 			{
 				// NOTE: at this point the thread local loggable was restored
-
 				endTrx(success);
 			}
 

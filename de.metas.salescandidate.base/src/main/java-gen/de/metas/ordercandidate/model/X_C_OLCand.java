@@ -15,7 +15,7 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1770254872L;
+	private static final long serialVersionUID = -1307325878L;
 
     /** Standard Constructor */
     public X_C_OLCand (Properties ctx, int C_OLCand_ID, String trxName)
@@ -274,52 +274,6 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 		return ii.intValue();
 	}
 
-	/** Set Standort eff..
-		@param C_BP_Location_Effective_ID 
-		Identifiziert die (Liefer-) Adresse des Geschäftspartners
-	  */
-	@Override
-	public void setC_BP_Location_Effective_ID (int C_BP_Location_Effective_ID)
-	{
-		throw new IllegalArgumentException ("C_BP_Location_Effective_ID is virtual column");	}
-
-	/** Get Standort eff..
-		@return Identifiziert die (Liefer-) Adresse des Geschäftspartners
-	  */
-	@Override
-	public int getC_BP_Location_Effective_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_BP_Location_Effective_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
-	/** Set Standort abw..
-		@param C_BP_Location_Override_ID 
-		Identifiziert die (Liefer-) Adresse des Geschäftspartners
-	  */
-	@Override
-	public void setC_BP_Location_Override_ID (int C_BP_Location_Override_ID)
-	{
-		if (C_BP_Location_Override_ID < 1) 
-			set_Value (COLUMNNAME_C_BP_Location_Override_ID, null);
-		else 
-			set_Value (COLUMNNAME_C_BP_Location_Override_ID, Integer.valueOf(C_BP_Location_Override_ID));
-	}
-
-	/** Get Standort abw..
-		@return Identifiziert die (Liefer-) Adresse des Geschäftspartners
-	  */
-	@Override
-	public int getC_BP_Location_Override_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_BP_Location_Override_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
 	/** Set Geschäftspartner eff..
 		@param C_BPartner_Effective_ID Geschäftspartner eff.	  */
 	@Override
@@ -430,6 +384,52 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 	public int getC_BPartner_SalesRep_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_BPartner_SalesRep_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Standort eff..
+		@param C_BP_Location_Effective_ID 
+		Identifiziert die (Liefer-) Adresse des Geschäftspartners
+	  */
+	@Override
+	public void setC_BP_Location_Effective_ID (int C_BP_Location_Effective_ID)
+	{
+		throw new IllegalArgumentException ("C_BP_Location_Effective_ID is virtual column");	}
+
+	/** Get Standort eff..
+		@return Identifiziert die (Liefer-) Adresse des Geschäftspartners
+	  */
+	@Override
+	public int getC_BP_Location_Effective_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_BP_Location_Effective_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Standort abw..
+		@param C_BP_Location_Override_ID 
+		Identifiziert die (Liefer-) Adresse des Geschäftspartners
+	  */
+	@Override
+	public void setC_BP_Location_Override_ID (int C_BP_Location_Override_ID)
+	{
+		if (C_BP_Location_Override_ID < 1) 
+			set_Value (COLUMNNAME_C_BP_Location_Override_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_BP_Location_Override_ID, Integer.valueOf(C_BP_Location_Override_ID));
+	}
+
+	/** Get Standort abw..
+		@return Identifiziert die (Liefer-) Adresse des Geschäftspartners
+	  */
+	@Override
+	public int getC_BP_Location_Override_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_BP_Location_Override_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
@@ -1012,6 +1012,31 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 		return ii.intValue();
 	}
 
+	/** Set Lieferkontakt.
+		@param DropShip_User_ID 
+		Business Partner Contact for drop shipment
+	  */
+	@Override
+	public void setDropShip_User_ID (int DropShip_User_ID)
+	{
+		if (DropShip_User_ID < 1) 
+			set_Value (COLUMNNAME_DropShip_User_ID, null);
+		else 
+			set_Value (COLUMNNAME_DropShip_User_ID, Integer.valueOf(DropShip_User_ID));
+	}
+
+	/** Get Lieferkontakt.
+		@return Business Partner Contact for drop shipment
+	  */
+	@Override
+	public int getDropShip_User_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_DropShip_User_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
 	/** Set Fehlermeldung.
 		@param ErrorMsg Fehlermeldung	  */
 	@Override
@@ -1179,6 +1204,28 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 	public int getHandOver_Partner_Override_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_HandOver_Partner_Override_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Übergabe-Kontakt.
+		@param HandOver_User_ID Übergabe-Kontakt	  */
+	@Override
+	public void setHandOver_User_ID (int HandOver_User_ID)
+	{
+		if (HandOver_User_ID < 1) 
+			set_Value (COLUMNNAME_HandOver_User_ID, null);
+		else 
+			set_Value (COLUMNNAME_HandOver_User_ID, Integer.valueOf(HandOver_User_ID));
+	}
+
+	/** Get Übergabe-Kontakt.
+		@return Übergabe-Kontakt	  */
+	@Override
+	public int getHandOver_User_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_HandOver_User_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
@@ -1766,31 +1813,6 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 		return (java.sql.Timestamp)get_Value(COLUMNNAME_PresetDateShipped);
 	}
 
-	/** Set Preiseinheit int..
-		@param Price_UOM_Internal_ID 
-		Interne Preiseinheit laut Stammdaten
-	  */
-	@Override
-	public void setPrice_UOM_Internal_ID (int Price_UOM_Internal_ID)
-	{
-		if (Price_UOM_Internal_ID < 1) 
-			set_Value (COLUMNNAME_Price_UOM_Internal_ID, null);
-		else 
-			set_Value (COLUMNNAME_Price_UOM_Internal_ID, Integer.valueOf(Price_UOM_Internal_ID));
-	}
-
-	/** Get Preiseinheit int..
-		@return Interne Preiseinheit laut Stammdaten
-	  */
-	@Override
-	public int getPrice_UOM_Internal_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_Price_UOM_Internal_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
 	/** Set Einzelpreis.
 		@param PriceActual 
 		Effektiver Preis
@@ -1873,6 +1895,31 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 		if (bd == null)
 			 return BigDecimal.ZERO;
 		return bd;
+	}
+
+	/** Set Preiseinheit int..
+		@param Price_UOM_Internal_ID 
+		Interne Preiseinheit laut Stammdaten
+	  */
+	@Override
+	public void setPrice_UOM_Internal_ID (int Price_UOM_Internal_ID)
+	{
+		if (Price_UOM_Internal_ID < 1) 
+			set_Value (COLUMNNAME_Price_UOM_Internal_ID, null);
+		else 
+			set_Value (COLUMNNAME_Price_UOM_Internal_ID, Integer.valueOf(Price_UOM_Internal_ID));
+	}
+
+	/** Get Preiseinheit int..
+		@return Interne Preiseinheit laut Stammdaten
+	  */
+	@Override
+	public int getPrice_UOM_Internal_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_Price_UOM_Internal_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	/** Set Verarbeitet.

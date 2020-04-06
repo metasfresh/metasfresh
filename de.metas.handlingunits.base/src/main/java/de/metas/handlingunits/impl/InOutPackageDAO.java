@@ -22,15 +22,18 @@
 
 package de.metas.handlingunits.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_M_InOut;
+import org.compiere.model.I_M_Package;
+
 import de.metas.handlingunits.IInOutPackageDAO;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutId;
 import de.metas.shipping.ShipperId;
-import de.metas.shipping.interfaces.I_M_Package;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_M_InOut;
 
 public class InOutPackageDAO implements IInOutPackageDAO
 {
@@ -41,7 +44,7 @@ public class InOutPackageDAO implements IInOutPackageDAO
 		final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
 		final I_M_InOut inOut = inOutDAO.getById(inOutId);
 
-		final I_M_Package mPackage = InterfaceWrapperHelper.newInstance(I_M_Package.class);
+		final I_M_Package mPackage = newInstance(I_M_Package.class);
 		mPackage.setM_Shipper_ID(shipperId.getRepoId());
 		mPackage.setShipDate(null);
 		mPackage.setC_BPartner_ID(inOut.getC_BPartner_ID());

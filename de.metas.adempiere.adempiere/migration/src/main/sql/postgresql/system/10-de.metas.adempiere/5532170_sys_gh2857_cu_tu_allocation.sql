@@ -170,7 +170,7 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=588909
 
 -- 2019-09-26T12:30:44.886Z
 -- URL zum Konzept
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Name_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,DisplayLength,EntityType,IncludedTabHeight,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,549187,588910,1002255,0,542022,0,TO_TIMESTAMP('2019-09-26 15:30:44','YYYY-MM-DD HH24:MI:SS'),100,10,'D',0,'Y','N','N','N','N','N','N','N','Packvorschrift',0,0,1,1,TO_TIMESTAMP('2019-09-26 15:30:44','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Name_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,DisplayLength,EntityType,IncludedTabHeight,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,549187,588910,542132,0,542022,0,TO_TIMESTAMP('2019-09-26 15:30:44','YYYY-MM-DD HH24:MI:SS'),100,10,'D',0,'Y','N','N','N','N','N','N','N','Packvorschrift',0,0,1,1,TO_TIMESTAMP('2019-09-26 15:30:44','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2019-09-26T12:30:44.886Z
@@ -180,7 +180,7 @@ INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTran
 
 -- 2019-09-26T12:30:44.891Z
 -- URL zum Konzept
-/* DDL */  select update_FieldTranslation_From_AD_Name_Element(1002255) 
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(542132) 
 ;
 
 -- 2019-09-26T12:30:44.901Z

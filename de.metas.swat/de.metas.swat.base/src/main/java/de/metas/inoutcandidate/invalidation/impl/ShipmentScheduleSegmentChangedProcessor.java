@@ -101,7 +101,7 @@ final class ShipmentScheduleSegmentChangedProcessor
 		final List<IShipmentScheduleSegment> segmentsCopy = new ArrayList<>(segments);
 		segments.clear();
 
-		shipmentScheduleInvalidator.invalidateStorageSegments(segmentsCopy);
+		shipmentScheduleInvalidator.flagSegmentForRecompute(segmentsCopy);
 	}
 
 	public void addSegment(final IShipmentScheduleSegment segment)

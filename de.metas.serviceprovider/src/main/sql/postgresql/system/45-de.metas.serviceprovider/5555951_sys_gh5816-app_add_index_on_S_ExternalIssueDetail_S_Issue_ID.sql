@@ -1,0 +1,1 @@
+CREATE INDEX idx_s_external_issue_details_s_issue_ID ON S_ExternalIssueDetail(S_Issue_ID);

@@ -18,8 +18,8 @@ import org.compiere.model.I_C_Location;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.TimeUtil;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyRepository;
@@ -62,7 +62,7 @@ public class AssignableInvoiceCandidateFactoryTest
 
 	private static final BigDecimal NINE = new BigDecimal("9");
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();

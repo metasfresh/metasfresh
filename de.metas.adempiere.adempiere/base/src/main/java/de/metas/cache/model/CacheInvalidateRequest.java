@@ -1,7 +1,5 @@
 package de.metas.cache.model;
 
-import java.util.UUID;
-
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.util.Trace;
@@ -54,23 +52,21 @@ public final class CacheInvalidateRequest
 
 	public static CacheInvalidateRequest allRecordsForTable(@NonNull final String rootTableName)
 	{
-		final String id = UUID.randomUUID().toString();
 		final int rootRecordId = RECORD_ID_ALL;
 		final String childTableName = null;
 		final int childRecordId = RECORD_ID_ALL;
 		final String debugFrom = DEBUG ? Trace.toOneLineStackTraceString() : null;
-		return new CacheInvalidateRequest(id, rootTableName, rootRecordId, childTableName, childRecordId, debugFrom);
+		return new CacheInvalidateRequest(rootTableName, rootRecordId, childTableName, childRecordId, debugFrom);
 	}
 
 	public static CacheInvalidateRequest rootRecord(@NonNull final String rootTableName, final int rootRecordId)
 	{
 		Check.assume(rootRecordId >= 0, "rootRecordId >= 0");
 
-		final String id = UUID.randomUUID().toString();
 		final String childTableName = null;
 		final int childRecordId = RECORD_ID_ALL;
 		final String debugFrom = DEBUG ? Trace.toOneLineStackTraceString() : null;
-		return new CacheInvalidateRequest(id, rootTableName, rootRecordId, childTableName, childRecordId, debugFrom);
+		return new CacheInvalidateRequest(rootTableName, rootRecordId, childTableName, childRecordId, debugFrom);
 	}
 
 	public static CacheInvalidateRequest rootRecord(@NonNull final String rootTableName, @NonNull final RepoIdAware rootId)
@@ -82,10 +78,9 @@ public final class CacheInvalidateRequest
 	{
 		Check.assume(rootRecordId >= 0, "rootRecordId >= 0");
 
-		final String id = UUID.randomUUID().toString();
 		final int childRecordId = RECORD_ID_ALL;
 		final String debugFrom = DEBUG ? Trace.toOneLineStackTraceString() : null;
-		return new CacheInvalidateRequest(id, rootTableName, rootRecordId, childTableName, childRecordId, debugFrom);
+		return new CacheInvalidateRequest(rootTableName, rootRecordId, childTableName, childRecordId, debugFrom);
 	}
 
 	public static CacheInvalidateRequest fromTableNameAndRecordId(final String tableName, final int recordId)
@@ -103,14 +98,11 @@ public final class CacheInvalidateRequest
 			return rootRecord(tableName, recordId);
 		}
 	}
-	
+
 	private static final boolean DEBUG = false;
 
 	private static final int RECORD_ID_ALL = -1;
-	private static final CacheInvalidateRequest ALL = new CacheInvalidateRequest("ALL", null, RECORD_ID_ALL, null, RECORD_ID_ALL, "ALL");
-
-	@JsonProperty("id")
-	private final String id;
+	private static final CacheInvalidateRequest ALL = new CacheInvalidateRequest(null, RECORD_ID_ALL, null, RECORD_ID_ALL, "ALL");
 
 	@JsonProperty("rootTableName")
 	private final String rootTableName;
@@ -121,20 +113,18 @@ public final class CacheInvalidateRequest
 	private final String childTableName;
 	@JsonProperty("childRecordId")
 	private final int childRecordId;
-	
-	@JsonProperty("debugFrom") 
+
+	@JsonProperty("debugFrom")
 	final String debugFrom;
 
 	@JsonCreator
 	private CacheInvalidateRequest(
-			@JsonProperty("id") final String id,
 			@JsonProperty("rootTableName") final String rootTableName,
 			@JsonProperty("rootRecordId") final int rootRecordId,
 			@JsonProperty("childTableName") final String childTableName,
 			@JsonProperty("childRecordId") final int childRecordId,
 			@JsonProperty("debugFrom") final String debugFrom)
 	{
-		this.id = id;
 		this.rootTableName = rootTableName;
 		this.rootRecordId = rootRecordId >= 0 ? rootRecordId : RECORD_ID_ALL;
 		this.childTableName = childTableName;
@@ -227,9 +217,8 @@ public final class CacheInvalidateRequest
 
 		public CacheInvalidateRequest build()
 		{
-			final String id = UUID.randomUUID().toString();
 			final String debugFrom = DEBUG ? Trace.toOneLineStackTraceString() : null;
-			return new CacheInvalidateRequest(id, rootTableName, rootRecordId, childTableName, childRecordId, debugFrom);
+			return new CacheInvalidateRequest(rootTableName, rootRecordId, childTableName, childRecordId, debugFrom);
 		}
 
 		public Builder rootRecord(@NonNull final String tableName, final int recordId)

@@ -1,9 +1,8 @@
 package de.metas.banking.process;
 
 import org.compiere.model.I_C_PaySelection;
+import org.compiere.model.I_C_PaySelectionLine;
 
-import de.metas.banking.model.I_C_PaySelectionLine;
-import de.metas.banking.model.I_C_Payment;
 import de.metas.banking.payment.IPaySelectionBL;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
@@ -12,7 +11,7 @@ import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.util.Services;
 
 /**
- * Creates an links {@link I_C_Payment}s to {@link I_C_PaySelectionLine}s.
+ * Creates an links payments to {@link I_C_PaySelectionLine}s.
  *
  * @author tsa
  *

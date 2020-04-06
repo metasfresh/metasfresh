@@ -44,7 +44,10 @@ public class BPartnerContactId implements RepoIdAware
 		final UserId userId = toValidContactUserIdOrNull(contactRepoId);
 		if (userId == null)
 		{
-			throw new AdempiereException("@Invalid@ @Contact_ID@");
+			throw new AdempiereException("@Invalid@ @Contact_ID@")
+					.appendParametersToMessage()
+					.setParameter("bpartnerId", bpartnerId)
+					.setParameter("contactRepoId", contactRepoId);
 		}
 
 		return of(bpartnerId, userId);
@@ -62,12 +65,16 @@ public class BPartnerContactId implements RepoIdAware
 		final UserId userId = toValidContactUserIdOrNull(contactRepoId);
 		if (userId == null)
 		{
-			throw new AdempiereException("@Invalid@ @Contact_ID@");
+			throw new AdempiereException("@Invalid@ @Contact_ID@")
+					.appendParametersToMessage()
+					.setParameter("bpartnerId", bpartnerId)
+					.setParameter("contactRepoId", contactRepoId);
 		}
 
 		return of(bpartnerId, userId);
 	}
 
+	@Nullable
 	public static BPartnerContactId ofRepoIdOrNull(
 			@NonNull final BPartnerId bpartnerId,
 			@Nullable final Integer contactRepoId)
@@ -76,6 +83,7 @@ public class BPartnerContactId implements RepoIdAware
 		return userId != null ? of(bpartnerId, userId) : null;
 	}
 
+	@Nullable
 	public static BPartnerContactId ofRepoIdOrNull(
 			@Nullable final Integer bpartnerRepoId,
 			@Nullable final Integer contactRepoId)
@@ -95,7 +103,8 @@ public class BPartnerContactId implements RepoIdAware
 		return of(bpartnerId, userId);
 	}
 
-	private static UserId toValidContactUserIdOrNull(final Integer userRepoId)
+	@Nullable
+	private static UserId toValidContactUserIdOrNull(@Nullable final Integer userRepoId)
 	{
 		final UserId userId = userRepoId != null ? UserId.ofRepoIdOrNull(userRepoId) : null;
 
@@ -115,7 +124,7 @@ public class BPartnerContactId implements RepoIdAware
 		return userId.getRepoId();
 	}
 
-	public static int toRepoId(final BPartnerContactId id)
+	public static int toRepoId(@Nullable final BPartnerContactId id)
 	{
 		return id != null ? id.getRepoId() : -1;
 	}

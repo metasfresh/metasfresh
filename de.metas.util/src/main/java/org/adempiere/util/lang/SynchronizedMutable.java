@@ -1,7 +1,7 @@
 package org.adempiere.util.lang;
 
-import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.function.UnaryOperator;
 
 import lombok.NonNull;
 
@@ -53,8 +53,15 @@ public final class SynchronizedMutable<T> implements IMutable<T>
 		this.value = value;
 	}
 
+	public synchronized T setValueAndReturnPrevious(final T value)
+	{
+		final T previousValue = this.value;
+		this.value = value;
+		return previousValue;
+	}
+
 	@Override
-	public synchronized T compute(@NonNull final Function<T, T> remappingFunction)
+	public synchronized T compute(@NonNull final UnaryOperator<T> remappingFunction)
 	{
 		this.value = remappingFunction.apply(this.value);
 		return this.value;
@@ -71,7 +78,7 @@ public final class SynchronizedMutable<T> implements IMutable<T>
 		return this.value;
 	}
 
-	public synchronized T computeIfNotNull(@NonNull final Function<T, T> remappingFunction)
+	public synchronized T computeIfNotNull(@NonNull final UnaryOperator<T> remappingFunction)
 	{
 		if (value != null)
 		{

@@ -52,6 +52,8 @@ CASE
 
 		ELSE false -- shall never nappen
 	END
+	AND
+	CASE WHEN  $P{M_Warehouse_ID} IS NOT NULL THEN o.M_Warehouse_ID=$P{M_Warehouse_ID} ELSE  true END
 LIMIT 1
 ;]]>
 	</queryString>
@@ -104,6 +106,9 @@ LIMIT 1
 				</subreportParameter>
 				<subreportParameter name="C_BPartner_ID">
 					<subreportParameterExpression><![CDATA[$P{C_BPartner_ID}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="M_Warehouse_ID">
+					<subreportParameterExpression><![CDATA[$P{M_Warehouse_ID}]]></subreportParameterExpression>
 				</subreportParameter>
 				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
 				<subreportExpression><![CDATA["de/metas/docs/sales/ordercheckup/legacy/report_description.jasper"]]></subreportExpression>

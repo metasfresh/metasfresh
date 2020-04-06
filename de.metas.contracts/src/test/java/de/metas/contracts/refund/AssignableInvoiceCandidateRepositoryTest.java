@@ -11,8 +11,8 @@ import java.time.LocalDate;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.TimeUtil;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.invoicecandidate.InvoiceCandidateId;
@@ -55,7 +55,7 @@ public class AssignableInvoiceCandidateRepositoryTest
 	private AssignableInvoiceCandidateRepository assignableInvoiceCandidateRepository;
 	private RefundTestTools refundTestTools;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();

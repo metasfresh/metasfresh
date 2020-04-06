@@ -15,9 +15,9 @@ import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import com.google.common.collect.ImmutableList;
 
@@ -73,6 +73,7 @@ import de.metas.util.lang.Percent;
  * #L%
  */
 
+@ExtendWith(AdempiereTestWatcher.class)
 public class CandidateAssignServiceExceedingQty_Percent_Test
 {
 	private static final CurrencyId CURRENCY_ID = CurrencyId.ofRepoId(102);
@@ -104,10 +105,7 @@ public class CandidateAssignServiceExceedingQty_Percent_Test
 
 	private RefundTestTools refundTestTools;
 
-	@Rule
-	public final AdempiereTestWatcher testWatcher = new AdempiereTestWatcher();
-
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();

@@ -4,16 +4,20 @@ import static java.math.BigDecimal.TEN;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 import org.adempiere.inout.util.DeliveryLineCandidate;
+import org.adempiere.inout.util.IShipmentSchedulesDuringUpdate.CompleteStatus;
 import org.adempiere.inout.util.ShipmentSchedulesDuringUpdate;
 import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.test.AdempiereTestWatcher;
 import org.assertj.core.api.AbstractBigDecimalAssert;
 import org.compiere.model.X_M_Product;
 import org.compiere.util.Env;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
@@ -60,6 +64,7 @@ import lombok.NonNull;
  * #L%
  */
 
+@ExtendWith(AdempiereTestWatcher.class)
 public class ShipmentScheduleUpdater_generate_Test
 {
 	private ShipmentScheduleUpdater shipmentScheduleUpdater;
@@ -294,6 +299,99 @@ public class ShipmentScheduleUpdater_generate_Test
 					.socks_qtyOnHand(6)
 					.setupAndInvoke();
 			assertOneResultWithQtyToDeliver(result).isEqualByComparingTo("11");
+		}
+
+	}
+
+	@Nested
+	public class completeOrder
+	{
+		private ShipmentSchedulesDuringUpdate setup(final String qtyOnHand)
+		{
+			final UomSpec uom = UomSpec.builder().name("stockUom").build();
+
+			final TestSetupSpec spec = TestSetupSpec.builder()
+					.uom(uom)
+					.product(ProductSpec.builder().value("prod1").uomValue("stockUom").stocked(true).build())
+					//
+					.stock(StockSpec.builder().product("prod1").qtyStock(new BigDecimal(qtyOnHand)).build())
+					//
+					.order(OrderSpec.builder().value("order1").build())
+					.orderLine(OrderLineSpec.builder().value("ol1").product("prod1").order("order1").qtyOrdered(new BigDecimal("10")).build())
+					.orderLine(OrderLineSpec.builder().value("ol2").product("prod1").order("order1").qtyOrdered(new BigDecimal("11")).build())
+					//
+					.shipmentSchedule(ShipmentScheduleSpec.builder().product("prod1").order("order1").orderLine("ol1").qtyOrdered(new BigDecimal("10"))
+							.deliveryRule(DeliveryRule.COMPLETE_ORDER)
+							.build())
+					.shipmentSchedule(ShipmentScheduleSpec.builder().product("prod1").order("order1").orderLine("ol2").qtyOrdered(new BigDecimal("11"))
+							.deliveryRule(DeliveryRule.COMPLETE_ORDER)
+							.build())
+					.build();
+
+			return setupAndInvoke(spec);
+		}
+
+		@Test
+		public void zeroQtyOnHand()
+		{
+			final ShipmentSchedulesDuringUpdate result = setup("0");
+
+			assertThat(result.getCandidates()).hasSize(0);
+		}
+
+		@Test
+		public void partialFirstLine()
+		{
+			final ShipmentSchedulesDuringUpdate result = setup("5");
+
+			assertThat(result.getCandidates()).hasSize(1);
+			final List<DeliveryLineCandidate> lines = ImmutableList.copyOf(result.getCandidates().get(0).getLines());
+			assertThat(lines).hasSize(1);
+
+			final DeliveryLineCandidate line1 = lines.get(0);
+			assertThat(line1.getDeliveryRule()).isEqualTo(DeliveryRule.COMPLETE_ORDER);
+			assertThat(line1.getQtyToDeliver()).isEqualTo("5");
+			assertThat(line1.getCompleteStatus()).isEqualTo(CompleteStatus.INCOMPLETE_LINE);
+		}
+
+		@Test
+		public void oneCompleteLine_onePartial()
+		{
+			final ShipmentSchedulesDuringUpdate result = setup("15");
+
+			assertThat(result.getCandidates()).hasSize(1);
+			final List<DeliveryLineCandidate> lines = ImmutableList.copyOf(result.getCandidates().get(0).getLines());
+			assertThat(lines).hasSize(2);
+
+			final DeliveryLineCandidate line1 = lines.get(0);
+			assertThat(line1.getDeliveryRule()).isEqualTo(DeliveryRule.COMPLETE_ORDER);
+			assertThat(line1.getQtyToDeliver()).isEqualTo("10");
+			assertThat(line1.getCompleteStatus()).isEqualTo(CompleteStatus.OK);
+
+			final DeliveryLineCandidate line2 = lines.get(1);
+			assertThat(line2.getDeliveryRule()).isEqualTo(DeliveryRule.COMPLETE_ORDER);
+			assertThat(line2.getQtyToDeliver()).isEqualTo("5");
+			assertThat(line2.getCompleteStatus()).isEqualTo(CompleteStatus.INCOMPLETE_LINE);
+		}
+
+		@Test
+		public void availableQtyOnHand()
+		{
+			final ShipmentSchedulesDuringUpdate result = setup("100");
+
+			assertThat(result.getCandidates()).hasSize(1);
+			final List<DeliveryLineCandidate> lines = ImmutableList.copyOf(result.getCandidates().get(0).getLines());
+			assertThat(lines).hasSize(2);
+
+			final DeliveryLineCandidate line1 = lines.get(0);
+			assertThat(line1.getDeliveryRule()).isEqualTo(DeliveryRule.COMPLETE_ORDER);
+			assertThat(line1.getQtyToDeliver()).isEqualTo("10");
+			assertThat(line1.getCompleteStatus()).isEqualTo(CompleteStatus.OK);
+
+			final DeliveryLineCandidate line2 = lines.get(1);
+			assertThat(line2.getDeliveryRule()).isEqualTo(DeliveryRule.COMPLETE_ORDER);
+			assertThat(line2.getQtyToDeliver()).isEqualTo("11");
+			assertThat(line2.getCompleteStatus()).isEqualTo(CompleteStatus.OK);
 		}
 
 	}

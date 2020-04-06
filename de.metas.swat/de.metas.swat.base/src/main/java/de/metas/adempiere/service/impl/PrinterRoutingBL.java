@@ -13,12 +13,12 @@ package de.metas.adempiere.service.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -75,17 +75,22 @@ public class PrinterRoutingBL implements IPrinterRoutingBL
 		final String printerType = null;
 
 		return findPrintingService0(ctx,
-				AD_Client_ID, 
+				AD_Client_ID,
 				AD_Org_ID,
-				AD_Role_ID, 
+				AD_Role_ID,
 				AD_User_ID,
 				C_DocType_ID,
 				AD_Process_ID.getRepoId(),
+				pi.getTable_ID(),
 				printerType);
 	}
 
 	@Override
-	public IPrintingService findPrintingService(final Properties ctx, final int C_DocType_ID, final int AD_Process_ID, final String printerType)
+	public IPrintingService findPrintingService(final Properties ctx,
+			final int C_DocType_ID,
+			final int AD_Process_ID,
+			final int AD_Table_ID,
+			final String printerType)
 	{
 		final int AD_Client_ID = Env.getAD_Client_ID(ctx);
 		final int AD_Org_ID = Env.getAD_Org_ID(ctx);
@@ -96,6 +101,7 @@ public class PrinterRoutingBL implements IPrinterRoutingBL
 				AD_Client_ID, AD_Org_ID,
 				AD_Role_ID, AD_User_ID,
 				C_DocType_ID, AD_Process_ID,
+				AD_Table_ID,
 				printerType);
 	}
 
@@ -105,11 +111,21 @@ public class PrinterRoutingBL implements IPrinterRoutingBL
 			final int AD_Client_ID, final int AD_Org_ID,
 			final int AD_Role_ID, final int AD_User_ID,
 			final int C_DocType_ID, final int AD_Process_ID,
+			final int AD_Table_ID,
 			final String printerType)
 	{
 		final IPrinterRoutingDAO dao = Services.get(IPrinterRoutingDAO.class);
 
-		final List<I_AD_PrinterRouting> rs = dao.fetchPrinterRoutings(ctx, AD_Client_ID, AD_Org_ID, AD_Role_ID, AD_User_ID, C_DocType_ID, AD_Process_ID, printerType, I_AD_PrinterRouting.class);
+		final List<I_AD_PrinterRouting> rs = dao.fetchPrinterRoutings(ctx,
+				AD_Client_ID,
+				AD_Org_ID,
+				AD_Role_ID,
+				AD_User_ID,
+				C_DocType_ID,
+				AD_Process_ID,
+				AD_Table_ID,
+				printerType,
+				I_AD_PrinterRouting.class);
 		for (final I_AD_PrinterRouting route : rs)
 		{
 			final IPrintingService printingService = getPrintingService(route);
@@ -294,9 +310,16 @@ public class PrinterRoutingBL implements IPrinterRoutingBL
 	}
 
 	@Override
-	public String findPrinterName(final Properties ctx, final int C_DocType_ID, final int AD_Process_ID, final String printerType)
+	public String findPrinterName(final Properties ctx, final int C_DocType_ID,
+			final int AD_Process_ID,
+			final int AD_Table_ID,
+			final String printerType)
 	{
-		final IPrintingService printingService = findPrintingService(ctx, C_DocType_ID, AD_Process_ID, printerType);
+		final IPrintingService printingService = findPrintingService(ctx,
+				C_DocType_ID,
+				AD_Process_ID,
+				AD_Table_ID,
+				printerType);
 		return printingService.getPrinterName();
 	}
 

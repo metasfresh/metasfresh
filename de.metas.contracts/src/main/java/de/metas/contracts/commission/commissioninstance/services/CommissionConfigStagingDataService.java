@@ -97,7 +97,7 @@ public class CommissionConfigStagingDataService
 		//
 		final ListMultimap<Integer, Integer> settingsId2termIds = MultimapBuilder.hashKeys().arrayListValues().build();
 		final ImmutableListMultimap.Builder<Integer, BPartnerId> conditionRecordId2BPartnerIds = ImmutableListMultimap.<Integer, BPartnerId> builder();
-		final ImmutableMap.Builder<BPartnerId, FlatrateTermId> bpartnerId2FlatrateTermId = ImmutableMap.<BPartnerId, FlatrateTermId> builder();
+		final ImmutableListMultimap.Builder<BPartnerId, FlatrateTermId> bpartnerId2FlatrateTermId = ImmutableListMultimap.<BPartnerId, FlatrateTermId> builder();
 
 		for (final I_C_Flatrate_Term commissionTermRecord : commissionTermRecords)
 		{
@@ -189,7 +189,7 @@ public class CommissionConfigStagingDataService
 		ImmutableMap<Integer, I_C_CommissionSettingsLine> id2SettingsLineRecord;
 
 		@NonNull
-		ImmutableMap<BPartnerId, FlatrateTermId> bPartnerId2FlatrateTermIds;
+		ImmutableListMultimap<BPartnerId, FlatrateTermId> bPartnerId2FlatrateTermIds;
 
 		@NonNull
 		ImmutableListMultimap<Integer, BPartnerId> conditionRecordId2BPartnerIds;

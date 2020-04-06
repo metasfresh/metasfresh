@@ -173,7 +173,7 @@ public abstract class AbstractDocOutboundProducer implements IDocOutboundProduce
 				.newWorkpackage()
 				.bindToThreadInheritedTrx()
 				.addElement(model)
-				.setUserInChargeId(Env.getAD_User_ID())
+				.setUserInChargeId(Env.getLoggedUserIdIfExists().orElse(null))
 				.build();
 	}
 }

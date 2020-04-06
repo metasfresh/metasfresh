@@ -104,7 +104,7 @@ public class PhonecallScheduleRepository
 						record.getC_Phonecall_Schema_Version_Line_ID()))
 				.isOrdered(record.isOrdered())
 				.isCalled(record.isCalled())
-				.salesRepId(UserId.ofRepoId(record.getSalesRep_ID()))
+				.salesRepId(UserId.ofRepoIdOrNull(record.getSalesRep_ID()))
 				.description(record.getDescription())
 				.build();
 	}

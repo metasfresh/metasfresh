@@ -93,8 +93,8 @@ public class BPartner
 
 	private BPGroupId groupId;
 
-	private final boolean vendor;
-	private final boolean customer;
+	private boolean vendor;
+	private boolean customer;
 
 	private InvoiceRule invoiceRule;
 
@@ -145,14 +145,21 @@ public class BPartner
 		this.changeLog = changeLog;
 	}
 
-	/** empty list means valid */
+	/** Only active bpartners are actually validated. Empty list means "valid" */
 	public ImmutableList<ITranslatableString> validate()
 	{
 		final ImmutableList.Builder<ITranslatableString> result = ImmutableList.builder();
-		if (isEmpty(value, true))
+		if (!isActive())
 		{
-			result.add(TranslatableStrings.constant("bpartner.value"));
+			return result.build();
 		}
+
+		// A missing "bpartner.value" is probably(=>can't be determined here) acceptable because
+		// for a new BPartner, org.compiere.model.PO.saveNew() will *most probably* create a new value on the fly (can be switched off, but usually makes no sense).
+		// if (isEmpty(value, true))
+		// {
+		// result.add(TranslatableStrings.constant("bpartner.value"));
+		// }
 		if (isEmpty(name, true))
 		{
 			result.add(TranslatableStrings.constant("bpartner.name"));

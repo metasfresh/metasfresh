@@ -13,6 +13,9 @@ import org.adempiere.ad.table.RecordChangeLog;
 import org.adempiere.ad.table.RecordChangeLogEntry;
 import org.adempiere.ad.table.RecordChangeLogRepository;
 import org.adempiere.exceptions.AdempiereException;
+import org.slf4j.MDC;
+import org.slf4j.MDC.MDCCloseable;
+
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -21,6 +24,7 @@ import de.metas.bpartner.BPGroup;
 import de.metas.bpartner.BPGroupId;
 import de.metas.bpartner.BPGroupRepository;
 import de.metas.bpartner.BPartnerContactId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.GLN;
 import de.metas.bpartner.composite.BPartner;
 import de.metas.bpartner.composite.BPartnerComposite;
@@ -41,6 +45,8 @@ import de.metas.greeting.Greeting;
 import de.metas.greeting.GreetingRepository;
 import de.metas.i18n.Language;
 import de.metas.i18n.TranslatableStrings;
+import de.metas.interfaces.I_C_BPartner;
+import de.metas.logging.TableRecordMDC;
 import de.metas.rest_api.bpartner.response.JsonResponseBPartner;
 import de.metas.rest_api.bpartner.response.JsonResponseComposite;
 import de.metas.rest_api.bpartner.response.JsonResponseComposite.JsonResponseCompositeBuilder;
@@ -51,13 +57,14 @@ import de.metas.rest_api.changelog.JsonChangeInfo.JsonChangeInfoBuilder;
 import de.metas.rest_api.changelog.JsonChangeLogItem;
 import de.metas.rest_api.changelog.JsonChangeLogItem.JsonChangeLogItemBuilder;
 import de.metas.rest_api.common.MetasfreshId;
+import de.metas.rest_api.exception.InvalidEntityException;
 import de.metas.rest_api.utils.BPartnerCompositeLookupKey;
 import de.metas.rest_api.utils.BPartnerQueryService;
 import de.metas.rest_api.utils.IdentifierString;
-import de.metas.rest_api.utils.InvalidEntityException;
 import de.metas.rest_api.utils.JsonConverters;
 import de.metas.user.UserId;
 import de.metas.util.collections.CollectionUtils;
+import de.metas.util.lang.ExternalId;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
@@ -114,6 +121,7 @@ public class JsonRetrieverService
 			.<String, String> builder()
 			.put(BPartnerContact.EMAIL, JsonResponseContact.EMAIL)
 			.put(BPartnerContact.EXTERNAL_ID, JsonResponseContact.EXTERNAL_ID)
+			.put(BPartnerContact.VALUE, JsonResponseContact.CODE)
 			.put(BPartnerContact.ACTIVE, JsonResponseContact.ACTIVE)
 			.put(BPartnerContact.FIRST_NAME, JsonResponseContact.FIRST_NAME)
 			.put(BPartnerContact.LAST_NAME, JsonResponseContact.LAST_NAME)
@@ -146,6 +154,7 @@ public class JsonRetrieverService
 			.put(BPartnerLocation.ID, JsonResponseLocation.METASFRESH_ID)
 			.put(BPartnerLocation.ACTIVE, JsonResponseLocation.ACTIVE)
 			.put(BPartnerLocation.NAME, JsonResponseLocation.NAME)
+			.put(BPartnerLocation.BPARTNERNAME, JsonResponseLocation.BPARTNERNAME)
 			.put(BPartnerLocation.ADDRESS_1, JsonResponseLocation.ADDRESS_1)
 			.put(BPartnerLocation.ADDRESS_2, JsonResponseLocation.ADDRESS_2)
 			.put(BPartnerLocation.ADDRESS_3, JsonResponseLocation.ADDRESS_3)
@@ -223,24 +232,30 @@ public class JsonRetrieverService
 
 	private JsonResponseComposite toJson(@NonNull final BPartnerComposite bpartnerComposite)
 	{
-		final JsonResponseCompositeBuilder result = JsonResponseComposite.builder();
+		final BPartner bpartner = bpartnerComposite.getBpartner();
 
-		// bpartner
-		result.bpartner(toJson(bpartnerComposite.getBpartner()));
-
-		// contacts
-		for (final BPartnerContact contact : bpartnerComposite.getContacts())
+		try (final MDCCloseable methodMDC = MDC.putCloseable("method", "JsonRetrieverService.toJson(BPartnerComposite)");
+				final MDCCloseable bpartnerMDC = TableRecordMDC.putTableRecordReference(I_C_BPartner.Table_Name, bpartner != null ? bpartner.getId() : null))
 		{
-			final Language language = bpartnerComposite.getBpartner().getLanguage();
-			result.contact(toJson(contact, language));
-		}
+			final JsonResponseCompositeBuilder result = JsonResponseComposite.builder();
 
-		// locations
-		for (final BPartnerLocation location : bpartnerComposite.getLocations())
-		{
-			result.location(toJson(location));
+			// bpartner
+			result.bpartner(toJson(bpartner));
+
+			// contacts
+			for (final BPartnerContact contact : bpartnerComposite.getContacts())
+			{
+				final Language language = bpartner.getLanguage();
+				result.contact(toJson(contact, language));
+			}
+
+			// locations
+			for (final BPartnerLocation location : bpartnerComposite.getLocations())
+			{
+				result.location(toJson(location));
+			}
+			return result.build();
 		}
-		return result.build();
 	}
 
 	private JsonResponseBPartner toJson(@NonNull final BPartner bpartner)
@@ -319,74 +334,92 @@ public class JsonRetrieverService
 			@NonNull final BPartnerContact contact,
 			@Nullable final Language language)
 	{
-		final MetasfreshId metasfreshId = MetasfreshId.of(contact.getId());
-		final MetasfreshId metasfreshBPartnerId = MetasfreshId.of(contact.getId().getBpartnerId());
-
-		final JsonChangeInfo jsonChangeInfo = createJsonChangeInfo(contact.getChangeLog(), CONTACT_FIELD_MAP);
-
-		final BPartnerContactType contactType = contact.getContactType();
-
-		String greetingTrl = null;
-		if (contact.getGreetingId() != null)
+		try
 		{
-			final Greeting greeting = greetingRepository.getByIdAndLang(contact.getGreetingId(), language);
-			greetingTrl = greeting.getGreeting();
+			final MetasfreshId metasfreshId = MetasfreshId.of(contact.getId());
+			final MetasfreshId metasfreshBPartnerId = MetasfreshId.of(contact.getId().getBpartnerId());
+
+			final JsonChangeInfo jsonChangeInfo = createJsonChangeInfo(contact.getChangeLog(), CONTACT_FIELD_MAP);
+
+			final BPartnerContactType contactType = contact.getContactType();
+
+			String greetingTrl = null;
+			if (contact.getGreetingId() != null)
+			{
+				final Greeting greeting = greetingRepository.getByIdAndLang(contact.getGreetingId(), language);
+				greetingTrl = greeting.getGreeting();
+			}
+			return JsonResponseContact.builder()
+					.active(contact.isActive())
+					.email(contact.getEmail())
+					.externalId(JsonConverters.toJsonOrNull(contact.getExternalId()))
+					.firstName(contact.getFirstName())
+					.lastName(contact.getLastName())
+					.metasfreshBPartnerId(metasfreshBPartnerId)
+					.metasfreshId(metasfreshId)
+					.name(contact.getName())
+					.greeting(greetingTrl)
+					.newsletter(contact.isNewsletter())
+					.phone(contact.getPhone())
+					.mobilePhone(contact.getMobilePhone())
+					.fax(contact.getFax())
+					.description(contact.getDescription())
+					.defaultContact(contactType.getIsDefaultContactOr(false))
+					.billToDefault(contactType.getIsBillToDefaultOr(false))
+					.shipToDefault(contactType.getIsShipToDefaultOr(false))
+					.sales(contactType.getIsSalesOr(false))
+					.salesDefault(contactType.getIsSalesDefaultOr(false))
+					.purchase(contactType.getIsPurchaseOr(false))
+					.purchaseDefault(contactType.getIsPurchaseDefaultOr(false))
+					.subjectMatter(contactType.getIsSubjectMatterOr(false))
+					.changeInfo(jsonChangeInfo)
+					.build();
 		}
-		return JsonResponseContact.builder()
-				.active(contact.isActive())
-				.email(contact.getEmail())
-				.externalId(JsonConverters.toJsonOrNull(contact.getExternalId()))
-				.firstName(contact.getFirstName())
-				.lastName(contact.getLastName())
-				.metasfreshBPartnerId(metasfreshBPartnerId)
-				.metasfreshId(metasfreshId)
-				.name(contact.getName())
-				.greeting(greetingTrl)
-				.newsletter(contact.isNewsletter())
-				.phone(contact.getPhone())
-				.mobilePhone(contact.getMobilePhone())
-				.fax(contact.getFax())
-				.description(contact.getDescription())
-				.defaultContact(contactType.getDefaultContactNotNull())
-				.billToDefault(contactType.getBillToDefaultNotNull())
-				.shipToDefault(contactType.getShipToDefaultNotNull())
-				.sales(contactType.getSalesNotNull())
-				.salesDefault(contactType.getSalesDefaultNotNull())
-				.purchase(contactType.getPurchaseNotNull())
-				.purchaseDefault(contactType.getPurchaseDefaultNotNull())
-				.subjectMatter(contactType.getSubjectMatterNotNull())
-				.changeInfo(jsonChangeInfo)
-				.build();
+		catch (final RuntimeException rte)
+		{
+			throw AdempiereException.wrapIfNeeded(rte).appendParametersToMessage()
+					.setParameter("AD_User_ID", BPartnerContactId.toRepoId(contact.getId()))
+					.setParameter("externalId", ExternalId.toValue(contact.getExternalId()));
+		}
 	}
 
 	private static JsonResponseLocation toJson(@NonNull final BPartnerLocation location)
 	{
-		final JsonChangeInfo jsonChangeInfo = createJsonChangeInfo(location.getChangeLog(), LOCATION_FIELD_MAP);
+		try
+		{
+			final JsonChangeInfo jsonChangeInfo = createJsonChangeInfo(location.getChangeLog(), LOCATION_FIELD_MAP);
 
-		final BPartnerLocationType locationType = location.getLocationType();
-
-		return JsonResponseLocation.builder()
-				.active(location.isActive())
-				.name(location.getName())
-				.address1(location.getAddress1())
-				.address2(location.getAddress2())
-				.address3(location.getAddress3())
-				.address4(location.getAddress4())
-				.city(location.getCity())
-				.countryCode(location.getCountryCode())
-				.district(location.getDistrict())
-				.externalId(JsonConverters.toJsonOrNull(location.getExternalId()))
-				.gln(GLN.toCode(location.getGln()))
-				.metasfreshId(MetasfreshId.of(location.getId()))
-				.poBox(location.getPoBox())
-				.postal(location.getPostal())
-				.region(location.getRegion())
-				.shipTo(locationType.getShipToNotNull())
-				.shipToDefault(locationType.getShipToDefaultNotNull())
-				.billTo(locationType.getBillToNotNull())
-				.billToDefault(locationType.getBillToDefaultNotNull())
-				.changeInfo(jsonChangeInfo)
-				.build();
+			final BPartnerLocationType locationType = location.getLocationType();
+			return JsonResponseLocation.builder()
+					.active(location.isActive())
+					.name(location.getName())
+					.bpartnerName(location.getBpartnerName())
+					.address1(location.getAddress1())
+					.address2(location.getAddress2())
+					.address3(location.getAddress3())
+					.address4(location.getAddress4())
+					.city(location.getCity())
+					.countryCode(location.getCountryCode())
+					.district(location.getDistrict())
+					.externalId(JsonConverters.toJsonOrNull(location.getExternalId()))
+					.gln(GLN.toCode(location.getGln()))
+					.metasfreshId(MetasfreshId.of(location.getId()))
+					.poBox(location.getPoBox())
+					.postal(location.getPostal())
+					.region(location.getRegion())
+					.shipTo(locationType.getIsShipToOr(false))
+					.shipToDefault(locationType.getIsShipToDefaultOr(false))
+					.billTo(locationType.getIsBillToOr(false))
+					.billToDefault(locationType.getIsBillToDefaultOr(false))
+					.changeInfo(jsonChangeInfo)
+					.build();
+		}
+		catch (final RuntimeException rte)
+		{
+			throw AdempiereException.wrapIfNeeded(rte).appendParametersToMessage()
+					.setParameter("C_BPartner_Location_ID", BPartnerLocationId.toRepoId(location.getId()))
+					.setParameter("externalId", ExternalId.toValue(location.getExternalId()));
+		}
 	}
 
 	public Optional<BPartnerComposite> getBPartnerComposite(@NonNull final IdentifierString bpartnerIdentifier)
@@ -425,10 +458,9 @@ public class JsonRetrieverService
 		{
 			byQuery = bpartnerCompositeRepository.getSingleByQuery(query);
 		}
-		catch (AdempiereException e)
+		catch (final AdempiereException e)
 		{
-
-			throw new InvalidEntityException(TranslatableStrings.constant("The given lookup keys needs to yield max one BPartnerComposite; multiple items yielded instead"), e)
+			throw new InvalidEntityException(TranslatableStrings.constant("Unable to retrieve single BPartnerComposite"), e)
 					.appendParametersToMessage()
 					.setParameter("BPartnerIdLookupKeys", queryLookupKeys);
 		}

@@ -34,24 +34,20 @@ import org.adempiere.test.AdempiereTestWatcher;
 import org.compiere.model.I_AD_Client;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Rule;
-import org.junit.rules.TestWatcher;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import de.metas.contracts.IContractsDAO;
 import de.metas.util.Services;
 import de.metas.util.time.TimeSource;
 
+@ExtendWith(AdempiereTestWatcher.class)
 public class ContractsTestBase
 {
 	protected ClientId clientId;
 
-	/** Watches current test and dumps the database to console in case of failure */
-	@Rule
-	public final TestWatcher testWatcher = new AdempiereTestWatcher();
-
-	@BeforeClass
+	@BeforeAll
 	public static void staticInit()
 	{
 		AdempiereTestHelper.get().staticInit();
@@ -60,7 +56,7 @@ public class ContractsTestBase
 	protected IContractsDAO dao;
 	protected PlainContractChangeDAO contractChangeDAO;
 
-	@Before
+	@BeforeEach
 	public final void beforeTest()
 	{
 		AdempiereTestHelper.get().init();

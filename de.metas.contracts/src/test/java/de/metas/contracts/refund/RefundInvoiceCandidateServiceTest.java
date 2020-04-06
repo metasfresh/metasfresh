@@ -14,8 +14,8 @@ import java.util.List;
 
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.util.TimeUtil;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import de.metas.aggregation.api.IAggregationFactory;
 import de.metas.aggregation.model.X_C_Aggregation;
@@ -81,7 +81,7 @@ public class RefundInvoiceCandidateServiceTest
 
 	private AssignableInvoiceCandidateRepository assignableInvoiceCandidateRepository;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();

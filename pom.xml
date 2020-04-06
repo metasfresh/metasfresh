@@ -141,12 +141,9 @@
 		<module>de.metas.payment.paypal</module>
 
 		<module>de.metas.printing</module>
-
 		<module>de.metas.printing.rest-api-impl</module>
-
 		<module>de.metas.printing.common</module>
 		<module>de.metas.printing.client</module>
-
 
 		<module>de.metas.procurement.sync-api</module>
 		<module>de.metas.procurement.base</module>
@@ -158,6 +155,8 @@
 		<module>de.metas.storage</module>
 
 		<module>de.metas.swat</module>
+
+		<module>de.metas.serviceprovider</module>
 
 		<module>de.metas.shipper.gateway.commons</module>
 		<module>de.metas.shipper.gateway.spi</module>
@@ -192,11 +191,18 @@
 		<module>de.metas.vertical.pharma.securpharm</module>
 
 		<module>vertical-healthcare_ch</module>
+		<module>de.metas.issue.tracking.github</module>
 
 	</modules>
 
 	<dependencyManagement>
 		<dependencies>
+
+			<dependency>
+				<groupId>org.projectlombok</groupId>
+				<artifactId>lombok</artifactId>
+				<version>1.18.10</version>
+			</dependency>
 
 			<dependency>
 				<groupId>com.mchange</groupId>
@@ -682,14 +688,6 @@
 					<attachClasses>true</attachClasses>
 				</configuration>
 			</plugin>
-
-			<!-- thanks to https://docs.spring.io/spring-boot/docs/current/reference/html/howto-build.html#howto-git-info -->
-			<plugin>
-				<groupId>pl.project13.maven</groupId>
-				<artifactId>git-commit-id-plugin</artifactId>
-				<version>2.2.2</version>
-			</plugin>
-
 		</plugins>
 
 	</build>

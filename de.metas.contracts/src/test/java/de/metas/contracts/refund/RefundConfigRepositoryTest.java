@@ -13,8 +13,8 @@ import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_InvoiceSchedule;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.X_C_InvoiceSchedule;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import com.google.common.collect.ImmutableList;
 
@@ -61,7 +61,7 @@ public class RefundConfigRepositoryTest
 
 	private ConditionsId conditionsId;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();

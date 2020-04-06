@@ -42,6 +42,7 @@ import de.metas.document.DocTypeId;
 import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.freighcost.FreightCostRule;
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.logging.LogManager;
@@ -107,8 +108,8 @@ class OLCandOrderFactory
 	private final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 
-	private static final String MSG_OL_CAND_PROCESSOR_PROCESSING_ERROR_DESC_1P = "OLCandProcessor.ProcessingError_Desc";
-	private static final String MSG_OL_CAND_PROCESSOR_ORDER_COMPLETION_FAILED_2P = "OLCandProcessor.Order_Completion_Failed";
+	private static final AdMessageKey MSG_OL_CAND_PROCESSOR_PROCESSING_ERROR_DESC_1P = AdMessageKey.of("OLCandProcessor.ProcessingError_Desc");
+	private static final AdMessageKey MSG_OL_CAND_PROCESSOR_ORDER_COMPLETION_FAILED_2P = AdMessageKey.of("OLCandProcessor.Order_Completion_Failed");
 
 	//
 	// Parameters
@@ -166,9 +167,12 @@ class OLCandOrderFactory
 
 		// if the olc has no value set, we are not falling back here!
 		final BPartnerInfo billBPartner = candidateOfGroup.getBillBPartnerInfo();
-		order.setBill_BPartner_ID(BPartnerId.toRepoId(billBPartner.getBpartnerId()));
-		order.setBill_Location_ID(BPartnerLocationId.toRepoId(billBPartner.getBpartnerLocationId()));
-		order.setBill_User_ID(BPartnerContactId.toRepoId(billBPartner.getContactId()));
+		if(billBPartner != null)
+		{
+			order.setBill_BPartner_ID(BPartnerId.toRepoId(billBPartner.getBpartnerId()));
+			order.setBill_Location_ID(BPartnerLocationId.toRepoId(billBPartner.getBpartnerLocationId()));
+			order.setBill_User_ID(BPartnerContactId.toRepoId(billBPartner.getContactId()));
+		}
 
 		final Timestamp dateDoc = TimeUtil.asTimestamp(candidateOfGroup.getDateDoc());
 		order.setDateOrdered(dateDoc);
@@ -181,17 +185,28 @@ class OLCandOrderFactory
 
 		// if the olc has no value set, we are not falling back here!
 		// 05617
-		final BPartnerInfo dropShipBPartner = candidateOfGroup.getDropShipBPartnerInfo();
-		order.setDropShip_BPartner_ID(BPartnerId.toRepoId(dropShipBPartner.getBpartnerId()));
-		order.setDropShip_Location_ID(BPartnerLocationId.toRepoId(dropShipBPartner.getBpartnerLocationId()));
-		final boolean isDropShip = dropShipBPartner != null || dropShipBPartner.getBpartnerLocationId() != null;
-		order.setIsDropShip(isDropShip);
+		final BPartnerInfo dropShipBPartner = candidateOfGroup.getDropShipBPartnerInfo().orElse(null);
+		if (dropShipBPartner != null)
+		{
+			order.setDropShip_BPartner_ID(BPartnerId.toRepoId(dropShipBPartner.getBpartnerId()));
+			order.setDropShip_Location_ID(BPartnerLocationId.toRepoId(dropShipBPartner.getBpartnerLocationId()));
+			order.setDropShip_User_ID(BPartnerContactId.toRepoId(dropShipBPartner.getContactId()));
+			final boolean isDropShip = dropShipBPartner.getBpartnerId() != null || dropShipBPartner.getBpartnerLocationId() != null;
+			order.setIsDropShip(isDropShip);
+		}
+		else
+		{
+			order.setIsDropShip(false);
+		}
 
-		final BPartnerInfo handOverBPartner = candidateOfGroup.getHandOverBPartnerInfo();
-		order.setHandOver_Partner_ID(BPartnerId.toRepoId(handOverBPartner.getBpartnerId()));
-		order.setHandOver_Location_ID(BPartnerLocationId.toRepoId(handOverBPartner.getBpartnerLocationId()));
-		order.setHandOver_User_ID(BPartnerContactId.toRepoId(handOverBPartner.getContactId()));
-		order.setIsUseHandOver_Location(handOverBPartner.getBpartnerLocationId() != null);
+		final BPartnerInfo handOverBPartner = candidateOfGroup.getHandOverBPartnerInfo().orElse(null);
+		if (handOverBPartner != null)
+		{
+			order.setHandOver_Partner_ID(BPartnerId.toRepoId(handOverBPartner.getBpartnerId()));
+			order.setHandOver_Location_ID(BPartnerLocationId.toRepoId(handOverBPartner.getBpartnerLocationId()));
+			order.setHandOver_User_ID(BPartnerContactId.toRepoId(handOverBPartner.getContactId()));
+		}
+		order.setIsUseHandOver_Location(handOverBPartner != null && handOverBPartner.getBpartnerLocationId() != null);
 
 		if (candidateOfGroup.getC_Currency_ID() > 0)
 		{
@@ -209,16 +224,15 @@ class OLCandOrderFactory
 		order.setM_PricingSystem_ID(PricingSystemId.toRepoId(candidateOfGroup.getPricingSystemId()));
 		order.setM_Shipper_ID(ShipperId.toRepoId(candidateOfGroup.getShipperId()));
 
-
 		final DocTypeId orderDocTypeId = candidateOfGroup.getOrderDocTypeId();
 		if (orderDocTypeId != null)
 		{
 			order.setC_DocTypeTarget_ID(candidateOfGroup.getOrderDocTypeId().getRepoId());
 		}
 
-		final BPartnerId salesRepId  = candidateOfGroup.getSalesRepId();
+		final BPartnerId salesRepId = candidateOfGroup.getSalesRepId();
 
-		if(salesRepId != null)
+		if (salesRepId != null)
 		{
 			order.setC_BPartner_SalesRep_ID(salesRepId.getRepoId());
 
@@ -230,7 +244,6 @@ class OLCandOrderFactory
 
 		// Save to SO the external header id, so that on completion it can be linked with its payment
 		order.setExternalId(candidateOfGroup.getExternalHeaderId());
-
 
 		// task 08926: set the data source; this shall trigger IsEdiEnabled to be set to true, if the data source is "EDI"
 		final de.metas.order.model.I_C_Order orderWithDataSource = InterfaceWrapperHelper.create(order, de.metas.order.model.I_C_Order.class);

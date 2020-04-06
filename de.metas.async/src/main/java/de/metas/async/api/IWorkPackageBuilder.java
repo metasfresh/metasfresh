@@ -1,5 +1,7 @@
 package de.metas.async.api;
 
+import java.util.Map;
+
 /*
  * #%L
  * de.metas.async
@@ -32,6 +34,7 @@ import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.spi.IWorkpackagePrioStrategy;
 import de.metas.lock.api.ILock;
 import de.metas.lock.api.ILockCommand;
+import de.metas.user.UserId;
 
 public interface IWorkPackageBuilder
 {
@@ -56,7 +59,7 @@ public interface IWorkPackageBuilder
 
 	/**
 	 * Only return the (parent) block builder. Don't do anything else (no sideeffects)
-	 * 
+	 *
 	 * @return parent builder
 	 */
 	IWorkPackageBlockBuilder end();
@@ -67,7 +70,13 @@ public interface IWorkPackageBuilder
 	 * NOTE: the {@link IWorkPackageParamsBuilder} will trigger the creation of {@link I_C_Queue_WorkPackage}.
 	 */
 	IWorkPackageParamsBuilder parameters();
-	
+
+	default IWorkPackageBuilder parameters(final Map<String, ? extends Object> parameters)
+	{
+		parameters().setParameters(parameters);
+		return this;
+	}
+
 	default IWorkPackageBuilder parameter(final String parameterName, final Object parameterValue)
 	{
 		parameters().setParameter(parameterName, parameterValue);
@@ -91,10 +100,8 @@ public interface IWorkPackageBuilder
 	/**
 	 * Sets workpackage's user in charge.
 	 * This will be the user which will be notified in case the workpackage processing fails.
-	 * 
-	 * @param userInChargeId
 	 */
-	IWorkPackageBuilder setUserInChargeId(final int userInChargeId);
+	IWorkPackageBuilder setUserInChargeId(UserId userInChargeId);
 
 	/**
 	 * Adds given model to workpackage elements.
@@ -115,7 +122,7 @@ public interface IWorkPackageBuilder
 	/**
 	 * Ask the builder to "bind" the new workpackage to given transaction.
 	 * As a consequence, the workpackage will be marked as "ready for processing" when this transaction is commited.
-	 * 
+	 *
 	 * If the transaction is null, the workpackage will be marked as ready immediately, on build.
 	 *
 	 * @param trxName
@@ -125,7 +132,7 @@ public interface IWorkPackageBuilder
 	/**
 	 * Ask the builder to "bind" the new workpackage to current thread inerited transaction.
 	 * As a consequence, the workpackage will be marked as "ready for processing" when this transaction is commited.
-	 * 
+	 *
 	 * If there is no thread inherited transaction, the workpackage will be marked as ready immediately, on build.
 	 */
 	default IWorkPackageBuilder bindToThreadInheritedTrx()
@@ -138,7 +145,7 @@ public interface IWorkPackageBuilder
 
 	/**
 	 * @return
-	 * 		Lock aquired when enqueued elements were locked (on {@link #build()}).
+	 *         Lock aquired when enqueued elements were locked (on {@link #build()}).
 	 *         Could be null if no lock was aquired.
 	 */
 	Future<ILock> getElementsLock();

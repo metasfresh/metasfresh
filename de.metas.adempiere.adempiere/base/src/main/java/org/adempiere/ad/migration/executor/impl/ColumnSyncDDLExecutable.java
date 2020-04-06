@@ -1,5 +1,14 @@
 package org.adempiere.ad.migration.executor.impl;
 
+import org.adempiere.ad.dao.impl.TypedSqlQuery;
+import org.adempiere.ad.migration.executor.IMigrationExecutorContext;
+import org.adempiere.ad.migration.executor.IPostponedExecutable;
+import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.util.LegacyAdapters;
+import org.compiere.model.I_AD_Column;
+import org.compiere.model.MColumn;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -13,27 +22,20 @@ package org.adempiere.ad.migration.executor.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import org.slf4j.Logger;
+
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
-
-import org.adempiere.ad.dao.impl.TypedSqlQuery;
-import org.adempiere.ad.migration.executor.IMigrationExecutorContext;
-import org.adempiere.ad.migration.executor.IPostponedExecutable;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.util.LegacyAdapters;
-import org.compiere.model.I_AD_Column;
-import org.compiere.model.MColumn;
+import de.metas.util.Services;
 
 public class ColumnSyncDDLExecutable implements IPostponedExecutable
 {
@@ -66,7 +68,8 @@ public class ColumnSyncDDLExecutable implements IPostponedExecutable
 		if (drop)
 		{
 			// TODO unsync column?
-			logger.warn("Please manualy drop column " + column.getColumnName() + "(" + column.getAD_Table() + ")");
+			final String tableName = Services.get(IADTableDAO.class).retrieveTableName(column.getAD_Table_ID());
+			logger.warn("Please manualy drop column {}.{}", tableName, column.getColumnName());
 		}
 		else
 		{
@@ -77,7 +80,7 @@ public class ColumnSyncDDLExecutable implements IPostponedExecutable
 
 	private I_AD_Column retrieveColumn()
 	{
-		final I_AD_Column column = new TypedSqlQuery<I_AD_Column>(migrationCtx.getCtx(), I_AD_Column.class, I_AD_Column.COLUMNNAME_AD_Column_ID + "=?", ITrx.TRXNAME_None)
+		final I_AD_Column column = new TypedSqlQuery<>(migrationCtx.getCtx(), I_AD_Column.class, I_AD_Column.COLUMNNAME_AD_Column_ID + "=?", ITrx.TRXNAME_None)
 				.setParameters(adColumnId)
 				.firstOnly();
 		return column;

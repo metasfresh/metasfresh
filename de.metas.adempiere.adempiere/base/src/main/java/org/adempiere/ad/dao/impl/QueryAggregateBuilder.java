@@ -216,7 +216,7 @@ public class QueryAggregateBuilder<SourceModelType, TargetModelType> implements 
 
 			final StringBuilder sourceSqlFrom = new StringBuilder("\nFROM ").append(sourceQuery.getTableName()).append("\n");
 
-			sourceSql = new StringBuilder(sourceSqlQuery.buildSQL(sourceSqlSelect, sourceSqlFrom, false)); // useOrderBy=false (it's pointless)
+			sourceSql = new StringBuilder(sourceSqlQuery.buildSQL(sourceSqlSelect, sourceSqlFrom, null, false)); // useOrderBy=false (it's pointless)
 			sqlParamsOut.addAll(sourceSqlQuery.getParametersEffective());
 
 			// Append GROUP BY

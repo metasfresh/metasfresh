@@ -6,6 +6,8 @@ import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
+import org.adempiere.ad.table.api.AdTableId;
+import org.adempiere.ad.table.api.IADTableDAO;
 import org.compiere.model.I_AD_Column;
 import org.compiere.model.I_AD_Element;
 import org.compiere.model.I_AD_Table;
@@ -99,7 +101,9 @@ public class AD_Column
 		column.setHelp(element.getHelp());
 		column.setIsCalculated(Services.get(IColumnBL.class).getDefaultIsCalculatedByColumnName(elementColumnName));
 
-		final I_AD_Table table = column.getAD_Table();
+		final AdTableId adTableId = AdTableId.ofRepoId(column.getAD_Table_ID());
+		final I_AD_Table table = Services.get(IADTableDAO.class).retrieveTable(adTableId);
+		
 		String entityType = table.getEntityType();
 
 		if (ENTITYTYPE_Dictionary.equals(entityType))
@@ -127,7 +131,8 @@ public class AD_Column
 	{
 		final String columnName = column.getColumnName();
 		final int previousDisplayType = column.getAD_Reference_ID();
-		final I_AD_Table table = column.getAD_Table();
+		final AdTableId adTableId = AdTableId.ofRepoId(column.getAD_Table_ID());
+		final I_AD_Table table = Services.get(IADTableDAO.class).retrieveTable(adTableId);
 		final String tableName = table.getTableName();
 
 		if (columnName.equalsIgnoreCase(tableName + "_ID"))

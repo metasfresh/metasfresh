@@ -87,6 +87,11 @@ public class InboundEMailConfigChangesDispatcher implements ICacheResetListener
 
 	private static Set<InboundEMailConfigId> extractConfigIds(final CacheInvalidateMultiRequest multiRequest)
 	{
+		if (multiRequest.isResetAll())
+		{
+			return ImmutableSet.of();
+		}
+
 		return multiRequest.getRecordsEffective()
 				.streamByTableName(I_C_InboundMailConfig.Table_Name)
 				.map(recordRef -> InboundEMailConfigId.ofRepoId(recordRef.getRecord_ID()))

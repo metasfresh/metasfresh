@@ -39,20 +39,21 @@ import java.util.Set;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.util.MiscUtils;
 import org.adempiere.util.proxy.Cached;
+import org.compiere.model.I_AD_Column;
 import org.compiere.model.I_AD_Table;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_Transaction;
-import org.compiere.model.MColumn;
 import org.compiere.model.MTable;
 import org.compiere.model.PO;
 import org.compiere.model.Query;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
-import de.metas.logging.LogManager;
-import de.metas.process.JavaProcess;
+
 import de.metas.adempiere.service.ISweepTableBL;
 import de.metas.cache.annotation.CacheIgnore;
+import de.metas.logging.LogManager;
+import de.metas.process.JavaProcess;
 
 public class SweepTableBL implements ISweepTableBL
 {
@@ -82,7 +83,7 @@ public class SweepTableBL implements ISweepTableBL
 		final String whereClauseToUse = "( " + whereClause + " )"
 				+ " AND AD_Client_ID=" + Env.getAD_Client_ID(ctx);
 
-		final List<Integer> initalIds = new ArrayList<Integer>();
+		final List<Integer> initalIds = new ArrayList<>();
 		for (final int initialId : PO.getAllIDs(tableName, whereClauseToUse,
 				trxName))
 		{
@@ -330,7 +331,7 @@ public class SweepTableBL implements ISweepTableBL
 				sweepCtx, tableName);
 
 		// Map Record_ID => TableName => Record_IDs
-		final Map<Integer, Map<String, List<Integer>>> result = new HashMap<Integer, Map<String, List<Integer>>>();
+		final Map<Integer, Map<String, List<Integer>>> result = new HashMap<>();
 
 		//
 		// TableName is not referred to by any other table
@@ -355,7 +356,7 @@ public class SweepTableBL implements ISweepTableBL
 			Map<String, List<Integer>> referingTable2Ids = result.get(recordId);
 			if (referingTable2Ids == null)
 			{
-				referingTable2Ids = new HashMap<String, List<Integer>>();
+				referingTable2Ids = new HashMap<>();
 				result.put(recordId, referingTable2Ids);
 			}
 
@@ -369,7 +370,7 @@ public class SweepTableBL implements ISweepTableBL
 							.get(referingTable);
 					if (referingTableIds == null)
 					{
-						referingTableIds = new ArrayList<Integer>();
+						referingTableIds = new ArrayList<>();
 						referingTable2Ids.put(referingTable, referingTableIds);
 					}
 
@@ -487,7 +488,7 @@ public class SweepTableBL implements ISweepTableBL
 
 			logger.debug("Retrieved " + ids.length + " RecordIDs for "
 					+ refInfoStr);
-			final List<Integer> result = new ArrayList<Integer>(ids.length);
+			final List<Integer> result = new ArrayList<>(ids.length);
 			for (final int id : ids)
 			{
 				result.add(id);
@@ -569,7 +570,7 @@ public class SweepTableBL implements ISweepTableBL
 			final String tableName, final String columnName)
 	{
 		final MTable table = MTable.get(ctx, tableName);
-		final MColumn column = table.getColumn(columnName);
+		final I_AD_Column column = table.getColumn(columnName);
 		if (column == null)
 		{
 			return false;
@@ -607,7 +608,7 @@ public class SweepTableBL implements ISweepTableBL
 	private Map<String, List<String>> retrieveReferringTablesAndCols(
 			final RuntimeContext sweepCtx, final String tableName)
 	{
-		final Map<String, List<String>> referingTable2Col = new HashMap<String, List<String>>();
+		final Map<String, List<String>> referingTable2Col = new HashMap<>();
 
 		final String sql = "SELECT TableName, ColumnName FROM db_columns_fk WHERE upper(Ref_TableName)=upper(?)";
 		final PreparedStatement pstmt = DB.prepareStatement(sql,
@@ -642,7 +643,7 @@ public class SweepTableBL implements ISweepTableBL
 						.get(referingTable);
 				if (referingColNames == null)
 				{
-					referingColNames = new ArrayList<String>();
+					referingColNames = new ArrayList<>();
 					referingTable2Col.put(referingTable, referingColNames);
 				}
 
@@ -671,7 +672,7 @@ public class SweepTableBL implements ISweepTableBL
 					.get(referringTable);
 			if (referingColNames == null)
 			{
-				referingColNames = new ArrayList<String>();
+				referingColNames = new ArrayList<>();
 				referingTable2Col.put(referringTable, referingColNames);
 			}
 
@@ -689,7 +690,7 @@ public class SweepTableBL implements ISweepTableBL
 			@CacheIgnore final RuntimeContext sweepCtx,
 			final String tableName)
 	{
-		final List<String> result = new ArrayList<String>();
+		final List<String> result = new ArrayList<>();
 		final List<String> tables = retrieveTablesWithDynRef(sweepCtx);
 		for (String t : tables)
 		{
@@ -729,7 +730,7 @@ public class SweepTableBL implements ISweepTableBL
 	private static List<String> retrieveStringList(final String sql,
 			final String trxName)
 	{
-		final List<String> result = new ArrayList<String>();
+		final List<String> result = new ArrayList<>();
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		try
@@ -793,7 +794,7 @@ public class SweepTableBL implements ISweepTableBL
 
 			logger.debug("Retrieved " + ids.length + " RecordIDs for "
 					+ refInfoStr);
-			final List<Integer> result = new ArrayList<Integer>(ids.length);
+			final List<Integer> result = new ArrayList<>(ids.length);
 			for (final int id : ids)
 			{
 				result.add(id);
@@ -827,8 +828,8 @@ public class SweepTableBL implements ISweepTableBL
 		/**
 		 * (TableName#RecordId) => {@link #DELETED} or {@link #REFERRING_RECORDS_ADDED}
 		 */
-		private final Map<String, String> records = new HashMap<String, String>();
+		private final Map<String, String> records = new HashMap<>();
 
-		private Set<String> pathsVisited = new HashSet<String>();
+		private Set<String> pathsVisited = new HashSet<>();
 	}
 }

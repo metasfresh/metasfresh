@@ -1,14 +1,7 @@
 package de.metas.report;
 
-import org.adempiere.ad.service.ITaskExecutorService;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.print.JRReportViewerProvider;
-import org.compiere.util.Ini;
-import org.slf4j.Logger;
-
+import ch.qos.logback.classic.Level;
 import com.google.common.io.Files;
-
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.logging.LogManager;
@@ -30,6 +23,12 @@ import lombok.Builder;
 import lombok.Builder.Default;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.ad.service.ITaskExecutorService;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.print.JRReportViewerProvider;
+import org.compiere.util.Ini;
+import org.slf4j.Logger;
 
 /*
  * #%L
@@ -175,7 +174,7 @@ public abstract class ReportStarter extends JavaProcess
 
 		//
 		// Generate report data
-		Loggables.addLog("ReportStarter.startProcess run report: reportingSystemType={}, title={}, outputType={}", reportingSystemType, processInfo.getTitle(), outputType);
+		Loggables.withLogger(logger, Level.DEBUG).addLog("ReportStarter.startProcess run report: reportingSystemType={}, title={}, outputType={}", reportingSystemType, processInfo.getTitle(), outputType);
 		final ExecuteReportResult result = getExecuteReportStrategy().executeReport(getProcessInfo(), outputType);
 
 		//

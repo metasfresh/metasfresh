@@ -380,7 +380,7 @@ class InventoryAllocationDestination implements IAllocationDestination
 		final I_M_InOut receipt = inoutLine.getM_InOut();
 		if (receipt.isSOTrx())
 		{
-			throw new AdempiereException("Document type {0} is not suitable for material disposal", new Object[] { receipt.getC_DocType_ID() });
+			throw new AdempiereException("Document type " + receipt.getC_DocType_ID() + " is not suitable for material disposal");
 		}
 	}
 

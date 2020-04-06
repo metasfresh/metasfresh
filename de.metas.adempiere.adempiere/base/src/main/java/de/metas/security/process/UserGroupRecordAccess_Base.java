@@ -6,7 +6,7 @@ import java.util.Set;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -18,6 +18,7 @@ import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.security.Principal;
 import de.metas.security.permissions.Access;
+import de.metas.security.permissions.record_access.PermissionIssuer;
 import de.metas.security.permissions.record_access.RecordAccessGrantRequest;
 import de.metas.security.permissions.record_access.RecordAccessRevokeRequest;
 import de.metas.security.permissions.record_access.RecordAccessService;
@@ -49,7 +50,7 @@ import de.metas.util.Check;
 
 abstract class UserGroupRecordAccess_Base extends JavaProcess implements IProcessPrecondition
 {
-	private final RecordAccessService userGroupRecordAccessService = Adempiere.getBean(RecordAccessService.class);
+	private final RecordAccessService userGroupRecordAccessService = SpringContextHolder.instance.getBean(RecordAccessService.class);
 
 	@Param(parameterName = "PrincipalType", mandatory = true)
 	private String principalTypeCode;
@@ -81,6 +82,8 @@ abstract class UserGroupRecordAccess_Base extends JavaProcess implements IProces
 				.recordRef(getRecordRef())
 				.principal(getPrincipal())
 				.permissions(getPermissionsToGrant())
+				.issuer(PermissionIssuer.MANUAL)
+				.requestedBy(getUserId())
 				.build());
 	}
 
@@ -105,6 +108,8 @@ abstract class UserGroupRecordAccess_Base extends JavaProcess implements IProces
 				.principal(getPrincipal())
 				.revokeAllPermissions(revokeAllPermissions)
 				.permissions(permissionsToRevoke)
+				.issuer(PermissionIssuer.MANUAL)
+				.requestedBy(getUserId())
 				.build());
 	}
 

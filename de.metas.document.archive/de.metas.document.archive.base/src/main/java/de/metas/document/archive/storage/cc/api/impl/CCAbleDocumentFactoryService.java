@@ -51,7 +51,6 @@ public class CCAbleDocumentFactoryService implements ICCAbleDocumentFactoryServi
 			@NonNull final ICCAbleDocumentFactory factory)
 	{
 		Check.assumeNotEmpty(tableName, "tableName not empty");
-
 		factories.put(tableName, factory);
 	}
 
@@ -66,7 +65,7 @@ public class CCAbleDocumentFactoryService implements ICCAbleDocumentFactoryServi
 		return factory.createCCAbleDocumentAdapter(model);
 	}
 
-	private ICCAbleDocumentFactory getCCAbleDocumentFactoryOrNull(final Object model)
+	private ICCAbleDocumentFactory getCCAbleDocumentFactoryOrNull(@NonNull final Object model)
 	{
 		final String tableName = InterfaceWrapperHelper.getModelTableName(model);
 		final ICCAbleDocumentFactory factory = factories.get(tableName);
@@ -74,7 +73,7 @@ public class CCAbleDocumentFactoryService implements ICCAbleDocumentFactoryServi
 	}
 
 	@Override
-	public boolean isSupported(final Object model)
+	public boolean isSupported(@NonNull final Object model)
 	{
 		final ICCAbleDocumentFactory factory = getCCAbleDocumentFactoryOrNull(model);
 		return factory != null;

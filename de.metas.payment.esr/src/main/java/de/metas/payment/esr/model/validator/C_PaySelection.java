@@ -8,11 +8,12 @@ import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_PaySelection;
+import org.compiere.model.I_C_PaySelectionLine;
 import org.compiere.model.ModelValidator;
 
-import de.metas.adempiere.model.I_C_PaySelectionLine;
 import de.metas.banking.payment.IPaySelectionBL;
 import de.metas.banking.payment.IPaySelectionDAO;
+import de.metas.i18n.AdMessageKey;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
@@ -40,7 +41,7 @@ import de.metas.util.Services;
 @Interceptor(I_C_PaySelection.class)
 public class C_PaySelection
 {
-	private static final String MSG_PaySelectionLines_No_ESRReference = "C_PaySelection_PaySelectionLines_No_ESRReference";
+	private static final AdMessageKey MSG_PaySelectionLines_No_ESRReference = AdMessageKey.of("C_PaySelection_PaySelectionLines_No_ESRReference");
 
 	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_COMPLETE })
 	public void verifyESRReferences(final I_C_PaySelection paySelection)
@@ -51,7 +52,7 @@ public class C_PaySelection
 
 		StringJoiner joiner = new StringJoiner(",");
 
-		for (final I_C_PaySelectionLine paySelectionLine : Services.get(IPaySelectionDAO.class).retrievePaySelectionLines(paySelection, I_C_PaySelectionLine.class))
+		for (final I_C_PaySelectionLine paySelectionLine : Services.get(IPaySelectionDAO.class).retrievePaySelectionLines(paySelection))
 		{
 			if (hasESRBankAccount(paySelectionLine) && (!isValidESRReference(paySelectionLine)))
 			{

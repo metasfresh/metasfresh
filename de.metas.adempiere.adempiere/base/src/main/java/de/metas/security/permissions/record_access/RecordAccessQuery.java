@@ -2,6 +2,8 @@ package de.metas.security.permissions.record_access;
 
 import java.util.Set;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.util.lang.impl.TableRecordReference;
 
 import com.google.common.collect.ImmutableSet;
@@ -40,15 +42,18 @@ public class RecordAccessQuery
 	ImmutableSet<TableRecordReference> recordRefs;
 	ImmutableSet<Access> permissions;
 	ImmutableSet<Principal> principals;
+	PermissionIssuer issuer;
 
 	@Builder
 	private RecordAccessQuery(
 			@Singular final Set<TableRecordReference> recordRefs,
 			@Singular final Set<Access> permissions,
-			@Singular final Set<Principal> principals)
+			@Singular final Set<Principal> principals,
+			@Nullable final PermissionIssuer issuer)
 	{
 		this.recordRefs = ImmutableSet.copyOf(recordRefs);
 		this.permissions = ImmutableSet.copyOf(permissions);
 		this.principals = ImmutableSet.copyOf(principals);
+		this.issuer = issuer;
 	}
 }

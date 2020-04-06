@@ -1,19 +1,3 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 /** Generated Model - DO NOT CHANGE */
 package de.metas.async.model;
 
@@ -30,7 +14,7 @@ public class X_C_Queue_WorkPackage extends org.compiere.model.PO implements I_C_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1741997145L;
+	private static final long serialVersionUID = 1201065515L;
 
     /** Standard Constructor */
     public X_C_Queue_WorkPackage (Properties ctx, int C_Queue_WorkPackage_ID, String trxName)
@@ -40,18 +24,12 @@ public class X_C_Queue_WorkPackage extends org.compiere.model.PO implements I_C_
         {
 			setC_Queue_Block_ID (0);
 			setC_Queue_WorkPackage_ID (0);
-			setIsError (false);
-// N
-			setIsErrorAcknowledged (false);
-// N
-			setIsReadyForProcessing (false);
-// N
-			setPriority (null);
-// 5
-			setProcessed (false);
-// N
-			setSkipTimeoutMillis (0);
-// 0
+			setIsError (false); // N
+			setIsErrorAcknowledged (false); // N
+			setIsReadyForProcessing (false); // N
+			setPriority (null); // 5
+			setProcessed (false); // N
+			setSkipTimeoutMillis (0); // 0
         } */
     }
 
@@ -71,7 +49,7 @@ public class X_C_Queue_WorkPackage extends org.compiere.model.PO implements I_C_
     }
 
 	@Override
-	public org.compiere.model.I_AD_Issue getAD_Issue() throws RuntimeException
+	public org.compiere.model.I_AD_Issue getAD_Issue()
 	{
 		return get_ValueAsPO(COLUMNNAME_AD_Issue_ID, org.compiere.model.I_AD_Issue.class);
 	}
@@ -108,7 +86,7 @@ public class X_C_Queue_WorkPackage extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
-	public org.compiere.model.I_AD_PInstance getAD_PInstance_Creator() throws RuntimeException
+	public org.compiere.model.I_AD_PInstance getAD_PInstance_Creator()
 	{
 		return get_ValueAsPO(COLUMNNAME_AD_PInstance_Creator_ID, org.compiere.model.I_AD_PInstance.class);
 	}
@@ -138,7 +116,7 @@ public class X_C_Queue_WorkPackage extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
-	public org.compiere.model.I_AD_PInstance getAD_PInstance() throws RuntimeException
+	public org.compiere.model.I_AD_PInstance getAD_PInstance()
 	{
 		return get_ValueAsPO(COLUMNNAME_AD_PInstance_ID, org.compiere.model.I_AD_PInstance.class);
 	}
@@ -175,7 +153,7 @@ public class X_C_Queue_WorkPackage extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
-	public org.compiere.model.I_AD_Role getAD_Role() throws RuntimeException
+	public org.compiere.model.I_AD_Role getAD_Role()
 	{
 		return get_ValueAsPO(COLUMNNAME_AD_Role_ID, org.compiere.model.I_AD_Role.class);
 	}
@@ -211,18 +189,6 @@ public class X_C_Queue_WorkPackage extends org.compiere.model.PO implements I_C_
 		return ii.intValue();
 	}
 
-	@Override
-	public org.compiere.model.I_AD_User getAD_User() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_AD_User_ID, org.compiere.model.I_AD_User.class);
-	}
-
-	@Override
-	public void setAD_User(org.compiere.model.I_AD_User AD_User)
-	{
-		set_ValueFromPO(COLUMNNAME_AD_User_ID, org.compiere.model.I_AD_User.class, AD_User);
-	}
-
 	/** Set Ansprechpartner.
 		@param AD_User_ID 
 		User within the system - Internal or Business Partner Contact
@@ -246,18 +212,6 @@ public class X_C_Queue_WorkPackage extends org.compiere.model.PO implements I_C_
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	@Override
-	public org.compiere.model.I_AD_User getAD_User_InCharge() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_AD_User_InCharge_ID, org.compiere.model.I_AD_User.class);
-	}
-
-	@Override
-	public void setAD_User_InCharge(org.compiere.model.I_AD_User AD_User_InCharge)
-	{
-		set_ValueFromPO(COLUMNNAME_AD_User_InCharge_ID, org.compiere.model.I_AD_User.class, AD_User_InCharge);
 	}
 
 	/** Set Betreuer.
@@ -305,7 +259,7 @@ public class X_C_Queue_WorkPackage extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
-	public de.metas.async.model.I_C_Async_Batch getC_Async_Batch() throws RuntimeException
+	public de.metas.async.model.I_C_Async_Batch getC_Async_Batch()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_Async_Batch_ID, de.metas.async.model.I_C_Async_Batch.class);
 	}
@@ -339,7 +293,7 @@ public class X_C_Queue_WorkPackage extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
-	public de.metas.async.model.I_C_Queue_Block getC_Queue_Block() throws RuntimeException
+	public de.metas.async.model.I_C_Queue_Block getC_Queue_Block()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_Queue_Block_ID, de.metas.async.model.I_C_Queue_Block.class);
 	}
@@ -373,7 +327,7 @@ public class X_C_Queue_WorkPackage extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
-	public de.metas.async.model.I_C_Queue_PackageProcessor getC_Queue_PackageProcessor() throws RuntimeException
+	public de.metas.async.model.I_C_Queue_PackageProcessor getC_Queue_PackageProcessor()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_Queue_PackageProcessor_ID, de.metas.async.model.I_C_Queue_PackageProcessor.class);
 	}
@@ -625,7 +579,7 @@ public class X_C_Queue_WorkPackage extends org.compiere.model.PO implements I_C_
 
 	/** Set Verarbeitet.
 		@param Processed 
-		Checkbox sagt aus, ob der Beleg verarbeitet wurde. 
+		Checkbox sagt aus, ob der Datensatz verarbeitet wurde. 
 	  */
 	@Override
 	public void setProcessed (boolean Processed)
@@ -634,7 +588,7 @@ public class X_C_Queue_WorkPackage extends org.compiere.model.PO implements I_C_
 	}
 
 	/** Get Verarbeitet.
-		@return Checkbox sagt aus, ob der Beleg verarbeitet wurde. 
+		@return Checkbox sagt aus, ob der Datensatz verarbeitet wurde. 
 	  */
 	@Override
 	public boolean isProcessed () 

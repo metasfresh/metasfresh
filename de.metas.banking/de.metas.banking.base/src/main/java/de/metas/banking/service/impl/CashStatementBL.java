@@ -1,81 +1,94 @@
 package de.metas.banking.service.impl;
 
-/*
- * #%L
- * de.metas.banking.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-
-import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.LegacyAdapters;
 import org.compiere.model.I_C_BP_BankAccount;
+import org.compiere.model.I_C_BankStatement;
 import org.compiere.model.I_C_BankStatementLine;
 import org.compiere.model.I_C_Payment;
-import org.compiere.model.MBankStatement;
-import org.compiere.model.MBankStatementLine;
-import org.compiere.model.MPayment;
 import org.compiere.model.Query;
 import org.compiere.util.TimeUtil;
 
+import de.metas.banking.BankStatementId;
+import de.metas.banking.BankStatementLineId;
+import de.metas.banking.api.BankAccountId;
+import de.metas.banking.payment.IBankStatementPaymentBL;
+import de.metas.banking.service.BankStatementCreateRequest;
+import de.metas.banking.service.BankStatementLineCreateRequest;
+import de.metas.banking.service.IBankStatementDAO;
 import de.metas.banking.service.ICashStatementBL;
+import de.metas.bpartner.BPartnerId;
+import de.metas.money.CurrencyId;
+import de.metas.money.Money;
+import de.metas.organization.OrgId;
+import de.metas.payment.PaymentDirection;
+import de.metas.util.Services;
 
 public class CashStatementBL implements ICashStatementBL
 {
+	private final IBankStatementDAO bankStatementDAO = Services.get(IBankStatementDAO.class);
+
 	// metas: us025b
 	@Override
-	public I_C_BankStatementLine createCashStatementLine(final I_C_Payment payment)
+	public void createCashStatementLine(final I_C_Payment payment)
 	{
-		MBankStatement bs = getCreateCashStatement(payment);
-		MBankStatementLine bsl = new MBankStatementLine(bs);
-		
-		MPayment paymentPO = LegacyAdapters.convertToPO(payment);
-		bsl.setPayment(paymentPO);
-		
-		bsl.setProcessed(true);
-		InterfaceWrapperHelper.save(bsl);
-		
-		return bsl;
+		final IBankStatementPaymentBL bankStatmentPaymentBL = Services.get(IBankStatementPaymentBL.class);
+
+		final I_C_BankStatement bs = getCreateCashStatement(payment);
+		final BankStatementId bankStatementId = BankStatementId.ofRepoId(bs.getC_BankStatement_ID());
+		final LocalDate statementDate = TimeUtil.asLocalDate(bs.getStatementDate());
+
+		final Money paymentAmt = extractPayAmt(payment);
+		final PaymentDirection paymentDirection = PaymentDirection.ofReceiptFlag(payment.isReceipt());
+		final Money statementAmt = paymentDirection.convertPayAmtToStatementAmt(paymentAmt);
+
+		final BankStatementLineId bankStatementLineId = bankStatementDAO.createBankStatementLine(BankStatementLineCreateRequest.builder()
+				.bankStatementId(bankStatementId)
+				.orgId(OrgId.ofRepoId(bs.getAD_Org_ID()))
+				//
+				.bpartnerId(BPartnerId.ofRepoId(payment.getC_BPartner_ID()))
+				//
+				.statementLineDate(statementDate)
+				//
+				.statementAmt(statementAmt)
+				.trxAmt(statementAmt)
+				//
+				.build());
+
+		final I_C_BankStatement bankStatement = bankStatementDAO.getById(bankStatementId);
+		final I_C_BankStatementLine bankStatementLine = bankStatementDAO.getLineById(bankStatementLineId);
+		bankStatmentPaymentBL.linkSinglePayment(bankStatement, bankStatementLine, payment);
+	}
+
+	private static Money extractPayAmt(final I_C_Payment payment)
+	{
+		final CurrencyId currencyId = CurrencyId.ofRepoId(payment.getC_Currency_ID());
+		return Money.of(payment.getPayAmt(), currencyId);
 	}
 
 	// metas: us025b
-	private MBankStatement getCreateCashStatement(final I_C_Payment payment)
+	private I_C_BankStatement getCreateCashStatement(final I_C_Payment payment)
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(payment);
 		final String trxName = InterfaceWrapperHelper.getTrxName(payment);
 		final int C_BP_BankAccount_ID = payment.getC_BP_BankAccount_ID();
-		final Timestamp statementDate = TimeUtil.getDay(payment.getDateTrx());
+		final LocalDate statementDate = TimeUtil.asLocalDate(payment.getDateTrx());
 
-		String whereClause = MBankStatement.COLUMNNAME_C_BP_BankAccount_ID + "=?"
-				+ " AND TRUNC(" + MBankStatement.COLUMNNAME_StatementDate + ")=?"
-				+ " AND " + MBankStatement.COLUMNNAME_Processed + "=?";
+		String whereClause = I_C_BankStatement.COLUMNNAME_C_BP_BankAccount_ID + "=?"
+				+ " AND TRUNC(" + I_C_BankStatement.COLUMNNAME_StatementDate + ")=?"
+				+ " AND " + I_C_BankStatement.COLUMNNAME_Processed + "=?";
 
-		MBankStatement bs = new Query(ctx, MBankStatement.Table_Name, whereClause, trxName)
+		I_C_BankStatement bs = new Query(ctx, I_C_BankStatement.Table_Name, whereClause, trxName)
 				.setParameters(new Object[] { C_BP_BankAccount_ID, statementDate, false })
 				.firstOnly();
 
 		if (bs != null)
+		{
 			return bs;
+		}
 
 		// Get BankAccount/CashBook
 		I_C_BP_BankAccount ba = InterfaceWrapperHelper.create(ctx, C_BP_BankAccount_ID, I_C_BP_BankAccount.class, trxName);
@@ -85,11 +98,18 @@ public class CashStatementBL implements ICashStatementBL
 		}
 
 		// Create Statement
-		bs = new MBankStatement(ba, false);
-		bs.setStatementDate(statementDate);
-		bs.saveEx();
-		return bs;
+		return createBankStatement(ba, statementDate);
 	}
-	// metas end
 
+	private I_C_BankStatement createBankStatement(final I_C_BP_BankAccount account, final LocalDate statementDate)
+	{
+		final BankStatementId bankStatementId = bankStatementDAO.createBankStatement(BankStatementCreateRequest.builder()
+				.orgId(OrgId.ofRepoId(account.getAD_Org_ID()))
+				.orgBankAccountId(BankAccountId.ofRepoId(account.getC_BP_BankAccount_ID()))
+				.statementDate(statementDate)
+				.name(statementDate.toString())
+				.build());
+
+		return bankStatementDAO.getById(bankStatementId);
+	}
 }

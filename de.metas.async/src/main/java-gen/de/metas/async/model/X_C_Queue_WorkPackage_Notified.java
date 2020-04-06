@@ -1,19 +1,3 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 /** Generated Model - DO NOT CHANGE */
 package de.metas.async.model;
 
@@ -30,7 +14,7 @@ public class X_C_Queue_WorkPackage_Notified extends org.compiere.model.PO implem
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -742795785L;
+	private static final long serialVersionUID = -1450071433L;
 
     /** Standard Constructor */
     public X_C_Queue_WorkPackage_Notified (Properties ctx, int C_Queue_WorkPackage_Notified_ID, String trxName)
@@ -57,14 +41,6 @@ public class X_C_Queue_WorkPackage_Notified extends org.compiere.model.PO implem
       return poi;
     }
 
-    @Override
-    public String toString()
-    {
-      StringBuffer sb = new StringBuffer ("X_C_Queue_WorkPackage_Notified[")
-        .append(get_ID()).append("]");
-      return sb.toString();
-    }
-
 	/** Set Bach Workpackage SeqNo.
 		@param BachWorkpackageSeqNo Bach Workpackage SeqNo	  */
 	@Override
@@ -85,7 +61,7 @@ public class X_C_Queue_WorkPackage_Notified extends org.compiere.model.PO implem
 	}
 
 	@Override
-	public de.metas.async.model.I_C_Async_Batch getC_Async_Batch() throws RuntimeException
+	public de.metas.async.model.I_C_Async_Batch getC_Async_Batch()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_Async_Batch_ID, de.metas.async.model.I_C_Async_Batch.class);
 	}
@@ -119,7 +95,7 @@ public class X_C_Queue_WorkPackage_Notified extends org.compiere.model.PO implem
 	}
 
 	@Override
-	public de.metas.async.model.I_C_Queue_WorkPackage getC_Queue_WorkPackage() throws RuntimeException
+	public de.metas.async.model.I_C_Queue_WorkPackage getC_Queue_WorkPackage()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_Queue_WorkPackage_ID, de.metas.async.model.I_C_Queue_WorkPackage.class);
 	}
@@ -196,5 +172,4 @@ public class X_C_Queue_WorkPackage_Notified extends org.compiere.model.PO implem
 		}
 		return false;
 	}
-
 }

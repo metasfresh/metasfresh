@@ -8,6 +8,7 @@ import org.adempiere.exceptions.AdempiereException;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStringBuilder;
 import de.metas.i18n.TranslatableStrings;
@@ -25,7 +26,7 @@ import lombok.Builder;
 @SuppressWarnings("serial")
 public class ProductNotOnPriceListException extends AdempiereException
 {
-	public static final String AD_Message = "ProductNotOnPriceList";
+	public static final AdMessageKey AD_Message = AdMessageKey.of("ProductNotOnPriceList");
 
 	public ProductNotOnPriceListException(final IPricingContext pricingCtx)
 	{

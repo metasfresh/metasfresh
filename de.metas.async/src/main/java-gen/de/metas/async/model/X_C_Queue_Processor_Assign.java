@@ -1,19 +1,3 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 /** Generated Model - DO NOT CHANGE */
 package de.metas.async.model;
 
@@ -30,7 +14,7 @@ public class X_C_Queue_Processor_Assign extends org.compiere.model.PO implements
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1059089867L;
+	private static final long serialVersionUID = 1479062073L;
 
     /** Standard Constructor */
     public X_C_Queue_Processor_Assign (Properties ctx, int C_Queue_Processor_Assign_ID, String trxName)
@@ -60,7 +44,7 @@ public class X_C_Queue_Processor_Assign extends org.compiere.model.PO implements
     }
 
 	@Override
-	public de.metas.async.model.I_C_Queue_PackageProcessor getC_Queue_PackageProcessor() throws RuntimeException
+	public de.metas.async.model.I_C_Queue_PackageProcessor getC_Queue_PackageProcessor()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_Queue_PackageProcessor_ID, de.metas.async.model.I_C_Queue_PackageProcessor.class);
 	}
@@ -116,7 +100,7 @@ public class X_C_Queue_Processor_Assign extends org.compiere.model.PO implements
 	}
 
 	@Override
-	public de.metas.async.model.I_C_Queue_Processor getC_Queue_Processor() throws RuntimeException
+	public de.metas.async.model.I_C_Queue_Processor getC_Queue_Processor()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_Queue_Processor_ID, de.metas.async.model.I_C_Queue_Processor.class);
 	}

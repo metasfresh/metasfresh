@@ -1,5 +1,7 @@
 package de.metas.invoicecandidate.spi.impl.aggregator.standard;
 
+import static de.metas.util.lang.CoalesceUtil.firstGreaterThanZero;
+
 /*
  * #%L
  * de.metas.swat.base
@@ -28,7 +30,9 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.function.BiFunction;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.text.annotation.ToStringBuilder;
@@ -79,6 +83,10 @@ import lombok.ToString;
 	@ToStringBuilder(skip = true)
 	private HashMap<InvoiceCandidateId, StockQtyAndUOMQty> _ic2QtyInvoiceable;
 
+	/** This can be different from {@link #_ic2QtyInvoiceable} because it contains the final result from {@link #addInvoiceCandidateWithInOutLine(InvoiceCandidateWithInOutLine)} */
+	@ToStringBuilder(skip = true)
+	private final Map<InvoiceCandidateId, StockQtyAndUOMQty> _ics2QtyInvoiced = new HashMap<>();
+
 	// State variables
 	private boolean _initialized = false;
 	private I_C_Invoice_Candidate _firstCand;
@@ -121,7 +129,10 @@ import lombok.ToString;
 		for (final InvoiceCandidateWithInOutLine iciol : _invoiceCandidateWithInOutLines)
 		{
 			final I_C_Invoice_Candidate ic = iciol.getC_Invoice_Candidate();
-			invoiceCandAggregate.addAssociationIfNotExists(ic, invoiceLine);
+			final InvoiceCandidateId invoiceCandidateId = InvoiceCandidateId.ofRepoId(ic.getC_Invoice_Candidate_ID());
+			final StockQtyAndUOMQty qtysInvoiced = _ics2QtyInvoiced.get(invoiceCandidateId);
+
+			invoiceCandAggregate.addAssociationIfNotExists(ic, invoiceLine, qtysInvoiced);
 		}
 
 		return invoiceCandAggregate;
@@ -395,7 +406,7 @@ import lombok.ToString;
 		}
 
 		// Make sure this aggregator/builder was correctly configured
-		Check.assumeNotNull(_ic2QtyInvoiceable, "_ic2QtyInvoiceable not null");
+		Check.assumeNotNull(_ic2QtyInvoiceable, "_ic2QtyInvoiceable needs to be not null");
 
 		_firstCand = ics.getC_Invoice_Candidate();
 
@@ -577,10 +588,11 @@ import lombok.ToString;
 
 	private int getC_PaymentTerm_ID()
 	{
-		final Integer valueOrNull = InterfaceWrapperHelper.getValueOverrideOrValue(
-				getFirstInvoiceCandidate(),
-				I_C_Invoice_Candidate.COLUMNNAME_C_PaymentTerm_ID);
-		return valueOrNull == null ? 0 : valueOrNull;
+		final int paymentTermId = firstGreaterThanZero(
+				getFirstInvoiceCandidate().getC_PaymentTerm_Override_ID(),
+				getFirstInvoiceCandidate().getC_PaymentTerm_ID());
+		return paymentTermId;
+
 	}
 
 	/** @return effective tax to use in invoice line */
@@ -596,7 +608,7 @@ import lombok.ToString;
 	}
 
 	private void addQtyToInvoice(
-			@NonNull final StockQtyAndUOMQty candQtyToInvoice,
+			@NonNull final StockQtyAndUOMQty candQtysToInvoice,
 			@NonNull final InvoiceCandidateWithInOutLine fromICS,
 			final boolean forcedAdditionalQty)
 	{
@@ -605,20 +617,28 @@ import lombok.ToString;
 		if (iciol != null && !forcedAdditionalQty)
 		{
 			final StockQtyAndUOMQty qtyAlreadyInvoiced = fromICS.getQtysAlreadyInvoiced();
-			final StockQtyAndUOMQty qtyAlreadyInvoicedNew = StockQtyAndUOMQtys.add(qtyAlreadyInvoiced, candQtyToInvoice);
+			final StockQtyAndUOMQty qtyAlreadyInvoicedNew = StockQtyAndUOMQtys.add(qtyAlreadyInvoiced, candQtysToInvoice);
 			// // task 07988: *don't* store/persist anything in here..just add, so it will be persisted later when the actual invoice was created
 			final InvoiceCandidateInOutLineToUpdate invoiceCandidateInOutLineToUpdate = new InvoiceCandidateInOutLineToUpdate(iciol, qtyAlreadyInvoicedNew);
 			_iciolsToUpdate.add(invoiceCandidateInOutLineToUpdate);
 		}
 
-		//
-		// Increase QtyToInvoice
-		_qtysToInvoice = StockQtyAndUOMQtys.add(_qtysToInvoice, candQtyToInvoice);
+		// Keep track on exactly which ic "contributed" which quantity
+		final InvoiceCandidateId invoiceCandidateId = InvoiceCandidateId.ofRepoId(fromICS.getC_Invoice_Candidate().getC_Invoice_Candidate_ID());
 
-		//
+		final BiFunction<InvoiceCandidateId, StockQtyAndUOMQty, StockQtyAndUOMQty> remappingFunction = //
+				(icId, existingQtys) -> (existingQtys == null)
+						? candQtysToInvoice // if nothing was put into the map yet, then just put candQtysToInvoice
+						: StockQtyAndUOMQtys.add(existingQtys, candQtysToInvoice);
+
+		_ics2QtyInvoiced.compute(invoiceCandidateId, remappingFunction);
+
+		// Increase QtyToInvoice
+		_qtysToInvoice = StockQtyAndUOMQtys.add(_qtysToInvoice, candQtysToInvoice);
+
 		// Update IC-QtyInvoiceable map (i.e. decrease invoiceable quantity)
 		{
-			subtractQtyInvoiceable(fromICS.getInvoicecandidateId(), candQtyToInvoice);
+			subtractQtyInvoiceable(fromICS.getInvoicecandidateId(), candQtysToInvoice);
 		}
 	}
 

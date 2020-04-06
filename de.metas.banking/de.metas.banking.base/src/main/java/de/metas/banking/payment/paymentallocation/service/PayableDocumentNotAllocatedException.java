@@ -26,6 +26,7 @@ import java.util.Collection;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStringBuilder;
 import de.metas.i18n.TranslatableStrings;
@@ -39,7 +40,7 @@ import de.metas.i18n.TranslatableStrings;
 public class PayableDocumentNotAllocatedException extends PaymentAllocationException
 {
 	private static final long serialVersionUID = 1L;
-	private static final String MSG = "PaymentAllocation.CannotAllocatePayableDocumentsException";
+	private static final AdMessageKey MSG = AdMessageKey.of("PaymentAllocation.CannotAllocatePayableDocumentsException");
 
 	private final Collection<PayableDocument> payables;
 

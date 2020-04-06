@@ -1,27 +1,9 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 /** Generated Model - DO NOT CHANGE */
 package de.metas.async.model;
 
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-
-import org.compiere.util.Env;
 
 /** Generated Model for C_Queue_WorkPackage_Param
  *  @author Adempiere (generated) 
@@ -33,7 +15,7 @@ public class X_C_Queue_WorkPackage_Param extends org.compiere.model.PO implement
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1350643571L;
+	private static final long serialVersionUID = 2074310948L;
 
     /** Standard Constructor */
     public X_C_Queue_WorkPackage_Param (Properties ctx, int C_Queue_WorkPackage_Param_ID, String trxName)
@@ -64,7 +46,7 @@ public class X_C_Queue_WorkPackage_Param extends org.compiere.model.PO implement
     }
 
 	@Override
-	public org.compiere.model.I_AD_Reference getAD_Reference() throws RuntimeException
+	public org.compiere.model.I_AD_Reference getAD_Reference()
 	{
 		return get_ValueAsPO(COLUMNNAME_AD_Reference_ID, org.compiere.model.I_AD_Reference.class);
 	}
@@ -101,7 +83,7 @@ public class X_C_Queue_WorkPackage_Param extends org.compiere.model.PO implement
 	}
 
 	@Override
-	public de.metas.async.model.I_C_Queue_WorkPackage getC_Queue_WorkPackage() throws RuntimeException
+	public de.metas.async.model.I_C_Queue_WorkPackage getC_Queue_WorkPackage()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_Queue_WorkPackage_ID, de.metas.async.model.I_C_Queue_WorkPackage.class);
 	}
@@ -193,7 +175,7 @@ public class X_C_Queue_WorkPackage_Param extends org.compiere.model.PO implement
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_P_Number);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 

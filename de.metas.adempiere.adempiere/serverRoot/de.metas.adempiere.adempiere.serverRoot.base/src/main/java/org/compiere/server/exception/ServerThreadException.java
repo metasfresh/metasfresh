@@ -24,6 +24,7 @@ package org.compiere.server.exception;
 
 import org.adempiere.exceptions.AdempiereException;
 
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.util.Services;
@@ -34,15 +35,10 @@ import de.metas.util.Services;
  * @author ts
  * @see http://dewiki908/mediawiki/index.php/03034:_ADempiere_ServerProcesses_can_die_%282012072510000033%29
  */
+@SuppressWarnings("serial")
 public class ServerThreadException extends AdempiereException
 {
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 1395917089148875113L;
-
-	private static final String SERVER_THREAD_EXCEPTION_MESSAGE = "ServerThreadException_Msg";
-	// private static final String MSG_SERVER_THREAD_EXCEPTION_ERR = "ServerThreadException_Err";
+	private static final AdMessageKey SERVER_THREAD_EXCEPTION_MESSAGE = AdMessageKey.of("ServerThreadException_Msg");
 
 	private final String adempiereProcessorName;
 

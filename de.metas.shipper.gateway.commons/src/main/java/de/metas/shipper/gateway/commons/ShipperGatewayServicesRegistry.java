@@ -8,7 +8,7 @@ import javax.annotation.Nullable;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
-import com.google.common.base.Predicates;
+import java.util.Objects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
@@ -58,17 +58,17 @@ public class ShipperGatewayServicesRegistry
 	{
 		repositoriesByGatewayId = deliveryOrderRepositories.orElse(ImmutableList.of())
 				.stream()
-				.filter(Predicates.notNull())
+				.filter(Objects::nonNull)
 				.collect(GuavaCollectors.toImmutableMapByKey(DeliveryOrderRepository::getShipperGatewayId));
 
 		clientFactoriesByGatewayId = shipperGatewayClientFactories.orElse(ImmutableList.of())
 				.stream()
-				.filter(Predicates.notNull())
+				.filter(Objects::nonNull)
 				.collect(GuavaCollectors.toImmutableMapByKey(ShipperGatewayClientFactory::getShipperGatewayId));
 
 		draftDeliveryOrderCreatorsByGatewayId = services.orElse(ImmutableList.of())
 				.stream()
-				.filter(Predicates.notNull())
+				.filter(Objects::nonNull)
 				.collect(GuavaCollectors.toImmutableMapByKey(DraftDeliveryOrderCreator::getShipperGatewayId));
 
 		logger.info("deliveryOrderRepositories: {}", repositoriesByGatewayId);

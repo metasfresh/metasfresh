@@ -12,8 +12,9 @@ import java.util.List;
 
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_UOM;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 import com.google.common.collect.ImmutableList;
 
@@ -35,8 +36,6 @@ import de.metas.money.Money;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.lang.Percent;
-import mockit.Mocked;
-import mockit.Tested;
 
 /*
  * #%L
@@ -88,30 +87,11 @@ public class CandidateAssignmentService_mocked_Test
 
 	private I_C_UOM uomRecord;
 
-	@Mocked
-	private RefundContractRepository refundContractRepository;
-
-	@Mocked
-	private RefundInvoiceCandidateService refundInvoiceCandidateService;
-
-	@Mocked
-	private AssignableInvoiceCandidateRepository assignableInvoiceCandidateRepository;
-
-	@Mocked
-	private AssignmentToRefundCandidateRepository assignmentToRefundCandidateRepository;
-
-	@Mocked
-	private RefundInvoiceCandidateRepository refundInvoiceCandidateRepository;
-
-	@Mocked
-	private RefundConfigChangeService refundConfigChangeService;
-
-	@Tested
 	private CandidateAssignmentService candidateAssignmentService;
 
 	private InvoiceSchedule invoiceSchedule;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
@@ -131,6 +111,13 @@ public class CandidateAssignmentService_mocked_Test
 				.invoiceDayOfMonth(30)
 				.invoiceDistance(6)
 				.build();
+
+		final RefundContractRepository refundContractRepository = Mockito.mock(RefundContractRepository.class);
+		final RefundInvoiceCandidateService refundInvoiceCandidateService = Mockito.mock(RefundInvoiceCandidateService.class);
+		final AssignableInvoiceCandidateRepository assignableInvoiceCandidateRepository = Mockito.mock(AssignableInvoiceCandidateRepository.class);
+		final AssignmentToRefundCandidateRepository assignmentToRefundCandidateRepository = Mockito.mock(AssignmentToRefundCandidateRepository.class);
+		final RefundInvoiceCandidateRepository refundInvoiceCandidateRepository = Mockito.mock(RefundInvoiceCandidateRepository.class);
+		final RefundConfigChangeService refundConfigChangeService = Mockito.mock(RefundConfigChangeService.class);
 
 		candidateAssignmentService = new CandidateAssignmentService(
 				refundContractRepository,

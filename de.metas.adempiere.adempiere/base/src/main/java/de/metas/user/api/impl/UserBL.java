@@ -14,6 +14,7 @@ import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
+import org.slf4j.MDC.MDCCloseable;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
@@ -25,10 +26,12 @@ import de.metas.email.mailboxes.ClientEMailConfig;
 import de.metas.email.mailboxes.UserEMailConfig;
 import de.metas.email.templates.MailTemplateId;
 import de.metas.email.templates.MailTextBuilder;
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.Language;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
+import de.metas.logging.TableRecordMDC;
 import de.metas.security.IUserRolePermissionsDAO;
 import de.metas.ui.web.WebuiURLs;
 import de.metas.user.UserId;
@@ -50,7 +53,7 @@ public class UserBL implements IUserBL
 	 */
 	private static final EMailCustomType MAILCONFIG_CUSTOMTYPE_UserPasswordReset = EMailCustomType.ofCode("L");
 
-	private static final String MSG_INCORRECT_PASSWORD = "org.compiere.util.Login.IncorrectPassword";
+	private static final AdMessageKey MSG_INCORRECT_PASSWORD = AdMessageKey.of("org.compiere.util.Login.IncorrectPassword");
 	private static final String SYS_MIN_PASSWORD_LENGTH = "org.compiere.util.Login.MinPasswordLength";
 
 	private MailService mailService()
@@ -87,19 +90,22 @@ public class UserBL implements IUserBL
 		final IUserDAO usersRepo = Services.get(IUserDAO.class);
 
 		final I_AD_User user = usersRepo.retrieveLoginUserByUserId(userId);
-		if (user.getAD_Client_ID() == ClientId.SYSTEM.getRepoId())
+		try (final MDCCloseable userRecordMDC = TableRecordMDC.putTableRecordReference(user))
 		{
-			throw new AdempiereException("Reseting password for system users is not allowed");
+			if (user.getAD_Client_ID() == ClientId.SYSTEM.getRepoId())
+			{
+				throw new AdempiereException("Reseting password for system users is not allowed");
+			}
+			createResetPasswordByEMailRequest(user);
 		}
-		createResetPasswordByEMailRequest(user);
 	}
 
-	@Override
-	public void createResetPasswordByEMailRequest(final I_AD_User user)
+	private void createResetPasswordByEMailRequest(@NonNull final I_AD_User user)
 	{
 		final EMailAddress emailTo = EMailAddress.ofNullableString(user.getEMail());
 		if (emailTo == null)
 		{
+			logger.debug("AD_User.Email={} is empty", user.getEMail());
 			throw new AdempiereException("@NoEMailFoundForLoginName@");
 		}
 
@@ -110,7 +116,7 @@ public class UserBL implements IUserBL
 		final MailTemplateId mailTemplateId = tenantEmailConfig.getPasswordResetMailTemplateId().orElse(null);
 		if (mailTemplateId == null)
 		{
-			logger.error("@NotFound@ @AD_Client_ID@/@PasswordReset_MailText_ID@ (@AD_User_ID@: {}, @AD_Client_ID@: {})", user, tenantEmailConfig);
+			logger.error("ClientEMailConfig for AD_Client_ID={} has no password reset mail template; ClientEMailConfig={}", adClientId.getRepoId(), tenantEmailConfig);
 			throw new AdempiereException("Internal Error. Please contact the System Administrator.");
 		}
 

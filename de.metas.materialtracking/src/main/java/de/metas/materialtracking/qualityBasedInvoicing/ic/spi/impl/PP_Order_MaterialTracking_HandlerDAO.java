@@ -43,7 +43,7 @@ public class PP_Order_MaterialTracking_HandlerDAO
 
 	/* package */PP_Order_MaterialTracking_HandlerDAO()
 	{
-	};
+	}
 
 	/**
 	 * Gets a filter which accepts only those {@link I_PP_Order}s which are invoiceable.

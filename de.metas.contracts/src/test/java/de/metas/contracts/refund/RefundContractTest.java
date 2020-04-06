@@ -9,8 +9,8 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 
 import org.compiere.model.I_C_UOM;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.contracts.ConditionsId;
@@ -20,8 +20,8 @@ import de.metas.contracts.refund.RefundConfig.RefundInvoiceType;
 import de.metas.contracts.refund.RefundConfig.RefundMode;
 import de.metas.invoice.InvoiceSchedule;
 import de.metas.invoice.InvoiceSchedule.Frequency;
-import de.metas.util.lang.Percent;
 import de.metas.invoice.InvoiceScheduleId;
+import de.metas.util.lang.Percent;
 
 /*
  * #%L
@@ -60,7 +60,7 @@ public class RefundContractTest
 
 	private I_C_UOM uomRecord;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		final InvoiceSchedule invoiceSchedule = InvoiceSchedule.builder()

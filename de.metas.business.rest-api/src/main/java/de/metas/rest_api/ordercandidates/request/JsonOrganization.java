@@ -3,6 +3,7 @@ package de.metas.rest_api.ordercandidates.request;
 import static de.metas.util.lang.CoalesceUtil.coalesce;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import de.metas.rest_api.common.SyncAdvise;
@@ -38,6 +39,7 @@ public class JsonOrganization
 	String code;
 	String name;
 
+	@JsonInclude(JsonInclude.Include.NON_NULL)
 	@ApiModelProperty(required = false, value = "Optional bpartner of this organization")
 	JsonRequestBPartnerLocationAndContact bpartner;
 

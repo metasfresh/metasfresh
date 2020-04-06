@@ -1,4 +1,4 @@
-de.metas.rest_api.bpartner.impl.ContactRestControllerTest.createOrUpdateContact=[
+de.metas.rest_api.bpartner.impl.ContactRestControllerTest.createOrUpdateContact_create=[
   {
     "active": true,
     "changeLog": {
@@ -11,12 +11,12 @@ de.metas.rest_api.bpartner.impl.ContactRestControllerTest.createOrUpdateContact=
           "AD_User_ID": 100010
         }
       },
-      "createdByUserId": 0,
+      "createdByUserId": 30,
       "createdTimestamp": {
         "seconds": 1561134,
         "nanos": 560000000
       },
-      "lastChangedByUserId": 0,
+      "lastChangedByUserId": 30,
       "lastChangedTimestamp": {
         "seconds": 1561134,
         "nanos": 560000000
@@ -57,12 +57,238 @@ de.metas.rest_api.bpartner.impl.ContactRestControllerTest.createOrUpdateContact=
         "present": true
       }
     },
+    "externalId": "externalId-1",
     "id": {
       "bpartnerId": 20,
       "userId": 100010
     },
     "name": "jsonContact.name",
-    "newsletter": true
+    "newsletter": false
+  }
+]
+
+
+de.metas.rest_api.bpartner.impl.ContactRestControllerTest.createOrUpdateContact_update_extContactIdentifier=[
+  {
+    "active": true,
+    "changeLog": {
+      "tableName": "AD_User",
+      "recordId": {
+        "keyColumnNames": [
+          "AD_User_ID"
+        ],
+        "keysByColumnName": {
+          "AD_User_ID": 30
+        }
+      },
+      "createdByUserId": 30,
+      "createdTimestamp": {
+        "seconds": 1561133,
+        "nanos": 544000000
+      },
+      "lastChangedByUserId": 30,
+      "lastChangedTimestamp": {
+        "seconds": 1561134,
+        "nanos": 560000000
+      },
+      "entries": [ ]
+    },
+    "contactType": {
+      "billToDefault": {
+        "value": false,
+        "present": true
+      },
+      "defaultContact": {
+        "value": false,
+        "present": true
+      },
+      "purchase": {
+        "value": false,
+        "present": true
+      },
+      "purchaseDefault": {
+        "value": false,
+        "present": true
+      },
+      "sales": {
+        "value": false,
+        "present": true
+      },
+      "salesDefault": {
+        "value": false,
+        "present": true
+      },
+      "shipToDefault": {
+        "value": false,
+        "present": true
+      },
+      "subjectMatter": {
+        "value": false,
+        "present": true
+      }
+    },
+    "email": "contactRecord.email",
+    "externalId": "contactRecord.externalId",
+    "firstName": "contactRecord.firstName",
+    "id": {
+      "bpartnerId": 20,
+      "userId": 30
+    },
+    "lastName": "contactRecord.lastName",
+    "name": "jsonContact.name-UPDATED",
+    "newsletter": false,
+    "phone": "contactRecord.phone",
+    "value": "contactRecord.value"
+  }
+]
+
+
+de.metas.rest_api.bpartner.impl.ContactRestControllerTest.createOrUpdateContact_update_idContactIdentifier=[
+  {
+    "active": true,
+    "changeLog": {
+      "tableName": "AD_User",
+      "recordId": {
+        "keyColumnNames": [
+          "AD_User_ID"
+        ],
+        "keysByColumnName": {
+          "AD_User_ID": 30
+        }
+      },
+      "createdByUserId": 30,
+      "createdTimestamp": {
+        "seconds": 1561133,
+        "nanos": 544000000
+      },
+      "lastChangedByUserId": 30,
+      "lastChangedTimestamp": {
+        "seconds": 1561134,
+        "nanos": 560000000
+      },
+      "entries": [ ]
+    },
+    "contactType": {
+      "billToDefault": {
+        "value": false,
+        "present": true
+      },
+      "defaultContact": {
+        "value": false,
+        "present": true
+      },
+      "purchase": {
+        "value": false,
+        "present": true
+      },
+      "purchaseDefault": {
+        "value": false,
+        "present": true
+      },
+      "sales": {
+        "value": false,
+        "present": true
+      },
+      "salesDefault": {
+        "value": false,
+        "present": true
+      },
+      "shipToDefault": {
+        "value": false,
+        "present": true
+      },
+      "subjectMatter": {
+        "value": false,
+        "present": true
+      }
+    },
+    "email": "contactRecord.email",
+    "externalId": "contactRecord.externalId",
+    "firstName": "contactRecord.firstName",
+    "id": {
+      "bpartnerId": 20,
+      "userId": 30
+    },
+    "lastName": "contactRecord.lastName",
+    "name": "jsonContact.name-UPDATED",
+    "newsletter": false,
+    "phone": "contactRecord.phone",
+    "value": "contactRecord.value"
+  }
+]
+
+
+de.metas.rest_api.bpartner.impl.ContactRestControllerTest.createOrUpdateContact_update_valContactIdentifier=[
+  {
+    "active": true,
+    "changeLog": {
+      "tableName": "AD_User",
+      "recordId": {
+        "keyColumnNames": [
+          "AD_User_ID"
+        ],
+        "keysByColumnName": {
+          "AD_User_ID": 30
+        }
+      },
+      "createdByUserId": 30,
+      "createdTimestamp": {
+        "seconds": 1561133,
+        "nanos": 544000000
+      },
+      "lastChangedByUserId": 30,
+      "lastChangedTimestamp": {
+        "seconds": 1561134,
+        "nanos": 560000000
+      },
+      "entries": [ ]
+    },
+    "contactType": {
+      "billToDefault": {
+        "value": false,
+        "present": true
+      },
+      "defaultContact": {
+        "value": false,
+        "present": true
+      },
+      "purchase": {
+        "value": false,
+        "present": true
+      },
+      "purchaseDefault": {
+        "value": false,
+        "present": true
+      },
+      "sales": {
+        "value": false,
+        "present": true
+      },
+      "salesDefault": {
+        "value": false,
+        "present": true
+      },
+      "shipToDefault": {
+        "value": false,
+        "present": true
+      },
+      "subjectMatter": {
+        "value": false,
+        "present": true
+      }
+    },
+    "email": "contactRecord.email",
+    "externalId": "contactRecord.externalId",
+    "firstName": "contactRecord.firstName",
+    "id": {
+      "bpartnerId": 20,
+      "userId": 30
+    },
+    "lastName": "contactRecord.lastName",
+    "name": "jsonContact.name-UPDATED",
+    "newsletter": false,
+    "phone": "contactRecord.phone",
+    "value": "contactRecord.value"
   }
 ]
 
@@ -70,15 +296,15 @@ de.metas.rest_api.bpartner.impl.ContactRestControllerTest.createOrUpdateContact=
 de.metas.rest_api.bpartner.impl.ContactRestControllerTest.retrieveContact_ext=[
   {
     "metasfreshId": 30,
-    "externalId": "abcde",
+    "externalId": "contactRecord.externalId",
     "metasfreshBPartnerId": 20,
     "active": true,
-    "name": "bpartnerRecord.name",
-    "firstName": "bpartnerRecord.firstName",
-    "lastName": "bpartnerRecord.lastName",
-    "email": "bpartnerRecord.email",
-    "phone": "bpartnerRecord.phone",
-    "newsletter": true,
+    "name": "contactRecord.name",
+    "firstName": "contactRecord.firstName",
+    "lastName": "contactRecord.lastName",
+    "email": "contactRecord.email",
+    "phone": "contactRecord.phone",
+    "newsletter": false,
     "shipToDefault": false,
     "billToDefault": false,
     "defaultContact": false,
@@ -100,15 +326,15 @@ de.metas.rest_api.bpartner.impl.ContactRestControllerTest.retrieveContact_ext=[
 de.metas.rest_api.bpartner.impl.ContactRestControllerTest.retrieveContact_id=[
   {
     "metasfreshId": 30,
-    "externalId": "abcde",
+    "externalId": "contactRecord.externalId",
     "metasfreshBPartnerId": 20,
     "active": true,
-    "name": "bpartnerRecord.name",
-    "firstName": "bpartnerRecord.firstName",
-    "lastName": "bpartnerRecord.lastName",
-    "email": "bpartnerRecord.email",
-    "phone": "bpartnerRecord.phone",
-    "newsletter": true,
+    "name": "contactRecord.name",
+    "firstName": "contactRecord.firstName",
+    "lastName": "contactRecord.lastName",
+    "email": "contactRecord.email",
+    "phone": "contactRecord.phone",
+    "newsletter": false,
     "shipToDefault": false,
     "billToDefault": false,
     "defaultContact": false,
@@ -130,15 +356,15 @@ de.metas.rest_api.bpartner.impl.ContactRestControllerTest.retrieveContact_id=[
 de.metas.rest_api.bpartner.impl.ContactRestControllerTest.retrieveContact_id_unspecified_CreatedByUpdatedBy=[
   {
     "metasfreshId": 30,
-    "externalId": "abcde",
+    "externalId": "contactRecord.externalId",
     "metasfreshBPartnerId": 20,
     "active": true,
-    "name": "bpartnerRecord.name",
-    "firstName": "bpartnerRecord.firstName",
-    "lastName": "bpartnerRecord.lastName",
-    "email": "bpartnerRecord.email",
-    "phone": "bpartnerRecord.phone",
-    "newsletter": true,
+    "name": "contactRecord.name",
+    "firstName": "contactRecord.firstName",
+    "lastName": "contactRecord.lastName",
+    "email": "contactRecord.email",
+    "phone": "contactRecord.phone",
+    "newsletter": false,
     "shipToDefault": false,
     "billToDefault": false,
     "defaultContact": false,
@@ -166,15 +392,15 @@ de.metas.rest_api.bpartner.impl.ContactRestControllerTest.retrieveContact_id_uns
 de.metas.rest_api.bpartner.impl.ContactRestControllerTest.retrieveContact_val=[
   {
     "metasfreshId": 30,
-    "externalId": "abcde",
+    "externalId": "contactRecord.externalId",
     "metasfreshBPartnerId": 20,
     "active": true,
-    "name": "bpartnerRecord.name",
-    "firstName": "bpartnerRecord.firstName",
-    "lastName": "bpartnerRecord.lastName",
-    "email": "bpartnerRecord.email",
-    "phone": "bpartnerRecord.phone",
-    "newsletter": true,
+    "name": "contactRecord.name",
+    "firstName": "contactRecord.firstName",
+    "lastName": "contactRecord.lastName",
+    "email": "contactRecord.email",
+    "phone": "contactRecord.phone",
+    "newsletter": false,
     "shipToDefault": false,
     "billToDefault": false,
     "defaultContact": false,
@@ -202,15 +428,15 @@ de.metas.rest_api.bpartner.impl.ContactRestControllerTest.retrieveContactsSince=
     "contacts": [
       {
         "metasfreshId": 30,
-        "externalId": "abcde",
+        "externalId": "contactRecord.externalId",
         "metasfreshBPartnerId": 20,
         "active": true,
-        "name": "bpartnerRecord.name",
-        "firstName": "bpartnerRecord.firstName",
-        "lastName": "bpartnerRecord.lastName",
-        "email": "bpartnerRecord.email",
-        "phone": "bpartnerRecord.phone",
-        "newsletter": true,
+        "name": "contactRecord.name",
+        "firstName": "contactRecord.firstName",
+        "lastName": "contactRecord.lastName",
+        "email": "contactRecord.email",
+        "phone": "contactRecord.phone",
+        "newsletter": false,
         "shipToDefault": false,
         "billToDefault": false,
         "defaultContact": false,
@@ -228,15 +454,15 @@ de.metas.rest_api.bpartner.impl.ContactRestControllerTest.retrieveContactsSince=
       },
       {
         "metasfreshId": 31,
-        "externalId": "abcde_1",
+        "externalId": "contactRecord.externalId_1",
         "metasfreshBPartnerId": 21,
         "active": true,
-        "name": "bpartnerRecord.name_1",
-        "firstName": "bpartnerRecord.firstName_1",
-        "lastName": "bpartnerRecord.lastName_1",
-        "email": "bpartnerRecord.email_1",
-        "phone": "bpartnerRecord.phone_1",
-        "newsletter": true,
+        "name": "contactRecord.name_1",
+        "firstName": "contactRecord.firstName_1",
+        "lastName": "contactRecord.lastName_1",
+        "email": "contactRecord.email_1",
+        "phone": "contactRecord.phone_1",
+        "newsletter": false,
         "shipToDefault": false,
         "billToDefault": false,
         "defaultContact": false,
@@ -248,7 +474,7 @@ de.metas.rest_api.bpartner.impl.ContactRestControllerTest.retrieveContactsSince=
         "changeInfo": {
           "createdMillis": 1561133544,
           "lastUpdatedMillis": 1561133544,
-          "lastUpdatedBy": 31
+          "lastUpdatedBy": 30
         }
       }
     ]
@@ -261,15 +487,15 @@ de.metas.rest_api.bpartner.impl.ContactRestControllerTest.retrieveContactsSince=
     "contacts": [
       {
         "metasfreshId": 32,
-        "externalId": "abcde_2",
+        "externalId": "contactRecord.externalId_2",
         "metasfreshBPartnerId": 22,
         "active": true,
-        "name": "bpartnerRecord.name_2",
-        "firstName": "bpartnerRecord.firstName_2",
-        "lastName": "bpartnerRecord.lastName_2",
-        "email": "bpartnerRecord.email_2",
-        "phone": "bpartnerRecord.phone_2",
-        "newsletter": true,
+        "name": "contactRecord.name_2",
+        "firstName": "contactRecord.firstName_2",
+        "lastName": "contactRecord.lastName_2",
+        "email": "contactRecord.email_2",
+        "phone": "contactRecord.phone_2",
+        "newsletter": false,
         "shipToDefault": false,
         "billToDefault": false,
         "defaultContact": false,
@@ -281,20 +507,21 @@ de.metas.rest_api.bpartner.impl.ContactRestControllerTest.retrieveContactsSince=
         "changeInfo": {
           "createdMillis": 1561133544,
           "createdBy": 32,
-          "lastUpdatedMillis": 1561133544
+          "lastUpdatedMillis": 1561133544,
+          "lastUpdatedBy": 30
         }
       },
       {
         "metasfreshId": 33,
-        "externalId": "abcde_3",
+        "externalId": "contactRecord.externalId_3",
         "metasfreshBPartnerId": 23,
         "active": true,
-        "name": "bpartnerRecord.name_3",
-        "firstName": "bpartnerRecord.firstName_3",
-        "lastName": "bpartnerRecord.lastName_3",
-        "email": "bpartnerRecord.email_3",
-        "phone": "bpartnerRecord.phone_3",
-        "newsletter": true,
+        "name": "contactRecord.name_3",
+        "firstName": "contactRecord.firstName_3",
+        "lastName": "contactRecord.lastName_3",
+        "email": "contactRecord.email_3",
+        "phone": "contactRecord.phone_3",
+        "newsletter": false,
         "shipToDefault": false,
         "billToDefault": false,
         "defaultContact": false,
@@ -305,7 +532,8 @@ de.metas.rest_api.bpartner.impl.ContactRestControllerTest.retrieveContactsSince=
         "subjectMatter": false,
         "changeInfo": {
           "createdMillis": 1561133544,
-          "lastUpdatedMillis": 1561133544
+          "lastUpdatedMillis": 1561133544,
+          "lastUpdatedBy": 30
         }
       }
     ]
@@ -317,15 +545,15 @@ de.metas.rest_api.bpartner.impl.ContactRestControllerTest.retrieveContactsSince=
     "contacts": [
       {
         "metasfreshId": 34,
-        "externalId": "abcde_4",
+        "externalId": "contactRecord.externalId_4",
         "metasfreshBPartnerId": 24,
         "active": true,
-        "name": "bpartnerRecord.name_4",
-        "firstName": "bpartnerRecord.firstName_4",
-        "lastName": "bpartnerRecord.lastName_4",
-        "email": "bpartnerRecord.email_4",
-        "phone": "bpartnerRecord.phone_4",
-        "newsletter": true,
+        "name": "contactRecord.name_4",
+        "firstName": "contactRecord.firstName_4",
+        "lastName": "contactRecord.lastName_4",
+        "email": "contactRecord.email_4",
+        "phone": "contactRecord.phone_4",
+        "newsletter": false,
         "shipToDefault": false,
         "billToDefault": false,
         "defaultContact": false,

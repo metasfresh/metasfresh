@@ -1,15 +1,17 @@
 package de.metas.printing.api.impl;
 
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
 
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_AD_User;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import com.google.common.collect.ImmutableSet;
 
@@ -49,19 +51,20 @@ public class PrintingQueueBLTests
 	 */
 	private I_C_Printing_Queue item;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
 		printingDAO = Services.get(IPrintingDAO.class);
 
-		final I_AD_User itemUser = InterfaceWrapperHelper.newInstance(I_AD_User.class);
-		InterfaceWrapperHelper.save(itemUser);
+		final I_AD_User itemUser = newInstance(I_AD_User.class);
+		save(itemUser);
 
-		item = InterfaceWrapperHelper.newInstance(I_C_Printing_Queue.class);
+		item = newInstance(I_C_Printing_Queue.class);
 		item.setAD_User_ID(itemUser.getAD_User_ID());
-		InterfaceWrapperHelper.save(item);
-		assertThat(item.isPrintoutForOtherUser(), is(false)); // guard
+		save(item);
+		assertFalse(item.isPrintoutForOtherUser()); // guard
+
 	}
 
 	/**
@@ -70,18 +73,18 @@ public class PrintingQueueBLTests
 	@Test
 	public void testSetPrintoutForOtherUsers_one_recipient()
 	{
-		final I_AD_User printRecipient = InterfaceWrapperHelper.newInstance(I_AD_User.class);
-		InterfaceWrapperHelper.save(printRecipient);
+		final I_AD_User printRecipient = newInstance(I_AD_User.class);
+		save(printRecipient);
 
-		assertThat(item.isPrintoutForOtherUser(), is(false)); // guard
+		assertFalse(item.isPrintoutForOtherUser()); // guard
 
 		final PrintingQueueBL printingQueueBL = new PrintingQueueBL();
 		printingQueueBL.setPrintoutForOtherUsers(item, ImmutableSet.of(printRecipient.getAD_User_ID()));
 
 		final List<Integer> result = printingDAO.retrievePrintingQueueRecipientIDs(item);
-		assertThat(result.size(), is(1));
-		assertThat(result.get(0), is(printRecipient.getAD_User_ID()));
-		assertThat(item.isPrintoutForOtherUser(), is(true));
+		assertEquals(result.size(), 1);
+		assertEquals(result.get(0), printRecipient.getAD_User_ID());
+		assertTrue(item.isPrintoutForOtherUser());
 	}
 
 	/**
@@ -94,26 +97,26 @@ public class PrintingQueueBLTests
 
 		// initial setup & guard
 		{
-			final I_AD_User printRecipient1 = InterfaceWrapperHelper.newInstance(I_AD_User.class);
-			InterfaceWrapperHelper.save(printRecipient1);
+			final I_AD_User printRecipient1 = newInstance(I_AD_User.class);
+			save(printRecipient1);
 
 			printingQueueBL.setPrintoutForOtherUsers(item, ImmutableSet.of(printRecipient1.getAD_User_ID()));
 
 			final List<Integer> result = printingDAO.retrievePrintingQueueRecipientIDs(item);
-			assertThat(result.size(), is(1));
-			assertThat(result.get(0), is(printRecipient1.getAD_User_ID()));
-			assertThat(item.isPrintoutForOtherUser(), is(true));
+			assertEquals(result.size(), 1);
+			assertEquals(result.get(0), printRecipient1.getAD_User_ID());
+			assertTrue(item.isPrintoutForOtherUser());
 		}
 
-		final I_AD_User printRecipient2 = InterfaceWrapperHelper.newInstance(I_AD_User.class);
-		InterfaceWrapperHelper.save(printRecipient2);
+		final I_AD_User printRecipient2 = newInstance(I_AD_User.class);
+		save(printRecipient2);
 
 		printingQueueBL.setPrintoutForOtherUsers(item, ImmutableSet.of(printRecipient2.getAD_User_ID()));
 
 		// still expecting one recipient, but printRecipient2
 		final List<Integer> result = printingDAO.retrievePrintingQueueRecipientIDs(item);
-		assertThat(result.size(), is(1));
-		assertThat(result.get(0), is(printRecipient2.getAD_User_ID()));
-		assertThat(item.isPrintoutForOtherUser(), is(true));
+		assertEquals(result.size(), 1);
+		assertEquals(result.get(0), printRecipient2.getAD_User_ID());
+		assertTrue(item.isPrintoutForOtherUser());
 	}
 }

@@ -27,11 +27,17 @@ import java.util.Map;
 
 import java.util.Properties;
 
+import javax.annotation.Nullable;
+
 import de.metas.util.ISingletonService;
+import lombok.NonNull;
 
 public interface IMsgBL extends ISingletonService
 {
-	String getMsg(String adLanguage, String message);
+	AdMessageKey MSG_Yes = AdMessageKey.of("Y");
+	AdMessageKey MSG_No = AdMessageKey.of("N");
+
+	String getMsg(String adLanguage, AdMessageKey message);
 
 	/**
 	 * Get translated text message for AD_Message
@@ -41,9 +47,9 @@ public interface IMsgBL extends ISingletonService
 	 * @param params parameters
 	 * @return translated text
 	 */
-	String getMsg(String adLanguage, String message, Object[] params);
+	String getMsg(String adLanguage, AdMessageKey message, Object[] params);
 
-	String getMsg(String adLanguage, String message, List<Object> params);
+	String getMsg(String adLanguage, AdMessageKey message, List<Object> params);
 
 	/**
 	 * Get translated text message for AD_Message
@@ -52,7 +58,13 @@ public interface IMsgBL extends ISingletonService
 	 * @param adMessage AD_Message
 	 * @return translated text
 	 */
-	String getMsg(Properties ctx, String adMessage);
+	String getMsg(Properties ctx, AdMessageKey adMessage);
+
+	@Deprecated
+	default String getMsg(Properties ctx, String adMessage)
+	{
+		return getMsg(ctx, AdMessageKey.of(adMessage));
+	}
 
 	/**
 	 * Get translated text message for AD_Message
@@ -62,9 +74,21 @@ public interface IMsgBL extends ISingletonService
 	 * @param params
 	 * @return translated text
 	 */
-	String getMsg(Properties ctx, String adMessage, Object[] params);
+	String getMsg(Properties ctx, AdMessageKey adMessage, Object[] params);
 
-	String getMsg(final String adMessage, final List<Object> params);
+	@Deprecated
+	default String getMsg(Properties ctx, String adMessage, Object[] params)
+	{
+		return getMsg(ctx, AdMessageKey.of(adMessage), params);
+	}
+
+	String getMsg(final AdMessageKey adMessage, final List<Object> params);
+
+	@Deprecated
+	default String getMsg(final String adMessage, final List<Object> params)
+	{
+		return getMsg(AdMessageKey.of(adMessage), params);
+	}
 
 	/**
 	 * Get translated text message for AD_Message
@@ -74,7 +98,13 @@ public interface IMsgBL extends ISingletonService
 	 * @param getText if true only return Text, if false only return Tip
 	 * @return translated text
 	 */
-	String getMsg(Properties ctx, String adMessage, boolean text);
+	String getMsg(Properties ctx, AdMessageKey adMessage, boolean text);
+
+	@Deprecated
+	default String getMsg(final Properties ctx, final String adMessage, final boolean text)
+	{
+		return getMsg(ctx, AdMessageKey.of(adMessage), text);
+	}
 
 	String parseTranslation(Properties ctx, String message);
 
@@ -113,26 +143,32 @@ public interface IMsgBL extends ISingletonService
 	ITranslatableString translatable(String text);
 
 	/**
-	 * @param adMessage AD_Message
-	 * @param msgParameters optional AD_Message parameters
 	 * @return AD_Message as translatable string
 	 * @see #translatable(String)
 	 */
-	ITranslatableString getTranslatableMsgText(String adMessage, Object... msgParameters);
+	ITranslatableString getTranslatableMsgText(AdMessageKey adMessage, Object... msgParameters);
 
-	/**
-	 * @see #getTranslatableMsgText(String, Object...)
-	 * @see #translatable(String)
-	 */
-	default ITranslatableString getTranslatableMsgText(final String adMessage, final List<Object> msgParameters)
+	@Deprecated
+	default ITranslatableString getTranslatableMsgText(@NonNull final String adMessage, @Nullable final Object... msgParameters)
+	{
+		return getTranslatableMsgText(AdMessageKey.of(adMessage), msgParameters);
+	}
+
+	default ITranslatableString getTranslatableMsgText(final AdMessageKey adMessage, final List<Object> msgParameters)
 	{
 		final Object[] msgParametersArr = msgParameters != null ? msgParameters.toArray() : new Object[] {};
 		return getTranslatableMsgText(adMessage, msgParametersArr);
 	}
 
+	@Deprecated
+	default ITranslatableString getTranslatableMsgText(final String adMessage, final List<Object> msgParameters)
+	{
+		return getTranslatableMsgText(AdMessageKey.of(adMessage), msgParameters);
+	}
+
 	default ITranslatableString getTranslatableMsgText(final boolean booleanValue)
 	{
-		return getTranslatableMsgText(booleanValue ? "Y" : "N");
+		return getTranslatableMsgText(booleanValue ? MSG_Yes : MSG_No);
 	}
 
 	ITranslatableString parseTranslatableString(String text);

@@ -468,9 +468,8 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 		}
 
 		// Add Fields
-		for (int f = 0; f < m_vo.getFields().size(); f++)
+		for (final GridFieldVO voF : m_vo.getFields())
 		{
-			final GridFieldVO voF = m_vo.getFields().get(f);
 			// Add Fields to Table
 			if (voF != null)
 			{
@@ -528,9 +527,9 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 
 				// List of ColumnNames, this field is dependent on
 				final List<String> list = field.getDependentOn();
-				for (int i = 0; i < list.size(); i++)
+				for (String element : list)
 				{
-					m_depOnField.put(list.get(i), field);   // ColumnName, Field
+					m_depOnField.put(element, field);   // ColumnName, Field
 				}
 				// Add fields all fields are dependent on
 				if (columnName.equals("IsActive")
@@ -629,9 +628,9 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 		if (list.size() > 0 && LogManager.isLevelFiner())
 		{
 			final StringBuilder sb = new StringBuilder();
-			for (int i = 0; i < list.size(); i++)
+			for (String element : list)
 			{
-				sb.append(list.get(i)).append(" ");
+				sb.append(element).append(" ");
 			}
 			log.trace("DependentOn {}: {} ", m_vo, sb);
 		}
@@ -2664,15 +2663,14 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 		event.setCreated((Integer)getValue("CreatedBy"), (Timestamp)getValue("Created"));
 		event.setUpdated((Integer)getValue("UpdatedBy"), (Timestamp)getValue("Updated"));
 
-
 		final int adTableId = getAD_Table_ID();
 		final String singleKeyColumnName = getKeyColumnName();
 
 		// We have a key column
-		if(!Check.isEmpty(singleKeyColumnName, true))
+		if (!Check.isEmpty(singleKeyColumnName, true))
 		{
 			final int recordId = getRecord_ID();
-			if(recordId < 0)
+			if (recordId < 0)
 			{
 				event.setAdTableId(adTableId);
 			}
@@ -2682,7 +2680,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 			}
 		}
 		// we have multiple parents
-		else if(!m_parents.isEmpty())
+		else if (!m_parents.isEmpty())
 		{
 			final Map<String, Object> valuesByColumnName = new HashMap<>();
 			for (final String keyColumnName : m_parents)
@@ -2925,9 +2923,9 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 				}
 				else
 				{   // no rows - set to a reasonable value - not updateable
-					// Object value = null;
-					// if (mField.isKey() || mField.isParent() || mField.getColumnName().equals(m_linkColumnName))
-					// value = mField.getDefault();
+					   // Object value = null;
+					   // if (mField.isKey() || mField.isParent() || mField.getColumnName().equals(m_linkColumnName))
+					   // value = mField.getDefault();
 
 					// CarlosRuiz - globalqss [ 1881480 ] Navigation problem between tabs
 					// the implementation of linking with window context variables is very weak
@@ -3309,7 +3307,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 		{
 			calloutExecutor.execute(field);
 		}
-		catch(final CalloutException e)
+		catch (final CalloutException e)
 		{
 			final String errmsg = AdempiereException.extractMessage(e);
 			log.warn("Failed executing callout on {}. \n Error message: {} \n CalloutInstance: {}", field, errmsg, e.getCalloutInstance(), e);
@@ -4345,7 +4343,6 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 
 	}
 
-
 	//
 	//
 	//
@@ -4413,6 +4410,12 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 		{
 			// backward compatibility
 			return SelectionSize.ofSize(1);
+		}
+
+		@Override
+		public <T> IQueryFilter<T> getQueryFilter(@NonNull Class<T> recordClass)
+		{
+			return gridTab.createCurrentRecordsQueryFilter(recordClass);
 		}
 
 	}

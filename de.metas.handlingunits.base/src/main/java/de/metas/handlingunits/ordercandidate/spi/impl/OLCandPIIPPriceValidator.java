@@ -46,10 +46,8 @@ import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.ordercandidate.spi.IOLCandValidator;
 import de.metas.ordercandidate.spi.impl.DefaultOLCandValidator;
 import de.metas.pricing.IEditablePricingContext;
-import de.metas.pricing.IPricingResult;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PricingSystemId;
-import de.metas.pricing.exceptions.ProductNotOnPriceListException;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.pricing.service.IPricingBL;
 import de.metas.product.ProductId;
@@ -129,12 +127,8 @@ public class OLCandPIIPPriceValidator implements IOLCandValidator
 		pricingCtx.setProductId(packingMaterialProductId);
 		pricingCtx.setPriceDate(datePromisedEffective);
 		pricingCtx.setCurrencyId(CurrencyId.ofRepoId(olCand.getC_Currency_ID()));
+		pricingCtx.setFailIfNotCalculated();
 
-		final IPricingResult pricingResult = Services.get(IPricingBL.class).calculatePrice(pricingCtx);
-		if (pricingResult == null || !pricingResult.isCalculated())
-		{
-			final int documentLineNo = -1; // not needed, the msg will be shown in the line itself
-			throw new ProductNotOnPriceListException(pricingCtx, documentLineNo);
-		}
+		Services.get(IPricingBL.class).calculatePrice(pricingCtx);
 	}
 }

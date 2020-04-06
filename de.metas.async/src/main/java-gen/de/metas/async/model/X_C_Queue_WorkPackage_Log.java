@@ -1,19 +1,3 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 /** Generated Model - DO NOT CHANGE */
 package de.metas.async.model;
 
@@ -30,7 +14,7 @@ public class X_C_Queue_WorkPackage_Log extends org.compiere.model.PO implements 
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1741665664L;
+	private static final long serialVersionUID = 2025646833L;
 
     /** Standard Constructor */
     public X_C_Queue_WorkPackage_Log (Properties ctx, int C_Queue_WorkPackage_Log_ID, String trxName)
@@ -59,7 +43,44 @@ public class X_C_Queue_WorkPackage_Log extends org.compiere.model.PO implements 
     }
 
 	@Override
-	public de.metas.async.model.I_C_Queue_WorkPackage getC_Queue_WorkPackage() throws RuntimeException
+	public org.compiere.model.I_AD_Issue getAD_Issue()
+	{
+		return get_ValueAsPO(COLUMNNAME_AD_Issue_ID, org.compiere.model.I_AD_Issue.class);
+	}
+
+	@Override
+	public void setAD_Issue(org.compiere.model.I_AD_Issue AD_Issue)
+	{
+		set_ValueFromPO(COLUMNNAME_AD_Issue_ID, org.compiere.model.I_AD_Issue.class, AD_Issue);
+	}
+
+	/** Set System-Problem.
+		@param AD_Issue_ID 
+		Automatically created or manually entered System Issue
+	  */
+	@Override
+	public void setAD_Issue_ID (int AD_Issue_ID)
+	{
+		if (AD_Issue_ID < 1) 
+			set_Value (COLUMNNAME_AD_Issue_ID, null);
+		else 
+			set_Value (COLUMNNAME_AD_Issue_ID, Integer.valueOf(AD_Issue_ID));
+	}
+
+	/** Get System-Problem.
+		@return Automatically created or manually entered System Issue
+	  */
+	@Override
+	public int getAD_Issue_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_AD_Issue_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public de.metas.async.model.I_C_Queue_WorkPackage getC_Queue_WorkPackage()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_Queue_WorkPackage_ID, de.metas.async.model.I_C_Queue_WorkPackage.class);
 	}

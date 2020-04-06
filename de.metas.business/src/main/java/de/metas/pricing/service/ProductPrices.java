@@ -24,6 +24,7 @@ import org.compiere.model.I_M_ProductPrice;
 import org.slf4j.Logger;
 
 import de.metas.adempiere.model.I_M_Product;
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.impexp.processing.product.ProductPriceCreateRequest;
@@ -66,7 +67,7 @@ import lombok.NonNull;
 
 public class ProductPrices
 {
-	private static final String MSG_NO_UOM_CONVERSION_AVAILABLE = "de.metas.pricing.service.product.MissingUOMConversion";
+	private static final AdMessageKey MSG_NO_UOM_CONVERSION_AVAILABLE = AdMessageKey.of("de.metas.pricing.service.product.MissingUOMConversion");
 
 	private static final CopyOnWriteArrayList<IProductPriceQueryMatcher> MATCHERS_MainProductPrice = new CopyOnWriteArrayList<>();
 
@@ -228,9 +229,10 @@ public class ProductPrices
 		return exception;
 	}
 
+	@SuppressWarnings("serial")
 	public static final class DuplicateMainProductPriceException extends AdempiereException
 	{
-		private static final long serialVersionUID = 6473484914632431744L;
+		private static final AdMessageKey MSG_M_ProductPrice_DublicateMainPrice = AdMessageKey.of("M_ProductPrice_DublicateMainPrice");
 
 		private DuplicateMainProductPriceException(@NonNull final I_M_ProductPrice anyDublicatedMainProductPrice)
 		{
@@ -246,7 +248,7 @@ public class ProductPrices
 			final I_M_PriceList_Version plvRecord = load(anyDublicatedMainProductPrice.getM_PriceList_Version_ID(), I_M_PriceList_Version.class);
 
 			return msgBL.getMsg(ctx,
-					"M_ProductPrice_DublicateMainPrice",
+					MSG_M_ProductPrice_DublicateMainPrice,
 					new Object[] { productRecord.getValue(), plvRecord.getName() });
 		}
 	}

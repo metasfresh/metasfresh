@@ -46,10 +46,8 @@ public class ValidationRuleFactory implements IValidationRuleFactory
 	private final Map<String, IValidationRule> classname2rulesCache = new ConcurrentHashMap<>();
 
 	@Override
-	public void registerTableValidationRule(final String tableName, final IValidationRule rule)
+	public void registerTableValidationRule(final String tableName, @NonNull final IValidationRule rule)
 	{
-		Check.assume(rule != null, "rule not null");
-
 		final boolean added = tableRulesMap
 				.computeIfAbsent(tableName, key -> new CopyOnWriteArrayList<>())
 				.addIfAbsent(rule);
@@ -119,7 +117,7 @@ public class ValidationRuleFactory implements IValidationRuleFactory
 		}
 	}
 
-	private IValidationRule createSQLValidationRule(final I_AD_Val_Rule valRule)
+	private IValidationRule createSQLValidationRule(@NonNull final I_AD_Val_Rule valRule)
 	{
 		final String whereClause = valRule.getCode();
 		if (Check.isEmpty(whereClause, true)) // shall not happen

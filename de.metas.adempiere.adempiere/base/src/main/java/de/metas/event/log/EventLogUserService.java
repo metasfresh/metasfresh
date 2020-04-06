@@ -150,8 +150,6 @@ public class EventLogUserService
 
 	/**
 	 * Invokes the given {@code request}'s runnable and sets up a threadlocal {@link ILoggable}.
-	 *
-	 * @param request
 	 */
 	public void invokeHandlerAndLog(@NonNull final InvokeHandlerAndLogRequest request)
 	{

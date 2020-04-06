@@ -164,7 +164,7 @@ public interface I_M_ShipmentSchedule_QtyPicked
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setisAnonymousHuPickedOnTheFly (boolean isAnonymousHuPickedOnTheFly);
+	public void setIsAnonymousHuPickedOnTheFly (boolean IsAnonymousHuPickedOnTheFly);
 
 	/**
 	 * Get Anonymous HU Picked On the Fly.
@@ -175,10 +175,10 @@ public interface I_M_ShipmentSchedule_QtyPicked
 	 */
 	public boolean isAnonymousHuPickedOnTheFly();
 
-    /** Column definition for isAnonymousHuPickedOnTheFly */
-    public static final org.adempiere.model.ModelColumn<I_M_ShipmentSchedule_QtyPicked, Object> COLUMN_isAnonymousHuPickedOnTheFly = new org.adempiere.model.ModelColumn<I_M_ShipmentSchedule_QtyPicked, Object>(I_M_ShipmentSchedule_QtyPicked.class, "isAnonymousHuPickedOnTheFly", null);
-    /** Column name isAnonymousHuPickedOnTheFly */
-    public static final String COLUMNNAME_isAnonymousHuPickedOnTheFly = "isAnonymousHuPickedOnTheFly";
+    /** Column definition for IsAnonymousHuPickedOnTheFly */
+    public static final org.adempiere.model.ModelColumn<I_M_ShipmentSchedule_QtyPicked, Object> COLUMN_IsAnonymousHuPickedOnTheFly = new org.adempiere.model.ModelColumn<I_M_ShipmentSchedule_QtyPicked, Object>(I_M_ShipmentSchedule_QtyPicked.class, "IsAnonymousHuPickedOnTheFly", null);
+    /** Column name IsAnonymousHuPickedOnTheFly */
+    public static final String COLUMNNAME_IsAnonymousHuPickedOnTheFly = "IsAnonymousHuPickedOnTheFly";
 
 	/**
 	 * Set Versand-/Wareneingangsposition.

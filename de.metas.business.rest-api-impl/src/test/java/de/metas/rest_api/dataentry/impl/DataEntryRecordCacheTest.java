@@ -9,8 +9,8 @@ import java.util.Set;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -63,7 +63,7 @@ public class DataEntryRecordCacheTest
 	private static final UserId USER_ID = UserId.ofRepoId(100);
 	private static final DataEntryFieldId FIELD_ID1 = DataEntryFieldId.ofRepoId(111);
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();

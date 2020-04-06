@@ -188,7 +188,7 @@ public interface IBPartnerDAO extends ISingletonService
 	 * @param bpValue an exact bpartner value. Try to retrieve by that value first, if <code>null</code> or empty, directly try the fallback
 	 * @param bpValueSuffixToFallback the suffix of a bpartner value. Only use if retrieval by <code>bpValue</code> produced no results. If <code>null</code> or empty, return <code>null</code>.
 	 * @return a single bPartner or <code>null</code>
-	 * @throws org.adempiere.exceptions.DBMoreThenOneRecordsFoundException if there is more than one matching partner.
+	 * @throws org.adempiere.exceptions.DBMoreThanOneRecordsFoundException if there is more than one matching partner.
 	 */
 	I_C_BPartner retrieveBPartnerByValueOrSuffix(Properties ctx, String bpValue, String bpValueSuffixToFallback);
 
@@ -238,7 +238,9 @@ public interface IBPartnerDAO extends ISingletonService
 	 * Performs an non-strict search (e.g. if BP has only one address, it returns it even if it's not flagged as the default ShipTo address).
 	 *
 	 * @return bp location or null
+	 * @deprecated please consider using {@link #retrieveBPartnerLocation(BPartnerLocationQuery)} instead
 	 */
+	@Deprecated
 	I_C_BPartner_Location getDefaultShipToLocation(BPartnerId bpartnerId);
 
 	CountryId getDefaultShipToLocationCountryIdOrNull(BPartnerId bpartnerId);
@@ -276,8 +278,16 @@ public interface IBPartnerDAO extends ISingletonService
 
 	Map<BPartnerId, Integer> retrieveAllDiscountSchemaIdsIndexedByBPartnerId(BPartnerType bpartnerType);
 
+	/**
+	 * @deprecated please consider using {@link #retrieveBPartnerLocation(BPartnerLocationQuery)} instead
+	 */
+	@Deprecated
 	BPartnerLocationId getBilltoDefaultLocationIdByBpartnerId(BPartnerId bpartnerId);
 
+	/**
+	 * @deprecated please consider using {@link #retrieveBPartnerLocation(BPartnerLocationQuery)} instead
+	 */
+	@Deprecated
 	BPartnerLocationId getShiptoDefaultLocationIdByBpartnerId(BPartnerId bpartnerId);
 
 	String getBPartnerNameById(BPartnerId bpartnerId);
@@ -325,7 +335,7 @@ public interface IBPartnerDAO extends ISingletonService
 
 	BPGroupId getBPGroupIdByBPartnerId(BPartnerId bpartnerId);
 
-	Stream<BPartnerId> streamChildBPartnerIds(BPartnerId parentPartnerId);
+	Stream<BPartnerId> streamBPartnerIdsBySalesRepBPartnerId(BPartnerId parentPartnerId);
 
 	List<BPartnerId> getParentsUpToTheTopInTrx(BPartnerId bpartnerId);
 

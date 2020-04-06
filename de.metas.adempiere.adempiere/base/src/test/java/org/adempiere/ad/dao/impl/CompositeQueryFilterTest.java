@@ -178,7 +178,7 @@ public class CompositeQueryFilterTest
 
 		assertThatThrownBy(() -> filters.addFilter(null))
 				.isInstanceOf(NullPointerException.class)
-				.hasMessage("filter");
+				.hasMessageContaining("filter");
 	}
 
 	@Test
@@ -215,7 +215,7 @@ public class CompositeQueryFilterTest
 
 		assertThatThrownBy(() -> filters.addFilters(filtersAndNulls))
 				.isInstanceOf(NullPointerException.class)
-				.hasMessage("filter");
+				.hasMessageContaining("filter");
 	}
 
 	@Test

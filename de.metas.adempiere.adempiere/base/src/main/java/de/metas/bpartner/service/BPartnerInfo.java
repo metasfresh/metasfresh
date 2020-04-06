@@ -8,6 +8,7 @@ import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
 
 /*
@@ -45,19 +46,17 @@ public final class BPartnerInfo
 
 	@Builder
 	private BPartnerInfo(
-			@Nullable final BPartnerId bpartnerId,
+			@NonNull final BPartnerId bpartnerId,
 			@Nullable final BPartnerLocationId bpartnerLocationId,
 			@Nullable final BPartnerContactId contactId)
 	{
-		if (bpartnerId != null
-				&& bpartnerLocationId != null
+		if (bpartnerLocationId != null
 				&& !bpartnerId.equals(bpartnerLocationId.getBpartnerId()))
 		{
 			throw new AdempiereException("" + bpartnerId + " and " + bpartnerLocationId + " not matching");
 		}
 
-		if (bpartnerId != null
-				&& contactId != null
+		if (contactId != null
 				&& !bpartnerId.equals(contactId.getBpartnerId()))
 		{
 			throw new AdempiereException("" + bpartnerId + " and " + contactId + " not matching");

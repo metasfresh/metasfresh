@@ -32,6 +32,12 @@ import lombok.Value;
 @Value
 public class DocBaseAndSubType
 {
+	public static DocBaseAndSubType of(@NonNull final String docBaseType)
+	{
+		final String docSubType = null;
+		return new DocBaseAndSubType(docBaseType, docSubType);
+	}
+
 	public static DocBaseAndSubType of(
 			@NonNull final String docBaseType,
 			@Nullable final String docSubType)

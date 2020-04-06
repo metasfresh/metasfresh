@@ -30,14 +30,8 @@ import java.util.List;
 import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.util.TimeUtil;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.junit.jupiter.api.Test;
 
-import de.metas.ShutdownListener;
-import de.metas.StartupListener;
-import de.metas.contracts.ContractLibraryConfiguration;
 import de.metas.contracts.IContractChangeBL;
 import de.metas.contracts.IContractChangeBL.ContractChangeParameters;
 import de.metas.contracts.IContractsDAO;
@@ -57,10 +51,6 @@ import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 
-@RunWith(SpringRunner.class)
-@SpringBootTest(classes = { StartupListener.class, ShutdownListener.class,
-		ContractLibraryConfiguration.class,
-		ContractOrderService.class})
 public class ContractChangeBLTest extends AbstractFlatrateTermTest
 {
 	final private IContractChangeBL contractChangeBL = Services.get(IContractChangeBL.class);
@@ -80,7 +70,7 @@ public class ContractChangeBLTest extends AbstractFlatrateTermTest
 	@Override
 	public void initialize()
 	{
-		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(C_Flatrate_Term.INSTANCE);
+		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(new C_Flatrate_Term(new ContractOrderService()));
 		SystemTime.setTimeSource(today);
 	}
 

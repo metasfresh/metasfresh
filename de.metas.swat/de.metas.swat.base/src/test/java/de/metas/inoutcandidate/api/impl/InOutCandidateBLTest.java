@@ -74,8 +74,7 @@ public class InOutCandidateBLTest
 	@Test
 	public void test_getQtyAndQuality_NotInDispute_noCatchWeight()
 	{
-		final StockQtyAndUOMQty qtys_33 = StockQtyAndUOMQtys.create(
-				new BigDecimal("33"), productId, null, null);
+		final StockQtyAndUOMQty qtys_33 = StockQtyAndUOMQtys.ofQtyInStockUOM(new BigDecimal("33"), productId);
 
 		final I_M_InOutLine inoutLine = new InOutLineExpectation<>(null, context)
 				.stockQtyAndMaybeCatchQty(qtys_33)
@@ -97,8 +96,7 @@ public class InOutCandidateBLTest
 	@Test
 	public void test_getQtyAndQuality_InDispute_noCatchWeight()
 	{
-		final StockQtyAndUOMQty qtys_33 = StockQtyAndUOMQtys.create(
-				new BigDecimal("33"), productId, null, null);
+		final StockQtyAndUOMQty qtys_33 = StockQtyAndUOMQtys.ofQtyInStockUOM(new BigDecimal("33"), productId);
 
 		final I_M_InOutLine inoutLine = new InOutLineExpectation<>(null, context)
 				.stockQtyAndMaybeCatchQty(qtys_33)
@@ -110,7 +108,7 @@ public class InOutCandidateBLTest
 		final ReceiptQty qtys = inOutCandidateBL.getQtyAndQuality(inoutLine);
 		ReceiptQtyExpectation.newInstance()
 				.qty(qtys_33)
-				.qtyWithIssuesExact(StockQtyAndUOMQtys.create(new BigDecimal("33"), productId, null, null))
+				.qtyWithIssuesExact(StockQtyAndUOMQtys.ofQtyInStockUOM(new BigDecimal("33"), productId))
 				.qualityNotices("note 1. note 2. note 3")
 				.assertExpected(qtys);
 	}

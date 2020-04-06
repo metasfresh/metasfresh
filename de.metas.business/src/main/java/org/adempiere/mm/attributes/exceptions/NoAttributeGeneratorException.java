@@ -25,13 +25,12 @@ package org.adempiere.mm.attributes.exceptions;
 
 import org.adempiere.exceptions.AdempiereException;
 
+import de.metas.i18n.AdMessageKey;
+
+@SuppressWarnings("serial")
 public class NoAttributeGeneratorException extends AdempiereException
 {
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = -1557791413969098788L;
-	private static final String MSG = "de.metas.swat.Attribute.generatorError";
+	private static final AdMessageKey MSG = AdMessageKey.of("de.metas.swat.Attribute.generatorError");
 
 	/**
 	 * 

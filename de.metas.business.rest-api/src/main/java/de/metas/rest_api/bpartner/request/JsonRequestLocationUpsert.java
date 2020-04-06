@@ -51,7 +51,7 @@ public class JsonRequestLocationUpsert
 	SyncAdvise syncAdvise;
 
 	@JsonCreator
-	@Builder
+	@Builder(toBuilder = true)
 	public JsonRequestLocationUpsert(
 			@Singular @JsonProperty("requestItems") final List<JsonRequestLocationUpsertItem> requestItems,
 			@Nullable @JsonProperty("syncAdvise") final SyncAdvise syncAdvise)

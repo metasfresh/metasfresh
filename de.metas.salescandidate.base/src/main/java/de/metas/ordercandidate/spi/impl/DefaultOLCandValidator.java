@@ -16,6 +16,7 @@ import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
 
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.logging.LogManager;
@@ -65,7 +66,7 @@ import lombok.NonNull;
 @Component
 public class DefaultOLCandValidator implements IOLCandValidator
 {
-	private static final String MSG_NO_UOM_CONVERSION = "NoUOMConversion_Params";
+	private static final AdMessageKey MSG_NO_UOM_CONVERSION = AdMessageKey.of("NoUOMConversion_Params");
 	// services
 	private static final Logger logger = LogManager.getLogger(DefaultOLCandValidator.class);
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);

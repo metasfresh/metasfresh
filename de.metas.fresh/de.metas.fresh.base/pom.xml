@@ -182,7 +182,7 @@
 
 		<dependency>
 			<groupId>de.metas.payment.sepa</groupId>
-			<artifactId>de.metas.payment.sepa</artifactId>
+			<artifactId>de.metas.payment.sepa.base</artifactId>
 			<version>${metasfresh.version}</version>
 		</dependency>
 
@@ -251,7 +251,7 @@
 		 -->
 		<dependency>
 			<groupId>de.metas.report</groupId>
-			<artifactId>report-service</artifactId>
+			<artifactId>metasfresh-report-service</artifactId>
 			<version>${metasfresh.version}</version>
 			<scope>provided</scope>
 		</dependency>
@@ -278,6 +278,18 @@
 		<dependency>
 			<groupId>de.metas.purchasecandidate</groupId>
 			<artifactId>de.metas.purchasecandidate.base</artifactId>
+			<version>${metasfresh.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.salescandidate</groupId>
+			<artifactId>de.metas.salescandidate.base</artifactId>
+			<version>${metasfresh.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.serviceprovider</groupId>
+			<artifactId>de.metas.serviceprovider.base</artifactId>
 			<version>${metasfresh.version}</version>
 		</dependency>
 

@@ -133,7 +133,7 @@ import lombok.NonNull;
 	{
 		final IWorkPackageBuilder workpackageBuilder = _queueBlockBuilder.newWorkpackage()
 				.setPriority(workpackagePriority)
-				.setUserInChargeId(Env.getAD_User_ID()) // we want the enqueuing user to be notified on problems
+				.setUserInChargeId(Env.getLoggedUserIdIfExists().orElse(null)) // we want the enqueuing user to be notified on problems
 				.bindToTrxName(getTrxName());
 
 		//

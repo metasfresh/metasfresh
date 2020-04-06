@@ -57,7 +57,9 @@ public class MDocTypeCounter extends X_C_DocTypeCounter
 		if (dtCounter != null)
 		{
 			if (!dtCounter.isCreateCounter() || !dtCounter.isValid())
+			{
 				return -1;
+			}
 			return dtCounter.getCounter_C_DocType_ID();
 		}
 
@@ -73,7 +75,7 @@ public class MDocTypeCounter extends X_C_DocTypeCounter
 			return -1;
 		}
 
-		final String cDocBaseType = Services.get(IDocTypeDAO.class).retrieveDocBaseTypeCounter(ctx, dt.getDocBaseType());
+		final String cDocBaseType = Services.get(IDocTypeDAO.class).getDocBaseTypeCounter(dt.getDocBaseType()).orElse(null);
 		if (cDocBaseType == null)
 		{
 			return 0;
@@ -112,7 +114,9 @@ public class MDocTypeCounter extends X_C_DocTypeCounter
 		Integer key = C_DocType_ID;
 		MDocTypeCounter retValue = s_counter.get(key);
 		if (retValue != null)
+		{
 			return retValue;
+		}
 
 		// Direct Relationship
 		MDocTypeCounter temp = null;
@@ -174,17 +178,21 @@ public class MDocTypeCounter extends X_C_DocTypeCounter
 		Integer key = new Integer(C_DocTypeCounter_ID);
 		MDocTypeCounter retValue = s_cache.get(key);
 		if (retValue != null)
+		{
 			return retValue;
+		}
 		retValue = new MDocTypeCounter(ctx, C_DocTypeCounter_ID, trxName);
 		if (retValue.get_ID() != 0)
+		{
 			s_cache.put(key, retValue);
+		}
 		return retValue;
 	}	// get
 
 	/** Object Cache */
-	private static CCache<Integer, MDocTypeCounter> s_cache = new CCache<Integer, MDocTypeCounter>("C_DocTypeCounter", 20);
+	private static CCache<Integer, MDocTypeCounter> s_cache = new CCache<>("C_DocTypeCounter", 20);
 	/** Counter Relationship Cache */
-	private static CCache<Integer, MDocTypeCounter> s_counter = new CCache<Integer, MDocTypeCounter>("C_DocTypeCounter", 20);
+	private static CCache<Integer, MDocTypeCounter> s_counter = new CCache<>("C_DocTypeCounter", 20);
 	/** Static Logger */
 	private static Logger s_log = LogManager.getLogger(MDocTypeCounter.class);
 
@@ -227,7 +235,9 @@ public class MDocTypeCounter extends X_C_DocTypeCounter
 	{
 		super.setC_DocType_ID(C_DocType_ID);
 		if (isValid())
+		{
 			setIsValid(false);
+		}
 	}	// setC_DocType_ID
 
 	/**
@@ -240,7 +250,9 @@ public class MDocTypeCounter extends X_C_DocTypeCounter
 	{
 		super.setCounter_C_DocType_ID(Counter_C_DocType_ID);
 		if (isValid())
+		{
 			setIsValid(false);
+		}
 	}	// setCounter_C_DocType_ID
 
 	/**
@@ -255,7 +267,9 @@ public class MDocTypeCounter extends X_C_DocTypeCounter
 		{
 			dt = MDocType.get(getCtx(), getC_DocType_ID());
 			if (dt.get_ID() == 0)
+			{
 				dt = null;
+			}
 		}
 		return dt;
 	}	// getDocType
@@ -272,7 +286,9 @@ public class MDocTypeCounter extends X_C_DocTypeCounter
 		{
 			dt = MDocType.get(getCtx(), getCounter_C_DocType_ID());
 			if (dt.get_ID() == 0)
+			{
 				dt = null;
+			}
 		}
 		return dt;
 	}	// getCounterDocType
@@ -304,7 +320,7 @@ public class MDocTypeCounter extends X_C_DocTypeCounter
 		log.debug(dtBT + " -> " + c_dtBT);
 
 		boolean valid = true;
-		final String docBaseTypeCounter = Services.get(IDocTypeDAO.class).retrieveDocBaseTypeCounter(getCtx(), dtBT);
+		final String docBaseTypeCounter = Services.get(IDocTypeDAO.class).getDocBaseTypeCounter(dtBT).orElse(null);
 
 		if (c_dtBT == null)
 		{
@@ -330,7 +346,9 @@ public class MDocTypeCounter extends X_C_DocTypeCounter
 
 		// Counter should have document numbering
 		if (!c_dt.isDocNoControlled())
+		{
 			return "Counter Document Type should be automatically Document Number controlled";
+		}
 		return null;
 	}	// validate
 
@@ -361,15 +379,21 @@ public class MDocTypeCounter extends X_C_DocTypeCounter
 	protected boolean beforeSave(boolean newRecord)
 	{
 		if (getAD_Org_ID() != 0)
+		{
 			setAD_Org_ID(0);
+		}
 
 		if (!newRecord
 				&& (is_ValueChanged("C_DocType_ID") || is_ValueChanged("Counter_C_DocType_ID")))
+		{
 			setIsValid(false);
+		}
 
 		// try to validate
 		if (!isValid())
+		{
 			validate();
+		}
 		return true;
 	}	// beforeSave
 

@@ -1,5 +1,6 @@
 package de.metas.contracts.commission.commissioninstance.businesslogic;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.annotation.Nullable;
@@ -9,8 +10,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.contracts.commission.Beneficiary;
-import de.metas.contracts.commission.commissioninstance.businesslogic.sales.CommissionTriggerData;
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.SalesCommissionShare;
+import de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.CommissionTriggerData;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NonNull;
@@ -38,7 +39,7 @@ import lombok.Singular;
  * #L%
  */
 
-/** one instance has a commission trigger and {@code n} commission shares (according to the sales rep hierarchy). */
+/** one instance has one commission trigger and {@code n} commission shares (according to the sales rep hierarchy). */
 @Data
 public class CommissionInstance
 {
@@ -47,22 +48,28 @@ public class CommissionInstance
 
 	private CommissionTriggerData currentTriggerData;
 
-	private final CommissionConfig config;
-
 	/** Each share means that commission will be paid to some {@link Beneficiary} in accordance to some commission contract and hierarchy. */
-	private final ImmutableList<SalesCommissionShare> shares;
+	private final List<SalesCommissionShare> shares;
 
 	@JsonCreator
 	@Builder(toBuilder = true)
 	private CommissionInstance(
 			@JsonProperty("id") @Nullable final CommissionInstanceId id,
 			@JsonProperty("currentTriggerData") @NonNull final CommissionTriggerData currentTriggerData,
-			@JsonProperty("config") @NonNull final CommissionConfig config,
 			@JsonProperty("shares") @Singular final List<SalesCommissionShare> shares)
 	{
 		this.id = id;
 		this.currentTriggerData = currentTriggerData;
-		this.config = config;
-		this.shares = ImmutableList.copyOf(shares);
+		this.shares = new ArrayList<>(shares);
+	}
+
+	public void addShares(@NonNull final ImmutableList<SalesCommissionShare> shares)
+	{
+		this.shares.addAll(shares);
+	}
+
+	public ImmutableList<SalesCommissionShare> getShares()
+	{
+		return ImmutableList.copyOf(shares);
 	}
 }

@@ -20,12 +20,12 @@ import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
+import javax.annotation.Nullable;
+
 /**
- *
  * NOTE: can be accessed only via {@link #instance} to make sure we are not registering it twice
  *
  * @author tsa
- *
  */
 public final class ShipmentScheduleHUTrxListener implements IHUTrxListener
 {
@@ -83,8 +83,9 @@ public final class ShipmentScheduleHUTrxListener implements IHUTrxListener
 
 		//
 		// Link VHU to shipment schedule
+		final boolean anonymousHuPickedOnTheFly = false;
 		final IHUShipmentScheduleBL huShipmentScheduleBL = Services.get(IHUShipmentScheduleBL.class);
-		huShipmentScheduleBL.addQtyPickedAndUpdateHU(shipmentSchedule, stockQtyAndUomQty, vhu, huContext, false);
+		huShipmentScheduleBL.addQtyPickedAndUpdateHU(shipmentSchedule, stockQtyAndUomQty, vhu, huContext, anonymousHuPickedOnTheFly);
 	}
 
 	private I_M_ShipmentSchedule findShipmentSchedule(final I_M_HU_Trx_Line trxLine)
@@ -114,9 +115,9 @@ public final class ShipmentScheduleHUTrxListener implements IHUTrxListener
 	/**
 	 * Gets the shipment schedule where the "from VHU" is assigned.
 	 *
-	 * @param trxLine
 	 * @return {@link I_M_ShipmentSchedule} or null
 	 */
+	@Nullable
 	private I_M_ShipmentSchedule getM_ShipmentScheduleFromVHU(final I_M_HU_Trx_Line trxLine)
 	{
 		//
@@ -190,6 +191,7 @@ public final class ShipmentScheduleHUTrxListener implements IHUTrxListener
 			return;
 		}
 
+		@SuppressWarnings("UnnecessaryLocalVariable")
 		final I_M_HU tuHU = hu;
 		Services.get(IHUShipmentScheduleBL.class).updateAllocationLUForTU(tuHU);
 	}

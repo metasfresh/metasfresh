@@ -7,8 +7,8 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.test.AdempiereTestHelper;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
@@ -40,7 +40,7 @@ import de.metas.contracts.model.X_C_Flatrate_Term;
 
 public class C_Flatrate_ConditionsTest
 {
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
@@ -62,7 +62,7 @@ public class C_Flatrate_ConditionsTest
 				.isThrownBy(() -> {
 					C_Flatrate_Conditions.INSTANCE.onTransitionChange(conditions);
 				})
-				.withMessageContaining(C_Flatrate_Conditions.MSG_CONDITIONS_ERROR_INVALID_TRANSITION_2P)
+				.withMessageContaining(C_Flatrate_Conditions.MSG_CONDITIONS_ERROR_INVALID_TRANSITION_2P.toAD_Message())
 				.withNoCause();
 	}
 
@@ -72,7 +72,7 @@ public class C_Flatrate_ConditionsTest
 		final I_C_Flatrate_Conditions conditions = newInstance(I_C_Flatrate_Conditions.class);
 		assertThatThrownBy(() -> {
 			C_Flatrate_Conditions.INSTANCE.prohibitVoidAndClose(conditions);
-		}).hasMessage("@" + MainValidator.MSG_FLATRATE_DOC_ACTION_NOT_SUPPORTED_0P + "@");
+		}).hasMessage(MainValidator.MSG_FLATRATE_DOC_ACTION_NOT_SUPPORTED_0P.toAD_Message());
 	}
 
 	@Test
@@ -84,7 +84,7 @@ public class C_Flatrate_ConditionsTest
 
 		assertThatThrownBy(() -> {
 			C_Flatrate_Conditions.INSTANCE.beforeComplete(conditions);
-		}).hasMessage(C_Flatrate_Conditions.MSG_CONDITIONS_ERROR_TRANSITION_NOT_CO_0P);
+		}).hasMessage(C_Flatrate_Conditions.MSG_CONDITIONS_ERROR_TRANSITION_NOT_CO_0P.toAD_Message());
 	}
 
 	@Test
@@ -101,7 +101,7 @@ public class C_Flatrate_ConditionsTest
 
 		assertThatThrownBy(() -> {
 			C_Flatrate_Conditions.INSTANCE.beforeReactivate(conditions);
-		}).hasMessage("@" + C_Flatrate_Conditions.MSG_CONDITIONS_ERROR_ALREADY_IN_USE_0P + "@");
+		}).hasMessage(C_Flatrate_Conditions.MSG_CONDITIONS_ERROR_ALREADY_IN_USE_0P.toAD_Message());
 	}
 
 }

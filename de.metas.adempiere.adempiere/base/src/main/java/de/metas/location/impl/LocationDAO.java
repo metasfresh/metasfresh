@@ -3,6 +3,7 @@ package de.metas.location.impl;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwaresOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
@@ -19,7 +20,7 @@ import org.compiere.model.I_C_Postal;
 import org.compiere.model.X_C_Location;
 import org.slf4j.Logger;
 
-import com.google.common.base.Predicates;
+import java.util.Objects;
 
 import de.metas.location.CountryId;
 import de.metas.location.GeographicalCoordinatesWithLocationId;
@@ -138,6 +139,11 @@ public class LocationDAO implements ILocationDAO
 			postalQuery.addEqualsFilter(I_C_Postal.COLUMNNAME_C_Region_ID, request.getRegionId());
 		}
 
+		if (!Check.isEmpty(request.getCity()))
+		{
+			postalQuery.addEqualsFilter(I_C_Postal.COLUMNNAME_City, request.getCity());
+		}
+
 		final int postalId = postalQuery.filter(PostalQueryFilter.of(postalValue))
 				.create()
 				.firstIdOnly();
@@ -160,7 +166,7 @@ public class LocationDAO implements ILocationDAO
 				.listColumns(I_C_Location.COLUMNNAME_C_Location_ID, I_C_Location.COLUMNNAME_Latitude, I_C_Location.COLUMNNAME_Longitude)
 				.stream()
 				.map(row -> toGeographicalCoordinatesWithLocationIdOrNull(row))
-				.filter(Predicates.notNull());
+				.filter(Objects::nonNull);
 	}
 
 	@Nullable

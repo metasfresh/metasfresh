@@ -18,8 +18,11 @@ package org.compiere.process;
 
 import java.util.List;
 
+import org.adempiere.ad.table.api.AdTableId;
+import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.util.LegacyAdapters;
 import org.compiere.model.I_AD_Column;
+import org.compiere.model.I_AD_Table;
 import org.compiere.model.MColumn;
 
 import de.metas.process.IProcessPrecondition;
@@ -27,6 +30,7 @@ import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * Synchronize Column with Database
@@ -56,7 +60,9 @@ public class ColumnSync extends JavaProcess implements IProcessPrecondition
 			return ProcessPreconditionsResolution.reject("virtual columns are not supported");
 		}
 
-		if (column.getAD_Table().isView())
+		final AdTableId adTableId = AdTableId.ofRepoId(column.getAD_Table_ID());
+		final I_AD_Table table = Services.get(IADTableDAO.class).retrieveTable(adTableId);
+		if (table.isView())
 		{
 			return ProcessPreconditionsResolution.reject("views are not supported");
 		}

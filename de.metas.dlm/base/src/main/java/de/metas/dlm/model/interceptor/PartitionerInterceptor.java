@@ -10,6 +10,7 @@ import org.adempiere.ad.modelvalidator.AbstractModelInterceptor;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
 import org.adempiere.ad.modelvalidator.ModelChangeType;
 import org.adempiere.ad.table.TableRecordIdDescriptor;
+import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -94,8 +95,7 @@ public class PartitionerInterceptor extends AbstractModelInterceptor
 				.create()
 				.list(I_AD_Column.class)
 				.forEach(column -> {
-
-					final String tableName = column.getAD_Table().getTableName();
+					final String tableName = Services.get(IADTableDAO.class).retrieveTableName(column.getAD_Table_ID());
 					if (!I_DLM_Partition_Workqueue.Table_Name.equals(tableName)) // this table is part of the DLM engine
 					{
 						final Optional<String> tableColumnName = columnBL.getTableIdColumnName(tableName, column.getColumnName());

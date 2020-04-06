@@ -33,6 +33,7 @@ import java.util.regex.Pattern;
 import javax.annotation.Nullable;
 
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Country;
@@ -41,7 +42,12 @@ import org.compiere.model.I_C_Location;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
+
+import de.metas.greeting.Greeting;
+import de.metas.greeting.GreetingId;
+import de.metas.greeting.GreetingRepository;
 import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.Language;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.location.CountryCustomInfo;
 import de.metas.location.CountryId;
@@ -60,6 +66,7 @@ public class AddressBuilder
 {
 	private static final transient Logger log = LogManager.getLogger(AddressBuilder.class);
 	private final ICountryDAO countriesRepo = Services.get(ICountryDAO.class);
+	private final GreetingRepository greetingRepository = SpringContextHolder.instance.getBean(GreetingRepository.class);
 
 	/**
 	 * org is mandatory; we need it when we retrieve country sequences; needs to be a perfect match
@@ -444,7 +451,7 @@ public class AddressBuilder
 		final boolean isLocal = location.getC_Location() == null ? false : location.getC_Location().getC_Country_ID() == countryLocal.getC_Country_ID();
 
 		// User Anschriftenblock
-		final String userBlock = buildUserBlock(InterfaceWrapperHelper.getCtx(bPartner), isLocal, user, bPartnerBlock, bPartner.isCompany(), trxName);
+		final String userBlock = buildUserBlock(bPartner, isLocal, user, bPartnerBlock, trxName);
 
 		// Addressblock
 		final String fullAddressBlock = Services.get(ILocationBL.class)
@@ -648,21 +655,27 @@ public class AddressBuilder
 	 * @param trxName
 	 * @return
 	 */
-	private String buildUserBlock(final Properties ctx, final boolean isLocal, final I_AD_User user, final String bPartnerBlock, final boolean isPartnerCompany, final String trxName)
+	private String buildUserBlock(@NonNull final org.compiere.model.I_C_BPartner bPartner,  final boolean isLocal, final I_AD_User user, final String bPartnerBlock, final String trxName)
 	{
+		final Properties ctx = InterfaceWrapperHelper.getCtx(bPartner);
+		final boolean isPartnerCompany = bPartner.isCompany();
+		final Language language = Language.asLanguage(bPartner.getAD_Language());
+		
 		String userGreeting = "";
 		if (user != null)
 		{
-			final I_C_Greeting greetingOfUser = user.getC_Greeting();
-			if (greetingOfUser != null && greetingOfUser.getC_Greeting_ID() > 0)
+			// Greeting
+			final GreetingId greetingId = GreetingId.ofRepoIdOrNull(user.getC_Greeting_ID());
+			if (greetingId != null)
 			{
-				userGreeting = greetingOfUser.getName();
+				final Greeting greeting = greetingRepository.getByIdAndLang(greetingId, language);
+				userGreeting = greeting.getGreeting();
 			}
+			
+			
 			final String userName = user.getLastname();
 			final String userVorname = user.getFirstname();
 			final String userTitle = user.getTitle();
-
-			// Greeting
 
 			//
 			// construct string

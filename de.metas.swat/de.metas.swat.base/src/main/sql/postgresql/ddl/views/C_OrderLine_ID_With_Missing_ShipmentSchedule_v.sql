@@ -3,18 +3,18 @@ SELECT ol.c_orderline_id
 FROM c_orderline ol
      JOIN c_order o ON ol.c_order_id = o.c_order_id
      JOIN c_doctype dt ON dt.c_doctype_id = o.c_doctype_id
-     JOIN m_product p ON p.m_product_id = ol.m_product_id AND p.producttype = 'I'::bpchar
+     JOIN m_product p ON p.m_product_id = ol.m_product_id AND p.producttype = 'I'
 WHERE true 
 	AND ol.qtyordered <> ol.qtydelivered 
 	AND NOT EXISTS ( SELECT 1 FROM m_shipmentschedule s	WHERE s.c_orderline_id = ol.c_orderline_id)
-	AND dt.docbasetype = 'SOO'::bpchar 
-	AND (dt.docsubtype <> ALL (ARRAY['ON'::bpchar, 'OB'::bpchar, 'WR'::bpchar])) 
-	AND o.issotrx = 'Y'::bpchar 
-	AND o.docstatus = 'CO'::bpchar 
+	AND dt.docbasetype = 'SOO'
+	AND (dt.docsubtype <> ALL (ARRAY['ON', 'OB', 'WR'])) 
+	AND o.issotrx = 'Y'
+	AND o.docstatus = 'CO'
 	AND NOT EXISTS ( 
 				SELECT 1 
 				FROM m_iolcandhandler_log log
-				WHERE log.m_iolcandhandler_id = 1000000::numeric AND log.ad_table_id = 260::numeric AND log.record_id = ol.c_orderline_id AND log.isactive = 'Y'::bpchar
+				WHERE log.m_iolcandhandler_id = 1000000 AND log.ad_table_id = 260 AND log.record_id = ol.c_orderline_id AND log.isactive = 'Y'
 			);
 
 ALTER TABLE public.c_orderline_id_with_missing_shipmentschedule_v OWNER TO metasfresh;

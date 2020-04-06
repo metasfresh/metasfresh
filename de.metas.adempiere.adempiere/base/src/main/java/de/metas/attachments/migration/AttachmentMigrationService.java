@@ -18,13 +18,16 @@ import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_Attachment;
 import org.compiere.model.I_AD_AttachmentEntry;
+import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
 import com.google.common.collect.ImmutableList;
 
+import ch.qos.logback.classic.Level;
 import de.metas.attachments.AttachmentEntry;
 import de.metas.attachments.AttachmentEntryCreateRequest;
 import de.metas.attachments.AttachmentEntryFactory;
+import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
@@ -57,6 +60,8 @@ import lombok.NonNull;
 @Service
 public class AttachmentMigrationService
 {
+	private static final Logger logger = LogManager.getLogger(AttachmentMigrationService.class);
+
 	private static final String SYSCONFIG_EXIST_RECORDS_TO_MIGRATE = "de.metas.attachments.migration.ExistRecordsToMigrate";
 
 	private final AttachmentEntryFactory attachmentEntryFactory;
@@ -176,7 +181,7 @@ public class AttachmentMigrationService
 
 		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 		sysConfigBL.setValue(SYSCONFIG_EXIST_RECORDS_TO_MIGRATE, existRecordsToMigrate, ClientId.SYSTEM, OrgId.ANY);
-		Loggables.addLog("Setting SysConfig {} to {}", SYSCONFIG_EXIST_RECORDS_TO_MIGRATE, StringUtils.ofBoolean(existRecordsToMigrate));
+		Loggables.withLogger(logger, Level.DEBUG).addLog("Setting SysConfig {} to {}", SYSCONFIG_EXIST_RECORDS_TO_MIGRATE, StringUtils.ofBoolean(existRecordsToMigrate));
 
 		return existRecordsToMigrate;
 	}

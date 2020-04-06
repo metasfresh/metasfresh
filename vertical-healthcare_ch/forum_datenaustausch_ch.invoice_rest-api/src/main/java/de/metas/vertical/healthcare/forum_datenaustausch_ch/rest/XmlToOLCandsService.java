@@ -337,11 +337,11 @@ public class XmlToOLCandsService
 				InvalidXMLException.class, "payload/invoice/requestId may not be empty");
 
 		final IPair<String, String> result;
-		if (requestIdToUse.startsWith("KV_"))
+		if (requestIdToUse.startsWith("KV_")) // "Krankenversicherung"
 		{
 			result = ImmutablePair.of("KV", requestIdToUse.substring("KV_".length()));
 		}
-		else if (requestIdToUse.startsWith("KT_"))
+		else if (requestIdToUse.startsWith("KT_")) // "Kanton"
 		{
 			result = ImmutablePair.of("KT", requestIdToUse.substring("KT_".length()));
 		}

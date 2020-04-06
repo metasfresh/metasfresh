@@ -23,6 +23,8 @@ package org.adempiere.util.agg.key;
  */
 
 
+import lombok.NonNull;
+
 import java.util.List;
 
 /**
@@ -34,5 +36,5 @@ import java.util.List;
  */
 public interface IAggregationKeyValueHandler<T>
 {
-	List<Object> getValues(T model);
+	List<Object> getValues(@NonNull T model);
 }

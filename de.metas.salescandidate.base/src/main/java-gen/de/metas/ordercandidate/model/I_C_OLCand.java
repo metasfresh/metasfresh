@@ -266,56 +266,6 @@ public interface I_C_OLCand
     public static final String COLUMNNAME_Bill_User_ID = "Bill_User_ID";
 
 	/**
-	 * Set Standort eff..
-	 * Identifiziert die (Liefer-) Adresse des Geschäftspartners
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: true (lazy loading)
-	 * @deprecated Please don't use it because this is a virtual column
-	 */
-	@Deprecated
-	public void setC_BP_Location_Effective_ID (int C_BP_Location_Effective_ID);
-
-	/**
-	 * Get Standort eff..
-	 * Identifiziert die (Liefer-) Adresse des Geschäftspartners
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: true (lazy loading)
-	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
-	 */
-	@Deprecated
-	public int getC_BP_Location_Effective_ID();
-
-    /** Column name C_BP_Location_Effective_ID */
-    public static final String COLUMNNAME_C_BP_Location_Effective_ID = "C_BP_Location_Effective_ID";
-
-	/**
-	 * Set Standort abw..
-	 * Identifiziert die (Liefer-) Adresse des Geschäftspartners
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setC_BP_Location_Override_ID (int C_BP_Location_Override_ID);
-
-	/**
-	 * Get Standort abw..
-	 * Identifiziert die (Liefer-) Adresse des Geschäftspartners
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public int getC_BP_Location_Override_ID();
-
-    /** Column name C_BP_Location_Override_ID */
-    public static final String COLUMNNAME_C_BP_Location_Override_ID = "C_BP_Location_Override_ID";
-
-	/**
 	 * Set Geschäftspartner eff..
 	 *
 	 * <br>Type: Search
@@ -429,6 +379,56 @@ public interface I_C_OLCand
 
     /** Column name C_BPartner_SalesRep_ID */
     public static final String COLUMNNAME_C_BPartner_SalesRep_ID = "C_BPartner_SalesRep_ID";
+
+	/**
+	 * Set Standort eff..
+	 * Identifiziert die (Liefer-) Adresse des Geschäftspartners
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	public void setC_BP_Location_Effective_ID (int C_BP_Location_Effective_ID);
+
+	/**
+	 * Get Standort eff..
+	 * Identifiziert die (Liefer-) Adresse des Geschäftspartners
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
+	 */
+	@Deprecated
+	public int getC_BP_Location_Effective_ID();
+
+    /** Column name C_BP_Location_Effective_ID */
+    public static final String COLUMNNAME_C_BP_Location_Effective_ID = "C_BP_Location_Effective_ID";
+
+	/**
+	 * Set Standort abw..
+	 * Identifiziert die (Liefer-) Adresse des Geschäftspartners
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setC_BP_Location_Override_ID (int C_BP_Location_Override_ID);
+
+	/**
+	 * Get Standort abw..
+	 * Identifiziert die (Liefer-) Adresse des Geschäftspartners
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getC_BP_Location_Override_ID();
+
+    /** Column name C_BP_Location_Override_ID */
+    public static final String COLUMNNAME_C_BP_Location_Override_ID = "C_BP_Location_Override_ID";
 
 	/**
 	 * Set Kosten.
@@ -569,6 +569,34 @@ public interface I_C_OLCand
     public static final String COLUMNNAME_C_OLCand_ID = "C_OLCand_ID";
 
 	/**
+	 * Get Erstellt.
+	 * Datum, an dem dieser Eintrag erstellt wurde
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.sql.Timestamp getCreated();
+
+    /** Column definition for Created */
+    public static final org.adempiere.model.ModelColumn<I_C_OLCand, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_C_OLCand, Object>(I_C_OLCand.class, "Created", null);
+    /** Column name Created */
+    public static final String COLUMNNAME_Created = "Created";
+
+	/**
+	 * Get Erstellt durch.
+	 * Nutzer, der diesen Eintrag erstellt hat
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getCreatedBy();
+
+    /** Column name CreatedBy */
+    public static final String COLUMNNAME_CreatedBy = "CreatedBy";
+
+	/**
 	 * Set Steuerkategorie.
 	 * Steuerkategorie
 	 *
@@ -634,34 +662,6 @@ public interface I_C_OLCand
 
     /** Column name C_UOM_Internal_ID */
     public static final String COLUMNNAME_C_UOM_Internal_ID = "C_UOM_Internal_ID";
-
-	/**
-	 * Get Erstellt.
-	 * Datum, an dem dieser Eintrag erstellt wurde
-	 *
-	 * <br>Type: DateTime
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public java.sql.Timestamp getCreated();
-
-    /** Column definition for Created */
-    public static final org.adempiere.model.ModelColumn<I_C_OLCand, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_C_OLCand, Object>(I_C_OLCand.class, "Created", null);
-    /** Column name Created */
-    public static final String COLUMNNAME_Created = "Created";
-
-	/**
-	 * Get Erstellt durch.
-	 * Nutzer, der diesen Eintrag erstellt hat
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public int getCreatedBy();
-
-    /** Column name CreatedBy */
-    public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
 	 * Set Kand.-Datum.
@@ -1071,6 +1071,29 @@ public interface I_C_OLCand
     public static final String COLUMNNAME_DropShip_Location_Override_ID = "DropShip_Location_Override_ID";
 
 	/**
+	 * Set Lieferkontakt.
+	 * Business Partner Contact for drop shipment
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setDropShip_User_ID (int DropShip_User_ID);
+
+	/**
+	 * Get Lieferkontakt.
+	 * Business Partner Contact for drop shipment
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getDropShip_User_ID();
+
+    /** Column name DropShip_User_ID */
+    public static final String COLUMNNAME_DropShip_User_ID = "DropShip_User_ID";
+
+	/**
 	 * Set Fehlermeldung.
 	 *
 	 * <br>Type: Text
@@ -1272,6 +1295,27 @@ public interface I_C_OLCand
 
     /** Column name HandOver_Partner_Override_ID */
     public static final String COLUMNNAME_HandOver_Partner_Override_ID = "HandOver_Partner_Override_ID";
+
+	/**
+	 * Set Übergabe-Kontakt.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setHandOver_User_ID (int HandOver_User_ID);
+
+	/**
+	 * Get Übergabe-Kontakt.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getHandOver_User_ID();
+
+    /** Column name HandOver_User_ID */
+    public static final String COLUMNNAME_HandOver_User_ID = "HandOver_User_ID";
 
 	/**
 	 * Set Abr. Menge basiert auf.
@@ -1864,29 +1908,6 @@ public interface I_C_OLCand
     public static final String COLUMNNAME_PresetDateShipped = "PresetDateShipped";
 
 	/**
-	 * Set Preiseinheit int..
-	 * Interne Preiseinheit laut Stammdaten
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setPrice_UOM_Internal_ID (int Price_UOM_Internal_ID);
-
-	/**
-	 * Get Preiseinheit int..
-	 * Interne Preiseinheit laut Stammdaten
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public int getPrice_UOM_Internal_ID();
-
-    /** Column name Price_UOM_Internal_ID */
-    public static final String COLUMNNAME_Price_UOM_Internal_ID = "Price_UOM_Internal_ID";
-
-	/**
 	 * Set Einzelpreis.
 	 * Effektiver Preis
 	 *
@@ -1987,6 +2008,29 @@ public interface I_C_OLCand
     public static final org.adempiere.model.ModelColumn<I_C_OLCand, Object> COLUMN_PriceInternal = new org.adempiere.model.ModelColumn<I_C_OLCand, Object>(I_C_OLCand.class, "PriceInternal", null);
     /** Column name PriceInternal */
     public static final String COLUMNNAME_PriceInternal = "PriceInternal";
+
+	/**
+	 * Set Preiseinheit int..
+	 * Interne Preiseinheit laut Stammdaten
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setPrice_UOM_Internal_ID (int Price_UOM_Internal_ID);
+
+	/**
+	 * Get Preiseinheit int..
+	 * Interne Preiseinheit laut Stammdaten
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getPrice_UOM_Internal_ID();
+
+    /** Column name Price_UOM_Internal_ID */
+    public static final String COLUMNNAME_Price_UOM_Internal_ID = "Price_UOM_Internal_ID";
 
 	/**
 	 * Set Verarbeitet.

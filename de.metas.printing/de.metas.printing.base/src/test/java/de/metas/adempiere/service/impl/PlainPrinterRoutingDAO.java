@@ -10,12 +10,12 @@ package de.metas.adempiere.service.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -49,6 +49,7 @@ public class PlainPrinterRoutingDAO implements IPrinterRoutingDAO
 			final int AD_Client_ID, final int AD_Org_ID,
 			final int AD_Role_ID, final int AD_User_ID,
 			final int C_DocType_ID, final int AD_Process_ID,
+			final int AD_Table_ID,
 			final String printerType,
 			final Class<T> clazz)
 	{
@@ -78,6 +79,11 @@ public class PlainPrinterRoutingDAO implements IPrinterRoutingDAO
 					return false;
 				}
 				if (!(pojo.getAD_Process_ID() <= 0 || pojo.getAD_Process_ID() == AD_Process_ID))
+				{
+					return false;
+				}
+
+				if (!(pojo.getAD_Table_ID() <= 0 || pojo.getAD_Table_ID() == AD_Table_ID))
 				{
 					return false;
 				}
@@ -120,7 +126,7 @@ public class PlainPrinterRoutingDAO implements IPrinterRoutingDAO
 			}
 		});
 
-		final List<T> resultConv = new ArrayList<T>(result.size());
+		final List<T> resultConv = new ArrayList<>(result.size());
 		for (final I_AD_PrinterRouting r : result)
 		{
 			resultConv.add(POJOWrapper.create(r, clazz));

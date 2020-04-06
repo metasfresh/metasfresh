@@ -273,7 +273,7 @@ public class RegisteredValidationRuleTest
 	{
 		final I_AD_Column column = InterfaceWrapperHelper.newInstance(I_AD_Column.class);
 		column.setColumnName(columnName);
-		column.setAD_Table(table);
+		column.setAD_Table_ID(table.getAD_Table_ID());
 		InterfaceWrapperHelper.save(column);
 
 		return column;

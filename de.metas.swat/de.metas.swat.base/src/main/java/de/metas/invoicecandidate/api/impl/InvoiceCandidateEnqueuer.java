@@ -45,6 +45,7 @@ import de.metas.async.model.I_C_Async_Batch;
 import de.metas.async.spi.IWorkpackagePrioStrategy;
 import de.metas.async.spi.impl.ConstantWorkpackagePrio;
 import de.metas.async.spi.impl.SizeBasedWorkpackagePrio;
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.InvoiceCandidateLockingUtil;
@@ -74,9 +75,9 @@ import lombok.NonNull;
  */
 /* package */class InvoiceCandidateEnqueuer implements IInvoiceCandidateEnqueuer
 {
-	private static final String MSG_INVOICE_CAND_BL_INVOICING_SKIPPED_QTY_TO_INVOICE = "InvoiceCandBL_Invoicing_Skipped_QtyToInvoice";
-	private static final String MSG_INVOICE_CAND_BL_INVOICING_SKIPPED_APPROVAL = "InvoiceCandBL_Invoicing_Skipped_ApprovalForInvoicing";
-	private static final String MSG_IncompleteGroupsFound_1P = "InvoiceCandEnqueuer_IncompleteGroupsFound";
+	private static final AdMessageKey MSG_INVOICE_CAND_BL_INVOICING_SKIPPED_QTY_TO_INVOICE = AdMessageKey.of("InvoiceCandBL_Invoicing_Skipped_QtyToInvoice");
+	private static final AdMessageKey MSG_INVOICE_CAND_BL_INVOICING_SKIPPED_APPROVAL = AdMessageKey.of("InvoiceCandBL_Invoicing_Skipped_ApprovalForInvoicing");
+	private static final AdMessageKey MSG_IncompleteGroupsFound_1P = AdMessageKey.of("InvoiceCandEnqueuer_IncompleteGroupsFound");
 
 	// services
 	private final transient IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);

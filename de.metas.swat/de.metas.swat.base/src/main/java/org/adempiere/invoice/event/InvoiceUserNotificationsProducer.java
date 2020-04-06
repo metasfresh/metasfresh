@@ -30,6 +30,7 @@ import org.compiere.model.I_C_Invoice;
 
 import org.slf4j.Logger;
 
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.event.IEventBus;
 import de.metas.event.Topic;
 import de.metas.event.Type;
@@ -38,7 +39,6 @@ import de.metas.notification.INotificationBL;
 import de.metas.notification.UserNotificationRequest;
 import de.metas.notification.UserNotificationRequest.TargetRecordAction;
 import de.metas.user.UserId;
-import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -98,9 +98,9 @@ public class InvoiceUserNotificationsProducer
 			@NonNull final I_C_Invoice invoice,
 			@Nullable final UserId recipientUserId)
 	{
-		Check.assumeNotNull(invoice, "invoice not null");
+		final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
+		final I_C_BPartner bpartner = bpartnerDAO.getById(invoice.getC_BPartner_ID());
 
-		final I_C_BPartner bpartner = invoice.getC_BPartner();
 		final String bpValue = bpartner.getValue();
 		final String bpName = bpartner.getName();
 

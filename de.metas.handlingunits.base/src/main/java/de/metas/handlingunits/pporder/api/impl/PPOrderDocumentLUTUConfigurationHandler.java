@@ -1,7 +1,27 @@
 package de.metas.handlingunits.pporder.api.impl;
 
+import de.metas.bpartner.BPartnerId;
+import de.metas.handlingunits.IHUPIItemProductDAO;
+import de.metas.handlingunits.allocation.ILUTUConfigurationFactory;
+import de.metas.handlingunits.impl.AbstractDocumentLUTUConfigurationHandler;
+import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
+import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
+import de.metas.handlingunits.model.I_PP_Order;
+import de.metas.handlingunits.model.X_M_HU;
+import de.metas.product.ProductId;
+import de.metas.uom.UomId;
+import de.metas.util.Services;
+import lombok.NonNull;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_OrderLine;
+import org.compiere.util.TimeUtil;
+import org.eevolution.api.IPPOrderBL;
+
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.ZonedDateTime;
+import java.util.Optional;
+import java.util.Properties;
 
 /*
  * #%L
@@ -24,25 +44,6 @@ import java.math.RoundingMode;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
-import java.util.Properties;
-
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_OrderLine;
-import org.eevolution.api.IPPOrderBL;
-
-import de.metas.bpartner.BPartnerId;
-import de.metas.handlingunits.IHUPIItemProductDAO;
-import de.metas.handlingunits.allocation.ILUTUConfigurationFactory;
-import de.metas.handlingunits.impl.AbstractDocumentLUTUConfigurationHandler;
-import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
-import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
-import de.metas.handlingunits.model.I_PP_Order;
-import de.metas.handlingunits.model.X_M_HU;
-import de.metas.product.ProductId;
-import de.metas.uom.UomId;
-import de.metas.util.Services;
-import lombok.NonNull;
 
 /**
  * This class has the job of managing a {@link I_M_HU_LUTU_Configuration} for a particular {@link I_PP_Order}..it might retrieve that ppOrder's lutuConfig or create a new default one.
@@ -122,6 +123,18 @@ import lombok.NonNull;
 			}
 		}
 
+		//try to get the default M_HU_Item_Product from the product CU-TU allocation
+		final ZonedDateTime date = TimeUtil.asZonedDateTime( ppOrder.getDatePromised() );
+
+		final Optional<I_M_HU_PI_Item_Product> defaultPip = hupiItemProductDAO.retrieveDefaultForProduct(
+				ProductId.ofRepoId( ppOrder.getM_Product_ID() ),
+				BPartnerId.ofRepoIdOrNull( ppOrder.getC_BPartner_ID() ),
+				date );
+
+		if ( defaultPip.isPresent() )
+		{
+			return defaultPip.get();
+		}
 		//
 		// Fallback: return the virtual PI Item Product
 		final I_M_HU_PI_Item_Product pipVirtual = hupiItemProductDAO.retrieveVirtualPIMaterialItemProduct(ctx);

@@ -57,7 +57,9 @@ public class WorkpackageLogsRepository implements IWorkpackageLogsRepository
 				+ I_C_Queue_WorkPackage_Log.COLUMNNAME_IsActive + "," // 7
 				+ I_C_Queue_WorkPackage_Log.COLUMNNAME_MsgText + "," // 8
 				+ I_C_Queue_WorkPackage_Log.COLUMNNAME_Updated + "," // 9
-				+ I_C_Queue_WorkPackage_Log.COLUMNNAME_UpdatedBy + ")" // 10
+				+ I_C_Queue_WorkPackage_Log.COLUMNNAME_UpdatedBy + ","  // 10
+				+ I_C_Queue_WorkPackage_Log.COLUMNNAME_AD_Issue_ID  // 11
+				+ ")"
 				+ " VALUES ("
 				+ "?," // 1 - AD_Client_ID
 				+ "?," // 2 - AD_Org_ID
@@ -68,7 +70,8 @@ public class WorkpackageLogsRepository implements IWorkpackageLogsRepository
 				+ "'Y'," // 7 - IsActive
 				+ "?," // 8 - MsgText
 				+ "?," // 9 - Updated
-				+ "?" // 10 - UpdatedBy
+				+ "?," // 10 - UpdatedBy
+				+ "?" // 11 - AD_Issue_ID
 				+ ")";
 
 		PreparedStatement pstmt = null;
@@ -90,6 +93,7 @@ public class WorkpackageLogsRepository implements IWorkpackageLogsRepository
 						logEntry.getMessage(), // 8 - MsgText
 						logEntry.getTimestamp(), // 9 - Updated
 						logEntry.getUserId(), // 10 - UpdatedBy
+						logEntry.getAdIssueId(), // 11 - AD_Issue_ID
 				});
 				pstmt.addBatch();
 			}

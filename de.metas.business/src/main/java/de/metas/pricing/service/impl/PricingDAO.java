@@ -29,7 +29,7 @@ import org.adempiere.pricing.model.I_C_PricingRule;
 import org.adempiere.util.reflect.ClassReference;
 import org.slf4j.Logger;
 
-import com.google.common.base.Predicates;
+import java.util.Objects;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.cache.CCache;
@@ -67,7 +67,7 @@ public class PricingDAO implements IPricingDAO
 				.create()
 				.stream()
 				.map(this::toPricingRuleDescriptorNoFail)
-				.filter(Predicates.notNull())
+				.filter(Objects::nonNull)
 				.collect(GuavaCollectors.distinctBy(PricingRuleDescriptor::getPricingRuleClass))
 				.collect(ImmutableList.toImmutableList());
 	}

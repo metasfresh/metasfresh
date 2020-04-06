@@ -17,6 +17,7 @@
 package de.metas.cache;
 
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -38,7 +39,6 @@ import org.compiere.Adempiere;
 import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
-import com.google.common.base.Predicates;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -91,6 +91,14 @@ public final class CacheMgt
 	public void enableRemoteCacheInvalidationForTableName(final String tableName)
 	{
 		CacheInvalidationRemoteHandler.instance.enableForTableName(tableName);
+	}
+
+	/**
+	 * Enable caches for the given table to be invalidated by remote events.<br>
+	 */
+	public void enableRemoteCacheInvalidationForTableNamesGroup(@NonNull final TableNamesGroup group)
+	{
+		CacheInvalidationRemoteHandler.instance.enableForTableNamesGroup(group);
 	}
 
 	private CachesGroup getCachesGroup(@NonNull final CacheLabel label)
@@ -199,7 +207,7 @@ public final class CacheMgt
 			multiRequest.getTableNamesEffective()
 					.stream()
 					.map(cacheResetListenersByTableName::get)
-					.filter(Predicates.notNull())
+					.filter(Objects::nonNull)
 					.flatMap(listeners -> listeners.stream())
 					.forEach(listener -> fireCacheResetListenerNoFail(listener, multiRequest));
 		}
@@ -582,7 +590,7 @@ public final class CacheMgt
 		{
 			return caches.values()
 					.stream()
-					.filter(Predicates.notNull());
+					.filter(Objects::nonNull);
 		}
 
 		public long computeTotalSize()

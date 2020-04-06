@@ -23,6 +23,7 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.Properties;
 
+import de.metas.bpartner.BPartnerContactId;
 import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
@@ -388,15 +389,9 @@ public class CalloutOrder extends CalloutEngine
 				if (IsSOTrx)
 				{
 					DocTypeId docTypeTargetId = DocTypeId.ofRepoIdOrNull(rs.getInt("SO_DocTypeTarget_ID"));
-
 					if (docTypeTargetId == null)
 					{
-						docTypeTargetId = Services.get(IDocTypeDAO.class).getDocTypeIdOrNull(DocTypeQuery.builder()
-								.docBaseType(X_C_DocType.DOCBASETYPE_SalesOrder)
-								.docSubType(X_C_DocType.DOCSUBTYPE_StandardOrder)
-								.adClientId(order.getAD_Client_ID())
-								.adOrgId(order.getAD_Org_ID())
-								.build());
+						docTypeTargetId = suggestDefaultSalesOrderDocTypeId(order);
 					}
 
 					if (docTypeTargetId != null)
@@ -456,25 +451,18 @@ public class CalloutOrder extends CalloutEngine
 				// calcLocation(ctx, WindowNo, mTab, mField, value);
 
 				// Contact - overwritten by InfoBP selection
-				int contID = rs.getInt("AD_User_ID");
+				BPartnerContactId contactUserId = BPartnerContactId.ofRepoIdOrNull(C_BPartner_ID, rs.getInt("AD_User_ID"));
+
 				if (C_BPartner_ID == calloutField.getTabInfoContextAsInt("C_BPartner_ID"))
 				{
-					final int tabInfoContactId = calloutField.getTabInfoContextAsInt("AD_User_ID");
-					if (tabInfoContactId > 0)
+					final BPartnerContactId tabInfoContactId = BPartnerContactId.ofRepoIdOrNull(C_BPartner_ID, calloutField.getTabInfoContextAsInt("AD_User_ID"));
+					if (tabInfoContactId != null)
 					{
-						contID = tabInfoContactId;
+						contactUserId = tabInfoContactId;
 					}
 				}
-				if (contID <= 0)
-				{
-					order.setAD_User_ID(-1);
-					order.setBill_User_ID(-1);
-				}
-				else
-				{
-					order.setAD_User_ID(contID);
-					order.setBill_User_ID(contID);
-				}
+				order.setAD_User_ID(BPartnerContactId.toRepoId(contactUserId));
+				order.setBill_User_ID(BPartnerContactId.toRepoId(contactUserId));
 
 				// CreditAvailable
 				if (IsSOTrx)
@@ -590,6 +578,34 @@ public class CalloutOrder extends CalloutEngine
 		}
 		return NO_ERROR;
 	} // bPartner
+
+	private DocTypeId suggestDefaultSalesOrderDocTypeId(final I_C_Order order)
+	{
+		final IDocTypeDAO docTypesRepo = Services.get(IDocTypeDAO.class);
+
+		final int adClientId = order.getAD_Client_ID();
+		final int adOrgId = order.getAD_Org_ID();
+
+		final DocTypeId defaultDocTypeId = docTypesRepo.getDocTypeIdOrNull(DocTypeQuery.builder()
+				.docBaseType(X_C_DocType.DOCBASETYPE_SalesOrder)
+				.defaultDocType(true)
+				.adClientId(adClientId)
+				.adOrgId(adOrgId)
+				.build());
+		if (defaultDocTypeId != null)
+		{
+			return defaultDocTypeId;
+		}
+
+		final DocTypeId standardOrderDocTypeId = docTypesRepo.getDocTypeIdOrNull(DocTypeQuery.builder()
+				.docBaseType(X_C_DocType.DOCBASETYPE_SalesOrder)
+				.docSubType(X_C_DocType.DOCSUBTYPE_StandardOrder)
+				.adClientId(adClientId)
+				.adOrgId(adOrgId)
+				.build());
+
+		return standardOrderDocTypeId;
+	}
 
 	private void checkCreditLimit(
 			@NonNull final ICalloutField calloutField,
@@ -1392,11 +1408,6 @@ public class CalloutOrder extends CalloutEngine
 
 	/**
 	 * Decides whether the business partner's credit limit should be checked.
-	 *
-	 * @param bpartnerId
-	 * @param creditStatus
-	 * @param evalCreditstatus if <code>true</code>, the result set's column <code>"SOCreditStatus"</code> is also used for the decision
-	 * @return
 	 */
 	private boolean isChkCreditLimit(@NonNull final CreditLimitRequest creditlimitrequest)
 	{

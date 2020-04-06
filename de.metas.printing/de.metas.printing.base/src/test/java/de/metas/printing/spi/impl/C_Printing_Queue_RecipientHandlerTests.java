@@ -1,14 +1,18 @@
 package de.metas.printing.spi.impl;
 
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import com.google.common.collect.ImmutableSet;
 
@@ -49,103 +53,112 @@ public class C_Printing_Queue_RecipientHandlerTests
 	 */
 	private I_C_Printing_Queue item;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
 		printingDAO = Services.get(IPrintingDAO.class);
 
-		final I_AD_User itemUser = InterfaceWrapperHelper.newInstance(I_AD_User.class);
-		InterfaceWrapperHelper.save(itemUser);
+		final I_AD_User itemUser = newInstance(I_AD_User.class);
+		save(itemUser);
 
-		item = InterfaceWrapperHelper.newInstance(I_C_Printing_Queue.class);
+		item = newInstance(I_C_Printing_Queue.class);
 		item.setAD_User_ID(itemUser.getAD_User_ID());
-		InterfaceWrapperHelper.save(item);
-		assertThat(item.isPrintoutForOtherUser(), is(false)); // guard
+		save(item);
+		assertFalse(item.isPrintoutForOtherUser()); // guard
+
 	}
 
 	@Test
 	public void testNotIsApplyHandler()
 	{
-		assertThat(C_Printing_Queue_RecipientHandler.INSTANCE.isApplyHandler(item, null), is(false));
+		assertFalse(C_Printing_Queue_RecipientHandler.INSTANCE.isApplyHandler(item, null));
 	}
 
 	@Test
 	public void testIsApplyHandler()
 	{
-		final I_AD_User printRecipient = InterfaceWrapperHelper.newInstance(I_AD_User.class);
-		InterfaceWrapperHelper.save(printRecipient);
+		final I_AD_User printRecipient = newInstance(I_AD_User.class);
+		save(printRecipient);
+
 
 		final I_AD_User itemUser = InterfaceWrapperHelper.loadOutOfTrx(item.getAD_User_ID(), I_AD_User.class);
-		itemUser.setC_Printing_Queue_Recipient(printRecipient);
-		InterfaceWrapperHelper.save(itemUser);
 
-		assertThat(C_Printing_Queue_RecipientHandler.INSTANCE.isApplyHandler(item, null), is(true));
+		itemUser.setC_Printing_Queue_Recipient(printRecipient);
+		save(itemUser);
+
+		assertTrue(C_Printing_Queue_RecipientHandler.INSTANCE.isApplyHandler(item, null));
 	}
 
 	@Test
 	public void testAfterEnqueueAfterSaveDirect()
 	{
-		final I_AD_User printRecipient = InterfaceWrapperHelper.newInstance(I_AD_User.class);
-		InterfaceWrapperHelper.save(printRecipient);
+		final I_AD_User printRecipient = newInstance(I_AD_User.class);
+		save(printRecipient);
+
 
 		final I_AD_User itemUser = InterfaceWrapperHelper.loadOutOfTrx(item.getAD_User_ID(), I_AD_User.class);
+
 		itemUser.setC_Printing_Queue_Recipient(printRecipient);
-		InterfaceWrapperHelper.save(itemUser);
+		save(itemUser);
 
 		C_Printing_Queue_RecipientHandler.INSTANCE.afterEnqueueAfterSave(item, null);
 
 		final List<Integer> result = printingDAO.retrievePrintingQueueRecipientIDs(item);
-		assertThat(result.size(), is(1));
-		assertThat(result.get(0), is(printRecipient.getAD_User_ID()));
-		assertThat(item.isPrintoutForOtherUser(), is(true));
+		assertEquals(result.size(),1);
+		assertEquals(result.get(0), printRecipient.getAD_User_ID());
+		assertTrue(item.isPrintoutForOtherUser());
 	}
 
 	@Test
 	public void testAfterEnqueueAfterSaveIndirect()
 	{
-		final I_AD_User printRecipientEffective = InterfaceWrapperHelper.newInstance(I_AD_User.class);
-		InterfaceWrapperHelper.save(printRecipientEffective);
+		final I_AD_User printRecipientEffective = newInstance(I_AD_User.class);
+		save(printRecipientEffective);
 
-		final I_AD_User printRecipientMiddle = InterfaceWrapperHelper.newInstance(I_AD_User.class);
+		final I_AD_User printRecipientMiddle = newInstance(I_AD_User.class);
 		printRecipientMiddle.setC_Printing_Queue_Recipient(printRecipientEffective);
-		InterfaceWrapperHelper.save(printRecipientMiddle);
+		save(printRecipientMiddle);
 
-		final I_AD_User itemUser = InterfaceWrapperHelper.loadOutOfTrx(item.getAD_User_ID(), I_AD_User.class);
+
+		final I_AD_User itemUser = loadOutOfTrx(item.getAD_User_ID(), I_AD_User.class);
+
 		itemUser.setC_Printing_Queue_Recipient(printRecipientMiddle);
-		InterfaceWrapperHelper.save(itemUser);
+		save(itemUser);
 
 		C_Printing_Queue_RecipientHandler.INSTANCE.afterEnqueueAfterSave(item, null);
 
 		final List<Integer> result = printingDAO.retrievePrintingQueueRecipientIDs(item);
-		assertThat(result.size(), is(1));
-		assertThat(result.get(0), is(printRecipientEffective.getAD_User_ID()));
-		assertThat(item.isPrintoutForOtherUser(), is(true));
+		assertEquals(result.size(), 1);
+		assertEquals(result.get(0),printRecipientEffective.getAD_User_ID());
+		assertTrue(item.isPrintoutForOtherUser());
 	}
 
 	@Test
 	public void testAfterEnqueueAfterSaveIndirectWithLoop()
 	{
-		final I_AD_User printRecipientEffective = InterfaceWrapperHelper.newInstance(I_AD_User.class);
-		InterfaceWrapperHelper.save(printRecipientEffective);
+		final I_AD_User printRecipientEffective = newInstance(I_AD_User.class);
+		save(printRecipientEffective);
 
-		final I_AD_User printRecipientMiddle = InterfaceWrapperHelper.newInstance(I_AD_User.class);
+		final I_AD_User printRecipientMiddle = newInstance(I_AD_User.class);
 		printRecipientMiddle.setC_Printing_Queue_Recipient(printRecipientEffective);
-		InterfaceWrapperHelper.save(printRecipientMiddle);
+		save(printRecipientMiddle);
 
 		printRecipientEffective.setC_Printing_Queue_Recipient(printRecipientMiddle);
-		InterfaceWrapperHelper.save(printRecipientEffective);
+		save(printRecipientEffective);
+
 
 		final I_AD_User itemUser = InterfaceWrapperHelper.loadOutOfTrx(item.getAD_User_ID(), I_AD_User.class);
+
 		itemUser.setC_Printing_Queue_Recipient(printRecipientMiddle);
-		InterfaceWrapperHelper.save(itemUser);
+		save(itemUser);
 
 		C_Printing_Queue_RecipientHandler.INSTANCE.afterEnqueueAfterSave(item, null);
 
 		final List<Integer> result = printingDAO.retrievePrintingQueueRecipientIDs(item);
-		assertThat(result.size(), is(1));
-		assertThat(result.get(0), is(printRecipientEffective.getAD_User_ID()));
-		assertThat(item.isPrintoutForOtherUser(), is(true));
+		assertEquals(result.size(), 1);
+		assertEquals(result.get(0), printRecipientEffective.getAD_User_ID());
+		assertTrue(item.isPrintoutForOtherUser());
 	}
 
 	/**
@@ -155,19 +168,22 @@ public class C_Printing_Queue_RecipientHandlerTests
 	public void testAfterEnqueueAfterUpdateRecipients()
 	{
 		// this is the recipient we do *not* want to have in the end result
-		final I_AD_User printRecipientWrong = InterfaceWrapperHelper.newInstance(I_AD_User.class);
-		InterfaceWrapperHelper.save(printRecipientWrong);
+		final I_AD_User printRecipientWrong = newInstance(I_AD_User.class);
+		save(printRecipientWrong);
 		// .. despite the fact that is it the item user's recipient
-		final I_AD_User itemUser = InterfaceWrapperHelper.loadOutOfTrx(item.getAD_User_ID(), I_AD_User.class);
+
+		final I_AD_User itemUser = loadOutOfTrx(item.getAD_User_ID(), I_AD_User.class);
 		itemUser.setC_Printing_Queue_Recipient(printRecipientWrong);
-		InterfaceWrapperHelper.save(itemUser);
+		save(itemUser);
 
-		final I_AD_User printRecipientEffective = InterfaceWrapperHelper.newInstance(I_AD_User.class);
-		InterfaceWrapperHelper.save(printRecipientEffective);
+		final I_AD_User printRecipientEffective = newInstance(I_AD_User.class);
+		save(printRecipientEffective);
 
-		final I_AD_User printRecipientIntermediate = InterfaceWrapperHelper.newInstance(I_AD_User.class);
+
+
+		final I_AD_User printRecipientIntermediate = newInstance(I_AD_User.class);
 		printRecipientIntermediate.setC_Printing_Queue_Recipient(printRecipientEffective);
-		InterfaceWrapperHelper.save(printRecipientIntermediate);
+		save(printRecipientIntermediate);
 
 		// set the item's recipient to be printRecipientIntermediate
 		new PrintingQueueBL().setPrintoutForOtherUsers(item, ImmutableSet.of(printRecipientIntermediate.getAD_User_ID()));
@@ -178,8 +194,8 @@ public class C_Printing_Queue_RecipientHandlerTests
 		// expect the result to be printRecipientEffective, because that's what printRecipientIntermediate links to
 		// the result shall *not* be printRecipientWrong. We want the handler to update the existing record no to reset it
 		final List<Integer> result = printingDAO.retrievePrintingQueueRecipientIDs(item);
-		assertThat(result.size(), is(1));
-		assertThat(result.get(0), is(printRecipientEffective.getAD_User_ID()));
-		assertThat(item.isPrintoutForOtherUser(), is(true));
+		assertEquals(result.size(),1);
+		assertEquals(result.get(0), printRecipientEffective.getAD_User_ID());
+		assertTrue(item.isPrintoutForOtherUser());
 	}
 }

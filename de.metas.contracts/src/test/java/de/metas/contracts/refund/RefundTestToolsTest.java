@@ -3,7 +3,7 @@ package de.metas.contracts.refund;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.compiere.util.TimeUtil;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import de.metas.util.time.SystemTime;
 import lombok.NonNull;

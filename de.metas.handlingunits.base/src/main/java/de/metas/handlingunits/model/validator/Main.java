@@ -187,7 +187,7 @@ public final class Main extends AbstractModuleInterceptor
 		programaticCalloutProvider.registerAnnotatedCallout(de.metas.handlingunits.inoutcandidate.callout.M_ShipmentSchedule.instance);
 
 		// Shipment
-		engine.addModelValidator(new M_ShipmentSchedule(), client);
+		// engine.addModelValidator(new M_ShipmentSchedule(), client); // now created&registered by spring
 		engine.addModelValidator(new M_ShipmentSchedule_QtyPicked(), client);
 
 		programaticCalloutProvider.registerAnnotatedCallout(de.metas.handlingunits.inout.callout.M_InOutLine.instance);

@@ -73,8 +73,6 @@ public interface IInOutBL extends ISingletonService
 	 */
 	IPricingContext createPricingCtx(org.compiere.model.I_M_InOutLine inOutLine);
 
-	IPricingResult getProductPrice(IPricingContext pricingCtx);
-
 	IPricingResult getProductPrice(org.compiere.model.I_M_InOutLine inOutLine);
 
 	/**
@@ -130,6 +128,7 @@ public interface IInOutBL extends ISingletonService
 	 */
 	boolean isReturnMovementType(String movementType);
 
+	BigDecimal negateIfReturnMovmenType(I_M_InOutLine iol, BigDecimal qty);
 	/**
 	 * Sort the given inOut's lines by their referenced order lines and configured sorting criteria.
 	 *

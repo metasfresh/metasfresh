@@ -1,0 +1,2628 @@
+de.metas.rest_api.ordercandidates.impl.OrderCandidatesRestControllerImplTest.createOrderLineCandidates=[
+  [
+    {
+      "id": 100043,
+      "externalLineId": "2009_01:001_EAN-2011234567890_EAN-7634567890000_1",
+      "externalHeaderId": "2011234567890_2009_01:001",
+      "poReference": "2009_01:001",
+      "org": {
+        "code": "EAN-2011234567890",
+        "name": "Biller AG",
+        "syncAdvise": {
+          "ifNotExists": "FAIL",
+          "ifExists": "DONT_UPDATE"
+        }
+      },
+      "bpartner": {
+        "bpartner": {
+          "metasfreshId": 100019,
+          "externalId": "EAN-7634567890000",
+          "code": "Krankenkasse AG",
+          "active": true,
+          "name": "Krankenkasse AG",
+          "group": "DefaultGroup",
+          "vendor": false,
+          "customer": true,
+          "changeInfo": {
+            "createdMillis": 1584400036193,
+            "lastUpdatedMillis": 1584400036193
+          }
+        },
+        "location": {
+          "metasfreshId": 100021,
+          "externalId": "EAN-7634567890000_singleAddress",
+          "active": true,
+          "address1": "Kassengraben 222",
+          "city": "Basel",
+          "gln": "7634567890000",
+          "countryCode": "CH",
+          "shipTo": false,
+          "shipToDefault": false,
+          "billTo": false,
+          "billToDefault": false,
+          "changeInfo": {
+            "createdMillis": 1584400036193,
+            "lastUpdatedMillis": 1584400036193
+          }
+        }
+      },
+      "billBPartner": {
+        "bpartner": {
+          "metasfreshId": 100019,
+          "externalId": "EAN-7634567890000",
+          "code": "Krankenkasse AG",
+          "active": true,
+          "name": "Krankenkasse AG",
+          "group": "DefaultGroup",
+          "vendor": false,
+          "customer": true,
+          "changeInfo": {
+            "createdMillis": 1584400036193,
+            "lastUpdatedMillis": 1584400036193
+          }
+        },
+        "location": {
+          "metasfreshId": 100021,
+          "externalId": "EAN-7634567890000_singleAddress",
+          "active": true,
+          "address1": "Kassengraben 222",
+          "city": "Basel",
+          "gln": "7634567890000",
+          "countryCode": "CH",
+          "shipTo": false,
+          "shipToDefault": false,
+          "billTo": false,
+          "billToDefault": false,
+          "changeInfo": {
+            "createdMillis": 1584400036193,
+            "lastUpdatedMillis": 1584400036193
+          }
+        }
+      },
+      "datePromised": {
+        "year": 2013,
+        "month": 3,
+        "day": 20,
+        "leapYear": false
+      },
+      "flatrateConditionsId": 0,
+      "productId": 100022,
+      "qty": 1,
+      "uomId": 100003,
+      "qtyItemCapacity": 0,
+      "huPIItemProductId": 0,
+      "pricingSystemId": -1,
+      "price": 0,
+      "discount": 0,
+      "warehouseDestId": -1
+    },
+    {
+      "id": 100044,
+      "externalLineId": "2009_01:001_EAN-2011234567890_EAN-7634567890000_2",
+      "externalHeaderId": "2011234567890_2009_01:001",
+      "poReference": "2009_01:001",
+      "org": {
+        "code": "EAN-2011234567890",
+        "name": "Biller AG",
+        "syncAdvise": {
+          "ifNotExists": "FAIL",
+          "ifExists": "DONT_UPDATE"
+        }
+      },
+      "bpartner": {
+        "bpartner": {
+          "metasfreshId": 100019,
+          "externalId": "EAN-7634567890000",
+          "code": "Krankenkasse AG",
+          "active": true,
+          "name": "Krankenkasse AG",
+          "group": "DefaultGroup",
+          "vendor": false,
+          "customer": true,
+          "changeInfo": {
+            "createdMillis": 1584400036193,
+            "lastUpdatedMillis": 1584400036193
+          }
+        },
+        "location": {
+          "metasfreshId": 100021,
+          "externalId": "EAN-7634567890000_singleAddress",
+          "active": true,
+          "address1": "Kassengraben 222",
+          "city": "Basel",
+          "gln": "7634567890000",
+          "countryCode": "CH",
+          "shipTo": false,
+          "shipToDefault": false,
+          "billTo": false,
+          "billToDefault": false,
+          "changeInfo": {
+            "createdMillis": 1584400036193,
+            "lastUpdatedMillis": 1584400036193
+          }
+        }
+      },
+      "billBPartner": {
+        "bpartner": {
+          "metasfreshId": 100019,
+          "externalId": "EAN-7634567890000",
+          "code": "Krankenkasse AG",
+          "active": true,
+          "name": "Krankenkasse AG",
+          "group": "DefaultGroup",
+          "vendor": false,
+          "customer": true,
+          "changeInfo": {
+            "createdMillis": 1584400036193,
+            "lastUpdatedMillis": 1584400036193
+          }
+        },
+        "location": {
+          "metasfreshId": 100021,
+          "externalId": "EAN-7634567890000_singleAddress",
+          "active": true,
+          "address1": "Kassengraben 222",
+          "city": "Basel",
+          "gln": "7634567890000",
+          "countryCode": "CH",
+          "shipTo": false,
+          "shipToDefault": false,
+          "billTo": false,
+          "billToDefault": false,
+          "changeInfo": {
+            "createdMillis": 1584400036193,
+            "lastUpdatedMillis": 1584400036193
+          }
+        }
+      },
+      "datePromised": {
+        "year": 2013,
+        "month": 3,
+        "day": 20,
+        "leapYear": false
+      },
+      "flatrateConditionsId": 0,
+      "productId": 100023,
+      "qty": 1,
+      "uomId": 100003,
+      "qtyItemCapacity": 0,
+      "huPIItemProductId": 0,
+      "pricingSystemId": -1,
+      "price": 0,
+      "discount": 0,
+      "warehouseDestId": -1
+    },
+    {
+      "id": 100045,
+      "externalLineId": "2009_01:001_EAN-2011234567890_EAN-7634567890000_3",
+      "externalHeaderId": "2011234567890_2009_01:001",
+      "poReference": "2009_01:001",
+      "org": {
+        "code": "EAN-2011234567890",
+        "name": "Biller AG",
+        "syncAdvise": {
+          "ifNotExists": "FAIL",
+          "ifExists": "DONT_UPDATE"
+        }
+      },
+      "bpartner": {
+        "bpartner": {
+          "metasfreshId": 100019,
+          "externalId": "EAN-7634567890000",
+          "code": "Krankenkasse AG",
+          "active": true,
+          "name": "Krankenkasse AG",
+          "group": "DefaultGroup",
+          "vendor": false,
+          "customer": true,
+          "changeInfo": {
+            "createdMillis": 1584400036193,
+            "lastUpdatedMillis": 1584400036193
+          }
+        },
+        "location": {
+          "metasfreshId": 100021,
+          "externalId": "EAN-7634567890000_singleAddress",
+          "active": true,
+          "address1": "Kassengraben 222",
+          "city": "Basel",
+          "gln": "7634567890000",
+          "countryCode": "CH",
+          "shipTo": false,
+          "shipToDefault": false,
+          "billTo": false,
+          "billToDefault": false,
+          "changeInfo": {
+            "createdMillis": 1584400036193,
+            "lastUpdatedMillis": 1584400036193
+          }
+        }
+      },
+      "billBPartner": {
+        "bpartner": {
+          "metasfreshId": 100019,
+          "externalId": "EAN-7634567890000",
+          "code": "Krankenkasse AG",
+          "active": true,
+          "name": "Krankenkasse AG",
+          "group": "DefaultGroup",
+          "vendor": false,
+          "customer": true,
+          "changeInfo": {
+            "createdMillis": 1584400036193,
+            "lastUpdatedMillis": 1584400036193
+          }
+        },
+        "location": {
+          "metasfreshId": 100021,
+          "externalId": "EAN-7634567890000_singleAddress",
+          "active": true,
+          "address1": "Kassengraben 222",
+          "city": "Basel",
+          "gln": "7634567890000",
+          "countryCode": "CH",
+          "shipTo": false,
+          "shipToDefault": false,
+          "billTo": false,
+          "billToDefault": false,
+          "changeInfo": {
+            "createdMillis": 1584400036193,
+            "lastUpdatedMillis": 1584400036193
+          }
+        }
+      },
+      "datePromised": {
+        "year": 2013,
+        "month": 3,
+        "day": 20,
+        "leapYear": false
+      },
+      "flatrateConditionsId": 0,
+      "productId": 100024,
+      "qty": 1,
+      "uomId": 100003,
+      "qtyItemCapacity": 0,
+      "huPIItemProductId": 0,
+      "pricingSystemId": -1,
+      "price": 0,
+      "discount": 0,
+      "warehouseDestId": -1
+    },
+    {
+      "id": 100046,
+      "externalLineId": "2009_01:001_EAN-2011234567890_EAN-7634567890000_4",
+      "externalHeaderId": "2011234567890_2009_01:001",
+      "poReference": "2009_01:001",
+      "org": {
+        "code": "EAN-2011234567890",
+        "name": "Biller AG",
+        "syncAdvise": {
+          "ifNotExists": "FAIL",
+          "ifExists": "DONT_UPDATE"
+        }
+      },
+      "bpartner": {
+        "bpartner": {
+          "metasfreshId": 100019,
+          "externalId": "EAN-7634567890000",
+          "code": "Krankenkasse AG",
+          "active": true,
+          "name": "Krankenkasse AG",
+          "group": "DefaultGroup",
+          "vendor": false,
+          "customer": true,
+          "changeInfo": {
+            "createdMillis": 1584400036193,
+            "lastUpdatedMillis": 1584400036193
+          }
+        },
+        "location": {
+          "metasfreshId": 100021,
+          "externalId": "EAN-7634567890000_singleAddress",
+          "active": true,
+          "address1": "Kassengraben 222",
+          "city": "Basel",
+          "gln": "7634567890000",
+          "countryCode": "CH",
+          "shipTo": false,
+          "shipToDefault": false,
+          "billTo": false,
+          "billToDefault": false,
+          "changeInfo": {
+            "createdMillis": 1584400036193,
+            "lastUpdatedMillis": 1584400036193
+          }
+        }
+      },
+      "billBPartner": {
+        "bpartner": {
+          "metasfreshId": 100019,
+          "externalId": "EAN-7634567890000",
+          "code": "Krankenkasse AG",
+          "active": true,
+          "name": "Krankenkasse AG",
+          "group": "DefaultGroup",
+          "vendor": false,
+          "customer": true,
+          "changeInfo": {
+            "createdMillis": 1584400036193,
+            "lastUpdatedMillis": 1584400036193
+          }
+        },
+        "location": {
+          "metasfreshId": 100021,
+          "externalId": "EAN-7634567890000_singleAddress",
+          "active": true,
+          "address1": "Kassengraben 222",
+          "city": "Basel",
+          "gln": "7634567890000",
+          "countryCode": "CH",
+          "shipTo": false,
+          "shipToDefault": false,
+          "billTo": false,
+          "billToDefault": false,
+          "changeInfo": {
+            "createdMillis": 1584400036193,
+            "lastUpdatedMillis": 1584400036193
+          }
+        }
+      },
+      "datePromised": {
+        "year": 2013,
+        "month": 3,
+        "day": 20,
+        "leapYear": false
+      },
+      "flatrateConditionsId": 0,
+      "productId": 100025,
+      "qty": 1,
+      "uomId": 100003,
+      "qtyItemCapacity": 0,
+      "huPIItemProductId": 0,
+      "pricingSystemId": -1,
+      "price": 0,
+      "discount": 0,
+      "warehouseDestId": -1
+    },
+    {
+      "id": 100047,
+      "externalLineId": "2009_01:001_EAN-2011234567890_EAN-7634567890000_5",
+      "externalHeaderId": "2011234567890_2009_01:001",
+      "poReference": "2009_01:001",
+      "org": {
+        "code": "EAN-2011234567890",
+        "name": "Biller AG",
+        "syncAdvise": {
+          "ifNotExists": "FAIL",
+          "ifExists": "DONT_UPDATE"
+        }
+      },
+      "bpartner": {
+        "bpartner": {
+          "metasfreshId": 100019,
+          "externalId": "EAN-7634567890000",
+          "code": "Krankenkasse AG",
+          "active": true,
+          "name": "Krankenkasse AG",
+          "group": "DefaultGroup",
+          "vendor": false,
+          "customer": true,
+          "changeInfo": {
+            "createdMillis": 1584400036193,
+            "lastUpdatedMillis": 1584400036193
+          }
+        },
+        "location": {
+          "metasfreshId": 100021,
+          "externalId": "EAN-7634567890000_singleAddress",
+          "active": true,
+          "address1": "Kassengraben 222",
+          "city": "Basel",
+          "gln": "7634567890000",
+          "countryCode": "CH",
+          "shipTo": false,
+          "shipToDefault": false,
+          "billTo": false,
+          "billToDefault": false,
+          "changeInfo": {
+            "createdMillis": 1584400036193,
+            "lastUpdatedMillis": 1584400036193
+          }
+        }
+      },
+      "billBPartner": {
+        "bpartner": {
+          "metasfreshId": 100019,
+          "externalId": "EAN-7634567890000",
+          "code": "Krankenkasse AG",
+          "active": true,
+          "name": "Krankenkasse AG",
+          "group": "DefaultGroup",
+          "vendor": false,
+          "customer": true,
+          "changeInfo": {
+            "createdMillis": 1584400036193,
+            "lastUpdatedMillis": 1584400036193
+          }
+        },
+        "location": {
+          "metasfreshId": 100021,
+          "externalId": "EAN-7634567890000_singleAddress",
+          "active": true,
+          "address1": "Kassengraben 222",
+          "city": "Basel",
+          "gln": "7634567890000",
+          "countryCode": "CH",
+          "shipTo": false,
+          "shipToDefault": false,
+          "billTo": false,
+          "billToDefault": false,
+          "changeInfo": {
+            "createdMillis": 1584400036193,
+            "lastUpdatedMillis": 1584400036193
+          }
+        }
+      },
+      "datePromised": {
+        "year": 2013,
+        "month": 3,
+        "day": 20,
+        "leapYear": false
+      },
+      "flatrateConditionsId": 0,
+      "productId": 100026,
+      "qty": 1,
+      "uomId": 100003,
+      "qtyItemCapacity": 0,
+      "huPIItemProductId": 0,
+      "pricingSystemId": -1,
+      "price": 0,
+      "discount": 0,
+      "warehouseDestId": -1
+    },
+    {
+      "id": 100048,
+      "externalLineId": "2009_01:001_EAN-2011234567890_EAN-7634567890000_6",
+      "externalHeaderId": "2011234567890_2009_01:001",
+      "poReference": "2009_01:001",
+      "org": {
+        "code": "EAN-2011234567890",
+        "name": "Biller AG",
+        "syncAdvise": {
+          "ifNotExists": "FAIL",
+          "ifExists": "DONT_UPDATE"
+        }
+      },
+      "bpartner": {
+        "bpartner": {
+          "metasfreshId": 100019,
+          "externalId": "EAN-7634567890000",
+          "code": "Krankenkasse AG",
+          "active": true,
+          "name": "Krankenkasse AG",
+          "group": "DefaultGroup",
+          "vendor": false,
+          "customer": true,
+          "changeInfo": {
+            "createdMillis": 1584400036193,
+            "lastUpdatedMillis": 1584400036193
+          }
+        },
+        "location": {
+          "metasfreshId": 100021,
+          "externalId": "EAN-7634567890000_singleAddress",
+          "active": true,
+          "address1": "Kassengraben 222",
+          "city": "Basel",
+          "gln": "7634567890000",
+          "countryCode": "CH",
+          "shipTo": false,
+          "shipToDefault": false,
+          "billTo": false,
+          "billToDefault": false,
+          "changeInfo": {
+            "createdMillis": 1584400036193,
+            "lastUpdatedMillis": 1584400036193
+          }
+        }
+      },
+      "billBPartner": {
+        "bpartner": {
+          "metasfreshId": 100019,
+          "externalId": "EAN-7634567890000",
+          "code": "Krankenkasse AG",
+          "active": true,
+          "name": "Krankenkasse AG",
+          "group": "DefaultGroup",
+          "vendor": false,
+          "customer": true,
+          "changeInfo": {
+            "createdMillis": 1584400036193,
+            "lastUpdatedMillis": 1584400036193
+          }
+        },
+        "location": {
+          "metasfreshId": 100021,
+          "externalId": "EAN-7634567890000_singleAddress",
+          "active": true,
+          "address1": "Kassengraben 222",
+          "city": "Basel",
+          "gln": "7634567890000",
+          "countryCode": "CH",
+          "shipTo": false,
+          "shipToDefault": false,
+          "billTo": false,
+          "billToDefault": false,
+          "changeInfo": {
+            "createdMillis": 1584400036193,
+            "lastUpdatedMillis": 1584400036193
+          }
+        }
+      },
+      "datePromised": {
+        "year": 2013,
+        "month": 3,
+        "day": 20,
+        "leapYear": false
+      },
+      "flatrateConditionsId": 0,
+      "productId": 100027,
+      "qty": 1,
+      "uomId": 100003,
+      "qtyItemCapacity": 0,
+      "huPIItemProductId": 0,
+      "pricingSystemId": -1,
+      "price": 0,
+      "discount": 0,
+      "warehouseDestId": -1
+    },
+    {
+      "id": 100049,
+      "externalLineId": "2009_01:001_EAN-2011234567890_EAN-7634567890000_7",
+      "externalHeaderId": "2011234567890_2009_01:001",
+      "poReference": "2009_01:001",
+      "org": {
+        "code": "EAN-2011234567890",
+        "name": "Biller AG",
+        "syncAdvise": {
+          "ifNotExists": "FAIL",
+          "ifExists": "DONT_UPDATE"
+        }
+      },
+      "bpartner": {
+        "bpartner": {
+          "metasfreshId": 100019,
+          "externalId": "EAN-7634567890000",
+          "code": "Krankenkasse AG",
+          "active": true,
+          "name": "Krankenkasse AG",
+          "group": "DefaultGroup",
+          "vendor": false,
+          "customer": true,
+          "changeInfo": {
+            "createdMillis": 1584400036193,
+            "lastUpdatedMillis": 1584400036193
+          }
+        },
+        "location": {
+          "metasfreshId": 100021,
+          "externalId": "EAN-7634567890000_singleAddress",
+          "active": true,
+          "address1": "Kassengraben 222",
+          "city": "Basel",
+          "gln": "7634567890000",
+          "countryCode": "CH",
+          "shipTo": false,
+          "shipToDefault": false,
+          "billTo": false,
+          "billToDefault": false,
+          "changeInfo": {
+            "createdMillis": 1584400036193,
+            "lastUpdatedMillis": 1584400036193
+          }
+        }
+      },
+      "billBPartner": {
+        "bpartner": {
+          "metasfreshId": 100019,
+          "externalId": "EAN-7634567890000",
+          "code": "Krankenkasse AG",
+          "active": true,
+          "name": "Krankenkasse AG",
+          "group": "DefaultGroup",
+          "vendor": false,
+          "customer": true,
+          "changeInfo": {
+            "createdMillis": 1584400036193,
+            "lastUpdatedMillis": 1584400036193
+          }
+        },
+        "location": {
+          "metasfreshId": 100021,
+          "externalId": "EAN-7634567890000_singleAddress",
+          "active": true,
+          "address1": "Kassengraben 222",
+          "city": "Basel",
+          "gln": "7634567890000",
+          "countryCode": "CH",
+          "shipTo": false,
+          "shipToDefault": false,
+          "billTo": false,
+          "billToDefault": false,
+          "changeInfo": {
+            "createdMillis": 1584400036193,
+            "lastUpdatedMillis": 1584400036193
+          }
+        }
+      },
+      "datePromised": {
+        "year": 2013,
+        "month": 3,
+        "day": 20,
+        "leapYear": false
+      },
+      "flatrateConditionsId": 0,
+      "productId": 100022,
+      "qty": 1,
+      "uomId": 100003,
+      "qtyItemCapacity": 0,
+      "huPIItemProductId": 0,
+      "pricingSystemId": -1,
+      "price": 0,
+      "discount": 0,
+      "warehouseDestId": -1
+    },
+    {
+      "id": 100050,
+      "externalLineId": "2009_01:001_EAN-2011234567890_EAN-7634567890000_8",
+      "externalHeaderId": "2011234567890_2009_01:001",
+      "poReference": "2009_01:001",
+      "org": {
+        "code": "EAN-2011234567890",
+        "name": "Biller AG",
+        "syncAdvise": {
+          "ifNotExists": "FAIL",
+          "ifExists": "DONT_UPDATE"
+        }
+      },
+      "bpartner": {
+        "bpartner": {
+          "metasfreshId": 100019,
+          "externalId": "EAN-7634567890000",
+          "code": "Krankenkasse AG",
+          "active": true,
+          "name": "Krankenkasse AG",
+          "group": "DefaultGroup",
+          "vendor": false,
+          "customer": true,
+          "changeInfo": {
+            "createdMillis": 1584400036193,
+            "lastUpdatedMillis": 1584400036193
+          }
+        },
+        "location": {
+          "metasfreshId": 100021,
+          "externalId": "EAN-7634567890000_singleAddress",
+          "active": true,
+          "address1": "Kassengraben 222",
+          "city": "Basel",
+          "gln": "7634567890000",
+          "countryCode": "CH",
+          "shipTo": false,
+          "shipToDefault": false,
+          "billTo": false,
+          "billToDefault": false,
+          "changeInfo": {
+            "createdMillis": 1584400036193,
+            "lastUpdatedMillis": 1584400036193
+          }
+        }
+      },
+      "billBPartner": {
+        "bpartner": {
+          "metasfreshId": 100019,
+          "externalId": "EAN-7634567890000",
+          "code": "Krankenkasse AG",
+          "active": true,
+          "name": "Krankenkasse AG",
+          "group": "DefaultGroup",
+          "vendor": false,
+          "customer": true,
+          "changeInfo": {
+            "createdMillis": 1584400036193,
+            "lastUpdatedMillis": 1584400036193
+          }
+        },
+        "location": {
+          "metasfreshId": 100021,
+          "externalId": "EAN-7634567890000_singleAddress",
+          "active": true,
+          "address1": "Kassengraben 222",
+          "city": "Basel",
+          "gln": "7634567890000",
+          "countryCode": "CH",
+          "shipTo": false,
+          "shipToDefault": false,
+          "billTo": false,
+          "billToDefault": false,
+          "changeInfo": {
+            "createdMillis": 1584400036193,
+            "lastUpdatedMillis": 1584400036193
+          }
+        }
+      },
+      "datePromised": {
+        "year": 2013,
+        "month": 3,
+        "day": 20,
+        "leapYear": false
+      },
+      "flatrateConditionsId": 0,
+      "productId": 100023,
+      "qty": 1,
+      "uomId": 100003,
+      "qtyItemCapacity": 0,
+      "huPIItemProductId": 0,
+      "pricingSystemId": -1,
+      "price": 0,
+      "discount": 0,
+      "warehouseDestId": -1
+    },
+    {
+      "id": 100051,
+      "externalLineId": "2009_01:001_EAN-2011234567890_EAN-7634567890000_9",
+      "externalHeaderId": "2011234567890_2009_01:001",
+      "poReference": "2009_01:001",
+      "org": {
+        "code": "EAN-2011234567890",
+        "name": "Biller AG",
+        "syncAdvise": {
+          "ifNotExists": "FAIL",
+          "ifExists": "DONT_UPDATE"
+        }
+      },
+      "bpartner": {
+        "bpartner": {
+          "metasfreshId": 100019,
+          "externalId": "EAN-7634567890000",
+          "code": "Krankenkasse AG",
+          "active": true,
+          "name": "Krankenkasse AG",
+          "group": "DefaultGroup",
+          "vendor": false,
+          "customer": true,
+          "changeInfo": {
+            "createdMillis": 1584400036193,
+            "lastUpdatedMillis": 1584400036193
+          }
+        },
+        "location": {
+          "metasfreshId": 100021,
+          "externalId": "EAN-7634567890000_singleAddress",
+          "active": true,
+          "address1": "Kassengraben 222",
+          "city": "Basel",
+          "gln": "7634567890000",
+          "countryCode": "CH",
+          "shipTo": false,
+          "shipToDefault": false,
+          "billTo": false,
+          "billToDefault": false,
+          "changeInfo": {
+            "createdMillis": 1584400036193,
+            "lastUpdatedMillis": 1584400036193
+          }
+        }
+      },
+      "billBPartner": {
+        "bpartner": {
+          "metasfreshId": 100019,
+          "externalId": "EAN-7634567890000",
+          "code": "Krankenkasse AG",
+          "active": true,
+          "name": "Krankenkasse AG",
+          "group": "DefaultGroup",
+          "vendor": false,
+          "customer": true,
+          "changeInfo": {
+            "createdMillis": 1584400036193,
+            "lastUpdatedMillis": 1584400036193
+          }
+        },
+        "location": {
+          "metasfreshId": 100021,
+          "externalId": "EAN-7634567890000_singleAddress",
+          "active": true,
+          "address1": "Kassengraben 222",
+          "city": "Basel",
+          "gln": "7634567890000",
+          "countryCode": "CH",
+          "shipTo": false,
+          "shipToDefault": false,
+          "billTo": false,
+          "billToDefault": false,
+          "changeInfo": {
+            "createdMillis": 1584400036193,
+            "lastUpdatedMillis": 1584400036193
+          }
+        }
+      },
+      "datePromised": {
+        "year": 2013,
+        "month": 3,
+        "day": 20,
+        "leapYear": false
+      },
+      "flatrateConditionsId": 0,
+      "productId": 100024,
+      "qty": 1,
+      "uomId": 100003,
+      "qtyItemCapacity": 0,
+      "huPIItemProductId": 0,
+      "pricingSystemId": -1,
+      "price": 0,
+      "discount": 0,
+      "warehouseDestId": -1
+    },
+    {
+      "id": 100052,
+      "externalLineId": "2009_01:001_EAN-2011234567890_EAN-7634567890000_10",
+      "externalHeaderId": "2011234567890_2009_01:001",
+      "poReference": "2009_01:001",
+      "org": {
+        "code": "EAN-2011234567890",
+        "name": "Biller AG",
+        "syncAdvise": {
+          "ifNotExists": "FAIL",
+          "ifExists": "DONT_UPDATE"
+        }
+      },
+      "bpartner": {
+        "bpartner": {
+          "metasfreshId": 100019,
+          "externalId": "EAN-7634567890000",
+          "code": "Krankenkasse AG",
+          "active": true,
+          "name": "Krankenkasse AG",
+          "group": "DefaultGroup",
+          "vendor": false,
+          "customer": true,
+          "changeInfo": {
+            "createdMillis": 1584400036193,
+            "lastUpdatedMillis": 1584400036193
+          }
+        },
+        "location": {
+          "metasfreshId": 100021,
+          "externalId": "EAN-7634567890000_singleAddress",
+          "active": true,
+          "address1": "Kassengraben 222",
+          "city": "Basel",
+          "gln": "7634567890000",
+          "countryCode": "CH",
+          "shipTo": false,
+          "shipToDefault": false,
+          "billTo": false,
+          "billToDefault": false,
+          "changeInfo": {
+            "createdMillis": 1584400036193,
+            "lastUpdatedMillis": 1584400036193
+          }
+        }
+      },
+      "billBPartner": {
+        "bpartner": {
+          "metasfreshId": 100019,
+          "externalId": "EAN-7634567890000",
+          "code": "Krankenkasse AG",
+          "active": true,
+          "name": "Krankenkasse AG",
+          "group": "DefaultGroup",
+          "vendor": false,
+          "customer": true,
+          "changeInfo": {
+            "createdMillis": 1584400036193,
+            "lastUpdatedMillis": 1584400036193
+          }
+        },
+        "location": {
+          "metasfreshId": 100021,
+          "externalId": "EAN-7634567890000_singleAddress",
+          "active": true,
+          "address1": "Kassengraben 222",
+          "city": "Basel",
+          "gln": "7634567890000",
+          "countryCode": "CH",
+          "shipTo": false,
+          "shipToDefault": false,
+          "billTo": false,
+          "billToDefault": false,
+          "changeInfo": {
+            "createdMillis": 1584400036193,
+            "lastUpdatedMillis": 1584400036193
+          }
+        }
+      },
+      "datePromised": {
+        "year": 2013,
+        "month": 3,
+        "day": 20,
+        "leapYear": false
+      },
+      "flatrateConditionsId": 0,
+      "productId": 100022,
+      "qty": 1,
+      "uomId": 100003,
+      "qtyItemCapacity": 0,
+      "huPIItemProductId": 0,
+      "pricingSystemId": -1,
+      "price": 0,
+      "discount": 0,
+      "warehouseDestId": -1
+    },
+    {
+      "id": 100053,
+      "externalLineId": "2009_01:001_EAN-2011234567890_EAN-7634567890000_11",
+      "externalHeaderId": "2011234567890_2009_01:001",
+      "poReference": "2009_01:001",
+      "org": {
+        "code": "EAN-2011234567890",
+        "name": "Biller AG",
+        "syncAdvise": {
+          "ifNotExists": "FAIL",
+          "ifExists": "DONT_UPDATE"
+        }
+      },
+      "bpartner": {
+        "bpartner": {
+          "metasfreshId": 100019,
+          "externalId": "EAN-7634567890000",
+          "code": "Krankenkasse AG",
+          "active": true,
+          "name": "Krankenkasse AG",
+          "group": "DefaultGroup",
+          "vendor": false,
+          "customer": true,
+          "changeInfo": {
+            "createdMillis": 1584400036193,
+            "lastUpdatedMillis": 1584400036193
+          }
+        },
+        "location": {
+          "metasfreshId": 100021,
+          "externalId": "EAN-7634567890000_singleAddress",
+          "active": true,
+          "address1": "Kassengraben 222",
+          "city": "Basel",
+          "gln": "7634567890000",
+          "countryCode": "CH",
+          "shipTo": false,
+          "shipToDefault": false,
+          "billTo": false,
+          "billToDefault": false,
+          "changeInfo": {
+            "createdMillis": 1584400036193,
+            "lastUpdatedMillis": 1584400036193
+          }
+        }
+      },
+      "billBPartner": {
+        "bpartner": {
+          "metasfreshId": 100019,
+          "externalId": "EAN-7634567890000",
+          "code": "Krankenkasse AG",
+          "active": true,
+          "name": "Krankenkasse AG",
+          "group": "DefaultGroup",
+          "vendor": false,
+          "customer": true,
+          "changeInfo": {
+            "createdMillis": 1584400036193,
+            "lastUpdatedMillis": 1584400036193
+          }
+        },
+        "location": {
+          "metasfreshId": 100021,
+          "externalId": "EAN-7634567890000_singleAddress",
+          "active": true,
+          "address1": "Kassengraben 222",
+          "city": "Basel",
+          "gln": "7634567890000",
+          "countryCode": "CH",
+          "shipTo": false,
+          "shipToDefault": false,
+          "billTo": false,
+          "billToDefault": false,
+          "changeInfo": {
+            "createdMillis": 1584400036193,
+            "lastUpdatedMillis": 1584400036193
+          }
+        }
+      },
+      "datePromised": {
+        "year": 2013,
+        "month": 3,
+        "day": 20,
+        "leapYear": false
+      },
+      "flatrateConditionsId": 0,
+      "productId": 100023,
+      "qty": 1,
+      "uomId": 100003,
+      "qtyItemCapacity": 0,
+      "huPIItemProductId": 0,
+      "pricingSystemId": -1,
+      "price": 0,
+      "discount": 0,
+      "warehouseDestId": -1
+    },
+    {
+      "id": 100054,
+      "externalLineId": "2009_01:001_EAN-2011234567890_EAN-7634567890000_12",
+      "externalHeaderId": "2011234567890_2009_01:001",
+      "poReference": "2009_01:001",
+      "org": {
+        "code": "EAN-2011234567890",
+        "name": "Biller AG",
+        "syncAdvise": {
+          "ifNotExists": "FAIL",
+          "ifExists": "DONT_UPDATE"
+        }
+      },
+      "bpartner": {
+        "bpartner": {
+          "metasfreshId": 100019,
+          "externalId": "EAN-7634567890000",
+          "code": "Krankenkasse AG",
+          "active": true,
+          "name": "Krankenkasse AG",
+          "group": "DefaultGroup",
+          "vendor": false,
+          "customer": true,
+          "changeInfo": {
+            "createdMillis": 1584400036193,
+            "lastUpdatedMillis": 1584400036193
+          }
+        },
+        "location": {
+          "metasfreshId": 100021,
+          "externalId": "EAN-7634567890000_singleAddress",
+          "active": true,
+          "address1": "Kassengraben 222",
+          "city": "Basel",
+          "gln": "7634567890000",
+          "countryCode": "CH",
+          "shipTo": false,
+          "shipToDefault": false,
+          "billTo": false,
+          "billToDefault": false,
+          "changeInfo": {
+            "createdMillis": 1584400036193,
+            "lastUpdatedMillis": 1584400036193
+          }
+        }
+      },
+      "billBPartner": {
+        "bpartner": {
+          "metasfreshId": 100019,
+          "externalId": "EAN-7634567890000",
+          "code": "Krankenkasse AG",
+          "active": true,
+          "name": "Krankenkasse AG",
+          "group": "DefaultGroup",
+          "vendor": false,
+          "customer": true,
+          "changeInfo": {
+            "createdMillis": 1584400036193,
+            "lastUpdatedMillis": 1584400036193
+          }
+        },
+        "location": {
+          "metasfreshId": 100021,
+          "externalId": "EAN-7634567890000_singleAddress",
+          "active": true,
+          "address1": "Kassengraben 222",
+          "city": "Basel",
+          "gln": "7634567890000",
+          "countryCode": "CH",
+          "shipTo": false,
+          "shipToDefault": false,
+          "billTo": false,
+          "billToDefault": false,
+          "changeInfo": {
+            "createdMillis": 1584400036193,
+            "lastUpdatedMillis": 1584400036193
+          }
+        }
+      },
+      "datePromised": {
+        "year": 2013,
+        "month": 3,
+        "day": 20,
+        "leapYear": false
+      },
+      "flatrateConditionsId": 0,
+      "productId": 100024,
+      "qty": 1,
+      "uomId": 100003,
+      "qtyItemCapacity": 0,
+      "huPIItemProductId": 0,
+      "pricingSystemId": -1,
+      "price": 0,
+      "discount": 0,
+      "warehouseDestId": -1
+    },
+    {
+      "id": 100055,
+      "externalLineId": "2009_01:001_EAN-2011234567890_EAN-7634567890000_13",
+      "externalHeaderId": "2011234567890_2009_01:001",
+      "poReference": "2009_01:001",
+      "org": {
+        "code": "EAN-2011234567890",
+        "name": "Biller AG",
+        "syncAdvise": {
+          "ifNotExists": "FAIL",
+          "ifExists": "DONT_UPDATE"
+        }
+      },
+      "bpartner": {
+        "bpartner": {
+          "metasfreshId": 100019,
+          "externalId": "EAN-7634567890000",
+          "code": "Krankenkasse AG",
+          "active": true,
+          "name": "Krankenkasse AG",
+          "group": "DefaultGroup",
+          "vendor": false,
+          "customer": true,
+          "changeInfo": {
+            "createdMillis": 1584400036193,
+            "lastUpdatedMillis": 1584400036193
+          }
+        },
+        "location": {
+          "metasfreshId": 100021,
+          "externalId": "EAN-7634567890000_singleAddress",
+          "active": true,
+          "address1": "Kassengraben 222",
+          "city": "Basel",
+          "gln": "7634567890000",
+          "countryCode": "CH",
+          "shipTo": false,
+          "shipToDefault": false,
+          "billTo": false,
+          "billToDefault": false,
+          "changeInfo": {
+            "createdMillis": 1584400036193,
+            "lastUpdatedMillis": 1584400036193
+          }
+        }
+      },
+      "billBPartner": {
+        "bpartner": {
+          "metasfreshId": 100019,
+          "externalId": "EAN-7634567890000",
+          "code": "Krankenkasse AG",
+          "active": true,
+          "name": "Krankenkasse AG",
+          "group": "DefaultGroup",
+          "vendor": false,
+          "customer": true,
+          "changeInfo": {
+            "createdMillis": 1584400036193,
+            "lastUpdatedMillis": 1584400036193
+          }
+        },
+        "location": {
+          "metasfreshId": 100021,
+          "externalId": "EAN-7634567890000_singleAddress",
+          "active": true,
+          "address1": "Kassengraben 222",
+          "city": "Basel",
+          "gln": "7634567890000",
+          "countryCode": "CH",
+          "shipTo": false,
+          "shipToDefault": false,
+          "billTo": false,
+          "billToDefault": false,
+          "changeInfo": {
+            "createdMillis": 1584400036193,
+            "lastUpdatedMillis": 1584400036193
+          }
+        }
+      },
+      "datePromised": {
+        "year": 2013,
+        "month": 3,
+        "day": 20,
+        "leapYear": false
+      },
+      "flatrateConditionsId": 0,
+      "productId": 100028,
+      "qty": 1,
+      "uomId": 100003,
+      "qtyItemCapacity": 0,
+      "huPIItemProductId": 0,
+      "pricingSystemId": -1,
+      "price": 0,
+      "discount": 0,
+      "warehouseDestId": -1
+    },
+    {
+      "id": 100056,
+      "externalLineId": "2009_01:001_EAN-2011234567890_EAN-7634567890000_14",
+      "externalHeaderId": "2011234567890_2009_01:001",
+      "poReference": "2009_01:001",
+      "org": {
+        "code": "EAN-2011234567890",
+        "name": "Biller AG",
+        "syncAdvise": {
+          "ifNotExists": "FAIL",
+          "ifExists": "DONT_UPDATE"
+        }
+      },
+      "bpartner": {
+        "bpartner": {
+          "metasfreshId": 100019,
+          "externalId": "EAN-7634567890000",
+          "code": "Krankenkasse AG",
+          "active": true,
+          "name": "Krankenkasse AG",
+          "group": "DefaultGroup",
+          "vendor": false,
+          "customer": true,
+          "changeInfo": {
+            "createdMillis": 1584400036193,
+            "lastUpdatedMillis": 1584400036193
+          }
+        },
+        "location": {
+          "metasfreshId": 100021,
+          "externalId": "EAN-7634567890000_singleAddress",
+          "active": true,
+          "address1": "Kassengraben 222",
+          "city": "Basel",
+          "gln": "7634567890000",
+          "countryCode": "CH",
+          "shipTo": false,
+          "shipToDefault": false,
+          "billTo": false,
+          "billToDefault": false,
+          "changeInfo": {
+            "createdMillis": 1584400036193,
+            "lastUpdatedMillis": 1584400036193
+          }
+        }
+      },
+      "billBPartner": {
+        "bpartner": {
+          "metasfreshId": 100019,
+          "externalId": "EAN-7634567890000",
+          "code": "Krankenkasse AG",
+          "active": true,
+          "name": "Krankenkasse AG",
+          "group": "DefaultGroup",
+          "vendor": false,
+          "customer": true,
+          "changeInfo": {
+            "createdMillis": 1584400036193,
+            "lastUpdatedMillis": 1584400036193
+          }
+        },
+        "location": {
+          "metasfreshId": 100021,
+          "externalId": "EAN-7634567890000_singleAddress",
+          "active": true,
+          "address1": "Kassengraben 222",
+          "city": "Basel",
+          "gln": "7634567890000",
+          "countryCode": "CH",
+          "shipTo": false,
+          "shipToDefault": false,
+          "billTo": false,
+          "billToDefault": false,
+          "changeInfo": {
+            "createdMillis": 1584400036193,
+            "lastUpdatedMillis": 1584400036193
+          }
+        }
+      },
+      "datePromised": {
+        "year": 2013,
+        "month": 3,
+        "day": 20,
+        "leapYear": false
+      },
+      "flatrateConditionsId": 0,
+      "productId": 100029,
+      "qty": 1,
+      "uomId": 100003,
+      "qtyItemCapacity": 0,
+      "huPIItemProductId": 0,
+      "pricingSystemId": -1,
+      "price": 0,
+      "discount": 0,
+      "warehouseDestId": -1
+    },
+    {
+      "id": 100057,
+      "externalLineId": "2009_01:001_EAN-2011234567890_EAN-7634567890000_15",
+      "externalHeaderId": "2011234567890_2009_01:001",
+      "poReference": "2009_01:001",
+      "org": {
+        "code": "EAN-2011234567890",
+        "name": "Biller AG",
+        "syncAdvise": {
+          "ifNotExists": "FAIL",
+          "ifExists": "DONT_UPDATE"
+        }
+      },
+      "bpartner": {
+        "bpartner": {
+          "metasfreshId": 100019,
+          "externalId": "EAN-7634567890000",
+          "code": "Krankenkasse AG",
+          "active": true,
+          "name": "Krankenkasse AG",
+          "group": "DefaultGroup",
+          "vendor": false,
+          "customer": true,
+          "changeInfo": {
+            "createdMillis": 1584400036193,
+            "lastUpdatedMillis": 1584400036193
+          }
+        },
+        "location": {
+          "metasfreshId": 100021,
+          "externalId": "EAN-7634567890000_singleAddress",
+          "active": true,
+          "address1": "Kassengraben 222",
+          "city": "Basel",
+          "gln": "7634567890000",
+          "countryCode": "CH",
+          "shipTo": false,
+          "shipToDefault": false,
+          "billTo": false,
+          "billToDefault": false,
+          "changeInfo": {
+            "createdMillis": 1584400036193,
+            "lastUpdatedMillis": 1584400036193
+          }
+        }
+      },
+      "billBPartner": {
+        "bpartner": {
+          "metasfreshId": 100019,
+          "externalId": "EAN-7634567890000",
+          "code": "Krankenkasse AG",
+          "active": true,
+          "name": "Krankenkasse AG",
+          "group": "DefaultGroup",
+          "vendor": false,
+          "customer": true,
+          "changeInfo": {
+            "createdMillis": 1584400036193,
+            "lastUpdatedMillis": 1584400036193
+          }
+        },
+        "location": {
+          "metasfreshId": 100021,
+          "externalId": "EAN-7634567890000_singleAddress",
+          "active": true,
+          "address1": "Kassengraben 222",
+          "city": "Basel",
+          "gln": "7634567890000",
+          "countryCode": "CH",
+          "shipTo": false,
+          "shipToDefault": false,
+          "billTo": false,
+          "billToDefault": false,
+          "changeInfo": {
+            "createdMillis": 1584400036193,
+            "lastUpdatedMillis": 1584400036193
+          }
+        }
+      },
+      "datePromised": {
+        "year": 2013,
+        "month": 3,
+        "day": 20,
+        "leapYear": false
+      },
+      "flatrateConditionsId": 0,
+      "productId": 100030,
+      "qty": 1,
+      "uomId": 100003,
+      "qtyItemCapacity": 0,
+      "huPIItemProductId": 0,
+      "pricingSystemId": -1,
+      "price": 0,
+      "discount": 0,
+      "warehouseDestId": -1
+    },
+    {
+      "id": 100058,
+      "externalLineId": "2009_01:001_EAN-2011234567890_EAN-7634567890000_16",
+      "externalHeaderId": "2011234567890_2009_01:001",
+      "poReference": "2009_01:001",
+      "org": {
+        "code": "EAN-2011234567890",
+        "name": "Biller AG",
+        "syncAdvise": {
+          "ifNotExists": "FAIL",
+          "ifExists": "DONT_UPDATE"
+        }
+      },
+      "bpartner": {
+        "bpartner": {
+          "metasfreshId": 100019,
+          "externalId": "EAN-7634567890000",
+          "code": "Krankenkasse AG",
+          "active": true,
+          "name": "Krankenkasse AG",
+          "group": "DefaultGroup",
+          "vendor": false,
+          "customer": true,
+          "changeInfo": {
+            "createdMillis": 1584400036193,
+            "lastUpdatedMillis": 1584400036193
+          }
+        },
+        "location": {
+          "metasfreshId": 100021,
+          "externalId": "EAN-7634567890000_singleAddress",
+          "active": true,
+          "address1": "Kassengraben 222",
+          "city": "Basel",
+          "gln": "7634567890000",
+          "countryCode": "CH",
+          "shipTo": false,
+          "shipToDefault": false,
+          "billTo": false,
+          "billToDefault": false,
+          "changeInfo": {
+            "createdMillis": 1584400036193,
+            "lastUpdatedMillis": 1584400036193
+          }
+        }
+      },
+      "billBPartner": {
+        "bpartner": {
+          "metasfreshId": 100019,
+          "externalId": "EAN-7634567890000",
+          "code": "Krankenkasse AG",
+          "active": true,
+          "name": "Krankenkasse AG",
+          "group": "DefaultGroup",
+          "vendor": false,
+          "customer": true,
+          "changeInfo": {
+            "createdMillis": 1584400036193,
+            "lastUpdatedMillis": 1584400036193
+          }
+        },
+        "location": {
+          "metasfreshId": 100021,
+          "externalId": "EAN-7634567890000_singleAddress",
+          "active": true,
+          "address1": "Kassengraben 222",
+          "city": "Basel",
+          "gln": "7634567890000",
+          "countryCode": "CH",
+          "shipTo": false,
+          "shipToDefault": false,
+          "billTo": false,
+          "billToDefault": false,
+          "changeInfo": {
+            "createdMillis": 1584400036193,
+            "lastUpdatedMillis": 1584400036193
+          }
+        }
+      },
+      "datePromised": {
+        "year": 2013,
+        "month": 3,
+        "day": 20,
+        "leapYear": false
+      },
+      "flatrateConditionsId": 0,
+      "productId": 100031,
+      "qty": 1,
+      "uomId": 100003,
+      "qtyItemCapacity": 0,
+      "huPIItemProductId": 0,
+      "pricingSystemId": -1,
+      "price": 0,
+      "discount": 0,
+      "warehouseDestId": -1
+    },
+    {
+      "id": 100059,
+      "externalLineId": "2009_01:001_EAN-2011234567890_EAN-7634567890000_17",
+      "externalHeaderId": "2011234567890_2009_01:001",
+      "poReference": "2009_01:001",
+      "org": {
+        "code": "EAN-2011234567890",
+        "name": "Biller AG",
+        "syncAdvise": {
+          "ifNotExists": "FAIL",
+          "ifExists": "DONT_UPDATE"
+        }
+      },
+      "bpartner": {
+        "bpartner": {
+          "metasfreshId": 100019,
+          "externalId": "EAN-7634567890000",
+          "code": "Krankenkasse AG",
+          "active": true,
+          "name": "Krankenkasse AG",
+          "group": "DefaultGroup",
+          "vendor": false,
+          "customer": true,
+          "changeInfo": {
+            "createdMillis": 1584400036193,
+            "lastUpdatedMillis": 1584400036193
+          }
+        },
+        "location": {
+          "metasfreshId": 100021,
+          "externalId": "EAN-7634567890000_singleAddress",
+          "active": true,
+          "address1": "Kassengraben 222",
+          "city": "Basel",
+          "gln": "7634567890000",
+          "countryCode": "CH",
+          "shipTo": false,
+          "shipToDefault": false,
+          "billTo": false,
+          "billToDefault": false,
+          "changeInfo": {
+            "createdMillis": 1584400036193,
+            "lastUpdatedMillis": 1584400036193
+          }
+        }
+      },
+      "billBPartner": {
+        "bpartner": {
+          "metasfreshId": 100019,
+          "externalId": "EAN-7634567890000",
+          "code": "Krankenkasse AG",
+          "active": true,
+          "name": "Krankenkasse AG",
+          "group": "DefaultGroup",
+          "vendor": false,
+          "customer": true,
+          "changeInfo": {
+            "createdMillis": 1584400036193,
+            "lastUpdatedMillis": 1584400036193
+          }
+        },
+        "location": {
+          "metasfreshId": 100021,
+          "externalId": "EAN-7634567890000_singleAddress",
+          "active": true,
+          "address1": "Kassengraben 222",
+          "city": "Basel",
+          "gln": "7634567890000",
+          "countryCode": "CH",
+          "shipTo": false,
+          "shipToDefault": false,
+          "billTo": false,
+          "billToDefault": false,
+          "changeInfo": {
+            "createdMillis": 1584400036193,
+            "lastUpdatedMillis": 1584400036193
+          }
+        }
+      },
+      "datePromised": {
+        "year": 2013,
+        "month": 3,
+        "day": 20,
+        "leapYear": false
+      },
+      "flatrateConditionsId": 0,
+      "productId": 100032,
+      "qty": 1,
+      "uomId": 100003,
+      "qtyItemCapacity": 0,
+      "huPIItemProductId": 0,
+      "pricingSystemId": -1,
+      "price": 0,
+      "discount": 0,
+      "warehouseDestId": -1
+    },
+    {
+      "id": 100060,
+      "externalLineId": "2009_01:001_EAN-2011234567890_EAN-7634567890000_18",
+      "externalHeaderId": "2011234567890_2009_01:001",
+      "poReference": "2009_01:001",
+      "org": {
+        "code": "EAN-2011234567890",
+        "name": "Biller AG",
+        "syncAdvise": {
+          "ifNotExists": "FAIL",
+          "ifExists": "DONT_UPDATE"
+        }
+      },
+      "bpartner": {
+        "bpartner": {
+          "metasfreshId": 100019,
+          "externalId": "EAN-7634567890000",
+          "code": "Krankenkasse AG",
+          "active": true,
+          "name": "Krankenkasse AG",
+          "group": "DefaultGroup",
+          "vendor": false,
+          "customer": true,
+          "changeInfo": {
+            "createdMillis": 1584400036193,
+            "lastUpdatedMillis": 1584400036193
+          }
+        },
+        "location": {
+          "metasfreshId": 100021,
+          "externalId": "EAN-7634567890000_singleAddress",
+          "active": true,
+          "address1": "Kassengraben 222",
+          "city": "Basel",
+          "gln": "7634567890000",
+          "countryCode": "CH",
+          "shipTo": false,
+          "shipToDefault": false,
+          "billTo": false,
+          "billToDefault": false,
+          "changeInfo": {
+            "createdMillis": 1584400036193,
+            "lastUpdatedMillis": 1584400036193
+          }
+        }
+      },
+      "billBPartner": {
+        "bpartner": {
+          "metasfreshId": 100019,
+          "externalId": "EAN-7634567890000",
+          "code": "Krankenkasse AG",
+          "active": true,
+          "name": "Krankenkasse AG",
+          "group": "DefaultGroup",
+          "vendor": false,
+          "customer": true,
+          "changeInfo": {
+            "createdMillis": 1584400036193,
+            "lastUpdatedMillis": 1584400036193
+          }
+        },
+        "location": {
+          "metasfreshId": 100021,
+          "externalId": "EAN-7634567890000_singleAddress",
+          "active": true,
+          "address1": "Kassengraben 222",
+          "city": "Basel",
+          "gln": "7634567890000",
+          "countryCode": "CH",
+          "shipTo": false,
+          "shipToDefault": false,
+          "billTo": false,
+          "billToDefault": false,
+          "changeInfo": {
+            "createdMillis": 1584400036193,
+            "lastUpdatedMillis": 1584400036193
+          }
+        }
+      },
+      "datePromised": {
+        "year": 2013,
+        "month": 3,
+        "day": 20,
+        "leapYear": false
+      },
+      "flatrateConditionsId": 0,
+      "productId": 100033,
+      "qty": 2,
+      "uomId": 100003,
+      "qtyItemCapacity": 0,
+      "huPIItemProductId": 0,
+      "pricingSystemId": -1,
+      "price": 0,
+      "discount": 0,
+      "warehouseDestId": -1
+    },
+    {
+      "id": 100061,
+      "externalLineId": "2009_01:001_EAN-2011234567890_EAN-7634567890000_19",
+      "externalHeaderId": "2011234567890_2009_01:001",
+      "poReference": "2009_01:001",
+      "org": {
+        "code": "EAN-2011234567890",
+        "name": "Biller AG",
+        "syncAdvise": {
+          "ifNotExists": "FAIL",
+          "ifExists": "DONT_UPDATE"
+        }
+      },
+      "bpartner": {
+        "bpartner": {
+          "metasfreshId": 100019,
+          "externalId": "EAN-7634567890000",
+          "code": "Krankenkasse AG",
+          "active": true,
+          "name": "Krankenkasse AG",
+          "group": "DefaultGroup",
+          "vendor": false,
+          "customer": true,
+          "changeInfo": {
+            "createdMillis": 1584400036193,
+            "lastUpdatedMillis": 1584400036193
+          }
+        },
+        "location": {
+          "metasfreshId": 100021,
+          "externalId": "EAN-7634567890000_singleAddress",
+          "active": true,
+          "address1": "Kassengraben 222",
+          "city": "Basel",
+          "gln": "7634567890000",
+          "countryCode": "CH",
+          "shipTo": false,
+          "shipToDefault": false,
+          "billTo": false,
+          "billToDefault": false,
+          "changeInfo": {
+            "createdMillis": 1584400036193,
+            "lastUpdatedMillis": 1584400036193
+          }
+        }
+      },
+      "billBPartner": {
+        "bpartner": {
+          "metasfreshId": 100019,
+          "externalId": "EAN-7634567890000",
+          "code": "Krankenkasse AG",
+          "active": true,
+          "name": "Krankenkasse AG",
+          "group": "DefaultGroup",
+          "vendor": false,
+          "customer": true,
+          "changeInfo": {
+            "createdMillis": 1584400036193,
+            "lastUpdatedMillis": 1584400036193
+          }
+        },
+        "location": {
+          "metasfreshId": 100021,
+          "externalId": "EAN-7634567890000_singleAddress",
+          "active": true,
+          "address1": "Kassengraben 222",
+          "city": "Basel",
+          "gln": "7634567890000",
+          "countryCode": "CH",
+          "shipTo": false,
+          "shipToDefault": false,
+          "billTo": false,
+          "billToDefault": false,
+          "changeInfo": {
+            "createdMillis": 1584400036193,
+            "lastUpdatedMillis": 1584400036193
+          }
+        }
+      },
+      "datePromised": {
+        "year": 2013,
+        "month": 3,
+        "day": 20,
+        "leapYear": false
+      },
+      "flatrateConditionsId": 0,
+      "productId": 100034,
+      "qty": 1,
+      "uomId": 100003,
+      "qtyItemCapacity": 0,
+      "huPIItemProductId": 0,
+      "pricingSystemId": -1,
+      "price": 0,
+      "discount": 0,
+      "warehouseDestId": -1
+    },
+    {
+      "id": 100062,
+      "externalLineId": "2009_01:001_EAN-2011234567890_EAN-7634567890000_20",
+      "externalHeaderId": "2011234567890_2009_01:001",
+      "poReference": "2009_01:001",
+      "org": {
+        "code": "EAN-2011234567890",
+        "name": "Biller AG",
+        "syncAdvise": {
+          "ifNotExists": "FAIL",
+          "ifExists": "DONT_UPDATE"
+        }
+      },
+      "bpartner": {
+        "bpartner": {
+          "metasfreshId": 100019,
+          "externalId": "EAN-7634567890000",
+          "code": "Krankenkasse AG",
+          "active": true,
+          "name": "Krankenkasse AG",
+          "group": "DefaultGroup",
+          "vendor": false,
+          "customer": true,
+          "changeInfo": {
+            "createdMillis": 1584400036193,
+            "lastUpdatedMillis": 1584400036193
+          }
+        },
+        "location": {
+          "metasfreshId": 100021,
+          "externalId": "EAN-7634567890000_singleAddress",
+          "active": true,
+          "address1": "Kassengraben 222",
+          "city": "Basel",
+          "gln": "7634567890000",
+          "countryCode": "CH",
+          "shipTo": false,
+          "shipToDefault": false,
+          "billTo": false,
+          "billToDefault": false,
+          "changeInfo": {
+            "createdMillis": 1584400036193,
+            "lastUpdatedMillis": 1584400036193
+          }
+        }
+      },
+      "billBPartner": {
+        "bpartner": {
+          "metasfreshId": 100019,
+          "externalId": "EAN-7634567890000",
+          "code": "Krankenkasse AG",
+          "active": true,
+          "name": "Krankenkasse AG",
+          "group": "DefaultGroup",
+          "vendor": false,
+          "customer": true,
+          "changeInfo": {
+            "createdMillis": 1584400036193,
+            "lastUpdatedMillis": 1584400036193
+          }
+        },
+        "location": {
+          "metasfreshId": 100021,
+          "externalId": "EAN-7634567890000_singleAddress",
+          "active": true,
+          "address1": "Kassengraben 222",
+          "city": "Basel",
+          "gln": "7634567890000",
+          "countryCode": "CH",
+          "shipTo": false,
+          "shipToDefault": false,
+          "billTo": false,
+          "billToDefault": false,
+          "changeInfo": {
+            "createdMillis": 1584400036193,
+            "lastUpdatedMillis": 1584400036193
+          }
+        }
+      },
+      "datePromised": {
+        "year": 2013,
+        "month": 3,
+        "day": 20,
+        "leapYear": false
+      },
+      "flatrateConditionsId": 0,
+      "productId": 100035,
+      "qty": 1,
+      "uomId": 100003,
+      "qtyItemCapacity": 0,
+      "huPIItemProductId": 0,
+      "pricingSystemId": -1,
+      "price": 0,
+      "discount": 0,
+      "warehouseDestId": -1
+    },
+    {
+      "id": 100063,
+      "externalLineId": "2009_01:001_EAN-2011234567890_EAN-7634567890000_21",
+      "externalHeaderId": "2011234567890_2009_01:001",
+      "poReference": "2009_01:001",
+      "org": {
+        "code": "EAN-2011234567890",
+        "name": "Biller AG",
+        "syncAdvise": {
+          "ifNotExists": "FAIL",
+          "ifExists": "DONT_UPDATE"
+        }
+      },
+      "bpartner": {
+        "bpartner": {
+          "metasfreshId": 100019,
+          "externalId": "EAN-7634567890000",
+          "code": "Krankenkasse AG",
+          "active": true,
+          "name": "Krankenkasse AG",
+          "group": "DefaultGroup",
+          "vendor": false,
+          "customer": true,
+          "changeInfo": {
+            "createdMillis": 1584400036193,
+            "lastUpdatedMillis": 1584400036193
+          }
+        },
+        "location": {
+          "metasfreshId": 100021,
+          "externalId": "EAN-7634567890000_singleAddress",
+          "active": true,
+          "address1": "Kassengraben 222",
+          "city": "Basel",
+          "gln": "7634567890000",
+          "countryCode": "CH",
+          "shipTo": false,
+          "shipToDefault": false,
+          "billTo": false,
+          "billToDefault": false,
+          "changeInfo": {
+            "createdMillis": 1584400036193,
+            "lastUpdatedMillis": 1584400036193
+          }
+        }
+      },
+      "billBPartner": {
+        "bpartner": {
+          "metasfreshId": 100019,
+          "externalId": "EAN-7634567890000",
+          "code": "Krankenkasse AG",
+          "active": true,
+          "name": "Krankenkasse AG",
+          "group": "DefaultGroup",
+          "vendor": false,
+          "customer": true,
+          "changeInfo": {
+            "createdMillis": 1584400036193,
+            "lastUpdatedMillis": 1584400036193
+          }
+        },
+        "location": {
+          "metasfreshId": 100021,
+          "externalId": "EAN-7634567890000_singleAddress",
+          "active": true,
+          "address1": "Kassengraben 222",
+          "city": "Basel",
+          "gln": "7634567890000",
+          "countryCode": "CH",
+          "shipTo": false,
+          "shipToDefault": false,
+          "billTo": false,
+          "billToDefault": false,
+          "changeInfo": {
+            "createdMillis": 1584400036193,
+            "lastUpdatedMillis": 1584400036193
+          }
+        }
+      },
+      "datePromised": {
+        "year": 2013,
+        "month": 3,
+        "day": 20,
+        "leapYear": false
+      },
+      "flatrateConditionsId": 0,
+      "productId": 100036,
+      "qty": 1,
+      "uomId": 100003,
+      "qtyItemCapacity": 0,
+      "huPIItemProductId": 0,
+      "pricingSystemId": -1,
+      "price": 0,
+      "discount": 0,
+      "warehouseDestId": -1
+    }
+  ]
+]
+
+
+de.metas.rest_api.ordercandidates.impl.OrderCandidatesRestControllerImplTest.test_CreateProductPrice_WarehouseDestId=[
+  {
+    "id": 100028,
+    "externalLineId": "externalLineId",
+    "externalHeaderId": "externalHeaderId",
+    "poReference": "poRef",
+    "org": {
+      "syncAdvise": {
+        "ifNotExists": "FAIL",
+        "ifExists": "DONT_UPDATE"
+      }
+    },
+    "bpartner": {
+      "bpartner": {
+        "metasfreshId": 100017,
+        "code": "bpCode",
+        "active": true,
+        "name": "bpCode-name",
+        "group": "bpCode-name",
+        "vendor": false,
+        "customer": true,
+        "changeInfo": {
+          "createdMillis": 1584400036193,
+          "lastUpdatedMillis": 1584400036193
+        }
+      },
+      "location": {
+        "metasfreshId": 100019,
+        "active": true,
+        "gln": "gln1",
+        "countryCode": "DE",
+        "shipTo": false,
+        "shipToDefault": false,
+        "billTo": false,
+        "billToDefault": false,
+        "changeInfo": {
+          "createdMillis": 1584400036193,
+          "lastUpdatedMillis": 1584400036193
+        }
+      }
+    },
+    "billBPartner": {
+      "bpartner": {
+        "metasfreshId": 100017,
+        "code": "bpCode",
+        "active": true,
+        "name": "bpCode-name",
+        "group": "bpCode-name",
+        "vendor": false,
+        "customer": true,
+        "changeInfo": {
+          "createdMillis": 1584400036193,
+          "lastUpdatedMillis": 1584400036193
+        }
+      },
+      "location": {
+        "metasfreshId": 100019,
+        "active": true,
+        "gln": "gln1",
+        "countryCode": "DE",
+        "shipTo": false,
+        "shipToDefault": false,
+        "billTo": false,
+        "billToDefault": false,
+        "changeInfo": {
+          "createdMillis": 1584400036193,
+          "lastUpdatedMillis": 1584400036193
+        }
+      }
+    },
+    "dateOrdered": {
+      "year": 2019,
+      "month": 9,
+      "day": 10,
+      "leapYear": false
+    },
+    "datePromised": {
+      "year": 2019,
+      "month": 9,
+      "day": 15,
+      "leapYear": false
+    },
+    "flatrateConditionsId": 0,
+    "productId": 100021,
+    "qty": 66,
+    "uomId": 100003,
+    "qtyItemCapacity": 0,
+    "huPIItemProductId": -1,
+    "pricingSystemId": 100012,
+    "price": 13.24,
+    "discount": 0,
+    "warehouseDestId": 100020
+  }
+]
+
+
+de.metas.rest_api.ordercandidates.impl.OrderCandidatesRestControllerImplTest.test_CreateProductPrice_WarehouseDestId_DirectDebit=[
+  {
+    "id": 100028,
+    "externalLineId": "externalLineId",
+    "externalHeaderId": "externalHeaderId",
+    "poReference": "poRef",
+    "org": {
+      "syncAdvise": {
+        "ifNotExists": "FAIL",
+        "ifExists": "DONT_UPDATE"
+      }
+    },
+    "bpartner": {
+      "bpartner": {
+        "metasfreshId": 100017,
+        "code": "bpCode",
+        "active": true,
+        "name": "bpCode-name",
+        "group": "bpCode-name",
+        "vendor": false,
+        "customer": true,
+        "changeInfo": {
+          "createdMillis": 1584400036193,
+          "lastUpdatedMillis": 1584400036193
+        }
+      },
+      "location": {
+        "metasfreshId": 100019,
+        "active": true,
+        "gln": "gln1",
+        "countryCode": "DE",
+        "shipTo": false,
+        "shipToDefault": false,
+        "billTo": false,
+        "billToDefault": false,
+        "changeInfo": {
+          "createdMillis": 1584400036193,
+          "lastUpdatedMillis": 1584400036193
+        }
+      }
+    },
+    "billBPartner": {
+      "bpartner": {
+        "metasfreshId": 100017,
+        "code": "bpCode",
+        "active": true,
+        "name": "bpCode-name",
+        "group": "bpCode-name",
+        "vendor": false,
+        "customer": true,
+        "changeInfo": {
+          "createdMillis": 1584400036193,
+          "lastUpdatedMillis": 1584400036193
+        }
+      },
+      "location": {
+        "metasfreshId": 100019,
+        "active": true,
+        "gln": "gln1",
+        "countryCode": "DE",
+        "shipTo": false,
+        "shipToDefault": false,
+        "billTo": false,
+        "billToDefault": false,
+        "changeInfo": {
+          "createdMillis": 1584400036193,
+          "lastUpdatedMillis": 1584400036193
+        }
+      }
+    },
+    "dateOrdered": {
+      "year": 2019,
+      "month": 9,
+      "day": 10,
+      "leapYear": false
+    },
+    "datePromised": {
+      "year": 2019,
+      "month": 9,
+      "day": 15,
+      "leapYear": false
+    },
+    "flatrateConditionsId": 0,
+    "productId": 100021,
+    "qty": 66,
+    "uomId": 100003,
+    "qtyItemCapacity": 0,
+    "huPIItemProductId": -1,
+    "pricingSystemId": 100012,
+    "price": 13.24,
+    "discount": 0,
+    "warehouseDestId": 100020
+  }
+]
+
+
+de.metas.rest_api.ordercandidates.impl.OrderCandidatesRestControllerImplTest.test_no_location_specified=[
+  {
+    "id": 100037,
+    "externalLineId": "externalLineId",
+    "externalHeaderId": "externalHeaderId",
+    "poReference": "poRef",
+    "org": {
+      "syncAdvise": {
+        "ifNotExists": "FAIL",
+        "ifExists": "DONT_UPDATE"
+      }
+    },
+    "bpartner": {
+      "bpartner": {
+        "metasfreshId": 100017,
+        "code": "mainPartner",
+        "active": true,
+        "name": "mainPartner-name",
+        "group": "mainPartner-name",
+        "vendor": false,
+        "customer": true,
+        "changeInfo": {
+          "createdMillis": 1584400036193,
+          "lastUpdatedMillis": 1584400036193
+        }
+      },
+      "location": {
+        "metasfreshId": 100019,
+        "active": true,
+        "countryCode": "DE",
+        "shipTo": false,
+        "shipToDefault": false,
+        "billTo": false,
+        "billToDefault": false,
+        "changeInfo": {
+          "createdMillis": 1584400036193,
+          "lastUpdatedMillis": 1584400036193
+        }
+      }
+    },
+    "billBPartner": {
+      "bpartner": {
+        "metasfreshId": 100021,
+        "code": "billPartner",
+        "active": true,
+        "name": "billPartner-name",
+        "group": "billPartner-name",
+        "vendor": false,
+        "customer": true,
+        "changeInfo": {
+          "createdMillis": 1584400036193,
+          "lastUpdatedMillis": 1584400036193
+        }
+      },
+      "location": {
+        "metasfreshId": 100023,
+        "active": true,
+        "countryCode": "DE",
+        "shipTo": false,
+        "shipToDefault": false,
+        "billTo": false,
+        "billToDefault": false,
+        "changeInfo": {
+          "createdMillis": 1584400036193,
+          "lastUpdatedMillis": 1584400036193
+        }
+      }
+    },
+    "dropShipBPartner": {
+      "bpartner": {
+        "metasfreshId": 100025,
+        "code": "droptShipPartner",
+        "active": true,
+        "name": "droptShipPartner-name",
+        "group": "droptShipPartner-name",
+        "vendor": false,
+        "customer": true,
+        "changeInfo": {
+          "createdMillis": 1584400036193,
+          "lastUpdatedMillis": 1584400036193
+        }
+      },
+      "location": {
+        "metasfreshId": 100029,
+        "active": true,
+        "gln": "expectedDropShipLocation",
+        "countryCode": "DE",
+        "shipTo": false,
+        "shipToDefault": false,
+        "billTo": false,
+        "billToDefault": false,
+        "changeInfo": {
+          "createdMillis": 1584400036193,
+          "lastUpdatedMillis": 1584400036193
+        }
+      }
+    },
+    "dateOrdered": {
+      "year": 2019,
+      "month": 9,
+      "day": 10,
+      "leapYear": false
+    },
+    "datePromised": {
+      "year": 2019,
+      "month": 9,
+      "day": 15,
+      "leapYear": false
+    },
+    "flatrateConditionsId": 0,
+    "productId": 100030,
+    "qty": 66,
+    "uomId": 100003,
+    "qtyItemCapacity": 0,
+    "huPIItemProductId": -1,
+    "pricingSystemId": 100012,
+    "price": 13.24,
+    "discount": 0,
+    "warehouseDestId": -1
+  }
+]
+
+
+de.metas.rest_api.ordercandidates.impl.OrderCandidatesRestControllerImplTest.test_no_location_specified_DirectDebit=[
+  {
+    "id": 100037,
+    "externalLineId": "externalLineId",
+    "externalHeaderId": "externalHeaderId",
+    "poReference": "poRef",
+    "org": {
+      "syncAdvise": {
+        "ifNotExists": "FAIL",
+        "ifExists": "DONT_UPDATE"
+      }
+    },
+    "bpartner": {
+      "bpartner": {
+        "metasfreshId": 100017,
+        "code": "mainPartner",
+        "active": true,
+        "name": "mainPartner-name",
+        "group": "mainPartner-name",
+        "vendor": false,
+        "customer": true,
+        "changeInfo": {
+          "createdMillis": 1584400036193,
+          "lastUpdatedMillis": 1584400036193
+        }
+      },
+      "location": {
+        "metasfreshId": 100019,
+        "active": true,
+        "countryCode": "DE",
+        "shipTo": false,
+        "shipToDefault": false,
+        "billTo": false,
+        "billToDefault": false,
+        "changeInfo": {
+          "createdMillis": 1584400036193,
+          "lastUpdatedMillis": 1584400036193
+        }
+      }
+    },
+    "billBPartner": {
+      "bpartner": {
+        "metasfreshId": 100021,
+        "code": "billPartner",
+        "active": true,
+        "name": "billPartner-name",
+        "group": "billPartner-name",
+        "vendor": false,
+        "customer": true,
+        "changeInfo": {
+          "createdMillis": 1584400036193,
+          "lastUpdatedMillis": 1584400036193
+        }
+      },
+      "location": {
+        "metasfreshId": 100023,
+        "active": true,
+        "countryCode": "DE",
+        "shipTo": false,
+        "shipToDefault": false,
+        "billTo": false,
+        "billToDefault": false,
+        "changeInfo": {
+          "createdMillis": 1584400036193,
+          "lastUpdatedMillis": 1584400036193
+        }
+      }
+    },
+    "dropShipBPartner": {
+      "bpartner": {
+        "metasfreshId": 100025,
+        "code": "droptShipPartner",
+        "active": true,
+        "name": "droptShipPartner-name",
+        "group": "droptShipPartner-name",
+        "vendor": false,
+        "customer": true,
+        "changeInfo": {
+          "createdMillis": 1584400036193,
+          "lastUpdatedMillis": 1584400036193
+        }
+      },
+      "location": {
+        "metasfreshId": 100029,
+        "active": true,
+        "gln": "expectedDropShipLocation",
+        "countryCode": "DE",
+        "shipTo": false,
+        "shipToDefault": false,
+        "billTo": false,
+        "billToDefault": false,
+        "changeInfo": {
+          "createdMillis": 1584400036193,
+          "lastUpdatedMillis": 1584400036193
+        }
+      }
+    },
+    "dateOrdered": {
+      "year": 2019,
+      "month": 9,
+      "day": 10,
+      "leapYear": false
+    },
+    "datePromised": {
+      "year": 2019,
+      "month": 9,
+      "day": 15,
+      "leapYear": false
+    },
+    "flatrateConditionsId": 0,
+    "productId": 100030,
+    "qty": 66,
+    "uomId": 100003,
+    "qtyItemCapacity": 0,
+    "huPIItemProductId": -1,
+    "pricingSystemId": 100012,
+    "price": 13.24,
+    "discount": 0,
+    "warehouseDestId": -1
+  }
+]
+
+
+de.metas.rest_api.ordercandidates.impl.OrderCandidatesRestControllerImplTest.test_sameBPartner_DifferentLocations=[
+  {
+    "id": 100022,
+    "externalLineId": "externalLineId",
+    "externalHeaderId": "externalHeaderId",
+    "poReference": "poRef",
+    "org": {
+      "syncAdvise": {
+        "ifNotExists": "FAIL",
+        "ifExists": "DONT_UPDATE"
+      }
+    },
+    "bpartner": {
+      "bpartner": {
+        "metasfreshId": 100013,
+        "code": "bpCode",
+        "active": true,
+        "name": "bpName",
+        "companyName": "bpCompanyName",
+        "group": "bpGroupName",
+        "vendor": false,
+        "customer": true,
+        "changeInfo": {
+          "createdMillis": 1584400036193,
+          "lastUpdatedMillis": 1584400036193
+        }
+      },
+      "location": {
+        "metasfreshId": 100015,
+        "active": true,
+        "gln": "gln-ship",
+        "countryCode": "DE",
+        "shipTo": false,
+        "shipToDefault": false,
+        "billTo": false,
+        "billToDefault": false,
+        "changeInfo": {
+          "createdMillis": 1584400036193,
+          "lastUpdatedMillis": 1584400036193
+        }
+      }
+    },
+    "billBPartner": {
+      "bpartner": {
+        "metasfreshId": 100013,
+        "code": "bpCode",
+        "active": true,
+        "name": "bpName",
+        "companyName": "bpCompanyName",
+        "group": "bpGroupName",
+        "vendor": false,
+        "customer": true,
+        "changeInfo": {
+          "createdMillis": 1584400036193,
+          "lastUpdatedMillis": 1584400036193
+        }
+      },
+      "location": {
+        "metasfreshId": 100017,
+        "active": true,
+        "gln": "gln-bill",
+        "countryCode": "DE",
+        "shipTo": false,
+        "shipToDefault": false,
+        "billTo": false,
+        "billToDefault": false,
+        "changeInfo": {
+          "createdMillis": 1584400036193,
+          "lastUpdatedMillis": 1584400036193
+        }
+      }
+    },
+    "dropShipBPartner": {
+      "bpartner": {
+        "metasfreshId": 100013,
+        "code": "bpCode",
+        "active": true,
+        "name": "bpName",
+        "companyName": "bpCompanyName",
+        "group": "bpGroupName",
+        "vendor": false,
+        "customer": true,
+        "changeInfo": {
+          "createdMillis": 1584400036193,
+          "lastUpdatedMillis": 1584400036193
+        }
+      },
+      "location": {
+        "metasfreshId": 100019,
+        "active": true,
+        "gln": "gln-dropShip",
+        "countryCode": "DE",
+        "shipTo": false,
+        "shipToDefault": false,
+        "billTo": false,
+        "billToDefault": false,
+        "changeInfo": {
+          "createdMillis": 1584400036193,
+          "lastUpdatedMillis": 1584400036193
+        }
+      }
+    },
+    "handOverBPartner": {
+      "bpartner": {
+        "metasfreshId": 100013,
+        "code": "bpCode",
+        "active": true,
+        "name": "bpName",
+        "companyName": "bpCompanyName",
+        "group": "bpGroupName",
+        "vendor": false,
+        "customer": true,
+        "changeInfo": {
+          "createdMillis": 1584400036193,
+          "lastUpdatedMillis": 1584400036193
+        }
+      },
+      "location": {
+        "metasfreshId": 100021,
+        "active": true,
+        "gln": "gln-handOver",
+        "countryCode": "DE",
+        "shipTo": false,
+        "shipToDefault": false,
+        "billTo": false,
+        "billToDefault": false,
+        "changeInfo": {
+          "createdMillis": 1584400036193,
+          "lastUpdatedMillis": 1584400036193
+        }
+      }
+    },
+    "dateOrdered": {
+      "year": 2019,
+      "month": 9,
+      "day": 10,
+      "leapYear": false
+    },
+    "datePromised": {
+      "year": 2019,
+      "month": 9,
+      "day": 15,
+      "leapYear": false
+    },
+    "flatrateConditionsId": 0,
+    "productId": 100011,
+    "qty": 66,
+    "uomId": 100003,
+    "qtyItemCapacity": 0,
+    "huPIItemProductId": -1,
+    "pricingSystemId": -1,
+    "price": 0,
+    "discount": 0,
+    "warehouseDestId": -1
+  }
+]
+
+
+de.metas.rest_api.ordercandidates.impl.OrderCandidatesRestControllerImplTest.toJsonAttachment_Type_URL=[
+  {
+    "externalReference": "externalReference",
+    "dataSourceName": "dataSourceName",
+    "attachmentId": "10",
+    "type": "URL",
+    "filename": "?",
+    "url": "https://metasfresh.com"
+  }
+]

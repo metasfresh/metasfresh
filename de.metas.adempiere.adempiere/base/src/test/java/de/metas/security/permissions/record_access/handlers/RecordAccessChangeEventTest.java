@@ -9,6 +9,7 @@ import org.junit.Test;
 
 import de.metas.security.Principal;
 import de.metas.security.permissions.Access;
+import de.metas.security.permissions.record_access.PermissionIssuer;
 import de.metas.security.permissions.record_access.RecordAccess;
 import de.metas.user.UserId;
 import de.metas.util.JSONObjectMapper;
@@ -70,6 +71,8 @@ public class RecordAccessChangeEventTest
 				.recordRef(TableRecordReference.of("DummyTable", recordId))
 				.principal(Principal.userId(UserId.METASFRESH))
 				.permission(Access.READ)
+				.issuer(PermissionIssuer.MANUAL)
+				.createdBy(UserId.ofRepoId(111))
 				.build();
 	}
 

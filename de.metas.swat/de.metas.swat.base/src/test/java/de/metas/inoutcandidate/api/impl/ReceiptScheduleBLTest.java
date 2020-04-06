@@ -46,6 +46,7 @@ import de.metas.uom.UomId;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
 
+@SuppressWarnings("ArraysAsListWithZeroOrOneArgument")
 public class ReceiptScheduleBLTest extends ReceiptScheduleTestBase
 {
 	final boolean complete = true;

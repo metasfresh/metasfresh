@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.I_C_BPartner;
@@ -12,9 +11,9 @@ import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.X_C_DocType;
-import org.compiere.util.Env;
 import org.slf4j.Logger;
 
+import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.handlingunits.IPackingMaterialDocumentLineSource;
@@ -169,15 +168,22 @@ public class EmptiesInOutProducer extends AbstractReturnsInOutProducer
 	{
 		final I_C_DocType docType = getEmptiesDocType(docBaseType, adClientId, adOrgId, isSOTrx);
 
-		int docTypeId = docType == null ? -1 : docType.getC_DocType_ID();
+		DocTypeId docTypeId = docType == null ? null : DocTypeId.ofRepoId(docType.getC_DocType_ID());
 
 		// If the empties doc type was not found (should not happen) fallback to the default one
-		if (docTypeId <= 0)
+		if (docTypeId == null)
 		{
 			final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
-			docTypeId = docTypeDAO.getDocTypeId(Env.getCtx(), docBaseType, adClientId, adOrgId, ITrx.TRXNAME_None);
+			docTypeId = docTypeDAO.getDocTypeId(
+					DocTypeQuery.builder()
+					.docBaseType(docBaseType)
+					.adClientId(adClientId)
+					.adOrgId(adOrgId)
+					.build()
+					//Env.getCtx(), docBaseType, adClientId, adOrgId, ITrx.TRXNAME_None
+					);
 		}
 
-		return docTypeId;
+		return DocTypeId.toRepoId(docTypeId);
 	}
 }

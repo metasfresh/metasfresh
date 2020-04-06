@@ -13,12 +13,12 @@ package de.metas.adempiere.service;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -44,7 +44,7 @@ public interface IPrinterRoutingBL extends ISingletonService
 	String PRINTERTYPE_Fax = "F";
 	String PRINTERTYPE_Label = "L";
 
-	String findPrinterName(Properties ctx, int C_DocType_ID, int AD_Process_ID, String printerType);
+	String findPrinterName(Properties ctx, int C_DocType_ID, int AD_Process_ID, int AD_Table_ID, String printerType);
 
 	/**
 	 * Uses the properties of the given <code>pi</code> to retrieve the printer to use via <code>AD_PrinterRouting</code>
@@ -63,7 +63,7 @@ public interface IPrinterRoutingBL extends ISingletonService
 	 * @return printing service; never return null
 	 * @throws AdempiereException if printing service was not found or printerType is not supported
 	 */
-	IPrintingService findPrintingService(Properties ctx, int C_DocType_ID, int AD_Process_ID, String printerType);
+	IPrintingService findPrintingService(Properties ctx, int C_DocType_ID, int AD_Process_ID, int AD_table_ID, String printerType);
 
 	String getDefaultPrinterName();
 

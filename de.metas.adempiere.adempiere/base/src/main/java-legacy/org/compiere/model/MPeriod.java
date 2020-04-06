@@ -25,6 +25,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 
+import org.adempiere.ad.dao.impl.TypedSqlQuery;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.PeriodClosedException;
@@ -560,23 +561,19 @@ public class MPeriod extends X_C_Period
 		
 		MYear year = new MYear(getCtx(), getC_Year_ID(), get_TrxName());
 		
-		Query query = MTable.get(getCtx(), "C_Period")
-		.createQuery("C_Year_ID IN (SELECT y.C_Year_ID from C_Year y WHERE" +
+		final String sqlWhereClause = "C_Year_ID IN (SELECT y.C_Year_ID from C_Year y WHERE" +
 				"                   y.C_Calendar_ID =?)" +
 				" AND (? BETWEEN StartDate AND EndDate" +
 				" OR ? BETWEEN StartDate AND EndDate)" +
-				" AND PeriodType=?",get_TrxName());
-		query.setParameters(new Object[] {year.getC_Calendar_ID(),
-				getStartDate(), getEndDate(),
-				getPeriodType()});
-		
-		List<MPeriod> periods = query.list(MPeriod.class);
-		
-		for ( int i=0; i < periods.size(); i++)
+				" AND PeriodType=?";
+		final List<I_C_Period> periods = new TypedSqlQuery<>(getCtx(), I_C_Period.class, sqlWhereClause, ITrx.TRXNAME_ThreadInherited)
+				.setParameters(year.getC_Calendar_ID(), getStartDate(), getEndDate(), getPeriodType())
+				.list(I_C_Period.class);
+		for (I_C_Period period : periods)
 		{
-			if ( periods.get(i).getC_Period_ID() != getC_Period_ID() )
+			if (period.getC_Period_ID() != getC_Period_ID())
 			{
-				throw new AdempiereException("Period overlaps with: "	+ periods.get(i).getName());
+				throw new AdempiereException("Period overlaps with: " + period.getName());
 			}
 		}
 		

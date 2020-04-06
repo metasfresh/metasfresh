@@ -57,6 +57,7 @@ public class BPartnerLocation
 	public static final String EXTERNAL_ID = "externalId";
 	public static final String GLN = "gln";
 	public static final String NAME = "name";
+	public static final String BPARTNERNAME = " bpartnerName";
 	public static final String ACTIVE = "active";
 	public static final String ADDRESS_1 = "address1";
 	public static final String ADDRESS_2 = "address2";
@@ -77,6 +78,8 @@ public class BPartnerLocation
 	private GLN gln;
 
 	private String name;
+
+	private String bpartnerName;
 
 	private boolean active;
 
@@ -121,6 +124,7 @@ public class BPartnerLocation
 			@Nullable final GLN gln,
 			@Nullable final Boolean active,
 			@Nullable final String name,
+			@Nullable final String bpartnerName,
 			@Nullable final String address1,
 			@Nullable final String address2,
 			@Nullable final String address3,
@@ -142,6 +146,8 @@ public class BPartnerLocation
 		this.active = coalesce(active, true);
 
 		this.name = name;
+
+		this.bpartnerName = bpartnerName;
 		this.address1 = address1;
 		this.address2 = address2;
 		this.address3 = address3;
@@ -165,10 +171,15 @@ public class BPartnerLocation
 		return toBuilder().build();
 	}
 
-	/** Empty list means valid */
+	/** Only active instances are actually validated. Empty list means "valid" */
 	public ImmutableList<ITranslatableString> validate()
 	{
 		final ImmutableList.Builder<ITranslatableString> result = ImmutableList.builder();
+		if (!isActive())
+		{
+			return result.build();
+		}
+
 		if (isEmpty(countryCode, true))
 		{
 			result.add(TranslatableStrings.constant("Missing location.countryCode"));
@@ -214,6 +225,15 @@ public class BPartnerLocation
 			createOriginalIfNotExists();
 		}
 		this.name = name;
+	}
+
+	public void setBpartnerName(@Nullable final String bpartnerName)
+	{
+		if (!Objects.equals(this.bpartnerName, bpartnerName))
+		{
+			createOriginalIfNotExists();
+		}
+		this.bpartnerName = bpartnerName;
 	}
 
 	public void setActive(@Nullable final boolean active)
@@ -362,7 +382,6 @@ public class BPartnerLocation
 	{
 		return !Objects.equals(this.countryCode, getOriginalOrSelf().getCountryCode());
 	}
-
 
 	public void setLocationType(@Nullable final BPartnerLocationType locationType)
 	{

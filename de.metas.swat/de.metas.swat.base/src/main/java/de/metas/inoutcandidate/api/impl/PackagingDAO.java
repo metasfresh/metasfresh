@@ -22,6 +22,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.ShipmentAllocationBestBeforePolicy;
+import de.metas.freighcost.FreightCostRule;
 import de.metas.inoutcandidate.api.IPackagingDAO;
 import de.metas.inoutcandidate.api.Packageable;
 import de.metas.inoutcandidate.api.Packageable.PackageableBuilder;
@@ -31,6 +32,7 @@ import de.metas.inoutcandidate.model.I_M_Packageable_V;
 import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
+import de.metas.order.DeliveryViaRule;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.product.ProductId;
@@ -177,7 +179,7 @@ public class PackagingDAO implements IPackagingDAO
 		packageable.productName(record.getProductName());
 		packageable.asiId(AttributeSetInstanceId.ofRepoIdOrNone(record.getM_AttributeSetInstance_ID()));
 
-		packageable.deliveryVia(record.getDeliveryViaRule());
+		packageable.deliveryViaRule(DeliveryViaRule.ofNullableCode(record.getDeliveryViaRule()));
 
 		packageable.shipperId(ShipperId.ofRepoIdOrNull(record.getM_Shipper_ID()));
 		packageable.shipperName(record.getShipperName());
@@ -203,7 +205,7 @@ public class PackagingDAO implements IPackagingDAO
 			packageable.salesOrderLineNetAmt(Money.of(record.getLineNetAmt(), currencyId));
 		}
 
-		packageable.freightCostRule(record.getFreightCostRule());
+		packageable.freightCostRule(FreightCostRule.ofNullableCode(record.getFreightCostRule()));
 
 		packageable.pickFromOrderId(PPOrderId.ofRepoIdOrNull(record.getPickFrom_Order_ID()));
 

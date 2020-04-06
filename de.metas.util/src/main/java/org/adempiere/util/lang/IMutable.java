@@ -1,7 +1,7 @@
 package org.adempiere.util.lang;
 
-import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.function.UnaryOperator;
 
 import lombok.NonNull;
 
@@ -52,7 +52,7 @@ public interface IMutable<T> extends IReference<T>
 	/**
 	 * @param remappingFunction function which takes the current value as input and which shall return the new value
 	 */
-	default T compute(@NonNull final Function<T, T> remappingFunction)
+	default T compute(@NonNull final UnaryOperator<T> remappingFunction)
 	{
 		final T valueOld = getValue();
 		final T valueNew = remappingFunction.apply(valueOld);

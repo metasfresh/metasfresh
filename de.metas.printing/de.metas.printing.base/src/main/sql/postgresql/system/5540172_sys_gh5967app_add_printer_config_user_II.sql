@@ -1,5 +1,6 @@
 
-UPDATE AD_Printer_Config SET AD_User_PrinterMatchingConfig_ID=CreatedBy WHERE AD_User_PrinterMatchingConfig_ID IS NULL;
+UPDATE AD_Printer_Config c SET AD_User_PrinterMatchingConfig_ID=CreatedBy WHERE c.AD_User_PrinterMatchingConfig_ID IS NULL AND EXISTS (select 1 from AD_User u where u.AD_User_ID=c.CreatedBy);
+UPDATE AD_Printer_Config c SET AD_User_PrinterMatchingConfig_ID=99 WHERE c.AD_User_PrinterMatchingConfig_ID IS NULL;
 COMMIT;
 
 -- 2020-01-02T15:36:30.669Z

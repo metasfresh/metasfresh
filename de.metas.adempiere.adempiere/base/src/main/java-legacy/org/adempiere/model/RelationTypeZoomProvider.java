@@ -34,6 +34,7 @@ import com.google.common.base.MoreObjects;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 
+import ch.qos.logback.classic.Level;
 import de.metas.adempiere.service.IColumnBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.logging.LogManager;
@@ -392,7 +393,7 @@ public class RelationTypeZoomProvider implements IZoomProvider
 		final Duration countDuration = Duration.ofNanos(stopwatch.stop().elapsed(TimeUnit.NANOSECONDS));
 		query.setRecordCount(count, countDuration);
 
-		Loggables.addLog("RelationTypeZoomProvider {} took {}", this, countDuration);
+		Loggables.withLogger(logger, Level.DEBUG).addLog("RelationTypeZoomProvider {} took {}", this, countDuration);
 	}
 
 	/**

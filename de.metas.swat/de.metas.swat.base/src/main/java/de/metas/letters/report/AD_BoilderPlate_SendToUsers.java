@@ -32,7 +32,6 @@ import java.util.StringTokenizer;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_AD_Message;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.MClient;
 import org.compiere.model.MNote;
@@ -43,6 +42,8 @@ import de.metas.email.EMailAddress;
 import de.metas.email.EMailSentStatus;
 import de.metas.email.impl.EMailSendException;
 import de.metas.email.mailboxes.UserEMailConfig;
+import de.metas.i18n.AdMessageId;
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IADMessageDAO;
 import de.metas.i18n.IMsgBL;
 import de.metas.letters.model.IEMailEditor;
@@ -63,7 +64,7 @@ import de.metas.util.Services;
  */
 public class AD_BoilderPlate_SendToUsers extends JavaProcess
 {
-	public static final String AD_Message_UserNotifyError = "de.metas.letters.UserNotifyError";
+	private static final AdMessageKey AD_Message_UserNotifyError = AdMessageKey.of("de.metas.letters.UserNotifyError");
 
 	/** From User (sender) */
 	private UserId p_AD_User_ID;
@@ -253,11 +254,9 @@ public class AD_BoilderPlate_SendToUsers extends JavaProcess
 
 	private void createNote(MADBoilerPlate text, I_AD_User user, Exception e)
 	{
-		final I_AD_Message msg = Services.get(IADMessageDAO.class).retrieveByValue(getCtx(), AD_Message_UserNotifyError);
-		if (msg == null)
-		{
-			throw new AdempiereException("@NotFound@ @AD_Message_ID@ " + AD_Message_UserNotifyError);
-		}
+		final AdMessageId adMessageId = Services.get(IADMessageDAO.class).retrieveIdByValue(AD_Message_UserNotifyError)
+				.orElseThrow(() -> new AdempiereException("@NotFound@ @AD_Message_ID@ " + AD_Message_UserNotifyError));
+
 		//
 		final IMsgBL msgBL = Services.get(IMsgBL.class);
 		final String reference = msgBL.parseTranslation(getCtx(), "@AD_BoilerPlate_ID@: " + text.get_Translation(MADBoilerPlate.COLUMNNAME_Name))
@@ -265,7 +264,7 @@ public class AD_BoilderPlate_SendToUsers extends JavaProcess
 		// +", "+Msg.parseTranslation(getCtx(), "@AD_PInstance_ID@: "+getAD_PInstance_ID())
 		;
 		final MNote note = new MNote(getCtx(),
-				msg.getAD_Message_ID(),
+				adMessageId.getRepoId(),
 				getFromUserEMailConfig().getUserId().getRepoId(),
 				InterfaceWrapperHelper.getModelTableId(user), user.getAD_User_ID(),
 				reference,

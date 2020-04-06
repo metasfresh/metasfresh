@@ -40,7 +40,6 @@ import de.metas.async.model.I_C_Async_Batch;
 import de.metas.async.model.I_C_Async_Batch_Type;
 import de.metas.email.EMail;
 import de.metas.letters.model.IEMailEditor;
-import de.metas.letters.model.I_AD_BoilerPlate;
 import de.metas.letters.model.MADBoilerPlate;
 import de.metas.letters.model.MADBoilerPlate.BoilerPlateContext;
 import de.metas.letters.spi.INotifyAsyncBatch;
@@ -87,14 +86,10 @@ public class NotifyAsyncBatch implements INotifyAsyncBatch
 		final Properties ctx = InterfaceWrapperHelper.getCtx(asyncBatch);
 		final String trxName = InterfaceWrapperHelper.getTrxName(asyncBatch);
 
-		final I_AD_BoilerPlate boilerPlate = asyncBatchType.getAD_BoilerPlate();
-		Check.assumeNotNull(boilerPlate, "Boiler plate should not be null for async batch type ! ", asyncBatchType.getC_Async_Batch_Type_ID());
+		final int boilerPlateId = asyncBatchType.getAD_BoilerPlate_ID();
+		Check.assume(boilerPlateId > 0, "Boiler plate should not be null for async batch type {} ", asyncBatchType);
 
-		final MADBoilerPlate text = InterfaceWrapperHelper.create(boilerPlate, MADBoilerPlate.class);
-		if (text == null)
-		{
-			return; // nothing to send
-		}
+		final MADBoilerPlate text = new MADBoilerPlate(ctx, boilerPlateId, trxName);
 
 		Boolean isSent = null;
 		try
@@ -151,8 +146,10 @@ public class NotifyAsyncBatch implements INotifyAsyncBatch
 					final String message = text.getTextSnippetParsed(attributesEffective);
 					//
 					if (Check.isEmpty(message, true))
+					 {
 						return null;
 					//
+					}
 
 					Check.assume(asyncBatch.getCreatedBy() > 0, "CreatedBy > 0");
 					notificationBL.send(UserNotificationRequest.builder()

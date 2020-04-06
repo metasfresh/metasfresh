@@ -5,12 +5,12 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_BPartner;
 import org.slf4j.Logger;
 
-import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableSet;
@@ -18,6 +18,7 @@ import com.google.common.collect.Multimaps;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.i18n.AdMessageKey;
 import de.metas.logging.LogManager;
 import de.metas.purchasecandidate.PurchaseCandidate;
 import de.metas.purchasecandidate.PurchaseCandidateId;
@@ -61,9 +62,9 @@ import lombok.NonNull;
 
 public class PurchaseCandidateToOrderWorkflow
 {
-	private static final String MSG_NO_REMOTE_PURCHASE_ORDER_WAS_PLACED = "de.metas.purchasecandidate.Event_NoRemotePurchaseOrderWasPlaced";
+	private static final AdMessageKey MSG_NO_REMOTE_PURCHASE_ORDER_WAS_PLACED = AdMessageKey.of("de.metas.purchasecandidate.Event_NoRemotePurchaseOrderWasPlaced");
 
-	private static final String MSG_ERROR_WHILE_PLACING_REMOTE_PURCHASE_ORDER = "de.metas.purchasecandidate.Event_ErrorWhilePlacingRemotePurchaseOrder";
+	private static final AdMessageKey MSG_ERROR_WHILE_PLACING_REMOTE_PURCHASE_ORDER = AdMessageKey.of("de.metas.purchasecandidate.Event_ErrorWhilePlacingRemotePurchaseOrder");
 
 	private static final Logger logger = LogManager.getLogger(PurchaseCandidateToOrderWorkflow.class);
 
@@ -109,7 +110,7 @@ public class PurchaseCandidateToOrderWorkflow
 
 		final ImmutableSet<PurchaseCandidateId> distinctIds = purchaseCandidates.stream()
 				.map(PurchaseCandidate::getId)
-				.filter(Predicates.notNull())
+				.filter(Objects::nonNull)
 				.collect(ImmutableSet.toImmutableSet());
 
 		if (distinctIds.size() != purchaseCandidates.size())
@@ -147,7 +148,7 @@ public class PurchaseCandidateToOrderWorkflow
 
 		final List<PurchaseOrderItem> purchaseOrderItems = remotePurchaseItems.stream()
 				.map(PurchaseOrderItem::castOrNull)
-				.filter(Predicates.notNull())
+				.filter(Objects::nonNull)
 				.collect(ImmutableList.toImmutableList());
 
 		purchaseOrderFromItemsAggregator

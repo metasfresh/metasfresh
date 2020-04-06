@@ -1,36 +1,22 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
-/** Generated Model - DO NOT CHANGE */
 package org.adempiere.model;
+
+/** Generated Model - DO NOT CHANGE */
+
 
 import java.sql.ResultSet;
 import java.util.Properties;
 
 /** Generated Model for AD_PrinterRouting
- *  @author Adempiere (generated) 
+ *  @author Adempiere (generated)
  */
 @SuppressWarnings("javadoc")
-public class X_AD_PrinterRouting extends org.compiere.model.PO implements I_AD_PrinterRouting, org.compiere.model.I_Persistent 
+public class X_AD_PrinterRouting extends org.compiere.model.PO implements I_AD_PrinterRouting, org.compiere.model.I_Persistent
 {
 
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1219344037L;
+	private static final long serialVersionUID = 938499557L;
 
     /** Standard Constructor */
     public X_AD_PrinterRouting (Properties ctx, int AD_PrinterRouting_ID, String trxName)
@@ -40,10 +26,8 @@ public class X_AD_PrinterRouting extends org.compiere.model.PO implements I_AD_P
         {
 			setAD_Printer_ID (0);
 			setAD_PrinterRouting_ID (0);
-			setIsDirectPrint (null);
-// N
-			setSeqNo (0);
-// @SQL=SELECT COALESCE(MAX(Line),0)+10 AS DefaultValue FROM AD_PrinterRouting
+			setIsDirectPrint (null); // N
+			setSeqNo (0); // @SQL=SELECT COALESCE(MAX(SeqNo),0)+10 AS DefaultValue FROM AD_PrinterRouting
         } */
     }
 
@@ -63,7 +47,7 @@ public class X_AD_PrinterRouting extends org.compiere.model.PO implements I_AD_P
     }
 
 	@Override
-	public de.metas.adempiere.model.I_AD_Printer getAD_Printer() throws RuntimeException
+	public de.metas.adempiere.model.I_AD_Printer getAD_Printer()
 	{
 		return get_ValueAsPO(COLUMNNAME_AD_Printer_ID, de.metas.adempiere.model.I_AD_Printer.class);
 	}
@@ -79,16 +63,16 @@ public class X_AD_PrinterRouting extends org.compiere.model.PO implements I_AD_P
 	@Override
 	public void setAD_Printer_ID (int AD_Printer_ID)
 	{
-		if (AD_Printer_ID < 1) 
+		if (AD_Printer_ID < 1)
 			set_Value (COLUMNNAME_AD_Printer_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_AD_Printer_ID, Integer.valueOf(AD_Printer_ID));
 	}
 
 	/** Get Logischer Drucker.
 		@return Logischer Drucker	  */
 	@Override
-	public int getAD_Printer_ID () 
+	public int getAD_Printer_ID ()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_AD_Printer_ID);
 		if (ii == null)
@@ -101,16 +85,16 @@ public class X_AD_PrinterRouting extends org.compiere.model.PO implements I_AD_P
 	@Override
 	public void setAD_PrinterRouting_ID (int AD_PrinterRouting_ID)
 	{
-		if (AD_PrinterRouting_ID < 1) 
+		if (AD_PrinterRouting_ID < 1)
 			set_ValueNoCheck (COLUMNNAME_AD_PrinterRouting_ID, null);
-		else 
+		else
 			set_ValueNoCheck (COLUMNNAME_AD_PrinterRouting_ID, Integer.valueOf(AD_PrinterRouting_ID));
 	}
 
 	/** Get Drucker-Zuordnung.
 		@return Drucker-Zuordnung	  */
 	@Override
-	public int getAD_PrinterRouting_ID () 
+	public int getAD_PrinterRouting_ID ()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_AD_PrinterRouting_ID);
 		if (ii == null)
@@ -119,7 +103,7 @@ public class X_AD_PrinterRouting extends org.compiere.model.PO implements I_AD_P
 	}
 
 	@Override
-	public org.compiere.model.I_AD_Process getAD_Process() throws RuntimeException
+	public org.compiere.model.I_AD_Process getAD_Process()
 	{
 		return get_ValueAsPO(COLUMNNAME_AD_Process_ID, org.compiere.model.I_AD_Process.class);
 	}
@@ -131,15 +115,15 @@ public class X_AD_PrinterRouting extends org.compiere.model.PO implements I_AD_P
 	}
 
 	/** Set Prozess.
-		@param AD_Process_ID 
+		@param AD_Process_ID
 		Prozess oder Bericht
 	  */
 	@Override
 	public void setAD_Process_ID (int AD_Process_ID)
 	{
-		if (AD_Process_ID < 1) 
+		if (AD_Process_ID < 1)
 			set_Value (COLUMNNAME_AD_Process_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_AD_Process_ID, Integer.valueOf(AD_Process_ID));
 	}
 
@@ -147,7 +131,7 @@ public class X_AD_PrinterRouting extends org.compiere.model.PO implements I_AD_P
 		@return Prozess oder Bericht
 	  */
 	@Override
-	public int getAD_Process_ID () 
+	public int getAD_Process_ID ()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_AD_Process_ID);
 		if (ii == null)
@@ -156,7 +140,7 @@ public class X_AD_PrinterRouting extends org.compiere.model.PO implements I_AD_P
 	}
 
 	@Override
-	public org.compiere.model.I_AD_Role getAD_Role() throws RuntimeException
+	public org.compiere.model.I_AD_Role getAD_Role()
 	{
 		return get_ValueAsPO(COLUMNNAME_AD_Role_ID, org.compiere.model.I_AD_Role.class);
 	}
@@ -168,15 +152,15 @@ public class X_AD_PrinterRouting extends org.compiere.model.PO implements I_AD_P
 	}
 
 	/** Set Rolle.
-		@param AD_Role_ID 
+		@param AD_Role_ID
 		Responsibility Role
 	  */
 	@Override
 	public void setAD_Role_ID (int AD_Role_ID)
 	{
-		if (AD_Role_ID < 0) 
+		if (AD_Role_ID < 0)
 			set_Value (COLUMNNAME_AD_Role_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_AD_Role_ID, Integer.valueOf(AD_Role_ID));
 	}
 
@@ -184,7 +168,7 @@ public class X_AD_PrinterRouting extends org.compiere.model.PO implements I_AD_P
 		@return Responsibility Role
 	  */
 	@Override
-	public int getAD_Role_ID () 
+	public int getAD_Role_ID ()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_AD_Role_ID);
 		if (ii == null)
@@ -192,28 +176,41 @@ public class X_AD_PrinterRouting extends org.compiere.model.PO implements I_AD_P
 		return ii.intValue();
 	}
 
+	/** Set DB-Tabelle.
+		@param AD_Table_ID
+		Database Table information
+	  */
 	@Override
-	public org.compiere.model.I_AD_User getAD_User() throws RuntimeException
+	public void setAD_Table_ID (int AD_Table_ID)
 	{
-		return get_ValueAsPO(COLUMNNAME_AD_User_ID, org.compiere.model.I_AD_User.class);
+		if (AD_Table_ID < 1)
+			set_Value (COLUMNNAME_AD_Table_ID, null);
+		else
+			set_Value (COLUMNNAME_AD_Table_ID, Integer.valueOf(AD_Table_ID));
 	}
 
+	/** Get DB-Tabelle.
+		@return Database Table information
+	  */
 	@Override
-	public void setAD_User(org.compiere.model.I_AD_User AD_User)
+	public int getAD_Table_ID ()
 	{
-		set_ValueFromPO(COLUMNNAME_AD_User_ID, org.compiere.model.I_AD_User.class, AD_User);
+		Integer ii = (Integer)get_Value(COLUMNNAME_AD_Table_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	/** Set User/Contact.
-		@param AD_User_ID 
+		@param AD_User_ID
 		User within the system - Internal or Business Partner Contact
 	  */
 	@Override
 	public void setAD_User_ID (int AD_User_ID)
 	{
-		if (AD_User_ID < 0) 
+		if (AD_User_ID < 0)
 			set_Value (COLUMNNAME_AD_User_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_AD_User_ID, Integer.valueOf(AD_User_ID));
 	}
 
@@ -221,7 +218,7 @@ public class X_AD_PrinterRouting extends org.compiere.model.PO implements I_AD_P
 		@return User within the system - Internal or Business Partner Contact
 	  */
 	@Override
-	public int getAD_User_ID () 
+	public int getAD_User_ID ()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_AD_User_ID);
 		if (ii == null)
@@ -229,28 +226,16 @@ public class X_AD_PrinterRouting extends org.compiere.model.PO implements I_AD_P
 		return ii.intValue();
 	}
 
-	@Override
-	public org.compiere.model.I_C_DocType getC_DocType() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_DocType_ID, org.compiere.model.I_C_DocType.class);
-	}
-
-	@Override
-	public void setC_DocType(org.compiere.model.I_C_DocType C_DocType)
-	{
-		set_ValueFromPO(COLUMNNAME_C_DocType_ID, org.compiere.model.I_C_DocType.class, C_DocType);
-	}
-
 	/** Set Belegart.
-		@param C_DocType_ID 
+		@param C_DocType_ID
 		Belegart oder Verarbeitungsvorgaben
 	  */
 	@Override
 	public void setC_DocType_ID (int C_DocType_ID)
 	{
-		if (C_DocType_ID < 0) 
+		if (C_DocType_ID < 0)
 			set_Value (COLUMNNAME_C_DocType_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_C_DocType_ID, Integer.valueOf(C_DocType_ID));
 	}
 
@@ -258,7 +243,7 @@ public class X_AD_PrinterRouting extends org.compiere.model.PO implements I_AD_P
 		@return Belegart oder Verarbeitungsvorgaben
 	  */
 	@Override
-	public int getC_DocType_ID () 
+	public int getC_DocType_ID ()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_DocType_ID);
 		if (ii == null)
@@ -277,12 +262,12 @@ public class X_AD_PrinterRouting extends org.compiere.model.PO implements I_AD_P
 	/** Get Beschreibung.
 		@return Beschreibung	  */
 	@Override
-	public java.lang.String getDescription () 
+	public java.lang.String getDescription ()
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_Description);
 	}
 
-	/** 
+	/**
 	 * IsDirectPrint AD_Reference_ID=319
 	 * Reference name: _YesNo
 	 */
@@ -292,7 +277,7 @@ public class X_AD_PrinterRouting extends org.compiere.model.PO implements I_AD_P
 	/** No = N */
 	public static final String ISDIRECTPRINT_No = "N";
 	/** Set Direct print.
-		@param IsDirectPrint 
+		@param IsDirectPrint
 		Print without dialog
 	  */
 	@Override
@@ -306,23 +291,23 @@ public class X_AD_PrinterRouting extends org.compiere.model.PO implements I_AD_P
 		@return Print without dialog
 	  */
 	@Override
-	public java.lang.String getIsDirectPrint () 
+	public java.lang.String getIsDirectPrint ()
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_IsDirectPrint);
 	}
 
-	/** Set Last Pages.
-		@param LastPages Last Pages	  */
+	/** Set Letzte Seiten.
+		@param LastPages Letzte Seiten	  */
 	@Override
 	public void setLastPages (int LastPages)
 	{
 		set_Value (COLUMNNAME_LastPages, Integer.valueOf(LastPages));
 	}
 
-	/** Get Last Pages.
-		@return Last Pages	  */
+	/** Get Letzte Seiten.
+		@return Letzte Seiten	  */
 	@Override
-	public int getLastPages () 
+	public int getLastPages ()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_LastPages);
 		if (ii == null)
@@ -331,7 +316,7 @@ public class X_AD_PrinterRouting extends org.compiere.model.PO implements I_AD_P
 	}
 
 	/** Set Reihenfolge.
-		@param SeqNo 
+		@param SeqNo
 		Zur Bestimmung der Reihenfolge der Einträge; die kleinste Zahl kommt zuerst
 	  */
 	@Override
@@ -344,7 +329,7 @@ public class X_AD_PrinterRouting extends org.compiere.model.PO implements I_AD_P
 		@return Zur Bestimmung der Reihenfolge der Einträge; die kleinste Zahl kommt zuerst
 	  */
 	@Override
-	public int getSeqNo () 
+	public int getSeqNo ()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_SeqNo);
 		if (ii == null)

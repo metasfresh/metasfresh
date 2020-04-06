@@ -2,6 +2,7 @@ package de.metas.process.ui;
 
 import java.util.List;
 
+import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.element.api.AdTabId;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.trx.api.ITrx;
@@ -21,6 +22,7 @@ import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.process.RelatedProcessDescriptor;
 import de.metas.process.SelectionSize;
+import lombok.NonNull;
 
 public class AProcessModelTest
 {
@@ -106,6 +108,12 @@ public class AProcessModelTest
 
 			@Override
 			public SelectionSize getSelectionSize()
+			{
+				throw new UnsupportedOperationException();
+			}
+
+			@Override
+			public <T> IQueryFilter<T> getQueryFilter(@NonNull final Class<T> recordClass)
 			{
 				throw new UnsupportedOperationException();
 			}

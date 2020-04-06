@@ -114,6 +114,7 @@ public final class ProcessInfo implements Serializable
 		adWorkflowId = builder.getAD_Workflow_ID();
 		serverProcess = builder.isServerProcess();
 		invokedByScheduler = builder.isInvokedByScheduler();
+		notifyUserAfterExecution = builder.isNotifyUserAfterExecution();
 
 		adTableId = builder.getAD_Table_ID();
 		recordId = builder.getRecord_ID();
@@ -195,6 +196,10 @@ public final class ProcessInfo implements Serializable
 
 	@Getter
 	private final boolean invokedByScheduler;
+
+	/** IF true, then expect the user to be notified, with a link to the AD_Pssntance_ID */
+	@Getter
+	private final boolean notifyUserAfterExecution;
 
 	/** Process Instance ID */
 	@Getter
@@ -739,8 +744,11 @@ public final class ProcessInfo implements Serializable
 
 		private List<ProcessInfoParameter> parameters = null;
 		private boolean loadParametersFromDB = false; // backward compatibility
+
 		@Getter
 		private boolean invokedByScheduler = false;
+
+		private Boolean notifyUserAfterExecution;
 
 		private ProcessInfoBuilder()
 		{
@@ -1053,7 +1061,9 @@ public final class ProcessInfo implements Serializable
 		public ProcessInfoBuilder setAD_Process(final org.compiere.model.I_AD_Process adProcess)
 		{
 			this._adProcess = InterfaceWrapperHelper.create(adProcess, I_AD_Process.class);
+
 			setAD_Process_ID(_adProcess.getAD_Process_ID());
+			setNotifyUserAfterExecution(adProcess.isNotifyUserAfterExecution());
 			return this;
 		}
 
@@ -1510,7 +1520,51 @@ public final class ProcessInfo implements Serializable
 		public ProcessInfoBuilder setInvokedByScheduler(final boolean invokedByScheduler)
 		{
 			this.invokedByScheduler = invokedByScheduler;
+			if (invokedByScheduler && notifyUserAfterExecution)
+			{
+				logger.debug("invokedByScheduler is set to true; -> set notifyUserAfterExecution to false because the scheduler has its own notification settings");
+				this.notifyUserAfterExecution = false;
+			}
 			return this;
+		}
+
+		public ProcessInfoBuilder setNotifyUserAfterExecution(final boolean notifyUserAfterExecution)
+		{
+			if (invokedByScheduler && notifyUserAfterExecution)
+			{
+				logger.debug("invokedByScheduler is set to true; -> set notifyUserAfterExecution to false because the scheduler has its own notification settings");
+				this.notifyUserAfterExecution = false;
+				return this;
+			}
+			this.notifyUserAfterExecution = notifyUserAfterExecution;
+			return this;
+		}
+
+		public boolean isNotifyUserAfterExecution()
+		{
+			if (notifyUserAfterExecution == null)
+			{
+				if (invokedByScheduler)
+				{
+					logger.debug("invokedByScheduler=true; -> set notifyUserAfterExecution to false because the scheduler has its own notification settings");
+					this.notifyUserAfterExecution = false;
+				}
+				else
+				{
+					final I_AD_Process processRecord = getAD_ProcessOrNull();
+					if (processRecord != null)
+					{
+						this.notifyUserAfterExecution = processRecord.isNotifyUserAfterExecution();
+						logger.debug("invokedByScheduler=false; -> set notifyUserAfterExecution={} from AD_Process_ID={}", notifyUserAfterExecution, processRecord.getAD_Process_ID());
+					}
+					else
+					{
+						logger.debug("invokedByScheduler=false and AD_Process=null; -> set notifyUserAfterExecution=false");
+						this.notifyUserAfterExecution = false;
+					}
+				}
+			}
+			return notifyUserAfterExecution;
 		}
 
 		private String getWhereClause()
@@ -1787,10 +1841,8 @@ public final class ProcessInfo implements Serializable
 		 * @return the login language if conditions fulfilled, null otherwise.
 		 * @task http://dewiki908/mediawiki/index.php/09614_Support_de_DE_Language_in_Reports_%28101717274915%29
 		 */
-		private static Language extractLanguageFromDraftInOut(final Properties ctx, @Nullable final TableRecordReference recordRef)
+		private static Language extractLanguageFromDraftInOut(@NonNull final Properties ctx, @Nullable final TableRecordReference recordRef)
 		{
-			Check.assumeNotNull(ctx, "Parameter ctx is not null");
-
 			final boolean isUseLoginLanguage = Services.get(ISysConfigBL.class).getBooleanValue(SYSCONFIG_UseLoginLanguageForDraftDocuments, true);
 
 			// in case the sys config is not set, there is no need to continue

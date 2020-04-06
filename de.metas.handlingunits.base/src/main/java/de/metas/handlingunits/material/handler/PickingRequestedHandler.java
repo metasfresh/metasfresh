@@ -8,11 +8,13 @@ import java.util.Set;
 import java.util.function.Supplier;
 
 import org.compiere.model.I_C_BPartner_Location;
+import org.slf4j.Logger;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
 import com.google.common.collect.ImmutableList;
 
+import ch.qos.logback.classic.Level;
 import de.metas.Profiles;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.handlingunits.HuId;
@@ -23,6 +25,7 @@ import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.logging.LogManager;
 import de.metas.material.event.MaterialEventHandler;
 import de.metas.material.event.picking.PickingRequestedEvent;
 import de.metas.picking.api.IPickingSlotDAO;
@@ -60,6 +63,7 @@ import lombok.NonNull;
 @Profile(Profiles.PROFILE_App)
 public class PickingRequestedHandler implements MaterialEventHandler<PickingRequestedEvent>
 {
+	private static final Logger logger = LogManager.getLogger(PickingRequestedHandler.class);
 
 	private final PickingCandidateService pickingCandidateService;
 
@@ -127,7 +131,7 @@ public class PickingRequestedHandler implements MaterialEventHandler<PickingRequ
 
 		final I_M_PickingSlot firstPickingSlot = pickingSlots.get(0);
 
-		Loggables.addLog(
+		Loggables.withLogger(logger, Level.DEBUG).addLog(
 				"Retrieved an available picking slot, because none was set in the event; pickingSlot={}",
 				firstPickingSlot);
 

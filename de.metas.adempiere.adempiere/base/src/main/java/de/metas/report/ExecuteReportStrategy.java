@@ -8,6 +8,8 @@ import lombok.NonNull;
 import lombok.ToString;
 import lombok.Value;
 
+import javax.annotation.Nullable;
+
 /*
  * #%L
  * de.metas.swat.base

@@ -1,11 +1,10 @@
 package de.metas.document.refid.modelvalidator;
 
+import org.adempiere.ad.table.api.IADTableDAO;
 import org.compiere.model.MClient;
-import org.compiere.model.MTable;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.PO;
-import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import de.metas.document.engine.IDocumentBL;
@@ -17,7 +16,10 @@ import lombok.NonNull;
 
 class ReferenceNoGeneratorInstanceValidator implements ModelValidator
 {
-	private final transient Logger logger = LogManager.getLogger(getClass());
+	private static final Logger logger = LogManager.getLogger(ReferenceNoGeneratorInstanceValidator.class);
+	private final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
+	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
+	private final IReferenceNoBL referenceNoBL = Services.get(IReferenceNoBL.class);
 
 	private final IReferenceNoGeneratorInstance instance;
 	private int m_AD_Client_ID = -1;
@@ -68,12 +70,12 @@ class ReferenceNoGeneratorInstanceValidator implements ModelValidator
 			if (idxProcessed < 0)
 			{
 				// if Processed column is missing create/link to referenceNo right now
-				Services.get(IReferenceNoBL.class).linkReferenceNo(po, instance);
+				referenceNoBL.linkReferenceNo(po, instance);
 			}
 			else if (po.get_ValueAsBoolean(idxProcessed))
 			{
 				// create/link to referenceNo only if is processed
-				Services.get(IReferenceNoBL.class).linkReferenceNo(po, instance);
+				referenceNoBL.linkReferenceNo(po, instance);
 			}
 		}
 		else if (type == TYPE_AFTER_CHANGE)
@@ -84,18 +86,18 @@ class ReferenceNoGeneratorInstanceValidator implements ModelValidator
 				if (po.get_ValueAsBoolean(idxProcessed))
 				{
 					// ... Processed is true => we need to create/link to referenceNo
-					Services.get(IReferenceNoBL.class).linkReferenceNo(po, instance);
+					referenceNoBL.linkReferenceNo(po, instance);
 				}
 				else
 				{
 					// ... Processed is false => we need to unlink to referenceNo
-					Services.get(IReferenceNoBL.class).unlinkReferenceNo(po, instance);
+					referenceNoBL.unlinkReferenceNo(po, instance);
 				}
 			}
 		}
 		else if (type == TYPE_BEFORE_DELETE)
 		{
-			Services.get(IReferenceNoBL.class).unlinkReferenceNo(po, instance);
+			referenceNoBL.unlinkReferenceNo(po, instance);
 		}
 
 		return null;
@@ -113,14 +115,14 @@ class ReferenceNoGeneratorInstanceValidator implements ModelValidator
 
 		if (timing == TIMING_AFTER_COMPLETE)
 		{
-			Services.get(IReferenceNoBL.class).linkReferenceNo(po, instance);
+			referenceNoBL.linkReferenceNo(po, instance);
 		}
 		else if (timing == TIMING_AFTER_VOID
 				|| timing == TIMING_AFTER_REACTIVATE
 				|| timing == TIMING_AFTER_REVERSEACCRUAL
 				|| timing == TIMING_AFTER_REVERSECORRECT)
 		{
-			Services.get(IReferenceNoBL.class).unlinkReferenceNo(po, instance);
+			referenceNoBL.unlinkReferenceNo(po, instance);
 		}
 		return null;
 	}
@@ -132,9 +134,9 @@ class ReferenceNoGeneratorInstanceValidator implements ModelValidator
 	{
 		for (int tableId : instance.getAssignedTableIds())
 		{
-			final String tableName = MTable.getTableName(Env.getCtx(), tableId);
+			final String tableName = adTableDAO.retrieveTableName(tableId);
 
-			if (Services.get(IDocumentBL.class).isDocumentTable(tableName))
+			if (documentBL.isDocumentTable(tableName))
 			{
 				engine.addDocValidate(tableName, this);
 				logger.debug("Registered docValidate " + this);
@@ -151,7 +153,7 @@ class ReferenceNoGeneratorInstanceValidator implements ModelValidator
 	{
 		for (int tableId : instance.getAssignedTableIds())
 		{
-			final String tableName = MTable.getTableName(Env.getCtx(), tableId);
+			final String tableName = adTableDAO.retrieveTableName(tableId);
 			engine.removeModelChange(tableName, this);
 			engine.removeDocValidate(tableName, this);
 		}

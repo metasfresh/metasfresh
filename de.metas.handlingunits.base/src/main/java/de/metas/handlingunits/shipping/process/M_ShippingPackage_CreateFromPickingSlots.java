@@ -10,12 +10,12 @@ package de.metas.handlingunits.shipping.process;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -28,6 +28,7 @@ import java.util.List;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_M_Package;
 import org.slf4j.Logger;
 
 import de.metas.bpartner.BPartnerId;
@@ -38,8 +39,8 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_PickingSlot;
 import de.metas.handlingunits.picking.IHUPickingSlotBL;
 import de.metas.handlingunits.picking.IHUPickingSlotBL.IQueueActionResult;
-import de.metas.i18n.IMsgBL;
 import de.metas.handlingunits.picking.IHUPickingSlotDAO;
+import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import de.metas.picking.api.IPickingSlotDAO;
 import de.metas.process.IProcessPrecondition;
@@ -50,7 +51,6 @@ import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.shipping.IShipperDAO;
 import de.metas.shipping.ShipperId;
 import de.metas.shipping.api.IShipperTransportationBL;
-import de.metas.shipping.interfaces.I_M_Package;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.shipping.model.I_M_ShippingPackage;
 import de.metas.util.Check;

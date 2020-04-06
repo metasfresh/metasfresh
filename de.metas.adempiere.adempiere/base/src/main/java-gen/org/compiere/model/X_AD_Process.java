@@ -14,7 +14,7 @@ public class X_AD_Process extends org.compiere.model.PO implements I_AD_Process,
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 669458688L;
+	private static final long serialVersionUID = 375076310L;
 
     /** Standard Constructor */
     public X_AD_Process (Properties ctx, int AD_Process_ID, String trxName)
@@ -28,6 +28,7 @@ public class X_AD_Process extends org.compiere.model.PO implements I_AD_Process,
 			setEntityType (null); // U
 			setIsApplySecuritySettings (false); // N
 			setIsBetaFunctionality (false);
+			setIsNotifyUserAfterExecution (false); // N
 			setIsOneInstanceOnly (false); // N
 			setIsReport (false);
 			setIsServerProcess (false);
@@ -93,7 +94,7 @@ public class X_AD_Process extends org.compiere.model.PO implements I_AD_Process,
 	}
 
 	@Override
-	public org.compiere.model.I_AD_Form getAD_Form() throws RuntimeException
+	public org.compiere.model.I_AD_Form getAD_Form()
 	{
 		return get_ValueAsPO(COLUMNNAME_AD_Form_ID, org.compiere.model.I_AD_Form.class);
 	}
@@ -130,7 +131,7 @@ public class X_AD_Process extends org.compiere.model.PO implements I_AD_Process,
 	}
 
 	@Override
-	public org.compiere.model.I_AD_PrintFormat getAD_PrintFormat() throws RuntimeException
+	public org.compiere.model.I_AD_PrintFormat getAD_PrintFormat()
 	{
 		return get_ValueAsPO(COLUMNNAME_AD_PrintFormat_ID, org.compiere.model.I_AD_PrintFormat.class);
 	}
@@ -192,7 +193,7 @@ public class X_AD_Process extends org.compiere.model.PO implements I_AD_Process,
 	}
 
 	@Override
-	public org.compiere.model.I_AD_ReportView getAD_ReportView() throws RuntimeException
+	public org.compiere.model.I_AD_ReportView getAD_ReportView()
 	{
 		return get_ValueAsPO(COLUMNNAME_AD_ReportView_ID, org.compiere.model.I_AD_ReportView.class);
 	}
@@ -229,7 +230,7 @@ public class X_AD_Process extends org.compiere.model.PO implements I_AD_Process,
 	}
 
 	@Override
-	public org.compiere.model.I_AD_Workflow getAD_Workflow() throws RuntimeException
+	public org.compiere.model.I_AD_Workflow getAD_Workflow()
 	{
 		return get_ValueAsPO(COLUMNNAME_AD_Workflow_ID, org.compiere.model.I_AD_Workflow.class);
 	}
@@ -452,6 +453,32 @@ public class X_AD_Process extends org.compiere.model.PO implements I_AD_Process,
 	public boolean isDirectPrint () 
 	{
 		Object oo = get_Value(COLUMNNAME_IsDirectPrint);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
+	/** Set Nach Ausführung Nutzer benachrichtigen.
+		@param IsNotifyUserAfterExecution 
+		Die Benachrichtigung enthält einen Link zum betreffenden Prozess-Revisonsdatensatz.
+	  */
+	@Override
+	public void setIsNotifyUserAfterExecution (boolean IsNotifyUserAfterExecution)
+	{
+		set_Value (COLUMNNAME_IsNotifyUserAfterExecution, Boolean.valueOf(IsNotifyUserAfterExecution));
+	}
+
+	/** Get Nach Ausführung Nutzer benachrichtigen.
+		@return Die Benachrichtigung enthält einen Link zum betreffenden Prozess-Revisonsdatensatz.
+	  */
+	@Override
+	public boolean isNotifyUserAfterExecution () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsNotifyUserAfterExecution);
 		if (oo != null) 
 		{
 			 if (oo instanceof Boolean) 

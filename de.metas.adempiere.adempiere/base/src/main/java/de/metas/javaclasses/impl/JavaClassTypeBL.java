@@ -13,11 +13,11 @@ package de.metas.javaclasses.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -35,20 +35,24 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IContextAware;
 import org.compiere.util.Util;
 import org.reflections.Reflections;
+import org.slf4j.Logger;
 
 import com.google.common.annotations.VisibleForTesting;
 
+import ch.qos.logback.classic.Level;
 import de.metas.javaclasses.AD_JavaClass;
 import de.metas.javaclasses.IJavaClassDAO;
 import de.metas.javaclasses.IJavaClassTypeBL;
 import de.metas.javaclasses.model.I_AD_JavaClass;
 import de.metas.javaclasses.model.I_AD_JavaClass_Type;
+import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 
 public class JavaClassTypeBL implements IJavaClassTypeBL
 {
+	private static final Logger logger = LogManager.getLogger(JavaClassTypeBL.class);
 
 	public JavaClassTypeBL()
 	{
@@ -171,7 +175,7 @@ public class JavaClassTypeBL implements IJavaClassTypeBL
 				existingRecord.setIsActive(true);
 				existingRecord.setIsInterface(clazz.isInterface());
 				InterfaceWrapperHelper.save(existingRecord);
-				Loggables.addLog(
+				Loggables.withLogger(logger, Level.DEBUG).addLog(
 						"Reactived AD_JavaClass record {} for AD_JavaClass_Type {} and class {}",
 						existingRecord, javaClassType, existingRecord.getClassname());
 			}

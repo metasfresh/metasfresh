@@ -36,6 +36,6 @@ public class M_ShipmentSchedule_QtyPicked
 		final ShipmentScheduleId shipmentScheduleId = ShipmentScheduleId.ofRepoId(shipmentScheduleQtyPicked.getM_ShipmentSchedule_ID());
 
 		final IShipmentScheduleInvalidateBL invalidSchedulesService = Services.get(IShipmentScheduleInvalidateBL.class);
-		invalidSchedulesService.invalidateShipmentSchedule(shipmentScheduleId);
+		invalidSchedulesService.flagForRecompute(shipmentScheduleId);
 	}
 }

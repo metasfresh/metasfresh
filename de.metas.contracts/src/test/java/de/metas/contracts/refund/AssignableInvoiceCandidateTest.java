@@ -7,8 +7,8 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 
 import org.adempiere.test.AdempiereTestHelper;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.contracts.refund.AssignableInvoiceCandidate.SplitResult;
@@ -44,7 +44,7 @@ public class AssignableInvoiceCandidateTest
 	private static final BigDecimal THIRTY = new BigDecimal("30");
 	private RefundTestTools refundTestTools;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();

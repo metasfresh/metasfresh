@@ -25,7 +25,7 @@ package de.metas.handlingunits.storage.impl;
 import java.util.List;
 import java.util.stream.Stream;
 
-import com.google.common.base.Predicates;
+import java.util.Objects;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.handlingunits.model.I_M_HU;
@@ -79,7 +79,7 @@ public class DefaultHUStorageFactory implements IHUStorageFactory
 		return hus.stream()
 				.map(this::getStorage)
 				.map(huStorage -> huStorage.getProductStorageOrNull(productId))
-				.filter(Predicates.notNull())
+				.filter(Objects::nonNull)
 				.collect(ImmutableList.toImmutableList());
 	}
 

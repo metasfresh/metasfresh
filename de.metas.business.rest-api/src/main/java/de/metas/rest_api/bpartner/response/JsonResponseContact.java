@@ -64,7 +64,7 @@ public class JsonResponseContact
 	public static final String PURCHASE = "purchase";
 	public static final String SUBJECT_MATTER = "subjectMatter";
 
-		@ApiModelProperty(allowEmptyValue = false, dataType = "java.lang.Long")
+	@ApiModelProperty(allowEmptyValue = false, dataType = "java.lang.Long")
 	MetasfreshId metasfreshId;
 
 	@ApiModelProperty(dataType = "java.lang.String")
@@ -73,6 +73,7 @@ public class JsonResponseContact
 	@ApiModelProperty(dataType = "java.lang.Integer")
 	private MetasfreshId metasfreshBPartnerId;
 
+	@ApiModelProperty("translated to `AD_User.Value`")
 	@JsonInclude(Include.NON_NULL)
 	String code;
 

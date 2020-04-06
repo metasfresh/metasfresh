@@ -1,13 +1,19 @@
 package de.metas.contracts.commission.commissioninstance.services;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.slf4j.MDC;
+import org.slf4j.MDC.MDCCloseable;
 import org.springframework.stereotype.Service;
 
+import com.google.common.collect.ImmutableList;
+
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionAlgorithm;
-import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionInstance;
+import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionConfig;
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionType;
-import de.metas.contracts.commission.commissioninstance.businesslogic.CreateInstanceRequest;
-import de.metas.contracts.commission.commissioninstance.businesslogic.sales.CommissionTriggerChange;
+import de.metas.contracts.commission.commissioninstance.businesslogic.CreateCommissionSharesRequest;
+import de.metas.contracts.commission.commissioninstance.businesslogic.sales.SalesCommissionShare;
+import de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.CommissionTriggerChange;
+import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
 
 /*
@@ -35,38 +41,58 @@ import lombok.NonNull;
 @Service
 public class CommissionAlgorithmInvoker
 {
-	public CommissionInstance applyCreateRequest(@NonNull final CreateInstanceRequest request)
+	public ImmutableList<SalesCommissionShare> createCommissionShares(@NonNull final CreateCommissionSharesRequest request)
 	{
-		final CommissionType commissionType = request.getConfig().getCommissionType();
-		final CommissionAlgorithm algorithm;
 		try
 		{
-			algorithm = createAlgorithmInstance(commissionType);
-		}
-		catch (Exception e)
-		{
-			throw AdempiereException.wrapIfNeeded(e).setParameter("request", request);
-		}
+			final ImmutableList<CommissionType> commissionTypes = CollectionUtils.extractDistinctElements(
+					request.getConfigs(),
+					CommissionConfig::getCommissionType);
 
-		// invoke it
-		return algorithm.createInstance(request);
+			final ImmutableList.Builder<SalesCommissionShare> result = ImmutableList.builder();
+			for (final CommissionType commissionType : commissionTypes)
+			{
+				try (final MDCCloseable commissionTypeMDC = MDC.putCloseable("commissionType", commissionType.name()))
+				{
+					final CommissionAlgorithm algorithm;
+					algorithm = createAlgorithmInstance(commissionType);
+
+					// invoke the algorithm
+					final ImmutableList<SalesCommissionShare> sharesFromAlgorithm = algorithm.createCommissionShares(request);
+					result.addAll(sharesFromAlgorithm);
+				}
+			}
+			return result.build();
+		}
+		catch (final RuntimeException e)
+		{
+			throw AdempiereException.wrapIfNeeded(e).setParameter("request", request); // augment&rethrow
+		}
 	}
 
-	public void applyTriggerChangeToSharesOfInstance(@NonNull final CommissionTriggerChange change)
+	public void updateCommissionShares(@NonNull final CommissionTriggerChange change)
 	{
-		final CommissionAlgorithm algorithm;
 		try
 		{
-			final CommissionType commissionType = change.getInstanceToUpdate().getConfig().getCommissionType();
-			algorithm = createAlgorithmInstance(commissionType);
+			final ImmutableList<CommissionType> commissionTypes = CollectionUtils.extractDistinctElements(
+					change.getInstanceToUpdate().getShares(),
+					share -> share.getConfig().getCommissionType());
+
+			for (final CommissionType commissionType : commissionTypes)
+			{
+				try (final MDCCloseable commissionTypeMDC = MDC.putCloseable("commissionType", commissionType.name()))
+				{
+					final CommissionAlgorithm algorithm = createAlgorithmInstance(commissionType);
+
+					// invoke the algorithm
+					algorithm.applyTriggerChangeToShares(change);
+				}
+			}
 		}
-		catch (Exception e)
+		catch (final RuntimeException e)
 		{
 			throw AdempiereException.wrapIfNeeded(e).setParameter("change", change);
 		}
-
-		// invoke the algorithm
-		algorithm.applyTriggerChangeToShares(change);
 	}
 
 	private CommissionAlgorithm createAlgorithmInstance(@NonNull final CommissionType commissionType)

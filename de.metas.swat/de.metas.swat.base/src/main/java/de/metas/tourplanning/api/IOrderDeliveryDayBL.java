@@ -23,6 +23,6 @@ public interface IOrderDeliveryDayBL extends ISingletonService
 	 *            <code>order</code>'s <code>DatePromised</code> value (task 08931).
 	 * @return true if preparation date was set
 	 */
-	boolean setPreparationDate(I_C_Order order, boolean fallbackToDatePromised);
+	boolean setPreparationDateAndTour(I_C_Order order, boolean fallbackToDatePromised);
 
 }

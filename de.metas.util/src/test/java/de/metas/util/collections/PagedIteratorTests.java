@@ -138,7 +138,7 @@ public class PagedIteratorTests
 				.pageSize(10)
 				.pageFetcher((firstRow, pageSize) -> null)
 				.build();
-		assertThat(it).isEmpty();
+		assertThat(it).isExhausted();
 	}
 
 	private final Page<String> generatePage(final int firstRow, final int pageSize)

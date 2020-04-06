@@ -1,25 +1,3 @@
-/*
- * #%L
- * de.metas.adempiere.adempiere.base
- * %%
- * Copyright (C) 2019 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
 package de.metas.shipping.model;
 
 
@@ -209,6 +187,29 @@ public interface I_M_ShippingPackage
     public static final String COLUMNNAME_IsActive = "IsActive";
 
 	/**
+	 * Set Abholung.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setIsToBeFetched (boolean IsToBeFetched);
+
+	/**
+	 * Get Abholung.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public boolean isToBeFetched();
+
+    /** Column definition for IsToBeFetched */
+    public static final org.adempiere.model.ModelColumn<I_M_ShippingPackage, Object> COLUMN_IsToBeFetched = new org.adempiere.model.ModelColumn<I_M_ShippingPackage, Object>(I_M_ShippingPackage.class, "IsToBeFetched", null);
+    /** Column name IsToBeFetched */
+    public static final String COLUMNNAME_IsToBeFetched = "IsToBeFetched";
+
+	/**
 	 * Set Lieferung/Wareneingang.
 	 * Material Shipment Document
 	 *
@@ -391,7 +392,7 @@ public interface I_M_ShippingPackage
 
 	/**
 	 * Set Verarbeitet.
-	 * Checkbox sagt aus, ob der Beleg verarbeitet wurde.
+	 * Checkbox sagt aus, ob der Datensatz verarbeitet wurde.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -401,7 +402,7 @@ public interface I_M_ShippingPackage
 
 	/**
 	 * Get Verarbeitet.
-	 * Checkbox sagt aus, ob der Beleg verarbeitet wurde.
+	 * Checkbox sagt aus, ob der Datensatz verarbeitet wurde.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true

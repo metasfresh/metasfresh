@@ -1,11 +1,11 @@
 package de.metas.handlingunits.impl;
 
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.Month;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -14,20 +14,17 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 
-import org.adempiere.ad.model.util.ModelByIdComparator;
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.wrapper.POJOWrapper;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
+import org.assertj.core.api.OptionalAssert;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TestWatcher;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.bpartner.BPartnerId;
@@ -44,7 +41,9 @@ import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
+import lombok.Builder;
 
+@ExtendWith(AdempiereTestWatcher.class)
 public class HUPIItemProductDAOTest
 {
 	private HUPIItemProductDAO dao;
@@ -56,24 +55,17 @@ public class HUPIItemProductDAOTest
 
 	private BPartnerId bpartner1;
 	private BPartnerId bpartner2;
-	private final BPartnerId bpartner_NULL = null;
-	// private I_C_BPartner bpartner3;
-	// private I_M_HU_PI_Item piItem1;
-	private ZonedDateTime date1;
-	private ZonedDateTime date2;
-	private ZonedDateTime date3;
-	private ZonedDateTime date4;
+	private BPartnerId bpartner3;
 
 	/** Watches current test and dumps the database to console in case of failure */
-	@Rule
-	public final TestWatcher testWatcher = new AdempiereTestWatcher();
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
 
 		dao = (HUPIItemProductDAO)Services.get(IHUPIItemProductDAO.class);
+
 		product1 = createProduct("p1");
 		product2 = createProduct("p2");
 
@@ -82,12 +74,7 @@ public class HUPIItemProductDAOTest
 
 		bpartner1 = BPartnerId.ofRepoId(createBPartner("bp1").getC_BPartner_ID());
 		bpartner2 = BPartnerId.ofRepoId(createBPartner("bp2").getC_BPartner_ID());
-		// bpartner3 = createBPartner("bp3");
-		// piItem1 = createM_HU_PI_Item();
-		date1 = LocalDate.of(2011, Month.OCTOBER, 01).atStartOfDay(SystemTime.zoneId());
-		date2 = LocalDate.of(2012, Month.OCTOBER, 01).atStartOfDay(SystemTime.zoneId());
-		date3 = LocalDate.of(2013, Month.OCTOBER, 01).atStartOfDay(SystemTime.zoneId());
-		date4 = LocalDate.of(2014, Month.OCTOBER, 01).atStartOfDay(SystemTime.zoneId());
+		bpartner3 = BPartnerId.ofRepoId(createBPartner("bp3").getC_BPartner_ID());
 	}
 
 	@Test
@@ -98,7 +85,8 @@ public class HUPIItemProductDAOTest
 				.getComparator();
 
 		final List<I_M_HU_PI_Item_Product> itemProducts = Arrays.asList(
-				createM_HU_PI_Item_Product(product1, null, date1, X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit), createM_HU_PI_Item_Product(product1, bpartner1, date3, X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit));
+				/* 0 */ huPIItemProduct().productId(product1).bpartnerId(null).validFrom("2011-10-01").huUnitType(X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit).build(),
+				/* 1 */ huPIItemProduct().productId(product1).bpartnerId(bpartner1).validFrom("2011-10-01").huUnitType(X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit).build());
 
 		final List<I_M_HU_PI_Item_Product> itemProductsOrdered = new ArrayList<>(itemProducts);
 		Collections.sort(itemProductsOrdered, orderBy);
@@ -111,37 +99,37 @@ public class HUPIItemProductDAOTest
 	public void test_retrieveMaterialItemProduct_product_anyBPartner_date()
 	{
 		final I_M_HU_PI_Item_Product[] itemProducts = new I_M_HU_PI_Item_Product[] {
-				/* 0 */createM_HU_PI_Item_Product(product1, null, date1, X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit),
-				/* 1 */createM_HU_PI_Item_Product(product1, bpartner1, date3, X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit),
+				/* 0 */ huPIItemProduct().productId(product1).bpartnerId(null).validFrom("2011-10-01").huUnitType(X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit).build(),
+				/* 1 */ huPIItemProduct().productId(product1).bpartnerId(bpartner1).validFrom("2013-10-01").huUnitType(X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit).build()
 		};
 
-		test_retrieveMaterialItemProduct_product_bpartner_date(itemProducts[0], product1, bpartner1, date1, X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit);
-		test_retrieveMaterialItemProduct_product_bpartner_date(itemProducts[0], product1, bpartner1, date2, X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit);
-		test_retrieveMaterialItemProduct_product_bpartner_date(itemProducts[1], product1, bpartner1, date3, X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit);
+		test_retrieveMaterialItemProduct_product_bpartner_date(itemProducts[0], product1, bpartner1, date("2011-10-01"), X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit);
+		test_retrieveMaterialItemProduct_product_bpartner_date(itemProducts[0], product1, bpartner1, date("2012-10-01"), X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit);
+		test_retrieveMaterialItemProduct_product_bpartner_date(itemProducts[1], product1, bpartner1, date("2013-10-01"), X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit);
 
-		test_retrieveMaterialItemProduct_product_bpartner_date(itemProducts[0], product1, bpartner2, date1, X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit);
-		test_retrieveMaterialItemProduct_product_bpartner_date(itemProducts[0], product1, bpartner2, date2, X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit);
-		test_retrieveMaterialItemProduct_product_bpartner_date(itemProducts[0], product1, bpartner2, date3, X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit);
+		test_retrieveMaterialItemProduct_product_bpartner_date(itemProducts[0], product1, bpartner2, date("2011-10-01"), X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit);
+		test_retrieveMaterialItemProduct_product_bpartner_date(itemProducts[0], product1, bpartner2, date("2012-10-01"), X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit);
+		test_retrieveMaterialItemProduct_product_bpartner_date(itemProducts[0], product1, bpartner2, date("2013-10-01"), X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit);
 	}
 
 	@Test
 	public void test_retrieveMaterialItemProduct_anyProduct_bpartner_date()
 	{
 		final I_M_HU_PI_Item_Product[] itemProducts = new I_M_HU_PI_Item_Product[] {
-				/* 0 */createM_HU_PI_Item_Product(product1, null, date1, X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit),
-				/* 1 */createM_HU_PI_Item_Product(null, null, date3, X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit),
+				/* 0 */ huPIItemProduct().productId(product1).bpartnerId(null).validFrom("2011-10-01").huUnitType(X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit).build(),
+				/* 1 */ huPIItemProduct().productId(null).bpartnerId(null).validFrom("2013-10-01").huUnitType(X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit).build()
 		};
 
-		test_retrieveMaterialItemProduct_product_bpartner_date(itemProducts[0], product1, bpartner1, date1, X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit);
-		test_retrieveMaterialItemProduct_product_bpartner_date(itemProducts[0], product1, bpartner1, date2, X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit);
-		test_retrieveMaterialItemProduct_product_bpartner_date(itemProducts[0], product1, bpartner1, date3, X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit);
+		test_retrieveMaterialItemProduct_product_bpartner_date(itemProducts[0], product1, bpartner1, date("2011-10-01"), X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit);
+		test_retrieveMaterialItemProduct_product_bpartner_date(itemProducts[0], product1, bpartner1, date("2012-10-01"), X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit);
+		test_retrieveMaterialItemProduct_product_bpartner_date(itemProducts[0], product1, bpartner1, date("2013-10-01"), X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit);
 
-		test_retrieveMaterialItemProduct_product_bpartner_date(null, product2, bpartner1, date1, X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit);
-		test_retrieveMaterialItemProduct_product_bpartner_date(null, product2, bpartner1, date2, X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit);
-		test_retrieveMaterialItemProduct_product_bpartner_date(null, product2, bpartner1, date3, X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit); // 06566: don't pull the "anyProduct"
+		test_retrieveMaterialItemProduct_product_bpartner_date(null, product2, bpartner1, date("2011-10-01"), X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit);
+		test_retrieveMaterialItemProduct_product_bpartner_date(null, product2, bpartner1, date("2012-10-01"), X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit);
+		test_retrieveMaterialItemProduct_product_bpartner_date(null, product2, bpartner1, date("2013-10-01"), X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit); // 06566: don't pull the "anyProduct"
 		// I_M_HU_PI_Item_Product, because product2 has no
 		// assignment
-		test_retrieveMaterialItemProduct_product_bpartner_date(null, product2, bpartner1, date4, X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit); // 06566: don't pull the "anyProduct"
+		test_retrieveMaterialItemProduct_product_bpartner_date(null, product2, bpartner1, date("2014-10-01"), X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit); // 06566: don't pull the "anyProduct"
 	}
 
 	/**
@@ -152,24 +140,22 @@ public class HUPIItemProductDAOTest
 	@Test
 	public void test_retrieveMaterialItemProductbyPackagingProduct()
 	{
-		final String huUnitType = X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit;
-
-		final I_M_HU_PI_Item_Product piip1 = createM_HU_PI_Item_Product(product1, bpartner1, date1, huUnitType);
-		assertThat(piip1.getM_HU_PI_Item().getItemType(), is(X_M_HU_PI_Item.ITEMTYPE_Material)); // guard
+		final I_M_HU_PI_Item_Product piip1 = huPIItemProduct().productId(product1).bpartnerId(bpartner1).validFrom("2011-10-01").huUnitType(X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit).build();
+		assertThat(piip1.getM_HU_PI_Item().getItemType()).isEqualTo(X_M_HU_PI_Item.ITEMTYPE_Material); // guard
 		addPackingmaterialToItem(packagingProduct1, piip1.getM_HU_PI_Item());
 		POJOWrapper.setInstanceName(piip1, "piip1");
 
-		final I_M_HU_PI_Item_Product piip2 = createM_HU_PI_Item_Product(product1, bpartner1, date1, huUnitType);
-		assertThat(piip1.getM_HU_PI_Item().getItemType(), is(X_M_HU_PI_Item.ITEMTYPE_Material)); // guard
+		final I_M_HU_PI_Item_Product piip2 = huPIItemProduct().productId(product1).bpartnerId(bpartner1).validFrom("2011-10-01").huUnitType(X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit).build();
+		assertThat(piip2.getM_HU_PI_Item().getItemType()).isEqualTo(X_M_HU_PI_Item.ITEMTYPE_Material); // guard
 		addPackingmaterialToItem(packagingProduct2, piip2.getM_HU_PI_Item());
 		POJOWrapper.setInstanceName(piip2, "piip2");
 
 		final boolean allowInfiniteCapacity = true;
 
-		assertThat(dao.retrieveMaterialItemProduct(product1, bpartner1, date1, huUnitType, allowInfiniteCapacity, packagingProduct1),
-				is(piip1));
-		assertThat(dao.retrieveMaterialItemProduct(product1, bpartner1, date1, huUnitType, allowInfiniteCapacity, packagingProduct2),
-				is(piip2));
+		assertThat(dao.retrieveMaterialItemProduct(product1, bpartner1, date("2011-10-01"), X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit, allowInfiniteCapacity, packagingProduct1))
+				.isEqualTo(piip1);
+		assertThat(dao.retrieveMaterialItemProduct(product1, bpartner1, date("2011-10-01"), X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit, allowInfiniteCapacity, packagingProduct2))
+				.isEqualTo(piip2);
 	}
 
 	private void test_retrieveMaterialItemProduct_product_bpartner_date(
@@ -189,40 +175,45 @@ public class HUPIItemProductDAOTest
 	{
 		final String expectedDescription = expected == null ? null : expected.getDescription();
 		final String actualDescription = actual == null ? null : actual.getDescription();
-		Assert.assertEquals(message, expectedDescription, actualDescription);
+		assertThat(actualDescription).as(message).isEqualTo(expectedDescription);
+	}
+
+	private static ZonedDateTime date(final String localDateStr)
+	{
+		return LocalDate.parse(localDateStr).atStartOfDay(SystemTime.zoneId());
 	}
 
 	private ProductId createProduct(final String value)
 	{
-		final I_M_Product p = InterfaceWrapperHelper.create(Env.getCtx(), I_M_Product.class, ITrx.TRXNAME_None);
+		final I_M_Product p = newInstance(I_M_Product.class);
 		p.setValue(value);
 		p.setName(value);
-		InterfaceWrapperHelper.save(p);
+		saveRecord(p);
 
 		return ProductId.ofRepoId(p.getM_Product_ID());
 	}
 
 	private I_C_BPartner createBPartner(final String value)
 	{
-		final I_C_BPartner bp = InterfaceWrapperHelper.create(Env.getCtx(), I_C_BPartner.class, ITrx.TRXNAME_None);
+		final I_C_BPartner bp = newInstance(I_C_BPartner.class);
 		bp.setValue(value);
 		bp.setName(value);
-		InterfaceWrapperHelper.save(bp);
+		saveRecord(bp);
 
 		return bp;
 	}
 
 	private I_M_HU_PI_Version createM_HU_PI_Version(final String huUnitType)
 	{
-		final I_M_HU_PI pi = InterfaceWrapperHelper.create(Env.getCtx(), I_M_HU_PI.class, ITrx.TRXNAME_None);
-		InterfaceWrapperHelper.save(pi);
+		final I_M_HU_PI pi = newInstance(I_M_HU_PI.class);
+		saveRecord(pi);
 
-		final I_M_HU_PI_Version piVersion = InterfaceWrapperHelper.create(Env.getCtx(), I_M_HU_PI_Version.class, ITrx.TRXNAME_None);
+		final I_M_HU_PI_Version piVersion = newInstance(I_M_HU_PI_Version.class);
 		piVersion.setM_HU_PI(pi);
 		piVersion.setHU_UnitType(huUnitType);
 		piVersion.setIsCurrent(true);
 		piVersion.setName("M_HU_PI_ID=" + pi.getM_HU_PI_ID() + "_Current");
-		InterfaceWrapperHelper.save(piVersion);
+		saveRecord(piVersion);
 		return piVersion;
 	}
 
@@ -230,32 +221,43 @@ public class HUPIItemProductDAOTest
 	{
 		final I_M_HU_PI_Version piVersion = createM_HU_PI_Version(huUnitType);
 
-		final I_M_HU_PI_Item piItem = InterfaceWrapperHelper.create(Env.getCtx(), I_M_HU_PI_Item.class, ITrx.TRXNAME_None);
+		final I_M_HU_PI_Item piItem = newInstance(I_M_HU_PI_Item.class);
 		piItem.setM_HU_PI_Version(piVersion);
 		piItem.setItemType(X_M_HU_PI_Item.ITEMTYPE_Material);
-		InterfaceWrapperHelper.save(piItem);
+		saveRecord(piItem);
 		return piItem;
 	}
 
 	private void addPackingmaterialToItem(final ProductId packingProductId, final I_M_HU_PI_Item materialPiItem)
 	{
-		final I_M_HU_PackingMaterial packingMaterial = InterfaceWrapperHelper.create(Env.getCtx(), I_M_HU_PackingMaterial.class, ITrx.TRXNAME_None);
+		final I_M_HU_PackingMaterial packingMaterial = newInstance(I_M_HU_PackingMaterial.class);
 		packingMaterial.setM_Product_ID(packingProductId.getRepoId());
-		InterfaceWrapperHelper.save(packingMaterial);
+		saveRecord(packingMaterial);
 
-		final I_M_HU_PI_Item packingMaterialPiItem = InterfaceWrapperHelper.create(Env.getCtx(), I_M_HU_PI_Item.class, ITrx.TRXNAME_None);
+		final I_M_HU_PI_Item packingMaterialPiItem = newInstance(I_M_HU_PI_Item.class);
 		packingMaterialPiItem.setM_HU_PI_Version(materialPiItem.getM_HU_PI_Version());
 
 		packingMaterialPiItem.setItemType(X_M_HU_PI_Item.ITEMTYPE_PackingMaterial);
 		packingMaterialPiItem.setM_HU_PackingMaterial(packingMaterial);
 		packingMaterialPiItem.setQty(BigDecimal.ONE);
 
-		InterfaceWrapperHelper.save(packingMaterialPiItem);
+		saveRecord(packingMaterialPiItem);
 	}
 
-	private I_M_HU_PI_Item_Product createM_HU_PI_Item_Product(final ProductId productId, final BPartnerId bpartnerId, final ZonedDateTime validFrom, final String huUnitType)
+	@Builder(builderMethodName = "huPIItemProduct", builderClassName = "HUPIItemProductBuilder")
+	private I_M_HU_PI_Item_Product createM_HU_PI_Item_Product(
+			final String instanceName,
+			final ProductId productId,
+			final BPartnerId bpartnerId,
+			final String validFrom,
+			final String huUnitType,
+			final Boolean defaultForProduct)
 	{
-		final I_M_HU_PI_Item_Product piItemProduct = InterfaceWrapperHelper.create(Env.getCtx(), I_M_HU_PI_Item_Product.class, ITrx.TRXNAME_None);
+		final I_M_HU_PI_Item_Product piItemProduct = newInstance(I_M_HU_PI_Item_Product.class);
+		if (instanceName != null)
+		{
+			POJOWrapper.setInstanceName(piItemProduct, instanceName);
+		}
 
 		piItemProduct.setM_Product_ID(ProductId.toRepoId(productId));
 		if (productId == null)
@@ -269,12 +271,17 @@ public class HUPIItemProductDAOTest
 		piItemProduct.setM_HU_PI_Item(huPiItem);
 
 		piItemProduct.setC_BPartner_ID(BPartnerId.toRepoId(bpartnerId));
-		piItemProduct.setValidFrom(TimeUtil.asTimestamp(validFrom));
+		piItemProduct.setValidFrom(TimeUtil.asTimestamp(date(validFrom)));
 
-		InterfaceWrapperHelper.save(piItemProduct);
+		if (defaultForProduct != null)
+		{
+			piItemProduct.setIsDefaultForProduct(defaultForProduct);
+		}
+
+		saveRecord(piItemProduct);
+
 		piItemProduct.setDescription(toString(piItemProduct));
-
-		InterfaceWrapperHelper.save(piItemProduct);
+		saveRecord(piItemProduct);
 
 		return piItemProduct;
 	}
@@ -347,21 +354,52 @@ public class HUPIItemProductDAOTest
 	@Test
 	public void test_retrieveTUs_case08868()
 	{
-		final I_M_HU_PI_Item_Product pip1 = createM_HU_PI_Item_Product(product1, bpartner_NULL, date1, X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit);
-		final I_M_HU_PI_Item_Product pip2 = createM_HU_PI_Item_Product(product1, bpartner1, date1, X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit);
+		final I_M_HU_PI_Item_Product pip1 = huPIItemProduct().productId(product1).bpartnerId(null).validFrom("2011-10-01").huUnitType(X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit).build();
+		final I_M_HU_PI_Item_Product pip2 = huPIItemProduct().productId(product1).bpartnerId(bpartner1).validFrom("2011-10-01").huUnitType(X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit).build();
 		@SuppressWarnings("unused")
-		final I_M_HU_PI_Item_Product pip3 = createM_HU_PI_Item_Product(product1, bpartner2, date1, X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit);
-		final I_M_HU_PI_Item_Product pip4 = createM_HU_PI_Item_Product(product1, bpartner1, date1, X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit);
+		final I_M_HU_PI_Item_Product pip3 = huPIItemProduct().productId(product1).bpartnerId(bpartner2).validFrom("2011-10-01").huUnitType(X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit).build();
+		final I_M_HU_PI_Item_Product pip4 = huPIItemProduct().productId(product1).bpartnerId(bpartner1).validFrom("2011-10-01").huUnitType(X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit).build();
 
-		final List<I_M_HU_PI_Item_Product> pipsExpected = Arrays.asList(pip1, pip2, pip4);
-		final List<I_M_HU_PI_Item_Product> pipsActual = dao.retrieveTUs(
-				Env.getCtx(),
-				product1,
-				bpartner1);
+		assertThat(dao.retrieveTUs(Env.getCtx(), product1, bpartner1))
+				.containsExactlyInAnyOrder(pip1, pip2, pip4);
+	}
 
-		Collections.sort(pipsActual, ModelByIdComparator.getInstance());
-		Assert.assertEquals(
-				pipsExpected,
-				pipsActual);
+	@Nested
+	public class retrieveDefaultForProduct
+	{
+		private OptionalAssert<I_M_HU_PI_Item_Product> assertDefaultForProduct(final ProductId productId, final BPartnerId bpartnerId, final String date)
+		{
+			return assertThat(dao.retrieveDefaultForProduct(product1, bpartnerId, date(date)));
+		}
+
+		@Test
+		public void noDefaults()
+		{
+			huPIItemProduct().productId(product1).bpartnerId(null).validFrom("2011-10-01").huUnitType(X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit).build();
+
+			assertDefaultForProduct(product1, bpartner1, "2011-10-01").isEmpty();
+		}
+
+		@Test
+		public void withDefaults()
+		{
+			final HUPIItemProductBuilder pipBuilder = huPIItemProduct().productId(product1).huUnitType(X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit).defaultForProduct(true);
+
+			final I_M_HU_PI_Item_Product pip1 = pipBuilder.instanceName("pip1").bpartnerId(bpartner1).validFrom("2012-10-01").build();
+			final I_M_HU_PI_Item_Product pip2 = pipBuilder.instanceName("pip2").bpartnerId(bpartner2).validFrom("2012-10-01").build();
+			final I_M_HU_PI_Item_Product pip3 = pipBuilder.instanceName("pip3").bpartnerId(null).validFrom("2011-10-01").build();
+
+			assertDefaultForProduct(product1, bpartner1, "2010-10-01").isEmpty();
+			assertDefaultForProduct(product1, bpartner1, "2011-10-01").contains(pip3);
+			assertDefaultForProduct(product1, bpartner1, "2012-10-01").contains(pip1);
+
+			assertDefaultForProduct(product1, bpartner2, "2010-10-01").isEmpty();
+			assertDefaultForProduct(product1, bpartner2, "2011-10-01").contains(pip3);
+			assertDefaultForProduct(product1, bpartner2, "2012-10-01").contains(pip2);
+
+			assertDefaultForProduct(product1, bpartner3, "2010-10-01").isEmpty();
+			assertDefaultForProduct(product1, bpartner3, "2011-10-01").contains(pip3);
+			assertDefaultForProduct(product1, bpartner3, "2012-10-01").contains(pip3);
+		}
 	}
 }

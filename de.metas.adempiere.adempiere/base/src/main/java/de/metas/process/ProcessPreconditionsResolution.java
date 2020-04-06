@@ -7,8 +7,8 @@ import javax.annotation.Nullable;
 import org.adempiere.exceptions.AdempiereException;
 
 import com.google.common.base.MoreObjects;
-import com.google.common.base.Objects;
 
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
@@ -16,6 +16,7 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
+import lombok.Value;
 
 /*
  * #%L
@@ -44,12 +45,12 @@ public final class ProcessPreconditionsResolution
 	/**
 	 * {@code AD_Message} value that is used by {@link #rejectBecauseNotSingleSelection()}. This constant can also be used with {@link #rejectWithInternalReason(String)}.
 	 */
-	public static final String MSG_ONLY_ONE_SELECTED_ROW_ALLOWED = "ProcessPreconditionsResolution_OnlyOneSelectedRowAllowed";
+	public static final AdMessageKey MSG_ONLY_ONE_SELECTED_ROW_ALLOWED = AdMessageKey.of("ProcessPreconditionsResolution_OnlyOneSelectedRowAllowed");
 
 	/**
 	 * {@code AD_Message} value that is used by {@link #rejectBecauseNoSelection()}. This constant can also be used with {@link #rejectWithInternalReason(String)}.
 	 */
-	public static final String MSG_NO_ROWS_SELECTED = "ProcessPreconditionsResolution_NoRowsSelected";
+	public static final AdMessageKey MSG_NO_ROWS_SELECTED = AdMessageKey.of("ProcessPreconditionsResolution_NoRowsSelected");
 
 	public static ProcessPreconditionsResolution accept()
 	{
@@ -71,8 +72,8 @@ public final class ProcessPreconditionsResolution
 	{
 		final boolean accepted = false;
 		final boolean internal = false;
-		final ITranslatableString captionOverride = null;
-		return new ProcessPreconditionsResolution(accepted, reason, internal, captionOverride);
+		final ProcessCaptionMapper captionMapper = null;
+		return new ProcessPreconditionsResolution(accepted, reason, internal, captionMapper);
 	}
 
 	/**
@@ -110,11 +111,16 @@ public final class ProcessPreconditionsResolution
 			return REJECTED_UnknownReason;
 		}
 
-		final boolean accepted = false;
 		final ITranslatableString reason = TranslatableStrings.constant(reasonStr);
+		return rejectWithInternalReason(reason);
+	}
+
+	public static ProcessPreconditionsResolution rejectWithInternalReason(@NonNull final ITranslatableString reason)
+	{
+		final boolean accepted = false;
 		final boolean internal = true;
-		final ITranslatableString captionOverride = null;
-		return new ProcessPreconditionsResolution(accepted, reason, internal, captionOverride);
+		final ProcessCaptionMapper captionMapper = null;
+		return new ProcessPreconditionsResolution(accepted, reason, internal, captionMapper);
 	}
 
 	public static ProcessPreconditionsResolution rejectBecauseNoSelection()
@@ -122,8 +128,8 @@ public final class ProcessPreconditionsResolution
 		final boolean accepted = false;
 		final ITranslatableString reason = Services.get(IMsgBL.class).getTranslatableMsgText(MSG_NO_ROWS_SELECTED);
 		final boolean internal = false;
-		final ITranslatableString captionOverride = null;
-		return new ProcessPreconditionsResolution(accepted, reason, internal, captionOverride);
+		final ProcessCaptionMapper captionMapper = null;
+		return new ProcessPreconditionsResolution(accepted, reason, internal, captionMapper);
 	}
 
 	public static ProcessPreconditionsResolution rejectBecauseNotSingleSelection()
@@ -131,8 +137,8 @@ public final class ProcessPreconditionsResolution
 		final boolean accepted = false;
 		final ITranslatableString reason = Services.get(IMsgBL.class).getTranslatableMsgText(MSG_ONLY_ONE_SELECTED_ROW_ALLOWED);
 		final boolean internal = false;
-		final ITranslatableString captionOverride = null;
-		return new ProcessPreconditionsResolution(accepted, reason, internal, captionOverride);
+		final ProcessCaptionMapper captionMapper = null;
+		return new ProcessPreconditionsResolution(accepted, reason, internal, captionMapper);
 	}
 
 	/**
@@ -167,19 +173,25 @@ public final class ProcessPreconditionsResolution
 	private final boolean accepted;
 	private final ITranslatableString reason;
 	private final boolean internal;
-	private final ITranslatableString captionOverride;
+
+	public interface ProcessCaptionMapper
+	{
+		ITranslatableString computeCaption(ITranslatableString originalProcessCaption);
+	}
+
+	private final ProcessCaptionMapper captionMapper;
 
 	@Builder(toBuilder = true)
 	private ProcessPreconditionsResolution(
 			@NonNull final Boolean accepted,
-			final ITranslatableString reason,
+			@Nullable final ITranslatableString reason,
 			@NonNull final Boolean internal,
-			final ITranslatableString captionOverride)
+			@Nullable final ProcessCaptionMapper captionMapper)
 	{
 		this.accepted = accepted;
 		this.reason = reason;
 		this.internal = internal;
-		this.captionOverride = captionOverride;
+		this.captionMapper = captionMapper;
 	}
 
 	@Override
@@ -188,7 +200,6 @@ public final class ProcessPreconditionsResolution
 		return MoreObjects.toStringHelper(accepted ? "accept" : "reject")
 				.omitNullValues()
 				.addValue(reason)
-				.add("captionOverride", captionOverride)
 				.add("internal", internal ? Boolean.TRUE : null)
 				.toString();
 	}
@@ -228,9 +239,13 @@ public final class ProcessPreconditionsResolution
 		return toBuilder().internal(true).build();
 	}
 
-	public String getCaptionOverrideOrNull(final String adLanguage)
+	public String computeCaption(@NonNull final ITranslatableString originalProcessCaption, @NonNull final String adLanguage)
 	{
-		return captionOverride == null ? null : captionOverride.translate(adLanguage);
+		final ITranslatableString caption = captionMapper != null
+				? captionMapper.computeCaption(originalProcessCaption)
+				: originalProcessCaption;
+
+		return caption.translate(adLanguage);
 	}
 
 	/**
@@ -239,20 +254,41 @@ public final class ProcessPreconditionsResolution
 	 * @param captionOverride caption override; null value will be considered as no override
 	 * @return
 	 */
-	public ProcessPreconditionsResolution deriveWithCaptionOverride(@Nullable final String captionOverride)
+	public ProcessPreconditionsResolution deriveWithCaptionOverride(@NonNull final String captionOverride)
 	{
-		final ITranslatableString captionOverrideNew = captionOverride == null ? null : TranslatableStrings.constant(captionOverride);
-		return deriveWithCaptionOverride(captionOverrideNew);
+		return withCaptionMapper(new ProcessCaptionOverrideMapper(captionOverride));
 	}
 
-	public ProcessPreconditionsResolution deriveWithCaptionOverride(@Nullable final ITranslatableString captionOverride)
+	public ProcessPreconditionsResolution deriveWithCaptionOverride(@NonNull final ITranslatableString captionOverride)
 	{
-		if (Objects.equal(this.captionOverride, captionOverride))
+		return withCaptionMapper(new ProcessCaptionOverrideMapper(captionOverride));
+	}
+
+	@Value
+	private static class ProcessCaptionOverrideMapper implements ProcessCaptionMapper
+	{
+		private final ITranslatableString captionOverride;
+
+		public ProcessCaptionOverrideMapper(@NonNull final ITranslatableString captionOverride)
 		{
-			return this;
+			this.captionOverride = captionOverride;
 		}
 
-		return toBuilder().captionOverride(captionOverride).build();
+		public ProcessCaptionOverrideMapper(@NonNull final String captionOverride)
+		{
+			this.captionOverride = TranslatableStrings.anyLanguage(captionOverride);
+		}
+
+		@Override
+		public ITranslatableString computeCaption(final ITranslatableString originalProcessCaption)
+		{
+			return captionOverride;
+		}
+	}
+
+	public ProcessPreconditionsResolution withCaptionMapper(final ProcessCaptionMapper captionMapper)
+	{
+		return toBuilder().captionMapper(captionMapper).build();
 	}
 
 	public ProcessPreconditionsResolution and(Supplier<ProcessPreconditionsResolution> resolutionSupplier)

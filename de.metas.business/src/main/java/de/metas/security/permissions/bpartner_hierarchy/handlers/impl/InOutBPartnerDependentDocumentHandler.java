@@ -7,11 +7,14 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_M_InOut;
 import org.springframework.stereotype.Component;
 
+import com.google.common.annotations.VisibleForTesting;
+
 import de.metas.bpartner.BPartnerId;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutId;
 import de.metas.security.permissions.bpartner_hierarchy.handlers.BPartnerDependentDocument;
 import de.metas.security.permissions.bpartner_hierarchy.handlers.BPartnerDependentDocumentHandler;
+import de.metas.user.UserId;
 import de.metas.util.Services;
 
 /*
@@ -37,7 +40,8 @@ import de.metas.util.Services;
  */
 
 @Component
-class InOutBPartnerDependentDocumentHandler implements BPartnerDependentDocumentHandler
+@VisibleForTesting
+public class InOutBPartnerDependentDocumentHandler implements BPartnerDependentDocumentHandler
 {
 	private final IInOutDAO inoutsRepo = Services.get(IInOutDAO.class);
 
@@ -57,6 +61,7 @@ class InOutBPartnerDependentDocumentHandler implements BPartnerDependentDocument
 				.documentRef(TableRecordReference.of(documentObj))
 				.newBPartnerId(BPartnerId.ofRepoIdOrNull(inoutRecord.getC_BPartner_ID()))
 				.oldBPartnerId(BPartnerId.ofRepoIdOrNull(inoutRecordOld.getC_BPartner_ID()))
+				.updatedBy(UserId.ofRepoIdOrSystem(inoutRecord.getUpdatedBy()))
 				.build();
 	}
 

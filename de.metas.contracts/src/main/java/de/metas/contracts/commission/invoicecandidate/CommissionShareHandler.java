@@ -4,7 +4,6 @@ import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.ZERO;
 import static org.adempiere.model.InterfaceWrapperHelper.create;
 import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 
 import java.math.BigDecimal;
@@ -51,9 +50,8 @@ import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.quantity.Quantitys;
-import de.metas.quantity.StockQtyAndUOMQty;
-import de.metas.quantity.StockQtyAndUOMQtys;
 import de.metas.tax.api.ITaxBL;
+import de.metas.tax.api.ITaxDAO;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -80,18 +78,22 @@ import lombok.NonNull;
  * #L%
  */
 
+/**
+ * Creates an maintains commission settlement invoice candidates.
+ */
 public class CommissionShareHandler extends AbstractInvoiceCandidateHandler
 {
-	private final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
-	private final IProductAcctDAO productAcctDAO = Services.get(IProductAcctDAO.class);
-	private final IProductBL productBL = Services.get(IProductBL.class);
-	private final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
-	private final IPricingBL pricingBL = Services.get(IPricingBL.class);
-	private final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
-	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
-	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	private final ITaxBL taxBL = Services.get(ITaxBL.class);
+	private final transient IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
+	private final transient IProductAcctDAO productAcctDAO = Services.get(IProductAcctDAO.class);
+	private final transient IProductBL productBL = Services.get(IProductBL.class);
+	private final transient IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
+	private final transient IPricingBL pricingBL = Services.get(IPricingBL.class);
+	private final transient IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
+	private final transient IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
+	private final transient IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
+	private final transient IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final transient ITaxBL taxBL = Services.get(ITaxBL.class);
+	private final transient ITaxDAO taxDAO = Services.get(ITaxDAO.class);
 
 	@Override
 	public Iterator<? extends Object> retrieveAllModelsWithMissingCandidates(int limit_IGNORED)
@@ -112,7 +114,7 @@ public class CommissionShareHandler extends AbstractInvoiceCandidateHandler
 		return true;
 	}
 
-	public boolean recordHasAnInvoiceCandiate(final I_C_Commission_Share commissionShareRecord)
+	public boolean recordHasAnInvoiceCandiate(@NonNull final I_C_Commission_Share commissionShareRecord)
 	{
 		final boolean recordHasInvoiceCandidate = createICsThatReferenceSharesQueryBuilder()
 				.addEqualsFilter(I_C_Invoice_Candidate.COLUMN_Record_ID, commissionShareRecord.getC_Commission_Share_ID())
@@ -121,7 +123,7 @@ public class CommissionShareHandler extends AbstractInvoiceCandidateHandler
 		return recordHasInvoiceCandidate;
 	}
 
-	public IQuery<I_C_Commission_Share> createShareWithMissingICsQuery()
+	private IQuery<I_C_Commission_Share> createShareWithMissingICsQuery()
 	{
 		final IQuery<I_C_Commission_Share> shareWithMissingCandidateQuery = queryBL
 				.createQueryBuilder(I_C_Commission_Share.class)
@@ -162,7 +164,6 @@ public class CommissionShareHandler extends AbstractInvoiceCandidateHandler
 		final I_C_Invoice_Candidate icRecord = newInstance(I_C_Invoice_Candidate.class, commissionShareRecord);
 
 		final OrgId orgId = OrgId.ofRepoId(commissionShareRecord.getAD_Org_ID());
-
 		icRecord.setAD_Org_ID(orgId.getRepoId());
 		icRecord.setC_ILCandHandler(getHandlerRecord());
 
@@ -173,7 +174,8 @@ public class CommissionShareHandler extends AbstractInvoiceCandidateHandler
 		final I_C_Flatrate_Term flatrateTerm = flatrateDAO.retrieveTerm(FlatrateTermId.ofRepoId(commissionShareRecord.getC_Flatrate_Term_ID()));
 
 		// product
-		icRecord.setM_Product_ID(CommissionConstants.COMMISSION_PRODUCT_ID.getRepoId());
+		final ProductId commissionProductId = ProductId.ofRepoId(commissionShareRecord.getCommission_Product_ID());
+		icRecord.setM_Product_ID(commissionProductId.getRepoId());
 
 		setOrderedData(icRecord, commissionShareRecord);
 		setDeliveredData(icRecord);
@@ -190,15 +192,14 @@ public class CommissionShareHandler extends AbstractInvoiceCandidateHandler
 		final IEditablePricingContext pricingContext = pricingBL
 				.createInitialContext(
 						orgId,
-						CommissionConstants.COMMISSION_PRODUCT_ID,
+						commissionProductId,
 						bPartnerId,
-						Quantitys.create(ONE, CommissionConstants.COMMISSION_PRODUCT_ID),
+						Quantitys.create(ONE, commissionProductId),
 						SOTrx.PURCHASE)
 				.setPriceListId(priceListId)
-				.setPriceDate(TimeUtil.asLocalDate(icRecord.getDateOrdered()));
-
+				.setPriceDate(TimeUtil.asLocalDate(icRecord.getDateOrdered()))
+				.setFailIfNotCalculated();
 		final IPricingResult pricingResult = pricingBL.calculatePrice(pricingContext);
-		// TODO throw exception if not calculated
 
 		icRecord.setInvoicableQtyBasedOn(X_C_Invoice_Candidate.INVOICABLEQTYBASEDON_Nominal);
 		icRecord.setM_PricingSystem_ID(PricingSystemId.toRepoId(pricingSystemId));
@@ -232,19 +233,29 @@ public class CommissionShareHandler extends AbstractInvoiceCandidateHandler
 		final ActivityId activityId = productAcctDAO.retrieveActivityForAcct(
 				ClientId.ofRepoId(commissionShareRecord.getAD_Client_ID()),
 				orgId,
-				CommissionConstants.COMMISSION_PRODUCT_ID);
+				commissionProductId);
 		icRecord.setC_Activity_ID(ActivityId.toRepoId(activityId));
 
-		final int taxId = taxBL.getTax(
-				Env.getCtx(),
-				icRecord, // model
-				pricingResult.getTaxCategoryId(),
-				CommissionConstants.COMMISSION_PRODUCT_ID.getRepoId(),
-				icRecord.getDeliveryDate(),
-				orgId,
-				(WarehouseId)null,
-				commissionToLocationId.getRepoId(),
-				false /* isSOTrx */);
+		// tax
+		final boolean taxExempt = taxDAO.retrieveIsTaxExemptSmallBusiness(bPartnerId, icRecord.getDeliveryDate());
+		final int taxId;
+		if (taxExempt)
+		{
+			taxId = taxDAO.retrieveExemptTax(orgId).getRepoId();
+		}
+		else
+		{
+			taxId = taxBL.getTax(
+					Env.getCtx(),
+					icRecord, // model
+					pricingResult.getTaxCategoryId(),
+					commissionProductId.getRepoId(),
+					icRecord.getDeliveryDate(),
+					orgId,
+					(WarehouseId)null,
+					commissionToLocationId.getRepoId(),
+					false /* isSOTrx */);
+		}
 		icRecord.setC_Tax_ID(taxId);
 		return icRecord;
 	}
@@ -291,17 +302,19 @@ public class CommissionShareHandler extends AbstractInvoiceCandidateHandler
 	{
 		final UomId uomId = productBL.getStockUOMId(ic.getM_Product_ID());
 
-		final BigDecimal allPoints = commissionShareRecord.getPointsSum_Forecasted()
-				.add(commissionShareRecord.getPointsSum_Invoiceable())
-				.add(commissionShareRecord.getPointsSum_Invoiced());
+		// Right now, only invoiced sales transactions are commission-worthy.
+		// We can later add a tick-box in the commission settings to make this configurable.
+		// Also note that for non-item products (which is usually the case for commission products), we have QtyInvoicable := QtyOrdered,
+		// which is why we don't include the forecasted and invoiceable quantities in the ordered qty
+		final BigDecimal ordered = commissionShareRecord.getPointsSum_Invoiced()
+		// .add(commissionShareRecord.getPointsSum_Invoiceable())
+		// .add(commissionShareRecord.getPointsSum_Forecasted())
+		;
 
-		final int commissionTriggerIcRecordId = commissionShareRecord.getC_Commission_Instance().getC_Invoice_Candidate_ID();
-		final I_C_Invoice_Candidate commissionTriggerIcRecord = loadOutOfTrx(commissionTriggerIcRecordId, I_C_Invoice_Candidate.class);
-
-		ic.setQtyEntered(allPoints);
+		ic.setQtyEntered(ordered);
 		ic.setC_UOM_ID(uomId.getRepoId());
-		ic.setQtyOrdered(allPoints);
-		ic.setDateOrdered(commissionTriggerIcRecord.getDateOrdered());
+		ic.setQtyOrdered(ordered); // we use the commission product's stock uom, so no uom conversion is needed
+		ic.setDateOrdered(commissionShareRecord.getC_Commission_Instance().getCommissionDate());
 		ic.setC_Order_ID(-1);
 	}
 
@@ -319,15 +332,14 @@ public class CommissionShareHandler extends AbstractInvoiceCandidateHandler
 	{
 		final I_C_Commission_Share commissionShareRecord = getCommissionShareRecord(ic);
 
-		final BigDecimal delivered = commissionShareRecord.getPointsSum_Invoiceable()
-				.add(commissionShareRecord.getPointsSum_Invoiced());
+		// Right now, only invoiced sales transactions are commission-worthy.
+		// We can later add a tick-box in the commission settings to make this configurable.
+		final BigDecimal delivered = commissionShareRecord.getPointsSum_Invoiced()
+		// .add(commissionShareRecord.getPointsSum_Invoiceable())
+		;
 
-		final StockQtyAndUOMQty stockAndUom = StockQtyAndUOMQtys.createConvert(delivered,
-				ProductId.ofRepoId(ic.getM_Product_ID()),
-				UomId.ofRepoId(ic.getC_UOM_ID()));
-
-		ic.setQtyDelivered(stockAndUom.getStockQty().toBigDecimal());
-		ic.setQtyDeliveredInUOM(stockAndUom.getStockQty().toBigDecimal());
+		ic.setQtyDelivered(delivered);
+		ic.setQtyDeliveredInUOM(delivered);  // we use the commission product's stock uom, so no uom conversion is needed
 
 		ic.setDeliveryDate(ic.getDateOrdered());
 		ic.setM_InOut_ID(-1);
@@ -346,5 +358,11 @@ public class CommissionShareHandler extends AbstractInvoiceCandidateHandler
 	{
 		final I_C_Commission_Share commissionShareRecord = getCommissionShareRecord(ic);
 		ic.setBill_BPartner_ID(commissionShareRecord.getC_BPartner_SalesRep_ID());
+	}
+
+	@Override
+	public String toString()
+	{
+		return "CommissionShareHandler";
 	}
 }

@@ -91,6 +91,7 @@ import org.w3c.dom.Element;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
 import de.metas.cache.model.IModelCacheInvalidationService;
 import de.metas.cache.model.ModelCacheInvalidationTiming;
+import de.metas.cache.model.POCacheSourceModel;
 import de.metas.cache.model.impl.TableRecordCacheLocal;
 import de.metas.document.sequence.IDocumentNoBL;
 import de.metas.document.sequence.IDocumentNoBuilder;
@@ -659,10 +660,16 @@ public abstract class PO
 	 */
 	public final int get_ValueAsInt(final int index)
 	{
+		final int defaultValue = 0;
+		return get_ValueAsInt(index, defaultValue);
+	}
+	
+	public final Integer get_ValueAsInt(final int index, final Integer defaultValue)
+	{
 		final Object value = get_Value(index);
 		if (value == null)
 		{
-			return 0;
+			return defaultValue;
 		}
 		if (value instanceof Integer)
 		{
@@ -674,8 +681,8 @@ public abstract class PO
 		}
 		catch (final NumberFormatException ex)
 		{
-			log.warn(p_info.getColumnName(index) + " - " + ex.getMessage());
-			return 0;
+			log.warn("Failed converting {}=`{}` ({}) to int. Returning {}.", p_info.getColumnName(index), value, value.getClass(), defaultValue, ex);
+			return defaultValue;
 		}
 	}   // get_ValueAsInt
 
@@ -3136,7 +3143,10 @@ public abstract class PO
 		{
 			try
 			{
-				Services.get(IModelCacheInvalidationService.class).invalidateForModel(this, newRecord ? ModelCacheInvalidationTiming.NEW : ModelCacheInvalidationTiming.CHANGE);
+				final IModelCacheInvalidationService cacheInvalidationService = Services.get(IModelCacheInvalidationService.class);
+				cacheInvalidationService.invalidateForModel(
+						POCacheSourceModel.of(this),
+						newRecord ? ModelCacheInvalidationTiming.NEW : ModelCacheInvalidationTiming.CHANGE);
 			}
 			catch (final Exception ex)
 			{
@@ -4202,7 +4212,7 @@ public abstract class PO
 		final IModelCacheInvalidationService cacheInvalidationService = Services.get(IModelCacheInvalidationService.class);
 		final CacheInvalidateMultiRequest cacheInvalidateRequest = //
 				p_info.isSingleKeyColumnName()
-						? cacheInvalidationService.createRequest(this, ModelCacheInvalidationTiming.DELETE)
+						? cacheInvalidationService.createRequestOrNull(POCacheSourceModel.of(this), ModelCacheInvalidationTiming.DELETE)
 						: null;
 
 		//
@@ -4991,13 +5001,19 @@ public abstract class PO
 	 */
 	public final int get_ValueAsInt(final String columnName)
 	{
-		final int idx = get_ColumnIndex(columnName);
-		if (idx < 0)
-		{
-			return 0;
-		}
-		return get_ValueAsInt(idx);
+		final int defaultValue = 0;
+		return get_ValueAsInt(columnName, defaultValue);
 	}
+	
+	@Override
+	public final Integer get_ValueAsInt(final String columnName, final Integer defaultValue)
+	{
+		final int idx = get_ColumnIndex(columnName);
+		return idx >= 0
+				? get_ValueAsInt(idx, defaultValue)
+				: defaultValue;
+	}
+
 
 	/**
 	 * Get value as Boolean
@@ -5087,7 +5103,7 @@ public abstract class PO
 		try
 		{
 			m_currentChangeType = type;
-			ModelValidationEngine.get().fireModelChange(this, type.getChangeType());
+			ModelValidationEngine.get().fireModelChange(this, type);
 		}
 		finally
 		{

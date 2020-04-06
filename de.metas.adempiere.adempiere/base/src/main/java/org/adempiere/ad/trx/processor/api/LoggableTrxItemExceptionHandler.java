@@ -1,5 +1,9 @@
 package org.adempiere.ad.trx.processor.api;
 
+import org.slf4j.Logger;
+
+import ch.qos.logback.classic.Level;
+import de.metas.logging.LogManager;
 import de.metas.util.ILoggable;
 import de.metas.util.Loggables;
 
@@ -11,29 +15,30 @@ import de.metas.util.Loggables;
  */
 public final class LoggableTrxItemExceptionHandler implements ITrxItemExceptionHandler
 {
+	private static final Logger logger = LogManager.getLogger(LoggableTrxItemExceptionHandler.class);
+
 	public static final LoggableTrxItemExceptionHandler instance = new LoggableTrxItemExceptionHandler();
 
 	private LoggableTrxItemExceptionHandler()
 	{
-		super();
 	}
 
 	@Override
 	public void onNewChunkError(final Throwable e, final Object item)
 	{
-		Loggables.addLog("Error while trying to create a new chunk for item={}; exception={}", item, e);
+		Loggables.withLogger(logger, Level.DEBUG).addLog("Error while trying to create a new chunk for item={}; exception={}", item, e);
 	}
 
 	@Override
 	public void onItemError(final Throwable e, final Object item)
 	{
-		Loggables.addLog("Error while trying to process item={}; exception={}", item, e);
+		Loggables.withLogger(logger, Level.DEBUG).addLog("Error while trying to process item={}; exception={}", item, e);
 	}
 
 	@Override
 	public void onCompleteChunkError(final Throwable e)
 	{
-		Loggables.addLog("Error while completing current chunk; exception={}", e);
+		Loggables.withLogger(logger, Level.DEBUG).addLog("Error while completing current chunk; exception={}", e);
 	}
 
 	@Override
@@ -46,12 +51,12 @@ public final class LoggableTrxItemExceptionHandler implements ITrxItemExceptionH
 	@Override
 	public void onCommitChunkError(final Throwable e)
 	{
-		Loggables.addLog("Processor failed to commit current chunk => rollback transaction; exception={}", e);
+		Loggables.withLogger(logger, Level.DEBUG).addLog("Processor failed to commit current chunk => rollback transaction; exception={}", e);
 	}
 
 	@Override
 	public void onCancelChunkError(final Throwable e)
 	{
-		Loggables.addLog("Error while cancelling current chunk. Ignored; exception={}", e);
+		Loggables.withLogger(logger, Level.DEBUG).addLog("Error while cancelling current chunk. Ignored; exception={}", e);
 	}
 }

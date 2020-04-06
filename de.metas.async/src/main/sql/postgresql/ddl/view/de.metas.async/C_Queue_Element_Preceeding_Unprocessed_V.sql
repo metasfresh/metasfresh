@@ -19,8 +19,9 @@ WHERE true
 	AND wp2.IsActive='Y'
 	AND e2.IsActive='Y'
 	AND b2.IsActive='Y'
-	-- And those workpackages were not processed yet!
+	-- And those older workpackages were not processed yet and didn't have an error yet!
 	AND wp2.Processed='N'
+	AND wp2.IsError='N'
 GROUP BY e.C_Queue_Element_ID;
 
 

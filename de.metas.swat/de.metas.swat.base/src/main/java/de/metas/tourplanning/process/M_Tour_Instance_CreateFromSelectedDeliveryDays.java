@@ -10,18 +10,17 @@ package de.metas.tourplanning.process;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.Iterator;
 
@@ -120,7 +119,7 @@ public class M_Tour_Instance_CreateFromSelectedDeliveryDays extends JavaProcess
 	}
 
 	@Override
-	protected void postProcess(boolean success)
+	protected void postProcess(final boolean success)
 	{
 		if (!success)
 		{
@@ -197,7 +196,9 @@ public class M_Tour_Instance_CreateFromSelectedDeliveryDays extends JavaProcess
 		// Make sure shipper transportation is not processed
 		if (p_M_ShipperTransportation.isProcessed())
 		{
-			throw new AdempiereException("@M_ShipperTransportation_ID@: @Processed@=@Y@");
+			throw new AdempiereException("@M_ShipperTransportation_ID@: @Processed@=@Y@")
+					.appendParametersToMessage()
+					.setParameter("M_ShipperTransportation_ID", p_M_ShipperTransportation_ID);
 		}
 
 		return p_M_ShipperTransportation;
@@ -228,7 +229,7 @@ public class M_Tour_Instance_CreateFromSelectedDeliveryDays extends JavaProcess
 	{
 		Check.assumeNotNull(tourInstance, "tourInstance not null");
 
-		I_M_ShipperTransportation shipperTransportation = InterfaceWrapperHelper.newInstance(I_M_ShipperTransportation.class, this);
+		final I_M_ShipperTransportation shipperTransportation = InterfaceWrapperHelper.newInstance(I_M_ShipperTransportation.class, this);
 		shipperTransportation.setDateDoc(tourInstance.getDeliveryDate());
 		shipperTransportation.setShipper_BPartner_ID(p_Shipper_BPartner_ID);
 		shipperTransportation.setShipper_Location_ID(p_Shipper_Location_ID);

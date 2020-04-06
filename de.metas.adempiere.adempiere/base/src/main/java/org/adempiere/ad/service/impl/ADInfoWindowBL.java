@@ -28,11 +28,11 @@ import java.util.Properties;
 
 import org.adempiere.ad.service.IADInfoWindowBL;
 import org.adempiere.ad.service.IADInfoWindowDAO;
+import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_AD_InfoColumn;
 import org.compiere.model.I_AD_InfoWindow;
 import org.compiere.model.I_AD_InfoWindow_From;
-import org.compiere.model.MTable;
 import org.compiere.model.MTree;
 import org.compiere.util.Env;
 
@@ -81,7 +81,7 @@ public class ADInfoWindowBL implements IADInfoWindowBL
 	public String getTableName(final I_AD_InfoWindow infoWindow)
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(infoWindow);
-		return MTable.getTableName(ctx, infoWindow.getAD_Table_ID());
+		return Services.get(IADTableDAO.class).retrieveTableName(infoWindow.getAD_Table_ID());
 	}
 
 	@Override

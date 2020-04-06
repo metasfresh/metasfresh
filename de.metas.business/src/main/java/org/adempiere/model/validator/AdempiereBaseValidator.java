@@ -2,28 +2,6 @@ package org.adempiere.model.validator;
 
 import java.util.List;
 
-/*
- * #%L
- * de.metas.adempiere.adempiere.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.element.model.interceptor.AD_Element;
 import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
@@ -76,6 +54,8 @@ import de.metas.async.spi.impl.NotifyAsyncBatch;
 import de.metas.bpartner.product.callout.C_BPartner_Product;
 import de.metas.cache.CCache.CacheMapType;
 import de.metas.cache.CacheMgt;
+import de.metas.cache.TableNamesGroup;
+import de.metas.cache.model.ColumnSqlCacheInvalidateRequestInitializer;
 import de.metas.cache.model.IModelCacheService;
 import de.metas.cache.model.ITableCacheConfig;
 import de.metas.cache.model.ITableCacheConfig.TrxLevel;
@@ -86,6 +66,28 @@ import de.metas.notification.INotificationGroupNameRepository;
 import de.metas.notification.NotificationGroupName;
 import de.metas.reference.model.interceptor.AD_Ref_Table;
 import de.metas.util.Services;
+
+/*
+ * #%L
+ * de.metas.adempiere.adempiere.base
+ * %%
+ * Copyright (C) 2015 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
 
 /**
  * ADempiere Base Module Activator
@@ -190,8 +192,8 @@ public final class AdempiereBaseValidator extends AbstractModuleInterceptor
 		// #2895
 		engine.addModelValidator(AD_Ref_Table.instance, client);
 
-		// #2913
-		engine.addModelValidator(org.adempiere.ad.column.model.interceptor.AD_Column.instance, client);
+		engine.addModelValidator(org.adempiere.ad.column.model.interceptor.AD_Column.instance, client); // #2913
+		engine.addModelValidator(new org.adempiere.ad.column.model.interceptor.AD_SQLColumn_SourceTableColumn(), client);
 
 		engine.addModelValidator(new AD_Element(), client);
 	}
@@ -283,11 +285,11 @@ public final class AdempiereBaseValidator extends AbstractModuleInterceptor
 				.register();
 
 		final CacheMgt cacheMgt = CacheMgt.get();
-
-		Services.get(IADTableDAO.class)
-				.getTableNamesWithRemoteCacheInvalidation()
-				.stream()
-				.forEach(cacheMgt::enableRemoteCacheInvalidationForTableName);
+		final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
+		cacheMgt.enableRemoteCacheInvalidationForTableNamesGroup(TableNamesGroup.builder()
+				.groupId("tablesWithRemoteCacheInvalidationFlagSet")
+				.tableNames(adTableDAO.getTableNamesWithRemoteCacheInvalidation())
+				.build());
 
 		// task 09304: now that we can, let's also invalidate the cached UOM conversions.
 		cacheMgt.enableRemoteCacheInvalidationForTableName(I_C_UOM.Table_Name);
@@ -340,5 +342,6 @@ public final class AdempiereBaseValidator extends AbstractModuleInterceptor
 		cacheMgt.enableRemoteCacheInvalidationForTableName(I_M_AttributeValue.Table_Name);
 
 		WindowBasedCacheInvalidateRequestInitializer.setup();
+		ColumnSqlCacheInvalidateRequestInitializer.setup();
 	}
 }

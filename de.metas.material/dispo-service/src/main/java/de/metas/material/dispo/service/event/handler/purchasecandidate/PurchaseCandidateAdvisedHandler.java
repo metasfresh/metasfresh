@@ -54,8 +54,6 @@ public final class PurchaseCandidateAdvisedHandler
 	private final RequestMaterialOrderService requestMaterialOrderService;
 
 	/**
-	 *
-	 * @param candidateChangeHandler
 	 * @param candidateService needed in case we directly request a {@link PpOrderSuggestedEvent}'s proposed PP_Order to be created.
 	 */
 	public PurchaseCandidateAdvisedHandler(
@@ -103,7 +101,6 @@ public final class PurchaseCandidateAdvisedHandler
 				.type(CandidateType.SUPPLY)
 				.businessCase(CandidateBusinessCase.PURCHASE)
 				.clientAndOrgId(event.getEventDescriptor().getClientAndOrgId())
-				//.status(CandidateStatus.doc_planned)
 				.materialDescriptor(materialDescriptor)
 				.businessCaseDetail(purchaseDetail)
 				.additionalDemandDetail(demandDetail)

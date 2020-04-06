@@ -5,7 +5,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
-import java.math.BigDecimal;
 import java.util.HashMap;
 
 import org.adempiere.exceptions.AdempiereException;
@@ -96,9 +95,6 @@ public class TestSetupSpecHelper
 		shipmentScheduleRecord.setM_Product_ID(productRecord.getM_Product_ID());
 		shipmentScheduleRecord.setIsClosed(false);
 		shipmentScheduleRecord.setC_BPartner_ID(setupData.bpartnerRecord.getC_BPartner_ID());
-		shipmentScheduleRecord.setQtyDelivered(BigDecimal.ONE);
-		shipmentScheduleRecord.setQtyOrdered_Override(new BigDecimal("23"));
-		shipmentScheduleRecord.setQtyOrdered_Calculated(new BigDecimal("24"));
 		shipmentScheduleRecord.setM_Warehouse_ID(setupData.warehouseId.getRepoId());
 		shipmentScheduleRecord.setC_Order_ID(orderRecord.getC_Order_ID());
 		shipmentScheduleRecord.setC_OrderLine_ID(orderLineRecord.getC_OrderLine_ID());
@@ -106,6 +102,8 @@ public class TestSetupSpecHelper
 		shipmentScheduleRecord.setBPartnerAddress_Override("BPartnerAddress_Override"); // not flagged as mandatory in AD, but always set
 		shipmentScheduleRecord.setAD_Table_ID(getTableId(I_C_OrderLine.class));
 		shipmentScheduleRecord.setRecord_ID(orderLineRecord.getC_OrderLine_ID());
+		
+		shipmentScheduleRecord.setQtyOrdered(shipmentSchedule.getQtyOrdered());
 
 		shipmentScheduleRecord.setDeliveryRule(shipmentSchedule.getDeliveryRule().getCode()); // <==
 
@@ -114,11 +112,10 @@ public class TestSetupSpecHelper
 
 		saveRecord(shipmentScheduleRecord);
 
-		final OlAndSched olAndSched = OlAndSched.builder()
+		return OlAndSched.builder()
 				.deliverRequest(orderLineRecord::getQtyOrdered)
 				.shipmentSchedule(shipmentScheduleRecord)
 				.build();
-		return olAndSched;
 	}
 
 	private PPOrderId createPickFromOrder(final SetupData setupData, final PickFromOrderSpec spec)

@@ -17,6 +17,7 @@ import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.util.Util.ArrayKey;
 import org.eevolution.api.IPPOrderBL;
+import org.slf4j.MDC.MDCCloseable;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ArrayListMultimap;
@@ -26,6 +27,7 @@ import com.google.common.collect.ListMultimap;
 
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.logging.TableRecordMDC;
 import de.metas.material.cockpit.stock.StockDataItem;
 import de.metas.material.cockpit.stock.StockDataMultiQuery;
 import de.metas.material.cockpit.stock.StockDataQuery;
@@ -150,22 +152,25 @@ public class ShipmentScheduleQtyOnHandStorage
 
 	}
 
-	private Stream<StockDataQuery> getMaterialQueriesIncludingPickingBOMComponents(@NonNull final I_M_ShipmentSchedule sched)
+	private Stream<StockDataQuery> getMaterialQueriesIncludingPickingBOMComponents(@NonNull final I_M_ShipmentSchedule shipmentScheduleRecord)
 	{
-		final StockDataQuery query = toQuery(sched);
-
-		final QtyCalculationsBOM bom = getPickingBOM(sched).orElse(null);
-		if (bom == null)
+		try (final MDCCloseable shipmentScheduleMDC = TableRecordMDC.putTableRecordReference(shipmentScheduleRecord))
 		{
-			return Stream.of(query);
-		}
-		else
-		{
-			final Stream<StockDataQuery> componentQueries = bom.getLines()
-					.stream()
-					.map(bomLine -> toPickBOMComponentQuery(query, bomLine));
+			final StockDataQuery query = toQuery(shipmentScheduleRecord);
 
-			return Stream.concat(Stream.of(query), componentQueries);
+			final QtyCalculationsBOM bom = getPickingBOM(shipmentScheduleRecord).orElse(null);
+			if (bom == null)
+			{
+				return Stream.of(query);
+			}
+			else
+			{
+				final Stream<StockDataQuery> componentQueries = bom.getLines()
+						.stream()
+						.map(bomLine -> toPickBOMComponentQuery(query, bomLine));
+
+				return Stream.concat(Stream.of(query), componentQueries);
+			}
 		}
 	}
 

@@ -8,6 +8,7 @@ import de.metas.handlingunits.IMutableHUContext;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.receiptschedule.IHUToReceiveValidator;
+import de.metas.i18n.AdMessageKey;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
@@ -36,7 +37,7 @@ import de.metas.util.Services;
 @Component
 public class RepackNumberHUToReceiveValidator implements IHUToReceiveValidator
 {
-	private static final String MSG_RepackNumberNotSetForHU = "pharma.RepackNumberNotSetForHU";
+	private static final AdMessageKey MSG_RepackNumberNotSetForHU = AdMessageKey.of("pharma.RepackNumberNotSetForHU");
 
 	@Override
 	public void assertValidForReceiving(final I_M_HU hu)

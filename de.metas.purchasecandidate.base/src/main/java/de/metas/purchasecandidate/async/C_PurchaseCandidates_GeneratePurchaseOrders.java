@@ -12,7 +12,7 @@ import org.compiere.SpringContextHolder;
 import org.compiere.util.Env;
 
 import com.google.common.base.Functions;
-import com.google.common.base.Predicates;
+import java.util.Objects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimap;
@@ -102,7 +102,7 @@ public class C_PurchaseCandidates_GeneratePurchaseOrders extends WorkpackageProc
 					.setElementsLocker(elementsLocker)
 					.bindToThreadInheritedTrx()
 					.addElements(candidateRecordReferences)
-					.setUserInChargeId(Env.getAD_User_ID())
+					.setUserInChargeId(Env.getLoggedUserIdIfExists().orElse(null))
 					.build();
 		}
 	}
@@ -132,7 +132,7 @@ public class C_PurchaseCandidates_GeneratePurchaseOrders extends WorkpackageProc
 				.stream()
 				.map(I_C_Queue_Element::getRecord_ID)
 				.map(PurchaseCandidateId::ofRepoIdOrNull)
-				.filter(Predicates.notNull())
+				.filter(Objects::nonNull)
 				.collect(ImmutableSet.toImmutableSet());
 		if (purchaseCandidateIds.isEmpty())
 		{

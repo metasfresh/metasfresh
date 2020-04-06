@@ -172,7 +172,7 @@ UPDATE AD_Column SET AD_Reference_ID=17, AD_Reference_Value_ID=234, Updated=TO_T
 
 INSERT INTO t_alter_column values('C_BankStatement','Posted','CHAR(1)',null,'N');
 INSERT INTO t_alter_column values('C_Order','Posted','CHAR(1)',null,'N');
-INSERT INTO t_alter_column values('C_Invoice','Posted','CHAR(1)',null,'N');
+--INSERT INTO t_alter_column values('C_Invoice','Posted','CHAR(1)',null,'N'); it's already like this and causes trouble on some customer instalations
 INSERT INTO t_alter_column values('C_Order','Posted','CHAR(1)',null,'N');
 INSERT INTO t_alter_column values('M_InOut','Posted','CHAR(1)',null,'N');
 INSERT INTO t_alter_column values('C_Payment','Posted','CHAR(1)',null,'N');

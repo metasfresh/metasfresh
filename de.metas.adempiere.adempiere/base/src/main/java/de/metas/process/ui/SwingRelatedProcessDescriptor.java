@@ -15,6 +15,7 @@ import org.compiere.util.Env;
 
 import com.google.common.base.MoreObjects;
 
+import de.metas.i18n.ITranslatableString;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.process.RelatedProcessDescriptor;
 import de.metas.util.Check;
@@ -33,11 +34,11 @@ import de.metas.util.Services;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -86,15 +87,8 @@ public class SwingRelatedProcessDescriptor
 
 	public String getCaption(final String adLanguage)
 	{
-		String caption = getPreconditionsResolution().getCaptionOverrideOrNull(adLanguage);
-
-		if (caption == null)
-		{
-			final I_AD_Process adProcess = adProcessSupplier.get();
-			final I_AD_Process adProcessTrl = InterfaceWrapperHelper.translate(adProcess, I_AD_Process.class, adLanguage);
-
-			caption = adProcessTrl.getName();
-		}
+		final ITranslatableString originalProcessCaption = getOriginalProcessCaption();
+		String caption = getPreconditionsResolution().computeCaption(originalProcessCaption, adLanguage);
 
 		if (Services.get(IDeveloperModeBL.class).isEnabled())
 		{
@@ -103,6 +97,13 @@ public class SwingRelatedProcessDescriptor
 		}
 
 		return caption;
+	}
+
+	private ITranslatableString getOriginalProcessCaption()
+	{
+		final I_AD_Process adProcess = adProcessSupplier.get();
+		return InterfaceWrapperHelper.getModelTranslationMap(adProcess)
+				.getColumnTrl(I_AD_Process.COLUMNNAME_Name, adProcess.getName());
 	}
 
 	public String getDescription(final String adLanguage)
@@ -170,7 +171,7 @@ public class SwingRelatedProcessDescriptor
 	{
 		return getPreconditionsResolution().isAccepted();
 	}
-	
+
 	public boolean isSilentRejection()
 	{
 		return getPreconditionsResolution().isInternal();

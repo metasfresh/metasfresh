@@ -7,6 +7,7 @@ import java.util.Properties;
 import org.adempiere.ad.table.exception.NoSingleKeyColumnException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.ITableRecordReference;
+import org.apache.commons.lang3.StringUtils;
 import org.compiere.Adempiere;
 import org.compiere.model.I_AD_Column;
 import org.compiere.model.POInfo;
@@ -185,12 +186,15 @@ public class ColumnBL implements IColumnBL
 	@Override
 	public boolean getDefaultIsCalculatedByColumnName(@NonNull final String columnName)
 	{
-		if (columnName.equalsIgnoreCase("Value")
-				|| columnName.equalsIgnoreCase("DocumentNo"))
-		{
-			return true;
-		}
-		return false;
+		return columnName.equalsIgnoreCase("Value")
+				|| columnName.equalsIgnoreCase("DocumentNo")
+				|| columnName.equalsIgnoreCase("DocStatus")
+				|| columnName.equalsIgnoreCase("Docaction")
+				|| columnName.equalsIgnoreCase("Processed")
+				|| columnName.equalsIgnoreCase("Processing")
+				|| StringUtils.containsIgnoreCase(columnName, "ExternalID")
+				|| columnName.equalsIgnoreCase("ExternalHeaderId")
+				|| columnName.equalsIgnoreCase("ExternalLineId");
 	}
-	
+
 }

@@ -4,12 +4,15 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.Collection;
 
+import org.slf4j.Logger;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 import com.google.common.collect.ImmutableList;
 
+import ch.qos.logback.classic.Level;
 import de.metas.Profiles;
+import de.metas.logging.LogManager;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.Candidate.CandidateBuilder;
 import de.metas.material.dispo.commons.candidate.CandidateType;
@@ -58,6 +61,7 @@ import lombok.NonNull;
 @Profile(Profiles.PROFILE_MaterialDispo)
 public class StockChangedEventHandler implements MaterialEventHandler<StockChangedEvent>
 {
+	private static final Logger logger = LogManager.getLogger(StockChangedEventHandler.class);
 
 	private final CandidateRepositoryRetrieval candidateRepository;
 	private final CandidateChangeService candidateChangeHandler;
@@ -144,7 +148,7 @@ public class StockChangedEventHandler implements MaterialEventHandler<StockChang
 		final BigDecimal quantityOnHand = event.getQtyOnHand();
 		if (quantityOnHand.signum() <= 0)
 		{
-			Loggables.addLog("Warning: something was out of sync since there is no existing 'latestMatch' with a qty to reduce");
+			Loggables.withLogger(logger, Level.DEBUG).addLog("Warning: something was out of sync since there is no existing 'latestMatch' with a qty to reduce");
 			return null;
 		}
 		return quantityOnHand;
@@ -155,7 +159,7 @@ public class StockChangedEventHandler implements MaterialEventHandler<StockChang
 	{
 		if (quantity.signum() == 0)
 		{
-			Loggables.addLog("The event's quantity is what was already expected; nothing to do");
+			Loggables.withLogger(logger, Level.DEBUG).addLog("The event's quantity is what was already expected; nothing to do");
 			return null;
 		}
 		final CandidateType type = quantity.signum() > 0 ? CandidateType.INVENTORY_UP : CandidateType.INVENTORY_DOWN;
@@ -172,7 +176,6 @@ public class StockChangedEventHandler implements MaterialEventHandler<StockChang
 				.build();
 
 		final CandidateBuilder candidateBuilder = Candidate.builderForEventDescr(event.getEventDescriptor())
-				//.status(CandidateStatus.doc_completed)
 				.materialDescriptor(materialDescriptorBuilder)
 				.transactionDetail(stockChangeDetail);
 		return candidateBuilder;

@@ -1,5 +1,7 @@
 package org.compiere.util;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -13,44 +15,35 @@ package org.compiere.util;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertSame;
 
 import java.lang.reflect.Field;
 import java.sql.Timestamp;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 
+import org.adempiere.util.lang.IAutoCloseable;
 import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
 
+import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.collections.CollectionUtils;
 import de.metas.util.collections.IdentityHashSet;
 
 public class EnvTests
 {
-	private boolean equals(Object o1, Object o2)
-	{
-		if (o1 == o2)
-			return true;
-		if (o1 == null)
-			return false;
-		return o1.equals(o2);
-	}
-
 	/** Creates a new context for testing */
 	private Properties newContext()
 	{
@@ -67,24 +60,38 @@ public class EnvTests
 	private <T> T defaultValue(String desc, Class<T> type)
 	{
 		if (type == Timestamp.class)
+		{
 			return (T)nextValue(Timestamp.class, desc);
+		}
 		else if (type == int.class)
+		{
 			return (T)nextValue(int.class, desc);
+		}
 		else if (type == String.class)
+		{
 			return (T)nextValue(String.class, desc);
+		}
 		else
+		{
 			throw new RuntimeException("Type " + type + " not supported (desc:" + desc + ")");
+		}
 	}
 
 	private <T> String name(String context, T defaultValue, Class<T> type)
 	{
 		String defaultValueStr;
 		if (type == Timestamp.class)
+		{
 			defaultValueStr = Env.toString((Timestamp)defaultValue);
+		}
 		else if (type == int.class)
+		{
 			defaultValueStr = Integer.toString((Integer)defaultValue);
+		}
 		else
+		{
 			defaultValueStr = defaultValue.toString();
+		}
 		final List<String> modifiers = null;
 		return new CtxName(context, modifiers, defaultValueStr).toString();
 	}
@@ -197,7 +204,7 @@ public class EnvTests
 		final T valueActual = getContext(ctx, context, type);
 		final String message = "Invalid context value for " + context
 				+ "\n Context: " + ctx;
-		assertEquals(message, valueExpected, valueActual);
+		assertThat(valueActual).as(message).isEqualTo(valueExpected);
 	}
 
 	private void assertContextNotSet(final Properties ctx, final String context)
@@ -205,7 +212,7 @@ public class EnvTests
 		final String valueActual = Env.getContext(ctx, context);
 		final String message = "Context value for " + context + " shall not be set"
 				+ "\n Context: " + ctx;
-		assertSame(message, Env.CTXVALUE_NullString, valueActual);
+		assertThat(valueActual).as(message).isSameAs(Env.CTXVALUE_NullString);
 	}
 
 	private void assertDefaults(final Properties ctx, final Properties defaultsExpected)
@@ -251,7 +258,7 @@ public class EnvTests
 			throw new RuntimeException("Type " + type + " not supported");
 		}
 		final T valueActual = getContext(ctx, WindowNo, context, type);
-		assertEquals(value, valueActual);
+		assertThat(valueActual).isEqualTo(value);
 
 		return value;
 	}
@@ -318,7 +325,7 @@ public class EnvTests
 			throw new RuntimeException("Type " + type + " not supported");
 		}
 		final T valueActual = getContext(ctx, WindowNo, TabNo, context, type);
-		assertEquals(value, valueActual);
+		assertThat(valueActual).isEqualTo(value);
 
 		return value;
 	}
@@ -368,41 +375,41 @@ public class EnvTests
 	// Test: Env.getContext(ctx, WindowNo, context)
 	private <T> void testGetContext(T expectedValue, Properties ctx, int WindowNo, String context, Class<T> type)
 	{
-		assertEquals(expectedValue, getContext(ctx, WindowNo, context, type));
+		assertThat(getContext(ctx, WindowNo, context, type)).isEqualTo(expectedValue);
 
 		T defaultValue = defaultValue("Default_W" + WindowNo + "_" + context, type);
-		T expectedValue2 = equals(expectedValue, getNoValue(type)) ? defaultValue : expectedValue;
-		assertEquals(expectedValue2, getContext(ctx, WindowNo, name(context, defaultValue, type), type));
+		T expectedValue2 = Objects.equals(expectedValue, getNoValue(type)) ? defaultValue : expectedValue;
+		assertThat(getContext(ctx, WindowNo, name(context, defaultValue, type), type)).isEqualTo(expectedValue2);
 	}
 
 	// Test: Env.getContext(ctx, WindowNo, TabNo, context);
 	private <T> void testGetContext(T expectedValue, Properties ctx, int WindowNo, int TabNo, String context, Class<T> type)
 	{
-		assertEquals(expectedValue, getContext(ctx, WindowNo, TabNo, context, type));
+		assertThat(getContext(ctx, WindowNo, TabNo, context, type)).isEqualTo(expectedValue);
 
 		T defaultValue = defaultValue("Default_W" + WindowNo + "_T" + TabNo + "_" + context, type);
-		T expectedValue2 = equals(expectedValue, getNoValue(type)) ? defaultValue : expectedValue;
-		assertEquals(expectedValue2, getContext(ctx, WindowNo, TabNo, name(context, defaultValue, type), type));
+		T expectedValue2 = Objects.equals(expectedValue, getNoValue(type)) ? defaultValue : expectedValue;
+		assertThat(getContext(ctx, WindowNo, TabNo, name(context, defaultValue, type), type)).isEqualTo(expectedValue2);
 	}
 
 	// Test: Env.getContext(ctx, WindowNo, context, onlyWindow);
 	private <T> void testGetContext(T expectedValue, Properties ctx, int WindowNo, String context, boolean onlyWindow, Class<T> type)
 	{
-		assertEquals(expectedValue, getContext(ctx, WindowNo, context, onlyWindow, type));
+		assertThat(getContext(ctx, WindowNo, context, onlyWindow, type)).isEqualTo(expectedValue);
 
 		T defaultValue = defaultValue("DefaultValue_W" + WindowNo + "_" + context, type);
-		T expectedValue2 = equals(expectedValue, getNoValue(type)) ? defaultValue : expectedValue;
-		assertEquals(expectedValue2, getContext(ctx, WindowNo, name(context, defaultValue, type), onlyWindow, type));
+		T expectedValue2 = Objects.equals(expectedValue, getNoValue(type)) ? defaultValue : expectedValue;
+		assertThat(getContext(ctx, WindowNo, name(context, defaultValue, type), onlyWindow, type)).isEqualTo(expectedValue2);
 	}
 
 	// Test: Env.getContext(ctx, WindowNo, TabNo, context, onlyTab);
 	private <T> void testGetContext(T expectedValue, Properties ctx, int WindowNo, int TabNo, String context, boolean onlyTab, Class<T> type)
 	{
-		assertEquals(expectedValue, getContext(ctx, WindowNo, TabNo, context, onlyTab, type));
+		assertThat(getContext(ctx, WindowNo, TabNo, context, onlyTab, type)).isEqualTo(expectedValue);
 
 		T defaultValue = defaultValue("DefaultValue_W" + WindowNo + "_T" + TabNo + "_" + context, type);
-		T expectedValue2 = equals(expectedValue, getNoValue(type)) ? defaultValue : expectedValue;
-		assertEquals(expectedValue2, getContext(ctx, WindowNo, TabNo, name(context, defaultValue, type), onlyTab, type));
+		T expectedValue2 = Objects.equals(expectedValue, getNoValue(type)) ? defaultValue : expectedValue;
+		assertThat(getContext(ctx, WindowNo, TabNo, name(context, defaultValue, type), onlyTab, type)).isEqualTo(expectedValue2);
 	}
 
 	private void testRemove(Properties ctx, String context)
@@ -511,9 +518,9 @@ public class EnvTests
 		// which is not removing the key in case value is null (like other methods do)
 		// but instead is setting the value to "" or 0 (if context ends with _ID)
 		Env.setContext(ctx, 10, 10, "TestName", (String)null);
-		assertEquals("", ctx.get("10|10|TestName"));
+		assertThat(ctx.get("10|10|TestName")).isEqualTo("");
 		Env.setContext(ctx, 10, 10, "TestName_ID", (String)null);
-		assertEquals("0", ctx.get("10|10|TestName_ID"));
+		assertThat(ctx.get("10|10|TestName_ID")).isEqualTo("0");
 	}
 
 	@Test
@@ -541,20 +548,23 @@ public class EnvTests
 				" AND C_BPartner_Location.C_BPartner_ID=100" +
 				" AND C_BPartner_Location.IsShipTo='Y'" +
 				" AND C_BPartner_Location.IsActive='Y'";
-		assertEquals(sqlParsed1, Env.parseContext(ctx, windowNo, sql, false)); // onlyWindow=false
+		assertThat(Env.parseContext(ctx, windowNo, sql, false)) // onlyWindow=false
+				.isEqualTo(sqlParsed1);
 
 		final String sqlParsed2 = "13=13" +
 				" AND C_BPartner_Location.C_BPartner_ID=-1" +
 				" AND C_BPartner_Location.IsShipTo='Y'" +
 				" AND C_BPartner_Location.IsActive='Y'";
-		assertEquals(sqlParsed2, Env.parseContext(ctx, 999999, sql, false)); // onlyWindow=false
+		assertThat(Env.parseContext(ctx, 999999, sql, false)) // onlyWindow=false
+				.isEqualTo(sqlParsed2);
 
 		Env.setContext(ctx, "#NotExistingField_ID", "112233");
 		final String sqlParsed3 = "112233=13" +
 				" AND C_BPartner_Location.C_BPartner_ID=100" +
 				" AND C_BPartner_Location.IsShipTo='Y'" +
 				" AND C_BPartner_Location.IsActive='Y'";
-		assertEquals(sqlParsed3, Env.parseContext(ctx, windowNo, sql, false)); // onlyWindow=false
+		assertThat(Env.parseContext(ctx, windowNo, sql, false)) // onlyWindow=false
+				.isEqualTo(sqlParsed3);
 	}
 
 	@Test
@@ -562,7 +572,9 @@ public class EnvTests
 	{
 		final Properties ctx = newContext();
 		Env.setContext(ctx, "Login.RememberMe", true);
-		assertEquals("Login.RememberMe should be Yes", "Y", Env.getContext(ctx, "Login.RememberMe"));
+		assertThat(Env.getContext(ctx, "Login.RememberMe"))
+				.as("Login.RememberMe should be Yes")
+				.isEqualTo("Y");
 	}
 
 	@Test
@@ -637,9 +649,46 @@ public class EnvTests
 
 		//
 		// Assert we got all property names, including the ones from parent context
-		assertEquals("All keys shall be present",
-				CollectionUtils.asSet(key1, key2, key3, key4),
-				propertyNames);
+		assertThat(propertyNames)
+				.as("All keys shall be present")
+				.isEqualTo(CollectionUtils.asSet(key1, key2, key3, key4));
+	}
+
+	@Nested
+	public class temporaryChangeLoggedUserId
+	{
+		@Test
+		public void withoutPreviousUser()
+		{
+			final Properties ctx = newContext();
+			assertThat(Env.getLoggedUserIdIfExists(ctx)).isEmpty();
+
+			final IAutoCloseable closeable = Env.temporaryChangeLoggedUserId(ctx, UserId.ofRepoId(111));
+			assertThat(Env.getLoggedUserIdIfExists(ctx)).contains(UserId.ofRepoId(111));
+
+			closeable.close();
+			assertThat(Env.getLoggedUserIdIfExists(ctx)).isEmpty();
+		}
+
+		@Test
+		public void withPreviousUser()
+		{
+			final Properties ctx = newContext();
+			assertThat(Env.getLoggedUserIdIfExists(ctx)).isEmpty();
+
+			Env.setLoggedUserId(ctx, UserId.ofRepoId(222));
+			assertThat(Env.getLoggedUserIdIfExists(ctx)).contains(UserId.ofRepoId(222));
+
+			final IAutoCloseable closeable = Env.temporaryChangeLoggedUserId(ctx, UserId.ofRepoId(111));
+			assertThat(Env.getLoggedUserIdIfExists(ctx)).contains(UserId.ofRepoId(111));
+
+			closeable.close();
+			assertThat(Env.getLoggedUserIdIfExists(ctx)).contains(UserId.ofRepoId(222));
+		}
+	}
+
+	public void test()
+	{
 	}
 
 }

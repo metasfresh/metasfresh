@@ -1,18 +1,15 @@
 package de.metas.contracts.commission.commissioninstance.services;
 
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-import java.util.Optional;
-
-import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
 
-import de.metas.bpartner.BPartnerId;
 import de.metas.contracts.commission.Beneficiary;
 import de.metas.contracts.commission.Customer;
-import de.metas.contracts.commission.commissioninstance.businesslogic.sales.CommissionTrigger;
-import de.metas.contracts.commission.commissioninstance.services.repos.CommissionTriggerDataRepository;
-import de.metas.invoicecandidate.InvoiceCandidateId;
-import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionPoints;
+import de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.CommissionTrigger;
+import de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.CommissionTriggerData;
+import de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.CommissionTriggerDocument;
+import de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.CommissionTriggerData.CommissionTriggerDataBuilder;
+import de.metas.util.lang.Percent;
 import lombok.NonNull;
 
 /*
@@ -40,41 +37,54 @@ import lombok.NonNull;
 @Service
 public class CommissionTriggerFactory
 {
-	private final CommissionTriggerDataRepository commissionTriggerDataRepository;
-
-	public CommissionTriggerFactory(@NonNull final CommissionTriggerDataRepository commissionTriggerDataRepository)
+	/**
+	 * @param documentDeleted might be true for invoice candidates
+	 */
+	public CommissionTrigger createForDocument(
+			@NonNull final CommissionTriggerDocument commissionTriggerDocument,
+			final boolean documentDeleted)
 	{
-		this.commissionTriggerDataRepository = commissionTriggerDataRepository;
-	}
-
-	public Optional<CommissionTrigger> createForNewSalesInvoiceCandidate(@NonNull final InvoiceCandidateId invoiceCandidateId)
-	{
-		final I_C_Invoice_Candidate icRecord = load(invoiceCandidateId, I_C_Invoice_Candidate.class);
-		return createForRecord(icRecord);
-	}
-
-	private Optional<CommissionTrigger> createForRecord(@NonNull final I_C_Invoice_Candidate icRecord)
-	{
-		final BPartnerId salesRepId = BPartnerId.ofRepoIdOrNull(icRecord.getC_BPartner_SalesRep_ID());
-		if (salesRepId == null)
-		{
-			return Optional.empty();
-		}
-
-		final InvoiceCandidateId invoiceCandidateId = InvoiceCandidateId.ofRepoIdOrNull(icRecord.getC_Invoice_Candidate_ID());
-		if (invoiceCandidateId == null)
-		{
-			return Optional.empty();
-		}
+		final CommissionTriggerData triggerData = createForRequest(commissionTriggerDocument, documentDeleted);
 
 		final CommissionTrigger trigger = CommissionTrigger.builder()
-				.customer(Customer.of(BPartnerId.ofRepoId(icRecord.getBill_BPartner_ID())))
-				.timestamp(TimeUtil.asInstant(icRecord.getUpdated()))
-				.beneficiary(Beneficiary.of(salesRepId))
-				.commissionTriggerData(commissionTriggerDataRepository.getForInvoiceCandiateId(invoiceCandidateId, false/* candidateDeleted */))
+				.customer(Customer.of(commissionTriggerDocument.getCustomerBPartnerId()))
+				.beneficiary(Beneficiary.of(commissionTriggerDocument.getSalesRepBPartnerId()))
+				.commissionTriggerData(triggerData)
 				.build();
 
-		return Optional.of(trigger);
+		return trigger;
+	}
+
+	private CommissionTriggerData createForRequest(
+			@NonNull final CommissionTriggerDocument commissionTriggerDocument,
+			final boolean documentDeleted)
+	{
+		final CommissionTriggerDataBuilder builder = CommissionTriggerData
+				.builder()
+				.orgId(commissionTriggerDocument.getOrgId())
+				.invoiceCandidateWasDeleted(documentDeleted)
+				.triggerType(commissionTriggerDocument.getTriggerType())
+				.triggerDocumentId(commissionTriggerDocument.getId())
+				.triggerDocumentDate(commissionTriggerDocument.getCommissionDate())
+				.timestamp(commissionTriggerDocument.getUpdated());
+
+		if (documentDeleted)
+		{
+			builder
+					.forecastedBasePoints(CommissionPoints.ZERO)
+					.invoiceableBasePoints(CommissionPoints.ZERO)
+					.invoicedBasePoints(CommissionPoints.ZERO)
+					.tradedCommissionPercent(Percent.ZERO);
+		}
+		else
+		{
+			builder
+					.forecastedBasePoints(commissionTriggerDocument.getForecastCommissionPoints())
+					.invoiceableBasePoints(commissionTriggerDocument.getCommissionPointsToInvoice())
+					.invoicedBasePoints(commissionTriggerDocument.getInvoicedCommissionPoints())
+					.tradedCommissionPercent(commissionTriggerDocument.getTradedCommissionPercent());
+		}
+		return builder.build();
 	}
 
 }

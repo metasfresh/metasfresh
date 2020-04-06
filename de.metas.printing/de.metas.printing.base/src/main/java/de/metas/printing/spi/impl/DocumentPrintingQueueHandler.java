@@ -14,6 +14,7 @@ import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
 import de.metas.adempiere.model.I_C_Invoice;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.document.archive.model.I_AD_Archive;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
@@ -96,12 +97,13 @@ public class DocumentPrintingQueueHandler extends PrintingQueueHandlerAdapter
 		{
 			logger.debug("Setting column of C_Printing_Queue {} from DocAction-PO {} that is referenced by AD_Archive {}: [AD_User_ID={}]",
 					new Object[] { queueItem, archiveRerencedModel, archive, document.getDoc_User_ID() });
-			queueItem.setAD_User_ID(document.getDoc_User_ID());
+			queueItem.setAD_User_ID(document.getDoc_User_ID());  // TODO tbp: not sure if here i should use BPartnerContactId
 		}
 
 		final Properties ctx = InterfaceWrapperHelper.getCtx(queueItem);
 		final int doctypeID = Services.get(IDocumentBL.class).getC_DocType_ID(ctx, archive.getAD_Table_ID(), archive.getRecord_ID());
 		queueItem.setC_DocType_ID(doctypeID);
+		queueItem.setAD_Table_ID(archive.getAD_Table_ID());
 
 		// Handles operations specific for invoices.
 		if (InterfaceWrapperHelper.isInstanceOf(archiveRerencedModel, I_C_Invoice.class))
@@ -209,7 +211,10 @@ public class DocumentPrintingQueueHandler extends PrintingQueueHandlerAdapter
 		queueItem.setC_BPartner_ID(invoice.getC_BPartner_ID());
 		queueItem.setC_BPartner_Location_ID(invoice.getC_BPartner_Location_ID());
 
-		final int documentCopies = invoice.getC_BPartner().getDocumentCopies();
+		final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
+		final I_C_BPartner partner = bpartnerDAO.getById(invoice.getC_BPartner_ID());
+
+		final int documentCopies = partner.getDocumentCopies();
 		if (documentCopies > 0)
 		{
 			// updating to the partner's preference

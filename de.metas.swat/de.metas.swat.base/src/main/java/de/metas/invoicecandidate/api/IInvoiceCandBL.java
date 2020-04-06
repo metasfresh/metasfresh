@@ -360,12 +360,9 @@ public interface IInvoiceCandBL extends ISingletonService
 	void setQualityDiscountPercent_Override(I_C_Invoice_Candidate ic, ImmutableAttributeSet attributes);
 
 	/**
-	 * Precision is take from the current pricelist of the partner. If it is not found, it is taken from the currency as fallback
-	 *
-	 * @param ic
-	 * @return
+	 * Precision is taken from the current pricelist of the partner. If it is not found, it is taken from the currency as fallback
 	 */
-	CurrencyPrecision getPrecisionFromPricelist(I_C_Invoice_Candidate ic);
+	CurrencyPrecision extractPricePrecision(I_C_Invoice_Candidate ic);
 
 	void closeInvoiceCandidatesByOrderLineId(OrderLineId orderLineId);
 
@@ -424,4 +421,7 @@ public interface IInvoiceCandBL extends ISingletonService
 	int createSelectionForInvoiceCandidates(List<ExternalHeaderIdWithExternalLineIds> headerAndLineIds, PInstanceId pInstanceId);
 
 	List<I_C_Queue_WorkPackage> getUnprocessedWorkPackagesForInvoiceCandidate(InvoiceCandidateId invoiceCandidateId);
+
+	/** @return {@code true} if the given {@code invoiceRecord} is currently created via invoicing from invoice candidates. */
+	boolean isCreatedByInvoicingJustNow(org.compiere.model.I_C_Invoice invoiceRecord);
 }

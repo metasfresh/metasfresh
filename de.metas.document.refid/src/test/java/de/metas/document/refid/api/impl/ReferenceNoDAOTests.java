@@ -28,7 +28,7 @@ import static org.junit.Assert.assertThat;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.exceptions.DBMoreThenOneRecordsFoundException;
+import org.adempiere.exceptions.DBMoreThanOneRecordsFoundException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Order;
 import org.compiere.util.Env;
@@ -63,7 +63,7 @@ public class ReferenceNoDAOTests extends RefIdTestBase
 	/**
 	 * Expecting the code to check that there is only one type per classname and throw an DBMoreThenOneRecordsFoundException if that is not the case (instead of simply returning the first one).
 	 */
-	@Test(expected = DBMoreThenOneRecordsFoundException.class)
+	@Test(expected = DBMoreThanOneRecordsFoundException.class)
 	public void testGetTypeByClassDuplicate()
 	{
 		setupType(Gen1.class);
@@ -108,7 +108,7 @@ public class ReferenceNoDAOTests extends RefIdTestBase
 	/**
 	 * Expecting the code to check that there is only one type per Name and throw an DBMoreThenOneRecordsFoundException if that is not the case (instead of simply returning the first one).
 	 */
-	@Test(expected = DBMoreThenOneRecordsFoundException.class)
+	@Test(expected = DBMoreThanOneRecordsFoundException.class)
 	public void testGetTypeByNameDuplicate()
 	{
 		setupType(Gen1.class);

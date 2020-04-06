@@ -86,7 +86,7 @@ public class UpdateInvalidShipmentSchedulesWorkpackageProcessor extends Workpack
 		final PInstanceId selectionId = Services.get(IADPInstanceDAO.class).createSelectionId();
 		loggable.addLog("Using revalidation ID: {}", selectionId);
 
-		try (final MDCCloseable mdcRestorer = ShipmentSchedulesMDC.withRevalidationId(selectionId))
+		try (final MDCCloseable mdcRestorer = ShipmentSchedulesMDC.putRevalidationId(selectionId))
 		{
 			final ShipmentScheduleUpdateInvalidRequest request = ShipmentScheduleUpdateInvalidRequest.builder()
 					.ctx(InterfaceWrapperHelper.getCtx(workpackage))

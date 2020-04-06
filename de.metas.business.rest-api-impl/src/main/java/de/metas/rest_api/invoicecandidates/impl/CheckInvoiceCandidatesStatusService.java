@@ -26,6 +26,7 @@ import de.metas.invoicecandidate.api.InvoiceCandidateQuery;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.rest_api.common.JsonExternalId;
 import de.metas.rest_api.common.MetasfreshId;
+import de.metas.rest_api.exception.InvalidEntityException;
 import de.metas.rest_api.invoice.impl.InvoiceService;
 import de.metas.rest_api.invoicecandidates.request.JsonCheckInvoiceCandidatesStatusRequest;
 import de.metas.rest_api.invoicecandidates.response.JsonCheckInvoiceCandidatesStatusResponse;
@@ -33,7 +34,6 @@ import de.metas.rest_api.invoicecandidates.response.JsonCheckInvoiceCandidatesSt
 import de.metas.rest_api.invoicecandidates.response.JsonCheckInvoiceCandidatesStatusResponseItem.JsonCheckInvoiceCandidatesStatusResponseItemBuilder;
 import de.metas.rest_api.invoicecandidates.response.JsonInvoiceStatus;
 import de.metas.rest_api.invoicecandidates.response.JsonWorkPackageStatus;
-import de.metas.rest_api.utils.InvalidEntityException;
 import de.metas.util.Services;
 import de.metas.util.lang.ExternalHeaderIdWithExternalLineIds;
 import lombok.NonNull;

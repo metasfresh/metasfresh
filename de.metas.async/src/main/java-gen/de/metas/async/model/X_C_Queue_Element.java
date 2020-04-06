@@ -1,19 +1,3 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 /** Generated Model - DO NOT CHANGE */
 package de.metas.async.model;
 
@@ -30,7 +14,7 @@ public class X_C_Queue_Element extends org.compiere.model.PO implements I_C_Queu
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1838919553L;
+	private static final long serialVersionUID = 437744889L;
 
     /** Standard Constructor */
     public X_C_Queue_Element (Properties ctx, int C_Queue_Element_ID, String trxName)
@@ -61,18 +45,6 @@ public class X_C_Queue_Element extends org.compiere.model.PO implements I_C_Queu
       return poi;
     }
 
-	@Override
-	public org.compiere.model.I_AD_Table getAD_Table() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_AD_Table_ID, org.compiere.model.I_AD_Table.class);
-	}
-
-	@Override
-	public void setAD_Table(org.compiere.model.I_AD_Table AD_Table)
-	{
-		set_ValueFromPO(COLUMNNAME_AD_Table_ID, org.compiere.model.I_AD_Table.class, AD_Table);
-	}
-
 	/** Set DB-Tabelle.
 		@param AD_Table_ID 
 		Database Table information
@@ -99,7 +71,7 @@ public class X_C_Queue_Element extends org.compiere.model.PO implements I_C_Queu
 	}
 
 	@Override
-	public de.metas.async.model.I_C_Queue_Block getC_Queue_Block() throws RuntimeException
+	public de.metas.async.model.I_C_Queue_Block getC_Queue_Block()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_Queue_Block_ID, de.metas.async.model.I_C_Queue_Block.class);
 	}
@@ -155,7 +127,7 @@ public class X_C_Queue_Element extends org.compiere.model.PO implements I_C_Queu
 	}
 
 	@Override
-	public de.metas.async.model.I_C_Queue_WorkPackage getC_Queue_WorkPackage() throws RuntimeException
+	public de.metas.async.model.I_C_Queue_WorkPackage getC_Queue_WorkPackage()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_Queue_WorkPackage_ID, de.metas.async.model.I_C_Queue_WorkPackage.class);
 	}
@@ -189,7 +161,7 @@ public class X_C_Queue_Element extends org.compiere.model.PO implements I_C_Queu
 	}
 
 	@Override
-	public de.metas.async.model.I_C_Queue_WorkPackage getC_Queue_Workpackage_Preceeding() throws RuntimeException
+	public de.metas.async.model.I_C_Queue_WorkPackage getC_Queue_Workpackage_Preceeding()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_Queue_Workpackage_Preceeding_ID, de.metas.async.model.I_C_Queue_WorkPackage.class);
 	}
