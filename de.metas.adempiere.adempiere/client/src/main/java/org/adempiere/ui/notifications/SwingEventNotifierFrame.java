@@ -13,15 +13,14 @@ package org.adempiere.ui.notifications;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.awt.Color;
 import java.awt.Dimension;
@@ -144,7 +143,7 @@ class SwingEventNotifierFrame extends JFrame
 
 		//
 		// Subscribe to user notifications
-		Services.get(IEventBusFactory.class).registerWeakUserNotificationsListener(eventListener);
+		Services.get(IEventBusFactory.class).registerUserNotificationsListener(eventListener);
 
 		//
 		// Schedule and UI update of this frame
@@ -170,8 +169,8 @@ class SwingEventNotifierFrame extends JFrame
 	{
 		disposed = true;
 
+		Services.get(IEventBusFactory.class).unregisterUserNotificationsListener(eventListener);
 		eventListener = null;
-		// NOTE: there no real need to unsubscribe from topics, because we registered our listener weakly
 
 		notification2panel.clear();
 
@@ -306,8 +305,7 @@ class SwingEventNotifierFrame extends JFrame
 			final Insets screenInsets = Toolkit.getDefaultToolkit().getScreenInsets(getGraphicsConfiguration());// height of the task bar
 			this.setLocation(
 					screenSize.width - getWidth(),
-					screenSize.height - screenInsets.bottom - getHeight() - (frameBottomGap > 0 ? frameBottomGap : 0)
-					);
+					screenSize.height - screenInsets.bottom - getHeight() - (frameBottomGap > 0 ? frameBottomGap : 0));
 		}
 
 		setVisible(visibleNew);
@@ -351,7 +349,7 @@ class SwingEventNotifierFrame extends JFrame
 	{
 		//
 		// Build summary text
-		final	String summaryTrl =  msgBL.getMsg(getCtx(), MSG_Notification_Summary_Default, new Object[] { Adempiere.getName() });
+		final String summaryTrl = msgBL.getMsg(getCtx(), MSG_Notification_Summary_Default, new Object[] { Adempiere.getName() });
 
 		final UserNotification notification = UserNotificationUtils.toUserNotification(event);
 		//
