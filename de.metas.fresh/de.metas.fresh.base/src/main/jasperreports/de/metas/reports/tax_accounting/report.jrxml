@@ -6,9 +6,6 @@
 	<property name="ireport.y" value="0"/>
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="mf15"/>
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
-	<parameter name="c_period_id" class="java.math.BigDecimal">
-		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
-	</parameter>
 	<parameter name="C_VAT_Code_ID" class="java.math.BigDecimal">
 		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
 	</parameter>
@@ -24,9 +21,16 @@
 	<parameter name="ad_language" class="java.lang.String">
 		<defaultValueExpression><![CDATA[$P{REPORT_LOCALE}.toString()]]></defaultValueExpression>
 	</parameter>
+	<parameter name="DateFrom" class="java.sql.Date">
+		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
+	</parameter>
+	<parameter name="DateTo" class="java.sql.Date">
+		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
+	</parameter>
 	<queryString>
 		<![CDATA[select * from report.tax_accounting_report
-(   $P{c_period_id},
+(   $P{DateFrom},
+	$P{DateTo},
 	$P{C_VAT_Code_ID},
 	$P{account_id},
 	$P{AD_Org_ID},
@@ -465,8 +469,8 @@
 		<band height="45" splitType="Stretch">
 			<subreport>
 				<reportElement x="-20" y="12" width="842" height="30" uuid="4ac5f482-9c3d-46c6-bd43-eb84d6b272f4"/>
-				<subreportParameter name="c_period_id">
-					<subreportParameterExpression><![CDATA[$P{c_period_id}]]></subreportParameterExpression>
+				<subreportParameter name="DateFrom">
+					<subreportParameterExpression><![CDATA[$P{DateFrom}]]></subreportParameterExpression>
 				</subreportParameter>
 				<subreportParameter name="C_VAT_Code_ID">
 					<subreportParameterExpression><![CDATA[$P{C_VAT_Code_ID}]]></subreportParameterExpression>
@@ -476,6 +480,9 @@
 				</subreportParameter>
 				<subreportParameter name="AD_Org_ID">
 					<subreportParameterExpression><![CDATA[$P{AD_Org_ID}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="DateTo">
+					<subreportParameterExpression><![CDATA[$P{DateTo}]]></subreportParameterExpression>
 				</subreportParameter>
 				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
 				<subreportExpression><![CDATA["de/metas/reports/tax_accounting/report_recap.jasper"]]></subreportExpression>
