@@ -72,7 +72,7 @@ public class ManualTest
 
 	@Test
 	@Ignore
-	public void createUpdateDeleteCampaign()
+	public void createUpdateDeleteCampagin()
 	{
 		// add one campaign
 		final String nameOfCampaignToAdd = appendSystemTime("test-name1");
