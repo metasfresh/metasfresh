@@ -15,7 +15,7 @@ public interface IEventBusFactory extends ISingletonService
 	/**
 	 * @return event bus; never returns <code>null</code>
 	 */
-	public IEventBus getEventBus(Topic topic);
+	IEventBus getEventBus(Topic topic);
 
 	/**
 	 * @return event bus or null
@@ -27,7 +27,7 @@ public interface IEventBusFactory extends ISingletonService
 	 *
 	 * @see #registerGlobalEventListener(Topic, IEventListener)
 	 */
-	public void initEventBussesWithGlobalListeners();
+	void initEventBussesWithGlobalListeners();
 
 	/**
 	 * Destroy all created event bus objects.
@@ -49,14 +49,12 @@ public interface IEventBusFactory extends ISingletonService
 
 	/**
 	 * Adds a topic on which currently login user shall subscribe for UI notifications.
-	 *
-	 * @param topic
 	 */
 	void addAvailableUserNotificationsTopic(final Topic topic);
 
 	void registerUserNotificationsListener(final IEventListener listener);
 
-	void registerWeakUserNotificationsListener(IEventListener listener);
+	void unregisterUserNotificationsListener(final IEventListener listener);
 
 	/**
 	 * Check remote endpoint connection status and send notifications in case it's down.
