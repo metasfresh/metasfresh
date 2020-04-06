@@ -5,7 +5,7 @@ UPDATE AD_Table SET PersonalDataCategory='P',Updated=TO_TIMESTAMP('2020-04-03 17
 
 -- 2020-04-03T15:52:54.916Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Index_Table (AD_Client_ID,AD_Index_Table_ID,AD_Org_ID,AD_Table_ID,Created,CreatedBy,Description,EntityType,IsActive,IsUnique,Name,Processing,Updated,UpdatedBy,WhereClause) VALUES (0,540522,0,541405,TO_TIMESTAMP('2020-04-03 17:52:54','YYYY-MM-DD HH24:MI:SS'),100,'Each commission trigger has just one instance','de.metas.contracts.commission','Y','Y','C_Commission_Trigger_UC','N',TO_TIMESTAMP('2020-04-03 17:52:54','YYYY-MM-DD HH24:MI:SS'),100,'IsActive=''Y''')
+INSERT INTO AD_Index_Table (AD_Client_ID,AD_Index_Table_ID,AD_Org_ID,AD_Table_ID,Created,CreatedBy,Description,EntityType,IsActive,IsUnique,Name,Processing,Updated,UpdatedBy,WhereClause) VALUES (0,540522,0,541405,TO_TIMESTAMP('2020-04-03 17:52:54','YYYY-MM-DD HH24:MI:SS'),100,'Each commission trigger has just one instance; although we allow support-staff to set all trigger-FKs to null or 0','de.metas.contracts.commission','Y','Y','C_Commission_Trigger_UC','N',TO_TIMESTAMP('2020-04-03 17:52:54','YYYY-MM-DD HH24:MI:SS'),100,'IsActive=''Y'' AND ( COALESCE(C_Invoice_Candidate_ID, 0) != 0 OR COALESCE(C_InvoiceLine_ID, 0) != 0 )')
 ;
 
 -- 2020-04-03T15:52:54.918Z
@@ -25,6 +25,7 @@ INSERT INTO AD_Index_Column (AD_Client_ID,AD_Column_ID,AD_Index_Column_ID,AD_Ind
 
 -- 2020-04-03T15:55:46.864Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-CREATE UNIQUE INDEX C_Commission_Trigger_UC ON C_Commission_Instance (COALESCE(C_Invoice_Candidate_ID, 0),COALESCE(C_InvoiceLine_ID, 0)) WHERE IsActive='Y'
+CREATE UNIQUE INDEX C_Commission_Trigger_UC ON C_Commission_Instance (COALESCE(C_Invoice_Candidate_ID, 0),COALESCE(C_InvoiceLine_ID, 0)) 
+WHERE IsActive='Y' AND ( COALESCE(C_Invoice_Candidate_ID, 0) != 0 OR COALESCE(C_InvoiceLine_ID, 0) != 0 )
 ;
 
