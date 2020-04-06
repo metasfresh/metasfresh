@@ -94,15 +94,6 @@ Since we now work with a range, we now declare the dependencies here where range
 			<type>jar</type>
 		</dependency>
 
-		<!-- https://github.com/metasfresh/metasfresh/issues/1471 -->
-		<dependency>
-			<groupId>de.metas.admin</groupId>
-			<artifactId>metasfresh-admin</artifactId>
-			<version>${metasfresh-admin.version}</version>
-			<type>jar</type>
-			<scope>provided</scope> <!-- we need this dependency here to update the version property-->
-		</dependency>
-
 <!--
 SQL and jasper dependencies:
 note: when adding new records, please roughly order them by alphabet.
@@ -710,27 +701,6 @@ note: when adding new records, please roughly order them by alphabet.
 						</configuration>
 					</execution>
 
-					<!--
-						Build deploy/download folder with procurement-webui. Those binaries are only needed in some scenarios
-						We specified these artifacts as dependencies further up. Therefore they were already resolved and now we only need to grab 'em by the artifactid without having to specify a particular version.
-					-->
-					<execution>
-						<id>copy-metasfresh-download-jars</id>
-						<phase>prepare-package</phase>
-						<goals>
-							<goal>copy-dependencies</goal>
-						</goals>
-						<configuration>
-							<outputDirectory>${project.build.directory}/dist/deploy/download</outputDirectory>
-							<includeArtifactIds>
-								de.metas.procurement.webui
-							</includeArtifactIds>
-							<excludeTransitive>true</excludeTransitive>
-							<overWriteReleases>true</overWriteReleases>
-							<overWriteSnapshots>true</overWriteSnapshots>
-							<stripVersion>true</stripVersion> <!-- when we deploy those files, we want their names to always be the same -->
-						</configuration>
-					</execution>
 					<execution>
 						<id>copy-metasfresh-service-jars</id>
 						<phase>prepare-package</phase>
