@@ -35,6 +35,14 @@ export function getData({
   );
 }
 
+export function getRowsData({ entity, docType, docId, tabId, rows }) {
+  const ids = rows.join(',');
+
+  return get(
+    `${config.API_URL}/${entity}/${docType}/${docId}/${tabId}?ids=${ids}`
+  );
+}
+
 export function getLayout(
   entity,
   docType,

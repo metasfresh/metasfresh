@@ -240,7 +240,7 @@ describe("MasterWindowContainer", () => {
 
       nock(config.API_URL)
         .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
-        .get(`/window/${windowType}/${docId}/${tabId}/${updatedRows[0].rowId}/`)
+        .get(`/window/${windowType}/${docId}/${tabId}?ids=${updatedRows[0].rowId}`)
         .reply(200, updatedRows);
 
       nock(config.API_URL)

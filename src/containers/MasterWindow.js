@@ -14,7 +14,7 @@ import {
   updateTabRowsData,
 } from '../actions/WindowActions';
 import { connectWS, disconnectWS } from '../utils/websockets';
-import { getTab, getData } from '../api';
+import { getTab, getRowsData } from '../api';
 
 import MasterWindow from '../components/app/MasterWindow';
 
@@ -46,6 +46,8 @@ class MasterWindowContainer extends Component {
     }
 
     // When closing modal, we need to update the stale tab
+    // TODO: Check if we still need to do this since all the changes in tabs should be handled
+    // via websockets now.
     if (
       !modal.visible &&
       modal.visible !== prevProps.modal.visible &&
@@ -89,24 +91,26 @@ class MasterWindowContainer extends Component {
       // Some included rows got staled
       else {
         const { staleRowIds } = activeTab;
-        staleRowIds.forEach((rowId) => {
-          this.getTabRow(activeTab.tabId, rowId).then((res) => {
-            this.mergeDataIntoIncludedTab(res);
-          });
+
+        await this.getTabRow(activeTab.tabId, staleRowIds).then((res) => {
+          this.mergeDataIntoIncludedTab(res);
         });
       }
     }
   }
 
-  getTabRow(tabId, rowId) {
-    const { params } = this.props;
-    return getData({
+  getTabRow(tabId, rows) {
+    const {
+      params: { windowType, docId },
+    } = this.props;
+
+    return getRowsData({
       entity: 'window',
-      docType: params.windowType,
-      docId: params.docId,
+      docType: windowType,
+      docId,
       tabId: tabId,
-      rowId: rowId,
-    }).catch(() => ({ rowId, tabId }));
+      rows,
+    }).catch(() => ({ rows, tabId }));
   }
 
   isActiveTab(tabId) {
@@ -116,9 +120,8 @@ class MasterWindowContainer extends Component {
 
   mergeDataIntoIncludedTab(response) {
     const { updateTabRowsData } = this.props;
-    const changedTabs = {};
-
     const { data } = response;
+    const changedTabs = {};
     let rowsById = null;
     let removedRows = null;
     let tabId;

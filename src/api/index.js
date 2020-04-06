@@ -10,6 +10,7 @@ import {
 } from './window';
 import {
   getData,
+  getRowsData,
   getLayout,
   patchRequest,
   getViewLayout,
@@ -41,6 +42,7 @@ import {
 
 export {
   getData,
+  getRowsData,
   getLayout,
   patchRequest,
   getAttributesInstance,
