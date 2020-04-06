@@ -11,6 +11,10 @@ import {
   getProcessData,
 } from './window';
 import {
+  getData,
+  getRowsData,
+  getLayout,
+  patchRequest,
   getViewLayout,
   getViewRowsByIds,
   browseViewRequest,
@@ -40,8 +44,9 @@ import {
 
 export {
   getData,
+  getRowsData,
+  getLayout,
   patchRequest,
-  initLayout,
   getAttributesInstance,
   topActionsRequest,
   getZoomIntoWindow,
