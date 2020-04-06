@@ -12,7 +12,7 @@ CREATE OR REPLACE FUNCTION report.fresh_pricelist_details_template_report(IN p_c
                 itemproductname         text,
                 qty                     numeric,
                 uomsymbol               text,
-                pricestd                numeric,
+                pricestd                text,
                 m_productprice_id       integer,
                 c_bpartner_id           numeric,
                 m_hu_pi_item_product_id integer,
@@ -34,10 +34,10 @@ SELECT plc.value                                                                
        plc.productcategory                                                                                          as productcategory,
        plc.productname                                                                                              as productname,
        plc.attributes                                                                                               as attributes,
-       coalesce(hupip.name, hupiv.description, plc.uomsymbol)                                                             as itemproductname,
+       replace(hupip.name, hupiv.name,  pi.Name)                                                                          as itemproductname,
        NULL::numeric                                                                                                as qty,
        plc.uomsymbol                                                                                                as uomsymbol,
-       round(plc.pricestd, cur.stdprecision)                                                                        as pricestd,
+       to_char(plc.pricestd, getPricePattern(prl.priceprecision::integer))                                                as pricestd,
        plc.M_ProductPrice_ID                                                                                        as m_productprice_id,
        p_c_bpartner_id                                                                                              as c_bpartner_id,
        plc.M_HU_PI_Item_Product_ID                                                                                  as m_hu_pi_item_product_id,
@@ -53,14 +53,12 @@ FROM report.fresh_PriceList_Details_Report(p_c_bpartner_id, p_m_pricelist_versio
          LEFT OUTER JOIN M_HU_PI_Item_Product hupip on hupip.M_HU_PI_Item_Product_ID = plc.M_HU_PI_Item_Product_ID
          LEFT OUTER JOIN M_HU_PI_Item hupii on hupii.M_HU_PI_Item_ID = hupip.M_HU_PI_Item_ID
          LEFT OUTER JOIN M_HU_PI_Version hupiv on hupiv.M_HU_PI_Version_ID = hupii.M_HU_PI_Version_ID
+		 LEFT OUTER JOIN M_HU_PI pi on pi.M_HU_PI_ID = hupiv.M_HU_PI_ID
+
          LEFT OUTER JOIN M_Pricelist_Version prlv on prlv.m_pricelist_version_id = p_m_pricelist_version_id
          LEFT OUTER JOIN M_Pricelist prl on prlv.m_pricelist_id = prl.m_pricelist_id
-         LEFT OUTER JOIN C_Currency cur on prl.c_currency_id = cur.c_currency_id
 --
 
 
 $BODY$
-    LANGUAGE sql STABLE
-                 COST 100
-                 ROWS 1000;
-                 
+    LANGUAGE sql STABLE;

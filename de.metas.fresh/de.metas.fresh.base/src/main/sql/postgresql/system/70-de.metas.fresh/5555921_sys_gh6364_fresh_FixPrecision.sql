@@ -1,3 +1,23 @@
+CREATE OR REPLACE FUNCTION getPricePattern(p_precision int)
+    RETURNS varchar AS
+$BODY$
+DECLARE
+    v_pattern varchar;
+BEGIN
+
+    select CASE
+               WHEN p_precision = 0
+                   THEN '9999999999'
+               ELSE Substring('9999999999D999999' FROM 0 FOR 12 + p_precision :: integer) END
+    into v_pattern;
+
+    return v_pattern;
+END;
+$BODY$
+    language plpgsql IMMUTABLE;
+	
+	
+	
 --DROP VIEW IF EXISTS rv_fresh_pricelist 
 
 --DROP VIEW IF EXISTS RV_fresh_PriceList_Comparison;
@@ -44,9 +64,13 @@ SELECT
 	
 FROM M_ProductPrice pp
 
-INNER JOIN M_Product p ON pp.M_Product_ID = p.M_Product_ID AND p.isActive = 'Y'
-INNER JOIN C_BPartner bp ON TRUE
-INNER JOIN M_Product_Category pc ON p.M_Product_Category_ID = pc.M_Product_Category_ID AND pc.isActive = 'Y'
+	INNER JOIN M_Product p ON pp.M_Product_ID = p.M_Product_ID AND p.isActive = 'Y'
+	
+	/** Get all BPartner and Product combinations. 
+	 * IMPORTANT: Never use the query without BPartner Filter active
+	 */
+	INNER JOIN C_BPartner bp ON TRUE
+	INNER JOIN M_Product_Category pc ON p.M_Product_Category_ID = pc.M_Product_Category_ID AND pc.isActive = 'Y'
 INNER JOIN C_UOM uom ON pp.C_UOM_ID = uom.C_UOM_ID AND uom.isActive = 'Y'
 
 
@@ -126,3 +150,72 @@ COMMENT ON VIEW RV_fresh_PriceList_Comparison
 Refactored in Tasks 07833 and 07915
 A view for a report that displays the same data as RV_fresh_PriceList but imroved to be able to filter by two Price list versions, to be able to compare them';
 
+
+
+
+
+
+
+DROP FUNCTION IF EXISTS report.fresh_pricelist_details_template_report(NUMERIC, NUMERIC, CHARACTER VARYING, NUMERIC);
+CREATE OR REPLACE FUNCTION report.fresh_pricelist_details_template_report(IN p_c_bpartner_id NUMERIC, IN p_m_pricelist_version_id NUMERIC, IN p_ad_language CHARACTER VARYING,
+                                                                          IN p_c_bpartner_location_id NUMERIC)
+    RETURNS TABLE
+            (
+                prodvalue               text,
+                customerproductnumber   text,
+                productcategory         text,
+                productname             text,
+                attributes              text,
+                itemproductname         text,
+                qty                     numeric,
+                uomsymbol               text,
+                pricestd                text,
+                m_productprice_id       integer,
+                c_bpartner_id           numeric,
+                m_hu_pi_item_product_id integer,
+                uom_x12de355            text,
+                c_bpartner_location_id  numeric,
+                qtycuspertu             numeric,
+                m_product_id            integer,
+                bp_value                text,
+                bp_name                 text,
+                reportfilename          text
+            )
+
+AS
+$BODY$
+--
+
+SELECT plc.value                                                                                                          AS prodvalue,
+       plc.customerproductnumber                                                                                          as customerproductnumber,
+       plc.productcategory                                                                                                as productcategory,
+       plc.productname                                                                                                    as productname,
+       plc.attributes                                                                                                     as attributes,
+       replace(hupip.name, hupiv.name,  pi.Name)                                                                          as itemproductname,
+       NULL::numeric                                                                                                      as qty,
+       plc.uomsymbol                                                                                                      as uomsymbol,
+       to_char(plc.pricestd, getPricePattern(prl.priceprecision::integer))                                                as pricestd,
+       plc.M_ProductPrice_ID                                                                                              as m_productprice_id,
+       p_c_bpartner_id                                                                                                    as c_bpartner_id,
+       plc.M_HU_PI_Item_Product_ID                                                                                        as m_hu_pi_item_product_id,
+       case when plc.m_hu_pi_item_product_id is not null then 'COLI' else plc.uom_x12de355 end                            as uom_x12de355,
+       p_c_bpartner_location_id                                                                                           as c_bpartner_location_id,
+       plc.qtycuspertu                                                                                                    as qtycuspertu,
+       plc.m_product_id                                                                                                   as m_product_id,
+       plc.BP_Value                                                                                                       as bp_value,
+       plc.BP_Name                                                                                                        as bp_name,
+       CONCAT(bp_value, '_', bp_name, '_', case when prlv.isactive = 'Y' then prlv.validfrom::date else null end, '.xls') as reportfilename
+
+FROM report.fresh_PriceList_Details_Report(p_c_bpartner_id, p_m_pricelist_version_id, NULL, p_ad_language) plc
+         LEFT OUTER JOIN M_HU_PI_Item_Product hupip on hupip.M_HU_PI_Item_Product_ID = plc.M_HU_PI_Item_Product_ID
+         LEFT OUTER JOIN M_HU_PI_Item hupii on hupii.M_HU_PI_Item_ID = hupip.M_HU_PI_Item_ID
+         LEFT OUTER JOIN M_HU_PI_Version hupiv on hupiv.M_HU_PI_Version_ID = hupii.M_HU_PI_Version_ID
+		 LEFT OUTER JOIN M_HU_PI pi on pi.M_HU_PI_ID = hupiv.M_HU_PI_ID
+
+         LEFT OUTER JOIN M_Pricelist_Version prlv on prlv.m_pricelist_version_id = p_m_pricelist_version_id
+         LEFT OUTER JOIN M_Pricelist prl on prlv.m_pricelist_id = prl.m_pricelist_id
+--
+
+
+$BODY$
+    LANGUAGE sql STABLE;
