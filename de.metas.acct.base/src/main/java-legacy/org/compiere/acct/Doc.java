@@ -24,6 +24,7 @@ import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -36,6 +37,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.logging.LoggingHelper;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_BP_BankAccount;
@@ -1926,9 +1928,11 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 	 *
 	 * IMPORTANT: This method won't fail if any of the documents's posting is failing, because we don't want to prevent the main document posting because of this.
 	 */
-	protected final void postDependingDocuments(final List<?> documentModels)
+	protected final <ID extends RepoIdAware> void postDependingDocuments(
+			final String tableName,
+			final Collection<ID> documentIds)
 	{
-		if (documentModels == null || documentModels.isEmpty())
+		if (documentIds == null || documentIds.isEmpty())
 		{
 			return; // nothing to do
 		}
@@ -1936,7 +1940,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		// task 08643: the list of documentModels might originate from a bag (i.e. InArrayFilter does not filter at all when given an empty set of values).
 		// so we assume that if there are >=200 items, it's that bug and there are not really that many documentModels.
 		// Note: we fixed the issue in the method's current callers (Doc_InOut and Doc_Invoice).
-		if (documentModels.size() >= 200)
+		if (documentIds.size() >= 200)
 		{
 			final PostingException ex = newPostingException()
 					.setDocument(this)
@@ -1946,9 +1950,10 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		}
 
 		final ClientId clientId = getClientId();
-		for (final Object document : documentModels)
+		for (final ID documentId : documentIds)
 		{
-			services.postImmediateNoFail(document, clientId);
+			final TableRecordReference documentRef = TableRecordReference.of(tableName, documentId);
+			services.postImmediateNoFail(documentRef, clientId);
 		}
 	}
 }   // Doc

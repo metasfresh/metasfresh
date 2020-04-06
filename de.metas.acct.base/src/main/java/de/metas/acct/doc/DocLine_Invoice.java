@@ -37,6 +37,8 @@ import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import de.metas.invoice.IMatchInvDAO;
+import de.metas.invoice.InvoiceId;
+import de.metas.invoice.InvoiceLineId;
 import de.metas.logging.LogManager;
 import de.metas.quantity.Quantity;
 import de.metas.tax.api.ITaxBL;
@@ -88,6 +90,12 @@ public class DocLine_Invoice extends DocLine<Doc_Invoice>
 		}	// correct included Tax
 
 		setAmount(lineNetAmt, priceList, qtyInvoiced.toBigDecimal());	// qty for discount calc
+	}
+
+	public InvoiceLineId getInvoiceLineId()
+	{
+		final InvoiceId invoiceId = getDoc().getInvoiceId();
+		return InvoiceLineId.ofRepoId(invoiceId, get_ID());
 	}
 
 	public final I_C_InvoiceLine getC_InvoiceLine()

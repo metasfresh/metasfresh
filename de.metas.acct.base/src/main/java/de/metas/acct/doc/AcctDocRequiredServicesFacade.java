@@ -8,6 +8,7 @@ import javax.annotation.Nullable;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_BP_BankAccount;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
@@ -190,12 +191,12 @@ public class AcctDocRequiredServicesFacade
 	}
 
 	public void postImmediateNoFail(
-			@NonNull final Object document,
+			@NonNull final TableRecordReference documentRef,
 			@NonNull final ClientId clientId)
 	{
 		postingService.newPostingRequest()
 				.setClientId(clientId)
-				.setDocumentFromModel(document) // the document to be posted
+				.setDocumentRef(documentRef)
 				.setFailOnError(false) // don't fail because we don't want to fail the main document posting because one of it's depending documents are failing
 				.setPostImmediate(PostImmediate.Yes) // yes, post it immediate
 				.setForce(false) // don't force it

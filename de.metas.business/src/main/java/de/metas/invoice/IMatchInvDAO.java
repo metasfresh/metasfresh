@@ -55,7 +55,9 @@ public interface IMatchInvDAO extends ISingletonService
 	 */
 	List<I_M_MatchInv> retrieveForInOutLine(I_M_InOutLine iol);
 
-	List<I_M_MatchInv> retrieveProcessedButNotPostedForInOutLines(@NonNull Set<InOutLineId> inoutLineIds);
+	Set<MatchInvId> retrieveIdsProcessedButNotPostedForInOutLines(@NonNull Set<InOutLineId> inoutLineIds);
+
+	Set<MatchInvId> retrieveIdsProcessedButNotPostedForInvoiceLines(@NonNull Set<InvoiceLineId> invoiceLineIds);
 
 	/**
 	 * Retrieves all (active or not) {@link I_M_MatchInv} records of given {@link I_M_InOut}.

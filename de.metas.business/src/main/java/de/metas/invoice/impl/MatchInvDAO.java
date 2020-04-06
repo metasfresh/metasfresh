@@ -34,10 +34,12 @@ import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_MatchInv;
 
-import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.inout.InOutLineId;
 import de.metas.invoice.IMatchInvDAO;
+import de.metas.invoice.InvoiceLineId;
+import de.metas.invoice.MatchInvId;
 import de.metas.product.ProductId;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.quantity.StockQtyAndUOMQtys;
@@ -95,11 +97,11 @@ public class MatchInvDAO implements IMatchInvDAO
 	}
 
 	@Override
-	public List<I_M_MatchInv> retrieveProcessedButNotPostedForInOutLines(@NonNull final Set<InOutLineId> inoutLineIds)
+	public Set<MatchInvId> retrieveIdsProcessedButNotPostedForInOutLines(@NonNull final Set<InOutLineId> inoutLineIds)
 	{
 		if (inoutLineIds.isEmpty())
 		{
-			return ImmutableList.of();
+			return ImmutableSet.of();
 		}
 
 		return queryBL
@@ -109,7 +111,25 @@ public class MatchInvDAO implements IMatchInvDAO
 				.addEqualsFilter(I_M_MatchInv.COLUMN_Processed, true)
 				.addNotEqualsFilter(I_M_MatchInv.COLUMN_Posted, true)
 				.create()
-				.list();
+				.listIds(MatchInvId::ofRepoId);
+	}
+
+	@Override
+	public Set<MatchInvId> retrieveIdsProcessedButNotPostedForInvoiceLines(@NonNull final Set<InvoiceLineId> invoiceLineIds)
+	{
+		if (invoiceLineIds.isEmpty())
+		{
+			return ImmutableSet.of();
+		}
+
+		return queryBL
+				.createQueryBuilder(I_M_MatchInv.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayOrAllFilter(I_M_MatchInv.COLUMN_C_InvoiceLine_ID, invoiceLineIds)
+				.addEqualsFilter(I_M_MatchInv.COLUMN_Processed, true)
+				.addNotEqualsFilter(I_M_MatchInv.COLUMN_Posted, true)
+				.create()
+				.listIds(MatchInvId::ofRepoId);
 	}
 
 	@Override

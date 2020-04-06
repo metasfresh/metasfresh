@@ -21,6 +21,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
@@ -39,6 +40,7 @@ import de.metas.currency.CurrencyPrecision;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.InOutLineId;
 import de.metas.invoice.IMatchInvDAO;
+import de.metas.invoice.MatchInvId;
 import de.metas.money.CurrencyId;
 import de.metas.util.Services;
 
@@ -416,8 +418,8 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 			return;
 		}
 
-		final List<I_M_MatchInv> matchInvs = matchInvDAO.retrieveProcessedButNotPostedForInOutLines(inoutLineIds);
-		postDependingDocuments(matchInvs);
+		final Set<MatchInvId> matchInvIds = matchInvDAO.retrieveIdsProcessedButNotPostedForInOutLines(inoutLineIds);
+		postDependingDocuments(I_M_MatchInv.Table_Name, matchInvIds);
 	}
 
 	/**
