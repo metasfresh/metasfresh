@@ -40,7 +40,7 @@ import lombok.Value;
 
 @Value
 @Builder
-public class ConfigLineTestRecord
+public class TestCommissionConfigLine
 {
 	/** Not persisted in the C_CommissionSettingsLine; just needed for the case that a particular line shall to be accessed later in the test */
 	@NonNull
@@ -58,7 +58,7 @@ public class ConfigLineTestRecord
 	@NonNull
 	Integer seqNo;
 
-	/** supposed to be invoked from {@link ConfigTestRecord}. */
+	/** supposed to be invoked from {@link TestCommissionConfig}. */
 	IPair<String, CommissionSettingsLineId> createConfigLineData(final int C_HierarchyCommissionSettings)
 	{
 		final I_C_CommissionSettingsLine settingsLineRecord = newInstance(I_C_CommissionSettingsLine.class);

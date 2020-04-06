@@ -274,7 +274,7 @@ public class CommissionConfigFactory
 		final BPartnerId settingsCustomerId = BPartnerId.ofRepoIdOrNull(settingsLineRecord.getC_BPartner_Customer_ID());
 		if (settingsCustomerGroupId == null && settingsCustomerId == null)
 		{
-			logger.debug("settingsCustomerGroupId and settingsCustomerId are null; => customerMatches matches");
+			logger.debug("settingsCustomerGroupId and settingsCustomerId are null; => customer matches");
 			customerMatches = true;
 		}
 		else
