@@ -106,6 +106,10 @@ try
 						// about -Dmetasfresh.assembly.descriptor.version: the versions plugin can't update the version of our shared assembly descriptor de.metas.assemblies. Therefore we need to provide the version from outside via this property
 						sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode -Dmaven.test.failure.ignore=true -Dmetasfresh.assembly.descriptor.version=${MF_VERSION} ${mvnConf.resolveParams} ${mvnConf.deployParam} clean install"
 
+						// deploy dist-artifacts. they were already installed further up, together with the rest
+						final MvnConf distMvnConf = mvnConf.withPomFile('metasfresh-dist/dist/pom.xml');
+						sh "mvn --settings ${distMvnConf.settingsFile} --file ${distMvnConf.pomFile} --batch-mode -Dmaven.test.failure.ignore=true -Dmetasfresh.assembly.descriptor.version=${MF_VERSION} ${distMvnConf.resolveParams} ${distMvnConf.deployParam} deploy"
+
 						publishJacocoReports(scmVars.GIT_COMMIT, 'codacy_project_token_for_metasfresh_repo')
 					} // stage
 
@@ -130,32 +134,6 @@ try
 							.withWorkDir('metasfresh-webui-api/target/docker');
 						final String publishedWebuiApiImageName = dockerBuildAndPush(webuiApiDockerConf)
 
-						currentBuild.description= """${currentBuild.description}<p/>
-							<h3>Backend docker images</h3>
-							This build created the following deployable docker images 
-							<ul>
-							<li><code>${publishedMsv3ServerImageName}</code></li>
-							<li><code>${publishedWebuiApiImageName}</code></li>
-							<li><code>${publishedReportDockerImageName}</code> that can be used as <b>base image</b> for custom metasfresh-report docker images</li>
-							</ul>
-							"""
-					}
-				} // dir
-
-				dir('distribution')
-				{
-					stage('Build distribution artifacts')
-					{
-						mvnUpdateParentPomVersion mvnConf
-						sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode -DnewVersion=${MF_VERSION} -DprocessAllModules=true -Dincludes=\"de.metas*:*\" ${mvnConf.resolveParams} ${VERSIONS_PLUGIN}:set"
-						sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode -Dproperty=metasfresh.version -DnewVersion=${MF_VERSION} ${VERSIONS_PLUGIN}:set-property"
-						// *deploy* dist-artifacts
-						sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode -Dmaven.test.failure.ignore=true -Dmetasfresh.assembly.descriptor.version=${MF_VERSION} ${mvnConf.resolveParams} ${mvnConf.deployParam} clean deploy"
-					}
-					stage('Build distribution docker images')
-					{
-						final def misc = new de.metas.jenkins.Misc();
-
 						// postgres DB init container
 						final DockerConf dbInitDockerConf = reportDockerConf
 										.withArtifactName('metasfresh-db-init-pg-9-5')
@@ -163,14 +141,29 @@ try
 						final String publishedDBInitDockerImageName = dockerBuildAndPush(dbInitDockerConf)
 
 						currentBuild.description= """${currentBuild.description}<p/>
-							<h3>Distribution docker images</h3>
+							<h3>Backend docker images</h3>
 							This build created the following deployable docker images 
 							<ul>
+							<li><code>${publishedMsv3ServerImageName}</code></li>
+							<li><code>${publishedWebuiApiImageName}</code></li>
+							<li><code>${publishedReportDockerImageName}</code> that can be used as <b>base image</b> for custom metasfresh-report docker images</li>
 							<li><code>${publishedDBInitDockerImageName}</code></li>
 							</ul>
 							"""
-					} // stage
-				} 
+					}
+				} // dir
+
+				// dir('distribution')
+				// {
+				// 	stage('Build distribution artifacts')
+				// 	{
+				// 		mvnUpdateParentPomVersion mvnConf
+				// 		sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode -DnewVersion=${MF_VERSION} -DprocessAllModules=true -Dincludes=\"de.metas*:*\" ${mvnConf.resolveParams} ${VERSIONS_PLUGIN}:set"
+				// 		sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode -Dproperty=metasfresh.version -DnewVersion=${MF_VERSION} ${VERSIONS_PLUGIN}:set-property"
+				// 		// *deploy* dist-artifacts
+				// 		sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode -Dmaven.test.failure.ignore=true -Dmetasfresh.assembly.descriptor.version=${MF_VERSION} ${mvnConf.resolveParams} ${mvnConf.deployParam} clean deploy"
+				// 	}
+				// } 
 			} // withMaven
 			} // withEnv
 		} // configFileProvider
