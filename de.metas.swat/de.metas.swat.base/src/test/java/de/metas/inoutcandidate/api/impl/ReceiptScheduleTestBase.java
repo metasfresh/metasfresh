@@ -30,6 +30,7 @@ import java.util.Properties;
 
 import javax.annotation.Nullable;
 
+import de.metas.bpartner.BPartnerContactId;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.mm.attributes.api.impl.LotNumberDateAttributeDAO;
@@ -95,9 +96,13 @@ public abstract class ReceiptScheduleTestBase
 	private IProductAcctDAO productAcctDAO; // 07629
 
 	protected Properties ctx;
-	/** Today (date+time) */
+	/**
+	 * Today (date+time)
+	 */
 	protected Timestamp date;
-	/** Today (date) */
+	/**
+	 * Today (date)
+	 */
 	protected Timestamp date2;
 
 	// Masterdata
@@ -251,7 +256,7 @@ public abstract class ReceiptScheduleTestBase
 		return locator;
 	}
 
-	protected I_M_ReceiptSchedule createReceiptSchedule(final I_C_BPartner bartner,
+	protected I_M_ReceiptSchedule createReceiptSchedule(final I_C_BPartner bPartner,
 			final I_M_Warehouse warehouse,
 			final Timestamp date,
 			final I_M_Product product, final int qty)
@@ -262,8 +267,9 @@ public abstract class ReceiptScheduleTestBase
 		receiptSchedule.setAD_Org_ID(0);
 		receiptSchedule.setAD_Table_ID(0);
 
-		receiptSchedule.setC_BPartner_ID(bartner.getC_BPartner_ID());
-		receiptSchedule.setAD_User_ID(0);
+		receiptSchedule.setC_BPartner_ID(bPartner.getC_BPartner_ID());
+		final BPartnerContactId bPartnerContactId = BPartnerContactId.ofRepoIdOrNull(bPartner.getC_BPartner_ID(), 0);
+		receiptSchedule.setAD_User_ID(BPartnerContactId.toRepoId(bPartnerContactId));
 
 		receiptSchedule.setDateOrdered(date);
 
