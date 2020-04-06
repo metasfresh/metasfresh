@@ -29,6 +29,7 @@ public interface IDocumentLocation
 
 	int getC_BPartner_Location_ID();
 
+	 // TODO this should be refactored to return BPartnerContactID
 	int getAD_User_ID();
 
 	String getBPartnerAddress();

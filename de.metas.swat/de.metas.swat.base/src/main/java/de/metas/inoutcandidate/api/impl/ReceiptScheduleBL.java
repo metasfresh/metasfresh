@@ -29,6 +29,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 
+import de.metas.bpartner.BPartnerContactId;
 import org.adempiere.ad.trx.processor.api.ITrxItemProcessorExecutorService;
 import org.adempiere.ad.trx.processor.api.LoggableTrxItemExceptionHandler;
 import org.adempiere.exceptions.AdempiereException;
@@ -66,6 +67,8 @@ import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+
+import javax.annotation.Nullable;
 
 public class ReceiptScheduleBL implements IReceiptScheduleBL
 {
@@ -178,6 +181,7 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 		return location;
 	}
 
+	@Deprecated
 	@Override
 	public int getC_BPartner_Effective_ID(final I_M_ReceiptSchedule rs)
 	{
@@ -205,16 +209,14 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 		return bpartnersRepo.getById(bpartnerId, I_C_BPartner.class);
 	}
 
+	@Nullable
 	@Override
-	public int getAD_User_Effective_ID(final I_M_ReceiptSchedule rs)
+	public BPartnerContactId getBPartnerContactID(@NonNull final I_M_ReceiptSchedule rs)
 	{
-		final int adUserOverrideID = rs.getAD_User_Override_ID();
-		if (adUserOverrideID > 0)
-		{
-			return adUserOverrideID;
-		}
+		final int cBPartnerIdRepo = rs.getC_BPartner_Override_ID() > 0 ? rs.getC_BPartner_Override_ID() : rs.getC_BPartner_ID();
+		final int adUserIdRepo = rs.getAD_User_Override_ID() > 0 ? rs.getAD_User_Override_ID() : rs.getAD_User_ID();
 
-		return rs.getAD_User_ID();
+		return BPartnerContactId.ofRepoIdOrNull(cBPartnerIdRepo, adUserIdRepo);
 	}
 
 	private IDocumentLocation asDocumentLocation(final I_M_ReceiptSchedule receiptSchedule)
@@ -286,7 +288,7 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 			@Override
 			public int getAD_User_ID()
 			{
-				return getAD_User_Effective_ID(receiptSchedule);
+				return BPartnerContactId.toRepoId(getBPartnerContactID(receiptSchedule));
 			}
 		};
 	}
@@ -318,7 +320,7 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 			@NonNull final IInOutProducer producer,
 			@NonNull final Iterator<I_M_ReceiptSchedule> receiptSchedules)
 	{
-		Services.get(ITrxItemProcessorExecutorService.class).<I_M_ReceiptSchedule, InOutGenerateResult> createExecutor()
+		Services.get(ITrxItemProcessorExecutorService.class).<I_M_ReceiptSchedule, InOutGenerateResult>createExecutor()
 				.setContext(ctx)
 				.setProcessor(producer)
 				.setExceptionHandler(LoggableTrxItemExceptionHandler.instance)
