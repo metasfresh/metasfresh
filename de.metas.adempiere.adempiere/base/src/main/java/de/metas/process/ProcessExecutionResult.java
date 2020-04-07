@@ -495,12 +495,11 @@ public class ProcessExecutionResult
 					.build());
 		}
 	}
-	
+
 	public void setRecordToOpen(@Nullable final RecordsToOpen recordsToOpen)
 	{
 		this.recordsToOpen = recordsToOpen;
 	}
-
 
 	public RecordsToOpen getRecordsToOpen()
 	{
@@ -814,10 +813,9 @@ public class ProcessExecutionResult
 	//
 	//
 
-	@Value
+	@lombok.Value
 	@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
-	public static final class RecordsToOpen
-	{
+	public static class RecordsToOpen{
 		@JsonProperty("records")
 		@JsonInclude(JsonInclude.Include.NON_EMPTY)
 		private final List<TableRecordReference> records;
