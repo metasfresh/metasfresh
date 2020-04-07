@@ -89,7 +89,7 @@ try
 					nexusCreateRepoIfNotExists mvnConf.mvnDeployRepoBaseURL, mvnConf.mvnRepoName
 
 					buildBackend(mvnConf)
-					// buildDistribution(mvnConf)
+					buildDistribution(mvnConf)
 					
 				} // withMaven
 			} // withEnv
@@ -103,127 +103,186 @@ try
   final String mattermostMsg = "This **${MF_UPSTREAM_BRANCH}** build failed or was aborted: ${BUILD_URL}"
   if(MF_UPSTREAM_BRANCH=='master' || MF_UPSTREAM_BRANCH=='release')
   {
-    mattermostSend color: 'danger', message: mattermostMsg
+	mattermostSend color: 'danger', message: mattermostMsg
   }
   else
   {
-    withCredentials([string(credentialsId: 'jenkins-issue-branches-webhook-URL', variable: 'secretWebhookUrl')])
-    {
-      mattermostSend color: 'danger', endpoint: secretWebhookUrl, channel: 'jenkins-low-prio', message: mattermostMsg
-    }
+	withCredentials([string(credentialsId: 'jenkins-issue-branches-webhook-URL', variable: 'secretWebhookUrl')])
+	{
+	  mattermostSend color: 'danger', endpoint: secretWebhookUrl, channel: 'jenkins-low-prio', message: mattermostMsg
+	}
   }
   throw all
 }
 
-def buildBackend(final MvnConf mvnConf)
+void buildBackend(final MvnConf mvnConf)
 {
 	dir('backend')
-				{
-					stage('Build backend code')
-					{
-						// update the parent pom version
-						mvnUpdateParentPomVersion mvnConf
+	{
+		stage('Build backend code')
+		{
+			// update the parent pom version
+			mvnUpdateParentPomVersion mvnConf
 
-						// set the artifact version of everything below ${mvnConf.pomFile}
-						// processAllModules=true: also update those modules that have a parent version range!
-						sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode -DnewVersion=${MF_VERSION} -DprocessAllModules=true -Dincludes=\"de.metas*:*\" ${mvnConf.resolveParams} ${VERSIONS_PLUGIN}:set"
-						// Set the metasfresh.version property from [1,10.0.0] to our current build version
-						// From the documentation: "Set a property to a given version without any sanity checks"; that's what we want here..sanity is clearly overated
-						sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode -Dproperty=metasfresh.version -DnewVersion=${MF_VERSION} ${VERSIONS_PLUGIN}:set-property"
-						// build and install
-						// maven.test.failure.ignore=true: continue if tests fail, because we want a full report.
-						// about -Dmetasfresh.assembly.descriptor.version: the versions plugin can't update the version of our shared assembly descriptor de.metas.assemblies. Therefore we need to provide the version from outside via this property
-						sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode -Dmaven.test.failure.ignore=true -Dmetasfresh.assembly.descriptor.version=${MF_VERSION} ${mvnConf.resolveParams} ${mvnConf.deployParam} clean install"
+			// set the artifact version of everything below ${mvnConf.pomFile}
+			// processAllModules=true: also update those modules that have a parent version range!
+			sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode -DnewVersion=${MF_VERSION} -DprocessAllModules=true -Dincludes=\"de.metas*:*\" ${mvnConf.resolveParams} ${VERSIONS_PLUGIN}:set"
+			// Set the metasfresh.version property from [1,10.0.0] to our current build version
+			// From the documentation: "Set a property to a given version without any sanity checks"; that's what we want here..sanity is clearly overated
+			sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode -Dproperty=metasfresh.version -DnewVersion=${MF_VERSION} ${VERSIONS_PLUGIN}:set-property"
+			// build and install
+			// maven.test.failure.ignore=true: continue if tests fail, because we want a full report.
+			// about -Dmetasfresh.assembly.descriptor.version: the versions plugin can't update the version of our shared assembly descriptor de.metas.assemblies. Therefore we need to provide the version from outside via this property
+			sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode -Dmaven.test.failure.ignore=true -Dmetasfresh.assembly.descriptor.version=${MF_VERSION} ${mvnConf.resolveParams} ${mvnConf.deployParam} clean install"
 
-						// deploy dist-artifacts. they were already installed further up, together with the rest
-						final MvnConf distMvnConf = mvnConf.withPomFile('metasfresh-dist/dist/pom.xml');
-						sh "mvn --settings ${distMvnConf.settingsFile} --file ${distMvnConf.pomFile} --batch-mode -Dmaven.test.failure.ignore=true -Dmetasfresh.assembly.descriptor.version=${MF_VERSION} ${distMvnConf.resolveParams} ${distMvnConf.deployParam} deploy"
+			// deploy dist-artifacts. they were already installed further up, together with the rest
+			final MvnConf distMvnConf = mvnConf.withPomFile('metasfresh-dist/dist/pom.xml');
+			sh "mvn --settings ${distMvnConf.settingsFile} --file ${distMvnConf.pomFile} --batch-mode -Dmaven.test.failure.ignore=true -Dmetasfresh.assembly.descriptor.version=${MF_VERSION} ${distMvnConf.resolveParams} ${distMvnConf.deployParam} deploy"
 
-						publishJacocoReports(scmVars.GIT_COMMIT, 'codacy_project_token_for_metasfresh_repo')
-					} // stage
+			publishJacocoReports(scmVars.GIT_COMMIT, 'codacy_project_token_for_metasfresh_repo')
+		} // stage
 
-					stage('Build backend docker images')
-					{
-						final def misc = new de.metas.jenkins.Misc();
-						final DockerConf reportDockerConf = new DockerConf(
-							'metasfresh-report', // artifactName
-							MF_UPSTREAM_BRANCH, // branchName
-							MF_VERSION, // versionSuffix
-							'de.metas.report/metasfresh-report-service-standalone/target/docker' // workDir
-						);
-						final String publishedReportDockerImageName = dockerBuildAndPush(reportDockerConf)
+		stage('Build backend docker images')
+		{
+			final def misc = new de.metas.jenkins.Misc();
+			final DockerConf reportDockerConf = new DockerConf(
+				'metasfresh-report', // artifactName
+				MF_UPSTREAM_BRANCH, // branchName
+				MF_VERSION, // versionSuffix
+				'de.metas.report/metasfresh-report-service-standalone/target/docker' // workDir
+			);
+			final String publishedReportDockerImageName = dockerBuildAndPush(reportDockerConf)
 
-						final DockerConf msv3ServerDockerConf = reportDockerConf
-							.withArtifactName('de.metas.vertical.pharma.msv3.server')
-							.withWorkDir('de.metas.vertical.pharma.msv3.server/target/docker');
-						final String publishedMsv3ServerImageName = dockerBuildAndPush(msv3ServerDockerConf)
+			final DockerConf msv3ServerDockerConf = reportDockerConf
+				.withArtifactName('de.metas.vertical.pharma.msv3.server')
+				.withWorkDir('de.metas.vertical.pharma.msv3.server/target/docker');
+			final String publishedMsv3ServerImageName = dockerBuildAndPush(msv3ServerDockerConf)
 
-						final DockerConf webuiApiDockerConf = reportDockerConf
-							.withArtifactName('metasfresh-webui-api')
-							.withWorkDir('metasfresh-webui-api/target/docker');
-						final String publishedWebuiApiImageName = dockerBuildAndPush(webuiApiDockerConf)
+			final DockerConf webuiApiDockerConf = reportDockerConf
+				.withArtifactName('metasfresh-webui-api')
+				.withWorkDir('metasfresh-webui-api/target/docker');
+			final String publishedWebuiApiImageName = dockerBuildAndPush(webuiApiDockerConf)
 
-						// postgres DB init container
-						final DockerConf dbInitDockerConf = reportDockerConf
-										.withArtifactName('metasfresh-db-init-pg-9-5')
-										.withWorkDir('metasfresh-dist/dist/target/docker/db-init')
-						final String publishedDBInitDockerImageName = dockerBuildAndPush(dbInitDockerConf)
+			// postgres DB init container
+			final DockerConf dbInitDockerConf = reportDockerConf
+							.withArtifactName('metasfresh-db-init-pg-9-5')
+							.withWorkDir('metasfresh-dist/dist/target/docker/db-init')
+			final String publishedDBInitDockerImageName = dockerBuildAndPush(dbInitDockerConf)
 
-						currentBuild.description= """${currentBuild.description}<p/>
-							<h3>Backend docker images</h3>
-							This build created the following deployable docker images 
-							<ul>
-							<li><code>${publishedMsv3ServerImageName}</code></li>
-							<li><code>${publishedWebuiApiImageName}</code></li>
-							<li><code>${publishedReportDockerImageName}</code> that can be used as <b>base image</b> for custom metasfresh-report docker images</li>
-							<li><code>${publishedDBInitDockerImageName}</code></li>
-							</ul>
-							"""
-					}
-				} // dir
+			currentBuild.description= """${currentBuild.description}<p/>
+				<h2>Backend</h2>
+				<h3>Docker images</h3>
+				This build created the following deployable docker images 
+				<ul>
+				<li><code>${publishedMsv3ServerImageName}</code></li>
+				<li><code>${publishedWebuiApiImageName}</code></li>
+				<li><code>${publishedReportDockerImageName}</code> that can be used as <b>base image</b> for custom metasfresh-report docker images</li>
+				<li><code>${publishedDBInitDockerImageName}</code></li>
+				</ul>
+				"""
+		}
+	} // dir
 }
 
-def buildDistribution(final MvnConf mvnConf)
+void buildDistribution(final MvnConf mvnConf)
 {
-dir('distribution')
-				{
-					stage('Resolve all distribution artifacts')
-					{
-						final def misc = new de.metas.jenkins.Misc();
+	dir('distribution')
+	{
+		stage('Resolve all distribution artifacts')
+		{
+			final def misc = new de.metas.jenkins.Misc();
 
-						mvnUpdateParentPomVersion mvnConf
+			mvnUpdateParentPomVersion mvnConf
 
-						// make sure we know which plugin version we run
-						final String versionsPlugin='org.codehaus.mojo:versions-maven-plugin:2.4'
+			// make sure we know which plugin version we run
+			final String versionsPlugin='org.codehaus.mojo:versions-maven-plugin:2.4'
 
-						final inSquaresIfNeeded = { String version -> return version == "LATEST" ? version: "[${version}]"; }
+			final String metasfreshAdminPropertyParam="-Dproperty=metasfresh-admin.version -DnewVersion=LATEST"
+			final String metasfreshWebFrontEndUpdatePropertyParam = "-Dproperty=metasfresh-webui-frontend.version -DnewVersion=LATEST"
+			final String metasfreshWebApiUpdatePropertyParam = "-Dproperty=metasfresh-webui-api.version -DnewVersion=LATEST"
+			final String metasfreshProcurementWebuiUpdatePropertyParam = "-Dproperty=metasfresh-procurement-webui.version -DnewVersion=LATEST"
+			final String metasfreshUpdatePropertyParam="-Dproperty=metasfresh.version -DnewVersion=LATEST"
 
-						// the square brackets in "-DnewVersion" are required if we have a concrete version (i.e. not "LATEST"); see https://github.com/mojohaus/versions-maven-plugin/issues/141 for details
-						final String metasfreshAdminPropertyParam="-Dproperty=metasfresh-admin.version -DnewVersion=${inSquaresIfNeeded(MF_ARTIFACT_VERSIONS['metasfresh-admin'])}"
-						final String metasfreshWebFrontEndUpdatePropertyParam = "-Dproperty=metasfresh-webui-frontend.version -DnewVersion=${inSquaresIfNeeded(MF_ARTIFACT_VERSIONS['metasfresh-webui-frontend'])}"
-						final String metasfreshWebApiUpdatePropertyParam = "-Dproperty=metasfresh-webui-api.version -DnewVersion=${inSquaresIfNeeded(MF_ARTIFACT_VERSIONS['metasfresh-webui'])}"
-						final String metasfreshProcurementWebuiUpdatePropertyParam = "-Dproperty=metasfresh-procurement-webui.version -DnewVersion=${inSquaresIfNeeded(MF_ARTIFACT_VERSIONS['metasfresh-procurement-webui'])}"
-						final String metasfreshUpdatePropertyParam="-Dproperty=metasfresh.version -DnewVersion=${inSquaresIfNeeded(MF_ARTIFACT_VERSIONS['metasfresh'])}"
+			// update the metasfresh.version property. either to the latest version or to the given params.MF_METASFRESH_VERSION.
+			sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode ${mvnConf.resolveParams} ${metasfreshUpdatePropertyParam} ${versionsPlugin}:update-property"
 
-						// update the metasfresh.version property. either to the latest version or to the given params.MF_METASFRESH_VERSION.
-						sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode ${mvnConf.resolveParams} ${metasfreshUpdatePropertyParam} ${versionsPlugin}:update-property"
+			// gh #968 also update the metasfresh-webui-frontend.version, metasfresh-webui-api.versions and procurement versions.
+			sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode ${mvnConf.resolveParams} ${metasfreshAdminPropertyParam} ${versionsPlugin}:update-property"
+			sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode ${mvnConf.resolveParams} ${metasfreshWebFrontEndUpdatePropertyParam} ${versionsPlugin}:update-property"
+			sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode ${mvnConf.resolveParams} ${metasfreshWebApiUpdatePropertyParam} ${versionsPlugin}:update-property"
+			sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode ${mvnConf.resolveParams} ${metasfreshProcurementWebuiUpdatePropertyParam} ${versionsPlugin}:update-property"
 
-						// gh #968 also update the metasfresh-webui-frontend.version, metasfresh-webui-api.versions and procurement versions.
-						sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode ${mvnConf.resolveParams} ${metasfreshAdminPropertyParam} ${versionsPlugin}:update-property"
-						sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode ${mvnConf.resolveParams} ${metasfreshWebFrontEndUpdatePropertyParam} ${versionsPlugin}:update-property"
-						sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode ${mvnConf.resolveParams} ${metasfreshWebApiUpdatePropertyParam} ${versionsPlugin}:update-property"
-						sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode ${mvnConf.resolveParams} ${metasfreshProcurementWebuiUpdatePropertyParam} ${versionsPlugin}:update-property"
+			// set the artifact version of everything below the parent ${mvnConf.pomFile}
+			sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode -DnewVersion=${MF_VERSION} -DallowSnapshots=false -DgenerateBackupPoms=true -DprocessDependencies=true -DprocessParent=true -DexcludeReactor=true ${mvnConf.resolveParams} ${versionsPlugin}:set"
+			
+			// we now have set the versions of metas-webui etc within the pom.xml. In order to document them, write them into a file.
+			// the file's name is app.properties, as configured in metasfresh-parent's pom.xml. Thx to http://stackoverflow.com/a/26589696/1012103
+			sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode ${mvnConf.resolveParams} org.codehaus.mojo:properties-maven-plugin:1.0.0:write-project-properties"
 
-						// set the artifact version of everything below the parent ${mvnConf.pomFile}
-						sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode -DnewVersion=${MF_VERSION} -DallowSnapshots=false -DgenerateBackupPoms=true -DprocessDependencies=true -DprocessParent=true -DexcludeReactor=true ${mvnConf.resolveParams} ${versionsPlugin}:set"
-						
-						// we now have set the versions of metas-webui etc within the pom.xml. In order to document them, write them into a file.
-						// the file's name is app.properties, as configured in metasfresh-parent's pom.xml. Thx to http://stackoverflow.com/a/26589696/1012103
-						sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode ${mvnConf.resolveParams} org.codehaus.mojo:properties-maven-plugin:1.0.0:write-project-properties"
+			// now load the properties we got from the pom.xml. Thx to http://stackoverflow.com/a/39644024/1012103
+			final def mavenProps = readProperties file: 'app.properties'
+			final def urlEncodedMavenProps = misc.urlEncodeMapValues(mavenProps);
 
-						// now load the properties we got from the pom.xml. Thx to http://stackoverflow.com/a/39644024/1012103
-						final def mavenProps = readProperties file: 'app.properties'
-						final def urlEncodedMavenProps = misc.urlEncodeMapValues(mavenProps);
-					}
-				}
+			final MF_ARTIFACT_URLS = [:];
+			MF_ARTIFACT_URLS['metasfresh-admin'] = "${mvnConf.resolveRepoURL}/de/metas/admin/metasfresh-admin/${urlEncodedMavenProps['metasfresh-admin.version']}/metasfresh-admin-${urlEncodedMavenProps['metasfresh-admin.version']}.jar"
+			MF_ARTIFACT_URLS['metasfresh-dist'] = "${mvnConf.deployRepoURL}/de/metas/dist/metasfresh-dist-dist/${misc.urlEncode(MF_VERSION)}/metasfresh-dist-dist-${misc.urlEncode(MF_VERSION)}-dist.tar.gz"
+			MF_ARTIFACT_URLS['metasfresh-dist-sql-only'] = "${mvnConf.deployRepoURL}/de/metas/dist/metasfresh-dist-dist/${misc.urlEncode(MF_VERSION)}/metasfresh-dist-dist-${misc.urlEncode(MF_VERSION)}-sql-only.tar.gz"
+			MF_ARTIFACT_URLS['metasfresh-material-dispo'] = "${mvnConf.resolveRepoURL}/de/metas/material/metasfresh-material-dispo-service/${urlEncodedMavenProps['metasfresh.version']}/metasfresh-material-dispo-service-${urlEncodedMavenProps['metasfresh.version']}.jar"
+			MF_ARTIFACT_URLS['metasfresh-procurement-webui'] = "${mvnConf.resolveRepoURL}/de/metas/procurement/de.metas.procurement.webui/${urlEncodedMavenProps['metasfresh-procurement-webui.version']}/de.metas.procurement.webui-${urlEncodedMavenProps['metasfresh-procurement-webui.version']}.jar"
+			MF_ARTIFACT_URLS['metasfresh-webui'] = "${mvnConf.resolveRepoURL}/de/metas/ui/web/metasfresh-webui-api/${urlEncodedMavenProps['metasfresh.version']}/metasfresh-webui-api-${urlEncodedMavenProps['metasfresh.version']}.jar"
+			MF_ARTIFACT_URLS['metasfresh-webui-frontend'] = "${mvnConf.resolveRepoURL}/de/metas/ui/web/metasfresh-webui-frontend/${urlEncodedMavenProps['metasfresh-webui-frontend.version']}/metasfresh-webui-frontend-${urlEncodedMavenProps['metasfresh-webui-frontend.version']}.tar.gz"
+
+			final MF_DOCKER_IMAGES = [:];
+
+			final String MF_RELEASE_VERSION = misc.extractReleaseVersion(MF_VERSION)
+
+			// Note: for the rollout-job's URL with the 'parambuild' to work on this pipelined jenkins, we need the https://wiki.jenkins-ci.org/display/JENKINS/Build+With+Parameters+Plugin, and *not* version 1.3, but later.
+			// See
+			//  * https://github.com/jenkinsci/build-with-parameters-plugin/pull/10
+			//  * https://jenkins.ci.cloudbees.com/job/plugins/job/build-with-parameters-plugin/15/org.jenkins-ci.plugins$build-with-parameters/
+			String releaseLinkWithText = "	<li>..and ${misc.createReleaseLinkWithText(MF_RELEASE_VERSION, MF_VERSION, MF_ARTIFACT_URLS, MF_DOCKER_IMAGES)}</li>";
+
+			// don't link to the e2e-run-job with the lastest e2e-docker-image; users shall instead call that job from metasfresh-e2e-builds, so it's documented in the job-params which docker-tag was used
+			final String e2eLinkWithText = "";
+			//final String e2eLinkWithText = "<li>Oh, and <a href=\"https://jenkins.metasfresh.com/job/ops/job/run_e2e_tests/parambuild/?MF_DOCKER_IMAGE_FULL_NAME=${MF_DOCKER_IMAGES['metasfresh-e2e']}&MF_UPSTREAM_BUILD_URL=${BUILD_URL}&MF_DOCKER_REGISTRY=&MF_DOCKER_IMAGE=\"><b>this link</b></a> lets you jump to a job that will perform an <b>e2e-test</b> using the upstream metasfresh-e2e tests.</li>";
+
+			currentBuild.description="""${currentBuild.description}<p/>
+<h2>Distribution</h2>						
+<h3>Version infos</h3>
+<ul>
+  <li>metasfresh-webui-frontend: version <b>${mavenProps['metasfresh-webui-frontend.version']}</b></li>
+  <li>metasfresh-procurement-webui: version <b>${mavenProps['metasfresh-procurement-webui.version']}</b></li>
+  <li>metasfresh-admin webui: version <b>${mavenProps['metasfresh-admin.version']}</b></li>
+  <li>metasfresh backend: version <b>${mavenProps['metasfresh.version']}</b></li>
+</ul>
+<p>
+<h3>Deployable maven artifacts</h3>
+<ul>
+	<li><a href=\"${MF_ARTIFACT_URLS['metasfresh-dist']}\">dist-tar.gz</a></li>
+	<li><a href=\"${MF_ARTIFACT_URLS['metasfresh-dist-sql-only']}\">sql-only-tar.gz</a></li>
+	<li><a href=\"${mvnConf.deployRepoURL}/de/metas/dist/metasfresh-dist-swingui/${misc.urlEncode(MF_VERSION)}/metasfresh-dist-swingui-${misc.urlEncode(MF_VERSION)}-client.zip\">client.zip</a></li>
+	<li><a href=\"${MF_ARTIFACT_URLS['metasfresh-webui']}\">metasfresh-webui-api.jar</a></li>
+	<li><a href=\"${MF_ARTIFACT_URLS['metasfresh-webui-frontend']}\">metasfresh-webui-frontend.tar.gz</a></li>
+	<li><a href=\"${MF_ARTIFACT_URLS['metasfresh-procurement-webui']}\">metasfresh-procurement-webui.jar</a></li>
+	<li><a href=\"${MF_ARTIFACT_URLS['metasfresh-material-dispo']}\">metasfresh-material-dispo.jar</a></li>
+	<li><a href=\"${MF_ARTIFACT_URLS['metasfresh-admin']}\">metasfresh-admin.jar</a></li>
+</ul>
+Note: all the separately listed artifacts are also included in the dist-tar.gz
+<p>
+<h3>Deploy</h3>
+<ul>
+	<li><a href=\"https://jenkins.metasfresh.com/job/ops/job/deploy_metasfresh/parambuild/?MF_ROLLOUT_FILE_URL=${MF_ARTIFACT_URLS['metasfresh-dist']}&MF_UPSTREAM_BUILD_URL=${BUILD_URL}\"><b>This link</b></a> lets you jump to a rollout job that will deploy (roll out) the <b>tar.gz to a host of your choice</b>.</li>
+	${releaseLinkWithText}
+	${e2eLinkWithText}
+</ul>
+<p>
+<h3>Additional notes</h3>
+<ul>
+  <li>The artifacts on <a href="${mvnConf.mvnDeployRepoBaseURL}">repo.metasfresh.com</a> are cleaned up on a regular schedule to preserve disk space.<br/>
+    Therefore the artifacts that are linked to by the URLs above might already have been deleted.</li>
+  <li>It is important to note that both the <i>"metasfresh-dist"</i> artifacts (client and backend server) build by this job and the <i>"webui"</i> artifacts that are also linked here are based on the same underlying metasfresh version.
+</ul>
+""";
+		}
+	}
 }
