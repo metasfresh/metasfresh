@@ -83,12 +83,41 @@ try
 			// and therefore, the jenkins information would not be added to the build.properties info file.
 			withEnv(["MF_VERSION=${MF_VERSION}"])
 			{
-			// disable automatic fingerprinting and archiving by artifactsPublisher, because in particular the archiving takes up too much space on the jenkins server.
-			withMaven(jdk: 'java-8', maven: 'maven-3.5.4', mavenLocalRepo: '.repository', mavenOpts: '-Xmx1536M', options: [artifactsPublisher(disabled: true)])
-			{
-				nexusCreateRepoIfNotExists mvnConf.mvnDeployRepoBaseURL, mvnConf.mvnRepoName
+				// disable automatic fingerprinting and archiving by artifactsPublisher, because in particular the archiving takes up too much space on the jenkins server.
+				withMaven(jdk: 'java-8', maven: 'maven-3.5.4', mavenLocalRepo: '.repository', mavenOpts: '-Xmx1536M', options: [artifactsPublisher(disabled: true)])
+				{
+					nexusCreateRepoIfNotExists mvnConf.mvnDeployRepoBaseURL, mvnConf.mvnRepoName
 
-				dir('backend')
+					buildBackend(mvnConf)
+					// buildDistribution(mvnConf)
+					
+				} // withMaven
+			} // withEnv
+		} // configFileProvider
+		
+		cleanWs cleanWhenAborted: false, cleanWhenFailure: false // clean up the workspace after (successfull) builds
+	} // node
+	} // timestamps
+} catch(all)
+{
+  final String mattermostMsg = "This **${MF_UPSTREAM_BRANCH}** build failed or was aborted: ${BUILD_URL}"
+  if(MF_UPSTREAM_BRANCH=='master' || MF_UPSTREAM_BRANCH=='release')
+  {
+    mattermostSend color: 'danger', message: mattermostMsg
+  }
+  else
+  {
+    withCredentials([string(credentialsId: 'jenkins-issue-branches-webhook-URL', variable: 'secretWebhookUrl')])
+    {
+      mattermostSend color: 'danger', endpoint: secretWebhookUrl, channel: 'jenkins-low-prio', message: mattermostMsg
+    }
+  }
+  throw all
+}
+
+def buildBackend(final MvnConf mvnConf)
+{
+	dir('backend')
 				{
 					stage('Build backend code')
 					{
@@ -152,38 +181,49 @@ try
 							"""
 					}
 				} // dir
+}
 
-				// dir('distribution')
-				// {
-				// 	stage('Build distribution artifacts')
-				// 	{
-				// 		mvnUpdateParentPomVersion mvnConf
-				// 		sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode -DnewVersion=${MF_VERSION} -DprocessAllModules=true -Dincludes=\"de.metas*:*\" ${mvnConf.resolveParams} ${VERSIONS_PLUGIN}:set"
-				// 		sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode -Dproperty=metasfresh.version -DnewVersion=${MF_VERSION} ${VERSIONS_PLUGIN}:set-property"
-				// 		// *deploy* dist-artifacts
-				// 		sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode -Dmaven.test.failure.ignore=true -Dmetasfresh.assembly.descriptor.version=${MF_VERSION} ${mvnConf.resolveParams} ${mvnConf.deployParam} clean deploy"
-				// 	}
-				// } 
-			} // withMaven
-			} // withEnv
-		} // configFileProvider
-		
-		cleanWs cleanWhenAborted: false, cleanWhenFailure: false // clean up the workspace after (successfull) builds
-	} // node
-	} // timestamps
-} catch(all)
+def buildDistribution(final MvnConf mvnConf)
 {
-  final String mattermostMsg = "This **${MF_UPSTREAM_BRANCH}** build failed or was aborted: ${BUILD_URL}"
-  if(MF_UPSTREAM_BRANCH=='master' || MF_UPSTREAM_BRANCH=='release')
-  {
-    mattermostSend color: 'danger', message: mattermostMsg
-  }
-  else
-  {
-    withCredentials([string(credentialsId: 'jenkins-issue-branches-webhook-URL', variable: 'secretWebhookUrl')])
-    {
-      mattermostSend color: 'danger', endpoint: secretWebhookUrl, channel: 'jenkins-low-prio', message: mattermostMsg
-    }
-  }
-  throw all
+dir('distribution')
+				{
+					stage('Resolve all distribution artifacts')
+					{
+						final def misc = new de.metas.jenkins.Misc();
+
+						mvnUpdateParentPomVersion mvnConf
+
+						// make sure we know which plugin version we run
+						final String versionsPlugin='org.codehaus.mojo:versions-maven-plugin:2.4'
+
+						final inSquaresIfNeeded = { String version -> return version == "LATEST" ? version: "[${version}]"; }
+
+						// the square brackets in "-DnewVersion" are required if we have a concrete version (i.e. not "LATEST"); see https://github.com/mojohaus/versions-maven-plugin/issues/141 for details
+						final String metasfreshAdminPropertyParam="-Dproperty=metasfresh-admin.version -DnewVersion=${inSquaresIfNeeded(MF_ARTIFACT_VERSIONS['metasfresh-admin'])}"
+						final String metasfreshWebFrontEndUpdatePropertyParam = "-Dproperty=metasfresh-webui-frontend.version -DnewVersion=${inSquaresIfNeeded(MF_ARTIFACT_VERSIONS['metasfresh-webui-frontend'])}"
+						final String metasfreshWebApiUpdatePropertyParam = "-Dproperty=metasfresh-webui-api.version -DnewVersion=${inSquaresIfNeeded(MF_ARTIFACT_VERSIONS['metasfresh-webui'])}"
+						final String metasfreshProcurementWebuiUpdatePropertyParam = "-Dproperty=metasfresh-procurement-webui.version -DnewVersion=${inSquaresIfNeeded(MF_ARTIFACT_VERSIONS['metasfresh-procurement-webui'])}"
+						final String metasfreshUpdatePropertyParam="-Dproperty=metasfresh.version -DnewVersion=${inSquaresIfNeeded(MF_ARTIFACT_VERSIONS['metasfresh'])}"
+
+						// update the metasfresh.version property. either to the latest version or to the given params.MF_METASFRESH_VERSION.
+						sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode ${mvnConf.resolveParams} ${metasfreshUpdatePropertyParam} ${versionsPlugin}:update-property"
+
+						// gh #968 also update the metasfresh-webui-frontend.version, metasfresh-webui-api.versions and procurement versions.
+						sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode ${mvnConf.resolveParams} ${metasfreshAdminPropertyParam} ${versionsPlugin}:update-property"
+						sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode ${mvnConf.resolveParams} ${metasfreshWebFrontEndUpdatePropertyParam} ${versionsPlugin}:update-property"
+						sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode ${mvnConf.resolveParams} ${metasfreshWebApiUpdatePropertyParam} ${versionsPlugin}:update-property"
+						sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode ${mvnConf.resolveParams} ${metasfreshProcurementWebuiUpdatePropertyParam} ${versionsPlugin}:update-property"
+
+						// set the artifact version of everything below the parent ${mvnConf.pomFile}
+						sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode -DnewVersion=${MF_VERSION} -DallowSnapshots=false -DgenerateBackupPoms=true -DprocessDependencies=true -DprocessParent=true -DexcludeReactor=true ${mvnConf.resolveParams} ${versionsPlugin}:set"
+						
+						// we now have set the versions of metas-webui etc within the pom.xml. In order to document them, write them into a file.
+						// the file's name is app.properties, as configured in metasfresh-parent's pom.xml. Thx to http://stackoverflow.com/a/26589696/1012103
+						sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode ${mvnConf.resolveParams} org.codehaus.mojo:properties-maven-plugin:1.0.0:write-project-properties"
+
+						// now load the properties we got from the pom.xml. Thx to http://stackoverflow.com/a/39644024/1012103
+						final def mavenProps = readProperties file: 'app.properties'
+						final def urlEncodedMavenProps = misc.urlEncodeMapValues(mavenProps);
+					}
+				}
 }
