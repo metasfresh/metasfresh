@@ -177,13 +177,9 @@ class DocumentListContainer extends Component {
    * @method connectWebSocket
    * @summary ToDo: Describe the method.
    */
-  connectWebSocket = () => {
-    const {
-      windowType,
-      deselectTableItems,
-      viewId,
-      updateViewData,
-    } = this.props;
+  connectWebSocket = (customViewId) => {
+    const { windowType, deselectTableItems, updateViewData } = this.props;
+    const viewId = customViewId ? customViewId : this.props.viewId;
 
     connectWS.call(this, `/view/${viewId}`, (msg) => {
       const { fullyChanged, changedIds } = msg;
@@ -316,8 +312,6 @@ class DocumentListContainer extends Component {
           }
 
           if (viewId) {
-            this.connectWebSocket(viewId);
-
             if (!isNewFilter) {
               this.browseView();
             } else {
@@ -424,7 +418,7 @@ class DocumentListContainer extends Component {
     filterView(windowType, viewId, filtersActive.toIndexedSeq().toArray())
       .then((response) => {
         const viewId = response.viewId;
-
+        this.connectWebSocket(viewId);
         if (response.data && response.data.description && setModalDescription) {
           setModalDescription(response.data.description);
         }
