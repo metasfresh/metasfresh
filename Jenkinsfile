@@ -12,7 +12,7 @@ final String MF_UPSTREAM_BRANCH = params.MF_UPSTREAM_BRANCH ?: env.BRANCH_NAME
 echo "params.MF_UPSTREAM_BRANCH=${params.MF_UPSTREAM_BRANCH}; env.BRANCH_NAME=${env.BRANCH_NAME}; => MF_UPSTREAM_BRANCH=${MF_UPSTREAM_BRANCH}"
 
 // keep the last 20 builds for master and stable, but onkly the last 5 for the rest, to preserve disk space on jenkins
-final String numberOfBuildsToKeepStr = (MF_UPSTREAM_BRANCH == 'master' || MF_UPSTREAM_BRANCH == 'stable') ? '20' : '5'
+final String numberOfBuildsToKeepStr = (MF_UPSTREAM_BRANCH == 'master' || MF_UPSTREAM_BRANCH == 'stable') ? '50' : '20'
 
 // thx to http://stackoverflow.com/a/36949007/1012103 with respect to the parameters
 properties([
@@ -48,8 +48,6 @@ So if this is a "master" build, but it was invoked by a "feature-branch" build t
 	pipelineTriggers([]),
 	buildDiscarder(logRotator(artifactDaysToKeepStr: '', artifactNumToKeepStr: '', daysToKeepStr: '', numToKeepStr: numberOfBuildsToKeepStr)) // keep the last $numberOfBuildsToKeepStr builds
 ]);
-
-final String VERSIONS_PLUGIN = 'org.codehaus.mojo:versions-maven-plugin:2.5'
 
 currentBuild.description = currentBuild.description ?: '';
 
@@ -121,6 +119,8 @@ void buildBackend(final MvnConf mvnConf)
 	{
 		stage('Build backend code')
 		{
+			final String VERSIONS_PLUGIN='org.codehaus.mojo:versions-maven-plugin:2.5' // make sure we know which plugin version we run
+			
 			// update the parent pom version
 			mvnUpdateParentPomVersion mvnConf
 
@@ -190,12 +190,11 @@ void buildDistribution(final MvnConf mvnConf)
 	{
 		stage('Resolve all distribution artifacts')
 		{
+			final String VERSIONS_PLUGIN='org.codehaus.mojo:versions-maven-plugin:2.5' // make sure we know which plugin version we run
+			
 			final def misc = new de.metas.jenkins.Misc();
 
 			mvnUpdateParentPomVersion mvnConf
-
-			// make sure we know which plugin version we run
-			final String versionsPlugin='org.codehaus.mojo:versions-maven-plugin:2.4'
 
 			final String metasfreshAdminPropertyParam="-Dproperty=metasfresh-admin.version -DnewVersion=LATEST"
 			final String metasfreshWebFrontEndUpdatePropertyParam = "-Dproperty=metasfresh-webui-frontend.version -DnewVersion=LATEST"
@@ -204,16 +203,16 @@ void buildDistribution(final MvnConf mvnConf)
 			final String metasfreshUpdatePropertyParam="-Dproperty=metasfresh.version -DnewVersion=LATEST"
 
 			// update the metasfresh.version property. either to the latest version or to the given params.MF_METASFRESH_VERSION.
-			sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode ${mvnConf.resolveParams} ${metasfreshUpdatePropertyParam} ${versionsPlugin}:update-property"
+			sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode ${mvnConf.resolveParams} ${metasfreshUpdatePropertyParam} ${VERSIONS_PLUGIN}:update-property"
 
 			// gh #968 also update the metasfresh-webui-frontend.version, metasfresh-webui-api.versions and procurement versions.
-			sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode ${mvnConf.resolveParams} ${metasfreshAdminPropertyParam} ${versionsPlugin}:update-property"
-			sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode ${mvnConf.resolveParams} ${metasfreshWebFrontEndUpdatePropertyParam} ${versionsPlugin}:update-property"
-			sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode ${mvnConf.resolveParams} ${metasfreshWebApiUpdatePropertyParam} ${versionsPlugin}:update-property"
-			sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode ${mvnConf.resolveParams} ${metasfreshProcurementWebuiUpdatePropertyParam} ${versionsPlugin}:update-property"
+			sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode ${mvnConf.resolveParams} ${metasfreshAdminPropertyParam} ${VERSIONS_PLUGIN}:update-property"
+			sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode ${mvnConf.resolveParams} ${metasfreshWebFrontEndUpdatePropertyParam} ${VERSIONS_PLUGIN}:update-property"
+			sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode ${mvnConf.resolveParams} ${metasfreshWebApiUpdatePropertyParam} ${VERSIONS_PLUGIN}:update-property"
+			sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode ${mvnConf.resolveParams} ${metasfreshProcurementWebuiUpdatePropertyParam} ${VERSIONS_PLUGIN}:update-property"
 
 			// set the artifact version of everything below the parent ${mvnConf.pomFile}
-			sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode -DnewVersion=${MF_VERSION} -DallowSnapshots=false -DgenerateBackupPoms=true -DprocessDependencies=true -DprocessParent=true -DexcludeReactor=true ${mvnConf.resolveParams} ${versionsPlugin}:set"
+			sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode -DnewVersion=${MF_VERSION} -DallowSnapshots=false -DgenerateBackupPoms=true -DprocessDependencies=true -DprocessParent=true -DexcludeReactor=true ${mvnConf.resolveParams} ${VERSIONS_PLUGIN}:set"
 			
 			// we now have set the versions of metas-webui etc within the pom.xml. In order to document them, write them into a file.
 			// the file's name is app.properties, as configured in metasfresh-parent's pom.xml. Thx to http://stackoverflow.com/a/26589696/1012103
