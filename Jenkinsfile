@@ -72,7 +72,7 @@ try
 			)
 			echo "mvnConf=${mvnConf.toString()}"
 
-			def scmVars = checkout scm; // i hope this to do all the magic we need
+			final def scmVars = checkout scm // i hope this to do all the magic we need
 			def gitCommitHash = scmVars.GIT_COMMIT
 
 			sh 'git clean -d --force -x' // clean the workspace
@@ -86,7 +86,7 @@ try
 				{
 					nexusCreateRepoIfNotExists mvnConf.mvnDeployRepoBaseURL, mvnConf.mvnRepoName
 
-					buildBackend(mvnConf)
+					buildBackend(mvnConf, scmVars)
 					buildDistribution(mvnConf)
 					
 				} // withMaven
@@ -113,10 +113,19 @@ try
   throw all
 }
 
-void buildBackend(final MvnConf mvnConf)
+void buildBackend(final MvnConf mvnConf, final Map scmVars)
 {
 	dir('backend')
 	{
+		echo "scmVars=${scmVars}"
+		
+		List<String> changes = sh(returnStdout: true, script: "git diff --name-only ${scmVars.GIT_PREVIOUS_COMMIT} ${scmVars.GIT_COMMIT} .").split()
+		echo "changes=${changes}"
+		if(changes.isEmpty())
+		{
+			echo "no changes happened in backend; skip building backend";
+			return;
+		}
 		stage('Build backend code')
 		{
 			final String VERSIONS_PLUGIN='org.codehaus.mojo:versions-maven-plugin:2.5' // make sure we know which plugin version we run
