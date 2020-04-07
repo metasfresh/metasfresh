@@ -6,11 +6,12 @@
 		<artifactId>de.metas.parent.general</artifactId>
 		<groupId>de.metas</groupId>
 		<version>[1,10.0.0]</version> <!-- we need the range during the jenkins build -->
-		<relativePath>../metasfresh-parent/pom.xml</relativePath>
+		<relativePath>../../metasfresh-parent/pom.xml</relativePath>
 	</parent>
 
-	<groupid>de.metas.metasfresh-distribution</groupid>
+	<groupId>de.metas.metasfresh-distribution</groupId>
 	<artifactId>metasfresh-distribution</artifactId>
+	<version>10.0.0</version>
 	<packaging>pom</packaging>
 
 	<properties>
@@ -34,7 +35,7 @@ Since we now work with a range, we now declare the dependencies here where range
 -->
 		<dependency>
 			<groupId>de.metas.dist</groupId>
-			<artifactId>/metasfresh-dist-dist</artifactId>
+			<artifactId>metasfresh-dist-dist</artifactId>
 			<version>${metasfresh.version}</version>
 			<type>tar.gz</type>
 			<classifier>dist</classifier>
