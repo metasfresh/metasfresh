@@ -113,10 +113,9 @@ public class PlainEventBusFactory implements IEventBusFactory
 	}
 
 	@Override
-	public void registerWeakUserNotificationsListener(final IEventListener listener)
+	public void unregisterUserNotificationsListener(IEventListener listener)
 	{
 		assertJUnitTestMode();
-		// as of now, no unit test needs an implementation.
 	}
 
 	@Override
