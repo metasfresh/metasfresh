@@ -1794,3 +1794,405 @@ UPDATE AD_Ref_Table SET AD_Display=NULL, AD_Key=570528, AD_Table_ID=541485,Updat
 UPDATE AD_Ref_Table SET AD_Key=570528, AD_Table_ID=541485,Updated=TO_TIMESTAMP('2020-04-06 17:57:47','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Reference_ID=541083
 ;
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+-- 2020-04-06T16:14:01.465Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET AD_Reference_ID=28, FieldLength=22, IsMandatory='Y',Updated=TO_TIMESTAMP('2020-04-06 19:14:01','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=570555
+;
+
+-- 2020-04-07T09:33:45.948Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process SET Name='Verknüpfte Buchungen öffnen',Updated=TO_TIMESTAMP('2020-04-07 12:33:45','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=584682
+;
+
+-- 2020-04-07T09:34:00.477Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Trl SET IsTranslated='Y', Name='Verknüpfte Buchungen öffnen',Updated=TO_TIMESTAMP('2020-04-07 12:34:00','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Process_ID=584682
+;
+
+-- 2020-04-07T09:34:05.019Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Trl SET IsTranslated='Y', Name='Verknüpfte Buchungen öffnen',Updated=TO_TIMESTAMP('2020-04-07 12:34:05','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Process_ID=584682
+;
+
+-- 2020-04-07T09:34:14.768Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Trl SET IsTranslated='Y', Name='Open Linked Fact Accounts',Updated=TO_TIMESTAMP('2020-04-07 12:34:14','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Process_ID=584682
+;
+
+-- 2020-04-07T09:34:30.593Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process SET Name='Verknüpfte Buchungen öffnen',Updated=TO_TIMESTAMP('2020-04-07 12:34:30','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=584681
+;
+
+-- 2020-04-07T09:34:51.909Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Trl SET Name='Open Linked Accounting Transactions',Updated=TO_TIMESTAMP('2020-04-07 12:34:51','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Process_ID=584681
+;
+
+-- 2020-04-07T09:34:57.698Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Trl SET IsTranslated='Y', Name='Verknüpfte Buchungen öffnen',Updated=TO_TIMESTAMP('2020-04-07 12:34:57','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Process_ID=584681
+;
+
+-- 2020-04-07T09:35:01.672Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Trl SET IsTranslated='Y', Name='Verknüpfte Buchungen öffnen',Updated=TO_TIMESTAMP('2020-04-07 12:35:01','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Process_ID=584681
+;
+
+-- 2020-04-07T09:35:24.810Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Trl SET Name='Open Linked Accounting Transactions',Updated=TO_TIMESTAMP('2020-04-07 12:35:24','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Process_ID=584682
+;
+
+-- 2020-04-07T09:43:15.729Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM AD_Table_Process WHERE AD_Table_Process_ID=540811
+;
+
+-- 2020-04-07T09:43:45.532Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM AD_Table_Process WHERE AD_Table_Process_ID=540810
+;
+
+-- 2020-04-07T11:06:08.300Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET AD_Reference_Value_ID=132,Updated=TO_TIMESTAMP('2020-04-07 14:06:08','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=570534
+;
+
+-- 2020-04-07T11:06:18.672Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET FieldLength=22,Updated=TO_TIMESTAMP('2020-04-07 14:06:18','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=570534
+;
+
+-- 2020-04-07T11:06:55.090Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET IsMandatory='Y', IsUpdateable='N',Updated=TO_TIMESTAMP('2020-04-07 14:06:55','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=570534
+;
+
+-- 2020-04-07T11:07:34.062Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET AD_Reference_ID=19, AD_Val_Rule_ID=129, DefaultValue='@#AD_Client_ID@',Updated=TO_TIMESTAMP('2020-04-07 14:07:34','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=570570
+;
+
+-- 2020-04-07T11:07:44.108Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET IsMandatory='Y',Updated=TO_TIMESTAMP('2020-04-07 14:07:44','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=570570
+;
+
+-- 2020-04-07T11:08:03.964Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET AD_Val_Rule_ID=104, DefaultValue='@#AD_Org_ID@',Updated=TO_TIMESTAMP('2020-04-07 14:08:03','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=570529
+;
+
+-- 2020-04-07T11:08:10.881Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET IsMandatory='Y',Updated=TO_TIMESTAMP('2020-04-07 14:08:10','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=570529
+;
+
+-- 2020-04-07T11:09:08.154Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET AD_Reference_ID=18, AD_Reference_Value_ID=130, IsUpdateable='N',Updated=TO_TIMESTAMP('2020-04-07 14:09:08','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=570541
+;
+
+-- 2020-04-07T11:09:32.347Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET AD_Val_Rule_ID=213,Updated=TO_TIMESTAMP('2020-04-07 14:09:32','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=570554
+;
+
+-- 2020-04-07T11:09:45.474Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET IsMandatory='Y', IsUpdateable='N',Updated=TO_TIMESTAMP('2020-04-07 14:09:45','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=570554
+;
+
+-- 2020-04-07T11:10:09.167Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET FieldLength=22,Updated=TO_TIMESTAMP('2020-04-07 14:10:09','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=570539
+;
+
+-- 2020-04-07T11:10:17.606Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET IsMandatory='Y', IsUpdateable='N',Updated=TO_TIMESTAMP('2020-04-07 14:10:17','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=570539
+;
+
+-- 2020-04-07T11:10:43.224Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET FieldLength=22, IsMandatory='Y', IsUpdateable='N',Updated=TO_TIMESTAMP('2020-04-07 14:10:43','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=570538
+;
+
+-- 2020-04-07T11:11:05.775Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET FieldLength=22, IsUpdateable='N',Updated=TO_TIMESTAMP('2020-04-07 14:11:05','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=570537
+;
+
+-- 2020-04-07T11:11:22.620Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET FieldLength=22, IsMandatory='Y', IsUpdateable='N',Updated=TO_TIMESTAMP('2020-04-07 14:11:22','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=570536
+;
+
+-- 2020-04-07T11:11:53.073Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET FieldLength=22, IsMandatory='Y', IsUpdateable='N',Updated=TO_TIMESTAMP('2020-04-07 14:11:53','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=570564
+;
+
+-- 2020-04-07T11:12:09.800Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET AD_Reference_ID=19, IsMandatory='Y', IsUpdateable='N',Updated=TO_TIMESTAMP('2020-04-07 14:12:09','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=570530
+;
+
+-- 2020-04-07T11:12:27.908Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET IsUpdateable='N',Updated=TO_TIMESTAMP('2020-04-07 14:12:27','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=570551
+;
+
+-- 2020-04-07T11:12:50.773Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET FieldLength=22, IsUpdateable='N',Updated=TO_TIMESTAMP('2020-04-07 14:12:50','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=570550
+;
+
+-- 2020-04-07T11:13:22.569Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET FieldLength=22, IsUpdateable='N',Updated=TO_TIMESTAMP('2020-04-07 14:13:22','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=570549
+;
+
+-- 2020-04-07T11:13:44.034Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET IsMandatory='Y', IsUpdateable='N',Updated=TO_TIMESTAMP('2020-04-07 14:13:44','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=570535
+;
+
+-- 2020-04-07T11:14:30.750Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET AD_Reference_Value_ID=133, IsUpdateable='N',Updated=TO_TIMESTAMP('2020-04-07 14:14:30','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=570542
+;
+
+-- 2020-04-07T11:14:52.016Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET AD_Reference_Value_ID=133, IsUpdateable='N',Updated=TO_TIMESTAMP('2020-04-07 14:14:52','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=570543
+;
+
+-- 2020-04-07T11:15:17.561Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET AD_Reference_Value_ID=540658, IsMandatory='Y', IsUpdateable='N',Updated=TO_TIMESTAMP('2020-04-07 14:15:17','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=570532
+;
+
+-- 2020-04-07T11:15:31.446Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET FieldLength=22,Updated=TO_TIMESTAMP('2020-04-07 14:15:31','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=570545
+;
+
+-- 2020-04-07T11:15:38.482Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET FieldLength=22,Updated=TO_TIMESTAMP('2020-04-07 14:15:38','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=570532
+;
+
+-- 2020-04-07T11:15:47.861Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET FieldLength=22,Updated=TO_TIMESTAMP('2020-04-07 14:15:47','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=570543
+;
+
+-- 2020-04-07T11:15:53.275Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET FieldLength=22,Updated=TO_TIMESTAMP('2020-04-07 14:15:53','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=570542
+;
+
+-- 2020-04-07T11:16:02.134Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET FieldLength=22,Updated=TO_TIMESTAMP('2020-04-07 14:16:02','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=570535
+;
+
+-- 2020-04-07T11:16:09.380Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET FieldLength=22,Updated=TO_TIMESTAMP('2020-04-07 14:16:09','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=570530
+;
+
+-- 2020-04-07T11:21:06.523Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET IsUpdateable='N',Updated=TO_TIMESTAMP('2020-04-07 14:21:06','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=570545
+;
+
+-- 2020-04-07T11:21:29.333Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET FieldLength=22, IsUpdateable='N',Updated=TO_TIMESTAMP('2020-04-07 14:21:29','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=570544
+;
+
+-- 2020-04-07T11:22:18.031Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET FieldLength=22, IsUpdateable='N',Updated=TO_TIMESTAMP('2020-04-07 14:22:18','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=570556
+;
+
+-- 2020-04-07T11:23:26.286Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET IsMandatory='Y',Updated=TO_TIMESTAMP('2020-04-07 14:23:26','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=570565
+;
+
+-- 2020-04-07T11:23:46.827Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET AD_Reference_ID=30, IsAllowLogging='Y', IsMandatory='Y',Updated=TO_TIMESTAMP('2020-04-07 14:23:46','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=570566
+;
+
+-- 2020-04-07T11:23:51.049Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET FieldLength=22,Updated=TO_TIMESTAMP('2020-04-07 14:23:51','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=570566
+;
+
+-- 2020-04-07T11:24:06.301Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET FieldLength=10,Updated=TO_TIMESTAMP('2020-04-07 14:24:06','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=570562
+;
+
+-- 2020-04-07T11:24:39.755Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET AD_Reference_ID=15, FieldLength=7, IsMandatory='Y', IsRangeFilter='Y', IsUpdateable='N',Updated=TO_TIMESTAMP('2020-04-07 14:24:39','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=570553
+;
+
+-- 2020-04-07T11:25:08.346Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET AD_Reference_ID=15, FieldLength=7, IsMandatory='Y', IsUpdateable='N',Updated=TO_TIMESTAMP('2020-04-07 14:25:08','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=570552
+;
+
+-- 2020-04-07T11:26:01.076Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET AD_Reference_ID=17, AD_Reference_Value_ID=131,Updated=TO_TIMESTAMP('2020-04-07 14:26:01','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=570563
+;
+
+-- 2020-04-07T11:28:44.309Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET AD_Reference_ID=13, FieldLength=22, IsUpdateable='N',Updated=TO_TIMESTAMP('2020-04-07 14:28:44','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=570528
+;
+
+-- 2020-04-07T11:29:01.133Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET IsGenericZoomOrigin='Y', IsIdentifier='Y', IsMandatory='Y', IsUpdateable='N',Updated=TO_TIMESTAMP('2020-04-07 14:29:01','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=570528
+;
+
+-- 2020-04-07T11:29:06.798Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET IsGenericZoomKeyColumn='Y', IsUpdateable='N',Updated=TO_TIMESTAMP('2020-04-07 14:29:06','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=570528
+;
+
+-- 2020-04-07T11:29:31.776Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET FieldLength=22, IsUpdateable='N',Updated=TO_TIMESTAMP('2020-04-07 14:29:31','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=570548
+;
+
+-- 2020-04-07T11:29:54.598Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET FieldLength=22, IsMandatory='Y', IsUpdateable='N',Updated=TO_TIMESTAMP('2020-04-07 14:29:54','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=570531
+;
+
+-- 2020-04-07T11:30:36.039Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET DefaultValue='Y', IsMandatory='Y', IsUpdateable='N',Updated=TO_TIMESTAMP('2020-04-07 14:30:36','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=570569
+;
+
+-- 2020-04-07T11:30:56.354Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET FieldLength=22, IsUpdateable='N',Updated=TO_TIMESTAMP('2020-04-07 14:30:56','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=570558
+;
+
+-- 2020-04-07T11:31:20.060Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET FieldLength=22, IsUpdateable='N',Updated=TO_TIMESTAMP('2020-04-07 14:31:20','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=570540
+;
+
+-- 2020-04-07T11:31:45.936Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET AD_Reference_ID=17, AD_Reference_Value_ID=125,Updated=TO_TIMESTAMP('2020-04-07 14:31:45','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=570533
+;
+
+-- 2020-04-07T11:31:55.634Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET IsMandatory='Y', IsUpdateable='N',Updated=TO_TIMESTAMP('2020-04-07 14:31:55','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=570533
+;
+
+-- 2020-04-07T11:32:18.478Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET IsAlwaysUpdateable='Y',Updated=TO_TIMESTAMP('2020-04-07 14:32:18','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=570555
+;
+
+-- 2020-04-07T11:32:37.785Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET FieldLength=7, IsMandatory='Y',Updated=TO_TIMESTAMP('2020-04-07 14:32:37','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=570567
+;
+
+-- 2020-04-07T11:32:58.308Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET AD_Reference_ID=30, FieldLength=22, IsMandatory='Y',Updated=TO_TIMESTAMP('2020-04-07 14:32:58','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=570568
+;
+
+-- 2020-04-07T11:33:32.668Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET AD_Reference_Value_ID=134, FieldLength=22, IsUpdateable='N',Updated=TO_TIMESTAMP('2020-04-07 14:33:32','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=570546
+;
+
+-- 2020-04-07T11:34:03.153Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET AD_Reference_Value_ID=137, FieldLength=22, IsUpdateable='N',Updated=TO_TIMESTAMP('2020-04-07 14:34:03','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=570547
+;
+
+-- 2020-04-07T11:34:27.578Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET AD_Reference_ID=13, IsUpdateable='N',Updated=TO_TIMESTAMP('2020-04-07 14:34:27','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=570560
+;
+
+-- 2020-04-07T11:34:47.697Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET AD_Reference_ID=13, IsUpdateable='N',Updated=TO_TIMESTAMP('2020-04-07 14:34:47','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=570561
+;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
