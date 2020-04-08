@@ -97,7 +97,7 @@ try
 
 					buildBackend(mvnConf, scmVars)
 
-					final Map artifactURLs =  = buildDistribution(mvnConf)
+					final Map artifactURLs = buildDistribution(mvnConf)
 
 					testSQLMigrationScripts(
 						params.MF_SQL_SEED_DUMP_URL, 
@@ -247,7 +247,6 @@ Map buildDistribution(final MvnConf mvnConf)
 			// now load the properties we got from the pom.xml. Thx to http://stackoverflow.com/a/39644024/1012103
 			final def mavenProps = readProperties file: 'app.properties'
 			final def urlEncodedMavenProps = misc.urlEncodeMapValues(mavenProps);
-
 			
 			artifactURLs['metasfresh-admin'] = "${mvnConf.resolveRepoURL}/de/metas/admin/metasfresh-admin/${urlEncodedMavenProps['metasfresh-admin.version']}/metasfresh-admin-${urlEncodedMavenProps['metasfresh-admin.version']}.jar"
 			artifactURLs['metasfresh-dist'] = "${mvnConf.deployRepoURL}/de/metas/dist/metasfresh-dist-dist/${misc.urlEncode(MF_VERSION)}/metasfresh-dist-dist-${misc.urlEncode(MF_VERSION)}-dist.tar.gz"
