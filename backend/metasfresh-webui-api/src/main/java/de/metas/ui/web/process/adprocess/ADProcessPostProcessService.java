@@ -200,7 +200,7 @@ public class ADProcessPostProcessService
 
 	private static final DocumentPath extractSingleDocumentPath(final RecordsToOpen recordsToOpen)
 	{
-		final TableRecordReference recordRef = recordsToOpen.getSingleRecord();
+		final TableRecordReference recordRef = recordsToOpen.getFirstRecord();
 		final int documentId = recordRef.getRecord_ID();
 
 		WindowId windowId = WindowId.fromNullableJson(recordsToOpen.getWindowIdString());
@@ -318,7 +318,10 @@ public class ADProcessPostProcessService
 		// Create & open view from Records
 		else if (recordsToOpen != null && recordsToOpen.getTarget() == OpenTarget.GridView)
 		{
-			final Set<DocumentPath> referencingDocumentPaths = extractReferencingDocumentPaths(processInfo);
+			final Set<DocumentPath> referencingDocumentPaths = recordsToOpen.isAutomaticallySetReferencingDocumentPaths()
+					? extractReferencingDocumentPaths(processInfo)
+					: null;
+
 			final String parentViewIdStr = processExecutionResult.getWebuiViewId();
 			final ViewId parentViewId = parentViewIdStr != null ? ViewId.ofViewIdString(parentViewIdStr) : null;
 			final CreateViewRequest viewRequest = createViewRequest(recordsToOpen, referencingDocumentPaths, parentViewId);
