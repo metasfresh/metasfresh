@@ -91,8 +91,8 @@ public class FactAcctDAO implements IFactAcctDAO
 	{
 		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_Fact_Acct.class, ctx, trxName)
-				.addEqualsFilter(I_Fact_Acct.COLUMN_AD_Table_ID, adTableId)
-				.addEqualsFilter(I_Fact_Acct.COLUMN_Record_ID, recordId)
+				.addEqualsFilter(I_Fact_Acct.COLUMNNAME_AD_Table_ID, adTableId)
+				.addEqualsFilter(I_Fact_Acct.COLUMNNAME_Record_ID, recordId)
 				.orderBy()
 				.addColumn(I_Fact_Acct.COLUMN_Fact_Acct_ID) // make sure we have a predictable order
 				.endOrderBy();
