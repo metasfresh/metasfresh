@@ -118,7 +118,7 @@ void buildBackend(final MvnConf mvnConf, final Map scmVars)
 	dir('backend')
 	{
 		// echo "scmVars=${scmVars}"
-		// List<String> changes = sh(returnStdout: true, script: "git diff --name-only ${scmVars.GIT_PREVIOUS_COMMIT} ${scmVars.GIT_COMMIT} .").split()
+		final List<String> changes = sh(returnStdout: true, script: "git diff --name-only ${scmVars.GIT_PREVIOUS_COMMIT} ${scmVars.GIT_COMMIT} .").split()
 		// echo "changes=${changes}"
 		if(changes.isEmpty())
 		{
