@@ -863,7 +863,7 @@ public class ProcessExecutionResult
 					.toString();
 		}
 
-		public TableRecordReference getSingleRecord()
+		public TableRecordReference getFirstRecord()
 		{
 			return getRecords().get(0);
 		}
