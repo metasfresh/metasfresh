@@ -272,10 +272,6 @@ Map buildDistribution(final MvnConf mvnConf, final Map dockerImages)
 			//  * https://jenkins.ci.cloudbees.com/job/plugins/job/build-with-parameters-plugin/15/org.jenkins-ci.plugins$build-with-parameters/
 			String releaseLinkWithText = "	<li>..and ${misc.createReleaseLinkWithText(MF_RELEASE_VERSION, MF_VERSION, artifactURLs, dockerImages)}</li>";
 
-			// don't link to the e2e-run-job with the lastest e2e-docker-image; users shall instead call that job from metasfresh-e2e-builds, so it's documented in the job-params which docker-tag was used
-			final String e2eLinkWithText = "";
-			//final String e2eLinkWithText = "<li>Oh, and <a href=\"https://jenkins.metasfresh.com/job/ops/job/run_e2e_tests/parambuild/?MF_DOCKER_IMAGE_FULL_NAME=${dockerImages['metasfresh-e2e']}&MF_UPSTREAM_BUILD_URL=${BUILD_URL}&MF_DOCKER_REGISTRY=&MF_DOCKER_IMAGE=\"><b>this link</b></a> lets you jump to a job that will perform an <b>e2e-test</b> using the upstream metasfresh-e2e tests.</li>";
-
 			currentBuild.description="""${currentBuild.description}<p/>
 <h2>Distribution</h2>						
 <h3>Version infos</h3>
@@ -303,7 +299,6 @@ Note: all the separately listed artifacts are also included in the dist-tar.gz
 <ul>
 	<li><a href=\"https://jenkins.metasfresh.com/job/ops/job/deploy_metasfresh/parambuild/?MF_ROLLOUT_FILE_URL=${artifactURLs['metasfresh-dist']}&MF_UPSTREAM_BUILD_URL=${BUILD_URL}\"><b>This link</b></a> lets you jump to a rollout job that will deploy (roll out) the <b>tar.gz to a host of your choice</b>.</li>
 	${releaseLinkWithText}
-	${e2eLinkWithText}
 </ul>
 <p>
 <h3>Additional notes</h3>
