@@ -1,7 +1,5 @@
 package de.metas.rest_api.bpartner.request;
 
-import static de.metas.rest_api.bpartner.SwaggerDocConstants.READ_ONLY_SYNC_ADVISE_DOC;
-
 import javax.annotation.Nullable;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -127,7 +125,11 @@ public class JsonRequestBPartner
 	String group;
 
 	@ApiModelProperty(position = 150, required = false, //
-			value = READ_ONLY_SYNC_ADVISE_DOC)
+			value = "Translates to `C_BPartner.GlobalId`")
+	@JsonInclude(Include.NON_NULL)
+	String globalId;
+
+	@ApiModelProperty(position = 160, required = false)
 	@JsonInclude(Include.NON_NULL)
 	SyncAdvise syncAdvise;
 
@@ -151,6 +153,7 @@ public class JsonRequestBPartner
 			@JsonProperty("url2") @Nullable final String url2,
 			@JsonProperty("url3") @Nullable final String url3,
 			@JsonProperty("group") @Nullable final String group,
+			@JsonProperty("globalId") @Nullable final String globalId,
 			@JsonProperty("syncAdvise") @Nullable final SyncAdvise syncAdvise)
 	{
 		this.externalId = externalId;
@@ -176,6 +179,7 @@ public class JsonRequestBPartner
 		this.url2 = url2;
 		this.url3 = url3;
 		this.group = group;
+		this.globalId = globalId;
 		this.syncAdvise = syncAdvise;
 	}
 }

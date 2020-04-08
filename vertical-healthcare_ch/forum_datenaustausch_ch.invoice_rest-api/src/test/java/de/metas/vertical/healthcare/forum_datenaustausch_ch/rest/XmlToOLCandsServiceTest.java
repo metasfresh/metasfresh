@@ -22,6 +22,7 @@ import de.metas.rest_api.ordercandidates.OrderCandidatesRestEndpoint;
 import de.metas.rest_api.ordercandidates.request.JsonOLCandCreateBulkRequest;
 import de.metas.rest_api.ordercandidates.request.JsonOLCandCreateRequest;
 import de.metas.util.JSONObjectMapper;
+import de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsService.TargetDocType;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.request.RequestType;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.JaxbUtil;
 import lombok.NonNull;
@@ -109,7 +110,7 @@ public class XmlToOLCandsServiceTest
 
 		// final XmlToOLCandsService xmlToOLCandsService = new XmlToOLCandsService(orderCandidatesRestEndpoint);
 		final JsonOLCandCreateBulkRequest result = xmlToOLCandsService
-				.createJsonOLCandCreateBulkRequest(xmlInvoice, orgSyncAdvise, bPartnersSyncAdvise, productsSyncAdvise);
+				.createJsonOLCandCreateBulkRequest(xmlInvoice, TargetDocType.KV, orgSyncAdvise, bPartnersSyncAdvise, productsSyncAdvise);
 
 		assertThat(result).isNotNull();
 		final List<JsonOLCandCreateRequest> requests = result.getRequests();
