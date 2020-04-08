@@ -47,6 +47,7 @@ public class CommissionTriggerDocument
 
 	BPartnerId customerBPartnerId;
 
+	/** The product that was sold to the customer. */
 	ProductId productId;
 
 	LocalDate commissionDate;

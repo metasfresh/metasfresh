@@ -220,7 +220,7 @@ public class CustomerTradeMarginPricingRule implements IPricingRule
 				.tradedCommissionPercent(Percent.ZERO)
 				.build();
 
-		final Optional<CommissionInstance> commissionInstance = commissionInstanceService.computeCommissionInstanceFor(commissionTriggerDocument);
+		final Optional<CommissionInstance> commissionInstance = commissionInstanceService.createCommissionInstance(commissionTriggerDocument);
 		if (!commissionInstance.isPresent())
 		{
 			return Optional.empty();

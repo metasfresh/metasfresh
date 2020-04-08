@@ -55,7 +55,7 @@ import lombok.Value;
 
 @Value
 @Builder
-public class CommissionInstanceTestRecord
+public class TestCommissionInstance
 {
 	@NonNull
 	String pointsBase_Forecasted;
@@ -91,7 +91,7 @@ public class CommissionInstanceTestRecord
 	BPGroupId existingCustomerGroupIdId;
 
 	@Singular
-	List<CommissionShareTestRecord> commissionShareTestRecords;
+	List<TestCommissionShare> commissionShareTestRecords;
 
 	public CreateCommissionInstanceResult createCommissionData()
 	{
@@ -144,7 +144,7 @@ public class CommissionInstanceTestRecord
 		saveRecord(instanceRecord);
 
 		final ImmutableMap.Builder<BPartnerId, Integer> bpartnerId2commissionShareId = ImmutableMap.builder();
-		for (final CommissionShareTestRecord commissionShareTestRecord : commissionShareTestRecords)
+		for (final TestCommissionShare commissionShareTestRecord : commissionShareTestRecords)
 		{
 			final int C_Commission_Share_ID = commissionShareTestRecord.createCommissionData(instanceRecord.getC_Commission_Instance_ID());
 			bpartnerId2commissionShareId.put(commissionShareTestRecord.getSalesRepBPartnerId(), C_Commission_Share_ID);

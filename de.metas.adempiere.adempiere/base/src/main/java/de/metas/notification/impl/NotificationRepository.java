@@ -112,7 +112,10 @@ public class NotificationRepository implements INotificationRepository
 			}
 			catch (final JsonProcessingException e)
 			{
-				throw new AdempiereException(e);
+				throw new AdempiereException("Unable to create JSON from the given request's contentADMessageParams", e)
+						.appendParametersToMessage()
+						.setParameter("detailADMessageParams", detailADMessageParams)
+						.setParameter("request", request);
 			}
 		}
 
@@ -265,7 +268,7 @@ public class NotificationRepository implements INotificationRepository
 		final boolean alreadyRead = notification.setRead(true);
 		if (alreadyRead)
 		{
-			logger.trace("Skip marking notification as read because it's already read: {}", notification);
+			logger.debug("Skip marking notification as read because it's already read: {}", notification);
 			return false;
 		}
 
@@ -297,7 +300,7 @@ public class NotificationRepository implements INotificationRepository
 		}
 
 		InterfaceWrapperHelper.save(notificationPO);
-		logger.trace("Marked notification read: {}", notificationPO);
+		logger.debug("Marked notification read: {}", notificationPO);
 		return true;
 	}
 

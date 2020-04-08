@@ -113,7 +113,7 @@ public class IssueRepository
 
 		return IssueEntity.builder()
 				.orgId(OrgId.ofRepoId(record.getAD_Org_ID()))
-				.projectId(ProjectId.ofRepoId(record.getC_Project_ID()))
+				.projectId(ProjectId.ofRepoIdOrNull(record.getC_Project_ID()))
 				.issueId(IssueId.ofRepoId(record.getS_Issue_ID()))
 				.effortUomId(UomId.ofRepoId(record.getEffort_UOM_ID()))
 				.milestoneId(MilestoneId.ofRepoIdOrNull(record.getS_Milestone_ID()))

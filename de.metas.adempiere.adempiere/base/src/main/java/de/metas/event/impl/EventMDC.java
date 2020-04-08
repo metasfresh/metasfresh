@@ -1,10 +1,19 @@
-package de.metas.document.model;
+package de.metas.event.impl;
+
+import java.util.Objects;
+
+import org.slf4j.MDC;
+import org.slf4j.MDC.MDCCloseable;
+
+import de.metas.event.Event;
+import lombok.NonNull;
+import lombok.experimental.UtilityClass;
 
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,17 +31,19 @@ package de.metas.document.model;
  * #L%
  */
 
-public interface IDocumentLocation
+@UtilityClass
+public class EventMDC
 {
-
-	int getC_BPartner_ID();
-
-	int getC_BPartner_Location_ID();
-
-	 // TODO this should be refactored to return BPartnerContactID
-	int getAD_User_ID();
-
-	String getBPartnerAddress();
-
-	void setBPartnerAddress(String address);
+	/**
+	 * @return {@code null} if the given {@code event} was put already.
+	 *         Thx to https://stackoverflow.com/a/35372185/1012103
+	 */
+	public MDCCloseable putEvent(@NonNull final Event event)
+	{
+		if (Objects.equals(MDC.get("de.metas.event.uuid"), event.getUuid().toString()))
+		{
+			return null;
+		}
+		return MDC.putCloseable("de.metas.event.uuid", event.getUuid().toString());
+	}
 }

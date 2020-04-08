@@ -32,7 +32,13 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxListenerManager;
 import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.slf4j.Logger;
+import org.slf4j.MDC.MDCCloseable;
 
+import com.google.common.base.MoreObjects;
+
+import de.metas.event.impl.EventMDC;
+import de.metas.logging.LogManager;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -41,6 +47,8 @@ import lombok.NonNull;
  */
 public class QueueableForwardingEventBus extends ForwardingEventBus
 {
+	private static final Logger logger = LogManager.getLogger(QueueableForwardingEventBus.class);
+
 	private boolean queuing = false;
 	private final List<Event> queuedEvents = new ArrayList<>();
 
@@ -52,13 +60,18 @@ public class QueueableForwardingEventBus extends ForwardingEventBus
 	@Override
 	public final void postEvent(@NonNull final Event event)
 	{
-		if (queuing)
+		try (final MDCCloseable mdc = EventMDC.putEvent(event))
 		{
-			queuedEvents.add(event);
-		}
-		else
-		{
-			super.postEvent(event);
+			if (queuing)
+			{
+				logger.debug("queuing=true; -> add event to queue; this={}", this);
+				queuedEvents.add(event);
+			}
+			else
+			{
+				logger.debug("queuing=false; -> post event immediately; this={}", this);
+				super.postEvent(event);
+			}
 		}
 	}
 
@@ -68,6 +81,7 @@ public class QueueableForwardingEventBus extends ForwardingEventBus
 	@OverridingMethodsMustInvokeSuper
 	public QueueableForwardingEventBus queueEvents()
 	{
+		logger.debug("starting to queue all events until flush is called; this={}", this);
 		this.queuing = true;
 		return this;
 	}
@@ -83,6 +97,7 @@ public class QueueableForwardingEventBus extends ForwardingEventBus
 			return this;
 		}
 
+		logger.debug("stopping to queue further events; this={}", this);
 		this.queuing = false;
 
 		// make sure our queue is empty
@@ -171,9 +186,22 @@ public class QueueableForwardingEventBus extends ForwardingEventBus
 	 */
 	public final void flush()
 	{
-		for (final Event event : getQueuedEventsAndClear())
+		final List<Event> queuedEventsList = getQueuedEventsAndClear();
+		logger.debug("flush - posting {} queued events to event bus; this={}", queuedEventsList.size(), this);
+		for (final Event event : queuedEventsList)
 		{
 			super.postEvent(event);
 		}
+	}
+
+	@Override
+	public String toString()
+	{
+		return MoreObjects.toStringHelper(this)
+				.omitNullValues()
+				.add("topicName", getTopicName())
+				.add("type", getType())
+				.add("destroyed", isDestroyed() ? Boolean.TRUE : null)
+				.toString();
 	}
 }
