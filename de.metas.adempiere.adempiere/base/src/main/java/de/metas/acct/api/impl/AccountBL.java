@@ -54,10 +54,11 @@ import de.metas.util.Services;
 
 public class AccountBL implements IAccountBL
 {
+	private static final Logger log = LogManager.getLogger(AccountBL.class);
+	private final IAcctSchemaDAO acctSchemaDAO = Services.get(IAcctSchemaDAO.class);
+	
 	private static final String SEGMENT_COMBINATION_NA = "_";
 	private static final String SEGMENT_DESCRIPTION_NA = "_";
-
-	private final transient Logger log = LogManager.getLogger(getClass());
 
 	@Override
 	public IAccountDimensionValidator createAccountDimensionValidator(final AcctSchema acctSchema)
@@ -68,8 +69,6 @@ public class AccountBL implements IAccountBL
 	@Override
 	public void setValueDescription(final I_C_ValidCombination account)
 	{
-		final IAcctSchemaDAO acctSchemaDAO = Services.get(IAcctSchemaDAO.class);
-
 		final StringBuilder combination = new StringBuilder();
 		final StringBuilder description = new StringBuilder();
 		boolean fullyQualified = true;

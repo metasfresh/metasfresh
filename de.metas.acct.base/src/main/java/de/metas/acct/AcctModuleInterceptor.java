@@ -1,4 +1,4 @@
-package de.metas.acct.model.validator;
+package de.metas.acct;
 
 import java.time.LocalDate;
 import java.util.Properties;
@@ -7,6 +7,7 @@ import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
 import org.adempiere.service.ClientId;
+import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_C_ConversionType;
 import org.compiere.model.I_C_Period;
@@ -19,20 +20,27 @@ import org.compiere.model.I_M_Product_Category_Acct;
 import org.compiere.model.MAccount;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
+import org.springframework.stereotype.Component;
 
+import de.metas.Profiles;
 import de.metas.acct.aggregation.async.ScheduleFactAcctLogProcessingFactAcctListener;
+import de.metas.acct.api.IAccountBL;
+import de.metas.acct.api.IAcctSchemaDAO;
+import de.metas.acct.api.IFactAcctDAO;
 import de.metas.acct.api.IFactAcctListenersService;
 import de.metas.acct.api.IPostingService;
 import de.metas.acct.api.IProductAcctDAO;
 import de.metas.acct.impexp.AccountImportProcess;
 import de.metas.acct.model.I_C_VAT_Code;
 import de.metas.acct.posting.IDocumentRepostingSupplierService;
+import de.metas.acct.posting.server.accouting_docs_to_repost_db_table.AccoutingDocsToRepostDBTableWatcher;
 import de.metas.acct.spi.impl.AllocationHdrDocumentRepostingSupplier;
 import de.metas.acct.spi.impl.GLJournalDocumentRepostingSupplier;
 import de.metas.acct.spi.impl.InvoiceDocumentRepostingSupplier;
 import de.metas.acct.spi.impl.PaymentDocumentRepostingSupplier;
 import de.metas.cache.CacheMgt;
 import de.metas.cache.model.IModelCacheService;
+import de.metas.costing.ICostElementRepository;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.impexp.processing.IImportProcessFactory;
 import de.metas.logging.LogManager;
@@ -40,26 +48,44 @@ import de.metas.money.CurrencyConversionTypeId;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductActivityProvider;
 import de.metas.security.IUserRolePermissionsDAO;
+import de.metas.treenode.TreeNodeService;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 /**
  * Accounting module activator
- *
- * @author tsa
- *
  */
+@Component
 public class AcctModuleInterceptor extends AbstractModuleInterceptor
 {
 	private static final transient Logger logger = LogManager.getLogger(AcctModuleInterceptor.class);
+	private final IFactAcctListenersService factAcctListenersService = Services.get(IFactAcctListenersService.class);
+	private final IPostingService postingService = Services.get(IPostingService.class);
+	private final IFactAcctDAO factAcctDAO = Services.get(IFactAcctDAO.class);
+	private final IDocumentRepostingSupplierService documentBL = Services.get(IDocumentRepostingSupplierService.class);
+	private final IImportProcessFactory importProcessFactory = Services.get(IImportProcessFactory.class);
+	private final IUserRolePermissionsDAO userRolePermissionsDAO = Services.get(IUserRolePermissionsDAO.class);
+	private final ICurrencyDAO currenciesRepo = Services.get(ICurrencyDAO.class);
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+	private final IAcctSchemaDAO acctSchemaDAO = Services.get(IAcctSchemaDAO.class);
+	private final IAccountBL accountBL = Services.get(IAccountBL.class);
+	private final ICostElementRepository costElementRepo;
+	private final TreeNodeService treeNodeService;
 
 	private static final String CTXNAME_C_ConversionType_ID = "#" + I_C_ConversionType.COLUMNNAME_C_ConversionType_ID;
+
+	public AcctModuleInterceptor(
+			@NonNull final ICostElementRepository costElementRepo,
+			@NonNull final TreeNodeService treeNodeService)
+	{
+		this.costElementRepo = costElementRepo;
+		this.treeNodeService = treeNodeService;
+	}
 
 	@Override
 	protected void onAfterInit()
 	{
-		Services.get(IFactAcctListenersService.class).registerListener(ScheduleFactAcctLogProcessingFactAcctListener.instance);
-
-		final IDocumentRepostingSupplierService documentBL = Services.get(IDocumentRepostingSupplierService.class);
+		factAcctListenersService.registerListener(ScheduleFactAcctLogProcessingFactAcctListener.instance);
 
 		// FRESH-539: register Reposting Handlers
 		documentBL.registerSupplier(new InvoiceDocumentRepostingSupplier());
@@ -67,34 +93,46 @@ public class AcctModuleInterceptor extends AbstractModuleInterceptor
 		documentBL.registerSupplier(new AllocationHdrDocumentRepostingSupplier());
 		documentBL.registerSupplier(new GLJournalDocumentRepostingSupplier());
 
-		if (Services.get(IPostingService.class).isEnabled())
+		if (postingService.isEnabled())
 		{
-			Services.get(IUserRolePermissionsDAO.class).setAccountingModuleActive();
+			userRolePermissionsDAO.setAccountingModuleActive();
 		}
 
 		Services.registerService(IProductActivityProvider.class, Services.get(IProductAcctDAO.class));
 
-		Services.get(IImportProcessFactory.class).registerImportProcess(I_I_ElementValue.class, AccountImportProcess.class);
+		importProcessFactory.registerImportProcess(I_I_ElementValue.class, AccountImportProcess.class);
+
+		//
+		// Accounting service
+		if (Profiles.isProfileActive(Profiles.PROFILE_AccountingService))
+		{
+			setupAccountingService();
+		}
+		else
+		{
+			logger.info("Skip setting up accounting service because profile {} is not active", Profiles.PROFILE_AccountingService);
+		}
 	}
 
 	@Override
 	protected void registerInterceptors(final IModelValidationEngine engine)
 	{
-		// engine.addModelValidator(new de.metas.acct.model.validator.C_AcctSchema()); // spring component
+		engine.addModelValidator(new de.metas.acct.model.validator.C_AcctSchema(acctSchemaDAO, costElementRepo));
 		engine.addModelValidator(new de.metas.acct.model.validator.C_AcctSchema_GL());
 		engine.addModelValidator(new de.metas.acct.model.validator.C_AcctSchema_Default());
 		engine.addModelValidator(new de.metas.acct.model.validator.C_AcctSchema_Element());
 
 		engine.addModelValidator(new de.metas.acct.model.validator.C_BP_BankAccount()); // 08354
-		// engine.addModelValidator(new de.metas.acct.model.validator.C_ElementValue()); // spring component
-		engine.addModelValidator(new de.metas.acct.model.validator.C_ValidCombination());
-		engine.addModelValidator(new de.metas.acct.model.validator.GL_Journal());
+		engine.addModelValidator(new de.metas.acct.model.validator.C_ElementValue(acctSchemaDAO, treeNodeService));
+		engine.addModelValidator(new de.metas.acct.model.validator.C_ValidCombination(accountBL));
+
+		engine.addModelValidator(new de.metas.acct.model.validator.GL_Journal(importProcessFactory));
 		engine.addModelValidator(new de.metas.acct.model.validator.GL_JournalLine());
 		engine.addModelValidator(new de.metas.acct.model.validator.GL_JournalBatch());
 		//
 		engine.addModelValidator(new de.metas.acct.model.validator.C_TaxDeclaration());
 		//
-		engine.addModelValidator(new de.metas.acct.model.validator.M_MatchInv());
+		engine.addModelValidator(new de.metas.acct.model.validator.M_MatchInv(postingService, factAcctDAO));
 		//
 		engine.addModelValidator(new de.metas.acct.model.validator.GL_Distribution());
 		engine.addModelValidator(new de.metas.acct.model.validator.GL_DistributionLine());
@@ -141,7 +179,6 @@ public class AcctModuleInterceptor extends AbstractModuleInterceptor
 			{
 				final OrgId adOrgId = OrgId.ofRepoId(adOrgRepoId);
 				final LocalDate date = Env.getLocalDate(ctx);
-				final ICurrencyDAO currenciesRepo = Services.get(ICurrencyDAO.class);
 				final CurrencyConversionTypeId conversionTypeId = currenciesRepo.getDefaultConversionTypeId(adClientId, adOrgId, date);
 				Env.setContext(ctx, CTXNAME_C_ConversionType_ID, conversionTypeId.getRepoId());
 			}
@@ -151,4 +188,24 @@ public class AcctModuleInterceptor extends AbstractModuleInterceptor
 			}
 		}
 	}
+
+	private void setupAccountingService()
+	{
+		startAccoutingDocsToRepostDBTableWatcher();
+	}
+
+	private void startAccoutingDocsToRepostDBTableWatcher()
+	{
+		final AccoutingDocsToRepostDBTableWatcher watcher = AccoutingDocsToRepostDBTableWatcher.builder()
+				.sysConfigBL(sysConfigBL)
+				.postingService(postingService)
+				.build();
+
+		final Thread thread = new Thread(watcher);
+		thread.setDaemon(true);
+		thread.setName(watcher.getClass().getName());
+		thread.start();
+		logger.info("Started {}", thread);
+	}
+
 }

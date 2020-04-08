@@ -36,7 +36,7 @@ import lombok.NonNull;
  * #L%
  */
 
-final class AccoutingDocsToRepostDBTableWatcher implements Runnable
+public final class AccoutingDocsToRepostDBTableWatcher implements Runnable
 {
 	private static final Logger logger = LogManager.getLogger(AccoutingDocsToRepostDBTableWatcher.class);
 	private final ISysConfigBL sysConfigBL;
@@ -50,12 +50,11 @@ final class AccoutingDocsToRepostDBTableWatcher implements Runnable
 	@Builder
 	private AccoutingDocsToRepostDBTableWatcher(
 			@NonNull final ISysConfigBL sysConfigBL,
-			@NonNull final IPostingService postingService,
-			@NonNull final AccoutingDocsToRepostDBTableRepository accoutingDocsToRepostDBTableRepository)
+			@NonNull final IPostingService postingService)
 	{
 		this.sysConfigBL = sysConfigBL;
 		this.postingService = postingService;
-		this.accoutingDocsToRepostDBTableRepository = accoutingDocsToRepostDBTableRepository;
+		this.accoutingDocsToRepostDBTableRepository = new AccoutingDocsToRepostDBTableRepository();
 	}
 
 	@Override
