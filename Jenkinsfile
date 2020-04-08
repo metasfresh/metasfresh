@@ -117,10 +117,9 @@ void buildBackend(final MvnConf mvnConf, final Map scmVars)
 {
 	dir('backend')
 	{
-		echo "scmVars=${scmVars}"
-		
-		List<String> changes = sh(returnStdout: true, script: "git diff --name-only ${scmVars.GIT_PREVIOUS_COMMIT} ${scmVars.GIT_COMMIT} .").split()
-		echo "changes=${changes}"
+		// echo "scmVars=${scmVars}"
+		// List<String> changes = sh(returnStdout: true, script: "git diff --name-only ${scmVars.GIT_PREVIOUS_COMMIT} ${scmVars.GIT_COMMIT} .").split()
+		// echo "changes=${changes}"
 		if(changes.isEmpty())
 		{
 			echo "no changes happened in backend; skip building backend";
@@ -145,6 +144,9 @@ void buildBackend(final MvnConf mvnConf, final Map scmVars)
 			sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode -Dmaven.test.failure.ignore=true -Dmetasfresh.assembly.descriptor.version=${MF_VERSION} ${mvnConf.resolveParams} ${mvnConf.deployParam} clean install"
 
 			// deploy dist-artifacts. they were already installed further up, together with the rest
+			final MvnConf webapiMvnConf = mvnConf.withPomFile('backend/metasfresh-webui-api/pom.xml');
+			sh "mvn --settings ${webapiMvnConf.settingsFile} --file ${webapiMvnConf.pomFile} --batch-mode -Dmaven.test.failure.ignore=true -Dmetasfresh.assembly.descriptor.version=${MF_VERSION} ${webapiMvnConf.resolveParams} ${webapiMvnConf.deployParam} deploy"
+			
 			final MvnConf distMvnConf = mvnConf.withPomFile('metasfresh-dist/dist/pom.xml');
 			sh "mvn --settings ${distMvnConf.settingsFile} --file ${distMvnConf.pomFile} --batch-mode -Dmaven.test.failure.ignore=true -Dmetasfresh.assembly.descriptor.version=${MF_VERSION} ${distMvnConf.resolveParams} ${distMvnConf.deployParam} deploy"
 
