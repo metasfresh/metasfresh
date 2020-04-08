@@ -1,5 +1,6 @@
 package de.metas.costing.impl;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -132,20 +133,20 @@ public class CostingService implements ICostingService
 			throw new AdempiereException("No costs created for " + request);
 		}
 
-		return createCostResult(costElementResults);
+		return toAggregatedCostAmount(costElementResults);
 	}
 
-	private AggregatedCostAmount createCostResult(final ImmutableList<CostDetailCreateResult> costElementResults)
+	private static AggregatedCostAmount toAggregatedCostAmount(@NonNull final List<CostDetailCreateResult> costDetailCreateResults)
 	{
-		Check.assumeNotEmpty(costElementResults, "costElementResults is not empty");
+		Check.assumeNotEmpty(costDetailCreateResults, "costDetailCreateResults is not empty");
 
-		final CostSegment costSegment = costElementResults
+		final CostSegment costSegment = costDetailCreateResults
 				.stream()
 				.map(CostDetailCreateResult::getCostSegment)
 				.distinct()
-				.collect(GuavaCollectors.singleElementOrThrow(() -> new AdempiereException("More than one CostSegment found in " + costElementResults)));
+				.collect(GuavaCollectors.singleElementOrThrow(() -> new AdempiereException("More than one CostSegment found in " + costDetailCreateResults)));
 
-		final Map<CostElement, CostAmount> amountsByCostElement = costElementResults
+		final Map<CostElement, CostAmount> amountsByCostElement = costDetailCreateResults
 				.stream()
 				.collect(Collectors.toMap(
 						CostDetailCreateResult::getCostElement, // keyMapper
@@ -343,49 +344,53 @@ public class CostingService implements ICostingService
 	}
 
 	@Override
-	public AggregatedCostAmount createReversalCostDetails(@NonNull final CostDetailReverseRequest request)
+	public AggregatedCostAmount createReversalCostDetails(@NonNull final CostDetailReverseRequest reversalRequest)
 	{
-		final Set<CostElementId> costElementIdsWithExistingCostDetails = costDetailsRepo
-				.getAllForDocumentAndAcctSchemaId(request.getReversalDocumentRef(), request.getAcctSchemaId())
-				.stream()
-				.map(CostDetail::getCostElementId)
-				.collect(ImmutableSet.toImmutableSet());
-
-		final List<CostDetail> initialDocCostDetails = costDetailsRepo.getAllForDocumentAndAcctSchemaId(request.getInitialDocumentRef(), request.getAcctSchemaId());
+		final List<CostDetail> initialDocCostDetails = costDetailsRepo.getAllForDocumentAndAcctSchemaId(reversalRequest.getInitialDocumentRef(), reversalRequest.getAcctSchemaId());
 		if (initialDocCostDetails.isEmpty())
 		{
-			throw new AdempiereException("Initial document has no cost details: " + request);
+			throw new AdempiereException("Initial document has no cost details: " + reversalRequest);
 		}
 
-		final ImmutableList<CostDetailCreateResult> costElementResults = initialDocCostDetails
-				.stream()
-				.filter(costDetail -> !costElementIdsWithExistingCostDetails.contains(costDetail.getCostElementId())) // not already created
-				.flatMap(costDetail -> createReversalCostDetailsAndStream(costDetail, request))
-				.collect(ImmutableList.toImmutableList());
-		if (costElementResults.isEmpty())
+		final ArrayList<CostDetailCreateResult> reversalDocCostDetails = new ArrayList<>();
+		for(final CostDetail initialDocCostDetail : initialDocCostDetails)
 		{
-			throw new AdempiereException("No costs created for " + request);
+			final List<CostDetailCreateResult> reversalCostDetails = createReversalCostDetails(initialDocCostDetail, reversalRequest);
+			reversalDocCostDetails.addAll(reversalCostDetails);
+		}
+		if (reversalDocCostDetails.isEmpty())
+		{
+			throw new AdempiereException("No costs created for " + reversalRequest);
 		}
 
-		return createCostResult(costElementResults);
+		return toAggregatedCostAmount(reversalDocCostDetails);
 	}
 
-	private Stream<CostDetailCreateResult> createReversalCostDetailsAndStream(final CostDetail costDetail, final CostDetailReverseRequest reversalRequest)
+	private List<CostDetailCreateResult> createReversalCostDetails(
+			@NonNull final CostDetail initialDocCostDetail,
+			@NonNull final CostDetailReverseRequest reversalRequest)
 	{
-		final CostElementId costElementId = costDetail.getCostElementId();
+		final CostElementId costElementId = initialDocCostDetail.getCostElementId();
 		final CostElement costElement = costElementsRepo.getById(costElementId);
 		if (costElement == null)
 		{
 			// cost element was disabled in meantime
-			return Stream.empty();
+			return ImmutableList.of();
 		}
 
-		final CostDetailCreateRequest request = createCostDetailCreateRequestFromReversalRequest(reversalRequest, costDetail, costElement);
-		return getCostingMethodHandlers(costElement.getCostingMethod(), request.getDocumentRef())
-				.stream()
-				.map(handler -> handler.createOrUpdateCost(request))
-				.filter(Optional::isPresent)
-				.map(Optional::get);
+		final CostDetailCreateRequest request = createCostDetailCreateRequestFromReversalRequest(reversalRequest, initialDocCostDetail, costElement);
+		final ArrayList<CostDetailCreateResult> results = new ArrayList<>();
+		
+		for (final CostingMethodHandler handler : getCostingMethodHandlers(costElement.getCostingMethod(), request.getDocumentRef()))
+		{
+			final CostDetailCreateResult result = handler.createOrUpdateCost(request).orElse(null);
+			if(result != null)
+			{
+				results.add(result);
+			}
+		}
+		
+		return results;
 	}
 
 	private static final CostDetailCreateRequest createCostDetailCreateRequestFromReversalRequest(
