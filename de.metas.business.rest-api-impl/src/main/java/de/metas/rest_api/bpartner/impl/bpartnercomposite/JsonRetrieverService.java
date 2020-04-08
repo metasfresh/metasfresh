@@ -265,6 +265,7 @@ public class JsonRetrieverService
 		return JsonResponseBPartner.builder()
 				.active(bpartner.isActive())
 				.code(bpartner.getValue())
+				.globalId(bpartner.getGlobalId())
 				.companyName(bpartner.getCompanyName())
 				.externalId(JsonConverters.toJsonOrNull(bpartner.getExternalId()))
 				.group(convertIdToGroupName(bpartner.getGroupId()))

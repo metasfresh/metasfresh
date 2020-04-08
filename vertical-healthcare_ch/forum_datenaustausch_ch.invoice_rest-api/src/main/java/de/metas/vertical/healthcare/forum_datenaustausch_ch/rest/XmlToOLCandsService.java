@@ -63,7 +63,6 @@ import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.reque
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.request.BodyType;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.request.CompanyType;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.request.GuarantorAddressType;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.request.InsuranceAddressType;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.request.InvoiceType;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.request.OnlineAddressType;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.request.PatientAddressType;
@@ -487,28 +486,6 @@ public class XmlToOLCandsService
 		return body.getTiersPayant().getBiller();
 	}
 
-	private @NonNull GuarantorAndBiller getGuarantorAndBiller(@NonNull final BodyType body)
-	{
-		final boolean tiersGarantIsSet = body.getTiersGarant() != null;
-		final boolean tiersPayantIsSet = body.getTiersPayant() != null;
-
-		Check.errorUnless(tiersGarantIsSet ^ tiersPayantIsSet,
-				"One of TiersGarant or TiersPayant needs to be provided but not both; tiersGarantIsSet={}; tiersPayantIsSet={} ",
-				tiersGarantIsSet, tiersPayantIsSet);
-
-		if (tiersGarantIsSet)
-		{
-			return new GuarantorAndBiller(
-					body.getTiersGarant().getGuarantor(),
-					body.getTiersGarant().getBiller());
-		}
-
-		// tiersPayantIsSet
-		return new GuarantorAndBiller(
-				body.getTiersPayant().getGuarantor(),
-				body.getTiersPayant().getBiller());
-	}
-
 	private PatientAddressType getPatient(@NonNull final BodyType body)
 	{
 		final boolean tiersGarantIsSet = body.getTiersGarant() != null;
@@ -542,59 +519,6 @@ public class XmlToOLCandsService
 		// tiersPayantIsSet
 		return body.getTiersPayant().getGuarantor();
 	}
-
-	private GuarantorAndBiller ProviderAndBiller(@NonNull final BodyType body)
-	{
-		final boolean tiersGarantIsSet = body.getTiersGarant() != null;
-		final boolean tiersPayantIsSet = body.getTiersPayant() != null;
-
-		Check.errorUnless(tiersGarantIsSet ^ tiersPayantIsSet,
-				"One of TiersGarant or TiersPayant needs to be provided but not both; tiersGarantIsSet={}; tiersPayantIsSet={} ",
-				tiersGarantIsSet, tiersPayantIsSet);
-
-		if (tiersGarantIsSet)
-		{
-			return new GuarantorAndBiller(
-					body.getTiersGarant().getGuarantor(),
-					body.getTiersGarant().getBiller());
-		}
-
-		// tiersPayantIsSet
-		return new GuarantorAndBiller(
-				body.getTiersPayant().getGuarantor(),
-				body.getTiersPayant().getBiller());
-	}
-
-	// private JsonOLCandCreateRequestBuilder insertInsuranceAndBillerIntoBuilder(
-	// @NonNull final JsonOLCandCreateRequestBuilder requestBuilder,
-	// @NonNull final InsuranceAndBiller insuranceAndBiller,
-	// @NonNull final HighLevelContext context)
-	// {
-	//
-	// final JsonRequestBPartnerLocationAndContact debitorBPartnerInfo = createReadOnlyInvoiceRecipient(context);
-	//
-	// return insuranceBuilder;
-	// }
-
-	// private JsonOLCandCreateRequestBuilder insertGuarantorAndBillerIntoBuilder(
-	// @NonNull final JsonOLCandCreateRequestBuilder requestBuilder,
-	// @NonNull final GuarantorAndBiller providerAndBiller,
-	// @NonNull final HighLevelContext context)
-	// {
-	// final JsonRequestBPartnerLocationAndContact debitorBPartnerInfo = createGuarantorJsonBPartnerInfo(
-	// providerAndBiller.getGuarantor(),
-	// context);
-	//
-	// final JsonOrganization billerOrgInfo = createBillerOrg(
-	// providerAndBiller.getBiller(),
-	// context);
-	//
-	// final JsonOLCandCreateRequestBuilder insuranceBuilder = copyBuilder(requestBuilder)
-	// .bpartner(debitorBPartnerInfo)
-	// .org(billerOrgInfo);
-	//
-	// return insuranceBuilder;
-	// }
 
 	private JsonRequestBPartnerLocationAndContact createPatientInvoiceRecipient(
 			@NonNull final JsonOLCandCreateRequestBuilder requestBuilder,
@@ -689,36 +613,6 @@ public class XmlToOLCandsService
 				.add(person.getFamilyname())
 				.toString();
 		return patientName;
-	}
-
-	@Value
-	private static class InsuranceAndBiller
-	{
-		@NonNull
-		final InsuranceAddressType insurance;
-
-		@NonNull
-		final BillerAddressType biller;
-	}
-
-	@Value
-	private static class PatientAndBiller
-	{
-		@NonNull
-		final PatientAddressType patient;
-
-		@NonNull
-		final BillerAddressType biller;
-	}
-
-	@Value
-	private static class GuarantorAndBiller
-	{
-		@NonNull
-		final GuarantorAddressType guarantor;
-
-		@NonNull
-		final BillerAddressType biller;
 	}
 
 	private JsonOrganization createBillerOrg(

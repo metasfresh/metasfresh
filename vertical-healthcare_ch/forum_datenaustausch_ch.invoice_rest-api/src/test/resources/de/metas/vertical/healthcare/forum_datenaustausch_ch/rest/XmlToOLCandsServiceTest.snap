@@ -38,15 +38,11 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "dataDest" : "int-DEST.de.metas.invoicecandidate",
     "bpartner" : {
       "bpartner" : {
-        "externalId" : "EAN-7634567890000",
-        "name" : "Krankenkasse AG"
+        "externalId" : "EAN-7634567890000"
       },
       "location" : {
         "gln" : "7634567890000",
-        "externalId" : "EAN-7634567890000_singleAddress",
-        "address1" : "Kassengraben 222",
-        "city" : "Basel",
-        "countryCode" : "CH"
+        "externalId" : "EAN-7634567890000_singleAddress"
       },
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -115,15 +111,11 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "dataDest" : "int-DEST.de.metas.invoicecandidate",
     "bpartner" : {
       "bpartner" : {
-        "externalId" : "EAN-7634567890000",
-        "name" : "Krankenkasse AG"
+        "externalId" : "EAN-7634567890000"
       },
       "location" : {
         "gln" : "7634567890000",
-        "externalId" : "EAN-7634567890000_singleAddress",
-        "address1" : "Kassengraben 222",
-        "city" : "Basel",
-        "countryCode" : "CH"
+        "externalId" : "EAN-7634567890000_singleAddress"
       },
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -192,15 +184,11 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "dataDest" : "int-DEST.de.metas.invoicecandidate",
     "bpartner" : {
       "bpartner" : {
-        "externalId" : "EAN-7634567890000",
-        "name" : "Krankenkasse AG"
+        "externalId" : "EAN-7634567890000"
       },
       "location" : {
         "gln" : "7634567890000",
-        "externalId" : "EAN-7634567890000_singleAddress",
-        "address1" : "Kassengraben 222",
-        "city" : "Basel",
-        "countryCode" : "CH"
+        "externalId" : "EAN-7634567890000_singleAddress"
       },
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -269,15 +257,11 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "dataDest" : "int-DEST.de.metas.invoicecandidate",
     "bpartner" : {
       "bpartner" : {
-        "externalId" : "EAN-7634567890000",
-        "name" : "Krankenkasse AG"
+        "externalId" : "EAN-7634567890000"
       },
       "location" : {
         "gln" : "7634567890000",
-        "externalId" : "EAN-7634567890000_singleAddress",
-        "address1" : "Kassengraben 222",
-        "city" : "Basel",
-        "countryCode" : "CH"
+        "externalId" : "EAN-7634567890000_singleAddress"
       },
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -346,15 +330,11 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "dataDest" : "int-DEST.de.metas.invoicecandidate",
     "bpartner" : {
       "bpartner" : {
-        "externalId" : "EAN-7634567890000",
-        "name" : "Krankenkasse AG"
+        "externalId" : "EAN-7634567890000"
       },
       "location" : {
         "gln" : "7634567890000",
-        "externalId" : "EAN-7634567890000_singleAddress",
-        "address1" : "Kassengraben 222",
-        "city" : "Basel",
-        "countryCode" : "CH"
+        "externalId" : "EAN-7634567890000_singleAddress"
       },
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -423,15 +403,11 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "dataDest" : "int-DEST.de.metas.invoicecandidate",
     "bpartner" : {
       "bpartner" : {
-        "externalId" : "EAN-7634567890000",
-        "name" : "Krankenkasse AG"
+        "externalId" : "EAN-7634567890000"
       },
       "location" : {
         "gln" : "7634567890000",
-        "externalId" : "EAN-7634567890000_singleAddress",
-        "address1" : "Kassengraben 222",
-        "city" : "Basel",
-        "countryCode" : "CH"
+        "externalId" : "EAN-7634567890000_singleAddress"
       },
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -500,15 +476,11 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "dataDest" : "int-DEST.de.metas.invoicecandidate",
     "bpartner" : {
       "bpartner" : {
-        "externalId" : "EAN-7634567890000",
-        "name" : "Krankenkasse AG"
+        "externalId" : "EAN-7634567890000"
       },
       "location" : {
         "gln" : "7634567890000",
-        "externalId" : "EAN-7634567890000_singleAddress",
-        "address1" : "Kassengraben 222",
-        "city" : "Basel",
-        "countryCode" : "CH"
+        "externalId" : "EAN-7634567890000_singleAddress"
       },
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -577,15 +549,11 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "dataDest" : "int-DEST.de.metas.invoicecandidate",
     "bpartner" : {
       "bpartner" : {
-        "externalId" : "EAN-7634567890000",
-        "name" : "Krankenkasse AG"
+        "externalId" : "EAN-7634567890000"
       },
       "location" : {
         "gln" : "7634567890000",
-        "externalId" : "EAN-7634567890000_singleAddress",
-        "address1" : "Kassengraben 222",
-        "city" : "Basel",
-        "countryCode" : "CH"
+        "externalId" : "EAN-7634567890000_singleAddress"
       },
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -654,15 +622,11 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "dataDest" : "int-DEST.de.metas.invoicecandidate",
     "bpartner" : {
       "bpartner" : {
-        "externalId" : "EAN-7634567890000",
-        "name" : "Krankenkasse AG"
+        "externalId" : "EAN-7634567890000"
       },
       "location" : {
         "gln" : "7634567890000",
-        "externalId" : "EAN-7634567890000_singleAddress",
-        "address1" : "Kassengraben 222",
-        "city" : "Basel",
-        "countryCode" : "CH"
+        "externalId" : "EAN-7634567890000_singleAddress"
       },
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -731,15 +695,11 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "dataDest" : "int-DEST.de.metas.invoicecandidate",
     "bpartner" : {
       "bpartner" : {
-        "externalId" : "EAN-7634567890000",
-        "name" : "Krankenkasse AG"
+        "externalId" : "EAN-7634567890000"
       },
       "location" : {
         "gln" : "7634567890000",
-        "externalId" : "EAN-7634567890000_singleAddress",
-        "address1" : "Kassengraben 222",
-        "city" : "Basel",
-        "countryCode" : "CH"
+        "externalId" : "EAN-7634567890000_singleAddress"
       },
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -808,15 +768,11 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "dataDest" : "int-DEST.de.metas.invoicecandidate",
     "bpartner" : {
       "bpartner" : {
-        "externalId" : "EAN-7634567890000",
-        "name" : "Krankenkasse AG"
+        "externalId" : "EAN-7634567890000"
       },
       "location" : {
         "gln" : "7634567890000",
-        "externalId" : "EAN-7634567890000_singleAddress",
-        "address1" : "Kassengraben 222",
-        "city" : "Basel",
-        "countryCode" : "CH"
+        "externalId" : "EAN-7634567890000_singleAddress"
       },
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -885,15 +841,11 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "dataDest" : "int-DEST.de.metas.invoicecandidate",
     "bpartner" : {
       "bpartner" : {
-        "externalId" : "EAN-7634567890000",
-        "name" : "Krankenkasse AG"
+        "externalId" : "EAN-7634567890000"
       },
       "location" : {
         "gln" : "7634567890000",
-        "externalId" : "EAN-7634567890000_singleAddress",
-        "address1" : "Kassengraben 222",
-        "city" : "Basel",
-        "countryCode" : "CH"
+        "externalId" : "EAN-7634567890000_singleAddress"
       },
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -962,15 +914,11 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "dataDest" : "int-DEST.de.metas.invoicecandidate",
     "bpartner" : {
       "bpartner" : {
-        "externalId" : "EAN-7634567890000",
-        "name" : "Krankenkasse AG"
+        "externalId" : "EAN-7634567890000"
       },
       "location" : {
         "gln" : "7634567890000",
-        "externalId" : "EAN-7634567890000_singleAddress",
-        "address1" : "Kassengraben 222",
-        "city" : "Basel",
-        "countryCode" : "CH"
+        "externalId" : "EAN-7634567890000_singleAddress"
       },
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -1039,15 +987,11 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "dataDest" : "int-DEST.de.metas.invoicecandidate",
     "bpartner" : {
       "bpartner" : {
-        "externalId" : "EAN-7634567890000",
-        "name" : "Krankenkasse AG"
+        "externalId" : "EAN-7634567890000"
       },
       "location" : {
         "gln" : "7634567890000",
-        "externalId" : "EAN-7634567890000_singleAddress",
-        "address1" : "Kassengraben 222",
-        "city" : "Basel",
-        "countryCode" : "CH"
+        "externalId" : "EAN-7634567890000_singleAddress"
       },
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -1116,15 +1060,11 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "dataDest" : "int-DEST.de.metas.invoicecandidate",
     "bpartner" : {
       "bpartner" : {
-        "externalId" : "EAN-7634567890000",
-        "name" : "Krankenkasse AG"
+        "externalId" : "EAN-7634567890000"
       },
       "location" : {
         "gln" : "7634567890000",
-        "externalId" : "EAN-7634567890000_singleAddress",
-        "address1" : "Kassengraben 222",
-        "city" : "Basel",
-        "countryCode" : "CH"
+        "externalId" : "EAN-7634567890000_singleAddress"
       },
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -1193,15 +1133,11 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "dataDest" : "int-DEST.de.metas.invoicecandidate",
     "bpartner" : {
       "bpartner" : {
-        "externalId" : "EAN-7634567890000",
-        "name" : "Krankenkasse AG"
+        "externalId" : "EAN-7634567890000"
       },
       "location" : {
         "gln" : "7634567890000",
-        "externalId" : "EAN-7634567890000_singleAddress",
-        "address1" : "Kassengraben 222",
-        "city" : "Basel",
-        "countryCode" : "CH"
+        "externalId" : "EAN-7634567890000_singleAddress"
       },
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -1270,15 +1206,11 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "dataDest" : "int-DEST.de.metas.invoicecandidate",
     "bpartner" : {
       "bpartner" : {
-        "externalId" : "EAN-7634567890000",
-        "name" : "Krankenkasse AG"
+        "externalId" : "EAN-7634567890000"
       },
       "location" : {
         "gln" : "7634567890000",
-        "externalId" : "EAN-7634567890000_singleAddress",
-        "address1" : "Kassengraben 222",
-        "city" : "Basel",
-        "countryCode" : "CH"
+        "externalId" : "EAN-7634567890000_singleAddress"
       },
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -1347,15 +1279,11 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "dataDest" : "int-DEST.de.metas.invoicecandidate",
     "bpartner" : {
       "bpartner" : {
-        "externalId" : "EAN-7634567890000",
-        "name" : "Krankenkasse AG"
+        "externalId" : "EAN-7634567890000"
       },
       "location" : {
         "gln" : "7634567890000",
-        "externalId" : "EAN-7634567890000_singleAddress",
-        "address1" : "Kassengraben 222",
-        "city" : "Basel",
-        "countryCode" : "CH"
+        "externalId" : "EAN-7634567890000_singleAddress"
       },
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -1424,15 +1352,11 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "dataDest" : "int-DEST.de.metas.invoicecandidate",
     "bpartner" : {
       "bpartner" : {
-        "externalId" : "EAN-7634567890000",
-        "name" : "Krankenkasse AG"
+        "externalId" : "EAN-7634567890000"
       },
       "location" : {
         "gln" : "7634567890000",
-        "externalId" : "EAN-7634567890000_singleAddress",
-        "address1" : "Kassengraben 222",
-        "city" : "Basel",
-        "countryCode" : "CH"
+        "externalId" : "EAN-7634567890000_singleAddress"
       },
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -1501,15 +1425,11 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "dataDest" : "int-DEST.de.metas.invoicecandidate",
     "bpartner" : {
       "bpartner" : {
-        "externalId" : "EAN-7634567890000",
-        "name" : "Krankenkasse AG"
+        "externalId" : "EAN-7634567890000"
       },
       "location" : {
         "gln" : "7634567890000",
-        "externalId" : "EAN-7634567890000_singleAddress",
-        "address1" : "Kassengraben 222",
-        "city" : "Basel",
-        "countryCode" : "CH"
+        "externalId" : "EAN-7634567890000_singleAddress"
       },
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -1578,15 +1498,11 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "dataDest" : "int-DEST.de.metas.invoicecandidate",
     "bpartner" : {
       "bpartner" : {
-        "externalId" : "EAN-7634567890000",
-        "name" : "Krankenkasse AG"
+        "externalId" : "EAN-7634567890000"
       },
       "location" : {
         "gln" : "7634567890000",
-        "externalId" : "EAN-7634567890000_singleAddress",
-        "address1" : "Kassengraben 222",
-        "city" : "Basel",
-        "countryCode" : "CH"
+        "externalId" : "EAN-7634567890000_singleAddress"
       },
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -1660,15 +1576,11 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "dataDest" : "int-DEST.de.metas.invoicecandidate",
     "bpartner" : {
       "bpartner" : {
-        "externalId" : "EAN-7634567890000",
-        "name" : "Krankenkasse AG"
+        "externalId" : "EAN-7634567890000"
       },
       "location" : {
         "gln" : "7634567890000",
-        "externalId" : "EAN-7634567890000_singleAddress",
-        "address1" : "Kassengraben 222",
-        "city" : "Basel",
-        "countryCode" : "CH"
+        "externalId" : "EAN-7634567890000_singleAddress"
       },
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -1737,15 +1649,11 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "dataDest" : "int-DEST.de.metas.invoicecandidate",
     "bpartner" : {
       "bpartner" : {
-        "externalId" : "EAN-7634567890000",
-        "name" : "Krankenkasse AG"
+        "externalId" : "EAN-7634567890000"
       },
       "location" : {
         "gln" : "7634567890000",
-        "externalId" : "EAN-7634567890000_singleAddress",
-        "address1" : "Kassengraben 222",
-        "city" : "Basel",
-        "countryCode" : "CH"
+        "externalId" : "EAN-7634567890000_singleAddress"
       },
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -1814,15 +1722,11 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "dataDest" : "int-DEST.de.metas.invoicecandidate",
     "bpartner" : {
       "bpartner" : {
-        "externalId" : "EAN-7634567890000",
-        "name" : "Krankenkasse AG"
+        "externalId" : "EAN-7634567890000"
       },
       "location" : {
         "gln" : "7634567890000",
-        "externalId" : "EAN-7634567890000_singleAddress",
-        "address1" : "Kassengraben 222",
-        "city" : "Basel",
-        "countryCode" : "CH"
+        "externalId" : "EAN-7634567890000_singleAddress"
       },
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -1891,15 +1795,11 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "dataDest" : "int-DEST.de.metas.invoicecandidate",
     "bpartner" : {
       "bpartner" : {
-        "externalId" : "EAN-7634567890000",
-        "name" : "Krankenkasse AG"
+        "externalId" : "EAN-7634567890000"
       },
       "location" : {
         "gln" : "7634567890000",
-        "externalId" : "EAN-7634567890000_singleAddress",
-        "address1" : "Kassengraben 222",
-        "city" : "Basel",
-        "countryCode" : "CH"
+        "externalId" : "EAN-7634567890000_singleAddress"
       },
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -1968,15 +1868,11 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "dataDest" : "int-DEST.de.metas.invoicecandidate",
     "bpartner" : {
       "bpartner" : {
-        "externalId" : "EAN-7634567890000",
-        "name" : "Krankenkasse AG"
+        "externalId" : "EAN-7634567890000"
       },
       "location" : {
         "gln" : "7634567890000",
-        "externalId" : "EAN-7634567890000_singleAddress",
-        "address1" : "Kassengraben 222",
-        "city" : "Basel",
-        "countryCode" : "CH"
+        "externalId" : "EAN-7634567890000_singleAddress"
       },
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -2045,15 +1941,11 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "dataDest" : "int-DEST.de.metas.invoicecandidate",
     "bpartner" : {
       "bpartner" : {
-        "externalId" : "EAN-7634567890000",
-        "name" : "Krankenkasse AG"
+        "externalId" : "EAN-7634567890000"
       },
       "location" : {
         "gln" : "7634567890000",
-        "externalId" : "EAN-7634567890000_singleAddress",
-        "address1" : "Kassengraben 222",
-        "city" : "Basel",
-        "countryCode" : "CH"
+        "externalId" : "EAN-7634567890000_singleAddress"
       },
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -2122,15 +2014,11 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "dataDest" : "int-DEST.de.metas.invoicecandidate",
     "bpartner" : {
       "bpartner" : {
-        "externalId" : "EAN-7634567890000",
-        "name" : "Krankenkasse AG"
+        "externalId" : "EAN-7634567890000"
       },
       "location" : {
         "gln" : "7634567890000",
-        "externalId" : "EAN-7634567890000_singleAddress",
-        "address1" : "Kassengraben 222",
-        "city" : "Basel",
-        "countryCode" : "CH"
+        "externalId" : "EAN-7634567890000_singleAddress"
       },
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -2199,15 +2087,11 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "dataDest" : "int-DEST.de.metas.invoicecandidate",
     "bpartner" : {
       "bpartner" : {
-        "externalId" : "EAN-7634567890000",
-        "name" : "Krankenkasse AG"
+        "externalId" : "EAN-7634567890000"
       },
       "location" : {
         "gln" : "7634567890000",
-        "externalId" : "EAN-7634567890000_singleAddress",
-        "address1" : "Kassengraben 222",
-        "city" : "Basel",
-        "countryCode" : "CH"
+        "externalId" : "EAN-7634567890000_singleAddress"
       },
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -2276,15 +2160,11 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "dataDest" : "int-DEST.de.metas.invoicecandidate",
     "bpartner" : {
       "bpartner" : {
-        "externalId" : "EAN-7634567890000",
-        "name" : "Krankenkasse AG"
+        "externalId" : "EAN-7634567890000"
       },
       "location" : {
         "gln" : "7634567890000",
-        "externalId" : "EAN-7634567890000_singleAddress",
-        "address1" : "Kassengraben 222",
-        "city" : "Basel",
-        "countryCode" : "CH"
+        "externalId" : "EAN-7634567890000_singleAddress"
       },
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -2353,15 +2233,11 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "dataDest" : "int-DEST.de.metas.invoicecandidate",
     "bpartner" : {
       "bpartner" : {
-        "externalId" : "EAN-7634567890000",
-        "name" : "Krankenkasse AG"
+        "externalId" : "EAN-7634567890000"
       },
       "location" : {
         "gln" : "7634567890000",
-        "externalId" : "EAN-7634567890000_singleAddress",
-        "address1" : "Kassengraben 222",
-        "city" : "Basel",
-        "countryCode" : "CH"
+        "externalId" : "EAN-7634567890000_singleAddress"
       },
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -2430,15 +2306,11 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "dataDest" : "int-DEST.de.metas.invoicecandidate",
     "bpartner" : {
       "bpartner" : {
-        "externalId" : "EAN-7634567890000",
-        "name" : "Krankenkasse AG"
+        "externalId" : "EAN-7634567890000"
       },
       "location" : {
         "gln" : "7634567890000",
-        "externalId" : "EAN-7634567890000_singleAddress",
-        "address1" : "Kassengraben 222",
-        "city" : "Basel",
-        "countryCode" : "CH"
+        "externalId" : "EAN-7634567890000_singleAddress"
       },
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -2507,15 +2379,11 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "dataDest" : "int-DEST.de.metas.invoicecandidate",
     "bpartner" : {
       "bpartner" : {
-        "externalId" : "EAN-7634567890000",
-        "name" : "Krankenkasse AG"
+        "externalId" : "EAN-7634567890000"
       },
       "location" : {
         "gln" : "7634567890000",
-        "externalId" : "EAN-7634567890000_singleAddress",
-        "address1" : "Kassengraben 222",
-        "city" : "Basel",
-        "countryCode" : "CH"
+        "externalId" : "EAN-7634567890000_singleAddress"
       },
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -2584,15 +2452,11 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "dataDest" : "int-DEST.de.metas.invoicecandidate",
     "bpartner" : {
       "bpartner" : {
-        "externalId" : "EAN-7634567890000",
-        "name" : "Krankenkasse AG"
+        "externalId" : "EAN-7634567890000"
       },
       "location" : {
         "gln" : "7634567890000",
-        "externalId" : "EAN-7634567890000_singleAddress",
-        "address1" : "Kassengraben 222",
-        "city" : "Basel",
-        "countryCode" : "CH"
+        "externalId" : "EAN-7634567890000_singleAddress"
       },
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -2661,15 +2525,11 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "dataDest" : "int-DEST.de.metas.invoicecandidate",
     "bpartner" : {
       "bpartner" : {
-        "externalId" : "EAN-7634567890000",
-        "name" : "Krankenkasse AG"
+        "externalId" : "EAN-7634567890000"
       },
       "location" : {
         "gln" : "7634567890000",
-        "externalId" : "EAN-7634567890000_singleAddress",
-        "address1" : "Kassengraben 222",
-        "city" : "Basel",
-        "countryCode" : "CH"
+        "externalId" : "EAN-7634567890000_singleAddress"
       },
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -2738,15 +2598,11 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "dataDest" : "int-DEST.de.metas.invoicecandidate",
     "bpartner" : {
       "bpartner" : {
-        "externalId" : "EAN-7634567890000",
-        "name" : "Krankenkasse AG"
+        "externalId" : "EAN-7634567890000"
       },
       "location" : {
         "gln" : "7634567890000",
-        "externalId" : "EAN-7634567890000_singleAddress",
-        "address1" : "Kassengraben 222",
-        "city" : "Basel",
-        "countryCode" : "CH"
+        "externalId" : "EAN-7634567890000_singleAddress"
       },
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -2815,15 +2671,11 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "dataDest" : "int-DEST.de.metas.invoicecandidate",
     "bpartner" : {
       "bpartner" : {
-        "externalId" : "EAN-7634567890000",
-        "name" : "Krankenkasse AG"
+        "externalId" : "EAN-7634567890000"
       },
       "location" : {
         "gln" : "7634567890000",
-        "externalId" : "EAN-7634567890000_singleAddress",
-        "address1" : "Kassengraben 222",
-        "city" : "Basel",
-        "countryCode" : "CH"
+        "externalId" : "EAN-7634567890000_singleAddress"
       },
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -2892,15 +2744,11 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "dataDest" : "int-DEST.de.metas.invoicecandidate",
     "bpartner" : {
       "bpartner" : {
-        "externalId" : "EAN-7634567890000",
-        "name" : "Krankenkasse AG"
+        "externalId" : "EAN-7634567890000"
       },
       "location" : {
         "gln" : "7634567890000",
-        "externalId" : "EAN-7634567890000_singleAddress",
-        "address1" : "Kassengraben 222",
-        "city" : "Basel",
-        "countryCode" : "CH"
+        "externalId" : "EAN-7634567890000_singleAddress"
       },
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -2969,15 +2817,11 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "dataDest" : "int-DEST.de.metas.invoicecandidate",
     "bpartner" : {
       "bpartner" : {
-        "externalId" : "EAN-7634567890000",
-        "name" : "Krankenkasse AG"
+        "externalId" : "EAN-7634567890000"
       },
       "location" : {
         "gln" : "7634567890000",
-        "externalId" : "EAN-7634567890000_singleAddress",
-        "address1" : "Kassengraben 222",
-        "city" : "Basel",
-        "countryCode" : "CH"
+        "externalId" : "EAN-7634567890000_singleAddress"
       },
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -3046,15 +2890,11 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "dataDest" : "int-DEST.de.metas.invoicecandidate",
     "bpartner" : {
       "bpartner" : {
-        "externalId" : "EAN-7634567890000",
-        "name" : "Krankenkasse AG"
+        "externalId" : "EAN-7634567890000"
       },
       "location" : {
         "gln" : "7634567890000",
-        "externalId" : "EAN-7634567890000_singleAddress",
-        "address1" : "Kassengraben 222",
-        "city" : "Basel",
-        "countryCode" : "CH"
+        "externalId" : "EAN-7634567890000_singleAddress"
       },
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -3123,15 +2963,11 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "dataDest" : "int-DEST.de.metas.invoicecandidate",
     "bpartner" : {
       "bpartner" : {
-        "externalId" : "EAN-7634567890000",
-        "name" : "Krankenkasse AG"
+        "externalId" : "EAN-7634567890000"
       },
       "location" : {
         "gln" : "7634567890000",
-        "externalId" : "EAN-7634567890000_singleAddress",
-        "address1" : "Kassengraben 222",
-        "city" : "Basel",
-        "countryCode" : "CH"
+        "externalId" : "EAN-7634567890000_singleAddress"
       },
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -3200,15 +3036,11 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "dataDest" : "int-DEST.de.metas.invoicecandidate",
     "bpartner" : {
       "bpartner" : {
-        "externalId" : "EAN-7634567890000",
-        "name" : "Krankenkasse AG"
+        "externalId" : "EAN-7634567890000"
       },
       "location" : {
         "gln" : "7634567890000",
-        "externalId" : "EAN-7634567890000_singleAddress",
-        "address1" : "Kassengraben 222",
-        "city" : "Basel",
-        "countryCode" : "CH"
+        "externalId" : "EAN-7634567890000_singleAddress"
       },
       "syncAdvise" : {
         "ifNotExists" : "FAIL",

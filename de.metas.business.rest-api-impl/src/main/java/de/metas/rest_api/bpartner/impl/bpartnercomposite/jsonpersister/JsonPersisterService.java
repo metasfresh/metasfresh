@@ -566,6 +566,16 @@ public class JsonPersisterService
 			bpartner.setValue(null);
 		}
 
+		// globalId
+		if (!isEmpty(jsonBPartner.getGlobalId(), true))
+		{
+			bpartner.setGlobalId(jsonBPartner.getGlobalId().trim());
+		}
+		else if (isUpdateRemove)
+		{
+			bpartner.setGlobalId(null);
+		}
+
 		// companyName
 		if (!isEmpty(jsonBPartner.getCompanyName(), true))
 		{

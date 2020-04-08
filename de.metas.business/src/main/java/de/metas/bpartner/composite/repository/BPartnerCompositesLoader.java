@@ -219,6 +219,7 @@ final class BPartnerCompositesLoader
 				.value(bpartnerRecord.getValue())
 				.companyName(bpartnerRecord.getCompanyName())
 				.externalId(ExternalId.ofOrNull(bpartnerRecord.getExternalId()))
+				.globalId(bpartnerRecord.getGlobalId())
 				.groupId(BPGroupId.ofRepoId(bpartnerRecord.getC_BP_Group_ID()))
 				.language(Language.asLanguage(bpartnerRecord.getAD_Language()))
 				.id(BPartnerId.ofRepoId(bpartnerRecord.getC_BPartner_ID()))

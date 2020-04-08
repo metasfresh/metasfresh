@@ -138,6 +138,7 @@ final class BPartnerCompositeSaver
 		bpartnerRecord.setIsCustomer(bpartner.isCustomer());
 
 		bpartnerRecord.setValue(bpartner.getValue());
+		bpartnerRecord.setGlobalId(bpartner.getGlobalId());
 
 		assertCanCreateOrUpdate(bpartnerRecord);
 		saveRecord(bpartnerRecord);
