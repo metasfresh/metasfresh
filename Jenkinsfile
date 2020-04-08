@@ -96,11 +96,12 @@ try
 					nexusCreateRepoIfNotExists mvnConf.mvnDeployRepoBaseURL, mvnConf.mvnRepoName
 
 					buildBackend(mvnConf, scmVars)
-					buildDistribution(mvnConf)
+
+					final Map artifactURLs =  = buildDistribution(mvnConf)
 
 					testSQLMigrationScripts(
 						params.MF_SQL_SEED_DUMP_URL, 
-						MF_ARTIFACT_URLS['metasfresh-dist-sql-only'], 
+						artifactURLs['metasfresh-dist-sql-only'], 
 						dbInitDockerImageName)
 				} // withMaven
 			} // withEnv
@@ -207,8 +208,10 @@ void buildBackend(final MvnConf mvnConf, final Map scmVars)
 	} // dir
 }
 
-void buildDistribution(final MvnConf mvnConf)
+Map buildDistribution(final MvnConf mvnConf)
 {
+	final artifactURLs = [:];
+
 	dir('distribution')
 	{
 		stage('Resolve all distribution artifacts')
@@ -245,14 +248,14 @@ void buildDistribution(final MvnConf mvnConf)
 			final def mavenProps = readProperties file: 'app.properties'
 			final def urlEncodedMavenProps = misc.urlEncodeMapValues(mavenProps);
 
-			final MF_ARTIFACT_URLS = [:];
-			MF_ARTIFACT_URLS['metasfresh-admin'] = "${mvnConf.resolveRepoURL}/de/metas/admin/metasfresh-admin/${urlEncodedMavenProps['metasfresh-admin.version']}/metasfresh-admin-${urlEncodedMavenProps['metasfresh-admin.version']}.jar"
-			MF_ARTIFACT_URLS['metasfresh-dist'] = "${mvnConf.deployRepoURL}/de/metas/dist/metasfresh-dist-dist/${misc.urlEncode(MF_VERSION)}/metasfresh-dist-dist-${misc.urlEncode(MF_VERSION)}-dist.tar.gz"
-			MF_ARTIFACT_URLS['metasfresh-dist-sql-only'] = "${mvnConf.deployRepoURL}/de/metas/dist/metasfresh-dist-dist/${misc.urlEncode(MF_VERSION)}/metasfresh-dist-dist-${misc.urlEncode(MF_VERSION)}-sql-only.tar.gz"
-			MF_ARTIFACT_URLS['metasfresh-material-dispo'] = "${mvnConf.resolveRepoURL}/de/metas/material/metasfresh-material-dispo-service/${urlEncodedMavenProps['metasfresh.version']}/metasfresh-material-dispo-service-${urlEncodedMavenProps['metasfresh.version']}.jar"
-			MF_ARTIFACT_URLS['metasfresh-procurement-webui'] = "${mvnConf.resolveRepoURL}/de/metas/procurement/de.metas.procurement.webui/${urlEncodedMavenProps['metasfresh-procurement-webui.version']}/de.metas.procurement.webui-${urlEncodedMavenProps['metasfresh-procurement-webui.version']}.jar"
-			MF_ARTIFACT_URLS['metasfresh-webui'] = "${mvnConf.resolveRepoURL}/de/metas/ui/web/metasfresh-webui-api/${urlEncodedMavenProps['metasfresh.version']}/metasfresh-webui-api-${urlEncodedMavenProps['metasfresh.version']}.jar"
-			MF_ARTIFACT_URLS['metasfresh-webui-frontend'] = "${mvnConf.resolveRepoURL}/de/metas/ui/web/metasfresh-webui-frontend/${urlEncodedMavenProps['metasfresh-webui-frontend.version']}/metasfresh-webui-frontend-${urlEncodedMavenProps['metasfresh-webui-frontend.version']}.tar.gz"
+			
+			artifactURLs['metasfresh-admin'] = "${mvnConf.resolveRepoURL}/de/metas/admin/metasfresh-admin/${urlEncodedMavenProps['metasfresh-admin.version']}/metasfresh-admin-${urlEncodedMavenProps['metasfresh-admin.version']}.jar"
+			artifactURLs['metasfresh-dist'] = "${mvnConf.deployRepoURL}/de/metas/dist/metasfresh-dist-dist/${misc.urlEncode(MF_VERSION)}/metasfresh-dist-dist-${misc.urlEncode(MF_VERSION)}-dist.tar.gz"
+			artifactURLs['metasfresh-dist-sql-only'] = "${mvnConf.deployRepoURL}/de/metas/dist/metasfresh-dist-dist/${misc.urlEncode(MF_VERSION)}/metasfresh-dist-dist-${misc.urlEncode(MF_VERSION)}-sql-only.tar.gz"
+			artifactURLs['metasfresh-material-dispo'] = "${mvnConf.resolveRepoURL}/de/metas/material/metasfresh-material-dispo-service/${urlEncodedMavenProps['metasfresh.version']}/metasfresh-material-dispo-service-${urlEncodedMavenProps['metasfresh.version']}.jar"
+			artifactURLs['metasfresh-procurement-webui'] = "${mvnConf.resolveRepoURL}/de/metas/procurement/de.metas.procurement.webui/${urlEncodedMavenProps['metasfresh-procurement-webui.version']}/de.metas.procurement.webui-${urlEncodedMavenProps['metasfresh-procurement-webui.version']}.jar"
+			artifactURLs['metasfresh-webui-api'] = "${mvnConf.resolveRepoURL}/de/metas/ui/web/metasfresh-webui-api/${urlEncodedMavenProps['metasfresh.version']}/metasfresh-webui-api-${urlEncodedMavenProps['metasfresh.version']}.jar"
+			artifactURLs['metasfresh-webui-frontend'] = "${mvnConf.resolveRepoURL}/de/metas/ui/web/metasfresh-webui-frontend/${urlEncodedMavenProps['metasfresh-webui-frontend.version']}/metasfresh-webui-frontend-${urlEncodedMavenProps['metasfresh-webui-frontend.version']}.tar.gz"
 
 			final MF_DOCKER_IMAGES = [:];
 
@@ -262,7 +265,7 @@ void buildDistribution(final MvnConf mvnConf)
 			// See
 			//  * https://github.com/jenkinsci/build-with-parameters-plugin/pull/10
 			//  * https://jenkins.ci.cloudbees.com/job/plugins/job/build-with-parameters-plugin/15/org.jenkins-ci.plugins$build-with-parameters/
-			String releaseLinkWithText = "	<li>..and ${misc.createReleaseLinkWithText(MF_RELEASE_VERSION, MF_VERSION, MF_ARTIFACT_URLS, MF_DOCKER_IMAGES)}</li>";
+			String releaseLinkWithText = "	<li>..and ${misc.createReleaseLinkWithText(MF_RELEASE_VERSION, MF_VERSION, artifactURLs, MF_DOCKER_IMAGES)}</li>";
 
 			// don't link to the e2e-run-job with the lastest e2e-docker-image; users shall instead call that job from metasfresh-e2e-builds, so it's documented in the job-params which docker-tag was used
 			final String e2eLinkWithText = "";
@@ -280,20 +283,20 @@ void buildDistribution(final MvnConf mvnConf)
 <p>
 <h3>Deployable maven artifacts</h3>
 <ul>
-	<li><a href=\"${MF_ARTIFACT_URLS['metasfresh-dist']}\">dist-tar.gz</a></li>
-	<li><a href=\"${MF_ARTIFACT_URLS['metasfresh-dist-sql-only']}\">sql-only-tar.gz</a></li>
+	<li><a href=\"${artifactURLs['metasfresh-dist']}\">dist-tar.gz</a></li>
+	<li><a href=\"${artifactURLs['metasfresh-dist-sql-only']}\">sql-only-tar.gz</a></li>
 	<li><a href=\"${mvnConf.deployRepoURL}/de/metas/dist/metasfresh-dist-swingui/${misc.urlEncode(MF_VERSION)}/metasfresh-dist-swingui-${misc.urlEncode(MF_VERSION)}-client.zip\">client.zip</a></li>
-	<li><a href=\"${MF_ARTIFACT_URLS['metasfresh-webui']}\">metasfresh-webui-api.jar</a></li>
-	<li><a href=\"${MF_ARTIFACT_URLS['metasfresh-webui-frontend']}\">metasfresh-webui-frontend.tar.gz</a></li>
-	<li><a href=\"${MF_ARTIFACT_URLS['metasfresh-procurement-webui']}\">metasfresh-procurement-webui.jar</a></li>
-	<li><a href=\"${MF_ARTIFACT_URLS['metasfresh-material-dispo']}\">metasfresh-material-dispo.jar</a></li>
-	<li><a href=\"${MF_ARTIFACT_URLS['metasfresh-admin']}\">metasfresh-admin.jar</a></li>
+	<li><a href=\"${artifactURLs['metasfresh-webui-api']}\">metasfresh-webui-api.jar</a></li>
+	<li><a href=\"${artifactURLs['metasfresh-webui-frontend']}\">metasfresh-webui-frontend.tar.gz</a></li>
+	<li><a href=\"${artifactURLs['metasfresh-procurement-webui']}\">metasfresh-procurement-webui.jar</a></li>
+	<li><a href=\"${artifactURLs['metasfresh-material-dispo']}\">metasfresh-material-dispo.jar</a></li>
+	<li><a href=\"${artifactURLs['metasfresh-admin']}\">metasfresh-admin.jar</a></li>
 </ul>
 Note: all the separately listed artifacts are also included in the dist-tar.gz
 <p>
 <h3>Deploy</h3>
 <ul>
-	<li><a href=\"https://jenkins.metasfresh.com/job/ops/job/deploy_metasfresh/parambuild/?MF_ROLLOUT_FILE_URL=${MF_ARTIFACT_URLS['metasfresh-dist']}&MF_UPSTREAM_BUILD_URL=${BUILD_URL}\"><b>This link</b></a> lets you jump to a rollout job that will deploy (roll out) the <b>tar.gz to a host of your choice</b>.</li>
+	<li><a href=\"https://jenkins.metasfresh.com/job/ops/job/deploy_metasfresh/parambuild/?MF_ROLLOUT_FILE_URL=${artifactURLs['metasfresh-dist']}&MF_UPSTREAM_BUILD_URL=${BUILD_URL}\"><b>This link</b></a> lets you jump to a rollout job that will deploy (roll out) the <b>tar.gz to a host of your choice</b>.</li>
 	${releaseLinkWithText}
 	${e2eLinkWithText}
 </ul>
@@ -307,6 +310,7 @@ Note: all the separately listed artifacts are also included in the dist-tar.gz
 """;
 		}
 	}
+	return artifactURLs;
 }
 
 void testSQLMigrationScripts(final String sqlSeedDumpURL, final String mestasfreshDistSQLOnlyURL, final String dbInitDockerImageName)
