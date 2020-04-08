@@ -148,7 +148,7 @@ public final class WebuiRelatedProcessDescriptor
 
 	public boolean isEnabledOrNotSilent()
 	{
-		try (final MDCCloseable processMDC = TableRecordMDC.putTableRecordReference(I_AD_Process.Table_Name, processId.toAdProcessId()))
+		try (final MDCCloseable processMDC = TableRecordMDC.putTableRecordReference(I_AD_Process.Table_Name, processId == null ? null : processId.toAdProcessIdOrNull()))
 		{
 			final ProcessPreconditionsResolution preconditionsResolution = getPreconditionsResolution();
 			return preconditionsResolution.isAccepted() || !preconditionsResolution.isInternal();

@@ -51,12 +51,12 @@ public final class ProcessId
 		return new ProcessId(processHandlerType, processId);
 	}
 
-	public static final ProcessId ofAD_Process_ID(final int adProcessId)
+	public static ProcessId ofAD_Process_ID(final int adProcessId)
 	{
 		return new ProcessId(PROCESSHANDLERTYPE_AD_Process, adProcessId);
 	}
 
-	public static final ProcessId ofAD_Process_ID(@NonNull final AdProcessId adProcessId)
+	public static ProcessId ofAD_Process_ID(@NonNull final AdProcessId adProcessId)
 	{
 		return new ProcessId(PROCESSHANDLERTYPE_AD_Process, adProcessId.getRepoId());
 	}
@@ -72,8 +72,6 @@ public final class ProcessId
 	@JsonCreator
 	private ProcessId(final String json)
 	{
-		super();
-
 		Preconditions.checkArgument(json != null && !json.isEmpty(), "invalid ProcessId json: %s", json);
 
 		this.json = json;
@@ -147,11 +145,32 @@ public final class ProcessId
 
 	public AdProcessId toAdProcessId()
 	{
-		if (!PROCESSHANDLERTYPE_AD_Process.contentEquals(getProcessHandlerType()))
+		final AdProcessId adProcessId = toAdProcessIdOrNull();
+		if (adProcessId == null)
 		{
-			throw new AdempiereException("Cannot convert " + this + " to " + AdProcessId.class.getSimpleName() + " because the processHanderType is not " + PROCESSHANDLERTYPE_AD_Process);
+			throw new AdempiereException("Cannot convert " + this + " to " + AdProcessId.class.getSimpleName() + " because the processHanderType=" + processHandlerType + " is not supported");
 		}
-		return AdProcessId.ofRepoId(getProcessIdAsInt());
+		return adProcessId;
+	}
+
+	/**
+	 * Convenience method to get the {@link AdProcessId} for this instance if its {@code processIdAsInt} member is set and/or if {@link #getProcessHandlerType()} is {@value #PROCESSHANDLERTYPE_AD_Process}.
+	 * {@code null} otherwise.
+	 */
+	public AdProcessId toAdProcessIdOrNull()
+	{
+		if (this.processIdAsInt > 0) // was set by the creator of this instance
+		{
+			return AdProcessId.ofRepoId(this.processIdAsInt);
+		}
+		else if (PROCESSHANDLERTYPE_AD_Process.contentEquals(getProcessHandlerType())) // can be derived via standard handler type
+		{
+			return AdProcessId.ofRepoId(getProcessIdAsInt());
+		}
+		else // nothing we can do here
+		{
+			return null;
+		}
 	}
 
 	public DocumentId toDocumentId()
