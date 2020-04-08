@@ -97,7 +97,7 @@ try
 
 					final Map backendDockerImages = buildBackend(mvnConf, scmVars)
 
-					final Map artifactURLs = buildDistribution(mvnConf)
+					final Map artifactURLs = buildDistribution(mvnConf, backendDockerImages)
 
 					testSQLMigrationScripts(
 						params.MF_SQL_SEED_DUMP_URL, 
@@ -121,7 +121,7 @@ try
   {
 	withCredentials([string(credentialsId: 'jenkins-issue-branches-webhook-URL', variable: 'secretWebhookUrl')])
 	{
-	  mattermostSend color: 'danger', endpoint: secretWebhookUrl, channel: 'jenkins-low-prio', message: mattermostMsg
+		mattermostSend color: 'danger', endpoint: secretWebhookUrl, channel: 'jenkins-low-prio', message: mattermostMsg
 	}
   }
   throw all
@@ -216,7 +216,7 @@ Map buildBackend(final MvnConf mvnConf, final Map scmVars)
 	} // dir
 }
 
-Map buildDistribution(final MvnConf mvnConf)
+Map buildDistribution(final MvnConf mvnConf, final Map dockerImages)
 {
 	final artifactURLs = [:];
 
