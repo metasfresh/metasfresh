@@ -14,6 +14,11 @@ echo "params.MF_UPSTREAM_BRANCH=${params.MF_UPSTREAM_BRANCH}; env.BRANCH_NAME=${
 // keep the last 20 builds for master and stable, but onkly the last 5 for the rest, to preserve disk space on jenkins
 final String numberOfBuildsToKeepStr = (MF_UPSTREAM_BRANCH == 'master' || MF_UPSTREAM_BRANCH == 'stable') ? '50' : '20'
 
+final String MF_SQL_SEED_DUMP_URL_DEFAULT = 
+	env.BRANCH_NAME == 'release' 
+		? 'https://metasfresh.com/wp-content/releases/db_seeds/metasfresh-5_39.pgdump' 
+		: 'https://metasfresh.com/wp-content/releases/db_seeds/metasfresh_latest.pgdump'
+
 // thx to http://stackoverflow.com/a/36949007/1012103 with respect to the parameters
 properties([
 	parameters([
@@ -44,6 +49,10 @@ So if this is a "master" build, but it was invoked by a "feature-branch" build t
 		string(defaultValue: '',
 				description: 'If metasfresh-frontend calls this job, then it uses this variable to forward the metasfresh-edi docker image name which it build',
 				name: 'MF_METASFRESH_EDI_DOCKER_IMAGE'),
+
+		string(defaultValue: MF_SQL_SEED_DUMP_URL_DEFAULT,
+				description: 'metasfresh database seed against which the build shall apply its migrate scripts for QA; leave empty to avoid this QA.',
+				name: 'MF_SQL_SEED_DUMP_URL')
 	]),
 	pipelineTriggers([]),
 	buildDiscarder(logRotator(artifactDaysToKeepStr: '', artifactNumToKeepStr: '', daysToKeepStr: '', numToKeepStr: numberOfBuildsToKeepStr)) // keep the last $numberOfBuildsToKeepStr builds
@@ -88,7 +97,11 @@ try
 
 					buildBackend(mvnConf, scmVars)
 					buildDistribution(mvnConf)
-					
+
+					testSQLMigrationScripts(
+						params.MF_SQL_SEED_DUMP_URL, 
+						MF_ARTIFACT_URLS['metasfresh-dist-sql-only'], 
+						dbInitDockerImageName)
 				} // withMaven
 			} // withEnv
 		} // configFileProvider
@@ -117,7 +130,6 @@ void buildBackend(final MvnConf mvnConf, final Map scmVars)
 {
 	dir('backend')
 	{
-		// echo "scmVars=${scmVars}"
 		final List<String> changes = sh(returnStdout: true, script: "git diff --name-only ${scmVars.GIT_PREVIOUS_COMMIT} ${scmVars.GIT_COMMIT} .").split()
 		// echo "changes=${changes}"
 		if(changes.isEmpty())
@@ -293,6 +305,30 @@ Note: all the separately listed artifacts are also included in the dist-tar.gz
   <li>It is important to note that both the <i>"metasfresh-dist"</i> artifacts (client and backend server) build by this job and the <i>"webui"</i> artifacts that are also linked here are based on the same underlying metasfresh version.
 </ul>
 """;
+		}
+	}
+}
+
+void testSQLMigrationScripts(final String sqlSeedDumpURL, final String mestasfreshDistSQLOnlyURL, final String dbInitDockerImageName)
+{
+	final List<String> changes = sh(returnStdout: true, script: "git diff --name-only ${scmVars.GIT_PREVIOUS_COMMIT} ${scmVars.GIT_COMMIT} . | grep *.sql").split()
+	echo "changes=${changes}"
+	if(changes.isEmpty())
+	{
+		echo "no *.sql changes happened; skip building backend";
+		return;
+	}
+	stage('Test SQL-Migration (docker)')
+	{
+		if(sqlSeedDumpURL)
+		{
+			// run the pg-init docker image to check that the migration scripts work; make sure to clean up afterwards
+			sh "docker run --rm -e \"URL_SEED_DUMP=${sqlSeedDumpURL}\" -e \"URL_MIGRATION_SCRIPTS_PACKAGE=${mestasfreshDistSQLOnlyURL}\" ${dbInitDockerImageName}"
+			sh "docker rmi ${dbInitDockerImageName}"
+		}
+		else
+		{
+			echo "We skip applying the migration scripts because params.MF_SQL_SEED_DUMP_URL was not set"
 		}
 	}
 }
