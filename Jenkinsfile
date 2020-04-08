@@ -35,16 +35,8 @@ So if this is a "master" build, but it was invoked by a "feature-branch" build t
 			name: 'MF_UPSTREAM_JOBNAME'),
 
 		string(defaultValue: '',
-			description: 'Version of the upstream job\'s artifact that was build by the job which called us. Shall used when resolving the upstream depdendency. Leave empty and this build will use the latest.',
+			description: 'Version of the upstream job\'s artifact that was build by the job which called us. Shall be used when resolving the upstream depdendency. Leave empty and this build will use the latest.',
 			name: 'MF_UPSTREAM_ARTIFACT_VERSION'),
-
-		string(defaultValue: '',
-			description: 'If metasfresh-frontend calls this job, then it uses this variable to forward the metasfresh-e2e version which it build',
-			name: 'MF_METASFRESH_E2E_ARTIFACT_VERSION'),
-
-		string(defaultValue: '',
-			description: 'If metasfresh-frontend calls this job, then it uses this variable to forward the metasfresh-e2e docker image name which it build',
-			name: 'MF_METASFRESH_E2E_DOCKER_IMAGE'),
 
 		string(defaultValue: '',
 				description: 'If metasfresh-frontend calls this job, then it uses this variable to forward the metasfresh-edi docker image name which it build',
@@ -99,10 +91,13 @@ try
 
 					final Map artifactURLs = buildDistribution(mvnConf, backendDockerImages)
 
-					testSQLMigrationScripts(
-						params.MF_SQL_SEED_DUMP_URL, 
-						artifactURLs['metasfresh-dist-sql-only'], 
-						backendDockerImages['dbInit'])
+					if(!backendDockerImages.isEmpty() && !artifactURLs.isEmpty())
+					{
+						testSQLMigrationScripts(
+							params.MF_SQL_SEED_DUMP_URL, 
+							artifactURLs['metasfresh-dist-sql-only'], 
+							backendDockerImages['dbInit'])
+					}
 				} // withMaven
 			} // withEnv
 		} // configFileProvider
