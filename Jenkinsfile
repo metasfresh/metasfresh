@@ -95,14 +95,14 @@ try
 				{
 					nexusCreateRepoIfNotExists mvnConf.mvnDeployRepoBaseURL, mvnConf.mvnRepoName
 
-					buildBackend(mvnConf, scmVars)
+					final Map backendDockerImages = buildBackend(mvnConf, scmVars)
 
 					final Map artifactURLs = buildDistribution(mvnConf)
 
 					testSQLMigrationScripts(
 						params.MF_SQL_SEED_DUMP_URL, 
 						artifactURLs['metasfresh-dist-sql-only'], 
-						dbInitDockerImageName)
+						backendDockerImages['dbInit'])
 				} // withMaven
 			} // withEnv
 		} // configFileProvider
@@ -127,8 +127,9 @@ try
   throw all
 }
 
-void buildBackend(final MvnConf mvnConf, final Map scmVars)
+Map buildBackend(final MvnConf mvnConf, final Map scmVars)
 {
+	final dockerImages = [:];
 	dir('backend')
 	{
 		final List<String> changes = sh(returnStdout: true, script: "git diff --name-only ${scmVars.GIT_PREVIOUS_COMMIT} ${scmVars.GIT_COMMIT} .").split()
@@ -193,6 +194,11 @@ void buildBackend(final MvnConf mvnConf, final Map scmVars)
 							.withWorkDir('metasfresh-dist/dist/target/docker/db-init')
 			final String publishedDBInitDockerImageName = dockerBuildAndPush(dbInitDockerConf)
 
+			dockerImages['report'] = publishedReportDockerImageName
+			dockerImages['msv3Server'] = publishedMsv3ServerImageName
+			dockerImages['webuiApi'] = publishedWebuiApiImageName
+			dockerImages['dbInit'] = publishedDBInitDockerImageName
+
 			currentBuild.description= """${currentBuild.description}<p/>
 				<h2>Backend</h2>
 				<h3>Docker images</h3>
@@ -205,6 +211,8 @@ void buildBackend(final MvnConf mvnConf, final Map scmVars)
 				</ul>
 				"""
 		}
+
+		return dockerImages
 	} // dir
 }
 
@@ -256,19 +264,17 @@ Map buildDistribution(final MvnConf mvnConf)
 			artifactURLs['metasfresh-webui-api'] = "${mvnConf.resolveRepoURL}/de/metas/ui/web/metasfresh-webui-api/${urlEncodedMavenProps['metasfresh.version']}/metasfresh-webui-api-${urlEncodedMavenProps['metasfresh.version']}.jar"
 			artifactURLs['metasfresh-webui-frontend'] = "${mvnConf.resolveRepoURL}/de/metas/ui/web/metasfresh-webui-frontend/${urlEncodedMavenProps['metasfresh-webui-frontend.version']}/metasfresh-webui-frontend-${urlEncodedMavenProps['metasfresh-webui-frontend.version']}.tar.gz"
 
-			final MF_DOCKER_IMAGES = [:];
-
 			final String MF_RELEASE_VERSION = misc.extractReleaseVersion(MF_VERSION)
 
 			// Note: for the rollout-job's URL with the 'parambuild' to work on this pipelined jenkins, we need the https://wiki.jenkins-ci.org/display/JENKINS/Build+With+Parameters+Plugin, and *not* version 1.3, but later.
 			// See
 			//  * https://github.com/jenkinsci/build-with-parameters-plugin/pull/10
 			//  * https://jenkins.ci.cloudbees.com/job/plugins/job/build-with-parameters-plugin/15/org.jenkins-ci.plugins$build-with-parameters/
-			String releaseLinkWithText = "	<li>..and ${misc.createReleaseLinkWithText(MF_RELEASE_VERSION, MF_VERSION, artifactURLs, MF_DOCKER_IMAGES)}</li>";
+			String releaseLinkWithText = "	<li>..and ${misc.createReleaseLinkWithText(MF_RELEASE_VERSION, MF_VERSION, artifactURLs, dockerImages)}</li>";
 
 			// don't link to the e2e-run-job with the lastest e2e-docker-image; users shall instead call that job from metasfresh-e2e-builds, so it's documented in the job-params which docker-tag was used
 			final String e2eLinkWithText = "";
-			//final String e2eLinkWithText = "<li>Oh, and <a href=\"https://jenkins.metasfresh.com/job/ops/job/run_e2e_tests/parambuild/?MF_DOCKER_IMAGE_FULL_NAME=${MF_DOCKER_IMAGES['metasfresh-e2e']}&MF_UPSTREAM_BUILD_URL=${BUILD_URL}&MF_DOCKER_REGISTRY=&MF_DOCKER_IMAGE=\"><b>this link</b></a> lets you jump to a job that will perform an <b>e2e-test</b> using the upstream metasfresh-e2e tests.</li>";
+			//final String e2eLinkWithText = "<li>Oh, and <a href=\"https://jenkins.metasfresh.com/job/ops/job/run_e2e_tests/parambuild/?MF_DOCKER_IMAGE_FULL_NAME=${dockerImages['metasfresh-e2e']}&MF_UPSTREAM_BUILD_URL=${BUILD_URL}&MF_DOCKER_REGISTRY=&MF_DOCKER_IMAGE=\"><b>this link</b></a> lets you jump to a job that will perform an <b>e2e-test</b> using the upstream metasfresh-e2e tests.</li>";
 
 			currentBuild.description="""${currentBuild.description}<p/>
 <h2>Distribution</h2>						
