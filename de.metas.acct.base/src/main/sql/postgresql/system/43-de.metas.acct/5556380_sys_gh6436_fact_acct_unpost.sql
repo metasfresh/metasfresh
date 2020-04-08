@@ -1,12 +1,15 @@
 DROP FUNCTION IF EXISTS fact_acct_unpost(character varying, numeric);
 DROP FUNCTION IF EXISTS "de_metas_acct".fact_acct_unpost(character varying, numeric);
+DROP FUNCTION IF EXISTS "de_metas_acct".fact_acct_unpost(character varying, numeric, char(1));
 
 CREATE OR REPLACE FUNCTION "de_metas_acct".fact_acct_unpost(p_tablename character varying,
-                                                            p_Record_ID numeric)
+                                                            p_Record_ID numeric,
+                                                            p_Force     char(1) = 'N')
     RETURNS text
 AS
 $BODY$
 DECLARE
+    v_lockSQL     text    := '';
     v_AD_Table_ID integer := -1;
     rowcount      integer;
     v_result      text    := '';
@@ -29,12 +32,16 @@ BEGIN
     --
     -- Lock the record.
     -- Make sure it was not already locked.
-    EXECUTE 'UPDATE ' || p_TableName || ' SET Processing=''Y'' WHERE ' || p_TableName || '_ID=' || p_Record_ID || ' AND Processing=''N''';
+    v_lockSQL := 'UPDATE ' || p_TableName || ' SET Processing=''Y'' WHERE ' || p_TableName || '_ID=' || p_Record_ID;
+     IF (p_Force <> 'Y') THEN
+             v_lockSQL := v_lockSQL || ' AND Processing=''N'' ';
+     END IF;
+    EXECUTE v_lockSQL;
     GET DIAGNOSTICS rowcount = ROW_COUNT;
     IF (rowcount <> 1) THEN
-        RAISE NOTICE 'Failed to lock record %, ID=%  (affected rows count was %).', p_TableName, p_Record_ID, rowcount;
-        RAISE NOTICE 'HINT: Check the processing flag (select Processing from % where %_ID=%)', p_TableName, p_TableName, p_Record_ID;
-        RAISE NOTICE 'HINT: Set processing flag to No (update % set Processing=''N'' where %_ID=%)', p_TableName, p_TableName, p_Record_ID;
+        RAISE NOTICE 'Failed to lock record %, ID=%, Force=%  (affected rows count was %).', p_TableName, p_Record_ID, p_Force, rowcount;
+        RAISE NOTICE 'HINT: Check the processing flag, if not force (select Processing from % where %_ID=%)', p_TableName, p_TableName, p_Record_ID;
+        RAISE NOTICE 'HINT: Set processing flag to No or use p_Force=Y (update % set Processing=''N'' where %_ID=%)', p_TableName, p_TableName, p_Record_ID;
         RAISE EXCEPTION 'Cannot lock record TableName=%, ID=%. Check previous notices for more info', p_TableName, p_Record_ID;
     END IF;
 
