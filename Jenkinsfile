@@ -90,13 +90,19 @@ try
 					dir('backend')
 					{
 						def backendBuildFile = load('buildfile.groovy')
-						echo "backendBuildFile=${backendBuildFile}"
+						//echo "backendBuildFile=${backendBuildFile}"
+						backendBuildFile.build(mvnConf, scmVars)
+					}
+					dir('frontend')
+					{
+						def backendBuildFile = load('buildfile.groovy')
+						//echo "frontendBuildFile=${backendBuildFile}"
 						backendBuildFile.build(mvnConf, scmVars)
 					}
 					dir('distribution')
 					{
 						def distributionBuildFile = load('buildfile.groovy')
-						echo "distributionBuildFile=${distributionBuildFile}"
+						//echo "distributionBuildFile=${distributionBuildFile}"
 						distributionBuildFile.build(mvnConf);
 					}
 				} // withMaven
