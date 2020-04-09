@@ -155,9 +155,9 @@ Map buildBackend(final MvnConf mvnConf, final Map scmVars)
 		} // stage
 
 		String publishedDBInitDockerImageName
+		final def misc = new de.metas.jenkins.Misc();
 		stage('Build backend docker images')
 		{
-			final def misc = new de.metas.jenkins.Misc();
 			final DockerConf reportDockerConf = new DockerConf(
 				'metasfresh-report', // artifactName
 				MF_UPSTREAM_BRANCH, // branchName
