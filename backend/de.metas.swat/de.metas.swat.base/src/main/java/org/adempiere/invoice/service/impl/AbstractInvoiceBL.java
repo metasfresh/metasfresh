@@ -38,6 +38,8 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
+import de.metas.invoice.InvoiceId;
+import de.metas.product.IProductBL;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
 import org.adempiere.exceptions.AdempiereException;
@@ -126,7 +128,9 @@ import lombok.NonNull;
  */
 public abstract class AbstractInvoiceBL implements IInvoiceBL
 {
-	/** Logger */
+	/**
+	 * Logger
+	 */
 	protected final transient Logger log = LogManager.getLogger(getClass());
 
 	/**
@@ -247,7 +251,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		Check.errorUnless(from.getAD_Client_ID() == to.getAD_Client_ID(), "from.AD_Client_ID={}, to.AD_Client_ID={}", from.getAD_Client_ID(), to.getAD_Client_ID());
 		Check.errorUnless(from.getAD_Org_ID() == to.getAD_Org_ID(), "from.AD_Org_ID={}, to.AD_Org_ID={}", from.getAD_Org_ID(), to.getAD_Org_ID());
 
-		to.setDocStatus(IDocument.STATUS_Drafted);		// Draft
+		to.setDocStatus(IDocument.STATUS_Drafted);        // Draft
 		to.setDocAction(IDocument.ACTION_Complete);
 		//
 		to.setC_DocType_ID(0);
@@ -431,7 +435,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		}
 
 		return change;
-	}	// testAllocation
+	}    // testAllocation
 
 	/**
 	 * Gets Invoice Grand Total (absolute value).
@@ -471,7 +475,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	{
 		final I_C_Invoice invoice = InterfaceWrapperHelper.newInstance(I_C_Invoice.class, order);
 		invoice.setAD_Org_ID(order.getAD_Org_ID());
-		setFromOrder(invoice, order);	// set base settings
+		setFromOrder(invoice, order);    // set base settings
 
 		//
 		DocTypeId docTypeId = docTypeTargetId;
@@ -675,6 +679,29 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	}
 
 	@Override
+	public void ensureUOMsAreNotNull(final @NonNull InvoiceId invoiceId)
+	{
+		final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
+		final IProductBL productBL = Services.get(IProductBL.class);
+
+		final List<I_C_InvoiceLine> lines = invoiceDAO.retrieveLines(invoiceId); // // TODO tbp: create this method!
+		for (final I_C_InvoiceLine line : lines)
+		{
+			if (line.getC_UOM_ID() < 1)
+			{
+				final ProductId productId = ProductId.ofRepoId(line.getM_Product_ID());
+				final UomId stockUOMId = productBL.getStockUOMId(productId);
+				line.setC_UOM_ID(stockUOMId.getRepoId());
+			}
+			if (line.getPrice_UOM_ID() < 1)
+			{
+				line.setPrice_UOM_ID(line.getC_UOM_ID());
+			}
+			InterfaceWrapperHelper.save(line);
+		}
+	}
+
+	@Override
 	public final void renumberLines(final I_C_Invoice invoice, final int step)
 	{
 
@@ -772,7 +799,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	 * @param lines - The unsorted array of InvoiceLines - is sorted by this method
 	 */
 	@VisibleForTesting
-	/* package */final void sortLines(final List<I_C_InvoiceLine> lines)
+	/* package */ final void sortLines(final List<I_C_InvoiceLine> lines)
 	{
 		final Comparator<I_C_InvoiceLine> cmp = getInvoiceLineComparator(lines);
 
@@ -1045,7 +1072,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 
 			if (invoiceLine.getM_Product() != null)
 			{
-				if (invoiceLine.getC_Charge() != null)	// Charge
+				if (invoiceLine.getC_Charge() != null)    // Charge
 				{
 					stdTax = createTax(ctx, taxDAO.getDefaultTax(invoiceLine.getC_Charge().getC_TaxCategory()).getC_Tax_ID(), trxName);
 				}
@@ -1109,7 +1136,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 			invoiceLine.setLineTotalAmt(lineNetAmt.add(TaxAmt));
 		}
 		invoiceLine.setTaxAmt(TaxAmt);
-	}	// setTaxAmt
+	}    // setTaxAmt
 
 	private I_C_Tax createTax(final Properties ctx, final int taxId, final String trxName)
 	{
@@ -1178,7 +1205,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	@Override
 	public final boolean isCreditMemo(@NonNull final org.compiere.model.I_C_Invoice invoice)
 	{
-		final I_C_DocType docType = assumeNotNull(getC_DocType(invoice), "The given C_Invoice_ID={} needs to have a C_DocType",invoice.getC_Invoice_ID());
+		final I_C_DocType docType = assumeNotNull(getC_DocType(invoice), "The given C_Invoice_ID={} needs to have a C_DocType", invoice.getC_Invoice_ID());
 		final String docBaseType = docType.getDocBaseType();
 		return isCreditMemo(docBaseType);
 	}
@@ -1316,9 +1343,9 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 				.build());
 		final I_C_Invoice adjustmentCharge = InterfaceWrapperHelper.create(
 				copyFrom(
-						invoice, 
-						SystemTime.asTimestamp(), 
-						targetDocTypeID.getRepoId(), 
+						invoice,
+						SystemTime.asTimestamp(),
+						targetDocTypeID.getRepoId(),
 						invoice.isSOTrx(),
 						false, // counter == false
 						true, // setOrderRef == true

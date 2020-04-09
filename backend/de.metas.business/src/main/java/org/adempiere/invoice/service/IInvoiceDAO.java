@@ -65,6 +65,8 @@ public interface IInvoiceDAO extends ISingletonService
 
 	List<I_C_InvoiceLine> retrieveLines(org.compiere.model.I_C_Invoice invoice);
 
+	List<I_C_InvoiceLine> retrieveLines(@NonNull InvoiceId invoiceId);
+
 	List<I_C_InvoiceLine> retrieveLines(org.compiere.model.I_C_Invoice invoice, String trxName);
 
 	IQueryBuilder<I_C_InvoiceLine> retrieveLinesQuery(org.compiere.model.I_C_Invoice invoice);

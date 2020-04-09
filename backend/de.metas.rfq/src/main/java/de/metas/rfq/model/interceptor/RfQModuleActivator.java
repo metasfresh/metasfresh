@@ -1,5 +1,6 @@
 package de.metas.rfq.model.interceptor;
 
+import de.metas.rfq.RfQModuleInterceptor;
 import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
 import org.compiere.model.I_AD_Client;
@@ -14,12 +15,12 @@ import org.compiere.model.I_AD_Client;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -28,9 +29,8 @@ import org.compiere.model.I_AD_Client;
 
 /**
  * RfQ module activator
- * 
- * @author metas-dev <dev@metasfresh.com>
  *
+ * @author metas-dev <dev@metasfresh.com>
  */
 public class RfQModuleActivator extends AbstractModuleInterceptor
 {
@@ -45,5 +45,6 @@ public class RfQModuleActivator extends AbstractModuleInterceptor
 		engine.addModelValidator(new de.metas.rfq.model.interceptor.C_RfQResponse(), client);
 		engine.addModelValidator(new de.metas.rfq.model.interceptor.C_RfQResponseLine(), client);
 		engine.addModelValidator(new de.metas.rfq.model.interceptor.C_RfQResponseLineQty(), client);
+		engine.addModelValidator(RfQModuleInterceptor.instance, client);
 	}
 }

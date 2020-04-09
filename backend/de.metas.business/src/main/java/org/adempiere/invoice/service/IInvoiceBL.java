@@ -27,6 +27,8 @@ import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.util.List;
 
+import de.metas.invoice.InvoiceId;
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.ImmutablePair;
@@ -53,14 +55,14 @@ public interface IInvoiceBL extends ISingletonService
 	/**
 	 * Copies a given invoice
 	 *
-	 * @param from the copy source
+	 * @param from                the copy source
 	 * @param dateDoc
 	 * @param C_DocTypeTarget_ID
-	 * @param isSOTrx parameter is set as the copy's <code>IsSOtrx</code> value
-	 * @param isCounterpart if <code>true</code>, then the copy shall be the counter document of <code>from</code>
-	 * @param setOrderRef if true, then the copy shall reference the same C_Order that <code>from</code> references
+	 * @param isSOTrx             parameter is set as the copy's <code>IsSOtrx</code> value
+	 * @param isCounterpart       if <code>true</code>, then the copy shall be the counter document of <code>from</code>
+	 * @param setOrderRef         if true, then the copy shall reference the same C_Order that <code>from</code> references
 	 * @param isSetLineInvoiceRef if true, then the copy shall reference the <code>from</code> C_Invoice
-	 * @param isCopyLines if true, the invoice lines are also copied using {@link #copyLinesFrom(I_C_Invoice, I_C_Invoice, boolean, boolean, boolean, IDocLineCopyHandler)}
+	 * @param isCopyLines         if true, the invoice lines are also copied using {@link #copyLinesFrom(I_C_Invoice, I_C_Invoice, boolean, boolean, boolean, IDocLineCopyHandler)}
 	 * @return
 	 */
 	org.compiere.model.I_C_Invoice copyFrom(
@@ -80,20 +82,20 @@ public interface IInvoiceBL extends ISingletonService
 	 *
 	 * @param fromInvoice
 	 * @param toInvoice
-	 * @param counter if <code>true</code>, then
-	 *            <ul>
-	 *            <li>The <code>C_InvoiceLine.Ref_InvoiceLine_ID</code> values of both the existing and new invoice line are set to the ID of their counterpart (independent of the setInvoiceRef
-	 *            parameter's value)
-	 *            <li>the invoice lines of toInvoice are created using toInvoice's context, because it may have a different org etc
-	 *            <li>if the respective source invoice line references an order line and that order line has a <code>Ref_OrderLine_ID</code> reference, then set that reference as the new invoice
-	 *            lines's <code>C_OrderLine_ID</code>. Same for inout line and <code>Ref_InOutLine_ID</code>. This is old, code and probably assumes that <code>Ref_OrderLine_ID</code> and
-	 *            <code>Ref_InOutLine_ID</code> are the analog counter docs to the newly created counter invoice line.
-	 *            </ul>
-	 * @param setOrderRef if <code>true</code> then set the new invoice line's <code>C_OrderLine_ID</code> to the value of the old invoice line. Otherwise, set the new line's ref to 0. <br>
-	 *            <b>Important</b>: the value set as consequence of param counter = true will take precedence!
-	 * @param setInvoiceRef if <code>true</code>, then set <code>C_InvoiceLine.Ref_InvoiceLine_ID</code> as described for the counter parameter (do this independent of the counter parameter's value).
+	 * @param counter            if <code>true</code>, then
+	 *                           <ul>
+	 *                           <li>The <code>C_InvoiceLine.Ref_InvoiceLine_ID</code> values of both the existing and new invoice line are set to the ID of their counterpart (independent of the setInvoiceRef
+	 *                           parameter's value)
+	 *                           <li>the invoice lines of toInvoice are created using toInvoice's context, because it may have a different org etc
+	 *                           <li>if the respective source invoice line references an order line and that order line has a <code>Ref_OrderLine_ID</code> reference, then set that reference as the new invoice
+	 *                           lines's <code>C_OrderLine_ID</code>. Same for inout line and <code>Ref_InOutLine_ID</code>. This is old, code and probably assumes that <code>Ref_OrderLine_ID</code> and
+	 *                           <code>Ref_InOutLine_ID</code> are the analog counter docs to the newly created counter invoice line.
+	 *                           </ul>
+	 * @param setOrderRef        if <code>true</code> then set the new invoice line's <code>C_OrderLine_ID</code> to the value of the old invoice line. Otherwise, set the new line's ref to 0. <br>
+	 *                           <b>Important</b>: the value set as consequence of param counter = true will take precedence!
+	 * @param setInvoiceRef      if <code>true</code>, then set <code>C_InvoiceLine.Ref_InvoiceLine_ID</code> as described for the counter parameter (do this independent of the counter parameter's value).
 	 * @param docLineCopyHandler allows copying of fields to be customized per implementation. This is e.g. used by {@link #creditInvoice(de.metas.adempiere.model.I_C_Invoice, IInvoiceCreditContext)}.
-	 *            May be <code>null</code>.
+	 *                           May be <code>null</code>.
 	 * @return
 	 * @see #copyFrom(I_C_Invoice, Timestamp, int, boolean, boolean, boolean, boolean, boolean)
 	 */
@@ -136,7 +138,7 @@ public interface IInvoiceBL extends ISingletonService
 	 * Writes off the given openAmt from the given invoice.
 	 *
 	 * @param invoice
-	 * @param openAmt open amount (not absolute, the value is relative to IsSOTrx sign)
+	 * @param openAmt     open amount (not absolute, the value is relative to IsSOTrx sign)
 	 * @param description
 	 */
 	void writeOffInvoice(I_C_Invoice invoice, BigDecimal openAmt, String description);
@@ -156,18 +158,18 @@ public interface IInvoiceBL extends ISingletonService
 	 * <p>
 	 * Depending in the <code>completeAndAllocate</code> parameter, the credit memo will also be allocated against the invoice, so that both have <code>IsPaid='Y'</code>.
 	 *
-	 * @param invoice the invoice to be credited. May not be fully paid/allocated and may not be a credit memo itself
+	 * @param invoice   the invoice to be credited. May not be fully paid/allocated and may not be a credit memo itself
 	 * @param creditCtx see {@link IInvoiceCreditContext}
 	 * @return the created credit memo
 	 * @throws AdempiereException if
-	 *             <ul>
-	 *             <li>the given invoice is <code>null</code> or</li>
-	 *             <li>the given C_Charge_ID doesn't have a valid C_Charge or</li>
-	 *             <li>the given invoice is a credit memo or</li>
-	 *             <li>the given
-	 *             invoice is already fully paid or</li>
-	 *             <li>the credit memo line's C_Tax is not tax exempt (due to the charge's tax category and/or the invoice BPartner's location)</li>
-	 *             </ul>
+	 *                            <ul>
+	 *                            <li>the given invoice is <code>null</code> or</li>
+	 *                            <li>the given C_Charge_ID doesn't have a valid C_Charge or</li>
+	 *                            <li>the given invoice is a credit memo or</li>
+	 *                            <li>the given
+	 *                            invoice is already fully paid or</li>
+	 *                            <li>the credit memo line's C_Tax is not tax exempt (due to the charge's tax category and/or the invoice BPartner's location)</li>
+	 *                            </ul>
 	 */
 	de.metas.adempiere.model.I_C_Invoice creditInvoice(de.metas.adempiere.model.I_C_Invoice invoice, IInvoiceCreditContext creditCtx);
 
@@ -182,7 +184,7 @@ public interface IInvoiceBL extends ISingletonService
 	/**
 	 * Test Allocation (and set paid flag)
 	 *
-	 * @param invoice the invoice to be checked
+	 * @param invoice         the invoice to be checked
 	 * @param ignoreProcessed if true, then the change will be done even if the given <code>invoice</code> currently still have <code>Processed='N'</code>.
 	 * @return true if the isPaid value was changed
 	 */
@@ -191,8 +193,8 @@ public interface IInvoiceBL extends ISingletonService
 	/**
 	 * @param order
 	 * @param C_DocTypeTarget_ID invoice's document type
-	 * @param dateInvoiced may be <code>null</code>
-	 * @param dateAcct may be <code>null</code> (see task 08438)
+	 * @param dateInvoiced       may be <code>null</code>
+	 * @param dateAcct           may be <code>null</code> (see task 08438)
 	 * @return created invoice
 	 */
 	de.metas.adempiere.model.I_C_Invoice createInvoiceFromOrder(
@@ -225,7 +227,7 @@ public interface IInvoiceBL extends ISingletonService
 	 * Sort and then renumber all invoice lines.
 	 *
 	 * @param invoice
-	 * @param step start and step
+	 * @param step    start and step
 	 */
 	void renumberLines(de.metas.adempiere.model.I_C_Invoice invoice, int step);
 
@@ -309,9 +311,9 @@ public interface IInvoiceBL extends ISingletonService
 	 * If the document subtype is {@code DOC_SUBTYPE_ARI_AQ} or {@code DOC_SUBTYPE_ARC_CQ}, then the price shall be read-only.<br>
 	 * IF (and only if!, as of now) the the document subtype is {@code DOC_SUBTYPE_ARC_CS}, then the order line shall be editable.
 	 *
-	 * @param invoice may not be null
+	 * @param invoice      may not be null
 	 * @param invoiceLines optional, the lines to update; if <code>null</code> or empty, then all invoice lines are updated <b>and saved</b>. Otherwise, the given lines are only updated, but not
-	 *            saved.
+	 *                     saved.
 	 */
 	void updateInvoiceLineIsReadOnlyFlags(de.metas.adempiere.model.I_C_Invoice invoice, I_C_InvoiceLine... invoiceLines);
 
@@ -402,4 +404,13 @@ public interface IInvoiceBL extends ISingletonService
 	I_C_Invoice voidAndRecreateInvoice(I_C_Invoice invoice);
 
 	void updateDescriptionFromDocTypeTargetId(I_C_Invoice invoice, String defaultDescription, String defaultDocumentNote);
+
+	/**
+	 * If a line has C_UOM_ID or Price_UOM_ID empty:
+	 * <p>
+	 * - set C_UOM_ID to M_Product.C_UOM_ID
+	 * <p>
+	 * - set Price_UOM_ID to C_InvoiceLine.C_UOM_ID
+	 */
+	void ensureUOMsAreNotNull(@NonNull InvoiceId invoiceId);
 }
