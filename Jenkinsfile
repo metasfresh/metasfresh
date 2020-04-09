@@ -8,6 +8,8 @@ import de.metas.jenkins.DockerConf
 import de.metas.jenkins.Misc
 import de.metas.jenkins.MvnConf
 
+chuckNorris()
+
 final String MF_UPSTREAM_BRANCH = params.MF_UPSTREAM_BRANCH ?: env.BRANCH_NAME
 echo "params.MF_UPSTREAM_BRANCH=${params.MF_UPSTREAM_BRANCH}; env.BRANCH_NAME=${env.BRANCH_NAME}; => MF_UPSTREAM_BRANCH=${MF_UPSTREAM_BRANCH}"
 
@@ -98,6 +100,12 @@ try
 						def backendBuildFile = load('buildfile.groovy')
 						//echo "backendBuildFile=${backendBuildFile}"
 						backendBuildFile.build(mvnConf, scmVars)
+					}
+					dir('e2e')
+					{
+						def e2eBuildFile = load('buildfile.groovy')
+						//echo "backendBuildFile=${backendBuildFile}"
+						e2eBuildFile.build(scmVars)
 					}
 					dir('distribution')
 					{
