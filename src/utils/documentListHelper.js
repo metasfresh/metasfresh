@@ -94,6 +94,7 @@ const DLmapStateToProps = (state, { location, ...props }) => {
         )
       : NO_SELECTION,
     modal: state.windowHandler.modal,
+    filters: state.filters,
   };
 };
 

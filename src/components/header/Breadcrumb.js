@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { push } from 'react-router-redux';
-
+import { clearAllFilters } from '../../actions/FiltersActions';
 import keymap from '../../shortcuts/keymap';
 import Tooltips from '../tooltips/Tooltips';
 import MenuOverlay from './MenuOverlay';
@@ -97,7 +97,10 @@ class Breadcrumb extends Component {
    * @param {*} menu
    */
   handleClick = (e, menu) => {
-    const { handleMenuOverlay, windowType } = this.props;
+    const { handleMenuOverlay, windowType, filters, dispatch } = this.props;
+    if (!filters.clearAll) {
+      dispatch(clearAllFilters(true));
+    }
 
     const noChildNodes =
       menu &&
@@ -284,6 +287,9 @@ Breadcrumb.propTypes = {
   openModal: PropTypes.any,
   siteName: PropTypes.any,
   windowType: PropTypes.any,
+  filters: PropTypes.object,
 };
 
-export default connect()(Breadcrumb);
+const mapStateToProps = ({ filters }) => ({ filters });
+
+export default connect(mapStateToProps)(Breadcrumb);

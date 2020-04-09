@@ -22,6 +22,7 @@ import {
   deleteView,
   updateViewData,
 } from '../../../actions/ViewActions';
+import { clearAllFilters } from '../../../actions/FiltersActions';
 import {
   closeListIncludedView,
   setListId,
@@ -109,6 +110,7 @@ class DocumentListContainer extends Component {
       closeListIncludedView,
       viewId,
       resetView,
+      clearAllFilters,
     } = this.props;
     const { staticFilterCleared } = this.state;
 
@@ -122,6 +124,11 @@ class DocumentListContainer extends Component {
 
     this.loadSupportAttributeFlag(nextProps);
 
+    if (nextProps.filters.clearAll) {
+      this.setState({ filtersActive: iMap() }, () => {
+        clearAllFilters(false);
+      });
+    }
     /*
      * If we browse list of docs, changing type of Document
      * does not re-construct component, so we need to
@@ -831,6 +838,7 @@ export default withRouterAndRef(
       removeSelectedTableItems,
       updateViewData,
       fetchLocationConfig,
+      clearAllFilters,
     },
     null,
     { forwardRef: true }
