@@ -1,9 +1,5 @@
-@Library('misc')
-import de.metas.jenkins.DockerConf
-import de.metas.jenkins.Misc
-import de.metas.jenkins.MvnConf
 
-Map buildDistribution(final MvnConf mvnConf)
+Map build(final MvnConf mvnConf)
 {
 	final artifactURLs = [:];
 
@@ -100,3 +96,5 @@ Note: all the separately listed artifacts are also included in the dist-tar.gz
 	}
 	return artifactURLs;
 }
+
+return this;

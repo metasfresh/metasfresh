@@ -1,7 +1,3 @@
-@Library('misc')
-import de.metas.jenkins.DockerConf
-import de.metas.jenkins.Misc
-import de.metas.jenkins.MvnConf
 
 Map build(final MvnConf mvnConf, final Map scmVars)
 {
@@ -124,3 +120,5 @@ void testSQLMigrationScripts(
 		}
 	}
 }
+
+return this;
