@@ -149,6 +149,14 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 		return retrieveLines(ctx, invoiceId, trxName);
 	}
 
+	@Override
+	public List<I_C_InvoiceLine> retrieveLines(@NonNull final InvoiceId invoiceId)
+	{
+		final Properties ctx = InterfaceWrapperHelper.getCtx(invoiceId);
+		final String trxName = InterfaceWrapperHelper.getTrxName(invoiceId);
+		return retrieveLines(ctx, invoiceId.getRepoId(), trxName);
+	}
+
 	@Cached(cacheName = I_C_InvoiceLine.Table_Name + "#By#C_Invoice_ID")
 	protected List<I_C_InvoiceLine> retrieveLines(@CacheCtx final Properties ctx, final int invoiceId, @CacheTrx final String trxName)
 	{
@@ -166,8 +174,8 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 				.orderBy()
 				.addColumn(I_C_InvoiceLine.COLUMNNAME_Line)
 				.endOrderBy()
-		//
-		;
+				//
+				;
 	}
 
 	@Override

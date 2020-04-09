@@ -87,7 +87,7 @@ public class ProductPrices
 	 * @param productId product (negative values are tolerated)
 	 * @return true if exists
 	 */
-	public static boolean hasMainProductPrice(final I_M_PriceList_Version plv, final ProductId productId)
+	public static boolean hasMainProductPrice(@Nullable final I_M_PriceList_Version plv, @Nullable final ProductId productId)
 	{
 		if (plv == null)
 		{
