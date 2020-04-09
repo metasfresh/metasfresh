@@ -29,7 +29,7 @@ BEGIN
     SELECT count(1)
     INTO rowcount
     FROM (
-             SELECT "de_metas_acct".fact_acct_unpost(t.tablename, t.record_id)
+             SELECT "de_metas_acct".fact_acct_unpost(t.tablename, t.record_id, 'Y')
              FROM (
                       SELECT DISTINCT tablename,
                                       record_id,
