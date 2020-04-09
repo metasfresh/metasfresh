@@ -42,9 +42,16 @@
 * - 400 - screen-freeze
 */
 html {
-    overflow: auto !important;
+    overflow-y: scroll !important;
+    overflow-x: auto !important;
 }
-
+/**
+ *  Note: Leave the overflow settings as they are ! Changing them would cause unexpected shifting
+ *        in some areas of the app due to scrollbar appearence. This happens because we are using the 
+ *        tether component which is rendering the content in an absolute position causing the scrollbar to show up when is 
+ *        rendered outside the visible area. 
+ *        https://github.com/metasfresh/metasfresh-webui-frontend/issues/2666
+ */
 body {
     background-color: #F8FAFB;
     color: $brand-font-color;
