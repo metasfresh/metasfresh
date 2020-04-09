@@ -780,8 +780,6 @@ note: when adding new records, please roughly order them by alphabet.
 							<includeArtifactIds>
 								<!-- gh metasfresh/metasfresh#1471 -->
 								metasfresh-admin,
-								<!-- gh metasfresh/metasfresh#523 and metasfresh/metasfresh#1471 -->
-								metasfresh-material-dispo-service,
 								<!-- gh metasfresh/metasfresh#968 -->
 								metasfresh-webui-api
 							</includeArtifactIds>
