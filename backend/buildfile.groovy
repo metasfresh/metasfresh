@@ -6,17 +6,17 @@ import de.metas.jenkins.MvnConf
 
 Map build(final MvnConf mvnConf, final Map scmVars)
 {
-	final dockerImages = [:];
-
-		def status = sh(returnStatus: true, script: "git diff --name-only ${scmVars.GIT_PREVIOUS_SUCCESSFUL_COMMIT} ${scmVars.GIT_COMMIT} .")
-		echo "status of git dif command=${status}"
-		if(scmVars.GIT_COMMIT && scmVars.GIT_PREVIOUS_SUCCESSFUL_COMMIT && status != 0)
+		final dockerImages = [:];
+	
+		stage('Build backend')
 		{
-			echo "no changes happened in backend; skip building backend";
-			return;
-		}
-		stage('Build backend code')
-		{
+			def status = sh(returnStatus: true, script: "git diff --name-only ${scmVars.GIT_PREVIOUS_SUCCESSFUL_COMMIT} ${scmVars.GIT_COMMIT} .")
+			echo "status of git dif command=${status}"
+			if(scmVars.GIT_COMMIT && scmVars.GIT_PREVIOUS_SUCCESSFUL_COMMIT && status != 0)
+			{
+				echo "no changes happened in backend; skip building backend";
+				return;
+			}
 			final String VERSIONS_PLUGIN='org.codehaus.mojo:versions-maven-plugin:2.5' // make sure we know which plugin version we run
 			
 			// update the parent pom version
@@ -41,12 +41,11 @@ Map build(final MvnConf mvnConf, final Map scmVars)
 			sh "mvn --settings ${distMvnConf.settingsFile} --file ${distMvnConf.pomFile} --batch-mode -Dmaven.test.failure.ignore=true -Dmetasfresh.assembly.descriptor.version=${MF_VERSION} ${distMvnConf.resolveParams} ${distMvnConf.deployParam} deploy"
 
 			publishJacocoReports(scmVars.GIT_COMMIT, 'codacy_project_token_for_metasfresh_repo')
-		} // stage
+		
 
-		String publishedDBInitDockerImageName
-		final def misc = new de.metas.jenkins.Misc();
-		stage('Build backend docker images')
-		{
+			String publishedDBInitDockerImageName
+			final def misc = new de.metas.jenkins.Misc();
+		
 			final DockerConf reportDockerConf = new DockerConf(
 				'metasfresh-report', // artifactName
 				MF_UPSTREAM_BRANCH, // branchName
@@ -104,15 +103,15 @@ void testSQLMigrationScripts(
 	final String dbInitDockerImageName,
 	final Map scmVars)
 {
-	def status = sh(returnStatus: true, script: "git diff --name-only ${scmVars.GIT_PREVIOUS_SUCCESSFUL_COMMIT} ${scmVars.GIT_COMMIT} . | grep sql\$")
-	echo "status of git dif command=${status}"
-	if(scmVars.GIT_COMMIT && scmVars.GIT_PREVIOUS_SUCCESSFUL_COMMIT && status != 0)
+	stage('Test SQL-Migration')
 	{
-		echo "no *.sql changes happened; skip applying SQL migration scripts";
-		return;
-	}
-	stage('Test SQL-Migration (docker)')
-	{
+		def status = sh(returnStatus: true, script: "git diff --name-only ${scmVars.GIT_PREVIOUS_SUCCESSFUL_COMMIT} ${scmVars.GIT_COMMIT} . | grep sql\$")
+		echo "status of git dif command=${status}"
+		if(scmVars.GIT_COMMIT && scmVars.GIT_PREVIOUS_SUCCESSFUL_COMMIT && status != 0)
+		{
+			echo "no *.sql changes happened; skip applying SQL migration scripts";
+			return;
+		}
 		if(sqlSeedDumpURL)
 		{
 			// run the pg-init docker image to check that the migration scripts work; make sure to clean up afterwards

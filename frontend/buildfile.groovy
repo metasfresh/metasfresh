@@ -34,7 +34,7 @@ Map build(final MvnConf mvnConf, final Map scmVars)
 
 	String BUILD_ARTIFACT_URL
 
-	stage('Build frontend code')
+	stage('Build frontend')
 	{
 		//final def scmVars = checkout scm
 		//BUILD_GIT_SHA1 = scmVars.GIT_COMMIT
@@ -105,12 +105,10 @@ Map build(final MvnConf mvnConf, final Map scmVars)
 		// all those env variables can be gotten from <buildResultInstance>.getBuildVariables()
 		// env.MF_VERSION=MF_VERSION
 		// env.BUILD_GIT_SHA1=BUILD_GIT_SHA1
-	} // stage
 
-	final String publishedDockerImageName;
 
-	stage('Build and push nginx docker image')
-	{
+		final String publishedDockerImageName;
+	
 		sh 'cp -r dist docker/nginx'
 
 		final DockerConf materialDispoDockerConf = new DockerConf(
