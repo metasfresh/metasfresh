@@ -8,7 +8,7 @@ Map build(final MvnConf mvnConf, final Map scmVars)
 {
 		final dockerImages = [:];
 		final def misc = new de.metas.jenkins.Misc();	
-		
+
 		stage('Build backend')
 		{
 			currentBuild.description= """${currentBuild.description}<p/>
@@ -73,7 +73,7 @@ Map build(final MvnConf mvnConf, final Map scmVars)
 			final DockerConf dbInitDockerConf = reportDockerConf
 							.withArtifactName('metasfresh-db-init-pg-9-5')
 							.withWorkDir('metasfresh-dist/dist/target/docker/db-init')
-			publishedDBInitDockerImageName = dockerBuildAndPush(dbInitDockerConf)
+			final String publishedDBInitDockerImageName = dockerBuildAndPush(dbInitDockerConf)
 
 			dockerImages['report'] = publishedReportDockerImageName
 			dockerImages['msv3Server'] = publishedMsv3ServerImageName
