@@ -1,2 +1,0 @@
-
-SELECT 'Dummy me';
