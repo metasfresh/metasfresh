@@ -30,11 +30,11 @@ Map build(final MvnConf mvnConf, final Map scmVars)
 		final NODEJS_TOOL_NAME="nodejs-13"
 		echo "Setting NODEJS_TOOL_NAME=$NODEJS_TOOL_NAME"
 
-		final String MF_UPSTREAM_BRANCH = params.MF_UPSTREAM_BRANCH ?: env.BRANCH_NAME
-		echo "params.MF_UPSTREAM_BRANCH=${params.MF_UPSTREAM_BRANCH}; env.BRANCH_NAME=${env.BRANCH_NAME}; => MF_UPSTREAM_BRANCH=${MF_UPSTREAM_BRANCH}"
+		// final String MF_UPSTREAM_BRANCH = params.MF_UPSTREAM_BRANCH ?: env.BRANCH_NAME
+		// echo "params.MF_UPSTREAM_BRANCH=${params.MF_UPSTREAM_BRANCH}; env.BRANCH_NAME=${env.BRANCH_NAME}; => MF_UPSTREAM_BRANCH=${MF_UPSTREAM_BRANCH}"
 
 		// https://github.com/metasfresh/metasfresh/issues/2110 make version/build infos more transparent
-		final String MF_VERSION = retrieveArtifactVersion(MF_UPSTREAM_BRANCH, env.BUILD_NUMBER)
+		// final String MF_VERSION = retrieveArtifactVersion(MF_UPSTREAM_BRANCH, env.BUILD_NUMBER)
 		//currentBuild.displayName = "artifact-version ${MF_VERSION}";
 
 		//String BUILD_GIT_SHA1 = "NOT_YET_SET" // will be set when we check out
@@ -70,7 +70,7 @@ Map build(final MvnConf mvnConf, final Map scmVars)
 		// add a file info.json whose shall look similar to the info which spring-boot provides unter the /info URL
 		final version_info_json = """{
   \"build\": {
-	\"releaseVersion\": \"${MF_VERSION}\",
+	\"releaseVersion\": \"${env.MF_VERSION}\",
     \"jenkinsBuildUrl\": \"${env.BUILD_URL}\",
     \"jenkinsBuildNo\": \"${env.BUILD_NUMBER}\",
     \"jenkinsJobName\": \"${env.JOB_NAME}\",
@@ -80,7 +80,7 @@ Map build(final MvnConf mvnConf, final Map scmVars)
 }""";
 		writeFile encoding: 'UTF-8', file: 'dist/info.json', text: version_info_json;
 
-		sh "tar cvzf webui-dist-${MF_VERSION}.tar.gz dist"
+		sh "tar cvzf webui-dist-${env.MF_VERSION}.tar.gz dist"
 
 		// upload our results to the maven repo
 
@@ -97,10 +97,10 @@ Map build(final MvnConf mvnConf, final Map scmVars)
 			//nexusCreateRepoIfNotExists mvnConf.mvnDeployRepoBaseURL, mvnConf.mvnRepoName
 			//withMaven(jdk: 'java-8', maven: 'maven-3.5.0', mavenLocalRepo: '.repository')
 			//{
-				sh "mvn --settings ${mvnConf.settingsFile} ${mvnConf.resolveParams} -Dfile=webui-dist-${MF_VERSION}.tar.gz -Durl=${mvnConf.deployRepoURL} -DrepositoryId=${mvnConf.MF_MAVEN_REPO_ID} -DgroupId=de.metas.ui.web -DartifactId=metasfresh-webui-frontend -Dversion=${MF_VERSION} -Dpackaging=tar.gz -DgeneratePom=true org.apache.maven.plugins:maven-deploy-plugin:2.7:deploy-file"
+				sh "mvn --settings ${mvnConf.settingsFile} ${mvnConf.resolveParams} -Dfile=webui-dist-${env.MF_VERSION}.tar.gz -Durl=${mvnConf.deployRepoURL} -DrepositoryId=${mvnConf.MF_MAVEN_REPO_ID} -DgroupId=de.metas.ui.web -DartifactId=metasfresh-webui-frontend -Dversion=${env.MF_VERSION} -Dpackaging=tar.gz -DgeneratePom=true org.apache.maven.plugins:maven-deploy-plugin:2.7:deploy-file"
 
 				final misc = new de.metas.jenkins.Misc()
-				BUILD_ARTIFACT_URL="${mvnConf.deployRepoURL}/de/metas/ui/web/metasfresh-webui-frontend/${misc.urlEncode(MF_VERSION)}/metasfresh-webui-frontend-${misc.urlEncode(MF_VERSION)}.tar.gz"
+				BUILD_ARTIFACT_URL="${mvnConf.deployRepoURL}/de/metas/ui/web/metasfresh-webui-frontend/${misc.urlEncode(env.MF_VERSION)}/metasfresh-webui-frontend-${misc.urlEncode(env.MF_VERSION)}.tar.gz"
 
 			//} // withMaven
 		} // configFileProvider
@@ -108,15 +108,15 @@ Map build(final MvnConf mvnConf, final Map scmVars)
 		// gh #968:
 		// set env variables which will be available to a possible upstream job that might have called us
 		// all those env variables can be gotten from <buildResultInstance>.getBuildVariables()
-		// env.MF_VERSION=MF_VERSION
+		// env.MF_VERSION=env.MF_VERSION
 		// env.BUILD_GIT_SHA1=BUILD_GIT_SHA1
 	
 		sh 'cp -r dist docker/nginx'
 
 		final DockerConf materialDispoDockerConf = new DockerConf(
 			'metasfresh-webui-dev', // artifactName
-			MF_UPSTREAM_BRANCH, // branchName
-			MF_VERSION, // versionSuffix
+			env.BRANCH_NAME, // branchName
+			env.MF_VERSION, // versionSuffix
 			'docker/nginx' // workDir
 		);
 		final String publishedDockerImageName = dockerBuildAndPush(materialDispoDockerConf)
@@ -125,8 +125,8 @@ Map build(final MvnConf mvnConf, final Map scmVars)
 		currentBuild.description="""${currentBuild.description}<br/>
 		This build's main artifacts (if not yet cleaned up) are
 <ul>
-<li><a href=\"${BUILD_ARTIFACT_URL}\">metasfresh-webui-frontend-${MF_VERSION}.tar.gz</a></li>
-<li>a docker image with name <code>${publishedDockerImageName}</code>; Note that you can also use the tag <code>${misc.mkDockerTag(MF_UPSTREAM_BRANCH)}_LATEST</code></li>
+<li><a href=\"${BUILD_ARTIFACT_URL}\">metasfresh-webui-frontend-${env.MF_VERSION}.tar.gz</a></li>
+<li>a docker image with name <code>${publishedDockerImageName}</code>; Note that you can also use the tag <code>${misc.mkDockerTag(env.BRANCH_NAME)}_LATEST</code></li>
 </ul>"""
 	}
 

@@ -9,7 +9,7 @@ import de.metas.jenkins.DockerConf
 def build(final Map scmVars)
 {
 	// https://github.com/metasfresh/metasfresh/issues/2110 make version/build infos more transparent
-	final String MF_VERSION = retrieveArtifactVersion(env.BRANCH_NAME, env.BUILD_NUMBER)
+	//final String MF_VERSION = retrieveArtifactVersion(env.BRANCH_NAME, env.BUILD_NUMBER)
 	
 	stage('Build e2e')
 	{
@@ -34,7 +34,7 @@ def build(final Map scmVars)
 		final DockerConf e2eDockerConf = new DockerConf(
 			'metasfresh-e2e', // artifactName
 			env.BRANCH_NAME, // branchName
-			MF_VERSION, // versionSuffix
+			env.MF_VERSION, // versionSuffix
 			'.', // workDir
 			additionalBuildArgs
 		);
