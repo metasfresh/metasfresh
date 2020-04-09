@@ -6,8 +6,9 @@ import de.metas.jenkins.MvnConf
 
 Map build(final MvnConf mvnConf, final Map scmVars)
 {
-		final dockerImages = [:];
-		final def misc = new de.metas.jenkins.Misc();	
+		final dockerImages = [:]
+		String publishedDBInitDockerImageName
+		final def misc = new de.metas.jenkins.Misc()
 
 		stage('Build backend')
 		{
@@ -48,9 +49,7 @@ Map build(final MvnConf mvnConf, final Map scmVars)
 			sh "mvn --settings ${distMvnConf.settingsFile} --file ${distMvnConf.pomFile} --batch-mode -Dmaven.test.failure.ignore=true -Dmetasfresh.assembly.descriptor.version=${MF_VERSION} ${distMvnConf.resolveParams} ${distMvnConf.deployParam} deploy"
 
 			publishJacocoReports(scmVars.GIT_COMMIT, 'codacy_project_token_for_metasfresh_repo')
-		
-			String publishedDBInitDockerImageName
-		
+				
 			final DockerConf reportDockerConf = new DockerConf(
 				'metasfresh-report', // artifactName
 				MF_UPSTREAM_BRANCH, // branchName
@@ -73,7 +72,7 @@ Map build(final MvnConf mvnConf, final Map scmVars)
 			final DockerConf dbInitDockerConf = reportDockerConf
 							.withArtifactName('metasfresh-db-init-pg-9-5')
 							.withWorkDir('metasfresh-dist/dist/target/docker/db-init')
-			final String publishedDBInitDockerImageName = dockerBuildAndPush(dbInitDockerConf)
+			publishedDBInitDockerImageName = dockerBuildAndPush(dbInitDockerConf)
 
 			dockerImages['report'] = publishedReportDockerImageName
 			dockerImages['msv3Server'] = publishedMsv3ServerImageName
