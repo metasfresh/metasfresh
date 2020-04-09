@@ -7,7 +7,8 @@ import de.metas.jenkins.MvnConf
 Map build(final MvnConf mvnConf, final Map scmVars)
 {
 		final dockerImages = [:];
-	
+		final def misc = new de.metas.jenkins.Misc();	
+		
 		stage('Build backend')
 		{
 			currentBuild.description= """${currentBuild.description}<p/>
@@ -49,7 +50,6 @@ Map build(final MvnConf mvnConf, final Map scmVars)
 			publishJacocoReports(scmVars.GIT_COMMIT, 'codacy_project_token_for_metasfresh_repo')
 		
 			String publishedDBInitDockerImageName
-			final def misc = new de.metas.jenkins.Misc();
 		
 			final DockerConf reportDockerConf = new DockerConf(
 				'metasfresh-report', // artifactName
