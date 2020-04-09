@@ -104,7 +104,7 @@ void testSQLMigrationScripts(
 	final String dbInitDockerImageName,
 	final Map scmVars)
 {
-	final List<String> changes = sh(returnStdout: true, script: "git diff --name-only ${scmVars.GIT_PREVIOUS_SUCCESSFUL_COMMIT} ${scmVars.GIT_COMMIT} . | grep *.sql").split()
+	final List<String> changes = sh(returnStdout: true, script: "git diff --name-only ${scmVars.GIT_PREVIOUS_SUCCESSFUL_COMMIT} ${scmVars.GIT_COMMIT} . | grep sql$").split()
 	echo "SQL-changes=${changes}"
 	if(changes.isEmpty())
 	{
