@@ -8,9 +8,9 @@ Map build(final MvnConf mvnConf, final Map scmVars)
 {
 	final dockerImages = [:];
 
-		final List<String> changes = sh(returnStdout: true, script: "git diff --name-only ${scmVars.GIT_PREVIOUS_SUCCESSFUL_COMMIT} ${scmVars.GIT_COMMIT} .").split()
-		// echo "changes=${changes}"
-		if(changes.isEmpty())
+		def status = sh(returnStatus: true, script: "git diff --name-only ${scmVars.GIT_PREVIOUS_SUCCESSFUL_COMMIT} ${scmVars.GIT_COMMIT} .")
+		echo "status of git dif command=${status}"
+		if(scmVars.GIT_COMMIT && scmVars.GIT_PREVIOUS_SUCCESSFUL_COMMIT && status != 0)
 		{
 			echo "no changes happened in backend; skip building backend";
 			return;
@@ -104,9 +104,9 @@ void testSQLMigrationScripts(
 	final String dbInitDockerImageName,
 	final Map scmVars)
 {
-	final List<String> changes = sh(returnStdout: true, script: "git diff --name-only ${scmVars.GIT_PREVIOUS_SUCCESSFUL_COMMIT} ${scmVars.GIT_COMMIT} . | grep sql\$").split()
-	echo "SQL-changes=${changes}"
-	if(changes.isEmpty())
+	def status = sh(returnStatus: true, script: "git diff --name-only ${scmVars.GIT_PREVIOUS_SUCCESSFUL_COMMIT} ${scmVars.GIT_COMMIT} . | grep sql\$")
+	echo "status of git dif command=${status}"
+	if(scmVars.GIT_COMMIT && scmVars.GIT_PREVIOUS_SUCCESSFUL_COMMIT && status != 0)
 	{
 		echo "no *.sql changes happened; skip applying SQL migration scripts";
 		return;
