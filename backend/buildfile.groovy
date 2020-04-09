@@ -80,7 +80,6 @@ Map build(final MvnConf mvnConf, final Map scmVars)
 			dockerImages['dbInit'] = publishedDBInitDockerImageName
 
 			currentBuild.description= """${currentBuild.description}<br/>
-				<h3>Docker images</h3>
 				This build created the following deployable docker images 
 				<ul>
 				<li><code>${publishedMsv3ServerImageName}</code></li>

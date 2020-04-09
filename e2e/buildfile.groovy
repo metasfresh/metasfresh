@@ -54,7 +54,7 @@ def build(final Map scmVars)
 	</ul>
 	<p/>
 	You can run the docker image like this:<br>
-	<pre>
+	<code>
 	hostname=yourinstance.metasfresh.com<br>
 	docker run --ipc=host --rm\\
 	-e "FRONTEND_URL=https://\${hostname}:443"\\
@@ -69,7 +69,7 @@ def build(final Map scmVars)
 	-e "DEBUG_PRINT_BASH_CMDS=n"\\
 	-e "DEBUG_SLEEP_AFTER_FAIL=n"\\
 	${publishedE2eDockerImageName}
-	</pre>
+	</code>
 	<p/>
 	Also see metasfresh-e2e's <a href="https://github.com/metasfresh/metasfresh-e2e/blob/master/README.md">README.md</a>.
 	<p/>
