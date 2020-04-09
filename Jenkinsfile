@@ -56,9 +56,9 @@ try
 {
 	timestamps
 	{
-		// https://github.com/metasfresh/metasfresh/issues/2110 make version/build infos more transparent
-		final String MF_VERSION=retrieveArtifactVersion(MF_UPSTREAM_BRANCH, env.BUILD_NUMBER)
-		currentBuild.displayName="artifact-version ${MF_VERSION}";
+	// https://github.com/metasfresh/metasfresh/issues/2110 make version/build infos more transparent
+	final String MF_VERSION=retrieveArtifactVersion(MF_UPSTREAM_BRANCH, env.BUILD_NUMBER)
+	currentBuild.displayName="artifact-version ${MF_VERSION}";
 
 	node('agent && linux')
 	{
@@ -74,7 +74,7 @@ try
 			echo "mvnConf=${mvnConf.toString()}"
 
 			final def scmVars = checkout scm // i hope this to do all the magic we need
-			def gitCommitHash = scmVars.GIT_COMMIT
+			//echo "scmVars=${scmVars}"
 
 			sh 'git clean -d --force -x' // clean the workspace
 
@@ -85,7 +85,7 @@ try
 				// disable automatic fingerprinting and archiving by artifactsPublisher, because in particular the archiving takes up too much space on the jenkins server.
 				withMaven(jdk: 'java-8', maven: 'maven-3.5.4', mavenLocalRepo: '.repository', mavenOpts: '-Xmx1536M', options: [artifactsPublisher(disabled: true)])
 				{
-					nexusCreateRepoIfNotExists mvnConf.mvnDeployRepoBaseURL, mvnConf.mvnRepoName
+					nexusCreateRepoIfNotExists(mvnConf.mvnDeployRepoBaseURL, mvnConf.mvnRepoName)
 
 					buildBackend(mvnConf, scmVars)
 
@@ -119,7 +119,7 @@ Map buildBackend(final MvnConf mvnConf, final Map scmVars)
 	final dockerImages = [:];
 	dir('backend')
 	{
-		final List<String> changes = sh(returnStdout: true, script: "git diff --name-only ${scmVars.GIT_PREVIOUS_COMMIT} ${scmVars.GIT_COMMIT} .").split()
+		final List<String> changes = sh(returnStdout: true, script: "git diff --name-only ${scmVars.GIT_PREVIOUS_SUCCESSFUL_COMMIT} ${scmVars.GIT_COMMIT} .").split()
 		// echo "changes=${changes}"
 		if(changes.isEmpty())
 		{
@@ -204,9 +204,38 @@ Map buildBackend(final MvnConf mvnConf, final Map scmVars)
 		testSQLMigrationScripts(
 			params.MF_SQL_SEED_DUMP_URL, 
 			metasfreshDistSQLOnlyURL, 
-			publishedDBInitDockerImageName)
+			publishedDBInitDockerImageName,
+			scmVars)
 		return dockerImages
 	} // dir
+}
+
+void testSQLMigrationScripts(
+	final String sqlSeedDumpURL, 
+	final String metasfreshDistSQLOnlyURL, 
+	final String dbInitDockerImageName,
+	final Map scmVars)
+{
+	final List<String> changes = sh(returnStdout: true, script: "git diff --name-only ${scmVars.GIT_PREVIOUS_SUCCESSFUL_COMMIT} ${scmVars.GIT_COMMIT} . | grep *.sql").split()
+	echo "SQL-changes=${changes}"
+	if(changes.isEmpty())
+	{
+		echo "no *.sql changes happened; skip applying SQL migration scripts";
+		return;
+	}
+	stage('Test SQL-Migration (docker)')
+	{
+		if(sqlSeedDumpURL)
+		{
+			// run the pg-init docker image to check that the migration scripts work; make sure to clean up afterwards
+			sh "docker run --rm -e \"URL_SEED_DUMP=${sqlSeedDumpURL}\" -e \"URL_MIGRATION_SCRIPTS_PACKAGE=${metasfreshDistSQLOnlyURL}\" ${dbInitDockerImageName}"
+			sh "docker rmi ${dbInitDockerImageName}"
+		}
+		else
+		{
+			echo "We skip applying the migration scripts because params.MF_SQL_SEED_DUMP_URL was not set"
+		}
+	}
 }
 
 Map buildDistribution(final MvnConf mvnConf)
@@ -308,28 +337,4 @@ Note: all the separately listed artifacts are also included in the dist-tar.gz
 		}
 	}
 	return artifactURLs;
-}
-
-void testSQLMigrationScripts(final String sqlSeedDumpURL, final String metasfreshDistSQLOnlyURL, final String dbInitDockerImageName)
-{
-	final List<String> changes = sh(returnStdout: true, script: "git diff --name-only ${scmVars.GIT_PREVIOUS_COMMIT} ${scmVars.GIT_COMMIT} . | grep *.sql").split()
-	echo "SQL-changes=${changes}"
-	if(changes.isEmpty())
-	{
-		echo "no *.sql changes happened; skip applying SQL migration scripts";
-		return;
-	}
-	stage('Test SQL-Migration (docker)')
-	{
-		if(sqlSeedDumpURL)
-		{
-			// run the pg-init docker image to check that the migration scripts work; make sure to clean up afterwards
-			sh "docker run --rm -e \"URL_SEED_DUMP=${sqlSeedDumpURL}\" -e \"URL_MIGRATION_SCRIPTS_PACKAGE=${metasfreshDistSQLOnlyURL}\" ${dbInitDockerImageName}"
-			sh "docker rmi ${dbInitDockerImageName}"
-		}
-		else
-		{
-			echo "We skip applying the migration scripts because params.MF_SQL_SEED_DUMP_URL was not set"
-		}
-	}
 }
