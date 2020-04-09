@@ -87,16 +87,16 @@ try
 				{
 					nexusCreateRepoIfNotExists(mvnConf.mvnDeployRepoBaseURL, mvnConf.mvnRepoName)
 
-					dir('backend')
-					{
-						def backendBuildFile = load('buildfile.groovy')
-						//echo "backendBuildFile=${backendBuildFile}"
-						backendBuildFile.build(mvnConf, scmVars)
-					}
 					dir('frontend')
 					{
 						def backendBuildFile = load('buildfile.groovy')
 						//echo "frontendBuildFile=${backendBuildFile}"
+						backendBuildFile.build(mvnConf, scmVars)
+					}
+					dir('backend')
+					{
+						def backendBuildFile = load('buildfile.groovy')
+						//echo "backendBuildFile=${backendBuildFile}"
 						backendBuildFile.build(mvnConf, scmVars)
 					}
 					dir('distribution')

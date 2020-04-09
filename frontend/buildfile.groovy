@@ -82,13 +82,13 @@ Map build(final MvnConf mvnConf, final Map scmVars)
 		configFileProvider([configFile(fileId: 'metasfresh-global-maven-settings', replaceTokens: true, variable: 'MAVEN_SETTINGS')])
 		{
 			// create our config instance to be used further on
-			final MvnConf mvnConf = new MvnConf(
-				'pom.xml', // pomFile
-				MAVEN_SETTINGS, // settingsFile
-				"mvn-${MF_UPSTREAM_BRANCH}".replace("/", "-"), // mvnRepoName
-				'https://repo.metasfresh.com' // mvnRepoBaseURL - for resolve and deploy
-			)
-			echo "mvnConf=${mvnConf.toString()}"
+			// final MvnConf mvnConf = new MvnConf(
+			// 	'pom.xml', // pomFile
+			// 	MAVEN_SETTINGS, // settingsFile
+			// 	"mvn-${MF_UPSTREAM_BRANCH}".replace("/", "-"), // mvnRepoName
+			// 	'https://repo.metasfresh.com' // mvnRepoBaseURL - for resolve and deploy
+			// )
+			// echo "mvnConf=${mvnConf.toString()}"
 			//nexusCreateRepoIfNotExists mvnConf.mvnDeployRepoBaseURL, mvnConf.mvnRepoName
 			//withMaven(jdk: 'java-8', maven: 'maven-3.5.0', mavenLocalRepo: '.repository')
 			//{

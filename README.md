@@ -53,13 +53,13 @@ Join one of the gitter rooms [metasfresh](https://gitter.im/metasfresh/metasfres
 ## Contributing
 Do you want to help improving documentation, contribute some code or participate in functional requirements. That's great, you're welcome! Please read our [Code of Coduct](https://github.com/metasfresh/metasfresh/blob/master/CODE_OF_CONDUCT.md) and [Contibutor Guidelines](https://github.com/metasfresh/metasfresh/blob/master/CONTRIBUTING.md) first.
 
-### Frequently used github URLs
+### "Monorepo"
+To check out only certain parts of this repository, we recomment to get git version 2.25.0 or later and use the [git-sparse-checkout](https://www.git-scm.com/docs/git-sparse-checkout) feature.
+Examples:
+* to get started, do `git sparse-checkout init --cone`
+  * this will leave you with just the files in the repo's root folder, such as the file you are reading
+* to get the frontend code, do `git sparse-checkout set frontend`
+* to go back to having everything checked out, do `git sparse-checkout disable`
 
-* [open pull requests](https://github.com/pulls?utf8=%E2%9C%93&q=is%3Aopen+is%3Apr+user%3Ametasfresh)
-* Issues/PRs
-  * [in `master` branch but not yet in `release` branch](https://github.com/issues?utf8=%E2%9C%93&q=user%3Ametasfresh+-label%3Abranch%3Arelease+label%3Abranch%3Amaster+updated%3A%3E2017-04-01+is%3Apublic+sort%3Aupdated-desc+)
-  * [in `release` branch but not yet closed](https://github.com/issues?utf8=%E2%9C%93&q=is%3Aopen+user%3Ametasfresh+label%3Abranch%3Arelease+updated%3A%3E2017-04-01+is%3Apublic+sort%3Aupdated-desc+)
-  * [in `release` branch but with a failed IT](https://github.com/issues?utf8=%E2%9C%93&q=user%3Ametasfresh+label%3Abranch%3Arelease+label%3Astatus%3AIT-failed+updated%3A%3E2017-04-01+is%3Apublic+sort%3Aupdated-desc)
-  
 ## What's new in metasfresh ERP?
 If you are interested in latest improvements or bug fixes of metasfresh ERP, then take a look in our [Release Notes](https://github.com/metasfresh/metasfresh/blob/master/ReleaseNotes.md).
