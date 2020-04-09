@@ -10,10 +10,16 @@ Map build(final MvnConf mvnConf, final Map scmVars)
 	
 		stage('Build backend')
 		{
+			currentBuild.description= """${currentBuild.description}<p/>
+				<h2>Backend</h2>
+			"""
 			def status = sh(returnStatus: true, script: "git diff --name-only ${scmVars.GIT_PREVIOUS_SUCCESSFUL_COMMIT} ${scmVars.GIT_COMMIT} .")
 			echo "status of git dif command=${status}"
 			if(scmVars.GIT_COMMIT && scmVars.GIT_PREVIOUS_SUCCESSFUL_COMMIT && status != 0)
 			{
+				currentBuild.description= """${currentBuild.description}<p/>
+				No changes happened in backend; skipped building it.
+				"""
 				echo "no changes happened in backend; skip building backend";
 				return;
 			}
@@ -42,7 +48,6 @@ Map build(final MvnConf mvnConf, final Map scmVars)
 
 			publishJacocoReports(scmVars.GIT_COMMIT, 'codacy_project_token_for_metasfresh_repo')
 		
-
 			String publishedDBInitDockerImageName
 			final def misc = new de.metas.jenkins.Misc();
 		
@@ -75,8 +80,7 @@ Map build(final MvnConf mvnConf, final Map scmVars)
 			dockerImages['webuiApi'] = publishedWebuiApiImageName
 			dockerImages['dbInit'] = publishedDBInitDockerImageName
 
-			currentBuild.description= """${currentBuild.description}<p/>
-				<h2>Backend</h2>
+			currentBuild.description= """${currentBuild.description}<br/>
 				<h3>Docker images</h3>
 				This build created the following deployable docker images 
 				<ul>
