@@ -87,17 +87,9 @@ try
 				{
 					nexusCreateRepoIfNotExists mvnConf.mvnDeployRepoBaseURL, mvnConf.mvnRepoName
 
-					final Map backendDockerImages = buildBackend(mvnConf, scmVars)
+					buildBackend(mvnConf, scmVars)
 
-					final Map artifactURLs = buildDistribution(mvnConf, backendDockerImages)
-
-					if(!backendDockerImages.isEmpty() && !artifactURLs.isEmpty())
-					{
-						testSQLMigrationScripts(
-							params.MF_SQL_SEED_DUMP_URL, 
-							artifactURLs['metasfresh-dist-sql-only'], 
-							backendDockerImages['dbInit'])
-					}
+					buildDistribution(mvnConf, backendDockerImages)
 				} // withMaven
 			} // withEnv
 		} // configFileProvider
@@ -162,6 +154,7 @@ Map buildBackend(final MvnConf mvnConf, final Map scmVars)
 			publishJacocoReports(scmVars.GIT_COMMIT, 'codacy_project_token_for_metasfresh_repo')
 		} // stage
 
+		String publishedDBInitDockerImageName
 		stage('Build backend docker images')
 		{
 			final def misc = new de.metas.jenkins.Misc();
@@ -187,7 +180,7 @@ Map buildBackend(final MvnConf mvnConf, final Map scmVars)
 			final DockerConf dbInitDockerConf = reportDockerConf
 							.withArtifactName('metasfresh-db-init-pg-9-5')
 							.withWorkDir('metasfresh-dist/dist/target/docker/db-init')
-			final String publishedDBInitDockerImageName = dockerBuildAndPush(dbInitDockerConf)
+			publishedDBInitDockerImageName = dockerBuildAndPush(dbInitDockerConf)
 
 			dockerImages['report'] = publishedReportDockerImageName
 			dockerImages['msv3Server'] = publishedMsv3ServerImageName
@@ -207,6 +200,11 @@ Map buildBackend(final MvnConf mvnConf, final Map scmVars)
 				"""
 		}
 
+		final String metasfreshDistSQLOnlyURL = "${mvnConf.deployRepoURL}/de/metas/dist/metasfresh-dist-dist/${misc.urlEncode(MF_VERSION)}/metasfresh-dist-dist-${misc.urlEncode(MF_VERSION)}-sql-only.tar.gz"
+		testSQLMigrationScripts(
+			params.MF_SQL_SEED_DUMP_URL, 
+			metasfreshDistSQLOnlyURL, 
+			publishedDBInitDockerImageName)
 		return dockerImages
 	} // dir
 }
@@ -308,13 +306,13 @@ Note: all the separately listed artifacts are also included in the dist-tar.gz
 	return artifactURLs;
 }
 
-void testSQLMigrationScripts(final String sqlSeedDumpURL, final String mestasfreshDistSQLOnlyURL, final String dbInitDockerImageName)
+void testSQLMigrationScripts(final String sqlSeedDumpURL, final String metasfreshDistSQLOnlyURL, final String dbInitDockerImageName)
 {
 	final List<String> changes = sh(returnStdout: true, script: "git diff --name-only ${scmVars.GIT_PREVIOUS_COMMIT} ${scmVars.GIT_COMMIT} . | grep *.sql").split()
-	echo "changes=${changes}"
+	echo "SQL-changes=${changes}"
 	if(changes.isEmpty())
 	{
-		echo "no *.sql changes happened; skip building backend";
+		echo "no *.sql changes happened; skip applying SQL migration scripts";
 		return;
 	}
 	stage('Test SQL-Migration (docker)')
@@ -322,7 +320,7 @@ void testSQLMigrationScripts(final String sqlSeedDumpURL, final String mestasfre
 		if(sqlSeedDumpURL)
 		{
 			// run the pg-init docker image to check that the migration scripts work; make sure to clean up afterwards
-			sh "docker run --rm -e \"URL_SEED_DUMP=${sqlSeedDumpURL}\" -e \"URL_MIGRATION_SCRIPTS_PACKAGE=${mestasfreshDistSQLOnlyURL}\" ${dbInitDockerImageName}"
+			sh "docker run --rm -e \"URL_SEED_DUMP=${sqlSeedDumpURL}\" -e \"URL_MIGRATION_SCRIPTS_PACKAGE=${metasfreshDistSQLOnlyURL}\" ${dbInitDockerImageName}"
 			sh "docker rmi ${dbInitDockerImageName}"
 		}
 		else
