@@ -209,7 +209,7 @@ Map buildBackend(final MvnConf mvnConf, final Map scmVars)
 	} // dir
 }
 
-Map buildDistribution(final MvnConf mvnConf, final Map dockerImages)
+Map buildDistribution(final MvnConf mvnConf)
 {
 	final artifactURLs = [:];
 
@@ -263,7 +263,7 @@ Map buildDistribution(final MvnConf mvnConf, final Map dockerImages)
 			// See
 			//  * https://github.com/jenkinsci/build-with-parameters-plugin/pull/10
 			//  * https://jenkins.ci.cloudbees.com/job/plugins/job/build-with-parameters-plugin/15/org.jenkins-ci.plugins$build-with-parameters/
-			String releaseLinkWithText = "	<li>..and ${misc.createReleaseLinkWithText(MF_RELEASE_VERSION, MF_VERSION, artifactURLs, dockerImages)}</li>";
+			String releaseLinkWithText = "	<li>..and ${misc.createReleaseLinkWithText(MF_RELEASE_VERSION, MF_VERSION, artifactURLs, null/*dockerImages*/)}</li>";
 
 			currentBuild.description="""${currentBuild.description}<p/>
 <h2>Distribution</h2>						
