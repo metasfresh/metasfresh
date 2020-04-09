@@ -89,7 +89,7 @@ try
 
 					buildBackend(mvnConf, scmVars)
 
-					buildDistribution(mvnConf, backendDockerImages)
+					buildDistribution(mvnConf)
 				} // withMaven
 			} // withEnv
 		} // configFileProvider
