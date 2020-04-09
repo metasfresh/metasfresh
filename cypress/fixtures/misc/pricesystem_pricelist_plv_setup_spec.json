@@ -1,0 +1,6 @@
+{
+  "priceSystemName": "TestPriceSystemName",
+  "priceListName": "TestPriceListName",
+  "currency": "EUR",
+  "priceListValueName": "TestPLV"
+}
