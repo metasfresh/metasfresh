@@ -16,7 +16,7 @@ def build(final Map scmVars)
 		currentBuild.description="""${currentBuild.description}<br/>
 				<h2>e2e</h2>
 			"""
-		def status = sh(returnStatus: true, script: "git diff --name-only ${scmVars.GIT_PREVIOUS_SUCCESSFUL_COMMIT} ${scmVars.GIT_COMMIT} .")
+		def status = sh(returnStatus: true, script: "git diff --name-only ${scmVars.GIT_PREVIOUS_SUCCESSFUL_COMMIT} ${scmVars.GIT_COMMIT} .| grep .") // see if anything at all changed in this folder
 		echo "status of git dif command=${status}"
 		if(scmVars.GIT_COMMIT && scmVars.GIT_PREVIOUS_SUCCESSFUL_COMMIT && status != 0)
 		{
