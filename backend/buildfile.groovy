@@ -45,8 +45,9 @@ Map build(final MvnConf mvnConf, final Map scmVars)
 			final MvnConf webapiMvnConf = mvnConf.withPomFile('metasfresh-webui-api/pom.xml');
 			sh "mvn --settings ${webapiMvnConf.settingsFile} --file ${webapiMvnConf.pomFile} --batch-mode -Dmaven.test.failure.ignore=true -Dmetasfresh.assembly.descriptor.version=${env.MF_VERSION} ${webapiMvnConf.resolveParams} ${webapiMvnConf.deployParam} deploy"
 			
+			// -T 1C means "run with 1 thread per CPU"; note that for us this is highly experimental
 			final MvnConf distMvnConf = mvnConf.withPomFile('metasfresh-dist/dist/pom.xml');
-			sh "mvn --settings ${distMvnConf.settingsFile} --file ${distMvnConf.pomFile} --batch-mode -Dmaven.test.failure.ignore=true -Dmetasfresh.assembly.descriptor.version=${env.MF_VERSION} ${distMvnConf.resolveParams} ${distMvnConf.deployParam} deploy"
+			sh "mvn -T 1C --settings ${distMvnConf.settingsFile} --file ${distMvnConf.pomFile} --batch-mode -Dmaven.test.failure.ignore=true -Dmetasfresh.assembly.descriptor.version=${env.MF_VERSION} ${distMvnConf.resolveParams} ${distMvnConf.deployParam} deploy"
 
 			publishJacocoReports(scmVars.GIT_COMMIT, 'codacy_project_token_for_metasfresh_repo')
 				
