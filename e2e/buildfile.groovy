@@ -21,7 +21,7 @@ def build(final Map scmVars)
 		if(scmVars.GIT_COMMIT && scmVars.GIT_PREVIOUS_SUCCESSFUL_COMMIT && status != 0)
 		{
 			currentBuild.description= """${currentBuild.description}<p/>
-					No changes happened in e2e; skipped building it.
+					No changes happened in e2e.
 					"""
 			echo "no changes happened in backend; skip building backend";
 			return;

@@ -20,7 +20,7 @@ Map build(final MvnConf mvnConf, final Map scmVars)
 		if(scmVars.GIT_COMMIT && scmVars.GIT_PREVIOUS_SUCCESSFUL_COMMIT && status != 0)
 		{
 			currentBuild.description= """${currentBuild.description}<p/>
-					No changes happened in frontend; skipped building it.
+					No changes happened in frontend.
 					"""
 			echo "no changes happened in backend; skip building backend";
 			return;
