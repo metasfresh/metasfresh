@@ -78,6 +78,13 @@ try
 			final def scmVars = checkout scm // i hope this to do all the magic we need
 			//echo "scmVars=${scmVars}"
 
+			currentBuild.description = """${currentBuild.description}
+			<ul>
+			<li>Current commit: https://github.com/metasfresh/metasfresh/commit/${scmVars.GIT_COMMIT}</li>
+			<li>Current successful commit: https://github.com/metasfresh/metasfresh/commit/${scmVars.GIT_PREVIOUS_SUCCESSFUL_COMMIT}</li>
+			</ul>
+			"""
+
 			sh 'git clean -d --force -x' // clean the workspace
 
 			// we need to provide MF_VERSION because otherwise  the profile "MF_VERSION-env-missing" would be activated from the metasfresh-parent pom.xml
