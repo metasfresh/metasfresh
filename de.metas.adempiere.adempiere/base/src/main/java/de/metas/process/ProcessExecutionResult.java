@@ -1,13 +1,5 @@
 package de.metas.process;
 
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.Setter;
-
-import org.compiere.util.Util;
-
-import javax.annotation.concurrent.Immutable;
-
 import java.io.File;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -15,8 +7,10 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Objects;
 import java.util.Set;
+
+import javax.annotation.Nullable;
+import javax.annotation.concurrent.Immutable;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -24,6 +18,7 @@ import org.compiere.print.MPrintFormat;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.MimeType;
+import org.compiere.util.Util;
 import org.slf4j.Logger;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
@@ -42,8 +37,14 @@ import de.metas.process.ProcessExecutionResult.RecordsToOpen.OpenTarget;
 import de.metas.report.ReportResultData;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import de.metas.util.lang.RepoIdAware;
 import de.metas.util.time.SystemTime;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NonNull;
+import lombok.Setter;
+import lombok.Singular;
 
 /*
  * #%L
@@ -148,6 +149,7 @@ public class ProcessExecutionResult
 	 * Records to be opened (UI) after this process was successfully executed
 	 */
 	@JsonInclude(JsonInclude.Include.NON_NULL)
+	@Nullable
 	private RecordsToOpen recordsToOpen = null;
 
 	@Getter
@@ -187,7 +189,7 @@ public class ProcessExecutionResult
 			@JsonProperty("refreshAllAfterExecution") final boolean refreshAllAfterExecution,
 			@JsonProperty("recordToRefreshAfterExecution") final TableRecordReference recordToRefreshAfterExecution,
 			@JsonProperty("recordToSelectAfterExecution") final TableRecordReference recordToSelectAfterExecution,
-			@JsonProperty("recordsToOpen") final RecordsToOpen recordsToOpen,
+			@JsonProperty("recordsToOpen") @Nullable final RecordsToOpen recordsToOpen,
 			@JsonProperty("webuiViewToOpen") final WebuiViewToOpen webuiViewToOpen,
 			@JsonProperty("displayQRCode") final DisplayQRCode displayQRCode,
 			@JsonProperty("webuiViewId") final String webuiViewId)
@@ -337,8 +339,6 @@ public class ProcessExecutionResult
 
 	/**
 	 * Sets if the process logs (if any) shall be displayed to user
-	 *
-	 * @param showProcessLogsPolicy
 	 */
 	public final void setShowProcessLogs(final ShowProcessLogs showProcessLogsPolicy)
 	{
@@ -382,9 +382,6 @@ public class ProcessExecutionResult
 		return refreshAllAfterExecution;
 	}
 
-	/**
-	 * @param record to be refreshed after process execution
-	 */
 	public void setRecordToRefreshAfterExecution(final TableRecordReference recordToRefreshAfterExecution)
 	{
 		this.recordToRefreshAfterExecution = recordToRefreshAfterExecution;
@@ -405,8 +402,6 @@ public class ProcessExecutionResult
 
 	/**
 	 * Sets the record to be selected in window, after this process is executed (applies only when the process was started from a user window).
-	 *
-	 * @param recordToSelectAfterExecution
 	 */
 	public void setRecordToSelectAfterExecution(final TableRecordReference recordToSelectAfterExecution)
 	{
@@ -422,11 +417,16 @@ public class ProcessExecutionResult
 	{
 		if (records == null || records.isEmpty())
 		{
-			recordsToOpen = null;
+			setRecordToOpen(null);
 		}
 		else
 		{
-			recordsToOpen = new RecordsToOpen(records, adWindowId, OpenTarget.GridView);
+			setRecordToOpen(RecordsToOpen.builder()
+					.records(records)
+					.adWindowId(adWindowId)
+					.target(OpenTarget.GridView)
+					.automaticallySetReferencingDocumentPaths(true)
+					.build());
 		}
 	}
 
@@ -434,14 +434,19 @@ public class ProcessExecutionResult
 	{
 		if (recordIds == null || recordIds.isEmpty())
 		{
-			recordsToOpen = null;
+			setRecordToOpen(null);
 		}
 		else
 		{
 			final Set<TableRecordReference> records = recordIds.stream()
 					.map(recordId -> TableRecordReference.of(tableName, recordId))
 					.collect(ImmutableSet.toImmutableSet());
-			recordsToOpen = new RecordsToOpen(records, adWindowId, OpenTarget.GridView);
+			setRecordToOpen(RecordsToOpen.builder()
+					.records(records)
+					.adWindowId(adWindowId)
+					.target(OpenTarget.GridView)
+					.automaticallySetReferencingDocumentPaths(true)
+					.build());
 		}
 	}
 
@@ -449,30 +454,44 @@ public class ProcessExecutionResult
 	{
 		if (records == null || records.isEmpty())
 		{
-			recordsToOpen = null;
+			setRecordToOpen(null);
 		}
 		else
 		{
-			final String adWindowId = null;
-			recordsToOpen = new RecordsToOpen(records, adWindowId, OpenTarget.GridView);
+			setRecordToOpen(RecordsToOpen.builder()
+					.records(records)
+					.adWindowId(null)
+					.target(OpenTarget.GridView)
+					.automaticallySetReferencingDocumentPaths(true)
+					.build());
 		}
 	}
 
-	public void setRecordToOpen(final TableRecordReference record, final int adWindowId, final OpenTarget target)
+	public void setRecordToOpen(@Nullable final TableRecordReference record, final int adWindowId, @NonNull final OpenTarget target)
 	{
 		setRecordToOpen(record, String.valueOf(adWindowId), target);
 	}
 
-	public void setRecordToOpen(final TableRecordReference record, final String adWindowId, final OpenTarget target)
+	public void setRecordToOpen(@Nullable final TableRecordReference record, final @Nullable String adWindowId, @NonNull final OpenTarget target)
 	{
 		if (record == null)
 		{
-			recordsToOpen = null;
+			setRecordToOpen(null);
 		}
 		else
 		{
-			recordsToOpen = new RecordsToOpen(ImmutableList.of(record), adWindowId, target);
+			setRecordToOpen(RecordsToOpen.builder()
+					.record(record)
+					.adWindowId(adWindowId)
+					.target(target)
+					.automaticallySetReferencingDocumentPaths(true)
+					.build());
 		}
+	}
+
+	public void setRecordToOpen(@Nullable final RecordsToOpen recordsToOpen)
+	{
+		this.recordsToOpen = recordsToOpen;
 	}
 
 	public RecordsToOpen getRecordsToOpen()
@@ -629,7 +648,7 @@ public class ProcessExecutionResult
 	 *
 	 * @return logs inner list; never fails
 	 */
-	private final List<ProcessInfoLog> getLogsInnerList()
+	private List<ProcessInfoLog> getLogsInnerList()
 	{
 		if (logs == null)
 		{
@@ -675,7 +694,6 @@ public class ProcessExecutionResult
 	 * Add to Log
 	 *
 	 * @param Log_ID Log ID
-	 * @param P_ID Process ID
 	 * @param P_Date Process Date
 	 * @param P_Number Process Number
 	 * @param P_Msg Process Message
@@ -693,7 +711,6 @@ public class ProcessExecutionResult
 	/**
 	 * Add to Log.
 	 *
-	 * @param P_ID     Process ID
 	 * @param P_Date   Process Date if <code>null</code> then the current {@link SystemTime} is used.
 	 * @param P_Number Process Number
 	 * @param P_Msg    Process Message
@@ -787,17 +804,18 @@ public class ProcessExecutionResult
 	//
 	//
 
-	@Immutable
+	@lombok.Value
 	@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
-	public static final class RecordsToOpen
+	public static class RecordsToOpen
 	{
 		@JsonProperty("records")
 		@JsonInclude(JsonInclude.Include.NON_EMPTY)
-		private final List<TableRecordReference> records;
+		List<TableRecordReference> records;
 
 		@JsonProperty("adWindowId")
 		@JsonInclude(JsonInclude.Include.NON_NULL)
-		private final String adWindowIdStr;
+		@Nullable
+		String windowIdString;
 
 		public enum OpenTarget
 		{
@@ -805,20 +823,26 @@ public class ProcessExecutionResult
 		}
 
 		@JsonProperty("target")
-		private final OpenTarget target;
+		@NonNull
+		OpenTarget target;
+
+		@JsonProperty("automaticallySetReferencingDocumentPaths")
+		boolean automaticallySetReferencingDocumentPaths;
 
 		@JsonCreator
-		private RecordsToOpen( //
-				@JsonProperty("records") final Collection<TableRecordReference> records //
-				, @JsonProperty("adWindowId") final String adWindowId //
-				, @JsonProperty("target") final OpenTarget target //
-		)
+		@Builder
+		private RecordsToOpen(
+				@JsonProperty("records") @NonNull @Singular final List<TableRecordReference> records,
+				@JsonProperty("adWindowId") @Nullable final String adWindowId,
+				@JsonProperty("target") @Nullable final OpenTarget target,
+				@JsonProperty("automaticallySetReferencingDocumentPaths") @Nullable final Boolean automaticallySetReferencingDocumentPaths)
 		{
 			Check.assumeNotEmpty(records, "records is not empty");
 
 			this.records = ImmutableList.copyOf(records);
-			this.adWindowIdStr = Check.isEmpty(adWindowId, true) ? null : adWindowId;
-			this.target = target;
+			this.windowIdString = StringUtils.trimBlankToNull(adWindowId);
+			this.target = target != null ? target : OpenTarget.GridView;
+			this.automaticallySetReferencingDocumentPaths = automaticallySetReferencingDocumentPaths != null ? automaticallySetReferencingDocumentPaths : true;
 		}
 
 		@Override
@@ -827,58 +851,15 @@ public class ProcessExecutionResult
 			return MoreObjects.toStringHelper(this)
 					.omitNullValues()
 					.add("records", records)
-					.add("adWindowId", adWindowIdStr)
+					.add("adWindowId", windowIdString)
 					.add("target", target)
+					.add("automaticallySetReferencingDocumentPaths", automaticallySetReferencingDocumentPaths)
 					.toString();
 		}
 
-		@Override
-		public int hashCode()
+		public TableRecordReference getFirstRecord()
 		{
-			return Objects.hash(records, adWindowIdStr, target);
-		}
-
-		@Override
-		public boolean equals(final Object obj)
-		{
-			if (this == obj)
-			{
-				return true;
-			}
-			if (obj instanceof RecordsToOpen)
-			{
-				final RecordsToOpen other = (RecordsToOpen)obj;
-				return Objects.equals(records, other.records)
-						&& Objects.equals(adWindowIdStr, other.adWindowIdStr)
-						&& Objects.equals(target, other.target);
-			}
-			else
-			{
-				return false;
-			}
-		}
-
-		/**
-		 * @return records to open; never null or empty
-		 */
-		public List<TableRecordReference> getRecords()
-		{
-			return records;
-		}
-
-		public TableRecordReference getSingleRecord()
-		{
-			return records.get(0);
-		}
-
-		public String getWindowIdString()
-		{
-			return adWindowIdStr;
-		}
-
-		public OpenTarget getTarget()
-		{
-			return target;
+			return getRecords().get(0);
 		}
 	}
 
@@ -896,7 +877,7 @@ public class ProcessExecutionResult
 	@Immutable
 	@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 	@lombok.Value
-	public static final class WebuiViewToOpen
+	public static class WebuiViewToOpen
 	{
 		@JsonProperty("viewId")
 		String viewId;
@@ -920,7 +901,7 @@ public class ProcessExecutionResult
 
 	@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 	@lombok.Value
-	public static final class DisplayQRCode
+	public static class DisplayQRCode
 	{
 		@JsonProperty("code")
 		String code;
