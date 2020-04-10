@@ -79,10 +79,9 @@ try
 			//echo "scmVars=${scmVars}"
 
 			currentBuild.description = """${currentBuild.description}
-			<ul>
-			<li>Current commit: https://github.com/metasfresh/metasfresh/commit/${scmVars.GIT_COMMIT}</li>
-			<li>Current successful commit: https://github.com/metasfresh/metasfresh/commit/${scmVars.GIT_PREVIOUS_SUCCESSFUL_COMMIT}</li>
-			</ul>
+			<b>
+			The changes since the last successful commit are <a href="https://github.com/metasfresh/metasfresh/compare/${scmVars.GIT_PREVIOUS_SUCCESSFUL_COMMIT}..${scmVars.GIT_COMMIT}">here</a>
+			</b>
 			"""
 
 			sh 'git clean -d --force -x' // clean the workspace
