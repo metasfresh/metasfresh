@@ -57,7 +57,9 @@ import de.metas.rest_api.ordercandidates.response.JsonOLCandCreateBulkResponse;
 import de.metas.util.Check;
 import de.metas.util.StringUtils;
 import de.metas.util.collections.CollectionUtils;
+import de.metas.util.lang.ExternalId;
 import de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.exceptions.InvalidXMLException;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.HealthcareCHHelper;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.commons.ForumDatenaustauschChConstants;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.request.BillerAddressType;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.request.BodyType;
@@ -879,12 +881,12 @@ public class XmlToOLCandsService
 
 	private JsonExternalId createBPartnerExternalId(@NonNull final PatientAddressType patient)
 	{
-		if (Check.isEmpty(patient.getSsn()))
+		final ExternalId externalId = HealthcareCHHelper.createBPartnerExternalId(patient.getSsn());
+		if (externalId == null)
 		{
 			throw new MissingPropertyException("SSN", patient);
 		}
-		return JsonExternalId.of("SSN-" + patient.getSsn());
-
+		return JsonExternalId.of(externalId.getValue());
 	}
 
 	private JsonExternalId createBPartnerExternalId(@NonNull final BillerAddressType biller)

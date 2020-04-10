@@ -1,14 +1,16 @@
-package de.metas.attachments.storeattachment;
+package de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base;
 
-import java.net.URI;
+import javax.annotation.Nullable;
 
-import de.metas.attachments.AttachmentEntry;
+import de.metas.util.Check;
+import de.metas.util.lang.ExternalId;
+import lombok.experimental.UtilityClass;
 
 /*
  * #%L
- * de.metas.adempiere.adempiere.base
+ * vertical-healthcare_ch.forum_datenaustausch_ch.invoice_base
  * %%
- * Copyright (C) 2018 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -26,8 +28,15 @@ import de.metas.attachments.AttachmentEntry;
  * #L%
  */
 
-/** Listener to be fired when an attachment was exported outside of metasfresh. */
-public interface AttachmentStoredListener
+@UtilityClass
+public class HealthcareCHHelper
 {
-	void attachmentWasStored(AttachmentEntry attachmentEntry, URI storageIdentifier);
+	public ExternalId createBPartnerExternalId(@Nullable final String ssn)
+	{
+		if (Check.isEmpty(ssn))
+		{
+			return null;
+		}
+		return ExternalId.of("SSN-" + ssn);
+	}
 }

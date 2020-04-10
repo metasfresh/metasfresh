@@ -15,7 +15,7 @@ public class X_C_Invoice extends org.compiere.model.PO implements I_C_Invoice, o
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 440118811L;
+	private static final long serialVersionUID = -1581909050L;
 
     /** Standard Constructor */
     public X_C_Invoice (Properties ctx, int C_Invoice_ID, String trxName)
@@ -117,6 +117,72 @@ public class X_C_Invoice extends org.compiere.model.PO implements I_C_Invoice, o
 	public int getAD_User_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_AD_User_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Leistungsempfänger.
+		@param Beneficiary_BPartner_ID Leistungsempfänger	  */
+	@Override
+	public void setBeneficiary_BPartner_ID (int Beneficiary_BPartner_ID)
+	{
+		if (Beneficiary_BPartner_ID < 1) 
+			set_Value (COLUMNNAME_Beneficiary_BPartner_ID, null);
+		else 
+			set_Value (COLUMNNAME_Beneficiary_BPartner_ID, Integer.valueOf(Beneficiary_BPartner_ID));
+	}
+
+	/** Get Leistungsempfänger.
+		@return Leistungsempfänger	  */
+	@Override
+	public int getBeneficiary_BPartner_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_Beneficiary_BPartner_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Leistungsempfänger Kontakt.
+		@param Beneficiary_Contact_ID Leistungsempfänger Kontakt	  */
+	@Override
+	public void setBeneficiary_Contact_ID (int Beneficiary_Contact_ID)
+	{
+		if (Beneficiary_Contact_ID < 1) 
+			set_Value (COLUMNNAME_Beneficiary_Contact_ID, null);
+		else 
+			set_Value (COLUMNNAME_Beneficiary_Contact_ID, Integer.valueOf(Beneficiary_Contact_ID));
+	}
+
+	/** Get Leistungsempfänger Kontakt.
+		@return Leistungsempfänger Kontakt	  */
+	@Override
+	public int getBeneficiary_Contact_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_Beneficiary_Contact_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Leistungsempfänger Addresse.
+		@param Beneficiary_Location_ID Leistungsempfänger Addresse	  */
+	@Override
+	public void setBeneficiary_Location_ID (int Beneficiary_Location_ID)
+	{
+		if (Beneficiary_Location_ID < 1) 
+			set_Value (COLUMNNAME_Beneficiary_Location_ID, null);
+		else 
+			set_Value (COLUMNNAME_Beneficiary_Location_ID, Integer.valueOf(Beneficiary_Location_ID));
+	}
+
+	/** Get Leistungsempfänger Addresse.
+		@return Leistungsempfänger Addresse	  */
+	@Override
+	public int getBeneficiary_Location_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_Beneficiary_Location_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
@@ -566,18 +632,6 @@ public class X_C_Invoice extends org.compiere.model.PO implements I_C_Invoice, o
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	@Override
-	public org.compiere.model.I_C_Payment getC_Payment()
-	{
-		return get_ValueAsPO(COLUMNNAME_C_Payment_ID, org.compiere.model.I_C_Payment.class);
-	}
-
-	@Override
-	public void setC_Payment(org.compiere.model.I_C_Payment C_Payment)
-	{
-		set_ValueFromPO(COLUMNNAME_C_Payment_ID, org.compiere.model.I_C_Payment.class, C_Payment);
 	}
 
 	/** Set Zahlung.

@@ -97,6 +97,11 @@ import lombok.NonNull;
  * #L%
  */
 
+/**
+ * Takes an invoice and its attached forum-datenaustausch XML-invoice,
+ * creates a new augmented version of that XML
+ * and creates a result with that augmented XML. This result will very probably attached as well.
+ * */
 public class InvoiceExportClientImpl implements InvoiceExportClient
 {
 	private final CrossVersionServiceRegistry crossVersionServiceRegistry;
@@ -110,10 +115,10 @@ public class InvoiceExportClientImpl implements InvoiceExportClient
 			@NonNull final ExportConfig exportConfig)
 	{
 		this.crossVersionServiceRegistry = crossVersionServiceRegistry;
-		exportConverter = crossVersionServiceRegistry.getRequestConverterForSimpleVersionName(exportConfig.getXmlVersion());
-		exportFileMode = assumeNotNull(exportConfig.getMode(), "The given exportConfig needs to have a non-null mode; exportconfig={}", exportConfig);
-		exportFileFromEAN = exportConfig.getFromEAN();
-		exportFileViaEAN = exportConfig.getViaEAN();
+		this.exportConverter = crossVersionServiceRegistry.getRequestConverterForSimpleVersionName(exportConfig.getXmlVersion());
+		this.exportFileMode = assumeNotNull(exportConfig.getMode(), "The given exportConfig needs to have a non-null mode; exportconfig={}", exportConfig);
+		this.exportFileFromEAN = exportConfig.getFromEAN();
+		this.exportFileViaEAN = exportConfig.getViaEAN();
 	}
 
 	@Override

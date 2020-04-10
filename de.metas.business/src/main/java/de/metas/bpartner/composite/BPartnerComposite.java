@@ -287,10 +287,19 @@ public final class BPartnerComposite
 
 	public Optional<BPartnerLocation> extractBillToLocation()
 	{
-		final Predicate<BPartnerLocation> predicate = l -> l.getLocationType().getBillTo().orElse(false);
+		final Predicate<BPartnerLocation> predicate = l -> l.getLocationType().getIsBillToOr(false);
 
 		return createFilteredLocationStream(predicate)
-				.sorted(Comparator.comparing(l -> !l.getLocationType().getBillToDefault().orElse(false)))
+				.sorted(Comparator.comparing(l -> !l.getLocationType().getIsBillToDefaultOr(false)))
+				.findFirst();
+	}
+
+	public Optional<BPartnerLocation> extractShipToLocation()
+	{
+		final Predicate<BPartnerLocation> predicate = l -> l.getLocationType().getIsShipToOr(false);
+
+		return createFilteredLocationStream(predicate)
+				.sorted(Comparator.comparing(l -> !l.getLocationType().getIsShipToDefaultOr(false)))
 				.findFirst();
 	}
 

@@ -17,14 +17,14 @@
 		and http://stackoverflow.com/questions/3628471/maven-versions-plugin-not-picking-up-properties-from-parent
 		-->
 		<metasfresh.version>[1,10.0.0]</metasfresh.version>
-		
+
 		<migration-sql-basedir></migration-sql-basedir>
 	</properties>
 
 	<packaging>jar</packaging>
 
 	<dependencies>
-	
+
 		<dependency>
 			<groupId>de.metas.vertical.healthcare_ch</groupId>
 			<artifactId>vertical-healthcare_ch.forum_datenaustausch_ch.invoice_440.request</artifactId>
@@ -46,7 +46,7 @@
 			<artifactId>vertical-healthcare_ch.forum_datenaustausch_ch.invoice_450.response</artifactId>
 			<version>${project.version}</version>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>de.metas.vertical.healthcare_ch</groupId>
 			<artifactId>vertical-healthcare_ch.forum_datenaustausch_ch.invoice_commons</artifactId>
@@ -81,7 +81,13 @@
 			<artifactId>de.metas.adempiere.adempiere.base</artifactId>
 			<version>${metasfresh.version}</version>
 		</dependency>
-
+<!--
+		<dependency>
+			<groupId>de.metas.business</groupId>
+			<artifactId>de.metas.business</artifactId>
+			<version>${metasfresh.version}</version>
+		</dependency>
+-->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter</artifactId>

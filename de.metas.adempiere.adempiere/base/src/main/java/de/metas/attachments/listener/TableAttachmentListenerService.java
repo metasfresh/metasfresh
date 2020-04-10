@@ -27,15 +27,20 @@ import java.util.Collection;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_Table_AttachmentListener;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
+import org.slf4j.MDC;
+import org.slf4j.MDC.MDCCloseable;
 import org.springframework.stereotype.Service;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.attachments.AttachmentEntry;
+import de.metas.attachments.listener.AttachmentListenerConstants.ListenerWorkStatus;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IADMessageDAO;
 import de.metas.javaclasses.IJavaClassBL;
+import de.metas.logging.LogManager;
 import de.metas.notification.INotificationBL;
 import de.metas.notification.UserNotificationRequest;
 import de.metas.util.Services;
@@ -44,6 +49,8 @@ import lombok.NonNull;
 @Service
 public class TableAttachmentListenerService
 {
+	private static final Logger logger = LogManager.getLogger(TableAttachmentListenerService.class);
+
 	private final INotificationBL notificationBL = Services.get(INotificationBL.class);
 	private final IJavaClassBL javaClassBL = Services.get(IJavaClassBL.class);
 	private final IADMessageDAO adMessageDAO = Services.get(IADMessageDAO.class);
@@ -63,20 +70,34 @@ public class TableAttachmentListenerService
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	private ImmutableList<AttachmentListenerActionResult> notifyAttachmentListenersFor(final TableRecordReference tableRecordReference, final AttachmentEntry attachmentEntry)
+	private ImmutableList<AttachmentListenerActionResult> notifyAttachmentListenersFor(
+			@NonNull final TableRecordReference tableRecordReference,
+			@NonNull final AttachmentEntry attachmentEntry)
 	{
+
 		return tableAttachmentListenerRepository.getById(tableRecordReference.getAdTableId())
 				.stream()
-				.map(listenerSettings -> {
-					final AttachmentListener attachmentListener = javaClassBL.newInstance(listenerSettings.getListenerJavaClassId());
-
-					final AttachmentListenerConstants.ListenerWorkStatus status = attachmentListener.afterPersist(attachmentEntry, tableRecordReference);
-
-					notifyUser(listenerSettings, tableRecordReference, status);
-
-					return new AttachmentListenerActionResult(attachmentListener, status);
-				})
+				.map(listenerSettings -> invokeListener(listenerSettings, tableRecordReference, attachmentEntry))
 				.collect(ImmutableList.toImmutableList());
+	}
+
+	private AttachmentListenerActionResult invokeListener(
+			@NonNull final AttachmentListenerSettings listenerSettings,
+			@NonNull final TableRecordReference tableRecordReference,
+			@NonNull final AttachmentEntry attachmentEntry)
+	{
+		final AttachmentListener attachmentListener = javaClassBL.newInstance(listenerSettings.getListenerJavaClassId());
+
+		try (final MDCCloseable mdc = MDC.putCloseable("attachmentListener", attachmentListener.getClass().getSimpleName()))
+		{
+			final ListenerWorkStatus status = attachmentListener.afterPersist(attachmentEntry, tableRecordReference);
+			logger.debug("attachmentListener returned status={}", status);
+			if (!status.equals(ListenerWorkStatus.NOT_APPLIED))
+			{
+				notifyUser(listenerSettings, tableRecordReference, status);
+			}
+			return new AttachmentListenerActionResult(attachmentListener, status);
+		}
 	}
 
 	/**
@@ -86,13 +107,14 @@ public class TableAttachmentListenerService
 	 * @param tableRecordReference reference of the table
 	 */
 	@VisibleForTesting
-	void notifyUser(final AttachmentListenerSettings attachmentListenerSettings,
-			final TableRecordReference tableRecordReference,
-			final AttachmentListenerConstants.ListenerWorkStatus listenerWorkStatus)
+	void notifyUser(
+			@NonNull final AttachmentListenerSettings attachmentListenerSettings,
+			@NonNull final TableRecordReference tableRecordReference,
+			@NonNull final ListenerWorkStatus listenerWorkStatus)
 	{
 		if (attachmentListenerSettings.isSendNotification())
 		{
-			AdMessageKey adMessageContent = adMessageDAO.retrieveValueById(attachmentListenerSettings.getAdMessageId()).orElse(null);
+			final AdMessageKey adMessageContent = adMessageDAO.retrieveValueById(attachmentListenerSettings.getAdMessageId()).orElse(null);
 
 			final UserNotificationRequest userNotificationRequest = UserNotificationRequest.builder()
 					.contentADMessage(adMessageContent != null ? adMessageContent.toAD_Message() : null)
