@@ -23,16 +23,6 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 /* DDL */  select update_Column_Translation_From_AD_Element(577655) 
 ;
 
--- 2020-04-10T05:30:26.411Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */ SELECT public.db_alter_table('C_Invoice','ALTER TABLE public.C_Invoice ADD COLUMN Beneficiary_BPartner_ID NUMERIC(10)')
-;
-
--- 2020-04-10T05:30:27.324Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-ALTER TABLE C_Invoice ADD CONSTRAINT BeneficiaryBPartner_CInvoice FOREIGN KEY (Beneficiary_BPartner_ID) REFERENCES public.C_BPartner DEFERRABLE INITIALLY DEFERRED
-;
-
 -- 2020-04-10T05:32:53.647Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,ColumnName,Created,CreatedBy,EntityType,IsActive,Name,PrintName,Updated,UpdatedBy) VALUES (0,577656,0,'Beneficiary_Location_ID',TO_TIMESTAMP('2020-04-10 07:32:53','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','Leistungsempfänger Ort','Leistungsempfänger Ort',TO_TIMESTAMP('2020-04-10 07:32:53','YYYY-MM-DD HH24:MI:SS'),100)
@@ -191,16 +181,6 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 -- 2020-04-10T05:36:17.965Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 /* DDL */  select update_Column_Translation_From_AD_Element(577656) 
-;
-
--- 2020-04-10T05:36:18.975Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */ SELECT public.db_alter_table('C_Invoice','ALTER TABLE public.C_Invoice ADD COLUMN Beneficiary_Location_ID NUMERIC(10)')
-;
-
--- 2020-04-10T05:36:20.170Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-ALTER TABLE C_Invoice ADD CONSTRAINT BeneficiaryLocation_CInvoice FOREIGN KEY (Beneficiary_Location_ID) REFERENCES public.C_BPartner_Location DEFERRABLE INITIALLY DEFERRED
 ;
 
 -- 2020-04-10T05:37:28.379Z
