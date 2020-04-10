@@ -80,7 +80,10 @@ try
 
 			currentBuild.description = """${currentBuild.description}
 			<b>
-			The changes since the last successful commit are <a href="https://github.com/metasfresh/metasfresh/compare/${scmVars.GIT_PREVIOUS_SUCCESSFUL_COMMIT}..${scmVars.GIT_COMMIT}">here</a>
+			<ul>
+			<li>This job builds commit <a href="https://github.com/metasfresh/metasfresh/commit/${scmVars.GIT_COMMIT}">${scmVars.GIT_COMMIT}</a></li>
+			<li>The changes since the last successful commit are <a href="https://github.com/metasfresh/metasfresh/compare/${scmVars.GIT_PREVIOUS_SUCCESSFUL_COMMIT}..${scmVars.GIT_COMMIT}">here</a></li>
+			</ul>
 			</b>
 			"""
 
@@ -95,26 +98,26 @@ try
 				{
 					nexusCreateRepoIfNotExists(mvnConf.mvnDeployRepoBaseURL, mvnConf.mvnRepoName)
 
-				// parallel frontend: {
+				parallel frontend: {
 					dir('frontend')
 					{
 						def frontendBuildFile = load('buildfile.groovy')
 						frontendBuildFile.build(mvnConf, scmVars)
 					}
-				// }, backend: {
+				}, backend: {
 					dir('backend')
 					{
 						def backendBuildFile = load('buildfile.groovy')
 						backendBuildFile.build(mvnConf, scmVars)
 					}
-				// }, e2e: {
+				}, e2e: {
 					dir('e2e')
 					{
 						def e2eBuildFile = load('buildfile.groovy')
 						e2eBuildFile.build(scmVars)
 					}
-				// },
-				// failFast: false
+				},
+				failFast: false
 					dir('distribution')
 					{
 						def distributionBuildFile = load('buildfile.groovy')
