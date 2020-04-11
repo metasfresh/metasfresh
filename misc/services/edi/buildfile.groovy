@@ -64,7 +64,7 @@ def build(final MvnConf mvnConf, final Map scmVars)
 				'./') // workDir
 		final String publishedDockerImageName =	dockerBuildAndPush(dockerConf)
 
-        currentBuild.description=""""""${currentBuild.description}<p/>
+        currentBuild.description="""${currentBuild.description}<p/>
 		This build's main artifact (if not yet cleaned up) is
 <ul>
 <li>a docker image with name <code>${publishedDockerImageName}</code>; Note that you can also use the tag <code>${env.BRANCH_NAME}_LATEST</code></li>
