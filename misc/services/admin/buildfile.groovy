@@ -28,9 +28,9 @@ def build(final MvnConf mvnConf, final Map scmVars)
 		}
 
 		// update the parent pom version
-      	mvnUpdateParentPomVersion mvnConf
+		mvnUpdateParentPomVersion mvnConf
 
-        // set the artifact version of everything below the pom.xml
+		// set the artifact version of everything below the pom.xml
 		sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode -DnewVersion=${env.MF_VERSION} -DallowSnapshots=false -DgenerateBackupPoms=true -DprocessDependencies=true -DprocessParent=true -DexcludeReactor=true -Dincludes=\"de.metas*:*\" ${mvnConf.resolveParams} versions:set"
 		sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode -DallowSnapshots=false -DgenerateBackupPoms=true -DprocessDependencies=true -DprocessParent=true -DexcludeReactor=true -Dincludes=\"de.metas*:*\" ${mvnConf.resolveParams} versions:use-latest-versions"
 

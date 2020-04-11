@@ -61,7 +61,7 @@ Map build(final MvnConf mvnConf, final Map scmVars)
 		else 
 		{
 			sh 'yarn test --ci --reporters="default" --reporters="jest-junit"'
-			junit 'junit.xml'
+			//junit 'junit.xml' // commenting out; might be that it published "everything"
 		}
 					
 		sh "webpack --config webpack.prod.js --bail --display-error-details"
