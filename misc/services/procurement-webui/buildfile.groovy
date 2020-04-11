@@ -21,7 +21,7 @@ def build(final MvnConf mvnConf, final Map scmVars)
 		echo "status of git dif command=${status}"
 		if(scmVars.GIT_COMMIT && scmVars.GIT_PREVIOUS_SUCCESSFUL_COMMIT && status != 0)
 		{
-			currentBuild.description= """${currentBuild.description}<p/>
+			currentBuild.description="""${currentBuild.description}<p/>
 			No changes happened in procurement-webu.
 			"""
 			echo "no changes happened in procurement-webu; skip building procurement-webu";
@@ -31,7 +31,7 @@ def build(final MvnConf mvnConf, final Map scmVars)
 		// update the parent pom version
 		mvnUpdateParentPomVersion mvnConf
 
-		final String mavenUpdatePropertyParam'-Dproperty=metasfresh.version';
+		final String mavenUpdatePropertyParam='-Dproperty=metasfresh.version'
 		
 		// update the metasfresh.version property. either to the latest version or to the given params.MF_UPSTREAM_VERSION.
 		sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode ${mvnConf.resolveParams} ${mavenUpdatePropertyParam} ${VERSIONS_PLUGIN}:update-property"
