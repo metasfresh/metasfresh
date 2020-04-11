@@ -73,7 +73,11 @@ git commit -m "gh6205-app - move procurement-webui files to new misc/services fo
 mkdir -p misc/services/edi
 git remote add -f edi git@github.com:metasfresh/metasfresh-edi.git
 git merge edi/master --allow-unrelated-historiesgit merge edi/master --allow-unrelated-histories
-
+git mv .pmd kubernetes README.md start_esb-camel_docker.sh .gitignore Dockerfile edi-remote-via-ssh-tunnel.launch Jenkinsfile LICENSE.txt pom.xml src misc/services/edi
+git commit -m "gh6205-app - move edi files to new misc/services folder" -m "metasfresh/metasfresh#6205"
+ 
+git mv temp/* .
+ 
 # add and commit that root Jenkinsfile
 
 # later
