@@ -6,7 +6,7 @@
 @Library('misc')
 import de.metas.jenkins.DockerConf
 
-def build(final Map scmVars, final bolean forceBuild=false)
+def build(final Map scmVars, final boolean forceBuild=false)
 {
 	// https://github.com/metasfresh/metasfresh/issues/2110 make version/build infos more transparent
 	//final String MF_VERSION = retrieveArtifactVersion(env.BRANCH_NAME, env.BUILD_NUMBER)

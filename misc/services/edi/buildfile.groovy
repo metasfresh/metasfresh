@@ -9,7 +9,7 @@ import de.metas.jenkins.MvnConf
 import de.metas.jenkins.Misc
 
 
-def build(final MvnConf mvnConf, final Map scmVars, final bolean forceBuild=falses)
+def build(final MvnConf mvnConf, final Map scmVars, final boolean forceBuild=falses)
 {s
 	final String VERSIONS_PLUGIN = 'org.codehaus.mojo:versions-maven-plugin:2.5'
        

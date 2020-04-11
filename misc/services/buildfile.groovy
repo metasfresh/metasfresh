@@ -8,7 +8,7 @@ import de.metas.jenkins.DockerConf
 import de.metas.jenkins.Misc
 import de.metas.jenkins.MvnConf
 
-def build(final MvnConf mvnConf, final Map scmVars, final bolean forceBuild=false)
+def build(final MvnConf mvnConf, final Map scmVars, final boolean forceBuild=false)
 {
     stage('Build misc services')
     {
