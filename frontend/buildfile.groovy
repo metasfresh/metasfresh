@@ -73,14 +73,10 @@ Map build(final MvnConf mvnConf, final Map scmVars)
 
 		sh "tar cvzf webui-dist-${env.MF_VERSION}.tar.gz dist"
 
-		// upload our results to the maven repo
-		//configFileProvider([configFile(fileId: 'metasfresh-global-maven-settings', replaceTokens: true, variable: 'MAVEN_SETTINGS')])
-		//{
 		sh "mvn --settings ${mvnConf.settingsFile} ${mvnConf.resolveParams} -Dfile=webui-dist-${env.MF_VERSION}.tar.gz -Durl=${mvnConf.deployRepoURL} -DrepositoryId=${mvnConf.MF_MAVEN_REPO_ID} -DgroupId=de.metas.ui.web -DartifactId=metasfresh-webui-frontend -Dversion=${env.MF_VERSION} -Dpackaging=tar.gz -DgeneratePom=true org.apache.maven.plugins:maven-deploy-plugin:2.7:deploy-file"
 
 		final misc = new de.metas.jenkins.Misc()
 		BUILD_ARTIFACT_URL="${mvnConf.deployRepoURL}/de/metas/ui/web/metasfresh-webui-frontend/${misc.urlEncode(env.MF_VERSION)}/metasfresh-webui-frontend-${misc.urlEncode(env.MF_VERSION)}.tar.gz"
-		//}
 	
 		sh 'cp -r dist docker/nginx'
 
@@ -92,7 +88,6 @@ Map build(final MvnConf mvnConf, final Map scmVars)
 		);
 		final String publishedDockerImageName = dockerBuildAndPush(materialDispoDockerConf)
 
-		final misc = new de.metas.jenkins.Misc()
 		currentBuild.description="""${currentBuild.description}<br/>
 		This build's main artifacts (if not yet cleaned up) are
 <ul>
