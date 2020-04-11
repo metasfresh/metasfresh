@@ -26,6 +26,7 @@ const DLpropTypes = {
   parentSelected: PropTypes.array.isRequired,
   selected: PropTypes.array.isRequired,
   isModal: PropTypes.bool,
+  inModal: PropTypes.bool,
 
   // from @react-router
   location: PropTypes.object.isRequired,
@@ -37,7 +38,8 @@ const DLpropTypes = {
  */
 const DLmapStateToProps = (state, { location, ...props }) => {
   const { query } = location;
-  let master = state.viewHandler.views[props.windowType];
+  const identifier = props.isModal ? props.defaultViewId : props.windowType;
+  let master = state.viewHandler.views[identifier];
 
   if (!master) {
     master = viewState;
@@ -47,6 +49,7 @@ const DLmapStateToProps = (state, { location, ...props }) => {
   const page = master.page ? master.page : parseInt(query.page);
   let viewId = master.viewId ? master.viewId : query.viewId;
 
+  // used for modals
   if (props.defaultViewId) {
     viewId = props.defaultViewId;
   }
