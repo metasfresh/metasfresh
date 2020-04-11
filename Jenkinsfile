@@ -23,11 +23,11 @@ properties([
 	parameters([
 		booleanParam(defaultValue: false,
 				description: 'If true, then rebuild everything, no matter if there were changes',
-				name: 'MF_FORCE_FULL_BUILD')
+				name: 'MF_FORCE_FULL_BUILD'),
 
 		string(defaultValue: MF_SQL_SEED_DUMP_URL_DEFAULT,
 				description: 'metasfresh database seed against which the build shall apply its migrate scripts for QA; leave empty to avoid this QA.',
-				name: 'MF_SQL_SEED_DUMP_URL')
+				name: 'MF_SQL_SEED_DUMP_URL'),
 	]),
 	pipelineTriggers([]),
 	buildDiscarder(logRotator(artifactDaysToKeepStr: '', artifactNumToKeepStr: '', daysToKeepStr: '', numToKeepStr: numberOfBuildsToKeepStr)) // keep the last $numberOfBuildsToKeepStr builds
