@@ -26,7 +26,10 @@ Map build(final MvnConf mvnConf, final Map scmVars)
 				return;
 			}
 			final String VERSIONS_PLUGIN='org.codehaus.mojo:versions-maven-plugin:2.5' // make sure we know which plugin version we run
-			
+		
+			// update the parent pom version
+			mvnUpdateParentPomVersion mvnConf
+
 			// set the artifact version of everything below ${mvnConf.pomFile}
 			// processAllModules=true: also update those modules that have a parent version range!
 			sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode -DnewVersion=${env.MF_VERSION} -DprocessAllModules=true -Dincludes=\"de.metas*:*\" ${mvnConf.resolveParams} ${VERSIONS_PLUGIN}:set"

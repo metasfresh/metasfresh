@@ -29,16 +29,7 @@ Map build(final MvnConf mvnConf, final Map scmVars)
 		// set nodejs version defined in tool name of NodeJS installations located in Jenkins global plugins
 		final NODEJS_TOOL_NAME="nodejs-13"
 		echo "Setting NODEJS_TOOL_NAME=$NODEJS_TOOL_NAME"
-
-		// final String MF_UPSTREAM_BRANCH = params.MF_UPSTREAM_BRANCH ?: env.BRANCH_NAME
-		// echo "params.MF_UPSTREAM_BRANCH=${params.MF_UPSTREAM_BRANCH}; env.BRANCH_NAME=${env.BRANCH_NAME}; => MF_UPSTREAM_BRANCH=${MF_UPSTREAM_BRANCH}"
-
-		// https://github.com/metasfresh/metasfresh/issues/2110 make version/build infos more transparent
-		// final String MF_VERSION = retrieveArtifactVersion(MF_UPSTREAM_BRANCH, env.BUILD_NUMBER)
-		//currentBuild.displayName = "artifact-version ${MF_VERSION}";
-
-		//String BUILD_GIT_SHA1 = "NOT_YET_SET" // will be set when we check out
-
+		
 		String BUILD_ARTIFACT_URL
 
 		//final def scmVars = checkout scm
@@ -83,33 +74,13 @@ Map build(final MvnConf mvnConf, final Map scmVars)
 		sh "tar cvzf webui-dist-${env.MF_VERSION}.tar.gz dist"
 
 		// upload our results to the maven repo
+		//configFileProvider([configFile(fileId: 'metasfresh-global-maven-settings', replaceTokens: true, variable: 'MAVEN_SETTINGS')])
+		//{
+		sh "mvn --settings ${mvnConf.settingsFile} ${mvnConf.resolveParams} -Dfile=webui-dist-${env.MF_VERSION}.tar.gz -Durl=${mvnConf.deployRepoURL} -DrepositoryId=${mvnConf.MF_MAVEN_REPO_ID} -DgroupId=de.metas.ui.web -DartifactId=metasfresh-webui-frontend -Dversion=${env.MF_VERSION} -Dpackaging=tar.gz -DgeneratePom=true org.apache.maven.plugins:maven-deploy-plugin:2.7:deploy-file"
 
-		configFileProvider([configFile(fileId: 'metasfresh-global-maven-settings', replaceTokens: true, variable: 'MAVEN_SETTINGS')])
-		{
-			// create our config instance to be used further on
-			// final MvnConf mvnConf = new MvnConf(
-			// 	'pom.xml', // pomFile
-			// 	MAVEN_SETTINGS, // settingsFile
-			// 	"mvn-${MF_UPSTREAM_BRANCH}".replace("/", "-"), // mvnRepoName
-			// 	'https://repo.metasfresh.com' // mvnRepoBaseURL - for resolve and deploy
-			// )
-			// echo "mvnConf=${mvnConf.toString()}"
-			//nexusCreateRepoIfNotExists mvnConf.mvnDeployRepoBaseURL, mvnConf.mvnRepoName
-			//withMaven(jdk: 'java-8', maven: 'maven-3.5.0', mavenLocalRepo: '.repository')
-			//{
-				sh "mvn --settings ${mvnConf.settingsFile} ${mvnConf.resolveParams} -Dfile=webui-dist-${env.MF_VERSION}.tar.gz -Durl=${mvnConf.deployRepoURL} -DrepositoryId=${mvnConf.MF_MAVEN_REPO_ID} -DgroupId=de.metas.ui.web -DartifactId=metasfresh-webui-frontend -Dversion=${env.MF_VERSION} -Dpackaging=tar.gz -DgeneratePom=true org.apache.maven.plugins:maven-deploy-plugin:2.7:deploy-file"
-
-				final misc = new de.metas.jenkins.Misc()
-				BUILD_ARTIFACT_URL="${mvnConf.deployRepoURL}/de/metas/ui/web/metasfresh-webui-frontend/${misc.urlEncode(env.MF_VERSION)}/metasfresh-webui-frontend-${misc.urlEncode(env.MF_VERSION)}.tar.gz"
-
-			//} // withMaven
-		} // configFileProvider
-
-		// gh #968:
-		// set env variables which will be available to a possible upstream job that might have called us
-		// all those env variables can be gotten from <buildResultInstance>.getBuildVariables()
-		// env.MF_VERSION=env.MF_VERSION
-		// env.BUILD_GIT_SHA1=BUILD_GIT_SHA1
+		final misc = new de.metas.jenkins.Misc()
+		BUILD_ARTIFACT_URL="${mvnConf.deployRepoURL}/de/metas/ui/web/metasfresh-webui-frontend/${misc.urlEncode(env.MF_VERSION)}/metasfresh-webui-frontend-${misc.urlEncode(env.MF_VERSION)}.tar.gz"
+		//}
 	
 		sh 'cp -r dist docker/nginx'
 
@@ -129,10 +100,6 @@ Map build(final MvnConf mvnConf, final Map scmVars)
 <li>a docker image with name <code>${publishedDockerImageName}</code>; Note that you can also use the tag <code>${misc.mkDockerTag(env.BRANCH_NAME)}_LATEST</code></li>
 </ul>"""
 	}
-
-	// gh #968: set docker image name to be available to a possible upstream job that might have called us
-//	env.MF_DOCKER_IMAGE=publishedDockerImageName
-
 }
 
 return this;
