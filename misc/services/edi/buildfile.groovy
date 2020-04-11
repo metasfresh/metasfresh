@@ -51,10 +51,6 @@ def build(final MvnConf mvnConf, final Map scmVars)
 		// maven.test.failure.ignore=true: see metasfresh stage
 		sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode -Dmaven.test.failure.ignore=true -Dmetasfresh.assembly.descriptor.version=${env.MF_VERSION} ${mvnConf.resolveParams} ${mvnConf.deployParam} clean deploy"
 
-		junit '**/target/surefire-reports/*.xml'
-
-		jacoco()
-
 		final DockerConf dockerConf = new DockerConf(
 				'de-metas-edi-esb-camel', // artifactName
 				env.BRANCH_NAME, // branchName

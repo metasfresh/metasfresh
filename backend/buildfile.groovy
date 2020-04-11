@@ -48,9 +48,7 @@ Map build(final MvnConf mvnConf, final Map scmVars)
 			
 			final MvnConf distMvnConf = mvnConf.withPomFile('metasfresh-dist/dist/pom.xml');
 			sh "mvn --settings ${distMvnConf.settingsFile} --file ${distMvnConf.pomFile} --batch-mode -Dmaven.test.failure.ignore=true -Dmetasfresh.assembly.descriptor.version=${env.MF_VERSION} ${distMvnConf.resolveParams} ${distMvnConf.deployParam} deploy"
-
-			publishJacocoReports(scmVars.GIT_COMMIT, 'codacy_project_token_for_metasfresh_repo')
-				
+			
 			final DockerConf reportDockerConf = new DockerConf(
 				'metasfresh-report', // artifactName
 				env.BRANCH_NAME, // branchName

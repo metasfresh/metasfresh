@@ -48,10 +48,6 @@ def build(final MvnConf mvnConf, final Map scmVars)
 			<ul>
 <li><a href=\"https://repo.metasfresh.com/content/repositories/${mvnConf.mvnRepoName}/de/metas/procurement/de.metas.procurement.webui/${MF_VERSION}/de.metas.procurement.webui-${MF_VERSION}.jar\">de.metas.procurement.webui-${MF_VERSION}.jar</a></li>
 </ul>""";
-
-		junit '**/target/surefire-reports/*.xml'
-
-		jacoco exclusionPattern: '**/src/main/java-gen'
     } // stage
 } 
 
