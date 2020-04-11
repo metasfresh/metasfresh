@@ -9,11 +9,10 @@ import de.metas.jenkins.MvnConf
 import de.metas.jenkins.Misc
 
 
-final String VERSIONS_PLUGIN = 'org.codehaus.mojo:versions-maven-plugin:2.5'
-String BUILD_GIT_SHA1 = "NOT_YET_SET" // will be set when we check out
 
 def build(final MvnConf mvnConf, final Map scmVars)
 {
+	final String VERSIONS_PLUGIN = 'org.codehaus.mojo:versions-maven-plugin:2.5'
        
 	stage('Build edi')
     {
