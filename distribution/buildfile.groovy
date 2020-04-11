@@ -46,7 +46,6 @@ Map build(final MvnConf mvnConf)
 			artifactURLs['metasfresh-admin'] = "${mvnConf.resolveRepoURL}/de/metas/admin/metasfresh-admin/${urlEncodedMavenProps['metasfresh-admin.version']}/metasfresh-admin-${urlEncodedMavenProps['metasfresh-admin.version']}.jar"
 			artifactURLs['metasfresh-dist'] = "${mvnConf.deployRepoURL}/de/metas/dist/metasfresh-dist-dist/${misc.urlEncode(MF_VERSION)}/metasfresh-dist-dist-${misc.urlEncode(MF_VERSION)}-dist.tar.gz"
 			artifactURLs['metasfresh-dist-sql-only'] = "${mvnConf.deployRepoURL}/de/metas/dist/metasfresh-dist-dist/${misc.urlEncode(MF_VERSION)}/metasfresh-dist-dist-${misc.urlEncode(MF_VERSION)}-sql-only.tar.gz"
-			artifactURLs['metasfresh-material-dispo'] = "${mvnConf.resolveRepoURL}/de/metas/material/metasfresh-material-dispo-service/${urlEncodedMavenProps['metasfresh.version']}/metasfresh-material-dispo-service-${urlEncodedMavenProps['metasfresh.version']}.jar"
 			artifactURLs['metasfresh-procurement-webui'] = "${mvnConf.resolveRepoURL}/de/metas/procurement/de.metas.procurement.webui/${urlEncodedMavenProps['metasfresh-procurement-webui.version']}/de.metas.procurement.webui-${urlEncodedMavenProps['metasfresh-procurement-webui.version']}.jar"
 			artifactURLs['metasfresh-webui-api'] = "${mvnConf.resolveRepoURL}/de/metas/ui/web/metasfresh-webui-api/${urlEncodedMavenProps['metasfresh.version']}/metasfresh-webui-api-${urlEncodedMavenProps['metasfresh.version']}.jar"
 			artifactURLs['metasfresh-webui-frontend'] = "${mvnConf.resolveRepoURL}/de/metas/ui/web/metasfresh-webui-frontend/${urlEncodedMavenProps['metasfresh-webui-frontend.version']}/metasfresh-webui-frontend-${urlEncodedMavenProps['metasfresh-webui-frontend.version']}.tar.gz"
@@ -80,7 +79,6 @@ Map build(final MvnConf mvnConf)
 	<li><a href=\"${artifactURLs['metasfresh-webui-api']}\">metasfresh-webui-api.jar</a></li>
 	<li><a href=\"${artifactURLs['metasfresh-webui-frontend']}\">metasfresh-webui-frontend.tar.gz</a></li>
 	<li><a href=\"${artifactURLs['metasfresh-procurement-webui']}\">metasfresh-procurement-webui.jar</a></li>
-	<li><a href=\"${artifactURLs['metasfresh-material-dispo']}\">metasfresh-material-dispo.jar</a></li>
 	<li><a href=\"${artifactURLs['metasfresh-admin']}\">metasfresh-admin.jar</a></li>
 </ul>
 Note: all the separately listed artifacts are also included in the dist-tar.gz

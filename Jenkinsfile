@@ -10,11 +10,8 @@ import de.metas.jenkins.MvnConf
 
 chuckNorris()
 
-final String MF_UPSTREAM_BRANCH = params.MF_UPSTREAM_BRANCH ?: env.BRANCH_NAME
-echo "params.MF_UPSTREAM_BRANCH=${params.MF_UPSTREAM_BRANCH}; env.BRANCH_NAME=${env.BRANCH_NAME}; => MF_UPSTREAM_BRANCH=${MF_UPSTREAM_BRANCH}"
-
 // keep the last 20 builds for master and stable, but onkly the last 5 for the rest, to preserve disk space on jenkins
-final String numberOfBuildsToKeepStr = (MF_UPSTREAM_BRANCH == 'master' || MF_UPSTREAM_BRANCH == 'stable') ? '50' : '20'
+final String numberOfBuildsToKeepStr = (env.BRANCH_NAME == 'master' || env.BRANCH_NAME == 'stable') ? '50' : '20'
 
 final String MF_SQL_SEED_DUMP_URL_DEFAULT = 
 	env.BRANCH_NAME == 'release' 
@@ -24,25 +21,9 @@ final String MF_SQL_SEED_DUMP_URL_DEFAULT =
 // thx to http://stackoverflow.com/a/36949007/1012103 with respect to the parameters
 properties([
 	parameters([
-		string(defaultValue: '',
-			description: '''If this job is invoked via an updstream build job, then that job can provide either its branch or the respective <code>MF_UPSTREAM_BRANCH</code> that was passed to it.<br>
-This build will then attempt to use maven dependencies from that branch, and it will sets its own name to reflect the given value.
-<p>
-So if this is a "master" build, but it was invoked by a "feature-branch" build then this build will try to get the feature-branch\'s build artifacts annd will set its
-<code>currentBuild.displayname</code> and <code>currentBuild.description</code> to make it obvious that the build contains code from the feature branch.''',
-			name: 'MF_UPSTREAM_BRANCH'),
-
-		string(defaultValue: '',
-			description: 'Name of the upstream job which called us. Required only in conjunction with MF_UPSTREAM_ARTIFACT_VERSION',
-			name: 'MF_UPSTREAM_JOBNAME'),
-
-		string(defaultValue: '',
-			description: 'Version of the upstream job\'s artifact that was build by the job which called us. Shall be used when resolving the upstream depdendency. Leave empty and this build will use the latest.',
-			name: 'MF_UPSTREAM_ARTIFACT_VERSION'),
-
-		string(defaultValue: '',
-				description: 'If metasfresh-frontend calls this job, then it uses this variable to forward the metasfresh-edi docker image name which it build',
-				name: 'MF_METASFRESH_EDI_DOCKER_IMAGE'),
+		booleanParam(defaultValue: false,
+				description: 'If true, then rebuild everything, no matter if there were changes',
+				name: 'MF_FORCE_FULL_BUILD')
 
 		string(defaultValue: MF_SQL_SEED_DUMP_URL_DEFAULT,
 				description: 'metasfresh database seed against which the build shall apply its migrate scripts for QA; leave empty to avoid this QA.',
@@ -59,7 +40,7 @@ try
 	timestamps
 	{
 	// https://github.com/metasfresh/metasfresh/issues/2110 make version/build infos more transparent
-	final String MF_VERSION=retrieveArtifactVersion(MF_UPSTREAM_BRANCH, env.BUILD_NUMBER)
+	final String MF_VERSION=retrieveArtifactVersion(env.BRANCH_NAME, env.BUILD_NUMBER)
 	currentBuild.displayName="artifact-version ${MF_VERSION}";
 
 	node('agent && linux')
@@ -70,7 +51,7 @@ try
 			final MvnConf mvnConf = new MvnConf(
 				'pom.xml', // pomFile
 				MAVEN_SETTINGS, // settingsFile
-				"mvn-${MF_UPSTREAM_BRANCH}".replace("/", "-"), // mvnRepoName
+				"mvn-${env.BRANCH_NAME}".replace("/", "-"), // mvnRepoName
 				'https://repo.metasfresh.com' // mvnRepoBaseURL
 			)
 			echo "mvnConf=${mvnConf.toString()}"
@@ -97,32 +78,31 @@ try
 				withMaven(jdk: 'java-8', maven: 'maven-3.5.4', mavenLocalRepo: '.repository', mavenOpts: '-Xmx1536M', options: [artifactsPublisher(disabled: true)])
 				{
 					nexusCreateRepoIfNotExists(mvnConf.mvnDeployRepoBaseURL, mvnConf.mvnRepoName)
-
 					dir('misc/parent-pom')
 					{
 						def parentPom = load('buildfile.groovy')
-						parentPom.build(mvnConf, scmVars)
+						parentPom.build(mvnConf, scmVars, params.MF_FORCE_FULL_BUILD)
 					}
 					// note: to do some of this in parallel, we first need to make sure that the different parts don't concurrently write to the build description
 					dir('frontend')
 					{
 						def frontendBuildFile = load('buildfile.groovy')
-						frontendBuildFile.build(mvnConf, scmVars)
+						frontendBuildFile.build(mvnConf, scmVars, params.MF_FORCE_FULL_BUILD)
 					}
 					dir('backend')
 					{
 						def backendBuildFile = load('buildfile.groovy')
-						backendBuildFile.build(mvnConf, scmVars)
+						backendBuildFile.build(mvnConf, scmVars, params.MF_FORCE_FULL_BUILD)
 					}
 					dir('misc/services')
 					{
 						def miscServices = load('buildfile.groovy')
-						miscServices.build(mvnConf, scmVars)
+						miscServices.build(mvnConf, scmVars, params.MF_FORCE_FULL_BUILD)
 					}
 					dir('e2e')
 					{
 						def e2eBuildFile = load('buildfile.groovy')
-						e2eBuildFile.build(scmVars)
+						e2eBuildFile.build(scmVars, params.MF_FORCE_FULL_BUILD)
 					}
 					dir('distribution')
 					{
@@ -141,8 +121,8 @@ try
 	} // timestamps
 } catch(all)
 {
-  final String mattermostMsg = "This **${MF_UPSTREAM_BRANCH}** build failed or was aborted: ${BUILD_URL}"
-  if(MF_UPSTREAM_BRANCH=='master' || MF_UPSTREAM_BRANCH=='release')
+  final String mattermostMsg = "This **${env.BRANCH_NAME}** build failed or was aborted: ${BUILD_URL}"
+  if(env.BRANCH_NAME=='master' || env.BRANCH_NAME=='release')
   {
 	mattermostSend color: 'danger', message: mattermostMsg
   }

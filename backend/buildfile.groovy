@@ -4,7 +4,7 @@ import de.metas.jenkins.DockerConf
 import de.metas.jenkins.Misc
 import de.metas.jenkins.MvnConf
 
-Map build(final MvnConf mvnConf, final Map scmVars)
+Map build(final MvnConf mvnConf, final Map scmVars, final bolean forceBuild=false)
 {
 		final dockerImages = [:]
 		String publishedDBInitDockerImageName
@@ -17,7 +17,7 @@ Map build(final MvnConf mvnConf, final Map scmVars)
 			"""
 			def status = sh(returnStatus: true, script: "git diff --name-only ${scmVars.GIT_PREVIOUS_SUCCESSFUL_COMMIT} ${scmVars.GIT_COMMIT} . | grep .") // see if anything at all changed in this folder
 			echo "status of git dif command=${status}"
-			if(scmVars.GIT_COMMIT && scmVars.GIT_PREVIOUS_SUCCESSFUL_COMMIT && status != 0)
+			if(scmVars.GIT_COMMIT && scmVars.GIT_PREVIOUS_SUCCESSFUL_COMMIT && status != 0 && !forceBuild)
 			{
 				currentBuild.description= """${currentBuild.description}<p/>
 				No changes happened in backend.

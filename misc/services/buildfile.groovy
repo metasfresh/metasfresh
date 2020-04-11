@@ -8,7 +8,7 @@ import de.metas.jenkins.DockerConf
 import de.metas.jenkins.Misc
 import de.metas.jenkins.MvnConf
 
-def build(final MvnConf mvnConf, final Map scmVars)
+def build(final MvnConf mvnConf, final Map scmVars, final bolean forceBuild=false)
 {
     stage('Build misc services')
     {
@@ -19,17 +19,17 @@ def build(final MvnConf mvnConf, final Map scmVars)
 		dir('edi')
 		{
 			def ediBuildFile = load('buildfile.groovy')
-			ediBuildFile.build(mvnConf, scmVars)
+			ediBuildFile.build(mvnConf, scmVars, forceBuild)
 		}
 		dir('procurement-webui')
 		{
 			def procurementWebuiBuildFile = load('buildfile.groovy')
-			procurementWebuiBuildFile.build(mvnConf, scmVars)
+			procurementWebuiBuildFile.build(mvnConf, scmVars, forceBuild)
 		}
 		dir('admin')
 		{
 			def procurementWebuiBuildFile = load('buildfile.groovy')
-			procurementWebuiBuildFile.build(mvnConf, scmVars)
+			procurementWebuiBuildFile.build(mvnConf, scmVars, forceBuild)
 		}
     } // stage
 } 
