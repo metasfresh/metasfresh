@@ -130,8 +130,7 @@ try
 						distributionBuildFile.build(mvnConf);
 					}
 					
-					junit '**/target/surefire-reports/*.xml'
-					jacoco exclusionPattern: '**/src/main/java-gen'
+					//junit '**/target/surefire-reports/*.xml'
 					publishJacocoReports(scmVars.GIT_COMMIT, 'codacy_project_token_for_metasfresh_repo')
 				} // withMaven
 			} // withEnv

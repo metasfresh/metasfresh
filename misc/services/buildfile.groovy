@@ -12,6 +12,10 @@ def build(final MvnConf mvnConf, final Map scmVars)
 {
     stage('Build misc services')
     {
+	currentBuild.description= """${currentBuild.description}<p/>
+			<h2>misc services</h2>
+		"""
+
 		dir('edi')
 		{
 			def ediBuildFile = load('buildfile.groovy')

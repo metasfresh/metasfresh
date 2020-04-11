@@ -10,11 +10,10 @@ import de.metas.jenkins.MvnConf
 
 def build(final MvnConf mvnConf, final Map scmVars)
 {
-    	// env.MF_RELEASE_VERSION is used by spring-boot's build-info goal
-    stage('Build admin')
+    //stage('Build admin') // too many stages clutter the build info
     {
 		currentBuild.description= """${currentBuild.description}<p/>
-			<h2>admin</h2>
+			<h3>admin</h3>
 		"""
 		def status = sh(returnStatus: true, script: "git diff --name-only ${scmVars.GIT_PREVIOUS_SUCCESSFUL_COMMIT} ${scmVars.GIT_COMMIT} . | grep .") // see if anything at all changed in this folder
 			echo "status of git dif command=${status}"

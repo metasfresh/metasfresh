@@ -13,10 +13,10 @@ def build(final MvnConf mvnConf, final Map scmVars)
 {
 	final String VERSIONS_PLUGIN = 'org.codehaus.mojo:versions-maven-plugin:2.5'
        
-	stage('Build edi')
+	// stage('Build edi')  // too many stages clutter the build info
     {
 		currentBuild.description= """${currentBuild.description}<p/>
-			<h2>EDI</h2>
+			<h3>EDI</h3>
 		"""
 		def status = sh(returnStatus: true, script: "git diff --name-only ${scmVars.GIT_PREVIOUS_SUCCESSFUL_COMMIT} ${scmVars.GIT_COMMIT} . | grep .") // see if anything at all changed in this folder
 			echo "status of git dif command=${status}"
