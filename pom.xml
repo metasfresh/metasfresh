@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<artifactId>de.metas.parent.general</artifactId>
+		<groupId>de.metas</groupId>
+		<version>[1,10.0.0]</version>
+	</parent>
+
+	<groupId>de.metas.admin</groupId>
+	<artifactId>metasfresh-admin</artifactId>
+
+	<!-- FRESH-271: we need an explicit version here, otherwise versions-maven-plugin can't set it to another version -->
+	<version>1.0.0</version>
+
+	<properties>
+		<spring-boot.version>1.5.3.RELEASE</spring-boot.version>
+		<start-class>de.metas.admin.SpringBootAdminApplication</start-class>
+	</properties>
+
+	<dependencyManagement>
+		<dependencies>
+			<!-- Import dependency management from Spring Boot -->
+			<dependency>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-dependencies</artifactId>
+				<version>${spring-boot.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
+
+	<dependencies>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-web</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>de.codecentric</groupId>
+			<artifactId>spring-boot-admin-server</artifactId>
+			<version>${spring-boot-admin.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>de.codecentric</groupId>
+			<artifactId>spring-boot-admin-server-ui</artifactId>
+			<version>${spring-boot-admin.version}</version>
+		</dependency>
+
+		<!-- logging -->
+		<!-- logstash-logback-encoder and janino are related to https://github.com/metasfresh/metasfresh/issues/1504 -->
+		<dependency>
+			<groupId>net.logstash.logback</groupId>
+			<artifactId>logstash-logback-encoder</artifactId>
+		</dependency>
+		<!-- we need janino for the conditional that we have in the logback config -->
+		<dependency>
+			<groupId>org.codehaus.janino</groupId>
+			<artifactId>janino</artifactId>
+		</dependency>
+
+	</dependencies>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-maven-plugin</artifactId>
+				<version>${spring-boot.version}</version>
+				<executions>
+					<execution>
+						<id>spring-boot-admin-repackage</id>
+						<goals>
+							<goal>repackage</goal>
+						</goals>
+						<configuration>
+							<executable>true</executable>
+							<mainClass>${start-class}</mainClass>
+						</configuration>
+					</execution>
+					<execution>
+						<id>spring-boot-admin-build-info</id>
+						<goals>
+							<goal>build-info</goal> <!-- create build-info.properties; thanks to https://docs.spring.io/spring-boot/docs/current/reference/html/howto-build.html#howto-build-info -->
+						</goals>
+							<configuration>
+								<additionalProperties>
+									<jenkinsBuildNo>${env.BUILD_NUMBER}</jenkinsBuildNo>
+									<jenkinsBuildTag>${env.BUILD_TAG}</jenkinsBuildTag>
+									<jenkinsBuildUrl>${env.BUILD_URL}</jenkinsBuildUrl>
+									<jenkinsJobName>${env.JOB_NAME}</jenkinsJobName>
+								</additionalProperties>
+							</configuration>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
+	<description>A standalone spring-boot service with spring-boot-admin. See https://github.com/codecentric/spring-boot-admin/blob/master/README.md for further infos</description>
+</project>
