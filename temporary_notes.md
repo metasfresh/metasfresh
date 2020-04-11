@@ -80,7 +80,7 @@ git commit -m "gh6205-app - move edi files to new misc/services folder" -m "meta
 mkdir -p misc/services/admin
 git remote add -f admin git@github.com:metasfresh/metasfresh-admin.git
 git merge admin/master --allow-unrelated-histories
-git mv .gitignore Jenkinsfile LICENSE metasfresh-admin.launch pom.xml README.md misc/services/admin
+git mv .gitignore Jenkinsfile LICENSE metasfresh-admin.launch pom.xml README.md src misc/services/admin
 git commit -m "gh6205-app - move admin files to new misc/services folder" -m "metasfresh/metasfresh#6205"
 
 # parent
