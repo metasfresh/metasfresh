@@ -89,14 +89,16 @@ Map build(final MvnConf mvnConf, final Map scmVars)
 				<li><code>${publishedDBInitDockerImageName}</code></li>
 				</ul>
 				"""
-		}
+				
+			final String metasfreshDistSQLOnlyURL = "${mvnConf.deployRepoURL}/de/metas/dist/metasfresh-dist-dist/${misc.urlEncode(env.MF_VERSION)}/metasfresh-dist-dist-${misc.urlEncode(env.MF_VERSION)}-sql-only.tar.gz"
+			testSQLMigrationScripts(
+				params.MF_SQL_SEED_DUMP_URL, 
+				metasfreshDistSQLOnlyURL, 
+				publishedDBInitDockerImageName,
+				scmVars)
+			
+		} // stage build Backend
 
-		final String metasfreshDistSQLOnlyURL = "${mvnConf.deployRepoURL}/de/metas/dist/metasfresh-dist-dist/${misc.urlEncode(env.MF_VERSION)}/metasfresh-dist-dist-${misc.urlEncode(env.MF_VERSION)}-sql-only.tar.gz"
-		testSQLMigrationScripts(
-			params.MF_SQL_SEED_DUMP_URL, 
-			metasfreshDistSQLOnlyURL, 
-			publishedDBInitDockerImageName,
-			scmVars)
 		return dockerImages
 }
 

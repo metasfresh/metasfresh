@@ -104,10 +104,10 @@ try
 						def ediBuildFile = load('buildfile.groovy')
 						ediBuildFile.build(mvnConf, scmVars)
 					}
-					dir('misc/services/edi')
+					dir('misc/services/procurement-webui')
 					{
-						def ediBuildFile = load('buildfile.groovy')
-						ediBuildFile.build(mvnConf, scmVars)
+						def procurementWebuiBuildFile = load('buildfile.groovy')
+						procurementWebuiBuildFile.build(mvnConf, scmVars)
 					}
 					dir('frontend')
 					{
