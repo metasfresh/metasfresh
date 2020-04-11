@@ -98,17 +98,12 @@ try
 				{
 					nexusCreateRepoIfNotExists(mvnConf.mvnDeployRepoBaseURL, mvnConf.mvnRepoName)
 
-					// note: to do this parallel, we first need to make sure that the different parts don't concurrently write to the build description
-					dir('misc/services/edi')
+					dir('misc/parent-pom')
 					{
-						def ediBuildFile = load('buildfile.groovy')
-						ediBuildFile.build(mvnConf, scmVars)
+						def parentPom = load('buildfile.groovy')
+						parentPom.build(mvnConf, scmVars)
 					}
-					dir('misc/services/procurement-webui')
-					{
-						def procurementWebuiBuildFile = load('buildfile.groovy')
-						procurementWebuiBuildFile.build(mvnConf, scmVars)
-					}
+					// note: to do some of this in parallel, we first need to make sure that the different parts don't concurrently write to the build description
 					dir('frontend')
 					{
 						def frontendBuildFile = load('buildfile.groovy')
@@ -119,6 +114,11 @@ try
 						def backendBuildFile = load('buildfile.groovy')
 						backendBuildFile.build(mvnConf, scmVars)
 					}
+					dir('misc/services')
+					{
+						def miscServices = load('buildfile.groovy')
+						miscServices.build(mvnConf, scmVars)
+					}
 					dir('e2e')
 					{
 						def e2eBuildFile = load('buildfile.groovy')
@@ -127,8 +127,7 @@ try
 					dir('distribution')
 					{
 						def distributionBuildFile = load('buildfile.groovy')
-						//echo "distributionBuildFile=${distributionBuildFile}"
-						distributionBuildFile.build(mvnConf);
+							distributionBuildFile.build(mvnConf);
 					}
 				} // withMaven
 			} // withEnv

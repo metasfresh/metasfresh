@@ -65,7 +65,7 @@ git commit -m "gh6205-app - temporarily make space for frontend files" -m "metas
 # procurement-webui
 mkdir -p misc/services/procurement-webui
 git remote add -f procurement-webui git@github.com:metasfresh/metasfresh-procurement-webui.git
-git merge procurement-webui/master --allow-unrelated-historiesgit merge procurement-webui/master --allow-unrelated-histories
+git merge procurement-webui/master --allow-unrelated-histories
 git mv .gitignore LICENSE.md  metasfresh-procurement-webui_localhost.launch README.md  metasfresh-procurement-webui.launch readme-launch-configs.md Jenkinsfile metasfresh-procurement-webui_jrebel.launch pom.xml src misc/services/procurement-webu
 git commit -m "gh6205-app - move procurement-webui files to new misc/services folder" -m "metasfresh/metasfresh#6205"
 
@@ -76,7 +76,22 @@ git merge edi/master --allow-unrelated-historiesgit merge edi/master --allow-unr
 git mv .pmd kubernetes README.md start_esb-camel_docker.sh .gitignore Dockerfile edi-remote-via-ssh-tunnel.launch Jenkinsfile LICENSE.txt pom.xml src misc/services/edi
 git commit -m "gh6205-app - move edi files to new misc/services folder" -m "metasfresh/metasfresh#6205"
  
+# admin
+mkdir -p misc/services/admin
+git remote add -f admin git@github.com:metasfresh/metasfresh-admin.git
+git merge admin/master --allow-unrelated-histories
+git mv .gitignore Jenkinsfile LICENSE metasfresh-admin.launch pom.xml README.md misc/services/admin
+git commit -m "gh6205-app - move admin files to new misc/services folder" -m "metasfresh/metasfresh#6205"
+
+# parent
+mkdir -p misc/parent-pom
+git remote add -f parent git@github.com:metasfresh/metasfresh-parent.git
+git merge parent/master --allow-unrelated-histories
+git mv .gitignore assemblies Jenkinsfile LICENSE.md pom.xml misc/parent-pom
+git commit -m "gh6205-app - move parent-pom files to new misc folder" -m "metasfresh/metasfresh#6205"
+
 git mv temp/* .
+git commit -m "gh6205-app - move temporarily moved files back from temp folder" -m "metasfresh/metasfresh#6205"
  
 # add and commit that root Jenkinsfile
 
@@ -95,4 +110,10 @@ git merge webui-api/master --allow-unrelated-histories && \
 git fetch dist master && \
 git merge dist/master --allow-unrelated-histories && \
 git fetch webui-frontend master && \
-git merge webui-frontend/master --allow-unrelated-histories
+git merge webui-frontend/master --allow-unrelated-histories && \
+git fetch edi master && \
+git merge edi/master --allow-unrelated-histories && \
+git fetch procurement-webui master && \
+git merge procurement-webui/master --allow-unrelated-histories && \
+git fetch admin master && \
+git merge admin/master --allow-unrelated-histories
