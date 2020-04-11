@@ -13,7 +13,7 @@ def build(final MvnConf mvnConf, final Map scmVars)
 	final String VERSIONS_PLUGIN = 'org.codehaus.mojo:versions-maven-plugin:2.5'
 	
     // stage('Build procurement-webui')  // too many stages clutter the build info
-    {
+    //{
 		currentBuild.description= """${currentBuild.description}<p/>
 			<h3>procurement-webui</h3>
 		"""
@@ -48,7 +48,7 @@ def build(final MvnConf mvnConf, final Map scmVars)
 			<ul>
 <li><a href=\"https://repo.metasfresh.com/content/repositories/${mvnConf.mvnRepoName}/de/metas/procurement/de.metas.procurement.webui/${MF_VERSION}/de.metas.procurement.webui-${MF_VERSION}.jar\">de.metas.procurement.webui-${MF_VERSION}.jar</a></li>
 </ul>""";
-    } // stage
+    //} // stage
 } 
 
 return this

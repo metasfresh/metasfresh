@@ -11,7 +11,7 @@ import de.metas.jenkins.MvnConf
 def build(final MvnConf mvnConf, final Map scmVars)
 {
     //stage('Build admin') // too many stages clutter the build info
-    {
+    //{
 		currentBuild.description= """${currentBuild.description}<p/>
 			<h3>admin</h3>
 		"""
@@ -50,9 +50,7 @@ def build(final MvnConf mvnConf, final Map scmVars)
 <li>a docker image with name <code>${publishedDockerImageName}</code>; Note that you can also use the tag <code>${env.BRANCH_NAME}_LATEST</code></li>
 </ul>
 		"""
-    } // stage
-
-
+    //} // stage
 } 
 
 return this
