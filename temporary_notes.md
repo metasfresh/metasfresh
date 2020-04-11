@@ -57,10 +57,30 @@ mkdir e2e
 git mv .babelrc .eslintrc .github cypress.json Dockerfile Jenkinsfile package.json reporter-config.json run_docker_via_jenkins .editorconfig .gitignore cypress metasfresh-e2e.code-workspace README.md run_cypress.sh  src webpack.config.js e2e
 git commit -m "gh6205-app - move e2e files to new e2e folder" -m "metasfresh/metasfresh#6205"
 
+mkdir -p misc/services
+mkdir temp # make space
+git mv CODE_OF_CONDUCT.md  README.md Jenkinsfile CONTRIBUTING.md ReleaseNotes.md temp/
+git commit -m "gh6205-app - temporarily make space for frontend files" -m "metasfresh/metasfresh#6205"
+
+# procurement-webui
+mkdir -p misc/services/procurement-webui
+git remote add -f procurement-webui git@github.com:metasfresh/metasfresh-procurement-webui.git
+git merge procurement-webui/master --allow-unrelated-historiesgit merge procurement-webui/master --allow-unrelated-histories
+git mv .gitignore LICENSE.md  metasfresh-procurement-webui_localhost.launch README.md  metasfresh-procurement-webui.launch readme-launch-configs.md Jenkinsfile metasfresh-procurement-webui_jrebel.launch pom.xml src misc/services/procurement-webu
+git commit -m "gh6205-app - move procurement-webui files to new misc/services folder" -m "metasfresh/metasfresh#6205"
+
+# edi
+mkdir -p misc/services/edi
+git remote add -f edi git@github.com:metasfresh/metasfresh-edi.git
+git merge edi/master --allow-unrelated-historiesgit merge edi/master --allow-unrelated-histories
+
 # add and commit that root Jenkinsfile
 
 # later
 # add metasfresh-procurement-webui and metasfresh-edi to misc subfolder that shall be another sibling to backend
+
+
+
 
 # keep up to date
 
