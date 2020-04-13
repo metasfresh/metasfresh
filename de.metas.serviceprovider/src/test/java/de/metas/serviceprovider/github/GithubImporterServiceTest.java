@@ -28,12 +28,16 @@ import de.metas.issue.tracking.github.api.v3.model.Issue;
 import de.metas.issue.tracking.github.api.v3.model.Label;
 import de.metas.issue.tracking.github.api.v3.model.RetrieveIssuesRequest;
 import de.metas.issue.tracking.github.api.v3.service.GithubClient;
+import de.metas.serviceprovider.ImportQueue;
+import de.metas.serviceprovider.external.ExternalSystem;
 import de.metas.serviceprovider.external.issuedetails.ExternalIssueDetail;
 import de.metas.serviceprovider.external.issuedetails.ExternalIssueDetailType;
-import de.metas.serviceprovider.importer.ImportIssuesQueue;
-import de.metas.serviceprovider.importer.info.ImportIssueInfo;
-import de.metas.serviceprovider.importer.info.ImportIssuesRequest;
-import de.metas.serviceprovider.milestone.Milestone;
+import de.metas.serviceprovider.external.reference.ExternalReferenceRepository;
+import de.metas.serviceprovider.issue.importer.info.ImportIssueInfo;
+import de.metas.serviceprovider.issue.importer.info.ImportIssuesRequest;
+import de.metas.serviceprovider.issue.importer.info.ImportMilestoneInfo;
+import de.metas.util.Services;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.test.AdempiereTestHelper;
 import org.junit.Before;
 import org.junit.Test;
@@ -58,6 +62,8 @@ import static de.metas.serviceprovider.TestConstants.MOCK_ORG_ID;
 import static de.metas.serviceprovider.TestConstants.MOCK_PROJECT_ID;
 import static de.metas.serviceprovider.TestConstants.MOCK_VALUE;
 import static de.metas.serviceprovider.github.GithubImporterConstants.CHUNK_SIZE;
+import static de.metas.serviceprovider.issue.importer.ImportConstants.IMPORT_LOG_MESSAGE_PREFIX;
+import static de.metas.serviceprovider.issue.importer.ImportConstants.ISSUE_QUEUE_CAPACITY;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.mockito.Mockito.when;
@@ -65,8 +71,11 @@ import static org.mockito.Mockito.when;
 public class GithubImporterServiceTest
 {
 	private final GithubClient mockGithubClient = Mockito.mock(GithubClient.class);
-	private final ImportIssuesQueue importIssuesQueue = new ImportIssuesQueue();
-	private final GithubImporterService githubImporterService = new GithubImporterService(importIssuesQueue, mockGithubClient);
+	private final ImportQueue<ImportIssueInfo> importIssuesQueue =
+			new ImportQueue<>(ISSUE_QUEUE_CAPACITY,IMPORT_LOG_MESSAGE_PREFIX);
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final ExternalReferenceRepository externalReferenceRepository = new ExternalReferenceRepository(queryBL);
+	private final GithubImporterService githubImporterService = new GithubImporterService(importIssuesQueue, mockGithubClient, externalReferenceRepository);
 
 	@Before
 	public void init()
@@ -103,7 +112,8 @@ public class GithubImporterServiceTest
 		assertEquals(issueInfo.getBudget(), BigDecimal.valueOf(6));
 		assertEquals(issueInfo.getEstimation(), BigDecimal.valueOf(4.25));
 		assertEquals(issueInfo.getDescription(), MOCK_DESCRIPTION);
-		assertEquals(issueInfo.getExternalIssueId(), MOCK_EXTERNAL_ID);
+		assertEquals(issueInfo.getExternalIssueId().getId(), MOCK_EXTERNAL_ID);
+		assertEquals(issueInfo.getExternalIssueId().getExternalSystem(), ExternalSystem.GITHUB);
 		assertEquals(issueInfo.getExternalIssueNo(), MOCK_EXTERNAL_ISSUE_NO);
 		assertEquals(issueInfo.getExternalIssueURL(), MOCK_EXTERNAL_URL);
 		assertEquals(issueInfo.getName(), MOCK_NAME);
@@ -111,11 +121,12 @@ public class GithubImporterServiceTest
 		assertEquals(issueInfo.getProjectId(), MOCK_PROJECT_ID);
 		assertEquals(issueInfo.getExternalProjectType(), MOCK_EXTERNAL_PROJECT_TYPE);
 
-		final Milestone milestone = issueInfo.getMilestone();
+		final ImportMilestoneInfo milestone = issueInfo.getMilestone();
 		assertNotNull(milestone);
 		assertEquals(milestone.getName(), MOCK_NAME);
 		assertEquals(milestone.getDescription(), MOCK_DESCRIPTION);
-		assertEquals(milestone.getExternalId(), MOCK_EXTERNAL_ID);
+		assertEquals(milestone.getExternalId().getId(), MOCK_EXTERNAL_ID);
+		assertEquals(milestone.getExternalId().getExternalSystem(), ExternalSystem.GITHUB);
 		assertEquals(milestone.getExternalURL(), MOCK_EXTERNAL_URL);
 		assertEquals(milestone.getOrgId(), MOCK_ORG_ID);
 		assertEquals(milestone.getDueDate(), MOCK_INSTANT);

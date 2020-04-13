@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.serviceprovider.base
+ * de.metas.issue.tracking.everhour
  * %%
  * Copyright (C) 2019 metas GmbH
  * %%
@@ -20,19 +20,20 @@
  * #L%
  */
 
-package de.metas.serviceprovider.external.project;
+package de.metas.issue.tracking.everhour.api.rest;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 
-import static de.metas.serviceprovider.model.X_S_ExternalProjectReference.EXTERNALSYSTEM_Github;
+import java.time.Duration;
 
-@AllArgsConstructor
 @Getter
-public enum ExternalSystem
+public class LimitExceededException extends RuntimeException
 {
-	GITHUB(EXTERNALSYSTEM_Github);
+	private final Duration retryAfter;
 
-	private final String value;
+	public LimitExceededException(final Duration retryAfter)
+	{
+		super();
+		this.retryAfter = retryAfter;
+	}
 }
-

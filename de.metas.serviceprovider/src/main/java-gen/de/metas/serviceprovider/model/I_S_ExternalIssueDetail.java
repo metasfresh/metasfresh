@@ -87,7 +87,7 @@ public interface I_S_ExternalIssueDetail
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
-	 * Set Detail value.
+	 * Set Value.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
@@ -96,7 +96,7 @@ public interface I_S_ExternalIssueDetail
 	public void setDetailValue (java.lang.String DetailValue);
 
 	/**
-	 * Get Detail value.
+	 * Get Value.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
@@ -135,7 +135,7 @@ public interface I_S_ExternalIssueDetail
     public static final String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set S_ExternalIssueDetail.
+	 * Set External issue details.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: false
@@ -144,7 +144,7 @@ public interface I_S_ExternalIssueDetail
 	public void setS_ExternalIssueDetail_ID (int S_ExternalIssueDetail_ID);
 
 	/**
-	 * Get S_ExternalIssueDetail.
+	 * Get External issue details.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: false

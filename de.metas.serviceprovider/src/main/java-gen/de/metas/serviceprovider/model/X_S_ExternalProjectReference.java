@@ -14,7 +14,7 @@ public class X_S_ExternalProjectReference extends org.compiere.model.PO implemen
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1251623490L;
+	private static final long serialVersionUID = 1872304532L;
 
     /** Standard Constructor */
     public X_S_ExternalProjectReference (Properties ctx, int S_ExternalProjectReference_ID, String trxName)
@@ -86,16 +86,16 @@ public class X_S_ExternalProjectReference extends org.compiere.model.PO implemen
 		return (java.lang.String)get_Value(COLUMNNAME_ExternalProjectOwner);
 	}
 
-	/** Set ExternalReference.
-		@param ExternalReference ExternalReference	  */
+	/** Set External reference.
+		@param ExternalReference External reference	  */
 	@Override
 	public void setExternalReference (java.lang.String ExternalReference)
 	{
 		set_Value (COLUMNNAME_ExternalReference, ExternalReference);
 	}
 
-	/** Get ExternalReference.
-		@return ExternalReference	  */
+	/** Get External reference.
+		@return External reference	  */
 	@Override
 	public java.lang.String getExternalReference () 
 	{
@@ -125,6 +125,8 @@ public class X_S_ExternalProjectReference extends org.compiere.model.PO implemen
 	public static final int EXTERNALSYSTEM_AD_Reference_ID=541117;
 	/** Github = Github */
 	public static final String EXTERNALSYSTEM_Github = "Github";
+	/** Everhour = Everhour */
+	public static final String EXTERNALSYSTEM_Everhour = "Everhour";
 	/** Set External system.
 		@param ExternalSystem 
 		Name of an external system (e.g. Github )

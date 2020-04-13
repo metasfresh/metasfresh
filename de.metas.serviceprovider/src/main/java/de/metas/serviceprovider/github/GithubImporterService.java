@@ -35,23 +35,29 @@ import de.metas.issue.tracking.github.api.v3.model.RetrieveIssuesRequest;
 import de.metas.issue.tracking.github.api.v3.service.GithubClient;
 import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
+import de.metas.serviceprovider.ImportQueue;
+import de.metas.serviceprovider.external.ExternalId;
+import de.metas.serviceprovider.external.ExternalSystem;
 import de.metas.serviceprovider.external.issuedetails.ExternalIssueDetail;
-import de.metas.serviceprovider.importer.ImportIssuesQueue;
-import de.metas.serviceprovider.importer.ImportService;
-import de.metas.serviceprovider.importer.info.ImportIssueInfo;
-import de.metas.serviceprovider.importer.info.ImportIssuesRequest;
-import de.metas.serviceprovider.milestone.Milestone;
+import de.metas.serviceprovider.external.reference.ExternalReferenceRepository;
+import de.metas.serviceprovider.external.reference.ExternalReferenceType;
+import de.metas.serviceprovider.external.reference.GetReferencedIdRequest;
+import de.metas.serviceprovider.issue.IssueId;
+import de.metas.serviceprovider.issue.importer.IssueImporter;
+import de.metas.serviceprovider.issue.importer.info.ImportIssueInfo;
+import de.metas.serviceprovider.issue.importer.info.ImportIssuesRequest;
+import de.metas.serviceprovider.issue.importer.info.ImportMilestoneInfo;
+import de.metas.serviceprovider.milestone.MilestoneId;
 import de.metas.user.UserId;
-import de.metas.user.api.IUserDAO;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.NumberUtils;
-import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -65,23 +71,24 @@ import static de.metas.issue.tracking.github.api.v3.GitHubApiConstants.LabelType
 import static de.metas.serviceprovider.external.issuedetails.ExternalIssueDetailType.LABEL;
 import static de.metas.serviceprovider.github.GithubImporterConstants.CHUNK_SIZE;
 import static de.metas.serviceprovider.github.GithubImporterConstants.HOUR_UOM_ID;
-import static de.metas.serviceprovider.importer.ImportConstants.IMPORT_LOG_MESSAGE_PREFIX;
+import static de.metas.serviceprovider.issue.importer.ImportConstants.IMPORT_LOG_MESSAGE_PREFIX;
 
 @Service
-public class GithubImporterService implements ImportService
+public class GithubImporterService implements IssueImporter
 {
 	private static final Logger log = LogManager.getLogger(GithubImporterService.class);
 
 	private final ReentrantLock lock = new ReentrantLock();
 
-	private final ImportIssuesQueue importIssuesQueue;
+	private final ImportQueue<ImportIssueInfo> importIssuesQueue;
 	private final GithubClient githubClient;
-	private final IUserDAO userDAO = Services.get(IUserDAO.class);
+	private final ExternalReferenceRepository externalReferenceRepository;
 
-	public GithubImporterService(final ImportIssuesQueue importIssuesQueue, final GithubClient githubClient)
+	public GithubImporterService(final ImportQueue<ImportIssueInfo> importIssuesQueue, final GithubClient githubClient, final ExternalReferenceRepository externalReferenceRepository)
 	{
 		this.importIssuesQueue = importIssuesQueue;
 		this.githubClient = githubClient;
+		this.externalReferenceRepository = externalReferenceRepository;
 	}
 
 	public void start(@NonNull final ImmutableList<ImportIssuesRequest> requestList)
@@ -101,7 +108,7 @@ public class GithubImporterService implements ImportService
 					importIssues(request);
 				}
 			});
-			Loggables.withLogger(log, Level.INFO).addLog(" {} GithubImporterService#start() finished work in {} sec. ",
+			Loggables.withLogger(log, Level.INFO).addLog(" {} GithubImporterService#start() finished work in {}. ",
 					IMPORT_LOG_MESSAGE_PREFIX, stopWatch.stop());
 		}
 		catch (final Exception ex)
@@ -162,12 +169,12 @@ public class GithubImporterService implements ImportService
 	}
 
 	@NonNull
-	private ImportIssueInfo buildImportIssueInfo(@NonNull final Issue issue,@NonNull final ImportIssuesRequest importIssuesRequest)
+	private ImportIssueInfo buildImportIssueInfo(@NonNull final Issue issue, @NonNull final ImportIssuesRequest importIssuesRequest)
 	{
 		final ImportIssueInfo.ImportIssueInfoBuilder importInfoBuilder = ImportIssueInfo
 				.builder()
 				.externalProjectType(importIssuesRequest.getExternalProjectType())
-				.externalIssueId(issue.getId())
+				.externalIssueId(ExternalId.of(ExternalSystem.GITHUB, issue.getId()))
 				.externalIssueURL(issue.getHtmlUrl())
 				.externalIssueNo(issue.getNumber())
 				.name(issue.getTitle())
@@ -184,9 +191,7 @@ public class GithubImporterService implements ImportService
 
 		if (issue.getAssignee() != null)
 		{
-			final UserId userId = userDAO.retrieveUserIdByLogin(issue.getAssignee().getLogin());
-
-			importInfoBuilder.assigneeId(userId);
+			importInfoBuilder.assigneeId(getUserIdByExternalId(issue.getAssignee().getId()));
 		}
 
 		processLabels(issue.getLabelList(), importInfoBuilder, importIssuesRequest.getOrgId());
@@ -195,16 +200,15 @@ public class GithubImporterService implements ImportService
 	}
 
 	@NonNull
-	private Milestone buildMilestone(@NonNull final GithubMilestone githubMilestone, @NonNull final OrgId orgId)
+	private ImportMilestoneInfo buildMilestone(@NonNull final GithubMilestone githubMilestone, @NonNull final OrgId orgId)
 	{
-		return Milestone.builder()
+		return ImportMilestoneInfo.builder()
 				.name(githubMilestone.getTitle())
 				.description(githubMilestone.getDescription())
 				.externalURL(githubMilestone.getHtmlUrl())
-				.externalId(githubMilestone.getId())
+				.externalId(ExternalId.of(ExternalSystem.GITHUB, githubMilestone.getId()))
 				.processed(ResourceState.CLOSED.getValue().equals(githubMilestone.getState()))
 				.dueDate(githubMilestone.getDueDate() != null ? Instant.parse(githubMilestone.getDueDate()) : null)
-				.value(githubMilestone.getTitle())
 				.orgId(orgId)
 				.build();
 	}
@@ -246,7 +250,19 @@ public class GithubImporterService implements ImportService
 		final Matcher matcher = valuePattern.matcher(label.getName());
 
 		return matcher.matches() ? NumberUtils.asBigDecimal(matcher.group(1)) : BigDecimal.ZERO;
+	}
 
+	@Nullable
+	private UserId getUserIdByExternalId(@NonNull final String externalUserId)
+	{
+		final Integer userId = externalReferenceRepository.getReferencedRecordIdOrNullBy(
+				GetReferencedIdRequest.builder()
+						.externalSystem(ExternalSystem.GITHUB)
+						.externalReference(externalUserId)
+						.externalReferenceType(ExternalReferenceType.USER_ID)
+						.build());
+
+		return UserId.ofRepoIdOrNullIfSystem(userId);
 	}
 
 	private void acquireLock()

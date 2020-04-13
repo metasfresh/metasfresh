@@ -82,8 +82,6 @@ public class IssueEntity
 	private UserId assigneeId;
 
 	@Nullable
-	private String externalIssueId;
-	@Nullable
 	private String externalIssueNo;
 	@Nullable
 	private String externalIssueURL;

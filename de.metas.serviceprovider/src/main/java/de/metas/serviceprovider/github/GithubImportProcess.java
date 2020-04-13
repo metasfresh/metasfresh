@@ -28,8 +28,8 @@ import de.metas.process.Param;
 import de.metas.serviceprovider.external.project.ExternalProjectReference;
 import de.metas.serviceprovider.external.project.ExternalProjectReferenceId;
 import de.metas.serviceprovider.external.project.ExternalProjectRepository;
-import de.metas.serviceprovider.importer.IssueImporterService;
-import de.metas.serviceprovider.importer.info.ImportIssuesRequest;
+import de.metas.serviceprovider.issue.importer.IssueImporterService;
+import de.metas.serviceprovider.issue.importer.info.ImportIssuesRequest;
 import de.metas.serviceprovider.model.I_S_ExternalProjectReference;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -40,7 +40,7 @@ import org.compiere.SpringContextHolder;
 import javax.annotation.Nullable;
 import java.util.stream.Stream;
 
-import static de.metas.serviceprovider.external.project.ExternalSystem.GITHUB;
+import static de.metas.serviceprovider.external.ExternalSystem.GITHUB;
 import static de.metas.serviceprovider.github.GithubImporterConstants.GitHubImporterSysConfig.ACCESS_TOKEN;
 
 public class GithubImportProcess extends JavaProcess

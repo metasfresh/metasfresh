@@ -20,59 +20,72 @@
  * #L%
  */
 
-package de.metas.serviceprovider.importer;
+package de.metas.serviceprovider.issue.importer;
 
 import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
 import de.metas.logging.LogManager;
+import de.metas.serviceprovider.ImportQueue;
+import de.metas.serviceprovider.external.ExternalId;
+import de.metas.serviceprovider.external.ExternalSystem;
 import de.metas.serviceprovider.external.project.ExternalProjectType;
-import de.metas.serviceprovider.importer.info.ImportIssueInfo;
-import de.metas.serviceprovider.importer.info.ImportIssuesRequest;
+import de.metas.serviceprovider.external.reference.ExternalReference;
+import de.metas.serviceprovider.external.reference.ExternalReferenceRepository;
+import de.metas.serviceprovider.external.reference.ExternalReferenceType;
+import de.metas.serviceprovider.external.reference.GetReferencedIdRequest;
+import de.metas.serviceprovider.issue.IssueId;
+import de.metas.serviceprovider.issue.importer.info.ImportIssueInfo;
+import de.metas.serviceprovider.issue.importer.info.ImportIssuesRequest;
 import de.metas.serviceprovider.issue.IssueEntity;
 import de.metas.serviceprovider.issue.IssueRepository;
 import de.metas.serviceprovider.issue.IssueType;
+import de.metas.serviceprovider.issue.importer.info.ImportMilestoneInfo;
 import de.metas.serviceprovider.milestone.Milestone;
 import de.metas.serviceprovider.milestone.MilestoneId;
 import de.metas.serviceprovider.milestone.MilestoneRepository;
+import de.metas.user.UserId;
 import de.metas.util.Loggables;
-import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Nullable;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
-import static de.metas.serviceprovider.importer.ImportConstants.IMPORT_LOG_MESSAGE_PREFIX;
+import static de.metas.serviceprovider.issue.importer.ImportConstants.IMPORT_LOG_MESSAGE_PREFIX;
 
 @Service
 public class IssueImporterService
 {
 	private static final Logger log = LogManager.getLogger(IssueImporterService.class);
 
-	private final ImportIssuesQueue importIssuesQueue;
+	private final ImportQueue<ImportIssueInfo> importIssuesQueue;
 	private final MilestoneRepository milestoneRepository;
 	private final IssueRepository issueRepository;
-	private final ITrxManager trxManager =  Services.get(ITrxManager.class);
+	private final ExternalReferenceRepository externalReferenceRepository;
+	private final ITrxManager trxManager;
 
-	public IssueImporterService(final ImportIssuesQueue importIssuesQueue, final MilestoneRepository milestoneRepository, final IssueRepository issueRepository)
+	public IssueImporterService(final ImportQueue<ImportIssueInfo> importIssuesQueue, final MilestoneRepository milestoneRepository, final IssueRepository issueRepository, final ExternalReferenceRepository externalReferenceRepository, final ITrxManager trxManager)
 	{
 		this.importIssuesQueue = importIssuesQueue;
 		this.milestoneRepository = milestoneRepository;
 		this.issueRepository = issueRepository;
+		this.externalReferenceRepository = externalReferenceRepository;
+		this.trxManager = trxManager;
 	}
 
 	public void importIssues(@NonNull final ImmutableList<ImportIssuesRequest> requestList,
-			                 @NonNull final ImportService importService)
+			                 @NonNull final IssueImporter issueImporter)
 	{
 		final CompletableFuture completableFuture =
-				CompletableFuture.runAsync(() -> importService.start(requestList));
+				CompletableFuture.runAsync(() -> issueImporter.start(requestList));
 
 		while (!completableFuture.isDone() || !importIssuesQueue.isEmpty())
 		{
 			final ImmutableList<ImportIssueInfo> issueInfos = importIssuesQueue.drainAll();
-			issueInfos.forEach(issue -> trxManager.runInNewTrx(localTrx -> importIssue(issue)));
+			issueInfos.forEach(issue -> trxManager.runInNewTrx( () -> importIssue(issue)));
 		}
 	}
 
@@ -85,8 +98,11 @@ public class IssueImporterService
 				importMilestone(importIssueInfo.getMilestone());
 			}
 
-			final Optional<IssueEntity> existingEffortIssue =
-					issueRepository.getEntityByExternalId(importIssueInfo.getExternalIssueId());
+			final IssueId issueId = getIssueIdByExternalId(importIssueInfo.getExternalIssueId());
+
+			final Optional<IssueEntity> existingEffortIssue = issueId != null
+					? Optional.of(issueRepository.getById(issueId, false))
+					: Optional.empty();
 
 			final IssueEntity issueEntity;
 			issueEntity = existingEffortIssue
@@ -94,6 +110,19 @@ public class IssueImporterService
 					.orElseGet(() -> buildIssue(importIssueInfo));
 
 			issueRepository.save(issueEntity);
+
+			if (!existingEffortIssue.isPresent())
+			{
+				final ExternalReference issueExternalRef = ExternalReference
+						.builder()
+						.externalSystem(importIssueInfo.getExternalIssueId().getExternalSystem())
+						.externalReferenceType(ExternalReferenceType.ISSUE_ID)
+						.externalReference(importIssueInfo.getExternalIssueId().getId())
+						.recordId(issueEntity.getIssueId().getRepoId())
+						.build();
+
+				externalReferenceRepository.save(issueExternalRef);
+			}
 		}
 		catch (final Exception e)
 		{
@@ -103,15 +132,41 @@ public class IssueImporterService
 		}
 	}
 
-	private void importMilestone(@NonNull final Milestone milestone)
+	private void importMilestone(@NonNull final ImportMilestoneInfo importMilestoneInfo)
 	{
-		if (milestone.getExternalId() != null)
-		{
-			milestoneRepository.getRepoIdByExternalId(milestone.getExternalId())
-					.ifPresent(milestone::setMilestoneId);
-		}
+		final Milestone milestone = buildMilestone(importMilestoneInfo);
+
+		final boolean isNew = milestone.getMilestoneId() == null;
 
 		milestoneRepository.save(milestone);
+
+		importMilestoneInfo.setMilestoneId(milestone.getMilestoneId());
+
+		if (isNew)
+		{
+			final ExternalReference externalReference = ExternalReference.builder()
+					.externalSystem(importMilestoneInfo.getExternalId().getExternalSystem())
+					.externalReferenceType(ExternalReferenceType.MILESTONE_ID)
+					.externalReference(importMilestoneInfo.getExternalId().getId())
+					.recordId(milestone.getMilestoneId().getRepoId())
+					.build();
+
+			externalReferenceRepository.save(externalReference);
+		}
+	}
+
+	private Milestone buildMilestone(@NonNull final ImportMilestoneInfo milestone)
+	{
+		return Milestone.builder()
+				.milestoneId(getMilestoneIdByExternalId(milestone.getExternalId()))
+				.name(milestone.getName())
+				.description(milestone.getDescription())
+				.externalURL(milestone.getExternalURL())
+				.processed(milestone.isProcessed())
+				.dueDate(milestone.getDueDate())
+				.value(milestone.getName())
+				.orgId(milestone.getOrgId())
+				.build();
 	}
 
 	@NonNull
@@ -135,7 +190,6 @@ public class IssueImporterService
 				.estimatedEffort(importIssueInfo.getEstimation())
 				.budgetedEffort(importIssueInfo.getBudget())
 				.effortUomId(importIssueInfo.getEffortUomId())
-				.externalIssueId(importIssueInfo.getExternalIssueId())
 				.externalIssueNo(importIssueInfo.getExternalIssueNo())
 				.externalIssueURL(importIssueInfo.getExternalIssueURL())
 				.externalIssueDetails(importIssueInfo.getExternalIssueDetails())
@@ -144,18 +198,17 @@ public class IssueImporterService
 
 	@NonNull
 	private IssueEntity mergeIssueInfoWithEntity(@NonNull final ImportIssueInfo importIssueInfo,
-											     @NonNull final IssueEntity existingEffortIssue)
+			@NonNull final IssueEntity existingEffortIssue)
 	{
 		final IssueEntity mergedIssueEntity = existingEffortIssue.toBuilder()
 				.projectId(importIssueInfo.getProjectId())
 				.description(importIssueInfo.getDescription())
-				.externalIssueId(importIssueInfo.getExternalIssueId())
 				.externalIssueNo(importIssueInfo.getExternalIssueNo())
 				.externalIssueURL(importIssueInfo.getExternalIssueURL())
 				.externalIssueDetails(importIssueInfo.getExternalIssueDetails())
 				.build();
 
-	if (importIssueInfo.getMilestone() != null && importIssueInfo.getMilestone().getMilestoneId() != null)
+		if (importIssueInfo.getMilestone() != null && importIssueInfo.getMilestone().getMilestoneId() != null)
 		{
 			mergedIssueEntity.setMilestoneId(importIssueInfo.getMilestone().getMilestoneId());
 		}
@@ -167,4 +220,30 @@ public class IssueImporterService
 		return mergedIssueEntity;
 	}
 
+
+	@Nullable
+	private IssueId getIssueIdByExternalId(@NonNull final ExternalId externalId)
+	{
+		final Integer issueId = externalReferenceRepository.getReferencedRecordIdOrNullBy(
+				GetReferencedIdRequest.builder()
+						.externalSystem(externalId.getExternalSystem())
+						.externalReference(externalId.getId())
+						.externalReferenceType(ExternalReferenceType.ISSUE_ID)
+						.build());
+
+		return IssueId.ofRepoIdOrNull(issueId);
+	}
+
+	@Nullable
+	private MilestoneId getMilestoneIdByExternalId(@NonNull final ExternalId externalId)
+	{
+		final Integer milestoneId = externalReferenceRepository.getReferencedRecordIdOrNullBy(
+				GetReferencedIdRequest.builder()
+						.externalSystem(externalId.getExternalSystem())
+						.externalReference(externalId.getId())
+						.externalReferenceType(ExternalReferenceType.MILESTONE_ID)
+						.build());
+
+		return MilestoneId.ofRepoIdOrNull(milestoneId);
+	}
 }
