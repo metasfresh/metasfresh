@@ -148,14 +148,3 @@ ALTER TABLE S_TimeBooking ADD CONSTRAINT SIssue_STimeBooking FOREIGN KEY (S_Issu
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 INSERT INTO t_alter_column values('s_timebooking','BookedDate','TIMESTAMP WITHOUT TIME ZONE',null,null)
 ;
-
--- 2020-04-10T17:09:20.523Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */ SELECT public.db_alter_table('S_TimeBooking','ALTER TABLE public.S_TimeBooking ADD COLUMN S_Issue_ID NUMERIC(10) NOT NULL')
-;
-
--- 2020-04-10T17:09:20.554Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-ALTER TABLE S_TimeBooking ADD CONSTRAINT SIssue_STimeBooking FOREIGN KEY (S_Issue_ID) REFERENCES public.S_Issue DEFERRABLE INITIALLY DEFERRED
-;
-
