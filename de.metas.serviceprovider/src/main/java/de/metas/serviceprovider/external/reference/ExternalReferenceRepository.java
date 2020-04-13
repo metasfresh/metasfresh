@@ -109,13 +109,7 @@ public class ExternalReferenceRepository
 	@NonNull
 	private ExternalReference buildExternalReference(@NonNull final I_S_ExternalReference record)
 	{
-		final Optional<ExternalReferenceType> type = ExternalReferenceType.of(record.getType());
-		if (!type.isPresent())
-		{
-			throw new AdempiereException("Unknown ExternalReferenceType: 'type'.")
-					.appendParametersToMessage()
-					.setParameter("type", record.getType());
-		}
+		final ExternalReferenceType type = ExternalReferenceType.ofCode(record.getType());
 
 		final Optional<ExternalSystem> externalSystem = ExternalSystem.of(record.getExternalSystem());
 		if (!externalSystem.isPresent())
@@ -127,7 +121,7 @@ public class ExternalReferenceRepository
 
 		return ExternalReference.builder()
 				.externalReference(record.getExternalReference())
-				.externalReferenceType(type.get())
+				.externalReferenceType(type)
 				.externalSystem(externalSystem.get())
 				.recordId(record.getRecord_ID())
 				.build();

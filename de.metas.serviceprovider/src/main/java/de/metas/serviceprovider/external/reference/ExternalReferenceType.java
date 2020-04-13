@@ -26,8 +26,8 @@ import de.metas.util.lang.ReferenceListAwareEnum;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 
-import java.util.Optional;
 import java.util.stream.Stream;
 
 import static de.metas.serviceprovider.model.X_S_ExternalReference.TYPE_IssueID;
@@ -47,10 +47,14 @@ public enum ExternalReferenceType implements ReferenceListAwareEnum
 	private final String code;
 
 	@NonNull
-	public static Optional<ExternalReferenceType> of(@NonNull final String code)
+	public static ExternalReferenceType ofCode(@NonNull final String code)
 	{
 		return Stream.of(values())
 				.filter( type -> type.getCode().equals(code))
-				.findFirst();
+				.findFirst()
+				.orElseThrow(() ->
+						new AdempiereException("Unknown ExternalReferenceType: 'type'.")
+						.appendParametersToMessage()
+						.setParameter("type", code));
 	}
 }

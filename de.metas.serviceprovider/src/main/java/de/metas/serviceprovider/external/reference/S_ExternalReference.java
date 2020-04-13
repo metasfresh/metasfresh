@@ -62,16 +62,9 @@ public class S_ExternalReference
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE, ModelValidator.TYPE_BEFORE_NEW })
 	public void beforeSave(final I_S_ExternalReference record)
 	{
-		final Optional<ExternalReferenceType> externalReferenceType = ExternalReferenceType.of(record.getType());
+		final ExternalReferenceType externalReferenceType = ExternalReferenceType.ofCode(record.getType());
 
-		if (!externalReferenceType.isPresent())
-		{
-			throw new AdempiereException("No ExternalReferenceType found for the given type!")
-					.appendParametersToMessage()
-					.setParameter("I_S_ExternalReference.type", record.getType());
-		}
-
-		switch (externalReferenceType.get())
+		switch (externalReferenceType)
 		{
 			case USER_ID:
 				validateUserId(UserId.ofRepoId(record.getRecord_ID()));
@@ -86,7 +79,7 @@ public class S_ExternalReference
 				validateMilestone(MilestoneId.ofRepoId(record.getRecord_ID()));
 				break;
 			default:
-				throw new AdempiereException("There is no validation in place for ExternalReferenceType: " + externalReferenceType.get().getCode());
+				throw new AdempiereException("There is no validation in place for ExternalReferenceType: " + externalReferenceType.getCode());
 		}
 	}
 
