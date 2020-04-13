@@ -372,16 +372,16 @@ public class StepComXMLInvoicBean
 			detailXrech.getDAMOU1().add(amount);
 
 			final DPRIC1 price = INVOIC_objectFactory.createDPRIC1();
+			final String priceUOM = ValidationHelper.validateString(xmlCctopInvoic500V.getEanComPriceUOM(),
+					"@FillMandatory@ @C_InvoiceLine_ID@=" + xmlCctopInvoic500V.getLine() + " @Price_UOM_ID@");
+			final MeasurementUnit priceMeasurementUnit = MeasurementUnit.fromMetasfreshUOM(priceUOM);
 			price.setDOCUMENTID(documentId);
 			price.setLINENUMBER(lineNumber);
 			price.setPRICEQUAL(PriceQual.NETT.name());
 			price.setPRICE(formatNumber(xmlCctopInvoic500V.getPriceActual(), decimalFormat));
 			price.setPRICESPEC(PriceSpecCode.NETP.name());
-			final MeasurementUnit priceMeasurementUnit = MeasurementUnit.fromMetasfreshUOM(xmlCctopInvoic500V.getEanComPriceUOM());
-			if (priceMeasurementUnit != null)
-			{
-				price.setPRICEMEASUREUNIT(priceMeasurementUnit.name());
-			}
+			price.setPRICEMEASUREUNIT(priceMeasurementUnit.name());
+
 			detailXrech.getDPRIC1().add(price);
 
 			if (xmlCctopInvoic500V.getOrderLine() != null)
