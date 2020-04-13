@@ -61,7 +61,6 @@ import lombok.NonNull;
  * Handles user queries.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 public class UserQueryRepository
 {
@@ -73,15 +72,25 @@ public class UserQueryRepository
 	private static final String FIELD_SEPARATOR = "<^>";
 	private static final String SEGMENT_SEPARATOR = "<~>";
 
-	/** Index Join Operator = 0 */
+	/**
+	 * Index Join Operator = 0
+	 */
 	private static final int INDEX_JOIN = 0;
-	/** Index ColumnName = 1 */
+	/**
+	 * Index ColumnName = 1
+	 */
 	private static final int INDEX_COLUMNNAME = 1;
-	/** Index Operator = 2 */
+	/**
+	 * Index Operator = 2
+	 */
 	private static final int INDEX_OPERATOR = 2;
-	/** Index Value = 3 */
+	/**
+	 * Index Value = 3
+	 */
 	private static final int INDEX_VALUE = 3;
-	/** Index Value2 = 4 */
+	/**
+	 * Index Value2 = 4
+	 */
 	private static final int INDEX_VALUE2 = 4;
 
 	// services
@@ -525,7 +534,9 @@ public class UserQueryRepository
 		resetUserQueriesCache();
 	}
 
-	private final IUserQueryField findSearchFieldByColumnName(final String columnName)
+	@Nullable
+	@VisibleForTesting
+	final IUserQueryField findSearchFieldByColumnName(@Nullable final String columnName)
 	{
 		if (columnName == null || columnName.isEmpty())
 		{
