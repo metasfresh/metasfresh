@@ -10,7 +10,7 @@ import de.metas.jenkins.Misc
 
 
 def build(final MvnConf mvnConf, final Map scmVars, final boolean forceBuild=false)
-{s
+{
 	final String VERSIONS_PLUGIN = 'org.codehaus.mojo:versions-maven-plugin:2.5'
        
 	// stage('Build edi')  // too many stages clutter the build info
