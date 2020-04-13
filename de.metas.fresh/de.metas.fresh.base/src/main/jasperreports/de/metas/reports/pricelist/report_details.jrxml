@@ -136,7 +136,7 @@
 		</band>
 	</pageHeader>
 	<detail>
-		<band height="12" splitType="Stretch">
+		<band height="16" splitType="Stretch">
 			<printWhenExpression><![CDATA[new Boolean(
     $P{Alt_PriceList_Version_ID} == null?
         $F{pricestd}.floatValue() != 0:

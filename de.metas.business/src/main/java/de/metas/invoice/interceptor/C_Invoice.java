@@ -90,8 +90,15 @@ public class C_Invoice // 03771
 		markAsPaid(invoice);
 		allocateInvoiceAgainstPaymentIfNeeded(invoice);
 		captureMoneyIfNeeded(invoice);
+		ensureUOMsAreNotNull(invoice);
 
 		C_Invoice_CreateExportData.scheduleOnTrxCommit(invoice);
+	}
+
+	private void ensureUOMsAreNotNull(@NonNull final I_C_Invoice invoice)
+	{
+		final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
+		invoiceBL.ensureUOMsAreNotNull(InvoiceId.ofRepoId(invoice.getC_Invoice_ID()));
 	}
 
 	@DocValidate(timings = { ModelValidator.TIMING_AFTER_REVERSEACCRUAL, ModelValidator.TIMING_AFTER_REVERSECORRECT })
@@ -107,10 +114,10 @@ public class C_Invoice // 03771
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE }
-	// exclude columns which are not relevant if they change
+			// exclude columns which are not relevant if they change
 			, ignoreColumnsChanged = {
-					I_C_Invoice.COLUMNNAME_IsPaid
-			})
+			I_C_Invoice.COLUMNNAME_IsPaid
+	})
 	public void updateIsReadOnly(final I_C_Invoice invoice)
 	{
 		Services.get(IInvoiceBL.class).updateInvoiceLineIsReadOnlyFlags(invoice);
@@ -131,6 +138,7 @@ public class C_Invoice // 03771
 		final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
 
 		final Boolean processedPLVFiltering = null; // task 09533: the user doesn't know about PLV's processed flag, so we can't filter by it
+		@SuppressWarnings("ConstantConditions")
 		final I_M_PriceList_Version priceListVersion = priceListDAO
 				.retrievePriceListVersionOrNull(PriceListId.ofRepoId(invoice.getM_PriceList_ID()), invoiceDate, processedPLVFiltering); // can be null
 
@@ -179,8 +187,6 @@ public class C_Invoice // 03771
 
 	/**
 	 * Mark invoice as paid if the grand total/open amount is 0
-	 *
-	 * @task 09489
 	 */
 	private void markAsPaid(final I_C_Invoice invoice)
 	{
@@ -193,7 +199,7 @@ public class C_Invoice // 03771
 
 	/**
 	 * Allocate the credit memo against it's parent invoices.
-	 *
+	 * <p>
 	 * Note: ATM, there should only be one parent invoice for a credit memo, but it's possible to have more in the future.
 	 */
 	private void allocateInvoiceAgainstCreditMemo(final I_C_Invoice creditMemo)
@@ -254,7 +260,6 @@ public class C_Invoice // 03771
 		if (isCreditMemo)
 		{
 			deleteInvoiceLines(invoice);
-			return;
 		}
 
 	}
