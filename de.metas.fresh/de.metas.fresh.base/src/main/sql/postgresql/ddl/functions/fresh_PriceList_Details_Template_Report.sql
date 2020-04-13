@@ -34,7 +34,7 @@ SELECT plc.value                                                                
        plc.productcategory                                                                                          as productcategory,
        plc.productname                                                                                              as productname,
        plc.attributes                                                                                               as attributes,
-       replace(hupip.name, hupiv.name,  pi.Name)                                                                          as itemproductname,
+       replace(hupip.name, hupiv.name,  pi.Name)                                                                    as itemproductname,
        NULL::numeric                                                                                                as qty,
        plc.uomsymbol                                                                                                as uomsymbol,
        to_char(plc.pricestd, getPricePattern(prl.priceprecision::integer))                                                as pricestd,
@@ -53,11 +53,16 @@ FROM report.fresh_PriceList_Details_Report(p_c_bpartner_id, p_m_pricelist_versio
          LEFT OUTER JOIN M_HU_PI_Item_Product hupip on hupip.M_HU_PI_Item_Product_ID = plc.M_HU_PI_Item_Product_ID
          LEFT OUTER JOIN M_HU_PI_Item hupii on hupii.M_HU_PI_Item_ID = hupip.M_HU_PI_Item_ID
          LEFT OUTER JOIN M_HU_PI_Version hupiv on hupiv.M_HU_PI_Version_ID = hupii.M_HU_PI_Version_ID
-		 LEFT OUTER JOIN M_HU_PI pi on pi.M_HU_PI_ID = hupiv.M_HU_PI_ID
+         LEFT OUTER JOIN M_HU_PI pi on pi.M_HU_PI_ID = hupiv.M_HU_PI_ID
 
          LEFT OUTER JOIN M_Pricelist_Version prlv on prlv.m_pricelist_version_id = p_m_pricelist_version_id
          LEFT OUTER JOIN M_Pricelist prl on prlv.m_pricelist_id = prl.m_pricelist_id
---
+         LEFT OUTER JOIN M_HU_PackingMaterial pmt on plc.m_product_id = pmt.m_product_id
+         LEFT OUTER JOIN M_ProductPrice ppr on ppr.m_product_id = pmt.m_product_id
+    --             LEFT OUTER JOIN packing material
+--             left outer join m-prod-price ppr when product aici = product din packing material and plv.version = parametru
+--     WHERE
+--    case when param = 'y' ppr.price is not null else 1=1
 
 
 $BODY$

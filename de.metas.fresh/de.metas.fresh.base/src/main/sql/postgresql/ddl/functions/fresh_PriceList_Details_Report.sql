@@ -60,14 +60,16 @@ FROM RV_fresh_PriceList_Comparison plc
          LEFT OUTER JOIN M_Product_Trl pt ON plc.M_Product_ID = pt.M_Product_ID AND AD_Language = p_ad_language AND pt.isActive = 'Y'
          LEFT OUTER JOIN C_BPartner bp ON plc.C_BPartner_ID = bp.C_BPartner_ID AND bp.isActive = 'Y'
          LEFT OUTER JOIN C_BPartner_Product bpp ON bp.C_BPartner_ID = bpp.C_BPartner_ID AND plc.M_Product_ID = bpp.M_Product_ID AND bpp.isActive = 'Y'
+         LEFT OUTER JOIN M_HU_PackingMaterial pmt on plc.m_product_id = pmt.m_product_id
+         LEFT OUTER JOIN M_ProductPrice ppr on ppr.m_product_id = pmt.m_product_id
 WHERE TRUE
   AND plc.C_BPartner_ID = p_c_bpartner_id
   AND plc.M_Pricelist_Version_ID = p_m_pricelist_version_id
   AND plc.Alt_Pricelist_Version_ID = coalesce(p_alt_pricelist_version_id, plc.m_pricelist_version_id)
   AND CASE
           WHEN p_alt_pricelist_version_id IS NOT NULL
-              THEN PriceStd != 0
-              ELSE PriceStd != 0 OR AltPriceStd != 0
+              THEN plc.PriceStd != 0
+              ELSE plc.PriceStd != 0 OR AltPriceStd != 0
       END
 ORDER BY plc.ProductCategoryValue,
          plc.ProductName,
