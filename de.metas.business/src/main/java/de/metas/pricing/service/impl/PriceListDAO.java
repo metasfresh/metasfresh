@@ -247,7 +247,7 @@ public class PriceListDAO implements IPriceListDAO
 	public I_M_PriceList_Version retrievePriceListVersionOrNull(
 			final PriceListId priceListId,
 			final ZonedDateTime date,
-			final Boolean processed)
+			final @Nullable Boolean processed)
 	{
 		return retrievePriceListVersionOrNull(Env.getCtx(), priceListId, date, processed);
 	}
