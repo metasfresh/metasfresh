@@ -101,10 +101,6 @@ public class ExcelExporterService
 			dataConsumer.putHeader(header);
 			dataConsumer.putResult(rs);
 
-			// we need to do the consuming right here, while the resultset is open.
-			dataConsumer.putHeader(header);
-			dataConsumer.putResult(rs);
-
 			loggable.addLog("Push data to dataConsumer done");
 		}
 		catch (final SQLException ex)
