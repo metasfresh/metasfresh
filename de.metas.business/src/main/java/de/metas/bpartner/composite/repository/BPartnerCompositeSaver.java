@@ -9,6 +9,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.ad.dao.ICompositeQueryUpdater;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -46,7 +48,9 @@ import de.metas.interfaces.I_C_BPartner;
 import de.metas.location.CountryId;
 import de.metas.location.ICountryDAO;
 import de.metas.location.impl.PostalQueryFilter;
+import de.metas.organization.OrgId;
 import de.metas.security.PermissionServiceFactories;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.lang.ExternalId;
 import lombok.NonNull;
@@ -93,20 +97,24 @@ final class BPartnerCompositeSaver
 		}
 
 		final BPartner bpartner = bpartnerComposite.getBpartner();
-		saveBPartner(bpartner);
+		saveBPartner(bpartner, bpartnerComposite.getOrgId());
 
-		saveBPartnerLocations(bpartner.getId(), bpartnerComposite.getLocations());
+		saveBPartnerLocations(bpartner.getId(), bpartnerComposite.getLocations(), bpartnerComposite.getOrgId());
 
-		saveBPartnerContacts(bpartner.getId(), bpartnerComposite.getContacts());
+		saveBPartnerContacts(bpartner.getId(), bpartnerComposite.getContacts(), bpartnerComposite.getOrgId());
 
-		saveBPartnerBankAccounts(bpartner.getId(), bpartnerComposite.getBankAccounts());
+		saveBPartnerBankAccounts(bpartner.getId(), bpartnerComposite.getBankAccounts(), bpartnerComposite.getOrgId());
 	}
 
-	private void saveBPartner(@NonNull final BPartner bpartner)
+	private void saveBPartner(@NonNull final BPartner bpartner, @Nullable final OrgId orgId)
 	{
 		final I_C_BPartner bpartnerRecord = loadOrNew(bpartner.getId(), I_C_BPartner.class);
 		bpartnerRecord.setIsActive(bpartner.isActive());
 
+		if (orgId != null)
+		{
+			bpartnerRecord.setAD_Org_ID(orgId.getRepoId());
+		}
 		// companyName
 		if (isEmpty(bpartner.getCompanyName(), true))
 		{
@@ -136,8 +144,10 @@ final class BPartnerCompositeSaver
 
 		bpartnerRecord.setIsVendor(bpartner.isVendor());
 		bpartnerRecord.setIsCustomer(bpartner.isCustomer());
-
-		bpartnerRecord.setValue(bpartner.getValue());
+		if (!Check.isEmpty(bpartner.getValue(), true))
+		{
+			bpartnerRecord.setValue(bpartner.getValue());
+		}
 		bpartnerRecord.setGlobalId(bpartner.getGlobalId());
 
 		assertCanCreateOrUpdate(bpartnerRecord);
@@ -149,12 +159,13 @@ final class BPartnerCompositeSaver
 
 	private void saveBPartnerLocations(
 			@NonNull final BPartnerId bpartnerId,
-			@NonNull final List<BPartnerLocation> bpartnerLocations)
+			@NonNull final List<BPartnerLocation> bpartnerLocations,
+			@Nullable final OrgId orgId)
 	{
 		final ArrayList<BPartnerLocationId> savedBPartnerLocationIds = new ArrayList<>();
 		for (final BPartnerLocation bPartnerLocation : bpartnerLocations)
 		{
-			saveBPartnerLocation(bpartnerId, bPartnerLocation);
+			saveBPartnerLocation(bpartnerId, bPartnerLocation, orgId);
 			savedBPartnerLocationIds.add(bPartnerLocation.getId());
 		}
 
@@ -175,9 +186,14 @@ final class BPartnerCompositeSaver
 
 	private void saveBPartnerLocation(
 			@NonNull final BPartnerId bpartnerId,
-			@NonNull final BPartnerLocation bpartnerLocation)
+			@NonNull final BPartnerLocation bpartnerLocation,
+			@Nullable final OrgId orgId)
 	{
 		final I_C_BPartner_Location bpartnerLocationRecord = loadOrNew(bpartnerLocation.getId(), I_C_BPartner_Location.class);
+		if (orgId != null)
+		{
+			bpartnerLocationRecord.setAD_Org_ID(orgId.getRepoId());
+		}
 		bpartnerLocationRecord.setIsActive(bpartnerLocation.isActive());
 		bpartnerLocationRecord.setC_BPartner_ID(bpartnerId.getRepoId());
 		bpartnerLocationRecord.setName(bpartnerLocation.getName());
@@ -310,12 +326,13 @@ final class BPartnerCompositeSaver
 
 	private void saveBPartnerContacts(
 			@NonNull final BPartnerId bpartnerId,
-			@NonNull final List<BPartnerContact> contacts)
+			@NonNull final List<BPartnerContact> contacts,
+			@Nullable final OrgId orgId)
 	{
 		final ArrayList<BPartnerContactId> savedBPartnerContactIds = new ArrayList<>();
 		for (final BPartnerContact bpartnerContact : contacts)
 		{
-			saveBPartnerContact(bpartnerId, bpartnerContact);
+			saveBPartnerContact(bpartnerId, bpartnerContact, orgId);
 			savedBPartnerContactIds.add(bpartnerContact.getId());
 		}
 
@@ -335,9 +352,15 @@ final class BPartnerCompositeSaver
 
 	private void saveBPartnerContact(
 			@NonNull final BPartnerId bpartnerId,
-			@NonNull final BPartnerContact bpartnerContact)
+			@NonNull final BPartnerContact bpartnerContact,
+			@Nullable final OrgId orgId)
 	{
 		final I_AD_User bpartnerContactRecord = loadOrNew(bpartnerContact.getId(), I_AD_User.class);
+
+		if (orgId != null)
+		{
+			bpartnerContactRecord.setAD_Org_ID(orgId.getRepoId());
+		}
 		bpartnerContactRecord.setExternalId(ExternalId.toValue(bpartnerContact.getExternalId()));
 		bpartnerContactRecord.setIsActive(bpartnerContact.isActive());
 		bpartnerContactRecord.setC_BPartner_ID(bpartnerId.getRepoId());
@@ -380,12 +403,13 @@ final class BPartnerCompositeSaver
 
 	private void saveBPartnerBankAccounts(
 			@NonNull final BPartnerId bpartnerId,
-			@NonNull final List<BPartnerBankAccount> bankAccounts)
+			@NonNull final List<BPartnerBankAccount> bankAccounts,
+			@Nullable final OrgId orgId)
 	{
 		final ArrayList<BPartnerBankAccountId> savedBPBankAccountIds = new ArrayList<>();
 		for (final BPartnerBankAccount bankAccount : bankAccounts)
 		{
-			saveBPartnerBankAccount(bpartnerId, bankAccount);
+			saveBPartnerBankAccount(bpartnerId, bankAccount, orgId);
 			savedBPBankAccountIds.add(bankAccount.getId());
 		}
 
@@ -395,9 +419,15 @@ final class BPartnerCompositeSaver
 
 	private void saveBPartnerBankAccount(
 			@NonNull final BPartnerId bpartnerId,
-			@NonNull final BPartnerBankAccount bankAccount)
+			@NonNull final BPartnerBankAccount bankAccount,
+			@Nullable final OrgId orgId)
 	{
 		final I_C_BP_BankAccount record = loadOrNew(bankAccount.getId(), I_C_BP_BankAccount.class);
+
+		if (orgId != null)
+		{
+			record.setAD_Org_ID(orgId.getRepoId());
+		}
 		record.setC_BPartner_ID(bpartnerId.getRepoId());
 
 		record.setIBAN(bankAccount.getIban());

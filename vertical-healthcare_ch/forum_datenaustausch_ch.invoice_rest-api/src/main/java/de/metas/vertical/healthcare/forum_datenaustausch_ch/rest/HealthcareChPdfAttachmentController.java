@@ -52,7 +52,7 @@ import lombok.NonNull;
 @RestController
 @RequestMapping(RestApiConstants.ENDPOINT_PDF_ATTACHMENT)
 @Conditional(RestApiStartupCondition.class)
-@Api(value = "forum-datenaustausch.ch XML endpoint")
+@Api(tags = { "forum-datenaustausch.ch XML endpoint" })
 public class HealthcareChPdfAttachmentController
 {
 	private final OrderCandidatesRestEndpoint orderCandidatesRestEndpoint;

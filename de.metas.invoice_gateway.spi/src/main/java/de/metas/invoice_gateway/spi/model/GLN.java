@@ -27,20 +27,20 @@ import lombok.Value;
  */
 
 @Value
-public class EAN
+public class GLN
 {
-	public static EAN of(@NonNull final String value)
+	public static GLN of(@NonNull final String value)
 	{
-		return new EAN(value);
+		return new GLN(value);
 	}
 
 	String value;
 
-	private EAN(@NonNull final String value)
+	private GLN(@NonNull final String value)
 	{
-		Check.assumeNotEmpty(value, "The given EAN value may not be empty");
+		Check.assumeNotEmpty(value, "The given GLN value may not be empty");
 
 		this.value = value.replaceAll(" ", "");
-		Check.assume(this.value.matches("[0-9]{13}"), "The given EAN value needs to consist of 13 digits");
+		Check.assume(this.value.matches("[0-9]{13}"), "The given GLN value needs to consist of 13 digits");
 	}
 }

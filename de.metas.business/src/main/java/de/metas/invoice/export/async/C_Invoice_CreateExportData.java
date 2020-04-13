@@ -2,9 +2,10 @@ package de.metas.invoice.export.async;
 
 import java.util.List;
 
-import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Invoice;
 import org.slf4j.Logger;
+import org.slf4j.MDC.MDCCloseable;
 
 import com.google.common.collect.ImmutableList;
 
@@ -16,6 +17,7 @@ import de.metas.async.spi.WorkpackagesOnCommitSchedulerTemplate;
 import de.metas.invoice.export.InvoiceExportService;
 import de.metas.invoice_gateway.spi.model.InvoiceId;
 import de.metas.logging.LogManager;
+import de.metas.logging.TableRecordMDC;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -35,7 +37,7 @@ public class C_Invoice_CreateExportData implements IWorkpackageProcessor
 	}
 
 	private final transient IQueueDAO queueDAO = Services.get(IQueueDAO.class);
-	private final transient InvoiceExportService invoiceExportService = Adempiere.getBean(InvoiceExportService.class);
+	private final transient InvoiceExportService invoiceExportService = SpringContextHolder.instance.getBean(InvoiceExportService.class);
 
 	@Override
 	public Result processWorkPackage(
@@ -45,10 +47,13 @@ public class C_Invoice_CreateExportData implements IWorkpackageProcessor
 		final List<I_C_Invoice> invoiceRecords = queueDAO.retrieveItemsSkipMissing(workpackage, I_C_Invoice.class, localTrxName);
 		for (final I_C_Invoice invoiceRecord : invoiceRecords)
 		{
-			Loggables.withLogger(logger, Level.DEBUG).addLog("Going to export data for invoiceRecord={}", invoiceRecord);
+			try (final MDCCloseable invoiceMDC = TableRecordMDC.putTableRecordReference(invoiceRecord))
+			{
+				Loggables.withLogger(logger, Level.DEBUG).addLog("Going to export data for invoiceRecord={}", invoiceRecord);
 
-			final InvoiceId invoiceId = InvoiceId.ofRepoId(invoiceRecord.getC_Invoice_ID());
-			invoiceExportService.exportInvoices(ImmutableList.of(invoiceId));
+				final InvoiceId invoiceId = InvoiceId.ofRepoId(invoiceRecord.getC_Invoice_ID());
+				invoiceExportService.exportInvoices(ImmutableList.of(invoiceId));
+			}
 		}
 		return Result.SUCCESS;
 	}

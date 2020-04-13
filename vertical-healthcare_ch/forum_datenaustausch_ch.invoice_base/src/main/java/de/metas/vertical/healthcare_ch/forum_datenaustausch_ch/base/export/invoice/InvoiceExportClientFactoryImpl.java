@@ -12,7 +12,6 @@ import ch.qos.logback.classic.Level;
 import de.metas.invoice_gateway.spi.InvoiceExportClient;
 import de.metas.invoice_gateway.spi.InvoiceExportClientFactory;
 import de.metas.invoice_gateway.spi.model.BPartnerId;
-import de.metas.invoice_gateway.spi.model.InvoiceAttachment;
 import de.metas.invoice_gateway.spi.model.export.InvoiceToExport;
 import de.metas.logging.LogManager;
 import de.metas.logging.TableRecordMDC;
@@ -82,8 +81,8 @@ public class InvoiceExportClientFactoryImpl implements InvoiceExportClientFactor
 
 			final boolean supported = invoice.getInvoiceAttachments()
 					.stream()
-					.map(InvoiceAttachment::getInvoiceExportProviderId)
-					.anyMatch(id -> requiredAttachmentTag.equals(id));
+					.map(attachment -> attachment.getTags().get(InvoiceExportClientFactory.ATTATCHMENT_TAGNAME_EXPORT_PROVIDER)) // might be null
+					.anyMatch(providerId -> requiredAttachmentTag.equals(providerId));
 			if (!supported)
 			{
 				loggable.addLog("forum_datenaustausch_ch - The invoice with id={} has no attachment with an {}-tag", invoice.getId(), requiredAttachmentTag);
@@ -102,9 +101,9 @@ public class InvoiceExportClientFactoryImpl implements InvoiceExportClientFactor
 				return Optional.empty();
 			}
 			final InvoiceExportClientImpl client = new InvoiceExportClientImpl(crossVersionServiceRegistry, config);
-			if (!client.canExport(invoice))
+			if (!client.applies(invoice))
 			{
-				loggable.addLog("forum_datenaustausch_ch - the export-client {} claims that it can't export the invoice with id={}", client.getClass().getSimpleName(), invoice.getId());
+				loggable.addLog("forum_datenaustausch_ch - the export-client {} said that it won't export the invoice with id={}", client.getClass().getSimpleName(), invoice.getId());
 				return Optional.empty();
 			}
 

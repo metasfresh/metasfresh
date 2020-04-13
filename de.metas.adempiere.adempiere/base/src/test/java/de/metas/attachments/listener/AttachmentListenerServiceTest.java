@@ -48,7 +48,7 @@ public class AttachmentListenerServiceTest
 	private static final int MOCK_AD_TABLE_ID = 3;
 	private static final int MOCK_RECORD_ID = 4;
 	private static final int SEQ_NO_TEN = 10;
-	private static final String MOCK_TABLE_NAME ="MockTable";
+	private static final String MOCK_TABLE_NAME = "MockTable";
 
 	@Before
 	public void init()
@@ -65,7 +65,6 @@ public class AttachmentListenerServiceTest
 		prepareAttachmentListenerMockRecord();
 	}
 
-
 	@Test
 	public void givenAttachmentEntry_whenNotifyAttachmentListeners_returnSuccess()
 	{
@@ -77,7 +76,7 @@ public class AttachmentListenerServiceTest
 
 		Mockito.doNothing().when(tableAttachmentListenerService).notifyUser(any(), any(), any());
 
-		final ImmutableList<AttachmentListenerActionResult> result = tableAttachmentListenerService.notifyAttachmentListeners(attachmentEntryMock);
+		final ImmutableList<AttachmentListenerActionResult> result = tableAttachmentListenerService.fireAfterRecordLinked(attachmentEntryMock, tableRecordReferenceMock);
 
 		assertEquals(result.size(), 1);
 		assertEquals(result.get(0).getStatus(), SUCCESS);
@@ -121,8 +120,7 @@ public class AttachmentListenerServiceTest
 
 	private void prepareAttachmentListenerMockRecord()
 	{
-		final I_AD_Table_AttachmentListener mockRecord =
-				InterfaceWrapperHelper.newInstance(I_AD_Table_AttachmentListener.class);
+		final I_AD_Table_AttachmentListener mockRecord = InterfaceWrapperHelper.newInstance(I_AD_Table_AttachmentListener.class);
 
 		mockRecord.setAD_JavaClass_ID(DUMB_LISTENER_MOCK_JAVA_CLASS_ID);
 		mockRecord.setSeqNo(SEQ_NO_TEN);

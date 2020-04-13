@@ -178,7 +178,7 @@ public class MasterdataProviderTest
 	{
 		final IOrgDAO orgsRepo = Services.get(IOrgDAO.class);
 
-		final OrgId orgId = masterdataProvider.getCreateOrgId(jsonOrganization);
+		final OrgId orgId = masterdataProvider.getCreateOrgIdInTrx(jsonOrganization);
 
 		// verify AD_Org
 		final I_AD_Org orgRecord = orgsRepo.getById(orgId);

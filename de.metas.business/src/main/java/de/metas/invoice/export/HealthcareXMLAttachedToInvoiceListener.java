@@ -22,6 +22,7 @@ import de.metas.bpartner.composite.BPartnerLocation;
 import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
 import de.metas.bpartner.service.BPartnerQuery;
 import de.metas.invoice_gateway.spi.InvoiceExportClientFactory;
+import de.metas.javaclasses.model.I_AD_JavaClass;
 import de.metas.logging.LogManager;
 import de.metas.logging.TableRecordMDC;
 import de.metas.util.collections.CollectionUtils;
@@ -57,7 +58,12 @@ import lombok.NonNull;
  * #L%
  */
 
-public class ExportXMLAttachedToInvoiceListener implements AttachmentListener
+/**
+ * Note that we use {@link BPartnerComposite} which is why this class needs to be in here as opposed being way down in the healthcare-ch modules.
+ * <p>
+ * Important: when renaming this class, please make sure to also update its {@link I_AD_JavaClass} record.
+ */
+public class HealthcareXMLAttachedToInvoiceListener implements AttachmentListener
 {
 	private final CrossVersionServiceRegistry crossVersionServiceRegistry = SpringContextHolder.instance.getBean(CrossVersionServiceRegistry.class);
 
@@ -65,10 +71,10 @@ public class ExportXMLAttachedToInvoiceListener implements AttachmentListener
 
 	private final BPartnerCompositeRepository bpartnerCompositeRepository = SpringContextHolder.instance.getBean(BPartnerCompositeRepository.class);
 
-	private static final Logger logger = LogManager.getLogger(ExportXMLAttachedToInvoiceListener.class);
+	private static final Logger logger = LogManager.getLogger(HealthcareXMLAttachedToInvoiceListener.class);
 
 	@Override
-	public ListenerWorkStatus afterPersist(
+	public ListenerWorkStatus afterRecordLinked(
 			@NonNull final AttachmentEntry attachmentEntry,
 			@NonNull final TableRecordReference tableRecordReference)
 	{
@@ -80,10 +86,18 @@ public class ExportXMLAttachedToInvoiceListener implements AttachmentListener
 				return ListenerWorkStatus.SUCCESS;
 			}
 
-			final AttachmentTags tags = attachmentEntry.getTags();
-			if (!tags.hasTagSetToTrue(AttachmentTags.TAGNAME_IS_DOCUMENT))
+			final I_C_Invoice invoiceRecord = tableRecordReference.getModel(I_C_Invoice.class);
+			if (invoiceRecord.getBeneficiary_BPartner_ID() > 0)
 			{
-				logger.debug("given attachmentEntry with id={} (filename={}) is not tagged as document; -> doing nothing",
+				logger.debug("C_Invoice with ID={} already has a Beneficiary_BPartner_ID > 0; -> doing nothing",
+						invoiceRecord.getC_Invoice_ID());
+				return ListenerWorkStatus.SUCCESS;
+			}
+
+			final AttachmentTags tags = attachmentEntry.getTags();
+			if (tags.hasTagSetToTrue(AttachmentTags.TAGNAME_IS_DOCUMENT))
+			{
+				logger.debug("given attachmentEntry with id={} (filename={}) is tagged as document (exported from original-xml + invoice). We need the orgiginal XML; -> doing nothing",
 						attachmentEntry.getId(), attachmentEntry.getFilename());
 				return ListenerWorkStatus.SUCCESS;
 			}
@@ -109,12 +123,11 @@ public class ExportXMLAttachedToInvoiceListener implements AttachmentListener
 			if (externalId == null)
 			{
 				logger.debug("patient-XML data extracted from attachmentEntry with id={} (filename={}) has no SSN; -> doing nothing",
-						attachmentEntry.getId(), attachmentEntry.getFilename()); // TODO
+						attachmentEntry.getId(), attachmentEntry.getFilename());
 				return ListenerWorkStatus.SUCCESS;
 			}
 
 			final ImmutableList<BPartnerComposite> bpartners = bpartnerCompositeRepository.getByQuery(BPartnerQuery.builder().externalId(externalId).build());
-
 			if (bpartners.isEmpty())
 			{
 				logger.debug("externalId={} of the patient-XML data extracted from attachmentEntry with id={} (filename={}) has no matching C_BPartner; -> doing nothing",
@@ -122,8 +135,6 @@ public class ExportXMLAttachedToInvoiceListener implements AttachmentListener
 				return ListenerWorkStatus.SUCCESS;
 			}
 			final BPartnerComposite bPartner = CollectionUtils.singleElement(bpartners);
-
-			final I_C_Invoice invoiceRecord = tableRecordReference.getModel(I_C_Invoice.class);
 
 			final int beneficiaryRepoId = bPartner.getBpartner().getId().getRepoId();
 			invoiceRecord.setBeneficiary_BPartner_ID(beneficiaryRepoId);

@@ -16,7 +16,7 @@ import de.metas.rest_api.common.SyncAdvise.IfExists;
 import de.metas.rest_api.common.SyncAdvise.IfNotExists;
 import de.metas.rest_api.ordercandidates.response.JsonAttachment;
 import de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsService.CreateOLCandsRequest;
-import de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsService.TargetDocType;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.HealthCareInvoiceDocSubType;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -50,9 +50,9 @@ import lombok.NonNull;
 @RequestMapping(RestApiConstants.ENDPOINT_INVOICE_440)
 @Conditional(RestApiStartupCondition.class)
 
-@Api(tags = { "Swagger Resource" })
+@Api(tags = { "forum-datenaustausch.ch XML endpoint" })
 @SwaggerDefinition(tags = {
-		@Tag(name = "Swagger Resource", description = "forum-datenaustausch.ch invoice v4.4 XML endpoint")
+		@Tag(name = "forum-datenaustausch.ch XML endpoint", description = "forum-datenaustausch.ch invoice v4.4 XML endpoint")
 })
 public class HealthcareChInvoice440RestController
 {
@@ -64,7 +64,7 @@ public class HealthcareChInvoice440RestController
 	}
 
 	@PostMapping(path = "importInvoiceXML/v440/KV")
-	@ApiOperation(value = "Upload forum-datenaustausch.ch invoice-XML into metasfresh")
+	@ApiOperation(value = "Upload a forum-datenaustausch.ch insurance invoice-XML (\"Krankenversicherung\") into metasfresh")
 	public ResponseEntity<JsonAttachment> importInsuranceInvoiceXML(
 
 			@RequestParam("file") @NonNull final MultipartFile xmlInvoiceFile,
@@ -99,11 +99,11 @@ public class HealthcareChInvoice440RestController
 				.ifNotExists(coalesce(ifProductsNotExist, IfNotExists.CREATE))
 				.build();
 
-		return importInvoiceXML(xmlInvoiceFile, TargetDocType.KV, billerSyncAdvise, debitorSyncAdvise, productSyncAdvise);
+		return importInvoiceXML(xmlInvoiceFile, HealthCareInvoiceDocSubType.KV, billerSyncAdvise, debitorSyncAdvise, productSyncAdvise);
 	}
 
 	@PostMapping(path = "importInvoiceXML/v440/KT")
-	@ApiOperation(value = "Upload forum-datenaustausch.ch invoice-XML into metasfresh")
+	@ApiOperation(value = "Upload a forum-datenaustausch.ch state invoice-XML (\"Kanton\") into metasfresh")
 	public ResponseEntity<JsonAttachment> importDistrictInvoiceXML(
 
 			@RequestParam("file") @NonNull final MultipartFile xmlInvoiceFile,
@@ -138,19 +138,19 @@ public class HealthcareChInvoice440RestController
 				.ifNotExists(coalesce(ifProductsNotExist, IfNotExists.CREATE))
 				.build();
 
-		return importInvoiceXML(xmlInvoiceFile, TargetDocType.KT, billerSyncAdvise, debitorSyncAdvise, productSyncAdvise);
+		return importInvoiceXML(xmlInvoiceFile, HealthCareInvoiceDocSubType.KT, billerSyncAdvise, debitorSyncAdvise, productSyncAdvise);
 	}
 
 	@PostMapping(path = "importInvoiceXML/v440/EA")
-	@ApiOperation(value = "Upload forum-datenaustausch.ch invoice-XML into metasfresh")
+	@ApiOperation(value = "Upload a forum-datenaustausch.ch patient invoice-XML (\"Eigenanteil\") into metasfresh")
 	public ResponseEntity<JsonAttachment> importPatientInvoiceXML(
 
 			@RequestParam("file") @NonNull final MultipartFile xmlInvoiceFile,
 
-			@ApiParam(required = false, defaultValue = "DONT_UPDATE", value = "This is applied only to the biller; the invoice recipient needs to already exist in metasfresh.") //
+			@ApiParam(required = false, defaultValue = "DONT_UPDATE", value = "This is applied only to the biller; the invoice recipient (patient) is always created or updated on the fly.") //
 			@RequestParam(required = false) final SyncAdvise.IfExists ifBPartnersExist,
 
-			@ApiParam(required = false, defaultValue = "CREATE", value = "This is applied only to the biller; the invoice recipient needs to already exist in metasfresh.") //
+			@ApiParam(required = false, defaultValue = "CREATE", value = "This is applied only to the biller; the invoice recipient (patient) is always created or updated on the fly.") //
 			@RequestParam(required = false) final SyncAdvise.IfNotExists ifBPartnersNotExist,
 
 			@ApiParam(required = false, defaultValue = "DONT_UPDATE") //
@@ -178,12 +178,12 @@ public class HealthcareChInvoice440RestController
 				.ifNotExists(coalesce(ifProductsNotExist, IfNotExists.CREATE))
 				.build();
 
-		return importInvoiceXML(xmlInvoiceFile, TargetDocType.EA, billerSyncAdvise, debitorSyncAdvise, productSyncAdvise);
+		return importInvoiceXML(xmlInvoiceFile, HealthCareInvoiceDocSubType.EA, billerSyncAdvise, debitorSyncAdvise, productSyncAdvise);
 	}
 
 	private ResponseEntity<JsonAttachment> importInvoiceXML(
 			@NonNull final MultipartFile xmlInvoiceFile,
-			@NonNull final TargetDocType targetDocType,
+			@NonNull final HealthCareInvoiceDocSubType targetDocType,
 			@NonNull final SyncAdvise billerSyncAdvise,
 			@NonNull final SyncAdvise debitorSyncAdvise,
 			@NonNull final SyncAdvise productSyncAdvise)

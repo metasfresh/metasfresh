@@ -46,16 +46,17 @@ import lombok.Value;
  * #L%
  */
 
-/** Identifies a metasfresh resourse (e.g. business partner) */
+/** Identifies a metasfresh resourse (e.g. business partner). */
 @Value
 public class IdentifierString
 {
 
 	public enum Type
 	{
-		/** Every metasfresh ressource can be identifies via its metasfresh-ID (i.e. the PK of its data base record) */
+		/** Every metasfresh ressource can be identified via its metasfresh-ID (i.e. the PK of its data base record, e.g. {@code C_BPartner_ID} or {@code M_Product_ID}) */
 		METASFRESH_ID,
 
+		/** Note that at least for C_BPartner, the external ID is only unique per Org!*/
 		EXTERNAL_ID,
 
 		VALUE,

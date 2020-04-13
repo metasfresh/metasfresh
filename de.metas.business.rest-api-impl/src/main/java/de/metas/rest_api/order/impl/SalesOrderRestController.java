@@ -112,8 +112,7 @@ public class SalesOrderRestController
 		final BPartnerQuery query = BPartnerQuery.builder()
 				.bpartnerValue(request.getShipBPartnerCode())
 				.onlyOrgId(OrgId.ANY)
-				.onlyOrgId(OrgId.ofRepoIdOrAny(Env.getAD_Org_ID(Env.getCtx())))
-				.outOfTrx(false)
+				.onlyOrgId(Env.getOrgId())
 				.failIfNotExists(true)
 				.build();
 

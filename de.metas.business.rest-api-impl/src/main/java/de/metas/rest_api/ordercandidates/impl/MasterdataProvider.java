@@ -9,10 +9,12 @@ import java.util.Optional;
 
 import javax.annotation.Nullable;
 
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_BPartner;
+import org.slf4j.Logger;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSet;
@@ -26,6 +28,7 @@ import de.metas.impex.InputDataSourceId;
 import de.metas.impex.api.IInputDataSourceDAO;
 import de.metas.impex.api.impl.InputDataSourceQuery;
 import de.metas.impex.api.impl.InputDataSourceQuery.InputDataSourceQueryBuilder;
+import de.metas.logging.LogManager;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
@@ -81,9 +84,11 @@ import lombok.NonNull;
 
 final class MasterdataProvider
 {
+	private static final Logger logger = LogManager.getLogger(MasterdataProvider.class);
+
 	private final IPriceListDAO priceListsRepo = Services.get(IPriceListDAO.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
-
+	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IWarehouseDAO warehousesRepo = Services.get(IWarehouseDAO.class);
 
 	private final PermissionService permissionService;
@@ -124,20 +129,45 @@ final class MasterdataProvider
 		return warehousesRepo.getWarehouseIdByValue(warehouseCode);
 	}
 
-	public OrgId getCreateOrgId(@Nullable final JsonOrganization json)
+	public OrgId getCreateOrgIdInTrx(@Nullable final JsonOrganization json)
 	{
 		if (json == null)
 		{
 			return permissionService.getDefaultOrgId();
 		}
 
-		return orgIdsByCode.compute(json.getCode(), (code, existingOrgId) -> createOrUpdateOrgId(json, existingOrgId));
+		return orgIdsByCode.compute(json.getCode(), (code, existingOrgId) -> createOrUpdateOrgIdInTrx(json, existingOrgId));
 	}
 
 	@VisibleForTesting
-	OrgId createOrUpdateOrgId(
+	OrgId createOrUpdateOrgIdInTrx(
 			@NonNull final JsonOrganization json,
-			@Nullable OrgId existingOrgId)
+			@Nullable final OrgId existingOrgId)
+	{
+		final I_AD_Org orgRecord = trxManager.callInNewTrx(() -> createOrUpdateOrgIdInTrx0(json, existingOrgId));
+		final OrgId orgId = OrgId.ofRepoId(orgRecord.getAD_Org_ID());
+
+		if (json.getBpartner() != null)
+		{
+			final BPartnerInfo bpartnerInfo = bpartnerEndpointAdapter.getCreateBPartnerInfoInTrx(json.getBpartner(), true/* billTo */, orgRecord.getValue());
+			logger.debug("Created or updated org-C_BPartner with C_BPartner_ID={}", bpartnerInfo.getBpartnerId().getRepoId());
+
+			trxManager.runInNewTrx(() -> {
+				final I_C_BPartner bpartnerRecord = Services.get(IBPartnerDAO.class).getById(bpartnerInfo.getBpartnerId());
+				bpartnerRecord.setAD_OrgBP_ID(orgRecord.getAD_Org_ID());
+				saveRecord(bpartnerRecord);
+
+				orgDAO.createOrUpdateOrgInfo(OrgInfoUpdateRequest.builder()
+						.orgId(orgId)
+						.orgBPartnerLocationId(Optional.of(bpartnerInfo.getBpartnerLocationId()))
+						.build());
+				logger.debug("Linked org-C_BPartner with C_BPartner_ID={} to AD_Org with AD_Org_ID={}", bpartnerRecord.getC_BPartner_ID(), orgRecord.getAD_Org_ID());
+			});
+		}
+		return orgId;
+	}
+
+	private I_AD_Org createOrUpdateOrgIdInTrx0(@NonNull final JsonOrganization json, @Nullable OrgId existingOrgId)
 	{
 		final SyncAdvise orgSyncAdvise = json.getSyncAdvise();
 
@@ -152,21 +182,23 @@ final class MasterdataProvider
 			final OrgQuery query = OrgQuery.builder()
 					.orgValue(code)
 					.failIfNotExists(orgSyncAdvise.isFailIfNotExists())
-					.outOfTrx(orgSyncAdvise.isLoadReadOnly())
 					.build();
 
 			existingOrgId = orgDAO
 					.retrieveOrgIdBy(query)
 					.orElse(null);
+			logger.debug("Tried to retrieve existingOrgId using AD_Org_ID.Value={}; result: {}", code, existingOrgId);
 		}
 
 		final I_AD_Org orgRecord;
 		if (existingOrgId != null)
 		{
+			logger.debug("Load existing AD_Org record with AD_Org_ID={}", existingOrgId.getRepoId());
 			orgRecord = orgDAO.getById(existingOrgId);
 		}
 		else
 		{
+			logger.debug("Create new AD_Org record");
 			orgRecord = newInstance(I_AD_Org.class);
 		}
 
@@ -177,22 +209,7 @@ final class MasterdataProvider
 			orgDAO.save(orgRecord);
 		}
 
-		final OrgId orgId = OrgId.ofRepoId(orgRecord.getAD_Org_ID());
-		if (json.getBpartner() != null)
-		{
-			final BPartnerInfo bpartnerInfo = bpartnerEndpointAdapter.getCreateBPartnerInfoInTrx(json.getBpartner(), true/* billTo */, orgRecord.getValue());
-
-			final I_C_BPartner bpartnerRecord = Services.get(IBPartnerDAO.class).getById(bpartnerInfo.getBpartnerId());
-			bpartnerRecord.setAD_OrgBP_ID(orgRecord.getAD_Org_ID());
-			saveRecord(bpartnerRecord);
-
-			orgDAO.createOrUpdateOrgInfo(OrgInfoUpdateRequest.builder()
-					.orgId(orgId)
-					.orgBPartnerLocationId(Optional.of(bpartnerInfo.getBpartnerLocationId()))
-					.build());
-		}
-
-		return orgId;
+		return orgRecord;
 	}
 
 	private void updateOrgRecord(@NonNull final I_AD_Org orgRecord, @NonNull final JsonOrganization json)
@@ -313,7 +330,7 @@ final class MasterdataProvider
 				shipperId = ShipperId.ofRepoIdOrNull(shipperIdentifier.asMetasfreshId().getValue());
 				break;
 			case VALUE:
-				shipperId = shipperDAO.getShipperIdByValue(shipperIdentifier.asValue(), getCreateOrgId(request.getOrg())).orElse(null);
+				shipperId = shipperDAO.getShipperIdByValue(shipperIdentifier.asValue(), getCreateOrgIdInTrx(request.getOrg())).orElse(null);
 				break;
 
 			default:

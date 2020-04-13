@@ -22,8 +22,6 @@
 
 package de.metas.attachments.listener;
 
-import java.util.Collection;
-
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_Table_AttachmentListener;
 import org.compiere.util.Env;
@@ -41,6 +39,7 @@ import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IADMessageDAO;
 import de.metas.javaclasses.IJavaClassBL;
 import de.metas.logging.LogManager;
+import de.metas.logging.TableRecordMDC;
 import de.metas.notification.INotificationBL;
 import de.metas.notification.UserNotificationRequest;
 import de.metas.util.Services;
@@ -56,29 +55,24 @@ public class TableAttachmentListenerService
 	private final IADMessageDAO adMessageDAO = Services.get(IADMessageDAO.class);
 	private final TableAttachmentListenerRepository tableAttachmentListenerRepository;
 
-	public TableAttachmentListenerService(final TableAttachmentListenerRepository tableAttachmentListenerRepository)
+	public TableAttachmentListenerService(@NonNull final TableAttachmentListenerRepository tableAttachmentListenerRepository)
 	{
 		this.tableAttachmentListenerRepository = tableAttachmentListenerRepository;
 	}
 
-	public ImmutableList<AttachmentListenerActionResult> notifyAttachmentListeners(@NonNull final AttachmentEntry attachmentEntry)
+	public ImmutableList<AttachmentListenerActionResult> fireAfterRecordLinked(
+			@NonNull final AttachmentEntry attachmentEntry,
+			@NonNull final TableRecordReference tableRecordReference)
 	{
-		return attachmentEntry.getLinkedRecords()
-				.stream()
-				.map(linkedRecord -> notifyAttachmentListenersFor(linkedRecord, attachmentEntry))
-				.flatMap(Collection::stream)
-				.collect(ImmutableList.toImmutableList());
-	}
-
-	private ImmutableList<AttachmentListenerActionResult> notifyAttachmentListenersFor(
-			@NonNull final TableRecordReference tableRecordReference,
-			@NonNull final AttachmentEntry attachmentEntry)
-	{
-
-		return tableAttachmentListenerRepository.getById(tableRecordReference.getAdTableId())
-				.stream()
-				.map(listenerSettings -> invokeListener(listenerSettings, tableRecordReference, attachmentEntry))
-				.collect(ImmutableList.toImmutableList());
+		try (final MDCCloseable linkedRecordMDC = TableRecordMDC.putTableRecordReference(tableRecordReference))
+		{
+			final ImmutableList<AttachmentListenerSettings> settings = tableAttachmentListenerRepository.getById(tableRecordReference.getAdTableId());
+			logger.debug("There are {} AttachmentListenerSettings for AD_Table_ID={}", settings.size(), tableRecordReference.getAD_Table_ID());
+			return settings
+					.stream()
+					.map(listenerSettings -> invokeListener(listenerSettings, tableRecordReference, attachmentEntry))
+					.collect(ImmutableList.toImmutableList());
+		}
 	}
 
 	private AttachmentListenerActionResult invokeListener(
@@ -90,7 +84,7 @@ public class TableAttachmentListenerService
 
 		try (final MDCCloseable mdc = MDC.putCloseable("attachmentListener", attachmentListener.getClass().getSimpleName()))
 		{
-			final ListenerWorkStatus status = attachmentListener.afterPersist(attachmentEntry, tableRecordReference);
+			final ListenerWorkStatus status = attachmentListener.afterRecordLinked(attachmentEntry, tableRecordReference);
 			logger.debug("attachmentListener returned status={}", status);
 			if (!status.equals(ListenerWorkStatus.NOT_APPLIED))
 			{

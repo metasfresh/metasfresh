@@ -95,7 +95,7 @@ class JsonConverters
 			throw new AdempiereException("@FillMandatory@ @POReference@: " + request);
 		}
 
-		final OrgId orgId = masterdataProvider.getCreateOrgId(request.getOrg());
+		final OrgId orgId = masterdataProvider.getCreateOrgIdInTrx(request.getOrg());
 
 		final ProductInfo productInfo = masterdataProvider.getCreateProductInfo(request.getProduct(), orgId);
 

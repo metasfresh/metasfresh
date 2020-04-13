@@ -1,5 +1,7 @@
 package de.metas.invoice_gateway.spi.model;
 
+import javax.annotation.Nullable;
+
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -33,6 +35,6 @@ public class BPartner
 	@NonNull
 	BPartnerId id;
 
-	@NonNull
-	EAN ean;
+	@Nullable
+	GLN gln;
 }

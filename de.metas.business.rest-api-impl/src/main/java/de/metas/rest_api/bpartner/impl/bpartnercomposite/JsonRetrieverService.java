@@ -451,13 +451,14 @@ public class JsonRetrieverService
 		return extractResult(bpartnerComposites);
 	}
 
-	private ImmutableMap<BPartnerCompositeLookupKey, BPartnerComposite> retrieveBPartnerComposites(@NonNull final Collection<BPartnerCompositeLookupKey> queryLookupKeys)
+	private ImmutableMap<BPartnerCompositeLookupKey, BPartnerComposite> retrieveBPartnerComposites(
+			@NonNull final Collection<BPartnerCompositeLookupKey> queryLookupKeys)
 	{
 		final BPartnerQuery query = bPartnerQueryService.createQuery(queryLookupKeys);
-		final Optional<BPartnerComposite> byQuery;
+		final Optional<BPartnerComposite> bpartnerComposite;
 		try
 		{
-			byQuery = bpartnerCompositeRepository.getSingleByQuery(query);
+			bpartnerComposite = bpartnerCompositeRepository.getSingleByQuery(query);
 		}
 		catch (final AdempiereException e)
 		{
@@ -465,12 +466,12 @@ public class JsonRetrieverService
 					.appendParametersToMessage()
 					.setParameter("BPartnerIdLookupKeys", queryLookupKeys);
 		}
-		if (!byQuery.isPresent())
+		if (!bpartnerComposite.isPresent())
 		{
 			return ImmutableMap.of();
 		}
 
-		final BPartnerComposite singleElement = byQuery.get();
+		final BPartnerComposite singleElement = bpartnerComposite.get();
 
 		final HashSet<BPartnerCompositeLookupKey> allLookupKeys = new HashSet<>(queryLookupKeys);
 		allLookupKeys.addAll(extractBPartnerLookupKeys(singleElement));

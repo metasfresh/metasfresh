@@ -1,7 +1,5 @@
 package de.metas.invoice_gateway.spi;
 
-import lombok.NonNull;
-
 import java.util.List;
 
 import de.metas.invoice_gateway.spi.model.InvoiceExportResult;
@@ -32,7 +30,21 @@ import de.metas.invoice_gateway.spi.model.export.InvoiceToExport;
 /** SPI to extend for different formats and protocols. */
 public interface InvoiceExportClient
 {
-	public boolean canExport(@NonNull final InvoiceToExport invoice);
+	/**
+	 * @return {@code true} if the implementation applies to the given {@code invoice}.
+	 * @throws InvoiceNotExportableException if the implementation "should" export the given {@code invoice}, but is not able to do so, e.g. because of missing properties.
+	 */
+	boolean applies(InvoiceToExport invoice);
 
-	public List<InvoiceExportResult> export(@NonNull final InvoiceToExport invoice);
+	List<InvoiceExportResult> export(InvoiceToExport invoice);
+
+	public static final class InvoiceNotExportableException extends RuntimeException
+	{
+		private static final long serialVersionUID = 748656736637027017L;
+
+		public InvoiceNotExportableException(String reason)
+		{
+			super(reason);
+		}
+	}
 }

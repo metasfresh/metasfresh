@@ -1,6 +1,7 @@
 package de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.export.invoice;
 
 import static de.metas.util.Check.assumeNotNull;
+import static de.metas.util.lang.CoalesceUtil.coalesceSuppliers;
 import static java.math.BigDecimal.ZERO;
 
 import java.io.ByteArrayInputStream;
@@ -19,6 +20,7 @@ import javax.xml.datatype.XMLGregorianCalendar;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.MimeType;
+import org.slf4j.Logger;
 
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
@@ -29,6 +31,7 @@ import com.google.common.collect.Maps;
 
 import de.metas.invoice_gateway.spi.CustomInvoicePayload;
 import de.metas.invoice_gateway.spi.InvoiceExportClient;
+import de.metas.invoice_gateway.spi.InvoiceExportClientFactory;
 import de.metas.invoice_gateway.spi.esr.model.ESRPaymentInfo;
 import de.metas.invoice_gateway.spi.model.AddressInfo;
 import de.metas.invoice_gateway.spi.model.InvoiceAttachment;
@@ -39,10 +42,12 @@ import de.metas.invoice_gateway.spi.model.MetasfreshVersion;
 import de.metas.invoice_gateway.spi.model.Money;
 import de.metas.invoice_gateway.spi.model.PersonInfo;
 import de.metas.invoice_gateway.spi.model.export.InvoiceToExport;
+import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.collections.CollectionUtils;
 import de.metas.util.xml.XmlIntrospectionUtil;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.CrossVersionServiceRegistry;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.HealthCareInvoiceDocSubType;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.Types.RequestType;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.config.ExportConfig;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.commons.ForumDatenaustauschChConstants;
@@ -101,9 +106,11 @@ import lombok.NonNull;
  * Takes an invoice and its attached forum-datenaustausch XML-invoice,
  * creates a new augmented version of that XML
  * and creates a result with that augmented XML. This result will very probably attached as well.
- * */
+ */
 public class InvoiceExportClientImpl implements InvoiceExportClient
 {
+	private static final Logger logger = LogManager.getLogger(InvoiceExportClientImpl.class);
+
 	private final CrossVersionServiceRegistry crossVersionServiceRegistry;
 	private final CrossVersionRequestConverter exportConverter;
 	private final XmlMode exportFileMode;
@@ -122,13 +129,39 @@ public class InvoiceExportClientImpl implements InvoiceExportClient
 	}
 
 	@Override
-	public boolean canExport(@NonNull final InvoiceToExport invoice)
+	public boolean applies(@NonNull final InvoiceToExport invoice)
 	{
+		final HealthCareInvoiceDocSubType docType = HealthCareInvoiceDocSubType.ofCodeOrNull(invoice.getDocSubType());
+		if (docType == null)
+		{
+			logger.debug("The givee invoice's DocSubType={} is not related to this export client implementation; -> return false");
+			return false;
+		}
+		if (HealthCareInvoiceDocSubType.EA.equals(docType))
+		{
+			logger.debug("The given invoice's DocSubType=EA (patient-invoice) is not supposed to be exported; -> return false");
+			return false;
+		}
+
 		final ImmutableMultimap<CrossVersionRequestConverter, InvoiceAttachment> //
 		converters = extractConverters(invoice.getInvoiceAttachments());
+		if (converters.isEmpty())
+		{
+			return false;
+		}
+
+		if (invoice.getRecipient().getGln() == null)
+		{
+			throw new InvoiceNotExportableException("The the given invoice's receiver C_BPartner_Location needs to have a GLN; invoice=" + invoice);
+		}
+
+		if (invoice.getBiller().getGln() == null)
+		{
+			throw new InvoiceNotExportableException("The the given invoice's biller C_BPartner_Location needs to have a GLN; invoice=" + invoice);
+		}
 
 		// TODO check if
-		// * the invoice's language and currency is OK, and if the invoice has a supported XML attachment
+		// * the invoice's language and currency is OK, ...
 		// * ..and if all the invoice's lines have exactly *one* externalId that matches a serviceRecord from the XML attachment
 		return !converters.isEmpty();
 	}
@@ -181,7 +214,9 @@ public class InvoiceExportClientImpl implements InvoiceExportClient
 				continue;
 			}
 
-			final String xsdName = XmlIntrospectionUtil.extractXsdValueOrNull(attachment.getDataAsInputStream());
+			final String xsdName = coalesceSuppliers(
+					() -> attachment.getTags().get(ForumDatenaustauschChConstants.XSD_NAME),
+					() -> XmlIntrospectionUtil.extractXsdValueOrNull(attachment.getDataAsInputStream()));
 
 			final CrossVersionRequestConverter converter = crossVersionServiceRegistry.getRequestConverterForXsdName(xsdName);
 			if (converter == null)
@@ -475,10 +510,14 @@ public class InvoiceExportClientImpl implements InvoiceExportClient
 
 		for (final InvoiceAttachment invoiceAttachment : invoiceAttachments)
 		{
-			if (invoiceAttachment.isPrimaryAttachment())
+			final boolean primaryAttachment = invoiceAttachment.getTags().get(InvoiceExportClientFactory.ATTATCHMENT_TAGNAME_BELONGS_TO_EXTERNAL_REFERENCE) == null;
+			if (primaryAttachment)
 			{
+				logger.debug("invoiceAttachment with filename={} is noth the 2ndary (i.e. exported) attachment; -> not exporting it", invoiceAttachment.getFileName());
 				continue;
 			}
+
+			logger.debug("Adding invoiceAttachment with filename={} to be exported", invoiceAttachment.getFileName());
 			final byte[] base64Data = Base64.getEncoder().encode(invoiceAttachment.getData());
 			final XmlDocument xmlDocument = XmlDocument.builder()
 					.base64(base64Data)
