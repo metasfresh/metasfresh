@@ -273,7 +273,7 @@ Note: all the separately listed artifacts are also included in the dist-tar.gz
 		// report
 		final String reportDockerBaseImageRepo = 'metasfresh-report'
 		final String reportDockerBaseImageTag = misc.mkDockerTag("${params.MF_METASFRESH_REPORT_DOCKER_BASE_IMAGE_VERSION}")
-		final String reportAdditionalBuildArgs = "--build-arg BASE_IMAGE_REPO=${reportDockerBaseImageRepo} --build-arg BASE_IMAGE_VERSION=${reportDockerBaseImageTag}"
+		final String reportAdditionalBuildArgs = "--build-arg BASE_IMAGE_NAME=${reportDockerBaseImageRepo} --build-arg BASE_IMAGE_VERSION=${reportDockerBaseImageTag}"
 
 		final DockerConf reportDockerConf = appDockerConf
 						.withArtifactName('metasfresh-dist-report')

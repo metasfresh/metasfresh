@@ -1,4 +1,4 @@
-ARG BASE_IMAGE_REPO=metasfresh-report
+ARG BASE_IMAGE_NAME=metasfresh-report
 
 #
 # The base images version to use can be set from outside using
