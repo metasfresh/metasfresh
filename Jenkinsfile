@@ -203,7 +203,6 @@ node('agent && linux')
 				// See
 				//  * https://github.com/jenkinsci/build-with-parameters-plugin/pull/10
 				//  * https://jenkins.ci.cloudbees.com/job/plugins/job/build-with-parameters-plugin/15/org.jenkins-ci.plugins$build-with-parameters/
-
 				String releaseLinkWithText = "	<li>..and ${misc.createReleaseLinkWithText(MF_RELEASE_VERSION, MF_VERSION, MF_ARTIFACT_URLS, MF_DOCKER_IMAGES)}</li>";
 				if(MF_UPSTREAM_BRANCH == 'release')
 				{
@@ -272,7 +271,7 @@ Note: all the separately listed artifacts are also included in the dist-tar.gz
 		final String publishedDistAppImageName = dockerBuildAndPush(appDockerConf)
 
 		// report
-		final String reportDockerBaseImageRepo = 'metasfresh-report-dev'
+		final String reportDockerBaseImageRepo = 'metasfresh-report'
 		final String reportDockerBaseImageTag = misc.mkDockerTag("${params.MF_METASFRESH_REPORT_DOCKER_BASE_IMAGE_VERSION}")
 		final String reportAdditionalBuildArgs = "--build-arg BASE_IMAGE_REPO=${reportDockerBaseImageRepo} --build-arg BASE_IMAGE_VERSION=${reportDockerBaseImageTag}"
 
