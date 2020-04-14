@@ -301,7 +301,8 @@ public class UserQueryRepository
 					logger.warn("No search column found for {}", segment);
 					continue;
 				}
-				final Object value = searchField.convertValueToFieldType(fields[j]);
+				final int displayType = poInfo.getColumnDisplayType(row.getSearchField().getColumnName());
+				final Object value = UserQueryFieldHelper.parseValueObjectByColumnDisplayType(fields[j], displayType, row.getSearchField().getColumnName());
 				if (j == INDEX_VALUE)
 				{
 					row.setValue(value);
