@@ -22,22 +22,23 @@
 
 package org.compiere.apps.search;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.util.stream.Stream;
-
+import com.google.common.collect.ImmutableList;
+import lombok.Builder;
 import org.adempiere.test.AdempiereTestHelper;
 import org.assertj.core.api.Assertions;
+import org.compiere.model.ColumnDisplayTypeProvider;
 import org.compiere.model.I_AD_UserQuery;
 import org.compiere.model.MQuery;
-
-import com.google.common.collect.ImmutableList;
-
-import lombok.Builder;
+import org.compiere.util.DisplayType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+
+import java.math.BigDecimal;
+import java.util.stream.Stream;
+
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class UserQueryRepositoryTest
 {
@@ -52,6 +53,19 @@ public class UserQueryRepositoryTest
 
 	private static UserQueryRepository createRepo(final String... columnNames)
 	{
+		// TODO tbp: maybe i should extract columnNames and columnDisplayType to own builder class, for easier test instantiation
+		final ColumnDisplayTypeProvider columnDisplayTypeProvider = new ColumnDisplayTypeProvider()
+		{
+			@Override
+			public int getColumnDisplayType(final String columnName)
+			{
+				if ("MyColumn".equals(columnName))
+				{
+					return DisplayType.String;
+				}
+				return DisplayType.Quantity;
+			}
+		};
 		return UserQueryRepository.builder()
 				.setSearchFields(Stream.of(columnNames)
 						.map(PlainUserQueryField::ofColumnName)
@@ -59,6 +73,7 @@ public class UserQueryRepositoryTest
 				.setAD_Tab_ID(111)
 				.setAD_Table_ID(123)
 				.setAD_User_ID_Any()
+				.setColumnDisplayTypeProvider(columnDisplayTypeProvider)
 				.build();
 	}
 
@@ -184,8 +199,9 @@ public class UserQueryRepositoryTest
 			expected.setJoin(IUserQueryRestriction.Join.AND);
 			expected.setSearchField(repo.findSearchFieldByColumnName("QtyOrdered"));
 			expected.setOperator(MQuery.Operator.GREATER);
-			expected.setValue(0);
+			expected.setValue(BigDecimal.ZERO);
 
+			Assertions.assertThat(actual.getValue()).isOfAnyClassIn(BigDecimal.class);
 			Assertions.assertThat(actual).isEqualToIgnoringGivenFields(expected);
 		}
 
@@ -201,8 +217,27 @@ public class UserQueryRepositoryTest
 			expected.setJoin(IUserQueryRestriction.Join.AND);
 			expected.setSearchField(repo.findSearchFieldByColumnName("QtyInvoiced"));
 			expected.setOperator(MQuery.Operator.EQUAL);
-			expected.setValue(0);
+			expected.setValue(BigDecimal.ZERO);
 
+			Assertions.assertThat(actual.getValue()).isOfAnyClassIn(BigDecimal.class);
+			Assertions.assertThat(actual).isEqualToIgnoringGivenFields(expected);
+		}
+
+		@Test
+		public void numberIsNotParsedAsString3()
+		{
+			final String segment = "AND<^>QtyInvoiced<^>=<^>66<^>";
+
+			final UserQueryRepository repo = createRepo("QtyInvoiced");
+			final UserQueryRestriction actual = repo.parseUserQuerySegment(segment);
+
+			final UserQueryRestriction expected = new UserQueryRestriction();
+			expected.setJoin(IUserQueryRestriction.Join.AND);
+			expected.setSearchField(repo.findSearchFieldByColumnName("QtyInvoiced"));
+			expected.setOperator(MQuery.Operator.EQUAL);
+			expected.setValue(BigDecimal.valueOf(66));
+
+			Assertions.assertThat(actual.getValue()).isOfAnyClassIn(BigDecimal.class);
 			Assertions.assertThat(actual).isEqualToIgnoringGivenFields(expected);
 		}
 	}
