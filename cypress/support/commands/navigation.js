@@ -200,7 +200,7 @@ Cypress.Commands.add('selectRowByColumnAndValue', (columnAndValue, modal = false
 });
 
 /**
- * Select all rows on the current page
+ * Select a single item using the Barcode lookup
  *
  */
 Cypress.Commands.add('selectItemUsingBarcodeFilter', huValue1 => {
