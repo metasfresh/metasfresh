@@ -50,11 +50,10 @@ import lombok.NonNull;
 
 /**
  * Factory class used to create(and complete) sales or purchase orders.
- *
+ * <p>
  * This is a general purpose class to be used by other more specific factories.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 public class OrderFactory
 {
@@ -119,10 +118,15 @@ public class OrderFactory
 			assertNotBuilt();
 			built = true;
 
+			final IOrderBL orderBL = Services.get(IOrderBL.class);
 			if (order.getC_DocTypeTarget_ID() <= 0)
 			{
-				final IOrderBL orderBL = Services.get(IOrderBL.class);
 				orderBL.setDocTypeTargetId(order);
+			}
+
+			if (order.getBill_BPartner_ID() <= 0)
+			{
+				orderBL.setBillLocation(order);
 			}
 			save(order);
 
