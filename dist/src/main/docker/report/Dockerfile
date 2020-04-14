@@ -9,7 +9,7 @@ ARG BASE_IMAGE_REPO=metasfresh-report
 ARG BASE_IMAGE_VERSION=latest
 
 
-FROM metasfresh/${BASE_IMAGE_REPO}:${BASE_IMAGE_VERSION}
+FROM docker.metasfresh.com:6001/metasfresh/${BASE_IMAGE_NAME}:${BASE_IMAGE_VERSION}
 
 # Note: it's the pom.xml's job to provide these 2 folders
 COPY ./external-lib/* /opt/metasfresh/metasfresh-report/external-lib/
