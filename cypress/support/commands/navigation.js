@@ -196,10 +196,28 @@ Cypress.Commands.add('selectRowByColumnAndValue', (columnAndValue, modal = false
           return cy.wrap(matchingRows);
         });
       })
-  )
-    ;
-})
-;
+  );
+});
+
+/**
+ * Select a single item using the Barcode lookup
+ *
+ */
+Cypress.Commands.add('selectItemUsingBarcodeFilter', huValue1 => {
+  cy.get('.filters-not-frequent > .btn')
+    .eq(0)
+    .click({ force: true });
+  cy.wait(500);
+  cy.get('li:contains("Barcode")')
+    .eq(0)
+    .click({ force: true });
+  cy.get('label:contains("Barcode")')
+    .siblings()
+    .find('input[type=text]')
+    .wait(500)
+    .type(`${huValue1}{enter}`)
+});
+
 /**
  * Select all rows on the current page
  *
