@@ -40,17 +40,14 @@ public class OrgQuery
 		return OrgQuery.builder().orgValue(value).build();
 	}
 
-	//boolean outOfTrx;
 	boolean failIfNotExists;
 	String orgValue;
 
 	@Builder
 	private OrgQuery(
-		//	@Nullable final Boolean outOfTrx,
 			@Nullable final Boolean failIfNotExists,
 			@NonNull final String orgValue)
 	{
-		// this.outOfTrx = coalesce(outOfTrx, false);
 		this.failIfNotExists = coalesce(failIfNotExists, false);
 		this.orgValue = assumeNotEmpty(orgValue.trim(), "Parameter 'orgValue' may not be empty");
 	}

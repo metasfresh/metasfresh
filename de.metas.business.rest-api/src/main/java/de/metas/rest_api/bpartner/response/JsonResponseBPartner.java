@@ -173,7 +173,7 @@ public class JsonResponseBPartner
 			@JsonProperty(METASFRESH_ID) @NonNull final MetasfreshId metasfreshId,
 			@JsonProperty(EXTERNAL_ID) @Nullable final JsonExternalId externalId,
 			@JsonProperty(CODE) @NonNull final String code,
-			@JsonProperty(GLOBAL_ID) @NonNull final String globalId,
+			@JsonProperty(GLOBAL_ID) @Nullable final String globalId,
 			@JsonProperty(ACTIVE) @NonNull final Boolean active,
 			@JsonProperty(NAME) @NonNull final String name,
 			@JsonProperty(NAME_2) @Nullable final String name2,

@@ -35,6 +35,7 @@ import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_AD_OrgInfo;
 import org.compiere.model.I_C_BP_Group;
 import org.compiere.model.I_C_UOM;
@@ -187,14 +188,10 @@ public class OrderCandidatesRestControllerImplTest
 		olCandBL = new OLCandBL(new BPartnerOrderParamsRepository());
 		Services.registerService(IOLCandBL.class, olCandBL);
 
+		final I_AD_Org defaultOrgRecord;
+
 		{ // create the master data requested to process the data from our json file
 			testMasterdata = new TestMasterdata();
-
-			final I_AD_OrgInfo orgInfo = InterfaceWrapperHelper.newInstance(I_AD_OrgInfo.class);
-			orgInfo.setAD_Org_ID(OrgId.ANY.getRepoId());
-			orgInfo.setStoreCreditCardData(StoreCreditCardNumberMode.DONT_STORE.getCode());
-			orgInfo.setTimeZone(ZoneId.of("Europe/Berlin").getId());
-			saveRecord(orgInfo);
 
 			countryId_DE = testMasterdata.createCountry(COUNTRY_CODE_DE);
 
@@ -214,6 +211,15 @@ public class OrderCandidatesRestControllerImplTest
 
 			testMasterdata.createDocType(DocBaseAndSubType.of(X_C_DocType.DOCBASETYPE_SalesOrder,
 					X_C_DocType.DOCSUBTYPE_PrepayOrder));
+
+			defaultOrgRecord = newInstance(I_AD_Org.class);
+			saveRecord(defaultOrgRecord);
+
+			final I_AD_OrgInfo orgInfo = InterfaceWrapperHelper.newInstance(I_AD_OrgInfo.class);
+			orgInfo.setAD_Org_ID(defaultOrgRecord.getAD_Org_ID());
+			orgInfo.setStoreCreditCardData(StoreCreditCardNumberMode.DONT_STORE.getCode());
+			orgInfo.setTimeZone(ZoneId.of("Europe/Berlin").getId());
+			saveRecord(orgInfo);
 		}
 
 		final CurrencyService currencyService = new CurrencyService();
@@ -243,7 +249,7 @@ public class OrderCandidatesRestControllerImplTest
 				new NoopPerformanceMonitoringService());
 
 		final PermissionService permissionService = Mockito.mock(PermissionService.class);
-		Mockito.doReturn(OrgId.ANY).when(permissionService).getDefaultOrgId();
+		Mockito.doReturn(OrgId.ofRepoId(defaultOrgRecord.getAD_Org_ID())).when(permissionService).getDefaultOrgId();
 		orderCandidatesRestControllerImpl.setPermissionServiceFactory(PermissionServiceFactories.singleton(permissionService));
 
 		LogManager.setLoggerLevel(orderCandidatesRestControllerImpl.getClass(), Level.ALL);

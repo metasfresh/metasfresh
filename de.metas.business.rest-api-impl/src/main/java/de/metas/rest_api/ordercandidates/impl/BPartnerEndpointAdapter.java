@@ -85,9 +85,9 @@ final class BPartnerEndpointAdapter
 	}
 
 	private BPartnerInfo getCreateBPartnerInfo0(
-			final JsonRequestBPartnerLocationAndContact jsonBPartnerInfo,
+			@Nullable final JsonRequestBPartnerLocationAndContact jsonBPartnerInfo,
 			final boolean billTo,
-			final String orgCode)
+			@Nullable final String orgCode)
 	{
 		if (jsonBPartnerInfo == null)
 		{
