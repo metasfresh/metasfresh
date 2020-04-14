@@ -20,39 +20,43 @@
  * #L%
  */
 
-package de.metas.serviceprovider.timebooking;
+package de.metas.serviceprovider.external.reference;
 
-import de.metas.organization.OrgId;
-import de.metas.serviceprovider.issue.IssueId;
-import de.metas.user.UserId;
-import lombok.Builder;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+import de.metas.util.Check;
+import de.metas.util.lang.RepoIdAware;
 import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
-import java.time.Instant;
 
 @Value
-@Builder(toBuilder = true)
-public class TimeBooking
+public class ExternalReferenceId implements RepoIdAware
 {
+	int repoId;
+
+	@JsonCreator
+	@NonNull
+	public static ExternalReferenceId ofRepoId(final int repoId)
+	{
+		return new ExternalReferenceId(repoId);
+	}
+
 	@Nullable
-	TimeBookingId timeBookingId;
+	public static ExternalReferenceId ofRepoIdOrNull(@Nullable final Integer repoId)
+	{
+		return repoId != null && repoId > 0 ? new ExternalReferenceId(repoId) : null;
+	}
 
-	@NonNull
-	UserId performingUserId;
+	@JsonValue
+	public int toJson()
+	{
+		return getRepoId();
+	}
 
-	@NonNull
-	OrgId orgId;
-
-	@NonNull
-	IssueId issueId;
-
-	long bookedSeconds;
-
-	@NonNull
-	String hoursAndMins;
-
-	@NonNull
-	Instant bookedDate;
+	private ExternalReferenceId(final int repoId)
+	{
+		this.repoId = Check.assumeGreaterThanZero(repoId, "S_Issue_ID");
+	}
 }

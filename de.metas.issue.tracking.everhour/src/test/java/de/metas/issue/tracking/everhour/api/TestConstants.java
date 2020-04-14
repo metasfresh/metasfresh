@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.serviceprovider.base
+ * de.metas.issue.tracking.everhour
  * %%
  * Copyright (C) 2019 metas GmbH
  * %%
@@ -20,39 +20,14 @@
  * #L%
  */
 
-package de.metas.serviceprovider.timebooking;
+package de.metas.issue.tracking.everhour.api;
 
-import de.metas.organization.OrgId;
-import de.metas.serviceprovider.issue.IssueId;
-import de.metas.user.UserId;
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Value;
-
-import javax.annotation.Nullable;
-import java.time.Instant;
-
-@Value
-@Builder(toBuilder = true)
-public class TimeBooking
+public interface TestConstants
 {
-	@Nullable
-	TimeBookingId timeBookingId;
+	String MOCK_ID = "id";
+	String MOCK_URL = "url";
 
-	@NonNull
-	UserId performingUserId;
-
-	@NonNull
-	OrgId orgId;
-
-	@NonNull
-	IssueId issueId;
-
-	long bookedSeconds;
-
-	@NonNull
-	String hoursAndMins;
-
-	@NonNull
-	Instant bookedDate;
+	int MOCK_USER_ID = 1;
+	String MOCK_DATE = "2020-04-10";
+	long MOCK_TIME = 1000;
 }

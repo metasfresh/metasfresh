@@ -27,10 +27,15 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
+import javax.annotation.Nullable;
+
 @Value
 @Builder
 public class ExternalReference
 {
+	@Nullable
+	ExternalReferenceId externalReferenceId;
+
 	@NonNull
 	ExternalSystem externalSystem;
 

@@ -45,8 +45,9 @@ import org.mockito.Mockito;
 
 import java.math.BigDecimal;
 
+import static de.metas.serviceprovider.TestConstants.MOCK_AUTH_TOKEN;
 import static de.metas.serviceprovider.TestConstants.MOCK_BUG_6_LABEL;
-import static de.metas.serviceprovider.TestConstants.MOCK_DATE_ISO_8601;
+import static de.metas.serviceprovider.TestConstants.MOCK_DATE_AND_TIME_ISO_8601;
 import static de.metas.serviceprovider.TestConstants.MOCK_DESCRIPTION;
 import static de.metas.serviceprovider.TestConstants.MOCK_EST_4_25_LABEL;
 import static de.metas.serviceprovider.TestConstants.MOCK_EXTERNAL_ID;
@@ -57,7 +58,6 @@ import static de.metas.serviceprovider.TestConstants.MOCK_EXTERNAL_REFERENCE;
 import static de.metas.serviceprovider.TestConstants.MOCK_EXTERNAL_URL;
 import static de.metas.serviceprovider.TestConstants.MOCK_INSTANT;
 import static de.metas.serviceprovider.TestConstants.MOCK_NAME;
-import static de.metas.serviceprovider.TestConstants.MOCK_OAUTH_TOKEN;
 import static de.metas.serviceprovider.TestConstants.MOCK_ORG_ID;
 import static de.metas.serviceprovider.TestConstants.MOCK_PROJECT_ID;
 import static de.metas.serviceprovider.TestConstants.MOCK_VALUE;
@@ -75,7 +75,8 @@ public class GithubImporterServiceTest
 			new ImportQueue<>(ISSUE_QUEUE_CAPACITY,IMPORT_LOG_MESSAGE_PREFIX);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final ExternalReferenceRepository externalReferenceRepository = new ExternalReferenceRepository(queryBL);
-	private final GithubImporterService githubImporterService = new GithubImporterService(importIssuesQueue, mockGithubClient, externalReferenceRepository);
+	private final GithubImporterService githubImporterService =
+			new GithubImporterService(importIssuesQueue, mockGithubClient, externalReferenceRepository);
 
 	@Before
 	public void init()
@@ -91,7 +92,7 @@ public class GithubImporterServiceTest
 				.builder()
 				.externalProjectType(MOCK_EXTERNAL_PROJECT_TYPE)
 				.issueNoList(ImmutableList.of())
-				.oAuthToken(MOCK_OAUTH_TOKEN)
+				.oAuthToken(MOCK_AUTH_TOKEN)
 				.orgId(MOCK_ORG_ID)
 				.projectId(MOCK_PROJECT_ID)
 				.repoOwner(MOCK_EXTERNAL_PROJECT_OWNER)
@@ -153,10 +154,10 @@ public class GithubImporterServiceTest
 				.builder()
 				.description(MOCK_DESCRIPTION)
 				.title(MOCK_NAME)
-				.dueDate(MOCK_DATE_ISO_8601)
+				.dueDate(MOCK_DATE_AND_TIME_ISO_8601)
 				.htmlUrl(MOCK_EXTERNAL_URL)
 				.id(MOCK_EXTERNAL_ID)
-				.dueDate(MOCK_DATE_ISO_8601)
+				.dueDate(MOCK_DATE_AND_TIME_ISO_8601)
 				.build();
 
 		final Issue issue = Issue.builder()
@@ -183,7 +184,7 @@ public class GithubImporterServiceTest
 				.pageSize(CHUNK_SIZE)
 				.repositoryId(MOCK_EXTERNAL_REFERENCE)
 				.repositoryOwner(MOCK_EXTERNAL_PROJECT_OWNER)
-				.oAuthToken(MOCK_OAUTH_TOKEN)
+				.oAuthToken(MOCK_AUTH_TOKEN)
 				.build();
 	}
 

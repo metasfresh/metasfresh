@@ -15,7 +15,7 @@ public class X_S_TimeBooking extends org.compiere.model.PO implements I_S_TimeBo
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1485887899L;
+	private static final long serialVersionUID = -1742457993L;
 
     /** Standard Constructor */
     public X_S_TimeBooking (Properties ctx, int S_TimeBooking_ID, String trxName)
@@ -122,16 +122,16 @@ public class X_S_TimeBooking extends org.compiere.model.PO implements I_S_TimeBo
 		return (java.lang.String)get_Value(COLUMNNAME_Comments);
 	}
 
-	/** Set Time (HH:mm).
-		@param HoursAndMinutes Time (HH:mm)	  */
+	/** Set Time (H:mm).
+		@param HoursAndMinutes Time (H:mm)	  */
 	@Override
 	public void setHoursAndMinutes (java.lang.String HoursAndMinutes)
 	{
 		set_Value (COLUMNNAME_HoursAndMinutes, HoursAndMinutes);
 	}
 
-	/** Get Time (HH:mm).
-		@return Time (HH:mm)	  */
+	/** Get Time (H:mm).
+		@return Time (H:mm)	  */
 	@Override
 	public java.lang.String getHoursAndMinutes () 
 	{

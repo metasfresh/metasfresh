@@ -35,7 +35,7 @@ import de.metas.serviceprovider.issue.IssueRepository;
 import de.metas.serviceprovider.timebooking.TimeBooking;
 import de.metas.serviceprovider.timebooking.TimeBookingId;
 import de.metas.serviceprovider.timebooking.TimeBookingRepository;
-import de.metas.serviceprovider.timebooking.importer.failed.FailedTImeBookingRepository;
+import de.metas.serviceprovider.timebooking.importer.failed.FailedTimeBookingRepository;
 import de.metas.util.Loggables;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -57,9 +57,9 @@ public class TimeBookingsImporterService
 	private final TimeBookingRepository timeBookingRepository;
 	private final IssueRepository issueRepository;
 	private final ITrxManager trxManager;
-	private final FailedTImeBookingRepository failedTImeBookingRepository;
+	private final FailedTimeBookingRepository failedTImeBookingRepository;
 
-	public TimeBookingsImporterService(final ImportQueue<ImportTimeBookingInfo> timeBookingImportQueue, final ExternalReferenceRepository externalReferenceRepository, final TimeBookingRepository timeBookingRepository, final IssueRepository issueRepository, final ITrxManager trxManager, final FailedTImeBookingRepository failedTImeBookingRepository)
+	public TimeBookingsImporterService(final ImportQueue<ImportTimeBookingInfo> timeBookingImportQueue, final ExternalReferenceRepository externalReferenceRepository, final TimeBookingRepository timeBookingRepository, final IssueRepository issueRepository, final ITrxManager trxManager, final FailedTimeBookingRepository failedTImeBookingRepository)
 	{
 		this.timeBookingImportQueue = timeBookingImportQueue;
 		this.externalReferenceRepository = externalReferenceRepository;
@@ -133,7 +133,7 @@ public class TimeBookingsImporterService
 
 	private void deleteCorrespondingFailedRecordIfExists(@NonNull final ExternalId externalId)
 	{
-		failedTImeBookingRepository.getByExternalIdAndSystem(externalId.getExternalSystem(), externalId.getId())
+		failedTImeBookingRepository.getOptionalByExternalIdAndSystem(externalId.getExternalSystem(), externalId.getId())
 				.ifPresent(failedTimeBooking -> failedTImeBookingRepository.delete(failedTimeBooking.getFailedTimeBookingId()));
 	}
 }

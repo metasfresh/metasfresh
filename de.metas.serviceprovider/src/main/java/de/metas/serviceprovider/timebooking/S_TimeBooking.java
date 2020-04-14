@@ -48,7 +48,7 @@ import java.util.regex.Pattern;
 @Component
 public class S_TimeBooking
 {
-	private final Pattern hmmPattern = Pattern.compile("^[0-9]+(:[0-5][0-9])?$");
+	private final Pattern hmmPattern = Pattern.compile("^[0-9]+:[0-5][0-9]$");
 
 	private final ExternalReferenceRepository externalReferenceRepository;
 
@@ -92,7 +92,7 @@ public class S_TimeBooking
 			throw new AdempiereException(" Incorrect format! Please enter a value in H:mm format."
 					+ " (e.g. 2:02 - two hours and two minutes, "
 					+ "\n 100:02 - one hundred hours and two minutes, "
-					+ "\n 2 - two hours, "
+					+ "\n 2:00 - two hours, "
 					+ "\n 0:02 - two minutes ");
 		}
 	}

@@ -41,9 +41,9 @@ import de.metas.serviceprovider.timebooking.TimeBookingId;
 import de.metas.serviceprovider.timebooking.importer.ImportTimeBookingInfo;
 import de.metas.serviceprovider.timebooking.importer.ImportTimeBookingsRequest;
 import de.metas.serviceprovider.timebooking.importer.TimeBookingsImporter;
-import de.metas.serviceprovider.timebooking.importer.failed.FailedTImeBookingRepository;
 import de.metas.serviceprovider.timebooking.importer.failed.FailedTimeBooking;
 import de.metas.serviceprovider.timebooking.importer.failed.FailedTimeBookingId;
+import de.metas.serviceprovider.timebooking.importer.failed.FailedTimeBookingRepository;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
@@ -76,11 +76,11 @@ public class EverhourImporterService implements TimeBookingsImporter
 	private final EverhourClient everhourClient;
 	private final ExternalReferenceRepository externalReferenceRepository;
 	private final ImportQueue<ImportTimeBookingInfo> timeBookingImportQueue;
-	private final FailedTImeBookingRepository failedTimeBookingRepository;
+	private final FailedTimeBookingRepository failedTimeBookingRepository;
 	private final ObjectMapper objectMapper;
 	private final ITrxManager iTrxManager;
 
-	public EverhourImporterService(final EverhourClient everhourClient, final ExternalReferenceRepository externalReferenceRepository, final ImportQueue<ImportTimeBookingInfo> timeBookingImportQueue, final FailedTImeBookingRepository failedTimeBookingRepository, final ObjectMapper objectMapper, final ITrxManager iTrxManager)
+	public EverhourImporterService(final EverhourClient everhourClient, final ExternalReferenceRepository externalReferenceRepository, final ImportQueue<ImportTimeBookingInfo> timeBookingImportQueue, final FailedTimeBookingRepository failedTimeBookingRepository, final ObjectMapper objectMapper, final ITrxManager iTrxManager)
 	{
 		this.everhourClient = everhourClient;
 		this.externalReferenceRepository = externalReferenceRepository;
@@ -202,7 +202,7 @@ public class EverhourImporterService implements TimeBookingsImporter
 	private void storeFailed(@NonNull final TimeRecord timeRecord, @NonNull final String errorMsg)
 	{
 		final FailedTimeBookingId existingFailedId = failedTimeBookingRepository
-				.getByExternalIdAndSystem(ExternalSystem.EVERHOUR, timeRecord.getId())
+				.getOptionalByExternalIdAndSystem(ExternalSystem.EVERHOUR, timeRecord.getId())
 				.map(FailedTimeBooking::getFailedTimeBookingId)
 				.orElse(null);
 

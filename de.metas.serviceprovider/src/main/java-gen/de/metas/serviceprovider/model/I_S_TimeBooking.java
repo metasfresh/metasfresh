@@ -82,7 +82,7 @@ public interface I_S_TimeBooking
 	/**
 	 * Set Booked date.
 	 *
-	 * <br>Type: Date
+	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -91,7 +91,7 @@ public interface I_S_TimeBooking
 	/**
 	 * Get Booked date.
 	 *
-	 * <br>Type: Date
+	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -179,7 +179,7 @@ public interface I_S_TimeBooking
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
-	 * Set Time (HH:mm).
+	 * Set Time (H:mm).
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
@@ -188,7 +188,7 @@ public interface I_S_TimeBooking
 	public void setHoursAndMinutes (java.lang.String HoursAndMinutes);
 
 	/**
-	 * Get Time (HH:mm).
+	 * Get Time (H:mm).
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
@@ -229,7 +229,7 @@ public interface I_S_TimeBooking
 	/**
 	 * Set Issue.
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -238,7 +238,7 @@ public interface I_S_TimeBooking
 	/**
 	 * Get Issue.
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */

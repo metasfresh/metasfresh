@@ -26,6 +26,7 @@ import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
 import de.metas.logging.LogManager;
 import de.metas.util.Loggables;
+import lombok.NonNull;
 import org.slf4j.Logger;
 
 import java.util.ArrayList;
@@ -46,6 +47,7 @@ public class ImportQueue<T>
 		this.logPrefix = logPrefix;
 	}
 
+	@NonNull
 	public ImmutableList<T> drainAll()
 	{
 		final ArrayList<T> objectList = new ArrayList<>();
@@ -72,7 +74,7 @@ public class ImportQueue<T>
 		return queue.isEmpty();
 	}
 
-	public void add(final T object)
+	public void add(@NonNull final T object)
 	{
 		try
 		{

@@ -46,7 +46,7 @@ public class ExternalReferenceRepository
 	public int getReferencedRecordIdBy(@NonNull final GetReferencedIdRequest getReferencedIdRequest)
 	{
 		final Optional<ExternalReference> externalReferenceEntity =
-				getBySystemTypeAndReference(getReferencedIdRequest);
+				getOptionalExternalReferenceBy(getReferencedIdRequest);
 
 		if (!externalReferenceEntity.isPresent())
 		{
@@ -63,12 +63,12 @@ public class ExternalReferenceRepository
 	@Nullable
 	public Integer getReferencedRecordIdOrNullBy(final @NonNull GetReferencedIdRequest getReferencedIdRequest)
 	{
-		return getBySystemTypeAndReference(getReferencedIdRequest)
+		return getOptionalExternalReferenceBy(getReferencedIdRequest)
 				.map(ExternalReference::getRecordId)
 				.orElse(null);
 	}
 
-	public void save(@NonNull final ExternalReference externalReference)
+	public ExternalReferenceId save(@NonNull final ExternalReference externalReference)
 	{
 		final I_S_ExternalReference record = InterfaceWrapperHelper.newInstance(I_S_ExternalReference.class);
 
@@ -78,6 +78,8 @@ public class ExternalReferenceRepository
 		record.setRecord_ID(externalReference.getRecordId());
 
 		InterfaceWrapperHelper.saveRecord(record);
+
+		return ExternalReferenceId.ofRepoId(record.getS_ExternalReference_ID());
 	}
 
 	public void deleteByRecordIdAndType(final int recordId, @NonNull final ExternalReferenceType type)
@@ -90,7 +92,7 @@ public class ExternalReferenceRepository
 				.forEach(InterfaceWrapperHelper::delete);
 	}
 
-	private Optional<ExternalReference> getBySystemTypeAndReference(@NonNull final GetReferencedIdRequest getReferencedIdRequest)
+	private Optional<ExternalReference> getOptionalExternalReferenceBy(@NonNull final GetReferencedIdRequest getReferencedIdRequest)
 	{
 		return queryBL.createQueryBuilder(I_S_ExternalReference.class)
 				.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_ExternalSystem,

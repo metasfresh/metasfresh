@@ -34,16 +34,16 @@ import org.springframework.stereotype.Repository;
 import java.util.Optional;
 
 @Repository
-public class FailedTImeBookingRepository
+public class FailedTimeBookingRepository
 {
 	private final IQueryBL queryBL;
 
-	public FailedTImeBookingRepository(final IQueryBL queryBL)
+	public FailedTimeBookingRepository(final IQueryBL queryBL)
 	{
 		this.queryBL = queryBL;
 	}
 
-	public void save(@NonNull final FailedTimeBooking failedTimeBooking)
+	public FailedTimeBookingId save(@NonNull final FailedTimeBooking failedTimeBooking)
 	{
 		final I_S_FailedTimeBooking record = InterfaceWrapperHelper.loadOrNew(failedTimeBooking.getFailedTimeBookingId(), I_S_FailedTimeBooking.class);
 
@@ -54,6 +54,8 @@ public class FailedTImeBookingRepository
 		record.setImportErrorMsg(failedTimeBooking.getErrorMsg());
 
 		InterfaceWrapperHelper.saveRecord(record);
+
+		return FailedTimeBookingId.ofRepoId(record.getS_FailedTimeBooking_ID());
 	}
 
 	public void delete(@NonNull final FailedTimeBookingId failedTimeBookingId)
@@ -63,8 +65,8 @@ public class FailedTImeBookingRepository
 		InterfaceWrapperHelper.delete(record);
 	}
 
-	public Optional<FailedTimeBooking> getByExternalIdAndSystem(@NonNull final ExternalSystem externalSystem,
-																@NonNull final String externalId)
+	public Optional<FailedTimeBooking> getOptionalByExternalIdAndSystem(@NonNull final ExternalSystem externalSystem,
+																	    @NonNull final String externalId)
 	{
 		return queryBL.createQueryBuilder(I_S_FailedTimeBooking.class)
 				.addEqualsFilter(I_S_FailedTimeBooking.COLUMNNAME_ExternalSystem, externalSystem.getValue() )

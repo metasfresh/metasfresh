@@ -76,13 +76,13 @@ public class TimeBookingRepository
 	private TimeBooking buildTimeBooking(@NonNull final I_S_TimeBooking record)
 	{
 		return TimeBooking.builder()
-				.bookedDate(record.getBookedDate().toInstant())
-				.bookedSeconds(record.getBookedSeconds().longValue())
-				.hoursAndMins(record.getHoursAndMinutes())
+				.timeBookingId(TimeBookingId.ofRepoId(record.getS_TimeBooking_ID()))
 				.issueId(IssueId.ofRepoId(record.getS_Issue_ID()))
 				.orgId(OrgId.ofRepoId(record.getAD_Org_ID()))
 				.performingUserId(UserId.ofRepoId(record.getAD_User_Performing_ID()))
-				.timeBookingId(TimeBookingId.ofRepoId(record.getS_TimeBooking_ID()))
+				.bookedDate(record.getBookedDate().toInstant())
+				.bookedSeconds(record.getBookedSeconds().longValue())
+				.hoursAndMins(record.getHoursAndMinutes())
 				.build();
 	}
 }
