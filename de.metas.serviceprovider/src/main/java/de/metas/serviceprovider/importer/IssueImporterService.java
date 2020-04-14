@@ -147,6 +147,7 @@ public class IssueImporterService
 											     @NonNull final IssueEntity existingEffortIssue)
 	{
 		final IssueEntity mergedIssueEntity = existingEffortIssue.toBuilder()
+				.projectId(importIssueInfo.getProjectId())
 				.description(importIssueInfo.getDescription())
 				.externalIssueId(importIssueInfo.getExternalIssueId())
 				.externalIssueNo(importIssueInfo.getExternalIssueNo())

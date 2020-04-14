@@ -224,12 +224,12 @@ public class EventBusFactory implements IEventBusFactory
 	}
 
 	@Override
-	public void registerWeakUserNotificationsListener(@NonNull final IEventListener listener)
+	public void unregisterUserNotificationsListener(@NonNull final IEventListener listener)
 	{
 		getAvailableUserNotificationsTopics()
 				.stream()
 				.map(this::getEventBus)
-				.forEach(eventBus -> eventBus.subscribeWeak(listener));
+				.forEach(eventBus -> eventBus.unsubscribe(listener));
 	}
 
 	@Override
