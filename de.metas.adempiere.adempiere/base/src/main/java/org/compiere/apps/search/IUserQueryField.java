@@ -47,6 +47,10 @@ public interface IUserQueryField
 		return Objects.equals(getColumnName(), columnName);
 	}
 
+	/**
+	 * @deprecated Please use {@link UserQueryFieldHelper#parseValueObjectByColumnDisplayType(Object, int, String)} instead
+	 */
+	@Deprecated
 	Object convertValueToFieldType(Object valueObj);
 
 	String getValueDisplay(Object value);
