@@ -6,7 +6,7 @@
 	<property name="ireport.zoom" value="1.5"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="metasfresh"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="jasperreports\dev.xml"/>
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
@@ -19,36 +19,93 @@
 	</parameter>
 	<parameter name="M_PriceList_Version_ID" class="java.math.BigDecimal"/>
 	<parameter name="Alt_PriceList_Version_ID" class="java.math.BigDecimal"/>
+	<parameter name="show_only_pricelist_instructions" class="java.lang.String">
+		<defaultValueExpression><![CDATA["Y"]]></defaultValueExpression>
+	</parameter>
 	<queryString>
 		<![CDATA[SELECT * FROM report.fresh_PriceList_Details_Report(
 	$P{C_BPartner_ID}
 	, $P{M_PriceList_Version_ID}
 	, $P{Alt_PriceList_Version_ID}
 	, $P{ad_language}
-);]]>
+	, $P{show_only_pricelist_instructions}) where show_only_pricelist_instructions = 'N' 
+	UNION ALL
+	SELECT * FROM report.fresh_PriceList_Details_Report_2(
+	$P{C_BPartner_ID}
+	, $P{M_PriceList_Version_ID}
+	, $P{Alt_PriceList_Version_ID}
+	, $P{ad_language}
+	, $P{show_only_pricelist_instructions}) where show_only_pricelist_instructions = 'Y'  ;]]>
 	</queryString>
-	<field name="bp_value" class="java.lang.String"/>
-	<field name="bp_name" class="java.lang.String"/>
-	<field name="productcategory" class="java.lang.String"/>
-	<field name="m_product_id" class="java.lang.Integer"/>
-	<field name="value" class="java.lang.String"/>
-	<field name="customerproductnumber" class="java.lang.String"/>
-	<field name="productname" class="java.lang.String"/>
-	<field name="isseasonfixedprice" class="java.lang.String"/>
-	<field name="itemproductname" class="java.lang.String"/>
-	<field name="qtycuspertu" class="java.math.BigDecimal"/>
-	<field name="packingmaterialname" class="java.lang.String"/>
-	<field name="pricestd" class="java.math.BigDecimal"/>
-	<field name="altpricestd" class="java.math.BigDecimal"/>
-	<field name="hasaltprice" class="java.lang.Integer"/>
-	<field name="uomsymbol" class="java.lang.String"/>
-	<field name="uom_x12de355" class="java.lang.String"/>
-	<field name="attributes" class="java.lang.String"/>
-	<field name="m_productprice_id" class="java.lang.Integer"/>
-	<field name="m_attributesetinstance_id" class="java.lang.Integer"/>
-	<field name="m_hu_pi_item_product_id" class="java.lang.Integer"/>
-	<field name="currency" class="java.lang.String"/>
-	<field name="currency2" class="java.lang.String"/>
+	<field name="bp_value" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="bp_value"/>
+	</field>
+	<field name="bp_name" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="bp_name"/>
+	</field>
+	<field name="productcategory" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="productcategory"/>
+	</field>
+	<field name="m_product_id" class="java.lang.Integer">
+		<property name="com.jaspersoft.studio.field.label" value="m_product_id"/>
+	</field>
+	<field name="value" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="value"/>
+	</field>
+	<field name="customerproductnumber" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="customerproductnumber"/>
+	</field>
+	<field name="productname" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="productname"/>
+	</field>
+	<field name="isseasonfixedprice" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="isseasonfixedprice"/>
+	</field>
+	<field name="itemproductname" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="itemproductname"/>
+	</field>
+	<field name="qtycuspertu" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="qtycuspertu"/>
+	</field>
+	<field name="packingmaterialname" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="packingmaterialname"/>
+	</field>
+	<field name="pricestd" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="pricestd"/>
+	</field>
+	<field name="altpricestd" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="altpricestd"/>
+	</field>
+	<field name="hasaltprice" class="java.lang.Integer">
+		<property name="com.jaspersoft.studio.field.label" value="hasaltprice"/>
+	</field>
+	<field name="uomsymbol" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="uomsymbol"/>
+	</field>
+	<field name="uom_x12de355" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="uom_x12de355"/>
+	</field>
+	<field name="attributes" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="attributes"/>
+	</field>
+	<field name="m_productprice_id" class="java.lang.Integer">
+		<property name="com.jaspersoft.studio.field.label" value="m_productprice_id"/>
+	</field>
+	<field name="m_attributesetinstance_id" class="java.lang.Integer">
+		<property name="com.jaspersoft.studio.field.label" value="m_attributesetinstance_id"/>
+	</field>
+	<field name="m_hu_pi_item_product_id" class="java.lang.Integer">
+		<property name="com.jaspersoft.studio.field.label" value="m_hu_pi_item_product_id"/>
+	</field>
+	<field name="currency" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="currency"/>
+	</field>
+	<field name="currency2" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="currency2"/>
+	</field>
+	<field name="show_only_pricelist_instructions" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="show_only_pricelist_instructions"/>
+	</field>
 	<variable name="LINE_COUNT" class="java.lang.Number" calculation="Count">
 		<variableExpression><![CDATA[1]]></variableExpression>
 		<initialValueExpression><![CDATA[0]]></initialValueExpression>

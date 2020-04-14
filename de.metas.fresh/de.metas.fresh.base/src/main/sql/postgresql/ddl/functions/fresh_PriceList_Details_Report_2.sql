@@ -1,7 +1,7 @@
-DROP FUNCTION IF EXISTS report.fresh_PriceList_Details_Report(numeric, numeric, numeric, character varying, character varying)
+DROP FUNCTION IF EXISTS report.fresh_PriceList_Details_Report_2(numeric, numeric, numeric, character varying, character varying)
 ;
 
-CREATE OR REPLACE FUNCTION report.fresh_pricelist_details_report(IN p_c_bpartner_id            numeric,
+CREATE OR REPLACE FUNCTION report.fresh_pricelist_details_report_2(IN p_c_bpartner_id            numeric,
                                                                  IN p_m_pricelist_version_id   numeric,
                                                                  IN p_alt_pricelist_version_id numeric,
                                                                  IN p_ad_language              character varying,
@@ -60,7 +60,7 @@ SELECT --
        plc.currency2                                                                             AS currency2,
        p_show_only_pricelist_instructions as show_only_pricelist_instructions
 
-FROM RV_fresh_PriceList_Comparison plc
+FROM RV_fresh_PriceList_Comparison_2 plc
          LEFT OUTER JOIN M_Product_Trl pt ON plc.M_Product_ID = pt.M_Product_ID AND AD_Language = p_ad_language AND pt.isActive = 'Y'
          LEFT OUTER JOIN C_BPartner bp ON plc.C_BPartner_ID = bp.C_BPartner_ID AND bp.isActive = 'Y'
          LEFT OUTER JOIN C_BPartner_Product bpp ON bp.C_BPartner_ID = bpp.C_BPartner_ID AND plc.M_Product_ID = bpp.M_Product_ID AND bpp.isActive = 'Y'
