@@ -19,7 +19,6 @@ import javax.annotation.Nullable;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
@@ -96,7 +95,7 @@ public final class BPartnerComposite
 		return this.locations
 				.stream()
 				.map(BPartnerLocation::getGln)
-				.filter(Predicates.notNull())
+				.filter(Objects::nonNull)
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
@@ -121,7 +120,7 @@ public final class BPartnerComposite
 		return result.build();
 	}
 
-	/** empty list means valid */
+	/** Only active instances are actually validated. Empty list means "valid" */
 	public ImmutableList<ITranslatableString> validate()
 	{
 		final ImmutableList.Builder<ITranslatableString> result = ImmutableList.builder();
@@ -130,7 +129,6 @@ public final class BPartnerComposite
 		{
 			result.add(TranslatableStrings.constant("Missing bpartnerComposite.orgId"));
 		}
-
 		if (bpartner == null)
 		{
 			result.add(TranslatableStrings.constant("Missing bpartnerComposite.bpartner"));
@@ -138,9 +136,8 @@ public final class BPartnerComposite
 		else
 		{
 			result.addAll(validateLookupKeys());
+			result.addAll(bpartner.validate());
 		}
-
-		result.addAll(bpartner.validate());
 
 		result.addAll(validateLocations());
 
@@ -159,6 +156,10 @@ public final class BPartnerComposite
 
 		for (final BPartnerContact contact : contacts)
 		{
+			if (!contact.isActive())
+			{
+				continue;
+			}
 			// result.addAll(contact.validate()); // doesn't yet have a validate method
 
 			final BPartnerContactType contactType = contact.getContactType();
@@ -195,27 +196,31 @@ public final class BPartnerComposite
 	{
 		final ImmutableList.Builder<ITranslatableString> result = ImmutableList.builder();
 
-		final List<BPartnerLocation> defaultShipToLocations = new ArrayList<>();
-		final List<BPartnerLocation> defaultBillToLocations = new ArrayList<>();
+		final List<BPartnerLocation> activeDefaultShipToLocations = new ArrayList<>();
+		final List<BPartnerLocation> activeDefaultBillToLocations = new ArrayList<>();
 		for (final BPartnerLocation location : locations)
 		{
+			if (!location.isActive())
+			{
+				continue;
+			}
 			result.addAll(location.validate());
 
 			final BPartnerLocationType locationType = location.getLocationType();
 			if (locationType != null && locationType.getBillToDefault().orElse(false))
 			{
-				defaultBillToLocations.add(location);
+				activeDefaultBillToLocations.add(location);
 			}
 			if (locationType != null && locationType.getShipToDefault().orElse(false))
 			{
-				defaultShipToLocations.add(location);
+				activeDefaultShipToLocations.add(location);
 			}
 		}
-		if (defaultShipToLocations.size() > 1)
+		if (activeDefaultShipToLocations.size() > 1)
 		{
 			result.add(TranslatableStrings.constant("Not more than one location may be flagged as default shipTo location"));
 		}
-		if (defaultBillToLocations.size() > 1)
+		if (activeDefaultBillToLocations.size() > 1)
 		{
 			result.add(TranslatableStrings.constant("Not more than one location may be flagged as default billTo location"));
 		}
@@ -282,10 +287,19 @@ public final class BPartnerComposite
 
 	public Optional<BPartnerLocation> extractBillToLocation()
 	{
-		final Predicate<BPartnerLocation> predicate = l -> l.getLocationType().getBillTo().orElse(false);
+		final Predicate<BPartnerLocation> predicate = l -> l.getLocationType().getIsBillToOr(false);
 
 		return createFilteredLocationStream(predicate)
-				.sorted(Comparator.comparing(l -> !l.getLocationType().getBillToDefault().orElse(false)))
+				.sorted(Comparator.comparing(l -> !l.getLocationType().getIsBillToDefaultOr(false)))
+				.findFirst();
+	}
+
+	public Optional<BPartnerLocation> extractShipToLocation()
+	{
+		final Predicate<BPartnerLocation> predicate = l -> l.getLocationType().getIsShipToOr(false);
+
+		return createFilteredLocationStream(predicate)
+				.sorted(Comparator.comparing(l -> !l.getLocationType().getIsShipToDefaultOr(false)))
 				.findFirst();
 	}
 

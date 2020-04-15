@@ -55,6 +55,10 @@ public class BPartnerQuery
 	String bpartnerName;
 	ImmutableSet<GLN> glns;
 
+	/**
+	 * If there are multiple orgIds, they are {@code OR}ed.
+	 * Note that this is is not required for security reasons.
+	 */
 	@Singular
 	ImmutableSet<OrgId> onlyOrgIds;
 

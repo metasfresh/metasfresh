@@ -113,59 +113,45 @@ public class BPartnerContactType
 		this.subjectMatter = Optional.ofNullable(subjectMatter);
 	}
 
-	/** Use this method only if the values can't be {@code null}, e.g. because this instance is coming straight from {@link BPartnerCompositeRepository}. */
-	public boolean getDefaultContactNotNull()
+	public boolean getIsDefaultContactOr(final boolean defaultValue)
 	{
-		return defaultContact.orElseThrow(() -> createException("defaultContact may not be null"));
+		return defaultContact.orElse(defaultValue);
+	}
+
+	public boolean getIsBillToDefaultOr(final boolean defaultValue)
+	{
+		return billToDefault.orElse(defaultValue);
+	}
+
+	public boolean getIsShipToDefaultOr(final boolean defaultValue)
+	{
+		return shipToDefault.orElse(defaultValue);
+	}
+
+	public boolean getIsSalesDefaultOr(final boolean defaultValue)
+	{
+		return salesDefault.orElse(defaultValue);
+	}
+
+	public boolean getIsSalesOr(final boolean defaultValue)
+	{
+		return sales.orElse(defaultValue);
+	}
+
+	public boolean getIsPurchaseDefaultOr(final boolean defaultValue)
+	{
+		return purchaseDefault.orElse(defaultValue);
+	}
+
+	public boolean getIsPurchaseOr(final boolean defaultValue)
+	{
+		return purchase.orElse(defaultValue);
 	}
 
 	/** Use this method only if the values can't be {@code null}, e.g. because this instance is coming straight from {@link BPartnerCompositeRepository}. */
-	public boolean getBillToDefaultNotNull()
+	public boolean getIsSubjectMatterOr(final boolean defaultValue)
 	{
-		return billToDefault.orElseThrow(() -> createException("billToDefault may not be null"));
-	}
-
-	/** Use this method only if the values can't be {@code null}, e.g. because this instance is coming straight from {@link BPartnerCompositeRepository}. */
-	public boolean getShipToDefaultNotNull()
-	{
-		return shipToDefault.orElseThrow(() -> createException("shipToDefault may not be null"));
-	}
-
-	/** Use this method only if the values can't be {@code null}, e.g. because this instance is coming straight from {@link BPartnerCompositeRepository}. */
-	public boolean getSalesDefaultNotNull()
-	{
-		return salesDefault.orElseThrow(() -> createException("salesDefault may not be null"));
-	}
-
-	/** Use this method only if the values can't be {@code null}, e.g. because this instance is coming straight from {@link BPartnerCompositeRepository}. */
-	public boolean getSalesNotNull()
-	{
-		return sales.orElseThrow(() -> createException("sales may not be null"));
-	}
-
-	/** Use this method only if the values can't be {@code null}, e.g. because this instance is coming straight from {@link BPartnerCompositeRepository}. */
-	public boolean getPurchaseDefaultNotNull()
-	{
-		return purchaseDefault.orElseThrow(() -> createException("purchaseDefault may not be null"));
-	}
-
-	/** Use this method only if the values can't be {@code null}, e.g. because this instance is coming straight from {@link BPartnerCompositeRepository}. */
-	public boolean getPurchaseNotNull()
-	{
-		return purchase.orElseThrow(() -> createException("purchase may not be null"));
-	}
-
-	/** Use this method only if the values can't be {@code null}, e.g. because this instance is coming straight from {@link BPartnerCompositeRepository}. */
-	public boolean getSubjectMatterNotNull()
-	{
-		return subjectMatter.orElseThrow(() -> createException("subjectMatter may not be null"));
-	}
-
-	private AdempiereException createException(@NonNull final String message)
-	{
-		return new AdempiereException(message)
-				.appendParametersToMessage()
-				.setParameter("contactLocationType", this);
+		return subjectMatter.orElse(defaultValue);
 	}
 
 	public void setDefaultContact(final boolean defaultContact)
