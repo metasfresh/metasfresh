@@ -222,7 +222,7 @@ public class BPartnerCompositeRepository
 		{
 			throw new AdempiereException("The given query needs to yield max one BPartnerComposite; items yielded instead: " + byQuery.size())
 					.appendParametersToMessage()
-					.setParameter("BPartnerQuery", query);
+					.setParameter("query", query);
 		}
 		return Optional.ofNullable(CollectionUtils.singleElementOrNull(byQuery));
 	}

@@ -436,20 +436,20 @@ public class JsonRetrieverService
 		return extractResult(bpartnerComposites);
 	}
 
-	private static Optional<BPartnerComposite> extractResult(@NonNull final Collection<BPartnerComposite> bpartnerComposites)
-	{
-		final ImmutableList<BPartnerComposite> distinctComposites = CollectionUtils.extractDistinctElements(bpartnerComposites, Function.identity());
-
-		final BPartnerComposite result = CollectionUtils.singleElementOrNull(distinctComposites); // we made sure there's not more than one in lookupBPartnerByKeys0
-		return result == null ? Optional.empty() : Optional.of(result.deepCopy());
-	}
-
-	/** Used to verify that changing actually works the way we expect it to (=> performance) */
+	/** Visible to verify that caching actually works the way we expect it to (=> performance) */
 	@VisibleForTesting
 	Optional<BPartnerComposite> getBPartnerCompositeAssertCacheHit(@NonNull final ImmutableList<BPartnerCompositeLookupKey> bpartnerLookupKeys)
 	{
 		final Collection<BPartnerComposite> bpartnerComposites = cache.getAssertAllCached(bpartnerLookupKeys);
 		return extractResult(bpartnerComposites);
+	}
+
+	private static Optional<BPartnerComposite> extractResult(@NonNull final Collection<BPartnerComposite> bpartnerComposites)
+	{
+		final ImmutableList<BPartnerComposite> distinctComposites = CollectionUtils.extractDistinctElements(bpartnerComposites, Function.identity());
+
+		final BPartnerComposite result = CollectionUtils.singleElement(distinctComposites); // we made sure there's not more than one in lookupBPartnerByKeys0
+		return result == null ? Optional.empty() : Optional.of(result.deepCopy());
 	}
 
 	private ImmutableMap<BPartnerCompositeLookupKey, BPartnerComposite> retrieveBPartnerComposites(
@@ -465,7 +465,7 @@ public class JsonRetrieverService
 		{
 			throw new InvalidEntityException(TranslatableStrings.constant("Unable to retrieve single BPartnerComposite"), e)
 					.appendParametersToMessage()
-					.setParameter("BPartnerIdLookupKeys", queryLookupKeys);
+					.setParameter("BPartnerCompositeLookupKeys", queryLookupKeys);
 		}
 		if (!bpartnerComposite.isPresent())
 		{
