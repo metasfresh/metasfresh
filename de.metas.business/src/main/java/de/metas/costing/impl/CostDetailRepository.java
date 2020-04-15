@@ -5,6 +5,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 import org.adempiere.ad.dao.IQueryBL;
@@ -84,7 +85,7 @@ public class CostDetailRepository implements ICostDetailRepository
 		record.setC_Currency_ID(cd.getAmt().getCurrencyId().getRepoId());
 
 		record.setQty(cd.getQty().toBigDecimal());
-		record.setC_UOM_ID(cd.getQty().getUOMId());
+		record.setC_UOM_ID(cd.getQty().getUomId().getRepoId());
 
 		record.setIsChangingCosts(cd.isChangingCosts());
 		final CostDetailPreviousAmounts previousAmounts = cd.getPreviousAmounts();
@@ -163,24 +164,15 @@ public class CostDetailRepository implements ICostDetailRepository
 	}
 
 	@Override
-	public CostAmount getCostDetailAmtOrNull(final CostDetailQuery query)
-	{
-		final CostDetail costDetail = getCostDetailOrNull(query);
-		return costDetail != null ? costDetail.getAmt() : null;
-	}
-
-	@Override
-	public CostDetail getCostDetailOrNull(@NonNull final CostDetailQuery query)
+	public Optional<CostDetail> getCostDetail(@NonNull final CostDetailQuery query)
 	{
 		final I_M_CostDetail record = createQueryBuilder(query)
 				.create()
 				.firstOnly(I_M_CostDetail.class);
-		if (record == null)
-		{
-			return null;
-		}
 
-		return toCostDetail(record);
+		return record != null
+				? Optional.of(toCostDetail(record))
+				: Optional.empty();
 	}
 
 	private IQueryBuilder<I_M_CostDetail> createQueryBuilder(@NonNull final CostDetailQuery query)

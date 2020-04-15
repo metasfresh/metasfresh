@@ -4,7 +4,6 @@ import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.Adempiere;
-import org.compiere.model.I_AD_Client;
 import org.compiere.util.Env;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -52,17 +51,17 @@ public class HUTraceModuleInterceptor extends AbstractModuleInterceptor
 	}
 
 	@Override
-	protected void registerInterceptors(final IModelValidationEngine engine, final I_AD_Client client)
+	protected void registerInterceptors(final IModelValidationEngine engine)
 	{
 		if (!isEnabled())
 		{
 			return;
 		}
 
-		engine.addModelValidator(new PP_Cost_Collector(), client);
-		engine.addModelValidator(new M_InOut(), client);
-		engine.addModelValidator(new M_Movement(), client);
-		// engine.addModelValidator(new M_ShipmentSchedule_QtyPicked(), client); this one is now a spring component
+		engine.addModelValidator(new PP_Cost_Collector());
+		engine.addModelValidator(new M_InOut());
+		engine.addModelValidator(new M_Movement());
+		// engine.addModelValidator(new M_ShipmentSchedule_QtyPicked()); this one is now a spring component
 	}
 
 	/**

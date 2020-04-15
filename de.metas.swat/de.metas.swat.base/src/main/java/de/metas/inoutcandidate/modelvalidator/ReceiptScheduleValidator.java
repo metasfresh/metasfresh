@@ -13,21 +13,19 @@ package de.metas.inoutcandidate.modelvalidator;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAwareFactoryService;
 import org.adempiere.util.agg.key.IAggregationKeyRegistry;
-import org.compiere.model.I_AD_Client;
 
 import de.metas.inoutcandidate.agg.key.impl.ReceiptScheduleKeyValueHandler;
 import de.metas.inoutcandidate.api.IReceiptScheduleBL;
@@ -36,6 +34,7 @@ import de.metas.inoutcandidate.api.impl.ReceiptScheduleHeaderAggregationKeyBuild
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.inoutcandidate.spi.impl.OrderLineReceiptScheduleListener;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 public class ReceiptScheduleValidator extends AbstractModuleInterceptor
 {
@@ -43,21 +42,28 @@ public class ReceiptScheduleValidator extends AbstractModuleInterceptor
 
 	private ReceiptScheduleValidator()
 	{
-		super();
 	}
 
 	@Override
-	protected void onInit(IModelValidationEngine engine, I_AD_Client client)
+	protected void onBeforeInit()
 	{
 		//
 		// 07344: Register RS AggregationKey Dependencies
 		registerRSAggregationKeyDependencies();
+	}
 
-		engine.addModelValidator(new C_Order_ReceiptSchedule(), client);
-		engine.addModelValidator(new M_ReceiptSchedule(), client);
-		engine.addModelValidator(new M_ReceiptSchedule_Alloc(), client);
-		engine.addModelValidator(new C_OrderLine_ReceiptSchedule(), client);
+	@Override
+	protected void registerInterceptors(@NonNull IModelValidationEngine engine)
+	{
+		engine.addModelValidator(new C_Order_ReceiptSchedule());
+		engine.addModelValidator(new M_ReceiptSchedule());
+		engine.addModelValidator(new M_ReceiptSchedule_Alloc());
+		engine.addModelValidator(new C_OrderLine_ReceiptSchedule());
+	}
 
+	@Override
+	protected void onAfterInit()
+	{
 		registerFactories();
 
 		// task 08452

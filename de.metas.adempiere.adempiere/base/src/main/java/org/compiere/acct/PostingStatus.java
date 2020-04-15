@@ -1,5 +1,6 @@
 package org.compiere.acct;
 
+import de.metas.i18n.AdMessageKey;
 import de.metas.util.Check;
 
 /**
@@ -34,9 +35,9 @@ public enum PostingStatus
 		return status;
 	}
 
-	public String getAD_Message()
+	public AdMessageKey getAD_Message()
 	{
-		return "PostingError-" + getStatusCode();
+		return AdMessageKey.of("PostingError-" + getStatusCode());
 	}
 
 	public static PostingStatus forStatusCode(final String statusCode)

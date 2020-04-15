@@ -2,7 +2,6 @@ package org.compiere.acct;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.api.IWarehouseDAO;
-import org.compiere.Adempiere;
 import org.compiere.model.I_M_MovementLine;
 
 import de.metas.acct.api.AcctSchema;
@@ -13,7 +12,6 @@ import de.metas.costing.CostDetailCreateRequest;
 import de.metas.costing.CostDetailReverseRequest;
 import de.metas.costing.CostElement;
 import de.metas.costing.CostingDocumentRef;
-import de.metas.costing.ICostingService;
 import de.metas.organization.OrgId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
@@ -76,11 +74,9 @@ class DocLine_Movement extends DocLine<Doc_Movement>
 
 	public final AggregatedCostAmount getCreateInboundCosts(final AcctSchema as)
 	{
-		final ICostingService costDetailService = Adempiere.getBean(ICostingService.class);
-
 		if (isReversalLine())
 		{
-			return costDetailService.createReversalCostDetails(CostDetailReverseRequest.builder()
+			return services.createReversalCostDetails(CostDetailReverseRequest.builder()
 					.acctSchemaId(as.getId())
 					.reversalDocumentRef(CostingDocumentRef.ofInboundMovementLineId(get_ID()))
 					.initialDocumentRef(CostingDocumentRef.ofInboundMovementLineId(getReversalLine_ID()))
@@ -93,7 +89,7 @@ class DocLine_Movement extends DocLine<Doc_Movement>
 			final AggregatedCostAmount inboundCostResult = outboundCostResult.getCostElements()
 					.stream()
 					.map(costElement -> createInboundCostDetailCreateRequest(as.getId(), costElement, outboundCostResult.getCostAmountForCostElement(costElement).negate()))
-					.map(costDetailService::createCostDetail)
+					.map(services::createCostDetail)
 					.reduce(AggregatedCostAmount::merge)
 					.orElse(null);
 
@@ -103,11 +99,9 @@ class DocLine_Movement extends DocLine<Doc_Movement>
 
 	public final AggregatedCostAmount getCreateOutboundCosts(final AcctSchema as)
 	{
-		final ICostingService costDetailService = Adempiere.getBean(ICostingService.class);
-
 		if (isReversalLine())
 		{
-			return costDetailService.createReversalCostDetails(CostDetailReverseRequest.builder()
+			return services.createReversalCostDetails(CostDetailReverseRequest.builder()
 					.acctSchemaId(as.getId())
 					.reversalDocumentRef(CostingDocumentRef.ofOutboundMovementLineId(get_ID()))
 					.initialDocumentRef(CostingDocumentRef.ofOutboundMovementLineId(getReversalLine_ID()))
@@ -116,7 +110,7 @@ class DocLine_Movement extends DocLine<Doc_Movement>
 		}
 		else
 		{
-			return costDetailService.createCostDetail(createOutboundCostDetailCreateRequest(as));
+			return services.createCostDetail(createOutboundCostDetailCreateRequest(as));
 		}
 	}
 

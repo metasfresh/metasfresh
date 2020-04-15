@@ -533,9 +533,6 @@ public class InterfaceWrapperHelper
 
 	/**
 	 * Refreshes the given model, and if the model is handled by {@link POWrapper} or {@link POJOWrapper}, then uses the given <code>trxName</code>.
-	 *
-	 * @param model
-	 * @param trxName
 	 */
 	public static void refresh(final Object model, final String trxName)
 	{
@@ -722,6 +719,10 @@ public class InterfaceWrapperHelper
 		}
 	}
 
+	/**
+	 * IMPORTANT: only call with <b>model interfaces</b> such as {@code I_AD_Table}, {@code C_Order} (legacy classes like `MProduct` and {@link IContextAware}s will also work) and the like.
+	 * Despite the parameter type being "Object" it does not work with all objects.
+	 */
 	public static String getTrxName(final Object model)
 	{
 		final boolean ignoreIfNotHandled = false;
@@ -729,11 +730,10 @@ public class InterfaceWrapperHelper
 	}
 
 	/**
+	 * IMPORTANT: only call with <b>model interfaces</b> such as {@code I_AD_Table}, {@code C_Order} (legacy classes like `MProduct` and {@link IContextAware}s will also work) and the like.
+	 * Despite the parameter type being "Object" it does not work with all objects.
 	 *
-	 * @param model
-	 * @param ignoreIfNotHandled if <code>true</code> and the given model can not be handeled (no PO, GridTab etc), then just return {@link ITrx#TRXNAME_None} without loggin a warning.
-	 *
-	 * @return
+	 * @param ignoreIfNotHandled if <code>true</code> and the given model can not be handeled (no PO, GridTab etc), then just return {@link ITrx#TRXNAME_None} without throwing an exception.
 	 */
 	public static String getTrxName(final Object model, final boolean ignoreIfNotHandled)
 	{
@@ -781,7 +781,7 @@ public class InterfaceWrapperHelper
 		final boolean failIfProcessed = true;
 		delete(model, failIfProcessed);
 	}
-	
+
 	public static void delete(@NonNull final Object model, final boolean failIfProcessed)
 	{
 		if (POWrapper.isHandled(model))

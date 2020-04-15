@@ -40,6 +40,8 @@ import de.metas.util.Services;
 public class GL_DistributionLine
 {
 	private static final transient Logger logger = LogManager.getLogger(GL_DistributionLine.class);
+	private final IGLDistributionBL glDistributionBL = Services.get(IGLDistributionBL.class);
+	private final IGLDistributionDAO glDistributionDAO = Services.get(IGLDistributionDAO.class);
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
 	public void validateLine(final I_GL_DistributionLine line)
@@ -47,7 +49,7 @@ public class GL_DistributionLine
 		if (line.getLine() == 0)
 		{
 			final I_GL_Distribution glDistribution = line.getGL_Distribution();
-			final int lastLineNo = Services.get(IGLDistributionDAO.class).retrieveLastLineNo(glDistribution);
+			final int lastLineNo = glDistributionDAO.retrieveLastLineNo(glDistribution);
 			final int lineNo = lastLineNo + 10;
 			line.setLine(lineNo);
 		}
@@ -124,7 +126,6 @@ public class GL_DistributionLine
 		final I_GL_Distribution glDistribution = line.getGL_Distribution();
 		try
 		{
-			final IGLDistributionBL glDistributionBL = Services.get(IGLDistributionBL.class);
 			glDistributionBL.validate(glDistribution);
 		}
 		catch (final GLDistributionNotValidException e)

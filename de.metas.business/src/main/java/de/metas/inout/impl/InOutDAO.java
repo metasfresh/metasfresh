@@ -71,6 +71,7 @@ import lombok.NonNull;
 public class InOutDAO implements IInOutDAO
 {
 	private static final Logger logger = LogManager.getLogger(InOutDAO.class);
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	@Override
 	public I_M_InOut getById(@NonNull final InOutId inoutId)
@@ -95,7 +96,7 @@ public class InOutDAO implements IInOutDAO
 	@Override
 	public ImmutableList<InOutId> retrieveByShipperTransportation(@NonNull final ShipperTransportationId shipperTransportationId)
 	{
-		return Services.get(IQueryBL.class)
+		return queryBL
 				.createQueryBuilder(de.metas.inout.model.I_M_InOut.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(de.metas.inout.model.I_M_InOut.COLUMNNAME_M_ShipperTransportation, shipperTransportationId)
@@ -115,7 +116,8 @@ public class InOutDAO implements IInOutDAO
 	@Override
 	public List<I_M_InOutLine> retrieveLines(final I_M_InOut inOut)
 	{
-		return retrieveLines(inOut, I_M_InOutLine.class);
+		final boolean retrieveAll = false;
+		return retrieveLines(inOut, retrieveAll, I_M_InOutLine.class);
 	}
 
 	@Override
@@ -137,17 +139,15 @@ public class InOutDAO implements IInOutDAO
 			final boolean retrieveAll,
 			@NonNull final Class<T> inoutLineClass)
 	{
-		final IQueryBuilder<I_M_InOutLine> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_M_InOutLine.class, inOut)
-				.addEqualsFilter(I_M_InOutLine.COLUMN_M_InOut_ID, inOut.getM_InOut_ID());
+		final IQueryBuilder<I_M_InOutLine> queryBuilder = queryBL.createQueryBuilder(I_M_InOutLine.class, inOut)
+				.addEqualsFilter(I_M_InOutLine.COLUMN_M_InOut_ID, inOut.getM_InOut_ID())
+				.orderBy(I_M_InOutLine.COLUMNNAME_Line)
+				.orderBy(I_M_InOutLine.COLUMNNAME_M_InOutLine_ID);
 
 		if (!retrieveAll)
 		{
 			queryBuilder.addOnlyActiveRecordsFilter();
 		}
-
-		queryBuilder.orderBy()
-				.addColumn(I_M_InOutLine.COLUMNNAME_Line)
-				.addColumn(I_M_InOutLine.COLUMNNAME_M_InOutLine_ID);
 
 		final List<T> inoutLines = queryBuilder
 				.create()
@@ -168,7 +168,7 @@ public class InOutDAO implements IInOutDAO
 
 		final Map<Integer, I_M_InOut> inoutsById = inouts.stream().collect(GuavaCollectors.toImmutableMapByKey(I_M_InOut::getM_InOut_ID));
 
-		final List<I_M_InOutLine> inoutLines = Services.get(IQueryBL.class).createQueryBuilder(I_M_InOutLine.class)
+		final List<I_M_InOutLine> inoutLines = queryBL.createQueryBuilder(I_M_InOutLine.class)
 				.addOnlyActiveRecordsFilter()
 				.addInArrayFilter(I_M_InOutLine.COLUMN_M_InOut_ID, inoutsById.keySet())
 				.orderBy(I_M_InOutLine.COLUMNNAME_M_InOut_ID)
@@ -192,7 +192,7 @@ public class InOutDAO implements IInOutDAO
 	@Override
 	public <T extends I_M_InOutLine> List<T> retrieveLinesForOrderLine(final I_C_OrderLine orderLine, final Class<T> clazz)
 	{
-		final IQueryBuilder<I_M_InOutLine> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_M_InOutLine.class, orderLine)
+		final IQueryBuilder<I_M_InOutLine> queryBuilder = queryBL.createQueryBuilder(I_M_InOutLine.class, orderLine)
 				.addEqualsFilter(I_M_InOutLine.COLUMN_C_OrderLine_ID, orderLine.getC_OrderLine_ID())
 				// .filterByClientId()
 				.addOnlyActiveRecordsFilter();
@@ -206,7 +206,7 @@ public class InOutDAO implements IInOutDAO
 	@Override
 	public <T extends I_M_InOutLine> List<T> retrieveLinesWithoutOrderLine(final I_M_InOut inOut, final Class<T> clazz)
 	{
-		final IQueryBuilder<I_M_InOutLine> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_M_InOutLine.class, inOut)
+		final IQueryBuilder<I_M_InOutLine> queryBuilder = queryBL.createQueryBuilder(I_M_InOutLine.class, inOut)
 				.addEqualsFilter(I_M_InOutLine.COLUMNNAME_M_InOut_ID, inOut.getM_InOut_ID())
 				.addEqualsFilter(I_M_InOutLine.COLUMNNAME_C_OrderLine_ID, null)
 				.addOnlyActiveRecordsFilter()
@@ -225,7 +225,7 @@ public class InOutDAO implements IInOutDAO
 		// + " AND io.IsSOTrx='Y'"
 		// + " AND iol.AD_Client_ID=?";
 
-		return Services.get(IQueryBL.class).createQueryBuilder(I_M_InOut.class, ctx, ITrx.TRXNAME_None)
+		return queryBL.createQueryBuilder(I_M_InOut.class, ctx, ITrx.TRXNAME_None)
 				.addInArrayOrAllFilter(I_M_InOut.COLUMNNAME_DocStatus,
 						IDocument.STATUS_Drafted,  // task: 07448: we also need to consider drafted shipments, because that's the customer workflow, and qty in a drafted InOut don'T couln'T at picked
 						// anymore, because they are already in a shipper-transportation
@@ -240,7 +240,7 @@ public class InOutDAO implements IInOutDAO
 	@Override
 	public IQueryBuilder<I_M_InOutLine> retrieveAllReferencingLinesBuilder(final I_M_InOutLine packingMaterialLine)
 	{
-		return Services.get(IQueryBL.class)
+		return queryBL
 				.createQueryBuilder(I_M_InOutLine.class, packingMaterialLine)
 				// .addOnlyActiveRecordsFilter() add all, also inactive ones
 				.addEqualsFilter(de.metas.inout.model.I_M_InOutLine.COLUMNNAME_M_PackingMaterial_InOutLine_ID, packingMaterialLine.getM_InOutLine_ID())
@@ -274,9 +274,6 @@ public class InOutDAO implements IInOutDAO
 
 	private IQueryBuilder<I_M_InOutLine> createInDisputeQueryBuilder(final I_M_InOut inOut)
 	{
-
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
-
 		final IQueryBuilder<I_M_InOutLine> queryBuilder = queryBL
 				.createQueryBuilder(I_M_InOutLine.class, inOut)
 				.addOnlyActiveRecordsFilter()
@@ -289,8 +286,7 @@ public class InOutDAO implements IInOutDAO
 	@Override
 	public LocalDate getLastInOutDate(@NonNull final BPartnerId bpartnerId, @NonNull final ProductId productId, @NonNull final SOTrx soTrx)
 	{
-		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_M_InOutLine.class)
+		return queryBL.createQueryBuilder(I_M_InOutLine.class)
 				.addEqualsFilter(I_M_InOutLine.COLUMNNAME_M_Product_ID, productId.getRepoId())
 				.andCollect(I_M_InOutLine.COLUMN_M_InOut_ID)
 				.addEqualsFilter(I_M_InOut.COLUMNNAME_C_BPartner_ID, bpartnerId.getRepoId())
@@ -311,8 +307,7 @@ public class InOutDAO implements IInOutDAO
 	@Override
 	public Stream<InOutId> streamInOutIdsByBPartnerId(@NonNull final BPartnerId bpartnerId)
 	{
-		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_M_InOut.class)
+		return queryBL.createQueryBuilder(I_M_InOut.class)
 				.addEqualsFilter(I_M_InOut.COLUMNNAME_C_BPartner_ID, bpartnerId)
 				.create()
 				.listIds(InOutId::ofRepoId)
@@ -351,8 +346,6 @@ public class InOutDAO implements IInOutDAO
 	@Override
 	public void unsetLineNos(@NonNull final ImmutableList<InOutLineId> inOutLineIdsToUnset)
 	{
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
-
 		final ICompositeQueryUpdater<I_M_InOutLine> updater = queryBL.createCompositeQueryUpdater(I_M_InOutLine.class)
 				.addSetColumnValue(I_M_InOutLine.COLUMNNAME_Line, 0);
 

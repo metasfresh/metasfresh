@@ -1,10 +1,8 @@
 package org.compiere.apps.search;
 
-import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -24,7 +22,6 @@ import org.compiere.swing.CLabel;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
 import de.metas.i18n.IMsgBL;
@@ -36,9 +33,8 @@ import de.metas.util.Services;
 
 /**
  * Represents a field which can be searched in {@link FindPanel}.
- * 
- * @author metas-dev <dev@metasfresh.com>
  *
+ * @author metas-dev <dev@metasfresh.com>
  */
 public final class FindPanelSearchField implements IUserQueryField
 {
@@ -52,7 +48,7 @@ public final class FindPanelSearchField implements IUserQueryField
 			{
 				continue;
 			}
-			
+
 			// skip fields which were hidden in UI (task 09504)
 			// NOTE: we don't check for isDisplayable() because there are some fields which are not displayable but we want to search by them (e.g. CreatedBy).
 			if (gridField.getVO().isHiddenFromUI())
@@ -72,29 +68,33 @@ public final class FindPanelSearchField implements IUserQueryField
 
 		return searchFields;
 	}
-	
+
 	public static FindPanelSearchField castToFindPanelSearchField(final Object field)
 	{
 		return (FindPanelSearchField)field;
 	}
-	
+
 	public static boolean isSelectionColumn(final IUserQueryField field)
 	{
-		if(field instanceof FindPanelSearchField)
+		if (field instanceof FindPanelSearchField)
 		{
 			return ((FindPanelSearchField)field).isSelectionColumn();
 		}
 		return false;
 	}
 
-	/** Maximum allowed number of columns for a text field component displayed in simple search tab */
+	/**
+	 * Maximum allowed number of columns for a text field component displayed in simple search tab
+	 */
 	static final int MAX_TEXT_FIELD_COLUMNS = 20;
 
 	// services
 	private static final transient Logger logger = LogManager.getLogger(FindPanelSearchField.class);
 	private final transient ISwingEditorFactory swingEditorFactory = Services.get(ISwingEditorFactory.class);
 
-	/** Reference ID for Yes/No */
+	/**
+	 * Reference ID for Yes/No
+	 */
 	private static final int AD_REFERENCE_ID_YESNO = 319;
 
 	private final GridField gridField;
@@ -146,7 +146,7 @@ public final class FindPanelSearchField implements IUserQueryField
 		// TODO: handle the case of lookup fields with validation rules
 
 		this.gridField = new GridField(vo);
-		
+
 		this.adLanguage = Env.getAD_Language(Env.getCtx());
 	}
 
@@ -193,7 +193,7 @@ public final class FindPanelSearchField implements IUserQueryField
 
 		return _displayName;
 	}
-	
+
 	public String getDisplayNameTrl()
 	{
 		return getDisplayName().translate(adLanguage);
@@ -238,7 +238,7 @@ public final class FindPanelSearchField implements IUserQueryField
 
 	/**
 	 * Creates the editor component
-	 * 
+	 *
 	 * @param tableEditor true if table editor
 	 * @return editor or null if editor could not be created
 	 */
@@ -280,74 +280,7 @@ public final class FindPanelSearchField implements IUserQueryField
 	@Override
 	public Object convertValueToFieldType(final Object valueObj)
 	{
-		if (valueObj == null)
-		{
-			return null;
-		}
-		final int dt = getDisplayType();
-		try
-		{
-			// Return Integer
-			if (dt == DisplayType.Integer || DisplayType.isID(dt) && getColumnName().endsWith("_ID"))
-			{
-				if (valueObj instanceof Integer)
-				{
-					return valueObj;
-				}
-				final int i = Integer.parseInt(valueObj.toString());
-				return new Integer(i);
-			}
-			// Return BigDecimal
-			else if (DisplayType.isNumeric(dt))
-			{
-				if (valueObj instanceof BigDecimal)
-				{
-					return valueObj;
-				}
-				return DisplayType.getNumberFormat(dt).parse(valueObj.toString());
-			}
-			// Return Timestamp
-			else if (DisplayType.isDate(dt))
-			{
-				if (valueObj instanceof java.util.Date)
-				{
-					return TimeUtil.asTimestamp((java.util.Date)valueObj);
-				}
-				long time = 0;
-				try
-				{
-					time = DisplayType.getDateFormat_JDBC().parse(valueObj.toString()).getTime();
-					return new Timestamp(time);
-				}
-				catch (final Exception e)
-				{
-					logger.error(valueObj + "(" + valueObj.getClass() + ")" + e);
-					time = DisplayType.getDateFormat(dt).parse(valueObj.toString()).getTime();
-				}
-				return new Timestamp(time);
-			}
-			// Return Y/N for Boolean
-			else if (valueObj instanceof Boolean)
-			{
-				return DisplayType.toBooleanString((Boolean)valueObj);
-			}
-		}
-		catch (final Exception ex)
-		{
-			String error = ex.getLocalizedMessage();
-			if (error == null || error.isEmpty())
-			{
-				error = ex.toString();
-			}
-			final StringBuilder errMsg = new StringBuilder();
-			errMsg.append(gridField.getColumnName()).append(" = ").append(valueObj).append(" - ").append(error);
-			//
-			logger.error("ValidationError: " + errMsg, ex);
-			// ADialog.error(0, getFrame(), "ValidationError", errMsg.toString());
-			return null;
-		}
-
-		return valueObj;
+		return UserQueryFieldHelper.parseValueObjectByColumnDisplayType(valueObj, getDisplayType(), getColumnName());
 	}
 
 	@Override
@@ -367,7 +300,7 @@ public final class FindPanelSearchField implements IUserQueryField
 			final IMsgBL msgBL = Services.get(IMsgBL.class);
 			infoDisplay = msgBL.getMsg(Env.getCtx(), infoDisplay);
 		}
-		
+
 		return infoDisplay;
 	}
 
@@ -489,7 +422,6 @@ public final class FindPanelSearchField implements IUserQueryField
 	 * Simple tree node class for product category tree search.
 	 *
 	 * @author Karsten Thiemann, kthiemann@adempiere.org
-	 *
 	 */
 	private static final class SimpleTreeNode
 	{

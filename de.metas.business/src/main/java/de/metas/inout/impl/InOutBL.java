@@ -28,8 +28,8 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Set;
 
-import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.comparator.ComparatorChain;
@@ -47,8 +47,11 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.cache.CacheMgt;
+import de.metas.cache.model.CacheInvalidateMultiRequest;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.IInOutDAO;
+import de.metas.inout.InOutAndLineId;
+import de.metas.inout.InOutId;
 import de.metas.invoice.IMatchInvDAO;
 import de.metas.lang.SOTrx;
 import de.metas.organization.OrgId;
@@ -74,13 +77,23 @@ public class InOutBL implements IInOutBL
 
 	private static final String VIEW_M_Shipment_Statistics_V = "M_Shipment_Statistics_V";
 
+	private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
+	private final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
+	private final IPricingBL pricingBL = Services.get(IPricingBL.class);
+	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
+	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
+	private final IMatchInvDAO matchInvDAO = Services.get(IMatchInvDAO.class);
+
+	@Override
+	public List<I_M_InOutLine> getLines(@NonNull final I_M_InOut inout)
+	{
+		return inOutDAO.retrieveLines(inout);
+	}
+
 	@Override
 	public IPricingContext createPricingCtx(@NonNull final org.compiere.model.I_M_InOutLine inOutLine)
 	{
-		final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
 		final I_M_InOut inOut = inOutLine.getM_InOut();
-		final IInOutBL inOutBL = Services.get(IInOutBL.class);
-		final IPricingBL pricingBL = Services.get(IPricingBL.class);
 
 		SOTrx soTrx = SOTrx.ofBoolean(inOut.isSOTrx());
 		final BPartnerId bPartnerId = BPartnerId.ofRepoId(inOut.getC_BPartner_ID());
@@ -96,7 +109,7 @@ public class InOutBL implements IInOutBL
 
 		if (pricingSystem == null)
 		{
-			if (inOutBL.isReturnMovementType(inOut.getMovementType()))
+			if (isReturnMovementType(inOut.getMovementType()))
 			{
 				// 08358
 				// in case no pricing system was found for the current IsSOTrx AND we are dealing with leergut inouts
@@ -139,13 +152,11 @@ public class InOutBL implements IInOutBL
 	public IPricingResult getProductPrice(final org.compiere.model.I_M_InOutLine inOutLine)
 	{
 		final IPricingContext pricingCtx = createPricingCtx(inOutLine);
-
-		final IPricingBL pricingBL = Services.get(IPricingBL.class);
-		return  pricingBL.calculatePrice(pricingCtx);
+		return pricingBL.calculatePrice(pricingCtx);
 
 	}
 
-public StockQtyAndUOMQty getStockQtyAndCatchQty(@NonNull final I_M_InOutLine inoutLine)
+	public StockQtyAndUOMQty getStockQtyAndCatchQty(@NonNull final I_M_InOutLine inoutLine)
 	{
 		final UomId catchUomIdOrNull;
 		if (inoutLine.getQtyDeliveredCatch().signum() != 0)
@@ -202,20 +213,19 @@ public StockQtyAndUOMQty getStockQtyAndCatchQty(@NonNull final I_M_InOutLine ino
 	 */
 	private I_M_PricingSystem getPricingSystemOrNull(final I_M_InOut inOut, final SOTrx soTrx)
 	{
-		final IPriceListDAO priceListsRepo = Services.get(IPriceListDAO.class);
 		if (inOut.getC_Order_ID() > 0 && inOut.getC_Order().getM_PricingSystem_ID() > 0)
 		{
 			final PricingSystemId pricingSystemId = PricingSystemId.ofRepoId(inOut.getC_Order().getM_PricingSystem_ID());
-			return priceListsRepo.getPricingSystemById(pricingSystemId);
+			return priceListDAO.getPricingSystemById(pricingSystemId);
 		}
 
-		final PricingSystemId pricingSystemId = Services.get(IBPartnerDAO.class).retrievePricingSystemIdOrNull(BPartnerId.ofRepoId(inOut.getC_BPartner_ID()), soTrx);
+		final PricingSystemId pricingSystemId = bpartnerDAO.retrievePricingSystemIdOrNull(BPartnerId.ofRepoId(inOut.getC_BPartner_ID()), soTrx);
 		if (pricingSystemId == null)
 		{
 			return null;
 		}
 
-		return priceListsRepo.getPricingSystemById(pricingSystemId);
+		return priceListDAO.getPricingSystemById(pricingSystemId);
 	}
 
 	private boolean isReversal(final int recordId, final int recordReversalId)
@@ -277,8 +287,6 @@ public StockQtyAndUOMQty getStockQtyAndCatchQty(@NonNull final I_M_InOutLine ino
 	@Override
 	public <T extends I_M_InOutLine> T newInOutLine(final I_M_InOut inout, final Class<T> modelClass)
 	{
-		final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
-
 		final T line = InterfaceWrapperHelper.newInstance(modelClass, inout);
 		line.setAD_Org_ID(inout.getAD_Org_ID());
 		line.setM_InOut(inout);
@@ -324,7 +332,7 @@ public StockQtyAndUOMQty getStockQtyAndCatchQty(@NonNull final I_M_InOutLine ino
 			@NonNull final BigDecimal qty)
 	{
 		final I_M_InOut inoutRecord = InterfaceWrapperHelper.load(iol.getM_InOut_ID(), I_M_InOut.class);
-		if(isReturnMovementType(inoutRecord.getMovementType()))
+		if (isReturnMovementType(inoutRecord.getMovementType()))
 		{
 			return qty.negate();
 		}
@@ -360,10 +368,6 @@ public StockQtyAndUOMQty getStockQtyAndCatchQty(@NonNull final I_M_InOutLine ino
 	@Override
 	public List<I_M_InOutLine> sortLines(final I_M_InOut inOut)
 	{
-		//
-		// Services
-		final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
-
 		final HashMap<Integer, Integer> inoutLineId2orderId = new HashMap<>();
 
 		final List<I_M_InOutLine> lines = inOutDAO.retrieveLines(inOut);
@@ -459,7 +463,7 @@ public StockQtyAndUOMQty getStockQtyAndCatchQty(@NonNull final I_M_InOutLine ino
 	@Override
 	public void deleteMatchInvs(final I_M_InOut inout)
 	{
-		final List<I_M_MatchInv> matchInvs = Services.get(IMatchInvDAO.class).retrieveForInOut(inout);
+		final List<I_M_MatchInv> matchInvs = matchInvDAO.retrieveForInOut(inout);
 		for (final I_M_MatchInv matchInv : matchInvs)
 		{
 			matchInv.setProcessed(false);
@@ -472,7 +476,7 @@ public StockQtyAndUOMQty getStockQtyAndCatchQty(@NonNull final I_M_InOutLine ino
 	{
 		//
 		// Delete M_MatchInvs (08627)
-		for (final I_M_MatchInv matchInv : Services.get(IMatchInvDAO.class).retrieveForInOutLine(iol))
+		for (final I_M_MatchInv matchInv : matchInvDAO.retrieveForInOutLine(iol))
 		{
 			matchInv.setProcessed(false); // delete it even if it's processed, because all M_MatchInv are processed on save new.
 			InterfaceWrapperHelper.delete(matchInv);
@@ -484,11 +488,15 @@ public StockQtyAndUOMQty getStockQtyAndCatchQty(@NonNull final I_M_InOutLine ino
 	{
 		if (inout.isSOTrx())
 		{
-			Services.get(IQueryBL.class).createQueryBuilder(I_M_InOutLine.class)
-					.addEqualsFilter(I_M_InOutLine.COLUMN_M_InOut_ID, inout.getM_InOut_ID())
-					.create()
-					.listIds()
-					.forEach(inoutLineId -> CacheMgt.get().reset(InOutBL.VIEW_M_Shipment_Statistics_V, inoutLineId));
+			final InOutId shipmentId = InOutId.ofRepoId(inout.getM_InOut_ID());
+			final Set<InOutAndLineId> shipmentAndLineIds = inOutDAO.retrieveLinesForInOutId(shipmentId);
+			if (!shipmentAndLineIds.isEmpty())
+			{
+				CacheMgt.get().reset(CacheInvalidateMultiRequest.rootRecords(
+						VIEW_M_Shipment_Statistics_V,
+						shipmentAndLineIds,
+						InOutAndLineId::getInOutLineId));
+			}
 		}
 	}
 
