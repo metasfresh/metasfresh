@@ -46,6 +46,9 @@ import lombok.NonNull;
  * #L%
  */
 
+/**
+ * If a request-item is coming with an identifier such as {@code ext-1234}, then this service makes sure that the item itself has the respective property such as {@code "externalId" : "1234"} set.
+ */
 @Service
 public class JsonRequestConsolidateService
 {

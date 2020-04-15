@@ -21,32 +21,33 @@ public class JsonResponseBPartnerCompositeUpsertItem
 {
 	@ApiModelProperty(position = 10)
 	@JsonInclude(Include.NON_NULL)
-	JsonResponseUpsertItem jsonResponseBPartnerUpsertItem;
+	JsonResponseUpsertItem responseBPartnerItem;
 
 	@ApiModelProperty(position = 20)
 	@JsonInclude(Include.NON_EMPTY)
-	List<JsonResponseUpsertItem> jsonResponseLocationUpsertItems;
+	List<JsonResponseUpsertItem> responseLocationItems;
 
 	@ApiModelProperty(position = 30)
 	@JsonInclude(Include.NON_EMPTY)
-	List<JsonResponseUpsertItem> jsonResponseContactUpsertItems;
+	List<JsonResponseUpsertItem> responseContactItems;
 
 	@ApiModelProperty(position = 40)
 	@JsonInclude(Include.NON_EMPTY)
-	List<JsonResponseUpsertItem> jsonResponseBankAccountUpsertItems;
+	List<JsonResponseUpsertItem> responseBankAccountItems;
 
 	@Builder
 	@JsonCreator
 	public JsonResponseBPartnerCompositeUpsertItem(
-			@JsonProperty("jsonResponseBPartnerUpsertItem") @Nullable final JsonResponseUpsertItem jsonResponseBPartnerUpsertItem,
-			@JsonProperty("jsonResponseLocationUpsertItems") @Singular final List<JsonResponseUpsertItem> jsonResponseLocationUpsertItems,
-			@JsonProperty("jsonResponseContactUpsertItems") @Singular final List<JsonResponseUpsertItem> jsonResponseContactUpsertItems,
-			@JsonProperty("jsonResponseBankAccountUpsertItems") @Singular final List<JsonResponseUpsertItem> jsonResponseBankAccountUpsertItems)
+			@JsonProperty("responseBPartnerItem") @Nullable final JsonResponseUpsertItem responseBPartnerItem,
+			@JsonProperty("responseLocationItems") @Singular final List<JsonResponseUpsertItem> responseLocationItems,
+			@JsonProperty("responseContactItems") @Singular final List<JsonResponseUpsertItem> responseContactItems,
+			@JsonProperty("responseBankAccountItems") @Singular final List<JsonResponseUpsertItem> responseBankAccountItems)
 	{
-		this.jsonResponseBPartnerUpsertItem = jsonResponseBPartnerUpsertItem;
-		this.jsonResponseLocationUpsertItems = jsonResponseLocationUpsertItems;
-		this.jsonResponseContactUpsertItems = jsonResponseContactUpsertItems;
-		this.jsonResponseBankAccountUpsertItems = jsonResponseBankAccountUpsertItems;
+		this.responseBPartnerItem = responseBPartnerItem;
+		this.responseLocationItems = responseLocationItems;
+		this.responseContactItems = responseContactItems;
+		this.responseBankAccountItems = responseBankAccountItems;
 	}
+
 
 }

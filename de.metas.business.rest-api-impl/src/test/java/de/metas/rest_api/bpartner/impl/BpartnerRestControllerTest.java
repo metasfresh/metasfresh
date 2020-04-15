@@ -137,7 +137,7 @@ class BpartnerRestControllerTest
 	{
 		start(AdempiereTestHelper.SNAPSHOT_CONFIG);
 	}
-	
+
 	@AfterAll
 	static void afterAll()
 	{
@@ -465,9 +465,9 @@ class BpartnerRestControllerTest
 		assertThat(resultBody.getResponseItems()).hasSize(1);
 
 		final JsonResponseBPartnerCompositeUpsertItem responseCompositeItem = resultBody.getResponseItems().get(0);
-		assertThat(responseCompositeItem.getJsonResponseBPartnerUpsertItem().getIdentifier()).isEqualTo(bpartnerIdentifier);
+		assertThat(responseCompositeItem.getResponseBPartnerItem().getIdentifier()).isEqualTo(bpartnerIdentifier);
 
-		final MetasfreshId metasfreshId = responseCompositeItem.getJsonResponseBPartnerUpsertItem().getMetasfreshId();
+		final MetasfreshId metasfreshId = responseCompositeItem.getResponseBPartnerItem().getMetasfreshId();
 		return metasfreshId;
 	}
 
@@ -492,8 +492,8 @@ class BpartnerRestControllerTest
 		assertThat(result.getBody().getResponseItems()).hasSize(1);
 		final JsonResponseBPartnerCompositeUpsertItem jsonResponseCompositeUpsertItem = result.getBody().getResponseItems().get(0);
 
-		assertThat(jsonResponseCompositeUpsertItem.getJsonResponseBPartnerUpsertItem().getIdentifier()).isEqualTo("ext-1234567");
-		assertThat(jsonResponseCompositeUpsertItem.getJsonResponseBPartnerUpsertItem().getMetasfreshId().getValue()).isEqualTo(bpartnerRecord.getC_BPartner_ID());
+		assertThat(jsonResponseCompositeUpsertItem.getResponseBPartnerItem().getIdentifier()).isEqualTo("ext-1234567");
+		assertThat(jsonResponseCompositeUpsertItem.getResponseBPartnerItem().getMetasfreshId().getValue()).isEqualTo(bpartnerRecord.getC_BPartner_ID());
 
 		// verify that the bpartner-record was updated
 		refresh(bpartnerRecord);

@@ -56,6 +56,7 @@ public class JsonResponseBPartner
 	public static final String EXTERNAL_ID = "externalId";
 	public static final String METASFRESH_ID = "metasfreshId";
 	public static final String CODE = "code";
+	public static final String GLOBAL_ID = "globalId";
 	public static final String ACTIVE = "active";
 	public static final String VENDOR = "vendor";
 	public static final String CUSTOMER = "customer";
@@ -81,6 +82,10 @@ public class JsonResponseBPartner
 	@ApiModelProperty(required = false, value = "This translates to `C_BPartner.Value`.")
 	@JsonProperty(CODE)
 	String code;
+
+	@ApiModelProperty(required = false, value = "This translates to `C_BPartner.GlobalId`.")
+	@JsonProperty(GLOBAL_ID)
+	String globalId;
 
 	@ApiModelProperty(required = false, value = "This translates to `C_BPartner.IsActive`.")
 	@JsonProperty(ACTIVE)
@@ -168,6 +173,7 @@ public class JsonResponseBPartner
 			@JsonProperty(METASFRESH_ID) @NonNull final MetasfreshId metasfreshId,
 			@JsonProperty(EXTERNAL_ID) @Nullable final JsonExternalId externalId,
 			@JsonProperty(CODE) @NonNull final String code,
+			@JsonProperty(GLOBAL_ID) @Nullable final String globalId,
 			@JsonProperty(ACTIVE) @NonNull final Boolean active,
 			@JsonProperty(NAME) @NonNull final String name,
 			@JsonProperty(NAME_2) @Nullable final String name2,
@@ -188,6 +194,7 @@ public class JsonResponseBPartner
 		this.metasfreshId = metasfreshId;
 		this.externalId = externalId;
 		this.code = code;
+		this.globalId = globalId;
 		this.active = active;
 
 		this.name = name;

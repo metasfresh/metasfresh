@@ -1,18 +1,16 @@
 package de.metas.rest_api.utils;
 
 import static de.metas.util.Check.isEmpty;
-import static de.metas.util.lang.CoalesceUtil.coalesce;
-
 import java.util.Collection;
 
 import javax.annotation.Nullable;
 
-import org.compiere.util.Env;
 import org.springframework.stereotype.Service;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.GLN;
 import de.metas.bpartner.service.BPartnerQuery;
+import de.metas.bpartner.service.BPartnerQuery.BPartnerQueryBuilder;
 import de.metas.organization.OrgId;
 import de.metas.rest_api.common.JsonExternalId;
 import de.metas.rest_api.common.MetasfreshId;
@@ -45,10 +43,15 @@ public class BPartnerQueryService
 {
 	public BPartnerQuery createQuery(@NonNull final Collection<BPartnerCompositeLookupKey> queryLookupKeys)
 	{
-		final OrgId onlyOrgId = Env.getOrgId(); // FIXME avoid using Env.getOrgId();
+		return createBPartnerQuery(queryLookupKeys, null);
+	}
+
+	public BPartnerQuery createQuery(@NonNull final Collection<BPartnerCompositeLookupKey> queryLookupKeys, @NonNull final OrgId onlyOrgId)
+	{
 		return createBPartnerQuery(queryLookupKeys, onlyOrgId);
 	}
 
+	/** Creates a query that advises the repo to fail if no matching bpartner is found. */
 	public BPartnerQuery createQueryFailIfNotExists(@NonNull final BPartnerCompositeLookupKey queryLookupKey)
 	{
 		return createQueryFailIfNotExists(queryLookupKey, null/* orgId */);
@@ -58,11 +61,13 @@ public class BPartnerQueryService
 			@NonNull final BPartnerCompositeLookupKey queryLookupKey,
 			@Nullable final OrgId orgId)
 	{
-		final OrgId orgIdEff = coalesce(orgId, Env.getOrgId());
-
-		final BPartnerQuery.BPartnerQueryBuilder queryBuilder = BPartnerQuery.builder()
-				.onlyOrgId(orgIdEff)
+		final BPartnerQueryBuilder queryBuilder = BPartnerQuery.builder()
 				.failIfNotExists(true);
+		if (orgId != null)
+		{
+			queryBuilder.onlyOrgId(orgId);
+		}
+
 		addKeyToQueryBuilder(queryLookupKey, queryBuilder);
 
 		return queryBuilder.build();
@@ -70,10 +75,13 @@ public class BPartnerQueryService
 
 	private static BPartnerQuery createBPartnerQuery(
 			@NonNull final Collection<BPartnerCompositeLookupKey> bpartnerLookupKeys,
-			@NonNull final OrgId onlyOrgId)
+			@Nullable final OrgId onlyOrgId)
 	{
-		final BPartnerQuery.BPartnerQueryBuilder query = BPartnerQuery.builder()
-				.onlyOrgId(onlyOrgId);
+		final BPartnerQueryBuilder query = BPartnerQuery.builder();
+		if (onlyOrgId != null)
+		{
+			query.onlyOrgId(onlyOrgId);
+		}
 
 		for (final BPartnerCompositeLookupKey bpartnerLookupKey : bpartnerLookupKeys)
 		{
@@ -83,7 +91,7 @@ public class BPartnerQueryService
 		return query.build();
 	}
 
-	private static void addKeyToQueryBuilder(final BPartnerCompositeLookupKey bpartnerLookupKey, final BPartnerQuery.BPartnerQueryBuilder queryBuilder)
+	private static void addKeyToQueryBuilder(final BPartnerCompositeLookupKey bpartnerLookupKey, final BPartnerQueryBuilder queryBuilder)
 	{
 		final JsonExternalId jsonExternalId = bpartnerLookupKey.getJsonExternalId();
 		if (jsonExternalId != null)

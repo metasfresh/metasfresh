@@ -18,7 +18,7 @@ import org.compiere.model.I_C_Location;
 import org.compiere.model.I_C_Postal;
 import org.slf4j.Logger;
 
-import com.google.common.base.Predicates;
+import java.util.Objects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
@@ -172,7 +172,7 @@ final class BPartnerCompositesLoader
 		final ImmutableList<Integer> postalIds = CollectionUtils.extractDistinctElements(locationRecords, I_C_Location::getC_Postal_ID);
 		final List<I_C_Postal> postalRecords = queryBL
 				.createQueryBuilder(I_C_Postal.class)
-				.addOnlyActiveRecordsFilter()
+				// .addOnlyActiveRecordsFilter() also load inactive records!
 				.addInArrayFilter(I_C_Postal.COLUMNNAME_C_Postal_ID, postalIds)
 				.create()
 				.list();
@@ -182,7 +182,7 @@ final class BPartnerCompositesLoader
 		final ImmutableList<Integer> countryIds = CollectionUtils.extractDistinctElements(locationRecords, I_C_Location::getC_Country_ID);
 		final List<I_C_Country> countryRecords = queryBL
 				.createQueryBuilder(I_C_Country.class)
-				.addOnlyActiveRecordsFilter()
+				// .addOnlyActiveRecordsFilter() also load inactive records!
 				.addInArrayFilter(I_C_Country.COLUMNNAME_C_Country_ID, countryIds)
 				.create()
 				.list();
@@ -219,6 +219,7 @@ final class BPartnerCompositesLoader
 				.value(bpartnerRecord.getValue())
 				.companyName(bpartnerRecord.getCompanyName())
 				.externalId(ExternalId.ofOrNull(bpartnerRecord.getExternalId()))
+				.globalId(bpartnerRecord.getGlobalId())
 				.groupId(BPGroupId.ofRepoId(bpartnerRecord.getC_BP_Group_ID()))
 				.language(Language.asLanguage(bpartnerRecord.getAD_Language()))
 				.id(BPartnerId.ofRepoId(bpartnerRecord.getC_BPartner_ID()))
@@ -361,7 +362,7 @@ final class BPartnerCompositesLoader
 				.get(bpartnerId)
 				.stream()
 				.map(record -> ofBankAccountRecordOrNull(record, relatedRecords))
-				.filter(Predicates.notNull())
+				.filter(Objects::nonNull)
 				.collect(ImmutableList.toImmutableList());
 	}
 
