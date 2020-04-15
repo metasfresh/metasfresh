@@ -917,6 +917,17 @@ UPDATE AD_Element_Trl SET Name='Pricelist Instructions', PrintName='Pricelist In
 /* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(577666,'en_US')
 ;
 
+-- 2020-04-15T14:40:53.161Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET Name='Pricelist Packing Instructions', PrintName='Pricelist Packing Instructions',Updated=TO_TIMESTAMP('2020-04-15 17:40:53','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=577666 AND AD_Language='en_US'
+;
+
+-- 2020-04-15T14:40:53.162Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(577666,'en_US')
+;
+
+
 DROP VIEW IF EXISTS rv_fresh_pricelist;
 DROP VIEW IF EXISTS RV_fresh_PriceList_Comparison;
 
