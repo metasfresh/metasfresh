@@ -16,7 +16,7 @@
 	<property name="com.jaspersoft.studio.unit.rightMargin" value="pixel"/>
 	<property name="com.jaspersoft.studio.unit.columnWidth" value="pixel"/>
 	<property name="com.jaspersoft.studio.unit.columnSpacing" value="pixel"/>
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="jasperreports\uat.xml"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="release.xml"/>
 	<property name="com.jaspersoft.studio.report.description" value=""/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
@@ -139,9 +139,9 @@
 	<group name="BpHeader" footerPosition="CollateAtBottom">
 		<groupExpression><![CDATA[$F{bp_value}]]></groupExpression>
 		<groupHeader>
-			<band height="60">
+			<band height="83">
 				<subreport isUsingCache="true">
-					<reportElement key="subreport-6" x="363" y="0" width="188" height="60" uuid="bea083b6-7b31-4a4f-b59f-b8ad03573da5">
+					<reportElement key="subreport-6" x="37" y="0" width="188" height="60" uuid="bea083b6-7b31-4a4f-b59f-b8ad03573da5">
 						<printWhenExpression><![CDATA[new Boolean ($F{c_bpartner_location_id} != null)]]></printWhenExpression>
 					</reportElement>
 					<subreportParameter name="bp_loc_id">
@@ -152,6 +152,17 @@
 					</subreportParameter>
 					<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
 					<subreportExpression><![CDATA["de/metas/docs/generics/report_bpblock_short.jasper"]]></subreportExpression>
+				</subreport>
+				<subreport isUsingCache="true">
+					<reportElement key="subreport-8" x="400" y="0" width="191" height="80" uuid="c5d77fa4-7184-4f47-a49b-955bd96be83c"/>
+					<subreportParameter name="org_id">
+						<subreportParameterExpression><![CDATA[$F{ad_org_id}]]></subreportParameterExpression>
+					</subreportParameter>
+					<subreportParameter name="IsSOTrx">
+						<subreportParameterExpression><![CDATA["Y"]]></subreportParameterExpression>
+					</subreportParameter>
+					<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+					<subreportExpression><![CDATA["de/metas/docs/generics/report_orgblock.jasper"]]></subreportExpression>
 				</subreport>
 			</band>
 			<band height="40" splitType="Stretch">
@@ -331,33 +342,8 @@
 			<band height="8"/>
 		</groupFooter>
 	</group>
-	<title>
-		<band height="200" splitType="Stretch">
-			<printWhenExpression><![CDATA[new Boolean(true)]]></printWhenExpression>
-			<subreport isUsingCache="true">
-				<reportElement key="subreport-8" x="0" y="100" width="225" height="100" uuid="c5d77fa4-7184-4f47-a49b-955bd96be83c"/>
-				<subreportParameter name="org_id">
-					<subreportParameterExpression><![CDATA[$F{ad_org_id}]]></subreportParameterExpression>
-				</subreportParameter>
-				<subreportParameter name="IsSOTrx">
-					<subreportParameterExpression><![CDATA["Y"]]></subreportParameterExpression>
-				</subreportParameter>
-				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
-				<subreportExpression><![CDATA["de/metas/docs/generics/report_orgblock.jasper"]]></subreportExpression>
-			</subreport>
-			<subreport isUsingCache="true">
-				<reportElement key="subreport-4" x="0" y="31" width="595" height="85" uuid="45686b08-5564-415f-85da-91f50a1ce8f5"/>
-				<subreportParameter name="org_id">
-					<subreportParameterExpression><![CDATA[$F{ad_org_id}]]></subreportParameterExpression>
-				</subreportParameter>
-				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
-				<subreportExpression><![CDATA["de/metas/docs/generics/report_logo.jasper"]]></subreportExpression>
-			</subreport>
-		</band>
-	</title>
 	<pageHeader>
 		<band height="116">
-			<printWhenExpression><![CDATA[( $V{PAGE_NUMBER}.intValue() > 1 ? new Boolean(true) : new Boolean(false))]]></printWhenExpression>
 			<subreport isUsingCache="true">
 				<reportElement key="subreport-5" x="0" y="15" width="595" height="85" uuid="7e3af522-ad6c-42b3-ab90-6733b69715ac"/>
 				<subreportParameter name="org_id">
@@ -470,7 +456,7 @@
 	<pageFooter>
 		<band height="55">
 			<textField pattern="" isBlankWhenNull="false">
-				<reportElement key="textField-63" x="452" y="25" width="63" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="a1a5d059-56b8-4574-8d19-5d1397b5dd02"/>
+				<reportElement key="textField-63" x="446" y="25" width="63" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="a1a5d059-56b8-4574-8d19-5d1397b5dd02"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -482,8 +468,8 @@
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Page}]]></textFieldExpression>
 			</textField>
-			<textField pattern="" isBlankWhenNull="false">
-				<reportElement key="textField-62" x="515" y="25" width="21" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="05a375a0-02fa-40c6-965d-338f0a8d2c23"/>
+			<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="false">
+				<reportElement key="textField-62" x="509" y="25" width="24" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="05a375a0-02fa-40c6-965d-338f0a8d2c23"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -496,7 +482,7 @@
 				<textFieldExpression><![CDATA[$V{PAGE_NUMBER} + "/ "]]></textFieldExpression>
 			</textField>
 			<textField evaluationTime="Auto" pattern="" isBlankWhenNull="false">
-				<reportElement key="textField-64" x="536" y="25" width="15" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="342602a8-2434-4675-be8b-2350fe69d96a"/>
+				<reportElement key="textField-64" x="533" y="25" width="24" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="342602a8-2434-4675-be8b-2350fe69d96a"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
