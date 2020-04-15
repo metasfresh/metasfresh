@@ -42,7 +42,7 @@ public class S_Milestone
 		this.externalReferenceRepository = externalReferenceRepository;
 	}
 
-	@ModelChange(timings = ModelValidator.TYPE_AFTER_DELETE)
+	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
 	public void afterDelete(@NonNull final I_S_Milestone record){
 		externalReferenceRepository.deleteByRecordIdAndType(record.getS_Milestone_ID(), ExternalReferenceType.MILESTONE_ID);
 	}

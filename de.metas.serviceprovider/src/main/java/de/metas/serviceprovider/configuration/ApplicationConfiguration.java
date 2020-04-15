@@ -23,12 +23,15 @@
 package de.metas.serviceprovider.configuration;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import de.metas.JsonObjectMapperHolder;
+import de.metas.i18n.IMsgBL;
 import de.metas.serviceprovider.ImportQueue;
 import de.metas.serviceprovider.issue.importer.info.ImportIssueInfo;
 import de.metas.serviceprovider.timebooking.importer.ImportTimeBookingInfo;
 import de.metas.user.api.IUserDAO;
 import de.metas.util.Services;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -74,6 +77,18 @@ public class ApplicationConfiguration
 	@Bean
 	public ObjectMapper objectMapper()
 	{
-		return new ObjectMapper();
+		return JsonObjectMapperHolder.sharedJsonObjectMapper();
+	}
+
+	@Bean
+	public IADTableDAO adTableDAO()
+	{
+		return Services.get(IADTableDAO.class);
+	}
+
+	@Bean
+	public IMsgBL msgBL()
+	{
+		return Services.get(IMsgBL.class);
 	}
 }

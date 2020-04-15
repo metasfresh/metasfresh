@@ -42,7 +42,7 @@ public class AD_User
 		this.externalReferenceRepository = externalReferenceRepository;
 	}
 
-	@ModelChange(timings = ModelValidator.TYPE_AFTER_DELETE)
+	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
 	public void afterDelete(@NonNull final I_AD_User record)
 	{
 		externalReferenceRepository.deleteByRecordIdAndType(record.getAD_User_ID(), ExternalReferenceType.USER_ID);

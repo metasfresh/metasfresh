@@ -14,7 +14,7 @@ public class X_S_ExternalReference extends org.compiere.model.PO implements I_S_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1803852630L;
+	private static final long serialVersionUID = -1554157808L;
 
     /** Standard Constructor */
     public X_S_ExternalReference (Properties ctx, int S_ExternalReference_ID, String trxName)
@@ -25,6 +25,7 @@ public class X_S_ExternalReference extends org.compiere.model.PO implements I_S_
 			setExternalReference (null);
 			setExternalSystem (null);
 			setRecord_ID (0);
+			setReferenced_AD_Table_ID (0);
 			setType (null);
         } */
     }
@@ -109,6 +110,50 @@ public class X_S_ExternalReference extends org.compiere.model.PO implements I_S_
 	public int getRecord_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_Record_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Referenced table ID.
+		@param Referenced_AD_Table_ID Referenced table ID	  */
+	@Override
+	public void setReferenced_AD_Table_ID (int Referenced_AD_Table_ID)
+	{
+		if (Referenced_AD_Table_ID < 1) 
+			set_Value (COLUMNNAME_Referenced_AD_Table_ID, null);
+		else 
+			set_Value (COLUMNNAME_Referenced_AD_Table_ID, Integer.valueOf(Referenced_AD_Table_ID));
+	}
+
+	/** Get Referenced table ID.
+		@return Referenced table ID	  */
+	@Override
+	public int getReferenced_AD_Table_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_Referenced_AD_Table_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Referenced record ID.
+		@param Referenced_Record_ID Referenced record ID	  */
+	@Override
+	public void setReferenced_Record_ID (int Referenced_Record_ID)
+	{
+		if (Referenced_Record_ID < 1) 
+			set_Value (COLUMNNAME_Referenced_Record_ID, null);
+		else 
+			set_Value (COLUMNNAME_Referenced_Record_ID, Integer.valueOf(Referenced_Record_ID));
+	}
+
+	/** Get Referenced record ID.
+		@return Referenced record ID	  */
+	@Override
+	public int getReferenced_Record_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_Referenced_Record_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();

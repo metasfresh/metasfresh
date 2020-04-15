@@ -39,11 +39,13 @@ import de.metas.serviceprovider.timebooking.importer.failed.FailedTimeBookingRep
 import de.metas.util.Loggables;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 
 import static de.metas.serviceprovider.timebooking.importer.ImportConstants.IMPORT_TIME_BOOKINGS_LOG_MESSAGE_PREFIX;
 
@@ -79,6 +81,11 @@ public class TimeBookingsImporterService
 		{
 			final ImmutableList<ImportTimeBookingInfo> importTimeBookingInfos = timeBookingImportQueue.drainAll();
 			importTimeBookingInfos.forEach(timeBookingInfo -> trxManager.runInNewTrx( () -> importTimeBooking(timeBookingInfo)));
+		}
+
+		if (completableFuture.isCompletedExceptionally())
+		{
+				extractAndPropagateAdempiereException(completableFuture);
 		}
 	}
 
@@ -135,5 +142,21 @@ public class TimeBookingsImporterService
 	{
 		failedTImeBookingRepository.getOptionalByExternalIdAndSystem(externalId.getExternalSystem(), externalId.getId())
 				.ifPresent(failedTimeBooking -> failedTImeBookingRepository.delete(failedTimeBooking.getFailedTimeBookingId()));
+	}
+
+	private void extractAndPropagateAdempiereException(final CompletableFuture completableFuture)
+	{
+		try
+		{
+			completableFuture.get();
+		}
+		catch (final ExecutionException ex)
+		{
+			throw AdempiereException.wrapIfNeeded(ex.getCause());
+		}
+		catch (final InterruptedException ex1)
+		{
+			throw AdempiereException.wrapIfNeeded(ex1);
+		}
 	}
 }

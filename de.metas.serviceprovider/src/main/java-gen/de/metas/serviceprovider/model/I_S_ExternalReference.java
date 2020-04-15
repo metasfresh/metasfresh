@@ -185,6 +185,50 @@ public interface I_S_ExternalReference
     public static final String COLUMNNAME_Record_ID = "Record_ID";
 
 	/**
+	 * Set Referenced table ID.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setReferenced_AD_Table_ID (int Referenced_AD_Table_ID);
+
+	/**
+	 * Get Referenced table ID.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getReferenced_AD_Table_ID();
+
+    /** Column name Referenced_AD_Table_ID */
+    public static final String COLUMNNAME_Referenced_AD_Table_ID = "Referenced_AD_Table_ID";
+
+	/**
+	 * Set Referenced record ID.
+	 *
+	 * <br>Type: Button
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setReferenced_Record_ID (int Referenced_Record_ID);
+
+	/**
+	 * Get Referenced record ID.
+	 *
+	 * <br>Type: Button
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getReferenced_Record_ID();
+
+    /** Column definition for Referenced_Record_ID */
+    public static final org.adempiere.model.ModelColumn<I_S_ExternalReference, Object> COLUMN_Referenced_Record_ID = new org.adempiere.model.ModelColumn<I_S_ExternalReference, Object>(I_S_ExternalReference.class, "Referenced_Record_ID", null);
+    /** Column name Referenced_Record_ID */
+    public static final String COLUMNNAME_Referenced_Record_ID = "Referenced_Record_ID";
+
+	/**
 	 * Set External reference.
 	 *
 	 * <br>Type: ID

@@ -27,32 +27,32 @@ import com.google.common.collect.ImmutableList;
 import de.metas.logging.LogManager;
 import de.metas.serviceprovider.ImportQueue;
 import de.metas.serviceprovider.external.ExternalId;
-import de.metas.serviceprovider.external.ExternalSystem;
 import de.metas.serviceprovider.external.project.ExternalProjectType;
 import de.metas.serviceprovider.external.reference.ExternalReference;
 import de.metas.serviceprovider.external.reference.ExternalReferenceRepository;
 import de.metas.serviceprovider.external.reference.ExternalReferenceType;
 import de.metas.serviceprovider.external.reference.GetReferencedIdRequest;
-import de.metas.serviceprovider.issue.IssueId;
-import de.metas.serviceprovider.issue.importer.info.ImportIssueInfo;
-import de.metas.serviceprovider.issue.importer.info.ImportIssuesRequest;
 import de.metas.serviceprovider.issue.IssueEntity;
+import de.metas.serviceprovider.issue.IssueId;
 import de.metas.serviceprovider.issue.IssueRepository;
 import de.metas.serviceprovider.issue.IssueType;
+import de.metas.serviceprovider.issue.importer.info.ImportIssueInfo;
+import de.metas.serviceprovider.issue.importer.info.ImportIssuesRequest;
 import de.metas.serviceprovider.issue.importer.info.ImportMilestoneInfo;
 import de.metas.serviceprovider.milestone.Milestone;
 import de.metas.serviceprovider.milestone.MilestoneId;
 import de.metas.serviceprovider.milestone.MilestoneRepository;
-import de.metas.user.UserId;
 import de.metas.util.Loggables;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.exceptions.AdempiereException;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 
 import static de.metas.serviceprovider.issue.importer.ImportConstants.IMPORT_LOG_MESSAGE_PREFIX;
 
@@ -86,6 +86,11 @@ public class IssueImporterService
 		{
 			final ImmutableList<ImportIssueInfo> issueInfos = importIssuesQueue.drainAll();
 			issueInfos.forEach(issue -> trxManager.runInNewTrx( () -> importIssue(issue)));
+		}
+
+		if (completableFuture.isCompletedExceptionally())
+		{
+			extractAndPropagateAdempiereException(completableFuture);
 		}
 	}
 
@@ -245,5 +250,21 @@ public class IssueImporterService
 						.build());
 
 		return MilestoneId.ofRepoIdOrNull(milestoneId);
+	}
+
+	private void extractAndPropagateAdempiereException(final CompletableFuture completableFuture)
+	{
+		try
+		{
+			completableFuture.get();
+		}
+		catch (final ExecutionException ex)
+		{
+			throw AdempiereException.wrapIfNeeded(ex.getCause());
+		}
+		catch (final InterruptedException ex1)
+		{
+			throw AdempiereException.wrapIfNeeded(ex1);
+		}
 	}
 }

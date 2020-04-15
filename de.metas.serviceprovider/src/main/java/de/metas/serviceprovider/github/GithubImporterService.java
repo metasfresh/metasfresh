@@ -114,6 +114,10 @@ public class GithubImporterService implements IssueImporter
 		catch (final Exception ex)
 		{
 			Loggables.withLogger(log, Level.ERROR).addLog(IMPORT_LOG_MESSAGE_PREFIX + ex.getMessage(), ex);
+
+			throw AdempiereException.wrapIfNeeded(ex)
+					.appendParametersToMessage()
+					.setParameter("requestList", requestList);
 		}
 		finally
 		{

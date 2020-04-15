@@ -22,11 +22,15 @@
 
 package de.metas.serviceprovider.external.reference;
 
+import de.metas.serviceprovider.model.I_S_Issue;
+import de.metas.serviceprovider.model.I_S_Milestone;
+import de.metas.serviceprovider.model.I_S_TimeBooking;
 import de.metas.util.lang.ReferenceListAwareEnum;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.I_AD_User;
 
 import java.util.stream.Stream;
 
@@ -39,12 +43,13 @@ import static de.metas.serviceprovider.model.X_S_ExternalReference.TYPE_UserID;
 @Getter
 public enum ExternalReferenceType implements ReferenceListAwareEnum
 {
-	ISSUE_ID(TYPE_IssueID),
-	USER_ID(TYPE_UserID),
-	TIME_BOOKING_ID(TYPE_TimeBookingID),
-	MILESTONE_ID(TYPE_MilestoneId);
+	ISSUE_ID(TYPE_IssueID, I_S_Issue.Table_Name),
+	USER_ID(TYPE_UserID, I_AD_User.Table_Name),
+	TIME_BOOKING_ID(TYPE_TimeBookingID, I_S_TimeBooking.Table_Name),
+	MILESTONE_ID(TYPE_MilestoneId, I_S_Milestone.Table_Name);
 
 	private final String code;
+	private final String tableName;
 
 	@NonNull
 	public static ExternalReferenceType ofCode(@NonNull final String code)

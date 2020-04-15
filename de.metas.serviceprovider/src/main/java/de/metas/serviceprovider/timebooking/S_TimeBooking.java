@@ -22,6 +22,8 @@
 
 package de.metas.serviceprovider.timebooking;
 
+import de.metas.i18n.AdMessageKey;
+import de.metas.i18n.IMsgBL;
 import de.metas.serviceprovider.external.reference.ExternalReferenceRepository;
 import de.metas.serviceprovider.external.reference.ExternalReferenceType;
 import de.metas.serviceprovider.model.I_S_TimeBooking;
@@ -49,12 +51,15 @@ import java.util.regex.Pattern;
 public class S_TimeBooking
 {
 	private final Pattern hmmPattern = Pattern.compile("^[0-9]+:[0-5][0-9]$");
+	private final String INCORRECT_FORMAT_MSG_KEY = "de.metas.serviceprovider.incorrectHmmFormat";
 
 	private final ExternalReferenceRepository externalReferenceRepository;
+	private final IMsgBL msgBL;
 
-	public S_TimeBooking(final ExternalReferenceRepository externalReferenceRepository)
+	public S_TimeBooking(final ExternalReferenceRepository externalReferenceRepository, final IMsgBL msgBL)
 	{
 		this.externalReferenceRepository = externalReferenceRepository;
+		this.msgBL = msgBL;
 	}
 
 	@Init
@@ -63,7 +68,7 @@ public class S_TimeBooking
 		Services.get(IProgramaticCalloutProvider.class).registerAnnotatedCallout(this);
 	}
 
-	@ModelChange(timings = ModelValidator.TYPE_AFTER_DELETE)
+	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
 	public void afterDelete(@NonNull final I_S_TimeBooking record)
 	{
 		externalReferenceRepository.deleteByRecordIdAndType(record.getS_TimeBooking_ID(), ExternalReferenceType.TIME_BOOKING_ID);
@@ -89,11 +94,9 @@ public class S_TimeBooking
 
 		if (!matcher.matches())
 		{
-			throw new AdempiereException(" Incorrect format! Please enter a value in H:mm format."
-					+ " (e.g. 2:02 - two hours and two minutes, "
-					+ "\n 100:02 - one hundred hours and two minutes, "
-					+ "\n 2:00 - two hours, "
-					+ "\n 0:02 - two minutes ");
+
+			throw new AdempiereException(msgBL.getTranslatableMsgText(AdMessageKey.of(INCORRECT_FORMAT_MSG_KEY)))
+					.markAsUserValidationError();
 		}
 	}
 }

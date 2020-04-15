@@ -33,9 +33,15 @@ import de.metas.serviceprovider.timebooking.TimeBookingId;
 import de.metas.serviceprovider.timebooking.TimeBookingRepository;
 import de.metas.user.UserId;
 import de.metas.user.api.IUserDAO;
+import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.callout.annotations.Callout;
+import org.adempiere.ad.callout.annotations.CalloutMethod;
+import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
+import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
@@ -43,6 +49,7 @@ import org.springframework.stereotype.Component;
 import java.util.Optional;
 
 @Interceptor(I_S_ExternalReference.class)
+@Callout(I_S_ExternalReference.class)
 @Component
 public class S_ExternalReference
 {
@@ -50,13 +57,21 @@ public class S_ExternalReference
 	private final IssueRepository issueRepository;
 	private final TimeBookingRepository timeBookingRepository;
 	private final MilestoneRepository milestoneRepository;
+	private final IADTableDAO adTableDAO;
 
-	public S_ExternalReference(final IUserDAO userDAO, final IssueRepository issueRepository, final TimeBookingRepository timeBookingRepository, final MilestoneRepository milestoneRepository)
+	public S_ExternalReference(final IUserDAO userDAO, final IssueRepository issueRepository, final TimeBookingRepository timeBookingRepository, final MilestoneRepository milestoneRepository, final IADTableDAO adTableDAO)
 	{
 		this.userDAO = userDAO;
 		this.issueRepository = issueRepository;
 		this.timeBookingRepository = timeBookingRepository;
 		this.milestoneRepository = milestoneRepository;
+		this.adTableDAO = adTableDAO;
+	}
+
+	@Init
+	public void registerCallout()
+	{
+		Services.get(IProgramaticCalloutProvider.class).registerAnnotatedCallout(this);
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE, ModelValidator.TYPE_BEFORE_NEW })
@@ -82,6 +97,22 @@ public class S_ExternalReference
 				throw new AdempiereException("There is no validation in place for ExternalReferenceType: " + externalReferenceType.getCode());
 		}
 	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE, ModelValidator.TYPE_BEFORE_NEW }, ifColumnsChanged = {I_S_ExternalReference.COLUMNNAME_Record_ID})
+	@CalloutMethod(columnNames = { I_S_ExternalReference.COLUMNNAME_Record_ID })
+	public void updateReferenced_Record_ID(final I_S_ExternalReference record)
+	{
+		record.setReferenced_Record_ID(record.getRecord_ID());
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE, ModelValidator.TYPE_BEFORE_NEW }, ifColumnsChanged = {I_S_ExternalReference.COLUMNNAME_Type})
+	@CalloutMethod(columnNames = { I_S_ExternalReference.COLUMNNAME_Type })
+	public void updateReferenced_Table_ID(final I_S_ExternalReference record)
+	{
+		final ExternalReferenceType externalReferenceType = ExternalReferenceType.ofCode(record.getType());
+		record.setReferenced_AD_Table_ID(adTableDAO.retrieveTableId(externalReferenceType.getTableName()));
+	}
+
 
 	private void validateUserId(@NonNull final UserId userId)
 	{

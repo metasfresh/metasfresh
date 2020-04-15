@@ -42,7 +42,7 @@ public class S_Issue
 		this.externalReferenceRepository = externalReferenceRepository;
 	}
 
-	@ModelChange(timings = ModelValidator.TYPE_AFTER_DELETE)
+	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
 	public void afterDelete(@NonNull final I_S_Issue record)
 	{
 		externalReferenceRepository.deleteByRecordIdAndType(record.getS_Issue_ID(), ExternalReferenceType.ISSUE_ID);

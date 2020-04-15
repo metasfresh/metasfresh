@@ -111,6 +111,10 @@ public class EverhourImporterService implements TimeBookingsImporter
 		catch (final Exception e)
 		{
 			Loggables.withLogger(log, Level.ERROR).addLog(IMPORT_TIME_BOOKINGS_LOG_MESSAGE_PREFIX + e.getMessage());
+
+			throw AdempiereException.wrapIfNeeded(e)
+					.appendParametersToMessage()
+					.setParameter("ImportTimeBookingsRequest", request);
 		}
 		finally
 		{
