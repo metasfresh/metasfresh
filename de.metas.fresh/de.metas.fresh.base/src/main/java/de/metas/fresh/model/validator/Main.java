@@ -51,7 +51,6 @@ import org.adempiere.mm.attributes.listeners.inAusLand.InvoiceLineInAusLandModel
 import org.adempiere.mm.attributes.listeners.inAusLand.OrderInAusLandModelAttributeSetInstanceListener;
 import org.adempiere.mm.attributes.listeners.inAusLand.OrderLineInAusLandModelAttributeSetInstanceListener;
 import org.adempiere.model.CopyRecordFactory;
-import org.compiere.model.I_AD_Client;
 
 import de.metas.fresh.model.I_Fresh_QtyOnHand;
 import de.metas.fresh.picking.form.SwingPickingTerminalPanel;
@@ -64,10 +63,8 @@ import de.metas.util.Services;
 public class Main extends AbstractModuleInterceptor
 {
 	@Override
-	protected void onInit(final IModelValidationEngine engine, final I_AD_Client client)
+	protected void onAfterInit()
 	{
-		super.onInit(engine, client);
-
 		// Services
 		final IModelAttributeSetInstanceListenerService modelAttributeSetInstanceListenerService = Services.get(IModelAttributeSetInstanceListenerService.class);
 
@@ -125,31 +122,31 @@ public class Main extends AbstractModuleInterceptor
 	}
 
 	@Override
-	protected void registerInterceptors(final IModelValidationEngine engine, final I_AD_Client client)
+	protected void registerInterceptors(final IModelValidationEngine engine)
 	{
 		//
 		// add model validators
-		engine.addModelValidator(new C_Order(), client);
-		engine.addModelValidator(new C_Invoice_Candidate(), client);
-		engine.addModelValidator(new de.metas.fresh.freshQtyOnHand.model.validator.Fresh_QtyOnHand(), client);
-		engine.addModelValidator(new de.metas.fresh.freshQtyOnHand.model.validator.Fresh_QtyOnHand_Line(), client);
+		engine.addModelValidator(new C_Order());
+		engine.addModelValidator(new C_Invoice_Candidate());
+		engine.addModelValidator(new de.metas.fresh.freshQtyOnHand.model.validator.Fresh_QtyOnHand());
+		engine.addModelValidator(new de.metas.fresh.freshQtyOnHand.model.validator.Fresh_QtyOnHand_Line());
 
-		engine.addModelValidator(de.metas.fresh.material.interceptor.Fresh_QtyOnHand.INSTANCE, client);
-		engine.addModelValidator(de.metas.fresh.material.interceptor.PMM_PurchaseCandidate.INSTANCE, client);
+		engine.addModelValidator(de.metas.fresh.material.interceptor.Fresh_QtyOnHand.INSTANCE);
+		engine.addModelValidator(de.metas.fresh.material.interceptor.PMM_PurchaseCandidate.INSTANCE);
 
-		engine.addModelValidator(de.metas.fresh.ordercheckup.model.validator.C_Order.instance, client); // task 09028
-		engine.addModelValidator(de.metas.fresh.ordercheckup.model.validator.C_Order_MFGWarehouse_ReportLine.instance, client); // task 09028
+		engine.addModelValidator(de.metas.fresh.ordercheckup.model.validator.C_Order.instance); // task 09028
+		engine.addModelValidator(de.metas.fresh.ordercheckup.model.validator.C_Order_MFGWarehouse_ReportLine.instance); // task 09028
 
 		// task 09421
-		engine.addModelValidator(de.metas.fresh.mrp_productinfo.model.validator.C_Order.INSTANCE, client);
-		engine.addModelValidator(de.metas.fresh.mrp_productinfo.model.validator.Fresh_QtyOnHand.INSTANCE, client);
+		engine.addModelValidator(de.metas.fresh.mrp_productinfo.model.validator.C_Order.INSTANCE);
+		engine.addModelValidator(de.metas.fresh.mrp_productinfo.model.validator.Fresh_QtyOnHand.INSTANCE);
 
 		// task FRESH-905: work with M_Transaction to update on each storage change
-		engine.addModelValidator(de.metas.fresh.mrp_productinfo.model.validator.M_Transaction.INSTANCE, client);
-		// engine.addModelValidator(de.metas.fresh.mrp_productinfo.model.validator.M_InOut.INSTANCE, client);
-		// engine.addModelValidator(de.metas.fresh.mrp_productinfo.model.validator.M_Movement.INSTANCE, client);
+		engine.addModelValidator(de.metas.fresh.mrp_productinfo.model.validator.M_Transaction.INSTANCE);
+		// engine.addModelValidator(de.metas.fresh.mrp_productinfo.model.validator.M_InOut.INSTANCE);
+		// engine.addModelValidator(de.metas.fresh.mrp_productinfo.model.validator.M_Movement.INSTANCE);
 
-		engine.addModelValidator(de.metas.fresh.mrp_productinfo.model.validator.PMM_PurchaseCandidate.INSTANCE, client); // task FRESH-86
+		engine.addModelValidator(de.metas.fresh.mrp_productinfo.model.validator.PMM_PurchaseCandidate.INSTANCE); // task FRESH-86
 	}
 
 	private void apply_Fresh_GOLIVE_Workarounds()

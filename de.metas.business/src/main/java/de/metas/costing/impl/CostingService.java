@@ -2,6 +2,7 @@ package de.metas.costing.impl;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
@@ -13,7 +14,6 @@ import org.adempiere.service.ClientId;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
 
-import java.util.Objects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSetMultimap;
@@ -84,7 +84,9 @@ public class CostingService implements ICostingService
 {
 	private static final Logger logger = LogManager.getLogger(CostingService.class);
 
+	private final IAcctSchemaDAO acctSchemasRepo = Services.get(IAcctSchemaDAO.class);
 	private final IProductCostingBL productCostingBL = Services.get(IProductCostingBL.class);
+	private final ICurrencyBL currencyConversionBL = Services.get(ICurrencyBL.class);
 	private final ICostDetailRepository costDetailsRepo;
 	private final ICostElementRepository costElementsRepo;
 	private final ICurrentCostsRepository currentCostsRepo;
@@ -100,20 +102,22 @@ public class CostingService implements ICostingService
 		this.costDetailsRepo = costDetailsRepo;
 		this.costElementsRepo = costElementsRepo;
 		this.currentCostsRepo = currentCostsRepo;
-		this.costingMethodHandlers = costingMethodHandlers.stream()
-				.collect(ImmutableSetMultimap.toImmutableSetMultimap(CostingMethodHandler::getCostingMethod, Function.identity()));
+
+		this.costingMethodHandlers = costingMethodHandlers
+				.stream()
+				.collect(ImmutableSetMultimap.toImmutableSetMultimap(
+						CostingMethodHandler::getCostingMethod,
+						Function.identity()));
 		logger.info("Costing method handlers: {}", this.costingMethodHandlers);
 	}
 
 	private AcctSchema getAcctSchemaById(final AcctSchemaId acctSchemaId)
 	{
-		final IAcctSchemaDAO acctSchemasRepo = Services.get(IAcctSchemaDAO.class);
 		return acctSchemasRepo.getById(acctSchemaId);
 	}
 
 	private List<AcctSchema> getAllAcctSchemaByClientId(final ClientId clientId)
 	{
-		final IAcctSchemaDAO acctSchemasRepo = Services.get(IAcctSchemaDAO.class);
 		return acctSchemasRepo.getAllByClient(clientId);
 	}
 
@@ -182,7 +186,6 @@ public class CostingService implements ICostingService
 			return request;
 		}
 
-		final ICurrencyBL currencyConversionBL = Services.get(ICurrencyBL.class);
 		final CurrencyConversionContext conversionCtx = currencyConversionBL.createCurrencyConversionContext(
 				request.getDate(),
 				request.getCurrencyConversionTypeId(),
@@ -370,17 +373,19 @@ public class CostingService implements ICostingService
 		return createCostResult(costElementResults);
 	}
 
-	private Stream<CostDetailCreateResult> createReversalCostDetailsAndStream(final CostDetail costDetail, final CostDetailReverseRequest reversalRequest)
+	private Stream<CostDetailCreateResult> createReversalCostDetailsAndStream(
+			@NonNull final CostDetail costDetail,
+			@NonNull final CostDetailReverseRequest reversalRequest)
 	{
 		final CostElementId costElementId = costDetail.getCostElementId();
-		final CostElement costElement = costElementsRepo.getById(costElementId);
+		final CostElement costElement = costElementsRepo.getByIdIfExists(costElementId).orElse(null);
 		if (costElement == null)
 		{
 			// cost element was disabled in meantime
 			return Stream.empty();
 		}
 
-		final CostDetailCreateRequest request = createCostDetailCreateRequestFromReversalRequest(reversalRequest, costDetail, costElement);
+		final CostDetailCreateRequest request = toCostDetailCreateRequestFromReversalRequest(reversalRequest, costDetail, costElement);
 		return getCostingMethodHandlers(costElement.getCostingMethod(), request.getDocumentRef())
 				.stream()
 				.map(handler -> handler.createOrUpdateCost(request))
@@ -388,7 +393,7 @@ public class CostingService implements ICostingService
 				.map(Optional::get);
 	}
 
-	private static final CostDetailCreateRequest createCostDetailCreateRequestFromReversalRequest(
+	private static final CostDetailCreateRequest toCostDetailCreateRequestFromReversalRequest(
 			@NonNull final CostDetailReverseRequest reversalRequest,
 			@NonNull final CostDetail costDetail,
 			@NonNull final CostElement costElement)

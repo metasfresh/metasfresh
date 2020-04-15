@@ -1,7 +1,6 @@
 package de.metas.acct.api.impl;
 
 import java.util.List;
-import java.util.Optional;
 
 /*
  * #%L
@@ -30,7 +29,6 @@ import java.util.Properties;
 import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.IClientDAO;
 import org.adempiere.util.lang.IAutoCloseable;
@@ -52,7 +50,6 @@ import de.metas.acct.posting.DocumentPostRequest;
 import de.metas.acct.posting.DocumentPostingBusService;
 import de.metas.adempiere.form.IClientUI;
 import de.metas.adempiere.form.IClientUIInvoker;
-import de.metas.document.engine.IDocument;
 import de.metas.event.Topic;
 import de.metas.logging.LogManager;
 import de.metas.notification.INotificationBL;
@@ -175,12 +172,7 @@ import lombok.ToString;
 		{
 			final List<AcctSchema> ass = Services.get(IAcctSchemaDAO.class).getAllByClient(clientId);
 
-			final Doc<?> doc = docFactory.getOrNull(ass, documentRef);
-			if (doc == null)
-			{
-				throw new PostingExecutionException("No accountable document found: " + this);
-			}
-
+			final Doc<?> doc = docFactory.get(ass, documentRef);
 			final boolean repost = true;
 			doc.post(force, repost);
 		}
@@ -229,13 +221,6 @@ import lombok.ToString;
 	}
 
 	@Override
-	public IPostingRequestBuilder setDocument(final int adTableId, final int recordId)
-	{
-		setDocumentRef(TableRecordReference.of(adTableId, recordId));
-		return this;
-	}
-
-	@Override
 	public IPostingRequestBuilder setDocumentRef(@NonNull final TableRecordReference documentRef)
 	{
 		assertNotExecuted();
@@ -247,46 +232,6 @@ import lombok.ToString;
 	{
 		Check.assumeNotNull(_documentRef, "document is set");
 		return _documentRef;
-	}
-
-	@Override
-	public IPostingRequestBuilder setDocumentFromModel(final Object documentObj)
-	{
-		assertNotExecuted();
-		Check.assumeNotNull(documentObj, "documentObj not null");
-
-		if (documentObj instanceof IDocument)
-		{
-			final IDocument document = IDocument.cast(documentObj);
-			setDocument(document);
-			return this;
-		}
-		else
-		{
-			setDocumentFromModel0(documentObj);
-			return this;
-		}
-	}
-
-	private void setDocumentFromModel0(@NonNull final Object documentObj)
-	{
-		assertNotExecuted();
-
-		final Optional<Integer> adClientIdOpt = InterfaceWrapperHelper.getValue(documentObj, "AD_Client_ID");
-		final ClientId clientId = ClientId.ofRepoId(adClientIdOpt.get());
-		final TableRecordReference documentRef = TableRecordReference.of(documentObj);
-
-		setClientId(clientId);
-		setDocumentRef(documentRef);
-	}
-
-	@Override
-	public IPostingRequestBuilder setDocument(@NonNull final IDocument document)
-	{
-		setClientId(ClientId.ofRepoId(document.getAD_Client_ID()));
-		setDocumentRef(document.toTableRecordReference());
-
-		return this;
 	}
 
 	@Override

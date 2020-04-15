@@ -1,10 +1,11 @@
 package de.metas.acct.posting;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import org.adempiere.service.ClientId;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -37,10 +38,10 @@ public class DocumentPostRequestTest
 {
 	private ObjectMapper jsonObjectMapper;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
-		jsonObjectMapper = 	JsonObjectMapperHolder.newJsonObjectMapper();
+		jsonObjectMapper = JsonObjectMapperHolder.newJsonObjectMapper();
 	}
 
 	@Test
@@ -59,7 +60,7 @@ public class DocumentPostRequestTest
 	{
 		final String json = jsonObjectMapper.writeValueAsString(request);
 		final DocumentPostRequest requestDeserialized = jsonObjectMapper.readValue(json, DocumentPostRequest.class);
-		Assert.assertEquals(request, requestDeserialized);
+		assertThat(requestDeserialized).isEqualTo(request);
 	}
 
 }

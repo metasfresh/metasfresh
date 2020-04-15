@@ -183,4 +183,6 @@ public interface IProductBL extends ISingletonService
 	String getProductName(ProductId productId);
 
 	ProductType getProductType(ProductId productId);
+
+	ProductCategoryId getDefaultProductCategoryId();
 }

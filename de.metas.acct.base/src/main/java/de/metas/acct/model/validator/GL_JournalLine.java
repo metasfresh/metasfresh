@@ -23,6 +23,9 @@ import de.metas.util.Services;
 public class GL_JournalLine
 {
 	// private static final transient Logger logger = CLogMgt.getLogger(GL_JournalLine.class);
+	private final IGLJournalLineBL glJournalLineBL = Services.get(IGLJournalLineBL.class);
+	private final IGLJournalBL glJournalBL = Services.get(IGLJournalBL.class);
+	private final IGLJournalLineDAO glJournalLineDAO = Services.get(IGLJournalLineDAO.class);
 
 	@Init
 	public void init()
@@ -33,10 +36,6 @@ public class GL_JournalLine
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
 	public void beforeSave(final I_GL_JournalLine glJournalLine, final int timing)
 	{
-		// Services
-		final IGLJournalLineBL glJournalLineBL = Services.get(IGLJournalLineBL.class);
-		final IGLJournalBL glJournalBL = Services.get(IGLJournalBL.class);
-
 		final boolean newRecord = ModelChangeType.valueOf(timing).isNew();
 
 		final I_GL_Journal glJournal = glJournalLine.getGL_Journal();
@@ -49,7 +48,7 @@ public class GL_JournalLine
 		// Set LineNo if not already set
 		if (newRecord && glJournalLine.getLine() <= 0)
 		{
-			final int lastLineNo = Services.get(IGLJournalLineDAO.class).retrieveLastLineNo(glJournal);
+			final int lastLineNo = glJournalLineDAO.retrieveLastLineNo(glJournal);
 			final int lineNo = lastLineNo + 10;
 			glJournalLine.setLine(lineNo);
 		}

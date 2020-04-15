@@ -16,6 +16,7 @@ import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableMap;
 
 import de.metas.acct.api.AcctSchema;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -69,7 +70,10 @@ public abstract class AcctDocProviderTemplate implements IAcctDocProvider
 	}
 
 	@Override
-	public final Doc<?> getOrNull(final List<AcctSchema> acctSchemas, final TableRecordReference documentRef)
+	public final Doc<?> getOrNull(
+			@NonNull final AcctDocRequiredServicesFacade services,
+			@NonNull final List<AcctSchema> acctSchemas,
+			@NonNull final TableRecordReference documentRef)
 	{
 		final String tableName = documentRef.getTableName();
 
@@ -80,6 +84,7 @@ public abstract class AcctDocProviderTemplate implements IAcctDocProvider
 		}
 
 		return docFactory.createAcctDoc(AcctDocContext.builder()
+				.services(services)
 				.acctSchemas(acctSchemas)
 				.documentModel(retrieveDocumentModel(documentRef))
 				.build());
@@ -100,7 +105,7 @@ public abstract class AcctDocProviderTemplate implements IAcctDocProvider
 	}
 
 	@FunctionalInterface
-	protected static interface AcctDocFactory
+	protected interface AcctDocFactory
 	{
 		Doc<?> createAcctDoc(AcctDocContext ctx);
 	}

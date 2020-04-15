@@ -3,6 +3,7 @@ package de.metas.cache.model;
 import java.util.Collection;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.Function;
 
 import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 
@@ -89,11 +90,20 @@ public class CacheInvalidateMultiRequest
 		return of(CacheInvalidateRequest.rootRecord(rootTableName, rootRecordId));
 	}
 
-	public static CacheInvalidateMultiRequest rootRecords(@NonNull final String rootTableName, @NonNull final Set<? extends RepoIdAware> ids)
+	public static <T extends RepoIdAware> CacheInvalidateMultiRequest rootRecords(@NonNull final String rootTableName, @NonNull final Set<? extends RepoIdAware> ids)
 	{
-		Check.assumeNotEmpty(ids, "ids is not empty");
+		return rootRecords(rootTableName, ids, Function.identity());
+	}
 
-		final ImmutableSet<CacheInvalidateRequest> requests = ids.stream()
+	public static <T, ID extends RepoIdAware> CacheInvalidateMultiRequest rootRecords(
+			@NonNull final String rootTableName,
+			@NonNull final Set<T> idObjs,
+			@NonNull final Function<T, ID> idMapper)
+	{
+		Check.assumeNotEmpty(idObjs, "ids is not empty");
+
+		final ImmutableSet<CacheInvalidateRequest> requests = idObjs.stream()
+				.map(idMapper)
 				.map(id -> CacheInvalidateRequest.rootRecord(rootTableName, id))
 				.collect(ImmutableSet.toImmutableSet());
 

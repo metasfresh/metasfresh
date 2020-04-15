@@ -24,8 +24,6 @@ package org.adempiere.ad.modelvalidator;
 
 import java.util.List;
 
-import javax.annotation.OverridingMethodsMustInvokeSuper;
-
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.ui.api.ITabCalloutFactory;
 import org.compiere.model.I_AD_Client;
@@ -37,6 +35,7 @@ import de.metas.event.IEventBusFactory;
 import de.metas.event.Topic;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 /**
  * To be extended by module/project main interceptors.
@@ -53,26 +52,27 @@ import de.metas.util.Services;
  */
 public abstract class AbstractModuleInterceptor extends AbstractModelInterceptor
 {
-	/**
-	 * Called when module is about to be initialized.
-	 * <p>
-	 * Instead of overriding this method, please consider overriding {@link #onAfterInit()} or one of the other methods such as {@link #registerCallouts(IProgramaticCalloutProvider)}.
-	 *
-	 * @param engine
-	 * @param client
-	 */
 	@Override
-	@OverridingMethodsMustInvokeSuper
-	protected void onInit(final IModelValidationEngine engine, final I_AD_Client client)
+	protected final void onInit(@NonNull final IModelValidationEngine engine, final I_AD_Client client_NOTUSED)
 	{
+		Check.assumeNull(client_NOTUSED, "client shall be null but it was {}", client_NOTUSED);
 		Check.assume(Services.isAutodetectServices(), "We work with activated service auto detection");
 
-		registerInterceptors(engine, client);
+		onBeforeInit();
+		registerInterceptors(engine);
 		registerTabCallouts(Services.get(ITabCalloutFactory.class));
 		registerCallouts(Services.get(IProgramaticCalloutProvider.class));
 		setupCaching(Services.get(IModelCacheService.class));
 		setupEventBus();
 		onAfterInit();
+	}
+	
+	/**
+	 * Called by {@link #onInit(IModelValidationEngine, I_AD_Client)} right before anything else.
+	 */
+	protected void onBeforeInit()
+	{
+		// nothing at this level
 	}
 
 	/**
@@ -95,11 +95,8 @@ public abstract class AbstractModuleInterceptor extends AbstractModelInterceptor
 
 	/**
 	 * Called onInit to register module interceptors
-	 *
-	 * @param engine
-	 * @param client
 	 */
-	protected void registerInterceptors(final IModelValidationEngine engine, final I_AD_Client client)
+	protected void registerInterceptors(@NonNull final IModelValidationEngine engine)
 	{
 		// nothing on this level
 	}
@@ -119,7 +116,7 @@ public abstract class AbstractModuleInterceptor extends AbstractModelInterceptor
 	 *
 	 * @param calloutsRegistry
 	 */
-	protected void registerCallouts(final IProgramaticCalloutProvider calloutsRegistry)
+	protected void registerCallouts(@NonNull final IProgramaticCalloutProvider calloutsRegistry)
 	{
 		// nothing on this level
 	}

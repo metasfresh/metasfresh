@@ -1,34 +1,9 @@
 package de.metas.acct.api;
 
-/*
- * #%L
- * de.metas.adempiere.adempiere.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.util.Properties;
-
 import org.adempiere.service.ClientId;
 import org.adempiere.util.lang.impl.TableRecordReference;
 
 import de.metas.adempiere.form.IClientUIInvoker;
-import de.metas.document.engine.IDocument;
 import de.metas.user.UserId;
 
 /**
@@ -102,29 +77,6 @@ public interface IPostingRequestBuilder
 
 	/** Sets the processing context's AD_Client_ID to be used */
 	IPostingRequestBuilder setClientId(ClientId clientId);
-
-	/**
-	 * Sets the document to be processed. i.e.
-	 * <ul>
-	 * <li>{@link #setDocument(int, int)}
-	 * <li>{@link #setContext(Properties, String)}
-	 * <li>{@link #setAD_Client_ID(int)}
-	 * </ul>
-	 * 
-	 * @param document
-	 */
-	IPostingRequestBuilder setDocument(final IDocument document);
-
-	/** see {@link #setDocument(IDocument)} */
-	IPostingRequestBuilder setDocumentFromModel(final Object documentObj);
-
-	/**
-	 * Sets the document to be processed.
-	 * 
-	 * @param adTableId
-	 * @param recordId
-	 */
-	IPostingRequestBuilder setDocument(final int adTableId, final int recordId);
 
 	IPostingRequestBuilder setDocumentRef(TableRecordReference documentRef);
 

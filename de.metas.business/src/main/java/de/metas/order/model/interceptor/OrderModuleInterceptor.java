@@ -5,7 +5,6 @@ import java.util.List;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
-import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 
@@ -28,7 +27,7 @@ public class OrderModuleInterceptor extends AbstractModuleInterceptor
 
 	private OrderModuleInterceptor()
 	{
-	};
+	}
 
 	@Override
 	protected List<Topic> getAvailableUserNotificationsTopics()
@@ -37,9 +36,9 @@ public class OrderModuleInterceptor extends AbstractModuleInterceptor
 	}
 
 	@Override
-	protected void registerInterceptors(final IModelValidationEngine engine, final I_AD_Client client)
+	protected void registerInterceptors(final IModelValidationEngine engine)
 	{
-		engine.addModelValidator(de.metas.order.model.interceptor.C_Order.INSTANCE, client); // FRESH-348
+		engine.addModelValidator(de.metas.order.model.interceptor.C_Order.INSTANCE); // FRESH-348
 
 		//
 		// Elasticsearch indexing
@@ -51,7 +50,7 @@ public class OrderModuleInterceptor extends AbstractModuleInterceptor
 					.triggerOnDelete()
 					.buildAndInstall();
 		}
-	};
+	}
 
 	@Override
 	protected void registerCallouts(final IProgramaticCalloutProvider calloutsRegistry)
