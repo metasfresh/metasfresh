@@ -83,7 +83,7 @@ public interface IPriceListDAO extends ISingletonService
 	 *
 	 * @param pricingSystem
 	 * @param countryId
-	 * @param soTrx sales, purchase or null to return both
+	 * @param soTrx         sales, purchase or null to return both
 	 */
 	List<I_M_PriceList> retrievePriceLists(PricingSystemId pricingSystemId, CountryId countryId, SOTrx soTrx);
 
@@ -106,9 +106,9 @@ public interface IPriceListDAO extends ISingletonService
 	 *
 	 * @param priceListId
 	 * @param date
-	 * @param processed optional, can be <code>null</code>. Allow to filter by <code>I_M_PriceList.Processed</code>
+	 * @param processed   optional, can be <code>null</code>. Allow to filter by <code>I_M_PriceList.Processed</code>
 	 */
-	I_M_PriceList_Version retrievePriceListVersionOrNull(PriceListId priceListId, ZonedDateTime date, Boolean processed);
+	I_M_PriceList_Version retrievePriceListVersionOrNull(PriceListId priceListId, ZonedDateTime date, @Nullable Boolean processed);
 
 	PriceListVersionId retrievePriceListVersionIdOrNull(PriceListId priceListId, ZonedDateTime date, Boolean processed);
 
@@ -128,7 +128,9 @@ public interface IPriceListDAO extends ISingletonService
 		return priceListVersionId;
 	}
 
-	/** @return next product price's MatchSeqNo */
+	/**
+	 * @return next product price's MatchSeqNo
+	 */
 	int retrieveNextMatchSeqNo(final I_M_ProductPrice productPrice);
 
 	I_M_PriceList_Version retrievePriceListVersionWithExactValidDate(PriceListId priceListId, Date date);

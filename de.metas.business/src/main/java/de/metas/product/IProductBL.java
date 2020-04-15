@@ -97,23 +97,31 @@ public interface IProductBL extends ISingletonService
 
 	I_M_AttributeSetInstance getCreateASI(Properties ctx, int M_AttributeSetInstance_ID, int M_Product_ID);
 
-	/** @return UOM used in material storage; never return null; */
+	/**
+	 * @return UOM used in material storage; never return null;
+	 */
 	I_C_UOM getStockUOM(I_M_Product product);
 
-	/** @return UOM used in material storage; never return null; */
+	/**
+	 * @return UOM used in material storage; never return null;
+	 */
 	I_C_UOM getStockUOM(int productId);
 
-	/** @return UOM used in material storage; never return null; */
+	/**
+	 * @return UOM used in material storage; never return null;
+	 */
 	default I_C_UOM getStockUOM(@NonNull final ProductId productId)
 	{
 		return getStockUOM(productId.getRepoId());
 	}
 
+	@NonNull
 	default UomId getStockUOMId(@NonNull final ProductId productId)
 	{
 		return getStockUOMId(productId.getRepoId());
 	}
 
+	@NonNull
 	default UomId getStockUOMId(final int productId)
 	{
 		return UomId.ofRepoId(getStockUOM(productId).getC_UOM_ID());
@@ -132,7 +140,7 @@ public interface IProductBL extends ISingletonService
 
 	/**
 	 * Checks if given product is a Trading Product.
-	 *
+	 * <p>
 	 * A product is considered a Trading Product when it is Purchased and it is also Sold.
 	 *
 	 * @param product

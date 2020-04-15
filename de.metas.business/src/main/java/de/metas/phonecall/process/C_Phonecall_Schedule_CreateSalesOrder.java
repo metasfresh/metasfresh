@@ -67,12 +67,14 @@ public class C_Phonecall_Schedule_CreateSalesOrder extends JavaProcess implement
 		final I_C_BPartner partnerRecord = bpartnerDAO.getById(phonecallSchedule.getBpartnerAndLocationId().getBpartnerId());
 
 		final I_C_Order draftOrder = OrderFactory.newSalesOrder()
-				.billBPartner(phonecallSchedule.getBpartnerAndLocationId().getBpartnerId().getRepoId(),
-						phonecallSchedule.getBpartnerAndLocationId().getRepoId(),
-						phonecallSchedule.getContactId().getRepoId())
 				.shipBPartner(phonecallSchedule.getBpartnerAndLocationId().getBpartnerId(),
 						phonecallSchedule.getBpartnerAndLocationId().getRepoId(),
 						phonecallSchedule.getContactId().getRepoId())
+				// // this makes the system create a SO with deactivated BPartner Contact, if you have 3 contacts and the first 2 have IsActive=false
+				// // kept here for easy repro of https://github.com/metasfresh/metasfresh/issues/6463
+				// // can be deleted after that bug is fixed
+				// .shipBPartner(phonecallSchedule.getBpartnerAndLocationId().getBpartnerId())
+				//
 				.docType(docTypeId)
 				.paymentTermId(partnerRecord.getC_PaymentTerm_ID())
 				.createDraftOrderHeader();
@@ -86,7 +88,7 @@ public class C_Phonecall_Schedule_CreateSalesOrder extends JavaProcess implement
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(final IProcessPreconditionsContext context)
 	{
-		if(!context.isSingleSelection())
+		if (!context.isSingleSelection())
 		{
 			return ProcessPreconditionsResolution.rejectBecauseNotSingleSelection();
 		}
