@@ -381,11 +381,13 @@ class FiltersItem extends PureComponent {
       );
     } else {
       // update the active filter with the defaultValue if value from active filter is empty
-      let activeFilterClone = _.cloneDeep(activeFilter);
+      const activeFilterClone = _.cloneDeep(activeFilter);
       activeFilterClone.parameters.map((afcItem, index) => {
-        afcItem.value = !afcItem.value
-          ? filter.parameters[index].defaultValue
-          : afcItem.value;
+        // YesNo filters (checkboxes) can be either null, true or false
+        afcItem.value =
+          !afcItem.value && afcItem.value !== false
+            ? filter.parameters[index].defaultValue
+            : afcItem.value;
         return afcItem;
       });
 
