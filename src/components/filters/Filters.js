@@ -210,6 +210,11 @@ class Filters extends PureComponent {
                   }, '');
                   break;
                 case 'YesNo':
+                  if (value === null) {
+                    captionName = '';
+                    itemCaption = '';
+                  }
+                  break;
                 case 'Switch':
                 default:
                   if (!value) {
