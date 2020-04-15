@@ -842,6 +842,81 @@ UNION ALL
 SELECT * FROM report.fresh_pricelist_details_template_report_With_PP_PI(@C_BPartner_ID/NULL@, @M_PriceList_Version_ID/NULL@,''@#AD_Language@'',@C_BPartner_Location_ID/NULL@, ''@p_show_product_price_pi_flag/NULL@'') where show_product_price_pi_flag = ''Y'';',Updated=TO_TIMESTAMP('2020-04-15 16:56:23','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=584659
 ;
 
+-- 2020-04-15T14:34:35.508Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET Name='Preisliste Packvorschriften', PrintName='Preisliste Packvorschriften',Updated=TO_TIMESTAMP('2020-04-15 17:34:35','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=577666 AND AD_Language='de_CH'
+;
+
+-- 2020-04-15T14:34:35.545Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(577666,'de_CH')
+;
+
+-- 2020-04-15T14:34:40.563Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET Name='Preisliste Packvorschriften', PrintName='Preisliste Packvorschriften',Updated=TO_TIMESTAMP('2020-04-15 17:34:40','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=577666 AND AD_Language='de_DE'
+;
+
+-- 2020-04-15T14:34:40.564Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(577666,'de_DE')
+;
+
+-- 2020-04-15T14:34:40.590Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_ad_element_on_ad_element_trl_update(577666,'de_DE')
+;
+
+-- 2020-04-15T14:34:40.596Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET ColumnName='p_show_product_price_pi_flag', Name='Preisliste Packvorschriften', Description=NULL, Help=NULL WHERE AD_Element_ID=577666
+;
+
+-- 2020-04-15T14:34:40.597Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName='p_show_product_price_pi_flag', Name='Preisliste Packvorschriften', Description=NULL, Help=NULL, AD_Element_ID=577666 WHERE UPPER(ColumnName)='P_SHOW_PRODUCT_PRICE_PI_FLAG' AND IsCentrallyMaintained='Y' AND AD_Element_ID IS NULL
+;
+
+-- 2020-04-15T14:34:40.598Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName='p_show_product_price_pi_flag', Name='Preisliste Packvorschriften', Description=NULL, Help=NULL WHERE AD_Element_ID=577666 AND IsCentrallyMaintained='Y'
+;
+
+-- 2020-04-15T14:34:40.598Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Preisliste Packvorschriften', Description=NULL, Help=NULL WHERE (AD_Column_ID IN (SELECT AD_Column_ID FROM AD_Column WHERE AD_Element_ID=577666) AND AD_Name_ID IS NULL ) OR (AD_Name_ID = 577666)
+;
+
+-- 2020-04-15T14:34:40.610Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_PrintFormatItem pi SET PrintName='Preisliste Packvorschriften', Name='Preisliste Packvorschriften' WHERE IsCentrallyMaintained='Y' AND EXISTS (SELECT * FROM AD_Column c  WHERE c.AD_Column_ID=pi.AD_Column_ID AND c.AD_Element_ID=577666)
+;
+
+-- 2020-04-15T14:34:40.611Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab SET Name='Preisliste Packvorschriften', Description=NULL, Help=NULL, CommitWarning = NULL WHERE AD_Element_ID = 577666
+;
+
+-- 2020-04-15T14:34:40.612Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_WINDOW SET Name='Preisliste Packvorschriften', Description=NULL, Help=NULL WHERE AD_Element_ID = 577666
+;
+
+-- 2020-04-15T14:34:40.613Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Menu SET   Name = 'Preisliste Packvorschriften', Description = NULL, WEBUI_NameBrowse = NULL, WEBUI_NameNew = NULL, WEBUI_NameNewBreadcrumb = NULL WHERE AD_Element_ID = 577666
+;
+
+-- 2020-04-15T14:34:51.028Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET Name='Pricelist Instructions', PrintName='Pricelist Instructions',Updated=TO_TIMESTAMP('2020-04-15 17:34:51','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=577666 AND AD_Language='en_US'
+;
+
+-- 2020-04-15T14:34:51.029Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(577666,'en_US')
+;
+
 DROP VIEW IF EXISTS rv_fresh_pricelist;
 DROP VIEW IF EXISTS RV_fresh_PriceList_Comparison;
 
