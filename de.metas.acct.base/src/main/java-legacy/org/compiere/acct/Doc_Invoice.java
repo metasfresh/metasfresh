@@ -26,7 +26,6 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
-import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.invoice.service.IInvoiceDAO;
@@ -51,6 +50,10 @@ import de.metas.acct.api.PostingType;
 import de.metas.acct.api.ProductAcctType;
 import de.metas.acct.doc.AcctDocContext;
 import de.metas.acct.doc.DocLine_Invoice;
+import de.metas.invoice.IMatchInvDAO;
+import de.metas.invoice.InvoiceId;
+import de.metas.invoice.InvoiceLineId;
+import de.metas.invoice.MatchInvId;
 import de.metas.tax.api.TaxId;
 import de.metas.util.Services;
 
@@ -70,6 +73,8 @@ import de.metas.util.Services;
  */
 public class Doc_Invoice extends Doc<DocLine_Invoice>
 {
+	private final IMatchInvDAO matchInvDAO = Services.get(IMatchInvDAO.class);
+
 	private static final String SYSCONFIG_PostMatchInvs = "org.compiere.acct.Doc_Invoice.PostMatchInvs";
 	private static final boolean DEFAULT_PostMatchInvs = false;
 
@@ -173,7 +178,8 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 			final BigDecimal lineIncludedTaxAmt = docLine.getIncludedTaxAmt();
 			if (lineIncludedTaxAmt.signum() != 0)
 			{
-				final DocTax docTax = getDocTaxOrNull(docLine.getC_Tax_ID());
+				final TaxId taxId = docLine.getTaxId().orElse(null);
+				final DocTax docTax = getDocTaxOrNull(taxId);
 				if (docTax != null)
 				{
 					docTax.addIncludedTax(lineIncludedTaxAmt);
@@ -207,7 +213,8 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 				final BigDecimal diff = docTax.getIncludedTaxDifference();
 				for (final DocLine_Invoice docLine : docLines)
 				{
-					if (docLine.getC_Tax_ID() == docTax.getC_Tax_ID())
+					final TaxId taxId = docLine.getTaxId().orElse(null);
+					if (taxId != null && taxId.getRepoId() == docTax.getC_Tax_ID())
 					{
 						docLine.setLineNetAmtDifference(diff);
 						break;
@@ -219,6 +226,11 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 		//
 		return docLines;
 	}	// loadLines
+
+	public InvoiceId getInvoiceId()
+	{
+		return InvoiceId.ofRepoId(get_ID());
+	}
 
 	public final boolean isCreditMemo()
 	{
@@ -259,11 +271,16 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 		return retValue;
 	}
 
-	final DocTax getDocTaxOrNull(final int taxId)
+	final DocTax getDocTaxOrNull(final TaxId taxId)
 	{
+		if (taxId == null)
+		{
+			return null;
+		}
+
 		return getTaxes()
 				.stream()
-				.filter(docTax -> docTax.getC_Tax_ID() == taxId)
+				.filter(docTax -> docTax.getC_Tax_ID() == taxId.getRepoId())
 				.findFirst()
 				.orElse(null);
 	}
@@ -801,10 +818,10 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 			return;
 		}
 
-		final Set<Integer> invoiceLineIds = new HashSet<>();
+		final Set<InvoiceLineId> invoiceLineIds = new HashSet<>();
 		for (final DocLine_Invoice line : getDocLines())
 		{
-			invoiceLineIds.add(line.get_ID());
+			invoiceLineIds.add(line.getInvoiceLineId());
 		}
 
 		// 08643
@@ -814,17 +831,8 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 			return;
 		}
 
-		final List<I_M_MatchInv> matchInvs = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_M_MatchInv.class)
-				.addInArrayOrAllFilter(I_M_MatchInv.COLUMN_C_InvoiceLine_ID, invoiceLineIds)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_M_MatchInv.COLUMN_Processed, true)
-				.addNotEqualsFilter(I_M_MatchInv.COLUMN_Posted, true)
-				.create()
-				.list();
-
-		postDependingDocuments(matchInvs);
-
+		final Set<MatchInvId> matchInvIds = matchInvDAO.retrieveIdsProcessedButNotPostedForInvoiceLines(invoiceLineIds);
+		postDependingDocuments(I_M_MatchInv.Table_Name, matchInvIds);
 	}
 
 	public static void unpost(final I_C_Invoice invoice)

@@ -37,7 +37,6 @@ import org.adempiere.ad.ui.api.ITabCalloutFactory;
 import org.adempiere.invoice.event.InvoiceUserNotificationsProducer;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.ui.api.IGridTabSummaryInfoFactory;
-import org.compiere.model.I_AD_Client;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
 
@@ -84,7 +83,7 @@ public class ConfigValidator extends AbstractModuleInterceptor
 	@Override
 	public void onAfterInit()
 	{
-		//super.onInit(engine, client);
+		//super.onInit(engine);
 
 		if (!Ini.isSwingClient())
 		{
@@ -109,22 +108,22 @@ public class ConfigValidator extends AbstractModuleInterceptor
 	}
 
 	@Override
-	protected void registerInterceptors(final IModelValidationEngine engine, final I_AD_Client client)
+	protected void registerInterceptors(final IModelValidationEngine engine)
 	{
-		engine.addModelValidator(new C_BPartner(), client);
-		engine.addModelValidator(C_ILCandHandler.instance, client);
-		engine.addModelValidator(new C_Invoice_Candidate_Agg(), client);
-		engine.addModelValidator(new C_Invoice_Line_Alloc(), client);
-		engine.addModelValidator(new C_InvoiceSchedule(), client);
-		engine.addModelValidator(new C_Invoice(), client);
-		engine.addModelValidator(new AD_Note(), client);
-		engine.addModelValidator(new C_OrderLine(), client);
-		engine.addModelValidator(new C_Order(), client);
-		engine.addModelValidator(new M_InOut(), client);
-		//engine.addModelValidator(new M_InOutLine(), client); is now a spring component
-		engine.addModelValidator(new M_InventoryLine(), client);
-		engine.addModelValidator(new M_ProductGroup_Product(), client);
-		engine.addModelValidator(new M_ProductGroup(), client);
+		engine.addModelValidator(new C_BPartner());
+		engine.addModelValidator(C_ILCandHandler.instance);
+		engine.addModelValidator(new C_Invoice_Candidate_Agg());
+		engine.addModelValidator(new C_Invoice_Line_Alloc());
+		engine.addModelValidator(new C_InvoiceSchedule());
+		engine.addModelValidator(new C_Invoice());
+		engine.addModelValidator(new AD_Note());
+		engine.addModelValidator(new C_OrderLine());
+		engine.addModelValidator(new C_Order());
+		engine.addModelValidator(new M_InOut());
+		//engine.addModelValidator(new M_InOutLine()); is now a spring component
+		engine.addModelValidator(new M_InventoryLine());
+		engine.addModelValidator(new M_ProductGroup_Product());
+		engine.addModelValidator(new M_ProductGroup());
 	}
 
 	@Override

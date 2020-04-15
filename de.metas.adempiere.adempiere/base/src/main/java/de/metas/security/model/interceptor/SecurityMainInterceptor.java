@@ -54,19 +54,19 @@ public class SecurityMainInterceptor extends AbstractModuleInterceptor
 	private static final transient Logger logger = LogManager.getLogger(SecurityMainInterceptor.class);
 
 	@Override
-	protected void registerInterceptors(final IModelValidationEngine engine, final I_AD_Client client)
+	protected void registerInterceptors(final IModelValidationEngine engine)
 	{
 		// Role and included roles
-		engine.addModelValidator(de.metas.security.model.interceptor.AD_Role.instance, client);
-		engine.addModelValidator(de.metas.security.model.interceptor.AD_Role_Included.instance, client);
-		engine.addModelValidator(AD_Document_Action_Access.instance, client);
+		engine.addModelValidator(de.metas.security.model.interceptor.AD_Role.instance);
+		engine.addModelValidator(de.metas.security.model.interceptor.AD_Role_Included.instance);
+		engine.addModelValidator(AD_Document_Action_Access.instance);
 
 		// Source tables
-		engine.addModelValidator(de.metas.security.model.interceptor.AD_Org.instance, client);
-		engine.addModelValidator(de.metas.security.model.interceptor.AD_Window.instance, client);
-		engine.addModelValidator(de.metas.security.model.interceptor.AD_Process.instance, client);
-		engine.addModelValidator(de.metas.security.model.interceptor.AD_Form.instance, client);
-		engine.addModelValidator(de.metas.security.model.interceptor.AD_Workflow.instance, client);
+		engine.addModelValidator(de.metas.security.model.interceptor.AD_Org.instance);
+		engine.addModelValidator(de.metas.security.model.interceptor.AD_Window.instance);
+		engine.addModelValidator(de.metas.security.model.interceptor.AD_Process.instance);
+		engine.addModelValidator(de.metas.security.model.interceptor.AD_Form.instance);
+		engine.addModelValidator(de.metas.security.model.interceptor.AD_Workflow.instance);
 
 		//
 		// Trigger permissions cache reset if any of permissions table was changed
@@ -77,7 +77,7 @@ public class SecurityMainInterceptor extends AbstractModuleInterceptor
 					.addAll(Services.get(IUserRolePermissionsDAO.class).getRoleDependentTableNames()) // all role dependent table name
 					.build()
 					.forEach(triggeringTableName -> {
-						engine.addModelValidator(new PermissionsCacheResetInterceptor(triggeringTableName), client);
+						engine.addModelValidator(new PermissionsCacheResetInterceptor(triggeringTableName));
 						logger.debug("Registered permissions cache reset on {}", triggeringTableName);
 					});
 		}

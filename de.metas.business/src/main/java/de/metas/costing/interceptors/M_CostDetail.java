@@ -5,7 +5,6 @@ import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_M_CostDetail;
 import org.compiere.model.ModelValidator;
-import org.springframework.stereotype.Component;
 
 /*
  * #%L
@@ -29,9 +28,8 @@ import org.springframework.stereotype.Component;
  * #L%
  */
 
-@Component
 @Interceptor(I_M_CostDetail.class)
-public class M_CostDetail
+class M_CostDetail
 {
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_DELETE })
 	public void beforeDelete(final I_M_CostDetail costDetail)

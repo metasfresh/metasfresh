@@ -1,7 +1,6 @@
 package org.compiere.acct;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.Adempiere;
 import org.compiere.model.I_C_ProjectIssue;
 
 import de.metas.acct.api.AcctSchema;
@@ -9,7 +8,6 @@ import de.metas.costing.CostAmount;
 import de.metas.costing.CostDetailCreateRequest;
 import de.metas.costing.CostDetailReverseRequest;
 import de.metas.costing.CostingDocumentRef;
-import de.metas.costing.ICostingService;
 import de.metas.quantity.Quantity;
 
 /*
@@ -45,11 +43,9 @@ public class DocLine_ProjectIssue extends DocLine<Doc_ProjectIssue>
 
 	public CostAmount getCreateCosts(final AcctSchema as)
 	{
-		final ICostingService costDetailService = Adempiere.getBean(ICostingService.class);
-
 		if (isReversalLine())
 		{
-			return costDetailService.createReversalCostDetails(CostDetailReverseRequest.builder()
+			return services.createReversalCostDetails(CostDetailReverseRequest.builder()
 					.acctSchemaId(as.getId())
 					.reversalDocumentRef(CostingDocumentRef.ofProjectIssueId(get_ID()))
 					.initialDocumentRef(CostingDocumentRef.ofProjectIssueId(getReversalLine_ID()))
@@ -59,7 +55,7 @@ public class DocLine_ProjectIssue extends DocLine<Doc_ProjectIssue>
 		}
 		else
 		{
-			return costDetailService.createCostDetail(
+			return services.createCostDetail(
 					CostDetailCreateRequest.builder()
 							.acctSchemaId(as.getId())
 							.clientId(getClientId())

@@ -9,8 +9,6 @@ import org.compiere.model.I_M_CostType;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.X_C_AcctSchema;
 import org.compiere.util.Env;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.IAcctSchemaDAO;
@@ -19,7 +17,7 @@ import de.metas.costing.CostingLevel;
 import de.metas.costing.CostingMethod;
 import de.metas.costing.ICostElementRepository;
 import de.metas.organization.OrgId;
-import de.metas.util.Services;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -44,11 +42,18 @@ import de.metas.util.Services;
  */
 
 @Interceptor(I_C_AcctSchema.class)
-@Component
 public class C_AcctSchema
 {
-	@Autowired
-	private ICostElementRepository costElementRepo;
+	private final IAcctSchemaDAO acctSchemaDAO;
+	private final ICostElementRepository costElementRepo;
+
+	public C_AcctSchema(
+			@NonNull final IAcctSchemaDAO acctSchemaDAO,
+			@NonNull final ICostElementRepository costElementRepo)
+	{
+		this.acctSchemaDAO = acctSchemaDAO;
+		this.costElementRepo = costElementRepo;
+	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
 	public void beforeSave(final I_C_AcctSchema acctSchema)
@@ -87,7 +92,7 @@ public class C_AcctSchema
 		}
 
 		final ClientId clientId = ClientId.ofRepoId(acctSchema.getAD_Client_ID());
-		final AcctSchemaId primaryAcctSchemaId = Services.get(IAcctSchemaDAO.class).getPrimaryAcctSchemaId(clientId);
+		final AcctSchemaId primaryAcctSchemaId = acctSchemaDAO.getPrimaryAcctSchemaId(clientId);
 		if (primaryAcctSchemaId == null)
 		{
 			// no primary schema defined

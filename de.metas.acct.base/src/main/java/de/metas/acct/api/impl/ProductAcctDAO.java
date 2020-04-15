@@ -1,5 +1,7 @@
 package de.metas.acct.api.impl;
 
+import java.util.HashMap;
+import java.util.List;
 import java.util.Optional;
 
 /*
@@ -27,14 +29,18 @@ import java.util.Optional;
 import java.util.Properties;
 
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
-import org.adempiere.util.proxy.Cached;
 import org.compiere.model.I_M_Product_Acct;
-import org.compiere.model.I_M_Product_Category;
 import org.compiere.model.I_M_Product_Category_Acct;
+import org.compiere.model.POInfo;
+import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
+
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Maps;
 
 import de.metas.acct.api.AccountId;
 import de.metas.acct.api.AcctSchema;
@@ -42,23 +48,37 @@ import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.IAcctSchemaDAO;
 import de.metas.acct.api.IProductAcctDAO;
 import de.metas.acct.api.ProductAcctType;
+import de.metas.acct.api.ProductCategoryAccounts;
 import de.metas.cache.CCache;
 import de.metas.cache.CCache.CacheMapType;
-import de.metas.cache.annotation.CacheCtx;
+import de.metas.costing.CostingLevel;
+import de.metas.costing.CostingMethod;
 import de.metas.organization.OrgId;
-import de.metas.product.IProductDAO;
+import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.util.Services;
+import lombok.EqualsAndHashCode;
 import lombok.NonNull;
+import lombok.ToString;
 import lombok.Value;
 
 public class ProductAcctDAO implements IProductAcctDAO
 {
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IAcctSchemaDAO acctSchemaDAO = Services.get(IAcctSchemaDAO.class);
+
 	private final CCache<ProductIdAndAcctSchemaId, Optional<I_M_Product_Acct>> productAcctRecords = CCache.<ProductIdAndAcctSchemaId, Optional<I_M_Product_Acct>> builder()
 			.cacheMapType(CacheMapType.LRU)
 			.initialCapacity(100)
+			.expireMinutes(CCache.EXPIREMINUTES_Never)
 			.additionalTableNameToResetFor(I_M_Product_Acct.Table_Name)
+			.build();
+
+	private final CCache<Integer, ProductCategoryAccountsCollection> productCategoryAcctCollectionCache = CCache.<Integer, ProductCategoryAccountsCollection> builder()
+			.initialCapacity(1)
+			.expireMinutes(CCache.EXPIREMINUTES_Never)
+			.additionalTableNameToResetFor(I_M_Product_Category_Acct.Table_Name)
 			.build();
 
 	@Override
@@ -67,7 +87,7 @@ public class ProductAcctDAO implements IProductAcctDAO
 			@NonNull final OrgId orgId,
 			@NonNull final ProductId productId)
 	{
-		final AcctSchemaId acctSchemaId = Services.get(IAcctSchemaDAO.class).getAcctSchemaIdByClientAndOrg(clientId, orgId);
+		final AcctSchemaId acctSchemaId = acctSchemaDAO.getAcctSchemaIdByClientAndOrg(clientId, orgId);
 		if (acctSchemaId == null)
 		{
 			return null;
@@ -91,7 +111,7 @@ public class ProductAcctDAO implements IProductAcctDAO
 
 	private Optional<I_M_Product_Acct> retrieveProductAcctRecord(@NonNull final ProductIdAndAcctSchemaId key)
 	{
-		final I_M_Product_Acct record = Services.get(IQueryBL.class)
+		final I_M_Product_Acct record = queryBL
 				.createQueryBuilderOutOfTrx(I_M_Product_Acct.class)
 				.addEqualsFilter(I_M_Product_Acct.COLUMNNAME_C_AcctSchema_ID, key.getAcctSchemaId())
 				.addEqualsFilter(I_M_Product_Acct.COLUMNNAME_M_Product_ID, key.getProductId())
@@ -103,7 +123,7 @@ public class ProductAcctDAO implements IProductAcctDAO
 	}
 
 	@Override
-	public Optional<AccountId> getProductAcct(
+	public Optional<AccountId> getProductAccount(
 			@NonNull final AcctSchemaId acctSchemaId,
 			@NonNull final ProductId productId,
 			@NonNull final ProductAcctType acctType)
@@ -127,7 +147,7 @@ public class ProductAcctDAO implements IProductAcctDAO
 	public ActivityId getProductActivityId(@NonNull final ProductId productId)
 	{
 		final Properties ctx = Env.getCtx();
-		final AcctSchema schema = Services.get(IAcctSchemaDAO.class).getByCliendAndOrg(ctx);
+		final AcctSchema schema = acctSchemaDAO.getByCliendAndOrg(ctx);
 		final I_M_Product_Acct productAcct = getProductAcctRecord(schema.getId(), productId).orElse(null);
 		if (productAcct == null)
 		{
@@ -137,26 +157,73 @@ public class ProductAcctDAO implements IProductAcctDAO
 		return ActivityId.ofRepoIdOrNull(productAcct.getC_Activity_ID());
 	}
 
-	@Override
-	@Cached(cacheName = I_M_Product_Category_Acct.Table_Name + "#Default")
-	public I_M_Product_Category_Acct retrieveDefaultProductCategoryAcct(@CacheCtx final Properties ctx, final AcctSchemaId acctSchemaId)
+	private ProductCategoryAccountsCollection getProductCategoryAccountsCollection()
 	{
-		final I_M_Product_Category pc = Services.get(IProductDAO.class).retrieveDefaultProductCategory(ctx);
+		return this.productCategoryAcctCollectionCache.getOrLoad(0, this::retrieveProductCategoryAccountsCollection);
+	}
 
-		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_M_Product_Category_Acct.class, ctx, ITrx.TRXNAME_None)
-				.addEqualsFilter(I_M_Product_Category_Acct.COLUMNNAME_C_AcctSchema_ID, acctSchemaId)
-				.addEqualsFilter(I_M_Product_Category_Acct.COLUMNNAME_M_Product_Category_ID, pc.getM_Product_Category_ID())
+	private ProductCategoryAccountsCollection retrieveProductCategoryAccountsCollection()
+	{
+		final POInfo poInfo = POInfo.getPOInfo(I_M_Product_Category_Acct.Table_Name);
+		final ImmutableSet<String> acctColumnNames = poInfo.getColumnNames()
+				.stream()
+				.filter(columnName -> poInfo.getColumnDisplayType(columnName) == DisplayType.Account)
+				.collect(ImmutableSet.toImmutableSet());
+
+		final ImmutableList<ProductCategoryAccounts> allProductCategoryAccts = queryBL.createQueryBuilderOutOfTrx(I_M_Product_Category_Acct.class)
 				.addOnlyActiveRecordsFilter()
 				.create()
-				.firstOnlyNotNull(I_M_Product_Category_Acct.class);
+				.stream()
+				.map(record -> toProductCategoryAcct(record, acctColumnNames))
+				.collect(ImmutableList.toImmutableList());
+
+		return new ProductCategoryAccountsCollection(allProductCategoryAccts);
+	}
+
+	private static ProductCategoryAccounts toProductCategoryAcct(
+			@NonNull final I_M_Product_Category_Acct record,
+			@NonNull final ImmutableSet<String> acctColumnNames)
+	{
+		final HashMap<String, Optional<AccountId>> accountIds = new HashMap<>(acctColumnNames.size());
+		for (final String acctColumnName : acctColumnNames)
+		{
+			final Optional<AccountId> accountId = extractAccountId(record, acctColumnName);
+			accountIds.put(acctColumnName, accountId);
+		}
+
+		return ProductCategoryAccounts.builder()
+				.productCategoryId(ProductCategoryId.ofRepoId(record.getM_Product_Category_ID()))
+				.acctSchemaId(AcctSchemaId.ofRepoId(record.getC_AcctSchema_ID()))
+				.costingLevel(CostingLevel.forNullableCode(record.getCostingLevel()))
+				.costingMethod(CostingMethod.ofNullableCode(record.getCostingMethod()))
+				.accountIdsByColumnName(accountIds)
+				.build();
+	}
+
+	private static Optional<AccountId> extractAccountId(@NonNull final I_M_Product_Category_Acct record, @NonNull final String acctColumnName)
+	{
+		final Integer validCombinationId = InterfaceWrapperHelper.getValueOrNull(record, acctColumnName);
+		return validCombinationId != null
+				? AccountId.optionalOfRepoId(validCombinationId)
+				: Optional.empty();
+	}
+
+	public Optional<ProductCategoryAccounts> getProductCategoryAccounts(
+			@NonNull final AcctSchemaId acctSchemaId,
+			@NonNull final ProductCategoryId productCategoryId)
+	{
+		return getProductCategoryAccountsCollection()
+				.getBy(productCategoryId, acctSchemaId);
 	}
 
 	@Override
-	public I_M_Product_Category_Acct retrieveDefaultProductCategoryAcct(final AcctSchema acctSchema)
+	public Optional<AccountId> getProductCategoryAccount(
+			@NonNull final AcctSchemaId acctSchemaId,
+			@NonNull final ProductCategoryId productCategoryId,
+			@NonNull final ProductAcctType acctType)
 	{
-		final Properties ctx = InterfaceWrapperHelper.getCtx(acctSchema);
-		return retrieveDefaultProductCategoryAcct(ctx, acctSchema.getId());
+		return getProductCategoryAccounts(acctSchemaId, productCategoryId)
+				.flatMap(productCategoryAcct -> productCategoryAcct.getAccountId(acctType));
 	}
 
 	@Value(staticConstructor = "of")
@@ -166,5 +233,36 @@ public class ProductAcctDAO implements IProductAcctDAO
 		ProductId productId;
 		@NonNull
 		AcctSchemaId acctSchemaId;
+	}
+
+	@Value(staticConstructor = "of")
+	private static class ProductCategoryIdAndAcctSchemaId
+	{
+		@NonNull
+		ProductCategoryId productCategoryId;
+		@NonNull
+		AcctSchemaId acctSchemaId;
+	}
+
+	@EqualsAndHashCode
+	@ToString
+	private static class ProductCategoryAccountsCollection
+	{
+		private final ImmutableMap<ProductCategoryIdAndAcctSchemaId, ProductCategoryAccounts> productCategoryAccts;
+
+		public ProductCategoryAccountsCollection(final List<ProductCategoryAccounts> productCategoryAccts)
+		{
+			this.productCategoryAccts = Maps.uniqueIndex(
+					productCategoryAccts,
+					productCategoryAcct -> ProductCategoryIdAndAcctSchemaId.of(productCategoryAcct.getProductCategoryId(), productCategoryAcct.getAcctSchemaId()));
+		}
+
+		public Optional<ProductCategoryAccounts> getBy(
+				@NonNull final ProductCategoryId productCategoryId,
+				@NonNull final AcctSchemaId acctSchemaId)
+		{
+			final ProductCategoryIdAndAcctSchemaId key = ProductCategoryIdAndAcctSchemaId.of(productCategoryId, acctSchemaId);
+			return Optional.ofNullable(productCategoryAccts.get(key));
+		}
 	}
 }

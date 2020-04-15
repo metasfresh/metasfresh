@@ -3,6 +3,9 @@ package de.metas.acct;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
+import javax.annotation.Nullable;
+
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ClientId;
 import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_C_AcctSchema_Default;
@@ -24,6 +27,7 @@ import de.metas.organization.OrgId;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
+import lombok.ToString;
 
 /*
  * #%L
@@ -89,15 +93,34 @@ public class AcctSchemaTestHelper
 
 	public static void registerAcctSchemaDAOWhichAlwaysProvides(@NonNull final AcctSchemaId acctSchemaId)
 	{
-		Services.registerService(IAcctSchemaDAO.class, new AcctSchemaDAO()
+		if (Services.isAvailable(IAcctSchemaDAO.class))
 		{
-			@Override
-			public AcctSchemaId getAcctSchemaIdByClientAndOrg(ClientId clientId, OrgId orgId)
-			{
-				return acctSchemaId;
-			}
-		});
+			final IAcctSchemaDAO acctSchemaDAO = Services.get(IAcctSchemaDAO.class);
+			throw new AdempiereException("Possible (test)developer error: registering a mocked service is not allowed"
+					+ " when an actual service was already registered (any maybe used): " + acctSchemaDAO);
+		}
 
-		logger.info("Registered {} which always returns {}", IAcctSchemaDAO.class, acctSchemaId);
+		final AcctSchemaDAO_getAcctSchemaIdByClientAndOrg_ReturnFixedValue acctSchemaDAO = new AcctSchemaDAO_getAcctSchemaIdByClientAndOrg_ReturnFixedValue(acctSchemaId);
+		Services.registerService(IAcctSchemaDAO.class, acctSchemaDAO);
+		logger.info("Registered {}", acctSchemaDAO);
+	}
+
+	@ToString
+	private static final class AcctSchemaDAO_getAcctSchemaIdByClientAndOrg_ReturnFixedValue extends AcctSchemaDAO
+	{
+		private final AcctSchemaId acctSchemaId;
+
+		public AcctSchemaDAO_getAcctSchemaIdByClientAndOrg_ReturnFixedValue(@Nullable final AcctSchemaId acctSchemaId)
+		{
+			this.acctSchemaId = acctSchemaId;
+		}
+
+		@Override
+		public AcctSchemaId getAcctSchemaIdByClientAndOrg(final ClientId clientId, final OrgId orgId)
+		{
+			logger.debug("Always returning acctSchemaId={} for clientId={} and orgId={}", acctSchemaId, clientId, orgId);
+			return acctSchemaId;
+		}
+
 	}
 }

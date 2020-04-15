@@ -30,6 +30,7 @@ import org.compiere.model.IQuery;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_Fact_Acct;
 import org.compiere.model.I_M_InOutLine;
+import org.compiere.util.Env;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -152,9 +153,7 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 	@Override
 	public List<I_C_InvoiceLine> retrieveLines(@NonNull final InvoiceId invoiceId)
 	{
-		final Properties ctx = InterfaceWrapperHelper.getCtx(invoiceId);
-		final String trxName = InterfaceWrapperHelper.getTrxName(invoiceId);
-		return retrieveLines(ctx, invoiceId.getRepoId(), trxName);
+		return retrieveLines(Env.getCtx(), invoiceId.getRepoId(), ITrx.TRXNAME_ThreadInherited);
 	}
 
 	@Cached(cacheName = I_C_InvoiceLine.Table_Name + "#By#C_Invoice_ID")

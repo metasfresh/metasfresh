@@ -5,7 +5,6 @@ import java.sql.Timestamp;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
-import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
@@ -22,7 +21,6 @@ import de.metas.costing.CostPrice;
 import de.metas.costing.CostSegment;
 import de.metas.costing.CostingDocumentRef;
 import de.metas.costing.CostingMethod;
-import de.metas.costing.ICostingService;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.ICurrencyBL;
 import de.metas.currency.ICurrencyDAO;
@@ -111,8 +109,6 @@ final class DocLine_MatchPO extends DocLine<Doc_MatchPO>
 
 	CostAmount getStandardCosts(final AcctSchema acctSchema)
 	{
-		final ICostingService costDetailService = SpringContextHolder.instance.getBean(ICostingService.class);
-
 		final CostSegment costSegment = CostSegment.builder()
 				.costingLevel(getProductCostingLevel(acctSchema))
 				.acctSchemaId(acctSchema.getId())
@@ -123,7 +119,7 @@ final class DocLine_MatchPO extends DocLine<Doc_MatchPO>
 				.attributeSetInstanceId(getAttributeSetInstanceId())
 				.build();
 
-		final CostPrice costPrice = costDetailService.getCurrentCostPrice(costSegment, CostingMethod.StandardCosting)
+		final CostPrice costPrice = services.getCurrentCostPrice(costSegment, CostingMethod.StandardCosting)
 				.orElseThrow(() -> newPostingException()
 						.setAcctSchema(acctSchema)
 						.setDetailMessage("No standard costs found for " + costSegment));
@@ -136,8 +132,6 @@ final class DocLine_MatchPO extends DocLine<Doc_MatchPO>
 		final I_M_InOutLine receiptLine = getReceiptLine();
 		Check.assumeNotNull(receiptLine, "Parameter receiptLine is not null");
 
-		final ICostingService costDetailService = SpringContextHolder.instance.getBean(ICostingService.class);
-
 		final I_C_OrderLine orderLine = getOrderLine();
 		final CurrencyConversionTypeId currencyConversionTypeId = CurrencyConversionTypeId.ofRepoIdOrNull(orderLine.getC_Order().getC_ConversionType_ID());
 		final Timestamp receiptDateAcct = receiptLine.getM_InOut().getDateAcct();
@@ -149,7 +143,7 @@ final class DocLine_MatchPO extends DocLine<Doc_MatchPO>
 
 		final AcctSchemaId acctSchemaId = as.getId();
 
-		return costDetailService.createCostDetail(
+		return services.createCostDetail(
 				CostDetailCreateRequest.builder()
 						.acctSchemaId(acctSchemaId)
 						.clientId(ClientId.ofRepoId(orderLine.getAD_Client_ID()))
