@@ -71,10 +71,10 @@ public abstract class CostingMethodHandlerTemplate implements CostingMethodHandl
 	@Override
 	public final Optional<CostDetailCreateResult> createOrUpdateCost(final CostDetailCreateRequest request)
 	{
-		final CostDetail costDetail = utils.getExistingCostDetailOrNull(request);
-		if (costDetail != null)
+		final CostDetail existingCostDetail = utils.getExistingCostDetail(request).orElse(null);
+		if (existingCostDetail != null)
 		{
-			return Optional.of(utils.createCostDetailCreateResult(costDetail, request));
+			return Optional.of(utils.toCostDetailCreateResult(existingCostDetail));
 		}
 		else
 		{

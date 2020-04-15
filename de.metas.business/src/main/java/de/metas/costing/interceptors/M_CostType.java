@@ -6,12 +6,12 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ClientId;
 import org.compiere.model.I_M_CostType;
 import org.compiere.model.ModelValidator;
-import org.springframework.stereotype.Component;
 
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.IAcctSchemaDAO;
 import de.metas.costing.CostTypeId;
-import de.metas.util.Services;
+import de.metas.organization.OrgId;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -35,30 +35,33 @@ import de.metas.util.Services;
  * #L%
  */
 
-@Component
 @Interceptor(I_M_CostType.class)
-public class M_CostType
+class M_CostType
 {
+	private final IAcctSchemaDAO acctSchemaDAO;
+
+	public M_CostType(@NonNull final IAcctSchemaDAO acctSchemaDAO)
+	{
+		this.acctSchemaDAO = acctSchemaDAO;
+	}
+
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
 	public void beforeSave(final I_M_CostType costType)
 	{
-		if (costType.getAD_Org_ID() != 0)
-		{
-			costType.setAD_Org_ID(0);
-		}
-	}	// beforeSave
+		costType.setAD_Org_ID(OrgId.ANY.getRepoId());
+	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_DELETE })
 	public void beforeDelete(final I_M_CostType costType)
 	{
 		final CostTypeId costTypeId = CostTypeId.ofRepoId(costType.getM_CostType_ID());
 		final ClientId clientId = ClientId.ofRepoId(costType.getAD_Client_ID());
-		
-		for (final AcctSchema as : Services.get(IAcctSchemaDAO.class).getAllByClient(clientId))
+
+		for (final AcctSchema as : acctSchemaDAO.getAllByClient(clientId))
 		{
-			if (as.getCosting().getCostTypeId().equals(costTypeId))
+			if (CostTypeId.equals(as.getCosting().getCostTypeId(), costTypeId))
 			{
-				throw new AdempiereException("@CannotDelete@ @C_AcctSchema_ID@");
+				throw new AdempiereException("Cannot delete cost type `" + costType.getName() + "` because accounting schema `" + as.getName() + "` it's still using it");
 			}
 		}
 	}	// beforeDelete

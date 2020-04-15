@@ -1,16 +1,13 @@
 package org.compiere.apps.search;
 
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Properties;
-import java.util.regex.Pattern;
-
-import javax.annotation.Nullable;
-
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
+import de.metas.cache.CCache;
+import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.GuavaCollectors;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.trx.api.ITrx;
@@ -18,6 +15,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.apps.search.IUserQueryRestriction.Join;
+import org.compiere.model.ColumnDisplayTypeProvider;
 import org.compiere.model.I_AD_UserQuery;
 import org.compiere.model.MQuery;
 import org.compiere.model.MQuery.Operator;
@@ -25,15 +23,15 @@ import org.compiere.util.Env;
 import org.compiere.util.Util.ArrayKey;
 import org.slf4j.Logger;
 
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableList;
+import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Properties;
+import java.util.regex.Pattern;
 
-import de.metas.cache.CCache;
-import de.metas.logging.LogManager;
-import de.metas.util.Check;
-import de.metas.util.GuavaCollectors;
-import de.metas.util.Services;
-import lombok.NonNull;
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 /*
  * #%L
@@ -61,7 +59,6 @@ import lombok.NonNull;
  * Handles user queries.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 public class UserQueryRepository
 {
@@ -73,15 +70,25 @@ public class UserQueryRepository
 	private static final String FIELD_SEPARATOR = "<^>";
 	private static final String SEGMENT_SEPARATOR = "<~>";
 
-	/** Index Join Operator = 0 */
+	/**
+	 * Index Join Operator = 0
+	 */
 	private static final int INDEX_JOIN = 0;
-	/** Index ColumnName = 1 */
+	/**
+	 * Index ColumnName = 1
+	 */
 	private static final int INDEX_COLUMNNAME = 1;
-	/** Index Operator = 2 */
+	/**
+	 * Index Operator = 2
+	 */
 	private static final int INDEX_OPERATOR = 2;
-	/** Index Value = 3 */
+	/**
+	 * Index Value = 3
+	 */
 	private static final int INDEX_VALUE = 3;
-	/** Index Value2 = 4 */
+	/**
+	 * Index Value2 = 4
+	 */
 	private static final int INDEX_VALUE2 = 4;
 
 	// services
@@ -92,7 +99,7 @@ public class UserQueryRepository
 	private final int adTabId;
 	private final int adTableId;
 	private final int adUserId;
-
+	private final ColumnDisplayTypeProvider columnDisplayTypeProvider;
 	// State
 	private final transient CCache<ArrayKey, List<I_AD_UserQuery>> adUserQueriesCache = CCache.newLRUCache(I_AD_UserQuery.Table_Name + "#by#AD_Tab_ID#AD_User_ID", 2, CCache.EXPIREMINUTES_Never);
 
@@ -103,6 +110,7 @@ public class UserQueryRepository
 		adTabId = builder.getAD_Tab_ID();
 		adTableId = builder.getAD_Table_ID();
 		adUserId = builder.getAD_User_ID();
+		columnDisplayTypeProvider = builder.getColumnDisplayTypeProvider();
 	}
 
 	private Collection<IUserQueryField> getSearchFields()
@@ -292,7 +300,8 @@ public class UserQueryRepository
 					logger.warn("No search column found for {}", segment);
 					continue;
 				}
-				final Object value = searchField.convertValueToFieldType(fields[j]);
+				final int displayType = columnDisplayTypeProvider.getColumnDisplayType(row.getSearchField().getColumnName());
+				final Object value = UserQueryFieldHelper.parseValueObjectByColumnDisplayType(fields[j], displayType, row.getSearchField().getColumnName());
 				if (j == INDEX_VALUE)
 				{
 					row.setValue(value);
@@ -389,7 +398,8 @@ public class UserQueryRepository
 				// allow saving restrictions without a value specified
 				// continue;
 			}
-			final Object valueConverted = field.convertValueToFieldType(value);
+			final int displayType = columnDisplayTypeProvider.getColumnDisplayType(row.getSearchField().getColumnName());
+			final Object valueConverted = UserQueryFieldHelper.parseValueObjectByColumnDisplayType(value, displayType, row.getSearchField().getColumnName());
 			if (valueConverted == null)
 			{
 				// allow saving restrictions without a value specified
@@ -409,7 +419,7 @@ public class UserQueryRepository
 					// continue;
 				}
 
-				final Object valueToConverted = field.convertValueToFieldType(valueTo);
+				final Object valueToConverted = UserQueryFieldHelper.parseValueObjectByColumnDisplayType(valueTo, displayType, row.getSearchField().getColumnName());
 				if (valueToConverted == null)
 				{
 					// allow saving restrictions without a value specified
@@ -525,7 +535,9 @@ public class UserQueryRepository
 		resetUserQueriesCache();
 	}
 
-	private final IUserQueryField findSearchFieldByColumnName(final String columnName)
+	@Nullable
+	@VisibleForTesting
+	final IUserQueryField findSearchFieldByColumnName(@Nullable final String columnName)
 	{
 		if (columnName == null || columnName.isEmpty())
 		{
@@ -549,6 +561,8 @@ public class UserQueryRepository
 		private Integer adTableId = null;
 		private Integer adUserId = null;
 		private Collection<IUserQueryField> searchFields;
+
+		private ColumnDisplayTypeProvider columnDisplayTypeProvider;
 
 		private Builder()
 		{
@@ -615,5 +629,15 @@ public class UserQueryRepository
 			return adUserId;
 		}
 
+		public Builder setColumnDisplayTypeProvider(@NonNull final ColumnDisplayTypeProvider columnDisplayTypeProvider)
+		{
+			this.columnDisplayTypeProvider = columnDisplayTypeProvider;
+			return this;
+		}
+
+		public ColumnDisplayTypeProvider getColumnDisplayTypeProvider()
+		{
+			return columnDisplayTypeProvider;
+		}
 	}
 }

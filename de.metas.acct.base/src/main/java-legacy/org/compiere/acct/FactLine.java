@@ -63,6 +63,7 @@ import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.quantity.Quantity;
+import de.metas.tax.api.TaxId;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.NumberUtils;
@@ -471,7 +472,7 @@ public final class FactLine extends X_Fact_Acct
 		// Tax
 		if (m_docLine != null)
 		{
-			setC_Tax_ID(m_docLine.getC_Tax_ID());
+			setC_Tax_ID(TaxId.toRepoId(m_docLine.getTaxId()));
 		}
 
 		// Document infos

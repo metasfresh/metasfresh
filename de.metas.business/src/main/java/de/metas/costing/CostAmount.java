@@ -238,4 +238,9 @@ public class CostAmount
 			return zero(currencyId);
 		}
 	}
+
+	public Money toMoney()
+	{
+		return Money.of(value, currencyId);
+	}
 }

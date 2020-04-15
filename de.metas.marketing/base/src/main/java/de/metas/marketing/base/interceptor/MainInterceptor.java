@@ -3,7 +3,6 @@ package de.metas.marketing.base.interceptor;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
-import org.compiere.model.I_AD_Client;
 
 /*
  * #%L
@@ -30,9 +29,9 @@ import org.compiere.model.I_AD_Client;
 public class MainInterceptor extends AbstractModuleInterceptor
 {
 	@Override
-	protected void registerInterceptors(final IModelValidationEngine engine, final I_AD_Client client)
+	protected void registerInterceptors(final IModelValidationEngine engine)
 	{
-		engine.addModelValidator(MKTG_Campaign_ContactPerson.INSTANCE, client);
+		engine.addModelValidator(MKTG_Campaign_ContactPerson.INSTANCE);
 
 	}
 

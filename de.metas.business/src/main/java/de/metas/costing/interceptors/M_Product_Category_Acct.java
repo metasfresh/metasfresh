@@ -5,11 +5,10 @@ import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.service.ClientId;
 import org.compiere.model.I_M_Product_Category_Acct;
 import org.compiere.model.ModelValidator;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
 import de.metas.costing.CostingMethod;
 import de.metas.costing.ICostElementRepository;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -33,12 +32,15 @@ import de.metas.costing.ICostElementRepository;
  * #L%
  */
 
-@Component
 @Interceptor(I_M_Product_Category_Acct.class)
-public class M_Product_Category_Acct
+class M_Product_Category_Acct
 {
-	@Autowired
-	private ICostElementRepository costElementRepo;
+	private final ICostElementRepository costElementRepository;
+
+	public M_Product_Category_Acct(@NonNull final ICostElementRepository costElementRepository)
+	{
+		this.costElementRepository = costElementRepository;
+	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE })
 	public void checkCosting(final I_M_Product_Category_Acct pca)
@@ -48,7 +50,7 @@ public class M_Product_Category_Acct
 		if (costingMethod != null)
 		{
 			final ClientId clientId = ClientId.ofRepoId(pca.getAD_Client_ID());
-			costElementRepo.getOrCreateMaterialCostElement(clientId, costingMethod);
+			costElementRepository.getOrCreateMaterialCostElement(clientId, costingMethod);
 		}
 	}
 }

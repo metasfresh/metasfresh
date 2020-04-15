@@ -460,4 +460,10 @@ public final class ProductBL implements IProductBL
 		final I_M_Product product = assumeNotNull(getById(productId), "M_Product record with M_Product_ID={} needs to exist", productId.getRepoId());
 		return ProductType.ofCode(product.getProductType());
 	}
+
+	@Override
+	public ProductCategoryId getDefaultProductCategoryId()
+	{
+		return productsRepo.getDefaultProductCategoryId();
+	}
 }

@@ -5,7 +5,6 @@ package de.metas.manufacturing.acct;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.Adempiere;
 import org.compiere.acct.DocLine;
 import org.compiere.model.MAccount;
 import org.compiere.util.DB;
@@ -22,7 +21,6 @@ import de.metas.costing.CostDetailReverseRequest;
 import de.metas.costing.CostElement;
 import de.metas.costing.CostElementType;
 import de.metas.costing.CostingDocumentRef;
-import de.metas.costing.ICostingService;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
@@ -104,13 +102,11 @@ public class DocLine_CostCollector extends DocLine<Doc_PPCostCollector>
 
 	public AggregatedCostAmount getCreateCosts(final AcctSchema as)
 	{
-		final ICostingService costDetailService = Adempiere.getBean(ICostingService.class);
-
 		final AcctSchemaId acctSchemaId = as.getId();
-		
+
 		if (isReversalLine())
 		{
-			return costDetailService.createReversalCostDetails(CostDetailReverseRequest.builder()
+			return services.createReversalCostDetails(CostDetailReverseRequest.builder()
 					.acctSchemaId(acctSchemaId)
 					.reversalDocumentRef(CostingDocumentRef.ofCostCollectorId(get_ID()))
 					.initialDocumentRef(CostingDocumentRef.ofCostCollectorId(getReversalLine_ID()))
@@ -119,7 +115,7 @@ public class DocLine_CostCollector extends DocLine<Doc_PPCostCollector>
 		}
 		else
 		{
-			return costDetailService.createCostDetail(
+			return services.createCostDetail(
 					CostDetailCreateRequest.builder()
 							.acctSchemaId(acctSchemaId)
 							.clientId(getClientId())

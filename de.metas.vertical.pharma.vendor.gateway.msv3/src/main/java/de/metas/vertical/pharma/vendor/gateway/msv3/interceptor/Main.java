@@ -2,7 +2,6 @@ package de.metas.vertical.pharma.vendor.gateway.msv3.interceptor;
 
 import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
-import org.compiere.model.I_AD_Client;
 
 import de.metas.vertical.pharma.vendor.gateway.msv3.model.I_I_BPartner;
 
@@ -37,7 +36,7 @@ import de.metas.vertical.pharma.vendor.gateway.msv3.model.I_I_BPartner;
 public class Main extends AbstractModuleInterceptor
 {
 	@Override
-	protected void registerInterceptors(final IModelValidationEngine engine, final I_AD_Client client)
+	protected void registerInterceptors(final IModelValidationEngine engine)
 	{
 		engine.addImportInterceptor(I_I_BPartner.Table_Name, MSV3PharmaImportPartnerInterceptor.instance);
 	}

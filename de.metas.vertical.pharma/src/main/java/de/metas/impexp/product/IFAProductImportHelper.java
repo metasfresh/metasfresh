@@ -6,7 +6,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import javax.annotation.Nullable;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_M_Product_Category;
 import org.compiere.model.X_I_Product;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
@@ -15,6 +14,7 @@ import de.metas.impexp.processing.product.ProductPriceCreateRequest;
 import de.metas.impexp.processing.product.ProductPriceImporter;
 import de.metas.location.ICountryDAO;
 import de.metas.product.IProductDAO;
+import de.metas.product.ProductCategoryId;
 import de.metas.tax.api.ITaxDAO;
 import de.metas.tax.api.ITaxDAO.TaxCategoryQuery;
 import de.metas.tax.api.ITaxDAO.TaxCategoryQuery.VATType;
@@ -92,8 +92,8 @@ import lombok.experimental.UtilityClass;
 		}
 		else
 		{
-			final I_M_Product_Category defaultProductCategoryRecord = Services.get(IProductDAO.class).retrieveDefaultProductCategory(Env.getCtx());
-			product.setM_Product_Category_ID(defaultProductCategoryRecord.getM_Product_Category_ID());
+			final @NonNull ProductCategoryId defaultProductCategoryId = Services.get(IProductDAO.class).getDefaultProductCategoryId();
+			product.setM_Product_Category_ID(defaultProductCategoryId.getRepoId());
 		}
 
 		InterfaceWrapperHelper.save(product);
