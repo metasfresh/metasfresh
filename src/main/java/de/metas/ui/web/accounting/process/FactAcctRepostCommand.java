@@ -3,6 +3,7 @@ package de.metas.ui.web.accounting.process;
 import java.util.Set;
 
 import org.adempiere.service.ClientId;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.util.Env;
 
 import com.google.common.collect.ImmutableSet;
@@ -55,6 +56,11 @@ final class FactAcctRepostCommand
 		int adTableId;
 		int recordId;
 		ClientId clientId;
+
+		public TableRecordReference getRecordRef()
+		{
+			return TableRecordReference.of(getAdTableId(), getRecordId());
+		}
 	}
 
 	@Builder
@@ -79,7 +85,7 @@ final class FactAcctRepostCommand
 		postingService
 				.newPostingRequest()
 				.setClientId(doc.getClientId())
-				.setDocument(doc.getAdTableId(), doc.getRecordId())
+				.setDocumentRef(doc.getRecordRef())
 				.setForce(forcePosting)
 				.setPostImmediate(PostImmediate.Yes)
 				.setFailOnError(true)
