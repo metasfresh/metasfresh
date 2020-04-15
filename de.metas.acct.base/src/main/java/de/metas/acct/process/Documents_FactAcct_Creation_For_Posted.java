@@ -5,7 +5,7 @@ import java.util.Date;
 import java.util.List;
 
 import org.adempiere.service.ClientId;
-import org.compiere.model.POInfo;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.util.TimeUtil;
 
 import de.metas.acct.api.IPostingRequestBuilder.PostImmediate;
@@ -83,26 +83,17 @@ public class Documents_FactAcct_Creation_For_Posted extends JavaProcess
 
 		for (final IDocument document : documentsPostedNoFacts)
 		{
-			final int tableID = document.get_Table_ID();
-
-			final int recordID = document.get_ID();
-
+			final ClientId clientId = ClientId.ofRepoId(document.getAD_Client_ID());
+			final TableRecordReference documentRef = document.toTableRecordReference();
 			final String documentNo = document.getDocumentNo();
-
-			final POInfo modelPOInfo = POInfo.getPOInfo(getCtx(), tableID);
-			final String tableName = modelPOInfo.getTableName();
 
 			// Note: Do not change this message!
 			// The view de_metas_acct.Reposted_Documents is based on it.
-			loggable.addLog("Document Reposted: AD_Table_ID = {}, Record_ID = {}, TableName = {}, DocumentNo = {}.",
-					tableID,
-					recordID,
-					tableName,
-					documentNo);
+			loggable.addLog("Document Reposted: {}, DocumentNo = {}.", documentRef, documentNo);
 
 			postingService.newPostingRequest()
-					.setClientId(ClientId.ofRepoId(getAD_Client_ID()))
-					.setDocument(document) // the document to be posted
+					.setClientId(clientId)
+					.setDocumentRef(documentRef) // the document to be posted
 					.setFailOnError(false) // don't fail because we don't want to fail the main document posting because one of it's depending documents are failing
 					.setPostImmediate(PostImmediate.Yes) // yes, post it immediate
 					.setForce(false) // don't force it

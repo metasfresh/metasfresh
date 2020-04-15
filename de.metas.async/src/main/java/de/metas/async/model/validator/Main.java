@@ -30,7 +30,6 @@ import org.adempiere.ad.modelvalidator.IModelValidationEngine;
 import org.adempiere.ad.session.MFSession;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.SpringContextHolder;
-import org.compiere.model.I_AD_Client;
 import org.compiere.util.Ini;
 import org.slf4j.Logger;
 
@@ -50,7 +49,6 @@ import de.metas.impexp.async.AsyncImportProcessBuilderFactory;
 import de.metas.impexp.async.AsyncImportWorkpackageProcessor;
 import de.metas.impexp.processing.IImportProcessFactory;
 import de.metas.logging.LogManager;
-import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 
@@ -74,12 +72,8 @@ public class Main extends AbstractModuleInterceptor
 	private static final int THREE_MINUTES = 3 * 60 * 1000;
 
 	@Override
-	public void onInit(final IModelValidationEngine engine, final I_AD_Client client)
+	protected void onAfterInit()
 	{
-		Check.assumeNull(client, "Registering async module on client level ({}) is not allowed", client);
-
-		super.onInit(engine, client);
-
 		startQueueProcessors();
 
 		final IMigrationLogger migrationLogger = Services.get(IMigrationLogger.class);
@@ -133,13 +127,13 @@ public class Main extends AbstractModuleInterceptor
 	}
 
 	@Override
-	protected void registerInterceptors(IModelValidationEngine engine, I_AD_Client client)
+	protected void registerInterceptors(IModelValidationEngine engine)
 	{
-		engine.addModelValidator(new C_Queue_PackageProcessor(), client);
-		engine.addModelValidator(new C_Queue_Processor(), client);
-		engine.addModelValidator(new de.metas.lock.model.validator.Main(), client);
-		engine.addModelValidator(new C_Async_Batch(), client);
-		engine.addModelValidator(C_Queue_WorkPackage.INSTANCE, client);
+		engine.addModelValidator(new C_Queue_PackageProcessor());
+		engine.addModelValidator(new C_Queue_Processor());
+		engine.addModelValidator(new de.metas.lock.model.validator.Main());
+		engine.addModelValidator(new C_Async_Batch());
+		engine.addModelValidator(C_Queue_WorkPackage.INSTANCE);
 	}
 
 	/**

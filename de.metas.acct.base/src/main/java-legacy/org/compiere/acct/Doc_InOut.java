@@ -20,18 +20,16 @@ import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_MatchInv;
 import org.compiere.model.MInOut;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.PostingType;
@@ -40,7 +38,9 @@ import de.metas.acct.doc.AcctDocContext;
 import de.metas.costing.CostAmount;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.inout.IInOutBL;
-import de.metas.inout.IInOutDAO;
+import de.metas.inout.InOutLineId;
+import de.metas.invoice.IMatchInvDAO;
+import de.metas.invoice.MatchInvId;
 import de.metas.money.CurrencyId;
 import de.metas.util.Services;
 
@@ -64,21 +64,19 @@ import de.metas.util.Services;
  */
 public class Doc_InOut extends Doc<DocLine_InOut>
 {
-	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
-	private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
 	private final IInOutBL inOutBL = Services.get(IInOutBL.class);
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IMatchInvDAO matchInvDAO = Services.get(IMatchInvDAO.class);
 
 	private static final String SYSCONFIG_PostMatchInvs = "org.compiere.acct.Doc_InOut.PostMatchInvs";
 	private static final boolean DEFAULT_PostMatchInvs = false;
+
+	private int m_Reversal_ID = 0;
+	private String m_DocStatus = "";
 
 	public Doc_InOut(final AcctDocContext ctx)
 	{
 		super(ctx);
 	}
-
-	private int m_Reversal_ID = 0;
-	private String m_DocStatus = "";
 
 	@Override
 	protected void loadDocumentDetails()
@@ -94,7 +92,7 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 	private List<DocLine_InOut> loadLines(final I_M_InOut inout)
 	{
 		final List<DocLine_InOut> docLines = new ArrayList<>();
-		for (final I_M_InOutLine inoutLine : inOutDAO.retrieveAllLines(inout))
+		for (final I_M_InOutLine inoutLine : inOutBL.getLines(inout))
 		{
 			if (inoutLine.isDescription()
 					|| inoutLine.getM_Product_ID() <= 0
@@ -103,7 +101,10 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 				continue;
 			}
 
-			final DocLine_InOut docLine = new DocLine_InOut(inoutLine, this);
+			final DocLine_InOut docLine = DocLine_InOut.builder()
+					.doc(this)
+					.inoutLine(inoutLine)
+					.build();
 			if (inOutBL.isReversal(inoutLine))
 			{
 				// NOTE: to be consistent with current logic
@@ -122,7 +123,7 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 
 	/** @return zero (always balanced) */
 	@Override
-	public BigDecimal getBalance()
+	protected BigDecimal getBalance()
 	{
 		return BigDecimal.ZERO;
 	}
@@ -146,7 +147,7 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 	 * @return Fact
 	 */
 	@Override
-	public List<Fact> createFacts(final AcctSchema as)
+	protected List<Fact> createFacts(final AcctSchema as)
 	{
 		setC_Currency_ID(as.getCurrencyId());
 
@@ -403,34 +404,22 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 
 	private final void postDependingMatchInvsIfNeeded()
 	{
-		if (!sysConfigBL.getBooleanValue(SYSCONFIG_PostMatchInvs, DEFAULT_PostMatchInvs))
+		if (!services.getSysConfigBooleanValue(SYSCONFIG_PostMatchInvs, DEFAULT_PostMatchInvs))
 		{
 			return;
 		}
 
-		final Set<Integer> inoutLineIds = new HashSet<>();
-		for (final DocLine_InOut docLine : getDocLines())
-		{
-			inoutLineIds.add(docLine.get_ID());
-		}
-
-		//
-		// Do nothing in case there are no inout lines
+		final ImmutableSet<InOutLineId> inoutLineIds = getDocLines()
+				.stream()
+				.map(DocLine_InOut::getInOutLineId)
+				.collect(ImmutableSet.toImmutableSet());
 		if (inoutLineIds.isEmpty())
 		{
 			return;
 		}
 
-		final List<I_M_MatchInv> matchInvs = queryBL
-				.createQueryBuilder(I_M_MatchInv.class)
-				.addInArrayOrAllFilter(I_M_MatchInv.COLUMN_M_InOutLine_ID, inoutLineIds)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_M_MatchInv.COLUMN_Processed, true)
-				.addNotEqualsFilter(I_M_MatchInv.COLUMN_Posted, true)
-				.create()
-				.list();
-
-		postDependingDocuments(matchInvs);
+		final Set<MatchInvId> matchInvIds = matchInvDAO.retrieveIdsProcessedButNotPostedForInOutLines(inoutLineIds);
+		postDependingDocuments(I_M_MatchInv.Table_Name, matchInvIds);
 	}
 
 	/**
@@ -449,7 +438,7 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 		}
 
 		final CurrencyId currencyId = costs.getCurrencyId();
-		final CurrencyPrecision precision = currencyDAO.getStdPrecision(currencyId);
+		final CurrencyPrecision precision = services.getCurrencyStandardPrecision(currencyId);
 		return precision.round(costs.getValue());
 	}
 }   // Doc_InOut

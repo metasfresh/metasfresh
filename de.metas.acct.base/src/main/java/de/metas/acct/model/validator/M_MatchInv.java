@@ -41,11 +41,22 @@ import de.metas.acct.api.IFactAcctDAO;
 import de.metas.acct.api.IPostingService;
 import de.metas.acct.doc.DocLine_Invoice;
 import de.metas.user.UserId;
-import de.metas.util.Services;
+import lombok.NonNull;
 
 @Interceptor(I_M_MatchInv.class)
 public class M_MatchInv
 {
+	private final IPostingService postingService;
+	private final IFactAcctDAO factAcctDAO;
+
+	public M_MatchInv(
+			@NonNull final IPostingService postingService,
+			@NonNull final IFactAcctDAO factAcctDAO)
+	{
+		this.postingService = postingService;
+		this.factAcctDAO = factAcctDAO;
+	}
+
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE)
 	public void beforeChange(final I_M_MatchInv matchInv)
 	{
@@ -82,8 +93,6 @@ public class M_MatchInv
 
 	private void postIt(final I_M_MatchInv matchInv)
 	{
-		final IPostingService postingService = Services.get(IPostingService.class);
-
 		postingService.newPostingRequest()
 				.setClientId(ClientId.ofRepoId(matchInv.getAD_Client_ID()))
 				.setDocumentRef(TableRecordReference.of(matchInv))
@@ -122,7 +131,7 @@ public class M_MatchInv
 			MPeriod.testPeriodOpen(ctx, matchInv.getDateAcct(), X_C_DocType.DOCBASETYPE_MatchInvoice, matchInv.getAD_Org_ID());
 
 			matchInv.setPosted(false);
-			Services.get(IFactAcctDAO.class).deleteForDocumentModel(matchInv);
+			factAcctDAO.deleteForDocumentModel(matchInv);
 		}
 
 		//

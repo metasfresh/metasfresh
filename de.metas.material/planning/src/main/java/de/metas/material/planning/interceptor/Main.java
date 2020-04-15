@@ -2,7 +2,6 @@ package de.metas.material.planning.interceptor;
 
 import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
-import org.compiere.model.I_AD_Client;
 
 /*
  * #%L
@@ -32,8 +31,8 @@ public class Main extends AbstractModuleInterceptor
 	 * Here we are going to register interceptors whose job it will be to notify the material disposition framework about notable events.
 	 */
 	@Override
-	protected void registerInterceptors(final IModelValidationEngine engine, final I_AD_Client client)
+	protected void registerInterceptors(final IModelValidationEngine engine)
 	{
-		engine.addModelValidator(S_Resource.INSTANCE, client);
+		engine.addModelValidator(S_Resource.INSTANCE);
 	}
 }

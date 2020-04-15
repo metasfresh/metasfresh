@@ -15,21 +15,30 @@ import de.metas.acct.gljournal.IGLJournalLineGroup;
 import de.metas.acct.impexp.GLJournalImportProcess;
 import de.metas.impexp.processing.IImportProcessFactory;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 @Interceptor(I_GL_Journal.class)
 public class GL_Journal
 {
+	private final IGLJournalLineDAO glJournalLineDAO = Services.get(IGLJournalLineDAO.class);
+	private final IImportProcessFactory importProcessFactory;
+
+	public GL_Journal(@NonNull final IImportProcessFactory importProcessFactory)
+	{
+		this.importProcessFactory = importProcessFactory;
+	}
+
 	@Init
 	public void init()
 	{
 		CopyRecordFactory.enableForTableName(I_GL_Journal.Table_Name);
-		Services.get(IImportProcessFactory.class).registerImportProcess(I_I_GLJournal.class, GLJournalImportProcess.class);
+		importProcessFactory.registerImportProcess(I_I_GLJournal.class, GLJournalImportProcess.class);
 	}
 
 	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_PREPARE })
 	public void assertAllGroupsAreBalances(final I_GL_Journal glJournal)
 	{
-		final IGLJournalLineGroup group = Services.get(IGLJournalLineDAO.class).retrieveFirstUnballancedJournalLineGroup(glJournal);
+		final IGLJournalLineGroup group = glJournalLineDAO.retrieveFirstUnballancedJournalLineGroup(glJournal);
 		if (group == null)
 		{
 			return;

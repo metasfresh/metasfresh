@@ -41,6 +41,8 @@ import de.metas.util.Services;
 @Interceptor(I_GL_JournalBatch.class)
 public class GL_JournalBatch
 {
+	private final IGLJournalDAO glJournalDAO = Services.get(IGLJournalDAO.class);
+	
 	@Init
 	public void init()
 	{
@@ -51,7 +53,7 @@ public class GL_JournalBatch
 			ifColumnsChanged = { I_GL_JournalBatch.COLUMNNAME_DateAcct, I_GL_JournalBatch.COLUMNNAME_DateDoc })
 	public void updateDateAcct(final I_GL_JournalBatch journalBatch)
 	{
-		final List<I_GL_Journal> journals = Services.get(IGLJournalDAO.class).retrieveJournalsForBatch(journalBatch);
+		final List<I_GL_Journal> journals = glJournalDAO.retrieveJournalsForBatch(journalBatch);
 
 		if (journals.isEmpty())
 		{

@@ -16,8 +16,6 @@
  *****************************************************************************/
 package org.compiere.db;
 
-import static de.metas.util.Check.isEmpty;
-
 import java.io.Serializable;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
@@ -101,7 +99,7 @@ public final class CConnection implements Serializable, Cloneable
 	 *
 	 * @return Connection Descriptor; never returns null.
 	 */
-	private static final CConnection createInstance()
+	private static CConnection createInstance()
 	{
 		CConnection cc = createFromIniIfOK();
 
@@ -287,7 +285,7 @@ public final class CConnection implements Serializable, Cloneable
 		resetAppsServer(); // reset our cached infos about the apps server.
 	}
 
-	private final void resetAppsServer()
+	private void resetAppsServer()
 	{
 		m_okApps = false;
 		m_appServerWasQueried = false;
@@ -675,7 +673,7 @@ public final class CConnection implements Serializable, Cloneable
 	// NOTE: this method is SUPPOSED to not contact the database server or do any expensive operations.
 	// It shall just return a status flag.
 	// Before changing this, check the caller, and mainly check in this class, because there are some methods which depends on this approach.
-	public final boolean isDatabaseOK()
+	public boolean isDatabaseOK()
 	{
 		final boolean checkifUnknown = false;
 		return isDatabaseOK(checkifUnknown);
@@ -687,7 +685,7 @@ public final class CConnection implements Serializable, Cloneable
 	 * @param checkifUnknown if true and the current connection status is not known, the system will try to contact the database and figure out if the db connection is really alive
 	 * @return true if the database connection is alive
 	 */
-	public final boolean isDatabaseOK(final boolean checkifUnknown)
+	public boolean isDatabaseOK(final boolean checkifUnknown)
 	{
 		if (checkifUnknown && this._okDB == null)
 		{
@@ -701,7 +699,7 @@ public final class CConnection implements Serializable, Cloneable
 	/**
 	 * Sets the {@link #_okDB} flag.
 	 */
-	private final void updateDatabaseOKStatus()
+	private void updateDatabaseOKStatus()
 	{
 		// If we are currently running this method, don't run it again.
 		if (_runningUpdateDatabaseOKStatus.getAndSet(true))
@@ -752,7 +750,7 @@ public final class CConnection implements Serializable, Cloneable
 	/**
 	 * Close DB connection.
 	 */
-	public synchronized final void closeDataSource()
+	public synchronized void closeDataSource()
 	{
 		if (_database != null)
 		{
@@ -808,7 +806,7 @@ public final class CConnection implements Serializable, Cloneable
 	 *
 	 * @return true if database connection is OK
 	 */
-	private final boolean testDatabaseIfNeeded()
+	private boolean testDatabaseIfNeeded()
 	{
 		// Check if database connection is already OK
 		if (isDatabaseOK())
@@ -852,7 +850,7 @@ public final class CConnection implements Serializable, Cloneable
 	 *
 	 * @return info
 	 */
-	public final String getDBInfo()
+	public String getDBInfo()
 	{
 		if (m_dbInfo == null)
 		{
@@ -871,7 +869,7 @@ public final class CConnection implements Serializable, Cloneable
 		return m_dbInfo;
 	}
 
-	private final String retrieveDBInfo() throws SQLException
+	private String retrieveDBInfo() throws SQLException
 	{
 		Connection conn = null;
 		try
@@ -967,7 +965,9 @@ public final class CConnection implements Serializable, Cloneable
 					&& cc.getType().equals(attrs.getDbType())
 					&& cc.getDbUid().equals(attrs.getDbUid())
 					&& cc.getDbPwd().equals(attrs.getDbPwd()))
+			{
 				return true;
+			}
 		}
 		return false;
 	}	// equals
@@ -1052,7 +1052,7 @@ public final class CConnection implements Serializable, Cloneable
 		return _database;
 	} 	// getDatabase
 
-	private final synchronized AdempiereDatabase getDatabaseOrNull()
+	private synchronized AdempiereDatabase getDatabaseOrNull()
 	{
 		return _database;
 	}
@@ -1066,9 +1066,13 @@ public final class CConnection implements Serializable, Cloneable
 	{
 		final AdempiereDatabase db = getDatabaseOrNull();
 		if (db != null)
+		{
 			return db.getConnectionURL(this);
+		}
 		else
+		{
 			return "";
+		}
 	} 	// getConnectionURL
 
 	/**
@@ -1331,40 +1335,34 @@ public final class CConnection implements Serializable, Cloneable
 	}
 
 	/**
-	 * Get Status Info
-	 *
-	 * @return info
-	 */
-	public String getStatus()
-	{
-		StringBuilder sb = new StringBuilder();
-		sb.append(attrs.getName());
-
-		final AdempiereDatabase db = getDatabaseOrNull();
-		if (db != null)
-			sb.append(db.getStatus());
-		return sb.toString();
-	}	// getStatus
-
-	/**
 	 * Get Transaction Isolation Info
 	 *
 	 * @param transactionIsolation
 	 * @return transaction isolation name
 	 */
 	@SuppressWarnings("unused")
-	private static final String getTransactionIsolationInfo(int transactionIsolation)
+	private static String getTransactionIsolationInfo(int transactionIsolation)
 	{
 		if (transactionIsolation == Connection.TRANSACTION_NONE)
+		{
 			return "NONE";
+		}
 		if (transactionIsolation == Connection.TRANSACTION_READ_COMMITTED)
+		{
 			return "READ_COMMITTED";
+		}
 		if (transactionIsolation == Connection.TRANSACTION_READ_UNCOMMITTED)
+		{
 			return "READ_UNCOMMITTED";
+		}
 		if (transactionIsolation == Connection.TRANSACTION_REPEATABLE_READ)
+		{
 			return "REPEATABLE_READ";
+		}
 		if (transactionIsolation == Connection.TRANSACTION_SERIALIZABLE)
+		{
 			return "SERIALIZABLE";
+		}
 		return "<?" + transactionIsolation + "?>";
 	}	// getTransactionIsolationInfo
 

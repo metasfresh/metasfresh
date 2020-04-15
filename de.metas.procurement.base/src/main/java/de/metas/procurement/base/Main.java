@@ -7,7 +7,6 @@ import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
 import org.adempiere.ad.ui.api.ITabCalloutFactory;
 import org.adempiere.service.ISysConfigBL;
-import org.compiere.model.I_AD_Client;
 import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableList;
@@ -59,38 +58,38 @@ public class Main extends AbstractModuleInterceptor
 	private static final String SYSCONFIG_JMS_QUEUE_REQUEST = "de.metas.procurement.webui.jms.queue.request";
 
 	@Override
-	protected void registerInterceptors(final IModelValidationEngine engine, final I_AD_Client client)
+	protected void registerInterceptors(final IModelValidationEngine engine)
 	{
 		//
 		// Candidate -> Purchase order
-		engine.addModelValidator(new de.metas.procurement.base.order.interceptor.C_Order(), client);
-		engine.addModelValidator(de.metas.procurement.base.order.interceptor.C_OrderLine.instance, client);
-		engine.addModelValidator(de.metas.procurement.base.order.interceptor.PMM_PurchaseCandidate.instance, client);
-		engine.addModelValidator(new de.metas.procurement.base.order.interceptor.PMM_PurchaseCandidate_OrderLine(), client);
+		engine.addModelValidator(new de.metas.procurement.base.order.interceptor.C_Order());
+		engine.addModelValidator(de.metas.procurement.base.order.interceptor.C_OrderLine.instance);
+		engine.addModelValidator(de.metas.procurement.base.order.interceptor.PMM_PurchaseCandidate.instance);
+		engine.addModelValidator(new de.metas.procurement.base.order.interceptor.PMM_PurchaseCandidate_OrderLine());
 
 		//
 		// Events
-		engine.addModelValidator(new de.metas.procurement.base.event.interceptor.PMM_QtyReport_Event(), client);
-		engine.addModelValidator(new de.metas.procurement.base.event.interceptor.PMM_WeekReport_Event(), client);
+		engine.addModelValidator(new de.metas.procurement.base.event.interceptor.PMM_QtyReport_Event());
+		engine.addModelValidator(new de.metas.procurement.base.event.interceptor.PMM_WeekReport_Event());
 
 		//
 		// Master data: bpartner & users
-		engine.addModelValidator(de.metas.procurement.base.model.interceptor.C_BPartner.instance, client);
-		engine.addModelValidator(de.metas.procurement.base.model.interceptor.AD_User.instance, client);
+		engine.addModelValidator(de.metas.procurement.base.model.interceptor.C_BPartner.instance);
+		engine.addModelValidator(de.metas.procurement.base.model.interceptor.AD_User.instance);
 		// Master data: contracts
-		engine.addModelValidator(de.metas.procurement.base.model.interceptor.C_Flatrate_Term.instance, client);
-		engine.addModelValidator(de.metas.procurement.base.model.interceptor.C_Flatrate_DataEntry.instance, client);
+		engine.addModelValidator(de.metas.procurement.base.model.interceptor.C_Flatrate_Term.instance);
+		engine.addModelValidator(de.metas.procurement.base.model.interceptor.C_Flatrate_DataEntry.instance);
 		// Master data: products
-		engine.addModelValidator(de.metas.procurement.base.model.interceptor.M_Product.instance, client);
-		engine.addModelValidator(de.metas.procurement.base.model.interceptor.C_BPartner_Product.instance, client);
-		engine.addModelValidator(de.metas.procurement.base.model.interceptor.PMM_Product.instance, client);
-		engine.addModelValidator(de.metas.procurement.base.model.interceptor.M_HU_PI_Item_Product.instance, client);
+		engine.addModelValidator(de.metas.procurement.base.model.interceptor.M_Product.instance);
+		engine.addModelValidator(de.metas.procurement.base.model.interceptor.C_BPartner_Product.instance);
+		engine.addModelValidator(de.metas.procurement.base.model.interceptor.PMM_Product.instance);
+		engine.addModelValidator(de.metas.procurement.base.model.interceptor.M_HU_PI_Item_Product.instance);
 		// Master data: messages
-		engine.addModelValidator(de.metas.procurement.base.model.interceptor.PMM_Message.instance, client);
+		engine.addModelValidator(de.metas.procurement.base.model.interceptor.PMM_Message.instance);
 		
 		//
 		// RfQ
-		engine.addModelValidator(new de.metas.procurement.base.rfq.model.interceptor.RfqMainInterceptor(), client);
+		engine.addModelValidator(new de.metas.procurement.base.rfq.model.interceptor.RfqMainInterceptor());
 	}
 
 	@Override

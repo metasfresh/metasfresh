@@ -30,7 +30,6 @@ import org.adempiere.ad.modelvalidator.IModelValidationEngine;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
-import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.util.Env;
@@ -92,10 +91,8 @@ public class MainValidator extends AbstractModuleInterceptor
 	}
 
 	@Override
-	protected void onInit(final IModelValidationEngine engine, final I_AD_Client client)
+	protected void onAfterInit()
 	{
-		super.onInit(engine, client);
-
 		if (!Ini.isSwingClient())
 		{
 			ensureDataDestExists();
@@ -162,31 +159,31 @@ public class MainValidator extends AbstractModuleInterceptor
 	}
 
 	@Override
-	protected void registerInterceptors(final IModelValidationEngine engine, final I_AD_Client client)
+	protected void registerInterceptors(final IModelValidationEngine engine)
 	{
-		engine.addModelValidator(C_Flatrate_Conditions.INSTANCE, client);
-		engine.addModelValidator(C_SubscriptionProgress.instance, client);
-		engine.addModelValidator(C_Flatrate_DataEntry.instance, client);
-		engine.addModelValidator(C_Flatrate_Matching.instance, client);
-		engine.addModelValidator(new C_Flatrate_Term(contractOrderService), client);
+		engine.addModelValidator(C_Flatrate_Conditions.INSTANCE);
+		engine.addModelValidator(C_SubscriptionProgress.instance);
+		engine.addModelValidator(C_Flatrate_DataEntry.instance);
+		engine.addModelValidator(C_Flatrate_Matching.instance);
+		engine.addModelValidator(new C_Flatrate_Term(contractOrderService));
 
-		engine.addModelValidator(new C_Invoice_Candidate(), client);
-		engine.addModelValidator(new C_Invoice_Clearing_Alloc(), client);
-		engine.addModelValidator(new C_Order(), client);
-		engine.addModelValidator(new C_OrderLine(groupChangesHandler), client);
+		engine.addModelValidator(new C_Invoice_Candidate());
+		engine.addModelValidator(new C_Invoice_Clearing_Alloc());
+		engine.addModelValidator(new C_Order());
+		engine.addModelValidator(new C_OrderLine(groupChangesHandler));
 
 		// 03742
-		engine.addModelValidator(new C_Flatrate_Transition(), client);
+		engine.addModelValidator(new C_Flatrate_Transition());
 
 		// 04360
-		engine.addModelValidator(new C_Period(), client);
+		engine.addModelValidator(new C_Period());
 
-		engine.addModelValidator(new M_InOutLine(), client);
+		engine.addModelValidator(new M_InOutLine());
 
-		engine.addModelValidator(new M_ShipmentSchedule_QtyPicked(), client);
+		engine.addModelValidator(new M_ShipmentSchedule_QtyPicked());
 
 		// 09869
-		engine.addModelValidator(M_ShipmentSchedule.INSTANCE, client);
+		engine.addModelValidator(M_ShipmentSchedule.INSTANCE);
 	}
 
 }

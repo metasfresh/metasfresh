@@ -59,6 +59,7 @@ import org.compiere.util.Env;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 
+import de.metas.cache.CCache;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.organization.OrgId;
 import de.metas.product.CreateProductRequest;
@@ -77,6 +78,12 @@ import lombok.NonNull;
 public class ProductDAO implements IProductDAO
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+	private CCache<Integer, ProductCategoryId> defaultProductCategoryCache = CCache.<Integer, ProductCategoryId> builder()
+			.tableName(I_M_Product_Category.Table_Name)
+			.initialCapacity(1)
+			.expireMinutes(CCache.EXPIREMINUTES_Never)
+			.build();
 
 	@Override
 	public I_M_Product getById(@NonNull final ProductId productId)
@@ -203,20 +210,27 @@ public class ProductDAO implements IProductDAO
 	}
 
 	@Override
-	@Cached(cacheName = I_M_Product_Category.Table_Name + "#Default")
-	public I_M_Product_Category retrieveDefaultProductCategory(@CacheCtx final Properties ctx)
+	public ProductCategoryId getDefaultProductCategoryId()
 	{
-		final I_M_Product_Category pc = queryBL
-				.createQueryBuilder(I_M_Product_Category.class, ctx, ITrx.TRXNAME_None)
+		return defaultProductCategoryCache.getOrLoad(0, this::retrieveDefaultProductCategoryId);
+	}
+
+	private ProductCategoryId retrieveDefaultProductCategoryId()
+	{
+		final ProductCategoryId productCategoryId = queryBL
+				.createQueryBuilderOutOfTrx(I_M_Product_Category.class)
 				.addOnlyActiveRecordsFilter()
 				.orderBy()
 				.addColumn(I_M_Product_Category.COLUMNNAME_IsDefault, Direction.Descending, Nulls.Last)
 				.addColumn(I_M_Product_Category.COLUMNNAME_M_Product_Category_ID)
 				.endOrderBy()
 				.create()
-				.first(I_M_Product_Category.class);
-		Check.assumeNotNull(pc, "default product category shall exist");
-		return pc;
+				.firstId(ProductCategoryId::ofRepoIdOrNull);
+		if (productCategoryId == null)
+		{
+			throw new AdempiereException("default product category shall exist");
+		}
+		return productCategoryId;
 	}
 
 	@Override

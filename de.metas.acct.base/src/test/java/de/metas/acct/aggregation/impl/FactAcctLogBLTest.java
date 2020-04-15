@@ -1,5 +1,7 @@
 package de.metas.acct.aggregation.impl;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.Properties;
@@ -14,10 +16,9 @@ import org.compiere.model.I_C_Year;
 import org.compiere.model.X_C_Period;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import de.metas.acct.aggregation.IFactAcctLogBL;
 import de.metas.acct.aggregation.IFactAcctLogDAO;
@@ -49,6 +50,7 @@ import de.metas.util.Services;
  * #L%
  */
 
+@ExtendWith(AdempiereTestWatcher.class)
 public class FactAcctLogBLTest
 {
 	private Properties ctx;
@@ -57,9 +59,6 @@ public class FactAcctLogBLTest
 	private IFactAcctLogBL factAcctLogBL;
 	private FactAcctLogDAO factAcctLogDAO;
 
-	@Rule
-	public final AdempiereTestWatcher testWatcher = new AdempiereTestWatcher();
-
 	private final int C_AcctSchema_ID1 = 1;
 	private final int C_ElementValue_ID1 = 1;
 
@@ -67,7 +66,7 @@ public class FactAcctLogBLTest
 
 	private I_C_Period year2015_p1;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
@@ -124,15 +123,15 @@ public class FactAcctLogBLTest
 		// Check the result
 		{
 			final List<I_Fact_Acct_Summary> summaries = retrieveAllFactAcctSummariesFor(FactAcctSummaryKey.of(log1));
-			Assert.assertEquals("Summary records count", 2, summaries.size());
+			assertThat(summaries).hasSize(2);
 
 			final I_Fact_Acct_Summary summary1 = summaries.get(0);
-			Assert.assertEquals("Summary AmtAcctDr", 100 - 30, summary1.getAmtAcctDr().intValueExact());
-			Assert.assertEquals("Summary AmtAcctCr", 0, summary1.getAmtAcctCr().intValueExact());
+			assertEquals("Summary AmtAcctDr", 100 - 30, summary1.getAmtAcctDr().intValueExact());
+			assertEquals("Summary AmtAcctCr", 0, summary1.getAmtAcctCr().intValueExact());
 
 			final I_Fact_Acct_Summary summary2 = summaries.get(1);
-			Assert.assertEquals("Summary AmtAcctDr", 100 - 30 + 10, summary2.getAmtAcctDr().intValueExact());
-			Assert.assertEquals("Summary AmtAcctCr", 0, summary2.getAmtAcctCr().intValueExact());
+			assertEquals("Summary AmtAcctDr", 100 - 30 + 10, summary2.getAmtAcctDr().intValueExact());
+			assertEquals("Summary AmtAcctCr", 0, summary2.getAmtAcctCr().intValueExact());
 		}
 
 		//
@@ -148,9 +147,9 @@ public class FactAcctLogBLTest
 			processAllLogs();
 
 			final List<I_Fact_Acct_Summary> summaries = retrieveAllFactAcctSummariesFor(FactAcctSummaryKey.of(log1));
-			Assert.assertEquals("Summary AmtAcctDr", 1000, summaries.get(0).getAmtAcctDr().intValueExact());
-			Assert.assertEquals("Summary AmtAcctDr", 100 - 30 + 1000, summaries.get(1).getAmtAcctDr().intValueExact());
-			Assert.assertEquals("Summary AmtAcctDr", 100 - 30 + 10 + 1000, summaries.get(2).getAmtAcctDr().intValueExact());
+			assertEquals("Summary AmtAcctDr", 1000, summaries.get(0).getAmtAcctDr().intValueExact());
+			assertEquals("Summary AmtAcctDr", 100 - 30 + 1000, summaries.get(1).getAmtAcctDr().intValueExact());
+			assertEquals("Summary AmtAcctDr", 100 - 30 + 10 + 1000, summaries.get(2).getAmtAcctDr().intValueExact());
 		}
 	}
 
@@ -169,9 +168,9 @@ public class FactAcctLogBLTest
 		// Check
 		{
 			final List<I_Fact_Acct_Summary> summaries = retrieveAllFactAcctSummariesFor(FactAcctSummaryKey.of(log1));
-			Assert.assertEquals("Summary records count", 1, summaries.size());
-			Assert.assertEquals("Summary AmtAcctDr", 100, summaries.get(0).getAmtAcctDr().intValueExact());
-			Assert.assertEquals("Summary AmtAcctDr_YTD", 100, summaries.get(0).getAmtAcctDr_YTD().intValueExact());
+			assertEquals("Summary records count", 1, summaries.size());
+			assertEquals("Summary AmtAcctDr", 100, summaries.get(0).getAmtAcctDr().intValueExact());
+			assertEquals("Summary AmtAcctDr_YTD", 100, summaries.get(0).getAmtAcctDr_YTD().intValueExact());
 		}
 
 		final I_Fact_Acct_Log log2 = newFactAcctLogBuilder()
@@ -186,13 +185,13 @@ public class FactAcctLogBLTest
 		// Check
 		{
 			final List<I_Fact_Acct_Summary> summaries = retrieveAllFactAcctSummariesFor(FactAcctSummaryKey.of(log2));
-			Assert.assertEquals("Summary records count", 2, summaries.size());
+			assertThat(summaries).hasSize(2);
 			//
-			Assert.assertEquals("Summary AmtAcctDr", 100, summaries.get(0).getAmtAcctDr().intValueExact());
-			Assert.assertEquals("Summary AmtAcctDr_YTD", 100, summaries.get(0).getAmtAcctDr_YTD().intValueExact());
+			assertEquals("Summary AmtAcctDr", 100, summaries.get(0).getAmtAcctDr().intValueExact());
+			assertEquals("Summary AmtAcctDr_YTD", 100, summaries.get(0).getAmtAcctDr_YTD().intValueExact());
 			//
-			Assert.assertEquals("Summary AmtAcctDr", 100 + 50, summaries.get(1).getAmtAcctDr().intValueExact());
-			Assert.assertEquals("Summary AmtAcctDr_YTD", 50, summaries.get(1).getAmtAcctDr_YTD().intValueExact());
+			assertEquals("Summary AmtAcctDr", 100 + 50, summaries.get(1).getAmtAcctDr().intValueExact());
+			assertEquals("Summary AmtAcctDr_YTD", 50, summaries.get(1).getAmtAcctDr_YTD().intValueExact());
 		}
 
 	}
@@ -208,14 +207,23 @@ public class FactAcctLogBLTest
 		;
 	}
 
+	private void assertEquals(String description, int expected, int actual)
+	{
+		assertThat(actual).as(description).isEqualTo(expected);
+	}
+
 	private final void assertHasLogs()
 	{
-		Assert.assertEquals("Has Logs", true, factAcctLogDAO.hasLogs(ctx, IFactAcctLogDAO.PROCESSINGTAG_NULL));
+		assertThat(factAcctLogDAO.hasLogs(ctx, IFactAcctLogDAO.PROCESSINGTAG_NULL))
+				.as("has logs")
+				.isTrue();
 	}
 
 	private final void assertNoLogs()
 	{
-		Assert.assertEquals("Has Logs", false, factAcctLogDAO.hasLogs(ctx, IFactAcctLogDAO.PROCESSINGTAG_NULL));
+		assertThat(factAcctLogDAO.hasLogs(ctx, IFactAcctLogDAO.PROCESSINGTAG_NULL))
+				.as("has logs")
+				.isFalse();
 	}
 
 	private final void processAllLogs()
