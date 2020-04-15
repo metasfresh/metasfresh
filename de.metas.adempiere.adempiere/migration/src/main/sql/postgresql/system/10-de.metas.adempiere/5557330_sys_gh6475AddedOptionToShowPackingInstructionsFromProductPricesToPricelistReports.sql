@@ -835,6 +835,13 @@ WHERE l.IsActive = 'Y'
   AND NOT EXISTS(SELECT 1 FROM AD_Process_Para_Trl tt WHERE tt.AD_Language = l.AD_Language AND tt.AD_Process_Para_ID = t.AD_Process_Para_ID)
 ;
 
+-- 2020-04-15T13:56:23.601Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process SET SQLStatement='SELECT * FROM report.fresh_pricelist_details_template_report(@C_BPartner_ID/NULL@, @M_PriceList_Version_ID/NULL@,''@#AD_Language@'',@C_BPartner_Location_ID/NULL@, ''@p_show_product_price_pi_flag/NULL@'') where show_product_price_pi_flag = ''N''
+UNION ALL
+SELECT * FROM report.fresh_pricelist_details_template_report_With_PP_PI(@C_BPartner_ID/NULL@, @M_PriceList_Version_ID/NULL@,''@#AD_Language@'',@C_BPartner_Location_ID/NULL@, ''@p_show_product_price_pi_flag/NULL@'') where show_product_price_pi_flag = ''Y'';',Updated=TO_TIMESTAMP('2020-04-15 16:56:23','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=584659
+;
+
 DROP VIEW IF EXISTS rv_fresh_pricelist;
 DROP VIEW IF EXISTS RV_fresh_PriceList_Comparison;
 

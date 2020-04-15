@@ -58,8 +58,6 @@ FROM report.fresh_PriceList_Details_Report(p_c_bpartner_id, p_m_pricelist_versio
 
          LEFT OUTER JOIN M_Pricelist_Version prlv on prlv.m_pricelist_version_id = p_m_pricelist_version_id
          LEFT OUTER JOIN M_Pricelist prl on prlv.m_pricelist_id = prl.m_pricelist_id
-         LEFT OUTER JOIN M_HU_PackingMaterial pmt on plc.m_product_id = pmt.m_product_id
-         LEFT OUTER JOIN M_ProductPrice ppr on ppr.m_product_id = pmt.m_product_id
 
 
 $BODY$
