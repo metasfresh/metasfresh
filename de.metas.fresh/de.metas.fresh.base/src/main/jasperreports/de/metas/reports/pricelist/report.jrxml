@@ -18,7 +18,7 @@
 	<parameter name="Alt_PriceList_Version_ID" class="java.math.BigDecimal"/>
 	<parameter name="C_BPartner_ID" class="java.math.BigDecimal"/>
 	<parameter name="C_BPartner_Location_ID" class="java.math.BigDecimal"/>
-	<parameter name="show_only_pricelist_instructions" class="java.lang.String">
+	<parameter name="p_show_product_price_pi_flag" class="java.lang.String">
 		<defaultValueExpression><![CDATA["Y"]]></defaultValueExpression>
 	</parameter>
 	<queryString>
@@ -117,8 +117,8 @@ WHERE
 				<subreportParameter name="C_BPartner_ID">
 					<subreportParameterExpression><![CDATA[$P{C_BPartner_ID}]]></subreportParameterExpression>
 				</subreportParameter>
-				<subreportParameter name="show_only_pricelist_instructions">
-					<subreportParameterExpression><![CDATA[$P{show_only_pricelist_instructions}]]></subreportParameterExpression>
+				<subreportParameter name="p_show_product_price_pi_flag">
+					<subreportParameterExpression><![CDATA[$P{p_show_product_price_pi_flag}]]></subreportParameterExpression>
 				</subreportParameter>
 				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
 				<subreportExpression><![CDATA["de/metas/reports/pricelist/report_details.jasper"]]></subreportExpression>

@@ -22,7 +22,7 @@
 		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
 	</parameter>
 	<parameter name="Alt_PriceList_Version_ID" class="java.math.BigDecimal"/>
-	<parameter name="show_only_pricelist_instructions" class="java.lang.String">
+	<parameter name="p_show_product_price_pi_flag" class="java.lang.String">
 		<defaultValueExpression><![CDATA["Y"]]></defaultValueExpression>
 	</parameter>
 	<queryString>
@@ -31,18 +31,18 @@
 	(SELECT validfrom FROM M_Pricelist_Version WHERE M_Pricelist_Version_ID = $P{M_PriceList_Version_ID}	AND isActive = 'Y') AS validfrom,
 	(SELECT name FROM C_BPartner_Location WHERE C_BPartner_Location_ID = $P{C_BPartner_Location_ID}	AND isActive = 'Y') AS bpl_Name
 FROM
-	report.fresh_PriceList_Details_Report ($P{C_BPartner_ID}, $P{M_PriceList_Version_ID}, $P{Alt_PriceList_Version_ID}, $P{ad_language}, $P{show_only_pricelist_instructions}) pdr
+	report.fresh_PriceList_Details_Report ($P{C_BPartner_ID}, $P{M_PriceList_Version_ID}, $P{Alt_PriceList_Version_ID}, $P{ad_language}, $P{p_show_product_price_pi_flag}) pdr
 	JOIN de_metas_endcustomer_fresh_reports.Docs_Generics_Org_Report (null,'Y', (SELECT AD_Org_ID FROM C_BPartner WHERE C_BPartner_ID = $P{C_BPartner_ID}  AND isActive = 'Y')) ON true
-	where pdr.show_only_pricelist_instructions = 'N' 
+	where pdr.show_product_price_pi_flag = 'N' 
 	UNION ALL
 	SELECT
 	*,
 	(SELECT validfrom FROM M_Pricelist_Version WHERE M_Pricelist_Version_ID = $P{M_PriceList_Version_ID}	AND isActive = 'Y') AS validfrom,
 	(SELECT name FROM C_BPartner_Location WHERE C_BPartner_Location_ID = $P{C_BPartner_Location_ID}	AND isActive = 'Y') AS bpl_Name
 FROM
-	report.fresh_PriceList_Details_Report_2 ( $P{C_BPartner_ID}, $P{M_PriceList_Version_ID}, $P{Alt_PriceList_Version_ID}, $P{ad_language}, $P{show_only_pricelist_instructions}) pdr
+	report.fresh_PriceList_Details_Report_With_PP_PI ( $P{C_BPartner_ID}, $P{M_PriceList_Version_ID}, $P{Alt_PriceList_Version_ID}, $P{ad_language}, $P{p_show_product_price_pi_flag}) pdr
 	JOIN de_metas_endcustomer_fresh_reports.Docs_Generics_Org_Report (null,'Y', (SELECT AD_Org_ID FROM C_BPartner WHERE C_BPartner_ID = $P{C_BPartner_ID}  AND isActive = 'Y')) ON true
-	where pdr.show_only_pricelist_instructions = 'Y' ;]]>
+	where pdr.show_product_price_pi_flag = 'Y' ;]]>
 	</queryString>
 	<field name="bp_value" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="bp_value"/>
@@ -110,8 +110,8 @@ FROM
 	<field name="currency2" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="currency2"/>
 	</field>
-	<field name="show_only_pricelist_instructions" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.label" value="show_only_pricelist_instructions"/>
+	<field name="show_product_price_pi_flag" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="show_product_price_pi_flag"/>
 	</field>
 	<field name="name" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="name"/>

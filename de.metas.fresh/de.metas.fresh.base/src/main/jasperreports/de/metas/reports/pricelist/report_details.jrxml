@@ -19,7 +19,7 @@
 	</parameter>
 	<parameter name="M_PriceList_Version_ID" class="java.math.BigDecimal"/>
 	<parameter name="Alt_PriceList_Version_ID" class="java.math.BigDecimal"/>
-	<parameter name="show_only_pricelist_instructions" class="java.lang.String">
+	<parameter name="p_show_product_price_pi_flag" class="java.lang.String">
 		<defaultValueExpression><![CDATA["Y"]]></defaultValueExpression>
 	</parameter>
 	<queryString>
@@ -28,14 +28,14 @@
 	, $P{M_PriceList_Version_ID}
 	, $P{Alt_PriceList_Version_ID}
 	, $P{ad_language}
-	, $P{show_only_pricelist_instructions}) where show_only_pricelist_instructions = 'N' 
+	, $P{p_show_product_price_pi_flag}) where show_product_price_pi_flag = 'N' 
 	UNION ALL
-	SELECT * FROM report.fresh_PriceList_Details_Report_2(
+	SELECT * FROM report.fresh_PriceList_Details_Report_With_PP_PI(
 	$P{C_BPartner_ID}
 	, $P{M_PriceList_Version_ID}
 	, $P{Alt_PriceList_Version_ID}
 	, $P{ad_language}
-	, $P{show_only_pricelist_instructions}) where show_only_pricelist_instructions = 'Y'  ;]]>
+	, $P{p_show_product_price_pi_flag}) where show_product_price_pi_flag = 'Y'  ;]]>
 	</queryString>
 	<field name="bp_value" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="bp_value"/>
@@ -103,8 +103,8 @@
 	<field name="currency2" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="currency2"/>
 	</field>
-	<field name="show_only_pricelist_instructions" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.label" value="show_only_pricelist_instructions"/>
+	<field name="show_product_price_pi_flag" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="show_product_price_pi_flag"/>
 	</field>
 	<variable name="LINE_COUNT" class="java.lang.Number" calculation="Count">
 		<variableExpression><![CDATA[1]]></variableExpression>
