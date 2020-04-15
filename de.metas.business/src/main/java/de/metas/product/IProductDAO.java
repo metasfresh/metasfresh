@@ -28,7 +28,6 @@ import static de.metas.util.lang.CoalesceUtil.coalesce;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.Properties;
 import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
@@ -57,15 +56,16 @@ public interface IProductDAO extends ISingletonService
 	List<I_M_Product> getByIds(final Set<ProductId> productIds);
 
 	/**
-	 * @return default product category; never returns null
+	 * @return default product category
 	 */
-	I_M_Product_Category retrieveDefaultProductCategory(Properties ctx);
+	@NonNull
+	ProductCategoryId getDefaultProductCategoryId();
 
 	/**
 	 * @param productId
 	 * @param orgId
 	 * @return the product of the given <code>org</code> that is mapped to the given <code>product</code> or <code>null</code> if the given product references no mapping, or the mapping is not active
-	 * or if there is no pendant in the given <code>org</code>.
+	 *         or if there is no pendant in the given <code>org</code>.
 	 * @task http://dewiki908/mediawiki/index.php/09700_Counter_Documents_%28100691234288%29
 	 */
 	ProductId retrieveMappedProductIdOrNull(ProductId productId, OrgId orgId);

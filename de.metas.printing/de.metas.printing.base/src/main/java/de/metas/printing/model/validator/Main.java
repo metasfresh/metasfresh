@@ -32,7 +32,6 @@ import org.adempiere.ad.modelvalidator.IModelValidationEngine;
 import org.adempiere.ad.session.ISessionBL;
 import org.adempiere.ad.session.MFSession;
 import org.adempiere.server.rpl.trx.api.IReplicationTrxBL;
-import org.compiere.model.I_AD_Client;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
@@ -68,6 +67,7 @@ import de.metas.printing.model.I_C_Printing_Queue;
 import de.metas.printing.spi.impl.DefaultPrintingRecordTextProvider;
 import de.metas.printing.spi.impl.DocumentPrintingQueueHandler;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 /**
  * Printing base - Main Validator
@@ -77,11 +77,31 @@ import de.metas.util.Services;
  */
 public class Main extends AbstractModuleInterceptor
 {
-
 	private static final Logger logger = LogManager.getLogger(Main.class);
 
+	private Boolean enabled;
+	private boolean loggedThatPrintingIsNotEnabled = false;
+
+	private boolean checkPrintingEnabled()
+	{
+		Boolean enabled = this.enabled;
+		if (enabled == null)
+		{
+			enabled = this.enabled = Printing_Constants.isEnabled();
+			loggedThatPrintingIsNotEnabled = false;
+		}
+
+		if (!enabled && !loggedThatPrintingIsNotEnabled)
+		{
+			logger.info("Printing is disabled; not registering any printing MIs, callouts etc");
+			loggedThatPrintingIsNotEnabled = true;
+		}
+
+		return enabled;
+	}
+
 	@Override
-	protected void onInit(final IModelValidationEngine engine, final I_AD_Client client)
+	protected void onBeforeInit()
 	{
 		//
 		// Configure tables which are skipped when we record migration scripts
@@ -104,16 +124,6 @@ public class Main extends AbstractModuleInterceptor
 			migrationLogger.addTableToIgnoreList(I_AD_Printer_Matching.Table_Name);
 		}
 
-		// Do not initialize if the printing module is disabled
-		if (!Printing_Constants.isEnabled())
-		{
-			logger.info("Printing is disabled; not registering any printing MIs, callouts etc");
-			return;
-		}
-
-		super.onInit(engine, client);
-
-
 		//
 		// Configure tables which are excluded by EXP_ReplicationTrx
 		{
@@ -124,52 +134,79 @@ public class Main extends AbstractModuleInterceptor
 			// and we don't need gracefully handle not-unique lookup results.
 			replicationTrxBL.addTableToIgnoreList(I_AD_User_Login.Table_Name);
 		}
-
-		engine.addModelValidator(AD_User_Login.instance, client);
-
-		engine.addModelValidator(new AD_Archive(), client);
-
-		engine.addModelValidator(new AD_Printer_Config(), client);
-		engine.addModelValidator(new AD_Printer_Matching(), client);
-		engine.addModelValidator(new AD_PrinterRouting(), client);
-		engine.addModelValidator(new AD_PrinterHW(), client);
-		engine.addModelValidator(new AD_PrinterHW_Calibration(), client);
-		engine.addModelValidator(new AD_PrinterHW_MediaTray(), client);
-		engine.addModelValidator(new AD_PrinterTray_Matching(), client);
-		engine.addModelValidator(new C_BPartner(), client); // task 08958
-
-		engine.addModelValidator(new C_Print_Job_Instructions(), client);
-		engine.addModelValidator(new C_Printing_Queue(), client);
-		engine.addModelValidator(new C_Printing_Queue_Recipient(), client);
-
-		// NOTE: we have an entry in AD_ModelValidator for "SwingPrintingClientValidator", so don't add it programmatically
-		// engine.addModelValidator(new SwingPrintingClientValidator(), client);
-
-		Services.get(IPrintingQueueBL.class).registerHandler(DocumentPrintingQueueHandler.instance);
-
-		Services.get(IPrintServiceRegistry.class).registerJasperService(de.metas.printing.adapter.MassPrintServiceAdapter.INSTANCE);
-
-		// callouts
-		final IProgramaticCalloutProvider programaticCalloutProvider = Services.get(IProgramaticCalloutProvider.class);
-
-		// task 09417
-		programaticCalloutProvider.registerAnnotatedCallout(de.metas.printing.callout.C_Doc_Outbound_Config.instance);
-
-		// task 09833
-		// Register the Default Printing Info ctx provider
-		Services.get(INotificationBL.class).setDefaultCtxProvider(DefaultPrintingRecordTextProvider.instance);
-
-		Services.get(IAsyncBatchListeners.class).registerAsyncBatchNoticeListener(new PDFPrintingAsyncBatchListener(), Printing_Constants.C_Async_Batch_InternalName_PDFPrinting);
 	}
 
 	@Override
-	protected void setupCaching(IModelCacheService cachingService)
+	protected void registerInterceptors(@NonNull final IModelValidationEngine engine)
+	{
+		// Do not initialize if the printing module is disabled
+		if (!checkPrintingEnabled())
+		{
+			return;
+		}
+
+		engine.addModelValidator(AD_User_Login.instance);
+
+		engine.addModelValidator(new AD_Archive());
+
+		engine.addModelValidator(new AD_Printer_Config());
+		engine.addModelValidator(new AD_Printer_Matching());
+		engine.addModelValidator(new AD_PrinterRouting());
+		engine.addModelValidator(new AD_PrinterHW());
+		engine.addModelValidator(new AD_PrinterHW_Calibration());
+		engine.addModelValidator(new AD_PrinterHW_MediaTray());
+		engine.addModelValidator(new AD_PrinterTray_Matching());
+		engine.addModelValidator(new C_BPartner()); // task 08958
+
+		engine.addModelValidator(new C_Print_Job_Instructions());
+		engine.addModelValidator(new C_Printing_Queue());
+		engine.addModelValidator(new C_Printing_Queue_Recipient());
+
+		// NOTE: we have an entry in AD_ModelValidator for "SwingPrintingClientValidator", so don't add it programmatically
+		// engine.addModelValidator(new SwingPrintingClientValidator());
+	}
+
+	@Override
+	protected void registerCallouts(@NonNull final IProgramaticCalloutProvider programaticCalloutProvider)
+	{
+		// Do not initialize if the printing module is disabled
+		if (!checkPrintingEnabled())
+		{
+			return;
+		}
+
+		// task 09417
+		programaticCalloutProvider.registerAnnotatedCallout(de.metas.printing.callout.C_Doc_Outbound_Config.instance);
+	}
+
+	@Override
+	protected void setupCaching(final IModelCacheService cachingService)
 	{
 		// task 09417: while we are in the area, also make sure that config changes are propagated
 		final CacheMgt cacheMgt = CacheMgt.get();
 		cacheMgt.enableRemoteCacheInvalidationForTableName(I_AD_PrinterRouting.Table_Name);
 		cacheMgt.enableRemoteCacheInvalidationForTableName(I_AD_Printer_Config.Table_Name);
 		cacheMgt.enableRemoteCacheInvalidationForTableName(I_AD_Printer_Matching.Table_Name);
+	}
+
+	@Override
+	protected void onAfterInit()
+	{
+		// Do not initialize if the printing module is disabled
+		if (!checkPrintingEnabled())
+		{
+			return;
+		}
+
+		Services.get(IPrintingQueueBL.class).registerHandler(DocumentPrintingQueueHandler.instance);
+
+		Services.get(IPrintServiceRegistry.class).registerJasperService(de.metas.printing.adapter.MassPrintServiceAdapter.INSTANCE);
+
+		// task 09833
+		// Register the Default Printing Info ctx provider
+		Services.get(INotificationBL.class).setDefaultCtxProvider(DefaultPrintingRecordTextProvider.instance);
+
+		Services.get(IAsyncBatchListeners.class).registerAsyncBatchNoticeListener(new PDFPrintingAsyncBatchListener(), Printing_Constants.C_Async_Batch_InternalName_PDFPrinting);
 	}
 
 	@Override
@@ -182,7 +219,7 @@ public class Main extends AbstractModuleInterceptor
 	public void onUserLogin(int AD_Org_ID, int AD_Role_ID, int AD_User_ID)
 	{
 		// make sure that the host key is set in the context
-		if (Printing_Constants.isEnabled())
+		if (checkPrintingEnabled())
 		{
 			final Properties ctx = Env.getCtx();
 			final MFSession session = Services.get(ISessionBL.class).getCurrentSession(ctx);

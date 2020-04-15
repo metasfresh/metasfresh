@@ -20,7 +20,6 @@ import org.compiere.model.I_M_Product;
 import org.compiere.model.MOrg;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.google.common.collect.ImmutableList;
@@ -80,8 +79,19 @@ import lombok.NonNull;
 public class CurrentCostsRepository implements ICurrentCostsRepository
 {
 	private static final Logger logger = LogManager.getLogger(CurrentCostsRepository.class);
-	@Autowired
-	private ICostElementRepository costElementRepo;
+
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IProductBL productBL = Services.get(IProductBL.class);
+	private final IAcctSchemaDAO acctSchemasRepo = Services.get(IAcctSchemaDAO.class);
+	private final IUOMDAO uomsRepo = Services.get(IUOMDAO.class);
+	private final IProductCostingBL productCostingBL = Services.get(IProductCostingBL.class);
+	private final ICostElementRepository costElementRepo;
+
+	public CurrentCostsRepository(
+			@NonNull final ICostElementRepository costElementRepo)
+	{
+		this.costElementRepo = costElementRepo;
+	}
 
 	@Override
 	public List<CurrentCost> getByIds(@NonNull final Set<CurrentCostId> ids)
@@ -91,7 +101,7 @@ public class CurrentCostsRepository implements ICurrentCostsRepository
 			return ImmutableList.of();
 		}
 
-		return Services.get(IQueryBL.class)
+		return queryBL
 				.createQueryBuilder(I_M_Cost.class)
 				.addInArrayFilter(I_M_Cost.COLUMNNAME_M_Cost_ID, ids)
 				.create()
@@ -128,7 +138,7 @@ public class CurrentCostsRepository implements ICurrentCostsRepository
 
 	private IQueryBuilder<I_M_Cost> queryCostRecords(@NonNull final CostSegment costSegment)
 	{
-		return Services.get(IQueryBL.class)
+		return queryBL
 				.createQueryBuilder(I_M_Cost.class)
 				.addEqualsFilter(I_M_Cost.COLUMN_AD_Org_ID, costSegment.getOrgId())
 				.addEqualsFilter(I_M_Cost.COLUMN_M_Product_ID, costSegment.getProductId())
@@ -207,9 +217,6 @@ public class CurrentCostsRepository implements ICurrentCostsRepository
 	@Override
 	public CurrentCost create(@NonNull final CostSegmentAndElement costSegmentAndElement)
 	{
-		final IProductBL productBL = Services.get(IProductBL.class);
-		final IAcctSchemaDAO acctSchemasRepo = Services.get(IAcctSchemaDAO.class);
-
 		final CostElement costElement = costElementRepo.getById(costSegmentAndElement.getCostElementId());
 		final AcctSchema acctSchema = acctSchemasRepo.getById(costSegmentAndElement.getAcctSchemaId());
 		final I_C_UOM uom = productBL.getStockUOM(costSegmentAndElement.getProductId());
@@ -255,9 +262,6 @@ public class CurrentCostsRepository implements ICurrentCostsRepository
 
 	private CurrentCost toCurrentCost(final I_M_Cost record)
 	{
-		final IUOMDAO uomsRepo = Services.get(IUOMDAO.class);
-		final IAcctSchemaDAO acctSchemasRepo = Services.get(IAcctSchemaDAO.class);
-		final IProductCostingBL productCostingBL = Services.get(IProductCostingBL.class);
 
 		final I_C_UOM uom = uomsRepo.getById(record.getC_UOM_ID());
 
@@ -343,7 +347,7 @@ public class CurrentCostsRepository implements ICurrentCostsRepository
 
 		final List<CostElement> costElements = costElementRepo.getCostElementsWithCostingMethods(clientId);
 
-		for (final AcctSchema as : Services.get(IAcctSchemaDAO.class).getAllByClient(clientId))
+		for (final AcctSchema as : acctSchemasRepo.getAllByClient(clientId))
 		{
 			if (as.isDisallowPostingForOrg(productOrgId))
 			{
@@ -352,7 +356,7 @@ public class CurrentCostsRepository implements ICurrentCostsRepository
 
 			final AcctSchemaId acctSchemaId = as.getId();
 			final CostTypeId costTypeId = as.getCosting().getCostTypeId();
-			final CostingLevel costingLevel = Services.get(IProductCostingBL.class).getCostingLevel(product, as);
+			final CostingLevel costingLevel = productCostingBL.getCostingLevel(product, as);
 
 			// Create Std Costing
 			if (costingLevel == CostingLevel.Client)

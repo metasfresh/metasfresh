@@ -25,7 +25,6 @@ package de.metas.dimension.model.validator;
 
 import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
-import org.compiere.model.I_AD_Client;
 
 /**
  * Module activator
@@ -36,10 +35,10 @@ import org.compiere.model.I_AD_Client;
 public class Main extends AbstractModuleInterceptor
 {
 	@Override
-	protected void registerInterceptors(final IModelValidationEngine engine, final I_AD_Client client)
+	protected void registerInterceptors(final IModelValidationEngine engine)
 	{
-		engine.addModelValidator(new de.metas.dimension.model.validator.AD_Column(), client);
-		engine.addModelValidator(new de.metas.dimension.model.validator.DIM_Dimension_Spec(), client);
-		engine.addModelValidator(new de.metas.dimension.model.validator.DIM_Dimension_Spec_Attribute(), client);
+		engine.addModelValidator(new de.metas.dimension.model.validator.AD_Column());
+		engine.addModelValidator(new de.metas.dimension.model.validator.DIM_Dimension_Spec());
+		engine.addModelValidator(new de.metas.dimension.model.validator.DIM_Dimension_Spec_Attribute());
 	}
 }
