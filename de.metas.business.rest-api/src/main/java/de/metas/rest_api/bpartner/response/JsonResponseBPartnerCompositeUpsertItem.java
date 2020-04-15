@@ -49,4 +49,5 @@ public class JsonResponseBPartnerCompositeUpsertItem
 		this.responseBankAccountItems = responseBankAccountItems;
 	}
 
+
 }
