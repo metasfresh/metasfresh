@@ -44,6 +44,6 @@ public class RfQModuleActivator extends AbstractModuleInterceptor
 		engine.addModelValidator(new de.metas.rfq.model.interceptor.C_RfQResponse());
 		engine.addModelValidator(new de.metas.rfq.model.interceptor.C_RfQResponseLine());
 		engine.addModelValidator(new de.metas.rfq.model.interceptor.C_RfQResponseLineQty());
-    engine.addModelValidator(RfQModuleInterceptor.instance, client);
+		engine.addModelValidator(RfQModuleInterceptor.instance);
 	}
 }
