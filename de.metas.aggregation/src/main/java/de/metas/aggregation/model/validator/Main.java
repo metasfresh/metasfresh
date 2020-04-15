@@ -26,7 +26,6 @@ package de.metas.aggregation.model.validator;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
-import org.compiere.model.I_AD_Client;
 
 import de.metas.aggregation.model.I_C_Aggregation;
 import de.metas.aggregation.model.I_C_Aggregation_Attribute;
@@ -42,10 +41,10 @@ import de.metas.cache.model.IModelCacheService;
 public class Main extends AbstractModuleInterceptor
 {
 	@Override
-	protected void registerInterceptors(final IModelValidationEngine engine, final I_AD_Client client)
+	protected void registerInterceptors(final IModelValidationEngine engine)
 	{
-		engine.addModelValidator(new de.metas.aggregation.model.validator.C_Aggregation(), client);
-		engine.addModelValidator(new de.metas.aggregation.model.validator.C_AggregationItem(), client);
+		engine.addModelValidator(new de.metas.aggregation.model.validator.C_Aggregation());
+		engine.addModelValidator(new de.metas.aggregation.model.validator.C_AggregationItem());
 	}
 
 	@Override

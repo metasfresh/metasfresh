@@ -16,33 +16,17 @@
  *****************************************************************************/
 package org.compiere.apps.search;
 
-import static org.compiere.apps.search.FindPanelSearchField.MAX_TEXT_FIELD_COLUMNS;
-
-import java.awt.BorderLayout;
-import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.Window;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-
-import javax.swing.BorderFactory;
-import javax.swing.Box;
-import javax.swing.ImageIcon;
-import javax.swing.JButton;
-import javax.swing.JTextField;
-import javax.swing.JToolBar;
-import javax.swing.RootPaneContainer;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-
+import de.metas.adempiere.form.IClientUI;
+import de.metas.i18n.IMsgBL;
+import de.metas.logging.LogManager;
+import de.metas.security.IUserRolePermissions;
+import de.metas.security.permissions.Access;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import net.miginfocom.layout.CC;
+import net.miginfocom.layout.LC;
+import net.miginfocom.swing.MigLayout;
+import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.images.Images;
 import org.adempiere.plaf.VEditorUI;
 import org.adempiere.service.ISysConfigBL;
@@ -59,6 +43,7 @@ import org.compiere.model.GridTabMaxRowsRestrictionChecker;
 import org.compiere.model.MQuery;
 import org.compiere.model.MQuery.Operator;
 import org.compiere.model.MTable;
+import org.compiere.model.POInfo;
 import org.compiere.swing.CButton;
 import org.compiere.swing.CComboBox;
 import org.compiere.swing.CLabel;
@@ -72,24 +57,29 @@ import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
-import de.metas.adempiere.form.IClientUI;
-import de.metas.i18n.IMsgBL;
-import de.metas.logging.LogManager;
-import de.metas.security.IUserRolePermissions;
-import de.metas.security.permissions.Access;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import net.miginfocom.layout.CC;
-import net.miginfocom.layout.LC;
-import net.miginfocom.swing.MigLayout;
+import javax.swing.*;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+
+import static org.compiere.apps.search.FindPanelSearchField.MAX_TEXT_FIELD_COLUMNS;
 
 /**
  * Find/Search Records. Based on AD_Find for persistency, query is build to restrict info
- * 
+ *
  * @author Jorg Janke
- * @version $Id: Find.java,v 1.3 2006/07/30 00:51:27 jjanke Exp $
- * 
  * @author Teo Sarca, www.arhipac.ro <li>BF [ 2564070 ] Saving user queries can produce unnecessary db errors
+ * @version $Id: Find.java,v 1.3 2006/07/30 00:51:27 jjanke Exp $
  */
 public final class FindPanel extends CPanel implements ActionListener
 {
@@ -124,6 +114,7 @@ public final class FindPanel extends CPanel implements ActionListener
 				.setAD_Tab_ID(adTabId)
 				.setAD_Table_ID(adTableId)
 				.setAD_User_ID(Env.getAD_User_ID(Env.getCtx()))
+				.setColumnDisplayTypeProvider(POInfo.getPOInfo(AdTableId.ofRepoId(adTableId)))
 				.build();
 		drawSmallButtons = builder.isSmall();
 		embedded = builder.isEmbedded();
@@ -137,7 +128,7 @@ public final class FindPanel extends CPanel implements ActionListener
 		// Create the query
 		final MQuery queryInitial = builder.getQuery();
 		m_query = createNewQuery(queryInitial);
-		
+
 		// Required for Column Validation
 		Env.setContext(Env.getCtx(), m_targetWindowNo, "Find_Table_ID", adTableId);
 		// Context for Advanced Search Grid is WINDOW_FIND
@@ -181,26 +172,42 @@ public final class FindPanel extends CPanel implements ActionListener
 
 	private final GridController gridController;
 	private final GridTab gridTab;
-	/** Target Window No */
+	/**
+	 * Target Window No
+	 */
 	private final int m_targetWindowNo;
 	private final int m_targetTabNo; // metas-2009_0021_AP1_G113
-	/** Table Name */
+	/**
+	 * Table Name
+	 */
 	private final String m_tableName;
-	/** Where */
+	/**
+	 * Where
+	 */
 	private final String m_whereExtended;
-	/** Available search Fields */
+	/**
+	 * Available search Fields
+	 */
 	private final Map<String, FindPanelSearchField> _columnName2searchFields;
 	private UserQueryRepository userQueriesRepository;
 	private final IUserRolePermissions role;
 	private final GridTabMaxRowsRestrictionChecker maxRowsChecker;
-	/** Resulting query */
+	/**
+	 * Resulting query
+	 */
 	private MQuery m_query = null;
-	/** Is cancel ? */
+	/**
+	 * Is cancel ?
+	 */
 	private boolean m_isCancel = false; // teo_sarca [ 1708717 ]
-	/** Find panel's action listener */
+	/**
+	 * Find panel's action listener
+	 */
 	private FindPanelActionListener actionListener = FindPanelActionListener.NULL;
 
-	/** Number of records */
+	/**
+	 * Number of records
+	 */
 	private int m_total;
 	//
 	private boolean hasValue = false;
@@ -209,7 +216,9 @@ public final class FindPanel extends CPanel implements ActionListener
 	private boolean hasDescription = false;
 	private boolean hasSuche = false;
 	private final boolean drawSmallButtons;
-	/** true if the find panel will be embedded in the window */
+	/**
+	 * true if the find panel will be embedded in the window
+	 */
 	private final boolean embedded;
 
 	private final int m_sColumnMax = Services.get(ISysConfigBL.class).getIntValue(
@@ -218,10 +227,14 @@ public final class FindPanel extends CPanel implements ActionListener
 			Env.getAD_Client_ID(Env.getCtx()));
 	private Component m_editorFirst = null; // metas-2009_0021_AP1_CR064: set
 
-	/** List of VEditors in simple search panel */
+	/**
+	 * List of VEditors in simple search panel
+	 */
 	private final List<VEditor> m_sEditors = new ArrayList<VEditor>();
 
-	/** For Grid Controller */
+	/**
+	 * For Grid Controller
+	 */
 	private static final int TABNO = 99;
 
 	//
@@ -236,7 +249,9 @@ public final class FindPanel extends CPanel implements ActionListener
 	private final CButton bSave = new CButton();
 	private final CButton bNew = new CButton();
 	private final CButton bDelete = new CButton();
-	/** Confirm panel (simple view) */
+	/**
+	 * Confirm panel (simple view)
+	 */
 	private ConfirmPanel confirmPanel;
 	private final CPanel simplePanelContent = new CPanel();
 	private final CPanel simplePanel = new CPanel();
@@ -279,7 +294,7 @@ public final class FindPanel extends CPanel implements ActionListener
 			confirmPanel.getResetButton().setIcon(getIcon("Reset"));
 			confirmPanel.setActionListener(this);
 		}
-		
+
 		//
 		// Tabbed pane
 		{
@@ -292,19 +307,19 @@ public final class FindPanel extends CPanel implements ActionListener
 			valueLabel.setLabelFor(valueField);
 			valueLabel.setText(msgBL.translate(ctx, "Value"));
 			valueField.setColumns(MAX_TEXT_FIELD_COLUMNS);
-			
+
 			nameLabel.setLabelFor(nameField);
 			nameLabel.setText(msgBL.translate(ctx, "Name"));
 			nameField.setColumns(MAX_TEXT_FIELD_COLUMNS);
-			
+
 			descriptionLabel.setLabelFor(descriptionField);
 			descriptionLabel.setText(msgBL.translate(ctx, "Description"));
 			descriptionField.setColumns(MAX_TEXT_FIELD_COLUMNS);
-			
+
 			searchLabel.setLabelFor(searchField);
 			searchLabel.setText(msgBL.translate(ctx, "search"));
 			searchField.setColumns(MAX_TEXT_FIELD_COLUMNS);
-			
+
 			docNoLabel.setLabelFor(docNoField);
 			docNoLabel.setText(msgBL.translate(ctx, "DocumentNo"));
 			docNoField.setColumns(MAX_TEXT_FIELD_COLUMNS);
@@ -325,17 +340,17 @@ public final class FindPanel extends CPanel implements ActionListener
 			fQueryName.setToolTipText(msgBL.getMsg(ctx, "QueryName"));
 			fQueryName.setEditable(true);
 			fQueryName.addActionListener(this);
-			
+
 			bSave.setIcon(getIcon("Save"));
 			bSave.setToolTipText(msgBL.getMsg(ctx, "Save"));
 			bSave.setPreferredSize(new Dimension(height, height));
 			bSave.addActionListener(this);
-			
+
 			bNew.setIcon(getIcon("New"));
 			bNew.setToolTipText(msgBL.getMsg(ctx, "New"));
 			bNew.setPreferredSize(new Dimension(height, height));
 			bNew.addActionListener(this);
-			
+
 			bDelete.setIcon(getIcon("Delete"));
 			bDelete.setToolTipText(msgBL.getMsg(ctx, "Delete"));
 			bDelete.setPreferredSize(new Dimension(height, height));
@@ -363,7 +378,7 @@ public final class FindPanel extends CPanel implements ActionListener
 				{
 					final LC layoutConstraints = new LC()
 							.fillX()// fill the whole available width in the container
-//							.debug(1000)
+							//							.debug(1000)
 							.wrapAfter((m_sColumnMax <= 0 ? 4 : m_sColumnMax) * 2);
 
 					final MigLayout simplePanelContentLayout = new MigLayout(layoutConstraints);
@@ -384,16 +399,16 @@ public final class FindPanel extends CPanel implements ActionListener
 					advancedPanel.setLayout(new BorderLayout());
 					advancedPanel.add(toolBar, BorderLayout.NORTH);
 					advancedPanel.add(advancedTableScrollPane, BorderLayout.CENTER);
-					
+
 					tabbedPane.addTab(msgBL.getMsg(ctx, "Advanced"), advancedPanel);
 				}
 			}
-			
+
 			//
 			// South: status bar
 			{
 				statusBar.removeBorders();
-				
+
 				southPanel.setLayout(new BorderLayout());
 				southPanel.add(confirmPanel, BorderLayout.CENTER);
 				southPanel.add(statusBar, BorderLayout.SOUTH);
@@ -418,17 +433,17 @@ public final class FindPanel extends CPanel implements ActionListener
 				hasName = true;
 			else if (columnName.equals("DocumentNo"))
 				hasDocNo = true;
-			// metas-2009_0021_AP1_CR064: change column "description" to be not automatically a search field
-			// else if (columnName.equals("Description"))
-			// hasDescription = true;
-			// else if (mField.isSelectionColumn())
-			// addSelectionColumn (mField);
-			// else if (columnName.indexOf("Name") != -1)
-			// addSelectionColumn (mField);
+				// metas-2009_0021_AP1_CR064: change column "description" to be not automatically a search field
+				// else if (columnName.equals("Description"))
+				// hasDescription = true;
+				// else if (mField.isSelectionColumn())
+				// addSelectionColumn (mField);
+				// else if (columnName.indexOf("Name") != -1)
+				// addSelectionColumn (mField);
 			else if (columnName.equals("Search"))
 				hasSuche = true;
 		} // for all target tab fields
-		
+
 		boolean hasEditors = false;
 
 		//
@@ -499,7 +514,7 @@ public final class FindPanel extends CPanel implements ActionListener
 				onTabChanged(e);
 			}
 		});
-		
+
 		//
 		// Get Total
 		m_total = getNoOfRecords(null, false);
@@ -509,7 +524,7 @@ public final class FindPanel extends CPanel implements ActionListener
 
 	/**
 	 * Add Selection Column to simple search tab
-	 * 
+	 *
 	 * @param searchField field
 	 */
 	private void addSelectionColumn(final IUserQueryField searchField)
@@ -521,7 +536,7 @@ public final class FindPanel extends CPanel implements ActionListener
 		{
 			return; // shall not happen
 		}
-		
+
 		//
 		// Add action listener to custom text fields - teo_sarca [ 1709292 ]
 		// i.e. when user presses enter we shall start searching
@@ -529,7 +544,7 @@ public final class FindPanel extends CPanel implements ActionListener
 		{
 			((CTextField)editor).addActionListener(this);
 		}
-		
+
 		final CLabel label = findPanelSearchField.createEditorLabel();
 
 		//
@@ -572,12 +587,12 @@ public final class FindPanel extends CPanel implements ActionListener
 		m_sEditors.clear();
 
 		mainPanel.removeAll();
-		
+
 		listenerList = null;
 
 		disposed = true; // metas: tsa
 	} // dispose
-	
+
 	private boolean isSimpleSearchPanelActive()
 	{
 		return tabbedPane.getSelectedComponent() == simplePanel;
@@ -585,7 +600,7 @@ public final class FindPanel extends CPanel implements ActionListener
 
 	/**************************************************************************
 	 * Action Listener
-	 * 
+	 *
 	 * @param e ActionEvent
 	 */
 	@Override
@@ -600,14 +615,14 @@ public final class FindPanel extends CPanel implements ActionListener
 			clientUI.error(m_targetWindowNo, ex);
 		}
 	}
-	
+
 	private void actionPerformed0(final ActionEvent e)
 	{
 		if (isDisposed())
 		{
 			return;
 		}
-		
+
 		// ConfirmPanel.A_OK and enter in fields
 		if (e.getActionCommand().equals(ConfirmPanel.A_OK))
 		{
@@ -637,7 +652,7 @@ public final class FindPanel extends CPanel implements ActionListener
 			m_total = 0;
 
 			executeQuery(GridTabMaxRows.DEFAULT);
-			
+
 			actionListener.onOpenAsNewRecord();
 		}
 		else if (e.getActionCommand().equals(ConfirmPanel.A_RESET))
@@ -658,11 +673,11 @@ public final class FindPanel extends CPanel implements ActionListener
 			onUserQuerySelected();
 		}
 	} // actionPerformed
-	
+
 	private final MQuery createNewQuery(final MQuery template)
 	{
 		final MQuery query;
-		if(template != null)
+		if (template != null)
 		{
 			query = template.deepCopy();
 		}
@@ -682,9 +697,9 @@ public final class FindPanel extends CPanel implements ActionListener
 		{
 			return;
 		}
-		
+
 		final IUserQuery userQuery = userQueriesRepository.getUserQueryByName(selectedUserQueryName);
-		if(userQuery == null)
+		if (userQuery == null)
 		{
 			return;
 		}
@@ -701,7 +716,7 @@ public final class FindPanel extends CPanel implements ActionListener
 	{
 		setDefaultButton();
 		final Component selectedTab = tabbedPane.getSelectedComponent();
-		if(selectedTab != null)
+		if (selectedTab != null)
 		{
 			selectedTab.requestFocusInWindow();
 		}
@@ -726,7 +741,7 @@ public final class FindPanel extends CPanel implements ActionListener
 	{
 		// Create Query String
 		m_query = createNewQuery(null);
-		
+
 		if (hasValue && !valueField.getText().equals("%")
 				&& valueField.getText().length() != 0)
 		{
@@ -816,7 +831,7 @@ public final class FindPanel extends CPanel implements ActionListener
 	private void cmd_ok_Advanced()
 	{
 		m_isCancel = false; // teo_sarca [ 1708717 ]
-		
+
 		// save pending
 		if (bSave.isEnabled())
 		{
@@ -845,11 +860,11 @@ public final class FindPanel extends CPanel implements ActionListener
 		}
 
 		advancedTable.stopEditor(false);
-		
+
 		m_query = null;
 		m_total = TOTAL_NotAvailable;
 		m_isCancel = true; // teo_sarca [ 1708717 ]
-		
+
 		dispose();
 	} // cmd_ok
 
@@ -875,12 +890,12 @@ public final class FindPanel extends CPanel implements ActionListener
 	private void cmd_save(final boolean saveQuery)
 	{
 		advancedTable.stopEditor(true);
-		
+
 		final List<IUserQueryRestriction> rows = advancedTable.getModel().getRows();
 
 		//
 		final MQuery queryToSave = createNewQuery(null);
-		
+
 		String userQueryNameToSave = null;
 		if (saveQuery)
 		{
@@ -890,7 +905,6 @@ public final class FindPanel extends CPanel implements ActionListener
 				userQueryNameToSave = selectedUserQueryName;
 			}
 		}
-
 
 		userQueriesRepository.saveRowsToQuery(rows, queryToSave, userQueryNameToSave);
 		m_query = queryToSave;
@@ -905,9 +919,9 @@ public final class FindPanel extends CPanel implements ActionListener
 	private void refreshUserQueries()
 	{
 		final String userQueryNameSelectedBefore = fQueryName.getSelectedItem();
-		
+
 		fQueryName.setModel(new ListComboBoxModel<>(userQueriesRepository.getUserQueryNames()));
-		
+
 		fQueryName.setSelectedItem(userQueryNameSelectedBefore);
 		if (fQueryName.getSelectedIndex() < 0)
 		{
@@ -937,7 +951,7 @@ public final class FindPanel extends CPanel implements ActionListener
 
 	/**************************************************************************
 	 * Get Query - Retrieve result
-	 * 
+	 *
 	 * @return String representation of query
 	 */
 	public MQuery getQuery()
@@ -965,7 +979,7 @@ public final class FindPanel extends CPanel implements ActionListener
 
 	/**
 	 * Get Total Records
-	 * 
+	 *
 	 * @return no of records or {@link #TOTAL_NotAvailable}
 	 */
 	/* package */int getTotalRecords()
@@ -991,8 +1005,8 @@ public final class FindPanel extends CPanel implements ActionListener
 
 	/**
 	 * Get the number of records of target tab
-	 * 
-	 * @param query where clause for target tab
+	 *
+	 * @param query            where clause for target tab
 	 * @param alertZeroRecords show dialog if there are no records
 	 * @return number of selected records; if the results are more then allowed this method will return 0
 	 */
@@ -1004,9 +1018,9 @@ public final class FindPanel extends CPanel implements ActionListener
 		if (!alertZeroRecords // we do count optimizations only if
 				// alertZeroRecords is false (not a real count is required)
 				&& (m_targetTabNo > 0 // do not count records for secondary tabs
-						|| MTable.get(Env.getCtx(), m_tableName).isHighVolume() // or we have a high volume table
+				|| MTable.get(Env.getCtx(), m_tableName).isHighVolume() // or we have a high volume table
 				|| (query != null && query.getRecordCount() == 0) // query has no results
-				))
+		))
 		{
 			return TOTAL_NotAvailable;
 		}
@@ -1138,7 +1152,7 @@ public final class FindPanel extends CPanel implements ActionListener
 
 	/**
 	 * Display current count
-	 * 
+	 *
 	 * @param currentCount String representation of current/total
 	 */
 	private void setStatusDB(final int currentCount)
@@ -1207,7 +1221,7 @@ public final class FindPanel extends CPanel implements ActionListener
 				.alignY("top")
 				.growPrioX(0)
 				.growX(0)
-				);
+		);
 
 		simplePanelContent.add(editorComp, new CC()
 				.alignY("top")
@@ -1216,7 +1230,7 @@ public final class FindPanel extends CPanel implements ActionListener
 				.growX()
 				.minWidth("100px")
 				.maxWidth("300px")
-				);
+		);
 
 		//
 		// Set Cursor to the first search field in the search panel (metas-2009_0021_AP1_CR064)
@@ -1378,14 +1392,13 @@ public final class FindPanel extends CPanel implements ActionListener
 		//
 		// Reset query
 		m_query = createNewQuery(null);
-		
+
 		//
 		// Reset counters
 		m_total = 0;
 	}
 
 	/**
-	 * 
 	 * @param maxRows acts as a "LIMIT" for the underlying SQL.
 	 */
 	private void executeQuery(final GridTabMaxRows maxRows)
@@ -1424,9 +1437,9 @@ public final class FindPanel extends CPanel implements ActionListener
 
 	private void setDefaultButton()
 	{
-			setDefaultButton(confirmPanel.getOKButton());
+		setDefaultButton(confirmPanel.getOKButton());
 	}
-	
+
 	private void setDefaultButton(final JButton button)
 	{
 		final Window frame = AEnv.getWindow(this);
@@ -1439,8 +1452,8 @@ public final class FindPanel extends CPanel implements ActionListener
 
 	/**
 	 * Get Icon with name action
-	 * 
-	 * @param name name
+	 *
+	 * @param name  name
 	 * @param small small
 	 * @return Icon
 	 */
@@ -1460,12 +1473,12 @@ public final class FindPanel extends CPanel implements ActionListener
 		{
 			return false;
 		}
-		
+
 		if (isSimpleSearchPanelActive())
 		{
 			return m_editorFirst != null;
 		}
-		
+
 		return false;
 	}
 
@@ -1497,7 +1510,7 @@ public final class FindPanel extends CPanel implements ActionListener
 				return m_editorFirst.requestFocusInWindow();
 			}
 		}
-		
+
 		return false;
 	}
 

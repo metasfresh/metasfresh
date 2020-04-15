@@ -89,7 +89,9 @@ public class Doc_ProjectIssue extends Doc<DocLine_ProjectIssue>
 	{
 		I_C_Project project = m_issue.getC_Project();
 		if (project != null)
+		{
 			return project.getValue() + " #" + m_issue.getLine();
+		}
 		return "(" + m_issue.getC_Project_ID() + ")";
 	}	// getDocumentNo
 
@@ -137,18 +139,26 @@ public class Doc_ProjectIssue extends Doc<DocLine_ProjectIssue>
 		// Issue Cost
 		CostAmount cost = null;
 		if (m_issue.getM_InOutLine_ID() > 0)
+		{
 			cost = getPOCost(as);
+		}
 		else if (m_issue.getS_TimeExpenseLine_ID() > 0)
+		{
 			cost = getLaborCost(as);
-		if (cost == null)	// standard Product Costs
+		}
+		if (cost == null)
+		{
 			cost = m_line.getCreateCosts(as);
+		}
 
 		//
 		// Project DR
 		{
 			int acctType = ACCTTYPE_ProjectWIP;
 			if (MProject.PROJECTCATEGORY_AssetProject.equals(ProjectCategory))
+			{
 				acctType = ACCTTYPE_ProjectAsset;
+			}
 			dr = fact.createLine(m_line,
 					getAccount(acctType, as),
 					cost.getCurrencyId(),
@@ -196,8 +206,8 @@ public class Doc_ProjectIssue extends Doc<DocLine_ProjectIssue>
 		{
 			pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_ThreadInherited);
 			pstmt.setInt(1, as.getCurrencyId().getRepoId());
-			pstmt.setInt(2, getAD_Client_ID());
-			pstmt.setInt(3, getAD_Org_ID());
+			pstmt.setInt(2, getClientId().getRepoId());
+			pstmt.setInt(3, getOrgId().getRepoId());
 			pstmt.setInt(4, m_issue.getM_InOutLine_ID());
 			rs = pstmt.executeQuery();
 

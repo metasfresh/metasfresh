@@ -124,78 +124,78 @@ public final class AdempiereBaseValidator extends AbstractModuleInterceptor
 	}
 
 	@Override
-	protected void registerInterceptors(final IModelValidationEngine engine, final I_AD_Client client)
+	protected void registerInterceptors(final IModelValidationEngine engine)
 	{
 		// Event bus
-		engine.addModelValidator(EventBusAdempiereInterceptor.instance, client);
+		engine.addModelValidator(EventBusAdempiereInterceptor.instance);
 
-		engine.addModelValidator(new org.adempiere.ad.callout.model.validator.AD_ColumnCallout(), client);
-		engine.addModelValidator(new org.adempiere.model.validator.AD_InfoColumn(), client);
-		engine.addModelValidator(new org.adempiere.server.rpl.model.validator.IMP_Processor(), client);
+		engine.addModelValidator(new org.adempiere.ad.callout.model.validator.AD_ColumnCallout());
+		engine.addModelValidator(new org.adempiere.model.validator.AD_InfoColumn());
+		engine.addModelValidator(new org.adempiere.server.rpl.model.validator.IMP_Processor());
 
-		engine.addModelValidator(new org.compiere.wf.model.validator.AD_Workflow(), client);
+		engine.addModelValidator(new org.compiere.wf.model.validator.AD_Workflow());
 
-		engine.addModelValidator(new de.metas.javaclasses.model.interceptor.AD_JavaClass(), client); // 04599
-		engine.addModelValidator(new de.metas.javaclasses.model.interceptor.AD_JavaClass_Type(), client); // 04599
+		engine.addModelValidator(new de.metas.javaclasses.model.interceptor.AD_JavaClass()); // 04599
+		engine.addModelValidator(new de.metas.javaclasses.model.interceptor.AD_JavaClass_Type()); // 04599
 
-		engine.addModelValidator(de.metas.process.model.interceptor.AD_Process.instance, client); // FRESH-727
+		engine.addModelValidator(de.metas.process.model.interceptor.AD_Process.instance); // FRESH-727
 
-		engine.addModelValidator(de.metas.system.interceptor.AD_System.INSTANCE, client);
+		engine.addModelValidator(de.metas.system.interceptor.AD_System.INSTANCE);
 
 		//
 		// Currency
 		{
-			engine.addModelValidator(new de.metas.currency.model.interceptor.C_Conversion_Rate(), client);
+			engine.addModelValidator(new de.metas.currency.model.interceptor.C_Conversion_Rate());
 		}
 
 		//
 		// Tax
 		{
-			engine.addModelValidator(new org.adempiere.tax.model.validator.C_Tax(), client);
+			engine.addModelValidator(new org.adempiere.tax.model.validator.C_Tax());
 		}
 
 		//
 		// Storage
 		{
-			engine.addModelValidator(new org.adempiere.model.validator.M_Transaction(), client);
+			engine.addModelValidator(new org.adempiere.model.validator.M_Transaction());
 		}
 
 		//
 		// fresh 08585: C_DocLine_Sort
 		{
-			engine.addModelValidator(new de.metas.adempiere.docline.sort.model.validator.C_DocLine_Sort(), client);
-			engine.addModelValidator(new de.metas.adempiere.docline.sort.model.validator.C_BP_DocLine_Sort(), client);
+			engine.addModelValidator(new de.metas.adempiere.docline.sort.model.validator.C_DocLine_Sort());
+			engine.addModelValidator(new de.metas.adempiere.docline.sort.model.validator.C_BP_DocLine_Sort());
 		}
 
-		engine.addModelValidator(de.metas.event.interceptor.Main.INSTANCE, client);
+		engine.addModelValidator(de.metas.event.interceptor.Main.INSTANCE);
 
-		engine.addModelValidator(de.metas.order.model.interceptor.OrderModuleInterceptor.INSTANCE, client);
+		engine.addModelValidator(de.metas.order.model.interceptor.OrderModuleInterceptor.INSTANCE);
 
-		engine.addModelValidator(de.metas.invoice.interceptor.InvoiceModuleInterceptor.INSTANCE, client);
+		engine.addModelValidator(de.metas.invoice.interceptor.InvoiceModuleInterceptor.INSTANCE);
 
 		// gh-issue #288
-		engine.addModelValidator(de.metas.logging.model.interceptor.LoggingModuleInterceptor.INSTANCE, client);
+		engine.addModelValidator(de.metas.logging.model.interceptor.LoggingModuleInterceptor.INSTANCE);
 
 		//
 		// Script/Rule engine
-		engine.addModelValidator(de.metas.script.model.interceptor.AD_Rule.instance, client);
-		engine.addModelValidator(de.metas.script.model.interceptor.AD_Table_ScriptValidator.instance, client);
+		engine.addModelValidator(de.metas.script.model.interceptor.AD_Rule.instance);
+		engine.addModelValidator(de.metas.script.model.interceptor.AD_Table_ScriptValidator.instance);
 
 		//
 		// Request
-		engine.addModelValidator(de.metas.request.model.interceptor.RequestsModuleInterceptor.instance, client);
+		engine.addModelValidator(de.metas.request.model.interceptor.RequestsModuleInterceptor.instance);
 
 		//
 		// BPartner
-		engine.addModelValidator(new de.metas.bpartner.model.interceptor.C_BPartner(), client);
+		engine.addModelValidator(new de.metas.bpartner.model.interceptor.C_BPartner());
 
 		// #2895
-		engine.addModelValidator(AD_Ref_Table.instance, client);
+		engine.addModelValidator(AD_Ref_Table.instance);
 
-		engine.addModelValidator(org.adempiere.ad.column.model.interceptor.AD_Column.instance, client); // #2913
-		engine.addModelValidator(new org.adempiere.ad.column.model.interceptor.AD_SQLColumn_SourceTableColumn(), client);
+		engine.addModelValidator(org.adempiere.ad.column.model.interceptor.AD_Column.instance); // #2913
+		engine.addModelValidator(new org.adempiere.ad.column.model.interceptor.AD_SQLColumn_SourceTableColumn());
 
-		engine.addModelValidator(new AD_Element(), client);
+		engine.addModelValidator(new AD_Element());
 	}
 
 	@Override

@@ -25,12 +25,10 @@ import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
  */
 
 import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
-import org.adempiere.ad.modelvalidator.IModelValidationEngine;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAwareFactoryService;
 import org.adempiere.mm.attributes.api.IModelAttributeSetInstanceListenerService;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_AD_Client;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
 
@@ -50,10 +48,8 @@ import de.metas.util.Services;
 public class OrderCandidate extends AbstractModuleInterceptor
 {
 	@Override
-	public void onInit(final IModelValidationEngine engine, final I_AD_Client client)
+	protected void onAfterInit()
 	{
-		super.onInit(engine, client);
-
 		Services.get(IAttributeSetInstanceAwareFactoryService.class).registerFactoryForTableName(I_C_OLCand.Table_Name, new OLCandASIAwareFactory()); // task 08803
 
 		// task 08803: registering this listener *after* C_OLCand, because C_OLCand can call IOLCandValdiatorBL.validate, and this listener (which is actually a model interceptor) needs to be called

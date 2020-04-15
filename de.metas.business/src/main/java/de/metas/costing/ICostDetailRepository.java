@@ -1,6 +1,7 @@
 package de.metas.costing;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 import de.metas.acct.api.AcctSchemaId;
@@ -34,9 +35,7 @@ public interface ICostDetailRepository
 
 	void delete(CostDetail costDetail);
 
-	CostDetail getCostDetailOrNull(CostDetailQuery query);
-
-	CostAmount getCostDetailAmtOrNull(CostDetailQuery query);
+	Optional<CostDetail> getCostDetail(CostDetailQuery query);
 
 	List<CostDetail> getAllForDocument(CostingDocumentRef documentRef);
 

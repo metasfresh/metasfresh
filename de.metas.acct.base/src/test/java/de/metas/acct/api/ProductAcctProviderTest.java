@@ -12,12 +12,10 @@ import org.compiere.model.I_C_Activity;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Product_Acct;
 import org.compiere.util.Env;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import de.metas.acct.AcctSchemaTestHelper;
-import de.metas.acct.api.AcctSchemaId;
-import de.metas.acct.api.IProductAcctDAO;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductActivityProvider;
 import de.metas.product.ProductId;
@@ -52,7 +50,9 @@ public class ProductAcctProviderTest
 	private OrgId orgId;
 	private AcctSchemaId acctSchemaId;
 
-	@Before
+	private IProductActivityProvider productActivityProvider;
+
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
@@ -61,14 +61,15 @@ public class ProductAcctProviderTest
 		orgId = OrgId.ofRepoId(Env.getAD_Org_ID(ctx));
 
 		//
-		// Service under test
-		Services.registerService(IProductActivityProvider.class, Services.get(IProductAcctDAO.class));
-
-		//
 		// Master data
 		// acctSchemaId = AcctSchemaTestHelper.newAcctSchema().build();
 		acctSchemaId = AcctSchemaId.ofRepoId(1);
 		AcctSchemaTestHelper.registerAcctSchemaDAOWhichAlwaysProvides(acctSchemaId);
+
+		//
+		// Service under test
+		Services.registerService(IProductActivityProvider.class, Services.get(IProductAcctDAO.class));
+		productActivityProvider = Services.get(IProductActivityProvider.class);
 	}
 
 	@Test
@@ -90,7 +91,6 @@ public class ProductAcctProviderTest
 
 	private ActivityId getProductActivityId(final ProductId productId)
 	{
-		final IProductActivityProvider productActivityProvider = Services.get(IProductActivityProvider.class);
 		return productActivityProvider.retrieveActivityForAcct(clientId, orgId, productId);
 	}
 

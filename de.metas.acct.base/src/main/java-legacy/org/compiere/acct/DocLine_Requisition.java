@@ -4,6 +4,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_RequisitionLine;
 
 import de.metas.quantity.Quantity;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -30,7 +31,9 @@ import de.metas.quantity.Quantity;
 final class DocLine_Requisition extends DocLine<Doc_Requisition>
 {
 
-	public DocLine_Requisition(final I_M_RequisitionLine line, final Doc_Requisition doc)
+	public DocLine_Requisition(
+			@NonNull final I_M_RequisitionLine line,
+			@NonNull final Doc_Requisition doc)
 	{
 		super(InterfaceWrapperHelper.getPO(line), doc);
 

@@ -9,6 +9,7 @@ import org.compiere.model.I_Fact_Acct;
 
 import ch.qos.logback.classic.Level;
 import de.metas.acct.api.AcctSchema;
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStringBuilder;
 import de.metas.i18n.TranslatableStrings;
@@ -23,6 +24,10 @@ import de.metas.util.Check;
 @SuppressWarnings("serial")
 public final class PostingException extends AdempiereException
 {
+	private static AdMessageKey MSG_Posted = AdMessageKey.of("Posted");
+	private static AdMessageKey MSG_Document = AdMessageKey.of("Document");
+	private static AdMessageKey MSG_DocumentLine = AdMessageKey.of("Line");
+
 	//
 	private Doc<?> _document;
 	private DocLine<?> _docLine;
@@ -73,19 +78,21 @@ public final class PostingException extends AdempiereException
 		final PostingStatus postingStatus = getPostingStatus();
 		if (postingStatus != null)
 		{
-			message.append("\n @Posted@: @").append(postingStatus.getAD_Message()).append("@ (").append(postingStatus.toString()).append(")");
+			message.append("\n ").appendADMessage(MSG_Posted).append(": ")
+					.appendADMessage(postingStatus.getAD_Message())
+					.append(" (").append(postingStatus.toString()).append(")");
 		}
 
 		// Document
 		final Doc<?> document = getDocument();
 		if (document != null)
 		{
-			message.append("\n @Document@: ").append(document.toString());
+			message.append("\n ").appendADMessage(MSG_Document).append(": ").appendObj(document);
 		}
 		final DocLine<?> documentLine = getDocLine();
 		if (documentLine != null)
 		{
-			message.append("\n @Line@: ").append(documentLine.toString());
+			message.append("\n ").appendADMessage(MSG_DocumentLine).append(": ").appendObj(documentLine);
 		}
 
 		// Fact

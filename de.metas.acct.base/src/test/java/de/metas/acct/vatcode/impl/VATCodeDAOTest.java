@@ -1,5 +1,7 @@
 package de.metas.acct.vatcode.impl;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import java.util.Date;
 import java.util.Properties;
 
@@ -10,10 +12,9 @@ import org.adempiere.test.AdempiereTestWatcher;
 import org.compiere.model.I_C_Tax;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import de.metas.acct.vatcode.IVATCodeDAO;
 import de.metas.acct.vatcode.VATCode;
@@ -33,20 +34,18 @@ import de.metas.util.Services;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
+@ExtendWith(AdempiereTestWatcher.class)
 public class VATCodeDAOTest
 {
-	@Rule
-	public AdempiereTestWatcher testWatcher = new AdempiereTestWatcher();
-
 	private Properties ctx;
 	private IVATCodeDAO vatCodeDAO;
 
@@ -61,7 +60,7 @@ public class VATCodeDAOTest
 	@SuppressWarnings("unused")
 	private final Date date_2016_02_01 = TimeUtil.getDay(2016, 2, 1);
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
@@ -104,7 +103,10 @@ public class VATCodeDAOTest
 	private void assertVATCode(final VATCode expectedVATCode, final VATCodeMatchingRequest request)
 	{
 		final VATCode actualVATCode = vatCodeDAO.findVATCode(request);
-		Assert.assertEquals("Invalid VATCode for " + request, expectedVATCode, actualVATCode);
+		assertThat(actualVATCode)
+				.as("request=" + request)
+				.withFailMessage("Invalid VATCode for " + request)
+				.isEqualTo(expectedVATCode);
 	}
 
 	private final I_C_Tax createTax(final String name)

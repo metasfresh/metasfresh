@@ -31,7 +31,6 @@ import org.adempiere.service.ClientId;
 import org.compiere.model.I_C_ElementValue;
 import org.compiere.model.MAccount;
 import org.compiere.model.ModelValidator;
-import org.springframework.stereotype.Component;
 
 import com.google.common.collect.ImmutableList;
 
@@ -43,19 +42,20 @@ import de.metas.acct.api.ChartOfAccountsId;
 import de.metas.acct.api.IAcctSchemaDAO;
 import de.metas.organization.OrgId;
 import de.metas.treenode.TreeNodeService;
-import de.metas.util.Services;
 import lombok.NonNull;
 
 @Interceptor(I_C_ElementValue.class)
-@Component
 public class C_ElementValue
 {
-	private final IAcctSchemaDAO acctSchemasRepo = Services.get(IAcctSchemaDAO.class);
+	private final IAcctSchemaDAO acctSchemasRepo;
 	private final TreeNodeService treeNodeService;
 
-	public C_ElementValue(@NonNull final TreeNodeService treeNodeService)
+	public C_ElementValue(
+			@NonNull final IAcctSchemaDAO acctSchemasRepo,
+			@NonNull final TreeNodeService treeNodeService)
 	{
-		this.treeNodeService=treeNodeService;
+		this.acctSchemasRepo = acctSchemasRepo;
+		this.treeNodeService = treeNodeService;
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
@@ -112,8 +112,7 @@ public class C_ElementValue
 				&& ChartOfAccountsId.equals(accountElement.getChartOfAccountsId(), chartOfAccountsId);
 	}
 
-	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE },
-			ifColumnsChanged = { I_C_ElementValue.COLUMNNAME_Parent_ID, I_C_ElementValue.COLUMNNAME_SeqNo })
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = { I_C_ElementValue.COLUMNNAME_Parent_ID, I_C_ElementValue.COLUMNNAME_SeqNo })
 	public void updateTreeNode(final I_C_ElementValue elementValueRecord)
 	{
 		treeNodeService.updateTreeNode(elementValueRecord);

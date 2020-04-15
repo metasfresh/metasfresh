@@ -1,5 +1,7 @@
 package de.metas.tax.api;
 
+import java.util.Optional;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 
@@ -43,9 +45,20 @@ public class TaxId implements RepoIdAware
 		return repoId > 0 ? ofRepoId(repoId) : null;
 	}
 
+	public static Optional<TaxId> optionalOfRepoId(final int repoId)
+	{
+		return Optional.ofNullable(ofRepoIdOrNull(repoId));
+	}
+
 	public static int toRepoId(final TaxId id)
 	{
 		return id != null ? id.getRepoId() : -1;
+	}
+
+	public static int toRepoId(final Optional<TaxId> optional)
+	{
+		final TaxId id = optional != null ? optional.orElse(null) : null;
+		return toRepoId(id);
 	}
 
 	int repoId;

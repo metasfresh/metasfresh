@@ -52,6 +52,7 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.images.Images;
 import org.adempiere.model.RecordZoomWindowFinder;
 import org.adempiere.service.ClientId;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.apps.form.FormFrame;
 import org.compiere.db.CConnection;
 import org.compiere.grid.ed.Calculator;
@@ -956,7 +957,7 @@ public final class AEnv
 		Services.get(IPostingService.class)
 				.newPostingRequest()
 				.setClientId(ClientId.ofRepoId(AD_Client_ID))
-				.setDocument(AD_Table_ID, Record_ID)
+				.setDocumentRef(TableRecordReference.of(AD_Table_ID, Record_ID))
 				.setForce(force)
 				.setPostImmediate(PostImmediate.Yes)
 				.setFailOnError(true) // yes, because we will display a pop-up to user in this case (see below)

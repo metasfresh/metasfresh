@@ -49,14 +49,8 @@ public class CompositeInterfaceWrapperHelper implements IInterfaceWrapperHelper
 
 	private final CopyOnWriteArrayList<IInterfaceWrapperHelper> helpers = new CopyOnWriteArrayList<>();
 
-	public CompositeInterfaceWrapperHelper()
+	public CompositeInterfaceWrapperHelper addFactory(@NonNull final IInterfaceWrapperHelper factory)
 	{
-		super();
-	}
-
-	public CompositeInterfaceWrapperHelper addFactory(final IInterfaceWrapperHelper factory)
-	{
-		Check.assumeNotNull(factory, "factory not null");
 		helpers.addIfAbsent(factory);
 		return this;
 	}
@@ -153,13 +147,12 @@ public class CompositeInterfaceWrapperHelper implements IInterfaceWrapperHelper
 		{
 			if (!ignoreIfNotHandled)
 			{
-				final AdempiereException ex = new AdempiereException("Cannot get trxName from object: " + model + ". Returning null.");
-				logger.warn(ex.getLocalizedMessage(), ex);
+				// throw exception because returning null will probably result in a new trx that will end up idle in transaction
+				throw new AdempiereException("Cannot get trxName from object: " + model + ".");
 			}
-
+			logger.debug("getTrxName - The given model={} has no IInterfaceWrapperHelper and ignoreIfNotHandled=true; -> return null", model);
 			return ITrx.TRXNAME_None;
 		}
-
 		return helper.getTrxName(model, ignoreIfNotHandled);
 	}
 
@@ -171,6 +164,7 @@ public class CompositeInterfaceWrapperHelper implements IInterfaceWrapperHelper
 		{
 			if (ignoreIfNotHandled)
 			{
+				logger.debug("setTrxName - The given model={} has no IInterfaceWrapperHelper and ignoreIfNotHandled=true; -> return null", model);
 				return;
 			}
 
@@ -302,7 +296,7 @@ public class CompositeInterfaceWrapperHelper implements IInterfaceWrapperHelper
 	{
 		return getHelperThatCanHandle(model).isCopy(model);
 	}
-	
+
 	@Override
 	public boolean isCopying(@NonNull final Object model)
 	{

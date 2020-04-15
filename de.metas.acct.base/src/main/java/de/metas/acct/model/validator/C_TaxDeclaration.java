@@ -11,10 +11,11 @@ import de.metas.util.Services;
 @Interceptor(I_C_TaxDeclaration.class)
 public class C_TaxDeclaration
 {
+	private final ITaxDeclarationDAO taxDeclarationDAO = Services.get(ITaxDeclarationDAO.class);
+	
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
 	public void deleteTaxDeclarationLinesAndAccts(final I_C_TaxDeclaration taxDeclaration)
 	{
-		final ITaxDeclarationDAO taxDeclarationDAO = Services.get(ITaxDeclarationDAO.class);
 		taxDeclarationDAO.deleteTaxDeclarationLinesAndAccts(taxDeclaration);
 	}
 }

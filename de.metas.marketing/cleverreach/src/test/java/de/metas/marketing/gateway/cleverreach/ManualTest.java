@@ -13,6 +13,7 @@ import org.assertj.core.api.Condition;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
+
 import com.google.common.collect.ImmutableList;
 
 import de.metas.marketing.base.model.Campaign;

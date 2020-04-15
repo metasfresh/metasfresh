@@ -58,7 +58,7 @@ import lombok.NonNull;
  *         <li>[ 2195894 ] Improve performance in PO engine
  *         <li>http://sourceforge.net/tracker/index.php?func=detail&aid=2195894&group_id=176962&atid=879335
  */
-public final class POInfo implements Serializable
+public final class POInfo implements Serializable, ColumnDisplayTypeProvider
 {
 	/** Used by Remote FinReport */
 	static final long serialVersionUID = -5976719579744948419L;
@@ -887,6 +887,7 @@ public final class POInfo implements Serializable
 		return m_columns[index].DisplayType;
 	}   // getColumnDisplayType
 
+	@Override
 	public int getColumnDisplayType(final String columnName)
 	{
 		final int columnIndex = getColumnIndex(columnName);
