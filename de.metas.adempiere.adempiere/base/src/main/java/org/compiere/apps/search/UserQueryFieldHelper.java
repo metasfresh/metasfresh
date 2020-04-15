@@ -25,6 +25,8 @@ package org.compiere.apps.search;
 import lombok.NonNull;
 import org.compiere.util.DisplayType;
 import org.compiere.util.TimeUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -33,6 +35,8 @@ import java.text.DecimalFormat;
 
 public class UserQueryFieldHelper
 {
+	private static transient final Logger logger = LoggerFactory.getLogger(UserQueryFieldHelper.class);
+
 	@Nullable
 	public static Object parseValueObjectByColumnDisplayType(@Nullable final Object valueObj, final int displayType, @NonNull final String columnName)
 	{
@@ -49,8 +53,7 @@ public class UserQueryFieldHelper
 				{
 					return valueObj;
 				}
-				final int i = Integer.parseInt(valueObj.toString());
-				return i;
+				return Integer.parseInt(valueObj.toString());
 			}
 			// Return BigDecimal
 			else if (DisplayType.isNumeric(displayType))
@@ -78,6 +81,7 @@ public class UserQueryFieldHelper
 				}
 				catch (final Exception e)
 				{
+					logger.warn(valueObj + "(" + valueObj.getClass() + ")", e);
 					time = DisplayType.getDateFormat(displayType).parse(valueObj.toString()).getTime();
 				}
 				return new Timestamp(time);
@@ -95,6 +99,7 @@ public class UserQueryFieldHelper
 			{
 				error = ex.toString();
 			}
+			logger.warn("ValidationError: (" + columnName + " = " + valueObj + ") - " + error, ex);
 			return null;
 		}
 

@@ -46,26 +46,20 @@ public class UserQueryRepositoryTest
 	@BeforeEach
 	public void init()
 	{
-		Class<?> noFqdn = UserQueryRepositoryTest.class; // i used Ctrl+v
-		String hasFQDN = "org.compiere.apps.search.UserQueryRepositoryTest"; // again i used ctrl+v
 		AdempiereTestHelper.get().init();
 	}
 
 	private static UserQueryRepository createRepo(final String... columnNames)
 	{
-		// TODO tbp: maybe i should extract columnNames and columnDisplayType to own builder class, for easier test instantiation
-		final ColumnDisplayTypeProvider columnDisplayTypeProvider = new ColumnDisplayTypeProvider()
-		{
-			@Override
-			public int getColumnDisplayType(final String columnName)
+		// TODO If we need to add a third column to this provider, we should extract columnNames and columnDisplayType to own builder class, for easier test instantiation
+		final ColumnDisplayTypeProvider columnDisplayTypeProvider = columnName -> {
+			if ("MyColumn".equals(columnName))
 			{
-				if ("MyColumn".equals(columnName))
-				{
-					return DisplayType.String;
-				}
-				return DisplayType.Quantity;
+				return DisplayType.String;
 			}
+			return DisplayType.Quantity;
 		};
+
 		return UserQueryRepository.builder()
 				.setSearchFields(Stream.of(columnNames)
 						.map(PlainUserQueryField::ofColumnName)

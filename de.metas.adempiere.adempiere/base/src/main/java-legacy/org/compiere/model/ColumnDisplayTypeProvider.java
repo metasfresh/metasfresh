@@ -22,6 +22,7 @@
 
 package org.compiere.model;
 
+@FunctionalInterface
 public interface ColumnDisplayTypeProvider
 {
 	int getColumnDisplayType(String columnName);
