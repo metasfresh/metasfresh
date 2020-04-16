@@ -24,7 +24,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import java.io.InputStream;
 import java.util.Optional;
 
-import org.adempiere.ad.table.RecordChangeLogRepository;
+import org.adempiere.ad.table.MockLogEntriesRepository;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
@@ -162,7 +162,6 @@ class BpartnerRestControllerTest
 				bpartnerCompositeRepository,
 				new BPGroupRepository(),
 				new GreetingRepository(),
-				new RecordChangeLogRepository(),
 				currencyRepository);
 
 		bpartnerRestController = new BpartnerRestController(

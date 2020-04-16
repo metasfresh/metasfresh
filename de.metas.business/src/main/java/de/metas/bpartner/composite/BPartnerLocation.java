@@ -171,10 +171,15 @@ public class BPartnerLocation
 		return toBuilder().build();
 	}
 
-	/** Empty list means valid */
+	/** Only active instances are actually validated. Empty list means "valid" */
 	public ImmutableList<ITranslatableString> validate()
 	{
 		final ImmutableList.Builder<ITranslatableString> result = ImmutableList.builder();
+		if (!isActive())
+		{
+			return result.build();
+		}
+
 		if (isEmpty(countryCode, true))
 		{
 			result.add(TranslatableStrings.constant("Missing location.countryCode"));
@@ -377,7 +382,6 @@ public class BPartnerLocation
 	{
 		return !Objects.equals(this.countryCode, getOriginalOrSelf().getCountryCode());
 	}
-
 
 	public void setLocationType(@Nullable final BPartnerLocationType locationType)
 	{

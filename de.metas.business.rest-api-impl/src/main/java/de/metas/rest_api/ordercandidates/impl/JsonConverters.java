@@ -68,7 +68,7 @@ import lombok.NonNull;
  */
 
 @Service
-class JsonConverters
+public class JsonConverters
 {
 	private final CurrencyService currencyService;
 	private final DocTypeService docTypeService;

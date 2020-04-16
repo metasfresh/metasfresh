@@ -27,7 +27,7 @@ import java.util.Optional;
 import javax.annotation.Nullable;
 
 import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
-import org.adempiere.ad.table.RecordChangeLogRepository;
+import org.adempiere.ad.table.MockLogEntriesRepository;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
@@ -35,6 +35,7 @@ import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_AD_OrgInfo;
 import org.compiere.model.I_C_BP_Group;
 import org.compiere.model.I_C_UOM;
@@ -87,7 +88,6 @@ import de.metas.rest_api.attachment.JsonAttachmentType;
 import de.metas.rest_api.bpartner.impl.BPartnerEndpointService;
 import de.metas.rest_api.bpartner.impl.BpartnerRestController;
 import de.metas.rest_api.bpartner.impl.JsonRequestConsolidateService;
-import de.metas.rest_api.bpartner.impl.MockLogEntriesRepository;
 import de.metas.rest_api.bpartner.impl.bpartnercomposite.JsonServiceFactory;
 import de.metas.rest_api.bpartner.request.JsonRequestBPartner;
 import de.metas.rest_api.bpartner.request.JsonRequestLocation;
@@ -96,6 +96,7 @@ import de.metas.rest_api.common.JsonErrorItem;
 import de.metas.rest_api.common.MetasfreshId;
 import de.metas.rest_api.common.SyncAdvise;
 import de.metas.rest_api.common.SyncAdvise.IfNotExists;
+import de.metas.rest_api.ordercandidates.request.BPartnerLookupAdvise;
 import de.metas.rest_api.ordercandidates.request.JSONPaymentRule;
 import de.metas.rest_api.ordercandidates.request.JsonOLCandCreateBulkRequest;
 import de.metas.rest_api.ordercandidates.request.JsonOLCandCreateRequest;
@@ -187,14 +188,10 @@ public class OrderCandidatesRestControllerImplTest
 		olCandBL = new OLCandBL(new BPartnerOrderParamsRepository());
 		Services.registerService(IOLCandBL.class, olCandBL);
 
+		final I_AD_Org defaultOrgRecord;
+
 		{ // create the master data requested to process the data from our json file
 			testMasterdata = new TestMasterdata();
-
-			final I_AD_OrgInfo orgInfo = InterfaceWrapperHelper.newInstance(I_AD_OrgInfo.class);
-			orgInfo.setAD_Org_ID(OrgId.ANY.getRepoId());
-			orgInfo.setStoreCreditCardData(StoreCreditCardNumberMode.DONT_STORE.getCode());
-			orgInfo.setTimeZone(ZoneId.of("Europe/Berlin").getId());
-			saveRecord(orgInfo);
 
 			countryId_DE = testMasterdata.createCountry(COUNTRY_CODE_DE);
 
@@ -214,6 +211,15 @@ public class OrderCandidatesRestControllerImplTest
 
 			testMasterdata.createDocType(DocBaseAndSubType.of(X_C_DocType.DOCBASETYPE_SalesOrder,
 					X_C_DocType.DOCSUBTYPE_PrepayOrder));
+
+			defaultOrgRecord = newInstance(I_AD_Org.class);
+			saveRecord(defaultOrgRecord);
+
+			final I_AD_OrgInfo orgInfo = InterfaceWrapperHelper.newInstance(I_AD_OrgInfo.class);
+			orgInfo.setAD_Org_ID(defaultOrgRecord.getAD_Org_ID());
+			orgInfo.setStoreCreditCardData(StoreCreditCardNumberMode.DONT_STORE.getCode());
+			orgInfo.setTimeZone(ZoneId.of("Europe/Berlin").getId());
+			saveRecord(orgInfo);
 		}
 
 		final CurrencyService currencyService = new CurrencyService();
@@ -229,7 +235,6 @@ public class OrderCandidatesRestControllerImplTest
 				bpartnerCompositeRepository,
 				new BPGroupRepository(),
 				new GreetingRepository(),
-				new RecordChangeLogRepository(),
 				currencyRepository);
 		final BpartnerRestController bpartnerRestController = new BpartnerRestController(
 				new BPartnerEndpointService(jsonServiceFactory),
@@ -243,7 +248,7 @@ public class OrderCandidatesRestControllerImplTest
 				new NoopPerformanceMonitoringService());
 
 		final PermissionService permissionService = Mockito.mock(PermissionService.class);
-		Mockito.doReturn(OrgId.ANY).when(permissionService).getDefaultOrgId();
+		Mockito.doReturn(OrgId.ofRepoId(defaultOrgRecord.getAD_Org_ID())).when(permissionService).getDefaultOrgId();
 		orderCandidatesRestControllerImpl.setPermissionServiceFactory(PermissionServiceFactories.singleton(permissionService));
 
 		LogManager.setLoggerLevel(orderCandidatesRestControllerImpl.getClass(), Level.ALL);
@@ -693,28 +698,32 @@ public class OrderCandidatesRestControllerImplTest
 				.orderDocType(OrderDocType.PrepayOrder)
 				.shipper("val-DPD")
 				.bpartner(JsonRequestBPartnerLocationAndContact.builder()
+						.bpartnerLookupAdvise(BPartnerLookupAdvise.Code)
 						.syncAdvise(SyncAdvise.CREATE_OR_MERGE)
 						.bpartner(bpartner)
 						.location(bpartherLocation)
 						.build())
 				.billBPartner(JsonRequestBPartnerLocationAndContact.builder()
+						.bpartnerLookupAdvise(BPartnerLookupAdvise.Code)
 						.syncAdvise(SyncAdvise.CREATE_OR_MERGE)
 						.bpartner(billPartner)
 						.location(billPartherLocation)
 						.build())
 				.dropShipBPartner(JsonRequestBPartnerLocationAndContact.builder()
+						.bpartnerLookupAdvise(BPartnerLookupAdvise.Code)
 						.syncAdvise(SyncAdvise.CREATE_OR_MERGE)
 						.bpartner(dropShipBPartner)
 						.location(dropshipPartherLocation)
 						.build())
 				.handOverBPartner(JsonRequestBPartnerLocationAndContact.builder()
+						.bpartnerLookupAdvise(BPartnerLookupAdvise.Code)
 						.syncAdvise(SyncAdvise.CREATE_OR_MERGE)
 						.bpartner(handOverBPartner)
 						.location(handOverPartherLocation)
 						.build())
 				.build());
 
-		// invoke the mthod under test
+		// invoke the method under test
 		final JsonOLCandCreateBulkResponse response = orderCandidatesRestControllerImpl
 				.createOrderLineCandidates(request)
 				.getBody();

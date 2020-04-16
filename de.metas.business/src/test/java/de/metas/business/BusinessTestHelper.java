@@ -10,7 +10,9 @@ import javax.annotation.Nullable;
 
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
 import org.compiere.model.I_C_BP_BankAccount;
+import org.compiere.model.I_C_BP_Group;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Currency;
@@ -213,12 +215,24 @@ public final class BusinessTestHelper
 
 	public static I_C_BPartner_Location createBPartnerLocation(final I_C_BPartner bpartner)
 	{
-		final I_C_BPartner_Location bpl = InterfaceWrapperHelper.newInstance(I_C_BPartner_Location.class, bpartner);
+		final I_C_BPartner_Location bpl = newInstance(I_C_BPartner_Location.class, bpartner);
 		bpl.setC_BPartner_ID(bpartner.getC_BPartner_ID());
 		bpl.setIsShipTo(true);
 		bpl.setIsBillTo(true);
 		saveRecord(bpl);
 		return bpl;
+	}
+
+	public static I_C_BP_Group createBPGroup(final String name, final boolean isDefault)
+	{
+		final I_C_BP_Group bpGroupRecord = newInstanceOutOfTrx(I_C_BP_Group.class);
+		POJOWrapper.setInstanceName(bpGroupRecord, name);
+		bpGroupRecord.setName(name);
+		bpGroupRecord.setIsDefault(isDefault);
+		InterfaceWrapperHelper.setValue(bpGroupRecord, I_C_BP_Group.COLUMNNAME_AD_Client_ID, ClientId.METASFRESH.getRepoId());
+
+		saveRecord(bpGroupRecord);
+		return bpGroupRecord;
 	}
 
 	public static I_C_BP_BankAccount createBpBankAccount(@NonNull final BPartnerId bPartnerId, @NonNull final CurrencyId currencyId, @Nullable String iban)

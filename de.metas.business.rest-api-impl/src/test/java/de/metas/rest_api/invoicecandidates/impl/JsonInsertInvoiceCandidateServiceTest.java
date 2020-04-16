@@ -9,6 +9,7 @@ import static org.assertj.core.api.Assertions.tuple;
 
 import java.util.List;
 
+import org.adempiere.ad.table.MockLogEntriesRepository;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
@@ -39,7 +40,6 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.impl.ManualCandidateHandler;
 import de.metas.pricing.service.impl.PricingTestHelper;
 import de.metas.pricing.service.impl.ProductPriceBuilder;
-import de.metas.rest_api.bpartner.impl.MockLogEntriesRepository;
 import de.metas.rest_api.common.JsonExternalId;
 import de.metas.rest_api.common.JsonSOTrx;
 import de.metas.rest_api.common.MetasfreshId;

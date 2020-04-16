@@ -1,7 +1,5 @@
 package de.metas.rest_api.bpartner.request;
 
-import static de.metas.rest_api.bpartner.SwaggerDocConstants.READ_ONLY_SYNC_ADVISE_DOC;
-
 import de.metas.rest_api.common.JsonExternalId;
 import de.metas.rest_api.common.JsonInvoiceRule;
 import de.metas.rest_api.common.MetasfreshId;
@@ -121,8 +119,12 @@ public class JsonRequestBPartner
 	private String group;
 	private boolean groupSet;
 
+	@JsonInclude(Include.NON_NULL)
+	String globalId;
+	add globalIdset and stuff
+
 	@ApiModelProperty(position = 150, required = false, //
-			value = READ_ONLY_SYNC_ADVISE_DOC)
+			value = "Translates to `C_BPartner.GlobalId`")
 	private SyncAdvise syncAdvise;
 	private boolean syncAdviseSet;
 

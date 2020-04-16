@@ -47,6 +47,9 @@ public class ShortTermLocationIndex
 	BPartnerId bpartnerId;
 	BPartnerComposite bpartnerComposite;
 
+	/** locations that were not (yet) retrieved via {@link #extract(IdentifierString)}. */
+	Map<BPartnerLocationId, BPartnerLocation> id2UnusedLocation;
+
 	public ShortTermLocationIndex(@NonNull final BPartnerComposite bpartnerComposite)
 	{
 		this.bpartnerComposite = bpartnerComposite;
@@ -55,15 +58,28 @@ public class ShortTermLocationIndex
 		this.externalId2Location = new HashMap<>();
 		this.gln2Location = new HashMap<>();
 
+		this.id2UnusedLocation = new HashMap<>();
+
 		for (final BPartnerLocation bpartnerLocation : bpartnerComposite.getLocations())
 		{
 			this.id2Location.put(bpartnerLocation.getId(), bpartnerLocation);
+			this.id2UnusedLocation.put(bpartnerLocation.getId(), bpartnerLocation);
 			this.externalId2Location.put(bpartnerLocation.getExternalId(), bpartnerLocation);
 			this.gln2Location.put(bpartnerLocation.getGln(), bpartnerLocation);
 		}
 	}
 
 	public BPartnerLocation extract(@NonNull final IdentifierString locationIdentifier)
+	{
+		final BPartnerLocation result = extract0(locationIdentifier);
+		if (result != null)
+		{
+			id2UnusedLocation.remove(result.getId());
+		}
+		return result;
+	}
+
+	private BPartnerLocation extract0(@NonNull final IdentifierString locationIdentifier)
 	{
 		switch (locationIdentifier.getType())
 		{
@@ -78,9 +94,11 @@ public class ShortTermLocationIndex
 					return null;
 				}
 			case GLN:
-				return gln2Location.get(locationIdentifier.asGLN());
+				final BPartnerLocation resultByGLN = gln2Location.get(locationIdentifier.asGLN());
+				return resultByGLN;
 			case EXTERNAL_ID:
-				return externalId2Location.get(locationIdentifier.asExternalId());
+				final BPartnerLocation resultByExternalId = externalId2Location.get(locationIdentifier.asExternalId());
+				return resultByExternalId;
 			default:
 				throw new InvalidIdentifierException(locationIdentifier);
 		}
@@ -124,9 +142,9 @@ public class ShortTermLocationIndex
 		return location;
 	}
 
-	public Collection<BPartnerLocation> getRemainingLocations()
+	public Collection<BPartnerLocation> getUnusedLocations()
 	{
-		return id2Location.values();
+		return id2UnusedLocation.values();
 	}
 
 	public void resetBillToDefaultFlags()

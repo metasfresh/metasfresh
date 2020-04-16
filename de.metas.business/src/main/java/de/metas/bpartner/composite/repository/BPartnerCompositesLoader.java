@@ -3,6 +3,7 @@ package de.metas.bpartner.composite.repository;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.table.LogEntriesRepository;
@@ -22,6 +23,7 @@ import java.util.Objects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimaps;
 
@@ -158,7 +160,8 @@ final class BPartnerCompositesLoader
 		final ImmutableListMultimap<Integer, I_C_BPartner_Location> bpartnerId2BPartnerLocations = Multimaps.index(bPartnerLocationRecords, I_C_BPartner_Location::getC_BPartner_ID);
 		bPartnerLocationRecords.forEach(bPartnerLocationRecord -> allTableRecordRefs.add(TableRecordReference.of(bPartnerLocationRecord)));
 
-		final ImmutableList<Integer> locationIds = CollectionUtils.extractDistinctElements(bPartnerLocationRecords, I_C_BPartner_Location::getC_Location_ID);
+		final ImmutableSet<Integer> locationIds = CollectionUtils.extractDistinctElementsIntoSet(bPartnerLocationRecords, I_C_BPartner_Location::getC_Location_ID);
+		Check.assume(!locationIds.contains(0), "C_BPartner_Location.C_Location_ID is mandatory, so locationIds may not contain 0; locationIds={}", locationIds); // useful when unit-testing
 		final List<I_C_Location> locationRecords = queryBL
 				.createQueryBuilder(I_C_Location.class)
 				// .addOnlyActiveRecordsFilter() also load inactive records!
@@ -219,6 +222,7 @@ final class BPartnerCompositesLoader
 				.value(bpartnerRecord.getValue())
 				.companyName(bpartnerRecord.getCompanyName())
 				.externalId(ExternalId.ofOrNull(bpartnerRecord.getExternalId()))
+				.globalId(bpartnerRecord.getGlobalId())
 				.groupId(BPGroupId.ofRepoId(bpartnerRecord.getC_BP_Group_ID()))
 				.language(Language.asLanguage(bpartnerRecord.getAD_Language()))
 				.id(BPartnerId.ofRepoId(bpartnerRecord.getC_BPartner_ID()))
@@ -263,7 +267,6 @@ final class BPartnerCompositesLoader
 	{
 		final I_C_Location locationRecord = locationRelatedRecords.getLocationId2Location().get(bPartnerLocationRecord.getC_Location_ID());
 		final I_C_Country countryRecord = locationRelatedRecords.getCountryId2Country().get(locationRecord.getC_Country_ID());
-		final I_C_Postal postalRecord = locationRelatedRecords.getPostalId2Postal().get(locationRecord.getC_Postal_ID());
 
 		final RecordChangeLog changeLog = ChangeLogUtil.createBPartnerLocationChangeLog(bPartnerLocationRecord, locationRelatedRecords);
 
@@ -292,6 +295,7 @@ final class BPartnerCompositesLoader
 
 		if (locationRecord.getC_Postal_ID() > 0)
 		{
+			final I_C_Postal postalRecord = locationRelatedRecords.getPostalId2Postal().get(locationRecord.getC_Postal_ID());
 			location.district(postalRecord.getDistrict());
 		}
 

@@ -143,6 +143,7 @@ public class JsonPersisterService
 	{
 		// TODO: add support to retrieve without changelog; we don't need changelog here;
 		// but! make sure we don't screw up caching
+
 		final Optional<BPartnerComposite> optionalBPartnerComposite = jsonRetrieverService.getBPartnerComposite(bpartnerIdentifier);
 
 		final JsonResponseBPartnerCompositeUpsertItemUnderConstrunction resultBuilder = new JsonResponseBPartnerCompositeUpsertItemUnderConstrunction();
@@ -152,12 +153,14 @@ public class JsonPersisterService
 		final BPartnerComposite bpartnerComposite;
 		if (optionalBPartnerComposite.isPresent())
 		{
+			logger.debug("Found BPartner with id={} for identifier={} (orgCode={})", optionalBPartnerComposite.get().getBpartner().getId(), bpartnerIdentifier.getRawIdentifierString(), jsonBPartnerComposite.getOrgCode());
 			// load and mutate existing aggregation root
 			bpartnerComposite = optionalBPartnerComposite.get();
 			resultBuilder.setNewBPartner(false);
 		}
 		else
 		{
+			logger.debug("Found no BPartner for identifier={} (orgCode={})", bpartnerIdentifier.getRawIdentifierString(), jsonBPartnerComposite.getOrgCode());
 			if (effectiveSyncAdvise.isFailIfNotExists())
 			{
 				throw MissingResourceException.builder()
@@ -168,6 +171,7 @@ public class JsonPersisterService
 						.setParameter("effectiveSyncAdvise", effectiveSyncAdvise);
 			}
 			// create new aggregation root
+			logger.debug("Going to create a new bpartner-composite (orgCode={})", jsonBPartnerComposite.getOrgCode());
 			bpartnerComposite = BPartnerComposite.builder().build();
 			resultBuilder.setNewBPartner(true);
 		}
@@ -517,7 +521,9 @@ public class JsonPersisterService
 		{
 			orgId = Services.get(IOrgDAO.class)
 					.retrieveOrgIdBy(OrgQuery.ofValue(orgCode))
-					.orElse(Env.getOrgId());
+					.orElseThrow(() -> MissingResourceException.builder()
+							.resourceName("organisation")
+							.resourceIdentifier(orgCode).build());
 		}
 		else
 		{
@@ -571,6 +577,16 @@ public class JsonPersisterService
 		else if (isUpdateRemove)
 		{
 			bpartner.setValue(null);
+		}
+
+		// globalId
+		if (!isEmpty(jsonBPartner.getGlobalId(), true))
+		{
+			bpartner.setGlobalId(jsonBPartner.getGlobalId().trim());
+		}
+		else if (isUpdateRemove)
+		{
+			bpartner.setGlobalId(null);
 		}
 
 		// companyName
@@ -765,7 +781,7 @@ public class JsonPersisterService
 		if (contactsSyncAdvise.getIfExists().isUpdateRemove())
 		{
 			// deactivate the remaining bpartner locations that we did not see
-			bpartnerComposite.getContacts().removeAll(shortTermIndex.getRemainingContacts());
+			bpartnerComposite.getContacts().removeAll(shortTermIndex.getUnusedContacts());
 		}
 
 		return result.build();
@@ -1139,7 +1155,7 @@ public class JsonPersisterService
 		if (locationsSyncAdvise.getIfExists().isUpdateRemove())
 		{
 			// deactivate the remaining bpartner locations that we did not see
-			bpartnerComposite.getLocations().removeAll(shortTermIndex.getRemainingLocations());
+			bpartnerComposite.getLocations().removeAll(shortTermIndex.getUnusedLocations());
 		}
 		return result.build();
 	}
