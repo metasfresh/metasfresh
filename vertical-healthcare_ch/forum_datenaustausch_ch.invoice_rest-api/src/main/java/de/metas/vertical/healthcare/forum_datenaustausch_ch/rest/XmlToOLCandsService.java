@@ -41,6 +41,7 @@ import de.metas.rest_api.common.JsonExternalId;
 import de.metas.rest_api.common.SyncAdvise;
 import de.metas.rest_api.exception.MissingPropertyException;
 import de.metas.rest_api.ordercandidates.OrderCandidatesRestEndpoint;
+import de.metas.rest_api.ordercandidates.request.BPartnerLookupAdvise;
 import de.metas.rest_api.ordercandidates.request.JsonOLCandCreateBulkRequest;
 import de.metas.rest_api.ordercandidates.request.JsonOLCandCreateRequest;
 import de.metas.rest_api.ordercandidates.request.JsonOLCandCreateRequest.JsonOLCandCreateRequestBuilder;
@@ -632,6 +633,7 @@ public class XmlToOLCandsService
 
 		return JsonRequestBPartnerLocationAndContact
 				.builder()
+				.bpartnerLookupAdvise(BPartnerLookupAdvise.GLN);
 				.syncAdvise(SyncAdvise.READ_ONLY)
 				.bpartner(bPartner.build())
 				.location(location)
@@ -685,6 +687,7 @@ public class XmlToOLCandsService
 				.build();
 
 		final JsonRequestBPartnerLocationAndContact bPartnerInfo = JsonRequestBPartnerLocationAndContact.builder()
+				.bpartnerLookupAdvise(BPartnerLookupAdvise.GLN)
 				.syncAdvise(context.getBillerSyncAdvise())
 				.bpartner(bPartnerBuilder.build())
 				.contact(contact)

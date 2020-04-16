@@ -6,7 +6,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import org.adempiere.ad.table.RecordChangeLogRepository;
+import org.adempiere.ad.table.MockLogEntriesRepository;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -39,7 +39,6 @@ import de.metas.organization.OrgInfo;
 import de.metas.rest_api.bpartner.impl.BPartnerEndpointService;
 import de.metas.rest_api.bpartner.impl.BpartnerRestController;
 import de.metas.rest_api.bpartner.impl.JsonRequestConsolidateService;
-import de.metas.rest_api.bpartner.impl.MockLogEntriesRepository;
 import de.metas.rest_api.bpartner.impl.bpartnercomposite.JsonServiceFactory;
 import de.metas.rest_api.bpartner.request.JsonRequestBPartner;
 import de.metas.rest_api.bpartner.request.JsonRequestContact;
@@ -136,7 +135,6 @@ public class MasterdataProviderTest
 				bpartnerCompositeRepository,
 				new BPGroupRepository(),
 				new GreetingRepository(),
-				new RecordChangeLogRepository(),
 				currencyRepository);
 		final BpartnerRestController bpartnerRestController = new BpartnerRestController(
 				new BPartnerEndpointService(jsonServiceFactory),

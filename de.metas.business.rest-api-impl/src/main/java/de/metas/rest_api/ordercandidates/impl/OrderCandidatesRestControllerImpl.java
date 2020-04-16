@@ -96,7 +96,7 @@ import lombok.NonNull;
 @RestController
 @RequestMapping(OrderCandidatesRestEndpoint.ENDPOINT)
 @Profile(Profiles.PROFILE_App)
-class OrderCandidatesRestControllerImpl implements OrderCandidatesRestEndpoint
+public class OrderCandidatesRestControllerImpl implements OrderCandidatesRestEndpoint
 {
 	public static final String DATA_SOURCE_INTERNAL_NAME = "SOURCE." + OrderCandidatesRestControllerImpl.class.getName();
 
@@ -124,7 +124,7 @@ class OrderCandidatesRestControllerImpl implements OrderCandidatesRestEndpoint
 	}
 
 	@VisibleForTesting
-	void setPermissionServiceFactory(@NonNull final PermissionServiceFactory permissionServiceFactory)
+	public void setPermissionServiceFactory(@NonNull final PermissionServiceFactory permissionServiceFactory)
 	{
 		this.permissionServiceFactory = permissionServiceFactory;
 	}

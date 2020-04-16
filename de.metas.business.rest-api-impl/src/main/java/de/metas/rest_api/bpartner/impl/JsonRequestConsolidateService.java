@@ -3,9 +3,11 @@ package de.metas.rest_api.bpartner.impl;
 import javax.annotation.Nullable;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
 import de.metas.bpartner.composite.BPartnerContact;
+import de.metas.logging.LogManager;
 import de.metas.rest_api.bpartner.request.JsonRequestBPartner;
 import de.metas.rest_api.bpartner.request.JsonRequestBPartnerUpsertItem;
 import de.metas.rest_api.bpartner.request.JsonRequestComposite;
@@ -52,6 +54,8 @@ import lombok.NonNull;
 @Service
 public class JsonRequestConsolidateService
 {
+	private static final Logger logger = LogManager.getLogger(JsonRequestConsolidateService.class);
+
 	public JsonRequestBPartnerUpsertItem consolidateWithIdentifier(@NonNull final JsonRequestBPartnerUpsertItem requestItem)
 	{
 		final IdentifierString identifierString = IdentifierString.of(requestItem.getBpartnerIdentifier());
@@ -123,7 +127,8 @@ public class JsonRequestConsolidateService
 			case INTERNALNAME:
 				throw new InvalidIdentifierException(identifierString);
 			case GLN:
-				throw new InvalidIdentifierException(identifierString);
+				//GLN-identifierString is valid for bPartner-lookup, but we can't consolidate the given jsonBPartner with it
+				break;
 			default:
 				throw new AdempiereException("Unexpected IdentifierString.Type=" + identifierString.getType())
 						.appendParametersToMessage()

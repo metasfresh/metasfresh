@@ -1,4 +1,4 @@
-package de.metas.rest_api.bpartner.impl;
+package org.adempiere.ad.table;
 
 import java.util.List;
 
