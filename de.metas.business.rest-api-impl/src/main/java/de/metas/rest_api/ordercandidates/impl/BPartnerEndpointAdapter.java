@@ -237,7 +237,7 @@ final class BPartnerEndpointAdapter
 			logger.debug("jsonBPartnerInfo has partnerLookupAdvise={}, but an externalId; -> return identifierString={}", bpartnerLookupAdvise, result);
 			return result;
 		}
-		else if (!Check.isEmpty(jsonBPartnerInfo.getLocation().getGln(), true))
+		else if (jsonBPartnerInfo.getLocation() != null && !Check.isEmpty(jsonBPartnerInfo.getLocation().getGln(), true))
 		{
 			final String result = IdentifierString.PREFIX_GLN + jsonBPartnerInfo.getLocation().getGln();
 			logger.debug("jsonBPartnerInfo has partnerLookupAdvise={}, but a GLN; -> return identifierString={}", bpartnerLookupAdvise, result);

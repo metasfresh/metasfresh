@@ -29,7 +29,8 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "syncAdvise" : {
           "ifNotExists" : "FAIL",
           "ifExists" : "DONT_UPDATE"
-        }
+        },
+        "bpartnerLookupAdvise" : "GLN"
       }
     },
     "externalLineId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000_1",
@@ -48,10 +49,12 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "city" : "Basel",
         "countryCode" : "CH"
       },
+      "contact" : null,
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
         "ifExists" : "DONT_UPDATE"
-      }
+      },
+      "bpartnerLookupAdvise" : "GLN"
     },
     "dateRequired" : "2013-03-20",
     "flatrateConditionsId" : 0,
@@ -106,7 +109,8 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "syncAdvise" : {
           "ifNotExists" : "FAIL",
           "ifExists" : "DONT_UPDATE"
-        }
+        },
+        "bpartnerLookupAdvise" : "GLN"
       }
     },
     "externalLineId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000_2",
@@ -125,10 +129,12 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "city" : "Basel",
         "countryCode" : "CH"
       },
+      "contact" : null,
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
         "ifExists" : "DONT_UPDATE"
-      }
+      },
+      "bpartnerLookupAdvise" : "GLN"
     },
     "dateRequired" : "2013-03-20",
     "flatrateConditionsId" : 0,
@@ -183,7 +189,8 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "syncAdvise" : {
           "ifNotExists" : "FAIL",
           "ifExists" : "DONT_UPDATE"
-        }
+        },
+        "bpartnerLookupAdvise" : "GLN"
       }
     },
     "externalLineId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000_3",
@@ -202,10 +209,12 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "city" : "Basel",
         "countryCode" : "CH"
       },
+      "contact" : null,
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
         "ifExists" : "DONT_UPDATE"
-      }
+      },
+      "bpartnerLookupAdvise" : "GLN"
     },
     "dateRequired" : "2013-03-20",
     "flatrateConditionsId" : 0,
@@ -260,7 +269,8 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "syncAdvise" : {
           "ifNotExists" : "FAIL",
           "ifExists" : "DONT_UPDATE"
-        }
+        },
+        "bpartnerLookupAdvise" : "GLN"
       }
     },
     "externalLineId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000_4",
@@ -279,10 +289,12 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "city" : "Basel",
         "countryCode" : "CH"
       },
+      "contact" : null,
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
         "ifExists" : "DONT_UPDATE"
-      }
+      },
+      "bpartnerLookupAdvise" : "GLN"
     },
     "dateRequired" : "2013-03-20",
     "flatrateConditionsId" : 0,
@@ -337,7 +349,8 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "syncAdvise" : {
           "ifNotExists" : "FAIL",
           "ifExists" : "DONT_UPDATE"
-        }
+        },
+        "bpartnerLookupAdvise" : "GLN"
       }
     },
     "externalLineId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000_5",
@@ -356,10 +369,12 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "city" : "Basel",
         "countryCode" : "CH"
       },
+      "contact" : null,
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
         "ifExists" : "DONT_UPDATE"
-      }
+      },
+      "bpartnerLookupAdvise" : "GLN"
     },
     "dateRequired" : "2013-03-20",
     "flatrateConditionsId" : 0,
@@ -414,7 +429,8 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "syncAdvise" : {
           "ifNotExists" : "FAIL",
           "ifExists" : "DONT_UPDATE"
-        }
+        },
+        "bpartnerLookupAdvise" : "GLN"
       }
     },
     "externalLineId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000_6",
@@ -433,10 +449,12 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "city" : "Basel",
         "countryCode" : "CH"
       },
+      "contact" : null,
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
         "ifExists" : "DONT_UPDATE"
-      }
+      },
+      "bpartnerLookupAdvise" : "GLN"
     },
     "dateRequired" : "2013-03-20",
     "flatrateConditionsId" : 0,
@@ -491,7 +509,8 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "syncAdvise" : {
           "ifNotExists" : "FAIL",
           "ifExists" : "DONT_UPDATE"
-        }
+        },
+        "bpartnerLookupAdvise" : "GLN"
       }
     },
     "externalLineId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000_7",
@@ -510,10 +529,12 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "city" : "Basel",
         "countryCode" : "CH"
       },
+      "contact" : null,
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
         "ifExists" : "DONT_UPDATE"
-      }
+      },
+      "bpartnerLookupAdvise" : "GLN"
     },
     "dateRequired" : "2013-03-20",
     "flatrateConditionsId" : 0,
@@ -568,7 +589,8 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "syncAdvise" : {
           "ifNotExists" : "FAIL",
           "ifExists" : "DONT_UPDATE"
-        }
+        },
+        "bpartnerLookupAdvise" : "GLN"
       }
     },
     "externalLineId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000_8",
@@ -587,10 +609,12 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "city" : "Basel",
         "countryCode" : "CH"
       },
+      "contact" : null,
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
         "ifExists" : "DONT_UPDATE"
-      }
+      },
+      "bpartnerLookupAdvise" : "GLN"
     },
     "dateRequired" : "2013-03-20",
     "flatrateConditionsId" : 0,
@@ -645,7 +669,8 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "syncAdvise" : {
           "ifNotExists" : "FAIL",
           "ifExists" : "DONT_UPDATE"
-        }
+        },
+        "bpartnerLookupAdvise" : "GLN"
       }
     },
     "externalLineId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000_9",
@@ -664,10 +689,12 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "city" : "Basel",
         "countryCode" : "CH"
       },
+      "contact" : null,
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
         "ifExists" : "DONT_UPDATE"
-      }
+      },
+      "bpartnerLookupAdvise" : "GLN"
     },
     "dateRequired" : "2013-03-20",
     "flatrateConditionsId" : 0,
@@ -722,7 +749,8 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "syncAdvise" : {
           "ifNotExists" : "FAIL",
           "ifExists" : "DONT_UPDATE"
-        }
+        },
+        "bpartnerLookupAdvise" : "GLN"
       }
     },
     "externalLineId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000_10",
@@ -741,10 +769,12 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "city" : "Basel",
         "countryCode" : "CH"
       },
+      "contact" : null,
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
         "ifExists" : "DONT_UPDATE"
-      }
+      },
+      "bpartnerLookupAdvise" : "GLN"
     },
     "dateRequired" : "2013-03-20",
     "flatrateConditionsId" : 0,
@@ -799,7 +829,8 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "syncAdvise" : {
           "ifNotExists" : "FAIL",
           "ifExists" : "DONT_UPDATE"
-        }
+        },
+        "bpartnerLookupAdvise" : "GLN"
       }
     },
     "externalLineId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000_11",
@@ -818,10 +849,12 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "city" : "Basel",
         "countryCode" : "CH"
       },
+      "contact" : null,
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
         "ifExists" : "DONT_UPDATE"
-      }
+      },
+      "bpartnerLookupAdvise" : "GLN"
     },
     "dateRequired" : "2013-03-20",
     "flatrateConditionsId" : 0,
@@ -876,7 +909,8 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "syncAdvise" : {
           "ifNotExists" : "FAIL",
           "ifExists" : "DONT_UPDATE"
-        }
+        },
+        "bpartnerLookupAdvise" : "GLN"
       }
     },
     "externalLineId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000_12",
@@ -895,10 +929,12 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "city" : "Basel",
         "countryCode" : "CH"
       },
+      "contact" : null,
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
         "ifExists" : "DONT_UPDATE"
-      }
+      },
+      "bpartnerLookupAdvise" : "GLN"
     },
     "dateRequired" : "2013-03-20",
     "flatrateConditionsId" : 0,
@@ -953,7 +989,8 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "syncAdvise" : {
           "ifNotExists" : "FAIL",
           "ifExists" : "DONT_UPDATE"
-        }
+        },
+        "bpartnerLookupAdvise" : "GLN"
       }
     },
     "externalLineId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000_13",
@@ -972,10 +1009,12 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "city" : "Basel",
         "countryCode" : "CH"
       },
+      "contact" : null,
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
         "ifExists" : "DONT_UPDATE"
-      }
+      },
+      "bpartnerLookupAdvise" : "GLN"
     },
     "dateRequired" : "2013-03-20",
     "flatrateConditionsId" : 0,
@@ -1030,7 +1069,8 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "syncAdvise" : {
           "ifNotExists" : "FAIL",
           "ifExists" : "DONT_UPDATE"
-        }
+        },
+        "bpartnerLookupAdvise" : "GLN"
       }
     },
     "externalLineId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000_14",
@@ -1049,10 +1089,12 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "city" : "Basel",
         "countryCode" : "CH"
       },
+      "contact" : null,
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
         "ifExists" : "DONT_UPDATE"
-      }
+      },
+      "bpartnerLookupAdvise" : "GLN"
     },
     "dateRequired" : "2013-03-20",
     "flatrateConditionsId" : 0,
@@ -1107,7 +1149,8 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "syncAdvise" : {
           "ifNotExists" : "FAIL",
           "ifExists" : "DONT_UPDATE"
-        }
+        },
+        "bpartnerLookupAdvise" : "GLN"
       }
     },
     "externalLineId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000_15",
@@ -1126,10 +1169,12 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "city" : "Basel",
         "countryCode" : "CH"
       },
+      "contact" : null,
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
         "ifExists" : "DONT_UPDATE"
-      }
+      },
+      "bpartnerLookupAdvise" : "GLN"
     },
     "dateRequired" : "2013-03-20",
     "flatrateConditionsId" : 0,
@@ -1184,7 +1229,8 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "syncAdvise" : {
           "ifNotExists" : "FAIL",
           "ifExists" : "DONT_UPDATE"
-        }
+        },
+        "bpartnerLookupAdvise" : "GLN"
       }
     },
     "externalLineId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000_16",
@@ -1203,10 +1249,12 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "city" : "Basel",
         "countryCode" : "CH"
       },
+      "contact" : null,
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
         "ifExists" : "DONT_UPDATE"
-      }
+      },
+      "bpartnerLookupAdvise" : "GLN"
     },
     "dateRequired" : "2013-03-20",
     "flatrateConditionsId" : 0,
@@ -1261,7 +1309,8 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "syncAdvise" : {
           "ifNotExists" : "FAIL",
           "ifExists" : "DONT_UPDATE"
-        }
+        },
+        "bpartnerLookupAdvise" : "GLN"
       }
     },
     "externalLineId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000_17",
@@ -1280,10 +1329,12 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "city" : "Basel",
         "countryCode" : "CH"
       },
+      "contact" : null,
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
         "ifExists" : "DONT_UPDATE"
-      }
+      },
+      "bpartnerLookupAdvise" : "GLN"
     },
     "dateRequired" : "2013-03-20",
     "flatrateConditionsId" : 0,
@@ -1338,7 +1389,8 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "syncAdvise" : {
           "ifNotExists" : "FAIL",
           "ifExists" : "DONT_UPDATE"
-        }
+        },
+        "bpartnerLookupAdvise" : "GLN"
       }
     },
     "externalLineId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000_18",
@@ -1357,10 +1409,12 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "city" : "Basel",
         "countryCode" : "CH"
       },
+      "contact" : null,
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
         "ifExists" : "DONT_UPDATE"
-      }
+      },
+      "bpartnerLookupAdvise" : "GLN"
     },
     "dateRequired" : "2013-03-20",
     "flatrateConditionsId" : 0,
@@ -1415,7 +1469,8 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "syncAdvise" : {
           "ifNotExists" : "FAIL",
           "ifExists" : "DONT_UPDATE"
-        }
+        },
+        "bpartnerLookupAdvise" : "GLN"
       }
     },
     "externalLineId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000_19",
@@ -1434,10 +1489,12 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "city" : "Basel",
         "countryCode" : "CH"
       },
+      "contact" : null,
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
         "ifExists" : "DONT_UPDATE"
-      }
+      },
+      "bpartnerLookupAdvise" : "GLN"
     },
     "dateRequired" : "2013-03-20",
     "flatrateConditionsId" : 0,
@@ -1492,7 +1549,8 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "syncAdvise" : {
           "ifNotExists" : "FAIL",
           "ifExists" : "DONT_UPDATE"
-        }
+        },
+        "bpartnerLookupAdvise" : "GLN"
       }
     },
     "externalLineId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000_20",
@@ -1511,10 +1569,12 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "city" : "Basel",
         "countryCode" : "CH"
       },
+      "contact" : null,
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
         "ifExists" : "DONT_UPDATE"
-      }
+      },
+      "bpartnerLookupAdvise" : "GLN"
     },
     "dateRequired" : "2013-03-20",
     "flatrateConditionsId" : 0,
@@ -1569,7 +1629,8 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "syncAdvise" : {
           "ifNotExists" : "FAIL",
           "ifExists" : "DONT_UPDATE"
-        }
+        },
+        "bpartnerLookupAdvise" : "GLN"
       }
     },
     "externalLineId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000_21",
@@ -1588,10 +1649,12 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "city" : "Basel",
         "countryCode" : "CH"
       },
+      "contact" : null,
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
         "ifExists" : "DONT_UPDATE"
-      }
+      },
+      "bpartnerLookupAdvise" : "GLN"
     },
     "dateRequired" : "2013-03-20",
     "flatrateConditionsId" : 0,
@@ -1651,7 +1714,8 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "syncAdvise" : {
           "ifNotExists" : "FAIL",
           "ifExists" : "DONT_UPDATE"
-        }
+        },
+        "bpartnerLookupAdvise" : "GLN"
       }
     },
     "externalLineId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000_1",
@@ -1670,10 +1734,12 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "city" : "Basel",
         "countryCode" : "CH"
       },
+      "contact" : null,
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
         "ifExists" : "DONT_UPDATE"
-      }
+      },
+      "bpartnerLookupAdvise" : "GLN"
     },
     "dateRequired" : "2013-03-20",
     "flatrateConditionsId" : 0,
@@ -1728,7 +1794,8 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "syncAdvise" : {
           "ifNotExists" : "FAIL",
           "ifExists" : "DONT_UPDATE"
-        }
+        },
+        "bpartnerLookupAdvise" : "GLN"
       }
     },
     "externalLineId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000_2",
@@ -1747,10 +1814,12 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "city" : "Basel",
         "countryCode" : "CH"
       },
+      "contact" : null,
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
         "ifExists" : "DONT_UPDATE"
-      }
+      },
+      "bpartnerLookupAdvise" : "GLN"
     },
     "dateRequired" : "2013-03-20",
     "flatrateConditionsId" : 0,
@@ -1805,7 +1874,8 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "syncAdvise" : {
           "ifNotExists" : "FAIL",
           "ifExists" : "DONT_UPDATE"
-        }
+        },
+        "bpartnerLookupAdvise" : "GLN"
       }
     },
     "externalLineId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000_3",
@@ -1824,10 +1894,12 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "city" : "Basel",
         "countryCode" : "CH"
       },
+      "contact" : null,
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
         "ifExists" : "DONT_UPDATE"
-      }
+      },
+      "bpartnerLookupAdvise" : "GLN"
     },
     "dateRequired" : "2013-03-20",
     "flatrateConditionsId" : 0,
@@ -1882,7 +1954,8 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "syncAdvise" : {
           "ifNotExists" : "FAIL",
           "ifExists" : "DONT_UPDATE"
-        }
+        },
+        "bpartnerLookupAdvise" : "GLN"
       }
     },
     "externalLineId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000_4",
@@ -1901,10 +1974,12 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "city" : "Basel",
         "countryCode" : "CH"
       },
+      "contact" : null,
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
         "ifExists" : "DONT_UPDATE"
-      }
+      },
+      "bpartnerLookupAdvise" : "GLN"
     },
     "dateRequired" : "2013-03-20",
     "flatrateConditionsId" : 0,
@@ -1959,7 +2034,8 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "syncAdvise" : {
           "ifNotExists" : "FAIL",
           "ifExists" : "DONT_UPDATE"
-        }
+        },
+        "bpartnerLookupAdvise" : "GLN"
       }
     },
     "externalLineId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000_5",
@@ -1978,10 +2054,12 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "city" : "Basel",
         "countryCode" : "CH"
       },
+      "contact" : null,
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
         "ifExists" : "DONT_UPDATE"
-      }
+      },
+      "bpartnerLookupAdvise" : "GLN"
     },
     "dateRequired" : "2013-03-20",
     "flatrateConditionsId" : 0,
@@ -2036,7 +2114,8 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "syncAdvise" : {
           "ifNotExists" : "FAIL",
           "ifExists" : "DONT_UPDATE"
-        }
+        },
+        "bpartnerLookupAdvise" : "GLN"
       }
     },
     "externalLineId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000_6",
@@ -2055,10 +2134,12 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "city" : "Basel",
         "countryCode" : "CH"
       },
+      "contact" : null,
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
         "ifExists" : "DONT_UPDATE"
-      }
+      },
+      "bpartnerLookupAdvise" : "GLN"
     },
     "dateRequired" : "2013-03-20",
     "flatrateConditionsId" : 0,
@@ -2113,7 +2194,8 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "syncAdvise" : {
           "ifNotExists" : "FAIL",
           "ifExists" : "DONT_UPDATE"
-        }
+        },
+        "bpartnerLookupAdvise" : "GLN"
       }
     },
     "externalLineId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000_7",
@@ -2132,10 +2214,12 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "city" : "Basel",
         "countryCode" : "CH"
       },
+      "contact" : null,
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
         "ifExists" : "DONT_UPDATE"
-      }
+      },
+      "bpartnerLookupAdvise" : "GLN"
     },
     "dateRequired" : "2013-03-20",
     "flatrateConditionsId" : 0,
@@ -2190,7 +2274,8 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "syncAdvise" : {
           "ifNotExists" : "FAIL",
           "ifExists" : "DONT_UPDATE"
-        }
+        },
+        "bpartnerLookupAdvise" : "GLN"
       }
     },
     "externalLineId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000_8",
@@ -2209,10 +2294,12 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "city" : "Basel",
         "countryCode" : "CH"
       },
+      "contact" : null,
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
         "ifExists" : "DONT_UPDATE"
-      }
+      },
+      "bpartnerLookupAdvise" : "GLN"
     },
     "dateRequired" : "2013-03-20",
     "flatrateConditionsId" : 0,
@@ -2267,7 +2354,8 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "syncAdvise" : {
           "ifNotExists" : "FAIL",
           "ifExists" : "DONT_UPDATE"
-        }
+        },
+        "bpartnerLookupAdvise" : "GLN"
       }
     },
     "externalLineId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000_9",
@@ -2286,10 +2374,12 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "city" : "Basel",
         "countryCode" : "CH"
       },
+      "contact" : null,
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
         "ifExists" : "DONT_UPDATE"
-      }
+      },
+      "bpartnerLookupAdvise" : "GLN"
     },
     "dateRequired" : "2013-03-20",
     "flatrateConditionsId" : 0,
@@ -2344,7 +2434,8 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "syncAdvise" : {
           "ifNotExists" : "FAIL",
           "ifExists" : "DONT_UPDATE"
-        }
+        },
+        "bpartnerLookupAdvise" : "GLN"
       }
     },
     "externalLineId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000_10",
@@ -2363,10 +2454,12 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "city" : "Basel",
         "countryCode" : "CH"
       },
+      "contact" : null,
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
         "ifExists" : "DONT_UPDATE"
-      }
+      },
+      "bpartnerLookupAdvise" : "GLN"
     },
     "dateRequired" : "2013-03-20",
     "flatrateConditionsId" : 0,
@@ -2421,7 +2514,8 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "syncAdvise" : {
           "ifNotExists" : "FAIL",
           "ifExists" : "DONT_UPDATE"
-        }
+        },
+        "bpartnerLookupAdvise" : "GLN"
       }
     },
     "externalLineId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000_11",
@@ -2440,10 +2534,12 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "city" : "Basel",
         "countryCode" : "CH"
       },
+      "contact" : null,
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
         "ifExists" : "DONT_UPDATE"
-      }
+      },
+      "bpartnerLookupAdvise" : "GLN"
     },
     "dateRequired" : "2013-03-20",
     "flatrateConditionsId" : 0,
@@ -2498,7 +2594,8 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "syncAdvise" : {
           "ifNotExists" : "FAIL",
           "ifExists" : "DONT_UPDATE"
-        }
+        },
+        "bpartnerLookupAdvise" : "GLN"
       }
     },
     "externalLineId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000_12",
@@ -2517,10 +2614,12 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "city" : "Basel",
         "countryCode" : "CH"
       },
+      "contact" : null,
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
         "ifExists" : "DONT_UPDATE"
-      }
+      },
+      "bpartnerLookupAdvise" : "GLN"
     },
     "dateRequired" : "2013-03-20",
     "flatrateConditionsId" : 0,
@@ -2575,7 +2674,8 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "syncAdvise" : {
           "ifNotExists" : "FAIL",
           "ifExists" : "DONT_UPDATE"
-        }
+        },
+        "bpartnerLookupAdvise" : "GLN"
       }
     },
     "externalLineId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000_13",
@@ -2594,10 +2694,12 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "city" : "Basel",
         "countryCode" : "CH"
       },
+      "contact" : null,
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
         "ifExists" : "DONT_UPDATE"
-      }
+      },
+      "bpartnerLookupAdvise" : "GLN"
     },
     "dateRequired" : "2013-03-20",
     "flatrateConditionsId" : 0,
@@ -2652,7 +2754,8 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "syncAdvise" : {
           "ifNotExists" : "FAIL",
           "ifExists" : "DONT_UPDATE"
-        }
+        },
+        "bpartnerLookupAdvise" : "GLN"
       }
     },
     "externalLineId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000_14",
@@ -2671,10 +2774,12 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "city" : "Basel",
         "countryCode" : "CH"
       },
+      "contact" : null,
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
         "ifExists" : "DONT_UPDATE"
-      }
+      },
+      "bpartnerLookupAdvise" : "GLN"
     },
     "dateRequired" : "2013-03-20",
     "flatrateConditionsId" : 0,
@@ -2729,7 +2834,8 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "syncAdvise" : {
           "ifNotExists" : "FAIL",
           "ifExists" : "DONT_UPDATE"
-        }
+        },
+        "bpartnerLookupAdvise" : "GLN"
       }
     },
     "externalLineId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000_15",
@@ -2748,10 +2854,12 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "city" : "Basel",
         "countryCode" : "CH"
       },
+      "contact" : null,
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
         "ifExists" : "DONT_UPDATE"
-      }
+      },
+      "bpartnerLookupAdvise" : "GLN"
     },
     "dateRequired" : "2013-03-20",
     "flatrateConditionsId" : 0,
@@ -2806,7 +2914,8 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "syncAdvise" : {
           "ifNotExists" : "FAIL",
           "ifExists" : "DONT_UPDATE"
-        }
+        },
+        "bpartnerLookupAdvise" : "GLN"
       }
     },
     "externalLineId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000_16",
@@ -2825,10 +2934,12 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "city" : "Basel",
         "countryCode" : "CH"
       },
+      "contact" : null,
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
         "ifExists" : "DONT_UPDATE"
-      }
+      },
+      "bpartnerLookupAdvise" : "GLN"
     },
     "dateRequired" : "2013-03-20",
     "flatrateConditionsId" : 0,
@@ -2883,7 +2994,8 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "syncAdvise" : {
           "ifNotExists" : "FAIL",
           "ifExists" : "DONT_UPDATE"
-        }
+        },
+        "bpartnerLookupAdvise" : "GLN"
       }
     },
     "externalLineId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000_17",
@@ -2902,10 +3014,12 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "city" : "Basel",
         "countryCode" : "CH"
       },
+      "contact" : null,
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
         "ifExists" : "DONT_UPDATE"
-      }
+      },
+      "bpartnerLookupAdvise" : "GLN"
     },
     "dateRequired" : "2013-03-20",
     "flatrateConditionsId" : 0,
@@ -2960,7 +3074,8 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "syncAdvise" : {
           "ifNotExists" : "FAIL",
           "ifExists" : "DONT_UPDATE"
-        }
+        },
+        "bpartnerLookupAdvise" : "GLN"
       }
     },
     "externalLineId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000_18",
@@ -2979,10 +3094,12 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "city" : "Basel",
         "countryCode" : "CH"
       },
+      "contact" : null,
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
         "ifExists" : "DONT_UPDATE"
-      }
+      },
+      "bpartnerLookupAdvise" : "GLN"
     },
     "dateRequired" : "2013-03-20",
     "flatrateConditionsId" : 0,
@@ -3037,7 +3154,8 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "syncAdvise" : {
           "ifNotExists" : "FAIL",
           "ifExists" : "DONT_UPDATE"
-        }
+        },
+        "bpartnerLookupAdvise" : "GLN"
       }
     },
     "externalLineId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000_19",
@@ -3056,10 +3174,12 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "city" : "Basel",
         "countryCode" : "CH"
       },
+      "contact" : null,
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
         "ifExists" : "DONT_UPDATE"
-      }
+      },
+      "bpartnerLookupAdvise" : "GLN"
     },
     "dateRequired" : "2013-03-20",
     "flatrateConditionsId" : 0,
@@ -3114,7 +3234,8 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "syncAdvise" : {
           "ifNotExists" : "FAIL",
           "ifExists" : "DONT_UPDATE"
-        }
+        },
+        "bpartnerLookupAdvise" : "GLN"
       }
     },
     "externalLineId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000_20",
@@ -3133,10 +3254,12 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "city" : "Basel",
         "countryCode" : "CH"
       },
+      "contact" : null,
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
         "ifExists" : "DONT_UPDATE"
-      }
+      },
+      "bpartnerLookupAdvise" : "GLN"
     },
     "dateRequired" : "2013-03-20",
     "flatrateConditionsId" : 0,
@@ -3191,7 +3314,8 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "syncAdvise" : {
           "ifNotExists" : "FAIL",
           "ifExists" : "DONT_UPDATE"
-        }
+        },
+        "bpartnerLookupAdvise" : "GLN"
       }
     },
     "externalLineId" : "2009_01:001_EAN-2011234567890_EAN-7634567890000_21",
@@ -3210,10 +3334,12 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "city" : "Basel",
         "countryCode" : "CH"
       },
+      "contact" : null,
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
         "ifExists" : "DONT_UPDATE"
-      }
+      },
+      "bpartnerLookupAdvise" : "GLN"
     },
     "dateRequired" : "2013-03-20",
     "flatrateConditionsId" : 0,
