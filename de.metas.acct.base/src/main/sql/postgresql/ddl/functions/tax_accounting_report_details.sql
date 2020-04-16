@@ -1,20 +1,18 @@
-DROP FUNCTION IF EXISTS report.tax_accounting_report_detail(IN p_dateFrom date, 
-														IN p_dateTo date, 
-														IN p_vatcode varchar,
-                                                        IN p_account_id numeric, 
-														IN p_c_tax_id numeric, 
-														IN p_org_id numeric,
-                                                        IN p_showdetails character varying,
-                                                        IN p_ad_language character varying(6);
-														
-CREATE OR REPLACE FUNCTION report.tax_accounting_report(IN p_dateFrom date, 
-														IN p_dateTo date, 
-														IN p_vatcode varchar,
-                                                        IN p_account_id numeric, 
-														IN p_c_tax_id numeric, 
-														IN p_org_id numeric,
-                                                        IN p_showdetails character varying,
-                                                        IN p_ad_language character varying(6))
+DROP FUNCTION IF EXISTS report.tax_accounting_report_details(IN p_dateFrom date,
+    IN p_dateTo date,
+    IN p_vatcode varchar,
+    IN p_account_id numeric,
+    IN p_c_tax_id numeric,
+    IN p_org_id numeric,
+    IN p_ad_language character varying(6));
+
+CREATE OR REPLACE FUNCTION report.tax_accounting_report_details(IN p_dateFrom date,
+                                                                IN p_dateTo date,
+                                                                IN p_vatcode varchar,
+                                                                IN p_account_id numeric,
+                                                                IN p_c_tax_id numeric,
+                                                                IN p_org_id numeric,
+                                                                IN p_ad_language character varying(6))
     RETURNS TABLE
             (
                 vatcode          character varying(10),
@@ -28,7 +26,8 @@ CREATE OR REPLACE FUNCTION report.tax_accounting_report(IN p_dateFrom date,
                 taxbaseamt       numeric,
                 taxamt           numeric,
                 taxamtperaccount numeric,
-                IsTaxLine        character varying,
+                IsTaxLine        character(1),
+				iso_code         character(3),
                 param_startdate  date,
                 param_enddate    date,
                 param_konto      character varying,
@@ -41,7 +40,7 @@ CREATE OR REPLACE FUNCTION report.tax_accounting_report(IN p_dateFrom date,
 AS
 $$
 
-SELECT DISTINCT ON (x.vatcode, x.kontono, x.kontoname, x.dateacct, x.documentno, x.taxname, x.taxrate, x.bpName, x.IsTaxLine) x.vatcode,
+SELECT DISTINCT ON (x.vatcode, x.kontono, x.kontoname, x.dateacct, x.documentno, x.taxname, x.taxrate, x.bpName, x.IsTaxLine, x.iso_code) x.vatcode,
                                                                                                                               x.kontono,
                                                                                                                               x.kontoname,
                                                                                                                               x.dateacct :: date,
@@ -61,8 +60,9 @@ SELECT DISTINCT ON (x.vatcode, x.kontono, x.kontoname, x.dateacct, x.documentno,
                                                                                                                                               0 :: numeric)) as taxamt,
                                                                                                                               taxamtperaccount,
                                                                                                                               IsTaxLine,
-                                                                                                                              x.dateFrom                     as param_startdate,
-                                                                                                                              x.dateTo                       as param_endtdate,
+																															  x.iso_code,
+                                                                                                                              x.p_dateFrom                   as param_startdate,
+                                                                                                                              x.p_dateTo                     as param_endtdate,
                                                                                                                               x.param_konto,
                                                                                                                               x.param_vatcode,
                                                                                                                               x.param_org,
@@ -93,7 +93,8 @@ FROM (
                          then (fa.amtacctdr - fa.amtacctcr)
                      else 0
                     end)                              AS taxamtperaccount,
-
+				
+				c.iso_code,
 
                 (case
                      when fa.line_id is null and fa.C_Tax_id is not null
@@ -114,7 +115,7 @@ FROM (
                 (CASE
                      WHEN p_vatcode IS NULL
                          THEN NULL
-                     ELSE p_vatcode END)                     AS param_vatcode,
+                     ELSE p_vatcode END)              AS param_vatcode,
                 (CASE
                      WHEN p_org_id IS NULL
                          THEN NULL
@@ -131,7 +132,8 @@ FROM (
 
                   JOIN c_elementvalue ev ON ev.c_elementvalue_id = fa.account_id and ev.isActive = 'Y'
                   JOIN c_tax tax ON fa.c_tax_id = tax.c_tax_id and tax.isActive = 'Y'
-
+					
+				  LEFT JOIN C_Currency c on fa.c_Currency_ID = c.C_Currency_ID	
                   LEFT OUTER JOIN c_bpartner bp on fa.c_bpartner_id = bp.c_bpartner_id
 
              --Show all accounts, not only tax accounts
@@ -203,8 +205,8 @@ FROM (
                                      fa.ad_table_id = get_Table_Id('C_AllocationHdr') AND
                                      fa.line_id = hdr.C_AllocationLine_ID
 
-         WHERE fa.DateAcct >= dateFrom
-           AND fa.DateAcct <= dateTo
+         WHERE fa.DateAcct >= p_dateFrom
+           AND fa.DateAcct <= p_dateTo
            AND fa.postingtype IN ('A', 'Y')
            AND fa.ad_org_id = p_org_id
            AND (CASE
@@ -215,10 +217,10 @@ FROM (
                     WHEN p_account_id IS NULL
                         THEN TRUE
                     ELSE p_account_id = fa.account_id END)
-			AND (CASE
+           AND (CASE
                     WHEN p_c_tax_id IS NULL
-                        THEN TRUE
-                    ELSE p_c_tax_id = fa.C_Tax_id END)		
+                        THEN (fa.C_Tax_id is null)
+                    ELSE p_c_tax_id = fa.C_Tax_id END)
            AND fa.isActive = 'Y'
      ) x
 

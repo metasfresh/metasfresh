@@ -28,54 +28,18 @@
 		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
 	</parameter>
 	<queryString>
-		<![CDATA[with accounts as
-         (
-             select C_ElementValue_ID
-             from c_elementvalue where IsActive='Y'
-            AND  CASE WHEN $P{account_id} IS NULL   THEN 1=1 ELSE C_ElementValue_ID = $P{account_id} END
-         ),
-     balanceRecords AS
-         (
-             Select b.*, a.C_ElementValue_ID
-             from accounts a
-                      join de_metas_acct.balanceToDate($P{AD_Org_ID},
-																				    C_ElementValue_ID,
-																				    $P{DateTo},
-																				    $P{C_VAT_Code_ID}) as b on 1 = 1
-         )
-select (Balance).Balance, (Balance).Debit, (Balance).Credit, b.accountno,  b.accountname, b.taxName, 
-     b.vatcode, b.C_ElementValue_ID,
-      $P{DateFrom} AS param_startdate, 
-	  $P{DateTo} AS param_enddate,
-      (CASE WHEN $P{account_id} IS NULL
-        THEN NULL
-       ELSE (SELECT value || ' - ' || name
-             from C_ElementValue
-             WHERE C_ElementValue_ID = $P{account_id} and isActive = 'Y') END) AS param_konto,
-      (CASE WHEN $P{C_VAT_Code_ID} IS NULL
-        THEN NULL
-       ELSE (SELECT vatcode
-             FROM C_Vat_Code
-             WHERE C_Vat_Code_ID = $P{C_VAT_Code_ID} and isActive = 'Y') END)     AS param_vatcode,
-      (CASE WHEN $P{AD_Org_ID} IS NULL
-        THEN NULL
-       ELSE (SELECT name
-             from ad_org
-             where ad_org_id = $P{AD_Org_ID} and isActive = 'Y') END)         AS param_org
-
-from balanceRecords as b
-where (Balance).Debit > 0 or (Balance).Credit > 0
-order by vatcode, accountno
-;]]>
+		<![CDATA[SELECT *
+FROM de_metas_acct.taxaccounts_details($P{AD_Org_ID},
+	                                                                                       $P{account_id}, 
+	                                                                                       $P{C_VAT_Code_ID}, 
+	                                                                                        $P{DateFrom},
+	                                                                                         $P{DateTo}) ;]]>
 	</queryString>
 	<field name="balance" class="java.math.BigDecimal">
 		<property name="com.jaspersoft.studio.field.label" value="balance"/>
 	</field>
-	<field name="debit" class="java.math.BigDecimal">
-		<property name="com.jaspersoft.studio.field.label" value="debit"/>
-	</field>
-	<field name="credit" class="java.math.BigDecimal">
-		<property name="com.jaspersoft.studio.field.label" value="credit"/>
+	<field name="balanceyear" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="balanceyear"/>
 	</field>
 	<field name="accountno" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="accountno"/>
@@ -86,16 +50,19 @@ order by vatcode, accountno
 	<field name="taxname" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="taxname"/>
 	</field>
+	<field name="c_tax_id" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="c_tax_id"/>
+	</field>
 	<field name="vatcode" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="vatcode"/>
 	</field>
 	<field name="c_elementvalue_id" class="java.math.BigDecimal">
 		<property name="com.jaspersoft.studio.field.label" value="c_elementvalue_id"/>
 	</field>
-	<field name="param_startdate" class="java.lang.String">
+	<field name="param_startdate" class="java.sql.Date">
 		<property name="com.jaspersoft.studio.field.label" value="param_startdate"/>
 	</field>
-	<field name="param_enddate" class="java.lang.String">
+	<field name="param_enddate" class="java.sql.Date">
 		<property name="com.jaspersoft.studio.field.label" value="param_enddate"/>
 	</field>
 	<field name="param_konto" class="java.lang.String">
@@ -108,27 +75,19 @@ order by vatcode, accountno
 		<property name="com.jaspersoft.studio.field.label" value="param_org"/>
 	</field>
 	<variable name="novat_acct_sum" class="java.math.BigDecimal" resetType="Group" resetGroup="account_group" calculation="Sum">
-		<variableExpression><![CDATA[$F{balance}]]></variableExpression>
+		<variableExpression><![CDATA[$F{balanceyear}]]></variableExpression>
 		<initialValueExpression><![CDATA[BigDecimal.ZERO]]></initialValueExpression>
 	</variable>
 	<variable name="novat_vat_sum" class="java.math.BigDecimal" resetType="Group" resetGroup="vatcode_group" calculation="Sum">
+		<variableExpression><![CDATA[$F{balanceyear}]]></variableExpression>
+		<initialValueExpression><![CDATA[BigDecimal.ZERO]]></initialValueExpression>
+	</variable>
+	<variable name="balance_acct_sum" class="java.math.BigDecimal" resetType="Group" resetGroup="account_group" calculation="Sum">
 		<variableExpression><![CDATA[$F{balance}]]></variableExpression>
 		<initialValueExpression><![CDATA[BigDecimal.ZERO]]></initialValueExpression>
 	</variable>
-	<variable name="debit_acct_sum" class="java.math.BigDecimal" resetType="Group" resetGroup="account_group" calculation="Sum">
-		<variableExpression><![CDATA[$F{debit}]]></variableExpression>
-		<initialValueExpression><![CDATA[BigDecimal.ZERO]]></initialValueExpression>
-	</variable>
-	<variable name="credit_acct_sum" class="java.math.BigDecimal" resetType="Group" resetGroup="account_group" calculation="Sum">
-		<variableExpression><![CDATA[$F{credit}]]></variableExpression>
-		<initialValueExpression><![CDATA[BigDecimal.ZERO]]></initialValueExpression>
-	</variable>
-	<variable name="debit_vat_sum" class="java.math.BigDecimal" resetType="Group" resetGroup="vatcode_group" calculation="Sum">
-		<variableExpression><![CDATA[$F{debit}]]></variableExpression>
-		<initialValueExpression><![CDATA[BigDecimal.ZERO]]></initialValueExpression>
-	</variable>
-	<variable name="credit_vat_sum" class="java.math.BigDecimal" resetType="Group" resetGroup="vatcode_group" calculation="Sum">
-		<variableExpression><![CDATA[$F{credit}]]></variableExpression>
+	<variable name="balance_vat_sum" class="java.math.BigDecimal" resetType="Group" resetGroup="vatcode_group" calculation="Sum">
+		<variableExpression><![CDATA[$F{balance}]]></variableExpression>
 		<initialValueExpression><![CDATA[BigDecimal.ZERO]]></initialValueExpression>
 	</variable>
 	<group name="vatcode_group">
@@ -154,14 +113,7 @@ order by vatcode, accountno
 					<textElement textAlignment="Right" verticalAlignment="Bottom">
 						<font fontName="Arial" size="10" isBold="true"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$V{credit_vat_sum}]]></textFieldExpression>
-				</textField>
-				<textField isStretchWithOverflow="true" evaluationTime="Group" evaluationGroup="vatcode_group" pattern="#,##0.00" isBlankWhenNull="true">
-					<reportElement x="514" y="7" width="83" height="16" uuid="77a1ebc3-7c4f-4e6e-8112-41574b125285"/>
-					<textElement textAlignment="Right" verticalAlignment="Bottom">
-						<font fontName="Arial" size="10" isBold="true"/>
-					</textElement>
-					<textFieldExpression><![CDATA[$V{debit_vat_sum}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$V{balance_vat_sum}]]></textFieldExpression>
 				</textField>
 			</band>
 		</groupHeader>
@@ -199,14 +151,7 @@ order by vatcode, accountno
 					<textElement textAlignment="Right" verticalAlignment="Bottom">
 						<font fontName="Arial" size="9" isBold="true"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$V{credit_acct_sum}]]></textFieldExpression>
-				</textField>
-				<textField isStretchWithOverflow="true" evaluationTime="Group" evaluationGroup="account_group" pattern="#,##0.00" isBlankWhenNull="true">
-					<reportElement x="514" y="4" width="83" height="14" uuid="a661d6d3-5672-4dc2-a9da-842b6e6fa2af"/>
-					<textElement textAlignment="Right" verticalAlignment="Bottom">
-						<font fontName="Arial" size="9" isBold="true"/>
-					</textElement>
-					<textFieldExpression><![CDATA[$V{debit_acct_sum}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$V{balance_acct_sum}]]></textFieldExpression>
 				</textField>
 			</band>
 		</groupHeader>
@@ -332,15 +277,15 @@ order by vatcode, accountno
 				<textFieldExpression><![CDATA[$F{param_org} != null ? $F{param_org} : $R{all}]]></textFieldExpression>
 			</textField>
 			<line>
-				<reportElement key="line" positionType="FixRelativeToBottom" x="0" y="110" width="782" height="1" forecolor="#000000" uuid="087288bf-43ff-4c01-8e12-eae1d040e4fa">
+				<reportElement key="line" x="0" y="110" width="782" height="1" forecolor="#000000" uuid="087288bf-43ff-4c01-8e12-eae1d040e4fa">
 					<printWhenExpression><![CDATA[new Boolean(("N").equals($P{showdetails}))]]></printWhenExpression>
 				</reportElement>
 				<graphicElement>
 					<pen lineWidth="1.0" lineStyle="Solid"/>
 				</graphicElement>
 			</line>
-			<textField>
-				<reportElement x="731" y="114" width="49" height="12" forecolor="#FFFFFF" uuid="bcb5892e-1c26-40e1-92b9-ab2c0735b68d">
+			<textField isStretchWithOverflow="true">
+				<reportElement x="710" y="114" width="70" height="12" forecolor="#FFFFFF" uuid="bcb5892e-1c26-40e1-92b9-ab2c0735b68d">
 					<printWhenExpression><![CDATA[new Boolean(("N").equals($P{showdetails}))]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Right">
@@ -377,15 +322,15 @@ order by vatcode, accountno
 				<textFieldExpression><![CDATA[$R{tax}]]></textFieldExpression>
 			</textField>
 			<line>
-				<reportElement key="line" positionType="FixRelativeToBottom" x="0" y="137" width="782" height="1" forecolor="#000000" uuid="13bd2f3c-a910-4395-91bc-b6d6baedbd16">
+				<reportElement key="line" x="0" y="137" width="782" height="1" forecolor="#000000" uuid="13bd2f3c-a910-4395-91bc-b6d6baedbd16">
 					<printWhenExpression><![CDATA[new Boolean(("Y").equals($P{showdetails}))]]></printWhenExpression>
 				</reportElement>
 				<graphicElement>
 					<pen lineWidth="1.0" lineStyle="Solid"/>
 				</graphicElement>
 			</line>
-			<textField>
-				<reportElement x="731" y="141" width="49" height="12" forecolor="#FFFFFF" uuid="f2c318c9-9604-4cab-94eb-70f9217d4fa0">
+			<textField isStretchWithOverflow="true">
+				<reportElement x="710" y="141" width="70" height="12" forecolor="#FFFFFF" uuid="f2c318c9-9604-4cab-94eb-70f9217d4fa0">
 					<printWhenExpression><![CDATA[new Boolean(("Y").equals($P{showdetails}))]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Right">
@@ -449,45 +394,25 @@ order by vatcode, accountno
 				</textElement>
 				<textFieldExpression><![CDATA[$R{vat_amt}]]></textFieldExpression>
 			</textField>
-			<textField>
-				<reportElement x="630" y="114" width="49" height="12" forecolor="#FFFFFF" uuid="ca26b28b-969f-4bfd-975a-c2e2521146cd">
+			<textField isStretchWithOverflow="true">
+				<reportElement x="620" y="114" width="59" height="12" forecolor="#FFFFFF" uuid="ca26b28b-969f-4bfd-975a-c2e2521146cd">
 					<printWhenExpression><![CDATA[new Boolean(("N").equals($P{showdetails}))]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Right">
 					<font fontName="Arial" size="8" isBold="true"/>
 					<paragraph rightIndent="5"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$R{Credit}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{balancePeriod}]]></textFieldExpression>
 			</textField>
-			<textField>
-				<reportElement x="548" y="114" width="49" height="12" forecolor="#FFFFFF" uuid="15a31d66-11c0-41b5-a186-7562bda6942a">
-					<printWhenExpression><![CDATA[new Boolean(("N").equals($P{showdetails}))]]></printWhenExpression>
-				</reportElement>
-				<textElement textAlignment="Right">
-					<font fontName="Arial" size="8" isBold="true"/>
-					<paragraph rightIndent="5"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$R{Debit}]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement x="630" y="142" width="49" height="12" forecolor="#FFFFFF" uuid="e373a04e-bb55-47f0-9bb0-5ef457ace879">
+			<textField isStretchWithOverflow="true">
+				<reportElement x="620" y="142" width="59" height="12" forecolor="#FFFFFF" uuid="e373a04e-bb55-47f0-9bb0-5ef457ace879">
 					<printWhenExpression><![CDATA[new Boolean(("Y").equals($P{showdetails}))]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Right">
 					<font fontName="Arial" size="8" isBold="true"/>
 					<paragraph rightIndent="5"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$R{Credit}]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement x="548" y="142" width="49" height="12" forecolor="#FFFFFF" uuid="bb9b32a0-4eaa-4416-9072-685c04509026">
-					<printWhenExpression><![CDATA[new Boolean(("Y").equals($P{showdetails}))]]></printWhenExpression>
-				</reportElement>
-				<textElement textAlignment="Right">
-					<font fontName="Arial" size="8" isBold="true"/>
-					<paragraph rightIndent="5"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$R{Debit}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{balancePeriod}]]></textFieldExpression>
 			</textField>
 		</band>
 	</pageHeader>
@@ -523,21 +448,14 @@ order by vatcode, accountno
 				<textElement textAlignment="Right">
 					<font fontName="Arial" size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{balance}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{balanceyear}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
 				<reportElement x="597" y="3" width="83" height="14" uuid="7ac05829-90bc-40de-882b-efaa1e855b94"/>
 				<textElement textAlignment="Right">
 					<font fontName="Arial" size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{credit}]]></textFieldExpression>
-			</textField>
-			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
-				<reportElement x="514" y="3" width="83" height="14" uuid="98a75617-1514-44ae-ac5a-1e0c3e7d0060"/>
-				<textElement textAlignment="Right">
-					<font fontName="Arial" size="8"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$F{debit}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{balance}]]></textFieldExpression>
 			</textField>
 		</band>
 		<band height="13" splitType="Stretch">
@@ -560,6 +478,9 @@ order by vatcode, accountno
 				</subreportParameter>
 				<subreportParameter name="DateTo">
 					<subreportParameterExpression><![CDATA[$P{DateTo}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="c_tax_id">
+					<subreportParameterExpression><![CDATA[$F{c_tax_id}]]></subreportParameterExpression>
 				</subreportParameter>
 				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
 				<subreportExpression><![CDATA["de/metas/reports/tax_accounting/report_details.jasper"]]></subreportExpression>

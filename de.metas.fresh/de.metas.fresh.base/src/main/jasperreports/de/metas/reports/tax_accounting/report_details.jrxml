@@ -24,9 +24,6 @@
 	<parameter name="AD_Org_ID" class="java.math.BigDecimal">
 		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
 	</parameter>
-	<parameter name="showdetails" class="java.lang.String" isForPrompting="false">
-		<defaultValueExpression><![CDATA["Y"]]></defaultValueExpression>
-	</parameter>
 	<parameter name="ad_language" class="java.lang.String">
 		<defaultValueExpression><![CDATA[$P{REPORT_LOCALE}.toString()]]></defaultValueExpression>
 	</parameter>
@@ -36,13 +33,16 @@
 	<parameter name="DateTo" class="java.sql.Date">
 		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
 	</parameter>
+	<parameter name="c_tax_id" class="java.math.BigDecimal">
+		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
+	</parameter>
 	<queryString>
 		<![CDATA[select *
-             from report.tax_accounting_report($P{DateFrom}, $P{DateTo},
+             from report.tax_accounting_report_details($P{DateFrom}, $P{DateTo},
                                                $P{vatcode},
                                                $P{account_id}, 
+                                               $P{c_tax_id}, 
 											   $P{AD_Org_ID},
-                                               $P{showdetails},
                                                $P{ad_language})
 
 order by vatcode, kontono, taxname, DateAcct
@@ -84,6 +84,9 @@ order by vatcode, kontono, taxname, DateAcct
 	<field name="istaxline" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="istaxline"/>
 	</field>
+	<field name="iso_code" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="iso_code"/>
+	</field>
 	<field name="param_startdate" class="java.sql.Date">
 		<property name="com.jaspersoft.studio.field.label" value="param_startdate"/>
 	</field>
@@ -109,8 +112,7 @@ order by vatcode, kontono, taxname, DateAcct
 		<property name="com.jaspersoft.studio.field.label" value="ad_org_id"/>
 	</field>
 	<detail>
-		<band height="15" splitType="Stretch">
-			<printWhenExpression><![CDATA[new Boolean(("Y").equals($P{showdetails}))]]></printWhenExpression>
+		<band height="17" splitType="Stretch">
 			<textField pattern="dd.MM.yyyy">
 				<reportElement x="0" y="0" width="70" height="12" uuid="dfd5727d-fc81-4b4b-9fb9-13ed7a8cf830"/>
 				<textElement>
@@ -168,6 +170,13 @@ order by vatcode, kontono, taxname, DateAcct
 					<font fontName="Arial" size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{taxbaseamt}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00">
+				<reportElement x="529" y="0" width="26" height="12" uuid="5ea4aa31-5b4b-464b-b429-27bebb8ee8c2"/>
+				<textElement textAlignment="Right">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{iso_code}]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>

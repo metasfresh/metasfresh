@@ -9,7 +9,7 @@ CREATE OR REPLACE FUNCTION de_metas_acct.balanceToDate(p_AD_Org_ID numeric(10, 0
     RETURNS TABLE
             (
                 vatcode     varchar,
-                taxName     varchar,
+                C_Tax_ID     numeric,
 				accountNo   varchar,
 				accountName varchar,
                 Balance     de_metas_acct.BalanceAmt
@@ -84,14 +84,12 @@ WITH records AS
 					fa.c_tax_id,
 					fa.vatcode,
 					ev.value as AccountNo,
-					ev.Name as AccountName,
-					t.Name as taxName
+					ev.Name as AccountName
              FROM filteredRecords fa
                       INNER JOIN C_ElementValue ev ON (ev.C_ElementValue_ID = fa.Account_ID) AND ev.isActive = 'Y'
-					  LEFT OUTER JOIN C_TAX t on t.C_tax_ID=fa.C_tax_ID
          )
 select vatcode,
-       taxName,  AccountNo, AccountName,
+       C_Tax_ID,  AccountNo, AccountName,
        ROW (SUM((Balance).Balance), SUM((Balance).Debit), SUM((Balance).Credit))::de_metas_acct.BalanceAmt
 from (
          (
@@ -105,7 +103,7 @@ from (
                                   WHEN fo.AccountType IN ('E', 'R') THEN ROW (0, 0, 0)::de_metas_acct.BalanceAmt
                           -- For any other account => we consider from the beginning to Date amount
                                   ELSE ROW (fo.AmtAcctDr - fo.AmtAcctCr, fo.AmtAcctDr, fo.AmtAcctCr)::de_metas_acct.BalanceAmt
-                          END)                            AS Balance, AccountNo, AccountName,taxName,
+                          END)                            AS Balance, AccountNo, AccountName,
                              C_tax_id,
                              vatcode,
                              ROW_NUMBER()
@@ -133,7 +131,7 @@ from (
                                   WHEN fo.AccountType IN ('E', 'R') THEN ROW (0, 0, 0)::de_metas_acct.BalanceAmt
                           -- For any other account => we consider from the beginning to Date amount
                                   ELSE ROW (fo.AmtAcctDr - fo.AmtAcctCr, fo.AmtAcctDr, fo.AmtAcctCr)::de_metas_acct.BalanceAmt
-                          END)                            AS Balance, AccountNo, AccountName,taxName,
+                          END)                            AS Balance, AccountNo, AccountName,
                              C_tax_id,
                              vatcode,
                              ROW_NUMBER()
@@ -162,7 +160,7 @@ from (
                                   WHEN fo.AccountType IN ('E', 'R') THEN ROW (0, 0, 0)::de_metas_acct.BalanceAmt
                           -- For any other account => we consider from the beginning to Date amount
                                   ELSE ROW (fo.AmtAcctDr - fo.AmtAcctCr, fo.AmtAcctDr, fo.AmtAcctCr)::de_metas_acct.BalanceAmt
-                          END)                            AS Balance, AccountNo, AccountName,taxName,
+                          END)                            AS Balance, AccountNo, AccountName,
                              C_tax_id,
                              vatcode,
                              ROW_NUMBER()
@@ -178,7 +176,7 @@ from (
              where RowNo = 1
          )
      ) a
-group by vatcode, taxName, AccountNo, AccountName
+group by vatcode, C_Tax_ID, AccountNo, AccountName
 $BODY$
     LANGUAGE sql STABLE;
 
