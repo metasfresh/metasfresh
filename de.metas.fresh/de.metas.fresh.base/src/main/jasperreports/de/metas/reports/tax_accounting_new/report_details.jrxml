@@ -27,10 +27,10 @@
 	<parameter name="ad_language" class="java.lang.String">
 		<defaultValueExpression><![CDATA[$P{REPORT_LOCALE}.toString()]]></defaultValueExpression>
 	</parameter>
-	<parameter name="DateFrom" class="java.sql.Date">
+	<parameter name="DateFrom" class="java.util.Date">
 		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
 	</parameter>
-	<parameter name="DateTo" class="java.sql.Date">
+	<parameter name="DateTo" class="java.util.Date">
 		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
 	</parameter>
 	<parameter name="c_tax_id" class="java.math.BigDecimal">
