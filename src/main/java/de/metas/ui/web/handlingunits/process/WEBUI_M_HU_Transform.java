@@ -1,20 +1,6 @@
 package de.metas.ui.web.handlingunits.process;
 
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-
-import java.math.BigDecimal;
-import java.util.Collection;
-import java.util.List;
-
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Profile;
-
-import java.util.Objects;
-import java.util.Optional;
-
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.Profiles;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
@@ -40,6 +26,17 @@ import de.metas.ui.web.window.model.DocumentCollection;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceContext;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Profile;
+
+import java.math.BigDecimal;
+import java.util.Collection;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+
+import static org.adempiere.model.InterfaceWrapperHelper.load;
 
 /*
  * #%L
@@ -230,8 +227,8 @@ public class WEBUI_M_HU_Transform
 				.luHU(p_M_LU_HU)
 				.qtyCU(p_QtyCU)
 				.qtyTU(p_QtyTU)
-				.huPlanningReceiptOwnerPM_TU(p_HUPlanningReceiptOwnerPM_TU)
-				.huPlanningReceiptOwnerPM_LU(p_HUPlanningReceiptOwnerPM_LU)
+				.huPlanningReceiptOwnerPM_TU(ActionType.valueOf(p_Action).equals(ActionType.TU_Set_Ownership) != p_HUPlanningReceiptOwnerPM_TU)
+				.huPlanningReceiptOwnerPM_LU(ActionType.valueOf(p_Action).equals(ActionType.LU_Set_Ownership) != p_HUPlanningReceiptOwnerPM_LU)
 				.build();
 
 		final WebuiHUTransformCommand command = WebuiHUTransformCommand.builder()
