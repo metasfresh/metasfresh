@@ -45,10 +45,11 @@ public class JsonRequestContact
 	private MetasfreshId metasfreshBPartnerId;
 	private boolean metasfreshBPartnerIdSet;
 
+	@ApiModelProperty("Translated to `AD_User.Value`")
 	private String code;
 	private boolean codeSet;
 
-	@ApiModelProperty(required = false, value = "If not specified but required (e.g. because a new contact is created), then `true` is assumed")
+	@ApiModelProperty("If not specified but required (e.g. because a new contact is created), then `true` is assumed")
 	private Boolean active;
 	private boolean activeSet;
 
@@ -130,140 +131,6 @@ public class JsonRequestContact
 			required = false, value = "Sync advise about this contact's individual properties.\n" + PARENT_SYNC_ADVISE_DOC)
 	private SyncAdvise syncAdvise;
 	private boolean syncAdviseSet;
-
-	public JsonRequestContact()
-	{
-	}
-
-//	@Builder(toBuilder = true)
-//	@JsonIgnore // we want jackson to use the setters
-//	private JsonRequestContact(
-//			@Nullable final JsonExternalId externalId,
-//			@Nullable final MetasfreshId metasfreshBPartnerId,
-//			@Nullable final String code,
-//			@Nullable final Boolean active,
-//			final String name,
-//
-//			final String firstName,
-//			final String lastName,
-//			final String email,
-//			final String phone,
-//
-//			final Boolean newsletter,
-//			String fax,
-//			final String mobilePhone,
-//			final String description,
-//
-//			@Nullable final Boolean defaultContact,
-//			@Nullable final Boolean shipToDefault,
-//			@Nullable final Boolean billToDefault,
-//
-//			@Nullable final Boolean sales,
-//			@Nullable final Boolean salesDefault,
-//			@Nullable final Boolean purchase,
-//			@Nullable final Boolean purchaseDefault,
-//
-//			@Nullable final Boolean subjectMatter,
-//
-//			@Nullable final SyncAdvise syncAdvise)
-//	{
-//		this.externalId = externalId;
-//		this.metasfreshBPartnerId = metasfreshBPartnerId;
-//		this.code = code;
-//		this.active = active;
-//		this.name = name;
-//
-//		this.firstName = firstName;
-//		this.lastName = lastName;
-//
-//		this.email = email;
-//		this.phone = phone;
-//		this.fax = fax;
-//		this.mobilePhone = mobilePhone;
-//
-//		this.newsletter = newsletter;
-//
-//		this.description = description;
-//
-//		this.defaultContact = defaultContact;
-//		this.subjectMatter = subjectMatter;
-//
-//		this.shipToDefault = shipToDefault;
-//		this.billToDefault = billToDefault;
-//
-//		this.sales = sales;
-//		this.salesDefault = salesDefault;
-//
-//		this.purchase = purchase;
-//		this.purchaseDefault = purchaseDefault;
-//
-//		this.syncAdvise = syncAdvise;
-//	}
-
-//	@Builder(toBuilder = true)
-//	@JsonIgnore
-//	private JsonRequestContact(
-//			@JsonProperty("externalId") @Nullable final JsonExternalId externalId,
-//			@JsonProperty("metasfreshBPartnerId") @Nullable final MetasfreshId metasfreshBPartnerId,
-//			@JsonProperty("code") @Nullable final String code,
-//			@JsonProperty("active") @Nullable final Boolean active,
-//			@JsonProperty("name") final String name,
-//
-//			@JsonProperty("firstName") final String firstName,
-//			@JsonProperty("lastName") final String lastName,
-//			@JsonProperty("email") final String email,
-//			@JsonProperty("phone") final String phone,
-//
-//			@JsonProperty("newsletter") final Boolean newsletter,
-//			@JsonProperty("fax") final String fax,
-//			@JsonProperty("mobilePhone") final String mobilePhone,
-//			@JsonProperty("description") final String description,
-//
-//			@JsonProperty("defaultContact") @Nullable final Boolean defaultContact,
-//			@JsonProperty("shipToDefault") @Nullable final Boolean shipToDefault,
-//			@JsonProperty("billToDefault") @Nullable final Boolean billToDefault,
-//
-//			@JsonProperty("sales") @Nullable final Boolean sales,
-//			@JsonProperty("salesDefault") @Nullable final Boolean salesDefault,
-//			@JsonProperty("purchase") @Nullable final Boolean purchase,
-//			@JsonProperty("purchaseDefault") @Nullable final Boolean purchaseDefault,
-//
-//			@JsonProperty("subjectMatter") @Nullable final Boolean subjectMatter,
-//
-//			@JsonProperty("syncAdvise") @Nullable final SyncAdvise syncAdvise)
-//	{
-//		this.externalId = externalId;
-//		this.metasfreshBPartnerId = metasfreshBPartnerId;
-//		this.code = code;
-//		this.active = active;
-//		this.name = name;
-//
-//		this.firstName = firstName;
-//		this.lastName = lastName;
-//
-//		this.email = email;
-//		this.phone = phone;
-//		this.fax = fax;
-//		this.mobilePhone = mobilePhone;
-//
-//		this.newsletter = newsletter;
-//
-//		this.description = description;
-//
-//		this.defaultContact = defaultContact;
-//		this.subjectMatter = subjectMatter;
-//
-//		this.shipToDefault = shipToDefault;
-//		this.billToDefault = billToDefault;
-//
-//		this.sales = sales;
-//		this.salesDefault = salesDefault;
-//
-//		this.purchase = purchase;
-//		this.purchaseDefault = purchaseDefault;
-//
-//		this.syncAdvise = syncAdvise;
-//	}
 
 	public void setExternalId(JsonExternalId externalId)
 	{

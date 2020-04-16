@@ -2,23 +2,16 @@ package de.metas.rest_api.bpartner.request;
 
 import static de.metas.rest_api.bpartner.SwaggerDocConstants.READ_ONLY_SYNC_ADVISE_DOC;
 
-import javax.annotation.Nullable;
-
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonInclude.Include;
-
 import de.metas.rest_api.common.JsonExternalId;
 import de.metas.rest_api.common.JsonInvoiceRule;
 import de.metas.rest_api.common.MetasfreshId;
 import de.metas.rest_api.common.SyncAdvise;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import lombok.Builder;
-import lombok.Value;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.ToString;
 
 /*
  * #%L
@@ -42,140 +35,202 @@ import lombok.Value;
  * #L%
  */
 
-@Value
+@Getter
+@ToString
+@EqualsAndHashCode
 @ApiModel(description = "Note that given the respective use-case, either one of both properties migh be `null`, but not both at once.")
 public class JsonRequestBPartner
 {
 	@ApiModelProperty(position = 10, required = false, //
 			dataType = "java.lang.String", //
 			value = "This translates to `C_BPartner.ExternalId`.")
-	@JsonInclude(Include.NON_NULL)
-	JsonExternalId externalId;
+	private JsonExternalId externalId;
+	private boolean externalIdSet;
 
 	@ApiModelProperty(position = 20, required = false, //
 			value = "This translates to `C_BPartner.Value`.")
-	@JsonInclude(Include.NON_NULL)
-	String code;
+	private String code;
+	private boolean codeSet;
 
 	@ApiModelProperty(required = false, value = "If not specified but required (e.g. because a new partner is created), then `true` is assumed.")
-	@JsonInclude(Include.NON_NULL)
-	Boolean active;
+	private Boolean active;
+	private boolean activeSet;
 
 	@ApiModelProperty(position = 30, required = false, //
 			value = "This translates to `C_BPartner.Name`.\n"
 					+ "If this is empty, and a BPartner with the given `name` does not yet exist, then the request will fail.")
-	@JsonInclude(Include.NON_NULL)
-	String name;
+	private String name;
+	private boolean nameSet;
 
 	@ApiModelProperty(position = 40, required = false, //
 			value = "This translates to `C_BPartner.Name2`.")
-	@JsonInclude(Include.NON_NULL)
-	String name2;
+	private String name2;
+	private boolean name2Set;
 
 	@ApiModelProperty(position = 50, required = false, //
 			value = "This translates to `C_BPartner.Name3`.")
-	@JsonInclude(Include.NON_NULL)
-	String name3;
+	private String name3;
+	private boolean name3Set;
 
 	@ApiModelProperty(position = 60, required = false, //
 			value = "This translates to `C_BPartner.CompanyName`.\n"
 					+ "If set, the the respective `C_BPartner` record will also have `IsCompany='Y'`")
-	@JsonInclude(Include.NON_NULL)
-	String companyName;
+	private String companyName;
+	private boolean companyNameSet;
 
-	@JsonInclude(Include.NON_NULL)
-	Boolean vendor;
+	private Boolean vendor;
+	private boolean vendorSet;
 
-	@JsonInclude(Include.NON_NULL)
-	Boolean customer;
+	private Boolean customer;
+	private boolean customerSet;
 
 	@ApiModelProperty(position = 70, required = false, //
 			value = "This translates to `C_BPartner.BPartner_Parent_ID`. It's a this bpartner's central/parent company",//
 			dataType = "java.lang.Integer")
-	@JsonInclude(Include.NON_NULL)
-	MetasfreshId parentId;
+	private MetasfreshId parentId;
+	private boolean parentIdSet;
 
 	@ApiModelProperty(position = 80, required = false, //
 			value = "This translates to `C_BPartner.Phone2`. It's this bpartner's central phone number")
-	@JsonInclude(Include.NON_NULL)
-	String phone;
+	private String phone;
+	private boolean phoneSet;
 
 	@ApiModelProperty(position = 90, required = false)
-	@JsonInclude(Include.NON_NULL)
-	String language;
+	private String language;
+	private boolean languageSet;
 
 	@ApiModelProperty(position = 100, required = false, //
 			value = "Optional; if specified, it will be used, e.g. when an order is created for this business partner.")
-	@JsonInclude(Include.NON_NULL)
-	JsonInvoiceRule invoiceRule;
+	private JsonInvoiceRule invoiceRule;
+	private boolean invoiceRuleSet;
 
 	@ApiModelProperty(position = 110, required = false)
-	@JsonInclude(Include.NON_NULL)
-	String url;
+	private String url;
+	private boolean urlSet;
 
 	@ApiModelProperty(position = 120, required = false)
-	@JsonInclude(Include.NON_NULL)
-	String url2;
+	private String url2;
+	private boolean url2Set;
 
 	@ApiModelProperty(position = 130, required = false)
-	@JsonInclude(Include.NON_NULL)
-	String url3;
+	private String url3;
+	private boolean url3Set;
 
 	@ApiModelProperty(position = 140, required = false, //
 			value = "Name of the business partner's group")
-	@JsonInclude(Include.NON_NULL)
-	String group;
+	private String group;
+	private boolean groupSet;
 
 	@ApiModelProperty(position = 150, required = false, //
 			value = READ_ONLY_SYNC_ADVISE_DOC)
-	@JsonInclude(Include.NON_NULL)
-	SyncAdvise syncAdvise;
+	private SyncAdvise syncAdvise;
+	private boolean syncAdviseSet;
 
-	@JsonCreator
-	@Builder(toBuilder = true)
-	private JsonRequestBPartner(
-			@JsonProperty("externalId") @Nullable final JsonExternalId externalId,
-			@JsonProperty("code") @Nullable final String code,
-			@JsonProperty("active") @Nullable final Boolean active,
-			@JsonProperty("name") @Nullable final String name,
-			@JsonProperty("name2") @Nullable final String name2,
-			@JsonProperty("name3") @Nullable final String name3,
-			@JsonProperty("companyName") @Nullable final String companyName,
-			@JsonProperty("vendor") @Nullable final Boolean vendor,
-			@JsonProperty("customer") @Nullable final Boolean customer,
-			@JsonProperty("parentId") @Nullable final MetasfreshId parentId,
-			@JsonProperty("phone") @Nullable final String phone,
-			@JsonProperty("language") @Nullable final String language,
-			@JsonProperty("invoiceRule") @Nullable final JsonInvoiceRule invoiceRule,
-			@JsonProperty("url") @Nullable final String url,
-			@JsonProperty("url2") @Nullable final String url2,
-			@JsonProperty("url3") @Nullable final String url3,
-			@JsonProperty("group") @Nullable final String group,
-			@JsonProperty("syncAdvise") @Nullable final SyncAdvise syncAdvise)
+	public void setExternalId(JsonExternalId externalId)
 	{
 		this.externalId = externalId;
+		this.externalIdSet = true;
+	}
+
+	public void setCode(String code)
+	{
 		this.code = code;
+		this.codeSet = true;
+	}
+
+	public void setActive(Boolean active)
+	{
 		this.active = active;
+		this.activeSet = true;
+	}
 
+	public void setName(String name)
+	{
 		this.name = name;
+		this.nameSet = true;
+	}
+
+	public void setName2(String name2)
+	{
 		this.name2 = name2;
+		this.name2Set = true;
+	}
+
+	public void setName3(String name3)
+	{
 		this.name3 = name3;
+		this.name3Set = true;
+	}
 
+	public void setCompanyName(String companyName)
+	{
 		this.companyName = companyName;
+		this.companyNameSet = true;
+	}
 
+	public void setVendor(Boolean vendor)
+	{
 		this.vendor = vendor;
+		this.vendorSet = true;
+	}
+
+	public void setCustomer(Boolean customer)
+	{
 		this.customer = customer;
+		this.customerSet = true;
+	}
 
+	public void setParentId(MetasfreshId parentId)
+	{
 		this.parentId = parentId;
+		this.parentIdSet = true;
+	}
 
+	public void setPhone(String phone)
+	{
 		this.phone = phone;
-		this.language = language;
-		this.invoiceRule = invoiceRule;
+		this.phoneSet = true;
+	}
 
+	public void setLanguage(String language)
+	{
+		this.language = language;
+		this.languageSet = true;
+	}
+
+	public void setInvoiceRule(JsonInvoiceRule invoiceRule)
+	{
+		this.invoiceRule = invoiceRule;
+		this.invoiceRuleSet = true;
+	}
+
+	public void setUrl(String url)
+	{
 		this.url = url;
+		this.urlSet = true;
+	}
+
+	public void setUrl2(String url2)
+	{
 		this.url2 = url2;
+		this.url2Set = true;
+	}
+
+	public void setUrl3(String url3)
+	{
 		this.url3 = url3;
+		this.url3Set = true;
+	}
+
+	public void setGroup(String group)
+	{
 		this.group = group;
+		this.groupSet = true;
+	}
+
+	public void setSyncAdvise(SyncAdvise syncAdvise)
+	{
 		this.syncAdvise = syncAdvise;
+		this.syncAdviseSet = true;
 	}
 }

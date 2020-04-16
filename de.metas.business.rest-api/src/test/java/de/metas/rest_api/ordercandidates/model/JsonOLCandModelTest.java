@@ -60,23 +60,23 @@ public class JsonOLCandModelTest
 	@Test
 	public void test_JsonBPartner() throws Exception
 	{
-		final JsonRequestBPartner pPartner = JsonRequestBPartner.builder()
-				.code("bp1")
-				.name("bp1 name")
-				.build();
+		final JsonRequestBPartner pPartner = new JsonRequestBPartner();
+		pPartner.setCode("bp1");
+		pPartner.setName("bp1 name");
+
 		testSerializeDeserialize(pPartner, JSONObjectMapper.forClass(JsonRequestBPartner.class));
 	}
 
 	@Test
 	public void test_JsonBPartnerLocation() throws Exception
 	{
-		final JsonRequestLocation bPartnerLocation = JsonRequestLocation.builder()
-				.address1("address1")
-				.address2("address2")
-				.postal("12345")
-				.city("city")
-				.countryCode("DE")
-				.build();
+		final JsonRequestLocation bPartnerLocation = new JsonRequestLocation();
+		bPartnerLocation.setAddress1("address1");
+		bPartnerLocation.setAddress2("address2");
+		bPartnerLocation.setPostal("12345");
+		bPartnerLocation.setCity("city");
+		bPartnerLocation.setCountryCode("DE");
+
 		testSerializeDeserialize(bPartnerLocation, JSONObjectMapper.forClass(JsonRequestLocation.class));
 	}
 
@@ -94,23 +94,25 @@ public class JsonOLCandModelTest
 	@Test
 	public void test_JsonBPartnerInfo() throws Exception
 	{
+		final JsonRequestBPartner bpartner = new JsonRequestBPartner();
+		bpartner.setCode("bp1");
+		bpartner.setName("bp1 name");
+
+		final JsonRequestLocation location = new JsonRequestLocation();
+		location.setAddress1("address1");
+		location.setAddress2("address2");
+		location.setPostal("12345");
+		location.setCity("city");
+		location.setCountryCode("DE");
+
 		final JsonRequestContact jsonContact = new JsonRequestContact();
 		jsonContact.setName("john doe");
 		jsonContact.setEmail("john@doe.com");
 		jsonContact.setPhone("+123456789");
 
 		final JsonRequestBPartnerLocationAndContact bPartnerInfo = JsonRequestBPartnerLocationAndContact.builder()
-				.bpartner(JsonRequestBPartner.builder()
-						.code("bp1")
-						.name("bp1 name")
-						.build())
-				.location(JsonRequestLocation.builder()
-						.address1("address1")
-						.address2("address2")
-						.postal("12345")
-						.city("city")
-						.countryCode("DE")
-						.build())
+				.bpartner(bpartner)
+				.location(location)
 				.contact(jsonContact)
 				.build();
 
@@ -197,6 +199,17 @@ public class JsonOLCandModelTest
 
 	private JsonOLCandCreateRequest createDummyJsonOLCandCreateRequest()
 	{
+		final JsonRequestBPartner bpartner = new JsonRequestBPartner();
+		bpartner.setCode("bp1");
+		bpartner.setName("bp1 name");
+
+		final JsonRequestLocation location = new JsonRequestLocation();
+		location.setAddress1("address1");
+		location.setAddress2("address2");
+		location.setPostal("12345");
+		location.setCity("city");
+		location.setCountryCode("DE");
+
 		final JsonRequestContact jsonContact = new JsonRequestContact();
 		jsonContact.setName("john doe");
 		jsonContact.setEmail("john@doe.com");
@@ -204,17 +217,8 @@ public class JsonOLCandModelTest
 
 		return JsonOLCandCreateRequest.builder()
 				.bpartner(JsonRequestBPartnerLocationAndContact.builder()
-						.bpartner(JsonRequestBPartner.builder()
-								.code("bp1")
-								.name("bp1 name")
-								.build())
-						.location(JsonRequestLocation.builder()
-								.address1("address1")
-								.address2("address2")
-								.postal("12345")
-								.city("city")
-								.countryCode("DE")
-								.build())
+						.bpartner(bpartner)
+						.location(location)
 						.contact(jsonContact)
 						.build())
 				.dateRequired(LocalDate.of(2018, 03, 20))

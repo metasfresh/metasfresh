@@ -31,10 +31,8 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.invoicecandidate.api.InvoiceCandidate_Constants;
 import de.metas.rest_api.bpartner.request.JsonRequestBPartner;
-import de.metas.rest_api.bpartner.request.JsonRequestBPartner.JsonRequestBPartnerBuilder;
 import de.metas.rest_api.bpartner.request.JsonRequestContact;
 import de.metas.rest_api.bpartner.request.JsonRequestLocation;
-import de.metas.rest_api.bpartner.request.JsonRequestLocation.JsonRequestLocationBuilder;
 import de.metas.rest_api.common.JsonDocTypeInfo;
 import de.metas.rest_api.common.JsonExternalId;
 import de.metas.rest_api.common.SyncAdvise;
@@ -466,9 +464,8 @@ public class XmlToOLCandsService
 		final JsonExternalId insuranceExternalId = createBPartnerExternalId(insurance);
 		final JsonExternalId recipientExternalId = createBPartnerExternalId(context.getInvoiceRecipientEAN());
 
-		final JsonRequestBPartnerBuilder bPartner = JsonRequestBPartner
-				.builder()
-				.externalId(recipientExternalId);
+		final JsonRequestBPartner bPartner = new JsonRequestBPartner();
+		bPartner.setExternalId(recipientExternalId);
 
 		final JsonRequestBPartnerLocationAndContactBuilder bPartnerInfo = JsonRequestBPartnerLocationAndContact.builder();
 
@@ -478,24 +475,23 @@ public class XmlToOLCandsService
 					insuranceExternalId,
 					insurance.getEanParty(),
 					company.getPostal());
-			bPartner.name(company.getCompanyname());
+			bPartner.setName(company.getCompanyname());
 
 			return bPartnerInfo
 					.syncAdvise(context.getDebitorSyncAdvise())
-					.bpartner(bPartner.build())
+					.bpartner(bPartner)
 					.location(location)
 					.build();
 		}
 
 		// build a "sparse" bPartner that is only suitable for lookup, because we don't have the masterdata needed to insert or update
-		final JsonRequestLocation location = JsonRequestLocation.builder()
-				.gln(context.getInvoiceRecipientEAN())
-				.externalId(createLocationExternalId(recipientExternalId))
-				.build();
+		final JsonRequestLocation location = new JsonRequestLocation();
+		location.setGln(context.getInvoiceRecipientEAN());
+		location.setExternalId(createLocationExternalId(recipientExternalId));
 
 		return bPartnerInfo
 				.syncAdvise(SyncAdvise.READ_ONLY)
-				.bpartner(bPartner.build())
+				.bpartner(bPartner)
 				.location(location)
 				.build();
 
@@ -510,16 +506,15 @@ public class XmlToOLCandsService
 		final CompanyType company = biller.getCompany();
 		final JsonExternalId billerBPartnerExternalId = createBPartnerExternalId(biller);
 
-		final JsonRequestBPartnerBuilder bPartnerBuilder = JsonRequestBPartner
-				.builder()
-				.name(name.getSingleStringName())
-				.externalId(billerBPartnerExternalId);
+		final JsonRequestBPartner bPartner = new JsonRequestBPartner();
+		bPartner.setName(name.getSingleStringName());
+		bPartner.setExternalId(billerBPartnerExternalId);
 
 		final JsonRequestLocation location;
 		final String email;
 		if (company != null)
 		{
-			bPartnerBuilder.companyName(company.getCompanyname());
+			bPartner.setCompanyName(company.getCompanyname());
 
 			email = extracFirsttEmailOrNull(company.getOnline());
 
@@ -547,7 +542,7 @@ public class XmlToOLCandsService
 
 		final JsonRequestBPartnerLocationAndContact bPartnerInfo = JsonRequestBPartnerLocationAndContact.builder()
 				.syncAdvise(context.getBillerSyncAdvise())
-				.bpartner(bPartnerBuilder.build())
+				.bpartner(bPartner)
 				.contact(jsonRequestContact)
 				.location(location)
 				.build();
@@ -624,31 +619,29 @@ public class XmlToOLCandsService
 		final String statecode = zip != null ? StringUtils.trim(zip.getStatecode()) : null;
 		final String countrycode = zip != null ? StringUtils.trim(zip.getCountrycode()) : null;
 
-		final JsonRequestLocationBuilder builder = JsonRequestLocation.builder();
+		final JsonRequestLocation location = new JsonRequestLocation();
 
 		if (!Check.isEmpty(street, true))
 		{
-			builder.address1(street)
-					.address2(pobox);
+			location.setAddress1(street);
+			location.setAddress2(pobox);
 		}
 		else
 		{
-			builder.address1(pobox);
+			location.setAddress1(pobox);
 		}
 
 		if (!Check.isEmpty(gln, true))
 		{
-			builder.gln(gln);
+			location.setGln(gln);
 		}
 
-		final JsonRequestLocation location = builder
-				.externalId(createLocationExternalId(bPartnerExternalId)) // TODO
-				.city(city)
-				.postal(zip.getValue())
-				.region(statecode)
-				.postal(statecode)
-				.countryCode(coalesce(countrycode, "CH")) // TODO
-				.build();
+		location.setExternalId(createLocationExternalId(bPartnerExternalId));
+		location.setCity(city);
+		location.setPostal(zip.getValue());
+		location.setRegion(statecode);
+		location.setCountryCode(coalesce(countrycode, "CH"));
+
 		return location;
 	}
 

@@ -5,7 +5,6 @@ import static org.assertj.core.api.Assertions.fail;
 import java.util.UUID;
 
 import de.metas.rest_api.bpartner.request.JsonRequestBPartner;
-import de.metas.rest_api.bpartner.request.JsonRequestBPartner.JsonRequestBPartnerBuilder;
 import de.metas.rest_api.bpartner.request.JsonRequestComposite;
 import de.metas.rest_api.bpartner.request.JsonRequestComposite.JsonRequestCompositeBuilder;
 import de.metas.rest_api.bpartner.request.JsonRequestContact;
@@ -15,10 +14,10 @@ import de.metas.rest_api.bpartner.request.JsonRequestContactUpsertItem;
 import de.metas.rest_api.bpartner.request.JsonRequestLocation;
 import de.metas.rest_api.bpartner.request.JsonRequestLocationUpsert;
 import de.metas.rest_api.bpartner.request.JsonRequestLocationUpsert.JsonRequestLocationUpsertBuilder;
+import de.metas.rest_api.bpartner.request.JsonRequestLocationUpsertItem;
 import de.metas.rest_api.common.JsonExternalId;
 import de.metas.rest_api.common.MetasfreshId;
 import de.metas.rest_api.utils.IdentifierString;
-import de.metas.rest_api.bpartner.request.JsonRequestLocationUpsertItem;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 
@@ -60,34 +59,34 @@ public class MockedDataUtil
 	{
 		final JsonRequestCompositeBuilder result = JsonRequestComposite.builder();
 
-		final JsonRequestBPartnerBuilder bPartner = JsonRequestBPartner
-				.builder()
-				.companyName("bPartner.companyName")
-				.name("bPartner.name")
-				.group("bPartner.group")
-				.language("bPartner.de_CH")
-				.parentId(MetasfreshId.of(1))
-				.phone("bPartner.phone")
-				.url("bPartner.url");
+		final JsonRequestBPartner bPartner = new JsonRequestBPartner();
+
+		bPartner.setCompanyName("bPartner.companyName");
+		bPartner.setName("bPartner.name");
+		bPartner.setGroup("bPartner.group");
+		bPartner.setLanguage("bPartner.de_CH");
+		bPartner.setParentId(MetasfreshId.of(1));
+		bPartner.setPhone("bPartner.phone");
+		bPartner.setUrl("bPartner.url");
 
 		final IdentifierString bpartnerIdentifier = IdentifierString.of(bpartnerIdentifierStr);
 
 		switch (bpartnerIdentifier.getType())
 		{
 			case EXTERNAL_ID:
-				bPartner.code("code");
-				bPartner.externalId(bpartnerIdentifier.asJsonExternalId());
+				bPartner.setCode("code");
+				bPartner.setExternalId(bpartnerIdentifier.asJsonExternalId());
 				break;
 			case VALUE:
-				bPartner.code(bpartnerIdentifier.asValue());
-				bPartner.externalId(JsonExternalId.of("externalId"));
+				bPartner.setCode(bpartnerIdentifier.asValue());
+				bPartner.setExternalId(JsonExternalId.of("externalId"));
 				break;
 			default:
 				fail("bpartnerIdentifier is not supported by this mockup method; bpartnerIdentifier={}", bpartnerIdentifier);
 				break;
 		}
 
-		result.bpartner(bPartner.build());
+		result.bpartner(bPartner);
 
 		final JsonRequestLocationUpsertBuilder locationUpsert = JsonRequestLocationUpsert.builder()
 				.requestItem(createMockLocation("l1", "CH"))
@@ -109,20 +108,22 @@ public class MockedDataUtil
 			@NonNull final String countryCode)
 	{
 		final String externalId = prefix + "_externalId";
+
+		final JsonRequestLocation location = new JsonRequestLocation();
+		location.setAddress1(prefix + "_address1");
+		location.setAddress2(prefix + "_address2");
+		location.setPoBox(prefix + "_poBox");
+		location.setDistrict(prefix + "_district");
+		location.setRegion(prefix + "_region");
+		location.setCity(prefix + "_city");
+		location.setCountryCode(countryCode);
+		location.setExternalId(JsonExternalId.of(externalId));
+		location.setGln(prefix + "_gln");
+		location.setPostal(prefix + "_postal");
+
 		return JsonRequestLocationUpsertItem.builder()
 				.locationIdentifier("ext-" + externalId)
-				.location(JsonRequestLocation.builder()
-						.address1(prefix + "_address1")
-						.address2(prefix + "_address2")
-						.poBox(prefix + "_poBox")
-						.district(prefix + "_district")
-						.region(prefix + "_region")
-						.city(prefix + "_city")
-						.countryCode(countryCode)
-						.externalId(JsonExternalId.of(externalId))
-						.gln(prefix + "_gln")
-						.postal(prefix + "_postal")
-						.build())
+				.location(location)
 				.build();
 	}
 
