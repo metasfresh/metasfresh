@@ -129,14 +129,16 @@ public class MockedDataUtil
 	public JsonRequestContactUpsertItem createMockContact(@NonNull final String prefix)
 	{
 		final String externalId = prefix + "_externalId";
+
+		final JsonRequestContact jsonRequestContact = new JsonRequestContact();
+		jsonRequestContact.setEmail(prefix + "_email@email.net");
+		jsonRequestContact.setExternalId(JsonExternalId.of(externalId));
+		jsonRequestContact.setName(prefix + "_name");
+		jsonRequestContact.setPhone(prefix + "_phone");
+
 		return JsonRequestContactUpsertItem.builder()
 				.contactIdentifier("ext-" + externalId)
-				.contact(JsonRequestContact.builder()
-						.email(prefix + "_email@email.net")
-						.externalId(JsonExternalId.of(externalId))
-						.name(prefix + "_name")
-						.phone(prefix + "_phone")
-						.build())
+				.contact(jsonRequestContact)
 				.build();
 	}
 }

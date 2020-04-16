@@ -224,16 +224,15 @@ public class MasterdataProviderTest
 				.syncAdvise(SyncAdvise.builder().ifNotExists(IfNotExists.CREATE).ifExists(IfExists.DONT_UPDATE).build())
 				.build();
 
-		final JsonRequestContact jsonContact = JsonRequestContact.builder()
-				.externalId(JsonExternalId.of("externalId"))
-				.name("Dr. Evil")
-				.firstName("Dr.")
-				.lastName("Evil")
-				.phone("")
-				.fax("")
-				.email("")
-				.syncAdvise(SyncAdvise.builder().ifNotExists(IfNotExists.CREATE).ifExists(IfExists.DONT_UPDATE).build())
-				.build();
+		final JsonRequestContact jsonContact = new JsonRequestContact();
+		jsonContact.setExternalId(JsonExternalId.of("externalId"));
+		jsonContact.setName("Dr. Evil");
+		jsonContact.setFirstName("Dr.");
+		jsonContact.setLastName("Evil");
+		jsonContact.setPhone(null);
+		jsonContact.setFax(null);
+		jsonContact.setEmail(null);
+		jsonContact.setSyncAdvise(SyncAdvise.builder().ifNotExists(IfNotExists.CREATE).ifExists(IfExists.DONT_UPDATE).build());
 
 		final JsonRequestBPartnerLocationAndContact jsonBPartnerInfo = JsonRequestBPartnerLocationAndContact.builder()
 				.bpartner(jsonBPartner)

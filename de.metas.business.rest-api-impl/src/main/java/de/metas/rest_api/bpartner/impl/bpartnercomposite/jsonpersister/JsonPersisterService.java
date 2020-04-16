@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.Optional;
 
 import org.compiere.util.Env;
+import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -26,6 +27,7 @@ import de.metas.bpartner.composite.BPartnerComposite;
 import de.metas.bpartner.composite.BPartnerCompositeAndContactId;
 import de.metas.bpartner.composite.BPartnerContact;
 import de.metas.bpartner.composite.BPartnerContactType;
+import de.metas.bpartner.composite.BPartnerContactType.BPartnerContactTypeBuilder;
 import de.metas.bpartner.composite.BPartnerLocation;
 import de.metas.bpartner.composite.BPartnerLocationType;
 import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
@@ -36,6 +38,7 @@ import de.metas.currency.CurrencyRepository;
 import de.metas.i18n.BooleanWithReason;
 import de.metas.i18n.Language;
 import de.metas.i18n.TranslatableStrings;
+import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
 import de.metas.order.InvoiceRule;
 import de.metas.organization.IOrgDAO;
@@ -73,6 +76,7 @@ import de.metas.rest_api.utils.JsonConverters;
 import de.metas.rest_api.utils.JsonExternalIds;
 import de.metas.user.UserId;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import lombok.Data;
 import lombok.Getter;
 import lombok.NonNull;
@@ -103,6 +107,8 @@ import lombok.ToString;
 @ToString
 public class JsonPersisterService
 {
+	private static final Logger logger = LogManager.getLogger(JsonPersisterService.class);
+
 	private final transient JsonRetrieverService jsonRetrieverService;
 	private final transient JsonRequestConsolidateService jsonRequestConsolidateService;
 	private final transient BPartnerCompositeRepository bpartnerCompositeRepository;
@@ -878,15 +884,22 @@ public class JsonPersisterService
 		final boolean isUpdateRemove = syncAdvise.getIfExists().isUpdateRemove();
 
 		// active
-		if (jsonBPartnerContact.getActive() != null)
+		if (jsonBPartnerContact.isActiveSet())
 		{
-			contact.setActive(jsonBPartnerContact.getActive());
+			if (jsonBPartnerContact.getActive() == null)
+			{
+				logger.debug("Ignoring boolean property \"active\" : null ");
+			}
+			else
+			{
+				contact.setNewsletter(jsonBPartnerContact.getActive());
+			}
 		}
 
 		// email
-		if (!isEmpty(jsonBPartnerContact.getEmail(), true))
+		if (jsonBPartnerContact.isEmailSet())
 		{
-			contact.setEmail(jsonBPartnerContact.getEmail().trim());
+			contact.setEmail(StringUtils.trim(jsonBPartnerContact.getEmail()));
 		}
 		else if (isUpdateRemove)
 		{
@@ -894,7 +907,7 @@ public class JsonPersisterService
 		}
 
 		// externalId
-		if (jsonBPartnerContact.getExternalId() != null)
+		if (jsonBPartnerContact.isExternalIdSet())
 		{
 			contact.setExternalId(JsonConverters.fromJsonOrNull(jsonBPartnerContact.getExternalId()));
 		}
@@ -904,9 +917,9 @@ public class JsonPersisterService
 		}
 
 		// firstName
-		if (!isEmpty(jsonBPartnerContact.getFirstName(), true))
+		if (jsonBPartnerContact.isFirstNameSet())
 		{
-			contact.setFirstName(jsonBPartnerContact.getFirstName().trim());
+			contact.setFirstName(StringUtils.trim(jsonBPartnerContact.getFirstName()));
 		}
 		else if (isUpdateRemove)
 		{
@@ -914,9 +927,9 @@ public class JsonPersisterService
 		}
 
 		// lastName
-		if (!isEmpty(jsonBPartnerContact.getLastName(), true))
+		if (jsonBPartnerContact.isLastNameSet())
 		{
-			contact.setLastName(jsonBPartnerContact.getLastName().trim());
+			contact.setLastName(StringUtils.trim(jsonBPartnerContact.getLastName()));
 		}
 		else if (isUpdateRemove)
 		{
@@ -928,9 +941,9 @@ public class JsonPersisterService
 		// metasfreshId - never updated;
 
 		// name
-		if (!isEmpty(jsonBPartnerContact.getName(), true))
+		if (jsonBPartnerContact.isNameSet())
 		{
-			contact.setName(jsonBPartnerContact.getName().trim());
+			contact.setName(StringUtils.trim(jsonBPartnerContact.getName()));
 		}
 		else if (isUpdateRemove)
 		{
@@ -938,9 +951,9 @@ public class JsonPersisterService
 		}
 
 		// value
-		if (!isEmpty(jsonBPartnerContact.getCode(), true))
+		if (jsonBPartnerContact.isCodeSet())
 		{
-			contact.setValue(jsonBPartnerContact.getCode().trim());
+			contact.setValue(StringUtils.trim(jsonBPartnerContact.getCode()));
 		}
 		else if (isUpdateRemove)
 		{
@@ -948,9 +961,9 @@ public class JsonPersisterService
 		}
 
 		// description
-		if (!isEmpty(jsonBPartnerContact.getDescription(), true))
+		if (jsonBPartnerContact.isDescriptionSet())
 		{
-			contact.setDescription(jsonBPartnerContact.getDescription().trim());
+			contact.setDescription(StringUtils.trim(jsonBPartnerContact.getDescription()));
 		}
 		else if (isUpdateRemove)
 		{
@@ -958,9 +971,9 @@ public class JsonPersisterService
 		}
 
 		// phone
-		if (!isEmpty(jsonBPartnerContact.getPhone(), true))
+		if (jsonBPartnerContact.isPhoneSet())
 		{
-			contact.setPhone(jsonBPartnerContact.getPhone().trim());
+			contact.setPhone(StringUtils.trim(jsonBPartnerContact.getPhone()));
 		}
 		else if (isUpdateRemove)
 		{
@@ -968,9 +981,9 @@ public class JsonPersisterService
 		}
 
 		// fax
-		if (!isEmpty(jsonBPartnerContact.getFax(), true))
+		if (jsonBPartnerContact.isFaxSet())
 		{
-			contact.setFax(jsonBPartnerContact.getFax().trim());
+			contact.setFax(StringUtils.trim(jsonBPartnerContact.getFax()));
 		}
 		else if (isUpdateRemove)
 		{
@@ -978,9 +991,9 @@ public class JsonPersisterService
 		}
 
 		// mobilePhone
-		if (!isEmpty(jsonBPartnerContact.getMobilePhone(), true))
+		if (jsonBPartnerContact.isMobilePhoneSet())
 		{
-			contact.setMobilePhone(jsonBPartnerContact.getMobilePhone().trim());
+			contact.setMobilePhone(StringUtils.trim(jsonBPartnerContact.getMobilePhone()));
 		}
 		else if (isUpdateRemove)
 		{
@@ -988,22 +1001,117 @@ public class JsonPersisterService
 		}
 
 		// newsletter
-		if (jsonBPartnerContact.getNewsletter() != null)
+		if (jsonBPartnerContact.isNewsletterSet())
 		{
-			contact.setNewsletter(jsonBPartnerContact.getNewsletter());
+			if (jsonBPartnerContact.getNewsletter() == null)
+			{
+				logger.debug("Ignoring boolean property \"newsLetter\" : null ");
+			}
+			else
+			{
+				contact.setNewsletter(jsonBPartnerContact.getNewsletter());
+			}
 		}
 
-		final BPartnerContactType contactType = BPartnerContactType.builder()
-				.defaultContact(jsonBPartnerContact.getDefaultContact())
-				.shipToDefault(jsonBPartnerContact.getShipToDefault())
-				.billToDefault(jsonBPartnerContact.getBillToDefault())
-				.purchase(jsonBPartnerContact.getPurchase())
-				.purchaseDefault(jsonBPartnerContact.getPurchaseDefault())
-				.sales(jsonBPartnerContact.getSales())
-				.salesDefault(jsonBPartnerContact.getSalesDefault())
-				.subjectMatter(jsonBPartnerContact.getSubjectMatter())
-				.build();
-		contact.setContactType(contactType);
+		final BPartnerContactType bpartnerContactType = syncJsonToContactType(jsonBPartnerContact);
+		contact.setContactType(bpartnerContactType);
+	}
+
+	private BPartnerContactType syncJsonToContactType(@NonNull final JsonRequestContact jsonBPartnerContact)
+	{
+		final BPartnerContactTypeBuilder contactType = BPartnerContactType.builder();
+
+		if (jsonBPartnerContact.isDefaultContactSet())
+		{
+			if (jsonBPartnerContact.getDefaultContact() == null)
+			{
+				logger.debug("Ignoring boolean property \"defaultContact\" : null ");
+			}
+			else
+			{
+				contactType.defaultContact(jsonBPartnerContact.getDefaultContact());
+			}
+		}
+		if (jsonBPartnerContact.isShipToDefaultSet())
+		{
+			if (jsonBPartnerContact.getShipToDefault() == null)
+			{
+				logger.debug("Ignoring boolean property \"shipToDefault\" : null ");
+			}
+			else
+			{
+				contactType.shipToDefault(jsonBPartnerContact.getShipToDefault());
+			}
+		}
+		if (jsonBPartnerContact.isBillToDefaultSet())
+		{
+			if (jsonBPartnerContact.getBillToDefault() == null)
+			{
+				logger.debug("Ignoring boolean property \"billToDefault\" : null ");
+			}
+			else
+			{
+				contactType.billToDefault(jsonBPartnerContact.getBillToDefault());
+			}
+		}
+		if (jsonBPartnerContact.isPurchaseSet())
+		{
+			if (jsonBPartnerContact.getPurchase() == null)
+			{
+				logger.debug("Ignoring boolean property \"purchase\" : null ");
+			}
+			else
+			{
+				contactType.purchase(jsonBPartnerContact.getPurchase());
+			}
+		}
+		if (jsonBPartnerContact.isPurchaseDefaultSet())
+		{
+			if (jsonBPartnerContact.getPurchaseDefault() == null)
+			{
+				logger.debug("Ignoring boolean property \"purchaseDefault\" : null ");
+			}
+			else
+			{
+				contactType.purchaseDefault(jsonBPartnerContact.getPurchaseDefault());
+			}
+		}
+		if (jsonBPartnerContact.isSalesSet())
+		{
+			if (jsonBPartnerContact.getSales() == null)
+			{
+				logger.debug("Ignoring boolean property \"sales\" : null ");
+			}
+			else
+			{
+				contactType.sales(jsonBPartnerContact.getSales());
+			}
+		}
+		if (jsonBPartnerContact.isSalesDefaultSet())
+		{
+			if (jsonBPartnerContact.getSalesDefault() == null)
+			{
+				logger.debug("Ignoring boolean property \"salesDefault\" : null ");
+			}
+			else
+			{
+				contactType.salesDefault(jsonBPartnerContact.getSalesDefault());
+			}
+		}
+		if (jsonBPartnerContact.isSubjectMatterSet())
+		{
+			if (jsonBPartnerContact.getSubjectMatter() == null)
+			{
+				logger.debug("Ignoring boolean property \"subjectMatter\" : null ");
+			}
+			else
+			{
+				contactType.subjectMatter(jsonBPartnerContact.getSubjectMatter());
+			}
+		}
+
+		BPartnerContactType ct = contactType.build();
+		return ct;
 	}
 
 	private ImmutableMap<String, JsonResponseUpsertItemBuilder> syncJsonToLocations(

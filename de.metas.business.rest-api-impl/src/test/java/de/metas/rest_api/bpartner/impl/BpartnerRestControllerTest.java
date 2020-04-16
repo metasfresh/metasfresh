@@ -597,11 +597,10 @@ class BpartnerRestControllerTest
 
 	private BPartnerComposite perform_createOrUpdateContact_update(@NonNull final String contactIdentifier)
 	{
-		final JsonRequestContact jsonContact = JsonRequestContact.builder()
-				.name("jsonContact.name-UPDATED")
-				.code("jsonContact.code-UPDATED")
-				.metasfreshBPartnerId(MetasfreshId.of(C_BPARTNER_ID))
-				.build();
+		final JsonRequestContact jsonContact = new JsonRequestContact();
+		jsonContact.setName("jsonContact.name-UPDATED");
+		jsonContact.setCode("jsonContact.code-UPDATED");
+		jsonContact.setMetasfreshBPartnerId(MetasfreshId.of(C_BPARTNER_ID));
 
 		SystemTime.setTimeSource(() -> 1561134560); // Fri, 21 Jun 2019 16:29:20 GMT
 		Env.setLoggedUserId(Env.getCtx(), UserId.ofRepoId(BPartnerRecordsUtil.AD_USER_ID));

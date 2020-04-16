@@ -75,7 +75,8 @@ public class JsonRequestConsolidateService
 		final JsonRequestContactUpsertBuilder consolidatedContacts = contacts.toBuilder().clearRequestItems(); // preserve sync advise
 		for (JsonRequestContactUpsertItem contactRequestItem : contacts.getRequestItems())
 		{
-			consolidatedContacts.requestItem(consolidateWithIdentifier(contactRequestItem));
+			consolidateWithIdentifier(contactRequestItem);
+			consolidatedContacts.requestItem(contactRequestItem);
 		}
 		return consolidatedContacts.build();
 	}
@@ -174,12 +175,11 @@ public class JsonRequestConsolidateService
 				.build();
 	}
 
-	private JsonRequestContactUpsertItem consolidateWithIdentifier(@NonNull final JsonRequestContactUpsertItem requestItem)
+	private void consolidateWithIdentifier(@NonNull final JsonRequestContactUpsertItem requestItem)
 	{
 		final IdentifierString identifierString = IdentifierString.of(requestItem.getContactIdentifier());
 		final JsonRequestContact jsonContact = requestItem.getContact();
 
-		JsonRequestContact consolidatedContact = jsonContact; // might be overridden
 		switch (identifierString.getType())
 		{
 			case METASFRESH_ID:
@@ -188,13 +188,13 @@ public class JsonRequestConsolidateService
 			case EXTERNAL_ID:
 				if (jsonContact.getExternalId() == null)
 				{
-					consolidatedContact = jsonContact.toBuilder().externalId(identifierString.asJsonExternalId()).build();
+					jsonContact.setExternalId(identifierString.asJsonExternalId());
 				}
 				break;
 			case VALUE:
 				if (Check.isEmpty(jsonContact.getCode(), true))
 				{
-					consolidatedContact = jsonContact.toBuilder().code(identifierString.asValue()).build();
+					jsonContact.setCode(identifierString.asValue());
 				}
 				break;
 			case INTERNALNAME:
@@ -207,14 +207,6 @@ public class JsonRequestConsolidateService
 						.setParameter("identifierString", identifierString)
 						.setParameter("jsonRequestContactUpsertItem", requestItem);
 		}
-
-		if (jsonContact.equals(consolidatedContact))
-		{
-			return requestItem;
-		}
-		return requestItem.toBuilder()
-				.contact(consolidatedContact)
-				.build();
 	}
 
 	/**

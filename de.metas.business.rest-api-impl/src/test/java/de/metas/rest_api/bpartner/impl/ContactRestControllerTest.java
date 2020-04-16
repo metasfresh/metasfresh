@@ -279,11 +279,10 @@ class ContactRestControllerTest
 	@Test
 	void createOrUpdateContact_create()
 	{
-		final JsonRequestContact jsonContact = JsonRequestContact.builder()
-				.name("jsonContact.name")
-				.code("jsonContact.code")
-				.metasfreshBPartnerId(MetasfreshId.of(C_BPARTNER_ID))
-				.build();
+		final JsonRequestContact jsonContact = new JsonRequestContact();
+		jsonContact.setName("jsonContact.name");
+		jsonContact.setCode("jsonContact.code");
+		jsonContact.setMetasfreshBPartnerId(MetasfreshId.of(C_BPARTNER_ID));
 
 		final String contactIdentifier = "ext-externalId-1";
 
@@ -340,11 +339,10 @@ class ContactRestControllerTest
 
 	private BPartnerContact perform_createOrUpdateContact_update(@NonNull final String contactIdentifier)
 	{
-		final JsonRequestContact jsonContact = JsonRequestContact.builder()
-				.name("jsonContact.name-UPDATED")
-				.code("jsonContact.code-UPDATED")
-				.metasfreshBPartnerId(MetasfreshId.of(C_BPARTNER_ID))
-				.build();
+		final JsonRequestContact jsonContact = new JsonRequestContact();
+		jsonContact.setName("jsonContact.name-UPDATED");
+		jsonContact.setCode("jsonContact.code-UPDATED");
+		jsonContact.setMetasfreshBPartnerId(MetasfreshId.of(C_BPARTNER_ID));
 
 		final JsonRequestContactUpsert upsertRequest = JsonRequestContactUpsert.builder()
 				.syncAdvise(SyncAdvise.builder().ifExists(IfExists.UPDATE_MERGE).build())

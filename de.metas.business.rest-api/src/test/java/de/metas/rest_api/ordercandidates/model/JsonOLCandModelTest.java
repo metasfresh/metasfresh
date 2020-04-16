@@ -83,17 +83,22 @@ public class JsonOLCandModelTest
 	@Test
 	public void test_JsonBPartnerContact() throws Exception
 	{
-		final JsonRequestContact contact = JsonRequestContact.builder()
-				.name("john doe")
-				.email("john@doe.com")
-				.phone("+123456789")
-				.build();
-		testSerializeDeserialize(contact, JSONObjectMapper.forClass(JsonRequestContact.class));
+		final JsonRequestContact jsonContact = new JsonRequestContact();
+		jsonContact.setName("john doe");
+		jsonContact.setEmail("john@doe.com");
+		jsonContact.setPhone("+123456789");
+
+		testSerializeDeserialize(jsonContact, JSONObjectMapper.forClass(JsonRequestContact.class));
 	}
 
 	@Test
 	public void test_JsonBPartnerInfo() throws Exception
 	{
+		final JsonRequestContact jsonContact = new JsonRequestContact();
+		jsonContact.setName("john doe");
+		jsonContact.setEmail("john@doe.com");
+		jsonContact.setPhone("+123456789");
+
 		final JsonRequestBPartnerLocationAndContact bPartnerInfo = JsonRequestBPartnerLocationAndContact.builder()
 				.bpartner(JsonRequestBPartner.builder()
 						.code("bp1")
@@ -106,11 +111,7 @@ public class JsonOLCandModelTest
 						.city("city")
 						.countryCode("DE")
 						.build())
-				.contact(JsonRequestContact.builder()
-						.name("john doe")
-						.email("john@doe.com")
-						.phone("+123456789")
-						.build())
+				.contact(jsonContact)
 				.build();
 
 		testSerializeDeserialize(bPartnerInfo, JSONObjectMapper.forClass(JsonRequestBPartnerLocationAndContact.class));
@@ -196,6 +197,11 @@ public class JsonOLCandModelTest
 
 	private JsonOLCandCreateRequest createDummyJsonOLCandCreateRequest()
 	{
+		final JsonRequestContact jsonContact = new JsonRequestContact();
+		jsonContact.setName("john doe");
+		jsonContact.setEmail("john@doe.com");
+		jsonContact.setPhone("+123456789");
+
 		return JsonOLCandCreateRequest.builder()
 				.bpartner(JsonRequestBPartnerLocationAndContact.builder()
 						.bpartner(JsonRequestBPartner.builder()
@@ -209,11 +215,7 @@ public class JsonOLCandModelTest
 								.city("city")
 								.countryCode("DE")
 								.build())
-						.contact(JsonRequestContact.builder()
-								.name("john doe")
-								.email("john@doe.com")
-								.phone("+123456789")
-								.build())
+						.contact(jsonContact)
 						.build())
 				.dateRequired(LocalDate.of(2018, 03, 20))
 				.dataSource("int-dataSourceInternalName")
@@ -225,12 +227,12 @@ public class JsonOLCandModelTest
 			@NonNull final T obj,
 			@NonNull JSONObjectMapper<T> jsonObjectMapper) throws IOException
 	{
-		//System.out.println("object: " + obj);
+		// System.out.println("object: " + obj);
 		final String json = jsonObjectMapper.writeValueAsString(obj);
-		//System.out.println("json: " + json);
+		// System.out.println("json: " + json);
 
 		final Object objDeserialized = jsonObjectMapper.readValue(json);
-		//System.out.println("object deserialized: " + objDeserialized);
+		// System.out.println("object deserialized: " + objDeserialized);
 
 		assertThat(objDeserialized).isEqualTo(obj);
 	}

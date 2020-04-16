@@ -538,19 +538,17 @@ public class XmlToOLCandsService
 					biller.getPerson().getPostal());
 		}
 
-		final JsonRequestContact contact = JsonRequestContact
-				.builder()
-				.externalId(JsonExternalId.of(billerBPartnerExternalId + "_singlePerson"))
-				.firstName(name.getFirstName())
-				.lastName(coalesce(name.getLastName(), name.getSingleStringName()))
-				.name(name.getSingleStringName())
-				.email(email)
-				.build();
+		final JsonRequestContact jsonRequestContact = new JsonRequestContact();
+		jsonRequestContact.setExternalId(JsonExternalId.of(billerBPartnerExternalId + "_singlePerson"));
+		jsonRequestContact.setFirstName(name.getFirstName());
+		jsonRequestContact.setLastName(coalesce(name.getLastName(), name.getSingleStringName()));
+		jsonRequestContact.setName(name.getSingleStringName());
+		jsonRequestContact.setEmail(email);
 
 		final JsonRequestBPartnerLocationAndContact bPartnerInfo = JsonRequestBPartnerLocationAndContact.builder()
 				.syncAdvise(context.getBillerSyncAdvise())
 				.bpartner(bPartnerBuilder.build())
-				.contact(contact)
+				.contact(jsonRequestContact)
 				.location(location)
 				.build();
 
