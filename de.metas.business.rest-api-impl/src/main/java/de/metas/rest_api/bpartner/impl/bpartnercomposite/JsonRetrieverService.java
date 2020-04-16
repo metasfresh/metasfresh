@@ -11,7 +11,6 @@ import javax.annotation.Nullable;
 
 import org.adempiere.ad.table.RecordChangeLog;
 import org.adempiere.ad.table.RecordChangeLogEntry;
-import org.adempiere.ad.table.RecordChangeLogRepository;
 import org.adempiere.exceptions.AdempiereException;
 import org.slf4j.MDC;
 import org.slf4j.MDC.MDCCloseable;
@@ -178,7 +177,6 @@ public class JsonRetrieverService
 	private final transient GreetingRepository greetingRepository;
 
 	private final transient BPartnerCompositeCache cache;
-	private final transient RecordChangeLogRepository recordChangeLogRepository;
 
 	@Getter
 	private final String identifier;
@@ -188,14 +186,12 @@ public class JsonRetrieverService
 			@NonNull final BPartnerCompositeRepository bpartnerCompositeRepository,
 			@NonNull final BPGroupRepository bpGroupRepository,
 			@NonNull final GreetingRepository greetingRepository,
-			@NonNull final RecordChangeLogRepository recordChangeLogRepository,
 			@NonNull final String identifier)
 	{
 		this.bPartnerQueryService = bPartnerQueryService;
 		this.bpartnerCompositeRepository = bpartnerCompositeRepository;
 		this.bpGroupRepository = bpGroupRepository;
 		this.greetingRepository = greetingRepository;
-		this.recordChangeLogRepository = recordChangeLogRepository;
 		this.identifier = identifier;
 
 		this.cache = new BPartnerCompositeCache(identifier);

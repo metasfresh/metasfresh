@@ -20,8 +20,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Optional;
 
+import org.adempiere.ad.table.MockLogEntriesRepository;
 import org.adempiere.ad.table.RecordChangeLogEntry;
-import org.adempiere.ad.table.RecordChangeLogRepository;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
@@ -127,7 +127,6 @@ class ContactRestControllerTest
 				bpartnerCompositeRepository,
 				new BPGroupRepository(),
 				new GreetingRepository(),
-				new RecordChangeLogRepository(),
 				new CurrencyRepository());
 
 		contactRestController = new ContactRestController(

@@ -39,6 +39,7 @@ import de.metas.rest_api.common.JsonDocTypeInfo;
 import de.metas.rest_api.common.JsonExternalId;
 import de.metas.rest_api.common.SyncAdvise;
 import de.metas.rest_api.ordercandidates.OrderCandidatesRestEndpoint;
+import de.metas.rest_api.ordercandidates.request.BPartnerLookupAdvise;
 import de.metas.rest_api.ordercandidates.request.JsonOLCandCreateBulkRequest;
 import de.metas.rest_api.ordercandidates.request.JsonOLCandCreateRequest;
 import de.metas.rest_api.ordercandidates.request.JsonOLCandCreateRequest.JsonOLCandCreateRequestBuilder;
@@ -470,7 +471,9 @@ public class XmlToOLCandsService
 				.builder()
 				.externalId(recipientExternalId);
 
-		final JsonRequestBPartnerLocationAndContactBuilder bPartnerInfo = JsonRequestBPartnerLocationAndContact.builder();
+		final JsonRequestBPartnerLocationAndContactBuilder bPartnerInfo = JsonRequestBPartnerLocationAndContact
+				.builder()
+				.bpartnerLookupAdvise(BPartnerLookupAdvise.GLN);
 
 		if (recipientExternalId.equals(insuranceExternalId))
 		{
@@ -548,6 +551,7 @@ public class XmlToOLCandsService
 				.build();
 
 		final JsonRequestBPartnerLocationAndContact bPartnerInfo = JsonRequestBPartnerLocationAndContact.builder()
+				.bpartnerLookupAdvise(BPartnerLookupAdvise.GLN)
 				.syncAdvise(context.getBillerSyncAdvise())
 				.bpartner(bPartnerBuilder.build())
 				.contact(contact)

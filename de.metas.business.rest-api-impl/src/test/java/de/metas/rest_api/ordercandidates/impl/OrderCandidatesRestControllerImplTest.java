@@ -27,7 +27,7 @@ import java.util.Optional;
 import javax.annotation.Nullable;
 
 import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
-import org.adempiere.ad.table.RecordChangeLogRepository;
+import org.adempiere.ad.table.MockLogEntriesRepository;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
@@ -88,7 +88,6 @@ import de.metas.rest_api.attachment.JsonAttachmentType;
 import de.metas.rest_api.bpartner.impl.BPartnerEndpointService;
 import de.metas.rest_api.bpartner.impl.BpartnerRestController;
 import de.metas.rest_api.bpartner.impl.JsonRequestConsolidateService;
-import de.metas.rest_api.bpartner.impl.MockLogEntriesRepository;
 import de.metas.rest_api.bpartner.impl.bpartnercomposite.JsonServiceFactory;
 import de.metas.rest_api.bpartner.request.JsonRequestBPartner;
 import de.metas.rest_api.bpartner.request.JsonRequestLocation;
@@ -235,7 +234,6 @@ public class OrderCandidatesRestControllerImplTest
 				bpartnerCompositeRepository,
 				new BPGroupRepository(),
 				new GreetingRepository(),
-				new RecordChangeLogRepository(),
 				currencyRepository);
 		final BpartnerRestController bpartnerRestController = new BpartnerRestController(
 				new BPartnerEndpointService(jsonServiceFactory),

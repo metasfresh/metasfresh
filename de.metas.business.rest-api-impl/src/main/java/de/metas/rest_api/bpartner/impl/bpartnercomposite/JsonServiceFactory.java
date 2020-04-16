@@ -1,6 +1,5 @@
 package de.metas.rest_api.bpartner.impl.bpartnercomposite;
 
-import org.adempiere.ad.table.RecordChangeLogRepository;
 import org.springframework.stereotype.Service;
 
 import de.metas.bpartner.BPGroupRepository;
@@ -42,7 +41,6 @@ public class JsonServiceFactory
 	private final BPartnerQueryService bpartnerQueryService;
 	private final BPartnerCompositeRepository bpartnerCompositeRepository;
 	private final BPGroupRepository bpGroupRepository;
-	private final RecordChangeLogRepository recordChangeLogRepository;
 	private final GreetingRepository greetingRepository;
 	private final CurrencyRepository currencyRepository;
 
@@ -52,13 +50,11 @@ public class JsonServiceFactory
 			@NonNull final BPartnerCompositeRepository bpartnerCompositeRepository,
 			@NonNull final BPGroupRepository bpGroupRepository,
 			@NonNull final GreetingRepository greetingRepository,
-			@NonNull final RecordChangeLogRepository recordChangeLogRepository,
 			@NonNull final CurrencyRepository currencyRepository)
 	{
 		this.jsonRequestConsolidateService = jsonRequestConsolidateService;
 		this.bpartnerQueryService = bpartnerQueryService;
 		this.greetingRepository = greetingRepository;
-		this.recordChangeLogRepository = recordChangeLogRepository;
 		this.bpartnerCompositeRepository = bpartnerCompositeRepository;
 		this.bpGroupRepository = bpGroupRepository;
 		this.currencyRepository = currencyRepository;
@@ -91,7 +87,6 @@ public class JsonServiceFactory
 				bpartnerCompositeRepository,
 				bpGroupRepository,
 				greetingRepository,
-				recordChangeLogRepository,
 				identifier);
 	}
 }

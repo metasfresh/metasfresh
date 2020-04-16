@@ -15,7 +15,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Optional;
 
-import org.adempiere.ad.table.RecordChangeLogRepository;
+import org.adempiere.ad.table.MockLogEntriesRepository;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_BP_Group;
 import org.compiere.util.Env;
@@ -32,7 +32,6 @@ import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
 import de.metas.currency.CurrencyRepository;
 import de.metas.greeting.GreetingRepository;
 import de.metas.rest_api.bpartner.impl.JsonRequestConsolidateService;
-import de.metas.rest_api.bpartner.impl.MockLogEntriesRepository;
 import de.metas.rest_api.common.JsonExternalId;
 import de.metas.rest_api.utils.BPartnerCompositeLookupKey;
 import de.metas.rest_api.utils.BPartnerQueryService;
@@ -88,7 +87,6 @@ class JsonRetrieverServiceTest
 				bpartnerCompositeRepository,
 				new BPGroupRepository(),
 				new GreetingRepository(),
-				new RecordChangeLogRepository(),
 				new CurrencyRepository());
 
 		jsonRetrieverService = jsonServiceFactory.createRetriever();
