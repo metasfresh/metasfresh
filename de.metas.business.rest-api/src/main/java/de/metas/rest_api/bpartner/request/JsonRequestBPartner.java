@@ -119,12 +119,11 @@ public class JsonRequestBPartner
 	private String group;
 	private boolean groupSet;
 
-	@JsonInclude(Include.NON_NULL)
-	String globalId;
-	add globalIdset and stuff
-
 	@ApiModelProperty(position = 150, required = false, //
 			value = "Translates to `C_BPartner.GlobalId`")
+	private String globalId;
+	private boolean globalIdset;
+
 	private SyncAdvise syncAdvise;
 	private boolean syncAdviseSet;
 
@@ -228,6 +227,12 @@ public class JsonRequestBPartner
 	{
 		this.group = group;
 		this.groupSet = true;
+	}
+
+	public void setGlobalId(String globalId)
+	{
+		this.globalId = globalId;
+		this.globalIdset = true;
 	}
 
 	public void setSyncAdvise(SyncAdvise syncAdvise)

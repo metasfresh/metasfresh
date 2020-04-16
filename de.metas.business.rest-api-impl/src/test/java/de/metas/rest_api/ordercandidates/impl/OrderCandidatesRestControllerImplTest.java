@@ -656,13 +656,13 @@ public class OrderCandidatesRestControllerImplTest
 		billPartherLocation.setGln("gln-bill");
 		billPartherLocation.setCountryCode("DE");
 
-		final JsonRequestLocation dropshipPartherLocation = new JsonRequestLocation();
-		dropshipPartherLocation.setGln("gln-dropShip");
-		dropshipPartherLocation.setCountryCode("DE");
+		final JsonRequestLocation dropShipPartherLocation = new JsonRequestLocation();
+		dropShipPartherLocation.setGln("gln-dropShip");
+		dropShipPartherLocation.setCountryCode("DE");
 
 		final JsonRequestLocation handOverPartherLocation = new JsonRequestLocation();
-		dropshipPartherLocation.setGln("gln-handOver");
-		dropshipPartherLocation.setCountryCode("DE");
+		handOverPartherLocation.setGln("gln-handOver");
+		handOverPartherLocation.setCountryCode("DE");
 
 		final JsonRequestBPartner bpartner = new JsonRequestBPartner();
 		bpartner.setCode("bpCode");
@@ -674,7 +674,7 @@ public class OrderCandidatesRestControllerImplTest
 		billPartner.setCode("bpCode");
 
 		final JsonRequestBPartner dropShipBPartner = new JsonRequestBPartner();
-		billPartner.setCode("bpCode");
+		dropShipBPartner.setCode("bpCode");
 
 		final JsonRequestBPartner handOverBPartner = new JsonRequestBPartner();
 		handOverBPartner.setCode("bpCode");
@@ -713,7 +713,7 @@ public class OrderCandidatesRestControllerImplTest
 						.bpartnerLookupAdvise(BPartnerLookupAdvise.Code)
 						.syncAdvise(SyncAdvise.CREATE_OR_MERGE)
 						.bpartner(dropShipBPartner)
-						.location(dropshipPartherLocation)
+						.location(dropShipPartherLocation)
 						.build())
 				.handOverBPartner(JsonRequestBPartnerLocationAndContact.builder()
 						.bpartnerLookupAdvise(BPartnerLookupAdvise.Code)
@@ -789,7 +789,7 @@ public class OrderCandidatesRestControllerImplTest
 		billPartner.setCode("billPartner");
 
 		final JsonRequestBPartner dropShipPartner = new JsonRequestBPartner();
-		billPartner.setCode("dropShipPartner");
+		dropShipPartner.setCode("dropShipPartner");
 
 		final JsonOLCandCreateBulkRequest request = JsonOLCandCreateBulkRequest.of(JsonOLCandCreateRequest.builder()
 				.dataSource("int-" + DATA_SOURCE_INTERNALNAME)
@@ -902,7 +902,7 @@ public class OrderCandidatesRestControllerImplTest
 		billPartner.setCode("billPartner");
 
 		final JsonRequestBPartner dropShipPartner = new JsonRequestBPartner();
-		billPartner.setCode("dropShipPartner");
+		dropShipPartner.setCode("dropShipPartner");
 
 		final JsonOLCandCreateBulkRequest request = JsonOLCandCreateBulkRequest.of(JsonOLCandCreateRequest.builder()
 				.dataSource("int-" + DATA_SOURCE_INTERNALNAME)
@@ -929,12 +929,15 @@ public class OrderCandidatesRestControllerImplTest
 						.build())
 
 				.bpartner(JsonRequestBPartnerLocationAndContact.builder()
+						.bpartnerLookupAdvise(BPartnerLookupAdvise.Code)
 						.bpartner(mainPartner) // no location specified!
 						.build())
 				.billBPartner(JsonRequestBPartnerLocationAndContact.builder()
+						.bpartnerLookupAdvise(BPartnerLookupAdvise.Code)
 						.bpartner(billPartner) // again, no location specified!
 						.build())
 				.dropShipBPartner(JsonRequestBPartnerLocationAndContact.builder()
+						.bpartnerLookupAdvise(BPartnerLookupAdvise.Code)
 						.bpartner(dropShipPartner)
 						.location(dropShipLocation)
 						.build())

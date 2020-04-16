@@ -568,11 +568,22 @@ public class JsonPersisterService
 		{
 			bpartner.setActive(jsonBPartner.getActive());
 		}
+		if (jsonBPartner.isActiveSet())
+		{
+			if (jsonBPartner.getActive() == null)
+			{
+				logger.debug("Ignoring boolean property \"active\" : null ");
+			}
+			else
+			{
+				bpartner.setActive(jsonBPartner.getActive());
+			}
+		}
 
 		// code / value
-		if (!isEmpty(jsonBPartner.getCode(), true))
+		if (jsonBPartner.isCodeSet())
 		{
-			bpartner.setValue(jsonBPartner.getCode().trim());
+			bpartner.setValue(StringUtils.trim(jsonBPartner.getCode()));
 		}
 		else if (isUpdateRemove)
 		{
@@ -580,9 +591,9 @@ public class JsonPersisterService
 		}
 
 		// globalId
-		if (!isEmpty(jsonBPartner.getGlobalId(), true))
+		if (jsonBPartner.isGlobalIdset())
 		{
-			bpartner.setGlobalId(jsonBPartner.getGlobalId().trim());
+			bpartner.setGlobalId(StringUtils.trim(jsonBPartner.getGlobalId()));
 		}
 		else if (isUpdateRemove)
 		{
@@ -590,9 +601,9 @@ public class JsonPersisterService
 		}
 
 		// companyName
-		if (!isEmpty(jsonBPartner.getCompanyName(), true))
+		if (jsonBPartner.isCompanyNameSet())
 		{
-			bpartner.setCompanyName(jsonBPartner.getCompanyName().trim());
+			bpartner.setCompanyName(StringUtils.trim(jsonBPartner.getCompanyName()));
 		}
 		else if (isUpdateRemove)
 		{
@@ -600,9 +611,9 @@ public class JsonPersisterService
 		}
 
 		// name
-		if (!isEmpty(jsonBPartner.getName(), true))
+		if (jsonBPartner.isNameSet())
 		{
-			bpartner.setName(jsonBPartner.getName().trim());
+			bpartner.setName(StringUtils.trim(jsonBPartner.getName()));
 		}
 		else if (isUpdateRemove)
 		{
@@ -610,9 +621,9 @@ public class JsonPersisterService
 		}
 
 		// name2
-		if (!isEmpty(jsonBPartner.getName2(), true))
+		if (jsonBPartner.isName2Set())
 		{
-			bpartner.setName2(jsonBPartner.getName2().trim());
+			bpartner.setName2(StringUtils.trim(jsonBPartner.getName2()));
 		}
 		else if (isUpdateRemove)
 		{
@@ -620,9 +631,9 @@ public class JsonPersisterService
 		}
 
 		// name3
-		if (!isEmpty(jsonBPartner.getName3(), true))
+		if (jsonBPartner.isName3Set())
 		{
-			bpartner.setName3(jsonBPartner.getName3().trim());
+			bpartner.setName3(StringUtils.trim(jsonBPartner.getName3()));
 		}
 		else if (isUpdateRemove)
 		{
@@ -630,7 +641,7 @@ public class JsonPersisterService
 		}
 
 		// externalId
-		if (jsonBPartner.getExternalId() != null)
+		if (jsonBPartner.isExternalIdSet())
 		{
 			bpartner.setExternalId(JsonConverters.fromJsonOrNull(jsonBPartner.getExternalId()));
 		}
@@ -639,17 +650,31 @@ public class JsonPersisterService
 			bpartner.setExternalId(null);
 		}
 
-		if (jsonBPartner.getCustomer() != null)
+		if (jsonBPartner.isCustomerSet())
 		{
-			bpartner.setCustomer(jsonBPartner.getCustomer());
+			if (jsonBPartner.getCustomer() == null)
+			{
+				logger.debug("Ignoring boolean property \"customer\" : null ");
+			}
+			else
+			{
+				bpartner.setCustomer(jsonBPartner.getCustomer());
+			}
 		}
-		if (jsonBPartner.getVendor() != null)
+		if (jsonBPartner.isVendorSet())
 		{
-			bpartner.setVendor(jsonBPartner.getVendor());
+			if (jsonBPartner.getVendor() == null)
+			{
+				logger.debug("Ignoring boolean property \"vendor\" : null ");
+			}
+			else
+			{
+				bpartner.setVendor(jsonBPartner.getVendor());
+			}
 		}
 
 		// group
-		if (!isEmpty(jsonBPartner.getGroup(), true))
+		if (jsonBPartner.isGroupSet())
 		{
 			final Optional<BPGroup> optionalBPGroup = bpGroupRepository
 					.getByNameAndOrgId(jsonBPartner.getGroup(), bpartnerComposite.getOrgId());
@@ -683,9 +708,9 @@ public class JsonPersisterService
 		// note that BP_Group_ID is mandatory, so we won't unset it even if isUpdateRemove
 
 		// language
-		if (!isEmpty(jsonBPartner.getLanguage(), true))
+		if (jsonBPartner.isLanguageSet())
 		{
-			bpartner.setLanguage(Language.asLanguage(jsonBPartner.getLanguage().trim()));
+			bpartner.setLanguage(Language.asLanguage(StringUtils.trim(jsonBPartner.getLanguage())));
 		}
 		else if (isUpdateRemove)
 		{
@@ -693,7 +718,7 @@ public class JsonPersisterService
 		}
 
 		// invoiceRule
-		if (jsonBPartner.getInvoiceRule() != null)
+		if (jsonBPartner.isInvoiceRuleSet())
 		{
 			bpartner.setInvoiceRule(InvoiceRule.ofCode(jsonBPartner.getInvoiceRule().toString()));
 		}
@@ -705,7 +730,7 @@ public class JsonPersisterService
 		// metasfreshId - we will never update it
 
 		// parentId
-		if (jsonBPartner.getParentId() != null)
+		if (jsonBPartner.isParentIdSet())
 		{
 			// TODO make sure in the repo that the parent-bpartner is reachable
 			bpartner.setParentId(BPartnerId.ofRepoId(jsonBPartner.getParentId().getValue()));
@@ -716,9 +741,9 @@ public class JsonPersisterService
 		}
 
 		// phone
-		if (!isEmpty(jsonBPartner.getPhone(), true))
+		if (jsonBPartner.isPhoneSet())
 		{
-			bpartner.setPhone(jsonBPartner.getPhone().trim());
+			bpartner.setPhone(StringUtils.trim(jsonBPartner.getPhone()));
 		}
 		else if (isUpdateRemove)
 		{
@@ -726,9 +751,9 @@ public class JsonPersisterService
 		}
 
 		// url
-		if (!isEmpty(jsonBPartner.getUrl(), true))
+		if (jsonBPartner.isUrlSet())
 		{
-			bpartner.setUrl(jsonBPartner.getUrl().trim());
+			bpartner.setUrl(StringUtils.trim(jsonBPartner.getUrl()));
 		}
 		else if (isUpdateRemove)
 		{
@@ -736,9 +761,9 @@ public class JsonPersisterService
 		}
 
 		// url2
-		if (!isEmpty(jsonBPartner.getUrl2(), true))
+		if (jsonBPartner.isUrl2Set())
 		{
-			bpartner.setUrl2(jsonBPartner.getUrl2().trim());
+			bpartner.setUrl2(StringUtils.trim(jsonBPartner.getUrl2()));
 		}
 		else if (isUpdateRemove)
 		{
@@ -746,14 +771,15 @@ public class JsonPersisterService
 		}
 
 		// url3
-		if (!isEmpty(jsonBPartner.getUrl3(), true))
+		if (jsonBPartner.isUrl3Set())
 		{
-			bpartner.setUrl3(jsonBPartner.getUrl3().trim());
+			bpartner.setUrl3(StringUtils.trim(jsonBPartner.getUrl3()));
 		}
 		else if (isUpdateRemove)
 		{
 			bpartner.setUrl3(null);
 		}
+
 		return BooleanWithReason.TRUE;
 	}
 

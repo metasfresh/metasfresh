@@ -19,7 +19,6 @@ import org.compiere.model.I_C_Location;
 import org.compiere.model.I_C_Postal;
 import org.slf4j.Logger;
 
-import java.util.Objects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
