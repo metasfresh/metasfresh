@@ -74,11 +74,11 @@ FROM de_metas_acct.taxaccounts_details($P{AD_Org_ID},
 	<field name="param_org" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="param_org"/>
 	</field>
-	<variable name="novat_acct_sum" class="java.math.BigDecimal" resetType="Group" resetGroup="account_group" calculation="Sum">
+	<variable name="balanceyear_acct_sum" class="java.math.BigDecimal" resetType="Group" resetGroup="account_group" calculation="Sum">
 		<variableExpression><![CDATA[$F{balanceyear}]]></variableExpression>
 		<initialValueExpression><![CDATA[BigDecimal.ZERO]]></initialValueExpression>
 	</variable>
-	<variable name="novat_vat_sum" class="java.math.BigDecimal" resetType="Group" resetGroup="vatcode_group" calculation="Sum">
+	<variable name="balanceyear_vat_sum" class="java.math.BigDecimal" resetType="Group" resetGroup="vatcode_group" calculation="Sum">
 		<variableExpression><![CDATA[$F{balanceyear}]]></variableExpression>
 		<initialValueExpression><![CDATA[BigDecimal.ZERO]]></initialValueExpression>
 	</variable>
@@ -93,23 +93,23 @@ FROM de_metas_acct.taxaccounts_details($P{AD_Org_ID},
 	<group name="vatcode_group">
 		<groupExpression><![CDATA[$F{vatcode}]]></groupExpression>
 		<groupHeader>
-			<band height="23">
+			<band height="15">
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-					<reportElement x="0" y="7" width="150" height="16" uuid="f9a5b4ab-ac9d-4612-9172-b6ce863e873a"/>
+					<reportElement x="0" y="1" width="150" height="14" uuid="f9a5b4ab-ac9d-4612-9172-b6ce863e873a"/>
 					<textElement textAlignment="Left" verticalAlignment="Bottom">
 						<font fontName="Arial" size="10" isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{vatcode} == null ? ($R{no_vatcode}) : $F{vatcode}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" evaluationTime="Group" evaluationGroup="vatcode_group" pattern="#,##0.00" isBlankWhenNull="true">
-					<reportElement x="680" y="7" width="100" height="16" uuid="25fae90c-d0e1-493d-a174-5bbcf9dfc162"/>
+					<reportElement x="680" y="1" width="100" height="14" uuid="25fae90c-d0e1-493d-a174-5bbcf9dfc162"/>
 					<textElement textAlignment="Right" verticalAlignment="Bottom">
 						<font fontName="Arial" size="10" isBold="true"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$V{novat_vat_sum}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$V{balanceyear_vat_sum}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" evaluationTime="Group" evaluationGroup="vatcode_group" pattern="#,##0.00" isBlankWhenNull="true">
-					<reportElement x="597" y="7" width="83" height="16" uuid="fb200e00-cbab-4355-8cfe-4e71cd55d9b0"/>
+					<reportElement x="597" y="1" width="83" height="14" uuid="fb200e00-cbab-4355-8cfe-4e71cd55d9b0"/>
 					<textElement textAlignment="Right" verticalAlignment="Bottom">
 						<font fontName="Arial" size="10" isBold="true"/>
 					</textElement>
@@ -130,7 +130,7 @@ FROM de_metas_acct.taxaccounts_details($P{AD_Org_ID},
 					<textElement textAlignment="Right" verticalAlignment="Bottom">
 						<font fontName="Arial" size="9" isBold="true"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$V{novat_acct_sum}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$V{balanceyear_acct_sum}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 					<reportElement x="0" y="3" width="70" height="14" uuid="28d98eec-e34e-4ec1-b4ab-6d2c7376c61a"/>
@@ -166,7 +166,7 @@ FROM de_metas_acct.taxaccounts_details($P{AD_Org_ID},
 		<band splitType="Stretch"/>
 	</title>
 	<pageHeader>
-		<band height="169" splitType="Stretch">
+		<band height="138" splitType="Stretch">
 			<rectangle>
 				<reportElement key="rectangle-1" x="0" y="113" width="782" height="13" backcolor="#808080" uuid="71745852-395f-414b-a5e4-6b213b418317">
 					<printWhenExpression><![CDATA[new Boolean(("N").equals($P{showdetails}))]]></printWhenExpression>
@@ -285,7 +285,7 @@ FROM de_metas_acct.taxaccounts_details($P{AD_Org_ID},
 				</graphicElement>
 			</line>
 			<textField isStretchWithOverflow="true">
-				<reportElement x="710" y="114" width="70" height="12" forecolor="#FFFFFF" uuid="bcb5892e-1c26-40e1-92b9-ab2c0735b68d">
+				<reportElement x="680" y="114" width="100" height="12" forecolor="#FFFFFF" uuid="bcb5892e-1c26-40e1-92b9-ab2c0735b68d">
 					<printWhenExpression><![CDATA[new Boolean(("N").equals($P{showdetails}))]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Right">
@@ -295,7 +295,7 @@ FROM de_metas_acct.taxaccounts_details($P{AD_Org_ID},
 				<textFieldExpression><![CDATA[$R{balance}]]></textFieldExpression>
 			</textField>
 			<rectangle>
-				<reportElement key="rectangle-1" x="0" y="140" width="782" height="26" backcolor="#808080" uuid="617d545b-7b86-42ba-b74b-7a80abd9e134">
+				<reportElement key="rectangle-1" x="0" y="110" width="782" height="26" backcolor="#808080" uuid="617d545b-7b86-42ba-b74b-7a80abd9e134">
 					<printWhenExpression><![CDATA[new Boolean(("Y").equals($P{showdetails}))]]></printWhenExpression>
 				</reportElement>
 				<graphicElement>
@@ -303,7 +303,7 @@ FROM de_metas_acct.taxaccounts_details($P{AD_Org_ID},
 				</graphicElement>
 			</rectangle>
 			<textField>
-				<reportElement x="0" y="141" width="70" height="12" forecolor="#FFFFFF" uuid="3629ff5c-377f-44e9-922b-b1d753869c67">
+				<reportElement x="0" y="111" width="70" height="12" forecolor="#FFFFFF" uuid="3629ff5c-377f-44e9-922b-b1d753869c67">
 					<printWhenExpression><![CDATA[new Boolean(("Y").equals($P{showdetails}))]]></printWhenExpression>
 				</reportElement>
 				<textElement>
@@ -313,7 +313,7 @@ FROM de_metas_acct.taxaccounts_details($P{AD_Org_ID},
 				<textFieldExpression><![CDATA[$R{booking}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement x="340" y="141" width="131" height="12" forecolor="#FFFFFF" uuid="ed0aad1b-40b1-4d1b-b3ee-bd0c1c55ef81">
+				<reportElement x="340" y="111" width="131" height="12" forecolor="#FFFFFF" uuid="ed0aad1b-40b1-4d1b-b3ee-bd0c1c55ef81">
 					<printWhenExpression><![CDATA[new Boolean(("Y").equals($P{showdetails}))]]></printWhenExpression>
 				</reportElement>
 				<textElement>
@@ -330,7 +330,7 @@ FROM de_metas_acct.taxaccounts_details($P{AD_Org_ID},
 				</graphicElement>
 			</line>
 			<textField isStretchWithOverflow="true">
-				<reportElement x="710" y="141" width="70" height="12" forecolor="#FFFFFF" uuid="f2c318c9-9604-4cab-94eb-70f9217d4fa0">
+				<reportElement x="710" y="111" width="70" height="12" forecolor="#FFFFFF" uuid="f2c318c9-9604-4cab-94eb-70f9217d4fa0">
 					<printWhenExpression><![CDATA[new Boolean(("Y").equals($P{showdetails}))]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Right">
@@ -340,7 +340,7 @@ FROM de_metas_acct.taxaccounts_details($P{AD_Org_ID},
 				<textFieldExpression><![CDATA[$R{balance}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="70" y="154" width="59" height="12" forecolor="#FFFFFF" uuid="72b42f9f-cb76-4ec2-bd30-71d52681f418">
+				<reportElement x="70" y="124" width="59" height="12" forecolor="#FFFFFF" uuid="72b42f9f-cb76-4ec2-bd30-71d52681f418">
 					<printWhenExpression><![CDATA[new Boolean(("Y").equals($P{showdetails}))]]></printWhenExpression>
 				</reportElement>
 				<textElement>
@@ -349,7 +349,7 @@ FROM de_metas_acct.taxaccounts_details($P{AD_Org_ID},
 				<textFieldExpression><![CDATA[$R{docno}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="129" y="154" width="120" height="12" forecolor="#FFFFFF" uuid="f150492f-a5d0-4272-821e-c52ef7431a2f">
+				<reportElement x="129" y="124" width="120" height="12" forecolor="#FFFFFF" uuid="f150492f-a5d0-4272-821e-c52ef7431a2f">
 					<printWhenExpression><![CDATA[new Boolean(("Y").equals($P{showdetails}))]]></printWhenExpression>
 				</reportElement>
 				<textElement>
@@ -358,7 +358,7 @@ FROM de_metas_acct.taxaccounts_details($P{AD_Org_ID},
 				<textFieldExpression><![CDATA[$R{bpname}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="383" y="154" width="55" height="12" forecolor="#FFFFFF" uuid="300e52de-09ca-470e-a0a4-98faf146de7e">
+				<reportElement x="383" y="124" width="55" height="12" forecolor="#FFFFFF" uuid="300e52de-09ca-470e-a0a4-98faf146de7e">
 					<printWhenExpression><![CDATA[new Boolean(("Y").equals($P{showdetails}))]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Right">
@@ -367,7 +367,7 @@ FROM de_metas_acct.taxaccounts_details($P{AD_Org_ID},
 				<textFieldExpression><![CDATA[$R{vat}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="438" y="154" width="91" height="12" forecolor="#FFFFFF" uuid="2cd7115b-12b6-423f-bbf1-35797b9e8760">
+				<reportElement x="438" y="124" width="91" height="12" forecolor="#FFFFFF" uuid="2cd7115b-12b6-423f-bbf1-35797b9e8760">
 					<printWhenExpression><![CDATA[new Boolean(("Y").equals($P{showdetails}))]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Right">
@@ -376,7 +376,7 @@ FROM de_metas_acct.taxaccounts_details($P{AD_Org_ID},
 				<textFieldExpression><![CDATA[$R{baseamt}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="529" y="154" width="96" height="12" forecolor="#FFFFFF" uuid="98e4dc32-7044-4a8b-8b5e-2754e4a3f55f">
+				<reportElement x="529" y="124" width="96" height="12" forecolor="#FFFFFF" uuid="98e4dc32-7044-4a8b-8b5e-2754e4a3f55f">
 					<printWhenExpression><![CDATA[new Boolean(("Y").equals($P{showdetails}))]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Right">
@@ -385,7 +385,7 @@ FROM de_metas_acct.taxaccounts_details($P{AD_Org_ID},
 				<textFieldExpression><![CDATA[$R{amt_not_vat}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="625" y="154" width="106" height="12" forecolor="#FFFFFF" uuid="a723dacc-19ef-4235-abca-31691ffb068a">
+				<reportElement x="625" y="124" width="106" height="12" forecolor="#FFFFFF" uuid="a723dacc-19ef-4235-abca-31691ffb068a">
 					<printWhenExpression><![CDATA[new Boolean(("Y").equals($P{showdetails}))]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Right">
@@ -395,7 +395,7 @@ FROM de_metas_acct.taxaccounts_details($P{AD_Org_ID},
 				<textFieldExpression><![CDATA[$R{vat_amt}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
-				<reportElement x="620" y="114" width="59" height="12" forecolor="#FFFFFF" uuid="ca26b28b-969f-4bfd-975a-c2e2521146cd">
+				<reportElement x="560" y="114" width="119" height="12" forecolor="#FFFFFF" uuid="ca26b28b-969f-4bfd-975a-c2e2521146cd">
 					<printWhenExpression><![CDATA[new Boolean(("N").equals($P{showdetails}))]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Right">
@@ -405,7 +405,7 @@ FROM de_metas_acct.taxaccounts_details($P{AD_Org_ID},
 				<textFieldExpression><![CDATA[$R{balancePeriod}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
-				<reportElement x="620" y="142" width="59" height="12" forecolor="#FFFFFF" uuid="e373a04e-bb55-47f0-9bb0-5ef457ace879">
+				<reportElement x="620" y="112" width="59" height="12" forecolor="#FFFFFF" uuid="e373a04e-bb55-47f0-9bb0-5ef457ace879">
 					<printWhenExpression><![CDATA[new Boolean(("Y").equals($P{showdetails}))]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Right">
@@ -420,48 +420,50 @@ FROM de_metas_acct.taxaccounts_details($P{AD_Org_ID},
 		<band splitType="Stretch"/>
 	</columnHeader>
 	<detail>
-		<band height="22">
-			<printWhenExpression><![CDATA[$F{vatcode}==null]]></printWhenExpression>
+		<band height="15">
+			<printWhenExpression><![CDATA[$F{vatcode}==null 
+&& $F{balance}.compareTo(BigDecimal.ZERO) !=0 
+&& $F{balanceyear}.compareTo(BigDecimal.ZERO) !=0]]></printWhenExpression>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement x="0" y="3" width="70" height="14" uuid="f1148d44-61ec-4614-b025-8b84222eca1d"/>
+				<reportElement x="0" y="2" width="70" height="12" uuid="f1148d44-61ec-4614-b025-8b84222eca1d"/>
 				<textElement textAlignment="Left">
 					<font fontName="Arial" size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{accountno}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement x="70" y="3" width="270" height="14" uuid="f8dfa375-a6d0-4df6-af0e-d9cae2c72b65"/>
+				<reportElement x="70" y="2" width="270" height="12" uuid="f8dfa375-a6d0-4df6-af0e-d9cae2c72b65"/>
 				<textElement textAlignment="Left">
 					<font fontName="Arial" size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{accountname}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement x="340" y="3" width="180" height="14" uuid="324e8ede-9298-453f-90dd-03b190730e6d"/>
+				<reportElement x="340" y="2" width="180" height="12" uuid="324e8ede-9298-453f-90dd-03b190730e6d"/>
 				<textElement textAlignment="Left">
 					<font fontName="Arial" size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{taxname}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
-				<reportElement x="680" y="3" width="100" height="14" uuid="809ba6cd-aa4a-4ac0-af9b-102f1e07e9c0"/>
+				<reportElement x="680" y="2" width="100" height="12" uuid="809ba6cd-aa4a-4ac0-af9b-102f1e07e9c0"/>
 				<textElement textAlignment="Right">
 					<font fontName="Arial" size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{balanceyear}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
-				<reportElement x="597" y="3" width="83" height="14" uuid="7ac05829-90bc-40de-882b-efaa1e855b94"/>
+				<reportElement x="597" y="2" width="83" height="12" uuid="7ac05829-90bc-40de-882b-efaa1e855b94"/>
 				<textElement textAlignment="Right">
 					<font fontName="Arial" size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{balance}]]></textFieldExpression>
 			</textField>
 		</band>
-		<band height="13" splitType="Stretch">
+		<band height="3" splitType="Stretch">
 			<printWhenExpression><![CDATA["Y".equals($P{showdetails})]]></printWhenExpression>
 			<subreport>
-				<reportElement stretchType="ElementGroupHeight" x="-19" y="6" width="841" height="4" isPrintWhenDetailOverflows="true" uuid="74a4be63-a872-4c91-8eb6-d32c169f6ef5">
+				<reportElement x="-19" y="1" width="841" height="2" isPrintWhenDetailOverflows="true" uuid="74a4be63-a872-4c91-8eb6-d32c169f6ef5">
 					<printWhenExpression><![CDATA["Y".equals($P{showdetails})]]></printWhenExpression>
 				</reportElement>
 				<subreportParameter name="DateFrom">

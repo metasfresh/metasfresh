@@ -54,8 +54,8 @@ with accounts as
          ),
      balance AS
          (
-             Select ((b2.Balance).Balance - (b1.Balance).Balance) as Balance,
-                    (b2.Balance).Balance                          as YearBalance,
+             Select (coalesce((b2.Balance).Balance,0) - coalesce((b1.Balance).Balance,0)) as Balance,
+                    coalesce((b2.Balance).Balance, 0)                          as YearBalance,
                     b2.accountno,
                     b2.accountname,
                     b2.C_Tax_ID,
@@ -67,8 +67,7 @@ with accounts as
                  and b1.accountname = b2.accountname
                  and coalesce(b1.vatcode, '') = coalesce(b2.vatcode, '')
                  and coalesce(b1.c_tax_id, 0) = coalesce(b2.c_tax_id, 0)
-             where (b2.Balance).Debit > 0
-                or (b2.Balance).Credit > 0
+             where (b2.Balance).Debit > 0 or (b2.Balance).Credit > 0
          )
 select Balance,
        YearBalance,

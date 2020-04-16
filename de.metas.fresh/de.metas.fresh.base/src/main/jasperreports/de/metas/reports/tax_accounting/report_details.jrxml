@@ -38,7 +38,8 @@
 	</parameter>
 	<queryString>
 		<![CDATA[select *
-             from report.tax_accounting_report_details($P{DateFrom}, $P{DateTo},
+             from report.tax_accounting_report_details($P{DateFrom}, 
+             	                               $P{DateTo},
                                                $P{vatcode},
                                                $P{account_id}, 
                                                $P{c_tax_id}, 
