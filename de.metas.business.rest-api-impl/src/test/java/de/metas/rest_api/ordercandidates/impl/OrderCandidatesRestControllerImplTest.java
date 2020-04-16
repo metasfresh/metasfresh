@@ -96,6 +96,7 @@ import de.metas.rest_api.common.JsonErrorItem;
 import de.metas.rest_api.common.MetasfreshId;
 import de.metas.rest_api.common.SyncAdvise;
 import de.metas.rest_api.common.SyncAdvise.IfNotExists;
+import de.metas.rest_api.ordercandidates.request.BPartnerLookupAdvise;
 import de.metas.rest_api.ordercandidates.request.JSONPaymentRule;
 import de.metas.rest_api.ordercandidates.request.JsonOLCandCreateBulkRequest;
 import de.metas.rest_api.ordercandidates.request.JsonOLCandCreateRequest;
@@ -660,6 +661,7 @@ public class OrderCandidatesRestControllerImplTest
 				.orderDocType(OrderDocType.PrepayOrder)
 				.shipper("val-DPD")
 				.bpartner(JsonRequestBPartnerLocationAndContact.builder()
+						.bpartnerLookupAdvise(BPartnerLookupAdvise.Code)
 						.syncAdvise(SyncAdvise.CREATE_OR_MERGE)
 						.bpartner(JsonRequestBPartner.builder()
 								.code("bpCode")
@@ -673,6 +675,7 @@ public class OrderCandidatesRestControllerImplTest
 								.build())
 						.build())
 				.billBPartner(JsonRequestBPartnerLocationAndContact.builder()
+						.bpartnerLookupAdvise(BPartnerLookupAdvise.Code)
 						.syncAdvise(SyncAdvise.CREATE_OR_MERGE)
 						.bpartner(JsonRequestBPartner.builder()
 								.code("bpCode")
@@ -683,6 +686,7 @@ public class OrderCandidatesRestControllerImplTest
 								.build())
 						.build())
 				.dropShipBPartner(JsonRequestBPartnerLocationAndContact.builder()
+						.bpartnerLookupAdvise(BPartnerLookupAdvise.Code)
 						.syncAdvise(SyncAdvise.CREATE_OR_MERGE)
 						.bpartner(JsonRequestBPartner.builder()
 								.code("bpCode")
@@ -693,6 +697,7 @@ public class OrderCandidatesRestControllerImplTest
 								.build())
 						.build())
 				.handOverBPartner(JsonRequestBPartnerLocationAndContact.builder()
+						.bpartnerLookupAdvise(BPartnerLookupAdvise.Code)
 						.syncAdvise(SyncAdvise.CREATE_OR_MERGE)
 						.bpartner(JsonRequestBPartner.builder()
 								.code("bpCode")
@@ -704,7 +709,7 @@ public class OrderCandidatesRestControllerImplTest
 						.build())
 				.build());
 
-		// invoke the mthod under test
+		// invoke the method under test
 		final JsonOLCandCreateBulkResponse response = orderCandidatesRestControllerImpl
 				.createOrderLineCandidates(request)
 				.getBody();
