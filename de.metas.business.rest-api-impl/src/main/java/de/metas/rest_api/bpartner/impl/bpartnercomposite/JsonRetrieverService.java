@@ -448,7 +448,10 @@ public class JsonRetrieverService
 	{
 		final ImmutableList<BPartnerComposite> distinctComposites = CollectionUtils.extractDistinctElements(bpartnerComposites, Function.identity());
 
-		final BPartnerComposite result = CollectionUtils.singleElement(distinctComposites); // we made sure there's not more than one in lookupBPartnerByKeys0
+		// There might be no bpartner yet. in that case we get not error but null.
+		// We made sure there's not more than by calling bpartnerCompositeRepository.getSingleByQuery.
+		final BPartnerComposite result = CollectionUtils.singleElementOrNull(distinctComposites);
+
 		return result == null ? Optional.empty() : Optional.of(result.deepCopy());
 	}
 

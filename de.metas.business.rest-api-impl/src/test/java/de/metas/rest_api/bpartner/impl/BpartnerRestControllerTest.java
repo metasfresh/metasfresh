@@ -148,7 +148,7 @@ class BpartnerRestControllerTest
 	void init()
 	{
 		AdempiereTestHelper.get().init();
-		
+
 		SpringContextHolder.registerJUnitBean(new GreetingRepository());
 
 		Services.registerService(IBPartnerBL.class, new BPartnerBL(new UserRepository()));
@@ -179,7 +179,7 @@ class BpartnerRestControllerTest
 
 		Env.setContext(Env.getCtx(), Env.CTXNAME_AD_Org_ID, AD_ORG_ID);
 	}
-	
+
 	@Test
 	void retrieveBPartner_ext()
 	{
