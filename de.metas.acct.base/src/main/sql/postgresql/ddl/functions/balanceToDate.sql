@@ -37,11 +37,6 @@ WITH records AS
                                    , COALESCE(SUM(Qty), 0)       as Qty
                               FROM Fact_Acct fa
                                        left outer join C_Period p on (p.C_Period_ID = fa.C_Period_ID)
-									   LEFT OUTER JOIN C_Vat_Code vat on vat.C_Vat_Code_ID = p_C_Vat_Code_ID and vat.isActive = 'Y'
-                              WHERE fa.DateAcct <= p_DateAcct
-                                AND fa.account_id = p_Account_ID
-                                AND fa.ad_org_id = p_AD_Org_ID
-                                AND (CASE WHEN vat.vatcode IS NULL THEN TRUE ELSE vat.vatcode = fa.VatCode END)
                               GROUP BY fa.AD_Client_ID, fa.AD_Org_ID
                                      , p.C_Period_ID
                                      , fa.DateAcct
@@ -67,7 +62,7 @@ WITH records AS
                       , SUM(AmtAcctDr) over facts_YearToDate as AmtAcctDr_YTD
                       , SUM(AmtAcctCr) over facts_YearToDate as AmtAcctCr_YTD
 
-                 from fact_records fa
+                 from MV_Fact_Acct_Sum fa
                      window
                          facts_ToDate as (partition by fa.AD_Client_ID, fa.AD_Org_ID, fa.C_AcctSchema_ID, fa.PostingType, fa.Account_ID, fa.C_Tax_ID, fa.vatcode order by fa.DateAcct)
                          , facts_YearToDate as (partition by fa.AD_Client_ID, fa.AD_Org_ID, fa.C_AcctSchema_ID, fa.PostingType, fa.Account_ID, fa.C_Tax_ID
@@ -87,6 +82,11 @@ WITH records AS
 					ev.Name as AccountName
              FROM filteredRecords fa
                       INNER JOIN C_ElementValue ev ON (ev.C_ElementValue_ID = fa.Account_ID) AND ev.isActive = 'Y'
+					   LEFT OUTER JOIN C_Vat_Code vat on vat.C_Vat_Code_ID = p_C_Vat_Code_ID and vat.isActive = 'Y'
+                              WHERE fa.DateAcct <= p_DateAcct
+                                AND fa.account_id = p_Account_ID
+                                AND fa.ad_org_id = p_AD_Org_ID
+                                AND (CASE WHEN vat.vatcode IS NULL THEN TRUE ELSE vat.vatcode = fa.VatCode END)
          )
 select vatcode,
        C_Tax_ID,  AccountNo, AccountName,
@@ -179,4 +179,3 @@ from (
 group by vatcode, C_Tax_ID, AccountNo, AccountName
 $BODY$
     LANGUAGE sql STABLE;
-
