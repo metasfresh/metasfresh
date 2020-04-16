@@ -6,7 +6,7 @@
 	<property name="ireport.zoom" value="1.241842646118328"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="metasfresh"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="jasperreports\dev.xml"/>
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
@@ -22,46 +22,136 @@
 		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
 	</parameter>
 	<parameter name="Alt_PriceList_Version_ID" class="java.math.BigDecimal"/>
+	<parameter name="p_show_product_price_pi_flag" class="java.lang.String">
+		<defaultValueExpression><![CDATA["Y"]]></defaultValueExpression>
+	</parameter>
 	<queryString>
 		<![CDATA[SELECT
 	*,
 	(SELECT validfrom FROM M_Pricelist_Version WHERE M_Pricelist_Version_ID = $P{M_PriceList_Version_ID}	AND isActive = 'Y') AS validfrom,
 	(SELECT name FROM C_BPartner_Location WHERE C_BPartner_Location_ID = $P{C_BPartner_Location_ID}	AND isActive = 'Y') AS bpl_Name
 FROM
-	report.fresh_PriceList_Details_Report( $P{C_BPartner_ID}, $P{M_PriceList_Version_ID}, $P{Alt_PriceList_Version_ID}, $P{ad_language})
+	report.fresh_PriceList_Details_Report ($P{C_BPartner_ID}, $P{M_PriceList_Version_ID}, $P{Alt_PriceList_Version_ID}, $P{ad_language}, $P{p_show_product_price_pi_flag}) pdr
 	JOIN de_metas_endcustomer_fresh_reports.Docs_Generics_Org_Report (null,'Y', (SELECT AD_Org_ID FROM C_BPartner WHERE C_BPartner_ID = $P{C_BPartner_ID}  AND isActive = 'Y')) ON true
-;]]>
+	where pdr.show_product_price_pi_flag = 'N' 
+	UNION ALL
+	SELECT
+	*,
+	(SELECT validfrom FROM M_Pricelist_Version WHERE M_Pricelist_Version_ID = $P{M_PriceList_Version_ID}	AND isActive = 'Y') AS validfrom,
+	(SELECT name FROM C_BPartner_Location WHERE C_BPartner_Location_ID = $P{C_BPartner_Location_ID}	AND isActive = 'Y') AS bpl_Name
+FROM
+	report.fresh_PriceList_Details_Report_With_PP_PI ( $P{C_BPartner_ID}, $P{M_PriceList_Version_ID}, $P{Alt_PriceList_Version_ID}, $P{ad_language}, $P{p_show_product_price_pi_flag}) pdr
+	JOIN de_metas_endcustomer_fresh_reports.Docs_Generics_Org_Report (null,'Y', (SELECT AD_Org_ID FROM C_BPartner WHERE C_BPartner_ID = $P{C_BPartner_ID}  AND isActive = 'Y')) ON true
+	where pdr.show_product_price_pi_flag = 'Y' ;]]>
 	</queryString>
-	<field name="bp_value" class="java.lang.String"/>
-	<field name="bp_name" class="java.lang.String"/>
-	<field name="productcategory" class="java.lang.String"/>
-	<field name="m_product_id" class="java.lang.Integer"/>
-	<field name="value" class="java.lang.String"/>
-	<field name="customerproductnumber" class="java.lang.String"/>
-	<field name="productname" class="java.lang.String"/>
-	<field name="isseasonfixedprice" class="java.lang.String"/>
-	<field name="itemproductname" class="java.lang.String"/>
-	<field name="qtycuspertu" class="java.math.BigDecimal"/>
-	<field name="packingmaterialname" class="java.lang.String"/>
-	<field name="pricestd" class="java.math.BigDecimal"/>
-	<field name="altpricestd" class="java.math.BigDecimal"/>
-	<field name="hasaltprice" class="java.lang.Integer"/>
-	<field name="uomsymbol" class="java.lang.String"/>
-	<field name="uom_x12de355" class="java.lang.String"/>
-	<field name="attributes" class="java.lang.String"/>
-	<field name="m_productprice_id" class="java.lang.Integer"/>
-	<field name="m_attributesetinstance_id" class="java.lang.Integer"/>
-	<field name="m_hu_pi_item_product_id" class="java.lang.Integer"/>
-	<field name="name" class="java.lang.String"/>
-	<field name="address" class="java.lang.String"/>
-	<field name="vataxid" class="java.lang.String"/>
-	<field name="phone" class="java.lang.String"/>
-	<field name="fax" class="java.lang.String"/>
-	<field name="postal" class="java.lang.String"/>
-	<field name="city" class="java.lang.String"/>
-	<field name="email" class="java.lang.String"/>
-	<field name="validfrom" class="java.sql.Timestamp"/>
-	<field name="bpl_name" class="java.lang.String"/>
+	<field name="bp_value" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="bp_value"/>
+	</field>
+	<field name="bp_name" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="bp_name"/>
+	</field>
+	<field name="productcategory" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="productcategory"/>
+	</field>
+	<field name="m_product_id" class="java.lang.Integer">
+		<property name="com.jaspersoft.studio.field.label" value="m_product_id"/>
+	</field>
+	<field name="value" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="value"/>
+	</field>
+	<field name="customerproductnumber" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="customerproductnumber"/>
+	</field>
+	<field name="productname" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="productname"/>
+	</field>
+	<field name="isseasonfixedprice" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="isseasonfixedprice"/>
+	</field>
+	<field name="itemproductname" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="itemproductname"/>
+	</field>
+	<field name="qtycuspertu" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="qtycuspertu"/>
+	</field>
+	<field name="packingmaterialname" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="packingmaterialname"/>
+	</field>
+	<field name="pricestd" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="pricestd"/>
+	</field>
+	<field name="altpricestd" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="altpricestd"/>
+	</field>
+	<field name="hasaltprice" class="java.lang.Integer">
+		<property name="com.jaspersoft.studio.field.label" value="hasaltprice"/>
+	</field>
+	<field name="uomsymbol" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="uomsymbol"/>
+	</field>
+	<field name="uom_x12de355" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="uom_x12de355"/>
+	</field>
+	<field name="attributes" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="attributes"/>
+	</field>
+	<field name="m_productprice_id" class="java.lang.Integer">
+		<property name="com.jaspersoft.studio.field.label" value="m_productprice_id"/>
+	</field>
+	<field name="m_attributesetinstance_id" class="java.lang.Integer">
+		<property name="com.jaspersoft.studio.field.label" value="m_attributesetinstance_id"/>
+	</field>
+	<field name="m_hu_pi_item_product_id" class="java.lang.Integer">
+		<property name="com.jaspersoft.studio.field.label" value="m_hu_pi_item_product_id"/>
+	</field>
+	<field name="currency" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="currency"/>
+	</field>
+	<field name="currency2" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="currency2"/>
+	</field>
+	<field name="show_product_price_pi_flag" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="show_product_price_pi_flag"/>
+	</field>
+	<field name="name" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="name"/>
+	</field>
+	<field name="address" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="address"/>
+	</field>
+	<field name="vataxid" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="vataxid"/>
+	</field>
+	<field name="taxid" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="taxid"/>
+	</field>
+	<field name="phone" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="phone"/>
+	</field>
+	<field name="phone2" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="phone2"/>
+	</field>
+	<field name="fax" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="fax"/>
+	</field>
+	<field name="postal" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="postal"/>
+	</field>
+	<field name="city" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="city"/>
+	</field>
+	<field name="email" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="email"/>
+	</field>
+	<field name="url" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="url"/>
+	</field>
+	<field name="validfrom" class="java.sql.Timestamp">
+		<property name="com.jaspersoft.studio.field.label" value="validfrom"/>
+	</field>
+	<field name="bpl_name" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="bpl_name"/>
+	</field>
 	<variable name="LINE_COUNT" class="java.lang.Number" calculation="Count">
 		<variableExpression><![CDATA[1]]></variableExpression>
 		<initialValueExpression><![CDATA[0]]></initialValueExpression>
