@@ -170,7 +170,7 @@ final class BPartnerCompositeSaver
 		}
 
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
-
+		// set location records that we don't have in 'bpartnerLocations' to inactive
 		final ICompositeQueryUpdater<I_C_BPartner_Location> columnUpdater = queryBL
 				.createCompositeQueryUpdater(I_C_BPartner_Location.class)
 				.addSetColumnValue(I_C_BPartner_Location.COLUMNNAME_IsActive, false);

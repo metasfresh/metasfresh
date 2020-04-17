@@ -1311,6 +1311,7 @@ public class BPartnerDAO implements IBPartnerDAO
 		final ExternalId externalId = assumeNotNull(query.getExternalId(), "Param query needs to have a non-null externalId; query={}", query);
 
 		final IQueryBuilder<I_C_BPartner> queryBuilder = createQueryBuilder(I_C_BPartner.class)
+				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_BPartner.COLUMN_ExternalId, externalId.getValue());
 
 		if (!query.getOnlyOrgIds().isEmpty())
@@ -1325,6 +1326,7 @@ public class BPartnerDAO implements IBPartnerDAO
 	private Optional<BPartnerId> getBPartnerIdByValueIfExists(@NonNull final BPartnerQuery query)
 	{
 		final IQueryBuilder<I_C_BPartner> queryBuilder = createQueryBuilder(I_C_BPartner.class)
+				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_BPartner.COLUMN_Value, query.getBpartnerValue());
 
 		if (!query.getOnlyOrgIds().isEmpty())
@@ -1339,6 +1341,7 @@ public class BPartnerDAO implements IBPartnerDAO
 	private Optional<BPartnerId> getBPartnerIdByNameIfExists(@NonNull final BPartnerQuery query)
 	{
 		final IQueryBuilder<I_C_BPartner> queryBuilder = createQueryBuilder(I_C_BPartner.class)
+				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_BPartner.COLUMN_Name, query.getBpartnerName());
 
 		if (!query.getOnlyOrgIds().isEmpty())
@@ -1368,7 +1371,7 @@ public class BPartnerDAO implements IBPartnerDAO
 	{
 		return Services.get(IQueryBL.class)
 				.createQueryBuilderOutOfTrx(modelClass)
-				.addOnlyActiveRecordsFilter()
+				//.addOnlyActiveRecordsFilter() // don't generally rule out inactive partners
 				.orderByDescending(I_AD_Org.COLUMNNAME_AD_Org_ID); // prefer "more specific" AD_Org_ID > 0;
 	}
 

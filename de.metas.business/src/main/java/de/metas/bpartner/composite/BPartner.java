@@ -97,6 +97,8 @@ public class BPartner
 
 	private InvoiceRule invoiceRule;
 
+	private String globalId;
+
 	private final RecordChangeLog changeLog;
 	private String globalId;
 

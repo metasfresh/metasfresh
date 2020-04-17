@@ -2283,10 +2283,10 @@ de.metas.rest_api.ordercandidates.impl.OrderCandidatesRestControllerImplTest.tes
     "dropShipBPartner": {
       "bpartner": {
         "metasfreshId": 100026,
-        "code": "droptShipPartner",
+        "code": "dropShipPartner",
         "active": true,
-        "name": "droptShipPartner-name",
-        "group": "droptShipPartner-name",
+        "name": "dropShipPartner-name",
+        "group": "dropShipPartner-name",
         "vendor": false,
         "customer": true,
         "changeInfo": {
@@ -2406,10 +2406,10 @@ de.metas.rest_api.ordercandidates.impl.OrderCandidatesRestControllerImplTest.tes
     "dropShipBPartner": {
       "bpartner": {
         "metasfreshId": 100026,
-        "code": "droptShipPartner",
+        "code": "dropShipPartner",
         "active": true,
-        "name": "droptShipPartner-name",
-        "group": "droptShipPartner-name",
+        "name": "dropShipPartner-name",
+        "group": "dropShipPartner-name",
         "vendor": false,
         "customer": true,
         "changeInfo": {

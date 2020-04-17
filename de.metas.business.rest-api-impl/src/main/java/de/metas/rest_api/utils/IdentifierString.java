@@ -152,6 +152,21 @@ public class IdentifierString
 		return new IdentifierString(Type.METASFRESH_ID, String.valueOf(repoId), String.valueOf(repoId));
 	}
 
+	public static final IdentifierString ofJsonExternalId(@Nullable final JsonExternalId jsonExternalId)
+	{
+		return of(PREFIX_EXTERNAL_ID + JsonExternalId.toValue(jsonExternalId));
+	}
+
+	public static final IdentifierString ofValue(@NonNull final String code)
+	{
+		return of(PREFIX_VALUE + code);
+	}
+
+	public static IdentifierString ofGLN(String gln)
+	{
+		return of(PREFIX_GLN + gln);
+	}
+
 	private IdentifierString(
 			@NonNull final Type type,
 			@NonNull final String value,

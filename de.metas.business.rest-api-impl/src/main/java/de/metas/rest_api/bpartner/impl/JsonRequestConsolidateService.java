@@ -9,19 +9,15 @@ import de.metas.bpartner.composite.BPartnerContact;
 import de.metas.rest_api.bpartner.request.JsonRequestBPartner;
 import de.metas.rest_api.bpartner.request.JsonRequestBPartnerUpsertItem;
 import de.metas.rest_api.bpartner.request.JsonRequestComposite;
-import de.metas.rest_api.bpartner.request.JsonRequestComposite.JsonRequestCompositeBuilder;
 import de.metas.rest_api.bpartner.request.JsonRequestContact;
 import de.metas.rest_api.bpartner.request.JsonRequestContactUpsert;
-import de.metas.rest_api.bpartner.request.JsonRequestContactUpsert.JsonRequestContactUpsertBuilder;
 import de.metas.rest_api.bpartner.request.JsonRequestContactUpsertItem;
 import de.metas.rest_api.bpartner.request.JsonRequestLocation;
 import de.metas.rest_api.bpartner.request.JsonRequestLocationUpsert;
-import de.metas.rest_api.bpartner.request.JsonRequestLocationUpsert.JsonRequestLocationUpsertBuilder;
 import de.metas.rest_api.bpartner.request.JsonRequestLocationUpsertItem;
 import de.metas.rest_api.exception.InvalidIdentifierException;
 import de.metas.rest_api.utils.IdentifierString;
 import de.metas.rest_api.utils.IdentifierString.Type;
-import de.metas.util.Check;
 import lombok.NonNull;
 
 /*
@@ -52,78 +48,69 @@ import lombok.NonNull;
 @Service
 public class JsonRequestConsolidateService
 {
-	public JsonRequestBPartnerUpsertItem consolidateWithIdentifier(@NonNull final JsonRequestBPartnerUpsertItem requestItem)
+	public void consolidateWithIdentifier(@NonNull final JsonRequestBPartnerUpsertItem requestItem)
 	{
 		final IdentifierString identifierString = IdentifierString.of(requestItem.getBpartnerIdentifier());
 		final JsonRequestComposite bpartnerComposite = requestItem.getBpartnerComposite();
 
-		final JsonRequestCompositeBuilder result = bpartnerComposite.toBuilder();
+		consolidateBPartnerWithIdentifier(identifierString, bpartnerComposite.getBpartner());
 
-		final JsonRequestBPartner consolidatedBPartner = consolidateBPartnerWithIdentifier(identifierString, bpartnerComposite.getBpartner());
-		result.bpartner(consolidatedBPartner);
+		consolidateWithIdentifier(bpartnerComposite.getContactsNotNull());
 
-		final JsonRequestContactUpsert consolidatedContacts = consolidateWithIdentifier(bpartnerComposite.getContactsNotNull());
-		result.contacts(consolidatedContacts);
-
-		final JsonRequestLocationUpsert consolidatedLocations = consolidateWithIdentifier(bpartnerComposite.getLocationsNotNull());
-		result.locations(consolidatedLocations);
+		consolidateWithIdentifier(bpartnerComposite.getLocationsNotNull());
 
 		// note that bank-accounts don't need this treatment yet because they don't have the identifier stuff etc
-
-		return requestItem.toBuilder().bpartnerComposite(result.build()).build();
 	}
 
-	public JsonRequestContactUpsert consolidateWithIdentifier(@NonNull final JsonRequestContactUpsert contacts)
+	public void consolidateWithIdentifier(@NonNull final JsonRequestContactUpsert contacts)
 	{
-		final JsonRequestContactUpsertBuilder consolidatedContacts = contacts.toBuilder().clearRequestItems(); // preserve sync advise
-		for (JsonRequestContactUpsertItem contactRequestItem : contacts.getRequestItems())
+		for (final JsonRequestContactUpsertItem contactRequestItem : contacts.getRequestItems())
 		{
-			consolidatedContacts.requestItem(consolidateWithIdentifier(contactRequestItem));
+			consolidateWithIdentifier(contactRequestItem);
 		}
-		return consolidatedContacts.build();
 	}
 
-	public JsonRequestLocationUpsert consolidateWithIdentifier(@NonNull final JsonRequestLocationUpsert locations)
+	public void consolidateWithIdentifier(@NonNull final JsonRequestLocationUpsert locations)
 	{
-		final JsonRequestLocationUpsertBuilder consolidatedLocations = locations.toBuilder().clearRequestItems(); // preserve sync advise
 		for (final JsonRequestLocationUpsertItem locationRequestItem : locations.getRequestItems())
 		{
-			consolidatedLocations.requestItem(consolidateWithIdentifier(locationRequestItem));
+			consolidateWithIdentifier(locationRequestItem);
 		}
-		return consolidatedLocations.build();
 	}
 
-	private JsonRequestBPartner consolidateBPartnerWithIdentifier(
+	/**
+	 * @return the identifier string which the given {@code jsonBPartner} will have *after* if was synched and persistes in metasfresh.
+	 */
+	private void consolidateBPartnerWithIdentifier(
 			@NonNull final IdentifierString identifierString,
 			@Nullable final JsonRequestBPartner jsonBPartner)
 	{
 		if (jsonBPartner == null)
 		{
-			return jsonBPartner; // nothing to consolidate with
+			return;
 		}
 
-		JsonRequestBPartner consolidatedBPartner = jsonBPartner; // might be overridden
 		switch (identifierString.getType())
 		{
 			case METASFRESH_ID:
 				// nothing to do; the bpartner-JSON has no metasfresh-ID to consolidate with
 				break;
 			case EXTERNAL_ID:
-				if (jsonBPartner.getExternalId() == null)
+				if (!jsonBPartner.isExternalIdSet())
 				{
-					consolidatedBPartner = jsonBPartner.toBuilder().externalId(identifierString.asJsonExternalId()).build();
+					jsonBPartner.setExternalId(identifierString.asJsonExternalId());
 				}
 				break;
 			case VALUE:
-				if (Check.isEmpty(jsonBPartner.getCode(), true))
+				if (!jsonBPartner.isCodeSet())
 				{
-					consolidatedBPartner = jsonBPartner.toBuilder().code(identifierString.asValue()).build();
+					jsonBPartner.setCode(identifierString.asValue());
 				}
 				break;
 			case INTERNALNAME:
 				throw new InvalidIdentifierException(identifierString);
 			case GLN:
-				//GLN-identifierString is valid for bPartner-lookup, but we can't consolidate the given jsonBPartner with it
+				// GLN-identifierString is valid for bPartner-lookup, but we can't consolidate the given jsonBPartner with it
 				break;
 			default:
 				throw new AdempiereException("Unexpected IdentifierString.Type=" + identifierString.getType())
@@ -131,15 +118,12 @@ public class JsonRequestConsolidateService
 						.setParameter("identifierString", identifierString)
 						.setParameter("jsonRequestBPartner", jsonBPartner);
 		}
-		return consolidatedBPartner;
 	}
 
-	private JsonRequestLocationUpsertItem consolidateWithIdentifier(@NonNull final JsonRequestLocationUpsertItem requestItem)
+	private void consolidateWithIdentifier(@NonNull final JsonRequestLocationUpsertItem requestItem)
 	{
 		final IdentifierString identifierString = IdentifierString.of(requestItem.getLocationIdentifier());
 		final JsonRequestLocation jsonLocation = requestItem.getLocation();
-
-		JsonRequestLocation consolidatedLocation = jsonLocation; // might be overridden
 
 		switch (identifierString.getType())
 		{
@@ -147,9 +131,10 @@ public class JsonRequestConsolidateService
 				// nothing to do; the bpartner-JSON has no metasfresh-ID to consolidate with
 				break;
 			case EXTERNAL_ID:
-				if (jsonLocation.getExternalId() == null)
+				if (!jsonLocation.isExternalIdSet())
 				{
-					consolidatedLocation = jsonLocation.toBuilder().externalId(identifierString.asJsonExternalId()).build();
+					jsonLocation.setExternalId(identifierString.asJsonExternalId());
+
 				}
 				break;
 			case VALUE:
@@ -157,9 +142,9 @@ public class JsonRequestConsolidateService
 			case INTERNALNAME:
 				throw new InvalidIdentifierException(identifierString);
 			case GLN:
-				if (Check.isEmpty(jsonLocation.getGln(), true))
+				if (jsonLocation.isGlnSet())
 				{
-					consolidatedLocation = jsonLocation.toBuilder().gln(identifierString.asGLN().getCode()).build();
+					jsonLocation.setGln(identifierString.asGLN().getCode());
 				}
 				break;
 			default:
@@ -168,39 +153,37 @@ public class JsonRequestConsolidateService
 						.setParameter("identifierString", identifierString)
 						.setParameter("jsonRequestLocationUpsertItem", requestItem);
 		}
-
-		if (jsonLocation.equals(consolidatedLocation))
-		{
-			return requestItem;
 		}
-		return requestItem.toBuilder()
-				.location(consolidatedLocation)
-				.build();
-	}
 
-	private JsonRequestContactUpsertItem consolidateWithIdentifier(@NonNull final JsonRequestContactUpsertItem requestItem)
+	private IdentifierString consolidateWithIdentifier(@NonNull final JsonRequestContactUpsertItem requestItem)
 	{
 		final IdentifierString identifierString = IdentifierString.of(requestItem.getContactIdentifier());
 		final JsonRequestContact jsonContact = requestItem.getContact();
 
-		JsonRequestContact consolidatedContact = jsonContact; // might be overridden
 		switch (identifierString.getType())
 		{
 			case METASFRESH_ID:
 				// nothing to do; the bpartner-JSON has no metasfresh-ID to consolidate with
-				break;
+				return identifierString;
 			case EXTERNAL_ID:
-				if (jsonContact.getExternalId() == null)
+				if (!jsonContact.isExternalIdSet())
 				{
-					consolidatedContact = jsonContact.toBuilder().externalId(identifierString.asJsonExternalId()).build();
+					jsonContact.setExternalId(identifierString.asJsonExternalId());
+					return identifierString;
 				}
-				break;
+				else
+				{
+					return IdentifierString.ofJsonExternalId(jsonContact.getExternalId());
+				}
 			case VALUE:
-				if (Check.isEmpty(jsonContact.getCode(), true))
+				if (!jsonContact.isCodeSet())
 				{
-					consolidatedContact = jsonContact.toBuilder().code(identifierString.asValue()).build();
+					jsonContact.setCode(identifierString.asValue());
 				}
-				break;
+				else
+				{
+					return IdentifierString.ofValue(jsonContact.getCode());
+				}
 			case INTERNALNAME:
 				throw new InvalidIdentifierException(identifierString);
 			case GLN:
@@ -211,15 +194,7 @@ public class JsonRequestConsolidateService
 						.setParameter("identifierString", identifierString)
 						.setParameter("jsonRequestContactUpsertItem", requestItem);
 		}
-
-		if (jsonContact.equals(consolidatedContact))
-		{
-			return requestItem;
 		}
-		return requestItem.toBuilder()
-				.contact(consolidatedContact)
-				.build();
-	}
 
 	/**
 	 * Assumes that the given {@code contact} has a property that matches the given type.

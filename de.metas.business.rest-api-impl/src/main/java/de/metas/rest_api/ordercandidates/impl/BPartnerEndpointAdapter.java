@@ -1,7 +1,5 @@
 package de.metas.rest_api.ordercandidates.impl;
 
-import static de.metas.util.lang.CoalesceUtil.coalesce;
-
 import java.util.Comparator;
 import java.util.Optional;
 
@@ -143,10 +141,12 @@ final class BPartnerEndpointAdapter
 		}
 
 		// bpartner - make sure that we have isCustomer=true unless explicitly specified otherwise
-		final JsonRequestBPartner bPartner = jsonBPartnerInfo.getBpartner()
-				.toBuilder()
-				.customer(coalesce(jsonBPartnerInfo.getBpartner().getCustomer(), true))
-				.build();
+		final JsonRequestBPartner bPartner = jsonBPartnerInfo.getBpartner();
+		if (!bPartner.isCustomerSet())
+		{
+			bPartner.setCustomer(true);
+		}
+
 		final JsonRequestComposite bpartnerComposite = JsonRequestComposite.builder()
 				.orgCode(orgCode)
 				.bpartner(bPartner)

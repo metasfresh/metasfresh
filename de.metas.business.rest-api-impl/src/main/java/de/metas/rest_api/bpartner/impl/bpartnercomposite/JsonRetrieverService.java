@@ -453,13 +453,6 @@ public class JsonRetrieverService
 	private ImmutableMap<BPartnerCompositeLookupKey, BPartnerComposite> retrieveBPartnerComposites(
 			@NonNull final Collection<BPartnerCompositeLookupKey> queryLookupKeys)
 	{
-		final Collection<BPartnerComposite> bpartnerComposites = cache.getAssertAllCached(bpartnerLookupKeys);
-		return extractResult(bpartnerComposites);
-	}
-
-	private ImmutableMap<BPartnerCompositeLookupKey, BPartnerComposite> retrieveBPartnerComposites(
-			@NonNull final Collection<BPartnerCompositeLookupKey> queryLookupKeys)
-	{
 		final BPartnerQuery query = bPartnerQueryService.createQuery(queryLookupKeys);
 		final Optional<BPartnerComposite> bpartnerComposite;
 		try

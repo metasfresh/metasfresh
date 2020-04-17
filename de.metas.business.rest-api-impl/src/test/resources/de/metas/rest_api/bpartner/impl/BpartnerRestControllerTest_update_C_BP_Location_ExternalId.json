@@ -1,0 +1,23 @@
+  {
+    "requestItems": [
+      {
+        "bpartnerIdentifier": "val-12345",
+        "bpartnerComposite": {
+          "locations": {
+            "requestItems": [
+                {
+                    "locationIdentifier": "ext-123",
+                    "location": {
+                      "externalId": "123_updated"
+                    }
+                }
+            ]
+        }
+      }
+    }
+    ],
+    "syncAdvise": {
+      "ifNotExists": "FAIL",
+      "ifExists": "UPDATE_MERGE"
+    }
+  }

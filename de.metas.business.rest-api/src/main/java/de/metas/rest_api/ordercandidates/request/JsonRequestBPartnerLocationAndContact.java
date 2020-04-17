@@ -91,10 +91,10 @@ public final class JsonRequestBPartnerLocationAndContact
 					Check.errorUnless(hasBPartnerLocationGln, "With bpartnerLookupAdvise={}, location.gln may not be empty; this={}", bpartnerLookupAdvise, this);
 					break;
 				case ExternalId:
-					Check.errorUnless(hasBPartnerLocationGln, "With bpartnerLookupAdvise={}, location.externalId may not be empty; this={}", bpartnerLookupAdvise, this);
+					Check.errorUnless(hasBPartnerExternalId, "With bpartnerLookupAdvise={}, bpartner.externalId may not be empty; this={}", bpartnerLookupAdvise, this);
 					break;
 				case Code:
-					Check.errorUnless(hasBPartnerLocationGln, "With bpartnerLookupAdvise={}, location.code may not be empty; this={}", bpartnerLookupAdvise, this);
+					Check.errorUnless(hasBPartnerCode, "With bpartnerLookupAdvise={}, bpartner.code may not be empty; this={}", bpartnerLookupAdvise, this);
 					break;
 				default:
 					Check.fail("Unsupported bpartnerLookupAdvise={}; this={}", bpartnerLookupAdvise, this);

@@ -259,6 +259,12 @@ public final class BPartnerComposite
 				.findAny();
 	}
 
+	public Optional<BPartnerContact> extractContactByHandle(@NonNull final String handle)
+	{
+		final Predicate<BPartnerContact> predicate = c -> c.getHandles().contains(handle);
+		return extractContact(predicate);
+	}
+
 	public Optional<BPartnerContact> extractContact(@NonNull final Predicate<BPartnerContact> filter)
 	{
 		return createFilteredContactStream(filter)
@@ -301,6 +307,12 @@ public final class BPartnerComposite
 		return createFilteredLocationStream(predicate)
 				.sorted(Comparator.comparing(l -> !l.getLocationType().getIsShipToDefaultOr(false)))
 				.findFirst();
+	}
+
+	public Optional<BPartnerLocation> extractLocationByHandle(@NonNull final String handle)
+	{
+		final Predicate<BPartnerLocation> predicate = l -> l.getHandles().contains(handle);
+		return extractLocation(predicate);
 	}
 
 	public Optional<BPartnerLocation> extractLocation(@NonNull final Predicate<BPartnerLocation> filter)
