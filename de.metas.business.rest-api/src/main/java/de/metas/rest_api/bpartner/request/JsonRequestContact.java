@@ -1,21 +1,14 @@
 package de.metas.rest_api.bpartner.request;
 
 import static de.metas.rest_api.bpartner.SwaggerDocConstants.*;
-import javax.annotation.Nullable;
-
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonInclude.Include;
-
 import de.metas.rest_api.common.JsonExternalId;
 import de.metas.rest_api.common.MetasfreshId;
 import de.metas.rest_api.common.SyncAdvise;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-
 import io.swagger.annotations.ApiModelProperty;
-import lombok.Builder;
-import lombok.Value;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.ToString;
 
 /*
  * #%L
@@ -39,164 +32,235 @@ import lombok.Value;
  * #L%
  */
 
-@Value
+@Getter
+@ToString
+@EqualsAndHashCode
 public class JsonRequestContact
 {
 	@ApiModelProperty(dataType = "java.lang.String")
-	JsonExternalId externalId;
+	private JsonExternalId externalId;
+	private boolean externalIdSet;
 
-	@JsonInclude(Include.NON_NULL)
 	@ApiModelProperty(dataType = "java.lang.Integer")
 	private MetasfreshId metasfreshBPartnerId;
+	private boolean metasfreshBPartnerIdSet;
 
-	@JsonInclude(Include.NON_NULL)
-	String code;
+	@ApiModelProperty("Translated to `AD_User.Value`")
+	private String code;
+	private boolean codeSet;
 
-	@ApiModelProperty(required = false, value = "If not specified but required (e.g. because a new contact is created), then `true` is assumed")
-	@JsonInclude(Include.NON_NULL)
-	Boolean active;
+	@ApiModelProperty("If not specified but required (e.g. because a new contact is created), then `true` is assumed")
+	private Boolean active;
+	private boolean activeSet;
 
-	@JsonInclude(Include.NON_NULL)
-	String name;
+	private String name;
+	private boolean nameSet;
 
-	@JsonInclude(Include.NON_NULL)
-	String firstName;
+	private String firstName;
+	private boolean firstNameSet;
 
-	@JsonInclude(Include.NON_NULL)
-	String lastName;
+	private String lastName;
+	private boolean lastNameSet;
 
-	@JsonInclude(Include.NON_NULL)
-	String email;
+	private String email;
+	private boolean emailSet;
 
-	@JsonInclude(Include.NON_NULL)
-	String phone;
+	private String phone;
+	private boolean phoneSet;
 
-	@JsonInclude(Include.NON_NULL)
-	String fax;
+	private String fax;
+	private boolean faxSet;
 
-	@JsonInclude(Include.NON_NULL)
-	String mobilePhone;
+	private String mobilePhone;
+	private boolean mobilePhoneSet;
 
 	@ApiModelProperty(required = false, value = "If not specified but required (e.g. because a new contact is created), then `false` is assumed")
-	@JsonInclude(Include.NON_NULL)
-	Boolean defaultContact;
+	private Boolean defaultContact;
+	private boolean defaultContactSet;
 
 	@ApiModelProperty(required = false, value = "Only one location per request may have `shipToDefault == true`.\n"
 			+ "If not specified but required (e.g. because a new contact is created), then `false` is assumed.\n"
 			+ "If `true`, then " //
 			+ "* another possibly exiting metasfresh contact might be set to `shipToDefault = false`, even if it is not specified in this request.")
-	@JsonInclude(Include.NON_NULL)
-	Boolean shipToDefault;
+	private Boolean shipToDefault;
+	private boolean shipToDefaultSet;
 
 	@ApiModelProperty(required = false, value = "Only one location per request may have `billToDefault == true`.\n"
 			+ "If not specified but required (e.g. because a new contact is created), then `false` is assumed.\n"
 			+ "If `true`, then " //
 			+ "* another possibly exiting metasfresh contact might be set to `billToDefault = false`, even if it is not specified in this request.")
-	@JsonInclude(Include.NON_NULL)
-	Boolean billToDefault;
+	private Boolean billToDefault;
+	private boolean billToDefaultSet;
 
 	@ApiModelProperty(required = false, value = "If not specified but required (e.g. because a new contact is created), then `false` is assumed")
-	@JsonInclude(Include.NON_NULL)
-	Boolean newsletter;
+	private Boolean newsletter;
+	private boolean newsletterSet;
 
-	@JsonInclude(Include.NON_NULL)
-	String description;
+	private String description;
+	private boolean descriptionSet;
 
 	@ApiModelProperty(required = false, value = "If not specified but required (e.g. because a new contact is created), then `false` is assumed")
-	@JsonInclude(Include.NON_NULL)
-	Boolean sales;
+	private Boolean sales;
+	private boolean salesSet;
 
 	@ApiModelProperty(required = false, value = "Only one location per request may have `salesDefault == true`.\n"
 			+ "If not specified but required (e.g. because a new contact is created), then `false` is assumed.\n"
 			+ "If `true`, then " //
 			+ "* `sales` is always be assumed to be `true` as well"
 			+ "* another possibly exiting metasfresh contact might be set to `salesDefault = false`, even if it is not specified in this request.")
-	@JsonInclude(Include.NON_NULL)
-	Boolean salesDefault;
+	private Boolean salesDefault;
+	private boolean salesDefaultSet;
 
 	@ApiModelProperty(required = false, value = "If not specified but required (e.g. because a new contact is created), then `false` is assumed")
-	@JsonInclude(Include.NON_NULL)
-	Boolean purchase;
+	private Boolean purchase;
+	private boolean purchaseSet;
 
 	@ApiModelProperty(required = false, value = "Only one location per request may have `purchaseDefault == true`.\n"
 			+ "If not specified but required (e.g. because a new contact is created), then `false` is assumed.\n"
 			+ "If `true`, then " //
 			+ "* `purchase` is always be assumed to be `true` as well"
 			+ "* another possibly exiting metasfresh contact might be set to `purchaseDefault = false`, even if it is not specified in this request.")
-	@JsonInclude(Include.NON_NULL)
-	Boolean purchaseDefault;
+	private Boolean purchaseDefault;
+	private boolean purchaseDefaultSet;
 
 	@ApiModelProperty(required = false, value = "If not specified but required (e.g. because a new contact is created), then `false` is assumed")
-	@JsonInclude(Include.NON_NULL)
-	Boolean subjectMatter;
+	private Boolean subjectMatter;
+	private boolean subjectMatterSet;
 
 	@ApiModelProperty(position = 20, // shall be last
 			required = false, value = "Sync advise about this contact's individual properties.\n" + PARENT_SYNC_ADVISE_DOC)
-	@JsonInclude(Include.NON_NULL)
-	SyncAdvise syncAdvise;
+	private SyncAdvise syncAdvise;
+	private boolean syncAdviseSet;
 
-	@Builder(toBuilder = true)
-	@JsonCreator
-	private JsonRequestContact(
-			@JsonProperty("externalId") @Nullable final JsonExternalId externalId,
-			@JsonProperty("metasfreshBPartnerId") @Nullable final MetasfreshId metasfreshBPartnerId,
-			@JsonProperty("code") @Nullable final String code,
-			@JsonProperty("active") @Nullable final Boolean active,
-			@JsonProperty("name") final String name,
-
-			@JsonProperty("firstName") final String firstName,
-			@JsonProperty("lastName") final String lastName,
-			@JsonProperty("email") final String email,
-			@JsonProperty("phone") final String phone,
-
-			@JsonProperty("newsletter") final Boolean newsletter,
-			@JsonProperty("fax") final String fax,
-			@JsonProperty("mobilePhone") final String mobilePhone,
-			@JsonProperty("description") final String description,
-
-			@JsonProperty("defaultContact") @Nullable final Boolean defaultContact,
-			@JsonProperty("shipToDefault") @Nullable final Boolean shipToDefault,
-			@JsonProperty("billToDefault") @Nullable final Boolean billToDefault,
-
-			@JsonProperty("sales") @Nullable final Boolean sales,
-			@JsonProperty("salesDefault") @Nullable final Boolean salesDefault,
-			@JsonProperty("purchase") @Nullable final Boolean purchase,
-			@JsonProperty("purchaseDefault") @Nullable final Boolean purchaseDefault,
-
-			@JsonProperty("subjectMatter") @Nullable final Boolean subjectMatter,
-
-			@JsonProperty("syncAdvise") @Nullable final SyncAdvise syncAdvise)
+	public void setExternalId(JsonExternalId externalId)
 	{
 		this.externalId = externalId;
+		this.externalIdSet = true;
+	}
+
+	public void setMetasfreshBPartnerId(MetasfreshId metasfreshBPartnerId)
+	{
 		this.metasfreshBPartnerId = metasfreshBPartnerId;
+		this.metasfreshBPartnerIdSet = true;
+	}
+
+	public void setCode(String code)
+	{
 		this.code = code;
+		this.codeSet = true;
+	}
+
+	public void setActive(Boolean active)
+	{
 		this.active = active;
+		this.activeSet = true;
+	}
+
+	public void setName(String name)
+	{
 		this.name = name;
+		this.nameSet = true;
+	}
 
+	public void setFirstName(String firstName)
+	{
 		this.firstName = firstName;
+		this.firstNameSet = true;
+	}
+
+	public void setLastName(String lastName)
+	{
 		this.lastName = lastName;
+		this.lastNameSet = true;
+	}
 
+	public void setEmail(String email)
+	{
 		this.email = email;
+		this.emailSet = true;
+	}
+
+	public void setPhone(String phone)
+	{
 		this.phone = phone;
+		this.phoneSet = true;
+	}
+
+	public void setFax(String fax)
+	{
 		this.fax = fax;
+		this.faxSet = true;
+	}
+
+	public void setMobilePhone(String mobilePhone)
+	{
 		this.mobilePhone = mobilePhone;
+		this.mobilePhoneSet = true;
+	}
 
-		this.newsletter = newsletter;
-
-		this.description = description;
-
+	public void setDefaultContact(Boolean defaultContact)
+	{
 		this.defaultContact = defaultContact;
-		this.subjectMatter = subjectMatter;
+		this.defaultContactSet = true;
+	}
 
+	public void setShipToDefault(Boolean shipToDefault)
+	{
 		this.shipToDefault = shipToDefault;
+		this.shipToDefaultSet = true;
+	}
+
+	public void setBillToDefault(Boolean billToDefault)
+	{
 		this.billToDefault = billToDefault;
+		this.billToDefaultSet = true;
+	}
 
+	public void setNewsletter(Boolean newsletter)
+	{
+		this.newsletter = newsletter;
+		this.newsletterSet = true;
+	}
+
+	public void setDescription(String description)
+	{
+		this.description = description;
+		this.descriptionSet = true;
+	}
+
+	public void setSales(Boolean sales)
+	{
 		this.sales = sales;
+		this.salesSet = true;
+	}
+
+	public void setSalesDefault(Boolean salesDefault)
+	{
 		this.salesDefault = salesDefault;
+		this.salesDefaultSet = true;
+	}
 
+	public void setPurchase(Boolean purchase)
+	{
 		this.purchase = purchase;
-		this.purchaseDefault = purchaseDefault;
+		this.purchaseSet = true;
+	}
 
+	public void setPurchaseDefault(Boolean purchaseDefault)
+	{
+		this.purchaseDefault = purchaseDefault;
+		this.purchaseDefaultSet = true;
+	}
+
+	public void setSubjectMatter(Boolean subjectMatter)
+	{
+		this.subjectMatter = subjectMatter;
+		this.subjectMatterSet = true;
+	}
+
+	public void setSyncAdvise(SyncAdvise syncAdvise)
+	{
 		this.syncAdvise = syncAdvise;
+		this.syncAdviseSet = true;
 	}
 }

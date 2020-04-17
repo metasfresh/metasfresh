@@ -24,7 +24,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import java.io.InputStream;
 import java.util.Optional;
 
-import org.adempiere.ad.table.RecordChangeLogRepository;
+import org.adempiere.ad.table.MockLogEntriesRepository;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
@@ -162,7 +162,6 @@ class BpartnerRestControllerTest
 				bpartnerCompositeRepository,
 				new BPGroupRepository(),
 				new GreetingRepository(),
-				new RecordChangeLogRepository(),
 				currencyRepository);
 
 		bpartnerRestController = new BpartnerRestController(
@@ -262,16 +261,12 @@ class BpartnerRestControllerTest
 		assertThat(bpartnerComposite.getContactsNotNull().getRequestItems()).hasSize(2); // guard
 		assertThat(bpartnerComposite.getLocationsNotNull().getRequestItems()).hasSize(2);// guard
 
-		final JsonRequestBPartner bpartner = bpartnerComposite.getBpartner()
-				.toBuilder()
-				.group(BP_GROUP_RECORD_NAME)
-				.build();
+		final JsonRequestBPartner bpartner = bpartnerComposite.getBpartner();
+		bpartner.setGroup(BP_GROUP_RECORD_NAME);
 
 		final JsonRequestBPartnerUpsertItem requestItem = JsonRequestBPartnerUpsertItem.builder()
 				.bpartnerIdentifier("ext-" + externalId)
-				.bpartnerComposite(bpartnerComposite.toBuilder()
-						.bpartner(bpartner)
-						.build())
+				.bpartnerComposite(bpartnerComposite)
 				.build();
 
 		final JsonRequestBPartnerUpsert bpartnerUpsertRequest = JsonRequestBPartnerUpsert.builder()
@@ -301,6 +296,10 @@ class BpartnerRestControllerTest
 	@Test
 	void createOrUpdateBPartner_update_builder()
 	{
+		JsonRequestBPartner partner = new JsonRequestBPartner();
+		partner.setCompanyName("otherCompanyName");
+		partner.setExternalId(JsonExternalId.of("1234567otherExternalId"));
+		partner.setCode("other12345");
 		final JsonRequestBPartnerUpsert bpartnerUpsertRequest = JsonRequestBPartnerUpsert.builder()
 				.syncAdvise(SyncAdvise.builder()
 						.ifExists(IfExists.UPDATE_MERGE)
@@ -309,11 +308,7 @@ class BpartnerRestControllerTest
 				.requestItem(JsonRequestBPartnerUpsertItem.builder()
 						.bpartnerIdentifier("ext-1234567")
 						.bpartnerComposite(JsonRequestComposite.builder()
-								.bpartner(JsonRequestBPartner.builder()
-										.companyName("otherCompanyName")
-										.externalId(JsonExternalId.of("1234567otherExternalId"))
-										.code("other12345")
-										.build())
+								.bpartner(partner)
 								.build())
 						.build())
 				.build();
@@ -597,11 +592,10 @@ class BpartnerRestControllerTest
 
 	private BPartnerComposite perform_createOrUpdateContact_update(@NonNull final String contactIdentifier)
 	{
-		final JsonRequestContact jsonContact = JsonRequestContact.builder()
-				.name("jsonContact.name-UPDATED")
-				.code("jsonContact.code-UPDATED")
-				.metasfreshBPartnerId(MetasfreshId.of(C_BPARTNER_ID))
-				.build();
+		final JsonRequestContact jsonContact = new JsonRequestContact();
+		jsonContact.setName("jsonContact.name-UPDATED");
+		jsonContact.setCode("jsonContact.code-UPDATED");
+		jsonContact.setMetasfreshBPartnerId(MetasfreshId.of(C_BPARTNER_ID));
 
 		SystemTime.setTimeSource(() -> 1561134560); // Fri, 21 Jun 2019 16:29:20 GMT
 		Env.setLoggedUserId(Env.getCtx(), UserId.ofRepoId(BPartnerRecordsUtil.AD_USER_ID));

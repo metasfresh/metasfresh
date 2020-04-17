@@ -27,7 +27,7 @@ import java.util.Optional;
 import javax.annotation.Nullable;
 
 import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
-import org.adempiere.ad.table.RecordChangeLogRepository;
+import org.adempiere.ad.table.MockLogEntriesRepository;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
@@ -35,6 +35,7 @@ import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_AD_OrgInfo;
 import org.compiere.model.I_C_BP_Group;
 import org.compiere.model.I_C_UOM;
@@ -87,7 +88,6 @@ import de.metas.rest_api.attachment.JsonAttachmentType;
 import de.metas.rest_api.bpartner.impl.BPartnerEndpointService;
 import de.metas.rest_api.bpartner.impl.BpartnerRestController;
 import de.metas.rest_api.bpartner.impl.JsonRequestConsolidateService;
-import de.metas.rest_api.bpartner.impl.MockLogEntriesRepository;
 import de.metas.rest_api.bpartner.impl.bpartnercomposite.JsonServiceFactory;
 import de.metas.rest_api.bpartner.request.JsonRequestBPartner;
 import de.metas.rest_api.bpartner.request.JsonRequestLocation;
@@ -96,6 +96,7 @@ import de.metas.rest_api.common.JsonErrorItem;
 import de.metas.rest_api.common.MetasfreshId;
 import de.metas.rest_api.common.SyncAdvise;
 import de.metas.rest_api.common.SyncAdvise.IfNotExists;
+import de.metas.rest_api.ordercandidates.request.BPartnerLookupAdvise;
 import de.metas.rest_api.ordercandidates.request.JSONPaymentRule;
 import de.metas.rest_api.ordercandidates.request.JsonOLCandCreateBulkRequest;
 import de.metas.rest_api.ordercandidates.request.JsonOLCandCreateRequest;
@@ -151,7 +152,7 @@ public class OrderCandidatesRestControllerImplTest
 	private static final String UOM_CODE = "MJ";
 	private UomId uomId;
 
-	private CurrencyId currencyId_EUR = CurrencyId.ofRepoId(12345);
+	private final CurrencyId currencyId_EUR = CurrencyId.ofRepoId(12345);
 
 	private static final String COUNTRY_CODE_DE = "DE";
 	private CountryId countryId_DE;
@@ -187,14 +188,10 @@ public class OrderCandidatesRestControllerImplTest
 		olCandBL = new OLCandBL(new BPartnerOrderParamsRepository());
 		Services.registerService(IOLCandBL.class, olCandBL);
 
+		final I_AD_Org defaultOrgRecord;
+
 		{ // create the master data requested to process the data from our json file
 			testMasterdata = new TestMasterdata();
-
-			final I_AD_OrgInfo orgInfo = InterfaceWrapperHelper.newInstance(I_AD_OrgInfo.class);
-			orgInfo.setAD_Org_ID(OrgId.ANY.getRepoId());
-			orgInfo.setStoreCreditCardData(StoreCreditCardNumberMode.DONT_STORE.getCode());
-			orgInfo.setTimeZone(ZoneId.of("Europe/Berlin").getId());
-			saveRecord(orgInfo);
 
 			countryId_DE = testMasterdata.createCountry(COUNTRY_CODE_DE);
 
@@ -214,6 +211,15 @@ public class OrderCandidatesRestControllerImplTest
 
 			testMasterdata.createDocType(DocBaseAndSubType.of(X_C_DocType.DOCBASETYPE_SalesOrder,
 					X_C_DocType.DOCSUBTYPE_PrepayOrder));
+
+			defaultOrgRecord = newInstance(I_AD_Org.class);
+			saveRecord(defaultOrgRecord);
+
+			final I_AD_OrgInfo orgInfo = InterfaceWrapperHelper.newInstance(I_AD_OrgInfo.class);
+			orgInfo.setAD_Org_ID(defaultOrgRecord.getAD_Org_ID());
+			orgInfo.setStoreCreditCardData(StoreCreditCardNumberMode.DONT_STORE.getCode());
+			orgInfo.setTimeZone(ZoneId.of("Europe/Berlin").getId());
+			saveRecord(orgInfo);
 		}
 
 		final CurrencyService currencyService = new CurrencyService();
@@ -229,7 +235,6 @@ public class OrderCandidatesRestControllerImplTest
 				bpartnerCompositeRepository,
 				new BPGroupRepository(),
 				new GreetingRepository(),
-				new RecordChangeLogRepository(),
 				currencyRepository);
 		final BpartnerRestController bpartnerRestController = new BpartnerRestController(
 				new BPartnerEndpointService(jsonServiceFactory),
@@ -243,7 +248,7 @@ public class OrderCandidatesRestControllerImplTest
 				new NoopPerformanceMonitoringService());
 
 		final PermissionService permissionService = Mockito.mock(PermissionService.class);
-		Mockito.doReturn(OrgId.ANY).when(permissionService).getDefaultOrgId();
+		Mockito.doReturn(OrgId.ofRepoId(defaultOrgRecord.getAD_Org_ID())).when(permissionService).getDefaultOrgId();
 		orderCandidatesRestControllerImpl.setPermissionServiceFactory(PermissionServiceFactories.singleton(permissionService));
 
 		LogManager.setLoggerLevel(orderCandidatesRestControllerImpl.getClass(), Level.ALL);
@@ -397,6 +402,9 @@ public class OrderCandidatesRestControllerImplTest
 
 	public void testDateOrdered(@Nullable final LocalDate dateOrdered)
 	{
+		final JsonRequestBPartner bpartner = new JsonRequestBPartner();
+		bpartner.setCode("bpCode");
+
 		final JsonOLCandCreateBulkRequest request = JsonOLCandCreateBulkRequest.of(JsonOLCandCreateRequest.builder()
 				.dataSource("int-" + DATA_SOURCE_INTERNALNAME)
 				.dataDest("int-" + DATA_DEST_INVOICECANDIDATE)
@@ -410,9 +418,7 @@ public class OrderCandidatesRestControllerImplTest
 						.code("productCode")
 						.build())
 				.bpartner(JsonRequestBPartnerLocationAndContact.builder()
-						.bpartner(JsonRequestBPartner.builder()
-								.code("bpCode")
-								.build())
+						.bpartner(bpartner)
 						.build())
 				.invoiceDocType(JsonDocTypeInfo.builder()
 						.docBaseType("ARI")
@@ -439,6 +445,9 @@ public class OrderCandidatesRestControllerImplTest
 	@Test
 	public void error_NoBPartnerFound()
 	{
+		final JsonRequestBPartner bpartner = new JsonRequestBPartner();
+		bpartner.setCode("bpCode");
+
 		final JsonOLCandCreateBulkRequest request = JsonOLCandCreateBulkRequest.of(JsonOLCandCreateRequest.builder()
 				.dataSource("int-" + DATA_SOURCE_INTERNALNAME)
 				.dataDest("int-" + DATA_DEST_INVOICECANDIDATE)
@@ -451,9 +460,7 @@ public class OrderCandidatesRestControllerImplTest
 						.code("productCode")
 						.build())
 				.bpartner(JsonRequestBPartnerLocationAndContact.builder()
-						.bpartner(JsonRequestBPartner.builder()
-								.code("bpCode")
-								.build())
+						.bpartner(bpartner)
 						.build())
 				.invoiceDocType(JsonDocTypeInfo.builder()
 						.docBaseType("ARI")
@@ -497,6 +504,12 @@ public class OrderCandidatesRestControllerImplTest
 
 		startInterceptors();
 
+		final JsonRequestLocation bpartherLocation = new JsonRequestLocation();
+		bpartherLocation.setGln("gln1");
+
+		final JsonRequestBPartner bpartner = new JsonRequestBPartner();
+		bpartner.setCode("bpCode");
+
 		final JsonOLCandCreateBulkRequest request = JsonOLCandCreateBulkRequest.of(JsonOLCandCreateRequest.builder()
 				.dataSource("int-" + DATA_SOURCE_INTERNALNAME)
 				.dataDest("int-" + DATA_DEST_INVOICECANDIDATE)
@@ -515,12 +528,8 @@ public class OrderCandidatesRestControllerImplTest
 						.syncAdvise(SyncAdvise.JUST_CREATE_IF_NOT_EXISTS)
 						.build())
 				.bpartner(JsonRequestBPartnerLocationAndContact.builder()
-						.bpartner(JsonRequestBPartner.builder()
-								.code("bpCode")
-								.build())
-						.location(JsonRequestLocation.builder()
-								.gln("gln1")
-								.build())
+						.bpartner(bpartner)
+						.location(bpartherLocation)
 						.build())
 				.shipper("val-DPD")
 				.salesPartnerCode("SalesRep")
@@ -579,6 +588,12 @@ public class OrderCandidatesRestControllerImplTest
 
 		startInterceptors();
 
+		final JsonRequestLocation bpartherLocation = new JsonRequestLocation();
+		bpartherLocation.setGln("gln1");
+
+		final JsonRequestBPartner bpartner = new JsonRequestBPartner();
+		bpartner.setCode("bpCode");
+
 		final JsonOLCandCreateBulkRequest request = JsonOLCandCreateBulkRequest.of(JsonOLCandCreateRequest.builder()
 				.dataSource("int-" + DATA_SOURCE_INTERNALNAME)
 				.dataDest("int-" + DATA_DEST_INVOICECANDIDATE)
@@ -597,12 +612,8 @@ public class OrderCandidatesRestControllerImplTest
 						.syncAdvise(SyncAdvise.JUST_CREATE_IF_NOT_EXISTS)
 						.build())
 				.bpartner(JsonRequestBPartnerLocationAndContact.builder()
-						.bpartner(JsonRequestBPartner.builder()
-								.code("bpCode")
-								.build())
-						.location(JsonRequestLocation.builder()
-								.gln("gln1")
-								.build())
+						.bpartner(bpartner)
+						.location(bpartherLocation)
 						.build())
 				.shipper("val-DPD")
 				.salesPartnerCode("SalesRep")
@@ -637,6 +648,37 @@ public class OrderCandidatesRestControllerImplTest
 		// Masterdata
 		testMasterdata.createProduct("productCode", uomId);
 
+		final JsonRequestLocation bpartherLocation = new JsonRequestLocation();
+		bpartherLocation.setGln("gln-ship");
+		bpartherLocation.setCountryCode("DE");
+
+		final JsonRequestLocation billPartherLocation = new JsonRequestLocation();
+		billPartherLocation.setGln("gln-bill");
+		billPartherLocation.setCountryCode("DE");
+
+		final JsonRequestLocation dropShipPartherLocation = new JsonRequestLocation();
+		dropShipPartherLocation.setGln("gln-dropShip");
+		dropShipPartherLocation.setCountryCode("DE");
+
+		final JsonRequestLocation handOverPartherLocation = new JsonRequestLocation();
+		handOverPartherLocation.setGln("gln-handOver");
+		handOverPartherLocation.setCountryCode("DE");
+
+		final JsonRequestBPartner bpartner = new JsonRequestBPartner();
+		bpartner.setCode("bpCode");
+		bpartner.setName("bpName");
+		bpartner.setCompanyName("bpCompanyName");
+		bpartner.setGroup("bpGroupName");
+
+		final JsonRequestBPartner billPartner = new JsonRequestBPartner();
+		billPartner.setCode("bpCode");
+
+		final JsonRequestBPartner dropShipBPartner = new JsonRequestBPartner();
+		dropShipBPartner.setCode("bpCode");
+
+		final JsonRequestBPartner handOverBPartner = new JsonRequestBPartner();
+		handOverBPartner.setCode("bpCode");
+
 		final JsonOLCandCreateBulkRequest request = JsonOLCandCreateBulkRequest.of(JsonOLCandCreateRequest.builder()
 				.dataSource("int-" + DATA_SOURCE_INTERNALNAME)
 				.dataDest("int-" + DATA_DEST_INVOICECANDIDATE)
@@ -656,51 +698,32 @@ public class OrderCandidatesRestControllerImplTest
 				.orderDocType(OrderDocType.PrepayOrder)
 				.shipper("val-DPD")
 				.bpartner(JsonRequestBPartnerLocationAndContact.builder()
+						.bpartnerLookupAdvise(BPartnerLookupAdvise.Code)
 						.syncAdvise(SyncAdvise.CREATE_OR_MERGE)
-						.bpartner(JsonRequestBPartner.builder()
-								.code("bpCode")
-								.name("bpName")
-								.companyName("bpCompanyName")
-								.group("bpGroupName")
-								.build())
-						.location(JsonRequestLocation.builder()
-								.gln("gln-ship")
-								.countryCode("DE")
-								.build())
+						.bpartner(bpartner)
+						.location(bpartherLocation)
 						.build())
 				.billBPartner(JsonRequestBPartnerLocationAndContact.builder()
+						.bpartnerLookupAdvise(BPartnerLookupAdvise.Code)
 						.syncAdvise(SyncAdvise.CREATE_OR_MERGE)
-						.bpartner(JsonRequestBPartner.builder()
-								.code("bpCode")
-								.build())
-						.location(JsonRequestLocation.builder()
-								.gln("gln-bill")
-								.countryCode("DE")
-								.build())
+						.bpartner(billPartner)
+						.location(billPartherLocation)
 						.build())
 				.dropShipBPartner(JsonRequestBPartnerLocationAndContact.builder()
+						.bpartnerLookupAdvise(BPartnerLookupAdvise.Code)
 						.syncAdvise(SyncAdvise.CREATE_OR_MERGE)
-						.bpartner(JsonRequestBPartner.builder()
-								.code("bpCode")
-								.build())
-						.location(JsonRequestLocation.builder()
-								.gln("gln-dropShip")
-								.countryCode("DE")
-								.build())
+						.bpartner(dropShipBPartner)
+						.location(dropShipPartherLocation)
 						.build())
 				.handOverBPartner(JsonRequestBPartnerLocationAndContact.builder()
+						.bpartnerLookupAdvise(BPartnerLookupAdvise.Code)
 						.syncAdvise(SyncAdvise.CREATE_OR_MERGE)
-						.bpartner(JsonRequestBPartner.builder()
-								.code("bpCode")
-								.build())
-						.location(JsonRequestLocation.builder()
-								.gln("gln-handOver")
-								.countryCode("DE")
-								.build())
+						.bpartner(handOverBPartner)
+						.location(handOverPartherLocation)
 						.build())
 				.build());
 
-		// invoke the mthod under test
+		// invoke the method under test
 		final JsonOLCandCreateBulkResponse response = orderCandidatesRestControllerImpl
 				.createOrderLineCandidates(request)
 				.getBody();
@@ -744,7 +767,7 @@ public class OrderCandidatesRestControllerImplTest
 				.build();
 
 		final BPartnerLocationId dropShipBpartnerAndLocation = testMasterdata.prepareBPartnerAndLocation()
-				.bpValue("droptShipPartner")
+				.bpValue("dropShipPartner")
 				.salesPricingSystemId(pricingSystemId)
 				.gln(GLN.ofString("redHerring!"))
 				.countryId(countryId_DE)
@@ -755,6 +778,18 @@ public class OrderCandidatesRestControllerImplTest
 				.build();
 
 		startInterceptors();
+
+		final JsonRequestLocation dropShipLocation = new JsonRequestLocation();
+		dropShipLocation.setGln("expectedDropShipLocation");
+
+		final JsonRequestBPartner mainPartner = new JsonRequestBPartner();
+		mainPartner.setCode("mainPartner");
+
+		final JsonRequestBPartner billPartner = new JsonRequestBPartner();
+		billPartner.setCode("billPartner");
+
+		final JsonRequestBPartner dropShipPartner = new JsonRequestBPartner();
+		dropShipPartner.setCode("dropShipPartner");
 
 		final JsonOLCandCreateBulkRequest request = JsonOLCandCreateBulkRequest.of(JsonOLCandCreateRequest.builder()
 				.dataSource("int-" + DATA_SOURCE_INTERNALNAME)
@@ -780,22 +815,14 @@ public class OrderCandidatesRestControllerImplTest
 						.syncAdvise(SyncAdvise.JUST_CREATE_IF_NOT_EXISTS)
 						.build())
 				.bpartner(JsonRequestBPartnerLocationAndContact.builder()
-						.bpartner(JsonRequestBPartner.builder()
-								.code("mainPartner")
-								.build()) // no location specified!
+						.bpartner(mainPartner) // no location specified!
 						.build())
 				.billBPartner(JsonRequestBPartnerLocationAndContact.builder()
-						.bpartner(JsonRequestBPartner.builder()
-								.code("billPartner")
-								.build()) // again, no location specified!
+						.bpartner(billPartner) // again, no location specified!
 						.build())
 				.dropShipBPartner(JsonRequestBPartnerLocationAndContact.builder()
-						.bpartner(JsonRequestBPartner.builder()
-								.code("droptShipPartner")
-								.build())
-						.location(JsonRequestLocation.builder()
-								.gln("expectedDropShipLocation")
-								.build())
+						.bpartner(dropShipPartner)
+						.location(dropShipLocation)
 						.build())
 
 				.build());
@@ -829,6 +856,7 @@ public class OrderCandidatesRestControllerImplTest
 	@Test
 	public void test_no_location_specified_DirectDebit()
 	{
+		// given
 		//
 		// Masterdata: pricing
 		final TaxCategoryId taxCategoryId = testMasterdata.createTaxCategory();
@@ -839,30 +867,42 @@ public class OrderCandidatesRestControllerImplTest
 
 		//
 		// Masterdata: BPartner & Location
-		final BPartnerLocationId bpartnerAndLocation = testMasterdata.prepareBPartnerAndLocation()
+		final BPartnerLocationId bpartnerLocationId = testMasterdata.prepareBPartnerAndLocation()
 				.bpValue("mainPartner")
 				.salesPricingSystemId(pricingSystemId)
 				.countryId(countryId_DE)
 				.build();
 
-		final BPartnerLocationId billBpartnerAndLocation = testMasterdata.prepareBPartnerAndLocation()
+		final BPartnerLocationId billBpartnerLocationId = testMasterdata.prepareBPartnerAndLocation()
 				.bpValue("billPartner")
 				.salesPricingSystemId(pricingSystemId)
 				.countryId(countryId_DE)
 				.build();
 
-		final BPartnerLocationId dropShipBpartnerAndLocation = testMasterdata.prepareBPartnerAndLocation()
-				.bpValue("droptShipPartner")
+		final BPartnerLocationId dropShipBpartnerLocationId = testMasterdata.prepareBPartnerAndLocation()
+				.bpValue("dropShipPartner")
 				.salesPricingSystemId(pricingSystemId)
 				.gln(GLN.ofString("redHerring!"))
 				.countryId(countryId_DE)
 				.build();
-		final BPartnerLocationId expectedDropShipLocation = testMasterdata.prepareBPartnerLocation().bpartnerId(dropShipBpartnerAndLocation.getBpartnerId())
+		final BPartnerLocationId expectedDropShipLocationId = testMasterdata.prepareBPartnerLocation().bpartnerId(dropShipBpartnerLocationId.getBpartnerId())
 				.countryId(countryId_DE)
 				.gln(GLN.ofString("expectedDropShipLocation"))
 				.build();
 
 		startInterceptors();
+
+		final JsonRequestLocation dropShipLocation = new JsonRequestLocation();
+		dropShipLocation.setGln("expectedDropShipLocation");
+
+		final JsonRequestBPartner mainPartner = new JsonRequestBPartner();
+		mainPartner.setCode("mainPartner");
+
+		final JsonRequestBPartner billPartner = new JsonRequestBPartner();
+		billPartner.setCode("billPartner");
+
+		final JsonRequestBPartner dropShipPartner = new JsonRequestBPartner();
+		dropShipPartner.setCode("dropShipPartner");
 
 		final JsonOLCandCreateBulkRequest request = JsonOLCandCreateBulkRequest.of(JsonOLCandCreateRequest.builder()
 				.dataSource("int-" + DATA_SOURCE_INTERNALNAME)
@@ -887,31 +927,29 @@ public class OrderCandidatesRestControllerImplTest
 						.priceStd(new BigDecimal("13.24"))
 						.syncAdvise(SyncAdvise.JUST_CREATE_IF_NOT_EXISTS)
 						.build())
+
 				.bpartner(JsonRequestBPartnerLocationAndContact.builder()
-						.bpartner(JsonRequestBPartner.builder()
-								.code("mainPartner")
-								.build()) // no location specified!
+						.bpartnerLookupAdvise(BPartnerLookupAdvise.Code)
+						.bpartner(mainPartner) // no location specified!
 						.build())
 				.billBPartner(JsonRequestBPartnerLocationAndContact.builder()
-						.bpartner(JsonRequestBPartner.builder()
-								.code("billPartner")
-								.build()) // again, no location specified!
+						.bpartnerLookupAdvise(BPartnerLookupAdvise.Code)
+						.bpartner(billPartner) // again, no location specified!
 						.build())
 				.dropShipBPartner(JsonRequestBPartnerLocationAndContact.builder()
-						.bpartner(JsonRequestBPartner.builder()
-								.code("droptShipPartner")
-								.build())
-						.location(JsonRequestLocation.builder()
-								.gln("expectedDropShipLocation")
-								.build())
+						.bpartnerLookupAdvise(BPartnerLookupAdvise.Code)
+						.bpartner(dropShipPartner)
+						.location(dropShipLocation)
 						.build())
 
 				.build());
 
+		// when
 		final JsonOLCandCreateBulkResponse response = orderCandidatesRestControllerImpl
 				.createOrderLineCandidates(request)
 				.getBody();
 
+		// then
 		final List<JsonOLCand> olCands = response.getResult();
 		assertThat(olCands).hasSize(1);
 		final JsonOLCand olCand = olCands.get(0);
@@ -923,13 +961,13 @@ public class OrderCandidatesRestControllerImplTest
 				.contains(olCand.getId());
 
 		assertThat(olCandRecords).extracting(COLUMNNAME_C_BPartner_ID, COLUMNNAME_C_BPartner_Location_ID)
-				.contains(tuple(bpartnerAndLocation.getBpartnerId().getRepoId(), bpartnerAndLocation.getRepoId()));
+				.contains(tuple(bpartnerLocationId.getBpartnerId().getRepoId(), bpartnerLocationId.getRepoId()));
 
 		assertThat(olCandRecords).extracting(COLUMNNAME_Bill_BPartner_ID, COLUMNNAME_Bill_Location_ID)
-				.contains(tuple(billBpartnerAndLocation.getBpartnerId().getRepoId(), billBpartnerAndLocation.getRepoId()));
+				.contains(tuple(billBpartnerLocationId.getBpartnerId().getRepoId(), billBpartnerLocationId.getRepoId()));
 
 		assertThat(olCandRecords).extracting(COLUMNNAME_DropShip_BPartner_ID, COLUMNNAME_DropShip_Location_ID)
-				.contains(tuple(dropShipBpartnerAndLocation.getBpartnerId().getRepoId(), expectedDropShipLocation.getRepoId()));
+				.contains(tuple(dropShipBpartnerLocationId.getBpartnerId().getRepoId(), expectedDropShipLocationId.getRepoId()));
 
 		expect(olCand).toMatchSnapshot();
 	}
@@ -937,13 +975,13 @@ public class OrderCandidatesRestControllerImplTest
 	private static class DummyOLCandWithUOMForTUsCapacityProvider implements IOLCandWithUOMForTUsCapacityProvider
 	{
 		@Override
-		public boolean isProviderNeededForOLCand(I_C_OLCand olCand)
+		public boolean isProviderNeededForOLCand(final I_C_OLCand olCand)
 		{
 			return false;
 		}
 
 		@Override
-		public Quantity computeQtyItemCapacity(I_C_OLCand olCand)
+		public Quantity computeQtyItemCapacity(final I_C_OLCand olCand)
 		{
 			return null;
 		}

@@ -6,7 +6,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import org.adempiere.ad.table.RecordChangeLogRepository;
+import org.adempiere.ad.table.MockLogEntriesRepository;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -39,7 +39,6 @@ import de.metas.organization.OrgInfo;
 import de.metas.rest_api.bpartner.impl.BPartnerEndpointService;
 import de.metas.rest_api.bpartner.impl.BpartnerRestController;
 import de.metas.rest_api.bpartner.impl.JsonRequestConsolidateService;
-import de.metas.rest_api.bpartner.impl.MockLogEntriesRepository;
 import de.metas.rest_api.bpartner.impl.bpartnercomposite.JsonServiceFactory;
 import de.metas.rest_api.bpartner.request.JsonRequestBPartner;
 import de.metas.rest_api.bpartner.request.JsonRequestContact;
@@ -136,7 +135,6 @@ public class MasterdataProviderTest
 				bpartnerCompositeRepository,
 				new BPGroupRepository(),
 				new GreetingRepository(),
-				new RecordChangeLogRepository(),
 				currencyRepository);
 		final BpartnerRestController bpartnerRestController = new BpartnerRestController(
 				new BPartnerEndpointService(jsonServiceFactory),
@@ -149,15 +147,13 @@ public class MasterdataProviderTest
 				.bpartnerRestController(bpartnerRestController)
 				.build();
 
-		jsonBPartner = JsonRequestBPartner.builder()
-				.name("jsonBPartner.name")
-				.code("jsonBPartner.code")
-				.build();
+		jsonBPartner = new JsonRequestBPartner();
+		jsonBPartner.setName("jsonBPartner.name");
+		jsonBPartner.setCode("jsonBPartner.code");
 
-		jsonBPartnerLocation = JsonRequestLocation.builder()
-				.countryCode("DE")
-				.externalId(JsonExternalId.of("jsonBPartnerLocation.externalId"))
-				.build();
+		jsonBPartnerLocation = new JsonRequestLocation();
+		jsonBPartnerLocation.setCountryCode("DE");
+		jsonBPartnerLocation.setExternalId(JsonExternalId.of("jsonBPartnerLocation.externalId"));
 
 		jsonBPartnerInfo = JsonRequestBPartnerLocationAndContact.builder()
 				.bpartner(jsonBPartner)
@@ -208,32 +204,29 @@ public class MasterdataProviderTest
 		bpartnerRecord.setC_BP_Group_ID(20);
 		saveRecord(bpartnerRecord);
 
-		JsonRequestBPartner jsonBPartner = JsonRequestBPartner.builder()
-				.code("jsonBPartner.code")
-				.syncAdvise(SyncAdvise.builder().ifNotExists(IfNotExists.FAIL).ifExists(IfExists.DONT_UPDATE).build())
-				.build();
+		final JsonRequestBPartner jsonBPartner = new JsonRequestBPartner();
+		jsonBPartner.setCode("jsonBPartner.code");
+		jsonBPartner.setSyncAdvise(SyncAdvise.builder().ifNotExists(IfNotExists.FAIL).ifExists(IfExists.DONT_UPDATE).build());
 
-		JsonRequestLocation jsonBPartnerLocation = JsonRequestLocation.builder()
-				.externalId(JsonExternalId.of("externalId"))
-				.name("Dr. Evil")
-				.address1("Teufelgasse 1234")
-				.bpartnerName("Ärztezentrum Gesundheitsquadrat")
-				.city("Düsselldorf")
-				.postal("54321")
-				.countryCode("DE")
-				.syncAdvise(SyncAdvise.builder().ifNotExists(IfNotExists.CREATE).ifExists(IfExists.DONT_UPDATE).build())
-				.build();
+		final JsonRequestLocation jsonBPartnerLocation = new JsonRequestLocation();
+		jsonBPartnerLocation.setExternalId(JsonExternalId.of("externalId"));
+		jsonBPartnerLocation.setName("Dr. Evil");
+		jsonBPartnerLocation.setAddress1("Teufelgasse 1234");
+		jsonBPartnerLocation.setBpartnerName("Ärztezentrum Gesundheitsquadrat");
+		jsonBPartnerLocation.setCity("Düsselldorf");
+		jsonBPartnerLocation.setPostal("54321");
+		jsonBPartnerLocation.setCountryCode("DE");
+		jsonBPartnerLocation.setSyncAdvise(SyncAdvise.builder().ifNotExists(IfNotExists.CREATE).ifExists(IfExists.DONT_UPDATE).build());
 
-		final JsonRequestContact jsonContact = JsonRequestContact.builder()
-				.externalId(JsonExternalId.of("externalId"))
-				.name("Dr. Evil")
-				.firstName("Dr.")
-				.lastName("Evil")
-				.phone("")
-				.fax("")
-				.email("")
-				.syncAdvise(SyncAdvise.builder().ifNotExists(IfNotExists.CREATE).ifExists(IfExists.DONT_UPDATE).build())
-				.build();
+		final JsonRequestContact jsonContact = new JsonRequestContact();
+		jsonContact.setExternalId(JsonExternalId.of("externalId"));
+		jsonContact.setName("Dr. Evil");
+		jsonContact.setFirstName("Dr.");
+		jsonContact.setLastName("Evil");
+		jsonContact.setPhone(null);
+		jsonContact.setFax(null);
+		jsonContact.setEmail(null);
+		jsonContact.setSyncAdvise(SyncAdvise.builder().ifNotExists(IfNotExists.CREATE).ifExists(IfExists.DONT_UPDATE).build());
 
 		final JsonRequestBPartnerLocationAndContact jsonBPartnerInfo = JsonRequestBPartnerLocationAndContact.builder()
 				.bpartner(jsonBPartner)
@@ -241,11 +234,11 @@ public class MasterdataProviderTest
 				.contact(jsonContact)
 				.build();
 
-		masterdataProvider.getCreateBPartnerInfoInTrx(jsonBPartnerInfo, true/*billTo*/, OrgId.ofRepoId(10));
+		masterdataProvider.getCreateBPartnerInfoInTrx(jsonBPartnerInfo, true/* billTo */, OrgId.ofRepoId(10));
 		assertThat(POJOLookupMap.get().getRecords(I_AD_User.class, l -> "externalId".equals(l.getExternalId()))).hasSize(1);
 		assertThat(POJOLookupMap.get().getRecords(I_C_BPartner_Location.class, l -> "externalId".equals(l.getExternalId()))).hasSize(1);
 
-		masterdataProvider.getCreateBPartnerInfoInTrx(jsonBPartnerInfo, true/*billTo*/, OrgId.ofRepoId(10));
+		masterdataProvider.getCreateBPartnerInfoInTrx(jsonBPartnerInfo, true/* billTo */, OrgId.ofRepoId(10));
 		assertThat(POJOLookupMap.get().getRecords(I_AD_User.class, l -> "externalId".equals(l.getExternalId()))).hasSize(1);
 		assertThat(POJOLookupMap.get().getRecords(I_C_BPartner_Location.class, l -> "externalId".equals(l.getExternalId()))).hasSize(1);
 	}

@@ -55,7 +55,8 @@
             "externalId" : "c1_externalId",
             "name" : "c1_name",
             "email" : "c1_email@email.net",
-            "phone" : "c1_phone"
+            "phone" : "c1_phone",
+            "fax" : null
           }
         }, {
           "contactIdentifier" : "ext-c2_externalId",
