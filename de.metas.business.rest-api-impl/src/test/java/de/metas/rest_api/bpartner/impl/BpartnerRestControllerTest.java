@@ -337,7 +337,7 @@ class BpartnerRestControllerTest
 		final I_C_BPartner bpartnerRecord = newInstance(I_C_BPartner.class);
 		bpartnerRecord.setAD_Org_ID(AD_ORG_ID);
 		bpartnerRecord.setName("bpartnerRecord.name");
-		bpartnerRecord.setValue("12345");
+		bpartnerRecord.setValue("12345"); // keep in sync with the JSON file
 		bpartnerRecord.setCompanyName("bpartnerRecord.companyName");
 		bpartnerRecord.setC_BP_Group_ID(C_BP_GROUP_ID);
 		saveRecord(bpartnerRecord);
@@ -352,6 +352,48 @@ class BpartnerRestControllerTest
 		// verify that the bpartner-record was updated
 		refresh(bpartnerRecord);
 		assertThat(bpartnerRecord.getValue()).isEqualTo("12345_updated");
+	}
+
+	/**
+	 * Like {@link #createOrUpdateBPartner_update_C_BPartner_Value_OK()}, but updates a location's externalId
+	 */
+	@Test
+	void createOrUpdateBPartner_update_C_BP_Location_ExternalId()
+	{
+		final JsonRequestBPartnerUpsert bpartnerUpsertRequest = loadUpsertRequest("BpartnerRestControllerTest_update_C_BP_Location_ExternalId.json");
+
+		final I_C_BPartner bpartnerRecord = newInstance(I_C_BPartner.class);
+		bpartnerRecord.setAD_Org_ID(AD_ORG_ID);
+		bpartnerRecord.setName("bpartnerRecord.name");
+		bpartnerRecord.setValue("12345"); // keep in sync with the JSON file
+		bpartnerRecord.setCompanyName("bpartnerRecord.companyName");
+		bpartnerRecord.setC_BP_Group_ID(C_BP_GROUP_ID);
+		saveRecord(bpartnerRecord);
+
+		final I_C_Country countryRecord = newInstance(I_C_Country.class);
+		countryRecord.setCountryCode("DE");
+		saveRecord(countryRecord);
+
+		final I_C_Location locationRecord = newInstance(I_C_Location.class);
+		locationRecord.setC_Country_ID(countryRecord.getC_Country_ID());
+		saveRecord(locationRecord);
+
+		final I_C_BPartner_Location bpartnerLocationRecord = newInstance(I_C_BPartner_Location.class);
+		bpartnerLocationRecord.setC_BPartner_ID(bpartnerRecord.getC_BPartner_ID());
+		bpartnerLocationRecord.setC_Location_ID(locationRecord.getC_Location_ID());
+		bpartnerLocationRecord.setExternalId("123"); // keep in sync with the JSON file
+		saveRecord(bpartnerLocationRecord);
+
+		final RecordCounts inititalCounts = new RecordCounts();
+
+		// invoke the method under test
+		bpartnerRestController.createOrUpdateBPartner(bpartnerUpsertRequest);
+
+		inititalCounts.assertCountsUnchanged();
+
+		// verify that the bpartner-record was updated
+		refresh(bpartnerLocationRecord);
+		assertThat(bpartnerLocationRecord.getExternalId()).isEqualTo("123_updated");
 	}
 
 	/**
@@ -422,7 +464,7 @@ class BpartnerRestControllerTest
 	}
 
 	/**
-	 * Verifies that if an upsert request contains two locations pointing to the same "real" location, then the are applied one after another.
+	 * Verifies that if an upsert request which contains two locations that identify the same C_BPartner_Location record, then they are applied one after another.
 	 */
 	@Test
 	void createOrUpdateBPartner_duplicate_location()

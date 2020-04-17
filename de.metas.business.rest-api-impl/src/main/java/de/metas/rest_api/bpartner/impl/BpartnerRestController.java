@@ -221,11 +221,10 @@ public class BpartnerRestController implements BPartnerRestEndpoint
 		{
 			try (final MDCCloseable mdc = MDC.putCloseable("bpartnerIdentifier", requestItem.getBpartnerIdentifier()))
 			{
-				final JsonRequestBPartnerUpsertItem consolidatedRequestItem = jsonRequestConsolidateService.consolidateWithIdentifier(requestItem);
+				jsonRequestConsolidateService.consolidateWithIdentifier(requestItem);
 
 				final JsonResponseBPartnerCompositeUpsertItem persist = persister.persist(
-						IdentifierString.of(consolidatedRequestItem.getBpartnerIdentifier()),
-						consolidatedRequestItem.getBpartnerComposite(),
+						requestItem,
 						defaultSyncAdvise);
 				response.responseItem(persist);
 			}
@@ -254,10 +253,10 @@ public class BpartnerRestController implements BPartnerRestEndpoint
 
 		final JsonPersisterService persister = jsonServiceFactory.createPersister();
 
-		final JsonRequestLocationUpsert consolicatedLocation = jsonRequestConsolidateService.consolidateWithIdentifier(jsonLocation);
+		jsonRequestConsolidateService.consolidateWithIdentifier(jsonLocation);
 		final Optional<JsonResponseUpsert> jsonLocationId = persister.persistForBPartner(
 				bpartnerIdentifier,
-				consolicatedLocation,
+				jsonLocation,
 				SyncAdvise.builder().ifExists(IfExists.UPDATE_MERGE).ifNotExists(IfNotExists.CREATE).build());
 
 		return createdOrNotFound(jsonLocationId);
@@ -284,11 +283,11 @@ public class BpartnerRestController implements BPartnerRestEndpoint
 
 		final JsonPersisterService persister = jsonServiceFactory.createPersister();
 
-		final JsonRequestContactUpsert consolicatedContact = jsonRequestConsolidateService.consolidateWithIdentifier(jsonContactUpsert);
+		jsonRequestConsolidateService.consolidateWithIdentifier(jsonContactUpsert);
 
 		final Optional<JsonResponseUpsert> response = persister.persistForBPartner(
 				bpartnerIdentifier,
-				consolicatedContact,
+				jsonContactUpsert,
 				SyncAdvise.CREATE_OR_MERGE);
 
 		return createdOrNotFound(response);

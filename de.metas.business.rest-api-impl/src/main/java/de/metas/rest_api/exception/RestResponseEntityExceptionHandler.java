@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
 import de.metas.bpartner.service.BPartnerIdNotFoundException;
+import de.metas.dao.selection.pagination.PageNotFoundException;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
 import de.metas.rest_api.common.JsonError;
@@ -48,7 +49,13 @@ public class RestResponseEntityExceptionHandler
 	private static final Logger logger = LogManager.getLogger(RestResponseEntityExceptionHandler.class);
 
 	@ExceptionHandler(BPartnerIdNotFoundException.class)
-	public ResponseEntity<JsonError> handleBPartnerInfoNotFoundException(@NonNull final BPartnerIdNotFoundException e)
+	public ResponseEntity<JsonError> handleBPartnerIdNotFoundException(@NonNull final BPartnerIdNotFoundException e)
+	{
+		return logAndCreateError(e, HttpStatus.NOT_FOUND);
+	}
+
+	@ExceptionHandler(PageNotFoundException.class)
+	public ResponseEntity<JsonError> handlePageNotFoundExceptionn(@NonNull final PageNotFoundException e)
 	{
 		return logAndCreateError(e, HttpStatus.NOT_FOUND);
 	}

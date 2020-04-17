@@ -49,6 +49,7 @@ import de.metas.rest_api.bpartner.impl.JsonRequestConsolidateService;
 import de.metas.rest_api.bpartner.impl.bpartnercomposite.BPartnerCompositeRestUtils;
 import de.metas.rest_api.bpartner.impl.bpartnercomposite.JsonRetrieverService;
 import de.metas.rest_api.bpartner.request.JsonRequestBPartner;
+import de.metas.rest_api.bpartner.request.JsonRequestBPartnerUpsertItem;
 import de.metas.rest_api.bpartner.request.JsonRequestBankAccountUpsertItem;
 import de.metas.rest_api.bpartner.request.JsonRequestBankAccountsUpsert;
 import de.metas.rest_api.bpartner.request.JsonRequestComposite;
@@ -137,48 +138,51 @@ public class JsonPersisterService
 	}
 
 	public JsonResponseBPartnerCompositeUpsertItem persist(
-			@NonNull final IdentifierString bpartnerIdentifier,
-			@NonNull final JsonRequestComposite jsonBPartnerComposite,
+			@NonNull final JsonRequestBPartnerUpsertItem requestItem,
 			@NonNull final SyncAdvise parentSyncAdvise)
 	{
 		// TODO: add support to retrieve without changelog; we don't need changelog here;
 		// but! make sure we don't screw up caching
 
+		final String rawBpartnerIdentifier = requestItem.getBpartnerIdentifier();
+		final IdentifierString bpartnerIdentifier = IdentifierString.of(rawBpartnerIdentifier);
 		final Optional<BPartnerComposite> optionalBPartnerComposite = jsonRetrieverService.getBPartnerComposite(bpartnerIdentifier);
 
 		final JsonResponseBPartnerCompositeUpsertItemUnderConstrunction resultBuilder = new JsonResponseBPartnerCompositeUpsertItemUnderConstrunction();
-		resultBuilder.setJsonResponseBPartnerUpsertItemBuilder(JsonResponseUpsertItem.builder().identifier(bpartnerIdentifier.getRawIdentifierString()));
+		resultBuilder.setJsonResponseBPartnerUpsertItemBuilder(JsonResponseUpsertItem.builder().identifier(rawBpartnerIdentifier));
 
-		final SyncAdvise effectiveSyncAdvise = coalesce(jsonBPartnerComposite.getSyncAdvise(), parentSyncAdvise);
+		final JsonRequestComposite jsonRequestComposite = requestItem.getBpartnerComposite();
+		final SyncAdvise effectiveSyncAdvise = coalesce(jsonRequestComposite.getSyncAdvise(), parentSyncAdvise);
+
 		final BPartnerComposite bpartnerComposite;
 		if (optionalBPartnerComposite.isPresent())
 		{
-			logger.debug("Found BPartner with id={} for identifier={} (orgCode={})", optionalBPartnerComposite.get().getBpartner().getId(), bpartnerIdentifier.getRawIdentifierString(), jsonBPartnerComposite.getOrgCode());
+			logger.debug("Found BPartner with id={} for identifier={} (orgCode={})", optionalBPartnerComposite.get().getBpartner().getId(), rawBpartnerIdentifier, jsonRequestComposite.getOrgCode());
 			// load and mutate existing aggregation root
 			bpartnerComposite = optionalBPartnerComposite.get();
 			resultBuilder.setNewBPartner(false);
 		}
 		else
 		{
-			logger.debug("Found no BPartner for identifier={} (orgCode={})", bpartnerIdentifier.getRawIdentifierString(), jsonBPartnerComposite.getOrgCode());
+			logger.debug("Found no BPartner for identifier={} (orgCode={})", rawBpartnerIdentifier, jsonRequestComposite.getOrgCode());
 			if (effectiveSyncAdvise.isFailIfNotExists())
 			{
 				throw MissingResourceException.builder()
 						.resourceName("bpartner")
-						.resourceIdentifier(bpartnerIdentifier.toJson())
-						.parentResource(jsonBPartnerComposite)
+						.resourceIdentifier(rawBpartnerIdentifier)
+						.parentResource(jsonRequestComposite)
 						.build()
 						.setParameter("effectiveSyncAdvise", effectiveSyncAdvise);
 			}
 			// create new aggregation root
-			logger.debug("Going to create a new bpartner-composite (orgCode={})", jsonBPartnerComposite.getOrgCode());
+			logger.debug("Going to create a new bpartner-composite (orgCode={})", jsonRequestComposite.getOrgCode());
 			bpartnerComposite = BPartnerComposite.builder().build();
 			resultBuilder.setNewBPartner(true);
 		}
 
 		syncJsonToBPartnerComposite(
 				resultBuilder,
-				jsonBPartnerComposite,
+				jsonRequestComposite,
 				bpartnerComposite,
 				effectiveSyncAdvise);
 
@@ -315,7 +319,7 @@ public class JsonPersisterService
 	 */
 	public Optional<JsonResponseUpsert> persistForBPartner(
 			@NonNull final IdentifierString bpartnerIdentifier,
-			@NonNull final JsonRequestLocationUpsert jsonBPartnerLocations,
+			@NonNull final JsonRequestLocationUpsert jsonRequestLocationUpsert,
 			@NonNull final SyncAdvise parentSyncAdvise)
 	{
 		final Optional<BPartnerComposite> optBPartnerComposite = jsonRetrieverService.getBPartnerComposite(bpartnerIdentifier);
@@ -327,9 +331,9 @@ public class JsonPersisterService
 		final BPartnerComposite bpartnerComposite = optBPartnerComposite.get();
 		final ShortTermLocationIndex shortTermIndex = new ShortTermLocationIndex(bpartnerComposite);
 
-		final SyncAdvise effectiveSyncAdvise = coalesce(jsonBPartnerLocations.getSyncAdvise(), parentSyncAdvise);
+		final SyncAdvise effectiveSyncAdvise = coalesce(jsonRequestLocationUpsert.getSyncAdvise(), parentSyncAdvise);
 
-		final List<JsonRequestLocationUpsertItem> requestItems = jsonBPartnerLocations.getRequestItems();
+		final List<JsonRequestLocationUpsertItem> requestItems = jsonRequestLocationUpsert.getRequestItems();
 
 		final Map<String, JsonResponseUpsertItemBuilder> identifierToBuilder = new HashMap<>();
 		for (final JsonRequestLocationUpsertItem requestItem : requestItems)
@@ -390,8 +394,7 @@ public class JsonPersisterService
 		final JsonResponseUpsertBuilder response = JsonResponseUpsert.builder();
 		for (final JsonRequestContactUpsertItem requestItem : jsonContactUpsert.getRequestItems())
 		{
-			final IdentifierString contactIdentifier = IdentifierString.of(requestItem.getContactIdentifier());
-			final BPartnerContact bpartnerContact = shortTermIndex.extract(contactIdentifier);
+			final BPartnerContact bpartnerContact = bpartnerComposite.extractContactByHandle(requestItem.getContactIdentifier()).get();
 
 			final JsonResponseUpsertItem responseItem = identifierToBuilder
 					.get(requestItem.getContactIdentifier())
@@ -468,7 +471,10 @@ public class JsonPersisterService
 			resultBuilder.getJsonResponseBPartnerUpsertItemBuilder().syncOutcome(SyncOutcome.NOTHING_DONE);
 		}
 		resultBuilder.setJsonResponseContactUpsertItems(syncJsonToContacts(jsonRequestComposite, bpartnerComposite, parentSyncAdvise));
-		resultBuilder.setJsonResponseLocationUpsertItems(syncJsonToLocations(jsonRequestComposite, bpartnerComposite, parentSyncAdvise));
+
+		final ImmutableMap<String, JsonResponseUpsertItemBuilder> identifierToLocationResponse = syncJsonToLocations(jsonRequestComposite, bpartnerComposite, parentSyncAdvise);
+		resultBuilder.setJsonResponseLocationUpsertItems(identifierToLocationResponse);
+
 		resultBuilder.setJsonResponseBankAccountUpsertItems(syncJsonToBankAccounts(jsonRequestComposite, bpartnerComposite, parentSyncAdvise));
 
 		bpartnerCompositeRepository.save(bpartnerComposite);
@@ -480,16 +486,20 @@ public class JsonPersisterService
 		final ImmutableMap<String, JsonResponseUpsertItemBuilder> jsonResponseContactUpsertItemBuilders = resultBuilder.getJsonResponseContactUpsertItems();
 		for (final JsonRequestContactUpsertItem requestItem : jsonRequestComposite.getContactsNotNull().getRequestItems())
 		{
-			final JsonResponseUpsertItemBuilder builder = jsonResponseContactUpsertItemBuilders.get(requestItem.getContactIdentifier());
-			final Optional<BPartnerContact> contact = bpartnerComposite.extractContact(BPartnerCompositeRestUtils.createContactFilterFor(IdentifierString.of(requestItem.getContactIdentifier())));
+			final String originalIdentifier = requestItem.getContactIdentifier();
+
+			final JsonResponseUpsertItemBuilder builder = jsonResponseContactUpsertItemBuilders.get(originalIdentifier);
+			final Optional<BPartnerContact> contact = bpartnerComposite.extractContactByHandle(originalIdentifier);
 			builder.metasfreshId(MetasfreshId.of(contact.get().getId()));
 		}
 
 		final ImmutableMap<String, JsonResponseUpsertItemBuilder> jsonResponseLocationUpsertItemBuilders = resultBuilder.getJsonResponseLocationUpsertItems();
 		for (final JsonRequestLocationUpsertItem requestItem : jsonRequestComposite.getLocationsNotNull().getRequestItems())
 		{
-			final JsonResponseUpsertItemBuilder builder = jsonResponseLocationUpsertItemBuilders.get(requestItem.getLocationIdentifier());
-			final Optional<BPartnerLocation> location = bpartnerComposite.extractLocation(BPartnerCompositeRestUtils.createLocationFilterFor(IdentifierString.of(requestItem.getLocationIdentifier())));
+			final String originalIdentifier = requestItem.getLocationIdentifier();
+
+			final JsonResponseUpsertItemBuilder builder = jsonResponseLocationUpsertItemBuilders.get(originalIdentifier);
+			final Optional<BPartnerLocation> location = bpartnerComposite.extractLocationByHandle(originalIdentifier);
 			builder.metasfreshId(MetasfreshId.of(location.get().getId()));
 		}
 
@@ -926,6 +936,8 @@ public class JsonPersisterService
 		final SyncAdvise syncAdvise = coalesce(jsonBPartnerContact.getSyncAdvise(), parentSyncAdvise);
 		final boolean isUpdateRemove = syncAdvise.getIfExists().isUpdateRemove();
 
+		contact.addHandle(contactIdentifier.getRawIdentifierString());
+
 		// active
 		if (jsonBPartnerContact.isActiveSet())
 		{
@@ -1331,15 +1343,15 @@ public class JsonPersisterService
 	}
 
 	private JsonResponseUpsertItemBuilder syncJsonLocation(
-			@NonNull final JsonRequestLocationUpsertItem jsonBPartnerLocation,
+			@NonNull final JsonRequestLocationUpsertItem locationUpsertItem,
 			@NonNull final SyncAdvise parentSyncAdvise,
 			@NonNull final ShortTermLocationIndex shortTermIndex)
 	{
-		final IdentifierString locationIdentifier = IdentifierString.of(jsonBPartnerLocation.getLocationIdentifier());
+		final IdentifierString locationIdentifier = IdentifierString.of(locationUpsertItem.getLocationIdentifier());
 		final BPartnerLocation existingLocation = shortTermIndex.extract(locationIdentifier);
 
 		final JsonResponseUpsertItemBuilder resultBuilder = JsonResponseUpsertItem.builder()
-				.identifier(jsonBPartnerLocation.getLocationIdentifier());
+				.identifier(locationUpsertItem.getLocationIdentifier());
 
 		final BPartnerLocation location;
 		if (existingLocation != null)
@@ -1353,8 +1365,8 @@ public class JsonPersisterService
 			{
 				throw MissingResourceException.builder()
 						.resourceName("location")
-						.resourceIdentifier(jsonBPartnerLocation.getLocationIdentifier())
-						.parentResource(jsonBPartnerLocation)
+						.resourceIdentifier(locationUpsertItem.getLocationIdentifier())
+						.parentResource(locationUpsertItem)
 						.detail(TranslatableStrings.constant("Type of locationlocationIdentifier=" + locationIdentifier.getType()))
 						.build()
 						.setParameter("effectiveSyncAdvise", parentSyncAdvise);
@@ -1363,8 +1375,8 @@ public class JsonPersisterService
 			{
 				throw MissingResourceException.builder()
 						.resourceName("location")
-						.resourceIdentifier(jsonBPartnerLocation.getLocationIdentifier())
-						.parentResource(jsonBPartnerLocation)
+						.resourceIdentifier(locationUpsertItem.getLocationIdentifier())
+						.parentResource(locationUpsertItem)
 						.detail(TranslatableStrings.constant("Type of locationlocationIdentifier=" + locationIdentifier.getType() + "; with this identifier-type, only updates are allowed."))
 						.build()
 						.setParameter("effectiveSyncAdvise", parentSyncAdvise);
@@ -1372,8 +1384,8 @@ public class JsonPersisterService
 			location = shortTermIndex.newLocation(locationIdentifier);
 			resultBuilder.syncOutcome(SyncOutcome.CREATED);
 		}
-
-		syncJsonToLocation(jsonBPartnerLocation.getLocation(), location, parentSyncAdvise);
+		location.addHandle(locationUpsertItem.getLocationIdentifier());
+		syncJsonToLocation(locationUpsertItem.getLocation(), location, parentSyncAdvise);
 
 		return resultBuilder;
 	}
@@ -1383,7 +1395,6 @@ public class JsonPersisterService
 			@NonNull final BPartnerLocation location,
 			@NonNull final SyncAdvise parentSyncAdvise)
 	{
-
 		final SyncAdvise syncAdvise = coalesce(jsonBPartnerLocation.getSyncAdvise(), parentSyncAdvise);
 
 		// active

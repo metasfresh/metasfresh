@@ -2,6 +2,8 @@ package de.metas.dao.selection.pagination;
 
 import org.adempiere.exceptions.AdempiereException;
 
+import lombok.NonNull;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -24,13 +26,14 @@ import org.adempiere.exceptions.AdempiereException;
  * #L%
  */
 
-public class PaginationException extends AdempiereException
+public class PageNotFoundException extends AdempiereException
 {
-	public PaginationException(String message)
+	private static final long serialVersionUID = 2037196076279971989L;
+
+	public PageNotFoundException(@NonNull final String completePageId)
 	{
-		super(message);
+		super("Page with ID " + completePageId + "not found");
 	}
 
-	private static final long serialVersionUID = 2037196076279971989L;
 
 }

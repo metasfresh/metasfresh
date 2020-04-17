@@ -140,9 +140,9 @@ public class ContactRestController implements ContactRestEndpoint
 
 		final JsonPersisterService persister = jsonServiceFactory.createPersister();
 
-		final JsonRequestContactUpsert consolidatedContacts = jsonRequestConsolidateService.consolidateWithIdentifier(contacts);
+		jsonRequestConsolidateService.consolidateWithIdentifier(contacts);
 
-		for (final JsonRequestContactUpsertItem requestItem : consolidatedContacts.getRequestItems())
+		for (final JsonRequestContactUpsertItem requestItem : contacts.getRequestItems())
 		{
 			final JsonResponseUpsertItem responseItem = persister.persist(
 					IdentifierString.of(requestItem.getContactIdentifier()),

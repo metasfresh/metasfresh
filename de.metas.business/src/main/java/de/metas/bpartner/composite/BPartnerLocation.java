@@ -3,7 +3,9 @@ package de.metas.bpartner.composite;
 import static de.metas.util.Check.isEmpty;
 import static de.metas.util.lang.CoalesceUtil.coalesce;
 
+import java.util.HashSet;
 import java.util.Objects;
+import java.util.Set;
 
 import javax.annotation.Nullable;
 
@@ -25,6 +27,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.NonNull;
+import lombok.Setter;
 
 /*
  * #%L
@@ -106,6 +110,12 @@ public class BPartnerLocation
 	private BPartnerLocationType locationType;
 
 	private final RecordChangeLog changeLog;
+
+	/**
+	 * Can be set in order to identify this label independently of its "real" properties. Won't be saved by the repo.
+	 */
+	@Setter(AccessLevel.NONE)
+	private final Set<String> handles = new HashSet<>();
 
 	/**
 	 * Used to track changes that were made since the instance's instantiation.
@@ -405,5 +415,10 @@ public class BPartnerLocation
 			return;
 		}
 		original = deepCopy();
+	}
+
+	public void addHandle(@NonNull final String handle)
+	{
+		handles.add(handle);
 	}
 }
