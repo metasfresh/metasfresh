@@ -83,10 +83,6 @@ export class QuickActions extends Component {
   UNSAFE_componentWillReceiveProps = (nextProps) => {
     const { selected, viewId, windowType } = this.props;
 
-    if (!nextProps.viewId && viewId) {
-      return this.props.onInvalidViewId();
-    }
-
     if (
       ((selected || nextProps.selected) &&
         JSON.stringify(nextProps.selected) !== JSON.stringify(selected)) ||

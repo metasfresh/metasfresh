@@ -164,6 +164,8 @@ class DocumentListContainer extends Component {
           if (included) {
             closeListIncludedView(includedView);
           }
+
+          this.fetchLayoutAndData();
         }
       );
     }
