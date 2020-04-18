@@ -128,9 +128,8 @@ public class TcpConnectionEndPointTest
 								Thread.sleep(readTimeoutMillis + 50);
 								final String anotherWrongServerReturnString = MockedEndpoint.createWeightString(new BigDecimal(weight + 10)) + ISiscCmd.SICS_CMD_TERMINATOR;
 								out.write(anotherWrongServerReturnString.getBytes(ICmd.SICS_CMD_CHARSET));
-								System.out.println("TcpConnectionEndPointTest" + ": server socked replied with anotherWrongServerReturnString=" + anotherWrongServerReturnString);
-
 								out.flush();
+								System.out.println("TcpConnectionEndPointTest" + ": server socked replied with anotherWrongServerReturnString=" + anotherWrongServerReturnString);
 							}
 						}
 					}
@@ -197,7 +196,7 @@ public class TcpConnectionEndPointTest
 		exitServerSocketThread = true;
 
 		assertThat(serverSocketThread, notNullValue());
-		serverSocketThread.join(3000); // waiting for just three seconds, we don't want the whole build to stall
-		assertThat("serverSocketThread did not stop within 3 seconds; serverSocketThread=" + serverSocketThread.toString(), serverSocketThread.isAlive(), is(false));
+		serverSocketThread.join(6000); // waiting for just 6 seconds, we don't want the whole build to stall
+		assertThat("TcpConnectionEndPointTest: serverSocketThread did not stop within 6 seconds; serverSocketThread=" + serverSocketThread.toString(), serverSocketThread.isAlive(), is(false));
 	}
 }
