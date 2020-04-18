@@ -22,32 +22,32 @@ package org.eevolution.model;
  * #L%
  */
 
-import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
-import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
-import org.adempiere.ad.modelvalidator.IModelValidationEngine;
-import org.compiere.SpringContextHolder;
-import org.compiere.model.I_AD_Client;
-import org.compiere.model.I_S_Resource;
-import org.compiere.model.I_S_ResourceType;
-import org.compiere.util.Env;
-
 import de.metas.cache.CacheMgt;
 import de.metas.cache.model.IModelCacheService;
 import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.planning.pporder.PPOrderPojoConverter;
 import lombok.NonNull;
+import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
+import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
+import org.adempiere.ad.modelvalidator.IModelValidationEngine;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_S_Resource;
+import org.compiere.model.I_S_ResourceType;
+import org.compiere.util.Env;
 
 /**
  * Libero Validator
  *
  * @author Victor Perez
  * @author Trifon Trifonov
- *         <li>[ 2270421 ] Can not complete Shipment (Customer)</li>
+ * <li>[ 2270421 ] Can not complete Shipment (Customer)</li>
  * @author Teo Sarca, www.arhipac.ro
  */
 public final class LiberoValidator extends AbstractModuleInterceptor
 {
-	/** Context variable which says if libero manufacturing is enabled */
+	/**
+	 * Context variable which says if libero manufacturing is enabled
+	 */
 	public static final String CTX_IsLiberoEnabled = "#IsLiberoEnabled";
 
 	private final PPOrderPojoConverter ppOrderConverter;
@@ -68,32 +68,32 @@ public final class LiberoValidator extends AbstractModuleInterceptor
 	}
 
 	@Override
-	protected void registerInterceptors(final IModelValidationEngine engine, final I_AD_Client client)
+	protected void registerInterceptors(final IModelValidationEngine engine)
 	{
 		//
 		// Master data
-		engine.addModelValidator(new org.eevolution.model.validator.PP_Product_BOM(), client);
-		engine.addModelValidator(new org.eevolution.model.validator.PP_Product_BOMLine(), client);
-		engine.addModelValidator(new org.eevolution.model.validator.PP_Product_Planning(), client);
+		engine.addModelValidator(new org.eevolution.model.validator.PP_Product_BOM());
+		engine.addModelValidator(new org.eevolution.model.validator.PP_Product_BOMLine());
+		engine.addModelValidator(new org.eevolution.model.validator.PP_Product_Planning());
 
 		// PP_Order related
-		engine.addModelValidator(new org.eevolution.model.validator.PP_Order(ppOrderConverter, materialEventService), client);
-		engine.addModelValidator(new org.eevolution.model.validator.PP_Order_PostMaterialEvent(ppOrderConverter, materialEventService), client); // gh #523
-		engine.addModelValidator(new org.eevolution.model.validator.PP_Order_BOM(), client);
-		engine.addModelValidator(new org.eevolution.model.validator.PP_Order_BOMLine(), client);
-		engine.addModelValidator(new org.eevolution.model.validator.PP_Order_Node_Product(), client);
-		engine.addModelValidator(new org.eevolution.model.validator.PP_Cost_Collector(), client);
+		engine.addModelValidator(new org.eevolution.model.validator.PP_Order(ppOrderConverter, materialEventService));
+		engine.addModelValidator(new org.eevolution.model.validator.PP_Order_PostMaterialEvent(ppOrderConverter, materialEventService)); // gh #523
+		engine.addModelValidator(new org.eevolution.model.validator.PP_Order_BOM());
+		engine.addModelValidator(new org.eevolution.model.validator.PP_Order_BOMLine());
+		engine.addModelValidator(new org.eevolution.model.validator.PP_Order_Node_Product());
+		engine.addModelValidator(new org.eevolution.model.validator.PP_Cost_Collector());
 
 		//
 		// DRP
-		engine.addModelValidator(new org.eevolution.model.validator.DD_Order(), client);
-		engine.addModelValidator(new org.eevolution.model.validator.DD_OrderFireMaterialEvent(), client); // gh #523
-		engine.addModelValidator(new org.eevolution.model.validator.DD_OrderLine(), client);
-		engine.addModelValidator(new org.eevolution.drp.model.validator.M_Movement(), client);
+		engine.addModelValidator(new org.eevolution.model.validator.DD_Order());
+		engine.addModelValidator(new org.eevolution.model.validator.DD_OrderFireMaterialEvent()); // gh #523
+		engine.addModelValidator(new org.eevolution.model.validator.DD_OrderLine());
+		engine.addModelValidator(new org.eevolution.drp.model.validator.M_Movement());
 
 		//
 		// Forecast
-		engine.addModelValidator(new org.eevolution.model.validator.M_Forecast(), client);
+		engine.addModelValidator(new org.eevolution.model.validator.M_Forecast());
 	}
 
 	@Override
@@ -117,4 +117,4 @@ public final class LiberoValidator extends AbstractModuleInterceptor
 	{
 		Env.setContext(Env.getCtx(), CTX_IsLiberoEnabled, true);
 	}
-}	// LiberoValidator
+}    // LiberoValidator

@@ -6,7 +6,6 @@ import org.adempiere.ad.modelvalidator.IModelValidationEngine;
 import org.adempiere.ad.persistence.po.NoDataFoundHandlers;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.service.ISysConfigBL;
-import org.compiere.model.I_AD_Client;
 
 import de.metas.connection.IConnectionCustomizerService;
 import de.metas.dlm.IDLMService;
@@ -47,16 +46,16 @@ public class Main extends AbstractModuleInterceptor
 	private static final String SYSCONFIG_DLM_PARTITIONER_INTERCEPTOR_ENABLED = "de.metas.dlm.PartitionerInterceptor.enabled";
 
 	@Override
-	protected void registerInterceptors(final IModelValidationEngine engine, final I_AD_Client client)
+	protected void registerInterceptors(final IModelValidationEngine engine)
 	{
-		engine.addModelValidator(DLM_Partition_Config.INSTANCE, client);
-		engine.addModelValidator(DLM_Partition_Config_Line.INSTANCE, client);
+		engine.addModelValidator(DLM_Partition_Config.INSTANCE);
+		engine.addModelValidator(DLM_Partition_Config_Line.INSTANCE);
 
 		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 		if (sysConfigBL.getBooleanValue(SYSCONFIG_DLM_PARTITIONER_INTERCEPTOR_ENABLED, false))
 		{
 			// gh #969: only do partitioning if it's enabled
-			engine.addModelValidator(PartitionerInterceptor.INSTANCE, client);
+			engine.addModelValidator(PartitionerInterceptor.INSTANCE);
 		}
 	}
 

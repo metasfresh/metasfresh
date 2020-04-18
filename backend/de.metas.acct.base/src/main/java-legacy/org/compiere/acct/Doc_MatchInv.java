@@ -29,7 +29,6 @@ import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
-import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
@@ -51,7 +50,6 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostDetailCreateRequest;
 import de.metas.costing.CostingDocumentRef;
-import de.metas.costing.ICostingService;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.ICurrencyBL;
 import de.metas.inout.IInOutBL;
@@ -508,7 +506,6 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 		Check.assume(!isSOTrx(), "Cannot create cost details for sales match invoice");
 
 		final IInOutBL inOutBL = Services.get(IInOutBL.class);
-		final ICostingService costDetailService = SpringContextHolder.instance.getBean(ICostingService.class);
 
 		final BigDecimal matchAmt = getInvoiceLineMatchedAmt();
 		final CurrencyId currentId = getInvoiceCurrencyId();
@@ -521,7 +518,7 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 
 		final I_M_MatchInv matchInv = getM_MatchInv();
 
-		return costDetailService
+		return services
 				.createCostDetail(CostDetailCreateRequest.builder()
 						.acctSchemaId(as.getId())
 						.clientId(getClientId())

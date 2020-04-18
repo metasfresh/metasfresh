@@ -308,6 +308,11 @@ public final class CacheMgt
 		}
 	}
 
+	public long reset(@NonNull final CacheInvalidateMultiRequest multiRequest)
+	{
+		return reset(multiRequest, ResetMode.LOCAL_AND_BROADCAST);
+	}
+
 	/**
 	 * Invalidate all cached entries for given TableName/Record_ID.
 	 *

@@ -24,7 +24,6 @@ package de.metas.payment.esr.model.validator;
 
 import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
-import org.compiere.model.I_AD_Client;
 
 import de.metas.banking.bankstatement.match.api.IPaymentBatchFactory;
 import de.metas.banking.bankstatement.match.spi.impl.ESRPaymentBatchProvider;
@@ -47,19 +46,17 @@ import de.metas.util.Services;
 public class ESR_Main_Validator extends AbstractModuleInterceptor
 {
 	@Override
-	protected void onInit(final IModelValidationEngine engine, final I_AD_Client client)
+	protected void onAfterInit()
 	{
-		super.onInit(engine, client);
-
 		registerFactories();
 	}
 
 	@Override
-	protected void registerInterceptors(IModelValidationEngine engine, I_AD_Client client)
+	protected void registerInterceptors(IModelValidationEngine engine)
 	{
-		engine.addModelValidator(new ESR_Import(), client);
-		engine.addModelValidator(new ESR_ImportLine(), client);
-		engine.addModelValidator(new C_PaySelection(), client);
+		engine.addModelValidator(new ESR_Import());
+		engine.addModelValidator(new ESR_ImportLine());
+		engine.addModelValidator(new C_PaySelection());
 	}
 
 	public void registerFactories()
