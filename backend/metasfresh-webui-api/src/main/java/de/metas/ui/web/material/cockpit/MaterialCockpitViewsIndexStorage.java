@@ -1,5 +1,6 @@
 package de.metas.ui.web.material.cockpit;
 
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
 import org.compiere.model.I_M_Product;
@@ -48,7 +49,7 @@ import lombok.NonNull;
 @Service
 public class MaterialCockpitViewsIndexStorage implements IViewsIndexStorage
 {
-	private final DefaultViewsRepositoryStorage defaultViewsRepositoryStorage = new DefaultViewsRepositoryStorage();
+	private final DefaultViewsRepositoryStorage defaultViewsRepositoryStorage = new DefaultViewsRepositoryStorage(TimeUnit.HOURS.toMinutes(1));
 
 	public MaterialCockpitViewsIndexStorage()
 	{

@@ -1,5 +1,6 @@
 package de.metas.ui.web.window.model.sql;
 
+import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.Map;
 
@@ -47,9 +48,9 @@ import lombok.experimental.UtilityClass;
 final class SqlValueConverters
 {
 	public static Object convertToPOValue(
-			final Object value, 
-			final String columnName, 
-			final DocumentFieldWidgetType widgetType, 
+			final Object value,
+			final String columnName,
+			final DocumentFieldWidgetType widgetType,
 			final Class<?> targetClass)
 	{
 		final Class<?> valueClass = JSONNullValue.isNull(value) ? null : value.getClass();
@@ -74,7 +75,7 @@ final class SqlValueConverters
 			}
 			else if (String.class.equals(valueClass))
 			{
-				return Integer.parseInt((String)value);
+				return new BigDecimal((String)value).intValue();
 			}
 			else if (Map.class.isAssignableFrom(valueClass))
 			{

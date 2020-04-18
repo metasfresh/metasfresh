@@ -1,6 +1,7 @@
 package de.metas.ui.web.bankstatement_reconciliation;
 
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
 import com.google.common.collect.ImmutableList;
@@ -59,7 +60,7 @@ public class BankStatementReconciliationViewFactory implements IViewFactory, IVi
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
 	private final BankStatementLineAndPaymentsToReconcileRepository rowsRepo;
-	private final DefaultViewsRepositoryStorage views = new DefaultViewsRepositoryStorage();
+	private final DefaultViewsRepositoryStorage views = new DefaultViewsRepositoryStorage(TimeUnit.HOURS.toMinutes(1));
 
 	public BankStatementReconciliationViewFactory(
 			@NonNull final BankStatementLineAndPaymentsToReconcileRepository rowsRepo)

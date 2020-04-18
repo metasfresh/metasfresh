@@ -10,6 +10,8 @@ import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 import lombok.NonNull;
 
+import javax.annotation.Nullable;
+
 /*
  * #%L
  * metasfresh-webui-api
@@ -39,7 +41,7 @@ public interface DocumentDescriptorFactory
 	 *
 	 * @param windowId may be {@code null}. If {@code null}, then return {@code false}.
 	 */
-	boolean isWindowIdSupported(WindowId windowId);
+	boolean isWindowIdSupported(@Nullable WindowId windowId);
 
 	DocumentDescriptor getDocumentDescriptor(WindowId windowId) throws DocumentLayoutBuildException;
 

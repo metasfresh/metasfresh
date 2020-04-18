@@ -1,41 +1,26 @@
+/*
+ * #%L
+ * metasfresh-webui-api
+ * %%
+ * Copyright (C) 2020 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.ui.web.window.model;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutionException;
-import java.util.function.Function;
-
-import javax.annotation.Nullable;
-import javax.annotation.concurrent.Immutable;
-
-import org.adempiere.ad.element.api.AdWindowId;
-import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
-import org.adempiere.ad.expression.api.ILogicExpression;
-import org.adempiere.ad.expression.api.LogicExpressionResult;
-import org.adempiere.ad.persistence.TableModelLoader;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.CopyRecordFactory;
-import org.adempiere.model.CopyRecordSupport;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.model.PlainContextAware;
-import org.adempiere.model.RecordZoomWindowFinder;
-import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.lang.IAutoCloseable;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.model.PO;
-import org.compiere.util.Env;
-import org.compiere.util.Evaluatee;
-import org.compiere.util.Evaluatees;
-import org.slf4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
@@ -43,7 +28,7 @@ import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-
+import de.metas.i18n.AdMessageKey;
 import de.metas.letters.model.MADBoilerPlate;
 import de.metas.letters.model.MADBoilerPlate.BoilerPlateContext;
 import de.metas.letters.model.MADBoilerPlate.SourceDocument;
@@ -78,28 +63,41 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.ad.element.api.AdWindowId;
+import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
+import org.adempiere.ad.expression.api.ILogicExpression;
+import org.adempiere.ad.expression.api.LogicExpressionResult;
+import org.adempiere.ad.persistence.TableModelLoader;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.CopyRecordFactory;
+import org.adempiere.model.CopyRecordSupport;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.model.PlainContextAware;
+import org.adempiere.model.RecordZoomWindowFinder;
+import org.adempiere.service.ISysConfigBL;
+import org.adempiere.util.lang.IAutoCloseable;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.PO;
+import org.compiere.util.Env;
+import org.compiere.util.Evaluatee;
+import org.compiere.util.Evaluatees;
+import org.slf4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
-/*
- * #%L
- * metasfresh-webui-api
- * %%
- * Copyright (C) 2016 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
+import javax.annotation.Nullable;
+import javax.annotation.concurrent.Immutable;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutionException;
+import java.util.function.Function;
 
 @Component
 public class DocumentCollection
@@ -108,6 +106,7 @@ public class DocumentCollection
 	private static final int DEFAULT_CACHE_SIZE = 800;
 
 	private static final Logger logger = LogManager.getLogger(DocumentCollection.class);
+	public static final AdMessageKey MSG_CLONING_NOT_ALLOWED_FOR_CURRENT_WINDOW = AdMessageKey.of("de.metas.ui.web.window.model.DocumentCollection.CloningNotAllowedForCurrentWindow");
 
 	@Autowired
 	private DocumentDescriptorFactory documentDescriptorFactory;
@@ -142,10 +141,8 @@ public class DocumentCollection
 
 	/**
 	 * Delegates to the {@link DocumentDescriptorFactory#isWindowIdSupported(WindowId)} of this instance's {@code documentDescriptorFactory}.
-	 *
-	 * @param windowId
-	 * @return
 	 */
+	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
 	public boolean isWindowIdSupported(@Nullable final WindowId windowId)
 	{
 		return documentDescriptorFactory.isWindowIdSupported(windowId);
@@ -162,7 +159,7 @@ public class DocumentCollection
 		return descriptor.getEntityDescriptor();
 	}
 
-	private final void addToTableName2WindowIdsCache(final DocumentEntityDescriptor entityDescriptor)
+	private void addToTableName2WindowIdsCache(final DocumentEntityDescriptor entityDescriptor)
 	{
 		final String tableName = entityDescriptor.getTableNameOrNull();
 		if (tableName == null)
@@ -174,7 +171,7 @@ public class DocumentCollection
 		windowIds.add(entityDescriptor.getWindowId());
 	}
 
-	private final Set<WindowId> getCachedWindowIdsForTableName(final String tableName)
+	private Set<WindowId> getCachedWindowIdsForTableName(final String tableName)
 	{
 		final Set<WindowId> windowIds = tableName2windowIds.get(tableName);
 		return windowIds != null && !windowIds.isEmpty() ? ImmutableSet.copyOf(windowIds) : ImmutableSet.of();
@@ -231,7 +228,7 @@ public class DocumentCollection
 	{
 		final DocumentKey rootDocumentKey = DocumentKey.ofRootDocumentPath(documentPath.getRootDocumentPath());
 
-		try (final IAutoCloseable readLock = getOrLoadDocument(rootDocumentKey).lockForReading())
+		try (@SuppressWarnings("unused") final IAutoCloseable readLock = getOrLoadDocument(rootDocumentKey).lockForReading())
 		{
 			final Document rootDocument = getOrLoadDocument(rootDocumentKey).copy(CopyMode.CheckInReadonly, NullDocumentChangesCollector.instance);
 			DocumentPermissionsHelper.assertCanView(rootDocument, UserSession.getCurrentPermissions());
@@ -294,7 +291,7 @@ public class DocumentCollection
 			isNewRootDocument = false;
 		}
 
-		try (final IAutoCloseable writeLock = lockHolder.lockForWriting())
+		try (@SuppressWarnings("unused") final IAutoCloseable writeLock = lockHolder.lockForWriting())
 		{
 			final Document rootDocument;
 			if (isNewRootDocument)
@@ -334,7 +331,6 @@ public class DocumentCollection
 	/**
 	 * Creates a new root document.
 	 *
-	 * @param documentPath
 	 * @return new root document (writable)
 	 */
 	private Document createRootDocument(final DocumentPath documentPath, final IDocumentChangesCollector changesCollector)
@@ -349,6 +345,7 @@ public class DocumentCollection
 		assertNewDocumentAllowed(entityDescriptor);
 
 		final DocumentsRepository documentsRepository = entityDescriptor.getDataBinding().getDocumentsRepository();
+		@SuppressWarnings("UnnecessaryLocalVariable")
 		final Document document = documentsRepository.createNewDocument(entityDescriptor, Document.NULL, changesCollector);
 		// NOTE: we assume document is writable
 		// NOTE: we are not adding it to index. That shall be done on "commit".
@@ -365,7 +362,9 @@ public class DocumentCollection
 		}
 	}
 
-	/** Retrieves document from repository */
+	/**
+	 * Retrieves document from repository
+	 */
 	private Document retrieveRootDocumentFromRepository(final DocumentKey documentKey)
 	{
 		final DocumentEntityDescriptor entityDescriptor = getDocumentEntityDescriptor(documentKey.getWindowId());
@@ -567,8 +566,6 @@ public class DocumentCollection
 
 	/**
 	 * Retrieves document path for given ZoomInto info.
-	 *
-	 * @param zoomIntoInfo
 	 */
 	public DocumentPath getDocumentPath(@NonNull final DocumentZoomIntoInfo zoomIntoInfo)
 	{
@@ -620,7 +617,7 @@ public class DocumentCollection
 					.retrieveParentDocumentId(rootEntityDescriptor);
 
 			//
-			return DocumentPath.includedDocumentPath(zoomIntoWindowIdEffective, rootDocumentId, childEntityDescriptor.getDetailId(), rowId);
+			return DocumentPath.includedDocumentPath(zoomIntoWindowIdEffective, rootDocumentId, Check.assumeNotNull(childEntityDescriptor.getDetailId(), "Expected childEntityDescriptor.getDetailId not null"), rowId);
 		}
 	}
 
@@ -661,9 +658,6 @@ public class DocumentCollection
 
 	/**
 	 * Invalidates all root documents identified by tableName/recordId and notifies frontend (via websocket).
-	 *
-	 * @param tableName
-	 * @param recordId
 	 */
 	public void invalidateDocumentByRecordId(final String tableName, final int recordId)
 	{
@@ -711,7 +705,7 @@ public class DocumentCollection
 			final Document rootDocument = rootDocuments.getIfPresent(rootDocumentKey);
 			if (rootDocument != null)
 			{
-				try (final IAutoCloseable lock = rootDocument.lockForWriting())
+				try (@SuppressWarnings("unused") final IAutoCloseable lock = rootDocument.lockForWriting())
 				{
 					for (final IncludedDocumentToInvalidate includedDocumentToInvalidate : documentToInvalidate.getIncludedDocuments())
 					{
@@ -725,11 +719,10 @@ public class DocumentCollection
 						{
 							final DetailId detailId = includedEntityDescriptor.getDetailId();
 
-							rootDocument.getIncludedDocumentsCollection(detailId).markStale(includedRowIds);
+							rootDocument.getIncludedDocumentsCollection(Check.assumeNotNull(detailId, "Expected detailId not null")).markStale(includedRowIds);
 							websocketPublisher.staleIncludedDocuments(windowId, rootDocumentId, detailId, includedRowIds);
 						}
 					}
-
 				}
 			}
 
@@ -748,9 +741,6 @@ public class DocumentCollection
 
 	/**
 	 * Invalidates all root documents identified by tableName/recordId and notifies frontend (via websocket).
-	 *
-	 * @param tableName
-	 * @param recordId
 	 */
 	public void invalidateRootDocument(@NonNull final DocumentPath documentPath)
 	{
@@ -789,6 +779,11 @@ public class DocumentCollection
 		final String tableName = InterfaceWrapperHelper.getModelTableName(fromModel);
 		final PO fromPO = InterfaceWrapperHelper.getPO(fromModel);
 
+		if (!CopyRecordFactory.isEnabledForTableName(tableName))
+		{
+			throw new AdempiereException(MSG_CLONING_NOT_ALLOWED_FOR_CURRENT_WINDOW);
+		}
+
 		final PO toPO = TableModelLoader.instance.newPO(Env.getCtx(), tableName, ITrx.TRXNAME_ThreadInherited);
 		toPO.setDynAttribute(PO.DYNATTR_CopyRecordSupport, CopyRecordFactory.getCopyRecordSupport(tableName)); // set "getValueToCopy" advisor
 		PO.copyValues(fromPO, toPO, true);
@@ -800,8 +795,7 @@ public class DocumentCollection
 		childCRS.setBase(true);
 		childCRS.copyRecord(fromPO, ITrx.TRXNAME_ThreadInherited);
 
-		final DocumentPath toDocumentPath = DocumentPath.rootDocumentPath(fromDocumentPath.getWindowId(), DocumentId.of(toPO.get_ID()));
-		return toDocumentPath;
+		return DocumentPath.rootDocumentPath(fromDocumentPath.getWindowId(), DocumentId.of(toPO.get_ID()));
 	}
 
 	public BoilerPlateContext createBoilerPlateContext(final DocumentPath documentPath)
@@ -834,7 +828,9 @@ public class DocumentCollection
 			return document.getFieldView(fieldName).getValue();
 		}
 
-		/** @return the given {@code defaultValue} if this document does not have a field with the given {@code fieldName} or if the field does not have a value. */
+		/**
+		 * @return the given {@code defaultValue} if this document does not have a field with the given {@code fieldName} or if the field does not have a value.
+		 */
 		@Override
 		public int getFieldValueAsInt(final String fieldName, final int defaultValue)
 		{
@@ -849,14 +845,11 @@ public class DocumentCollection
 	@Immutable
 	@Value
 	@Builder
-	public static final class DocumentPrint
+	public static class DocumentPrint
 	{
-		@NonNull
-		private final String filename;
-		@NonNull
-		private final String reportContentType;
-		@NonNull
-		private final byte[] reportData;
+		@NonNull String filename;
+		@NonNull String reportContentType;
+		@NonNull byte[] reportData;
 	}
 
 	@Immutable
