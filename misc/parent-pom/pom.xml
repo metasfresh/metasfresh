@@ -243,7 +243,7 @@ Default parent pom with common settings (e.g. java file encoding) to be used by 
 						<goals>
 							<goal>revision</goal>
 						</goals>
-						<phase>initialize</phase>
+						<phase>prepare-package</phase>
 					</execution>
 				</executions>
 				<configuration>
