@@ -116,4 +116,6 @@ git merge edi/master --allow-unrelated-histories && \
 git fetch procurement-webui master && \
 git merge procurement-webui/master --allow-unrelated-histories && \
 git fetch admin master && \
-git merge admin/master --allow-unrelated-histories
+git merge admin/master --allow-unrelated-histories && \
+git fetch e2e master && \
+git merge e2e/master --allow-unrelated-histories

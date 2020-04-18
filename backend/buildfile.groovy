@@ -27,9 +27,6 @@ Map build(final MvnConf mvnConf, final Map scmVars, final boolean forceBuild=fal
 			}
 			final String VERSIONS_PLUGIN='org.codehaus.mojo:versions-maven-plugin:2.5' // make sure we know which plugin version we run
 		
-			// update the parent pom version
-			mvnUpdateParentPomVersion mvnConf
-
 			// set the artifact version of everything below ${mvnConf.pomFile}
 			// processAllModules=true: also update those modules that have a parent version range!
 			sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode -DnewVersion=${env.MF_VERSION} -DprocessAllModules=true -Dincludes=\"de.metas*:*\" ${mvnConf.resolveParams} ${VERSIONS_PLUGIN}:set"
@@ -46,7 +43,7 @@ Map build(final MvnConf mvnConf, final Map scmVars, final boolean forceBuild=fal
 			final MvnConf webapiMvnConf = mvnConf.withPomFile('metasfresh-webui-api/pom.xml');
 			sh "mvn --settings ${webapiMvnConf.settingsFile} --file ${webapiMvnConf.pomFile} --batch-mode -Dmaven.test.failure.ignore=true -Dmetasfresh.assembly.descriptor.version=${env.MF_VERSION} ${webapiMvnConf.resolveParams} ${webapiMvnConf.deployParam} deploy"
 			
-			final MvnConf distMvnConf = mvnConf.withPomFile('metasfresh-dist/dist/pom.xml');
+			final MvnConf distMvnConf = mvnConf.withPomFile('metasfresh-dist/pom.xml');
 			sh "mvn --settings ${distMvnConf.settingsFile} --file ${distMvnConf.pomFile} --batch-mode -Dmaven.test.failure.ignore=true -Dmetasfresh.assembly.descriptor.version=${env.MF_VERSION} ${distMvnConf.resolveParams} ${distMvnConf.deployParam} deploy"
 			
 			final DockerConf reportDockerConf = new DockerConf(
