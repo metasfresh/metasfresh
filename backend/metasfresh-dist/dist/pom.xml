@@ -432,7 +432,7 @@ note: when adding new records, please roughly order them by alphabet.
 			<classifier>migration-postgres-sql</classifier>
 			<type>zip</type>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>de.metas.serviceprovider</groupId>
 			<artifactId>de.metas.serviceprovider.base</artifactId>
@@ -838,7 +838,7 @@ note: when adding new records, please roughly order them by alphabet.
 							<overWriteSnapshots>true</overWriteSnapshots>
 						</configuration>
 					</execution>
-					
+
 				</executions>
 			</plugin>
 
@@ -975,6 +975,14 @@ note: when adding new records, please roughly order them by alphabet.
 				<artifactId>maven-enforcer-plugin</artifactId>
 				<configuration>
 					<skip>true</skip>
+				</configuration>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-deploy-plugin</artifactId>
+				<configuration>
+					<skip>false</skip>
 				</configuration>
 			</plugin>
 

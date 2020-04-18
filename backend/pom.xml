@@ -691,6 +691,14 @@
 					<attachClasses>true</attachClasses>
 				</configuration>
 			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-deploy-plugin</artifactId>
+				<configuration>
+					<skip>true</skip>
+				</configuration>
+			</plugin>
 		</plugins>
 
 	</build>
@@ -803,71 +811,6 @@
 									<sources>
 										<source>src/main/java-legacy</source>
 									</sources>
-								</configuration>
-							</execution>
-						</executions>
-					</plugin>
-				</plugins>
-			</build>
-		</profile>
-
-		<profile>
-			<!-- If the file KEYSTORE_REQUIRED.txt is present in a child project, 
-				then we assume that some code needs to be signed. Therefore, the parent-pom 
-				profile with id "prepare-code-signing" activates to download our keystores, 
-				unpack them into the "${project.build.directory}/keystore" folder and set 
-				properties so that e.g. the printing client applet can be singned with our 
-				"developement" signature. Note that: *these default properties can be overridden 
-				from outside. *our "development" signature is not verified by a CA and is 
-				therefore not meant to be rolled out at the customer. *the actual signing 
-				does not take place in this profile, because different projects will sign 
-				different files (and might even use the keystore with different plugins). -->
-			<id>prepare-code-signing</id>
-			<activation>
-				<file>
-					<exists>KEYSTORE_REQUIRED.txt</exists>
-				</file>
-			</activation>
-			<properties>
-				<!-- This is the developement keystore and its passwords. They are supposed 
-					to make sure that a build on a local dev workstatation won't fail. To sign 
-					a "real" build for production, they need to be overwritten from outside (=>handled 
-					by jenkins and/or the RM). -->
-				<keystore.version>1.4.0_dev</keystore.version>
-				<keystore.alias>metas_dev</keystore.alias>
-				<keystore.store.password>metas_dev</keystore.store.password>
-				<keystore.key.password>metas_dev</keystore.key.password>
-
-				<keystore.file>metas_development_keystore</keystore.file>
-				<keystore.path>${project.build.directory}/keystore/${keystore.file}</keystore.path>
-			</properties>
-			<build>
-				<plugins>
-					<plugin>
-						<!-- get our keystores and unpack them to the target folder -->
-						<!-- thx to http://maksim.sorokin.dk/it/2010/08/19/signing-jars-on-a-build-server/ -->
-						<groupId>org.apache.maven.plugins</groupId>
-						<artifactId>maven-dependency-plugin</artifactId>
-						<executions>
-							<execution>
-								<id>unpack</id>
-								<!-- choosing an early phase to make sure the keystore files are 
-									there on prepare-package -->
-								<phase>initialize</phase>
-								<goals>
-									<goal>unpack</goal>
-								</goals>
-								<configuration>
-									<artifactItems>
-										<artifactItem>
-											<groupId>de.metas.keystore</groupId>
-											<artifactId>de.metas.keystore</artifactId>
-											<version>${keystore.version}</version>
-											<type>zip</type>
-											<outputDirectory>${project.build.directory}/keystore</outputDirectory>
-											<includes>*</includes>
-										</artifactItem>
-									</artifactItems>
 								</configuration>
 							</execution>
 						</executions>
