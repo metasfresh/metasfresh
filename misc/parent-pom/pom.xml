@@ -263,6 +263,10 @@ Default parent pom with common settings (e.g. java file encoding) to be used by 
 					-->
 					<useNativeGit>true</useNativeGit>
 
+					<!-- Run only once, and inject the respective file into all submodules -->
+					<runOnlyOnce>true</runOnlyOnce>
+					<injectAllReactorProjects>true</injectAllReactorProjects>
+
 				</configuration>
 			</plugin>
 		</plugins>
