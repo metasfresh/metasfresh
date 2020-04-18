@@ -148,7 +148,9 @@ export default class DocumentList extends Component {
       onRedirectToNewDocument,
       onShowIncludedViewOnSelect,
       onClearStaticFilters,
+      onSortData,
     } = this.props;
+
     const { rowData, size, staticFilters, orderBy, queryLimitHit } = reduxData;
     const { rowEdited, clickOutsideLock, toggleWidth } = this.state;
 
@@ -349,7 +351,7 @@ export default class DocumentList extends Component {
                 onSelectionChanged={updateParentSelectedIds}
                 mainTable={true}
                 updateDocList={onFetchLayoutAndData}
-                sort={this.sortData}
+                sort={onSortData}
                 tabIndex={0}
                 indentSupported={layout.supportTree}
                 disableOnClickOutside={clickOutsideLock}

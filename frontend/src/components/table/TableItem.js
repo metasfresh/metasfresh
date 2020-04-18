@@ -49,6 +49,11 @@ class TableItem extends Component {
 
   // TODO: This needs refactoring. The cases should be better described
   shouldComponentUpdate(nextProps, nextState) {
+    // re-render if we triggered a sortAction
+    if (nextProps.activeSort) {
+      return true;
+    }
+
     // check on saving logic
     if (this.props.notSaved === true && nextProps.notSaved === false) {
       return true;
@@ -723,6 +728,7 @@ TableItem.propTypes = {
   keyProperty: PropTypes.string,
   selected: PropTypes.array,
   page: PropTypes.number,
+  activeSort: PropTypes.bool,
 };
 
 export default TableItem;
