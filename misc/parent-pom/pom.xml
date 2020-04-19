@@ -231,45 +231,6 @@ Default parent pom with common settings (e.g. java file encoding) to be used by 
 	</dependencyManagement>
 
 	<build>
-		<plugins>
-			<plugin>
-				<!-- always add the git information to our artifacts, so we can know where we are coming from -->
-				<groupId>pl.project13.maven</groupId>
-				<artifactId>git-commit-id-plugin</artifactId>
-				<version>4.0.0</version>
-				<executions>
-					<execution>
-						<id>get-the-git-infos</id>
-						<goals>
-							<goal>revision</goal>
-						</goals>
-						<phase>prepare-package</phase>
-					</execution>
-				</executions>
-				<configuration>
-					<generateGitPropertiesFile>true</generateGitPropertiesFile>
-					<generateGitPropertiesFilename>${project.build.outputDirectory}/git.properties</generateGitPropertiesFilename>
-					<!--includeOnlyProperties>
-						For starts, we naively include everything.
-						Also see https://github.com/git-commit-id/git-commit-id-maven-plugin/blob/master/maven/docs/using-the-plugin.md
-						<includeOnlyProperty>^git.build.(time|version)$</includeOnlyProperty>
-						<includeOnlyProperty>^git.commit.id.(abbrev|full)$</includeOnlyProperty>
-					</includeOnlyProperties-->
-					<commitIdGenerationMode>full</commitIdGenerationMode>
-					<!--
-					Using the native git binary gives us aprox-10 minutes in the metasfresh repo
-					Also see https://github.com/git-commit-id/git-commit-id-maven-plugin/blob/master/maven/docs/using-the-plugin.md 
-					Most notably, you can also call maven with `-Dmaven.gitcommitid.nativegit=false` to override this
-					-->
-					<useNativeGit>true</useNativeGit>
-
-					<!-- Run only once, and inject the respective file into all submodules -->
-					<runOnlyOnce>true</runOnlyOnce>
-					<injectAllReactorProjects>true</injectAllReactorProjects>
-
-				</configuration>
-			</plugin>
-		</plugins>
 		<pluginManagement>
 			<plugins>
 				<plugin>
@@ -867,6 +828,45 @@ Failure to find de.metas:de.metas.parent:pom:(1.0.0,3) in (URL ...) was cached i
 
 			<build>
 				<plugins>
+					<!-- This plugin sometimes causes trouble in eclipse do we only run it when there is a jenkins-buildnumber -->
+					<plugin>
+						<groupId>pl.project13.maven</groupId>
+						<artifactId>git-commit-id-plugin</artifactId>
+						<version>4.0.0</version>
+						<executions>
+							<execution>
+								<id>get-the-git-infos</id>
+								<goals>
+									<goal>revision</goal>
+								</goals>
+								<!-- don't bind it to the initialization phase to avoid it being run on mvn clean -->
+								<phase>prepare-package</phase>
+							</execution>
+						</executions>
+						<configuration>
+							<generateGitPropertiesFile>true</generateGitPropertiesFile>
+							<generateGitPropertiesFilename>${project.build.outputDirectory}/git.properties</generateGitPropertiesFilename>
+					<!--includeOnlyProperties>
+						For starts, we naively include everything.
+						Also see https://github.com/git-commit-id/git-commit-id-maven-plugin/blob/master/maven/docs/using-the-plugin.md
+						<includeOnlyProperty>^git.build.(time|version)$</includeOnlyProperty>
+						<includeOnlyProperty>^git.commit.id.(abbrev|full)$</includeOnlyProperty>
+					</includeOnlyProperties-->
+							<commitIdGenerationMode>full</commitIdGenerationMode>
+					<!--
+					Using the native git binary gives us aprox-10 minutes in the metasfresh repo
+					Also see https://github.com/git-commit-id/git-commit-id-maven-plugin/blob/master/maven/docs/using-the-plugin.md 
+					Most notably, you can also call maven with `-Dmaven.gitcommitid.nativegit=false` to override this
+					-->
+							<useNativeGit>true</useNativeGit>
+
+					<!-- Run only once, and inject the respective file into all submodules -->
+							<runOnlyOnce>true</runOnlyOnce>
+							<injectAllReactorProjects>true</injectAllReactorProjects>
+
+						</configuration>
+					</plugin>
+
 					<plugin>
 						<groupId>org.jacoco</groupId>
 						<artifactId>jacoco-maven-plugin</artifactId>
