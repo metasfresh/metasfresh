@@ -37,7 +37,7 @@ Map build(final MvnConf mvnConf, final Map scmVars, final boolean forceBuild=fal
 			// maven.test.failure.ignore=true: continue if tests fail, because we want a full report.
 			// about -Dmetasfresh.assembly.descriptor.version: the versions plugin can't update the version of our shared assembly descriptor de.metas.assemblies. Therefore we need to provide the version from outside via this property
 			// about -T 2C: it means "run with 2 threads per CPU"; note that for us this is highly experimental
-			sh "mvn --settings ${mvnConf.settingsFile} --debug --file ${mvnConf.pomFile} --batch-mode -Dmaven.test.failure.ignore=true -Dmetasfresh.assembly.descriptor.version=${env.MF_VERSION} ${mvnConf.resolveParams} ${mvnConf.deployParam} clean deploy"
+			sh "mvn --settings ${mvnConf.settingsFile} -T 2C --file ${mvnConf.pomFile} --batch-mode -Dmaven.test.failure.ignore=true -Dmetasfresh.assembly.descriptor.version=${env.MF_VERSION} ${mvnConf.resolveParams} ${mvnConf.deployParam} clean deploy"
 
 			// // deploy dist-artifacts. they were already installed further up, together with the rest
 			// final MvnConf webapiMvnConf = mvnConf.withPomFile('metasfresh-webui-api/pom.xml');
