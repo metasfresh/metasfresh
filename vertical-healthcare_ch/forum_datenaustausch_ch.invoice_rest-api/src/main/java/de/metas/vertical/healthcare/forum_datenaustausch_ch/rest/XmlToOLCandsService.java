@@ -397,17 +397,16 @@ public class XmlToOLCandsService
 				context);
 		requestBuilder.org(billerOrgInfo);
 
-		final JsonRequestBPartnerLocationAndContact invoiceRecipient;
 		switch (context.getTargetDocType())
 		{
 			case KV:
-				invoiceRecipient = createReadOnlyInvoiceRecipient(context);
+				requestBuilder.bpartner(createReadOnlyInvoiceRecipient(context));
 				break;
 			case KT:
-				invoiceRecipient = createReadOnlyInvoiceRecipient(context);
+				requestBuilder.bpartner(createReadOnlyInvoiceRecipient(context));
 				break;
 			case EA:
-				invoiceRecipient = createPatientInvoiceRecipient(
+				addPatientInvoiceRecipients(
 						requestBuilder,
 						body,
 						billerOrgInfo.getCode(),
@@ -418,7 +417,6 @@ public class XmlToOLCandsService
 		}
 
 		requestBuilder
-				.bpartner(invoiceRecipient)
 				.externalHeaderId(createExternalHeaderId(requestBuilder));
 
 		final ImmutableList<JsonOLCandCreateRequestBuilder> allBuilders = insertServicesIntoBuilder(
@@ -481,7 +479,7 @@ public class XmlToOLCandsService
 		return body.getTiersPayant().getGuarantor();
 	}
 
-	private JsonRequestBPartnerLocationAndContact createPatientInvoiceRecipient(
+	private void addPatientInvoiceRecipients(
 			@NonNull final JsonOLCandCreateRequestBuilder requestBuilder,
 			@NonNull final BodyType body,
 			@NonNull final String orgCode,
@@ -531,8 +529,22 @@ public class XmlToOLCandsService
 				patientExternalId,
 				null/* gln */,
 				guarantorPostal);
-		if (!Objects.equals(patientLocation, guarantorLocation))
+		if (Objects.equals(patientLocation, guarantorLocation))
 		{
+			patientLocation.setName(patientName);
+			patientLocation.setShipTo(true);
+			patientLocation.setShipToDefault(true);
+			patientLocation.setBillTo(true);
+			patientLocation.setBillToDefault(true);
+		}
+		else
+		{
+			// add an additional bill-location for the guarantor
+			final JsonRequestBPartnerLocationAndContactBuilder billBartnerInfo = JsonRequestBPartnerLocationAndContact
+					.builder()
+					.syncAdvise(context.getDebitorSyncAdvise())
+					.bpartner(bPartner);
+
 			guarantorLocation.setSyncAdvise(SyncAdvise.CREATE_OR_MERGE);
 			guarantorLocation.setName(guarantorName);
 			guarantorLocation.setExternalId(JsonExternalId.of(guarantorLocation.getExternalId().getValue() + "_GUARANTOR"));
@@ -540,29 +552,18 @@ public class XmlToOLCandsService
 			guarantorLocation.setShipToDefault(false);
 			guarantorLocation.setBillTo(true);
 			guarantorLocation.setBillToDefault(true);
+			billBartnerInfo.location(guarantorLocation);
+			requestBuilder.billBPartner(billBartnerInfo.build());
 
+			patientLocation.setSyncAdvise(SyncAdvise.CREATE_OR_MERGE);
 			patientLocation.setName(patientName);
 			patientLocation.setShipTo(true);
 			patientLocation.setShipToDefault(true);
 			patientLocation.setBillTo(false);
 			patientLocation.setBillToDefault(false);
-
-			bPartnerInfo
-					.location(guarantorLocation)
-					.location(patientLocation);
 		}
-		else
-		{
-			patientLocation.setName(patientName);
-			patientLocation.setShipTo(true);
-			patientLocation.setShipToDefault(true);
-			patientLocation.setBillTo(true);
-			patientLocation.setBillToDefault(true);
-
-			bPartnerInfo.location(patientLocation);
-		}
-
-		return bPartnerInfo.build();
+		bPartnerInfo.location(patientLocation);
+		requestBuilder.bpartner(bPartnerInfo.build());
 	}
 
 	private String createFullPersonName(@NonNull final PersonType person)
@@ -785,6 +786,9 @@ public class XmlToOLCandsService
 		location.setPostal(zip.getValue());
 		location.setRegion(statecode);
 		location.setCountryCode(coalesce(countrycode, "CH"));
+
+		location.setBillTo(true);
+		location.setShipTo(true);
 
 		return location;
 	}
