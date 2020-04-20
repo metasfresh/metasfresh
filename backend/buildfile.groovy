@@ -33,19 +33,19 @@ Map build(final MvnConf mvnConf, final Map scmVars, final boolean forceBuild=fal
 			// Set the metasfresh.version property from [1,10.0.0] to our current build version
 			// From the documentation: "Set a property to a given version without any sanity checks"; that's what we want here..sanity is clearly overated
 			sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode -Dproperty=metasfresh.version -DnewVersion=${env.MF_VERSION} ${VERSIONS_PLUGIN}:set-property"
-			// build and install
+
+			// build and deploy - note that the maven-deploy-plugin is configured to skip=true to all but metasfresh-dist/dist and metasfresh-webui-api
 			// maven.test.failure.ignore=true: continue if tests fail, because we want a full report.
 			// about -Dmetasfresh.assembly.descriptor.version: the versions plugin can't update the version of our shared assembly descriptor de.metas.assemblies. Therefore we need to provide the version from outside via this property
 			// about -T 2C: it means "run with 2 threads per CPU"; note that for us this is highly experimental
 			sh "mvn --settings ${mvnConf.settingsFile} -T 2C --file ${mvnConf.pomFile} --batch-mode -Dmaven.test.failure.ignore=true -Dmetasfresh.assembly.descriptor.version=${env.MF_VERSION} ${mvnConf.resolveParams} ${mvnConf.deployParam} clean deploy"
 
-			// // deploy dist-artifacts. they were already installed further up, together with the rest
-			// final MvnConf webapiMvnConf = mvnConf.withPomFile('metasfresh-webui-api/pom.xml');
-			// sh "mvn --settings ${webapiMvnConf.settingsFile} --file ${webapiMvnConf.pomFile} --batch-mode -Dmaven.test.failure.ignore=true -Dmetasfresh.assembly.descriptor.version=${env.MF_VERSION} ${webapiMvnConf.resolveParams} ${webapiMvnConf.deployParam} deploy"
-			
-			// final MvnConf distMvnConf = mvnConf.withPomFile('metasfresh-dist/pom.xml');
-			// sh "mvn --settings ${distMvnConf.settingsFile} --file ${distMvnConf.pomFile} --batch-mode -Dmaven.test.failure.ignore=true -Dmetasfresh.assembly.descriptor.version=${env.MF_VERSION} ${distMvnConf.resolveParams} ${distMvnConf.deployParam} deploy"
-			
+			// also deploy the parent-poms for the artifacts that were not-skipped from deployment in the last mvn invocation
+			sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --non-recursive --batch-mode -Dmetasfresh.assembly.descriptor.version=${env.MF_VERSION} ${distMvnConf.resolveParams} ${distMvnConf.deployParam} -Dmaven.deploy.skip=false deploy"
+
+			final MvnConf distMvnConf = mvnConf.withPomFile('metasfresh-dist/pom.xml');
+			sh "mvn --settings ${distMvnConf.settingsFile} --file ${distMvnConf.pomFile} --non-recursive --batch-mode -Dmetasfresh.assembly.descriptor.version=${env.MF_VERSION} ${distMvnConf.resolveParams} ${distMvnConf.deployParam} -Dmaven.deploy.skip=false deploy"
+
 			final DockerConf reportDockerConf = new DockerConf(
 				'metasfresh-report', // artifactName
 				env.BRANCH_NAME, // branchName
