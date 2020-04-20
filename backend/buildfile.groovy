@@ -41,10 +41,13 @@ Map build(final MvnConf mvnConf, final Map scmVars, final boolean forceBuild=fal
 			sh "mvn --settings ${mvnConf.settingsFile} -T 2C --file ${mvnConf.pomFile} --batch-mode -Dmaven.test.failure.ignore=true -Dmetasfresh.assembly.descriptor.version=${env.MF_VERSION} ${mvnConf.resolveParams} ${mvnConf.deployParam} clean deploy"
 
 			// also deploy the parent-poms for the artifacts that were not-skipped from deployment in the last mvn invocation
-			sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --non-recursive --batch-mode -Dmetasfresh.assembly.descriptor.version=${env.MF_VERSION} ${mvnConf.resolveParams} ${mvnConf.deployParam} -Dmaven.deploy.skip=false deploy"
+			// note that the deploy target did not work; "-Dmaven.deploy.skip=false" had no effect
+			//sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --non-recursive --batch-mode -Dmetasfresh.assembly.descriptor.version=${env.MF_VERSION} ${mvnConf.resolveParams} ${mvnConf.deployParam} -Dmaven.deploy.skip=false deploy"
+			sh "mvn --settings ${mvnConf.settingsFile} ${mvnConf.resolveParams} -Dfile=${mvnConf.pomFile} -DpomFile=${mvnConf.pomFile} -Durl=${mvnConf.deployRepoURL} -DrepositoryId=${mvnConf.MF_MAVEN_REPO_ID} -Dversion=${env.MF_VERSION} org.apache.maven.plugins:maven-deploy-plugin:2.7:deploy-file"
 
 			final MvnConf distMvnConf = mvnConf.withPomFile('metasfresh-dist/pom.xml');
-			sh "mvn --settings ${distMvnConf.settingsFile} --file ${distMvnConf.pomFile} --non-recursive --batch-mode -Dmetasfresh.assembly.descriptor.version=${env.MF_VERSION} ${distMvnConf.resolveParams} ${distMvnConf.deployParam} -Dmaven.deploy.skip=false deploy"
+			//sh "mvn --settings ${distMvnConf.settingsFile} --file ${distMvnConf.pomFile} --non-recursive --batch-mode -Dmetasfresh.assembly.descriptor.version=${env.MF_VERSION} ${distMvnConf.resolveParams} ${distMvnConf.deployParam} -Dmaven.deploy.skip=false deploy"
+			sh "mvn --settings ${distMvnConf.settingsFile} ${distMvnConf.resolveParams} -Dfile=${distMvnConf.pomFile} -DpomFile=${distMvnConf.pomFile} -Durl=${distMvnConf.deployRepoURL} -DrepositoryId=${distMvnConf.MF_MAVEN_REPO_ID} -Dversion=${env.MF_VERSION} org.apache.maven.plugins:maven-deploy-plugin:2.7:deploy-file"
 
 			final DockerConf reportDockerConf = new DockerConf(
 				'metasfresh-report', // artifactName
