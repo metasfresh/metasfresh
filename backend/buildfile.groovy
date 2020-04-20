@@ -41,7 +41,7 @@ Map build(final MvnConf mvnConf, final Map scmVars, final boolean forceBuild=fal
 			sh "mvn --settings ${mvnConf.settingsFile} -T 2C --file ${mvnConf.pomFile} --batch-mode -Dmaven.test.failure.ignore=true -Dmetasfresh.assembly.descriptor.version=${env.MF_VERSION} ${mvnConf.resolveParams} ${mvnConf.deployParam} clean deploy"
 
 			// also deploy the parent-poms for the artifacts that were not-skipped from deployment in the last mvn invocation
-			sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --non-recursive --batch-mode -Dmetasfresh.assembly.descriptor.version=${env.MF_VERSION} ${distMvnConf.resolveParams} ${distMvnConf.deployParam} -Dmaven.deploy.skip=false deploy"
+			sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --non-recursive --batch-mode -Dmetasfresh.assembly.descriptor.version=${env.MF_VERSION} ${mvnConf.resolveParams} ${mvnConf.deployParam} -Dmaven.deploy.skip=false deploy"
 
 			final MvnConf distMvnConf = mvnConf.withPomFile('metasfresh-dist/pom.xml');
 			sh "mvn --settings ${distMvnConf.settingsFile} --file ${distMvnConf.pomFile} --non-recursive --batch-mode -Dmetasfresh.assembly.descriptor.version=${env.MF_VERSION} ${distMvnConf.resolveParams} ${distMvnConf.deployParam} -Dmaven.deploy.skip=false deploy"
