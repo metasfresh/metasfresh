@@ -20,10 +20,25 @@
  * #L%
  */
 
-package de.metas.serviceprovider.importer;
+package de.metas.serviceprovider.external;
 
-public interface ImportConstants
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
+
+@Value
+@Builder
+public class ExternalId
 {
-	String IMPORT_LOG_MESSAGE_PREFIX = "*** ImportIssueLogs:";
-	int ISSUE_QUEUE_CAPACITY = 100;
+	@NonNull
+	ExternalSystem externalSystem;
+
+	@NonNull
+	String id;
+
+	@NonNull
+	public static ExternalId of(@NonNull final ExternalSystem externalSystem, @NonNull final String id)
+	{
+		return new ExternalId(externalSystem, id);
+	}
 }

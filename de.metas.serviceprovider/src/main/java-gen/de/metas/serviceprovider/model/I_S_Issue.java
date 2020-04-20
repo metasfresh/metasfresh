@@ -515,6 +515,33 @@ public interface I_S_Issue
     public static final String COLUMNNAME_S_Milestone_ID = "S_Milestone_ID";
 
 	/**
+	 * Set Parent issue ID.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setS_Parent_Issue_ID (int S_Parent_Issue_ID);
+
+	/**
+	 * Get Parent issue ID.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getS_Parent_Issue_ID();
+
+	public de.metas.serviceprovider.model.I_S_Issue getS_Parent_Issue();
+
+	public void setS_Parent_Issue(de.metas.serviceprovider.model.I_S_Issue S_Parent_Issue);
+
+    /** Column definition for S_Parent_Issue_ID */
+    public static final org.adempiere.model.ModelColumn<I_S_Issue, de.metas.serviceprovider.model.I_S_Issue> COLUMN_S_Parent_Issue_ID = new org.adempiere.model.ModelColumn<I_S_Issue, de.metas.serviceprovider.model.I_S_Issue>(I_S_Issue.class, "S_Parent_Issue_ID", de.metas.serviceprovider.model.I_S_Issue.class);
+    /** Column name S_Parent_Issue_ID */
+    public static final String COLUMNNAME_S_Parent_Issue_ID = "S_Parent_Issue_ID";
+
+	/**
 	 * Get Aktualisiert.
 	 * Datum, an dem dieser Eintrag aktualisiert wurde
 	 *

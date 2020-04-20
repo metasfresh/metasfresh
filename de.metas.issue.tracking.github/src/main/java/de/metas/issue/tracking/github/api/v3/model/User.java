@@ -36,6 +36,6 @@ import lombok.Value;
 public class User
 {
 	@NonNull
-	@JsonProperty("login")
-	String login;
+	@JsonProperty("id")
+	String id;
 }

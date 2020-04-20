@@ -20,50 +20,53 @@
  * #L%
  */
 
-package de.metas.serviceprovider.importer;
+package de.metas.serviceprovider;
 
 import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
 import de.metas.logging.LogManager;
-import de.metas.serviceprovider.importer.info.ImportIssueInfo;
 import de.metas.util.Loggables;
+import lombok.NonNull;
 import org.slf4j.Logger;
-import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.Optional;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
-import static de.metas.serviceprovider.importer.ImportConstants.IMPORT_LOG_MESSAGE_PREFIX;
-import static de.metas.serviceprovider.importer.ImportConstants.ISSUE_QUEUE_CAPACITY;
-
-@Component
-public class ImportIssuesQueue
+public class ImportQueue<T>
 {
-	private static final Logger log = LogManager.getLogger(ImportIssuesQueue.class);
+	private static final Logger log = LogManager.getLogger(ImportQueue.class);
 
-	private final LinkedBlockingQueue<ImportIssueInfo> queue = new LinkedBlockingQueue<>(ISSUE_QUEUE_CAPACITY);
+	private final LinkedBlockingQueue<T> queue;
+	private final String logPrefix;
 
-	public ImmutableList<ImportIssueInfo> drainAll()
+	public ImportQueue(final int queueCapacity, final String logPrefix)
 	{
-		final ArrayList<ImportIssueInfo> issues = new ArrayList<>();
+		this.queue = new LinkedBlockingQueue<>(queueCapacity);
+		this.logPrefix = logPrefix;
+	}
+
+	@NonNull
+	public ImmutableList<T> drainAll()
+	{
+		final ArrayList<T> objectList = new ArrayList<>();
 
 		try
 		{
-			final Optional<ImportIssueInfo> importIssueInfo = Optional.ofNullable(queue.poll(2, TimeUnit.SECONDS));
-			importIssueInfo.ifPresent(issues::add);
+			final Optional<T> object = Optional.ofNullable(queue.poll(2, TimeUnit.SECONDS));
+			object.ifPresent(objectList::add);
 
-			queue.drainTo(issues);
+			queue.drainTo(objectList);
 
-			log.debug(" {} drained {} issues for processing!", IMPORT_LOG_MESSAGE_PREFIX, issues.size());
+			log.debug(" {} drained {} objects for processing!", logPrefix, objectList.size());
 		}
 		catch (final InterruptedException e)
 		{
-			Loggables.withLogger(log, Level.ERROR).addLog(IMPORT_LOG_MESSAGE_PREFIX + e.getMessage(),e);
+			Loggables.withLogger(log, Level.ERROR).addLog(logPrefix + e.getMessage(),e);
 		}
 
-		return ImmutableList.copyOf(issues);
+		return ImmutableList.copyOf(objectList);
 	}
 
 	public boolean isEmpty()
@@ -71,15 +74,15 @@ public class ImportIssuesQueue
 		return queue.isEmpty();
 	}
 
-	public void add(final ImportIssueInfo importIssueInfo)
+	public void add(@NonNull final T object)
 	{
 		try
 		{
-			queue.put(importIssueInfo);
+			queue.put(object);
 		}
 		catch (final InterruptedException e)
 		{
-			Loggables.withLogger(log, Level.ERROR).addLog(IMPORT_LOG_MESSAGE_PREFIX + e.getMessage(),e);
+			Loggables.withLogger(log, Level.ERROR).addLog(logPrefix + e.getMessage(),e);
 		}
 	}
 }

@@ -15,7 +15,7 @@ public class X_S_Issue extends org.compiere.model.PO implements I_S_Issue, org.c
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 80795629L;
+	private static final long serialVersionUID = 944106513L;
 
     /** Standard Constructor */
     public X_S_Issue (Properties ctx, int S_Issue_ID, String trxName)
@@ -421,6 +421,40 @@ public class X_S_Issue extends org.compiere.model.PO implements I_S_Issue, org.c
 	public int getS_Milestone_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_S_Milestone_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public de.metas.serviceprovider.model.I_S_Issue getS_Parent_Issue()
+	{
+		return get_ValueAsPO(COLUMNNAME_S_Parent_Issue_ID, de.metas.serviceprovider.model.I_S_Issue.class);
+	}
+
+	@Override
+	public void setS_Parent_Issue(de.metas.serviceprovider.model.I_S_Issue S_Parent_Issue)
+	{
+		set_ValueFromPO(COLUMNNAME_S_Parent_Issue_ID, de.metas.serviceprovider.model.I_S_Issue.class, S_Parent_Issue);
+	}
+
+	/** Set Parent issue ID.
+		@param S_Parent_Issue_ID Parent issue ID	  */
+	@Override
+	public void setS_Parent_Issue_ID (int S_Parent_Issue_ID)
+	{
+		if (S_Parent_Issue_ID < 1) 
+			set_Value (COLUMNNAME_S_Parent_Issue_ID, null);
+		else 
+			set_Value (COLUMNNAME_S_Parent_Issue_ID, Integer.valueOf(S_Parent_Issue_ID));
+	}
+
+	/** Get Parent issue ID.
+		@return Parent issue ID	  */
+	@Override
+	public int getS_Parent_Issue_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_S_Parent_Issue_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();

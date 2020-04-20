@@ -133,7 +133,7 @@ public interface I_S_ExternalProjectReference
     public static final String COLUMNNAME_ExternalProjectOwner = "ExternalProjectOwner";
 
 	/**
-	 * Set ExternalReference.
+	 * Set External reference.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
@@ -142,7 +142,7 @@ public interface I_S_ExternalProjectReference
 	public void setExternalReference (java.lang.String ExternalReference);
 
 	/**
-	 * Get ExternalReference.
+	 * Get External reference.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true

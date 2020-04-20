@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.serviceprovider.base
+ * de.metas.issue.tracking.everhour
  * %%
  * Copyright (C) 2019 metas GmbH
  * %%
@@ -20,19 +20,14 @@
  * #L%
  */
 
-package de.metas.serviceprovider.external.project;
+package de.metas.issue.tracking.everhour.api;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-
-import static de.metas.serviceprovider.model.X_S_ExternalProjectReference.EXTERNALSYSTEM_Github;
-
-@AllArgsConstructor
-@Getter
-public enum ExternalSystem
+public interface TestConstants
 {
-	GITHUB(EXTERNALSYSTEM_Github);
+	String MOCK_ID = "id";
+	String MOCK_URL = "url";
 
-	private final String value;
+	int MOCK_USER_ID = 1;
+	String MOCK_DATE = "2020-04-10";
+	long MOCK_TIME = 1000;
 }
-

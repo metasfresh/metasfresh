@@ -20,74 +20,49 @@
  * #L%
  */
 
-package de.metas.serviceprovider.importer.info;
+package de.metas.serviceprovider.issue.importer.info;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.organization.OrgId;
 import de.metas.project.ProjectId;
-import de.metas.serviceprovider.external.issuedetails.ExternalIssueDetail;
 import de.metas.serviceprovider.external.project.ExternalProjectType;
-import de.metas.serviceprovider.milestone.Milestone;
-import de.metas.uom.UomId;
-import de.metas.user.UserId;
-import de.metas.util.StringUtils;
+import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
+import lombok.ToString;
 import lombok.Value;
 
 import javax.annotation.Nullable;
-import java.math.BigDecimal;
 
 @Value
 @Builder
-public class ImportIssueInfo
+@ToString(exclude = "oAuthToken")
+public class ImportIssuesRequest
 {
-	@Nullable
-	ProjectId projectId;
+	@NonNull
+	String oAuthToken;
 
 	@NonNull
-	OrgId orgId;
+	String repoId;
 
 	@NonNull
-	ExternalProjectType externalProjectType;
-
-	@Nullable
-	BigDecimal estimation;
-
-	@Nullable
-	BigDecimal budget;
+	String repoOwner;
 
 	@NonNull
-	UomId effortUomId;
+	private ExternalProjectType externalProjectType;
 
 	@NonNull
-	String name;
+	private OrgId orgId;
 
 	@Nullable
-	String description;
-
-	boolean processed;
+	private ProjectId projectId;
 
 	@Nullable
-	UserId assigneeId;
+	ImmutableList<String> issueNoList;
 
-	@NonNull
-	String externalIssueId;
-
-	@Nullable
-	String externalIssueNo;
-
-	@Nullable
-	String externalIssueURL;
-
-	@Nullable
-	Milestone milestone;
-
-	@NonNull
-	ImmutableList<ExternalIssueDetail> externalIssueDetails;
-
-	public String getSearchKey()
+	public boolean importByIds()
 	{
-		return StringUtils.nullToEmpty(getExternalIssueNo()).concat(" ").concat(getName()).trim();
+		return !Check.isEmpty(issueNoList);
 	}
+
 }

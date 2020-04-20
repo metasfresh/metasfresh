@@ -41,9 +41,6 @@ public class Milestone
 	private MilestoneId milestoneId;
 
 	@Nullable
-	private String externalId;
-
-	@Nullable
 	private String externalURL;
 
 	@Nullable

@@ -192,8 +192,9 @@
 
 		<module>vertical-healthcare_ch</module>
 		<module>de.metas.issue.tracking.github</module>
+        <module>de.metas.issue.tracking.everhour</module>
 
-	</modules>
+    </modules>
 
 	<dependencyManagement>
 		<dependencies>

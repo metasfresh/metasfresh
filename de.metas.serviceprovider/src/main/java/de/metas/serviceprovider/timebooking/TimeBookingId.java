@@ -20,49 +20,40 @@
  * #L%
  */
 
-package de.metas.serviceprovider.importer.info;
+package de.metas.serviceprovider.timebooking;
 
-import com.google.common.collect.ImmutableList;
-import de.metas.organization.OrgId;
-import de.metas.project.ProjectId;
-import de.metas.serviceprovider.external.project.ExternalProjectType;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 import de.metas.util.Check;
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.ToString;
+import de.metas.util.lang.RepoIdAware;
 import lombok.Value;
 
 import javax.annotation.Nullable;
 
 @Value
-@Builder
-@ToString(exclude = "oAuthToken")
-public class ImportIssuesRequest
+public class TimeBookingId implements RepoIdAware
 {
-	@NonNull
-	String oAuthToken;
+	int repoId;
 
-	@NonNull
-	String repoId;
-
-	@NonNull
-	String repoOwner;
-
-	@NonNull
-	private ExternalProjectType externalProjectType;
-
-	@NonNull
-	private OrgId orgId;
-
-	@Nullable
-	private ProjectId projectId;
-
-	@Nullable
-	ImmutableList<String> issueNoList;
-
-	public boolean importByIds()
+	@JsonCreator
+	public static TimeBookingId ofRepoId(final int repoId)
 	{
-		return !Check.isEmpty(issueNoList);
+		return new TimeBookingId(repoId);
 	}
 
+	public static TimeBookingId ofRepoIdOrNull(@Nullable final Integer repoId)
+	{
+		return repoId != null && repoId > 0 ? new TimeBookingId(repoId) : null;
+	}
+
+	private TimeBookingId(final int repoId)
+	{
+		this.repoId = Check.assumeGreaterThanZero(repoId, "S_TimeBooking_ID");
+	}
+
+	@JsonValue
+	public int toJson()
+	{
+		return getRepoId();
+	}
 }

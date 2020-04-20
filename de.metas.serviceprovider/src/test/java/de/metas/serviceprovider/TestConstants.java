@@ -24,35 +24,55 @@ package de.metas.serviceprovider;
 
 import de.metas.organization.OrgId;
 import de.metas.project.ProjectId;
+import de.metas.serviceprovider.external.ExternalSystem;
 import de.metas.serviceprovider.external.project.ExternalProjectReferenceId;
 import de.metas.serviceprovider.external.project.ExternalProjectType;
-import de.metas.serviceprovider.external.project.ExternalSystem;
+import de.metas.serviceprovider.external.reference.ExternalReferenceType;
+import de.metas.serviceprovider.issue.IssueId;
 import de.metas.serviceprovider.milestone.MilestoneId;
 import de.metas.uom.UomId;
 import de.metas.user.UserId;
 
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneOffset;
 
 public interface TestConstants
 {
 	String MOCK_EXTERNAL_PROJECT_OWNER = "externalProjectOwner";
 	String MOCK_EXTERNAL_REFERENCE = "externalReference";
-	ExternalSystem MOCK_EXTERNAL_PROJECT = ExternalSystem.GITHUB;
+	ExternalReferenceType MOCK_EXTERNAL_REFERENCE_TYPE = ExternalReferenceType.ISSUE_ID;
+	ExternalSystem MOCK_EXTERNAL_SYSTEM = ExternalSystem.GITHUB;
+	ExternalSystem MOCK_EXTERNAL_SYSTEM_1 = ExternalSystem.EVERHOUR;
 	ExternalProjectType MOCK_EXTERNAL_PROJECT_TYPE = ExternalProjectType.EFFORT;
+	String MOCK_EXTERNAL_ID = "externalId";
+	String MOCK_EXTERNAL_URL = "externalURL";
+	String MOCK_EXTERNAL_ISSUE_NO = "externalIssueNo";
 
 	String MOCK_NAME = "name";
 	String MOCK_SEARCH_KEY = "searchKey";
 	String MOCK_DESCRIPTION = "description";
-	String MOCK_EXTERNAL_ID = "externalId";
-	String MOCK_EXTERNAL_URL = "externalURL";
-	String MOCK_EXTERNAL_ISSUE_NO = "externalIssueNo";
-	String MOCK_DATE_ISO_8601 = "2020-03-16T14:37:53Z";
-	Instant MOCK_INSTANT = Instant.parse(MOCK_DATE_ISO_8601);
-	String MOCK_OAUTH_TOKEN = "oAuthToken";
+	String MOCK_DATE_ISO = "2020-03-16";
+	Instant MOCK_INSTANT_FROM_DATE = LocalDate.parse(MOCK_DATE_ISO).atStartOfDay(ZoneOffset.UTC).toInstant();
+	String MOCK_DATE_AND_TIME_ISO_8601 = "2020-03-16T14:37:53Z";
+	Instant MOCK_INSTANT = Instant.parse(MOCK_DATE_AND_TIME_ISO_8601);
+	String MOCK_AUTH_TOKEN = "authToken";
 	String MOCK_VALUE = "value";
 	String MOCK_BUG_6_LABEL = "bud:6";
 	String MOCK_EST_4_25_LABEL = "est:4.25";
+	long MOCK_BOOKED_SECONDS = 1800;
+	String MOCK_HOURS_AND_MINUTES = "0:30";
+	String MOCK_ERROR_MESSAGE = "errorMessage";
+	String MOCK_JSON_VALUE = "mockedJSONValue";
+	LocalDate MOCK_DATE_2020_03_01 = LocalDate.of(2020, 3, 1);
+	LocalDate MOCK_DATE_2020_03_07 = LocalDate.of(2020, 3, 7);
+	LocalDate MOCK_DATE_2020_03_08 = LocalDate.of(2020,3,8);
+	LocalDate MOCK_DATE_2020_03_12 = LocalDate.of(2020, 3, 12);
 
+
+
+
+	int MOCK_RECORD_ID = 1;
 	ExternalProjectReferenceId MOCK_EXTERNAL_PROJECT_REFERENCE_ID_INACTIVE = ExternalProjectReferenceId.ofRepoId(2);
 	ExternalProjectReferenceId MOCK_EXTERNAL_PROJECT_REFERENCE_ID_ACTIVE = ExternalProjectReferenceId.ofRepoId(1);
 	MilestoneId MOCK_MILESTONE_ID = MilestoneId.ofRepoId(1);
@@ -60,4 +80,7 @@ public interface TestConstants
 	ProjectId MOCK_PROJECT_ID = ProjectId.ofRepoId(1);
 	UserId MOCK_USER_ID = UserId.ofRepoId(1);
 	UomId MOCK_UOM_ID = UomId.ofRepoId(1);
+	IssueId MOCK_ISSUE_ID = IssueId.ofRepoId(1);
+	String MOCK_GH_TASK_ID = "gh:" + MOCK_ISSUE_ID.getRepoId();
+	String MOCK_EV_TASK_ID = "ev:" + MOCK_ISSUE_ID.getRepoId();
 }

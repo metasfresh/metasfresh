@@ -34,7 +34,6 @@ import org.junit.Test;
 import java.math.BigDecimal;
 
 import static de.metas.serviceprovider.TestConstants.MOCK_DESCRIPTION;
-import static de.metas.serviceprovider.TestConstants.MOCK_EXTERNAL_ID;
 import static de.metas.serviceprovider.TestConstants.MOCK_EXTERNAL_ISSUE_NO;
 import static de.metas.serviceprovider.TestConstants.MOCK_EXTERNAL_URL;
 import static de.metas.serviceprovider.TestConstants.MOCK_MILESTONE_ID;
@@ -44,6 +43,7 @@ import static de.metas.serviceprovider.TestConstants.MOCK_PROJECT_ID;
 import static de.metas.serviceprovider.TestConstants.MOCK_SEARCH_KEY;
 import static de.metas.serviceprovider.TestConstants.MOCK_UOM_ID;
 import static de.metas.serviceprovider.TestConstants.MOCK_USER_ID;
+import static de.metas.serviceprovider.TestConstants.MOCK_VALUE;
 
 public class IssueRepositoryTest
 {
@@ -52,7 +52,7 @@ public class IssueRepositoryTest
 	private final ImmutableList<ExternalIssueDetail> MOCK_EXTERNAL_DETAILS =
 			ImmutableList.of(ExternalIssueDetail.builder()
 					.type(ExternalIssueDetailType.LABEL)
-					.value("value")
+					.value(MOCK_VALUE)
 					.orgId(MOCK_ORG_ID)
 					.build());
 
@@ -70,7 +70,6 @@ public class IssueRepositoryTest
 			.type(IssueType.EXTERNAL)
 			.isEffortIssue(true)
 			.processed(true)
-			.externalIssueId(MOCK_EXTERNAL_ID)
 			.externalIssueNo(MOCK_EXTERNAL_ISSUE_NO)
 			.externalIssueURL(MOCK_EXTERNAL_URL)
 			.externalIssueDetails(MOCK_EXTERNAL_DETAILS)
@@ -88,7 +87,7 @@ public class IssueRepositoryTest
 	{
 		issueRepository.save(MOCK_ISSUE_ENTITY);
 
-		final IssueEntity storedEntity = issueRepository.getEntityByExternalId(MOCK_ISSUE_ENTITY.getExternalIssueId()).get();
+		final IssueEntity storedEntity = issueRepository.getById(MOCK_ISSUE_ENTITY.getIssueId(), true);
 
 		Assert.assertEquals(storedEntity, MOCK_ISSUE_ENTITY);
 	}

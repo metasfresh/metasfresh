@@ -175,6 +175,11 @@ public interface IQuery<T>
 		return Optional.ofNullable(first(clazz));
 	}
 
+	default <ET extends T> Optional<ET> firstOnlyOptional(final Class<ET> clazz) throws DBException
+	{
+		return Optional.ofNullable(firstOnly(clazz));
+	}
+
 	/**
 	 * Same as {@link #first(Class)}, but in case there is no record found an exception will be thrown too.
 	 *

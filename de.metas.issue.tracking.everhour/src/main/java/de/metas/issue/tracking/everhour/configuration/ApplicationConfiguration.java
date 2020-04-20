@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.serviceprovider.base
+ * de.metas.issue.tracking.everhour
  * %%
  * Copyright (C) 2019 metas GmbH
  * %%
@@ -20,12 +20,19 @@
  * #L%
  */
 
-package de.metas.serviceprovider.importer;
+package de.metas.issue.tracking.everhour.configuration;
 
-import com.google.common.collect.ImmutableList;
-import de.metas.serviceprovider.importer.info.ImportIssuesRequest;
+import de.metas.util.Services;
+import org.adempiere.service.ISysConfigBL;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 
-public interface ImportService
+@Configuration
+public class ApplicationConfiguration
 {
-	void start(ImmutableList<ImportIssuesRequest> importIssuesRequestList);
+	@Bean
+	public ISysConfigBL sysConfigBL()
+	{
+		return Services.get(ISysConfigBL.class);
+	}
 }
