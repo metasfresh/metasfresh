@@ -22,8 +22,10 @@
 
 package de.metas.serviceprovider.issue;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.organization.OrgId;
 import de.metas.project.ProjectId;
+import de.metas.serviceprovider.external.issuedetails.ExternalIssueDetail;
 import de.metas.serviceprovider.external.issuedetails.ExternalIssueDetailsRepository;
 import de.metas.serviceprovider.milestone.MilestoneId;
 import de.metas.serviceprovider.model.I_S_Issue;
@@ -37,6 +39,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.springframework.stereotype.Repository;
 
+import javax.annotation.Nullable;
 import java.util.Optional;
 
 @Repository
@@ -74,7 +77,6 @@ public class IssueRepository
 		record.setBudgetedEffort(issueEntity.getBudgetedEffort());
 		record.setEffort_UOM_ID(issueEntity.getEffortUomId().getRepoId());
 
-		record.setExternalId(issueEntity.getExternalIssueId());
 		record.setExternalIssueNo(issueEntity.getExternalIssueNo());
 		record.setIssueURL(issueEntity.getExternalIssueURL());
 
@@ -87,21 +89,53 @@ public class IssueRepository
 		externalIssueDetailsRepository.persistIssueDetails(issueId, issueEntity.getExternalIssueDetails());
 	}
 
-	@NonNull
-	public Optional<IssueEntity> getEntityByExternalId(@NonNull final String externalIssueId)
-	{
-		final I_S_Issue budget_issue = queryBL
-				.createQueryBuilder(I_S_Issue.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_S_Issue.COLUMNNAME_ExternalId, externalIssueId)
-				.create()
-				.firstOnly(I_S_Issue.class);
 
-		return budget_issue != null ? Optional.of(buildIssueEntity(budget_issue)) : Optional.empty();
+	/**
+	 *  Retrieves the record identified by the given issue ID.
+	 *
+	 * @param issueId		Issue ID
+	 * @param loadDetails   specifies whether external issue details should be loaded or not
+	 * @return	issue entity
+	 * @throws AdempiereException in case no record was found for the given ID.
+	 */
+	@NonNull
+	public IssueEntity getById(@NonNull final IssueId issueId, final boolean loadDetails)
+	{
+		final I_S_Issue record = getRecordOrNull(issueId);
+
+		if (record == null)
+		{
+			throw new AdempiereException("No S_Issue record was found for the given ID")
+					.appendParametersToMessage()
+					.setParameter("S_Issue_Id", issueId);
+		}
+
+		return buildIssueEntity(record, loadDetails);
 	}
 
 	@NonNull
-	private IssueEntity buildIssueEntity(final I_S_Issue record)
+	public Optional<IssueEntity> getByIdOptional(@NonNull final IssueId issueId, final boolean loadDetails)
+	{
+		final I_S_Issue record = getRecordOrNull(issueId);
+
+		return record != null
+				? Optional.of(buildIssueEntity(record, loadDetails))
+				: Optional.empty();
+	}
+
+	@Nullable
+	private I_S_Issue getRecordOrNull(@NonNull final IssueId issueId)
+	{
+		return queryBL
+				.createQueryBuilder(I_S_Issue.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_S_Issue.COLUMNNAME_S_Issue_ID, issueId.getRepoId())
+				.create()
+				.firstOnly(I_S_Issue.class);
+	}
+
+	@NonNull
+	private IssueEntity buildIssueEntity(@NonNull final I_S_Issue record, final boolean loadDetails)
 	{
 		final Optional<IssueType> issueType = IssueType.getTypeByValue(record.getIssueType());
 
@@ -110,6 +144,10 @@ public class IssueRepository
 			throw new AdempiereException("Unknown IssueType!").appendParametersToMessage()
 					.setParameter("I_S_Issue", record);
 		}
+
+		final ImmutableList<ExternalIssueDetail> externalIssueDetails = loadDetails
+				? externalIssueDetailsRepository.getByIssueId(IssueId.ofRepoId(record.getS_Issue_ID()))
+				: ImmutableList.of();
 
 		return IssueEntity.builder()
 				.orgId(OrgId.ofRepoId(record.getAD_Org_ID()))
@@ -126,10 +164,9 @@ public class IssueRepository
 				.isEffortIssue(record.isEffortIssue())
 				.estimatedEffort(record.getEstimatedEffort())
 				.budgetedEffort(record.getBudgetedEffort())
-				.externalIssueId(record.getExternalId())
 				.externalIssueNo(record.getExternalIssueNo())
 				.externalIssueURL(record.getIssueURL())
-				.externalIssueDetails(externalIssueDetailsRepository.getByIssueId(IssueId.ofRepoId(record.getS_Issue_ID())))
+				.externalIssueDetails(externalIssueDetails)
 				.build();
 	}
 }

@@ -114,6 +114,6 @@ public class TestPOJOs
 
 	private User getMockUser()
 	{
-		return User.builder().login(MOCK_VALUE).build();
+		return User.builder().id(MOCK_VALUE).build();
 	}
 }

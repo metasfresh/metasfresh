@@ -29,12 +29,12 @@ import org.adempiere.test.AdempiereTestHelper;
 import org.junit.Before;
 import org.junit.Test;
 
-import static de.metas.serviceprovider.TestConstants.MOCK_EXTERNAL_PROJECT;
 import static de.metas.serviceprovider.TestConstants.MOCK_EXTERNAL_PROJECT_OWNER;
 import static de.metas.serviceprovider.TestConstants.MOCK_EXTERNAL_PROJECT_REFERENCE_ID_ACTIVE;
 import static de.metas.serviceprovider.TestConstants.MOCK_EXTERNAL_PROJECT_REFERENCE_ID_INACTIVE;
 import static de.metas.serviceprovider.TestConstants.MOCK_EXTERNAL_PROJECT_TYPE;
 import static de.metas.serviceprovider.TestConstants.MOCK_EXTERNAL_REFERENCE;
+import static de.metas.serviceprovider.TestConstants.MOCK_EXTERNAL_SYSTEM;
 import static de.metas.serviceprovider.TestConstants.MOCK_ORG_ID;
 import static de.metas.serviceprovider.TestConstants.MOCK_PROJECT_ID;
 import static org.junit.Assert.assertEquals;
@@ -60,7 +60,7 @@ public class ExternalProjectRepositoryTest
 		record.setC_Project_ID(MOCK_PROJECT_ID.getRepoId());
 		record.setExternalProjectOwner(MOCK_EXTERNAL_PROJECT_OWNER);
 		record.setExternalReference(MOCK_EXTERNAL_REFERENCE);
-		record.setExternalSystem(MOCK_EXTERNAL_PROJECT.getValue());
+		record.setExternalSystem(MOCK_EXTERNAL_SYSTEM.getValue());
 		record.setIsActive(isActive);
 		record.setProjectType(MOCK_EXTERNAL_PROJECT_TYPE.getValue());
 		record.setS_ExternalProjectReference_ID(id.getRepoId());
@@ -84,7 +84,7 @@ public class ExternalProjectRepositoryTest
 	@Test
 	public void getByExternalSystem()
 	{
-		final ImmutableList<ExternalProjectReference> records = externalProjectRepository.getByExternalSystem(MOCK_EXTERNAL_PROJECT);
+		final ImmutableList<ExternalProjectReference> records = externalProjectRepository.getByExternalSystem(MOCK_EXTERNAL_SYSTEM);
 
 		assertEquals(records.size(), 1);
 		assertEquals(records.get(0).getOrgId(), MOCK_ORG_ID);
