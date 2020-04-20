@@ -499,12 +499,11 @@ public class XmlToOLCandsService
 		final PersonType person = patient.getPerson();
 		final String patientName = createFullPersonName(person);
 
-		final JsonRequestBPartnerBuilder bPartner = JsonRequestBPartner
-				.builder()
-				.globalId(patient.getSsn())
-				.externalId(patientExternalId)
-				.name(patientName);
-		bPartnerInfo.bpartner(bPartner.build());
+		final JsonRequestBPartner bPartner = new JsonRequestBPartner();
+		bPartner.setGlobalId(patient.getSsn());
+		bPartner.setExternalId(patientExternalId);
+		bPartner.setName(patientName);
+		bPartnerInfo.bpartner(bPartner);
 
 		final JsonRequestLocation patientLocation = createJsonBPartnerLocation(
 				patientExternalId,
@@ -534,33 +533,33 @@ public class XmlToOLCandsService
 				guarantorPostal);
 		if (!Objects.equals(patientLocation, guarantorLocation))
 		{
+			guarantorLocation.setSyncAdvise(SyncAdvise.CREATE_OR_MERGE);
+			guarantorLocation.setName(guarantorName);
+			guarantorLocation.setExternalId(JsonExternalId.of(guarantorLocation.getExternalId().getValue() + "_GUARANTOR"));
+			guarantorLocation.setShipTo(false);
+			guarantorLocation.setShipToDefault(false);
+			guarantorLocation.setBillTo(true);
+			guarantorLocation.setBillToDefault(true);
+
+			patientLocation.setName(patientName);
+			patientLocation.setShipTo(true);
+			patientLocation.setShipToDefault(true);
+			patientLocation.setBillTo(false);
+			patientLocation.setBillToDefault(false);
+
 			bPartnerInfo
-					.location(guarantorLocation.toBuilder()
-							.syncAdvise(SyncAdvise.CREATE_OR_MERGE)
-							.name(guarantorName)
-							.externalId(JsonExternalId.of(guarantorLocation.getExternalId().getValue() + "_GUARANTOR"))
-							.shipTo(false)
-							.shipToDefault(false)
-							.billTo(true)
-							.billToDefault(true)
-							.build())
-					.location(patientLocation.toBuilder()
-							.name(patientName)
-							.shipTo(true)
-							.shipToDefault(true)
-							.billTo(false)
-							.billToDefault(false)
-							.build());
+					.location(guarantorLocation)
+					.location(patientLocation);
 		}
 		else
 		{
-			bPartnerInfo.location(patientLocation.toBuilder()
-					.name(patientName)
-					.shipTo(true)
-					.shipToDefault(true)
-					.billTo(true)
-					.billToDefault(true)
-					.build());
+			patientLocation.setName(patientName);
+			patientLocation.setShipTo(true);
+			patientLocation.setShipToDefault(true);
+			patientLocation.setBillTo(true);
+			patientLocation.setBillToDefault(true);
+
+			bPartnerInfo.location(patientLocation);
 		}
 
 		return bPartnerInfo.build();
@@ -623,33 +622,13 @@ public class XmlToOLCandsService
 		final JsonRequestBPartner bPartner = new JsonRequestBPartner();
 		bPartner.setExternalId(recipientExternalId);
 
-		final JsonRequestBPartnerLocationAndContactBuilder bPartnerInfo = JsonRequestBPartnerLocationAndContact
-				.builder()
-				.bpartnerLookupAdvise(BPartnerLookupAdvise.GLN);
-
-		if (recipientExternalId.equals(insuranceExternalId))
-		{
-			final JsonRequestLocation location = createJsonBPartnerLocation(
-					insuranceExternalId,
-					insurance.getEanParty(),
-					company.getPostal());
-			bPartner.setName(company.getCompanyname());
-
-			return bPartnerInfo
-					.syncAdvise(context.getDebitorSyncAdvise())
-					.bpartner(bPartner)
-					.location(location)
-					.build();
-		}
-
-		// build a "sparse" bPartner that is only suitable for lookup, because we don't have the masterdata needed to insert or update
 		final JsonRequestLocation location = new JsonRequestLocation();
 		location.setGln(context.getInvoiceRecipientEAN());
 		location.setExternalId(createLocationExternalId(recipientExternalId));
 
 		return JsonRequestBPartnerLocationAndContact
 				.builder()
-				.bpartnerLookupAdvise(BPartnerLookupAdvise.GLN);
+				.bpartnerLookupAdvise(BPartnerLookupAdvise.GLN)
 				.syncAdvise(SyncAdvise.READ_ONLY)
 				.bpartner(bPartner)
 				.location(location)

@@ -29,4 +29,7 @@ public interface CustomSequenceNoProvider
 	boolean isApplicable(Evaluatee context);
 
 	String provideSequenceNo(Evaluatee context);
+
+	/** Indicate to metasfresh if this implementation wants its sequence number to be "standalone" or, be the prefix for a "normal", incremental number. */
+	boolean isUseIncrementSeqNoAsPrefix();
 }
