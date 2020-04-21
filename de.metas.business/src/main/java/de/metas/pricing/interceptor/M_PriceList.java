@@ -80,7 +80,7 @@ public class M_PriceList
 		}
 	}
 
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = { I_M_PriceList.COLUMNNAME_Name })
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = { I_M_PriceList.COLUMNNAME_Name })
 	public void updatePLVName(@NonNull final I_M_PriceList priceList)
 	{
 		final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
