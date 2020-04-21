@@ -189,10 +189,15 @@ public interface IPriceListDAO extends ISingletonService
 
 	PricingSystemId getPricingSystemId(PriceListId priceListId);
 
-	String createPLVName(PriceListId pricelistId, LocalDate date);
+	/**
+	 * Please keep in sync with {@link #updateAllPLVName(PriceListId)}
+	 */
+	String createPLVName(@NonNull PriceListId pricelistId, @NonNull LocalDate date);
 
 	/**
 	 * Update the Name of all Price List Versions.
+	 * <p>
+	 * Please keep in sync with {@link #createPLVName(PriceListId, LocalDate)}
 	 *
 	 * @return number of updated records
 	 */

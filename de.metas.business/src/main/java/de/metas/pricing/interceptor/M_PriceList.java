@@ -25,17 +25,13 @@ package de.metas.pricing.interceptor;
 import de.metas.location.CountryId;
 import de.metas.money.CurrencyId;
 import de.metas.pricing.PriceListId;
-import de.metas.pricing.callout.M_PricelistVersion_TabCallout;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.ad.ui.api.ITabCalloutFactory;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_M_PriceList;
-import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
@@ -43,11 +39,11 @@ import org.springframework.stereotype.Component;
 @Component
 public class M_PriceList
 {
-	@Init
-	public void registerCallouts()
-	{
-		Services.get(ITabCalloutFactory.class).registerTabCalloutForTable(I_M_PriceList_Version.Table_Name, M_PricelistVersion_TabCallout.class);
-	}
+	// @Init
+	// public void registerCallouts()
+	// {
+	// 	Services.get(ITabCalloutFactory.class).registerTabCalloutForTable(I_M_PriceList_Version.Table_Name, M_PricelistVersion_TabCallout.class);
+	// }
 
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE })
 	public void assertBasePricingIsValid(final I_M_PriceList priceList)
@@ -84,7 +80,7 @@ public class M_PriceList
 		}
 	}
 
-	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = { I_M_PriceList.COLUMNNAME_Name })
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = { I_M_PriceList.COLUMNNAME_Name })
 	public void updatePLVName(@NonNull final I_M_PriceList priceList)
 	{
 		final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);

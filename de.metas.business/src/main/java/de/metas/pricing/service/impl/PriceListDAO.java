@@ -1,29 +1,56 @@
+/*
+ * #%L
+ * de.metas.business
+ * %%
+ * Copyright (C) 2020 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.pricing.service.impl;
 
-import static de.metas.util.Check.assumeNotNull;
-import static org.adempiere.model.InterfaceWrapperHelper.copy;
-import static org.adempiere.model.InterfaceWrapperHelper.getCtx;
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.time.LocalDate;
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Optional;
-import java.util.Properties;
-import java.util.Set;
-import java.util.stream.Stream;
-
-import javax.annotation.Nullable;
-
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.cache.annotation.CacheCtx;
+import de.metas.currency.ICurrencyBL;
+import de.metas.impexp.processing.product.ProductPriceCreateRequest;
+import de.metas.lang.SOTrx;
+import de.metas.location.CountryId;
+import de.metas.logging.LogManager;
+import de.metas.money.CurrencyId;
+import de.metas.pricing.PriceListId;
+import de.metas.pricing.PriceListVersionId;
+import de.metas.pricing.PricingSystemId;
+import de.metas.pricing.ProductPriceId;
+import de.metas.pricing.service.AddProductPriceRequest;
+import de.metas.pricing.service.CopyProductPriceRequest;
+import de.metas.pricing.service.IPriceListDAO;
+import de.metas.pricing.service.PriceListsCollection;
+import de.metas.pricing.service.UpdateProductPriceRequest;
+import de.metas.product.ProductId;
+import de.metas.tax.api.TaxCategoryId;
+import de.metas.user.UserId;
+import de.metas.util.Check;
+import de.metas.util.NumberUtils;
+import de.metas.util.Services;
+import de.metas.util.time.SystemTime;
+import lombok.NonNull;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -51,35 +78,28 @@ import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Date;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Optional;
+import java.util.Properties;
+import java.util.Set;
+import java.util.stream.Stream;
 
-import de.metas.bpartner.BPartnerLocationId;
-import de.metas.bpartner.service.IBPartnerDAO;
-import de.metas.cache.annotation.CacheCtx;
-import de.metas.currency.ICurrencyBL;
-import de.metas.impexp.processing.product.ProductPriceCreateRequest;
-import de.metas.lang.SOTrx;
-import de.metas.location.CountryId;
-import de.metas.logging.LogManager;
-import de.metas.money.CurrencyId;
-import de.metas.pricing.PriceListId;
-import de.metas.pricing.PriceListVersionId;
-import de.metas.pricing.PricingSystemId;
-import de.metas.pricing.ProductPriceId;
-import de.metas.pricing.service.AddProductPriceRequest;
-import de.metas.pricing.service.CopyProductPriceRequest;
-import de.metas.pricing.service.IPriceListDAO;
-import de.metas.pricing.service.PriceListsCollection;
-import de.metas.pricing.service.UpdateProductPriceRequest;
-import de.metas.product.ProductId;
-import de.metas.tax.api.TaxCategoryId;
-import de.metas.user.UserId;
-import de.metas.util.Check;
-import de.metas.util.NumberUtils;
-import de.metas.util.Services;
-import lombok.NonNull;
+import static de.metas.util.Check.assumeNotNull;
+import static org.adempiere.model.InterfaceWrapperHelper.copy;
+import static org.adempiere.model.InterfaceWrapperHelper.getCtx;
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 public class PriceListDAO implements IPriceListDAO
 {
@@ -720,22 +740,14 @@ public class PriceListDAO implements IPriceListDAO
 	}
 
 	@Override
-	public String createPLVName(final PriceListId pricelistId, LocalDate date)
+	public String createPLVName(@NonNull final PriceListId pricelistId, final @NonNull LocalDate date)
 	{
+		final I_M_PriceList priceList = getById(pricelistId);
+
 		final String formattedDate = date.format(DateTimeFormatter.ISO_LOCAL_DATE);
+		final String priceListName = priceList.getName();
 
-		final I_M_PriceList pricelist = getById(pricelistId);
-
-		final String pricelsitName = pricelist.getName();
-
-		final String plvName = new StringBuilder()
-				.append(pricelsitName)
-				.append(" ")
-				.append(formattedDate)
-				.toString();
-
-		return plvName;
-
+		return priceListName + " " + formattedDate;
 	}
 
 	@Override
@@ -743,13 +755,15 @@ public class PriceListDAO implements IPriceListDAO
 	{
 		final I_M_PriceList priceList = getById(priceListId);
 
+		final String dateFormat = "YYYY-MM-DD"; // equivalent of DateTimeFormatter.ISO_LOCAL_DATE
+
 		final String priceListName = priceList.getName();
 		final UserId updatedBy = Env.getLoggedUserId();
 		final Timestamp now = SystemTime.asTimestamp();
 
 		final String sqlStr = ""
 				+ " UPDATE " + I_M_PriceList_Version.Table_Name + " plv "
-				+ " SET " + I_M_PriceList_Version.COLUMNNAME_Name + "      = ? || ' ' || to_char(plv." + I_M_PriceList_Version.COLUMNNAME_ValidFrom + ", 'YYYY-MM-DD'), "
+				+ " SET " + I_M_PriceList_Version.COLUMNNAME_Name + "      = ? || ' ' || to_char(plv." + I_M_PriceList_Version.COLUMNNAME_ValidFrom + ", '" + dateFormat + "'), "
 				+ "     " + I_M_PriceList_Version.COLUMNNAME_UpdatedBy + " = ?, "
 				+ "     " + I_M_PriceList_Version.COLUMNNAME_Updated + "   = ? "
 				+ " WHERE plv." + I_M_PriceList_Version.COLUMNNAME_M_PriceList_ID + " = ? ";
