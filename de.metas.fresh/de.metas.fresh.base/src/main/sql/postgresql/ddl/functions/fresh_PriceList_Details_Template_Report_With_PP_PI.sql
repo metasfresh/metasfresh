@@ -1,6 +1,6 @@
-DROP FUNCTION IF EXISTS report.fresh_pricelist_details_template_report(NUMERIC, NUMERIC, CHARACTER VARYING, NUMERIC, text);
-CREATE OR REPLACE FUNCTION report.fresh_pricelist_details_template_report(IN p_c_bpartner_id numeric, IN p_m_pricelist_version_id numeric, IN p_ad_language character varying,
-                                                                          IN p_c_bpartner_location_id numeric, IN p_show_product_price_pi_flag text)
+DROP FUNCTION IF EXISTS report.fresh_pricelist_details_template_report_With_PP_PI(NUMERIC, NUMERIC, CHARACTER VARYING, NUMERIC, text);
+CREATE OR REPLACE FUNCTION report.fresh_pricelist_details_template_report_With_PP_PI(IN p_c_bpartner_id numeric, IN p_m_pricelist_version_id numeric, IN p_ad_language character varying,
+                                                                            IN p_c_bpartner_location_id numeric, IN p_show_product_price_pi_flag text)
     RETURNS TABLE
             (
                 prodvalue                  text,
@@ -50,7 +50,7 @@ SELECT plc.value                                                                
        CONCAT(bp_value, '_', bp_name, '_', case when prlv.isactive = 'Y' then prlv.validfrom::date else null end, '.xls') as reportfilename,
        p_show_product_price_pi_flag                                                                                       as show_product_price_pi_flag
 
-FROM report.fresh_PriceList_Details_Report(p_c_bpartner_id, p_m_pricelist_version_id, NULL, p_ad_language, p_show_product_price_pi_flag) plc
+FROM report.fresh_PriceList_Details_Report_With_PP_PI(p_c_bpartner_id, p_m_pricelist_version_id, NULL, p_ad_language, p_show_product_price_pi_flag) plc
          LEFT OUTER JOIN M_HU_PI_Item_Product hupip on hupip.M_HU_PI_Item_Product_ID = plc.M_HU_PI_Item_Product_ID
          LEFT OUTER JOIN M_HU_PI_Item hupii on hupii.M_HU_PI_Item_ID = hupip.M_HU_PI_Item_ID
          LEFT OUTER JOIN M_HU_PI_Version hupiv on hupiv.M_HU_PI_Version_ID = hupii.M_HU_PI_Version_ID
@@ -58,6 +58,7 @@ FROM report.fresh_PriceList_Details_Report(p_c_bpartner_id, p_m_pricelist_versio
 
          LEFT OUTER JOIN M_Pricelist_Version prlv on prlv.m_pricelist_version_id = p_m_pricelist_version_id
          LEFT OUTER JOIN M_Pricelist prl on prlv.m_pricelist_id = prl.m_pricelist_id
+
 
 
 $BODY$

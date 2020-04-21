@@ -1,41 +1,43 @@
-DROP FUNCTION IF EXISTS report.Current_Vs_Previous_Pricelist_Comparison_Report(p_C_BPartner_ID numeric, p_C_BP_Group_ID numeric, p_IsSoTrx text, p_AD_Language text, p_show_product_price_pi_flag text)
+DROP FUNCTION IF EXISTS report.Current_Vs_Previous_Pricelist_Comparison_Report_With_PP_PI(p_C_BPartner_ID numeric, p_C_BP_Group_ID numeric, p_IsSoTrx text, p_AD_Language text, p_show_product_price_pi_flag text)
 ;
 
-CREATE OR REPLACE FUNCTION report.Current_Vs_Previous_Pricelist_Comparison_Report(p_C_BPartner_ID numeric = NULL,
-                                                                                  p_C_BP_Group_ID numeric = NULL,
-                                                                                  p_IsSoTrx text = 'Y',
-                                                                                  p_AD_Language TEXT = 'en_US',
-                                                                                  p_show_product_price_pi_flag text = 'Y')
+CREATE OR REPLACE FUNCTION report.Current_Vs_Previous_Pricelist_Comparison_Report_With_PP_PI(p_C_BPartner_ID numeric = NULL,
+                                                                                    p_C_BP_Group_ID numeric = NULL,
+                                                                                    p_IsSoTrx text = 'Y',
+                                                                                    p_AD_Language TEXT = 'en_US',
+                                                                                    p_show_product_price_pi_flag text = 'Y')
+
+
     RETURNS TABLE
             (
-                bp_value                     text,
-                bp_name                      text,
-                ProductCategory              text,
-                M_Product_ID                 integer,
-                value                        text,
-                CustomerProductNumber        text,
-                ProductName                  text,
-                IsSeasonFixedPrice           text,
-                ItemProductName              text,
-                qtycuspertu                  numeric,
-                packingmaterialname          text,
-                pricestd                     numeric,
-                altpricestd                  numeric,
-                hasaltprice                  integer,
-                uomsymbol                    text,
-                uom_x12de355                 text,
-                Attributes                   text,
-                m_productprice_id            integer,
-                m_attributesetinstance_id    integer,
-                m_hu_pi_item_product_id      integer,
-                currency                     text,
-                currency2                    text,
-                validFromPLV1                timestamp,
-                validFromPLV2                timestamp,
-                namePLV1                     text,
-                namePLV2                     text,
-                c_bpartner_location_id       numeric,
-                AD_Org_ID                    numeric,
+                bp_value                   text,
+                bp_name                    text,
+                ProductCategory            text,
+                M_Product_ID               integer,
+                value                      text,
+                CustomerProductNumber      text,
+                ProductName                text,
+                IsSeasonFixedPrice         text,
+                ItemProductName            text,
+                qtycuspertu                numeric,
+                packingmaterialname        text,
+                pricestd                   numeric,
+                altpricestd                numeric,
+                hasaltprice                integer,
+                uomsymbol                  text,
+                uom_x12de355               text,
+                Attributes                 text,
+                m_productprice_id          integer,
+                m_attributesetinstance_id  integer,
+                m_hu_pi_item_product_id    integer,
+                currency                   text,
+                currency2                  text,
+                validFromPLV1              timestamp,
+                validFromPLV2              timestamp,
+                namePLV1                   text,
+                namePLV2                   text,
+                c_bpartner_location_id     numeric,
+                AD_Org_ID                  numeric,
                 show_product_price_pi_flag text
             )
 AS
@@ -84,7 +86,7 @@ WITH PriceListVersionsByValidFrom AS
                     (SELECT bpl.c_bpartner_location_id FROM c_bpartner_location bpl WHERE bpl.c_bpartner_id = plv.c_bpartner_id ORDER BY bpl.isbilltodefault DESC LIMIT 1) c_bpartner_location_id,
                     (SELECT plv2.ad_org_id FROM m_pricelist_version plv2 WHERE plv2.m_pricelist_version_id = plv.PLV1_ID)                                                  AD_Org_ID
              FROM currentAndPreviousPLV plv
-                      INNER JOIN LATERAL report.fresh_PriceList_Details_Report(
+                      INNER JOIN LATERAL report.fresh_PriceList_Details_Report_With_PP_PI(
                      plv.c_bpartner_id,
                      plv.PLV1_ID,
                      plv.PLV2_ID,
@@ -138,12 +140,12 @@ How to run
 - All Bpartners
 
 SELECT *
-FROM report.Current_Vs_Previous_Pricelist_Comparison_Report()
+FROM report.Current_Vs_Previous_Pricelist_Comparison_Report_With_PP_PI()
 ;
 
 - Specific Bpartner
 
 SELECT *
-FROM report.Current_Vs_Previous_Pricelist_Comparison_Report(2156515)
+FROM report.Current_Vs_Previous_Pricelist_Comparison_Report_With_PP_PI(2156515)
 ;
  */
