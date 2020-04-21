@@ -722,7 +722,8 @@ public class PriceListDAO implements IPriceListDAO
 
 		if (pricelistId != null && validFrom != null)
 		{
-			final String plvName = createPLVName(pricelistId, validFrom);
+			final I_M_PriceList priceList = getById(pricelistId);
+			final String plvName = createPLVName(priceList.getName(), validFrom);
 
 			newCustomerPLV.setName(plvName);
 		}
@@ -740,12 +741,10 @@ public class PriceListDAO implements IPriceListDAO
 	}
 
 	@Override
-	public String createPLVName(@NonNull final PriceListId pricelistId, final @NonNull LocalDate date)
+	// // TODO tbp: move to BL, not in DAO
+	public String createPLVName(final @NonNull String priceListName, final @NonNull LocalDate date)
 	{
-		final I_M_PriceList priceList = getById(pricelistId);
-
 		final String formattedDate = date.format(DateTimeFormatter.ISO_LOCAL_DATE);
-		final String priceListName = priceList.getName();
 
 		return priceListName + " " + formattedDate;
 	}
