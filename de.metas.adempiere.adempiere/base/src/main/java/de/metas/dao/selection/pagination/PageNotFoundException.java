@@ -32,7 +32,7 @@ public class PageNotFoundException extends AdempiereException
 
 	public PageNotFoundException(@NonNull final String completePageId)
 	{
-		super("Page with ID " + completePageId + "not found");
+		super("Page with ID " + completePageId + " not found");
 	}
 
 
