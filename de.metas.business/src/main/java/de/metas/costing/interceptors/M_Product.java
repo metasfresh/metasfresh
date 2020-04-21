@@ -6,7 +6,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.ModelValidator;
 
-import de.metas.costing.ICostDetailRepository;
+import de.metas.costing.ICostDetailService;
 import de.metas.costing.ICurrentCostsRepository;
 import de.metas.product.ProductId;
 import lombok.NonNull;
@@ -37,21 +37,21 @@ import lombok.NonNull;
 class M_Product
 {
 	private final ICurrentCostsRepository currentCostsRepository;
-	private final ICostDetailRepository costDetailsRepo;
+	private final ICostDetailService costDetailsService;
 
 	public M_Product(
 			@NonNull final ICurrentCostsRepository currentCostsRepository,
-			@NonNull final ICostDetailRepository costDetailsRepo)
+			@NonNull final ICostDetailService costDetailsService)
 	{
 		this.currentCostsRepository = currentCostsRepository;
-		this.costDetailsRepo = costDetailsRepo;
+		this.costDetailsService = costDetailsService;
 	}
 
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE, ifColumnsChanged = I_M_Product.COLUMNNAME_C_UOM_ID)
 	public void assertNoCosts(final I_M_Product product)
 	{
 		final ProductId productId = ProductId.ofRepoId(product.getM_Product_ID());
-		if (costDetailsRepo.hasCostDetailsForProductId(productId))
+		if (costDetailsService.hasCostDetailsForProductId(productId))
 		{
 			throw new AdempiereException("@CannotDeleteProductsWithCostDetails@");
 		}
