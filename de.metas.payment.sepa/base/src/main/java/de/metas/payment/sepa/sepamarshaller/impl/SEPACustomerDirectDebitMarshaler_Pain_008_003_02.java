@@ -445,7 +445,7 @@ public class SEPACustomerDirectDebitMarshaler_Pain_008_003_02 implements SEPAMar
 		prvtId.setOthr(othr);
 
 		final RestrictedPersonIdentificationSchemeNameSEPA schemeNm = new RestrictedPersonIdentificationSchemeNameSEPA();
-		othr.setId(sepaHeader.getSEPA_CreditorIdentifier());
+		othr.setId(sepaHeader.getSEPA_CreditorIdentifier()); // it's not mandatory, but we made sure that it was set for SEPA_Exports with this protocol
 		othr.setSchmeNm(schemeNm);
 		schemeNm.setPrtry(IdentificationSchemeNameSEPA.valueOf("SEPA"));
 

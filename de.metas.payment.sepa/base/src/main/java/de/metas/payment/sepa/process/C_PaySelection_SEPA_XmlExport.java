@@ -1,8 +1,12 @@
 package de.metas.payment.sepa.process;
 
+import java.util.Optional;
+
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 
+import de.metas.banking.PaySelectionId;
+import de.metas.banking.payment.IPaySelectionDAO;
 import de.metas.document.engine.DocStatus;
 import de.metas.i18n.IMsgBL;
 import de.metas.payment.sepa.api.ISEPADocumentBL;
@@ -35,6 +39,7 @@ public class C_PaySelection_SEPA_XmlExport
 	// services
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final ISEPADocumentBL sepaDocumentBL = Services.get(ISEPADocumentBL.class);
+	private final IPaySelectionDAO paySelectionDAO = Services.get(IPaySelectionDAO.class);
 
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(final IProcessPreconditionsContext context)
@@ -50,17 +55,18 @@ public class C_PaySelection_SEPA_XmlExport
 			return ProcessPreconditionsResolution.rejectWithInternalReason("Process " + C_PaySelection_SEPA_XmlExport.class + " only works for C_PaySelection");
 		}
 
-		final I_C_PaySelection paySelectionHeader = context.getSelectedModel(I_C_PaySelection.class);
-		if (paySelectionHeader == null)
+		final PaySelectionId paySelectionId = PaySelectionId.ofRepoIdOrNull(context.getSingleSelectedRecordId());
+		final Optional<org.compiere.model.I_C_PaySelection> paySelectionHeader = paySelectionDAO.getById(paySelectionId);
+		if (!paySelectionHeader.isPresent())
 		{
-			return ProcessPreconditionsResolution.rejectWithInternalReason("No payment selection");
+			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
 		}
 
-		final DocStatus docStatus = DocStatus.ofNullableCodeOrUnknown(paySelectionHeader.getDocStatus());
+		final DocStatus docStatus = DocStatus.ofNullableCodeOrUnknown(paySelectionHeader.get().getDocStatus());
 		if (!docStatus.isCompletedOrClosed())
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason(
-					"Process " + C_PaySelection_SEPA_XmlExport.class + " only works for completed or closed C_PaySelections; C_PaySelection_ID=" + paySelectionHeader.getC_PaySelection_ID());
+					"Process " + C_PaySelection_SEPA_XmlExport.class + " only works for completed or closed C_PaySelections; C_PaySelection_ID=" + paySelectionHeader.get().getC_PaySelection_ID());
 		}
 
 		return ProcessPreconditionsResolution.accept();

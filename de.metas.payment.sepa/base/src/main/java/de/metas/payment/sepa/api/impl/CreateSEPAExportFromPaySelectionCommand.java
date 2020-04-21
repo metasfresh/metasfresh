@@ -6,6 +6,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Invoice;
@@ -49,7 +50,9 @@ import lombok.NonNull;
 class CreateSEPAExportFromPaySelectionCommand
 {
 	private static final AdMessageKey ERR_C_BP_BankAccount_BankNotSet = AdMessageKey.of("de.metas.payment.sepa.C_BP_BankAccount_BankNotSet");
-	
+	private static final AdMessageKey ERR_C_BP_BankAccount_SEPA_CreditorIdentifierNotSet = AdMessageKey.of("de.metas.payment.sepa.C_BP_BankAccount_SEPA_CreditorIdentifierNotSet");
+	private static final AdMessageKey ERR_C_Bank_SwiftCodeNotSet = AdMessageKey.of("de.metas.payment.sepa.C_Bank_SwiftCodeNotSet");
+
 	private final IPaymentDAO paymentsRepo = Services.get(IPaymentDAO.class);
 	private final IBPartnerOrgBL partnerOrgBL = Services.get(IBPartnerOrgBL.class);
 
@@ -102,7 +105,6 @@ class CreateSEPAExportFromPaySelectionCommand
 		// task 07789: note that for the CASE of ESR accounts, there is a model validator in de.metas.payment.esr which will
 		// set this field
 		// exportLine.setOtherAccountIdentification(OtherAccountIdentification);
-
 		if (bpBankAccount.getC_Bank_ID() > 0)
 		{
 			exportLine.setSwiftCode(toNullOrRemoveSpaces(bpBankAccount.getC_Bank().getSwiftCode()));
@@ -118,18 +120,19 @@ class CreateSEPAExportFromPaySelectionCommand
 		final PaySelectionTrxType paySelectionTrxType = PaySelectionTrxType.ofNullableCode(paySelectionHeader.getPaySelectionTrxType());
 		if (paySelectionTrxType == null)
 		{
-			throw new AdempiereException("@Invalid@ @PaySelectionTrxType@");
+			throw new FillMandatoryException(false, I_C_PaySelection.COLUMNNAME_PaySelectionTrxType);
 		}
 
 		final I_SEPA_Export header = newInstance(I_SEPA_Export.class, paySelectionHeader);
-		header.setSEPA_Protocol(SEPAProtocol.ofPaySelectionTrxType(paySelectionTrxType).getCode());
+		final SEPAProtocol sepaProtocol = SEPAProtocol.ofPaySelectionTrxType(paySelectionTrxType);
+		header.setSEPA_Protocol(sepaProtocol.getCode());
 
 		//
 		// We need the source org BP.
 		final I_C_BPartner orgBP = partnerOrgBL.retrieveLinkedBPartner(paySelectionHeader.getAD_Org_ID());
 
 		final org.compiere.model.I_C_BP_BankAccount bankAccountSource = paySelectionHeader.getC_BP_BankAccount();
-		Check.assumeNotNull(bankAccountSource, "bankAccountSource not null");
+		Check.assumeNotNull(bankAccountSource, "bankAccountSource not null"); // mandatory column
 		final I_C_BP_BankAccount bpBankAccount = create(bankAccountSource, I_C_BP_BankAccount.class);
 
 		// task 09923: In case the bp bank account does not have a bank set, it cannot be used in a SEPA Export
@@ -141,7 +144,8 @@ class CreateSEPAExportFromPaySelectionCommand
 		// Set corresponding data
 		header.setAD_Org_ID(paySelectionHeader.getAD_Org_ID());
 		final String iban = bpBankAccount.getIBAN();
-		if (!Check.isEmpty(iban, true))
+
+		if (Check.isNotBlank(iban))
 		{
 			header.setIBAN(iban.replaceAll(" ", ""));
 		}
@@ -149,13 +153,23 @@ class CreateSEPAExportFromPaySelectionCommand
 		header.setPaymentDate(paySelectionHeader.getPayDate());
 		header.setProcessed(false);
 		header.setSEPA_CreditorName(orgBP.getName());
+
+		if (SEPAProtocol.DIRECT_DEBIT_PAIN_008_003_02.equals(sepaProtocol) && Check.isBlank(bpBankAccount.getSEPA_CreditorIdentifier()))
+		{
+			throw new AdempiereException(ERR_C_BP_BankAccount_SEPA_CreditorIdentifierNotSet, new Object[] { bpBankAccount.toString() });
+		}
 		header.setSEPA_CreditorIdentifier(bpBankAccount.getSEPA_CreditorIdentifier());
+
+		if (Check.isBlank(bpBankAccount.getC_Bank().getSwiftCode()))
+		{
+			throw new AdempiereException(ERR_C_Bank_SwiftCodeNotSet, new Object[] { bpBankAccount.getC_Bank().getName() });
+		}
 		header.setSwiftCode(bpBankAccount.getC_Bank().getSwiftCode());
 
 		final int paySelectionTableID = getTableId(I_C_PaySelection.class);
 		header.setAD_Table_ID(paySelectionTableID);
-
 		header.setRecord_ID(paySelectionHeader.getC_PaySelection_ID());
+
 		header.setDescription(paySelectionHeader.getDescription());
 
 		header.setIsExportBatchBookings(paySelectionHeader.isExportBatchBookings());
