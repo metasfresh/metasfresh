@@ -42,7 +42,7 @@ import java.time.LocalDate;
 @Component
 public class M_PriceList_Version
 {
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = { I_M_PriceList_Version.COLUMNNAME_ValidFrom })
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE, ModelValidator.TYPE_BEFORE_NEW }, ifColumnsChanged = { I_M_PriceList_Version.COLUMNNAME_ValidFrom })
 	public void updatePLVName_InterceptorOnly(@NonNull final I_M_PriceList_Version priceListVersion)
 	{
 		updatePLVName(priceListVersion);
