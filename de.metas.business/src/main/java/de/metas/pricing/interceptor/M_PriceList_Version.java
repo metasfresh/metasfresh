@@ -42,9 +42,19 @@ import java.time.LocalDate;
 @Component
 public class M_PriceList_Version
 {
-	@CalloutMethod(columnNames = I_M_PriceList_Version.COLUMNNAME_ValidFrom)
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = { I_M_PriceList_Version.COLUMNNAME_ValidFrom })
-	public void updatePLVName(@NonNull final I_M_PriceList_Version priceListVersion)
+	public void updatePLVName_InterceptorOnly(@NonNull final I_M_PriceList_Version priceListVersion)
+	{
+		updatePLVName(priceListVersion);
+	}
+
+	@CalloutMethod(columnNames = I_M_PriceList_Version.COLUMNNAME_ValidFrom)
+	public void updatePLVName_CalloutOnly(@NonNull final I_M_PriceList_Version priceListVersion)
+	{    // callout doesn't work
+		updatePLVName(priceListVersion);
+	}
+
+	private void updatePLVName(final @NonNull I_M_PriceList_Version priceListVersion)
 	{
 		final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
 		final PriceListId priceListId = PriceListId.ofRepoId(priceListVersion.getM_PriceList_ID());
