@@ -1338,6 +1338,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 			else
 			{
 				throw new AdempiereException(MSG_NoAccountFound, get_ID(), acctType)
+						.markAsUserValidationError()
 						.setParameter("sql", sql)
 						.setParameter("sqlParams", sqlParams)
 						.appendParametersToMessage();
