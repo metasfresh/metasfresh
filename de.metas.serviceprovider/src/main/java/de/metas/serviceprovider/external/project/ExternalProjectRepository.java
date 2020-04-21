@@ -25,6 +25,7 @@ package de.metas.serviceprovider.external.project;
 import com.google.common.collect.ImmutableList;
 import de.metas.organization.OrgId;
 import de.metas.project.ProjectId;
+import de.metas.serviceprovider.external.ExternalSystem;
 import de.metas.serviceprovider.model.I_S_ExternalProjectReference;
 import de.metas.util.Services;
 import lombok.NonNull;

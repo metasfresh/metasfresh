@@ -22,17 +22,16 @@ package org.adempiere.model;
  * #L%
  */
 
-import java.util.List;
-
+import com.google.common.collect.ImmutableList;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.compiere.model.GridField;
 import org.compiere.model.PO;
 
-import com.google.common.collect.ImmutableList;
+import javax.annotation.Nullable;
+import java.util.List;
 
 /**
  * @author Cristina Ghita, METAS.RO
- *
  */
 public interface CopyRecordSupport
 {
@@ -51,7 +50,7 @@ public interface CopyRecordSupport
 
 	/**
 	 * Updates given <code>po</code> and sets the right values for columns that needs special handling.
-	 *
+	 * <p>
 	 * e.g. this method makes sure columns like Name or Value have an unique value (to not trigger the unique index).
 	 */
 	void updateSpecialColumnsName(PO to);
@@ -76,12 +75,11 @@ public interface CopyRecordSupport
 	/**
 	 * Gets the value to be copied for a column which is calculated and whom value is not desirable to be copied.
 	 *
-	 * @param gridField
 	 * @return copied value which needs to be set
 	 */
 	Object getValueToCopy(final GridField gridField);
 
-	void setAdWindowId(AdWindowId adWindowId);
+	void setAdWindowId(@Nullable AdWindowId adWindowId);
 
 	/**
 	 * Allows other modules to install custom code to be executed each time a record was copied.

@@ -711,7 +711,7 @@ public class GeneralCopyRecordSupport implements CopyRecordSupport
 	}
 
 	@Override
-	public final void setAdWindowId(final AdWindowId adWindowId)
+	public final void setAdWindowId(final @Nullable AdWindowId adWindowId)
 	{
 		this._adWindowId = adWindowId;
 	}

@@ -48,7 +48,6 @@ public class MilestoneRepositoryTest
 			.name(MOCK_NAME)
 			.value(MOCK_SEARCH_KEY)
 			.description(MOCK_DESCRIPTION)
-			.externalId(MOCK_EXTERNAL_ID)
 			.externalURL(MOCK_EXTERNAL_URL)
 			.processed(true)
 			.dueDate(MOCK_INSTANT)
@@ -65,9 +64,7 @@ public class MilestoneRepositoryTest
 	{
 		milestoneRepository.save(MOCK_MILESTONE);
 
-		final MilestoneId milestoneId = milestoneRepository.getRepoIdByExternalId(MOCK_EXTERNAL_ID).get();
-
-		final I_S_Milestone record = InterfaceWrapperHelper.load(milestoneId, I_S_Milestone.class);
+		final I_S_Milestone record = InterfaceWrapperHelper.load(MOCK_MILESTONE.getMilestoneId(), I_S_Milestone.class);
 
 		assertEqualsRecord(record, MOCK_MILESTONE);
 	}
@@ -78,7 +75,6 @@ public class MilestoneRepositoryTest
 		assertEquals(record.getS_Milestone_ID(), milestone.getMilestoneId().getRepoId());
 		assertEquals(record.getAD_Org_ID(), milestone.getOrgId().getRepoId());
 		assertEquals(record.getDescription(), milestone.getDescription());
-		assertEquals(record.getExternalId(), milestone.getExternalId());
 		assertEquals(record.getExternalUrl(), milestone.getExternalURL());
 		assertEquals(record.getValue(), milestone.getValue());
 		assertEquals(record.getName(), milestone.getName());

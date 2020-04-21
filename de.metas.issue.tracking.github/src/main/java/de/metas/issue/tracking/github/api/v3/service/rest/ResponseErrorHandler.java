@@ -26,25 +26,21 @@ import de.metas.issue.tracking.github.api.v3.model.RateLimit;
 import de.metas.issue.tracking.github.api.v3.service.RateLimitService;
 import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.DefaultResponseErrorHandler;
 
 import java.io.IOException;
 import java.util.Optional;
 
 @Component
-public class ResponseErrorHandler implements org.springframework.web.client.ResponseErrorHandler
+public class ResponseErrorHandler extends DefaultResponseErrorHandler
 {
 
 	private final RateLimitService rateLimitService;
 
 	public ResponseErrorHandler(final RateLimitService rateLimitService)
 	{
+		super();
 		this.rateLimitService = rateLimitService;
-	}
-
-	@Override public boolean hasError(final ClientHttpResponse response) throws IOException
-	{
-		return response.getStatusCode().is4xxClientError()
-				|| response.getStatusCode().is5xxServerError();
 	}
 
 	@Override public void handleError(final ClientHttpResponse response) throws IOException
@@ -59,6 +55,6 @@ public class ResponseErrorHandler implements org.springframework.web.client.Resp
 			}
 		}
 
-		throw new IOException(response.getBody().toString());
+		super.handleError(response);
 	}
 }

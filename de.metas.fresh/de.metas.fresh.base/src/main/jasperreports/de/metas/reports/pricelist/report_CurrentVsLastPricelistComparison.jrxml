@@ -16,7 +16,7 @@
 	<property name="com.jaspersoft.studio.unit.rightMargin" value="pixel"/>
 	<property name="com.jaspersoft.studio.unit.columnWidth" value="pixel"/>
 	<property name="com.jaspersoft.studio.unit.columnSpacing" value="pixel"/>
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="jasperreports\uat.xml"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="jasperreports\it.xml"/>
 	<property name="com.jaspersoft.studio.report.description" value=""/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
@@ -39,9 +39,25 @@
 	<parameter name="ad_language" class="java.lang.String" isForPrompting="false">
 		<defaultValueExpression><![CDATA[$P{REPORT_LOCALE}.toString()]]></defaultValueExpression>
 	</parameter>
+	<parameter name="p_show_product_price_pi_flag" class="java.lang.String">
+		<defaultValueExpression><![CDATA["Y"]]></defaultValueExpression>
+	</parameter>
 	<queryString>
 		<![CDATA[SELECT *
-		FROM report.Current_Vs_Previous_Pricelist_Comparison_Report($P{C_BPartner_ID}, $P{C_BP_Group_ID}, $P{IsSOTrx}, $P{ad_language})
+		FROM report.Current_Vs_Previous_Pricelist_Comparison_Report(
+			$P{C_BPartner_ID}, 
+			$P{C_BP_Group_ID}, 
+			$P{IsSOTrx}, $P{ad_language},
+			$P{p_show_product_price_pi_flag}
+		) where show_product_price_pi_flag = 'N' 
+		UNION ALL
+		SELECT *
+		FROM report.Current_Vs_Previous_Pricelist_Comparison_Report_With_PP_PI(
+			$P{C_BPartner_ID}, 
+			$P{C_BP_Group_ID}, 
+			$P{IsSOTrx}, $P{ad_language}, 
+			$P{p_show_product_price_pi_flag}
+		) where show_product_price_pi_flag = 'Y' 
 		;]]>
 	</queryString>
 	<field name="bp_value" class="java.lang.String">
@@ -127,6 +143,9 @@
 	</field>
 	<field name="ad_org_id" class="java.math.BigDecimal">
 		<property name="com.jaspersoft.studio.field.label" value="ad_org_id"/>
+	</field>
+	<field name="show_product_price_pi_flag" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="show_product_price_pi_flag"/>
 	</field>
 	<variable name="LINE_COUNT" class="java.lang.Number" calculation="Count">
 		<variableExpression><![CDATA[1]]></variableExpression>

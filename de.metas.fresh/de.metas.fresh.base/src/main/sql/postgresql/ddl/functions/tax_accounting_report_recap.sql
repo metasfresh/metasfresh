@@ -1,5 +1,5 @@
-DROP FUNCTION IF EXISTS report.tax_accounting_report_recap( IN c_period_id numeric, IN vatcode numeric, IN account_id numeric, IN org_id numeric );
-CREATE OR REPLACE FUNCTION report.tax_accounting_report_recap(IN c_period_id numeric, IN vatcode numeric,
+DROP FUNCTION IF EXISTS report.tax_accounting_report_recap(IN dateFrom date, IN dateTo date, IN vatcode numeric, IN account_id numeric, IN org_id numeric );
+CREATE OR REPLACE FUNCTION report.tax_accounting_report_recap(IN dateFrom date, IN dateTo date, IN vatcode numeric,
                                                               IN account_id  numeric, IN org_id numeric)
   RETURNS TABLE(
     taxname    character varying,
@@ -46,7 +46,6 @@ FROM
         FROM public.fact_acct fa
           -- gh #489: explicitly select from public.fact_acct, bacause the function de_metas_acct.Fact_Acct_EndingBalance expects it.
           JOIN c_tax tax ON fa.c_tax_id = tax.c_tax_id and tax.isActive = 'Y'
-          JOIN c_period p ON p.c_period_id = $1 and p.isActive = 'Y'
 
           --if invoice
           LEFT OUTER JOIN
@@ -103,18 +102,18 @@ FROM
             ON hdr.C_AllocationHdr_ID = fa.record_id AND fa.ad_table_id = get_Table_Id('C_AllocationHdr') AND
                fa.line_id = hdr.C_AllocationLine_ID
 
-          LEFT OUTER JOIN C_Vat_Code vat on vat.C_Vat_Code_ID = $2 and vat.isActive = 'Y'
+          LEFT OUTER JOIN C_Vat_Code vat on vat.C_Vat_Code_ID = $3 and vat.isActive = 'Y'
 
         WHERE fa.line_id is null and fa.C_Tax_id is not null
-              AND fa.c_period_id = $1
+              AND fa.DateAcct >= dateFrom AND fa.DateAcct <= dateTo
               AND fa.postingtype IN ('A', 'Y')
-              AND fa.ad_org_id = $4
+              AND fa.ad_org_id = $5
               AND (CASE WHEN vat.vatcode IS NULL
           THEN TRUE
                    ELSE vat.vatcode = fa.VatCode END)
-              AND (CASE WHEN $3 IS NULL
+              AND (CASE WHEN $4 IS NULL
           THEN TRUE
-                   ELSE $3 = fa.account_id END)
+                   ELSE $4 = fa.account_id END)
               AND fa.isActive = 'Y'
 
 

@@ -59,5 +59,10 @@
             <artifactId>mockito-core</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>de.metas.issue.tracking.everhour</groupId>
+            <artifactId>de.metas.issue.tracking.everhour</artifactId>
+            <version>${metasfresh.version}</version>
+        </dependency>
     </dependencies>
 </project>
