@@ -25,6 +25,7 @@ package de.metas.pricing.interceptor;
 import de.metas.location.CountryId;
 import de.metas.money.CurrencyId;
 import de.metas.pricing.PriceListId;
+import de.metas.pricing.service.IPriceListBL;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -77,7 +78,7 @@ public class M_PriceList
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = { I_M_PriceList.COLUMNNAME_Name })
 	public void updatePLVName(@NonNull final I_M_PriceList priceList)
 	{
-		final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
-		priceListDAO.updateAllPLVName(priceList.getName(), PriceListId.ofRepoId(priceList.getM_PriceList_ID()));
+		final IPriceListBL priceListBL = Services.get(IPriceListBL.class);
+		priceListBL.updateAllPLVName(priceList.getName(), PriceListId.ofRepoId(priceList.getM_PriceList_ID()));
 	}
 }

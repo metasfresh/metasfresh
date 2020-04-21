@@ -23,6 +23,7 @@
 package de.metas.pricing.interceptor;
 
 import de.metas.pricing.PriceListId;
+import de.metas.pricing.service.IPriceListBL;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -32,6 +33,7 @@ import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.ModelValidator;
 import org.compiere.util.TimeUtil;
@@ -55,7 +57,10 @@ public class M_PriceList_Version
 	public void updatePLVName(@NonNull final I_M_PriceList_Version priceListVersion)
 	{
 		final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
+		final IPriceListBL priceListBL = Services.get(IPriceListBL.class);
+
 		final PriceListId priceListId = PriceListId.ofRepoId(priceListVersion.getM_PriceList_ID());
+		final I_M_PriceList priceList = priceListDAO.getById(priceListId);
 		final LocalDate date = TimeUtil.asLocalDate(priceListVersion.getValidFrom());
 
 		if (date == null)
@@ -63,7 +68,7 @@ public class M_PriceList_Version
 			return;
 		}
 
-		final String plvName = priceListDAO.createPLVName(priceList.getName(), date);
+		final String plvName = priceListBL.createPLVName(priceList.getName(), date);
 		priceListVersion.setName(plvName);
 	}
 }

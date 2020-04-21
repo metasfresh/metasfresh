@@ -40,6 +40,7 @@ import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.ProductPriceId;
 import de.metas.pricing.service.AddProductPriceRequest;
 import de.metas.pricing.service.CopyProductPriceRequest;
+import de.metas.pricing.service.IPriceListBL;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.pricing.service.PriceListsCollection;
 import de.metas.pricing.service.UpdateProductPriceRequest;
@@ -49,7 +50,6 @@ import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.NumberUtils;
 import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
@@ -83,7 +83,6 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
@@ -723,7 +722,7 @@ public class PriceListDAO implements IPriceListDAO
 		if (pricelistId != null && validFrom != null)
 		{
 			final I_M_PriceList priceList = getById(pricelistId);
-			final String plvName = createPLVName(priceList.getName(), validFrom);
+			final String plvName = Services.get(IPriceListBL.class).createPLVName(priceList.getName(), validFrom);
 
 			newCustomerPLV.setName(plvName);
 		}
@@ -738,33 +737,6 @@ public class PriceListDAO implements IPriceListDAO
 
 		save(newCustomerPLV);
 
-	}
-
-	@Override
-	// // TODO tbp: move to BL, not in DAO
-	public String createPLVName(final @NonNull String priceListName, final @NonNull LocalDate date)
-	{
-		final String formattedDate = date.format(DateTimeFormatter.ISO_LOCAL_DATE);
-
-		return priceListName + " " + formattedDate;
-	}
-
-	@Override
-	public int updateAllPLVName(final String namePrefix, final PriceListId priceListId)
-	{
-		final String dateFormat = "YYYY-MM-DD"; // equivalent of DateTimeFormatter.ISO_LOCAL_DATE
-
-		final UserId updatedBy = Env.getLoggedUserId();
-		final Timestamp now = SystemTime.asTimestamp();
-
-		final String sqlStr = ""
-				+ " UPDATE " + I_M_PriceList_Version.Table_Name + " plv "
-				+ " SET " + I_M_PriceList_Version.COLUMNNAME_Name + "      = ? || ' ' || to_char(plv." + I_M_PriceList_Version.COLUMNNAME_ValidFrom + ", '" + dateFormat + "'), "
-				+ "     " + I_M_PriceList_Version.COLUMNNAME_UpdatedBy + " = ?, "
-				+ "     " + I_M_PriceList_Version.COLUMNNAME_Updated + "   = ? "
-				+ " WHERE plv." + I_M_PriceList_Version.COLUMNNAME_M_PriceList_ID + " = ? ";
-
-		return DB.executeUpdateEx(sqlStr, new Object[] { namePrefix, updatedBy, now, priceListId }, ITrx.TRXNAME_ThreadInherited);
 	}
 
 	@VisibleForTesting

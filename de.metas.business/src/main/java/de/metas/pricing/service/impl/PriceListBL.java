@@ -1,14 +1,31 @@
 package de.metas.pricing.service.impl;
 
-import java.sql.Timestamp;
-import java.time.ZonedDateTime;
-import java.util.Iterator;
-
-import javax.annotation.Nullable;
-
+import de.metas.currency.CurrencyPrecision;
+import de.metas.currency.ICurrencyDAO;
+import de.metas.lang.SOTrx;
+import de.metas.location.CountryId;
+import de.metas.money.CurrencyId;
+import de.metas.pricing.PriceListId;
+import de.metas.pricing.PricingSystemId;
+import de.metas.pricing.service.IPriceListBL;
+import de.metas.pricing.service.IPriceListDAO;
+import de.metas.user.UserId;
+import de.metas.util.Services;
+import de.metas.util.time.SystemTime;
+import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
+import org.compiere.util.DB;
+import org.compiere.util.Env;
+
+import javax.annotation.Nullable;
+import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Iterator;
 
 /*
  * #%L
@@ -31,18 +48,6 @@ import org.compiere.model.I_M_PriceList_Version;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
-import de.metas.currency.CurrencyPrecision;
-import de.metas.currency.ICurrencyDAO;
-import de.metas.lang.SOTrx;
-import de.metas.location.CountryId;
-import de.metas.money.CurrencyId;
-import de.metas.pricing.PriceListId;
-import de.metas.pricing.PricingSystemId;
-import de.metas.pricing.service.IPriceListBL;
-import de.metas.pricing.service.IPriceListDAO;
-import de.metas.util.Services;
-import lombok.NonNull;
 
 public class PriceListBL implements IPriceListBL
 {
@@ -174,5 +179,31 @@ public class PriceListBL implements IPriceListBL
 		}
 
 		return lastPriceListVersion;
+	}
+
+	@Override
+	public String createPLVName(final @NonNull String priceListName, final @NonNull LocalDate date)
+	{
+		final String formattedDate = date.format(DateTimeFormatter.ISO_LOCAL_DATE);
+
+		return priceListName + " " + formattedDate;
+	}
+
+	@Override
+	public int updateAllPLVName(final String namePrefix, final PriceListId priceListId)
+	{
+		final String dateFormat = "YYYY-MM-DD"; // equivalent of DateTimeFormatter.ISO_LOCAL_DATE
+
+		final UserId updatedBy = Env.getLoggedUserId();
+		final Timestamp now = SystemTime.asTimestamp();
+
+		final String sqlStr = ""
+				+ " UPDATE " + I_M_PriceList_Version.Table_Name + " plv "
+				+ " SET " + I_M_PriceList_Version.COLUMNNAME_Name + "      = ? || ' ' || to_char(plv." + I_M_PriceList_Version.COLUMNNAME_ValidFrom + ", '" + dateFormat + "'), "
+				+ "     " + I_M_PriceList_Version.COLUMNNAME_UpdatedBy + " = ?, "
+				+ "     " + I_M_PriceList_Version.COLUMNNAME_Updated + "   = ? "
+				+ " WHERE plv." + I_M_PriceList_Version.COLUMNNAME_M_PriceList_ID + " = ? ";
+
+		return DB.executeUpdateEx(sqlStr, new Object[] { namePrefix, updatedBy, now, priceListId }, ITrx.TRXNAME_ThreadInherited);
 	}
 }

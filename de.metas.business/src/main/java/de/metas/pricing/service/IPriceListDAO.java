@@ -188,20 +188,4 @@ public interface IPriceListDAO extends ISingletonService
 	Optional<TaxCategoryId> getDefaultTaxCategoryByPriceListVersionId(final PriceListVersionId priceListVersionId);
 
 	PricingSystemId getPricingSystemId(PriceListId priceListId);
-
-	/**
-	 * Please keep in sync with {@link #updateAllPLVName(String, PriceListId)} )}
-	 */
-	String createPLVName(final @NonNull String priceListName, @NonNull LocalDate date);
-
-	/**
-	 * Update the Name of all Price List Versions.
-	 * <p>
-	 * The name has the format "Price List.Name + PLV.ValidFrom".
-	 * <p>
-	 * Please keep in sync with {@link #createPLVName(String, LocalDate)}
-	 *
-	 * @return number of updated records
-	 */
-	int updateAllPLVName(final String namePrefix, final PriceListId priceListId);
 }
