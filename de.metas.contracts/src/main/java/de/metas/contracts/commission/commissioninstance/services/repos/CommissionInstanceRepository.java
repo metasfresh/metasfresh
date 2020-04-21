@@ -36,6 +36,7 @@ import de.metas.contracts.commission.commissioninstance.businesslogic.algorithms
 import de.metas.contracts.commission.commissioninstance.businesslogic.hierarchy.HierarchyLevel;
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.SalesCommissionFact;
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.SalesCommissionShare;
+import de.metas.contracts.commission.commissioninstance.businesslogic.sales.SalesCommissionShareId;
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.SalesCommissionShare.SalesCommissionShareBuilder;
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.SalesCommissionState;
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.CommissionTriggerData;
@@ -187,6 +188,7 @@ public class CommissionInstanceRepository
 	private SalesCommissionShareBuilder createShareBuilder(@NonNull final I_C_Commission_Share shareRecord)
 	{
 		final SalesCommissionShareBuilder share = SalesCommissionShare.builder()
+				.id(SalesCommissionShareId.ofRepoId(shareRecord.getC_Commission_Share_ID()))
 				.beneficiary(Beneficiary.of(BPartnerId.ofRepoId(shareRecord.getC_BPartner_SalesRep_ID())))
 				.level(HierarchyLevel.of(shareRecord.getLevelHierarchy()));
 
