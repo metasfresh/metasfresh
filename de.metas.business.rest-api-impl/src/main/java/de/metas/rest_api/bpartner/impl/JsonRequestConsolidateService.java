@@ -153,9 +153,9 @@ public class JsonRequestConsolidateService
 						.setParameter("identifierString", identifierString)
 						.setParameter("jsonRequestLocationUpsertItem", requestItem);
 		}
-		}
+	}
 
-	private IdentifierString consolidateWithIdentifier(@NonNull final JsonRequestContactUpsertItem requestItem)
+	private void consolidateWithIdentifier(@NonNull final JsonRequestContactUpsertItem requestItem)
 	{
 		final IdentifierString identifierString = IdentifierString.of(requestItem.getContactIdentifier());
 		final JsonRequestContact jsonContact = requestItem.getContact();
@@ -164,26 +164,19 @@ public class JsonRequestConsolidateService
 		{
 			case METASFRESH_ID:
 				// nothing to do; the bpartner-JSON has no metasfresh-ID to consolidate with
-				return identifierString;
+				break;
 			case EXTERNAL_ID:
 				if (!jsonContact.isExternalIdSet())
 				{
 					jsonContact.setExternalId(identifierString.asJsonExternalId());
-					return identifierString;
 				}
-				else
-				{
-					return IdentifierString.ofJsonExternalId(jsonContact.getExternalId());
-				}
+				break;
 			case VALUE:
 				if (!jsonContact.isCodeSet())
 				{
 					jsonContact.setCode(identifierString.asValue());
 				}
-				else
-				{
-					return IdentifierString.ofValue(jsonContact.getCode());
-				}
+				break;
 			case INTERNALNAME:
 				throw new InvalidIdentifierException(identifierString);
 			case GLN:
@@ -194,7 +187,7 @@ public class JsonRequestConsolidateService
 						.setParameter("identifierString", identifierString)
 						.setParameter("jsonRequestContactUpsertItem", requestItem);
 		}
-		}
+	}
 
 	/**
 	 * Assumes that the given {@code contact} has a property that matches the given type.

@@ -738,7 +738,7 @@ public class XmlToOLCandsService
 
 	private JsonExternalId createPationBPartnerExternalId(@NonNull final String orgCode, @NonNull final PatientAddressType patient)
 	{
-		final ExternalId externalId = HealthcareCHHelper.createBPartnerExternalId(patient.getSsn());
+		final ExternalId externalId = HealthcareCHHelper.createBPartnerExternalIdForPatient(patient.getSsn());
 		if (externalId == null)
 		{
 			throw new MissingPropertyException("SSN", patient);

@@ -31,7 +31,7 @@ import lombok.experimental.UtilityClass;
 @UtilityClass
 public class HealthcareCHHelper
 {
-	public ExternalId createBPartnerExternalId(@Nullable final String ssn)
+	public ExternalId createBPartnerExternalIdForPatient(@Nullable final String ssn)
 	{
 		if (Check.isEmpty(ssn))
 		{

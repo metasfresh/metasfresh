@@ -119,7 +119,7 @@ public class HealthcareXMLAttachedToInvoiceListener implements AttachmentListene
 			final XmlRequest xRequest = requestConverter.toCrossVersionRequest(new ByteArrayInputStream(attachmentData));
 			final @NonNull XmlPatient patient = xRequest.getPayload().getBody().getTiers().getPatient();
 
-			final ExternalId externalId = HealthcareCHHelper.createBPartnerExternalId(patient.getSsn());
+			final ExternalId externalId = HealthcareCHHelper.createBPartnerExternalIdForPatient(patient.getSsn());
 			if (externalId == null)
 			{
 				logger.debug("patient-XML data extracted from attachmentEntry with id={} (filename={}) has no SSN; -> doing nothing",
