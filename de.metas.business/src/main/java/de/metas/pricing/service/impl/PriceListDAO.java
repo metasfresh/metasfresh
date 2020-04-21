@@ -738,6 +738,25 @@ public class PriceListDAO implements IPriceListDAO
 
 	}
 
+	@Override
+	public int updateAllPLVName(@NonNull final PriceListId priceListId)
+	{
+		final I_M_PriceList priceList = getById(priceListId);
+
+		final String priceListName = priceList.getName();
+		final UserId updatedBy = Env.getLoggedUserId();
+		final Timestamp now = SystemTime.asTimestamp();
+
+		final String sqlStr = ""
+				+ " UPDATE " + I_M_PriceList_Version.Table_Name + " plv "
+				+ " SET " + I_M_PriceList_Version.COLUMNNAME_Name + "      = ? || ' ' || to_char(plv." + I_M_PriceList_Version.COLUMNNAME_ValidFrom + ", 'YYYY-MM-DD'), "
+				+ "     " + I_M_PriceList_Version.COLUMNNAME_UpdatedBy + " = ?, "
+				+ "     " + I_M_PriceList_Version.COLUMNNAME_Updated + "   = ? "
+				+ " WHERE plv." + I_M_PriceList_Version.COLUMNNAME_M_PriceList_ID + " = ? ";
+
+		return DB.executeUpdateEx(sqlStr, new Object[] { priceListName, updatedBy, now, priceListId.getRepoId() }, ITrx.TRXNAME_ThreadInherited);
+	}
+
 	@VisibleForTesting
 	protected void createProductPricesForPLV(final UserId userId, final PriceListVersionId newCustomerPLVId)
 	{
