@@ -243,7 +243,10 @@ public class SEPACustomerDirectDebitMarshaler_Pain_008_003_02 implements SEPAMar
 			}
 
 			// Sequence Type: Valid values are FNAL, FRST, OOFF, RCUR
-			pmtTpInf.setSeqTp(SequenceType1Code.OOFF);
+			// "OOFF": single direct debit without continuation within the mandate.
+			// "RCUR": following direct debits within the accompanying mandate"
+			// We go with RCUR now
+			pmtTpInf.setSeqTp(SequenceType1Code.RCUR);
 
 			// //FIXME: Is this needed?
 			// {
