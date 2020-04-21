@@ -751,13 +751,10 @@ public class PriceListDAO implements IPriceListDAO
 	}
 
 	@Override
-	public int updateAllPLVName(@NonNull final PriceListId priceListId)
+	public int updateAllPLVName(final String namePrefix, final PriceListId priceListId)
 	{
-		final I_M_PriceList priceList = getById(priceListId);
-
 		final String dateFormat = "YYYY-MM-DD"; // equivalent of DateTimeFormatter.ISO_LOCAL_DATE
 
-		final String priceListName = priceList.getName();
 		final UserId updatedBy = Env.getLoggedUserId();
 		final Timestamp now = SystemTime.asTimestamp();
 
@@ -768,7 +765,7 @@ public class PriceListDAO implements IPriceListDAO
 				+ "     " + I_M_PriceList_Version.COLUMNNAME_Updated + "   = ? "
 				+ " WHERE plv." + I_M_PriceList_Version.COLUMNNAME_M_PriceList_ID + " = ? ";
 
-		return DB.executeUpdateEx(sqlStr, new Object[] { priceListName, updatedBy, now, priceListId.getRepoId() }, ITrx.TRXNAME_ThreadInherited);
+		return DB.executeUpdateEx(sqlStr, new Object[] { namePrefix, updatedBy, now, priceListId }, ITrx.TRXNAME_ThreadInherited);
 	}
 
 	@VisibleForTesting

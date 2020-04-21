@@ -28,6 +28,8 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
+import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
+import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.compiere.model.I_M_PriceList_Version;
@@ -42,25 +44,26 @@ import java.time.LocalDate;
 @Component
 public class M_PriceList_Version
 {
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE, ModelValidator.TYPE_BEFORE_NEW }, ifColumnsChanged = { I_M_PriceList_Version.COLUMNNAME_ValidFrom })
-	public void updatePLVName_InterceptorOnly(@NonNull final I_M_PriceList_Version priceListVersion)
+	@Init
+	public void registerCallouts()
 	{
-		updatePLVName(priceListVersion);
+		Services.get(IProgramaticCalloutProvider.class).registerAnnotatedCallout(this);
 	}
 
 	@CalloutMethod(columnNames = I_M_PriceList_Version.COLUMNNAME_ValidFrom)
-	public void updatePLVName_CalloutOnly(@NonNull final I_M_PriceList_Version priceListVersion)
-	{    // callout doesn't work
-		updatePLVName(priceListVersion);
-	}
-
-	private void updatePLVName(final @NonNull I_M_PriceList_Version priceListVersion)
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE, ModelValidator.TYPE_BEFORE_NEW }, ifColumnsChanged = { I_M_PriceList_Version.COLUMNNAME_ValidFrom })
+	public void updatePLVName(@NonNull final I_M_PriceList_Version priceListVersion)
 	{
 		final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
 		final PriceListId priceListId = PriceListId.ofRepoId(priceListVersion.getM_PriceList_ID());
 		final LocalDate date = TimeUtil.asLocalDate(priceListVersion.getValidFrom());
 
-		final String plvName = priceListDAO.createPLVName(priceListId, date);
+		if (date == null)
+		{
+			return;
+		}
+
+		final String plvName = priceListDAO.createPLVName(priceList.getName(), date);
 		priceListVersion.setName(plvName);
 	}
 }
