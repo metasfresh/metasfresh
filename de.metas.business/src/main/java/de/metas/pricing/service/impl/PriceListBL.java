@@ -1,5 +1,7 @@
 package de.metas.pricing.service.impl;
 
+import de.metas.cache.CacheMgt;
+import de.metas.cache.model.CacheInvalidateMultiRequest;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.lang.SOTrx;
@@ -204,6 +206,11 @@ public class PriceListBL implements IPriceListBL
 				+ "     " + I_M_PriceList_Version.COLUMNNAME_Updated + "   = ? "
 				+ " WHERE plv." + I_M_PriceList_Version.COLUMNNAME_M_PriceList_ID + " = ? ";
 
-		return DB.executeUpdateEx(sqlStr, new Object[] { namePrefix, updatedBy, now, priceListId }, ITrx.TRXNAME_ThreadInherited);
+		final int recordsUpdated = DB.executeUpdateEx(sqlStr, new Object[] { namePrefix, updatedBy, now, priceListId }, ITrx.TRXNAME_ThreadInherited);
+
+		final CacheInvalidateMultiRequest cacheInvalidateRequest = CacheInvalidateMultiRequest.allChildRecords(I_M_PriceList.Table_Name, priceListId.getRepoId(), I_M_PriceList_Version.Table_Name);
+		CacheMgt.get().reset(cacheInvalidateRequest);
+
+		return recordsUpdated;
 	}
 }
