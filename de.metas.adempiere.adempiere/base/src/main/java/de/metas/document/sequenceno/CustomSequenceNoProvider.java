@@ -30,6 +30,9 @@ public interface CustomSequenceNoProvider
 
 	String provideSequenceNo(Evaluatee context);
 
-	/** Indicate to metasfresh if this implementation wants its sequence number to be "standalone" or, be the prefix for a "normal", incremental number. */
+	/**
+	 * Indicate to metasfresh if this implementation wants its sequence number to be "standalone" or, be the prefix for a "normal", incremental number.
+	 * Note that if the incremental number is appended, that is <i>without</i> applying the {@code AD_Sequence}'s decimal pattern.
+	 */
 	boolean isUseIncrementSeqNoAsPrefix();
 }
