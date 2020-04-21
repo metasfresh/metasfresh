@@ -1,26 +1,8 @@
-package de.metas.pricing.interceptor;
-
-import org.adempiere.ad.modelvalidator.annotations.Init;
-import org.adempiere.ad.modelvalidator.annotations.Interceptor;
-import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.ad.ui.api.ITabCalloutFactory;
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.I_M_PriceList;
-import org.compiere.model.I_M_PriceList_Version;
-import org.compiere.model.ModelValidator;
-import org.springframework.stereotype.Component;
-
-import de.metas.location.CountryId;
-import de.metas.money.CurrencyId;
-import de.metas.pricing.callout.M_PricelistVersion_TabCallout;
-import de.metas.pricing.service.IPriceListDAO;
-import de.metas.util.Services;
-
 /*
  * #%L
  * de.metas.business
  * %%
- * Copyright (C) 2019 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -38,16 +20,26 @@ import de.metas.util.Services;
  * #L%
  */
 
+package de.metas.pricing.interceptor;
+
+import de.metas.location.CountryId;
+import de.metas.money.CurrencyId;
+import de.metas.pricing.PriceListId;
+import de.metas.pricing.service.IPriceListBL;
+import de.metas.pricing.service.IPriceListDAO;
+import de.metas.util.Services;
+import lombok.NonNull;
+import org.adempiere.ad.modelvalidator.annotations.Interceptor;
+import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.I_M_PriceList;
+import org.compiere.model.ModelValidator;
+import org.springframework.stereotype.Component;
+
 @Interceptor(I_M_PriceList.class)
 @Component
 public class M_PriceList
 {
-	@Init
-	public void registerCallouts()
-	{
-		Services.get(ITabCalloutFactory.class).registerTabCalloutForTable(I_M_PriceList_Version.Table_Name, M_PricelistVersion_TabCallout.class);
-	}
-
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE })
 	public void assertBasePricingIsValid(final I_M_PriceList priceList)
 	{
@@ -81,5 +73,12 @@ public class M_PriceList
 			throw new AdempiereException("@PriceListAndBasePriceListCountryMismatchError@")
 					.markAsUserValidationError();
 		}
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = { I_M_PriceList.COLUMNNAME_Name })
+	public void updatePLVName(@NonNull final I_M_PriceList priceList)
+	{
+		final IPriceListBL priceListBL = Services.get(IPriceListBL.class);
+		priceListBL.updateAllPLVName(priceList.getName(), PriceListId.ofRepoId(priceList.getM_PriceList_ID()));
 	}
 }
