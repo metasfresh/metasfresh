@@ -209,7 +209,7 @@ public interface I_S_ExternalReference
 	 * Set Referenced record ID.
 	 *
 	 * <br>Type: Button
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	public void setReferenced_Record_ID (int Referenced_Record_ID);
@@ -218,7 +218,7 @@ public interface I_S_ExternalReference
 	 * Get Referenced record ID.
 	 *
 	 * <br>Type: Button
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	public int getReferenced_Record_ID();

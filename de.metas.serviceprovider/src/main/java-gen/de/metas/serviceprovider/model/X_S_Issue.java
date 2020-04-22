@@ -15,7 +15,7 @@ public class X_S_Issue extends org.compiere.model.PO implements I_S_Issue, org.c
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 944106513L;
+	private static final long serialVersionUID = -1040725648L;
 
     /** Standard Constructor */
     public X_S_Issue (Properties ctx, int S_Issue_ID, String trxName)
@@ -23,7 +23,6 @@ public class X_S_Issue extends org.compiere.model.PO implements I_S_Issue, org.c
       super (ctx, S_Issue_ID, trxName);
       /** if (S_Issue_ID == 0)
         {
-			setCurrentEffort (0); // 0
 			setEffort_UOM_ID (0);
 			setEstimatedEffort (BigDecimal.ZERO); // 0
 			setIsApproved (false); // N
@@ -76,6 +75,25 @@ public class X_S_Issue extends org.compiere.model.PO implements I_S_Issue, org.c
 		return ii.intValue();
 	}
 
+	/** Set Aggregated effort (H:mm).
+		@param AggregatedEffort 
+		The time spent on the whole issue tree in H:mm format.
+	  */
+	@Override
+	public void setAggregatedEffort (java.lang.String AggregatedEffort)
+	{
+		set_Value (COLUMNNAME_AggregatedEffort, AggregatedEffort);
+	}
+
+	/** Get Aggregated effort (H:mm).
+		@return The time spent on the whole issue tree in H:mm format.
+	  */
+	@Override
+	public java.lang.String getAggregatedEffort () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_AggregatedEffort);
+	}
+
 	/** Set Budgetiert.
 		@param BudgetedEffort 
 		Ursprünglich geplanter oder erwarteter Aufwand.
@@ -118,25 +136,6 @@ public class X_S_Issue extends org.compiere.model.PO implements I_S_Issue, org.c
 	public int getC_Project_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_Project_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
-	/** Set Aktueller Aufwand.
-		@param CurrentEffort Aktueller Aufwand	  */
-	@Override
-	public void setCurrentEffort (int CurrentEffort)
-	{
-		set_Value (COLUMNNAME_CurrentEffort, Integer.valueOf(CurrentEffort));
-	}
-
-	/** Get Aktueller Aufwand.
-		@return Aktueller Aufwand	  */
-	@Override
-	public int getCurrentEffort () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_CurrentEffort);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
@@ -234,6 +233,25 @@ public class X_S_Issue extends org.compiere.model.PO implements I_S_Issue, org.c
 		return (java.lang.String)get_Value(COLUMNNAME_ExternalIssueNo);
 	}
 
+	/** Set Invoiceable effort.
+		@param InvoiceableEffort Invoiceable effort	  */
+	@Override
+	public void setInvoiceableEffort (java.math.BigDecimal InvoiceableEffort)
+	{
+		set_Value (COLUMNNAME_InvoiceableEffort, InvoiceableEffort);
+	}
+
+	/** Get Invoiceable effort.
+		@return Invoiceable effort	  */
+	@Override
+	public java.math.BigDecimal getInvoiceableEffort () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_InvoiceableEffort);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
+	}
+
 	/** Set Freigegeben.
 		@param IsApproved 
 		Zeigt an, ob dieser Beleg eine Freigabe braucht
@@ -283,6 +301,25 @@ public class X_S_Issue extends org.compiere.model.PO implements I_S_Issue, org.c
 		return false;
 	}
 
+	/** Set IssueEffort (H:mm).
+		@param IssueEffort 
+		Time spent directly on this task in H:mm format.
+	  */
+	@Override
+	public void setIssueEffort (java.lang.String IssueEffort)
+	{
+		set_Value (COLUMNNAME_IssueEffort, IssueEffort);
+	}
+
+	/** Get IssueEffort (H:mm).
+		@return Time spent directly on this task in H:mm format.
+	  */
+	@Override
+	public java.lang.String getIssueEffort () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_IssueEffort);
+	}
+
 	/** 
 	 * IssueType AD_Reference_ID=541105
 	 * Reference name: Budget_Issue_Type
@@ -328,6 +365,36 @@ public class X_S_Issue extends org.compiere.model.PO implements I_S_Issue, org.c
 		return (java.lang.String)get_Value(COLUMNNAME_IssueURL);
 	}
 
+	/** Set Latest activity.
+		@param LatestActivity Latest activity	  */
+	@Override
+	public void setLatestActivity (java.sql.Timestamp LatestActivity)
+	{
+		throw new IllegalArgumentException ("LatestActivity is virtual column");	}
+
+	/** Get Latest activity.
+		@return Latest activity	  */
+	@Override
+	public java.sql.Timestamp getLatestActivity () 
+	{
+		return (java.sql.Timestamp)get_Value(COLUMNNAME_LatestActivity);
+	}
+
+	/** Set Fälligkeitsdatum.
+		@param Milestone_DueDate Fälligkeitsdatum	  */
+	@Override
+	public void setMilestone_DueDate (java.sql.Timestamp Milestone_DueDate)
+	{
+		throw new IllegalArgumentException ("Milestone_DueDate is virtual column");	}
+
+	/** Get Fälligkeitsdatum.
+		@return Fälligkeitsdatum	  */
+	@Override
+	public java.sql.Timestamp getMilestone_DueDate () 
+	{
+		return (java.sql.Timestamp)get_Value(COLUMNNAME_Milestone_DueDate);
+	}
+
 	/** Set Name.
 		@param Name Name	  */
 	@Override
@@ -342,6 +409,22 @@ public class X_S_Issue extends org.compiere.model.PO implements I_S_Issue, org.c
 	public java.lang.String getName () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_Name);
+	}
+
+	/** Set Planned UAT date.
+		@param PlannedUATDate Planned UAT date	  */
+	@Override
+	public void setPlannedUATDate (java.sql.Timestamp PlannedUATDate)
+	{
+		set_Value (COLUMNNAME_PlannedUATDate, PlannedUATDate);
+	}
+
+	/** Get Planned UAT date.
+		@return Planned UAT date	  */
+	@Override
+	public java.sql.Timestamp getPlannedUATDate () 
+	{
+		return (java.sql.Timestamp)get_Value(COLUMNNAME_PlannedUATDate);
 	}
 
 	/** Set Verarbeitet.
@@ -368,6 +451,25 @@ public class X_S_Issue extends org.compiere.model.PO implements I_S_Issue, org.c
 			return "Y".equals(oo);
 		}
 		return false;
+	}
+
+	/** Set Rough estimation.
+		@param RoughEstimation Rough estimation	  */
+	@Override
+	public void setRoughEstimation (java.math.BigDecimal RoughEstimation)
+	{
+		set_Value (COLUMNNAME_RoughEstimation, RoughEstimation);
+	}
+
+	/** Get Rough estimation.
+		@return Rough estimation	  */
+	@Override
+	public java.math.BigDecimal getRoughEstimation () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_RoughEstimation);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
 	}
 
 	/** Set Issue.

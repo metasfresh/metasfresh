@@ -20,41 +20,37 @@
  * #L%
  */
 
-package de.metas.serviceprovider.issue;
+package de.metas.serviceprovider.issue.hierarchy;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonValue;
-import de.metas.util.Check;
-import de.metas.util.lang.RepoIdAware;
+import com.google.common.collect.ImmutableList;
+import de.metas.serviceprovider.issue.IssueEntity;
+import de.metas.util.Node;
+import lombok.NonNull;
 import lombok.Value;
 
-import javax.annotation.Nullable;
-
 @Value
-public class IssueId implements RepoIdAware
+public class IssueHierarchy
 {
-	int repoId;
+	Node<IssueEntity> root;
 
-	@JsonCreator
-	public static IssueId ofRepoId(final int repoId)
+	public static IssueHierarchy of(@NonNull final Node<IssueEntity> root)
 	{
-		return new IssueId(repoId);
+		return new IssueHierarchy(root);
 	}
 
-	@Nullable
-	public static IssueId ofRepoIdOrNull(@Nullable final Integer repoId)
+	/**
+	 * @see Node#listAllNodesBelow()
+	 */
+	public ImmutableList<IssueEntity> listIssues()
 	{
-		return repoId != null && repoId > 0 ? new IssueId(repoId) : null;
+		return root.listAllNodesBelow()
+				.stream()
+				.map(Node::getValue)
+				.collect(ImmutableList.toImmutableList());
 	}
 
-	private IssueId(final int repoId)
+	private IssueHierarchy(final Node<IssueEntity> root)
 	{
-		this.repoId = Check.assumeGreaterThanZero(repoId, "S_Issue_ID");
-	}
-
-	@JsonValue
-	public int toJson()
-	{
-		return getRepoId();
+		this.root = root;
 	}
 }
