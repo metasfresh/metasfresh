@@ -515,12 +515,6 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		return model;
 	}
 
-	/**
-	 * Return first ID
-	 *
-	 * @return first ID or -1 if not found
-	 * @throws DBException
-	 */
 	@Override
 	public int firstId() throws DBException
 	{
