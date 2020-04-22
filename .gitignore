@@ -31,3 +31,4 @@ private
 # JRebel files
 **/src/main/resources/rebel.xml
 **/jrebel-classpath-*.jar
+/serverRoot/.temp-*.jar
