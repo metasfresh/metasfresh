@@ -32,7 +32,6 @@ import de.metas.serviceprovider.model.I_S_Issue;
 import de.metas.uom.UomId;
 import de.metas.user.UserId;
 import de.metas.util.NumberUtils;
-import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
@@ -45,48 +44,33 @@ import java.util.Optional;
 @Repository
 public class IssueRepository
 {
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IQueryBL queryBL;
 
 	private final ExternalIssueDetailsRepository externalIssueDetailsRepository;
 
-	public IssueRepository(final ExternalIssueDetailsRepository externalIssueDetailsRepository)
+	public IssueRepository(final IQueryBL queryBL, final ExternalIssueDetailsRepository externalIssueDetailsRepository)
 	{
+		this.queryBL = queryBL;
 		this.externalIssueDetailsRepository = externalIssueDetailsRepository;
 	}
 
-	public void save(final IssueEntity issueEntity)
+	public void saveWithoutDetails(@NonNull final IssueEntity issueEntity)
 	{
-		final I_S_Issue record;
-
-		record = InterfaceWrapperHelper.loadOrNew(issueEntity.getIssueId(), I_S_Issue.class);
-
-		record.setAD_Org_ID(issueEntity.getOrgId().getRepoId());
-		record.setAD_User_ID(NumberUtils.asInt(issueEntity.getAssigneeId(), -1));
-		record.setC_Project_ID(NumberUtils.asInt(issueEntity.getProjectId(), -1));
-
-		record.setName(issueEntity.getName());
-		record.setValue(issueEntity.getSearchKey());
-		record.setDescription(issueEntity.getDescription());
-
-		record.setIssueType(issueEntity.getType().getValue());
-		record.setIsEffortIssue(issueEntity.isEffortIssue());
-		record.setProcessed(issueEntity.isProcessed());
-
-		record.setS_Milestone_ID(NumberUtils.asInt(issueEntity.getMilestoneId(), -1));
-		record.setEstimatedEffort(issueEntity.getEstimatedEffort());
-		record.setBudgetedEffort(issueEntity.getBudgetedEffort());
-		record.setEffort_UOM_ID(issueEntity.getEffortUomId().getRepoId());
-
-		record.setExternalIssueNo(issueEntity.getExternalIssueNo());
-		record.setIssueURL(issueEntity.getExternalIssueURL());
+		final I_S_Issue record = buildRecord(issueEntity);
 
 		InterfaceWrapperHelper.saveRecord(record);
 
 		final IssueId issueId = IssueId.ofRepoId(record.getS_Issue_ID());
 
 		issueEntity.setIssueId(issueId);
+	}
 
-		externalIssueDetailsRepository.persistIssueDetails(issueId, issueEntity.getExternalIssueDetails());
+
+	public void saveWithDetails(@NonNull final IssueEntity issueEntity)
+	{
+		saveWithoutDetails(issueEntity);
+
+		externalIssueDetailsRepository.persistIssueDetails(issueEntity.getIssueId(), issueEntity.getExternalIssueDetails());
 	}
 
 
@@ -153,6 +137,7 @@ public class IssueRepository
 				.orgId(OrgId.ofRepoId(record.getAD_Org_ID()))
 				.projectId(ProjectId.ofRepoIdOrNull(record.getC_Project_ID()))
 				.issueId(IssueId.ofRepoId(record.getS_Issue_ID()))
+				.parentIssueId(IssueId.ofRepoIdOrNull(record.getS_Parent_Issue_ID()))
 				.effortUomId(UomId.ofRepoId(record.getEffort_UOM_ID()))
 				.milestoneId(MilestoneId.ofRepoIdOrNull(record.getS_Milestone_ID()))
 				.assigneeId(UserId.ofRepoIdOrNullIfSystem(record.getAD_User_ID()))
@@ -164,9 +149,42 @@ public class IssueRepository
 				.isEffortIssue(record.isEffortIssue())
 				.estimatedEffort(record.getEstimatedEffort())
 				.budgetedEffort(record.getBudgetedEffort())
+				.issueEffort(record.getIssueEffort())
+				.aggregatedEffort(record.getAggregatedEffort())
 				.externalIssueNo(record.getExternalIssueNo())
 				.externalIssueURL(record.getIssueURL())
 				.externalIssueDetails(externalIssueDetails)
 				.build();
+	}
+
+	private I_S_Issue buildRecord(@NonNull final IssueEntity issueEntity)
+	{
+		final I_S_Issue record =
+				InterfaceWrapperHelper.loadOrNew(issueEntity.getIssueId(), I_S_Issue.class);
+
+		record.setAD_Org_ID(issueEntity.getOrgId().getRepoId());
+		record.setAD_User_ID(NumberUtils.asInt(issueEntity.getAssigneeId(), -1));
+		record.setC_Project_ID(NumberUtils.asInt(issueEntity.getProjectId(), -1));
+		record.setS_Parent_Issue_ID(NumberUtils.asInt(issueEntity.getParentIssueId(), -1));
+
+		record.setName(issueEntity.getName());
+		record.setValue(issueEntity.getSearchKey());
+		record.setDescription(issueEntity.getDescription());
+
+		record.setIssueType(issueEntity.getType().getValue());
+		record.setIsEffortIssue(issueEntity.isEffortIssue());
+		record.setProcessed(issueEntity.isProcessed());
+
+		record.setS_Milestone_ID(NumberUtils.asInt(issueEntity.getMilestoneId(), -1));
+		record.setEstimatedEffort(issueEntity.getEstimatedEffort());
+		record.setBudgetedEffort(issueEntity.getBudgetedEffort());
+		record.setEffort_UOM_ID(issueEntity.getEffortUomId().getRepoId());
+		record.setIssueEffort(issueEntity.getIssueEffort());
+		record.setAggregatedEffort(issueEntity.getAggregatedEffort());
+
+		record.setExternalIssueNo(issueEntity.getExternalIssueNo());
+		record.setIssueURL(issueEntity.getExternalIssueURL());
+
+		return record;
 	}
 }

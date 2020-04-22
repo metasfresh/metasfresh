@@ -68,9 +68,9 @@ public interface TestConstants
 	LocalDate MOCK_DATE_2020_03_07 = LocalDate.of(2020, 3, 7);
 	LocalDate MOCK_DATE_2020_03_08 = LocalDate.of(2020,3,8);
 	LocalDate MOCK_DATE_2020_03_12 = LocalDate.of(2020, 3, 12);
-
-
-
+	String MOCK_EFFORT_1_30 = "1:30";
+	String MOCK_EFFORT_1_00 = "1:00";
+	String MOCK_EFFORT_2_30 = "2:30";
 
 	int MOCK_RECORD_ID = 1;
 	ExternalProjectReferenceId MOCK_EXTERNAL_PROJECT_REFERENCE_ID_INACTIVE = ExternalProjectReferenceId.ofRepoId(2);

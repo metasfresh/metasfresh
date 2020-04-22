@@ -20,41 +20,55 @@
  * #L%
  */
 
-package de.metas.serviceprovider.issue;
+package de.metas.serviceprovider.timebooking;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonValue;
-import de.metas.util.Check;
-import de.metas.util.lang.RepoIdAware;
-import lombok.Value;
+import de.metas.util.time.HmmUtils;
+import lombok.Data;
 
 import javax.annotation.Nullable;
 
-@Value
-public class IssueId implements RepoIdAware
+@Data
+public class Effort
 {
-	int repoId;
+	long seconds;
 
-	@JsonCreator
-	public static IssueId ofRepoId(final int repoId)
+	public static Effort ofNullable(@Nullable final String hmm)
 	{
-		return new IssueId(repoId);
+		final long seconds = hmm != null
+				? HmmUtils.hmmToSeconds(hmm)
+				: 0;
+
+		return new Effort(seconds);
 	}
 
-	@Nullable
-	public static IssueId ofRepoIdOrNull(@Nullable final Integer repoId)
+	public static Effort of(final long seconds)
 	{
-		return repoId != null && repoId > 0 ? new IssueId(repoId) : null;
+		return new Effort(seconds);
 	}
 
-	private IssueId(final int repoId)
+	public Effort addNullSafe(@Nullable final Effort effort)
 	{
-		this.repoId = Check.assumeGreaterThanZero(repoId, "S_Issue_ID");
+		final long secondsToAdd = effort != null
+				? effort.getSeconds()
+				: 0;
+
+		final long secondsSum = getSeconds() + secondsToAdd;
+
+		return new Effort(secondsSum);
 	}
 
-	@JsonValue
-	public int toJson()
+	public String getHmm()
 	{
-		return getRepoId();
+		return HmmUtils.secondsToHmm(seconds);
+	}
+
+	public Effort negate()
+	{
+		return new Effort(-seconds);
+	}
+
+	private Effort(final long seconds)
+	{
+		this.seconds = seconds;
 	}
 }

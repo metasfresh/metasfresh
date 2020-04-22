@@ -37,6 +37,7 @@ import de.metas.serviceprovider.timebooking.TimeBookingId;
 import de.metas.serviceprovider.timebooking.TimeBookingRepository;
 import de.metas.serviceprovider.timebooking.importer.failed.FailedTimeBookingRepository;
 import de.metas.util.Loggables;
+import de.metas.util.time.HmmUtils;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
@@ -105,7 +106,7 @@ public class TimeBookingsImporterService
 					.orgId(issueEntity.getOrgId())
 					.bookedDate(importTimeInfo.getBookedDate())
 					.bookedSeconds(importTimeInfo.getBookedSeconds())
-					.hoursAndMins(TimeUtil.secondsToHmm(importTimeInfo.getBookedSeconds()))
+					.hoursAndMins(HmmUtils.secondsToHmm(importTimeInfo.getBookedSeconds()))
 					.build();
 
 			final TimeBookingId timeBookingId = timeBookingRepository.save(timeBooking);

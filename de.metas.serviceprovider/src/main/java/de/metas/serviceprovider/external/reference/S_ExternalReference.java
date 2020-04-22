@@ -113,7 +113,6 @@ public class S_ExternalReference
 		record.setReferenced_AD_Table_ID(adTableDAO.retrieveTableId(externalReferenceType.getTableName()));
 	}
 
-
 	private void validateUserId(@NonNull final UserId userId)
 	{
 		try
