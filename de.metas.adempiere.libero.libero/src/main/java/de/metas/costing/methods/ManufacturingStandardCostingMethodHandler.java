@@ -31,7 +31,7 @@ import de.metas.costing.CostSegmentAndElement;
 import de.metas.costing.CostingDocumentRef;
 import de.metas.costing.CostingMethod;
 import de.metas.costing.CurrentCost;
-import de.metas.costing.ICostDetailRepository;
+import de.metas.costing.ICostDetailService;
 import de.metas.costing.ICurrentCostsRepository;
 import de.metas.material.planning.IResourceProductService;
 import de.metas.material.planning.pporder.PPOrderBOMLineId;
@@ -77,7 +77,7 @@ public class ManufacturingStandardCostingMethodHandler implements CostingMethodH
 	private final IResourceProductService resourceProductService = Services.get(IResourceProductService.class);
 	//
 	private final ICurrentCostsRepository currentCostsRepo;
-	private final ICostDetailRepository costDetailsRepo;
+	private final ICostDetailService costDetailsService;
 	private final CostingMethodHandlerUtils utils;
 
 	private static final ImmutableSet<String> HANDLED_TABLE_NAMES = ImmutableSet.<String> builder()
@@ -86,11 +86,11 @@ public class ManufacturingStandardCostingMethodHandler implements CostingMethodH
 
 	public ManufacturingStandardCostingMethodHandler(
 			@NonNull final ICurrentCostsRepository currentCostsRepo,
-			@NonNull final ICostDetailRepository costDetailsRepo,
+			@NonNull final ICostDetailService costDetailsService,
 			@NonNull final CostingMethodHandlerUtils utils)
 	{
 		this.currentCostsRepo = currentCostsRepo;
-		this.costDetailsRepo = costDetailsRepo;
+		this.costDetailsService = costDetailsService;
 		this.utils = utils;
 	}
 
@@ -176,7 +176,7 @@ public class ManufacturingStandardCostingMethodHandler implements CostingMethodH
 		final CurrentCost currentCosts = getCurrentCost(request);
 		final CostPrice price = currentCosts.getCostPrice();
 		final CostAmount amt = price.multiply(qty).roundToCostingPrecisionIfNeeded(acctSchema);
-		final CostDetail costDetail = costDetailsRepo.create(request.toCostDetailBuilder()
+		final CostDetail costDetail = costDetailsService.create(request.toCostDetailBuilder()
 				.amt(amt)
 				.changingCosts(true)
 				.previousAmounts(CostDetailPreviousAmounts.of(currentCosts)));
@@ -208,7 +208,7 @@ public class ManufacturingStandardCostingMethodHandler implements CostingMethodH
 		final CostAmount amt = price.multiply(qty).roundToCostingPrecisionIfNeeded(acctSchema);
 
 		final CurrentCost currentCosts = getCurrentCost(request);
-		final CostDetail costDetail = costDetailsRepo.create(request.toCostDetailBuilder()
+		final CostDetail costDetail = costDetailsService.create(request.toCostDetailBuilder()
 				.amt(amt)
 				.changingCosts(true)
 				.previousAmounts(CostDetailPreviousAmounts.of(currentCosts)));
@@ -221,7 +221,7 @@ public class ManufacturingStandardCostingMethodHandler implements CostingMethodH
 		return result;
 	}
 
-	private CostDetailCreateResult createUsageVariance(@NonNull CostDetailCreateRequest request)
+	private CostDetailCreateResult createUsageVariance(@NonNull final CostDetailCreateRequest request)
 	{
 		final Quantity qty = request.getQty();
 
@@ -231,7 +231,7 @@ public class ManufacturingStandardCostingMethodHandler implements CostingMethodH
 		final CostAmount amt = price.multiply(qty).roundToCostingPrecisionIfNeeded(acctSchema);
 
 		final CurrentCost currentCosts = getCurrentCost(request);
-		final CostDetail costDetail = costDetailsRepo.create(request.toCostDetailBuilder()
+		final CostDetail costDetail = costDetailsService.create(request.toCostDetailBuilder()
 				.amt(amt)
 				.changingCosts(true)
 				.previousAmounts(CostDetailPreviousAmounts.of(currentCosts)));

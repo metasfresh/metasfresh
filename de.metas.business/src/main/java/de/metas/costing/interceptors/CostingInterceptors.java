@@ -5,7 +5,7 @@ import org.adempiere.ad.modelvalidator.IModelValidationEngine;
 import org.springframework.stereotype.Component;
 
 import de.metas.acct.api.IAcctSchemaDAO;
-import de.metas.costing.ICostDetailRepository;
+import de.metas.costing.ICostDetailService;
 import de.metas.costing.ICostElementRepository;
 import de.metas.costing.ICurrentCostsRepository;
 import de.metas.costing.IProductCostingBL;
@@ -39,18 +39,18 @@ public class CostingInterceptors extends AbstractModuleInterceptor
 {
 	private final ICostElementRepository costElementRepository;
 	private final ICurrentCostsRepository currentCostsRepository;
-	private final ICostDetailRepository costDetailsRepo;
+	private final ICostDetailService costDetailsService;
 	private final IProductCostingBL productCostingBL = Services.get(IProductCostingBL.class);
 	private final IAcctSchemaDAO acctSchemaDAO = Services.get(IAcctSchemaDAO.class);
 
 	public CostingInterceptors(
 			@NonNull final ICostElementRepository costElementRepository,
 			@NonNull final ICurrentCostsRepository currentCostsRepository,
-			@NonNull final ICostDetailRepository costDetailsRepo)
+			@NonNull final ICostDetailService costDetailsService)
 	{
 		this.costElementRepository = costElementRepository;
 		this.currentCostsRepository = currentCostsRepository;
-		this.costDetailsRepo = costDetailsRepo;
+		this.costDetailsService = costDetailsService;
 	}
 
 	@Override
@@ -61,6 +61,6 @@ public class CostingInterceptors extends AbstractModuleInterceptor
 		engine.addModelValidator(new de.metas.costing.interceptors.M_CostElement(acctSchemaDAO));
 		engine.addModelValidator(new de.metas.costing.interceptors.M_CostType(acctSchemaDAO));
 		engine.addModelValidator(new de.metas.costing.interceptors.M_Product_Category_Acct(costElementRepository));
-		engine.addModelValidator(new de.metas.costing.interceptors.M_Product(currentCostsRepository, costDetailsRepo));
+		engine.addModelValidator(new de.metas.costing.interceptors.M_Product(currentCostsRepository, costDetailsService));
 	}
 }
