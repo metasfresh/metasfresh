@@ -62,6 +62,7 @@ public class Invoice440ExportClientTest
 
 		final InvoiceToExport invoice = InvoiceToExport.builder()
 				.id(invoiceId)
+				.docSubType("EA")
 				.metasfreshVersion(matasfreshVersion)
 				.recipient(recipient)
 				.biller(biller)

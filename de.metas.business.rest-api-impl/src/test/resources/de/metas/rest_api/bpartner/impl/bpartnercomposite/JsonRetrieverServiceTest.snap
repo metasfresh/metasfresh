@@ -34,7 +34,14 @@ de.metas.rest_api.bpartner.impl.bpartnercomposite.JsonRetrieverServiceTest.retri
       }
     ],
     "bpartner": {
+      "id": 20,
+      "externalId": "fghij",
       "active": true,
+      "value": "bpartnerRecord.value",
+      "name": "bpartnerRecord.name",
+      "groupId": 15,
+      "vendor": true,
+      "customer": true,
       "changeLog": {
         "tableName": "C_BPartner",
         "recordId": {
@@ -56,14 +63,7 @@ de.metas.rest_api.bpartner.impl.bpartnercomposite.JsonRetrieverServiceTest.retri
           "nanos": 544000000
         },
         "entries": [ ]
-      },
-      "customer": true,
-      "externalId": "fghij",
-      "groupId": 15,
-      "id": 20,
-      "name": "bpartnerRecord.name",
-      "value": "bpartnerRecord.value",
-      "vendor": true
+      }
     },
     "contacts": [
       {
@@ -127,6 +127,7 @@ de.metas.rest_api.bpartner.impl.bpartnercomposite.JsonRetrieverServiceTest.retri
         "email": "contactRecord.email",
         "externalId": "contactRecord.externalId",
         "firstName": "contactRecord.firstName",
+        "handles": [ ],
         "id": {
           "bpartnerId": 20,
           "userId": 30
@@ -170,6 +171,7 @@ de.metas.rest_api.bpartner.impl.bpartnercomposite.JsonRetrieverServiceTest.retri
         "district": "postalRecord.district",
         "externalId": "bpartnerLocation.externalId",
         "gln": "bpartnerLocationRecord.gln",
+        "handles": [ ],
         "id": {
           "repoId": 40,
           "bpartnerId": 20
