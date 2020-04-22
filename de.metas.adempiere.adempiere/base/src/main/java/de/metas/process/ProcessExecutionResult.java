@@ -851,9 +851,10 @@ public class ProcessExecutionResult
 		{
 			return MoreObjects.toStringHelper(this)
 					.omitNullValues()
-					.add("records", records)
 					.add("adWindowId", windowIdString)
 					.add("target", target)
+					.add("automaticallySetReferencingDocumentPaths", automaticallySetReferencingDocumentPaths)
+					.add("records", records)
 					.add("automaticallySetReferencingDocumentPaths", automaticallySetReferencingDocumentPaths)
 					.toString();
 		}

@@ -108,7 +108,7 @@ public class XmlToOLCandsServiceTest
 		final SyncAdvise bPartnersSyncAdvise = SyncAdvise.READ_ONLY;
 		final SyncAdvise productsSyncAdvise = SyncAdvise.READ_ONLY;
 
-		// final XmlToOLCandsService xmlToOLCandsService = new XmlToOLCandsService(orderCandidatesRestEndpoint);
+		// invoke the merhod under test
 		final JsonOLCandCreateBulkRequest result = xmlToOLCandsService
 				.createJsonOLCandCreateBulkRequest(xmlInvoice, HealthCareInvoiceDocSubType.KV, orgSyncAdvise, bPartnersSyncAdvise, productsSyncAdvise);
 

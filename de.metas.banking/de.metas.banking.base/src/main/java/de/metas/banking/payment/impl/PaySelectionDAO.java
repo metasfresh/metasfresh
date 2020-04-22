@@ -8,6 +8,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.trx.api.ITrx;
@@ -38,8 +40,12 @@ public class PaySelectionDAO implements IPaySelectionDAO
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	@Override
-	public Optional<I_C_PaySelection> getById(@NonNull final PaySelectionId paySelectionId)
+	public Optional<I_C_PaySelection> getById(@Nullable final PaySelectionId paySelectionId)
 	{
+		if(paySelectionId==null)
+		{
+			return Optional.empty();
+		}
 		// NOTE: use query by ID instead of load because we want to tolerate the case when we are asking for a pay selection which was not already saved by webui
 		final I_C_PaySelection paySelectionRecord = queryBL.createQueryBuilder(I_C_PaySelection.class)
 				.addOnlyActiveRecordsFilter()
