@@ -14,7 +14,7 @@ public class X_S_ExternalReference extends org.compiere.model.PO implements I_S_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1554157808L;
+	private static final long serialVersionUID = 388616412L;
 
     /** Standard Constructor */
     public X_S_ExternalReference (Properties ctx, int S_ExternalReference_ID, String trxName)
@@ -26,6 +26,7 @@ public class X_S_ExternalReference extends org.compiere.model.PO implements I_S_
 			setExternalSystem (null);
 			setRecord_ID (0);
 			setReferenced_AD_Table_ID (0);
+			setReferenced_Record_ID (0);
 			setType (null);
         } */
     }

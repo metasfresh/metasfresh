@@ -45,6 +45,9 @@ public class IssueEntity
 	private IssueId issueId;
 
 	@Nullable
+	private UserId assigneeId;
+
+	@Nullable
 	private ProjectId projectId;
 
 	@NonNull
@@ -57,16 +60,25 @@ public class IssueEntity
 	private UomId effortUomId;
 
 	@Nullable
+	private IssueId parentIssueId;
+
+	@Nullable
 	private BigDecimal estimatedEffort;
 
 	@Nullable
 	private BigDecimal budgetedEffort;
 
 	@Nullable
-	private String description;
+	private String issueEffort;
+
+	@Nullable
+	private String aggregatedEffort;
 
 	@NonNull
 	private String name;
+
+	@Nullable
+	private String description;
 
 	@NonNull
 	private String searchKey;
@@ -77,9 +89,6 @@ public class IssueEntity
 	private boolean processed;
 
 	private boolean isEffortIssue;
-
-	@Nullable
-	private UserId assigneeId;
 
 	@Nullable
 	private String externalIssueNo;

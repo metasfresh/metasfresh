@@ -1938,23 +1938,4 @@ public class TimeUtil
 		}
 		return Instant.ofEpochSecond(seconds, nanos);
 	}
-
-	public static String secondsToHmm(final long seconds)
-	{
-		final long hours = seconds / 3600;
-		final long hoursRemainder = seconds - (hours * 3600);
-		final long mins = hoursRemainder / 60;
-
-		return hours + ":" + (mins < 10L ? "0" + mins : mins);
-	}
-
-	public static long hmmToSeconds(final String hmm)
-	{
-		final String[] parts = hmm.split(":");
-
-		final long hours = Long.parseLong(parts[0]);
-		final long minutes = Long.parseLong(parts[1]);
-
-		return (hours * 3600) + (minutes * 60);
-	}
 }	// TimeUtil

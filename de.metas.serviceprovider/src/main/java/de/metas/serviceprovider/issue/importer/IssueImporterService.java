@@ -114,7 +114,7 @@ public class IssueImporterService
 					.map(issue -> mergeIssueInfoWithEntity(importIssueInfo, issue))
 					.orElseGet(() -> buildIssue(importIssueInfo));
 
-			issueRepository.save(issueEntity);
+			issueRepository.saveWithDetails(issueEntity);
 
 			if (!existingEffortIssue.isPresent())
 			{
@@ -207,6 +207,7 @@ public class IssueImporterService
 	{
 		final IssueEntity mergedIssueEntity = existingEffortIssue.toBuilder()
 				.projectId(importIssueInfo.getProjectId())
+				.processed(importIssueInfo.isProcessed())
 				.description(importIssueInfo.getDescription())
 				.externalIssueNo(importIssueInfo.getExternalIssueNo())
 				.externalIssueURL(importIssueInfo.getExternalIssueURL())
