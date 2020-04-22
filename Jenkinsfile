@@ -23,7 +23,7 @@ properties([
 			description: '''If this job is invoked via an updstream build job, then that job can provide either its branch or the respective <code>MF_UPSTREAM_BRANCH</code> that was passed to it.<br>
 This build will then attempt to use maven dependencies from that branch, and it will set its own name to reflect the given value.
 <p>
-So if this is a "master" build, but it was invoked by a "feature-branch" build then this build will try to get the feature-branch\'s build artifacts annd will set its
+So if this is a "yeast_overgrowth" build, but it was invoked by a "feature-branch" build then this build will try to get the feature-branch\'s build artifacts annd will set its
 <code>currentBuild.displayname</code> and <code>currentBuild.description</code> to make it obvious that the build contains code from the feature branch.''',
 			name: 'MF_UPSTREAM_BRANCH'),
 
@@ -31,10 +31,10 @@ So if this is a "master" build, but it was invoked by a "feature-branch" build t
 			description: 'Build number of the upstream job that called us, if any.',
 			name: 'MF_UPSTREAM_BUILDNO'),
 
-		string(defaultValue: 'release_LATEST',
+		string(defaultValue: 'yeast_overgrowth_LATEST',
 			description: '''Tag/version of the metasfresh-report base image. Note: the image does not contain jasper files, so there is no need to have a particual base image for that.
 <p>
-Backouground: if you e.g. specify gh47 as MF_UPSTREAM_BRANCH and a particular artifact doesn exist in that maven repo, then the maven repo at nexus is set to fall back to "master". 
+Backouground: if you e.g. specify gh47 as MF_UPSTREAM_BRANCH and a particular artifact doesn exist in that maven repo, then the maven repo at nexus is set to fall back to "yeast_overgrowth". 
 For docker we currently don not have such an arrangement.''',
 			name: 'MF_METASFRESH_REPORT_DOCKER_BASE_IMAGE_VERSION'),
 
