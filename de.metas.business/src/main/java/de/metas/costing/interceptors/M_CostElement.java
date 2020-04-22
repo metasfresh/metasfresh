@@ -11,7 +11,6 @@ import org.compiere.model.I_M_CostElement;
 import org.compiere.model.I_M_Product_Category;
 import org.compiere.model.I_M_Product_Category_Acct;
 import org.compiere.model.ModelValidator;
-import org.springframework.stereotype.Component;
 
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.IAcctSchemaDAO;
@@ -20,6 +19,7 @@ import de.metas.costing.CostingMethod;
 import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -43,10 +43,17 @@ import de.metas.util.Services;
  * #L%
  */
 
-@Component
 @Interceptor(I_M_CostElement.class)
-public class M_CostElement
+class M_CostElement
 {
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IAcctSchemaDAO acctSchemaDAO;
+
+	public M_CostElement(@NonNull final IAcctSchemaDAO acctSchemaDAO)
+	{
+		this.acctSchemaDAO = acctSchemaDAO;
+	}
+
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
 	public void beforeSave(final I_M_CostElement costElement)
 	{
@@ -86,7 +93,7 @@ public class M_CostElement
 
 		// Costing Methods on AS level
 		final ClientId clientId = ClientId.ofRepoId(costElement.getAD_Client_ID());
-		for (final AcctSchema as : Services.get(IAcctSchemaDAO.class).getAllByClient(clientId))
+		for (final AcctSchema as : acctSchemaDAO.getAllByClient(clientId))
 		{
 			if (as.getCosting().getCostingMethod().equals(costingMethod))
 			{
@@ -95,7 +102,8 @@ public class M_CostElement
 		}
 
 		// Costing Methods on PC level
-		final String productCategoriesUsingCostingMethod = Services.get(IQueryBL.class)
+		// FIXME: this shall go in some DAO/Repository
+		final String productCategoriesUsingCostingMethod = queryBL
 				.createQueryBuilder(I_M_Product_Category_Acct.class)
 				.addEqualsFilter(I_M_Product_Category_Acct.COLUMN_AD_Client_ID, clientId)
 				.addEqualsFilter(I_M_Product_Category_Acct.COLUMN_CostingMethod, costingMethod.getCode())

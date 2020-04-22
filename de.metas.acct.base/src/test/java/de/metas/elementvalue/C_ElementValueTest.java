@@ -18,6 +18,7 @@ import org.compiere.model.X_C_Element;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import de.metas.acct.api.IAcctSchemaDAO;
 import de.metas.acct.model.validator.C_ElementValue;
 import de.metas.treenode.TreeNodeRepository;
 import de.metas.treenode.TreeNodeService;
@@ -49,7 +50,6 @@ import lombok.NonNull;
 
 public class C_ElementValueTest
 {
-
 	private ElementValueService elementValueService;
 
 	private I_C_ElementValue parent;
@@ -79,7 +79,8 @@ public class C_ElementValueTest
 		SpringContextHolder.registerJUnitBean(treeNodeRepository);
 		SpringContextHolder.registerJUnitBean(treeNodeService);
 
-		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(new C_ElementValue(treeNodeService));
+		final IAcctSchemaDAO acctSchemasRepo = Services.get(IAcctSchemaDAO.class);
+		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(new C_ElementValue(acctSchemasRepo, treeNodeService));
 
 		prepareData();
 	}

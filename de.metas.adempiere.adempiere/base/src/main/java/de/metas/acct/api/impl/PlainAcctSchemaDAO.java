@@ -1,6 +1,7 @@
 package de.metas.acct.api.impl;
 
 import org.adempiere.service.ClientId;
+import org.compiere.Adempiere;
 
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.organization.OrgId;
@@ -36,6 +37,7 @@ public class PlainAcctSchemaDAO extends AcctSchemaDAO
 	@Override
 	public AcctSchemaId getAcctSchemaIdByClientAndOrg(ClientId clientId, OrgId orgId)
 	{
+		Adempiere.assertUnitTestMode();
 		return null;
 	}
 }

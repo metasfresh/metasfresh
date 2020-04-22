@@ -1,15 +1,16 @@
 package de.metas.location;
 
-import java.util.Objects;
-
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
-
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
+import lombok.NonNull;
 import lombok.Value;
+
+import javax.annotation.Nullable;
+import java.util.Objects;
 
 /*
  * #%L
@@ -21,12 +22,12 @@ import lombok.Value;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -40,11 +41,13 @@ public class CountryId implements RepoIdAware
 	public static final CountryId SWITZERLAND = new CountryId(107);
 
 	@JsonCreator
+	@NonNull
 	public static CountryId ofRepoId(final int repoId)
 	{
 		return new CountryId(repoId);
 	}
 
+	@Nullable
 	public static CountryId ofRepoIdOrNull(final int repoId)
 	{
 		return repoId > 0 ? new CountryId(repoId) : null;
@@ -69,7 +72,7 @@ public class CountryId implements RepoIdAware
 		return repoId;
 	}
 
-	public static boolean equals(CountryId countryId1, CountryId countryId2)
+	public static boolean equals(@Nullable final CountryId countryId1, @Nullable final CountryId countryId2)
 	{
 		return Objects.equals(countryId1, countryId2);
 	}

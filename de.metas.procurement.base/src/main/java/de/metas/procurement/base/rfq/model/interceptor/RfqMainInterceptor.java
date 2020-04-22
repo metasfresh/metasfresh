@@ -2,7 +2,6 @@ package de.metas.procurement.base.rfq.model.interceptor;
 
 import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
-import org.compiere.model.I_AD_Client;
 
 import de.metas.procurement.base.rfq.PMMRfQResponseProducerFactory;
 import de.metas.procurement.base.rfq.PMMWebuiRfQResponsePublisher;
@@ -48,11 +47,11 @@ public class RfqMainInterceptor extends AbstractModuleInterceptor
 	}
 
 	@Override
-	protected void registerInterceptors(final IModelValidationEngine engine, final I_AD_Client client)
+	protected void registerInterceptors(final IModelValidationEngine engine)
 	{
-		engine.addModelValidator(new de.metas.procurement.base.rfq.model.interceptor.C_RfQ(), client);
-		engine.addModelValidator(new de.metas.procurement.base.rfq.model.interceptor.C_RfQLine(), client);
-		engine.addModelValidator(new de.metas.procurement.base.rfq.model.interceptor.PMM_RfQResponse_ChangeEvent(), client);
+		engine.addModelValidator(new de.metas.procurement.base.rfq.model.interceptor.C_RfQ());
+		engine.addModelValidator(new de.metas.procurement.base.rfq.model.interceptor.C_RfQLine());
+		engine.addModelValidator(new de.metas.procurement.base.rfq.model.interceptor.PMM_RfQResponse_ChangeEvent());
 	}
 
 }

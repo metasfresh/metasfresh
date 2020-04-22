@@ -24,6 +24,7 @@ import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -32,12 +33,11 @@ import java.util.Set;
 import java.util.function.IntFunction;
 
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
-import org.adempiere.service.ISysConfigBL;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.logging.LoggingHelper;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_BP_BankAccount;
@@ -59,26 +59,17 @@ import de.metas.acct.api.AccountId;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaGeneralLedger;
 import de.metas.acct.api.AcctSchemaId;
-import de.metas.acct.api.IAccountDAO;
-import de.metas.acct.api.IFactAcctDAO;
-import de.metas.acct.api.IFactAcctListenersService;
-import de.metas.acct.api.IPostingRequestBuilder.PostImmediate;
-import de.metas.acct.api.IPostingService;
 import de.metas.acct.doc.AcctDocContext;
+import de.metas.acct.doc.AcctDocRequiredServicesFacade;
 import de.metas.acct.doc.PostingException;
-import de.metas.banking.api.IBPBankAccountDAO;
 import de.metas.bpartner.BPartnerId;
-import de.metas.cache.model.CacheInvalidateMultiRequest;
-import de.metas.cache.model.IModelCacheInvalidationService;
-import de.metas.cache.model.ModelCacheInvalidationTiming;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.CurrencyPrecision;
-import de.metas.currency.ICurrencyBL;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.currency.exceptions.NoCurrencyRateFoundException;
 import de.metas.document.engine.IDocument;
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.BooleanWithReason;
-import de.metas.i18n.IMsgBL;
 import de.metas.lang.SOTrx;
 import de.metas.location.LocationId;
 import de.metas.logging.LogManager;
@@ -90,9 +81,10 @@ import de.metas.product.acct.api.ActivityId;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.NumberUtils;
-import de.metas.util.Services;
 import de.metas.util.lang.CoalesceUtil;
 import de.metas.util.lang.RepoIdAware;
+import lombok.AccessLevel;
+import lombok.Getter;
 import lombok.NonNull;
 
 /**
@@ -158,15 +150,10 @@ import lombok.NonNull;
 public abstract class Doc<DocLineType extends DocLine<?>>
 {
 	private final String SYSCONFIG_CREATE_NOTE_ON_ERROR = "org.compiere.acct.Doc.createNoteOnPostError";
+	protected static final AdMessageKey MSG_NoAccountFound = AdMessageKey.of("Doc_NoAccountFound_Error");
 
-	// services
-	private final transient ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
-	protected final transient IMsgBL msgBL = Services.get(IMsgBL.class);
-	protected final transient ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
-	protected final transient ICurrencyBL currencyConversionBL = Services.get(ICurrencyBL.class);
-	private final transient ITrxManager trxManager = Services.get(ITrxManager.class);
-	protected final transient IFactAcctDAO factAcctDAO = Services.get(IFactAcctDAO.class);
-	protected final transient IAccountDAO accountDAO = Services.get(IAccountDAO.class);
+	@Getter(AccessLevel.PROTECTED)
+	protected final AcctDocRequiredServicesFacade services;
 
 	/** AR Invoices - ARI */
 	public static final String DOCTYPE_ARInvoice = X_C_DocType.DOCBASETYPE_ARInvoice;
@@ -230,10 +217,9 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 	 */
 	protected Doc(@NonNull final AcctDocContext ctx, final String defaultDocBaseType)
 	{
-		//
-		// Accounting schemas
-		Check.assumeNotEmpty(ctx.getAcctSchemas(), "ass not empty");
-		acctSchemas = ImmutableList.copyOf(ctx.getAcctSchemas());
+
+		services = ctx.getServices();
+		acctSchemas = ctx.getAcctSchemas();
 
 		//
 		// Document model
@@ -334,7 +320,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		return InterfaceWrapperHelper.create(getPO(), modelClass);
 	}
 
-	public final void setDocLines(final List<DocLineType> docLines)
+	protected final void setDocLines(final List<DocLineType> docLines)
 	{
 		this.docLines = docLines;
 	}
@@ -363,20 +349,11 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 	 */
 	public final void post(final boolean force, final boolean repost)
 	{
-		//
-		// Lock Document
-		try
-		{
-			lock(force, repost);
-		}
-		catch (final Exception ex)
-		{
-			throw newPostingException(ex);
-		}
+		lock(force, repost);
 
 		//
 		// Do the actual posting
-		trxManager.runInThreadInheritedTrx(new TrxRunnable2()
+		services.runInThreadInheritedTrx(new TrxRunnable2()
 		{
 			PostingException postingException;
 
@@ -392,7 +369,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 				final PostingException postingException = newPostingException(e);
 				this.postingException = postingException;
 
-				final boolean createNote = sysConfigBL.getBooleanValue(SYSCONFIG_CREATE_NOTE_ON_ERROR, false, getAD_Client_ID(), getAD_Org_ID());
+				final boolean createNote = services.getSysConfigBooleanValue(SYSCONFIG_CREATE_NOTE_ON_ERROR);
 				if (createNote)
 				{
 					createErrorNote(postingException);
@@ -482,78 +459,66 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		//
 		// Create Fact per AcctSchema
 		final List<Fact> facts = new ArrayList<>();
-		// for all Accounting Schema
+		for (final AcctSchema acctSchema : acctSchemas)
 		{
-			for (final AcctSchema acctSchema : acctSchemas)
-			{
-				// if acct schema has "only" org, skip
-				boolean skip = false;
-				if (acctSchema.isPostOnlyForSomeOrgs())
-				{
-					// Header Level Org
-					skip = acctSchema.isDisallowPostingForOrg(getOrgId());
-					// Line Level Org
-					final List<DocLineType> docLines = getDocLines();
-					if (docLines != null)
-					{
-						for (int line = 0; skip && line < docLines.size(); line++)
-						{
-							skip = acctSchema.isDisallowPostingForOrg(docLines.get(line).getOrgId());
-							if (!skip)
-							{
-								break;
-							}
-						}
-					}
-				}
-				if (skip)
-				{
-					continue;
-				}
-
-				// post
-				final List<Fact> factsForAcctSchema = postLogic(acctSchema);
-				facts.addAll(factsForAcctSchema);
-			}
-		}
-
-		//
-		// Fire event: BEFORE_POST
-		final IFactAcctListenersService factAcctListenersService = Services.get(IFactAcctListenersService.class);
-		factAcctListenersService.fireBeforePost(getPO());
-
-		//
-		// Save facts
-		// p_Status = postCommit (p_Status);
-		for (final Fact fact : facts)
-		{
-			// Skip null facts
-			if (fact == null)
+			if (isSkipPosting(acctSchema))
 			{
 				continue;
 			}
 
+			// post
+			final List<Fact> factsForAcctSchema = postLogic(acctSchema);
+			facts.addAll(factsForAcctSchema);
+		}
+
+		//
+		// Fire event: BEFORE_POST
+		services.fireBeforePostEvent(getPO());
+
+		//
+		// Save facts
+		for (final Fact fact : facts)
+		{
 			fact.save();
 		}
 
 		//
 		// Fire event: AFTER_POST
-		factAcctListenersService.fireAfterPost(getPO());
-
-		//
+		services.fireAfterPostEvent(getPO());
 		// Execute after document posted code
 		afterPost();
 
 		//
 		// Dispose facts
-		// Dispose lines
 		for (Fact fact : facts)
 		{
-			if (fact != null)
+			fact.dispose();
+		}
+	}
+
+	private boolean isSkipPosting(final AcctSchema acctSchema)
+	{
+		// if acct schema has "only" org, skip
+		boolean skip = false;
+		if (acctSchema.isPostOnlyForSomeOrgs())
+		{
+			// Header Level Org
+			skip = acctSchema.isDisallowPostingForOrg(getOrgId());
+			// Line Level Org
+			final List<DocLineType> docLines = getDocLines();
+			if (docLines != null)
 			{
-				fact.dispose();
+				for (int line = 0; skip && line < docLines.size(); line++)
+				{
+					skip = acctSchema.isDisallowPostingForOrg(docLines.get(line).getOrgId());
+					if (!skip)
+					{
+						break;
+					}
+				}
 			}
 		}
+		return skip;
 	}
 
 	/**
@@ -564,15 +529,9 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 	private final int deleteAcct()
 	{
 		final Object documentPO = getPO();
-		return factAcctDAO.deleteForDocumentModel(documentPO);
+		return services.deleteFactAcctByDocumentModel(documentPO);
 	}	// deleteAcct
 
-	/**
-	 * Posting logic for Accounting Schema
-	 *
-	 * @param acctSchema Accounting Schema
-	 * @return
-	 */
 	private final List<Fact> postLogic(final AcctSchema acctSchema)
 	{
 		// rejectUnbalanced
@@ -606,100 +565,111 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 					.setDetailMessage("No facts");
 		}
 
+		//
+		// Process facts: validate, GL distribution, balance etc
 		for (final Fact fact : facts)
 		{
-			if (fact == null)
-			{
-				throw newPostingException()
-						.setAcctSchema(acctSchema)
-						.setPostingStatus(PostingStatus.Error)
-						.setDetailMessage("No fact");
-			}
+			processFacts(fact);
+		}
 
-			// check accounts
-			final BooleanWithReason checkAccountsResult = fact.checkAccounts();
-			if (checkAccountsResult.isFalse())
-			{
-				throw newPostingException()
-						.setAcctSchema(acctSchema)
-						.setPostingStatus(PostingStatus.InvalidAccount)
-						.setDetailMessage(checkAccountsResult.getReason())
-						.setFact(fact);
-			}
-
-			// distribute
-			try
-			{
-				fact.distribute();
-			}
-			catch (final Exception e)
-			{
-				throw newPostingException(e)
-						.setAcctSchema(acctSchema)
-						.setPostingStatus(PostingStatus.Error)
-						.setFact(fact)
-						.setDetailMessage("Fact distribution error: " + e.getLocalizedMessage());
-			}
-
-			// Balance source amounts
-			if (fact.isSingleCurrency() && !fact.isSourceBalanced())
-			{
-				fact.balanceSource();
-				if (!fact.isSourceBalanced())
-				{
-					throw newPostingException()
-							.setAcctSchema(acctSchema)
-							.setPostingStatus(PostingStatus.NotBalanced)
-							.setFact(fact)
-							.setDetailMessage("Source amounts not balanced");
-				}
-			}
-
-			// balanceSegments
-			if (!fact.isSegmentBalanced())
-			{
-				fact.balanceSegments();
-				if (!fact.isSegmentBalanced())
-				{
-					throw newPostingException()
-							.setAcctSchema(acctSchema)
-							.setPostingStatus(PostingStatus.NotBalanced)
-							.setFact(fact)
-							.setDetailMessage("Segment not balanced");
-				}
-			}
-
-			// balanceAccounting
-			if (!fact.isAcctBalanced())
-			{
-				fact.balanceAccounting();
-				if (!fact.isAcctBalanced())
-				{
-					throw newPostingException()
-							.setAcctSchema(acctSchema)
-							.setPostingStatus(PostingStatus.NotBalanced)
-							.setFact(fact)
-							.setDetailMessage("Accountable amounts not balanced");
-				}
-			}
-		}	// for all facts
-
-		// return STATUS_Posted;
 		return facts;
 	}   // postLogic
+
+	private void processFacts(final Fact fact)
+	{
+		if (fact == null)
+		{
+			throw newPostingException()
+					// .setAcctSchema(acctSchema)
+					.setPostingStatus(PostingStatus.Error)
+					.setDetailMessage("No fact");
+		}
+
+		final AcctSchema acctSchema = fact.getAcctSchema();
+
+		// check accounts
+		final BooleanWithReason checkAccountsResult = fact.checkAccounts();
+		if (checkAccountsResult.isFalse())
+		{
+			throw newPostingException()
+					.setAcctSchema(acctSchema)
+					.setPostingStatus(PostingStatus.InvalidAccount)
+					.setDetailMessage(checkAccountsResult.getReason())
+					.setFact(fact);
+		}
+
+		// distribute
+		try
+		{
+			fact.distribute();
+		}
+		catch (final Exception e)
+		{
+			throw newPostingException(e)
+					.setAcctSchema(acctSchema)
+					.setPostingStatus(PostingStatus.Error)
+					.setFact(fact)
+					.setDetailMessage("Fact distribution error: " + e.getLocalizedMessage());
+		}
+
+		// Balance source amounts
+		if (fact.isSingleCurrency() && !fact.isSourceBalanced())
+		{
+			fact.balanceSource();
+			if (!fact.isSourceBalanced())
+			{
+				throw newPostingException()
+						.setAcctSchema(acctSchema)
+						.setPostingStatus(PostingStatus.NotBalanced)
+						.setFact(fact)
+						.setDetailMessage("Source amounts not balanced");
+			}
+		}
+
+		// balanceSegments
+		if (!fact.isSegmentBalanced())
+		{
+			fact.balanceSegments();
+			if (!fact.isSegmentBalanced())
+			{
+				throw newPostingException()
+						.setAcctSchema(acctSchema)
+						.setPostingStatus(PostingStatus.NotBalanced)
+						.setFact(fact)
+						.setDetailMessage("Segment not balanced");
+			}
+		}
+
+		// balanceAccounting
+		if (!fact.isAcctBalanced())
+		{
+			fact.balanceAccounting();
+			if (!fact.isAcctBalanced())
+			{
+				throw newPostingException()
+						.setAcctSchema(acctSchema)
+						.setPostingStatus(PostingStatus.NotBalanced)
+						.setFact(fact)
+						.setDetailMessage("Accountable amounts not balanced");
+			}
+		}
+	}
 
 	/**
 	 * Lock document
 	 *
 	 * @param force force posting
 	 * @param repost true if is document re-posting; i.e. it will assume the document was not already posted
-	 * @throws AdempiereException in case of failure
+	 * @throws PostingException
 	 */
 	private final void lock(final boolean force, final boolean repost)
 	{
+		final String tableName = get_TableName();
+		final int recordId = get_ID();
+
 		final StringBuilder sql = new StringBuilder("UPDATE ");
-		sql.append(get_TableName()).append(" SET Processing='Y' WHERE ")
-				.append(get_TableName()).append("_ID=").append(get_ID())
+		sql.append(tableName).append(" SET Processing='Y' WHERE ")
+				.append(tableName).append("_ID=").append(recordId)
 				.append(" AND Processed='Y' AND IsActive='Y'");
 		if (!force)
 		{
@@ -765,11 +735,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 
 	private void fireDocumentChanged()
 	{
-		final IModelCacheInvalidationService modelCacheInvalidationService = Services.get(IModelCacheInvalidationService.class);
-		modelCacheInvalidationService.invalidate(
-				CacheInvalidateMultiRequest.fromTableNameAndRecordId(get_TableName(), get_ID()),
-				ModelCacheInvalidationTiming.CHANGE);
-
+		services.fireDocumentChanged(get_TableName(), get_ID());
 	}
 
 	/**************************************************************************
@@ -840,7 +806,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 			try
 			{
 				pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_None);
-				pstmt.setInt(1, getAD_Client_ID());
+				pstmt.setInt(1, getClientId().getRepoId());
 				pstmt.setString(2, m_DocumentType);
 				rsDT = pstmt.executeQuery();
 				if (rsDT.next())
@@ -869,7 +835,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 			try
 			{
 				pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_None);
-				pstmt.setInt(1, getAD_Client_ID());
+				pstmt.setInt(1, getClientId().getRepoId());
 				rsDT = pstmt.executeQuery();
 				if (rsDT.next())
 				{
@@ -926,8 +892,6 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 
 	/**
 	 * Makes sure the document is convertible from it's currency to accounting currency.
-	 *
-	 * @param acctSchema accounting schema
 	 */
 	private final void checkConvertible(final AcctSchema acctSchema)
 	{
@@ -935,7 +899,6 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		final CurrencyId docCurrencyId = getCurrencyId();
 		if (docCurrencyId == null)
 		{
-			log.debug("(none) - {}", this);
 			return;
 		}
 
@@ -965,14 +928,14 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 				continue;
 			}
 
-			final CurrencyConversionContext conversionCtx = currencyConversionBL.createCurrencyConversionContext(
+			final CurrencyConversionContext conversionCtx = services.createCurrencyConversionContext(
 					getDateAcct(),
 					getCurrencyConversionTypeId(),
 					getClientId(),
 					getOrgId());
 			try
 			{
-				currencyConversionBL.getCurrencyRate(conversionCtx, currencyId, acctCurrencyId);
+				services.getCurrencyRate(conversionCtx, currencyId, acctCurrencyId);
 			}
 			catch (final NoCurrencyRateFoundException e)
 			{
@@ -1001,12 +964,12 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		}
 		if (m_period == null)
 		{
-			m_period = MPeriod.get(Env.getCtx(), TimeUtil.asTimestamp(getDateAcct()), getAD_Org_ID());
+			m_period = MPeriod.get(Env.getCtx(), TimeUtil.asTimestamp(getDateAcct()), getOrgId().getRepoId());
 		}
 
 		// Is Period Open?
 		if (m_period != null
-				&& m_period.isOpen(getDocumentType(), TimeUtil.asTimestamp(getDateAcct()), getAD_Org_ID()))
+				&& m_period.isOpen(getDocumentType(), TimeUtil.asTimestamp(getDateAcct()), getOrgId().getRepoId()))
 		{
 			m_C_Period_ID = m_period.getC_Period_ID();
 		}
@@ -1367,15 +1330,19 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 				final AccountId accountId = AccountId.ofRepoIdOrNull(rs.getInt(1));
 				if (accountId == null)
 				{
-					log.error("account ID not set for: account Type=" + acctType + ", Record=" + get_ID() + ", SQL=" + sql + ", sqlParams=" + sqlParams);
+					log.warn("account ID not set for: account Type=" + acctType + ", Record=" + get_ID() + ", SQL=" + sql + ", sqlParams=" + sqlParams);
 				}
 
 				return accountId;
 			}
 			else
 			{
-				log.error("No record found for: account Type=" + acctType + ", Record=" + get_ID() + ", SQL=" + sql + ", sqlParams=" + sqlParams);
-				return null;
+				throw new AdempiereException(MSG_NoAccountFound, get_ID(), acctType)
+						.markAsUserValidationError()
+						.setParameter("sql", sql)
+						.setParameter("sqlParams", sqlParams)
+						.appendParametersToMessage();
+
 			}
 		}
 		catch (final SQLException e)
@@ -1405,17 +1372,17 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 			return null;
 		}
 
-		return accountDAO.getById(accountId);
+		return services.getAccountById(accountId);
 	}	// getAccount
 
 	protected final MAccount getRealizedGainAcct(final AcctSchema as)
 	{
-		return accountDAO.getById(as.getDefaultAccounts().getRealizedGainAcctId());
+		return services.getAccountById(as.getDefaultAccounts().getRealizedGainAcctId());
 	}
 
 	protected final MAccount getRealizedLossAcct(final AcctSchema as)
 	{
-		return accountDAO.getById(as.getDefaultAccounts().getRealizedLossAcctId());
+		return services.getAccountById(as.getDefaultAccounts().getRealizedLossAcctId());
 	}
 
 	@Override
@@ -1424,29 +1391,17 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		return getPO().toString();
 	}
 
-	@Deprecated
-	public final int getAD_Client_ID()
+	protected final ClientId getClientId()
 	{
-		return getPO().getAD_Client_ID();
+		return ClientId.ofRepoId(getPO().getAD_Client_ID());
 	}
 
-	public final ClientId getClientId()
+	protected final OrgId getOrgId()
 	{
-		return ClientId.ofRepoId(getAD_Client_ID());
+		return OrgId.ofRepoId(getPO().getAD_Org_ID());
 	}
 
-	@Deprecated
-	public final int getAD_Org_ID()
-	{
-		return getPO().getAD_Org_ID();
-	}
-
-	public final OrgId getOrgId()
-	{
-		return OrgId.ofRepoId(getAD_Org_ID());
-	}
-
-	public String getDocumentNo()
+	protected String getDocumentNo()
 	{
 		if (m_DocumentNo == null)
 		{
@@ -1460,12 +1415,12 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		return m_DocumentNo;
 	}
 
-	public final String getDocStatus()
+	protected final String getDocStatus()
 	{
 		return m_DocStatus;
 	}
 
-	public final String getDescription()
+	protected final String getDescription()
 	{
 		if (m_Description == null)
 		{
@@ -1478,7 +1433,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		return m_Description;
 	}
 
-	public final CurrencyId getCurrencyId()
+	protected final CurrencyId getCurrencyId()
 	{
 		if (_currencyId == null)
 		{
@@ -1500,7 +1455,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		setC_Currency_ID(currencyId);
 	}
 
-	public final boolean isMultiCurrency()
+	protected final boolean isMultiCurrency()
 	{
 		return m_MultiCurrency;
 	}
@@ -1510,7 +1465,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		m_MultiCurrency = mc;
 	}
 
-	public final CurrencyConversionTypeId getCurrencyConversionTypeId()
+	protected final CurrencyConversionTypeId getCurrencyConversionTypeId()
 	{
 		return CurrencyConversionTypeId.ofRepoIdOrNull(getValueAsIntOrZero("C_ConversionType_ID"));
 	}
@@ -1528,21 +1483,21 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 			return ICurrencyDAO.DEFAULT_PRECISION.toInt();
 		}
 
-		_currencyPrecision = currencyDAO.getStdPrecision(currencyId);
+		_currencyPrecision = services.getCurrencyStandardPrecision(currencyId);
 		return _currencyPrecision.toInt();
 	}
 
-	public final int getGL_Category_ID()
+	protected final int getGL_Category_ID()
 	{
 		return m_GL_Category_ID;
 	}
 
-	public final int getGL_Budget_ID()
+	protected final int getGL_Budget_ID()
 	{
 		return getValueAsIntOrZero("GL_Budget_ID");
 	}
 
-	public final LocalDate getDateAcct()
+	protected final LocalDate getDateAcct()
 	{
 		return CoalesceUtil.coalesceSuppliers(
 				() -> _dateAcct,
@@ -1557,7 +1512,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		_dateAcct = TimeUtil.asLocalDate(dateAcct);
 	}
 
-	public final LocalDate getDateDoc()
+	protected final LocalDate getDateDoc()
 	{
 		return CoalesceUtil.coalesceSuppliers(
 				() -> _dateDoc,
@@ -1578,7 +1533,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		_dateDoc = dateDoc;
 	}
 
-	public final boolean isPosted()
+	private final boolean isPosted()
 	{
 		final Boolean posted = getValueAsBoolean("Posted", null);
 		if (posted == null)
@@ -1596,7 +1551,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 				() -> SOTrx.PURCHASE.toBoolean());
 	}
 
-	public final int getC_DocType_ID()
+	protected final int getC_DocType_ID()
 	{
 		final int docTypeId = getValueAsIntOrZero("C_DocType_ID");
 		if (docTypeId > 0)
@@ -1609,12 +1564,12 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		return docTypeTargetId;
 	}
 
-	public final int getC_Charge_ID()
+	protected final int getC_Charge_ID()
 	{
 		return getValueAsIntOrZero("C_Charge_ID");
 	}
 
-	public final UserId getSalesRepId()
+	protected final UserId getSalesRepId()
 	{
 		return getValueAsIdOrNull("SalesRep_ID", UserId::ofRepoIdOrNull);
 	}
@@ -1654,12 +1609,12 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		}
 		if (bpBankAccount == null || bpBankAccount.getC_BP_BankAccount_ID() != bpBankAccountId)
 		{
-			bpBankAccount = Services.get(IBPBankAccountDAO.class).getById(bpBankAccountId);
+			bpBankAccount = services.getBPBankAccountById(bpBankAccountId);
 		}
 		return bpBankAccount;
 	}
 
-	public final int getC_CashBook_ID()
+	protected final int getC_CashBook_ID()
 	{
 		if (m_C_CashBook_ID == -1)
 		{
@@ -1677,7 +1632,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		m_C_CashBook_ID = C_CashBook_ID;
 	}
 
-	public final WarehouseId getWarehouseId()
+	protected final WarehouseId getWarehouseId()
 	{
 		return getValueAsIdOrNull("M_Warehouse_ID", WarehouseId::ofRepoIdOrNull);
 	}
@@ -1687,7 +1642,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 	 *
 	 * @return BPartner
 	 */
-	public final BPartnerId getBPartnerId()
+	protected final BPartnerId getBPartnerId()
 	{
 		if (_bpartnerId == null)
 		{
@@ -1701,22 +1656,22 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		_bpartnerId = Optional.ofNullable(bpartnerId);
 	}
 
-	public final int getC_BPartner_Location_ID()
+	protected final int getC_BPartner_Location_ID()
 	{
 		return getValueAsIntOrZero("C_BPartner_Location_ID");
 	}
 
-	public final int getC_Project_ID()
+	protected final int getC_Project_ID()
 	{
 		return getValueAsIntOrZero("C_Project_ID");
 	}
 
-	public final int getC_SalesRegion_ID()
+	protected final int getC_SalesRegion_ID()
 	{
 		return getValueAsIntOrZero("C_SalesRegion_ID");
 	}
 
-	public final int getBP_C_SalesRegion_ID()
+	protected final int getBP_C_SalesRegion_ID()
 	{
 		if (m_BP_C_SalesRegion_ID == -1)
 		{
@@ -1737,42 +1692,42 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		m_BP_C_SalesRegion_ID = C_SalesRegion_ID;
 	}
 
-	public final ActivityId getActivityId()
+	protected final ActivityId getActivityId()
 	{
 		return ActivityId.ofRepoIdOrNull(getValueAsIntOrZero("C_Activity_ID"));
 	}
 
-	public final int getC_Campaign_ID()
+	protected final int getC_Campaign_ID()
 	{
 		return getValueAsIntOrZero("C_Campaign_ID");
 	}
 
-	public final ProductId getProductId()
+	protected final ProductId getProductId()
 	{
 		return getValueAsIdOrNull("M_Product_ID", ProductId::ofRepoIdOrNull);
 	}
 
-	public final OrgId getOrgTrxId()
+	protected final OrgId getOrgTrxId()
 	{
 		return getValueAsIdOrNull("AD_OrgTrx_ID", OrgId::ofRepoIdOrNull);
 	}
 
-	public final LocationId getLocationFromId()
+	protected final LocationId getLocationFromId()
 	{
 		return locationFromId;
 	}
 
-	public final LocationId getLocationToId()
+	protected final LocationId getLocationToId()
 	{
 		return locationToId;
 	}
 
-	public final int getUser1_ID()
+	protected final int getUser1_ID()
 	{
 		return getValueAsIntOrZero("User1_ID");
 	}
 
-	public final int getUser2_ID()
+	protected final int getUser2_ID()
 	{
 		return getValueAsIntOrZero("User2_ID");
 	}
@@ -1923,17 +1878,24 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 			DB.getConstraints().setOnlyAllowedTrxNamePrefixes(false).incMaxTrx(1);
 
 			final PostingStatus postingStatus = ex.getPostingStatus(PostingStatus.Error);
-			final String AD_MessageValue = postingStatus.getAD_Message();
+			final AdMessageKey AD_MessageValue = postingStatus.getAD_Message();
 			final PO po = getPO();
 			final int AD_User_ID = po.getUpdatedBy();
 			final Properties ctx = Env.getCtx();
 			final String adLanguage = Env.getAD_Language(ctx);
 
-			final MNote note = new MNote(ctx, AD_MessageValue, AD_User_ID, getAD_Client_ID(), getAD_Org_ID(), ITrx.TRXNAME_None);
+			final MNote note = new MNote(
+					ctx,
+					AD_MessageValue.toAD_Message(),
+					AD_User_ID,
+					getClientId().getRepoId(),
+					getOrgId().getRepoId(),
+					ITrx.TRXNAME_None);
 			note.setRecord(po.get_Table_ID(), po.get_ID());
 			note.setReference(toString());	// Document
 
-			final StringBuilder text = new StringBuilder(msgBL.getMsg(ctx, AD_MessageValue));
+			final StringBuilder text = new StringBuilder();
+			text.append(services.translate(AD_MessageValue).translate(adLanguage));
 			final String p_Error = ex.getDetailMessage().translate(adLanguage);
 			if (!Check.isEmpty(p_Error, true))
 			{
@@ -1970,16 +1932,13 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 	/**
 	 * Post immediate given list of documents.
 	 *
-	 * NOTE:
-	 * <ul>
-	 * <li>this method won't fail if any of the documents's posting is failing, because we don't want to prevent the main document posting because of this
-	 * </ul>
-	 *
-	 * @param documentModels
+	 * IMPORTANT: This method won't fail if any of the documents's posting is failing, because we don't want to prevent the main document posting because of this.
 	 */
-	protected final void postDependingDocuments(final List<?> documentModels)
+	protected final <ID extends RepoIdAware> void postDependingDocuments(
+			final String tableName,
+			final Collection<ID> documentIds)
 	{
-		if (documentModels == null)
+		if (documentIds == null || documentIds.isEmpty())
 		{
 			return; // nothing to do
 		}
@@ -1987,8 +1946,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		// task 08643: the list of documentModels might originate from a bag (i.e. InArrayFilter does not filter at all when given an empty set of values).
 		// so we assume that if there are >=200 items, it's that bug and there are not really that many documentModels.
 		// Note: we fixed the issue in the method's current callers (Doc_InOut and Doc_Invoice).
-		//
-		if (documentModels != null && documentModels.size() >= 200)
+		if (documentIds.size() >= 200)
 		{
 			final PostingException ex = newPostingException()
 					.setDocument(this)
@@ -1997,18 +1955,11 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 			return;
 		}
 
-		final IPostingService postingService = Services.get(IPostingService.class);
-
-		for (final Object document : documentModels)
+		final ClientId clientId = getClientId();
+		for (final ID documentId : documentIds)
 		{
-			postingService.newPostingRequest()
-					.setClientId(getClientId())
-					.setDocumentFromModel(document) // the document to be posted
-					.setFailOnError(false) // don't fail because we don't want to fail the main document posting because one of it's depending documents are failing
-					.setPostImmediate(PostImmediate.Yes) // yes, post it immediate
-					.setForce(false) // don't force it
-					.setPostWithoutServer() // post directly (don't contact the server) because we want to post on client or server like the main document
-					.postIt(); // do it!
+			final TableRecordReference documentRef = TableRecordReference.of(tableName, documentId);
+			services.postImmediateNoFail(documentRef, clientId);
 		}
 	}
 }   // Doc

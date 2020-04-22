@@ -47,6 +47,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
 import java.util.Set;
 
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
 import org.compiere.model.I_C_Order;
 import org.slf4j.Logger;
 
@@ -54,8 +55,8 @@ import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.acct.api.IFactAcctDAO;
-import de.metas.acct.api.IPostingService;
 import de.metas.acct.api.IPostingRequestBuilder.PostImmediate;
+import de.metas.acct.api.IPostingService;
 import de.metas.document.engine.IDocument;
 import de.metas.lock.api.ILock;
 import de.metas.lock.api.ILockAutoCloseable;
@@ -461,7 +462,8 @@ import lombok.NonNull;
 
 		postingService
 				.newPostingRequest()
-				.setDocument(document)
+				.setClientId(ClientId.ofRepoId(document.getAD_Client_ID()))
+				.setDocumentRef(document.toTableRecordReference())
 				.setForce(true)
 				.setPostImmediate(postImmediate)
 				.setFailOnError(false) // backward compatibility
@@ -518,7 +520,7 @@ import lombok.NonNull;
 		final IDocument document = getDocument();
 		if (document.get_Table_ID() == getTableId(I_C_Order.class)) // orders can be closed any time
 		{
-			
+
 		}
 		else if (!isValidDocAction(ACTION_Close))
 		{

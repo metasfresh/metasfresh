@@ -26,7 +26,6 @@ import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
 import org.adempiere.service.ISysConfigBL;
-import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_I_BankStatement;
 
 import de.metas.acct.posting.IDocumentRepostingSupplierService;
@@ -41,7 +40,6 @@ import de.metas.banking.service.ICashStatementBL;
 import de.metas.banking.spi.impl.BankStatementDocumentRepostingSupplier;
 import de.metas.impexp.processing.IImportProcessFactory;
 import de.metas.payment.api.IPaymentBL;
-import de.metas.util.Check;
 import de.metas.util.Services;
 
 /**
@@ -53,10 +51,14 @@ import de.metas.util.Services;
 public class Banking extends AbstractModuleInterceptor
 {
 	@Override
-	protected void onInit(final IModelValidationEngine engine, final I_AD_Client client)
+	protected void onAfterInit()
 	{
-		super.onInit(engine, client);
+		final IBankStatementDAO bankStatementDAO = Services.get(IBankStatementDAO.class);
 
+		// Register the Document Reposting Handler
+		final IDocumentRepostingSupplierService documentBL = Services.get(IDocumentRepostingSupplierService.class);
+		documentBL.registerSupplier(new BankStatementDocumentRepostingSupplier(bankStatementDAO));
+		
 		final IPaySelectionBL paySelectionBL = Services.get(IPaySelectionBL.class);
 		final IBankStatementListenerService bankStatementListenerService = Services.get(IBankStatementListenerService.class);
 		final IImportProcessFactory importProcessFactory = Services.get(IImportProcessFactory.class);
@@ -68,23 +70,7 @@ public class Banking extends AbstractModuleInterceptor
 	}
 
 	@Override
-	protected void onAfterInit()
-	{
-		final IBankStatementDAO bankStatementDAO = Services.get(IBankStatementDAO.class);
-
-		// Register the Document Reposting Handler
-		final IDocumentRepostingSupplierService documentBL = Services.get(IDocumentRepostingSupplierService.class);
-		documentBL.registerSupplier(new BankStatementDocumentRepostingSupplier(bankStatementDAO));
-	}
-
-	@Override
-	protected void registerInterceptors(final IModelValidationEngine engine, final I_AD_Client client)
-	{
-		Check.assumeNull(client, "client shall be null but it was {}");
-		registerInterceptors(engine);
-	}
-
-	private void registerInterceptors(final IModelValidationEngine engine)
+	protected void registerInterceptors(final IModelValidationEngine engine)
 	{
 		final IBankStatementBL bankStatementBL = Services.get(IBankStatementBL.class);
 		final IPaymentBL paymentBL = Services.get(IPaymentBL.class);

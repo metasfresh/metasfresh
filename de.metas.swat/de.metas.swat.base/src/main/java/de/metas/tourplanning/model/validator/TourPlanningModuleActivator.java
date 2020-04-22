@@ -13,19 +13,19 @@ package de.metas.tourplanning.model.validator;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
-import org.compiere.model.I_AD_Client;
+
+import lombok.NonNull;
 
 /**
  * (MAIN) Tour Planning Module Activator
@@ -35,21 +35,20 @@ import org.compiere.model.I_AD_Client;
  */
 public class TourPlanningModuleActivator extends AbstractModuleInterceptor
 {
-
 	@Override
-	protected void onInit(IModelValidationEngine engine, I_AD_Client client)
+	protected void registerInterceptors(@NonNull IModelValidationEngine engine)
 	{
-		engine.addModelValidator(new M_Tour_Instance(), client);
-		engine.addModelValidator(new M_DeliveryDay(), client);
-		engine.addModelValidator(new M_DeliveryDay_Alloc(), client);
+		engine.addModelValidator(new M_Tour_Instance());
+		engine.addModelValidator(new M_DeliveryDay());
+		engine.addModelValidator(new M_DeliveryDay_Alloc());
 
-		engine.addModelValidator(new M_TourVersionLine(), client);
+		engine.addModelValidator(new M_TourVersionLine());
 
 		//
 		// Main documents integration
-		engine.addModelValidator(new de.metas.tourplanning.model.validator.C_Order(), client);
-		engine.addModelValidator(new de.metas.tourplanning.model.validator.M_ShipmentSchedule(), client);
-		engine.addModelValidator(new de.metas.tourplanning.model.validator.M_ShipperTransportation(), client);
+		engine.addModelValidator(new de.metas.tourplanning.model.validator.C_Order());
+		engine.addModelValidator(new de.metas.tourplanning.model.validator.M_ShipmentSchedule());
+		engine.addModelValidator(new de.metas.tourplanning.model.validator.M_ShipperTransportation());
 	}
 
 }
