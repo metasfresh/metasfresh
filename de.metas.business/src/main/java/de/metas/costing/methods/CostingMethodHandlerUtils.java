@@ -14,18 +14,11 @@ import de.metas.costing.CostAmount;
 import de.metas.costing.CostDetail;
 import de.metas.costing.CostDetailCreateRequest;
 import de.metas.costing.CostDetailCreateResult;
-import de.metas.costing.CostDetailPreviousAmounts;
-import de.metas.costing.CostDetailQuery;
 import de.metas.costing.CostPrice;
-import de.metas.costing.CostSegment;
 import de.metas.costing.CostSegmentAndElement;
-import de.metas.costing.CostTypeId;
-import de.metas.costing.CostingLevel;
 import de.metas.costing.CurrentCost;
-import de.metas.costing.ICostDetailRepository;
-import de.metas.costing.ICostElementRepository;
+import de.metas.costing.ICostDetailService;
 import de.metas.costing.ICurrentCostsRepository;
-import de.metas.costing.IProductCostingBL;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.CurrencyConversionResult;
 import de.metas.currency.CurrencyPrecision;
@@ -71,22 +64,17 @@ public class CostingMethodHandlerUtils
 	private final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
 	private final CurrencyRepository currenciesRepo;
 	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
-	private final IProductCostingBL productCostingBL = Services.get(IProductCostingBL.class);
-	private final ICostDetailRepository costDetailsRepo;
+	private final ICostDetailService costDetailsService;
 	private final ICurrentCostsRepository currentCostsRepo;
-	private final ICostElementRepository costElementRepo;
 
 	public CostingMethodHandlerUtils(
 			@NonNull final CurrencyRepository currenciesRepo,
 			@NonNull final ICurrentCostsRepository currentCostsRepo,
-			@NonNull final ICostDetailRepository costDetailsRepo,
-			@NonNull final ICostElementRepository costElementRepo)
+			@NonNull final ICostDetailService costDetailsService)
 	{
 		this.currenciesRepo = currenciesRepo;
-
 		this.currentCostsRepo = currentCostsRepo;
-		this.costDetailsRepo = costDetailsRepo;
-		this.costElementRepo = costElementRepo;
+		this.costDetailsService = costDetailsService;
 	}
 
 	public QuantityUOMConverter getQuantityUOMConverter()
@@ -105,83 +93,29 @@ public class CostingMethodHandlerUtils
 		return acctSchemaRepo.getById(acctSchemaId);
 	}
 
-	private CostSegment extractCostSegment(final CostDetail costDetail)
-	{
-		final AcctSchema acctSchema = getAcctSchemaById(costDetail.getAcctSchemaId());
-		final CostingLevel costingLevel = productCostingBL.getCostingLevel(costDetail.getProductId(), acctSchema);
-		final CostTypeId costTypeId = acctSchema.getCosting().getCostTypeId();
-
-		return CostSegment.builder()
-				.costingLevel(costingLevel)
-				.acctSchemaId(costDetail.getAcctSchemaId())
-				.costTypeId(costTypeId)
-				.productId(costDetail.getProductId())
-				.clientId(costDetail.getClientId())
-				.orgId(costDetail.getOrgId())
-				.attributeSetInstanceId(costDetail.getAttributeSetInstanceId())
-				.build();
-	}
-
-	private CostSegmentAndElement extractCostSegmentAndElement(final CostDetail costDetail)
-	{
-		return extractCostSegment(costDetail)
-				.withCostElementId(costDetail.getCostElementId());
-	}
-
 	public CostSegmentAndElement extractCostSegmentAndElement(final CostDetailCreateRequest request)
 	{
-		final AcctSchema acctSchema = getAcctSchemaById(request.getAcctSchemaId());
-		final CostingLevel costingLevel = productCostingBL.getCostingLevel(request.getProductId(), acctSchema);
-		final CostTypeId costTypeId = acctSchema.getCosting().getCostTypeId();
-
-		return CostSegmentAndElement.builder()
-				.costingLevel(costingLevel)
-				.acctSchemaId(request.getAcctSchemaId())
-				.costTypeId(costTypeId)
-				.productId(request.getProductId())
-				.clientId(request.getClientId())
-				.orgId(request.getOrgId())
-				.attributeSetInstanceId(request.getAttributeSetInstanceId())
-				.costElementId(request.getCostElementId())
-				.build();
+		return costDetailsService.extractCostSegmentAndElement(request);
 	}
 
-	public final CostDetailCreateResult createCostDetailRecordWithChangedCosts(@NonNull final CostDetailCreateRequest request, @NonNull final CurrentCost previousCosts)
+	public CostDetailCreateResult createCostDetailRecordWithChangedCosts(@NonNull final CostDetailCreateRequest request, @NonNull final CurrentCost previousCosts)
 	{
-		final CostDetail costDetail = costDetailsRepo.create(request.toCostDetailBuilder()
-				.changingCosts(true)
-				.previousAmounts(CostDetailPreviousAmounts.of(previousCosts)));
-
-		return toCostDetailCreateResult(costDetail);
+		return costDetailsService.createCostDetailRecordWithChangedCosts(request, previousCosts);
 	}
 
 	public CostDetailCreateResult createCostDetailRecordNoCostsChanged(@NonNull final CostDetailCreateRequest request)
 	{
-		final CostDetail costDetail = costDetailsRepo.create(request.toCostDetailBuilder()
-				.changingCosts(false));
-
-		return toCostDetailCreateResult(costDetail);
+		return costDetailsService.createCostDetailRecordNoCostsChanged(request);
 	}
 
 	public CostDetailCreateResult toCostDetailCreateResult(final CostDetail costDetail)
 	{
-		return CostDetailCreateResult.builder()
-				.costSegment(extractCostSegment(costDetail))
-				.costElement(costElementRepo.getById(costDetail.getCostElementId()))
-				.amt(costDetail.getAmt())
-				.qty(costDetail.getQty())
-				.build();
+		return costDetailsService.toCostDetailCreateResult(costDetail);
 	}
 
 	protected final Optional<CostDetail> getExistingCostDetail(final CostDetailCreateRequest request)
 	{
-		return costDetailsRepo.getCostDetail(CostDetailQuery.builder()
-				.acctSchemaId(request.getAcctSchemaId())
-				.costElementId(request.getCostElementId()) // assume request's costing element is set
-				.documentRef(request.getDocumentRef())
-				// .productId(request.getProductId())
-				// .attributeSetInstanceId(request.getAttributeSetInstanceId())
-				.build());
+		return costDetailsService.getExistingCostDetail(request);
 	}
 
 	public final CurrentCost getCurrentCost(final CostDetailCreateRequest request)
@@ -192,7 +126,7 @@ public class CostingMethodHandlerUtils
 
 	public final CurrentCost getCurrentCost(final CostDetail costDetail)
 	{
-		final CostSegmentAndElement costSegmentAndElement = extractCostSegmentAndElement(costDetail);
+		final CostSegmentAndElement costSegmentAndElement = costDetailsService.extractCostSegmentAndElement(costDetail);
 		return getCurrentCost(costSegmentAndElement);
 	}
 
@@ -260,15 +194,6 @@ public class CostingMethodHandlerUtils
 
 	public Stream<CostDetail> streamAllCostDetailsAfter(final CostDetail costDetail)
 	{
-		final CostingLevel costingLevel = productCostingBL.getCostingLevel(costDetail.getProductId(), costDetail.getAcctSchemaId());
-		return costDetailsRepo.streamOrderedById(CostDetailQuery.builder()
-				.acctSchemaId(costDetail.getAcctSchemaId())
-				.costElementId(costDetail.getCostElementId())
-				.productId(costDetail.getProductId())
-				.attributeSetInstanceId(costingLevel.effectiveValueOrNull(costDetail.getAttributeSetInstanceId()))
-				.clientId(costingLevel.effectiveValue(costDetail.getClientId()))
-				.orgId(costingLevel.effectiveValueOrNull(costDetail.getOrgId()))
-				.afterCostDetailId(costDetail.getId())
-				.build());
+		return costDetailsService.streamAllCostDetailsAfter(costDetail);
 	}
 }
