@@ -26,6 +26,8 @@ import com.google.common.collect.ImmutableList;
 import de.metas.serviceprovider.external.issuedetails.ExternalIssueDetail;
 import de.metas.serviceprovider.external.issuedetails.ExternalIssueDetailType;
 import de.metas.serviceprovider.external.issuedetails.ExternalIssueDetailsRepository;
+import de.metas.util.Services;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.test.AdempiereTestHelper;
 import org.junit.Assert;
 import org.junit.Before;
@@ -34,6 +36,7 @@ import org.junit.Test;
 import java.math.BigDecimal;
 
 import static de.metas.serviceprovider.TestConstants.MOCK_DESCRIPTION;
+import static de.metas.serviceprovider.TestConstants.MOCK_EFFORT_1_30;
 import static de.metas.serviceprovider.TestConstants.MOCK_EXTERNAL_ISSUE_NO;
 import static de.metas.serviceprovider.TestConstants.MOCK_EXTERNAL_URL;
 import static de.metas.serviceprovider.TestConstants.MOCK_MILESTONE_ID;
@@ -47,7 +50,8 @@ import static de.metas.serviceprovider.TestConstants.MOCK_VALUE;
 
 public class IssueRepositoryTest
 {
-	private final IssueRepository issueRepository = new IssueRepository(new ExternalIssueDetailsRepository());
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IssueRepository issueRepository = new IssueRepository(queryBL, new ExternalIssueDetailsRepository(queryBL));
 
 	private final ImmutableList<ExternalIssueDetail> MOCK_EXTERNAL_DETAILS =
 			ImmutableList.of(ExternalIssueDetail.builder()
@@ -64,6 +68,8 @@ public class IssueRepositoryTest
 			.milestoneId(MOCK_MILESTONE_ID)
 			.budgetedEffort(BigDecimal.ONE)
 			.estimatedEffort(BigDecimal.ONE)
+			.issueEffort(MOCK_EFFORT_1_30)
+			.aggregatedEffort(MOCK_EFFORT_1_30)
 			.name(MOCK_NAME)
 			.searchKey(MOCK_SEARCH_KEY)
 			.description(MOCK_DESCRIPTION)
@@ -85,7 +91,7 @@ public class IssueRepositoryTest
 	@Test
 	public void save()
 	{
-		issueRepository.save(MOCK_ISSUE_ENTITY);
+		issueRepository.saveWithDetails(MOCK_ISSUE_ENTITY);
 
 		final IssueEntity storedEntity = issueRepository.getById(MOCK_ISSUE_ENTITY.getIssueId(), true);
 
