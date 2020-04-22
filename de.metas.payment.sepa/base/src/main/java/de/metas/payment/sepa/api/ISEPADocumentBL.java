@@ -23,10 +23,6 @@ package de.metas.payment.sepa.api;
  */
 
 import java.util.Date;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Properties;
-
 import org.compiere.model.I_C_PaySelection;
 
 import de.metas.payment.sepa.model.I_SEPA_Export;
@@ -37,26 +33,7 @@ public interface ISEPADocumentBL extends ISingletonService
 {
 	I_SEPA_Export createSEPAExportFromPaySelection(I_C_PaySelection from);
 
-	/**
-	 * Creates {@link I_SEPA_Export} entries from an iterator over SEPA documents
-	 *
-	 * @param ctx
-	 * @param iterator
-	 * @param trxName
-	 * @param ignorePaymentRule
-	 * @return
-	 */
-	List<I_SEPA_Export> createSEPAExports(Properties ctx, Iterator<ISEPADocument> iterator, String trxName, boolean ignorePaymentRule);
-
 	Date getDueDate(I_SEPA_Export_Line line);
-
-	/**
-	 * Method used to update data in a BP after a SEPA operation
-	 * NOTE: Currently only a placeholder, as we're not using the functionality yet.
-	 *
-	 * @param line
-	 */
-	void updateBparter(I_SEPA_Export_Line line);
 
 	/**
 	 * Generates the SEPA Credit Transfer xml from the given export header.
