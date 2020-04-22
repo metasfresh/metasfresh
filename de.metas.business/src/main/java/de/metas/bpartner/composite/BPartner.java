@@ -100,6 +100,7 @@ public class BPartner
 	private String globalId;
 
 	private final RecordChangeLog changeLog;
+	private String globalId;
 
 	/** They are all nullable because we can create a completely empty instance which we then fill. */
 	@Builder(toBuilder = true)
