@@ -26,8 +26,10 @@ import com.google.common.collect.ImmutableList;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.table.api.AdTableId;
+import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.ITableRecordReference;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_CM_Chat;
 import org.compiere.model.I_CM_ChatEntry;
 import org.compiere.model.X_CM_Chat;
@@ -47,8 +49,9 @@ import java.util.List;
 public class NotesRepository
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IADTableDAO tableDAO = Services.get(IADTableDAO.class);
 
-	public void createNote(final @NonNull String characterData, @NonNull final ITableRecordReference tableRecordReference)
+	public void createNote(final @NonNull String characterData, @NonNull final TableRecordReference tableRecordReference)
 	{
 		final I_CM_Chat chat = getOrCreateChat(tableRecordReference);
 
@@ -61,9 +64,9 @@ public class NotesRepository
 	}
 
 	@NonNull
-	public List<I_CM_ChatEntry> retrieveAllNotes(@NonNull final ITableRecordReference tableRecordReference)
+	public List<I_CM_ChatEntry> retrieveNotes(@NonNull final TableRecordReference tableRecordReference, final int maxNumberOfRecords)
 	{
-		final ChatId chatId = retrieveChatId(tableRecordReference);
+		final ChatId chatId = getChatIdOrNull(tableRecordReference);
 
 		if (chatId == null)
 		{
@@ -72,22 +75,26 @@ public class NotesRepository
 
 		return queryBL.createQueryBuilder(I_CM_ChatEntry.class)
 				.addEqualsFilter(I_CM_ChatEntry.COLUMNNAME_CM_Chat_ID, chatId)
+				.orderByDescending(I_CM_ChatEntry.COLUMNNAME_Created)
+				.setLimit(maxNumberOfRecords)
 				.create()
 				.listImmutable(I_CM_ChatEntry.class);
 	}
 
 	@NonNull
-	private I_CM_Chat getOrCreateChat(final @NonNull ITableRecordReference tableRecordReference)
+	private I_CM_Chat getOrCreateChat(final @NonNull TableRecordReference tableRecordReference)
 	{
-		final ChatId chatId = retrieveChatId(tableRecordReference);
+		final ChatId chatId = getChatIdOrNull(tableRecordReference);
 
 		if (chatId != null)
 		{
 			return InterfaceWrapperHelper.load(chatId, I_CM_Chat.class);
 		}
 
+		final String tableName = tableDAO.retrieveTableName(AdTableId.ofRepoId(tableRecordReference.getAD_Table_ID()));
+
 		final I_CM_Chat chat = InterfaceWrapperHelper.newInstance(I_CM_Chat.class);
-		// chat.setDescription();  // TODO tbp: what to set here?
+		chat.setDescription("Table name: " + tableName);
 		chat.setAD_Table_ID(tableRecordReference.getAD_Table_ID());
 		chat.setRecord_ID(tableRecordReference.getRecord_ID());
 		chat.setConfidentialType(X_CM_Chat.CONFIDENTIALTYPE_PublicInformation);
@@ -97,7 +104,7 @@ public class NotesRepository
 	}
 
 	@Nullable
-	private ChatId retrieveChatId(final @NonNull ITableRecordReference tableRecordReference)
+	private ChatId getChatIdOrNull(final @NonNull TableRecordReference tableRecordReference)
 	{
 		return queryBL.createQueryBuilder(I_CM_Chat.class)
 				.addEqualsFilter(I_CM_Chat.COLUMNNAME_AD_Table_ID, tableRecordReference.getAD_Table_ID())
