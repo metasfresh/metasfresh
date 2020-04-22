@@ -34,7 +34,7 @@ SELECT plc.value                                                                
        plc.productcategory                                                                                                as productcategory,
        plc.productname                                                                                                    as productname,
        plc.attributes                                                                                                     as attributes,
-       replace(hupip.name, hupiv.name, pi.Name)                                                                           as itemproductname,
+       replace(plc.itemproductname, hupiv.name, pi.Name)                                                                  as itemproductname,
        NULL::numeric                                                                                                      as qty,
        plc.uomsymbol                                                                                                      as uomsymbol,
        to_char(plc.pricestd, getPricePattern(prl.priceprecision::integer))                                                as pricestd,
