@@ -64,6 +64,7 @@ import de.metas.payment.PaymentTrxType;
 import de.metas.payment.TenderType;
 import de.metas.payment.api.IPaymentBL;
 import de.metas.payment.api.IPaymentDAO;
+import de.metas.payment.api.impl.PaymentBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
@@ -156,7 +157,6 @@ public final class MPayment extends X_C_Payment
 			//
 			setIsReceipt(true);
 			setIsApproved(false);
-			setIsReconciled(false);
 			setIsAllocated(false);
 			setIsOnline(false);
 			setIsSelfService(false);
@@ -176,6 +176,8 @@ public final class MPayment extends X_C_Payment
 			setDateTrx(new Timestamp(System.currentTimeMillis()));
 			setDateAcct(getDateTrx());
 			setTenderType(TenderType.Check.getCode());
+			
+			PaymentBL.markNotReconciledNoSave(this);
 		}
 	}   // MPayment
 

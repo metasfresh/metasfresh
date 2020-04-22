@@ -15,7 +15,7 @@ public class X_C_Payment extends org.compiere.model.PO implements I_C_Payment, o
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -81261264L;
+	private static final long serialVersionUID = 275325209L;
 
     /** Standard Constructor */
     public X_C_Payment (Properties ctx, int C_Payment_ID, String trxName)
@@ -66,25 +66,6 @@ public class X_C_Payment extends org.compiere.model.PO implements I_C_Payment, o
       return poi;
     }
 
-	/** Set Konto-Nr..
-		@param AccountNo 
-		Account Number
-	  */
-	@Override
-	public void setAccountNo (java.lang.String AccountNo)
-	{
-		set_Value (COLUMNNAME_AccountNo, AccountNo);
-	}
-
-	/** Get Konto-Nr..
-		@return Account Number
-	  */
-	@Override
-	public java.lang.String getAccountNo () 
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_AccountNo);
-	}
-
 	/** Set Ort.
 		@param A_City 
 		City or the Credit Card or Account Holder
@@ -121,31 +102,6 @@ public class X_C_Payment extends org.compiere.model.PO implements I_C_Payment, o
 	public java.lang.String getA_Country () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_A_Country);
-	}
-
-	/** Set Buchende Organisation.
-		@param AD_OrgTrx_ID 
-		Performing or initiating organization
-	  */
-	@Override
-	public void setAD_OrgTrx_ID (int AD_OrgTrx_ID)
-	{
-		if (AD_OrgTrx_ID < 1) 
-			set_Value (COLUMNNAME_AD_OrgTrx_ID, null);
-		else 
-			set_Value (COLUMNNAME_AD_OrgTrx_ID, Integer.valueOf(AD_OrgTrx_ID));
-	}
-
-	/** Get Buchende Organisation.
-		@return Performing or initiating organization
-	  */
-	@Override
-	public int getAD_OrgTrx_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_AD_OrgTrx_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
 	}
 
 	/** Set EMail.
@@ -281,6 +237,50 @@ public class X_C_Payment extends org.compiere.model.PO implements I_C_Payment, o
 		return (java.lang.String)get_Value(COLUMNNAME_A_Zip);
 	}
 
+	/** Set Konto-Nr..
+		@param AccountNo 
+		Account Number
+	  */
+	@Override
+	public void setAccountNo (java.lang.String AccountNo)
+	{
+		set_Value (COLUMNNAME_AccountNo, AccountNo);
+	}
+
+	/** Get Konto-Nr..
+		@return Account Number
+	  */
+	@Override
+	public java.lang.String getAccountNo () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_AccountNo);
+	}
+
+	/** Set Buchende Organisation.
+		@param AD_OrgTrx_ID 
+		Performing or initiating organization
+	  */
+	@Override
+	public void setAD_OrgTrx_ID (int AD_OrgTrx_ID)
+	{
+		if (AD_OrgTrx_ID < 1) 
+			set_Value (COLUMNNAME_AD_OrgTrx_ID, null);
+		else 
+			set_Value (COLUMNNAME_AD_OrgTrx_ID, Integer.valueOf(AD_OrgTrx_ID));
+	}
+
+	/** Get Buchende Organisation.
+		@return Performing or initiating organization
+	  */
+	@Override
+	public int getAD_OrgTrx_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_AD_OrgTrx_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
 	/** Set Kostenstelle.
 		@param C_Activity_ID 
 		Kostenstelle
@@ -306,26 +306,73 @@ public class X_C_Payment extends org.compiere.model.PO implements I_C_Payment, o
 		return ii.intValue();
 	}
 
-	/** Set Geschäftspartner.
-		@param C_BPartner_ID 
-		Identifies a Business Partner
+	/** Set Bankauszug.
+		@param C_BankStatement_ID 
+		Bank Statement of account
 	  */
 	@Override
-	public void setC_BPartner_ID (int C_BPartner_ID)
+	public void setC_BankStatement_ID (int C_BankStatement_ID)
 	{
-		if (C_BPartner_ID < 1) 
-			set_Value (COLUMNNAME_C_BPartner_ID, null);
+		if (C_BankStatement_ID < 1) 
+			set_Value (COLUMNNAME_C_BankStatement_ID, null);
 		else 
-			set_Value (COLUMNNAME_C_BPartner_ID, Integer.valueOf(C_BPartner_ID));
+			set_Value (COLUMNNAME_C_BankStatement_ID, Integer.valueOf(C_BankStatement_ID));
 	}
 
-	/** Get Geschäftspartner.
-		@return Identifies a Business Partner
+	/** Get Bankauszug.
+		@return Bank Statement of account
 	  */
 	@Override
-	public int getC_BPartner_ID () 
+	public int getC_BankStatement_ID () 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_BPartner_ID);
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_BankStatement_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Auszugs-Position.
+		@param C_BankStatementLine_ID 
+		Position auf einem Bankauszug zu dieser Bank
+	  */
+	@Override
+	public void setC_BankStatementLine_ID (int C_BankStatementLine_ID)
+	{
+		if (C_BankStatementLine_ID < 1) 
+			set_Value (COLUMNNAME_C_BankStatementLine_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_BankStatementLine_ID, Integer.valueOf(C_BankStatementLine_ID));
+	}
+
+	/** Get Auszugs-Position.
+		@return Position auf einem Bankauszug zu dieser Bank
+	  */
+	@Override
+	public int getC_BankStatementLine_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_BankStatementLine_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Bankauszugszeile Referenz.
+		@param C_BankStatementLine_Ref_ID Bankauszugszeile Referenz	  */
+	@Override
+	public void setC_BankStatementLine_Ref_ID (int C_BankStatementLine_Ref_ID)
+	{
+		if (C_BankStatementLine_Ref_ID < 1) 
+			set_Value (COLUMNNAME_C_BankStatementLine_Ref_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_BankStatementLine_Ref_ID, Integer.valueOf(C_BankStatementLine_Ref_ID));
+	}
+
+	/** Get Bankauszugszeile Referenz.
+		@return Bankauszugszeile Referenz	  */
+	@Override
+	public int getC_BankStatementLine_Ref_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_BankStatementLine_Ref_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
@@ -363,6 +410,31 @@ public class X_C_Payment extends org.compiere.model.PO implements I_C_Payment, o
 	public int getC_BP_BankAccount_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_BP_BankAccount_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Geschäftspartner.
+		@param C_BPartner_ID 
+		Identifies a Business Partner
+	  */
+	@Override
+	public void setC_BPartner_ID (int C_BPartner_ID)
+	{
+		if (C_BPartner_ID < 1) 
+			set_Value (COLUMNNAME_C_BPartner_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_BPartner_ID, Integer.valueOf(C_BPartner_ID));
+	}
+
+	/** Get Geschäftspartner.
+		@return Identifies a Business Partner
+	  */
+	@Override
+	public int getC_BPartner_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_BPartner_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
@@ -542,44 +614,6 @@ public class X_C_Payment extends org.compiere.model.PO implements I_C_Payment, o
 		return ii.intValue();
 	}
 
-	/** Set Gebühr.
-		@param ChargeAmt Gebühr	  */
-	@Override
-	public void setChargeAmt (java.math.BigDecimal ChargeAmt)
-	{
-		set_Value (COLUMNNAME_ChargeAmt, ChargeAmt);
-	}
-
-	/** Get Gebühr.
-		@return Gebühr	  */
-	@Override
-	public java.math.BigDecimal getChargeAmt () 
-	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_ChargeAmt);
-		if (bd == null)
-			 return BigDecimal.ZERO;
-		return bd;
-	}
-
-	/** Set Check No.
-		@param CheckNo 
-		Check Number
-	  */
-	@Override
-	public void setCheckNo (java.lang.String CheckNo)
-	{
-		set_Value (COLUMNNAME_CheckNo, CheckNo);
-	}
-
-	/** Get Check No.
-		@return Check Number
-	  */
-	@Override
-	public java.lang.String getCheckNo () 
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_CheckNo);
-	}
-
 	@Override
 	public org.compiere.model.I_C_Invoice getC_Invoice()
 	{
@@ -654,6 +688,31 @@ public class X_C_Payment extends org.compiere.model.PO implements I_C_Payment, o
 		return ii.intValue();
 	}
 
+	/** Set Zahlung.
+		@param C_Payment_ID 
+		Payment identifier
+	  */
+	@Override
+	public void setC_Payment_ID (int C_Payment_ID)
+	{
+		if (C_Payment_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_C_Payment_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_C_Payment_ID, Integer.valueOf(C_Payment_ID));
+	}
+
+	/** Get Zahlung.
+		@return Payment identifier
+	  */
+	@Override
+	public int getC_Payment_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_Payment_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
 	@Override
 	public org.compiere.model.I_C_PaymentBatch getC_PaymentBatch()
 	{
@@ -691,31 +750,6 @@ public class X_C_Payment extends org.compiere.model.PO implements I_C_Payment, o
 		return ii.intValue();
 	}
 
-	/** Set Zahlung.
-		@param C_Payment_ID 
-		Payment identifier
-	  */
-	@Override
-	public void setC_Payment_ID (int C_Payment_ID)
-	{
-		if (C_Payment_ID < 1) 
-			set_ValueNoCheck (COLUMNNAME_C_Payment_ID, null);
-		else 
-			set_ValueNoCheck (COLUMNNAME_C_Payment_ID, Integer.valueOf(C_Payment_ID));
-	}
-
-	/** Get Zahlung.
-		@return Payment identifier
-	  */
-	@Override
-	public int getC_Payment_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_Payment_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
 	/** Set Projekt.
 		@param C_Project_ID 
 		Financial Project
@@ -739,6 +773,44 @@ public class X_C_Payment extends org.compiere.model.PO implements I_C_Payment, o
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** Set Gebühr.
+		@param ChargeAmt Gebühr	  */
+	@Override
+	public void setChargeAmt (java.math.BigDecimal ChargeAmt)
+	{
+		set_Value (COLUMNNAME_ChargeAmt, ChargeAmt);
+	}
+
+	/** Get Gebühr.
+		@return Gebühr	  */
+	@Override
+	public java.math.BigDecimal getChargeAmt () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_ChargeAmt);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
+	}
+
+	/** Set Check No.
+		@param CheckNo 
+		Check Number
+	  */
+	@Override
+	public void setCheckNo (java.lang.String CheckNo)
+	{
+		set_Value (COLUMNNAME_CheckNo, CheckNo);
+	}
+
+	/** Get Check No.
+		@return Check Number
+	  */
+	@Override
+	public java.lang.String getCheckNo () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_CheckNo);
 	}
 
 	/** Set Exp. Monat.
@@ -881,9 +953,9 @@ public class X_C_Payment extends org.compiere.model.PO implements I_C_Payment, o
 		return (java.sql.Timestamp)get_Value(COLUMNNAME_DateAcct);
 	}
 
-	/** Set Vorgangsdatum.
+	/** Set Datum.
 		@param DateTrx 
-		Transaction Date
+		Vorgangsdatum
 	  */
 	@Override
 	public void setDateTrx (java.sql.Timestamp DateTrx)
@@ -891,8 +963,8 @@ public class X_C_Payment extends org.compiere.model.PO implements I_C_Payment, o
 		set_Value (COLUMNNAME_DateTrx, DateTrx);
 	}
 
-	/** Get Vorgangsdatum.
-		@return Transaction Date
+	/** Get Datum.
+		@return Vorgangsdatum
 	  */
 	@Override
 	public java.sql.Timestamp getDateTrx () 
@@ -1230,9 +1302,9 @@ public class X_C_Payment extends org.compiere.model.PO implements I_C_Payment, o
 		return false;
 	}
 
-	/** Set Over/Under Payment.
+	/** Set Über-/Unterzahlung.
 		@param IsOverUnderPayment 
-		Over-Payment (unallocated) or Under-Payment (partial payment)
+		Überzahlung (nicht zugewiesen) oder Unterzahlung (Teilzahlung)
 	  */
 	@Override
 	public void setIsOverUnderPayment (boolean IsOverUnderPayment)
@@ -1240,8 +1312,8 @@ public class X_C_Payment extends org.compiere.model.PO implements I_C_Payment, o
 		set_Value (COLUMNNAME_IsOverUnderPayment, Boolean.valueOf(IsOverUnderPayment));
 	}
 
-	/** Get Over/Under Payment.
-		@return Over-Payment (unallocated) or Under-Payment (partial payment)
+	/** Get Über-/Unterzahlung.
+		@return Überzahlung (nicht zugewiesen) oder Unterzahlung (Teilzahlung)
 	  */
 	@Override
 	public boolean isOverUnderPayment () 
@@ -1461,9 +1533,9 @@ public class X_C_Payment extends org.compiere.model.PO implements I_C_Payment, o
 		return (java.lang.String)get_Value(COLUMNNAME_PONum);
 	}
 
-	/** Set Verbucht.
+	/** Set Buchungsstatus.
 		@param Posted 
-		Posting status
+		Buchungsstatus
 	  */
 	@Override
 	public void setPosted (boolean Posted)
@@ -1471,8 +1543,8 @@ public class X_C_Payment extends org.compiere.model.PO implements I_C_Payment, o
 		set_Value (COLUMNNAME_Posted, Boolean.valueOf(Posted));
 	}
 
-	/** Get Verbucht.
-		@return Posting status
+	/** Get Buchungsstatus.
+		@return Buchungsstatus
 	  */
 	@Override
 	public boolean isPosted () 
@@ -1489,7 +1561,7 @@ public class X_C_Payment extends org.compiere.model.PO implements I_C_Payment, o
 
 	/** Set Verarbeitet.
 		@param Processed 
-		Checkbox sagt aus, ob der Beleg verarbeitet wurde. 
+		Checkbox sagt aus, ob der Datensatz verarbeitet wurde. 
 	  */
 	@Override
 	public void setProcessed (boolean Processed)
@@ -1498,7 +1570,7 @@ public class X_C_Payment extends org.compiere.model.PO implements I_C_Payment, o
 	}
 
 	/** Get Verarbeitet.
-		@return Checkbox sagt aus, ob der Beleg verarbeitet wurde. 
+		@return Checkbox sagt aus, ob der Datensatz verarbeitet wurde. 
 	  */
 	@Override
 	public boolean isProcessed () 
@@ -1662,77 +1734,6 @@ public class X_C_Payment extends org.compiere.model.PO implements I_C_Payment, o
 		return false;
 	}
 
-	@Override
-	public org.compiere.model.I_C_Payment getRef_Payment()
-	{
-		return get_ValueAsPO(COLUMNNAME_Ref_Payment_ID, org.compiere.model.I_C_Payment.class);
-	}
-
-	@Override
-	public void setRef_Payment(org.compiere.model.I_C_Payment Ref_Payment)
-	{
-		set_ValueFromPO(COLUMNNAME_Ref_Payment_ID, org.compiere.model.I_C_Payment.class, Ref_Payment);
-	}
-
-	/** Set Referenced Payment.
-		@param Ref_Payment_ID Referenced Payment	  */
-	@Override
-	public void setRef_Payment_ID (int Ref_Payment_ID)
-	{
-		if (Ref_Payment_ID < 1) 
-			set_ValueNoCheck (COLUMNNAME_Ref_Payment_ID, null);
-		else 
-			set_ValueNoCheck (COLUMNNAME_Ref_Payment_ID, Integer.valueOf(Ref_Payment_ID));
-	}
-
-	/** Get Referenced Payment.
-		@return Referenced Payment	  */
-	@Override
-	public int getRef_Payment_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_Ref_Payment_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
-	@Override
-	public org.compiere.model.I_C_Payment getReversal()
-	{
-		return get_ValueAsPO(COLUMNNAME_Reversal_ID, org.compiere.model.I_C_Payment.class);
-	}
-
-	@Override
-	public void setReversal(org.compiere.model.I_C_Payment Reversal)
-	{
-		set_ValueFromPO(COLUMNNAME_Reversal_ID, org.compiere.model.I_C_Payment.class, Reversal);
-	}
-
-	/** Set Storno-Gegenbeleg.
-		@param Reversal_ID 
-		ID of document reversal
-	  */
-	@Override
-	public void setReversal_ID (int Reversal_ID)
-	{
-		if (Reversal_ID < 1) 
-			set_Value (COLUMNNAME_Reversal_ID, null);
-		else 
-			set_Value (COLUMNNAME_Reversal_ID, Integer.valueOf(Reversal_ID));
-	}
-
-	/** Get Storno-Gegenbeleg.
-		@return ID of document reversal
-	  */
-	@Override
-	public int getReversal_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_Reversal_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
 	/** Set Info.
 		@param R_Info 
 		Response info
@@ -1750,25 +1751,6 @@ public class X_C_Payment extends org.compiere.model.PO implements I_C_Payment, o
 	public java.lang.String getR_Info () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_R_Info);
-	}
-
-	/** Set BLZ.
-		@param RoutingNo 
-		Bank Routing Number
-	  */
-	@Override
-	public void setRoutingNo (java.lang.String RoutingNo)
-	{
-		set_Value (COLUMNNAME_RoutingNo, RoutingNo);
-	}
-
-	/** Get BLZ.
-		@return Bank Routing Number
-	  */
-	@Override
-	public java.lang.String getRoutingNo () 
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_RoutingNo);
 	}
 
 	/** Set Referenz.
@@ -1845,6 +1827,72 @@ public class X_C_Payment extends org.compiere.model.PO implements I_C_Payment, o
 	public java.lang.String getR_Result () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_R_Result);
+	}
+
+	/** Set Referenced Payment.
+		@param Ref_Payment_ID Referenced Payment	  */
+	@Override
+	public void setRef_Payment_ID (int Ref_Payment_ID)
+	{
+		if (Ref_Payment_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_Ref_Payment_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_Ref_Payment_ID, Integer.valueOf(Ref_Payment_ID));
+	}
+
+	/** Get Referenced Payment.
+		@return Referenced Payment	  */
+	@Override
+	public int getRef_Payment_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_Ref_Payment_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Storno-Gegenbeleg.
+		@param Reversal_ID 
+		ID of document reversal
+	  */
+	@Override
+	public void setReversal_ID (int Reversal_ID)
+	{
+		if (Reversal_ID < 1) 
+			set_Value (COLUMNNAME_Reversal_ID, null);
+		else 
+			set_Value (COLUMNNAME_Reversal_ID, Integer.valueOf(Reversal_ID));
+	}
+
+	/** Get Storno-Gegenbeleg.
+		@return ID of document reversal
+	  */
+	@Override
+	public int getReversal_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_Reversal_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set BLZ.
+		@param RoutingNo 
+		Bank Routing Number
+	  */
+	@Override
+	public void setRoutingNo (java.lang.String RoutingNo)
+	{
+		set_Value (COLUMNNAME_RoutingNo, RoutingNo);
+	}
+
+	/** Get BLZ.
+		@return Bank Routing Number
+	  */
+	@Override
+	public java.lang.String getRoutingNo () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_RoutingNo);
 	}
 
 	/** Set Swipe.
@@ -2057,7 +2105,7 @@ public class X_C_Payment extends org.compiere.model.PO implements I_C_Payment, o
 		return (java.lang.String)get_Value(COLUMNNAME_VoiceAuthCode);
 	}
 
-	/** Set Write-off Amount.
+	/** Set Abschreiben.
 		@param WriteOffAmt 
 		Amount to write-off
 	  */
@@ -2067,7 +2115,7 @@ public class X_C_Payment extends org.compiere.model.PO implements I_C_Payment, o
 		set_Value (COLUMNNAME_WriteOffAmt, WriteOffAmt);
 	}
 
-	/** Get Write-off Amount.
+	/** Get Abschreiben.
 		@return Amount to write-off
 	  */
 	@Override

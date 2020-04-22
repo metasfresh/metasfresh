@@ -32,6 +32,7 @@ import de.metas.payment.TenderType;
 import de.metas.payment.api.DefaultPaymentBuilder;
 import de.metas.payment.api.IPaymentBL;
 import de.metas.payment.api.PaymentQuery;
+import de.metas.payment.api.PaymentReconcileReference;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -196,7 +197,10 @@ public class BankStatementPaymentBL implements IBankStatementPaymentBL
 		final DocStatus bankStatementDocStatus = DocStatus.ofCode(bankStatement.getDocStatus());
 		if (bankStatementDocStatus.isCompleted())
 		{
-			paymentBL.markReconciledAndSave(payment);
+			final PaymentReconcileReference reconcileRef = PaymentReconcileReference.bankStatementLine(
+					BankStatementId.ofRepoId(bankStatementLine.getC_BankStatement_ID()),
+					BankStatementLineId.ofRepoId(bankStatementLine.getC_BankStatementLine_ID()));
+			paymentBL.markReconciledAndSave(payment, reconcileRef);
 		}
 
 		bankStatementListenersService.firePaymentLinked(PaymentLinkResult.builder()

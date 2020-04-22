@@ -11,6 +11,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
@@ -33,6 +34,7 @@ import org.compiere.util.TimeUtil;
 import org.compiere.util.TrxRunnableAdapter;
 import org.slf4j.Logger;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.allocation.api.IAllocationBL;
@@ -55,6 +57,8 @@ import de.metas.payment.api.DefaultPaymentBuilder;
 import de.metas.payment.api.IPaymentBL;
 import de.metas.payment.api.IPaymentDAO;
 import de.metas.payment.api.PaymentQuery;
+import de.metas.payment.api.PaymentReconcileReference;
+import de.metas.payment.api.PaymentReconcileRequest;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -502,30 +506,100 @@ public class PaymentBL implements IPaymentBL
 		final List<I_C_Payment> payments = paymentDAO.getByIds(ImmutableSet.copyOf(paymentIds));
 		for (final I_C_Payment payment : payments)
 		{
-			payment.setIsReconciled(false);
+			markNotReconciledNoSave(payment);
 			paymentDAO.save(payment);
 		}
 	}
 
-	@Override
-	public void markReconciled(@NonNull final Collection<PaymentId> paymentIds)
+	public static void markNotReconciledNoSave(@NonNull final I_C_Payment payment)
 	{
-		if (paymentIds.isEmpty())
+		payment.setIsReconciled(false);
+		payment.setC_BankStatement_ID(-1);
+		payment.setC_BankStatementLine_ID(-1);
+		payment.setC_BankStatementLine_Ref_ID(-1);
+	}
+
+	@Override
+	public void markReconciled(@NonNull final Collection<PaymentReconcileRequest> requests)
+	{
+		final Collection<I_C_Payment> preloadedPayments = ImmutableList.of();
+		markReconciled(requests, preloadedPayments);
+	}
+
+	@Override
+	public void markReconciled(
+			@NonNull final Collection<PaymentReconcileRequest> requests,
+			@NonNull final Collection<I_C_Payment> preloadedPayments)
+	{
+		if (requests.isEmpty())
 		{
 			return;
 		}
 
-		final List<I_C_Payment> payments = paymentDAO.getByIds(ImmutableSet.copyOf(paymentIds));
-		for (final I_C_Payment payment : payments)
+		final HashMap<PaymentId, I_C_Payment> payments = new HashMap<>();
+		for (final I_C_Payment payment : preloadedPayments)
 		{
-			markReconciledAndSave(payment);
+			final PaymentId paymentId = PaymentId.ofRepoId(payment.getC_Payment_ID());
+			payments.put(paymentId, payment);
+		}
+
+		final ImmutableSet<PaymentId> paymentIdsToLoad = requests.stream()
+				.map(PaymentReconcileRequest::getPaymentId)
+				.filter(paymentId -> !payments.containsKey(paymentId))
+				.collect(ImmutableSet.toImmutableSet());
+		if (!paymentIdsToLoad.isEmpty())
+		{
+			for (final I_C_Payment payment : paymentDAO.getByIds(paymentIdsToLoad))
+			{
+				final PaymentId paymentId = PaymentId.ofRepoId(payment.getC_Payment_ID());
+				payments.put(paymentId, payment);
+			}
+		}
+
+		for (final PaymentReconcileRequest request : requests)
+		{
+			markReconciledAndSave(
+					payments.get(request.getPaymentId()),
+					request.getReconcileRef());
 		}
 	}
 
 	@Override
-	public void markReconciledAndSave(@NonNull final I_C_Payment payment)
+	public void markReconciledAndSave(
+			@NonNull final I_C_Payment payment,
+			@NonNull PaymentReconcileReference reconcileRef)
 	{
+		if (payment.isReconciled())
+		{
+			throw new AdempiereException("Payment was already reconciled");
+		}
+
 		payment.setIsReconciled(true);
+
+		final PaymentReconcileReference.Type type = reconcileRef.getType();
+		if (PaymentReconcileReference.Type.BANK_STATEMENT_LINE.equals(type))
+		{
+			payment.setC_BankStatement_ID(reconcileRef.getBankStatementId().getRepoId());
+			payment.setC_BankStatementLine_ID(reconcileRef.getBankStatementLineId().getRepoId());
+			payment.setC_BankStatementLine_Ref_ID(-1);
+		}
+		else if (PaymentReconcileReference.Type.BANK_STATEMENT_LINE_REF.equals(type))
+		{
+			payment.setC_BankStatement_ID(reconcileRef.getBankStatementId().getRepoId());
+			payment.setC_BankStatementLine_ID(reconcileRef.getBankStatementLineId().getRepoId());
+			payment.setC_BankStatementLine_Ref_ID(reconcileRef.getBankStatementLineRefId().getRepoId());
+		}
+		else if (PaymentReconcileReference.Type.REVERSAL.equals(type))
+		{
+			payment.setC_BankStatement_ID(-1);
+			payment.setC_BankStatementLine_ID(-1);
+			payment.setC_BankStatementLine_Ref_ID(-1);
+		}
+		else
+		{
+			throw new AdempiereException("Unknown reconciliation type: " + type);
+		}
+
 		paymentDAO.save(payment);
 	}
 }
