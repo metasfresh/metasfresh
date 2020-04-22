@@ -99,7 +99,7 @@ public final class JsonOLCandCreateBulkResponse
 	{
 		if (!errors.isEmpty())
 		{
-			throw new IllegalStateException("Not an successful result: " + this, getError().getThrowable());
+			throw new IllegalStateException("Not a successful result: " + this, getError().getThrowable());
 		}
 		return result;
 	}

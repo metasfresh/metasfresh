@@ -2,19 +2,13 @@ package de.metas.rest_api.bpartner.request;
 
 import static de.metas.rest_api.bpartner.SwaggerDocConstants.PARENT_SYNC_ADVISE_DOC;
 
-import javax.annotation.Nullable;
-
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonInclude.Include;
-import com.fasterxml.jackson.annotation.JsonProperty;
-
 import de.metas.rest_api.common.JsonExternalId;
 import de.metas.rest_api.common.SyncAdvise;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import lombok.Builder;
-import lombok.Value;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.ToString;
 
 /*
  * #%L
@@ -38,146 +32,216 @@ import lombok.Value;
  * #L%
  */
 
+@Getter
+@ToString
+@EqualsAndHashCode
 @ApiModel(description = "Locations can be inserted/updated, or just looked up. For lookup, metasfresh tries first the `externalId` and then the `gln`.")
-@Value
 public class JsonRequestLocation
 {
 	@ApiModelProperty(dataType = "java.lang.String", //
 			value = "This translates to `C_BPartner_Location.ExternalId`.\n"
 					+ "Needs to be unique over all business partners (not only the one this location belongs to).")
-	JsonExternalId externalId;
+	private JsonExternalId externalId;
+	private boolean externalIdSet;
 
 	@ApiModelProperty("If not specified but required (e.g. because a new location is created), then `true` is assumed")
-	@JsonInclude(Include.NON_NULL)
-	Boolean active;
+	private Boolean active;
+	private boolean activeSet;
 
 	@ApiModelProperty("This translates to `C_BPartner_Location.Name`")
-	@JsonInclude(Include.NON_EMPTY)
-	String name;
+	private String name;
+	private boolean nameSet;
 
 	@ApiModelProperty("This translates to `C_BPartner_Location.BPartnerName`")
-	@JsonInclude(Include.NON_EMPTY)
-	String bpartnerName;
+	private String bpartnerName;
+	private boolean bpartnerNameSet;
 
-	@JsonInclude(Include.NON_EMPTY)
-	String address1;
+	private String address1;
+	private boolean address1Set;
 
-	@JsonInclude(Include.NON_EMPTY)
-	String address2;
+	private String address2;
+	private boolean address2Set;
 
-	@JsonInclude(Include.NON_EMPTY)
-	String address3;
+	private String address3;
+	private boolean address3Set;
 
-	@JsonInclude(Include.NON_EMPTY)
-	String address4;
+	private String address4;
+	private boolean address4Set;
 
-	@JsonInclude(Include.NON_EMPTY)
-	String poBox;
+	private String poBox;
+	private boolean poBoxSet;
 
 	@ApiModelProperty("If specified, then metasfresh will attempt to lookup the `C_Postal` record.\n"
 			+ "If there is one matching postal record, the system **will ignore** the following properties and instead use the postal record's values:\n"
 			+ "* countryCode\n"
 			+ "* city\n"
 			+ "* region\n")
-	@JsonInclude(Include.NON_EMPTY)
-	String postal;
+	private String postal;
+	private boolean postalSet;
 
-	@JsonInclude(Include.NON_EMPTY)
-	String city;
+	private String city;
+	private boolean citySet;
 
-	@ApiModelProperty(allowEmptyValue = true, //
-			value = "If specified, then metasfresh will use this property (in addition to `postal`) as a filter criterion to look up `C_Postal` records.\n"
-					+ "The property may be empty so a caller can explicitly tell metasfresh *not* to filter by district")
-	@JsonInclude(Include.NON_EMPTY)
-	String district;
+	@ApiModelProperty("If specified, then metasfresh will use this property (in addition to `postal`) as a filter criterion to look up `C_Postal` records.\n"
+			+ "The property may be empty so a caller can explicitly tell metasfresh *not* to filter by district")
+	private String district;
+	private boolean districtSet;
 
-	@JsonInclude(Include.NON_EMPTY)
-	String region;
+	private String region;
+	private boolean regionSet;
 
-	@JsonInclude(Include.NON_EMPTY)
-	String countryCode;
+	private String countryCode;
+	private boolean countryCodeSet;
 
-	@ApiModelProperty(allowEmptyValue = true/* we want to allow unsetting the GLN */, //
-			value = "This translates to `C_BPartner_Location.GLN`.")
-	String gln;
+	@ApiModelProperty("This translates to `C_BPartner_Location.GLN`")
+	private String gln;
+	private boolean glnSet;
 
 	@ApiModelProperty(required = false)
-	@JsonInclude(Include.NON_NULL)
-	Boolean shipTo;
+	private Boolean shipTo;
+	private boolean shipToSet;
 
 	@ApiModelProperty(required = false, value = "Only one location per request may have `shipToDefault == true`.\n"
 			+ "If `true`, then " //
 			+ "* `shipTo` is always be assumed to be `true` as well"
 			+ "* another possibly exiting metasfresh location might be set to `shipToDefault = false`, even if it is not specified in this request.")
-	@JsonInclude(Include.NON_NULL)
-	Boolean shipToDefault;
+	private Boolean shipToDefault;
+	private boolean shipToDefaultSet;
 
 	@ApiModelProperty(required = false)
-	@JsonInclude(Include.NON_NULL)
-	Boolean billTo;
+	private Boolean billTo;
+	private boolean billToSet;
 
 	@ApiModelProperty(required = false, value = "Only one location per request may have `billToDefault == true`.\n"
 			+ "If `true`, then " //
 			+ "* `billTo` is always be assumed to be `true` as well"
 			+ "* another possibly exiting metasfresh location might be set to `billToDefault = false`, even if it is not specified in this request.")
-	@JsonInclude(Include.NON_NULL)
-	Boolean billToDefault;
+	private Boolean billToDefault;
+	private boolean billToDefaultSet;
 
 	@ApiModelProperty(position = 20, // shall be last
-			required = false, value = "Sync advise about this location's individual properties.\n" + PARENT_SYNC_ADVISE_DOC)
-	@JsonInclude(Include.NON_NULL)
-	SyncAdvise syncAdvise;
+			value = "Sync advise about this location's individual properties.\n" + PARENT_SYNC_ADVISE_DOC)
+	private SyncAdvise syncAdvise;
+	private boolean syncAdviseSet;
 
-	@Builder(toBuilder = true)
-	@JsonCreator
-	private JsonRequestLocation(
-			@JsonProperty("gln") @Nullable final String gln,
-			@JsonProperty("externalId") @Nullable final JsonExternalId externalId,
-			@JsonProperty("name") @Nullable final String name,
-			@JsonProperty("bpartnerName") @Nullable final String bpartnerName,
-			@JsonProperty("active") @Nullable final Boolean active,
-			@JsonProperty("address1") @Nullable final String address1,
-			@JsonProperty("address2") @Nullable final String address2,
-			@JsonProperty("address3") @Nullable final String address3,
-			@JsonProperty("address4") @Nullable final String address4,
-			@JsonProperty("postal") final String postal,
-			@JsonProperty("poBox") final String poBox,
-			@JsonProperty("district") final String district,
-			@JsonProperty("region") final String region,
-			@JsonProperty("city") final String city,
-			@JsonProperty("countryCode") @Nullable final String countryCode,
-			@JsonProperty("shipTo") @Nullable final Boolean shipTo,
-			@JsonProperty("shipToDefault") @Nullable final Boolean shipToDefault,
-			@JsonProperty("billTo") @Nullable final Boolean billTo,
-			@JsonProperty("billToDefault") @Nullable final Boolean billToDefault,
-			@JsonProperty("syncAdvise") @Nullable final SyncAdvise syncAdvise)
+	public void setExternalId(JsonExternalId externalId)
+	{
+		this.externalId = externalId;
+		this.externalIdSet = true;
+	}
+
+	public void setActive(Boolean active)
+	{
+		this.active = active;
+		this.activeSet = true;
+	}
+
+	public void setName(String name)
+	{
+		this.name = name;
+		this.nameSet = true;
+	}
+
+	public void setBpartnerName(String bpartnerName)
+	{
+		this.bpartnerName = bpartnerName;
+		this.bpartnerNameSet = true;
+	}
+
+	public void setAddress1(String address1)
+	{
+		this.address1 = address1;
+		this.address1Set = true;
+	}
+
+	public void setAddress2(String address2)
+	{
+		this.address2 = address2;
+		this.address2Set = true;
+	}
+
+	public void setAddress3(String address3)
+	{
+		this.address3 = address3;
+		this.address3Set = true;
+	}
+
+	public void setAddress4(String address4)
+	{
+		this.address4 = address4;
+		this.address4Set = true;
+	}
+
+	public void setPoBox(String poBox)
+	{
+		this.poBox = poBox;
+		this.poBoxSet = true;
+	}
+
+	public void setPostal(String postal)
+	{
+		this.postal = postal;
+		this.postalSet = true;
+	}
+
+	public void setCity(String city)
+	{
+		this.city = city;
+		this.citySet = true;
+	}
+
+	public void setDistrict(String district)
+	{
+		this.district = district;
+		this.districtSet = true;
+	}
+
+	public void setRegion(String region)
+	{
+		this.region = region;
+		this.regionSet = true;
+	}
+
+	public void setCountryCode(String countryCode)
+	{
+		this.countryCode = countryCode;
+		this.countryCodeSet = true;
+	}
+
+	public void setGln(String gln)
 	{
 		this.gln = gln;
-		this.externalId = externalId;
-
-		this.name = name;
-
-		this.bpartnerName = bpartnerName;
-
-		this.active = active;
-
-		this.address1 = address1;
-		this.address2 = address2;
-		this.address3 = address3;
-		this.address4 = address4;
-
-		this.postal = postal;
-		this.poBox = poBox;
-		this.district = district;
-		this.region = region;
-		this.city = city;
-		this.countryCode = countryCode; // mandatory only if we want to insert/update a new location
-
-		this.shipTo = shipTo;
-		this.shipToDefault = shipToDefault;
-		this.billTo = billTo;
-		this.billToDefault = billToDefault;
-
-		this.syncAdvise = syncAdvise;
+		this.glnSet = true;
 	}
+
+	public void setShipTo(Boolean shipTo)
+	{
+		this.shipTo = shipTo;
+		this.shipToSet = true;
+	}
+
+	public void setShipToDefault(Boolean shipToDefault)
+	{
+		this.shipToDefault = shipToDefault;
+		this.shipToDefaultSet = true;
+	}
+
+	public void setBillTo(Boolean billTo)
+	{
+		this.billTo = billTo;
+		this.billToSet = true;
+	}
+
+	public void setBillToDefault(Boolean billToDefault)
+	{
+		this.billToDefault = billToDefault;
+		this.billToDefaultSet = true;
+	}
+
+	public void setSyncAdvise(SyncAdvise syncAdvise)
+	{
+		this.syncAdvise = syncAdvise;
+		this.syncAdviseSet = true;
+	}
+
 }

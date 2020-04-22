@@ -1,7 +1,8 @@
 package de.metas.report.jasper;
 
-import org.junit.Assert;
-import org.junit.Test;
+import static org.assertj.core.api.Assertions.assertThat;
+
+import org.junit.jupiter.api.Test;
 
 import de.metas.report.jasper.JasperJdbcConnection;
 
@@ -32,75 +33,100 @@ public class JasperJdbcConnectionTest
 	/**
 	 * Testing this method de.metas.adempiere.report.jasper.JasperJdbcConnection.injectSecurityWhereClauses(String, String)
 	 */
-
 	@Test
-	public void test_injectSecurityWhereClauses()
+	void test_injectSecurityWhereClauses1()
 	{
 		// all parameters null
 		test_injectSecurityWhereClauses(null, null, null);
+	}
 
+	@Test
+	void test_injectSecurityWhereClauses2()
+	{
 		// null where clause
 		test_injectSecurityWhereClauses("SQL", "SQL", null);
+	}
 
+	@Test
+	void test_injectSecurityWhereClauses3()
+	{
 		// simple generic test
 		test_injectSecurityWhereClauses(
 
-		"SELECT * from test"
-				+ "\nWHERE OrgFilter;",
+				"SELECT * from test"
+						+ "\nWHERE OrgFilter /*JasperJdbcConnection.securityWhereClause*/;",
 
-		"SELECT * from test",
+				"SELECT * from test",
 
-		"OrgFilter");
+				"OrgFilter");
+	}
 
+	@Test
+	void test_injectSecurityWhereClauses4()
+	{
 		// realistic test with no WHERE and no ORDER BY
 		test_injectSecurityWhereClauses(
 
-		"SELECT * FROM report.saldobilanz_Report (?,?,?,?)"
-				+ "\nWHERE AD_Org_ID IN (0,1000004);",
+				"SELECT * FROM report.saldobilanz_Report (?,?,?,?)"
+						+ "\nWHERE AD_Org_ID IN (0,1000004) /*JasperJdbcConnection.securityWhereClause*/;",
 
-		"SELECT * FROM report.saldobilanz_Report (?,?,?,?);",
+				"SELECT * FROM report.saldobilanz_Report (?,?,?,?);",
 
-		"AD_Org_ID IN (0,1000004)");
+				"AD_Org_ID IN (0,1000004)");
+	}
 
+	@Test
+	void test_injectSecurityWhereClauses5()
+	{
 		// realistic test with ORDER BY
 		test_injectSecurityWhereClauses(
 
-		"SELECT * FROM report.saldobilanz_Report (?,?,?,?)  " +
-				"\nWHERE AD_Org_ID IN (0, 1000000)" +
-				"\nORDER BY AD_Org_ID;",
+				"SELECT * FROM report.saldobilanz_Report (?,?,?,?)  " +
+						"\nWHERE AD_Org_ID IN (0, 1000000) /*JasperJdbcConnection.securityWhereClause*/" +
+						"\nORDER BY AD_Org_ID;",
 
-		"SELECT * FROM report.saldobilanz_Report (?,?,?,?)  ORDER BY AD_Org_ID;",
+				"SELECT * FROM report.saldobilanz_Report (?,?,?,?)  ORDER BY AD_Org_ID;",
 
-		"AD_Org_ID IN (0, 1000000)");
+				"AD_Org_ID IN (0, 1000000)");
+	}
 
+	@Test
+	void test_injectSecurityWhereClauses6()
+	{
 		// realistic test with WHERE and ORDER BY. ";" used
 		test_injectSecurityWhereClauses(
 				"SELECT * FROM report.saldobilanz_Report (?,?,?,?) WHERE testwhere " +
-						"\nAND AD_Org_ID IN (0, 1000000)" +
+						"\nAND AD_Org_ID IN (0, 1000000) /*JasperJdbcConnection.securityWhereClause*/" +
 						"\nORDER BY AD_Org_ID;",
 
-		"SELECT * FROM report.saldobilanz_Report (?,?,?,?) WHERE testwhere ORDER BY AD_Org_ID;",
+				"SELECT * FROM report.saldobilanz_Report (?,?,?,?) WHERE testwhere ORDER BY AD_Org_ID;",
 
-		"AD_Org_ID IN (0, 1000000)");
+				"AD_Org_ID IN (0, 1000000)");
+	}
 
+	@Test
+	void test_injectSecurityWhereClauses7()
+	{
 		// realistic test with WHERE and ORDER BY. ";" not used
 		test_injectSecurityWhereClauses(
 				"SELECT * FROM report.saldobilanz_Report (?,?,?,?) WHERE testwhere " +
-						"\nAND AD_Org_ID IN (0, 1000000)" +
+						"\nAND AD_Org_ID IN (0, 1000000) /*JasperJdbcConnection.securityWhereClause*/" +
 						"\nORDER BY AD_Org_ID;",
 
-		"SELECT * FROM report.saldobilanz_Report (?,?,?,?) WHERE testwhere ORDER BY AD_Org_ID",
+				"SELECT * FROM report.saldobilanz_Report (?,?,?,?) WHERE testwhere ORDER BY AD_Org_ID",
 
-		"AD_Org_ID IN (0, 1000000)");
-
+				"AD_Org_ID IN (0, 1000000)");
 	}
 
-	private void test_injectSecurityWhereClauses(final String sqlExpected, final String sqlInput, final String securityWhereClause)
+	private void test_injectSecurityWhereClauses(
+			final String sqlExpected,
+			final String sqlInput,
+			final String securityWhereClause)
 	{
 		final String sqlActual = JasperJdbcConnection.injectSecurityWhereClauses(sqlInput, securityWhereClause);
 		final String errmsg = "Invalid sql for "
 				+ "\n sqlInput=" + sqlInput
 				+ "\n securityWhereClause=" + securityWhereClause;
-		Assert.assertEquals(errmsg, sqlExpected, sqlActual);
+		assertThat(sqlActual).as(errmsg).isEqualTo(sqlExpected);
 	}
 }

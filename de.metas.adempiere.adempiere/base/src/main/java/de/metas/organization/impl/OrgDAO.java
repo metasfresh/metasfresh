@@ -250,7 +250,7 @@ public class OrgDAO implements IOrgDAO
 	@Override
 	public Optional<OrgId> retrieveOrgIdBy(@NonNull final OrgQuery orgQuery)
 	{
-		final IQueryBuilder<I_AD_Org> queryBuilder = createQueryBuilder(orgQuery.isOutOfTrx());
+		final IQueryBuilder<I_AD_Org> queryBuilder = createQueryBuilder();
 
 		final int orgId = queryBuilder
 				.addEqualsFilter(I_AD_Org.COLUMNNAME_Value, orgQuery.getOrgValue())
@@ -267,19 +267,11 @@ public class OrgDAO implements IOrgDAO
 		return Optional.ofNullable(OrgId.ofRepoIdOrNull(orgId));
 	}
 
-	private IQueryBuilder<I_AD_Org> createQueryBuilder(final boolean outOfTrx)
+	private IQueryBuilder<I_AD_Org> createQueryBuilder()
 	{
-		final IQueryBuilder<I_AD_Org> queryBuilder;
-		if (outOfTrx)
-		{
-			queryBuilder = Services.get(IQueryBL.class)
-					.createQueryBuilderOutOfTrx(I_AD_Org.class);
-		}
-		else
-		{
-			queryBuilder = Services.get(IQueryBL.class)
-					.createQueryBuilder(I_AD_Org.class);
-		}
+		final IQueryBuilder<I_AD_Org> queryBuilder = Services.get(IQueryBL.class)
+				.createQueryBuilderOutOfTrx(I_AD_Org.class);
+
 		return queryBuilder.addOnlyActiveRecordsFilter();
 	}
 

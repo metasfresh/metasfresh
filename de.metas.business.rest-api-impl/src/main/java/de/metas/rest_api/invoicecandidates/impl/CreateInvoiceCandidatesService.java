@@ -326,7 +326,6 @@ public class CreateInvoiceCandidatesService
 			final OrgQuery query = OrgQuery.builder()
 					.orgValue(item.getOrgCode())
 					.failIfNotExists(true)
-					.outOfTrx(true)
 					.build();
 			try
 			{

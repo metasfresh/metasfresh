@@ -1,7 +1,9 @@
 package de.metas.document.sequenceno;
 
 import org.compiere.util.Evaluatee;
+import org.slf4j.Logger;
 
+import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import lombok.NonNull;
 
@@ -29,13 +31,19 @@ import lombok.NonNull;
 
 public class POReferenceAsSequenceNoProvider implements CustomSequenceNoProvider
 {
+	private static final Logger logger = LogManager.getLogger(POReferenceAsSequenceNoProvider.class);
+
 	private static final String PARAM_POReference = "POReference";
 
 	/** @return {@code true} if the given {@code context} has a non-null {@code POReference} value. */
 	@Override
 	public boolean isApplicable(@NonNull final Evaluatee context)
 	{
-		return getPOReferenceOrNull(context) != null;
+		final String poReference = getPOReferenceOrNull(context);
+		final boolean result = Check.isNotBlank(poReference);
+		logger.debug("isApplicable - Given evaluatee-context contains {}={}; -> returning {}; context={}", PARAM_POReference, poReference, result, context);
+
+		return result;
 	}
 
 	/** @return the given {@code context}'s {@code POReference} value. */
@@ -45,6 +53,7 @@ public class POReferenceAsSequenceNoProvider implements CustomSequenceNoProvider
 		final String poReference = getPOReferenceOrNull(context);
 		Check.assumeNotNull(poReference, "The given context needs to have a non-empty POreference value; context={}", context);
 
+		logger.debug("provideSequenceNo - returning {};", poReference);
 		return poReference;
 	}
 
@@ -58,5 +67,12 @@ public class POReferenceAsSequenceNoProvider implements CustomSequenceNoProvider
 
 		poReference = poReference.trim();
 		return !poReference.isEmpty() ? poReference : null;
+	}
+
+	/** @return true */
+	@Override
+	public boolean isUseIncrementSeqNoAsPrefix()
+	{
+		return true;
 	}
 }

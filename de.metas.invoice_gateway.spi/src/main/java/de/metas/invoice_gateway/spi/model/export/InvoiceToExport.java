@@ -1,15 +1,10 @@
 package de.metas.invoice_gateway.spi.model.export;
 
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Singular;
-import lombok.Value;
-
-import javax.annotation.Nullable;
-
 import java.time.Instant;
 import java.util.GregorianCalendar;
 import java.util.List;
+
+import javax.annotation.Nullable;
 
 import de.metas.invoice_gateway.spi.CustomInvoicePayload;
 import de.metas.invoice_gateway.spi.model.BPartner;
@@ -19,6 +14,10 @@ import de.metas.invoice_gateway.spi.model.InvoiceLine;
 import de.metas.invoice_gateway.spi.model.InvoiceTax;
 import de.metas.invoice_gateway.spi.model.MetasfreshVersion;
 import de.metas.invoice_gateway.spi.model.Money;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Singular;
+import lombok.Value;
 
 /*
  * #%L
@@ -50,6 +49,9 @@ public class InvoiceToExport
 
 	@NonNull
 	InvoiceId id;
+
+	@NonNull
+	String docSubType;
 
 	@NonNull
 	MetasfreshVersion metasfreshVersion;

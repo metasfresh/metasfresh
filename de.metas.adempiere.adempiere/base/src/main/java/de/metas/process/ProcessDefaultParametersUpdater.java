@@ -80,8 +80,6 @@ public final class ProcessDefaultParametersUpdater
 
 	/**
 	 * Extracts, if possible, the {@link IProcessDefaultParametersProvider} from given <code>processInfo</code> and registers it.
-	 *
-	 * @param processInfo
 	 */
 	public ProcessDefaultParametersUpdater addDefaultParametersProvider(final ProcessInfo processInfo)
 	{

@@ -68,7 +68,7 @@ import lombok.NonNull;
  */
 
 @Service
-class JsonConverters
+public class JsonConverters
 {
 	private final CurrencyService currencyService;
 	private final DocTypeService docTypeService;
@@ -95,7 +95,7 @@ class JsonConverters
 			throw new AdempiereException("@FillMandatory@ @POReference@: " + request);
 		}
 
-		final OrgId orgId = masterdataProvider.getCreateOrgId(request.getOrg());
+		final OrgId orgId = masterdataProvider.getCreateOrgIdInTrx(request.getOrg());
 
 		final ProductInfo productInfo = masterdataProvider.getCreateProductInfo(request.getProduct(), orgId);
 

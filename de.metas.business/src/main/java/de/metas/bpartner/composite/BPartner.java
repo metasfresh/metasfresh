@@ -7,7 +7,6 @@ import javax.annotation.Nullable;
 
 import org.adempiere.ad.table.RecordChangeLog;
 
-import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.bpartner.BPGroupId;
@@ -43,11 +42,11 @@ import lombok.Data;
  */
 
 @Data
-@JsonPropertyOrder(alphabetic = true/* we want the serialized json to be less flaky in our snapshot files */)
 public class BPartner
 {
 	public static final String ID = "id";
 	public static final String EXTERNAL_ID = "externalId";
+	public static final String GLOBAL_ID = "globalId";
 	public static final String ACTIVE = "active";
 	public static final String NAME = "name";
 	public static final String NAME_2 = "name2";
@@ -98,6 +97,8 @@ public class BPartner
 
 	private InvoiceRule invoiceRule;
 
+	private String globalId;
+
 	private final RecordChangeLog changeLog;
 
 	/** They are all nullable because we can create a completely empty instance which we then fill. */
@@ -105,6 +106,7 @@ public class BPartner
 	private BPartner(
 			@Nullable final BPartnerId id,
 			@Nullable final ExternalId externalId,
+			@Nullable final String globalId,
 			@Nullable final Boolean active,
 			@Nullable final String value,
 			@Nullable final String name,
@@ -125,6 +127,7 @@ public class BPartner
 	{
 		this.id = id;
 		this.externalId = externalId;
+		this.globalId = globalId;
 		this.active = coalesce(active, true);
 		this.value = value;
 		this.name = name;

@@ -46,16 +46,17 @@ import lombok.Value;
  * #L%
  */
 
-/** Identifies a metasfresh resourse (e.g. business partner) */
+/** Identifies a metasfresh resourse (e.g. business partner). */
 @Value
 public class IdentifierString
 {
 
 	public enum Type
 	{
-		/** Every metasfresh ressource can be identifies via its metasfresh-ID (i.e. the PK of its data base record) */
+		/** Every metasfresh ressource can be identified via its metasfresh-ID (i.e. the PK of its data base record, e.g. {@code C_BPartner_ID} or {@code M_Product_ID}) */
 		METASFRESH_ID,
 
+		/** Note that at least for C_BPartner, the external ID is only unique per Org!*/
 		EXTERNAL_ID,
 
 		VALUE,
@@ -149,6 +150,21 @@ public class IdentifierString
 	{
 		Check.assumeGreaterOrEqualToZero(repoId, "repoId");
 		return new IdentifierString(Type.METASFRESH_ID, String.valueOf(repoId), String.valueOf(repoId));
+	}
+
+	public static final IdentifierString ofJsonExternalId(@Nullable final JsonExternalId jsonExternalId)
+	{
+		return of(PREFIX_EXTERNAL_ID + JsonExternalId.toValue(jsonExternalId));
+	}
+
+	public static final IdentifierString ofValue(@NonNull final String code)
+	{
+		return of(PREFIX_VALUE + code);
+	}
+
+	public static IdentifierString ofGLN(String gln)
+	{
+		return of(PREFIX_GLN + gln);
 	}
 
 	private IdentifierString(

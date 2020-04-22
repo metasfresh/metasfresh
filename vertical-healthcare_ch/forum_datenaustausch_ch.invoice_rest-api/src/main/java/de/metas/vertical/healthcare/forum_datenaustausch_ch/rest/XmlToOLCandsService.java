@@ -13,12 +13,12 @@ import java.io.InputStream;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.StringJoiner;
 
 import javax.annotation.Nullable;
 import javax.xml.bind.JAXBElement;
 
-import org.adempiere.util.lang.IPair;
-import org.adempiere.util.lang.ImmutablePair;
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.X_C_DocType;
 import org.compiere.util.TimeUtil;
 import org.springframework.context.annotation.Conditional;
@@ -28,17 +28,18 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
+import com.jgoodies.common.base.Objects;
 
 import de.metas.invoicecandidate.api.InvoiceCandidate_Constants;
 import de.metas.rest_api.bpartner.request.JsonRequestBPartner;
-import de.metas.rest_api.bpartner.request.JsonRequestBPartner.JsonRequestBPartnerBuilder;
 import de.metas.rest_api.bpartner.request.JsonRequestContact;
 import de.metas.rest_api.bpartner.request.JsonRequestLocation;
-import de.metas.rest_api.bpartner.request.JsonRequestLocation.JsonRequestLocationBuilder;
 import de.metas.rest_api.common.JsonDocTypeInfo;
 import de.metas.rest_api.common.JsonExternalId;
 import de.metas.rest_api.common.SyncAdvise;
+import de.metas.rest_api.exception.MissingPropertyException;
 import de.metas.rest_api.ordercandidates.OrderCandidatesRestEndpoint;
+import de.metas.rest_api.ordercandidates.request.BPartnerLookupAdvise;
 import de.metas.rest_api.ordercandidates.request.JsonOLCandCreateBulkRequest;
 import de.metas.rest_api.ordercandidates.request.JsonOLCandCreateRequest;
 import de.metas.rest_api.ordercandidates.request.JsonOLCandCreateRequest.JsonOLCandCreateRequestBuilder;
@@ -53,15 +54,21 @@ import de.metas.rest_api.ordercandidates.response.JsonOLCandCreateBulkResponse;
 import de.metas.util.Check;
 import de.metas.util.StringUtils;
 import de.metas.util.collections.CollectionUtils;
+import de.metas.util.lang.ExternalId;
 import de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.exceptions.InvalidXMLException;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.HealthCareInvoiceDocSubType;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.HealthcareCHHelper;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.commons.ForumDatenaustauschChConstants;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.Invoice440RequestConversionService;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.request.BillerAddressType;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.request.BodyType;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.request.CompanyType;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.request.InsuranceAddressType;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.request.GuarantorAddressType;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.request.InvoiceType;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.request.OnlineAddressType;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.request.PatientAddressType;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.request.PayloadType;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.request.PersonType;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.request.PostalAddressType;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.request.RecordDRGType;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.request.RecordDrugType;
@@ -124,6 +131,7 @@ public class XmlToOLCandsService
 
 		final JsonOLCandCreateBulkRequest jsonOLCandCreateBulkRequest = createJsonOLCandCreateBulkRequest(
 				xmlInvoice,
+				createOLCandsRequest.getTargetDocType(),
 				createOLCandsRequest.getBillerSyncAdvise(),
 				createOLCandsRequest.getDebitorSyncAdvise(),
 				createOLCandsRequest.getProductSyncAdvise());
@@ -134,7 +142,10 @@ public class XmlToOLCandsService
 				orderCandidates.getBody().getResult(),
 				JsonOLCand::getExternalHeaderId);
 
-		final ResponseEntity<JsonAttachment> result = attachXmlToOLCandidates(xmlInvoiceFile, externalHeaderId);
+		final ResponseEntity<JsonAttachment> result = attachXmlToOLCandidates(
+				xmlInvoiceFile,
+				externalHeaderId,
+				Invoice440RequestConversionService.INVOICE_440_REQUEST_XSD); // store the XSD name so we don't need to extract it from the binary attachment data
 		return result.getBody();
 	}
 
@@ -142,10 +153,19 @@ public class XmlToOLCandsService
 	@Builder
 	public static class CreateOLCandsRequest
 	{
+		@NonNull
+		HealthCareInvoiceDocSubType targetDocType;
+
+		@NonNull
 		MultipartFile xmlInvoiceFile;
 
+		@NonNull
 		SyncAdvise billerSyncAdvise;
+
+		@NonNull
 		SyncAdvise debitorSyncAdvise;
+
+		@NonNull
 		SyncAdvise productSyncAdvise;
 	}
 
@@ -174,13 +194,15 @@ public class XmlToOLCandsService
 
 	private ResponseEntity<JsonAttachment> attachXmlToOLCandidates(
 			@NonNull final MultipartFile xmlInvoiceFile,
-			@NonNull final String externalReference)
+			@NonNull final String externalReference,
+			@NonNull final String xsdName)
 	{
 		try
 		{
 			final ImmutableList<String> tags = ImmutableList.of(
 					ATTATCHMENT_TAGNAME_EXPORT_PROVIDER/* name */, ForumDatenaustauschChConstants.INVOICE_EXPORT_PROVIDER_ID/* value */,
-					ATTATCHMENT_TAGNAME_EXTERNAL_REFERENCE/* name */, externalReference/* value */);
+					ATTATCHMENT_TAGNAME_EXTERNAL_REFERENCE/* name */, externalReference/* value */,
+					ForumDatenaustauschChConstants.XSD_NAME, xsdName);
 
 			return orderCandidatesRestEndpoint.attachFile(
 					RestApiConstants.INPUT_SOURCE_INTERAL_NAME,
@@ -223,7 +245,7 @@ public class XmlToOLCandsService
 
 		public XmlInvalidRequestIdException(@Nullable final String invalidRequestId)
 		{
-			super("Invalid invoice request_id=" + invalidRequestId + "; it has to start with KV_ or KT_");
+			super("Invalid invoice request_id=" + invalidRequestId + "; it has to start with EA_, KV_ or KT_");
 			this.invalidRequestId = invalidRequestId;
 		}
 	}
@@ -241,6 +263,7 @@ public class XmlToOLCandsService
 	@VisibleForTesting
 	JsonOLCandCreateBulkRequest createJsonOLCandCreateBulkRequest(
 			@NonNull final RequestType xmlInvoice,
+			@NonNull final HealthCareInvoiceDocSubType targetDocType,
 			@NonNull final SyncAdvise billerSyncAdvise,
 			@NonNull final SyncAdvise debitorSyncAdvise,
 			@NonNull final SyncAdvise productsSyncAdvise)
@@ -252,6 +275,7 @@ public class XmlToOLCandsService
 
 		final String invoiceRecipientEAN = extractRecipientEAN(xmlInvoice);
 		final HighLevelContext context = HighLevelContext.builder()
+				.targetDocType(targetDocType)
 				.billerSyncAdvise(billerSyncAdvise)
 				.debitorSyncAdvise(debitorSyncAdvise)
 				.productsSyncAdvise(productsSyncAdvise)
@@ -275,8 +299,9 @@ public class XmlToOLCandsService
 	private static class HighLevelContext
 	{
 		@NonNull
+		HealthCareInvoiceDocSubType targetDocType;
+		@NonNull
 		String invoiceRecipientEAN;
-
 		@NonNull
 		SyncAdvise billerSyncAdvise;
 		@NonNull
@@ -302,11 +327,11 @@ public class XmlToOLCandsService
 			@NonNull final PayloadType payload,
 			@NonNull final HighLevelContext context)
 	{
-		final IPair<String, String> docSubTypeAndPOReference = createPOReference(payload);
+		final String poReference = createPOReference(payload);
 
-		requestBuilder.poReference(docSubTypeAndPOReference.getRight());
+		requestBuilder.poReference(poReference);
 
-		requestBuilder.invoiceDocType(createJsonDocTypeInfo(docSubTypeAndPOReference.getLeft()));
+		requestBuilder.invoiceDocType(createJsonDocTypeInfo(context.getTargetDocType()));
 
 		insertInoviceIntoBuilder(
 				requestBuilder,
@@ -324,11 +349,7 @@ public class XmlToOLCandsService
 		return requests;
 	}
 
-	/**
-	 * @return a pair consisting of invoice {@code DocSubType} and {@code POreference}.
-	 *         TODO the hardcoded way of getting the invoice's {@code DocSubType} from the XML is not cool, but I want to keep it for now. Ideas of how to solve this in future are centered around linking the doc type to the invoice recipient
-	 */
-	private IPair<String, String> createPOReference(@NonNull final PayloadType payload)
+	private String createPOReference(@NonNull final PayloadType payload)
 	{
 		final InvoiceType invoice = payload.getInvoice();
 
@@ -336,14 +357,18 @@ public class XmlToOLCandsService
 				invoice.getRequestId(),
 				InvalidXMLException.class, "payload/invoice/requestId may not be empty");
 
-		final IPair<String, String> result;
+		final String result;
 		if (requestIdToUse.startsWith("KV_")) // "Krankenversicherung"
 		{
-			result = ImmutablePair.of("KV", requestIdToUse.substring("KV_".length()));
+			result = requestIdToUse.substring("KV_".length());
 		}
 		else if (requestIdToUse.startsWith("KT_")) // "Kanton"
 		{
-			result = ImmutablePair.of("KT", requestIdToUse.substring("KT_".length()));
+			result = requestIdToUse.substring("KT_".length());
+		}
+		else if (requestIdToUse.startsWith("EA_")) // "Eigenanteil"
+		{
+			result = requestIdToUse.substring("EA_".length());
 		}
 		else
 		{
@@ -366,23 +391,43 @@ public class XmlToOLCandsService
 			@NonNull final BodyType body,
 			@NonNull final HighLevelContext context)
 	{
-		final JsonOLCandCreateRequestBuilder //
-		invoiceRecipientBuilder = insertInsuranceAndBillerIntoBuilder(
-				requestBuilder,
-				getInsuranceAndBiller(body),
-				context);
 
-		invoiceRecipientBuilder.externalHeaderId(createExternalHeaderId(invoiceRecipientBuilder));
+		final JsonOrganization billerOrgInfo = createBillerOrg(
+				getBiller(body),
+				context);
+		requestBuilder.org(billerOrgInfo);
+
+		switch (context.getTargetDocType())
+		{
+			case KV:
+				requestBuilder.bpartner(createReadOnlyInvoiceRecipient(context));
+				break;
+			case KT:
+				requestBuilder.bpartner(createReadOnlyInvoiceRecipient(context));
+				break;
+			case EA:
+				addPatientInvoiceRecipients(
+						requestBuilder,
+						body,
+						billerOrgInfo.getCode(),
+						context);
+				break;
+			default:
+				throw new AdempiereException("Unsupported targetDocType=" + context.getTargetDocType());
+		}
+
+		requestBuilder
+				.externalHeaderId(createExternalHeaderId(requestBuilder));
 
 		final ImmutableList<JsonOLCandCreateRequestBuilder> allBuilders = insertServicesIntoBuilder(
-				invoiceRecipientBuilder,
+				requestBuilder.build(),
 				body.getServices(),
 				context);
 
 		return allBuilders;
 	}
 
-	private InsuranceAndBiller getInsuranceAndBiller(@NonNull final BodyType body)
+	private BillerAddressType getBiller(@NonNull final BodyType body)
 	{
 		final boolean tiersGarantIsSet = body.getTiersGarant() != null;
 		final boolean tiersPayantIsSet = body.getTiersPayant() != null;
@@ -393,45 +438,155 @@ public class XmlToOLCandsService
 
 		if (tiersGarantIsSet)
 		{
-			return new InsuranceAndBiller(
-					body.getTiersGarant().getInsurance(),
-					body.getTiersGarant().getBiller());
+			return body.getTiersGarant().getBiller();
 		}
 
 		// tiersPayantIsSet
-		return new InsuranceAndBiller(
-				body.getTiersPayant().getInsurance(),
-				body.getTiersPayant().getBiller());
+		return body.getTiersPayant().getBiller();
 	}
 
-	private JsonOLCandCreateRequestBuilder insertInsuranceAndBillerIntoBuilder(
+	private PatientAddressType getPatient(@NonNull final BodyType body)
+	{
+		final boolean tiersGarantIsSet = body.getTiersGarant() != null;
+		final boolean tiersPayantIsSet = body.getTiersPayant() != null;
+
+		Check.errorUnless(tiersGarantIsSet ^ tiersPayantIsSet,
+				"One of TiersGarant or TiersPayant needs to be provided but not both; tiersGarantIsSet={}; tiersPayantIsSet={} ",
+				tiersGarantIsSet, tiersPayantIsSet);
+
+		if (tiersGarantIsSet)
+		{
+			return body.getTiersGarant().getPatient();
+		}
+		// tiersPayantIsSet
+		return body.getTiersPayant().getPatient();
+	}
+
+	private GuarantorAddressType getGuarantor(@NonNull final BodyType body)
+	{
+		final boolean tiersGarantIsSet = body.getTiersGarant() != null;
+		final boolean tiersPayantIsSet = body.getTiersPayant() != null;
+
+		Check.errorUnless(tiersGarantIsSet ^ tiersPayantIsSet,
+				"One of TiersGarant or TiersPayant needs to be provided but not both; tiersGarantIsSet={}; tiersPayantIsSet={} ",
+				tiersGarantIsSet, tiersPayantIsSet);
+
+		if (tiersGarantIsSet)
+		{
+			return body.getTiersGarant().getGuarantor();
+		}
+		// tiersPayantIsSet
+		return body.getTiersPayant().getGuarantor();
+	}
+
+	private void addPatientInvoiceRecipients(
 			@NonNull final JsonOLCandCreateRequestBuilder requestBuilder,
-			@NonNull final InsuranceAndBiller insuranceAndBiller,
+			@NonNull final BodyType body,
+			@NonNull final String orgCode,
 			@NonNull final HighLevelContext context)
 	{
-		final JsonRequestBPartnerLocationAndContact recipientBPartnerInfo = createJsonBPartnerInfo(
-				insuranceAndBiller.getInsurance(),
-				context);
+		final PatientAddressType patient = getPatient(body);
+		final GuarantorAddressType guarantor = getGuarantor(body);
 
-		final JsonOrganization billerOrgInfo = createBillerOrg(
-				insuranceAndBiller.getBiller(),
-				context);
+		final JsonExternalId patientExternalId = createPationBPartnerExternalId(orgCode, patient);
 
-		final JsonOLCandCreateRequestBuilder insuranceBuilder = copyBuilder(requestBuilder)
-				.bpartner(recipientBPartnerInfo)
-				.org(billerOrgInfo);
+		final JsonRequestBPartnerLocationAndContactBuilder bPartnerInfo = JsonRequestBPartnerLocationAndContact
+				.builder()
+				.syncAdvise(context.getDebitorSyncAdvise());
 
-		return insuranceBuilder;
+		final PersonType person = patient.getPerson();
+		final String patientName = createFullPersonName(person);
+
+		final JsonRequestBPartner bPartner = new JsonRequestBPartner();
+		bPartner.setGlobalId(patient.getSsn());
+		bPartner.setExternalId(patientExternalId);
+		bPartner.setName(patientName);
+		bPartnerInfo.bpartner(bPartner);
+
+		final JsonRequestLocation patientLocation = createJsonBPartnerLocation(
+				patientExternalId,
+				null/* gln */,
+				person.getPostal());
+
+		final PostalAddressType guarantorPostal;
+		final String guarantorName;
+		if (guarantor.getCompany() != null)
+		{
+			guarantorPostal = guarantor.getCompany().getPostal();
+			guarantorName = guarantor.getCompany().getCompanyname();
+		}
+		else if (guarantor.getPerson() != null)
+		{
+			guarantorPostal = guarantor.getPerson().getPostal();
+			guarantorName = createFullPersonName(guarantor.getPerson());
+		}
+		else
+		{
+			throw new MissingPropertyException("guarantor/company or guarantor/person", guarantor);
+		}
+
+		final JsonRequestLocation guarantorLocation = createJsonBPartnerLocation(
+				patientExternalId,
+				null/* gln */,
+				guarantorPostal);
+		if (Objects.equals(patientLocation, guarantorLocation))
+		{
+			patientLocation.setName(patientName);
+			patientLocation.setShipTo(true);
+			patientLocation.setShipToDefault(true);
+			patientLocation.setBillTo(true);
+			patientLocation.setBillToDefault(true);
+		}
+		else
+		{
+			// add an additional bill-location for the guarantor
+			final JsonRequestBPartnerLocationAndContactBuilder billBartnerInfo = JsonRequestBPartnerLocationAndContact
+					.builder()
+					.syncAdvise(context.getDebitorSyncAdvise())
+					.bpartner(bPartner);
+
+			guarantorLocation.setSyncAdvise(SyncAdvise.CREATE_OR_MERGE);
+			guarantorLocation.setName(guarantorName);
+			guarantorLocation.setExternalId(JsonExternalId.of(guarantorLocation.getExternalId().getValue() + "_GUARANTOR"));
+			guarantorLocation.setShipTo(false);
+			guarantorLocation.setShipToDefault(false);
+			guarantorLocation.setBillTo(true);
+			guarantorLocation.setBillToDefault(true);
+			billBartnerInfo.location(guarantorLocation);
+			requestBuilder.billBPartner(billBartnerInfo.build());
+
+			patientLocation.setSyncAdvise(SyncAdvise.CREATE_OR_MERGE);
+			patientLocation.setName(patientName);
+			patientLocation.setShipTo(true);
+			patientLocation.setShipToDefault(true);
+			patientLocation.setBillTo(false);
+			patientLocation.setBillToDefault(false);
+		}
+		bPartnerInfo.location(patientLocation);
+		requestBuilder.bpartner(bPartnerInfo.build());
 	}
 
-	@Value
-	private static class InsuranceAndBiller
+	private String createFullPersonName(@NonNull final PersonType person)
 	{
-		@NonNull
-		final InsuranceAddressType insurance;
-
-		@NonNull
-		final BillerAddressType biller;
+		final StringJoiner joiner = new StringJoiner(" ");
+		if (Check.isNotBlank(person.getSalutation()))
+		{
+			joiner.add(person.getSalutation());
+		}
+		if (Check.isNotBlank(person.getTitle()))
+		{
+			joiner.add(person.getTitle());
+		}
+		if (Check.isNotBlank(person.getGivenname()))
+		{
+			joiner.add(person.getGivenname());
+		}
+		if (Check.isNotBlank(person.getFamilyname()))
+		{
+			joiner.add(person.getFamilyname());
+		}
+		final String patientName = joiner.toString();
+		return patientName;
 	}
 
 	private JsonOrganization createBillerOrg(
@@ -450,55 +605,35 @@ public class XmlToOLCandsService
 		return org;
 	}
 
-	private JsonDocTypeInfo createJsonDocTypeInfo(@NonNull final String docSubType)
+	private JsonDocTypeInfo createJsonDocTypeInfo(@NonNull final HealthCareInvoiceDocSubType docSubType)
 	{
 		return JsonDocTypeInfo.builder()
 				.docBaseType(X_C_DocType.DOCBASETYPE_ARInvoice)
-				.docSubType(docSubType)
+				.docSubType(docSubType.getCode())
 				.build();
 	}
 
-	private JsonRequestBPartnerLocationAndContact createJsonBPartnerInfo(
-			@NonNull final InsuranceAddressType insurance,
-			@NonNull final HighLevelContext context)
+	/**
+	 * Build a "sparse" bPartner that is (only) suitable for lookup.
+	 */
+	private JsonRequestBPartnerLocationAndContact createReadOnlyInvoiceRecipient(@NonNull final HighLevelContext context)
 	{
-		final CompanyType company = insurance.getCompany();
-		final JsonExternalId insuranceExternalId = createBPartnerExternalId(insurance);
 		final JsonExternalId recipientExternalId = createBPartnerExternalId(context.getInvoiceRecipientEAN());
 
-		final JsonRequestBPartnerBuilder bPartner = JsonRequestBPartner
+		final JsonRequestBPartner bPartner = new JsonRequestBPartner();
+		bPartner.setExternalId(recipientExternalId);
+
+		final JsonRequestLocation location = new JsonRequestLocation();
+		location.setGln(context.getInvoiceRecipientEAN());
+		location.setExternalId(createLocationExternalId(recipientExternalId));
+
+		return JsonRequestBPartnerLocationAndContact
 				.builder()
-				.externalId(recipientExternalId);
-
-		final JsonRequestBPartnerLocationAndContactBuilder bPartnerInfo = JsonRequestBPartnerLocationAndContact.builder();
-
-		if (recipientExternalId.equals(insuranceExternalId))
-		{
-			final JsonRequestLocation location = createJsonBPartnerLocation(
-					insuranceExternalId,
-					insurance.getEanParty(),
-					company.getPostal());
-			bPartner.name(company.getCompanyname());
-
-			return bPartnerInfo
-					.syncAdvise(context.getDebitorSyncAdvise())
-					.bpartner(bPartner.build())
-					.location(location)
-					.build();
-		}
-
-		// build a "sparse" bPartner that is only suitable for lookup, because we don't have the masterdata needed to insert or update
-		final JsonRequestLocation location = JsonRequestLocation.builder()
-				.gln(context.getInvoiceRecipientEAN())
-				.externalId(createLocationExternalId(recipientExternalId))
-				.build();
-
-		return bPartnerInfo
+				.bpartnerLookupAdvise(BPartnerLookupAdvise.GLN)
 				.syncAdvise(SyncAdvise.READ_ONLY)
-				.bpartner(bPartner.build())
+				.bpartner(bPartner)
 				.location(location)
 				.build();
-
 	}
 
 	private JsonRequestBPartnerLocationAndContact createJsonBPartnerInfo(
@@ -510,18 +645,17 @@ public class XmlToOLCandsService
 		final CompanyType company = biller.getCompany();
 		final JsonExternalId billerBPartnerExternalId = createBPartnerExternalId(biller);
 
-		final JsonRequestBPartnerBuilder bPartnerBuilder = JsonRequestBPartner
-				.builder()
-				.name(name.getSingleStringName())
-				.externalId(billerBPartnerExternalId);
+		final JsonRequestBPartner bPartner = new JsonRequestBPartner();
+		bPartner.setName(name.getSingleStringName());
+		bPartner.setExternalId(billerBPartnerExternalId);
 
 		final JsonRequestLocation location;
 		final String email;
 		if (company != null)
 		{
-			bPartnerBuilder.companyName(company.getCompanyname());
+			bPartner.setCompanyName(company.getCompanyname());
 
-			email = extracFirsttEmailOrNull(company.getOnline());
+			email = extracFirstEmailOrNull(company.getOnline());
 
 			location = createJsonBPartnerLocation(
 					billerBPartnerExternalId,
@@ -530,7 +664,7 @@ public class XmlToOLCandsService
 		}
 		else
 		{ // biller.getPerson() != null
-			email = extracFirsttEmailOrNull(biller.getPerson().getOnline());
+			email = extracFirstEmailOrNull(biller.getPerson().getOnline());
 
 			location = createJsonBPartnerLocation(
 					billerBPartnerExternalId,
@@ -538,19 +672,18 @@ public class XmlToOLCandsService
 					biller.getPerson().getPostal());
 		}
 
-		final JsonRequestContact contact = JsonRequestContact
-				.builder()
-				.externalId(JsonExternalId.of(billerBPartnerExternalId + "_singlePerson"))
-				.firstName(name.getFirstName())
-				.lastName(coalesce(name.getLastName(), name.getSingleStringName()))
-				.name(name.getSingleStringName())
-				.email(email)
-				.build();
+		final JsonRequestContact jsonRequestContact = new JsonRequestContact();
+		jsonRequestContact.setExternalId(JsonExternalId.of(billerBPartnerExternalId + "_singlePerson"));
+		jsonRequestContact.setFirstName(name.getFirstName());
+		jsonRequestContact.setLastName(coalesce(name.getLastName(), name.getSingleStringName()));
+		jsonRequestContact.setName(name.getSingleStringName());
+		jsonRequestContact.setEmail(email);
 
 		final JsonRequestBPartnerLocationAndContact bPartnerInfo = JsonRequestBPartnerLocationAndContact.builder()
+				.bpartnerLookupAdvise(BPartnerLookupAdvise.GLN)
 				.syncAdvise(context.getBillerSyncAdvise())
-				.bpartner(bPartnerBuilder.build())
-				.contact(contact)
+				.bpartner(bPartner)
+				.contact(jsonRequestContact)
 				.location(location)
 				.build();
 
@@ -589,7 +722,7 @@ public class XmlToOLCandsService
 		String singleStringName;
 	}
 
-	private String extracFirsttEmailOrNull(@Nullable final OnlineAddressType online)
+	private String extracFirstEmailOrNull(@Nullable final OnlineAddressType online)
 	{
 		if (online == null || online.getEmail().isEmpty())
 		{
@@ -603,9 +736,14 @@ public class XmlToOLCandsService
 		return JsonExternalId.of("EAN-" + eanParty);
 	}
 
-	private JsonExternalId createBPartnerExternalId(@NonNull final InsuranceAddressType insurance)
+	private JsonExternalId createPationBPartnerExternalId(@NonNull final String orgCode, @NonNull final PatientAddressType patient)
 	{
-		return JsonExternalId.of("EAN-" + insurance.getEanParty());
+		final ExternalId externalId = HealthcareCHHelper.createBPartnerExternalIdForPatient(patient.getSsn());
+		if (externalId == null)
+		{
+			throw new MissingPropertyException("SSN", patient);
+		}
+		return JsonExternalId.of("org:" + orgCode + "_bp:" + externalId.getValue());
 	}
 
 	private JsonExternalId createBPartnerExternalId(@NonNull final BillerAddressType biller)
@@ -615,7 +753,7 @@ public class XmlToOLCandsService
 
 	private JsonRequestLocation createJsonBPartnerLocation(
 			@NonNull final JsonExternalId bPartnerExternalId,
-			@NonNull final String gln,
+			@Nullable final String gln,
 			@NonNull final PostalAddressType postal)
 	{
 		final String street = StringUtils.trim(postal.getStreet());
@@ -626,31 +764,32 @@ public class XmlToOLCandsService
 		final String statecode = zip != null ? StringUtils.trim(zip.getStatecode()) : null;
 		final String countrycode = zip != null ? StringUtils.trim(zip.getCountrycode()) : null;
 
-		final JsonRequestLocationBuilder builder = JsonRequestLocation.builder();
+		final JsonRequestLocation location = new JsonRequestLocation();
 
 		if (!Check.isEmpty(street, true))
 		{
-			builder.address1(street)
-					.address2(pobox);
+			location.setAddress1(street);
+			location.setAddress2(pobox);
 		}
 		else
 		{
-			builder.address1(pobox);
+			location.setAddress1(pobox);
 		}
 
 		if (!Check.isEmpty(gln, true))
 		{
-			builder.gln(gln);
+			location.setGln(gln);
 		}
 
-		final JsonRequestLocation location = builder
-				.externalId(createLocationExternalId(bPartnerExternalId)) // TODO
-				.city(city)
-				.postal(zip.getValue())
-				.region(statecode)
-				.postal(statecode)
-				.countryCode(coalesce(countrycode, "CH")) // TODO
-				.build();
+		location.setExternalId(createLocationExternalId(bPartnerExternalId));
+		location.setCity(city);
+		location.setPostal(zip.getValue());
+		location.setRegion(statecode);
+		location.setCountryCode(coalesce(countrycode, "CH"));
+
+		location.setBillTo(true);
+		location.setShipTo(true);
+
 		return location;
 	}
 
@@ -667,7 +806,7 @@ public class XmlToOLCandsService
 	}
 
 	private ImmutableList<JsonOLCandCreateRequestBuilder> insertServicesIntoBuilder(
-			@NonNull final JsonOLCandCreateRequestBuilder invoiceRecipientBuilder,
+			@NonNull final JsonOLCandCreateRequest invoiceRecipient,
 			@NonNull final ServicesType services,
 			@NonNull final HighLevelContext context)
 	{
@@ -676,14 +815,14 @@ public class XmlToOLCandsService
 		final List<Object> records = services.getRecordTarmedOrRecordDrgOrRecordLab();
 		for (final Object record : records)
 		{
-			result.addAll(insertServiceRecordIntoBuilder(invoiceRecipientBuilder, record, context));
+			result.addAll(insertServiceRecordIntoBuilder(invoiceRecipient, record, context));
 		}
 
 		return result.build();
 	}
 
 	private ImmutableList<JsonOLCandCreateRequestBuilder> insertServiceRecordIntoBuilder(
-			@NonNull final JsonOLCandCreateRequestBuilder invoiceRecipientBuilder,
+			@NonNull final JsonOLCandCreateRequest preliminaryRequest,
 			@NonNull final Object record,
 			@NonNull final HighLevelContext context)
 	{
@@ -697,7 +836,7 @@ public class XmlToOLCandsService
 		{
 			final RecordTarmedType recordTarmedType = (RecordTarmedType)record;
 
-			externalLineId = createExternalId(invoiceRecipientBuilder, recordTarmedType.getRecordId());
+			externalLineId = createExternalId(preliminaryRequest, recordTarmedType.getRecordId());
 			product = createProduct(recordTarmedType.getCode(), recordTarmedType.getName(), context);
 			price = recordTarmedType.getAmount();
 			quantity = ONE;
@@ -706,7 +845,7 @@ public class XmlToOLCandsService
 		{
 			final RecordDRGType recordDRGType = (RecordDRGType)record;
 
-			externalLineId = createExternalId(invoiceRecipientBuilder, recordDRGType.getRecordId());
+			externalLineId = createExternalId(preliminaryRequest, recordDRGType.getRecordId());
 			product = createProduct(recordDRGType.getCode(), recordDRGType.getName(), context);
 			price = createPrice(recordDRGType.getUnit(), recordDRGType.getUnitFactor(), recordDRGType.getExternalFactor());
 			quantity = recordDRGType.getQuantity();
@@ -715,7 +854,7 @@ public class XmlToOLCandsService
 		{
 			final RecordLabType recordLabType = (RecordLabType)record;
 
-			externalLineId = createExternalId(invoiceRecipientBuilder, recordLabType.getRecordId());
+			externalLineId = createExternalId(preliminaryRequest, recordLabType.getRecordId());
 			product = createProduct(recordLabType.getCode(), recordLabType.getName(), context);
 			price = createPrice(recordLabType.getUnit(), recordLabType.getUnitFactor(), recordLabType.getExternalFactor());
 			quantity = recordLabType.getQuantity();
@@ -724,7 +863,7 @@ public class XmlToOLCandsService
 		{
 			final RecordMigelType recordMigelType = (RecordMigelType)record;
 
-			externalLineId = createExternalId(invoiceRecipientBuilder, recordMigelType.getRecordId());
+			externalLineId = createExternalId(preliminaryRequest, recordMigelType.getRecordId());
 			product = createProduct(recordMigelType.getCode(), recordMigelType.getName(), context);
 			price = createPrice(recordMigelType.getUnit(), recordMigelType.getUnitFactor(), recordMigelType.getExternalFactor());
 			quantity = recordMigelType.getQuantity();
@@ -733,7 +872,7 @@ public class XmlToOLCandsService
 		{
 			final RecordParamedType recordParamedOtherType = (RecordParamedType)record;
 
-			externalLineId = createExternalId(invoiceRecipientBuilder, recordParamedOtherType.getRecordId());
+			externalLineId = createExternalId(preliminaryRequest, recordParamedOtherType.getRecordId());
 			product = createProduct(recordParamedOtherType.getCode(), recordParamedOtherType.getName(), context);
 			price = createPrice(recordParamedOtherType.getUnit(), recordParamedOtherType.getUnitFactor(), recordParamedOtherType.getExternalFactor());
 			quantity = recordParamedOtherType.getQuantity();
@@ -742,7 +881,7 @@ public class XmlToOLCandsService
 		{
 			final RecordDrugType recordDrugType = (RecordDrugType)record;
 
-			externalLineId = createExternalId(invoiceRecipientBuilder, recordDrugType.getRecordId());
+			externalLineId = createExternalId(preliminaryRequest, recordDrugType.getRecordId());
 			product = createProduct(recordDrugType.getCode(), recordDrugType.getName(), context);
 			price = createPrice(recordDrugType.getUnit(), recordDrugType.getUnitFactor(), recordDrugType.getExternalFactor());
 			quantity = recordDrugType.getQuantity();
@@ -751,7 +890,7 @@ public class XmlToOLCandsService
 		{
 			final RecordOtherType recordOtherType = (RecordOtherType)record;
 
-			externalLineId = createExternalId(invoiceRecipientBuilder, recordOtherType.getRecordId());
+			externalLineId = createExternalId(preliminaryRequest, recordOtherType.getRecordId());
 			product = createProduct(recordOtherType.getCode(), recordOtherType.getName(), context);
 			price = createPrice(recordOtherType);
 			quantity = recordOtherType.getQuantity();
@@ -762,8 +901,7 @@ public class XmlToOLCandsService
 			Check.fail("Unexpected record type={}", record);
 			return null;
 		}
-		final JsonOLCandCreateRequestBuilder serviceRecordBuilder = copyBuilder(invoiceRecipientBuilder);
-		serviceRecordBuilder
+		final JsonOLCandCreateRequestBuilder serviceRecordBuilder = preliminaryRequest.toBuilder()
 				.externalLineId(externalLineId)
 				.product(product)
 				.price(price)
@@ -795,11 +933,9 @@ public class XmlToOLCandsService
 	}
 
 	private String createExternalId(
-			@NonNull final JsonOLCandCreateRequestBuilder requestBuilder,
+			@NonNull final JsonOLCandCreateRequest request,
 			final int recordId)
 	{
-		final JsonOLCandCreateRequest request = requestBuilder.build();
-
 		final String externalHeaderId = assumeNotEmpty(request.getExternalHeaderId(), "request.externalHeaderId may not be empty; request={}", request);
 		return ""
 				+ externalHeaderId

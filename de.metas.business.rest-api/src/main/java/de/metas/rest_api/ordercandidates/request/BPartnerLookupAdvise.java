@@ -1,14 +1,10 @@
-package de.metas.invoice_gateway.spi.model;
-
-import de.metas.util.Check;
-import lombok.NonNull;
-import lombok.Value;
+package de.metas.rest_api.ordercandidates.request;
 
 /*
  * #%L
- * metasfresh-invoice_gateway.spi
+ * de.metas.business.rest-api
  * %%
- * Copyright (C) 2018 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -26,21 +22,7 @@ import lombok.Value;
  * #L%
  */
 
-@Value
-public class EAN
+public enum BPartnerLookupAdvise
 {
-	public static EAN of(@NonNull final String value)
-	{
-		return new EAN(value);
-	}
-
-	String value;
-
-	private EAN(@NonNull final String value)
-	{
-		Check.assumeNotEmpty(value, "The given EAN value may not be empty");
-
-		this.value = value.replaceAll(" ", "");
-		Check.assume(this.value.matches("[0-9]{13}"), "The given EAN value needs to consist of 13 digits");
-	}
+	GLN, ExternalId, Code
 }

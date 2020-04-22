@@ -276,6 +276,17 @@ public final class CollectionUtils
 				.collect(ImmutableList.toImmutableList());
 	}
 
+	public static <R, T> ImmutableSet<R> extractDistinctElementsIntoSet(
+			@NonNull final Collection<T> collection,
+			@NonNull final Function<T, R> extractFuntion)
+	{
+		return collection
+				.stream()
+				.map(extractFuntion)
+				.distinct()
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
 	/**
 	 * Converts the element of given <code>list</code> of type <code>InputType</code> to a list of <code>OutputType</code> by using given <code>converter</code>.
 	 *

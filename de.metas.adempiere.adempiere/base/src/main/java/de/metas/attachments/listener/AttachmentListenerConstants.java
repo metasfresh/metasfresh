@@ -27,9 +27,12 @@ public interface AttachmentListenerConstants
 	enum ListenerWorkStatus
 	{
 		SUCCESS("OK"),
+
+		NOT_APPLIED("NOT_APPLIED"),
+
 		FAILURE("ERROR");
 
-		private final String value;
+		private String value;
 
 		ListenerWorkStatus(final String value)
 		{

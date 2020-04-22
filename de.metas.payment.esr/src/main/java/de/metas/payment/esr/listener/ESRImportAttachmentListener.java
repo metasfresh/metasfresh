@@ -26,6 +26,7 @@ import ch.qos.logback.classic.Level;
 import de.metas.attachments.AttachmentEntry;
 import de.metas.attachments.listener.AttachmentListener;
 import de.metas.attachments.listener.AttachmentListenerConstants;
+import de.metas.javaclasses.model.I_AD_JavaClass;
 import de.metas.logging.LogManager;
 import de.metas.payment.esr.api.IESRImportBL;
 import de.metas.payment.esr.api.RunESRImportRequest;
@@ -40,6 +41,9 @@ import static de.metas.attachments.listener.AttachmentListenerConstants.Listener
 import static de.metas.payment.esr.ESRConstants.ESR_ASYNC_BATCH_DESC;
 import static de.metas.payment.esr.ESRConstants.ESR_ASYNC_BATCH_NAME;
 
+/**
+ * Important: when renaming this class, please make sure to also update its {@link I_AD_JavaClass} record.
+ */
 public class ESRImportAttachmentListener implements AttachmentListener
 {
 	private static final Logger logger = LogManager.getLogger(ESRImportAttachmentListener.class);
@@ -47,7 +51,7 @@ public class ESRImportAttachmentListener implements AttachmentListener
 	private final transient IESRImportBL esrImportBL = Services.get(IESRImportBL.class);
 
 	@Override
-	public AttachmentListenerConstants.ListenerWorkStatus afterPersist(
+	public AttachmentListenerConstants.ListenerWorkStatus afterRecordLinked(
 							final AttachmentEntry attachmentEntry,
 							final TableRecordReference tableRecordReference)
 	{
