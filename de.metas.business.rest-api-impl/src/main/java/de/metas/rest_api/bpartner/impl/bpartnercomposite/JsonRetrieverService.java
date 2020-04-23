@@ -177,7 +177,7 @@ public class JsonRetrieverService
 
 	private final transient GreetingRepository greetingRepository;
 
-	private final transient BPartnerCompositeCache cache;
+	private final transient BPartnerCompositeCacheByLookupKey cache;
 	private final transient RecordChangeLogRepository recordChangeLogRepository;
 
 	@Getter
@@ -198,7 +198,7 @@ public class JsonRetrieverService
 		this.recordChangeLogRepository = recordChangeLogRepository;
 		this.identifier = identifier;
 
-		this.cache = new BPartnerCompositeCache(identifier);
+		this.cache = new BPartnerCompositeCacheByLookupKey(identifier);
 	}
 
 	public Optional<JsonResponseComposite> getJsonBPartnerComposite(@NonNull final IdentifierString bpartnerIdentifier)

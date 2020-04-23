@@ -15,6 +15,8 @@ import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
+import org.slf4j.MDC;
+import org.slf4j.MDC.MDCCloseable;
 import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -200,16 +202,20 @@ class OrderCandidatesRestControllerImpl implements OrderCandidatesRestEndpoint
 			@NonNull final JsonOLCandCreateRequest json,
 			@NonNull final MasterdataProvider masterdataProvider)
 	{
-		final SpanMetadata spanMetadata = SpanMetadata.builder()
-				.name("CreateOrUpdateMasterDataSingle")
-				.type(Type.REST_API_PROCESSING.getCode())
-				.label("externalHeaderId", json.getExternalHeaderId())
-				.label("externalLineId", json.getExternalLineId())
-				.build();
+		try (final MDCCloseable extHeaderMDC = MDC.putCloseable("externalHeaderId", json.getExternalHeaderId());
+				final MDCCloseable extLineMDC = MDC.putCloseable("externalLineId", json.getExternalLineId()))
+		{
+			final SpanMetadata spanMetadata = SpanMetadata.builder()
+					.name("CreateOrUpdateMasterDataSingle")
+					.type(Type.REST_API_PROCESSING.getCode())
+					.label("externalHeaderId", json.getExternalHeaderId())
+					.label("externalLineId", json.getExternalLineId())
+					.build();
 
-		perfMonService.monitorSpan(
-				() -> createOrUpdateMasterdata0(json, masterdataProvider),
-				spanMetadata);
+			perfMonService.monitorSpan(
+					() -> createOrUpdateMasterdata0(json, masterdataProvider),
+					spanMetadata);
+		}
 	}
 
 	private void createOrUpdateMasterdata0(
@@ -225,7 +231,6 @@ class OrderCandidatesRestControllerImpl implements OrderCandidatesRestEndpoint
 
 		final ProductInfo productInfo = masterdataProvider.getCreateProductInfo(json.getProduct(), orgId);
 
-		//
 		// Create product prices if needed
 		{
 			final BPartnerInfo billBPartnerInfoEffective = CoalesceUtil.coalesce(billBPartnerInfo, bpartnerInfo);
@@ -244,7 +249,6 @@ class OrderCandidatesRestControllerImpl implements OrderCandidatesRestEndpoint
 				logger.debug("Skip creating product price for {} because {}", productInfo, optionalRequest.getExplanation());
 			}
 		}
-
 	}
 
 	private ExplainedOptional<ProductPriceCreateRequest> createProductPriceCreateRequest(

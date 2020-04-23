@@ -60,7 +60,7 @@ public class BPartnerCompositeRepository
 {
 	private final IBPartnerDAO bpartnersRepo = Services.get(IBPartnerDAO.class);
 	private final LogEntriesRepository recordChangeLogRepository;
-	private final BPartnerCompositeCache bpartnerCompositeCache = new BPartnerCompositeCache();
+	private final BPartnerCompositeCacheById bpartnerCompositeCache = new BPartnerCompositeCacheById();
 
 	public BPartnerCompositeRepository(@NonNull final LogEntriesRepository recordChangeLogRepository)
 	{

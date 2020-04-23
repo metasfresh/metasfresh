@@ -33,6 +33,7 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
 import org.adempiere.util.jmx.JMXRegistry;
 import org.adempiere.util.jmx.JMXRegistry.OnJMXAlreadyExistsPolicy;
+import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.Adempiere;
 import org.slf4j.Logger;
@@ -106,7 +107,7 @@ public final class CacheMgt
 
 	public void register(@NonNull final CacheInterface instance)
 	{
-		try (final MDCCloseable cacheIdMDC = CacheMDC.putCache(instance))
+		try (final IAutoCloseable cacheIdMDC = CacheMDC.putCache(instance))
 		{
 			final Boolean registerWeak = null; // auto
 			register(instance, registerWeak);
@@ -115,7 +116,7 @@ public final class CacheMgt
 
 	private void register(@NonNull final CacheInterface cache, final Boolean registerWeak)
 	{
-		try (final MDCCloseable cacheIdMDC = CacheMDC.putCache(cache))
+		try (final IAutoCloseable cacheIdMDC = CacheMDC.putCache(cache))
 		{
 			// FIXME: consider register weak flag
 			final Set<CacheLabel> labels = cache.getLabels();
@@ -129,7 +130,7 @@ public final class CacheMgt
 
 	public void unregister(final CacheInterface cache)
 	{
-		try (final MDCCloseable cacheIdMDC = CacheMDC.putCache(cache))
+		try (final IAutoCloseable cacheIdMDC = CacheMDC.putCache(cache))
 		{
 			cache.getLabels()
 					.stream()
@@ -585,7 +586,7 @@ public final class CacheMgt
 
 		public void addCache(@NonNull final CacheInterface cache)
 		{
-			try (final MDCCloseable cacheIdMDC = CacheMDC.putCache(cache))
+			try (final IAutoCloseable cacheIdMDC = CacheMDC.putCache(cache))
 			{
 				caches.put(cache.getCacheId(), cache);
 			}
@@ -593,7 +594,7 @@ public final class CacheMgt
 
 		public void removeCache(@NonNull final CacheInterface cache)
 		{
-			try (final MDCCloseable cacheIdMDC = CacheMDC.putCache(cache))
+			try (final IAutoCloseable cacheIdMDC = CacheMDC.putCache(cache))
 			{
 				caches.remove(cache.getCacheId());
 			}
@@ -629,7 +630,7 @@ public final class CacheMgt
 
 		private static final long invalidateNoFail(final CacheInterface cacheInstance, final TableRecordReference recordRef)
 		{
-			try (final MDCCloseable cacheIdMDC = CacheMDC.putCache(cacheInstance))
+			try (final IAutoCloseable cacheIdMDC = CacheMDC.putCache(cacheInstance))
 			{
 				return cacheInstance.resetForRecordId(recordRef);
 			}
@@ -643,7 +644,7 @@ public final class CacheMgt
 
 		private static final long invalidateNoFail(@Nullable final CacheInterface cacheInstance)
 		{
-			try (final MDCCloseable cacheIdMDC = CacheMDC.putCache(cacheInstance))
+			try (final IAutoCloseable cacheIdMDC = CacheMDC.putCache(cacheInstance))
 			{
 				if (cacheInstance == null)
 				{
