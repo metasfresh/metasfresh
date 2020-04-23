@@ -33,6 +33,7 @@ import lombok.ToString;
 import lombok.Value;
 
 import javax.annotation.Nullable;
+import java.time.LocalDate;
 
 @Value
 @Builder
@@ -49,13 +50,16 @@ public class ImportIssuesRequest
 	String repoOwner;
 
 	@NonNull
-	private ExternalProjectType externalProjectType;
+	ExternalProjectType externalProjectType;
 
 	@NonNull
-	private OrgId orgId;
+	OrgId orgId;
 
 	@Nullable
-	private ProjectId projectId;
+	ProjectId projectId;
+
+	@Nullable
+	LocalDate dateFrom;
 
 	@Nullable
 	ImmutableList<String> issueNoList;

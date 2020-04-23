@@ -35,6 +35,7 @@ import org.junit.rules.ExpectedException;
 import static de.metas.serviceprovider.TestConstants.MOCK_EXTERNAL_REFERENCE;
 import static de.metas.serviceprovider.TestConstants.MOCK_EXTERNAL_REFERENCE_TYPE;
 import static de.metas.serviceprovider.TestConstants.MOCK_EXTERNAL_SYSTEM;
+import static de.metas.serviceprovider.TestConstants.MOCK_ORG_ID;
 import static de.metas.serviceprovider.TestConstants.MOCK_RECORD_ID;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -110,6 +111,7 @@ public class ExternalReferenceRepositoryTest
 	private ExternalReference getMockExternalReference()
 	{
 		return ExternalReference.builder()
+				.orgId(MOCK_ORG_ID)
 				.externalReference(MOCK_EXTERNAL_REFERENCE)
 				.externalReferenceType(MOCK_EXTERNAL_REFERENCE_TYPE)
 				.externalSystem(MOCK_EXTERNAL_SYSTEM)

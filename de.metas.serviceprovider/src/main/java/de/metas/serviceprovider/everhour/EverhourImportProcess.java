@@ -27,6 +27,7 @@ import de.metas.process.Param;
 import de.metas.serviceprovider.timebooking.importer.ImportTimeBookingsRequest;
 import de.metas.serviceprovider.timebooking.importer.TimeBookingsImporterService;
 import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.SpringContextHolder;
 
@@ -37,27 +38,32 @@ import static de.metas.serviceprovider.everhour.EverhourImportConstants.Everhour
 public class EverhourImportProcess extends JavaProcess
 {
 	@Param(parameterName = "DateFrom")
-	private LocalDate startDate;
+	private LocalDate dateFrom;
 
 	@Param(parameterName = "DateTo")
-	private LocalDate endDate;
+	private LocalDate dateTo;
 
 	private final EverhourImporterService everhourImporterService = SpringContextHolder.instance.getBean(EverhourImporterService.class);
 	private final TimeBookingsImporterService timeBookingsImporterService = SpringContextHolder.instance.getBean(TimeBookingsImporterService.class);
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
-
 
 	@Override protected String doIt() throws Exception
 	{
 		final ImportTimeBookingsRequest timeBookingsRequest = ImportTimeBookingsRequest
 				.builder()
 				.authToken(sysConfigBL.getValue(ACCESS_TOKEN.getName()))
-				.startDate(startDate)
-				.endDate(endDate)
+				.startDate(dateFrom)
+				.endDate(dateTo)
 				.build();
 
 		timeBookingsImporterService.importTimeBookings(everhourImporterService,timeBookingsRequest);
 
 		return MSG_OK;
+	}
+
+	protected void overwriteParameters(@NonNull final LocalDate dateFrom, @NonNull final LocalDate dateTo)
+	{
+		this.dateFrom = dateFrom;
+		this.dateTo = dateTo;
 	}
 }
