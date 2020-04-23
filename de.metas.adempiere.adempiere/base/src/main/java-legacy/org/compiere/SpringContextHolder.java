@@ -10,6 +10,7 @@ import javax.annotation.Nullable;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.reflect.ClassReference;
 import org.slf4j.Logger;
+import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.context.ApplicationContext;
 
 import de.metas.logging.LogManager;
@@ -108,7 +109,7 @@ public final class SpringContextHolder
 			final T beanImpl = (T)junitRegisteredBeans.get(ClassReference.of(requiredType));
 			if (beanImpl != null)
 			{
-				logger.info("JUnit testingL Returning manually registered bean: {}", beanImpl);
+				logger.info("JUnit testing Returning manually registered bean: {}", beanImpl);
 				return beanImpl;
 			}
 		}
@@ -134,7 +135,19 @@ public final class SpringContextHolder
 		{
 			return defaultImplementation;
 		}
-		return getBean(requiredType);
+
+		try
+		{
+			return springApplicationContext.getBean(requiredType);
+		}
+		catch (final NoSuchBeanDefinitionException e)
+		{
+			if (Adempiere.isUnitTestMode())
+			{
+				return defaultImplementation; // otherwise we would need to register NoopPerformanceMonitoringService for >800 unit tests
+			}
+			throw e;
+		}
 	}
 
 	/**
