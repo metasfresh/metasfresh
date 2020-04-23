@@ -45,23 +45,23 @@ import lombok.experimental.UtilityClass;
  * @author ts
  */
 @UtilityClass
-public final class SystemTime
+public class SystemTime
 {
-	private static final TimeSource defaultTimeSource = () -> System.currentTimeMillis();
+	private final TimeSource defaultTimeSource = () -> System.currentTimeMillis();
 
-	private static TimeSource timeSource;
+	private TimeSource timeSource;
 
-	public static long millis()
+	public long millis()
 	{
 		return getTimeSource().millis();
 	}
 
-	public static ZoneId zoneId()
+	public ZoneId zoneId()
 	{
 		return ZoneId.systemDefault();
 	}
 
-	public static GregorianCalendar asGregorianCalendar()
+	public GregorianCalendar asGregorianCalendar()
 	{
 
 		final GregorianCalendar cal = new GregorianCalendar();
@@ -70,44 +70,44 @@ public final class SystemTime
 		return cal;
 	}
 
-	public static Date asDate()
+	public Date asDate()
 	{
 		return new Date(millis());
 	}
 
-	public static Timestamp asTimestamp()
+	public Timestamp asTimestamp()
 	{
 
 		return new Timestamp(millis());
 	}
 
-	public static Instant asInstant()
+	public Instant asInstant()
 	{
 		return Instant.ofEpochMilli(millis());
 	}
 
-	public static LocalDateTime asLocalDateTime()
+	public LocalDateTime asLocalDateTime()
 	{
 		return asZonedDateTime().toLocalDateTime();
 	}
 
 	@NonNull
-	public static LocalDate asLocalDate()
+	public LocalDate asLocalDate()
 	{
 		return asZonedDateTime().toLocalDate();
 	}
 
-	public static ZonedDateTime asZonedDateTime()
+	public ZonedDateTime asZonedDateTime()
 	{
 		return asZonedDateTime(zoneId());
 	}
 
-	public static ZonedDateTime asZonedDateTimeAtStartOfDay()
+	public ZonedDateTime asZonedDateTimeAtStartOfDay()
 	{
 		return asZonedDateTime(zoneId()).truncatedTo(ChronoUnit.DAYS);
 	}
 
-	public static ZonedDateTime asZonedDateTime(@NonNull final ZoneId zoneId)
+	public ZonedDateTime asZonedDateTime(@NonNull final ZoneId zoneId)
 	{
 		return asInstant().atZone(zoneId);
 	}
@@ -115,7 +115,7 @@ public final class SystemTime
 	/**
 	 * Same as {@link #asTimestamp()} but the returned date will be truncated to DAY.
 	 */
-	public static Timestamp asDayTimestamp()
+	public Timestamp asDayTimestamp()
 	{
 		final GregorianCalendar cal = asGregorianCalendar();
 		cal.set(Calendar.HOUR_OF_DAY, 0);
@@ -129,7 +129,7 @@ public final class SystemTime
 	 * "Why not go with {@link #asDayTimestamp()}" you ask?
 	 * See https://stackoverflow.com/questions/8929242/compare-date-object-with-a-timestamp-in-java
 	 */
-	public static Date asDayDate()
+	public Date asDayDate()
 	{
 		final GregorianCalendar cal = asGregorianCalendar();
 		cal.set(Calendar.HOUR_OF_DAY, 0);
@@ -139,7 +139,7 @@ public final class SystemTime
 		return new Date(cal.getTimeInMillis());
 	}
 
-	private static TimeSource getTimeSource()
+	private TimeSource getTimeSource()
 	{
 		return timeSource == null ? defaultTimeSource : timeSource;
 	}
@@ -148,7 +148,7 @@ public final class SystemTime
 	 * After invocation of this method, the time returned will be the system
 	 * time again.
 	 */
-	public static void resetTimeSource()
+	public void resetTimeSource()
 	{
 		timeSource = null;
 	}
@@ -157,7 +157,7 @@ public final class SystemTime
 	 * @param newTimeSource the given TimeSource will be used for the time returned by the
 	 *                      methods of this class (unless it is null).
 	 */
-	public static void setTimeSource(@Nullable final TimeSource newTimeSource)
+	public void setTimeSource(@Nullable final TimeSource newTimeSource)
 	{
 		timeSource = newTimeSource;
 	}
