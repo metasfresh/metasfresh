@@ -68,13 +68,24 @@ public class PaymentReconcileReference
 
 	public static PaymentReconcileReference bankStatementLineRef(@NonNull final BankStatementAndLineAndRefId bankStatementLineRefId)
 	{
+		return bankStatementLineRef(
+				bankStatementLineRefId.getBankStatementId(),
+				bankStatementLineRefId.getBankStatementLineId(),
+				bankStatementLineRefId.getBankStatementLineRefId());
+	}
+
+	public static PaymentReconcileReference bankStatementLineRef(
+			@NonNull final BankStatementId bankStatementId,
+			@NonNull final BankStatementLineId bankStatementLineId,
+			@NonNull final BankStatementLineRefId bankStatementLineRefId)
+	{
 		final PaymentId reversalId = null;
 
 		return new PaymentReconcileReference(
 				Type.BANK_STATEMENT_LINE_REF,
-				bankStatementLineRefId.getBankStatementId(),
-				bankStatementLineRefId.getBankStatementLineId(),
-				bankStatementLineRefId.getBankStatementLineRefId(),
+				bankStatementId,
+				bankStatementLineId,
+				bankStatementLineRefId,
 				reversalId);
 	}
 

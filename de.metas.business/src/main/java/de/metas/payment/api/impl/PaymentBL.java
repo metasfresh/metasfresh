@@ -13,6 +13,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 
@@ -34,10 +35,14 @@ import org.compiere.util.TimeUtil;
 import org.compiere.util.TrxRunnableAdapter;
 import org.slf4j.Logger;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.allocation.api.IAllocationBL;
+import de.metas.banking.BankStatementId;
+import de.metas.banking.BankStatementLineId;
+import de.metas.banking.BankStatementLineRefId;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.ICurrencyBL;
@@ -571,7 +576,11 @@ public class PaymentBL implements IPaymentBL
 	{
 		if (payment.isReconciled())
 		{
-			throw new AdempiereException("Payment was already reconciled");
+			final PaymentReconcileReference currentReconcileRef = extractPaymentReconcileReference(payment);
+			throw new AdempiereException("Payment was already reconciled")
+					.setParameter("reconcileRef", reconcileRef)
+					.setParameter("currentReconcileRef", currentReconcileRef)
+					.appendParametersToMessage();
 		}
 
 		payment.setIsReconciled(true);
@@ -591,6 +600,18 @@ public class PaymentBL implements IPaymentBL
 		}
 		else if (PaymentReconcileReference.Type.REVERSAL.equals(type))
 		{
+			final DocStatus docStatus = DocStatus.ofNullableCodeOrUnknown(payment.getDocStatus());
+			if (!docStatus.isReversed())
+			{
+				throw new AdempiereException("Payment shall be reversed but it's DocStatus is `" + docStatus + "`: " + payment);
+			}
+
+			final PaymentId reversalId = PaymentId.ofRepoIdOrNull(payment.getReversal_ID());
+			if (!Objects.equals(reversalId, reconcileRef.getReversalId()))
+			{
+				throw new AdempiereException("Payment shall be reversed by `" + reconcileRef.getReversalId() + "` but it was reversed by `" + reversalId + "`: " + payment);
+			}
+
 			payment.setC_BankStatement_ID(-1);
 			payment.setC_BankStatementLine_ID(-1);
 			payment.setC_BankStatementLine_Ref_ID(-1);
@@ -601,5 +622,35 @@ public class PaymentBL implements IPaymentBL
 		}
 
 		paymentDAO.save(payment);
+	}
+
+	@VisibleForTesting
+	static PaymentReconcileReference extractPaymentReconcileReference(final I_C_Payment payment)
+	{
+		try
+		{
+			final DocStatus docStatus = DocStatus.ofNullableCodeOrUnknown(payment.getDocStatus());
+			if (docStatus.isReversed())
+			{
+				final PaymentId reversalId = PaymentId.ofRepoId(payment.getReversal_ID());
+				return PaymentReconcileReference.reversal(reversalId);
+			}
+
+			final BankStatementId bankStatementId = BankStatementId.ofRepoId(payment.getC_BankStatement_ID());
+			final BankStatementLineId bankStatementLineId = BankStatementLineId.ofRepoId(payment.getC_BankStatementLine_ID());
+			final BankStatementLineRefId bankStatementLineRefId = BankStatementLineRefId.ofRepoIdOrNull(payment.getC_BankStatementLine_Ref_ID());
+			if (bankStatementLineRefId == null)
+			{
+				return PaymentReconcileReference.bankStatementLine(bankStatementId, bankStatementLineId);
+			}
+			else
+			{
+				return PaymentReconcileReference.bankStatementLineRef(bankStatementId, bankStatementLineId, bankStatementLineRefId);
+			}
+		}
+		catch (final Exception ex)
+		{
+			throw new AdempiereException("Failed extracting payment reconcile reference from " + payment, ex);
+		}
 	}
 }
