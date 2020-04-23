@@ -1,6 +1,6 @@
 de.metas.rest_api.ordercandidates.impl.OrderCandidatesRestControllerImplTest.billToDefault_exitingBPartner=[
   {
-    "id": 100035,
+    "id": 100039,
     "externalLineId": "65e71492fecca21fdc3e68e5f9bd7e32-1-2-1",
     "externalHeaderId": "65e71492fecca21fdc3e68e5f9bd7e32-1-2",
     "poReference": "1000172362-1-2",
@@ -49,7 +49,7 @@ de.metas.rest_api.ordercandidates.impl.OrderCandidatesRestControllerImplTest.bil
         }
       },
       "contact": {
-        "metasfreshId": 100026,
+        "metasfreshId": 100030,
         "externalId": "billToId-1-2",
         "metasfreshBPartnerId": 100020,
         "active": true,
@@ -112,7 +112,7 @@ de.metas.rest_api.ordercandidates.impl.OrderCandidatesRestControllerImplTest.bil
         }
       },
       "contact": {
-        "metasfreshId": 100026,
+        "metasfreshId": 100030,
         "externalId": "billToId-1-2",
         "metasfreshBPartnerId": 100020,
         "active": true,
@@ -175,7 +175,7 @@ de.metas.rest_api.ordercandidates.impl.OrderCandidatesRestControllerImplTest.bil
         }
       },
       "contact": {
-        "metasfreshId": 100028,
+        "metasfreshId": 100032,
         "externalId": "shipToId-1-2",
         "metasfreshBPartnerId": 100020,
         "active": true,

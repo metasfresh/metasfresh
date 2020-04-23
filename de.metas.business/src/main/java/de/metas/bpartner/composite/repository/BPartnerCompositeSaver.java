@@ -22,6 +22,7 @@ import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Location;
 import org.compiere.model.I_C_Postal;
 import org.compiere.util.Env;
+import org.slf4j.MDC.MDCCloseable;
 
 import com.google.common.collect.ImmutableList;
 
@@ -46,6 +47,7 @@ import de.metas.interfaces.I_C_BPartner;
 import de.metas.location.CountryId;
 import de.metas.location.ICountryDAO;
 import de.metas.location.impl.PostalQueryFilter;
+import de.metas.logging.TableRecordMDC;
 import de.metas.security.PermissionServiceFactories;
 import de.metas.util.Services;
 import de.metas.util.lang.ExternalId;
@@ -93,14 +95,15 @@ final class BPartnerCompositeSaver
 		}
 
 		final BPartner bpartner = bpartnerComposite.getBpartner();
-		saveBPartner(bpartner);
-
+		try(final MDCCloseable bpartnerRecordMDC = TableRecordMDC.putTableRecordReference(I_C_BPartner.Table_Name, bpartner.getId())){
+		saveBPartner(bpartner);}
+		try(final MDCCloseable bpartnerRecordMDC = TableRecordMDC.putTableRecordReference(I_C_BPartner.Table_Name, bpartner.getId())){
 		saveBPartnerLocations(bpartner.getId(), bpartnerComposite.getLocations());
 
 		saveBPartnerContacts(bpartner.getId(), bpartnerComposite.getContacts());
 
 		saveBPartnerBankAccounts(bpartner.getId(), bpartnerComposite.getBankAccounts());
-	}
+	}}
 
 	private void saveBPartner(@NonNull final BPartner bpartner)
 	{
@@ -175,7 +178,7 @@ final class BPartnerCompositeSaver
 	private void saveBPartnerLocation(
 			@NonNull final BPartnerId bpartnerId,
 			@NonNull final BPartnerLocation bpartnerLocation)
-	{
+	{	try(final MDCCloseable bpartnerLocationRecordMDC = TableRecordMDC.putTableRecordReference(I_C_BPartner_Location.Table_Name, bpartnerLocation.getId())){
 		final I_C_BPartner_Location bpartnerLocationRecord = loadOrNew(bpartnerLocation.getId(), I_C_BPartner_Location.class);
 		bpartnerLocationRecord.setIsActive(bpartnerLocation.isActive());
 		bpartnerLocationRecord.setC_BPartner_ID(bpartnerId.getRepoId());
@@ -304,7 +307,7 @@ final class BPartnerCompositeSaver
 		saveRecord(bpartnerLocationRecord);
 
 		final BPartnerLocationId bpartnerLocationId = BPartnerLocationId.ofRepoId(bpartnerLocationRecord.getC_BPartner_ID(), bpartnerLocationRecord.getC_BPartner_Location_ID());
-		bpartnerLocation.setId(bpartnerLocationId);
+		bpartnerLocation.setId(bpartnerLocationId);}
 	}
 
 	private void saveBPartnerContacts(
@@ -335,7 +338,7 @@ final class BPartnerCompositeSaver
 	private void saveBPartnerContact(
 			@NonNull final BPartnerId bpartnerId,
 			@NonNull final BPartnerContact bpartnerContact)
-	{
+	{try(final MDCCloseable bpartnerContactRecordMDC = TableRecordMDC.putTableRecordReference(I_AD_User.Table_Name, bpartnerContact.getId())){
 		final I_AD_User bpartnerContactRecord = loadOrNew(bpartnerContact.getId(), I_AD_User.class);
 		bpartnerContactRecord.setExternalId(ExternalId.toValue(bpartnerContact.getExternalId()));
 		bpartnerContactRecord.setIsActive(bpartnerContact.isActive());
@@ -374,7 +377,7 @@ final class BPartnerCompositeSaver
 
 		final BPartnerContactId bpartnerContactId = BPartnerContactId.ofRepoId(bpartnerId, bpartnerContactRecord.getAD_User_ID());
 
-		bpartnerContact.setId(bpartnerContactId);
+		bpartnerContact.setId(bpartnerContactId);}
 	}
 
 	private void saveBPartnerBankAccounts(
@@ -395,7 +398,9 @@ final class BPartnerCompositeSaver
 	private void saveBPartnerBankAccount(
 			@NonNull final BPartnerId bpartnerId,
 			@NonNull final BPartnerBankAccount bankAccount)
-	{
+	{try(final MDCCloseable bankAccountRecordMDC = TableRecordMDC.putTableRecordReference(I_C_BP_BankAccount.Table_Name, bankAccount.getId())){
+
+
 		final I_C_BP_BankAccount record = loadOrNew(bankAccount.getId(), I_C_BP_BankAccount.class);
 		record.setC_BPartner_ID(bpartnerId.getRepoId());
 
@@ -408,7 +413,7 @@ final class BPartnerCompositeSaver
 
 		final BPartnerBankAccountId id = BPartnerBankAccountId.ofRepoId(bpartnerId, record.getC_BP_BankAccount_ID());
 
-		bankAccount.setId(id);
+		bankAccount.setId(id);}
 	}
 
 	private void assertCanCreateOrUpdate(@NonNull final Object record)

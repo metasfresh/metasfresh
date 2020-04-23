@@ -979,6 +979,13 @@ public class OrderCandidatesRestControllerImplTest
 		// then
 		final JsonOLCand jsonOLCand = assertResultOKForTest_1_JSON(result);
 		expect(jsonOLCand).toMatchSnapshot();
+
+		final List<I_C_BPartner_Location> bplRecords = POJOLookupMap.get().getRecords(I_C_BPartner_Location.class);
+		assertThat(bplRecords)
+				.extracting(COLUMNNAME_ExternalId, "shipTo", "billTo", "billToDefault")
+				.containsExactlyInAnyOrder(
+						tuple("billToId-1-2", false, true, true),
+						tuple("shipToId-1-2", true, false, false));
 	}
 
 	@Test
@@ -1003,7 +1010,8 @@ public class OrderCandidatesRestControllerImplTest
 				.countryId(countryId_DE)
 				.shipTo(false)
 				.billTo(true)
-				.billToDefault(true)
+				.billToDefault(false)
+				.shipToDefault(false)
 				.build();
 		testMasterdata.prepareBPartnerLocation().bpartnerId(bpartnerId)
 				.externalId("shipToId-1-2")
@@ -1011,6 +1019,23 @@ public class OrderCandidatesRestControllerImplTest
 				.shipTo(true)
 				.billTo(false)
 				.billToDefault(false)
+				.shipToDefault(false)
+				.build();
+		testMasterdata.prepareBPartnerLocation().bpartnerId(bpartnerId)
+				.externalId("billToId-1-2_alt")
+				.countryId(countryId_DE)
+				.shipTo(false)
+				.billTo(true)
+				.billToDefault(false)
+				.shipToDefault(false)
+				.build();
+		testMasterdata.prepareBPartnerLocation().bpartnerId(bpartnerId)
+				.externalId("shipToId-1-2_alt")
+				.countryId(countryId_DE)
+				.shipTo(true)
+				.billTo(false)
+				.billToDefault(false)
+				.shipToDefault(false)
 				.build();
 
 		SystemTime.setTimeSource(() -> 1584400036193L + 10000); // some later time, such that the bpartner's creation was in the past.
@@ -1023,11 +1048,22 @@ public class OrderCandidatesRestControllerImplTest
 		// then
 		final JsonOLCand jsonOLCand = assertResultOKForTest_1_JSON(result);
 		expect(jsonOLCand).toMatchSnapshot();
+
+		final List<I_C_BPartner_Location> bplRecords = POJOLookupMap.get().getRecords(I_C_BPartner_Location.class);
+		assertThat(bplRecords)
+				.extracting(COLUMNNAME_ExternalId, "shipTo", "billTo", "billToDefault")
+				.containsExactlyInAnyOrder(
+						tuple("billToId-1-2", false, true, true),
+						tuple("shipToId-1-2", true, false, false),
+						tuple("billToId-1-2_alt", false, true, false),
+						tuple("shipToId-1-2_alt", true, false, false));
+
 	}
 
 	private JsonOLCand assertResultOKForTest_1_JSON(@NonNull final ResponseEntity<JsonOLCandCreateBulkResponse> result)
 	{
 		assertThat(result.getBody().getResult()).hasSize(1);
+
 		final JsonOLCand jsonOLCand = result.getBody().getResult().get(0);
 		assertThat(jsonOLCand.getBpartner().getLocation())
 				.extracting("billTo", "billToDefault", "shipTo")
@@ -1039,12 +1075,6 @@ public class OrderCandidatesRestControllerImplTest
 				.extracting("billTo", "billToDefault", "shipTo")
 				.containsExactly(false, false, true);
 
-		final List<I_C_BPartner_Location> olCandRecords = POJOLookupMap.get().getRecords(I_C_BPartner_Location.class);
-		assertThat(olCandRecords).hasSize(2)
-				.extracting(COLUMNNAME_ExternalId, "shipTo", "billTo", "billToDefault")
-				.containsExactlyInAnyOrder(
-						tuple("billToId-1-2", false, true, true),
-						tuple("shipToId-1-2", true, false, false));
 		return jsonOLCand;
 	}
 
