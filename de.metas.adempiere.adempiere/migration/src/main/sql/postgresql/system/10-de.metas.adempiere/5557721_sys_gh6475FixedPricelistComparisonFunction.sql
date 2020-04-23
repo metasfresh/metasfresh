@@ -87,9 +87,9 @@ FROM M_ProductPrice pp
          LEFT OUTER JOIN m_hu_pi_item_product hupip ON
     case
         when pp.m_hu_pi_item_product_id is null then
-                    bp_ip.m_hu_pi_item_product_ID = hupip.m_hu_pi_item_product_id and hupip.isActive = 'Y'
+            bp_ip.m_hu_pi_item_product_ID = hupip.m_hu_pi_item_product_id and hupip.isActive = 'Y'
         else
-                    bp_ip.m_product_id = hupip.m_product_id and hupip.isActive = 'Y'
+            bp_ip.m_product_id = hupip.m_product_id and hupip.isActive = 'Y'
         end
          LEFT OUTER JOIN m_hu_pi_item it ON hupip.M_HU_PI_Item_ID = it.M_HU_PI_Item_ID AND it.isActive = 'Y'
          LEFT OUTER JOIN m_hu_pi_item pmit ON it.m_hu_pi_version_id = pmit.m_hu_pi_version_id AND pmit.itemtype::TEXT = 'PM'::TEXT AND pmit.isActive = 'Y'
