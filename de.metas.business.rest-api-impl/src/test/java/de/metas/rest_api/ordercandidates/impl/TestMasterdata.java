@@ -1,5 +1,6 @@
 package de.metas.rest_api.ordercandidates.impl;
 
+import static de.metas.util.lang.CoalesceUtil.coalesce;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
@@ -7,13 +8,14 @@ import java.time.LocalDate;
 
 import javax.annotation.Nullable;
 
+import org.adempiere.ad.wrapper.POJOLookupMap;
+import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.pricing.model.I_C_PricingRule;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.model.I_M_Warehouse;
 import org.compiere.model.I_C_BP_Group;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
-import org.compiere.model.I_C_Country;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Location;
 import org.compiere.model.I_C_TaxCategory;
@@ -70,14 +72,6 @@ import lombok.NonNull;
 @Ignore
 final class TestMasterdata
 {
-	public CountryId createCountry(final String countryCode)
-	{
-		final I_C_Country record = newInstance(I_C_Country.class);
-		record.setCountryCode(countryCode);
-		saveRecord(record);
-		return CountryId.ofRepoId(record.getC_Country_ID());
-	}
-
 	public void createDataSource(final String internalName)
 	{
 		final I_AD_InputDataSource dataSourceRecord = newInstance(I_AD_InputDataSource.class);
@@ -96,9 +90,11 @@ final class TestMasterdata
 	@Builder(builderMethodName = "prepareBPartnerAndLocation", builderClassName = "_BPartnerAndLocationBuilder")
 	private BPartnerLocationId createBPartnerAndLocation(
 			@NonNull final String bpValue,
+			@Nullable final String bpExternalId,
 			@Nullable final PricingSystemId salesPricingSystemId,
 			@NonNull final CountryId countryId,
-			@Nullable final GLN gln)
+			@Nullable final GLN gln,
+			@Nullable final String bpLocationExternalId)
 	{
 
 		final I_C_BP_Group groupRecord = newInstance(I_C_BP_Group.class);
@@ -106,8 +102,10 @@ final class TestMasterdata
 		saveRecord(groupRecord);
 
 		final I_C_BPartner bpRecord = newInstance(I_C_BPartner.class);
+		POJOWrapper.setInstanceName(bpRecord, bpValue);
 		bpRecord.setValue(bpValue);
 		bpRecord.setName(bpValue + "-name");
+		bpRecord.setExternalId(bpExternalId);
 		bpRecord.setIsCustomer(true);
 		bpRecord.setM_PricingSystem_ID(PricingSystemId.toRepoId(salesPricingSystemId));
 		bpRecord.setPaymentRule(PaymentRule.OnCredit.getCode());
@@ -119,21 +117,69 @@ final class TestMasterdata
 				.bpartnerId(BPartnerId.ofRepoId(bpRecord.getC_BPartner_ID()))
 				.countryId(countryId)
 				.gln(gln)
+				.externalId(bpLocationExternalId)
 				.build();
+	}
+
+	@Builder(builderMethodName = "prepareBPartner", builderClassName = "_BPartnerBuilder")
+	private BPartnerId createBPartner(
+			@NonNull final String bpValue,
+			@Nullable final String bpExternalId,
+			@Nullable final String bpGroupExistingName,
+			@Nullable final PricingSystemId salesPricingSystemId)
+	{
+		final I_C_BP_Group groupRecord;
+		if (bpGroupExistingName != null)
+		{
+			groupRecord = POJOLookupMap.get()
+					.getFirstOnly(I_C_BP_Group.class, bp -> bp.getName().equals(bpGroupExistingName));
+		}
+		else
+		{
+			groupRecord = newInstance(I_C_BP_Group.class);
+			groupRecord.setName(bpValue + "-name");
+			saveRecord(groupRecord);
+		}
+		final I_C_BPartner bpRecord = newInstance(I_C_BPartner.class);
+		POJOWrapper.setInstanceName(bpRecord, bpValue);
+		bpRecord.setValue(bpValue);
+		bpRecord.setName(bpValue + "-name");
+		bpRecord.setExternalId(bpExternalId);
+		bpRecord.setIsCustomer(true);
+		bpRecord.setM_PricingSystem_ID(PricingSystemId.toRepoId(salesPricingSystemId));
+		bpRecord.setPaymentRule(PaymentRule.OnCredit.getCode());
+		bpRecord.setPaymentRulePO(PaymentRule.OnCredit.getCode());
+		bpRecord.setC_BP_Group_ID(groupRecord.getC_BP_Group_ID());
+		saveRecord(bpRecord);
+
+		return BPartnerId.ofRepoId(bpRecord.getC_BPartner_ID());
 	}
 
 	@Builder(builderMethodName = "prepareBPartnerLocation", builderClassName = "_BPartnerLocationBuilder")
 	private BPartnerLocationId createBPartnerLocation(
 			@NonNull final BPartnerId bpartnerId,
 			@NonNull final CountryId countryId,
-			@Nullable final GLN gln)
+			@Nullable final GLN gln,
+			@Nullable final String externalId,
+			final boolean billTo,
+			final boolean billToDefault,
+			final boolean shipTo,
+			final boolean shipToDefault)
 	{
 		final LocationId locationId = createLocation(countryId);
 
 		final I_C_BPartner_Location bplRecord = newInstance(I_C_BPartner_Location.class);
+
 		bplRecord.setC_BPartner_ID(bpartnerId.getRepoId());
 		bplRecord.setC_Location_ID(locationId.getRepoId());
 		bplRecord.setGLN(gln != null ? gln.getCode() : null);
+		bplRecord.setExternalId(externalId);
+		bplRecord.setIsBillTo(billTo);
+		bplRecord.setIsBillToDefault(billToDefault);
+		bplRecord.setIsShipTo(shipTo);
+		bplRecord.setIsShipToDefault(shipToDefault);
+
+		POJOWrapper.setInstanceName(bplRecord, coalesce(bplRecord.getGLN(), bplRecord.getExternalId()));
 		saveRecord(bplRecord);
 
 		return BPartnerLocationId.ofRepoId(bplRecord.getC_BPartner_ID(), bplRecord.getC_BPartner_Location_ID());

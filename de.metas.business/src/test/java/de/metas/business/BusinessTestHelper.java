@@ -1,5 +1,6 @@
 package de.metas.business;
 
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
@@ -13,6 +14,7 @@ import org.adempiere.service.ClientId;
 import org.compiere.model.I_C_BP_Group;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_Country;
 import org.compiere.model.I_C_Currency;
 import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_C_TaxCategory;
@@ -23,6 +25,7 @@ import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.X_C_UOM;
 
 import de.metas.currency.CurrencyCode;
+import de.metas.location.CountryId;
 import de.metas.product.ProductId;
 import de.metas.tax.api.ITaxDAO;
 import de.metas.tax.api.TaxCategoryId;
@@ -68,6 +71,15 @@ public final class BusinessTestHelper
 
 	private BusinessTestHelper()
 	{
+	}
+
+	public static CountryId createCountry(@NonNull final String countryCode)
+	{
+		final I_C_Country record = newInstance(I_C_Country.class);
+		record.setCountryCode(countryCode);
+		POJOWrapper.setInstanceName(record, countryCode);
+		saveRecord(record);
+		return CountryId.ofRepoId(record.getC_Country_ID());
 	}
 
 	public static I_C_UOM createUomKg()

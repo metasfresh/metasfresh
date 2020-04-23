@@ -57,6 +57,7 @@ import ch.qos.logback.classic.Level;
 import de.metas.attachments.AttachmentEntry;
 import de.metas.attachments.AttachmentEntryId;
 import de.metas.bpartner.BPGroupRepository;
+import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.GLN;
 import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
@@ -118,6 +119,7 @@ import de.metas.user.UserRepository;
 import de.metas.util.JSONObjectMapper;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
+import lombok.NonNull;
 import mockit.Mocked;
 
 /*
@@ -144,6 +146,8 @@ import mockit.Mocked;
 
 public class OrderCandidatesRestControllerImplTest
 {
+	private static final long DEFAULT_TIME = 1584400036193L; // some time on 2020-03-16
+
 	@Rule
 	public AdempiereTestWatcher testWatcher = new AdempiereTestWatcher();
 
@@ -186,7 +190,7 @@ public class OrderCandidatesRestControllerImplTest
 	{
 		AdempiereTestHelper.get().init();
 
-		SystemTime.setTimeSource(() -> 1584400036193L); // some time at 2020-03-16
+		SystemTime.setTimeSource(() -> DEFAULT_TIME);
 
 		Services.registerService(IBPartnerBL.class, new BPartnerBL(new UserRepository()));
 
@@ -206,9 +210,7 @@ public class OrderCandidatesRestControllerImplTest
 			orgInfo.setTimeZone(ZoneId.of("Europe/Berlin").getId());
 			saveRecord(orgInfo);
 
-			BusinessTestHelper.createBPGroup("DefaultGroup", true);
-
-			countryId_DE = testMasterdata.createCountry(COUNTRY_CODE_DE);
+			countryId_DE = BusinessTestHelper.createCountry(COUNTRY_CODE_DE);
 
 			final I_C_UOM uom = BusinessTestHelper.createUOM(UOM_CODE, UOM_CODE);
 			uomId = UomId.ofRepoId(uom.getC_UOM_ID());
@@ -315,8 +317,8 @@ public class OrderCandidatesRestControllerImplTest
 	public void createOrderLineCandidates()
 	{
 		final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
-
-		testMasterdata.createCountry("CH");
+		BusinessTestHelper.createBPGroup("DefaultGroup", true);
+		BusinessTestHelper.createCountry("CH");
 
 		final JsonOLCandCreateBulkRequest bulkRequestFromFile = JsonOLCandUtil.fromResource("/JsonOLCandCreateBulkRequest.json");
 		assertThat(bulkRequestFromFile.getRequests()).hasSize(21); // guards
@@ -958,9 +960,10 @@ public class OrderCandidatesRestControllerImplTest
 	 * Uses a production-based JSON to make sure that billTo and shipTo flags end up the in C_BPartner_Location the ways they should.
 	 */
 	@Test
-	public void test_billToDefault()
+	public void billToDefault_newBPartner()
 	{
 		// given
+		BusinessTestHelper.createBPGroup("DefaultGroup", true);
 		testMasterdata.createDataSource("SOURCE.de.metas.rest_api.ordercandidates.impl.OrderCandidatesRestControllerImpl_B2C");
 		testMasterdata.createDataSource("DEST.de.metas.ordercandidate");
 		testMasterdata.createPricingSystem("vk3");
@@ -968,12 +971,62 @@ public class OrderCandidatesRestControllerImplTest
 		testMasterdata.createSalesRep("ABC-DEF-12345");
 		testMasterdata.createDocType(DocBaseAndSubType.of("ARI"));
 
-		final JsonOLCandCreateRequest request = loadRequest("OrderCandidatesRestControllerImplTest.json");
+		final JsonOLCandCreateRequest request = loadRequest("OrderCandidatesRestControllerImplTest_1.json");
 
 		// when
 		final ResponseEntity<JsonOLCandCreateBulkResponse> result = orderCandidatesRestControllerImpl.createOrderLineCandidate(request);
 
 		// then
+		final JsonOLCand jsonOLCand = assertResultOKForTest_1_JSON(result);
+		expect(jsonOLCand).toMatchSnapshot();
+	}
+
+	@Test
+	public void billToDefault_exitingBPartner()
+	{
+		// given
+		BusinessTestHelper.createBPGroup("DefaultGroup", true);
+		testMasterdata.createDataSource("SOURCE.de.metas.rest_api.ordercandidates.impl.OrderCandidatesRestControllerImpl_B2C");
+		testMasterdata.createDataSource("DEST.de.metas.ordercandidate");
+		testMasterdata.createPricingSystem("vk3");
+		testMasterdata.createShipper("Standard");
+		testMasterdata.createSalesRep("ABC-DEF-12345");
+		testMasterdata.createDocType(DocBaseAndSubType.of("ARI"));
+
+		final BPartnerId bpartnerId = testMasterdata.prepareBPartner()
+				.bpValue("bpValue")
+				.bpExternalId("1-2")
+				.bpGroupExistingName("DefaultGroup")
+				.build();
+		testMasterdata.prepareBPartnerLocation().bpartnerId(bpartnerId)
+				.externalId("billToId-1-2")
+				.countryId(countryId_DE)
+				.shipTo(false)
+				.billTo(true)
+				.billToDefault(true)
+				.build();
+		testMasterdata.prepareBPartnerLocation().bpartnerId(bpartnerId)
+				.externalId("shipToId-1-2")
+				.countryId(countryId_DE)
+				.shipTo(true)
+				.billTo(false)
+				.billToDefault(false)
+				.build();
+
+		SystemTime.setTimeSource(() -> 1584400036193L + 10000); // some later time, such that the bpartner's creation was in the past.
+
+		final JsonOLCandCreateRequest request = loadRequest("OrderCandidatesRestControllerImplTest_1.json");
+
+		// when
+		final ResponseEntity<JsonOLCandCreateBulkResponse> result = orderCandidatesRestControllerImpl.createOrderLineCandidate(request);
+
+		// then
+		final JsonOLCand jsonOLCand = assertResultOKForTest_1_JSON(result);
+		expect(jsonOLCand).toMatchSnapshot();
+	}
+
+	private JsonOLCand assertResultOKForTest_1_JSON(@NonNull final ResponseEntity<JsonOLCandCreateBulkResponse> result)
+	{
 		assertThat(result.getBody().getResult()).hasSize(1);
 		final JsonOLCand jsonOLCand = result.getBody().getResult().get(0);
 		assertThat(jsonOLCand.getBpartner().getLocation())
@@ -992,11 +1045,10 @@ public class OrderCandidatesRestControllerImplTest
 				.containsExactlyInAnyOrder(
 						tuple("billToId-1-2", false, true, true),
 						tuple("shipToId-1-2", true, false, false));
-
-		expect(jsonOLCand).toMatchSnapshot();
+		return jsonOLCand;
 	}
 
-	private JsonOLCandCreateRequest loadRequest(final String jsonFileName)
+	private JsonOLCandCreateRequest loadRequest(@NonNull final String jsonFileName)
 	{
 		final InputStream stream = getClass().getClassLoader().getResourceAsStream("de/metas/rest_api/ordercandidates/impl/" + jsonFileName);
 		assertThat(stream).isNotNull();
