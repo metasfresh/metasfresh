@@ -64,7 +64,7 @@ public class NotesRepository
 	}
 
 	@NonNull
-	public List<I_CM_ChatEntry> retrieveNotes(@NonNull final TableRecordReference tableRecordReference, final int maxNumberOfRecords)
+	public List<I_CM_ChatEntry> retrieveLastNotes(@NonNull final TableRecordReference tableRecordReference, final int maxNumberOfRecords)
 	{
 		final ChatId chatId = getChatIdOrNull(tableRecordReference);
 
