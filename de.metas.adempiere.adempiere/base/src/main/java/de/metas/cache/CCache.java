@@ -39,6 +39,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.util.Util;
 import org.slf4j.Logger;
+import org.slf4j.MDC.MDCCloseable;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.cache.Cache;
@@ -411,13 +412,16 @@ public class CCache<K, V> implements CacheInterface
 	@Override
 	public long reset()
 	{
-		final long no = cache.size();
-		clear();
-		if (no > 0)
+		try (final MDCCloseable cacheIdMDC = CacheMDC.putCache(this))
 		{
-			logger.trace("Reset {} entries from {}", no, this);
+			final long no = cache.size();
+			clear();
+			if (no > 0)
+			{
+				logger.trace("Reset {} entries from {}", no, this);
+			}
+			return no;
 		}
-		return no;
 	}
 
 	private void clear()
@@ -432,13 +436,16 @@ public class CCache<K, V> implements CacheInterface
 	@Override
 	public long resetForRecordId(@NonNull final TableRecordReference recordRef)
 	{
-		if (!invalidationKeysMapper.isPresent())
+		try (final MDCCloseable cacheIdMDC = CacheMDC.putCache(this))
 		{
-			// NOTE: reseting only by "key" is not supported, so we are reseting everything
-			return reset();
-		}
+			if (!invalidationKeysMapper.isPresent())
+			{
+				// NOTE: reseting only by "key" is not supported, so we are reseting everything
+				return reset();
+			}
 
-		return resetForRecordIdUsingKeysMapper(recordRef, invalidationKeysMapper.get());
+			return resetForRecordIdUsingKeysMapper(recordRef, invalidationKeysMapper.get());
+		}
 	}
 
 	private long resetForRecordIdUsingKeysMapper(
@@ -447,11 +454,16 @@ public class CCache<K, V> implements CacheInterface
 	{
 		if (keysMapper.isResetAll(recordRef))
 		{
+			logger.debug("resetForRecordIdUsingKeysMapper - given keysMapper indicated to reset all; -> resetting the whole cache");
 			return reset();
 		}
 
 		long counter = 0; // note that also the "reset-all" reset() method only returns an approx number.
-		for (final K key : keysMapper.computeCachingKeys(recordRef))
+
+		final Collection<K> keysToReset = keysMapper.computeCachingKeys(recordRef);
+		logger.debug("resetForRecordIdUsingKeysMapper - given keysMapper indicated the following keys: {}", keysToReset);
+
+		for (final K key : keysToReset)
 		{
 			final boolean keyRemoved = remove(key) != null;
 			if (keyRemoved)
@@ -483,19 +495,28 @@ public class CCache<K, V> implements CacheInterface
 
 	public boolean containsKey(final K key)
 	{
-		return cache.getIfPresent(key) != null;
+		try (final MDCCloseable cacheIdMDC = CacheMDC.putCache(this))
+		{
+			return cache.getIfPresent(key) != null;
+		}
 	}
 
 	public V remove(final K key)
 	{
-		final V value = cache.getIfPresent(key);
-		cache.invalidate(key);
-		return value;
+		try (final MDCCloseable cacheIdMDC = CacheMDC.putCache(this))
+		{
+			final V value = cache.getIfPresent(key);
+			cache.invalidate(key);
+			return value;
+		}
 	}
 
 	public void removeAll(final Iterable<K> keys)
 	{
-		cache.invalidateAll(keys);
+		try (final MDCCloseable cacheIdMDC = CacheMDC.putCache(this))
+		{
+			cache.invalidateAll(keys);
+		}
 	}
 
 	/**
@@ -504,7 +525,10 @@ public class CCache<K, V> implements CacheInterface
 	@Nullable
 	public V get(final K key)
 	{
-		return cache.getIfPresent(key);
+		try (final MDCCloseable cacheIdMDC = CacheMDC.putCache(this))
+		{
+			return cache.getIfPresent(key);
+		}
 	}	// get
 
 	/**
@@ -552,33 +576,36 @@ public class CCache<K, V> implements CacheInterface
 	 */
 	public V get(final K key, final Callable<V> valueInitializer)
 	{
-		if (valueInitializer == null)
+		try (final MDCCloseable cacheIdMDC = CacheMDC.putCache(this))
 		{
-			return cache.getIfPresent(key);
-		}
+			if (valueInitializer == null)
+			{
+				return cache.getIfPresent(key);
+			}
 
-		try
-		{
-			return cache.get(key, valueInitializer);
-		}
-		catch (final InvalidCacheLoadException e)
-		{
-			// Exception thrown when the Callable returns null
-			// We can safely ignore it and return null.
-			// The value was not cached.
-			return null;
-		}
-		catch (final ExecutionException e)
-		{
-			throw AdempiereException.wrapIfNeeded(e);
-		}
-		catch (final UncheckedExecutionException e)
-		{
-			throw (RuntimeException)e.getCause();
-		}
-		catch (final ExecutionError e)
-		{
-			throw (Error)e.getCause();
+			try
+			{
+				return cache.get(key, valueInitializer);
+			}
+			catch (final InvalidCacheLoadException e)
+			{
+				// Exception thrown when the Callable returns null
+				// We can safely ignore it and return null.
+				// The value was not cached.
+				return null;
+			}
+			catch (final ExecutionException e)
+			{
+				throw AdempiereException.wrapIfNeeded(e);
+			}
+			catch (final UncheckedExecutionException e)
+			{
+				throw (RuntimeException)e.getCause();
+			}
+			catch (final ExecutionError e)
+			{
+				throw (Error)e.getCause();
+			}
 		}
 	}
 
@@ -593,13 +620,19 @@ public class CCache<K, V> implements CacheInterface
 	 */
 	public V getOrLoad(final K key, final Callable<V> valueLoader)
 	{
-		return get(key, valueLoader);
+		try (final MDCCloseable cacheIdMDC = CacheMDC.putCache(this))
+		{
+			return get(key, valueLoader);
+		}
 	}
 
 	public V getOrLoad(final K key, @NonNull final Function<K, V> valueLoader)
 	{
-		final Callable<V> callable = () -> valueLoader.apply(key);
-		return get(key, callable);
+		try (final MDCCloseable cacheIdMDC = CacheMDC.putCache(this))
+		{
+			final Callable<V> callable = () -> valueLoader.apply(key);
+			return get(key, callable);
+		}
 	}
 
 	/**
@@ -616,48 +649,58 @@ public class CCache<K, V> implements CacheInterface
 	 */
 	public Collection<V> getAllOrLoad(final Collection<K> keys, final Function<Collection<K>, Map<K, V>> valuesLoader)
 	{
-		if (keys.isEmpty())
+		try (final MDCCloseable cacheIdMDC = CacheMDC.putCache(this))
 		{
-			return ImmutableList.of();
-		}
-
-		//
-		// Fetch from cache what's available
-		final List<V> values = new ArrayList<>(keys.size());
-		final Set<K> keysToLoad = new HashSet<>();
-		for (final K key : ImmutableSet.copyOf(keys))
-		{
-			final V value = cache.getIfPresent(key);
-			if (value == null)
+			if (keys.isEmpty())
 			{
-				keysToLoad.add(key);
+				logger.debug("getAllOrLoad - Given keys is empty; -> return empty list");
+				return ImmutableList.of();
+			}
+
+			//
+			// Fetch from cache what's available
+			final List<V> values = new ArrayList<>(keys.size());
+			final Set<K> keysToLoad = new HashSet<>();
+			for (final K key : ImmutableSet.copyOf(keys))
+			{
+				final V value = cache.getIfPresent(key);
+				if (value == null)
+				{
+					logger.debug("getAllOrLoad - Cache miss for key={}; -> adding it to 'keysToLoad'", key);
+					keysToLoad.add(key);
+				}
+				else
+				{
+					logger.debug("getAllOrLoad - Cache hit for key={}; -> adding it to result values", key);
+					values.add(value);
+				}
+			}
+
+			//
+			// Load the missing keys if any
+			if (keysToLoad.isEmpty())
+			{
+				logger.debug("getAllOrLoad - all keys had cached values; nothing to load", keysToLoad);
 			}
 			else
 			{
-				values.add(value);
+				logger.debug("getAllOrLoad - Apply valuesLoader to load values for keysToLoad={}", keysToLoad);
+				final Map<K, V> valuesLoaded = valuesLoader.apply(keysToLoad);
+
+				// add loaded values to cache and notify listener
+				for (final Entry<K, V> entry : valuesLoaded.entrySet())
+				{
+					final K key = entry.getKey();
+					final V value = entry.getValue();
+
+					cache.put(key, value);
+					fireAdditionListener(key, value);
+				}
+				values.addAll(valuesLoaded.values()); // add loaded values to the list we will return
 			}
+
+			return values;
 		}
-
-		//
-		// Load the missing keys if any
-		if (!keysToLoad.isEmpty())
-		{
-			final Map<K, V> valuesLoaded = valuesLoader.apply(keysToLoad);
-
-			// add loaded values to cache and notify listener
-			for (final Entry<K, V> entry : valuesLoaded.entrySet())
-			{
-				final K key = entry.getKey();
-				final V value = entry.getValue();
-
-				cache.put(key, value);
-				fireAdditionListener(key, value);
-			}
-			values.addAll(valuesLoaded.values()); // add loaded values to the list we will return
-		}
-
-		//
-		return values;
 	}
 
 	/**
@@ -670,25 +713,31 @@ public class CCache<K, V> implements CacheInterface
 	 */
 	public <E extends Throwable> V getOrElseThrow(final K key, final Supplier<E> exceptionSupplier) throws E
 	{
-		final V value = get(key);
-		if (value == null)
+		try (final MDCCloseable cacheIdMDC = CacheMDC.putCache(this))
 		{
-			throw exceptionSupplier.get();
+			final V value = get(key);
+			if (value == null)
+			{
+				throw exceptionSupplier.get();
+			}
+			return value;
 		}
-		return value;
 	}
 
 	public void put(final K key, final V value)
 	{
-		m_justReset = false;
-		if (value == null)
+		try (final MDCCloseable cacheIdMDC = CacheMDC.putCache(this))
 		{
-			cache.invalidate(key);
-		}
-		else
-		{
-			cache.put(key, value);
-			fireAdditionListener(key, value);
+			m_justReset = false;
+			if (value == null)
+			{
+				cache.invalidate(key);
+			}
+			else
+			{
+				cache.put(key, value);
+				fireAdditionListener(key, value);
+			}
 		}
 	}
 
@@ -707,11 +756,14 @@ public class CCache<K, V> implements CacheInterface
 	 */
 	public void putAll(final Map<? extends K, ? extends V> map)
 	{
-		cache.putAll(map);
-
-		for (final Entry<? extends K, ? extends V> entry : map.entrySet())
+		try (final MDCCloseable cacheIdMDC = CacheMDC.putCache(this))
 		{
-			fireAdditionListener(entry.getKey(), entry.getValue());
+			cache.putAll(map);
+
+			for (final Entry<? extends K, ? extends V> entry : map.entrySet())
+			{
+				fireAdditionListener(entry.getKey(), entry.getValue());
+			}
 		}
 	}
 
@@ -752,10 +804,13 @@ public class CCache<K, V> implements CacheInterface
 	protected final void finalize() throws Throwable
 	{
 		// NOTE: to avoid memory leaks we need to programatically clear our internal state
-
-		if (cache != null)
+		try (final MDCCloseable cacheIdMDC = CacheMDC.putCache(this))
 		{
-			cache.invalidateAll();
+			logger.debug("Running finalize");
+			if (cache != null)
+			{
+				cache.invalidateAll();
+			}
 		}
 	}
 

@@ -24,6 +24,7 @@ import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Location;
 import org.compiere.model.I_C_Postal;
 import org.compiere.util.Env;
+import org.slf4j.MDC.MDCCloseable;
 
 import com.google.common.collect.ImmutableList;
 
@@ -49,6 +50,7 @@ import de.metas.location.CountryId;
 import de.metas.location.ICountryDAO;
 import de.metas.location.impl.PostalQueryFilter;
 import de.metas.organization.OrgId;
+import de.metas.logging.TableRecordMDC;
 import de.metas.security.PermissionServiceFactories;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -97,13 +99,18 @@ final class BPartnerCompositeSaver
 		}
 
 		final BPartner bpartner = bpartnerComposite.getBpartner();
-		saveBPartner(bpartner, bpartnerComposite.getOrgId());
+		try (final MDCCloseable bpartnerRecordMDC = TableRecordMDC.putTableRecordReference(I_C_BPartner.Table_Name, bpartner.getId()))
+		{
+			saveBPartner(bpartner, bpartnerComposite.getOrgId());
+		}
+		try (final MDCCloseable bpartnerRecordMDC = TableRecordMDC.putTableRecordReference(I_C_BPartner.Table_Name, bpartner.getId()))
+		{
+			saveBPartnerLocations(bpartner.getId(), bpartnerComposite.getLocations(), bpartnerComposite.getOrgId());
 
-		saveBPartnerLocations(bpartner.getId(), bpartnerComposite.getLocations(), bpartnerComposite.getOrgId());
+			saveBPartnerContacts(bpartner.getId(), bpartnerComposite.getContacts(), bpartnerComposite.getOrgId());
 
-		saveBPartnerContacts(bpartner.getId(), bpartnerComposite.getContacts(), bpartnerComposite.getOrgId());
-
-		saveBPartnerBankAccounts(bpartner.getId(), bpartnerComposite.getBankAccounts(), bpartnerComposite.getOrgId());
+			saveBPartnerBankAccounts(bpartner.getId(), bpartnerComposite.getBankAccounts(), bpartnerComposite.getOrgId());
+		}
 	}
 
 	private void saveBPartner(@NonNull final BPartner bpartner, @Nullable final OrgId orgId)
@@ -189,139 +196,142 @@ final class BPartnerCompositeSaver
 			@NonNull final BPartnerLocation bpartnerLocation,
 			@Nullable final OrgId orgId)
 	{
-		final I_C_BPartner_Location bpartnerLocationRecord = loadOrNew(bpartnerLocation.getId(), I_C_BPartner_Location.class);
-		if (orgId != null)
+		try (final MDCCloseable bpartnerLocationRecordMDC = TableRecordMDC.putTableRecordReference(I_C_BPartner_Location.Table_Name, bpartnerLocation.getId()))
 		{
-			bpartnerLocationRecord.setAD_Org_ID(orgId.getRepoId());
+			final I_C_BPartner_Location bpartnerLocationRecord = loadOrNew(bpartnerLocation.getId(), I_C_BPartner_Location.class);
+			if (orgId != null)
+			{
+				bpartnerLocationRecord.setAD_Org_ID(orgId.getRepoId());
+			}
+			bpartnerLocationRecord.setIsActive(bpartnerLocation.isActive());
+			bpartnerLocationRecord.setC_BPartner_ID(bpartnerId.getRepoId());
+			bpartnerLocationRecord.setName(bpartnerLocation.getName());
+			bpartnerLocationRecord.setBPartnerName(bpartnerLocation.getBpartnerName());
+
+			final BPartnerLocationType locationType = bpartnerLocation.getLocationType();
+			if (locationType != null)
+			{
+				locationType.getBillTo().ifPresent(b -> bpartnerLocationRecord.setIsBillTo(b));
+				locationType.getBillToDefault().ifPresent(b -> bpartnerLocationRecord.setIsBillToDefault(b));
+				locationType.getShipTo().ifPresent(b -> bpartnerLocationRecord.setIsShipTo(b));
+				locationType.getShipToDefault().ifPresent(b -> bpartnerLocationRecord.setIsShipToDefault(b));
+			}
+
+			boolean anyLocationChange = false;
+
+			// C_Location is immutable; never update an existing record, but create a new one
+			final I_C_Location locationRecord = newInstance(I_C_Location.class);
+
+			anyLocationChange = anyLocationChange || bpartnerLocation.isActiveChanged();
+			locationRecord.setIsActive(bpartnerLocation.isActive());
+
+			anyLocationChange = anyLocationChange || bpartnerLocation.isAddress1Changed();
+			locationRecord.setAddress1(bpartnerLocation.getAddress1());
+
+			anyLocationChange = anyLocationChange || bpartnerLocation.isAddress2Changed();
+			locationRecord.setAddress2(bpartnerLocation.getAddress2());
+
+			anyLocationChange = anyLocationChange || bpartnerLocation.isAddress3Changed();
+			locationRecord.setAddress3(bpartnerLocation.getAddress3());
+
+			anyLocationChange = anyLocationChange || bpartnerLocation.isAddress4Changed();
+			locationRecord.setAddress4(bpartnerLocation.getAddress4());
+
+			anyLocationChange = anyLocationChange || bpartnerLocation.isCountryCodeChanged();
+			if (!isEmpty(bpartnerLocation.getCountryCode(), true))
+			{
+				final ICountryDAO countryDAO = Services.get(ICountryDAO.class);
+				final CountryId countryId = countryDAO.getCountryIdByCountryCode(bpartnerLocation.getCountryCode());
+				locationRecord.setC_Country_ID(CountryId.toRepoId(countryId));
+			}
+
+			boolean postalDataSetFromPostalRecord = false;
+			anyLocationChange = anyLocationChange || bpartnerLocation.isPostalChanged();
+			if (!isEmpty(bpartnerLocation.getPostal(), true))
+			{
+				final IQueryBuilder<I_C_Postal> postalQueryBuilder = Services.get(IQueryBL.class)
+						.createQueryBuilder(I_C_Postal.class)
+						.addOnlyActiveRecordsFilter()
+						.addOnlyContextClient()
+						.filter(PostalQueryFilter.of(bpartnerLocation.getPostal().trim()));
+				if (!isEmpty(bpartnerLocation.getDistrict(), true))
+				{
+					postalQueryBuilder.addEqualsFilter(I_C_Postal.COLUMN_District, bpartnerLocation.getDistrict());
+				}
+				else
+				{
+					// prefer C_Postal records that have no district set
+				}
+
+				postalQueryBuilder.orderBy().addColumn(I_C_Postal.COLUMNNAME_District, Direction.Ascending, Nulls.First);
+
+				final List<I_C_Postal> postalRecords = postalQueryBuilder
+						.create()
+						.list();
+
+				final I_C_Postal postalRecord;
+				if (postalRecords.isEmpty())
+				{
+					postalRecord = null;
+				}
+				else if (postalRecords.size() == 1)
+				{
+					postalRecord = postalRecords.get(0);
+				}
+				else if (locationRecord.getC_Country_ID() > 0)
+				{
+					postalRecord = postalRecords
+							.stream()
+							.filter(r -> (r.getC_Country_ID() == locationRecord.getC_Country_ID()))
+							.findFirst()
+							.orElse(null);
+				}
+				else
+				{
+					postalRecord = null;
+				}
+
+				if (postalRecord != null)
+				{
+					locationRecord.setC_Country_ID(postalRecord.getC_Country_ID());
+					locationRecord.setC_Postal_ID(postalRecord.getC_Postal_ID());
+					locationRecord.setPostal(postalRecord.getPostal());
+					locationRecord.setCity(postalRecord.getCity());
+					locationRecord.setRegionName(postalRecord.getRegionName());
+
+					postalDataSetFromPostalRecord = true;
+				}
+			}
+
+			bpartnerLocationRecord.setExternalId(ExternalId.toValue(bpartnerLocation.getExternalId()));
+			bpartnerLocationRecord.setGLN(GLN.toCode(bpartnerLocation.getGln()));
+			// bpartnerLocation.getId() // id is only for lookup and won't be updated later
+
+			if (!postalDataSetFromPostalRecord)
+			{
+				locationRecord.setPostal(bpartnerLocation.getPostal());
+				locationRecord.setCity(bpartnerLocation.getCity());
+				locationRecord.setRegionName(bpartnerLocation.getRegion());
+			}
+
+			anyLocationChange = anyLocationChange || bpartnerLocation.isPoBoxChanged();
+			locationRecord.setPOBox(bpartnerLocation.getPoBox());
+
+			if (anyLocationChange)
+			{
+				assertCanCreateOrUpdate(locationRecord);
+				saveRecord(locationRecord);
+				bpartnerLocationRecord.setC_Location_ID(locationRecord.getC_Location_ID());
+			}
+
+			Services.get(IBPartnerBL.class).setAddress(bpartnerLocationRecord);
+
+			assertCanCreateOrUpdate(bpartnerLocationRecord);
+			saveRecord(bpartnerLocationRecord);
+
+			final BPartnerLocationId bpartnerLocationId = BPartnerLocationId.ofRepoId(bpartnerLocationRecord.getC_BPartner_ID(), bpartnerLocationRecord.getC_BPartner_Location_ID());
+			bpartnerLocation.setId(bpartnerLocationId);
 		}
-		bpartnerLocationRecord.setIsActive(bpartnerLocation.isActive());
-		bpartnerLocationRecord.setC_BPartner_ID(bpartnerId.getRepoId());
-		bpartnerLocationRecord.setName(bpartnerLocation.getName());
-		bpartnerLocationRecord.setBPartnerName(bpartnerLocation.getBpartnerName());
-
-		final BPartnerLocationType locationType = bpartnerLocation.getLocationType();
-		if (locationType != null)
-		{
-			locationType.getBillTo().ifPresent(b -> bpartnerLocationRecord.setIsBillTo(b));
-			locationType.getBillToDefault().ifPresent(b -> bpartnerLocationRecord.setIsBillToDefault(b));
-			locationType.getShipTo().ifPresent(b -> bpartnerLocationRecord.setIsShipTo(b));
-			locationType.getShipToDefault().ifPresent(b -> bpartnerLocationRecord.setIsShipToDefault(b));
-		}
-
-		boolean anyLocationChange = false;
-
-		// C_Location is immutable; never update an existing record, but create a new one
-		final I_C_Location locationRecord = newInstance(I_C_Location.class);
-
-		anyLocationChange = anyLocationChange || bpartnerLocation.isActiveChanged();
-		locationRecord.setIsActive(bpartnerLocation.isActive());
-
-		anyLocationChange = anyLocationChange || bpartnerLocation.isAddress1Changed();
-		locationRecord.setAddress1(bpartnerLocation.getAddress1());
-
-		anyLocationChange = anyLocationChange || bpartnerLocation.isAddress2Changed();
-		locationRecord.setAddress2(bpartnerLocation.getAddress2());
-
-		anyLocationChange = anyLocationChange || bpartnerLocation.isAddress3Changed();
-		locationRecord.setAddress3(bpartnerLocation.getAddress3());
-
-		anyLocationChange = anyLocationChange || bpartnerLocation.isAddress4Changed();
-		locationRecord.setAddress4(bpartnerLocation.getAddress4());
-
-		anyLocationChange = anyLocationChange || bpartnerLocation.isCountryCodeChanged();
-		if (!isEmpty(bpartnerLocation.getCountryCode(), true))
-		{
-			final ICountryDAO countryDAO = Services.get(ICountryDAO.class);
-			final CountryId countryId = countryDAO.getCountryIdByCountryCode(bpartnerLocation.getCountryCode());
-			locationRecord.setC_Country_ID(CountryId.toRepoId(countryId));
-		}
-
-		boolean postalDataSetFromPostalRecord = false;
-		anyLocationChange = anyLocationChange || bpartnerLocation.isPostalChanged();
-		if (!isEmpty(bpartnerLocation.getPostal(), true))
-		{
-			final IQueryBuilder<I_C_Postal> postalQueryBuilder = Services.get(IQueryBL.class)
-					.createQueryBuilder(I_C_Postal.class)
-					.addOnlyActiveRecordsFilter()
-					.addOnlyContextClient()
-					.filter(PostalQueryFilter.of(bpartnerLocation.getPostal().trim()));
-			if (!isEmpty(bpartnerLocation.getDistrict(), true))
-			{
-				postalQueryBuilder.addEqualsFilter(I_C_Postal.COLUMN_District, bpartnerLocation.getDistrict());
-			}
-			else
-			{
-				// prefer C_Postal records that have no district set
-			}
-
-			postalQueryBuilder.orderBy().addColumn(I_C_Postal.COLUMNNAME_District, Direction.Ascending, Nulls.First);
-
-			final List<I_C_Postal> postalRecords = postalQueryBuilder
-					.create()
-					.list();
-
-			final I_C_Postal postalRecord;
-			if (postalRecords.isEmpty())
-			{
-				postalRecord = null;
-			}
-			else if (postalRecords.size() == 1)
-			{
-				postalRecord = postalRecords.get(0);
-			}
-			else if (locationRecord.getC_Country_ID() > 0)
-			{
-				postalRecord = postalRecords
-						.stream()
-						.filter(r -> (r.getC_Country_ID() == locationRecord.getC_Country_ID()))
-						.findFirst()
-						.orElse(null);
-			}
-			else
-			{
-				postalRecord = null;
-			}
-
-			if (postalRecord != null)
-			{
-				locationRecord.setC_Country_ID(postalRecord.getC_Country_ID());
-				locationRecord.setC_Postal_ID(postalRecord.getC_Postal_ID());
-				locationRecord.setPostal(postalRecord.getPostal());
-				locationRecord.setCity(postalRecord.getCity());
-				locationRecord.setRegionName(postalRecord.getRegionName());
-
-				postalDataSetFromPostalRecord = true;
-			}
-		}
-
-		bpartnerLocationRecord.setExternalId(ExternalId.toValue(bpartnerLocation.getExternalId()));
-		bpartnerLocationRecord.setGLN(GLN.toCode(bpartnerLocation.getGln()));
-		// bpartnerLocation.getId() // id is only for lookup and won't be updated later
-
-		if (!postalDataSetFromPostalRecord)
-		{
-			locationRecord.setPostal(bpartnerLocation.getPostal());
-			locationRecord.setCity(bpartnerLocation.getCity());
-			locationRecord.setRegionName(bpartnerLocation.getRegion());
-		}
-
-		anyLocationChange = anyLocationChange || bpartnerLocation.isPoBoxChanged();
-		locationRecord.setPOBox(bpartnerLocation.getPoBox());
-
-		if (anyLocationChange)
-		{
-			assertCanCreateOrUpdate(locationRecord);
-			saveRecord(locationRecord);
-			bpartnerLocationRecord.setC_Location_ID(locationRecord.getC_Location_ID());
-		}
-
-		Services.get(IBPartnerBL.class).setAddress(bpartnerLocationRecord);
-
-		assertCanCreateOrUpdate(bpartnerLocationRecord);
-		saveRecord(bpartnerLocationRecord);
-
-		final BPartnerLocationId bpartnerLocationId = BPartnerLocationId.ofRepoId(bpartnerLocationRecord.getC_BPartner_ID(), bpartnerLocationRecord.getC_BPartner_Location_ID());
-		bpartnerLocation.setId(bpartnerLocationId);
 	}
 
 	private void saveBPartnerContacts(
@@ -355,50 +365,53 @@ final class BPartnerCompositeSaver
 			@NonNull final BPartnerContact bpartnerContact,
 			@Nullable final OrgId orgId)
 	{
-		final I_AD_User bpartnerContactRecord = loadOrNew(bpartnerContact.getId(), I_AD_User.class);
-
-		if (orgId != null)
+		try (final MDCCloseable bpartnerContactRecordMDC = TableRecordMDC.putTableRecordReference(I_AD_User.Table_Name, bpartnerContact.getId()))
 		{
-			bpartnerContactRecord.setAD_Org_ID(orgId.getRepoId());
+			final I_AD_User bpartnerContactRecord = loadOrNew(bpartnerContact.getId(), I_AD_User.class);
+
+			if (orgId != null)
+			{
+				bpartnerContactRecord.setAD_Org_ID(orgId.getRepoId());
+			}
+			bpartnerContactRecord.setExternalId(ExternalId.toValue(bpartnerContact.getExternalId()));
+			bpartnerContactRecord.setIsActive(bpartnerContact.isActive());
+			bpartnerContactRecord.setC_BPartner_ID(bpartnerId.getRepoId());
+			bpartnerContactRecord.setName(bpartnerContact.getName());
+			bpartnerContactRecord.setEMail(bpartnerContact.getEmail());
+
+			bpartnerContactRecord.setFirstname(bpartnerContact.getFirstName());
+			bpartnerContactRecord.setLastname(bpartnerContact.getLastName());
+
+			bpartnerContactRecord.setIsNewsletter(bpartnerContact.isNewsletter());
+
+			final BPartnerContactType contactType = bpartnerContact.getContactType();
+			if (contactType != null)
+			{
+				contactType.getDefaultContact().ifPresent(b -> bpartnerContactRecord.setIsDefaultContact(b));
+				contactType.getBillToDefault().ifPresent(b -> bpartnerContactRecord.setIsBillToContact_Default(b));
+				contactType.getShipToDefault().ifPresent(b -> bpartnerContactRecord.setIsShipToContact_Default(b));
+				contactType.getSales().ifPresent(b -> bpartnerContactRecord.setIsSalesContact(b));
+				contactType.getSalesDefault().ifPresent(b -> bpartnerContactRecord.setIsSalesContact_Default(b));
+				contactType.getPurchase().ifPresent(b -> bpartnerContactRecord.setIsPurchaseContact(b));
+				contactType.getPurchaseDefault().ifPresent(b -> bpartnerContactRecord.setIsPurchaseContact_Default(b));
+				contactType.getSubjectMatter().ifPresent(b -> bpartnerContactRecord.setIsSubjectMatterContact(b));
+			}
+
+			bpartnerContactRecord.setDescription(bpartnerContact.getDescription());
+
+			bpartnerContactRecord.setPhone(bpartnerContact.getPhone());
+			bpartnerContactRecord.setFax(bpartnerContact.getFax());
+			bpartnerContactRecord.setMobilePhone(bpartnerContact.getMobilePhone());
+
+			bpartnerContactRecord.setC_Greeting_ID(GreetingId.toRepoIdOr(bpartnerContact.getGreetingId(), 0));
+
+			assertCanCreateOrUpdate(bpartnerContactRecord);
+			saveRecord(bpartnerContactRecord);
+
+			final BPartnerContactId bpartnerContactId = BPartnerContactId.ofRepoId(bpartnerId, bpartnerContactRecord.getAD_User_ID());
+
+			bpartnerContact.setId(bpartnerContactId);
 		}
-		bpartnerContactRecord.setExternalId(ExternalId.toValue(bpartnerContact.getExternalId()));
-		bpartnerContactRecord.setIsActive(bpartnerContact.isActive());
-		bpartnerContactRecord.setC_BPartner_ID(bpartnerId.getRepoId());
-		bpartnerContactRecord.setName(bpartnerContact.getName());
-		bpartnerContactRecord.setEMail(bpartnerContact.getEmail());
-
-		bpartnerContactRecord.setFirstname(bpartnerContact.getFirstName());
-		bpartnerContactRecord.setLastname(bpartnerContact.getLastName());
-
-		bpartnerContactRecord.setIsNewsletter(bpartnerContact.isNewsletter());
-
-		final BPartnerContactType contactType = bpartnerContact.getContactType();
-		if (contactType != null)
-		{
-			contactType.getDefaultContact().ifPresent(b -> bpartnerContactRecord.setIsDefaultContact(b));
-			contactType.getBillToDefault().ifPresent(b -> bpartnerContactRecord.setIsBillToContact_Default(b));
-			contactType.getShipToDefault().ifPresent(b -> bpartnerContactRecord.setIsShipToContact_Default(b));
-			contactType.getSales().ifPresent(b -> bpartnerContactRecord.setIsSalesContact(b));
-			contactType.getSalesDefault().ifPresent(b -> bpartnerContactRecord.setIsSalesContact_Default(b));
-			contactType.getPurchase().ifPresent(b -> bpartnerContactRecord.setIsPurchaseContact(b));
-			contactType.getPurchaseDefault().ifPresent(b -> bpartnerContactRecord.setIsPurchaseContact_Default(b));
-			contactType.getSubjectMatter().ifPresent(b -> bpartnerContactRecord.setIsSubjectMatterContact(b));
-		}
-
-		bpartnerContactRecord.setDescription(bpartnerContact.getDescription());
-
-		bpartnerContactRecord.setPhone(bpartnerContact.getPhone());
-		bpartnerContactRecord.setFax(bpartnerContact.getFax());
-		bpartnerContactRecord.setMobilePhone(bpartnerContact.getMobilePhone());
-
-		bpartnerContactRecord.setC_Greeting_ID(GreetingId.toRepoIdOr(bpartnerContact.getGreetingId(), 0));
-
-		assertCanCreateOrUpdate(bpartnerContactRecord);
-		saveRecord(bpartnerContactRecord);
-
-		final BPartnerContactId bpartnerContactId = BPartnerContactId.ofRepoId(bpartnerId, bpartnerContactRecord.getAD_User_ID());
-
-		bpartnerContact.setId(bpartnerContactId);
 	}
 
 	private void saveBPartnerBankAccounts(
@@ -422,24 +435,28 @@ final class BPartnerCompositeSaver
 			@NonNull final BPartnerBankAccount bankAccount,
 			@Nullable final OrgId orgId)
 	{
-		final I_C_BP_BankAccount record = loadOrNew(bankAccount.getId(), I_C_BP_BankAccount.class);
-
-		if (orgId != null)
+		try (final MDCCloseable bankAccountRecordMDC = TableRecordMDC.putTableRecordReference(I_C_BP_BankAccount.Table_Name, bankAccount.getId()))
 		{
-			record.setAD_Org_ID(orgId.getRepoId());
+
+			final I_C_BP_BankAccount record = loadOrNew(bankAccount.getId(), I_C_BP_BankAccount.class);
+
+			if (orgId != null)
+			{
+				record.setAD_Org_ID(orgId.getRepoId());
+			}
+			record.setC_BPartner_ID(bpartnerId.getRepoId());
+
+			record.setIBAN(bankAccount.getIban());
+			record.setC_Currency_ID(bankAccount.getCurrencyId().getRepoId());
+			record.setIsActive(bankAccount.isActive());
+
+			assertCanCreateOrUpdate(record);
+			saveRecord(record);
+
+			final BPartnerBankAccountId id = BPartnerBankAccountId.ofRepoId(bpartnerId, record.getC_BP_BankAccount_ID());
+
+			bankAccount.setId(id);
 		}
-		record.setC_BPartner_ID(bpartnerId.getRepoId());
-
-		record.setIBAN(bankAccount.getIban());
-		record.setC_Currency_ID(bankAccount.getCurrencyId().getRepoId());
-		record.setIsActive(bankAccount.isActive());
-
-		assertCanCreateOrUpdate(record);
-		saveRecord(record);
-
-		final BPartnerBankAccountId id = BPartnerBankAccountId.ofRepoId(bpartnerId, record.getC_BP_BankAccount_ID());
-
-		bankAccount.setId(id);
 	}
 
 	private void assertCanCreateOrUpdate(@NonNull final Object record)

@@ -154,7 +154,7 @@ public class OrderCandidatesRestControllerImpl implements OrderCandidatesRestEnd
 			// load/create/update the master data (according to SyncAdvice) in a dedicated trx.
 			// because when creating the actual order line candidates, there is e.g. code invoked by model interceptors that gets AD_OrgInfo out of transaction.
 			trxManager.runInNewTrx(() -> createOrUpdateMasterdataBulk(bulkRequest, masterdataProvider));
-			// the required masterdata should be there now, and cached within masterdataProvider for quick retrieval as the olcands are created.
+			// the required masterdata should be there now
 
 			// invoke creatOrderLineCandidates with the unchanged bulkRequest, because the request's bpartner and product instances are
 			// (at least currently) part of the respective caching keys.

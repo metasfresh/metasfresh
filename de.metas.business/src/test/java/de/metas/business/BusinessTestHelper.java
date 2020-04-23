@@ -15,6 +15,7 @@ import org.compiere.model.I_C_BP_BankAccount;
 import org.compiere.model.I_C_BP_Group;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_Country;
 import org.compiere.model.I_C_Currency;
 import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_C_TaxCategory;
@@ -28,9 +29,9 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.currency.impl.PlainCurrencyDAO;
+import de.metas.location.CountryId;
 import de.metas.money.CurrencyId;
 import de.metas.product.ProductId;
-import de.metas.product.ProductType;
 import de.metas.tax.api.ITaxDAO;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.uom.CreateUOMConversionRequest;
@@ -75,6 +76,15 @@ public final class BusinessTestHelper
 
 	private BusinessTestHelper()
 	{
+	}
+
+	public static CountryId createCountry(@NonNull final String countryCode)
+	{
+		final I_C_Country record = newInstance(I_C_Country.class);
+		record.setCountryCode(countryCode);
+		POJOWrapper.setInstanceName(record, countryCode);
+		saveRecord(record);
+		return CountryId.ofRepoId(record.getC_Country_ID());
 	}
 
 	public static I_C_UOM createUomKg()
@@ -169,21 +179,41 @@ public final class BusinessTestHelper
 		return currenciesRepo.getOrCreateByCurrencyCode(CurrencyCode.EUR).getId();
 	}
 
+	public static I_M_Product createProduct(final String name, final I_C_UOM uom)
+	{
+		final BigDecimal weightKg = null; // N/A
+		return createProduct(name, uom, weightKg);
+	}
+
+	public static I_M_Product createProduct(final String name, final UomId uomId)
+	{
+		final BigDecimal weightKg = null; // N/A
+		return createProduct(name, uomId, weightKg);
+	}
+
+	public static I_M_Product createProduct(
+			@NonNull final String name,
+			@Nullable final I_C_UOM uom,
+			@Nullable final BigDecimal weightKg)
+	{
+		final UomId uomId = uom == null ? null : UomId.ofRepoIdOrNull(uom.getC_UOM_ID());
+		return createProduct(name, uomId, weightKg);
+	}
+
 	/**
-	 * @param name
-	 * @param uom
 	 * @param weightKg product weight (Kg); mainly used for packing materials
-	 * @return
 	 */
-	public static I_M_Product createProduct(final String name, final I_C_UOM uom, final BigDecimal weightKg)
+	public static I_M_Product createProduct(
+			@NonNull final String name,
+			@Nullable final UomId uomId,
+			@Nullable final BigDecimal weightKg)
 	{
 		final I_M_Product product = newInstanceOutOfTrx(I_M_Product.class);
 		POJOWrapper.setInstanceName(product, name);
 		product.setValue(name);
 		product.setName(name);
-		product.setC_UOM_ID(uom.getC_UOM_ID());
-		product.setProductType(ProductType.Item.getCode());
-		product.setIsStocked(true);
+		product.setC_UOM_ID(UomId.toRepoId(uomId));
+
 		if (weightKg != null)
 		{
 			product.setWeight(weightKg);
@@ -191,12 +221,6 @@ public final class BusinessTestHelper
 		saveRecord(product);
 
 		return product;
-	}
-
-	public static I_M_Product createProduct(final String name, final I_C_UOM uom)
-	{
-		final BigDecimal weightKg = null; // N/A
-		return createProduct(name, uom, weightKg);
 	}
 
 	/**
