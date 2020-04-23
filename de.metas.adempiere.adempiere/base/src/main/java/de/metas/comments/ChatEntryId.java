@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.notes;
+package de.metas.comments;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
@@ -29,22 +29,22 @@ import de.metas.util.lang.RepoIdAware;
 import lombok.Value;
 
 @Value
-public class ChatId implements RepoIdAware
+public class ChatEntryId implements RepoIdAware
 {
 	int repoId;
 
 	@JsonCreator
-	public static ChatId ofRepoId(final int repoId)
+	public static ChatEntryId ofRepoId(final int repoId)
 	{
-		return new ChatId(repoId);
+		return new ChatEntryId(repoId);
 	}
 
-	public static ChatId ofRepoIdOrNull(final int repoId)
+	public static ChatEntryId ofRepoIdOrNull(final int repoId)
 	{
 		return repoId > 0 ? ofRepoId(repoId) : null;
 	}
 
-	private ChatId(final int repoId)
+	private ChatEntryId(final int repoId)
 	{
 		this.repoId = Check.assumeGreaterThanZero(repoId, "repoId");
 	}

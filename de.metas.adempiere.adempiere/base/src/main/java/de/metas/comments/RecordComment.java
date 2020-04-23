@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.notes;
+package de.metas.comments;
 
 import de.metas.user.UserId;
 import lombok.NonNull;
@@ -29,7 +29,7 @@ import lombok.Value;
 import java.time.ZonedDateTime;
 
 @Value
-public class UserRecordNote
+public class RecordComment
 {
 	@NonNull UserId createdBy;
 
@@ -39,7 +39,7 @@ public class UserRecordNote
 
 	@NonNull ChatEntryId id;
 
-	private UserRecordNote(@NonNull final UserId createdBy, @NonNull final ZonedDateTime created, @NonNull final String text, @NonNull final ChatEntryId id)
+	private RecordComment(@NonNull final UserId createdBy, @NonNull final ZonedDateTime created, @NonNull final String text, @NonNull final ChatEntryId id)
 	{
 		this.createdBy = createdBy;
 		this.created = created;
@@ -48,8 +48,8 @@ public class UserRecordNote
 	}
 
 	@NonNull
-	public static UserRecordNote of(@NonNull final UserId createdBy, @NonNull final ZonedDateTime created, @NonNull final String text, @NonNull final ChatEntryId id)
+	public static RecordComment of(@NonNull final UserId createdBy, @NonNull final ZonedDateTime created, @NonNull final String text, @NonNull final ChatEntryId id)
 	{
-		return new UserRecordNote(createdBy, created, text, id);
+		return new RecordComment(createdBy, created, text, id);
 	}
 }

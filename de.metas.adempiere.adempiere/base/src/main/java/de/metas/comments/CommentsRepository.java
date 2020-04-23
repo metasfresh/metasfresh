@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.notes;
+package de.metas.comments;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.user.UserId;
@@ -44,18 +44,18 @@ import java.time.ZonedDateTime;
 import java.util.List;
 
 /**
- * A Note is made of an {@link I_CM_Chat} as the parent storing the table and record IDs,
- * and an {@link I_CM_ChatEntry} as the children storing the text data of the note.
+ * A Comment is made of an {@link I_CM_Chat} as the parent storing the table and record IDs,
+ * and an {@link I_CM_ChatEntry} as the children storing the text data of the Comment.
  * <p>
- * There can be multiple notes for a record.
+ * There can be multiple Comments for a record.
  */
 @Repository
-public class NotesRepository
+public class CommentsRepository
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IADTableDAO tableDAO = Services.get(IADTableDAO.class);
 
-	public void createNote(final @NonNull String characterData, @NonNull final TableRecordReference tableRecordReference)
+	public void createComment(final @NonNull String characterData, @NonNull final TableRecordReference tableRecordReference)
 	{
 		final ChatId chatId = getOrCreateChat(tableRecordReference);
 
@@ -68,7 +68,7 @@ public class NotesRepository
 	}
 
 	@NonNull
-	public List<UserRecordNote> retrieveLastNotes(@NonNull final TableRecordReference tableRecordReference, final int maxNumberOfRecords)
+	public List<RecordComment> retrieveLastComments(@NonNull final TableRecordReference tableRecordReference, final int maxNumberOfRecords)
 	{
 		final ChatId chatId = getChatIdOrNull(tableRecordReference);
 
@@ -83,19 +83,19 @@ public class NotesRepository
 				.setLimit(maxNumberOfRecords)
 				.create()
 				.iterateAndStream()
-				.map(NotesRepository::toRecordNote)
+				.map(CommentsRepository::toRecordComment)
 				.collect(GuavaCollectors.toImmutableList());
 	}
 
 	@NonNull
-	private static UserRecordNote toRecordNote(@NonNull final I_CM_ChatEntry chatEntry)
+	private static RecordComment toRecordComment(@NonNull final I_CM_ChatEntry chatEntry)
 	{
 		final UserId createdBy = UserId.ofRepoId(chatEntry.getCreatedBy());
 		final ZonedDateTime created = TimeUtil.asZonedDateTime(chatEntry.getCreated());
 		final String text = chatEntry.getCharacterData();
 		final ChatEntryId id = ChatEntryId.ofRepoId(chatEntry.getCM_ChatEntry_ID());
 
-		return UserRecordNote.of(createdBy, created, text, id);
+		return RecordComment.of(createdBy, created, text, id);
 	}
 
 	@NonNull
