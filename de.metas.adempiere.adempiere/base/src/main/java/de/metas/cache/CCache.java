@@ -835,7 +835,6 @@ public class CCache<K, V> implements CacheInterface
 
 		private CCacheStats(final long cacheId, final String name, final long size, final CacheStats guavaStats)
 		{
-			super();
 			this.cacheId = cacheId;
 			this.name = name;
 			this.size = size;

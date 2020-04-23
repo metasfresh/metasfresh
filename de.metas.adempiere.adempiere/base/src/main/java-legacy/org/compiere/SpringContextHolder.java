@@ -126,6 +126,17 @@ public final class SpringContextHolder
 		return springApplicationContext.getBean(requiredType);
 	}
 
+	/** can be used if a service might be retrieved before the spring application context is up */
+	public <T> T getBeanOr(@NonNull final Class<T> requiredType, @NonNull final T defaultImplementation)
+	{
+		final ApplicationContext springApplicationContext = getApplicationContext();
+		if (springApplicationContext == null)
+		{
+			return defaultImplementation;
+		}
+		return getBean(requiredType);
+	}
+
 	/**
 	 * When running this method from within a junit test, we need to fire up spring
 	 */
