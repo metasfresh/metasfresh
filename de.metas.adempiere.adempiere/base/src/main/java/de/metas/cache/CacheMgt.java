@@ -37,6 +37,7 @@ import org.adempiere.util.jmx.JMXRegistry.OnJMXAlreadyExistsPolicy;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.Adempiere;
 import org.slf4j.Logger;
+import org.slf4j.MDC.MDCCloseable;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Stopwatch;
@@ -113,28 +114,36 @@ public final class CacheMgt
 
 	public void register(@NonNull final CacheInterface instance)
 	{
-		final Boolean registerWeak = null; // auto
-		register(instance, registerWeak);
+		try (final MDCCloseable cacheIdMDC = CacheMDC.putCache(instance))
+		{
+			final Boolean registerWeak = null; // auto
+			register(instance, registerWeak);
+		}
 	}
 
 	private void register(@NonNull final CacheInterface cache, final Boolean registerWeak)
 	{
-		// FIXME: consider register weak flag
+		try (final MDCCloseable cacheIdMDC = CacheMDC.putCache(cache))
+		{
+			// FIXME: consider register weak flag
+			final Set<CacheLabel> labels = cache.getLabels();
+			Check.assumeNotEmpty(labels, "labels is not empty");
 
-		final Set<CacheLabel> labels = cache.getLabels();
-		Check.assumeNotEmpty(labels, "labels is not empty");
-
-		labels.stream()
-				.map(this::getCachesGroup)
-				.forEach(cacheGroup -> cacheGroup.addCache(cache));
+			labels.stream()
+					.map(this::getCachesGroup)
+					.forEach(cacheGroup -> cacheGroup.addCache(cache));
+		}
 	}
 
 	public void unregister(final CacheInterface cache)
 	{
-		cache.getLabels()
-				.stream()
-				.map(this::getCachesGroup)
-				.forEach(cacheGroup -> cacheGroup.removeCache(cache));
+		try (final MDCCloseable cacheIdMDC = CacheMDC.putCache(cache))
+		{
+			cache.getLabels()
+					.stream()
+					.map(this::getCachesGroup)
+					.forEach(cacheGroup -> cacheGroup.removeCache(cache));
+		}
 	}
 
 	public Set<CacheLabel> getCacheLabels()
@@ -367,13 +376,16 @@ public final class CacheMgt
 		if (request.isAllRecords())
 		{
 			final CacheLabel label = CacheLabel.ofTableName(request.getTableNameEffective());
-			final CachesGroup cachesGroup = getCachesGroupIfPresent(label);
-			if (cachesGroup == null)
+			try (final MDCCloseable labelMDC = CacheMDC.putCacheLabel(label))
 			{
-				return 0;
-			}
+				final CachesGroup cachesGroup = getCachesGroupIfPresent(label);
+				if (cachesGroup == null)
+				{
+					return 0;
+				}
 
-			return cachesGroup.invalidateAllNoFail();
+				return cachesGroup.invalidateAllNoFail();
+			}
 		}
 		else
 		{
@@ -394,16 +406,19 @@ public final class CacheMgt
 		}
 	}
 
-	private long invalidateForRecord(final TableRecordReference recordRef)
+	private long invalidateForRecord(@NonNull final TableRecordReference recordRef)
 	{
 		final CacheLabel label = CacheLabel.ofTableName(recordRef.getTableName());
-		final CachesGroup cachesGroup = getCachesGroupIfPresent(label);
-		if (cachesGroup == null)
+		try (final MDCCloseable labelMDC = CacheMDC.putCacheLabel(label))
 		{
-			return 0;
-		}
+			final CachesGroup cachesGroup = getCachesGroupIfPresent(label);
+			if (cachesGroup == null)
+			{
+				return 0;
+			}
 
-		return cachesGroup.invalidateForRecordNoFail(recordRef);
+			return cachesGroup.invalidateForRecordNoFail(recordRef);
+		}
 	}
 
 	/**
@@ -583,12 +598,18 @@ public final class CacheMgt
 
 		public void addCache(@NonNull final CacheInterface cache)
 		{
-			caches.put(cache.getCacheId(), cache);
+			try (final MDCCloseable cacheIdMDC = CacheMDC.putCache(cache))
+			{
+				caches.put(cache.getCacheId(), cache);
+			}
 		}
 
 		public void removeCache(@NonNull final CacheInterface cache)
 		{
-			caches.remove(cache.getCacheId());
+			try (final MDCCloseable cacheIdMDC = CacheMDC.putCache(cache))
+			{
+				caches.remove(cache.getCacheId());
+			}
 		}
 
 		private final Stream<CacheInterface> streamCaches()
@@ -621,7 +642,7 @@ public final class CacheMgt
 
 		private static final long invalidateNoFail(final CacheInterface cacheInstance, final TableRecordReference recordRef)
 		{
-			try
+			try (final MDCCloseable cacheIdMDC = CacheMDC.putCache(cacheInstance))
 			{
 				return cacheInstance.resetForRecordId(recordRef);
 			}
@@ -635,13 +656,12 @@ public final class CacheMgt
 
 		private static final long invalidateNoFail(@Nullable final CacheInterface cacheInstance)
 		{
-			if (cacheInstance == null)
+			try (final MDCCloseable cacheIdMDC = CacheMDC.putCache(cacheInstance))
 			{
-				return 0;
-			}
-
-			try
-			{
+				if (cacheInstance == null)
+				{
+					return 0;
+				}
 				return cacheInstance.reset();
 			}
 			catch (final Exception ex)

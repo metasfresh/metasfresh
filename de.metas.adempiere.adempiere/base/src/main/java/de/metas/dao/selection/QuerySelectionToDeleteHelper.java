@@ -117,7 +117,7 @@ public class QuerySelectionToDeleteHelper
 			DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_None);
 		}
 
-		logger.debug("{} query selections scheduled to be deleted");
+		logger.debug("{} query selections are now scheduled to be deleted", counter);
 	}
 
 	public static void deleteScheduledSelectionsNoFail()

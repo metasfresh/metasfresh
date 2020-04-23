@@ -77,7 +77,7 @@ final class BPartnerCompositeCache
 			@NonNull final Collection<BPartnerCompositeLookupKey> keys)
 	{
 		final ImmutableList.Builder<BPartnerComposite> result = ImmutableList.builder();
-		for (BPartnerCompositeLookupKey key : keys)
+		for (final BPartnerCompositeLookupKey key : keys)
 		{
 			result.add(cache.getOrElseThrow(
 					key,

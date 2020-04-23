@@ -11,11 +11,13 @@ import static io.github.jsonSnapshot.SnapshotMatcher.expect;
 import static io.github.jsonSnapshot.SnapshotMatcher.start;
 import static io.github.jsonSnapshot.SnapshotMatcher.validateSnapshots;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
 
+import static org.compiere.model.I_C_BPartner_Location.*;
+
+import java.io.InputStream;
 import java.math.BigDecimal;
 import java.net.URI;
 import java.time.LocalDate;
@@ -30,14 +32,13 @@ import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
 import org.adempiere.ad.table.MockLogEntriesRepository;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.ClientId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_AD_OrgInfo;
-import org.compiere.model.I_C_BP_Group;
+import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.X_C_DocType;
@@ -58,11 +59,13 @@ import ch.qos.logback.classic.Level;
 import de.metas.attachments.AttachmentEntry;
 import de.metas.attachments.AttachmentEntryId;
 import de.metas.bpartner.BPGroupRepository;
+import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.GLN;
 import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.impl.BPartnerBL;
+import de.metas.business.BusinessTestHelper;
 import de.metas.currency.CurrencyRepository;
 import de.metas.document.DocBaseAndSubType;
 import de.metas.greeting.GreetingRepository;
@@ -116,8 +119,10 @@ import de.metas.tax.api.TaxCategoryId;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.user.UserRepository;
+import de.metas.util.JSONObjectMapper;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -144,6 +149,8 @@ import de.metas.util.time.SystemTime;
 @ExtendWith(AdempiereTestWatcher.class)
 public class OrderCandidatesRestControllerImplTest
 {
+	private static final long DEFAULT_TIME = 1584400036193L; // some time on 2020-03-16
+
 	private static final String DATA_SOURCE_INTERNALNAME = "SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController";
 	private static final String DATA_DEST_INVOICECANDIDATE = "DEST.de.metas.invoicecandidate";
 
@@ -180,7 +187,7 @@ public class OrderCandidatesRestControllerImplTest
 	{
 		AdempiereTestHelper.get().init();
 
-		SystemTime.setTimeSource(() -> 1584400036193L); // some time at 2020-03-16
+		SystemTime.setTimeSource(() -> DEFAULT_TIME);
 
 		Services.registerService(IBPartnerBL.class, new BPartnerBL(new UserRepository()));
 		SpringContextHolder.registerJUnitBean(new GreetingRepository());
@@ -193,9 +200,21 @@ public class OrderCandidatesRestControllerImplTest
 		{ // create the master data requested to process the data from our json file
 			testMasterdata = new TestMasterdata();
 
-			countryId_DE = testMasterdata.createCountry(COUNTRY_CODE_DE);
+			defaultOrgRecord = InterfaceWrapperHelper.newInstance(I_AD_Org.class);
+			defaultOrgRecord.setValue("001");
+			saveRecord(defaultOrgRecord);
 
-			uomId = testMasterdata.createUOM(UOM_CODE);
+			final I_AD_OrgInfo orgInfo = InterfaceWrapperHelper.newInstance(I_AD_OrgInfo.class);
+			orgInfo.setAD_Org_ID(defaultOrgRecord.getAD_Org_ID());
+			orgInfo.setStoreCreditCardData(StoreCreditCardNumberMode.DONT_STORE.getCode());
+			orgInfo.setTimeZone(ZoneId.of("Europe/Berlin").getId());
+			saveRecord(orgInfo);
+
+			countryId_DE = BusinessTestHelper.createCountry(COUNTRY_CODE_DE);
+
+			final I_C_UOM uom = BusinessTestHelper.createUOM(UOM_CODE, UOM_CODE);
+			uomId = UomId.ofRepoId(uom.getC_UOM_ID());
+			BusinessTestHelper.createProduct("ProductCode", uomId);
 
 			testMasterdata.createDocType(DOCTYPE_SALES_INVOICE);
 
@@ -211,15 +230,6 @@ public class OrderCandidatesRestControllerImplTest
 
 			testMasterdata.createDocType(DocBaseAndSubType.of(X_C_DocType.DOCBASETYPE_SalesOrder,
 					X_C_DocType.DOCSUBTYPE_PrepayOrder));
-
-			defaultOrgRecord = newInstance(I_AD_Org.class);
-			saveRecord(defaultOrgRecord);
-
-			final I_AD_OrgInfo orgInfo = InterfaceWrapperHelper.newInstance(I_AD_OrgInfo.class);
-			orgInfo.setAD_Org_ID(defaultOrgRecord.getAD_Org_ID());
-			orgInfo.setStoreCreditCardData(StoreCreditCardNumberMode.DONT_STORE.getCode());
-			orgInfo.setTimeZone(ZoneId.of("Europe/Berlin").getId());
-			saveRecord(orgInfo);
 		}
 
 		final CurrencyService currencyService = new CurrencyService();
@@ -271,6 +281,21 @@ public class OrderCandidatesRestControllerImplTest
 		registry.addModelInterceptor(new de.metas.ordercandidate.modelvalidator.C_OLCand(olCandValidatorService));
 	}
 
+	private static class DummyOLCandWithUOMForTUsCapacityProvider implements IOLCandWithUOMForTUsCapacityProvider
+	{
+		@Override
+		public boolean isProviderNeededForOLCand(I_C_OLCand olCand)
+		{
+			return false;
+		}
+
+		@Override
+		public Quantity computeQtyItemCapacity(I_C_OLCand olCand)
+		{
+			return null;
+		}
+	}
+
 	@Test
 	public void extractTags()
 	{
@@ -294,14 +319,8 @@ public class OrderCandidatesRestControllerImplTest
 	public void createOrderLineCandidates()
 	{
 		final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
-
-		testMasterdata.createCountry("CH");
-
-		final I_C_BP_Group groupRecord = newInstance(I_C_BP_Group.class);
-		groupRecord.setIsDefault(true);
-		InterfaceWrapperHelper.setValue(groupRecord, I_C_BP_Group.COLUMNNAME_AD_Client_ID, ClientId.METASFRESH.getRepoId());
-		groupRecord.setName("DefaultGroup");
-		saveRecord(groupRecord);
+		BusinessTestHelper.createBPGroup("DefaultGroup", true);
+		BusinessTestHelper.createCountry("CH");
 
 		final JsonOLCandCreateBulkRequest bulkRequestFromFile = JsonOLCandUtil.fromResource("/JsonOLCandCreateBulkRequest.json");
 		assertThat(bulkRequestFromFile.getRequests()).hasSize(21); // guards
@@ -972,18 +991,133 @@ public class OrderCandidatesRestControllerImplTest
 		expect(olCand).toMatchSnapshot();
 	}
 
-	private static class DummyOLCandWithUOMForTUsCapacityProvider implements IOLCandWithUOMForTUsCapacityProvider
+	/**
+	 * Uses a production-based JSON to make sure that billTo and shipTo flags end up the in C_BPartner_Location the ways they should.
+	 */
+	@Test
+	public void billToDefault_newBPartner()
 	{
-		@Override
-		public boolean isProviderNeededForOLCand(final I_C_OLCand olCand)
-		{
-			return false;
-		}
+		// given
+		BusinessTestHelper.createBPGroup("DefaultGroup", true);
+		testMasterdata.createDataSource("SOURCE.de.metas.rest_api.ordercandidates.impl.OrderCandidatesRestControllerImpl_B2C");
+		testMasterdata.createDataSource("DEST.de.metas.ordercandidate");
+		testMasterdata.createPricingSystem("vk3");
+		testMasterdata.createShipper("Standard");
+		testMasterdata.createSalesRep("ABC-DEF-12345");
+		testMasterdata.createDocType(DocBaseAndSubType.of("ARI"));
 
-		@Override
-		public Quantity computeQtyItemCapacity(final I_C_OLCand olCand)
-		{
-			return null;
-		}
+		final JsonOLCandCreateRequest request = loadRequest("OrderCandidatesRestControllerImplTest_1.json");
+
+		// when
+		final ResponseEntity<JsonOLCandCreateBulkResponse> result = orderCandidatesRestControllerImpl.createOrderLineCandidate(request);
+
+		// then
+		final JsonOLCand jsonOLCand = assertResultOKForTest_1_JSON(result);
+		expect(jsonOLCand).toMatchSnapshot();
+
+		final List<I_C_BPartner_Location> bplRecords = POJOLookupMap.get().getRecords(I_C_BPartner_Location.class);
+		assertThat(bplRecords)
+				.extracting(COLUMNNAME_ExternalId, "shipTo", "billTo", "billToDefault")
+				.containsExactlyInAnyOrder(
+						tuple("billToId-1-2", false, true, true),
+						tuple("shipToId-1-2", true, false, false));
+	}
+
+	@Test
+	public void billToDefault_exitingBPartner()
+	{
+		// given
+		BusinessTestHelper.createBPGroup("DefaultGroup", true);
+		testMasterdata.createDataSource("SOURCE.de.metas.rest_api.ordercandidates.impl.OrderCandidatesRestControllerImpl_B2C");
+		testMasterdata.createDataSource("DEST.de.metas.ordercandidate");
+		testMasterdata.createPricingSystem("vk3");
+		testMasterdata.createShipper("Standard");
+		testMasterdata.createSalesRep("ABC-DEF-12345");
+		testMasterdata.createDocType(DocBaseAndSubType.of("ARI"));
+
+		final BPartnerId bpartnerId = testMasterdata.prepareBPartner()
+				.bpValue("bpValue")
+				.bpExternalId("1-2")
+				.bpGroupExistingName("DefaultGroup")
+				.build();
+		testMasterdata.prepareBPartnerLocation().bpartnerId(bpartnerId)
+				.externalId("billToId-1-2")
+				.countryId(countryId_DE)
+				.shipTo(false)
+				.billTo(true)
+				.billToDefault(false)
+				.shipToDefault(false)
+				.build();
+		testMasterdata.prepareBPartnerLocation().bpartnerId(bpartnerId)
+				.externalId("shipToId-1-2")
+				.countryId(countryId_DE)
+				.shipTo(true)
+				.billTo(false)
+				.billToDefault(false)
+				.shipToDefault(false)
+				.build();
+		testMasterdata.prepareBPartnerLocation().bpartnerId(bpartnerId)
+				.externalId("billToId-1-2_alt")
+				.countryId(countryId_DE)
+				.shipTo(false)
+				.billTo(true)
+				.billToDefault(false)
+				.shipToDefault(false)
+				.build();
+		testMasterdata.prepareBPartnerLocation().bpartnerId(bpartnerId)
+				.externalId("shipToId-1-2_alt")
+				.countryId(countryId_DE)
+				.shipTo(true)
+				.billTo(false)
+				.billToDefault(false)
+				.shipToDefault(false)
+				.build();
+
+		SystemTime.setTimeSource(() -> 1584400036193L + 10000); // some later time, such that the bpartner's creation was in the past.
+
+		final JsonOLCandCreateRequest request = loadRequest("OrderCandidatesRestControllerImplTest_1.json");
+
+		// when
+		final ResponseEntity<JsonOLCandCreateBulkResponse> result = orderCandidatesRestControllerImpl.createOrderLineCandidate(request);
+
+		// then
+		final JsonOLCand jsonOLCand = assertResultOKForTest_1_JSON(result);
+		expect(jsonOLCand).toMatchSnapshot();
+
+		final List<I_C_BPartner_Location> bplRecords = POJOLookupMap.get().getRecords(I_C_BPartner_Location.class);
+		assertThat(bplRecords)
+				.extracting(COLUMNNAME_ExternalId, "shipTo", "billTo", "billToDefault")
+				.containsExactlyInAnyOrder(
+						tuple("billToId-1-2", false, true, true),
+						tuple("shipToId-1-2", true, false, false),
+						tuple("billToId-1-2_alt", false, true, false),
+						tuple("shipToId-1-2_alt", true, false, false));
+
+	}
+
+	private JsonOLCand assertResultOKForTest_1_JSON(@NonNull final ResponseEntity<JsonOLCandCreateBulkResponse> result)
+	{
+		assertThat(result.getBody().getResult()).hasSize(1);
+
+		final JsonOLCand jsonOLCand = result.getBody().getResult().get(0);
+		assertThat(jsonOLCand.getBpartner().getLocation())
+				.extracting("billTo", "billToDefault", "shipTo")
+				.containsExactly(true, true, false);
+		assertThat(jsonOLCand.getBillBPartner().getLocation())
+				.extracting("billTo", "billToDefault", "shipTo")
+				.containsExactly(true, true, false);
+		assertThat(jsonOLCand.getDropShipBPartner().getLocation())
+				.extracting("billTo", "billToDefault", "shipTo")
+				.containsExactly(false, false, true);
+
+		return jsonOLCand;
+	}
+
+	private JsonOLCandCreateRequest loadRequest(@NonNull final String jsonFileName)
+	{
+		final InputStream stream = getClass().getClassLoader().getResourceAsStream("de/metas/rest_api/ordercandidates/impl/" + jsonFileName);
+		assertThat(stream).isNotNull();
+		final JsonOLCandCreateRequest request = JSONObjectMapper.forClass(JsonOLCandCreateRequest.class).readValue(stream);
+		return request;
 	}
 }
