@@ -204,6 +204,7 @@ class VendorReturnsInOutProducer extends AbstractReturnsInOutProducer
 					}
 					newInOutLine.setQtyEnteredTU(new BigDecimal(qtyTU));
 					newInOutLine.setM_HU_PI_Item_Product(huPipToInOutLine.getHupip());
+					newInOutLine.setC_OrderLine_ID(returnOriginInOutLine.getC_OrderLine_ID());
 				}
 			}
 
