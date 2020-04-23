@@ -68,7 +68,7 @@ public class NotesRepository
 	}
 
 	@NonNull
-	public List<RecordNote> retrieveLastNotes(@NonNull final TableRecordReference tableRecordReference, final int maxNumberOfRecords)
+	public List<UserRecordNote> retrieveLastNotes(@NonNull final TableRecordReference tableRecordReference, final int maxNumberOfRecords)
 	{
 		final ChatId chatId = getChatIdOrNull(tableRecordReference);
 
@@ -88,14 +88,14 @@ public class NotesRepository
 	}
 
 	@NonNull
-	private static RecordNote toRecordNote(@NonNull final I_CM_ChatEntry chatEntry)
+	private static UserRecordNote toRecordNote(@NonNull final I_CM_ChatEntry chatEntry)
 	{
 		final UserId createdBy = UserId.ofRepoId(chatEntry.getCreatedBy());
 		final ZonedDateTime created = TimeUtil.asZonedDateTime(chatEntry.getCreated());
 		final String text = chatEntry.getCharacterData();
 		final ChatEntryId id = ChatEntryId.ofRepoId(chatEntry.getCM_ChatEntry_ID());
 
-		return RecordNote.of(createdBy, created, text, id);
+		return UserRecordNote.of(createdBy, created, text, id);
 	}
 
 	@NonNull

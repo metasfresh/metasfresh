@@ -29,7 +29,7 @@ import lombok.Value;
 import java.time.ZonedDateTime;
 
 @Value
-public class RecordNote
+public class UserRecordNote
 {
 	@NonNull UserId createdBy;
 
@@ -39,7 +39,7 @@ public class RecordNote
 
 	@NonNull ChatEntryId id;
 
-	private RecordNote(@NonNull final UserId createdBy, @NonNull final ZonedDateTime created, @NonNull final String text, @NonNull final ChatEntryId id)
+	private UserRecordNote(@NonNull final UserId createdBy, @NonNull final ZonedDateTime created, @NonNull final String text, @NonNull final ChatEntryId id)
 	{
 		this.createdBy = createdBy;
 		this.created = created;
@@ -48,8 +48,8 @@ public class RecordNote
 	}
 
 	@NonNull
-	public static RecordNote of(@NonNull final UserId createdBy, @NonNull final ZonedDateTime created, @NonNull final String text, @NonNull final ChatEntryId id)
+	public static UserRecordNote of(@NonNull final UserId createdBy, @NonNull final ZonedDateTime created, @NonNull final String text, @NonNull final ChatEntryId id)
 	{
-		return new RecordNote(createdBy, created, text, id);
+		return new UserRecordNote(createdBy, created, text, id);
 	}
 }
