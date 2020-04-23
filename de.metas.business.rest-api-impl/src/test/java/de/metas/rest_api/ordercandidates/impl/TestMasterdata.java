@@ -17,7 +17,6 @@ import org.compiere.model.I_C_Country;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Location;
 import org.compiere.model.I_C_TaxCategory;
-import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_PricingSystem;
@@ -71,14 +70,6 @@ import lombok.NonNull;
 @Ignore
 final class TestMasterdata
 {
-	public UomId createUOM(final String uomCode)
-	{
-		final I_C_UOM uomRecord = newInstance(I_C_UOM.class);
-		uomRecord.setX12DE355(uomCode);
-		saveRecord(uomRecord);
-		return UomId.ofRepoId(uomRecord.getC_UOM_ID());
-	}
-
 	public CountryId createCountry(final String countryCode)
 	{
 		final I_C_Country record = newInstance(I_C_Country.class);

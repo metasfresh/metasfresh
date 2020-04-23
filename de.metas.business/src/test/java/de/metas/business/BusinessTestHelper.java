@@ -9,6 +9,8 @@ import javax.annotation.Nullable;
 
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
+import org.compiere.model.I_C_BP_Group;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Currency;
@@ -154,35 +156,6 @@ public final class BusinessTestHelper
 	}
 
 	/**
-	 *
-	 * @param name
-	 * @param uom
-	 * @param weightKg product weight (Kg); mainly used for packing materials
-	 * @return
-	 */
-	public static I_M_Product createProduct(final String name, final I_C_UOM uom, final BigDecimal weightKg)
-	{
-		final I_M_Product product = newInstanceOutOfTrx(I_M_Product.class);
-		POJOWrapper.setInstanceName(product, name);
-		product.setValue(name);
-		product.setName(name);
-		product.setC_UOM_ID(uom.getC_UOM_ID());
-		if (weightKg != null)
-		{
-			product.setWeight(weightKg);
-		}
-		saveRecord(product);
-
-		return product;
-	}
-
-	public static I_M_Product createProduct(final String name, final I_C_UOM uom)
-	{
-		final BigDecimal weightKg = null; // N/A
-		return createProduct(name, uom, weightKg);
-	}
-
-	/**
 	 * Creates and saves a simple {@link I_C_BPartner}
 	 */
 	public static I_C_BPartner createBPartner(final String nameAndValue)
@@ -196,6 +169,50 @@ public final class BusinessTestHelper
 		return bpartner;
 	}
 
+	public static I_M_Product createProduct(final String name, final I_C_UOM uom)
+	{
+		final BigDecimal weightKg = null; // N/A
+		return createProduct(name, uom, weightKg);
+	}
+
+	public static I_M_Product createProduct(final String name, final UomId uomId)
+	{
+		final BigDecimal weightKg = null; // N/A
+		return createProduct(name, uomId, weightKg);
+	}
+
+	public static I_M_Product createProduct(
+			@NonNull final String name,
+			@Nullable final I_C_UOM uom,
+			@Nullable final BigDecimal weightKg)
+	{
+		final UomId uomId = uom == null ? null : UomId.ofRepoIdOrNull(uom.getC_UOM_ID());
+		return createProduct(name, uomId, weightKg);
+	}
+
+	/**
+	 * @param weightKg product weight (Kg); mainly used for packing materials
+	 */
+	public static I_M_Product createProduct(
+			@NonNull final String name,
+			@Nullable final UomId uomId,
+			@Nullable final BigDecimal weightKg)
+	{
+		final I_M_Product product = newInstanceOutOfTrx(I_M_Product.class);
+		POJOWrapper.setInstanceName(product, name);
+		product.setValue(name);
+		product.setName(name);
+		product.setC_UOM_ID(UomId.toRepoId(uomId));
+
+		if (weightKg != null)
+		{
+			product.setWeight(weightKg);
+		}
+		saveRecord(product);
+
+		return product;
+	}
+
 	public static I_C_BPartner_Location createBPartnerLocation(final I_C_BPartner bpartner)
 	{
 		final I_C_BPartner_Location bpl = InterfaceWrapperHelper.newInstance(I_C_BPartner_Location.class, bpartner);
@@ -204,6 +221,18 @@ public final class BusinessTestHelper
 		bpl.setIsBillTo(true);
 		saveRecord(bpl);
 		return bpl;
+	}
+
+	public static I_C_BP_Group createBPGroup(final String name, final boolean isDefault)
+	{
+		final I_C_BP_Group bpGroupRecord = newInstanceOutOfTrx(I_C_BP_Group.class);
+		POJOWrapper.setInstanceName(bpGroupRecord, name);
+		bpGroupRecord.setName(name);
+		bpGroupRecord.setIsDefault(isDefault);
+		InterfaceWrapperHelper.setValue(bpGroupRecord, I_C_BP_Group.COLUMNNAME_AD_Client_ID, ClientId.METASFRESH.getRepoId());
+
+		saveRecord(bpGroupRecord);
+		return bpGroupRecord;
 	}
 
 	/**

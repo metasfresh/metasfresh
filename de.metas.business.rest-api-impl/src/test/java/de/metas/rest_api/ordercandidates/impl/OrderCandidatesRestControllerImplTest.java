@@ -11,11 +11,13 @@ import static io.github.jsonSnapshot.SnapshotMatcher.expect;
 import static io.github.jsonSnapshot.SnapshotMatcher.start;
 import static io.github.jsonSnapshot.SnapshotMatcher.validateSnapshots;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
 
+import static org.compiere.model.I_C_BPartner_Location.*;
+
+import java.io.InputStream;
 import java.math.BigDecimal;
 import java.net.URI;
 import java.time.LocalDate;
@@ -30,12 +32,12 @@ import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
 import org.adempiere.ad.table.RecordChangeLogRepository;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.ClientId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.adempiere.warehouse.WarehouseId;
+import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_AD_OrgInfo;
-import org.compiere.model.I_C_BP_Group;
+import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.X_C_DocType;
@@ -60,6 +62,7 @@ import de.metas.bpartner.GLN;
 import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.impl.BPartnerBL;
+import de.metas.business.BusinessTestHelper;
 import de.metas.currency.CurrencyRepository;
 import de.metas.document.DocBaseAndSubType;
 import de.metas.greeting.GreetingRepository;
@@ -76,7 +79,6 @@ import de.metas.ordercandidate.api.impl.OLCandBL;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.ordercandidate.spi.IOLCandWithUOMForTUsCapacityProvider;
 import de.metas.ordercandidate.spi.impl.DefaultOLCandValidator;
-import de.metas.organization.OrgId;
 import de.metas.organization.StoreCreditCardNumberMode;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PricingSystemId;
@@ -113,6 +115,7 @@ import de.metas.tax.api.TaxCategoryId;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.user.UserRepository;
+import de.metas.util.JSONObjectMapper;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
 import mockit.Mocked;
@@ -193,15 +196,23 @@ public class OrderCandidatesRestControllerImplTest
 		{ // create the master data requested to process the data from our json file
 			testMasterdata = new TestMasterdata();
 
+			final I_AD_Org org = InterfaceWrapperHelper.newInstance(I_AD_Org.class);
+			org.setValue("001");
+			saveRecord(org);
+
 			final I_AD_OrgInfo orgInfo = InterfaceWrapperHelper.newInstance(I_AD_OrgInfo.class);
-			orgInfo.setAD_Org_ID(OrgId.ANY.getRepoId());
+			orgInfo.setAD_Org_ID(org.getAD_Org_ID());
 			orgInfo.setStoreCreditCardData(StoreCreditCardNumberMode.DONT_STORE.getCode());
 			orgInfo.setTimeZone(ZoneId.of("Europe/Berlin").getId());
 			saveRecord(orgInfo);
 
+			BusinessTestHelper.createBPGroup("DefaultGroup", true);
+
 			countryId_DE = testMasterdata.createCountry(COUNTRY_CODE_DE);
 
-			uomId = testMasterdata.createUOM(UOM_CODE);
+			final I_C_UOM uom = BusinessTestHelper.createUOM(UOM_CODE, UOM_CODE);
+			uomId = UomId.ofRepoId(uom.getC_UOM_ID());
+			BusinessTestHelper.createProduct("ProductCode", uomId);
 
 			testMasterdata.createDocType(DOCTYPE_SALES_INVOICE);
 
@@ -266,6 +277,21 @@ public class OrderCandidatesRestControllerImplTest
 		registry.addModelInterceptor(new de.metas.ordercandidate.modelvalidator.C_OLCand(olCandValidatorService));
 	}
 
+	private static class DummyOLCandWithUOMForTUsCapacityProvider implements IOLCandWithUOMForTUsCapacityProvider
+	{
+		@Override
+		public boolean isProviderNeededForOLCand(I_C_OLCand olCand)
+		{
+			return false;
+		}
+
+		@Override
+		public Quantity computeQtyItemCapacity(I_C_OLCand olCand)
+		{
+			return null;
+		}
+	}
+
 	@Test
 	public void extractTags()
 	{
@@ -291,12 +317,6 @@ public class OrderCandidatesRestControllerImplTest
 		final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 
 		testMasterdata.createCountry("CH");
-
-		final I_C_BP_Group groupRecord = newInstance(I_C_BP_Group.class);
-		groupRecord.setIsDefault(true);
-		InterfaceWrapperHelper.setValue(groupRecord, I_C_BP_Group.COLUMNNAME_AD_Client_ID, ClientId.METASFRESH.getRepoId());
-		groupRecord.setName("DefaultGroup");
-		saveRecord(groupRecord);
 
 		final JsonOLCandCreateBulkRequest bulkRequestFromFile = JsonOLCandUtil.fromResource("/JsonOLCandCreateBulkRequest.json");
 		assertThat(bulkRequestFromFile.getRequests()).hasSize(21); // guards
@@ -934,18 +954,53 @@ public class OrderCandidatesRestControllerImplTest
 		expect(olCand).toMatchSnapshot();
 	}
 
-	private static class DummyOLCandWithUOMForTUsCapacityProvider implements IOLCandWithUOMForTUsCapacityProvider
+	/**
+	 * Uses a production-based JSON to make sure that billTo and shipTo flags end up the in C_BPartner_Location the ways they should.
+	 */
+	@Test
+	public void test_billToDefault()
 	{
-		@Override
-		public boolean isProviderNeededForOLCand(I_C_OLCand olCand)
-		{
-			return false;
-		}
+		// given
+		testMasterdata.createDataSource("SOURCE.de.metas.rest_api.ordercandidates.impl.OrderCandidatesRestControllerImpl_B2C");
+		testMasterdata.createDataSource("DEST.de.metas.ordercandidate");
+		testMasterdata.createPricingSystem("vk3");
+		testMasterdata.createShipper("Standard");
+		testMasterdata.createSalesRep("ABC-DEF-12345");
+		testMasterdata.createDocType(DocBaseAndSubType.of("ARI"));
 
-		@Override
-		public Quantity computeQtyItemCapacity(I_C_OLCand olCand)
-		{
-			return null;
-		}
+		final JsonOLCandCreateRequest request = loadRequest("OrderCandidatesRestControllerImplTest.json");
+
+		// when
+		final ResponseEntity<JsonOLCandCreateBulkResponse> result = orderCandidatesRestControllerImpl.createOrderLineCandidate(request);
+
+		// then
+		assertThat(result.getBody().getResult()).hasSize(1);
+		final JsonOLCand jsonOLCand = result.getBody().getResult().get(0);
+		assertThat(jsonOLCand.getBpartner().getLocation())
+				.extracting("billTo", "billToDefault", "shipTo")
+				.containsExactly(true, true, false);
+		assertThat(jsonOLCand.getBillBPartner().getLocation())
+				.extracting("billTo", "billToDefault", "shipTo")
+				.containsExactly(true, true, false);
+		assertThat(jsonOLCand.getDropShipBPartner().getLocation())
+				.extracting("billTo", "billToDefault", "shipTo")
+				.containsExactly(false, false, true);
+
+		final List<I_C_BPartner_Location> olCandRecords = POJOLookupMap.get().getRecords(I_C_BPartner_Location.class);
+		assertThat(olCandRecords).hasSize(2)
+				.extracting(COLUMNNAME_ExternalId, "shipTo", "billTo", "billToDefault")
+				.containsExactlyInAnyOrder(
+						tuple("billToId-1-2", false, true, true),
+						tuple("shipToId-1-2", true, false, false));
+
+		expect(jsonOLCand).toMatchSnapshot();
+	}
+
+	private JsonOLCandCreateRequest loadRequest(final String jsonFileName)
+	{
+		final InputStream stream = getClass().getClassLoader().getResourceAsStream("de/metas/rest_api/ordercandidates/impl/" + jsonFileName);
+		assertThat(stream).isNotNull();
+		final JsonOLCandCreateRequest request = JSONObjectMapper.forClass(JsonOLCandCreateRequest.class).readValue(stream);
+		return request;
 	}
 }

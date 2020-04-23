@@ -167,7 +167,7 @@ public class JsonResponseBPartner
 	private JsonResponseBPartner(
 			@JsonProperty(METASFRESH_ID) @NonNull final MetasfreshId metasfreshId,
 			@JsonProperty(EXTERNAL_ID) @Nullable final JsonExternalId externalId,
-			@JsonProperty(CODE) @NonNull final String code,
+			@JsonProperty(CODE) @Nullable final String code, // usually metasfresh makes sure it's not null; but in unit-tests it might be; also, let's just return the result here, and avoid throwing an NPE
 			@JsonProperty(ACTIVE) @NonNull final Boolean active,
 			@JsonProperty(NAME) @NonNull final String name,
 			@JsonProperty(NAME_2) @Nullable final String name2,
