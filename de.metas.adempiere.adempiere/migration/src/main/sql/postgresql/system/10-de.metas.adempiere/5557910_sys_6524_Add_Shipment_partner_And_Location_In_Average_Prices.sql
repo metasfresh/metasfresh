@@ -20,8 +20,8 @@ CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.average_product_pr
                 GeschaftspartnerNr   character varying(40),
                 GeschaftspartnerName character varying(60),
 
-                VersandpartnerNr character varying (40),
-                VersandpartnerName character varying (60),
+                LieferpartnerNr character varying (40),
+                LieferpartnerName character varying (60),
                 Lieferadresse character varying (255),
 
 
