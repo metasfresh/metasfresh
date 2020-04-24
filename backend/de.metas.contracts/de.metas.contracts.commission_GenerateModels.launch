@@ -18,5 +18,6 @@
 <stringAttribute key="org.eclipse.jdt.launching.MAIN_TYPE" value="org.adempiere.util.GenerateModel"/>
 <stringAttribute key="org.eclipse.jdt.launching.PROGRAM_ARGUMENTS" value="${workspace_loc:de.metas.contracts}/src/main/java-gen/de/metas/contracts/commission/model/ de.metas.contracts.commission.model 'de.metas.contracts.commission' '%'"/>
 <stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="de.metas.contracts"/>
+<stringAttribute key="org.eclipse.jdt.launching.SOURCE_PATH_PROVIDER" value="org.eclipse.m2e.launchconfig.sourcepathProvider"/>
 <stringAttribute key="org.eclipse.jdt.launching.VM_ARGUMENTS" value="-DPropertyFile=&quot;${project_loc:metasfresh-dist}/metasfresh.properties&quot;"/>
 </launchConfiguration>
