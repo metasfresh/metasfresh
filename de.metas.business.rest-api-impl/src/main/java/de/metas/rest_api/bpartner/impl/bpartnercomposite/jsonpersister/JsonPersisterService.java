@@ -763,7 +763,7 @@ public class JsonPersisterService
 		if (jsonBPartner.isParentIdSet())
 		{
 			// TODO make sure in the repo that the parent-bpartner is reachable
-			bpartner.setParentId(BPartnerId.ofRepoId(MetasfreshId.toValue(jsonBPartner.getParentId())));
+			bpartner.setParentId(BPartnerId.ofRepoIdOrNull(MetasfreshId.toValue(jsonBPartner.getParentId())));
 		}
 		else if (isUpdateRemove)
 		{
