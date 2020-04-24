@@ -22,34 +22,41 @@
 
 package de.metas.comments;
 
-import de.metas.user.UserId;
-import lombok.NonNull;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+import de.metas.util.Check;
+import de.metas.util.lang.RepoIdAware;
 import lombok.Value;
 
-import java.time.ZonedDateTime;
+import javax.annotation.Nullable;
 
 @Value
-public class RecordComment
+public class CommentEntryId implements RepoIdAware
 {
-	@NonNull UserId createdBy;
+	int repoId;
 
-	@NonNull ZonedDateTime created;
-
-	@NonNull String text;
-
-	@NonNull ChatEntryId id;
-
-	private RecordComment(@NonNull final UserId createdBy, @NonNull final ZonedDateTime created, @NonNull final String text, @NonNull final ChatEntryId id)
+	@JsonCreator
+	public static CommentEntryId ofRepoId(final int repoId)
 	{
-		this.createdBy = createdBy;
-		this.created = created;
-		this.text = text;
-		this.id = id;
+		return new CommentEntryId(repoId);
 	}
 
-	@NonNull
-	public static RecordComment of(@NonNull final UserId createdBy, @NonNull final ZonedDateTime created, @NonNull final String text, @NonNull final ChatEntryId id)
+	@Nullable
+	public static CommentEntryId ofRepoIdOrNull(final int repoId)
 	{
-		return new RecordComment(createdBy, created, text, id);
+		return repoId > 0 ? ofRepoId(repoId) : null;
+	}
+
+	private CommentEntryId(final int repoId)
+	{
+		this.repoId = Check.assumeGreaterThanZero(repoId, "repoId");
+	}
+
+	@Override
+	@JsonValue
+	public int getRepoId()
+	{
+		return repoId;
 	}
 }
+

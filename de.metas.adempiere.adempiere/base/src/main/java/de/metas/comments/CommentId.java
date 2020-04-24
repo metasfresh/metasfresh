@@ -28,23 +28,26 @@ import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
 import lombok.Value;
 
+import javax.annotation.Nullable;
+
 @Value
-public class ChatEntryId implements RepoIdAware
+public class CommentId implements RepoIdAware
 {
 	int repoId;
 
 	@JsonCreator
-	public static ChatEntryId ofRepoId(final int repoId)
+	public static CommentId ofRepoId(final int repoId)
 	{
-		return new ChatEntryId(repoId);
+		return new CommentId(repoId);
 	}
 
-	public static ChatEntryId ofRepoIdOrNull(final int repoId)
+	@Nullable
+	public static CommentId ofRepoIdOrNull(final int repoId)
 	{
 		return repoId > 0 ? ofRepoId(repoId) : null;
 	}
 
-	private ChatEntryId(final int repoId)
+	private CommentId(final int repoId)
 	{
 		this.repoId = Check.assumeGreaterThanZero(repoId, "repoId");
 	}

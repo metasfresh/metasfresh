@@ -57,10 +57,10 @@ public class CommentsRepository
 
 	public void createComment(final @NonNull String characterData, @NonNull final TableRecordReference tableRecordReference)
 	{
-		final ChatId chatId = getOrCreateChat(tableRecordReference);
+		final CommentId commentId = getOrCreateChat(tableRecordReference);
 
 		final I_CM_ChatEntry chatEntry = InterfaceWrapperHelper.newInstance(I_CM_ChatEntry.class);
-		chatEntry.setCM_Chat_ID(chatId.getRepoId());
+		chatEntry.setCM_Chat_ID(commentId.getRepoId());
 		chatEntry.setConfidentialType(X_CM_ChatEntry.CONFIDENTIALTYPE_PublicInformation);
 		chatEntry.setCharacterData(characterData);
 		chatEntry.setChatEntryType(X_CM_ChatEntry.CHATENTRYTYPE_NoteFlat);
@@ -68,17 +68,17 @@ public class CommentsRepository
 	}
 
 	@NonNull
-	public List<RecordComment> retrieveLastComments(@NonNull final TableRecordReference tableRecordReference, final int maxNumberOfRecords)
+	public List<CommentEntry> retrieveLastComments(@NonNull final TableRecordReference tableRecordReference, final int maxNumberOfRecords)
 	{
-		final ChatId chatId = getChatIdOrNull(tableRecordReference);
+		final CommentId commentId = getChatIdOrNull(tableRecordReference);
 
-		if (chatId == null)
+		if (commentId == null)
 		{
 			return ImmutableList.of();
 		}
 
 		return queryBL.createQueryBuilder(I_CM_ChatEntry.class)
-				.addEqualsFilter(I_CM_ChatEntry.COLUMNNAME_CM_Chat_ID, chatId)
+				.addEqualsFilter(I_CM_ChatEntry.COLUMNNAME_CM_Chat_ID, commentId)
 				.orderByDescending(I_CM_ChatEntry.COLUMNNAME_Created)
 				.setLimit(maxNumberOfRecords)
 				.create()
@@ -88,24 +88,24 @@ public class CommentsRepository
 	}
 
 	@NonNull
-	private static RecordComment toRecordComment(@NonNull final I_CM_ChatEntry chatEntry)
+	private static CommentEntry toRecordComment(@NonNull final I_CM_ChatEntry chatEntry)
 	{
 		final UserId createdBy = UserId.ofRepoId(chatEntry.getCreatedBy());
 		final ZonedDateTime created = TimeUtil.asZonedDateTime(chatEntry.getCreated());
 		final String text = chatEntry.getCharacterData();
-		final ChatEntryId id = ChatEntryId.ofRepoId(chatEntry.getCM_ChatEntry_ID());
+		final CommentEntryId id = CommentEntryId.ofRepoId(chatEntry.getCM_ChatEntry_ID());
 
-		return RecordComment.of(createdBy, created, text, id);
+		return CommentEntry.of(createdBy, created, text, id);
 	}
 
 	@NonNull
-	private ChatId getOrCreateChat(final @NonNull TableRecordReference tableRecordReference)
+	private CommentId getOrCreateChat(final @NonNull TableRecordReference tableRecordReference)
 	{
-		final ChatId chatId = getChatIdOrNull(tableRecordReference);
+		final CommentId commentId = getChatIdOrNull(tableRecordReference);
 
-		if (chatId != null)
+		if (commentId != null)
 		{
-			return chatId;
+			return commentId;
 		}
 
 		final String tableName = tableDAO.retrieveTableName(AdTableId.ofRepoId(tableRecordReference.getAD_Table_ID()));
@@ -117,16 +117,16 @@ public class CommentsRepository
 		chat.setConfidentialType(X_CM_Chat.CONFIDENTIALTYPE_PublicInformation);
 		chat.setModerationType(X_CM_Chat.MODERATIONTYPE_NotModerated);
 		InterfaceWrapperHelper.save(chat);
-		return ChatId.ofRepoId(chat.getCM_Chat_ID());
+		return CommentId.ofRepoId(chat.getCM_Chat_ID());
 	}
 
 	@Nullable
-	private ChatId getChatIdOrNull(final @NonNull TableRecordReference tableRecordReference)
+	private CommentId getChatIdOrNull(final @NonNull TableRecordReference tableRecordReference)
 	{
 		return queryBL.createQueryBuilder(I_CM_Chat.class)
 				.addEqualsFilter(I_CM_Chat.COLUMNNAME_AD_Table_ID, tableRecordReference.getAD_Table_ID())
 				.addEqualsFilter(I_CM_Chat.COLUMNNAME_Record_ID, tableRecordReference.getRecord_ID())
 				.create()
-				.firstId(ChatId::ofRepoIdOrNull);
+				.firstId(CommentId::ofRepoIdOrNull);
 	}
 }
