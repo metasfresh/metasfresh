@@ -49,7 +49,7 @@ public class CommentEntryId implements RepoIdAware
 
 	private CommentEntryId(final int repoId)
 	{
-		this.repoId = Check.assumeGreaterThanZero(repoId, "repoId");
+		this.repoId = Check.assumeGreaterThanZero(repoId, "CM_ChatEntry_ID");
 	}
 
 	@Override

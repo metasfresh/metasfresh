@@ -30,8 +30,9 @@ import lombok.Value;
 
 import javax.annotation.Nullable;
 
+/*package*/
 @Value
-public class CommentId implements RepoIdAware
+class CommentId implements RepoIdAware
 {
 	int repoId;
 
@@ -49,7 +50,7 @@ public class CommentId implements RepoIdAware
 
 	private CommentId(final int repoId)
 	{
-		this.repoId = Check.assumeGreaterThanZero(repoId, "repoId");
+		this.repoId = Check.assumeGreaterThanZero(repoId, "CM_Chat_ID");
 	}
 
 	@Override
