@@ -29,8 +29,7 @@ class Breadcrumb extends Component {
    * @param {*} page
    */
   linkToPage = (page) => {
-    const { dispatch } = this.props;
-    dispatch(push('/window/' + page));
+    window.location = '/window/' + page;
   };
 
   /**

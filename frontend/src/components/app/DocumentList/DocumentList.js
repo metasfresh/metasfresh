@@ -63,26 +63,11 @@ export default class DocumentList extends Component {
   };
 
   /**
-   * @method updateQuickActions
-   * @summary ToDo: Describe the method.
-   */
-  updateQuickActions = (childSelection) => {
-    if (this.quickActionsComponent) {
-      this.quickActionsComponent.updateActions(childSelection);
-    }
-  };
-
-  /**
    * @method setTableRowEdited
    * @summary ToDo: Describe the method.
    */
   setTableRowEdited = (val) => {
-    this.setState(
-      {
-        rowEdited: val,
-      },
-      () => this.updateQuickActions()
-    );
+    this.setState({ rowEdited: val });
   };
 
   /**
@@ -344,7 +329,6 @@ export default class DocumentList extends Component {
                 readonly={true}
                 supportOpenRecord={layout.supportOpenRecord}
                 onRowEdited={this.setTableRowEdited}
-                updateQuickActions={this.updateQuickActions}
                 keyProperty="id"
                 onDoubleClick={onRedirectToDocument}
                 handleChangePage={onChangePage}
