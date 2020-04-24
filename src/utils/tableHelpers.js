@@ -23,9 +23,7 @@ export function constructorFn(props) {
   this.state = {
     // TODO: Maybe we sholud move this to redux ?
     selected:
-      defaultSelected && defaultSelected !== null
-        ? defaultSelected
-        : [undefined],
+      defaultSelected && defaultSelected !== null ? defaultSelected : [],
     listenOnKeys: true,
     contextMenu: {
       open: false,
