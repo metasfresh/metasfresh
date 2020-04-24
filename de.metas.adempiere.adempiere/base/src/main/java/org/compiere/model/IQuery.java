@@ -138,10 +138,15 @@ public interface IQuery<T>
 	}
 
 	/**
-	 * @return first ID or -1 if no records are found. If there are more results, they are ignored and no exception is thrown.
+	 * @return first ID or -1 if no records are found.
+	 * No exception is thrown if multiple results exist, they are just ignored.
 	 */
 	int firstId();
 
+	/**
+	 * @return first ID or null if no records are found.
+	 * No exception is thrown if multiple results exist, they are just ignored.
+	 */
 	@Nullable
 	default <ID extends RepoIdAware> ID firstId(@NonNull final java.util.function.Function<Integer, ID> idMapper)
 	{
@@ -149,10 +154,15 @@ public interface IQuery<T>
 	}
 
 	/**
-	 * @return first ID or -1 if no records are found. If there are more results, an exception is thrown.
+	 * @return first ID or -1 if no records are found.
+	 * An exception is thrown if multiple results exist.
 	 */
 	int firstIdOnly() throws DBException;
 
+	/**
+	 * @return first ID or null if no records are found.
+	 * An exception is thrown if multiple results exist.
+	 */
 	@Nullable
 	default <ID extends RepoIdAware> ID firstIdOnly(final java.util.function.Function<Integer, ID> idMapper)
 	{
