@@ -30,24 +30,28 @@ import lombok.Value;
 
 import javax.annotation.Nullable;
 
+/**
+ * Most likely you want to use {@link CommentEntryId}.
+ * Please also read the description of {@link CommentEntryRepository}
+ */
 @Value
-public class CommentId implements RepoIdAware
+public class CommentEntryParentId implements RepoIdAware
 {
 	int repoId;
 
 	@JsonCreator
-	public static CommentId ofRepoId(final int repoId)
+	public static CommentEntryParentId ofRepoId(final int repoId)
 	{
-		return new CommentId(repoId);
+		return new CommentEntryParentId(repoId);
 	}
 
 	@Nullable
-	public static CommentId ofRepoIdOrNull(final int repoId)
+	public static CommentEntryParentId ofRepoIdOrNull(final int repoId)
 	{
 		return repoId > 0 ? ofRepoId(repoId) : null;
 	}
 
-	private CommentId(final int repoId)
+	private CommentEntryParentId(final int repoId)
 	{
 		this.repoId = Check.assumeGreaterThanZero(repoId, "CM_Chat_ID");
 	}
