@@ -4,7 +4,6 @@ import static de.metas.util.Check.assumeNotEmpty;
 import static de.metas.util.Check.isEmpty;
 
 import java.util.Objects;
-
 import javax.annotation.Nullable;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -82,9 +81,18 @@ public class JsonExternalId
 		return value;
 	}
 
-	public static boolean equals(final JsonExternalId id1, final JsonExternalId id2)
+	public static boolean equals(@Nullable final JsonExternalId id1, @Nullable final JsonExternalId id2)
 	{
 		return Objects.equals(id1, id2);
+	}
+
+	public static String toValue(@Nullable final JsonExternalId externalId)
+	{
+		if (externalId == null)
+		{
+			return null;
+		}
+		return externalId.getValue();
 	}
 
 }

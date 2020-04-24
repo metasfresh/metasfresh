@@ -122,7 +122,7 @@ public final class JsonOLCandCreateRequest
 			required = false, //
 			value = "This translates to `C_OLCand.datePromised`.\n"
 					+ "It's the date that the external system's user would like the metasfresh user to promise for delivery.\n"
-					+ "Note: may be empty, if is `dataDestInternalName='DEST.de.metas.invoicecandidate'`")
+					+ "Note: may be empty, if `dataDestInternalName='DEST.de.metas.invoicecandidate'`")
 	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
 	LocalDate dateRequired;
 

@@ -14,7 +14,7 @@ public class X_S_ExternalIssueDetail extends org.compiere.model.PO implements I_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 984006963L;
+	private static final long serialVersionUID = -683123281L;
 
     /** Standard Constructor */
     public X_S_ExternalIssueDetail (Properties ctx, int S_ExternalIssueDetail_ID, String trxName)
@@ -42,24 +42,24 @@ public class X_S_ExternalIssueDetail extends org.compiere.model.PO implements I_
       return poi;
     }
 
-	/** Set Detail value.
-		@param DetailValue Detail value	  */
+	/** Set Value.
+		@param DetailValue Value	  */
 	@Override
 	public void setDetailValue (java.lang.String DetailValue)
 	{
 		set_Value (COLUMNNAME_DetailValue, DetailValue);
 	}
 
-	/** Get Detail value.
-		@return Detail value	  */
+	/** Get Value.
+		@return Value	  */
 	@Override
 	public java.lang.String getDetailValue () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_DetailValue);
 	}
 
-	/** Set S_ExternalIssueDetail.
-		@param S_ExternalIssueDetail_ID S_ExternalIssueDetail	  */
+	/** Set External issue details.
+		@param S_ExternalIssueDetail_ID External issue details	  */
 	@Override
 	public void setS_ExternalIssueDetail_ID (int S_ExternalIssueDetail_ID)
 	{
@@ -69,8 +69,8 @@ public class X_S_ExternalIssueDetail extends org.compiere.model.PO implements I_
 			set_ValueNoCheck (COLUMNNAME_S_ExternalIssueDetail_ID, Integer.valueOf(S_ExternalIssueDetail_ID));
 	}
 
-	/** Get S_ExternalIssueDetail.
-		@return S_ExternalIssueDetail	  */
+	/** Get External issue details.
+		@return External issue details	  */
 	@Override
 	public int getS_ExternalIssueDetail_ID () 
 	{

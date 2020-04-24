@@ -4,12 +4,11 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
-import javax.annotation.Nullable;
+import com.google.common.collect.ImmutableMap;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
-
-import de.metas.invoice_gateway.spi.InvoiceExportClientFactory;
+import java.util.Map;
 
 /*
  * #%L
@@ -40,18 +39,9 @@ public class InvoiceAttachment
 
 	String mimeType;
 
+	ImmutableMap<String, String> tags;
+
 	byte[] data;
-
-	/**
-	 * String that identifies the export client factory in charge for this attachment.
-	 * See {@link InvoiceExportClientFactory#getInvoiceExportProviderId()}.
-	 *
-	 * Note: *currently*, only invoices with an attachment that has a providerId can be exported,
-	 * but that's just due to the very first ExportClient implementation.
-	 */
-	String invoiceExportProviderId;
-
-	boolean primaryAttachment;
 
 	public InputStream getDataAsInputStream()
 	{
@@ -60,17 +50,15 @@ public class InvoiceAttachment
 
 	@Builder
 	private InvoiceAttachment(
-			@NonNull String fileName,
-			@NonNull String mimeType,
-			@NonNull byte[] data,
-			@Nullable String invoiceExportProviderId,
-			@NonNull Boolean primaryAttachment)
+			@NonNull final String fileName,
+			@NonNull final String mimeType,
+			@NonNull final byte[] data,
+			@NonNull final Map<String, String> tags)
 	{
 		this.fileName = fileName;
 		this.mimeType = mimeType;
 		this.data = data;
-		this.invoiceExportProviderId = invoiceExportProviderId;
-		this.primaryAttachment = primaryAttachment;
+		this.tags = ImmutableMap.copyOf(tags);
 	}
 
 }

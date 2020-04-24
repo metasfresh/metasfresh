@@ -27,7 +27,6 @@ import de.metas.organization.OrgId;
 import de.metas.serviceprovider.issue.IssueId;
 import de.metas.serviceprovider.model.I_S_ExternalIssueDetail;
 import de.metas.util.Check;
-import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
@@ -41,7 +40,12 @@ import java.util.stream.Collectors;
 @Repository
 public class ExternalIssueDetailsRepository
 {
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IQueryBL queryBL;
+
+	public ExternalIssueDetailsRepository(final IQueryBL queryBL)
+	{
+		this.queryBL = queryBL;
+	}
 
 	public ImmutableList<ExternalIssueDetail> getByIssueId(@NonNull final IssueId issueId)
 	{

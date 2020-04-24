@@ -2,6 +2,9 @@ package de.metas.bpartner.composite;
 
 import static de.metas.util.lang.CoalesceUtil.coalesce;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import javax.annotation.Nullable;
 
 import org.adempiere.ad.table.RecordChangeLog;
@@ -15,8 +18,10 @@ import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.greeting.GreetingId;
 import de.metas.util.lang.ExternalId;
+import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NonNull;
 import lombok.Setter;
 
 /*
@@ -101,6 +106,12 @@ public class BPartnerContact
 	private final RecordChangeLog changeLog;
 
 	/**
+	 * Can be set in order to identify this label independently of its "real" properties. Won't be saved by the repo.
+	 */
+	@Setter(AccessLevel.NONE)
+	private final Set<String> handles = new HashSet<>();
+
+	/**
 	 * They are all nullable because we can create a completely empty instance which we then fill.
 	 * <p>
 	 * We need no bpartner id property
@@ -148,12 +159,22 @@ public class BPartnerContact
 
 	public BPartnerContact deepCopy()
 	{
-		return toBuilder().build();
+		final BPartnerContactBuilder builder = toBuilder();
+		if (contactType != null)
+		{
+			builder.contactType(contactType.deepCopy());
+		}
+		return builder.build();
 	}
 
 	public final void setId(@Nullable final BPartnerContactId id)
 	{
 		this.id = id;
 		this.bpartnerId = id != null ? id.getBpartnerId() : null;
+	}
+
+	public void addHandle(@NonNull final String handle)
+	{
+		handles.add(handle);
 	}
 }

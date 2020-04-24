@@ -29,7 +29,7 @@ def build(final MvnConf mvnConf, final Map scmVars, final boolean forceBuild=fal
 			return;
 		}
 		
-		// update the parent pom version
+		// update the parent pom version.
 		mvnUpdateParentPomVersion mvnConf
 
 		final String mavenUpdatePropertyParam

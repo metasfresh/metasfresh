@@ -285,6 +285,8 @@ public class BankStatementDAO implements IBankStatementDAO
 		record.setName(request.getName());
 		record.setDescription(request.getDescription());
 		record.setStatementDate(TimeUtil.asTimestamp(request.getStatementDate()));
+		record.setDocStatus(DocStatus.Drafted.getCode());
+		record.setDocAction(IDocument.ACTION_Complete);
 
 		final BankStatementCreateRequest.ElectronicFundsTransfer eft = request.getEft();
 		if (eft != null)
@@ -364,6 +366,7 @@ public class BankStatementDAO implements IBankStatementDAO
 		record.setAD_Org_ID(request.getOrgId().getRepoId());
 		record.setC_BankStatement_ID(request.getBankStatementId().getRepoId());
 		record.setC_BankStatementLine_ID(request.getBankStatementLineId().getRepoId());
+		record.setProcessed(request.isProcessed());
 		record.setLine(request.getLineNo());
 
 		record.setC_BPartner_ID(request.getBpartnerId().getRepoId());

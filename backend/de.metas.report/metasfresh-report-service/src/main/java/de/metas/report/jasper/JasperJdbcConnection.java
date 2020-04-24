@@ -19,9 +19,15 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.Executor;
 
+import javax.annotation.Nullable;
+
+import org.slf4j.Logger;
+
 import com.google.common.annotations.VisibleForTesting;
 
+import de.metas.logging.LogManager;
 import de.metas.util.Check;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -33,34 +39,34 @@ import de.metas.util.Check;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
 /**
  * An {@link Connection} wrapper which inserts a given "query info" comment at the beginning of the SQL queries, right before they are executed.
- * 
+ *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
 final class JasperJdbcConnection implements Connection
 {
+	private static final Logger logger = LogManager.getLogger(JasperJdbcConnection.class);
+
 	private final Connection delegate;
 	private final String queryInfo;
 	private final String securityWhereClause;
 
-	public JasperJdbcConnection(final Connection delegate, final String queryInfo, final String securityWhereClause)
+	public JasperJdbcConnection(@NonNull final Connection delegate, final String queryInfo, final String securityWhereClause)
 	{
-		super();
-		Check.assumeNotNull(delegate, "delegate not null");
 		this.delegate = delegate;
 
 		this.queryInfo = normalizeQueryInfo(queryInfo);
@@ -77,17 +83,16 @@ final class JasperJdbcConnection implements Connection
 		return "/* "
 				+ queryInfo.replace("/*", " ").replace("*/", " ")
 				+ " */ ";
-
 	}
 
-	private String customizeSql(final String sql)
+	private String customizeSql(@Nullable final String sql)
 	{
 		String sqlCustomized = addQueryInfo(sql);
 		sqlCustomized = injectSecurityWhereClauses(sqlCustomized, securityWhereClause);
-		
+
 		return sqlCustomized;
 	}
-	
+
 	private String addQueryInfo(final String sql)
 	{
 		if (queryInfo == null)
@@ -102,37 +107,42 @@ final class JasperJdbcConnection implements Connection
 		final String sqlWithInfo = queryInfo + sql;
 		return sqlWithInfo;
 	}
-	
+
 	@VisibleForTesting
-	static String injectSecurityWhereClauses(final String sql, final String securityWhereClause)
+	static String injectSecurityWhereClauses(@Nullable final String sql, @Nullable final String securityWhereClause)
 	{
-		if(sql == null)
+		if (sql == null)
 		{
+			logger.debug("injectSecurityWhereClauses - sql=null; -> return null");
 			return null;
 		}
 		if (securityWhereClause == null)
 		{
+			logger.debug("injectSecurityWhereClauses - securityWhereClause=null; -> return sql={}", sql);
 			return sql;
 		}
-		
+
+		logger.debug("injectSecurityWhereClauses - sql={}", sql);
+		logger.debug("injectSecurityWhereClauses - securityWhereClause={}", securityWhereClause);
+
 		final StringBuilder sqlCustomized = new StringBuilder();
 
 		// Cut off last ORDER BY clause
 		final String orderBy;
 		final int idxOrderBy = sql.lastIndexOf("ORDER BY ");
-		
+
 		final int lastIdxOfSemicolon = sql.lastIndexOf(";");
-		final int idxSemicolon = lastIdxOfSemicolon > -1? lastIdxOfSemicolon : sql.length() ;
-		
+		final int idxSemicolon = lastIdxOfSemicolon > -1 ? lastIdxOfSemicolon : sql.length();
+
 		if (idxOrderBy != -1)
 		{
+			logger.debug("injectSecurityWhereClauses - found a 'ORDER BY' at idx={}; -> later append it to the end", idxSemicolon);
 			orderBy = sql.substring(idxOrderBy, idxSemicolon);
 			sqlCustomized.append(sql.substring(0, idxOrderBy));
 		}
-		
-		
-		else if(idxSemicolon != -1)
+		else if (idxSemicolon != -1)
 		{
+			logger.debug("injectSecurityWhereClauses - found a semicolon at idx={}; -> will omit it", idxSemicolon);
 			orderBy = null;
 			sqlCustomized.append(sql.substring(0, idxSemicolon));
 		}
@@ -141,26 +151,28 @@ final class JasperJdbcConnection implements Connection
 			orderBy = null;
 			sqlCustomized.append(sql);
 		}
-		
+
 		// Do we have to add WHERE or AND
 		if (sql.indexOf(" WHERE ") == -1)
 		{
+			logger.debug("injectSecurityWhereClauses - found no ' WHERE '; -> will add the securityWhereClause with a WHERE");
 			sqlCustomized.append("\nWHERE ");
 		}
 		else
 		{
+			logger.debug("injectSecurityWhereClauses - found a ' WHERE '; -> will add the securityWhereClause with an AND");
 			sqlCustomized.append("\nAND ");
 		}
-		
-		sqlCustomized.append(securityWhereClause);
-		
+
+		sqlCustomized.append(securityWhereClause+" /*JasperJdbcConnection.securityWhereClause*/");
+
 		if (orderBy != null)
 		{
 			sqlCustomized.append("\n").append(orderBy);
 		}
 
 		sqlCustomized.append(";");
-		
+
 		return sqlCustomized.toString();
 	}
 

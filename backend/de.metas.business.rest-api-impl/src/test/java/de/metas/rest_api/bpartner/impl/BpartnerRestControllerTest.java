@@ -24,7 +24,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import java.io.InputStream;
 import java.util.Optional;
 
-import org.adempiere.ad.table.RecordChangeLogRepository;
+import org.adempiere.ad.table.MockLogEntriesRepository;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
@@ -162,7 +162,6 @@ class BpartnerRestControllerTest
 				bpartnerCompositeRepository,
 				new BPGroupRepository(),
 				new GreetingRepository(),
-				new RecordChangeLogRepository(),
 				currencyRepository);
 
 		bpartnerRestController = new BpartnerRestController(
@@ -262,16 +261,12 @@ class BpartnerRestControllerTest
 		assertThat(bpartnerComposite.getContactsNotNull().getRequestItems()).hasSize(2); // guard
 		assertThat(bpartnerComposite.getLocationsNotNull().getRequestItems()).hasSize(2);// guard
 
-		final JsonRequestBPartner bpartner = bpartnerComposite.getBpartner()
-				.toBuilder()
-				.group(BP_GROUP_RECORD_NAME)
-				.build();
+		final JsonRequestBPartner bpartner = bpartnerComposite.getBpartner();
+		bpartner.setGroup(BP_GROUP_RECORD_NAME);
 
 		final JsonRequestBPartnerUpsertItem requestItem = JsonRequestBPartnerUpsertItem.builder()
 				.bpartnerIdentifier("ext-" + externalId)
-				.bpartnerComposite(bpartnerComposite.toBuilder()
-						.bpartner(bpartner)
-						.build())
+				.bpartnerComposite(bpartnerComposite)
 				.build();
 
 		final JsonRequestBPartnerUpsert bpartnerUpsertRequest = JsonRequestBPartnerUpsert.builder()
@@ -301,6 +296,10 @@ class BpartnerRestControllerTest
 	@Test
 	void createOrUpdateBPartner_update_builder()
 	{
+		JsonRequestBPartner partner = new JsonRequestBPartner();
+		partner.setCompanyName("otherCompanyName");
+		partner.setExternalId(JsonExternalId.of("1234567otherExternalId"));
+		partner.setCode("other12345");
 		final JsonRequestBPartnerUpsert bpartnerUpsertRequest = JsonRequestBPartnerUpsert.builder()
 				.syncAdvise(SyncAdvise.builder()
 						.ifExists(IfExists.UPDATE_MERGE)
@@ -309,11 +308,7 @@ class BpartnerRestControllerTest
 				.requestItem(JsonRequestBPartnerUpsertItem.builder()
 						.bpartnerIdentifier("ext-1234567")
 						.bpartnerComposite(JsonRequestComposite.builder()
-								.bpartner(JsonRequestBPartner.builder()
-										.companyName("otherCompanyName")
-										.externalId(JsonExternalId.of("1234567otherExternalId"))
-										.code("other12345")
-										.build())
+								.bpartner(partner)
 								.build())
 						.build())
 				.build();
@@ -342,7 +337,7 @@ class BpartnerRestControllerTest
 		final I_C_BPartner bpartnerRecord = newInstance(I_C_BPartner.class);
 		bpartnerRecord.setAD_Org_ID(AD_ORG_ID);
 		bpartnerRecord.setName("bpartnerRecord.name");
-		bpartnerRecord.setValue("12345");
+		bpartnerRecord.setValue("12345"); // keep in sync with the JSON file
 		bpartnerRecord.setCompanyName("bpartnerRecord.companyName");
 		bpartnerRecord.setC_BP_Group_ID(C_BP_GROUP_ID);
 		saveRecord(bpartnerRecord);
@@ -357,6 +352,48 @@ class BpartnerRestControllerTest
 		// verify that the bpartner-record was updated
 		refresh(bpartnerRecord);
 		assertThat(bpartnerRecord.getValue()).isEqualTo("12345_updated");
+	}
+
+	/**
+	 * Like {@link #createOrUpdateBPartner_update_C_BPartner_Value_OK()}, but updates a location's externalId
+	 */
+	@Test
+	void createOrUpdateBPartner_update_C_BP_Location_ExternalId()
+	{
+		final JsonRequestBPartnerUpsert bpartnerUpsertRequest = loadUpsertRequest("BpartnerRestControllerTest_update_C_BP_Location_ExternalId.json");
+
+		final I_C_BPartner bpartnerRecord = newInstance(I_C_BPartner.class);
+		bpartnerRecord.setAD_Org_ID(AD_ORG_ID);
+		bpartnerRecord.setName("bpartnerRecord.name");
+		bpartnerRecord.setValue("12345"); // keep in sync with the JSON file
+		bpartnerRecord.setCompanyName("bpartnerRecord.companyName");
+		bpartnerRecord.setC_BP_Group_ID(C_BP_GROUP_ID);
+		saveRecord(bpartnerRecord);
+
+		final I_C_Country countryRecord = newInstance(I_C_Country.class);
+		countryRecord.setCountryCode("DE");
+		saveRecord(countryRecord);
+
+		final I_C_Location locationRecord = newInstance(I_C_Location.class);
+		locationRecord.setC_Country_ID(countryRecord.getC_Country_ID());
+		saveRecord(locationRecord);
+
+		final I_C_BPartner_Location bpartnerLocationRecord = newInstance(I_C_BPartner_Location.class);
+		bpartnerLocationRecord.setC_BPartner_ID(bpartnerRecord.getC_BPartner_ID());
+		bpartnerLocationRecord.setC_Location_ID(locationRecord.getC_Location_ID());
+		bpartnerLocationRecord.setExternalId("123"); // keep in sync with the JSON file
+		saveRecord(bpartnerLocationRecord);
+
+		final RecordCounts inititalCounts = new RecordCounts();
+
+		// invoke the method under test
+		bpartnerRestController.createOrUpdateBPartner(bpartnerUpsertRequest);
+
+		inititalCounts.assertCountsUnchanged();
+
+		// verify that the bpartner-record was updated
+		refresh(bpartnerLocationRecord);
+		assertThat(bpartnerLocationRecord.getExternalId()).isEqualTo("123_updated");
 	}
 
 	/**
@@ -427,7 +464,7 @@ class BpartnerRestControllerTest
 	}
 
 	/**
-	 * Verifies that if an upsert request contains two locations pointing to the same "real" location, then the are applied one after another.
+	 * Verifies that if an upsert request which contains two locations that identify the same C_BPartner_Location record, then they are applied one after another.
 	 */
 	@Test
 	void createOrUpdateBPartner_duplicate_location()
@@ -597,11 +634,10 @@ class BpartnerRestControllerTest
 
 	private BPartnerComposite perform_createOrUpdateContact_update(@NonNull final String contactIdentifier)
 	{
-		final JsonRequestContact jsonContact = JsonRequestContact.builder()
-				.name("jsonContact.name-UPDATED")
-				.code("jsonContact.code-UPDATED")
-				.metasfreshBPartnerId(MetasfreshId.of(C_BPARTNER_ID))
-				.build();
+		final JsonRequestContact jsonContact = new JsonRequestContact();
+		jsonContact.setName("jsonContact.name-UPDATED");
+		jsonContact.setCode("jsonContact.code-UPDATED");
+		jsonContact.setMetasfreshBPartnerId(MetasfreshId.of(C_BPARTNER_ID));
 
 		SystemTime.setTimeSource(() -> 1561134560); // Fri, 21 Jun 2019 16:29:20 GMT
 		Env.setLoggedUserId(Env.getCtx(), UserId.ofRepoId(BPartnerRecordsUtil.AD_USER_ID));

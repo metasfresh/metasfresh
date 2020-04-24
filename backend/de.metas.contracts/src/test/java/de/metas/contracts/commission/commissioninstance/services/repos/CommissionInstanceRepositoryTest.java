@@ -429,6 +429,6 @@ class CommissionInstanceRepositoryTest
 
 		// final check; load the CommissionInstance from the records we just created and verify that it's equal to the one we got from json
 		final CommissionInstance reloadedInstance = commissionInstanceRepository.getById(result);
-		assertThat(reloadedInstance).isEqualTo(commissionInstance.toBuilder().id(result).build());
+		SnapshotMatcher.expect(reloadedInstance).toMatchSnapshot();
 	}
 }

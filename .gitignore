@@ -1,1 +1,6 @@
 /local_mvn_repository
+/backend/metasfresh-dist/serverRoot/application-logstash.properties
+/backend/metasfresh-dist/serverRoot/logback-logstash.xml
+/backend/metasfresh-dist/swingui/application.properties
+/backend/metasfresh-webui-api/application-logstash.properties
+/backend/metasfresh-webui-api/logback-logstash.xml

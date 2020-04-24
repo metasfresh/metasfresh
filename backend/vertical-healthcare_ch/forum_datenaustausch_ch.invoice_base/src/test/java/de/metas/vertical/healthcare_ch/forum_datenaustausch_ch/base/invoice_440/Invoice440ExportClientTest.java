@@ -9,7 +9,7 @@ import org.junit.Test;
 
 import de.metas.invoice_gateway.spi.model.BPartner;
 import de.metas.invoice_gateway.spi.model.BPartnerId;
-import de.metas.invoice_gateway.spi.model.EAN;
+import de.metas.invoice_gateway.spi.model.GLN;
 import de.metas.invoice_gateway.spi.model.InvoiceId;
 import de.metas.invoice_gateway.spi.model.MetasfreshVersion;
 import de.metas.invoice_gateway.spi.model.Money;
@@ -47,12 +47,12 @@ public class Invoice440ExportClientTest
 
 		final BPartner recipient = BPartner.builder()
 				.id(BPartnerId.ofRepoId(20))
-				.ean(EAN.of("2234567890123"))
+				.gln(GLN.of("2234567890123"))
 				.build();
 
 		final BPartner biller = BPartner.builder()
 				.id(BPartnerId.ofRepoId(30))
-				.ean(EAN.of("3234567890123"))
+				.gln(GLN.of("3234567890123"))
 				.build();
 
 		final MetasfreshVersion matasfreshVersion = MetasfreshVersion.builder()
@@ -62,6 +62,7 @@ public class Invoice440ExportClientTest
 
 		final InvoiceToExport invoice = InvoiceToExport.builder()
 				.id(invoiceId)
+				.docSubType("EA")
 				.metasfreshVersion(matasfreshVersion)
 				.recipient(recipient)
 				.biller(biller)

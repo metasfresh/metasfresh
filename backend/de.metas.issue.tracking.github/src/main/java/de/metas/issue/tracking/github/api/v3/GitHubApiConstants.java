@@ -55,7 +55,8 @@ public interface GitHubApiConstants
 	{
 		STATE("state"),
 		PER_PAGE("per_page"),
-		PAGE("page");
+		PAGE("page"),
+		SINCE("since");
 
 		private final String value;
 	}

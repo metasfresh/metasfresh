@@ -47,7 +47,10 @@ public class PageDescriptorRepository
 				.addEqualsFilter(I_T_Query_Selection_Pagination.COLUMN_Page_Identifier, pageIdentifier.getPageUid())
 				.create()
 				.firstOnly(I_T_Query_Selection_Pagination.class);
-
+		if (pageDescriptorRecord == null)
+		{
+			throw new PageNotFoundException(completePageId);
+		}
 		return PageDescriptor.builder()
 				.selectionUid(pageDescriptorRecord.getUUID())
 				.selectionTime(TimeUtil.asInstant(pageDescriptorRecord.getResult_Time()))

@@ -22,6 +22,7 @@ import de.metas.rest_api.ordercandidates.OrderCandidatesRestEndpoint;
 import de.metas.rest_api.ordercandidates.request.JsonOLCandCreateBulkRequest;
 import de.metas.rest_api.ordercandidates.request.JsonOLCandCreateRequest;
 import de.metas.util.JSONObjectMapper;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.HealthCareInvoiceDocSubType;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.request.RequestType;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.JaxbUtil;
 import lombok.NonNull;
@@ -107,9 +108,9 @@ public class XmlToOLCandsServiceTest
 		final SyncAdvise bPartnersSyncAdvise = SyncAdvise.READ_ONLY;
 		final SyncAdvise productsSyncAdvise = SyncAdvise.READ_ONLY;
 
-		// final XmlToOLCandsService xmlToOLCandsService = new XmlToOLCandsService(orderCandidatesRestEndpoint);
+		// invoke the merhod under test
 		final JsonOLCandCreateBulkRequest result = xmlToOLCandsService
-				.createJsonOLCandCreateBulkRequest(xmlInvoice, orgSyncAdvise, bPartnersSyncAdvise, productsSyncAdvise);
+				.createJsonOLCandCreateBulkRequest(xmlInvoice, HealthCareInvoiceDocSubType.KV, orgSyncAdvise, bPartnersSyncAdvise, productsSyncAdvise);
 
 		assertThat(result).isNotNull();
 		final List<JsonOLCandCreateRequest> requests = result.getRequests();
@@ -122,7 +123,6 @@ public class XmlToOLCandsServiceTest
 		assertThat(requests).allSatisfy(r -> assertThat(r.getPoReference()).isEqualTo("2009_01:001")); // this is the "invoice-ID as given by the examples file
 
 		assertThat(requests).hasSize(21); // guards
-		assertThat(requests).allSatisfy(r -> assertThat(r.getBpartner().getBpartner().getName()).isEqualTo("Krankenkasse AG"));
 		assertThat(requests).allSatisfy(r -> assertThat(r.getBpartner().getBpartner().getExternalId().getValue()).isEqualTo("EAN-7634567890000"));
 		assertThat(requests).allSatisfy(r -> assertThat(r.getBpartner().getLocation().getGln()).isEqualTo("7634567890000"));
 

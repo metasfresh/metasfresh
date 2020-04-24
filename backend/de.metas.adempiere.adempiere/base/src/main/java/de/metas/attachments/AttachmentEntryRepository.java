@@ -24,6 +24,7 @@ import org.springframework.stereotype.Repository;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.attachments.AttachmentEntry.AttachmentEntryBuilder;
+import de.metas.attachments.listener.TableAttachmentListenerService;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
@@ -53,12 +54,15 @@ import lombok.NonNull;
 @Repository
 public class AttachmentEntryRepository
 {
-
 	private final AttachmentEntryFactory attachmentEntryFactory;
+	private final TableAttachmentListenerService tableAttachmentListenerService;
 
-	public AttachmentEntryRepository(@NonNull final AttachmentEntryFactory attachmentEntryFactory)
+	public AttachmentEntryRepository(
+			@NonNull final AttachmentEntryFactory attachmentEntryFactory,
+			@NonNull final TableAttachmentListenerService tableAttachmentListenerService)
 	{
 		this.attachmentEntryFactory = attachmentEntryFactory;
+		this.tableAttachmentListenerService = tableAttachmentListenerService;
 	}
 
 	public AttachmentEntry getById(@NonNull final AttachmentEntryId id)
@@ -229,6 +233,8 @@ public class AttachmentEntryRepository
 			attachmentMultiRefRecord.setAD_Table_ID(attachmentReference.getAD_Table_ID());
 			attachmentMultiRefRecord.setRecord_ID(attachmentReference.getRecord_ID());
 			saveRecord(attachmentMultiRefRecord);
+
+			tableAttachmentListenerService.fireAfterRecordLinked(attachmentEntry, attachmentReference);
 		}
 	}
 

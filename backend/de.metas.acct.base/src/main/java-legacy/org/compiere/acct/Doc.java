@@ -150,6 +150,7 @@ import lombok.NonNull;
 public abstract class Doc<DocLineType extends DocLine<?>>
 {
 	private final String SYSCONFIG_CREATE_NOTE_ON_ERROR = "org.compiere.acct.Doc.createNoteOnPostError";
+	protected static final AdMessageKey MSG_NoAccountFound = AdMessageKey.of("Doc_NoAccountFound_Error");
 
 	@Getter(AccessLevel.PROTECTED)
 	protected final AcctDocRequiredServicesFacade services;
@@ -216,6 +217,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 	 */
 	protected Doc(@NonNull final AcctDocContext ctx, final String defaultDocBaseType)
 	{
+
 		services = ctx.getServices();
 		acctSchemas = ctx.getAcctSchemas();
 
@@ -1328,15 +1330,19 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 				final AccountId accountId = AccountId.ofRepoIdOrNull(rs.getInt(1));
 				if (accountId == null)
 				{
-					log.error("account ID not set for: account Type=" + acctType + ", Record=" + get_ID() + ", SQL=" + sql + ", sqlParams=" + sqlParams);
+					log.warn("account ID not set for: account Type=" + acctType + ", Record=" + get_ID() + ", SQL=" + sql + ", sqlParams=" + sqlParams);
 				}
 
 				return accountId;
 			}
 			else
 			{
-				log.error("No record found for: account Type=" + acctType + ", Record=" + get_ID() + ", SQL=" + sql + ", sqlParams=" + sqlParams);
-				return null;
+				throw new AdempiereException(MSG_NoAccountFound, get_ID(), acctType)
+						.markAsUserValidationError()
+						.setParameter("sql", sql)
+						.setParameter("sqlParams", sqlParams)
+						.appendParametersToMessage();
+
 			}
 		}
 		catch (final SQLException e)

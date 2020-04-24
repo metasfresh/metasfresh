@@ -28,8 +28,8 @@ import de.metas.process.Param;
 import de.metas.serviceprovider.external.project.ExternalProjectReference;
 import de.metas.serviceprovider.external.project.ExternalProjectReferenceId;
 import de.metas.serviceprovider.external.project.ExternalProjectRepository;
-import de.metas.serviceprovider.importer.IssueImporterService;
-import de.metas.serviceprovider.importer.info.ImportIssuesRequest;
+import de.metas.serviceprovider.issue.importer.IssueImporterService;
+import de.metas.serviceprovider.issue.importer.info.ImportIssuesRequest;
 import de.metas.serviceprovider.model.I_S_ExternalProjectReference;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -38,9 +38,10 @@ import org.adempiere.service.ISysConfigBL;
 import org.compiere.SpringContextHolder;
 
 import javax.annotation.Nullable;
+import java.time.LocalDate;
 import java.util.stream.Stream;
 
-import static de.metas.serviceprovider.external.project.ExternalSystem.GITHUB;
+import static de.metas.serviceprovider.external.ExternalSystem.GITHUB;
 import static de.metas.serviceprovider.github.GithubImporterConstants.GitHubImporterSysConfig.ACCESS_TOKEN;
 
 public class GithubImportProcess extends JavaProcess
@@ -50,6 +51,9 @@ public class GithubImportProcess extends JavaProcess
 
 	@Param(parameterName = "IssueNumbers")
 	private String issueNumbers;
+
+	@Param(parameterName = "DateFrom")
+	private LocalDate dateFrom;
 
 	private final ExternalProjectRepository externalProjectRepository = SpringContextHolder.instance.getBean(ExternalProjectRepository.class);
 	private final IssueImporterService issueImporterService = SpringContextHolder.instance.getBean(IssueImporterService.class);
@@ -61,12 +65,17 @@ public class GithubImportProcess extends JavaProcess
 	protected String doIt() throws Exception
 	{
 		final ImmutableList<ImportIssuesRequest> importIssuesRequests =
-				importAll() ?  buildRequestsForAllRepos()
-							:  ImmutableList.of(buildSpecificRequest(externalProjectReferenceId, issueNumbers));
+				importAllProjects() ?  buildRequestsForAllRepos()
+									:  ImmutableList.of(buildSpecificRequest(issueNumbers));
 
 		issueImporterService.importIssues(importIssuesRequests, githubImporterService);
 
 		return MSG_OK;
+	}
+
+	protected void setDateFrom(@NonNull final LocalDate dateFrom)
+	{
+		this.dateFrom = dateFrom;
 	}
 
 	@NonNull
@@ -79,11 +88,10 @@ public class GithubImportProcess extends JavaProcess
 	}
 
 	@NonNull
-	private ImportIssuesRequest buildSpecificRequest(final int externalProjectReferenceId,
-													@Nullable final String issueNumbers)
+	private ImportIssuesRequest buildSpecificRequest(@Nullable final String issueNumbers)
 	{
 		final ExternalProjectReference externalProject =
-				externalProjectRepository.getById(ExternalProjectReferenceId.ofRepoId(externalProjectReferenceId));
+				externalProjectRepository.getById(ExternalProjectReferenceId.ofRepoId(this.externalProjectReferenceId));
 
 		final ImmutableList<String> issueNoList = Check.isNotBlank(issueNumbers)
 				? Stream.of( issueNumbers.split(",") )
@@ -107,11 +115,12 @@ public class GithubImportProcess extends JavaProcess
 				.projectId(externalProjectReference.getProjectId())
 				.oAuthToken(sysConfigBL.getValue(ACCESS_TOKEN.getName()))
 				.issueNoList(issueNoList)
+				.dateFrom(this.dateFrom)
 				.build();
 	}
 
-	private boolean importAll()
+	private boolean importAllProjects()
 	{
-		return externalProjectReferenceId == 0 && Check.isBlank(issueNumbers);
+		return externalProjectReferenceId == 0;
 	}
 }

@@ -105,6 +105,69 @@ public interface I_C_Invoice
     public static final String COLUMNNAME_AD_User_ID = "AD_User_ID";
 
 	/**
+	 * Set Leistungsempfänger.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setBeneficiary_BPartner_ID (int Beneficiary_BPartner_ID);
+
+	/**
+	 * Get Leistungsempfänger.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getBeneficiary_BPartner_ID();
+
+    /** Column name Beneficiary_BPartner_ID */
+    public static final String COLUMNNAME_Beneficiary_BPartner_ID = "Beneficiary_BPartner_ID";
+
+	/**
+	 * Set Leistungsempfänger Kontakt.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setBeneficiary_Contact_ID (int Beneficiary_Contact_ID);
+
+	/**
+	 * Get Leistungsempfänger Kontakt.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getBeneficiary_Contact_ID();
+
+    /** Column name Beneficiary_Contact_ID */
+    public static final String COLUMNNAME_Beneficiary_Contact_ID = "Beneficiary_Contact_ID";
+
+	/**
+	 * Set Leistungsempfänger Addresse.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setBeneficiary_Location_ID (int Beneficiary_Location_ID);
+
+	/**
+	 * Get Leistungsempfänger Addresse.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getBeneficiary_Location_ID();
+
+    /** Column name Beneficiary_Location_ID */
+    public static final String COLUMNNAME_Beneficiary_Location_ID = "Beneficiary_Location_ID";
+
+	/**
 	 * Set Anschrift-Text.
 	 *
 	 * <br>Type: Text
@@ -539,12 +602,6 @@ public interface I_C_Invoice
 	 */
 	public int getC_Payment_ID();
 
-	public org.compiere.model.I_C_Payment getC_Payment();
-
-	public void setC_Payment(org.compiere.model.I_C_Payment C_Payment);
-
-    /** Column definition for C_Payment_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_Invoice, org.compiere.model.I_C_Payment> COLUMN_C_Payment_ID = new org.adempiere.model.ModelColumn<I_C_Invoice, org.compiere.model.I_C_Payment>(I_C_Invoice.class, "C_Payment_ID", org.compiere.model.I_C_Payment.class);
     /** Column name C_Payment_ID */
     public static final String COLUMNNAME_C_Payment_ID = "C_Payment_ID";
 

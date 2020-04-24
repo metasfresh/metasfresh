@@ -45,7 +45,7 @@ import lombok.NonNull;
  */
 public final class ProcessDefaultParametersUpdater
 {
-	public static final ProcessDefaultParametersUpdater newInstance()
+	public static ProcessDefaultParametersUpdater newInstance()
 	{
 		return new ProcessDefaultParametersUpdater();
 	}
@@ -80,8 +80,6 @@ public final class ProcessDefaultParametersUpdater
 
 	/**
 	 * Extracts, if possible, the {@link IProcessDefaultParametersProvider} from given <code>processInfo</code> and registers it.
-	 *
-	 * @param processInfo
 	 */
 	public ProcessDefaultParametersUpdater addDefaultParametersProvider(final ProcessInfo processInfo)
 	{
@@ -90,10 +88,8 @@ public final class ProcessDefaultParametersUpdater
 		return this;
 	}
 
-	public static IProcessDefaultParametersProvider createProcessDefaultParametersProvider(final ProcessInfo pi)
+	public static IProcessDefaultParametersProvider createProcessDefaultParametersProvider(@NonNull final ProcessInfo pi)
 	{
-		Check.assumeNotNull(pi, "Parameter pi is not null");
-
 		try
 		{
 			final Object processClassInstance = pi.newProcessClassInstanceOrNull();
@@ -184,12 +180,12 @@ public final class ProcessDefaultParametersUpdater
 		{
 			return;
 		}
-		
+
 		if (parameterObjs == null || parameterObjs.isEmpty())
 		{
 			return;
 		}
-		
+
 		parameterObjs.stream() // stream parameter objects
 				.map(processDefaultParameterConverter) // convert parameter object to IProcessDefaultParameter
 				.forEach(this::updateDefaultValue) // update the default value if available

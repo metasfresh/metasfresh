@@ -41,6 +41,7 @@ public class IssueId implements RepoIdAware
 		return new IssueId(repoId);
 	}
 
+	@Nullable
 	public static IssueId ofRepoIdOrNull(@Nullable final Integer repoId)
 	{
 		return repoId != null && repoId > 0 ? new IssueId(repoId) : null;

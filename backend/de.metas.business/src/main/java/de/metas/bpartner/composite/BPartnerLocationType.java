@@ -82,6 +82,24 @@ public class BPartnerLocationType
 		}
 	}
 
+	/** copy constructor, see {@link #deepCopy()}. */
+	private BPartnerLocationType(
+			@Nullable final Optional<Boolean> billTo,
+			@Nullable final Optional<Boolean> billToDefault,
+			@Nullable final Optional<Boolean> shipTo,
+			@Nullable final Optional<Boolean> shipToDefault)
+	{
+		this.billTo = billTo;
+		this.billToDefault = billToDefault;
+		this.shipTo = shipTo;
+		this.shipToDefault = shipToDefault;
+	}
+
+	public BPartnerLocationType deepCopy()
+	{
+		return new BPartnerLocationType(billTo, billToDefault, shipTo, shipToDefault);
+	}
+
 	public boolean getIsShipToOr(final boolean defaultValue)
 	{
 		return shipTo.orElse(defaultValue);

@@ -2,7 +2,7 @@ package de.metas.security.impl;
 
 import java.util.Set;
 
-import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_PInstance_Log;
 import org.compiere.model.I_AD_Private_Access;
 import org.compiere.util.DB;
@@ -62,7 +62,7 @@ final class UserRolePermissionsSqlHelpers
 		RecordAccessService result = _userGroupRecordAccessService;
 		if (result == null)
 		{
-			result = _userGroupRecordAccessService = Adempiere.getBean(RecordAccessService.class);
+			result = _userGroupRecordAccessService = SpringContextHolder.instance.getBean(RecordAccessService.class);
 		}
 		return result;
 	}
@@ -87,7 +87,7 @@ final class UserRolePermissionsSqlHelpers
 		Set<UserGroupId> userGroupIds = this._userGroupIds;
 		if (userGroupIds == null)
 		{
-			this._userGroupIds = userGroupIds = Adempiere.getBean(UserGroupRepository.class).getAssignedGroupIdsByUserId(getUserId());
+			this._userGroupIds = userGroupIds = SpringContextHolder.instance.getBean(UserGroupRepository.class).getAssignedGroupIdsByUserId(getUserId());
 		}
 		return userGroupIds;
 	}
@@ -172,7 +172,7 @@ final class UserRolePermissionsSqlHelpers
 		return sqlFinal;
 	}	// addAccessSQL
 
-	private final String buildAccessSQL(
+	private String buildAccessSQL(
 			final String sqlSelectFromWhere,
 			final String tableNameIn,
 			final boolean fullyQualified,

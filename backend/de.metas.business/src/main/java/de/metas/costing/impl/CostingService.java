@@ -1,5 +1,6 @@
 package de.metas.costing.impl;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -12,9 +13,10 @@ import java.util.stream.Stream;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ClientId;
 import org.slf4j.Logger;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSetMultimap;
 
@@ -38,12 +40,13 @@ import de.metas.costing.CostTypeId;
 import de.metas.costing.CostingDocumentRef;
 import de.metas.costing.CostingLevel;
 import de.metas.costing.CostingMethod;
-import de.metas.costing.ICostDetailRepository;
+import de.metas.costing.ICostDetailService;
 import de.metas.costing.ICostElementRepository;
 import de.metas.costing.ICostingService;
 import de.metas.costing.ICurrentCostsRepository;
 import de.metas.costing.IProductCostingBL;
 import de.metas.costing.methods.CostingMethodHandler;
+import de.metas.costing.methods.CostingMethodHandlerUtils;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.CurrencyConversionResult;
 import de.metas.currency.ICurrencyBL;
@@ -79,7 +82,7 @@ import lombok.NonNull;
  * #L%
  */
 
-@Component
+@Service
 public class CostingService implements ICostingService
 {
 	private static final Logger logger = LogManager.getLogger(CostingService.class);
@@ -87,19 +90,22 @@ public class CostingService implements ICostingService
 	private final IAcctSchemaDAO acctSchemasRepo = Services.get(IAcctSchemaDAO.class);
 	private final IProductCostingBL productCostingBL = Services.get(IProductCostingBL.class);
 	private final ICurrencyBL currencyConversionBL = Services.get(ICurrencyBL.class);
-	private final ICostDetailRepository costDetailsRepo;
+	private final CostingMethodHandlerUtils utils;
+	private final ICostDetailService costDetailsService;
 	private final ICostElementRepository costElementsRepo;
 	private final ICurrentCostsRepository currentCostsRepo;
 
 	private final ImmutableSetMultimap<CostingMethod, CostingMethodHandler> costingMethodHandlers;
 
 	public CostingService(
-			@NonNull final ICostDetailRepository costDetailsRepo,
+			@NonNull final CostingMethodHandlerUtils utils,
+			@NonNull final ICostDetailService costDetailsService,
 			@NonNull final ICostElementRepository costElementsRepo,
 			@NonNull final ICurrentCostsRepository currentCostsRepo,
 			@NonNull final List<CostingMethodHandler> costingMethodHandlers)
 	{
-		this.costDetailsRepo = costDetailsRepo;
+		this.utils = utils;
+		this.costDetailsService = costDetailsService;
 		this.costElementsRepo = costElementsRepo;
 		this.currentCostsRepo = currentCostsRepo;
 
@@ -136,10 +142,10 @@ public class CostingService implements ICostingService
 			throw new AdempiereException("No costs created for " + request);
 		}
 
-		return createCostResult(costElementResults);
+		return toAggregatedCostAmount(costElementResults);
 	}
 
-	private AggregatedCostAmount createCostResult(final ImmutableList<CostDetailCreateResult> costElementResults)
+	private static AggregatedCostAmount toAggregatedCostAmount(final List<CostDetailCreateResult> costElementResults)
 	{
 		Check.assumeNotEmpty(costElementResults, "costElementResults is not empty");
 
@@ -205,7 +211,7 @@ public class CostingService implements ICostingService
 	@Override
 	public void voidAndDeleteForDocument(final CostingDocumentRef documentRef)
 	{
-		costDetailsRepo.getAllForDocument(documentRef)
+		costDetailsService.getAllForDocument(documentRef)
 				.forEach(costDetail -> voidAndDelete(costDetail, documentRef));
 	}
 
@@ -220,7 +226,7 @@ public class CostingService implements ICostingService
 					.forEach(handler -> handler.voidCosts(request));
 		}
 
-		costDetailsRepo.delete(costDetail);
+		costDetailsService.delete(costDetail);
 	}
 
 	private CostDetailVoidRequest createCostDetailVoidRequest(final CostDetail costDetail)
@@ -346,34 +352,48 @@ public class CostingService implements ICostingService
 	}
 
 	@Override
-	public AggregatedCostAmount createReversalCostDetails(@NonNull final CostDetailReverseRequest request)
+	public AggregatedCostAmount createReversalCostDetails(@NonNull final CostDetailReverseRequest reversalRequest)
 	{
-		final Set<CostElementId> costElementIdsWithExistingCostDetails = costDetailsRepo
-				.getAllForDocumentAndAcctSchemaId(request.getReversalDocumentRef(), request.getAcctSchemaId())
-				.stream()
-				.map(CostDetail::getCostElementId)
-				.collect(ImmutableSet.toImmutableSet());
-
-		final List<CostDetail> initialDocCostDetails = costDetailsRepo.getAllForDocumentAndAcctSchemaId(request.getInitialDocumentRef(), request.getAcctSchemaId());
+		final List<CostDetail> initialDocCostDetails = costDetailsService.getAllForDocumentAndAcctSchemaId(reversalRequest.getInitialDocumentRef(), reversalRequest.getAcctSchemaId());
 		if (initialDocCostDetails.isEmpty())
 		{
-			throw new AdempiereException("Initial document has no cost details: " + request);
+			throw new AdempiereException("Initial document has no cost details: " + reversalRequest);
 		}
 
-		final ImmutableList<CostDetailCreateResult> costElementResults = initialDocCostDetails
+		final ImmutableMap<CostElementId, CostDetail> existingCostDetails = costDetailsService
+				.getAllForDocumentAndAcctSchemaId(reversalRequest.getReversalDocumentRef(), reversalRequest.getAcctSchemaId())
 				.stream()
-				.filter(costDetail -> !costElementIdsWithExistingCostDetails.contains(costDetail.getCostElementId())) // not already created
-				.flatMap(costDetail -> createReversalCostDetailsAndStream(costDetail, request))
-				.collect(ImmutableList.toImmutableList());
-		if (costElementResults.isEmpty())
+				.collect(ImmutableMap.toImmutableMap(
+						costDetail -> costDetail.getCostElementId(),
+						costDetail -> costDetail));
+
+		final ArrayList<CostDetailCreateResult> costDetailCreateResults = new ArrayList<>();
+
+		for (final CostDetail initialDocCostDetail : initialDocCostDetails)
 		{
-			throw new AdempiereException("No costs created for " + request);
+			final CostElementId costElementId = initialDocCostDetail.getCostElementId();
+			final CostDetail existingCostDetail = existingCostDetails.get(costElementId);
+			if (existingCostDetail != null)
+			{
+				final CostDetailCreateResult result = utils.toCostDetailCreateResult(existingCostDetail);
+				costDetailCreateResults.add(result);
+			}
+			else
+			{
+				final List<CostDetailCreateResult> results = createReversalCostDetails(initialDocCostDetail, reversalRequest);
+				costDetailCreateResults.addAll(results);
+			}
 		}
 
-		return createCostResult(costElementResults);
+		if (costDetailCreateResults.isEmpty())
+		{
+			throw new AdempiereException("No costs created for " + reversalRequest);
+		}
+
+		return toAggregatedCostAmount(costDetailCreateResults);
 	}
 
-	private Stream<CostDetailCreateResult> createReversalCostDetailsAndStream(
+	private ImmutableList<CostDetailCreateResult> createReversalCostDetails(
 			@NonNull final CostDetail costDetail,
 			@NonNull final CostDetailReverseRequest reversalRequest)
 	{
@@ -382,7 +402,7 @@ public class CostingService implements ICostingService
 		if (costElement == null)
 		{
 			// cost element was disabled in meantime
-			return Stream.empty();
+			return ImmutableList.of();
 		}
 
 		final CostDetailCreateRequest request = toCostDetailCreateRequestFromReversalRequest(reversalRequest, costDetail, costElement);
@@ -390,7 +410,8 @@ public class CostingService implements ICostingService
 				.stream()
 				.map(handler -> handler.createOrUpdateCost(request))
 				.filter(Optional::isPresent)
-				.map(Optional::get);
+				.map(Optional::get)
+				.collect(ImmutableList.toImmutableList());
 	}
 
 	private static final CostDetailCreateRequest toCostDetailCreateRequestFromReversalRequest(

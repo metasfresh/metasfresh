@@ -47,12 +47,13 @@ public class JsonRequestBPartnerUpsertItemTest
 	@Test
 	public void serializeDeserialize()
 	{
+		final JsonRequestBPartner partner = new JsonRequestBPartner();
+		partner.setCode("code");
+
 		final JsonRequestBPartnerUpsertItem item = JsonRequestBPartnerUpsertItem.builder()
 				.bpartnerIdentifier("ext-12345")
 				.bpartnerComposite(JsonRequestComposite.builder()
-						.bpartner(JsonRequestBPartner.builder()
-								.code("code")
-								.build())
+						.bpartner(partner)
 						.build())
 				.build();
 

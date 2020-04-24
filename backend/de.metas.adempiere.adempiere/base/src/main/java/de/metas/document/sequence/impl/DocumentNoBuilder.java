@@ -9,6 +9,7 @@ import java.util.function.Supplier;
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.util.lang.IMutable;
@@ -190,17 +191,21 @@ class DocumentNoBuilder implements IDocumentNoBuilder
 	 */
 	private String getSequenceNoToUse()
 	{
-		// If manual sequenceNo was provided, then used
+		// If manual sequenceNo was provided, then uset
 		if (_sequenceNo != null)
 		{
+			logger.debug("getSequenceNoToUse - return sequenceNo={} which was provided via setter");
 			return _sequenceNo;
 		}
 
 		final DocumentSequenceInfo docSeqInfo = getDocumentSequenceInfo();
+		final String result;
 
 		final CustomSequenceNoProvider customSequenceNoProvider = docSeqInfo.getCustomSequenceNoProvider();
 		if (customSequenceNoProvider != null)
 		{
+			logger.debug("getSequenceNoToUse - going to invoke customSequenceNoProvider={}" + customSequenceNoProvider);
+
 			final Evaluatee evalContext = getEvaluationContext();
 			if (!customSequenceNoProvider.isApplicable(evalContext))
 			{
@@ -210,19 +215,53 @@ class DocumentNoBuilder implements IDocumentNoBuilder
 						.setParameter("context", evalContext);
 			}
 
-			return customSequenceNoProvider.provideSequenceNo(evalContext);
-		}
+			final String customSequenceNumber = customSequenceNoProvider.provideSequenceNo(evalContext);
+			logger.debug("getSequenceNoToUse - The customSequenceNoProvider returned customSequenceNumber={}" + customSequenceNumber);
 
-		//
-		// Don't increment sequence number if it's not Auto
-		if (!docSeqInfo.isAutoSequence())
+			if (customSequenceNoProvider.isUseIncrementSeqNoAsPrefix())
+			{
+				logger.debug("getSequenceNoToUse - The customSequenceNoProvider.isUseIncrementSeqNoAsPrefix()=true; -> going to prepend an incremental sequence number to it");
+				if (!docSeqInfo.isAutoSequence())
+				{
+
+					throw new AdempiereException("The current customSequenceNoProvider requires this sequence to be configured as auto-sequence")
+							.appendParametersToMessage()
+							.setParameter("customSequenceNoProvider", customSequenceNoProvider)
+							.setParameter("docSeqInfo", docSeqInfo);
+				}
+				result = customSequenceNumber + "-" + retrieveAndIncrementSeqNo(docSeqInfo);
+			}
+			else
+			{
+				result = customSequenceNumber;
+			}
+		}
+		else
 		{
-			logger.info("Skip getting and incrementing the sequence because it's not an auto sequence: {}", docSeqInfo);
-			return NO_DOCUMENTNO;
+			logger.debug("getSequenceNoToUse - going to get incremental seuqnce number" + customSequenceNoProvider);
+
+			//
+			// Don't increment sequence number if it's not Auto
+			if (!docSeqInfo.isAutoSequence())
+			{
+				logger.debug("Skip getting and incrementing the sequence because it's not an auto sequence: {}", docSeqInfo);
+				result = NO_DOCUMENTNO;
+			}
+			else
+			{
+				result = retrieveAndIncrementSeqNo(docSeqInfo);
+			}
 		}
 
-		//
-		// Get and increment sequence number from database
+		logger.debug("getSequenceNoToUse - returning result={}", result);
+		return result;
+	}
+
+	/**
+	 * Get and increment sequence number from database
+	 */
+	private String retrieveAndIncrementSeqNo(@NonNull final DocumentSequenceInfo docSeqInfo)
+	{
 		final int sequenceNo;
 		if (isUsePreliminaryDocumentNo())
 		{
@@ -235,7 +274,7 @@ class DocumentNoBuilder implements IDocumentNoBuilder
 		return Integer.toString(sequenceNo);
 	}
 
-	private int retrieveAndIncrementSequenceCurrentNext(final DocumentSequenceInfo docSeqInfo)
+	private int retrieveAndIncrementSequenceCurrentNext(@NonNull final DocumentSequenceInfo docSeqInfo)
 	{
 		final String trxName = getTrxName();
 		final List<Object> sqlParams = new ArrayList<>();
@@ -276,7 +315,7 @@ class DocumentNoBuilder implements IDocumentNoBuilder
 		return currentSeq.getValue();
 	}
 
-	private int retrieveSequenceCurrentNext(final DocumentSequenceInfo docSeqInfo)
+	private int retrieveSequenceCurrentNext(@NonNull final DocumentSequenceInfo docSeqInfo)
 	{
 		final int adSequenceId = docSeqInfo.getAdSequenceId();
 		final String trxName = getTrxName();

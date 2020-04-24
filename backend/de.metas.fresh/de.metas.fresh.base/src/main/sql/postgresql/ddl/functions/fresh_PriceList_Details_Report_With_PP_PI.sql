@@ -2,10 +2,10 @@ DROP FUNCTION IF EXISTS report.fresh_PriceList_Details_Report_With_PP_PI(numeric
 ;
 
 CREATE OR REPLACE FUNCTION report.fresh_pricelist_details_report_With_PP_PI(IN p_c_bpartner_id numeric,
-                                                                   IN p_m_pricelist_version_id numeric,
-                                                                   IN p_alt_pricelist_version_id numeric,
-                                                                   IN p_ad_language character varying,
-                                                                   IN p_show_product_price_pi_flag text)
+                                                                            IN p_m_pricelist_version_id numeric,
+                                                                            IN p_alt_pricelist_version_id numeric,
+                                                                            IN p_ad_language character varying,
+                                                                            IN p_show_product_price_pi_flag text)
     RETURNS TABLE
             (
                 bp_value                   text,

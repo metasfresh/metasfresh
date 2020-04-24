@@ -27,6 +27,9 @@ import lombok.NonNull;
 import lombok.ToString;
 import lombok.Value;
 
+import javax.annotation.Nullable;
+import java.time.LocalDate;
+
 @Value
 @Builder
 @ToString(exclude = "oAuthToken")
@@ -44,4 +47,7 @@ public class RetrieveIssuesRequest
 
 	@NonNull
 	String oAuthToken;
+
+	@Nullable
+	LocalDate dateFrom;
 }
