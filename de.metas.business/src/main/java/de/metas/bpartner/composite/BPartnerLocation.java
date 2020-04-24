@@ -178,7 +178,17 @@ public class BPartnerLocation
 
 	public BPartnerLocation deepCopy()
 	{
-		return toBuilder().build();
+		final BPartnerLocationBuilder builder = toBuilder();
+
+		if (locationType != null)
+		{
+			builder.locationType(locationType.deepCopy());
+		}
+		if (original != null)
+		{
+			builder.original(original.deepCopy());
+		}
+		return builder.build();
 	}
 
 	/** Only active instances are actually validated. Empty list means "valid" */

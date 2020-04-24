@@ -4,8 +4,6 @@ import java.util.Optional;
 
 import javax.annotation.Nullable;
 
-import org.adempiere.exceptions.AdempiereException;
-
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
@@ -13,7 +11,6 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
 import lombok.Builder;
 import lombok.Data;
-import lombok.NonNull;
 
 /*
  * #%L
@@ -111,6 +108,32 @@ public class BPartnerContactType
 		}
 
 		this.subjectMatter = Optional.ofNullable(subjectMatter);
+	}
+
+	/** copy constructor */
+	private BPartnerContactType(
+			@Nullable final Optional<Boolean> defaultContact,
+			@Nullable final Optional<Boolean> billToDefault,
+			@Nullable final Optional<Boolean> shipToDefault,
+			@Nullable final Optional<Boolean> sales,
+			@Nullable final Optional<Boolean> salesDefault,
+			@Nullable final Optional<Boolean> purchase,
+			@Nullable final Optional<Boolean> purchaseDefault,
+			@Nullable final Optional<Boolean> subjectMatter)
+	{
+		this.defaultContact = defaultContact;
+		this.billToDefault = billToDefault;
+		this.shipToDefault = shipToDefault;
+		this.sales = sales;
+		this.salesDefault = salesDefault;
+		this.purchase = purchase;
+		this.purchaseDefault = purchaseDefault;
+		this.subjectMatter = subjectMatter;
+	}
+
+	public BPartnerContactType deepCopy()
+	{
+		return new BPartnerContactType(defaultContact, billToDefault, shipToDefault, sales, salesDefault, purchase, purchaseDefault, subjectMatter);
 	}
 
 	public boolean getIsDefaultContactOr(final boolean defaultValue)
