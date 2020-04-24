@@ -50,12 +50,12 @@ import java.util.List;
  * There can be multiple Comments for a record.
  */
 @Repository
-public class CommentsRepository
+public class CommentEntryRepository
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IADTableDAO tableDAO = Services.get(IADTableDAO.class);
 
-	public void createComment(final @NonNull String characterData, @NonNull final TableRecordReference tableRecordReference)
+	public void createCommentEntry(final @NonNull String characterData, @NonNull final TableRecordReference tableRecordReference)
 	{
 		final CommentId commentId = getOrCreateChat(tableRecordReference);
 
@@ -68,7 +68,7 @@ public class CommentsRepository
 	}
 
 	@NonNull
-	public List<CommentEntry> retrieveLastComments(@NonNull final TableRecordReference tableRecordReference, final int maxNumberOfRecords)
+	public List<CommentEntry> retrieveLastCommentEntries(@NonNull final TableRecordReference tableRecordReference, final int maxNumberOfRecords)
 	{
 		final CommentId commentId = getChatIdOrNull(tableRecordReference);
 
@@ -83,7 +83,7 @@ public class CommentsRepository
 				.setLimit(maxNumberOfRecords)
 				.create()
 				.iterateAndStream()
-				.map(CommentsRepository::toRecordComment)
+				.map(CommentEntryRepository::toRecordComment)
 				.collect(GuavaCollectors.toImmutableList());
 	}
 
