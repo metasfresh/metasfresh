@@ -30,9 +30,8 @@ import lombok.Value;
 
 import javax.annotation.Nullable;
 
-/*package*/
 @Value
-class CommentId implements RepoIdAware
+public class CommentId implements RepoIdAware
 {
 	int repoId;
 
