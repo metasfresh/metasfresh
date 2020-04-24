@@ -8,6 +8,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner_Location;
+import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableList;
 
@@ -16,7 +17,9 @@ import de.metas.bpartner.composite.BPartnerComposite;
 import de.metas.cache.CCache;
 import de.metas.cache.CCache.CacheMapType;
 import de.metas.interfaces.I_C_BPartner;
+import de.metas.logging.LogManager;
 import lombok.NonNull;
+import lombok.ToString;
 
 /*
  * #%L
@@ -39,12 +42,14 @@ import lombok.NonNull;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-// TODO merge with de.metas.rest_api.bpartner.impl.bpartnercomposite.BPartnerCompositeCache
-final class BPartnerCompositeCache
+@ToString
+final class BPartnerCompositeCacheById
 {
+	private static final Logger logger = LogManager.getLogger(BPartnerCompositeCacheById.class);
+
 	private final CCache<BPartnerId, BPartnerComposite> cache = CCache
 			.<BPartnerId, BPartnerComposite> builder()
-			.cacheName("BPartnerCompositeCache")
+			.cacheName("BPartnerComposite_by_Id")
 			.additionalTableNameToResetFor(I_C_BPartner.Table_Name)
 			.additionalTableNameToResetFor(I_C_BPartner_Location.Table_Name)
 			.additionalTableNameToResetFor(I_AD_User.Table_Name)
@@ -62,33 +67,43 @@ final class BPartnerCompositeCache
 
 	private Collection<BPartnerId> extractBPartnerIds(@NonNull final TableRecordReference recordRef)
 	{
+		final ImmutableList<BPartnerId> result;
 		if (I_C_BPartner.Table_Name.equals(recordRef.getTableName()))
 		{
-			return ImmutableList.of(BPartnerId.ofRepoId(recordRef.getRecord_ID()));
+			result = ImmutableList.of(BPartnerId.ofRepoId(recordRef.getRecord_ID()));
 		}
 		else if (I_C_BPartner_Location.Table_Name.equals(recordRef.getTableName()))
 		{
 			final I_C_BPartner_Location bpartnerLocationRecord = recordRef.getModel(I_C_BPartner_Location.class);
 			if (bpartnerLocationRecord == null) // can happen while we are in the process of storing a bpartner with locations and contacts
 			{
-				return ImmutableList.of();
+				result = ImmutableList.of();
 			}
-			return ImmutableList.of(BPartnerId.ofRepoId(bpartnerLocationRecord.getC_BPartner_ID()));
+			else
+			{
+				result = ImmutableList.of(BPartnerId.ofRepoId(bpartnerLocationRecord.getC_BPartner_ID()));
+			}
 		}
 		else if (I_AD_User.Table_Name.equals(recordRef.getTableName()))
 		{
 			final I_AD_User userRecord = recordRef.getModel(I_AD_User.class);
 			if (userRecord == null) // can happen while we are in the process of storing a bpartner with locations and contacts
 			{
-				return ImmutableList.of();
+				result = ImmutableList.of();
 			}
-			final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(userRecord.getC_BPartner_ID());
-			return bpartnerId != null ? ImmutableList.of(bpartnerId) : ImmutableList.of();
+			else
+			{
+				final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(userRecord.getC_BPartner_ID());
+				result = bpartnerId != null ? ImmutableList.of(bpartnerId) : ImmutableList.of();
+			}
 		}
 		else
 		{
 			throw new AdempiereException("Given recordRef has unexpected tableName=" + recordRef.getTableName() + "; recordRef=" + recordRef);
 		}
+
+		logger.debug("extractBPartnerIds for recordRef={} returns result={}", recordRef, result);
+		return result;
 	}
 
 }

@@ -4,8 +4,11 @@ import java.util.Objects;
 
 import javax.annotation.Nullable;
 
+import org.adempiere.util.lang.IAutoCloseable;
 import org.slf4j.MDC;
 import org.slf4j.MDC.MDCCloseable;
+
+import com.google.common.collect.ImmutableList;
 
 import lombok.experimental.UtilityClass;
 
@@ -35,22 +38,38 @@ import lombok.experimental.UtilityClass;
 public class CacheMDC
 {
 	/**
+	 * Creates one composite closable for both cache id and name.
+	 *
 	 * @return {@code null} if the given {@code cache} was put already.
 	 *         Thx to https://stackoverflow.com/a/35372185/1012103
 	 */
-	public <K, V> MDCCloseable putCache(@Nullable final CacheInterface cache)
+	public <K, V> IAutoCloseable putCache(@Nullable final CacheInterface cache)
 	{
 		if (cache == null)
 		{
 			return null;
 		}
 
+		final ImmutableList.Builder<MDCCloseable> closables = ImmutableList.builder();
+
 		final String cacheId = Long.toString(cache.getCacheId());
-		if (Objects.equals(MDC.get("de.metas.cache.cacheId"), cacheId))
+		if (!Objects.equals(MDC.get("de.metas.cache.cacheId"), cacheId))
 		{
-			return null;
+			closables.add(MDC.putCloseable("de.metas.cache.cacheId", cacheId));
 		}
-		return MDC.putCloseable("de.metas.cache.cacheId", cacheId);
+
+		if (cache instanceof CCache)
+		{
+			final CCache<?, ?> ccache = (CCache<?, ?>)cache;
+			final String cacheName = ccache.getCacheName();
+			if (!Objects.equals(MDC.get("de.metas.cache.cacheName"), cacheName))
+			{
+				closables.add(MDC.putCloseable("de.metas.cache.cacheName", cacheName));
+			}
+		}
+
+		final ImmutableList<MDCCloseable> composite = closables.build();
+		return () -> composite.forEach(MDCCloseable::close);
 	}
 
 	public MDCCloseable putCacheLabel(@Nullable final CacheLabel cacheLabel)
@@ -60,10 +79,10 @@ public class CacheMDC
 			return null;
 		}
 
-		if (Objects.equals(MDC.get("de.metas.cache.CCache.cacheLabel"), cacheLabel.getName()))
+		if (Objects.equals(MDC.get("de.metas.cache.cacheLabel"), cacheLabel.getName()))
 		{
 			return null;
 		}
-		return MDC.putCloseable("de.metas.cache.CCache.cacheLabel", cacheLabel.getName());
+		return MDC.putCloseable("de.metas.cache.cacheLabel", cacheLabel.getName());
 	}
 }

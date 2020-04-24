@@ -203,7 +203,7 @@ public class OrderCandidatesRestControllerImpl implements OrderCandidatesRestEnd
 			@NonNull final MasterdataProvider masterdataProvider)
 	{
 		try (final MDCCloseable extHeaderMDC = MDC.putCloseable("externalHeaderId", json.getExternalHeaderId());
-				final MDCCloseable extLineMDC = MDC.putCloseable("externalLineId", json.getExternalHeaderId()))
+				final MDCCloseable extLineMDC = MDC.putCloseable("externalLineId", json.getExternalLineId()))
 		{
 			final SpanMetadata spanMetadata = SpanMetadata.builder()
 					.name("CreateOrUpdateMasterDataSingle")
@@ -231,7 +231,6 @@ public class OrderCandidatesRestControllerImpl implements OrderCandidatesRestEnd
 
 		final ProductInfo productInfo = masterdataProvider.getCreateProductInfo(json.getProduct(), orgId);
 
-		//
 		// Create product prices if needed
 		{
 			final BPartnerInfo billBPartnerInfoEffective = CoalesceUtil.coalesce(billBPartnerInfo, bpartnerInfo);
@@ -250,7 +249,6 @@ public class OrderCandidatesRestControllerImpl implements OrderCandidatesRestEnd
 				logger.debug("Skip creating product price for {} because {}", productInfo, optionalRequest.getExplanation());
 			}
 		}
-
 	}
 
 	private ExplainedOptional<ProductPriceCreateRequest> createProductPriceCreateRequest(

@@ -189,7 +189,7 @@ final class CacheInvalidationRemoteHandler implements IEventListener
 
 		//
 		// Reset cache for TableName/Record_ID
-		logger.debug("Reseting local cache for {} because we got remote event: {}", request, event);
+		logger.debug("Resetting local cache for {} because we got remote event: {}", request, event);
 		CacheMgt.get().reset(request, CacheMgt.ResetMode.LOCAL); // don't broadcast it anymore because else we would introduce recursion
 	}
 

@@ -105,7 +105,9 @@ public interface PerformanceMonitoringService
 
 		ASYNC_WORKPACKAGE("asyncWorkPackage"),
 
-		REST_API_PROCESSING("rest-API");
+		REST_API_PROCESSING("rest-API"),
+
+		CACHE_OPERATION("cache-operation");
 
 		private Type(String code)
 		{
