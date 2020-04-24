@@ -25,6 +25,7 @@ package de.metas.serviceprovider.timebooking.importer;
 import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
 import de.metas.logging.LogManager;
+import de.metas.organization.OrgId;
 import de.metas.serviceprovider.ImportQueue;
 import de.metas.serviceprovider.external.ExternalId;
 import de.metas.serviceprovider.external.reference.ExternalReference;
@@ -113,7 +114,7 @@ public class TimeBookingsImporterService
 
 			if (isNewRecord)
 			{
-				insertTimeBookingExternalRef(timeBookingId, importTimeInfo.getExternalTimeBookingId());
+				insertTimeBookingExternalRef(timeBookingId, importTimeInfo.getExternalTimeBookingId(), timeBooking.getOrgId());
 			}
 
 			deleteCorrespondingFailedRecordIfExists(importTimeInfo.getExternalTimeBookingId());
@@ -127,9 +128,11 @@ public class TimeBookingsImporterService
 	}
 
 	private void insertTimeBookingExternalRef(@NonNull final TimeBookingId timeBookingId,
-											  @NonNull final ExternalId externalId)
+											  @NonNull final ExternalId externalId,
+			                                  @NonNull final OrgId orgId)
 	{
 		final ExternalReference externalReference = ExternalReference.builder()
+				.orgId(orgId)
 				.externalReference(externalId.getId())
 				.recordId(timeBookingId.getRepoId())
 				.externalSystem(externalId.getExternalSystem())

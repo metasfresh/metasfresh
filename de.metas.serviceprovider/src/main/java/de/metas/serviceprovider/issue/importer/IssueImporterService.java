@@ -123,6 +123,7 @@ public class IssueImporterService
 						.externalSystem(importIssueInfo.getExternalIssueId().getExternalSystem())
 						.externalReferenceType(ExternalReferenceType.ISSUE_ID)
 						.externalReference(importIssueInfo.getExternalIssueId().getId())
+						.orgId(issueEntity.getOrgId())
 						.recordId(issueEntity.getIssueId().getRepoId())
 						.build();
 
@@ -149,11 +150,13 @@ public class IssueImporterService
 
 		if (isNew)
 		{
-			final ExternalReference externalReference = ExternalReference.builder()
+			final ExternalReference externalReference = ExternalReference
+					.builder()
 					.externalSystem(importMilestoneInfo.getExternalId().getExternalSystem())
 					.externalReferenceType(ExternalReferenceType.MILESTONE_ID)
 					.externalReference(importMilestoneInfo.getExternalId().getId())
 					.recordId(milestone.getMilestoneId().getRepoId())
+					.orgId(milestone.getOrgId())
 					.build();
 
 			externalReferenceRepository.save(externalReference);

@@ -20,34 +20,24 @@
  * #L%
  */
 
-package de.metas.serviceprovider.external.reference;
+package de.metas.serviceprovider.github;
 
-import de.metas.organization.OrgId;
-import de.metas.serviceprovider.external.ExternalSystem;
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Value;
+import de.metas.process.Param;
 
-import javax.annotation.Nullable;
+import java.time.LocalDate;
 
-@Value
-@Builder
-public class ExternalReference
+public class ScheduledGithubImport extends GithubImportProcess
 {
-	@Nullable
-	ExternalReferenceId externalReferenceId;
+	@Param(parameterName = "OffsetDays")
+	private int offsetDays;
 
-	@NonNull
-	OrgId orgId;
+	@Override
+	protected String doIt() throws Exception
+	{
+		final LocalDate dateFrom = LocalDate.now().minusDays(offsetDays);
 
-	@NonNull
-	ExternalSystem externalSystem;
+		setDateFrom(dateFrom);
 
-	@NonNull
-	ExternalReferenceType externalReferenceType;
-
-	@NonNull
-	String externalReference;
-
-	int recordId;
+		return super.doIt();
+	}
 }

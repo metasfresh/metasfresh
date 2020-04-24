@@ -61,6 +61,7 @@ import static de.metas.serviceprovider.TestConstants.MOCK_EV_TASK_ID;
 import static de.metas.serviceprovider.TestConstants.MOCK_EXTERNAL_ID;
 import static de.metas.serviceprovider.TestConstants.MOCK_GH_TASK_ID;
 import static de.metas.serviceprovider.TestConstants.MOCK_ISSUE_ID;
+import static de.metas.serviceprovider.TestConstants.MOCK_ORG_ID;
 import static de.metas.serviceprovider.TestConstants.MOCK_RECORD_ID;
 import static de.metas.serviceprovider.TestConstants.MOCK_USER_ID;
 import static de.metas.serviceprovider.timebooking.importer.ImportConstants.IMPORT_TIME_BOOKINGS_LOG_MESSAGE_PREFIX;
@@ -194,6 +195,7 @@ public class EverhourImporterServiceTest
 		//1. add external ref for Everhour user
 		final ExternalReference userRef = ExternalReference
 				.builder()
+				.orgId(MOCK_ORG_ID)
 				.recordId(MOCK_RECORD_ID)
 				.externalReference(String.valueOf(MOCK_USER_ID.getRepoId()))
 				.externalSystem(ExternalSystem.EVERHOUR)
@@ -205,6 +207,7 @@ public class EverhourImporterServiceTest
 		//2. add external ref for GitHub issue ID
 		final ExternalReference issueRef = ExternalReference
 				.builder()
+				.orgId(MOCK_ORG_ID)
 				.recordId(MOCK_RECORD_ID)
 				.externalReference(String.valueOf(MOCK_ISSUE_ID.getRepoId()))
 				.externalSystem(ExternalSystem.GITHUB)

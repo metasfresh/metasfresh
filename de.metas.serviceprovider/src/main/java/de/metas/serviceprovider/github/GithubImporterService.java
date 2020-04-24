@@ -42,12 +42,10 @@ import de.metas.serviceprovider.external.issuedetails.ExternalIssueDetail;
 import de.metas.serviceprovider.external.reference.ExternalReferenceRepository;
 import de.metas.serviceprovider.external.reference.ExternalReferenceType;
 import de.metas.serviceprovider.external.reference.GetReferencedIdRequest;
-import de.metas.serviceprovider.issue.IssueId;
 import de.metas.serviceprovider.issue.importer.IssueImporter;
 import de.metas.serviceprovider.issue.importer.info.ImportIssueInfo;
 import de.metas.serviceprovider.issue.importer.info.ImportIssuesRequest;
 import de.metas.serviceprovider.issue.importer.info.ImportMilestoneInfo;
-import de.metas.serviceprovider.milestone.MilestoneId;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
@@ -143,6 +141,7 @@ public class GithubImporterService implements IssueImporter
 					.repositoryId(importIssuesRequest.getRepoId())
 					.pageSize(CHUNK_SIZE)
 					.pageIndex(chunkIndex)
+					.dateFrom(importIssuesRequest.getDateFrom())
 					.build();
 
 			final ImmutableList<Issue> issues = githubClient.fetchIssues(retrieveIssuesRequest);
