@@ -283,7 +283,7 @@ import static de.metas.report.server.ReportConstants.REPORT_PARAM_REPORT_FORMAT;
 		return executed;
 	}
 
-	/* package */ final void assertNotExecuted()
+	/* package */ void assertNotExecuted()
 	{
 		if (isExecuted())
 		{
@@ -310,10 +310,11 @@ import static de.metas.report.server.ReportConstants.REPORT_PARAM_REPORT_FORMAT;
 		{
 			executed = false;
 		}
+		logger.debug("executionResult.success={} executionResult.summary={}", executionResult.isSuccess(), executionResult.getSummary());
 		return executionResult;
 	}
 
-	private final ProcessInstanceResult executeADProcess(@NonNull final ProcessExecutionContext context)
+	private ProcessInstanceResult executeADProcess(@NonNull final ProcessExecutionContext context)
 	{
 		//
 		// Create the process info and execute the process synchronously
@@ -323,7 +324,7 @@ import static de.metas.report.server.ReportConstants.REPORT_PARAM_REPORT_FORMAT;
 				.setPInstanceId(PInstanceId.ofRepoId(getInstanceId().toInt()))
 				.setTitle(caption.translate(context.getAdLanguage()))
 				.setPrintPreview(true)
-				.setJRDesiredOutputType( getTargetOutputType() )
+				.setJRDesiredOutputType(getTargetOutputType())
 				//
 				// Execute the process/report
 				.buildAndPrepareExecution()
@@ -354,7 +355,7 @@ import static de.metas.report.server.ReportConstants.REPORT_PARAM_REPORT_FORMAT;
 		return saved;
 	}
 
-	/* package */ final IAutoCloseable lockForReading()
+	/* package */ IAutoCloseable lockForReading()
 	{
 		final ReadLock readLock = readwriteLock.readLock();
 		logger.debug("Acquiring read lock for {}: {}", this, readLock);
@@ -367,7 +368,7 @@ import static de.metas.report.server.ReportConstants.REPORT_PARAM_REPORT_FORMAT;
 		};
 	}
 
-	/* package */ final IAutoCloseable lockForWriting()
+	/* package */ IAutoCloseable lockForWriting()
 	{
 		final WriteLock writeLock = readwriteLock.writeLock();
 		logger.debug("Acquiring write lock for {}: {}", this, writeLock);
@@ -381,24 +382,24 @@ import static de.metas.report.server.ReportConstants.REPORT_PARAM_REPORT_FORMAT;
 	}
 
 	/**
-	 *  Try to get the target output type from the specific process param {@link de.metas.report.server.ReportConstants#REPORT_PARAM_REPORT_FORMAT},
-	 *  if the parameter is missing, the default output type is returned.
-	 *  @see OutputType#getDefault()
+	 * Try to get the target output type from the specific process param {@link de.metas.report.server.ReportConstants#REPORT_PARAM_REPORT_FORMAT},
+	 * if the parameter is missing, the default output type is returned.
+	 *
+	 * @see OutputType#getDefault()
 	 */
 	private OutputType getTargetOutputType()
 	{
 		final IDocumentFieldView formatField = parameters.getFieldViewOrNull(REPORT_PARAM_REPORT_FORMAT);
 
-		if ( formatField != null )
+		if (formatField != null)
 		{
 			final LookupValue outputTypeParamValue = formatField.getValueAs(LookupValue.class);
 
 			if (outputTypeParamValue != null)
 			{
-				final Optional<OutputType> targetOutputType =
-						OutputType.getOutputTypeByFileExtension( String.valueOf( formatField.getValueAs(LookupValue.class).getId() ) );
+				final Optional<OutputType> targetOutputType = OutputType.getOutputTypeByFileExtension(String.valueOf(formatField.getValueAs(LookupValue.class).getId()));
 
-				if ( targetOutputType.isPresent() )
+				if (targetOutputType.isPresent())
 				{
 					return targetOutputType.get();
 				}

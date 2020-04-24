@@ -75,7 +75,6 @@ final class DocumentAttachments
 	private static final Joiner ID_Joiner = Joiner.on(ID_SEPARATOR);
 
 	private final AttachmentEntryService attachmentEntryService;
-	private final TableAttachmentListenerService tableAttachmentListenerService;
 
 	private final DocumentPath documentPath;
 	private final ITableRecordReference recordRef;
@@ -95,7 +94,6 @@ final class DocumentAttachments
 		this.recordRef = recordRef;
 		this.entityDescriptor = entityDescriptor;
 		this.websocketPublisher = websocketPublisher;
-		this.tableAttachmentListenerService = tableAttachmentListenerService;
 		this.attachmentEntryService = attachmentEntryService;
 	}
 
@@ -128,11 +126,9 @@ final class DocumentAttachments
 		final String name = file.getOriginalFilename();
 		final byte[] data = file.getBytes();
 
-		final AttachmentEntry attachmentEntry = attachmentEntryService.createNewAttachment(recordRef, name, data);
+		attachmentEntryService.createNewAttachment(recordRef, name, data);
 
 		notifyRelatedDocumentTabsChanged();
-
-		tableAttachmentListenerService.notifyAttachmentListeners(attachmentEntry);
 	}
 
 	public void addURLEntry(final String name, final URI url)
@@ -215,7 +211,7 @@ final class DocumentAttachments
 		return ImmutablePair.of(idPrefix, entryId);
 	}
 
-	private static final DocumentId buildId(final String idPrefix, final int id)
+	private static DocumentId buildId(final String idPrefix, final int id)
 	{
 		return DocumentId.ofString(ID_Joiner.join(idPrefix, id));
 	}

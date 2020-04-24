@@ -4,11 +4,13 @@ import java.util.List;
 import java.util.function.Supplier;
 
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableList;
 
 import de.metas.bpartner.product.stats.BPartnerProductStatsService;
 import de.metas.i18n.ITranslatableString;
+import de.metas.logging.LogManager;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.process.RelatedProcessDescriptor;
 import de.metas.ui.web.order.products_proposal.filters.ProductsProposalViewFilter;
@@ -52,6 +54,8 @@ import lombok.NonNull;
 @ViewFactory(windowId = BasePLVProductsProposalViewFactory.WINDOW_ID_STRING)
 public class BasePLVProductsProposalViewFactory extends ProductsProposalViewFactoryTemplate
 {
+	private static final Logger logger = LogManager.getLogger(BasePLVProductsProposalViewFactory.class);
+
 	public static final String WINDOW_ID_STRING = "basePLVProductsProposal";
 	public static final WindowId WINDOW_ID = WindowId.fromJson(WINDOW_ID_STRING);
 
@@ -101,6 +105,7 @@ public class BasePLVProductsProposalViewFactory extends ProductsProposalViewFact
 				.soTrx(parentView.getSoTrx())
 				//
 				.build().load();
+		logger.debug("loaded ProductsProposalRowsData with size={} for basePriceListVersionId={}", basePriceListVersionId, rowsData.size());
 
 		final ProductsProposalView view = ProductsProposalView.builder()
 				.windowId(getWindowId())

@@ -308,6 +308,7 @@ public class ADProcessPostProcessService
 		// Open report
 		if (reportTempFile != null)
 		{
+			logger.debug("The processExecutionResult specifies reportTempFile={}", reportTempFile);
 			return OpenReportAction.builder()
 					.filename(processExecutionResult.getReportFilename())
 					.contentType(processExecutionResult.getReportContentType())
@@ -318,6 +319,7 @@ public class ADProcessPostProcessService
 		// Create & open view from Records
 		else if (recordsToOpen != null && recordsToOpen.getTarget() == OpenTarget.GridView)
 		{
+			logger.debug("The processExecutionResult specifies recordsToOpen={}", recordsToOpen);
 			final Set<DocumentPath> referencingDocumentPaths = recordsToOpen.isAutomaticallySetReferencingDocumentPaths()
 					? extractReferencingDocumentPaths(processInfo)
 					: null;
@@ -336,6 +338,8 @@ public class ADProcessPostProcessService
 		else if (processExecutionResult.getWebuiViewToOpen() != null)
 		{
 			final WebuiViewToOpen viewToOpen = processExecutionResult.getWebuiViewToOpen();
+			logger.debug("The processExecutionResult specifies viewToOpen={}", viewToOpen);
+
 			final ViewOpenTarget target = viewToOpen.getTarget();
 			if (ViewOpenTarget.IncludedView.equals(target))
 			{

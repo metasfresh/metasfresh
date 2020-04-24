@@ -15,6 +15,7 @@ import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_Product;
+import org.slf4j.Logger;
 
 import java.util.Objects;
 import com.google.common.collect.ImmutableList;
@@ -33,6 +34,7 @@ import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.lang.SOTrx;
+import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.ProductPriceId;
@@ -79,6 +81,8 @@ import lombok.Singular;
 
 public final class ProductsProposalRowsLoader
 {
+	private static final Logger logger = LogManager.getLogger(ProductsProposalRowsLoader.class);
+
 	// services
 	private final IPriceListDAO priceListsRepo = Services.get(IPriceListDAO.class);
 	private final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
@@ -126,15 +130,16 @@ public final class ProductsProposalRowsLoader
 	public ProductsProposalRowsData load()
 	{
 		List<ProductsProposalRow> rows = loadRows();
+		logger.debug("loaded {} productsProposalRows for priceListVersionIds={}", rows.size(), priceListVersionIds);
 		rows = updateLastShipmentDays(rows);
 
 		final PriceListVersionId singlePriceListVersionId = priceListVersionIds.size() == 1 ? priceListVersionIds.iterator().next() : null;
 		final PriceListVersionId basePriceListVersionId;
 		if (singlePriceListVersionId != null)
 		{
-			final ZonedDateTime datePromised = order == null? SystemTime.asZonedDateTime() : order.getDatePromised();
-
+			final ZonedDateTime datePromised = order == null ? SystemTime.asZonedDateTime() : order.getDatePromised();
 			basePriceListVersionId = priceListsRepo.getBasePriceListVersionIdForPricingCalculationOrNull(singlePriceListVersionId, datePromised);
+			logger.debug("singlePriceListVersionId={} and datePromised={}; -> basePriceListVersionId={}", PriceListVersionId.toRepoId(singlePriceListVersionId), datePromised, PriceListVersionId.toRepoId(basePriceListVersionId));
 		}
 		else
 		{
@@ -146,6 +151,7 @@ public final class ProductsProposalRowsLoader
 
 		if (order != null)
 		{
+			logger.debug("order!=null; -> add bpartnerName={} to headerProperties", order.getBpartnerName());
 			headerProperties.entry(ViewHeaderProperty.builder()
 					.caption(msgBL.translatable("C_BPartner_ID"))
 					.value(order.getBpartnerName())
