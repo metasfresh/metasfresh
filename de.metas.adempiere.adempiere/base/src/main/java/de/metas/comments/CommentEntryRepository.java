@@ -126,6 +126,7 @@ public class CommentsRepository
 		return queryBL.createQueryBuilder(I_CM_Chat.class)
 				.addEqualsFilter(I_CM_Chat.COLUMNNAME_AD_Table_ID, tableRecordReference.getAD_Table_ID())
 				.addEqualsFilter(I_CM_Chat.COLUMNNAME_Record_ID, tableRecordReference.getRecord_ID())
+				.orderBy(I_CM_Chat.COLUMNNAME_CM_Chat_ID)
 				.create()
 				.firstId(CommentId::ofRepoIdOrNull);
 	}
