@@ -95,7 +95,12 @@ public class CommentEntryRepository
 		final String text = chatEntry.getCharacterData();
 		final CommentEntryId id = CommentEntryId.ofRepoId(chatEntry.getCM_ChatEntry_ID());
 
-		return CommentEntry.of(createdBy, created, text, id);
+		return CommentEntry.builder()
+				.created(created)
+				.createdBy(createdBy)
+				.text(text)
+				.id(id)
+				.build();
 	}
 
 	@NonNull

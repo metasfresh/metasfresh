@@ -23,6 +23,7 @@
 package de.metas.comments;
 
 import de.metas.user.UserId;
+import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -39,17 +40,16 @@ public class CommentEntry
 
 	@NonNull CommentEntryId id;
 
-	private CommentEntry(@NonNull final UserId createdBy, @NonNull final ZonedDateTime created, @NonNull final String text, @NonNull final CommentEntryId id)
+	@Builder
+	private CommentEntry(
+			@NonNull final UserId createdBy,
+			@NonNull final ZonedDateTime created,
+			@NonNull final String text,
+			@NonNull final CommentEntryId id)
 	{
 		this.createdBy = createdBy;
 		this.created = created;
 		this.text = text;
 		this.id = id;
-	}
-
-	@NonNull
-	public static CommentEntry of(@NonNull final UserId createdBy, @NonNull final ZonedDateTime created, @NonNull final String text, @NonNull final CommentEntryId id)
-	{
-		return new CommentEntry(createdBy, created, text, id);
 	}
 }
