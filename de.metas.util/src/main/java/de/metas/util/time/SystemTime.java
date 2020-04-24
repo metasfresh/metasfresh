@@ -22,6 +22,10 @@ package de.metas.util.time;
  * #L%
  */
 
+import lombok.NonNull;
+import lombok.experimental.UtilityClass;
+
+import javax.annotation.Nullable;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -32,11 +36,6 @@ import java.time.temporal.ChronoUnit;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
-
-import javax.annotation.Nullable;
-
-import lombok.NonNull;
-import lombok.experimental.UtilityClass;
 
 /**
  * Code taken from the book "Test Driven", Chapter 7 ("Test-driving the
@@ -56,6 +55,10 @@ public class SystemTime
 		return getTimeSource().millis();
 	}
 
+	/**
+	 * For WEBUI/Json please use de.metas.ui.web.window.datatypes.json.DateTimeConverters#toJson(java.time.ZonedDateTime, java.time.ZoneId)
+	 * For NON webui please use use de.metas.organization.IOrgDAO.getTimeZone(OrgId)
+	 */
 	public ZoneId zoneId()
 	{
 		return ZoneId.systemDefault();
