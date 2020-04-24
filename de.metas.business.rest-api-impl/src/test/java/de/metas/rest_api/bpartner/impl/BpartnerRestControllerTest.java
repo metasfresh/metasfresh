@@ -323,14 +323,17 @@ class BpartnerRestControllerTest
 	void createOrUpdateBPartner_update_json()
 	{
 		final JsonRequestBPartnerUpsert bpartnerUpsertRequest = loadUpsertRequest("BpartnerRestControllerTest_Simple_BPartner.json");
-		createOrUpdateBPartner_update_performTest(bpartnerUpsertRequest);
+		final I_C_BPartner bpartnerRecord = createOrUpdateBPartner_update_performTest(bpartnerUpsertRequest);
+
+		assertThat(bpartnerRecord.getBPartner_Parent_ID()).isLessThanOrEqualTo(0);
 	}
 
 	/**
 	 * Verifies a small&simple JSON that identifies a BPartner by its value and then updates that value.
+	 * @return bpartnerRecord for further assertions
 	 */
 	@Test
-	void createOrUpdateBPartner_update_C_BPartner_Value_OK()
+	void  createOrUpdateBPartner_update_C_BPartner_Value_OK()
 	{
 		final JsonRequestBPartnerUpsert bpartnerUpsertRequest = loadUpsertRequest("BpartnerRestControllerTest_update_C_BPartner_Value.json");
 
@@ -352,6 +355,7 @@ class BpartnerRestControllerTest
 		// verify that the bpartner-record was updated
 		refresh(bpartnerRecord);
 		assertThat(bpartnerRecord.getValue()).isEqualTo("12345_updated");
+
 	}
 
 	/**
@@ -508,7 +512,7 @@ class BpartnerRestControllerTest
 		return metasfreshId;
 	}
 
-	private void createOrUpdateBPartner_update_performTest(@NonNull final JsonRequestBPartnerUpsert bpartnerUpsertRequest)
+	private I_C_BPartner createOrUpdateBPartner_update_performTest(@NonNull final JsonRequestBPartnerUpsert bpartnerUpsertRequest)
 	{
 		final I_C_BPartner bpartnerRecord = newInstance(I_C_BPartner.class);
 		bpartnerRecord.setAD_Org_ID(AD_ORG_ID);
@@ -517,6 +521,7 @@ class BpartnerRestControllerTest
 		bpartnerRecord.setValue("bpartnerRecord.value");
 		bpartnerRecord.setCompanyName("bpartnerRecord.companyName");
 		bpartnerRecord.setC_BP_Group_ID(C_BP_GROUP_ID);
+		bpartnerRecord.setBPartner_Parent_ID(123); // in one test this shall be updated to null
 		saveRecord(bpartnerRecord);
 
 		final RecordCounts inititalCounts = new RecordCounts();
@@ -536,6 +541,7 @@ class BpartnerRestControllerTest
 		refresh(bpartnerRecord);
 		assertThat(bpartnerRecord.getCompanyName()).isEqualTo("otherCompanyName");
 		assertThat(bpartnerRecord.getValue()).isEqualTo("other12345");
+		return bpartnerRecord;
 	}
 
 	@Value
