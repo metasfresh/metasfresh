@@ -42,11 +42,11 @@ import lombok.NonNull;
  * #L%
  */
 
-final class BPartnerCompositeCache
+final class BPartnerCompositeCacheByLookupKey
 {
 	private final transient CCache<BPartnerCompositeLookupKey, BPartnerComposite> cache;
 
-	public BPartnerCompositeCache(@NonNull final String identifier)
+	public BPartnerCompositeCacheByLookupKey(@NonNull final String identifier)
 	{
 		final CacheIndex<BPartnerId/* RK */, BPartnerCompositeLookupKey/* CK */, BPartnerComposite/* V */> //
 		cacheIndex = CacheIndex.of(new BPartnerCompositeCacheIndex());
@@ -83,7 +83,6 @@ final class BPartnerCompositeCache
 					key,
 					() -> new AdempiereException("Missing record for key=" + key)));
 		}
-
 		return result.build();
 	}
 }

@@ -36,10 +36,10 @@ import java.util.function.Supplier;
 import javax.annotation.Nullable;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.util.Util;
 import org.slf4j.Logger;
-import org.slf4j.MDC.MDCCloseable;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.cache.Cache;
@@ -412,7 +412,7 @@ public class CCache<K, V> implements CacheInterface
 	@Override
 	public long reset()
 	{
-		try (final MDCCloseable cacheIdMDC = CacheMDC.putCache(this))
+		try (final IAutoCloseable cacheIdMDC = CacheMDC.putCache(this))
 		{
 			final long no = cache.size();
 			clear();
@@ -436,7 +436,7 @@ public class CCache<K, V> implements CacheInterface
 	@Override
 	public long resetForRecordId(@NonNull final TableRecordReference recordRef)
 	{
-		try (final MDCCloseable cacheIdMDC = CacheMDC.putCache(this))
+		try (final IAutoCloseable cacheIdMDC = CacheMDC.putCache(this))
 		{
 			if (!invalidationKeysMapper.isPresent())
 			{
@@ -454,18 +454,19 @@ public class CCache<K, V> implements CacheInterface
 	{
 		if (keysMapper.isResetAll(recordRef))
 		{
-			logger.debug("resetForRecordIdUsingKeysMapper - given keysMapper indicated to reset all; -> resetting the whole cache");
+			logger.debug("resetForRecordIdUsingKeysMapper - given keysMapper indicated to reset all for recordRef={}; -> resetting the whole cache", recordRef);
 			return reset();
 		}
 
 		long counter = 0; // note that also the "reset-all" reset() method only returns an approx number.
 
 		final Collection<K> keysToReset = keysMapper.computeCachingKeys(recordRef);
-		logger.debug("resetForRecordIdUsingKeysMapper - given keysMapper indicated the following keys: {}", keysToReset);
+		logger.debug("resetForRecordIdUsingKeysMapper - given keysMapper indicated the following keys for recordRef={}: {}", keysToReset, recordRef);
 
 		for (final K key : keysToReset)
 		{
-			final boolean keyRemoved = remove(key) != null;
+			final V removedItem = remove(key);
+			final boolean keyRemoved = removedItem != null;
 			if (keyRemoved)
 			{
 				counter++;
@@ -479,7 +480,7 @@ public class CCache<K, V> implements CacheInterface
 	{
 		final StringBuilder sb = new StringBuilder("CCache[")
 				.append(cacheName)
-				.append(", size").append(cache.size())
+				.append(", size=").append(cache.size())
 				.append(", id=").append(cacheId);
 
 		if (DEBUG)
@@ -495,7 +496,7 @@ public class CCache<K, V> implements CacheInterface
 
 	public boolean containsKey(final K key)
 	{
-		try (final MDCCloseable cacheIdMDC = CacheMDC.putCache(this))
+		try (final IAutoCloseable cacheIdMDC = CacheMDC.putCache(this))
 		{
 			return cache.getIfPresent(key) != null;
 		}
@@ -503,17 +504,18 @@ public class CCache<K, V> implements CacheInterface
 
 	public V remove(final K key)
 	{
-		try (final MDCCloseable cacheIdMDC = CacheMDC.putCache(this))
+		try (final IAutoCloseable cacheIdMDC = CacheMDC.putCache(this))
 		{
 			final V value = cache.getIfPresent(key);
 			cache.invalidate(key);
+			logger.debug("remove - Removed key={}; item that was actually in this cache={}", key, value);
 			return value;
 		}
 	}
 
 	public void removeAll(final Iterable<K> keys)
 	{
-		try (final MDCCloseable cacheIdMDC = CacheMDC.putCache(this))
+		try (final IAutoCloseable cacheIdMDC = CacheMDC.putCache(this))
 		{
 			cache.invalidateAll(keys);
 		}
@@ -525,20 +527,18 @@ public class CCache<K, V> implements CacheInterface
 	@Nullable
 	public V get(final K key)
 	{
-		try (final MDCCloseable cacheIdMDC = CacheMDC.putCache(this))
+		try (final IAutoCloseable cacheIdMDC = CacheMDC.putCache(this))
 		{
-			return cache.getIfPresent(key);
+			final V result = cache.getIfPresent(key);
+			logger.debug("get - key={}; result={}", key, result);
+			return result;
 		}
-	}	// get
+	}
 
 	/**
 	 * Gets cached value by <code>key</code>.
 	 *
 	 * For more informations, see {@link #get(Object, Callable)}.
-	 *
-	 * @param key
-	 * @param valueInitializer
-	 * @return cached value
 	 */
 	public V get(final K key, final Supplier<V> valueInitializer)
 	{
@@ -576,7 +576,7 @@ public class CCache<K, V> implements CacheInterface
 	 */
 	public V get(final K key, final Callable<V> valueInitializer)
 	{
-		try (final MDCCloseable cacheIdMDC = CacheMDC.putCache(this))
+		try (final IAutoCloseable cacheIdMDC = CacheMDC.putCache(this))
 		{
 			if (valueInitializer == null)
 			{
@@ -620,7 +620,7 @@ public class CCache<K, V> implements CacheInterface
 	 */
 	public V getOrLoad(final K key, final Callable<V> valueLoader)
 	{
-		try (final MDCCloseable cacheIdMDC = CacheMDC.putCache(this))
+		try (final IAutoCloseable cacheIdMDC = CacheMDC.putCache(this))
 		{
 			return get(key, valueLoader);
 		}
@@ -628,7 +628,7 @@ public class CCache<K, V> implements CacheInterface
 
 	public V getOrLoad(final K key, @NonNull final Function<K, V> valueLoader)
 	{
-		try (final MDCCloseable cacheIdMDC = CacheMDC.putCache(this))
+		try (final IAutoCloseable cacheIdMDC = CacheMDC.putCache(this))
 		{
 			final Callable<V> callable = () -> valueLoader.apply(key);
 			return get(key, callable);
@@ -649,7 +649,7 @@ public class CCache<K, V> implements CacheInterface
 	 */
 	public Collection<V> getAllOrLoad(final Collection<K> keys, final Function<Collection<K>, Map<K, V>> valuesLoader)
 	{
-		try (final MDCCloseable cacheIdMDC = CacheMDC.putCache(this))
+		try (final IAutoCloseable cacheIdMDC = CacheMDC.putCache(this))
 		{
 			if (keys.isEmpty())
 			{
@@ -684,7 +684,7 @@ public class CCache<K, V> implements CacheInterface
 			}
 			else
 			{
-				logger.debug("getAllOrLoad - Apply valuesLoader to load values for keysToLoad={}", keysToLoad);
+				logger.debug("getAllOrLoad - Appling valuesLoader to load values for keysToLoad={}", keysToLoad);
 				final Map<K, V> valuesLoaded = valuesLoader.apply(keysToLoad);
 
 				// add loaded values to cache and notify listener
@@ -713,7 +713,7 @@ public class CCache<K, V> implements CacheInterface
 	 */
 	public <E extends Throwable> V getOrElseThrow(final K key, final Supplier<E> exceptionSupplier) throws E
 	{
-		try (final MDCCloseable cacheIdMDC = CacheMDC.putCache(this))
+		try (final IAutoCloseable cacheIdMDC = CacheMDC.putCache(this))
 		{
 			final V value = get(key);
 			if (value == null)
@@ -726,7 +726,7 @@ public class CCache<K, V> implements CacheInterface
 
 	public void put(final K key, final V value)
 	{
-		try (final MDCCloseable cacheIdMDC = CacheMDC.putCache(this))
+		try (final IAutoCloseable cacheIdMDC = CacheMDC.putCache(this))
 		{
 			m_justReset = false;
 			if (value == null)
@@ -743,6 +743,7 @@ public class CCache<K, V> implements CacheInterface
 
 	private void fireAdditionListener(final K key, final V value)
 	{
+		logger.debug("fireAdditionListener - Item added; key={}; value={}", key, value);
 		if (additionListener != null)
 		{
 			additionListener.itemAdded(key, value);
@@ -756,7 +757,7 @@ public class CCache<K, V> implements CacheInterface
 	 */
 	public void putAll(final Map<? extends K, ? extends V> map)
 	{
-		try (final MDCCloseable cacheIdMDC = CacheMDC.putCache(this))
+		try (final IAutoCloseable cacheIdMDC = CacheMDC.putCache(this))
 		{
 			cache.putAll(map);
 
@@ -804,7 +805,7 @@ public class CCache<K, V> implements CacheInterface
 	protected final void finalize() throws Throwable
 	{
 		// NOTE: to avoid memory leaks we need to programatically clear our internal state
-		try (final MDCCloseable cacheIdMDC = CacheMDC.putCache(this))
+		try (final IAutoCloseable cacheIdMDC = CacheMDC.putCache(this))
 		{
 			logger.debug("Running finalize");
 			if (cache != null)
@@ -834,7 +835,6 @@ public class CCache<K, V> implements CacheInterface
 
 		private CCacheStats(final long cacheId, final String name, final long size, final CacheStats guavaStats)
 		{
-			super();
 			this.cacheId = cacheId;
 			this.name = name;
 			this.size = size;

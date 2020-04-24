@@ -18,7 +18,6 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.GLN;
-import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.util.lang.ExternalId;
@@ -178,7 +177,17 @@ public class BPartnerLocation
 
 	public BPartnerLocation deepCopy()
 	{
-		return toBuilder().build();
+		final BPartnerLocationBuilder builder = toBuilder();
+
+		if (locationType != null)
+		{
+			builder.locationType(locationType.deepCopy());
+		}
+		if (original != null)
+		{
+			builder.original(original.deepCopy());
+		}
+		return builder.build();
 	}
 
 	/** Only active instances are actually validated. Empty list means "valid" */

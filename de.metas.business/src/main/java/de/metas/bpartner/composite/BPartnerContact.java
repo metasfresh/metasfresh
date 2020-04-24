@@ -159,7 +159,12 @@ public class BPartnerContact
 
 	public BPartnerContact deepCopy()
 	{
-		return toBuilder().build();
+		final BPartnerContactBuilder builder = toBuilder();
+		if (contactType != null)
+		{
+			builder.contactType(contactType.deepCopy());
+		}
+		return builder.build();
 	}
 
 	public final void setId(@Nullable final BPartnerContactId id)
