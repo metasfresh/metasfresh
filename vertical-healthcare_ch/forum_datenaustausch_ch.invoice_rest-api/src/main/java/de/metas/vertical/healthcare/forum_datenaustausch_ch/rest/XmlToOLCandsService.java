@@ -409,7 +409,6 @@ public class XmlToOLCandsService
 				addPatientInvoiceRecipients(
 						requestBuilder,
 						body,
-						billerOrgInfo.getCode(),
 						context);
 				break;
 			default:
@@ -482,13 +481,13 @@ public class XmlToOLCandsService
 	private void addPatientInvoiceRecipients(
 			@NonNull final JsonOLCandCreateRequestBuilder requestBuilder,
 			@NonNull final BodyType body,
-			@NonNull final String orgCode,
 			@NonNull final HighLevelContext context)
 	{
 		final PatientAddressType patient = getPatient(body);
 		final GuarantorAddressType guarantor = getGuarantor(body);
+		final BillerAddressType biller = getBiller(body);
 
-		final JsonExternalId patientExternalId = createPationBPartnerExternalId(orgCode, patient);
+		final JsonExternalId patientExternalId = createPatientBPartnerExternalId(biller, patient);
 
 		final JsonRequestBPartnerLocationAndContactBuilder bPartnerInfo = JsonRequestBPartnerLocationAndContact
 				.builder()
@@ -736,14 +735,14 @@ public class XmlToOLCandsService
 		return JsonExternalId.of("EAN-" + eanParty);
 	}
 
-	private JsonExternalId createPationBPartnerExternalId(@NonNull final String orgCode, @NonNull final PatientAddressType patient)
+	private JsonExternalId createPatientBPartnerExternalId(@NonNull final BillerAddressType biller, @NonNull final PatientAddressType patient)
 	{
-		final ExternalId externalId = HealthcareCHHelper.createBPartnerExternalIdForPatient(patient.getSsn());
+		final ExternalId externalId = HealthcareCHHelper.createBPartnerExternalIdForPatient(biller.getEanParty(), patient.getSsn());
 		if (externalId == null)
 		{
 			throw new MissingPropertyException("SSN", patient);
 		}
-		return JsonExternalId.of("org:" + orgCode + "_bp:" + externalId.getValue());
+		return JsonExternalId.of(externalId.getValue());
 	}
 
 	private JsonExternalId createBPartnerExternalId(@NonNull final BillerAddressType biller)

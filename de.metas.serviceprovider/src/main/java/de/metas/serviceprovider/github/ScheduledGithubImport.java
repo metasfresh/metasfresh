@@ -1,16 +1,8 @@
-package de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base;
-
-import javax.annotation.Nullable;
-
-import de.metas.util.Check;
-import de.metas.util.lang.ExternalId;
-import lombok.experimental.UtilityClass;
-
 /*
  * #%L
- * vertical-healthcare_ch.forum_datenaustausch_ch.invoice_base
+ * de.metas.serviceprovider.base
  * %%
- * Copyright (C) 2020 metas GmbH
+ * Copyright (C) 2019 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -28,15 +20,24 @@ import lombok.experimental.UtilityClass;
  * #L%
  */
 
-@UtilityClass
-public class HealthcareCHHelper
+package de.metas.serviceprovider.github;
+
+import de.metas.process.Param;
+
+import java.time.LocalDate;
+
+public class ScheduledGithubImport extends GithubImportProcess
 {
-	public ExternalId createBPartnerExternalIdForPatient(@Nullable final String billerEAN, @Nullable final String patientSSN)
+	@Param(parameterName = "OffsetDays")
+	private int offsetDays;
+
+	@Override
+	protected String doIt() throws Exception
 	{
-		if (Check.isBlank(billerEAN) || Check.isBlank(patientSSN))
-		{
-			return null;
-		}
-		return ExternalId.of("org:EAN-" + billerEAN + "_bp:SSN-" + patientSSN);
+		final LocalDate dateFrom = LocalDate.now().minusDays(offsetDays);
+
+		setDateFrom(dateFrom);
+
+		return super.doIt();
 	}
 }

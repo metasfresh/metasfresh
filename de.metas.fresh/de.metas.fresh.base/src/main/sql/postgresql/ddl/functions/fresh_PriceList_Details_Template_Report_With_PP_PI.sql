@@ -1,6 +1,6 @@
 DROP FUNCTION IF EXISTS report.fresh_pricelist_details_template_report_With_PP_PI(NUMERIC, NUMERIC, CHARACTER VARYING, NUMERIC, text);
 CREATE OR REPLACE FUNCTION report.fresh_pricelist_details_template_report_With_PP_PI(IN p_c_bpartner_id numeric, IN p_m_pricelist_version_id numeric, IN p_ad_language character varying,
-                                                                            IN p_c_bpartner_location_id numeric, IN p_show_product_price_pi_flag text)
+                                                                                     IN p_c_bpartner_location_id numeric, IN p_show_product_price_pi_flag text)
     RETURNS TABLE
             (
                 prodvalue                  text,
@@ -34,7 +34,7 @@ SELECT plc.value                                                                
        plc.productcategory                                                                                                as productcategory,
        plc.productname                                                                                                    as productname,
        plc.attributes                                                                                                     as attributes,
-       replace(hupip.name, hupiv.name, pi.Name)                                                                           as itemproductname,
+       replace(plc.itemproductname, hupiv.name, pi.Name)                                                                  as itemproductname,
        NULL::numeric                                                                                                      as qty,
        plc.uomsymbol                                                                                                      as uomsymbol,
        to_char(plc.pricestd, getPricePattern(prl.priceprecision::integer))                                                as pricestd,
@@ -58,7 +58,6 @@ FROM report.fresh_PriceList_Details_Report_With_PP_PI(p_c_bpartner_id, p_m_price
 
          LEFT OUTER JOIN M_Pricelist_Version prlv on prlv.m_pricelist_version_id = p_m_pricelist_version_id
          LEFT OUTER JOIN M_Pricelist prl on prlv.m_pricelist_id = prl.m_pricelist_id
-
 
 
 $BODY$

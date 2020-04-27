@@ -34,13 +34,14 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
 import org.adempiere.util.jmx.JMXRegistry;
 import org.adempiere.util.jmx.JMXRegistry.OnJMXAlreadyExistsPolicy;
+import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 import org.slf4j.Logger;
 import org.slf4j.MDC.MDCCloseable;
 
 import com.google.common.base.MoreObjects;
-import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.MapMaker;
@@ -49,6 +50,10 @@ import com.google.common.collect.Maps;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
 import de.metas.cache.model.CacheInvalidateRequest;
 import de.metas.logging.LogManager;
+import de.metas.monitoring.adapter.NoopPerformanceMonitoringService;
+import de.metas.monitoring.adapter.PerformanceMonitoringService;
+import de.metas.monitoring.adapter.PerformanceMonitoringService.SpanMetadata;
+import de.metas.monitoring.adapter.PerformanceMonitoringService.Type;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -114,7 +119,7 @@ public final class CacheMgt
 
 	public void register(@NonNull final CacheInterface instance)
 	{
-		try (final MDCCloseable cacheIdMDC = CacheMDC.putCache(instance))
+		try (final IAutoCloseable cacheIdMDC = CacheMDC.putCache(instance))
 		{
 			final Boolean registerWeak = null; // auto
 			register(instance, registerWeak);
@@ -123,7 +128,7 @@ public final class CacheMgt
 
 	private void register(@NonNull final CacheInterface cache, final Boolean registerWeak)
 	{
-		try (final MDCCloseable cacheIdMDC = CacheMDC.putCache(cache))
+		try (final IAutoCloseable cacheIdMDC = CacheMDC.putCache(cache))
 		{
 			// FIXME: consider register weak flag
 			final Set<CacheLabel> labels = cache.getLabels();
@@ -137,7 +142,7 @@ public final class CacheMgt
 
 	public void unregister(final CacheInterface cache)
 	{
-		try (final MDCCloseable cacheIdMDC = CacheMDC.putCache(cache))
+		try (final IAutoCloseable cacheIdMDC = CacheMDC.putCache(cache))
 		{
 			cache.getLabels()
 					.stream()
@@ -169,8 +174,6 @@ public final class CacheMgt
 	 */
 	public long reset()
 	{
-		final Stopwatch stopwatch = Stopwatch.createStarted();
-
 		// Do nothing if already running (i.e. avoid recursion)
 		if (cacheResetRunning.getAndSet(true))
 		{
@@ -178,6 +181,25 @@ public final class CacheMgt
 			return 0;
 		}
 
+		final SpanMetadata spanMetadata = SpanMetadata.builder()
+				.name("Full CacheReset")
+				.type(Type.CACHE_OPERATION.getCode())
+				.build();
+		return getPerfMonService().monitorSpan(
+				() -> reset0(),
+				spanMetadata);
+	}
+
+	private PerformanceMonitoringService getPerfMonService()
+	{
+		// this is called already very early in the startup phase, so we need to avoid an exception if there is no spring context yet
+		return SpringContextHolder.instance.getBeanOr(
+				PerformanceMonitoringService.class,
+				NoopPerformanceMonitoringService.INSTANCE);
+	}
+
+	private long reset0()
+	{
 		long total = 0;
 		try
 		{
@@ -193,10 +215,9 @@ public final class CacheMgt
 		finally
 		{
 			cacheResetRunning.set(false);
-			stopwatch.stop();
 		}
 
-		logger.info("Reset all: cache instances invalidated ({} cached items invalidated). Took {}", total, stopwatch);
+		logger.info("Reset all: cache instances invalidated ({} cached items invalidated).", total);
 		return total;
 	}
 
@@ -332,6 +353,18 @@ public final class CacheMgt
 	 */
 	long reset(@NonNull final CacheInvalidateMultiRequest multiRequest, @NonNull final ResetMode mode)
 	{
+		final SpanMetadata spanMetadata = SpanMetadata.builder()
+				.name("CacheReset")
+				.type(Type.CACHE_OPERATION.getCode())
+				.label("resetMode", mode.toString())
+				.build();
+		return getPerfMonService().monitorSpan(
+				() -> reset0(multiRequest, mode),
+				spanMetadata);
+	}
+
+	private Long reset0(final CacheInvalidateMultiRequest multiRequest, final ResetMode mode)
+	{
 		final long resetCount;
 		if (mode.isResetLocal())
 		{
@@ -352,7 +385,7 @@ public final class CacheMgt
 		}
 
 		return resetCount;
-	}	// reset
+	}
 
 	private long invalidateForMultiRequest(final CacheInvalidateMultiRequest multiRequest)
 	{
@@ -598,7 +631,7 @@ public final class CacheMgt
 
 		public void addCache(@NonNull final CacheInterface cache)
 		{
-			try (final MDCCloseable cacheIdMDC = CacheMDC.putCache(cache))
+			try (final IAutoCloseable cacheIdMDC = CacheMDC.putCache(cache))
 			{
 				caches.put(cache.getCacheId(), cache);
 			}
@@ -606,7 +639,7 @@ public final class CacheMgt
 
 		public void removeCache(@NonNull final CacheInterface cache)
 		{
-			try (final MDCCloseable cacheIdMDC = CacheMDC.putCache(cache))
+			try (final IAutoCloseable cacheIdMDC = CacheMDC.putCache(cache))
 			{
 				caches.remove(cache.getCacheId());
 			}
@@ -642,7 +675,7 @@ public final class CacheMgt
 
 		private static final long invalidateNoFail(final CacheInterface cacheInstance, final TableRecordReference recordRef)
 		{
-			try (final MDCCloseable cacheIdMDC = CacheMDC.putCache(cacheInstance))
+			try (final IAutoCloseable cacheIdMDC = CacheMDC.putCache(cacheInstance))
 			{
 				return cacheInstance.resetForRecordId(recordRef);
 			}
@@ -656,7 +689,7 @@ public final class CacheMgt
 
 		private static final long invalidateNoFail(@Nullable final CacheInterface cacheInstance)
 		{
-			try (final MDCCloseable cacheIdMDC = CacheMDC.putCache(cacheInstance))
+			try (final IAutoCloseable cacheIdMDC = CacheMDC.putCache(cacheInstance))
 			{
 				if (cacheInstance == null)
 				{

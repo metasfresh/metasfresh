@@ -32,6 +32,7 @@ import de.metas.currency.impl.PlainCurrencyDAO;
 import de.metas.location.CountryId;
 import de.metas.money.CurrencyId;
 import de.metas.product.ProductId;
+import de.metas.product.ProductType;
 import de.metas.tax.api.ITaxDAO;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.uom.CreateUOMConversionRequest;
@@ -213,6 +214,8 @@ public final class BusinessTestHelper
 		product.setValue(name);
 		product.setName(name);
 		product.setC_UOM_ID(UomId.toRepoId(uomId));
+		product.setProductType(ProductType.Item.getCode());
+		product.setIsStocked(true);
 
 		if (weightKg != null)
 		{

@@ -22,6 +22,7 @@
 
 package de.metas.serviceprovider.external.reference;
 
+import de.metas.organization.OrgId;
 import de.metas.serviceprovider.external.ExternalSystem;
 import de.metas.serviceprovider.model.I_S_ExternalReference;
 import lombok.NonNull;
@@ -72,6 +73,7 @@ public class ExternalReferenceRepository
 	{
 		final I_S_ExternalReference record = InterfaceWrapperHelper.newInstance(I_S_ExternalReference.class);
 
+		record.setAD_Org_ID(externalReference.getOrgId().getRepoId());
 		record.setExternalReference(externalReference.getExternalReference());
 		record.setExternalSystem(externalReference.getExternalSystem().getValue());
 		record.setType(externalReference.getExternalReferenceType().getCode());
@@ -122,6 +124,7 @@ public class ExternalReferenceRepository
 		}
 
 		return ExternalReference.builder()
+				.orgId(OrgId.ofRepoId(record.getAD_Org_ID()))
 				.externalReference(record.getExternalReference())
 				.externalReferenceType(type)
 				.externalSystem(externalSystem.get())

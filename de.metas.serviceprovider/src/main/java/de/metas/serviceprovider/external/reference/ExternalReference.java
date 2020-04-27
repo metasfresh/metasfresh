@@ -22,6 +22,7 @@
 
 package de.metas.serviceprovider.external.reference;
 
+import de.metas.organization.OrgId;
 import de.metas.serviceprovider.external.ExternalSystem;
 import lombok.Builder;
 import lombok.NonNull;
@@ -35,6 +36,9 @@ public class ExternalReference
 {
 	@Nullable
 	ExternalReferenceId externalReferenceId;
+
+	@NonNull
+	OrgId orgId;
 
 	@NonNull
 	ExternalSystem externalSystem;

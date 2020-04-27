@@ -33,6 +33,7 @@ import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.HealthcareCH
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.commons.ForumDatenaustauschChConstants;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.CrossVersionRequestConverter;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.XmlRequest;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.payload.body.tiers.XmlBiller;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.payload.body.tiers.XmlPatient;
 import lombok.NonNull;
 
@@ -117,12 +118,12 @@ public class HealthcareXMLAttachedToInvoiceListener implements AttachmentListene
 
 			final CrossVersionRequestConverter requestConverter = crossVersionServiceRegistry.getRequestConverterForXsdName(xsdName);
 			final XmlRequest xRequest = requestConverter.toCrossVersionRequest(new ByteArrayInputStream(attachmentData));
-			final @NonNull XmlPatient patient = xRequest.getPayload().getBody().getTiers().getPatient();
-
-			final ExternalId externalId = HealthcareCHHelper.createBPartnerExternalIdForPatient(patient.getSsn());
+			final XmlPatient patient = xRequest.getPayload().getBody().getTiers().getPatient();
+			final XmlBiller biller = xRequest.getPayload().getBody().getTiers().getBiller();
+			final ExternalId externalId = HealthcareCHHelper.createBPartnerExternalIdForPatient(biller.getEanParty(), patient.getSsn());
 			if (externalId == null)
 			{
-				logger.debug("patient-XML data extracted from attachmentEntry with id={} (filename={}) has no SSN; -> doing nothing",
+				logger.debug("patient-XML data extracted from attachmentEntry with id={} (filename={}) has no patient-SSN or biller-EAN; -> doing nothing",
 						attachmentEntry.getId(), attachmentEntry.getFilename());
 				return ListenerWorkStatus.SUCCESS;
 			}
