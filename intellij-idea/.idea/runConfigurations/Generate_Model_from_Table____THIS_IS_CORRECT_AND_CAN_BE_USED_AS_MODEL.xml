@@ -1,4 +1,4 @@
-component name="ProjectRunConfigurationManager">
+<component name="ProjectRunConfigurationManager">
   <configuration default="false" name="Generate Model from Table -- THIS IS CORRECT AND CAN BE USED AS MODEL" type="Application" factoryName="Application">
     <option name="INCLUDE_PROVIDED_SCOPE" value="true" />
     <option name="MAIN_CLASS_NAME" value="org.adempiere.util.GenerateModel" />
