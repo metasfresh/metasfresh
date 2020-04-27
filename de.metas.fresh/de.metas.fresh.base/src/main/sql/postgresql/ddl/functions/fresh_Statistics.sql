@@ -169,7 +169,7 @@ FROM
 			/* Please note: This is an important implicit filter. Inner Joining the Product
 			 * filters Fact Acct records for e.g. Taxes
 			 */  
-			INNER JOIN M_Product p ON fa.M_Product_ID = p.M_Product_ID AND p.isActive = 'Y'
+			INNER JOIN M_Product p ON fa.M_Product_ID = p.M_Product_ID
 		WHERE
 			fa.AD_Table_ID = ( SELECT Get_Table_ID( 'C_Invoice' ) )
 			-- Akontozahlung invoices are not included. See FRESH_609
