@@ -1,6 +1,4 @@
-import { getData, patchRequest } from './global';
 import {
-  initLayout,
   getAttributesInstance,
   topActionsRequest,
   getZoomIntoWindow,
