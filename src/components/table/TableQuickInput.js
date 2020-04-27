@@ -3,7 +3,7 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import cx from 'classnames';
 
-import { initLayout, patchRequest } from '../../api';
+import { getLayout, patchRequest } from '../../api';
 import { addNotification } from '../../actions/AppActions';
 import { completeRequest, createInstance } from '../../actions/GenericActions';
 import { parseToDisplay } from '../../utils/documentListHelper';
@@ -91,7 +91,7 @@ class TableQuickInput extends Component {
           });
 
         !layout &&
-          initLayout('window', docType, tabId, 'quickInput', docId).then(
+          getLayout('window', docType, tabId, 'quickInput', docId).then(
             (layout) => {
               this.setState({
                 layout: layout.data.elements,

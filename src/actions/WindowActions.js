@@ -62,7 +62,7 @@ import {
 import {
   getData,
   patchRequest,
-  initLayout,
+  getLayout,
   topActionsRequest,
   getProcessData,
   getTab,
@@ -655,7 +655,7 @@ export function createWindow(
           dispatch(getWindowBreadcrumb(windowId));
         }
 
-        return initLayout('window', windowId, tabId, null, null, isAdvanced)
+        return getLayout('window', windowId, tabId, null, null, isAdvanced)
           .then((response) =>
             dispatch(initLayoutSuccess(response.data, getScope(isModal)))
           )
@@ -1154,7 +1154,7 @@ export function createProcess({
         let response;
 
         try {
-          response = await initLayout('process', processType);
+          response = await getLayout('process', processType);
 
           await dispatch(setProcessSaved());
 
