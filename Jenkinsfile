@@ -31,8 +31,8 @@ So if this is a '${env.BRANCH_NAME}' build, but it was invoked by a "feature-bra
 			description: 'Build number of the upstream job that called us, if any.',
 			name: 'MF_UPSTREAM_BUILDNO'),
 
-		string(defaultValue: """${env.BRANCH_NAME}_LATEST',
-			description: '''Tag/version of the metasfresh-report base image. Note: the image does not contain jasper files, so there is no need to have a particual base image for that.
+		string(defaultValue: "${env.BRANCH_NAME}_LATEST",
+			description: """Tag/version of the metasfresh-report base image. Note: the image does not contain jasper files, so there is no need to have a particual base image for that.
 <p>
 Backouground: if you e.g. specify gh47 as MF_UPSTREAM_BRANCH and a particular artifact doesn exist in that maven repo, then the maven repo at nexus is set to fall back to ${env.BRANCH_NAME}'. 
 For docker we currently don not have such an arrangement.""",
