@@ -25,6 +25,8 @@
     <file url="file://$PROJECT_DIR$/metasfresh/de.metas.adempiere.adempiere/base" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/metasfresh/de.metas.adempiere.adempiere/base/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/metasfresh/de.metas.adempiere.adempiere/base/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/metasfresh/de.metas.adempiere.adempiere/base/src/test/resources/de/metas/impexp/parser/multiplelines.csv" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/metasfresh/de.metas.adempiere.adempiere/base/src/test/resources/de/metas/impexp/parser/regularlines.csv" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/metasfresh/de.metas.adempiere.adempiere/client" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/metasfresh/de.metas.adempiere.adempiere/client/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/metasfresh/de.metas.adempiere.adempiere/client/src/main/resources" charset="UTF-8" />
@@ -130,6 +132,8 @@
     <file url="file://$PROJECT_DIR$/metasfresh/de.metas.invoice_gateway.api/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/metasfresh/de.metas.invoice_gateway.spi" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/metasfresh/de.metas.invoice_gateway.spi/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/metasfresh/de.metas.issue.tracking.everhour/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/metasfresh/de.metas.issue.tracking.github/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/metasfresh/de.metas.jax.rs" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/metasfresh/de.metas.jax.rs/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/metasfresh/de.metas.jax.rs/src/main/resources" charset="UTF-8" />
@@ -149,7 +153,6 @@
     <file url="file://$PROJECT_DIR$/metasfresh/de.metas.material/dispo-commons/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/metasfresh/de.metas.material/dispo-service" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/metasfresh/de.metas.material/dispo-service/src/main/java" charset="UTF-8" />
-    <file url="file://$PROJECT_DIR$/metasfresh/de.metas.material/dispo-service/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/metasfresh/de.metas.material/event" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/metasfresh/de.metas.material/event/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/metasfresh/de.metas.material/planning" charset="UTF-8" />
@@ -173,8 +176,7 @@
     <file url="file://$PROJECT_DIR$/metasfresh/de.metas.payment.paypal" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/metasfresh/de.metas.payment.paypal/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/metasfresh/de.metas.payment.sepa" charset="UTF-8" />
-    <file url="file://$PROJECT_DIR$/metasfresh/de.metas.payment.sepa/src/main/java" charset="UTF-8" />
-    <file url="file://$PROJECT_DIR$/metasfresh/de.metas.payment.sepa/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/metasfresh/de.metas.payment.sepa/base/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/metasfresh/de.metas.printing" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/metasfresh/de.metas.printing.client" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/metasfresh/de.metas.printing.client/src/main/java" charset="UTF-8" />
@@ -188,7 +190,6 @@
     <file url="file://$PROJECT_DIR$/metasfresh/de.metas.printing.common/de.metas.printing.esb.base/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/metasfresh/de.metas.printing.rest-api-impl" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/metasfresh/de.metas.printing.rest-api-impl/src/main/java" charset="UTF-8" />
-    <file url="file://$PROJECT_DIR$/metasfresh/de.metas.printing.rest-api-impl/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/metasfresh/de.metas.printing/de.metas.printing.base" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/metasfresh/de.metas.printing/de.metas.printing.base/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/metasfresh/de.metas.printing/de.metas.printing.base/src/main/resources" charset="UTF-8" />
@@ -208,14 +209,16 @@
     <file url="file://$PROJECT_DIR$/metasfresh/de.metas.report/de.metas.report.jasper.commons" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/metasfresh/de.metas.report/de.metas.report.jasper.commons/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/metasfresh/de.metas.report/de.metas.report.jasper.commons/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/metasfresh/de.metas.report/metasfresh-report-service-standalone/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/metasfresh/de.metas.report/metasfresh-report-service-standalone/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/metasfresh/de.metas.report/metasfresh-report-service/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/metasfresh/de.metas.report/report-service" charset="UTF-8" />
-    <file url="file://$PROJECT_DIR$/metasfresh/de.metas.report/report-service/src/main/java" charset="UTF-8" />
-    <file url="file://$PROJECT_DIR$/metasfresh/de.metas.report/report-service/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/metasfresh/de.metas.rfq" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/metasfresh/de.metas.rfq/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/metasfresh/de.metas.salescandidate.base" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/metasfresh/de.metas.salescandidate.base/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/metasfresh/de.metas.scripts.rollout" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/metasfresh/de.metas.serviceprovider/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/metasfresh/de.metas.shipper.gateway.commons" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/metasfresh/de.metas.shipper.gateway.commons/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/metasfresh/de.metas.shipper.gateway.derkurier" charset="UTF-8" />
