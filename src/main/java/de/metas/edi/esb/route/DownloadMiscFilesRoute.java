@@ -1,5 +1,6 @@
 package de.metas.edi.esb.route;
 
+import org.apache.camel.Exchange;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.builder.RouteBuilder;
 import org.springframework.stereotype.Component;
@@ -44,8 +45,8 @@ public class DownloadMiscFilesRoute extends RouteBuilder
 			return;
 		}
 		from(INPUT_FILE_REMOTE)
-				.routeId("STEPCOM-Remote-XML-Orders-To-Local")
-				.log(LoggingLevel.TRACE, "Getting remote file")
+				.routeId("STEPCOM-Remote-misc-files-To-Local")
+				.log(LoggingLevel.TRACE, "Getting remote file: " + header(Exchange.FILE_NAME))
 				.to(OUTPUT_FILE_LOCAL);
 	}
 }
