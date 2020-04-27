@@ -123,7 +123,7 @@ FROM
 			/* Please note: This is an important implicit filter. Inner Joining the Product
 			 * filters Fact Acct records for e.g. Taxes
 			 */  
-			INNER JOIN M_Product p ON fa.M_Product_ID = p.M_Product_ID AND p.isActive = 'Y'
+			INNER JOIN M_Product p ON fa.M_Product_ID = p.M_Product_ID 
 		WHERE
 			AD_Table_ID = ( SELECT Get_Table_ID( 'C_Invoice' ) )
 			AND ( IsInPeriod OR IsInCompPeriod )
@@ -163,7 +163,7 @@ FROM
 			fa.ad_org_id
 	) a
 	INNER JOIN C_BPartner bp ON a.C_BPartner_ID = bp.C_BPartner_ID AND bp.isActive = 'Y'
-	INNER JOIN M_Product p ON a.M_Product_ID = p.M_Product_ID AND p.isActive = 'Y'
+	INNER JOIN M_Product p ON a.M_Product_ID = p.M_Product_ID 
 	INNER JOIN M_Product_Category pc ON p.M_Product_Category_ID = pc.M_Product_Category_ID AND pc.isActive = 'Y'
 $BODY$
 LANGUAGE sql STABLE;
