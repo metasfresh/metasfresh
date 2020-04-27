@@ -1,15 +1,6 @@
 package de.metas.inout.invoicecandidate;
 
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Properties;
-
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_DocType;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
@@ -22,6 +13,13 @@ import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateRequest;
 import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateResult;
 import de.metas.order.OrderId;
 import de.metas.util.Services;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_DocType;
+
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Properties;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 
@@ -88,7 +86,7 @@ public class M_InOut_Handler extends AbstractInvoiceCandidateHandler
 
 		//
 		// Retrieve inout lines
-		final List<I_M_InOutLine> inoutLines = inOutDAO.retrieveLinesWithoutOrderLine(inout, I_M_InOutLine.class);
+		final List<I_M_InOutLine> inoutLines = inOutDAO.retrieveLines(inout, I_M_InOutLine.class);
 		if (inoutLines.isEmpty())
 		{
 			return ImmutableList.of();
@@ -122,7 +120,7 @@ public class M_InOut_Handler extends AbstractInvoiceCandidateHandler
 	@Override
 	public void invalidateCandidatesFor(final Object model)
 	{
-		final I_M_InOut inout = InterfaceWrapperHelper.create(model, I_M_InOut.class);
+		final I_M_InOut inout = InterfaceWrapperHelper.createOld(model, I_M_InOut.class);
 		invalidateCandidatesForInOut(inout);
 
 		invalidateFreightCostCandidateIfNeeded(inout);

@@ -1,25 +1,6 @@
 package de.metas.handlingunits.inout.impl;
 
-import java.math.BigDecimal;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.TreeMap;
-import java.util.TreeSet;
-import java.util.stream.Collectors;
-
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_M_InOut;
-import org.compiere.util.Env;
-import org.compiere.util.Util;
-import org.compiere.util.Util.ArrayKey;
-
 import com.google.common.base.Preconditions;
-
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
@@ -43,6 +24,23 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_M_InOut;
+import org.compiere.util.Env;
+import org.compiere.util.Util;
+import org.compiere.util.Util.ArrayKey;
+
+import java.math.BigDecimal;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.TreeMap;
+import java.util.TreeSet;
+import java.util.stream.Collectors;
 
 /*
  * #%L
@@ -69,15 +67,13 @@ import lombok.Value;
 /**
  * Producer for vendor returns.
  * Used when some products were received from a vendor and it was decided they are not respecting the quality standards they can be sent back to the vendor.
- *
+ * <p>
  * Introduced in #1062
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 class VendorReturnsInOutProducer extends AbstractReturnsInOutProducer
 {
-
 
 	public static final VendorReturnsInOutProducer newInstance()
 	{
@@ -132,8 +128,6 @@ class VendorReturnsInOutProducer extends AbstractReturnsInOutProducer
 			collector.setisCollectAggregatedHUs(true);
 			final I_M_HU hu = huToReturnInfo.getHu();
 
-
-
 			// we know for sure the huAssignments are for inoutlines
 			final I_M_InOutLine inOutLine = InterfaceWrapperHelper.create(getCtx(), huToReturnInfo.getOriginalReceiptInOutLineId(), I_M_InOutLine.class, ITrx.TRXNAME_None);
 
@@ -187,6 +181,7 @@ class VendorReturnsInOutProducer extends AbstractReturnsInOutProducer
 		for (final I_M_InOutLine newInOutLine : inoutLinesBuilder.getInOutLines())
 		{
 			de.metas.inout.model.I_M_InOutLine returnOriginInOutLine = newInOutLine.getReturn_Origin_InOutLine();
+			newInOutLine.setC_OrderLine_ID(returnOriginInOutLine.getC_OrderLine_ID());
 
 			if (returnOriginInOutLine == null)
 			{
@@ -204,7 +199,6 @@ class VendorReturnsInOutProducer extends AbstractReturnsInOutProducer
 					}
 					newInOutLine.setQtyEnteredTU(new BigDecimal(qtyTU));
 					newInOutLine.setM_HU_PI_Item_Product(huPipToInOutLine.getHupip());
-					newInOutLine.setC_OrderLine_ID(returnOriginInOutLine.getC_OrderLine_ID());
 				}
 			}
 
