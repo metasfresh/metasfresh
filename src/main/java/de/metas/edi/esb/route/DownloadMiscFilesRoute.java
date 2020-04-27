@@ -3,6 +3,8 @@ package de.metas.edi.esb.route;
 import org.apache.camel.Exchange;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.builder.RouteBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import de.metas.edi.esb.commons.Util;
@@ -32,20 +34,25 @@ import de.metas.edi.esb.commons.Util;
 @Component
 public class DownloadMiscFilesRoute extends RouteBuilder
 {
+	private static final String ROUTE_ID = "Remote-misc-files-To-Local";
+
 	private static final String INPUT_FILE_REMOTE = "{{edi.file.misc.remote}}";
 
 	private static final String OUTPUT_FILE_LOCAL = "{{edi.file.misc.local}}";
+
+	private static final transient Logger logger = LoggerFactory.getLogger(ROUTE_ID);
 
 	@Override
 	public final void configure()
 	{
 		final String remoteEndpoint = Util.resolveProperty(getContext(), INPUT_FILE_REMOTE, "");
-		if (!Util.isEmpty(remoteEndpoint))
+		if (Util.isEmpty(remoteEndpoint))
 		{
+			logger.info("remoteEndpoint " + INPUT_FILE_REMOTE + " is empty; -> not configuring " + DownloadMiscFilesRoute.class.getSimpleName());
 			return;
 		}
 		from(INPUT_FILE_REMOTE)
-				.routeId("STEPCOM-Remote-misc-files-To-Local")
+				.routeId(ROUTE_ID)
 				.log(LoggingLevel.TRACE, "Getting remote file: " + header(Exchange.FILE_NAME))
 				.to(OUTPUT_FILE_LOCAL);
 	}
