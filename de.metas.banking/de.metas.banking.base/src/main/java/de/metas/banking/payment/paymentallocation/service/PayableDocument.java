@@ -10,9 +10,11 @@ import org.compiere.model.I_C_Order;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.invoice.InvoiceId;
+import de.metas.lang.SOTrx;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.order.OrderId;
+import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
@@ -38,13 +40,16 @@ public class PayableDocument
 	}
 
 	@Getter
+	private final OrgId orgId;
+
+	@Getter
 	private final InvoiceId invoiceId;
 	private final OrderId prepayOrderId;
 
 	@Getter
 	private final BPartnerId bpartnerId;
 	private final String documentNo;
-	private final boolean isSOTrx;
+	private final SOTrx soTrx;
 	@Getter
 	private final TableRecordReference reference;
 	@Getter
@@ -62,16 +67,22 @@ public class PayableDocument
 
 	@Builder
 	private PayableDocument(
+			@NonNull final OrgId orgId,
 			@Nullable final InvoiceId invoiceId,
 			@Nullable final OrderId prepayOrderId,
 			@Nullable final BPartnerId bpartnerId,
 			@Nullable final String documentNo,
-			final boolean isSOTrx,
+			@NonNull final SOTrx soTrx,
 			final boolean creditMemo,
 			//
 			@NonNull final Money openAmt,
 			@NonNull AllocationAmounts amountsToAllocate)
 	{
+		if (!orgId.isRegular())
+		{
+			throw new AdempiereException("Transactional organization expected: " + orgId);
+		}
+
 		if (invoiceId != null)
 		{
 			this.invoiceId = invoiceId;
@@ -91,9 +102,10 @@ public class PayableDocument
 			throw new AdempiereException("Invoice or Prepay Order shall be set");
 		}
 
+		this.orgId = orgId;
 		this.bpartnerId = bpartnerId;
 		this.documentNo = documentNo;
-		this.isSOTrx = isSOTrx;
+		this.soTrx = soTrx;
 		this.creditMemo = creditMemo;
 
 		if (!CurrencyId.equals(openAmt.getCurrencyId(), amountsToAllocate.getCurrencyId()))
@@ -129,12 +141,12 @@ public class PayableDocument
 
 	public boolean isCustomerDocument()
 	{
-		return isSOTrx;
+		return soTrx.isSales();
 	}
 
 	public boolean isVendorDocument()
 	{
-		return !isSOTrx;
+		return soTrx.isPurchase();
 	}
 
 	public void addAllocatedAmounts(@NonNull final AllocationAmounts amounts)

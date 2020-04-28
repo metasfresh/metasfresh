@@ -608,7 +608,6 @@ public class PaymentAllocationBuilderTest
 	private PaymentAllocationBuilder newPaymentAllocationBuilder()
 	{
 		return PaymentAllocationBuilder.newBuilder()
-				.orgId(adOrgId)
 				.dateTrx(date)
 				.dateAcct(date)  // task 09643. Leaving this date also as current date. will be changed later if needed
 		;
@@ -667,10 +666,11 @@ public class PaymentAllocationBuilderTest
 		InterfaceWrapperHelper.saveRecord(invoice);
 
 		return PayableDocument.builder()
+				.orgId(adOrgId)
 				.invoiceId(InvoiceId.ofRepoId(invoice.getC_Invoice_ID()))
 				.bpartnerId(BPartnerId.ofRepoId(invoice.getC_BPartner_ID()))
 				.documentNo(invoice.getDocumentNo())
-				.isSOTrx(invoice.isSOTrx())
+				.soTrx(SOTrx.ofBoolean(invoice.isSOTrx()))
 				.creditMemo(invoiceType.isCreditMemo())
 				.openAmt(openAmt)
 				.amountsToAllocate(amountsToAllocate)
@@ -721,6 +721,7 @@ public class PaymentAllocationBuilderTest
 		InterfaceWrapperHelper.save(payment);
 
 		return PaymentDocument.builder()
+				.orgId(adOrgId)
 				.paymentId(PaymentId.ofRepoId(payment.getC_Payment_ID()))
 				.bpartnerId(BPartnerId.ofRepoId(payment.getC_BPartner_ID()))
 				.documentNo(payment.getDocumentNo())
@@ -743,6 +744,7 @@ public class PaymentAllocationBuilderTest
 	{
 		return AllocationLineCandidate.builder()
 				.type(type)
+				.orgId(adOrgId)
 				.bpartnerId(bpartnerId)
 				//
 				.payableDocumentRef(payableRef)

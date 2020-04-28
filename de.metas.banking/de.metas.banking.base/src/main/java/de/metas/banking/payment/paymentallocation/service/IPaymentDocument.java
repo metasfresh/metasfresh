@@ -5,6 +5,7 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import de.metas.bpartner.BPartnerId;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
+import de.metas.organization.OrgId;
 
 public interface IPaymentDocument
 {
@@ -14,6 +15,8 @@ public interface IPaymentDocument
 	}
 
 	PaymentDocumentType getType();
+	
+	OrgId getOrgId();
 
 	BPartnerId getBpartnerId();
 

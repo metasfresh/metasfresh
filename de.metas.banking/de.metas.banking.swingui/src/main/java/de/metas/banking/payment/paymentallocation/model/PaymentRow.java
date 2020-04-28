@@ -36,6 +36,7 @@ import de.metas.currency.CurrencyCode;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
+import de.metas.organization.OrgId;
 import de.metas.payment.PaymentId;
 import de.metas.util.Services;
 
@@ -51,6 +52,7 @@ public final class PaymentRow extends AbstractAllocableDocRow implements IPaymen
 		return row instanceof IPaymentRow ? (IPaymentRow)row : null;
 	}
 
+	private final OrgId orgId;
 	private final String docTypeName;
 	private final int C_Payment_ID;
 	private final String documentNo;
@@ -73,8 +75,8 @@ public final class PaymentRow extends AbstractAllocableDocRow implements IPaymen
 
 	private PaymentRow(final Builder builder)
 	{
-		super();
 		// FIXME: validate: not null, etc
+		orgId = builder.orgId;
 		docTypeName = builder.docTypeName;
 		C_Payment_ID = builder.C_Payment_ID;
 		documentNo = builder.documentNo;
@@ -107,6 +109,11 @@ public final class PaymentRow extends AbstractAllocableDocRow implements IPaymen
 	public void setSelected(final boolean selected)
 	{
 		this.selected = selected;
+	}
+
+	public OrgId getOrgId()
+	{
+		return orgId;
 	}
 
 	@Override
@@ -234,6 +241,7 @@ public final class PaymentRow extends AbstractAllocableDocRow implements IPaymen
 		final CurrencyId currencyId = currenciesRepo.getByCurrencyCode(paymentRow.getCurrencyISOCode()).getId();
 
 		return PaymentDocument.builder()
+				.orgId(paymentRow.getOrgId())
 				.paymentId(PaymentId.ofRepoId(paymentRow.getC_Payment_ID()))
 				.bpartnerId(BPartnerId.ofRepoIdOrNull(paymentRow.getC_BPartner_ID()))
 				.paymentDirection(paymentRow.getPaymentDirection())
@@ -383,6 +391,7 @@ public final class PaymentRow extends AbstractAllocableDocRow implements IPaymen
 
 	public static final class Builder
 	{
+		private OrgId orgId;
 		private String docTypeName;
 		private int C_Payment_ID;
 		private String documentNo;
@@ -405,6 +414,12 @@ public final class PaymentRow extends AbstractAllocableDocRow implements IPaymen
 		public PaymentRow build()
 		{
 			return new PaymentRow(this);
+		}
+
+		public Builder setOrgId(final OrgId orgId)
+		{
+			this.orgId = orgId;
+			return this;
 		}
 
 		public Builder setDocTypeName(final String docTypeName)

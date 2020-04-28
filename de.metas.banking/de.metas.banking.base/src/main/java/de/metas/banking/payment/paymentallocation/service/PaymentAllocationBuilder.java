@@ -59,7 +59,6 @@ public class PaymentAllocationBuilder
 	private final transient IAllocationBL allocationBL = Services.get(IAllocationBL.class);
 
 	// Parameters
-	private OrgId _adOrgId;
 	private LocalDate _dateTrx;
 	private LocalDate _dateAcct;
 	private ImmutableList<PayableDocument> _payableDocuments = ImmutableList.of();
@@ -149,7 +148,7 @@ public class PaymentAllocationBuilder
 	 */
 	private final PaymentAllocationId createAndCompleteAllocation(final AllocationLineCandidate line)
 	{
-		final OrgId adOrgId = getOrgId();
+		final OrgId adOrgId = line.getOrgId();
 		final CurrencyId currencyId = line.getCurrencyId();
 		final Timestamp dateTrx = TimeUtil.asTimestamp(getDateTrx());
 		final Timestamp dateAcct = TimeUtil.asTimestamp(getDateAcct());
@@ -428,6 +427,7 @@ public class PaymentAllocationBuilder
 				final AllocationLineCandidate allocationLine = AllocationLineCandidate.builder()
 						.type(type)
 						//
+						.orgId(payable.getOrgId())
 						.bpartnerId(payable.getBpartnerId())
 						//
 						.payableDocumentRef(payable.getReference())
@@ -589,6 +589,7 @@ public class PaymentAllocationBuilder
 				final AllocationLineCandidate allocationLine = AllocationLineCandidate.builder()
 						.type(AllocationLineCandidateType.InboundPaymentToOutboundPayment)
 						//
+						.orgId(paymentOut.getOrgId())
 						.bpartnerId(paymentOut.getBpartnerId())
 						//
 						.payableDocumentRef(paymentOut.getReference())
@@ -649,6 +650,7 @@ public class PaymentAllocationBuilder
 		final AllocationLineCandidate allocationLine = AllocationLineCandidate.builder()
 				.type(AllocationLineCandidateType.InvoiceDiscountOrWriteOff)
 				//
+				.orgId(payable.getOrgId())
 				.bpartnerId(payable.getBpartnerId())
 				//
 				.payableDocumentRef(payable.getReference())
@@ -789,22 +791,6 @@ public class PaymentAllocationBuilder
 	private final void assertNotBuilt()
 	{
 		Check.assume(!_built, "Not already built");
-	}
-
-	public PaymentAllocationBuilder orgId(final OrgId adOrgId)
-	{
-		assertNotBuilt();
-		_adOrgId = adOrgId;
-		return this;
-	}
-
-	private final OrgId getOrgId()
-	{
-		if (_adOrgId == null || !_adOrgId.isRegular())
-		{
-			throw new PaymentAllocationException("@Org0NotAllowed@");
-		}
-		return _adOrgId;
 	}
 
 	private final LocalDate getDateTrx()

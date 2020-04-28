@@ -10,6 +10,7 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import de.metas.bpartner.BPartnerId;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
+import de.metas.organization.OrgId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -33,6 +34,7 @@ public final class AllocationLineCandidate
 	}
 
 	private final AllocationLineCandidateType type;
+	private final OrgId orgId;
 	private final BPartnerId bpartnerId;
 
 	private final TableRecordReference payableDocumentRef;
@@ -49,6 +51,7 @@ public final class AllocationLineCandidate
 	private AllocationLineCandidate(
 			@NonNull final AllocationLineCandidateType type,
 			//
+			@NonNull final OrgId orgId,
 			@Nullable final BPartnerId bpartnerId,
 			//
 			@NonNull final TableRecordReference payableDocumentRef,
@@ -59,6 +62,10 @@ public final class AllocationLineCandidate
 			@Nullable final Money payableOverUnderAmt,
 			@Nullable final Money paymentOverUnderAmt)
 	{
+		if (!orgId.isRegular())
+		{
+			throw new AdempiereException("Transactional organization expected: " + orgId);
+		}
 		if (Objects.equals(payableDocumentRef, paymentDocumentRef))
 		{
 			throw new AdempiereException("payable and payment shall not be the same but there are: " + payableDocumentRef);
@@ -78,14 +85,16 @@ public final class AllocationLineCandidate
 
 		this.type = type;
 
+		this.orgId = orgId;
+		this.bpartnerId = bpartnerId;
+
+		this.payableDocumentRef = payableDocumentRef;
+		this.paymentDocumentRef = paymentDocumentRef;
+
 		this.currencyId = amounts.getCurrencyId();
 		this.amounts = amounts;
 		this.payableOverUnderAmt = payableOverUnderAmt != null ? payableOverUnderAmt : Money.zero(amounts.getCurrencyId());
 		this.paymentOverUnderAmt = paymentOverUnderAmt != null ? paymentOverUnderAmt : Money.zero(amounts.getCurrencyId());
 
-		this.bpartnerId = bpartnerId;
-
-		this.payableDocumentRef = payableDocumentRef;
-		this.paymentDocumentRef = paymentDocumentRef;
 	}
 }

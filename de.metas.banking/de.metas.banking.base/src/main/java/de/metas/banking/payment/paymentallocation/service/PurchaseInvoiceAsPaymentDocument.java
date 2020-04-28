@@ -6,6 +6,7 @@ import de.metas.banking.payment.paymentallocation.service.PayableDocument.Payabl
 import de.metas.bpartner.BPartnerId;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
+import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
@@ -41,6 +42,12 @@ final class PurchaseInvoiceAsPaymentDocument implements IPaymentDocument
 	public PaymentDocumentType getType()
 	{
 		return PaymentDocumentType.PurchaseInvoice;
+	}
+
+	@Override
+	public OrgId getOrgId()
+	{
+		return purchaseInvoicePayableDoc.getOrgId();
 	}
 
 	@Override
