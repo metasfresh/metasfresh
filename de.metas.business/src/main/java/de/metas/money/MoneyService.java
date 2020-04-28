@@ -60,6 +60,11 @@ public class MoneyService
 		this.currencyRepository = currencyRepository;
 	}
 
+	public CurrencyId getCurrencyIdByCurrencyCode(@NonNull final CurrencyCode currencyCode)
+	{
+		return currencyRepository.getCurrencyIdByCurrencyCode(currencyCode);
+	}
+
 	public Money convertMoneyToCurrency(
 			@NonNull final Money money,
 			@NonNull final CurrencyId targetCurrencyId)

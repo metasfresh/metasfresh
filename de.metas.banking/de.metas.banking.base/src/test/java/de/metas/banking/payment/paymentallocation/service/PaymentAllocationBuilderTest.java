@@ -79,6 +79,7 @@ import de.metas.lang.SOTrx;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.organization.OrgId;
+import de.metas.payment.PaymentDirection;
 import de.metas.payment.PaymentId;
 import de.metas.payment.api.IPaymentDAO;
 import de.metas.util.Check;
@@ -103,9 +104,6 @@ public class PaymentAllocationBuilderTest
 	private final BPartnerId bpartnerId = BPartnerId.ofRepoId(1); // dummy value
 	private Currency currency;
 	private Map<InvoiceType, I_C_DocType> invoiceDocTypes;
-
-	private static final boolean IsReceipt_Yes = true;
-	private static final boolean IsReceipt_No = false;
 
 	@BeforeEach
 	public void init()
@@ -148,7 +146,7 @@ public class PaymentAllocationBuilderTest
 						invoice1 = newInvoice(VendorInvoice, "8000", "0", "100", "200"))
 				// Payments
 				, Arrays.<IPaymentDocument> asList(
-				// PaymentId / IsReceipt / OpenAmt / AppliedAmt
+				// PaymentId / PaymentDirection / OpenAmt / AppliedAmt
 				));
 
 		//
@@ -176,8 +174,8 @@ public class PaymentAllocationBuilderTest
 						invoice1 = newInvoice(VendorInvoice, "8000", "5000", "100", "200"))
 				// Payments
 				, ImmutableList.of(
-						// PaymentId / IsReceipt / OpenAmt / AppliedAmt
-						payment1 = newPaymentRow(IsReceipt_No, "5000", "5000")));
+						// PaymentId / PaymentDirection / OpenAmt / AppliedAmt
+						payment1 = newPaymentRow(PaymentDirection.OUTBOUND, "5000", "5000")));
 
 		//
 		// Define expected candidates
@@ -202,9 +200,9 @@ public class PaymentAllocationBuilderTest
 				Arrays.<PayableDocument> asList()
 				// Payments
 				, ImmutableList.of(
-						// PaymentId / IsReceipt / OpenAmt / AppliedAmt
-						payment1 = newPaymentRow(IsReceipt_No, "5000", "5000"),
-						payment2 = newPaymentRow(IsReceipt_Yes, "5000", "5000")));
+						// PaymentId / PaymentDirection / OpenAmt / AppliedAmt
+						payment1 = newPaymentRow(PaymentDirection.OUTBOUND, "5000", "5000"),
+						payment2 = newPaymentRow(PaymentDirection.INBOUND, "5000", "5000")));
 
 		//
 		// Define expected candidates
@@ -228,8 +226,11 @@ public class PaymentAllocationBuilderTest
 				Arrays.<PayableDocument> asList()
 				// Payments
 				, ImmutableList.of(
-						// PaymentId / IsReceipt / OpenAmt / AppliedAmt
-						payment1 = newPaymentRow(IsReceipt_No, "5000", "5000"), payment2 = newPaymentRow(IsReceipt_Yes, "3000", "3000"), payment3 = newPaymentRow(IsReceipt_Yes, "2000", "2000")));
+						// PaymentId / PaymentDirection / OpenAmt / AppliedAmt
+						payment1 = newPaymentRow(PaymentDirection.OUTBOUND, "5000", "5000"), //
+						payment2 = newPaymentRow(PaymentDirection.INBOUND, "3000", "3000"), //
+						payment3 = newPaymentRow(PaymentDirection.INBOUND, "2000", "2000") //
+				));
 
 		//
 		// Define expected candidates
@@ -311,9 +312,9 @@ public class PaymentAllocationBuilderTest
 	@Test
 	public void test_Vendor_MultiInvoice_MultiPayment()
 	{
-		// PaymentId / IsReceipt / OpenAmt / AppliedAmt
-		final PaymentDocument payment1 = newPaymentRow(IsReceipt_No, "5000", "5000");
-		final PaymentDocument payment2 = newPaymentRow(IsReceipt_No, "5000", "5000");
+		// PaymentId / PaymentDirection / OpenAmt / AppliedAmt
+		final PaymentDocument payment1 = newPaymentRow(PaymentDirection.OUTBOUND, "5000", "5000");
+		final PaymentDocument payment2 = newPaymentRow(PaymentDirection.OUTBOUND, "5000", "5000");
 
 		// InvoiceType / OpenAmt / AppliedAmt / Discount / WriteOff
 		final PayableDocument invoice1 = newInvoice(VendorInvoice, "8000", "6000", "1599", "1");
@@ -345,9 +346,9 @@ public class PaymentAllocationBuilderTest
 				)
 				// Payments
 				, ImmutableList.of(
-						// PaymentId / IsReceipt / OpenAmt / AppliedAmt
-						payment1 = newPaymentRow(IsReceipt_Yes, "5000", "5000"),
-						payment2 = newPaymentRow(IsReceipt_Yes, "5000", "5000")));
+						// PaymentId / PaymentDirection / OpenAmt / AppliedAmt
+						payment1 = newPaymentRow(PaymentDirection.INBOUND, "5000", "5000"),
+						payment2 = newPaymentRow(PaymentDirection.INBOUND, "5000", "5000")));
 
 		//
 		// Define expected candidates
@@ -395,8 +396,8 @@ public class PaymentAllocationBuilderTest
 						invoice1 = newInvoice(VendorCreditMemo, "100", "30", "0", "0"))
 				// Payments
 				, ImmutableList.of(
-						// PaymentId / IsReceipt / OpenAmt / AppliedAmt
-						payment1 = newPaymentRow(IsReceipt_Yes, "50", "30")));
+						// PaymentId / PaymentDirection / OpenAmt / AppliedAmt
+						payment1 = newPaymentRow(PaymentDirection.INBOUND, "50", "30")));
 
 		//
 		// Define expected candidates
@@ -428,8 +429,8 @@ public class PaymentAllocationBuilderTest
 						invoice2 = newInvoice(VendorCreditMemo, "80", "80", "0", "0"))
 				// Payments
 				, ImmutableList.of(
-						// PaymentId / IsReceipt / OpenAmt / AppliedAmt
-						payment1 = newPaymentRow(IsReceipt_No, "20", "20")));
+						// PaymentId / PaymentDirection / OpenAmt / AppliedAmt
+						payment1 = newPaymentRow(PaymentDirection.OUTBOUND, "20", "20")));
 
 		//
 		// Define expected candidates
@@ -461,8 +462,8 @@ public class PaymentAllocationBuilderTest
 						newInvoice(VendorInvoice, "100", "100", "0", "0"))
 				// Payments
 				, ImmutableList.of(
-						// PaymentId / IsReceipt / OpenAmt / AppliedAmt
-						newPaymentRow(IsReceipt_Yes, "100", "100")));
+						// PaymentId / PaymentDirection / OpenAmt / AppliedAmt
+						newPaymentRow(PaymentDirection.INBOUND, "100", "100")));
 
 		assertThatThrownBy(() -> builder.build())
 				.isInstanceOf(PayableDocumentNotAllocatedException.class);
@@ -485,8 +486,8 @@ public class PaymentAllocationBuilderTest
 							// InvoiceType / OpenAmt / PayAmt / Discount / WriteOff
 							invoice1 = newInvoice(CustomerInvoice, "100", "100", "0", "0")))
 					.paymentDocuments(ImmutableList.of(
-							// IsReceipt / OpenAmt / AmountToAllocate
-							payment1 = newPaymentRow(IsReceipt_Yes, "10", "10")))
+							// PaymentDirection / OpenAmt / AmountToAllocate
+							payment1 = newPaymentRow(PaymentDirection.INBOUND, "10", "10")))
 					.payableRemainingOpenAmtPolicy(payableRemainingOpenAmtPolicy)
 					.allowPartialAllocations(allowPartialAllocations)
 					.build();
@@ -568,8 +569,8 @@ public class PaymentAllocationBuilderTest
 						// InvoiceType / OpenAmt / PayAmt / Discount / WriteOff
 						invoice1 = newInvoice(CustomerInvoice, "100", "100", "0", "0")))
 				.paymentDocuments(ImmutableList.of(
-						// IsReceipt / OpenAmt / AmountToAllocate
-						payment1 = newPaymentRow(IsReceipt_Yes, "10", "10")))
+						// PaymentDirection / OpenAmt / AmountToAllocate
+						payment1 = newPaymentRow(PaymentDirection.INBOUND, "10", "10")))
 				.payableRemainingOpenAmtPolicy(PayableRemainingOpenAmtPolicy.WRITE_OFF);
 
 		//
@@ -703,7 +704,7 @@ public class PaymentAllocationBuilderTest
 	}
 
 	private PaymentDocument newPaymentRow(
-			final boolean isReceipt,
+			final PaymentDirection paymentDirection,
 			final String openAmtStr,
 			final String amountToAllocateStr)
 	{
@@ -723,9 +724,9 @@ public class PaymentAllocationBuilderTest
 				.paymentId(PaymentId.ofRepoId(payment.getC_Payment_ID()))
 				.bpartnerId(BPartnerId.ofRepoId(payment.getC_BPartner_ID()))
 				.documentNo(payment.getDocumentNo())
-				.isSOTrx(isReceipt)
-				.openAmt(Money.of(openAmtStr, currencyId).negateIf(!isReceipt))
-				.amountToAllocate(Money.of(amountToAllocateStr, currencyId).negateIf(!isReceipt))
+				.paymentDirection(paymentDirection)
+				.openAmt(Money.of(openAmtStr, currencyId).negateIf(paymentDirection.isOutboundPayment()))
+				.amountToAllocate(Money.of(amountToAllocateStr, currencyId).negateIf(paymentDirection.isOutboundPayment()))
 				.build();
 	}
 
