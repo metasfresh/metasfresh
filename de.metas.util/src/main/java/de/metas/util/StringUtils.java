@@ -22,6 +22,14 @@ package de.metas.util;
  * #L%
  */
 
+import lombok.NonNull;
+import org.adempiere.util.lang.IPair;
+import org.adempiere.util.lang.ImmutablePair;
+import org.apache.commons.lang3.StringEscapeUtils;
+import org.slf4j.helpers.FormattingTuple;
+import org.slf4j.helpers.MessageFormatter;
+
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.text.Format;
 import java.text.MessageFormat;
@@ -31,16 +39,6 @@ import java.util.Collection;
 import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.util.lang.IPair;
-import org.adempiere.util.lang.ImmutablePair;
-import org.apache.commons.lang3.StringEscapeUtils;
-import org.slf4j.helpers.FormattingTuple;
-import org.slf4j.helpers.MessageFormatter;
-
-import lombok.NonNull;
 
 public final class StringUtils
 {
@@ -196,7 +194,8 @@ public final class StringUtils
 	 * @param strBoolean the parameter to convert. May be empty or {@code null}.
 	 * @return
 	 */
-	public static Boolean toBooleanOrNull(final String strBoolean)
+	@Nullable
+	public static Boolean toBooleanOrNull(@Nullable final String strBoolean)
 	{
 		if (Check.isEmpty(strBoolean, true))
 		{

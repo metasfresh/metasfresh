@@ -20,24 +20,33 @@
  * #L%
  */
 
-package de.metas.serviceprovider.github;
+package de.metas.serviceprovider.github.config;
 
-import de.metas.uom.UomId;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
+import de.metas.serviceprovider.model.I_S_GithubConfig;
+import org.adempiere.ad.dao.IQueryBL;
+import org.springframework.stereotype.Repository;
 
-public interface GithubImporterConstants
+import javax.annotation.Nullable;
+
+@Repository
+public class GithubConfigRepository
 {
-	int CHUNK_SIZE = 100;
-	UomId HOUR_UOM_ID = UomId.ofRepoId(101);
+	private final IQueryBL queryBL;
 
-	@AllArgsConstructor
-	@Getter
-	enum GitHubConfig
+	public GithubConfigRepository(final IQueryBL queryBL)
 	{
-		ACCESS_TOKEN("accessToken"),
-		LOOK_FOR_PARENT("lookForParent");
+		this.queryBL = queryBL;
+	}
 
-		private final String name;
+	@Nullable
+	public String getValueByName(final String name)
+	{
+		return queryBL.createQueryBuilder(I_S_GithubConfig.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_S_GithubConfig.COLUMNNAME_Name, name)
+				.create()
+				.firstOnlyOptional(I_S_GithubConfig.class)
+				.map(I_S_GithubConfig::getConfig)
+				.orElse(null);
 	}
 }

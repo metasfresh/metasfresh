@@ -22,6 +22,30 @@ package org.compiere.model;
  * #L%
  */
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ListMultimap;
+import de.metas.dao.selection.pagination.QueryResultPage;
+import de.metas.money.Money;
+import de.metas.process.PInstanceId;
+import de.metas.security.permissions.Access;
+import de.metas.util.collections.IteratorUtils;
+import de.metas.util.lang.RepoIdAware;
+import lombok.Getter;
+import lombok.NonNull;
+import org.adempiere.ad.dao.ICompositeQueryUpdaterExecutor;
+import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.ad.dao.IQueryInsertExecutor;
+import org.adempiere.ad.dao.IQueryOrderBy;
+import org.adempiere.ad.dao.IQueryUpdater;
+import org.adempiere.ad.dao.ISqlQueryUpdater;
+import org.adempiere.ad.model.util.Model2IdFunction;
+import org.adempiere.exceptions.DBException;
+import org.adempiere.exceptions.DBMoreThanOneRecordsFoundException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
@@ -35,33 +59,6 @@ import java.util.function.Function;
 import java.util.function.IntFunction;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.ad.dao.ICompositeQueryUpdaterExecutor;
-import org.adempiere.ad.dao.IQueryFilter;
-import org.adempiere.ad.dao.IQueryInsertExecutor;
-import org.adempiere.ad.dao.IQueryOrderBy;
-import org.adempiere.ad.dao.IQueryUpdater;
-import org.adempiere.ad.dao.ISqlQueryUpdater;
-import org.adempiere.ad.model.util.Model2IdFunction;
-import org.adempiere.exceptions.DBException;
-import org.adempiere.exceptions.DBMoreThanOneRecordsFoundException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.model.ModelColumn;
-
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.ListMultimap;
-
-import de.metas.dao.selection.pagination.QueryResultPage;
-import de.metas.money.Money;
-import de.metas.process.PInstanceId;
-import de.metas.security.permissions.Access;
-import de.metas.util.collections.IteratorUtils;
-import de.metas.util.lang.RepoIdAware;
-import lombok.Getter;
-import lombok.NonNull;
 
 public interface IQuery<T>
 {
@@ -175,6 +172,7 @@ public interface IQuery<T>
 		return Optional.ofNullable(first(clazz));
 	}
 
+	@NonNull
 	default <ET extends T> Optional<ET> firstOnlyOptional(final Class<ET> clazz) throws DBException
 	{
 		return Optional.ofNullable(firstOnly(clazz));

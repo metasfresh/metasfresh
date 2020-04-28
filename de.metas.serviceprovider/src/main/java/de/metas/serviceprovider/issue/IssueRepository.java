@@ -107,6 +107,16 @@ public class IssueRepository
 				: Optional.empty();
 	}
 
+	@NonNull
+	public Optional<IssueEntity> getByExternalURLOptional(@NonNull final String externalURL, final boolean loadDetails)
+	{
+		return queryBL.createQueryBuilder(I_S_Issue.class)
+				.addEqualsFilter(I_S_Issue.COLUMNNAME_IssueURL, externalURL)
+				.create()
+				.firstOnlyOptional(I_S_Issue.class)
+				.map(record -> buildIssueEntity(record, loadDetails));
+	}
+
 	@Nullable
 	private I_S_Issue getRecordOrNull(@NonNull final IssueId issueId)
 	{

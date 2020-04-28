@@ -2,7 +2,7 @@
  * #%L
  * de.metas.issue.tracking.github
  * %%
- * Copyright (C) 2019 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -28,43 +28,12 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import lombok.Builder;
 import lombok.Value;
 
-import java.util.List;
-
 @Value
 @Builder
 @JsonIgnoreProperties(ignoreUnknown = true)
-@JsonDeserialize(builder = Issue.IssueBuilder.class)
-public class Issue
+@JsonDeserialize(builder = PullRequest.PullRequestBuilder.class)
+public class PullRequest
 {
-	@JsonProperty("id")
-	String id;
-
-	@JsonProperty("html_url")
-	String htmlUrl;
-
-	@JsonProperty("number")
-	String number;
-
-	@JsonProperty("title")
-	String title;
-
-	@JsonProperty("labels")
-	List<Label> labelList;
-
-	@JsonProperty("state")
-	String state;
-
-	@JsonProperty("assignee")
-	User assignee;
-
-	@JsonProperty("milestone")
-	GithubMilestone githubMilestone;
-
-	@JsonProperty("body")
-	String body;
-
-	@JsonProperty("pull_request")
-	PullRequest pullRequest;
+	@JsonProperty("url")
+	String url;
 }
-
-

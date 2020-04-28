@@ -20,24 +20,23 @@
  * #L%
  */
 
-package de.metas.serviceprovider.github;
+package de.metas.serviceprovider.external.project;
 
-import de.metas.uom.UomId;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
+import de.metas.serviceprovider.external.ExternalSystem;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
 
-public interface GithubImporterConstants
+@Value
+@Builder
+public class GetExternalProjectRequest
 {
-	int CHUNK_SIZE = 100;
-	UomId HOUR_UOM_ID = UomId.ofRepoId(101);
+	@NonNull
+	ExternalSystem externalSystem;
 
-	@AllArgsConstructor
-	@Getter
-	enum GitHubConfig
-	{
-		ACCESS_TOKEN("accessToken"),
-		LOOK_FOR_PARENT("lookForParent");
+	@NonNull
+	String externalReference;
 
-		private final String name;
-	}
+	@NonNull
+	String externalProjectOwner;
 }

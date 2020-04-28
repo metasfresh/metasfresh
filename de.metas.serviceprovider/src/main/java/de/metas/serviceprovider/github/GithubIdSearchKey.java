@@ -22,22 +22,20 @@
 
 package de.metas.serviceprovider.github;
 
-import de.metas.uom.UomId;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
 
-public interface GithubImporterConstants
+@Value
+@Builder(toBuilder = true)
+public class GithubIdSearchKey
 {
-	int CHUNK_SIZE = 100;
-	UomId HOUR_UOM_ID = UomId.ofRepoId(101);
+	@NonNull
+	String repository;
 
-	@AllArgsConstructor
-	@Getter
-	enum GitHubConfig
-	{
-		ACCESS_TOKEN("accessToken"),
-		LOOK_FOR_PARENT("lookForParent");
+	@NonNull
+	String repositoryOwner;
 
-		private final String name;
-	}
+	@NonNull
+	String issueNo;
 }
