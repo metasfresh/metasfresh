@@ -6,6 +6,7 @@ import java.util.function.Function;
 import org.adempiere.ad.dao.cache.CacheInvalidateMultiRequestSerializer;
 import org.slf4j.Logger;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.cache.model.CacheInvalidateMultiRequest;
@@ -193,7 +194,8 @@ final class CacheInvalidationRemoteHandler implements IEventListener
 		CacheMgt.get().reset(request, CacheMgt.ResetMode.LOCAL); // don't broadcast it anymore because else we would introduce recursion
 	}
 
-	private Event createEventFromRequest(@NonNull final CacheInvalidateMultiRequest request)
+	@VisibleForTesting
+	Event createEventFromRequest(@NonNull final CacheInvalidateMultiRequest request)
 	{
 		final Event event = Event.builder()
 				.putProperty(EVENT_PROPERTY, jsonSerializer.toJson(request))

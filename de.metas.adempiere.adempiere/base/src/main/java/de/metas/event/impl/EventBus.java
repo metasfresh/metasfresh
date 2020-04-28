@@ -219,7 +219,7 @@ final class EventBus implements IEventBus
 			eventToPost = event;
 		}
 
-		logger.debug("{} - Posting event: {}", this, event);
+		logger.debug("{} - Posting event: {}", this, eventToPost);
 		eventBus.post(eventToPost);
 	}
 
