@@ -84,7 +84,7 @@ SELECT
 	(SELECT name FROM C_Activity WHERE C_Activity_ID = $3 AND isActive = 'Y') AS param_Activity,
 	(SELECT COALESCE(pt.name, p.name) FROM M_Product p 
 		LEFT OUTER JOIN M_Product_Trl pt ON p.M_Product_ID = pt.M_Product_ID AND pt.AD_Language = $9 AND pt.isActive = 'Y'
-		WHERE p.M_Product_ID = $4 AND p.isActive = 'Y'
+		WHERE p.M_Product_ID = $4 
 	) AS param_product,
 	(SELECT name FROM M_Product_Category WHERE M_Product_Category_ID = $5 AND isActive = 'Y') AS param_Product_Category,
 	(SELECT String_Agg(ai_value, ', ' ORDER BY ai_Value) FROM Report.fresh_Attributes WHERE M_AttributeSetInstance_ID = $6) AS Param_Attributes,
@@ -166,7 +166,7 @@ FROM
 			/* Please note: This is an important implicit filter. Inner Joining the Product
 			 * filters Fact Acct records for e.g. Taxes
 			 */  
-			INNER JOIN M_Product p ON fa.M_Product_ID = p.M_Product_ID AND p.isActive = 'Y'
+			INNER JOIN M_Product p ON fa.M_Product_ID = p.M_Product_ID
 		WHERE
 			fa.AD_Table_ID = ( SELECT Get_Table_ID( 'C_Invoice' ) )
 
@@ -220,7 +220,7 @@ FROM
 	) a
 	INNER JOIN C_UOM uom ON a.UOMConv_ID = uom.C_UOM_ID   AND uom.isActive = 'Y'
 	LEFT OUTER JOIN C_UOM_Trl uomt ON uom.C_UOM_ID = uomt.C_UOM_ID AND uomt.AD_Language = $9 AND uomt.isActive = 'Y'
-	INNER JOIN M_Product p ON a.M_Product_ID = p.M_Product_ID AND p.isActive = 'Y'
+	INNER JOIN M_Product p ON a.M_Product_ID = p.M_Product_ID
 	LEFT OUTER JOIN M_Product_Trl pt ON p.M_Product_ID = pt.M_Product_ID AND pt.AD_Language = $9 AND pt.isActive = 'Y'
 	INNER JOIN M_Product_Category pc ON p.M_Product_Category_ID = pc.M_Product_Category_ID AND pc.isActive = 'Y'
 	

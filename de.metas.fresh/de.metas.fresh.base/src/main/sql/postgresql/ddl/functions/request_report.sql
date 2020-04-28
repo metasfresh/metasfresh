@@ -72,7 +72,7 @@ SELECT
 	(SELECT Name FROM R_Status WHERE R_Status_ID = $9 AND isActive = 'Y') AS p_status,
 	(SELECT COALESCE(pt.name, p.name) FROM M_Product p 
 		LEFT OUTER JOIN M_Product_Trl pt ON p.M_Product_ID = pt.M_Product_ID AND pt.AD_Language = $11 AND pt.isActive = 'Y'
-		WHERE p.M_Product_ID = $10 AND p.isActive = 'Y'
+		WHERE p.M_Product_ID = $10
 	) AS p_product
 	
 
@@ -80,7 +80,7 @@ FROM R_Request req
 
 LEFT OUTER JOIN C_BPartner bp ON req.C_BPartner_ID = bp.C_BPartner_ID AND bp.isActive = 'Y'
 LEFT OUTER JOIN M_InOut io ON req.Record_ID = io.M_InOut_ID AND io.isActive = 'Y'
-LEFT OUTER JOIN M_Product p ON req.M_Product_ID = p.M_Product_ID AND p.isActive = 'Y'
+LEFT OUTER JOIN M_Product p ON req.M_Product_ID = p.M_Product_ID
 LEFT OUTER JOIN M_Product_Trl pt ON p.M_Product_ID = pt.M_Product_ID AND pt.AD_Language = $11 AND pt.isActive = 'Y'
 
 LEFT OUTER JOIN R_Status r ON req.R_Status_ID = r.R_Status_ID AND r.isActive = 'Y'
