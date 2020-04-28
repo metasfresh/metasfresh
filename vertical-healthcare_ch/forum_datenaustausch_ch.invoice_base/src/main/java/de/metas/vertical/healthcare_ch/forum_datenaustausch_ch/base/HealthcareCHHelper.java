@@ -31,12 +31,12 @@ import lombok.experimental.UtilityClass;
 @UtilityClass
 public class HealthcareCHHelper
 {
-	public ExternalId createBPartnerExternalIdForPatient(@Nullable final String ssn)
+	public ExternalId createBPartnerExternalIdForPatient(@Nullable final String billerEAN, @Nullable final String patientSSN)
 	{
-		if (Check.isEmpty(ssn))
+		if (Check.isBlank(billerEAN) || Check.isBlank(patientSSN))
 		{
 			return null;
 		}
-		return ExternalId.of("SSN-" + ssn);
+		return ExternalId.of("org:EAN-" + billerEAN + "_bp:SSN-" + patientSSN);
 	}
 }
