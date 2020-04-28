@@ -16,29 +16,7 @@
  *****************************************************************************/
 package org.compiere.acct;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.util.Optional;
-import java.util.function.IntFunction;
-
-import javax.annotation.Nullable;
-import javax.annotation.OverridingMethodsMustInvokeSuper;
-
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.ClientId;
-import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Product;
-import org.compiere.model.MAccount;
-import org.compiere.model.MCharge;
-import org.compiere.model.PO;
-import org.compiere.util.DB;
-import org.compiere.util.TimeUtil;
-import org.slf4j.Logger;
-
 import com.google.common.base.MoreObjects;
-
 import de.metas.acct.api.AccountId;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaId;
@@ -65,13 +43,32 @@ import de.metas.util.Optionals;
 import de.metas.util.lang.CoalesceUtil;
 import de.metas.util.lang.RepoIdAware;
 import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_Product;
+import org.compiere.model.MAccount;
+import org.compiere.model.MCharge;
+import org.compiere.model.PO;
+import org.compiere.util.DB;
+import org.compiere.util.TimeUtil;
+import org.slf4j.Logger;
+
+import javax.annotation.Nullable;
+import javax.annotation.OverridingMethodsMustInvokeSuper;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.Optional;
+import java.util.function.IntFunction;
 
 /**
  * Standard Document Line
  *
  * @author Jorg Janke
  * @author Armen Rizal, Goodwill Consulting
- *         <li>BF [ 1745154 ] Cost in Reversing Material Related Docs
+ * <li>BF [ 1745154 ] Cost in Reversing Material Related Docs
  * @version $Id: DocLine.java,v 1.2 2006/07/30 00:53:33 jjanke Exp $
  */
 public class DocLine<DT extends Doc<? extends DocLine<?>>>
@@ -80,27 +77,45 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 	private final Logger logger = LogManager.getLogger(getClass());
 	protected final AcctDocRequiredServicesFacade services;
 
-	/** Persistent Object */
+	/**
+	 * Persistent Object
+	 */
 	private final PO p_po;
-	/** Parent */
+	/**
+	 * Parent
+	 */
 	private final DT m_doc;
 
-	/** Qty */
+	/**
+	 * Qty
+	 */
 	private Quantity qty = null;
 
 	// -- GL Amounts
-	/** Debit Journal Amt */
+	/**
+	 * Debit Journal Amt
+	 */
 	private BigDecimal m_AmtSourceDr = BigDecimal.ZERO;
-	/** Credit Journal Amt */
+	/**
+	 * Credit Journal Amt
+	 */
 	private BigDecimal m_AmtSourceCr = BigDecimal.ZERO;
-	/** Net Line Amt */
+	/**
+	 * Net Line Amt
+	 */
 	private BigDecimal m_LineNetAmt = null;
-	/** List Amount */
+	/**
+	 * List Amount
+	 */
 	private BigDecimal m_ListAmt = BigDecimal.ZERO;
-	/** Discount Amount */
+	/**
+	 * Discount Amount
+	 */
 	private BigDecimal m_DiscountAmt = BigDecimal.ZERO;
 
-	/** Converted Amounts */
+	/**
+	 * Converted Amounts
+	 */
 	private BigDecimal m_AmtAcctDr = null;
 	private BigDecimal m_AmtAcctCr = null;
 
@@ -135,7 +150,7 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 		{
 			p_po.setAD_Org_ID(m_doc.getOrgId().getRepoId());
 		}
-	}	// DocLine
+	}    // DocLine
 
 	protected final ClientId getClientId()
 	{
@@ -296,8 +311,8 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 	 * Set Product Amounts
 	 *
 	 * @param LineNetAmt Line Net Amt
-	 * @param PriceList Price List
-	 * @param Qty Qty for discount calc
+	 * @param PriceList  Price List
+	 * @param Qty        Qty for discount calc
 	 */
 	public final void setAmount(final BigDecimal LineNetAmt, final BigDecimal PriceList, final BigDecimal Qty)
 	{
@@ -373,7 +388,7 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 	 * Line Account from Product (or Charge).
 	 *
 	 * @param acctType see ProductCost.ACCTTYPE_* (0..3)
-	 * @param as Accounting schema
+	 * @param as       Accounting schema
 	 * @return Requested Product Account
 	 */
 	@OverridingMethodsMustInvokeSuper
@@ -440,7 +455,7 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 	 * Account from Default Product Category
 	 *
 	 * @param AcctType see ACCTTYPE_* (1..8)
-	 * @param as accounting schema
+	 * @param as       accounting schema
 	 * @return Requested Product Account
 	 */
 	private final MAccount getAccountDefault(final ProductAcctType acctType, final AcctSchema as)
@@ -473,7 +488,7 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 	/**
 	 * Get Charge Account
 	 *
-	 * @param as account schema
+	 * @param as     account schema
 	 * @param amount amount for expense(+)/revenue(-)
 	 * @return Charge Account or null
 	 */
@@ -498,7 +513,7 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 			}
 		}
 		return m_C_Period_ID;
-	}	// getC_Period_ID
+	}    // getC_Period_ID
 
 	protected final void setC_Period_ID(final int C_Period_ID)
 	{
@@ -654,7 +669,7 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 	 * Quantity
 	 *
 	 * @param quantity transaction Qty
-	 * @param isSOTrx SL order trx (i.e. negative qty)
+	 * @param isSOTrx  SL order trx (i.e. negative qty)
 	 */
 	protected final void setQty(@NonNull final Quantity quantity, final boolean isSOTrx)
 	{
@@ -744,7 +759,7 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 	 */
 	public final int getC_SalesRegion_ID()
 	{
-		if (m_C_SalesRegion_ID == -1)	// never tried
+		if (m_C_SalesRegion_ID == -1)    // never tried
 		{
 			final int bpartnerLocationId = getC_BPartner_Location_ID();
 			if (bpartnerLocationId > 0)
@@ -754,12 +769,12 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 				m_C_SalesRegion_ID = DB.getSQLValueEx(ITrx.TRXNAME_None, sql, bpartnerLocationId);
 				if (m_C_SalesRegion_ID == 0)
 				{
-					m_C_SalesRegion_ID = -2;	// don't try again
+					m_C_SalesRegion_ID = -2;    // don't try again
 				}
 			}
 			else
 			{
-				m_C_SalesRegion_ID = -2;		// don't try again
+				m_C_SalesRegion_ID = -2;        // don't try again
 			}
 		}
 		if (m_C_SalesRegion_ID < 0)
@@ -865,7 +880,7 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 		return 0;
 	}
 
-	private final BigDecimal getValueAsBD(final String columnName, final BigDecimal defaultValue)
+	@Nullable final BigDecimal getValueAsBD(final String columnName, @Nullable final BigDecimal defaultValue)
 	{
 		final PO po = getPO();
 		final int index = po.get_ColumnIndex(columnName);
@@ -914,13 +929,17 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 		m_ReversalLine_ID = ReversalLine_ID;
 	}   // setReversalLine_ID
 
-	/** @return get original (voided/reversed) document line */
+	/**
+	 * @return get original (voided/reversed) document line
+	 */
 	public final int getReversalLine_ID()
 	{
 		return m_ReversalLine_ID;
 	}
 
-	/** @return is the reversal document line (not the original) */
+	/**
+	 * @return is the reversal document line (not the original)
+	 */
 	public final boolean isReversalLine()
 	{
 		return m_ReversalLine_ID > 0 // has a reversal counterpart
@@ -948,7 +967,7 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 	public final boolean isTaxIncluded()
 	{
 		return _taxIncluded;
-	}	// isTaxIncluded
+	}    // isTaxIncluded
 
 	/**
 	 * Set Tax Included
@@ -977,7 +996,9 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 		return m_doc.getStdPrecision();
 	}
 
-	/** @return document (header) */
+	/**
+	 * @return document (header)
+	 */
 	protected final DT getDoc()
 	{
 		return m_doc;
