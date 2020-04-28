@@ -154,7 +154,7 @@ public final class JSONDocumentLayout implements Serializable
 
 		if (WindowConstants.isProtocolDebugging())
 		{
-			putDebugProperties(layout.getDebugProperties());
+			putDebugProperties(layout.getDebugProperties().toMap());
 			putDebugProperty(JSONOptions.DEBUG_ATTRNAME, options.toString());
 		}
 	}

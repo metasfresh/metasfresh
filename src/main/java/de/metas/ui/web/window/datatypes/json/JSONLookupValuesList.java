@@ -25,6 +25,7 @@ import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
+import de.metas.ui.web.window.datatypes.DebugProperties;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
@@ -77,7 +78,7 @@ public class JSONLookupValuesList
 		}
 
 		final ImmutableList<JSONLookupValue> jsonValuesList = jsonValues.collect(ImmutableList.toImmutableList());
-		final ImmutableMap<String, String> otherProperties = lookupValues.getDebugProperties();
+		final DebugProperties otherProperties = lookupValues.getDebugProperties();
 		return new JSONLookupValuesList(jsonValuesList, otherProperties);
 	}
 
@@ -89,7 +90,7 @@ public class JSONLookupValuesList
 			return EMPTY;
 		}
 
-		return new JSONLookupValuesList(ImmutableList.copyOf(jsonLookupValues), ImmutableMap.of());
+		return new JSONLookupValuesList(ImmutableList.copyOf(jsonLookupValues), DebugProperties.EMPTY);
 	}
 
 	public static final Collector<JSONLookupValue, ?, JSONLookupValuesList> collect()
@@ -142,15 +143,15 @@ public class JSONLookupValuesList
 	@JsonInclude(JsonInclude.Include.NON_ABSENT)
 	private String defaultValue;
 
-	private LinkedHashMap<String, String> otherProperties;
+	private LinkedHashMap<String, Object> otherProperties;
 
 	@VisibleForTesting
-	JSONLookupValuesList(final ImmutableList<JSONLookupValue> values, final Map<String, String> otherProperties)
+	JSONLookupValuesList(final ImmutableList<JSONLookupValue> values, final DebugProperties otherProperties)
 	{
 		this.values = values;
 		if (otherProperties != null && !otherProperties.isEmpty())
 		{
-			this.otherProperties = new LinkedHashMap<>(otherProperties);
+			this.otherProperties = new LinkedHashMap<>(otherProperties.toMap());
 		}
 	}
 
@@ -175,7 +176,7 @@ public class JSONLookupValuesList
 	}
 
 	@JsonAnyGetter
-	public Map<String, String> getOtherProperties()
+	public Map<String, Object> getOtherProperties()
 	{
 		return otherProperties == null ? ImmutableMap.of() : otherProperties;
 	}

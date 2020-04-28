@@ -2,7 +2,6 @@ package de.metas.ui.web.window.datatypes;
 
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.Map;
 import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.BinaryOperator;
@@ -18,12 +17,12 @@ import javax.annotation.concurrent.Immutable;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.util.GuavaCollectors;
 import de.metas.util.lang.RepoIdAware;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.NonNull;
 
 /*
@@ -65,8 +64,7 @@ public final class LookupValuesList implements Iterable<LookupValue>
 	 */
 	public static Collector<LookupValue, ?, LookupValuesList> collect()
 	{
-		final Map<String, String> debugProperties = null;
-		return collect(debugProperties);
+		return collect(DebugProperties.EMPTY);
 	}
 
 	/**
@@ -74,7 +72,7 @@ public final class LookupValuesList implements Iterable<LookupValue>
 	 *
 	 * @param debugProperties optional debug properties, <code>null</code> is also OK.
 	 */
-	public static Collector<LookupValue, ?, LookupValuesList> collect(final Map<String, String> debugProperties)
+	public static Collector<LookupValue, ?, LookupValuesList> collect(final DebugProperties debugProperties)
 	{
 		final Supplier<ImmutableListMultimap.Builder<Object, LookupValue>> supplier = ImmutableListMultimap.Builder::new;
 		final BiConsumer<ImmutableListMultimap.Builder<Object, LookupValue>, LookupValue> accumulator = (builder, item) -> builder.put(item.getId(), item);
@@ -91,9 +89,8 @@ public final class LookupValuesList implements Iterable<LookupValue>
 		}
 
 		final ImmutableListMultimap<Object, LookupValue> valuesById = ImmutableListMultimap.of(lookupValue.getId(), lookupValue);
-		final Map<String, String> debugProperties = ImmutableMap.of();
 		final boolean ordered = true;
-		return new LookupValuesList(valuesById, ordered, debugProperties);
+		return new LookupValuesList(valuesById, ordered, DebugProperties.EMPTY);
 	}
 
 	public static LookupValuesList fromCollection(final Collection<? extends LookupValue> lookupValues)
@@ -104,12 +101,13 @@ public final class LookupValuesList implements Iterable<LookupValue>
 		}
 
 		final ImmutableListMultimap<Object, LookupValue> valuesById = lookupValues.stream().collect(GuavaCollectors.toImmutableListMultimap(LookupValue::getId));
-		final Map<String, String> debugProperties = ImmutableMap.of();
 		final boolean ordered = true;
-		return new LookupValuesList(valuesById, ordered, debugProperties);
+		return new LookupValuesList(valuesById, ordered, DebugProperties.EMPTY);
 	}
 
-	private static LookupValuesList build(final ImmutableListMultimap.Builder<Object, LookupValue> valuesByIdBuilder, final Map<String, String> debugProperties)
+	private static LookupValuesList build(
+			@NonNull final ImmutableListMultimap.Builder<Object, LookupValue> valuesByIdBuilder,
+			@Nullable final DebugProperties debugProperties)
 	{
 		final ImmutableListMultimap<Object, LookupValue> valuesById = valuesByIdBuilder.build();
 		if (valuesById.isEmpty() && (debugProperties == null || debugProperties.isEmpty()))
@@ -126,16 +124,17 @@ public final class LookupValuesList implements Iterable<LookupValue>
 
 	private final ImmutableListMultimap<Object, LookupValue> valuesById;
 	private final boolean ordered;
-	private final ImmutableMap<String, String> debugProperties;
+	@Getter
+	private final DebugProperties debugProperties;
 
 	private LookupValuesList(
 			@NonNull final ImmutableListMultimap<Object, LookupValue> valuesById,
 			final boolean ordered,
-			@Nullable final Map<String, String> debugProperties)
+			@Nullable final DebugProperties debugProperties)
 	{
 		this.valuesById = valuesById;
 		this.ordered = ordered;
-		this.debugProperties = debugProperties == null || debugProperties.isEmpty() ? ImmutableMap.of() : ImmutableMap.copyOf(debugProperties);
+		this.debugProperties = debugProperties != null ? debugProperties : DebugProperties.EMPTY;
 	}
 
 	/** Empty constructor */
@@ -143,7 +142,7 @@ public final class LookupValuesList implements Iterable<LookupValue>
 	{
 		valuesById = ImmutableListMultimap.of();
 		ordered = true;
-		debugProperties = ImmutableMap.of();
+		debugProperties = DebugProperties.EMPTY;
 	}
 
 	@Override
@@ -194,14 +193,6 @@ public final class LookupValuesList implements Iterable<LookupValue>
 	public Iterator<LookupValue> iterator()
 	{
 		return getValues().iterator();
-	}
-
-	/**
-	 * @return debug properties or empty map; never returns null
-	 */
-	public ImmutableMap<String, String> getDebugProperties()
-	{
-		return debugProperties;
 	}
 
 	/**

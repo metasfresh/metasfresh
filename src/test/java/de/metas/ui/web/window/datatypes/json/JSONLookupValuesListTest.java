@@ -3,7 +3,6 @@ package de.metas.ui.web.window.datatypes.json;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
-import java.util.Map;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
@@ -15,6 +14,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.JsonObjectMapperHolder;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
+import de.metas.ui.web.window.datatypes.DebugProperties;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 
 public class JSONLookupValuesListTest
@@ -65,7 +65,7 @@ public class JSONLookupValuesListTest
 	{
 		private JSONLookupValuesList newJSONLookupValuesList(final JSONLookupValue... values)
 		{
-			final Map<String, String> otherProperties = null;
+			final DebugProperties otherProperties = null;
 			return new JSONLookupValuesList(ImmutableList.copyOf(values), otherProperties);
 		}
 
