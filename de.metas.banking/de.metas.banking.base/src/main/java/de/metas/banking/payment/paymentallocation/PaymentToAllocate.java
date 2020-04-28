@@ -5,6 +5,7 @@ import java.time.LocalDate;
 import de.metas.bpartner.BPartnerId;
 import de.metas.currency.Amount;
 import de.metas.organization.ClientAndOrgId;
+import de.metas.payment.PaymentDirection;
 import de.metas.payment.PaymentId;
 import lombok.Builder;
 import lombok.NonNull;
@@ -58,5 +59,6 @@ public class PaymentToAllocate
 	@NonNull
 	Amount openAmt;
 
-	boolean inboundPayment;
+	@NonNull
+	PaymentDirection paymentDirection;
 }

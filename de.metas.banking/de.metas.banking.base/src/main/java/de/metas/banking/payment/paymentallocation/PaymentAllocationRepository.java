@@ -30,6 +30,7 @@ import de.metas.money.CurrencyId;
 import de.metas.order.OrderId;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
+import de.metas.payment.PaymentDirection;
 import de.metas.payment.PaymentId;
 import de.metas.util.Check;
 import lombok.NonNull;
@@ -376,7 +377,7 @@ public class PaymentAllocationRepository
 				.dateAcct(TimeUtil.asLocalDate(rs.getTimestamp("dateacct"))) // task 09643
 				.payAmt(payAmtConv)
 				.openAmt(openAmtConv)
-				.inboundPayment(inboundPayment)
+				.paymentDirection(PaymentDirection.ofInboundPaymentFlag(inboundPayment))
 				.build();
 	}
 
