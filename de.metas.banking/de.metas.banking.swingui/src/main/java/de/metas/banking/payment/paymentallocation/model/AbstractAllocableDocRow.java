@@ -13,17 +13,18 @@ package de.metas.banking.payment.paymentallocation.model;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.math.BigDecimal;
+
+import de.metas.payment.PaymentDirection;
 
 /**
  * Abstract {@link IAllocableDocRow} which contains the "default methods" (as in java8), which are common on all {@link IAllocableDocRow} implementations.
@@ -56,7 +57,6 @@ abstract class AbstractAllocableDocRow implements IAllocableDocRow
 		return adjustAP(getAppliedAmt());
 	}
 
-
 	protected static final BigDecimal notNullOrZero(final BigDecimal value)
 	{
 		return value == null ? BigDecimal.ZERO : value;
@@ -76,12 +76,17 @@ abstract class AbstractAllocableDocRow implements IAllocableDocRow
 
 	}
 
+	public final PaymentDirection getPaymentDirection()
+	{
+		return PaymentDirection.ofInboundPaymentFlag(isCustomerDocument());
+	}
+
 	@Override
 	public final boolean isVendorDocument()
 	{
 		return getMultiplierAP().signum() < 0;
 	}
-	
+
 	@Override
 	public final boolean isCustomerDocument()
 	{

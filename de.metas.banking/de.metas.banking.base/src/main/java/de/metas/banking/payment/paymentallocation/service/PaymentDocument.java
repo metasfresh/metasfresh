@@ -8,6 +8,7 @@ import org.compiere.model.I_C_Payment;
 import de.metas.bpartner.BPartnerId;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
+import de.metas.payment.PaymentDirection;
 import de.metas.payment.PaymentId;
 import de.metas.util.Check;
 import lombok.Builder;
@@ -35,7 +36,7 @@ public class PaymentDocument implements IPaymentDocument
 	private final String documentNo;
 	@Getter
 	private final TableRecordReference reference;
-	private final boolean isSOTrx;
+	private final PaymentDirection paymentDirection;
 	//
 	private final Money openAmtInitial;
 	@Getter
@@ -50,7 +51,7 @@ public class PaymentDocument implements IPaymentDocument
 			@NonNull final PaymentId paymentId,
 			@Nullable final BPartnerId bpartnerId,
 			@Nullable final String documentNo,
-			final boolean isSOTrx,
+			@NonNull final PaymentDirection paymentDirection,
 			//
 			@NonNull final Money openAmt,
 			@NonNull final Money amountToAllocate)
@@ -59,7 +60,7 @@ public class PaymentDocument implements IPaymentDocument
 		this.bpartnerId = bpartnerId;
 		this.documentNo = documentNo;
 		this.reference = TableRecordReference.of(I_C_Payment.Table_Name, paymentId);
-		this.isSOTrx = isSOTrx;
+		this.paymentDirection = paymentDirection;
 		//
 		Money.getCommonCurrencyIdOfAll(openAmt, amountToAllocate);
 		this.openAmtInitial = openAmt;
@@ -133,12 +134,12 @@ public class PaymentDocument implements IPaymentDocument
 	@Override
 	public boolean isCustomerDocument()
 	{
-		return isSOTrx;
+		return paymentDirection.isInboundPayment();
 	}
 
 	@Override
 	public boolean isVendorDocument()
 	{
-		return !isSOTrx;
+		return paymentDirection.isOutboundPayment();
 	}
 }
