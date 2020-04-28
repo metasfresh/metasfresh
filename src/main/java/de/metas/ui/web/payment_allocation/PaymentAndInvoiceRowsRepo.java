@@ -124,7 +124,7 @@ public class PaymentAndInvoiceRowsRepo
 				.dateTrx(paymentToAllocate.getDateTrx())
 				.payAmt(paymentToAllocate.getPayAmt())
 				.openAmt(paymentToAllocate.getOpenAmt())
-				.inboundPayment(paymentToAllocate.isInboundPayment())
+				.paymentDirection(paymentToAllocate.getPaymentDirection())
 				.build();
 	}
 
