@@ -25,14 +25,14 @@ package org.adempiere.invoice.process;
 import java.math.BigDecimal;
 import java.util.Properties;
 
-import org.adempiere.invoice.service.IInvoiceBL;
-import org.adempiere.invoice.service.IInvoiceCreditContext;
-import org.adempiere.invoice.service.impl.InvoiceCreditContext;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.apps.AEnv;
 
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.document.IDocTypeDAO;
+import de.metas.invoice.service.IInvoiceBL;
+import de.metas.invoice.service.IInvoiceCreditContext;
+import de.metas.invoice.service.impl.InvoiceCreditContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
 import de.metas.util.Services;

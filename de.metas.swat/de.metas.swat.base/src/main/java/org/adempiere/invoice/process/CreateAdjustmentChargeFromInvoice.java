@@ -1,10 +1,10 @@
 package org.adempiere.invoice.process;
 
-import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_DocType;
 
 import de.metas.adempiere.model.I_C_Invoice;
+import de.metas.invoice.service.IInvoiceBL;
 import de.metas.process.JavaProcess;
 import de.metas.process.Param;
 import de.metas.util.Services;

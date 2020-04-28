@@ -9,7 +9,6 @@ import java.time.LocalDate;
 import java.util.Objects;
 
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.invoice.service.IInvoiceDAO;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Customer_Retention;
@@ -25,6 +24,7 @@ import de.metas.contracts.IContractsDAO;
 import de.metas.contracts.invoice.ContractInvoiceService;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.invoice.InvoiceId;
+import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.lang.CoalesceUtil;
