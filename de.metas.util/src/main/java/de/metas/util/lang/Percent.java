@@ -239,6 +239,14 @@ public class Percent
 	 */
 	public BigDecimal computePercentageOf(@NonNull final BigDecimal base, final int precision)
 	{
+		return computePercentageOf(base, precision, RoundingMode.HALF_UP);
+	}
+	
+	public BigDecimal computePercentageOf(
+			@NonNull final BigDecimal base,
+			final int precision,
+			@NonNull final RoundingMode roundingMode)
+	{
 		Check.assumeGreaterOrEqualToZero(precision, "precision");
 
 		if (base.signum() == 0)
@@ -251,15 +259,15 @@ public class Percent
 		}
 		else if (isOneHundred())
 		{
-			return base.setScale(precision, RoundingMode.HALF_UP);
+			return base.setScale(precision, roundingMode);
 		}
 		else
 		{
 			return base
-					.setScale(precision + 2, RoundingMode.HALF_UP)
-					.divide(ONE_HUNDRED_VALUE, RoundingMode.HALF_UP)
+					.setScale(precision + 2, roundingMode)
+					.divide(ONE_HUNDRED_VALUE, roundingMode)
 					.multiply(value)
-					.setScale(precision, RoundingMode.HALF_UP);
+					.setScale(precision, roundingMode);
 		}
 	}
 
