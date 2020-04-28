@@ -179,17 +179,6 @@ export const getSelectionDirect = (selections, windowId, viewId) => {
   return (windowTypeSelections && windowTypeSelections[viewId]) || NO_SELECTION;
 };
 
-const getQuickactionsData = (state, { windowType, viewId }) => {
-  const key = `${windowType}${viewId ? `-${viewId}` : ''}`;
-
-  return state.windowHandler.quickActions[key] || [];
-};
-
-export const getQuickactions = createSelector(
-  [getQuickactionsData],
-  (actions) => actions
-);
-
 export default function windowHandler(state = initialState, action) {
   switch (action.type) {
     case NO_CONNECTION:

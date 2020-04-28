@@ -6,7 +6,6 @@ import Queue from 'simple-promise-queue';
 import cx from 'classnames';
 
 import { quickActionsRequest } from '../../api';
-import { getQuickactions } from '../../reducers/windowHandler';
 import {
   openModal,
   fetchedQuickActions,
@@ -242,19 +241,22 @@ export class QuickActions extends Component {
         parentView
       )
         .then((result) => {
-          const [resp, respRel] = result;
+          const [respRel, resp] = result;
 
           if (this.mounted) {
-            const currentActions = resp && resp.data ? resp.data.actions : [];
+            const currentActions =
+              resp && resp.data ? resp.data.actions : respRel.data.actions;
             const relatedActions =
-              respRel && respRel.data ? respRel.data.actions : [];
+              resp && resp.data ? respRel.data.actions : null;
 
-            if (childView.viewId && relatedActions) {
-              fetchedQuickActions(
-                childView.windowType,
-                childView.viewId,
-                relatedActions
-              );
+            if ((parentView.viewId || childView.viewId) && relatedActions) {
+              const windowType = parentView.windowType
+                ? parentView.windowType
+                : childView.windowType;
+              const id = parentView.viewId
+                ? parentView.viewId
+                : childView.viewId;
+              fetchedQuickActions(windowType, id, relatedActions);
             }
 
             fetchedQuickActions(windowId, viewId, currentActions);
@@ -458,9 +460,14 @@ QuickActions.propTypes = {
   onInvalidViewId: PropTypes.func,
 };
 
-const mapStateToProps = (state, { viewId, windowType }) => ({
-  actions: getQuickactions(state, { viewId, windowType }),
-});
+const mapStateToProps = (state, ownProps) => {
+  const { viewId, windowType } = ownProps;
+  const key = `${windowType}${viewId ? `-${viewId}` : ''}`;
+
+  return {
+    actions: state.windowHandler.quickActions[key] || [],
+  };
+};
 
 export default connect(
   mapStateToProps,
