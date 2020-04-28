@@ -209,7 +209,12 @@ public class InvoiceCandBLHandlCompleteAndReversalTest extends AbstractICTestSup
 		doTestCreditMemoReinvoicableAndReversal(reverseInvoice, reversalIlaExpectedQtyInvoiced);
 	}
 
-	
+
+	/**
+	 * Directly create a credit memo directly from the invoice candidates and complete it.
+	 * Reverse the credit memo.
+	 * => the allocations should be similar with those of a standard sales invoice ( the sum of them should be 0)
+	 */
 	@Test
 	public void testReverseCreditMemo()
 	{
