@@ -7,6 +7,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.organization.OrgId;
+import de.metas.payment.PaymentDirection;
 import de.metas.util.Check;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
@@ -28,7 +29,7 @@ final class PurchaseInvoiceAsPaymentDocument implements IPaymentDocument
 	private PurchaseInvoiceAsPaymentDocument(@NonNull final PayableDocument purchasePayableDoc)
 	{
 		Check.assume(!purchasePayableDoc.isCreditMemo(), "is not credit memo: {}", purchasePayableDoc);
-		Check.assume(purchasePayableDoc.isVendorDocument(), "is vendor document: {}", purchasePayableDoc);
+		Check.assume(purchasePayableDoc.getSoTrx().isPurchase(), "is purchase document: {}", purchasePayableDoc);
 		this.purchaseInvoicePayableDoc = purchasePayableDoc;
 	}
 
@@ -105,13 +106,13 @@ final class PurchaseInvoiceAsPaymentDocument implements IPaymentDocument
 		{
 			return false;
 		}
-		if (payable.isCustomerDocument() != purchaseInvoicePayableDoc.isVendorDocument())
+		if (payable.getSoTrx() != purchaseInvoicePayableDoc.getSoTrx())
 		{
 			return false;
 		}
 
 		// A purchase invoice cannot pay another purchase invoice
-		if (payable.isVendorDocument())
+		if (payable.getSoTrx().isPurchase())
 		{
 			return false;
 		}
@@ -126,15 +127,9 @@ final class PurchaseInvoiceAsPaymentDocument implements IPaymentDocument
 	}
 
 	@Override
-	public boolean isCustomerDocument()
+	public PaymentDirection getPaymentDirection()
 	{
-		return purchaseInvoicePayableDoc.isCustomerDocument();
-	}
-
-	@Override
-	public boolean isVendorDocument()
-	{
-		return purchaseInvoicePayableDoc.isVendorDocument();
+		return PaymentDirection.ofSOTrx(purchaseInvoicePayableDoc.getSoTrx());
 	}
 
 	@Override

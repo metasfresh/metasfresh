@@ -41,6 +41,7 @@ public class PaymentDocument implements IPaymentDocument
 	private final String documentNo;
 	@Getter
 	private final TableRecordReference reference;
+	@Getter
 	private final PaymentDirection paymentDirection;
 	//
 	private final Money openAmtInitial;
@@ -141,17 +142,5 @@ public class PaymentDocument implements IPaymentDocument
 	public boolean canPay(@NonNull final PayableDocument payable)
 	{
 		return true;
-	}
-
-	@Override
-	public boolean isCustomerDocument()
-	{
-		return paymentDirection.isInboundPayment();
-	}
-
-	@Override
-	public boolean isVendorDocument()
-	{
-		return paymentDirection.isOutboundPayment();
 	}
 }

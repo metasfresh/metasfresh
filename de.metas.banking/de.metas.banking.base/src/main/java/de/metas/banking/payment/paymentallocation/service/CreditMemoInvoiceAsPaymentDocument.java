@@ -7,6 +7,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.organization.OrgId;
+import de.metas.payment.PaymentDirection;
 import de.metas.util.Check;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
@@ -100,13 +101,13 @@ final class CreditMemoInvoiceAsPaymentDocument implements IPaymentDocument
 	}
 
 	@Override
-	public boolean canPay(PayableDocument payable)
+	public boolean canPay(@NonNull final PayableDocument payable)
 	{
 		if (payable.getType() != PayableDocumentType.Invoice)
 		{
 			return false;
 		}
-		if (payable.isCustomerDocument() != creditMemoPayableDoc.isCustomerDocument())
+		if (payable.getSoTrx() != creditMemoPayableDoc.getSoTrx())
 		{
 			return false;
 		}
@@ -127,15 +128,9 @@ final class CreditMemoInvoiceAsPaymentDocument implements IPaymentDocument
 	}
 
 	@Override
-	public boolean isCustomerDocument()
+	public PaymentDirection getPaymentDirection()
 	{
-		return creditMemoPayableDoc.isCustomerDocument();
-	}
-
-	@Override
-	public boolean isVendorDocument()
-	{
-		return creditMemoPayableDoc.isVendorDocument();
+		return PaymentDirection.ofSOTrx(creditMemoPayableDoc.getSoTrx());
 	}
 
 	@Override

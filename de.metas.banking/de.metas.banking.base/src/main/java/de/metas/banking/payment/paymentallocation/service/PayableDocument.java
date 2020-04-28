@@ -49,6 +49,7 @@ public class PayableDocument
 	@Getter
 	private final BPartnerId bpartnerId;
 	private final String documentNo;
+	@Getter
 	private final SOTrx soTrx;
 	@Getter
 	private final TableRecordReference reference;
@@ -137,16 +138,6 @@ public class PayableDocument
 	public CurrencyId getCurrencyId()
 	{
 		return getAmountsToAllocate().getCurrencyId();
-	}
-
-	public boolean isCustomerDocument()
-	{
-		return soTrx.isSales();
-	}
-
-	public boolean isVendorDocument()
-	{
-		return soTrx.isPurchase();
 	}
 
 	public void addAllocatedAmounts(@NonNull final AllocationAmounts amounts)

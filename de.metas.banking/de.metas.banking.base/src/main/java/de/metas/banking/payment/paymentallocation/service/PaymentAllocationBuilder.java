@@ -338,14 +338,14 @@ public class PaymentAllocationBuilder
 		}
 
 		final List<IPaymentDocument> paymentVendorDocuments = paymentDocuments.stream()
-				.filter(IPaymentDocument::isVendorDocument)
+				.filter(paymentDocument -> paymentDocument.getPaymentDirection().isOutboundPayment())
 				.collect(ImmutableList.toImmutableList());
 
 		final List<PayableDocument> payableVendorDocuments_NoCreditMemos = new ArrayList<>();
 		final List<IPaymentDocument> paymentVendorDocuments_CreditMemos = new ArrayList<>();
 		for (final PayableDocument payable : payableDocuments)
 		{
-			if (!payable.isVendorDocument())
+			if (payable.getSoTrx().isPurchase())
 			{
 				continue;
 			}
@@ -510,7 +510,7 @@ public class PaymentAllocationBuilder
 				continue;
 			}
 
-			if (payable.isCustomerDocument())
+			if (payable.getSoTrx().isSales())
 			{
 				salesInvoices.add(payable);
 			}
