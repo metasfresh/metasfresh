@@ -329,8 +329,9 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 
 		//
 		// Pricing Informations
-		final PriceAndTax priceAndQty = calculatePriceAndQuantityAndUpdate(icRecord, inOutLineRecord.getReturn_Origin_InOutLine());
-
+        //final PriceAndTax priceAndQty = calculatePriceAndQuantityAndUpdate(icRecord, inOutLineRecord);
+		final PriceAndTax priceAndQty = inOutLineRecord.getReturn_Origin_InOutLine_ID() != 0 ? calculatePriceAndQuantityAndUpdate(icRecord, inOutLineRecord.getReturn_Origin_InOutLine())
+				: calculatePriceAndQuantityAndUpdate(icRecord, inOutLineRecord);
 		//
 		// Description
 		icRecord.setDescription(inOut.getDescription());
