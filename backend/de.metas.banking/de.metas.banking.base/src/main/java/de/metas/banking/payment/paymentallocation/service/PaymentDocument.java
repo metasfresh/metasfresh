@@ -9,7 +9,6 @@ import org.compiere.model.I_C_Payment;
 import de.metas.bpartner.BPartnerId;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
-import de.metas.organization.OrgId;
 import de.metas.payment.PaymentDirection;
 import de.metas.payment.PaymentId;
 import de.metas.util.Check;
@@ -142,5 +141,17 @@ public class PaymentDocument implements IPaymentDocument
 	public boolean canPay(@NonNull final PayableDocument payable)
 	{
 		return true;
+	}
+
+	@Override
+	public boolean isCustomerDocument()
+	{
+		return paymentDirection.isInboundPayment();
+	}
+
+	@Override
+	public boolean isVendorDocument()
+	{
+		return paymentDirection.isOutboundPayment();
 	}
 }
