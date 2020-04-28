@@ -99,14 +99,14 @@ public final class CacheIndex<DataItemId, CacheKey, DataItem> implements Caching
 		final Set<DataItemId> dataItemIds = _recordRef_to_dateItemId.get(recordRef);
 		if (dataItemIds.isEmpty())
 		{
-			logger.trace("computeCachingKeys: Returning no cache keys for {}", recordRef);
+			logger.debug("computeCachingKeys: Returning no cache keys for {}", recordRef);
 			return ImmutableSet.of();
 		}
 
 		final ImmutableSet<CacheKey> cacheKeys = dataItemIds.stream()
 				.flatMap(dataItemId -> _dataItemId_to_cacheKey.get(dataItemId).stream())
 				.collect(ImmutableSet.toImmutableSet());
-		logger.trace("computeCachingKeys: Returning cacheKeys={} for {} (dataItemIds={})", cacheKeys, recordRef, dataItemIds);
+		logger.debug("computeCachingKeys: Returning cacheKeys={} for {} (dataItemIds={})", cacheKeys, recordRef, dataItemIds);
 		return cacheKeys;
 	}
 
@@ -145,10 +145,10 @@ public final class CacheIndex<DataItemId, CacheKey, DataItem> implements Caching
 			@NonNull final Collection<CacheKey> cacheKeys,
 			@NonNull final Collection<TableRecordReference> recordRefs)
 	{
-		logger.trace("Adding to index: {} -> {}", dataItemId, cacheKeys);
+		logger.debug("Adding to index: {} -> {}", dataItemId, cacheKeys);
 		_dataItemId_to_cacheKey.putAll(dataItemId, cacheKeys);
 
-		logger.trace("Adding to index: {} -> {}", recordRefs, dataItemId);
+		logger.debug("Adding to index: {} -> {}", recordRefs, dataItemId);
 		recordRefs.forEach(recordRef -> _recordRef_to_dateItemId.put(recordRef, dataItemId));
 	}
 
@@ -165,10 +165,10 @@ public final class CacheIndex<DataItemId, CacheKey, DataItem> implements Caching
 			final CacheKey cacheKey,
 			final Collection<TableRecordReference> recordRefs)
 	{
-		logger.trace("Removing pair from index: {}, {}", dataItemId, cacheKey);
+		logger.debug("Removing pair from index: {}, {}", dataItemId, cacheKey);
 		_dataItemId_to_cacheKey.remove(dataItemId, cacheKey);
 
-		logger.trace("Removing pairs from index: {}, {}", recordRefs, dataItemId);
+		logger.debug("Removing pairs from index: {}, {}", recordRefs, dataItemId);
 		recordRefs.forEach(recordRef -> _recordRef_to_dateItemId.remove(recordRef, dataItemId));
 	}
 }
