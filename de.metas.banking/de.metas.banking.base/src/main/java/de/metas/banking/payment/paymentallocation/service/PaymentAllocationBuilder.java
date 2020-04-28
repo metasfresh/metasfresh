@@ -1,28 +1,5 @@
 package de.metas.banking.payment.paymentallocation.service;
 
-/*
- * #%L
- * de.metas.banking.swingui
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -83,7 +60,6 @@ public class PaymentAllocationBuilder
 
 	// Parameters
 	private OrgId _adOrgId;
-	private CurrencyId _currencyId;
 	private LocalDate _dateTrx;
 	private LocalDate _dateAcct;
 	private ImmutableList<PayableDocument> _payableDocuments = ImmutableList.of();
@@ -174,7 +150,7 @@ public class PaymentAllocationBuilder
 	private final PaymentAllocationId createAndCompleteAllocation(final AllocationLineCandidate line)
 	{
 		final OrgId adOrgId = getOrgId();
-		final CurrencyId currencyId = getCurrencyId();
+		final CurrencyId currencyId = line.getCurrencyId();
 		final Timestamp dateTrx = TimeUtil.asTimestamp(getDateTrx());
 		final Timestamp dateAcct = TimeUtil.asTimestamp(getDateAcct());
 
@@ -191,10 +167,10 @@ public class PaymentAllocationBuilder
 				.setC_BPartner_ID(BPartnerId.toRepoId(line.getBpartnerId()))
 				//
 				// Amounts
-				.setAmount(line.getAmount())
-				.setDiscountAmt(line.getDiscountAmt())
-				.setWriteOffAmt(line.getWriteOffAmt())
-				.setOverUnderAmt(line.getPayableOverUnderAmt())
+				.setAmount(line.getAmounts().getPayAmt().toBigDecimal())
+				.setDiscountAmt(line.getAmounts().getDiscountAmt().toBigDecimal())
+				.setWriteOffAmt(line.getAmounts().getWriteOffAmt().toBigDecimal())
+				.setOverUnderAmt(line.getPayableOverUnderAmt().toBigDecimal())
 				.setSkipIfAllAmountsAreZero();
 
 		final ITableRecordReference payableDocRef = line.getPayableDocumentRef();
@@ -224,8 +200,8 @@ public class PaymentAllocationBuilder
 					.setC_BPartner_ID(BPartnerId.toRepoId(line.getBpartnerId()))
 					//
 					// Amounts
-					.setAmount(line.getAmount().negate())
-					.setOverUnderAmt(line.getPaymentOverUnderAmt())
+					.setAmount(line.getAmounts().getPayAmt().negate().toBigDecimal())
+					.setOverUnderAmt(line.getPaymentOverUnderAmt().toBigDecimal())
 					.setSkipIfAllAmountsAreZero()
 					//
 					.setC_Invoice_ID(paymentDocRef.getRecord_ID());
@@ -237,7 +213,7 @@ public class PaymentAllocationBuilder
 		{
 			payableLineBuilder.setC_Invoice_ID(payableDocRef.getRecord_ID());
 			// allow only if the line's amount is zero, because else, we need to have a document where to allocate.
-			Check.assume(line.getAmount().signum() == 0, "zero amount: {}", line);
+			Check.assume(line.getAmounts().getPayAmt().signum() == 0, "zero amount: {}", line);
 		}
 		//
 		// Outgoing payment - Incoming payment
@@ -251,8 +227,8 @@ public class PaymentAllocationBuilder
 					.setC_BPartner_ID(BPartnerId.toRepoId(line.getBpartnerId()))
 					//
 					// Amounts
-					.setAmount(line.getAmount().negate())
-					.setOverUnderAmt(line.getPaymentOverUnderAmt())
+					.setAmount(line.getAmounts().getPayAmt().negate().toBigDecimal())
+					.setOverUnderAmt(line.getPaymentOverUnderAmt().toBigDecimal())
 					.setSkipIfAllAmountsAreZero()
 					//
 					.setC_Payment_ID(paymentDocRef.getRecord_ID());
@@ -457,11 +433,9 @@ public class PaymentAllocationBuilder
 						.payableDocumentRef(payable.getReference())
 						.paymentDocumentRef(payment.getReference())
 						// Amounts:
-						.amount(payableAmountsToAllocate.getPayAmt().toBigDecimal())
-						.discountAmt(payableAmountsToAllocate.getDiscountAmt().toBigDecimal())
-						.writeOffAmt(payableAmountsToAllocate.getWriteOffAmt().toBigDecimal())
-						.payableOverUnderAmt(payableOverUnderAmt.toBigDecimal())
-						.paymentOverUnderAmt(paymentOverUnderAmt.toBigDecimal())
+						.amounts(payableAmountsToAllocate)
+						.payableOverUnderAmt(payableOverUnderAmt)
+						.paymentOverUnderAmt(paymentOverUnderAmt)
 						//
 						.build();
 				allocationLineCandidates.add(allocationLine);
@@ -620,9 +594,9 @@ public class PaymentAllocationBuilder
 						.payableDocumentRef(paymentOut.getReference())
 						.paymentDocumentRef(paymentIn.getReference())
 						// Amounts:
-						.amount(amtToAllocate.toBigDecimal())
-						.payableOverUnderAmt(payableOverUnderAmt.toBigDecimal())
-						.paymentOverUnderAmt(paymentOverUnderAmt.toBigDecimal())
+						.amounts(AllocationAmounts.ofPayAmt(amtToAllocate))
+						.payableOverUnderAmt(payableOverUnderAmt)
+						.paymentOverUnderAmt(paymentOverUnderAmt)
 						//
 						.build();
 				allocationLineCandidates.add(allocationLine);
@@ -680,11 +654,9 @@ public class PaymentAllocationBuilder
 				.payableDocumentRef(payable.getReference())
 				.paymentDocumentRef(null) // nop
 				// Amounts:
-				.amount(BigDecimal.ZERO)
-				.discountAmt(amountsToAllocate.getDiscountAmt().toBigDecimal())
-				.writeOffAmt(amountsToAllocate.getWriteOffAmt().toBigDecimal())
-				.payableOverUnderAmt(payableOverUnderAmt.toBigDecimal())
-				.paymentOverUnderAmt(BigDecimal.ZERO)
+				.amounts(amountsToAllocate)
+				.payableOverUnderAmt(payableOverUnderAmt)
+				// .paymentOverUnderAmt(ZERO)
 				//
 				.build();
 
@@ -833,20 +805,6 @@ public class PaymentAllocationBuilder
 			throw new PaymentAllocationException("@Org0NotAllowed@");
 		}
 		return _adOrgId;
-	}
-
-	private final CurrencyId getCurrencyId()
-	{
-		Check.assumeNotNull(_currencyId, "currencyId shall be set");
-		return _currencyId;
-	}
-
-	/** Sets the currency of all invoices and payments set. */
-	public PaymentAllocationBuilder currencyId(final CurrencyId currencyId)
-	{
-		assertNotBuilt();
-		_currencyId = currencyId;
-		return this;
 	}
 
 	private final LocalDate getDateTrx()

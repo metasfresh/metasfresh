@@ -70,7 +70,6 @@ import de.metas.banking.payment.paymentallocation.impl.PaymentAllocationBL;
 import de.metas.banking.payment.paymentallocation.service.AllocationLineCandidate.AllocationLineCandidateType;
 import de.metas.banking.payment.paymentallocation.service.PaymentAllocationBuilder.PayableRemainingOpenAmtPolicy;
 import de.metas.bpartner.BPartnerId;
-import de.metas.currency.Currency;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.impl.PlainCurrencyDAO;
 import de.metas.document.engine.IDocument;
@@ -102,7 +101,7 @@ public class PaymentAllocationBuilderTest
 	private int nextPaymentId = 1;
 	private final OrgId adOrgId = OrgId.ofRepoId(1000000); // just a dummy value
 	private final BPartnerId bpartnerId = BPartnerId.ofRepoId(1); // dummy value
-	private Currency currency;
+	private CurrencyId euroCurrencyId;
 	private Map<InvoiceType, I_C_DocType> invoiceDocTypes;
 
 	@BeforeEach
@@ -117,10 +116,16 @@ public class PaymentAllocationBuilderTest
 		invoiceBL = Services.get(IInvoiceBL.class);
 		invoicesDAO = Services.get(IInvoiceDAO.class);
 
-		currency = PlainCurrencyDAO.createCurrency(CurrencyCode.CHF);
+		euroCurrencyId = PlainCurrencyDAO.createCurrencyId(CurrencyCode.EUR);
 		invoiceDocTypes = new HashMap<>();
 
 		setAllowSalesPurchaseInvoiceCompensation(true);
+	}
+
+	private Money euro(final String amount)
+	{
+		final BigDecimal amountBD = !Check.isEmpty(amount) ? new BigDecimal(amount) : BigDecimal.ZERO;
+		return Money.of(amountBD, euroCurrencyId);
 	}
 
 	private final void setAllowSalesPurchaseInvoiceCompensation(final boolean allow)
@@ -604,7 +609,6 @@ public class PaymentAllocationBuilderTest
 	{
 		return PaymentAllocationBuilder.newBuilder()
 				.orgId(adOrgId)
-				.currencyId(currency.getId())
 				.dateTrx(date)
 				.dateAcct(date)  // task 09643. Leaving this date also as current date. will be changed later if needed
 		;
@@ -629,17 +633,15 @@ public class PaymentAllocationBuilderTest
 			final String discountAmtStr,
 			final String writeOffAmtStr)
 	{
-		final CurrencyId currencyId = currency.getId();
-
-		final Money openAmt_CMAdjusted_APAdjusted = Money.of(openAmtStr, currencyId);
+		final Money openAmt_CMAdjusted_APAdjusted = euro(openAmtStr);
 		final Money openAmt = openAmt_CMAdjusted_APAdjusted
 				.negateIf(invoiceType.isCreditMemo())
 				.negateIf(!invoiceType.isSoTrx());
 
 		final AllocationAmounts amountsToAllocate_CMAdjusted_APAdjusted = AllocationAmounts.builder()
-				.payAmt(Money.of(payAmtStr, currencyId))
-				.discountAmt(Money.of(discountAmtStr, currencyId))
-				.writeOffAmt(Money.of(writeOffAmtStr, currencyId))
+				.payAmt(euro(payAmtStr))
+				.discountAmt(euro(discountAmtStr))
+				.writeOffAmt(euro(writeOffAmtStr))
 				.build();
 		final AllocationAmounts amountsToAllocate = amountsToAllocate_CMAdjusted_APAdjusted
 				.negateIf(invoiceType.isCreditMemo())
@@ -708,8 +710,6 @@ public class PaymentAllocationBuilderTest
 			final String openAmtStr,
 			final String amountToAllocateStr)
 	{
-		final CurrencyId currencyId = currency.getId();
-
 		//
 		// Create a dummy record (needed for the BL which calculates how much was allocated)
 		final int paymentId = nextPaymentId++;
@@ -717,7 +717,7 @@ public class PaymentAllocationBuilderTest
 		payment.setC_Payment_ID(paymentId);
 		payment.setDocumentNo("Doc" + paymentId);
 		payment.setC_BPartner_ID(bpartnerId.getRepoId());
-		payment.setC_Currency_ID(currencyId.getRepoId());
+		payment.setC_Currency_ID(euroCurrencyId.getRepoId());
 		InterfaceWrapperHelper.save(payment);
 
 		return PaymentDocument.builder()
@@ -725,8 +725,8 @@ public class PaymentAllocationBuilderTest
 				.bpartnerId(BPartnerId.ofRepoId(payment.getC_BPartner_ID()))
 				.documentNo(payment.getDocumentNo())
 				.paymentDirection(paymentDirection)
-				.openAmt(Money.of(openAmtStr, currencyId).negateIf(paymentDirection.isOutboundPayment()))
-				.amountToAllocate(Money.of(amountToAllocateStr, currencyId).negateIf(paymentDirection.isOutboundPayment()))
+				.openAmt(euro(openAmtStr).negateIf(paymentDirection.isOutboundPayment()))
+				.amountToAllocate(euro(amountToAllocateStr).negateIf(paymentDirection.isOutboundPayment()))
 				.build();
 	}
 
@@ -748,18 +748,15 @@ public class PaymentAllocationBuilderTest
 				.payableDocumentRef(payableRef)
 				.paymentDocumentRef(paymentRef)
 				//
-				.amount(toBigDecimalOrZero(allocatedAmt))
-				.discountAmt(toBigDecimalOrZero(discountAmt))
-				.writeOffAmt(toBigDecimalOrZero(writeOffAmt))
-				.payableOverUnderAmt(toBigDecimalOrZero(overUnderAmt))
-				.paymentOverUnderAmt(toBigDecimalOrZero(paymentOverUnderAmt))
+				.amounts(AllocationAmounts.builder()
+						.payAmt(euro(allocatedAmt))
+						.discountAmt(euro(discountAmt))
+						.writeOffAmt(euro(writeOffAmt))
+						.build())
+				.payableOverUnderAmt(euro(overUnderAmt))
+				.paymentOverUnderAmt(euro(paymentOverUnderAmt))
 				//
 				.build();
-	}
-
-	private static BigDecimal toBigDecimalOrZero(final String str)
-	{
-		return !Check.isEmpty(str) ? new BigDecimal(str) : BigDecimal.ZERO;
 	}
 
 	private final void dumpCandidates(final String title, final Iterable<AllocationLineCandidate> candidates)
