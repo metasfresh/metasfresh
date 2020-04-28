@@ -1,10 +1,16 @@
-package de.metas.monitoring.adapter;
+package de.metas.cache;
 
-import java.util.concurrent.Callable;
+import static org.assertj.core.api.Assertions.assertThat;
+
+import org.junit.jupiter.api.Test;
+
+import de.metas.cache.model.CacheInvalidateMultiRequest;
+import de.metas.cache.model.CacheInvalidateRequest;
+import de.metas.event.Event;
 
 /*
  * #%L
- * de.metas.monitoring
+ * de.metas.adempiere.adempiere.base
  * %%
  * Copyright (C) 2020 metas GmbH
  * %%
@@ -24,34 +30,19 @@ import java.util.concurrent.Callable;
  * #L%
  */
 
-public class NoopPerformanceMonitoringService implements PerformanceMonitoringService
+class CacheInvalidationRemoteHandlerTest
 {
-	public static final NoopPerformanceMonitoringService INSTANCE = new NoopPerformanceMonitoringService();
 
-	@Override
-	public <V> V monitorSpan(Callable<V> callable, SpanMetadata request)
+	@Test
+	void createEventFromRequest()
 	{
-		try
-		{
-			return callable.call();
-		}
-		catch (Exception e)
-		{
-			throw PerformanceMonitoringServiceUtil.asRTE(e);
-		}
-	}
+		final CacheInvalidateMultiRequest multiRequest = CacheInvalidateMultiRequest.of(CacheInvalidateRequest.builder()
+				.rootRecord("SomeRootTable", 123)
+				.childRecord("SomeChildTable", 456)
+				.build());
 
-	@Override
-	public <V> V monitorTransaction(Callable<V> callable, TransactionMetadata request)
-	{
-		try
-		{
-			return callable.call();
-		}
-		catch (Exception e)
-		{
-			throw PerformanceMonitoringServiceUtil.asRTE(e);
-		}
+		final Event result = CacheInvalidationRemoteHandler.instance.createEventFromRequest(multiRequest);
+		assertThat(result).isNotNull();
 	}
 
 }
