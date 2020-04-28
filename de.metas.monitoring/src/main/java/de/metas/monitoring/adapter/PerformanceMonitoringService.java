@@ -122,7 +122,11 @@ public interface PerformanceMonitoringService
 	{
 		MODEL_CHANGE("modelChange"),
 
-		DOC_VALIDATE("docValidate");
+		DOC_VALIDATE("docValidate"),
+
+		REMOVE_FROM_CACHE("removeFromCache"),
+
+		ADD_TO_CACHE("addToCache");
 
 		private SubType(String code)
 		{

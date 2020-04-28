@@ -683,27 +683,40 @@ public class JsonPersisterService
 		}
 		}
 
-		// group
+		// group - attempt to fall back to default group
 		if (jsonBPartner.isGroupSet())
 		{
-			final Optional<BPGroup> optionalBPGroup = bpGroupRepository
-					.getByNameAndOrgId(jsonBPartner.getGroup(), bpartnerComposite.getOrgId());
-
-			final BPGroup bpGroup;
-			if (optionalBPGroup.isPresent())
+			if (jsonBPartner.getGroup() == null)
 			{
-				bpGroup = optionalBPGroup.get();
-				bpGroup.setName(jsonBPartner.getGroup().trim());
+				logger.debug("Setting \"groupId\" to null; -> will attempt to insert default groupId");
+				bpartner.setGroupId(null);
 			}
 			else
 			{
-				bpGroup = BPGroup.of(bpartnerComposite.getOrgId(), null, jsonBPartner.getGroup().trim());
-			}
+				final Optional<BPGroup> optionalBPGroup = bpGroupRepository
+						.getByNameAndOrgId(jsonBPartner.getGroup(), bpartnerComposite.getOrgId());
 
-			final BPGroupId bpGroupId = bpGroupRepository.save(bpGroup);
-			bpartner.setGroupId(bpGroupId);
+				final BPGroup bpGroup;
+				if (optionalBPGroup.isPresent())
+				{
+					bpGroup = optionalBPGroup.get();
+					bpGroup.setName(jsonBPartner.getGroup().trim());
+				}
+				else
+				{
+					bpGroup = BPGroup.of(bpartnerComposite.getOrgId(), null, jsonBPartner.getGroup().trim());
+				}
+
+				final BPGroupId bpGroupId = bpGroupRepository.save(bpGroup);
+				bpartner.setGroupId(bpGroupId);
+			}
 		}
-		else if (bpartner.getGroupId() == null)
+		else if(isUpdateRemove)
+		{
+			logger.debug("Setting \"groupId\" to null; -> will attempt to insert default groupId");
+			bpartner.setGroupId(null);
+		}
+		if (bpartner.getGroupId() == null)
 		{
 			final Optional<BPGroup> optionalBPGroup = bpGroupRepository.getDefaultGroup();
 			if (!optionalBPGroup.isPresent())
@@ -714,8 +727,8 @@ public class JsonPersisterService
 						.build();
 			}
 			bpartner.setGroupId(optionalBPGroup.get().getId());
+			logger.debug("\"groupId\" = null; -> using default groupId={}", bpartner.getGroupId().getRepoId());
 		}
-		// note that BP_Group_ID is mandatory, so we won't unset it even if isUpdateRemove
 
 		// language
 		if (jsonBPartner.isLanguageSet())
@@ -730,7 +743,14 @@ public class JsonPersisterService
 		// invoiceRule
 		if (jsonBPartner.isInvoiceRuleSet())
 		{
-			bpartner.setInvoiceRule(InvoiceRule.ofCode(jsonBPartner.getInvoiceRule().toString()));
+			if (jsonBPartner.getInvoiceRule() == null)
+			{
+				bpartner.setInvoiceRule(null);
+			}
+			else
+			{
+				bpartner.setInvoiceRule(InvoiceRule.ofCode(jsonBPartner.getInvoiceRule().toString()));
+			}
 		}
 		else if (isUpdateRemove)
 		{
@@ -743,7 +763,7 @@ public class JsonPersisterService
 		if (jsonBPartner.isParentIdSet())
 		{
 			// TODO make sure in the repo that the parent-bpartner is reachable
-			bpartner.setParentId(BPartnerId.ofRepoId(jsonBPartner.getParentId().getValue()));
+			bpartner.setParentId(BPartnerId.ofRepoIdOrNull(MetasfreshId.toValue(jsonBPartner.getParentId())));
 		}
 		else if (isUpdateRemove)
 		{
