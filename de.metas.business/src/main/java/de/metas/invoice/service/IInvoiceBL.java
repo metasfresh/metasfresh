@@ -27,7 +27,6 @@ import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.util.List;
 
-import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.ImmutablePair;
@@ -44,11 +43,13 @@ import de.metas.document.ICopyHandler;
 import de.metas.document.ICopyHandlerBL;
 import de.metas.document.IDocCopyHandler;
 import de.metas.document.IDocLineCopyHandler;
+import de.metas.invoice.InvoiceCreditContext;
 import de.metas.invoice.InvoiceId;
 import de.metas.payment.PaymentRule;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.util.ISingletonService;
+import lombok.NonNull;
 
 public interface IInvoiceBL extends ISingletonService
 {
@@ -94,7 +95,7 @@ public interface IInvoiceBL extends ISingletonService
 	 * @param setOrderRef        if <code>true</code> then set the new invoice line's <code>C_OrderLine_ID</code> to the value of the old invoice line. Otherwise, set the new line's ref to 0. <br>
 	 *                           <b>Important</b>: the value set as consequence of param counter = true will take precedence!
 	 * @param setInvoiceRef      if <code>true</code>, then set <code>C_InvoiceLine.Ref_InvoiceLine_ID</code> as described for the counter parameter (do this independent of the counter parameter's value).
-	 * @param docLineCopyHandler allows copying of fields to be customized per implementation. This is e.g. used by {@link #creditInvoice(de.metas.adempiere.model.I_C_Invoice, IInvoiceCreditContext)}.
+	 * @param docLineCopyHandler allows copying of fields to be customized per implementation. This is e.g. used by {@link #creditInvoice(de.metas.adempiere.model.I_C_Invoice, InvoiceCreditContext)}.
 	 *                           May be <code>null</code>.
 	 * @return
 	 * @see #copyFrom(I_C_Invoice, Timestamp, int, boolean, boolean, boolean, boolean, boolean)
@@ -159,7 +160,7 @@ public interface IInvoiceBL extends ISingletonService
 	 * Depending in the <code>completeAndAllocate</code> parameter, the credit memo will also be allocated against the invoice, so that both have <code>IsPaid='Y'</code>.
 	 *
 	 * @param invoice   the invoice to be credited. May not be fully paid/allocated and may not be a credit memo itself
-	 * @param creditCtx see {@link IInvoiceCreditContext}
+	 * @param creditCtx
 	 * @return the created credit memo
 	 * @throws AdempiereException if
 	 *                            <ul>
@@ -171,7 +172,7 @@ public interface IInvoiceBL extends ISingletonService
 	 *                            <li>the credit memo line's C_Tax is not tax exempt (due to the charge's tax category and/or the invoice BPartner's location)</li>
 	 *                            </ul>
 	 */
-	de.metas.adempiere.model.I_C_Invoice creditInvoice(de.metas.adempiere.model.I_C_Invoice invoice, IInvoiceCreditContext creditCtx);
+	de.metas.adempiere.model.I_C_Invoice creditInvoice(de.metas.adempiere.model.I_C_Invoice invoice, InvoiceCreditContext creditCtx);
 
 	/**
 	 * Creates a new invoice line for the given invoice. Note that the new line is not saved.

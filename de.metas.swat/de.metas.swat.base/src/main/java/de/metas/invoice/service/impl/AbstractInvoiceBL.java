@@ -84,9 +84,9 @@ import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.IModelTranslationMap;
 import de.metas.i18n.ITranslatableString;
+import de.metas.invoice.InvoiceCreditContext;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.service.IInvoiceBL;
-import de.metas.invoice.service.IInvoiceCreditContext;
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.invoice.service.IInvoiceLineBL;
 import de.metas.invoice.service.IMatchInvBL;
@@ -147,7 +147,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	public static final String SYSCONFIG_C_Invoice_PaymentRule = "de.metas.invoice.C_Invoice_PaymentRule";
 
 	@Override
-	public final I_C_Invoice creditInvoice(@NonNull final I_C_Invoice invoice, final IInvoiceCreditContext creditCtx)
+	public final I_C_Invoice creditInvoice(@NonNull final I_C_Invoice invoice, final InvoiceCreditContext creditCtx)
 	{
 		Check.errorIf(isCreditMemo(invoice), "Param 'invoice'={} may not be a credit memo");
 		Check.errorIf(invoice.isPaid(), "Param 'invoice'={} may not yet be paid");
@@ -165,11 +165,13 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		// 'invoice' is not paid, so the open amount won't be zero
 		Check.assume(openAmt.signum() != 0, "OpenAmt != zero for {}", invoice);
 
-		final int targetDocTypeID = getTarget_DocType_ID(ctx, invoice, creditCtx.getC_DocType_ID());
+		final DocTypeId targetDocTypeId = getTarget_DocType_ID(ctx, invoice, creditCtx.getDocTypeId());
 		//
 		// create the credit memo as a copy of the original invoice
 		final I_C_Invoice creditMemo = InterfaceWrapperHelper.create(
-				copyFrom(invoice, SystemTime.asTimestamp(), targetDocTypeID, invoice.isSOTrx(),
+				copyFrom(invoice, SystemTime.asTimestamp(),
+						targetDocTypeId.getRepoId(),
+						invoice.isSOTrx(),
 						false, // counter == false
 						creditCtx.isReferenceOriginalOrder(), // setOrderRef == creditCtx.isReferenceOriginalOrder()
 						creditCtx.isReferenceInvoice(), // setInvoiceRef == creditCtx.isReferenceInvoice()
@@ -179,11 +181,11 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		return creditMemo;
 	}
 
-	private int getTarget_DocType_ID(final Properties ctx, final I_C_Invoice invoice, final int C_DocType_ID)
+	private DocTypeId getTarget_DocType_ID(final Properties ctx, final I_C_Invoice invoice, final DocTypeId docTypeId)
 	{
-		if (C_DocType_ID > 0)
+		if (docTypeId != null)
 		{
-			return C_DocType_ID;
+			return docTypeId;
 		}
 
 		//
@@ -204,8 +206,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 						.docBaseType(docBaseType)
 						.adClientId(invoice.getAD_Client_ID())
 						.adOrgId(invoice.getAD_Org_ID())
-						.build())
-				.getRepoId();
+						.build());
 	}
 
 	public static final IDocCopyHandler<org.compiere.model.I_C_Invoice, org.compiere.model.I_C_InvoiceLine> defaultDocCopyHandler = new DefaultDocCopyHandler<>(org.compiere.model.I_C_Invoice.class, org.compiere.model.I_C_InvoiceLine.class);

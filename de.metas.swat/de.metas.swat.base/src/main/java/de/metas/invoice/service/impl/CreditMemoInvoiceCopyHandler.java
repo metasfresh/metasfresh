@@ -46,8 +46,8 @@ import de.metas.currency.ICurrencyDAO;
 import de.metas.document.IDocCopyHandler;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
+import de.metas.invoice.InvoiceCreditContext;
 import de.metas.invoice.service.IInvoiceBL;
-import de.metas.invoice.service.IInvoiceCreditContext;
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.money.CurrencyId;
 import de.metas.util.Check;
@@ -57,16 +57,16 @@ import de.metas.util.Services;
  * Note: This class is currently instantiated and called directly from BLs in this package.<br>
  * <p>
  * IMPORTANT: this copy handler is special in that it could also complete the target invoice! Make sure that it's called after the other "generic" handlers.<br>
- * Also see the javadoc of {@link IInvoiceBL#creditInvoice(de.metas.adempiere.model.I_C_Invoice, IInvoiceCreditContext)}.
+ * Also see the javadoc of {@link IInvoiceBL#creditInvoice(de.metas.adempiere.model.I_C_Invoice, InvoiceCreditContext)}.
  */
 public class CreditMemoInvoiceCopyHandler implements IDocCopyHandler<I_C_Invoice, I_C_InvoiceLine>
 {
-	private final IInvoiceCreditContext creditCtx;
+	private final InvoiceCreditContext creditCtx;
 	private final BigDecimal openAmt;
 	private final String trxName;
 
 	public CreditMemoInvoiceCopyHandler(final Properties ctx,
-			final IInvoiceCreditContext creditCtx,
+			final InvoiceCreditContext creditCtx,
 			final BigDecimal openAmt,
 			final String trxName)
 	{
@@ -274,7 +274,7 @@ public class CreditMemoInvoiceCopyHandler implements IDocCopyHandler<I_C_Invoice
 
 	private void completeAndAllocateCreditMemo(final de.metas.adempiere.model.I_C_Invoice invoice, final de.metas.adempiere.model.I_C_Invoice creditMemo)
 	{
-		if (!creditCtx.completeAndAllocate())
+		if (!creditCtx.isCompleteAndAllocate())
 		{
 			Services.get(IDocumentBL.class).processEx(creditMemo, IDocument.ACTION_Prepare, IDocument.STATUS_InProgress);
 			Check.assume(creditMemo.getGrandTotal().compareTo(openAmt) == 0, "{} has GrandTotal={}", creditMemo, openAmt);
