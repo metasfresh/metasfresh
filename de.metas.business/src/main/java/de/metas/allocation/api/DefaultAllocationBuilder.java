@@ -13,15 +13,14 @@ package de.metas.allocation.api;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -42,7 +41,6 @@ import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 
 import de.metas.bpartner.service.IBPartnerStatisticsUpdater;
-import de.metas.builder.BuilderSupport;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.logging.LogManager;
@@ -67,10 +65,9 @@ public class DefaultAllocationBuilder implements IAllocationBuilder
 	// Status
 	private final I_C_AllocationHdr allocHdr;
 	private boolean _built;
-	
-	private final java.util.List<I_C_AllocationLine> allocationLines = new ArrayList<>();
 
-	private final BuilderSupport<DefaultAllocationLineBuilder> s = new BuilderSupport<DefaultAllocationLineBuilder>(this);
+	private final ArrayList<DefaultAllocationLineBuilder> allocationLineBuilders = new ArrayList<>();
+	private final ArrayList<I_C_AllocationLine> allocationLines = new ArrayList<>();
 
 	public DefaultAllocationBuilder(final IContextAware contextProvider)
 	{
@@ -140,21 +137,16 @@ public class DefaultAllocationBuilder implements IAllocationBuilder
 	}
 
 	@Override
-	public IAllocationLineBuilder addLine()
-	{
-		return addLine(DefaultAllocationLineBuilder.class);
-	}
-
-	@SuppressWarnings("unchecked")
-	@Override
-	public final <T extends DefaultAllocationLineBuilder> T addLine(final Class<T> implClazz)
+	public DefaultAllocationLineBuilder addLine()
 	{
 		assertNotBuilt();
-		return (T)s.addLine(implClazz);
+
+		final DefaultAllocationLineBuilder lineBuilder = new DefaultAllocationLineBuilder(this);
+		allocationLineBuilders.add(lineBuilder);
+
+		return lineBuilder;
 	}
 
-	
-	
 	@Override
 	public I_C_AllocationHdr create(final boolean complete)
 	{
@@ -163,20 +155,15 @@ public class DefaultAllocationBuilder implements IAllocationBuilder
 		// Supplier which provides a created & saved allocation header.
 		// To be used by line builder only when the line builder is sure it will create a line.
 		// We are memorizing the result because we want to save it only first time when it's called.
-		final Supplier<I_C_AllocationHdr> allocHdrSupplier = Suppliers.memoize(new Supplier<I_C_AllocationHdr>()
-		{
-			@Override
-			public I_C_AllocationHdr get()
-			{
-				InterfaceWrapperHelper.save(allocHdr);
-				return allocHdr;
-			}
+		final Supplier<I_C_AllocationHdr> allocHdrSupplier = Suppliers.memoize(() -> {
+			InterfaceWrapperHelper.save(allocHdr);
+			return allocHdr;
 		});
 
 		//
 		// Iterate all line builders and create allocation lines, if needed.
 		int createdLinesCount = 0;
-		for (final DefaultAllocationLineBuilder line : s.getLines())
+		for (final DefaultAllocationLineBuilder line : allocationLineBuilders)
 		{
 			final I_C_AllocationLine allocationLine = line.create(allocHdrSupplier);
 			if (allocationLine != null)
@@ -243,7 +230,7 @@ public class DefaultAllocationBuilder implements IAllocationBuilder
 	public final int getC_AllocationLine_ID()
 	{
 		final Set<Integer> allocationLineIds = new HashSet<>();
-		for (final DefaultAllocationLineBuilder line : s.getLines())
+		for (final DefaultAllocationLineBuilder line : allocationLineBuilders)
 		{
 			final int allocationLineId = line.getC_AllocationLine_ID();
 			if (allocationLineId <= 0)
@@ -261,7 +248,7 @@ public class DefaultAllocationBuilder implements IAllocationBuilder
 
 		return allocationLineIds.iterator().next();
 	}
-	
+
 	@Override
 	public final java.util.List<I_C_AllocationLine> getC_AllocationLines()
 	{
@@ -279,7 +266,7 @@ public class DefaultAllocationBuilder implements IAllocationBuilder
 	public Set<Integer> getC_BPartner_IDs()
 	{
 		final Set<Integer> bpartnerIds = new HashSet<>();
-		for (final DefaultAllocationLineBuilder line : s.getLines())
+		for (final DefaultAllocationLineBuilder line : allocationLineBuilders)
 		{
 			final int bpartnerId = line.getC_BPartner_ID();
 			if (bpartnerId <= 0)

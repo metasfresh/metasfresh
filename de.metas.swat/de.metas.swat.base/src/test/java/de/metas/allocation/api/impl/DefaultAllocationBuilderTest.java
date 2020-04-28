@@ -58,23 +58,4 @@ public class DefaultAllocationBuilderTest
 		assertThat(line, instanceOf(DefaultAllocationLineBuilder.class));
 		assertTrue(line.getParent() == builder);
 	}
-
-	public static class CustomLineBuilder extends DefaultAllocationLineBuilder
-	{
-		public CustomLineBuilder(DefaultAllocationBuilder parent)
-		{
-			super(parent);
-		}
-
-	}
-
-	@Test
-	public void addLineWithCustomBuilderTest()
-	{
-		final DefaultAllocationBuilder builder = new DefaultAllocationBuilder(ctxProvider);
-		final IAllocationLineBuilder line = builder.addLine(CustomLineBuilder.class);
-
-		assertThat(line, instanceOf(CustomLineBuilder.class));
-		assertTrue(line.getParent() == builder);
-	}
 }

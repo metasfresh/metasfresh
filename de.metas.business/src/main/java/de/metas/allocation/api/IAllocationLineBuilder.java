@@ -13,19 +13,16 @@ package de.metas.allocation.api;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.math.BigDecimal;
-
-import de.metas.builder.ILineBuilder;
 
 /**
  * Implementors of this interface are used to create {@link org.compiere.model.I_C_AllocationLine}s.
@@ -34,7 +31,7 @@ import de.metas.builder.ILineBuilder;
  *
  * @see IAllocationBuilder
  */
-public interface IAllocationLineBuilder extends ILineBuilder
+public interface IAllocationLineBuilder
 {
 	IAllocationLineBuilder setAD_Org_ID(int AD_Org_ID);
 

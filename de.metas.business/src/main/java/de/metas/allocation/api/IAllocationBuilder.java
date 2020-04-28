@@ -13,15 +13,14 @@ package de.metas.allocation.api;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.sql.Timestamp;
 import java.util.List;
@@ -30,15 +29,13 @@ import java.util.Set;
 import org.compiere.model.I_C_AllocationHdr;
 import org.compiere.model.I_C_AllocationLine;
 
-import de.metas.builder.IBuilder;
-
 /**
  * Implementors of this interface are used to create {@link I_C_AllocationHdr}s.
  * 
  * @see IAllocationBL#newBuilder(Object)
  * 
  */
-public interface IAllocationBuilder extends IBuilder
+public interface IAllocationBuilder
 {
 	IAllocationBuilder setAD_Org_ID(int adOrgId);
 
@@ -57,21 +54,9 @@ public interface IAllocationBuilder extends IBuilder
 	IAllocationBuilder setDescription(final String description);
 
 	/**
-	 * Convenience method to create a new line builder using the {@link DefaultAllocationLineBuilder} implementation. Module specific subclasses can override this method.
-	 * 
-	 * @return
+	 * Creates a new allocation line builder to add another line to the allocation that is currently build
 	 */
 	IAllocationLineBuilder addLine();
-
-	/**
-	 * Creates a new allocation line builder to add another line to the allocation that is currently build
-	 * 
-	 * @param implClazz the allocation line builder implementation class to be used. If unsure which class to pick, then use {@link #addLine()}.
-	 *            <p>
-	 *            <b>IMPORTANT: when using an class that is included in another class, then this included class needs to be <code>static</code></b>
-	 * @return
-	 */
-	<T extends DefaultAllocationLineBuilder> T addLine(Class<T> implClazz);
 
 	/**
 	 * Creates the {@link I_C_AllocationHdr}.
