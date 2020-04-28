@@ -633,8 +633,8 @@
 		<band height="12" splitType="Stretch">
 			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 			<printWhenExpression><![CDATA[new Boolean ( $F{unionorder}.intValue() == 1 )
-&& (BigDecimal.ZERO.compareTo($F{sameperiodsum}) !=0
-|| BigDecimal.ZERO.compareTo($F{compperiodsum}) !=0)]]></printWhenExpression>
+&&  ($F{sameperiodsum}.signum() !=0
+|| $F{compperiodsum}.signum() !=0)]]></printWhenExpression>
 			<textField>
 				<reportElement x="37" y="0" width="192" height="12" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
 				<textElement>
