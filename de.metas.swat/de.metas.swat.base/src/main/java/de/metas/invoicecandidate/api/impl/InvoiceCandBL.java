@@ -1370,7 +1370,8 @@ public class InvoiceCandBL implements IInvoiceCandBL
 
 					note = "@C_InvoiceLine@  @QtyInvoiced@ = " + il.getQtyInvoiced() + " @IsCreditedInvoiceReinvoicable@='Y'; ignoring overlap, because credit memo";
 				}
-				else if (creditMemo && !creditedInvoiceReinvoicable)
+
+				else if (creditMemo && !creditedInvoiceReinvoicable && creditedInvoiceIsReversed)
 				{
 					// the original credit memo's ila also has QtyInvoiced=0
 					qtyInvoicedForIla = StockQtyAndUOMQtys.createZero(productId, uomId);
@@ -1882,7 +1883,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 
 		final BigDecimal qualityDiscountPercentage;
 		final PricingConditions pricingConditions = pricingConditionsRepo.getPricingConditionsById(pricingConditionsId);
-		if(pricingConditions.isBreaksDiscountType())
+		if (pricingConditions.isBreaksDiscountType())
 		{
 			BigDecimal qty = ic.getQtyToInvoice();
 			if (qty.signum() < 0)
@@ -1915,7 +1916,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		{
 			qualityDiscountPercentage = null;
 		}
-		
+
 		ic.setQualityDiscountPercent_Override(qualityDiscountPercentage);
 	}
 
