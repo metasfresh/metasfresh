@@ -271,8 +271,8 @@
 	<detail>
 		<band height="10" splitType="Stretch">
 			<printWhenExpression><![CDATA[new Boolean ($F{unionorder}.intValue() == 1)
-&& (BigDecimal.ZERO.compareTo($F{sameperiodsum}) !=0
-|| BigDecimal.ZERO.compareTo($F{sameperiodlastyearsum}) !=0)]]></printWhenExpression>
+&& ($F{sameperiodsum}.signum() !=0
+|| $F{sameperiodlastyearsum}.signum() !=0)]]></printWhenExpression>
 			<textField>
 				<reportElement x="37" y="0" width="170" height="10" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
 				<textElement>
