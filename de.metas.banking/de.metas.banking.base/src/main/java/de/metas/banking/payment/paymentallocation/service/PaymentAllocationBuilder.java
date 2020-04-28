@@ -9,8 +9,6 @@ import java.util.List;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.model.PlainContextAware;
-import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.compiere.model.I_C_AllocationHdr;
 import org.compiere.model.I_C_AllocationLine;
@@ -21,9 +19,9 @@ import org.compiere.util.TimeUtil;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.allocation.api.C_AllocationHdr_Builder;
+import de.metas.allocation.api.C_AllocationLine_Builder;
 import de.metas.allocation.api.IAllocationBL;
-import de.metas.allocation.api.IAllocationBuilder;
-import de.metas.allocation.api.IAllocationLineBuilder;
 import de.metas.allocation.api.PaymentAllocationId;
 import de.metas.banking.payment.paymentallocation.IPaymentAllocationBL;
 import de.metas.banking.payment.paymentallocation.service.AllocationLineCandidate.AllocationLineCandidateType;
@@ -153,24 +151,23 @@ public class PaymentAllocationBuilder
 		final Timestamp dateTrx = TimeUtil.asTimestamp(getDateTrx());
 		final Timestamp dateAcct = TimeUtil.asTimestamp(getDateAcct());
 
-		final IContextAware context = PlainContextAware.newWithThreadInheritedTrx();
-		final IAllocationBuilder allocationBuilder = allocationBL.newBuilder(context)
-				.setAD_Org_ID(adOrgId.getRepoId())
-				.setC_Currency_ID(currencyId.getRepoId())
-				.setDateAcct(dateAcct)
-				.setDateTrx(dateTrx)
-				.setManual(true); // flag it as manually created by user
+		final C_AllocationHdr_Builder allocationBuilder = allocationBL.newBuilder()
+				.orgId(adOrgId.getRepoId())
+				.currencyId(currencyId.getRepoId())
+				.dateAcct(dateAcct)
+				.dateTrx(dateTrx)
+				.manual(true); // flag it as manually created by user
 
-		final IAllocationLineBuilder payableLineBuilder = allocationBuilder.addLine()
-				.setAD_Org_ID(adOrgId.getRepoId())
-				.setC_BPartner_ID(BPartnerId.toRepoId(line.getBpartnerId()))
+		final C_AllocationLine_Builder payableLineBuilder = allocationBuilder.addLine()
+				.orgId(adOrgId.getRepoId())
+				.bpartnerId(BPartnerId.toRepoId(line.getBpartnerId()))
 				//
 				// Amounts
-				.setAmount(line.getAmounts().getPayAmt().toBigDecimal())
-				.setDiscountAmt(line.getAmounts().getDiscountAmt().toBigDecimal())
-				.setWriteOffAmt(line.getAmounts().getWriteOffAmt().toBigDecimal())
-				.setOverUnderAmt(line.getPayableOverUnderAmt().toBigDecimal())
-				.setSkipIfAllAmountsAreZero();
+				.amount(line.getAmounts().getPayAmt().toBigDecimal())
+				.discountAmt(line.getAmounts().getDiscountAmt().toBigDecimal())
+				.writeOffAmt(line.getAmounts().getWriteOffAmt().toBigDecimal())
+				.overUnderAmt(line.getPayableOverUnderAmt().toBigDecimal())
+				.skipIfAllAmountsAreZero();
 
 		final ITableRecordReference payableDocRef = line.getPayableDocumentRef();
 		final String payableDocTableName = payableDocRef.getTableName();
@@ -182,35 +179,35 @@ public class PaymentAllocationBuilder
 		if (I_C_Invoice.Table_Name.equals(payableDocTableName)
 				&& I_C_Payment.Table_Name.equals(paymentDocTableName))
 		{
-			payableLineBuilder.setC_Invoice_ID(payableDocRef.getRecord_ID());
-			payableLineBuilder.setC_Payment_ID(paymentDocRef.getRecord_ID());
+			payableLineBuilder.invoiceId(payableDocRef.getRecord_ID());
+			payableLineBuilder.paymentId(paymentDocRef.getRecord_ID());
 		}
 		//
 		// Invoice - CreditMemo invoice or Sales invoice - Purchase Invoice
 		else if (I_C_Invoice.Table_Name.equals(payableDocTableName)
 				&& I_C_Invoice.Table_Name.equals(paymentDocTableName))
 		{
-			payableLineBuilder.setC_Invoice_ID(payableDocRef.getRecord_ID());
+			payableLineBuilder.invoiceId(payableDocRef.getRecord_ID());
 			//
 
 			// Credit memo line
 			allocationBuilder.addLine()
-					.setAD_Org_ID(adOrgId.getRepoId())
-					.setC_BPartner_ID(BPartnerId.toRepoId(line.getBpartnerId()))
+					.orgId(adOrgId.getRepoId())
+					.bpartnerId(BPartnerId.toRepoId(line.getBpartnerId()))
 					//
 					// Amounts
-					.setAmount(line.getAmounts().getPayAmt().negate().toBigDecimal())
-					.setOverUnderAmt(line.getPaymentOverUnderAmt().toBigDecimal())
-					.setSkipIfAllAmountsAreZero()
+					.amount(line.getAmounts().getPayAmt().negate().toBigDecimal())
+					.overUnderAmt(line.getPaymentOverUnderAmt().toBigDecimal())
+					.skipIfAllAmountsAreZero()
 					//
-					.setC_Invoice_ID(paymentDocRef.getRecord_ID());
+					.invoiceId(paymentDocRef.getRecord_ID());
 		}
 		//
 		// Invoice - just Discount/WriteOff
 		else if (I_C_Invoice.Table_Name.equals(payableDocTableName)
 				&& paymentDocTableName == null)
 		{
-			payableLineBuilder.setC_Invoice_ID(payableDocRef.getRecord_ID());
+			payableLineBuilder.invoiceId(payableDocRef.getRecord_ID());
 			// allow only if the line's amount is zero, because else, we need to have a document where to allocate.
 			Check.assume(line.getAmounts().getPayAmt().signum() == 0, "zero amount: {}", line);
 		}
@@ -219,18 +216,18 @@ public class PaymentAllocationBuilder
 		else if (I_C_Payment.Table_Name.equals(payableDocTableName)
 				&& I_C_Payment.Table_Name.equals(paymentDocTableName))
 		{
-			payableLineBuilder.setC_Payment_ID(payableDocRef.getRecord_ID());
+			payableLineBuilder.paymentId(payableDocRef.getRecord_ID());
 			// Incoming payment line
 			allocationBuilder.addLine()
-					.setAD_Org_ID(adOrgId.getRepoId())
-					.setC_BPartner_ID(BPartnerId.toRepoId(line.getBpartnerId()))
+					.orgId(adOrgId.getRepoId())
+					.bpartnerId(BPartnerId.toRepoId(line.getBpartnerId()))
 					//
 					// Amounts
-					.setAmount(line.getAmounts().getPayAmt().negate().toBigDecimal())
-					.setOverUnderAmt(line.getPaymentOverUnderAmt().toBigDecimal())
-					.setSkipIfAllAmountsAreZero()
+					.amount(line.getAmounts().getPayAmt().negate().toBigDecimal())
+					.overUnderAmt(line.getPaymentOverUnderAmt().toBigDecimal())
+					.skipIfAllAmountsAreZero()
 					//
-					.setC_Payment_ID(paymentDocRef.getRecord_ID());
+					.paymentId(paymentDocRef.getRecord_ID());
 		}
 		else
 		{
@@ -244,7 +241,7 @@ public class PaymentAllocationBuilder
 		}
 
 		//
-		final List<I_C_AllocationLine> lines = allocationBuilder.getC_AllocationLines();
+		final ImmutableList<I_C_AllocationLine> lines = allocationBuilder.getC_AllocationLines();
 		updateCounter_AllocationLine_ID(lines);
 
 		return PaymentAllocationId.ofRepoId(allocationHdr.getC_AllocationHdr_ID());
@@ -256,7 +253,7 @@ public class PaymentAllocationBuilder
 	 *
 	 * @param lines
 	 */
-	private static void updateCounter_AllocationLine_ID(final List<I_C_AllocationLine> lines)
+	private static void updateCounter_AllocationLine_ID(final ImmutableList<I_C_AllocationLine> lines)
 	{
 		if (lines.size() != 2)
 		{

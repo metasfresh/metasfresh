@@ -13,15 +13,14 @@ package de.metas.allocation.api;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 
@@ -34,85 +33,79 @@ import com.google.common.base.Supplier;
 import de.metas.util.Check;
 
 /**
- * Default allocation line build implementation. Other modules/project can subclass this if they need to build extended allocation lines.
- * <p>
- * Note that this builder is dump by intention. No assumptions, no code to automatically set field B after field A was set.
- *
- * @author ts
- *
+ * {@link I_C_AllocationLine} builder.
  */
-public class DefaultAllocationLineBuilder implements IAllocationLineBuilder
+public class C_AllocationLine_Builder
 {
-
-	private final DefaultAllocationBuilder parent;
+	private final IAllocationDAO allocationDAO;
+	private final C_AllocationHdr_Builder parent;
 
 	private final I_C_AllocationLine allocLine;
 	private boolean skipIfAllAmountsAreZero = false;
 
-	public DefaultAllocationLineBuilder(final DefaultAllocationBuilder parent)
+	public C_AllocationLine_Builder(final C_AllocationHdr_Builder parent)
 	{
 		this.parent = parent;
-		this.allocLine = InterfaceWrapperHelper.newInstance(I_C_AllocationLine.class, parent.getContextProvider());
+		this.allocationDAO = parent.getAllocationDAO();
+
+		this.allocLine = InterfaceWrapperHelper.newInstance(I_C_AllocationLine.class);
 	}
 
-	@Override
-	public final IAllocationLineBuilder setAD_Org_ID(int ad_Org_ID)
+	public final C_AllocationLine_Builder orgId(int orgId)
 	{
-		allocLine.setAD_Org_ID(ad_Org_ID);
+		allocLine.setAD_Org_ID(orgId);
 		return this;
 	}
 
-	@Override
-	public final IAllocationLineBuilder setC_BPartner_ID(int c_BPartner_ID)
+	public final C_AllocationLine_Builder bpartnerId(int bpartnerId)
 	{
-		allocLine.setC_BPartner_ID(c_BPartner_ID);
+		allocLine.setC_BPartner_ID(bpartnerId);
 		return this;
 	}
 
-	@Override
-	public final IAllocationLineBuilder setC_Invoice_ID(int c_Invoice_ID)
+	public final C_AllocationLine_Builder invoiceId(int invoiceId)
 	{
-		allocLine.setC_Invoice_ID(c_Invoice_ID);
+		allocLine.setC_Invoice_ID(invoiceId);
 		return this;
 	}
 
-	@Override
-	public final IAllocationLineBuilder setC_Payment_ID(int C_Payment_ID)
+	public final C_AllocationLine_Builder paymentId(int paymentId)
 	{
-		allocLine.setC_Payment_ID(C_Payment_ID);
+		allocLine.setC_Payment_ID(paymentId);
 		return this;
 	}
 
-	@Override
-	public final IAllocationLineBuilder setAmount(BigDecimal amt)
+	public final C_AllocationLine_Builder amount(BigDecimal amt)
 	{
 		allocLine.setAmount(amt);
 		return this;
 	}
 
-	@Override
-	public final IAllocationLineBuilder setDiscountAmt(final BigDecimal discountAmt)
+	public final C_AllocationLine_Builder discountAmt(final BigDecimal discountAmt)
 	{
 		allocLine.setDiscountAmt(discountAmt);
 		return this;
 	}
 
-	@Override
-	public final IAllocationLineBuilder setWriteOffAmt(final BigDecimal writeOffAmt)
+	public final C_AllocationLine_Builder writeOffAmt(final BigDecimal writeOffAmt)
 	{
 		allocLine.setWriteOffAmt(writeOffAmt);
 		return this;
 	}
 
-	@Override
-	public final IAllocationLineBuilder setOverUnderAmt(BigDecimal overUnderAmt)
+	public final C_AllocationLine_Builder overUnderAmt(BigDecimal overUnderAmt)
 	{
 		allocLine.setOverUnderAmt(overUnderAmt);
 		return this;
 	}
 
-	@Override
-	public final IAllocationLineBuilder setSkipIfAllAmountsAreZero()
+	public C_AllocationLine_Builder paymentWriteOffAmt(BigDecimal paymentWriteOffAmt)
+	{
+		allocLine.setPaymentWriteOffAmt(paymentWriteOffAmt);
+		return this;
+	}
+
+	public final C_AllocationLine_Builder skipIfAllAmountsAreZero()
 	{
 		this.skipIfAllAmountsAreZero = true;
 		return this;
@@ -135,8 +128,7 @@ public class DefaultAllocationLineBuilder implements IAllocationLineBuilder
 		return allAmountsAreZero;
 	}
 
-	@Override
-	public final IAllocationBuilder lineDone()
+	public final C_AllocationHdr_Builder lineDone()
 	{
 		return parent;
 	}
@@ -162,57 +154,12 @@ public class DefaultAllocationLineBuilder implements IAllocationLineBuilder
 
 		allocLine.setC_AllocationHdr(allocHdr);
 		allocLine.setAD_Org_ID(allocHdr.getAD_Org_ID());
-		InterfaceWrapperHelper.save(allocLine);
+		allocationDAO.save(allocLine);
 		return allocLine;
 	}
 
-	@Override
-	public final DefaultAllocationBuilder getParent()
+	public final C_AllocationHdr_Builder getParent()
 	{
 		return parent;
 	}
-
-	/**
-	 * @return C_AllocationLine_ID or -1
-	 */
-	public final int getC_AllocationLine_ID()
-	{
-		if (allocLine == null)
-		{
-			return -1;
-		}
-
-		final int allocationLineId = allocLine.getC_AllocationLine_ID();
-		return allocationLineId > 0 ? allocationLineId : -1;
-	}
-
-	/**
-	 *
-	 * @return C_BPartner_ID or -1
-	 */
-	public final int getC_BPartner_ID()
-	{
-		if (allocLine == null)
-		{
-			return -1;
-		}
-
-		final int bpartnerId = allocLine.getC_BPartner_ID();
-		return bpartnerId > 0 ? bpartnerId : -1;
-	}
-
-	@Override
-	public IAllocationLineBuilder setPaymentWriteOffAmt(BigDecimal paymentWriteOffAmt)
-	{
-		allocLine.setPaymentWriteOffAmt(paymentWriteOffAmt);
-		return this;
-	}
-
-	@Override
-	public IAllocationLineBuilder setCounter_AllocationLine_ID(int Counter_AllocationLine_ID)
-	{
-		allocLine.setCounter_AllocationLine_ID(Counter_AllocationLine_ID);
-		return this;
-	}
-
 }

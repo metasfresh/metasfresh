@@ -1,5 +1,7 @@
 package de.metas.allocation.api.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+
 /*
  * #%L
  * de.metas.swat.base
@@ -65,6 +67,18 @@ import lombok.NonNull;
 public class AllocationDAO implements IAllocationDAO
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+	@Override
+	public void save(@NonNull final I_C_AllocationHdr allocationHdr)
+	{
+		saveRecord(allocationHdr);
+	}
+
+	@Override
+	public void save(@NonNull final I_C_AllocationLine allocationLine)
+	{
+		saveRecord(allocationLine);
+	}
 
 	@Override
 	public final BigDecimal retrieveOpenAmt(

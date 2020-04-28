@@ -38,8 +38,6 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
-import de.metas.invoice.InvoiceId;
-import de.metas.product.IProductBL;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
 import org.adempiere.exceptions.AdempiereException;
@@ -92,6 +90,7 @@ import de.metas.i18n.ITranslatableString;
 import de.metas.invoice.IInvoiceLineBL;
 import de.metas.invoice.IMatchInvBL;
 import de.metas.invoice.IMatchInvDAO;
+import de.metas.invoice.InvoiceId;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandBL.IInvoiceGenerateResult;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
@@ -105,6 +104,7 @@ import de.metas.pricing.IPricingResult;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.service.IPriceListBL;
 import de.metas.pricing.service.IPricingBL;
+import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.StockQtyAndUOMQty;
@@ -375,17 +375,17 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		}
 
 		// @formatter:off
-		Services.get(IAllocationBL.class).newBuilder(InterfaceWrapperHelper.getContextAware(invoice))
-			.setAD_Org_ID(invoice.getAD_Org_ID())
-			.setC_Currency_ID(invoice.getC_Currency_ID())
-			.setDateAcct(invoice.getDateAcct())
-			.setDateTrx(invoice.getDateInvoiced())
+		Services.get(IAllocationBL.class).newBuilder()
+			.orgId(invoice.getAD_Org_ID())
+			.currencyId(invoice.getC_Currency_ID())
+			.dateAcct(invoice.getDateAcct())
+			.dateTrx(invoice.getDateInvoiced())
 			.addLine()
-				.setAD_Org_ID(invoice.getAD_Org_ID())
-				.setC_BPartner_ID(invoice.getC_BPartner_ID())
-				.setC_Invoice_ID(invoice.getC_Invoice_ID())
-				.setAmount(BigDecimal.ZERO)
-				.setWriteOffAmt(openAmtAbs)
+				.orgId(invoice.getAD_Org_ID())
+				.bpartnerId(invoice.getC_BPartner_ID())
+				.invoiceId(invoice.getC_Invoice_ID())
+				.amount(BigDecimal.ZERO)
+				.writeOffAmt(openAmtAbs)
 			.lineDone()
 			.create(true);
 		// @formatter:on
@@ -1532,22 +1532,22 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		// allocate the invoice against the credit memo
 		// @formatter:off
 		Services.get(IAllocationBL.class)
-			.newBuilder(InterfaceWrapperHelper.getContextAware(invoice))
-			.setAD_Org_ID(invoice.getAD_Org_ID())
-			.setDateTrx(dateTrx)
-			.setDateAcct(dateAcct)
-			.setC_Currency_ID(invoice.getC_Currency_ID())
+			.newBuilder()
+			.orgId(invoice.getAD_Org_ID())
+			.dateTrx(dateTrx)
+			.dateAcct(dateAcct)
+			.currencyId(invoice.getC_Currency_ID())
 			.addLine()
-				.setAD_Org_ID(invoice.getAD_Org_ID())
-				.setC_BPartner_ID(invoice.getC_BPartner_ID())
-				.setC_Invoice_ID(invoice.getC_Invoice_ID())
-				.setAmount(openAmt)
+				.orgId(invoice.getAD_Org_ID())
+				.bpartnerId(invoice.getC_BPartner_ID())
+				.invoiceId(invoice.getC_Invoice_ID())
+				.amount(openAmt)
 			.lineDone()
 			.addLine()
-				.setAD_Org_ID(creditMemo.getAD_Org_ID())
-				.setC_BPartner_ID(creditMemo.getC_BPartner_ID())
-				.setC_Invoice_ID(creditMemo.getC_Invoice_ID())
-				.setAmount(openAmt.negate())
+				.orgId(creditMemo.getAD_Org_ID())
+				.bpartnerId(creditMemo.getC_BPartner_ID())
+				.invoiceId(creditMemo.getC_Invoice_ID())
+				.amount(openAmt.negate())
 			.lineDone()
 			.create(true); // completeIt = true
 		// @formatter:on
