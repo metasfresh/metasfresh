@@ -243,3 +243,110 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=606032
 UPDATE AD_Field SET SeqNo=75, SeqNoGrid=75,Updated=TO_TIMESTAMP('2020-04-29 18:49:09','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=606032
 ;
 
+
+
+
+
+-- 2020-04-29T16:11:45.437Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element SET Description='Inaktive referenzierte Datensätze mit anzeigen',Updated=TO_TIMESTAMP('2020-04-29 19:11:45','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=577691
+;
+
+-- 2020-04-29T16:11:45.457Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET ColumnName='ShowInactiveValues', Name='Inaktive Werte anzeigen', Description='Inaktive referenzierte Datensätze mit anzeigen', Help=NULL WHERE AD_Element_ID=577691
+;
+
+-- 2020-04-29T16:11:45.458Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName='ShowInactiveValues', Name='Inaktive Werte anzeigen', Description='Inaktive referenzierte Datensätze mit anzeigen', Help=NULL, AD_Element_ID=577691 WHERE UPPER(ColumnName)='SHOWINACTIVEVALUES' AND IsCentrallyMaintained='Y' AND AD_Element_ID IS NULL
+;
+
+-- 2020-04-29T16:11:45.462Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName='ShowInactiveValues', Name='Inaktive Werte anzeigen', Description='Inaktive referenzierte Datensätze mit anzeigen', Help=NULL WHERE AD_Element_ID=577691 AND IsCentrallyMaintained='Y'
+;
+
+-- 2020-04-29T16:11:45.463Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Inaktive Werte anzeigen', Description='Inaktive referenzierte Datensätze mit anzeigen', Help=NULL WHERE (AD_Column_ID IN (SELECT AD_Column_ID FROM AD_Column WHERE AD_Element_ID=577691) AND AD_Name_ID IS NULL ) OR (AD_Name_ID = 577691)
+;
+
+-- 2020-04-29T16:11:45.479Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab SET Name='Inaktive Werte anzeigen', Description='Inaktive referenzierte Datensätze mit anzeigen', Help=NULL, CommitWarning = NULL WHERE AD_Element_ID = 577691
+;
+
+-- 2020-04-29T16:11:45.481Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_WINDOW SET Name='Inaktive Werte anzeigen', Description='Inaktive referenzierte Datensätze mit anzeigen', Help=NULL WHERE AD_Element_ID = 577691
+;
+
+-- 2020-04-29T16:11:45.485Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Menu SET   Name = 'Inaktive Werte anzeigen', Description = 'Inaktive referenzierte Datensätze mit anzeigen', WEBUI_NameBrowse = NULL, WEBUI_NameNew = NULL, WEBUI_NameNewBreadcrumb = NULL WHERE AD_Element_ID = 577691
+;
+
+-- 2020-04-29T16:11:49.152Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET Description='Inaktive referenzierte Datensätze mit anzeigen',Updated=TO_TIMESTAMP('2020-04-29 19:11:49','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=577691 AND AD_Language='de_CH'
+;
+
+-- 2020-04-29T16:11:49.196Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(577691,'de_CH') 
+;
+
+-- 2020-04-29T16:11:51.444Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET Description='Inaktive referenzierte Datensätze mit anzeigen',Updated=TO_TIMESTAMP('2020-04-29 19:11:51','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=577691 AND AD_Language='de_DE'
+;
+
+-- 2020-04-29T16:11:51.445Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(577691,'de_DE') 
+;
+
+-- 2020-04-29T16:11:51.464Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_ad_element_on_ad_element_trl_update(577691,'de_DE') 
+;
+
+-- 2020-04-29T16:11:51.466Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET ColumnName='ShowInactiveValues', Name='Inaktive Werte anzeigen', Description='Inaktive referenzierte Datensätze mit anzeigen', Help=NULL WHERE AD_Element_ID=577691
+;
+
+-- 2020-04-29T16:11:51.467Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName='ShowInactiveValues', Name='Inaktive Werte anzeigen', Description='Inaktive referenzierte Datensätze mit anzeigen', Help=NULL, AD_Element_ID=577691 WHERE UPPER(ColumnName)='SHOWINACTIVEVALUES' AND IsCentrallyMaintained='Y' AND AD_Element_ID IS NULL
+;
+
+-- 2020-04-29T16:11:51.468Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName='ShowInactiveValues', Name='Inaktive Werte anzeigen', Description='Inaktive referenzierte Datensätze mit anzeigen', Help=NULL WHERE AD_Element_ID=577691 AND IsCentrallyMaintained='Y'
+;
+
+-- 2020-04-29T16:11:51.468Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Inaktive Werte anzeigen', Description='Inaktive referenzierte Datensätze mit anzeigen', Help=NULL WHERE (AD_Column_ID IN (SELECT AD_Column_ID FROM AD_Column WHERE AD_Element_ID=577691) AND AD_Name_ID IS NULL ) OR (AD_Name_ID = 577691)
+;
+
+-- 2020-04-29T16:11:51.484Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab SET Name='Inaktive Werte anzeigen', Description='Inaktive referenzierte Datensätze mit anzeigen', Help=NULL, CommitWarning = NULL WHERE AD_Element_ID = 577691
+;
+
+-- 2020-04-29T16:11:51.485Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_WINDOW SET Name='Inaktive Werte anzeigen', Description='Inaktive referenzierte Datensätze mit anzeigen', Help=NULL WHERE AD_Element_ID = 577691
+;
+
+-- 2020-04-29T16:11:51.486Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Menu SET   Name = 'Inaktive Werte anzeigen', Description = 'Inaktive referenzierte Datensätze mit anzeigen', WEBUI_NameBrowse = NULL, WEBUI_NameNew = NULL, WEBUI_NameNewBreadcrumb = NULL WHERE AD_Element_ID = 577691
+;
+
+
+
+
