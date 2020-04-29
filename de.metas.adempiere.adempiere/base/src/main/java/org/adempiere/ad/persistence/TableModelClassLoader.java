@@ -251,9 +251,9 @@ public class TableModelClassLoader
 		className = StringUtils.replace(className, "_", "");
 
 		// Search packages
-		for (int i = 0; i < s_packages.length; i++)
+		for (String s_package : s_packages)
 		{
-			StringBuffer name = new StringBuffer(s_packages[i]).append(".M").append(className);
+			StringBuilder name = new StringBuilder(s_package).append(".M").append(className);
 			Class<?> clazz = loadModelClassForClassname(name.toString());
 			if (clazz != null)
 			{

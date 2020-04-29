@@ -31,6 +31,7 @@ import javax.annotation.Nullable;
 import org.compiere.Adempiere;
 import org.compiere.SpringContextHolder;
 import org.slf4j.Logger;
+import org.slf4j.MDC.MDCCloseable;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.eventbus.AsyncEventBus;
@@ -195,30 +196,33 @@ final class EventBus implements IEventBus
 	@Override
 	public void postEvent(@NonNull final Event event)
 	{
-		// Do nothing if destroyed
-		if (destroyed)
+		try (final MDCCloseable mdc = EventMDC.putEvent(event))
 		{
-			logger.warn("Attempt to post an event to a destroyed bus. Ignored. \n Bus: {} \n Event: {}", this, event);
-			return;
+			// Do nothing if destroyed
+			if (destroyed)
+			{
+				logger.warn("Attempt to post an event to a destroyed bus. Ignored. \n Bus: {} \n Event: {}", this, event);
+				return;
+			}
+
+			final Event eventToPost;
+
+			// as long as we have just one common event-log-DB, we store events only on the machine they were created on, in order to avoid duplicates.
+			if (event.isShallBeLogged() && event.isLocalEvent())
+			{
+				eventToPost = event.withStatusWasLogged();
+
+				final EventLogService eventLogService = SpringContextHolder.instance.getBean(EventLogService.class);
+				eventLogService.saveEvent(eventToPost, this);
+			}
+			else
+			{
+				eventToPost = event;
+			}
+
+			logger.debug("{} - Posting event: {}", this, event);
+			eventBus.post(eventToPost);
 		}
-
-		final Event eventToPost;
-
-		// as long as we have just one common event-log-DB, we store events only on the machine they were created on, in order to avoid duplicates.
-		if (event.isShallBeLogged() && event.isLocalEvent())
-		{
-			eventToPost = event.withStatusWasLogged();
-
-			final EventLogService eventLogService = Adempiere.getBean(EventLogService.class);
-			eventLogService.saveEvent(eventToPost, this);
-		}
-		else
-		{
-			eventToPost = event;
-		}
-
-		logger.debug("{} - Posting event: {}", this, event);
-		eventBus.post(eventToPost);
 	}
 
 	private static class TypedConsumerAsEventListener<T> implements IEventListener
@@ -227,11 +231,14 @@ final class EventBus implements IEventBus
 		private final Consumer<T> eventConsumer;
 		@NonNull
 		private final JSONObjectMapper<T> jsonDeserializer;
+		@NonNull
+		private final Class<T> eventBodyType;
 
 		public TypedConsumerAsEventListener(
 				@NonNull final Class<T> eventBodyType,
 				@NonNull final Consumer<T> eventConsumer)
 		{
+			this.eventBodyType = eventBodyType;
 			this.jsonDeserializer = JSONObjectMapper.forClass(eventBodyType);
 			this.eventConsumer = eventConsumer;
 		}
@@ -239,9 +246,14 @@ final class EventBus implements IEventBus
 		@Override
 		public void onEvent(final IEventBus eventBus, final Event event)
 		{
-			final String json = event.getPropertyAsString(PROP_Body);
-			final T obj = jsonDeserializer.readValue(json);
-			eventConsumer.accept(obj);
+			try (final MDCCloseable mdc = EventMDC.putEvent(event))
+			{
+				logger.debug("TypedConsumerAsEventListener received event; eventBodyType={}", eventBodyType.getName());
+
+				final String json = event.getPropertyAsString(PROP_Body);
+				final T obj = jsonDeserializer.readValue(json);
+				eventConsumer.accept(obj);
+			}
 		}
 
 	}
@@ -256,7 +268,12 @@ final class EventBus implements IEventBus
 		@Subscribe
 		public void onEvent(@NonNull final Event event)
 		{
-			invokeEventListener(this.eventListener, event);
+			try (final MDCCloseable mdc = EventMDC.putEvent(event))
+			{
+				logger.debug("GuavaEventListenerAdapter received event; referenced eventListener={}", eventListener);
+
+				invokeEventListener(this.eventListener, event);
+			}
 		}
 	}
 
@@ -284,8 +301,11 @@ final class EventBus implements IEventBus
 				}
 				return;
 			}
-
-			invokeEventListener(eventListener, event);
+			try (final MDCCloseable mdc = EventMDC.putEvent(event))
+			{
+				logger.debug("GuavaEventListenerAdapter received event; referenced eventListener={}", eventListener);
+				invokeEventListener(eventListener, event);
+			}
 		}
 	}
 
@@ -320,6 +340,10 @@ final class EventBus implements IEventBus
 				eventLogUserService
 						.newErrorLogEntry(eventListener.getClass(), ex)
 						.createAndStore();
+			}
+			else
+			{
+				logger.warn("Got exception will invoking {} with {}", eventListener, event, ex);
 			}
 		}
 		finally

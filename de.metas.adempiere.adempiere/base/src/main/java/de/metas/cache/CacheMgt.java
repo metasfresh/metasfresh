@@ -53,6 +53,7 @@ import de.metas.logging.LogManager;
 import de.metas.monitoring.adapter.NoopPerformanceMonitoringService;
 import de.metas.monitoring.adapter.PerformanceMonitoringService;
 import de.metas.monitoring.adapter.PerformanceMonitoringService.SpanMetadata;
+import de.metas.monitoring.adapter.PerformanceMonitoringService.SubType;
 import de.metas.monitoring.adapter.PerformanceMonitoringService.Type;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -175,7 +176,7 @@ public final class CacheMgt
 
 		final SpanMetadata spanMetadata = SpanMetadata.builder()
 				.name("Full CacheReset")
-				.type(Type.CACHE_OPERATION.getCode())
+				.type(Type.CACHE_OPERATION.getCode()).subType(SubType.CACHE_INVALIDATE.getCode())
 				.build();
 		return getPerfMonService().monitorSpan(
 				() -> reset0(),
@@ -342,7 +343,7 @@ public final class CacheMgt
 	{
 		final SpanMetadata spanMetadata = SpanMetadata.builder()
 				.name("CacheReset")
-				.type(Type.CACHE_OPERATION.getCode())
+				.type(Type.CACHE_OPERATION.getCode()).subType(SubType.CACHE_INVALIDATE.getCode())
 				.label("resetMode", mode.toString())
 				.build();
 		return getPerfMonService().monitorSpan(

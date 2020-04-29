@@ -1,8 +1,12 @@
 package de.metas.event.remote;
 
+import org.slf4j.Logger;
+
+import ch.qos.logback.classic.Level;
 import de.metas.event.Event;
 import de.metas.event.IEventBus;
 import de.metas.event.IEventListener;
+import de.metas.logging.LogManager;
 import de.metas.util.Loggables;
 import lombok.NonNull;
 
@@ -14,6 +18,8 @@ import lombok.NonNull;
  */
 class EventBus2RemoteEndpointHandler implements IEventListener
 {
+	private static final Logger logger = LogManager.getLogger(EventBus2RemoteEndpointHandler.class);
+
 	public static final EventBus2RemoteEndpointHandler newInstance(final IEventBusRemoteEndpoint remoteEndpoint)
 	{
 		return new EventBus2RemoteEndpointHandler(remoteEndpoint);
@@ -33,7 +39,7 @@ class EventBus2RemoteEndpointHandler implements IEventListener
 		remoteEndpoint.sendEvent(topicName, event);
 
 		// doesn't hurt, but note that oftentimes this send is done in an "after-commit" listener;
-		// therefore the thread-local Logaable that you as a dev have in mind might already be gone when this is executed
-		Loggables.addLog("Send event with UUID={} to remoteEndpoint={}", event.getUuid(), remoteEndpoint);
+		// therefore the thread-local Loggable that you as a dev have in mind might already be gone when this is executed
+		Loggables.withLogger(logger, Level.DEBUG).addLog("Send event with UUID={} to remoteEndpoint={}", event.getUuid(), remoteEndpoint);
 	}
 }

@@ -50,8 +50,6 @@ public interface IEventBus
 
 	/**
 	 * Subscribe to this bus.
-	 *
-	 * @param listener
 	 */
 	void subscribe(IEventListener listener);
 
