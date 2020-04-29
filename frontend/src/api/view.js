@@ -205,33 +205,29 @@ export async function quickActionsRequest(
   parentView
 ) {
   const requests = [];
-
   const query = getQueryString({
     viewProfileId,
     selectedIds,
+    childViewId: childView.viewId,
+    childViewSelectedIds: childView.viewSelectedIds,
+    parentViewId: parentView.viewId,
+    parentViewSelectedIds: parentView.viewSelectedIds,
   });
-
-  const mainRequest = get(`
-    ${config.API_URL}/documentView/${windowId}/${viewId}/quickActions${
-    query ? `?${query}` : ''
-  }`);
-
-  requests.push(mainRequest);
 
   if (parentView.viewId) {
     const parentQuery = getQueryString({
       viewProfileId,
       selectedIds: parentView.viewSelectedIds,
+      childViewId: viewId,
+      childViewSelectedIds: selectedIds,
     });
 
-    const childRequest = get(`
+    const r1 = get(`
       ${config.API_URL}/documentView/${parentView.windowType}/${
       parentView.viewId
     }/quickActions${parentQuery ? `?${parentQuery}` : ''}`);
-    requests.push(childRequest);
-  }
-
-  if (childView.viewId) {
+    requests.push(r1);
+  } else if (childView.viewId) {
     const childQuery = getQueryString({
       viewProfileId,
       selectedIds: childView.selectedIds,
@@ -239,12 +235,18 @@ export async function quickActionsRequest(
       parentViewSelectedIds: selectedIds,
     });
 
-    const parentRequest = get(`
+    const r2 = get(`
       ${config.API_URL}/documentView/${childView.windowType}/${
       childView.viewId
     }/quickActions${childQuery ? `?${childQuery}` : ''}`);
-    requests.push(parentRequest);
+    requests.push(r2);
   }
+
+  const r3 = get(`
+    ${config.API_URL}/documentView/${windowId}/${viewId}/quickActions${
+    query ? `?${query}` : ''
+  }`);
+  requests.push(r3);
 
   return await Promise.all(requests);
 }
