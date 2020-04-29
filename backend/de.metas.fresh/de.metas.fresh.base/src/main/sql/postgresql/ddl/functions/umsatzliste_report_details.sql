@@ -98,7 +98,7 @@ FROM
 	WHERE ic.isActive = 'Y'
 	) ic
 	INNER JOIN C_BPartner bp ON ic.Bill_BPartner_ID = bp.C_BPartner_ID AND bp.isActive = 'Y'
-	INNER JOIN M_Product p ON ic.M_Product_ID = p.M_Product_ID AND p.isActive = 'Y'
+	INNER JOIN M_Product p ON ic.M_Product_ID = p.M_Product_ID
 	INNER JOIN C_Currency c ON ic.Base_Currency_ID = c.C_Currency_ID AND c.isActive = 'Y'
 WHERE
 	ic.AD_Org_ID = $5
