@@ -83,7 +83,6 @@ import de.metas.payment.PaymentId;
 import de.metas.payment.api.IPaymentDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
 import lombok.Builder;
 import lombok.NonNull;
 
@@ -96,7 +95,7 @@ public class PaymentAllocationBuilderTest
 	private IInvoiceBL invoiceBL;
 	private IInvoiceDAO invoicesDAO;
 
-	private final LocalDate date = SystemTime.asLocalDate();
+	private final LocalDate date = LocalDate.parse("2020-04-29");
 	private int nextInvoiceId = 1;
 	private int nextPaymentId = 1;
 	private final OrgId adOrgId = OrgId.ofRepoId(1000000); // just a dummy value
