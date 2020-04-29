@@ -46,6 +46,7 @@ import de.metas.document.engine.IDocumentBL;
 import de.metas.document.exceptions.DocumentProcessingException;
 import de.metas.logging.LogManager;
 import de.metas.logging.MetasfreshLastError;
+import de.metas.monitoring.adapter.NoopPerformanceMonitoringService;
 import de.metas.monitoring.adapter.PerformanceMonitoringService;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
@@ -104,7 +105,7 @@ public abstract class AbstractDocumentBL implements IDocumentBL
 			@NonNull final String action,
 			final boolean throwExIfNotSuccess)
 	{
-		final PerformanceMonitoringService perfMonServicew = SpringContextHolder.instance.getBean(PerformanceMonitoringService.class);
+		final PerformanceMonitoringService perfMonServicew = SpringContextHolder.instance.getBeanOr(PerformanceMonitoringService.class, NoopPerformanceMonitoringService.INSTANCE);
 
 		return perfMonServicew.monitorSpan(
 				() -> processIt0(document, action, throwExIfNotSuccess),
