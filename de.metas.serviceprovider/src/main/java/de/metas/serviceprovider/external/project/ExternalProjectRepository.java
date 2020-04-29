@@ -63,6 +63,7 @@ public class ExternalProjectRepository
 	public Optional<ExternalProjectReference> getByRequestOptional(@NonNull final GetExternalProjectRequest getExternalProjectRequest)
 	{
 		return queryBL.createQueryBuilder(I_S_ExternalProjectReference.class)
+				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_S_ExternalProjectReference.COLUMN_ExternalSystem, getExternalProjectRequest.getExternalSystem().getValue())
 
 				.addEqualsFilter(I_S_ExternalProjectReference.COLUMNNAME_ExternalReference, getExternalProjectRequest.getExternalReference())

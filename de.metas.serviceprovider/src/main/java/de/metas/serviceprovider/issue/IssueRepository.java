@@ -111,6 +111,7 @@ public class IssueRepository
 	public Optional<IssueEntity> getByExternalURLOptional(@NonNull final String externalURL, final boolean loadDetails)
 	{
 		return queryBL.createQueryBuilder(I_S_Issue.class)
+				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_S_Issue.COLUMNNAME_IssueURL, externalURL)
 				.create()
 				.firstOnlyOptional(I_S_Issue.class)
