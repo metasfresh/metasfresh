@@ -268,35 +268,62 @@ public class PaymentAllocationBuilderTest
 		assertInvoiceAllocated(invoice2.getInvoiceId(), true);
 	}
 
-	@Test
-	public void test_SalesInvoiceAndPurchaseInvoice_NoPayments()
+	@Nested
+	public class test_SalesInvoiceAndPurchaseInvoice_NoPayments
 	{
-		final PayableDocument invoice1, invoice2;
-		final PaymentAllocationBuilder builder = newPaymentAllocationBuilder(
-				// Invoices
-				ImmutableList.of(
-						// InvoiceType / OpenAmt / AppliedAmt / Discount / WriteOff
-						invoice1 = newInvoice(CustomerInvoice, "5000", "1000", "0", "0"),
-						invoice2 = newInvoice(VendorInvoice, "1000", "1000", "0", "0") //
-				)
-				// Payments
-				, ImmutableList.<PaymentDocument> of());
+		private PayableDocument invoice1;
+		private PayableDocument invoice2;
+		private PaymentAllocationBuilder builder;
 
-		//
-		// Define expected candidates
-		final List<AllocationLineCandidate> candidatesExpected = ImmutableList.of(
-				// invoiceId / paymentId / AllocatedAmt / DiscountAmt / WriteOffAmt / OverUnderAmt / PaymentOverUnderAmt
-				createAllocationCandidate(SalesInvoiceToPurchaseInvoice, invoice1.getReference(), invoice2.getReference(), "1000", "0", "0", "4000", "0"));
+		@BeforeEach
+		public void beforeEach()
+		{
+			builder = newPaymentAllocationBuilder(
+					// Invoices
+					ImmutableList.of(
+							// InvoiceType / OpenAmt / AppliedAmt / Discount / WriteOff
+							invoice1 = newInvoice(CustomerInvoice, "5000", "1000", "0", "0"),
+							invoice2 = newInvoice(VendorInvoice, "1000", "1000", "0", "0") //
+					)
+					// Payments
+					, ImmutableList.<PaymentDocument> of());
+		}
 
-		//
-		// Check
-		assertExpected(candidatesExpected, builder);
-		//
-		assertInvoiceAllocatedAmt(invoice1.getInvoiceId(), +1000);
-		assertInvoiceAllocated(invoice1.getInvoiceId(), false);
-		//
-		assertInvoiceAllocatedAmt(invoice2.getInvoiceId(), -1000);
-		assertInvoiceAllocated(invoice2.getInvoiceId(), true);
+		@Test
+		public void purchaseSalesInvoiceCompensation_allowed()
+		{
+			builder.allowPurchaseSalesInvoiceCompensation(true);
+
+			//
+			// Define expected candidates
+			final List<AllocationLineCandidate> candidatesExpected = ImmutableList.of(
+					// invoiceId / paymentId / AllocatedAmt / DiscountAmt / WriteOffAmt / OverUnderAmt / PaymentOverUnderAmt
+					createAllocationCandidate(SalesInvoiceToPurchaseInvoice, invoice1.getReference(), invoice2.getReference(), "1000", "0", "0", "4000", "0"));
+
+			//
+			// Check
+			assertExpected(candidatesExpected, builder);
+			//
+			assertInvoiceAllocatedAmt(invoice1.getInvoiceId(), +1000);
+			assertInvoiceAllocated(invoice1.getInvoiceId(), false);
+			//
+			assertInvoiceAllocatedAmt(invoice2.getInvoiceId(), -1000);
+			assertInvoiceAllocated(invoice2.getInvoiceId(), true);
+		}
+
+		@Test
+		public void purchaseSalesInvoiceCompensation_notAllowed()
+		{
+			builder
+					.allowPurchaseSalesInvoiceCompensation(false)
+					.allowPartialAllocations(true);
+
+			final PaymentAllocationResult result = builder.build();
+			System.out.println(result);
+
+			assertThat(result.isOK()).isTrue();
+			assertThat(result.getCandidates()).isEmpty();
+		}
 	}
 
 	@Test
@@ -604,8 +631,7 @@ public class PaymentAllocationBuilderTest
 	{
 		return newPaymentAllocationBuilder()
 				.payableDocuments(invoices)
-				.paymentDocuments(payments)
-				.allowPurchaseSalesInvoiceCompensation(true);
+				.paymentDocuments(payments);
 	}
 
 	/**
