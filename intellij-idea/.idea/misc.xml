@@ -1,12 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="EntryPointsManager">
-    <list size="5">
+    <list size="8">
       <item index="0" class="java.lang.String" itemvalue="de.metas.process.Param" />
-      <item index="1" class="java.lang.String" itemvalue="mockit.Injectable" />
-      <item index="2" class="java.lang.String" itemvalue="org.adempiere.ad.modelvalidator.annotations.ModelChange" />
-      <item index="3" class="java.lang.String" itemvalue="org.junit.jupiter.api.BeforeEach" />
-      <item index="4" class="java.lang.String" itemvalue="org.springframework.stereotype.Service" />
+      <item index="1" class="java.lang.String" itemvalue="de.metas.ui.web.process.descriptor.ProcessParamLookupValuesProvider" />
+      <item index="2" class="java.lang.String" itemvalue="mockit.Injectable" />
+      <item index="3" class="java.lang.String" itemvalue="org.adempiere.ad.callout.annotations.CalloutMethod" />
+      <item index="4" class="java.lang.String" itemvalue="org.adempiere.ad.modelvalidator.annotations.DocValidate" />
+      <item index="5" class="java.lang.String" itemvalue="org.adempiere.ad.modelvalidator.annotations.ModelChange" />
+      <item index="6" class="java.lang.String" itemvalue="org.junit.jupiter.api.BeforeEach" />
+      <item index="7" class="java.lang.String" itemvalue="org.springframework.stereotype.Service" />
     </list>
     <writeAnnotations>
       <writeAnnotation name="de.metas.process.Param" />
@@ -19,7 +22,7 @@
     <file type="gwt" url="file://$PROJECT_DIR$/metasfresh-procurement-webui" />
   </component>
   <component name="JavaScriptSettings">
-    <option name="languageLevel" value="ES6" />
+    <option name="languageLevel" value="JSX" />
   </component>
   <component name="MavenProjectsManager">
     <option name="originalFiles">
@@ -43,7 +46,7 @@
     <option name="myDefaultNotNull" value="lombok.NonNull" />
     <option name="myNullables">
       <value>
-        <list size="11">
+        <list size="12">
           <item index="0" class="java.lang.String" itemvalue="org.jetbrains.annotations.Nullable" />
           <item index="1" class="java.lang.String" itemvalue="javax.annotation.Nullable" />
           <item index="2" class="java.lang.String" itemvalue="javax.annotation.CheckForNull" />
@@ -55,12 +58,13 @@
           <item index="8" class="java.lang.String" itemvalue="org.checkerframework.checker.nullness.compatqual.NullableDecl" />
           <item index="9" class="java.lang.String" itemvalue="org.checkerframework.checker.nullness.compatqual.NullableType" />
           <item index="10" class="java.lang.String" itemvalue="com.android.annotations.Nullable" />
+          <item index="11" class="java.lang.String" itemvalue="org.eclipse.jdt.annotation.Nullable" />
         </list>
       </value>
     </option>
     <option name="myNotNulls">
       <value>
-        <list size="11">
+        <list size="12">
           <item index="0" class="java.lang.String" itemvalue="org.jetbrains.annotations.NotNull" />
           <item index="1" class="java.lang.String" itemvalue="javax.annotation.Nonnull" />
           <item index="2" class="java.lang.String" itemvalue="edu.umd.cs.findbugs.annotations.NonNull" />
@@ -72,6 +76,7 @@
           <item index="8" class="java.lang.String" itemvalue="org.checkerframework.checker.nullness.compatqual.NonNullType" />
           <item index="9" class="java.lang.String" itemvalue="com.android.annotations.NonNull" />
           <item index="10" class="java.lang.String" itemvalue="lombok.NonNull" />
+          <item index="11" class="java.lang.String" itemvalue="org.eclipse.jdt.annotation.NonNull" />
         </list>
       </value>
     </option>
