@@ -5,7 +5,8 @@
         "bpartnerComposite": {
           "bpartner": {
             "code": "other12345",
-            "companyName": "otherCompanyName"
+            "companyName": "otherCompanyName",
+            "parentId": null
           }
         }
       }
