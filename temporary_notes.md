@@ -1,5 +1,5 @@
 
-
+```bash
 git clone git@github.com:metasfresh/metasfresh.git
 
 cd metasfresh
@@ -92,17 +92,16 @@ git commit -m "gh6205-app - move parent-pom files to new misc folder" -m "metasf
 
 git mv temp/* .
 git commit -m "gh6205-app - move temporarily moved files back from temp folder" -m "metasfresh/metasfresh#6205"
+```
+ 
  
 # add and commit that root Jenkinsfile
-
-# later
-# add metasfresh-procurement-webui and metasfresh-edi to misc subfolder that shall be another sibling to backend
-
 
 
 
 # keep up to date
 
+```bash
 git pull && \
 git merge origin/master && \
 git fetch webui-api master && \
@@ -119,3 +118,4 @@ git fetch admin master && \
 git merge admin/master --allow-unrelated-histories && \
 git fetch e2e master && \
 git merge e2e/master --allow-unrelated-histories
+```
