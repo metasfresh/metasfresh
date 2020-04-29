@@ -47,8 +47,6 @@ import javax.annotation.Nullable;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.ClientId;
-import org.adempiere.service.ISysConfigBL;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_AllocationHdr;
@@ -64,7 +62,6 @@ import org.junit.jupiter.api.Test;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.allocation.api.IAllocationDAO;
-import de.metas.banking.payment.paymentallocation.impl.PaymentAllocationBL;
 import de.metas.banking.payment.paymentallocation.service.AllocationLineCandidate.AllocationLineCandidateType;
 import de.metas.banking.payment.paymentallocation.service.PaymentAllocationBuilder.PayableRemainingOpenAmtPolicy;
 import de.metas.bpartner.BPartnerId;
@@ -89,7 +86,6 @@ import lombok.NonNull;
 public class PaymentAllocationBuilderTest
 {
 	// services
-	private ISysConfigBL sysConfigs;
 	private IAllocationDAO allocationDAO;
 	private IPaymentDAO paymentDAO;
 	private IInvoiceBL invoiceBL;
@@ -109,7 +105,6 @@ public class PaymentAllocationBuilderTest
 		AdempiereTestHelper.get().init();
 
 		// services
-		sysConfigs = Services.get(ISysConfigBL.class);
 		allocationDAO = Services.get(IAllocationDAO.class);
 		paymentDAO = Services.get(IPaymentDAO.class);
 		invoiceBL = Services.get(IInvoiceBL.class);
@@ -117,19 +112,12 @@ public class PaymentAllocationBuilderTest
 
 		euroCurrencyId = PlainCurrencyDAO.createCurrencyId(CurrencyCode.EUR);
 		invoiceDocTypes = new HashMap<>();
-
-		setAllowSalesPurchaseInvoiceCompensation(true);
 	}
 
 	private Money euro(final String amount)
 	{
 		final BigDecimal amountBD = !Check.isEmpty(amount) ? new BigDecimal(amount) : BigDecimal.ZERO;
 		return Money.of(amountBD, euroCurrencyId);
-	}
-
-	private final void setAllowSalesPurchaseInvoiceCompensation(final boolean allow)
-	{
-		sysConfigs.setValue(PaymentAllocationBL.SYSCONFIG_AllowAllocationOfPurchaseInvoiceAgainstSaleInvoice, allow, ClientId.SYSTEM, OrgId.ANY);
 	}
 
 	@Test
@@ -618,7 +606,8 @@ public class PaymentAllocationBuilderTest
 	{
 		return newPaymentAllocationBuilder()
 				.payableDocuments(invoices)
-				.paymentDocuments(payments);
+				.paymentDocuments(payments)
+				.allowPurchaseSalesInvoiceCompensation(true);
 	}
 
 	/**

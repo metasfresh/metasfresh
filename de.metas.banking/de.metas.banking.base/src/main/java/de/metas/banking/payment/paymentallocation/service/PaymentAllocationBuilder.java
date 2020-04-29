@@ -23,7 +23,6 @@ import de.metas.allocation.api.C_AllocationHdr_Builder;
 import de.metas.allocation.api.C_AllocationLine_Builder;
 import de.metas.allocation.api.IAllocationBL;
 import de.metas.allocation.api.PaymentAllocationId;
-import de.metas.banking.payment.paymentallocation.IPaymentAllocationBL;
 import de.metas.banking.payment.paymentallocation.service.AllocationLineCandidate.AllocationLineCandidateType;
 import de.metas.bpartner.BPartnerId;
 import de.metas.money.CurrencyId;
@@ -53,8 +52,8 @@ public class PaymentAllocationBuilder
 	}
 
 	// services
-	private final transient ITrxManager trxManager = Services.get(ITrxManager.class);
-	private final transient IAllocationBL allocationBL = Services.get(IAllocationBL.class);
+	private final ITrxManager trxManager = Services.get(ITrxManager.class);
+	private final IAllocationBL allocationBL = Services.get(IAllocationBL.class);
 
 	// Parameters
 	private LocalDate _dateTrx;
@@ -63,6 +62,7 @@ public class PaymentAllocationBuilder
 	private ImmutableList<IPaymentDocument> _paymentDocuments = ImmutableList.of();
 	private boolean allowOnlyOneVendorDoc = true;
 	private boolean allowPartialAllocations = false;
+	private boolean allowPurchaseSalesInvoiceCompensation;
 	private PayableRemainingOpenAmtPolicy payableRemainingOpenAmtPolicy = PayableRemainingOpenAmtPolicy.DO_NOTHING;
 	private boolean dryRun = false;
 
@@ -300,7 +300,7 @@ public class PaymentAllocationBuilder
 
 		//
 		// Try to allocate purchase invoices to sales invoices
-		if (Services.get(IPaymentAllocationBL.class).isPurchaseSalesInvoiceCompensationAllowed())
+		if (allowPurchaseSalesInvoiceCompensation)
 		{
 			allocationCandidates.addAll(createAllocationLineCandidates_PurchaseInvoicesToSaleInvoices(payableDocuments));
 		}
@@ -827,6 +827,13 @@ public class PaymentAllocationBuilder
 	{
 		assertNotBuilt();
 		this.allowPartialAllocations = allowPartialAllocations;
+		return this;
+	}
+
+	public PaymentAllocationBuilder allowPurchaseSalesInvoiceCompensation(final boolean allowPurchaseSalesInvoiceCompensation)
+	{
+		assertNotBuilt();
+		this.allowPurchaseSalesInvoiceCompensation = allowPurchaseSalesInvoiceCompensation;
 		return this;
 	}
 

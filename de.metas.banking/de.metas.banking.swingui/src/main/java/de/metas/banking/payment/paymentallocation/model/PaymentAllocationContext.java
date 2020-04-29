@@ -13,15 +13,14 @@ package de.metas.banking.payment.paymentallocation.model;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.util.Collection;
@@ -38,10 +37,8 @@ import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimap;
 
-import de.metas.banking.payment.paymentallocation.IPaymentAllocationBL;
 import de.metas.util.Check;
 import de.metas.util.IProcessor;
-import de.metas.util.Services;
 
 /**
  * Context of payment allocation, used by DAO methods and calculation methods.
@@ -70,14 +67,13 @@ public final class PaymentAllocationContext
 
 	private final boolean allowPurchaseSalesInvoiceCompensation;
 
-	public static final Builder builder()
+	public static Builder builder()
 	{
 		return new Builder();
 	}
 
 	private PaymentAllocationContext(final Builder builder)
 	{
-		super();
 		AD_Org_ID = builder.AD_Org_ID;
 		C_BPartner_ID = builder.C_BPartner_ID;
 		C_Currency_ID = builder.C_Currency_ID;
@@ -93,7 +89,7 @@ public final class PaymentAllocationContext
 		//
 		warningsConsumer = builder.warningsConsumer;
 
-		allowPurchaseSalesInvoiceCompensation = builder.isAllowPurchaseSalesInvoiceCompensation();
+		allowPurchaseSalesInvoiceCompensation = builder.allowPurchaseSalesInvoiceCompensation;
 	}
 
 	@Override
@@ -193,7 +189,8 @@ public final class PaymentAllocationContext
 	}
 
 	/**
-	 * @return <ul>
+	 * @return
+	 *         <ul>
 	 *         <li>how much from an invoice open amount are we allowed to write-off (percentage between 0...1).
 	 *         <li>zero if the tolerance checking is disabled
 	 *         </ul>
@@ -246,6 +243,7 @@ public final class PaymentAllocationContext
 		private Multimap<AllocableDocType, Integer> documentIds;
 		private int filterPaymentId = 0;
 		private String filterPOReference;
+		private boolean allowPurchaseSalesInvoiceCompensation;
 
 		private Builder()
 		{
@@ -331,9 +329,10 @@ public final class PaymentAllocationContext
 			return this;
 		}
 
-		private final boolean isAllowPurchaseSalesInvoiceCompensation()
+		public Builder allowPurchaseSalesInvoiceCompensation(final boolean allowPurchaseSalesInvoiceCompensation)
 		{
-			return Services.get(IPaymentAllocationBL.class).isPurchaseSalesInvoiceCompensationAllowed();
+			this.allowPurchaseSalesInvoiceCompensation = allowPurchaseSalesInvoiceCompensation;
+			return this;
 		}
 	}
 }
