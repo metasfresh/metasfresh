@@ -19,16 +19,16 @@ import lombok.NonNull;
  *
  */
 @EqualsAndHashCode
-final class CreditMemoInvoiceAsPaymentDocument implements IPaymentDocument
+final class CreditMemoInvoiceAsPaymentDocumentWrapper implements IPaymentDocument
 {
-	public static CreditMemoInvoiceAsPaymentDocument wrap(final PayableDocument creditMemoPayableDoc)
+	public static CreditMemoInvoiceAsPaymentDocumentWrapper wrap(final PayableDocument creditMemoPayableDoc)
 	{
-		return new CreditMemoInvoiceAsPaymentDocument(creditMemoPayableDoc);
+		return new CreditMemoInvoiceAsPaymentDocumentWrapper(creditMemoPayableDoc);
 	}
 
 	private final PayableDocument creditMemoPayableDoc;
 
-	private CreditMemoInvoiceAsPaymentDocument(@NonNull final PayableDocument creditMemoPayableDoc)
+	private CreditMemoInvoiceAsPaymentDocumentWrapper(@NonNull final PayableDocument creditMemoPayableDoc)
 	{
 		Check.assume(creditMemoPayableDoc.isCreditMemo(), "is credit memo: {}", creditMemoPayableDoc);
 		this.creditMemoPayableDoc = creditMemoPayableDoc;

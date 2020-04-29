@@ -19,16 +19,16 @@ import lombok.NonNull;
  * but the "customer" issued an purchase invoice to us, that purchase invoice can be used to compensate our customer invoice.
  */
 @EqualsAndHashCode
-final class PurchaseInvoiceAsInboundPaymentDocument implements IPaymentDocument
+final class PurchaseInvoiceAsInboundPaymentDocumentWrapper implements IPaymentDocument
 {
-	public static PurchaseInvoiceAsInboundPaymentDocument wrap(final PayableDocument creditMemoPayableDoc)
+	public static PurchaseInvoiceAsInboundPaymentDocumentWrapper wrap(final PayableDocument creditMemoPayableDoc)
 	{
-		return new PurchaseInvoiceAsInboundPaymentDocument(creditMemoPayableDoc);
+		return new PurchaseInvoiceAsInboundPaymentDocumentWrapper(creditMemoPayableDoc);
 	}
 
 	private final PayableDocument purchaseInvoicePayableDoc;
 
-	private PurchaseInvoiceAsInboundPaymentDocument(@NonNull final PayableDocument purchasePayableDoc)
+	private PurchaseInvoiceAsInboundPaymentDocumentWrapper(@NonNull final PayableDocument purchasePayableDoc)
 	{
 		Check.assume(purchasePayableDoc.getSoTrx().isPurchase(), "is purchase document: {}", purchasePayableDoc);
 		Check.assume(!purchasePayableDoc.isCreditMemo(), "is not credit memo: {}", purchasePayableDoc);

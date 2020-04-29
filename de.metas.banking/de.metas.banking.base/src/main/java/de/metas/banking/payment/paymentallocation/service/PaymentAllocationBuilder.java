@@ -352,7 +352,7 @@ public class PaymentAllocationBuilder
 
 			if (payable.isCreditMemo())
 			{
-				paymentVendorDocuments_CreditMemos.add(CreditMemoInvoiceAsPaymentDocument.wrap(payable));
+				paymentVendorDocuments_CreditMemos.add(CreditMemoInvoiceAsPaymentDocumentWrapper.wrap(payable));
 			}
 			else
 			{
@@ -483,7 +483,7 @@ public class PaymentAllocationBuilder
 		{
 			if (payable.isCreditMemo())
 			{
-				creditMemos.add(CreditMemoInvoiceAsPaymentDocument.wrap(payable));
+				creditMemos.add(CreditMemoInvoiceAsPaymentDocumentWrapper.wrap(payable));
 			}
 			else
 			{
@@ -516,7 +516,7 @@ public class PaymentAllocationBuilder
 			}
 			else
 			{
-				purchaseInvoices.add(PurchaseInvoiceAsInboundPaymentDocument.wrap(payable));
+				purchaseInvoices.add(PurchaseInvoiceAsInboundPaymentDocumentWrapper.wrap(payable));
 			}
 		}
 
