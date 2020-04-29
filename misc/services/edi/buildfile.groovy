@@ -31,15 +31,10 @@ def build(final MvnConf mvnConf, final Map scmVars, final boolean forceBuild=fal
 		
 		// update the parent pom version.
 		mvnUpdateParentPomVersion mvnConf
-
-		final String mavenUpdatePropertyParam
 		
 		// set the root-pom's parent pom. Although the parent pom is avaialbe via relativePath, we need it to be this build's version then the root pom is deployed to our maven-repo
 		sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode -DparentVersion=${env.MF_VERSION} ${mvnConf.resolveParams} ${VERSIONS_PLUGIN}:update-parent"
 		
-		// update the metasfresh.version property. either to the latest version or to the given params.MF_UPSTREAM_VERSION.
-		sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode ${mvnConf.resolveParams} ${mavenUpdatePropertyParam} versions:update-property"
-
 		// set the artifact version of everything below de.metas.esb/pom.xml
 		sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode -DallowSnapshots=false -DgenerateBackupPoms=true -DprocessDependencies=true -DprocessParent=true -DexcludeReactor=true -Dincludes=\"de.metas*:*\" ${mvnConf.resolveParams} -DnewVersion=${env.MF_VERSION} ${VERSIONS_PLUGIN}:set"
 
