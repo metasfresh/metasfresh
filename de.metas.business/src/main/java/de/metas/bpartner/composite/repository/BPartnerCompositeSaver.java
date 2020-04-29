@@ -49,6 +49,7 @@ import de.metas.interfaces.I_C_BPartner;
 import de.metas.location.CountryId;
 import de.metas.location.ICountryDAO;
 import de.metas.location.impl.PostalQueryFilter;
+import de.metas.logging.TableRecordMDC;
 import de.metas.organization.OrgId;
 import de.metas.logging.TableRecordMDC;
 import de.metas.security.PermissionServiceFactories;
