@@ -712,7 +712,7 @@ public class PaymentAllocationBuilder
 	 * @param payment
 	 * @return true if the invoice and payment are compatible and we could try to do an allocation
 	 */
-	private final boolean isCompatible(final PayableDocument payable, final IPaymentDocument payment)
+	private static final boolean isCompatible(final PayableDocument payable, final IPaymentDocument payment)
 	{
 		// Given payment does not support payable's type
 		if (!payment.canPay(payable))
