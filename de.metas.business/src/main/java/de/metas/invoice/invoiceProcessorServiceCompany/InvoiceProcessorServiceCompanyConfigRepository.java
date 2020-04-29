@@ -4,15 +4,9 @@ import java.util.Optional;
 
 import org.springframework.stereotype.Repository;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonValue;
-
 import de.metas.bpartner.BPartnerId;
 import de.metas.cache.CCache;
-import de.metas.util.Check;
-import de.metas.util.lang.RepoIdAware;
 import lombok.NonNull;
-import lombok.Value;
 
 /*
  * #%L
@@ -64,33 +58,5 @@ public class InvoiceProcessorServiceCompanyConfigRepository
 	{
 		// TODO: impl
 		throw new UnsupportedOperationException();
-	}
-
-	//
-	//
-	//
-
-	@Value
-	private static class InvoiceProcessorServiceCompanyConfigId implements RepoIdAware
-	{
-		@JsonCreator
-		public static InvoiceProcessorServiceCompanyConfigId ofRepoId(final int repoId)
-		{
-			return new InvoiceProcessorServiceCompanyConfigId(repoId);
-		}
-
-		int repoId;
-
-		private InvoiceProcessorServiceCompanyConfigId(final int repoId)
-		{
-			this.repoId = Check.assumeGreaterThanZero(repoId, "repoId");
-		}
-
-		@JsonValue
-		@Override
-		public int getRepoId()
-		{
-			return repoId;
-		}
 	}
 }
