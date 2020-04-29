@@ -444,34 +444,47 @@ public class PaymentAllocationBuilder
 
 			if (!payable.isFullyAllocated())
 			{
-				if (PayableRemainingOpenAmtPolicy.DO_NOTHING.equals(payableRemainingOpenAmtPolicy))
+				final AllocationLineCandidate allocationLine = createAllocationLineCandidate_ForRemainingOpenAmt(payable);
+				if(allocationLine != null)
 				{
-					// do nothing
-				}
-				else if (PayableRemainingOpenAmtPolicy.DISCOUNT.equals(payableRemainingOpenAmtPolicy))
-				{
-					payable.moveRemainingOpenAmtToDiscount();
-
-					final AllocationAmounts discountAndWriteOffAmts = payable.getAmountsToAllocate();
-					final AllocationLineCandidate allocationLine = createAllocationLineCandidate_DiscountAndWriteOff(payable, discountAndWriteOffAmts);
 					allocationLineCandidates.add(allocationLine);
-				}
-				else if (PayableRemainingOpenAmtPolicy.WRITE_OFF.equals(payableRemainingOpenAmtPolicy))
-				{
-					payable.moveRemainingOpenAmtToWriteOff();
-
-					final AllocationAmounts discountAndWriteOffAmts = payable.getAmountsToAllocate();
-					final AllocationLineCandidate allocationLine = createAllocationLineCandidate_DiscountAndWriteOff(payable, discountAndWriteOffAmts);
-					allocationLineCandidates.add(allocationLine);
-				}
-				else
-				{
-					throw new AdempiereException("Unknown payableRemainingOpenAmtPolicy: " + payableRemainingOpenAmtPolicy); // shall not happen
 				}
 			}
 		}   // payables loop (aka invoice or prepay order)
 
 		return allocationLineCandidates;
+	}
+
+	private final AllocationLineCandidate createAllocationLineCandidate_ForRemainingOpenAmt(@NonNull final PayableDocument payable)
+	{
+		if (payable.isFullyAllocated())
+		{
+			return null;
+		}
+
+		if (PayableRemainingOpenAmtPolicy.DO_NOTHING.equals(payableRemainingOpenAmtPolicy))
+		{
+			// do nothing
+			return null;
+		}
+		else if (PayableRemainingOpenAmtPolicy.DISCOUNT.equals(payableRemainingOpenAmtPolicy))
+		{
+			payable.moveRemainingOpenAmtToDiscount();
+
+			final AllocationAmounts discountAndWriteOffAmts = payable.getAmountsToAllocate();
+			return createAllocationLineCandidate_DiscountAndWriteOff(payable, discountAndWriteOffAmts);
+		}
+		else if (PayableRemainingOpenAmtPolicy.WRITE_OFF.equals(payableRemainingOpenAmtPolicy))
+		{
+			payable.moveRemainingOpenAmtToWriteOff();
+
+			final AllocationAmounts discountAndWriteOffAmts = payable.getAmountsToAllocate();
+			return createAllocationLineCandidate_DiscountAndWriteOff(payable, discountAndWriteOffAmts);
+		}
+		else
+		{
+			throw new AdempiereException("Unknown payableRemainingOpenAmtPolicy: " + payableRemainingOpenAmtPolicy); // shall not happen
+		}
 	}
 
 	private final List<AllocationLineCandidate> createAllocationLineCandidates_CreditMemosToInvoices(final List<PayableDocument> payableDocuments)
