@@ -11,8 +11,8 @@ import de.metas.jenkins.Misc
 
 def build(final MvnConf mvnConf, final Map scmVars, final boolean forceBuild=false)
 {
-	final String VERSIONS_PLUGIN = 'org.codehaus.mojo:versions-maven-plugin:2.5'
-       
+	final String VERSIONS_PLUGIN = 'org.codehaus.mojo:versions-maven-plugin:2.7'
+
 	// stage('Build edi')  // too many stages clutter the build info
     //{
 		currentBuild.description= """${currentBuild.description}<p/>
@@ -34,8 +34,8 @@ def build(final MvnConf mvnConf, final Map scmVars, final boolean forceBuild=fal
 
 		final String mavenUpdatePropertyParam
 		
-		// still update the property, but use the latest version
-		mavenUpdatePropertyParam='-Dproperty=metasfresh.version'
+		// set the root-pom's parent pom. Although the parent pom is avaialbe via relativePath, we need it to be this build's version then the root pom is deployed to our maven-repo
+		sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode -DparentVersion=${env.MF_VERSION} ${mvnConf.resolveParams} ${VERSIONS_PLUGIN}:update-parent"
 		
 		// update the metasfresh.version property. either to the latest version or to the given params.MF_UPSTREAM_VERSION.
 		sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode ${mvnConf.resolveParams} ${mavenUpdatePropertyParam} versions:update-property"
