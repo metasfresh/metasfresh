@@ -1,6 +1,5 @@
 package de.metas.ui.web.payment_allocation.process;
 
-import de.metas.banking.payment.paymentallocation.service.PaymentAllocationBuilder;
 import de.metas.banking.payment.paymentallocation.service.PaymentAllocationResult;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.ProcessPreconditionsResolution;
@@ -32,13 +31,11 @@ public class PaymentsView_Allocate extends PaymentsView_Allocate_Template implem
 	@Override
 	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
 	{
-		final PaymentAllocationBuilder builder = preparePaymentAllocationBuilder();
-		if (builder == null)
+		final PaymentAllocationResult result = newPaymentsViewAllocateCommand().dryRun().orElse(null);
+		if (result == null)
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("invalid");
 		}
-
-		final PaymentAllocationResult result = builder.dryRun().build();
 
 		if (result.getCandidates().isEmpty())
 		{

@@ -6,12 +6,15 @@ import java.util.Set;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_Invoice;
 
+import com.google.common.base.MoreObjects;
+
 import de.metas.bpartner.BPartnerId;
 import de.metas.currency.Amount;
 import de.metas.i18n.ITranslatableString;
 import de.metas.invoice.InvoiceId;
 import de.metas.lang.SOTrx;
 import de.metas.organization.ClientAndOrgId;
+import de.metas.organization.OrgId;
 import de.metas.ui.web.view.IViewRow;
 import de.metas.ui.web.view.ViewRowFieldNameAndJsonValues;
 import de.metas.ui.web.view.ViewRowFieldNameAndJsonValuesHolder;
@@ -79,7 +82,6 @@ public class InvoiceRow implements IViewRow
 	private final DocumentId rowId;
 	@Getter
 	private final InvoiceId invoiceId;
-	@Getter
 	private final ClientAndOrgId clientAndOrgId;
 	@Getter
 	private final SOTrx soTrx;
@@ -137,9 +139,22 @@ public class InvoiceRow implements IViewRow
 	}
 
 	@Override
+	public String toString()
+	{
+		return MoreObjects.toStringHelper(this)
+				.addValue(values.get(this))
+				.toString();
+	}
+
+	@Override
 	public DocumentId getId()
 	{
 		return rowId;
+	}
+
+	public OrgId getOrgId()
+	{
+		return clientAndOrgId.getOrgId();
 	}
 
 	@Override
