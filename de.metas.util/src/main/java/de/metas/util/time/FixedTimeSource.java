@@ -1,11 +1,14 @@
 package de.metas.util.time;
 
-import java.time.Instant;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.ZoneId;
-import java.util.Date;
+import java.time.ZonedDateTime;
 
-import com.google.common.base.MoreObjects;
+import lombok.EqualsAndHashCode;
+import lombok.NonNull;
+import lombok.ToString;
 
 /**
  * A {@link TimeSource} implementation which returns a preset time.
@@ -15,9 +18,21 @@ import com.google.common.base.MoreObjects;
  * @author tsa
  *
  */
+@EqualsAndHashCode
+@ToString
 public class FixedTimeSource implements TimeSource
 {
-	private final long millis;
+	private final ZonedDateTime date;
+
+	public static FixedTimeSource ofLocalDateTime(final LocalDateTime localDateTime)
+	{
+		return new FixedTimeSource(localDateTime.atZone(ZoneId.systemDefault()));
+	}
+
+	public static FixedTimeSource ofZonedDateTime(final ZonedDateTime zonedDateTime)
+	{
+		return new FixedTimeSource(zonedDateTime);
+	}
 
 	/**
 	 *
@@ -28,35 +43,42 @@ public class FixedTimeSource implements TimeSource
 	 * @param minute
 	 * @param second
 	 */
+	@Deprecated
 	public FixedTimeSource(final int year, final int month, final int day, final int hour, final int minute, final int second)
 	{
-		this(LocalDateTime.of(year, month, day, hour, minute, second));
+		this(LocalDate.of(year, month, day)
+				.atTime(LocalTime.of(hour, minute, second))
+				.atZone(ZoneId.systemDefault()));
 	}
 
-	public FixedTimeSource(final Date date)
+	/**
+	 * @deprecated Please use {@link #ofLocalDateTime(LocalDateTime)}
+	 */
+	@Deprecated
+	public FixedTimeSource(final LocalDateTime localDateTime)
 	{
-		millis = date.getTime();
+		this(localDateTime.atZone(ZoneId.systemDefault()));
 	}
 
-	public FixedTimeSource(final LocalDateTime date)
+	private FixedTimeSource(@NonNull final ZonedDateTime date)
 	{
-		millis = date.atZone(ZoneId.systemDefault())
-				.toInstant()
-				.toEpochMilli();
-	}
-
-	@Override
-	public String toString()
-	{
-		return MoreObjects.toStringHelper(this)
-				.add("millis", millis)
-				.add("date", Instant.ofEpochMilli(millis))
-				.toString();
+		this.date = date;
 	}
 
 	@Override
 	public long millis()
 	{
-		return millis;
+		return date.toInstant().toEpochMilli();
+	}
+
+	@Override
+	public ZoneId zoneId()
+	{
+		return date.getZone();
+	}
+
+	public ZonedDateTime asZonedDateTime()
+	{
+		return date;
 	}
 }

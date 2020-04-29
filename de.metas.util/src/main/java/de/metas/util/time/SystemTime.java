@@ -47,7 +47,7 @@ import lombok.experimental.UtilityClass;
 @UtilityClass
 public final class SystemTime
 {
-	private static final TimeSource defaultTimeSource = () -> System.currentTimeMillis();
+	private static final TimeSource defaultTimeSource = new SystemTimeSource();
 
 	private static TimeSource timeSource;
 
@@ -58,7 +58,7 @@ public final class SystemTime
 
 	public static ZoneId zoneId()
 	{
-		return ZoneId.systemDefault();
+		return getTimeSource().zoneId();
 	}
 
 	public static GregorianCalendar asGregorianCalendar()
@@ -155,10 +155,25 @@ public final class SystemTime
 
 	/**
 	 * @param newTimeSource the given TimeSource will be used for the time returned by the
-	 *                      methods of this class (unless it is null).
+	 *            methods of this class (unless it is null).
 	 */
 	public static void setTimeSource(@Nullable final TimeSource newTimeSource)
 	{
 		timeSource = newTimeSource;
+	}
+
+	private static final class SystemTimeSource implements TimeSource
+	{
+		@Override
+		public long millis()
+		{
+			return System.currentTimeMillis();
+		}
+
+		@Override
+		public ZoneId zoneId()
+		{
+			return ZoneId.systemDefault();
+		}
 	}
 }

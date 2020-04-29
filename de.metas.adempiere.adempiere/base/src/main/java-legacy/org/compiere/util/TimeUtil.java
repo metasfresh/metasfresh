@@ -1642,11 +1642,19 @@ public class TimeUtil
 		}
 	}
 
-	// @Deprecated
-	// public static LocalTime asLocalTime(final LocalTime localTime)
-	// {
-	// return localTime;
-	// }
+	public static LocalDate asLocalDate(@Nullable final Timestamp timestamp, @NonNull final ZoneId zoneId)
+	{
+		return timestamp != null
+				? timestamp.toInstant().atZone(zoneId).toLocalDate()
+				: null;
+	}
+
+	public static LocalDate asLocalDate(@Nullable final ZonedDateTime zonedDateTime, @NonNull final ZoneId zoneId)
+	{
+		return zonedDateTime != null
+				? convertToTimeZone(zonedDateTime, zoneId).toLocalDate()
+				: null;
+	}
 
 	public static LocalTime asLocalTime(final Object obj)
 	{
@@ -1688,6 +1696,10 @@ public class TimeUtil
 		else if (obj instanceof Timestamp)
 		{
 			return ((Timestamp)obj).toLocalDateTime();
+		}
+		else if (obj instanceof ZonedDateTime)
+		{
+			return ((ZonedDateTime)obj).toLocalDateTime();
 		}
 		else
 		{
