@@ -345,7 +345,7 @@ public class PaymentAllocationBuilder
 		final List<IPaymentDocument> paymentVendorDocuments_CreditMemos = new ArrayList<>();
 		for (final PayableDocument payable : payableDocuments)
 		{
-			if (payable.getSoTrx().isPurchase())
+			if (!payable.getSoTrx().isPurchase())
 			{
 				continue;
 			}
@@ -516,7 +516,7 @@ public class PaymentAllocationBuilder
 			}
 			else
 			{
-				purchaseInvoices.add(PurchaseInvoiceAsPaymentDocument.wrap(payable));
+				purchaseInvoices.add(PurchaseInvoiceAsInboundPaymentDocument.wrap(payable));
 			}
 		}
 

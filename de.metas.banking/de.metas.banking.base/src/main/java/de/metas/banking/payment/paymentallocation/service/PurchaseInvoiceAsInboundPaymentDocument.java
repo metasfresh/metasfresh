@@ -13,23 +13,26 @@ import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 
 /**
- * @author metas-dev <dev@metasfresh.com>
- *
+ * Wraps a given purchase invoice as an inbound payment document which we will try to allocate to some other sales invoice that we issued.
+ * 
+ * In other words, if we issued a sales invoice to one of our customers,
+ * but the "customer" issued an purchase invoice to us, that purchase invoice can be used to compensate our customer invoice.
  */
 @EqualsAndHashCode
-final class PurchaseInvoiceAsPaymentDocument implements IPaymentDocument
+final class PurchaseInvoiceAsInboundPaymentDocument implements IPaymentDocument
 {
-	public static PurchaseInvoiceAsPaymentDocument wrap(final PayableDocument creditMemoPayableDoc)
+	public static PurchaseInvoiceAsInboundPaymentDocument wrap(final PayableDocument creditMemoPayableDoc)
 	{
-		return new PurchaseInvoiceAsPaymentDocument(creditMemoPayableDoc);
+		return new PurchaseInvoiceAsInboundPaymentDocument(creditMemoPayableDoc);
 	}
 
 	private final PayableDocument purchaseInvoicePayableDoc;
 
-	private PurchaseInvoiceAsPaymentDocument(@NonNull final PayableDocument purchasePayableDoc)
+	private PurchaseInvoiceAsInboundPaymentDocument(@NonNull final PayableDocument purchasePayableDoc)
 	{
-		Check.assume(!purchasePayableDoc.isCreditMemo(), "is not credit memo: {}", purchasePayableDoc);
 		Check.assume(purchasePayableDoc.getSoTrx().isPurchase(), "is purchase document: {}", purchasePayableDoc);
+		Check.assume(!purchasePayableDoc.isCreditMemo(), "is not credit memo: {}", purchasePayableDoc);
+
 		this.purchaseInvoicePayableDoc = purchasePayableDoc;
 	}
 
@@ -43,6 +46,12 @@ final class PurchaseInvoiceAsPaymentDocument implements IPaymentDocument
 	public PaymentDocumentType getType()
 	{
 		return PaymentDocumentType.PurchaseInvoice;
+	}
+
+	@Override
+	public PaymentDirection getPaymentDirection()
+	{
+		return PaymentDirection.INBOUND;
 	}
 
 	@Override
@@ -102,17 +111,12 @@ final class PurchaseInvoiceAsPaymentDocument implements IPaymentDocument
 	@Override
 	public boolean canPay(@NonNull final PayableDocument payable)
 	{
+		// A purchase invoice can compensate only on a sales invoice
 		if (payable.getType() != PayableDocumentType.Invoice)
 		{
 			return false;
 		}
-		if (payable.getSoTrx() != purchaseInvoicePayableDoc.getSoTrx())
-		{
-			return false;
-		}
-
-		// A purchase invoice cannot pay another purchase invoice
-		if (payable.getSoTrx().isPurchase())
+		if (!payable.getSoTrx().isSales())
 		{
 			return false;
 		}
@@ -124,12 +128,6 @@ final class PurchaseInvoiceAsPaymentDocument implements IPaymentDocument
 		}
 
 		return true;
-	}
-
-	@Override
-	public PaymentDirection getPaymentDirection()
-	{
-		return PaymentDirection.ofSOTrx(purchaseInvoicePayableDoc.getSoTrx());
 	}
 
 	@Override

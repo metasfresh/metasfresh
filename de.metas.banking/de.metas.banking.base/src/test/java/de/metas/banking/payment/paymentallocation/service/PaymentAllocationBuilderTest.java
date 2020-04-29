@@ -654,7 +654,7 @@ public class PaymentAllocationBuilderTest
 		final I_C_DocType docType = getInvoiceDocType(invoiceType);
 		final I_C_Invoice invoice = InterfaceWrapperHelper.newInstance(I_C_Invoice.class);
 		invoice.setC_Invoice_ID(invoiceId);
-		invoice.setDocumentNo("Doc" + invoiceId);
+		invoice.setDocumentNo("InvoiceDocNo" + invoiceId);
 		invoice.setC_DocType_ID(docType.getC_DocType_ID());
 		invoice.setIsSOTrx(docType.isSOTrx());
 		invoice.setDateInvoiced(TimeUtil.asTimestamp(date));
@@ -715,7 +715,7 @@ public class PaymentAllocationBuilderTest
 		final int paymentId = nextPaymentId++;
 		final I_C_Payment payment = InterfaceWrapperHelper.newInstance(I_C_Payment.class);
 		payment.setC_Payment_ID(paymentId);
-		payment.setDocumentNo("Doc" + paymentId);
+		payment.setDocumentNo("PaymentDocNo" + paymentId);
 		payment.setC_BPartner_ID(bpartnerId.getRepoId());
 		payment.setC_Currency_ID(euroCurrencyId.getRepoId());
 		InterfaceWrapperHelper.save(payment);
