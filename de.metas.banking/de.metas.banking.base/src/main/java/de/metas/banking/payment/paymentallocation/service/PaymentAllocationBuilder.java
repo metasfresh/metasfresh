@@ -9,7 +9,7 @@ import java.util.List;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.ITableRecordReference;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_AllocationHdr;
 import org.compiere.model.I_C_AllocationLine;
 import org.compiere.model.I_C_Invoice;
@@ -169,9 +169,9 @@ public class PaymentAllocationBuilder
 				.overUnderAmt(line.getPayableOverUnderAmt().toBigDecimal())
 				.skipIfAllAmountsAreZero();
 
-		final ITableRecordReference payableDocRef = line.getPayableDocumentRef();
+		final TableRecordReference payableDocRef = line.getPayableDocumentRef();
 		final String payableDocTableName = payableDocRef.getTableName();
-		final ITableRecordReference paymentDocRef = line.getPaymentDocumentRef();
+		final TableRecordReference paymentDocRef = line.getPaymentDocumentRef();
 		final String paymentDocTableName = paymentDocRef == null ? null : paymentDocRef.getTableName();
 
 		//
@@ -183,7 +183,8 @@ public class PaymentAllocationBuilder
 			payableLineBuilder.paymentId(paymentDocRef.getRecord_ID());
 		}
 		//
-		// Invoice - CreditMemo invoice or Sales invoice - Purchase Invoice
+		// Invoice - CreditMemo invoice
+		// or Sales invoice - Purchase Invoice
 		else if (I_C_Invoice.Table_Name.equals(payableDocTableName)
 				&& I_C_Invoice.Table_Name.equals(paymentDocTableName))
 		{
@@ -445,7 +446,7 @@ public class PaymentAllocationBuilder
 			if (!payable.isFullyAllocated())
 			{
 				final AllocationLineCandidate allocationLine = createAllocationLineCandidate_ForRemainingOpenAmt(payable);
-				if(allocationLine != null)
+				if (allocationLine != null)
 				{
 					allocationLineCandidates.add(allocationLine);
 				}
