@@ -329,7 +329,6 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 
 		//
 		// Pricing Informations
-        //final PriceAndTax priceAndQty = calculatePriceAndQuantityAndUpdate(icRecord, inOutLineRecord);
 		final PriceAndTax priceAndQty = inOutLineRecord.getReturn_Origin_InOutLine_ID() != 0 ? calculatePriceAndQuantityAndUpdate(icRecord, inOutLineRecord.getReturn_Origin_InOutLine())
 				: calculatePriceAndQuantityAndUpdate(icRecord, inOutLineRecord);
 		//
@@ -458,9 +457,9 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 	 *
 	 * @param ic
 	 * @return <ul>
-	 *         <li>+1 on regular shipment/receipt
-	 *         <li>-1 on material returns
-	 *         </ul>
+	 * <li>+1 on regular shipment/receipt
+	 * <li>-1 on material returns
+	 * </ul>
 	 */
 	private BigDecimal getQtyMultiplier(final I_C_Invoice_Candidate ic)
 	{
@@ -791,7 +790,9 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 	public PriceAndTax calculatePriceAndTax(final I_C_Invoice_Candidate ic)
 	{
 		final I_M_InOutLine inoutLine = getM_InOutLine(ic);
-		return calculatePriceAndTax(ic, inoutLine);
+
+		return inoutLine.getReturn_Origin_InOutLine_ID() != 0 ? calculatePriceAndTax(ic, inoutLine.getReturn_Origin_InOutLine())
+				: calculatePriceAndTax(ic, inoutLine);
 	}
 
 	public static PriceAndTax calculatePriceAndTax(
