@@ -1,7 +1,6 @@
 package de.metas.server.housekeep;
 
 import org.adempiere.ad.housekeeping.spi.IStartupHouseKeepingTask;
-import org.compiere.SpringContextHolder;
 import org.springframework.stereotype.Component;
 
 import de.metas.security.RoleId;
@@ -21,11 +20,11 @@ import de.metas.user.UserId;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -34,7 +33,12 @@ import de.metas.user.UserId;
 public class ResetJsonReportsAuthTokenHouseKeepingTask implements IStartupHouseKeepingTask
 {
 
-	private final UserAuthTokenRepository  userAuthTokenRepo = SpringContextHolder.instance.getBean(UserAuthTokenRepository.class);
+	private final UserAuthTokenRepository userAuthTokenRepo;
+
+	public ResetJsonReportsAuthTokenHouseKeepingTask(final UserAuthTokenRepository userAuthTokenRepo)
+	{
+		this.userAuthTokenRepo = userAuthTokenRepo;
+	}
 
 	@Override
 	public void executeTask()
