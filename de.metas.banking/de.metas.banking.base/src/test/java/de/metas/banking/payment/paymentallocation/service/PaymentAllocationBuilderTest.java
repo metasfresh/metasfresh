@@ -120,486 +120,6 @@ public class PaymentAllocationBuilderTest
 		return Money.of(amountBD, euroCurrencyId);
 	}
 
-	@Test
-	public void test_NoDocuments()
-	{
-		assertThatThrownBy(() -> newPaymentAllocationBuilder().build())
-				.isInstanceOf(NoDocumentsPaymentAllocationException.class);
-	}
-
-	@Test
-	public void test_OneInvoice_NoPayments_JustDiscountAndWriteOff()
-	{
-		final PayableDocument invoice1;
-		final PaymentAllocationBuilder builder = newPaymentAllocationBuilder(
-				// Invoices
-				ImmutableList.of(
-						// InvoiceDocBaseType / OpenAmt / AppliedAmt / Discount / WriteOff
-						invoice1 = newInvoice(VendorInvoice, "8000", "0", "100", "200"))
-				// Payments
-				, ImmutableList.<PaymentDocument> of());
-
-		//
-		// Define expected candidates
-		final List<AllocationLineCandidate> candidatesExpected = ImmutableList.of(
-				// invoiceId / paymentId / AllocatedAmt / DiscountAmt / WriteOffAmt / OverUnderAmt / PaymentOverUnderAmt
-				createAllocationCandidate(InvoiceDiscountOrWriteOff, invoice1.getReference(), null, "0", "-100", "-200", "-7700", "0"));
-
-		//
-		// Check
-		assertExpected(candidatesExpected, builder);
-		assertInvoiceAllocatedAmt(invoice1.getInvoiceId(), -(100 + 200));
-		assertInvoiceAllocated(invoice1.getInvoiceId(), false);
-	}
-
-	@Test
-	public void test_OneVendorInvoice_OneVendorPayment()
-	{
-		final PaymentDocument payment1;
-		final PayableDocument invoice1;
-		final PaymentAllocationBuilder builder = newPaymentAllocationBuilder(
-				// Invoices
-				ImmutableList.of(
-						// InvoiceDocBaseType / OpenAmt / AppliedAmt / Discount / WriteOff
-						invoice1 = newInvoice(VendorInvoice, "8000", "5000", "100", "200"))
-				// Payments
-				, ImmutableList.of(
-						// PaymentId / PaymentDirection / OpenAmt / AppliedAmt
-						payment1 = newPaymentRow(PaymentDirection.OUTBOUND, "5000", "5000")));
-
-		//
-		// Define expected candidates
-		final List<AllocationLineCandidate> candidatesExpected = ImmutableList.of(
-				// invoiceId / paymentId / AllocatedAmt / DiscountAmt / WriteOffAmt / OverUnderAmt / PaymentOverUnderAmt
-				createAllocationCandidate(InvoiceToPayment, invoice1.getReference(), payment1.getReference(), "-5000", "-100", "-200", "-2700", "0"));
-
-		//
-		// Check
-		assertExpected(candidatesExpected, builder);
-		assertInvoiceAllocatedAmt(invoice1.getInvoiceId(), -(5000 + 100 + 200));
-		assertInvoiceAllocated(invoice1.getInvoiceId(), false);
-		assertPaymentAllocatedAmt(payment1.getPaymentId(), -5000);
-	}
-
-	@Test
-	public void test_NoInvoices_TwoPayments()
-	{
-		final PaymentDocument payment1, payment2;
-		final PaymentAllocationBuilder builder = newPaymentAllocationBuilder(
-				// Invoices
-				Arrays.<PayableDocument> asList()
-				// Payments
-				, ImmutableList.of(
-						// PaymentId / PaymentDirection / OpenAmt / AppliedAmt
-						payment1 = newPaymentRow(PaymentDirection.OUTBOUND, "5000", "5000"),
-						payment2 = newPaymentRow(PaymentDirection.INBOUND, "5000", "5000")));
-
-		//
-		// Define expected candidates
-		final List<AllocationLineCandidate> candidatesExpected = ImmutableList.of(
-				// invoiceId / paymentId / AllocatedAmt / DiscountAmt / WriteOffAmt / OverUnderAmt / PaymentOverUnderAmt
-				createAllocationCandidate(InboundPaymentToOutboundPayment, payment1.getReference(), payment2.getReference(), "-5000", "0", "0", "0", "0"));
-
-		//
-		// Check
-		assertExpected(candidatesExpected, builder);
-		assertPaymentAllocatedAmt(payment1.getPaymentId(), -5000);
-		assertPaymentAllocatedAmt(payment2.getPaymentId(), +5000);
-	}
-
-	@Test
-	public void test_NoInvoices_ThreePayments()
-	{
-		final PaymentDocument payment1, payment2, payment3;
-		final PaymentAllocationBuilder builder = newPaymentAllocationBuilder(
-				// Invoices
-				Arrays.<PayableDocument> asList()
-				// Payments
-				, ImmutableList.of(
-						// PaymentId / PaymentDirection / OpenAmt / AppliedAmt
-						payment1 = newPaymentRow(PaymentDirection.OUTBOUND, "5000", "5000"), //
-						payment2 = newPaymentRow(PaymentDirection.INBOUND, "3000", "3000"), //
-						payment3 = newPaymentRow(PaymentDirection.INBOUND, "2000", "2000") //
-				));
-
-		//
-		// Define expected candidates
-		final List<AllocationLineCandidate> candidatesExpected = ImmutableList.of(
-				// invoiceId / paymentId / AllocatedAmt / DiscountAmt / WriteOffAmt / OverUnderAmt / PaymentOverUnderAmt
-				createAllocationCandidate(InboundPaymentToOutboundPayment, payment1.getReference(), payment2.getReference(), "-3000", "0", "0", "-2000", "0"), //
-				createAllocationCandidate(InboundPaymentToOutboundPayment, payment1.getReference(), payment3.getReference(), "-2000", "0", "0", "0", "0"));
-
-		//
-		// Check
-		assertExpected(candidatesExpected, builder);
-		assertPaymentAllocatedAmt(payment1.getPaymentId(), -5000);
-		assertPaymentAllocatedAmt(payment2.getPaymentId(), +3000);
-		assertPaymentAllocatedAmt(payment3.getPaymentId(), +2000);
-	}
-
-	@Test
-	public void test_InvoiceAndCreditMemo_NoPayments()
-	{
-		final PayableDocument invoice1, invoice2;
-		final PaymentAllocationBuilder builder = newPaymentAllocationBuilder(
-				// Invoices
-				ImmutableList.of(
-						// InvoiceDocBaseType / OpenAmt / AppliedAmt / Discount / WriteOff
-						invoice1 = newInvoice(CustomerInvoice, "5000", "1000", "0", "0"),
-						invoice2 = newInvoice(CustomerCreditMemo, "1000", "1000", "0", "0") // CreditMemo
-				)
-				// Payments
-				, ImmutableList.<PaymentDocument> of());
-
-		//
-		// Define expected candidates
-		final List<AllocationLineCandidate> candidatesExpected = ImmutableList.of(
-				// invoiceId / paymentId / AllocatedAmt / DiscountAmt / WriteOffAmt / OverUnderAmt / PaymentOverUnderAmt
-				createAllocationCandidate(InvoiceToCreditMemo, invoice1.getReference(), invoice2.getReference(), "1000", "0", "0", "4000", "0"));
-
-		//
-		// Check
-		assertExpected(candidatesExpected, builder);
-		//
-		assertInvoiceAllocatedAmt(invoice1.getInvoiceId(), +1000);
-		assertInvoiceAllocated(invoice1.getInvoiceId(), false);
-		//
-		assertInvoiceAllocatedAmt(invoice2.getInvoiceId(), -1000);
-		assertInvoiceAllocated(invoice2.getInvoiceId(), true);
-	}
-
-	@Nested
-	public class test_SalesInvoiceAndPurchaseInvoice_NoPayments
-	{
-		private PayableDocument invoice1;
-		private PayableDocument invoice2;
-		private PaymentAllocationBuilder builder;
-
-		@BeforeEach
-		public void beforeEach()
-		{
-			builder = newPaymentAllocationBuilder(
-					// Invoices
-					ImmutableList.of(
-							// InvoiceDocBaseType / OpenAmt / AppliedAmt / Discount / WriteOff
-							invoice1 = newInvoice(CustomerInvoice, "5000", "1000", "0", "0"),
-							invoice2 = newInvoice(VendorInvoice, "1000", "1000", "0", "0") //
-					)
-					// Payments
-					, ImmutableList.<PaymentDocument> of());
-		}
-
-		@Test
-		public void purchaseSalesInvoiceCompensation_allowed()
-		{
-			builder.allowPurchaseSalesInvoiceCompensation(true);
-
-			//
-			// Define expected candidates
-			final List<AllocationLineCandidate> candidatesExpected = ImmutableList.of(
-					// invoiceId / paymentId / AllocatedAmt / DiscountAmt / WriteOffAmt / OverUnderAmt / PaymentOverUnderAmt
-					createAllocationCandidate(SalesInvoiceToPurchaseInvoice, invoice1.getReference(), invoice2.getReference(), "1000", "0", "0", "4000", "0"));
-
-			//
-			// Check
-			assertExpected(candidatesExpected, builder);
-			//
-			assertInvoiceAllocatedAmt(invoice1.getInvoiceId(), +1000);
-			assertInvoiceAllocated(invoice1.getInvoiceId(), false);
-			//
-			assertInvoiceAllocatedAmt(invoice2.getInvoiceId(), -1000);
-			assertInvoiceAllocated(invoice2.getInvoiceId(), true);
-		}
-
-		@Test
-		public void purchaseSalesInvoiceCompensation_notAllowed()
-		{
-			builder
-					.allowPurchaseSalesInvoiceCompensation(false)
-					.allowPartialAllocations(true);
-
-			final PaymentAllocationResult result = builder.build();
-			System.out.println(result);
-
-			assertThat(result.isOK()).isTrue();
-			assertThat(result.getCandidates()).isEmpty();
-		}
-	}
-
-	@Test
-	public void test_Vendor_MultiInvoice_MultiPayment()
-	{
-		// PaymentId / PaymentDirection / OpenAmt / AppliedAmt
-		final PaymentDocument payment1 = newPaymentRow(PaymentDirection.OUTBOUND, "5000", "5000");
-		final PaymentDocument payment2 = newPaymentRow(PaymentDirection.OUTBOUND, "5000", "5000");
-
-		// InvoiceDocBaseType / OpenAmt / AppliedAmt / Discount / WriteOff
-		final PayableDocument invoice1 = newInvoice(VendorInvoice, "8000", "6000", "1599", "1");
-		final PayableDocument invoice2 = newInvoice(VendorInvoice, "7100", "3000", "50", "50");
-
-		final PaymentAllocationBuilder builder = newPaymentAllocationBuilder(
-				// Invoices
-				ImmutableList.of(invoice1, invoice2)
-				// Payments
-				, ImmutableList.of(payment1, payment2));
-
-		assertThatThrownBy(() -> builder.build())
-				.isInstanceOf(MultipleVendorDocumentsException.class);
-	}
-
-	@Test
-	public void test_Sales_MultiInvoice_MultiPayment()
-	{
-		final PaymentDocument payment1, payment2;
-		final PayableDocument invoice1, invoice2, invoice3, invoice4;
-		final PaymentAllocationBuilder builder = newPaymentAllocationBuilder(
-				// Invoices
-				ImmutableList.of(
-						// InvoiceDocBaseType / OpenAmt / AppliedAmt / Discount / WriteOff
-						invoice1 = newInvoice(CustomerInvoice, "8000", "6000", "1599", "1"),
-						invoice2 = newInvoice(CustomerInvoice, "7100", "3000", "50", "50"),
-						invoice3 = newInvoice(CustomerInvoice, "1600", "1500", "100", "0"),
-						invoice4 = newInvoice(CustomerCreditMemo, "500", "500", "0", "0") // i.e. CreditMemo
-				)
-				// Payments
-				, ImmutableList.of(
-						// PaymentId / PaymentDirection / OpenAmt / AppliedAmt
-						payment1 = newPaymentRow(PaymentDirection.INBOUND, "5000", "5000"),
-						payment2 = newPaymentRow(PaymentDirection.INBOUND, "5000", "5000")));
-
-		//
-		// Define expected candidates
-		final List<AllocationLineCandidate> candidatesExpected = ImmutableList.of(
-				// invoiceId / paymentId / AllocatedAmt / DiscountAmt / WriteOffAmt / OverUnderAmt / PaymentOverUnderAmt
-				createAllocationCandidate(InvoiceToCreditMemo, invoice1.getReference(), invoice4.getReference(), "500", "1599", "1", "5900", "0")
-				//
-				, createAllocationCandidate(InvoiceToPayment, invoice1.getReference(), payment1.getReference(), "5000", "0", "0", "900", "0")
-				//
-				, createAllocationCandidate(InvoiceToPayment, invoice1.getReference(), payment2.getReference(), "500", "0", "0", "400", "4500")
-				//
-				, createAllocationCandidate(InvoiceToPayment, invoice2.getReference(), payment2.getReference(), "3000", "50", "50", "4000", "1500")
-				//
-				, createAllocationCandidate(InvoiceToPayment, invoice3.getReference(), payment2.getReference(), "1500", "100", "0", "0", "0"));
-
-		//
-		// Check
-		assertExpected(candidatesExpected, builder);
-		//
-		assertInvoiceAllocatedAmt(invoice1.getInvoiceId(), 500 + 1599 + 1 + 5000 + 500);
-		assertInvoiceAllocated(invoice1.getInvoiceId(), false);
-		//
-		assertInvoiceAllocatedAmt(invoice2.getInvoiceId(), 3000 + 50 + 50);
-		assertInvoiceAllocated(invoice2.getInvoiceId(), false);
-		//
-		assertInvoiceAllocatedAmt(invoice3.getInvoiceId(), 1500 + 100);
-		assertInvoiceAllocated(invoice3.getInvoiceId(), true);
-		//
-		assertInvoiceAllocatedAmt(invoice4.getInvoiceId(), -500); // credit memo
-		assertInvoiceAllocated(invoice4.getInvoiceId(), true);
-		//
-		assertPaymentAllocatedAmt(payment1.getPaymentId(), 5000);
-		assertPaymentAllocatedAmt(payment2.getPaymentId(), 5000);
-	}
-
-	@Test
-	public void test_CreditMemoInvoice_Payment()
-	{
-		final PaymentDocument payment1;
-		final PayableDocument invoice1;
-		final PaymentAllocationBuilder builder = newPaymentAllocationBuilder(
-				// Invoices
-				ImmutableList.of(
-						// InvoiceDocBaseType / OpenAmt / AppliedAmt / Discount / WriteOff
-						invoice1 = newInvoice(VendorCreditMemo, "100", "30", "0", "0"))
-				// Payments
-				, ImmutableList.of(
-						// PaymentId / PaymentDirection / OpenAmt / AppliedAmt
-						payment1 = newPaymentRow(PaymentDirection.INBOUND, "50", "30")));
-
-		//
-		// Define expected candidates
-		final List<AllocationLineCandidate> candidatesExpected = ImmutableList.of(
-				// invoiceId / paymentId / AllocatedAmt / DiscountAmt / WriteOffAmt / OverUnderAmt / PaymentOverUnderAmt
-				createAllocationCandidate(InvoiceToPayment, invoice1.getReference(), payment1.getReference(), "30", "0", "0", "70", "20"));
-
-		//
-		// Check
-		assertExpected(candidatesExpected, builder);
-		//
-		assertInvoiceAllocatedAmt(invoice1.getInvoiceId(), 30); // credit memo
-		assertInvoiceAllocated(invoice1.getInvoiceId(), false);
-		//
-		assertPaymentAllocatedAmt(payment1.getPaymentId(), 30);
-	}
-
-	@Test
-	public void test_RegularInvoice_CreditMemoInvoice_Payment()
-	{
-		final PaymentDocument payment1;
-		final PayableDocument invoice1;
-		final PayableDocument invoice2;
-		final PaymentAllocationBuilder builder = newPaymentAllocationBuilder(
-				// Invoices
-				ImmutableList.of(
-						// InvoiceDocBaseType / OpenAmt / AppliedAmt / Discount / WriteOff
-						invoice1 = newInvoice(VendorInvoice, "165", "100", "10", "5"),
-						invoice2 = newInvoice(VendorCreditMemo, "80", "80", "0", "0"))
-				// Payments
-				, ImmutableList.of(
-						// PaymentId / PaymentDirection / OpenAmt / AppliedAmt
-						payment1 = newPaymentRow(PaymentDirection.OUTBOUND, "20", "20")));
-
-		//
-		// Define expected candidates
-		final List<AllocationLineCandidate> candidatesExpected = ImmutableList.of(
-				// invoiceId / paymentId / AllocatedAmt / DiscountAmt / WriteOffAmt / OverUnderAmt / PaymentOverUnderAmt
-				createAllocationCandidate(InvoiceToCreditMemo, invoice1.getReference(), invoice2.getReference(), "-80", "-10", "-5", "-70", "0"),
-				createAllocationCandidate(InvoiceToPayment, invoice1.getReference(), payment1.getReference(), "-20", "0", "0", "-50", "0"));
-
-		//
-		// Check
-		assertExpected(candidatesExpected, builder);
-		//
-		assertInvoiceAllocatedAmt(invoice1.getInvoiceId(), -(100 + 10 + 5));
-		assertInvoiceAllocated(invoice1.getInvoiceId(), false);
-		//
-		assertInvoiceAllocatedAmt(invoice2.getInvoiceId(), +80); // CM
-		assertInvoiceAllocated(invoice2.getInvoiceId(), true);
-		//
-		assertPaymentAllocatedAmt(payment1.getPaymentId(), -20);
-	}
-
-	@Test
-	public void test_VendorInvoice_CustomerReceipt()
-	{
-		final PaymentAllocationBuilder builder = newPaymentAllocationBuilder(
-				// Invoices
-				ImmutableList.of(
-						// InvoiceDocBaseType / OpenAmt / AppliedAmt / Discount / WriteOff
-						newInvoice(VendorInvoice, "100", "100", "0", "0"))
-				// Payments
-				, ImmutableList.of(
-						// PaymentId / PaymentDirection / OpenAmt / AppliedAmt
-						newPaymentRow(PaymentDirection.INBOUND, "100", "100")));
-
-		assertThatThrownBy(() -> builder.build())
-				.isInstanceOf(PayableDocumentNotAllocatedException.class);
-	}
-
-	@Nested
-	public class payableRemainingOpenAmtPolicy
-	{
-		private PayableRemainingOpenAmtPolicy payableRemainingOpenAmtPolicy;
-		private boolean allowPartialAllocations = false;
-
-		private PayableDocument invoice1;
-		private PaymentDocument payment1;
-		private PaymentAllocationResult result;
-
-		private void setup()
-		{
-			result = newPaymentAllocationBuilder()
-					.payableDocuments(ImmutableList.of(
-							// InvoiceDocBaseType / OpenAmt / PayAmt / Discount / WriteOff
-							invoice1 = newInvoice(CustomerInvoice, "100", "100", "0", "0")))
-					.paymentDocuments(ImmutableList.of(
-							// PaymentDirection / OpenAmt / AmountToAllocate
-							payment1 = newPaymentRow(PaymentDirection.INBOUND, "10", "10")))
-					.payableRemainingOpenAmtPolicy(payableRemainingOpenAmtPolicy)
-					.allowPartialAllocations(allowPartialAllocations)
-					.build();
-		}
-
-		@Test
-		public void doNothing_disallowPartialAllocations()
-		{
-			payableRemainingOpenAmtPolicy = PayableRemainingOpenAmtPolicy.DO_NOTHING;
-			allowPartialAllocations = false;
-			assertThatThrownBy(() -> setup())
-					.isInstanceOf(PayableDocumentNotAllocatedException.class);
-		}
-
-		@Test
-		public void doNothing_allowPartialAllocations()
-		{
-			payableRemainingOpenAmtPolicy = PayableRemainingOpenAmtPolicy.DO_NOTHING;
-			allowPartialAllocations = true;
-			setup();
-
-			assertThat(result.getCandidates())
-					.hasSize(1)
-					.containsExactly(
-							allocation().type(InvoiceToPayment)
-									.payableRef(invoice1.getReference()).paymentRef(payment1.getReference())
-									.allocatedAmt("10").overUnderAmt("90")
-									.build());
-		}
-
-		@Test
-		public void discount()
-		{
-			payableRemainingOpenAmtPolicy = PayableRemainingOpenAmtPolicy.DISCOUNT;
-			setup();
-
-			assertThat(result.getCandidates())
-					.hasSize(2)
-					.containsExactly(
-							allocation().type(InvoiceToPayment)
-									.payableRef(invoice1.getReference()).paymentRef(payment1.getReference())
-									.allocatedAmt("10").overUnderAmt("90")
-									.build(),
-							allocation().type(InvoiceDiscountOrWriteOff)
-									.payableRef(invoice1.getReference())
-									.discountAmt("90")
-									.build());
-		}
-
-		@Test
-		public void writeOff()
-		{
-			payableRemainingOpenAmtPolicy = PayableRemainingOpenAmtPolicy.WRITE_OFF;
-			setup();
-
-			assertThat(result.getCandidates())
-					.hasSize(2)
-					.containsExactly(
-							allocation().type(InvoiceToPayment)
-									.payableRef(invoice1.getReference()).paymentRef(payment1.getReference())
-									.allocatedAmt("10").overUnderAmt("90")
-									.build(),
-							allocation().type(InvoiceDiscountOrWriteOff)
-									.payableRef(invoice1.getReference())
-									.writeOffAmt("90")
-									.build());
-		}
-
-	}
-
-	@Test
-	public void test_automaticallyWriteOff()
-	{
-		final PayableDocument invoice1;
-		final PaymentDocument payment1;
-
-		final PaymentAllocationBuilder builder = newPaymentAllocationBuilder()
-				.payableDocuments(ImmutableList.of(
-						// InvoiceDocBaseType / OpenAmt / PayAmt / Discount / WriteOff
-						invoice1 = newInvoice(CustomerInvoice, "100", "100", "0", "0")))
-				.paymentDocuments(ImmutableList.of(
-						// PaymentDirection / OpenAmt / AmountToAllocate
-						payment1 = newPaymentRow(PaymentDirection.INBOUND, "10", "10")))
-				.payableRemainingOpenAmtPolicy(PayableRemainingOpenAmtPolicy.WRITE_OFF);
-
-		//
-		// Define expected candidates
-		final List<AllocationLineCandidate> candidatesExpected = ImmutableList.of(
-				// invoiceId / paymentId / AllocatedAmt / DiscountAmt / WriteOffAmt / OverUnderAmt / PaymentOverUnderAmt
-				createAllocationCandidate(InvoiceToPayment, invoice1.getReference(), payment1.getReference(), "10", "0", "0", "90", "0"),
-				createAllocationCandidate(InvoiceDiscountOrWriteOff, invoice1.getReference(), null, "0", "0", "90", "0", "0"));
-
-		assertExpected(candidatesExpected, builder);
-	}
-
 	private final void assertExpected(final List<AllocationLineCandidate> candidatesExpected, final PaymentAllocationBuilder builder)
 	{
 		final PaymentAllocationResult result = builder.build();
@@ -704,7 +224,7 @@ public class PaymentAllocationBuilderTest
 		return docType;
 	}
 
-	private PaymentDocument newPaymentRow(
+	private PaymentDocument newPayment(
 			final PaymentDirection paymentDirection,
 			final String openAmtStr,
 			final String amountToAllocateStr)
@@ -823,5 +343,491 @@ public class PaymentAllocationBuilderTest
 		assertThat(actualCount)
 				.as("C_AllocationHdr count")
 				.isEqualTo(expectedCount);
+	}
+
+	//
+	//
+	// -----------------------------------------------
+	//
+	//
+
+	@Test
+	public void test_NoDocuments()
+	{
+		assertThatThrownBy(() -> newPaymentAllocationBuilder().build())
+				.isInstanceOf(NoDocumentsPaymentAllocationException.class);
+	}
+
+	@Test
+	public void test_OneInvoice_NoPayments_JustDiscountAndWriteOff()
+	{
+		final PayableDocument invoice1;
+		final PaymentAllocationBuilder builder = newPaymentAllocationBuilder(
+				// Invoices
+				ImmutableList.of(
+						// InvoiceDocBaseType / OpenAmt / AppliedAmt / Discount / WriteOff
+						invoice1 = newInvoice(VendorInvoice, "8000", "0", "100", "200"))
+				// Payments
+				, ImmutableList.<PaymentDocument> of());
+
+		//
+		// Define expected candidates
+		final List<AllocationLineCandidate> candidatesExpected = ImmutableList.of(
+				// invoiceId / paymentId / AllocatedAmt / DiscountAmt / WriteOffAmt / OverUnderAmt / PaymentOverUnderAmt
+				createAllocationCandidate(InvoiceDiscountOrWriteOff, invoice1.getReference(), null, "0", "-100", "-200", "-7700", "0"));
+
+		//
+		// Check
+		assertExpected(candidatesExpected, builder);
+		assertInvoiceAllocatedAmt(invoice1.getInvoiceId(), -(100 + 200));
+		assertInvoiceAllocated(invoice1.getInvoiceId(), false);
+	}
+
+	@Test
+	public void test_OneVendorInvoice_OneVendorPayment()
+	{
+		final PaymentDocument payment1;
+		final PayableDocument invoice1;
+		final PaymentAllocationBuilder builder = newPaymentAllocationBuilder(
+				// Invoices
+				ImmutableList.of(
+						// InvoiceDocBaseType / OpenAmt / AppliedAmt / Discount / WriteOff
+						invoice1 = newInvoice(VendorInvoice, "8000", "5000", "100", "200"))
+				// Payments
+				, ImmutableList.of(
+						// PaymentId / PaymentDirection / OpenAmt / AppliedAmt
+						payment1 = newPayment(PaymentDirection.OUTBOUND, "5000", "5000")));
+
+		//
+		// Define expected candidates
+		final List<AllocationLineCandidate> candidatesExpected = ImmutableList.of(
+				// invoiceId / paymentId / AllocatedAmt / DiscountAmt / WriteOffAmt / OverUnderAmt / PaymentOverUnderAmt
+				createAllocationCandidate(InvoiceToPayment, invoice1.getReference(), payment1.getReference(), "-5000", "-100", "-200", "-2700", "0"));
+
+		//
+		// Check
+		assertExpected(candidatesExpected, builder);
+		assertInvoiceAllocatedAmt(invoice1.getInvoiceId(), -(5000 + 100 + 200));
+		assertInvoiceAllocated(invoice1.getInvoiceId(), false);
+		assertPaymentAllocatedAmt(payment1.getPaymentId(), -5000);
+	}
+
+	@Test
+	public void test_NoInvoices_TwoPayments()
+	{
+		final PaymentDocument payment1, payment2;
+		final PaymentAllocationBuilder builder = newPaymentAllocationBuilder(
+				// Invoices
+				Arrays.<PayableDocument> asList()
+				// Payments
+				, ImmutableList.of(
+						// PaymentId / PaymentDirection / OpenAmt / AppliedAmt
+						payment1 = newPayment(PaymentDirection.OUTBOUND, "5000", "5000"),
+						payment2 = newPayment(PaymentDirection.INBOUND, "5000", "5000")));
+
+		//
+		// Define expected candidates
+		final List<AllocationLineCandidate> candidatesExpected = ImmutableList.of(
+				// invoiceId / paymentId / AllocatedAmt / DiscountAmt / WriteOffAmt / OverUnderAmt / PaymentOverUnderAmt
+				createAllocationCandidate(InboundPaymentToOutboundPayment, payment1.getReference(), payment2.getReference(), "-5000", "0", "0", "0", "0"));
+
+		//
+		// Check
+		assertExpected(candidatesExpected, builder);
+		assertPaymentAllocatedAmt(payment1.getPaymentId(), -5000);
+		assertPaymentAllocatedAmt(payment2.getPaymentId(), +5000);
+	}
+
+	@Test
+	public void test_NoInvoices_ThreePayments()
+	{
+		final PaymentDocument payment1, payment2, payment3;
+		final PaymentAllocationBuilder builder = newPaymentAllocationBuilder(
+				// Invoices
+				Arrays.<PayableDocument> asList()
+				// Payments
+				, ImmutableList.of(
+						// PaymentId / PaymentDirection / OpenAmt / AppliedAmt
+						payment1 = newPayment(PaymentDirection.OUTBOUND, "5000", "5000"), //
+						payment2 = newPayment(PaymentDirection.INBOUND, "3000", "3000"), //
+						payment3 = newPayment(PaymentDirection.INBOUND, "2000", "2000") //
+				));
+
+		//
+		// Define expected candidates
+		final List<AllocationLineCandidate> candidatesExpected = ImmutableList.of(
+				// invoiceId / paymentId / AllocatedAmt / DiscountAmt / WriteOffAmt / OverUnderAmt / PaymentOverUnderAmt
+				createAllocationCandidate(InboundPaymentToOutboundPayment, payment1.getReference(), payment2.getReference(), "-3000", "0", "0", "-2000", "0"), //
+				createAllocationCandidate(InboundPaymentToOutboundPayment, payment1.getReference(), payment3.getReference(), "-2000", "0", "0", "0", "0"));
+
+		//
+		// Check
+		assertExpected(candidatesExpected, builder);
+		assertPaymentAllocatedAmt(payment1.getPaymentId(), -5000);
+		assertPaymentAllocatedAmt(payment2.getPaymentId(), +3000);
+		assertPaymentAllocatedAmt(payment3.getPaymentId(), +2000);
+	}
+
+	@Test
+	public void test_InvoiceAndCreditMemo_NoPayments()
+	{
+		final PayableDocument invoice1, invoice2;
+		final PaymentAllocationBuilder builder = newPaymentAllocationBuilder(
+				// Invoices
+				ImmutableList.of(
+						// InvoiceDocBaseType / OpenAmt / AppliedAmt / Discount / WriteOff
+						invoice1 = newInvoice(CustomerInvoice, "5000", "1000", "0", "0"),
+						invoice2 = newInvoice(CustomerCreditMemo, "1000", "1000", "0", "0") // CreditMemo
+				)
+				// Payments
+				, ImmutableList.<PaymentDocument> of());
+
+		//
+		// Define expected candidates
+		final List<AllocationLineCandidate> candidatesExpected = ImmutableList.of(
+				// invoiceId / paymentId / AllocatedAmt / DiscountAmt / WriteOffAmt / OverUnderAmt / PaymentOverUnderAmt
+				createAllocationCandidate(InvoiceToCreditMemo, invoice1.getReference(), invoice2.getReference(), "1000", "0", "0", "4000", "0"));
+
+		//
+		// Check
+		assertExpected(candidatesExpected, builder);
+		//
+		assertInvoiceAllocatedAmt(invoice1.getInvoiceId(), +1000);
+		assertInvoiceAllocated(invoice1.getInvoiceId(), false);
+		//
+		assertInvoiceAllocatedAmt(invoice2.getInvoiceId(), -1000);
+		assertInvoiceAllocated(invoice2.getInvoiceId(), true);
+	}
+
+	@Nested
+	public class test_SalesInvoiceAndPurchaseInvoice_NoPayments
+	{
+		private PayableDocument invoice1;
+		private PayableDocument invoice2;
+		private PaymentAllocationBuilder builder;
+
+		@BeforeEach
+		public void beforeEach()
+		{
+			builder = newPaymentAllocationBuilder(
+					// Invoices
+					ImmutableList.of(
+							// InvoiceDocBaseType / OpenAmt / AppliedAmt / Discount / WriteOff
+							invoice1 = newInvoice(CustomerInvoice, "5000", "1000", "0", "0"),
+							invoice2 = newInvoice(VendorInvoice, "1000", "1000", "0", "0") //
+					)
+					// Payments
+					, ImmutableList.<PaymentDocument> of());
+		}
+
+		@Test
+		public void purchaseSalesInvoiceCompensation_allowed()
+		{
+			builder.allowPurchaseSalesInvoiceCompensation(true);
+
+			//
+			// Define expected candidates
+			final List<AllocationLineCandidate> candidatesExpected = ImmutableList.of(
+					// invoiceId / paymentId / AllocatedAmt / DiscountAmt / WriteOffAmt / OverUnderAmt / PaymentOverUnderAmt
+					createAllocationCandidate(SalesInvoiceToPurchaseInvoice, invoice1.getReference(), invoice2.getReference(), "1000", "0", "0", "4000", "0"));
+
+			//
+			// Check
+			assertExpected(candidatesExpected, builder);
+			//
+			assertInvoiceAllocatedAmt(invoice1.getInvoiceId(), +1000);
+			assertInvoiceAllocated(invoice1.getInvoiceId(), false);
+			//
+			assertInvoiceAllocatedAmt(invoice2.getInvoiceId(), -1000);
+			assertInvoiceAllocated(invoice2.getInvoiceId(), true);
+		}
+
+		@Test
+		public void purchaseSalesInvoiceCompensation_notAllowed()
+		{
+			builder
+					.allowPurchaseSalesInvoiceCompensation(false)
+					.allowPartialAllocations(true);
+
+			final PaymentAllocationResult result = builder.build();
+			System.out.println(result);
+
+			assertThat(result.isOK()).isTrue();
+			assertThat(result.getCandidates()).isEmpty();
+		}
+	}
+
+	@Test
+	public void test_Vendor_MultiInvoice_MultiPayment()
+	{
+		// PaymentId / PaymentDirection / OpenAmt / AppliedAmt
+		final PaymentDocument payment1 = newPayment(PaymentDirection.OUTBOUND, "5000", "5000");
+		final PaymentDocument payment2 = newPayment(PaymentDirection.OUTBOUND, "5000", "5000");
+
+		// InvoiceDocBaseType / OpenAmt / AppliedAmt / Discount / WriteOff
+		final PayableDocument invoice1 = newInvoice(VendorInvoice, "8000", "6000", "1599", "1");
+		final PayableDocument invoice2 = newInvoice(VendorInvoice, "7100", "3000", "50", "50");
+
+		final PaymentAllocationBuilder builder = newPaymentAllocationBuilder(
+				// Invoices
+				ImmutableList.of(invoice1, invoice2)
+				// Payments
+				, ImmutableList.of(payment1, payment2));
+
+		assertThatThrownBy(() -> builder.build())
+				.isInstanceOf(MultipleVendorDocumentsException.class);
+	}
+
+	@Test
+	public void test_Sales_MultiInvoice_MultiPayment()
+	{
+		final PaymentDocument payment1, payment2;
+		final PayableDocument invoice1, invoice2, invoice3, invoice4;
+		final PaymentAllocationBuilder builder = newPaymentAllocationBuilder(
+				// Invoices
+				ImmutableList.of(
+						// InvoiceDocBaseType / OpenAmt / AppliedAmt / Discount / WriteOff
+						invoice1 = newInvoice(CustomerInvoice, "8000", "6000", "1599", "1"),
+						invoice2 = newInvoice(CustomerInvoice, "7100", "3000", "50", "50"),
+						invoice3 = newInvoice(CustomerInvoice, "1600", "1500", "100", "0"),
+						invoice4 = newInvoice(CustomerCreditMemo, "500", "500", "0", "0") // i.e. CreditMemo
+				)
+				// Payments
+				, ImmutableList.of(
+						// PaymentId / PaymentDirection / OpenAmt / AppliedAmt
+						payment1 = newPayment(PaymentDirection.INBOUND, "5000", "5000"),
+						payment2 = newPayment(PaymentDirection.INBOUND, "5000", "5000")));
+
+		//
+		// Define expected candidates
+		final List<AllocationLineCandidate> candidatesExpected = ImmutableList.of(
+				// invoiceId / paymentId / AllocatedAmt / DiscountAmt / WriteOffAmt / OverUnderAmt / PaymentOverUnderAmt
+				createAllocationCandidate(InvoiceToCreditMemo, invoice1.getReference(), invoice4.getReference(), "500", "1599", "1", "5900", "0")
+				//
+				, createAllocationCandidate(InvoiceToPayment, invoice1.getReference(), payment1.getReference(), "5000", "0", "0", "900", "0")
+				//
+				, createAllocationCandidate(InvoiceToPayment, invoice1.getReference(), payment2.getReference(), "500", "0", "0", "400", "4500")
+				//
+				, createAllocationCandidate(InvoiceToPayment, invoice2.getReference(), payment2.getReference(), "3000", "50", "50", "4000", "1500")
+				//
+				, createAllocationCandidate(InvoiceToPayment, invoice3.getReference(), payment2.getReference(), "1500", "100", "0", "0", "0"));
+
+		//
+		// Check
+		assertExpected(candidatesExpected, builder);
+		//
+		assertInvoiceAllocatedAmt(invoice1.getInvoiceId(), 500 + 1599 + 1 + 5000 + 500);
+		assertInvoiceAllocated(invoice1.getInvoiceId(), false);
+		//
+		assertInvoiceAllocatedAmt(invoice2.getInvoiceId(), 3000 + 50 + 50);
+		assertInvoiceAllocated(invoice2.getInvoiceId(), false);
+		//
+		assertInvoiceAllocatedAmt(invoice3.getInvoiceId(), 1500 + 100);
+		assertInvoiceAllocated(invoice3.getInvoiceId(), true);
+		//
+		assertInvoiceAllocatedAmt(invoice4.getInvoiceId(), -500); // credit memo
+		assertInvoiceAllocated(invoice4.getInvoiceId(), true);
+		//
+		assertPaymentAllocatedAmt(payment1.getPaymentId(), 5000);
+		assertPaymentAllocatedAmt(payment2.getPaymentId(), 5000);
+	}
+
+	@Test
+	public void test_CreditMemoInvoice_Payment()
+	{
+		final PaymentDocument payment1;
+		final PayableDocument invoice1;
+		final PaymentAllocationBuilder builder = newPaymentAllocationBuilder(
+				// Invoices
+				ImmutableList.of(
+						// InvoiceDocBaseType / OpenAmt / AppliedAmt / Discount / WriteOff
+						invoice1 = newInvoice(VendorCreditMemo, "100", "30", "0", "0"))
+				// Payments
+				, ImmutableList.of(
+						// PaymentId / PaymentDirection / OpenAmt / AppliedAmt
+						payment1 = newPayment(PaymentDirection.INBOUND, "50", "30")));
+
+		//
+		// Define expected candidates
+		final List<AllocationLineCandidate> candidatesExpected = ImmutableList.of(
+				// invoiceId / paymentId / AllocatedAmt / DiscountAmt / WriteOffAmt / OverUnderAmt / PaymentOverUnderAmt
+				createAllocationCandidate(InvoiceToPayment, invoice1.getReference(), payment1.getReference(), "30", "0", "0", "70", "20"));
+
+		//
+		// Check
+		assertExpected(candidatesExpected, builder);
+		//
+		assertInvoiceAllocatedAmt(invoice1.getInvoiceId(), 30); // credit memo
+		assertInvoiceAllocated(invoice1.getInvoiceId(), false);
+		//
+		assertPaymentAllocatedAmt(payment1.getPaymentId(), 30);
+	}
+
+	@Test
+	public void test_RegularInvoice_CreditMemoInvoice_Payment()
+	{
+		final PaymentDocument payment1;
+		final PayableDocument invoice1;
+		final PayableDocument invoice2;
+		final PaymentAllocationBuilder builder = newPaymentAllocationBuilder(
+				// Invoices
+				ImmutableList.of(
+						// InvoiceDocBaseType / OpenAmt / AppliedAmt / Discount / WriteOff
+						invoice1 = newInvoice(VendorInvoice, "165", "100", "10", "5"),
+						invoice2 = newInvoice(VendorCreditMemo, "80", "80", "0", "0"))
+				// Payments
+				, ImmutableList.of(
+						// PaymentId / PaymentDirection / OpenAmt / AppliedAmt
+						payment1 = newPayment(PaymentDirection.OUTBOUND, "20", "20")));
+
+		//
+		// Define expected candidates
+		final List<AllocationLineCandidate> candidatesExpected = ImmutableList.of(
+				// invoiceId / paymentId / AllocatedAmt / DiscountAmt / WriteOffAmt / OverUnderAmt / PaymentOverUnderAmt
+				createAllocationCandidate(InvoiceToCreditMemo, invoice1.getReference(), invoice2.getReference(), "-80", "-10", "-5", "-70", "0"),
+				createAllocationCandidate(InvoiceToPayment, invoice1.getReference(), payment1.getReference(), "-20", "0", "0", "-50", "0"));
+
+		//
+		// Check
+		assertExpected(candidatesExpected, builder);
+		//
+		assertInvoiceAllocatedAmt(invoice1.getInvoiceId(), -(100 + 10 + 5));
+		assertInvoiceAllocated(invoice1.getInvoiceId(), false);
+		//
+		assertInvoiceAllocatedAmt(invoice2.getInvoiceId(), +80); // CM
+		assertInvoiceAllocated(invoice2.getInvoiceId(), true);
+		//
+		assertPaymentAllocatedAmt(payment1.getPaymentId(), -20);
+	}
+
+	@Test
+	public void test_VendorInvoice_CustomerReceipt()
+	{
+		final PaymentAllocationBuilder builder = newPaymentAllocationBuilder(
+				// Invoices
+				ImmutableList.of(
+						// InvoiceDocBaseType / OpenAmt / AppliedAmt / Discount / WriteOff
+						newInvoice(VendorInvoice, "100", "100", "0", "0"))
+				// Payments
+				, ImmutableList.of(
+						// PaymentId / PaymentDirection / OpenAmt / AppliedAmt
+						newPayment(PaymentDirection.INBOUND, "100", "100")));
+
+		assertThatThrownBy(() -> builder.build())
+				.isInstanceOf(PayableDocumentNotAllocatedException.class);
+	}
+
+	@Nested
+	public class payableRemainingOpenAmtPolicy
+	{
+		private PayableRemainingOpenAmtPolicy payableRemainingOpenAmtPolicy;
+		private boolean allowPartialAllocations = false;
+
+		private PayableDocument invoice1;
+		private PaymentDocument payment1;
+		private PaymentAllocationResult result;
+
+		private void setup()
+		{
+			result = newPaymentAllocationBuilder()
+					.payableDocuments(ImmutableList.of(
+							// InvoiceDocBaseType / OpenAmt / PayAmt / Discount / WriteOff
+							invoice1 = newInvoice(CustomerInvoice, "100", "100", "0", "0")))
+					.paymentDocuments(ImmutableList.of(
+							// PaymentDirection / OpenAmt / AmountToAllocate
+							payment1 = newPayment(PaymentDirection.INBOUND, "10", "10")))
+					.payableRemainingOpenAmtPolicy(payableRemainingOpenAmtPolicy)
+					.allowPartialAllocations(allowPartialAllocations)
+					.build();
+		}
+
+		@Test
+		public void doNothing_disallowPartialAllocations()
+		{
+			payableRemainingOpenAmtPolicy = PayableRemainingOpenAmtPolicy.DO_NOTHING;
+			allowPartialAllocations = false;
+			assertThatThrownBy(() -> setup())
+					.isInstanceOf(PayableDocumentNotAllocatedException.class);
+		}
+
+		@Test
+		public void doNothing_allowPartialAllocations()
+		{
+			payableRemainingOpenAmtPolicy = PayableRemainingOpenAmtPolicy.DO_NOTHING;
+			allowPartialAllocations = true;
+			setup();
+
+			assertThat(result.getCandidates())
+					.hasSize(1)
+					.containsExactly(
+							allocation().type(InvoiceToPayment)
+									.payableRef(invoice1.getReference()).paymentRef(payment1.getReference())
+									.allocatedAmt("10").overUnderAmt("90")
+									.build());
+		}
+
+		@Test
+		public void discount()
+		{
+			payableRemainingOpenAmtPolicy = PayableRemainingOpenAmtPolicy.DISCOUNT;
+			setup();
+
+			assertThat(result.getCandidates())
+					.hasSize(2)
+					.containsExactly(
+							allocation().type(InvoiceToPayment)
+									.payableRef(invoice1.getReference()).paymentRef(payment1.getReference())
+									.allocatedAmt("10").overUnderAmt("90")
+									.build(),
+							allocation().type(InvoiceDiscountOrWriteOff)
+									.payableRef(invoice1.getReference())
+									.discountAmt("90")
+									.build());
+		}
+
+		@Test
+		public void writeOff()
+		{
+			payableRemainingOpenAmtPolicy = PayableRemainingOpenAmtPolicy.WRITE_OFF;
+			setup();
+
+			assertThat(result.getCandidates())
+					.hasSize(2)
+					.containsExactly(
+							allocation().type(InvoiceToPayment)
+									.payableRef(invoice1.getReference()).paymentRef(payment1.getReference())
+									.allocatedAmt("10").overUnderAmt("90")
+									.build(),
+							allocation().type(InvoiceDiscountOrWriteOff)
+									.payableRef(invoice1.getReference())
+									.writeOffAmt("90")
+									.build());
+		}
+
+	}
+
+	@Test
+	public void test_automaticallyWriteOff()
+	{
+		final PayableDocument invoice1;
+		final PaymentDocument payment1;
+
+		final PaymentAllocationBuilder builder = newPaymentAllocationBuilder()
+				.payableDocuments(ImmutableList.of(
+						// InvoiceDocBaseType / OpenAmt / PayAmt / Discount / WriteOff
+						invoice1 = newInvoice(CustomerInvoice, "100", "100", "0", "0")))
+				.paymentDocuments(ImmutableList.of(
+						// PaymentDirection / OpenAmt / AmountToAllocate
+						payment1 = newPayment(PaymentDirection.INBOUND, "10", "10")))
+				.payableRemainingOpenAmtPolicy(PayableRemainingOpenAmtPolicy.WRITE_OFF);
+
+		//
+		// Define expected candidates
+		final List<AllocationLineCandidate> candidatesExpected = ImmutableList.of(
+				// invoiceId / paymentId / AllocatedAmt / DiscountAmt / WriteOffAmt / OverUnderAmt / PaymentOverUnderAmt
+				createAllocationCandidate(InvoiceToPayment, invoice1.getReference(), payment1.getReference(), "10", "0", "0", "90", "0"),
+				createAllocationCandidate(InvoiceDiscountOrWriteOff, invoice1.getReference(), null, "0", "0", "90", "0", "0"));
+
+		assertExpected(candidatesExpected, builder);
 	}
 }
