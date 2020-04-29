@@ -856,13 +856,13 @@ public class PaymentAllocationBuilder
 		return this;
 	}
 
-	public PaymentAllocationBuilder paymentDocuments(final Collection<? extends IPaymentDocument> paymentDocuments)
+	public PaymentAllocationBuilder paymentDocuments(final Collection<PaymentDocument> paymentDocuments)
 	{
 		_paymentDocuments = ImmutableList.copyOf(paymentDocuments);
 		return this;
 	}
 
-	public PaymentAllocationBuilder paymentDocument(final IPaymentDocument paymentDocument)
+	public PaymentAllocationBuilder paymentDocument(final PaymentDocument paymentDocument)
 	{
 		return paymentDocuments(ImmutableList.of(paymentDocument));
 	}

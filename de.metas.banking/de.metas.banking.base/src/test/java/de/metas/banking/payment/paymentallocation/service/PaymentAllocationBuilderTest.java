@@ -137,9 +137,7 @@ public class PaymentAllocationBuilderTest
 						// InvoiceType / OpenAmt / AppliedAmt / Discount / WriteOff
 						invoice1 = newInvoice(VendorInvoice, "8000", "0", "100", "200"))
 				// Payments
-				, Arrays.<IPaymentDocument> asList(
-				// PaymentId / PaymentDirection / OpenAmt / AppliedAmt
-				));
+				, ImmutableList.<PaymentDocument> of());
 
 		//
 		// Define expected candidates
@@ -251,7 +249,7 @@ public class PaymentAllocationBuilderTest
 						invoice2 = newInvoice(CustomerCreditMemo, "1000", "1000", "0", "0") // CreditMemo
 				)
 				// Payments
-				, Arrays.<IPaymentDocument> asList());
+				, ImmutableList.<PaymentDocument> of());
 
 		//
 		// Define expected candidates
@@ -282,7 +280,7 @@ public class PaymentAllocationBuilderTest
 						invoice2 = newInvoice(VendorInvoice, "1000", "1000", "0", "0") //
 				)
 				// Payments
-				, Arrays.<IPaymentDocument> asList());
+				, ImmutableList.<PaymentDocument> of());
 
 		//
 		// Define expected candidates
@@ -602,7 +600,7 @@ public class PaymentAllocationBuilderTest
 
 	private PaymentAllocationBuilder newPaymentAllocationBuilder(
 			final Collection<PayableDocument> invoices,
-			final Collection<IPaymentDocument> payments)
+			final Collection<PaymentDocument> payments)
 	{
 		return newPaymentAllocationBuilder()
 				.payableDocuments(invoices)
