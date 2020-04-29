@@ -5,10 +5,10 @@ import static de.metas.banking.payment.paymentallocation.service.AllocationLineC
 import static de.metas.banking.payment.paymentallocation.service.AllocationLineCandidate.AllocationLineCandidateType.InvoiceToCreditMemo;
 import static de.metas.banking.payment.paymentallocation.service.AllocationLineCandidate.AllocationLineCandidateType.InvoiceToPayment;
 import static de.metas.banking.payment.paymentallocation.service.AllocationLineCandidate.AllocationLineCandidateType.SalesInvoiceToPurchaseInvoice;
-import static de.metas.banking.payment.paymentallocation.service.PaymentAllocationBuilderTest.InvoiceType.CustomerCreditMemo;
-import static de.metas.banking.payment.paymentallocation.service.PaymentAllocationBuilderTest.InvoiceType.CustomerInvoice;
-import static de.metas.banking.payment.paymentallocation.service.PaymentAllocationBuilderTest.InvoiceType.VendorCreditMemo;
-import static de.metas.banking.payment.paymentallocation.service.PaymentAllocationBuilderTest.InvoiceType.VendorInvoice;
+import static de.metas.invoice.InvoiceDocBaseType.CustomerCreditMemo;
+import static de.metas.invoice.InvoiceDocBaseType.CustomerInvoice;
+import static de.metas.invoice.InvoiceDocBaseType.VendorCreditMemo;
+import static de.metas.invoice.InvoiceDocBaseType.VendorInvoice;
 
 /*
  * #%L
@@ -53,7 +53,6 @@ import org.compiere.model.I_C_AllocationHdr;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Payment;
-import org.compiere.model.X_C_DocType;
 import org.compiere.util.TimeUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
@@ -68,6 +67,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.impl.PlainCurrencyDAO;
 import de.metas.document.engine.IDocument;
+import de.metas.invoice.InvoiceDocBaseType;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice.service.IInvoiceDAO;
@@ -97,7 +97,7 @@ public class PaymentAllocationBuilderTest
 	private final OrgId adOrgId = OrgId.ofRepoId(1000000); // just a dummy value
 	private final BPartnerId bpartnerId = BPartnerId.ofRepoId(1); // dummy value
 	private CurrencyId euroCurrencyId;
-	private Map<InvoiceType, I_C_DocType> invoiceDocTypes;
+	private Map<InvoiceDocBaseType, I_C_DocType> invoiceDocTypes;
 
 	@BeforeEach
 	public void init()
@@ -134,7 +134,7 @@ public class PaymentAllocationBuilderTest
 		final PaymentAllocationBuilder builder = newPaymentAllocationBuilder(
 				// Invoices
 				ImmutableList.of(
-						// InvoiceType / OpenAmt / AppliedAmt / Discount / WriteOff
+						// InvoiceDocBaseType / OpenAmt / AppliedAmt / Discount / WriteOff
 						invoice1 = newInvoice(VendorInvoice, "8000", "0", "100", "200"))
 				// Payments
 				, ImmutableList.<PaymentDocument> of());
@@ -160,7 +160,7 @@ public class PaymentAllocationBuilderTest
 		final PaymentAllocationBuilder builder = newPaymentAllocationBuilder(
 				// Invoices
 				ImmutableList.of(
-						// InvoiceType / OpenAmt / AppliedAmt / Discount / WriteOff
+						// InvoiceDocBaseType / OpenAmt / AppliedAmt / Discount / WriteOff
 						invoice1 = newInvoice(VendorInvoice, "8000", "5000", "100", "200"))
 				// Payments
 				, ImmutableList.of(
@@ -244,7 +244,7 @@ public class PaymentAllocationBuilderTest
 		final PaymentAllocationBuilder builder = newPaymentAllocationBuilder(
 				// Invoices
 				ImmutableList.of(
-						// InvoiceType / OpenAmt / AppliedAmt / Discount / WriteOff
+						// InvoiceDocBaseType / OpenAmt / AppliedAmt / Discount / WriteOff
 						invoice1 = newInvoice(CustomerInvoice, "5000", "1000", "0", "0"),
 						invoice2 = newInvoice(CustomerCreditMemo, "1000", "1000", "0", "0") // CreditMemo
 				)
@@ -281,7 +281,7 @@ public class PaymentAllocationBuilderTest
 			builder = newPaymentAllocationBuilder(
 					// Invoices
 					ImmutableList.of(
-							// InvoiceType / OpenAmt / AppliedAmt / Discount / WriteOff
+							// InvoiceDocBaseType / OpenAmt / AppliedAmt / Discount / WriteOff
 							invoice1 = newInvoice(CustomerInvoice, "5000", "1000", "0", "0"),
 							invoice2 = newInvoice(VendorInvoice, "1000", "1000", "0", "0") //
 					)
@@ -333,7 +333,7 @@ public class PaymentAllocationBuilderTest
 		final PaymentDocument payment1 = newPaymentRow(PaymentDirection.OUTBOUND, "5000", "5000");
 		final PaymentDocument payment2 = newPaymentRow(PaymentDirection.OUTBOUND, "5000", "5000");
 
-		// InvoiceType / OpenAmt / AppliedAmt / Discount / WriteOff
+		// InvoiceDocBaseType / OpenAmt / AppliedAmt / Discount / WriteOff
 		final PayableDocument invoice1 = newInvoice(VendorInvoice, "8000", "6000", "1599", "1");
 		final PayableDocument invoice2 = newInvoice(VendorInvoice, "7100", "3000", "50", "50");
 
@@ -355,7 +355,7 @@ public class PaymentAllocationBuilderTest
 		final PaymentAllocationBuilder builder = newPaymentAllocationBuilder(
 				// Invoices
 				ImmutableList.of(
-						// InvoiceType / OpenAmt / AppliedAmt / Discount / WriteOff
+						// InvoiceDocBaseType / OpenAmt / AppliedAmt / Discount / WriteOff
 						invoice1 = newInvoice(CustomerInvoice, "8000", "6000", "1599", "1"),
 						invoice2 = newInvoice(CustomerInvoice, "7100", "3000", "50", "50"),
 						invoice3 = newInvoice(CustomerInvoice, "1600", "1500", "100", "0"),
@@ -409,7 +409,7 @@ public class PaymentAllocationBuilderTest
 		final PaymentAllocationBuilder builder = newPaymentAllocationBuilder(
 				// Invoices
 				ImmutableList.of(
-						// InvoiceType / OpenAmt / AppliedAmt / Discount / WriteOff
+						// InvoiceDocBaseType / OpenAmt / AppliedAmt / Discount / WriteOff
 						invoice1 = newInvoice(VendorCreditMemo, "100", "30", "0", "0"))
 				// Payments
 				, ImmutableList.of(
@@ -441,7 +441,7 @@ public class PaymentAllocationBuilderTest
 		final PaymentAllocationBuilder builder = newPaymentAllocationBuilder(
 				// Invoices
 				ImmutableList.of(
-						// InvoiceType / OpenAmt / AppliedAmt / Discount / WriteOff
+						// InvoiceDocBaseType / OpenAmt / AppliedAmt / Discount / WriteOff
 						invoice1 = newInvoice(VendorInvoice, "165", "100", "10", "5"),
 						invoice2 = newInvoice(VendorCreditMemo, "80", "80", "0", "0"))
 				// Payments
@@ -475,7 +475,7 @@ public class PaymentAllocationBuilderTest
 		final PaymentAllocationBuilder builder = newPaymentAllocationBuilder(
 				// Invoices
 				ImmutableList.of(
-						// InvoiceType / OpenAmt / AppliedAmt / Discount / WriteOff
+						// InvoiceDocBaseType / OpenAmt / AppliedAmt / Discount / WriteOff
 						newInvoice(VendorInvoice, "100", "100", "0", "0"))
 				// Payments
 				, ImmutableList.of(
@@ -500,7 +500,7 @@ public class PaymentAllocationBuilderTest
 		{
 			result = newPaymentAllocationBuilder()
 					.payableDocuments(ImmutableList.of(
-							// InvoiceType / OpenAmt / PayAmt / Discount / WriteOff
+							// InvoiceDocBaseType / OpenAmt / PayAmt / Discount / WriteOff
 							invoice1 = newInvoice(CustomerInvoice, "100", "100", "0", "0")))
 					.paymentDocuments(ImmutableList.of(
 							// PaymentDirection / OpenAmt / AmountToAllocate
@@ -583,7 +583,7 @@ public class PaymentAllocationBuilderTest
 
 		final PaymentAllocationBuilder builder = newPaymentAllocationBuilder()
 				.payableDocuments(ImmutableList.of(
-						// InvoiceType / OpenAmt / PayAmt / Discount / WriteOff
+						// InvoiceDocBaseType / OpenAmt / PayAmt / Discount / WriteOff
 						invoice1 = newInvoice(CustomerInvoice, "100", "100", "0", "0")))
 				.paymentDocuments(ImmutableList.of(
 						// PaymentDirection / OpenAmt / AmountToAllocate
@@ -638,7 +638,7 @@ public class PaymentAllocationBuilderTest
 	 * NOTE: amounts shall be CreditMemo adjusted, but not AP adjusted
 	 */
 	private PayableDocument newInvoice(
-			final InvoiceType invoiceType,
+			final InvoiceDocBaseType InvoiceDocBaseType,
 			final String openAmtStr,
 			final String payAmtStr,
 			final String discountAmtStr,
@@ -646,8 +646,8 @@ public class PaymentAllocationBuilderTest
 	{
 		final Money openAmt_CMAdjusted_APAdjusted = euro(openAmtStr);
 		final Money openAmt = openAmt_CMAdjusted_APAdjusted
-				.negateIf(invoiceType.isCreditMemo())
-				.negateIf(!invoiceType.isSoTrx());
+				.negateIf(InvoiceDocBaseType.isCreditMemo())
+				.negateIf(!InvoiceDocBaseType.isSales());
 
 		final AllocationAmounts amountsToAllocate_CMAdjusted_APAdjusted = AllocationAmounts.builder()
 				.payAmt(euro(payAmtStr))
@@ -655,15 +655,15 @@ public class PaymentAllocationBuilderTest
 				.writeOffAmt(euro(writeOffAmtStr))
 				.build();
 		final AllocationAmounts amountsToAllocate = amountsToAllocate_CMAdjusted_APAdjusted
-				.negateIf(invoiceType.isCreditMemo())
-				.negateIf(!invoiceType.isSoTrx());
+				.negateIf(InvoiceDocBaseType.isCreditMemo())
+				.negateIf(!InvoiceDocBaseType.isSales());
 
-		// invoiceType.isCreditMemo() ? amountsToAllocate_CMAdjusted_APAdjusted.negate() : amountsToAllocate_CMAdjusted_APAdjusted;
+		// InvoiceDocBaseType.isCreditMemo() ? amountsToAllocate_CMAdjusted_APAdjusted.negate() : amountsToAllocate_CMAdjusted_APAdjusted;
 
 		//
 		// Create the invoice record (needed for the BL which calculates how much was allocated)
 		final int invoiceId = nextInvoiceId++;
-		final I_C_DocType docType = getInvoiceDocType(invoiceType);
+		final I_C_DocType docType = getInvoiceDocType(InvoiceDocBaseType);
 		final I_C_Invoice invoice = InterfaceWrapperHelper.newInstance(I_C_Invoice.class);
 		invoice.setC_Invoice_ID(invoiceId);
 		invoice.setDocumentNo("InvoiceDocNo" + invoiceId);
@@ -683,36 +683,23 @@ public class PaymentAllocationBuilderTest
 				.bpartnerId(BPartnerId.ofRepoId(invoice.getC_BPartner_ID()))
 				.documentNo(invoice.getDocumentNo())
 				.soTrx(SOTrx.ofBoolean(invoice.isSOTrx()))
-				.creditMemo(invoiceType.isCreditMemo())
+				.creditMemo(InvoiceDocBaseType.isCreditMemo())
 				.openAmt(openAmt)
 				.amountsToAllocate(amountsToAllocate)
 				.build();
 	}
 
-	private I_C_DocType getInvoiceDocType(final InvoiceType invoiceType)
+	private I_C_DocType getInvoiceDocType(final InvoiceDocBaseType InvoiceDocBaseType)
 	{
-		return invoiceDocTypes.computeIfAbsent(invoiceType, this::createInvoiceDocType);
+		return invoiceDocTypes.computeIfAbsent(InvoiceDocBaseType, this::createInvoiceDocType);
 	}
 
-	private final I_C_DocType createInvoiceDocType(final InvoiceType invoiceType)
+	private final I_C_DocType createInvoiceDocType(final InvoiceDocBaseType invoiceDocBaseType)
 	{
-		final String docBaseType;
-		final boolean isSOTrx;
-		if (invoiceType.isSoTrx())
-		{
-			docBaseType = invoiceType.isCreditMemo() ? X_C_DocType.DOCBASETYPE_ARCreditMemo : X_C_DocType.DOCBASETYPE_ARInvoice;
-			isSOTrx = true;
-		}
-		else
-		{
-			docBaseType = invoiceType.isCreditMemo() ? X_C_DocType.DOCBASETYPE_APCreditMemo : X_C_DocType.DOCBASETYPE_APInvoice;
-			isSOTrx = false;
-		}
-
 		final I_C_DocType docType = InterfaceWrapperHelper.newInstance(I_C_DocType.class);
-		docType.setDocBaseType(docBaseType);
-		docType.setName(invoiceType.toString());
-		docType.setIsSOTrx(isSOTrx);
+		docType.setDocBaseType(invoiceDocBaseType.getCode());
+		docType.setName(invoiceDocBaseType.toString());
+		docType.setIsSOTrx(invoiceDocBaseType.isSales());
 		InterfaceWrapperHelper.save(docType);
 		return docType;
 	}
@@ -837,33 +824,4 @@ public class PaymentAllocationBuilderTest
 				.as("C_AllocationHdr count")
 				.isEqualTo(expectedCount);
 	}
-
-	enum InvoiceType
-	{
-		VendorInvoice(SOTrx.PURCHASE, false),//
-		VendorCreditMemo(SOTrx.PURCHASE, true),//
-		CustomerInvoice(SOTrx.SALES, false),//
-		CustomerCreditMemo(SOTrx.SALES, true) //
-		;
-
-		private final boolean soTrx;
-		private final boolean creditMemo;
-
-		InvoiceType(final SOTrx soTrx, final boolean creditMemo)
-		{
-			this.soTrx = soTrx.toBoolean();
-			this.creditMemo = creditMemo;
-		}
-
-		public boolean isSoTrx()
-		{
-			return soTrx;
-		}
-
-		public boolean isCreditMemo()
-		{
-			return creditMemo;
-		}
-	}
-
 }
