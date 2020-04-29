@@ -3,7 +3,6 @@ package de.metas.banking.payment.paymentallocation.service;
 import javax.annotation.Nullable;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Order;
@@ -15,7 +14,6 @@ import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.order.OrderId;
 import de.metas.organization.OrgId;
-import de.metas.util.Check;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -48,6 +46,7 @@ public class PayableDocument
 
 	@Getter
 	private final BPartnerId bpartnerId;
+	@Getter
 	private final String documentNo;
 	@Getter
 	private final SOTrx soTrx;
@@ -72,7 +71,7 @@ public class PayableDocument
 			@Nullable final InvoiceId invoiceId,
 			@Nullable final OrderId prepayOrderId,
 			@Nullable final BPartnerId bpartnerId,
-			@Nullable final String documentNo,
+			@NonNull final String documentNo,
 			@NonNull final SOTrx soTrx,
 			final boolean creditMemo,
 			//
@@ -117,22 +116,6 @@ public class PayableDocument
 		this.amountsToAllocateInitial = amountsToAllocate;
 		this.amountsToAllocate = amountsToAllocate;
 		this.amountsAllocated = amountsToAllocate.toZero();
-	}
-
-	public String getDocumentNo()
-	{
-		if (!Check.isEmpty(documentNo, true))
-		{
-			return documentNo;
-		}
-
-		final ITableRecordReference reference = getReference();
-		if (reference != null)
-		{
-			return "<" + reference.getRecord_ID() + ">";
-		}
-
-		return "?";
 	}
 
 	public CurrencyId getCurrencyId()
