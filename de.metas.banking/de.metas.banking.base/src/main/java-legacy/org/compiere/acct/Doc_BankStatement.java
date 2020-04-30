@@ -260,7 +260,7 @@ public class Doc_BankStatement extends Doc<DocLine_BankStatement>
 				.setDocLine(line)
 				.setAccount(getAccount(Doc.ACCTTYPE_BankInTransit, as))
 				.setCurrencyId(line.getCurrencyId())
-				.setCurrencyConversionCtx(line.getBankTransferCurrencyConversionCtx())
+				.setCurrencyConversionCtx(line.getBankTransferCurrencyConversionCtx(as.getCurrencyId()))
 				.orgId(bankOrgId.isRegular() ? bankOrgId : line.getOrgId()) // bank org, line org
 				.bpartnerIdIfNotNull(line.getBPartnerId());
 
