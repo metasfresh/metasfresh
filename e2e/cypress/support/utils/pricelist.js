@@ -70,16 +70,16 @@ export class PriceList {
       cy.setCheckBoxValue('IsSOPriceList', priceList.isSalesPriceList);
 
       priceList.priceListVersions.forEach(version => {
-        PriceList.applyPriceListVersion(version);
+        let debugName = `${priceList.name} - ${version.validFrom}`;
+        PriceList.applyPriceListVersion(version, debugName);
       });
     });
   }
 
-  static applyPriceListVersion(priceListVersion) {
-    describe(`Create new PriceListVersion ${priceListVersion.name}`, function() {
+  static applyPriceListVersion(priceListVersion, debugName) {
+    describe(`Create new PriceListVersion ${debugName}`, function() {
       cy.selectTab('M_PriceList_Version');
       cy.pressAddNewButton();
-      cy.writeIntoStringField('Name', priceListVersion.name, true, null, true);
       cy.writeIntoStringField('ValidFrom', priceListVersion.validFrom, true, null, true);
       if (priceListVersion.discountSchema) {
         cy.selectInListField('M_DiscountSchema_ID', priceListVersion.discountSchema, true);
@@ -93,12 +93,6 @@ export class PriceList {
 }
 
 export class PriceListVersion {
-  setName(name) {
-    cy.log(`PriceListVersion - set n = ${name}`);
-    this.name = name;
-    return this;
-  }
-
   setDescription(description) {
     cy.log(`PriceListVersion - set Description = ${description}`);
     this.description = description;
