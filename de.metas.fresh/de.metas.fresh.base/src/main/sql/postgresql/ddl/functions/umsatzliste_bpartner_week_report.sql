@@ -76,7 +76,7 @@ SELECT
 	(SELECT name FROM C_BPartner WHERE C_BPartner_ID = $10 AND isActive = 'Y') AS param_bp,
 	(SELECT COALESCE(pt.name, p.name) FROM M_Product p 
 		LEFT OUTER JOIN M_Product_Trl pt ON p.M_Product_ID = pt.M_Product_ID AND pt.AD_Language = $16 AND pt.isActive = 'Y'
-		WHERE p.M_Product_ID = $11 AND p.isActive = 'Y'
+		WHERE p.M_Product_ID = $11 
 	) AS param_product,
 	(SELECT name FROM M_Product_Category WHERE M_Product_Category_ID = $12 AND isActive = 'Y') AS param_Product_Category,
 	(SELECT String_Agg(ai_value, ', ' ORDER BY ai_Value) FROM Report.fresh_Attributes WHERE M_AttributeSetInstance_ID = $13) AS Param_Attributes,
@@ -118,7 +118,7 @@ FROM
 			INNER JOIN M_InOutLine iol ON iol.M_InOutLine_ID = iciol.M_InOutLine_ID AND iol.isActive = 'Y'
 			INNER JOIN M_InOut io ON iol.M_InOut_ID = io.M_InOut_ID AND io.isActive = 'Y'
 
-			INNER JOIN M_Product p ON iol.M_Product_ID = p.M_Product_ID AND p.isActive = 'Y'
+			INNER JOIN M_Product p ON iol.M_Product_ID = p.M_Product_ID 
 			
 			LEFT OUTER JOIN C_UOM uom ON ic.Price_UOM_ID = uom.C_UOM_ID AND uom.isActive = 'Y'
 			LEFT OUTER JOIN C_UOM_Conversion uconv ON uconv.C_UOM_ID = iol.C_UOM_ID
@@ -169,7 +169,7 @@ FROM
 			iciol.ad_org_id
 	) a
 	INNER JOIN C_BPartner bp ON a.C_BPartner_ID = bp.C_BPartner_ID AND bp.isActive = 'Y'
-	INNER JOIN M_Product p ON a.M_Product_ID = p.M_Product_ID AND p.isActive = 'Y'
+	INNER JOIN M_Product p ON a.M_Product_ID = p.M_Product_ID 
 	LEFT OUTER JOIN M_Product_Trl pt ON p.M_Product_ID = pt.M_Product_ID AND pt.AD_Language = $16 AND pt.isActive = 'Y'
 	INNER JOIN M_Product_Category pc ON p.M_Product_Category_ID = pc.M_Product_Category_ID AND pc.isActive = 'Y'
 	

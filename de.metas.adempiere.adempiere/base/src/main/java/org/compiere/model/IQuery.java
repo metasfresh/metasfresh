@@ -1,10 +1,8 @@
-package org.compiere.model;
-
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -21,6 +19,8 @@ package org.compiere.model;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+package org.compiere.model;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -137,8 +137,16 @@ public interface IQuery<T>
 		return mapById(getModelClass());
 	}
 
+	/**
+	 * @return first ID or -1 if no records are found.
+	 * No exception is thrown if multiple results exist, they are just ignored.
+	 */
 	int firstId();
 
+	/**
+	 * @return first ID or null if no records are found.
+	 * No exception is thrown if multiple results exist, they are just ignored.
+	 */
 	@Nullable
 	default <ID extends RepoIdAware> ID firstId(@NonNull final java.util.function.Function<Integer, ID> idMapper)
 	{
@@ -146,13 +154,15 @@ public interface IQuery<T>
 	}
 
 	/**
-	 * Return first ID. If there are more results, an exception is thrown.
-	 *
-	 * @return first ID or -1 if not found
-	 * @throws DBException
+	 * @return first ID or -1 if no records are found.
+	 * An exception is thrown if multiple results exist.
 	 */
 	int firstIdOnly() throws DBException;
 
+	/**
+	 * @return first ID or null if no records are found.
+	 * An exception is thrown if multiple results exist.
+	 */
 	@Nullable
 	default <ID extends RepoIdAware> ID firstIdOnly(final java.util.function.Function<Integer, ID> idMapper)
 	{
@@ -185,8 +195,7 @@ public interface IQuery<T>
 	 * @return
 	 * @throws DBException
 	 */
-	@NonNull
-	<ET extends T> ET firstNotNull(Class<ET> clazz) throws DBException;
+	@NonNull <ET extends T> ET firstNotNull(Class<ET> clazz) throws DBException;
 
 	/**
 	 * Return first model that match query criteria. If there are more records that match the criteria, then an exception will be thrown.
@@ -205,8 +214,7 @@ public interface IQuery<T>
 	 * @return
 	 * @throws DBException
 	 */
-	@NonNull
-	<ET extends T> ET firstOnlyNotNull(Class<ET> clazz) throws DBException;
+	@NonNull <ET extends T> ET firstOnlyNotNull(Class<ET> clazz) throws DBException;
 
 	/**
 	 * Same as {@link #firstOnly(Class)}, but in case there are more then one record <code>null</code> will be returned instead of throwing exception.
@@ -361,7 +369,7 @@ public interface IQuery<T>
 	 * For a detailed description about LIMIT and OFFSET concepts, please take a look <a href="http://www.postgresql.org/docs/9.1/static/queries-limit.html">here</a>.
 	 *
 	 * @param limit integer greater than zero or {@link #NO_LIMIT}. Note: if the {@link #iterate()} method is used and the underlying database supports paging, then the limit value (if set) is used as
-	 *            page size.
+	 *              page size.
 	 * @return this
 	 */
 	IQuery<T> setLimit(int limit);
@@ -371,8 +379,8 @@ public interface IQuery<T>
 	 * <p>
 	 * For a detailed description about LIMIT and OFFSET concepts, please take a look <a href="http://www.postgresql.org/docs/9.1/static/queries-limit.html">here</a>.
 	 *
-	 * @param limit integer greater than zero or {@link #NO_LIMIT}. Note: if the {@link #iterate()} method is used and the underlying database supports paging, then the limit value (if set) is used as
-	 *            page size.
+	 * @param limit  integer greater than zero or {@link #NO_LIMIT}. Note: if the {@link #iterate()} method is used and the underlying database supports paging, then the limit value (if set) is used as
+	 *               page size.
 	 * @param offset integer greater than zero or {@link #NO_LIMIT}
 	 * @return this
 	 */
@@ -472,7 +480,7 @@ public interface IQuery<T>
 	 * Selects DISTINCT given column and return the result as a list.
 	 *
 	 * @param columnName
-	 * @param valueType value type
+	 * @param valueType  value type
 	 * @see #listColumns(String...)
 	 */
 	<AT> List<AT> listDistinct(String columnName, Class<AT> valueType);

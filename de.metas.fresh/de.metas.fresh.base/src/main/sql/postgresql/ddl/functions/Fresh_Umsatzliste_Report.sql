@@ -117,7 +117,7 @@ FROM
 			/* Please note: This is an important implicit filter. Inner Joining the Product
 			 * filters Fact Acct records for e.g. Taxes
 			 */  
-			INNER JOIN M_Product pr ON fa.M_Product_ID = pr.M_Product_ID AND pr.isActive = 'Y'
+			INNER JOIN M_Product pr ON fa.M_Product_ID = pr.M_Product_ID 
 				AND pr.M_Product_Category_ID !=  getSysConfigAsNumeric('PackingMaterialProductCategoryID', fa.AD_Client_ID, fa.AD_Org_ID)
 			INNER JOIN C_BPartner bp ON fa.C_BPartner_ID = bp.C_BPartner_ID AND bp.isActive = 'Y'
 
