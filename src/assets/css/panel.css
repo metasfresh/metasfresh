@@ -253,6 +253,10 @@
     min-width: 74px;
 }
 
+.panel-full-width {
+    width: 100%;
+}
+
 .prompt-button-wrapper {
     width: 100%;
     text-align: right;
