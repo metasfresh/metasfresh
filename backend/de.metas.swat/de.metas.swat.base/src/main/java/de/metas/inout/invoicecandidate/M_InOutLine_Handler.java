@@ -329,8 +329,9 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 
 		//
 		// Pricing Informations
-		final PriceAndTax priceAndQty = inOutLineRecord.getReturn_Origin_InOutLine_ID() != 0 ? calculatePriceAndQuantityAndUpdate(icRecord, inOutLineRecord.getReturn_Origin_InOutLine())
-				: calculatePriceAndQuantityAndUpdate(icRecord, inOutLineRecord);
+		org.compiere.model.I_M_InOutLine inOutLineRecordToUse = inOutLineRecord.getReturn_Origin_InOutLine_ID() > 0 ? inOutLineRecord.getReturn_Origin_InOutLine() : inOutLineRecord;
+		final PriceAndTax priceAndQty = calculatePriceAndQuantityAndUpdate(icRecord, inOutLineRecordToUse);
+
 		//
 		// Description
 		icRecord.setDescription(inOut.getDescription());
@@ -790,9 +791,9 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 	public PriceAndTax calculatePriceAndTax(final I_C_Invoice_Candidate ic)
 	{
 		final I_M_InOutLine inoutLine = getM_InOutLine(ic);
+		org.compiere.model.I_M_InOutLine inOutLineRecordToUse = inoutLine.getReturn_Origin_InOutLine_ID() > 0 ? inoutLine.getReturn_Origin_InOutLine() : inoutLine;
 
-		return inoutLine.getReturn_Origin_InOutLine_ID() != 0 ? calculatePriceAndTax(ic, inoutLine.getReturn_Origin_InOutLine())
-				: calculatePriceAndTax(ic, inoutLine);
+		return calculatePriceAndTax(ic, inOutLineRecordToUse);
 	}
 
 	public static PriceAndTax calculatePriceAndTax(
@@ -821,7 +822,7 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 				.taxCategoryId(pricingResult.getTaxCategoryId())
 				//
 				.priceEntered(pricingResult.getPriceStd())
-				.priceActual(inoutLine.getC_OrderLine_ID() != 0 ? inoutLine.getC_OrderLine().getPriceActual() : pricingResult.getPriceStd())
+				.priceActual(inoutLine.getC_OrderLine_ID() != 0 ? Services.get(IOrderLineBL.class).getPriceActual(inoutLine.getC_OrderLine()) : pricingResult.getPriceStd())
 				.priceUOMId(pricingResult.getPriceUomId()) // 07090 when we set PriceActual, we shall also set PriceUOM.
 				.invoicableQtyBasedOn(pricingResult.getInvoicableQtyBasedOn())
 				.taxIncluded(taxIncluded)
