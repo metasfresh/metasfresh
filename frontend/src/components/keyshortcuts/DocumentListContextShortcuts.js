@@ -45,7 +45,6 @@ export default class DocumentListContextShortcuts extends Component {
       }
     },
     COLLAPSE_INDENT: (event) => {
-      if (this.props.commentsOpened) return false;
       event.preventDefault();
 
       if (this.props.handleIndent) {
@@ -99,5 +98,4 @@ DocumentListContextShortcuts.propTypes = {
   handleAdvancedEdit: PropTypes.func,
   getAllLeafs: PropTypes.any,
   handleIndent: PropTypes.func,
-  commentsOpened: PropTypes.bool,
 };

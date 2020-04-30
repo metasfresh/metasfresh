@@ -8,7 +8,6 @@ import pluginsHandler from './pluginsHandler';
 import viewHandler from './viewHandler';
 import filters from './filterHandler';
 import table from './tableHandler';
-import commentsPanel from './commentsPanel';
 
 export default {
   appHandler,
@@ -19,6 +18,5 @@ export default {
   pluginsHandler,
   filters,
   table,
-  commentsPanel,
   routing,
 };

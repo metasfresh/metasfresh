@@ -1367,7 +1367,6 @@ class Table extends Component {
             }
             getAllLeafs={this.getAllLeafs}
             handleIndent={this.handleShortcutIndent}
-            commentsOpened={this.props.commentsOpened}
           />
         )}
 
@@ -1401,7 +1400,6 @@ const mapStateToProps = (state) => ({
       ? state.appHandler.me.language.key.includes('de')
       : false,
   activeSort: state.table ? state.table.activeSort : false,
-  commentsOpened: state.commentsPanel ? state.commentsPanel.isOpen : false,
 });
 
 const clickOutsideConfig = {

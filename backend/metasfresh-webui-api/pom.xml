@@ -19,8 +19,6 @@
 	<properties>
 		<spring-boot.version>1.5.3.RELEASE</spring-boot.version>
 		<metasfresh.version>10.0.0</metasfresh.version>
-		
-		<license.name>gpl_v3</license.name>
 	</properties>
 
 	<dependencies>

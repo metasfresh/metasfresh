@@ -263,7 +263,6 @@ class SubHeader extends Component {
       handleLetter,
       handlePrint,
       openModal,
-      handleComments,
       standardActions,
       windowId,
     } = this.props;
@@ -326,13 +325,6 @@ class SubHeader extends Component {
         icon: 'meta-icon-delete',
         caption: counterpart.translate('window.Delete.caption'),
         hotkey: keymap.DELETE_DOCUMENT,
-      },
-      {
-        action: 'comments',
-        handler: handleComments,
-        icon: 'meta-icon-message',
-        caption: counterpart.translate('window.comments.caption'),
-        hotkey: keymap.OPEN_COMMENTS,
       },
     ]
       .filter((docLink) => standardActions.has(docLink.action))
@@ -571,7 +563,6 @@ SubHeader.propTypes = {
   handleClone: PropTypes.any,
   handleDelete: PropTypes.any,
   handleEmail: PropTypes.any,
-  handleComments: PropTypes.func,
   handleLetter: PropTypes.any,
   handleEditModeToggle: PropTypes.any,
   handlePrint: PropTypes.any,
