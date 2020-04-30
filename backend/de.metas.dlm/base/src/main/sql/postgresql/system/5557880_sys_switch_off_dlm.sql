@@ -5,7 +5,8 @@ SET IsActive='N',
 	UpdatedBy=99, 
 	Description=COALESCE(Description,'') || '
 Deactivated for now, until we revised the topic of "partition-boundaries". Until then we can''t make sure that E.g. a connected graph starting at one invoice contains only a limited subset of all invoices.' 
-WHERE ModelVAlidationClass='de.metas.dlm.model.interceptor.Main';
+WHERE ModelValidationClass='de.metas.dlm.model.interceptor.Main' AND Description not ilike '%Deactivated for now, until we revised the topic of "partition-boundaries". Until then we can''t make sure that E.g. a connected graph starting at one invoice contains only a limited subset of all invoices.%'
+;
 
 UPDATE AD_Sysconfig 
 SET Value='N', 
