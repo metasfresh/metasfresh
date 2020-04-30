@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import classnames from 'classnames';
+import { updateCommentsPanelOpenFlag } from '../../actions/CommentsPanelActions';
 
 import { processNewRecord } from '../../actions/GenericActions';
 import {
@@ -11,6 +12,7 @@ import {
   createWindow,
   handleProcessResponse,
   fetchChangeLog,
+  callAPI,
   patch,
 } from '../../actions/WindowActions';
 import { startProcess } from '../../api';
@@ -24,6 +26,7 @@ import ModalContextShortcuts from '../keyshortcuts/ModalContextShortcuts';
 import Tooltips from '../tooltips/Tooltips.js';
 import Indicator from './Indicator';
 import OverlayField from './OverlayField';
+import CommentsPanel from '../comments/CommentsPanel';
 
 /**
  * @file Modal is an overlay view that can be opened over the main view.
@@ -172,14 +175,26 @@ class Modal extends Component {
       parentViewId,
       parentViewSelectedIds,
     } = this.props;
+    let request = null;
 
     switch (modalType) {
       case 'static':
         {
-          let request = null;
           if (staticModalType === 'about') {
             request = dispatch(
               fetchChangeLog(windowType, dataId, tabId, rowId)
+            );
+          }
+          if (staticModalType === 'comments') {
+            request = dispatch(
+              callAPI({
+                windowId: windowType,
+                docId: dataId,
+                tabId,
+                rowId,
+                target: staticModalType,
+                verb: 'GET',
+              })
             );
           }
 
@@ -313,7 +328,9 @@ class Modal extends Component {
     const { dispatch, rawModalVisible } = this.props;
 
     dispatch(closeModal());
-
+    // make sure that on closing the modal for comments `isOpen `flag is closed
+    // if you don't do this you will have COLLAPSE_INDENT issue  (see: keymap.js)
+    dispatch(updateCommentsPanelOpenFlag(false));
     if (!rawModalVisible) {
       document.body.style.overflow = 'auto';
     }
@@ -419,6 +436,9 @@ class Modal extends Component {
         let content = null;
         if (staticModalType === 'about') {
           content = <ChangeLogModal data={data} />;
+        }
+        if (staticModalType === 'comments') {
+          content = <CommentsPanel windowId={windowType} docId={dataId} />;
         }
         return (
           <div className="window-wrapper">

@@ -242,6 +242,24 @@ class Header extends Component {
   };
 
   /**
+   * @method handleComments
+   * @summary opens the modal with the comments panel
+   */
+  handleComments = () => {
+    const { windowId } = this.props;
+    this.openModal(
+      windowId,
+      'static',
+      counterpart.translate('window.comments.caption'),
+      null,
+      null,
+      null,
+      null,
+      'comments'
+    );
+  };
+
+  /**
    * @method openModel
    * @summary ToDo: Describe the method
    * @param {string} windowId
@@ -768,6 +786,7 @@ class Header extends Component {
             handleDelete={this.handleDelete}
             handleEmail={this.handleEmail}
             handleLetter={this.handleLetter}
+            handleComments={this.handleComments}
             redirect={this.redirect}
             disableOnClickOutside={!isSubheaderShow}
             breadcrumb={breadcrumb}
@@ -832,6 +851,7 @@ class Header extends Component {
               : undefined
           }
           handleEmail={this.handleEmail}
+          handleComments={this.handleComments}
           handleLetter={this.handleLetter}
           handleDelete={dataId ? this.handleDelete : undefined}
           handleClone={
