@@ -40,10 +40,12 @@ import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.ICurrencyBL;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.money.CurrencyConversionTypeId;
+import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentId;
 import de.metas.payment.api.IPaymentBL;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 /**
  * Bank Statement Line
@@ -77,6 +79,7 @@ class DocLine_BankStatement extends DocLine<Doc_BankStatement>
 		m_StmtAmt = line.getStmtAmt();
 		m_InterestAmt = line.getInterestAmt();
 		m_TrxAmt = line.getTrxAmt();
+		fixedCurrencyRate = line.getCurrencyRate();
 		//
 		setDateDoc(TimeUtil.asLocalDate(line.getValutaDate()));
 		setBPartnerId(BPartnerId.ofRepoIdOrNull(line.getC_BPartner_ID()));
@@ -102,6 +105,7 @@ class DocLine_BankStatement extends DocLine<Doc_BankStatement>
 	private final BigDecimal m_TrxAmt;
 	private final BigDecimal m_StmtAmt;
 	private final BigDecimal m_InterestAmt;
+	private final BigDecimal fixedCurrencyRate;
 
 	public final List<BankStatementLineReference> getReferences()
 	{
@@ -210,26 +214,27 @@ class DocLine_BankStatement extends DocLine<Doc_BankStatement>
 	}
 
 	/**
-	 * @return the currency conversion used for bank transfer (i.e. Spot)
+	 * @return the currency conversion used for bank transfer
 	 */
-	public CurrencyConversionContext getBankTransferCurrencyConversionCtx()
+	public CurrencyConversionContext getBankTransferCurrencyConversionCtx(@NonNull final CurrencyId acctSchemaCurrencyId)
 	{
-		return getCurrencyConversionCtx(ConversionTypeMethod.Spot);
-	}
+		final CurrencyConversionTypeId conversionTypeId = currencyDAO.getConversionTypeId(ConversionTypeMethod.Spot);
 
-	private final CurrencyConversionContext getCurrencyConversionCtx(final ConversionTypeMethod type)
-	{
-		final CurrencyConversionTypeId conversionTypeId = currencyDAO.getConversionTypeId(type);
-		return getCurrencyConversionCtx(conversionTypeId);
-	}
-
-	private final CurrencyConversionContext getCurrencyConversionCtx(final CurrencyConversionTypeId conversionTypeId)
-	{
-		return currencyConversionBL.createCurrencyConversionContext(
+		CurrencyConversionContext conversionCtx = currencyConversionBL.createCurrencyConversionContext(
 				getDateAcct(),
 				conversionTypeId,
 				getClientId(),
 				getOrgId());
+
+		if (fixedCurrencyRate != null && fixedCurrencyRate.signum() != 0)
+		{
+			conversionCtx = conversionCtx.withFixedConversionRate(
+					getCurrencyId(),
+					acctSchemaCurrencyId,
+					fixedCurrencyRate);
+		}
+
+		return conversionCtx;
 	}
 
 	public boolean isBankTransfer()

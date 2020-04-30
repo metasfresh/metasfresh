@@ -16,6 +16,28 @@
  *****************************************************************************/
 package org.compiere.acct;
 
+import java.math.BigDecimal;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.time.LocalDate;
+
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.DBException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.warehouse.api.IWarehouseDAO;
+import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_RevenueRecognition_Plan;
+import org.compiere.model.I_Fact_Acct;
+import org.compiere.model.I_M_Movement;
+import org.compiere.model.MAccount;
+import org.compiere.model.X_Fact_Acct;
+import org.compiere.util.DB;
+import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
+
 import de.metas.acct.api.AccountDimension;
 import de.metas.acct.api.AccountId;
 import de.metas.acct.api.AcctSchema;
@@ -47,43 +69,22 @@ import de.metas.util.Check;
 import de.metas.util.NumberUtils;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.exceptions.DBException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.warehouse.api.IWarehouseDAO;
-import org.compiere.model.I_C_BPartner_Location;
-import org.compiere.model.I_C_RevenueRecognition_Plan;
-import org.compiere.model.I_Fact_Acct;
-import org.compiere.model.I_M_Movement;
-import org.compiere.model.MAccount;
-import org.compiere.model.X_Fact_Acct;
-import org.compiere.util.DB;
-import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
-
-import java.math.BigDecimal;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.time.LocalDate;
 
 /**
  * Accounting Fact Entry.
  *
  * @author Jorg Janke
  * @version $Id: FactLine.java,v 1.3 2006/07/30 00:53:33 jjanke Exp $
- * <p>
- * Contributor(s):
- * Chris Farley: Fix Bug [ 1657372 ] M_MatchInv records can not be balanced
- * https://sourceforge.net/forum/message.php?msg_id=4151117
- * Carlos Ruiz - globalqss: Add setAmtAcct method rounded by Currency
- * Armen Rizal, Goodwill Consulting
- * <li>BF [ 1745154 ] Cost in Reversing Material Related Docs Bayu Sistematika -
- * <li>BF [ 2213252 ] Matching Inv-Receipt generated unproperly value for src
- * amt Teo Sarca
- * <li>FR [ 2819081 ] FactLine.getDocLine should be public https://sourceforge.net/tracker/?func=detail&atid=879335&aid=2819081&group_id=176962
+ *          <p>
+ *          Contributor(s):
+ *          Chris Farley: Fix Bug [ 1657372 ] M_MatchInv records can not be balanced
+ *          https://sourceforge.net/forum/message.php?msg_id=4151117
+ *          Carlos Ruiz - globalqss: Add setAmtAcct method rounded by Currency
+ *          Armen Rizal, Goodwill Consulting
+ *          <li>BF [ 1745154 ] Cost in Reversing Material Related Docs Bayu Sistematika -
+ *          <li>BF [ 2213252 ] Matching Inv-Receipt generated unproperly value for src
+ *          amt Teo Sarca
+ *          <li>FR [ 2819081 ] FactLine.getDocLine should be public https://sourceforge.net/tracker/?func=detail&atid=879335&aid=2819081&group_id=176962
  */
 public final class FactLine extends X_Fact_Acct
 {
@@ -92,16 +93,6 @@ public final class FactLine extends X_Fact_Acct
 	 */
 	private static final long serialVersionUID = 1287219868802190295L;
 
-	/**
-	 * Bank Statement
-	 **/
-	private final String DOCTYPE_Bank_Statement = "CMB";
-
-	/**
-	 * Bank Statement
-	 **/
-	private final String DOCTYPE_GL_Journal = "GLJ";
-
 	FactLine(final int AD_Table_ID, final int Record_ID)
 	{
 		this(AD_Table_ID, Record_ID, 0);
@@ -109,8 +100,8 @@ public final class FactLine extends X_Fact_Acct
 
 	/**
 	 * @param AD_Table_ID - Table of Document Source
-	 * @param Record_ID   - Record of document
-	 * @param Line_ID     - Optional line id
+	 * @param Record_ID - Record of document
+	 * @param Line_ID - Optional line id
 	 */
 	FactLine(final int AD_Table_ID, final int Record_ID, final int Line_ID)
 	{
@@ -283,7 +274,7 @@ public final class FactLine extends X_Fact_Acct
 	/**
 	 * Set Source Amounts
 	 *
-	 * @param currencyId  currency
+	 * @param currencyId currency
 	 * @param AmtSourceDr source amount dr
 	 * @param AmtSourceCr source amount cr
 	 * @return true, if any if the amount is not zero
@@ -393,8 +384,8 @@ public final class FactLine extends X_Fact_Acct
 	 * Set Accounted Amounts rounded by currency
 	 *
 	 * @param currencyId currency
-	 * @param AmtAcctDr  acct amount dr
-	 * @param AmtAcctCr  acct amount cr
+	 * @param AmtAcctDr acct amount dr
+	 * @param AmtAcctCr acct amount cr
 	 */
 	public void setAmtAcct(final CurrencyId currencyId, final BigDecimal AmtAcctDr, final BigDecimal AmtAcctCr)
 	{
@@ -443,7 +434,7 @@ public final class FactLine extends X_Fact_Acct
 	/**
 	 * Set Document Info
 	 *
-	 * @param doc     document
+	 * @param doc document
 	 * @param docLine doc line
 	 */
 	protected void setDocumentInfo(final Doc<?> doc, final DocLine<?> docLine)
@@ -729,7 +720,7 @@ public final class FactLine extends X_Fact_Acct
 	 * Set Location from Locator
 	 *
 	 * @param M_Locator_ID locator
-	 * @param isFrom       from
+	 * @param isFrom from
 	 */
 	public void setLocationFromLocator(final int M_Locator_ID, final boolean isFrom)
 	{
@@ -773,7 +764,7 @@ public final class FactLine extends X_Fact_Acct
 	 * Set Location from Busoness Partner Location
 	 *
 	 * @param C_BPartner_Location_ID bp location
-	 * @param isFrom                 from
+	 * @param isFrom from
 	 */
 	public void setLocationFromBPartner(final int C_BPartner_Location_ID, final boolean isFrom)
 	{
@@ -816,7 +807,7 @@ public final class FactLine extends X_Fact_Acct
 	 * Set Location from Organization
 	 *
 	 * @param AD_Org_ID org
-	 * @param isFrom    from
+	 * @param isFrom from
 	 */
 	public void setLocationFromOrg(final int AD_Org_ID, final boolean isFrom)
 	{
@@ -1077,28 +1068,22 @@ public final class FactLine extends X_Fact_Acct
 		}
 		else
 		{
-			final ICurrencyBL currencyConversionBL = Services.get(ICurrencyBL.class);
-			final CurrencyConversionContext conversionCtx = getCurrencyConversionCtx();
-			final CurrencyRate currencyRate = currencyConversionBL.getCurrencyRate(conversionCtx, currencyId, acctCurrencyId);
+			final CurrencyRate currencyRate = getCurrencyRate(currencyId, acctCurrencyId);
 			final BigDecimal amtAcctDr = currencyRate.convertAmount(getAmtSourceDr());
 			final BigDecimal amtAcctCr = currencyRate.convertAmount(getAmtSourceCr());
 
 			setAmtAcctDr(amtAcctDr);
 			setAmtAcctCr(amtAcctCr);
-
-			final String docType = getDoc().getDocumentType();
-
-			if (docType.equals(DOCTYPE_GL_Journal) || docType.equals(DOCTYPE_Bank_Statement))
-			{
-				final BigDecimal lineCurrencyRate = getDocLine().getValueAsBD("currencyrate", null);
-				setCurrencyRate(lineCurrencyRate != null ? lineCurrencyRate : currencyRate.getConversionRate());
-			}
-			else
-			{
-				setCurrencyRate(currencyRate.getConversionRate());
-			}
+			setCurrencyRate(currencyRate.getConversionRate());
 		}
 	}    // convert
+
+	private CurrencyRate getCurrencyRate(final CurrencyId currencyId, final CurrencyId acctCurrencyId)
+	{
+		final ICurrencyBL currencyConversionBL = Services.get(ICurrencyBL.class);
+		final CurrencyConversionContext conversionCtx = getCurrencyConversionCtx();
+		return currencyConversionBL.getCurrencyRate(conversionCtx, currencyId, acctCurrencyId);
+	}
 
 	public void setCurrencyConversionCtx(final CurrencyConversionContext currencyConversionCtx)
 	{
