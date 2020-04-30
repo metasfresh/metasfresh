@@ -774,6 +774,12 @@ public class OrderLineBL implements IOrderLineBL
 	}
 
 	@Override
+	public BigDecimal getPriceActual(final org.compiere.model.I_C_OrderLine orderline)
+	{
+		return orderline.getPriceActual();
+	}
+
+	@Override
 	public PaymentTermId getPaymentTermId(@NonNull final org.compiere.model.I_C_OrderLine orderLine)
 	{
 		final PaymentTermId paymentTermOverrideId = PaymentTermId.ofRepoIdOrNull(orderLine.getC_PaymentTerm_Override_ID());

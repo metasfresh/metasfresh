@@ -92,8 +92,8 @@ public interface IOrderLineBL extends ISingletonService
 	 * Utility method to subtract the given <code>discount</code> (in percent!) from the given <code>priceEntered</code> and return the result.
 	 *
 	 * @param baseAmount
-	 * @param discount the discount to subtract in percent (between 0 and 100). Example: 10
-	 * @param precision the precision of the expected result (relevant for rounding)
+	 * @param discount   the discount to subtract in percent (between 0 and 100). Example: 10
+	 * @param precision  the precision of the expected result (relevant for rounding)
 	 * @return
 	 * @deprecated Use {@link Percent#subtractFromBase(BigDecimal, int)}
 	 */
@@ -117,9 +117,8 @@ public interface IOrderLineBL extends ISingletonService
 	 *
 	 * @param orderLine
 	 * @return C_TaxCategory_ID
-	 * @see de.metas.util.Check#assume(boolean, String, Object...)
-	 *
 	 * @throws ProductNotOnPriceListException if the product's pricing info could not be retrieved.
+	 * @see de.metas.util.Check#assume(boolean, String, Object...)
 	 */
 	TaxCategoryId getTaxCategoryId(org.compiere.model.I_C_OrderLine orderLine);
 
@@ -177,7 +176,9 @@ public interface IOrderLineBL extends ISingletonService
 
 	Quantity convertQtyToPriceUOM(Quantity qty, org.compiere.model.I_C_OrderLine orderLine);
 
-	/** Convert the given quantity to the orderLine's {@code C_UOM_ID}. */
+	/**
+	 * Convert the given quantity to the orderLine's {@code C_UOM_ID}.
+	 */
 	Quantity convertQtyToUOM(Quantity qty, org.compiere.model.I_C_OrderLine orderLine);
 
 	/**
@@ -222,6 +223,8 @@ public interface IOrderLineBL extends ISingletonService
 	boolean isAllowedCounterLineCopy(org.compiere.model.I_C_OrderLine fromLine);
 
 	ProductPrice getCostPrice(org.compiere.model.I_C_OrderLine orderLine);
+
+	BigDecimal getPriceActual(org.compiere.model.I_C_OrderLine orderline);
 
 	PaymentTermId getPaymentTermId(org.compiere.model.I_C_OrderLine orderLine);
 
