@@ -1,6 +1,6 @@
 -- 2020-04-28T15:19:02.739Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE AD_Index_Table SET WhereClause='S_Issue.IssueURL IS NOT NULL and S_Issue.IsActive=''Y''',Updated=TO_TIMESTAMP('2020-04-28 18:19:02','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Index_Table_ID=540527
+UPDATE AD_Index_Table SET WhereClause='S_Issue.IsActive=''Y''',Updated=TO_TIMESTAMP('2020-04-28 18:19:02','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Index_Table_ID=540527
 ;
 
 -- 2020-04-28T15:19:15.974Z
@@ -10,7 +10,7 @@ DROP INDEX IF EXISTS idx_s_issue_externalurl
 
 -- 2020-04-28T15:19:15.982Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-CREATE UNIQUE INDEX IDX_S_Issue_ExternalURL ON S_Issue (IssueURL) WHERE S_Issue.IssueURL IS NOT NULL and S_Issue.IsActive='Y'
+CREATE UNIQUE INDEX IDX_S_Issue_ExternalURL ON S_Issue (IssueURL) WHERE S_Issue.IsActive='Y'
 ;
 
 -- 2020-04-28T15:20:15.763Z
