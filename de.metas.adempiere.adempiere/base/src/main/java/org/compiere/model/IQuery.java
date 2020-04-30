@@ -182,6 +182,7 @@ public interface IQuery<T>
 		return Optional.ofNullable(first(clazz));
 	}
 
+	@NonNull
 	default <ET extends T> Optional<ET> firstOnlyOptional(final Class<ET> clazz) throws DBException
 	{
 		return Optional.ofNullable(firstOnly(clazz));

@@ -1,8 +1,8 @@
 /*
  * #%L
- * de.metas.serviceprovider.base
+ * de.metas.issue.tracking.github
  * %%
- * Copyright (C) 2019 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,24 +20,20 @@
  * #L%
  */
 
-package de.metas.serviceprovider.github;
+package de.metas.issue.tracking.github.api.v3.model;
 
-import de.metas.uom.UomId;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import lombok.Builder;
+import lombok.Value;
 
-public interface GithubImporterConstants
+@Value
+@Builder
+@JsonIgnoreProperties(ignoreUnknown = true)
+@JsonDeserialize(builder = PullRequest.PullRequestBuilder.class)
+public class PullRequest
 {
-	int CHUNK_SIZE = 100;
-	UomId HOUR_UOM_ID = UomId.ofRepoId(101);
-
-	@AllArgsConstructor
-	@Getter
-	enum GitHubConfig
-	{
-		ACCESS_TOKEN("accessToken"),
-		LOOK_FOR_PARENT("lookForParent");
-
-		private final String name;
-	}
+	@JsonProperty("url")
+	String url;
 }

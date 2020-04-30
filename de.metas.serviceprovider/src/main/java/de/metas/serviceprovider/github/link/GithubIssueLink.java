@@ -20,24 +20,20 @@
  * #L%
  */
 
-package de.metas.serviceprovider.github;
+package de.metas.serviceprovider.github.link;
 
-import de.metas.uom.UomId;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
+import de.metas.serviceprovider.github.GithubIdSearchKey;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
 
-public interface GithubImporterConstants
+@Value
+@Builder
+public class GithubIssueLink
 {
-	int CHUNK_SIZE = 100;
-	UomId HOUR_UOM_ID = UomId.ofRepoId(101);
+	@NonNull
+	GithubIdSearchKey githubIdSearchKey;
 
-	@AllArgsConstructor
-	@Getter
-	enum GitHubConfig
-	{
-		ACCESS_TOKEN("accessToken"),
-		LOOK_FOR_PARENT("lookForParent");
-
-		private final String name;
-	}
+	@NonNull
+	String url;
 }
