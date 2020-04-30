@@ -1,28 +1,29 @@
+/*
+ * #%L
+ * metasfresh-dlm-base
+ * %%
+ * Copyright (C) 2020 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.dlm.partitioner.impl;
 
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.table.api.IADTableDAO;
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.model.PlainContextAware;
-import org.adempiere.util.lang.IContextAware;
-import org.adempiere.util.lang.ITableRecordReference;
-import org.adempiere.util.lang.Mutable;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.util.TrxRunnable;
-import org.slf4j.Logger;
-
-import com.google.common.annotations.VisibleForTesting;
-
 import ch.qos.logback.classic.Level;
+import com.google.common.annotations.VisibleForTesting;
 import de.metas.adempiere.service.IColumnBL;
 import de.metas.dlm.IDLMService;
 import de.metas.dlm.Partition;
@@ -40,28 +41,25 @@ import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.model.PlainContextAware;
+import org.adempiere.util.lang.IContextAware;
+import org.adempiere.util.lang.ITableRecordReference;
+import org.adempiere.util.lang.Mutable;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.util.TrxRunnable;
+import org.slf4j.Logger;
 
-/*
- * #%L
- * metasfresh-dlm
- * %%
- * Copyright (C) 2016 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 
 public class RecordCrawlerService implements IRecordCrawlerService
 {
@@ -82,7 +80,8 @@ public class RecordCrawlerService implements IRecordCrawlerService
 		// otherwise, the partiton we are in truth working on just now would be flagged as "completed" in the DB until further notice
 		storeIterateResult(config, result, ctxAware);
 
-		mainLoop: while (!result.isQueueEmpty())
+		mainLoop:
+		while (!result.isQueueEmpty())
 		{
 			final ITableRecordReference currentReference = result.nextFromQueue();
 			final IDLMAware currentRecord = currentReference.getModel(ctxAware, IDLMAware.class);
@@ -153,7 +152,7 @@ public class RecordCrawlerService implements IRecordCrawlerService
 						continue;
 					}
 
-					final TableRecordReference forwardReference = new TableRecordReference(forwardTableName, forwardKey);
+					final TableRecordReference forwardReference = TableRecordReference.of(forwardTableName, forwardKey);
 
 					final boolean recordWasAlreadyAddedBefore = result.contains(forwardReference);
 					if (recordWasAlreadyAddedBefore)
@@ -183,10 +182,10 @@ public class RecordCrawlerService implements IRecordCrawlerService
 							logger.debug("{}[{}] forward: referenced IDLMAware={} already has DLM_Partition_ID={}",
 									currentTableName, currentRecordId, forwardRecord, forwardRecord.getDLM_Partition_ID());
 						}
-						if(AddResult.STOP.equals(addResult))
+						if (AddResult.STOP.equals(addResult))
 						{
 							Loggables.withLogger(logger, Level.WARN)
-								.addLog("The crawler was signaled to stop when it added ReferencedRecord={} to the result. Stopping now", forwardReference);
+									.addLog("The crawler was signaled to stop when it added ReferencedRecord={} to the result. Stopping now", forwardReference);
 							break mainLoop;
 						}
 					}
@@ -318,8 +317,8 @@ public class RecordCrawlerService implements IRecordCrawlerService
 	 * <p>
 	 * This method is invoked in its own transaction via {@link ITrxManager#runInNewTrx(TrxRunnable)}.
 	 *
-	 * @param config not actually used in this method, but forwarded to the new {@link Partition} that <code>clearAfterPartitionStored</code> will be called with.
-	 * @param result side-effect: the method will call {@link IterateResult#clearAfterPartitionStored(Partition))}, so the stored partition will be contained within the result
+	 * @param config   not actually used in this method, but forwarded to the new {@link Partition} that <code>clearAfterPartitionStored</code> will be called with.
+	 * @param result   side-effect: the method will call {@link IterateResult#clearAfterPartitionStored(Partition))}, so the stored partition will be contained within the result
 	 * @param ctxAware
 	 * @return
 	 */
