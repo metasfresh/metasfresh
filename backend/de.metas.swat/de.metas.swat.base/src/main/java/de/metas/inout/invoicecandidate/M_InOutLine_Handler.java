@@ -1,61 +1,8 @@
 package de.metas.inout.invoicecandidate;
 
-import static java.math.BigDecimal.ONE;
-import static java.math.BigDecimal.ZERO;
-import static org.adempiere.model.InterfaceWrapperHelper.create;
-import static org.adempiere.model.InterfaceWrapperHelper.getCtx;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-
-/*
- * #%L
- * de.metas.swat.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Properties;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.mm.attributes.api.IAttributeDAO;
-import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
-import org.adempiere.service.ClientId;
-import org.adempiere.warehouse.WarehouseId;
-import org.compiere.SpringContextHolder;
-import org.compiere.model.I_AD_Note;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_BPartner_Location;
-import org.compiere.model.I_C_Order;
-import org.compiere.model.I_C_OrderLine;
-import org.slf4j.Logger;
-
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
-
 import de.metas.acct.api.IProductAcctDAO;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerLocationId;
@@ -97,6 +44,56 @@ import de.metas.util.ImmutableMapEntry;
 import de.metas.util.Services;
 import de.metas.util.lang.CoalesceUtil;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.mm.attributes.api.IAttributeDAO;
+import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
+import org.adempiere.service.ClientId;
+import org.adempiere.warehouse.WarehouseId;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_AD_Note;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_Order;
+import org.compiere.model.I_C_OrderLine;
+import org.slf4j.Logger;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Properties;
+
+import static java.math.BigDecimal.ONE;
+import static java.math.BigDecimal.ZERO;
+import static org.adempiere.model.InterfaceWrapperHelper.create;
+import static org.adempiere.model.InterfaceWrapperHelper.getCtx;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+
+/*
+ * #%L
+ * de.metas.swat.base
+ * %%
+ * Copyright (C) 2015 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
 
 /**
  * Creates {@link I_C_Invoice_Candidate}s from {@link I_M_InOutLine}s which do not reference an order line.
@@ -332,8 +329,8 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 
 		//
 		// Pricing Informations
-		final PriceAndTax priceAndQty = calculatePriceAndQuantityAndUpdate(icRecord, inOutLineRecord);
-
+		final PriceAndTax priceAndQty = inOutLineRecord.getReturn_Origin_InOutLine_ID() != 0 ? calculatePriceAndQuantityAndUpdate(icRecord, inOutLineRecord.getReturn_Origin_InOutLine())
+				: calculatePriceAndQuantityAndUpdate(icRecord, inOutLineRecord);
 		//
 		// Description
 		icRecord.setDescription(inOut.getDescription());
@@ -459,11 +456,10 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 	 * Qty Sign Multiplier
 	 *
 	 * @param ic
-	 * @return
-	 *         <ul>
-	 *         <li>+1 on regular shipment/receipt
-	 *         <li>-1 on material returns
-	 *         </ul>
+	 * @return <ul>
+	 * <li>+1 on regular shipment/receipt
+	 * <li>-1 on material returns
+	 * </ul>
 	 */
 	private BigDecimal getQtyMultiplier(final I_C_Invoice_Candidate ic)
 	{
@@ -794,7 +790,9 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 	public PriceAndTax calculatePriceAndTax(final I_C_Invoice_Candidate ic)
 	{
 		final I_M_InOutLine inoutLine = getM_InOutLine(ic);
-		return calculatePriceAndTax(ic, inoutLine);
+
+		return inoutLine.getReturn_Origin_InOutLine_ID() != 0 ? calculatePriceAndTax(ic, inoutLine.getReturn_Origin_InOutLine())
+				: calculatePriceAndTax(ic, inoutLine);
 	}
 
 	public static PriceAndTax calculatePriceAndTax(
@@ -823,7 +821,7 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 				.taxCategoryId(pricingResult.getTaxCategoryId())
 				//
 				.priceEntered(pricingResult.getPriceStd())
-				.priceActual(pricingResult.getPriceStd())
+				.priceActual(inoutLine.getC_OrderLine_ID() != 0 ? inoutLine.getC_OrderLine().getPriceActual() : pricingResult.getPriceStd())
 				.priceUOMId(pricingResult.getPriceUomId()) // 07090 when we set PriceActual, we shall also set PriceUOM.
 				.invoicableQtyBasedOn(pricingResult.getInvoicableQtyBasedOn())
 				.taxIncluded(taxIncluded)
