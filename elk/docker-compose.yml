@@ -2,7 +2,7 @@ version: '2.4'
 
 services:
   elk:
-    image: metasfresh/elk:0.2
+    image: metasfresh/elk:0.3
     restart: always
     ports:
       - "127.0.0.1:5601:5601" #Kibana web interface
