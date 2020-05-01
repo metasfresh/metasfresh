@@ -44,7 +44,7 @@ public class PaymentDocumentNotAllocatedException extends PaymentAllocationExcep
 
 	private final Collection<IPaymentDocument> payments;
 
-	PaymentDocumentNotAllocatedException(final Collection<IPaymentDocument> payments)
+	PaymentDocumentNotAllocatedException(final Collection<PaymentDocument> payments)
 	{
 		super("");
 		this.payments = ImmutableList.copyOf(payments);

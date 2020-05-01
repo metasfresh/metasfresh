@@ -40,8 +40,6 @@ public interface IAllocationBL extends ISingletonService
 			boolean ignoreIsAutoAllocateAvailableAmt);
 
 	/**
-	 *
-	 * @param allocationHdr
 	 * @return <code>true</code> if the given allocationHdr is the reversal of another allocationHdr.
 	 */
 	boolean isReversal(I_C_AllocationHdr allocationHdr);

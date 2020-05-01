@@ -24,13 +24,20 @@ package de.metas.allocation.api;
 
 import java.math.BigDecimal;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_AllocationHdr;
 import org.compiere.model.I_C_AllocationLine;
 
 import com.google.common.base.Supplier;
 
+import de.metas.bpartner.BPartnerId;
+import de.metas.invoice.InvoiceId;
+import de.metas.organization.OrgId;
+import de.metas.payment.PaymentId;
 import de.metas.util.Check;
+import lombok.NonNull;
 
 /**
  * {@link I_C_AllocationLine} builder.
@@ -51,16 +58,31 @@ public class C_AllocationLine_Builder
 		this.allocLine = InterfaceWrapperHelper.newInstance(I_C_AllocationLine.class);
 	}
 
-	public final C_AllocationLine_Builder orgId(int orgId)
+	public final C_AllocationLine_Builder orgId(@NonNull final OrgId orgId)
+	{
+		return orgId(orgId.getRepoId());
+	}
+
+	public final C_AllocationLine_Builder orgId(final int orgId)
 	{
 		allocLine.setAD_Org_ID(orgId);
 		return this;
 	}
 
-	public final C_AllocationLine_Builder bpartnerId(int bpartnerId)
+	public final C_AllocationLine_Builder bpartnerId(@Nullable final BPartnerId bpartnerId)
+	{
+		return bpartnerId(BPartnerId.toRepoId(bpartnerId));
+	}
+
+	public final C_AllocationLine_Builder bpartnerId(final int bpartnerId)
 	{
 		allocLine.setC_BPartner_ID(bpartnerId);
 		return this;
+	}
+
+	public final C_AllocationLine_Builder invoiceId(@Nullable final InvoiceId invoiceId)
+	{
+		return invoiceId(InvoiceId.toRepoId(invoiceId));
 	}
 
 	public final C_AllocationLine_Builder invoiceId(int invoiceId)
@@ -69,13 +91,18 @@ public class C_AllocationLine_Builder
 		return this;
 	}
 
+	public final C_AllocationLine_Builder paymentId(@Nullable final PaymentId paymentId)
+	{
+		return paymentId(PaymentId.toRepoId(paymentId));
+	}
+
 	public final C_AllocationLine_Builder paymentId(int paymentId)
 	{
 		allocLine.setC_Payment_ID(paymentId);
 		return this;
 	}
 
-	public final C_AllocationLine_Builder amount(BigDecimal amt)
+	public final C_AllocationLine_Builder amount(final BigDecimal amt)
 	{
 		allocLine.setAmount(amt);
 		return this;

@@ -1,29 +1,32 @@
 package de.metas.banking.payment.paymentallocation.service;
 
-import java.sql.Timestamp;
+import java.math.BigDecimal;
 import java.util.List;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_AllocationHdr;
 import org.compiere.model.I_C_AllocationLine;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Payment;
-import org.compiere.util.TimeUtil;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.allocation.api.C_AllocationHdr_Builder;
-import de.metas.allocation.api.C_AllocationLine_Builder;
 import de.metas.allocation.api.IAllocationBL;
+import de.metas.allocation.api.IAllocationDAO;
 import de.metas.allocation.api.PaymentAllocationId;
-import de.metas.bpartner.BPartnerId;
-import de.metas.money.CurrencyId;
-import de.metas.organization.OrgId;
+import de.metas.banking.payment.paymentallocation.service.AllocationLineCandidate.AllocationLineCandidateType;
+import de.metas.invoice.InvoiceId;
+import de.metas.money.Money;
+import de.metas.payment.PaymentId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -51,6 +54,7 @@ final class AllocationLineCandidateSaver
 {
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IAllocationBL allocationBL = Services.get(IAllocationBL.class);
+	private final IAllocationDAO allocationDAO = Services.get(IAllocationDAO.class);
 
 	public ImmutableSet<PaymentAllocationId> save(final List<AllocationLineCandidate> candidates)
 	{
@@ -63,7 +67,7 @@ final class AllocationLineCandidateSaver
 
 		for (final AllocationLineCandidate candidate : candidates)
 		{
-			final PaymentAllocationId paymentAllocationId = createAndCompleteAllocation(candidate);
+			final PaymentAllocationId paymentAllocationId = saveCandidate(candidate);
 			if (paymentAllocationId != null)
 			{
 				paymentAllocationIds.add(paymentAllocationId);
@@ -73,97 +77,207 @@ final class AllocationLineCandidateSaver
 		return paymentAllocationIds.build();
 	}
 
-	private PaymentAllocationId createAndCompleteAllocation(final AllocationLineCandidate candidate)
+	private PaymentAllocationId saveCandidate(final AllocationLineCandidate candidate)
 	{
-		final OrgId adOrgId = candidate.getOrgId();
-		final CurrencyId currencyId = candidate.getCurrencyId();
-		final Timestamp dateTrx = TimeUtil.asTimestamp(candidate.getDateTrx());
-		final Timestamp dateAcct = TimeUtil.asTimestamp(candidate.getDateAcct());
-
-		final C_AllocationHdr_Builder allocationBuilder = allocationBL.newBuilder()
-				.orgId(adOrgId.getRepoId())
-				.currencyId(currencyId.getRepoId())
-				.dateAcct(dateAcct)
-				.dateTrx(dateTrx)
-				.manual(true); // flag it as manually created by user
-
-		final C_AllocationLine_Builder payableLineBuilder = allocationBuilder.addLine()
-				.orgId(adOrgId.getRepoId())
-				.bpartnerId(BPartnerId.toRepoId(candidate.getBpartnerId()))
-				//
-				// Amounts
-				.amount(candidate.getAmounts().getPayAmt().toBigDecimal())
-				.discountAmt(candidate.getAmounts().getDiscountAmt().toBigDecimal())
-				.writeOffAmt(candidate.getAmounts().getWriteOffAmt().toBigDecimal())
-				.overUnderAmt(candidate.getPayableOverUnderAmt().toBigDecimal())
-				.skipIfAllAmountsAreZero();
-
-		final TableRecordReference payableDocRef = candidate.getPayableDocumentRef();
-		final String payableDocTableName = payableDocRef.getTableName();
-		final TableRecordReference paymentDocRef = candidate.getPaymentDocumentRef();
-		final String paymentDocTableName = paymentDocRef == null ? null : paymentDocRef.getTableName();
-
-		//
-		// Invoice - Payment
-		if (I_C_Invoice.Table_Name.equals(payableDocTableName)
-				&& I_C_Payment.Table_Name.equals(paymentDocTableName))
+		final AllocationLineCandidateType type = candidate.getType();
+		if (AllocationLineCandidateType.InvoiceToPayment.equals(type))
 		{
-			payableLineBuilder.invoiceId(payableDocRef.getRecord_ID());
-			payableLineBuilder.paymentId(paymentDocRef.getRecord_ID());
+			return saveCandidate_InvoiceToPayment(candidate);
 		}
-		//
-		// Invoice - CreditMemo invoice
-		// or Sales invoice - Purchase Invoice
-		else if (I_C_Invoice.Table_Name.equals(payableDocTableName)
-				&& I_C_Invoice.Table_Name.equals(paymentDocTableName))
+		else if (AllocationLineCandidateType.SalesInvoiceToPurchaseInvoice.equals(type))
 		{
-			payableLineBuilder.invoiceId(payableDocRef.getRecord_ID());
-			//
-
-			// Credit memo line
-			allocationBuilder.addLine()
-					.orgId(adOrgId.getRepoId())
-					.bpartnerId(BPartnerId.toRepoId(candidate.getBpartnerId()))
-					//
-					// Amounts
-					.amount(candidate.getAmounts().getPayAmt().negate().toBigDecimal())
-					.overUnderAmt(candidate.getPaymentOverUnderAmt().toBigDecimal())
-					.skipIfAllAmountsAreZero()
-					//
-					.invoiceId(paymentDocRef.getRecord_ID());
+			return saveCandidate_InvoiceToInvoice(candidate);
 		}
-		//
-		// Invoice - just Discount/WriteOff
-		else if (I_C_Invoice.Table_Name.equals(payableDocTableName)
-				&& paymentDocTableName == null)
+		else if (AllocationLineCandidateType.InvoiceToCreditMemo.equals(type))
 		{
-			payableLineBuilder.invoiceId(payableDocRef.getRecord_ID());
-			// allow only if the line's amount is zero, because else, we need to have a document where to allocate.
-			Check.assume(candidate.getAmounts().getPayAmt().signum() == 0, "zero amount: {}", candidate);
+			return saveCandidate_InvoiceToInvoice(candidate);
 		}
-		//
-		// Outgoing payment - Incoming payment
-		else if (I_C_Payment.Table_Name.equals(payableDocTableName)
-				&& I_C_Payment.Table_Name.equals(paymentDocTableName))
+		else if (AllocationLineCandidateType.InvoiceDiscountOrWriteOff.equals(type))
 		{
-			payableLineBuilder.paymentId(payableDocRef.getRecord_ID());
-			// Incoming payment line
-			allocationBuilder.addLine()
-					.orgId(adOrgId.getRepoId())
-					.bpartnerId(BPartnerId.toRepoId(candidate.getBpartnerId()))
-					//
-					// Amounts
-					.amount(candidate.getAmounts().getPayAmt().negate().toBigDecimal())
-					.overUnderAmt(candidate.getPaymentOverUnderAmt().toBigDecimal())
-					.skipIfAllAmountsAreZero()
-					//
-					.paymentId(paymentDocRef.getRecord_ID());
+			return saveCandidate_InvoiceDiscountOrWriteOff(candidate);
+		}
+		else if (AllocationLineCandidateType.InvoiceProcessingFee.equals(type))
+		{
+			throw new AdempiereException("Cannot save InvoiceProcessingFee directly. Convert it to a different AllocationLineCandidateType first.")
+					.setParameter("candidate", candidate)
+					.appendParametersToMessage();
+		}
+		else if (AllocationLineCandidateType.InboundPaymentToOutboundPayment.equals(type))
+		{
+			return saveCandidate_InboundPaymentToOutboundPayment(candidate);
 		}
 		else
 		{
-			throw new InvalidDocumentsPaymentAllocationException(payableDocRef, paymentDocRef);
+			throw new AdempiereException("Unknown type: " + type);
 		}
+	}
 
+	@Nullable
+	private PaymentAllocationId saveCandidate_InvoiceToPayment(@NonNull final AllocationLineCandidate candidate)
+	{
+		final Money payAmt = candidate.getAmounts().getPayAmt();
+		final Money discountAmt = candidate.getAmounts().getDiscountAmt();
+		final Money writeOffAmt = candidate.getAmounts().getWriteOffAmt();
+
+		Check.assumeEquals(candidate.getAmounts(), AllocationAmounts.builder()
+				.payAmt(payAmt)
+				.discountAmt(discountAmt)
+				.writeOffAmt(writeOffAmt)
+				.build());
+
+		final C_AllocationHdr_Builder allocationBuilder = newC_AllocationHdr_Builder(candidate);
+
+		allocationBuilder.addLine()
+				.skipIfAllAmountsAreZero()
+				//
+				.orgId(candidate.getOrgId())
+				.bpartnerId(candidate.getBpartnerId())
+				//
+				// Amounts
+				.amount(payAmt.toBigDecimal())
+				.discountAmt(discountAmt.toBigDecimal())
+				.writeOffAmt(writeOffAmt.toBigDecimal())
+				.overUnderAmt(candidate.getPayableOverUnderAmt().toBigDecimal())
+				//
+				.invoiceId(extractInvoiceId(candidate.getPayableDocumentRef()))
+				.paymentId(extractPaymentId(candidate.getPaymentDocumentRef()));
+
+		return createAndComplete(allocationBuilder);
+	}
+
+	private PaymentAllocationId saveCandidate_InvoiceToInvoice(AllocationLineCandidate candidate)
+	{
+		final Money payAmt = candidate.getAmounts().getPayAmt();
+		final Money discountAmt = candidate.getAmounts().getDiscountAmt();
+		final Money writeOffAmt = candidate.getAmounts().getWriteOffAmt();
+
+		Check.assumeEquals(candidate.getAmounts(), AllocationAmounts.builder()
+				.payAmt(payAmt)
+				.discountAmt(discountAmt)
+				.writeOffAmt(writeOffAmt)
+				.build());
+
+		final C_AllocationHdr_Builder allocationBuilder = newC_AllocationHdr_Builder(candidate);
+
+		// Sales/Purchase invoice
+		allocationBuilder.addLine()
+				.skipIfAllAmountsAreZero()
+				//
+				.orgId(candidate.getOrgId())
+				.bpartnerId(candidate.getBpartnerId())
+				//
+				// Amounts
+				.amount(payAmt.toBigDecimal())
+				.discountAmt(discountAmt.toBigDecimal())
+				.writeOffAmt(writeOffAmt.toBigDecimal())
+				.overUnderAmt(candidate.getPayableOverUnderAmt().toBigDecimal())
+				//
+				.invoiceId(extractInvoiceId(candidate.getPayableDocumentRef()));
+
+		// Credit memo line
+		// or Purchase/Sales invoice line
+		allocationBuilder.addLine()
+				.skipIfAllAmountsAreZero()
+				//
+				.orgId(candidate.getOrgId())
+				.bpartnerId(candidate.getBpartnerId())
+				//
+				// Amounts
+				.amount(payAmt.negate().toBigDecimal())
+				.overUnderAmt(candidate.getPaymentOverUnderAmt().toBigDecimal())
+				//
+				.invoiceId(extractInvoiceId(candidate.getPaymentDocumentRef()));
+
+		return createAndComplete(allocationBuilder);
+	}
+
+	private PaymentAllocationId saveCandidate_InvoiceDiscountOrWriteOff(@NonNull final AllocationLineCandidate candidate)
+	{
+		final Money discountAmt = candidate.getAmounts().getDiscountAmt();
+		final Money writeOffAmt = candidate.getAmounts().getWriteOffAmt();
+
+		Check.assumeEquals(candidate.getAmounts(), AllocationAmounts.builder()
+				.discountAmt(discountAmt)
+				.writeOffAmt(writeOffAmt)
+				.build());
+
+		final C_AllocationHdr_Builder allocationBuilder = newC_AllocationHdr_Builder(candidate);
+
+		allocationBuilder.addLine()
+				.skipIfAllAmountsAreZero()
+				//
+				.orgId(candidate.getOrgId())
+				.bpartnerId(candidate.getBpartnerId())
+				//
+				// Amounts
+				.amount(BigDecimal.ZERO)
+				.discountAmt(discountAmt.toBigDecimal())
+				.writeOffAmt(writeOffAmt.toBigDecimal())
+				.overUnderAmt(candidate.getPayableOverUnderAmt().toBigDecimal())
+				//
+				.invoiceId(extractInvoiceId(candidate.getPayableDocumentRef()));
+
+		return createAndComplete(allocationBuilder);
+	}
+
+	private PaymentAllocationId saveCandidate_InboundPaymentToOutboundPayment(AllocationLineCandidate candidate)
+	{
+		final Money payAmt = candidate.getAmounts().getPayAmt();
+
+		Check.assumeEquals(candidate.getAmounts(), AllocationAmounts.builder()
+				.payAmt(payAmt)
+				.build());
+
+		final C_AllocationHdr_Builder allocationBuilder = newC_AllocationHdr_Builder(candidate)
+				//
+				// Outgoing payment line
+				.addLine()
+				.skipIfAllAmountsAreZero()
+				.orgId(candidate.getOrgId())
+				.bpartnerId(candidate.getBpartnerId())
+				.paymentId(extractPaymentId(candidate.getPayableDocumentRef()))
+				//
+				.amount(payAmt.toBigDecimal())
+				.overUnderAmt(candidate.getPayableOverUnderAmt().toBigDecimal())
+				.lineDone()
+				//
+				// Incoming payment line
+				.addLine()
+				.skipIfAllAmountsAreZero()
+				.orgId(candidate.getOrgId())
+				.bpartnerId(candidate.getBpartnerId())
+				.paymentId(extractPaymentId(candidate.getPaymentDocumentRef()))
+				//
+				.amount(payAmt.negate().toBigDecimal())
+				.overUnderAmt(candidate.getPaymentOverUnderAmt().toBigDecimal())
+				.lineDone();
+
+		return createAndComplete(allocationBuilder);
+	}
+
+	private static InvoiceId extractInvoiceId(@NonNull final TableRecordReference recordRef)
+	{
+		return recordRef.getIdAssumingTableName(I_C_Invoice.Table_Name, InvoiceId::ofRepoId);
+	}
+
+	private static PaymentId extractPaymentId(@NonNull final TableRecordReference recordRef)
+	{
+		return recordRef.getIdAssumingTableName(I_C_Payment.Table_Name, PaymentId::ofRepoId);
+	}
+
+	private C_AllocationHdr_Builder newC_AllocationHdr_Builder(final AllocationLineCandidate candidate)
+	{
+		return allocationBL.newBuilder()
+				.orgId(candidate.getOrgId())
+				.currencyId(candidate.getCurrencyId())
+				.dateTrx(candidate.getDateTrx())
+				.dateAcct(candidate.getDateAcct())
+				.manual(true); // flag it as manually created by user
+	}
+
+	@Nullable
+	private PaymentAllocationId createAndComplete(final C_AllocationHdr_Builder allocationBuilder)
+	{
 		final I_C_AllocationHdr allocationHdr = allocationBuilder.createAndComplete();
 		if (allocationHdr == null)
 		{
@@ -183,7 +297,7 @@ final class AllocationLineCandidateSaver
 	 *
 	 * @param lines
 	 */
-	private static void updateCounter_AllocationLine_ID(final ImmutableList<I_C_AllocationLine> lines)
+	private void updateCounter_AllocationLine_ID(final ImmutableList<I_C_AllocationLine> lines)
 	{
 		if (lines.size() != 2)
 		{
@@ -195,10 +309,10 @@ final class AllocationLineCandidateSaver
 		final I_C_AllocationLine al2 = lines.get(1);
 
 		al1.setCounter_AllocationLine_ID(al2.getC_AllocationLine_ID());
-		InterfaceWrapperHelper.save(al1);
+		allocationDAO.save(al1);
 
 		//
 		al2.setCounter_AllocationLine_ID(al1.getC_AllocationLine_ID());
-		InterfaceWrapperHelper.save(al2);
+		allocationDAO.save(al2);
 	}
 }

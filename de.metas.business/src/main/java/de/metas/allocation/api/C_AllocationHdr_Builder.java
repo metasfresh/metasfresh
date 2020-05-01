@@ -23,6 +23,7 @@ package de.metas.allocation.api;
  */
 
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.ArrayList;
 
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -30,6 +31,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_AllocationHdr;
 import org.compiere.model.I_C_AllocationLine;
+import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
 import com.google.common.base.Supplier;
@@ -40,8 +42,11 @@ import de.metas.bpartner.service.IBPartnerStatisticsUpdater;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.logging.LogManager;
+import de.metas.money.CurrencyId;
+import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 import lombok.ToString;
 
 /**
@@ -139,10 +144,15 @@ public class C_AllocationHdr_Builder
 	{
 		Check.assume(!_built, "Not already built");
 	}
-	
+
 	IAllocationDAO getAllocationDAO()
 	{
 		return allocationDAO;
+	}
+
+	public final C_AllocationHdr_Builder orgId(@NonNull final OrgId orgId)
+	{
+		return orgId(orgId.getRepoId());
 	}
 
 	public final C_AllocationHdr_Builder orgId(final int adOrgId)
@@ -152,6 +162,11 @@ public class C_AllocationHdr_Builder
 		return this;
 	}
 
+	public final C_AllocationHdr_Builder dateTrx(LocalDate dateTrx)
+	{
+		return dateTrx(TimeUtil.asTimestamp(dateTrx));
+	}
+
 	public final C_AllocationHdr_Builder dateTrx(Timestamp dateTrx)
 	{
 		assertNotBuilt();
@@ -159,11 +174,21 @@ public class C_AllocationHdr_Builder
 		return this;
 	}
 
+	public final C_AllocationHdr_Builder dateAcct(LocalDate dateAcct)
+	{
+		return dateAcct(TimeUtil.asTimestamp(dateAcct));
+	}
+
 	public final C_AllocationHdr_Builder dateAcct(Timestamp dateAcct)
 	{
 		assertNotBuilt();
 		allocHdr.setDateAcct(dateAcct);
 		return this;
+	}
+
+	public final C_AllocationHdr_Builder currencyId(@NonNull final CurrencyId currencyId)
+	{
+		return currencyId(currencyId.getRepoId());
 	}
 
 	public final C_AllocationHdr_Builder currencyId(int currencyId)

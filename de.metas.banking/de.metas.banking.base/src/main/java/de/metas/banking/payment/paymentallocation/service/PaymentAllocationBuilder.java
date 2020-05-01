@@ -21,7 +21,7 @@ import de.metas.util.OptionalDeferredException;
 import lombok.NonNull;
 
 /**
- * Builds one {@link I_C_AllocationHdr} of all given {@link PayableDocument}s and {@link IPaymentDocument}s.
+ * Builds one {@link I_C_AllocationHdr} of all given {@link PayableDocument}s and {@link PaymentDocument}s.
  *
  * @author tsa
  *
@@ -45,7 +45,7 @@ public class PaymentAllocationBuilder
 	private LocalDate _dateTrx;
 	private LocalDate _dateAcct;
 	private ImmutableList<PayableDocument> _payableDocuments = ImmutableList.of();
-	private ImmutableList<IPaymentDocument> _paymentDocuments = ImmutableList.of();
+	private ImmutableList<PaymentDocument> _paymentDocuments = ImmutableList.of();
 	private boolean allowOnlyOneVendorDoc = true;
 	private boolean allowPartialAllocations = false;
 	private boolean allowPurchaseSalesInvoiceCompensation;
@@ -125,7 +125,7 @@ public class PaymentAllocationBuilder
 		//
 		// Make sure we have something to allocate
 		final List<PayableDocument> payableDocuments = getPayableDocuments();
-		final List<IPaymentDocument> paymentDocuments = getPaymentDocuments();
+		final List<PaymentDocument> paymentDocuments = getPaymentDocuments();
 		if (payableDocuments.isEmpty() && paymentDocuments.isEmpty())
 		{
 			throw new NoDocumentsPaymentAllocationException();
@@ -161,7 +161,7 @@ public class PaymentAllocationBuilder
 
 		//
 		// Try allocate payment reversals to payments
-		allocationCandidates.addAll(createAllocationLineCandidates_ForPayments(paymentDocuments));
+		allocationCandidates.addAll(createAllocationLineCandidates_InboundPaymentToOutboundPayment(paymentDocuments));
 
 		// Try allocate the payable remaining Discounts and WriteOffs.
 		allocationCandidates.addAll(createAllocationLineCandidates_DiscountAndWriteOffs(payableDocuments));
@@ -171,25 +171,22 @@ public class PaymentAllocationBuilder
 
 	/***
 	 * Do not allow to allocate more then one document type for vendor documents
-	 *
-	 * @param payableDocuments
-	 * @param paymentDocuments
 	 */
 	private void assertOnlyOneVendorDocType(
 			final List<PayableDocument> payableDocuments,
-			final List<IPaymentDocument> paymentDocuments)
+			final List<PaymentDocument> paymentDocuments)
 	{
 		if (!allowOnlyOneVendorDoc)
 		{
 			return; // task 09558: nothing to do
 		}
 
-		final List<IPaymentDocument> paymentVendorDocuments = paymentDocuments.stream()
+		final List<PaymentDocument> paymentVendorDocuments = paymentDocuments.stream()
 				.filter(paymentDocument -> paymentDocument.getPaymentDirection().isOutboundPayment())
 				.collect(ImmutableList.toImmutableList());
 
 		final List<PayableDocument> payableVendorDocuments_NoCreditMemos = new ArrayList<>();
-		final List<IPaymentDocument> paymentVendorDocuments_CreditMemos = new ArrayList<>();
+		final List<CreditMemoInvoiceAsPaymentDocumentWrapper> paymentVendorDocuments_CreditMemos = new ArrayList<>();
 		for (final PayableDocument payable : payableDocuments)
 		{
 			if (!payable.getSoTrx().isPurchase())
@@ -220,17 +217,10 @@ public class PaymentAllocationBuilder
 		}
 	}
 
-	/**
-	 * Allocate given payments to given payable documents.
-	 *
-	 * @param payableDocuments
-	 * @param paymentDocuments
-	 * @return created allocation candidates
-	 */
 	private final List<AllocationLineCandidate> createAllocationLineCandidates(
 			@NonNull final AllocationLineCandidateType type,
 			@NonNull final List<PayableDocument> payableDocuments,
-			@NonNull final List<IPaymentDocument> paymentDocuments)
+			@NonNull final List<? extends IPaymentDocument> paymentDocuments)
 	{
 		if (payableDocuments.isEmpty() || paymentDocuments.isEmpty())
 		{
@@ -336,9 +326,13 @@ public class PaymentAllocationBuilder
 
 	private final List<AllocationLineCandidate> createAllocationLineCandidates_CreditMemosToInvoices(final List<PayableDocument> payableDocuments)
 	{
-		final List<PayableDocument> invoices = new ArrayList<>();
-		final List<IPaymentDocument> creditMemos = new ArrayList<>();
+		if (payableDocuments.isEmpty())
+		{
+			return ImmutableList.of();
+		}
 
+		final List<PayableDocument> invoices = new ArrayList<>();
+		final List<CreditMemoInvoiceAsPaymentDocumentWrapper> creditMemos = new ArrayList<>();
 		for (final PayableDocument payable : payableDocuments)
 		{
 			if (payable.isCreditMemo())
@@ -359,9 +353,13 @@ public class PaymentAllocationBuilder
 
 	private final List<AllocationLineCandidate> createAllocationLineCandidates_PurchaseInvoicesToSaleInvoices(final List<PayableDocument> payableDocuments)
 	{
-		final List<PayableDocument> salesInvoices = new ArrayList<>();
-		final List<IPaymentDocument> purchaseInvoices = new ArrayList<>();
+		if (payableDocuments.isEmpty())
+		{
+			return ImmutableList.of();
+		}
 
+		final List<PayableDocument> salesInvoices = new ArrayList<>();
+		final List<PurchaseInvoiceAsInboundPaymentDocumentWrapper> purchaseInvoices = new ArrayList<>();
 		for (final PayableDocument payable : payableDocuments)
 		{
 			// do not support credit memo
@@ -386,12 +384,7 @@ public class PaymentAllocationBuilder
 				purchaseInvoices);
 	}
 
-	/**
-	 * Iterate all payment documents and try to allocate incoming payments to outgoing payments
-	 *
-	 * @param paymentDocuments
-	 */
-	private final List<AllocationLineCandidate> createAllocationLineCandidates_ForPayments(final List<IPaymentDocument> paymentDocuments)
+	private final List<AllocationLineCandidate> createAllocationLineCandidates_InboundPaymentToOutboundPayment(final List<PaymentDocument> paymentDocuments)
 	{
 		if (paymentDocuments.isEmpty())
 		{
@@ -400,9 +393,9 @@ public class PaymentAllocationBuilder
 
 		//
 		// Build the incoming payments and outgoing payments lists.
-		final List<IPaymentDocument> paymentDocumentsIn = new ArrayList<>();
-		final List<IPaymentDocument> paymentDocumentsOut = new ArrayList<>();
-		for (final IPaymentDocument payment : paymentDocuments)
+		final List<PaymentDocument> paymentDocumentsIn = new ArrayList<>();
+		final List<PaymentDocument> paymentDocumentsOut = new ArrayList<>();
+		for (final PaymentDocument payment : paymentDocuments)
 		{
 			if (payment.isFullyAllocated())
 			{
@@ -426,9 +419,9 @@ public class PaymentAllocationBuilder
 		//
 		// Iterate incoming payments and try allocating them to outgoing payments.
 		final List<AllocationLineCandidate> allocationLineCandidates = new ArrayList<>();
-		for (final IPaymentDocument paymentIn : paymentDocumentsIn)
+		for (final PaymentDocument paymentIn : paymentDocumentsIn)
 		{
-			for (final IPaymentDocument paymentOut : paymentDocumentsOut)
+			for (final PaymentDocument paymentOut : paymentDocumentsOut)
 			{
 				if (paymentOut.isFullyAllocated())
 				{
@@ -607,7 +600,7 @@ public class PaymentAllocationBuilder
 		//
 		// Check payments
 		{
-			final List<IPaymentDocument> paymentDocumentsNotFullyAllocated = getPaymentDocumentsNotFullyAllocated();
+			final List<PaymentDocument> paymentDocumentsNotFullyAllocated = getPaymentDocumentsNotFullyAllocated();
 			if (!paymentDocumentsNotFullyAllocated.isEmpty())
 			{
 				return OptionalDeferredException.of(() -> new PaymentDocumentNotAllocatedException(paymentDocumentsNotFullyAllocated));
@@ -617,7 +610,7 @@ public class PaymentAllocationBuilder
 		return OptionalDeferredException.noError();
 	}
 
-	private List<IPaymentDocument> getPaymentDocumentsNotFullyAllocated()
+	private List<PaymentDocument> getPaymentDocumentsNotFullyAllocated()
 	{
 		return getPaymentDocuments()
 				.stream()
@@ -800,7 +793,7 @@ public class PaymentAllocationBuilder
 		return _payableDocuments;
 	}
 
-	private final List<IPaymentDocument> getPaymentDocuments()
+	private final List<PaymentDocument> getPaymentDocuments()
 	{
 		return _paymentDocuments;
 	}
