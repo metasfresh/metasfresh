@@ -47,7 +47,7 @@ import de.metas.util.Services;
  * #L%
  */
 
-public class AllocationLineCandidateSaver
+final class AllocationLineCandidateSaver
 {
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IAllocationBL allocationBL = Services.get(IAllocationBL.class);
@@ -73,7 +73,7 @@ public class AllocationLineCandidateSaver
 		return paymentAllocationIds.build();
 	}
 
-	private final PaymentAllocationId createAndCompleteAllocation(final AllocationLineCandidate candidate)
+	private PaymentAllocationId createAndCompleteAllocation(final AllocationLineCandidate candidate)
 	{
 		final OrgId adOrgId = candidate.getOrgId();
 		final CurrencyId currencyId = candidate.getCurrencyId();
