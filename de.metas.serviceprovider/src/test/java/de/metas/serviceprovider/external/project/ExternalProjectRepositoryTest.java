@@ -24,6 +24,8 @@ package de.metas.serviceprovider.external.project;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.serviceprovider.model.I_S_ExternalProjectReference;
+import de.metas.util.Services;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.junit.Before;
@@ -41,7 +43,8 @@ import static org.junit.Assert.assertEquals;
 
 public class ExternalProjectRepositoryTest
 {
-	private final ExternalProjectRepository externalProjectRepository = new ExternalProjectRepository();
+	private final IQueryBL queryBL =  Services.get(IQueryBL.class);
+	private final ExternalProjectRepository externalProjectRepository = new ExternalProjectRepository(queryBL);
 
 	@Before
 	public void init()

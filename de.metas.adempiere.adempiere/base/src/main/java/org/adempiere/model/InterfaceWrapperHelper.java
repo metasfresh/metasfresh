@@ -1,10 +1,8 @@
-package org.adempiere.model;
-
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -21,6 +19,8 @@ package org.adempiere.model;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+package org.adempiere.model;
 
 import java.util.Collection;
 import java.util.List;
@@ -308,7 +308,7 @@ public class InterfaceWrapperHelper
 	 * Also see {@link #create(Object, Class)} for more informations.
 	 * <p>
 	 * Note: if you want to load a record from <code>(AD_Table_ID, Reference_ID)</code>,<br>
-	 * then it's probably better to use e.g. {@link org.adempiere.util.lang.impl.TableRecordReference#TableRecordReference(int, int)}.
+	 * then it's probably better to use e.g. {@link org.adempiere.util.lang.impl.TableRecordReference#of(int, int)}.
 	 *
 	 * @param ctx
 	 * @param id
@@ -333,7 +333,7 @@ public class InterfaceWrapperHelper
 	 * Notes:
 	 * <li>this method might or might not benefit from caching, depending on how {@link IModelCacheService} was configured.
 	 * <li>if you want to load a record from <code>(AD_Table_ID, Reference_ID)</code>,<br>
-	 * then it's probably better to use {@link org.adempiere.util.lang.impl.TableRecordReference#TableRecordReference(int, int)}.
+	 * then it's probably better to use {@link org.adempiere.util.lang.impl.TableRecordReference#of(int, int)}.
 	 *
 	 * @param ctx
 	 * @param tableName
