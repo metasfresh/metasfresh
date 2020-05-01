@@ -1,6 +1,5 @@
 package de.metas.banking.payment.paymentallocation.service;
 
-import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -8,31 +7,17 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
-import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_AllocationHdr;
-import org.compiere.model.I_C_AllocationLine;
-import org.compiere.model.I_C_Invoice;
-import org.compiere.model.I_C_Payment;
-import org.compiere.util.TimeUtil;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
-import de.metas.allocation.api.C_AllocationHdr_Builder;
-import de.metas.allocation.api.C_AllocationLine_Builder;
-import de.metas.allocation.api.IAllocationBL;
 import de.metas.allocation.api.PaymentAllocationId;
 import de.metas.banking.payment.paymentallocation.service.AllocationLineCandidate.AllocationLineCandidateType;
-import de.metas.bpartner.BPartnerId;
-import de.metas.money.CurrencyId;
 import de.metas.money.Money;
-import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.OptionalDeferredException;
-import de.metas.util.Services;
 import lombok.NonNull;
 
 /**
@@ -54,8 +39,7 @@ public class PaymentAllocationBuilder
 	}
 
 	// services
-	private final ITrxManager trxManager = Services.get(ITrxManager.class);
-	private final IAllocationBL allocationBL = Services.get(IAllocationBL.class);
+	private final AllocationLineCandidateSaver candidatesSaver = new AllocationLineCandidateSaver();
 
 	// Parameters
 	private LocalDate _dateTrx;
@@ -108,7 +92,7 @@ public class PaymentAllocationBuilder
 		{
 			try
 			{
-				paymentAllocationIds = trxManager.callInNewTrx(() -> createAndCompleteAllocations(candidates));
+				paymentAllocationIds = candidatesSaver.save(candidates);
 			}
 			catch (final Exception ex)
 			{
@@ -127,153 +111,9 @@ public class PaymentAllocationBuilder
 				.build();
 	}
 
-	private final ImmutableSet<PaymentAllocationId> createAndCompleteAllocations(final List<AllocationLineCandidate> lines)
-	{
-		final ImmutableSet.Builder<PaymentAllocationId> paymentAllocationIds = ImmutableSet.builder();
-
-		for (final AllocationLineCandidate line : lines)
-		{
-			final PaymentAllocationId paymentAllocationId = createAndCompleteAllocation(line);
-			if (paymentAllocationId != null)
-			{
-				paymentAllocationIds.add(paymentAllocationId);
-			}
-		}
-
-		return paymentAllocationIds.build();
-	}
-
 	/**
 	 * Create and complete one {@link I_C_AllocationHdr} for given candidate.
 	 */
-	private final PaymentAllocationId createAndCompleteAllocation(final AllocationLineCandidate line)
-	{
-		final OrgId adOrgId = line.getOrgId();
-		final CurrencyId currencyId = line.getCurrencyId();
-		final Timestamp dateTrx = TimeUtil.asTimestamp(getDateTrx());
-		final Timestamp dateAcct = TimeUtil.asTimestamp(getDateAcct());
-
-		final C_AllocationHdr_Builder allocationBuilder = allocationBL.newBuilder()
-				.orgId(adOrgId.getRepoId())
-				.currencyId(currencyId.getRepoId())
-				.dateAcct(dateAcct)
-				.dateTrx(dateTrx)
-				.manual(true); // flag it as manually created by user
-
-		final C_AllocationLine_Builder payableLineBuilder = allocationBuilder.addLine()
-				.orgId(adOrgId.getRepoId())
-				.bpartnerId(BPartnerId.toRepoId(line.getBpartnerId()))
-				//
-				// Amounts
-				.amount(line.getAmounts().getPayAmt().toBigDecimal())
-				.discountAmt(line.getAmounts().getDiscountAmt().toBigDecimal())
-				.writeOffAmt(line.getAmounts().getWriteOffAmt().toBigDecimal())
-				.overUnderAmt(line.getPayableOverUnderAmt().toBigDecimal())
-				.skipIfAllAmountsAreZero();
-
-		final TableRecordReference payableDocRef = line.getPayableDocumentRef();
-		final String payableDocTableName = payableDocRef.getTableName();
-		final TableRecordReference paymentDocRef = line.getPaymentDocumentRef();
-		final String paymentDocTableName = paymentDocRef == null ? null : paymentDocRef.getTableName();
-
-		//
-		// Invoice - Payment
-		if (I_C_Invoice.Table_Name.equals(payableDocTableName)
-				&& I_C_Payment.Table_Name.equals(paymentDocTableName))
-		{
-			payableLineBuilder.invoiceId(payableDocRef.getRecord_ID());
-			payableLineBuilder.paymentId(paymentDocRef.getRecord_ID());
-		}
-		//
-		// Invoice - CreditMemo invoice
-		// or Sales invoice - Purchase Invoice
-		else if (I_C_Invoice.Table_Name.equals(payableDocTableName)
-				&& I_C_Invoice.Table_Name.equals(paymentDocTableName))
-		{
-			payableLineBuilder.invoiceId(payableDocRef.getRecord_ID());
-			//
-
-			// Credit memo line
-			allocationBuilder.addLine()
-					.orgId(adOrgId.getRepoId())
-					.bpartnerId(BPartnerId.toRepoId(line.getBpartnerId()))
-					//
-					// Amounts
-					.amount(line.getAmounts().getPayAmt().negate().toBigDecimal())
-					.overUnderAmt(line.getPaymentOverUnderAmt().toBigDecimal())
-					.skipIfAllAmountsAreZero()
-					//
-					.invoiceId(paymentDocRef.getRecord_ID());
-		}
-		//
-		// Invoice - just Discount/WriteOff
-		else if (I_C_Invoice.Table_Name.equals(payableDocTableName)
-				&& paymentDocTableName == null)
-		{
-			payableLineBuilder.invoiceId(payableDocRef.getRecord_ID());
-			// allow only if the line's amount is zero, because else, we need to have a document where to allocate.
-			Check.assume(line.getAmounts().getPayAmt().signum() == 0, "zero amount: {}", line);
-		}
-		//
-		// Outgoing payment - Incoming payment
-		else if (I_C_Payment.Table_Name.equals(payableDocTableName)
-				&& I_C_Payment.Table_Name.equals(paymentDocTableName))
-		{
-			payableLineBuilder.paymentId(payableDocRef.getRecord_ID());
-			// Incoming payment line
-			allocationBuilder.addLine()
-					.orgId(adOrgId.getRepoId())
-					.bpartnerId(BPartnerId.toRepoId(line.getBpartnerId()))
-					//
-					// Amounts
-					.amount(line.getAmounts().getPayAmt().negate().toBigDecimal())
-					.overUnderAmt(line.getPaymentOverUnderAmt().toBigDecimal())
-					.skipIfAllAmountsAreZero()
-					//
-					.paymentId(paymentDocRef.getRecord_ID());
-		}
-		else
-		{
-			throw new InvalidDocumentsPaymentAllocationException(payableDocRef, paymentDocRef);
-		}
-
-		final I_C_AllocationHdr allocationHdr = allocationBuilder.createAndComplete();
-		if (allocationHdr == null)
-		{
-			return null;
-		}
-
-		//
-		final ImmutableList<I_C_AllocationLine> lines = allocationBuilder.getC_AllocationLines();
-		updateCounter_AllocationLine_ID(lines);
-
-		return PaymentAllocationId.ofRepoId(allocationHdr.getC_AllocationHdr_ID());
-	}
-
-	/**
-	 * Sets the counter allocation line - that means the mathcing line
-	 * The id is set only if we have 2 line: credit memo - invoice; purchase invoice - sales invoice; incoming payment - outgoing payment
-	 *
-	 * @param lines
-	 */
-	private static void updateCounter_AllocationLine_ID(final ImmutableList<I_C_AllocationLine> lines)
-	{
-		if (lines.size() != 2)
-		{
-			return;
-		}
-
-		//
-		final I_C_AllocationLine al1 = lines.get(0);
-		final I_C_AllocationLine al2 = lines.get(1);
-
-		al1.setCounter_AllocationLine_ID(al2.getC_AllocationLine_ID());
-		InterfaceWrapperHelper.save(al1);
-
-		//
-		al2.setCounter_AllocationLine_ID(al1.getC_AllocationLine_ID());
-		InterfaceWrapperHelper.save(al2);
-	}
 
 	/**
 	 * Allocate {@link #getPayableDocuments()} and {@link #getPaymentDocuments()}.
@@ -436,6 +276,10 @@ public class PaymentAllocationBuilder
 						//
 						.payableDocumentRef(payable.getReference())
 						.paymentDocumentRef(payment.getReference())
+						//
+						.dateTrx(getDateTrx())
+						.dateAcct(getDateAcct())
+						//
 						// Amounts:
 						.amounts(payableAmountsToAllocate)
 						.payableOverUnderAmt(payableOverUnderAmt)
@@ -607,6 +451,10 @@ public class PaymentAllocationBuilder
 						//
 						.payableDocumentRef(paymentOut.getReference())
 						.paymentDocumentRef(paymentIn.getReference())
+						//
+						.dateTrx(getDateTrx())
+						.dateAcct(getDateAcct())
+						//
 						// Amounts:
 						.amounts(AllocationAmounts.ofPayAmt(amtToAllocate))
 						.payableOverUnderAmt(payableOverUnderAmt)
@@ -671,6 +519,10 @@ public class PaymentAllocationBuilder
 				//
 				.payableDocumentRef(payable.getReference())
 				.paymentDocumentRef(null) // nop
+				//
+				.dateTrx(getDateTrx())
+				.dateAcct(getDateAcct())
+				//
 				// Amounts:
 				.amounts(amountsToAllocate)
 				.payableOverUnderAmt(payableOverUnderAmt)
@@ -725,6 +577,10 @@ public class PaymentAllocationBuilder
 				//
 				.payableDocumentRef(payable.getReference())
 				.paymentDocumentRef(null) // nop
+				//
+				.dateTrx(getDateTrx())
+				.dateAcct(getDateAcct())
+				//
 				// Amounts:
 				.amounts(amountsToAllocate)
 				.payableOverUnderAmt(payableOverUnderAmt)

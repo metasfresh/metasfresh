@@ -143,8 +143,7 @@ public class PaymentAllocationBuilderTest
 	{
 		return PaymentAllocationBuilder.newBuilder()
 				.dateTrx(date)
-				.dateAcct(date)  // task 09643. Leaving this date also as current date. will be changed later if needed
-		;
+				.dateAcct(date);
 	}
 
 	private PaymentAllocationBuilder newPaymentAllocationBuilder(
@@ -273,6 +272,9 @@ public class PaymentAllocationBuilderTest
 				//
 				.payableDocumentRef(payableRef)
 				.paymentDocumentRef(paymentRef)
+				//
+				.dateTrx(date)
+				.dateAcct(date)
 				//
 				.amounts(AllocationAmounts.builder()
 						.payAmt(euro(allocatedAmt))

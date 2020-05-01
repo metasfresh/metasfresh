@@ -1,5 +1,6 @@
 package de.metas.banking.payment.paymentallocation.service;
 
+import java.time.LocalDate;
 import java.util.Objects;
 
 import javax.annotation.Nullable;
@@ -41,6 +42,9 @@ public final class AllocationLineCandidate
 	private final TableRecordReference payableDocumentRef;
 	private final TableRecordReference paymentDocumentRef;
 
+	private final LocalDate dateTrx;
+	private final LocalDate dateAcct;
+
 	//
 	// Amounts
 	private final CurrencyId currencyId;
@@ -57,6 +61,9 @@ public final class AllocationLineCandidate
 			//
 			@NonNull final TableRecordReference payableDocumentRef,
 			@Nullable final TableRecordReference paymentDocumentRef,
+			//
+			@NonNull final LocalDate dateTrx,
+			@NonNull final LocalDate dateAcct,
 			//
 			// Amounts
 			@NonNull final AllocationAmounts amounts,
@@ -91,6 +98,9 @@ public final class AllocationLineCandidate
 
 		this.payableDocumentRef = payableDocumentRef;
 		this.paymentDocumentRef = paymentDocumentRef;
+
+		this.dateTrx = dateTrx;
+		this.dateAcct = dateAcct;
 
 		this.currencyId = amounts.getCurrencyId();
 		this.amounts = amounts;
