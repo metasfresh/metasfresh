@@ -9,6 +9,8 @@ import static de.metas.invoice.InvoiceDocBaseType.CustomerCreditMemo;
 import static de.metas.invoice.InvoiceDocBaseType.CustomerInvoice;
 import static de.metas.invoice.InvoiceDocBaseType.VendorCreditMemo;
 import static de.metas.invoice.InvoiceDocBaseType.VendorInvoice;
+import static de.metas.payment.PaymentDirection.INBOUND;
+import static de.metas.payment.PaymentDirection.OUTBOUND;
 
 /*
  * #%L
@@ -157,33 +159,34 @@ public class PaymentAllocationBuilderTest
 	/**
 	 * NOTE: amounts shall be CreditMemo adjusted, but not AP adjusted
 	 */
+	@Builder(builderMethodName = "invoice", builderClassName = "$PayableDocumentBuilder")
 	private PayableDocument newInvoice(
-			final InvoiceDocBaseType InvoiceDocBaseType,
-			final String openAmtStr,
-			final String payAmtStr,
-			final String discountAmtStr,
-			final String writeOffAmtStr)
+			final InvoiceDocBaseType type,
+			final String open,
+			final String pay,
+			final String discount,
+			final String writeOff,
+			final String invoiceProcessingFee)
 	{
-		final Money openAmt_CMAdjusted_APAdjusted = euro(openAmtStr);
-		final Money openAmt = openAmt_CMAdjusted_APAdjusted
-				.negateIf(InvoiceDocBaseType.isCreditMemo())
-				.negateIf(!InvoiceDocBaseType.isSales());
+		final Money openAmt_CMAdjusted_APAdjusted = euro(open);
+		final Money openAmtEffective = openAmt_CMAdjusted_APAdjusted
+				.negateIf(type.isCreditMemo())
+				.negateIf(!type.isSales());
 
 		final AllocationAmounts amountsToAllocate_CMAdjusted_APAdjusted = AllocationAmounts.builder()
-				.payAmt(euro(payAmtStr))
-				.discountAmt(euro(discountAmtStr))
-				.writeOffAmt(euro(writeOffAmtStr))
+				.payAmt(euro(pay))
+				.discountAmt(euro(discount))
+				.writeOffAmt(euro(writeOff))
+				.invoiceProcessingFee(euro(invoiceProcessingFee))
 				.build();
 		final AllocationAmounts amountsToAllocate = amountsToAllocate_CMAdjusted_APAdjusted
-				.negateIf(InvoiceDocBaseType.isCreditMemo())
-				.negateIf(!InvoiceDocBaseType.isSales());
-
-		// InvoiceDocBaseType.isCreditMemo() ? amountsToAllocate_CMAdjusted_APAdjusted.negate() : amountsToAllocate_CMAdjusted_APAdjusted;
+				.negateIf(type.isCreditMemo())
+				.negateIf(!type.isSales());
 
 		//
 		// Create the invoice record (needed for the BL which calculates how much was allocated)
 		final int invoiceId = nextInvoiceId++;
-		final I_C_DocType docType = getInvoiceDocType(InvoiceDocBaseType);
+		final I_C_DocType docType = getInvoiceDocType(type);
 		final I_C_Invoice invoice = InterfaceWrapperHelper.newInstance(I_C_Invoice.class);
 		invoice.setC_Invoice_ID(invoiceId);
 		invoice.setDocumentNo("InvoiceDocNo" + invoiceId);
@@ -203,8 +206,8 @@ public class PaymentAllocationBuilderTest
 				.bpartnerId(BPartnerId.ofRepoId(invoice.getC_BPartner_ID()))
 				.documentNo(invoice.getDocumentNo())
 				.soTrx(SOTrx.ofBoolean(invoice.isSOTrx()))
-				.creditMemo(InvoiceDocBaseType.isCreditMemo())
-				.openAmt(openAmt)
+				.creditMemo(type.isCreditMemo())
+				.openAmt(openAmtEffective)
 				.amountsToAllocate(amountsToAllocate)
 				.build();
 	}
@@ -224,10 +227,11 @@ public class PaymentAllocationBuilderTest
 		return docType;
 	}
 
-	private PaymentDocument newPayment(
-			final PaymentDirection paymentDirection,
-			final String openAmtStr,
-			final String amountToAllocateStr)
+	@Builder(builderMethodName = "payment", builderClassName = "$PaymentDocumentBuilder")
+	private PaymentDocument newPayment0(
+			@NonNull final PaymentDirection direction,
+			final String open,
+			final String amtToAllocate)
 	{
 		//
 		// Create a dummy record (needed for the BL which calculates how much was allocated)
@@ -244,13 +248,13 @@ public class PaymentAllocationBuilderTest
 				.paymentId(PaymentId.ofRepoId(payment.getC_Payment_ID()))
 				.bpartnerId(BPartnerId.ofRepoId(payment.getC_BPartner_ID()))
 				.documentNo(payment.getDocumentNo())
-				.paymentDirection(paymentDirection)
-				.openAmt(euro(openAmtStr).negateIf(paymentDirection.isOutboundPayment()))
-				.amountToAllocate(euro(amountToAllocateStr).negateIf(paymentDirection.isOutboundPayment()))
+				.paymentDirection(direction)
+				.openAmt(euro(open).negateIf(direction.isOutboundPayment()))
+				.amountToAllocate(euro(amtToAllocate).negateIf(direction.isOutboundPayment()))
 				.build();
 	}
 
-	@Builder(builderMethodName = "allocation", builderClassName = "AllocationBuilder")
+	@Builder(builderMethodName = "allocation", builderClassName = "$AllocationBuilder")
 	private final AllocationLineCandidate createAllocationCandidate(
 			@NonNull final AllocationLineCandidateType type,
 			@Nullable final TableRecordReference payableRef,
@@ -258,6 +262,7 @@ public class PaymentAllocationBuilderTest
 			@Nullable final String allocatedAmt,
 			@Nullable final String discountAmt,
 			@Nullable final String writeOffAmt,
+			@Nullable final String invoiceProcessingFee,
 			@Nullable final String overUnderAmt,
 			@Nullable final String paymentOverUnderAmt)
 	{
@@ -273,6 +278,7 @@ public class PaymentAllocationBuilderTest
 						.payAmt(euro(allocatedAmt))
 						.discountAmt(euro(discountAmt))
 						.writeOffAmt(euro(writeOffAmt))
+						.invoiceProcessingFee(euro(invoiceProcessingFee))
 						.build())
 				.payableOverUnderAmt(euro(overUnderAmt))
 				.paymentOverUnderAmt(euro(paymentOverUnderAmt))
@@ -365,16 +371,17 @@ public class PaymentAllocationBuilderTest
 		final PaymentAllocationBuilder builder = newPaymentAllocationBuilder(
 				// Invoices
 				ImmutableList.of(
-						// InvoiceDocBaseType / OpenAmt / AppliedAmt / Discount / WriteOff
-						invoice1 = newInvoice(VendorInvoice, "8000", "0", "100", "200"))
+						invoice1 = invoice().type(VendorInvoice).open("8000").pay("0").discount("100").writeOff("200").build())
 				// Payments
 				, ImmutableList.<PaymentDocument> of());
 
 		//
 		// Define expected candidates
 		final List<AllocationLineCandidate> candidatesExpected = ImmutableList.of(
-				// invoiceId / paymentId / AllocatedAmt / DiscountAmt / WriteOffAmt / OverUnderAmt / PaymentOverUnderAmt
-				createAllocationCandidate(InvoiceDiscountOrWriteOff, invoice1.getReference(), null, "0", "-100", "-200", "-7700", "0"));
+				allocation().type(InvoiceDiscountOrWriteOff)
+						.payableRef(invoice1.getReference())
+						.discountAmt("-100").writeOffAmt("-200").overUnderAmt("-7700")
+						.build());
 
 		//
 		// Check
@@ -391,18 +398,19 @@ public class PaymentAllocationBuilderTest
 		final PaymentAllocationBuilder builder = newPaymentAllocationBuilder(
 				// Invoices
 				ImmutableList.of(
-						// InvoiceDocBaseType / OpenAmt / AppliedAmt / Discount / WriteOff
-						invoice1 = newInvoice(VendorInvoice, "8000", "5000", "100", "200"))
+						invoice1 = invoice().type(VendorInvoice).open("8000").pay("5000").discount("100").writeOff("200").build())
 				// Payments
 				, ImmutableList.of(
-						// PaymentId / PaymentDirection / OpenAmt / AppliedAmt
-						payment1 = newPayment(PaymentDirection.OUTBOUND, "5000", "5000")));
+						payment1 = payment().direction(OUTBOUND).open("5000").amtToAllocate("5000").build()));
 
 		//
 		// Define expected candidates
 		final List<AllocationLineCandidate> candidatesExpected = ImmutableList.of(
-				// invoiceId / paymentId / AllocatedAmt / DiscountAmt / WriteOffAmt / OverUnderAmt / PaymentOverUnderAmt
-				createAllocationCandidate(InvoiceToPayment, invoice1.getReference(), payment1.getReference(), "-5000", "-100", "-200", "-2700", "0"));
+				allocation().type(InvoiceToPayment)
+						.payableRef(invoice1.getReference())
+						.paymentRef(payment1.getReference())
+						.allocatedAmt("-5000").discountAmt("-100").writeOffAmt("-200").overUnderAmt("-2700")
+						.build());
 
 		//
 		// Check
@@ -421,15 +429,17 @@ public class PaymentAllocationBuilderTest
 				Arrays.<PayableDocument> asList()
 				// Payments
 				, ImmutableList.of(
-						// PaymentId / PaymentDirection / OpenAmt / AppliedAmt
-						payment1 = newPayment(PaymentDirection.OUTBOUND, "5000", "5000"),
-						payment2 = newPayment(PaymentDirection.INBOUND, "5000", "5000")));
+						payment1 = payment().direction(OUTBOUND).open("5000").amtToAllocate("5000").build(),
+						payment2 = payment().direction(INBOUND).open("5000").amtToAllocate("5000").build()));
 
 		//
 		// Define expected candidates
 		final List<AllocationLineCandidate> candidatesExpected = ImmutableList.of(
-				// invoiceId / paymentId / AllocatedAmt / DiscountAmt / WriteOffAmt / OverUnderAmt / PaymentOverUnderAmt
-				createAllocationCandidate(InboundPaymentToOutboundPayment, payment1.getReference(), payment2.getReference(), "-5000", "0", "0", "0", "0"));
+				allocation().type(InboundPaymentToOutboundPayment)
+						.payableRef(payment1.getReference())
+						.paymentRef(payment2.getReference())
+						.allocatedAmt("-5000")
+						.build());
 
 		//
 		// Check
@@ -447,18 +457,24 @@ public class PaymentAllocationBuilderTest
 				Arrays.<PayableDocument> asList()
 				// Payments
 				, ImmutableList.of(
-						// PaymentId / PaymentDirection / OpenAmt / AppliedAmt
-						payment1 = newPayment(PaymentDirection.OUTBOUND, "5000", "5000"), //
-						payment2 = newPayment(PaymentDirection.INBOUND, "3000", "3000"), //
-						payment3 = newPayment(PaymentDirection.INBOUND, "2000", "2000") //
+						payment1 = payment().direction(OUTBOUND).open("5000").amtToAllocate("5000").build(), //
+						payment2 = payment().direction(INBOUND).open("3000").amtToAllocate("3000").build(), //
+						payment3 = payment().direction(INBOUND).open("2000").amtToAllocate("2000").build() //
 				));
 
 		//
 		// Define expected candidates
 		final List<AllocationLineCandidate> candidatesExpected = ImmutableList.of(
-				// invoiceId / paymentId / AllocatedAmt / DiscountAmt / WriteOffAmt / OverUnderAmt / PaymentOverUnderAmt
-				createAllocationCandidate(InboundPaymentToOutboundPayment, payment1.getReference(), payment2.getReference(), "-3000", "0", "0", "-2000", "0"), //
-				createAllocationCandidate(InboundPaymentToOutboundPayment, payment1.getReference(), payment3.getReference(), "-2000", "0", "0", "0", "0"));
+				allocation().type(InboundPaymentToOutboundPayment)
+						.payableRef(payment1.getReference())
+						.paymentRef(payment2.getReference())
+						.allocatedAmt("-3000").overUnderAmt("-2000")
+						.build(),
+				allocation().type(InboundPaymentToOutboundPayment)
+						.payableRef(payment1.getReference())
+						.paymentRef(payment3.getReference())
+						.allocatedAmt("-2000")
+						.build());
 
 		//
 		// Check
@@ -475,18 +491,20 @@ public class PaymentAllocationBuilderTest
 		final PaymentAllocationBuilder builder = newPaymentAllocationBuilder(
 				// Invoices
 				ImmutableList.of(
-						// InvoiceDocBaseType / OpenAmt / AppliedAmt / Discount / WriteOff
-						invoice1 = newInvoice(CustomerInvoice, "5000", "1000", "0", "0"),
-						invoice2 = newInvoice(CustomerCreditMemo, "1000", "1000", "0", "0") // CreditMemo
-				)
+						invoice1 = invoice().type(CustomerInvoice).open("5000").pay("1000").build(),
+						invoice2 = invoice().type(CustomerCreditMemo).open("1000").pay("1000").build())
 				// Payments
 				, ImmutableList.<PaymentDocument> of());
 
 		//
 		// Define expected candidates
 		final List<AllocationLineCandidate> candidatesExpected = ImmutableList.of(
-				// invoiceId / paymentId / AllocatedAmt / DiscountAmt / WriteOffAmt / OverUnderAmt / PaymentOverUnderAmt
-				createAllocationCandidate(InvoiceToCreditMemo, invoice1.getReference(), invoice2.getReference(), "1000", "0", "0", "4000", "0"));
+				allocation().type(InvoiceToCreditMemo)
+						.payableRef(invoice1.getReference())
+						.paymentRef(invoice2.getReference())
+						.allocatedAmt("1000")
+						.overUnderAmt("4000")
+						.build());
 
 		//
 		// Check
@@ -512,10 +530,8 @@ public class PaymentAllocationBuilderTest
 			builder = newPaymentAllocationBuilder(
 					// Invoices
 					ImmutableList.of(
-							// InvoiceDocBaseType / OpenAmt / AppliedAmt / Discount / WriteOff
-							invoice1 = newInvoice(CustomerInvoice, "5000", "1000", "0", "0"),
-							invoice2 = newInvoice(VendorInvoice, "1000", "1000", "0", "0") //
-					)
+							invoice1 = invoice().type(CustomerInvoice).open("5000").pay("1000").build(),
+							invoice2 = invoice().type(VendorInvoice).open("1000").pay("1000").build())
 					// Payments
 					, ImmutableList.<PaymentDocument> of());
 		}
@@ -528,8 +544,12 @@ public class PaymentAllocationBuilderTest
 			//
 			// Define expected candidates
 			final List<AllocationLineCandidate> candidatesExpected = ImmutableList.of(
-					// invoiceId / paymentId / AllocatedAmt / DiscountAmt / WriteOffAmt / OverUnderAmt / PaymentOverUnderAmt
-					createAllocationCandidate(SalesInvoiceToPurchaseInvoice, invoice1.getReference(), invoice2.getReference(), "1000", "0", "0", "4000", "0"));
+					allocation().type(SalesInvoiceToPurchaseInvoice)
+							.payableRef(invoice1.getReference())
+							.paymentRef(invoice2.getReference())
+							.allocatedAmt("1000")
+							.overUnderAmt("4000")
+							.build());
 
 			//
 			// Check
@@ -560,13 +580,11 @@ public class PaymentAllocationBuilderTest
 	@Test
 	public void test_Vendor_MultiInvoice_MultiPayment()
 	{
-		// PaymentId / PaymentDirection / OpenAmt / AppliedAmt
-		final PaymentDocument payment1 = newPayment(PaymentDirection.OUTBOUND, "5000", "5000");
-		final PaymentDocument payment2 = newPayment(PaymentDirection.OUTBOUND, "5000", "5000");
+		final PaymentDocument payment1 = payment().direction(OUTBOUND).open("5000").amtToAllocate("5000").build();
+		final PaymentDocument payment2 = payment().direction(OUTBOUND).open("5000").amtToAllocate("5000").build();
 
-		// InvoiceDocBaseType / OpenAmt / AppliedAmt / Discount / WriteOff
-		final PayableDocument invoice1 = newInvoice(VendorInvoice, "8000", "6000", "1599", "1");
-		final PayableDocument invoice2 = newInvoice(VendorInvoice, "7100", "3000", "50", "50");
+		final PayableDocument invoice1 = invoice().type(VendorInvoice).open("8000").pay("6000").discount("1599").writeOff("1").build();
+		final PayableDocument invoice2 = invoice().type(VendorInvoice).open("7100").pay("3000").discount("50").writeOff("50").build();
 
 		final PaymentAllocationBuilder builder = newPaymentAllocationBuilder(
 				// Invoices
@@ -586,31 +604,43 @@ public class PaymentAllocationBuilderTest
 		final PaymentAllocationBuilder builder = newPaymentAllocationBuilder(
 				// Invoices
 				ImmutableList.of(
-						// InvoiceDocBaseType / OpenAmt / AppliedAmt / Discount / WriteOff
-						invoice1 = newInvoice(CustomerInvoice, "8000", "6000", "1599", "1"),
-						invoice2 = newInvoice(CustomerInvoice, "7100", "3000", "50", "50"),
-						invoice3 = newInvoice(CustomerInvoice, "1600", "1500", "100", "0"),
-						invoice4 = newInvoice(CustomerCreditMemo, "500", "500", "0", "0") // i.e. CreditMemo
-				)
+						invoice1 = invoice().type(CustomerInvoice).open("8000").pay("6000").discount("1599").writeOff("1").build(),
+						invoice2 = invoice().type(CustomerInvoice).open("7100").pay("3000").discount("50").writeOff("50").build(),
+						invoice3 = invoice().type(CustomerInvoice).open("1600").pay("1500").discount("100").build(),
+						invoice4 = invoice().type(CustomerCreditMemo).open("500").pay("500").build())
 				// Payments
 				, ImmutableList.of(
-						// PaymentId / PaymentDirection / OpenAmt / AppliedAmt
-						payment1 = newPayment(PaymentDirection.INBOUND, "5000", "5000"),
-						payment2 = newPayment(PaymentDirection.INBOUND, "5000", "5000")));
+						payment1 = payment().direction(INBOUND).open("5000").amtToAllocate("5000").build(),
+						payment2 = payment().direction(INBOUND).open("5000").amtToAllocate("5000").build()));
 
 		//
 		// Define expected candidates
 		final List<AllocationLineCandidate> candidatesExpected = ImmutableList.of(
-				// invoiceId / paymentId / AllocatedAmt / DiscountAmt / WriteOffAmt / OverUnderAmt / PaymentOverUnderAmt
-				createAllocationCandidate(InvoiceToCreditMemo, invoice1.getReference(), invoice4.getReference(), "500", "1599", "1", "5900", "0")
-				//
-				, createAllocationCandidate(InvoiceToPayment, invoice1.getReference(), payment1.getReference(), "5000", "0", "0", "900", "0")
-				//
-				, createAllocationCandidate(InvoiceToPayment, invoice1.getReference(), payment2.getReference(), "500", "0", "0", "400", "4500")
-				//
-				, createAllocationCandidate(InvoiceToPayment, invoice2.getReference(), payment2.getReference(), "3000", "50", "50", "4000", "1500")
-				//
-				, createAllocationCandidate(InvoiceToPayment, invoice3.getReference(), payment2.getReference(), "1500", "100", "0", "0", "0"));
+				allocation().type(InvoiceToCreditMemo)
+						.payableRef(invoice1.getReference())
+						.paymentRef(invoice4.getReference())
+						.allocatedAmt("500").discountAmt("1599").writeOffAmt("1").overUnderAmt("5900")
+						.build(),
+				allocation().type(InvoiceToPayment)
+						.payableRef(invoice1.getReference())
+						.paymentRef(payment1.getReference())
+						.allocatedAmt("5000").discountAmt("0").writeOffAmt("0").overUnderAmt("900")
+						.build(),
+				allocation().type(InvoiceToPayment)
+						.payableRef(invoice1.getReference())
+						.paymentRef(payment2.getReference())
+						.allocatedAmt("500").discountAmt("0").writeOffAmt("0").overUnderAmt("400").paymentOverUnderAmt("4500")
+						.build(),
+				allocation().type(InvoiceToPayment)
+						.payableRef(invoice2.getReference())
+						.paymentRef(payment2.getReference())
+						.allocatedAmt("3000").discountAmt("50").writeOffAmt("50").overUnderAmt("4000").paymentOverUnderAmt("1500")
+						.build(),
+				allocation().type(InvoiceToPayment)
+						.payableRef(invoice3.getReference())
+						.paymentRef(payment2.getReference())
+						.allocatedAmt("1500").discountAmt("100").writeOffAmt("0").overUnderAmt("0")
+						.build());
 
 		//
 		// Check
@@ -640,18 +670,21 @@ public class PaymentAllocationBuilderTest
 		final PaymentAllocationBuilder builder = newPaymentAllocationBuilder(
 				// Invoices
 				ImmutableList.of(
-						// InvoiceDocBaseType / OpenAmt / AppliedAmt / Discount / WriteOff
-						invoice1 = newInvoice(VendorCreditMemo, "100", "30", "0", "0"))
+						invoice1 = invoice().type(VendorCreditMemo).open("100").pay("30").build())
 				// Payments
 				, ImmutableList.of(
-						// PaymentId / PaymentDirection / OpenAmt / AppliedAmt
-						payment1 = newPayment(PaymentDirection.INBOUND, "50", "30")));
+						payment1 = payment().direction(INBOUND).open("50").amtToAllocate("30").build()));
 
 		//
 		// Define expected candidates
 		final List<AllocationLineCandidate> candidatesExpected = ImmutableList.of(
-				// invoiceId / paymentId / AllocatedAmt / DiscountAmt / WriteOffAmt / OverUnderAmt / PaymentOverUnderAmt
-				createAllocationCandidate(InvoiceToPayment, invoice1.getReference(), payment1.getReference(), "30", "0", "0", "70", "20"));
+				allocation().type(InvoiceToPayment)
+						.payableRef(invoice1.getReference())
+						.paymentRef(payment1.getReference())
+						.allocatedAmt("30")
+						.overUnderAmt("70")
+						.paymentOverUnderAmt("20")
+						.build());
 
 		//
 		// Check
@@ -672,20 +705,25 @@ public class PaymentAllocationBuilderTest
 		final PaymentAllocationBuilder builder = newPaymentAllocationBuilder(
 				// Invoices
 				ImmutableList.of(
-						// InvoiceDocBaseType / OpenAmt / AppliedAmt / Discount / WriteOff
-						invoice1 = newInvoice(VendorInvoice, "165", "100", "10", "5"),
-						invoice2 = newInvoice(VendorCreditMemo, "80", "80", "0", "0"))
+						invoice1 = invoice().type(VendorInvoice).open("165").pay("100").discount("10").writeOff("5").build(),
+						invoice2 = invoice().type(VendorCreditMemo).open("80").pay("80").build())
 				// Payments
 				, ImmutableList.of(
-						// PaymentId / PaymentDirection / OpenAmt / AppliedAmt
-						payment1 = newPayment(PaymentDirection.OUTBOUND, "20", "20")));
+						payment1 = payment().direction(OUTBOUND).open("20").amtToAllocate("20").build()));
 
 		//
 		// Define expected candidates
 		final List<AllocationLineCandidate> candidatesExpected = ImmutableList.of(
-				// invoiceId / paymentId / AllocatedAmt / DiscountAmt / WriteOffAmt / OverUnderAmt / PaymentOverUnderAmt
-				createAllocationCandidate(InvoiceToCreditMemo, invoice1.getReference(), invoice2.getReference(), "-80", "-10", "-5", "-70", "0"),
-				createAllocationCandidate(InvoiceToPayment, invoice1.getReference(), payment1.getReference(), "-20", "0", "0", "-50", "0"));
+				allocation().type(InvoiceToCreditMemo)
+						.payableRef(invoice1.getReference())
+						.paymentRef(invoice2.getReference())
+						.allocatedAmt("-80").discountAmt("-10").writeOffAmt("-5").overUnderAmt("-70")
+						.build(),
+				allocation().type(InvoiceToPayment)
+						.payableRef(invoice1.getReference())
+						.paymentRef(payment1.getReference())
+						.allocatedAmt("-20").overUnderAmt("-50")
+						.build());
 
 		//
 		// Check
@@ -706,12 +744,10 @@ public class PaymentAllocationBuilderTest
 		final PaymentAllocationBuilder builder = newPaymentAllocationBuilder(
 				// Invoices
 				ImmutableList.of(
-						// InvoiceDocBaseType / OpenAmt / AppliedAmt / Discount / WriteOff
-						newInvoice(VendorInvoice, "100", "100", "0", "0"))
+						invoice().type(VendorInvoice).open("100").pay("100").build())
 				// Payments
 				, ImmutableList.of(
-						// PaymentId / PaymentDirection / OpenAmt / AppliedAmt
-						newPayment(PaymentDirection.INBOUND, "100", "100")));
+						payment().direction(INBOUND).open("100").amtToAllocate("100").build()));
 
 		assertThatThrownBy(() -> builder.build())
 				.isInstanceOf(PayableDocumentNotAllocatedException.class);
@@ -731,11 +767,9 @@ public class PaymentAllocationBuilderTest
 		{
 			result = newPaymentAllocationBuilder()
 					.payableDocuments(ImmutableList.of(
-							// InvoiceDocBaseType / OpenAmt / PayAmt / Discount / WriteOff
-							invoice1 = newInvoice(CustomerInvoice, "100", "100", "0", "0")))
+							invoice1 = invoice().type(CustomerInvoice).open("100").pay("100").build()))
 					.paymentDocuments(ImmutableList.of(
-							// PaymentDirection / OpenAmt / AmountToAllocate
-							payment1 = newPayment(PaymentDirection.INBOUND, "10", "10")))
+							payment1 = payment().direction(INBOUND).open("10").amtToAllocate("10").build()))
 					.payableRemainingOpenAmtPolicy(payableRemainingOpenAmtPolicy)
 					.allowPartialAllocations(allowPartialAllocations)
 					.build();
@@ -814,20 +848,60 @@ public class PaymentAllocationBuilderTest
 
 		final PaymentAllocationBuilder builder = newPaymentAllocationBuilder()
 				.payableDocuments(ImmutableList.of(
-						// InvoiceDocBaseType / OpenAmt / PayAmt / Discount / WriteOff
-						invoice1 = newInvoice(CustomerInvoice, "100", "100", "0", "0")))
+						invoice1 = invoice().type(CustomerInvoice).open("100").pay("100").build()))
 				.paymentDocuments(ImmutableList.of(
-						// PaymentDirection / OpenAmt / AmountToAllocate
-						payment1 = newPayment(PaymentDirection.INBOUND, "10", "10")))
+						payment1 = payment().direction(INBOUND).open("10").amtToAllocate("10").build()))
 				.payableRemainingOpenAmtPolicy(PayableRemainingOpenAmtPolicy.WRITE_OFF);
 
 		//
 		// Define expected candidates
 		final List<AllocationLineCandidate> candidatesExpected = ImmutableList.of(
-				// invoiceId / paymentId / AllocatedAmt / DiscountAmt / WriteOffAmt / OverUnderAmt / PaymentOverUnderAmt
-				createAllocationCandidate(InvoiceToPayment, invoice1.getReference(), payment1.getReference(), "10", "0", "0", "90", "0"),
-				createAllocationCandidate(InvoiceDiscountOrWriteOff, invoice1.getReference(), null, "0", "0", "90", "0", "0"));
+				allocation().type(InvoiceToPayment)
+						.payableRef(invoice1.getReference())
+						.paymentRef(payment1.getReference())
+						.allocatedAmt("10")
+						.overUnderAmt("90")
+						.build(),
+
+				allocation().type(InvoiceDiscountOrWriteOff)
+						.payableRef(invoice1.getReference())
+						.writeOffAmt("90")
+						.build());
 
 		assertExpected(candidatesExpected, builder);
+	}
+
+	@Test
+	public void test_invoiceProcessingFee()
+	{
+		PayableDocument invoice1;
+		PaymentDocument payment1;
+
+		final PaymentAllocationBuilder builder = newPaymentAllocationBuilder(
+				// Invoices
+				ImmutableList.of(
+						invoice1 = invoice().type(CustomerInvoice).open("100").pay("88").discount("10").invoiceProcessingFee("2").build())
+				// Payments
+				, ImmutableList.of(
+						payment1 = payment().direction(INBOUND).open("88").amtToAllocate("88").build()));
+
+		//
+		// Define expected candidates
+		final List<AllocationLineCandidate> candidatesExpected = ImmutableList.of(
+				allocation().type(AllocationLineCandidateType.InvoiceProcessingFee)
+						.payableRef(invoice1.getReference())
+						.invoiceProcessingFee("2")
+						.overUnderAmt("98")
+						.build(),
+
+				allocation().type(InvoiceToPayment)
+						.payableRef(invoice1.getReference())
+						.paymentRef(payment1.getReference())
+						.allocatedAmt("88")
+						.discountAmt("10")
+						.build());
+
+		final PaymentAllocationResult result = builder.dryRun().build();
+		assertExpected(candidatesExpected, result.getCandidates());
 	}
 }

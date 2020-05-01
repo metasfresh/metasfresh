@@ -1,11 +1,14 @@
 package de.metas.banking.payment.paymentallocation.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
+import de.metas.banking.payment.paymentallocation.service.AllocationAmounts.AllocationAmountsBuilder;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 
@@ -45,12 +48,61 @@ public class AllocationAmountsTest
 				.payAmt(euro(999001))
 				.discountAmt(euro(999002))
 				.writeOffAmt(euro(999003))
+				.invoiceProcessingFee(euro(999004))
 				.build();
 	}
 
 	private Money euro(final int amount)
 	{
 		return Money.of(amount, euroCurrencyId);
+	}
+
+	@Nested
+	public class builder
+	{
+		@Test
+		public void noAmounts()
+		{
+			assertThatThrownBy(() -> AllocationAmounts.builder().build())
+					.isInstanceOf(AdempiereException.class)
+					.hasMessageStartingWith("Provide at least one amount.");
+		}
+
+		@Test
+		public void payAmt()
+		{
+			AllocationAmounts.builder().payAmt(euro(1)).build();
+		}
+
+		@Test
+		public void discountAmt()
+		{
+			AllocationAmounts.builder().discountAmt(euro(1)).build();
+		}
+
+		@Test
+		public void writeOffAmt()
+		{
+			AllocationAmounts.builder().writeOffAmt(euro(1)).build();
+		}
+
+		@Test
+		public void invoiceProcessingFee()
+		{
+			AllocationAmounts.builder().invoiceProcessingFee(euro(1)).build();
+		}
+
+		@Test
+		public void differentCurrencies()
+		{
+			final AllocationAmountsBuilder builder = AllocationAmounts.builder()
+					.discountAmt(Money.of(1, CurrencyId.ofRepoId(1)))
+					.invoiceProcessingFee(Money.of(2, CurrencyId.ofRepoId(2)));
+
+			assertThatThrownBy(builder::build)
+					.isInstanceOf(AdempiereException.class)
+					.hasMessageStartingWith("All given Money instances shall have the same currency");
+		}
 	}
 
 	@Test
@@ -60,6 +112,7 @@ public class AllocationAmountsTest
 				.payAmt(euro(1))
 				.discountAmt(euro(2))
 				.writeOffAmt(euro(3))
+				.invoiceProcessingFee(euro(4))
 				.build();
 
 		assertThat(amounts.add(amounts))
@@ -67,16 +120,18 @@ public class AllocationAmountsTest
 						.payAmt(euro(2))
 						.discountAmt(euro(4))
 						.writeOffAmt(euro(6))
+						.invoiceProcessingFee(euro(8))
 						.build());
 	}
 
 	@Test
-	public void remove()
+	public void subtract()
 	{
 		final AllocationAmounts amounts = allAmountFieldsSet.toBuilder()
 				.payAmt(euro(1))
 				.discountAmt(euro(2))
 				.writeOffAmt(euro(3))
+				.invoiceProcessingFee(euro(4))
 				.build();
 
 		assertThat(amounts.subtract(amounts))
@@ -90,6 +145,7 @@ public class AllocationAmountsTest
 				.payAmt(euro(1))
 				.discountAmt(euro(2))
 				.writeOffAmt(euro(3))
+				.invoiceProcessingFee(euro(4))
 				.build();
 
 		assertThat(amounts.negate())
@@ -97,6 +153,7 @@ public class AllocationAmountsTest
 						.payAmt(euro(-1))
 						.discountAmt(euro(-2))
 						.writeOffAmt(euro(-3))
+						.invoiceProcessingFee(euro(-4))
 						.build());
 	}
 
@@ -107,9 +164,10 @@ public class AllocationAmountsTest
 				.payAmt(euro(1))
 				.discountAmt(euro(2))
 				.writeOffAmt(euro(3))
+				.invoiceProcessingFee(euro(4))
 				.build();
 
-		assertThat(amounts.getTotalAmt()).isEqualTo(euro(1 + 2 + 3));
+		assertThat(amounts.getTotalAmt()).isEqualTo(euro(1 + 2 + 3 + 4));
 	}
 
 	@Test
@@ -117,6 +175,16 @@ public class AllocationAmountsTest
 	{
 		assertThat(allAmountFieldsSet.isZero()).isFalse();
 		assertThat(allAmountFieldsSet.toZero().isZero()).isTrue();
+	}
+
+	@Test
+	public void withZeroPayAmt()
+	{
+		final AllocationAmounts amounts = AllocationAmounts.ofPayAmt(euro(123));
+		assertThat(amounts.getPayAmt()).isEqualTo(euro(123));
+
+		final AllocationAmounts zero = amounts.withZeroPayAmt();
+		assertThat(zero.getPayAmt()).isEqualTo(euro(0));
 	}
 
 	@Nested
@@ -158,6 +226,13 @@ public class AllocationAmountsTest
 		}
 
 		@Test
+		public void withInvoiceProcessingFee()
+		{
+			final AllocationAmounts amounts = zeroAmounts.withInvoiceProcessingFee(euro(1));
+			assertThat(amounts.isZero()).isFalse();
+		}
+
+		@Test
 		public void fromAmountsFullySetToZero()
 		{
 			AllocationAmounts amounts = allAmountFieldsSet;
@@ -170,8 +245,11 @@ public class AllocationAmountsTest
 			assertThat(amounts.isZero()).isFalse();
 
 			amounts = amounts.withWriteOffAmt(euro(0));
+			assertThat(amounts.isZero()).isFalse();
 
+			amounts = amounts.withInvoiceProcessingFee(euro(0));
 			assertThat(amounts.isZero()).isTrue();
+			assertThat(amounts.getTotalAmt()).isEqualTo(Money.zero(euroCurrencyId));
 		}
 	}
 }

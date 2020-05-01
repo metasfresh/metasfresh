@@ -6,6 +6,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -296,6 +298,10 @@ public class PaymentAllocationBuilder
 		final ImmutableList.Builder<AllocationLineCandidate> allocationCandidates = ImmutableList.builder();
 
 		//
+		// Allocate invoice processing fees first
+		allocationCandidates.addAll(createAllocationLineCandidates_InvoiceProcessingFee(payableDocuments));
+
+		//
 		// Try to allocate credit memos to regular invoices
 		allocationCandidates.addAll(createAllocationLineCandidates_CreditMemosToInvoices(payableDocuments));
 
@@ -471,16 +477,12 @@ public class PaymentAllocationBuilder
 		else if (PayableRemainingOpenAmtPolicy.DISCOUNT.equals(payableRemainingOpenAmtPolicy))
 		{
 			payable.moveRemainingOpenAmtToDiscount();
-
-			final AllocationAmounts discountAndWriteOffAmts = payable.getAmountsToAllocate();
-			return createAllocationLineCandidate_DiscountAndWriteOff(payable, discountAndWriteOffAmts);
+			return createAllocationLineCandidate_DiscountAndWriteOff(payable);
 		}
 		else if (PayableRemainingOpenAmtPolicy.WRITE_OFF.equals(payableRemainingOpenAmtPolicy))
 		{
 			payable.moveRemainingOpenAmtToWriteOff();
-
-			final AllocationAmounts discountAndWriteOffAmts = payable.getAmountsToAllocate();
-			return createAllocationLineCandidate_DiscountAndWriteOff(payable, discountAndWriteOffAmts);
+			return createAllocationLineCandidate_DiscountAndWriteOff(payable);
 		}
 		else
 		{
@@ -635,27 +637,30 @@ public class PaymentAllocationBuilder
 			return ImmutableList.of();
 		}
 
-		final List<AllocationLineCandidate> allocationLineCandidates = new ArrayList<>();
+		final ArrayList<AllocationLineCandidate> allocationLineCandidates = new ArrayList<>();
 		for (final PayableDocument payable : payableDocuments)
 		{
-			final AllocationAmounts amountsToAllocate = payable.getAmountsToAllocate().withZeroPayAmt();
-			if (amountsToAllocate.isZero())
+			final AllocationLineCandidate allocationLine = createAllocationLineCandidate_DiscountAndWriteOff(payable);
+			if (allocationLine != null)
 			{
-				continue;
+				allocationLineCandidates.add(allocationLine);
 			}
-
-			final AllocationLineCandidate allocationLine = createAllocationLineCandidate_DiscountAndWriteOff(payable, amountsToAllocate);
-			allocationLineCandidates.add(allocationLine);
 		}
 
 		return allocationLineCandidates;
 	}
 
-	private AllocationLineCandidate createAllocationLineCandidate_DiscountAndWriteOff(
-			@NonNull final PayableDocument payable,
-			@NonNull final AllocationAmounts amountsToAllocate)
+	@Nullable
+	private AllocationLineCandidate createAllocationLineCandidate_DiscountAndWriteOff(@NonNull final PayableDocument payable)
 	{
-		Check.assume(amountsToAllocate.getPayAmt().signum() == 0, "PayAmt shall be zero: {}", amountsToAllocate);
+		final AllocationAmounts amountsToAllocate = AllocationAmounts.builder()
+				.discountAmt(payable.getAmountsToAllocate().getDiscountAmt())
+				.writeOffAmt(payable.getAmountsToAllocate().getWriteOffAmt())
+				.build();
+		if (amountsToAllocate.isZero())
+		{
+			return null;
+		}
 
 		final Money payableOverUnderAmt = payable.computeProjectedOverUnderAmt(amountsToAllocate);
 		final AllocationLineCandidate allocationLine = AllocationLineCandidate.builder()
@@ -670,6 +675,59 @@ public class PaymentAllocationBuilder
 				.amounts(amountsToAllocate)
 				.payableOverUnderAmt(payableOverUnderAmt)
 				// .paymentOverUnderAmt(ZERO)
+				//
+				.build();
+
+		payable.addAllocatedAmounts(amountsToAllocate);
+
+		return allocationLine;
+	}
+
+	private List<AllocationLineCandidate> createAllocationLineCandidates_InvoiceProcessingFee(final List<PayableDocument> payableDocuments)
+	{
+		if (payableDocuments.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
+		final ArrayList<AllocationLineCandidate> allocationLineCandidates = new ArrayList<>();
+		for (final PayableDocument payable : payableDocuments)
+		{
+			final Money invoiceProcessingFee = payable.getAmountsToAllocate().getInvoiceProcessingFee();
+			if (invoiceProcessingFee.isZero())
+			{
+				continue;
+			}
+
+			final AllocationLineCandidate allocationLine = createAllocationLineCandidate_InvoiceProcessingFee(payable, invoiceProcessingFee);
+			allocationLineCandidates.add(allocationLine);
+		}
+
+		return allocationLineCandidates;
+	}
+
+	private AllocationLineCandidate createAllocationLineCandidate_InvoiceProcessingFee(
+			@NonNull final PayableDocument payable,
+			@NonNull final Money invoiceProcessingFee)
+	{
+		Check.assume(!invoiceProcessingFee.isZero(), "invoiceProcessingFee shall be non zero");
+
+		final AllocationAmounts amountsToAllocate = AllocationAmounts.builder()
+				.invoiceProcessingFee(invoiceProcessingFee)
+				.build();
+
+		final Money payableOverUnderAmt = payable.computeProjectedOverUnderAmt(amountsToAllocate);
+		final AllocationLineCandidate allocationLine = AllocationLineCandidate.builder()
+				.type(AllocationLineCandidateType.InvoiceProcessingFee)
+				//
+				.orgId(payable.getOrgId())
+				.bpartnerId(payable.getBpartnerId())
+				//
+				.payableDocumentRef(payable.getReference())
+				.paymentDocumentRef(null) // nop
+				// Amounts:
+				.amounts(amountsToAllocate)
+				.payableOverUnderAmt(payableOverUnderAmt)
 				//
 				.build();
 

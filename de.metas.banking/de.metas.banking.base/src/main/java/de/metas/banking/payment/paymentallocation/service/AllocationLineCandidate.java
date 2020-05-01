@@ -30,6 +30,7 @@ public final class AllocationLineCandidate
 		SalesInvoiceToPurchaseInvoice, //
 		InvoiceToCreditMemo, //
 		InvoiceDiscountOrWriteOff, //
+		InvoiceProcessingFee, //
 		InboundPaymentToOutboundPayment, //
 	}
 
