@@ -903,7 +903,9 @@ public class PaymentAllocationBuilderTest
 						.discountAmt("10")
 						.build());
 
-		final PaymentAllocationResult result = builder.dryRun().build();
+		final PaymentAllocationResult result = builder
+				.dryRun() // would fail if is not dryRun because we cannot save InvoiceProcessingFee allocations
+				.build();
 		assertExpected(candidatesExpected, result.getCandidates());
 	}
 }
