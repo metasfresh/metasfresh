@@ -17,6 +17,7 @@ import de.metas.inout.IInOutBL;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice.service.IMatchInvBuilder;
 import de.metas.invoice.service.IMatchInvDAO;
+import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.quantity.StockQtyAndUOMQtys;
@@ -82,11 +83,16 @@ import de.metas.util.Services;
 
 		//
 		// Make sure M_Product_ID matches
-		if (invoiceLine.getM_Product_ID() != inoutLine.getM_Product_ID())
+		final ProductId invoiceLineProductId = ProductId.ofRepoId(invoiceLine.getM_Product_ID());
+		final ProductId inoutLineProductId = ProductId.ofRepoId(inoutLine.getM_Product_ID());
+		if (!ProductId.equals(invoiceLineProductId, inoutLineProductId))
 		{
+			final IProductBL productBL = Services.get(IProductBL.class);
+			final String invoiceProductName = productBL.getProductValueAndName(invoiceLineProductId);
+			final String inoutProductName = productBL.getProductValueAndName(inoutLineProductId);
 			throw new AdempiereException("@Invalid@ @M_Product_ID@"
-					+ "\n @C_InvoiceLine_ID@: " + invoiceLine + ", @M_Product_ID@=" + invoiceLine.getM_Product()
-					+ "\n @M_InOutLine_ID@: " + inoutLine + ", @M_Product_ID@=" + inoutLine.getM_Product_ID());
+					+ "\n @C_InvoiceLine_ID@: " + invoiceLine + ", @M_Product_ID@=" + invoiceProductName
+					+ "\n @M_InOutLine_ID@: " + inoutLine + ", @M_Product_ID@=" + inoutProductName);
 		}
 
 		// Create the new M_MatchInv record
@@ -103,7 +109,7 @@ import de.metas.util.Services;
 		matchInv.setC_UOM_ID(qtyToMatch.getUOMQtyNotNull().getUomId().getRepoId());
 
 		// Product & ASI
-		matchInv.setM_Product_ID(inoutLine.getM_Product_ID());
+		matchInv.setM_Product_ID(inoutLineProductId.getRepoId());
 		matchInv.setM_AttributeSetInstance_ID(inoutLine.getM_AttributeSetInstance_ID());
 
 		//

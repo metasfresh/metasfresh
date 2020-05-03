@@ -1,5 +1,27 @@
 package de.metas.invoice.service.impl;
 
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.util.Optional;
+import java.util.Properties;
+
+import org.adempiere.exceptions.TaxCategoryNotFoundException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseBL;
+import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_Invoice;
+import org.compiere.model.I_C_Order;
+import org.compiere.model.I_C_Tax;
+import org.compiere.model.I_M_InOut;
+import org.compiere.model.I_M_PriceList;
+import org.compiere.model.I_M_PriceList_Version;
+import org.compiere.model.I_M_ProductPrice;
+import org.compiere.model.MTax;
+import org.compiere.util.TimeUtil;
+import org.slf4j.Logger;
+
 /*
  * #%L
  * de.metas.swat.base
@@ -42,6 +64,7 @@ import de.metas.pricing.service.IPricingBL;
 import de.metas.pricing.service.ProductPrices;
 import de.metas.product.ProductId;
 import de.metas.tax.api.ITaxBL;
+import de.metas.tax.api.ITaxDAO;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.tax.api.TaxNotFoundException;
 import de.metas.uom.IUOMConversionBL;
@@ -49,30 +72,8 @@ import de.metas.uom.UOMConversionContext;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.lang.Percent;
 import lombok.NonNull;
-import org.adempiere.exceptions.TaxCategoryNotFoundException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.warehouse.WarehouseId;
-import org.adempiere.warehouse.api.IWarehouseBL;
-import org.compiere.model.I_C_BPartner_Location;
-import org.compiere.model.I_C_Invoice;
-import org.compiere.model.I_C_Order;
-import org.compiere.model.I_C_Tax;
-import org.compiere.model.I_M_InOut;
-import org.compiere.model.I_M_PriceList;
-import org.compiere.model.I_M_PriceList_Version;
-import org.compiere.model.I_M_ProductPrice;
-import org.compiere.model.MTax;
-import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
-import org.slf4j.Logger;
-
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.sql.Timestamp;
-import java.time.LocalDate;
-import java.util.Optional;
-import java.util.Properties;
 
 public class InvoiceLineBL implements IInvoiceLineBL
 {
@@ -164,7 +165,9 @@ public class InvoiceLineBL implements IInvoiceLineBL
 			logger.info("Changing C_Tax_ID to " + taxId + " for " + il);
 			il.setC_Tax_ID(taxId);
 
-			final I_C_Tax tax = il.getC_Tax();
+			final ITaxDAO taxDAO = Services.get(ITaxDAO.class);
+			final I_C_Tax tax = taxDAO.getTaxByIdOrNull(taxId);
+
 			il.setC_TaxCategory_ID(tax.getC_TaxCategory_ID());
 		}
 		return taxChange;
@@ -277,8 +280,7 @@ public class InvoiceLineBL implements IInvoiceLineBL
 
 	private BigDecimal calculateQtyInvoicedInPriceUOM(@NonNull final I_C_InvoiceLine ilRecord)
 	{
-		
-		
+
 		final BigDecimal qtyEntered = ilRecord.getQtyEntered();
 		Check.assumeNotNull(qtyEntered, "qtyEntered not null; ilRecord={}", ilRecord);
 
@@ -287,7 +289,7 @@ public class InvoiceLineBL implements IInvoiceLineBL
 		{
 			return qtyEntered;
 		}
-		
+
 		final UomId uomId = UomId.ofRepoIdOrNull(ilRecord.getC_UOM_ID());
 		if (uomId == null)
 		{
@@ -419,7 +421,8 @@ public class InvoiceLineBL implements IInvoiceLineBL
 			return;
 		}
 
-		final IPricingResult pricingResult = Services.get(IPricingBL.class).calculatePrice(pricingCtx.setFailIfNotCalculated());
+		final IPricingBL pricingBL = Services.get(IPricingBL.class);
+		final IPricingResult pricingResult = pricingBL.calculatePrice(pricingCtx.setFailIfNotCalculated());
 
 		//
 		// PriceList
@@ -448,12 +451,11 @@ public class InvoiceLineBL implements IInvoiceLineBL
 		calculatePriceActual(invoiceLine, pricingResult.getPrecision());
 
 		invoiceLine.setPrice_UOM_ID(UomId.toRepoId(pricingResult.getPriceUomId())); //
-
 	}
 
 	private static void calculatePriceActual(final I_C_InvoiceLine invoiceLine, final CurrencyPrecision precision)
 	{
-		final BigDecimal discount = invoiceLine.getDiscount();
+		final Percent discount = Percent.of(invoiceLine.getDiscount());
 		final BigDecimal priceEntered = invoiceLine.getPriceEntered();
 
 		BigDecimal priceActual;
@@ -470,22 +472,15 @@ public class InvoiceLineBL implements IInvoiceLineBL
 			}
 			else
 			{
+				final IPriceListBL priceListBL = Services.get(IPriceListBL.class);
+
 				final I_C_Invoice invoice = invoiceLine.getC_Invoice();
-				pricePrecision = Services.get(IPriceListBL.class).getPricePrecision(PriceListId.ofRepoId(invoice.getM_PriceList_ID()));
+				pricePrecision = priceListBL.getPricePrecision(PriceListId.ofRepoId(invoice.getM_PriceList_ID()));
 			}
 
-			priceActual = subtractDiscount(priceEntered, discount, pricePrecision);
+			priceActual = discount.subtractFromBase(priceEntered, pricePrecision.toInt(), pricePrecision.getRoundingMode());
 		}
 
 		invoiceLine.setPriceActual(priceActual);
-	}
-
-	private static BigDecimal subtractDiscount(final BigDecimal baseAmount, final BigDecimal discount, final CurrencyPrecision precision)
-	{
-		BigDecimal multiplier = Env.ONEHUNDRED.subtract(discount);
-		multiplier = multiplier.divide(Env.ONEHUNDRED, precision.toInt() * 3, RoundingMode.HALF_UP);
-
-		final BigDecimal result = baseAmount.multiply(multiplier).setScale(precision.toInt(), RoundingMode.HALF_UP);
-		return result;
 	}
 }

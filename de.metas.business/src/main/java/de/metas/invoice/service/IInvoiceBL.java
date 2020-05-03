@@ -46,6 +46,7 @@ import de.metas.document.IDocLineCopyHandler;
 import de.metas.invoice.InvoiceCreditContext;
 import de.metas.invoice.InvoiceId;
 import de.metas.payment.PaymentRule;
+import de.metas.product.ProductId;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.util.ISingletonService;
@@ -206,6 +207,9 @@ public interface IInvoiceBL extends ISingletonService
 
 	void setFromOrder(I_C_Invoice invoice, I_C_Order order);
 
+
+	void updateFromBPartner(I_C_Invoice invoice);
+
 	/**
 	 * Sets Target Document Type and IsSOTrx.
 	 *
@@ -256,7 +260,7 @@ public interface IInvoiceBL extends ISingletonService
 	 * <p>
 	 * Important note: what we do <b>not</b> set there is the price UOM because that one is set only together with the price.
 	 */
-	void setProductAndUOM(I_C_InvoiceLine invoiceLine, int productId);
+	void setProductAndUOM(I_C_InvoiceLine invoiceLine, ProductId productId);
 
 	/**
 	 * Set the given invoiceline's QtyInvoiced, QtyEntered and QtyInvoicedInPriceUOM.
