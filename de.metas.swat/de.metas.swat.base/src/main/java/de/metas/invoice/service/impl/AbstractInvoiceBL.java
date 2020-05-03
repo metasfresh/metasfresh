@@ -148,7 +148,6 @@ import lombok.NonNull;
 public abstract class AbstractInvoiceBL implements IInvoiceBL
 {
 	protected final transient Logger log = LogManager.getLogger(getClass());
-	private final IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
 
 	/**
 	 * See {@link #setHasFixedLineNumber(I_C_InvoiceLine)}.
@@ -611,6 +610,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		}
 
 		// Set Defaults
+		final IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
 		final PaymentTermId paymentTermId = bpartnerBL.getPaymentTermIdForBPartner(bpartnerId, soTrx).orElse(null);
 		if (paymentTermId != null)
 		{
