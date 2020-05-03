@@ -1,6 +1,7 @@
 package de.metas.payment.paymentterm;
 
 import java.util.Objects;
+import java.util.Optional;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
@@ -43,6 +44,11 @@ public class PaymentTermId implements RepoIdAware
 	public static PaymentTermId ofRepoIdOrNull(final int repoId)
 	{
 		return repoId > 0 ? ofRepoId(repoId) : null;
+	}
+
+	public static Optional<PaymentTermId> optionalOfRepoId(final int repoId)
+	{
+		return Optional.ofNullable(ofRepoIdOrNull(repoId));
 	}
 
 	int repoId;
