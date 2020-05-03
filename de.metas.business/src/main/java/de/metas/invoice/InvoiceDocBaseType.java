@@ -1,5 +1,7 @@
 package de.metas.invoice;
 
+import javax.annotation.Nullable;
+
 import org.compiere.model.X_C_DocType;
 
 import de.metas.lang.SOTrx;
@@ -62,6 +64,11 @@ public enum InvoiceDocBaseType implements ReferenceListAwareEnum
 		return index.ofCode(code);
 	}
 
+	public static InvoiceDocBaseType ofNullableCode(@Nullable final String code)
+	{
+		return index.ofNullableCode(code);
+	}
+
 	public static InvoiceDocBaseType ofSOTrxAndCreditMemo(@NonNull final SOTrx soTrx, final boolean creditMemo)
 	{
 		if (soTrx.isSales())
@@ -79,4 +86,8 @@ public enum InvoiceDocBaseType implements ReferenceListAwareEnum
 		return getSoTrx().isSales();
 	}
 
+	public boolean isCustomerCreditMemo()
+	{
+		return this == CustomerCreditMemo;
+	}
 }
