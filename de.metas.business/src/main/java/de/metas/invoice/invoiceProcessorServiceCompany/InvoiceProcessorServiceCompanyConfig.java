@@ -1,6 +1,7 @@
 package de.metas.invoice.invoiceProcessorServiceCompany;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.document.DocTypeId;
 import de.metas.product.ProductId;
 import de.metas.util.lang.Percent;
 import lombok.Builder;
@@ -35,6 +36,9 @@ public class InvoiceProcessorServiceCompanyConfig
 {
 	@NonNull
 	BPartnerId serviceCompanyBPartnerId;
+
+	@NonNull
+	DocTypeId serviceInvoiceDocTypeId;
 
 	@NonNull
 	ProductId serviceFeeProductId;
