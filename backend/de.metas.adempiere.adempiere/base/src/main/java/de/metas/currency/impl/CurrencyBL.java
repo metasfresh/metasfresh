@@ -36,7 +36,6 @@ import de.metas.acct.api.IAcctSchemaDAO;
 import de.metas.currency.ConversionTypeMethod;
 import de.metas.currency.Currency;
 import de.metas.currency.CurrencyConversionContext;
-import de.metas.currency.CurrencyConversionContext.CurrencyConversionContextBuilder;
 import de.metas.currency.CurrencyConversionResult;
 import de.metas.currency.CurrencyConversionResult.CurrencyConversionResultBuilder;
 import de.metas.currency.CurrencyPrecision;
@@ -219,32 +218,22 @@ public class CurrencyBL implements ICurrencyBL
 
 	@Override
 	public final CurrencyConversionContext createCurrencyConversionContext(
-			@Nullable final LocalDate convDate,
+			@Nullable final LocalDate conversionDate,
 			@Nullable final CurrencyConversionTypeId conversionTypeId,
 			@NonNull final ClientId clientId,
 			@NonNull final OrgId orgId)
 	{
-		final CurrencyConversionContextBuilder conversionCtx = CurrencyConversionContext.builder()
+		final LocalDate conversionDateEffective = conversionDate != null ? conversionDate : SystemTime.asLocalDate();
+		final CurrencyConversionTypeId conversionTypeIdEffective = conversionTypeId != null
+				? conversionTypeId
+				: getDefaultConversionTypeId(clientId, orgId, conversionDateEffective);
+
+		return CurrencyConversionContext.builder()
+				.conversionDate(conversionDateEffective)
+				.conversionTypeId(conversionTypeIdEffective)
 				.clientId(clientId)
-				.orgId(orgId);
-
-		final LocalDate convDateToUse = convDate != null ? convDate : SystemTime.asLocalDate();
-
-		// Conversion Type
-		if (conversionTypeId != null)
-		{
-			conversionCtx.conversionTypeId(conversionTypeId);
-		}
-		else
-		{
-			final CurrencyConversionTypeId defaultConversionTypeId = getDefaultConversionTypeId(clientId, orgId, convDateToUse);
-			conversionCtx.conversionTypeId(defaultConversionTypeId);
-		}
-
-		// Conversion Date
-		conversionCtx.conversionDate(convDateToUse);
-
-		return conversionCtx.build();
+				.orgId(orgId)
+				.build();
 	}
 
 	@Override
@@ -293,6 +282,10 @@ public class CurrencyBL implements ICurrencyBL
 		if (currencyFromId.equals(currencyToId))
 		{
 			conversionRate = BigDecimal.ONE;
+		}
+		else if (conversionCtx.hasFixedConversionRate(currencyFromId, currencyToId))
+		{
+			conversionRate = conversionCtx.getFixedConversionRate(currencyFromId, currencyToId);
 		}
 		else
 		{
