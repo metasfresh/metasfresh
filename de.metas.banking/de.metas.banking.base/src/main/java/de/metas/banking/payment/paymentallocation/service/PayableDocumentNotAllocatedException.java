@@ -23,12 +23,13 @@ package de.metas.banking.payment.paymentallocation.service;
  */
 
 import java.util.Collection;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import com.google.common.collect.ImmutableList;
 
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.ITranslatableString;
-import de.metas.i18n.TranslatableStringBuilder;
 import de.metas.i18n.TranslatableStrings;
 
 /**
@@ -37,42 +38,32 @@ import de.metas.i18n.TranslatableStrings;
  * @author tsa
  *
  */
+@SuppressWarnings("serial")
 public class PayableDocumentNotAllocatedException extends PaymentAllocationException
 {
-	private static final long serialVersionUID = 1L;
 	private static final AdMessageKey MSG = AdMessageKey.of("PaymentAllocation.CannotAllocatePayableDocumentsException");
 
-	private final Collection<PayableDocument> payables;
+	private final ImmutableList<PayableDocument> payables;
 
 	PayableDocumentNotAllocatedException(final Collection<PayableDocument> payables)
 	{
-		super("");
+		super();
 		this.payables = ImmutableList.copyOf(payables);
 	}
 
 	@Override
 	protected ITranslatableString buildMessage()
 	{
-		final TranslatableStringBuilder message = TranslatableStrings.builder();
-
-		if (payables != null && !payables.isEmpty())
-		{
-			for (final PayableDocument payable : payables)
-			{
-				if (payable == null)
-				{
-					continue;
-				}
-				if (!message.isEmpty())
-				{
-					message.append(", ");
-				}
-				message.append(payable.getDocumentNo());
-			}
-		}
-
-		message.insertFirstADMessage(MSG);
-		return message.build();
+		return TranslatableStrings.builder()
+				.appendADMessage(MSG)
+				.append(toCommaSeparatedDocumentNos(payables))
+				.build();
 	}
 
+	private static String toCommaSeparatedDocumentNos(final List<PayableDocument> payables)
+	{
+		return payables.stream()
+				.map(PayableDocument::getDocumentNo)
+				.collect(Collectors.joining(", "));
+	}
 }
