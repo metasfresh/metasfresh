@@ -58,7 +58,7 @@ final class AllocationLineCandidateSaver
 
 	public ImmutableSet<PaymentAllocationId> save(final List<AllocationLineCandidate> candidates)
 	{
-		return trxManager.callInNewTrx(() -> saveInTrx(candidates));
+		return trxManager.callInThreadInheritedTrx(() -> saveInTrx(candidates));
 	}
 
 	private ImmutableSet<PaymentAllocationId> saveInTrx(final List<AllocationLineCandidate> candidates)
