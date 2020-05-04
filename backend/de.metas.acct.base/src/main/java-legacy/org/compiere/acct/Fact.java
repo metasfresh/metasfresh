@@ -16,24 +16,7 @@
  *****************************************************************************/
 package org.compiere.acct;
 
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.function.Consumer;
-
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.acct.FactTrxLines.FactTrxLinesType;
-import org.compiere.model.I_C_ElementValue;
-import org.compiere.model.MAccount;
-import org.compiere.util.Env;
-import org.slf4j.Logger;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.acct.api.AccountId;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaElement;
@@ -56,22 +39,37 @@ import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
 import lombok.ToString;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.acct.FactTrxLines.FactTrxLinesType;
+import org.compiere.model.I_C_ElementValue;
+import org.compiere.model.MAccount;
+import org.compiere.util.Env;
+import org.slf4j.Logger;
+
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.function.Consumer;
 
 /**
  * Accounting Fact
  *
  * @author Jorg Janke
  * @version $Id: Fact.java,v 1.2 2006/07/30 00:53:33 jjanke Exp $
- *
- *          BF [ 2789949 ] Multicurrency in matching posting
+ * <p>
+ * BF [ 2789949 ] Multicurrency in matching posting
  */
 public final class Fact
 {
 	/**
 	 * Constructor
 	 *
-	 * @param document pointer to document
-	 * @param acctSchema Account Schema to create accounts
+	 * @param document    pointer to document
+	 * @param acctSchema  Account Schema to create accounts
 	 * @param postingType the default Posting type (actual,..) for this posting
 	 */
 	public Fact(
@@ -87,18 +85,28 @@ public final class Fact
 	// services
 	private static final transient Logger log = LogManager.getLogger(Fact.class);
 
-	/** Document */
+	/**
+	 * Document
+	 */
 	private final Doc<?> m_doc;
-	/** Accounting Schema */
+	/**
+	 * Accounting Schema
+	 */
 	private final AcctSchema acctSchema;
 
-	/** Posting Type */
+	/**
+	 * Posting Type
+	 */
 	private final PostingType postingType;
 
-	/** Is Converted */
+	/**
+	 * Is Converted
+	 */
 	private boolean m_converted = false;
 
-	/** Lines */
+	/**
+	 * Lines
+	 */
 	private List<FactLine> m_lines = new ArrayList<>();
 
 	private FactTrxStrategy factTrxLinesStrategy = PerDocumentLineFactTrxStrategy.instance;
@@ -121,11 +129,11 @@ public final class Fact
 	/**
 	 * Create and convert Fact Line. Used to create a DR and/or CR entry
 	 *
-	 * @param docLine the document line or null
-	 * @param account if null, line is not created
+	 * @param docLine    the document line or null
+	 * @param account    if null, line is not created
 	 * @param currencyId the currency
-	 * @param debitAmt debit amount, can be null
-	 * @param creditAmt credit amount, can be null
+	 * @param debitAmt   debit amount, can be null
+	 * @param creditAmt  credit amount, can be null
 	 * @return Fact Line
 	 */
 	public FactLine createLine(final DocLine<?> docLine,
@@ -157,12 +165,12 @@ public final class Fact
 	/**
 	 * Create and convert Fact Line. Used to create a DR and/or CR entry.
 	 *
-	 * @param docLine the document line or null
-	 * @param account if null, line is not created
+	 * @param docLine    the document line or null
+	 * @param account    if null, line is not created
 	 * @param currencyId the currency
-	 * @param debitAmt debit amount, can be null
-	 * @param creditAmt credit amount, can be null
-	 * @param qty quantity, can be null and in that case the standard qty from DocLine/Doc will be used.
+	 * @param debitAmt   debit amount, can be null
+	 * @param creditAmt  credit amount, can be null
+	 * @param qty        quantity, can be null and in that case the standard qty from DocLine/Doc will be used.
 	 * @return Fact Line or null
 	 */
 	public FactLine createLine(final DocLine<?> docLine,
@@ -177,7 +185,7 @@ public final class Fact
 				.setAmtSource(currencyId, debitAmt, creditAmt)
 				.setQty(qty)
 				.buildAndAdd();
-	}	// createLine
+	}    // createLine
 
 	public FactLine createLine(final DocLine<?> docLine,
 			final MAccount account,
@@ -213,10 +221,10 @@ public final class Fact
 	/**
 	 * Create and convert Fact Line. Used to create either a DR or CR entry
 	 *
-	 * @param docLine Document line or null
-	 * @param account Account to be used
+	 * @param docLine    Document line or null
+	 * @param account    Account to be used
 	 * @param currencyId Currency
-	 * @param Amt if negative Cr else Dr
+	 * @param Amt        if negative Cr else Dr
 	 * @return FactLine
 	 */
 	public FactLine createLine(DocLine<?> docLine, MAccount account, CurrencyId currencyId, BigDecimal Amt)
@@ -237,7 +245,7 @@ public final class Fact
 	public boolean isConverted()
 	{
 		return m_converted;
-	}	// isConverted
+	}    // isConverted
 
 	/**
 	 * Get AcctSchema
@@ -247,7 +255,7 @@ public final class Fact
 	public AcctSchema getAcctSchema()
 	{
 		return acctSchema;
-	}	// getAcctSchema
+	}    // getAcctSchema
 
 	public AcctSchemaId getAcctSchemaId()
 	{
@@ -297,7 +305,7 @@ public final class Fact
 			log.warn("NO - Diff=" + balance + " - " + toString());
 		}
 		return retValue;
-	}	// isSourceBalanced
+	}    // isSourceBalanced
 
 	/**
 	 * Return Source Balance
@@ -313,7 +321,7 @@ public final class Fact
 		}
 		// log.debug("getSourceBalance - " + result.toString());
 		return result;
-	}	// getSourceBalance
+	}    // getSourceBalance
 
 	/**
 	 * Create Source Line for Suspense Balancing. Only if Suspense Balancing is enabled and not a multi-currency document (double check as otherwise the rule should not have fired) If not balanced
@@ -558,7 +566,7 @@ public final class Fact
 			log.warn("NO - Diff=" + balance + " - " + toString());
 		}
 		return retValue;
-	}	// isAcctBalanced
+	}    // isAcctBalanced
 
 	/**
 	 * Return Accounting Balance
@@ -574,7 +582,7 @@ public final class Fact
 		}
 		// log.debug(result.toString());
 		return result;
-	}	// getAcctBalance
+	}    // getAcctBalance
 
 	/**
 	 * Balance Accounting Currency. If the accounting currency is not balanced, if Currency balancing is enabled create a new line using the currency balancing account with zero source balance or
@@ -584,7 +592,7 @@ public final class Fact
 	 */
 	public FactLine balanceAccounting()
 	{
-		BigDecimal diff = getAcctBalance();		// DR-CR
+		BigDecimal diff = getAcctBalance();        // DR-CR
 		FactLine line = null;
 
 		BigDecimal BSamount = BigDecimal.ZERO;
@@ -645,7 +653,7 @@ public final class Fact
 			// Switch sides
 			boolean switchIt = BSline != null
 					&& ((BSline.isDrSourceBalance() && isDR)
-							|| (!BSline.isDrSourceBalance() && !isDR));
+					|| (!BSline.isDrSourceBalance() && !isDR));
 			if (switchIt)
 			{
 				drAmt = BigDecimal.ZERO;
@@ -722,10 +730,10 @@ public final class Fact
 				return BooleanWithReason.falseBecause("Cannot post to Inactive Account " + ev + ": " + line);
 			}
 
-		}	// for all lines
+		}    // for all lines
 
 		return BooleanWithReason.TRUE;
-	}	// checkAccounts
+	}    // checkAccounts
 
 	/**
 	 * GL Distribution of Fact Lines
@@ -753,7 +761,7 @@ public final class Fact
 		sb.append(",PostType=").append(getPostingType());
 		sb.append("]");
 		return sb.toString();
-	}	// toString
+	}    // toString
 
 	/**
 	 * Get Lines
@@ -765,7 +773,7 @@ public final class Fact
 		final FactLine[] temp = new FactLine[m_lines.size()];
 		m_lines.toArray(temp);
 		return temp;
-	}	// getLines
+	}    // getLines
 
 	/**
 	 * Save Fact
@@ -849,9 +857,13 @@ public final class Fact
 			CR = cr;
 		}
 
-		/** DR Amount */
+		/**
+		 * DR Amount
+		 */
 		private BigDecimal DR = BigDecimal.ZERO;
-		/** CR Amount */
+		/**
+		 * CR Amount
+		 */
 		private BigDecimal CR = BigDecimal.ZERO;
 
 		/**
@@ -874,7 +886,7 @@ public final class Fact
 		public BigDecimal getBalance()
 		{
 			return DR.subtract(CR);
-		}	// getBalance
+		}    // getBalance
 
 		/**
 		 * Get Post Balance
@@ -889,7 +901,7 @@ public final class Fact
 				return bd.negate();
 			}
 			return bd;
-		}	// getPostBalance
+		}    // getPostBalance
 
 		/**
 		 * Zero Balance
@@ -899,7 +911,7 @@ public final class Fact
 		public boolean isZeroBalance()
 		{
 			return getBalance().signum() == 0;
-		}	// isZeroBalance
+		}    // isZeroBalance
 
 		/**
 		 * Reversal
@@ -909,7 +921,7 @@ public final class Fact
 		public boolean isReversal()
 		{
 			return DR.signum() <= 0 && CR.signum() <= 0;
-		}	// isReversal
+		}    // isReversal
 
 		/**
 		 * String Representation
@@ -926,7 +938,7 @@ public final class Fact
 					.append("]");
 			return sb.toString();
 		} // toString
-	}	// Balance
+	}    // Balance
 
 	@ToString(exclude = "fact")
 	public static final class FactLineBuilder
@@ -1054,7 +1066,6 @@ public final class Fact
 				line.setCurrencyConversionCtx(currencyConversionCtx);
 				line.addDescription(currencyConversionCtx.getSummary());
 			}
-			line.convert();
 
 			//
 			// Optionally overwrite Acct Amount

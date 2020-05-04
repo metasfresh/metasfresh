@@ -16,17 +16,6 @@
  *****************************************************************************/
 package org.compiere.acct;
 
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_GL_Journal;
-import org.compiere.model.I_GL_JournalLine;
-import org.compiere.model.X_GL_JournalLine;
-
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.PostingType;
@@ -42,6 +31,16 @@ import de.metas.tax.api.TaxId;
 import de.metas.uom.IUOMDAO;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_GL_Journal;
+import org.compiere.model.I_GL_JournalLine;
+import org.compiere.model.X_GL_JournalLine;
+
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 
 /**
  * Post GL Journal Documents.
@@ -110,7 +109,7 @@ public class Doc_GLJournal extends Doc<DocLine_GLJournal>
 		}
 
 		return docLinesAll;
-	}	// loadLines
+	}    // loadLines
 
 	/**
 	 * Regular {@link I_GL_JournalLine}.
@@ -175,7 +174,7 @@ public class Doc_GLJournal extends Doc<DocLine_GLJournal>
 	 * Account_DR	DR					TaxBaseAmt
 	 * Tax_Acct		DR					TaxAmt
 	 * </pre>
-	 *
+	 * <p>
 	 * Tax Accounting (Credit)
 	 *
 	 * <pre>
@@ -304,17 +303,19 @@ public class Doc_GLJournal extends Doc<DocLine_GLJournal>
 					continue;
 				}
 
+				final CurrencyConversionContext currencyConversionCtx = createCurrencyConversionContext(
+						line,
+						as.getCurrencyId());
+
 				final FactLine factLine = fact.createLine(line,
 						line.getAccount(),
 						line.getCurrencyId(),
 						line.getAmtSourceDr(),
 						line.getAmtSourceCr());
 
-				final CurrencyConversionContext currencyConversionCtx = createCurrencyConversionContext(
-						line,
-						as.getCurrencyId());
 				factLine.setCurrencyConversionCtx(currencyConversionCtx);
-			}	// for all lines
+				factLine.convert();
+			}    // for all lines
 		}
 		else
 		{
