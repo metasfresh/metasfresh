@@ -120,6 +120,7 @@ public final class MLookupInfo implements Serializable, Cloneable
 	public String InfoFactoryClass = null;
 	private boolean autoComplete = false;
 	private boolean queryHasEntityType = false;
+	private boolean showInactiveValues = false;
 
 	private boolean translated = false;
 
@@ -565,6 +566,16 @@ public final class MLookupInfo implements Serializable, Cloneable
 	public boolean isAutoComplete()
 	{
 		return this.autoComplete;
+	}
+	
+	void setShowInactiveValues(boolean showInactiveValues)
+	{
+		this.showInactiveValues = showInactiveValues;
+	}
+
+	public boolean isShowInactiveValues()
+	{
+		return this.showInactiveValues;
 	}
 
 	void setQueryHasEntityType(boolean queryHasEntityType)

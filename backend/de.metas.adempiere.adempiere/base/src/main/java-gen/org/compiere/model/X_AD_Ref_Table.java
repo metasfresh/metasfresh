@@ -14,7 +14,7 @@ public class X_AD_Ref_Table extends org.compiere.model.PO implements I_AD_Ref_Ta
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1951439871L;
+	private static final long serialVersionUID = -1360911191L;
 
     /** Standard Constructor */
     public X_AD_Ref_Table (Properties ctx, int AD_Ref_Table_ID, String trxName)
@@ -27,6 +27,7 @@ public class X_AD_Ref_Table extends org.compiere.model.PO implements I_AD_Ref_Ta
 			setAD_Table_ID (0);
 			setEntityType (null); // U
 			setIsValueDisplayed (false);
+			setShowInactiveValues (false); // N
         } */
     }
 
@@ -46,7 +47,7 @@ public class X_AD_Ref_Table extends org.compiere.model.PO implements I_AD_Ref_Ta
     }
 
 	@Override
-	public org.compiere.model.I_AD_Column getAD_Disp() throws RuntimeException
+	public org.compiere.model.I_AD_Column getAD_Disp()
 	{
 		return get_ValueAsPO(COLUMNNAME_AD_Display, org.compiere.model.I_AD_Column.class);
 	}
@@ -80,7 +81,7 @@ public class X_AD_Ref_Table extends org.compiere.model.PO implements I_AD_Ref_Ta
 	}
 
 	@Override
-	public org.compiere.model.I_AD_Column getAD_() throws RuntimeException
+	public org.compiere.model.I_AD_Column getAD_()
 	{
 		return get_ValueAsPO(COLUMNNAME_AD_Key, org.compiere.model.I_AD_Column.class);
 	}
@@ -114,7 +115,7 @@ public class X_AD_Ref_Table extends org.compiere.model.PO implements I_AD_Ref_Ta
 	}
 
 	@Override
-	public org.compiere.model.I_AD_Reference getAD_Reference() throws RuntimeException
+	public org.compiere.model.I_AD_Reference getAD_Reference()
 	{
 		return get_ValueAsPO(COLUMNNAME_AD_Reference_ID, org.compiere.model.I_AD_Reference.class);
 	}
@@ -150,18 +151,6 @@ public class X_AD_Ref_Table extends org.compiere.model.PO implements I_AD_Ref_Ta
 		return ii.intValue();
 	}
 
-	@Override
-	public org.compiere.model.I_AD_Table getAD_Table() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_AD_Table_ID, org.compiere.model.I_AD_Table.class);
-	}
-
-	@Override
-	public void setAD_Table(org.compiere.model.I_AD_Table AD_Table)
-	{
-		set_ValueFromPO(COLUMNNAME_AD_Table_ID, org.compiere.model.I_AD_Table.class, AD_Table);
-	}
-
 	/** Set DB-Tabelle.
 		@param AD_Table_ID 
 		Database Table information
@@ -188,7 +177,7 @@ public class X_AD_Ref_Table extends org.compiere.model.PO implements I_AD_Ref_Ta
 	}
 
 	@Override
-	public org.compiere.model.I_AD_Window getAD_Window() throws RuntimeException
+	public org.compiere.model.I_AD_Window getAD_Window()
 	{
 		return get_ValueAsPO(COLUMNNAME_AD_Window_ID, org.compiere.model.I_AD_Window.class);
 	}
@@ -292,6 +281,29 @@ public class X_AD_Ref_Table extends org.compiere.model.PO implements I_AD_Ref_Ta
 	public java.lang.String getOrderByClause () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_OrderByClause);
+	}
+
+	/** Set Inaktive Werte anzeigen.
+		@param ShowInactiveValues Inaktive Werte anzeigen	  */
+	@Override
+	public void setShowInactiveValues (boolean ShowInactiveValues)
+	{
+		set_Value (COLUMNNAME_ShowInactiveValues, Boolean.valueOf(ShowInactiveValues));
+	}
+
+	/** Get Inaktive Werte anzeigen.
+		@return Inaktive Werte anzeigen	  */
+	@Override
+	public boolean isShowInactiveValues () 
+	{
+		Object oo = get_Value(COLUMNNAME_ShowInactiveValues);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
 	}
 
 	/** Set Sql WHERE.

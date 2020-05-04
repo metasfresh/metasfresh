@@ -767,6 +767,7 @@ public class MLookupFactory
 		lookupInfo.setSecurityDisabled(false);
 		lookupInfo.setAutoComplete(tableRefInfo.isAutoComplete());
 		lookupInfo.setTranslated(isTranslated);
+		lookupInfo.setShowInactiveValues(tableRefInfo.isShowInactiveValues());
 
 		return lookupInfo;
 	}

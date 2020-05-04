@@ -94,6 +94,8 @@ public interface ILookupDAO extends ISingletonService
 		AdWindowId getZoomPO_Window_ID();
 
 		boolean isAutoComplete();
+		
+		boolean isShowInactiveValues();
 
 		/**
 		 * Check if the keyColumn ends with "_ID"
