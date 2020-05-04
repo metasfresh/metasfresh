@@ -23,18 +23,20 @@
 package de.metas.serviceprovider.github;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.process.JavaProcess;
 import de.metas.process.Param;
 import de.metas.serviceprovider.external.project.ExternalProjectReference;
 import de.metas.serviceprovider.external.project.ExternalProjectReferenceId;
 import de.metas.serviceprovider.external.project.ExternalProjectRepository;
+import de.metas.serviceprovider.github.config.GithubConfigRepository;
+import de.metas.serviceprovider.github.link.GithubIssueLinkMatcher;
 import de.metas.serviceprovider.issue.importer.IssueImporterService;
 import de.metas.serviceprovider.issue.importer.info.ImportIssuesRequest;
 import de.metas.serviceprovider.model.I_S_ExternalProjectReference;
 import de.metas.util.Check;
-import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import lombok.NonNull;
-import org.adempiere.service.ISysConfigBL;
 import org.compiere.SpringContextHolder;
 
 import javax.annotation.Nullable;
@@ -42,7 +44,8 @@ import java.time.LocalDate;
 import java.util.stream.Stream;
 
 import static de.metas.serviceprovider.external.ExternalSystem.GITHUB;
-import static de.metas.serviceprovider.github.GithubImporterConstants.GitHubImporterSysConfig.ACCESS_TOKEN;
+import static de.metas.serviceprovider.github.GithubImporterConstants.GitHubConfig.ACCESS_TOKEN;
+import static de.metas.serviceprovider.github.GithubImporterConstants.GitHubConfig.LOOK_FOR_PARENT;
 
 public class GithubImportProcess extends JavaProcess
 {
@@ -58,15 +61,20 @@ public class GithubImportProcess extends JavaProcess
 	private final ExternalProjectRepository externalProjectRepository = SpringContextHolder.instance.getBean(ExternalProjectRepository.class);
 	private final IssueImporterService issueImporterService = SpringContextHolder.instance.getBean(IssueImporterService.class);
 	private final GithubImporterService githubImporterService = SpringContextHolder.instance.getBean(GithubImporterService.class);
-	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+	private final GithubConfigRepository githubConfigRepository = SpringContextHolder.instance.getBean(GithubConfigRepository.class);
 
 
 	@Override
 	protected String doIt() throws Exception
 	{
+		final ImmutableList<ExternalProjectReference> allActiveGithubProjects =
+				externalProjectRepository.getByExternalSystem(GITHUB);
+
+		final GithubIssueLinkMatcher githubIssueLinkMatcher = getGithubLinkMatcher(allActiveGithubProjects);
+
 		final ImmutableList<ImportIssuesRequest> importIssuesRequests =
-				importAllProjects() ?  buildRequestsForAllRepos()
-									:  ImmutableList.of(buildSpecificRequest(issueNumbers));
+				importAllProjects() ?  buildRequestsForAllRepos(allActiveGithubProjects, githubIssueLinkMatcher)
+									:  ImmutableList.of(buildSpecificRequest(issueNumbers, githubIssueLinkMatcher));
 
 		issueImporterService.importIssues(importIssuesRequests, githubImporterService);
 
@@ -79,16 +87,18 @@ public class GithubImportProcess extends JavaProcess
 	}
 
 	@NonNull
-	private ImmutableList<ImportIssuesRequest> buildRequestsForAllRepos()
+	private ImmutableList<ImportIssuesRequest> buildRequestsForAllRepos(@NonNull final ImmutableList<ExternalProjectReference> githubProjects,
+			                                                            @Nullable final GithubIssueLinkMatcher githubIssueLinkMatcher)
 	{
-		return externalProjectRepository.getByExternalSystem(GITHUB)
+		return githubProjects
 				.stream()
-				.map(externalProject -> buildImportIssueRequest(externalProject, ImmutableList.of()))
+				.map(externalProject -> buildImportIssueRequest(externalProject, ImmutableList.of(), githubIssueLinkMatcher))
 				.collect(ImmutableList.toImmutableList());
 	}
 
 	@NonNull
-	private ImportIssuesRequest buildSpecificRequest(@Nullable final String issueNumbers)
+	private ImportIssuesRequest buildSpecificRequest(@Nullable final String issueNumbers,
+													 @Nullable final GithubIssueLinkMatcher githubIssueLinkMatcher)
 	{
 		final ExternalProjectReference externalProject =
 				externalProjectRepository.getById(ExternalProjectReferenceId.ofRepoId(this.externalProjectReferenceId));
@@ -100,12 +110,13 @@ public class GithubImportProcess extends JavaProcess
 						.collect(ImmutableList.toImmutableList())
 				: ImmutableList.of();
 
-		return buildImportIssueRequest(externalProject, issueNoList);
+		return buildImportIssueRequest(externalProject, issueNoList, githubIssueLinkMatcher);
 	}
 
 	@NonNull
 	private ImportIssuesRequest buildImportIssueRequest(@NonNull final ExternalProjectReference externalProjectReference,
-														@NonNull final ImmutableList<String> issueNoList)
+														@NonNull final ImmutableList<String> issueNoList,
+														@Nullable final GithubIssueLinkMatcher githubIssueLinkMatcher)
 	{
 		return ImportIssuesRequest.builder()
 				.externalProjectType(externalProjectReference.getExternalProjectType())
@@ -113,10 +124,33 @@ public class GithubImportProcess extends JavaProcess
 				.repoOwner(externalProjectReference.getProjectOwner())
 				.orgId(externalProjectReference.getOrgId())
 				.projectId(externalProjectReference.getProjectId())
-				.oAuthToken(sysConfigBL.getValue(ACCESS_TOKEN.getName()))
+				.oAuthToken(githubConfigRepository.getValueByName(ACCESS_TOKEN.getName()))
 				.issueNoList(issueNoList)
 				.dateFrom(this.dateFrom)
+				.githubIssueLinkMatcher(githubIssueLinkMatcher)
 				.build();
+	}
+
+	@Nullable
+	private GithubIssueLinkMatcher getGithubLinkMatcher(@NonNull final ImmutableList<ExternalProjectReference> externalProjectReferences)
+	{
+		final Boolean lookForParent = StringUtils.toBooleanOrNull(githubConfigRepository.getValueByName(LOOK_FOR_PARENT.getName()));
+
+		if (!Boolean.TRUE.equals(lookForParent))
+		{
+			return null;
+		}
+
+		final ImmutableSet.Builder<String> owners = ImmutableSet.builder();
+		final ImmutableSet.Builder<String> projects = ImmutableSet.builder();
+
+		externalProjectReferences.forEach(projectRef ->
+		{
+			owners.add(projectRef.getProjectOwner());
+			projects.add(projectRef.getExternalProjectReference());
+		});
+
+		return GithubIssueLinkMatcher.of(owners.build(), projects.build());
 	}
 
 	private boolean importAllProjects()

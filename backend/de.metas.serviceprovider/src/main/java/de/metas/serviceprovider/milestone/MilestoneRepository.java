@@ -62,6 +62,7 @@ public class MilestoneRepository
 	{
 		return queryBL
 				.createQueryBuilder(I_S_Milestone.class)
+				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_S_Milestone.COLUMNNAME_S_Milestone_ID, milestoneId.getRepoId())
 				.create()
 				.anyMatch();

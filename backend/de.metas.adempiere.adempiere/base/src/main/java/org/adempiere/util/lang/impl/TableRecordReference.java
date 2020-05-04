@@ -1,17 +1,8 @@
-package org.adempiere.util.lang.impl;
-
-import java.lang.ref.SoftReference;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -29,20 +20,7 @@ import java.util.Optional;
  * #L%
  */
 
-import java.util.Properties;
-import java.util.Set;
-import java.util.function.IntFunction;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.ad.table.api.AdTableId;
-import org.adempiere.ad.table.api.IADTableDAO;
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.model.PlainContextAware;
-import org.adempiere.util.lang.IContextAware;
-import org.adempiere.util.lang.ITableRecordReference;
+package org.adempiere.util.lang.impl;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
@@ -52,24 +30,41 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import de.metas.util.lang.RepoIdAware;
 import lombok.NonNull;
+import org.adempiere.ad.table.api.AdTableId;
+import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.model.PlainContextAware;
+import org.adempiere.util.lang.IContextAware;
+import org.adempiere.util.lang.ITableRecordReference;
+
+import javax.annotation.Nullable;
+import java.lang.ref.SoftReference;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Properties;
+import java.util.Set;
+import java.util.function.IntFunction;
 
 /**
  * Simple implementation of {@link ITableRecordReference} which can:
  * <ul>
- * <li>wrap an already loaded model (if you use {@link #TableRecordReference(Object)} constructor)
- * <li>start from known AD_Table_ID/Record_ID and will load the underlying model only when it's needed (if you use {@link #TableRecordReference(int, int)} constructor)
+ * <li>wrap an already loaded model (if you use {@link #of(Object)} constructor)
+ * <li>start from known AD_Table_ID/Record_ID and will load the underlying model only when it's needed (if you use {@link #of(int, int)} constructor)
  * </ul>
- *
+ * <p>
  * TODO: merge logic with {@link de.metas.cache.model.impl.TableRecordCacheLocal}.
  *
  * @author tsa
- *
  */
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 public final class TableRecordReference implements ITableRecordReference
@@ -98,7 +93,7 @@ public final class TableRecordReference implements ITableRecordReference
 	}
 
 	@Deprecated
-	public static TableRecordReference of(TableRecordReference recordRef)
+	public static TableRecordReference of(final TableRecordReference recordRef)
 	{
 		return recordRef;
 	}
@@ -106,10 +101,10 @@ public final class TableRecordReference implements ITableRecordReference
 	/**
 	 * Same as {@link #of(Object)} but in case <code>model</code> is null then it will return null.
 	 *
-	 * @param model
 	 * @return {@link TableRecordReference} or null
 	 */
-	public static TableRecordReference ofOrNull(final Object model)
+	@Nullable
+	public static TableRecordReference ofOrNull(@Nullable final Object model)
 	{
 		if (model == null)
 		{
@@ -130,8 +125,8 @@ public final class TableRecordReference implements ITableRecordReference
 
 		return models
 				.stream()
-				.filter(model -> model != null)
-				.map(model -> of(model))
+				.filter(Objects::nonNull)
+				.map(TableRecordReference::of)
 				.collect(GuavaCollectors.toImmutableList());
 	}
 
@@ -150,7 +145,7 @@ public final class TableRecordReference implements ITableRecordReference
 				.collect(GuavaCollectors.toImmutableList());
 	}
 
-	public static Set<TableRecordReference> ofSet(final Collection<?> models)
+	public static Set<TableRecordReference> ofSet(@Nullable final Collection<?> models)
 	{
 		if (models == null || models.isEmpty())
 		{
@@ -159,8 +154,8 @@ public final class TableRecordReference implements ITableRecordReference
 
 		return models
 				.stream()
-				.filter(model -> model != null)
-				.map(model -> of(model))
+				.filter(Objects::nonNull)
+				.map(TableRecordReference::of)
 				.collect(GuavaCollectors.toImmutableSet());
 	}
 
@@ -175,6 +170,7 @@ public final class TableRecordReference implements ITableRecordReference
 		return new TableRecordReference(adTableId.orElse(-1), recordId.orElse(-1)); // the -1 shall cause an exception to be thrown
 	}
 
+	@Nullable
 	public static ITableRecordReference ofReferencedOrNull(@Nullable final Object model)
 	{
 		if (model == null)
@@ -196,7 +192,8 @@ public final class TableRecordReference implements ITableRecordReference
 		return new TableRecordReference(adTableId, recordId);
 	}
 
-	public static TableRecordReference of(final String tableName, final int recordId)
+	@JsonCreator
+	public static TableRecordReference of(@JsonProperty("tableName") final String tableName, @JsonProperty("recordId") final int recordId)
 	{
 		return new TableRecordReference(tableName, recordId);
 	}
@@ -222,6 +219,7 @@ public final class TableRecordReference implements ITableRecordReference
 				.collect(GuavaCollectors.toImmutableList());
 	}
 
+	@Nullable
 	public static TableRecordReference ofMapOrNull(final Map<?, ?> map)
 	{
 		final Object tableNameObj = map.get(PROP_TableName);
@@ -262,6 +260,7 @@ public final class TableRecordReference implements ITableRecordReference
 		return new TableRecordReference(tableName, recordId);
 	}
 
+	@Nullable
 	@JsonIgnore
 	private transient Integer _adTableId;
 
@@ -285,12 +284,9 @@ public final class TableRecordReference implements ITableRecordReference
 	/**
 	 * Creates an instance that will be loaded on demand and is specified by the given <code>adTableId</code> and <code>recordId</code>.
 	 * <p>
-	 * Hint: Please consider using {@link ITableRecordReference#FromReferencedModelConverter} instead if this constructor.
-	 *
-	 * @param adTableId
-	 * @param recordId
+	 * Hint: Please consider using {@link #of(int, int)}  instead if this constructor.
 	 */
-	public TableRecordReference(final int adTableId, final int recordId)
+	private TableRecordReference(final int adTableId, final int recordId)
 	{
 		Check.assume(adTableId > 0, "adTableId > 0");
 		this._adTableId = adTableId;
@@ -305,15 +301,11 @@ public final class TableRecordReference implements ITableRecordReference
 	/**
 	 * Creates an instance that will be loaded on demand and is specified by the given <code>tableName</code> and <code>recordId</code>.
 	 * <p>
-	 * Hint: Please consider using {@link ITableRecordReference#FromReferencedModelConverter} instead if this constructor.
-	 *
-	 * @param tableName
-	 * @param recordId
+	 * Hint: Please consider using {@link #of(String, int)} instead if this constructor.
 	 */
-	@JsonCreator
-	public TableRecordReference(
-			@JsonProperty("tableName") final String tableName,
-			@JsonProperty("recordId") final int recordId)
+	private TableRecordReference(
+			final String tableName,
+			final int recordId)
 	{
 		Check.assumeNotEmpty(tableName, "tableName not empty");
 
@@ -433,6 +425,7 @@ public final class TableRecordReference implements ITableRecordReference
 		return mapper.apply(repoId);
 	}
 
+	@Deprecated
 	@Override
 	public Object getModel(@NonNull final IContextAware context)
 	{
@@ -469,8 +462,6 @@ public final class TableRecordReference implements ITableRecordReference
 
 	/**
 	 * Checks if underlying (and cached) model is still valid in given context. In case is no longer valid, it will be set to <code>null</code>.
-	 *
-	 * @param context
 	 */
 	private void checkModelStaled(final IContextAware context)
 	{
@@ -490,6 +481,7 @@ public final class TableRecordReference implements ITableRecordReference
 		// TODO: why the ctx is not validated, like org.adempiere.ad.dao.cache.impl.TableRecordCacheLocal.getValue(Class<RT>) does?
 	}
 
+	@Deprecated
 	@Override
 	public Object getModel()
 	{
