@@ -1,10 +1,8 @@
-package de.metas.bpartner.service.async.spi.impl;
-
 /*
  * #%L
  * de.metas.swat.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -21,6 +19,8 @@ package de.metas.bpartner.service.async.spi.impl;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+package de.metas.bpartner.service.async.spi.impl;
 
 import java.util.List;
 import java.util.Map;
@@ -91,7 +91,7 @@ public class C_BPartner_UpdateStatsFromBPartner extends WorkpackageProcessorAdap
 		@Override
 		protected Object extractModelToEnqueueFromItem(final Collector collector, final BPartnerToUpdate item)
 		{
-			return new TableRecordReference(I_C_BPartner.Table_Name, item.getBpartnerId());
+			return TableRecordReference.of(I_C_BPartner.Table_Name, item.getBpartnerId());
 		}
 
 		@Override

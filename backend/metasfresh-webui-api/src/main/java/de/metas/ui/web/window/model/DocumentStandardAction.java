@@ -3,7 +3,6 @@ package de.metas.ui.web.window.model;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonValue;
-
 import lombok.NonNull;
 
 /*
@@ -30,7 +29,7 @@ import lombok.NonNull;
 
 /**
  * Document's standard action (e.g. new, delete, print etc).
- * 
+ *
  * @author metas-dev <dev@metasfresh.com>
  * @task https://github.com/metasfresh/metasfresh-webui-api/issues/583
  */
@@ -43,12 +42,13 @@ public enum DocumentStandardAction
 	Email("email"), //
 	Letter("letter"), //
 	Print("print"), //
-	Delete("delete") //
+	Delete("delete"), //
+	Comments("comments")//
 	;
 
 	private final String json;
 
-	private DocumentStandardAction(@NonNull final String json)
+	DocumentStandardAction(@NonNull final String json)
 	{
 		this.json = json;
 	}

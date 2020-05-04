@@ -254,7 +254,7 @@ public interface I_S_ExternalProjectReference
     public static final String COLUMNNAME_ProjectType = "ProjectType";
 
 	/**
-	 * Set S_ExternalProjectReference_ID.
+	 * Set External project reference ID.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -263,7 +263,7 @@ public interface I_S_ExternalProjectReference
 	public void setS_ExternalProjectReference_ID (int S_ExternalProjectReference_ID);
 
 	/**
-	 * Get S_ExternalProjectReference_ID.
+	 * Get External project reference ID.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -275,6 +275,33 @@ public interface I_S_ExternalProjectReference
     public static final org.adempiere.model.ModelColumn<I_S_ExternalProjectReference, Object> COLUMN_S_ExternalProjectReference_ID = new org.adempiere.model.ModelColumn<I_S_ExternalProjectReference, Object>(I_S_ExternalProjectReference.class, "S_ExternalProjectReference_ID", null);
     /** Column name S_ExternalProjectReference_ID */
     public static final String COLUMNNAME_S_ExternalProjectReference_ID = "S_ExternalProjectReference_ID";
+
+	/**
+	 * Set Reihenfolge.
+	 * Zur Bestimmung der Reihenfolge der Einträge;
+ die kleinste Zahl kommt zuerst
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setSeqNo (int SeqNo);
+
+	/**
+	 * Get Reihenfolge.
+	 * Zur Bestimmung der Reihenfolge der Einträge;
+ die kleinste Zahl kommt zuerst
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getSeqNo();
+
+    /** Column definition for SeqNo */
+    public static final org.adempiere.model.ModelColumn<I_S_ExternalProjectReference, Object> COLUMN_SeqNo = new org.adempiere.model.ModelColumn<I_S_ExternalProjectReference, Object>(I_S_ExternalProjectReference.class, "SeqNo", null);
+    /** Column name SeqNo */
+    public static final String COLUMNNAME_SeqNo = "SeqNo";
 
 	/**
 	 * Get Aktualisiert.

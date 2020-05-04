@@ -47,11 +47,15 @@ public interface TestConstants
 	ExternalProjectType MOCK_EXTERNAL_PROJECT_TYPE = ExternalProjectType.EFFORT;
 	String MOCK_EXTERNAL_ID = "externalId";
 	String MOCK_EXTERNAL_URL = "externalURL";
-	String MOCK_EXTERNAL_ISSUE_NO = "externalIssueNo";
+	String MOCK_EXTERNAL_ISSUE_NO = "1";
+	String MOCK_PARENT_EXTERNAL_ID = "parentExternalId";
+	String MOCK_PARENT_ISSUE_NO = "1234";
 
 	String MOCK_NAME = "name";
 	String MOCK_SEARCH_KEY = "searchKey";
 	String MOCK_DESCRIPTION = "description";
+	String MOCK_PARENT_ISSUE_URL = "https://github.com/" + MOCK_EXTERNAL_PROJECT_OWNER + "/" + MOCK_EXTERNAL_REFERENCE + "/issues/" + MOCK_PARENT_ISSUE_NO;
+	String MOCK_ISSUE_URL =  "https://github.com/" + MOCK_EXTERNAL_PROJECT_OWNER + "/" + MOCK_EXTERNAL_REFERENCE + "/issues/" + MOCK_EXTERNAL_ISSUE_NO;
 	String MOCK_DATE_ISO = "2020-03-16";
 	Instant MOCK_INSTANT_FROM_DATE = LocalDate.parse(MOCK_DATE_ISO).atStartOfDay(ZoneOffset.UTC).toInstant();
 	String MOCK_DATE_AND_TIME_ISO_8601 = "2020-03-16T14:37:53Z";

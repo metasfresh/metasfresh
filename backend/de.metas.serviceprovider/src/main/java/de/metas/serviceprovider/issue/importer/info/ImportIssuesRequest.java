@@ -26,6 +26,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.organization.OrgId;
 import de.metas.project.ProjectId;
 import de.metas.serviceprovider.external.project.ExternalProjectType;
+import de.metas.serviceprovider.github.link.GithubIssueLinkMatcher;
 import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
@@ -57,6 +58,9 @@ public class ImportIssuesRequest
 
 	@Nullable
 	ProjectId projectId;
+
+	@Nullable
+	GithubIssueLinkMatcher githubIssueLinkMatcher;
 
 	@Nullable
 	LocalDate dateFrom;
