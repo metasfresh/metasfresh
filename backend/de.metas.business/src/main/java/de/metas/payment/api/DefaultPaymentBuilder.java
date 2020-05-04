@@ -1,10 +1,8 @@
-package de.metas.payment.api;
-
 /*
  * #%L
- * de.metas.adempiere.adempiere.base
+ * de.metas.business
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,17 +20,7 @@ package de.metas.payment.api;
  * #L%
  */
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.invoice.service.IInvoiceBL;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_Invoice;
-import org.compiere.model.I_C_Payment;
-import org.compiere.model.X_C_DocType;
-import org.compiere.util.TimeUtil;
+package de.metas.payment.api;
 
 import de.metas.banking.api.BankAccountId;
 import de.metas.bpartner.BPartnerId;
@@ -51,6 +39,16 @@ import de.metas.payment.TenderType;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.invoice.service.IInvoiceBL;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_Invoice;
+import org.compiere.model.I_C_Payment;
+import org.compiere.model.X_C_DocType;
+import org.compiere.util.TimeUtil;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.time.LocalDate;
 
 public class DefaultPaymentBuilder
 {
@@ -117,7 +115,7 @@ public class DefaultPaymentBuilder
 	 *
 	 * @return draft payment
 	 */
-	private I_C_Payment createDraft()
+	public I_C_Payment createDraft()
 	{
 		final I_C_Payment payment = createNoSave();
 		InterfaceWrapperHelper.save(payment);
@@ -198,6 +196,9 @@ public class DefaultPaymentBuilder
 		return this;
 	}
 
+	/**
+	 * DateTrx should be the same as Line.DateAcct, and not Line.StatementDate, in case of a BankStatementLine.
+	 */
 	public final DefaultPaymentBuilder dateAcct(@Nullable final LocalDate dateAcct)
 	{
 		assertNotBuilt();
@@ -205,6 +206,9 @@ public class DefaultPaymentBuilder
 		return this;
 	}
 
+	/**
+	 * DateTrx should be the same as Line.DateAcct, and not Line.StatementDate, in case of a BankStatementLine.
+	 */
 	public final DefaultPaymentBuilder dateTrx(@Nullable final LocalDate dateTrx)
 	{
 		assertNotBuilt();
