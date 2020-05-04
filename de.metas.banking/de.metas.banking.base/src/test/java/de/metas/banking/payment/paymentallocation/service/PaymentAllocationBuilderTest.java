@@ -66,11 +66,14 @@ import de.metas.allocation.api.IAllocationDAO;
 import de.metas.banking.payment.paymentallocation.service.AllocationLineCandidate.AllocationLineCandidateType;
 import de.metas.banking.payment.paymentallocation.service.PaymentAllocationBuilder.PayableRemainingOpenAmtPolicy;
 import de.metas.bpartner.BPartnerId;
+import de.metas.currency.Amount;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.impl.PlainCurrencyDAO;
+import de.metas.document.DocTypeId;
 import de.metas.document.engine.IDocument;
 import de.metas.invoice.InvoiceDocBaseType;
 import de.metas.invoice.InvoiceId;
+import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingFeeCalculation;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.lang.SOTrx;
@@ -80,6 +83,7 @@ import de.metas.organization.OrgId;
 import de.metas.payment.PaymentDirection;
 import de.metas.payment.PaymentId;
 import de.metas.payment.api.IPaymentDAO;
+import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.Builder;
@@ -165,7 +169,8 @@ public class PaymentAllocationBuilderTest
 			final String pay,
 			final String discount,
 			final String writeOff,
-			final String invoiceProcessingFee)
+			final String invoiceProcessingFee,
+			final InvoiceProcessingFeeCalculation invoiceProcessingFeeCalculation)
 	{
 		final Money openAmt_CMAdjusted_APAdjusted = euro(open);
 		final Money openAmtEffective = openAmt_CMAdjusted_APAdjusted
@@ -208,6 +213,7 @@ public class PaymentAllocationBuilderTest
 				.creditMemo(type.isCreditMemo())
 				.openAmt(openAmtEffective)
 				.amountsToAllocate(amountsToAllocate)
+				.invoiceProcessingFeeCalculation(invoiceProcessingFeeCalculation)
 				.build();
 	}
 
@@ -262,6 +268,7 @@ public class PaymentAllocationBuilderTest
 			@Nullable final String discountAmt,
 			@Nullable final String writeOffAmt,
 			@Nullable final String invoiceProcessingFee,
+			@Nullable final InvoiceProcessingFeeCalculation invoiceProcessingFeeCalculation,
 			@Nullable final String overUnderAmt,
 			@Nullable final String paymentOverUnderAmt)
 	{
@@ -284,6 +291,7 @@ public class PaymentAllocationBuilderTest
 						.build())
 				.payableOverUnderAmt(euro(overUnderAmt))
 				.paymentOverUnderAmt(euro(paymentOverUnderAmt))
+				.invoiceProcessingFeeCalculation(invoiceProcessingFeeCalculation)
 				//
 				.build();
 	}
@@ -879,10 +887,22 @@ public class PaymentAllocationBuilderTest
 		PayableDocument invoice1;
 		PaymentDocument payment1;
 
+		final InvoiceProcessingFeeCalculation invoiceProcessingFeeCalculation = InvoiceProcessingFeeCalculation.builder()
+				.orgId(adOrgId)
+				.dateTrx(date)
+				.customerId(bpartnerId)
+				.invoiceId(InvoiceId.ofRepoId(1111))
+				.invoiceGrandTotal(Amount.of(100, CurrencyCode.EUR))
+				.serviceCompanyBPartnerId(BPartnerId.ofRepoId(2222))
+				.serviceInvoiceDocTypeId(DocTypeId.ofRepoId(3333))
+				.serviceFeeProductId(ProductId.ofRepoId(4444))
+				.feeAmountIncludingTax(Amount.of(666, CurrencyCode.EUR)) // does not matter
+				.build();
+
 		final PaymentAllocationBuilder builder = newPaymentAllocationBuilder(
 				// Invoices
 				ImmutableList.of(
-						invoice1 = invoice().type(CustomerInvoice).open("100").pay("88").discount("10").invoiceProcessingFee("2").build())
+						invoice1 = invoice().type(CustomerInvoice).open("100").pay("88").discount("10").invoiceProcessingFee("2").invoiceProcessingFeeCalculation(invoiceProcessingFeeCalculation).build())
 				// Payments
 				, ImmutableList.of(
 						payment1 = payment().direction(INBOUND).open("88").amtToAllocate("88").build()));
@@ -893,6 +913,7 @@ public class PaymentAllocationBuilderTest
 				allocation().type(AllocationLineCandidateType.InvoiceProcessingFee)
 						.payableRef(invoice1.getReference())
 						.invoiceProcessingFee("2")
+						.invoiceProcessingFeeCalculation(invoiceProcessingFeeCalculation)
 						.overUnderAmt("98")
 						.build(),
 
