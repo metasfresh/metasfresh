@@ -33,6 +33,7 @@ import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.IPricingResult;
 import de.metas.pricing.exceptions.ProductNotOnPriceListException;
 import de.metas.product.ProductId;
+import de.metas.product.ProductPrice;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.tax.api.ITaxBL;
@@ -812,6 +813,7 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 		{
 			taxIncluded = pricingResult.isTaxIncluded();
 		}
+		final ProductPrice pp = inoutLine.getC_OrderLine_ID() != 0 ? Services.get(IOrderLineBL.class).getCostPrice(inoutLine.getC_OrderLine()) : null;
 
 		return PriceAndTax.builder()
 				.pricingSystemId(pricingResult.getPricingSystemId())
@@ -822,8 +824,8 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 				.taxCategoryId(pricingResult.getTaxCategoryId())
 				//
 				.priceEntered(pricingResult.getPriceStd())
-				.priceActual(inoutLine.getC_OrderLine_ID() != 0 ? Services.get(IOrderLineBL.class).getPriceActual(inoutLine.getC_OrderLine()) : pricingResult.getPriceStd())
-				.priceUOMId(pricingResult.getPriceUomId()) // 07090 when we set PriceActual, we shall also set PriceUOM.
+				.priceActual(pp != null ? pp.toMoney().toBigDecimal() : pricingResult.getPriceStd())
+				.priceUOMId(pp != null ? pp.getUomId() : pricingResult.getPriceUomId()) // 07090 when we set PriceActual, we shall also set PriceUOM.
 				.invoicableQtyBasedOn(pricingResult.getInvoicableQtyBasedOn())
 				.taxIncluded(taxIncluded)
 				//

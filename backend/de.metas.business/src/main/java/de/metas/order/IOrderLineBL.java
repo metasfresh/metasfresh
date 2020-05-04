@@ -22,13 +22,6 @@ package de.metas.order;
  * #L%
  */
 
-import java.math.BigDecimal;
-import java.util.Collection;
-import java.util.Map;
-
-import org.compiere.model.I_C_Order;
-import org.compiere.model.I_M_PriceList_Version;
-
 import de.metas.currency.CurrencyPrecision;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.payment.paymentterm.PaymentTermId;
@@ -41,6 +34,12 @@ import de.metas.quantity.Quantity;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.util.ISingletonService;
 import de.metas.util.lang.Percent;
+import org.compiere.model.I_C_Order;
+import org.compiere.model.I_M_PriceList_Version;
+
+import java.math.BigDecimal;
+import java.util.Collection;
+import java.util.Map;
 
 public interface IOrderLineBL extends ISingletonService
 {
@@ -223,8 +222,6 @@ public interface IOrderLineBL extends ISingletonService
 	boolean isAllowedCounterLineCopy(org.compiere.model.I_C_OrderLine fromLine);
 
 	ProductPrice getCostPrice(org.compiere.model.I_C_OrderLine orderLine);
-
-	BigDecimal getPriceActual(org.compiere.model.I_C_OrderLine orderline);
 
 	PaymentTermId getPaymentTermId(org.compiere.model.I_C_OrderLine orderLine);
 
