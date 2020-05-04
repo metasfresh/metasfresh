@@ -1,0 +1,13 @@
+{
+  "name": "ProductName",
+  "description": "Test Product",
+  "productCategory": "06_Kartoffeln",
+  "c_uom": "Each",
+  "de_DE__c_uom": "Stück",
+  "isStocked": true,
+  "isPurchased": true,
+  "isSold": true,
+  "isDiverse": false,
+  "productType": "Item",
+  "de_DE__productType": "Artikel"
+}

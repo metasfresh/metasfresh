@@ -1,0 +1,150 @@
+.chart-wrapper {
+    width: 100%;
+    overflow: auto;
+    min-height: 425px;
+}
+
+.draggable-widget-maximize .chart-wrapper {
+    height: 100%;
+}
+
+.chart-data-table-wrapper,
+.panel.chart-data-table-wrapper {
+    width: 60%;
+    margin: 20px auto;
+}
+
+.chart-edit-mode {
+    cursor: pointer;
+    position: absolute;
+    right: 30px;
+    top: 8px;
+}
+
+.draggable-edit-mode-input {
+    height: 100%;
+}
+
+.chart-options-overlay {
+    background-color: rgba(18, 18, 18, .7);
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 400;
+}
+
+.chart-options-wrapper {
+    background: $brand-bright-color;
+    width: 40%;
+    margin-left: -20%;
+    left: 50%;
+    top: 20%;
+    position: absolute;
+    padding: 40px;
+}
+
+.chart-options {
+    min-height: 300px;
+}
+
+.chart-options label {
+    min-width: 140px;
+}
+
+.chart-options .input-options {
+    border-top: none;
+    border-right: none;
+    border-left: none;
+    min-width: 250px;
+}
+
+.chart-options-list-wrapper {
+    min-width: 250px;
+    display: inline-block
+}
+
+.chart-options-button-wrapper {
+    text-align: right;
+}
+
+@media (max-width: $breakpoint-md){
+    .chart-data-table-wrapper,
+    .panel.chart-data-table-wrapper {
+        width: 90%;
+    }
+
+    .chart-data-table-wrapper .table td {
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        overflow: hidden;
+       
+    }
+}
+
+@media (max-width: $breakpoint){
+    .chart-data-table-wrapper,
+    .panel.chart-data-table-wrapper {
+        width: 100%;
+    }
+
+    .chart-data-table-wrapper .table {
+        table-layout: fixed;
+    }
+}
+
+.pie-path {
+    stroke: #fff;
+    stroke-width: 2px;
+}
+
+.error-load-data {
+    padding-top: 1rem;
+    color: $brand-danger-color;
+}
+
+.error-load-data .error-load-text {
+    padding-bottom: 1rem;
+}
+
+$loader-bcg: rgba(0, 0, 0, 0.2);
+$loader: #808080;
+
+.error-loading {
+    width: 120px;
+    height: 120px;
+    border-radius: 100%;
+    border: 20px solid $loader-bcg;
+    animation: spin 4s infinite linear;
+}
+
+@keyframes spin { 
+    0%, 100% { 
+        border-bottom-color: $loader;
+        border-left-color: $loader-bcg;
+        border-right-color: $loader-bcg;
+        border-top-color: $loader-bcg;  
+    }
+
+    25% {
+        border-right-color: $loader;
+        border-left-color: $loader-bcg;
+        border-top-color: $loader-bcg;
+        border-bottom-color: $loader-bcg;
+    }
+
+    50% {
+        border-top-color: $loader;
+        border-left-color: $loader-bcg;
+        border-right-color: $loader-bcg;
+        border-bottom-color: $loader-bcg;
+    }
+
+    75% {
+        border-left-color: $loader;
+        border-right-color: $loader-bcg;
+        border-top-color: $loader-bcg;
+        border-bottom-color: $loader-bcg;
+    }
+}

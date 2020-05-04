@@ -1,0 +1,13 @@
+screenshots
+videos
+package-lock.json
+node_modules
+npm-debug.log*
+.DS_Store
+cypress-git-repo
+debug.log
+.metadata
+cypress/config.js
+/cypress/config.js.remote
+/cypress/config.js.local
+/metasfresh-e2e.iml

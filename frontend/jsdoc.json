@@ -1,0 +1,17 @@
+{
+  "source": {
+    "include": ["./src"],
+    "includePattern": ".js$",
+    "excludePattern": "(node_modules/|docs)"
+  },
+  "plugins": ["plugins/markdown", "node_modules/better-docs/category"],
+  "opts": {
+    "encoding": "utf8",
+    "readme": "./readme.md",
+    "destination": "docs/",
+    "recurse": true,
+    "verbose": true,
+    "tutorials": "./tutorials",
+    "template": "./node_modules/better-docs/"
+  }
+}
