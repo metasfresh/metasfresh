@@ -42,7 +42,7 @@ public enum InvoiceDocBaseType implements ReferenceListAwareEnum
 	;
 
 	@Getter
-	private final String code;
+	private final String docBaseType;
 
 	@Getter
 	private final SOTrx soTrx;
@@ -52,9 +52,9 @@ public enum InvoiceDocBaseType implements ReferenceListAwareEnum
 
 	private static final ValuesIndex<InvoiceDocBaseType> index = ReferenceListAwareEnums.index(values());
 
-	InvoiceDocBaseType(@NonNull final String code, @NonNull final SOTrx soTrx, final boolean creditMemo)
+	InvoiceDocBaseType(@NonNull final String docBaseType, @NonNull final SOTrx soTrx, final boolean creditMemo)
 	{
-		this.code = code;
+		this.docBaseType = docBaseType;
 		this.soTrx = soTrx;
 		this.creditMemo = creditMemo;
 	}
@@ -79,6 +79,12 @@ public enum InvoiceDocBaseType implements ReferenceListAwareEnum
 		{
 			return !creditMemo ? VendorInvoice : VendorCreditMemo;
 		}
+	}
+
+	@Override
+	public String getCode()
+	{
+		return getDocBaseType();
 	}
 
 	public boolean isSales()

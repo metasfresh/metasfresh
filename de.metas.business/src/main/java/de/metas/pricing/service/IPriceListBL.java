@@ -33,15 +33,23 @@ public interface IPriceListBL extends ISingletonService
 			@NonNull CountryId countryId,
 			@NonNull ZonedDateTime date,
 			@NonNull SOTrx soTrx);
-
-	/**
-	 * @return the current price list or null
-	 */
-	I_M_PriceList getCurrentPricelistOrNull(
+	
+	Optional<I_M_PriceList> getCurrentPriceList(
 			PricingSystemId pricingSystemId,
 			CountryId countryId,
 			ZonedDateTime date,
-			SOTrx soTrx);
+			@NonNull SOTrx soTrx);
+
+
+	@Nullable
+	default I_M_PriceList getCurrentPricelistOrNull(
+			@NonNull final PricingSystemId pricingSystemId,
+			@NonNull final CountryId countryId,
+			@NonNull final ZonedDateTime date,
+			@NonNull final SOTrx soTrx)
+	{
+		return getCurrentPriceList(pricingSystemId, countryId, date, soTrx).orElse(null);
+	}
 
 	/**
 	 * Find the current version from a pricing system based on the given parameters.

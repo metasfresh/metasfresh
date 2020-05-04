@@ -100,21 +100,19 @@ public class PriceListBL implements IPriceListBL
 		return currenciesRepo.getStdPrecision(CurrencyId.ofRepoId(priceList.getC_Currency_ID()));
 	}
 
-	@Nullable
 	@Override
-	public I_M_PriceList getCurrentPricelistOrNull(
-			final PricingSystemId pricingSystemId,
-			final CountryId countryId,
-			final ZonedDateTime date,
+	public Optional<I_M_PriceList> getCurrentPriceList(
+			@NonNull final PricingSystemId pricingSystemId,
+			@NonNull final CountryId countryId,
+			@NonNull final ZonedDateTime date,
 			@NonNull final SOTrx soTrx)
 	{
-		final PriceListId priceListId = getCurrentPriceListId(pricingSystemId, countryId, date, soTrx).orElse(null);
-		return priceListId != null
-				? Services.get(IPriceListDAO.class).getById(priceListId)
-				: null;
+		final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
+
+		return getCurrentPriceListId(pricingSystemId, countryId, date, soTrx)
+				.map(priceListDAO::getById);
 	}
 
-	@Nullable
 	@Override
 	public Optional<PriceListId> getCurrentPriceListId(
 			@NonNull final PricingSystemId pricingSystemId,

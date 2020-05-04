@@ -45,6 +45,7 @@ import javax.annotation.Nullable;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -58,6 +59,7 @@ import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_MatchInv;
+import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_RMA;
 import org.compiere.model.X_C_DocType;
 import org.compiere.model.X_C_Tax;
@@ -587,10 +589,10 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	@Override
 	public void updateFromBPartner(@NonNull final org.compiere.model.I_C_Invoice invoice)
 	{
-		final BPartnerId bpartnerId = BPartnerId.ofRepoId(invoice.getC_BPartner_ID());
+		final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(invoice.getC_BPartner_ID());
 		if (bpartnerId == null)
 		{
-			return;
+			throw new FillMandatoryException("C_BPartner_ID");
 		}
 
 		final SOTrx soTrx = SOTrx.ofBoolean(invoice.isSOTrx());
@@ -641,18 +643,14 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 				.bPartnerLocationId(bpartnerLocationId)
 				.ifNotFound(IfNotFound.RETURN_NULL)
 				.build());
-		if (contact != null)
-		{
-			invoice.setAD_User_ID(contact.getId().getRepoId());
-		}
+		invoice.setAD_User_ID(contact != null ? contact.getId().getRepoId() : -1);
 
 		//
 		// Price List
-		final PriceListId priceListId = getPriceListId(bpartnerLocationId, soTrx, date).orElse(null);
-		if (priceListId != null)
-		{
-			invoice.setM_PriceList_ID(priceListId.getRepoId());
-		}
+		final I_M_PriceList priceList = getPriceList(bpartnerLocationId, soTrx, date);
+		invoice.setM_PriceList_ID(priceList.getM_PriceList_ID());
+		invoice.setC_Currency_ID(priceList.getC_Currency_ID());
+		invoice.setIsTaxIncluded(priceList.isTaxIncluded());
 	}
 
 	private Optional<BPartnerLocationId> getDefaultBPartnerLocationId(final BPartnerId bpartnerId, final SOTrx soTrx)
@@ -678,7 +676,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		return Optional.empty();
 	}
 
-	private Optional<PriceListId> getPriceListId(
+	private I_M_PriceList getPriceList(
 			@NonNull final BPartnerLocationId bpartnerLocationId,
 			@NonNull final SOTrx soTrx,
 			@NonNull final ZonedDateTime date)
@@ -688,17 +686,22 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		final PricingSystemId pricingSystemId = bpartnerDAO.retrievePricingSystemIdOrNull(bpartnerLocationId.getBpartnerId(), soTrx);
 		if (pricingSystemId == null)
 		{
-			return Optional.empty();
+			throw new AdempiereException("@NotFound@ @M_PricingSystem_ID@")
+					.setParameter("C_BPartner_ID", bpartnerLocationId.getBpartnerId())
+					.setParameter("SOTrx", soTrx)
+					.appendParametersToMessage();
 		}
 
 		final CountryId countryId = bpartnerDAO.getBPartnerLocationCountryId(bpartnerLocationId);
 
 		final IPriceListBL priceListBL = Services.get(IPriceListBL.class);
-		return priceListBL.getCurrentPriceListId(
-				pricingSystemId,
-				countryId,
-				date,
-				soTrx);
+		return priceListBL.getCurrentPriceList(pricingSystemId, countryId, date, soTrx)
+				.orElseThrow(() -> new AdempiereException("@NotFound@ @M_PriceList_ID@")
+						.setParameter("M_PricingSystem_ID", pricingSystemId)
+						.setParameter("C_Country_ID", countryId)
+						.setParameter("Date", date)
+						.setParameter("soTrx", soTrx)
+						.appendParametersToMessage());
 	}
 
 	@Override

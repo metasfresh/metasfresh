@@ -114,21 +114,26 @@ public class InvoiceProcessingServiceCompanyService
 			@NonNull final InvoiceProcessingFeeCalculation calculation,
 			@Nullable final Money invoiceProcessingFeeIncludingTaxOverride)
 	{
+		final Amount invoiceProcessingFeeIncludingTaxOverrideAmount = invoiceProcessingFeeIncludingTaxOverride != null
+				? moneyService.toAmount(invoiceProcessingFeeIncludingTaxOverride)
+				: null;
+
+		return generateServiceInvoice(calculation, invoiceProcessingFeeIncludingTaxOverrideAmount);
+	}
+
+	public InvoiceId generateServiceInvoice(
+			@NonNull final InvoiceProcessingFeeCalculation calculation,
+			@Nullable final Amount invoiceProcessingFeeIncludingTaxOverride)
+	{
 		trxManager.assertThreadInheritedTrxExists();
 
 		final OrgId orgId = calculation.getOrgId();
 		final LocalDate dateTrx = calculation.getDateTrx();
 		final ZoneId timeZone = orgDAO.getTimeZone(orgId);
 
-		final Amount invoiceProcessingFeeIncludingTax;
-		if (invoiceProcessingFeeIncludingTaxOverride != null)
-		{
-			invoiceProcessingFeeIncludingTax = moneyService.toAmount(invoiceProcessingFeeIncludingTaxOverride);
-		}
-		else
-		{
-			invoiceProcessingFeeIncludingTax = calculation.getFeeAmountIncludingTax();
-		}
+		final Amount invoiceProcessingFeeIncludingTax = invoiceProcessingFeeIncludingTaxOverride != null
+				? invoiceProcessingFeeIncludingTaxOverride
+				: calculation.getFeeAmountIncludingTax();
 
 		final BPartnerId serviceCompanyBPartnerId = calculation.getServiceCompanyBPartnerId();
 		final DocTypeId serviceInvoiceDocTypeId = calculation.getServiceInvoiceDocTypeId();
