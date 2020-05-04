@@ -406,8 +406,6 @@ public interface IInvoiceBL extends ISingletonService
 	 */
 	PaymentRule getDefaultPaymentRule();
 
-	I_C_Invoice voidAndRecreateInvoice(I_C_Invoice invoice);
-
 	void updateDescriptionFromDocTypeTargetId(I_C_Invoice invoice, String defaultDescription, String defaultDocumentNote);
 
 	/**
