@@ -30,8 +30,6 @@ describe('Create Pricing Masterdata', function() {
 
     //PLV
     cy.pressAddNewButton();
-    cy.clearField('Name', true);
-    cy.writeIntoStringField('Name', priceListValueName, true);
     cy.pressDoneButton();
   });
 });
