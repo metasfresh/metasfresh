@@ -223,6 +223,8 @@ public interface IOrderLineBL extends ISingletonService
 
 	ProductPrice getCostPrice(org.compiere.model.I_C_OrderLine orderLine);
 
+	ProductPrice getPriceActual(org.compiere.model.I_C_OrderLine orderLine);
+
 	PaymentTermId getPaymentTermId(org.compiere.model.I_C_OrderLine orderLine);
 
 	Map<OrderAndLineId, Quantity> getQtyToDeliver(Collection<OrderAndLineId> orderAndLineIds);

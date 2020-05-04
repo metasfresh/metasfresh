@@ -813,7 +813,7 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 		{
 			taxIncluded = pricingResult.isTaxIncluded();
 		}
-		final ProductPrice pp = inoutLine.getC_OrderLine_ID() != 0 ? Services.get(IOrderLineBL.class).getCostPrice(inoutLine.getC_OrderLine()) : null;
+		final ProductPrice pp = inoutLine.getC_OrderLine_ID() != 0 ? Services.get(IOrderLineBL.class).getPriceActual(inoutLine.getC_OrderLine()) : null;
 
 		return PriceAndTax.builder()
 				.pricingSystemId(pricingResult.getPricingSystemId())

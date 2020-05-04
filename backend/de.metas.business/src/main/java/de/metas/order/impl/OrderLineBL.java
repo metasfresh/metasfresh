@@ -772,6 +772,21 @@ public class OrderLineBL implements IOrderLineBL
 	}
 
 	@Override
+	public ProductPrice getPriceActual(final org.compiere.model.I_C_OrderLine orderLine)
+	{
+		final CurrencyId currencyId = CurrencyId.ofRepoId(orderLine.getC_Currency_ID());
+		final ProductId productId = ProductId.ofRepoId(orderLine.getM_Product_ID());
+		final UomId productUomId = Services.get(IProductBL.class).getStockUOMId(productId);
+		final BigDecimal priceActual = orderLine.getPriceActual();
+
+		return ProductPrice.builder()
+				.productId(productId)
+				.uomId(productUomId)
+				.money(Money.of(priceActual, currencyId))
+				.build();
+	}
+
+	@Override
 	public PaymentTermId getPaymentTermId(@NonNull final org.compiere.model.I_C_OrderLine orderLine)
 	{
 		final PaymentTermId paymentTermOverrideId = PaymentTermId.ofRepoIdOrNull(orderLine.getC_PaymentTerm_Override_ID());
