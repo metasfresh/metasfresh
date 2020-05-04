@@ -297,58 +297,6 @@ public class MInvoice extends X_C_Invoice implements IDocument
 		// metas end
 	}	// MInvoice
 
-	/**
-	 * Create Invoice from Batch Line
-	 *
-	 * @param batch batch
-	 * @param line batch line
-	 */
-	public MInvoice(final MInvoiceBatch batch, final MInvoiceBatchLine line)
-	{
-		this(line.getCtx(), 0, line.get_TrxName());
-		setClientOrg(line);
-		setDocumentNo(line.getDocumentNo());
-		//
-		setIsSOTrx(batch.isSOTrx());
-		final I_C_BPartner bp = Services.get(IBPartnerDAO.class).getById(line.getC_BPartner_ID());
-		setBPartner(bp);	// defaults
-		//
-		setIsTaxIncluded(line.isTaxIncluded());
-		// May conflict with default price list
-		setC_Currency_ID(batch.getC_Currency_ID());
-		setC_ConversionType_ID(batch.getC_ConversionType_ID());
-		//
-		// setPaymentRule(order.getPaymentRule());
-		// setC_PaymentTerm_ID(order.getC_PaymentTerm_ID());
-		// setPOReference("");
-		setDescription(batch.getDescription());
-		// setDateOrdered(order.getDateOrdered());
-
-		// metas
-		set_Value(C_Invoice_INCOTERM, batch.get_Value(C_Invoice_INCOTERM));
-		set_Value(C_Invoice_INCOTERMLOCATION, batch.get_Value(C_Invoice_INCOTERMLOCATION));
-		// TODO: DescriptionBottom?
-		// metas end
-
-		//
-		setAD_OrgTrx_ID(line.getAD_OrgTrx_ID());
-		setC_Project_ID(line.getC_Project_ID());
-		// setC_Campaign_ID(line.getC_Campaign_ID());
-		setC_Activity_ID(line.getC_Activity_ID());
-		setUser1_ID(line.getUser1_ID());
-		setUser2_ID(line.getUser2_ID());
-		//
-		Services.get(IInvoiceBL.class).setDocTypeTargetIdAndUpdateDescription(this, line.getC_DocType_ID());
-		setDateInvoiced(line.getDateInvoiced());
-		setDateAcct(line.getDateAcct());
-		//
-		setSalesRep_ID(batch.getSalesRep_ID());
-		//
-		setC_BPartner_ID(line.getC_BPartner_ID());
-		setC_BPartner_Location_ID(line.getC_BPartner_Location_ID());
-		setAD_User_ID(line.getAD_User_ID());
-	}	// MInvoice
-
 	@Override
 	public void setClientOrg(final int AD_Client_ID, final int AD_Org_ID)
 	{
