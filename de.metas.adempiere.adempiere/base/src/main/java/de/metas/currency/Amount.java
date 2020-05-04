@@ -88,6 +88,11 @@ public final class Amount implements Comparable<Amount>
 
 	public BigDecimal getAsBigDecimal()
 	{
+		return toBigDecimal();
+	}
+
+	public BigDecimal toBigDecimal()
+	{
 		return value;
 	}
 
