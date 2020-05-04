@@ -76,12 +76,6 @@ public class PO_Record
 		I_AD_Note.Table_Name
 	};
 
-	/**	Restrict Table ID			*/
-	private static int[]	s_restricts =	new int[]{
-		getTableId(I_R_Request.class),
-		X_CM_Chat.Table_ID
-	//	X_Fact_Acct.Table_ID
-	};
 	/**	Restrict Table Names			*/
 	private static String[]	s_restrictNames = new String[]{
 		X_R_Request.Table_Name,
@@ -168,7 +162,7 @@ public class PO_Record
 	static String exists (int AD_Table_ID, int Record_ID, String trxName)
 	{
 		//	Table Loop only
-		for (int i = 0; i < s_restricts.length; i++)
+		for (int i = 0; i < s_restrictNames.length; i++)
 		{
 			//	SELECT COUNT(*) FROM table WHERE AD_Table_ID=#1 AND Record_ID=#2
 			final StringBuilder sql = new StringBuilder("SELECT COUNT(*) FROM ")

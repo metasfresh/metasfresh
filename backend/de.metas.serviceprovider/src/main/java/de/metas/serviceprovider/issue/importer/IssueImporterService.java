@@ -184,9 +184,14 @@ public class IssueImporterService
 				? importIssueInfo.getMilestone().getMilestoneId()
 				: null;
 
+		final IssueId parentIssueId = importIssueInfo.getParentIssueId() != null
+				? importIssueInfo.getParentIssueId()
+				: getIssueIdByExternalId(importIssueInfo.getExternalParentIssueId());
+
 		return IssueEntity.builder()
 				.orgId(importIssueInfo.getOrgId())
 				.projectId(importIssueInfo.getProjectId())
+				.parentIssueId(parentIssueId)
 				.assigneeId(importIssueInfo.getAssigneeId())
 				.milestoneId(milestoneId)
 				.name(importIssueInfo.getName())
@@ -208,7 +213,13 @@ public class IssueImporterService
 	private IssueEntity mergeIssueInfoWithEntity(@NonNull final ImportIssueInfo importIssueInfo,
 			@NonNull final IssueEntity existingEffortIssue)
 	{
-		final IssueEntity mergedIssueEntity = existingEffortIssue.toBuilder()
+		final IssueId parentIssueId = importIssueInfo.getParentIssueId() != null
+				? importIssueInfo.getParentIssueId()
+				: getIssueIdByExternalId(importIssueInfo.getExternalParentIssueId());
+
+		final IssueEntity mergedIssueEntity = existingEffortIssue
+				.toBuilder()
+				.parentIssueId(parentIssueId)
 				.projectId(importIssueInfo.getProjectId())
 				.processed(importIssueInfo.isProcessed())
 				.description(importIssueInfo.getDescription())
@@ -231,8 +242,13 @@ public class IssueImporterService
 
 
 	@Nullable
-	private IssueId getIssueIdByExternalId(@NonNull final ExternalId externalId)
+	private IssueId getIssueIdByExternalId(@Nullable final ExternalId externalId)
 	{
+		if (externalId == null)
+		{
+			return null;
+		}
+
 		final Integer issueId = externalReferenceRepository.getReferencedRecordIdOrNullBy(
 				GetReferencedIdRequest.builder()
 						.externalSystem(externalId.getExternalSystem())

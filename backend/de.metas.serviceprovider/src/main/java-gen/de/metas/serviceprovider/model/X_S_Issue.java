@@ -15,7 +15,7 @@ public class X_S_Issue extends org.compiere.model.PO implements I_S_Issue, org.c
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1040725648L;
+	private static final long serialVersionUID = -1893549512L;
 
     /** Standard Constructor */
     public X_S_Issue (Properties ctx, int S_Issue_ID, String trxName)
@@ -214,7 +214,7 @@ public class X_S_Issue extends org.compiere.model.PO implements I_S_Issue, org.c
 		return (java.lang.String)get_Value(COLUMNNAME_ExternalId);
 	}
 
-	/** Set ExternalIssueNo.
+	/** Set External issue no.
 		@param ExternalIssueNo 
 		External issue number ( e.g. github issue number )
 	  */
@@ -224,7 +224,7 @@ public class X_S_Issue extends org.compiere.model.PO implements I_S_Issue, org.c
 		set_Value (COLUMNNAME_ExternalIssueNo, ExternalIssueNo);
 	}
 
-	/** Get ExternalIssueNo.
+	/** Get External issue no.
 		@return External issue number ( e.g. github issue number )
 	  */
 	@Override
@@ -301,7 +301,7 @@ public class X_S_Issue extends org.compiere.model.PO implements I_S_Issue, org.c
 		return false;
 	}
 
-	/** Set IssueEffort (H:mm).
+	/** Set Issue effort (H:mm).
 		@param IssueEffort 
 		Time spent directly on this task in H:mm format.
 	  */
@@ -311,7 +311,7 @@ public class X_S_Issue extends org.compiere.model.PO implements I_S_Issue, org.c
 		set_Value (COLUMNNAME_IssueEffort, IssueEffort);
 	}
 
-	/** Get IssueEffort (H:mm).
+	/** Get Issue effort (H:mm).
 		@return Time spent directly on this task in H:mm format.
 	  */
 	@Override

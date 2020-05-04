@@ -62,6 +62,14 @@ public class Issue
 
 	@JsonProperty("body")
 	String body;
+
+	@JsonProperty("pull_request")
+	PullRequest pullRequest;
+
+	public boolean isPullRequest()
+	{
+		return pullRequest != null;
+	}
 }
 
 
