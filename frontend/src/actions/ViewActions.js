@@ -27,6 +27,8 @@ import {
   DELETE_VIEW,
 } from '../constants/ActionTypes';
 
+import { createGridTable, updateGridTable } from './TablesActions';
+
 export function resetView(id) {
   return {
     type: RESET_VIEW,
@@ -159,8 +161,8 @@ export function addLocationData(id, locationData) {
 
 // THUNK ACTIONS
 
-export function fetchDocument(
-  windowId,
+export function fetchDocument({
+  windowType,
   viewId,
   page,
   pageLength,
@@ -168,10 +170,10 @@ export function fetchDocument(
   // for modals
   useViewId = false,
   //for filtering in modals
-  modalId = null
-) {
+  modalId = null,
+}) {
   return (dispatch) => {
-    let identifier = useViewId ? viewId : windowId;
+    let identifier = useViewId ? viewId : windowType;
 
     if (useViewId && modalId) {
       identifier = modalId;
@@ -179,9 +181,20 @@ export function fetchDocument(
 
     dispatch(fetchDocumentPending(identifier));
 
-    return browseViewRequest({ windowId, viewId, page, pageLength, orderBy })
+    return browseViewRequest({
+      windowId: windowType,
+      viewId,
+      page,
+      pageLength,
+      orderBy,
+    })
       .then((response) => {
         dispatch(fetchDocumentSuccess(identifier, response.data));
+
+        const tableId = `${windowType}_${viewId}`;
+        const tableData = { windowType, viewId, ...response.data };
+
+        dispatch(updateGridTable(tableId, tableData));
 
         return Promise.resolve(response.data);
       })
@@ -195,7 +208,7 @@ export function fetchDocument(
 }
 
 export function createView({
-  windowId,
+  windowType,
   viewType,
   filters,
   refDocType,
@@ -205,12 +218,12 @@ export function createView({
   inModalId,
 }) {
   return (dispatch) => {
-    const identifier = inModalId ? inModalId : windowId;
+    const identifier = inModalId ? inModalId : windowType;
 
     dispatch(createViewPending(identifier));
 
     return createViewRequest({
-      windowId,
+      windowId: windowType,
       viewType,
       filters,
       refDocType,
@@ -220,6 +233,12 @@ export function createView({
     })
       .then((response) => {
         dispatch(createViewSuccess(identifier, response.data));
+
+        const { viewId } = response.data;
+        const tableId = `${windowType}_${viewId}`;
+        const tableData = { windowType, viewId };
+
+        dispatch(createGridTable(tableId, tableData));
 
         return Promise.resolve(response.data);
       })
@@ -233,19 +252,22 @@ export function createView({
 }
 
 export function fetchLayout(
-  windowId,
+  windowType,
   viewType,
   viewProfileId = null,
   viewId = null
 ) {
   return (dispatch) => {
-    const identifier = viewId ? viewId : windowId;
+    const identifier = viewId ? viewId : windowType;
 
     dispatch(fetchLayoutPending(identifier));
 
-    return getViewLayout(windowId, viewType, viewProfileId)
+    return getViewLayout(windowType, viewType, viewProfileId)
       .then((response) => {
         dispatch(fetchLayoutSuccess(identifier, response.data));
+
+        // TODO: we could extract more table data from the layout response here
+        // and have everything table-related in one branch of the state tree
 
         return Promise.resolve(response.data);
       })

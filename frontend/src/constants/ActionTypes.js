@@ -1,3 +1,5 @@
+export * from './TableTypes';
+
 /**
  * @constant
  * @type {string} ToDo: Description for the constant.

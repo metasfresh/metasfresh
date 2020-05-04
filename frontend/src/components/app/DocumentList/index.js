@@ -391,7 +391,7 @@ class DocumentListContainer extends Component {
     const { filtersActive } = this.state;
 
     createView({
-      windowId: windowType,
+      windowType,
       viewType: type,
       filters: filtersActive.toIndexedSeq().toArray(),
       refDocType: refType,
@@ -493,15 +493,15 @@ class DocumentListContainer extends Component {
       modalId = viewId;
     }
 
-    return fetchDocument(
+    return fetchDocument({
       windowType,
-      id,
+      viewId: id,
       page,
-      this.pageLength,
-      sortingQuery,
-      isModal,
-      modalId
-    )
+      pageLength: this.pageLength,
+      orderBy: sortingQuery,
+      useViewId: isModal,
+      modalId,
+    })
       .then((response) => {
         const result = response.result;
         const resultById = {};
