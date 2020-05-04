@@ -84,6 +84,12 @@ public class ImportIssueInfo
 	@Nullable
 	ImportMilestoneInfo milestone;
 
+	@Nullable
+	IssueId parentIssueId;
+
+	@Nullable
+	ExternalId externalParentIssueId;
+
 	@NonNull
 	ImmutableList<ExternalIssueDetail> externalIssueDetails;
 

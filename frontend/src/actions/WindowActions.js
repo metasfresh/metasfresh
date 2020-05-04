@@ -70,6 +70,7 @@ import {
   getProcessData,
   getTab,
   startProcess,
+  formatParentUrl,
 } from '../api';
 import {
   addNotification,
@@ -81,7 +82,12 @@ import {
 import { openFile } from './GenericActions';
 import { setListIncludedView } from './ListActions';
 import { getWindowBreadcrumb } from './MenuActions';
-import { toggleFullScreen } from '../utils';
+import {
+  updateCommentsPanel,
+  updateCommentsPanelTextInput,
+  updateCommentsPanelOpenFlag,
+} from './CommentsPanelActions';
+import { toggleFullScreen, preFormatPostDATA } from '../utils';
 import { getScope, parseToDisplay } from '../utils/documentListHelper';
 
 export function fetchedQuickActions(windowId, id, data) {
@@ -758,6 +764,79 @@ export function fetchTopActions(windowType, docId, tabId) {
           type: FETCH_TOP_ACTIONS_FAILURE,
         });
       });
+  };
+}
+
+/**
+ * this is 'generic' window action that allows calling APIs that do follow a specific pattern
+ * in their path like /rest/api/documentView/{windowId}/{viewId}/{target}
+ * Where target can be for example 'geoLocations' or 'comments'. This can be further
+ * adapted to other REST paths by shaping the formatParentUrl function accordingly
+ * windowId - windowId for which we want to apply/get changes
+ * docId    - docId for which we want to apply/get changes
+ * tabId    - tabId for which we want to apply/get changes
+ * rowId    - rowId for which we want to apply/get changes
+ * verb     - GET/POST for now
+ * data     - data you want to be passed for a POST request
+ * @param {object} param
+ */
+export function callAPI({ windowId, docId, tabId, rowId, target, verb, data }) {
+  return (dispatch) => {
+    const parentUrl = formatParentUrl({ windowId, docId, rowId, target });
+    if (!parentUrl) return;
+    dispatch(updateCommentsPanelOpenFlag(true));
+    // -- GET call - adapt shape as needed
+    if (verb === 'GET') {
+      return axios.get(parentUrl).then(async (response) => {
+        const data = response.data;
+        let rowData = null;
+
+        if (docId && rowId) {
+          if (rowId.length === 1) {
+            const childUrl = getChangelogUrl(windowId, docId, tabId, rowId);
+            rowData = await axios.get(childUrl).then((resp) => resp.data);
+          }
+        }
+
+        if (rowData) {
+          data.rowsData = rowData;
+        }
+        // update corresponding target in the store - might be adapted for more separated entities
+        if (target === 'comments') {
+          dispatch(updateCommentsPanel(data));
+        }
+        // -- end updating corresponding target
+        dispatch(
+          initDataSuccess({
+            data,
+            docId,
+            scope: 'modal',
+          })
+        );
+      });
+    }
+
+    // -- actions dispatched on POST below
+    if (verb === 'POST') {
+      const dataToSend = preFormatPostDATA({ target, postData: { txt: data } });
+      return axios.post(parentUrl, dataToSend).then(async (response) => {
+        const data = response.data;
+        if (target === 'comments') {
+          dispatch(
+            callAPI({
+              windowId,
+              docId,
+              tabId,
+              rowId,
+              target,
+              verb: 'GET',
+            })
+          );
+          dispatch(updateCommentsPanelTextInput('')); // clear the input in the form
+        }
+        return data;
+      });
+    }
   };
 }
 

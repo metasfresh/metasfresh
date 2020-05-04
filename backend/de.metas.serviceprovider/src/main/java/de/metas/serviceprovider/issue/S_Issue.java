@@ -77,4 +77,22 @@ public class S_Issue
 		}
 	}
 
+	@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE, ifColumnsChanged = I_S_Issue.COLUMNNAME_IsActive)
+	public void reactivateLinkedExternalReferences(@NonNull final I_S_Issue record)
+	{
+		if (record.isActive())
+		{
+			externalReferenceRepository.updateIsActiveByRecordIdAndType(record.getS_Issue_ID(), ExternalReferenceType.ISSUE_ID, record.isActive());
+		}
+	}
+
+	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE, ifColumnsChanged = I_S_Issue.COLUMNNAME_IsActive)
+	public void inactivateLinkedExternalReferences(@NonNull final I_S_Issue record)
+	{
+		if (!record.isActive())
+		{
+			externalReferenceRepository.updateIsActiveByRecordIdAndType(record.getS_Issue_ID(), ExternalReferenceType.ISSUE_ID, record.isActive());
+		}
+	}
+
 }

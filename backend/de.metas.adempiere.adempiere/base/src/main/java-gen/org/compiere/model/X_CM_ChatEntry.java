@@ -1,36 +1,20 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 /** Generated Model - DO NOT CHANGE */
 package org.compiere.model;
 
 import java.sql.ResultSet;
 import java.util.Properties;
-import org.compiere.util.KeyNamePair;
 
 /** Generated Model for CM_ChatEntry
  *  @author Adempiere (generated) 
- *  @version Release 3.5.4a - $Id$ */
-public class X_CM_ChatEntry extends PO implements I_CM_ChatEntry, I_Persistent 
+ */
+@SuppressWarnings("javadoc")
+public class X_CM_ChatEntry extends org.compiere.model.PO implements I_CM_ChatEntry, org.compiere.model.I_Persistent 
 {
 
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20090915L;
+	private static final long serialVersionUID = -1128109696L;
 
     /** Standard Constructor */
     public X_CM_ChatEntry (Properties ctx, int CM_ChatEntry_ID, String trxName)
@@ -39,8 +23,7 @@ public class X_CM_ChatEntry extends PO implements I_CM_ChatEntry, I_Persistent
       /** if (CM_ChatEntry_ID == 0)
         {
 			setCharacterData (null);
-			setChatEntryType (null);
-// N
+			setChatEntryType (null); // N
 			setCM_ChatEntry_ID (0);
 			setCM_Chat_ID (0);
 			setConfidentialType (null);
@@ -53,48 +36,32 @@ public class X_CM_ChatEntry extends PO implements I_CM_ChatEntry, I_Persistent
       super (ctx, rs, trxName);
     }
 
-    /** AccessLevel
-      * @return 7 - System - Client - Org 
-      */
-    protected int get_AccessLevel()
-    {
-      return accessLevel.intValue();
-    }
 
     /** Load Meta Data */
-    protected POInfo initPO (Properties ctx)
+    @Override
+    protected org.compiere.model.POInfo initPO (Properties ctx)
     {
-      POInfo poi = POInfo.getPOInfo (ctx, Table_ID, get_TrxName());
+      org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
     }
 
-    public String toString()
-    {
-      StringBuffer sb = new StringBuffer ("X_CM_ChatEntry[")
-        .append(get_ID()).append("]");
-      return sb.toString();
-    }
-
-	public I_AD_User getAD_User() throws RuntimeException
-    {
-		return (I_AD_User)MTable.get(getCtx(), I_AD_User.Table_Name)
-			.getPO(getAD_User_ID(), get_TrxName());	}
-
-	/** Set User/Contact.
+	/** Set Ansprechpartner.
 		@param AD_User_ID 
 		User within the system - Internal or Business Partner Contact
 	  */
+	@Override
 	public void setAD_User_ID (int AD_User_ID)
 	{
-		if (AD_User_ID < 1) 
+		if (AD_User_ID < 0) 
 			set_Value (COLUMNNAME_AD_User_ID, null);
 		else 
 			set_Value (COLUMNNAME_AD_User_ID, Integer.valueOf(AD_User_ID));
 	}
 
-	/** Get User/Contact.
+	/** Get Ansprechpartner.
 		@return User within the system - Internal or Business Partner Contact
 	  */
+	@Override
 	public int getAD_User_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_AD_User_ID);
@@ -107,7 +74,8 @@ public class X_CM_ChatEntry extends PO implements I_CM_ChatEntry, I_Persistent
 		@param CharacterData 
 		Long Character Field
 	  */
-	public void setCharacterData (String CharacterData)
+	@Override
+	public void setCharacterData (java.lang.String CharacterData)
 	{
 		set_ValueNoCheck (COLUMNNAME_CharacterData, CharacterData);
 	}
@@ -115,12 +83,16 @@ public class X_CM_ChatEntry extends PO implements I_CM_ChatEntry, I_Persistent
 	/** Get Character Data.
 		@return Long Character Field
 	  */
-	public String getCharacterData () 
+	@Override
+	public java.lang.String getCharacterData () 
 	{
-		return (String)get_Value(COLUMNNAME_CharacterData);
+		return (java.lang.String)get_Value(COLUMNNAME_CharacterData);
 	}
 
-	/** ChatEntryType AD_Reference_ID=398 */
+	/** 
+	 * ChatEntryType AD_Reference_ID=398
+	 * Reference name: CM_Chat EntryType
+	 */
 	public static final int CHATENTRYTYPE_AD_Reference_ID=398;
 	/** Wiki = W */
 	public static final String CHATENTRYTYPE_Wiki = "W";
@@ -132,7 +104,8 @@ public class X_CM_ChatEntry extends PO implements I_CM_ChatEntry, I_Persistent
 		@param ChatEntryType 
 		Type of Chat/Forum Entry
 	  */
-	public void setChatEntryType (String ChatEntryType)
+	@Override
+	public void setChatEntryType (java.lang.String ChatEntryType)
 	{
 
 		set_Value (COLUMNNAME_ChatEntryType, ChatEntryType);
@@ -141,20 +114,29 @@ public class X_CM_ChatEntry extends PO implements I_CM_ChatEntry, I_Persistent
 	/** Get Chat Entry Type.
 		@return Type of Chat/Forum Entry
 	  */
-	public String getChatEntryType () 
+	@Override
+	public java.lang.String getChatEntryType () 
 	{
-		return (String)get_Value(COLUMNNAME_ChatEntryType);
+		return (java.lang.String)get_Value(COLUMNNAME_ChatEntryType);
 	}
 
-	public I_CM_ChatEntry getCM_ChatEntryGrandParent() throws RuntimeException
-    {
-		return (I_CM_ChatEntry)MTable.get(getCtx(), I_CM_ChatEntry.Table_Name)
-			.getPO(getCM_ChatEntryGrandParent_ID(), get_TrxName());	}
+	@Override
+	public org.compiere.model.I_CM_ChatEntry getCM_ChatEntryGrandParent()
+	{
+		return get_ValueAsPO(COLUMNNAME_CM_ChatEntryGrandParent_ID, org.compiere.model.I_CM_ChatEntry.class);
+	}
+
+	@Override
+	public void setCM_ChatEntryGrandParent(org.compiere.model.I_CM_ChatEntry CM_ChatEntryGrandParent)
+	{
+		set_ValueFromPO(COLUMNNAME_CM_ChatEntryGrandParent_ID, org.compiere.model.I_CM_ChatEntry.class, CM_ChatEntryGrandParent);
+	}
 
 	/** Set Chat Entry Grandparent.
 		@param CM_ChatEntryGrandParent_ID 
 		Link to Grand Parent (root level)
 	  */
+	@Override
 	public void setCM_ChatEntryGrandParent_ID (int CM_ChatEntryGrandParent_ID)
 	{
 		if (CM_ChatEntryGrandParent_ID < 1) 
@@ -166,6 +148,7 @@ public class X_CM_ChatEntry extends PO implements I_CM_ChatEntry, I_Persistent
 	/** Get Chat Entry Grandparent.
 		@return Link to Grand Parent (root level)
 	  */
+	@Override
 	public int getCM_ChatEntryGrandParent_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_CM_ChatEntryGrandParent_ID);
@@ -174,10 +157,11 @@ public class X_CM_ChatEntry extends PO implements I_CM_ChatEntry, I_Persistent
 		return ii.intValue();
 	}
 
-	/** Set Chat Entry.
+	/** Set Chat-Eintrag.
 		@param CM_ChatEntry_ID 
 		Individual Chat / Discussion Entry
 	  */
+	@Override
 	public void setCM_ChatEntry_ID (int CM_ChatEntry_ID)
 	{
 		if (CM_ChatEntry_ID < 1) 
@@ -186,9 +170,10 @@ public class X_CM_ChatEntry extends PO implements I_CM_ChatEntry, I_Persistent
 			set_ValueNoCheck (COLUMNNAME_CM_ChatEntry_ID, Integer.valueOf(CM_ChatEntry_ID));
 	}
 
-	/** Get Chat Entry.
+	/** Get Chat-Eintrag.
 		@return Individual Chat / Discussion Entry
 	  */
+	@Override
 	public int getCM_ChatEntry_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_CM_ChatEntry_ID);
@@ -197,23 +182,23 @@ public class X_CM_ChatEntry extends PO implements I_CM_ChatEntry, I_Persistent
 		return ii.intValue();
 	}
 
-    /** Get Record ID/ColumnName
-        @return ID/ColumnName pair
-      */
-    public KeyNamePair getKeyNamePair() 
-    {
-        return new KeyNamePair(get_ID(), String.valueOf(getCM_ChatEntry_ID()));
-    }
+	@Override
+	public org.compiere.model.I_CM_ChatEntry getCM_ChatEntryParent()
+	{
+		return get_ValueAsPO(COLUMNNAME_CM_ChatEntryParent_ID, org.compiere.model.I_CM_ChatEntry.class);
+	}
 
-	public I_CM_ChatEntry getCM_ChatEntryParent() throws RuntimeException
-    {
-		return (I_CM_ChatEntry)MTable.get(getCtx(), I_CM_ChatEntry.Table_Name)
-			.getPO(getCM_ChatEntryParent_ID(), get_TrxName());	}
+	@Override
+	public void setCM_ChatEntryParent(org.compiere.model.I_CM_ChatEntry CM_ChatEntryParent)
+	{
+		set_ValueFromPO(COLUMNNAME_CM_ChatEntryParent_ID, org.compiere.model.I_CM_ChatEntry.class, CM_ChatEntryParent);
+	}
 
 	/** Set Chat Entry Parent.
 		@param CM_ChatEntryParent_ID 
 		Link to direct Parent
 	  */
+	@Override
 	public void setCM_ChatEntryParent_ID (int CM_ChatEntryParent_ID)
 	{
 		if (CM_ChatEntryParent_ID < 1) 
@@ -225,6 +210,7 @@ public class X_CM_ChatEntry extends PO implements I_CM_ChatEntry, I_Persistent
 	/** Get Chat Entry Parent.
 		@return Link to direct Parent
 	  */
+	@Override
 	public int getCM_ChatEntryParent_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_CM_ChatEntryParent_ID);
@@ -233,15 +219,23 @@ public class X_CM_ChatEntry extends PO implements I_CM_ChatEntry, I_Persistent
 		return ii.intValue();
 	}
 
-	public I_CM_Chat getCM_Chat() throws RuntimeException
-    {
-		return (I_CM_Chat)MTable.get(getCtx(), I_CM_Chat.Table_Name)
-			.getPO(getCM_Chat_ID(), get_TrxName());	}
+	@Override
+	public org.compiere.model.I_CM_Chat getCM_Chat()
+	{
+		return get_ValueAsPO(COLUMNNAME_CM_Chat_ID, org.compiere.model.I_CM_Chat.class);
+	}
+
+	@Override
+	public void setCM_Chat(org.compiere.model.I_CM_Chat CM_Chat)
+	{
+		set_ValueFromPO(COLUMNNAME_CM_Chat_ID, org.compiere.model.I_CM_Chat.class, CM_Chat);
+	}
 
 	/** Set Chat.
 		@param CM_Chat_ID 
 		Chat or discussion thread
 	  */
+	@Override
 	public void setCM_Chat_ID (int CM_Chat_ID)
 	{
 		if (CM_Chat_ID < 1) 
@@ -253,6 +247,7 @@ public class X_CM_ChatEntry extends PO implements I_CM_ChatEntry, I_Persistent
 	/** Get Chat.
 		@return Chat or discussion thread
 	  */
+	@Override
 	public int getCM_Chat_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_CM_Chat_ID);
@@ -261,7 +256,10 @@ public class X_CM_ChatEntry extends PO implements I_CM_ChatEntry, I_Persistent
 		return ii.intValue();
 	}
 
-	/** ConfidentialType AD_Reference_ID=340 */
+	/** 
+	 * ConfidentialType AD_Reference_ID=340
+	 * Reference name: R_Request Confidential
+	 */
 	public static final int CONFIDENTIALTYPE_AD_Reference_ID=340;
 	/** Public Information = A */
 	public static final String CONFIDENTIALTYPE_PublicInformation = "A";
@@ -271,39 +269,45 @@ public class X_CM_ChatEntry extends PO implements I_CM_ChatEntry, I_Persistent
 	public static final String CONFIDENTIALTYPE_Internal = "I";
 	/** Private Information = P */
 	public static final String CONFIDENTIALTYPE_PrivateInformation = "P";
-	/** Set Confidentiality.
+	/** Set Vertraulichkeit.
 		@param ConfidentialType 
 		Type of Confidentiality
 	  */
-	public void setConfidentialType (String ConfidentialType)
+	@Override
+	public void setConfidentialType (java.lang.String ConfidentialType)
 	{
 
 		set_Value (COLUMNNAME_ConfidentialType, ConfidentialType);
 	}
 
-	/** Get Confidentiality.
+	/** Get Vertraulichkeit.
 		@return Type of Confidentiality
 	  */
-	public String getConfidentialType () 
+	@Override
+	public java.lang.String getConfidentialType () 
 	{
-		return (String)get_Value(COLUMNNAME_ConfidentialType);
+		return (java.lang.String)get_Value(COLUMNNAME_ConfidentialType);
 	}
 
-	/** ModeratorStatus AD_Reference_ID=396 */
+	/** 
+	 * ModeratorStatus AD_Reference_ID=396
+	 * Reference name: CM_ChatEntry ModeratorStatus
+	 */
 	public static final int MODERATORSTATUS_AD_Reference_ID=396;
-	/** Not Displayed = N */
-	public static final String MODERATORSTATUS_NotDisplayed = "N";
-	/** Published = P */
-	public static final String MODERATORSTATUS_Published = "P";
+	/** Nicht angezeigt = N */
+	public static final String MODERATORSTATUS_NichtAngezeigt = "N";
+	/** Veröffentlicht = P */
+	public static final String MODERATORSTATUS_Veroeffentlicht = "P";
 	/** To be reviewed = R */
 	public static final String MODERATORSTATUS_ToBeReviewed = "R";
-	/** Suspicious = S */
-	public static final String MODERATORSTATUS_Suspicious = "S";
+	/** Verdächtig = S */
+	public static final String MODERATORSTATUS_Verdaechtig = "S";
 	/** Set Moderation Status.
 		@param ModeratorStatus 
 		Status of Moderation
 	  */
-	public void setModeratorStatus (String ModeratorStatus)
+	@Override
+	public void setModeratorStatus (java.lang.String ModeratorStatus)
 	{
 
 		set_Value (COLUMNNAME_ModeratorStatus, ModeratorStatus);
@@ -312,25 +316,28 @@ public class X_CM_ChatEntry extends PO implements I_CM_ChatEntry, I_Persistent
 	/** Get Moderation Status.
 		@return Status of Moderation
 	  */
-	public String getModeratorStatus () 
+	@Override
+	public java.lang.String getModeratorStatus () 
 	{
-		return (String)get_Value(COLUMNNAME_ModeratorStatus);
+		return (java.lang.String)get_Value(COLUMNNAME_ModeratorStatus);
 	}
 
-	/** Set Subject.
+	/** Set Betreff.
 		@param Subject 
-		Email Message Subject
+		Mail Betreff
 	  */
-	public void setSubject (String Subject)
+	@Override
+	public void setSubject (java.lang.String Subject)
 	{
 		set_Value (COLUMNNAME_Subject, Subject);
 	}
 
-	/** Get Subject.
-		@return Email Message Subject
+	/** Get Betreff.
+		@return Mail Betreff
 	  */
-	public String getSubject () 
+	@Override
+	public java.lang.String getSubject () 
 	{
-		return (String)get_Value(COLUMNNAME_Subject);
+		return (java.lang.String)get_Value(COLUMNNAME_Subject);
 	}
 }

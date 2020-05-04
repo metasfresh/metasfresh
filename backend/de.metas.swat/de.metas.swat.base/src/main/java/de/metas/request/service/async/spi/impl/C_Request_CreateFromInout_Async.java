@@ -1,14 +1,28 @@
+/*
+ * #%L
+ * de.metas.swat.base
+ * %%
+ * Copyright (C) 2020 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.request.service.async.spi.impl;
 
-import java.util.List;
-import java.util.Properties;
-
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.util.Env;
-
 import com.google.common.base.MoreObjects;
-
 import de.metas.async.api.IQueueDAO;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.spi.WorkpackageProcessorAdapter;
@@ -16,35 +30,18 @@ import de.metas.async.spi.WorkpackagesOnCommitSchedulerTemplate;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.request.api.IRequestBL;
 import de.metas.util.Services;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.util.Env;
 
-/*
- * #%L
- * de.metas.swat.base
- * %%
- * Copyright (C) 2016 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
+import java.util.List;
+import java.util.Properties;
 
 public class C_Request_CreateFromInout_Async extends WorkpackageProcessorAdapter
 {
 	/**
-	 * 
 	 * Schedule the request creation based on the given inoutline ids
-	 * 
+	 * <p>
 	 * These requests will contain information taken from the lines and from their inout headers:
 	 * <li>inout
 	 * <li>product
@@ -78,9 +75,8 @@ public class C_Request_CreateFromInout_Async extends WorkpackageProcessorAdapter
 	/**
 	 * Class to keep information about the inout lines with quality issues (Quality Discount Percent).
 	 * This model will be used ion the
-	 * 
-	 * @author metas-dev <dev@metasfresh.com>
 	 *
+	 * @author metas-dev <dev@metasfresh.com>
 	 */
 	private static final class InOutLineWithQualityIssues
 	{
@@ -117,7 +113,9 @@ public class C_Request_CreateFromInout_Async extends WorkpackageProcessorAdapter
 		protected boolean isEligibleForScheduling(final InOutLineWithQualityIssues model)
 		{
 			return model != null && model.getM_InOutLine_ID() > 0;
-		};
+		}
+
+		;
 
 		@Override
 		protected Properties extractCtxFromItem(final InOutLineWithQualityIssues item)
@@ -134,7 +132,7 @@ public class C_Request_CreateFromInout_Async extends WorkpackageProcessorAdapter
 		@Override
 		protected Object extractModelToEnqueueFromItem(final Collector collector, final InOutLineWithQualityIssues item)
 		{
-			return new TableRecordReference(I_M_InOutLine.Table_Name, item.getM_InOutLine_ID());
+			return TableRecordReference.of(I_M_InOutLine.Table_Name, item.getM_InOutLine_ID());
 		}
 	};
 

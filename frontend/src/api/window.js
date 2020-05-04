@@ -87,6 +87,43 @@ export function getTab(tabId, windowType, docId, orderBy) {
   );
 }
 
+/**
+ * getAPIUrl function
+ */
+const getAPIUrl = function({ windowId, docId, tabId, rowId, path }) {
+  let documentId = docId;
+
+  if (!docId && rowId) {
+    documentId = rowId[0];
+  }
+
+  return `${config.API_URL}/window/${windowId}${
+    documentId ? `/${documentId}` : ''
+  }${rowId && tabId ? `/${tabId}/${rowId}` : ''}/${path}`;
+};
+
+/**
+ * Formats the url for the api call
+ */
+export function formatParentUrl({ windowId, docId, rowId, target }) {
+  let parentUrl;
+  switch (target) {
+    case 'comments':
+      parentUrl = getAPIUrl({
+        windowId,
+        docId,
+        tabId: null,
+        rowId,
+        path: target,
+      });
+      break;
+    default:
+      parentUrl = null;
+      break;
+  }
+  return parentUrl;
+}
+
 export function startProcess(processType, pinstanceId) {
   return get(`${config.API_URL}/process/${processType}/${pinstanceId}/start`);
 }

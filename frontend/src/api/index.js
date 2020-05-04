@@ -7,6 +7,7 @@ import {
   getTab,
   startProcess,
   getProcessData,
+  formatParentUrl,
 } from './window';
 import {
   getData,
@@ -76,4 +77,5 @@ export {
   getUserLang,
   setUserLang,
   getAvailableLang,
+  formatParentUrl,
 };

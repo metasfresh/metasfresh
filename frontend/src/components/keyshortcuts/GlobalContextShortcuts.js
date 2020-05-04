@@ -14,6 +14,7 @@ export default class GlobalContextShortcuts extends Component {
     handleDocStatusToggle: PropTypes.func,
     handleEditModeToggle: PropTypes.func,
     handleEmail: PropTypes.func,
+    handleComments: PropTypes.func,
     handleInboxToggle: PropTypes.func,
     handleLetter: PropTypes.func,
     handleMenuOverlay: PropTypes.func,
@@ -124,6 +125,13 @@ export default class GlobalContextShortcuts extends Component {
       event.preventDefault();
 
       this.props.closeOverlays('dropdown', this.props.handleDocStatusToggle);
+    },
+    OPEN_COMMENTS: (event) => {
+      event.preventDefault();
+
+      this.props.handleComments();
+
+      return true;
     },
     TOGGLE_EDIT_MODE: (event) => {
       event.preventDefault();
@@ -255,6 +263,11 @@ export default class GlobalContextShortcuts extends Component {
         key="TOGGLE_EDIT_MODE"
         name="TOGGLE_EDIT_MODE"
         handler={this.handlers.TOGGLE_EDIT_MODE}
+      />,
+      <Shortcut
+        key="OPEN_COMMENTS"
+        name="OPEN_COMMENTS"
+        handler={this.handlers.OPEN_COMMENTS}
       />,
       <Shortcut
         key="TEXT_START"

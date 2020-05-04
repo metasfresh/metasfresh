@@ -14,7 +14,7 @@ public class X_S_ExternalProjectReference extends org.compiere.model.PO implemen
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1872304532L;
+	private static final long serialVersionUID = -1917811340L;
 
     /** Standard Constructor */
     public X_S_ExternalProjectReference (Properties ctx, int S_ExternalProjectReference_ID, String trxName)
@@ -27,6 +27,7 @@ public class X_S_ExternalProjectReference extends org.compiere.model.PO implemen
 			setExternalSystem (null);
 			setProjectType (null);
 			setS_ExternalProjectReference_ID (0);
+			setSeqNo (0); // 0
         } */
     }
 
@@ -176,8 +177,8 @@ public class X_S_ExternalProjectReference extends org.compiere.model.PO implemen
 		return (java.lang.String)get_Value(COLUMNNAME_ProjectType);
 	}
 
-	/** Set S_ExternalProjectReference_ID.
-		@param S_ExternalProjectReference_ID S_ExternalProjectReference_ID	  */
+	/** Set External project reference ID.
+		@param S_ExternalProjectReference_ID External project reference ID	  */
 	@Override
 	public void setS_ExternalProjectReference_ID (int S_ExternalProjectReference_ID)
 	{
@@ -187,12 +188,34 @@ public class X_S_ExternalProjectReference extends org.compiere.model.PO implemen
 			set_ValueNoCheck (COLUMNNAME_S_ExternalProjectReference_ID, Integer.valueOf(S_ExternalProjectReference_ID));
 	}
 
-	/** Get S_ExternalProjectReference_ID.
-		@return S_ExternalProjectReference_ID	  */
+	/** Get External project reference ID.
+		@return External project reference ID	  */
 	@Override
 	public int getS_ExternalProjectReference_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_S_ExternalProjectReference_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Reihenfolge.
+		@param SeqNo 
+		Zur Bestimmung der Reihenfolge der Einträge; die kleinste Zahl kommt zuerst
+	  */
+	@Override
+	public void setSeqNo (int SeqNo)
+	{
+		set_Value (COLUMNNAME_SeqNo, Integer.valueOf(SeqNo));
+	}
+
+	/** Get Reihenfolge.
+		@return Zur Bestimmung der Reihenfolge der Einträge; die kleinste Zahl kommt zuerst
+	  */
+	@Override
+	public int getSeqNo () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_SeqNo);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
