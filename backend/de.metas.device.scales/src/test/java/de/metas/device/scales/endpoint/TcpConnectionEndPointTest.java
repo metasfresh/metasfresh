@@ -200,7 +200,12 @@ public class TcpConnectionEndPointTest
 		System.out.println("TcpConnectionEndPointTest" + ": tearDown method sets exitServerSocketThread=true for serverSocketThread to stop");
 
 		assertThat(serverSocketThread, notNullValue());
+
 		serverSocketThread.join(3000); // waiting for just three seconds, we don't want the whole build to stall
+
+		// it's weird..the jenkins console output seems to imply that the following assertThat is reached after 300ms, and not after 3000.
+		// ..let's just wait another 3secs
+		Thread.currentThread().wait(3000);
 		assertThat("TcpConnectionEndPointTest" + ": serverSocketThread did not stop within 3 seconds; serverSocketThread=" + serverSocketThread.toString(), serverSocketThread.isAlive(), is(false));
 	}
 }
