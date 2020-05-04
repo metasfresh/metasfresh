@@ -59,7 +59,7 @@ import de.metas.util.Services;
  * IMPORTANT: this copy handler is special in that it could also complete the target invoice! Make sure that it's called after the other "generic" handlers.<br>
  * Also see the javadoc of {@link IInvoiceBL#creditInvoice(de.metas.adempiere.model.I_C_Invoice, InvoiceCreditContext)}.
  */
-public class CreditMemoInvoiceCopyHandler implements IDocCopyHandler<I_C_Invoice, I_C_InvoiceLine>
+class CreditMemoInvoiceCopyHandler implements IDocCopyHandler<I_C_Invoice, I_C_InvoiceLine>
 {
 	private final InvoiceCreditContext creditCtx;
 	private final BigDecimal openAmt;

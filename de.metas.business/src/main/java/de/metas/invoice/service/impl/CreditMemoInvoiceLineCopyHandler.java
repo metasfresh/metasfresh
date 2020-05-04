@@ -36,7 +36,7 @@ import de.metas.util.Services;
  * Please move this class to <code>org.adempiere.invoice.spi.impl</code> as soon as it is registered at and invoked via {@link de.metas.document.ICopyHandlerBL}.
  * 
  */
-public class CreditMemoInvoiceLineCopyHandler implements IDocLineCopyHandler<I_C_InvoiceLine>
+class CreditMemoInvoiceLineCopyHandler implements IDocLineCopyHandler<I_C_InvoiceLine>
 {
 	private static final CreditMemoInvoiceLineCopyHandler instance = new CreditMemoInvoiceLineCopyHandler();
 

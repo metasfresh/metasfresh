@@ -13,11 +13,11 @@ package de.metas.invoice.service.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -26,32 +26,21 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.model.PlainContextAware;
 import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.util.lang.IContextAware;
-import org.compiere.util.Env;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import com.google.common.collect.ImmutableList;
 
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.adempiere.model.I_C_InvoiceLine;
-import de.metas.invoice.service.impl.InvoiceBL;
 
 public class InvoiceBLRenumberTests
 {
-
-	private AdempiereTestHelper testHelper;
-
-	private IContextAware context;
-
-	@Before
+	@BeforeEach
 	public void init()
 	{
-		testHelper = AdempiereTestHelper.get();
-		testHelper.init();
-		context = new PlainContextAware(Env.getCtx());
+		AdempiereTestHelper.get().init();
 	}
 
 	/**
@@ -64,32 +53,32 @@ public class InvoiceBLRenumberTests
 	{
 		final InvoiceBL invoiceBL = new InvoiceBL();
 
-		final I_C_Invoice invoice = InterfaceWrapperHelper.newInstance(I_C_Invoice.class, context);
+		final I_C_Invoice invoice = InterfaceWrapperHelper.newInstance(I_C_Invoice.class);
 		InterfaceWrapperHelper.save(invoice);
 
-		final I_C_InvoiceLine il1 = InterfaceWrapperHelper.newInstance(I_C_InvoiceLine.class, context);
+		final I_C_InvoiceLine il1 = InterfaceWrapperHelper.newInstance(I_C_InvoiceLine.class);
 		il1.setC_Invoice(invoice);
 		il1.setLine(10);
 		InterfaceWrapperHelper.save(il1);
 
-		final I_C_InvoiceLine il2 = InterfaceWrapperHelper.newInstance(I_C_InvoiceLine.class, context);
+		final I_C_InvoiceLine il2 = InterfaceWrapperHelper.newInstance(I_C_InvoiceLine.class);
 		il2.setC_Invoice(invoice);
 		il2.setLine(20);
 		InterfaceWrapperHelper.save(il2);
 
-		final I_C_InvoiceLine il3 = InterfaceWrapperHelper.newInstance(I_C_InvoiceLine.class, context);
+		final I_C_InvoiceLine il3 = InterfaceWrapperHelper.newInstance(I_C_InvoiceLine.class);
 		il3.setC_Invoice(invoice);
 		il3.setLine(10);
 		InterfaceWrapperHelper.save(il3);
 		invoiceBL.setHasFixedLineNumber(il3, true);
 
-		final I_C_InvoiceLine il4 = InterfaceWrapperHelper.newInstance(I_C_InvoiceLine.class, context);
+		final I_C_InvoiceLine il4 = InterfaceWrapperHelper.newInstance(I_C_InvoiceLine.class);
 		il4.setC_Invoice(invoice);
 		il4.setLine(20);
 		InterfaceWrapperHelper.save(il4);
 		invoiceBL.setHasFixedLineNumber(il4, true);
 
-		final I_C_InvoiceLine il5 = InterfaceWrapperHelper.newInstance(I_C_InvoiceLine.class, context);
+		final I_C_InvoiceLine il5 = InterfaceWrapperHelper.newInstance(I_C_InvoiceLine.class);
 		il5.setC_Invoice(invoice);
 		il5.setLine(30);
 		InterfaceWrapperHelper.save(il5);

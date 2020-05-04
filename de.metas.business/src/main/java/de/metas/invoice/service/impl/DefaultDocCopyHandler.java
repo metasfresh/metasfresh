@@ -25,6 +25,7 @@ package de.metas.invoice.service.impl;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 
+import de.metas.document.IDocCopyHandler;
 import de.metas.document.IDocLineCopyHandler;
 
 /**
@@ -33,30 +34,38 @@ import de.metas.document.IDocLineCopyHandler;
  * Please move this class to <code>org.adempiere.invoice.spi.impl</code> as soon as it is registered at and invoked via {@link de.metas.document.ICopyHandlerBL}.
  * 
  */
-public final class DefaultDocLineCopyHandler<LT> implements IDocLineCopyHandler<LT>
+final class DefaultDocCopyHandler<HT, LT> implements IDocCopyHandler<HT, LT>
 {
+	private final Class<HT> headerClass; 
 	private final Class<LT> lineClass;
-
-	public DefaultDocLineCopyHandler(Class<LT> lineClass)
+	
+	public DefaultDocCopyHandler(Class<HT> headerClass, Class<LT> lineClass)
 	{
+		this.headerClass = headerClass;
 		this.lineClass = lineClass;
 	}
 
 	@Override
-	public void copyPreliminaryValues(final LT from, final LT to)
+	public void copyPreliminaryValues(final HT from, final HT to)
 	{
 		InterfaceWrapperHelper.copyValues(from, to);
 	}
 
 	@Override
-	public void copyValues(final LT from, final LT to)
+	public void copyValues(final HT from, final HT to)
 	{
 		// nothing should happen in the default handler
 	}
 
 	@Override
-	public Class<LT> getSupportedItemsClass()
+	public IDocLineCopyHandler<LT> getDocLineCopyHandler()
 	{
-		return lineClass;
+		return new DefaultDocLineCopyHandler<>(lineClass);
+	}
+
+	@Override
+	public Class<HT> getSupportedItemsClass()
+	{
+		return headerClass;
 	}
 }
