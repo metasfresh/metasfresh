@@ -61,14 +61,4 @@ public class M_ShipmentSchedule_Recompute extends ViewBasedProcessTemplate imple
 		return MSG_OK;
 	}
 
-	@Override
-	protected void postProcess(final boolean success)
-	{
-		if (!success)
-		{
-			return;
-		}
-		
-		invalidateView();
-	}
 }

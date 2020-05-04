@@ -39,14 +39,4 @@ public class C_Invoice_Candidate_Recompute extends ViewBasedProcessTemplate impl
 		return MSG_OK;
 	}
 
-	@Override
-	protected void postProcess(final boolean success)
-	{
-		if (!success)
-		{
-			return;
-		}
-
-		invalidateView();
-	}
 }
