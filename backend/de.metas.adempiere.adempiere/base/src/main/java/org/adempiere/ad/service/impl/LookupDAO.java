@@ -489,7 +489,7 @@ public class LookupDAO implements ILookupDAO
 				+ "t.AD_Table_ID, cd.ColumnSQL as DisplayColumnSQL, "                    // 10..11
 				+ "rt.AD_Window_ID as RT_AD_Window_ID, " // 12
 				+ "t." + I_AD_Table.COLUMNNAME_IsAutocomplete // 13
-				+ "rt." + I_AD_Ref_Table.COLUMNNAME_ShowInactiveValues // 14
+				+ ", rt." + I_AD_Ref_Table.COLUMNNAME_ShowInactiveValues // 14
 				+ ", r.Name as ReferenceName"
 				// #2340 Also collect information about the ref table being a reference target
 				+ " FROM AD_Ref_Table rt"
