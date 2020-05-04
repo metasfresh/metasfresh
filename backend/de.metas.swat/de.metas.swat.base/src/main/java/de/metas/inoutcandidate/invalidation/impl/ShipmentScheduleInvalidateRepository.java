@@ -627,8 +627,17 @@ public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleIn
 		
 		if (count > 0)
 		{
+			invalidateCacheForAllShipmentSchedules();
 			UpdateInvalidShipmentSchedulesWorkpackageProcessor.schedule();
 		}
+	}
+	
+	private void invalidateCacheForAllShipmentSchedules()
+	{
+		final IModelCacheInvalidationService modelCacheInvalidationService = Services.get(IModelCacheInvalidationService.class);
+
+		final CacheInvalidateMultiRequest multiRequest = CacheInvalidateMultiRequest.allRecordsForTable(I_M_ShipmentSchedule.Table_Name);
+		modelCacheInvalidationService.invalidate(multiRequest,  ModelCacheInvalidationTiming.CHANGE);
 	}
 	
 
