@@ -205,7 +205,7 @@ public class TcpConnectionEndPointTest
 
 		// it's weird..the jenkins console output seems to imply that the following assertThat is reached after 300ms, and not after 3000.
 		// ..let's just wait another 3secs
-		Thread.currentThread().wait(3000);
+		Thread.sleep(3000);
 		assertThat("TcpConnectionEndPointTest" + ": serverSocketThread did not stop within 3 seconds; serverSocketThread=" + serverSocketThread.toString(), serverSocketThread.isAlive(), is(false));
 	}
 }
