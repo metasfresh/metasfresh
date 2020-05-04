@@ -19,7 +19,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.allocation.api.PaymentAllocationId;
 import de.metas.banking.payment.paymentallocation.service.AllocationLineCandidate.AllocationLineCandidateType;
 import de.metas.invoice.InvoiceId;
-import de.metas.invoice.invoiceProcessorServiceCompany.InvoiceProcessorServiceCompanyService;
+import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingServiceCompanyService;
 import de.metas.money.Money;
 import de.metas.util.Check;
 import de.metas.util.OptionalDeferredException;
@@ -58,7 +58,7 @@ public class PaymentAllocationBuilder
 	private boolean allowPurchaseSalesInvoiceCompensation;
 	private PayableRemainingOpenAmtPolicy payableRemainingOpenAmtPolicy = PayableRemainingOpenAmtPolicy.DO_NOTHING;
 	private boolean dryRun = false;
-	private InvoiceProcessorServiceCompanyService invoiceProcessorServiceCompanyService;
+	private InvoiceProcessingServiceCompanyService invoiceProcessingServiceCompanyService;
 
 	// Status
 	private boolean _built = false;
@@ -142,7 +142,7 @@ public class PaymentAllocationBuilder
 			return candidate;
 		}
 
-		if (invoiceProcessorServiceCompanyService == null)
+		if (invoiceProcessingServiceCompanyService == null)
 		{
 			throw new AdempiereException("Cannot process invoice fee candidates because no service was configured");
 		}
@@ -154,7 +154,7 @@ public class PaymentAllocationBuilder
 				.build();
 		Check.assumeEquals(amounts, candidate.getAmounts());
 
-		final InvoiceId serviceInvoiceId = invoiceProcessorServiceCompanyService.generateServiceInvoice(
+		final InvoiceId serviceInvoiceId = invoiceProcessingServiceCompanyService.generateServiceInvoice(
 				candidate.getInvoiceProcessingFeeCalculation(),
 				candidate.getAmounts().getInvoiceProcessingFee());
 
@@ -853,10 +853,10 @@ public class PaymentAllocationBuilder
 		return _paymentDocuments;
 	}
 
-	public PaymentAllocationBuilder invoiceProcessorServiceCompanyService(@NonNull final InvoiceProcessorServiceCompanyService invoiceProcessorServiceCompanyService)
+	public PaymentAllocationBuilder invoiceProcessingServiceCompanyService(@NonNull final InvoiceProcessingServiceCompanyService invoiceProcessingServiceCompanyService)
 	{
 		assertNotBuilt();
-		this.invoiceProcessorServiceCompanyService = invoiceProcessorServiceCompanyService;
+		this.invoiceProcessingServiceCompanyService = invoiceProcessingServiceCompanyService;
 		return this;
 	}
 }

@@ -9,7 +9,7 @@ import org.compiere.model.I_C_Order;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.invoice.InvoiceId;
-import de.metas.invoice.invoiceProcessorServiceCompany.InvoiceProcessorFeeCalculation;
+import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingFeeCalculation;
 import de.metas.lang.SOTrx;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
@@ -67,7 +67,7 @@ public class PayableDocument
 	private AllocationAmounts amountsAllocated;
 
 	@Getter
-	private InvoiceProcessorFeeCalculation invoiceProcessingFeeCalculation;
+	private InvoiceProcessingFeeCalculation invoiceProcessingFeeCalculation;
 
 	@Builder
 	private PayableDocument(
@@ -81,7 +81,7 @@ public class PayableDocument
 			//
 			@NonNull final Money openAmt,
 			@NonNull AllocationAmounts amountsToAllocate,
-			@Nullable final InvoiceProcessorFeeCalculation invoiceProcessingFeeCalculation)
+			@Nullable final InvoiceProcessingFeeCalculation invoiceProcessingFeeCalculation)
 	{
 		if (!orgId.isRegular())
 		{

@@ -1,4 +1,4 @@
-package de.metas.invoice.invoiceProcessorServiceCompany;
+package de.metas.invoice.invoiceProcessingServiceCompany;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
@@ -30,22 +30,22 @@ import lombok.Value;
  */
 
 @Value
-public class InvoiceProcessorServiceCompanyConfigId implements RepoIdAware
+public class InvoiceProcessingServiceCompanyConfigId implements RepoIdAware
 {
 	@JsonCreator
-	public static InvoiceProcessorServiceCompanyConfigId ofRepoId(final int repoId)
+	public static InvoiceProcessingServiceCompanyConfigId ofRepoId(final int repoId)
 	{
-		return new InvoiceProcessorServiceCompanyConfigId(repoId);
+		return new InvoiceProcessingServiceCompanyConfigId(repoId);
 	}
 
-	public static InvoiceProcessorServiceCompanyConfigId ofRepoIdOrNull(final int repoId)
+	public static InvoiceProcessingServiceCompanyConfigId ofRepoIdOrNull(final int repoId)
 	{
-		return repoId > 0 ? new InvoiceProcessorServiceCompanyConfigId(repoId) : null;
+		return repoId > 0 ? new InvoiceProcessingServiceCompanyConfigId(repoId) : null;
 	}
 
 	int repoId;
 
-	private InvoiceProcessorServiceCompanyConfigId(final int repoId)
+	private InvoiceProcessingServiceCompanyConfigId(final int repoId)
 	{
 		this.repoId = Check.assumeGreaterThanZero(repoId, "repoId");
 	}

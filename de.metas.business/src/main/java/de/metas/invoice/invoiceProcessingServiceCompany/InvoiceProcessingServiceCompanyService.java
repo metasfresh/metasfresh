@@ -1,4 +1,4 @@
-package de.metas.invoice.invoiceProcessorServiceCompany;
+package de.metas.invoice.invoiceProcessingServiceCompany;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 
@@ -60,9 +60,9 @@ import lombok.NonNull;
  */
 
 @Service
-public class InvoiceProcessorServiceCompanyService
+public class InvoiceProcessingServiceCompanyService
 {
-	private final InvoiceProcessorServiceCompanyConfigRepository configRepository;
+	private final InvoiceProcessingServiceCompanyConfigRepository configRepository;
 	private final MoneyService moneyService;
 
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
@@ -71,21 +71,21 @@ public class InvoiceProcessorServiceCompanyService
 	private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
-	public InvoiceProcessorServiceCompanyService(
-			@NonNull final InvoiceProcessorServiceCompanyConfigRepository configRepository,
+	public InvoiceProcessingServiceCompanyService(
+			@NonNull final InvoiceProcessingServiceCompanyConfigRepository configRepository,
 			@NonNull final MoneyService moneyService)
 	{
 		this.configRepository = configRepository;
 		this.moneyService = moneyService;
 	}
 
-	public Optional<InvoiceProcessorFeeCalculation> computeFee(@NonNull final InvoiceProcessorFeeComputeRequest request)
+	public Optional<InvoiceProcessingFeeCalculation> computeFee(@NonNull final InvoiceProcessingFeeComputeRequest request)
 	{
 		final BPartnerId customerId = request.getCustomerId();
 		final InvoiceId invoiceId = request.getInvoiceId();
 		final Amount invoiceGrandTotal = request.getInvoiceGrandTotal();
 
-		final InvoiceProcessorServiceCompanyConfig config = configRepository.getByCustomerId(customerId).orElse(null);
+		final InvoiceProcessingServiceCompanyConfig config = configRepository.getByCustomerId(customerId).orElse(null);
 		if (config == null)
 		{
 			return Optional.empty();
@@ -94,7 +94,7 @@ public class InvoiceProcessorServiceCompanyService
 		final CurrencyPrecision precision = moneyService.getStdPrecision(invoiceGrandTotal.getCurrencyCode());
 		final Amount feeAmountIncludingTax = invoiceGrandTotal.multiply(config.getFeePercentageOfGrandTotal(), precision);
 
-		return Optional.of(InvoiceProcessorFeeCalculation.builder()
+		return Optional.of(InvoiceProcessingFeeCalculation.builder()
 				.orgId(request.getOrgId())
 				.dateTrx(request.getDateTrx())
 				//
@@ -111,7 +111,7 @@ public class InvoiceProcessorServiceCompanyService
 	}
 
 	public InvoiceId generateServiceInvoice(
-			@NonNull final InvoiceProcessorFeeCalculation calculation,
+			@NonNull final InvoiceProcessingFeeCalculation calculation,
 			@Nullable final Money invoiceProcessingFeeIncludingTaxOverride)
 	{
 		trxManager.assertThreadInheritedTrxExists();

@@ -1,4 +1,4 @@
-package de.metas.invoice.invoiceProcessorServiceCompany;
+package de.metas.invoice.invoiceProcessingServiceCompany;
 
 import java.time.LocalDate;
 
@@ -34,7 +34,7 @@ import lombok.Value;
 
 @Value
 @Builder
-public class InvoiceProcessorFeeComputeRequest
+public class InvoiceProcessingFeeComputeRequest
 {
 	@NonNull
 	OrgId orgId;

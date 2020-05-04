@@ -9,7 +9,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
 
 import de.metas.bpartner.BPartnerId;
-import de.metas.invoice.invoiceProcessorServiceCompany.InvoiceProcessorFeeCalculation;
+import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingFeeCalculation;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.organization.OrgId;
@@ -52,7 +52,7 @@ public final class AllocationLineCandidate
 	private final AllocationAmounts amounts;
 	private final Money payableOverUnderAmt;
 	private final Money paymentOverUnderAmt;
-	private final InvoiceProcessorFeeCalculation invoiceProcessingFeeCalculation;
+	private final InvoiceProcessingFeeCalculation invoiceProcessingFeeCalculation;
 
 	@Builder(toBuilder = true)
 	private AllocationLineCandidate(
@@ -71,7 +71,7 @@ public final class AllocationLineCandidate
 			@NonNull final AllocationAmounts amounts,
 			@Nullable final Money payableOverUnderAmt,
 			@Nullable final Money paymentOverUnderAmt,
-			@Nullable final InvoiceProcessorFeeCalculation invoiceProcessingFeeCalculation)
+			@Nullable final InvoiceProcessingFeeCalculation invoiceProcessingFeeCalculation)
 	{
 		if (!orgId.isRegular())
 		{

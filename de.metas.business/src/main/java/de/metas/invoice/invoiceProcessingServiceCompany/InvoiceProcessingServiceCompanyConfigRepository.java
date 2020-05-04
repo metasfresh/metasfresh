@@ -1,4 +1,4 @@
-package de.metas.invoice.invoiceProcessorServiceCompany;
+package de.metas.invoice.invoiceProcessingServiceCompany;
 
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
@@ -43,12 +43,12 @@ import lombok.NonNull;
  */
 
 @Repository
-public class InvoiceProcessorServiceCompanyConfigRepository
+public class InvoiceProcessingServiceCompanyConfigRepository
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-	private final CCache<InvoiceProcessorServiceCompanyConfigId, InvoiceProcessorServiceCompanyConfig> //
-	configsById = CCache.<InvoiceProcessorServiceCompanyConfigId, InvoiceProcessorServiceCompanyConfig> builder()
+	private final CCache<InvoiceProcessingServiceCompanyConfigId, InvoiceProcessingServiceCompanyConfig> //
+	configsById = CCache.<InvoiceProcessingServiceCompanyConfigId, InvoiceProcessingServiceCompanyConfig> builder()
 			.tableName(I_InvoiceProcessingServiceCompany.Table_Name)
 			.build();
 
@@ -57,29 +57,29 @@ public class InvoiceProcessorServiceCompanyConfigRepository
 			.tableName(I_InvoiceProcessingServiceCompany_BPartnerAssignment.Table_Name)
 			.build();
 
-	public Optional<InvoiceProcessorServiceCompanyConfig> getByCustomerId(@NonNull final BPartnerId customerId)
+	public Optional<InvoiceProcessingServiceCompanyConfig> getByCustomerId(@NonNull final BPartnerId customerId)
 	{
 		return getConfigIdByCustomerId(customerId)
 				.map(this::getById)
-				.filter(InvoiceProcessorServiceCompanyConfig::isActive);
+				.filter(InvoiceProcessingServiceCompanyConfig::isActive);
 	}
 
-	private Optional<InvoiceProcessorServiceCompanyConfigId> getConfigIdByCustomerId(@NonNull final BPartnerId customerId)
+	private Optional<InvoiceProcessingServiceCompanyConfigId> getConfigIdByCustomerId(@NonNull final BPartnerId customerId)
 	{
 		final CustomerToConfigAssignmentMap customerToConfigAssignmentMap = customerToConfigAssignmentsCache.getOrLoad(0, this::retrieveCustomerToConfigAssignmentMap);
 		return customerToConfigAssignmentMap.getConfigIdByCustomerId(customerId);
 	}
 
-	private InvoiceProcessorServiceCompanyConfig getById(@NonNull final InvoiceProcessorServiceCompanyConfigId configId)
+	private InvoiceProcessingServiceCompanyConfig getById(@NonNull final InvoiceProcessingServiceCompanyConfigId configId)
 	{
 		return configsById.getOrLoad(configId, this::retrieveById);
 	}
 
-	private InvoiceProcessorServiceCompanyConfig retrieveById(@NonNull final InvoiceProcessorServiceCompanyConfigId configId)
+	private InvoiceProcessingServiceCompanyConfig retrieveById(@NonNull final InvoiceProcessingServiceCompanyConfigId configId)
 	{
 		final I_InvoiceProcessingServiceCompany record = loadOutOfTrx(configId, I_InvoiceProcessingServiceCompany.class);
 
-		return InvoiceProcessorServiceCompanyConfig.builder()
+		return InvoiceProcessingServiceCompanyConfig.builder()
 				.active(record.isActive())
 				.serviceCompanyBPartnerId(BPartnerId.ofRepoId(record.getServiceCompany_BPartner_ID()))
 				.serviceInvoiceDocTypeId(DocTypeId.ofRepoId(record.getServiceInvoice_DocType_ID()))
@@ -90,14 +90,14 @@ public class InvoiceProcessorServiceCompanyConfigRepository
 
 	private CustomerToConfigAssignmentMap retrieveCustomerToConfigAssignmentMap()
 	{
-		final ImmutableMap<BPartnerId, InvoiceProcessorServiceCompanyConfigId> configIdsByCustomerId = queryBL
+		final ImmutableMap<BPartnerId, InvoiceProcessingServiceCompanyConfigId> configIdsByCustomerId = queryBL
 				.createQueryBuilder(I_InvoiceProcessingServiceCompany_BPartnerAssignment.class)
 				.addOnlyActiveRecordsFilter()
 				.create()
 				.stream()
 				.collect(ImmutableMap.toImmutableMap(
 						record -> BPartnerId.ofRepoId(record.getC_BPartner_ID()),
-						record -> InvoiceProcessorServiceCompanyConfigId.ofRepoId(record.getInvoiceProcessingServiceCompany_ID())));
+						record -> InvoiceProcessingServiceCompanyConfigId.ofRepoId(record.getInvoiceProcessingServiceCompany_ID())));
 
 		return new CustomerToConfigAssignmentMap(configIdsByCustomerId);
 	}
@@ -108,14 +108,14 @@ public class InvoiceProcessorServiceCompanyConfigRepository
 
 	private static class CustomerToConfigAssignmentMap
 	{
-		private final ImmutableMap<BPartnerId, InvoiceProcessorServiceCompanyConfigId> configIdsByCustomerId;
+		private final ImmutableMap<BPartnerId, InvoiceProcessingServiceCompanyConfigId> configIdsByCustomerId;
 
-		private CustomerToConfigAssignmentMap(@NonNull final Map<BPartnerId, InvoiceProcessorServiceCompanyConfigId> configIdsByCustomerId)
+		private CustomerToConfigAssignmentMap(@NonNull final Map<BPartnerId, InvoiceProcessingServiceCompanyConfigId> configIdsByCustomerId)
 		{
 			this.configIdsByCustomerId = ImmutableMap.copyOf(configIdsByCustomerId);
 		}
 
-		public Optional<InvoiceProcessorServiceCompanyConfigId> getConfigIdByCustomerId(@NonNull final BPartnerId customerId)
+		public Optional<InvoiceProcessingServiceCompanyConfigId> getConfigIdByCustomerId(@NonNull final BPartnerId customerId)
 		{
 			return Optional.ofNullable(configIdsByCustomerId.get(customerId));
 		}

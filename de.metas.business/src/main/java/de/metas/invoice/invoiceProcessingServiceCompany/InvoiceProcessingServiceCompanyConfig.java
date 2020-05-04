@@ -1,14 +1,9 @@
-package de.metas.invoice.invoiceProcessorServiceCompany;
-
-import java.math.BigDecimal;
-import java.time.LocalDate;
+package de.metas.invoice.invoiceProcessingServiceCompany;
 
 import de.metas.bpartner.BPartnerId;
-import de.metas.currency.Amount;
 import de.metas.document.DocTypeId;
-import de.metas.invoice.InvoiceId;
-import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
+import de.metas.util.lang.Percent;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -36,23 +31,10 @@ import lombok.Value;
  */
 
 @Value
-@Builder(toBuilder = true)
-public class InvoiceProcessorFeeCalculation
+@Builder
+public class InvoiceProcessingServiceCompanyConfig
 {
-	@NonNull
-	OrgId orgId;
-
-	@NonNull
-	LocalDate dateTrx;
-
-	@NonNull
-	BPartnerId customerId;
-
-	@NonNull
-	InvoiceId invoiceId;
-
-	@NonNull
-	Amount invoiceGrandTotal;
+	boolean active;
 
 	@NonNull
 	BPartnerId serviceCompanyBPartnerId;
@@ -64,16 +46,5 @@ public class InvoiceProcessorFeeCalculation
 	ProductId serviceFeeProductId;
 
 	@NonNull
-	Amount feeAmountIncludingTax;
-
-	public InvoiceProcessorFeeCalculation withFeeAmountIncludingTax(@NonNull final BigDecimal feeAmountIncludingTaxBD)
-	{
-		if (this.feeAmountIncludingTax.valueComparingEqualsTo(feeAmountIncludingTaxBD))
-		{
-			return this;
-		}
-
-		final Amount newFeeAmountIncludingTax = Amount.of(feeAmountIncludingTaxBD, this.feeAmountIncludingTax.getCurrencyCode());
-		return toBuilder().feeAmountIncludingTax(newFeeAmountIncludingTax).build();
-	}
+	Percent feePercentageOfGrandTotal;
 }
