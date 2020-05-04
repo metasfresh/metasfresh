@@ -32,9 +32,11 @@ public interface GithubImporterConstants
 	UomId HOUR_UOM_ID = UomId.ofRepoId(101);
 
 	@AllArgsConstructor
-	@Getter enum GitHubImporterSysConfig
+	@Getter
+	enum GitHubConfig
 	{
-		ACCESS_TOKEN("de.metas.issue.tracking.github.accessToken");
+		ACCESS_TOKEN("accessToken"),
+		LOOK_FOR_PARENT("lookForParent");
 
 		private final String name;
 	}
