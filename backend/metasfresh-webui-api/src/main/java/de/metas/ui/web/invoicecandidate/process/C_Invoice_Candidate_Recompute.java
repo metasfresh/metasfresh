@@ -48,7 +48,5 @@ public class C_Invoice_Candidate_Recompute extends ViewBasedProcessTemplate impl
 		}
 
 		invalidateView();
-
 	}
-
 }

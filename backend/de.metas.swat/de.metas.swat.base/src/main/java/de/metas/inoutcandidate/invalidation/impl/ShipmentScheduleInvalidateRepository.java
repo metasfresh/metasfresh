@@ -622,10 +622,9 @@ public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleIn
 				.execute()
 				.getRowsInserted();
 
-		logger.debug("Invalidated {} invoice candidates for {}", new Object[] { count, shipmentScheduleQuery });
+		logger.debug("Invalidated {} shipment schedules for {}", new Object[] { count, shipmentScheduleQuery });
 
-		//
-		// Schedule an update for invalidated invoice candidates
+		
 		if (count > 0)
 		{
 			UpdateInvalidShipmentSchedulesWorkpackageProcessor.schedule();

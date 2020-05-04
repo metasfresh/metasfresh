@@ -68,8 +68,7 @@ public class M_ShipmentSchedule_Recompute extends ViewBasedProcessTemplate imple
 		{
 			return;
 		}
-
+		
 		invalidateView();
-
 	}
 }
