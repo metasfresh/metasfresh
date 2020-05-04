@@ -232,6 +232,7 @@ public class BankStatementBL implements IBankStatementBL
 		bankStatementLine.setC_BPartner_ID(invoice.getC_BPartner_ID());
 		bankStatementLine.setStmtAmt(invoice.getGrandTotal());
 		bankStatementLine.setTrxAmt(invoice.getGrandTotal());
+		bankStatementLine.setC_Currency_ID(invoice.getC_Currency_ID());
 	}
 
 }
