@@ -1,10 +1,13 @@
 package de.metas.invoice.invoiceProcessorServiceCompany;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.currency.Amount;
+import de.metas.document.DocTypeId;
 import de.metas.invoice.InvoiceId;
+import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import lombok.Builder;
 import lombok.NonNull;
@@ -37,6 +40,12 @@ import lombok.Value;
 public class InvoiceProcessorFeeCalculation
 {
 	@NonNull
+	OrgId orgId;
+
+	@NonNull
+	LocalDate dateTrx;
+
+	@NonNull
 	BPartnerId customerId;
 
 	@NonNull
@@ -47,6 +56,9 @@ public class InvoiceProcessorFeeCalculation
 
 	@NonNull
 	BPartnerId serviceCompanyBPartnerId;
+
+	@NonNull
+	DocTypeId serviceInvoiceDocTypeId;
 
 	@NonNull
 	ProductId serviceFeeProductId;

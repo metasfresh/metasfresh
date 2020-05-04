@@ -9,6 +9,7 @@ import org.compiere.model.I_C_Order;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.invoice.InvoiceId;
+import de.metas.invoice.invoiceProcessorServiceCompany.InvoiceProcessorFeeCalculation;
 import de.metas.lang.SOTrx;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
@@ -65,6 +66,9 @@ public class PayableDocument
 	private AllocationAmounts amountsToAllocate;
 	private AllocationAmounts amountsAllocated;
 
+	@Getter
+	private InvoiceProcessorFeeCalculation invoiceProcessingFeeCalculation;
+
 	@Builder
 	private PayableDocument(
 			@NonNull final OrgId orgId,
@@ -76,11 +80,17 @@ public class PayableDocument
 			final boolean creditMemo,
 			//
 			@NonNull final Money openAmt,
-			@NonNull AllocationAmounts amountsToAllocate)
+			@NonNull AllocationAmounts amountsToAllocate,
+			@Nullable final InvoiceProcessorFeeCalculation invoiceProcessingFeeCalculation)
 	{
 		if (!orgId.isRegular())
 		{
 			throw new AdempiereException("Transactional organization expected: " + orgId);
+		}
+
+		if (amountsToAllocate.getInvoiceProcessingFee().signum() != 0 && invoiceProcessingFeeCalculation == null)
+		{
+			throw new AdempiereException("invoiceProcessingFeeCalculation is required when the fee is not zero");
 		}
 
 		if (invoiceId != null)
@@ -116,6 +126,8 @@ public class PayableDocument
 		this.amountsToAllocateInitial = amountsToAllocate;
 		this.amountsToAllocate = amountsToAllocate;
 		this.amountsAllocated = amountsToAllocate.toZero();
+
+		this.invoiceProcessingFeeCalculation = invoiceProcessingFeeCalculation;
 	}
 
 	public CurrencyId getCurrencyId()

@@ -1,14 +1,37 @@
 package de.metas.invoice.invoiceProcessorServiceCompany;
 
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.Optional;
 
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.I_C_Invoice;
+import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
 
+import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.bpartner.BPartnerId;
 import de.metas.currency.Amount;
+import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.CurrencyRepository;
+import de.metas.document.DocTypeId;
+import de.metas.document.engine.DocStatus;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.invoice.InvoiceId;
+import de.metas.invoice.service.IInvoiceBL;
+import de.metas.invoice.service.IInvoiceDAO;
+import de.metas.lang.SOTrx;
+import de.metas.money.CurrencyId;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
+import de.metas.product.ProductId;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*
@@ -39,6 +62,12 @@ public class InvoiceProcessorServiceCompanyService
 	private final InvoiceProcessorServiceCompanyConfigRepository configRepository;
 	private final CurrencyRepository currencyRepository;
 
+	private final ITrxManager trxManager = Services.get(ITrxManager.class);
+	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
+	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
+	private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+
 	public InvoiceProcessorServiceCompanyService(
 			@NonNull final InvoiceProcessorServiceCompanyConfigRepository configRepository,
 			@NonNull final CurrencyRepository currencyRepository)
@@ -63,14 +92,74 @@ public class InvoiceProcessorServiceCompanyService
 		final Amount feeAmountIncludingTax = invoiceGrandTotal.multiply(config.getFeePercentageOfGrandTotal(), precision);
 
 		return Optional.of(InvoiceProcessorFeeCalculation.builder()
+				.orgId(request.getOrgId())
+				.dateTrx(request.getDateTrx())
+				//
 				.customerId(customerId)
 				.invoiceId(invoiceId)
 				.invoiceGrandTotal(invoiceGrandTotal)
 				//
 				.serviceCompanyBPartnerId(config.getServiceCompanyBPartnerId())
+				.serviceInvoiceDocTypeId(config.getServiceInvoiceDocTypeId())
 				.serviceFeeProductId(config.getServiceFeeProductId())
 				.feeAmountIncludingTax(feeAmountIncludingTax)
 				//
 				.build());
+	}
+
+	public InvoiceId generateServiceInvoice(@NonNull final InvoiceProcessorFeeCalculation calculation)
+	{
+		trxManager.assertThreadInheritedTrxExists();
+
+		final OrgId orgId = calculation.getOrgId();
+		final LocalDate dateTrx = calculation.getDateTrx();
+		final @NonNull Amount invoiceProcessingFeeIncludingVAT = calculation.getFeeAmountIncludingTax();
+		final ZoneId timeZone = orgDAO.getTimeZone(orgId);
+
+		final BPartnerId serviceCompanyBPartnerId = calculation.getServiceCompanyBPartnerId();
+		final DocTypeId serviceInvoiceDocTypeId = calculation.getServiceInvoiceDocTypeId();
+		final ProductId serviceFeeProductId = calculation.getServiceFeeProductId();
+
+		//
+		// Invoice Header
+		final I_C_Invoice invoice = newInstance(I_C_Invoice.class);
+		invoice.setAD_Org_ID(orgId.getRepoId());
+		invoice.setIsSOTrx(SOTrx.PURCHASE.toBoolean());
+		invoice.setC_DocTypeTarget_ID(serviceInvoiceDocTypeId.getRepoId());
+		invoice.setDateInvoiced(TimeUtil.asTimestamp(dateTrx, timeZone));
+		invoice.setDateAcct(TimeUtil.asTimestamp(dateTrx, timeZone));
+
+		invoice.setC_BPartner_ID(serviceCompanyBPartnerId.getRepoId());
+		invoiceBL.updateFromBPartner(invoice);
+		invoice.setIsTaxIncluded(true);
+
+		final CurrencyCode invoiceCurrencyCode = currencyRepository.getCurrencyCodeById(CurrencyId.ofRepoId(invoice.getC_Currency_ID()));
+		if (!invoiceCurrencyCode.equals(invoiceProcessingFeeIncludingVAT.getCurrencyCode()))
+		{
+			throw new AdempiereException("Price List currency is not matching processing Fee currency")
+					.setParameter("invoiceProcessingFee", invoiceProcessingFeeIncludingVAT)
+					.setParameter("invoiceCurrencyCode", invoiceCurrencyCode)
+					.setParameter("M_PriceList_ID", invoice.getM_PriceList_ID())
+					.appendParametersToMessage();
+		}
+
+		invoiceDAO.save(invoice);
+
+		//
+		// Invoice Line
+		final I_C_InvoiceLine invoiceLine = newInstance(I_C_InvoiceLine.class);
+		invoiceLine.setAD_Org_ID(orgId.getRepoId());
+		invoiceLine.setC_Invoice_ID(invoice.getC_Invoice_ID());
+		invoiceBL.setProductAndUOM(invoiceLine, serviceFeeProductId);
+		invoiceLine.setQtyEntered(BigDecimal.ONE);
+		invoiceLine.setQtyInvoiced(BigDecimal.ONE);
+		invoiceLine.setIsManualPrice(true);
+		invoiceLine.setPriceEntered(invoiceProcessingFeeIncludingVAT.toBigDecimal());
+		invoiceLine.setPriceActual(invoiceProcessingFeeIncludingVAT.toBigDecimal());
+		invoiceDAO.save(invoiceLine);
+
+		documentBL.processEx(invoice, IDocument.ACTION_Complete, DocStatus.Completed.getCode());
+
+		return InvoiceId.ofRepoId(invoice.getC_Invoice_ID());
 	}
 }

@@ -7,17 +7,23 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_AllocationHdr;
+import org.compiere.model.I_C_Invoice;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.allocation.api.PaymentAllocationId;
 import de.metas.banking.payment.paymentallocation.service.AllocationLineCandidate.AllocationLineCandidateType;
+import de.metas.invoice.InvoiceId;
+import de.metas.invoice.invoiceProcessorServiceCompany.InvoiceProcessorServiceCompanyService;
 import de.metas.money.Money;
 import de.metas.util.Check;
 import de.metas.util.OptionalDeferredException;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /**
@@ -39,6 +45,7 @@ public class PaymentAllocationBuilder
 	}
 
 	// services
+	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final AllocationLineCandidateSaver candidatesSaver = new AllocationLineCandidateSaver();
 
 	// Parameters
@@ -51,6 +58,7 @@ public class PaymentAllocationBuilder
 	private boolean allowPurchaseSalesInvoiceCompensation;
 	private PayableRemainingOpenAmtPolicy payableRemainingOpenAmtPolicy = PayableRemainingOpenAmtPolicy.DO_NOTHING;
 	private boolean dryRun = false;
+	private InvoiceProcessorServiceCompanyService invoiceProcessorServiceCompanyService;
 
 	// Status
 	private boolean _built = false;
@@ -90,14 +98,7 @@ public class PaymentAllocationBuilder
 		final ImmutableSet<PaymentAllocationId> paymentAllocationIds;
 		if (!candidates.isEmpty() && !dryRun)
 		{
-			try
-			{
-				paymentAllocationIds = candidatesSaver.save(candidates);
-			}
-			catch (final Exception ex)
-			{
-				throw PaymentAllocationException.wrapIfNeeded(ex);
-			}
+			paymentAllocationIds = processCandidates(candidates);
 		}
 		else
 		{
@@ -108,6 +109,62 @@ public class PaymentAllocationBuilder
 				.candidates(candidates)
 				.fullyAllocatedCheck(fullyAllocatedCheck)
 				.paymentAllocationIds(paymentAllocationIds)
+				.build();
+	}
+
+	private ImmutableSet<PaymentAllocationId> processCandidates(final Collection<AllocationLineCandidate> candidates)
+	{
+		return trxManager.callInThreadInheritedTrx(() -> processCandidatesInTrx(candidates));
+	}
+
+	private ImmutableSet<PaymentAllocationId> processCandidatesInTrx(final Collection<AllocationLineCandidate> candidates)
+	{
+		try
+		{
+			ImmutableList<AllocationLineCandidate> candidatesEffective = ImmutableList.copyOf(candidates);
+
+			candidatesEffective = candidatesEffective.stream()
+					.map(this::processInvoiceProcessingFeeCandidate)
+					.collect(ImmutableList.toImmutableList());
+
+			return candidatesSaver.save(candidatesEffective);
+		}
+		catch (final Exception ex)
+		{
+			throw PaymentAllocationException.wrapIfNeeded(ex);
+		}
+	}
+
+	private AllocationLineCandidate processInvoiceProcessingFeeCandidate(@NonNull final AllocationLineCandidate candidate)
+	{
+		if (!AllocationLineCandidateType.InvoiceProcessingFee.equals(candidate.getType()))
+		{
+			return candidate;
+		}
+
+		if (invoiceProcessorServiceCompanyService == null)
+		{
+			throw new AdempiereException("Cannot process invoice fee candidates because no service was configured");
+		}
+
+		final AllocationAmounts amounts = AllocationAmounts.builder()
+				.discountAmt(candidate.getAmounts().getDiscountAmt())
+				.writeOffAmt(candidate.getAmounts().getWriteOffAmt())
+				.invoiceProcessingFee(candidate.getAmounts().getInvoiceProcessingFee())
+				.build();
+		Check.assumeEquals(amounts, candidate.getAmounts());
+
+		final InvoiceId serviceInvoiceId = invoiceProcessorServiceCompanyService.generateServiceInvoice(
+				candidate.getInvoiceProcessingFeeCalculation()
+						.withFeeAmountIncludingTax(candidate.getAmounts().getInvoiceProcessingFee().toBigDecimal()));
+
+		return candidate.toBuilder()
+				.type(AllocationLineCandidateType.SalesInvoiceToPurchaseInvoice)
+				.amounts(amounts.toBuilder()
+						.payAmt(amounts.getInvoiceProcessingFee())
+						.invoiceProcessingFee(null)
+						.build())
+				.paymentDocumentRef(TableRecordReference.of(I_C_Invoice.Table_Name, serviceInvoiceId))
 				.build();
 	}
 
@@ -538,28 +595,25 @@ public class PaymentAllocationBuilder
 		final ArrayList<AllocationLineCandidate> allocationLineCandidates = new ArrayList<>();
 		for (final PayableDocument payable : payableDocuments)
 		{
-			final Money invoiceProcessingFee = payable.getAmountsToAllocate().getInvoiceProcessingFee();
-			if (invoiceProcessingFee.isZero())
+			final AllocationLineCandidate allocationLine = createAllocationLineCandidate_InvoiceProcessingFee(payable);
+			if (allocationLine != null)
 			{
-				continue;
+				allocationLineCandidates.add(allocationLine);
 			}
-
-			final AllocationLineCandidate allocationLine = createAllocationLineCandidate_InvoiceProcessingFee(payable, invoiceProcessingFee);
-			allocationLineCandidates.add(allocationLine);
 		}
 
 		return allocationLineCandidates;
 	}
 
-	private AllocationLineCandidate createAllocationLineCandidate_InvoiceProcessingFee(
-			@NonNull final PayableDocument payable,
-			@NonNull final Money invoiceProcessingFee)
+	private AllocationLineCandidate createAllocationLineCandidate_InvoiceProcessingFee(@NonNull final PayableDocument payable)
 	{
-		Check.assume(!invoiceProcessingFee.isZero(), "invoiceProcessingFee shall be non zero");
-
 		final AllocationAmounts amountsToAllocate = AllocationAmounts.builder()
-				.invoiceProcessingFee(invoiceProcessingFee)
+				.invoiceProcessingFee(payable.getAmountsToAllocate().getInvoiceProcessingFee())
 				.build();
+		if (amountsToAllocate.isZero())
+		{
+			return null;
+		}
 
 		final Money payableOverUnderAmt = payable.computeProjectedOverUnderAmt(amountsToAllocate);
 		final AllocationLineCandidate allocationLine = AllocationLineCandidate.builder()
@@ -577,6 +631,7 @@ public class PaymentAllocationBuilder
 				// Amounts:
 				.amounts(amountsToAllocate)
 				.payableOverUnderAmt(payableOverUnderAmt)
+				.invoiceProcessingFeeCalculation(payable.getInvoiceProcessingFeeCalculation())
 				//
 				.build();
 
@@ -796,5 +851,12 @@ public class PaymentAllocationBuilder
 	private final List<PaymentDocument> getPaymentDocuments()
 	{
 		return _paymentDocuments;
+	}
+
+	public PaymentAllocationBuilder invoiceProcessorServiceCompanyService(@NonNull final InvoiceProcessorServiceCompanyService invoiceProcessorServiceCompanyService)
+	{
+		assertNotBuilt();
+		this.invoiceProcessorServiceCompanyService = invoiceProcessorServiceCompanyService;
+		return this;
 	}
 }

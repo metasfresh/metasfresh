@@ -9,6 +9,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.invoice.invoiceProcessorServiceCompany.InvoiceProcessorFeeCalculation;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.organization.OrgId;
@@ -51,8 +52,9 @@ public final class AllocationLineCandidate
 	private final AllocationAmounts amounts;
 	private final Money payableOverUnderAmt;
 	private final Money paymentOverUnderAmt;
+	private final InvoiceProcessorFeeCalculation invoiceProcessingFeeCalculation;
 
-	@Builder
+	@Builder(toBuilder = true)
 	private AllocationLineCandidate(
 			@NonNull final AllocationLineCandidateType type,
 			//
@@ -68,7 +70,8 @@ public final class AllocationLineCandidate
 			// Amounts
 			@NonNull final AllocationAmounts amounts,
 			@Nullable final Money payableOverUnderAmt,
-			@Nullable final Money paymentOverUnderAmt)
+			@Nullable final Money paymentOverUnderAmt,
+			@Nullable final InvoiceProcessorFeeCalculation invoiceProcessingFeeCalculation)
 	{
 		if (!orgId.isRegular())
 		{
@@ -78,10 +81,16 @@ public final class AllocationLineCandidate
 		{
 			throw new AdempiereException("payable and payment shall not be the same but there are: " + payableDocumentRef);
 		}
+
 		if (amounts.getPayAmt().signum() != 0 && paymentDocumentRef == null)
 		{
 			throw new AdempiereException("paymentDocumentRef shall be not null when amount is not zero");
 		}
+		if (amounts.getInvoiceProcessingFee().signum() != 0 && invoiceProcessingFeeCalculation == null)
+		{
+			throw new AdempiereException("invoiceProcessingFeeCalculation shall be not null when processing fee is not zero");
+		}
+
 		if (payableOverUnderAmt != null && !CurrencyId.equals(payableOverUnderAmt.getCurrencyId(), amounts.getCurrencyId()))
 		{
 			throw new AdempiereException("payableOverUnderAmt shall bave " + amounts.getCurrencyId() + ": " + payableOverUnderAmt);
@@ -106,6 +115,6 @@ public final class AllocationLineCandidate
 		this.amounts = amounts;
 		this.payableOverUnderAmt = payableOverUnderAmt != null ? payableOverUnderAmt : Money.zero(amounts.getCurrencyId());
 		this.paymentOverUnderAmt = paymentOverUnderAmt != null ? paymentOverUnderAmt : Money.zero(amounts.getCurrencyId());
-
+		this.invoiceProcessingFeeCalculation = invoiceProcessingFeeCalculation;
 	}
 }

@@ -1,8 +1,11 @@
 package de.metas.invoice.invoiceProcessorServiceCompany;
 
+import java.time.LocalDate;
+
 import de.metas.bpartner.BPartnerId;
 import de.metas.currency.Amount;
 import de.metas.invoice.InvoiceId;
+import de.metas.organization.OrgId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -33,6 +36,12 @@ import lombok.Value;
 @Builder
 public class InvoiceProcessorFeeComputeRequest
 {
+	@NonNull
+	OrgId orgId;
+
+	@NonNull
+	LocalDate dateTrx;
+
 	@NonNull
 	BPartnerId customerId;
 
