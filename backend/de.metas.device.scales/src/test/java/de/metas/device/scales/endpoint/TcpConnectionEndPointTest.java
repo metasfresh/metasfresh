@@ -129,8 +129,6 @@ public class TcpConnectionEndPointTest
 								final String anotherWrongServerReturnString = MockedEndpoint.createWeightString(new BigDecimal(weight + 10)) + ISiscCmd.SICS_CMD_TERMINATOR;
 								out.write(anotherWrongServerReturnString.getBytes(ICmd.SICS_CMD_CHARSET));
 								System.out.println("TcpConnectionEndPointTest" + ": server-socked-thread replied with anotherWrongServerReturnString=" + anotherWrongServerReturnString);
-
-								out.flush();
 							}
 						}
 						System.out.println("TcpConnectionEndPointTest" + ": server-socked-thread sees exitServerSocketThread=" + exitServerSocketThread);
