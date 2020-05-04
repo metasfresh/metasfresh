@@ -34,6 +34,8 @@ import lombok.Value;
 @Builder
 public class InvoiceProcessorServiceCompanyConfig
 {
+	boolean active;
+
 	@NonNull
 	BPartnerId serviceCompanyBPartnerId;
 

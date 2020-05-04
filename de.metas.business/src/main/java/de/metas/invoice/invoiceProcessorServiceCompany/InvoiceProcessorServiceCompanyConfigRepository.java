@@ -1,14 +1,23 @@
 package de.metas.invoice.invoiceProcessorServiceCompany;
 
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+
 import java.util.Map;
 import java.util.Optional;
 
+import org.adempiere.ad.dao.IQueryBL;
+import org.compiere.model.I_InvoiceProcessingServiceCompany;
+import org.compiere.model.I_InvoiceProcessingServiceCompany_BPartnerAssignment;
 import org.springframework.stereotype.Repository;
 
 import com.google.common.collect.ImmutableMap;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.cache.CCache;
+import de.metas.document.DocTypeId;
+import de.metas.product.ProductId;
+import de.metas.util.Services;
+import de.metas.util.lang.Percent;
 import lombok.NonNull;
 
 /*
@@ -36,20 +45,23 @@ import lombok.NonNull;
 @Repository
 public class InvoiceProcessorServiceCompanyConfigRepository
 {
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
 	private final CCache<InvoiceProcessorServiceCompanyConfigId, InvoiceProcessorServiceCompanyConfig> //
 	configsById = CCache.<InvoiceProcessorServiceCompanyConfigId, InvoiceProcessorServiceCompanyConfig> builder()
-			// TODO .tableName(tableName)
+			.tableName(I_InvoiceProcessingServiceCompany.Table_Name)
 			.build();
 
 	private final CCache<Integer, CustomerToConfigAssignmentMap> //
 	customerToConfigAssignmentsCache = CCache.<Integer, CustomerToConfigAssignmentMap> builder()
-			// TODO .tableName(tableName)
+			.tableName(I_InvoiceProcessingServiceCompany_BPartnerAssignment.Table_Name)
 			.build();
 
 	public Optional<InvoiceProcessorServiceCompanyConfig> getByCustomerId(@NonNull final BPartnerId customerId)
 	{
 		return getConfigIdByCustomerId(customerId)
-				.map(this::getById);
+				.map(this::getById)
+				.filter(InvoiceProcessorServiceCompanyConfig::isActive);
 	}
 
 	private Optional<InvoiceProcessorServiceCompanyConfigId> getConfigIdByCustomerId(@NonNull final BPartnerId customerId)
@@ -65,14 +77,29 @@ public class InvoiceProcessorServiceCompanyConfigRepository
 
 	private InvoiceProcessorServiceCompanyConfig retrieveById(@NonNull final InvoiceProcessorServiceCompanyConfigId configId)
 	{
-		// TODO: impl
-		throw new UnsupportedOperationException();
+		final I_InvoiceProcessingServiceCompany record = loadOutOfTrx(configId, I_InvoiceProcessingServiceCompany.class);
+
+		return InvoiceProcessorServiceCompanyConfig.builder()
+				.active(record.isActive())
+				.serviceCompanyBPartnerId(BPartnerId.ofRepoId(record.getServiceCompany_BPartner_ID()))
+				.serviceInvoiceDocTypeId(DocTypeId.ofRepoId(record.getServiceInvoice_DocType_ID()))
+				.serviceFeeProductId(ProductId.ofRepoId(record.getServiceFee_Product_ID()))
+				.feePercentageOfGrandTotal(Percent.of(record.getFeePercentageOfGrandTotal()))
+				.build();
 	}
 
 	private CustomerToConfigAssignmentMap retrieveCustomerToConfigAssignmentMap()
 	{
-		// TODO: impl
-		throw new UnsupportedOperationException();
+		final ImmutableMap<BPartnerId, InvoiceProcessorServiceCompanyConfigId> configIdsByCustomerId = queryBL
+				.createQueryBuilder(I_InvoiceProcessingServiceCompany_BPartnerAssignment.class)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.stream()
+				.collect(ImmutableMap.toImmutableMap(
+						record -> BPartnerId.ofRepoId(record.getC_BPartner_ID()),
+						record -> InvoiceProcessorServiceCompanyConfigId.ofRepoId(record.getInvoiceProcessingServiceCompany_ID())));
+
+		return new CustomerToConfigAssignmentMap(configIdsByCustomerId);
 	}
 
 	//
@@ -83,7 +110,7 @@ public class InvoiceProcessorServiceCompanyConfigRepository
 	{
 		private final ImmutableMap<BPartnerId, InvoiceProcessorServiceCompanyConfigId> configIdsByCustomerId;
 
-		private CustomerToConfigAssignmentMap(final Map<BPartnerId, InvoiceProcessorServiceCompanyConfigId> configIdsByCustomerId)
+		private CustomerToConfigAssignmentMap(@NonNull final Map<BPartnerId, InvoiceProcessorServiceCompanyConfigId> configIdsByCustomerId)
 		{
 			this.configIdsByCustomerId = ImmutableMap.copyOf(configIdsByCustomerId);
 		}
