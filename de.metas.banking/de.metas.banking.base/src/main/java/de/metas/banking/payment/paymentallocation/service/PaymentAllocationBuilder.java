@@ -155,8 +155,8 @@ public class PaymentAllocationBuilder
 		Check.assumeEquals(amounts, candidate.getAmounts());
 
 		final InvoiceId serviceInvoiceId = invoiceProcessorServiceCompanyService.generateServiceInvoice(
-				candidate.getInvoiceProcessingFeeCalculation()
-						.withFeeAmountIncludingTax(candidate.getAmounts().getInvoiceProcessingFee().toBigDecimal()));
+				candidate.getInvoiceProcessingFeeCalculation(),
+				candidate.getAmounts().getInvoiceProcessingFee());
 
 		return candidate.toBuilder()
 				.type(AllocationLineCandidateType.SalesInvoiceToPurchaseInvoice)

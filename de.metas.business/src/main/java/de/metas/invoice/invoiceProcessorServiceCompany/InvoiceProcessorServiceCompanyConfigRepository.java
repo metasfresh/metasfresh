@@ -1,8 +1,11 @@
 package de.metas.invoice.invoiceProcessorServiceCompany;
 
+import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.stereotype.Repository;
+
+import com.google.common.collect.ImmutableMap;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.cache.CCache;
@@ -33,8 +36,14 @@ import lombok.NonNull;
 @Repository
 public class InvoiceProcessorServiceCompanyConfigRepository
 {
-	private CCache<InvoiceProcessorServiceCompanyConfigId, InvoiceProcessorServiceCompanyConfig> //
+	private final CCache<InvoiceProcessorServiceCompanyConfigId, InvoiceProcessorServiceCompanyConfig> //
 	configsById = CCache.<InvoiceProcessorServiceCompanyConfigId, InvoiceProcessorServiceCompanyConfig> builder()
+			// TODO .tableName(tableName)
+			.build();
+
+	private final CCache<Integer, CustomerToConfigAssignmentMap> //
+	customerToConfigAssignmentsCache = CCache.<Integer, CustomerToConfigAssignmentMap> builder()
+			// TODO .tableName(tableName)
 			.build();
 
 	public Optional<InvoiceProcessorServiceCompanyConfig> getByCustomerId(@NonNull final BPartnerId customerId)
@@ -45,8 +54,8 @@ public class InvoiceProcessorServiceCompanyConfigRepository
 
 	private Optional<InvoiceProcessorServiceCompanyConfigId> getConfigIdByCustomerId(@NonNull final BPartnerId customerId)
 	{
-		// TODO: impl
-		throw new UnsupportedOperationException();
+		final CustomerToConfigAssignmentMap customerToConfigAssignmentMap = customerToConfigAssignmentsCache.getOrLoad(0, this::retrieveCustomerToConfigAssignmentMap);
+		return customerToConfigAssignmentMap.getConfigIdByCustomerId(customerId);
 	}
 
 	private InvoiceProcessorServiceCompanyConfig getById(@NonNull final InvoiceProcessorServiceCompanyConfigId configId)
@@ -58,5 +67,30 @@ public class InvoiceProcessorServiceCompanyConfigRepository
 	{
 		// TODO: impl
 		throw new UnsupportedOperationException();
+	}
+
+	private CustomerToConfigAssignmentMap retrieveCustomerToConfigAssignmentMap()
+	{
+		// TODO: impl
+		throw new UnsupportedOperationException();
+	}
+
+	//
+	//
+	//
+
+	private static class CustomerToConfigAssignmentMap
+	{
+		private final ImmutableMap<BPartnerId, InvoiceProcessorServiceCompanyConfigId> configIdsByCustomerId;
+
+		private CustomerToConfigAssignmentMap(final Map<BPartnerId, InvoiceProcessorServiceCompanyConfigId> configIdsByCustomerId)
+		{
+			this.configIdsByCustomerId = ImmutableMap.copyOf(configIdsByCustomerId);
+		}
+
+		public Optional<InvoiceProcessorServiceCompanyConfigId> getConfigIdByCustomerId(@NonNull final BPartnerId customerId)
+		{
+			return Optional.ofNullable(configIdsByCustomerId.get(customerId));
+		}
 	}
 }

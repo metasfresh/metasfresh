@@ -7,6 +7,8 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.Optional;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_Invoice;
@@ -18,7 +20,6 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.currency.Amount;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyPrecision;
-import de.metas.currency.CurrencyRepository;
 import de.metas.document.DocTypeId;
 import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
@@ -28,6 +29,8 @@ import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.lang.SOTrx;
 import de.metas.money.CurrencyId;
+import de.metas.money.Money;
+import de.metas.money.MoneyService;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
@@ -60,7 +63,7 @@ import lombok.NonNull;
 public class InvoiceProcessorServiceCompanyService
 {
 	private final InvoiceProcessorServiceCompanyConfigRepository configRepository;
-	private final CurrencyRepository currencyRepository;
+	private final MoneyService moneyService;
 
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
@@ -70,10 +73,10 @@ public class InvoiceProcessorServiceCompanyService
 
 	public InvoiceProcessorServiceCompanyService(
 			@NonNull final InvoiceProcessorServiceCompanyConfigRepository configRepository,
-			@NonNull final CurrencyRepository currencyRepository)
+			@NonNull final MoneyService moneyService)
 	{
 		this.configRepository = configRepository;
-		this.currencyRepository = currencyRepository;
+		this.moneyService = moneyService;
 	}
 
 	public Optional<InvoiceProcessorFeeCalculation> computeFee(@NonNull final InvoiceProcessorFeeComputeRequest request)
@@ -88,7 +91,7 @@ public class InvoiceProcessorServiceCompanyService
 			return Optional.empty();
 		}
 
-		final CurrencyPrecision precision = currencyRepository.getStdPrecision(invoiceGrandTotal.getCurrencyCode());
+		final CurrencyPrecision precision = moneyService.getStdPrecision(invoiceGrandTotal.getCurrencyCode());
 		final Amount feeAmountIncludingTax = invoiceGrandTotal.multiply(config.getFeePercentageOfGrandTotal(), precision);
 
 		return Optional.of(InvoiceProcessorFeeCalculation.builder()
@@ -107,14 +110,25 @@ public class InvoiceProcessorServiceCompanyService
 				.build());
 	}
 
-	public InvoiceId generateServiceInvoice(@NonNull final InvoiceProcessorFeeCalculation calculation)
+	public InvoiceId generateServiceInvoice(
+			@NonNull final InvoiceProcessorFeeCalculation calculation,
+			@Nullable final Money invoiceProcessingFeeIncludingTaxOverride)
 	{
 		trxManager.assertThreadInheritedTrxExists();
 
 		final OrgId orgId = calculation.getOrgId();
 		final LocalDate dateTrx = calculation.getDateTrx();
-		final @NonNull Amount invoiceProcessingFeeIncludingVAT = calculation.getFeeAmountIncludingTax();
 		final ZoneId timeZone = orgDAO.getTimeZone(orgId);
+
+		final Amount invoiceProcessingFeeIncludingTax;
+		if (invoiceProcessingFeeIncludingTaxOverride != null)
+		{
+			invoiceProcessingFeeIncludingTax = moneyService.toAmount(invoiceProcessingFeeIncludingTaxOverride);
+		}
+		else
+		{
+			invoiceProcessingFeeIncludingTax = calculation.getFeeAmountIncludingTax();
+		}
 
 		final BPartnerId serviceCompanyBPartnerId = calculation.getServiceCompanyBPartnerId();
 		final DocTypeId serviceInvoiceDocTypeId = calculation.getServiceInvoiceDocTypeId();
@@ -133,11 +147,12 @@ public class InvoiceProcessorServiceCompanyService
 		invoiceBL.updateFromBPartner(invoice);
 		invoice.setIsTaxIncluded(true);
 
-		final CurrencyCode invoiceCurrencyCode = currencyRepository.getCurrencyCodeById(CurrencyId.ofRepoId(invoice.getC_Currency_ID()));
-		if (!invoiceCurrencyCode.equals(invoiceProcessingFeeIncludingVAT.getCurrencyCode()))
+		final CurrencyId invoiceCurrencyId = CurrencyId.ofRepoId(invoice.getC_Currency_ID());
+		final CurrencyCode invoiceCurrencyCode = moneyService.getCurrencyCodeByCurrencyId(invoiceCurrencyId);
+		if (!invoiceCurrencyCode.equals(invoiceProcessingFeeIncludingTax.getCurrencyCode()))
 		{
 			throw new AdempiereException("Price List currency is not matching processing Fee currency")
-					.setParameter("invoiceProcessingFee", invoiceProcessingFeeIncludingVAT)
+					.setParameter("invoiceProcessingFee", invoiceProcessingFeeIncludingTax)
 					.setParameter("invoiceCurrencyCode", invoiceCurrencyCode)
 					.setParameter("M_PriceList_ID", invoice.getM_PriceList_ID())
 					.appendParametersToMessage();
@@ -154,8 +169,8 @@ public class InvoiceProcessorServiceCompanyService
 		invoiceLine.setQtyEntered(BigDecimal.ONE);
 		invoiceLine.setQtyInvoiced(BigDecimal.ONE);
 		invoiceLine.setIsManualPrice(true);
-		invoiceLine.setPriceEntered(invoiceProcessingFeeIncludingVAT.toBigDecimal());
-		invoiceLine.setPriceActual(invoiceProcessingFeeIncludingVAT.toBigDecimal());
+		invoiceLine.setPriceEntered(invoiceProcessingFeeIncludingTax.toBigDecimal());
+		invoiceLine.setPriceActual(invoiceProcessingFeeIncludingTax.toBigDecimal());
 		invoiceDAO.save(invoiceLine);
 
 		documentBL.processEx(invoice, IDocument.ACTION_Complete, DocStatus.Completed.getCode());
