@@ -75,9 +75,9 @@ import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.allocation.api.IAllocationBL;
 import de.metas.allocation.api.IAllocationDAO;
+import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
-import de.metas.bpartner.exceptions.BPartnerNoAddressException;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerBL.RetrieveContactRequest;
 import de.metas.bpartner.service.IBPartnerBL.RetrieveContactRequest.ContactType;
@@ -95,6 +95,7 @@ import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
 import de.metas.i18n.IModelTranslationMap;
 import de.metas.i18n.ITranslatableString;
+import de.metas.invoice.BPartnerInvoicingInfo;
 import de.metas.invoice.InvoiceCreditContext;
 import de.metas.invoice.InvoiceDocBaseType;
 import de.metas.invoice.InvoiceId;
@@ -106,6 +107,7 @@ import de.metas.invoice.service.IMatchInvDAO;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
 import de.metas.logging.LogManager;
+import de.metas.money.CurrencyId;
 import de.metas.order.IOrderBL;
 import de.metas.payment.PaymentRule;
 import de.metas.payment.paymentterm.PaymentTermId;
@@ -589,6 +591,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	@Override
 	public void updateFromBPartner(@NonNull final org.compiere.model.I_C_Invoice invoice)
 	{
+
 		final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(invoice.getC_BPartner_ID());
 		if (bpartnerId == null)
 		{
@@ -602,58 +605,59 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 			throw new AdempiereException("Set DateInvoiced first");
 		}
 
-		// Set Defaults
-		final IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
-		final PaymentTermId paymentTermId = bpartnerBL.getPaymentTermIdForBPartner(bpartnerId, soTrx).orElse(null);
-		if (paymentTermId != null)
-		{
-			invoice.setC_PaymentTerm_ID(paymentTermId.getRepoId());
-		}
-		final PaymentRule paymentRule = bpartnerBL.getPaymentRuleForBPartner(bpartnerId).orElse(null);
-		if (paymentRule != null)
-		{
-			invoice.setPaymentRule(paymentRule.getCode());
-		}
+		final BPartnerInvoicingInfo invoicingInfo = getBPartnerInvoicingInfo(bpartnerId, soTrx, date);
+		invoice.setC_BPartner_Location_ID(invoicingInfo.getBillBPartnerLocationId().getRepoId());
+		invoice.setAD_User_ID(invoicingInfo.getBillContactId().map(BPartnerContactId::getRepoId).orElse(-1));
 
-		//
-		// Set Location
-		final BPartnerLocationId suggestedBPLocationId = getDefaultBPartnerLocationId(bpartnerId, soTrx).orElse(null);
-		final BPartnerLocationId bpartnerLocationId;
-		if (suggestedBPLocationId != null)
-		{
-			bpartnerLocationId = suggestedBPLocationId;
-			invoice.setC_BPartner_Location_ID(bpartnerLocationId.getRepoId());
-		}
-		else
-		{
-			bpartnerLocationId = BPartnerLocationId.ofRepoIdOrNull(bpartnerId, invoice.getC_BPartner_Location_ID());
-			if (bpartnerLocationId == null)
-			{
-				final I_C_BPartner bpartner = bpartnerBL.getById(bpartnerId);
-				throw new BPartnerNoAddressException(bpartner);
-			}
-		}
+		invoicingInfo.getPaymentRule().ifPresent(paymentRule -> invoice.setPaymentRule(paymentRule.getCode()));
+		invoicingInfo.getPaymentTermId().ifPresent(paymentTermId -> invoice.setC_PaymentTerm_ID(paymentTermId.getRepoId()));
 
-		//
-		// Set Contact
-		final User contact = bpartnerBL.retrieveContactOrNull(RetrieveContactRequest.builder()
-				.onlyActive(true)
-				.contactType(ContactType.BILL_TO_DEFAULT)
-				.bpartnerId(bpartnerLocationId.getBpartnerId())
-				.bPartnerLocationId(bpartnerLocationId)
-				.ifNotFound(IfNotFound.RETURN_NULL)
-				.build());
-		invoice.setAD_User_ID(contact != null ? contact.getId().getRepoId() : -1);
-
-		//
-		// Price List
-		final I_M_PriceList priceList = getPriceList(bpartnerLocationId, soTrx, date);
-		invoice.setM_PriceList_ID(priceList.getM_PriceList_ID());
-		invoice.setC_Currency_ID(priceList.getC_Currency_ID());
-		invoice.setIsTaxIncluded(priceList.isTaxIncluded());
+		invoice.setM_PriceList_ID(invoicingInfo.getPriceListId().getRepoId());
+		invoice.setIsTaxIncluded(invoicingInfo.isTaxIncluded());
+		invoice.setC_Currency_ID(invoicingInfo.getCurrencyId().getRepoId());
 	}
 
-	private Optional<BPartnerLocationId> getDefaultBPartnerLocationId(final BPartnerId bpartnerId, final SOTrx soTrx)
+	@Override
+	public BPartnerInvoicingInfo getBPartnerInvoicingInfo(
+			@NonNull final BPartnerId bpartnerId,
+			@NonNull final SOTrx soTrx,
+			@NonNull final ZonedDateTime date)
+	{
+		final IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
+
+		final BPartnerLocationId billBPartnerLocationId = getBillBPartnerLocationId(bpartnerId, soTrx);
+		final User billContact = bpartnerBL.retrieveContactOrNull(RetrieveContactRequest.builder()
+				.onlyActive(true)
+				.contactType(ContactType.BILL_TO_DEFAULT)
+				.bpartnerId(billBPartnerLocationId.getBpartnerId())
+				.bPartnerLocationId(billBPartnerLocationId)
+				.ifNotFound(IfNotFound.RETURN_NULL)
+				.build());
+		final Optional<BPartnerContactId> billContactId = billContact != null
+				? Optional.of(BPartnerContactId.of(billContact.getBpartnerId(), billContact.getId()))
+				: Optional.empty();
+
+		final Optional<PaymentTermId> paymentTermId = bpartnerBL.getPaymentTermIdForBPartner(bpartnerId, soTrx);
+		final Optional<PaymentRule> paymentRule = bpartnerBL.getPaymentRuleForBPartner(bpartnerId);
+
+		final I_M_PriceList priceList = getPriceList(billBPartnerLocationId, soTrx, date);
+
+		return BPartnerInvoicingInfo.builder()
+				.bpartnerId(bpartnerId)
+				.billBPartnerLocationId(billBPartnerLocationId)
+				.billContactId(billContactId)
+				//
+				.paymentRule(paymentRule)
+				.paymentTermId(paymentTermId)
+				//
+				.priceListId(PriceListId.ofRepoId(priceList.getM_PriceList_ID()))
+				.taxIncluded(priceList.isTaxIncluded())
+				.currencyId(CurrencyId.ofRepoId(priceList.getC_Currency_ID()))
+				//
+				.build();
+	}
+
+	private BPartnerLocationId getBillBPartnerLocationId(final BPartnerId bpartnerId, final SOTrx soTrx)
 	{
 		final IBPartnerDAO bpartnersRepo = Services.get(IBPartnerDAO.class);
 
@@ -663,17 +667,20 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 			if ((loc.isBillTo() && soTrx.isSales())
 					|| (loc.isPayFrom() && soTrx.isPurchase()))
 			{
-				return Optional.of(BPartnerLocationId.ofRepoId(loc.getC_BPartner_ID(), loc.getC_BPartner_Location_ID()));
+				return BPartnerLocationId.ofRepoId(loc.getC_BPartner_ID(), loc.getC_BPartner_Location_ID());
 			}
 		}
 
 		if (!bpLocations.isEmpty())
 		{
 			final I_C_BPartner_Location loc = bpLocations.get(0);
-			return Optional.of(BPartnerLocationId.ofRepoId(loc.getC_BPartner_ID(), loc.getC_BPartner_Location_ID()));
+			return BPartnerLocationId.ofRepoId(loc.getC_BPartner_ID(), loc.getC_BPartner_Location_ID());
 		}
 
-		return Optional.empty();
+		throw new AdempiereException("@NotFound@ @Bill_Location_ID@")
+				.setParameter("C_BPartner_ID", bpartnerId)
+				.setParameter("SOTrx", soTrx)
+				.appendParametersToMessage();
 	}
 
 	private I_M_PriceList getPriceList(

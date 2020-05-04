@@ -25,6 +25,7 @@ package de.metas.invoice.service;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.LocalDate;
+import java.time.ZonedDateTime;
 import java.util.List;
 
 import org.adempiere.ad.dao.IQueryFilter;
@@ -37,14 +38,17 @@ import org.compiere.model.I_C_Tax;
 import org.compiere.model.X_C_DocType;
 
 import de.metas.adempiere.model.I_C_InvoiceLine;
+import de.metas.bpartner.BPartnerId;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.document.DocTypeId;
 import de.metas.document.ICopyHandler;
 import de.metas.document.ICopyHandlerBL;
 import de.metas.document.IDocCopyHandler;
 import de.metas.document.IDocLineCopyHandler;
+import de.metas.invoice.BPartnerInvoicingInfo;
 import de.metas.invoice.InvoiceCreditContext;
 import de.metas.invoice.InvoiceId;
+import de.metas.lang.SOTrx;
 import de.metas.payment.PaymentRule;
 import de.metas.product.ProductId;
 import de.metas.quantity.StockQtyAndUOMQty;
@@ -208,6 +212,11 @@ public interface IInvoiceBL extends ISingletonService
 	void setFromOrder(I_C_Invoice invoice, I_C_Order order);
 
 	void updateFromBPartner(I_C_Invoice invoice);
+
+	BPartnerInvoicingInfo getBPartnerInvoicingInfo(
+			@NonNull BPartnerId bpartnerId,
+			@NonNull SOTrx soTrx,
+			@NonNull ZonedDateTime date);
 
 	/**
 	 * Sets Target Document Type and IsSOTrx.
