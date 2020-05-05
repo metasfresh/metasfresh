@@ -31,7 +31,7 @@ Map build(final MvnConf mvnConf, final Map scmVars, final boolean forceBuild=fal
     echo "ls output >>>${vlsout}<<<<"
 
 
-    dev vgitout_temp = sh(returnStdout: true, script: "git diff --name-only HEAD~1 ${scmVars.GIT_COMMIT} .").trim()
+    def vgitout_temp = sh(returnStdout: true, script: "git diff --name-only HEAD~1 ${scmVars.GIT_COMMIT} .").trim()
     echo "git output >>>${vgitout_temp}<<<"
 
 
