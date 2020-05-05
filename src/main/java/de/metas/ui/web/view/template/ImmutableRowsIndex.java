@@ -3,7 +3,9 @@ package de.metas.ui.web.view.template;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Function;
+import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 
 import com.google.common.collect.ImmutableList;
@@ -135,6 +137,41 @@ public final class ImmutableRowsIndex<T extends IViewRow>
 		{
 			resultRows.add(rowToAdd);
 			added = true;
+		}
+
+		return new ImmutableRowsIndex<>(this.initialRowIds, resultRows);
+	}
+
+	public ImmutableRowsIndex<T> changingRow(
+			@NonNull final DocumentId rowIdToChange,
+			@NonNull final UnaryOperator<T> rowMapper)
+	{
+		final ArrayList<T> resultRows = new ArrayList<>(rowIds.size());
+		boolean changed = false;
+		for (final DocumentId rowId : this.rowIds)
+		{
+			if (rowId.equals(rowIdToChange))
+			{
+				final T row = rowsById.get(rowId);
+				final T rowChanged = rowMapper.apply(row);
+				if (Objects.equals(row, rowChanged))
+				{
+					// no change
+					return this;
+				}
+
+				resultRows.add(rowChanged);
+				changed = true;
+			}
+			else
+			{
+				resultRows.add(rowsById.get(rowId));
+			}
+		}
+
+		if (!changed)
+		{
+			return this;
 		}
 
 		return new ImmutableRowsIndex<>(this.initialRowIds, resultRows);

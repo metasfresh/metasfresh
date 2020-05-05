@@ -24,6 +24,9 @@ import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyRepository;
 import de.metas.document.IDocTypeBL;
 import de.metas.invoice.InvoiceId;
+import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingFeeCalculation;
+import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingFeeComputeRequest;
+import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingServiceCompanyService;
 import de.metas.money.CurrencyId;
 import de.metas.payment.PaymentId;
 import de.metas.ui.web.window.model.lookup.LookupDataSource;
@@ -62,13 +65,16 @@ public class PaymentAndInvoiceRowsRepo
 	private final CurrencyRepository currenciesRepo;
 	private final PaymentAllocationRepository paymentAllocationRepo;
 	private final LookupDataSource bpartnersLookup;
+	private final InvoiceProcessingServiceCompanyService invoiceProcessorServiceCompanyService;
 
 	public PaymentAndInvoiceRowsRepo(
 			@NonNull final CurrencyRepository currenciesRepo,
-			@NonNull final PaymentAllocationRepository paymentAllocationRepo)
+			@NonNull final PaymentAllocationRepository paymentAllocationRepo,
+			@NonNull final InvoiceProcessingServiceCompanyService invoiceProcessorServiceCompanyService)
 	{
 		this.currenciesRepo = currenciesRepo;
 		this.paymentAllocationRepo = paymentAllocationRepo;
+		this.invoiceProcessorServiceCompanyService = invoiceProcessorServiceCompanyService;
 		bpartnersLookup = LookupDataSourceFactory.instance.searchInTableLookup(I_C_BPartner.Table_Name);
 	}
 
@@ -129,8 +135,8 @@ public class PaymentAndInvoiceRowsRepo
 	}
 
 	private InvoiceRows retrieveInvoiceRowsByPayments(
-			final List<PaymentToAllocate> paymentsToAllocate,
-			final ZonedDateTime evaluationDate)
+			@NonNull final List<PaymentToAllocate> paymentsToAllocate,
+			@NonNull final ZonedDateTime evaluationDate)
 	{
 		final ImmutableSet<InvoiceToAllocateQuery> queries = paymentsToAllocate.stream()
 				.map(paymentToAllocate -> prepareInvoiceToAllocateQuery(paymentToAllocate)
@@ -140,7 +146,7 @@ public class PaymentAndInvoiceRowsRepo
 
 		final ImmutableList<InvoiceRow> rows = paymentAllocationRepo.retrieveInvoicesToAllocate(queries)
 				.stream()
-				.map(this::toInvoiceRow)
+				.map(invoiceToAllocate -> toInvoiceRow(invoiceToAllocate, evaluationDate))
 				.collect(ImmutableList.toImmutableList());
 
 		return InvoiceRows.builder()
@@ -161,8 +167,12 @@ public class PaymentAndInvoiceRowsRepo
 				.clientAndOrgId(paymentToAllocate.getClientAndOrgId());
 	}
 
-	private InvoiceRow toInvoiceRow(final InvoiceToAllocate invoiceToAllocate)
+	private InvoiceRow toInvoiceRow(
+			@NonNull final InvoiceToAllocate invoiceToAllocate,
+			@NonNull final ZonedDateTime evaluationDate)
 	{
+		final Optional<InvoiceProcessingFeeCalculation> serviceFee = computeServiceFee(invoiceToAllocate, evaluationDate);
+
 		return InvoiceRow.builder()
 				.invoiceId(invoiceToAllocate.getInvoiceId())
 				.clientAndOrgId(invoiceToAllocate.getClientAndOrgId())
@@ -170,12 +180,28 @@ public class PaymentAndInvoiceRowsRepo
 				.documentNo(invoiceToAllocate.getDocumentNo())
 				.dateInvoiced(invoiceToAllocate.getDateInvoiced())
 				.bpartner(bpartnersLookup.findById(invoiceToAllocate.getBpartnerId()))
-				.soTrx(invoiceToAllocate.getSoTrx())
-				.creditMemo(invoiceToAllocate.isCreditMemo())
+				.docBaseType(invoiceToAllocate.getDocBaseType())
 				.grandTotal(invoiceToAllocate.getGrandTotal())
 				.openAmt(invoiceToAllocate.getOpenAmountConverted())
 				.discountAmt(invoiceToAllocate.getDiscountAmountConverted())
+				.serviceFeeCalculation(serviceFee.orElse(null))
 				.build();
+	}
+
+	private Optional<InvoiceProcessingFeeCalculation> computeServiceFee(final InvoiceToAllocate invoiceToAllocate, final ZonedDateTime evaluationDate)
+	{
+		if (!invoiceToAllocate.getDocBaseType().isCustomerInvoice())
+		{
+			return Optional.empty();
+		}
+
+		return invoiceProcessorServiceCompanyService.computeFee(InvoiceProcessingFeeComputeRequest.builder()
+				.orgId(invoiceToAllocate.getClientAndOrgId().getOrgId())
+				.evaluationDate(evaluationDate)
+				.customerId(invoiceToAllocate.getBpartnerId())
+				.invoiceId(invoiceToAllocate.getInvoiceId())
+				.invoiceGrandTotal(invoiceToAllocate.getGrandTotal())
+				.build());
 	}
 
 	public List<InvoiceRow> getInvoiceRowsListByInvoiceId(
@@ -194,7 +220,7 @@ public class PaymentAndInvoiceRowsRepo
 
 		return paymentAllocationRepo.retrieveInvoicesToAllocate(query)
 				.stream()
-				.map(this::toInvoiceRow)
+				.map(invoiceToAllocate -> toInvoiceRow(invoiceToAllocate, evaluationDate))
 				.collect(ImmutableList.toImmutableList());
 	}
 

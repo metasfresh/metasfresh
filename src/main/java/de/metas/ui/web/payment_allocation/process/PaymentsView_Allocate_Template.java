@@ -7,17 +7,12 @@ import javax.annotation.OverridingMethodsMustInvokeSuper;
 
 import org.compiere.SpringContextHolder;
 
-import com.google.common.collect.ImmutableList;
-
-import de.metas.banking.payment.paymentallocation.service.AllocationAmounts;
-import de.metas.banking.payment.paymentallocation.service.PayableDocument;
-import de.metas.banking.payment.paymentallocation.service.PaymentAllocationBuilder;
-import de.metas.banking.payment.paymentallocation.service.PaymentDocument;
-import de.metas.money.Money;
+import de.metas.banking.payment.paymentallocation.IPaymentAllocationBL;
+import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingServiceCompanyService;
 import de.metas.money.MoneyService;
-import de.metas.ui.web.payment_allocation.InvoiceRow;
-import de.metas.ui.web.payment_allocation.PaymentRow;
-import de.metas.util.time.SystemTime;
+import de.metas.ui.web.payment_allocation.process.PaymentsViewAllocateCommand.PaymentsViewAllocateCommandBuilder;
+import de.metas.util.Services;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -44,6 +39,8 @@ import de.metas.util.time.SystemTime;
 abstract class PaymentsView_Allocate_Template extends PaymentsViewBasedProcess
 {
 	private final MoneyService moneyService = SpringContextHolder.instance.getBean(MoneyService.class);
+	private final InvoiceProcessingServiceCompanyService invoiceProcessingServiceCompanyService = SpringContextHolder.instance.getBean(InvoiceProcessingServiceCompanyService.class);
+	private final IPaymentAllocationBL paymentAllocationBL = Services.get(IPaymentAllocationBL.class);
 
 	@Override
 	protected final String doIt()
@@ -68,11 +65,13 @@ abstract class PaymentsView_Allocate_Template extends PaymentsViewBasedProcess
 	@OverridingMethodsMustInvokeSuper
 	protected PaymentAllocationBuilder preparePaymentAllocationBuilder()
 	{
-		final PaymentRow paymentRow = getSingleSelectedPaymentRowOrNull();
-		if (paymentRow == null)
-		{
-			return null;
-		}
+		final PaymentsViewAllocateCommandBuilder builder = PaymentsViewAllocateCommand.builder()
+				.moneyService(moneyService)
+				.invoiceProcessingServiceCompanyService(invoiceProcessingServiceCompanyService)
+				//
+				.paymentRow(getSingleSelectedPaymentRowOrNull())
+				.invoiceRows(getSelectedInvoiceRows())
+				.allowPurchaseSalesInvoiceCompensation(paymentAllocationBL.isPurchaseSalesInvoiceCompensationAllowed());
 
 		final List<PaymentDocument> paymentDocuments = paymentRow != null
 				? ImmutableList.of(toPaymentDocument(paymentRow))

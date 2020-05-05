@@ -64,7 +64,7 @@ public class PaymentsView_AllocateAndWriteOff extends PaymentsView_Allocate_Temp
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("not a valid selection");
 		}
-		if (result.getTotalWriteOffAmt().signum() == 0)
+		if (result.getTotalWriteOffAmtAsBigDecimal().signum() == 0)
 		{
 			// NOTE: there is other process is would allocate without writing off
 			return ProcessPreconditionsResolution.rejectWithInternalReason("nothing to write-off");
@@ -78,7 +78,7 @@ public class PaymentsView_AllocateAndWriteOff extends PaymentsView_Allocate_Temp
 	{
 		return TranslatableStrings.builder()
 				.appendADElement("WriteOffAmt").append(": ")
-				.append(result.getTotalWriteOffAmt(), DisplayType.Amount)
+				.append(result.getTotalWriteOffAmtAsBigDecimal(), DisplayType.Amount)
 				.build();
 	}
 }
