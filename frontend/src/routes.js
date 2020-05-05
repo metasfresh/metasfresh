@@ -2,13 +2,9 @@ import React from 'react';
 import { IndexRoute, NoMatch, Route } from 'react-router';
 import { push } from 'react-router-redux';
 
-import {
-  clearNotifications,
-  enableTutorial,
-  loginSuccess,
-  logoutSuccess
-} from './actions/AppActions';
-import { getResetPasswordInfo, localLoginRequest, logoutRequest } from './api';
+import { loginSuccess, logoutSuccess } from './actions/AppActions';
+import { localLoginRequest, logoutRequest, getResetPasswordInfo } from './api';
+import { clearNotifications, enableTutorial } from './actions/AppActions';
 import { createWindow } from './actions/WindowActions';
 import { setBreadcrumb } from './actions/MenuActions';
 import Translation from './components/Translation';
@@ -174,7 +170,7 @@ export const getRoutes = (store, auth, plugins) => {
   return (
     <Route path="/">
       <Route onEnter={authRequired} childRoutes={childRoutes}>
-        <IndexRoute component={Dashboard}/>
+        <IndexRoute component={Dashboard} />
       </Route>
       <Route
         path="/login"
@@ -212,8 +208,8 @@ export const getRoutes = (store, auth, plugins) => {
           />
         )}
       />
-      <Route path="/calendar" component={Calendar}/>
-      <Route path="*" component={NoMatch}/>
+      <Route path="/calendar" component={Calendar} />
+      <Route path="*" component={NoMatch} />
     </Route>
   );
 };
