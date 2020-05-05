@@ -1,0 +1,5 @@
+-- 2020-05-04T10:24:04.121Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET AD_Val_Rule_ID=145,Updated=TO_TIMESTAMP('2020-05-04 13:24:04','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=10779
+;
+

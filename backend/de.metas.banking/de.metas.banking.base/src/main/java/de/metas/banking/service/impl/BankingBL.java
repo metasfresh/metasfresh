@@ -22,24 +22,6 @@
 
 package de.metas.banking.service.impl;
 
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.GregorianCalendar;
-import java.util.List;
-
-import org.adempiere.banking.model.I_C_Invoice;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.invoice.service.IInvoiceBL;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Constants;
-import org.compiere.model.MInvoice;
-import org.compiere.model.MInvoiceLine;
-import org.compiere.model.MRecurrentPaymentHistory;
-import org.compiere.model.MRecurrentPaymentLine;
-import org.slf4j.Logger;
-
 import de.metas.banking.model.I_C_RecurrentPayment;
 import de.metas.banking.model.X_C_RecurrentPaymentLine;
 import de.metas.banking.service.IBankingBL;
@@ -52,6 +34,23 @@ import de.metas.payment.PaymentRule;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
+import org.adempiere.banking.model.I_C_Invoice;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.invoice.service.IInvoiceBL;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.Constants;
+import org.compiere.model.MInvoice;
+import org.compiere.model.MInvoiceLine;
+import org.compiere.model.MRecurrentPaymentHistory;
+import org.compiere.model.MRecurrentPaymentLine;
+import org.slf4j.Logger;
+
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.GregorianCalendar;
+import java.util.List;
 
 public class BankingBL implements IBankingBL
 {
@@ -156,7 +155,7 @@ public class BankingBL implements IBankingBL
 		invoice.setSalesRep_ID(line.getSalesRep_ID());
 		invoice.setC_PaymentTerm_ID(line.getC_PaymentTerm_ID());
 		invoice.setIsSOTrx(false); // always vendor invoice
-		
+
 		// FRESH-488: Set the payment rule 
 		final PaymentRule paymentRule = Services.get(IInvoiceBL.class).getDefaultPaymentRule();
 		invoice.setPaymentRule(paymentRule.getCode());
@@ -196,7 +195,7 @@ public class BankingBL implements IBankingBL
 	public String createBankAccountName(final org.compiere.model.I_C_BP_BankAccount bankAccount)
 	{
 		final StringBuilder name = new StringBuilder();
-		
+
 		if (bankAccount.getC_Bank_ID() > 0)
 		{
 			name.append(bankAccount.getC_Bank().getName());
@@ -206,7 +205,7 @@ public class BankingBL implements IBankingBL
 			// fallback
 			name.append(bankAccount.getA_Name());
 		}
-		
+
 		final CurrencyId currencyId = CurrencyId.ofRepoIdOrNull(bankAccount.getC_Currency_ID());
 		if (currencyId != null)
 		{
@@ -214,7 +213,7 @@ public class BankingBL implements IBankingBL
 			{
 				name.append("_");
 			}
-			
+
 			final CurrencyCode currencyCode = Services.get(ICurrencyDAO.class).getCurrencyCodeById(currencyId);
 			name.append(currencyCode.toThreeLetterCode());
 		}
