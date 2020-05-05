@@ -16,16 +16,21 @@ def build(final Map scmVars, final boolean forceBuild=false)
 		currentBuild.description="""${currentBuild.description}<br/>
 				<h2>e2e</h2>
 			"""
-		def status = sh(returnStatus: true, script: "git diff --name-only ${scmVars.GIT_PREVIOUS_SUCCESSFUL_COMMIT} ${scmVars.GIT_COMMIT} .| grep .") // see if anything at all changed in this folder
-		echo "status of git dif command=${status}"
-		if(scmVars.GIT_COMMIT && scmVars.GIT_PREVIOUS_SUCCESSFUL_COMMIT && status != 0 && !forceBuild)
-		{
-			currentBuild.description= """${currentBuild.description}<p/>
+
+    def previousCommitNotNull = scmVars.GIT_PREVIOUS_SUCCESSFUL_COMMIT ?: "HEAD~1"
+    def vgitout = sh(returnStdout: true, script: "git diff --name-only ${previousCommitNotNull} ${scmVars.GIT_COMMIT} .").trim()
+    echo "git diff output (modified files): >>>>>\n${vgitout}\n<<<<<"
+    def anyFileChanged = !vgitout.isEmpty() // see if anything at all changed in this folder
+    echo "Any file changed compared to last build: ${anyFileChanged}"
+
+    if(scmVars.GIT_COMMIT && scmVars.GIT_PREVIOUS_SUCCESSFUL_COMMIT && !anyFileChanged && !forceBuild)
+    {
+      currentBuild.description= """${currentBuild.description}<p/>
 					No changes happened in e2e.
 					"""
-			echo "no changes happened in backend; skip building backend";
-			return;
-		}
+      echo "no changes happened in e2e; skip building e2e";
+      return;
+    }
 
 		final def dateFormat = new java.text.SimpleDateFormat("yyyy-MM-dd")
 		final String currentDate = dateFormat.format(new Date())

@@ -18,7 +18,7 @@ Map build(final MvnConf mvnConf, final Map scmVars, final boolean forceBuild=fal
 
     def previousCommitNotNull = scmVars.GIT_PREVIOUS_SUCCESSFUL_COMMIT ?: "HEAD~1"
     def vgitout = sh(returnStdout: true, script: "git diff --name-only ${previousCommitNotNull} ${scmVars.GIT_COMMIT} .").trim()
-    echo "git diff output: >>>${vgitout}<<<"
+    echo "git diff output (modified files): >>>>>\n${vgitout}\n<<<<<"
     def anyFileChanged = !vgitout.isEmpty() // see if anything at all changed in this folder
 		echo "Any file changed compared to last build: ${anyFileChanged}"
 
