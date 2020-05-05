@@ -23,7 +23,7 @@ Map build(final MvnConf mvnConf, final Map scmVars, final boolean forceBuild=fal
 		"""
 
 //    vgitout = sh(returnStdout: true, script: "git diff --name-only ${scmVars.GIT_PREVIOUS_SUCCESSFUL_COMMIT} ${scmVars.GIT_COMMIT} . 2> /dev/null").trim()
-    def vgitout = sh(returnStdout: true, script: "git diff --name-only ${scmVars.GIT_PREVIOUS_SUCCESSFUL_COMMIT} ${scmVars.GIT_COMMIT} . ; exit 0").trim()
+    def vgitout = sh(returnStdout: true, script: "git diff --name-only ${scmVars.GIT_PREVIOUS_SUCCESSFUL_COMMIT} ${scmVars.GIT_COMMIT} . | exit 0").trim()
     echo "git output ${vgitout}"
     def status = !vgitout.isEmpty() // see if anything at all changed in this folder
 		echo "status of git dif command=${status} (anything changed?)"
