@@ -208,7 +208,7 @@ public class RelationTypeZoomProviderFactoryTest
 	{
 		final I_AD_Ref_Table refTable = newInstance(I_AD_Ref_Table.class);
 		refTable.setAD_Reference(reference);
-		refTable.setAD_Table(table);
+		refTable.setAD_Table_ID(table.getAD_Table_ID());
 
 		save(refTable);
 		return refTable;

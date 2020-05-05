@@ -576,8 +576,12 @@ public final class SqlLookupDescriptor implements ISqlLookupDescriptor
 					.append(DBConstants.FUNCNAME_unaccent_string).append("(").append(LookupDataSourceContext.PARAM_FilterSql).append(", 1)");
 
 			// IsActive WHERE
-			sqlWhereFinal.appendIfNotEmpty("\n AND ");
-			sqlWhereFinal.append(" /* active */ ('").append(SqlForFetchingLookupById.SQL_PARAM_ShowInactive).append("'='Y' OR ").append(tableName).append(".IsActive='Y')");
+			if (!lookupInfo.isShowInactiveValues())
+			{
+				sqlWhereFinal.appendIfNotEmpty("\n AND ");
+				sqlWhereFinal.append(" /* active */ ('").append(SqlForFetchingLookupById.SQL_PARAM_ShowInactive)
+						.append("'='Y' OR ").append(tableName).append(".IsActive='Y')");
+			}
 
 			return sqlWhereFinal.build();
 		}

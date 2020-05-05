@@ -10,8 +10,8 @@ import de.metas.jenkins.MvnConf
 
 chuckNorris()
 
-// keep the last 20 builds for master and stable, but onkly the last 5 for the rest, to preserve disk space on jenkins
-final String numberOfBuildsToKeepStr = (env.BRANCH_NAME == 'master' || env.BRANCH_NAME == 'stable') ? '50' : '20'
+// keep the last 20 builds for master and stable, but onkly the last 10 for the rest, to preserve disk space on jenkins
+final String numberOfBuildsToKeepStr = (env.BRANCH_NAME == 'master' || env.BRANCH_NAME == 'stable') ? '20' : '10'
 
 final String MF_SQL_SEED_DUMP_URL_DEFAULT = 
 	env.BRANCH_NAME == 'release' 

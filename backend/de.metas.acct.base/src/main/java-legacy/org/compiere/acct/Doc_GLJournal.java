@@ -16,17 +16,6 @@
  *****************************************************************************/
 package org.compiere.acct;
 
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_GL_Journal;
-import org.compiere.model.I_GL_JournalLine;
-import org.compiere.model.X_GL_JournalLine;
-
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.PostingType;
@@ -34,10 +23,24 @@ import de.metas.acct.doc.AcctDocContext;
 import de.metas.acct.gljournal.IGLJournalLineBL;
 import de.metas.acct.gljournal.IGLJournalLineDAO;
 import de.metas.acct.tax.ITaxAccountable;
+import de.metas.currency.CurrencyConversionContext;
+import de.metas.currency.ICurrencyBL;
+import de.metas.money.CurrencyId;
 import de.metas.quantity.Quantity;
 import de.metas.tax.api.TaxId;
 import de.metas.uom.IUOMDAO;
 import de.metas.util.Services;
+import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_GL_Journal;
+import org.compiere.model.I_GL_JournalLine;
+import org.compiere.model.X_GL_JournalLine;
+
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 
 /**
  * Post GL Journal Documents.
@@ -53,8 +56,9 @@ import de.metas.util.Services;
 public class Doc_GLJournal extends Doc<DocLine_GLJournal>
 {
 	// Services
-	private final transient IGLJournalLineDAO glJournalLineDAO = Services.get(IGLJournalLineDAO.class);
-	private final transient IGLJournalLineBL glJournalLineBL = Services.get(IGLJournalLineBL.class);
+	private final IGLJournalLineDAO glJournalLineDAO = Services.get(IGLJournalLineDAO.class);
+	private final IGLJournalLineBL glJournalLineBL = Services.get(IGLJournalLineBL.class);
+	private final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
 
 	public Doc_GLJournal(final AcctDocContext ctx)
 	{
@@ -105,7 +109,7 @@ public class Doc_GLJournal extends Doc<DocLine_GLJournal>
 		}
 
 		return docLinesAll;
-	}	// loadLines
+	}    // loadLines
 
 	/**
 	 * Regular {@link I_GL_JournalLine}.
@@ -170,7 +174,7 @@ public class Doc_GLJournal extends Doc<DocLine_GLJournal>
 	 * Account_DR	DR					TaxBaseAmt
 	 * Tax_Acct		DR					TaxAmt
 	 * </pre>
-	 *
+	 * <p>
 	 * Tax Accounting (Credit)
 	 *
 	 * <pre>
@@ -220,6 +224,7 @@ public class Doc_GLJournal extends Doc<DocLine_GLJournal>
 	{
 		final DocLine_GLJournal docLine = new DocLine_GLJournal(glJournalLine, this);
 		docLine.setC_ConversionType_ID(glJournalLine.getC_ConversionType_ID());
+		docLine.setFixedCurrencyRate(glJournalLine.getCurrencyRate());
 		docLine.setTaxId(null); // avoid setting C_Tax_ID by default
 		docLine.setAcctSchemaId(acctSchemaId);
 
@@ -228,7 +233,7 @@ public class Doc_GLJournal extends Doc<DocLine_GLJournal>
 		{
 			docLine.setQty(qty);
 		}
-		
+
 		return docLine;
 	}
 
@@ -298,12 +303,19 @@ public class Doc_GLJournal extends Doc<DocLine_GLJournal>
 					continue;
 				}
 
-				fact.createLine(line,
+				final CurrencyConversionContext currencyConversionCtx = createCurrencyConversionContext(
+						line,
+						as.getCurrencyId());
+
+				final FactLine factLine = fact.createLine(line,
 						line.getAccount(),
 						line.getCurrencyId(),
 						line.getAmtSourceDr(),
 						line.getAmtSourceCr());
-			}	// for all lines
+
+				factLine.setCurrencyConversionCtx(currencyConversionCtx);
+				factLine.convert();
+			}    // for all lines
 		}
 		else
 		{
@@ -315,5 +327,27 @@ public class Doc_GLJournal extends Doc<DocLine_GLJournal>
 		facts.add(fact);
 		return facts;
 	}   // createFact
+
+	private CurrencyConversionContext createCurrencyConversionContext(
+			@NonNull final DocLine_GLJournal line,
+			@NonNull final CurrencyId acctSchemaCurrencyId)
+	{
+		CurrencyConversionContext currencyConversionCtx = currencyBL.createCurrencyConversionContext(
+				line.getDateAcct(),
+				line.getCurrencyConversionTypeId(),
+				line.getClientId(),
+				line.getOrgId());
+
+		BigDecimal fixedCurrencyRate = line.getFixedCurrencyRate();
+		if (fixedCurrencyRate != null && fixedCurrencyRate.signum() != 0)
+		{
+			currencyConversionCtx = currencyConversionCtx.withFixedConversionRate(
+					line.getCurrencyId(),
+					acctSchemaCurrencyId,
+					fixedCurrencyRate);
+		}
+
+		return currencyConversionCtx;
+	}
 
 }   // Doc_GLJournal
