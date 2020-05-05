@@ -25,7 +25,6 @@ package de.metas.adempiere.modelvalidator;
 
 import java.math.BigDecimal;
 
-import org.adempiere.invoice.service.IInvoiceDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.MClient;
@@ -38,8 +37,9 @@ import org.slf4j.Logger;
 
 import de.metas.adempiere.exception.OrderInvoicePricesNotMatchException;
 import de.metas.adempiere.model.I_C_InvoiceLine;
-import de.metas.invoice.IInvoiceLineBL;
-import de.metas.invoice.impl.InvoiceLineBL;
+import de.metas.invoice.service.IInvoiceDAO;
+import de.metas.invoice.service.IInvoiceLineBL;
+import de.metas.invoice.service.impl.InvoiceLineBL;
 import de.metas.logging.LogManager;
 import de.metas.util.Services;
 

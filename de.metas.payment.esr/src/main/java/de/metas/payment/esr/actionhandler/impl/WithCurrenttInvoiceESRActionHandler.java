@@ -24,9 +24,10 @@ package de.metas.payment.esr.actionhandler.impl;
 
 
 import org.slf4j.Logger;
+
+import de.metas.invoice.service.IInvoiceBL;
 import de.metas.logging.LogManager;
 
-import org.adempiere.invoice.service.IInvoiceBL;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Payment;
 

@@ -27,7 +27,6 @@ import java.util.Properties;
 
 import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.Adempiere;
 import org.compiere.util.DB;
@@ -38,6 +37,7 @@ import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.service.BPartnerCreditLimitRepository;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.document.IDocTypeDAO;
+import de.metas.invoice.service.IInvoiceBL;
 import de.metas.logging.MetasfreshLastError;
 import de.metas.payment.PaymentRule;
 import de.metas.payment.paymentterm.IPaymentTermRepository;
@@ -45,10 +45,13 @@ import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.service.IPriceListBL;
 import de.metas.pricing.service.IPriceListDAO;
+import de.metas.product.IProductBL;
 import de.metas.security.IUserRolePermissions;
 import de.metas.tax.api.ITaxBL;
+import de.metas.tax.api.ITaxDAO;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.LegacyUOMConversionUtils;
+import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
@@ -281,8 +284,7 @@ public class CalloutInvoice extends CalloutEngine
 		final I_C_InvoiceLine invoiceLine = calloutField.getModel(I_C_InvoiceLine.class);
 		final I_C_Invoice invoice = invoiceLine.getC_Invoice();
 
-		final I_M_Product product = invoiceLine.getM_Product();
-		final int productID = product.getM_Product_ID();
+		final int productID = invoiceLine.getM_Product_ID();
 
 		if (productID <= 0)
 		{
@@ -354,7 +356,8 @@ public class CalloutInvoice extends CalloutEngine
 		}
 
 		// 07216: Correctly set price and product UOM.
-		invoiceLine.setC_UOM_ID(product.getC_UOM_ID());
+		final UomId uomId = Services.get(IProductBL.class).getStockUOMId(productID);
+		invoiceLine.setC_UOM_ID(uomId.getRepoId());
 
 		//
 		return tax(calloutField);
@@ -720,7 +723,8 @@ public class CalloutInvoice extends CalloutEngine
 			}
 			else
 			{
-				final I_C_Tax tax = invoiceLine.getC_Tax();
+				final ITaxDAO taxDAO = Services.get(ITaxDAO.class);
+				final I_C_Tax tax = taxDAO.getTaxByIdOrNull(invoiceLine.getC_Tax_ID());
 
 				if (tax != null)
 				{

@@ -31,7 +31,6 @@ import java.util.List;
 
 import org.adempiere.banking.model.I_C_Invoice;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Constants;
 import org.compiere.model.MInvoice;
@@ -46,6 +45,7 @@ import de.metas.banking.service.IBankingBL;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.document.engine.IDocument;
+import de.metas.invoice.service.IInvoiceBL;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
 import de.metas.payment.PaymentRule;

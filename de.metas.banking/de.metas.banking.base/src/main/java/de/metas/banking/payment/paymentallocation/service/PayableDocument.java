@@ -3,17 +3,18 @@ package de.metas.banking.payment.paymentallocation.service;
 import javax.annotation.Nullable;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Order;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.invoice.InvoiceId;
+import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingFeeCalculation;
+import de.metas.lang.SOTrx;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.order.OrderId;
-import de.metas.util.Check;
+import de.metas.organization.OrgId;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -38,13 +39,18 @@ public class PayableDocument
 	}
 
 	@Getter
+	private final OrgId orgId;
+
+	@Getter
 	private final InvoiceId invoiceId;
 	private final OrderId prepayOrderId;
 
 	@Getter
 	private final BPartnerId bpartnerId;
+	@Getter
 	private final String documentNo;
-	private final boolean isSOTrx;
+	@Getter
+	private final SOTrx soTrx;
 	@Getter
 	private final TableRecordReference reference;
 	@Getter
@@ -60,18 +66,33 @@ public class PayableDocument
 	private AllocationAmounts amountsToAllocate;
 	private AllocationAmounts amountsAllocated;
 
+	@Getter
+	private InvoiceProcessingFeeCalculation invoiceProcessingFeeCalculation;
+
 	@Builder
 	private PayableDocument(
+			@NonNull final OrgId orgId,
 			@Nullable final InvoiceId invoiceId,
 			@Nullable final OrderId prepayOrderId,
 			@Nullable final BPartnerId bpartnerId,
-			@Nullable final String documentNo,
-			final boolean isSOTrx,
+			@NonNull final String documentNo,
+			@NonNull final SOTrx soTrx,
 			final boolean creditMemo,
 			//
 			@NonNull final Money openAmt,
-			@NonNull AllocationAmounts amountsToAllocate)
+			@NonNull AllocationAmounts amountsToAllocate,
+			@Nullable final InvoiceProcessingFeeCalculation invoiceProcessingFeeCalculation)
 	{
+		if (!orgId.isRegular())
+		{
+			throw new AdempiereException("Transactional organization expected: " + orgId);
+		}
+
+		if (amountsToAllocate.getInvoiceProcessingFee().signum() != 0 && invoiceProcessingFeeCalculation == null)
+		{
+			throw new AdempiereException("invoiceProcessingFeeCalculation is required when the fee is not zero");
+		}
+
 		if (invoiceId != null)
 		{
 			this.invoiceId = invoiceId;
@@ -91,9 +112,10 @@ public class PayableDocument
 			throw new AdempiereException("Invoice or Prepay Order shall be set");
 		}
 
+		this.orgId = orgId;
 		this.bpartnerId = bpartnerId;
 		this.documentNo = documentNo;
-		this.isSOTrx = isSOTrx;
+		this.soTrx = soTrx;
 		this.creditMemo = creditMemo;
 
 		if (!CurrencyId.equals(openAmt.getCurrencyId(), amountsToAllocate.getCurrencyId()))
@@ -104,37 +126,13 @@ public class PayableDocument
 		this.amountsToAllocateInitial = amountsToAllocate;
 		this.amountsToAllocate = amountsToAllocate;
 		this.amountsAllocated = amountsToAllocate.toZero();
-	}
 
-	public String getDocumentNo()
-	{
-		if (!Check.isEmpty(documentNo, true))
-		{
-			return documentNo;
-		}
-
-		final ITableRecordReference reference = getReference();
-		if (reference != null)
-		{
-			return "<" + reference.getRecord_ID() + ">";
-		}
-
-		return "?";
+		this.invoiceProcessingFeeCalculation = invoiceProcessingFeeCalculation;
 	}
 
 	public CurrencyId getCurrencyId()
 	{
 		return getAmountsToAllocate().getCurrencyId();
-	}
-
-	public boolean isCustomerDocument()
-	{
-		return isSOTrx;
-	}
-
-	public boolean isVendorDocument()
-	{
-		return !isSOTrx;
 	}
 
 	public void addAllocatedAmounts(@NonNull final AllocationAmounts amounts)

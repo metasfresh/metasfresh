@@ -36,6 +36,7 @@ import de.metas.uom.IUOMConversionDAO;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.experimental.UtilityClass;
 
 /*
  * #%L
@@ -59,6 +60,7 @@ import lombok.NonNull;
  * #L%
  */
 
+@UtilityClass
 public final class BusinessTestHelper
 {
 	/**
@@ -70,10 +72,6 @@ public final class BusinessTestHelper
 	 * Standard in ADempiere
 	 */
 	private static final int UOM_Precision_3 = 3;
-
-	private BusinessTestHelper()
-	{
-	}
 
 	public static I_C_UOM createUomKg()
 	{
@@ -165,6 +163,33 @@ public final class BusinessTestHelper
 	{
 		final PlainCurrencyDAO currenciesRepo = (PlainCurrencyDAO)Services.get(ICurrencyDAO.class);
 		return currenciesRepo.getOrCreateByCurrencyCode(CurrencyCode.EUR).getId();
+	}
+
+	public static ProductId createProductId(final String name, final I_C_UOM uom)
+	{
+		final I_M_Product product = createProduct(name, uom);
+		return ProductId.ofRepoId(product.getM_Product_ID());
+	}
+
+	public static I_M_Product createProduct(final String name, final I_C_UOM uom)
+	{
+		final BigDecimal weightKg = null; // N/A
+		return createProduct(name, uom, weightKg);
+	}
+
+	public static I_M_Product createProduct(final String name, final UomId uomId)
+	{
+		final BigDecimal weightKg = null; // N/A
+		return createProduct(name, uomId, weightKg);
+	}
+
+	public static I_M_Product createProduct(
+			@NonNull final String name,
+			@Nullable final I_C_UOM uom,
+			@Nullable final BigDecimal weightKg)
+	{
+		final UomId uomId = uom == null ? null : UomId.ofRepoIdOrNull(uom.getC_UOM_ID());
+		return createProduct(name, uomId, weightKg);
 	}
 
 	/**

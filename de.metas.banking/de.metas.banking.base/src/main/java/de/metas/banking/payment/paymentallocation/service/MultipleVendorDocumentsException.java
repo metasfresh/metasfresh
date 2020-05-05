@@ -23,12 +23,14 @@ package de.metas.banking.payment.paymentallocation.service;
  */
 
 import java.util.Collection;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import com.google.common.collect.ImmutableList;
 
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.ITranslatableString;
-import de.metas.i18n.TranslatableStringBuilder;
 import de.metas.i18n.TranslatableStrings;
 
 /**
@@ -37,62 +39,44 @@ import de.metas.i18n.TranslatableStrings;
  * @author cg
  *
  */
+@SuppressWarnings("serial")
 public class MultipleVendorDocumentsException extends PaymentAllocationException
 {
-	private static final long serialVersionUID = 1L;
 	private static final AdMessageKey MSG = AdMessageKey.of("PaymentAllocation.CannotAllocateMultipleDocumentsException");
 
-	private final Collection<IPaymentDocument> payments;
-	private final Collection<PayableDocument> payableDocs;
+	private final ImmutableList<IPaymentDocument> payments;
+	private final ImmutableList<PayableDocument> payables;
 
-	MultipleVendorDocumentsException(final Collection<IPaymentDocument> payments, final Collection<PayableDocument> payableDocs)
+	MultipleVendorDocumentsException(
+			final Collection<IPaymentDocument> payments,
+			final Collection<PayableDocument> payables)
 	{
-		super("");
+		super();
 		this.payments = ImmutableList.copyOf(payments);
-		this.payableDocs = ImmutableList.copyOf(payableDocs);
+		this.payables = ImmutableList.copyOf(payables);
 	}
 
 	@Override
 	protected ITranslatableString buildMessage()
 	{
-		final TranslatableStringBuilder message = TranslatableStrings.builder();
+		return TranslatableStrings.builder()
+				.appendADMessage(MSG)
+				.append(toCommaSeparatedDocumentNos(payables, payments))
+				.build();
+	}
 
-		if (payments != null && !payments.isEmpty())
-		{
-			for (final IPaymentDocument payment : payments)
-			{
-				if (payment == null)
-				{
-					continue;
-				}
+	private static String toCommaSeparatedDocumentNos(
+			final List<PayableDocument> payables,
+			final List<IPaymentDocument> payments)
+	{
+		final Stream<String> paymentDocumentNos = payments.stream()
+				.map(IPaymentDocument::getDocumentNo);
 
-				if (!message.isEmpty())
-				{
-					message.append(", ");
-				}
-				message.append(payment.getDocumentNo());
-			}
-		}
+		final Stream<String> payableDocumentNos = payables.stream()
+				.map(PayableDocument::getDocumentNo);
 
-		if (payableDocs != null && !payableDocs.isEmpty())
-		{
-			for (final PayableDocument doc : payableDocs)
-			{
-				if (doc == null)
-				{
-					continue;
-				}
-
-				if (!message.isEmpty())
-				{
-					message.append(", ");
-				}
-				message.append(doc.getDocumentNo());
-			}
-		}
-
-		message.insertFirstADMessage(MSG);
-		return message.build();
+		return Stream.concat(paymentDocumentNos, payableDocumentNos)
+				.collect(Collectors.joining(", "));
 	}
 
 }

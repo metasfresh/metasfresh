@@ -36,7 +36,7 @@ import org.compiere.model.I_M_InOutLine;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.inout.IInOutBL;
-import de.metas.invoice.IMatchInvDAO;
+import de.metas.invoice.service.IMatchInvDAO;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.IInvoiceLineAggregationRequest;
 import de.metas.invoicecandidate.api.IInvoiceLineAttribute;

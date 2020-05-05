@@ -2,8 +2,6 @@ package de.metas.bpartner.product.stats.interceptor;
 
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
-import org.adempiere.invoice.service.IInvoiceBL;
-import org.adempiere.invoice.service.IInvoiceDAO;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.ModelValidator;
 import org.compiere.util.TimeUtil;
@@ -17,6 +15,8 @@ import de.metas.bpartner.product.stats.BPartnerProductStatsEventSender;
 import de.metas.bpartner.product.stats.InvoiceChangedEvent;
 import de.metas.bpartner.product.stats.InvoiceChangedEvent.ProductPrice;
 import de.metas.invoice.InvoiceId;
+import de.metas.invoice.service.IInvoiceBL;
+import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.lang.SOTrx;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;

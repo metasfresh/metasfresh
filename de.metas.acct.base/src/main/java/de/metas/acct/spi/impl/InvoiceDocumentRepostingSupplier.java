@@ -4,9 +4,8 @@ import java.sql.Timestamp;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.invoice.service.IInvoiceDAO;
-
 import de.metas.acct.spi.IDocumentRepostingSupplier;
+import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.util.Services;
 
 /*
