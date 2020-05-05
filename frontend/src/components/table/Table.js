@@ -42,6 +42,7 @@ import TablePagination from './TablePagination';
 const MOBILE_TABLE_SIZE_LIMIT = 30; // subjective number, based on empiric testing
 const isMobileOrTablet =
   currentDevice.type === 'mobile' || currentDevice.type === 'tablet';
+const DEFAULT_SELECTED = [undefined];
 
 class Table extends Component {
   _isMounted = false;
@@ -1224,7 +1225,7 @@ class Table extends Component {
                 mainTable,
                 updateDocList,
               }}
-              selected={selected || [undefined]}
+              selected={selected || DEFAULT_SELECTED}
               blur={this.closeContextMenu}
               tabId={tabId}
               deselect={this.deselectAllProducts}
@@ -1328,7 +1329,7 @@ class Table extends Component {
                 disablePaginationShortcuts,
               }}
               onChangePage={handleChangePage}
-              selected={selected || [undefined]}
+              selected={selected || DEFAULT_SELECTED}
               pageLength={pageLength}
               rowLength={rows ? rows.length : 0}
               handleSelectAll={this.selectAll}
@@ -1344,7 +1345,8 @@ class Table extends Component {
             text="Are you sure?"
             buttons={{ submit: 'Delete', cancel: 'Cancel' }}
             onCancelClick={this.handlePromptCancelClick}
-            onSubmitClick={() => this.handlePromptSubmitClick(selected)}
+            selected={selected}
+            onSubmitClick={this.handlePromptSubmitClick}
           />
         )}
 
@@ -1367,7 +1369,6 @@ class Table extends Component {
             }
             getAllLeafs={this.getAllLeafs}
             handleIndent={this.handleShortcutIndent}
-            commentsOpened={this.props.commentsOpened}
           />
         )}
 
@@ -1401,7 +1402,6 @@ const mapStateToProps = (state) => ({
       ? state.appHandler.me.language.key.includes('de')
       : false,
   activeSort: state.table ? state.table.activeSort : false,
-  commentsOpened: state.commentsPanel ? state.commentsPanel.isOpen : false,
 });
 
 const clickOutsideConfig = {
