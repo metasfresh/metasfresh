@@ -12,10 +12,22 @@ Map build(final MvnConf mvnConf, final Map scmVars, final boolean forceBuild=fal
 {
 	stage('Build frontend')
 	{
+
+    echo "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    echo "scmVars=${scmVars}"
+    echo "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+
+
 		currentBuild.description="""${currentBuild.description}<br/>
 			<h2>Frontend</h2>
 		"""
-		def status = sh(returnStatus: true, script: "git diff --name-only ${scmVars.GIT_PREVIOUS_SUCCESSFUL_COMMIT} ${scmVars.GIT_COMMIT} .| grep .") // see if anything at all changed in this folder
+		def status = sh(returnStatus: true, script: """
+    vgitout=\$(git diff --name-only ${scmVars.GIT_PREVIOUS_SUCCESSFUL_COMMIT} ${scmVars.GIT_COMMIT} .)
+    echo "git exit code" \$?
+    (grep .) <<< "$vgitout"
+    echo "grep exit code" \$?
+    (grep .) <<< "$vgitout"
+    """) // see if anything at all changed in this folder
 		echo "status of git dif command=${status}"
 		if(scmVars.GIT_COMMIT && scmVars.GIT_PREVIOUS_SUCCESSFUL_COMMIT && status != 0 && !forceBuild)
 		{
