@@ -33,7 +33,6 @@ import de.metas.payment.api.IPaymentBL;
 import de.metas.util.Services;
 import lombok.Getter;
 import lombok.NonNull;
-import lombok.Setter;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BankStatementLine;
@@ -108,7 +107,6 @@ class DocLine_BankStatement extends DocLine<Doc_BankStatement>
 	private final BigDecimal m_InterestAmt;
 
 	@Getter
-	@Setter
 	private final BigDecimal fixedCurrencyRate;
 
 	public final List<BankStatementLineReference> getReferences()
