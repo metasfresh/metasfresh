@@ -1,86 +1,73 @@
-<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
-		<artifactId>de.metas.parent</artifactId>
+		<artifactId>de.metas.parent.general</artifactId>
 		<groupId>de.metas</groupId>
-		<version>[1,10.0.0]</version>
+		<version>[1,10.0.0]</version> <!-- we need the range during the jenkins build -->
+		<relativePath>../../metasfresh-parent/pom.xml</relativePath>
 	</parent>
 
-	<groupId>de.metas.dist</groupId>
-	<artifactId>metasfresh-dist</artifactId>
+	<groupId>de.metas.metasfresh-distribution</groupId>
+	<artifactId>metasfresh-distribution</artifactId>
+	<version>10.0.0</version>
 	<packaging>pom</packaging>
 
-	<!-- FRESH-271: we need an explicit version here, otherwise versions-maven-plugin can't set it to another version -->
-	<version>10.0.0</version>
-
-	<modules>
-		<!-- note: we can't use e.g.
-		<module>${project.groupId}.base</module>
-		In here, because the versions-maven-plugin doesn't resolve them when we run its set goal.
-		There are probably ways to replace the property with its hardcoded string, but I'm not exploring them now
+	<properties>
+		<!--
+		The following *.version properties are changed by the build system via mvn versions:update-property.
+		See http://www.mojohaus.org/versions-maven-plugin/examples/update-properties.html
+		and http://stackoverflow.com/questions/3628471/maven-versions-plugin-not-picking-up-properties-from-parent
 		-->
-		<module>base</module>
-		<module>serverRoot</module>
-		<module>swingui</module>
-		<module>dist</module>
-	</modules>
+		<!-- 10.0.0 is the version that is build and installed to our local repo bei eclipse or if we run maven from the command line -->
+		<metasfresh.version>[1,10.0.0]</metasfresh.version>
+		<metasfresh-procurement-webui.version>[1,10.0.0]</metasfresh-procurement-webui.version>
+		<metasfresh-admin.version>[1,10.0.0]</metasfresh-admin.version>
+		<metasfresh-webui-frontend.version>[1,10.0.0]</metasfresh-webui-frontend.version>
+	</properties>
+
+	<dependencies>
+<!--
+We used to just get many of the following deployables with the dependencies-plugin's copy goal, but there we need to give a version.
+Ranges are not allowed.
+Since we now work with a range, we now declare the dependencies here where ranges can be resolved, and can then further down use the copy-dependencies goal instead of the copy goal.
+-->
+		<dependency>
+			<groupId>de.metas.dist</groupId>
+			<artifactId>metasfresh-dist-dist</artifactId>
+			<version>${metasfresh.version}</version>
+			<type>tar.gz</type>
+			<classifier>dist</classifier>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.ui.web</groupId>
+			<artifactId>metasfresh-webui-frontend</artifactId>
+			<version>${metasfresh-webui-frontend.version}</version>
+			<type>tar.gz</type>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.procurement</groupId>
+			<artifactId>de.metas.procurement.webui</artifactId>
+			<version>${metasfresh-procurement-webui.version}</version>
+			<type>jar</type>
+		</dependency>
+
+		<!-- https://github.com/metasfresh/metasfresh/issues/1471 -->
+		<dependency>
+			<groupId>de.metas.admin</groupId>
+			<artifactId>metasfresh-admin</artifactId>
+			<version>${metasfresh-admin.version}</version>
+			<type>jar</type>
+			<scope>provided</scope> <!-- we need this dependency here to update the version property-->
+		</dependency>
+	
+	</dependencies>
 
 	<build>
 		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-enforcer-plugin</artifactId>
-
-				<configuration>
-					<rules>
-						<banDuplicateClasses>
-							<dependencies>
-								<!--
-									do not check this dependency, because the endcustomer allInOne-jar contains
-									all the classes that are also its dependencies
-								-->
-								<dependency>
-									<groupId>${project.groupId}</groupId>
-									<artifactId>${project.groupId}.base</artifactId>
-									<ignoreClasses>
-										<ignoreClass>*</ignoreClass>
-									</ignoreClasses>
-								</dependency>
-								<dependency>
-									<groupId>de.metas.migration</groupId>
-									<artifactId>de.metas.migration.cli</artifactId>
-									<ignoreClasses>
-										<ignoreClass>*</ignoreClass>
-									</ignoreClasses>
-								</dependency>
-
-								<dependency>
-									<groupId>${project.groupId}</groupId>
-									<artifactId>${project.groupId}*</artifactId>
-									<ignoreClasses>
-										<ignoreClass>org.springframework.boot.loader.*</ignoreClass>
-									</ignoreClasses>
-								</dependency>
-
-								<!-- see also https://www.elastic.co/blog/to-shade-or-not-to-shade -->
-								<!-- seems as if we need to repeat stuff from the parent pom :-( -->
-								<dependency>
-									<groupId>org.elasticsearch</groupId>
-									<artifactId>elasticsearch</artifactId>
-									<ignoreClasses>
-										<ignoreClass>org.joda.*</ignoreClass>
-									</ignoreClasses>
-								</dependency>
-
-							</dependencies>
-							<findAllDuplicates>true</findAllDuplicates>
-						</banDuplicateClasses>
-					</rules>
-					<fail>true</fail>
-				</configuration>
-			</plugin>
 			<!--
 			See http://www.mojohaus.org/versions-maven-plugin/examples/update-properties.html
 			Note that the property needs to be declared in the actual child poms, see http://stackoverflow.com/questions/3628471/maven-versions-plugin-not-picking-up-properties-from-parent
@@ -96,17 +83,11 @@
 							<searchReactor>false</searchReactor>
 							<autoLinkDependencies>true</autoLinkDependencies>
 						</property>
-
 						<!-- gh #968 https://github.com/metasfresh/metasfresh/issues/968
 							declare the the version properties of related artifacts which we can to set in the dist module
 						-->
 						<property>
 							<name>metasfresh-webui-frontend.version</name>
-							<searchReactor>false</searchReactor>
-							<autoLinkDependencies>true</autoLinkDependencies>
-						</property>
-						<property>
-							<name>metasfresh-webui-api.version</name>
 							<searchReactor>false</searchReactor>
 							<autoLinkDependencies>true</autoLinkDependencies>
 						</property>
@@ -126,5 +107,4 @@
 			</plugin>
 		</plugins>
 	</build>
-
 </project>
