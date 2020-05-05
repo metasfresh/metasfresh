@@ -192,7 +192,7 @@
 
 		<module>vertical-healthcare_ch</module>
 		<module>de.metas.issue.tracking.github</module>
-        
+
 		<module>metasfresh-webui-api</module>
 		<module>metasfresh-dist</module>
 
