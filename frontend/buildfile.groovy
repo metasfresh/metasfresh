@@ -21,14 +21,12 @@ Map build(final MvnConf mvnConf, final Map scmVars, final boolean forceBuild=fal
 		currentBuild.description="""${currentBuild.description}<br/>
 			<h2>Frontend</h2>
 		"""
-		def status = sh(returnStatus: true, script: """
-    vgitout=\$(git diff --name-only ${scmVars.GIT_PREVIOUS_SUCCESSFUL_COMMIT} ${scmVars.GIT_COMMIT} .)
-    echo "git exit code" \$?
-    (grep .) <<< "$vgitout"
-    echo "grep exit code" \$?
-    (grep .) <<< "$vgitout"
-    """) // see if anything at all changed in this folder
-		echo "status of git dif command=${status}"
+
+    vgitout = sh(returnStdout: true, script: "git diff --name-only ${scmVars.GIT_PREVIOUS_SUCCESSFUL_COMMIT} ${scmVars.GIT_COMMIT} . 2> /dev/null").trim()
+    echo "git output $vgitout".isEmpty()
+    def status = !vgitout.isEmpty() // see if anything at all changed in this folder
+		echo "status of git dif command=${status} (anything changed?)"
+
 		if(scmVars.GIT_COMMIT && scmVars.GIT_PREVIOUS_SUCCESSFUL_COMMIT && status != 0 && !forceBuild)
 		{
 			currentBuild.description= """${currentBuild.description}<p/>
