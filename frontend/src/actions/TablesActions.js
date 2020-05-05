@@ -16,6 +16,7 @@ function updateTable(id, data) {
 }
 
 function createTableData(rawData) {
+  // use lodash's `pick` to remove excessive data
   return {
     windowType: rawData.windowType || rawData.windowId,
     viewId: rawData.viewId,
@@ -53,12 +54,14 @@ export function updateGridTable(tableId, tableResponse) {
   };
 }
 
-export function createTabTable(tableId, tableResponse) {
+export function createTabTable(tableId, basicTableProps, tableRows) {
   return (dispatch) => {
-    console.log('createTabTable: ', tableResponse)
-    // const tableData = createTableData(tableResponse);
+    const tableData = createTableData({
+      ...basicTableProps,
+      result: tableRows,
+    });
 
-    // dispatch(createTable(tableId, tableData));
+    dispatch(createTable(tableId, tableData));
   };
 }
 

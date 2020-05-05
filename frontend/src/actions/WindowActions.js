@@ -523,16 +523,20 @@ export function deselectTableItems(ids, windowType, viewId) {
 // THUNK ACTIONS
 
 // TODO: Just a quick thunk action creator to test Tables reducer
+// but looks like this can actually replace the `initTabs`.
+/*
+ * Action creator for fetching single tab's rows
+ */
 export function fetchTab(tabId, windowType, docId) {
   return (dispatch) => {
     return getTab(tabId, windowType, docId)
       .then((response) => {
         const tableId = `${windowType}_${docId}_${tabId}`;
-        const tableData = { windowType, tabId, docId, ...response.data };
+        const tableData = { windowType, tabId, docId };
 
-        dispatch(createTabTable(tableId, tableData));
+        dispatch(createTabTable(tableId, tableData, response));
 
-        return Promise.resolve(response.data);
+        return Promise.resolve(response);
       })
       .catch((error) => {
         //show error message ?
@@ -541,6 +545,8 @@ export function fetchTab(tabId, windowType, docId) {
   };
 }
 
+// TODO: Figure out if we still need this as it looks like we can just fetch
+// tabs when they're created (in the Tab component's constructor)
 export function initTabs(layout, windowType, docId, isModal) {
   return async (dispatch) => {
     const requests = [];
@@ -706,19 +712,22 @@ export function createWindow(
           dispatch(getWindowBreadcrumb(windowId));
         }
 
-        return getLayout('window', windowId, tabId, null, null, isAdvanced)
-          .then((response) =>
-            dispatch(initLayoutSuccess(response.data, getScope(isModal)))
-          )
-          .then((response) => {
-            if (!isModal) {
-              return dispatch(
-                initTabs(response.layout.tabs, windowId, docId, isModal)
-              );
-            }
-            return Promise.resolve(null);
-          })
-          .catch((e) => Promise.reject(e));
+        return (
+          getLayout('window', windowId, tabId, null, null, isAdvanced)
+            .then((response) =>
+              dispatch(initLayoutSuccess(response.data, getScope(isModal)))
+            )
+            // TODO: looks like this can be removed ?
+            .then((response) => {
+              if (!isModal) {
+                return dispatch(
+                  initTabs(response.layout.tabs, windowId, docId, isModal)
+                );
+              }
+              return Promise.resolve(null);
+            })
+            .catch((e) => Promise.reject(e))
+        );
       }
     );
   };
