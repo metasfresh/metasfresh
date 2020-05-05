@@ -11,10 +11,13 @@ import org.compiere.model.I_C_Invoice;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.invoice.InvoiceId;
+import de.metas.ui.web.view.IEditableView.RowEditingContext;
+import de.metas.ui.web.view.template.IEditableRowsData;
 import de.metas.ui.web.view.template.IRowsData;
 import de.metas.ui.web.view.template.SynchronizedRowsIndexHolder;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
+import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import lombok.Builder;
 import lombok.NonNull;
 
@@ -40,7 +43,7 @@ import lombok.NonNull;
  * #L%
  */
 
-public class InvoiceRows implements IRowsData<InvoiceRow>
+public class InvoiceRows implements IEditableRowsData<InvoiceRow>
 {
 	public static InvoiceRows cast(final IRowsData<InvoiceRow> rows)
 	{
@@ -102,5 +105,12 @@ public class InvoiceRows implements IRowsData<InvoiceRow>
 		}
 
 		rowsHolder.compute(rows -> rows.addingRow(row));
+	}
+
+	@Override
+	public void patchRow(final RowEditingContext ctx, final List<JSONDocumentChangedEvent> fieldChangeRequests)
+	{
+		final DocumentId rowIdToChange = ctx.getRowId();
+		rowsHolder.compute(rows -> rows.changingRow(rowIdToChange, row -> InvoiceRowReducers.reduce(row, fieldChangeRequests)));
 	}
 }
