@@ -31,7 +31,6 @@ import java.util.Properties;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.apache.commons.collections4.IteratorUtils;
 import org.compiere.model.I_C_Invoice;
@@ -44,7 +43,8 @@ import org.compiere.util.Env;
 import org.compiere.util.TrxRunnable;
 import org.slf4j.Logger;
 
-import de.metas.invoice.IMatchInvDAO;
+import de.metas.invoice.service.IInvoiceBL;
+import de.metas.invoice.service.IMatchInvDAO;
 import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
 import de.metas.invoicecandidate.model.I_C_Invoice_Line_Alloc;
 import de.metas.logging.LogManager;

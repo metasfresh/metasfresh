@@ -65,6 +65,13 @@ public class PaymentDirectionTest
 	}
 
 	@Test
+	public void ofSOTrx()
+	{
+		assertThat(PaymentDirection.ofSOTrx(SOTrx.PURCHASE)).isSameAs(PaymentDirection.OUTBOUND);
+		assertThat(PaymentDirection.ofSOTrx(SOTrx.SALES)).isSameAs(PaymentDirection.INBOUND);
+	}
+
+	@Test
 	public void ofSOTrxAndCreditMemo()
 	{
 		test_ofSOTrxAndCreditMemo(PaymentDirection.OUTBOUND, SOTrx.PURCHASE, false);

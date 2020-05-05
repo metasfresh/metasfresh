@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Optional;
 
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.invoice.service.IInvoiceDAO;
 import org.compiere.model.I_C_Invoice;
 import org.springframework.stereotype.Service;
 
@@ -15,6 +14,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.document.engine.DocStatus;
 import de.metas.invoice.InvoiceId;
+import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.util.Services;

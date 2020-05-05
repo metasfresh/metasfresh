@@ -24,16 +24,15 @@ import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
-import org.adempiere.invoice.service.IInvoiceBL;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
-import org.slf4j.Logger;
 
-import de.metas.logging.LogManager;
+import de.metas.invoice.service.IInvoiceBL;
 import de.metas.logging.LogManager;
 import de.metas.tax.api.ITaxBL;
+import de.metas.tax.api.ITaxDAO;
 import de.metas.util.Services;
 
 /**
@@ -74,7 +73,9 @@ public class MInvoiceTax extends X_C_InvoiceTax
 		{
 			Object old = line.get_ValueOld(MInvoiceLine.COLUMNNAME_C_Tax_ID);
 			if (old == null)
+			{
 				return null;
+			}
 			C_Tax_ID = ((Integer)old).intValue();
 		}
 
@@ -106,7 +107,10 @@ public class MInvoiceTax extends X_C_InvoiceTax
 		}
 
 		final boolean taxIncluded = Services.get(IInvoiceBL.class).isTaxIncluded(line);
-		final I_C_Tax tax = line.getC_Tax();
+		
+		final ITaxDAO taxDAO = Services.get(ITaxDAO.class);
+		final I_C_Tax tax = taxDAO.getTaxByIdOrNull(line.getC_Tax_ID());
+
 
 		// Create New
 		retValue = new MInvoiceTax(line.getCtx(), 0, trxName);
@@ -166,7 +170,9 @@ public class MInvoiceTax extends X_C_InvoiceTax
 	private int getPrecision()
 	{
 		if (m_precision == null)
+		{
 			return 2;
+		}
 		return m_precision.intValue();
 	}	// getPrecision
 
@@ -188,7 +194,9 @@ public class MInvoiceTax extends X_C_InvoiceTax
 	protected MTax getTax()
 	{
 		if (m_tax == null)
+		{
 			m_tax = MTax.get(getCtx(), getC_Tax_ID());
+		}
 		return m_tax;
 	}	// getTax
 
@@ -243,17 +251,25 @@ public class MInvoiceTax extends X_C_InvoiceTax
 				// TaxAmt
 				BigDecimal amt = rs.getBigDecimal(2);
 				if (amt == null)
+				{
 					amt = Env.ZERO;
+				}
 				boolean isSOTrx = "Y".equals(rs.getString(3));
 				//
 				// phib [ 1702807 ]: manual tax should never be amended
 				// on line level taxes
-				if (!documentLevel && amt.signum() != 0 && !isSOTrx) 	// manually entered
+				if (!documentLevel && amt.signum() != 0 && !isSOTrx)
+				{
 					;
+				}
 				else if (documentLevel || baseAmt.signum() == 0)
+				{
 					amt = Env.ZERO;
-				else	// calculate line tax
+				}
+				else
+				{
 					amt = taxBL.calculateTax(tax, baseAmt, isTaxIncluded(), getPrecision());
+				}
 				//
 				taxAmt = taxAmt.add(amt);
 
@@ -288,9 +304,13 @@ public class MInvoiceTax extends X_C_InvoiceTax
 
 		// Set Base
 		if (isTaxIncluded())
+		{
 			setTaxBaseAmt(taxBaseAmt.subtract(taxAmt));
+		}
 		else
+		{
 			setTaxBaseAmt(taxBaseAmt);
+		}
 
 		// Deactivate InvoiceTax if there were no invoice lines matching our C_Tax_ID
 		// Active it otherwise

@@ -38,9 +38,11 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.invoice.InvoiceId;
+import de.metas.lang.SOTrx;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.order.OrderId;
+import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
@@ -63,6 +65,7 @@ public final class InvoiceRow extends AbstractAllocableDocRow implements IInvoic
 		return row instanceof IInvoiceRow ? (IInvoiceRow)row : null;
 	}
 
+	private final OrgId orgId;
 	private final int C_Invoice_ID;
 	private final int C_Order_ID;
 	private final String documentNo;
@@ -93,6 +96,7 @@ public final class InvoiceRow extends AbstractAllocableDocRow implements IInvoic
 	{
 		super();
 		// FIXME: validate: not null, etc
+		orgId = builder.orgId;
 		C_Invoice_ID = builder.C_Invoice_ID;
 		C_Order_ID = builder.C_Order_ID;
 		documentNo = builder.documentNo;
@@ -133,6 +137,11 @@ public final class InvoiceRow extends AbstractAllocableDocRow implements IInvoic
 	public void setSelected(final boolean selected)
 	{
 		this.selected = selected;
+	}
+
+	public OrgId getOrgId()
+	{
+		return orgId;
 	}
 
 	@Override
@@ -499,7 +508,7 @@ public final class InvoiceRow extends AbstractAllocableDocRow implements IInvoic
 	@Override
 	public PayableDocument copyAsPayableDocument()
 	{
-		final IInvoiceRow invoiceRow = this;
+		final InvoiceRow invoiceRow = this;
 		final InvoiceId invoiceId;
 		final OrderId prepayOrderId;
 		final boolean creditMemo;
@@ -524,10 +533,11 @@ public final class InvoiceRow extends AbstractAllocableDocRow implements IInvoic
 		final CurrencyId currencyId = currenciesRepo.getByCurrencyCode(invoiceRow.getCurrencyISOCode()).getId();
 
 		return PayableDocument.builder()
+				.orgId(invoiceRow.getOrgId())
 				.invoiceId(invoiceId)
 				.prepayOrderId(prepayOrderId)
 				.bpartnerId(BPartnerId.ofRepoIdOrNull(invoiceRow.getC_BPartner_ID()))
-				.isSOTrx(invoiceRow.isCustomerDocument())
+				.soTrx(SOTrx.ofBoolean(invoiceRow.isCustomerDocument()))
 				.creditMemo(creditMemo)
 				.documentNo(invoiceRow.getDocumentNo())
 				//
@@ -546,6 +556,7 @@ public final class InvoiceRow extends AbstractAllocableDocRow implements IInvoic
 	//
 	public static final class Builder
 	{
+		private OrgId orgId;
 		private int C_Invoice_ID = -1;
 		private int C_Order_ID = -1;
 		private String documentNo;
@@ -574,6 +585,12 @@ public final class InvoiceRow extends AbstractAllocableDocRow implements IInvoic
 		public InvoiceRow build()
 		{
 			return new InvoiceRow(this);
+		}
+
+		public Builder setOrgId(OrgId orgId)
+		{
+			this.orgId = orgId;
+			return this;
 		}
 
 		public Builder setC_Invoice_ID(final int C_Invoice_ID)

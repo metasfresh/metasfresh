@@ -26,7 +26,6 @@ package de.metas.payment.esr.actionhandler.impl;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
-import de.metas.banking.api.BankAccountId;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
@@ -35,6 +34,7 @@ import org.compiere.model.I_C_Payment;
 import org.compiere.util.TrxRunnable;
 
 import de.metas.allocation.api.IAllocationBL;
+import de.metas.banking.api.BankAccountId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
@@ -105,22 +105,22 @@ public class MoneyTransferedBackESRActionHandler extends AbstractESRActionHandle
 
 			// Create the allocation
 			// @formatter:off
-			Services.get(IAllocationBL.class).newBuilder(InterfaceWrapperHelper.getContextAware(line))
-					.setAD_Org_ID(line.getAD_Org_ID())
-					.setC_Currency_ID(transferBackPayment.getC_Currency_ID())
-					.setDateAcct(transferBackPayment.getDateAcct())
-					.setDateTrx(transferBackPayment.getDateTrx())
+			Services.get(IAllocationBL.class).newBuilder()
+					.orgId(line.getAD_Org_ID())
+					.currencyId(transferBackPayment.getC_Currency_ID())
+					.dateAcct(transferBackPayment.getDateAcct())
+					.dateTrx(transferBackPayment.getDateTrx())
 					.addLine()
-						.setAD_Org_ID(line.getAD_Org_ID())
-						.setC_BPartner_ID(linePayment.getC_BPartner_ID())
-						.setC_Payment_ID(linePayment.getC_Payment_ID())
-						.setAmount(transferedBackAmt)
+						.orgId(line.getAD_Org_ID())
+						.bpartnerId(linePayment.getC_BPartner_ID())
+						.paymentId(linePayment.getC_Payment_ID())
+						.amount(transferedBackAmt)
 					.lineDone()
 					.addLine()
-						.setAD_Org_ID(line.getAD_Org_ID())
-						.setC_BPartner_ID(transferBackPayment.getC_BPartner_ID())
-						.setC_Payment_ID(transferBackPayment.getC_Payment_ID())
-						.setAmount(transferedBackAmt.negate())
+						.orgId(line.getAD_Org_ID())
+						.bpartnerId(transferBackPayment.getC_BPartner_ID())
+						.paymentId(transferBackPayment.getC_Payment_ID())
+						.amount(transferedBackAmt.negate())
 					.lineDone()
 					.create(true);
 			// @formatter:on

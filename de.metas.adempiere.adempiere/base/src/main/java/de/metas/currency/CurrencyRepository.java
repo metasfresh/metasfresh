@@ -31,9 +31,10 @@ import lombok.NonNull;
 @Repository
 public class CurrencyRepository
 {
+	final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
+	
 	public Currency getById(@NonNull final CurrencyId currencyId)
 	{
-		final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
 		return currencyDAO.getById(currencyId);
 	}
 
@@ -44,7 +45,6 @@ public class CurrencyRepository
 
 	public CurrencyId getCurrencyIdByCurrencyCode(@NonNull final CurrencyCode currencyCode)
 	{
-		final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
 		final Currency currency = currencyDAO.getByCurrencyCode(currencyCode);
 		return currency.getId();
 	}
@@ -58,6 +58,13 @@ public class CurrencyRepository
 	{
 		return getById(currencyId).getPrecision();
 	}
+	
+	public CurrencyPrecision getStdPrecision(@NonNull final CurrencyCode currencyCode)
+	{
+		final CurrencyId currencyId = getCurrencyIdByCurrencyCode(currencyCode);
+		return getStdPrecision(currencyId);
+	}
+
 
 	public CurrencyPrecision getCostingPrecision(@NonNull final CurrencyId currencyId)
 	{

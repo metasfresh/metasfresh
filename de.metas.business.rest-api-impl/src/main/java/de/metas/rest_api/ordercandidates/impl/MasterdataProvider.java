@@ -3,6 +3,7 @@ package de.metas.rest_api.ordercandidates.impl;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
+import java.time.ZoneId;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -218,7 +219,7 @@ final class MasterdataProvider
 		orgRecord.setName(json.getName());
 	}
 
-	public JsonOrganization getJsonOrganizationById(final int orgId)
+	public JsonOrganization getJsonOrganizationById(final OrgId orgId)
 	{
 		final I_AD_Org orgRecord = orgDAO.getById(orgId);
 		if (orgRecord == null)
@@ -230,6 +231,11 @@ final class MasterdataProvider
 				.code(orgRecord.getValue())
 				.name(orgRecord.getName())
 				.build();
+	}
+
+	public ZoneId getOrgTimeZone(final OrgId orgId)
+	{
+		return orgDAO.getTimeZone(orgId);
 	}
 
 	public BPartnerInfo getCreateBPartnerInfoInTrx(
