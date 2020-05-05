@@ -47,7 +47,7 @@ public class C_Customer_Retention_CreateMissing extends JavaProcess
 
 		customers.stream()
 				.filter(customerId -> !customerRetentionRepo.hasCustomerRetention(customerId))
-				.forEach(customerId -> customerRetentionRepo.createNewCustomerRetention(customerId));
+				.forEach(customerId -> customerRetentionRepo.createEmptyCustomerRetention(customerId));
 
 		customers.stream()
 				.filter(customerId -> !customerRetentionRepo.isNewCustomer(customerId))

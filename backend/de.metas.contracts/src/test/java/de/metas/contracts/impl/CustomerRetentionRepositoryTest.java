@@ -19,6 +19,7 @@ import org.junit.jupiter.api.Test;
 
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.bpartner.BPartnerId;
+import de.metas.contracts.CustomerRetentionId;
 import de.metas.contracts.invoice.ContractInvoiceService;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.document.engine.DocStatus;
@@ -72,9 +73,7 @@ public class CustomerRetentionRepositoryTest
 
 		final I_C_Customer_Retention customerRetention = createCustomerRetention(partner.getC_BPartner_ID());
 
-		final BPartnerId bpartnerId = BPartnerId.ofRepoId(partner.getC_BPartner_ID());
-
-		repository.setNewCustomer(bpartnerId);
+		repository.setNewCustomer(CustomerRetentionId.ofRepoId(customerRetention.getC_Customer_Retention_ID()));
 
 		refresh(customerRetention);
 
@@ -88,9 +87,7 @@ public class CustomerRetentionRepositoryTest
 
 		final I_C_Customer_Retention customerRetention = createCustomerRetention(partner.getC_BPartner_ID());
 
-		final BPartnerId bpartnerId = BPartnerId.ofRepoId(partner.getC_BPartner_ID());
-
-		repository.setRegularCustomer(bpartnerId);
+		repository.setRegularCustomer(CustomerRetentionId.ofRepoId(customerRetention.getC_Customer_Retention_ID()));
 
 		refresh(customerRetention);
 
@@ -104,9 +101,7 @@ public class CustomerRetentionRepositoryTest
 
 		final I_C_Customer_Retention customerRetention = createCustomerRetention(partner.getC_BPartner_ID());
 
-		final BPartnerId bpartnerId = BPartnerId.ofRepoId(partner.getC_BPartner_ID());
-
-		repository.setNonSubscriptionCustomer(bpartnerId);
+		repository.setNonSubscriptionCustomer(CustomerRetentionId.ofRepoId(customerRetention.getC_Customer_Retention_ID()));
 
 		refresh(customerRetention);
 
@@ -210,7 +205,7 @@ public class CustomerRetentionRepositoryTest
 
 		final I_C_Invoice_Candidate cand1 = createInvoiceCandidate(term1.getC_Flatrate_Term_ID());
 
-		final I_C_Invoice invoice1 = createInvoice(partner.getC_BPartner_ID(),"documentNo1", masterEndDate1);
+		final I_C_Invoice invoice1 = createInvoice(partner.getC_BPartner_ID(), "documentNo1", masterEndDate1);
 
 		final I_C_InvoiceLine invoiceLine1 = createInvoiceLine(invoice1.getC_Invoice_ID());
 
@@ -221,7 +216,7 @@ public class CustomerRetentionRepositoryTest
 
 		final I_C_Invoice_Candidate cand2 = createInvoiceCandidate(term2.getC_Flatrate_Term_ID());
 
-		final I_C_Invoice invoice2 = createInvoice(partner.getC_BPartner_ID(),"documentNo2", SystemTime.asTimestamp());
+		final I_C_Invoice invoice2 = createInvoice(partner.getC_BPartner_ID(), "documentNo2", SystemTime.asTimestamp());
 
 		final I_C_InvoiceLine invoiceLine2 = createInvoiceLine(invoice2.getC_Invoice_ID());
 
@@ -234,7 +229,6 @@ public class CustomerRetentionRepositoryTest
 		refresh(customerRetention);
 
 		assertThat(X_C_Customer_Retention.CUSTOMERRETENTION_Neukunde).isEqualTo(customerRetention.getCustomerRetention());
-
 
 	}
 
@@ -250,7 +244,7 @@ public class CustomerRetentionRepositoryTest
 
 		final I_C_Invoice_Candidate cand1 = createInvoiceCandidate(term1.getC_Flatrate_Term_ID());
 
-		final I_C_Invoice invoice1 = createInvoice(partner.getC_BPartner_ID(),"documentNo1", masterEndDate1);
+		final I_C_Invoice invoice1 = createInvoice(partner.getC_BPartner_ID(), "documentNo1", masterEndDate1);
 
 		final I_C_InvoiceLine invoiceLine1 = createInvoiceLine(invoice1.getC_Invoice_ID());
 
@@ -261,7 +255,7 @@ public class CustomerRetentionRepositoryTest
 
 		final I_C_Invoice_Candidate cand2 = createInvoiceCandidate(term2.getC_Flatrate_Term_ID());
 
-		final I_C_Invoice invoice2 = createInvoice(partner.getC_BPartner_ID(),"documentNo2", SystemTime.asTimestamp());
+		final I_C_Invoice invoice2 = createInvoice(partner.getC_BPartner_ID(), "documentNo2", SystemTime.asTimestamp());
 
 		final I_C_InvoiceLine invoiceLine2 = createInvoiceLine(invoice2.getC_Invoice_ID());
 
@@ -288,7 +282,7 @@ public class CustomerRetentionRepositoryTest
 
 		final I_C_Invoice_Candidate cand1 = createInvoiceCandidate(term1.getC_Flatrate_Term_ID());
 
-		final I_C_Invoice invoice1 = createInvoice(partner.getC_BPartner_ID(),"documentNo1", masterEndDate1);
+		final I_C_Invoice invoice1 = createInvoice(partner.getC_BPartner_ID(), "documentNo1", masterEndDate1);
 
 		final I_C_InvoiceLine invoiceLine1 = createInvoiceLine(invoice1.getC_Invoice_ID());
 
@@ -299,7 +293,7 @@ public class CustomerRetentionRepositoryTest
 
 		final I_C_Invoice_Candidate cand2 = createInvoiceCandidate(term2.getC_Flatrate_Term_ID());
 
-		final I_C_Invoice invoice2 = createInvoice(partner.getC_BPartner_ID(),"documentNo2", SystemTime.asTimestamp());
+		final I_C_Invoice invoice2 = createInvoice(partner.getC_BPartner_ID(), "documentNo2", SystemTime.asTimestamp());
 
 		final I_C_InvoiceLine invoiceLine2 = createInvoiceLine(invoice2.getC_Invoice_ID());
 
@@ -348,7 +342,7 @@ public class CustomerRetentionRepositoryTest
 		return invoice;
 	}
 
-	private I_C_Invoice_Candidate createInvoiceCandidate(int termId)
+	private I_C_Invoice_Candidate createInvoiceCandidate(final int termId)
 	{
 		final I_C_Invoice_Candidate cand = newInstance(I_C_Invoice_Candidate.class);
 		cand.setAD_Table_ID(getTableId(I_C_Flatrate_Term.class));
@@ -370,7 +364,7 @@ public class CustomerRetentionRepositoryTest
 
 	}
 
-	private I_C_Customer_Retention createCustomerRetention(int partnerId)
+	private I_C_Customer_Retention createCustomerRetention(final int partnerId)
 	{
 		final I_C_Customer_Retention customerRetention = newInstance(I_C_Customer_Retention.class);
 
