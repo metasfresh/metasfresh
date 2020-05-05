@@ -111,7 +111,7 @@ public class S_Issue
 		}
 	}
 
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE, ModelValidator.TYPE_BEFORE_NEW }, ifColumnsChanged = I_S_Issue.COLUMNNAME_S_Parent_Issue_ID)
+	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE, ifColumnsChanged = I_S_Issue.COLUMNNAME_S_Parent_Issue_ID)
 	public void overwriteParentIssueId(@NonNull final I_S_Issue record)
 	{
 		if (isParentAlreadyInHierarchy(record))
