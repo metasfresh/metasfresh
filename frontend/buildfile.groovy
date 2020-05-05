@@ -24,23 +24,25 @@ Map build(final MvnConf mvnConf, final Map scmVars, final boolean forceBuild=fal
 
 //    vgitout = sh(returnStdout: true, script: "git diff --name-only ${scmVars.GIT_PREVIOUS_SUCCESSFUL_COMMIT} ${scmVars.GIT_COMMIT} . 2> /dev/null").trim()
 //    def vgitout = sh(returnStdout: true, script: "git diff --name-only ${scmVars.GIT_PREVIOUS_SUCCESSFUL_COMMIT} ${scmVars.GIT_COMMIT} . | exit 0").trim() // use "| exit 0" to not fail in the case when this is the first build
-    def vpwdout = sh(returnStdout: true, script: "pwd")
-    echo "pwd output >>>${vpwdout}<<<<"
+//    def vpwdout = sh(returnStdout: true, script: "pwd")
+//    echo "pwd output >>>${vpwdout}<<<<"
+//
+//    def vlsout = sh(returnStdout: true, script: "ls")
+//    echo "ls output >>>${vlsout}<<<<"
+//
+//
+//    def vgitout_temp = sh(returnStdout: true, script: "git diff --name-only HEAD~1 ${scmVars.GIT_COMMIT} .").trim()
+//    echo "git output >>>${vgitout_temp}<<<"
+//
 
-    def vlsout = sh(returnStdout: true, script: "ls")
-    echo "ls output >>>${vlsout}<<<<"
+    def previousCommitNotNull = scmVars.GIT_PREVIOUS_SUCCESSFUL_COMMIT ?: "HEAD~5"
 
+    def vgitout = sh(returnStdout: true, script: "git diff --name-only ${previousCommitNotNull} ${scmVars.GIT_COMMIT} .").trim()
+    echo "git diff output: >>>${vgitout}<<<"
+    def anyFileChanged = !vgitout.isEmpty() // see if anything at all changed in this folder
+		echo "anyFileChanged compared to last build: ${anyFileChanged}"
 
-    def vgitout_temp = sh(returnStdout: true, script: "git diff --name-only HEAD~1 ${scmVars.GIT_COMMIT} .").trim()
-    echo "git output >>>${vgitout_temp}<<<"
-
-
-    def vgitout = sh(returnStdout: true, script: "git diff --name-only ${scmVars.GIT_PREVIOUS_SUCCESSFUL_COMMIT} ${scmVars.GIT_COMMIT} .").trim()
-    echo "git output >>>${vgitout}<<<"
-    def status = !vgitout.isEmpty() // see if anything at all changed in this folder
-		echo "status of git dif command=${status} (anything changed?)"
-
-		if(scmVars.GIT_COMMIT && scmVars.GIT_PREVIOUS_SUCCESSFUL_COMMIT && status && !forceBuild)
+		if(scmVars.GIT_COMMIT && scmVars.GIT_PREVIOUS_SUCCESSFUL_COMMIT && !anyFileChanged && !forceBuild)
 		{
 			currentBuild.description= """${currentBuild.description}<p/>
 					No changes happened in frontend.
