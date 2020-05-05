@@ -1,0 +1,11 @@
+{
+  "priceSystemName" : "PriceSystem",
+  "priceListName" : "PriceList",
+  "priceListVersionName" : "PriceListVersion",
+  "productCategoryName" : "ProductCategory",
+  "productName" : "Product",
+  "discountSchemaName" : "DiscountSchema",
+  "bPartnerName" : "bPartner",
+  "salesInvoiceTargetDocumentType" : "Sales Invoice",
+  "originalQuantity" : 20
+}

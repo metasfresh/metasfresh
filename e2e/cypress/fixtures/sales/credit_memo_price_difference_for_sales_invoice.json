@@ -1,0 +1,9 @@
+{
+  "creditMemoPriceDiff": "Credit Memo - Price diff",
+  "salesInvoiceTargetDocumentType": "Sales Invoice",
+  "businessPartnerName": "Test Lieferant 1",
+  "productName": "Convenience Salat 250g",
+  "originalQuantity": 20,
+  "newProductPrice__comment": "must be lower than the original price",
+  "newProductPrice": "0.123456"
+}

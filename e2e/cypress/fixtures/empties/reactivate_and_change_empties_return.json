@@ -1,0 +1,15 @@
+{
+    "businessPartnerName" : "Test Lieferant 1",
+    "initialProductQuantity" : 222,
+    "newProductQuantity" : 654,
+    "documentType" : "Leergutausgabe",
+
+    "priceSystemName" : "PriceSystem",
+    "priceListName" : "PriceList",
+    "priceListVersionName" : "PriceListVersion",
+
+    "productCategory1" : "ProductCategory",
+    "productName1" : "Product1",
+    "productName2" : "Product2",
+    "productName3" : "Product3"
+}

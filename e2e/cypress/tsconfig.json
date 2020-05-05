@@ -1,0 +1,13 @@
+{
+  "_comment": "Thanks to https://docs.cypress.io/guides/tooling/intelligent-code-completion.html#Reference-type-declarations-via-tsconfig",
+  "compilerOptions": {
+    "allowJs": true,
+    "baseUrl": "../node_modules",
+    "types": [
+      "cypress"
+    ]
+  },
+  "include": [
+    "**/*.*"
+  ]
+}
