@@ -25,6 +25,32 @@
  */
 package de.metas.payment.api.impl;
 
+import static java.math.BigDecimal.ZERO;
+
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Date;
+import java.util.List;
+import java.util.Set;
+
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.service.ClientId;
+import org.adempiere.service.ISysConfigBL;
+import org.adempiere.util.lang.Mutable;
+import org.compiere.model.I_C_AllocationHdr;
+import org.compiere.model.I_C_AllocationLine;
+import org.compiere.model.I_C_DocType;
+import org.compiere.model.I_C_Invoice;
+import org.compiere.model.I_C_Payment;
+import org.compiere.util.TimeUtil;
+import org.compiere.util.TrxRunnableAdapter;
+import org.slf4j.Logger;
+
 import com.google.common.collect.ImmutableSet;
 import de.metas.allocation.api.IAllocationBL;
 import de.metas.bpartner.BPartnerBankAccountId;
@@ -37,6 +63,7 @@ import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.DocStatus;
 import de.metas.invoice.InvoiceId;
+import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
@@ -467,7 +494,6 @@ public class PaymentBL implements IPaymentBL
 		Check.assume(writeOffAmt != null && writeOffAmt.signum() != 0, "WriteOffAmt != 0 but it was {}", writeOffAmt);
 		Check.assumeNotNull(date, "date not null");
 
-		final Properties ctx = InterfaceWrapperHelper.getCtx(payment);
 		final Timestamp dateTS = TimeUtil.asTimestamp(date);
 
 		final Mutable<I_C_AllocationHdr> allocHdrRef = new Mutable<>();
@@ -477,17 +503,17 @@ public class PaymentBL implements IPaymentBL
 			@Override
 			public void run(String localTrxName) throws Exception
 			{
-				final I_C_AllocationHdr allocHdr = allocationBL.newBuilder(PlainContextAware.newWithThreadInheritedTrx(ctx))
-						.setAD_Org_ID(payment.getAD_Org_ID())
-						.setC_Currency_ID(payment.getC_Currency_ID())
-						.setDateAcct(dateTS)
-						.setDateTrx(dateTS)
+				final I_C_AllocationHdr allocHdr = allocationBL.newBuilder()
+						.orgId(payment.getAD_Org_ID())
+						.currencyId(payment.getC_Currency_ID())
+						.dateAcct(dateTS)
+						.dateTrx(dateTS)
 						//
 						.addLine()
-						.setAD_Org_ID(payment.getAD_Org_ID())
-						.setC_BPartner_ID(payment.getC_BPartner_ID())
-						.setC_Payment_ID(payment.getC_Payment_ID())
-						.setPaymentWriteOffAmt(writeOffAmt)
+						.orgId(payment.getAD_Org_ID())
+						.bpartnerId(payment.getC_BPartner_ID())
+						.paymentId(payment.getC_Payment_ID())
+						.paymentWriteOffAmt(writeOffAmt)
 						.lineDone()
 						//
 						.createAndComplete();

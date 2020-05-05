@@ -39,13 +39,10 @@ import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 
-import de.metas.bpartner.BPartnerContactId;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.invoice.service.IInvoiceBL;
-import org.adempiere.invoice.service.IInvoiceDAO;
 import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -68,6 +65,7 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.adempiere.model.I_C_Order;
+import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeDAO;
@@ -77,8 +75,10 @@ import de.metas.i18n.AdMessageId;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IADMessageDAO;
 import de.metas.i18n.IMsgBL;
-import de.metas.invoice.IMatchInvBL;
-import de.metas.invoice.InvoiceUtil;
+import de.metas.invoice.service.IInvoiceBL;
+import de.metas.invoice.service.IInvoiceDAO;
+import de.metas.invoice.service.IMatchInvBL;
+import de.metas.invoice.service.InvoiceUtil;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.IInvoiceCandAggregate;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
@@ -626,8 +626,8 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 				final I_C_Tax tax = ilVO.getC_Tax();
 				if (tax != null)  // guard against old ICs which might not have a tax..leave it to the MInvoiceLine BL in that case
 				{
-					invoiceLine.setC_Tax(tax);
-					invoiceLine.setC_TaxCategory(tax.getC_TaxCategory());
+					invoiceLine.setC_Tax_ID(tax.getC_Tax_ID());
+					invoiceLine.setC_TaxCategory_ID(tax.getC_TaxCategory_ID());
 				}
 
 				// Set Line Net Amount and Tax Amount

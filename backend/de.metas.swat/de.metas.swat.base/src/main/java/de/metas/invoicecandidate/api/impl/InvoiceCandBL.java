@@ -40,6 +40,7 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -60,8 +61,6 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.invoice.service.IInvoiceBL;
-import org.adempiere.invoice.service.IInvoiceDAO;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
@@ -76,9 +75,12 @@ import org.compiere.model.I_AD_Note;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_InvoiceSchedule;
+import org.compiere.model.I_C_Payment;
 import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_PriceList;
+import org.compiere.model.MInvoice;
+import org.compiere.model.MInvoiceLine;
 import org.compiere.model.MNote;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
@@ -89,6 +91,7 @@ import ch.qos.logback.classic.Level;
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.adempiere.model.I_C_Order;
+import de.metas.allocation.api.IAllocationDAO;
 import de.metas.async.api.IQueueDAO;
 import de.metas.async.api.IWorkPackageQueue;
 import de.metas.async.model.I_C_Queue_WorkPackage;
@@ -108,13 +111,16 @@ import de.metas.currency.ICurrencyDAO;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.invoice.InvoiceSchedule;
-import de.metas.invoice.InvoiceScheduleRepository;
+import de.metas.invoice.service.IInvoiceBL;
+import de.metas.invoice.service.IInvoiceDAO;
+import de.metas.invoice.service.InvoiceScheduleRepository;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.InvoiceCandidateIds;
 import de.metas.invoicecandidate.api.IAggregationBL;
@@ -181,6 +187,7 @@ import de.metas.util.OptionalBoolean;
 import de.metas.util.Services;
 import de.metas.util.lang.ExternalHeaderIdWithExternalLineIds;
 import de.metas.util.lang.Percent;
+import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 
 public class InvoiceCandBL implements IInvoiceCandBL
@@ -2195,6 +2202,89 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		return queueDAO.retrieveUnprocessedWorkPackagesByEnqueuedRecord(
 				InvoiceCandWorkpackageProcessor.class,
 				TableRecordReference.of(I_C_Invoice_Candidate.Table_Name, invoiceCandidateId));
+	}
+
+	@Override
+	public I_C_Invoice voidAndRecreateInvoice(@NonNull final org.compiere.model.I_C_Invoice invoice)
+	{
+		// first make sure that payments have the flag auto-allocate set
+		final IAllocationDAO allocationDAO = Services.get(IAllocationDAO.class);
+
+		final I_C_Invoice inv = InterfaceWrapperHelper.create(invoice, I_C_Invoice.class);
+
+		final List<I_C_Payment> availablePayments = allocationDAO.retrieveInvoicePayments(inv);
+
+		for (final I_C_Payment payment : availablePayments)
+		{
+			payment.setIsAutoAllocateAvailableAmt(true);
+			InterfaceWrapperHelper.save(payment);
+		}
+
+		// first fetch invoice candidates
+		final IInvoiceCandDAO invoiceCandDB = Services.get(IInvoiceCandDAO.class);
+		final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
+
+		final List<I_C_Invoice_Candidate> invoiceCands = new ArrayList<>();
+
+		final MInvoice invoicePO = (MInvoice)InterfaceWrapperHelper.getPO(invoice);
+		for (final MInvoiceLine ilPO : invoicePO.getLines(true))
+		{
+			final I_C_InvoiceLine il = InterfaceWrapperHelper.create(ilPO, I_C_InvoiceLine.class);
+			invoiceCands.addAll(invoiceCandDB.retrieveIcForIl(il));
+		}
+
+		final Properties ctx = InterfaceWrapperHelper.getCtx(invoice);
+		final String trxName = InterfaceWrapperHelper.getTrxName(invoice);
+
+		// void invoice
+		Services.get(IDocumentBL.class).processEx(invoice, IDocument.ACTION_Reverse_Correct, IDocument.STATUS_Reversed);
+
+		// update invalids
+		invoiceCandBL.updateInvalid()
+				.setContext(ctx, trxName)
+				.setOnlyC_Invoice_Candidates(invoiceCands.iterator())
+				.update();
+
+		for (final I_C_Invoice_Candidate ic : invoiceCands)
+		{
+			InterfaceWrapperHelper.refresh(ic); // this is important ;-)
+			final Timestamp today = SystemTime.asDayTimestamp();
+			// if the invoice was a future invoice, use same date
+			if (today.before(invoicePO.getDateInvoiced()))
+			{
+				ic.setDateInvoiced(invoicePO.getDateInvoiced());
+			}
+			// we set this to null in order to have the new invoice with the current date
+			else
+			{
+				ic.setDateInvoiced(null);
+			}
+			InterfaceWrapperHelper.save(ic, trxName);
+		}
+
+		// recreate invoice for those specific invoice candidates
+		final IInvoiceGenerateResult result = invoiceCandBL.generateInvoices()
+				.setContext(ctx, trxName)
+				.setInvoicingParams(new PlainInvoicingParams()
+						.setStoreInvoicesInResult(true)
+						.setAssumeOneInvoice(true))
+				.generateInvoices(invoiceCands.iterator());
+
+		final I_C_Invoice newInvoice;
+		if (result.getInvoiceCount() == 1)
+		{
+			newInvoice = result.getC_Invoices().get(0);
+		}
+		else if (result.getInvoiceCount() > 1)
+		{
+			throw new AdempiereException("Internal error: More then one invoices were generated for given candidate (" + result + ")");
+		}
+		else
+		{
+			newInvoice = null;
+		}
+
+		return newInvoice;
 	}
 
 }

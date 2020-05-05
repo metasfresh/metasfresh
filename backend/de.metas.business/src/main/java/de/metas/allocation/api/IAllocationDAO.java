@@ -43,6 +43,10 @@ import lombok.NonNull;
 
 public interface IAllocationDAO extends ISingletonService
 {
+	void save(I_C_AllocationHdr allocationHdr);
+
+	void save(I_C_AllocationLine allocationLine);
+
 	List<I_C_AllocationLine> retrieveLines(I_C_AllocationHdr allocHdr);
 
 	/**

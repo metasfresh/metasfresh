@@ -37,7 +37,7 @@ import de.metas.bpartner.service.IBPGroupDAO;
 import de.metas.costing.CostingDocumentRef;
 import de.metas.costing.ICostingService;
 import de.metas.currency.ICurrencyBL;
-import de.metas.invoice.IMatchInvDAO;
+import de.metas.invoice.service.IMatchInvDAO;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;

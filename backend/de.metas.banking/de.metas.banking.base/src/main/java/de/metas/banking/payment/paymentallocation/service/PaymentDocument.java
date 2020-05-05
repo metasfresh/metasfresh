@@ -2,12 +2,14 @@ package de.metas.banking.payment.paymentallocation.service;
 
 import javax.annotation.Nullable;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_Payment;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
+import de.metas.organization.OrgId;
 import de.metas.payment.PaymentDirection;
 import de.metas.payment.PaymentId;
 import de.metas.util.Check;
@@ -30,12 +32,16 @@ import lombok.ToString;
 public class PaymentDocument implements IPaymentDocument
 {
 	@Getter
+	private final OrgId orgId;
+
+	@Getter
 	private final PaymentId paymentId;
 	@Getter
 	private final BPartnerId bpartnerId;
 	private final String documentNo;
 	@Getter
 	private final TableRecordReference reference;
+	@Getter
 	private final PaymentDirection paymentDirection;
 	//
 	private final Money openAmtInitial;
@@ -48,6 +54,7 @@ public class PaymentDocument implements IPaymentDocument
 
 	@Builder
 	private PaymentDocument(
+			@NonNull final OrgId orgId,
 			@NonNull final PaymentId paymentId,
 			@Nullable final BPartnerId bpartnerId,
 			@Nullable final String documentNo,
@@ -56,6 +63,12 @@ public class PaymentDocument implements IPaymentDocument
 			@NonNull final Money openAmt,
 			@NonNull final Money amountToAllocate)
 	{
+		if (!orgId.isRegular())
+		{
+			throw new AdempiereException("Transactional organization expected: " + orgId);
+		}
+
+		this.orgId = orgId;
 		this.paymentId = paymentId;
 		this.bpartnerId = bpartnerId;
 		this.documentNo = documentNo;
@@ -129,17 +142,5 @@ public class PaymentDocument implements IPaymentDocument
 	public boolean canPay(@NonNull final PayableDocument payable)
 	{
 		return true;
-	}
-
-	@Override
-	public boolean isCustomerDocument()
-	{
-		return paymentDirection.isInboundPayment();
-	}
-
-	@Override
-	public boolean isVendorDocument()
-	{
-		return paymentDirection.isOutboundPayment();
 	}
 }

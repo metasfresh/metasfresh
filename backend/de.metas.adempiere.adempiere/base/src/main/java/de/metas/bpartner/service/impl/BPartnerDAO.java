@@ -35,7 +35,6 @@ import java.sql.SQLException;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -411,11 +410,11 @@ public class BPartnerDAO implements IBPartnerDAO
 
 	@Override
 	@Cached(cacheName = I_C_BPartner_Location.Table_Name + "#by#" + I_C_BPartner_Location.COLUMNNAME_C_BPartner_ID)
-	public List<I_C_BPartner_Location> retrieveBPartnerLocations(@CacheCtx final Properties ctx, final int bpartnerId, @CacheTrx final String trxName)
+	public ImmutableList<I_C_BPartner_Location> retrieveBPartnerLocations(@CacheCtx final Properties ctx, final int bpartnerId, @CacheTrx final String trxName)
 	{
 		if (bpartnerId <= 0)
 		{
-			return Collections.emptyList();
+			return ImmutableList.of();
 		}
 		final IQueryBuilder<I_C_BPartner_Location> queryBuilder = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_BPartner_Location.class, ctx, trxName)
@@ -508,7 +507,7 @@ public class BPartnerDAO implements IBPartnerDAO
 
 	@Override
 	@Cached(cacheName = I_AD_User.Table_Name + "#by#" + I_AD_User.COLUMNNAME_C_BPartner_ID)
-	public List<I_AD_User> retrieveContacts(@CacheCtx final Properties ctx, final int bpartnerId, @CacheTrx final String trxName)
+	public ImmutableList<I_AD_User> retrieveContacts(@CacheCtx final Properties ctx, final int bpartnerId, @CacheTrx final String trxName)
 	{
 		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_AD_User.class, ctx, trxName)
@@ -527,12 +526,13 @@ public class BPartnerDAO implements IBPartnerDAO
 		return retrieveContacts(ctx, bpartnerId, trxName);
 	}
 
-	public List<I_AD_User> retrieveContacts(@NonNull final BPartnerId bpartnerId)
+	@Override
+	public ImmutableList<I_AD_User> retrieveContacts(@NonNull final BPartnerId bpartnerId)
 	{
 		return retrieveContacts(Env.getCtx(), bpartnerId.getRepoId(), ITrx.TRXNAME_None);
 	}
 
-	public List<I_AD_User> retrieveContactsInTrx(@NonNull final BPartnerId bpartnerId)
+	public ImmutableList<I_AD_User> retrieveContactsInTrx(@NonNull final BPartnerId bpartnerId)
 	{
 		return retrieveContacts(Env.getCtx(), bpartnerId.getRepoId(), ITrx.TRXNAME_ThreadInherited);
 	}
@@ -1371,7 +1371,7 @@ public class BPartnerDAO implements IBPartnerDAO
 	{
 		return Services.get(IQueryBL.class)
 				.createQueryBuilderOutOfTrx(modelClass)
-				//.addOnlyActiveRecordsFilter() // don't generally rule out inactive partners
+				// .addOnlyActiveRecordsFilter() // don't generally rule out inactive partners
 				.orderByDescending(I_AD_Org.COLUMNNAME_AD_Org_ID); // prefer "more specific" AD_Org_ID > 0;
 	}
 

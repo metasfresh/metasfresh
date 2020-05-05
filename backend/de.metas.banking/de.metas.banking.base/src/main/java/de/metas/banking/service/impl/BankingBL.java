@@ -22,12 +22,30 @@
 
 package de.metas.banking.service.impl;
 
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.GregorianCalendar;
+import java.util.List;
+
+import org.adempiere.banking.model.I_C_Invoice;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.Constants;
+import org.compiere.model.MInvoice;
+import org.compiere.model.MInvoiceLine;
+import org.compiere.model.MRecurrentPaymentHistory;
+import org.compiere.model.MRecurrentPaymentLine;
+import org.slf4j.Logger;
+
 import de.metas.banking.model.I_C_RecurrentPayment;
 import de.metas.banking.model.X_C_RecurrentPaymentLine;
 import de.metas.banking.service.IBankingBL;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.document.engine.IDocument;
+import de.metas.invoice.service.IInvoiceBL;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
 import de.metas.payment.PaymentRule;
@@ -52,7 +70,7 @@ import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.List;
 
-public class BankingBL implements IBankingBL
+public class 	 implements IBankingBL
 {
 	private static final Logger logger = LogManager.getLogger(BankingBL.class);
 
