@@ -26,7 +26,7 @@ import de.metas.contracts.refund.RefundConfig.RefundMode;
 import de.metas.contracts.refund.RefundInvoiceCandidateRepository.RefundInvoiceCandidateQuery;
 import de.metas.invoice.InvoiceSchedule;
 import de.metas.invoice.InvoiceSchedule.Frequency;
-import de.metas.invoice.InvoiceScheduleRepository;
+import de.metas.invoice.service.InvoiceScheduleRepository;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;

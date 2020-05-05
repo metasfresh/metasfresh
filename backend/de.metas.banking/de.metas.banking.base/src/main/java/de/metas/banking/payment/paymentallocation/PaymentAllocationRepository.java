@@ -23,6 +23,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.currency.Amount;
 import de.metas.currency.CurrencyCode;
 import de.metas.document.DocTypeId;
+import de.metas.invoice.InvoiceDocBaseType;
 import de.metas.invoice.InvoiceId;
 import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
@@ -266,8 +267,7 @@ public class PaymentAllocationRepository
 				.openAmountConverted(openAmtConv)
 				.discountAmountConverted(discountAmountConv)
 				.docTypeId(docTypeId)
-				.soTrx(soTrx)
-				.creditMemo(isCreditMemo)
+				.docBaseType(InvoiceDocBaseType.ofSOTrxAndCreditMemo(soTrx, isCreditMemo))
 				.poReference(rs.getString("POReference"))
 				.build();
 	}

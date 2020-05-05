@@ -1,5 +1,7 @@
 package de.metas.allocation.api.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+
 /*
  * #%L
  * de.metas.swat.base
@@ -38,7 +40,6 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
-import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.IQuery;
@@ -58,6 +59,7 @@ import de.metas.cache.annotation.CacheCtx;
 import de.metas.cache.annotation.CacheTrx;
 import de.metas.document.engine.DocStatus;
 import de.metas.invoice.InvoiceId;
+import de.metas.invoice.service.IInvoiceBL;
 import de.metas.payment.PaymentId;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -65,6 +67,18 @@ import lombok.NonNull;
 public class AllocationDAO implements IAllocationDAO
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+	@Override
+	public void save(@NonNull final I_C_AllocationHdr allocationHdr)
+	{
+		saveRecord(allocationHdr);
+	}
+
+	@Override
+	public void save(@NonNull final I_C_AllocationLine allocationLine)
+	{
+		saveRecord(allocationLine);
+	}
 
 	@Override
 	public final BigDecimal retrieveOpenAmt(

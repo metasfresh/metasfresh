@@ -2,7 +2,7 @@
  * #%L
  * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2019 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -31,6 +31,11 @@ import lombok.Value;
 
 import javax.annotation.Nullable;
 
+/**
+ * Note for the user: This class has a misleading name. We still haven't decided if/how to use it.
+ *
+ * My recommendation is to use instead {@link de.metas.bpartner.BPartnerBankAccountId} and it clearly states its purpose.
+ */
 @Value
 public class BankAccountId implements RepoIdAware
 {

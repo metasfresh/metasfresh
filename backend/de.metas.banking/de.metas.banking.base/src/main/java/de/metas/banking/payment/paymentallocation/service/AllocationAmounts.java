@@ -4,10 +4,13 @@ import java.util.Objects;
 
 import javax.annotation.Nullable;
 
+import org.adempiere.exceptions.AdempiereException;
+
 import com.google.common.base.MoreObjects;
 
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
+import de.metas.util.lang.CoalesceUtil;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -56,27 +59,44 @@ public class AllocationAmounts
 	private final Money payAmt;
 	private final Money discountAmt;
 	private final Money writeOffAmt;
+	private final Money invoiceProcessingFee;
 
 	@Builder(toBuilder = true)
 	private AllocationAmounts(
-			@NonNull final Money payAmt,
+			@Nullable final Money payAmt,
 			@Nullable final Money discountAmt,
-			@Nullable final Money writeOffAmt)
+			@Nullable final Money writeOffAmt,
+			@Nullable final Money invoiceProcessingFee)
 	{
-		this.payAmt = payAmt;
-		this.discountAmt = discountAmt != null ? discountAmt : payAmt.toZero();
-		this.writeOffAmt = writeOffAmt != null ? writeOffAmt : payAmt.toZero();
-		this.currencyId = Money.getCommonCurrencyIdOfAll(payAmt, discountAmt, writeOffAmt);
+		final Money firstNonNull = CoalesceUtil.coalesce(payAmt, discountAmt, writeOffAmt, invoiceProcessingFee);
+		if (firstNonNull == null)
+		{
+			throw new AdempiereException("Provide at least one amount. If you want o create a ZERO instance, use the zero(currencyId) method.");
+		}
+		final Money zero = firstNonNull.toZero();
+
+		this.payAmt = payAmt != null ? payAmt : zero;
+		this.discountAmt = discountAmt != null ? discountAmt : zero;
+		this.writeOffAmt = writeOffAmt != null ? writeOffAmt : zero;
+		this.invoiceProcessingFee = invoiceProcessingFee != null ? invoiceProcessingFee : zero;
+
+		this.currencyId = Money.getCommonCurrencyIdOfAll(
+				this.payAmt,
+				this.discountAmt,
+				this.writeOffAmt,
+				this.invoiceProcessingFee);
 	}
 
 	@Override
 	public String toString()
 	{
 		return MoreObjects.toStringHelper(this)
-				.add("payAmt", payAmt.toBigDecimal())
-				.add("discountAmt", discountAmt.toBigDecimal())
-				.add("writeOffAmt", writeOffAmt.toBigDecimal())
+				.omitNullValues()
 				.add("currencyId", currencyId.getRepoId())
+				.add("payAmt", payAmt != null ? payAmt.toBigDecimal() : null)
+				.add("discountAmt", discountAmt != null ? discountAmt.toBigDecimal() : null)
+				.add("writeOffAmt", writeOffAmt != null ? writeOffAmt.toBigDecimal() : null)
+				.add("invoiceProcessingFee", invoiceProcessingFee != null ? invoiceProcessingFee.toBigDecimal() : null)
 				.toString();
 	}
 
@@ -124,6 +144,13 @@ public class AllocationAmounts
 				: toBuilder().writeOffAmt(writeOffAmt).build();
 	}
 
+	public AllocationAmounts withInvoiceProcessingFee(@NonNull final Money invoiceProcessingFee)
+	{
+		return Objects.equals(this.invoiceProcessingFee, invoiceProcessingFee)
+				? this
+				: toBuilder().invoiceProcessingFee(invoiceProcessingFee).build();
+	}
+
 	public AllocationAmounts movePayAmtToDiscount()
 	{
 		if (payAmt.signum() == 0)
@@ -160,6 +187,7 @@ public class AllocationAmounts
 				.payAmt(this.payAmt.add(other.payAmt))
 				.discountAmt(this.discountAmt.add(other.discountAmt))
 				.writeOffAmt(this.writeOffAmt.add(other.writeOffAmt))
+				.invoiceProcessingFee(this.invoiceProcessingFee.add(other.invoiceProcessingFee))
 				.build();
 	}
 
@@ -169,6 +197,7 @@ public class AllocationAmounts
 				.payAmt(this.payAmt.subtract(other.payAmt))
 				.discountAmt(this.discountAmt.subtract(other.discountAmt))
 				.writeOffAmt(this.writeOffAmt.subtract(other.writeOffAmt))
+				.invoiceProcessingFee(this.invoiceProcessingFee.subtract(other.invoiceProcessingFee))
 				.build();
 	}
 
@@ -188,19 +217,21 @@ public class AllocationAmounts
 				.payAmt(this.payAmt.negate())
 				.discountAmt(this.discountAmt.negate())
 				.writeOffAmt(this.writeOffAmt.negate())
+				.invoiceProcessingFee(this.invoiceProcessingFee.negate())
 				.build();
 	}
 
 	public Money getTotalAmt()
 	{
-		return payAmt.add(discountAmt).add(writeOffAmt);
+		return payAmt.add(discountAmt).add(writeOffAmt).add(invoiceProcessingFee);
 	}
 
 	public boolean isZero()
 	{
 		return payAmt.signum() == 0
 				&& discountAmt.signum() == 0
-				&& writeOffAmt.signum() == 0;
+				&& writeOffAmt.signum() == 0
+				&& invoiceProcessingFee.signum() == 0;
 	}
 
 	public AllocationAmounts toZero()

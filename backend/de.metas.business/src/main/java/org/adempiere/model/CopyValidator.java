@@ -34,6 +34,8 @@ import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_EXP_Format;
 
+import de.metas.invoice.service.MInvoicePOCopyRecordSupport;
+
 /**
  * @author Cristina Ghita, METAS.RO
  * 

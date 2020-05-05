@@ -239,6 +239,14 @@ public class Percent
 	 */
 	public BigDecimal computePercentageOf(@NonNull final BigDecimal base, final int precision)
 	{
+		return computePercentageOf(base, precision, RoundingMode.HALF_UP);
+	}
+
+	public BigDecimal computePercentageOf(
+			@NonNull final BigDecimal base,
+			final int precision,
+			@NonNull final RoundingMode roundingMode)
+	{
 		Check.assumeGreaterOrEqualToZero(precision, "precision");
 
 		if (base.signum() == 0)
@@ -251,15 +259,15 @@ public class Percent
 		}
 		else if (isOneHundred())
 		{
-			return base.setScale(precision, RoundingMode.HALF_UP);
+			return base.setScale(precision, roundingMode);
 		}
 		else
 		{
 			return base
-					.setScale(precision + 2, RoundingMode.HALF_UP)
-					.divide(ONE_HUNDRED_VALUE, RoundingMode.HALF_UP)
+					.setScale(precision + 2, roundingMode)
+					.divide(ONE_HUNDRED_VALUE, roundingMode)
 					.multiply(value)
-					.setScale(precision, RoundingMode.HALF_UP);
+					.setScale(precision, roundingMode);
 		}
 	}
 
@@ -293,6 +301,11 @@ public class Percent
 	 */
 	public BigDecimal subtractFromBase(@NonNull final BigDecimal base, final int precision)
 	{
+		return subtractFromBase(base, precision, RoundingMode.HALF_UP);
+	}
+
+	public BigDecimal subtractFromBase(@NonNull final BigDecimal base, final int precision, @NonNull final RoundingMode roundingMode)
+	{
 		Check.assumeGreaterOrEqualToZero(precision, "precision");
 
 		if (base.signum() == 0)
@@ -301,7 +314,7 @@ public class Percent
 		}
 		else if (isZero())
 		{
-			return base.setScale(precision, RoundingMode.HALF_UP);
+			return base.setScale(precision, roundingMode);
 		}
 		else if (isOneHundred())
 		{
@@ -310,13 +323,13 @@ public class Percent
 		else
 		{
 			// make sure the base we work with does not have more digits than we expect from the given precision.
-			final BigDecimal baseToUse = base.setScale(precision, RoundingMode.HALF_UP);
+			final BigDecimal baseToUse = base.setScale(precision, roundingMode);
 
 			return baseToUse
 					.setScale(precision + 2)
 					.divide(ONE_HUNDRED_VALUE, RoundingMode.UNNECESSARY) // no rounding needed because we raised the current precision by 2
 					.multiply(ONE_HUNDRED_VALUE.subtract(value))
-					.setScale(precision, RoundingMode.HALF_UP);
+					.setScale(precision, roundingMode);
 		}
 	}
 

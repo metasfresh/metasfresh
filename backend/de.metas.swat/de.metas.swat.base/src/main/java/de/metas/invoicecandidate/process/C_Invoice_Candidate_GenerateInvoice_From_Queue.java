@@ -28,11 +28,11 @@ package de.metas.invoicecandidate.process;
 
 import java.util.Properties;
 
-import org.adempiere.invoice.service.IInvoiceBL;
 import org.compiere.model.I_AD_Note;
 import org.compiere.model.I_C_Invoice;
 
 import de.metas.adempiere.util.ADHyperlinkBuilder;
+import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandBL.IInvoiceGenerateResult;
 import de.metas.process.JavaProcess;

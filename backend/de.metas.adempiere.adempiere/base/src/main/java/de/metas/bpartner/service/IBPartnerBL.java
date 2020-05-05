@@ -44,6 +44,7 @@ import de.metas.i18n.Language;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
 import de.metas.payment.PaymentRule;
+import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.user.User;
 import de.metas.user.UserId;
 import de.metas.util.ISingletonService;
@@ -225,6 +226,8 @@ public interface IBPartnerBL extends ISingletonService
 	CountryId getBPartnerLocationCountryId(BPartnerLocationId bpLocationId);
 
 	ShipmentAllocationBestBeforePolicy getBestBeforePolicy(BPartnerId bpartnerId);
+
+	Optional<PaymentTermId> getPaymentTermIdForBPartner(BPartnerId bpartnerId, SOTrx soTrx);
 
 	/**
 	 * @return the payment rule for the BP. If none is set, gets the one of the BP group.

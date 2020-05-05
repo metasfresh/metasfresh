@@ -29,16 +29,16 @@ package de.metas.payment.api;
 import java.math.BigDecimal;
 
 import org.adempiere.ad.wrapper.POJOWrapper;
-import org.adempiere.invoice.service.IInvoiceDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Payment;
 
+import de.metas.allocation.api.C_AllocationHdr_Builder;
+import de.metas.allocation.api.C_AllocationLine_Builder;
 import de.metas.allocation.api.IAllocationBL;
-import de.metas.allocation.api.IAllocationBuilder;
-import de.metas.allocation.api.IAllocationLineBuilder;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.impl.PlainDocumentBL.IProcessInterceptor;
+import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.payment.PaymentId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -68,11 +68,11 @@ public class C_Payment_ProcessInterceptor implements IProcessInterceptor
 		{
 			final I_C_Invoice invoice = payment.getC_Invoice();
 			
-			IAllocationBuilder allocBuilder = Services.get(IAllocationBL.class)
-					.newBuilder(InterfaceWrapperHelper.getContextAware(invoice))
-					.setC_Currency_ID(invoice.getC_Currency_ID())
-					.setDateAcct(invoice.getDateAcct())
-					.setDateTrx(invoice.getDateInvoiced());
+			C_AllocationHdr_Builder allocBuilder = Services.get(IAllocationBL.class)
+					.newBuilder()
+					.currencyId(invoice.getC_Currency_ID())
+					.dateAcct(invoice.getDateAcct())
+					.dateTrx(invoice.getDateInvoiced());
 
 			BigDecimal sumAmt = BigDecimal.ZERO;
 
@@ -83,25 +83,25 @@ public class C_Payment_ProcessInterceptor implements IProcessInterceptor
 
 			Check.assume(invoice.getC_BPartner_ID() == payment.getC_BPartner_ID(), "{} and {} have the same C_BPartner_ID", invoice, payment);
 
-			final IAllocationLineBuilder lineBuilder = allocBuilder.addLine()
-					.setAD_Org_ID(invoice.getAD_Org_ID())
-					.setC_BPartner_ID(invoice.getC_BPartner_ID())
-					.setC_Invoice_ID(invoice.getC_Invoice_ID())
-					.setC_Payment_ID(payment.getC_Payment_ID());
+			final C_AllocationLine_Builder lineBuilder = allocBuilder.addLine()
+					.orgId(invoice.getAD_Org_ID())
+					.bpartnerId(invoice.getC_BPartner_ID())
+					.invoiceId(invoice.getC_Invoice_ID())
+					.paymentId(payment.getC_Payment_ID());
 
 			final BigDecimal invoiceOpenAmt = Services.get(IInvoiceDAO.class).retrieveOpenAmt(invoice);
 
 			if (sumAmt.compareTo(invoiceOpenAmt) < 0)
 			{
 				allocBuilder = lineBuilder
-						.setAmount(currentAmt)
+						.amount(currentAmt)
 						.lineDone();
 			}
 			else
 			{
 				// make sure the allocated amt is not bigger than the open amt of the invoice
 				allocBuilder = lineBuilder
-						.setAmount(invoiceOpenAmt.subtract(sumAmt.subtract(currentAmt)))
+						.amount(invoiceOpenAmt.subtract(sumAmt.subtract(currentAmt)))
 						.lineDone();
 			}
 

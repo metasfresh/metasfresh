@@ -52,7 +52,7 @@ import de.metas.inout.IInOutBL;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutAndLineId;
 import de.metas.inout.InOutId;
-import de.metas.invoice.IMatchInvDAO;
+import de.metas.invoice.service.IMatchInvDAO;
 import de.metas.lang.SOTrx;
 import de.metas.organization.OrgId;
 import de.metas.pricing.IEditablePricingContext;

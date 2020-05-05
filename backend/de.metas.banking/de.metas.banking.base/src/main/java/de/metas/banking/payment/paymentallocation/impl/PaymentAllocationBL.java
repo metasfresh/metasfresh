@@ -32,7 +32,7 @@ import de.metas.util.Services;
 public class PaymentAllocationBL implements IPaymentAllocationBL
 {
 	@VisibleForTesting
-	public static final String SYSCONFIG_AllowAllocationOfPurchaseInvoiceAgainstSaleInvoice = "de.metas.banking.DifferenceRowBalancer.PurchaseInvoiceAgainstSaleInvoice";
+	private static final String SYSCONFIG_AllowAllocationOfPurchaseInvoiceAgainstSaleInvoice = "de.metas.banking.DifferenceRowBalancer.PurchaseInvoiceAgainstSaleInvoice";
 
 	@Override
 	public boolean isPurchaseSalesInvoiceCompensationAllowed()

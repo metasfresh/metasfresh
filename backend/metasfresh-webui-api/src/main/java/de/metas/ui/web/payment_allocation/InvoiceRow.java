@@ -1,18 +1,23 @@
 package de.metas.ui.web.payment_allocation;
 
 import java.time.LocalDate;
+import java.util.Map;
 import java.util.Set;
+
+import javax.annotation.Nullable;
 
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_Invoice;
 
 import com.google.common.base.MoreObjects;
+import com.google.common.collect.ImmutableMap;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.currency.Amount;
 import de.metas.i18n.ITranslatableString;
+import de.metas.invoice.InvoiceDocBaseType;
 import de.metas.invoice.InvoiceId;
-import de.metas.lang.SOTrx;
+import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingFeeCalculation;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.ui.web.view.IViewRow;
@@ -23,6 +28,7 @@ import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
+import de.metas.ui.web.window.descriptor.ViewEditorRenderMode;
 import de.metas.ui.web.window.descriptor.WidgetSize;
 import lombok.Builder;
 import lombok.Getter;
@@ -72,25 +78,35 @@ public class InvoiceRow implements IViewRow
 	@Getter
 	private final Amount openAmt;
 
-	@ViewColumn(seqNo = 70, widgetType = DocumentFieldWidgetType.Amount, widgetSize = WidgetSize.Small, captionKey = "Discount")
+	public static final String FIELD_DiscountAmt = "discountAmt";
+	@ViewColumn(seqNo = 70, widgetType = DocumentFieldWidgetType.Amount, widgetSize = WidgetSize.Small, captionKey = "Discount", fieldName = FIELD_DiscountAmt)
 	@Getter
 	private final Amount discountAmt;
 
-	@ViewColumn(seqNo = 80, widgetType = DocumentFieldWidgetType.Text, widgetSize = WidgetSize.Small, captionKey = "C_Currency_ID")
+	public static final String FIELD_ServiceFeeAmt = "serviceFeeAmt";
+	@ViewColumn(seqNo = 80, widgetType = DocumentFieldWidgetType.Amount, widgetSize = WidgetSize.Small, captionKey = "ServiceFeeAmt", fieldName = FIELD_ServiceFeeAmt)
+	@Getter
+	private final Amount serviceFeeAmt;
+
+	@ViewColumn(seqNo = 90, widgetType = DocumentFieldWidgetType.Text, widgetSize = WidgetSize.Small, captionKey = "C_Currency_ID")
 	private final String currencyCode;
+
+	//
+	//
+	//
 
 	private final DocumentId rowId;
 	@Getter
 	private final InvoiceId invoiceId;
 	private final ClientAndOrgId clientAndOrgId;
 	@Getter
-	private final SOTrx soTrx;
+	private final InvoiceDocBaseType docBaseType;
 	@Getter
-	private final boolean creditMemo;
+	private final InvoiceProcessingFeeCalculation serviceFeeCalculation;
 
 	private final ViewRowFieldNameAndJsonValuesHolder<InvoiceRow> values;
 
-	@Builder
+	@Builder(toBuilder = true)
 	private InvoiceRow(
 			@NonNull final InvoiceId invoiceId,
 			@NonNull final ClientAndOrgId clientAndOrgId,
@@ -98,28 +114,47 @@ public class InvoiceRow implements IViewRow
 			@NonNull final String documentNo,
 			@NonNull final LocalDate dateInvoiced,
 			@NonNull final LookupValue bpartner,
-			@NonNull final SOTrx soTrx,
-			final boolean creditMemo,
+			@NonNull final InvoiceDocBaseType docBaseType,
 			@NonNull final Amount grandTotal,
 			@NonNull final Amount openAmt,
-			@NonNull final Amount discountAmt)
+			@NonNull final Amount discountAmt,
+			@Nullable final InvoiceProcessingFeeCalculation serviceFeeCalculation)
 	{
-		rowId = convertInvoiceIdToDocumentId(invoiceId);
-		this.invoiceId = invoiceId;
-		this.clientAndOrgId = clientAndOrgId;
 		this.docTypeName = docTypeName;
 		this.documentNo = documentNo;
 		this.dateInvoiced = dateInvoiced;
 		this.bpartner = bpartner;
-		this.soTrx = soTrx;
-		this.creditMemo = creditMemo;
+		this.docBaseType = docBaseType;
+
 		this.grandTotal = grandTotal;
 		this.openAmt = openAmt;
 		this.discountAmt = discountAmt;
-		this.currencyCode = Amount.getCommonCurrencyCodeOfAll(grandTotal, openAmt, discountAmt)
+		this.serviceFeeAmt = serviceFeeCalculation != null ? serviceFeeCalculation.getFeeAmountIncludingTax() : null;
+		this.currencyCode = Amount.getCommonCurrencyCodeOfAll(grandTotal, openAmt, discountAmt, this.serviceFeeAmt)
 				.toThreeLetterCode();
 
-		values = ViewRowFieldNameAndJsonValuesHolder.newInstance(InvoiceRow.class);
+		rowId = convertInvoiceIdToDocumentId(invoiceId);
+		this.invoiceId = invoiceId;
+		this.clientAndOrgId = clientAndOrgId;
+		this.serviceFeeCalculation = serviceFeeCalculation;
+
+		this.values = buildViewRowFieldNameAndJsonValuesHolder(serviceFeeCalculation);
+	}
+
+	private static ViewRowFieldNameAndJsonValuesHolder<InvoiceRow> buildViewRowFieldNameAndJsonValuesHolder(
+			@Nullable final InvoiceProcessingFeeCalculation serviceFeeCalculation)
+	{
+		final ImmutableMap.Builder<String, ViewEditorRenderMode> viewEditorRenderModes = ImmutableMap.<String, ViewEditorRenderMode> builder()
+				.put(FIELD_DiscountAmt, ViewEditorRenderMode.ALWAYS);
+
+		if (serviceFeeCalculation != null)
+		{
+			viewEditorRenderModes.put(FIELD_ServiceFeeAmt, ViewEditorRenderMode.ALWAYS);
+		}
+
+		return ViewRowFieldNameAndJsonValuesHolder.builder(InvoiceRow.class)
+				.viewEditorRenderModeByFieldName(viewEditorRenderModes.build())
+				.build();
 	}
 
 	static DocumentId convertInvoiceIdToDocumentId(@NonNull final InvoiceId invoiceId)
@@ -179,6 +214,12 @@ public class InvoiceRow implements IViewRow
 	public ViewRowFieldNameAndJsonValues getFieldNameAndJsonValues()
 	{
 		return values.get(this);
+	}
+
+	@Override
+	public Map<String, ViewEditorRenderMode> getViewEditorRenderModeByFieldName()
+	{
+		return values.getViewEditorRenderModeByFieldName();
 	}
 
 	public BPartnerId getBPartnerId()
