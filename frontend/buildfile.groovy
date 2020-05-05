@@ -23,8 +23,19 @@ Map build(final MvnConf mvnConf, final Map scmVars, final boolean forceBuild=fal
 		"""
 
 //    vgitout = sh(returnStdout: true, script: "git diff --name-only ${scmVars.GIT_PREVIOUS_SUCCESSFUL_COMMIT} ${scmVars.GIT_COMMIT} . 2> /dev/null").trim()
-    def vgitout = sh(returnStdout: true, script: "git diff --name-only ${scmVars.GIT_PREVIOUS_SUCCESSFUL_COMMIT} ${scmVars.GIT_COMMIT} . | exit 0").trim()
-    echo "git output ${vgitout}"
+//    def vgitout = sh(returnStdout: true, script: "git diff --name-only ${scmVars.GIT_PREVIOUS_SUCCESSFUL_COMMIT} ${scmVars.GIT_COMMIT} . | exit 0").trim() // use "| exit 0" to not fail in the case when this is the first build
+    dev vpwdout = sh(returnStdout: true, script: "pwd")
+    echo "pwd output >>>${vpwdout}"
+
+    dev vlsout = sh(returnStdout: true, script: "ls")
+    echo "ls output >>>${vlsout}"
+
+
+    sh(returnStdout: true, script: "git diff --name-only HEAD~1 ${scmVars.GIT_COMMIT} .").trim()
+
+
+    def vgitout = sh(returnStdout: true, script: "git diff --name-only ${scmVars.GIT_PREVIOUS_SUCCESSFUL_COMMIT} ${scmVars.GIT_COMMIT} .").trim()
+    echo "git output >>>${vgitout}<<<"
     def status = !vgitout.isEmpty() // see if anything at all changed in this folder
 		echo "status of git dif command=${status} (anything changed?)"
 
@@ -33,7 +44,7 @@ Map build(final MvnConf mvnConf, final Map scmVars, final boolean forceBuild=fal
 			currentBuild.description= """${currentBuild.description}<p/>
 					No changes happened in frontend.
 					"""
-			echo "no changes happened in backend; skip building backend";
+			echo "no changes happened in frontend; skip building frontend";
 			return;
 		}
 
