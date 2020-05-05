@@ -88,6 +88,11 @@ public class InvoiceProcessingServiceCompanyService
 			return Optional.empty();
 		}
 
+		if (invoiceDAO.hasCompletedInvoicesReferencing(invoiceId))
+		{
+			return Optional.empty();
+		}
+
 		final CurrencyPrecision precision = moneyService.getStdPrecision(invoiceGrandTotal.getCurrencyCode());
 		final Amount feeAmountIncludingTax = invoiceGrandTotal.multiply(config.getFeePercentageOfGrandTotal(), precision);
 
@@ -143,6 +148,7 @@ public class InvoiceProcessingServiceCompanyService
 		invoice.setC_DocTypeTarget_ID(serviceInvoiceDocTypeId.getRepoId());
 		invoice.setDateInvoiced(TimeUtil.asTimestamp(evaluationDate));
 		invoice.setDateAcct(TimeUtil.asTimestamp(evaluationDate));
+		invoice.setRef_Invoice_ID(calculation.getInvoiceId().getRepoId());
 
 		invoice.setC_BPartner_ID(serviceCompanyBPartnerId.getRepoId());
 		invoiceBL.updateFromBPartner(invoice);
