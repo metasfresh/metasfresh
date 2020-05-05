@@ -37,6 +37,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
+import de.metas.invoice.InvoiceId;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.money.MoneyService;
@@ -92,6 +93,7 @@ public class BankStatementPaymentBL implements IBankStatementPaymentBL
 		}
 
 		final Set<PaymentId> eligiblePaymentIds = findEligiblePaymentIds(bankStatementLine, bpartnerId, 2);
+		//noinspection StatementWithEmptyBody
 		if (eligiblePaymentIds.size() > 1)
 		{
 			// Don't create a new Payment and don't link any of the existing payments if there are multiple payments found.
@@ -160,13 +162,15 @@ public class BankStatementPaymentBL implements IBankStatementPaymentBL
 		final boolean inboundPayment = statementAmt.signum() >= 0;
 		final Money payAmount = statementAmt.negateIf(!inboundPayment);
 
+		final InvoiceId invoiceId = InvoiceId.ofRepoIdOrNull(bankStatementLine.getC_Invoice_ID());
+
 		final TenderType tenderType = paymentBL.getTenderType(BPartnerBankAccountId.ofRepoId(bpartnerId, orgBankAccountId.getRepoId()));
 
 		final DefaultPaymentBuilder paymentBuilder = inboundPayment
 				? paymentBL.newInboundReceiptBuilder()
 				: paymentBL.newOutboundPaymentBuilder();
 
-		return paymentBuilder
+		paymentBuilder
 				.adOrgId(orgId)
 				.bpartnerId(bpartnerId)
 				.orgBankAccountId(orgBankAccountId)
@@ -174,8 +178,14 @@ public class BankStatementPaymentBL implements IBankStatementPaymentBL
 				.payAmt(payAmount.toBigDecimal())
 				.dateAcct(acctLineDate)
 				.dateTrx(acctLineDate) // Note: DateTrx should be the same as Line.DateAcct, and not Line.StatementDate.
-				.tenderType(tenderType)
-				.createDraft(); // note: don't complete the payment now, else onComplete interceptors might link this payment to a different Bank Statement Line.
+				.tenderType(tenderType);
+
+		if (invoiceId != null)
+		{
+			paymentBuilder.invoiceId(invoiceId);
+		}
+
+		return paymentBuilder.createDraft(); // note: don't complete the payment now, else onComplete interceptors might link this payment to a different Bank Statement Line.
 	}
 
 	@Override
