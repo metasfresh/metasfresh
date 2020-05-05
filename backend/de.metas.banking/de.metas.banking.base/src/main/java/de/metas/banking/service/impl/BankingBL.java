@@ -52,25 +52,8 @@ import de.metas.payment.PaymentRule;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
-import org.adempiere.banking.model.I_C_Invoice;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.invoice.service.IInvoiceBL;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Constants;
-import org.compiere.model.MInvoice;
-import org.compiere.model.MInvoiceLine;
-import org.compiere.model.MRecurrentPaymentHistory;
-import org.compiere.model.MRecurrentPaymentLine;
-import org.slf4j.Logger;
 
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.GregorianCalendar;
-import java.util.List;
-
-public class 	 implements IBankingBL
+public class BankingBL implements IBankingBL
 {
 	private static final Logger logger = LogManager.getLogger(BankingBL.class);
 
@@ -174,7 +157,7 @@ public class 	 implements IBankingBL
 		invoice.setC_PaymentTerm_ID(line.getC_PaymentTerm_ID());
 		invoice.setIsSOTrx(false); // always vendor invoice
 
-		// FRESH-488: Set the payment rule 
+		// FRESH-488: Set the payment rule
 		final PaymentRule paymentRule = Services.get(IInvoiceBL.class).getDefaultPaymentRule();
 		invoice.setPaymentRule(paymentRule.getCode());
 
