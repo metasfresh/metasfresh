@@ -5,8 +5,8 @@
 	<parent>
 		<artifactId>de.metas.parent.general</artifactId>
 		<groupId>de.metas</groupId>
-		<version>[1,10.0.0]</version> <!-- we need the range during the jenkins build -->
-		<relativePath>../metasfresh-parent/pom.xml</relativePath>
+		<version>10.0.0</version>
+		<relativePath>../../parent-pom/pom.xml</relativePath>
 	</parent>
 
 	<groupId>de.metas.edi.esb</groupId>
