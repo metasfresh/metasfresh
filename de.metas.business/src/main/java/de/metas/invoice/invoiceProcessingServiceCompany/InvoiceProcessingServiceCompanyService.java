@@ -3,8 +3,7 @@ package de.metas.invoice.invoiceProcessingServiceCompany;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.Optional;
 
 import javax.annotation.Nullable;
@@ -31,7 +30,6 @@ import de.metas.lang.SOTrx;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.money.MoneyService;
-import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
@@ -69,7 +67,6 @@ public class InvoiceProcessingServiceCompanyService
 	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 	private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
-	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
 	public InvoiceProcessingServiceCompanyService(
 			@NonNull final InvoiceProcessingServiceCompanyConfigRepository configRepository,
@@ -96,7 +93,7 @@ public class InvoiceProcessingServiceCompanyService
 
 		return Optional.of(InvoiceProcessingFeeCalculation.builder()
 				.orgId(request.getOrgId())
-				.dateTrx(request.getDateTrx())
+				.evaluationDate(request.getEvaluationDate())
 				//
 				.customerId(customerId)
 				.invoiceId(invoiceId)
@@ -128,8 +125,7 @@ public class InvoiceProcessingServiceCompanyService
 		trxManager.assertThreadInheritedTrxExists();
 
 		final OrgId orgId = calculation.getOrgId();
-		final LocalDate dateTrx = calculation.getDateTrx();
-		final ZoneId timeZone = orgDAO.getTimeZone(orgId);
+		final ZonedDateTime evaluationDate = calculation.getEvaluationDate();
 
 		final Amount invoiceProcessingFeeIncludingTax = invoiceProcessingFeeIncludingTaxOverride != null
 				? invoiceProcessingFeeIncludingTaxOverride
@@ -145,8 +141,8 @@ public class InvoiceProcessingServiceCompanyService
 		invoice.setAD_Org_ID(orgId.getRepoId());
 		invoice.setIsSOTrx(SOTrx.PURCHASE.toBoolean());
 		invoice.setC_DocTypeTarget_ID(serviceInvoiceDocTypeId.getRepoId());
-		invoice.setDateInvoiced(TimeUtil.asTimestamp(dateTrx, timeZone));
-		invoice.setDateAcct(TimeUtil.asTimestamp(dateTrx, timeZone));
+		invoice.setDateInvoiced(TimeUtil.asTimestamp(evaluationDate));
+		invoice.setDateAcct(TimeUtil.asTimestamp(evaluationDate));
 
 		invoice.setC_BPartner_ID(serviceCompanyBPartnerId.getRepoId());
 		invoiceBL.updateFromBPartner(invoice);

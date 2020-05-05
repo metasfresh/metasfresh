@@ -1,6 +1,6 @@
 package de.metas.invoice.invoiceProcessingServiceCompany;
 
-import java.time.LocalDate;
+import java.time.ZonedDateTime;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.currency.Amount;
@@ -40,7 +40,7 @@ public class InvoiceProcessingFeeComputeRequest
 	OrgId orgId;
 
 	@NonNull
-	LocalDate dateTrx;
+	ZonedDateTime evaluationDate;
 
 	@NonNull
 	BPartnerId customerId;

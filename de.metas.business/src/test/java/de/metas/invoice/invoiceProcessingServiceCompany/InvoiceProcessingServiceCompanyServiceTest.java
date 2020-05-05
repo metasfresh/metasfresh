@@ -166,7 +166,7 @@ public class InvoiceProcessingServiceCompanyServiceTest
 
 			final Optional<InvoiceProcessingFeeCalculation> result = invoiceProcessingServiceCompanyService.computeFee(InvoiceProcessingFeeComputeRequest.builder()
 					.orgId(OrgId.ofRepoId(1))
-					.dateTrx(LocalDate.parse("2020-04-30"))
+					.evaluationDate(LocalDate.parse("2020-04-30").atStartOfDay(ZoneId.of("UTC+5")))
 					.customerId(BPartnerId.ofRepoId(2))
 					.invoiceId(InvoiceId.ofRepoId(3))
 					.invoiceGrandTotal(Amount.of(100, CurrencyCode.EUR))
@@ -175,7 +175,7 @@ public class InvoiceProcessingServiceCompanyServiceTest
 			assertThat(result.orElse(null))
 					.isEqualToComparingFieldByField(InvoiceProcessingFeeCalculation.builder()
 							.orgId(OrgId.ofRepoId(1))
-							.dateTrx(LocalDate.parse("2020-04-30"))
+							.evaluationDate(LocalDate.parse("2020-04-30").atStartOfDay(ZoneId.of("UTC+5")))
 							.customerId(BPartnerId.ofRepoId(2))
 							.invoiceId(InvoiceId.ofRepoId(3))
 							.invoiceGrandTotal(Amount.of(100, CurrencyCode.EUR))
@@ -199,7 +199,7 @@ public class InvoiceProcessingServiceCompanyServiceTest
 
 			final Optional<InvoiceProcessingFeeCalculation> result = invoiceProcessingServiceCompanyService.computeFee(InvoiceProcessingFeeComputeRequest.builder()
 					.orgId(OrgId.ofRepoId(1))
-					.dateTrx(LocalDate.parse("2020-04-30"))
+					.evaluationDate(LocalDate.parse("2020-04-30").atStartOfDay(ZoneId.of("UTC+5")))
 					.customerId(BPartnerId.ofRepoId(2))
 					.invoiceId(InvoiceId.ofRepoId(3))
 					.invoiceGrandTotal(Amount.of(100, CurrencyCode.EUR))
@@ -394,7 +394,7 @@ public class InvoiceProcessingServiceCompanyServiceTest
 		{
 			final InvoiceProcessingFeeCalculation calculation = InvoiceProcessingFeeCalculation.builder()
 					.orgId(orgId)
-					.dateTrx(LocalDate.parse("2020-04-30"))
+					.evaluationDate(LocalDate.parse("2020-04-30").atStartOfDay(ZoneId.of("UTC-8")))
 					.customerId(BPartnerId.ofRepoId(2))
 					.invoiceId(InvoiceId.ofRepoId(3))
 					.invoiceGrandTotal(Amount.of(100, CurrencyCode.EUR))

@@ -1,7 +1,7 @@
 package de.metas.invoice.invoiceProcessingServiceCompany;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
+import java.time.ZonedDateTime;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.currency.Amount;
@@ -43,7 +43,7 @@ public class InvoiceProcessingFeeCalculation
 	OrgId orgId;
 
 	@NonNull
-	LocalDate dateTrx;
+	ZonedDateTime evaluationDate;
 
 	@NonNull
 	BPartnerId customerId;

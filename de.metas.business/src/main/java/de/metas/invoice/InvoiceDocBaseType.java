@@ -92,6 +92,11 @@ public enum InvoiceDocBaseType implements ReferenceListAwareEnum
 		return getSoTrx().isSales();
 	}
 
+	public boolean isCustomerInvoice()
+	{
+		return this == CustomerInvoice;
+	}
+
 	public boolean isCustomerCreditMemo()
 	{
 		return this == CustomerCreditMemo;

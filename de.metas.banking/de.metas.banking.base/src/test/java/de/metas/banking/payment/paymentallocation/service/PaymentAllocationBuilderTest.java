@@ -39,6 +39,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
@@ -889,7 +890,7 @@ public class PaymentAllocationBuilderTest
 
 		final InvoiceProcessingFeeCalculation invoiceProcessingFeeCalculation = InvoiceProcessingFeeCalculation.builder()
 				.orgId(adOrgId)
-				.dateTrx(date)
+				.evaluationDate(date.atStartOfDay(ZoneId.of("UTC-8")))
 				.customerId(bpartnerId)
 				.invoiceId(InvoiceId.ofRepoId(1111))
 				.invoiceGrandTotal(Amount.of(100, CurrencyCode.EUR))
