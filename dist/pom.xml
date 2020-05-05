@@ -1,0 +1,1068 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>de.metas.dist</groupId>
+		<artifactId>metasfresh-dist</artifactId>
+		<version>10.0.0</version>
+	</parent>
+
+	<artifactId>metasfresh-dist-dist</artifactId>
+	<packaging>pom</packaging>
+
+	<properties>
+		<!--
+			Strip the version to make sure that the file names are the same of the target server, even if we roll out another version (e.g. IT vs UAT).
+			This is important because
+				  1. we rely on old files to be overwritten by new files
+				  2. shell scripts are using certain jars in their class-paths
+		-->
+		<de.metas.endcustomer.stripVersion>true</de.metas.endcustomer.stripVersion>
+
+		<!--
+		The following *.version properties are changed by the build system via mvn versions:update-property.
+		See http://www.mojohaus.org/versions-maven-plugin/examples/update-properties.html
+		and http://stackoverflow.com/questions/3628471/maven-versions-plugin-not-picking-up-properties-from-parent
+		-->
+		<!-- 10.0.0 is the version that is build and installed to our local repo bei eclipse or if we run maven from the command line -->
+		<metasfresh.version>[1,10.0.0]</metasfresh.version>
+		<metasfresh-webui-api.version>[1,10.0.0]</metasfresh-webui-api.version>
+		<metasfresh-procurement-webui.version>[1,10.0.0]</metasfresh-procurement-webui.version>
+		<metasfresh-admin.version>[1,10.0.0]</metasfresh-admin.version>
+		<metasfresh-webui-frontend.version>[1,10.0.0]</metasfresh-webui-frontend.version>
+	</properties>
+
+	<dependencies>
+
+<!--
+We used to just get many of the following deployables with the dependencies-plugin's copy goal, but there we need to give a version.
+Ranges are not allowed.
+Since we now work with a range, we now declare the dependencies here where ranges can be resolved, and can then further down use the copy-dependencies goal instead of the copy goal.
+-->
+		<dependency>
+			<groupId>de.metas.dist</groupId>
+			<artifactId>metasfresh-dist-serverRoot</artifactId>
+			<version>10.0.0</version>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.scripts.rollout</groupId>
+			<artifactId>de.metas.scripts.rollout</artifactId>
+			<version>${metasfresh.version}</version>
+			<type>tar.gz</type>
+			<classifier>dist</classifier>
+			<exclusions>
+				<exclusion>
+					<artifactId>logback-classic</artifactId>
+					<groupId>ch.qos.logback</groupId>
+				</exclusion>
+				<exclusion>
+					<artifactId>slf4j-api</artifactId>
+					<groupId>org.slf4j</groupId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.dist</groupId>
+			<artifactId>metasfresh-dist-base</artifactId>
+			<version>10.0.0</version>
+			<type>jar</type>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.dist</groupId>
+			<artifactId>metasfresh-dist-swingui</artifactId>
+			<version>10.0.0</version>
+			<classifier>client</classifier>
+			<type>zip</type>
+		</dependency>
+
+
+		<dependency>
+			<groupId>de.metas.printing</groupId>
+			<artifactId>de.metas.printing.client</artifactId>
+			<classifier>jar-with-dependencies</classifier>
+			<version>${metasfresh.version}</version>
+		</dependency>
+		<!--
+			gh #968 https://github.com/metasfresh/metasfresh/issues/968
+			We need to declare theses dependencies so that the version:update-property can update the *.version properties
+			Further down we will then copy these files to the dist folder using the copy-dependencies goal.
+		-->
+		<dependency>
+			<groupId>de.metas.ui.web</groupId>
+			<artifactId>metasfresh-webui-api</artifactId>
+			<version>${metasfresh-webui-api.version}</version>
+			<type>jar</type>
+		</dependency>
+		<dependency>
+			<groupId>de.metas.ui.web</groupId>
+			<artifactId>metasfresh-webui-frontend</artifactId>
+			<version>${metasfresh-webui-frontend.version}</version>
+			<type>tar.gz</type>
+		</dependency>
+		<dependency>
+			<groupId>de.metas.procurement</groupId>
+			<artifactId>de.metas.procurement.webui</artifactId>
+			<version>${metasfresh-procurement-webui.version}</version>
+			<type>jar</type>
+		</dependency>
+
+		<!-- https://github.com/metasfresh/metasfresh/issues/1471 -->
+		<dependency>
+			<groupId>de.metas.admin</groupId>
+			<artifactId>metasfresh-admin</artifactId>
+			<version>${metasfresh-admin.version}</version>
+			<type>jar</type>
+			<scope>provided</scope> <!-- we need this dependency here to update the version property-->
+		</dependency>
+
+		<!-- https://github.com/metasfresh/metasfresh/issues/523 -->
+		<dependency>
+			<groupId>de.metas.material</groupId>
+			<artifactId>metasfresh-material-dispo-service</artifactId>
+			<version>${metasfresh.version}</version> <!-- currently this service is not in a dedicated repo and thus doesn't have a dedicated version -->
+			<type>jar</type>
+			<scope>provided</scope> <!-- we need this dependency here to update the version property -->
+		</dependency>
+
+<!--
+SQL and jasper dependencies:
+note: when adding new records, please roughly order them by alphabet.
+ -->
+		<dependency>
+			<groupId>de.metas.acct</groupId>
+			<artifactId>de.metas.acct.base</artifactId>
+			<version>${metasfresh.version}</version>
+			<classifier>migration-postgres-sql</classifier>
+			<type>zip</type>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.adempiere.adempiere</groupId>
+			<artifactId>de.metas.adempiere.adempiere.migration-sql</artifactId>
+			<version>${metasfresh.version}</version>
+			<classifier>migration-postgres-sql</classifier>
+			<type>zip</type>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.aggregation</groupId>
+			<artifactId>de.metas.aggregation</artifactId>
+			<version>${metasfresh.version}</version>
+			<classifier>migration-postgres-sql</classifier>
+			<type>zip</type>
+			<exclusions>
+				<exclusion>
+					<artifactId>slf4j-api</artifactId>
+					<groupId>org.slf4j</groupId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.business</groupId>
+			<artifactId>de.metas.business</artifactId>
+			<version>${metasfresh.version}</version>
+			<classifier>migration-postgres-sql</classifier>
+			<type>zip</type>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.async</groupId>
+			<artifactId>de.metas.async</artifactId>
+			<version>${metasfresh.version}</version>
+			<classifier>migration-postgres-sql</classifier>
+			<type>zip</type>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.adempiere.libero</groupId>
+			<artifactId>de.metas.adempiere.libero.libero</artifactId>
+			<version>${metasfresh.version}</version>
+			<classifier>migration-postgres-sql</classifier>
+			<type>zip</type>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.banking</groupId>
+			<artifactId>de.metas.banking.base</artifactId>
+			<version>${metasfresh.version}</version>
+			<classifier>migration-postgres-sql</classifier>
+			<type>zip</type>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.business</groupId>
+			<artifactId>de.metas.business.rest-api</artifactId>
+			<version>${metasfresh.version}</version>
+			<classifier>migration-postgres-sql</classifier>
+			<type>zip</type>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.contracts</groupId>
+			<artifactId>de.metas.contracts</artifactId>
+			<version>${metasfresh.version}</version>
+			<classifier>migration-postgres-sql</classifier>
+			<type>zip</type>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.device.adempiere</groupId>
+			<artifactId>de.metas.device.adempiere</artifactId>
+			<version>${metasfresh.version}</version>
+			<classifier>migration-postgres-sql</classifier>
+			<type>zip</type>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.dimension</groupId>
+			<artifactId>de.metas.dimension</artifactId>
+			<version>${metasfresh.version}</version>
+			<classifier>migration-postgres-sql</classifier>
+			<type>zip</type>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.dlm</groupId>
+			<artifactId>metasfresh-dlm-base</artifactId>
+			<version>${metasfresh.version}</version>
+			<classifier>migration-postgres-sql</classifier>
+			<type>zip</type>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.document.archive</groupId>
+			<artifactId>de.metas.document.archive.base</artifactId>
+			<version>${metasfresh.version}</version>
+			<classifier>migration-postgres-sql</classifier>
+			<type>zip</type>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.document</groupId>
+			<artifactId>de.metas.document.refid</artifactId>
+			<version>${metasfresh.version}</version>
+			<classifier>migration-postgres-sql</classifier>
+			<type>zip</type>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.dunning</groupId>
+			<artifactId>de.metas.dunning</artifactId>
+			<version>${metasfresh.version}</version>
+			<classifier>jasper</classifier>
+		</dependency>
+		<dependency>
+			<groupId>de.metas.dunning</groupId>
+			<artifactId>de.metas.dunning</artifactId>
+			<version>${metasfresh.version}</version>
+			<classifier>migration-postgres-sql</classifier>
+			<type>zip</type>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.edi</groupId>
+			<artifactId>de.metas.edi</artifactId>
+			<version>${metasfresh.version}</version>
+			<classifier>migration-postgres-sql</classifier>
+			<type>zip</type>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.fresh</groupId>
+			<artifactId>de.metas.fresh.base</artifactId>
+			<version>${metasfresh.version}</version>
+			<classifier>jasper</classifier>
+			<exclusions>
+				<exclusion>
+					<artifactId>slf4j-api</artifactId>
+					<groupId>org.slf4j</groupId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>de.metas.fresh</groupId>
+			<artifactId>de.metas.fresh.base</artifactId>
+			<version>${metasfresh.version}</version>
+			<classifier>migration-postgres-sql</classifier>
+			<type>zip</type>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.dist</groupId>
+			<artifactId>metasfresh-dist-base</artifactId>
+			<version>10.0.0</version>
+			<classifier>jasper</classifier>
+		</dependency>
+		<dependency>
+			<groupId>de.metas.dist</groupId>
+			<artifactId>metasfresh-dist-base</artifactId>
+			<version>10.0.0</version>
+			<classifier>migration-postgres-sql</classifier>
+			<type>zip</type>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.handlingunits</groupId>
+			<artifactId>de.metas.handlingunits.base</artifactId>
+			<version>${metasfresh.version}</version>
+			<classifier>migration-postgres-sql</classifier>
+			<type>zip</type>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.jax.rs</groupId>
+			<artifactId>de.metas.jax.rs</artifactId>
+			<version>${metasfresh.version}</version>
+			<classifier>migration-postgres-sql</classifier>
+			<type>zip</type>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.marketing</groupId>
+			<artifactId>marketing-base</artifactId>
+			<version>${metasfresh.version}</version>
+			<classifier>migration-postgres-sql</classifier>
+			<type>zip</type>
+		</dependency>
+		<dependency>
+			<groupId>de.metas.marketing</groupId>
+			<artifactId>marketing-cleverreach</artifactId>
+			<version>${metasfresh.version}</version>
+			<classifier>migration-postgres-sql</classifier>
+			<type>zip</type>
+		</dependency>
+		<dependency>
+			<groupId>de.metas.marketing</groupId>
+			<artifactId>marketing-serialletter </artifactId>
+			<version>${metasfresh.version}</version>
+			<classifier>migration-postgres-sql</classifier>
+			<type>zip</type>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.vertical.creditscore</groupId>
+			<artifactId>metasfresh-creditscore-creditpass</artifactId>
+			<version>${metasfresh.version}</version>
+			<classifier>migration-postgres-sql</classifier>
+			<type>zip</type>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.material</groupId>
+			<artifactId>metasfresh-material-cockpit</artifactId>
+			<version>${metasfresh.version}</version>
+			<classifier>migration-postgres-sql</classifier>
+			<type>zip</type>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.material</groupId>
+			<artifactId>metasfresh-material-dispo-service</artifactId>
+			<version>${metasfresh.version}</version>
+			<classifier>migration-postgres-sql</classifier>
+			<type>zip</type>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.material</groupId>
+			<artifactId>metasfresh-material-planning</artifactId>
+			<version>${metasfresh.version}</version>
+			<classifier>migration-postgres-sql</classifier>
+			<type>zip</type>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.materialtracking</groupId>
+			<artifactId>de.metas.materialtracking</artifactId>
+			<version>${metasfresh.version}</version>
+			<classifier>migration-postgres-sql</classifier>
+			<type>zip</type>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.payment.esr</groupId>
+			<artifactId>de.metas.payment.esr</artifactId>
+			<version>${metasfresh.version}</version>
+			<classifier>migration-postgres-sql</classifier>
+			<type>zip</type>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.payment.sepa</groupId>
+			<artifactId>de.metas.payment.sepa.base</artifactId>
+			<version>${metasfresh.version}</version>
+			<classifier>migration-postgres-sql</classifier>
+			<type>zip</type>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.payment.paypal</groupId>
+			<artifactId>de.metas.payment.paypal</artifactId>
+			<version>${metasfresh.version}</version>
+			<classifier>migration-postgres-sql</classifier>
+			<type>zip</type>
+		</dependency>
+
+		<dependency>
+			<artifactId>de.metas.printing.base</artifactId>
+			<groupId>de.metas.printing</groupId>
+			<version>${metasfresh.version}</version>
+			<classifier>jasper</classifier>
+		</dependency>
+		<dependency>
+			<artifactId>de.metas.printing.base</artifactId>
+			<groupId>de.metas.printing</groupId>
+			<version>${metasfresh.version}</version>
+			<classifier>migration-postgres-sql</classifier>
+			<type>zip</type>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.procurement</groupId>
+			<artifactId>de.metas.procurement.base</artifactId>
+			<version>${metasfresh.version}</version>
+			<classifier>jasper</classifier>
+		</dependency>
+		<dependency>
+			<groupId>de.metas.procurement</groupId>
+			<artifactId>de.metas.procurement.base</artifactId>
+			<version>${metasfresh.version}</version>
+			<classifier>migration-postgres-sql</classifier>
+			<type>zip</type>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.report</groupId>
+			<artifactId>metasfresh-report-service</artifactId>
+			<version>${metasfresh.version}</version>
+			<classifier>migration-postgres-sql</classifier>
+			<type>zip</type>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.rfq</groupId>
+			<artifactId>de.metas.rfq</artifactId>
+			<version>${metasfresh.version}</version>
+			<classifier>migration-postgres-sql</classifier>
+			<type>zip</type>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.purchasecandidate</groupId>
+			<artifactId>de.metas.purchasecandidate.base</artifactId>
+			<version>${metasfresh.version}</version>
+			<classifier>migration-postgres-sql</classifier>
+			<type>zip</type>
+		</dependency>
+		<dependency>
+			<groupId>de.metas.salescandidate</groupId>
+			<artifactId>de.metas.salescandidate.base</artifactId>
+			<version>${metasfresh.version}</version>
+			<classifier>migration-postgres-sql</classifier>
+			<type>zip</type>
+		</dependency>
+		
+		<dependency>
+			<groupId>de.metas.serviceprovider</groupId>
+			<artifactId>de.metas.serviceprovider.base</artifactId>
+			<version>${metasfresh.version}</version>
+			<classifier>migration-postgres-sql</classifier>
+			<type>zip</type>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.shipper.gateway</groupId>
+			<artifactId>de.metas.shipper.gateway.derkurier</artifactId>
+			<version>${metasfresh.version}</version>
+			<classifier>migration-postgres-sql</classifier>
+			<type>zip</type>
+		</dependency>
+		<dependency>
+			<groupId>de.metas.shipper.gateway</groupId>
+			<artifactId>de.metas.shipper.gateway.dhl</artifactId>
+			<version>${metasfresh.version}</version>
+			<classifier>migration-postgres-sql</classifier>
+			<type>zip</type>
+		</dependency>
+		<dependency>
+			<groupId>de.metas.shipper.gateway</groupId>
+			<artifactId>de.metas.shipper.gateway.dpd</artifactId>
+			<version>${metasfresh.version}</version>
+			<classifier>migration-postgres-sql</classifier>
+			<type>zip</type>
+		</dependency>
+		<dependency>
+			<groupId>de.metas.shipper.gateway</groupId>
+			<artifactId>de.metas.shipper.gateway.go</artifactId>
+			<version>${metasfresh.version}</version>
+			<classifier>migration-postgres-sql</classifier>
+			<type>zip</type>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.datev</groupId>
+			<artifactId>metasfresh-datev</artifactId>
+			<version>${metasfresh.version}</version>
+			<classifier>migration-postgres-sql</classifier>
+			<type>zip</type>
+		</dependency>
+
+		<!-- Elasticsearch -->
+		<dependency>
+			<groupId>de.metas.elasticsearch</groupId>
+			<artifactId>de.metas.elasticsearch</artifactId>
+			<version>${metasfresh.version}</version>
+			<classifier>migration-postgres-sql</classifier>
+			<type>zip</type>
+		</dependency>
+		<dependency>
+			<groupId>de.metas.elasticsearch</groupId>
+			<artifactId>de.metas.elasticsearch.server</artifactId>
+			<version>${metasfresh.version}</version>
+			<classifier>migration-postgres-sql</classifier>
+			<type>zip</type>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.inbound</groupId>
+			<artifactId>de.metas.inbound.mail</artifactId>
+			<version>${metasfresh.version}</version>
+			<classifier>migration-postgres-sql</classifier>
+			<type>zip</type>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.swat</groupId>
+			<artifactId>de.metas.swat.base</artifactId>
+			<version>${metasfresh.version}</version>
+			<classifier>migration-postgres-sql</classifier>
+			<type>zip</type>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.ui.web</groupId>
+			<artifactId>de.metas.ui.web.base</artifactId>
+			<version>${metasfresh.version}</version>
+			<classifier>migration-postgres-sql</classifier>
+			<type>zip</type>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.vertical.pharma</groupId>
+			<artifactId>metasfresh-pharma</artifactId>
+			<version>${metasfresh.version}</version>
+			<classifier>migration-postgres-sql</classifier>
+			<type>zip</type>
+		</dependency>
+		<dependency>
+			<groupId>de.metas.vertical.pharma</groupId>
+			<artifactId>metasfresh-pharma.vendor.gateway.msv3</artifactId>
+			<version>${metasfresh.version}</version>
+			<classifier>migration-postgres-sql</classifier>
+			<type>zip</type>
+		</dependency>
+		<dependency>
+			<groupId>de.metas.vertical.pharma</groupId>
+			<artifactId>metasfresh-pharma.msv3.server-peer-metasfresh</artifactId>
+			<version>${metasfresh.version}</version>
+			<classifier>migration-postgres-sql</classifier>
+			<type>zip</type>
+		</dependency>
+		<dependency>
+			<groupId>de.metas.vertical.pharma</groupId>
+			<artifactId>metasfresh-pharma.securpharm</artifactId>
+			<version>${metasfresh.version}</version>
+			<classifier>migration-postgres-sql</classifier>
+			<type>zip</type>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.vertical.healthcare_ch</groupId>
+			<artifactId>vertical-healthcare_ch.forum_datenaustausch_ch.invoice_base</artifactId>
+			<version>${metasfresh.version}</version>
+			<classifier>migration-postgres-sql</classifier>
+			<type>zip</type>
+		</dependency>
+
+		<!-- Thx for the two fonts to http://ansuz.sooke.bc.ca/page/fonts ^^ -->
+		<dependency>
+			<groupId>jp.osdn.ocra</groupId>
+			<artifactId>jp.osdn.ocra</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>jp.osdn.ocrb</groupId>
+			<artifactId>jp.osdn.ocrb</artifactId>
+		</dependency>
+
+	</dependencies>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-maven-plugin</artifactId>
+				<version>${spring-boot.version}</version>
+				<executions>
+					<execution>
+						<!--
+							Issue https://github.com/metasfresh/metasfresh/issues/2110:
+							Create build-info.properties and add them also to our distributable files
+						 -->
+						<id>spring-boot-dist-build-info</id>
+						<phase>prepare-package</phase>
+						<goals>
+							<goal>build-info</goal> <!-- create build-info.properties; thanks to https://docs.spring.io/spring-boot/docs/current/reference/html/howto-build.html#howto-build-info -->
+						</goals>
+						<configuration>
+							<outputFile>${project.build.directory}/build-info/build-info.properties</outputFile>
+							<additionalProperties>
+								<jenkinsBuildNo>${env.BUILD_NUMBER}</jenkinsBuildNo>
+								<jenkinsBuildTag>${env.BUILD_TAG}</jenkinsBuildTag>
+								<jenkinsBuildUrl>${env.BUILD_URL}</jenkinsBuildUrl>
+								<jenkinsJobName>${env.JOB_NAME}</jenkinsJobName>
+							</additionalProperties>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-dependency-plugin</artifactId>
+				<executions>
+					<!-- Build deploy/reports -->
+					<execution>
+						<!--
+						First we explicitly extract everything that is *not* the jasper files from
+							de.metas.fresh.base or
+							de.metas.endcustomer.*.base.
+						Among these files, we don't expect any name collisions.
+						-->
+						<id>unpack-jasper-general</id>
+						<phase>prepare-package</phase>
+						<goals>
+							<goal>unpack-dependencies</goal>
+						</goals>
+						<configuration>
+							<type>jar</type>
+							<excludeArtifactIds>de.metas.fresh.base,metasfresh-dist-base</excludeArtifactIds>
+							<classifier>jasper</classifier>
+							<excludeTransitive>true</excludeTransitive>
+							<failOnMissingClassifierArtifact>false</failOnMissingClassifierArtifact>
+							<outputDirectory>${project.build.directory}/dist/deploy/reports</outputDirectory>
+							<overWriteReleases>true</overWriteReleases>
+							<overWriteSnapshots>true</overWriteSnapshots>
+						</configuration>
+					</execution>
+					<execution>
+						<!--
+						Then we extract the first the fresh-specific jasper files  and finally the endcustomer-specific jasper files,
+						and we want them to overwrite the generic files if they have the same name.
+						-->
+						<id>unpack-jasper-fresh</id>
+						<phase>prepare-package</phase>
+						<goals>
+							<goal>unpack-dependencies</goal>
+						</goals>
+						<configuration>
+							<type>jar</type>
+							<includeArtifactIds>de.metas.fresh.base</includeArtifactIds>
+							<classifier>jasper</classifier>
+							<excludeTransitive>true</excludeTransitive>
+							<failOnMissingClassifierArtifact>false</failOnMissingClassifierArtifact>
+							<outputDirectory>${project.build.directory}/dist/deploy/reports</outputDirectory>
+							<overWriteReleases>true</overWriteReleases>
+							<overWriteSnapshots>true</overWriteSnapshots>
+						</configuration>
+					</execution>
+					<execution>
+						<id>unpack-jasper-endcustomer</id>
+						<phase>prepare-package</phase>
+						<goals>
+							<goal>unpack-dependencies</goal>
+						</goals>
+						<configuration>
+							<type>jar</type>
+							<includeArtifactIds>metasfresh-dist-base</includeArtifactIds>
+							<classifier>jasper</classifier>
+							<excludeTransitive>true</excludeTransitive>
+							<failOnMissingClassifierArtifact>false</failOnMissingClassifierArtifact>
+							<outputDirectory>${project.build.directory}/dist/deploy/reports</outputDirectory>
+							<overWriteReleases>true</overWriteReleases>
+							<overWriteSnapshots>true</overWriteSnapshots>
+						</configuration>
+					</execution>
+
+					<!--
+						Build deploy/download folder: metasfresh server executable and client-zip
+						Note that we want to set the target file name, which is something, the copy goal offers, but not the copy-dependencies goal.
+						On the other hand, the copy goal does not work with version ranges
+						Fortunately, the client-zip has the same parent pom like this project and we can be sure that it will have the same version.
+						Therefore, we don't need to provide a version range and can thus use the copy goal.
+					-->
+					<execution>
+						<id>copy-main-deployables</id>
+						<phase>prepare-package</phase>
+						<goals>
+							<goal>copy</goal>
+						</goals>
+						<configuration>
+							<excludeTransitive>true</excludeTransitive>
+							<stripVersion>${de.metas.endcustomer.stripVersion}</stripVersion>
+							<artifactItems>
+								<artifactItem>
+									<groupId>de.metas.dist</groupId>
+									<artifactId>metasfresh-dist-serverRoot</artifactId>
+									<version>${project.version}</version>
+									<outputDirectory>${project.build.directory}/dist/deploy</outputDirectory>
+									<destFileName>metasfresh_server.jar</destFileName>
+								</artifactItem>
+								<artifactItem>
+									<groupId>de.metas.dist</groupId>
+									<artifactId>metasfresh-dist-swingui</artifactId>
+									<classifier>client</classifier>
+									<version>${project.version}</version>
+									<type>zip</type>
+									<outputDirectory>${project.build.directory}/dist/deploy/download</outputDirectory>
+									<destFileName>metasfresh-client.zip</destFileName>
+								</artifactItem>
+							</artifactItems>
+						</configuration>
+					</execution>
+
+					<!--
+						Build deploy folder: additional binaries that are generally required for metasfresh to run.
+						We specified these artifacts as dependencies further up. Therefore they were already resolved and now we only need to grab 'em by the artifactid without having to specify a particular version.
+					-->
+					<execution>
+						<id>copy-metasfresh-deploy-jars</id>
+						<phase>prepare-package</phase>
+						<goals>
+							<goal>copy-dependencies</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${project.build.directory}/dist/deploy</outputDirectory>
+							<includeArtifactIds>
+								metasfresh-webui-frontend
+							</includeArtifactIds>
+							<excludeTransitive>true</excludeTransitive>
+							<overWriteReleases>true</overWriteReleases>
+							<overWriteSnapshots>true</overWriteSnapshots>
+							<stripVersion>true</stripVersion> <!-- when we deploy those files, we want their names to always be the same -->
+						</configuration>
+					</execution>
+
+					<!--
+						Build deploy/download folder with procurement-webui. Those binaries are only needed in some scenarios
+						We specified these artifacts as dependencies further up. Therefore they were already resolved and now we only need to grab 'em by the artifactid without having to specify a particular version.
+					-->
+					<execution>
+						<id>copy-metasfresh-download-jars</id>
+						<phase>prepare-package</phase>
+						<goals>
+							<goal>copy-dependencies</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${project.build.directory}/dist/deploy/download</outputDirectory>
+							<includeArtifactIds>
+								de.metas.procurement.webui
+							</includeArtifactIds>
+							<excludeTransitive>true</excludeTransitive>
+							<overWriteReleases>true</overWriteReleases>
+							<overWriteSnapshots>true</overWriteSnapshots>
+							<stripVersion>true</stripVersion> <!-- when we deploy those files, we want their names to always be the same -->
+						</configuration>
+					</execution>
+					<execution>
+						<id>copy-metasfresh-service-jars</id>
+						<phase>prepare-package</phase>
+						<goals>
+							<goal>copy-dependencies</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${project.build.directory}/dist/deploy/services</outputDirectory>
+							<includeArtifactIds>
+								<!-- gh metasfresh/metasfresh#1471 -->
+								metasfresh-admin,
+								<!-- gh metasfresh/metasfresh#523 and metasfresh/metasfresh#1471 -->
+								metasfresh-material-dispo-service,
+								<!-- gh metasfresh/metasfresh#968 -->
+								metasfresh-webui-api
+							</includeArtifactIds>
+							<type>jar</type>
+							<excludeTransitive>true</excludeTransitive>
+							<overWriteReleases>true</overWriteReleases>
+							<overWriteSnapshots>true</overWriteSnapshots>
+							<stripVersion>true</stripVersion> <!-- when we deploy those files, we want their names to always be the same -->
+						</configuration>
+					</execution>
+					<execution>
+						<id>copy-metasfresh-service-configs</id>
+						<phase>prepare-package</phase>
+						<goals>
+							<goal>copy-dependencies</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${project.build.directory}/dist/deploy/services</outputDirectory>
+							<includeArtifactIds>
+								<!-- gh metasfresh/metasfresh#1471 -->
+								metasfresh-admin,
+								<!-- gh metasfresh/metasfresh#523 and metasfresh/metasfresh#1471 -->
+								metasfresh-material-dispo-service,
+								<!-- gh metasfresh/metasfresh#968 -->
+								metasfresh-webui-api
+							</includeArtifactIds>
+							<type>zip</type>
+							<classifier>configs</classifier>
+							<excludeTransitive>true</excludeTransitive>
+							<overWriteReleases>true</overWriteReleases>
+							<overWriteSnapshots>true</overWriteSnapshots>
+							<stripVersion>true</stripVersion> <!-- when we deploy those files, we want their names to always be the same -->
+						</configuration>
+					</execution>
+					<execution>
+						<id>copy-metasfresh-download-jars-with-dependencies</id>
+						<phase>prepare-package</phase>
+						<goals>
+							<goal>copy-dependencies</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${project.build.directory}/dist/deploy/download</outputDirectory>
+							<includeArtifactIds>de.metas.printing.client</includeArtifactIds>
+							<classifier>jar-with-dependencies</classifier>
+							<type>jar</type>
+							<excludeTransitive>true</excludeTransitive>
+							<overWriteReleases>true</overWriteReleases>
+							<overWriteSnapshots>true</overWriteSnapshots>
+							<stripVersion>true</stripVersion> <!-- when we deploy those files, we want their names to always be the same -->
+						</configuration>
+					</execution>
+
+					<!-- Build dist/sql: sql migration scripts -->
+					<execution>
+						<id>unpack-sql</id>
+						<phase>prepare-package</phase>
+						<goals>
+							<goal>unpack-dependencies</goal>
+						</goals>
+						<configuration>
+							<type>zip</type>
+							<classifier>migration-postgres-sql</classifier>
+							<excludeTransitive>true</excludeTransitive>
+							<failOnMissingClassifierArtifact>false</failOnMissingClassifierArtifact>
+							<outputDirectory>${project.build.directory}/dist/sql</outputDirectory>
+						</configuration>
+					</execution>
+
+					<!-- Build dist/install: rollout helper scripts -->
+					<execution>
+						<id>unpack-rollout-scripts</id>
+						<phase>prepare-package</phase>
+						<goals>
+							<goal>unpack-dependencies</goal>
+						</goals>
+						<configuration>
+							<type>zip</type>
+							<includeArtifactIds>de.metas.scripts.rollout</includeArtifactIds>
+							<excludeTransitive>true</excludeTransitive>
+							<!-- we assume that the rollout scripts were assembled with outputDirectory=install,
+								so the scripts shall end up in dist/install -->
+							<outputDirectory>${project.build.directory}/dist</outputDirectory>
+						</configuration>
+					</execution>
+
+					<!-- Build dist/sources: add sources of all of involved artifacts -->
+					<execution>
+						<id>copy-sources</id>
+						<phase>prepare-package</phase>
+						<goals>
+							<goal>copy-dependencies</goal>
+						</goals>
+						<configuration>
+							<type>jar</type>
+							<classifier>sources</classifier>
+							<excludeTransitive>false</excludeTransitive>
+							<stripVersion>true</stripVersion>
+							<failOnMissingClassifierArtifact>false</failOnMissingClassifierArtifact>
+							<outputDirectory>${project.build.directory}/dist/sources</outputDirectory>
+						</configuration>
+					</execution>
+
+					<!-- Build dist/doc: Write the project dependency tree -->
+					<execution>
+						<id>write-dependency-tree</id>
+						<phase>prepare-package</phase>
+						<goals>
+							<goal>tree</goal>
+						</goals>
+						<configuration>
+							<outputType>text</outputType>
+							<outputFile>${project.build.directory}/dist/doc/project_dependency_tree.txt</outputFile>
+						</configuration>
+					</execution>
+
+					<!-- copy external-lib
+						We specified these artifacts as dependencies further up. Therefore they were already resolved and now we only need to grab 'em by the artifactid without having to specify a particular version.
+					-->
+					<execution>
+						<id>copy-metasfresh-external-lib-for-docker-build</id>
+						<phase>prepare-package</phase>
+						<goals>
+							<goal>copy-dependencies</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${docker.build.directory}/report/external-lib</outputDirectory>
+							<includeArtifactIds>jp.osdn.ocra,jp.osdn.ocrb</includeArtifactIds>
+							<excludeTransitive>true</excludeTransitive>
+							<overWriteReleases>true</overWriteReleases>
+							<overWriteSnapshots>true</overWriteSnapshots>
+						</configuration>
+					</execution>
+					
+				</executions>
+			</plugin>
+
+			<plugin>
+				<artifactId>maven-resources-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>copy-misc-files</id>
+						<phase>prepare-package</phase>
+						<goals>
+							<goal>copy-resources</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${project.build.directory}/dist/misc</outputDirectory>
+							<resources>
+								<resource>
+									<directory>src/main/misc</directory>
+									<filtering>true</filtering>
+								</resource>
+							</resources>
+						</configuration>
+					</execution>
+					
+					<!-- copy the jasper files that were prepared by the maven-dependency-plugin, so they become part of the metasfresh-app docker image -->
+					<execution>
+						<id>copy-jasper-folder-for-app-docker-build</id>
+						<phase>package</phase>
+						<goals>
+							<goal>copy-resources</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${docker.build.directory}/app/reports</outputDirectory>
+							<resources>
+								<resource>
+									<directory>${project.build.directory}/dist/deploy/reports</directory>
+									<filtering>false</filtering>
+								</resource>
+							</resources>
+						</configuration>
+					</execution>
+
+					<!-- copy the jasper files that were prepared by the maven-dependency-plugin, so they become part of the metasfresh-dist-report docker image -->
+					<execution>
+						<id>copy-jasper-folder-for-report-docker-build</id>
+						<phase>package</phase>
+						<goals>
+							<goal>copy-resources</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${docker.build.directory}/report/reports</outputDirectory>
+							<resources>
+								<resource>
+									<directory>${project.build.directory}/dist/deploy/reports</directory>
+									<filtering>false</filtering>
+								</resource>
+							</resources>
+						</configuration>
+					</execution>
+					
+					<!-- copy the metasfresh_server.jar that was prepared by the 
+					     maven-dependency-plugin with <id>copy-main-deployables</id>-->
+					<execution>
+						<id>copy-metasfresh-jar-for-docker-build</id>
+						<phase>package</phase>
+						<goals>
+							<goal>copy-resources</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${docker.build.directory}/app</outputDirectory>
+							<resources>
+								<resource>
+									<directory>${project.build.directory}/dist/deploy</directory>
+									<includes>
+										<include>metasfresh_server.jar</include>
+									</includes>
+									<filtering>false</filtering>
+								</resource>
+							</resources>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+
+			<plugin>
+				<artifactId>maven-assembly-plugin</artifactId>
+				<executions>
+					<!-- Archive the whole dist/ folder -->
+					<execution>
+						<id>package-dist</id>
+						<phase>package</phase>
+						<goals>
+							<goal>single</goal>
+						</goals>
+						<configuration>
+							<descriptors>
+								<descriptor>src/main/assembly/dist.xml</descriptor>
+							</descriptors>
+						</configuration>
+					</execution>
+					<execution>
+						<id>package-sql-only</id>
+						<phase>package</phase>
+						<goals>
+							<goal>single</goal>
+						</goals>
+						<configuration>
+							<descriptors>
+								<descriptor>src/main/assembly/sql-only.xml</descriptor>
+							</descriptors>
+						</configuration>
+					</execution>
+					<execution>
+						<id>package-jasper</id>
+						<phase>package</phase>
+						<goals>
+							<goal>single</goal>
+						</goals>
+						<configuration>
+							<descriptors>
+								<descriptor>src/main/assembly/jasper.xml</descriptor>
+							</descriptors>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+
+			<plugin>
+				<!--
+				Here we combine a number of pre-fabricated metasfresh artifacts that might internally have different versions of the same libs.
+				Therefore our dependencyConvergence rule would fail. For that reason, we skip the enforcer.
+				It would be nice to skip just the dependencyConvergence rule, but i don't know how to do that.
+				-->
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-enforcer-plugin</artifactId>
+				<configuration>
+					<skip>true</skip>
+				</configuration>
+			</plugin>
+
+		</plugins>
+	</build>
+</project>
