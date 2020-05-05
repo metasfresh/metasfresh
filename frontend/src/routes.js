@@ -213,3 +213,7 @@ export const getRoutes = (store, auth, plugins) => {
     </Route>
   );
 };
+
+function dummy(){
+  // 1
+}
