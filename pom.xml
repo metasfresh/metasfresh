@@ -1,0 +1,370 @@
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
+	xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<artifactId>de.metas.parent.general</artifactId>
+		<groupId>de.metas</groupId>
+		<version>[1,10.0.0]</version> <!-- we need the range during the jenkins build -->
+		<relativePath>../metasfresh-parent</relativePath>
+	</parent>
+
+	<!-- FRESH-271: we need an explicit version here, otherwise versions-maven-plugin 
+		can't set it to another version -->
+	<version>10.0.0</version>
+
+	<groupId>de.metas.ui.web</groupId>
+	<artifactId>metasfresh-webui-api</artifactId>
+
+	<properties>
+
+		<spring-boot.version>1.5.3.RELEASE</spring-boot.version>
+
+		<!-- See http://www.mojohaus.org/versions-maven-plugin/examples/update-properties.html 
+			and http://stackoverflow.com/questions/3628471/maven-versions-plugin-not-picking-up-properties-from-parent -->
+		<metasfresh.version>[1,10.0.0]</metasfresh.version>
+
+	</properties>
+
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>org.projectlombok</groupId>
+				<artifactId>lombok</artifactId>
+				<version>1.18.10</version>
+			</dependency>
+			
+			<!-- Import dependency management from Spring Boot -->
+			<dependency>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-dependencies</artifactId>
+				<version>${spring-boot.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
+
+	<dependencies>
+
+		<!-- Spring -->
+		<dependency>
+			<groupId>org.springframework.session</groupId>
+			<artifactId>spring-session</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-websocket</artifactId>
+		</dependency>
+
+		<!-- TODO: enable this dependency when we will really implement spring 
+			security -->
+		<!-- <dependency> <groupId>org.springframework.boot</groupId> <artifactId>spring-boot-starter-security</artifactId> 
+			</dependency> -->
+
+		<!-- see http://codecentric.github.io/spring-boot-admin/1.5.0/#client-applications -->
+		<!-- there are exclusions to avoid dependency version convergence issues 
+			(i.e. to satisfy the enforcer plugin) -->
+		<dependency>
+			<groupId>de.codecentric</groupId>
+			<artifactId>spring-boot-admin-starter-client</artifactId>
+			<version>${spring-boot-admin.version}</version>
+			<exclusions>
+				<exclusion>
+					<groupId>org.springframework</groupId>
+					<artifactId>spring-core</artifactId>
+				</exclusion>
+				<exclusion>
+					<artifactId>spring-web</artifactId>
+					<groupId>org.springframework</groupId>
+				</exclusion>
+				<exclusion>
+					<artifactId>spring-boot</artifactId>
+					<groupId>org.springframework.boot</groupId>
+				</exclusion>
+				<exclusion>
+					<artifactId>spring-boot-starter-web</artifactId>
+					<groupId>org.springframework.boot</groupId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+
+		<dependency>
+			<groupId>com.google.guava</groupId>
+			<artifactId>guava</artifactId>
+			<version>21.0</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.projectlombok</groupId>
+			<artifactId>lombok</artifactId>
+			<scope>provided</scope>
+		</dependency>
+
+		<!-- Adempiere dependencies -->
+		<dependency>
+			<groupId>de.metas.fresh</groupId>
+			<artifactId>de.metas.fresh.base</artifactId>
+			<version>${metasfresh.version}</version>
+			<exclusions>
+				<!-- TODO: i think we shall remove this dep. from de.metas.fresh.base 
+					!!! -->
+				<exclusion>
+					<groupId>de.metas.adempiere.adempiere</groupId>
+					<artifactId>de.metas.adempiere.adempiere.serverRoot.base</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.ui.web</groupId>
+			<artifactId>de.metas.ui.web.base</artifactId>
+			<version>${metasfresh.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.purchasecandidate</groupId>
+			<artifactId>de.metas.purchasecandidate.base</artifactId>
+			<version>${metasfresh.version}</version>
+		</dependency>
+
+		<!-- note that the code is not called by metasfresh-webui-api (currently!) 
+			but there are model interceptors etc that should be present -->
+		<dependency>
+			<groupId>de.metas.vertical.pharma</groupId>
+			<artifactId>metasfresh-pharma</artifactId>
+			<version>${metasfresh.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.vertical.pharma</groupId>
+			<artifactId>metasfresh-pharma.msv3.server-peer-metasfresh</artifactId>
+			<version>${metasfresh.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.adempiere.adempiere</groupId>
+			<artifactId>de.metas.adempiere.adempiere.base</artifactId>
+			<version>${metasfresh.version}</version>
+			<scope>test</scope>
+			<classifier>tests</classifier>
+		</dependency>
+		<dependency>
+			<groupId>de.metas.business</groupId>
+			<artifactId>de.metas.business</artifactId>
+			<version>${metasfresh.version}</version>
+			<scope>test</scope>
+			<classifier>tests</classifier>
+		</dependency>
+
+		<!-- required to display ATP info in sales and purchase contexts -->
+		<dependency>
+			<groupId>de.metas.material</groupId>
+			<artifactId>metasfresh-material-dispo-commons</artifactId>
+			<version>${metasfresh.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.handlingunits</groupId>
+			<artifactId>de.metas.handlingunits.base</artifactId>
+			<version>${metasfresh.version}</version>
+			<classifier>tests</classifier>
+			<scope>test</scope>
+		</dependency>
+
+
+		<!-- Elasticsearch -->
+		<dependency>
+			<groupId>de.metas.elasticsearch</groupId>
+			<artifactId>de.metas.elasticsearch.server</artifactId>
+			<version>${metasfresh.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-data-elasticsearch</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework.data</groupId>
+			<artifactId>spring-data-elasticsearch</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.elasticsearch</groupId>
+			<artifactId>elasticsearch</artifactId>
+			<exclusions>
+				<exclusion>
+					<groupId>com.google.guava</groupId>
+					<artifactId>guava</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<dependency>
+			<!-- Required for elasticsearch -->
+			<groupId>net.java.dev.jna</groupId>
+			<artifactId>jna</artifactId>
+		</dependency>
+
+		<!-- Swagger -->
+		<dependency>
+			<groupId>io.springfox</groupId>
+			<artifactId>springfox-swagger2</artifactId>
+			<version>${springfox-swagger.version}</version>
+			<exclusions>
+				<exclusion>
+					<groupId>com.google.guava</groupId>
+					<artifactId>guava</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>io.springfox</groupId>
+			<artifactId>springfox-swagger-ui</artifactId>
+			<version>${springfox-swagger.version}</version>
+		</dependency>
+
+		<!-- https://github.com/hoereth/springfox-enum-plugin -->
+		<dependency>
+			<groupId>de.pentabyte</groupId>
+			<artifactId>springfox-enum-plugin</artifactId>
+			<version>1.1.1</version>
+		</dependency>
+
+		<!-- logging -->
+		<!-- logstash-logback-encoder and janino are related to https://github.com/metasfresh/metasfresh/issues/1504 -->
+		<dependency>
+			<groupId>net.logstash.logback</groupId>
+			<artifactId>logstash-logback-encoder</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.mockito</groupId>
+			<artifactId>mockito-core</artifactId>
+            <version>${mockito.version}</version>
+            <scope>test</scope>
+		</dependency>
+		
+		<dependency>
+			<groupId>io.takari.junit</groupId>
+			<artifactId>takari-cpsuite </artifactId>
+			<version>1.2.7</version>
+			<scope>test</scope>
+		</dependency>
+
+	</dependencies>
+
+	<build>
+		<finalName>metasfresh-webui-api</finalName>
+		<plugins>
+			<!-- See http://www.mojohaus.org/versions-maven-plugin/examples/update-properties.html 
+				Note that the propery needs to be declared in the actual child poms, see 
+				http://stackoverflow.com/questions/3628471/maven-versions-plugin-not-picking-up-properties-from-parent -->
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>versions-maven-plugin</artifactId>
+				<version>2.4</version>
+				<configuration>
+					<includeProperties>metasfresh.version</includeProperties> <!-- for now, e.g. don't update the spring-version property -->
+					<properties>
+						<property>
+							<name>metasfresh.version</name>
+							<searchReactor>false</searchReactor>
+							<autoLinkDependencies>true</autoLinkDependencies>
+						</property>
+					</properties>
+				</configuration>
+			</plugin>
+
+			<!-- Add the generic info plus ci build info to the manifests of all jars 
+				that we create -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<configuration>
+					<archive>
+						<manifest>
+							<addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+							<addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
+						</manifest>
+						<manifestEntries>
+							<Implementation-Version>${project.version}</Implementation-Version>
+							<jenkinsBuildNo>${env.BUILD_NUMBER}</jenkinsBuildNo>
+							<jenkinsBuildTag>${env.BUILD_TAG}</jenkinsBuildTag>
+							<jenkinsBuildUrl>${env.BUILD_URL}</jenkinsBuildUrl>
+							<jenkinsJobName>${env.JOB_NAME}</jenkinsJobName>
+						</manifestEntries>
+					</archive>
+				</configuration>
+			</plugin>
+
+			<plugin>
+				<artifactId>maven-resources-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>copy-springboot-properties</id>
+						<phase>process-resources</phase>
+						<goals>
+							<goal>copy-resources</goal>
+						</goals>
+						<configuration>
+							<encoding>UTF-8</encoding>
+							<delimiters>
+								<delimiter>@</delimiter>
+								<useDefaultDelimiters>false</useDefaultDelimiters>
+							</delimiters>
+							<outputDirectory>${project.build.directory}/classes</outputDirectory>
+							<resources>
+								<resource>
+									<directory>src/main/resources</directory>
+									<includes>
+										<include>application*.properties</include>
+									</includes>
+									<filtering>true</filtering>
+								</resource>
+							</resources>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+
+			<plugin>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-maven-plugin</artifactId>
+				<version>${spring-boot.version}</version>
+				<executions>
+					<execution>
+						<id>spring-boot-webui-api-repackage</id>
+						<goals>
+							<goal>repackage</goal>
+						</goals>
+						<configuration>
+							<executable>true</executable>
+
+							<!-- this also provides the super-jar to the successive docker build 
+								Note that the ${docker.build.directory} property is set by the prepare-docker 
+								profile that is activated by the presence of the scr/main/docker folder -->
+							<outputDirectory>${docker.build.directory}</outputDirectory>
+						</configuration>
+					</execution>
+					<execution>
+						<id>spring-boot-webui-api-build-info</id>
+						<goals>
+							<goal>build-info</goal> <!-- create build-info.properties; thanks to https://docs.spring.io/spring-boot/docs/current/reference/html/howto-build.html#howto-build-info -->
+						</goals>
+						<configuration>
+							<additionalProperties>
+								<jenkinsBuildNo>${env.BUILD_NUMBER}</jenkinsBuildNo>
+								<jenkinsBuildTag>${env.BUILD_TAG}</jenkinsBuildTag>
+								<jenkinsBuildUrl>${env.BUILD_URL}</jenkinsBuildUrl>
+								<jenkinsJobName>${env.JOB_NAME}</jenkinsJobName>
+							</additionalProperties>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
+</project>
