@@ -1,8 +1,8 @@
 /*
  * #%L
- * de.metas.serviceprovider.base
+ * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2019 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,29 +20,22 @@
  * #L%
  */
 
-package de.metas.serviceprovider.external.issuedetails;
+package de.metas.reflist;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
+import lombok.Builder;
+import lombok.Data;
 import lombok.NonNull;
 
-import java.util.Optional;
-import java.util.stream.Stream;
-
-@AllArgsConstructor
-@Getter
-public enum ExternalIssueDetailType
+@Data
+@Builder
+public class GetRefListRequest
 {
-	LABEL("Label");
-
-	private final String value;
+	@NonNull
+	ReferenceId referenceId;
 
 	@NonNull
-	public static Optional<ExternalIssueDetailType> getTypeByValue(final String value)
-	{
-		return Stream.of(values())
-				.filter(v -> v.getValue().equals(value))
-				.findFirst();
-	}
+	String name;
 
+	@NonNull
+	String value;
 }

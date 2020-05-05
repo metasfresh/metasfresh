@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.serviceprovider.external.issuedetails;
+package de.metas.serviceprovider.external.label;
 
 import de.metas.organization.OrgId;
 import lombok.Builder;
@@ -30,13 +30,10 @@ import lombok.Value;
 
 @Builder
 @Value
-public class ExternalIssueDetail
+public class IssueLabel
 {
 	@NonNull
 	OrgId orgId;
-
-	@NonNull
-	ExternalIssueDetailType type;
 
 	@NonNull
 	String value;

@@ -25,7 +25,7 @@ package de.metas.serviceprovider.issue;
 import com.google.common.collect.ImmutableList;
 import de.metas.organization.OrgId;
 import de.metas.project.ProjectId;
-import de.metas.serviceprovider.external.issuedetails.ExternalIssueDetail;
+import de.metas.serviceprovider.external.label.IssueLabel;
 import de.metas.serviceprovider.milestone.MilestoneId;
 import de.metas.uom.UomId;
 import de.metas.user.UserId;
@@ -96,7 +96,7 @@ public class IssueEntity
 	private String externalIssueURL;
 
 	@NonNull
-	private ImmutableList<ExternalIssueDetail> externalIssueDetails;
+	private ImmutableList<IssueLabel> issueLabels;
 
 	public void setEstimatedEffortIfNull(@Nullable final BigDecimal estimatedEffort)
 	{
@@ -111,14 +111,6 @@ public class IssueEntity
 		if ( NumberUtils.asBigDecimal(this.budgetedEffort,BigDecimal.ZERO).equals(BigDecimal.ZERO) )
 		{
 			this.budgetedEffort = budgetedEffort;
-		}
-	}
-
-	public void setAssigneeIdIfNull(@Nullable final UserId assigneeId)
-	{
-		if (this.assigneeId == null)
-		{
-			this.assigneeId = assigneeId;
 		}
 	}
 }

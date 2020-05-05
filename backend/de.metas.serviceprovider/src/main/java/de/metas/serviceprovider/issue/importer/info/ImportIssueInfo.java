@@ -26,7 +26,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.organization.OrgId;
 import de.metas.project.ProjectId;
 import de.metas.serviceprovider.external.ExternalId;
-import de.metas.serviceprovider.external.issuedetails.ExternalIssueDetail;
+import de.metas.serviceprovider.external.label.IssueLabel;
 import de.metas.serviceprovider.external.project.ExternalProjectType;
 import de.metas.serviceprovider.issue.IssueId;
 import de.metas.uom.UomId;
@@ -91,7 +91,7 @@ public class ImportIssueInfo
 	ExternalId externalParentIssueId;
 
 	@NonNull
-	ImmutableList<ExternalIssueDetail> externalIssueDetails;
+	ImmutableList<IssueLabel> issueLabels;
 
 	public String getSearchKey()
 	{

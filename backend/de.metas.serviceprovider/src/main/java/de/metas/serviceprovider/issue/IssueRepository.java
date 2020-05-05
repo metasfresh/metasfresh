@@ -25,8 +25,8 @@ package de.metas.serviceprovider.issue;
 import com.google.common.collect.ImmutableList;
 import de.metas.organization.OrgId;
 import de.metas.project.ProjectId;
-import de.metas.serviceprovider.external.issuedetails.ExternalIssueDetail;
-import de.metas.serviceprovider.external.issuedetails.ExternalIssueDetailsRepository;
+import de.metas.serviceprovider.external.label.IssueLabel;
+import de.metas.serviceprovider.external.label.IssueLabelRepository;
 import de.metas.serviceprovider.milestone.MilestoneId;
 import de.metas.serviceprovider.model.I_S_Issue;
 import de.metas.uom.UomId;
@@ -46,15 +46,15 @@ public class IssueRepository
 {
 	private final IQueryBL queryBL;
 
-	private final ExternalIssueDetailsRepository externalIssueDetailsRepository;
+	private final IssueLabelRepository issueLabelRepository;
 
-	public IssueRepository(final IQueryBL queryBL, final ExternalIssueDetailsRepository externalIssueDetailsRepository)
+	public IssueRepository(final IQueryBL queryBL, final IssueLabelRepository issueLabelRepository)
 	{
 		this.queryBL = queryBL;
-		this.externalIssueDetailsRepository = externalIssueDetailsRepository;
+		this.issueLabelRepository = issueLabelRepository;
 	}
 
-	public void saveWithoutDetails(@NonNull final IssueEntity issueEntity)
+	public void saveWithoutLabels(@NonNull final IssueEntity issueEntity)
 	{
 		final I_S_Issue record = buildRecord(issueEntity);
 
@@ -66,11 +66,11 @@ public class IssueRepository
 	}
 
 
-	public void saveWithDetails(@NonNull final IssueEntity issueEntity)
+	public void saveWithLabels(@NonNull final IssueEntity issueEntity)
 	{
-		saveWithoutDetails(issueEntity);
+		saveWithoutLabels(issueEntity);
 
-		externalIssueDetailsRepository.persistIssueDetails(issueEntity.getIssueId(), issueEntity.getExternalIssueDetails());
+		issueLabelRepository.persistLabels(issueEntity.getIssueId(), issueEntity.getIssueLabels());
 	}
 
 
@@ -78,12 +78,12 @@ public class IssueRepository
 	 *  Retrieves the record identified by the given issue ID.
 	 *
 	 * @param issueId		Issue ID
-	 * @param loadDetails   specifies whether external issue details should be loaded or not
+	 * @param loadLabels   specifies whether labels should be loaded or not
 	 * @return	issue entity
 	 * @throws AdempiereException in case no record was found for the given ID.
 	 */
 	@NonNull
-	public IssueEntity getById(@NonNull final IssueId issueId, final boolean loadDetails)
+	public IssueEntity getById(@NonNull final IssueId issueId, final boolean loadLabels)
 	{
 		final I_S_Issue record = getRecordOrNull(issueId);
 
@@ -94,28 +94,28 @@ public class IssueRepository
 					.setParameter("S_Issue_Id", issueId);
 		}
 
-		return buildIssueEntity(record, loadDetails);
+		return buildIssueEntity(record, loadLabels);
 	}
 
 	@NonNull
-	public Optional<IssueEntity> getByIdOptional(@NonNull final IssueId issueId, final boolean loadDetails)
+	public Optional<IssueEntity> getByIdOptional(@NonNull final IssueId issueId, final boolean loadLabels)
 	{
 		final I_S_Issue record = getRecordOrNull(issueId);
 
 		return record != null
-				? Optional.of(buildIssueEntity(record, loadDetails))
+				? Optional.of(buildIssueEntity(record, loadLabels))
 				: Optional.empty();
 	}
 
 	@NonNull
-	public Optional<IssueEntity> getByExternalURLOptional(@NonNull final String externalURL, final boolean loadDetails)
+	public Optional<IssueEntity> getByExternalURLOptional(@NonNull final String externalURL, final boolean loadLabels)
 	{
 		return queryBL.createQueryBuilder(I_S_Issue.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_S_Issue.COLUMNNAME_IssueURL, externalURL)
 				.create()
 				.firstOnlyOptional(I_S_Issue.class)
-				.map(record -> buildIssueEntity(record, loadDetails));
+				.map(record -> buildIssueEntity(record, loadLabels));
 	}
 
 	@Nullable
@@ -130,7 +130,7 @@ public class IssueRepository
 	}
 
 	@NonNull
-	private IssueEntity buildIssueEntity(@NonNull final I_S_Issue record, final boolean loadDetails)
+	private IssueEntity buildIssueEntity(@NonNull final I_S_Issue record, final boolean loadLabels)
 	{
 		final Optional<IssueType> issueType = IssueType.getTypeByValue(record.getIssueType());
 
@@ -140,8 +140,8 @@ public class IssueRepository
 					.setParameter("I_S_Issue", record);
 		}
 
-		final ImmutableList<ExternalIssueDetail> externalIssueDetails = loadDetails
-				? externalIssueDetailsRepository.getByIssueId(IssueId.ofRepoId(record.getS_Issue_ID()))
+		final ImmutableList<IssueLabel> issueLabels = loadLabels
+				? issueLabelRepository.getByIssueId(IssueId.ofRepoId(record.getS_Issue_ID()))
 				: ImmutableList.of();
 
 		return IssueEntity.builder()
@@ -164,7 +164,7 @@ public class IssueRepository
 				.aggregatedEffort(record.getAggregatedEffort())
 				.externalIssueNo(record.getExternalIssueNo())
 				.externalIssueURL(record.getIssueURL())
-				.externalIssueDetails(externalIssueDetails)
+				.issueLabels(issueLabels)
 				.build();
 	}
 

@@ -135,7 +135,7 @@ public interface I_S_Issue
 	 * Set Project.
 	 * Financial Project
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -145,7 +145,7 @@ public interface I_S_Issue
 	 * Get Project.
 	 * Financial Project
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -248,29 +248,6 @@ public interface I_S_Issue
     public static final org.adempiere.model.ModelColumn<I_S_Issue, Object> COLUMN_EstimatedEffort = new org.adempiere.model.ModelColumn<I_S_Issue, Object>(I_S_Issue.class, "EstimatedEffort", null);
     /** Column name EstimatedEffort */
     public static final String COLUMNNAME_EstimatedEffort = "EstimatedEffort";
-
-	/**
-	 * Set External ID.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setExternalId (java.lang.String ExternalId);
-
-	/**
-	 * Get External ID.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.lang.String getExternalId();
-
-    /** Column definition for ExternalId */
-    public static final org.adempiere.model.ModelColumn<I_S_Issue, Object> COLUMN_ExternalId = new org.adempiere.model.ModelColumn<I_S_Issue, Object>(I_S_Issue.class, "ExternalId", null);
-    /** Column name ExternalId */
-    public static final String COLUMNNAME_ExternalId = "ExternalId";
 
 	/**
 	 * Set External issue no.

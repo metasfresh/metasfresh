@@ -32,9 +32,8 @@ import de.metas.issue.tracking.github.api.v3.model.RetrieveIssuesRequest;
 import de.metas.issue.tracking.github.api.v3.service.GithubClient;
 import de.metas.serviceprovider.ImportQueue;
 import de.metas.serviceprovider.external.ExternalSystem;
-import de.metas.serviceprovider.external.issuedetails.ExternalIssueDetail;
-import de.metas.serviceprovider.external.issuedetails.ExternalIssueDetailType;
-import de.metas.serviceprovider.external.issuedetails.ExternalIssueDetailsRepository;
+import de.metas.serviceprovider.external.label.IssueLabel;
+import de.metas.serviceprovider.external.label.IssueLabelRepository;
 import de.metas.serviceprovider.external.project.ExternalProjectRepository;
 import de.metas.serviceprovider.external.reference.ExternalReferenceRepository;
 import de.metas.serviceprovider.github.link.GithubIssueLinkMatcher;
@@ -55,7 +54,7 @@ import java.math.BigDecimal;
 import java.util.HashMap;
 
 import static de.metas.serviceprovider.TestConstants.MOCK_AUTH_TOKEN;
-import static de.metas.serviceprovider.TestConstants.MOCK_BUG_6_LABEL;
+import static de.metas.serviceprovider.TestConstants.MOCK_BUD_6_LABEL;
 import static de.metas.serviceprovider.TestConstants.MOCK_DATE_AND_TIME_ISO_8601;
 import static de.metas.serviceprovider.TestConstants.MOCK_DESCRIPTION;
 import static de.metas.serviceprovider.TestConstants.MOCK_EST_4_25_LABEL;
@@ -85,12 +84,18 @@ import static org.mockito.Mockito.when;
 public class GithubImporterServiceTest
 {
 	private final GithubClient mockGithubClient = Mockito.mock(GithubClient.class);
+
 	private final ImportQueue<ImportIssueInfo> importIssuesQueue =
 			new ImportQueue<>(ISSUE_QUEUE_CAPACITY,IMPORT_LOG_MESSAGE_PREFIX);
+
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
 	private final ExternalReferenceRepository externalReferenceRepository = new ExternalReferenceRepository(queryBL);
-	private final IssueRepository issueRepository = new IssueRepository(queryBL, new ExternalIssueDetailsRepository(queryBL));
+
+	private final IssueRepository issueRepository = new IssueRepository(queryBL, new IssueLabelRepository(queryBL));
+
 	private final ExternalProjectRepository externalProjectRepository = new ExternalProjectRepository(queryBL);
+
 	private final GithubImporterService githubImporterService =
 			new GithubImporterService(importIssuesQueue, mockGithubClient, externalReferenceRepository, issueRepository, externalProjectRepository);
 	@Before
@@ -141,7 +146,7 @@ public class GithubImporterServiceTest
 		assertEquals(issueInfo.getProjectId(), MOCK_PROJECT_ID);
 		assertEquals(issueInfo.getExternalProjectType(), MOCK_EXTERNAL_PROJECT_TYPE);
 
-		checkMilestoneAndDetails(issueInfo);
+		checkMilestoneAndLabels(issueInfo);
 	}
 
 	@Test
@@ -205,7 +210,7 @@ public class GithubImporterServiceTest
 	{
 		final ImmutableList<Label> labels = ImmutableList.of(
 				Label.builder().name(MOCK_VALUE).build(),
-				Label.builder().name(MOCK_BUG_6_LABEL).build(),
+				Label.builder().name(MOCK_BUD_6_LABEL).build(),
 				Label.builder().name(MOCK_EST_4_25_LABEL).build()
 		);
 
@@ -298,7 +303,7 @@ public class GithubImporterServiceTest
 		assertEquals(parentIssue.getProjectId(), MOCK_PROJECT_ID);
 		assertEquals(parentIssue.getExternalProjectType(), MOCK_EXTERNAL_PROJECT_TYPE);
 
-		checkMilestoneAndDetails(parentIssue);
+		checkMilestoneAndLabels(parentIssue);
 
 		//check child
 		final ImportIssueInfo childIssue = importIssueInfos.get(1);
@@ -315,10 +320,10 @@ public class GithubImporterServiceTest
 		assertEquals(childIssue.getExternalProjectType(), MOCK_EXTERNAL_PROJECT_TYPE);
 		assertEquals(childIssue.getExternalParentIssueId().getId(), MOCK_PARENT_EXTERNAL_ID);
 
-		checkMilestoneAndDetails(childIssue);
+		checkMilestoneAndLabels(childIssue);
 	}
 
-	private void checkMilestoneAndDetails(final ImportIssueInfo issueInfo)
+	private void checkMilestoneAndLabels(final ImportIssueInfo issueInfo)
 	{
 		final ImportMilestoneInfo milestone = issueInfo.getMilestone();
 		assertNotNull(milestone);
@@ -330,13 +335,12 @@ public class GithubImporterServiceTest
 		assertEquals(milestone.getOrgId(), MOCK_ORG_ID);
 		assertEquals(milestone.getDueDate(), MOCK_INSTANT);
 
-		final ImmutableList<ExternalIssueDetail> issueDetails = issueInfo.getExternalIssueDetails();
-		assertNotNull(issueDetails);
-		assertEquals(issueDetails.size(), 3);
+		final ImmutableList<IssueLabel> issueLabels = issueInfo.getIssueLabels();
+		assertNotNull(issueLabels);
+		assertEquals(issueLabels.size(), 3);
 
-		assertEquals(issueDetails.get(0).getValue(), MOCK_VALUE);
-		assertEquals(issueDetails.get(1).getValue(), MOCK_BUG_6_LABEL);
-		assertEquals(issueDetails.get(2).getValue(), MOCK_EST_4_25_LABEL);
-		issueDetails.forEach(externalIssueDetail -> assertEquals(externalIssueDetail.getType(), ExternalIssueDetailType.LABEL));
+		assertEquals(issueLabels.get(0).getValue(), MOCK_VALUE);
+		assertEquals(issueLabels.get(1).getValue(), MOCK_BUD_6_LABEL);
+		assertEquals(issueLabels.get(2).getValue(), MOCK_EST_4_25_LABEL);
 	}
 }

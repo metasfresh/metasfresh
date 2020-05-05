@@ -15,7 +15,7 @@ public class X_S_Issue extends org.compiere.model.PO implements I_S_Issue, org.c
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1893549512L;
+	private static final long serialVersionUID = 1617159647L;
 
     /** Standard Constructor */
     public X_S_Issue (Properties ctx, int S_Issue_ID, String trxName)
@@ -196,22 +196,6 @@ public class X_S_Issue extends org.compiere.model.PO implements I_S_Issue, org.c
 		if (bd == null)
 			 return BigDecimal.ZERO;
 		return bd;
-	}
-
-	/** Set External ID.
-		@param ExternalId External ID	  */
-	@Override
-	public void setExternalId (java.lang.String ExternalId)
-	{
-		set_Value (COLUMNNAME_ExternalId, ExternalId);
-	}
-
-	/** Get External ID.
-		@return External ID	  */
-	@Override
-	public java.lang.String getExternalId () 
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_ExternalId);
 	}
 
 	/** Set External issue no.

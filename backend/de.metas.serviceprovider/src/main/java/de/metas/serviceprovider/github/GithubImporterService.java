@@ -38,7 +38,7 @@ import de.metas.organization.OrgId;
 import de.metas.serviceprovider.ImportQueue;
 import de.metas.serviceprovider.external.ExternalId;
 import de.metas.serviceprovider.external.ExternalSystem;
-import de.metas.serviceprovider.external.issuedetails.ExternalIssueDetail;
+import de.metas.serviceprovider.external.label.IssueLabel;
 import de.metas.serviceprovider.external.project.ExternalProjectReference;
 import de.metas.serviceprovider.external.project.ExternalProjectRepository;
 import de.metas.serviceprovider.external.project.GetExternalProjectRequest;
@@ -75,7 +75,6 @@ import java.util.regex.Pattern;
 
 import static de.metas.issue.tracking.github.api.v3.GitHubApiConstants.LabelType.BUDGET;
 import static de.metas.issue.tracking.github.api.v3.GitHubApiConstants.LabelType.ESTIMATION;
-import static de.metas.serviceprovider.external.issuedetails.ExternalIssueDetailType.LABEL;
 import static de.metas.serviceprovider.github.GithubImporterConstants.CHUNK_SIZE;
 import static de.metas.serviceprovider.github.GithubImporterConstants.HOUR_UOM_ID;
 import static de.metas.serviceprovider.issue.importer.ImportConstants.IMPORT_LOG_MESSAGE_PREFIX;
@@ -265,7 +264,7 @@ public class GithubImporterService implements IssueImporter
 			@NonNull final ImportIssueInfo.ImportIssueInfoBuilder importIssueInfoBuilder,
 			@NonNull final OrgId orgId)
 	{
-		final List<ExternalIssueDetail> externalIssueDetailList = new ArrayList<>();
+		final List<IssueLabel> issueLabelList = new ArrayList<>();
 		BigDecimal budget = BigDecimal.ZERO;
 		BigDecimal estimation = BigDecimal.ZERO;
 
@@ -276,19 +275,18 @@ public class GithubImporterService implements IssueImporter
 				budget = budget.add(getValueFromLabel(label, BUDGET.getPattern()));
 				estimation = estimation.add(getValueFromLabel(label, ESTIMATION.getPattern()));
 
-				final ExternalIssueDetail externalIssueDetail = ExternalIssueDetail.builder()
-						.type(LABEL)
+				final IssueLabel issueLabel = IssueLabel.builder()
 						.value(label.getName())
 						.orgId(orgId)
 						.build();
 
-				externalIssueDetailList.add(externalIssueDetail);
+				issueLabelList.add(issueLabel);
 			}
 		}
 
 		importIssueInfoBuilder.budget(budget);
 		importIssueInfoBuilder.estimation(estimation);
-		importIssueInfoBuilder.externalIssueDetails(ImmutableList.copyOf(externalIssueDetailList));
+		importIssueInfoBuilder.issueLabels(ImmutableList.copyOf(issueLabelList));
 	}
 
 	@NonNull
