@@ -16,21 +16,7 @@
  *****************************************************************************/
 package org.compiere.acct;
 
-import java.math.BigDecimal;
-import java.util.List;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_BankStatementLine;
-import org.compiere.model.I_C_Payment;
-import org.compiere.model.MPeriod;
-import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.banking.BankStatementLineId;
 import de.metas.banking.BankStatementLineReference;
 import de.metas.banking.service.IBankStatementDAO;
@@ -40,10 +26,24 @@ import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.ICurrencyBL;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.money.CurrencyConversionTypeId;
+import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentId;
 import de.metas.payment.api.IPaymentBL;
 import de.metas.util.Services;
+import lombok.Getter;
+import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_BankStatementLine;
+import org.compiere.model.I_C_Payment;
+import org.compiere.model.MPeriod;
+import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.util.List;
 
 /**
  * Bank Statement Line
@@ -60,9 +60,9 @@ class DocLine_BankStatement extends DocLine<Doc_BankStatement>
 
 	/**
 	 * Constructor
-	 * 
+	 *
 	 * @param line statement line
-	 * @param doc header
+	 * @param doc  header
 	 */
 	public DocLine_BankStatement(final I_C_BankStatementLine line, final Doc_BankStatement doc)
 	{
@@ -77,6 +77,7 @@ class DocLine_BankStatement extends DocLine<Doc_BankStatement>
 		m_StmtAmt = line.getStmtAmt();
 		m_InterestAmt = line.getInterestAmt();
 		m_TrxAmt = line.getTrxAmt();
+		fixedCurrencyRate = line.getCurrencyRate();
 		//
 		setDateDoc(TimeUtil.asLocalDate(line.getValutaDate()));
 		setBPartnerId(BPartnerId.ofRepoIdOrNull(line.getC_BPartner_ID()));
@@ -95,13 +96,18 @@ class DocLine_BankStatement extends DocLine<Doc_BankStatement>
 	}   // DocLine_Bank
 
 	private final List<BankStatementLineReference> _bankStatementLineReferences;
-	/** Reversal Flag */
+	/**
+	 * Reversal Flag
+	 */
 	private final boolean m_IsReversal;
 	private final I_C_Payment _payment;
 
 	private final BigDecimal m_TrxAmt;
 	private final BigDecimal m_StmtAmt;
 	private final BigDecimal m_InterestAmt;
+
+	@Getter
+	private final BigDecimal fixedCurrencyRate;
 
 	public final List<BankStatementLineReference> getReferences()
 	{
@@ -110,7 +116,7 @@ class DocLine_BankStatement extends DocLine<Doc_BankStatement>
 
 	/**
 	 * Get Payment
-	 * 
+	 *
 	 * @return {@link I_C_Payment} or <code>null</code>
 	 */
 	private final I_C_Payment getC_Payment()
@@ -123,14 +129,18 @@ class DocLine_BankStatement extends DocLine<Doc_BankStatement>
 		return _payment;
 	}
 
-	/** @return payment org (if exists) or line's org */
+	/**
+	 * @return payment org (if exists) or line's org
+	 */
 	public OrgId getPaymentOrgId()
 	{
 		final I_C_Payment paymentToUse = getC_Payment();
 		return getPaymentOrgId(paymentToUse);
-	}	// getAD_Org_ID
+	}    // getAD_Org_ID
 
-	/** @return C_Payment.AD_Org_ID (if any); fallback to {@link #getAD_Org_ID()} */
+	/**
+	 * @return C_Payment.AD_Org_ID (if any); fallback to {@link #getAD_Org_ID()}
+	 */
 	public final OrgId getPaymentOrgId(@Nullable final I_C_Payment payment)
 	{
 		if (payment != null)
@@ -154,7 +164,7 @@ class DocLine_BankStatement extends DocLine<Doc_BankStatement>
 
 	/**
 	 * Is Reversal
-	 * 
+	 *
 	 * @return true if reversal
 	 */
 	public boolean isReversal()
@@ -164,7 +174,7 @@ class DocLine_BankStatement extends DocLine<Doc_BankStatement>
 
 	/**
 	 * Get Interest
-	 * 
+	 *
 	 * @return InterestAmount
 	 */
 	public BigDecimal getInterestAmt()
@@ -174,7 +184,7 @@ class DocLine_BankStatement extends DocLine<Doc_BankStatement>
 
 	/**
 	 * Get Statement
-	 * 
+	 *
 	 * @return Starement Amount
 	 */
 	public BigDecimal getStmtAmt()
@@ -184,7 +194,7 @@ class DocLine_BankStatement extends DocLine<Doc_BankStatement>
 
 	/**
 	 * Get Transaction
-	 * 
+	 *
 	 * @return transaction amount
 	 */
 	public BigDecimal getTrxAmt()
@@ -193,11 +203,10 @@ class DocLine_BankStatement extends DocLine<Doc_BankStatement>
 	}   // getTrxAmt
 
 	/**
-	 * @return
-	 *         <ul>
-	 *         <li>true if this line is an inbound transaction (i.e. we received money in our bank account)
-	 *         <li>false if this line is an outbound transaction (i.e. we paid money from our bank account)
-	 *         </ul>
+	 * @return <ul>
+	 * <li>true if this line is an inbound transaction (i.e. we received money in our bank account)
+	 * <li>false if this line is an outbound transaction (i.e. we paid money from our bank account)
+	 * </ul>
 	 */
 	public boolean isInboundTrx()
 	{
@@ -210,26 +219,27 @@ class DocLine_BankStatement extends DocLine<Doc_BankStatement>
 	}
 
 	/**
-	 * @return the currency conversion used for bank transfer (i.e. Spot)
+	 * @return the currency conversion used for bank transfer
 	 */
-	public CurrencyConversionContext getBankTransferCurrencyConversionCtx()
+	public CurrencyConversionContext getBankTransferCurrencyConversionCtx(@NonNull final CurrencyId acctSchemaCurrencyId)
 	{
-		return getCurrencyConversionCtx(ConversionTypeMethod.Spot);
-	}
+		final CurrencyConversionTypeId conversionTypeId = currencyDAO.getConversionTypeId(ConversionTypeMethod.Spot);
 
-	private final CurrencyConversionContext getCurrencyConversionCtx(final ConversionTypeMethod type)
-	{
-		final CurrencyConversionTypeId conversionTypeId = currencyDAO.getConversionTypeId(type);
-		return getCurrencyConversionCtx(conversionTypeId);
-	}
-
-	private final CurrencyConversionContext getCurrencyConversionCtx(final CurrencyConversionTypeId conversionTypeId)
-	{
-		return currencyConversionBL.createCurrencyConversionContext(
+		CurrencyConversionContext conversionCtx = currencyConversionBL.createCurrencyConversionContext(
 				getDateAcct(),
 				conversionTypeId,
 				getClientId(),
 				getOrgId());
+
+		if (fixedCurrencyRate != null && fixedCurrencyRate.signum() != 0)
+		{
+			conversionCtx = conversionCtx.withFixedConversionRate(
+					getCurrencyId(),
+					acctSchemaCurrencyId,
+					fixedCurrencyRate);
+		}
+
+		return conversionCtx;
 	}
 
 	public boolean isBankTransfer()
