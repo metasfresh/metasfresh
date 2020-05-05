@@ -24,10 +24,10 @@ Map build(final MvnConf mvnConf, final Map scmVars, final boolean forceBuild=fal
 
 //    vgitout = sh(returnStdout: true, script: "git diff --name-only ${scmVars.GIT_PREVIOUS_SUCCESSFUL_COMMIT} ${scmVars.GIT_COMMIT} . 2> /dev/null").trim()
 //    def vgitout = sh(returnStdout: true, script: "git diff --name-only ${scmVars.GIT_PREVIOUS_SUCCESSFUL_COMMIT} ${scmVars.GIT_COMMIT} . | exit 0").trim() // use "| exit 0" to not fail in the case when this is the first build
-    dev vpwdout = sh(returnStdout: true, script: "pwd")
+    def vpwdout = sh(returnStdout: true, script: "pwd")
     echo "pwd output >>>${vpwdout}"
 
-    dev vlsout = sh(returnStdout: true, script: "ls")
+    def vlsout = sh(returnStdout: true, script: "ls")
     echo "ls output >>>${vlsout}"
 
 
