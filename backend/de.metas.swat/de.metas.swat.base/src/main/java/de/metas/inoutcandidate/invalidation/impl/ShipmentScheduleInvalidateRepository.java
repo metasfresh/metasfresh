@@ -21,6 +21,7 @@ import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributesBL;
 import org.adempiere.util.lang.Mutable;
+import org.compiere.model.IQuery;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_Locator;
 import org.compiere.util.DB;
@@ -39,6 +40,7 @@ import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateRepositor
 import de.metas.inoutcandidate.invalidation.segments.IShipmentScheduleSegment;
 import de.metas.inoutcandidate.invalidation.segments.ShipmentScheduleAttributeSegment;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_Recompute;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.logging.LogManager;
 import de.metas.process.PInstanceId;
@@ -609,5 +611,34 @@ public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleIn
 		final List<Object> sqlParams = ImmutableList.of(pinstanceId);
 		return TypedSqlQueryFilter.of(sql, sqlParams);
 	}
+	
+	@Override
+	public final void invalidateShipmentSchedulesFor(@NonNull final IQuery<I_M_ShipmentSchedule> shipmentScheduleQuery)
+	{
+		final int count = shipmentScheduleQuery.insertDirectlyInto(I_M_ShipmentSchedule_Recompute.class)
+				.mapColumn(I_M_ShipmentSchedule_Recompute.COLUMNNAME_M_ShipmentSchedule_ID, 
+						I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID)
+				
+				.execute()
+				.getRowsInserted();
+
+		logger.debug("Invalidated {} shipment schedules for {}", new Object[] { count, shipmentScheduleQuery });
+
+		
+		if (count > 0)
+		{
+			invalidateCacheForAllShipmentSchedules();
+			UpdateInvalidShipmentSchedulesWorkpackageProcessor.schedule();
+		}
+	}
+	
+	private void invalidateCacheForAllShipmentSchedules()
+	{
+		final IModelCacheInvalidationService modelCacheInvalidationService = Services.get(IModelCacheInvalidationService.class);
+
+		final CacheInvalidateMultiRequest multiRequest = CacheInvalidateMultiRequest.allRecordsForTable(I_M_ShipmentSchedule.Table_Name);
+		modelCacheInvalidationService.invalidate(multiRequest,  ModelCacheInvalidationTiming.CHANGE);
+	}
+	
 
 }
