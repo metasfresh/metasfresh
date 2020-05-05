@@ -57,7 +57,9 @@ try
 			echo "mvnConf=${mvnConf.toString()}"
 
 			final def scmVars = checkout scm // i hope this to do all the magic we need
-			//echo "scmVars=${scmVars}"
+			echo "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+			echo "scmVars=${scmVars}"
+			echo "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
 
 			currentBuild.description = """${currentBuild.description}
 			<b>
