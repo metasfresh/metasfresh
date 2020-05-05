@@ -216,8 +216,4 @@ export const getRoutes = (store, auth, plugins) => {
       <Route path="*" component={NoMatch}/>
     </Route>
   );
-
-  function dummy() {
-    // 1
-  }
 };
