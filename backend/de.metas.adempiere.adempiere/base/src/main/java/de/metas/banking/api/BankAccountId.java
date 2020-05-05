@@ -32,7 +32,7 @@ import lombok.Value;
 import javax.annotation.Nullable;
 
 /**
- * Note for the user: This class has a misleading name. We still haven't decided if/now to use it.
+ * Note for the user: This class has a misleading name. We still haven't decided if/how to use it.
  *
  * My recommendation is to use instead {@link de.metas.bpartner.BPartnerBankAccountId} and it clearly states its purpose.
  */
