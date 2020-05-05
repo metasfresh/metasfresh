@@ -87,6 +87,7 @@ import {
   updateCommentsPanelTextInput,
   updateCommentsPanelOpenFlag,
 } from './CommentsPanelActions';
+import { createTabTable, updateTabTable } from './TablesActions';
 import { toggleFullScreen, preFormatPostDATA } from '../utils';
 import { getScope, parseToDisplay } from '../utils/documentListHelper';
 
@@ -520,6 +521,25 @@ export function deselectTableItems(ids, windowType, viewId) {
 }
 
 // THUNK ACTIONS
+
+// TODO: Just a quick thunk action creator to test Tables reducer
+export function fetchTab(tabId, windowType, docId) {
+  return (dispatch) => {
+    return getTab(tabId, windowType, docId)
+      .then((response) => {
+        const tableId = `${windowType}_${docId}_${tabId}`;
+        const tableData = { windowType, tabId, docId, ...response.data };
+
+        dispatch(createTabTable(tableId, tableData));
+
+        return Promise.resolve(response.data);
+      })
+      .catch((error) => {
+        //show error message ?
+        return Promise.resolve(error);
+      });
+  };
+}
 
 export function initTabs(layout, windowType, docId, isModal) {
   return async (dispatch) => {

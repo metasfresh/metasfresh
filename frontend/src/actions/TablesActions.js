@@ -52,3 +52,25 @@ export function updateGridTable(tableId, tableResponse) {
     }
   };
 }
+
+export function createTabTable(tableId, tableResponse) {
+  return (dispatch) => {
+    console.log('createTabTable: ', tableResponse)
+    // const tableData = createTableData(tableResponse);
+
+    // dispatch(createTable(tableId, tableData));
+  };
+}
+
+export function updateTabTable(tableId, tableResponse) {
+  return (dispatch, getState) => {
+    const tableExists = getState().tables.get(tableId);
+    const tableData = createTableData(tableResponse);
+
+    if (tableExists) {
+      dispatch(updateTable(tableId, tableData));
+    } else {
+      dispatch(createTable(tableId, tableData));
+    }
+  };
+}

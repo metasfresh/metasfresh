@@ -2,7 +2,11 @@ import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 
-import { addRowData, updateMasterData } from '../../actions/WindowActions';
+import {
+  addRowData,
+  updateMasterData,
+  fetchTab,
+} from '../../actions/WindowActions';
 import { getTab } from '../../api';
 
 /*
@@ -29,6 +33,8 @@ class Tab extends Component {
       const query = orderBy
         ? (orderBy[0].ascending ? '+' : '-') + orderBy[0].fieldName
         : '';
+
+      dispatch(fetchTab(tabId, windowId, docId));
 
       if (singleRowView) {
         getTab(tabId, windowId, docId).then((res) => {

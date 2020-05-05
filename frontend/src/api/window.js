@@ -69,6 +69,7 @@ export function discardNewDocument({ windowType, documentId } = {}) {
   );
 }
 
+// TODO: Rename this to `getTabRequest`
 export function getTab(tabId, windowType, docId, orderBy) {
   return getData({
     entity: 'window',
