@@ -67,8 +67,6 @@ public class UnArchiveRecordHandler implements INoDataFoundHandler
 	 *
 	 * @param tableName the table name to load from. May be empty or null. In that case, the metohd will return {@code false}.
 	 * @param ids the IDs to load. May be {@code null}, not-int or the size might be not equal to one. In those cases, the method returns {@code false}.
-	 * @param ctx
-	 * @return
 	 */
 	@Override
 	public boolean invoke(final String tableName, final Object[] ids, final IContextAware ctx)

@@ -105,6 +105,8 @@ public interface PerformanceMonitoringService
 
 		ASYNC_WORKPACKAGE("asyncWorkPackage"),
 
+		SCHEDULER("scheduler"),
+
 		REST_API_PROCESSING("rest-API"),
 
 		CACHE_OPERATION("cache-operation");

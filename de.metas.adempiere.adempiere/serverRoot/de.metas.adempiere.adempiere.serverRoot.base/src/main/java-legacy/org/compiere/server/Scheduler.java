@@ -34,6 +34,7 @@ import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.Mutable;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_AD_PInstance;
 import org.compiere.model.I_AD_Process;
@@ -59,6 +60,10 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.attachments.AttachmentEntryService;
 import de.metas.logging.LogManager;
+import de.metas.monitoring.adapter.NoopPerformanceMonitoringService;
+import de.metas.monitoring.adapter.PerformanceMonitoringService;
+import de.metas.monitoring.adapter.PerformanceMonitoringService.TransactionMetadata;
+import de.metas.monitoring.adapter.PerformanceMonitoringService.Type;
 import de.metas.notification.INotificationBL;
 import de.metas.notification.UserNotificationRequest;
 import de.metas.notification.UserNotificationRequest.TargetRecordAction;
@@ -179,11 +184,23 @@ public class Scheduler extends AdempiereServer
 		m_summary = new StringBuffer();
 	}
 
-	/**
-	 * Work
-	 */
 	@Override
 	protected void doWork()
+	{
+		final PerformanceMonitoringService service = SpringContextHolder.instance.getBeanOr(
+				PerformanceMonitoringService.class,
+				NoopPerformanceMonitoringService.INSTANCE);
+
+		service.monitorTransaction(
+				() -> doWork0(),
+				TransactionMetadata.builder()
+						.name("Scheduler - " + m_model.getName())
+						.type(Type.SCHEDULER)
+						.label("scheduler.name", m_model.getName())
+						.build());
+	}
+
+	private void doWork0()
 	{
 		// metas us1030 updating staus
 		setSchedulerStatus(X_AD_Scheduler.STATUS_Running, null);
