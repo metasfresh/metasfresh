@@ -1,0 +1,130 @@
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<artifactId>de.metas.parent</artifactId>
+		<groupId>de.metas</groupId>
+		<version>[1,10.0.0]</version>
+	</parent>
+
+	<groupId>de.metas.dist</groupId>
+	<artifactId>metasfresh-dist</artifactId>
+	<packaging>pom</packaging>
+
+	<!-- FRESH-271: we need an explicit version here, otherwise versions-maven-plugin can't set it to another version -->
+	<version>10.0.0</version>
+
+	<modules>
+		<!-- note: we can't use e.g.
+		<module>${project.groupId}.base</module>
+		In here, because the versions-maven-plugin doesn't resolve them when we run its set goal.
+		There are probably ways to replace the property with its hardcoded string, but I'm not exploring them now
+		-->
+		<module>base</module>
+		<module>serverRoot</module>
+		<module>swingui</module>
+		<module>dist</module>
+	</modules>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-enforcer-plugin</artifactId>
+
+				<configuration>
+					<rules>
+						<banDuplicateClasses>
+							<dependencies>
+								<!--
+									do not check this dependency, because the endcustomer allInOne-jar contains
+									all the classes that are also its dependencies
+								-->
+								<dependency>
+									<groupId>${project.groupId}</groupId>
+									<artifactId>${project.groupId}.base</artifactId>
+									<ignoreClasses>
+										<ignoreClass>*</ignoreClass>
+									</ignoreClasses>
+								</dependency>
+								<dependency>
+									<groupId>de.metas.migration</groupId>
+									<artifactId>de.metas.migration.cli</artifactId>
+									<ignoreClasses>
+										<ignoreClass>*</ignoreClass>
+									</ignoreClasses>
+								</dependency>
+
+								<dependency>
+									<groupId>${project.groupId}</groupId>
+									<artifactId>${project.groupId}*</artifactId>
+									<ignoreClasses>
+										<ignoreClass>org.springframework.boot.loader.*</ignoreClass>
+									</ignoreClasses>
+								</dependency>
+
+								<!-- see also https://www.elastic.co/blog/to-shade-or-not-to-shade -->
+								<!-- seems as if we need to repeat stuff from the parent pom :-( -->
+								<dependency>
+									<groupId>org.elasticsearch</groupId>
+									<artifactId>elasticsearch</artifactId>
+									<ignoreClasses>
+										<ignoreClass>org.joda.*</ignoreClass>
+									</ignoreClasses>
+								</dependency>
+
+							</dependencies>
+							<findAllDuplicates>true</findAllDuplicates>
+						</banDuplicateClasses>
+					</rules>
+					<fail>true</fail>
+				</configuration>
+			</plugin>
+			<!--
+			See http://www.mojohaus.org/versions-maven-plugin/examples/update-properties.html
+			Note that the property needs to be declared in the actual child poms, see http://stackoverflow.com/questions/3628471/maven-versions-plugin-not-picking-up-properties-from-parent
+			-->
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>versions-maven-plugin</artifactId>
+				<version>2.3</version>
+				<configuration>
+					<properties>
+						<property>
+							<name>metasfresh.version</name>
+							<searchReactor>false</searchReactor>
+							<autoLinkDependencies>true</autoLinkDependencies>
+						</property>
+
+						<!-- gh #968 https://github.com/metasfresh/metasfresh/issues/968
+							declare the the version properties of related artifacts which we can to set in the dist module
+						-->
+						<property>
+							<name>metasfresh-webui-frontend.version</name>
+							<searchReactor>false</searchReactor>
+							<autoLinkDependencies>true</autoLinkDependencies>
+						</property>
+						<property>
+							<name>metasfresh-webui-api.version</name>
+							<searchReactor>false</searchReactor>
+							<autoLinkDependencies>true</autoLinkDependencies>
+						</property>
+						<property>
+							<name>metasfresh-procurement-webui.version</name>
+							<searchReactor>false</searchReactor>
+							<autoLinkDependencies>true</autoLinkDependencies>
+						</property>
+						<property>
+							<!-- metasfresh/metasfresh#1471 -->
+							<name>metasfresh-admin.version</name>
+							<searchReactor>false</searchReactor>
+							<autoLinkDependencies>true</autoLinkDependencies>
+						</property>
+					</properties>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+
+</project>
