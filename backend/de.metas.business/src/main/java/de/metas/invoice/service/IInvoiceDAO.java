@@ -176,4 +176,6 @@ public interface IInvoiceDAO extends ISingletonService
 	ImmutableMap<InvoiceId, String> getDocumentNosByInvoiceIds(@NonNull Collection<InvoiceId> invoiceIds);
 
 	org.compiere.model.I_C_InvoiceLine getByIdOutOfTrx(InvoiceLineId invoiceLineId);
+
+	boolean hasCompletedInvoicesReferencing(InvoiceId invoiceId);
 }
