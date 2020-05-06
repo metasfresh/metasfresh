@@ -266,9 +266,6 @@ export function fetchLayout(
       .then((response) => {
         dispatch(fetchLayoutSuccess(identifier, response.data));
 
-        // TODO: we could extract more table data from the layout response here
-        // and have everything table-related in one branch of the state tree
-
         return Promise.resolve(response.data);
       })
       .catch((error) => {

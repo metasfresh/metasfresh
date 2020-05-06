@@ -1,6 +1,8 @@
 import { List as iList, Map as iMap } from 'immutable';
 import * as types from '../constants/ActionTypes';
 
+import { getView } from '../reducers/viewHandler';
+
 function createTable(id, data) {
   return {
     type: types.CREATE_TABLE,
@@ -23,6 +25,10 @@ function createTableData(rawData) {
     docId: rawData.id,
     tabId: rawData.tabId,
     headerProperties: rawData.headerProperties,
+    headerElements: iList(rawData.elements),
+    emptyText: rawData.emptyResultText,
+    emptyHint: rawData.emptyResultHint,
+    page: rawData.page,
     size: rawData.size,
     orderBy: rawData.orderBy,
     queryLimit: rawData.queryLimit,
@@ -34,8 +40,10 @@ function createTableData(rawData) {
 }
 
 export function createGridTable(tableId, tableResponse) {
-  return (dispatch) => {
-    const tableData = createTableData(tableResponse);
+  return (dispatch, getState) => {
+    const windowType = tableResponse.windowType || tableResponse.windowId;
+    const tableLayout = getView(getState(), windowType).layout;
+    const tableData = createTableData({ ...tableResponse, ...tableLayout });
 
     dispatch(createTable(tableId, tableData));
   };
