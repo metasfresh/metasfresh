@@ -82,7 +82,7 @@ public interface I_S_TimeBooking
 	/**
 	 * Set Booked date.
 	 *
-	 * <br>Type: DateTime
+	 * <br>Type: Date
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -91,7 +91,7 @@ public interface I_S_TimeBooking
 	/**
 	 * Get Booked date.
 	 *
-	 * <br>Type: DateTime
+	 * <br>Type: Date
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */

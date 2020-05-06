@@ -138,7 +138,7 @@ public interface I_S_IssueLabel
 	 * Set Issue.
 	 *
 	 * <br>Type: TableDir
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	public void setS_Issue_ID (int S_Issue_ID);
@@ -147,7 +147,7 @@ public interface I_S_IssueLabel
 	 * Get Issue.
 	 *
 	 * <br>Type: TableDir
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	public int getS_Issue_ID();

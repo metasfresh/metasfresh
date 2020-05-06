@@ -23,6 +23,7 @@
 package de.metas.serviceprovider.issue;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.cache.model.IModelCacheInvalidationService;
 import de.metas.serviceprovider.external.label.IssueLabel;
 import de.metas.serviceprovider.external.label.IssueLabelRepository;
 import de.metas.util.Services;
@@ -52,7 +53,9 @@ import static de.metas.serviceprovider.TestConstants.MOCK_VALUE;
 public class IssueRepositoryTest
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	private final IssueRepository issueRepository = new IssueRepository(queryBL, new IssueLabelRepository(queryBL));
+	private final IModelCacheInvalidationService modelCacheInvalidationService =  Services.get(IModelCacheInvalidationService.class);
+
+	private final IssueRepository issueRepository = new IssueRepository(queryBL, new IssueLabelRepository(queryBL), modelCacheInvalidationService);
 
 	private final ImmutableList<IssueLabel> MOCK_LABELS =
 			ImmutableList.of(IssueLabel.builder().value(MOCK_VALUE).orgId(MOCK_ORG_ID).build(),

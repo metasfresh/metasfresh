@@ -55,6 +55,8 @@ import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -93,7 +95,12 @@ public class IssueImporterService
 		while (!completableFuture.isDone() || !importIssuesQueue.isEmpty())
 		{
 			final ImmutableList<ImportIssueInfo> issueInfos = importIssuesQueue.drainAll();
-			issueInfos.forEach(issue -> trxManager.runInNewTrx( () -> importIssue(issue)));
+
+			final ArrayList<IssueId> importedIdsCollector = new ArrayList<>();
+
+			issueInfos.forEach(issue -> trxManager.runInNewTrx( () -> importIssue(issue, importedIdsCollector)));
+
+			issueRepository.invalidateCacheForIds(ImmutableList.copyOf(importedIdsCollector));
 		}
 
 		if (completableFuture.isCompletedExceptionally())
@@ -102,7 +109,7 @@ public class IssueImporterService
 		}
 	}
 
-	private void importIssue(@NonNull final ImportIssueInfo importIssueInfo)
+	private void importIssue(@NonNull final ImportIssueInfo importIssueInfo, @NonNull final List<IssueId> importedIdsCollector)
 	{
 		try
 		{
@@ -139,6 +146,8 @@ public class IssueImporterService
 
 				externalReferenceRepository.save(issueExternalRef);
 			}
+
+			importedIdsCollector.add(issueEntity.getIssueId());
 		}
 		catch (final Exception e)
 		{

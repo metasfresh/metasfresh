@@ -24,6 +24,7 @@ package de.metas.serviceprovider.github;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import de.metas.cache.model.IModelCacheInvalidationService;
 import de.metas.issue.tracking.github.api.v3.model.FetchIssueByIdRequest;
 import de.metas.issue.tracking.github.api.v3.model.GithubMilestone;
 import de.metas.issue.tracking.github.api.v3.model.Issue;
@@ -89,10 +90,11 @@ public class GithubImporterServiceTest
 			new ImportQueue<>(ISSUE_QUEUE_CAPACITY,IMPORT_LOG_MESSAGE_PREFIX);
 
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IModelCacheInvalidationService modelCacheInvalidationService =  Services.get(IModelCacheInvalidationService.class);
 
 	private final ExternalReferenceRepository externalReferenceRepository = new ExternalReferenceRepository(queryBL);
 
-	private final IssueRepository issueRepository = new IssueRepository(queryBL, new IssueLabelRepository(queryBL));
+	private final IssueRepository issueRepository = new IssueRepository(queryBL, new IssueLabelRepository(queryBL), modelCacheInvalidationService);
 
 	private final ExternalProjectRepository externalProjectRepository = new ExternalProjectRepository(queryBL);
 

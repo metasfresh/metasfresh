@@ -23,6 +23,9 @@
 package de.metas.serviceprovider.issue;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.cache.model.CacheInvalidateMultiRequest;
+import de.metas.cache.model.IModelCacheInvalidationService;
+import de.metas.cache.model.ModelCacheInvalidationTiming;
 import de.metas.organization.OrgId;
 import de.metas.project.ProjectId;
 import de.metas.serviceprovider.external.label.IssueLabel;
@@ -39,19 +42,22 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.springframework.stereotype.Repository;
 
 import javax.annotation.Nullable;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Repository
 public class IssueRepository
 {
 	private final IQueryBL queryBL;
-
 	private final IssueLabelRepository issueLabelRepository;
+	private final IModelCacheInvalidationService modelCacheInvalidationService;
 
-	public IssueRepository(final IQueryBL queryBL, final IssueLabelRepository issueLabelRepository)
+	public IssueRepository(final IQueryBL queryBL, final IssueLabelRepository issueLabelRepository, final IModelCacheInvalidationService modelCacheInvalidationService)
 	{
 		this.queryBL = queryBL;
 		this.issueLabelRepository = issueLabelRepository;
+		this.modelCacheInvalidationService = modelCacheInvalidationService;
 	}
 
 	public void saveWithoutLabels(@NonNull final IssueEntity issueEntity)
@@ -116,6 +122,16 @@ public class IssueRepository
 				.create()
 				.firstOnlyOptional(I_S_Issue.class)
 				.map(record -> buildIssueEntity(record, loadLabels));
+	}
+
+	public void invalidateCacheForIds(@NonNull final ImmutableList<IssueId> issueIds)
+	{
+		final List<Integer> recordIds = issueIds.stream().map(IssueId::getRepoId).collect(Collectors.toList());
+
+		final CacheInvalidateMultiRequest multiRequest =
+				CacheInvalidateMultiRequest.fromTableNameAndRecordIds(I_S_Issue.Table_Name, recordIds);
+
+		modelCacheInvalidationService.invalidate(multiRequest, ModelCacheInvalidationTiming.CHANGE);
 	}
 
 	@Nullable

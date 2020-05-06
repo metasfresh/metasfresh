@@ -22,8 +22,8 @@
 
 package de.metas.serviceprovider.issue;
 
+import de.metas.cache.model.IModelCacheInvalidationService;
 import de.metas.serviceprovider.external.label.IssueLabelRepository;
-import de.metas.serviceprovider.issue.hierarchy.IssueHierarchy;
 import de.metas.serviceprovider.model.I_S_Issue;
 import de.metas.serviceprovider.timebooking.Effort;
 import de.metas.util.NumberUtils;
@@ -33,8 +33,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.junit.Before;
 import org.junit.Test;
-
-import java.util.List;
 
 import static de.metas.serviceprovider.TestConstants.MOCK_EFFORT_1_00;
 import static de.metas.serviceprovider.TestConstants.MOCK_EFFORT_1_30;
@@ -48,8 +46,9 @@ import static org.junit.Assert.assertEquals;
 public class IssueEffortServiceTest
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IModelCacheInvalidationService modelCacheInvalidationService =  Services.get(IModelCacheInvalidationService.class);
 	private final IssueLabelRepository issueLabelRepository = new IssueLabelRepository(queryBL);
-	private final IssueRepository issueRepository = new IssueRepository(queryBL, issueLabelRepository);
+	private final IssueRepository issueRepository = new IssueRepository(queryBL, issueLabelRepository, modelCacheInvalidationService);
 	private final IssueHierarchyService issueHierarchyService = new IssueHierarchyService(issueRepository);
 	private final IssueEffortService issueEffortService = new IssueEffortService(issueRepository, issueHierarchyService);
 

@@ -22,6 +22,7 @@
 
 package de.metas.serviceprovider.issue;
 
+import de.metas.cache.model.IModelCacheInvalidationService;
 import de.metas.serviceprovider.external.label.IssueLabelRepository;
 import de.metas.serviceprovider.issue.hierarchy.IssueHierarchy;
 import de.metas.util.Services;
@@ -38,8 +39,9 @@ import static org.junit.Assert.assertEquals;
 public class IssueHierarchyServiceTest
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IModelCacheInvalidationService modelCacheInvalidationService =  Services.get(IModelCacheInvalidationService.class);
 	private final IssueLabelRepository issueLabelRepository = new IssueLabelRepository(queryBL);
-	private final IssueRepository issueRepository = new IssueRepository(queryBL, issueLabelRepository);
+	private final IssueRepository issueRepository = new IssueRepository(queryBL, issueLabelRepository, modelCacheInvalidationService);
 	private final IssueHierarchyService issueHierarchyService = new IssueHierarchyService(issueRepository);
 
 	@Before
