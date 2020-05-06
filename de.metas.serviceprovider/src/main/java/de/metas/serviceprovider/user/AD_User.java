@@ -43,8 +43,26 @@ public class AD_User
 	}
 
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
-	public void afterDelete(@NonNull final I_AD_User record)
+	public void deleteLinkedExternalReferences(@NonNull final I_AD_User record)
 	{
 		externalReferenceRepository.deleteByRecordIdAndType(record.getAD_User_ID(), ExternalReferenceType.USER_ID);
+	}
+
+	@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE, ifColumnsChanged = I_AD_User.COLUMNNAME_IsActive)
+	public void reactivateLinkedExternalReferences(@NonNull final I_AD_User record)
+	{
+		if (record.isActive())
+		{
+			externalReferenceRepository.updateIsActiveByRecordIdAndType(record.getAD_User_ID(), ExternalReferenceType.USER_ID, record.isActive());
+		}
+	}
+
+	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE, ifColumnsChanged = I_AD_User.COLUMNNAME_IsActive)
+	public void inactivateLinkedExternalReferences(@NonNull final I_AD_User record)
+	{
+		if (!record.isActive())
+		{
+			externalReferenceRepository.updateIsActiveByRecordIdAndType(record.getAD_User_ID(), ExternalReferenceType.USER_ID, record.isActive());
+		}
 	}
 }

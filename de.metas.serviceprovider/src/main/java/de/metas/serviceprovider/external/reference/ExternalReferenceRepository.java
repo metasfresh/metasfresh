@@ -32,6 +32,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.springframework.stereotype.Repository;
 
 import javax.annotation.Nullable;
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -86,17 +87,21 @@ public class ExternalReferenceRepository
 
 	public void deleteByRecordIdAndType(final int recordId, @NonNull final ExternalReferenceType type)
 	{
-		queryBL.createQueryBuilder(I_S_ExternalReference.class)
-				.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_Type, type.getCode())
-				.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_Record_ID, recordId)
-				.create()
-				.list()
-				.forEach(InterfaceWrapperHelper::delete);
+		listIncludingInactiveBy(recordId, type).forEach(InterfaceWrapperHelper::delete);
+	}
+
+	public void updateIsActiveByRecordIdAndType(final int recordId, @NonNull final ExternalReferenceType type, final boolean isActive)
+	{
+		listIncludingInactiveBy(recordId, type)
+				.stream()
+				.peek(record -> record.setIsActive(isActive))
+				.forEach(InterfaceWrapperHelper::saveRecord);
 	}
 
 	private Optional<ExternalReference> getOptionalExternalReferenceBy(@NonNull final GetReferencedIdRequest getReferencedIdRequest)
 	{
 		return queryBL.createQueryBuilder(I_S_ExternalReference.class)
+				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_ExternalSystem,
 						getReferencedIdRequest.getExternalSystem().getValue())
 
@@ -108,6 +113,15 @@ public class ExternalReferenceRepository
 				.create()
 				.firstOnlyOptional(I_S_ExternalReference.class)
 				.map(this::buildExternalReference);
+	}
+
+	private List<I_S_ExternalReference> listIncludingInactiveBy(final int recordId, @NonNull final ExternalReferenceType type)
+	{
+		return queryBL.createQueryBuilder(I_S_ExternalReference.class)
+				.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_Type, type.getCode())
+				.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_Record_ID, recordId)
+				.create()
+				.list();
 	}
 
 	@NonNull
@@ -124,6 +138,7 @@ public class ExternalReferenceRepository
 		}
 
 		return ExternalReference.builder()
+				.externalReferenceId(ExternalReferenceId.ofRepoId(record.getS_ExternalReference_ID()))
 				.orgId(OrgId.ofRepoId(record.getAD_Org_ID()))
 				.externalReference(record.getExternalReference())
 				.externalReferenceType(type)

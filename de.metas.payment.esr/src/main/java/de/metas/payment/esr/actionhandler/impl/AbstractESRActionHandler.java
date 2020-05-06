@@ -24,12 +24,12 @@ package de.metas.payment.esr.actionhandler.impl;
 
 import java.math.BigDecimal;
 
-import org.adempiere.invoice.service.IInvoiceBL;
-import org.adempiere.invoice.service.IInvoiceDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Payment;
 
+import de.metas.invoice.service.IInvoiceBL;
+import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.payment.esr.ESRConstants;
 import de.metas.payment.esr.actionhandler.IESRActionHandler;
 import de.metas.payment.esr.api.IESRImportBL;

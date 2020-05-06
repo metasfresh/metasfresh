@@ -1,29 +1,10 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 package org.compiere.model;
 
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-import org.compiere.util.KeyNamePair;
 
 /** Generated Interface for CM_Chat
  *  @author Adempiere (generated) 
- *  @version Release 3.5.4a
  */
+@SuppressWarnings("javadoc")
 public interface I_CM_Chat 
 {
 
@@ -31,174 +12,305 @@ public interface I_CM_Chat
     public static final String Table_Name = "CM_Chat";
 
     /** AD_Table_ID=876 */
-    public static final int Table_ID = MTable.getTable_ID(Table_Name);
+//    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
-    KeyNamePair Model = new KeyNamePair(Table_ID, Table_Name);
+//    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
 
-    /** AccessLevel = 7 - System - Client - Org 
+    /** AccessLevel = 7 - System - Client - Org
      */
-    BigDecimal accessLevel = BigDecimal.valueOf(7);
+//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(7);
 
     /** Load Meta Data */
+
+	/**
+	 * Get Mandant.
+	 * Client/Tenant for this installation.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getAD_Client_ID();
 
     /** Column name AD_Client_ID */
     public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
-	/** Get Client.
-	  * Client/Tenant for this installation.
-	  */
-	public int getAD_Client_ID();
+	/**
+	 * Set Sektion.
+	 * Organisatorische Einheit des Mandanten
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setAD_Org_ID (int AD_Org_ID);
+
+	/**
+	 * Get Sektion.
+	 * Organisatorische Einheit des Mandanten
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getAD_Org_ID();
 
     /** Column name AD_Org_ID */
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
-	/** Set Organization.
-	  * Organizational entity within client
-	  */
-	public void setAD_Org_ID (int AD_Org_ID);
+	/**
+	 * Set DB-Tabelle.
+	 * Database Table information
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setAD_Table_ID (int AD_Table_ID);
 
-	/** Get Organization.
-	  * Organizational entity within client
-	  */
-	public int getAD_Org_ID();
+	/**
+	 * Get DB-Tabelle.
+	 * Database Table information
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getAD_Table_ID();
 
     /** Column name AD_Table_ID */
     public static final String COLUMNNAME_AD_Table_ID = "AD_Table_ID";
 
-	/** Set Table.
-	  * Database Table information
-	  */
-	public void setAD_Table_ID (int AD_Table_ID);
+	/**
+	 * Set Chat.
+	 * Chat or discussion thread
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setCM_Chat_ID (int CM_Chat_ID);
 
-	/** Get Table.
-	  * Database Table information
-	  */
-	public int getAD_Table_ID();
+	/**
+	 * Get Chat.
+	 * Chat or discussion thread
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getCM_Chat_ID();
 
-	public I_AD_Table getAD_Table() throws RuntimeException;
-
+    /** Column definition for CM_Chat_ID */
+    public static final org.adempiere.model.ModelColumn<I_CM_Chat, Object> COLUMN_CM_Chat_ID = new org.adempiere.model.ModelColumn<I_CM_Chat, Object>(I_CM_Chat.class, "CM_Chat_ID", null);
     /** Column name CM_Chat_ID */
     public static final String COLUMNNAME_CM_Chat_ID = "CM_Chat_ID";
 
-	/** Set Chat.
-	  * Chat or discussion thread
-	  */
-	public void setCM_Chat_ID (int CM_Chat_ID);
+	/**
+	 * Set Chat-Art.
+	 * Type of discussion / chat
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setCM_ChatType_ID (int CM_ChatType_ID);
 
-	/** Get Chat.
-	  * Chat or discussion thread
-	  */
-	public int getCM_Chat_ID();
+	/**
+	 * Get Chat-Art.
+	 * Type of discussion / chat
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getCM_ChatType_ID();
 
+	public org.compiere.model.I_CM_ChatType getCM_ChatType();
+
+	public void setCM_ChatType(org.compiere.model.I_CM_ChatType CM_ChatType);
+
+    /** Column definition for CM_ChatType_ID */
+    public static final org.adempiere.model.ModelColumn<I_CM_Chat, org.compiere.model.I_CM_ChatType> COLUMN_CM_ChatType_ID = new org.adempiere.model.ModelColumn<I_CM_Chat, org.compiere.model.I_CM_ChatType>(I_CM_Chat.class, "CM_ChatType_ID", org.compiere.model.I_CM_ChatType.class);
     /** Column name CM_ChatType_ID */
     public static final String COLUMNNAME_CM_ChatType_ID = "CM_ChatType_ID";
 
-	/** Set Chat Type.
-	  * Type of discussion / chat
-	  */
-	public void setCM_ChatType_ID (int CM_ChatType_ID);
+	/**
+	 * Set Vertraulichkeit.
+	 * Type of Confidentiality
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setConfidentialType (java.lang.String ConfidentialType);
 
-	/** Get Chat Type.
-	  * Type of discussion / chat
-	  */
-	public int getCM_ChatType_ID();
+	/**
+	 * Get Vertraulichkeit.
+	 * Type of Confidentiality
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getConfidentialType();
 
-	public I_CM_ChatType getCM_ChatType() throws RuntimeException;
-
+    /** Column definition for ConfidentialType */
+    public static final org.adempiere.model.ModelColumn<I_CM_Chat, Object> COLUMN_ConfidentialType = new org.adempiere.model.ModelColumn<I_CM_Chat, Object>(I_CM_Chat.class, "ConfidentialType", null);
     /** Column name ConfidentialType */
     public static final String COLUMNNAME_ConfidentialType = "ConfidentialType";
 
-	/** Set Confidentiality.
-	  * Type of Confidentiality
-	  */
-	public void setConfidentialType (String ConfidentialType);
+	/**
+	 * Get Erstellt.
+	 * Date this record was created
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.sql.Timestamp getCreated();
 
-	/** Get Confidentiality.
-	  * Type of Confidentiality
-	  */
-	public String getConfidentialType();
-
+    /** Column definition for Created */
+    public static final org.adempiere.model.ModelColumn<I_CM_Chat, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_CM_Chat, Object>(I_CM_Chat.class, "Created", null);
     /** Column name Created */
     public static final String COLUMNNAME_Created = "Created";
 
-	/** Get Created.
-	  * Date this record was created
-	  */
-	public Timestamp getCreated();
+	/**
+	 * Get Erstellt durch.
+	 * User who created this records
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getCreatedBy();
 
     /** Column name CreatedBy */
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
-	/** Get Created By.
-	  * User who created this records
-	  */
-	public int getCreatedBy();
+	/**
+	 * Set Beschreibung.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setDescription (java.lang.String Description);
 
+	/**
+	 * Get Beschreibung.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getDescription();
+
+    /** Column definition for Description */
+    public static final org.adempiere.model.ModelColumn<I_CM_Chat, Object> COLUMN_Description = new org.adempiere.model.ModelColumn<I_CM_Chat, Object>(I_CM_Chat.class, "Description", null);
     /** Column name Description */
     public static final String COLUMNNAME_Description = "Description";
 
-	/** Set Description.
-	  * Optional short description of the record
-	  */
-	public void setDescription (String Description);
+	/**
+	 * Set Aktiv.
+	 * The record is active in the system
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setIsActive (boolean IsActive);
 
-	/** Get Description.
-	  * Optional short description of the record
-	  */
-	public String getDescription();
+	/**
+	 * Get Aktiv.
+	 * The record is active in the system
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public boolean isActive();
 
+    /** Column definition for IsActive */
+    public static final org.adempiere.model.ModelColumn<I_CM_Chat, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_CM_Chat, Object>(I_CM_Chat.class, "IsActive", null);
     /** Column name IsActive */
     public static final String COLUMNNAME_IsActive = "IsActive";
 
-	/** Set Active.
-	  * The record is active in the system
-	  */
-	public void setIsActive (boolean IsActive);
+	/**
+	 * Set Moderation Type.
+	 * Type of moderation
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setModerationType (java.lang.String ModerationType);
 
-	/** Get Active.
-	  * The record is active in the system
-	  */
-	public boolean isActive();
+	/**
+	 * Get Moderation Type.
+	 * Type of moderation
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getModerationType();
 
+    /** Column definition for ModerationType */
+    public static final org.adempiere.model.ModelColumn<I_CM_Chat, Object> COLUMN_ModerationType = new org.adempiere.model.ModelColumn<I_CM_Chat, Object>(I_CM_Chat.class, "ModerationType", null);
     /** Column name ModerationType */
     public static final String COLUMNNAME_ModerationType = "ModerationType";
 
-	/** Set Moderation Type.
-	  * Type of moderation
-	  */
-	public void setModerationType (String ModerationType);
+	/**
+	 * Set Datensatz-ID.
+	 * Direct internal record ID
+	 *
+	 * <br>Type: Button
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setRecord_ID (int Record_ID);
 
-	/** Get Moderation Type.
-	  * Type of moderation
-	  */
-	public String getModerationType();
+	/**
+	 * Get Datensatz-ID.
+	 * Direct internal record ID
+	 *
+	 * <br>Type: Button
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getRecord_ID();
 
+    /** Column definition for Record_ID */
+    public static final org.adempiere.model.ModelColumn<I_CM_Chat, Object> COLUMN_Record_ID = new org.adempiere.model.ModelColumn<I_CM_Chat, Object>(I_CM_Chat.class, "Record_ID", null);
     /** Column name Record_ID */
     public static final String COLUMNNAME_Record_ID = "Record_ID";
 
-	/** Set Record ID.
-	  * Direct internal record ID
-	  */
-	public void setRecord_ID (int Record_ID);
+	/**
+	 * Get Aktualisiert.
+	 * Date this record was updated
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.sql.Timestamp getUpdated();
 
-	/** Get Record ID.
-	  * Direct internal record ID
-	  */
-	public int getRecord_ID();
-
+    /** Column definition for Updated */
+    public static final org.adempiere.model.ModelColumn<I_CM_Chat, Object> COLUMN_Updated = new org.adempiere.model.ModelColumn<I_CM_Chat, Object>(I_CM_Chat.class, "Updated", null);
     /** Column name Updated */
     public static final String COLUMNNAME_Updated = "Updated";
 
-	/** Get Updated.
-	  * Date this record was updated
-	  */
-	public Timestamp getUpdated();
+	/**
+	 * Get Aktualisiert durch.
+	 * User who updated this records
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getUpdatedBy();
 
     /** Column name UpdatedBy */
     public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
-
-	/** Get Updated By.
-	  * User who updated this records
-	  */
-	public int getUpdatedBy();
 }

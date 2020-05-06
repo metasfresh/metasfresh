@@ -9,8 +9,8 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.currency.Amount;
 import de.metas.currency.CurrencyCode;
 import de.metas.document.DocTypeId;
+import de.metas.invoice.InvoiceDocBaseType;
 import de.metas.invoice.InvoiceId;
-import de.metas.lang.SOTrx;
 import de.metas.order.OrderId;
 import de.metas.organization.ClientAndOrgId;
 import lombok.Builder;
@@ -84,8 +84,7 @@ public class InvoiceToAllocate
 	@NonNull
 	DocTypeId docTypeId;
 	@NonNull
-	SOTrx soTrx;
-	boolean creditMemo;
+	InvoiceDocBaseType docBaseType;
 
 	@Nullable
 	String poReference;

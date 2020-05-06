@@ -1,22 +1,8 @@
-package de.metas.contracts.interceptor;
-
-import java.math.BigDecimal;
-
-import org.adempiere.ad.modelvalidator.annotations.Interceptor;
-import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.model.ModelValidator;
-
-import de.metas.contracts.model.I_C_SubscriptionProgress;
-import de.metas.contracts.model.X_C_SubscriptionProgress;
-import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
-
 /*
  * #%L
  * de.metas.contracts
  * %%
- * Copyright (C) 2016 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -33,6 +19,21 @@ import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+package de.metas.contracts.interceptor;
+
+import java.math.BigDecimal;
+
+import org.adempiere.ad.modelvalidator.annotations.Interceptor;
+import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.ModelValidator;
+
+import de.metas.contracts.model.I_C_SubscriptionProgress;
+import de.metas.contracts.model.X_C_SubscriptionProgress;
+import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+
 /**
  * Updates the {@link I_C_SubscriptionProgress} record's status on shipment schedule changes.
  *
@@ -98,7 +99,7 @@ public class M_ShipmentSchedule
 
 	private I_C_SubscriptionProgress getSubscriptionRecordOrNull(final I_M_ShipmentSchedule shipmentSchedule)
 	{
-		final TableRecordReference ref = new TableRecordReference(shipmentSchedule.getAD_Table_ID(), shipmentSchedule.getRecord_ID());
+		final TableRecordReference ref = TableRecordReference.of(shipmentSchedule.getAD_Table_ID(), shipmentSchedule.getRecord_ID());
 		if (!I_C_SubscriptionProgress.Table_Name.equals(ref.getTableName()))
 		{
 			return null;

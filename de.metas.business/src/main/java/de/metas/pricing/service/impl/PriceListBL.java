@@ -1,5 +1,20 @@
 package de.metas.pricing.service.impl;
 
+import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Iterator;
+import java.util.Optional;
+
+import javax.annotation.Nullable;
+
+import org.adempiere.ad.trx.api.ITrx;
+import org.compiere.model.I_M_PriceList;
+import org.compiere.model.I_M_PriceList_Version;
+import org.compiere.util.DB;
+import org.compiere.util.Env;
+
 import de.metas.cache.CacheMgt;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
 import de.metas.currency.CurrencyPrecision;
@@ -15,19 +30,6 @@ import de.metas.user.UserId;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
 import lombok.NonNull;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_M_PriceList;
-import org.compiere.model.I_M_PriceList_Version;
-import org.compiere.util.DB;
-import org.compiere.util.Env;
-
-import javax.annotation.Nullable;
-import java.sql.Timestamp;
-import java.time.LocalDate;
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.Iterator;
 
 /*
  * #%L
@@ -98,22 +100,31 @@ public class PriceListBL implements IPriceListBL
 		return currenciesRepo.getStdPrecision(CurrencyId.ofRepoId(priceList.getC_Currency_ID()));
 	}
 
-	@Nullable
 	@Override
-	public I_M_PriceList getCurrentPricelistOrNull(
-			final PricingSystemId pricingSystemId,
-			final CountryId countryId,
-			final ZonedDateTime date,
+	public Optional<I_M_PriceList> getCurrentPriceList(
+			@NonNull final PricingSystemId pricingSystemId,
+			@NonNull final CountryId countryId,
+			@NonNull final ZonedDateTime date,
+			@NonNull final SOTrx soTrx)
+	{
+		final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
+
+		return getCurrentPriceListId(pricingSystemId, countryId, date, soTrx)
+				.map(priceListDAO::getById);
+	}
+
+	@Override
+	public Optional<PriceListId> getCurrentPriceListId(
+			@NonNull final PricingSystemId pricingSystemId,
+			@NonNull final CountryId countryId,
+			@NonNull final ZonedDateTime date,
 			@NonNull final SOTrx soTrx)
 	{
 		final Boolean processedPLVFiltering = null;
 		final I_M_PriceList_Version currentVersion = getCurrentPriceListVersionOrNull(pricingSystemId, countryId, date, soTrx, processedPLVFiltering);
-		if (currentVersion == null)
-		{
-			return null;
-		}
-
-		return InterfaceWrapperHelper.create(currentVersion.getM_PriceList(), I_M_PriceList.class);
+		return currentVersion != null
+				? Optional.of(PriceListId.ofRepoId(currentVersion.getM_PriceList_ID()))
+				: Optional.empty();
 	}
 
 	@SuppressWarnings("UnusedAssignment")

@@ -2,14 +2,14 @@ package de.metas.invoice.interceptor;
 
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
-import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.adempiere.model.I_C_InvoiceLine;
-import de.metas.invoice.IInvoiceLineBL;
+import de.metas.invoice.service.IInvoiceBL;
+import de.metas.invoice.service.IInvoiceLineBL;
 import de.metas.util.Services;
 
 @Validator(I_C_InvoiceLine.class)

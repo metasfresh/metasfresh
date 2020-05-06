@@ -46,4 +46,22 @@ public class S_Milestone
 	public void afterDelete(@NonNull final I_S_Milestone record){
 		externalReferenceRepository.deleteByRecordIdAndType(record.getS_Milestone_ID(), ExternalReferenceType.MILESTONE_ID);
 	}
+
+	@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE, ifColumnsChanged = I_S_Milestone.COLUMNNAME_IsActive)
+	public void reactivateLinkedExternalReferences(@NonNull final I_S_Milestone record)
+	{
+		if (record.isActive())
+		{
+			externalReferenceRepository.updateIsActiveByRecordIdAndType(record.getS_Milestone_ID(), ExternalReferenceType.MILESTONE_ID, record.isActive());
+		}
+	}
+
+	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE, ifColumnsChanged = I_S_Milestone.COLUMNNAME_IsActive)
+	public void inactivateLinkedExternalReferences(@NonNull final I_S_Milestone record)
+	{
+		if (!record.isActive())
+		{
+			externalReferenceRepository.updateIsActiveByRecordIdAndType(record.getS_Milestone_ID(), ExternalReferenceType.MILESTONE_ID, record.isActive());
+		}
+	}
 }

@@ -25,12 +25,12 @@ package de.metas.materialtracking.model.validator;
 import java.util.List;
 
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
-import org.adempiere.invoice.service.IInvoiceBL;
-import org.adempiere.invoice.service.IInvoiceDAO;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_OrderLine;
 import de.metas.adempiere.model.I_C_InvoiceLine;
+import de.metas.invoice.service.IInvoiceBL;
+import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.util.Services;
 
 @Interceptor(I_C_Invoice.class)

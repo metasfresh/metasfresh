@@ -13,15 +13,14 @@ package de.metas.banking.payment.paymentallocation.service;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import static de.metas.banking.payment.paymentallocation.service.InvoiceType.VendorCreditMemo;
 import static de.metas.banking.payment.paymentallocation.service.InvoiceType.VendorInvoice;
@@ -31,8 +30,6 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
-import org.adempiere.service.ClientId;
-import org.adempiere.service.ISysConfigBL;
 import org.adempiere.test.AdempiereTestHelper;
 import org.hamcrest.Matchers;
 import org.junit.Assert;
@@ -44,7 +41,6 @@ import org.junit.rules.TestWatcher;
 import com.google.common.base.Supplier;
 import com.google.common.collect.ArrayListMultimap;
 
-import de.metas.banking.payment.paymentallocation.impl.PaymentAllocationBL;
 import de.metas.banking.payment.paymentallocation.model.AbstractAllocableDocTableModel;
 import de.metas.banking.payment.paymentallocation.model.AllocableDocType;
 import de.metas.banking.payment.paymentallocation.model.IAllocableDocRow;
@@ -54,8 +50,6 @@ import de.metas.banking.payment.paymentallocation.model.InvoiceRow;
 import de.metas.banking.payment.paymentallocation.model.InvoiceWriteOffAmountType;
 import de.metas.banking.payment.paymentallocation.model.PaymentAllocationContext;
 import de.metas.banking.payment.paymentallocation.model.PaymentAllocationTotals;
-import de.metas.organization.OrgId;
-import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
 
 public class DifferenceRowBalancerTest
@@ -83,12 +77,6 @@ public class DifferenceRowBalancerTest
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
-		setAllowSalesPurchaseInvoiceCompensation(false);
-	}
-
-	private final void setAllowSalesPurchaseInvoiceCompensation(final boolean allow)
-	{
-		Services.get(ISysConfigBL.class).setValue(PaymentAllocationBL.SYSCONFIG_AllowAllocationOfPurchaseInvoiceAgainstSaleInvoice, allow, ClientId.SYSTEM, OrgId.ANY);
 	}
 
 	@Test
@@ -97,9 +85,7 @@ public class DifferenceRowBalancerTest
 		context = createContext();
 
 		invoiceRows = Arrays.asList(
-				newInvoiceRow(VendorInvoice, 1000)
-				, newInvoiceRow(VendorCreditMemo, -100)
-				);
+				newInvoiceRow(VendorInvoice, 1000), newInvoiceRow(VendorCreditMemo, -100));
 		paymentRows = Arrays.asList();
 
 		balanceRows();
@@ -118,9 +104,7 @@ public class DifferenceRowBalancerTest
 		context = createContext();
 
 		invoiceRows = Arrays.asList(
-				newInvoiceRow(VendorInvoice, 300)
-				, newInvoiceRow(VendorCreditMemo, -1000)
-				);
+				newInvoiceRow(VendorInvoice, 300), newInvoiceRow(VendorCreditMemo, -1000));
 		paymentRows = Arrays.asList();
 
 		balanceRows();
@@ -146,7 +130,7 @@ public class DifferenceRowBalancerTest
 				, newInvoiceRow(VendorInvoice, 100) // 4
 				, newInvoiceRow(VendorCreditMemo, -250) // 5
 				, newInvoiceRow(VendorCreditMemo, -160) // 6
-				);
+		);
 		paymentRows = Arrays.asList();
 
 		balanceRows();
@@ -183,7 +167,7 @@ public class DifferenceRowBalancerTest
 				, newInvoiceRow(VendorInvoice, 100) // 4
 				, newInvoiceRow(VendorCreditMemo, -250) // 5
 				, newInvoiceRow(VendorCreditMemo, -450) // 6
-				);
+		);
 		paymentRows = Arrays.asList();
 
 		balanceRows();
@@ -210,11 +194,7 @@ public class DifferenceRowBalancerTest
 		context = createContext();
 
 		invoiceRows = Arrays.asList(
-				newInvoiceRow(VendorInvoice, 100)
-				, newInvoiceRow(VendorInvoice, 100)
-				, newInvoiceRow(VendorInvoice, 100)
-				, newInvoiceRow(VendorCreditMemo, -110)
-				);
+				newInvoiceRow(VendorInvoice, 100), newInvoiceRow(VendorInvoice, 100), newInvoiceRow(VendorInvoice, 100), newInvoiceRow(VendorCreditMemo, -110));
 		paymentRows = Arrays.asList();
 
 		invoiceRows.get(1).setTaboo(true); // lock!
@@ -236,17 +216,15 @@ public class DifferenceRowBalancerTest
 		assertWriteOffAmt(invoiceRows.get(3), 0);
 	}
 
-
 	@Test
 	public void test_SaleInvoicesAndPurchaseInvoices01_LessPurchaseInvoiceThanInvoiced()
 	{
-		setAllowSalesPurchaseInvoiceCompensation(true);
-		context = createContext();
+		context = prepareContext()
+				.allowPurchaseSalesInvoiceCompensation(true)
+				.build();
 
 		invoiceRows = Arrays.asList(
-				newInvoiceRow(InvoiceType.CustomerInvoice, 1000)
-				, newInvoiceRow(VendorInvoice, 600)
-				);
+				newInvoiceRow(InvoiceType.CustomerInvoice, 1000), newInvoiceRow(VendorInvoice, 600));
 		paymentRows = Arrays.asList();
 
 		balanceRows();
@@ -262,13 +240,12 @@ public class DifferenceRowBalancerTest
 	@Test
 	public void test_SaleInvoicesAndPurchaseInvoices02_MorePurchaseInvoiceThanInvoiced()
 	{
-		setAllowSalesPurchaseInvoiceCompensation(true);
-		context = createContext();
+		context = prepareContext()
+				.allowPurchaseSalesInvoiceCompensation(true)
+				.build();
 
 		invoiceRows = Arrays.asList(
-				newInvoiceRow(InvoiceType.CustomerInvoice, 1000)
-				, newInvoiceRow(VendorInvoice, 1600)
-				);
+				newInvoiceRow(InvoiceType.CustomerInvoice, 1000), newInvoiceRow(VendorInvoice, 1600));
 		paymentRows = Arrays.asList();
 
 		balanceRows();
@@ -287,9 +264,7 @@ public class DifferenceRowBalancerTest
 		context = createContext();
 
 		invoiceRows = Arrays.asList(
-				newInvoiceRow(InvoiceType.CustomerInvoice, 1000)
-				, newInvoiceRow(VendorInvoice, 1600)
-				);
+				newInvoiceRow(InvoiceType.CustomerInvoice, 1000), newInvoiceRow(VendorInvoice, 1600));
 		paymentRows = Arrays.asList();
 
 		balanceRows();
@@ -304,12 +279,17 @@ public class DifferenceRowBalancerTest
 
 	private PaymentAllocationContext createContext()
 	{
+		return prepareContext().build();
+	}
+
+	private PaymentAllocationContext.Builder prepareContext()
+	{
 		return PaymentAllocationContext.builder()
 				.setMultiCurrency(false)
 				.setDocumentIdsToIncludeWhenQuering(ArrayListMultimap.<AllocableDocType, Integer> create())
 				.setC_BPartner_ID(bpartnerId)
 				.addAllowedWriteOffType(writeOffType)
-				.build();
+				.allowPurchaseSalesInvoiceCompensation(false);
 	}
 
 	private void balanceRows()
@@ -360,18 +340,10 @@ public class DifferenceRowBalancerTest
 
 	private final Supplier<PaymentAllocationTotals> createPaymentAllocationTotals()
 	{
-		return new Supplier<PaymentAllocationTotals>()
-		{
-
-			@Override
-			public PaymentAllocationTotals get()
-			{
-				return PaymentAllocationTotals.builder()
-						.setInvoicedAmt(AbstractAllocableDocTableModel.calculateTotalAppliedAmt(invoiceRows))
-						.setPaymentExistingAmt(AbstractAllocableDocTableModel.calculateTotalAppliedAmt(paymentRows))
-						.build();
-			}
-		};
+		return () -> PaymentAllocationTotals.builder()
+				.setInvoicedAmt(AbstractAllocableDocTableModel.calculateTotalAppliedAmt(invoiceRows))
+				.setPaymentExistingAmt(AbstractAllocableDocTableModel.calculateTotalAppliedAmt(paymentRows))
+				.build();
 	}
 
 	private void dump(final String title, final Iterable<? extends IAllocableDocRow> rows)
@@ -397,23 +369,17 @@ public class DifferenceRowBalancerTest
 
 	private final void assertAppliedAmt(final IAllocableDocRow row, final int expectedAppliedAmt)
 	{
-		Assert.assertThat("row's appliedAmt: " + row
-				, row.getAppliedAmt()
-				, Matchers.comparesEqualTo(BigDecimal.valueOf(expectedAppliedAmt)));
+		Assert.assertThat("row's appliedAmt: " + row, row.getAppliedAmt(), Matchers.comparesEqualTo(BigDecimal.valueOf(expectedAppliedAmt)));
 	}
 
 	private final void assertWriteOffAmt(final IInvoiceRow row, final int expectedAmt)
 	{
-		Assert.assertThat("row's " + writeOffType + ": " + row
-				, row.getWriteOffAmtOfType(writeOffType)
-				, Matchers.comparesEqualTo(BigDecimal.valueOf(expectedAmt)));
+		Assert.assertThat("row's " + writeOffType + ": " + row, row.getWriteOffAmtOfType(writeOffType), Matchers.comparesEqualTo(BigDecimal.valueOf(expectedAmt)));
 	}
 
 	private final void assertOverUnderAmt(final IInvoiceRow row, final int expectedAmt)
 	{
-		Assert.assertThat("row's " + writeOffType + ": " + row
-				, row.getOverUnderAmt()
-				, Matchers.comparesEqualTo(BigDecimal.valueOf(expectedAmt)));
+		Assert.assertThat("row's " + writeOffType + ": " + row, row.getOverUnderAmt(), Matchers.comparesEqualTo(BigDecimal.valueOf(expectedAmt)));
 	}
 
 }

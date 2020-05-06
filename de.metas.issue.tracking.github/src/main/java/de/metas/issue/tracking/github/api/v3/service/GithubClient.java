@@ -86,7 +86,9 @@ public class GithubClient
 
 		issueList = ImmutableList.copyOf(restService.performGet(getRequest, Issue[].class).getBody());
 
-		return issueList;
+		return issueList.stream()
+				.filter(issue -> !issue.isPullRequest())
+				.collect(ImmutableList.toImmutableList());
 	}
 
 	public Issue fetchIssueById(@NonNull final FetchIssueByIdRequest fetchIssueByIdRequest)

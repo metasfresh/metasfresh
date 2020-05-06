@@ -26,13 +26,13 @@ import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
-import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_OrderLine;
 import org.springframework.stereotype.Component;
 
 import de.metas.adempiere.model.I_C_InvoiceLine;
-import de.metas.invoice.IInvoiceLineBL;
+import de.metas.invoice.service.IInvoiceBL;
+import de.metas.invoice.service.IInvoiceLineBL;
 import de.metas.util.Services;
 
 @Callout(I_C_InvoiceLine.class)
@@ -92,7 +92,7 @@ public class C_InvoiceLine
 		if (InterfaceWrapperHelper.isNull(invoiceLine, I_C_InvoiceLine.COLUMNNAME_C_OrderLine_ID))
 		{
 			// set the product to null if the orderline was set to null
-			invoiceLine.setM_Product(null);
+			invoiceLine.setM_Product_ID(-1);
 
 			return;
 		}

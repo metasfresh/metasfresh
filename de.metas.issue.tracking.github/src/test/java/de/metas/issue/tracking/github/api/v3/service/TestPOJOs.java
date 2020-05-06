@@ -26,6 +26,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import de.metas.issue.tracking.github.api.v3.model.GithubMilestone;
 import de.metas.issue.tracking.github.api.v3.model.Issue;
 import de.metas.issue.tracking.github.api.v3.model.Label;
+import de.metas.issue.tracking.github.api.v3.model.PullRequest;
 import de.metas.issue.tracking.github.api.v3.model.User;
 import org.junit.Test;
 
@@ -82,6 +83,7 @@ public class TestPOJOs
 				.htmlUrl(MOCK_EXTERNAL_URL)
 				.assignee(getMockUser())
 				.state(MOCK_VALUE)
+				.pullRequest(PullRequest.builder().url(MOCK_EXTERNAL_URL).build())
 				.build();
 
 		testSerializeDeserializeObject(issue);

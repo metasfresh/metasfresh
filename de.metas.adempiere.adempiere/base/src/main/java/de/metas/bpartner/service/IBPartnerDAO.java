@@ -138,6 +138,8 @@ public interface IBPartnerDAO extends ISingletonService
 	 */
 	List<I_AD_User> retrieveContacts(I_C_BPartner bpartner);
 
+	List<I_AD_User> retrieveContacts(BPartnerId bpartnerId);
+
 	Optional<BPartnerContactId> getContactIdByExternalId(BPartnerId bpartnerId, ExternalId externalId);
 
 	I_AD_User getContactById(BPartnerContactId contactId);

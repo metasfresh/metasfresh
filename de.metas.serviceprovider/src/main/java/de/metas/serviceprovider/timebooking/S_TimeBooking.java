@@ -112,6 +112,24 @@ public class S_TimeBooking
 		}
 	}
 
+	@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE, ifColumnsChanged = I_S_TimeBooking.COLUMNNAME_IsActive)
+	public void reactivateLinkedExternalReferences(@NonNull final I_S_TimeBooking record)
+	{
+		if (record.isActive())
+		{
+			externalReferenceRepository.updateIsActiveByRecordIdAndType(record.getS_TimeBooking_ID(), ExternalReferenceType.TIME_BOOKING_ID, record.isActive());
+		}
+	}
+
+	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE, ifColumnsChanged = I_S_TimeBooking.COLUMNNAME_IsActive)
+	public void inactivateLinkedExternalReferences(@NonNull final I_S_TimeBooking record)
+	{
+		if (!record.isActive())
+		{
+			externalReferenceRepository.updateIsActiveByRecordIdAndType(record.getS_TimeBooking_ID(), ExternalReferenceType.TIME_BOOKING_ID, record.isActive());
+		}
+	}
+
 	@CalloutMethod(columnNames = { I_S_TimeBooking.COLUMNNAME_HoursAndMinutes })
 	public void validateHmmInput(@NonNull final I_S_TimeBooking record)
 	{

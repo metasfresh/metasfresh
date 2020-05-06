@@ -3,7 +3,6 @@ package com.mchange.v2.c3p0.impl;
 import com.mchange.v2.resourcepool.ResourcePool;
 
 import lombok.NonNull;
-
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
