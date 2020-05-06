@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<included>
+	<appender name="FILE-byLoggedUserAndRemoteAddr" class="ch.qos.logback.classic.sift.SiftingAppender">
+		<!-- in the absence of the class attribute, it is assumed that the desired 
+			discriminator type is ch.qos.logback.classic.sift.MDCBasedDiscriminator -->
+		<discriminator>
+			<key>LoggedUserAndRemoteAddr</key>
+			<defaultValue>_unknown</defaultValue>
+		</discriminator>
+		<sift>
+			<appender name="FILE-byLoggedUserAndRemoteAddr-${LoggedUser}-${RemoteAddr}" class="de.metas.logging.MetasfreshFileAppender">
+				<encoder>
+					<pattern>${FILE_LOG_PATTERN}</pattern>
+				</encoder>
+
+				<!-- it works with changing the logging.path property -->
+				<rollingPolicy class="de.metas.logging.MetasfreshTimeBasedRollingPolicy">
+					<LogDir>${LOG_PATH}/byLoggedUserAndRemoteAddr/${LoggedUserAndRemoteAddr}</LogDir>
+					<LogFilePrefix>-</LogFilePrefix>
+					<LogFileDatePattern>%d{yyyy-MM-dd}_%d{HHmmss,aux}
+					</LogFileDatePattern>
+
+					<TimeBasedFileNamingAndTriggeringPolicy
+						class="de.metas.logging.MetasfreshTimeBasedFileNamingAndTriggeringPolicy" />
+				</rollingPolicy>
+			</appender>
+		</sift>
+	</appender>
+</included>
