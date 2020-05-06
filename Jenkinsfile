@@ -57,7 +57,7 @@ try
 			echo "mvnConf=${mvnConf.toString()}"
 
 			final def scmVars = checkout scm
-			echo "scmVars=${scmVars}" // echo the source of truth
+			echo "git debug scmVars=>>>>>${scmVars}<<<<<"
 
 			currentBuild.description = """${currentBuild.description}
 			<b>
