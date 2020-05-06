@@ -1,0 +1,12 @@
+{
+    "description" : "Spende",
+    "category" : "Standard",
+    "postingType" : "Actual",
+    "de_DE__postingType": "Ist",
+    "de_CH__postingType": "Ist",
+    "currency" : "CHF",
+    "docType" : "Journal",
+    "account" : "1020_UBS Kontokorrent",
+    "amountSource" : 100.00,
+    "activity" : "250_Verwaltung"
+}

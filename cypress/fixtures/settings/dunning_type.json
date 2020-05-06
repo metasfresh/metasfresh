@@ -1,0 +1,21 @@
+{
+  "name": "test dunning",
+  "isDefault": false,
+  "currency": "EUR",
+  "entryLine": [
+    {
+      "name": "Level 1",
+      "printName": "Text 1",
+      "days": "1",
+      "header": "Header 1",
+      "note": "Note 1"
+    },
+    {
+      "name": "Level 2",
+      "printName": "Text 2",
+      "days": "1",
+      "header": "Header 2",
+      "note": "Note 2"
+    }
+  ]
+}
