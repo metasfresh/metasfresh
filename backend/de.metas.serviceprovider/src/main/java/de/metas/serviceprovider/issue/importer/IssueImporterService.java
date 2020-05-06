@@ -306,7 +306,6 @@ public class IssueImporterService
 		return GetRefListRequest
 				.builder()
 				.referenceId(ReferenceId.ofRepoId(LABEL_AD_Reference_ID))
-				.name(issueLabel.getValue())
 				.value(issueLabel.getValue())
 				.build();
 	}

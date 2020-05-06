@@ -23,18 +23,15 @@
 package de.metas.reflist;
 
 import lombok.Builder;
-import lombok.Data;
 import lombok.NonNull;
+import lombok.Value;
 
-@Data
+@Value
 @Builder
 public class GetRefListRequest
 {
 	@NonNull
 	ReferenceId referenceId;
-
-	@NonNull
-	String name;
 
 	@NonNull
 	String value;

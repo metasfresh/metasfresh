@@ -59,7 +59,6 @@ public class RefListRepository
 		return queryBL.createQueryBuilder(I_AD_Ref_List.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_AD_Ref_List.COLUMNNAME_AD_Reference_ID, getRefListRequest.getReferenceId().getRepoId())
-				.addEqualsFilter(I_AD_Ref_List.COLUMNNAME_Name, getRefListRequest.getName())
 				.addEqualsFilter(I_AD_Ref_List.COLUMNNAME_Value, getRefListRequest.getValue())
 				.create()
 				.firstOnlyOptional(I_AD_Ref_List.class)
