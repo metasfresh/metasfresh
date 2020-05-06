@@ -404,7 +404,7 @@ note: when adding new records, please roughly order them by alphabet.
 
 		<dependency>
 			<groupId>de.metas.report</groupId>
-			<artifactId>metasfresh-report-service</artifactId>
+			<artifactId>report-service</artifactId>
 			<version>${metasfresh.version}</version>
 			<classifier>migration-postgres-sql</classifier>
 			<type>zip</type>
