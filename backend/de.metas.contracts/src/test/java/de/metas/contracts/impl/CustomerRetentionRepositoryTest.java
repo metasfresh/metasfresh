@@ -168,7 +168,7 @@ public class CustomerRetentionRepositoryTest
 
 		final BPartnerId bpartnerId = BPartnerId.ofRepoId(partner.getC_BPartner_ID());
 
-		repository.createUpdateCustomerRetention(bpartnerId);
+		repository.updateCustomerRetention(bpartnerId);
 
 		refresh(customerRetention);
 
@@ -187,7 +187,7 @@ public class CustomerRetentionRepositoryTest
 
 		final BPartnerId bpartnerId = BPartnerId.ofRepoId(partner.getC_BPartner_ID());
 
-		repository.createUpdateCustomerRetention(bpartnerId);
+		repository.updateCustomerRetention(bpartnerId);
 
 		refresh(customerRetention);
 
@@ -226,7 +226,7 @@ public class CustomerRetentionRepositoryTest
 
 		final BPartnerId bpartnerId = BPartnerId.ofRepoId(partner.getC_BPartner_ID());
 
-		repository.createUpdateCustomerRetention(bpartnerId);
+		repository.updateCustomerRetention(bpartnerId);
 
 		refresh(customerRetention);
 
@@ -267,7 +267,7 @@ public class CustomerRetentionRepositoryTest
 
 		final BPartnerId bpartnerId = BPartnerId.ofRepoId(partner.getC_BPartner_ID());
 
-		repository.createUpdateCustomerRetention(bpartnerId);
+		repository.updateCustomerRetention(bpartnerId);
 
 		refresh(customerRetention);
 
@@ -306,7 +306,7 @@ public class CustomerRetentionRepositoryTest
 
 		final BPartnerId bpartnerId = BPartnerId.ofRepoId(partner.getC_BPartner_ID());
 
-		repository.createUpdateCustomerRetention(bpartnerId);
+		repository.updateCustomerRetention(bpartnerId);
 
 		refresh(customerRetention);
 		assertThat(X_C_Customer_Retention.CUSTOMERRETENTION_Stammkunde).isEqualTo(customerRetention.getCustomerRetention());
@@ -344,7 +344,7 @@ public class CustomerRetentionRepositoryTest
 
 		final BPartnerId bpartnerId = BPartnerId.ofRepoId(partner.getC_BPartner_ID());
 
-		repository.createUpdateCustomerRetention(bpartnerId);
+		repository.updateCustomerRetention(bpartnerId);
 
 		refresh(customerRetention);
 		assertThat(X_C_Customer_Retention.CUSTOMERRETENTION_Stammkunde).isEqualTo(customerRetention.getCustomerRetention());

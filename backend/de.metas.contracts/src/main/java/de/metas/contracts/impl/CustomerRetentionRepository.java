@@ -184,7 +184,7 @@ public class CustomerRetentionRepository
 		return !Check.isEmpty(retrieveExistingCustomerRetention(bpartnerId));
 	}
 
-	public void createUpdateCustomerRetention(@NonNull final BPartnerId bpartnerId)
+	public void updateCustomerRetention(@NonNull final BPartnerId bpartnerId)
 	{
 		final CustomerRetentionId customerRetentionId = retrieveOrCreateCustomerRetention(bpartnerId);
 
