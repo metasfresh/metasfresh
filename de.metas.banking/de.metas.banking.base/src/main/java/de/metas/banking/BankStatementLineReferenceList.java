@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.Objects;
 import java.util.stream.Collector;
+import java.util.stream.Stream;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -63,6 +64,11 @@ public final class BankStatementLineReferenceList implements Iterable<BankStatem
 	public Iterator<BankStatementLineReference> iterator()
 	{
 		return list.iterator();
+	}
+
+	public Stream<BankStatementLineReference> stream()
+	{
+		return list.stream();
 	}
 
 	public ImmutableSet<PaymentId> getPaymentIds()
