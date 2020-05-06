@@ -1,25 +1,3 @@
-/*
- * #%L
- * de.metas.business
- * %%
- * Copyright (C) 2020 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
 /**
  *
  */
@@ -33,7 +11,9 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 import org.adempiere.ad.trx.api.ITrx;
@@ -54,9 +34,14 @@ import org.compiere.util.TimeUtil;
 import org.compiere.util.TrxRunnableAdapter;
 import org.slf4j.Logger;
 
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.allocation.api.IAllocationBL;
+import de.metas.banking.BankStatementId;
+import de.metas.banking.BankStatementLineId;
+import de.metas.banking.BankStatementLineRefId;
 import de.metas.bpartner.BPartnerBankAccountId;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.CurrencyPrecision;
@@ -78,6 +63,8 @@ import de.metas.payment.api.DefaultPaymentBuilder;
 import de.metas.payment.api.IPaymentBL;
 import de.metas.payment.api.IPaymentDAO;
 import de.metas.payment.api.PaymentQuery;
+import de.metas.payment.api.PaymentReconcileReference;
+import de.metas.payment.api.PaymentReconcileRequest;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -450,10 +437,10 @@ public class PaymentBL implements IPaymentBL
 
 		logger.debug("Allocated={} ({}={})", test, alloc, total);
 		return change;
-	}    // testAllocation
+	}	// testAllocation
 
 	@Override
-	public boolean isCashTrx(@NonNull final I_C_Payment payment)
+	public boolean isCashTrx(I_C_Payment payment)
 	{
 		final TenderType tenderType = TenderType.ofCode(payment.getTenderType());
 		return tenderType.isCash();
@@ -524,31 +511,147 @@ public class PaymentBL implements IPaymentBL
 		final List<I_C_Payment> payments = paymentDAO.getByIds(ImmutableSet.copyOf(paymentIds));
 		for (final I_C_Payment payment : payments)
 		{
-			payment.setIsReconciled(false);
+			markNotReconciledNoSave(payment);
 			paymentDAO.save(payment);
 		}
 	}
 
-	@Override
-	public void markReconciled(@NonNull final Collection<PaymentId> paymentIds)
+	public static void markNotReconciledNoSave(@NonNull final I_C_Payment payment)
 	{
-		if (paymentIds.isEmpty())
+		payment.setIsReconciled(false);
+		payment.setC_BankStatement_ID(-1);
+		payment.setC_BankStatementLine_ID(-1);
+		payment.setC_BankStatementLine_Ref_ID(-1);
+	}
+
+	@Override
+	public void markReconciled(@NonNull final Collection<PaymentReconcileRequest> requests)
+	{
+		final Collection<I_C_Payment> preloadedPayments = ImmutableList.of();
+		markReconciled(requests, preloadedPayments);
+	}
+
+	@Override
+	public void markReconciled(
+			@NonNull final Collection<PaymentReconcileRequest> requests,
+			@NonNull final Collection<I_C_Payment> preloadedPayments)
+	{
+		if (requests.isEmpty())
 		{
 			return;
 		}
 
-		final List<I_C_Payment> payments = paymentDAO.getByIds(ImmutableSet.copyOf(paymentIds));
-		for (final I_C_Payment payment : payments)
+		final HashMap<PaymentId, I_C_Payment> payments = new HashMap<>();
+		for (final I_C_Payment payment : preloadedPayments)
 		{
-			markReconciledAndSave(payment);
+			final PaymentId paymentId = PaymentId.ofRepoId(payment.getC_Payment_ID());
+			payments.put(paymentId, payment);
+		}
+
+		final ImmutableSet<PaymentId> paymentIdsToLoad = requests.stream()
+				.map(PaymentReconcileRequest::getPaymentId)
+				.filter(paymentId -> !payments.containsKey(paymentId))
+				.collect(ImmutableSet.toImmutableSet());
+		if (!paymentIdsToLoad.isEmpty())
+		{
+			for (final I_C_Payment payment : paymentDAO.getByIds(paymentIdsToLoad))
+			{
+				final PaymentId paymentId = PaymentId.ofRepoId(payment.getC_Payment_ID());
+				payments.put(paymentId, payment);
+			}
+		}
+
+		for (final PaymentReconcileRequest request : requests)
+		{
+			markReconciledAndSave(
+					payments.get(request.getPaymentId()),
+					request.getReconcileRef());
 		}
 	}
 
 	@Override
-	public void markReconciledAndSave(@NonNull final I_C_Payment payment)
+	public void markReconciledAndSave(
+			@NonNull final I_C_Payment payment,
+			@NonNull PaymentReconcileReference reconcileRef)
 	{
+		if (payment.isReconciled())
+		{
+			final PaymentReconcileReference currentReconcileRef = extractPaymentReconcileReference(payment);
+			throw new AdempiereException("Payment was already reconciled")
+					.setParameter("reconcileRef", reconcileRef)
+					.setParameter("currentReconcileRef", currentReconcileRef)
+					.appendParametersToMessage();
+		}
+
 		payment.setIsReconciled(true);
+
+		final PaymentReconcileReference.Type type = reconcileRef.getType();
+		if (PaymentReconcileReference.Type.BANK_STATEMENT_LINE.equals(type))
+		{
+			payment.setC_BankStatement_ID(reconcileRef.getBankStatementId().getRepoId());
+			payment.setC_BankStatementLine_ID(reconcileRef.getBankStatementLineId().getRepoId());
+			payment.setC_BankStatementLine_Ref_ID(-1);
+		}
+		else if (PaymentReconcileReference.Type.BANK_STATEMENT_LINE_REF.equals(type))
+		{
+			payment.setC_BankStatement_ID(reconcileRef.getBankStatementId().getRepoId());
+			payment.setC_BankStatementLine_ID(reconcileRef.getBankStatementLineId().getRepoId());
+			payment.setC_BankStatementLine_Ref_ID(reconcileRef.getBankStatementLineRefId().getRepoId());
+		}
+		else if (PaymentReconcileReference.Type.REVERSAL.equals(type))
+		{
+			final DocStatus docStatus = DocStatus.ofNullableCodeOrUnknown(payment.getDocStatus());
+			if (!docStatus.isReversed())
+			{
+				throw new AdempiereException("Payment shall be reversed but it's DocStatus is `" + docStatus + "`: " + payment);
+			}
+
+			final PaymentId reversalId = PaymentId.ofRepoIdOrNull(payment.getReversal_ID());
+			if (!Objects.equals(reversalId, reconcileRef.getReversalId()))
+			{
+				throw new AdempiereException("Payment shall be reversed by `" + reconcileRef.getReversalId() + "` but it was reversed by `" + reversalId + "`: " + payment);
+			}
+
+			payment.setC_BankStatement_ID(-1);
+			payment.setC_BankStatementLine_ID(-1);
+			payment.setC_BankStatementLine_Ref_ID(-1);
+		}
+		else
+		{
+			throw new AdempiereException("Unknown reconciliation type: " + type);
+		}
+
 		paymentDAO.save(payment);
+	}
+
+	@VisibleForTesting
+	static PaymentReconcileReference extractPaymentReconcileReference(final I_C_Payment payment)
+	{
+		try
+		{
+			final DocStatus docStatus = DocStatus.ofNullableCodeOrUnknown(payment.getDocStatus());
+			if (docStatus.isReversed())
+			{
+				final PaymentId reversalId = PaymentId.ofRepoId(payment.getReversal_ID());
+				return PaymentReconcileReference.reversal(reversalId);
+			}
+
+			final BankStatementId bankStatementId = BankStatementId.ofRepoId(payment.getC_BankStatement_ID());
+			final BankStatementLineId bankStatementLineId = BankStatementLineId.ofRepoId(payment.getC_BankStatementLine_ID());
+			final BankStatementLineRefId bankStatementLineRefId = BankStatementLineRefId.ofRepoIdOrNull(payment.getC_BankStatementLine_Ref_ID());
+			if (bankStatementLineRefId == null)
+			{
+				return PaymentReconcileReference.bankStatementLine(bankStatementId, bankStatementLineId);
+			}
+			else
+			{
+				return PaymentReconcileReference.bankStatementLineRef(bankStatementId, bankStatementLineId, bankStatementLineRefId);
+			}
+		}
+		catch (final Exception ex)
+		{
+			throw new AdempiereException("Failed extracting payment reconcile reference from " + payment, ex);
+		}
 	}
 
 	@Override

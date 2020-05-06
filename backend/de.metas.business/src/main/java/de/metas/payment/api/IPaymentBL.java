@@ -1,8 +1,13 @@
+/**
+ *
+ */
+package de.metas.payment.api;
+
 /*
  * #%L
- * de.metas.business
+ * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2020 metas GmbH
+ * Copyright (C) 2015 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,25 +25,21 @@
  * #L%
  */
 
-/**
- *
- */
-package de.metas.payment.api;
+import java.math.BigDecimal;
+import java.util.Collection;
+import java.util.Date;
+import java.util.List;
+import java.util.Set;
+
+import org.compiere.model.I_C_AllocationHdr;
+import org.compiere.model.I_C_Invoice;
+import org.compiere.model.I_C_Payment;
 
 import de.metas.bpartner.BPartnerBankAccountId;
 import de.metas.payment.PaymentId;
 import de.metas.payment.TenderType;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
-import org.compiere.model.I_C_AllocationHdr;
-import org.compiere.model.I_C_Invoice;
-import org.compiere.model.I_C_Payment;
-
-import java.math.BigDecimal;
-import java.util.Collection;
-import java.util.Date;
-import java.util.List;
-import java.util.Set;
 
 public interface IPaymentBL extends ISingletonService
 {
@@ -119,9 +120,15 @@ public interface IPaymentBL extends ISingletonService
 
 	void updateDiscountAndPayAmtFromInvoiceIfAny(I_C_Payment payment);
 
-	void markReconciled(@NonNull Collection<PaymentId> paymentIds);
+	void markReconciled(@NonNull Collection<PaymentReconcileRequest> requests);
 
-	void markReconciledAndSave(@NonNull I_C_Payment payment);
+	void markReconciled(
+			@NonNull Collection<PaymentReconcileRequest> requests,
+			@NonNull Collection<I_C_Payment> preloadedPayments);
+
+	void markReconciledAndSave(
+			@NonNull I_C_Payment payment,
+			@NonNull PaymentReconcileReference reconcileRef);
 
 	void markNotReconciled(@NonNull Collection<PaymentId> paymentIds);
 

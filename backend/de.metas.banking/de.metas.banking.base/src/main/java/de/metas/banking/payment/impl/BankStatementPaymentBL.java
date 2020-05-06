@@ -1,26 +1,14 @@
-/*
- * #%L
- * de.metas.banking.base
- * %%
- * Copyright (C) 2020 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
 package de.metas.banking.payment.impl;
+
+import java.time.LocalDate;
+import java.util.Set;
+
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.I_C_BankStatement;
+import org.compiere.model.I_C_BankStatementLine;
+import org.compiere.model.I_C_Payment;
+import org.compiere.util.TimeUtil;
+import org.springframework.stereotype.Component;
 
 import de.metas.banking.BankStatementId;
 import de.metas.banking.BankStatementLineId;
@@ -48,17 +36,9 @@ import de.metas.payment.TenderType;
 import de.metas.payment.api.DefaultPaymentBuilder;
 import de.metas.payment.api.IPaymentBL;
 import de.metas.payment.api.PaymentQuery;
+import de.metas.payment.api.PaymentReconcileReference;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.I_C_BankStatement;
-import org.compiere.model.I_C_BankStatementLine;
-import org.compiere.model.I_C_Payment;
-import org.compiere.util.TimeUtil;
-import org.springframework.stereotype.Component;
-
-import java.time.LocalDate;
-import java.util.Set;
 
 @Component
 public class BankStatementPaymentBL implements IBankStatementPaymentBL
@@ -155,6 +135,7 @@ public class BankStatementPaymentBL implements IBankStatementPaymentBL
 
 		// final CurrencyId currencyId = CurrencyId.ofRepoId(line.getC_Currency_ID());
 		final OrgId orgId = OrgId.ofRepoId(bankStatementLine.getAD_Org_ID());
+		final LocalDate statementLineDate = TimeUtil.asLocalDate(bankStatementLine.getStatementLineDate());
 		final LocalDate acctLineDate = TimeUtil.asLocalDate(bankStatementLine.getDateAcct());
 		final BankAccountId orgBankAccountId = BankAccountId.ofRepoId(bankStatement.getC_BP_BankAccount_ID());
 
@@ -176,7 +157,7 @@ public class BankStatementPaymentBL implements IBankStatementPaymentBL
 				.orgBankAccountId(orgBankAccountId)
 				.currencyId(payAmount.getCurrencyId())
 				.payAmt(payAmount.toBigDecimal())
-				.dateAcct(acctLineDate)
+				.dateAcct(statementLineDate)
 				.dateTrx(acctLineDate) // Note: DateTrx should be the same as Line.DateAcct, and not Line.StatementDate.
 				.tenderType(tenderType);
 
@@ -185,7 +166,7 @@ public class BankStatementPaymentBL implements IBankStatementPaymentBL
 			paymentBuilder.invoiceId(invoiceId);
 		}
 
-		return paymentBuilder.createDraft(); // note: don't complete the payment now, else onComplete interceptors might link this payment to a different Bank Statement Line.
+		return paymentBuilder.createDraft(); // note: don't complete the payment now, else onComplete interceptors might link this payment to a different Bank Statement Line.	}
 	}
 
 	@Override
@@ -233,7 +214,10 @@ public class BankStatementPaymentBL implements IBankStatementPaymentBL
 		final DocStatus bankStatementDocStatus = DocStatus.ofCode(bankStatement.getDocStatus());
 		if (bankStatementDocStatus.isCompleted())
 		{
-			paymentBL.markReconciledAndSave(payment);
+			final PaymentReconcileReference reconcileRef = PaymentReconcileReference.bankStatementLine(
+					BankStatementId.ofRepoId(bankStatementLine.getC_BankStatement_ID()),
+					BankStatementLineId.ofRepoId(bankStatementLine.getC_BankStatementLine_ID()));
+			paymentBL.markReconciledAndSave(payment, reconcileRef);
 		}
 
 		bankStatementListenersService.firePaymentLinked(PaymentLinkResult.builder()
