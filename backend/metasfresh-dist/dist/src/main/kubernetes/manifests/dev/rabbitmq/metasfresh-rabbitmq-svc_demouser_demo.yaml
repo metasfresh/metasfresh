@@ -1,0 +1,28 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: "metasfresh-rabbitmq-mf15-dev"
+  labels:
+    de.metas.deployment.type: metasfresh-rabbitmq
+    de.metas.deployment.user: "mf15"
+    de.metas.deployment.stage: "dev"
+spec:
+  ports:
+  - name: rabbitmq-broker
+    port: 5672
+    protocol: TCP
+    targetPort: 5672
+    nodePort: 30050
+  - name: rabbitmq-management
+    port: 15672
+    protocol: TCP
+    targetPort: 15672
+    nodePort: 30051
+  selector:
+    de.metas.deployment.type: metasfresh-rabbitmq
+    de.metas.deployment.user: "mf15"
+    de.metas.deployment.stage: "dev"
+  sessionAffinity: None
+# use nodeport such that we can also use rabbitmq as part of the developement environment
+# see https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services---service-types
+  type: NodePort

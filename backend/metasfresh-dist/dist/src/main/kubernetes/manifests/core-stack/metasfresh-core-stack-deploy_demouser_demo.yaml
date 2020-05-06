@@ -1,0 +1,124 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: "metasfresh-core-stack-mf15-dev"
+  labels:
+    de.metas.deployment.type: metasfresh-core-stack
+    de.metas.deployment.user: "mf15"
+    de.metas.deployment.stage: "dev"
+    de.metas.deployment.name: "metasfresh-core-stack-mf15-dev"
+  namespace: "default"
+# can be created with kubectl create namespace demo"
+#  namespace: "demo"
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        de.metas.deployment.type: metasfresh-core-stack
+        de.metas.deployment.user: "mf15"
+        de.metas.deployment.stage: "dev"
+    spec:
+      containers:
+#
+# metasfresh-app
+      - env:
+        - name: METASFRESH_HOME
+          value: /opt/metasfresh
+        - name: DB_HOST
+          value: "metasfresh-postgresql-mf15-dev"
+        - name: DB_PASSWORD
+          value: metasfresh
+        - name: APP_HOST
+          value: localhost
+        - name: ES_HOST
+          value: metasfresh-search-mf15-dev
+        - name: ES_PORT
+          value: '9300'
+        - name: RABBITMQ_HOST
+          value: metasfresh-rabbitmq-mf15-dev
+        - name: RABBITMQ_PORT
+          value: '5672'
+        - name: RABBITMQ_USER
+          value: guest
+        # usually the password is not set via ENV RABBITMQ_PASSWORD, but via a secrect $secret_rabbitmq_password
+        - name: RABBITMQ_PASSWORD
+          value: guest
+        - name: ADMIN_HOST
+          value: metasfresh-admin
+        - name: ADMIN_PORT
+          value: '9090'
+        name: app
+        image: docker.metasfresh.com/metasfresh/metasfresh-dist-app:gh4939_app_LATEST
+        imagePullPolicy: Always
+        ports:
+          - containerPort: 61616 # activemq
+          - containerPort: 8282  # embedded tomcat
+          - containerPort: 8788  # remote debugging
+        resources: 
+          requests:
+            memory: 1200M
+        volumeMounts:
+        # - mountPath: /etc/localtime
+        #   name: host-localtime
+        #   readOnly: true
+        # - mountPath: /etc/timezone
+        #   name: host-timezone
+        #   readOnly: true
+#
+# metasfresh-webui-api
+      - env:
+        - name: DB_HOST
+          value: "metasfresh-postgresql-mf15-dev"
+        - name: APP_HOST
+          value: localhost
+        - name: ES_HOST
+          value: metasfresh-search-mf15-dev
+        - name: ES_PORT
+          value: '9300'
+        - name: RABBITMQ_HOST
+          value: metasfresh-rabbitmq-mf15-dev
+        - name: RABBITMQ_PORT
+          value: '5672'
+        - name: RABBITMQ_USER
+          value: guest
+        # usually the password is not set via ENV RABBITMQ_PASSWORD, but via a secrect $secret_rabbitmq_password
+        - name: RABBITMQ_PASSWORD
+          value: guest
+        - name: ADMIN_HOST
+          value: metasfresh-admin
+        - name: ADMIN_PORT
+          value: '9090'          
+        name: webapi
+        image: docker.metasfresh.com/metasfresh/metasfresh-webui-api-dev:gh4939_app_LATEST
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8080
+        - containerPort: 8789 # remote debugging
+        resources: 
+          requests:
+            memory: 600M
+        volumeMounts:
+        # - mountPath: /etc/localtime
+        #   name: host-localtime
+        #   readOnly: true
+        # - mountPath: /etc/timezone
+        #   name: host-timezone
+        #   readOnly: true
+      restartPolicy: Always
+      initContainers:
+        - name: init-wait-for-postgres
+          image: busybox
+          command: ['sh', '-c', 'until nslookup metasfresh-postgresql-mf15-dev; do echo waiting for metasfresh-postgresql-mf15-dev; sleep 2; done;']
+        - name: init-wait-for-elasticsearch
+          image: busybox
+          command: ['sh', '-c', 'until nslookup metasfresh-search-mf15-dev; do echo waiting for metasfresh-search-mf15-dev; sleep 2; done;']
+      volumes:
+      # - name: host-localtime
+      #   hostPath:
+      #     path: /etc/localtime
+      # - name: host-timezone
+      #   hostPath:
+      #     path: /etc/timezone

@@ -1,0 +1,693 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ /*
+  ~  * #%L
+  ~  * %%
+  ~  * Copyright (C) <current year> metas GmbH
+  ~  * %%
+  ~  * This program is free software: you can redistribute it and/or modify
+  ~  * it under the terms of the GNU General Public License as
+  ~  * published by the Free Software Foundation, either version 2 of the
+  ~  * License, or (at your option) any later version.
+  ~  *
+  ~  * This program is distributed in the hope that it will be useful,
+  ~  * but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+  ~  * GNU General Public License for more details.
+  ~  *
+  ~  * You should have received a copy of the GNU General Public
+  ~  * License along with this program. If not, see
+  ~  * <http://www.gnu.org/licenses/gpl-2.0.html>.
+  ~  * #L%
+  ~  */
+  -->
+
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified">
+    <xs:element name="Document" type="Document" nillable="true"/>
+    <xs:complexType name="Document">
+        <xs:sequence>
+            <xs:element name="Xbest4h" type="Xbest4h" maxOccurs="9999"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:element name="Xbest4h" type="Xbest4h" nillable="true"/>
+    <xs:complexType name="Xbest4h">
+        <xs:sequence>
+            <xs:element name="HEADER" type="HEADER_Xbest"/>
+            <xs:element name="TRAILR" type="TRAILR"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="HEADER_Xbest">
+        <xs:sequence>
+            <xs:element name="DOCUMENTID" type="xs:string"/>
+            <xs:element name="PARTNERID" type="xs:string"/>
+            <xs:element name="OWNERID" type="xs:string"/>
+            <xs:element name="TESTINDICATOR" type="xs:string" minOccurs="0"/>
+            <xs:element name="APPLICATIONREF" type="xs:string" minOccurs="0"/>
+            <xs:element name="INTERCHANGEREF" type="xs:string" minOccurs="0"/>
+            <xs:element name="MESSAGEREF" type="xs:string" minOccurs="0"/>
+            <xs:element name="DOCUMENTTYP" type="xs:string"/>
+            <xs:element name="DOCUMENTFUNCTION" type="xs:string"/>
+            <xs:element name="DOCUMENTANSWER" type="xs:string" minOccurs="0"/>
+            <xs:element name="HDATE1" type="HDATE1" minOccurs="2" maxOccurs="6"/>
+            <xs:element name="HADDI1" type="HADDI1" minOccurs="0"/>
+            <xs:element name="HTEXT1" type="HTEXT1" minOccurs="0" maxOccurs="2"/>
+            <xs:element name="HREFE1" type="HREFE1" minOccurs="0" maxOccurs="2"/>
+            <xs:element name="HADRE1" type="HADRE1" minOccurs="2" maxOccurs="5"/>
+            <xs:element name="HCURR1" type="HCURR1" minOccurs="0"/>
+            <xs:element name="HPAYT1" type="HPAYT1" minOccurs="0"/>
+            <xs:element name="HTRSD1" type="HTRSD1" minOccurs="0"/>
+            <xs:element name="HTRSC1" type="HTRSC1" minOccurs="0"/>
+            <xs:element name="HALCH1" type="HALCH1" minOccurs="0" maxOccurs="0"/>
+            <xs:element name="DETAIL" type="DETAIL_Xbest" minOccurs="0" maxOccurs="999"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="TRAILR">
+        <xs:sequence>
+            <xs:element name="DOCUMENTID" type="xs:string"/>
+            <xs:element name="CONTROLQUAL" type="xs:string" minOccurs="0"/>
+            <xs:element name="CONTROLVALUE" type="xs:string" minOccurs="0"/>
+            <xs:element name="MEASUREMENTUNIT" type="xs:string" minOccurs="0"/>
+            <xs:element name="TAMOU1" type="TAMOU1" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="TTAXI1" type="TTAXI1" minOccurs="0" maxOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:element name="HEADER_Xbest" type="HEADER_Xbest" nillable="true"/>
+    <xs:element name="HDATE1" type="HDATE1" nillable="true"/>
+    <xs:complexType name="HDATE1">
+        <xs:sequence>
+            <xs:element name="DOCUMENTID" type="xs:string"/>
+            <xs:element name="DATEQUAL" type="xs:string"/>
+            <xs:element name="DATEFROM" type="xs:string"/>
+            <xs:element name="DATETO" type="xs:string" minOccurs="0"/>
+            <xs:element name="DAYS" type="xs:string" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:element name="HADDI1" type="HADDI1" nillable="true"/>
+    <xs:complexType name="HADDI1">
+        <xs:sequence>
+            <xs:element name="DOCUMENTID" type="xs:string"/>
+            <xs:element name="ADDINFO" type="xs:string"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:element name="HTEXT1" type="HTEXT1" nillable="true"/>
+    <xs:complexType name="HTEXT1">
+        <xs:sequence>
+            <xs:element name="DOCUMENTID" type="xs:string"/>
+            <xs:element name="FREETEXTQUAL" type="xs:string"/>
+            <xs:element name="FREETEXT" type="xs:string"/>
+            <xs:element name="FREETEXTCODE" type="xs:string" minOccurs="0"/>
+            <xs:element name="FREETEXTLANGUAGE" type="xs:string" minOccurs="0"/>
+            <xs:element name="FREETEXTFUNCTION" type="xs:string" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:element name="HREFE1" type="HREFE1" nillable="true"/>
+    <xs:complexType name="HREFE1">
+        <xs:sequence>
+            <xs:element name="DOCUMENTID" type="xs:string"/>
+            <xs:element name="REFERENCEQUAL" type="xs:string"/>
+            <xs:element name="REFERENCE" type="xs:string"/>
+            <xs:element name="REFERENCEDATE1" type="xs:string" minOccurs="0"/>
+            <xs:element name="REFERENCEDATE2" type="xs:string" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:element name="HADRE1" type="HADRE1" nillable="true"/>
+    <xs:complexType name="HADRE1">
+        <xs:sequence>
+            <xs:element name="DOCUMENTID" type="xs:string"/>
+            <xs:element name="ADDRESSQUAL" type="xs:string"/>
+            <xs:element name="PARTYIDGLN" type="xs:string"/>
+            <xs:element name="PARTYIDSUPPLIER" type="xs:string" minOccurs="0"/>
+            <xs:element name="PARTYIDBUYER" type="xs:string" minOccurs="0"/>
+            <xs:element name="NAME1" type="xs:string" minOccurs="0"/>
+            <xs:element name="NAME2" type="xs:string" minOccurs="0"/>
+            <xs:element name="NAME3" type="xs:string" minOccurs="0"/>
+            <xs:element name="NAME4" type="xs:string" minOccurs="0"/>
+            <xs:element name="STREET1" type="xs:string" minOccurs="0"/>
+            <xs:element name="STREET2" type="xs:string" minOccurs="0"/>
+            <xs:element name="CITY" type="xs:string" minOccurs="0"/>
+            <xs:element name="POSTALCODE" type="xs:string" minOccurs="0"/>
+            <xs:element name="AREA" type="xs:string" minOccurs="0"/>
+            <xs:element name="COUNTRY" type="xs:string" minOccurs="0"/>
+            <xs:element name="LOCATIONCODE" type="xs:string" minOccurs="0"/>
+            <xs:element name="LOCATIONNAME" type="xs:string" minOccurs="0"/>
+            <xs:element name="HFINI1" type="HFINI1" minOccurs="0" maxOccurs="0"/>
+            <xs:element name="HRFAD1" type="HRFAD1" minOccurs="0"/>
+            <xs:element name="HCTAD1" type="HCTAD1" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:element name="HFINI1" type="HFINI1" nillable="true"/>
+    <xs:complexType name="HFINI1">
+        <xs:sequence>
+            <xs:element name="DOCUMENTID" type="xs:string"/>
+            <xs:element name="ADDRESSQUAL" type="xs:string"/>
+            <xs:element name="PARTYFUNCTIONQUAL" type="xs:string"/>
+            <xs:element name="ACCOUNTHOLDERID" type="xs:string" minOccurs="0"/>
+            <xs:element name="ACCOUNTHOLDERNAME" type="xs:string" minOccurs="0"/>
+            <xs:element name="ACCOUNTHOLDERCURR" type="xs:string" minOccurs="0"/>
+            <xs:element name="INSTITUTIONNAMECODE" type="xs:string" minOccurs="0"/>
+            <xs:element name="INSTITUTIONBRANCHID" type="xs:string" minOccurs="0"/>
+            <xs:element name="INSTITUTIONNAME" type="xs:string" minOccurs="0"/>
+            <xs:element name="INSTITUTIONLOCATION" type="xs:string" minOccurs="0"/>
+            <xs:element name="COUNTRY" type="xs:string" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:element name="HRFAD1" type="HRFAD1" nillable="true"/>
+    <xs:complexType name="HRFAD1">
+        <xs:sequence>
+            <xs:element name="DOCUMENTID" type="xs:string"/>
+            <xs:element name="ADDRESSQUAL" type="xs:string"/>
+            <xs:element name="REFERENCEQUAL" type="xs:string"/>
+            <xs:element name="REFERENCE" type="xs:string" minOccurs="0"/>
+            <xs:element name="REFERENCEDATE1" type="xs:string" minOccurs="0"/>
+            <xs:element name="REFERENCEDATE2" type="xs:string" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:element name="HCTAD1" type="HCTAD1" nillable="true"/>
+    <xs:complexType name="HCTAD1">
+        <xs:sequence>
+            <xs:element name="DOCUMENTID" type="xs:string"/>
+            <xs:element name="ADDRESSQUAL" type="xs:string"/>
+            <xs:element name="CONTACTQUAL" type="xs:string"/>
+            <xs:element name="CONTACTID" type="xs:string" minOccurs="0"/>
+            <xs:element name="CONTACTDESC" type="xs:string" minOccurs="0"/>
+            <xs:element name="CONTACTTELEFON" type="xs:string" minOccurs="0"/>
+            <xs:element name="CONTACTTELEFAX" type="xs:string" minOccurs="0"/>
+            <xs:element name="CONTACTEMAIL" type="xs:string" minOccurs="0"/>
+            <xs:element name="CONTACTWEB" type="xs:string" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:element name="HCURR1" type="HCURR1" nillable="true"/>
+    <xs:complexType name="HCURR1">
+        <xs:sequence>
+            <xs:element name="DOCUMENTID" type="xs:string"/>
+            <xs:element name="CURRENCYQUAL" type="xs:string"/>
+            <xs:element name="CURRENCYCODE" type="xs:string"/>
+            <xs:element name="CURRENCYEXRATE" type="xs:string" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:element name="HPAYT1" type="HPAYT1" nillable="true"/>
+    <xs:complexType name="HPAYT1">
+        <xs:sequence>
+            <xs:element name="DOCUMENTID" type="xs:string"/>
+            <xs:element name="TERMSQUAL" type="xs:string"/>
+            <xs:element name="TIMEREFERENCE" type="xs:string" minOccurs="0"/>
+            <xs:element name="TIMERELATION" type="xs:string" minOccurs="0"/>
+            <xs:element name="TIMEPERIODTYPE" type="xs:string" minOccurs="0"/>
+            <xs:element name="TIMEPERIODQUANTITY" type="xs:string" minOccurs="0"/>
+            <xs:element name="PAYMENTMETHODE" type="xs:string" minOccurs="0"/>
+            <xs:element name="TERMSDATEFROM" type="xs:string" minOccurs="0"/>
+            <xs:element name="TERMSDATETO" type="xs:string" minOccurs="0"/>
+            <xs:element name="DISCOUNTPERCENT" type="xs:string" minOccurs="0"/>
+            <xs:element name="DISCOUNTAMOUNT" type="xs:string" minOccurs="0"/>
+            <xs:element name="PAYMENTDESC" type="xs:string" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:element name="HTRSD1" type="HTRSD1" nillable="true"/>
+    <xs:complexType name="HTRSD1">
+        <xs:sequence>
+            <xs:element name="DOCUMENTID" type="xs:string"/>
+            <xs:element name="TRANSPORTREFERENCE" type="xs:string" minOccurs="0"/>
+            <xs:element name="TRANSPORTMODE" type="xs:string"/>
+            <xs:element name="TRANSPORTMEANS" type="xs:string" minOccurs="0"/>
+            <xs:element name="CARRIERID" type="xs:string" minOccurs="0"/>
+            <xs:element name="CARRIERDESC" type="xs:string" minOccurs="0"/>
+            <xs:element name="LOCATIONQUAL" type="xs:string" minOccurs="0"/>
+            <xs:element name="LOCATIONCODE" type="xs:string" minOccurs="0"/>
+            <xs:element name="LOCATIONNAME" type="xs:string" minOccurs="0"/>
+            <xs:element name="LOCATIONDATE" type="xs:string" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:element name="HTRSC1" type="HTRSC1" nillable="true"/>
+    <xs:complexType name="HTRSC1">
+        <xs:sequence>
+            <xs:element name="DOCUMENTID" type="xs:string"/>
+            <xs:element name="TRANPORTTERMSQUAL" type="xs:string"/>
+            <xs:element name="TRANPORTTERMSCODE" type="xs:string" minOccurs="0"/>
+            <xs:element name="TRANPORTTERMSDESC" type="xs:string" minOccurs="0"/>
+            <xs:element name="LOCATIONQUAL" type="xs:string" minOccurs="0"/>
+            <xs:element name="LOCATIONCODE" type="xs:string" minOccurs="0"/>
+            <xs:element name="LOCATIONNAME" type="xs:string" minOccurs="0"/>
+            <xs:element name="LOCATIONDATE" type="xs:string" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:element name="HALCH1" type="HALCH1" nillable="true"/>
+    <xs:complexType name="HALCH1">
+        <xs:sequence>
+            <xs:element name="DOCUMENTID" type="xs:string"/>
+            <xs:element name="ALLOWCHARGEQUAL" type="xs:string"/>
+            <xs:element name="ALLOWCHARGECODE" type="xs:string" minOccurs="0"/>
+            <xs:element name="ALLOWCHARGEID" type="xs:string" minOccurs="0"/>
+            <xs:element name="SPECSERVICECODE" type="xs:string" minOccurs="0"/>
+            <xs:element name="SPECSERVICEDESC1" type="xs:string" minOccurs="0"/>
+            <xs:element name="SPECSERVICEDESC2" type="xs:string" minOccurs="0"/>
+            <xs:element name="PERCENTAGE" type="xs:string" minOccurs="0"/>
+            <xs:element name="AMOUNT" type="xs:string" minOccurs="0"/>
+            <xs:element name="CURRENCY" type="xs:string" minOccurs="0"/>
+            <xs:element name="TAXCODE" type="xs:string" minOccurs="0"/>
+            <xs:element name="TAXRATE" type="xs:string" minOccurs="0"/>
+            <xs:element name="TAXCATEGORY" type="xs:string" minOccurs="0"/>
+            <xs:element name="TAXAMOUNT" type="xs:string" minOccurs="0"/>
+            <xs:element name="TAXABLEAMOUNT" type="xs:string" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:element name="PQVAR1" type="PQVAR1" nillable="true"/>
+    <xs:complexType name="PQVAR1">
+        <xs:sequence>
+            <xs:element name="DOCUMENTID" type="xs:string"/>
+            <xs:element name="QUANTITY" type="xs:string"/>
+            <xs:element name="QUANTITYMEASUREUNIT" type="xs:string" minOccurs="0"/>
+            <xs:element name="DISCREPANCYCODE" type="xs:string" minOccurs="0"/>
+            <xs:element name="DISCREPANCYREASON" type="xs:string" minOccurs="0"/>
+            <xs:element name="DISCREPANCYDESC" type="xs:string" minOccurs="0"/>
+            <xs:element name="DISCREPANCYDATE1" type="xs:string" minOccurs="0"/>
+            <xs:element name="DISCREPANCYDATE2" type="xs:string" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:element name="PPACK1" type="PPACK1" nillable="true"/>
+    <xs:complexType name="PPACK1">
+        <xs:sequence>
+            <xs:element name="DOCUMENTID" type="xs:string"/>
+            <xs:element name="PACKAGINGDETAIL" type="xs:string" minOccurs="0"/>
+            <xs:element name="PACKAGINGLEVEL" type="xs:string" minOccurs="0"/>
+            <xs:element name="PACKAGINGCODE" type="xs:string" minOccurs="0"/>
+            <xs:element name="PACKAGINGTYPE" type="xs:string" minOccurs="0"/>
+            <xs:element name="IDENTIFICATIONQUAL" type="xs:string" minOccurs="0"/>
+            <xs:element name="IDENTIFICATIONCODE" type="xs:string" minOccurs="0"/>
+            <xs:element name="HIERARCHICALPARENT" type="xs:string" minOccurs="0"/>
+            <xs:element name="PACKAGINGUNIT" type="xs:string" minOccurs="0"/>
+            <xs:element name="PACKAGINGUNITCODE" type="xs:string" minOccurs="0"/>
+            <xs:element name="PMESU1" type="PMESU1" minOccurs="0"/>
+            <xs:element name="PHAND1" type="PHAND1" minOccurs="0"/>
+            <xs:element name="DETAIL" type="DETAIL_Xbest" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:element name="PMESU1" type="PMESU1" nillable="true"/>
+    <xs:complexType name="PMESU1">
+        <xs:sequence>
+            <xs:element name="DOCUMENTID" type="xs:string"/>
+            <xs:element name="MEASUREQUAL" type="xs:string" minOccurs="0"/>
+            <xs:element name="MEASUREATTR" type="xs:string" minOccurs="0"/>
+            <xs:element name="MEASUREUNIT" type="xs:string" minOccurs="0"/>
+            <xs:element name="MEASUREVALUE" type="xs:string" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:element name="PHAND1" type="PHAND1" nillable="true"/>
+    <xs:complexType name="PHAND1">
+        <xs:sequence>
+            <xs:element name="DOCUMENTID" type="xs:string"/>
+            <xs:element name="HANDLINGINSTRCODE" type="xs:string" minOccurs="0"/>
+            <xs:element name="HANDLINGINSTRDESC" type="xs:string" minOccurs="0"/>
+            <xs:element name="HAZARDOUSMATCODE" type="xs:string" minOccurs="0"/>
+            <xs:element name="HAZARDOUSMATNAME" type="xs:string" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:element name="DETAIL_Xbest" type="DETAIL_Xbest" nillable="true"/>
+    <xs:complexType name="DETAIL_Xbest">
+        <xs:sequence>
+            <xs:element name="DOCUMENTID" type="xs:string"/>
+            <xs:element name="LINENUMBER" type="xs:string"/>
+            <xs:element name="SUBLINENUMBER" type="xs:string" minOccurs="0"/>
+            <xs:element name="ACTIONREQUEST" type="xs:string" minOccurs="0"/>
+            <xs:element name="DPRIN1" type="DPRIN1" maxOccurs="5"/>
+            <xs:element name="DPRDE1" type="DPRDE1" minOccurs="0" maxOccurs="3"/>
+            <xs:element name="DMESU1" type="DMESU1" minOccurs="0" maxOccurs="0"/>
+            <xs:element name="DQUAN1" type="DQUAN1" maxOccurs="3"/>
+            <xs:element name="DADDI1" type="DADDI1" minOccurs="0"/>
+            <xs:element name="DDATE1" type="DDATE1" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="DAMOU1" type="DAMOU1" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="DTEXT1" type="DTEXT1" minOccurs="0" maxOccurs="2"/>
+            <xs:element name="DPRIC1" type="DPRIC1" minOccurs="0" maxOccurs="4"/>
+            <xs:element name="DREFE1" type="DREFE1" minOccurs="0" maxOccurs="2"/>
+            <xs:element name="DPLAC1" type="DPLAC1" minOccurs="0" maxOccurs="0"/>
+            <xs:element name="DTAXI1" type="DTAXI1" minOccurs="0" maxOccurs="0"/>
+            <xs:element name="DADRE1" type="DADRE1" minOccurs="0" maxOccurs="0"/>
+            <xs:element name="DALCH1" type="DALCH1" minOccurs="0" maxOccurs="0"/>
+            <xs:element name="DTRSD1" type="DTRSD1" minOccurs="0" maxOccurs="0"/>
+            <xs:element name="DLPIN1" type="DLPIN1" minOccurs="0" maxOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:element name="DPRIN1" type="DPRIN1" nillable="true"/>
+    <xs:complexType name="DPRIN1">
+        <xs:sequence>
+            <xs:element name="DOCUMENTID" type="xs:string"/>
+            <xs:element name="LINENUMBER" type="xs:string"/>
+            <xs:element name="PRODUCTQUAL" type="xs:string"/>
+            <xs:element name="PRODUCTID" type="xs:string"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:element name="DPRDE1" type="DPRDE1" nillable="true"/>
+    <xs:complexType name="DPRDE1">
+        <xs:sequence>
+            <xs:element name="DOCUMENTID" type="xs:string"/>
+            <xs:element name="LINENUMBER" type="xs:string"/>
+            <xs:element name="PRODUCTDESCQUAL" type="xs:string"/>
+            <xs:element name="PRODUCTDESCCODE" type="xs:string" minOccurs="0"/>
+            <xs:element name="PRODUCTDESCTEXT" type="xs:string" minOccurs="0"/>
+            <xs:element name="PRODUCTDESCTYPE" type="xs:string" minOccurs="0"/>
+            <xs:element name="PRODUCTDESCLANG" type="xs:string" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:element name="DMESU1" type="DMESU1" nillable="true"/>
+    <xs:complexType name="DMESU1">
+        <xs:sequence>
+            <xs:element name="DOCUMENTID" type="xs:string"/>
+            <xs:element name="LINENUMBER" type="xs:string"/>
+            <xs:element name="MEASUREQUAL" type="xs:string"/>
+            <xs:element name="MEASUREATTR" type="xs:string" minOccurs="0"/>
+            <xs:element name="MEASUREUNIT" type="xs:string" minOccurs="0"/>
+            <xs:element name="MEASUREVALUE" type="xs:string"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:element name="DQUAN1" type="DQUAN1" nillable="true"/>
+    <xs:complexType name="DQUAN1">
+        <xs:sequence>
+            <xs:element name="DOCUMENTID" type="xs:string"/>
+            <xs:element name="LINENUMBER" type="xs:string"/>
+            <xs:element name="QUANTITYQUAL" type="xs:string"/>
+            <xs:element name="QUANTITY" type="xs:string"/>
+            <xs:element name="MEASUREMENTUNIT" type="xs:string" minOccurs="0"/>
+            <xs:element name="DMKDQ1" type="DMKDQ1" minOccurs="0"/>
+            <xs:element name="DPLDQ1" type="DPLDQ1" minOccurs="0"/>
+            <xs:element name="DDTDQ1" type="DDTDQ1" minOccurs="0"/>
+            <xs:element name="DPRDQ1" type="DPRDQ1" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:element name="DMKDQ1" type="DMKDQ1" nillable="true"/>
+    <xs:complexType name="DMKDQ1">
+        <xs:sequence>
+            <xs:element name="DOCUMENTID" type="xs:string"/>
+            <xs:element name="LINENUMBER" type="xs:string"/>
+            <xs:element name="QUANTITYQUAL" type="xs:string"/>
+            <xs:element name="IDENTIFICATIONQUAL" type="xs:string"/>
+            <xs:element name="IDENTIFICATIONCODE" type="xs:string" minOccurs="0"/>
+            <xs:element name="IDENTIFICATIONDATE1" type="xs:string" minOccurs="0"/>
+            <xs:element name="IDENTIFICATIONDATE2" type="xs:string" minOccurs="0"/>
+            <xs:element name="IDENTIFICATIONDATE3" type="xs:string" minOccurs="0"/>
+            <xs:element name="IDENTIFICATIONDATE4" type="xs:string" minOccurs="0"/>
+            <xs:element name="QUANTITY" type="xs:string" minOccurs="0"/>
+            <xs:element name="QUANTITYMEASUREUNIT" type="xs:string" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:element name="DPLDQ1" type="DPLDQ1" nillable="true"/>
+    <xs:complexType name="DPLDQ1">
+        <xs:sequence>
+            <xs:element name="DOCUMENTID" type="xs:string"/>
+            <xs:element name="LINENUMBER" type="xs:string"/>
+            <xs:element name="QUANTITYQUAL" type="xs:string"/>
+            <xs:element name="LOCATIONQUAL" type="xs:string"/>
+            <xs:element name="LOCATIONCODE" type="xs:string" minOccurs="0"/>
+            <xs:element name="LOCATIONNAME" type="xs:string" minOccurs="0"/>
+            <xs:element name="DATE" type="xs:string" minOccurs="0"/>
+            <xs:element name="QUANTITY" type="xs:string" minOccurs="0"/>
+            <xs:element name="QUANTITYMEASUREUNIT" type="xs:string" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:element name="DDTDQ1" type="DDTDQ1" nillable="true"/>
+    <xs:complexType name="DDTDQ1">
+        <xs:sequence>
+            <xs:element name="DOCUMENTID" type="xs:string"/>
+            <xs:element name="LINENUMBER" type="xs:string"/>
+            <xs:element name="QUANTITYQUAL" type="xs:string"/>
+            <xs:element name="DATEQUAL" type="xs:string"/>
+            <xs:element name="DATEFROM" type="xs:string" minOccurs="0"/>
+            <xs:element name="DATETO" type="xs:string" minOccurs="0"/>
+            <xs:element name="DAYS" type="xs:string" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:element name="DPRDQ1" type="DPRDQ1" nillable="true"/>
+    <xs:complexType name="DPRDQ1">
+        <xs:sequence>
+            <xs:element name="DOCUMENTID" type="xs:string"/>
+            <xs:element name="LINENUMBER" type="xs:string"/>
+            <xs:element name="QUANTITYQUAL" type="xs:string"/>
+            <xs:element name="PRICEQUAL" type="xs:string"/>
+            <xs:element name="PRICE" type="xs:string" minOccurs="0"/>
+            <xs:element name="PRICESPEC" type="xs:string" minOccurs="0"/>
+            <xs:element name="PRICETYPE" type="xs:string" minOccurs="0"/>
+            <xs:element name="PRICEBASIS" type="xs:string" minOccurs="0"/>
+            <xs:element name="PRICEMEASUREUNIT" type="xs:string" minOccurs="0"/>
+            <xs:element name="CURRENCY" type="xs:string" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:element name="DADDI1" type="DADDI1" nillable="true"/>
+    <xs:complexType name="DADDI1">
+        <xs:sequence>
+            <xs:element name="DOCUMENTID" type="xs:string"/>
+            <xs:element name="LINENUMBER" type="xs:string"/>
+            <xs:element name="ADDINFO" type="xs:string"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:element name="DDATE1" type="DDATE1" nillable="true"/>
+    <xs:complexType name="DDATE1">
+        <xs:sequence>
+            <xs:element name="DOCUMENTID" type="xs:string"/>
+            <xs:element name="LINENUMBER" type="xs:string"/>
+            <xs:element name="DATEQUAL" type="xs:string"/>
+            <xs:element name="DATEFROM" type="xs:string"/>
+            <xs:element name="DATETO" type="xs:string" minOccurs="0"/>
+            <xs:element name="DAYS" type="xs:string" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:element name="DAMOU1" type="DAMOU1" nillable="true"/>
+    <xs:complexType name="DAMOU1">
+        <xs:sequence>
+            <xs:element name="DOCUMENTID" type="xs:string"/>
+            <xs:element name="LINENUMBER" type="xs:string"/>
+            <xs:element name="AMOUNTQUAL" type="xs:string"/>
+            <xs:element name="AMOUNT" type="xs:string"/>
+            <xs:element name="CURRENCY" type="xs:string" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:element name="DTEXT1" type="DTEXT1" nillable="true"/>
+    <xs:complexType name="DTEXT1">
+        <xs:sequence>
+            <xs:element name="DOCUMENTID" type="xs:string"/>
+            <xs:element name="LINENUMBER" type="xs:string"/>
+            <xs:element name="FREETEXTQUAL" type="xs:string"/>
+            <xs:element name="FREETEXT" type="xs:string" minOccurs="0"/>
+            <xs:element name="FREETEXTCODE" type="xs:string" minOccurs="0"/>
+            <xs:element name="FREETEXTLANGUAGE" type="xs:string" minOccurs="0"/>
+            <xs:element name="FREETEXTFUNCTION" type="xs:string" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:element name="DPRIC1" type="DPRIC1" nillable="true"/>
+    <xs:complexType name="DPRIC1">
+        <xs:sequence>
+            <xs:element name="DOCUMENTID" type="xs:string"/>
+            <xs:element name="LINENUMBER" type="xs:string"/>
+            <xs:element name="PRICEQUAL" type="xs:string"/>
+            <xs:element name="PRICE" type="xs:string"/>
+            <xs:element name="PRICESPEC" type="xs:string" minOccurs="0"/>
+            <xs:element name="PRICETYPE" type="xs:string" minOccurs="0"/>
+            <xs:element name="PRICEBASIS" type="xs:string" minOccurs="0"/>
+            <xs:element name="PRICEMEASUREUNIT" type="xs:string" minOccurs="0"/>
+            <xs:element name="CURRENCY" type="xs:string" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:element name="DREFE1" type="DREFE1" nillable="true"/>
+    <xs:complexType name="DREFE1">
+        <xs:sequence>
+            <xs:element name="DOCUMENTID" type="xs:string"/>
+            <xs:element name="LINENUMBER" type="xs:string"/>
+            <xs:element name="REFERENCEQUAL" type="xs:string"/>
+            <xs:element name="REFERENCE" type="xs:string"/>
+            <xs:element name="REFERENCELINE" type="xs:string" minOccurs="0"/>
+            <xs:element name="REFERENCEDATE1" type="xs:string" minOccurs="0"/>
+            <xs:element name="REFERENCEDATE2" type="xs:string" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:element name="DPLAC1" type="DPLAC1" nillable="true"/>
+    <xs:complexType name="DPLAC1">
+        <xs:sequence>
+            <xs:element name="DOCUMENTID" type="xs:string"/>
+            <xs:element name="LINENUMBER" type="xs:string"/>
+            <xs:element name="LOCATIONQUAL" type="xs:string"/>
+            <xs:element name="LOCATIONCODE" type="xs:string" minOccurs="0"/>
+            <xs:element name="LOCATIONNAME" type="xs:string" minOccurs="0"/>
+            <xs:element name="DATE" type="xs:string" minOccurs="0"/>
+            <xs:element name="QUANTITY" type="xs:string" minOccurs="0"/>
+            <xs:element name="QUANTITYMEASUREUNIT" type="xs:string" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:element name="DTAXI1" type="DTAXI1" nillable="true"/>
+    <xs:complexType name="DTAXI1">
+        <xs:sequence>
+            <xs:element name="DOCUMENTID" type="xs:string"/>
+            <xs:element name="LINENUMBER" type="xs:string"/>
+            <xs:element name="TAXQUAL" type="xs:string"/>
+            <xs:element name="TAXCODE" type="xs:string" minOccurs="0"/>
+            <xs:element name="TAXRATE" type="xs:string" minOccurs="0"/>
+            <xs:element name="TAXCATEGORY" type="xs:string" minOccurs="0"/>
+            <xs:element name="TAXAMOUNT" type="xs:string" minOccurs="0"/>
+            <xs:element name="TAXABLEAMOUNT" type="xs:string" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:element name="DADRE1" type="DADRE1" nillable="true"/>
+    <xs:complexType name="DADRE1">
+        <xs:sequence>
+            <xs:element name="DOCUMENTID" type="xs:string"/>
+            <xs:element name="LINENUMBER" type="xs:string"/>
+            <xs:element name="ADDRESSQUAL" type="xs:string"/>
+            <xs:element name="PARTYIDGLN" type="xs:string" minOccurs="0"/>
+            <xs:element name="PARTYIDSUPPLIER" type="xs:string" minOccurs="0"/>
+            <xs:element name="PARTYIDBUYER" type="xs:string" minOccurs="0"/>
+            <xs:element name="NAME1" type="xs:string" minOccurs="0"/>
+            <xs:element name="NAME2" type="xs:string" minOccurs="0"/>
+            <xs:element name="NAME3" type="xs:string" minOccurs="0"/>
+            <xs:element name="NAME4" type="xs:string" minOccurs="0"/>
+            <xs:element name="STREET1" type="xs:string" minOccurs="0"/>
+            <xs:element name="STREET2" type="xs:string" minOccurs="0"/>
+            <xs:element name="CITY" type="xs:string" minOccurs="0"/>
+            <xs:element name="POSTALCODE" type="xs:string" minOccurs="0"/>
+            <xs:element name="AREA" type="xs:string" minOccurs="0"/>
+            <xs:element name="COUNTRY" type="xs:string" minOccurs="0"/>
+            <xs:element name="LOCATIONCODE" type="xs:string" minOccurs="0"/>
+            <xs:element name="LOCATIONNAME" type="xs:string" minOccurs="0"/>
+            <xs:element name="DRFAD1" type="DRFAD1" minOccurs="0"/>
+            <xs:element name="DCTAD1" type="DCTAD1" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:element name="DRFAD1" type="DRFAD1" nillable="true"/>
+    <xs:complexType name="DRFAD1">
+        <xs:sequence>
+            <xs:element name="DOCUMENTID" type="xs:string"/>
+            <xs:element name="LINENUMBER" type="xs:string"/>
+            <xs:element name="ADDRESSQUAL" type="xs:string"/>
+            <xs:element name="REFERENCEQUAL" type="xs:string"/>
+            <xs:element name="REFERENCE" type="xs:string" minOccurs="0"/>
+            <xs:element name="REFERENCEDATE1" type="xs:string" minOccurs="0"/>
+            <xs:element name="REFERENCEDATE2" type="xs:string" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:element name="DCTAD1" type="DCTAD1" nillable="true"/>
+    <xs:complexType name="DCTAD1">
+        <xs:sequence>
+            <xs:element name="DOCUMENTID" type="xs:string"/>
+            <xs:element name="LINENUMBER" type="xs:string"/>
+            <xs:element name="ADDRESSQUAL" type="xs:string"/>
+            <xs:element name="CONTACTQUAL" type="xs:string"/>
+            <xs:element name="CONTACTID" type="xs:string" minOccurs="0"/>
+            <xs:element name="CONTACTDESC" type="xs:string" minOccurs="0"/>
+            <xs:element name="CONTACTTELEFON" type="xs:string" minOccurs="0"/>
+            <xs:element name="CONTACTTELEFAX" type="xs:string" minOccurs="0"/>
+            <xs:element name="CONTACTEMAIL" type="xs:string" minOccurs="0"/>
+            <xs:element name="CONTACTWEB" type="xs:string" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:element name="DALCH1" type="DALCH1" nillable="true"/>
+    <xs:complexType name="DALCH1">
+        <xs:sequence>
+            <xs:element name="DOCUMENTID" type="xs:string"/>
+            <xs:element name="LINENUMBER" type="xs:string"/>
+            <xs:element name="ALLOWCHARGEQUAL" type="xs:string"/>
+            <xs:element name="ALLOWCHARGECODE" type="xs:string" minOccurs="0"/>
+            <xs:element name="ALLOWCHARGEID" type="xs:string" minOccurs="0"/>
+            <xs:element name="SPECSERVICECODE" type="xs:string" minOccurs="0"/>
+            <xs:element name="SPECSERVICEDESC1" type="xs:string" minOccurs="0"/>
+            <xs:element name="SPECSERVICEDESC2" type="xs:string" minOccurs="0"/>
+            <xs:element name="PERCENTAGE" type="xs:string" minOccurs="0"/>
+            <xs:element name="AMOUNT" type="xs:string" minOccurs="0"/>
+            <xs:element name="CURRENCY" type="xs:string" minOccurs="0"/>
+            <xs:element name="TAXCODE" type="xs:string" minOccurs="0"/>
+            <xs:element name="TAXRATE" type="xs:string" minOccurs="0"/>
+            <xs:element name="TAXCATEGORY" type="xs:string" minOccurs="0"/>
+            <xs:element name="TAXAMOUNT" type="xs:string" minOccurs="0"/>
+            <xs:element name="TAXABLEAMOUNT" type="xs:string" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:element name="DTRSD1" type="DTRSD1" nillable="true"/>
+    <xs:complexType name="DTRSD1">
+        <xs:sequence>
+            <xs:element name="DOCUMENTID" type="xs:string"/>
+            <xs:element name="LINENUMBER" type="xs:string"/>
+            <xs:element name="TRANSPORTREFERENCE" type="xs:string" minOccurs="0"/>
+            <xs:element name="TRANSPORTMODE" type="xs:string"/>
+            <xs:element name="TRANSPORTMEANS" type="xs:string" minOccurs="0"/>
+            <xs:element name="CARRIERID" type="xs:string" minOccurs="0"/>
+            <xs:element name="CARRIERDESC" type="xs:string" minOccurs="0"/>
+            <xs:element name="LOCATIONQUAL" type="xs:string" minOccurs="0"/>
+            <xs:element name="LOCATIONCODE" type="xs:string" minOccurs="0"/>
+            <xs:element name="LOCATIONNAME" type="xs:string" minOccurs="0"/>
+            <xs:element name="LOCATIONDATE" type="xs:string" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:element name="DLPIN1" type="DLPIN1" nillable="true"/>
+    <xs:complexType name="DLPIN1">
+        <xs:sequence>
+            <xs:element name="DOCUMENTID" type="xs:string"/>
+            <xs:element name="LINENUMBER" type="xs:string"/>
+            <xs:element name="DELIVERYINSTRUCTION" type="xs:string" minOccurs="0"/>
+            <xs:element name="FREETEXT" type="xs:string" minOccurs="0"/>
+            <xs:element name="FREETEXTLANGUAGE" type="xs:string" minOccurs="0"/>
+            <xs:element name="DPLQU1" type="DPLQU1" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:element name="DPLQU1" type="DPLQU1" nillable="true"/>
+    <xs:complexType name="DPLQU1">
+        <xs:sequence>
+            <xs:element name="DOCUMENTID" type="xs:string"/>
+            <xs:element name="LINENUMBER" type="xs:string"/>
+            <xs:element name="QUANTITYQUAL" type="xs:string"/>
+            <xs:element name="QUANTITY" type="xs:string"/>
+            <xs:element name="MEASUREMENTUNIT" type="xs:string" minOccurs="0"/>
+            <xs:element name="DATE1" type="xs:string" minOccurs="0"/>
+            <xs:element name="DATE2" type="xs:string" minOccurs="0"/>
+            <xs:element name="DATE3" type="xs:string" minOccurs="0"/>
+            <xs:element name="DATE4" type="xs:string" minOccurs="0"/>
+            <xs:element name="DATE5" type="xs:string" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:element name="DMARK1" type="DMARK1" nillable="true"/>
+    <xs:complexType name="DMARK1">
+        <xs:sequence>
+            <xs:element name="DOCUMENTID" type="xs:string"/>
+            <xs:element name="LINENUMBER" type="xs:string"/>
+            <xs:element name="IDENTIFICATIONQUAL" type="xs:string"/>
+            <xs:element name="IDENTIFICATIONCODE" type="xs:string" minOccurs="0"/>
+            <xs:element name="IDENTIFICATIONDATE1" type="xs:string" minOccurs="0"/>
+            <xs:element name="IDENTIFICATIONDATE2" type="xs:string" minOccurs="0"/>
+            <xs:element name="IDENTIFICATIONDATE3" type="xs:string" minOccurs="0"/>
+            <xs:element name="IDENTIFICATIONDATE4" type="xs:string" minOccurs="0"/>
+            <xs:element name="QUANTITY" type="xs:string" minOccurs="0"/>
+            <xs:element name="QUANTITYMEASUREUNIT" type="xs:string" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:element name="DQVAR1" type="DQVAR1" nillable="true"/>
+    <xs:complexType name="DQVAR1">
+        <xs:sequence>
+            <xs:element name="DOCUMENTID" type="xs:string"/>
+            <xs:element name="LINENUMBER" type="xs:string"/>
+            <xs:element name="QUANTITY" type="xs:string"/>
+            <xs:element name="QUANTITYMEASUREUNIT" type="xs:string" minOccurs="0"/>
+            <xs:element name="DISCREPANCYCODE" type="xs:string" minOccurs="0"/>
+            <xs:element name="DISCREPANCYREASON" type="xs:string" minOccurs="0"/>
+            <xs:element name="DISCREPANCYDESC" type="xs:string" minOccurs="0"/>
+            <xs:element name="DISCREPANCYDATE1" type="xs:string" minOccurs="0"/>
+            <xs:element name="DISCREPANCYDATE2" type="xs:string" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:element name="TRAILR" type="TRAILR" nillable="true"/>
+    <xs:element name="TAMOU1" type="TAMOU1" nillable="true"/>
+    <xs:complexType name="TAMOU1">
+        <xs:sequence>
+            <xs:element name="DOCUMENTID" type="xs:string"/>
+            <xs:element name="AMOUNTQUAL" type="xs:string"/>
+            <xs:element name="AMOUNT" type="xs:string"/>
+            <xs:element name="CURRENCY" type="xs:string" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:element name="TTAXI1" type="TTAXI1" nillable="true"/>
+    <xs:complexType name="TTAXI1">
+        <xs:sequence>
+            <xs:element name="DOCUMENTID" type="xs:string"/>
+            <xs:element name="TAXQUAL" type="xs:string"/>
+            <xs:element name="TAXCODE" type="xs:string" minOccurs="0"/>
+            <xs:element name="TAXRATE" type="xs:string" minOccurs="0"/>
+            <xs:element name="TAXCATEGORY" type="xs:string" minOccurs="0"/>
+            <xs:element name="TAXAMOUNT" type="xs:string" minOccurs="0"/>
+            <xs:element name="TAXABLEAMOUNT" type="xs:string" minOccurs="0"/>
+            <xs:element name="LINESAMOUNT" type="xs:string" minOccurs="0"/>
+            <xs:element name="CHARGESAMOUNT" type="xs:string" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+</xs:schema>

@@ -1,0 +1,18 @@
+
+{
+    "productForPackingMaterial": "ProductPackingMaterial",
+    "packingInstructionsName": "ProductPackingInstructions",
+
+    "productName1": "Product1",
+    "productCategoryName": "ProductCategoryName",
+
+    "discountSchemaName": "DiscountSchema",
+    "priceSystemName": "PriceSystem",
+    "priceListName": "PriceList",
+    "priceListVersionName": "PriceListVersion",
+
+    "vendorName": "Vendor",
+    
+    "materialentnahme": "Materialentnahmelager",
+    "warehouseName": "Hauptlager_StdWarehouse_Hauptlager_0_0_0"
+}
