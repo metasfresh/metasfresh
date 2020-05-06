@@ -1,8 +1,5 @@
 package de.metas.contracts.process;
 
-import java.sql.Timestamp;
-
-import org.compiere.Adempiere;
 import org.compiere.SpringContextHolder;
 
 import com.google.common.collect.ImmutableSet;
@@ -10,12 +7,8 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.contracts.IContractsDAO;
 import de.metas.contracts.impl.CustomerRetentionRepository;
-import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.process.JavaProcess;
-import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.lang.CoalesceUtil;
-import de.metas.util.time.SystemTime;
 
 /*
  * #%L

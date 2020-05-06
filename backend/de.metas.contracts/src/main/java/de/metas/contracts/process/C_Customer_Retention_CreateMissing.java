@@ -1,6 +1,6 @@
 package de.metas.contracts.process;
 
-import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 
 import com.google.common.collect.ImmutableSet;
 
@@ -35,14 +35,13 @@ import de.metas.util.Services;
 public class C_Customer_Retention_CreateMissing extends JavaProcess
 {
 
-	final CustomerRetentionRepository customerRetentionRepo = Adempiere.getBean(CustomerRetentionRepository.class);
+	final CustomerRetentionRepository customerRetentionRepo = SpringContextHolder.instance.getBean(CustomerRetentionRepository.class);
 
 	final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 
 	@Override
 	protected String doIt() throws Exception
 	{
-
 		final ImmutableSet<BPartnerId> customers = bpartnerDAO.retrieveAllCustomerIDs();
 
 		customers.stream()
@@ -50,7 +49,6 @@ public class C_Customer_Retention_CreateMissing extends JavaProcess
 				.forEach(customerId -> customerRetentionRepo.createEmptyCustomerRetention(customerId));
 
 		customers.stream()
-				.filter(customerId -> !customerRetentionRepo.isNewCustomer(customerId))
 				.forEach(customerId -> customerRetentionRepo.updateCustomerRetention(customerId));
 
 		return MSG_OK;

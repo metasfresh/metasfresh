@@ -2,22 +2,28 @@ package de.metas.contracts.invoice;
 
 import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
 
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.invoice.service.IInvoiceDAO;
 import org.compiere.model.I_C_Invoice;
+import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
 
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.bpartner.BPartnerId;
+import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.document.engine.DocStatus;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.util.Services;
+import de.metas.util.lang.CoalesceUtil;
 import lombok.NonNull;
 
 /*
@@ -48,6 +54,7 @@ public class ContractInvoiceService
 	private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
 	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
 
 	public boolean isContractSalesInvoice(@NonNull final InvoiceId invoiceId)
 	{
@@ -114,5 +121,41 @@ public class ContractInvoiceService
 		final int tableId = invoiceCandidate.getAD_Table_ID();
 
 		return getTableId(I_C_Flatrate_Term.class) == tableId;
+	}
+
+	public LocalDate retrieveContractEndDateForInvoiceIdOrNull(@NonNull final InvoiceId invoiceId)
+	{
+		final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
+
+		final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
+		final I_C_Invoice invoice = invoiceDAO.getByIdInTrx(invoiceId);
+		final List<I_C_InvoiceLine> invoiceLines = invoiceDAO.retrieveLines(invoice);
+
+		final List<I_C_Invoice_Candidate> allInvoiceCands = new ArrayList<>();
+
+		for (final I_C_InvoiceLine invoiceLine : invoiceLines)
+		{
+			final List<I_C_Invoice_Candidate> cands = invoiceCandDAO.retrieveIcForIl(invoiceLine);
+			allInvoiceCands.addAll(cands);
+		}
+
+		final Optional<I_C_Flatrate_Term> latestTerm = allInvoiceCands.stream()
+				.filter(cand -> isSubscriptionInvoiceCandidate(cand))
+				.map(cand -> cand.getRecord_ID())
+
+				.map(recordId -> flatrateDAO.getById(recordId))
+				.sorted(Comparator.comparing(I_C_Flatrate_Term::getMasterEndDate)
+						.thenComparing(I_C_Flatrate_Term::getEndDate)
+						.reversed()
+
+				)
+				.findFirst();
+
+		if (latestTerm == null)
+		{
+			return null;
+		}
+
+		return TimeUtil.asLocalDate(CoalesceUtil.coalesce(latestTerm.get().getMasterEndDate(), latestTerm.get().getEndDate()));
 	}
 }

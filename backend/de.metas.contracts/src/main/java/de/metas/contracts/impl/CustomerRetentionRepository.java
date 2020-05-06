@@ -5,7 +5,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
-import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.util.Objects;
 
@@ -21,6 +20,7 @@ import org.compiere.model.X_C_Customer_Retention;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.bpartner.BPartnerId;
@@ -74,7 +74,6 @@ public class CustomerRetentionRepository
 
 	public I_C_Customer_Retention getById(final CustomerRetentionId customerRetentionId)
 	{
-
 		return load(customerRetentionId.getRepoId(), I_C_Customer_Retention.class);
 	}
 
@@ -96,7 +95,8 @@ public class CustomerRetentionRepository
 		return CustomerRetentionId.ofRepoId(customerRetention.getC_Customer_Retention_ID());
 	}
 
-	public void setNewCustomer(@NonNull final CustomerRetentionId customerRetentionId)
+	@VisibleForTesting
+	void setNewCustomer(@NonNull final CustomerRetentionId customerRetentionId)
 	{
 		final I_C_Customer_Retention customerRetention = getById(customerRetentionId);
 
@@ -104,7 +104,8 @@ public class CustomerRetentionRepository
 		save(customerRetention);
 	}
 
-	public void setRegularCustomer(@NonNull final CustomerRetentionId customerRetentionId)
+	@VisibleForTesting
+	void setRegularCustomer(@NonNull final CustomerRetentionId customerRetentionId)
 	{
 		final I_C_Customer_Retention customerRetention = getById(customerRetentionId);
 
@@ -112,7 +113,8 @@ public class CustomerRetentionRepository
 		save(customerRetention);
 	}
 
-	public void setNonSubscriptionCustomer(@NonNull final CustomerRetentionId customerRetentionId)
+	@VisibleForTesting
+	void setNonSubscriptionCustomer(@NonNull final CustomerRetentionId customerRetentionId)
 	{
 		final I_C_Customer_Retention customerRetention = getById(customerRetentionId);
 
@@ -120,7 +122,7 @@ public class CustomerRetentionRepository
 		save(customerRetention);
 	}
 
-	public CustomerRetentionId retrieveOrCreateCustomerRetention(@NonNull final BPartnerId bpartnerId)
+	private CustomerRetentionId retrieveOrCreateCustomerRetention(@NonNull final BPartnerId bpartnerId)
 	{
 		final I_C_Customer_Retention customerRetention = retrieveExistingCustomerRetention(bpartnerId);
 
@@ -133,7 +135,7 @@ public class CustomerRetentionRepository
 
 	}
 
-	public I_C_Customer_Retention retrieveExistingCustomerRetention(@NonNull final BPartnerId bpartnerId)
+	private I_C_Customer_Retention retrieveExistingCustomerRetention(@NonNull final BPartnerId bpartnerId)
 	{
 		final I_C_Customer_Retention existingCustomerRetention = queryBL.createQueryBuilder(I_C_Customer_Retention.class)
 				.addOnlyActiveRecordsFilter()
@@ -169,7 +171,8 @@ public class CustomerRetentionRepository
 				.listIds(BPartnerId::ofRepoId);
 	}
 
-	public int retrieveCustomerRetentionThreshold()
+	@VisibleForTesting
+	int retrieveCustomerRetentionThreshold()
 	{
 		return sysConfigBL.getIntValue(SYS_CONFIG_C_CUSTOMER_RETENTION_Threshold, DEFAULT_Threshold_CustomerRetention);
 	}
@@ -189,10 +192,12 @@ public class CustomerRetentionRepository
 		{
 			return;
 		}
+		final LocalDate contractEndDate = TimeUtil.asLocalDate(
+				CoalesceUtil.coalesce(
+						latestFlatrateTermForBPartnerId.getMasterEndDate(),
+						latestFlatrateTermForBPartnerId.getEndDate()));
 
-		final Timestamp contractEndDate = CoalesceUtil.coalesce(latestFlatrateTermForBPartnerId.getMasterEndDate(), latestFlatrateTermForBPartnerId.getEndDate());
-
-		if (dateExceedsThreshold(contractEndDate, SystemTime.asTimestamp()))
+		if (dateExceedsThreshold(contractEndDate, SystemTime.asLocalDate()))
 		{
 			setNonSubscriptionCustomer(customerRetentionId);
 
@@ -212,14 +217,12 @@ public class CustomerRetentionRepository
 
 	}
 
-	public boolean dateExceedsThreshold(@NonNull final Timestamp contractEndDate, @NonNull final Timestamp dateToCompare)
+	@VisibleForTesting
+	boolean dateExceedsThreshold(@NonNull final LocalDate contractEndDate, @NonNull final LocalDate dateToCompare)
 	{
-		final LocalDate currentDate = TimeUtil.asLocalDate(dateToCompare);
-		final LocalDate contractEndLocalDate = TimeUtil.asLocalDate(contractEndDate);
-
 		final int customerRetentionThreshold = retrieveCustomerRetentionThreshold();
 
-		return currentDate.minusMonths(customerRetentionThreshold).isAfter(contractEndLocalDate);
+		return dateToCompare.minusMonths(customerRetentionThreshold).isAfter(contractEndDate);
 	}
 
 	public void updateCustomerRetentionOnInvoiceComplete(@NonNull final InvoiceId invoiceId)
@@ -235,36 +238,44 @@ public class CustomerRetentionRepository
 
 		final CustomerRetentionId customerRetentionId = retrieveOrCreateCustomerRetention(bpartnerId);
 
-		/*
-		 * if (!isNewCustomer(bpartnerId))
-		 * {
-		 * // only change bpartners that are already marked as "New Customer" TODO WHY
-		 * return;
-		 * }
-		 */
-
 		updateCustomerRetentionAfterInvoiceId(customerRetentionId, invoiceId);
 	}
 
-	private void updateCustomerRetentionAfterInvoiceId(@NonNull final CustomerRetentionId customerRetentionId, @NonNull final InvoiceId invoiceId)
+	private void updateCustomerRetentionAfterInvoiceId(@NonNull final CustomerRetentionId customerRetentionId,
+			@NonNull final InvoiceId invoiceId)
 	{
-		
-		// TODO Compare with masterenddate from contract!!!
+
 		final InvoiceId predecessorSalesContractInvoiceId = contractInvoiceService.retrievePredecessorSalesContractInvoiceId(invoiceId);
 
 		if (Check.isEmpty(predecessorSalesContractInvoiceId))
 		{
 			setNewCustomer(customerRetentionId);
 		}
+
 		else
 		{
 			final I_C_Invoice predecessorInvoice = invoiceDAO.getByIdInTrx(predecessorSalesContractInvoiceId);
 			final I_C_Invoice lastInvoice = invoiceDAO.getByIdInTrx(invoiceId);
 
-			final Timestamp predecessorInvoiceDate = predecessorInvoice.getDateInvoiced();
-			final Timestamp lastInvoiceDate = lastInvoice.getDateInvoiced();
+			final LocalDate predecessorInvoiceDate = TimeUtil.asLocalDate(predecessorInvoice.getDateInvoiced());
+			final LocalDate lastInvoiceDate = TimeUtil.asLocalDate(lastInvoice.getDateInvoiced());
 
-			if (dateExceedsThreshold(predecessorInvoiceDate, lastInvoiceDate))
+			final LocalDate predecessorInvoiceContractEndDate = contractInvoiceService.retrieveContractEndDateForInvoiceIdOrNull(predecessorSalesContractInvoiceId);
+
+			final LocalDate dateToCompareThreshold;
+
+			if (predecessorInvoiceContractEndDate == null)
+			{
+				dateToCompareThreshold = predecessorInvoiceDate;
+			}
+
+			else
+			{
+				dateToCompareThreshold = predecessorInvoiceContractEndDate.isAfter(predecessorInvoiceDate) ? predecessorInvoiceContractEndDate
+						: predecessorInvoiceDate;
+			}
+
+			if (dateExceedsThreshold(dateToCompareThreshold, lastInvoiceDate))
 			{
 				setNewCustomer(customerRetentionId);
 			}
