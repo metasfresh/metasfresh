@@ -1,6 +1,6 @@
 ---
-name: test task
-about: This template shall help with our standard testing workflow
+name: e2e test task
+about: This template shall help with our standard e2e testing workflow
 title: ''
 labels: ''
 assignees: ''
