@@ -45,13 +45,6 @@ const history = createMemoryHistory('/window/143/1000000');
 
 localStorage.setItem('isLogged', true)
 
-const createInitialProps = function(additionalProps = {}) {
-  return {
-    ...FIXTURES_PROPS,
-    ...additionalProps,
-  };
-};
-
 const rootReducer = combineReducers({
   appHandler,
   listHandler,
@@ -81,7 +74,7 @@ const createInitialState = function(state = {}) {
 }
 
 describe("MasterWindowContainer", () => {
-  // describe("'integration' tests:", () => {
+  describe("'integration' tests:", () => {
     it("renders without errors", async (done) => {
       const initialState = createInitialState();
       const store = createStore(
@@ -89,7 +82,6 @@ describe("MasterWindowContainer", () => {
         initialState,
         applyMiddleware(...middleware),
       );
-      const initialProps = createInitialProps();
       const windowType = FIXTURES_PROPS.params.windowType;
       const docId = FIXTURES_PROPS.params.docId;
       const tabId = layoutFixtures.layout1.tabs[0].tabId;
@@ -138,12 +130,17 @@ describe("MasterWindowContainer", () => {
         .get(`/window/${windowType}/${docId}/field/DocAction/dropdown`)
         .reply(200, docActionFixtures.data1);
 
+      // This request doesn't happen here but in the `websockets` test. But component
+      // created here still exists and thus tries to handle this XHR response.
+      nock(config.API_URL)
+        .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
+        .get(`/window/${windowType}/${docId}/?noTabs=true`)
+        .reply(200, dataFixtures.data1);
+
       const wrapper = mount(
         <Provider store={store}>
           <ShortcutProvider hotkeys={{}} keymap={{}} >
-            <CustomRouter history={history} auth={auth}>
-              <MasterWindow {...initialProps} />
-            </CustomRouter>
+            <CustomRouter history={history} auth={auth} />
           </ShortcutProvider>
         </Provider>
       );
@@ -153,10 +150,11 @@ describe("MasterWindowContainer", () => {
 
         const html = wrapper.html();
         expect(html).toContain('<table');
-      }, 5000);
+      }, 6000);
 
       done();
     }, 10000);
+  });
 
   describe('websocket tests', () => {
     let mockServer;
@@ -168,7 +166,7 @@ describe("MasterWindowContainer", () => {
       mockServer = new StompServer({
           server: server,
           path: '/ws',
-          heartbeat: [2000,2000]
+          heartbeat: [1000,1000]
       });
 
       server.listen(8080);
@@ -179,14 +177,14 @@ describe("MasterWindowContainer", () => {
       server.close();
     });
 
-    it("renders without errors", async done => {
+    it("reacts to websocket events and updates the UI correctly", async done => {
       const initialState = createInitialState();
       const store = createStore(
         rootReducer,
         initialState,
         applyMiddleware(...middleware),
       );
-      const initialProps = createInitialProps();
+
       const windowType = FIXTURES_PROPS.params.windowType;
       const docId = FIXTURES_PROPS.params.docId;
       const tabId = layoutFixtures.layout1.tabs[0].tabId;
@@ -251,16 +249,12 @@ describe("MasterWindowContainer", () => {
       const wrapper = mount(
         <Provider store={store}>
           <ShortcutProvider hotkeys={{}} keymap={{}} >
-            <CustomRouter history={history} auth={auth}>
-              <MasterWindow {...initialProps} />
-            </CustomRouter>
+            <CustomRouter history={history} auth={auth} />
           </ShortcutProvider>
         </Provider>
       );
 
       const msg = dataFixtures.websocketMessage1;
-
-      wrapper.update();
 
       // connection to the server takes some time, so we're waiting for the websocket url to be saved
       // in the store and then once the connection is open - push a websocket event from
@@ -269,10 +263,8 @@ describe("MasterWindowContainer", () => {
         .then(() => {
           setTimeout(() => {
             mockServer.send(store.getState().windowHandler.master.websocket, {}, JSON.stringify(msg));
-          }, 3000);
+          }, 5000);
         });
-
-      wrapper.update();
 
       createWaitForElement('tbody')(wrapper)
         .then((component) => {
@@ -283,7 +275,7 @@ describe("MasterWindowContainer", () => {
       await waitFor(() => {
         wrapper.update();
         expect(wrapper.find('tbody tr').length).toBe(8);
-      }, { timeout: 5000, interval: 500 });
+      }, { timeout: 8000, interval: 500 });
 
       done();
     }, 20000);
