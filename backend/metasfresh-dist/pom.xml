@@ -5,7 +5,8 @@
 	<parent>
 		<artifactId>de.metas.parent</artifactId>
 		<groupId>de.metas</groupId>
-		<version>[1,10.0.0]</version>
+		<version>10.0.0</version>
+		<relativePath>../pom.xml</relativePath>
 	</parent>
 
 	<groupId>de.metas.dist</groupId>
@@ -102,11 +103,6 @@
 						-->
 						<property>
 							<name>metasfresh-webui-frontend.version</name>
-							<searchReactor>false</searchReactor>
-							<autoLinkDependencies>true</autoLinkDependencies>
-						</property>
-						<property>
-							<name>metasfresh-webui-api.version</name>
 							<searchReactor>false</searchReactor>
 							<autoLinkDependencies>true</autoLinkDependencies>
 						</property>

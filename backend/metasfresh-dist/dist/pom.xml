@@ -27,10 +27,6 @@
 		-->
 		<!-- 10.0.0 is the version that is build and installed to our local repo bei eclipse or if we run maven from the command line -->
 		<metasfresh.version>[1,10.0.0]</metasfresh.version>
-		<metasfresh-webui-api.version>[1,10.0.0]</metasfresh-webui-api.version>
-		<metasfresh-procurement-webui.version>[1,10.0.0]</metasfresh-procurement-webui.version>
-		<metasfresh-admin.version>[1,10.0.0]</metasfresh-admin.version>
-		<metasfresh-webui-frontend.version>[1,10.0.0]</metasfresh-webui-frontend.version>
 	</properties>
 
 	<dependencies>
@@ -94,38 +90,8 @@ Since we now work with a range, we now declare the dependencies here where range
 		<dependency>
 			<groupId>de.metas.ui.web</groupId>
 			<artifactId>metasfresh-webui-api</artifactId>
-			<version>${metasfresh-webui-api.version}</version>
+			<version>${metasfresh.version}</version>
 			<type>jar</type>
-		</dependency>
-		<dependency>
-			<groupId>de.metas.ui.web</groupId>
-			<artifactId>metasfresh-webui-frontend</artifactId>
-			<version>${metasfresh-webui-frontend.version}</version>
-			<type>tar.gz</type>
-		</dependency>
-		<dependency>
-			<groupId>de.metas.procurement</groupId>
-			<artifactId>de.metas.procurement.webui</artifactId>
-			<version>${metasfresh-procurement-webui.version}</version>
-			<type>jar</type>
-		</dependency>
-
-		<!-- https://github.com/metasfresh/metasfresh/issues/1471 -->
-		<dependency>
-			<groupId>de.metas.admin</groupId>
-			<artifactId>metasfresh-admin</artifactId>
-			<version>${metasfresh-admin.version}</version>
-			<type>jar</type>
-			<scope>provided</scope> <!-- we need this dependency here to update the version property-->
-		</dependency>
-
-		<!-- https://github.com/metasfresh/metasfresh/issues/523 -->
-		<dependency>
-			<groupId>de.metas.material</groupId>
-			<artifactId>metasfresh-material-dispo-service</artifactId>
-			<version>${metasfresh.version}</version> <!-- currently this service is not in a dedicated repo and thus doesn't have a dedicated version -->
-			<type>jar</type>
-			<scope>provided</scope> <!-- we need this dependency here to update the version property -->
 		</dependency>
 
 <!--
@@ -438,7 +404,7 @@ note: when adding new records, please roughly order them by alphabet.
 
 		<dependency>
 			<groupId>de.metas.report</groupId>
-			<artifactId>report-service</artifactId>
+			<artifactId>metasfresh-report-service</artifactId>
 			<version>${metasfresh.version}</version>
 			<classifier>migration-postgres-sql</classifier>
 			<type>zip</type>
@@ -466,6 +432,15 @@ note: when adding new records, please roughly order them by alphabet.
 			<classifier>migration-postgres-sql</classifier>
 			<type>zip</type>
 		</dependency>
+
+		<dependency>
+			<groupId>de.metas.serviceprovider</groupId>
+			<artifactId>de.metas.serviceprovider.base</artifactId>
+			<version>${metasfresh.version}</version>
+			<classifier>migration-postgres-sql</classifier>
+			<type>zip</type>
+		</dependency>
+
 		<dependency>
 			<groupId>de.metas.shipper.gateway</groupId>
 			<artifactId>de.metas.shipper.gateway.derkurier</artifactId>
@@ -726,49 +701,6 @@ note: when adding new records, please roughly order them by alphabet.
 						</configuration>
 					</execution>
 
-					<!--
-						Build deploy folder: additional binaries that are generally required for metasfresh to run.
-						We specified these artifacts as dependencies further up. Therefore they were already resolved and now we only need to grab 'em by the artifactid without having to specify a particular version.
-					-->
-					<execution>
-						<id>copy-metasfresh-deploy-jars</id>
-						<phase>prepare-package</phase>
-						<goals>
-							<goal>copy-dependencies</goal>
-						</goals>
-						<configuration>
-							<outputDirectory>${project.build.directory}/dist/deploy</outputDirectory>
-							<includeArtifactIds>
-								metasfresh-webui-frontend
-							</includeArtifactIds>
-							<excludeTransitive>true</excludeTransitive>
-							<overWriteReleases>true</overWriteReleases>
-							<overWriteSnapshots>true</overWriteSnapshots>
-							<stripVersion>true</stripVersion> <!-- when we deploy those files, we want their names to always be the same -->
-						</configuration>
-					</execution>
-
-					<!--
-						Build deploy/download folder with procurement-webui. Those binaries are only needed in some scenarios
-						We specified these artifacts as dependencies further up. Therefore they were already resolved and now we only need to grab 'em by the artifactid without having to specify a particular version.
-					-->
-					<execution>
-						<id>copy-metasfresh-download-jars</id>
-						<phase>prepare-package</phase>
-						<goals>
-							<goal>copy-dependencies</goal>
-						</goals>
-						<configuration>
-							<outputDirectory>${project.build.directory}/dist/deploy/download</outputDirectory>
-							<includeArtifactIds>
-								de.metas.procurement.webui
-							</includeArtifactIds>
-							<excludeTransitive>true</excludeTransitive>
-							<overWriteReleases>true</overWriteReleases>
-							<overWriteSnapshots>true</overWriteSnapshots>
-							<stripVersion>true</stripVersion> <!-- when we deploy those files, we want their names to always be the same -->
-						</configuration>
-					</execution>
 					<execution>
 						<id>copy-metasfresh-service-jars</id>
 						<phase>prepare-package</phase>
@@ -778,8 +710,6 @@ note: when adding new records, please roughly order them by alphabet.
 						<configuration>
 							<outputDirectory>${project.build.directory}/dist/deploy/services</outputDirectory>
 							<includeArtifactIds>
-								<!-- gh metasfresh/metasfresh#1471 -->
-								metasfresh-admin,
 								<!-- gh metasfresh/metasfresh#968 -->
 								metasfresh-webui-api
 							</includeArtifactIds>
@@ -799,10 +729,6 @@ note: when adding new records, please roughly order them by alphabet.
 						<configuration>
 							<outputDirectory>${project.build.directory}/dist/deploy/services</outputDirectory>
 							<includeArtifactIds>
-								<!-- gh metasfresh/metasfresh#1471 -->
-								metasfresh-admin,
-								<!-- gh metasfresh/metasfresh#523 and metasfresh/metasfresh#1471 -->
-								metasfresh-material-dispo-service,
 								<!-- gh metasfresh/metasfresh#968 -->
 								metasfresh-webui-api
 							</includeArtifactIds>
@@ -912,7 +838,7 @@ note: when adding new records, please roughly order them by alphabet.
 							<overWriteSnapshots>true</overWriteSnapshots>
 						</configuration>
 					</execution>
-					
+
 				</executions>
 			</plugin>
 
@@ -1051,7 +977,6 @@ note: when adding new records, please roughly order them by alphabet.
 					<skip>true</skip>
 				</configuration>
 			</plugin>
-
 		</plugins>
 	</build>
 </project>

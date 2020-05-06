@@ -3,10 +3,10 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
-		<artifactId>de.metas.parent.general</artifactId>
+		<artifactId>de.metas.parent</artifactId>
 		<groupId>de.metas</groupId>
-		<version>[1,10.0.0]</version> <!-- we need the range during the jenkins build -->
-		<relativePath>../metasfresh-parent</relativePath>
+		<version>10.0.0</version>
+		<relativePath>../pom.xml</relativePath>
 	</parent>
 
 	<!-- FRESH-271: we need an explicit version here, otherwise versions-maven-plugin 
@@ -17,33 +17,11 @@
 	<artifactId>metasfresh-webui-api</artifactId>
 
 	<properties>
-
 		<spring-boot.version>1.5.3.RELEASE</spring-boot.version>
-
-		<!-- See http://www.mojohaus.org/versions-maven-plugin/examples/update-properties.html 
-			and http://stackoverflow.com/questions/3628471/maven-versions-plugin-not-picking-up-properties-from-parent -->
-		<metasfresh.version>[1,10.0.0]</metasfresh.version>
-
+		<metasfresh.version>10.0.0</metasfresh.version>
+		
+		<license.name>gpl_v3</license.name>
 	</properties>
-
-	<dependencyManagement>
-		<dependencies>
-			<dependency>
-				<groupId>org.projectlombok</groupId>
-				<artifactId>lombok</artifactId>
-				<version>1.18.10</version>
-			</dependency>
-			
-			<!-- Import dependency management from Spring Boot -->
-			<dependency>
-				<groupId>org.springframework.boot</groupId>
-				<artifactId>spring-boot-dependencies</artifactId>
-				<version>${spring-boot.version}</version>
-				<type>pom</type>
-				<scope>import</scope>
-			</dependency>
-		</dependencies>
-	</dependencyManagement>
 
 	<dependencies>
 
@@ -243,10 +221,10 @@
 		<dependency>
 			<groupId>org.mockito</groupId>
 			<artifactId>mockito-core</artifactId>
-            <version>${mockito.version}</version>
-            <scope>test</scope>
+			<version>${mockito.version}</version>
+			<scope>test</scope>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>io.takari.junit</groupId>
 			<artifactId>takari-cpsuite </artifactId>
@@ -364,6 +342,14 @@
 						</configuration>
 					</execution>
 				</executions>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-deploy-plugin</artifactId>
+				<configuration>
+					<skip>false</skip>
+				</configuration>
 			</plugin>
 		</plugins>
 	</build>
