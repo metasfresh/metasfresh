@@ -32,7 +32,7 @@ import de.metas.util.Services;
  * #L%
  */
 
-public class C_Customer_Retention_CreateMissing extends JavaProcess
+public class C_Customer_Retention_CreateUpdate extends JavaProcess
 {
 
 	final CustomerRetentionRepository customerRetentionRepo = SpringContextHolder.instance.getBean(CustomerRetentionRepository.class);
@@ -45,11 +45,7 @@ public class C_Customer_Retention_CreateMissing extends JavaProcess
 		final ImmutableSet<BPartnerId> customers = bpartnerDAO.retrieveAllCustomerIDs();
 
 		customers.stream()
-				.filter(customerId -> !customerRetentionRepo.hasCustomerRetention(customerId))
-				.forEach(customerId -> customerRetentionRepo.createEmptyCustomerRetention(customerId));
-
-		customers.stream()
-				.forEach(customerId -> customerRetentionRepo.updateCustomerRetention(customerId));
+				.forEach(customerId -> customerRetentionRepo.createUpdateCustomerRetention(customerId));
 
 		return MSG_OK;
 	}

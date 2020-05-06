@@ -6,12 +6,10 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 import java.time.LocalDate;
-import java.util.Objects;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.SpringContextHolder;
-import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Customer_Retention;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Order;
@@ -20,7 +18,6 @@ import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableSet;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.contracts.CustomerRetentionId;
@@ -37,8 +34,6 @@ import de.metas.util.Services;
 import de.metas.util.lang.CoalesceUtil;
 import de.metas.util.time.SystemTime;
 import lombok.NonNull;
-
-
 
 /*
  * #%L
@@ -149,42 +144,13 @@ public class CustomerRetentionRepository
 
 	}
 
-	public boolean isNewCustomer(@NonNull final BPartnerId bpartnerId)
-	{
-		final I_C_Customer_Retention customerRetention = retrieveExistingCustomerRetention(bpartnerId);
-
-		if (customerRetention == null)
-		{
-			return false;
-		}
-
-		final String currentCustomerRetention = customerRetention.getCustomerRetention();
-
-		return Objects.equals(X_C_Customer_Retention.CUSTOMERRETENTION_Neukunde, currentCustomerRetention);
-	}
-
-	public ImmutableSet<BPartnerId> retrieveBPartnerIdsWithCustomerRetention()
-	{
-		return queryBL.createQueryBuilder(I_C_Customer_Retention.class)
-				.addOnlyActiveRecordsFilter()
-				.addNotNull(I_C_Customer_Retention.COLUMN_CustomerRetention)
-				.andCollect(I_C_Customer_Retention.COLUMN_C_BPartner_ID, I_C_BPartner.class)
-				.create()
-				.listIds(BPartnerId::ofRepoId);
-	}
-
 	@VisibleForTesting
 	int retrieveCustomerRetentionThreshold()
 	{
 		return sysConfigBL.getIntValue(SYS_CONFIG_C_CUSTOMER_RETENTION_Threshold, DEFAULT_Threshold_CustomerRetention);
 	}
 
-	public boolean hasCustomerRetention(@NonNull final BPartnerId bpartnerId)
-	{
-		return !Check.isEmpty(retrieveExistingCustomerRetention(bpartnerId));
-	}
-
-	public void updateCustomerRetention(@NonNull final BPartnerId bpartnerId)
+	public void createUpdateCustomerRetention(@NonNull final BPartnerId bpartnerId)
 	{
 		final CustomerRetentionId customerRetentionId = retrieveOrCreateCustomerRetention(bpartnerId);
 
