@@ -23,12 +23,13 @@ package de.metas.banking.payment.paymentallocation.service;
  */
 
 import java.util.Collection;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import com.google.common.collect.ImmutableList;
 
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.ITranslatableString;
-import de.metas.i18n.TranslatableStringBuilder;
 import de.metas.i18n.TranslatableStrings;
 
 /**
@@ -42,37 +43,28 @@ public class PaymentDocumentNotAllocatedException extends PaymentAllocationExcep
 {
 	private static final AdMessageKey MSG = AdMessageKey.of("PaymentAllocation.CannotAllocatePayableDocumentsException");
 
-	private final Collection<IPaymentDocument> payments;
+	private final ImmutableList<PaymentDocument> payments;
 
-	PaymentDocumentNotAllocatedException(final Collection<IPaymentDocument> payments)
+	PaymentDocumentNotAllocatedException(final Collection<PaymentDocument> payments)
 	{
-		super("");
+		super();
 		this.payments = ImmutableList.copyOf(payments);
 	}
 
 	@Override
 	protected ITranslatableString buildMessage()
 	{
-		final TranslatableStringBuilder message = TranslatableStrings.builder();
+		return TranslatableStrings.builder()
+				.appendADMessage(MSG)
+				.append(toCommaSeparatedDocumentNos(payments))
+				.build();
+	}
 
-		if (payments != null && !payments.isEmpty())
-		{
-			for (final IPaymentDocument payment : payments)
-			{
-				if (payment == null)
-				{
-					continue;
-				}
-				if (!message.isEmpty())
-				{
-					message.append(", ");
-				}
-				message.append(payment.getDocumentNo());
-			}
-		}
-
-		message.insertFirstADMessage(MSG);
-		return message.build();
+	private static String toCommaSeparatedDocumentNos(final List<PaymentDocument> payments)
+	{
+		return payments.stream()
+				.map(PaymentDocument::getDocumentNo)
+				.collect(Collectors.joining(", "));
 	}
 
 }

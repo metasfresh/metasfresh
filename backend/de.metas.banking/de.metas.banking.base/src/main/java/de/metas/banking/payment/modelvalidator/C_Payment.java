@@ -1,15 +1,8 @@
-/**
- *
- */
-package de.metas.banking.payment.modelvalidator;
-
-import org.adempiere.ad.modelvalidator.IModelValidationEngine;
-
 /*
  * #%L
  * de.metas.banking.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -27,6 +20,18 @@ import org.adempiere.ad.modelvalidator.IModelValidationEngine;
  * #L%
  */
 
+/**
+ *
+ */
+package de.metas.banking.payment.modelvalidator;
+
+import com.google.common.collect.ImmutableList;
+import de.metas.banking.service.IBankStatementBL;
+import de.metas.banking.service.ICashStatementBL;
+import de.metas.payment.PaymentId;
+import de.metas.payment.api.IPaymentBL;
+import lombok.NonNull;
+import org.adempiere.ad.modelvalidator.IModelValidationEngine;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
@@ -36,14 +41,6 @@ import org.adempiere.model.CopyRecordFactory;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.ModelValidator;
-
-import com.google.common.collect.ImmutableList;
-
-import de.metas.banking.service.IBankStatementBL;
-import de.metas.banking.service.ICashStatementBL;
-import de.metas.payment.PaymentId;
-import de.metas.payment.api.IPaymentBL;
-import lombok.NonNull;
 
 /**
  * @author cg
@@ -132,6 +129,11 @@ public class C_Payment
 		}
 
 		if (!sysConfigBL.getBooleanValue("CASH_AS_PAYMENT", true, payment.getAD_Client_ID()))
+		{
+			return;
+		}
+
+		if (bankStatementBL.isPaymentOnBankStatement(PaymentId.ofRepoId(payment.getC_Payment_ID())))
 		{
 			return;
 		}

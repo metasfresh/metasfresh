@@ -39,8 +39,8 @@ import de.metas.costing.CostAmount;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.InOutLineId;
-import de.metas.invoice.IMatchInvDAO;
 import de.metas.invoice.MatchInvId;
+import de.metas.invoice.service.IMatchInvDAO;
 import de.metas.money.CurrencyId;
 import de.metas.util.Services;
 

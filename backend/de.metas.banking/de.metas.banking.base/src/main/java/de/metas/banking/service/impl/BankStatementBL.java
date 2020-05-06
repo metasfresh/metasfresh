@@ -1,24 +1,8 @@
-package de.metas.banking.service.impl;
-
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
-import java.util.Set;
-
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_BankStatement;
-import org.compiere.model.I_C_BankStatementLine;
-import org.compiere.model.MPeriod;
-import org.compiere.model.X_C_DocType;
-
-import com.google.common.collect.ImmutableSet;
-
 /*
  * #%L
  * de.metas.banking.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -36,6 +20,23 @@ import com.google.common.collect.ImmutableSet;
  * #L%
  */
 
+package de.metas.banking.service.impl;
+
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Properties;
+import java.util.Set;
+
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_BankStatement;
+import org.compiere.model.I_C_BankStatementLine;
+import org.compiere.model.I_C_Invoice;
+import org.compiere.model.MPeriod;
+import org.compiere.model.X_C_DocType;
+
+import com.google.common.collect.ImmutableSet;
+
 import de.metas.acct.api.IFactAcctDAO;
 import de.metas.banking.BankStatementId;
 import de.metas.banking.BankStatementLineId;
@@ -43,6 +44,8 @@ import de.metas.banking.BankStatementLineReferenceList;
 import de.metas.banking.service.IBankStatementBL;
 import de.metas.banking.service.IBankStatementDAO;
 import de.metas.banking.service.IBankStatementListenerService;
+import de.metas.invoice.InvoiceId;
+import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.payment.PaymentId;
 import de.metas.payment.api.IPaymentBL;
 import de.metas.util.Services;
@@ -137,8 +140,8 @@ public class BankStatementBL implements IBankStatementBL
 	{
 		return line.getTrxAmt()
 				.add(line.getInterestAmt())
-		// .add(line.getChargeAmt())
-		;
+				// .add(line.getChargeAmt())
+				;
 	}
 
 	@Override
@@ -220,6 +223,18 @@ public class BankStatementBL implements IBankStatementBL
 	public ImmutableSet<PaymentId> getLinesPaymentIds(@NonNull final BankStatementId bankStatementId)
 	{
 		return bankStatementDAO.getLinesPaymentIds(bankStatementId);
+	}
+
+	@Override
+	public void updateLineFromInvoice(final @NonNull I_C_BankStatementLine bankStatementLine, @NonNull final InvoiceId invoiceId)
+	{
+		final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
+		final I_C_Invoice invoice = invoiceDAO.getByIdInTrx(invoiceId);
+
+		bankStatementLine.setC_BPartner_ID(invoice.getC_BPartner_ID());
+		bankStatementLine.setStmtAmt(invoice.getGrandTotal());
+		bankStatementLine.setTrxAmt(invoice.getGrandTotal());
+		bankStatementLine.setC_Currency_ID(invoice.getC_Currency_ID());
 	}
 
 }

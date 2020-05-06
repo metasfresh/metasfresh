@@ -5,6 +5,8 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import de.metas.bpartner.BPartnerId;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
+import de.metas.organization.OrgId;
+import de.metas.payment.PaymentDirection;
 
 public interface IPaymentDocument
 {
@@ -14,14 +16,14 @@ public interface IPaymentDocument
 	}
 
 	PaymentDocumentType getType();
+	
+	OrgId getOrgId();
 
 	BPartnerId getBpartnerId();
 
 	String getDocumentNo();
 
-	boolean isCustomerDocument();
-
-	boolean isVendorDocument();
+	PaymentDirection getPaymentDirection();
 
 	TableRecordReference getReference();
 

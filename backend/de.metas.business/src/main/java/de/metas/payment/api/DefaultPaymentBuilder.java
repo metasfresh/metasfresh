@@ -1,10 +1,8 @@
-package de.metas.payment.api;
-
 /*
  * #%L
- * de.metas.adempiere.adempiere.base
+ * de.metas.business
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,12 +20,13 @@ package de.metas.payment.api;
  * #L%
  */
 
+package de.metas.payment.api;
+
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
 import javax.annotation.Nullable;
 
-import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Payment;
@@ -43,6 +42,7 @@ import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.invoice.InvoiceId;
+import de.metas.invoice.service.IInvoiceBL;
 import de.metas.lang.SOTrx;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
@@ -117,7 +117,7 @@ public class DefaultPaymentBuilder
 	 *
 	 * @return draft payment
 	 */
-	private I_C_Payment createDraft()
+	public I_C_Payment createDraft()
 	{
 		final I_C_Payment payment = createNoSave();
 		InterfaceWrapperHelper.save(payment);
@@ -198,6 +198,9 @@ public class DefaultPaymentBuilder
 		return this;
 	}
 
+	/**
+	 * DateTrx should be the same as Line.DateAcct, and not Line.StatementDate, in case of a BankStatementLine.
+	 */
 	public final DefaultPaymentBuilder dateAcct(@Nullable final LocalDate dateAcct)
 	{
 		assertNotBuilt();
@@ -205,6 +208,9 @@ public class DefaultPaymentBuilder
 		return this;
 	}
 
+	/**
+	 * DateTrx should be the same as Line.DateAcct, and not Line.StatementDate, in case of a BankStatementLine.
+	 */
 	public final DefaultPaymentBuilder dateTrx(@Nullable final LocalDate dateTrx)
 	{
 		assertNotBuilt();

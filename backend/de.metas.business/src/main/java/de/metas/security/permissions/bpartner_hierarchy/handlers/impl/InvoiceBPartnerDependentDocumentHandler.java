@@ -2,7 +2,6 @@ package de.metas.security.permissions.bpartner_hierarchy.handlers.impl;
 
 import java.util.stream.Stream;
 
-import org.adempiere.invoice.service.IInvoiceDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_Invoice;
@@ -12,6 +11,7 @@ import com.google.common.annotations.VisibleForTesting;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.invoice.InvoiceId;
+import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.security.permissions.bpartner_hierarchy.handlers.BPartnerDependentDocument;
 import de.metas.security.permissions.bpartner_hierarchy.handlers.BPartnerDependentDocumentHandler;
 import de.metas.user.UserId;

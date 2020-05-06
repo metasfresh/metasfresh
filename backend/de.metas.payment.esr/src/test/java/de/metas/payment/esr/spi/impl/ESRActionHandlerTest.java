@@ -30,14 +30,14 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.math.BigDecimal;
 
 import org.adempiere.ad.wrapper.POJOLookupMap;
-import org.adempiere.invoice.service.IInvoiceBL;
-import org.adempiere.invoice.service.IInvoiceDAO;
 import org.compiere.model.I_C_AllocationHdr;
 import org.compiere.model.I_C_AllocationLine;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Payment;
 import org.junit.jupiter.api.Test;
 
+import de.metas.invoice.service.IInvoiceBL;
+import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.payment.esr.ESRTestBase;
 import de.metas.payment.esr.actionhandler.impl.DunningESRActionHandler;
 import de.metas.payment.esr.actionhandler.impl.MoneyTransferedBackESRActionHandler;

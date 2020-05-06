@@ -5,7 +5,6 @@ import java.util.Iterator;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
-import org.adempiere.invoice.service.IInvoiceDAO;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_C_Invoice;
@@ -17,6 +16,7 @@ import de.metas.contracts.commission.commissioninstance.interceptor.C_InvoiceFac
 import de.metas.error.AdIssueId;
 import de.metas.error.IErrorManager;
 import de.metas.invoice.InvoiceId;
+import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.logging.LogManager;
 import de.metas.logging.TableRecordMDC;
 import de.metas.process.IProcessPrecondition;

@@ -49,8 +49,10 @@ import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
 
 import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
 
+import de.metas.util.time.FixedTimeSource;
 import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 
@@ -60,13 +62,25 @@ import lombok.NonNull;
  */
 public class TimeUtilTest
 {
+	@AfterEach
+	public void beforeEach()
+	{
+		SystemTime.resetTimeSource();
+	}
+
+	@AfterEach
+	public void afterEach()
+	{
+		SystemTime.resetTimeSource();
+	}
+
 	private static Timestamp createTimestamp(final int year, int month, int day)
 	{
 		return TimeUtil.getDay(year, month, day);
 	}
 
 	@Test
-	public void testIsValid() throws Exception
+	public void testIsValid()
 	{
 		final Timestamp date_2011_05_10 = createTimestamp(2011, 5, 10);
 		final Timestamp date_2011_05_20 = createTimestamp(2011, 5, 20);
@@ -603,6 +617,23 @@ public class TimeUtilTest
 		assertThat(TimeUtil.isDateOrTimeClass(String.class)).isFalse();
 		assertThat(TimeUtil.isDateOrTimeClass(Integer.class)).isFalse();
 		assertThat(TimeUtil.isDateOrTimeClass(BigDecimal.class)).isFalse();
+	}
+
+	@Test
+	public void test_asTimestamp_asLocalDateWithTimeZone()
+	{
+		SystemTime.setTimeSource(
+				FixedTimeSource.ofZonedDateTime(LocalDate.of(2020, Month.APRIL, 29)
+						.atTime(LocalTime.of(13, 14))
+						.atZone(ZoneId.of("UTC+5"))));
+
+		final Timestamp timestamp = TimeUtil.asTimestamp(
+				LocalDate.parse("2020-04-30")
+						.atTime(LocalTime.of(23, 59, 59))
+						.atZone(ZoneId.of("UTC-8")));
+
+		final LocalDate localDate = TimeUtil.asLocalDate(timestamp, ZoneId.of("UTC-8"));
+		assertThat(localDate).isEqualTo("2020-04-30");
 	}
 
 }

@@ -2,7 +2,7 @@
  * #%L
  * de.metas.banking.base
  * %%
- * Copyright (C) 2019 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -32,8 +32,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
+import org.adempiere.bank.BankRepository;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BP_BankAccount;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BankStatement;
@@ -116,6 +118,8 @@ class BankStatementPaymentBLTest
 
 		final IModelInterceptorRegistry modelInterceptorRegistry = Services.get(IModelInterceptorRegistry.class);
 		modelInterceptorRegistry.addModelInterceptor(new C_BankStatementLine_MockedInterceptor(bankStatementBL));
+
+		SpringContextHolder.registerJUnitBean(new BankRepository());
 
 		createMasterData();
 	}

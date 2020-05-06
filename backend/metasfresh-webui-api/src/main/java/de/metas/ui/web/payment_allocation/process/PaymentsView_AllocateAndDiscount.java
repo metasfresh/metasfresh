@@ -58,7 +58,7 @@ public class PaymentsView_AllocateAndDiscount extends PaymentsView_Allocate_Temp
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("not a valid selection");
 		}
-		if (result.getTotalDiscountAmt().signum() == 0)
+		if (result.getTotalDiscountAmtAsBigDecimal().signum() == 0)
 		{
 			// NOTE: there is other process is would allocate without writing off
 			return ProcessPreconditionsResolution.rejectWithInternalReason("nothing to discount");
@@ -72,7 +72,7 @@ public class PaymentsView_AllocateAndDiscount extends PaymentsView_Allocate_Temp
 	{
 		return TranslatableStrings.builder()
 				.appendADElement("DiscountAmt").append(": ")
-				.append(result.getTotalDiscountAmt(), DisplayType.Amount)
+				.append(result.getTotalDiscountAmtAsBigDecimal(), DisplayType.Amount)
 				.build();
 	}
 }

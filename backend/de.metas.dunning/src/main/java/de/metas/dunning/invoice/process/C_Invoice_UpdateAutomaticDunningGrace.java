@@ -1,11 +1,11 @@
 package de.metas.dunning.invoice.process;
 
-import org.adempiere.invoice.service.IInvoiceDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_AD_Org;
 
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.dunning.invoice.api.IInvoiceSourceBL;
+import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.process.JavaProcess;
 import de.metas.process.Param;
 import de.metas.util.Services;
