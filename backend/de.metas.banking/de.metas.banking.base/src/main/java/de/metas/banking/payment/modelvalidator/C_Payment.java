@@ -1,8 +1,17 @@
+/**
+ *
+ */
+package de.metas.banking.payment.modelvalidator;
+
+import java.util.Collection;
+
+import org.adempiere.ad.modelvalidator.IModelValidationEngine;
+
 /*
  * #%L
  * de.metas.banking.base
  * %%
- * Copyright (C) 2020 metas GmbH
+ * Copyright (C) 2015 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,18 +29,6 @@
  * #L%
  */
 
-/**
- *
- */
-package de.metas.banking.payment.modelvalidator;
-
-import com.google.common.collect.ImmutableList;
-import de.metas.banking.service.IBankStatementBL;
-import de.metas.banking.service.ICashStatementBL;
-import de.metas.payment.PaymentId;
-import de.metas.payment.api.IPaymentBL;
-import lombok.NonNull;
-import org.adempiere.ad.modelvalidator.IModelValidationEngine;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
@@ -41,6 +38,16 @@ import org.adempiere.model.CopyRecordFactory;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.ModelValidator;
+
+import com.google.common.collect.ImmutableList;
+
+import de.metas.banking.service.IBankStatementBL;
+import de.metas.banking.service.ICashStatementBL;
+import de.metas.payment.PaymentId;
+import de.metas.payment.api.IPaymentBL;
+import de.metas.payment.api.PaymentReconcileReference;
+import de.metas.payment.api.PaymentReconcileRequest;
+import lombok.NonNull;
 
 /**
  * @author cg
@@ -113,10 +120,14 @@ public class C_Payment
 		final PaymentId paymentId = PaymentId.ofRepoId(payment.getC_Payment_ID());
 		if (!bankStatementBL.isPaymentOnBankStatement(paymentId))
 		{
-			paymentBL.markReconciledAndSave(payment);
-
 			final PaymentId reversalId = PaymentId.ofRepoId(payment.getReversal_ID());
-			paymentBL.markReconciled(ImmutableList.of(reversalId));
+
+			final ImmutableList<PaymentReconcileRequest> requests = ImmutableList.of(
+					PaymentReconcileRequest.of(paymentId, PaymentReconcileReference.reversal(reversalId)),
+					PaymentReconcileRequest.of(reversalId, PaymentReconcileReference.reversal(paymentId)));
+
+			final Collection<I_C_Payment> preloadedPayments = ImmutableList.of(payment);
+			paymentBL.markReconciled(requests, preloadedPayments);
 		}
 	}
 
