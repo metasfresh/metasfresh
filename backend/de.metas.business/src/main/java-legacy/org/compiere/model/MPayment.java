@@ -700,7 +700,7 @@ public final class MPayment extends X_C_Payment
 	/**
 	 * Set Payment Amount
 	 *
-	 * @param C_Currency_ID currency (optional)
+	 * @param currencyId currency (optional)
 	 * @param payAmt        amount
 	 * @deprecated Will be deleted because it's used only by legacy API
 	 */

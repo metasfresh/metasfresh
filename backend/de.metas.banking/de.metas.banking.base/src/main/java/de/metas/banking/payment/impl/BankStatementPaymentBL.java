@@ -94,7 +94,6 @@ public class BankStatementPaymentBL implements IBankStatementPaymentBL
 		}
 
 		final Set<PaymentId> eligiblePaymentIds = findEligiblePaymentIds(bankStatementLine, bpartnerId, 2);
-		//noinspection StatementWithEmptyBody
 		if (eligiblePaymentIds.size() > 1)
 		{
 			// Don't create a new Payment and don't link any of the existing payments if there are multiple payments found.
@@ -230,7 +229,7 @@ public class BankStatementPaymentBL implements IBankStatementPaymentBL
 		bankStatementDAO.save(bankStatementLine);
 
 		//
-		// ReConcile payment if bank statement is processed
+		// Reconcile payment if bank statement is processed
 		final DocStatus bankStatementDocStatus = DocStatus.ofCode(bankStatement.getDocStatus());
 		if (bankStatementDocStatus.isCompleted())
 		{

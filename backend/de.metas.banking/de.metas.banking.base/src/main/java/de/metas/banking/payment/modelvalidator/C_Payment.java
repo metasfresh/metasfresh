@@ -20,9 +20,6 @@
  * #L%
  */
 
-/**
- *
- */
 package de.metas.banking.payment.modelvalidator;
 
 import com.google.common.collect.ImmutableList;
@@ -48,7 +45,6 @@ import java.util.Collection;
 
 /**
  * @author cg
- *
  */
 @Interceptor(I_C_Payment.class)
 public class C_Payment
