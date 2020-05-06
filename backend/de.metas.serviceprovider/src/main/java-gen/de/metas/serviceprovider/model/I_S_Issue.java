@@ -253,21 +253,21 @@ public interface I_S_Issue
 	 * Set External issue no.
 	 * External issue number ( e.g. github issue number )
 	 *
-	 * <br>Type: String
+	 * <br>Type: Number
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setExternalIssueNo (java.lang.String ExternalIssueNo);
+	public void setExternalIssueNo (java.math.BigDecimal ExternalIssueNo);
 
 	/**
 	 * Get External issue no.
 	 * External issue number ( e.g. github issue number )
 	 *
-	 * <br>Type: String
+	 * <br>Type: Number
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getExternalIssueNo();
+	public java.math.BigDecimal getExternalIssueNo();
 
     /** Column definition for ExternalIssueNo */
     public static final org.adempiere.model.ModelColumn<I_S_Issue, Object> COLUMN_ExternalIssueNo = new org.adempiere.model.ModelColumn<I_S_Issue, Object>(I_S_Issue.class, "ExternalIssueNo", null);

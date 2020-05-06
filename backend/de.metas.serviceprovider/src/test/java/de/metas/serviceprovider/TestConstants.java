@@ -47,9 +47,9 @@ public interface TestConstants
 	ExternalProjectType MOCK_EXTERNAL_PROJECT_TYPE = ExternalProjectType.EFFORT;
 	String MOCK_EXTERNAL_ID = "externalId";
 	String MOCK_EXTERNAL_URL = "externalURL";
-	String MOCK_EXTERNAL_ISSUE_NO = "1";
+	Integer MOCK_EXTERNAL_ISSUE_NO = 1;
 	String MOCK_PARENT_EXTERNAL_ID = "parentExternalId";
-	String MOCK_PARENT_ISSUE_NO = "1234";
+	Integer MOCK_PARENT_ISSUE_NO = 1234;
 
 	String MOCK_NAME = "name";
 	String MOCK_SEARCH_KEY = "searchKey";

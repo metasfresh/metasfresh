@@ -206,7 +206,7 @@ public class GithubImporterService implements IssueImporter
 				.builder()
 				.repository(importIssuesRequest.getRepoId())
 				.repositoryOwner(importIssuesRequest.getRepoOwner())
-				.issueNo(issue.getNumber())
+				.issueNo(String.valueOf(issue.getNumber()))
 				.build();
 
 		if (seenExternalIdsByKey.put(githubIdSearchKey, issue.getId()) != null)

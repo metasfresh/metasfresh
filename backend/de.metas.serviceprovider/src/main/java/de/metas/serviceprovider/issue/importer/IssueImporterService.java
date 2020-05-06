@@ -48,6 +48,7 @@ import de.metas.serviceprovider.milestone.Milestone;
 import de.metas.serviceprovider.milestone.MilestoneId;
 import de.metas.serviceprovider.milestone.MilestoneRepository;
 import de.metas.util.Loggables;
+import de.metas.util.NumberUtils;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
@@ -222,7 +223,7 @@ public class IssueImporterService
 				.estimatedEffort(importIssueInfo.getEstimation())
 				.budgetedEffort(importIssueInfo.getBudget())
 				.effortUomId(importIssueInfo.getEffortUomId())
-				.externalIssueNo(importIssueInfo.getExternalIssueNo())
+				.externalIssueNo(NumberUtils.asBigDecimal(importIssueInfo.getExternalIssueNo()))
 				.externalIssueURL(importIssueInfo.getExternalIssueURL())
 				.issueLabels(importIssueInfo.getIssueLabels())
 				.build();
@@ -248,7 +249,7 @@ public class IssueImporterService
 				.processed(importIssueInfo.isProcessed())
 				.isEffortIssue(ExternalProjectType.EFFORT.equals(importIssueInfo.getExternalProjectType()))
 				.description(importIssueInfo.getDescription())
-				.externalIssueNo(importIssueInfo.getExternalIssueNo())
+				.externalIssueNo(NumberUtils.asBigDecimal(importIssueInfo.getExternalIssueNo()))
 				.externalIssueURL(importIssueInfo.getExternalIssueURL())
 				.issueLabels(importIssueInfo.getIssueLabels())
 				.milestoneId(milestoneId)

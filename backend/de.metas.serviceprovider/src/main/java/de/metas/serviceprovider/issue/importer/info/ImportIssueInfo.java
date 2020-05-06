@@ -31,7 +31,6 @@ import de.metas.serviceprovider.external.project.ExternalProjectType;
 import de.metas.serviceprovider.issue.IssueId;
 import de.metas.uom.UomId;
 import de.metas.user.UserId;
-import de.metas.util.StringUtils;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -76,7 +75,7 @@ public class ImportIssueInfo
 	ExternalId externalIssueId;
 
 	@Nullable
-	String externalIssueNo;
+	Integer externalIssueNo;
 
 	@Nullable
 	String externalIssueURL;
@@ -95,6 +94,8 @@ public class ImportIssueInfo
 
 	public String getSearchKey()
 	{
-		return StringUtils.nullToEmpty(getExternalIssueNo()).concat(" ").concat(getName()).trim();
+		return externalIssueNo != null
+				? externalIssueNo + " " + getName().trim()
+				: getName().trim();
 	}
 }

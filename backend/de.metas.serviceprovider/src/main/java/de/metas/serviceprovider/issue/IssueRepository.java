@@ -126,6 +126,11 @@ public class IssueRepository
 
 	public void invalidateCacheForIds(@NonNull final ImmutableList<IssueId> issueIds)
 	{
+		if (issueIds.isEmpty())
+		{
+			return;//nothing to invalidate
+		}
+
 		final List<Integer> recordIds = issueIds.stream().map(IssueId::getRepoId).collect(Collectors.toList());
 
 		final CacheInvalidateMultiRequest multiRequest =

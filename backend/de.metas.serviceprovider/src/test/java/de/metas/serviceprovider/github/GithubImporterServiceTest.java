@@ -124,7 +124,7 @@ public class GithubImporterServiceTest
 		//then
 		assertEquals(seendIds.size(), 1);
 		final GithubIdSearchKey idSearchKey = GithubIdSearchKey.builder()
-				.issueNo(MOCK_EXTERNAL_ISSUE_NO)
+				.issueNo(MOCK_EXTERNAL_ISSUE_NO.toString())
 				.repository(MOCK_EXTERNAL_REFERENCE)
 				.repositoryOwner(MOCK_EXTERNAL_PROJECT_OWNER)
 				.build();
@@ -198,17 +198,17 @@ public class GithubImporterServiceTest
 				.build();
 	}
 
-	private FetchIssueByIdRequest getMockFetchIssueByIdRequest(final String issueNo)
+	private FetchIssueByIdRequest getMockFetchIssueByIdRequest(final Integer issueNo)
 	{
 		return FetchIssueByIdRequest.builder()
 				.repositoryId(MOCK_EXTERNAL_REFERENCE)
 				.repositoryOwner(MOCK_EXTERNAL_PROJECT_OWNER)
 				.oAuthToken(MOCK_AUTH_TOKEN)
-				.issueNumber(issueNo)
+				.issueNumber(issueNo.toString())
 				.build();
 	}
 
-	private Issue buildMockIssue(final String issueNo, final String description, final String externalId)
+	private Issue buildMockIssue(final Integer issueNo, final String description, final String externalId)
 	{
 		final ImmutableList<Label> labels = ImmutableList.of(
 				Label.builder().name(MOCK_VALUE).build(),
@@ -273,11 +273,11 @@ public class GithubImporterServiceTest
 	private void checkSeenIds(final HashMap<GithubIdSearchKey, String> seendIds)
 	{
 		final GithubIdSearchKey childIdSearchKey = GithubIdSearchKey.builder()
-				.issueNo(MOCK_EXTERNAL_ISSUE_NO)
+				.issueNo(MOCK_EXTERNAL_ISSUE_NO.toString())
 				.repository(MOCK_EXTERNAL_REFERENCE)
 				.repositoryOwner(MOCK_EXTERNAL_PROJECT_OWNER)
 				.build();
-		final GithubIdSearchKey parentIdSearchKey = childIdSearchKey.toBuilder().issueNo(MOCK_PARENT_ISSUE_NO).build();
+		final GithubIdSearchKey parentIdSearchKey = childIdSearchKey.toBuilder().issueNo(MOCK_PARENT_ISSUE_NO.toString()).build();
 
 		assertEquals(seendIds.size(), 2);
 		assertEquals(seendIds.get(childIdSearchKey), MOCK_EXTERNAL_ID);

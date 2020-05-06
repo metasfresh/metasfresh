@@ -77,7 +77,7 @@ public class IssueRepositoryTest
 			.type(IssueType.EXTERNAL)
 			.isEffortIssue(true)
 			.processed(true)
-			.externalIssueNo(MOCK_EXTERNAL_ISSUE_NO)
+			.externalIssueNo(BigDecimal.valueOf(MOCK_EXTERNAL_ISSUE_NO))
 			.externalIssueURL(MOCK_EXTERNAL_URL)
 			.issueLabels(MOCK_LABELS)
 			.build();

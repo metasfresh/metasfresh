@@ -15,7 +15,7 @@ public class X_S_Issue extends org.compiere.model.PO implements I_S_Issue, org.c
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1617159647L;
+	private static final long serialVersionUID = 1557635338L;
 
     /** Standard Constructor */
     public X_S_Issue (Properties ctx, int S_Issue_ID, String trxName)
@@ -203,7 +203,7 @@ public class X_S_Issue extends org.compiere.model.PO implements I_S_Issue, org.c
 		External issue number ( e.g. github issue number )
 	  */
 	@Override
-	public void setExternalIssueNo (java.lang.String ExternalIssueNo)
+	public void setExternalIssueNo (java.math.BigDecimal ExternalIssueNo)
 	{
 		set_Value (COLUMNNAME_ExternalIssueNo, ExternalIssueNo);
 	}
@@ -212,9 +212,12 @@ public class X_S_Issue extends org.compiere.model.PO implements I_S_Issue, org.c
 		@return External issue number ( e.g. github issue number )
 	  */
 	@Override
-	public java.lang.String getExternalIssueNo () 
+	public java.math.BigDecimal getExternalIssueNo () 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_ExternalIssueNo);
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_ExternalIssueNo);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
 	}
 
 	/** Set Invoiceable effort.

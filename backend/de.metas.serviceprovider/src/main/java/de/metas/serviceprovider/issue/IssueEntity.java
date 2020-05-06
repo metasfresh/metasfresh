@@ -91,7 +91,7 @@ public class IssueEntity
 	private boolean isEffortIssue;
 
 	@Nullable
-	private String externalIssueNo;
+	private BigDecimal externalIssueNo;
 	@Nullable
 	private String externalIssueURL;
 
