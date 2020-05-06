@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonValue;
 
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
+import lombok.Value;
 
 /*
  * #%L
@@ -27,7 +28,7 @@ import de.metas.util.lang.RepoIdAware;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
+@Value
 public class CustomerRetentionId implements RepoIdAware
 {
 	int repoId;
