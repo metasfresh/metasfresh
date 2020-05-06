@@ -48,7 +48,7 @@ Map build(final MvnConf mvnConf, final Map scmVars, final boolean forceBuild=fal
 				'metasfresh-report', // artifactName
 				env.BRANCH_NAME, // branchName
 				env.MF_VERSION, // versionSuffix
-				'de.metas.report/metasfresh-report-service-standalone/target/docker' // workDir
+				'de.metas.report/report-service/target/docker' // workDir
 			);
 			final String publishedReportDockerImageName = dockerBuildAndPush(reportDockerConf)
 
