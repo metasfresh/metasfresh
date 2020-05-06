@@ -1,0 +1,474 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<artifactId>de.metas.parent.general</artifactId>
+		<groupId>de.metas</groupId>
+		<version>[1,10.0.0]</version>
+	</parent>
+
+	<groupId>de.metas.procurement</groupId>
+	<artifactId>de.metas.procurement.webui</artifactId>
+
+	<!-- FRESH-271: we need an explicit version here, otherwise versions-maven-plugin
+		can't set it to another version it -->
+	<version>10.0.0</version>
+
+	<properties>
+		<start-class>de.metas.procurement.webui.Application</start-class>
+
+		<version.vaadin>7.6.1</version.vaadin>
+		<vaadin.plugin.version>${version.vaadin}</vaadin.plugin.version>
+
+		<touchkit.version>4.1.0.rc1</touchkit.version>
+
+		<vaadin4spring.version>0.0.7.RELEASE</vaadin4spring.version>
+
+		<vaadin-spring.version>1.0.0.beta3</vaadin-spring.version>
+
+		<spring-boot.version>1.4.1.RELEASE</spring-boot.version>
+
+		<!-- note that we also use 3.1.6 in the metasfresh/de.metas.jaxrs module. -->
+		<cxf.version>3.1.6</cxf.version>
+
+		<!-- See http://www.mojohaus.org/versions-maven-plugin/examples/update-properties.html
+		and http://stackoverflow.com/questions/3628471/maven-versions-plugin-not-picking-up-properties-from-parent
+		-->
+		<metasfresh.version>[1,10.0.0]</metasfresh.version>
+
+	</properties>
+
+	<dependencyManagement>
+		<dependencies>
+			<!-- Import dependency management from Spring Boot -->
+			<dependency>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-dependencies</artifactId>
+				<version>${spring-boot.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+
+			<!-- Pull in the cxf-parents as import scope to re-use the dependenecyManagement
+				sections of those poms. Those sections define the versions of various third
+				party deps that CXF used to build with and test with and we would like to
+				make sure the same versions are used for the samples -->
+			<dependency>
+				<groupId>org.apache.cxf</groupId>
+				<artifactId>cxf-parent</artifactId>
+				<version>${cxf.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.cxf</groupId>
+				<artifactId>cxf</artifactId>
+				<version>${cxf.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+
+		</dependencies>
+	</dependencyManagement>
+
+	<dependencies>
+
+		<dependency>
+			<groupId>de.metas.procurement</groupId>
+			<artifactId>de.metas.procurement.sync-api</artifactId>
+			<version>${metasfresh.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.vaadin.spring.extensions</groupId>
+			<artifactId>vaadin-spring-ext-boot</artifactId>
+			<version>${vaadin4spring.version}</version>
+			<exclusions>
+				<exclusion>
+					<groupId>com.vaadin</groupId>
+					<artifactId>vaadin-spring</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>org.vaadin.spring.addons</groupId>
+			<artifactId>vaadin-spring-addon-eventbus</artifactId>
+			<version>${vaadin4spring.version}</version>
+			<exclusions>
+				<exclusion>
+					<groupId>com.vaadin</groupId>
+					<artifactId>vaadin-spring</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>org.vaadin.spring.addons</groupId>
+			<artifactId>vaadin-spring-addon-i18n</artifactId>
+			<version>${vaadin4spring.version}</version>
+			<exclusions>
+				<exclusion>
+					<groupId>com.vaadin</groupId>
+					<artifactId>vaadin-spring</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-actuator</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-web</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-data-jpa</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-mail</artifactId>
+		</dependency>
+
+		<!-- Database -->
+		<dependency>
+			<!-- used for embedded database, in demo and tests -->
+			<groupId>com.h2database</groupId>
+			<artifactId>h2</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.postgresql</groupId>
+			<artifactId>postgresql</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.vaadin</groupId>
+			<artifactId>vaadin-spring</artifactId>
+			<version>${vaadin-spring.version}</version>
+			<exclusions>
+				<exclusion>
+					<groupId>com.vaadin</groupId>
+					<artifactId>vaadin-server</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>com.vaadin.addon</groupId>
+			<artifactId>vaadin-touchkit-agpl</artifactId>
+			<version>${touchkit.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.vaadin</groupId>
+			<artifactId>vaadin-server</artifactId>
+			<version>${version.vaadin}</version>
+			<exclusions>
+				<!-- <exclusion> <artifactId>guava</artifactId> <groupId>com.vaadin.external.google</groupId>
+					</exclusion> -->
+				<exclusion>
+					<artifactId>vaadin-theme-compiler</artifactId>
+					<groupId>com.vaadin</groupId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>com.vaadin</groupId>
+			<artifactId>vaadin-client</artifactId>
+			<version>${version.vaadin}</version>
+			<exclusions>
+				<exclusion>
+					<groupId>javax.validation</groupId>
+					<artifactId>validation-api</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>javax.validation</groupId>
+			<artifactId>validation-api</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>com.vaadin</groupId>
+			<artifactId>vaadin-push</artifactId>
+			<version>${version.vaadin}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.hibernate</groupId>
+			<artifactId>hibernate-validator</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.vaadin</groupId>
+			<artifactId>viritin</artifactId>
+			<version>1.35</version>
+			<exclusions>
+				<exclusion>
+					<groupId>com.vaadin</groupId>
+					<artifactId>vaadin-server</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+
+		<dependency>
+			<groupId>org.vaadin.addons</groupId>
+			<artifactId>qrcode</artifactId>
+			<version>2.0.1</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-jms</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.activemq</groupId>
+			<artifactId>activemq-broker</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.activemq</groupId>
+			<artifactId>activemq-kahadb-store</artifactId>
+		</dependency>
+
+		<!-- REST -->
+		<!-- even without using the http transport we do need the servlet API! -->
+		<dependency>
+			<groupId>javax.servlet</groupId>
+			<artifactId>javax.servlet-api</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>javax.ws.rs</groupId>
+			<artifactId>javax.ws.rs-api</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.apache.cxf</groupId>
+			<artifactId>cxf-rt-transports-jms</artifactId>
+			<version>${cxf.version}</version>
+		</dependency>
+		<!-- needed, even if we currently communicate with JMS only -->
+		<dependency>
+			<groupId>org.apache.cxf</groupId>
+			<artifactId>cxf-rt-transports-http</artifactId>
+			<version>${cxf.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.apache.cxf</groupId>
+			<artifactId>cxf-rt-frontend-jaxrs</artifactId>
+			<version>${cxf.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.cxf</groupId>
+			<artifactId>cxf-rt-rs-client</artifactId>
+			<version>${cxf.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.apache.cxf</groupId>
+			<artifactId>cxf-rt-rs-extension-providers</artifactId>
+			<version>${cxf.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.apache.cxf</groupId>
+			<artifactId>cxf-rt-management</artifactId>
+			<version>${cxf.version}</version>
+		</dependency>
+
+		<!-- this provider can also marshal and unmarshal objects that are not
+			tagged with @XmlRoot -->
+		<dependency>
+			<groupId>com.fasterxml.jackson.jaxrs</groupId>
+			<artifactId>jackson-jaxrs-json-provider</artifactId>
+		</dependency>
+
+		<!-- Logging -->
+		<dependency>
+			<groupId>net.logstash.logback</groupId>
+			<artifactId>logstash-logback-encoder</artifactId>
+			<version>4.6</version>
+			<exclusions>
+				<exclusion>
+					<groupId>ch.qos.logback</groupId>
+					<artifactId>logback-core</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>com.fasterxml.jackson.core</groupId>
+					<artifactId>jackson-databind</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+
+	</dependencies>
+
+	<build>
+		<plugins>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-enforcer-plugin</artifactId>
+				<configuration>
+					<rules>
+						<!-- task 08834: We shall not leave the decision about plugin-versions
+							to maven. Rationale: we had the case that a build stopped working at a *very*
+							critical moment, because maven picked a more recent version of the jaxb plugin.
+							That version didn't support the way, we configured it and failed with an
+							error message. This shall not happen again. -->
+						<requirePluginVersions>
+							<message>!! We need to have the plugin version under control to
+								avoid build failures due to maven releasing a new plugin version
+								!!</message>
+							<banLatest>true</banLatest>
+							<banRelease>true</banRelease>
+							<banSnapshots>true</banSnapshots>
+							<phases>clean,deploy,site</phases>
+							<additionalPlugins>
+								<additionalPlugin>org.apache.maven.plugins:maven-reactor-plugin</additionalPlugin>
+							</additionalPlugins>
+							<unCheckedPluginList>org.apache.maven.plugins:maven-enforcer-plugin,org.apache.maven.plugins:maven-eclipse-plugin</unCheckedPluginList>
+						</requirePluginVersions>
+
+						<!-- See http://maven.apache.org/enforcer/enforcer-rules/dependencyConvergence.html -->
+						<dependencyConvergence />
+
+						<!-- if you want to avoid duplicate class names in your dependency tree, then good luck with vaadin ;-)  -->
+						<banDuplicateClasses>
+							<ignoreClasses>
+								<ignoreClass>com.google.*</ignoreClass>
+								<ignoreClass>com.vaadin.*</ignoreClass>
+								<ignoreClass>elemental.*</ignoreClass>
+								<ignoreClass>javax.annotation.*</ignoreClass>
+								<ignoreClass>javax.el.*</ignoreClass>
+								<ignoreClass>javax.persistence.*</ignoreClass>
+								<ignoreClass>javax.servlet.*</ignoreClass>
+								<ignoreClass>javax.transaction.*</ignoreClass>
+								<ignoreClass>org.apache.commons.*</ignoreClass>
+								<ignoreClass>org.apache.juli.*</ignoreClass>
+								<ignoreClass>org.mozilla.*</ignoreClass>
+							</ignoreClasses>
+							<findAllDuplicates>true</findAllDuplicates>
+						</banDuplicateClasses>
+					</rules>
+				</configuration>
+			</plugin>
+
+			<plugin>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-maven-plugin</artifactId>
+				<version>${spring-boot.version}</version>
+				<executions>
+					<execution>
+						<id>spring-boot-procurement-webui-repackage</id>
+						<goals>
+							<goal>repackage</goal>
+						</goals>
+						<configuration>
+							<executable>true</executable>
+						</configuration>
+					</execution>
+					<execution>
+						<id>spring-boot-procurement-webui-build-info</id>
+						<goals>
+							<goal>build-info</goal> <!-- create build-info.properties; thanks to https://docs.spring.io/spring-boot/docs/current/reference/html/howto-build.html#howto-build-info -->
+						</goals>
+						<configuration>
+								<additionalProperties>
+									<jenkinsBuildNo>${env.BUILD_NUMBER}</jenkinsBuildNo>
+									<jenkinsBuildTag>${env.BUILD_TAG}</jenkinsBuildTag>
+									<jenkinsBuildUrl>${env.BUILD_URL}</jenkinsBuildUrl>
+									<jenkinsJobName>${env.JOB_NAME}</jenkinsJobName>
+								</additionalProperties>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+
+			<plugin>
+				<groupId>com.vaadin</groupId>
+				<artifactId>vaadin-maven-plugin</artifactId>
+				<version>${vaadin.plugin.version}</version>
+				<configuration>
+					<extraJvmArgs>-Xmx1g -Xss1024k</extraJvmArgs>
+
+					<!-- We are doing "inplace" gwt compilation but into subdir VAADIN/widgetsets -->
+					<webappDirectory>${basedir}/src/main/webapp/VAADIN/widgetsets</webappDirectory>
+					<hostedWebapp>${basedir}/src/main/webapp/VAADIN/widgetsets</hostedWebapp>
+					<noServer>true</noServer>
+					<!-- Remove draftCompile when project is ready -->
+					<draftCompile>false</draftCompile>
+					<persistentunitcachedir>${project.build.directory}/gwtdirt</persistentunitcachedir>
+					<compileReport>false</compileReport>
+					<style>OBF</style>
+					<strict>true</strict>
+					<!-- Symbol maps etc, not needed in vaadin app, just target them outside
+						war -->
+					<deploy>${project.build.directory}/gwt-deploy</deploy>
+				</configuration>
+				<executions>
+					<execution>
+						<configuration>
+							<!-- if you don't specify any modules, the plugin will find them -->
+							<!-- <modules> <module>com.vaadin.demo.mobilemail.gwt.ColorPickerWidgetSet</module>
+								</modules> -->
+						</configuration>
+						<goals>
+							<goal>clean</goal>
+							<goal>resources</goal>
+							<!-- These are non functional currently with spring boot directory
+								structure <goal>update-theme</goal> <goal>update-widgetset</goal> -->
+							<goal>compile-theme</goal>
+							<goal>compile</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+
+			<plugin>
+				<artifactId>maven-resources-plugin</artifactId>
+				<executions>
+					<!-- ensure fresly compiled widgetset to jar, TODO check vaadin plugin
+						configuration could get rid of this -->
+					<execution>
+						<id>copy-resources</id>
+						<phase>prepare-package</phase>
+						<goals>
+							<goal>copy-resources</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${basedir}/target/classes/VAADIN</outputDirectory>
+							<resources>
+								<resource>
+									<directory>${basedir}/src/main/webapp/VAADIN</directory>
+								</resource>
+							</resources>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+
+			<!--
+			See http://www.mojohaus.org/versions-maven-plugin/examples/update-properties.html
+			Note that the propery needs to be declared in the actual child poms, see http://stackoverflow.com/questions/3628471/maven-versions-plugin-not-picking-up-properties-from-parent
+			-->
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>versions-maven-plugin</artifactId>
+				<version>2.4</version>
+				<configuration>
+					<properties>
+						<property>
+							<name>metasfresh.version</name>
+							<searchReactor>false</searchReactor>
+							<autoLinkDependencies>true</autoLinkDependencies>
+						</property>
+					</properties>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+	<description>Standalone mobile web application that is connected to metasfresh and allows the user to log report the availiability of goods which he would like to sell.</description>
+</project>
