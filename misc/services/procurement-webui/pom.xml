@@ -6,7 +6,8 @@
 	<parent>
 		<artifactId>de.metas.parent.general</artifactId>
 		<groupId>de.metas</groupId>
-		<version>[1,10.0.0]</version>
+		<version>10.0.0</version>
+		<relativePath>../../parent-pom/pom.xml</relativePath>
 	</parent>
 
 	<groupId>de.metas.procurement</groupId>
@@ -290,7 +291,6 @@
 		<dependency>
 			<groupId>net.logstash.logback</groupId>
 			<artifactId>logstash-logback-encoder</artifactId>
-			<version>4.6</version>
 			<exclusions>
 				<exclusion>
 					<groupId>ch.qos.logback</groupId>

@@ -1,13 +1,12 @@
-<project
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
-	xmlns="http://maven.apache.org/POM/4.0.0"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
+	xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
-		<artifactId>de.metas.parent.general</artifactId>
+		<artifactId>de.metas.parent</artifactId>
 		<groupId>de.metas</groupId>
-		<version>[1,10.0.0]</version> <!-- we need the range during the jenkins build -->
+		<version>10.0.0</version>
+		<relativePath>../pom.xml</relativePath>
 	</parent>
 
 	<!-- FRESH-271: we need an explicit version here, otherwise versions-maven-plugin 
@@ -18,27 +17,11 @@
 	<artifactId>metasfresh-webui-api</artifactId>
 
 	<properties>
-
 		<spring-boot.version>1.5.3.RELEASE</spring-boot.version>
-
-		<!-- See http://www.mojohaus.org/versions-maven-plugin/examples/update-properties.html 
-			and http://stackoverflow.com/questions/3628471/maven-versions-plugin-not-picking-up-properties-from-parent -->
-		<metasfresh.version>[1,10.0.0]</metasfresh.version>
-
+		<metasfresh.version>10.0.0</metasfresh.version>
+		
+		<license.name>gpl_v3</license.name>
 	</properties>
-
-	<dependencyManagement>
-		<dependencies>
-			<!-- Import dependency management from Spring Boot -->
-			<dependency>
-				<groupId>org.springframework.boot</groupId>
-				<artifactId>spring-boot-dependencies</artifactId>
-				<version>${spring-boot.version}</version>
-				<type>pom</type>
-				<scope>import</scope>
-			</dependency>
-		</dependencies>
-	</dependencyManagement>
 
 	<dependencies>
 
@@ -233,35 +216,13 @@
 		<dependency>
 			<groupId>net.logstash.logback</groupId>
 			<artifactId>logstash-logback-encoder</artifactId>
-			<version>6.3</version>
-		</dependency>
-		<!-- we need janino for the conditional that we have in the logback config -->
-		<dependency>
-			<groupId>org.codehaus.janino</groupId>
-			<artifactId>janino</artifactId>
-		</dependency>
-
-		<!-- Test dependencies -->
-		<!-- remember, jmockit needs to be before junit in the classpath -->
-		<dependency>
-			<groupId>org.jmockit</groupId>
-			<artifactId>jmockit</artifactId>
-			<version>1.33</version>
-			<scope>test</scope>
 		</dependency>
 
 		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-test</artifactId>
+			<groupId>org.mockito</groupId>
+			<artifactId>mockito-core</artifactId>
+			<version>${mockito.version}</version>
 			<scope>test</scope>
-			<exclusions>
-				<!-- excluded to avoid maven-enforcer-plugin error: Duplicate classes 
-					found: org.ow2.asm:asm:jar:5.0.3:test, net.minidev:accessors-smart:jar:1.1:test -->
-				<exclusion>
-					<groupId>org.ow2.asm</groupId>
-					<artifactId>asm</artifactId>
-				</exclusion>
-			</exclusions>
 		</dependency>
 
 		<dependency>
@@ -381,6 +342,14 @@
 						</configuration>
 					</execution>
 				</executions>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-deploy-plugin</artifactId>
+				<configuration>
+					<skip>false</skip>
+				</configuration>
 			</plugin>
 		</plugins>
 	</build>
