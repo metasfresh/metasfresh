@@ -1,0 +1,135 @@
+{
+  "longText": {
+    "data1": {
+      "displayed": true,
+      "field": "ProductDescription",
+      "mandatory": false,
+      "readonly": false,
+      "validStatus": {
+        "valid": true,
+        "initialValue": true,
+        "fieldName": "ProductDescription"
+      },
+      "fieldName": "ProductDescription",
+      "initialValue": true,
+      "valid": true,
+      "value": "Test 134",
+      "viewEditorRenderMode": "always",
+      "widgetType": "LongText"
+    },
+    "layout1": {
+      "caption": "Product Description",
+      "description": "Product Description",
+      "fields": [
+        {
+          "field": "ProductDescription",
+          "emptyText": "none"
+        }
+      ],
+      "gridAlign": "left",
+      "multilineText": true,
+      "multilineTextLines": 3,
+      "size": "L",
+      "sortable": true,
+      "viewEditorRenderMode": "never",
+      "widgetType": "LongText"
+    }
+  },
+  "text": {
+    "data1": {
+      "displayed": true,
+      "field": "Name",
+      "mandatory": true,
+      "readonly": false,
+      "validStatus": {
+        "valid": true,
+        "initialValue": true,
+        "fieldName": "Name"
+      },
+      "fieldName": "Name",
+      "initialValue": true,
+      "valid": true,
+      "value": "Apricotest",
+      "viewEditorRenderMode": "always",
+      "widgetType": "Text"
+    },
+    "layout1": {
+      "caption": "Name",
+      "description": "",
+      "fields": [
+        {
+          "field": "Name",
+          "emptyText": "none"
+        }
+      ],
+      "size": "L",
+      "viewEditorRenderMode": "never",
+      "widgetType": "Text"
+    }
+  },
+  "integer": {
+    "data1": {
+      "displayed": true,
+      "field": "SeqNo",
+      "mandatory": true,
+      "readonly": false,
+      "validStatus": {
+        "valid": true,
+        "initialValue": true,
+        "fieldName": "SeqNo"
+      },
+      "fieldName": "SeqNo",
+      "initialValue": true,
+      "valid": true,
+      "value": "21",
+      "viewEditorRenderMode": "always",
+      "widgetType": "Integer"
+    },
+    "layout1": {
+      "caption": "Reihenfolge",
+      "description": "Zur Bestimmung der Reihenfolge der Einträge; die kleinste Zahl kommt zuerst",
+      "fields": [
+        {
+          "field": "SeqNo",
+          "emptyText": "none"
+        }
+      ],
+      "emptyText": "none",
+      "field": "SeqNo",
+      "viewEditorRenderMode": "never",
+      "widgetType": "Integer"
+    }
+  },
+  "costPrice": {
+    "data1": {
+      "displayed": true,
+      "field": "PriceList",
+      "mandatory": true,
+      "readonly": false,
+      "validStatus": {
+        "valid": true,
+        "initialValue": true,
+        "fieldName": "PriceList"
+      },
+      "fieldName": "PriceList",
+      "initialValue": true,
+      "valid": true,
+      "value": "13.50",
+      "viewEditorRenderMode": "always",
+      "widgetType": "CostPrice"
+    },
+    "layout1": {
+      "caption": "List Price",
+      "description": "List Price",
+      "fields": [
+        {
+          "field": "PriceList",
+          "emptyText": "none"
+        }
+      ],
+      "size": "L",
+      "viewEditorRenderMode": "on-demand",
+      "widgetType": "CostPrice"
+    }
+  }
+}
