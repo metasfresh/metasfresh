@@ -1,20 +1,14 @@
 package de.metas.contracts.process;
 
-import java.sql.Timestamp;
-
-import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.contracts.IContractsDAO;
 import de.metas.contracts.impl.CustomerRetentionRepository;
-import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.process.JavaProcess;
-import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.lang.CoalesceUtil;
-import de.metas.util.time.SystemTime;
 
 /*
  * #%L
@@ -41,7 +35,7 @@ import de.metas.util.time.SystemTime;
 public class C_Customer_Retention_Update extends JavaProcess
 {
 
-	private final CustomerRetentionRepository customerRetentionRepo = Adempiere.getBean(CustomerRetentionRepository.class);
+	private final CustomerRetentionRepository customerRetentionRepo = SpringContextHolder.instance.getBean(CustomerRetentionRepository.class);
 
 	final IContractsDAO contractsDAO = Services.get(IContractsDAO.class);
 
@@ -52,19 +46,7 @@ public class C_Customer_Retention_Update extends JavaProcess
 
 		for (final BPartnerId bpartnerId : bPartnerIdsWithCustomerRetention)
 		{
-			final I_C_Flatrate_Term latestFlatrateTermForBPartnerId = contractsDAO.retrieveLatestFlatrateTermForBPartnerId(bpartnerId);
-
-			if (Check.isEmpty(latestFlatrateTermForBPartnerId))
-			{
-				continue;
-			}
-
-			final Timestamp endDate = CoalesceUtil.coalesce(latestFlatrateTermForBPartnerId.getMasterEndDate(), latestFlatrateTermForBPartnerId.getEndDate());
-
-			if (customerRetentionRepo.dateExceedsThreshold(endDate, SystemTime.asTimestamp()))
-			{
-				customerRetentionRepo.setNonSubscriptionCustomer(bpartnerId);
-			}
+			customerRetentionRepo.updateCustomerRetention(bpartnerId);
 		}
 
 		return MSG_OK;
