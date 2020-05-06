@@ -1,12 +1,8 @@
-package de.metas.order.impl;
-
-import static de.metas.util.lang.CoalesceUtil.coalesce;
-
 /*
  * #%L
- * de.metas.swat.base
+ * de.metas.business
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -24,35 +20,7 @@ import static de.metas.util.lang.CoalesceUtil.coalesce;
  * #L%
  */
 
-import java.math.BigDecimal;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Properties;
-
-import org.adempiere.ad.dao.IQueryAggregateBuilder;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.LegacyAdapters;
-import org.compiere.SpringContextHolder;
-import org.compiere.model.I_AD_User;
-import org.compiere.model.I_C_BPartner_Location;
-import org.compiere.model.I_C_DocType;
-import org.compiere.model.I_C_Order;
-import org.compiere.model.I_C_Tax;
-import org.compiere.model.I_M_PriceList;
-import org.compiere.model.I_M_PriceList_Version;
-import org.compiere.model.MOrder;
-import org.compiere.model.MOrderLine;
-import org.compiere.model.X_C_DocType;
-import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
-import org.slf4j.Logger;
+package de.metas.order.impl;
 
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
@@ -102,6 +70,38 @@ import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import de.metas.util.lang.CoalesceUtil;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryAggregateBuilder;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.LegacyAdapters;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_AD_User;
+import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_DocType;
+import org.compiere.model.I_C_Order;
+import org.compiere.model.I_C_Tax;
+import org.compiere.model.I_M_PriceList;
+import org.compiere.model.I_M_PriceList_Version;
+import org.compiere.model.MOrder;
+import org.compiere.model.MOrderLine;
+import org.compiere.model.X_C_DocType;
+import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
+import org.slf4j.Logger;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Properties;
+
+import static de.metas.util.lang.CoalesceUtil.coalesce;
 
 public class OrderBL implements IOrderBL
 {
@@ -703,7 +703,7 @@ public class OrderBL implements IOrderBL
 		final int oldBPartnerId = order.getBill_BPartner_ID();
 		final int newBPartnerId = billtoLocation.getC_BPartner_ID();
 		order.setBill_BPartner_ID(newBPartnerId);
-		
+
 		order.setBill_Location_ID(billtoLocation.getC_BPartner_Location_ID());
 
 		if (newBPartnerId != oldBPartnerId)
@@ -863,12 +863,37 @@ public class OrderBL implements IOrderBL
 	}
 
 	@Override
+	@NonNull
 	public BPartnerContactId getBillToContactId(@NonNull final I_C_Order order)
+	{
+		final BPartnerContactId contactIdOrNull = getBillToContactIdOrNull(order);
+
+		if (contactIdOrNull == null)
+		{
+			throw new AdempiereException("@Invalid@ @Contact_ID@ for Order " + order.getC_Order_ID())
+					.appendParametersToMessage()
+					.setParameter("getBill_BPartner_ID", order.getBill_BPartner_ID())
+					.setParameter("getBill_Location_ID", order.getBill_Location_ID())
+					.setParameter("getC_BPartner_ID", order.getC_BPartner_ID())
+					.setParameter("getC_BPartner_Location_ID", order.getC_BPartner_Location_ID());
+		}
+
+		return contactIdOrNull;
+	}
+
+	@Override
+	public boolean hasBillToContactId(@NonNull final I_C_Order order)
+	{
+		return null != getBillToContactIdOrNull(order);
+	}
+
+	@Nullable
+	private BPartnerContactId getBillToContactIdOrNull(@NonNull final I_C_Order order)
 	{
 		final BPartnerContactId billToContactId = BPartnerContactId.ofRepoIdOrNull(order.getBill_BPartner_ID(), order.getBill_User_ID());
 		return billToContactId != null
 				? billToContactId
-				: BPartnerContactId.ofRepoId(order.getC_BPartner_ID(), order.getAD_User_ID());
+				: BPartnerContactId.ofRepoIdOrNull(order.getC_BPartner_ID(), order.getAD_User_ID());
 	}
 
 	private static final ModelDynAttributeAccessor<org.compiere.model.I_C_Order, BigDecimal> DYNATTR_QtyInvoicedSum = new ModelDynAttributeAccessor<>("QtyInvoicedSum", BigDecimal.class);
