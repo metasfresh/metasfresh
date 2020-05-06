@@ -361,7 +361,17 @@ public class BPartnerDAO implements IBPartnerDAO
 				.findFirst()
 				.orElse(null);
 	}
-
+	
+	@Override
+	public I_C_BPartner_Location getBPartnerLocationByIdEvenInactive(@NonNull final BPartnerLocationId bpartnerLocationId)
+	{
+		return retrieveAllBPartnerLocations(bpartnerLocationId.getBpartnerId())
+				.stream()
+				.filter(bpLocation -> bpLocation.getC_BPartner_Location_ID() == bpartnerLocationId.getRepoId())
+				.findFirst()
+				.orElse(null);
+	}
+	
 	@Override
 	public I_C_BPartner_Location getBPartnerLocationByIdInTrx(@NonNull final BPartnerLocationId bpartnerLocationId)
 	{
@@ -438,9 +448,27 @@ public class BPartnerDAO implements IBPartnerDAO
 				.create()
 				.listImmutable(I_C_BPartner_Location.class);
 	}
+	
+	
+	@Override
+	@Cached(cacheName = I_C_BPartner_Location.Table_Name + "#by#" + I_C_BPartner_Location.COLUMNNAME_C_BPartner_ID)
+	public ImmutableList<I_C_BPartner_Location> retrieveAllBPartnerLocations(@NonNull final BPartnerId bpartnerId)
+	{
+		final IQueryBuilder<I_C_BPartner_Location> queryBuilder = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_C_BPartner_Location.class)
+				.addEqualsFilter(I_C_BPartner_Location.COLUMNNAME_C_BPartner_ID, bpartnerId);
+
+		queryBuilder.orderBy()
+				.addColumn(I_C_BPartner_Location.COLUMNNAME_IsActive);
+
+		return queryBuilder
+				.create()
+				.listImmutable(I_C_BPartner_Location.class);
+	}
+	
 
 	@Override
-	public I_C_BPartner_Location getDefaultShipToLocation(final BPartnerId bpartnerId)
+	public I_C_BPartner_Location getDefaultShipToLocation(@NonNull final BPartnerId bpartnerId)
 	{
 		final List<I_C_BPartner_Location> bpLocations = retrieveBPartnerLocations(bpartnerId);
 		if (bpLocations.isEmpty())
@@ -511,7 +539,7 @@ public class BPartnerDAO implements IBPartnerDAO
 	@Override
 	public CountryId getBPartnerLocationCountryId(@NonNull final BPartnerLocationId bpartnerLocationId)
 	{
-		final I_C_BPartner_Location bpLocation = getBPartnerLocationById(bpartnerLocationId); // TODO retrieve it even if inactive
+		final I_C_BPartner_Location bpLocation = getBPartnerLocationByIdEvenInactive(bpartnerLocationId); 
 		return CountryId.ofRepoId(bpLocation.getC_Location().getC_Country_ID());
 	}
 
@@ -1610,4 +1638,5 @@ public class BPartnerDAO implements IBPartnerDAO
 
 		return createLocationIdOrNull(partnerId, billToLocation);
 	}
+
 }

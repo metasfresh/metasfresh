@@ -111,6 +111,8 @@ public interface IBPartnerDAO extends ISingletonService
 	Optional<BPartnerLocationId> getBPartnerLocationIdByGln(BPartnerId bpartnerId, GLN gln);
 
 	I_C_BPartner_Location getBPartnerLocationById(BPartnerLocationId bpartnerLocationId);
+	
+	I_C_BPartner_Location getBPartnerLocationByIdEvenInactive(BPartnerLocationId bpartnerLocationId);
 
 	I_C_BPartner_Location getBPartnerLocationByIdInTrx(BPartnerLocationId bpartnerLocationId);
 
@@ -119,6 +121,12 @@ public interface IBPartnerDAO extends ISingletonService
 	List<I_C_BPartner_Location> retrieveBPartnerLocations(BPartnerId bpartnerId);
 
 	List<I_C_BPartner_Location> retrieveBPartnerLocations(Properties ctx, int bpartnerId, String trxName);
+	
+	/**
+	 * @param bpartnerId
+	 * @return all locations, also inactive ones
+	 */
+	List<I_C_BPartner_Location> retrieveAllBPartnerLocations(final BPartnerId bpartnerId);
 
 	List<I_C_BPartner_Location> retrieveBPartnerLocations(I_C_BPartner bpartner);
 
@@ -246,11 +254,11 @@ public interface IBPartnerDAO extends ISingletonService
 	 */
 	@Deprecated
 	I_C_BPartner_Location getDefaultShipToLocation(BPartnerId bpartnerId);
-
+	
 	CountryId getDefaultShipToLocationCountryIdOrNull(BPartnerId bpartnerId);
 
 	CountryId getBPartnerLocationCountryId(BPartnerLocationId bpartnerLocationId);
-
+	
 	/**
 	 * Retrieve default/first bill to location.
 	 *
