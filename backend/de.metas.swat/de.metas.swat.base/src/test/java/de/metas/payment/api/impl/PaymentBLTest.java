@@ -1,5 +1,8 @@
 package de.metas.payment.api.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /*
@@ -26,257 +29,450 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
-import java.util.Properties;
+import java.util.List;
 
 import org.adempiere.ad.wrapper.POJOLookupMap;
-import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.X_C_Payment;
-import org.compiere.util.Env;
 import org.junit.Assert;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
+import com.google.common.collect.ImmutableList;
+
 import de.metas.adempiere.model.I_C_Invoice;
+import de.metas.banking.BankStatementId;
+import de.metas.banking.BankStatementLineId;
+import de.metas.banking.BankStatementLineRefId;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.currency.impl.PlainCurrencyDAO;
 import de.metas.document.engine.DocStatus;
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.money.CurrencyId;
+import de.metas.payment.PaymentId;
+import de.metas.payment.api.IPaymentBL;
+import de.metas.payment.api.PaymentReconcileReference;
+import de.metas.payment.api.PaymentReconcileRequest;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
 
 @ExtendWith(AdempiereTestWatcher.class)
 public class PaymentBLTest
 {
-	private POJOLookupMap db;
-	private Properties ctx;
-	private I_C_Payment payment;
-	private I_C_Invoice invoice;
+	private PaymentBL paymentBL;
+
+	private PlainCurrencyDAO currencyDAO;
 	private CurrencyId currencyEUR;
 	private CurrencyId currencyCHF;
-	private PlainCurrencyDAO currencyDAO;
-
-	private I_C_Order order;
-
-	protected IInvoiceDAO dao;
 
 	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
-		ctx = Env.getCtx();
-		Env.setContext(ctx, "#AD_Client_ID", 1);
-		Env.setContext(ctx, "#AD_Org_ID", 1);
-		Env.setContext(ctx, "#AD_Role_ID", 1);
-		Env.setContext(ctx, "#AD_User_ID", 1);
 
-		db = POJOLookupMap.get();
-
-		currencyEUR = PlainCurrencyDAO.createCurrencyId(CurrencyCode.EUR);
-		currencyCHF = PlainCurrencyDAO.createCurrencyId(CurrencyCode.CHF);
+		paymentBL = (PaymentBL)Services.get(IPaymentBL.class);
 
 		currencyDAO = (PlainCurrencyDAO)Services.get(ICurrencyDAO.class);
-		currencyDAO.setRate(currencyEUR, currencyCHF, new BigDecimal(2.0));
-		currencyDAO.setRate(currencyCHF, currencyEUR, new BigDecimal(0.5));
-
-		invoice = db.newInstance(I_C_Invoice.class);
-		invoice.setAD_Org_ID(1);
-		invoice.setC_Currency_ID(currencyEUR.getRepoId());
-		invoice.setGrandTotal(new BigDecimal(50.0));
-		invoice.setIsSOTrx(true);
-		invoice.setProcessed(true);
-		db.save(invoice);
-
-		order = db.newInstance(I_C_Order.class);
-		order.setAD_Org_ID(1);
-		order.setC_Currency_ID(currencyEUR.getRepoId());
-		order.setGrandTotal(new BigDecimal(50.0));
-		order.setIsSOTrx(true);
-		order.setProcessed(true);
-		db.save(order);
-
-		POJOWrapper.setDefaultStrictValues(false); // trying to fix a test fail that occurs when running on dejes901, but not when running on PC13
+		currencyEUR = PlainCurrencyDAO.createCurrencyId(CurrencyCode.EUR);
+		currencyCHF = PlainCurrencyDAO.createCurrencyId(CurrencyCode.CHF);
 	}
 
-	@Test
-	public void testUpdateAmounts()
+	@Nested
+	public class updateAmounts
 	{
-		final PaymentBL paymentBL = new PaymentBL(); // the class under test
-		final Timestamp today = SystemTime.asDayTimestamp();
+		private I_C_Order order;
+		private I_C_Invoice invoice;
 
-		payment = db.newInstance(I_C_Payment.class);
-		payment.setDateTrx(today); // needed for default C_ConversionType_ID retrieval
-		paymentBL.updateAmounts(payment, I_C_Payment.COLUMNNAME_C_Currency_ID, false);
-		db.save(payment);
+		@BeforeEach
+		public void beforeEach()
+		{
+			order = newInstance(I_C_Order.class);
+			order.setAD_Org_ID(1);
+			order.setC_Currency_ID(currencyEUR.getRepoId());
+			order.setGrandTotal(new BigDecimal(50.0));
+			order.setIsSOTrx(true);
+			order.setProcessed(true);
+			saveRecord(order);
 
-		payment.setDiscountAmt(BigDecimal.ONE);
-		payment.setWriteOffAmt(BigDecimal.ONE);
-		payment.setOverUnderAmt(BigDecimal.ONE);
-		paymentBL.updateAmounts(payment, I_C_Payment.COLUMNNAME_C_DocType_ID, false);
+			invoice = newInstance(I_C_Invoice.class);
+			invoice.setAD_Org_ID(1);
+			invoice.setC_Currency_ID(currencyEUR.getRepoId());
+			invoice.setGrandTotal(new BigDecimal(50.0));
+			invoice.setIsSOTrx(true);
+			invoice.setProcessed(true);
+			saveRecord(invoice);
+		}
 
-		Assert.assertEquals("Incorrect over/under amount", BigDecimal.ZERO, payment.getOverUnderAmt());
-		Assert.assertEquals("Incorrect discount amount", BigDecimal.ZERO, payment.getDiscountAmt());
-		Assert.assertEquals("Incorrect writteoff amount", BigDecimal.ZERO, payment.getWriteOffAmt());
+		private List<I_C_Invoice> getAllInvoices()
+		{
+			final POJOLookupMap db = POJOLookupMap.get();
+			return db.getRecords(I_C_Invoice.class);
+		}
 
-		paymentBL.updateAmounts(payment, I_C_Payment.COLUMNNAME_C_DocType_ID, false);
+		@Test
+		public void standardCases()
+		{
+			final PaymentBL paymentBL = new PaymentBL(); // the class under test
+			final Timestamp today = SystemTime.asDayTimestamp();
+			currencyDAO.setRate(currencyEUR, currencyCHF, new BigDecimal(2.0));
+			currencyDAO.setRate(currencyCHF, currencyEUR, new BigDecimal(0.5));
 
-		Assert.assertEquals("Incorrect over/under amount", BigDecimal.ZERO, payment.getOverUnderAmt());
-		Assert.assertEquals("Incorrect discount amount", BigDecimal.ZERO, payment.getDiscountAmt());
-		Assert.assertEquals("Incorrect writeoff amount", BigDecimal.ZERO, payment.getWriteOffAmt());
+			final I_C_Payment payment = newInstance(I_C_Payment.class);
+			payment.setDateTrx(today); // needed for default C_ConversionType_ID retrieval
+			paymentBL.updateAmounts(payment, I_C_Payment.COLUMNNAME_C_Currency_ID, /* creditMemoAdjusted */false);
+			saveRecord(payment);
 
-		payment.setDiscountAmt(BigDecimal.ONE);
-		payment.setWriteOffAmt(BigDecimal.ONE);
-		payment.setOverUnderAmt(BigDecimal.ONE);
-		paymentBL.updateAmounts(payment, I_C_Payment.COLUMNNAME_C_Currency_ID, false);
+			payment.setDiscountAmt(BigDecimal.ONE);
+			payment.setWriteOffAmt(BigDecimal.ONE);
+			payment.setOverUnderAmt(BigDecimal.ONE);
+			paymentBL.updateAmounts(payment, I_C_Payment.COLUMNNAME_C_DocType_ID, /* creditMemoAdjusted */false);
 
-		Assert.assertEquals("Incorrect over/under amount", BigDecimal.ZERO, payment.getOverUnderAmt());
-		Assert.assertEquals("Incorrect discount amount", BigDecimal.ZERO, payment.getDiscountAmt());
-		Assert.assertEquals("Incorrect writteoff amount", BigDecimal.ZERO, payment.getWriteOffAmt());
-		payment.setC_Currency_ID(currencyEUR.getRepoId());
-		db.save(payment);
+			Assert.assertEquals("Incorrect over/under amount", BigDecimal.ZERO, payment.getOverUnderAmt());
+			Assert.assertEquals("Incorrect discount amount", BigDecimal.ZERO, payment.getDiscountAmt());
+			Assert.assertEquals("Incorrect writteoff amount", BigDecimal.ZERO, payment.getWriteOffAmt());
 
-		payment.setDiscountAmt(BigDecimal.ONE);
-		payment.setWriteOffAmt(BigDecimal.ONE);
-		payment.setOverUnderAmt(BigDecimal.ONE);
-		paymentBL.onCurrencyChange(payment);
+			paymentBL.updateAmounts(payment, I_C_Payment.COLUMNNAME_C_DocType_ID, /* creditMemoAdjusted */false);
 
-		Assert.assertEquals("Incorrect over/under amount", BigDecimal.ZERO, payment.getOverUnderAmt());
-		Assert.assertEquals("Incorrect discount amount", BigDecimal.ZERO, payment.getDiscountAmt());
-		Assert.assertEquals("Incorrect writteoff amount", BigDecimal.ZERO, payment.getWriteOffAmt());
+			Assert.assertEquals("Incorrect over/under amount", BigDecimal.ZERO, payment.getOverUnderAmt());
+			Assert.assertEquals("Incorrect discount amount", BigDecimal.ZERO, payment.getDiscountAmt());
+			Assert.assertEquals("Incorrect writeoff amount", BigDecimal.ZERO, payment.getWriteOffAmt());
 
-		paymentBL.updateAmounts(payment, I_C_Payment.COLUMNNAME_C_ConversionType_ID, false);
+			payment.setDiscountAmt(BigDecimal.ONE);
+			payment.setWriteOffAmt(BigDecimal.ONE);
+			payment.setOverUnderAmt(BigDecimal.ONE);
+			paymentBL.updateAmounts(payment, I_C_Payment.COLUMNNAME_C_Currency_ID, /* creditMemoAdjusted */false);
 
-		Assert.assertEquals("Incorrect over/under amount", BigDecimal.ZERO, payment.getOverUnderAmt());
-		Assert.assertEquals("Incorrect discount amount", BigDecimal.ZERO, payment.getDiscountAmt());
-		Assert.assertEquals("Incorrect writeoff amount", BigDecimal.ZERO, payment.getWriteOffAmt());
+			Assert.assertEquals("Incorrect over/under amount", BigDecimal.ZERO, payment.getOverUnderAmt());
+			Assert.assertEquals("Incorrect discount amount", BigDecimal.ZERO, payment.getDiscountAmt());
+			Assert.assertEquals("Incorrect writteoff amount", BigDecimal.ZERO, payment.getWriteOffAmt());
+			payment.setC_Currency_ID(currencyEUR.getRepoId());
+			saveRecord(payment);
 
-		Assert.assertEquals("Incorrect over/under amount", BigDecimal.ZERO, payment.getOverUnderAmt());
-		Assert.assertEquals("Incorrect discount amount", BigDecimal.ZERO, payment.getDiscountAmt());
-		Assert.assertEquals("Incorrect writeoff amount", BigDecimal.ZERO, payment.getWriteOffAmt());
+			payment.setDiscountAmt(BigDecimal.ONE);
+			payment.setWriteOffAmt(BigDecimal.ONE);
+			payment.setOverUnderAmt(BigDecimal.ONE);
+			paymentBL.onCurrencyChange(payment);
 
-		payment.setDiscountAmt(BigDecimal.ONE);
-		payment.setWriteOffAmt(BigDecimal.ONE);
-		payment.setOverUnderAmt(BigDecimal.ONE);
-		paymentBL.updateAmounts(payment, I_C_Payment.COLUMNNAME_C_Currency_ID, false);
+			Assert.assertEquals("Incorrect over/under amount", BigDecimal.ZERO, payment.getOverUnderAmt());
+			Assert.assertEquals("Incorrect discount amount", BigDecimal.ZERO, payment.getDiscountAmt());
+			Assert.assertEquals("Incorrect writteoff amount", BigDecimal.ZERO, payment.getWriteOffAmt());
 
-		Assert.assertEquals("Incorrect over/under amount", BigDecimal.ZERO, payment.getOverUnderAmt());
-		Assert.assertEquals("Incorrect discount amount", BigDecimal.ZERO, payment.getDiscountAmt());
-		Assert.assertEquals("Incorrect writteoff amount", BigDecimal.ZERO, payment.getWriteOffAmt());
-		payment.setC_Currency_ID(currencyEUR.getRepoId());
-		payment.setC_Invoice_ID(db.getRecords(I_C_Invoice.class).get(0).getC_Invoice_ID());
-		invoice.setC_Currency_ID(currencyCHF.getRepoId());
+			paymentBL.updateAmounts(payment, I_C_Payment.COLUMNNAME_C_ConversionType_ID, /* creditMemoAdjusted */false);
 
-		db.save(invoice);
-		db.save(payment);
+			Assert.assertEquals("Incorrect over/under amount", BigDecimal.ZERO, payment.getOverUnderAmt());
+			Assert.assertEquals("Incorrect discount amount", BigDecimal.ZERO, payment.getDiscountAmt());
+			Assert.assertEquals("Incorrect writeoff amount", BigDecimal.ZERO, payment.getWriteOffAmt());
 
-		paymentBL.updateAmounts(payment, I_C_Payment.COLUMNNAME_C_Currency_ID, false);
+			Assert.assertEquals("Incorrect over/under amount", BigDecimal.ZERO, payment.getOverUnderAmt());
+			Assert.assertEquals("Incorrect discount amount", BigDecimal.ZERO, payment.getDiscountAmt());
+			Assert.assertEquals("Incorrect writeoff amount", BigDecimal.ZERO, payment.getWriteOffAmt());
 
-		Assert.assertEquals("Incorrect over/under amount", 0, payment.getOverUnderAmt().signum());
-		Assert.assertEquals("Incorrect discount amount", 0, payment.getDiscountAmt().signum());
-		Assert.assertEquals("Incorrect writteoff amount", 0, payment.getWriteOffAmt().signum());
+			payment.setDiscountAmt(BigDecimal.ONE);
+			payment.setWriteOffAmt(BigDecimal.ONE);
+			payment.setOverUnderAmt(BigDecimal.ONE);
+			paymentBL.updateAmounts(payment, I_C_Payment.COLUMNNAME_C_Currency_ID, /* creditMemoAdjusted */false);
 
-		payment.setAD_Org_ID(1);
-		// NOTE: Trick to reset the cached invoice, else payment.getC_Invoice() will return the cached invoice
-		// and not "invoice" which we will modify below
-		payment.setC_Invoice_ID(-1);
-		payment.setC_Invoice_ID(db.getRecords(I_C_Invoice.class).get(0).getC_Invoice_ID());
-		payment.setC_Currency_ID(currencyEUR.getRepoId());
-		payment.setDiscountAmt(BigDecimal.ZERO);
-		payment.setWriteOffAmt(BigDecimal.ZERO);
-		payment.setOverUnderAmt(BigDecimal.ZERO);
-		payment.setDocStatus(DocStatus.Drafted.getCode());
-		payment.setDocAction(X_C_Payment.DOCACTION_Complete);
-		db.save(payment);
+			Assert.assertEquals("Incorrect over/under amount", BigDecimal.ZERO, payment.getOverUnderAmt());
+			Assert.assertEquals("Incorrect discount amount", BigDecimal.ZERO, payment.getDiscountAmt());
+			Assert.assertEquals("Incorrect writteoff amount", BigDecimal.ZERO, payment.getWriteOffAmt());
+			payment.setC_Currency_ID(currencyEUR.getRepoId());
+			payment.setC_Invoice_ID(getAllInvoices().get(0).getC_Invoice_ID());
+			invoice.setC_Currency_ID(currencyCHF.getRepoId());
 
-		// Test writeoff completion
-		payment.setPayAmt(new BigDecimal(40.0));
-		db.save(payment);
-		invoice.setC_Currency_ID(currencyEUR.getRepoId());
-		invoice.setGrandTotal(new BigDecimal(50.0));
-		db.save(invoice);
+			saveRecord(invoice);
+			saveRecord(payment);
 
-		paymentBL.updateAmounts(payment, I_C_Payment.COLUMNNAME_IsOverUnderPayment, false);
+			paymentBL.updateAmounts(payment, I_C_Payment.COLUMNNAME_C_Currency_ID, /* creditMemoAdjusted */false);
 
-		Assert.assertEquals("Incorrect writeoff amount", new BigDecimal(10.0), payment.getWriteOffAmt());
+			Assert.assertEquals("Incorrect over/under amount", 0, payment.getOverUnderAmt().signum());
+			Assert.assertEquals("Incorrect discount amount", 0, payment.getDiscountAmt().signum());
+			Assert.assertEquals("Incorrect writteoff amount", 0, payment.getWriteOffAmt().signum());
 
-		// Test over/under completion
-		payment.setPayAmt(new BigDecimal(60.0));
-		payment.setIsOverUnderPayment(true);
-		db.save(payment);
+			payment.setAD_Org_ID(1);
+			// NOTE: Trick to reset the cached invoice, else payment.getC_Invoice() will return the cached invoice
+			// and not "invoice" which we will modify below
+			payment.setC_Invoice_ID(-1);
+			payment.setC_Invoice_ID(getAllInvoices().get(0).getC_Invoice_ID());
+			payment.setC_Currency_ID(currencyEUR.getRepoId());
+			payment.setDiscountAmt(BigDecimal.ZERO);
+			payment.setWriteOffAmt(BigDecimal.ZERO);
+			payment.setOverUnderAmt(BigDecimal.ZERO);
+			payment.setDocStatus(DocStatus.Drafted.getCode());
+			payment.setDocAction(X_C_Payment.DOCACTION_Complete);
+			saveRecord(payment);
 
-		paymentBL.updateAmounts(payment, I_C_Payment.COLUMNNAME_IsOverUnderPayment, false);
+			// Test writeoff completion
+			payment.setPayAmt(new BigDecimal(40.0));
+			saveRecord(payment);
+			invoice.setC_Currency_ID(currencyEUR.getRepoId());
+			invoice.setGrandTotal(new BigDecimal(50.0));
+			saveRecord(invoice);
 
-		Assert.assertEquals("Incorrect over/under amount", new BigDecimal(-10.0), payment.getOverUnderAmt());
+			paymentBL.updateAmounts(payment, I_C_Payment.COLUMNNAME_IsOverUnderPayment, /* creditMemoAdjusted */false);
 
-		Assert.assertEquals("Incorrect payment amount in EUR", new BigDecimal(60.0), payment.getPayAmt());
+			Assert.assertEquals("Incorrect writeoff amount", new BigDecimal(10.0), payment.getWriteOffAmt());
 
-		// Test currency change
-		payment.setC_Currency_ID(currencyCHF.getRepoId());
-		db.save(payment);
+			// Test over/under completion
+			payment.setPayAmt(new BigDecimal(60.0));
+			payment.setIsOverUnderPayment(true);
+			saveRecord(payment);
 
-		paymentBL.updateAmounts(payment, I_C_Payment.COLUMNNAME_C_Currency_ID, false);
+			paymentBL.updateAmounts(payment, I_C_Payment.COLUMNNAME_IsOverUnderPayment, /* creditMemoAdjusted */false);
 
-		Assert.assertEquals("Incorrect pay amount", 0, new BigDecimal(120.0).compareTo(payment.getPayAmt()));
+			Assert.assertEquals("Incorrect over/under amount", new BigDecimal(-10.0), payment.getOverUnderAmt());
 
-		paymentBL.updateAmounts(payment, null, false); // B==D
+			Assert.assertEquals("Incorrect payment amount in EUR", new BigDecimal(60.0), payment.getPayAmt());
 
-		Assert.assertEquals("Incorrect pay amount", 0, new BigDecimal(120.0).compareTo(payment.getPayAmt()));
+			// Test currency change
+			payment.setC_Currency_ID(currencyCHF.getRepoId());
+			saveRecord(payment);
 
-		currencyDAO.setRate(currencyEUR, currencyCHF, new BigDecimal(2.0));
-		currencyDAO.setRate(currencyCHF, currencyEUR, new BigDecimal(0.5));
+			paymentBL.updateAmounts(payment, I_C_Payment.COLUMNNAME_C_Currency_ID, /* creditMemoAdjusted */false);
 
-		// Called manually because we can't test properly with "creditMemoAdjusted" true
-		paymentBL.onPayAmtChange(payment, false);
+			Assert.assertEquals("Incorrect pay amount", 0, new BigDecimal(120.0).compareTo(payment.getPayAmt()));
 
-		Assert.assertTrue("Incorrect payment amount in CHF", new BigDecimal(120.0).compareTo(payment.getPayAmt()) == 0);
+			paymentBL.updateAmounts(payment, null, /* creditMemoAdjusted */false); // B==D
 
-		payment.setC_Invoice_ID(0);
-		payment.setC_Order_ID(order.getC_Order_ID());
-		payment.setC_Currency_ID(currencyEUR.getRepoId());
-		payment.setPayAmt(new BigDecimal(30.0));
-		db.save(payment);
+			Assert.assertEquals("Incorrect pay amount", 0, new BigDecimal(120.0).compareTo(payment.getPayAmt()));
 
-		paymentBL.updateAmounts(payment, I_C_Payment.COLUMNNAME_IsOverUnderPayment, false);
+			currencyDAO.setRate(currencyEUR, currencyCHF, new BigDecimal(2.0));
+			currencyDAO.setRate(currencyCHF, currencyEUR, new BigDecimal(0.5));
 
-		payment.setDocStatus(DocStatus.Completed.getCode());
-		payment.setDocAction(X_C_Payment.DOCACTION_Close);
-		db.save(payment);
+			// Called manually because we can't test properly with "creditMemoAdjusted" true
+			paymentBL.onPayAmtChange(payment, /* creditMemoAdjusted */false);
 
-		paymentBL.onPayAmtChange(payment, false);
+			Assert.assertTrue("Incorrect payment amount in CHF", new BigDecimal(120.0).compareTo(payment.getPayAmt()) == 0);
 
+			payment.setC_Invoice_ID(0);
+			payment.setC_Order_ID(order.getC_Order_ID());
+			payment.setC_Currency_ID(currencyEUR.getRepoId());
+			payment.setPayAmt(new BigDecimal(30.0));
+			saveRecord(payment);
+
+			paymentBL.updateAmounts(payment, I_C_Payment.COLUMNNAME_IsOverUnderPayment, /* creditMemoAdjusted */false);
+
+			payment.setDocStatus(DocStatus.Completed.getCode());
+			payment.setDocAction(X_C_Payment.DOCACTION_Close);
+			saveRecord(payment);
+
+			paymentBL.onPayAmtChange(payment, /* creditMemoAdjusted */false);
+		}
+
+		@Test
+		public void exceptionTest()
+		{
+			final I_C_Payment payment = newInstance(I_C_Payment.class);
+			payment.setAD_Org_ID(1);
+			payment.setC_Invoice_ID(getAllInvoices().get(0).getC_Invoice_ID());
+			payment.setC_Currency_ID(currencyEUR.getRepoId());
+			payment.setDiscountAmt(BigDecimal.ZERO);
+			payment.setWriteOffAmt(BigDecimal.ZERO);
+			payment.setOverUnderAmt(BigDecimal.ZERO);
+			payment.setDocStatus(DocStatus.Drafted.getCode());
+			payment.setDocAction(X_C_Payment.DOCACTION_Complete);
+			invoice.setC_Currency_ID(currencyCHF.getRepoId());
+
+			saveRecord(invoice);
+			saveRecord(payment);
+
+			currencyDAO.setRate(currencyEUR, currencyCHF, new BigDecimal(0.0));
+			currencyDAO.setRate(currencyCHF, currencyEUR, new BigDecimal(0.0));
+
+			assertThatThrownBy(() -> paymentBL.updateAmounts(payment, null, false))
+					.isInstanceOf(AdempiereException.class)
+					.hasMessage("NoCurrencyConversion");
+		}
 	}
 
-	@Test
-	public void exceptionTest()
+	@Nested
+	public class markReconciledAndSave
 	{
-		final PaymentBL paymentBL = new PaymentBL(); // the class under test
+		private I_C_Payment payment;
 
-		payment = db.newInstance(I_C_Payment.class);
-		payment.setAD_Org_ID(1);
-		payment.setC_Invoice_ID(db.getRecords(I_C_Invoice.class).get(0).getC_Invoice_ID());
-		payment.setC_Currency_ID(currencyEUR.getRepoId());
-		payment.setDiscountAmt(BigDecimal.ZERO);
-		payment.setWriteOffAmt(BigDecimal.ZERO);
-		payment.setOverUnderAmt(BigDecimal.ZERO);
-		payment.setDocStatus(DocStatus.Drafted.getCode());
-		payment.setDocAction(X_C_Payment.DOCACTION_Complete);
-		invoice.setC_Currency_ID(currencyCHF.getRepoId());
+		@BeforeEach
+		public void beforeEach()
+		{
+			payment = newInstance(I_C_Payment.class);
+		}
 
-		db.save(invoice);
-		db.save(payment);
+		@Test
+		public void reveral_failIf_DocStatusIsNotReversed()
+		{
+			final PaymentReconcileReference reconcileRef = PaymentReconcileReference.reversal(PaymentId.ofRepoId(123));
+			// payment.setDocStatus(DocStatus.Reversed.getCode());
+			// payment.setReversal_ID(123);
+			assertThatThrownBy(() -> paymentBL.markReconciledAndSave(payment, reconcileRef))
+					.hasMessageStartingWith("Payment shall be reversed but it's DocStatus is ");
+		}
 
-		currencyDAO.setRate(currencyEUR, currencyCHF, new BigDecimal(0.0));
-		currencyDAO.setRate(currencyCHF, currencyEUR, new BigDecimal(0.0));
+		@Test
+		public void reveral_failIf_ReversalIdDoesNotMatch()
+		{
+			final PaymentReconcileReference reconcileRef = PaymentReconcileReference.reversal(PaymentId.ofRepoId(123));
+			payment.setDocStatus(DocStatus.Reversed.getCode());
+			payment.setReversal_ID(999);
+			assertThatThrownBy(() -> paymentBL.markReconciledAndSave(payment, reconcileRef))
+					.hasMessageStartingWith("Payment shall be reversed by `PaymentId(repoId=123)` but it was reversed by `PaymentId(repoId=999)");
+		}
 
-		assertThatThrownBy(() -> paymentBL.updateAmounts(payment, null, false))
-				.isInstanceOf(AdempiereException.class)
-				.hasMessage("NoCurrencyConversion");
+		@Test
+		public void reveral()
+		{
+			final PaymentReconcileReference reconcileRef = PaymentReconcileReference.reversal(PaymentId.ofRepoId(123));
+
+			payment.setDocStatus(DocStatus.Reversed.getCode());
+			payment.setReversal_ID(123);
+			paymentBL.markReconciledAndSave(payment, reconcileRef);
+			assertThat(payment.isReconciled()).isTrue();
+			assertThat(payment.getC_BankStatement_ID()).isLessThanOrEqualTo(0);
+			assertThat(payment.getC_BankStatementLine_ID()).isLessThanOrEqualTo(0);
+			assertThat(payment.getC_BankStatementLine_Ref_ID()).isLessThanOrEqualTo(0);
+			assertThat(payment.getReversal_ID()).isEqualTo(123);
+
+			final PaymentReconcileReference extractedReconcileRef = PaymentBL.extractPaymentReconcileReference(payment);
+			assertThat(extractedReconcileRef).isEqualTo(reconcileRef);
+		}
+
+		@Test
+		public void bankStatementLine()
+		{
+			final PaymentReconcileReference reconcileRef = PaymentReconcileReference.bankStatementLine(
+					BankStatementId.ofRepoId(1),
+					BankStatementLineId.ofRepoId(2));
+
+			paymentBL.markReconciledAndSave(payment, reconcileRef);
+			assertThat(payment.isReconciled()).isTrue();
+			assertThat(payment.getC_BankStatement_ID()).isEqualTo(1);
+			assertThat(payment.getC_BankStatementLine_ID()).isEqualTo(2);
+			assertThat(payment.getC_BankStatementLine_Ref_ID()).isLessThanOrEqualTo(0);
+
+			final PaymentReconcileReference extractedReconcileRef = PaymentBL.extractPaymentReconcileReference(payment);
+			assertThat(extractedReconcileRef).isEqualTo(reconcileRef);
+		}
+
+		@Test
+		public void bankStatementLineRef()
+		{
+			final PaymentReconcileReference reconcileRef = PaymentReconcileReference.bankStatementLineRef(
+					BankStatementId.ofRepoId(1),
+					BankStatementLineId.ofRepoId(2),
+					BankStatementLineRefId.ofRepoId(3));
+
+			paymentBL.markReconciledAndSave(payment, reconcileRef);
+			assertThat(payment.isReconciled()).isTrue();
+			assertThat(payment.getC_BankStatement_ID()).isEqualTo(1);
+			assertThat(payment.getC_BankStatementLine_ID()).isEqualTo(2);
+			assertThat(payment.getC_BankStatementLine_Ref_ID()).isEqualTo(3);
+
+			final PaymentReconcileReference extractedReconcileRef = PaymentBL.extractPaymentReconcileReference(payment);
+			assertThat(extractedReconcileRef).isEqualTo(reconcileRef);
+		}
+
+		@Test
+		public void alreadyReconciled()
+		{
+			final PaymentReconcileReference bankStatementLine1 = PaymentReconcileReference.bankStatementLine(BankStatementId.ofRepoId(1), BankStatementLineId.ofRepoId(2));
+			final PaymentReconcileReference bankStatementLine2 = PaymentReconcileReference.bankStatementLine(BankStatementId.ofRepoId(1), BankStatementLineId.ofRepoId(3));
+
+			paymentBL.markReconciledAndSave(payment, bankStatementLine1);
+
+			assertThatThrownBy(() -> paymentBL.markReconciledAndSave(payment, bankStatementLine2))
+					.isInstanceOf(AdempiereException.class)
+					.hasMessageStartingWith("Payment was already reconciled");
+		}
+	}
+
+	@Nested
+	public class markReconciled_with_preloadedPayments
+	{
+		@Nested
+		public class singlePayment
+		{
+			private final PaymentReconcileReference bankStatementLine1 = PaymentReconcileReference.bankStatementLine(BankStatementId.ofRepoId(1), BankStatementLineId.ofRepoId(2));
+
+			@Test
+			public void preloaded()
+			{
+				final I_C_Payment payment = newInstance(I_C_Payment.class);
+				saveRecord(payment);
+				assertThat(payment.isReconciled()).isFalse();
+				final PaymentId paymentId = PaymentId.ofRepoId(payment.getC_Payment_ID());
+
+				final PaymentReconcileRequest request = PaymentReconcileRequest.of(paymentId, bankStatementLine1);
+				paymentBL.markReconciled(
+						ImmutableList.of(request),
+						ImmutableList.of(payment));
+
+				assertThat(payment.isReconciled()).isTrue();
+				assertThat(PaymentBL.extractPaymentReconcileReference(payment)).isEqualTo(bankStatementLine1);
+			}
+
+			@Test
+			public void notPreloaded()
+			{
+				final PaymentId paymentId;
+				{
+					final I_C_Payment payment = newInstance(I_C_Payment.class);
+					saveRecord(payment);
+					assertThat(payment.isReconciled()).isFalse();
+					paymentId = PaymentId.ofRepoId(payment.getC_Payment_ID());
+				}
+
+				final PaymentReconcileRequest request = PaymentReconcileRequest.of(paymentId, bankStatementLine1);
+				paymentBL.markReconciled(
+						ImmutableList.of(request),
+						ImmutableList.of(/* nothing preloaded */));
+
+				final I_C_Payment payment = paymentBL.getById(paymentId);
+				assertThat(payment.isReconciled()).isTrue();
+				assertThat(PaymentBL.extractPaymentReconcileReference(payment)).isEqualTo(bankStatementLine1);
+			}
+		}
+
+		@Nested
+		public class multiplePayments
+		{
+			private final PaymentReconcileReference bankStatementLine1 = PaymentReconcileReference.bankStatementLine(BankStatementId.ofRepoId(1), BankStatementLineId.ofRepoId(2));
+			private final PaymentReconcileReference bankStatementLine2 = PaymentReconcileReference.bankStatementLine(BankStatementId.ofRepoId(1), BankStatementLineId.ofRepoId(3));
+
+			@Test
+			public void partialPreloaded()
+			{
+				final I_C_Payment payment1;
+				final PaymentId paymentId1;
+				{
+					payment1 = newInstance(I_C_Payment.class);
+					saveRecord(payment1);
+					paymentId1 = PaymentId.ofRepoId(payment1.getC_Payment_ID());
+				}
+
+				final PaymentId paymentId2;
+				{
+					final I_C_Payment payment2 = newInstance(I_C_Payment.class);
+					saveRecord(payment2);
+					paymentId2 = PaymentId.ofRepoId(payment2.getC_Payment_ID());
+				}
+
+				paymentBL.markReconciled(
+						ImmutableList.of(
+								PaymentReconcileRequest.of(paymentId1, bankStatementLine1),
+								PaymentReconcileRequest.of(paymentId2, bankStatementLine2)),
+						ImmutableList.of(payment1));
+
+				assertThat(payment1.isReconciled()).isTrue();
+				assertThat(PaymentBL.extractPaymentReconcileReference(payment1)).isEqualTo(bankStatementLine1);
+
+				final I_C_Payment payment2 = paymentBL.getById(paymentId2);
+				assertThat(payment2.isReconciled()).isTrue();
+				assertThat(PaymentBL.extractPaymentReconcileReference(payment2)).isEqualTo(bankStatementLine2);
+			}
+		}
 	}
 }

@@ -4,10 +4,8 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
-import java.util.Set;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -18,6 +16,8 @@ import org.compiere.model.X_C_DocType;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
+
+import com.google.common.collect.ImmutableList;
 
 import de.metas.acct.api.IFactAcctDAO;
 import de.metas.banking.BankStatementId;
@@ -34,9 +34,12 @@ import de.metas.i18n.TranslatableStringBuilder;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.payment.PaymentId;
 import de.metas.payment.api.IPaymentBL;
+import de.metas.payment.api.PaymentReconcileReference;
+import de.metas.payment.api.PaymentReconcileRequest;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -262,7 +265,7 @@ public class BankStatementDocumentHandler implements DocumentHandler
 
 		//
 		// Reconcile payments
-		paymentBL.markReconciled(getAllPaymentIds(lines));
+		paymentBL.markReconciled(extractPaymentReconcileRequests(lines));
 
 		//
 		bankStatement.setProcessed(true);
@@ -270,32 +273,60 @@ public class BankStatementDocumentHandler implements DocumentHandler
 		return IDocument.STATUS_Completed;
 	}
 
-	private Set<PaymentId> getAllPaymentIds(final List<I_C_BankStatementLine> lines)
+	private List<PaymentReconcileRequest> extractPaymentReconcileRequests(final List<I_C_BankStatementLine> lines)
 	{
+		final ArrayList<PaymentReconcileRequest> requests = new ArrayList<>();
 		final ArrayList<BankStatementLineId> bankStatementLineIds = new ArrayList<>();
-		final HashSet<PaymentId> paymentIds = new HashSet<>();
 
+		//
+		// Extract payment reconcile requests from bank statement lines
 		for (final I_C_BankStatementLine line : lines)
 		{
 			final BankStatementLineId bankStatementLineId = BankStatementLineId.ofRepoId(line.getC_BankStatementLine_ID());
 			bankStatementLineIds.add(bankStatementLineId);
 
-			//
-			// Collect payment from line
-			final PaymentId paymentId = PaymentId.ofRepoIdOrNull(line.getC_Payment_ID());
-			if (paymentId != null)
+			final PaymentReconcileRequest request = extractPaymentReconcileRequestOrNull(line);
+			if (request != null)
 			{
-				paymentIds.add(paymentId);
+				requests.add(request);
 			}
 		}
 
 		//
-		// Collect payments from bank statement line references
-		paymentIds.addAll(bankStatementDAO
+		// Extract payment reconcile requests from bank statement line references
+		final List<PaymentReconcileRequest> lineRefRequests = bankStatementDAO
 				.getLineReferences(bankStatementLineIds)
-				.getPaymentIds());
+				.stream()
+				.map(lineRef -> extractPaymentReconcileRequest(lineRef))
+				.collect(ImmutableList.toImmutableList());
 
-		return paymentIds;
+		requests.addAll(lineRefRequests);
+
+		return requests;
+	}
+
+	private static PaymentReconcileRequest extractPaymentReconcileRequestOrNull(final I_C_BankStatementLine line)
+	{
+		final PaymentId paymentId = PaymentId.ofRepoIdOrNull(line.getC_Payment_ID());
+		if (paymentId != null)
+		{
+			final PaymentReconcileReference reconcileRef = PaymentReconcileReference.bankStatementLine(
+					BankStatementId.ofRepoId(line.getC_BankStatement_ID()),
+					BankStatementLineId.ofRepoId(line.getC_BankStatementLine_ID()));
+
+			return PaymentReconcileRequest.of(paymentId, reconcileRef);
+		}
+		else
+		{
+			return null;
+		}
+	}
+
+	private static PaymentReconcileRequest extractPaymentReconcileRequest(@NonNull final BankStatementLineReference lineRef)
+	{
+		final PaymentId paymentId = lineRef.getPaymentId();
+		final PaymentReconcileReference reconcileRef = PaymentReconcileReference.bankStatementLineRef(lineRef.getId());
+		return PaymentReconcileRequest.of(paymentId, reconcileRef);
 	}
 
 	@Override
