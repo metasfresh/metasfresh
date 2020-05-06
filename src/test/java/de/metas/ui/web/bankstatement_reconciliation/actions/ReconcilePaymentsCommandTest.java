@@ -7,6 +7,8 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.time.LocalDate;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
@@ -62,6 +64,7 @@ import de.metas.payment.TenderType;
 import de.metas.payment.api.DefaultPaymentBuilder;
 import de.metas.payment.api.IPaymentBL;
 import de.metas.payment.api.IPaymentDAO;
+import de.metas.payment.api.PaymentReconcileReference;
 import de.metas.payment.esr.api.impl.ESRImportBL;
 import de.metas.payment.esr.model.I_ESR_ImportLine;
 import de.metas.payment.esr.model.validator.ESRBankStatementListener;
@@ -228,7 +231,7 @@ public class ReconcilePaymentsCommandTest
 			@NonNull final Boolean inboundPayment,
 			@NonNull final BPartnerId customerId,
 			@NonNull final Money paymentAmt,
-			final boolean reconciled)
+			@Nullable final PaymentReconcileReference reconcileRef)
 	{
 		final DefaultPaymentBuilder builder = inboundPayment
 				? paymentBL.newInboundReceiptBuilder()
@@ -248,9 +251,9 @@ public class ReconcilePaymentsCommandTest
 		payment.setDocumentNo("documentNo-" + payment.getC_Payment_ID());
 		paymentDAO.save(payment);
 
-		if (reconciled)
+		if (reconcileRef != null)
 		{
-			paymentBL.markReconciledAndSave(payment);
+			paymentBL.markReconciledAndSave(payment, reconcileRef);
 		}
 
 		final PaymentId paymentId = PaymentId.ofRepoId(payment.getC_Payment_ID());
@@ -495,7 +498,9 @@ public class ReconcilePaymentsCommandTest
 						.inboundPayment(true)
 						.customerId(customerId)
 						.paymentAmt(euro("1000"))
-						.reconciled(true)
+						.reconcileRef(PaymentReconcileReference.bankStatementLine(
+								BankStatementId.ofRepoId(666),
+								BankStatementLineId.ofRepoId(666)))
 						.build();
 
 				assertThatThrownBy(() -> executeReconcilePaymentsCommand(ReconcilePaymentsRequest.builder()
