@@ -1,26 +1,14 @@
-/*
- * #%L
- * de.metas.banking.base
- * %%
- * Copyright (C) 2020 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
 package de.metas.banking.payment.impl;
+
+import java.time.LocalDate;
+import java.util.Set;
+
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.I_C_BankStatement;
+import org.compiere.model.I_C_BankStatementLine;
+import org.compiere.model.I_C_Payment;
+import org.compiere.util.TimeUtil;
+import org.springframework.stereotype.Component;
 
 import de.metas.banking.BankStatementId;
 import de.metas.banking.BankStatementLineId;
@@ -32,12 +20,8 @@ import de.metas.banking.payment.PaymentLinkResult;
 import de.metas.banking.service.IBankStatementBL;
 import de.metas.banking.service.IBankStatementDAO;
 import de.metas.banking.service.IBankStatementListenerService;
-import de.metas.bpartner.BPartnerBankAccountId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.document.engine.DocStatus;
-import de.metas.document.engine.IDocument;
-import de.metas.document.engine.IDocumentBL;
-import de.metas.invoice.InvoiceId;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.money.MoneyService;
@@ -48,17 +32,9 @@ import de.metas.payment.TenderType;
 import de.metas.payment.api.DefaultPaymentBuilder;
 import de.metas.payment.api.IPaymentBL;
 import de.metas.payment.api.PaymentQuery;
+import de.metas.payment.api.PaymentReconcileReference;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.I_C_BankStatement;
-import org.compiere.model.I_C_BankStatementLine;
-import org.compiere.model.I_C_Payment;
-import org.compiere.util.TimeUtil;
-import org.springframework.stereotype.Component;
-
-import java.time.LocalDate;
-import java.util.Set;
 
 @Component
 public class BankStatementPaymentBL implements IBankStatementPaymentBL
@@ -93,7 +69,6 @@ public class BankStatementPaymentBL implements IBankStatementPaymentBL
 		}
 
 		final Set<PaymentId> eligiblePaymentIds = findEligiblePaymentIds(bankStatementLine, bpartnerId, 2);
-		//noinspection StatementWithEmptyBody
 		if (eligiblePaymentIds.size() > 1)
 		{
 			// Don't create a new Payment and don't link any of the existing payments if there are multiple payments found.
@@ -140,7 +115,6 @@ public class BankStatementPaymentBL implements IBankStatementPaymentBL
 	{
 		final I_C_Payment payment = createPayment(bankStatement, bankStatementLine);
 		linkSinglePayment(bankStatement, bankStatementLine, payment);
-		Services.get(IDocumentBL.class).processEx(payment, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
 	}
 
 	private I_C_Payment createPayment(
@@ -155,37 +129,27 @@ public class BankStatementPaymentBL implements IBankStatementPaymentBL
 
 		// final CurrencyId currencyId = CurrencyId.ofRepoId(line.getC_Currency_ID());
 		final OrgId orgId = OrgId.ofRepoId(bankStatementLine.getAD_Org_ID());
-		final LocalDate acctLineDate = TimeUtil.asLocalDate(bankStatementLine.getDateAcct());
+		final LocalDate statementLineDate = TimeUtil.asLocalDate(bankStatementLine.getStatementLineDate());
 		final BankAccountId orgBankAccountId = BankAccountId.ofRepoId(bankStatement.getC_BP_BankAccount_ID());
 
 		final Money statementAmt = extractStatementAmt(bankStatementLine);
 		final boolean inboundPayment = statementAmt.signum() >= 0;
 		final Money payAmount = statementAmt.negateIf(!inboundPayment);
 
-		final InvoiceId invoiceId = InvoiceId.ofRepoIdOrNull(bankStatementLine.getC_Invoice_ID());
-
-		final TenderType tenderType = paymentBL.getTenderType(BPartnerBankAccountId.ofRepoId(bpartnerId, orgBankAccountId.getRepoId()));
-
 		final DefaultPaymentBuilder paymentBuilder = inboundPayment
 				? paymentBL.newInboundReceiptBuilder()
 				: paymentBL.newOutboundPaymentBuilder();
 
-		paymentBuilder
+		return paymentBuilder
 				.adOrgId(orgId)
 				.bpartnerId(bpartnerId)
 				.orgBankAccountId(orgBankAccountId)
 				.currencyId(payAmount.getCurrencyId())
 				.payAmt(payAmount.toBigDecimal())
-				.dateAcct(acctLineDate)
-				.dateTrx(acctLineDate) // Note: DateTrx should be the same as Line.DateAcct, and not Line.StatementDate.
-				.tenderType(tenderType);
-
-		if (invoiceId != null)
-		{
-			paymentBuilder.invoiceId(invoiceId);
-		}
-
-		return paymentBuilder.createDraft(); // note: don't complete the payment now, else onComplete interceptors might link this payment to a different Bank Statement Line.
+				.dateAcct(statementLineDate)
+				.dateTrx(statementLineDate)
+				.tenderType(TenderType.Check)
+				.createAndProcess();
 	}
 
 	@Override
@@ -233,7 +197,10 @@ public class BankStatementPaymentBL implements IBankStatementPaymentBL
 		final DocStatus bankStatementDocStatus = DocStatus.ofCode(bankStatement.getDocStatus());
 		if (bankStatementDocStatus.isCompleted())
 		{
-			paymentBL.markReconciledAndSave(payment);
+			final PaymentReconcileReference reconcileRef = PaymentReconcileReference.bankStatementLine(
+					BankStatementId.ofRepoId(bankStatementLine.getC_BankStatement_ID()),
+					BankStatementLineId.ofRepoId(bankStatementLine.getC_BankStatementLine_ID()));
+			paymentBL.markReconciledAndSave(payment, reconcileRef);
 		}
 
 		bankStatementListenersService.firePaymentLinked(PaymentLinkResult.builder()
