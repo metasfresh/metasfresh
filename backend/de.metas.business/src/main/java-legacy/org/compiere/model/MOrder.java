@@ -1,51 +1,27 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution *
- * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved. *
- * This program is free software; you can redistribute it and/or modify it *
- * under the terms version 2 of the GNU General Public License as published *
- * by the Free Software Foundation. This program is distributed in the hope *
- * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. *
- * See the GNU General Public License for more details. *
- * You should have received a copy of the GNU General Public License along *
- * with this program; if not, write to the Free Software Foundation, Inc., *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA. *
- * For the text or an alternative of this public license, you may reach us *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA *
- * or via info@compiere.org or http://www.compiere.org/license.html *
- *****************************************************************************/
+/*
+ * #%L
+ * de.metas.business
+ * %%
+ * Copyright (C) 2020 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
 package org.compiere.model;
 
-import java.io.File;
-import java.math.BigDecimal;
-import java.sql.ResultSet;
-import java.sql.Timestamp;
-import java.time.LocalDate;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Properties;
-import java.util.Set;
-import java.util.regex.Pattern;
-
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.exceptions.FillMandatoryException;
-import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.LegacyAdapters;
-import org.adempiere.warehouse.WarehouseId;
-import org.adempiere.warehouse.api.IWarehouseBL;
-import org.adempiere.warehouse.api.IWarehouseDAO;
-import org.adempiere.warehouse.spi.IWarehouseAdvisor;
-import org.compiere.SpringContextHolder;
-import org.compiere.print.ReportEngine;
-import org.compiere.util.DB;
-import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.acct.api.IFactAcctDAO;
 import de.metas.bpartner.exceptions.BPartnerNoBillToAddressException;
 import de.metas.bpartner.exceptions.BPartnerNoShipToAddressException;
@@ -86,6 +62,33 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.FillMandatoryException;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.LegacyAdapters;
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseBL;
+import org.adempiere.warehouse.api.IWarehouseDAO;
+import org.adempiere.warehouse.spi.IWarehouseAdvisor;
+import org.compiere.SpringContextHolder;
+import org.compiere.print.ReportEngine;
+import org.compiere.util.DB;
+import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
+
+import java.io.File;
+import java.math.BigDecimal;
+import java.sql.ResultSet;
+import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Objects;
+import java.util.Properties;
+import java.util.Set;
+import java.util.regex.Pattern;
 
 /**
  * Order Model.
@@ -94,18 +97,16 @@ import lombok.NonNull;
  * Use DocAction and C_DocTypeTarget_ID instead.
  *
  * @author Jorg Janke
- *
  * @author victor.perez@e-evolution.com, e-Evolution http://www.e-evolution.com
  * <li>FR [ 2520591 ] Support multiples calendar for Org
- * @see [ http://sourceforge.net/tracker2/?func=detail&atid=879335&aid=2520591&group_id=176962 ]
- * @version $Id: MOrder.java,v 1.5 2006/10/06 00:42:24 jjanke Exp $
- *
  * @author Teo Sarca, www.arhipac.ro
  * <li>BF [ 2419978 ] Voiding PO, requisition don't set on NULL
  * <li>BF [ 2892578 ] Order should autoset only active price lists
  * https://sourceforge.net/tracker/?func=detail&aid=2892578&group_id=176962&atid=879335
  * @author Michael Judd, www.akunagroup.com
  * <li>BF [ 2804888 ] Incorrect reservation of products with attributes
+ * @version $Id: MOrder.java,v 1.5 2006/10/06 00:42:24 jjanke Exp $
+ * @see [ http://sourceforge.net/tracker2/?func=detail&atid=879335&aid=2520591&group_id=176962 ]
  */
 public class MOrder extends X_C_Order implements IDocument
 {
@@ -235,9 +236,13 @@ public class MOrder extends X_C_Order implements IDocument
 		super(ctx, rs, trxName);
 	}    // MOrder
 
-	/** Order Lines */
+	/**
+	 * Order Lines
+	 */
 	private ImmutableList<MOrderLine> _lines = null;
-	/** Tax Lines */
+	/**
+	 * Tax Lines
+	 */
 	private MOrderTax[] m_taxes = null;
 
 	/**
@@ -360,21 +365,37 @@ public class MOrder extends X_C_Order implements IDocument
 
 	/*************************************************************************/
 
-	/** Sales Order Sub Type - SO */
+	/**
+	 * Sales Order Sub Type - SO
+	 */
 	public static final String DocSubType_Standard = "SO";
-	/** Sales Order Sub Type - OB */
+	/**
+	 * Sales Order Sub Type - OB
+	 */
 	public static final String DocSubType_Quotation = "OB";
-	/** Sales Order Sub Type - ON */
+	/**
+	 * Sales Order Sub Type - ON
+	 */
 	public static final String DocSubType_Proposal = "ON";
-	/** Sales Order Sub Type - PR */
+	/**
+	 * Sales Order Sub Type - PR
+	 */
 	public static final String DocSubType_Prepay = "PR";
-	/** Sales Order Sub Type - WR */
+	/**
+	 * Sales Order Sub Type - WR
+	 */
 	public static final String DocSubType_POS = "WR";
-	/** Sales Order Sub Type - WP */
+	/**
+	 * Sales Order Sub Type - WP
+	 */
 	public static final String DocSubType_Warehouse = "WP";
-	/** Sales Order Sub Type - WI */
+	/**
+	 * Sales Order Sub Type - WI
+	 */
 	public static final String DocSubType_OnCredit = "WI";
-	/** Sales Order Sub Type - RM */
+	/**
+	 * Sales Order Sub Type - RM
+	 */
 	public static final String DocSubType_RMA = "RM";
 
 	/**
@@ -1129,9 +1150,13 @@ public class MOrder extends X_C_Order implements IDocument
 		return Services.get(IDocumentBL.class).processIt(this, processAction); // task 09824
 	}
 
-	/** Process Message */
+	/**
+	 * Process Message
+	 */
 	private String m_processMsg = null;
-	/** Just Prepared Flag */
+	/**
+	 * Just Prepared Flag
+	 */
 	private boolean m_justPrepared = false;
 
 	/**
@@ -1624,6 +1649,12 @@ public class MOrder extends X_C_Order implements IDocument
 			return DocStatus.Completed;
 		}
 
+		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_COMPLETE);
+		if (m_processMsg != null)
+		{
+			return DocStatus.Invalid;
+		}
+
 		//
 		// Waiting Payment - until we have a payment
 		if (prepareAndReturnTrueIfWaitForPaymentIsNeeded(docSubType))
@@ -1640,12 +1671,6 @@ public class MOrder extends X_C_Order implements IDocument
 			{
 				return docStatus;
 			}
-		}
-
-		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_COMPLETE);
-		if (m_processMsg != null)
-		{
-			return DocStatus.Invalid;
 		}
 
 		// Implicit Approval
