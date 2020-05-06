@@ -1,0 +1,57 @@
+{
+  "name": "metasfresh-e2e",
+  "license": "GPL-2.0-or-later",
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:metasfresh/metasfresh-e2e.git"
+  },
+  "scripts": {
+    "cypress:open": "cypress open"
+  },
+  "devDependencies": {
+    "@babel/core": "7.2.2",
+    "@babel/plugin-proposal-class-properties": "7.3.0",
+    "@babel/plugin-proposal-object-rest-spread": "7.3.1",
+    "@babel/plugin-transform-async-to-generator": "7.2.0",
+    "@babel/polyfill": "7.2.5",
+    "@babel/preset-env": "7.3.1",
+    "@babel/preset-react": "7.0.0",
+    "@babel/register": "7.0.0",
+    "@cypress/webpack-preprocessor": "^4.0.3",
+    "babel-eslint": "10.0.1",
+    "babel-loader": "8.0.5",
+    "cypress": "^3.5.0",
+    "eslint": "5.9.0",
+    "eslint-config-prettier": "4.0.0",
+    "eslint-plugin-chai-friendly": "^0.4.1",
+    "eslint-plugin-cypress": "^2.2.1",
+    "eslint-plugin-prettier": "3.0.1",
+    "html-webpack-plugin": "^3.2.0",
+    "mocha": "^5.2.0",
+    "mocha-junit-reporter": "^1.18.0",
+    "mocha-multi-reporters": "^1.1.7",
+    "prettier": "1.16.4",
+    "react-hot-loader": "4.6.3",
+    "webpack": "^4.29.6",
+    "webpack-git-hash": "^1.0.2"
+  },
+  "devDependenciesComments": {
+    "generalComment": "wrt comments in package.json: thx to https://stackoverflow.com/q/14221579/1012103",
+    "mochaComment1": "use mocha to create junit test reports thx to https://docs.cypress.io/guides/tooling/reporters.html#Multiple-Reporters",
+    "mochaComment2": "mocha 6.0.0 and 6.0.1 don't work; thx to https://github.com/cypress-io/cypress/issues/3537"
+  },
+  "dependencies": {
+    "axios": "^0.18.1",
+    "cypress-plugin-snapshots": "^1.2.6",
+    "cypress-skip-and-only-ui": "^1.0.12",
+    "immutable": "^4.0.0-rc.12",
+    "luxon": "^1.11.4",
+    "moment": "^2.24.0",
+    "numeral": "^2.0.6",
+    "react": "16.5.0",
+    "react-dom": "16.5.0",
+    "react-router-redux": "^4.0.8",
+    "sockjs-client": "^1.3.0",
+    "stompjs": "^2.3.3"
+  }
+}
