@@ -42,6 +42,7 @@ import de.metas.cache.annotation.CacheTrx;
 import de.metas.currency.Amount;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyRepository;
+import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.InvoiceLineId;
@@ -173,8 +174,8 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 				.orderBy()
 				.addColumn(I_C_InvoiceLine.COLUMNNAME_Line)
 				.endOrderBy()
-				//
-				;
+		//
+		;
 	}
 
 	@Override
@@ -357,5 +358,16 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 	public org.compiere.model.I_C_InvoiceLine getByIdOutOfTrx(@NonNull final InvoiceLineId invoiceLineId)
 	{
 		return loadOutOfTrx(invoiceLineId, I_C_InvoiceLine.class);
+	}
+
+	@Override
+	public boolean hasCompletedInvoicesReferencing(@NonNull final InvoiceId invoiceId)
+	{
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+		return queryBL.createQueryBuilder(I_C_Invoice.class)
+				.addEqualsFilter(I_C_Invoice.COLUMNNAME_Ref_Invoice_ID, invoiceId)
+				.addInArrayFilter(I_C_Invoice.COLUMNNAME_DocStatus, DocStatus.Completed, DocStatus.Closed)
+				.create()
+				.anyMatch();
 	}
 }

@@ -190,6 +190,30 @@ public class InvoiceProcessingServiceCompanyServiceTest
 		}
 
 		@Test
+		public void alreadyExistingServiceFeeInvoice()
+		{
+			config()
+					.feePercentageOfGrandTotal("2")
+					.customerId(BPartnerId.ofRepoId(2))
+					.build();
+
+			final I_C_Invoice serviceFeeInvoice = newInstance(I_C_Invoice.class);
+			serviceFeeInvoice.setRef_Invoice_ID(3);
+			serviceFeeInvoice.setDocStatus(DocStatus.Completed.getCode());
+			saveRecord(serviceFeeInvoice);
+
+			final Optional<InvoiceProcessingFeeCalculation> result = invoiceProcessingServiceCompanyService.computeFee(InvoiceProcessingFeeComputeRequest.builder()
+					.orgId(OrgId.ofRepoId(1))
+					.evaluationDate(LocalDate.parse("2020-04-30").atStartOfDay(ZoneId.of("UTC+5")))
+					.customerId(BPartnerId.ofRepoId(2))
+					.invoiceId(InvoiceId.ofRepoId(3))
+					.invoiceGrandTotal(Amount.of(100, CurrencyCode.EUR))
+					.build());
+
+			assertThat(result).isEmpty();
+		}
+
+		@Test
 		public void customerIsNotAssignedToInvoiceProcessingServiceCompany()
 		{
 			config()
@@ -390,7 +414,7 @@ public class InvoiceProcessingServiceCompanyServiceTest
 		}
 
 		@Test
-		public void test()
+		public void standardCase()
 		{
 			final InvoiceProcessingFeeCalculation calculation = InvoiceProcessingFeeCalculation.builder()
 					.orgId(orgId)
@@ -413,34 +437,36 @@ public class InvoiceProcessingServiceCompanyServiceTest
 							Amount.of(3, CurrencyCode.EUR)));
 
 			//
-			// Check service invoice header
-			final POJOLookupMap db = POJOLookupMap.get();
-			List<I_C_Invoice> invoices = db.getRecords(I_C_Invoice.class);
-			assertThat(invoices).hasSize(1);
-			final I_C_Invoice serviceInvoice = invoices.get(0);
-			assertThat(serviceInvoice.getC_Invoice_ID()).isEqualTo(serviceInvoiceId.getRepoId());
-			assertThat(serviceInvoice.getC_BPartner_ID()).isEqualTo(serviceCompanyBPartnerAndLocationId.getBpartnerId().getRepoId());
-			assertThat(serviceInvoice.getC_BPartner_Location_ID()).isEqualTo(serviceCompanyBPartnerAndLocationId.getRepoId());
-			assertThat(TimeUtil.asLocalDate(serviceInvoice.getDateInvoiced(), ZoneId.of("UTC-8"))).isEqualTo("2020-04-30");
-			assertThat(serviceInvoice.getDocStatus()).isEqualTo(DocStatus.Completed.getCode());
-			assertThat(serviceInvoice.getC_DocTypeTarget_ID()).isEqualTo(serviceInvoiceDocTypeId.getRepoId());
-			assertThat(serviceInvoice.getM_PriceList_ID()).isEqualTo(servicePriceListId.getRepoId());
-			assertThat(serviceInvoice.isTaxIncluded()).isTrue();
+			// Check generate service invoice
+			{
+				// Check service invoice header
+				final POJOLookupMap db = POJOLookupMap.get();
+				List<I_C_Invoice> invoices = db.getRecords(I_C_Invoice.class);
+				assertThat(invoices).hasSize(1);
+				final I_C_Invoice serviceInvoice = invoices.get(0);
+				assertThat(serviceInvoice.getC_Invoice_ID()).isEqualTo(serviceInvoiceId.getRepoId());
+				assertThat(serviceInvoice.getRef_Invoice_ID()).isEqualTo(3);
+				assertThat(serviceInvoice.getC_BPartner_ID()).isEqualTo(serviceCompanyBPartnerAndLocationId.getBpartnerId().getRepoId());
+				assertThat(serviceInvoice.getC_BPartner_Location_ID()).isEqualTo(serviceCompanyBPartnerAndLocationId.getRepoId());
+				assertThat(TimeUtil.asLocalDate(serviceInvoice.getDateInvoiced(), ZoneId.of("UTC-8"))).isEqualTo("2020-04-30");
+				assertThat(serviceInvoice.getDocStatus()).isEqualTo(DocStatus.Completed.getCode());
+				assertThat(serviceInvoice.getC_DocTypeTarget_ID()).isEqualTo(serviceInvoiceDocTypeId.getRepoId());
+				assertThat(serviceInvoice.getM_PriceList_ID()).isEqualTo(servicePriceListId.getRepoId());
+				assertThat(serviceInvoice.isTaxIncluded()).isTrue();
 
-			//
-			// Check service invoice line
-			final List<I_C_InvoiceLine> serviceInvoiceLines = db.getRecords(I_C_InvoiceLine.class);
-			assertThat(serviceInvoiceLines).hasSize(1);
-			final I_C_InvoiceLine serviceInvoiceLine = serviceInvoiceLines.get(0);
-			assertThat(serviceInvoiceLine.getC_Invoice_ID()).isEqualTo(serviceInvoice.getC_Invoice_ID());
-			assertThat(serviceInvoiceLine.getM_Product_ID()).isEqualTo(serviceFeeProductId.getRepoId());
-			assertThat(serviceInvoiceLine.isManualPrice()).isTrue();
-			assertThat(serviceInvoiceLine.getPriceActual()).isEqualByComparingTo("3");
-			assertThat(serviceInvoiceLine.getQtyEntered()).isEqualByComparingTo("1");
-			assertThat(serviceInvoiceLine.getQtyInvoiced()).isEqualByComparingTo("1");
-
-			// assertThat(serviceInvoiceLine.getLineNetAmt()).isEqualByComparingTo("3");
-			// assertThat(serviceInvoiceLine.getC_Tax_ID()).isGreaterThan(0);
+				// Check service invoice line
+				final List<I_C_InvoiceLine> serviceInvoiceLines = db.getRecords(I_C_InvoiceLine.class);
+				assertThat(serviceInvoiceLines).hasSize(1);
+				final I_C_InvoiceLine serviceInvoiceLine = serviceInvoiceLines.get(0);
+				assertThat(serviceInvoiceLine.getC_Invoice_ID()).isEqualTo(serviceInvoice.getC_Invoice_ID());
+				assertThat(serviceInvoiceLine.getM_Product_ID()).isEqualTo(serviceFeeProductId.getRepoId());
+				assertThat(serviceInvoiceLine.isManualPrice()).isTrue();
+				assertThat(serviceInvoiceLine.getPriceActual()).isEqualByComparingTo("3");
+				assertThat(serviceInvoiceLine.getQtyEntered()).isEqualByComparingTo("1");
+				assertThat(serviceInvoiceLine.getQtyInvoiced()).isEqualByComparingTo("1");
+				// assertThat(serviceInvoiceLine.getLineNetAmt()).isEqualByComparingTo("3");
+				// assertThat(serviceInvoiceLine.getC_Tax_ID()).isGreaterThan(0);
+			}
 		}
 	}
 }
