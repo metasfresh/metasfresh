@@ -10,7 +10,6 @@
 <booleanAttribute key="org.eclipse.debug.core.appendEnvironmentVariables" value="true"/>
 <stringAttribute key="org.eclipse.jdt.launching.CLASSPATH_PROVIDER" value="org.eclipse.m2e.launchconfig.classpathProvider"/>
 <stringAttribute key="org.eclipse.jdt.launching.MAIN_TYPE" value="org.adempiere.util.GenerateModel"/>
-<stringAttribute key="org.eclipse.jdt.launching.MODULE_NAME" value="vertical-healthcare_ch.forum_datenaustausch_ch.invoice_base"/>
 <stringAttribute key="org.eclipse.jdt.launching.PROGRAM_ARGUMENTS" value="${project_loc:vertical-healthcare_ch.forum_datenaustausch_ch.invoice_base}/src/main/java-gen&#13;&#10;&quot;-&quot;&#13;&#10;&quot;'de.metas.vertical.healthcare.forum_datenaustausch_ch'&quot;"/>
 <stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="vertical-healthcare_ch.forum_datenaustausch_ch.invoice_base"/>
 <stringAttribute key="org.eclipse.jdt.launching.SOURCE_PATH_PROVIDER" value="org.eclipse.m2e.launchconfig.sourcepathProvider"/>
