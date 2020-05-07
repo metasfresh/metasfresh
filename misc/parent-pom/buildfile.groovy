@@ -9,7 +9,7 @@ import de.metas.jenkins.Misc
 
 def build(final MvnConf mvnConf, final Map scmVars)
 {
-	final String VERSIONS_PLUGIN = 'org.codehaus.mojo:versions-maven-plugin:2.5'
+	final String VERSIONS_PLUGIN = 'org.codehaus.mojo:versions-maven-plugin:2.7'
 
 	stage('parent-pom') // for display purposes
 	{
