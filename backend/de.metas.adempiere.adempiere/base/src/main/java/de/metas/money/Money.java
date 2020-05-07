@@ -28,8 +28,10 @@ import com.google.common.collect.ImmutableSet;
 
 import de.metas.currency.Amount;
 import de.metas.currency.CurrencyCode;
+import de.metas.currency.CurrencyPrecision;
 import de.metas.util.Check;
 import de.metas.util.NumberUtils;
+import de.metas.util.lang.Percent;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -264,6 +266,15 @@ public final class Money
 		}
 
 		return new Money(value.multiply(multiplicand), currencyId);
+	}
+
+	public Money multiply(@NonNull Percent percent, @NonNull final CurrencyPrecision precision)
+	{
+		final BigDecimal newValue = percent.computePercentageOf(value, precision.toInt(), precision.getRoundingMode());
+
+		return !newValue.equals(value)
+				? new Money(newValue, currencyId)
+				: this;
 	}
 
 	public Money min(@NonNull final Money other)

@@ -424,4 +424,6 @@ public interface IInvoiceCandBL extends ISingletonService
 
 	/** @return {@code true} if the given {@code invoiceRecord} is currently created via invoicing from invoice candidates. */
 	boolean isCreatedByInvoicingJustNow(org.compiere.model.I_C_Invoice invoiceRecord);
+
+	I_C_Invoice voidAndRecreateInvoice(org.compiere.model.I_C_Invoice invoice);
 }

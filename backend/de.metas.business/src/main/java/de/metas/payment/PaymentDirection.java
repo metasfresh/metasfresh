@@ -40,9 +40,20 @@ public enum PaymentDirection
 		return isReceipt ? INBOUND : OUTBOUND;
 	}
 
+	public static PaymentDirection ofInboundPaymentFlag(final boolean inboundPayment)
+	{
+		return inboundPayment ? INBOUND : OUTBOUND;
+	}
+
 	public static PaymentDirection ofBankStatementAmount(@NonNull final Money statementAmt)
 	{
 		return statementAmt.signum() >= 0 ? INBOUND : OUTBOUND;
+	}
+
+	public static PaymentDirection ofSOTrx(@NonNull final SOTrx soTrx)
+	{
+		final boolean creditMemo = false;
+		return ofSOTrxAndCreditMemo(soTrx, creditMemo);
 	}
 
 	public static PaymentDirection ofSOTrxAndCreditMemo(@NonNull final SOTrx soTrx, final boolean creditMemo)

@@ -27,13 +27,13 @@ import java.math.BigDecimal;
 
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
-import org.adempiere.invoice.service.IInvoiceBL;
-import org.adempiere.invoice.service.IInvoiceDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Payment;
 import org.compiere.util.TrxRunnable;
 
+import de.metas.invoice.service.IInvoiceBL;
+import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.payment.esr.ESRConstants;
 import de.metas.payment.esr.model.I_ESR_ImportLine;
 import de.metas.util.Check;

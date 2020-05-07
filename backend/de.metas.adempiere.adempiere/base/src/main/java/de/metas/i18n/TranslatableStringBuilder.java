@@ -89,7 +89,8 @@ public final class TranslatableStringBuilder
 
 	public boolean isEmpty()
 	{
-		return parts.isEmpty();
+		return parts.isEmpty()
+				&& (lastStringBuffer == null || lastStringBuffer.length() == 0);
 	}
 
 	public TranslatableStringBuilder append(final ITranslatableString value)

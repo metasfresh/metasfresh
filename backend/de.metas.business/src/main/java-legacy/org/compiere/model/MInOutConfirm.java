@@ -25,7 +25,6 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.util.Env;
@@ -35,6 +34,7 @@ import org.slf4j.Logger;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.Msg;
+import de.metas.invoice.service.IInvoiceBL;
 import de.metas.logging.LogManager;
 import de.metas.user.api.IUserDAO;
 import de.metas.util.Services;

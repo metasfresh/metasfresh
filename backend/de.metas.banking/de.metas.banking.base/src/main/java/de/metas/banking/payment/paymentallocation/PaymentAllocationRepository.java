@@ -23,6 +23,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.currency.Amount;
 import de.metas.currency.CurrencyCode;
 import de.metas.document.DocTypeId;
+import de.metas.invoice.InvoiceDocBaseType;
 import de.metas.invoice.InvoiceId;
 import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
@@ -30,6 +31,7 @@ import de.metas.money.CurrencyId;
 import de.metas.order.OrderId;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
+import de.metas.payment.PaymentDirection;
 import de.metas.payment.PaymentId;
 import de.metas.util.Check;
 import lombok.NonNull;
@@ -265,8 +267,7 @@ public class PaymentAllocationRepository
 				.openAmountConverted(openAmtConv)
 				.discountAmountConverted(discountAmountConv)
 				.docTypeId(docTypeId)
-				.soTrx(soTrx)
-				.creditMemo(isCreditMemo)
+				.docBaseType(InvoiceDocBaseType.ofSOTrxAndCreditMemo(soTrx, isCreditMemo))
 				.poReference(rs.getString("POReference"))
 				.build();
 	}
@@ -376,7 +377,7 @@ public class PaymentAllocationRepository
 				.dateAcct(TimeUtil.asLocalDate(rs.getTimestamp("dateacct"))) // task 09643
 				.payAmt(payAmtConv)
 				.openAmt(openAmtConv)
-				.inboundPayment(inboundPayment)
+				.paymentDirection(PaymentDirection.ofInboundPaymentFlag(inboundPayment))
 				.build();
 	}
 

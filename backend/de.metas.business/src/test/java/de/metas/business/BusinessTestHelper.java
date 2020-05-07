@@ -10,9 +10,12 @@ import javax.annotation.Nullable;
 
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
 import org.compiere.model.I_C_BP_BankAccount;
+import org.compiere.model.I_C_BP_Group;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_Country;
 import org.compiere.model.I_C_Currency;
 import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_C_TaxCategory;
@@ -26,6 +29,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.currency.impl.PlainCurrencyDAO;
+import de.metas.location.CountryId;
 import de.metas.money.CurrencyId;
 import de.metas.product.ProductId;
 import de.metas.product.ProductType;
@@ -36,6 +40,7 @@ import de.metas.uom.IUOMConversionDAO;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.experimental.UtilityClass;
 
 /*
  * #%L
@@ -59,6 +64,7 @@ import lombok.NonNull;
  * #L%
  */
 
+@UtilityClass
 public final class BusinessTestHelper
 {
 	/**
@@ -71,8 +77,14 @@ public final class BusinessTestHelper
 	 */
 	private static final int UOM_Precision_3 = 3;
 
-	private BusinessTestHelper()
+
+	public static CountryId createCountry(@NonNull final String countryCode)
 	{
+		final I_C_Country record = newInstance(I_C_Country.class);
+		record.setCountryCode(countryCode);
+		POJOWrapper.setInstanceName(record, countryCode);
+		saveRecord(record);
+		return CountryId.ofRepoId(record.getC_Country_ID());
 	}
 
 	public static I_C_UOM createUomKg()
@@ -167,21 +179,49 @@ public final class BusinessTestHelper
 		return currenciesRepo.getOrCreateByCurrencyCode(CurrencyCode.EUR).getId();
 	}
 
+	public static ProductId createProductId(final String name, final I_C_UOM uom)
+	{
+		final I_M_Product product = createProduct(name, uom);
+		return ProductId.ofRepoId(product.getM_Product_ID());
+	}
+
+	public static I_M_Product createProduct(final String name, final I_C_UOM uom)
+	{
+		final BigDecimal weightKg = null; // N/A
+		return createProduct(name, uom, weightKg);
+	}
+
+	public static I_M_Product createProduct(final String name, final UomId uomId)
+	{
+		final BigDecimal weightKg = null; // N/A
+		return createProduct(name, uomId, weightKg);
+	}
+
+	public static I_M_Product createProduct(
+			@NonNull final String name,
+			@Nullable final I_C_UOM uom,
+			@Nullable final BigDecimal weightKg)
+	{
+		final UomId uomId = uom == null ? null : UomId.ofRepoIdOrNull(uom.getC_UOM_ID());
+		return createProduct(name, uomId, weightKg);
+	}
+
 	/**
-	 * @param name
-	 * @param uom
 	 * @param weightKg product weight (Kg); mainly used for packing materials
-	 * @return
 	 */
-	public static I_M_Product createProduct(final String name, final I_C_UOM uom, final BigDecimal weightKg)
+	public static I_M_Product createProduct(
+			@NonNull final String name,
+			@Nullable final UomId uomId,
+			@Nullable final BigDecimal weightKg)
 	{
 		final I_M_Product product = newInstanceOutOfTrx(I_M_Product.class);
 		POJOWrapper.setInstanceName(product, name);
 		product.setValue(name);
 		product.setName(name);
-		product.setC_UOM_ID(uom.getC_UOM_ID());
+		product.setC_UOM_ID(UomId.toRepoId(uomId));
 		product.setProductType(ProductType.Item.getCode());
 		product.setIsStocked(true);
+
 		if (weightKg != null)
 		{
 			product.setWeight(weightKg);
@@ -189,12 +229,6 @@ public final class BusinessTestHelper
 		saveRecord(product);
 
 		return product;
-	}
-
-	public static I_M_Product createProduct(final String name, final I_C_UOM uom)
-	{
-		final BigDecimal weightKg = null; // N/A
-		return createProduct(name, uom, weightKg);
 	}
 
 	/**
@@ -213,12 +247,24 @@ public final class BusinessTestHelper
 
 	public static I_C_BPartner_Location createBPartnerLocation(final I_C_BPartner bpartner)
 	{
-		final I_C_BPartner_Location bpl = InterfaceWrapperHelper.newInstance(I_C_BPartner_Location.class, bpartner);
+		final I_C_BPartner_Location bpl = newInstance(I_C_BPartner_Location.class, bpartner);
 		bpl.setC_BPartner_ID(bpartner.getC_BPartner_ID());
 		bpl.setIsShipTo(true);
 		bpl.setIsBillTo(true);
 		saveRecord(bpl);
 		return bpl;
+	}
+
+	public static I_C_BP_Group createBPGroup(final String name, final boolean isDefault)
+	{
+		final I_C_BP_Group bpGroupRecord = newInstanceOutOfTrx(I_C_BP_Group.class);
+		POJOWrapper.setInstanceName(bpGroupRecord, name);
+		bpGroupRecord.setName(name);
+		bpGroupRecord.setIsDefault(isDefault);
+		InterfaceWrapperHelper.setValue(bpGroupRecord, I_C_BP_Group.COLUMNNAME_AD_Client_ID, ClientId.METASFRESH.getRepoId());
+
+		saveRecord(bpGroupRecord);
+		return bpGroupRecord;
 	}
 
 	public static I_C_BP_BankAccount createBpBankAccount(@NonNull final BPartnerId bPartnerId, @NonNull final CurrencyId currencyId, @Nullable String iban)

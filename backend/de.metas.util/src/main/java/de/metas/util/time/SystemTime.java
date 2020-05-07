@@ -1,5 +1,18 @@
 package de.metas.util.time;
 
+import java.sql.Timestamp;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.temporal.ChronoUnit;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
+
+import javax.annotation.Nullable;
+
 /*
  * #%L
  * de.metas.util
@@ -22,16 +35,8 @@ package de.metas.util.time;
  * #L%
  */
 
-import java.sql.Timestamp;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
-import java.time.temporal.ChronoUnit;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.GregorianCalendar;
+import lombok.NonNull;
+import lombok.experimental.UtilityClass;
 
 import javax.annotation.Nullable;
 
@@ -47,7 +52,7 @@ import lombok.experimental.UtilityClass;
 @UtilityClass
 public final class SystemTime
 {
-	private static final TimeSource defaultTimeSource = () -> System.currentTimeMillis();
+	private static final TimeSource defaultTimeSource = new SystemTimeSource();
 
 	private static TimeSource timeSource;
 
@@ -58,7 +63,7 @@ public final class SystemTime
 
 	public static ZoneId zoneId()
 	{
-		return ZoneId.systemDefault();
+		return getTimeSource().zoneId();
 	}
 
 	public static GregorianCalendar asGregorianCalendar()
@@ -160,5 +165,20 @@ public final class SystemTime
 	public static void setTimeSource(@Nullable final TimeSource newTimeSource)
 	{
 		timeSource = newTimeSource;
+	}
+
+	private static final class SystemTimeSource implements TimeSource
+	{
+		@Override
+		public long millis()
+		{
+			return System.currentTimeMillis();
+}
+
+		@Override
+		public ZoneId zoneId()
+		{
+			return ZoneId.systemDefault();
+		}
 	}
 }
