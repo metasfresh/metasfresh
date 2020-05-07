@@ -1,4 +1,4 @@
-package org.adempiere.model;
+package de.metas.document.references;
 
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 import static org.compiere.model.I_AD_Ref_Table.COLUMNNAME_AD_Reference_ID;

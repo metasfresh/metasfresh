@@ -1,4 +1,4 @@
-package org.adempiere.model;
+package de.metas.document.references;
 
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;

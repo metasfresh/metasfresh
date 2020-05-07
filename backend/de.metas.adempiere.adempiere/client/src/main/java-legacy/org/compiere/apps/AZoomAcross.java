@@ -24,10 +24,6 @@ import javax.swing.JPopupMenu;
 
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.model.IZoomSource;
-import org.adempiere.model.POZoomSource;
-import org.adempiere.model.ZoomInfo;
-import org.adempiere.model.ZoomInfoFactory;
 import org.compiere.model.MQuery;
 import org.compiere.model.PO;
 import org.compiere.model.Query;
@@ -37,6 +33,10 @@ import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.document.references.IZoomSource;
+import de.metas.document.references.POZoomSource;
+import de.metas.document.references.ZoomInfo;
+import de.metas.document.references.ZoomInfoFactory;
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import de.metas.util.Services;

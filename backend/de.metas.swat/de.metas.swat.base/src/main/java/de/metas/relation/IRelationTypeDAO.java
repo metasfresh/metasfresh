@@ -31,7 +31,6 @@ import de.metas.util.ISingletonService;
 
 public interface IRelationTypeDAO extends ISingletonService
 {
-
 	I_AD_RelationType retrieveForInternalName(Properties ctx, String internalName);
 
 	default I_AD_RelationType retrieveForInternalName(final String internalName)

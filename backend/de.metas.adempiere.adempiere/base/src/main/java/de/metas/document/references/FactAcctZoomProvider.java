@@ -1,4 +1,4 @@
-package org.adempiere.model;
+package de.metas.document.references;
 
 import java.util.List;
 import java.util.function.IntSupplier;

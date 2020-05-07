@@ -1,4 +1,4 @@
-package org.adempiere.model;
+package de.metas.document.references;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
@@ -18,6 +18,8 @@ import org.compiere.model.X_AD_Reference;
 import org.junit.Before;
 import org.junit.Test;
 
+import de.metas.document.references.RelationTypeZoomProvider;
+import de.metas.document.references.RelationTypeZoomProvidersFactory;
 import de.metas.util.Services;
 import lombok.NonNull;
 import mockit.Expectations;

@@ -3,10 +3,10 @@ package de.metas.zoom.process;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.model.GenericPO;
-import org.adempiere.model.POZoomSource;
-import org.adempiere.model.ZoomInfoFactory;
 import org.compiere.util.Env;
 
+import de.metas.document.references.POZoomSource;
+import de.metas.document.references.ZoomInfoFactory;
 import de.metas.process.JavaProcess;
 import de.metas.process.Param;
 import de.metas.security.IUserRolePermissions;
