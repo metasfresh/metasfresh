@@ -58,7 +58,7 @@ public class PaymentDocument implements IPaymentDocument
 			@NonNull final PaymentId paymentId,
 			@Nullable final BPartnerId bpartnerId,
 			@Nullable final String documentNo,
-			final boolean isSOTrx,
+			@NonNull final PaymentDirection paymentDirection,
 			//
 			@NonNull final Money openAmt,
 			@NonNull final Money amountToAllocate)
@@ -73,7 +73,7 @@ public class PaymentDocument implements IPaymentDocument
 		this.bpartnerId = bpartnerId;
 		this.documentNo = documentNo;
 		this.reference = TableRecordReference.of(I_C_Payment.Table_Name, paymentId);
-		this.isSOTrx = isSOTrx;
+		this.paymentDirection = paymentDirection;
 		//
 		Money.getCommonCurrencyIdOfAll(openAmt, amountToAllocate);
 		this.openAmtInitial = openAmt;
@@ -143,4 +143,4 @@ public class PaymentDocument implements IPaymentDocument
 	{
 		return true;
 	}
-	}
+}

@@ -81,6 +81,7 @@ import de.metas.lang.SOTrx;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.organization.OrgId;
+import de.metas.payment.PaymentDirection;
 import de.metas.payment.PaymentId;
 import de.metas.payment.api.IPaymentDAO;
 import de.metas.product.ProductId;
@@ -104,9 +105,6 @@ public class PaymentAllocationBuilderTest
 	private final BPartnerId bpartnerId = BPartnerId.ofRepoId(1); // dummy value
 	private CurrencyId euroCurrencyId;
 	private Map<InvoiceDocBaseType, I_C_DocType> invoiceDocTypes;
-
-	private static final boolean IsReceipt_Yes = true;
-	private static final boolean IsReceipt_No = false;
 
 	@BeforeEach
 	public void init()
@@ -541,11 +539,11 @@ public class PaymentAllocationBuilderTest
 		public void beforeEach()
 		{
 			builder = newPaymentAllocationBuilder(
-				// Invoices
-				ImmutableList.of(
+					// Invoices
+					ImmutableList.of(
 							invoice1 = invoice().type(CustomerInvoice).open("5000").pay("1000").build(),
 							invoice2 = invoice().type(VendorInvoice).open("1000").pay("1000").build())
-				// Payments
+					// Payments
 					, ImmutableList.<PaymentDocument> of());
 		}
 
@@ -554,9 +552,9 @@ public class PaymentAllocationBuilderTest
 		{
 			builder.allowPurchaseSalesInvoiceCompensation(true);
 
-		//
-		// Define expected candidates
-		final List<AllocationLineCandidate> candidatesExpected = ImmutableList.of(
+			//
+			// Define expected candidates
+			final List<AllocationLineCandidate> candidatesExpected = ImmutableList.of(
 					allocation().type(SalesInvoiceToPurchaseInvoice)
 							.payableRef(invoice1.getReference())
 							.paymentRef(invoice2.getReference())
@@ -564,18 +562,18 @@ public class PaymentAllocationBuilderTest
 							.overUnderAmt("4000")
 							.build());
 
-		//
-		// Check
-		assertExpected(candidatesExpected, builder);
-		//
-		assertInvoiceAllocatedAmt(invoice1.getInvoiceId(), +1000);
-		assertInvoiceAllocated(invoice1.getInvoiceId(), false);
-		//
-		assertInvoiceAllocatedAmt(invoice2.getInvoiceId(), -1000);
-		assertInvoiceAllocated(invoice2.getInvoiceId(), true);
-	}
+			//
+			// Check
+			assertExpected(candidatesExpected, builder);
+			//
+			assertInvoiceAllocatedAmt(invoice1.getInvoiceId(), +1000);
+			assertInvoiceAllocated(invoice1.getInvoiceId(), false);
+			//
+			assertInvoiceAllocatedAmt(invoice2.getInvoiceId(), -1000);
+			assertInvoiceAllocated(invoice2.getInvoiceId(), true);
+		}
 
-	@Test
+		@Test
 		public void purchaseSalesInvoiceCompensation_notAllowed()
 		{
 			builder
@@ -932,4 +930,4 @@ public class PaymentAllocationBuilderTest
 				.build();
 		assertExpected(candidatesExpected, result.getCandidates());
 	}
-	}
+}

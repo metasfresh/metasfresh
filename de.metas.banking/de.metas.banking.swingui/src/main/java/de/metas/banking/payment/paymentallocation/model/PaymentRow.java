@@ -244,7 +244,7 @@ public final class PaymentRow extends AbstractAllocableDocRow implements IPaymen
 				.orgId(paymentRow.getOrgId())
 				.paymentId(PaymentId.ofRepoId(paymentRow.getC_Payment_ID()))
 				.bpartnerId(BPartnerId.ofRepoIdOrNull(paymentRow.getC_BPartner_ID()))
-				.isSOTrx(paymentRow.isCustomerDocument())
+				.paymentDirection(paymentRow.getPaymentDirection())
 				.documentNo(paymentRow.getDocumentNo())
 				.openAmt(Money.of(paymentRow.getOpenAmtConv_APAdjusted(), currencyId))
 				.amountToAllocate(Money.of(paymentRow.getAppliedAmt_APAdjusted(), currencyId))

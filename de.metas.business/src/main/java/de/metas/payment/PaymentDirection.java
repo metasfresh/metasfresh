@@ -40,6 +40,11 @@ public enum PaymentDirection
 		return isReceipt ? INBOUND : OUTBOUND;
 	}
 
+	public static PaymentDirection ofInboundPaymentFlag(final boolean inboundPayment)
+	{
+		return inboundPayment ? INBOUND : OUTBOUND;
+	}
+
 	public static PaymentDirection ofBankStatementAmount(@NonNull final Money statementAmt)
 	{
 		return statementAmt.signum() >= 0 ? INBOUND : OUTBOUND;
