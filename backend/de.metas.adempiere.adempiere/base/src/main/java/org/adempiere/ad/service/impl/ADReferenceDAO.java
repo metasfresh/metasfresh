@@ -30,7 +30,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 public class ADReferenceDAO implements IADReferenceDAO
 {
-	private final CCache<ReferenceId, Map<String,ADRefListItem>> cache = CCache.<ReferenceId, Map<String,ADRefListItem>>
+	private final CCache<ReferenceId, ImmutableMap<String,ADRefListItem>> cache = CCache.<ReferenceId, ImmutableMap<String,ADRefListItem>>
 			builder()
 			.tableName(I_AD_Ref_List.Table_Name)
 			.build();
@@ -109,7 +109,7 @@ public class ADReferenceDAO implements IADReferenceDAO
 		saveRecord(record);
 	}
 
-	private Map<String, ADRefListItem> retrieveListValuesMap(@NonNull final ReferenceId referenceId)
+	private ImmutableMap<String, ADRefListItem> retrieveListValuesMap(@NonNull final ReferenceId referenceId)
 	{
 
 		final IQueryBuilder<I_AD_Ref_List> queryBuilder = Services.get(IQueryBL.class)
