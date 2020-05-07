@@ -3,11 +3,9 @@ package org.adempiere.ad.table.api.impl;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
-import java.util.Properties;
-import java.util.Set;
+
+import javax.annotation.Nullable;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -17,22 +15,17 @@ import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.table.api.ITableRecordIdDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
-import org.adempiere.model.PlainContextAware;
-import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.ITableRecordReference;
-import org.adempiere.util.proxy.Cached;
 import org.compiere.model.I_AD_Column;
 import org.compiere.model.I_AD_Table;
 import org.compiere.util.DB;
-import org.compiere.util.Env;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.adempiere.service.IColumnBL;
-import de.metas.cache.annotation.CacheCtx;
-import de.metas.cache.annotation.CacheTrx;
+import de.metas.cache.CCache;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -60,53 +53,45 @@ import lombok.NonNull;
 
 public class TableRecordIdDAO implements ITableRecordIdDAO
 {
-
 	private static final String DB_FUNCTION_RETRIEVE_DISTINCT_IDS = "table_record_reference_retrieve_distinct_ids";
 
+	private CCache<String, ImmutableList<TableRecordIdDescriptor>> tableRecordIdDescriptorsByOriginTableName = CCache.<String, ImmutableList<TableRecordIdDescriptor>> builder()
+			.tableName(I_AD_Table.Table_Name)
+			.build();
+
 	@Override
-	public List<TableRecordIdDescriptor> retrieveTableRecordIdReferences(final String tableName)
+	public List<TableRecordIdDescriptor> getTableRecordIdReferences(@NonNull final String tableName)
 	{
-		final PlainContextAware ctxAware = PlainContextAware.newWithTrxName(Env.getCtx(), ITrx.TRXNAME_None);
-
-		return retrieveTableRecordIdReferences(ctxAware, tableName);
-	}
-
-	@Cached(cacheName = I_AD_Table.Table_Name + "#and#" + I_AD_Column.Table_Name + "#referencedTableId2TableRecordTableIDs")
-	public List<TableRecordIdDescriptor> retrieveTableRecordIdReferences(@CacheCtx final Properties ctx, @CacheTrx final String trxName)
-	{
-		final PlainContextAware ctxAware = PlainContextAware.newWithTrxName(ctx, trxName);
-
-		return retrieveTableRecordIdReferences(ctxAware, null);
-
+		return tableRecordIdDescriptorsByOriginTableName.getOrLoad(tableName, this::retrieveTableRecordIdReferences);
 	}
 
 	@Override
 	public List<TableRecordIdDescriptor> retrieveAllTableRecordIdReferences()
 	{
-		return retrieveTableRecordIdReferences(Env.getCtx(), ITrx.TRXNAME_None);
+		final String onlyTableName = null;
+		return retrieveTableRecordIdReferences(onlyTableName);
 	}
 
-	private List<TableRecordIdDescriptor> retrieveTableRecordIdReferences(final IContextAware ctxAware, final String tableName)
+	private ImmutableList<TableRecordIdDescriptor> retrieveTableRecordIdReferences(@Nullable final String onlyTableName)
 	{
 		final IColumnBL columnBL = Services.get(IColumnBL.class);
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
 
 		//
-		final List<TableRecordIdDescriptor> result = new ArrayList<>();
+		final ImmutableList.Builder<TableRecordIdDescriptor> result = ImmutableList.builder();
 
 		// get the list of all columns whose names that end with "Record_ID". They probably belong to a column-record table (but we will make sure).
 		// we could have queried for columns ending with "Table_ID", but there might be more "*Table_ID" columns that don't have a "*Record_ID" column than the other way around.
-		final IQueryBuilder<I_AD_Column> recordIdColumnsQuery = queryBL.createQueryBuilder(I_AD_Column.class, ctxAware)
-				.addOnlyActiveRecordsFilter();
+		final IQueryBuilder<I_AD_Column> recordIdColumnsQuery = queryBL.createQueryBuilderOutOfTrx(I_AD_Column.class)
+				.addOnlyActiveRecordsFilter()
+				.addEndsWithQueryFilter(I_AD_Column.COLUMNNAME_ColumnName, ITableRecordReference.COLUMNNAME_Record_ID)
+				.orderBy(I_AD_Column.COLUMN_AD_Column_ID);
 
-		if (tableName != null)
+		if (onlyTableName != null)
 		{
-			recordIdColumnsQuery.addEqualsFilter(I_AD_Column.COLUMNNAME_AD_Table_ID, Services.get(IADTableDAO.class).retrieveTableId(tableName));
+			recordIdColumnsQuery.addEqualsFilter(I_AD_Column.COLUMNNAME_AD_Table_ID, adTableDAO.retrieveTableId(onlyTableName));
 		}
-
-		recordIdColumnsQuery.addEndsWithQueryFilter(I_AD_Column.COLUMNNAME_ColumnName, ITableRecordReference.COLUMNNAME_Record_ID)
-				.orderBy().addColumn(I_AD_Column.COLUMN_AD_Column_ID).endOrderBy();
 
 		final List<I_AD_Column> recordIdColumns = recordIdColumnsQuery
 				.create()
@@ -115,25 +100,32 @@ public class TableRecordIdDAO implements ITableRecordIdDAO
 		for (final I_AD_Column recordIdColumn : recordIdColumns)
 		{
 			final AdTableId adTableId = AdTableId.ofRepoId(recordIdColumn.getAD_Table_ID());
-			final I_AD_Table table = Services.get(IADTableDAO.class).retrieveTable(adTableId);
-			if (table.isView())
+			final I_AD_Table adTable = adTableDAO.retrieveTable(adTableId);
+			if (adTable.isView())
 			{
 				continue;
 			}
-			final Optional<String> tableColumnName = columnBL.getTableIdColumnName(table.getTableName(), recordIdColumn.getColumnName());
-			if (!tableColumnName.isPresent())
+
+			final String tableName = adTable.getTableName();
+			final String recordIdColumnName = recordIdColumn.getColumnName();
+			final String tableColumnName = columnBL.getTableIdColumnName(tableName, recordIdColumnName).orElse(null);
+			if (tableColumnName == null)
 			{
 				continue;
 			}
 
 			// now we know for sure that the records "table" of table can reference other records via Table_ID/Record_ID
-			retrieveDistinctIds(table.getTableName(), tableColumnName.get()).stream()
-					.filter(referencedTableID -> referencedTableID > 0)
-					.map(referencedTableID -> adTableDAO.retrieveTableName(referencedTableID))
-					.forEach(referencedTableName -> result.add(
-							TableRecordIdDescriptor.of(table.getTableName(), recordIdColumn.getColumnName(), referencedTableName)));
+			retrieveDistinctIds(tableName, tableColumnName)
+					.stream()
+					.map(referencedTableId -> TableRecordIdDescriptor.builder()
+							.originTableName(tableName)
+							.recordIdColumnName(recordIdColumnName)
+							.targetTableName(adTableDAO.retrieveTableName(referencedTableId))
+							.build())
+					.forEach(result::add);
 		}
-		return result;
+
+		return result.build();
 	}
 
 	/**
@@ -146,7 +138,7 @@ public class TableRecordIdDAO implements ITableRecordIdDAO
 	 * @task https://github.com/metasfresh/metasfresh/issues/3389
 	 */
 	@VisibleForTesting
-	Set<Integer> retrieveDistinctIds(
+	ImmutableSet<AdTableId> retrieveDistinctIds(
 			@NonNull final String tableName,
 			@NonNull final String idColumnName)
 	{
@@ -161,16 +153,21 @@ public class TableRecordIdDAO implements ITableRecordIdDAO
 			DB.setParameters(pstmt, ImmutableList.of(tableName, idColumnName));
 			rs = pstmt.executeQuery();
 
-			final ImmutableSet.Builder<Integer> result = ImmutableSet.builder();
+			final ImmutableSet.Builder<AdTableId> result = ImmutableSet.builder();
 			while (rs.next())
 			{
-				result.add(rs.getInt(1));
+				final AdTableId adTableId = AdTableId.ofRepoIdOrNull(rs.getInt(1));
+				if (adTableId != null)
+				{
+					result.add(adTableId);
+				}
 			}
 			return result.build();
 		}
-		catch (final SQLException e)
+		catch (final SQLException ex)
 		{
-			throw DBException.wrapIfNeeded(e).appendParametersToMessage()
+			throw DBException.wrapIfNeeded(ex)
+					.appendParametersToMessage()
 					.setParameter("sql", sql)
 					.setParameter("sqlParams", sqlParams);
 		}
