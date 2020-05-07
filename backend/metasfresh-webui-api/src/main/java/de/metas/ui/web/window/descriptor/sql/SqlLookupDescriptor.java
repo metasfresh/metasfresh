@@ -433,7 +433,6 @@ public final class SqlLookupDescriptor implements ISqlLookupDescriptor
 						.addAll(validationRuleEffective.getPostQueryFilter().getParameters())
 						.build();
 				setSqlExpressions(lookupInfo);
-				setReferenceTooltipType(lookupInfo.getReferenceTooltipType());
 			}
 
 			return new SqlLookupDescriptor(this);
@@ -485,6 +484,9 @@ public final class SqlLookupDescriptor implements ISqlLookupDescriptor
 					entityTypeIndex = MLookupFactory.COLUMNINDEX_EntityType;
 				}
 			}
+			//
+			// Description value
+			referenceTooltipType = lookupInfo.getReferenceTooltipType();
 		}
 
 		private void setSqlExpressions_PAttribute()
