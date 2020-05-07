@@ -4,15 +4,19 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { push } from 'react-router-redux';
 
-import { referencesRequest } from '../../actions/GenericActions';
+import { referencesEventSource } from '../../actions/GenericActions';
 import { setFilter } from '../../actions/ListActions';
 import Loader from '../app/Loader';
 
+/**
+ * Document related documents (references) component
+ */
 class Referenced extends Component {
   constructor(props) {
     super(props);
 
     this.state = {
+      loading: true,
       data: null,
     };
   }
@@ -20,17 +24,108 @@ class Referenced extends Component {
   componentDidMount = () => {
     const { windowType, docId } = this.props;
 
-    referencesRequest('window', windowType, docId).then((response) => {
-      this.setState(
-        {
-          data: response.data.groups,
-        },
-        () => {
-          this.referenced && this.referenced.focus();
-        }
-      );
+    referencesEventSource({
+      windowId: windowType,
+      documentId: docId,
+
+      onPartialResult: (partialGroup) => {
+        const data = this.state.data || [];
+        this.setState(
+          {
+            ...this.state,
+            loading: true,
+            data: this.mergePartialGroupToGroupsArray(data, partialGroup),
+          },
+          () => {
+            this.referenced && this.referenced.focus();
+          }
+        );
+      },
+
+      onComplete: () => {
+        this.setState({
+          ...this.state,
+          loading: false,
+        });
+      },
     });
   };
+
+  mergePartialGroupToGroupsArray(groups, partialGroup) {
+    if (!partialGroup) {
+      return groups;
+    }
+
+    let result = [];
+    let partialGroupMerged = false;
+
+    for (const group of groups) {
+      if (!partialGroupMerged && group.caption === partialGroup.caption) {
+        const changedGroup = this.mergeReferencesToGroup(
+          group,
+          partialGroup.references
+        );
+
+        result.push(changedGroup);
+        partialGroupMerged = true;
+      } else {
+        result.push(group);
+      }
+    }
+
+    if (!partialGroupMerged) {
+      result.push(partialGroup);
+      partialGroupMerged = true;
+    }
+
+    //
+    // Sort groups by caption alphabetically, keep miscGroup last.
+    result = result.sort((group1, group2) => {
+      if (group1.miscGroup == group2.miscGroup) {
+        return group1.caption.localeCompare(group2.caption);
+      } else if (group1.miscGroup) {
+        return +1; // keep misc group last
+      } else {
+        return -1;
+      }
+    });
+
+    return result;
+  }
+
+  mergeReferencesToGroup(group, referencesToAdd) {
+    if (!referencesToAdd || !referencesToAdd.length) {
+      return group;
+    }
+
+    const referencesToAddById = {};
+    referencesToAdd.forEach((reference) => {
+      referencesToAddById[reference.id] = reference;
+    });
+
+    let references = [];
+
+    for (const existingReference of group.references) {
+      const referenceToAdd = referencesToAddById[existingReference.id];
+      delete referencesToAddById[existingReference.id];
+
+      if (referenceToAdd) {
+        references.push(referenceToAdd);
+      } else {
+        references.push(existingReference);
+      }
+    }
+
+    Object.values(referencesToAddById).forEach((referenceToAdd) =>
+      references.push(referenceToAdd)
+    );
+
+    references = references.sort((reference1, reference2) => {
+      return reference1.caption.localeCompare(reference2.caption);
+    });
+
+    return { ...group, references };
+  }
 
   handleReferenceClick = (type, filter) => {
     const { dispatch, windowType, docId } = this.props;
@@ -76,10 +171,10 @@ class Referenced extends Component {
   };
 
   renderData = () => {
-    const { data } = this.state;
+    const { loading, data } = this.state;
 
-    return data && data.length ? (
-      data.map((item) => {
+    if (data && data.length) {
+      return data.map((item) => {
         return [
           <div
             key="caption"
@@ -103,23 +198,26 @@ class Referenced extends Component {
             </div>
           ))
         );
-      })
-    ) : (
-      <div className="subheader-item subheader-item-disabled">
-        {counterpart.translate('window.sideList.referenced.empty')}
-      </div>
-    );
+      });
+    } else if (!loading) {
+      return (
+        <div className="subheader-item subheader-item-disabled">
+          {counterpart.translate('window.sideList.referenced.empty')}
+        </div>
+      );
+    }
   };
 
   render() {
-    const { data } = this.state;
+    const { loading } = this.state;
     return (
       <div
         onKeyDown={this.handleKeyDown}
         ref={(c) => (this.referenced = c)}
         tabIndex={0}
       >
-        {!data ? <Loader /> : this.renderData()}
+        {this.renderData()}
+        {loading ? <Loader /> : null}
       </div>
     );
   }

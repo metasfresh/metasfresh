@@ -72,13 +72,11 @@ class TableContextMenu extends Component {
   getReferences = () => {
     const { docId, tabId, windowId, selected } = this.props;
 
-    referencesRequest('window', windowId, docId, tabId, selected[0]).then(
-      (response) => {
-        this.setState({
-          references: response.data.references,
-        });
-      }
-    );
+    referencesRequest(windowId, docId, tabId, selected[0]).then((response) => {
+      this.setState({
+        references: response.data.references,
+      });
+    });
   };
 
   handleReferenceClick = (refType, filter) => {

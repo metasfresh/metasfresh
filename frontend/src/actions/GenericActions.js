@@ -210,19 +210,43 @@ export function rowActionsRequest({ windowId, documentId, tabId, rowId }) {
   );
 }
 
-export function referencesRequest(entity, type, docId, tabId, rowId) {
+export function referencesRequest(windowId, documentId, tabId, rowId) {
   return axios.get(
     config.API_URL +
+      '/window/' +
+      windowId +
       '/' +
-      entity +
-      '/' +
-      type +
-      '/' +
-      docId +
+      documentId +
       (tabId ? '/' + tabId : '') +
       (rowId ? '/' + rowId : '') +
       '/references'
   );
+}
+
+export function referencesEventSource({
+  windowId,
+  documentId,
+  onPartialResult,
+  onComplete,
+}) {
+  var eventSource = new EventSource(
+    `${config.API_URL}/window/${windowId}/${documentId}/references/sse`,
+    { withCredentials: true }
+  );
+
+  eventSource.onmessage = (event) => {
+    const data = JSON.parse(event.data);
+    if (data.type === 'PARTIAL_RESULT') {
+      onPartialResult(data.partialGroup);
+    } else if (data.type === 'COMPLETED') {
+      eventSource.close();
+      onComplete && onComplete();
+    }
+  };
+
+  eventSource.onerror = () => {
+    eventSource.close();
+  };
 }
 
 export function attachmentsRequest(entity, docType, docId) {
