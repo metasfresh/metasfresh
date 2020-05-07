@@ -5,6 +5,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.Stream;
 
+import org.adempiere.util.concurrent.CustomizableThreadFactory;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -62,6 +63,8 @@ public class DocumentReferencesRestController
 	private final DocumentReferencesService documentReferencesService;
 	private final MenuTreeRepository menuTreeRepository;
 
+	private final ExecutorService sseExecutor;
+
 	public DocumentReferencesRestController(
 			@NonNull final UserSession userSession,
 			@NonNull final DocumentReferencesService documentReferencesService,
@@ -70,6 +73,11 @@ public class DocumentReferencesRestController
 		this.userSession = userSession;
 		this.documentReferencesService = documentReferencesService;
 		this.menuTreeRepository = menuTreeRepository;
+
+		this.sseExecutor = Executors.newCachedThreadPool(CustomizableThreadFactory.builder()
+				.setDaemon(true)
+				.setThreadNamePrefix(getClass().getSimpleName() + "-SSE-")
+				.build());
 	}
 
 	private JSONOptions newJSONOptions()
@@ -130,8 +138,7 @@ public class DocumentReferencesRestController
 
 			final JSONDocumentReferencesGroupsAggregator aggregator = newJSONDocumentReferencesGroupsAggregator();
 
-			final ExecutorService sseMvcExecutor = Executors.newSingleThreadExecutor();
-			sseMvcExecutor.execute(() -> {
+			sseExecutor.execute(() -> {
 				try
 				{
 					documentReferences.forEach(documentReference -> aggregator.addAndFlush(documentReference, emitter));
