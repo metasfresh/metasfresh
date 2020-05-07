@@ -36,8 +36,6 @@ import docActionFixtures from '../../../test_setup/fixtures/master_window/doc_ac
 import userSessionData from '../../../test_setup/fixtures/user_session.json';
 import notificationsData from '../../../test_setup/fixtures/notifications.json';
 
-import MasterWindow from "../../containers/MasterWindow";
-
 const mockStore = configureStore(middleware);
 const middleware = [thunk, promiseMiddleware];
 const FIXTURES_PROPS = fixtures.props1;
