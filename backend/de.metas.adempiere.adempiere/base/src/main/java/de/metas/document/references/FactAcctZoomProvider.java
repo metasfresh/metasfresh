@@ -41,7 +41,7 @@ import lombok.NonNull;
  * #L%
  */
 
-public class FactAcctZoomProvider implements IZoomProvider
+class FactAcctZoomProvider implements IZoomProvider
 {
 	public static final transient FactAcctZoomProvider instance = new FactAcctZoomProvider();
 	private static final String COLUMNNAME_Posted = "Posted";
