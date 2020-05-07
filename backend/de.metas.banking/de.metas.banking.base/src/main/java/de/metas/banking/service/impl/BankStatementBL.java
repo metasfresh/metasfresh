@@ -22,7 +22,21 @@
 
 package de.metas.banking.service.impl;
 
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Properties;
+import java.util.Set;
+
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_BankStatement;
+import org.compiere.model.I_C_BankStatementLine;
+import org.compiere.model.I_C_Invoice;
+import org.compiere.model.MPeriod;
+import org.compiere.model.X_C_DocType;
+
 import com.google.common.collect.ImmutableSet;
+
 import de.metas.acct.api.IFactAcctDAO;
 import de.metas.banking.BankStatementId;
 import de.metas.banking.BankStatementLineId;
@@ -31,23 +45,11 @@ import de.metas.banking.service.IBankStatementBL;
 import de.metas.banking.service.IBankStatementDAO;
 import de.metas.banking.service.IBankStatementListenerService;
 import de.metas.invoice.InvoiceId;
+import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.payment.PaymentId;
 import de.metas.payment.api.IPaymentBL;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.invoice.service.IInvoiceDAO;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_BankStatement;
-import org.compiere.model.I_C_BankStatementLine;
-import org.compiere.model.I_C_Invoice;
-import org.compiere.model.MPeriod;
-import org.compiere.model.X_C_DocType;
-
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
-import java.util.Set;
 
 public class BankStatementBL implements IBankStatementBL
 {

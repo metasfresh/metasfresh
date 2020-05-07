@@ -22,6 +22,9 @@
 
 package de.metas.payment.api;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
+
 import javax.annotation.Nullable;
 
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -48,16 +51,6 @@ import de.metas.payment.TenderType;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.invoice.service.IInvoiceBL;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_Invoice;
-import org.compiere.model.I_C_Payment;
-import org.compiere.model.X_C_DocType;
-import org.compiere.util.TimeUtil;
-
-import javax.annotation.Nullable;
-import java.math.BigDecimal;
-import java.time.LocalDate;
 
 public class DefaultPaymentBuilder
 {
