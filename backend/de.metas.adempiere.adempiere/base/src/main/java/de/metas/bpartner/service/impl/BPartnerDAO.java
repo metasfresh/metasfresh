@@ -365,7 +365,7 @@ public class BPartnerDAO implements IBPartnerDAO
 	@Override
 	public I_C_BPartner_Location getBPartnerLocationByIdEvenInactive(@NonNull final BPartnerLocationId bpartnerLocationId)
 	{
-		return retrieveAllBPartnerLocations(bpartnerLocationId.getBpartnerId())
+		return retrieveBPartnerLocations(bpartnerLocationId.getBpartnerId(), true)
 				.stream()
 				.filter(bpLocation -> bpLocation.getC_BPartner_Location_ID() == bpartnerLocationId.getRepoId())
 				.findFirst()
@@ -391,11 +391,9 @@ public class BPartnerDAO implements IBPartnerDAO
 	@Override
 	public List<I_C_BPartner_Location> retrieveBPartnerLocations(@NonNull final I_C_BPartner bpartner)
 	{
-		final Properties ctx = InterfaceWrapperHelper.getCtx(bpartner);
 		final int bpartnerId = bpartner.getC_BPartner_ID();
-		final String trxName = InterfaceWrapperHelper.getTrxName(bpartner);
 
-		return retrieveBPartnerLocations(ctx, bpartnerId, trxName);
+		return retrieveBPartnerLocations(BPartnerId.ofRepoId(bpartnerId));
 	}
 
 	@Override
@@ -423,40 +421,24 @@ public class BPartnerDAO implements IBPartnerDAO
 	}
 
 	@Override
-	public List<I_C_BPartner_Location> retrieveBPartnerLocations(@NonNull final BPartnerId bpartnerId)
+	public ImmutableList<I_C_BPartner_Location> retrieveBPartnerLocations(@NonNull final BPartnerId bpartnerId)
 	{
-		return retrieveBPartnerLocations(Env.getCtx(), bpartnerId.getRepoId(), ITrx.TRXNAME_None);
+		return retrieveBPartnerLocations(bpartnerId, false);
 	}
 
-	@Override
-	@Cached(cacheName = I_C_BPartner_Location.Table_Name + "#by#" + I_C_BPartner_Location.COLUMNNAME_C_BPartner_ID)
-	public ImmutableList<I_C_BPartner_Location> retrieveBPartnerLocations(@CacheCtx final Properties ctx, final int bpartnerId, @CacheTrx final String trxName)
-	{
-		if (bpartnerId <= 0)
-		{
-			return ImmutableList.of();
-		}
-		final IQueryBuilder<I_C_BPartner_Location> queryBuilder = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_C_BPartner_Location.class, ctx, trxName)
-				.addEqualsFilter(I_C_BPartner_Location.COLUMNNAME_C_BPartner_ID, bpartnerId)
-				.addOnlyActiveRecordsFilter();
-
-		queryBuilder.orderBy()
-				.addColumn(I_C_BPartner_Location.COLUMNNAME_C_BPartner_Location_ID);
-
-		return queryBuilder
-				.create()
-				.listImmutable(I_C_BPartner_Location.class);
-	}
-	
 	
 	@Override
 	@Cached(cacheName = I_C_BPartner_Location.Table_Name + "#by#" + I_C_BPartner_Location.COLUMNNAME_C_BPartner_ID)
-	public ImmutableList<I_C_BPartner_Location> retrieveAllBPartnerLocations(@NonNull final BPartnerId bpartnerId)
+	public ImmutableList<I_C_BPartner_Location> retrieveBPartnerLocations(@NonNull final BPartnerId bpartnerId, final boolean includeInactive)
 	{
 		final IQueryBuilder<I_C_BPartner_Location> queryBuilder = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_BPartner_Location.class)
 				.addEqualsFilter(I_C_BPartner_Location.COLUMNNAME_C_BPartner_ID, bpartnerId);
+		
+		if (!includeInactive)
+		{
+			queryBuilder.addOnlyActiveRecordsFilter();
+		}
 
 		queryBuilder.orderBy()
 				.addColumn(I_C_BPartner_Location.COLUMNNAME_IsActive);
@@ -846,7 +828,7 @@ public class BPartnerDAO implements IBPartnerDAO
 	public boolean hasMoreLocations(final Properties ctx, final int bpartnerId, final int excludeBPLocationId, final String trxName)
 	{
 		Check.assumeGreaterThanZero(bpartnerId, "bpartnerId");
-		return retrieveBPartnerLocations(ctx, bpartnerId, trxName)
+		return retrieveBPartnerLocations(BPartnerId.ofRepoId(bpartnerId))
 				.stream()
 				.anyMatch(bpartnerLocation -> bpartnerLocation.getC_BPartner_Location_ID() != excludeBPLocationId);
 	}
@@ -1058,7 +1040,7 @@ public class BPartnerDAO implements IBPartnerDAO
 
 	private List<I_C_BPartner_Location> retrieveBPartnerLocationsInTrx(final BPartnerId bpartnerId)
 	{
-		return retrieveBPartnerLocations(Env.getCtx(), bpartnerId.getRepoId(), ITrx.TRXNAME_ThreadInherited);
+		return retrieveBPartnerLocations(bpartnerId);
 	}
 
 	@Override
