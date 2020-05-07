@@ -15,3 +15,9 @@ export const CREATE_TABLE = 'CREATE_TABLE';
  * @type {string} Update table data.
  */
 export const UPDATE_TABLE = 'UPDATE_TABLE';
+
+/**
+ * @constant
+ * @type {string} Delete table from the state
+ */
+export const DELETE_TABLE = 'DELETE_TABLE';

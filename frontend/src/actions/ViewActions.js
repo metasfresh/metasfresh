@@ -27,7 +27,7 @@ import {
   DELETE_VIEW,
 } from '../constants/ActionTypes';
 
-import { createGridTable, updateGridTable } from './TablesActions';
+import { createGridTable, updateGridTable } from './TableActions';
 
 export function resetView(id) {
   return {
@@ -251,6 +251,7 @@ export function createView({
   };
 }
 
+//TODO: Check if table is created properly when browsing existing view
 export function fetchLayout(
   windowType,
   viewType,
@@ -276,6 +277,7 @@ export function fetchLayout(
   };
 }
 
+// TODO: Update table
 export function filterView(windowId, viewId, filters, useViewId = false) {
   return (dispatch) => {
     const identifier = useViewId ? viewId : windowId;

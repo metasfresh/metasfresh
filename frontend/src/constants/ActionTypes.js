@@ -1,4 +1,4 @@
-export * from './TableTypes';
+export * from './actions/TableTypes';
 
 /**
  * @constant
