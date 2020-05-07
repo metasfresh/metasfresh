@@ -68,7 +68,7 @@ import {
   getLayout,
   topActionsRequest,
   getProcessData,
-  getTab,
+  getTabRequest,
   startProcess,
   formatParentUrl,
 } from '../api';
@@ -87,7 +87,7 @@ import {
   updateCommentsPanelTextInput,
   updateCommentsPanelOpenFlag,
 } from './CommentsPanelActions';
-import { createTabTable, updateTabTable } from './TablesActions';
+import { createTabTable, updateTabTable } from './TableActions';
 import { toggleFullScreen, preFormatPostDATA } from '../utils';
 import { getScope, parseToDisplay } from '../utils/documentListHelper';
 
@@ -529,12 +529,12 @@ export function deselectTableItems(ids, windowType, viewId) {
  */
 export function fetchTab(tabId, windowType, docId) {
   return (dispatch) => {
-    return getTab(tabId, windowType, docId)
+    return getTabRequest(tabId, windowType, docId)
       .then((response) => {
         const tableId = `${windowType}_${docId}_${tabId}`;
-        const tableData = { windowType, tabId, docId };
+        const tableData = { result: response };
 
-        dispatch(createTabTable(tableId, tableData, response));
+        dispatch(updateTabTable(tableId, tableData));
 
         return Promise.resolve(response);
       })
@@ -557,7 +557,7 @@ export function fetchTab(tabId, windowType, docId) {
 //         tabTmp[tab.tabId] = {};
 
 //         if ((tab.tabId && index === 0) || !tab.queryOnActivate) {
-//           requests.push(getTab(tab.tabId, windowType, docId));
+//           requests.push(getTabRequest(tab.tabId, windowType, docId));
 //         }
 //       });
 
@@ -646,31 +646,50 @@ export function initWindow(windowType, docId, tabId, rowId = null, isAdvanced) {
  * Main method to generate window
  */
 export function createWindow(
-  windowId,
-  docId = 'NEW',
+  windowType,
+  documentId = 'NEW',
   tabId,
   rowId,
   isModal = false,
   isAdvanced
 ) {
   return (dispatch) => {
-    if (docId == 'new') {
-      docId = 'NEW';
+    if (documentId == 'new') {
+      documentId = 'NEW';
     }
 
     // this chain is really important,
     // to do not re-render widgets on init
-    return dispatch(initWindow(windowId, docId, tabId, rowId, isAdvanced)).then(
+    return dispatch(initWindow(windowType, documentId, tabId, rowId, isAdvanced)).then(
       (response) => {
         if (!response || !response.data) {
           return Promise.resolve(null);
         }
 
-        if (docId == 'NEW' && !isModal) {
-          dispatch(setLatestNewDocument(response.data[0].id));
+        const data = response.data[0];
+        const docId = data.id;
+        const tabs = data.includedTabsInfo;
+
+        console.log('createWindow.initWindow response: ', data, tabs)
+
+        if (tabs) {
+          Object.values(tabs).forEach(tab => {
+            const tableId = `${windowType}_${docId}_${tabId}`;
+            const tableData = {
+              windowType,
+              docId,
+              tabId,
+              ...tab,
+            }
+            dispatch(createTabTable(tableId, tableData))
+          });
+        }
+
+        if (documentId == 'NEW' && !isModal) {
+          dispatch(setLatestNewDocument(docId));
           // redirect immedietely
           return dispatch(
-            replace(`/window/${windowId}/${response.data[0].id}`)
+            replace(`/window/${windowType}/${docId}`)
           );
         }
 
@@ -682,46 +701,52 @@ export function createWindow(
           }
         });
 
-        if (docId === 'NEW') {
-          dispatch(updateModal(null, response.data[0].id));
+        if (documentId === 'NEW') {
+          dispatch(updateModal(null, docId));
         }
 
-        docId = response.data[elem].id;
         dispatch(
           initDataSuccess({
             data: parseToDisplay(response.data[elem].fieldsByName),
             docId,
-            saveStatus: response.data[0].saveStatus,
+            saveStatus: data.saveStatus,
             scope: getScope(isModal),
-            standardActions: response.data[0].standardActions,
-            validStatus: response.data[0].validStatus,
-            includedTabsInfo: response.data[0].includedTabsInfo,
-            websocket: response.data[0].websocketEndpoint,
+            standardActions: data.standardActions,
+            validStatus: data.validStatus,
+            includedTabsInfo: data.includedTabsInfo,
+            websocket: data.websocketEndpoint,
           })
         );
 
         if (isModal) {
           if (rowId === 'NEW') {
             dispatch(
-              mapDataToState(response.data, false, 'NEW', docId, windowId)
+              mapDataToState(response.data, false, 'NEW', docId, windowType)
             );
             dispatch(updateStatus(response.data));
-            dispatch(updateModal(response.data[0].rowId));
+            dispatch(updateModal(data.rowId));
           }
         } else {
-          dispatch(getWindowBreadcrumb(windowId));
+          dispatch(getWindowBreadcrumb(windowType));
         }
 
         return (
-          getLayout('window', windowId, tabId, null, null, isAdvanced)
-            .then((response) =>
+          getLayout('window', windowType, tabId, null, null, isAdvanced)
+            .then((response) => {
+              console.log('getLayout response: ', response.data, windowType, tabId, docId)
+
+              // const tableId = `${windowType}_${docId}_${tabId}`;
+              // const tableData = { result: response };
+
+              // dispatch(updateTabTable(tableId, tableData));
+
               dispatch(initLayoutSuccess(response.data, getScope(isModal)))
-            )
+            })
             // TODO: looks like this can be removed ?
             // .then((response) => {
             //   if (!isModal) {
             //     return dispatch(
-            //       initTabs(response.layout.tabs, windowId, docId, isModal)
+            //       initTabs(response.layout.tabs, windowType, docId, isModal)
             //     );
             //   }
             //   return Promise.resolve(null);

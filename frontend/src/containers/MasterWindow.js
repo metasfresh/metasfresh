@@ -14,7 +14,7 @@ import {
   updateTabRowsData,
 } from '../actions/WindowActions';
 import { connectWS, disconnectWS } from '../utils/websockets';
-import { getTab, getRowsData } from '../api';
+import { getTabRequest, getRowsData } from '../api';
 
 import MasterWindow from '../components/app/MasterWindow';
 
@@ -56,7 +56,7 @@ class MasterWindowContainer extends Component {
     ) {
       const tabId = master.layout.activeTab;
 
-      getTab(tabId, params.windowType, master.docId).then((tab) => {
+      getTabRequest(tabId, params.windowType, master.docId).then((tab) => {
         addRowData({ [tabId]: tab }, 'master');
       });
     }
@@ -180,7 +180,7 @@ class MasterWindowContainer extends Component {
       sortingOrder = (ordering.ascending ? '+' : '-') + ordering.fieldName;
     }
 
-    getTab(activeTabId, params.windowType, master.docId, sortingOrder).then(
+    getTabRequest(activeTabId, params.windowType, master.docId, sortingOrder).then(
       (tab) => {
         addRowData({ [activeTabId]: tab }, 'master');
       }
