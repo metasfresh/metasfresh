@@ -1,12 +1,15 @@
 package org.adempiere.ad.service.impl;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-
+import com.google.common.collect.ImmutableMap;
+import de.metas.i18n.IModelTranslationMap;
+import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.TranslatableStrings;
+import de.metas.organization.OrgId;
+import de.metas.reflist.RefListId;
+import de.metas.reflist.ReferenceId;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.service.IADReferenceDAO;
@@ -16,13 +19,15 @@ import org.adempiere.util.proxy.Cached;
 import org.compiere.model.I_AD_Ref_List;
 import org.compiere.util.Env;
 
-import com.google.common.collect.ImmutableMap;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
 
-import de.metas.i18n.IModelTranslationMap;
-import de.metas.i18n.ITranslatableString;
-import de.metas.i18n.TranslatableStrings;
-import de.metas.util.Check;
-import de.metas.util.Services;
+import static org.adempiere.model.InterfaceWrapperHelper.loadOrNew;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 public class ADReferenceDAO implements IADReferenceDAO
 {
@@ -67,11 +72,13 @@ public class ADReferenceDAO implements IADReferenceDAO
 			final String value = item.getValue();
 			final IModelTranslationMap itemTrl = InterfaceWrapperHelper.getModelTranslationMap(item);
 			itemsMap.put(value, ADRefListItem.builder()
+					.orgId(OrgId.ofRepoId(item.getAD_Org_ID()))
+					.referenceId(ReferenceId.ofRepoId(item.getAD_Reference_ID()))
 					.value(value)
 					.valueName(item.getValueName())
 					.name(itemTrl.getColumnTrl(I_AD_Ref_List.COLUMNNAME_Name, item.getName()))
 					.description(itemTrl.getColumnTrl(I_AD_Ref_List.COLUMNNAME_Description, item.getDescription()))
-					.refListId(item.getAD_Ref_List_ID())
+					.refListId(RefListId.ofRepoId(item.getAD_Ref_List_ID()))
 					.build());
 		}
 
@@ -118,5 +125,18 @@ public class ADReferenceDAO implements IADReferenceDAO
 			final ADRefListItem item = retrieveListItemOrNull(adReferenceId, value);
 			return item != null ? item.getName() : TranslatableStrings.constant(value);
 		});
+	}
+
+	public void saveRefList(@NonNull final IADReferenceDAO.ADRefListItem refList)
+	{
+		final I_AD_Ref_List record = loadOrNew(refList.getRefListId(), I_AD_Ref_List.class);
+
+		record.setAD_Org_ID(refList.getOrgId().getRepoId());
+		record.setAD_Reference_ID(refList.getReferenceId().getRepoId());
+
+		record.setName(refList.getName().getDefaultValue());
+		record.setValue(refList.getValue());
+
+		saveRecord(record);
 	}
 }

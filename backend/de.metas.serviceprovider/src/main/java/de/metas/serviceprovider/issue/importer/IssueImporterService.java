@@ -24,10 +24,8 @@ package de.metas.serviceprovider.issue.importer;
 
 import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
-import de.metas.reflist.GetRefListRequest;
-import de.metas.reflist.RefList;
-import de.metas.reflist.RefListRepository;
 import de.metas.reflist.ReferenceId;
 import de.metas.serviceprovider.ImportQueue;
 import de.metas.serviceprovider.external.ExternalId;
@@ -50,6 +48,7 @@ import de.metas.serviceprovider.milestone.MilestoneRepository;
 import de.metas.util.Loggables;
 import de.metas.util.NumberUtils;
 import lombok.NonNull;
+import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.slf4j.Logger;
@@ -75,16 +74,16 @@ public class IssueImporterService
 	private final IssueRepository issueRepository;
 	private final ExternalReferenceRepository externalReferenceRepository;
 	private final ITrxManager trxManager;
-	private final RefListRepository refListRepository;
+	private final IADReferenceDAO referenceDAO;
 
-	public IssueImporterService(final ImportQueue<ImportIssueInfo> importIssuesQueue, final MilestoneRepository milestoneRepository, final IssueRepository issueRepository, final ExternalReferenceRepository externalReferenceRepository, final ITrxManager trxManager, final RefListRepository refListRepository)
+	public IssueImporterService(final ImportQueue<ImportIssueInfo> importIssuesQueue, final MilestoneRepository milestoneRepository, final IssueRepository issueRepository, final ExternalReferenceRepository externalReferenceRepository, final ITrxManager trxManager, final IADReferenceDAO referenceDAO)
 	{
 		this.importIssuesQueue = importIssuesQueue;
 		this.milestoneRepository = milestoneRepository;
 		this.issueRepository = issueRepository;
 		this.externalReferenceRepository = externalReferenceRepository;
 		this.trxManager = trxManager;
-		this.refListRepository = refListRepository;
+		this.referenceDAO = referenceDAO;
 	}
 
 	public void importIssues(@NonNull final ImmutableList<ImportIssuesRequest> requestList,
@@ -296,25 +295,17 @@ public class IssueImporterService
 	private void createMissingRefListForLabels(@NonNull final ImmutableList<IssueLabel> issueLabels)
 	{
 		issueLabels.stream()
-				.filter(label -> !refListRepository.getByRequest(buildGetRefListRequest(label)).isPresent())
+				.filter(label -> referenceDAO.retrieveListItemOrNull(LABEL_AD_Reference_ID, label.getValue()) == null)
 				.map(this::buildRefList)
-				.forEach(refListRepository::save);
+				.forEach(referenceDAO::saveRefList);
 	}
 
-	private GetRefListRequest buildGetRefListRequest(@NonNull final IssueLabel issueLabel)
+	private IADReferenceDAO.ADRefListItem buildRefList(@NonNull final IssueLabel issueLabel)
 	{
-		return GetRefListRequest
+		return IADReferenceDAO.ADRefListItem
 				.builder()
-				.referenceId(ReferenceId.ofRepoId(LABEL_AD_Reference_ID))
-				.value(issueLabel.getValue())
-				.build();
-	}
-
-	private RefList buildRefList(@NonNull final IssueLabel issueLabel)
-	{
-		return RefList.builder()
 				.orgId(issueLabel.getOrgId())
-				.name(issueLabel.getValue())
+				.name(TranslatableStrings.constant(issueLabel.getValue()))
 				.value(issueLabel.getValue())
 				.referenceId(ReferenceId.ofRepoId(LABEL_AD_Reference_ID))
 				.build();

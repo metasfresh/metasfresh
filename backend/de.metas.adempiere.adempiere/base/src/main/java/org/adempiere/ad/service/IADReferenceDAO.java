@@ -22,18 +22,21 @@ package org.adempiere.ad.service;
  * #L%
  */
 
+import de.metas.i18n.ITranslatableString;
+import de.metas.organization.OrgId;
+import de.metas.reflist.RefListId;
+import de.metas.reflist.ReferenceId;
+import de.metas.util.ISingletonService;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
+import org.compiere.util.Env;
+
+import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-
-import org.compiere.util.Env;
-
-import de.metas.i18n.ITranslatableString;
-import de.metas.util.ISingletonService;
-
-import lombok.Builder;
-import lombok.Value;
 
 public interface IADReferenceDAO extends ISingletonService
 {
@@ -41,12 +44,26 @@ public interface IADReferenceDAO extends ISingletonService
 	@Builder
 	public static final class ADRefListItem
 	{
-		private final String value;
-		private final String valueName;
-		private final ITranslatableString name;
-		private final ITranslatableString description;
-		/** AD_Ref_List_ID */
-		private final int refListId;
+		@NonNull
+		OrgId orgId;
+
+		@NonNull
+		ReferenceId referenceId;
+
+		@NonNull
+		String value;
+
+		@Nullable
+		String valueName;
+
+		@NonNull
+		ITranslatableString name;
+
+		@Nullable
+		ITranslatableString description;
+
+		@Nullable
+		RefListId refListId;
 	}
 	
 	/**
@@ -98,4 +115,6 @@ public interface IADReferenceDAO extends ISingletonService
 	ADRefListItem retrieveListItemOrNull(int adReferenceId, String value);
 
 	ITranslatableString retrieveListNameTranslatableString(int adReferenceId, String value);
+
+	void saveRefList(@NonNull final IADReferenceDAO.ADRefListItem refList);
 }

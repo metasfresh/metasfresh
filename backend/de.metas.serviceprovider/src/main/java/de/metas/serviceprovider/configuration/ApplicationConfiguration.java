@@ -32,6 +32,7 @@ import de.metas.serviceprovider.timebooking.importer.ImportTimeBookingInfo;
 import de.metas.user.api.IUserDAO;
 import de.metas.util.Services;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.springframework.context.annotation.Bean;
@@ -97,5 +98,11 @@ public class ApplicationConfiguration
 	public IModelCacheInvalidationService modelCacheInvalidationService()
 	{
 		return Services.get(IModelCacheInvalidationService .class);
+	}
+
+	@Bean
+	public IADReferenceDAO referenceDAO()
+	{
+		return Services.get(IADReferenceDAO.class);
 	}
 }
