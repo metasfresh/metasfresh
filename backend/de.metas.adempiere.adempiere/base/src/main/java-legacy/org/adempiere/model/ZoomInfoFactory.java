@@ -364,7 +364,7 @@ public class ZoomInfoFactory
 			final int recordsCount = recordsCountSupplier.getAsInt();
 			final Duration recordsCountDuration = Duration.ofNanos(stopwatch.stop().elapsed(TimeUnit.NANOSECONDS));
 			query.setRecordCount(recordsCount, recordsCountDuration);
-			logger.info("Updated records count for {} in {}", this, stopwatch);
+			logger.debug("Updated records count for {} in {}", this, stopwatch);
 		}
 
 		public AdWindowId getAdWindowId()
@@ -465,7 +465,7 @@ public class ZoomInfoFactory
 		}
 
 		stopwatch.stop();
-		logger.info("Fetches zoom candidates for source={} in {}", zoomOrigin, stopwatch);
+		logger.debug("Fetched zoom candidates for source={} in {}", zoomOrigin, stopwatch);
 
 		return zoomInfoCandidates.build();
 	}

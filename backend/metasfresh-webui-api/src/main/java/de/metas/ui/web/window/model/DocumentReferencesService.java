@@ -98,7 +98,7 @@ public class DocumentReferencesService
 				});
 		stopwatch.stop();
 
-		logger.info("Fetched initial document references stream for {} in {}", documentPath, stopwatch);
+		logger.debug("Fetched initial document references stream for {} in {}", documentPath, stopwatch);
 
 		return documentReferences;
 	}
