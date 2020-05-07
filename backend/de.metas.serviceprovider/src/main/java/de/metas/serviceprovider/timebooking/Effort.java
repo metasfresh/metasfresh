@@ -23,12 +23,12 @@
 package de.metas.serviceprovider.timebooking;
 
 import de.metas.util.time.HmmUtils;
-import lombok.Data;
 import lombok.NonNull;
+import lombok.Value;
 
 import javax.annotation.Nullable;
 
-@Data
+@Value
 public class Effort
 {
 	long seconds;

@@ -29,7 +29,6 @@ import de.metas.serviceprovider.external.label.IssueLabel;
 import de.metas.serviceprovider.milestone.MilestoneId;
 import de.metas.uom.UomId;
 import de.metas.user.UserId;
-import de.metas.util.NumberUtils;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NonNull;
@@ -100,7 +99,7 @@ public class IssueEntity
 
 	public void setEstimatedEffortIfNull(@Nullable final BigDecimal estimatedEffort)
 	{
-		if ( NumberUtils.asBigDecimal(this.estimatedEffort,BigDecimal.ZERO).equals(BigDecimal.ZERO) )
+		if ( this.estimatedEffort == null || this.estimatedEffort.signum() == 0 )
 		{
 			this.estimatedEffort = estimatedEffort;
 		}
@@ -108,7 +107,7 @@ public class IssueEntity
 
 	public void setBudgetedEffortIfNull(@Nullable final BigDecimal budgetedEffort)
 	{
-		if ( NumberUtils.asBigDecimal(this.budgetedEffort,BigDecimal.ZERO).equals(BigDecimal.ZERO) )
+		if ( this.budgetedEffort == null || this.budgetedEffort.signum() == 0 )
 		{
 			this.budgetedEffort = budgetedEffort;
 		}

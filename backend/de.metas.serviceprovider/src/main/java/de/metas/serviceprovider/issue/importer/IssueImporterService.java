@@ -300,11 +300,10 @@ public class IssueImporterService
 				.forEach(referenceDAO::saveRefList);
 	}
 
-	private IADReferenceDAO.ADRefListItem buildRefList(@NonNull final IssueLabel issueLabel)
+	private IADReferenceDAO.ADRefListItemCreateRequest buildRefList(@NonNull final IssueLabel issueLabel)
 	{
-		return IADReferenceDAO.ADRefListItem
+		return IADReferenceDAO.ADRefListItemCreateRequest
 				.builder()
-				.orgId(issueLabel.getOrgId())
 				.name(TranslatableStrings.constant(issueLabel.getValue()))
 				.value(issueLabel.getValue())
 				.referenceId(ReferenceId.ofRepoId(LABEL_AD_Reference_ID))

@@ -1,10 +1,10 @@
 package org.adempiere.ad.service.impl;
 
 import com.google.common.collect.ImmutableMap;
+import de.metas.cache.CCache;
 import de.metas.i18n.IModelTranslationMap;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
-import de.metas.organization.OrgId;
 import de.metas.reflist.RefListId;
 import de.metas.reflist.ReferenceId;
 import de.metas.util.Check;
@@ -15,7 +15,6 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.proxy.Cached;
 import org.compiere.model.I_AD_Ref_List;
 import org.compiere.util.Env;
 
@@ -26,11 +25,16 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
-import static org.adempiere.model.InterfaceWrapperHelper.loadOrNew;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 public class ADReferenceDAO implements IADReferenceDAO
 {
+	private final CCache<ReferenceId, Map<String,ADRefListItem>> cache = CCache.<ReferenceId, Map<String,ADRefListItem>>
+			builder()
+			.tableName(I_AD_Ref_List.Table_Name)
+			.build();
+
 	@Override
 	public Collection<ADRefListItem> retrieveListItems(final int adReferenceId)
 	{
@@ -45,44 +49,10 @@ public class ADReferenceDAO implements IADReferenceDAO
 		return itemsMap.keySet();
 	}
 
-	@Cached(cacheName = I_AD_Ref_List.Table_Name + "#by#" + I_AD_Ref_List.COLUMNNAME_AD_Reference_ID + "#asMap", expireMinutes = Cached.EXPIREMINUTES_Never)
 	@Override
 	public Map<String, ADRefListItem> retrieveListValuesMap(final int adReferenceId)
 	{
-
-		final IQueryBuilder<I_AD_Ref_List> queryBuilder = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_AD_Ref_List.class, Env.getCtx(), ITrx.TRXNAME_None);
-
-		queryBuilder.getCompositeFilter()
-				.addEqualsFilter(I_AD_Ref_List.COLUMNNAME_AD_Reference_ID, adReferenceId)
-				.addOnlyActiveRecordsFilter();
-
-		queryBuilder.orderBy()
-				.addColumn(I_AD_Ref_List.COLUMNNAME_AD_Ref_List_ID);
-
-		final List<I_AD_Ref_List> items = queryBuilder.create().list(I_AD_Ref_List.class);
-		if (items.isEmpty())
-		{
-			return ImmutableMap.of();
-		}
-
-		final Map<String, ADRefListItem> itemsMap = new HashMap<>(items.size());
-		for (final I_AD_Ref_List item : items)
-		{
-			final String value = item.getValue();
-			final IModelTranslationMap itemTrl = InterfaceWrapperHelper.getModelTranslationMap(item);
-			itemsMap.put(value, ADRefListItem.builder()
-					.orgId(OrgId.ofRepoId(item.getAD_Org_ID()))
-					.referenceId(ReferenceId.ofRepoId(item.getAD_Reference_ID()))
-					.value(value)
-					.valueName(item.getValueName())
-					.name(itemTrl.getColumnTrl(I_AD_Ref_List.COLUMNNAME_Name, item.getName()))
-					.description(itemTrl.getColumnTrl(I_AD_Ref_List.COLUMNNAME_Description, item.getDescription()))
-					.refListId(RefListId.ofRepoId(item.getAD_Ref_List_ID()))
-					.build());
-		}
-
-		return ImmutableMap.copyOf(itemsMap);
+		return cache.getOrLoad(ReferenceId.ofRepoId(adReferenceId), this::retrieveListValuesMap);
 	}
 
 	@Override
@@ -127,16 +97,52 @@ public class ADReferenceDAO implements IADReferenceDAO
 		});
 	}
 
-	public void saveRefList(@NonNull final IADReferenceDAO.ADRefListItem refList)
+	public void saveRefList(@NonNull final IADReferenceDAO.ADRefListItemCreateRequest refListItemCreateRequest)
 	{
-		final I_AD_Ref_List record = loadOrNew(refList.getRefListId(), I_AD_Ref_List.class);
+		final I_AD_Ref_List record = newInstanceOutOfTrx(I_AD_Ref_List.class);
 
-		record.setAD_Org_ID(refList.getOrgId().getRepoId());
-		record.setAD_Reference_ID(refList.getReferenceId().getRepoId());
+		record.setAD_Reference_ID(refListItemCreateRequest.getReferenceId().getRepoId());
 
-		record.setName(refList.getName().getDefaultValue());
-		record.setValue(refList.getValue());
+		record.setName(refListItemCreateRequest.getName().getDefaultValue());
+		record.setValue(refListItemCreateRequest.getValue());
 
 		saveRecord(record);
+	}
+
+	private Map<String, ADRefListItem> retrieveListValuesMap(@NonNull final ReferenceId referenceId)
+	{
+
+		final IQueryBuilder<I_AD_Ref_List> queryBuilder = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_AD_Ref_List.class, Env.getCtx(), ITrx.TRXNAME_None);
+
+		queryBuilder.getCompositeFilter()
+				.addEqualsFilter(I_AD_Ref_List.COLUMNNAME_AD_Reference_ID, referenceId.getRepoId())
+				.addOnlyActiveRecordsFilter();
+
+		queryBuilder.orderBy()
+				.addColumn(I_AD_Ref_List.COLUMNNAME_AD_Ref_List_ID);
+
+		final List<I_AD_Ref_List> items = queryBuilder.create().list(I_AD_Ref_List.class);
+		if (items.isEmpty())
+		{
+			return ImmutableMap.of();
+		}
+
+		final Map<String, ADRefListItem> itemsMap = new HashMap<>(items.size());
+		for (final I_AD_Ref_List item : items)
+		{
+			final String value = item.getValue();
+			final IModelTranslationMap itemTrl = InterfaceWrapperHelper.getModelTranslationMap(item);
+			itemsMap.put(value, ADRefListItem.builder()
+					.referenceId(ReferenceId.ofRepoId(item.getAD_Reference_ID()))
+					.value(value)
+					.valueName(item.getValueName())
+					.name(itemTrl.getColumnTrl(I_AD_Ref_List.COLUMNNAME_Name, item.getName()))
+					.description(itemTrl.getColumnTrl(I_AD_Ref_List.COLUMNNAME_Description, item.getDescription()))
+					.refListId(RefListId.ofRepoId(item.getAD_Ref_List_ID()))
+					.build());
+		}
+
+		return ImmutableMap.copyOf(itemsMap);
 	}
 }

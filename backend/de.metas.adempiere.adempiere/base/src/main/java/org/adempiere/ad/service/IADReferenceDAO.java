@@ -23,7 +23,6 @@ package org.adempiere.ad.service;
  */
 
 import de.metas.i18n.ITranslatableString;
-import de.metas.organization.OrgId;
 import de.metas.reflist.RefListId;
 import de.metas.reflist.ReferenceId;
 import de.metas.util.ISingletonService;
@@ -42,13 +41,13 @@ public interface IADReferenceDAO extends ISingletonService
 {
 	@Value
 	@Builder
-	public static final class ADRefListItem
+	class ADRefListItem
 	{
 		@NonNull
-		OrgId orgId;
+		ReferenceId referenceId;
 
 		@NonNull
-		ReferenceId referenceId;
+		RefListId refListId;
 
 		@NonNull
 		String value;
@@ -61,11 +60,22 @@ public interface IADReferenceDAO extends ISingletonService
 
 		@Nullable
 		ITranslatableString description;
-
-		@Nullable
-		RefListId refListId;
 	}
-	
+
+	@Value
+	@Builder
+	class ADRefListItemCreateRequest
+	{
+		@NonNull
+		ReferenceId referenceId;
+
+		@NonNull
+		String value;
+
+		@NonNull
+		ITranslatableString name;
+	}
+
 	/**
 	 * 
 	 * @param ctx
@@ -116,5 +126,5 @@ public interface IADReferenceDAO extends ISingletonService
 
 	ITranslatableString retrieveListNameTranslatableString(int adReferenceId, String value);
 
-	void saveRefList(@NonNull final IADReferenceDAO.ADRefListItem refList);
+	void saveRefList(@NonNull final IADReferenceDAO.ADRefListItemCreateRequest refListItemCreateRequest);
 }
