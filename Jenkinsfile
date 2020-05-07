@@ -52,6 +52,8 @@ timestamps
 
 node('agent && linux')
 {
+	dir('backend')
+	{
 	configFileProvider([configFile(fileId: 'metasfresh-global-maven-settings', replaceTokens: true, variable: 'MAVEN_SETTINGS')])
 	{
 		// create our config instance to be used further on
@@ -140,7 +142,7 @@ node('agent && linux')
 
 	// clean up the workspace after (successfull) builds
 	cleanWs cleanWhenAborted: false, cleanWhenFailure: false
-
+	} //dir
 } // node
 
 // this map is populated in the "Invoke downstream jobs" stage
