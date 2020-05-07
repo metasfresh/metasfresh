@@ -6,6 +6,8 @@ import java.util.Set;
 import de.metas.bpartner.BPartnerId;
 import de.metas.currency.Amount;
 import de.metas.organization.ClientAndOrgId;
+import de.metas.organization.OrgId;
+import de.metas.payment.PaymentDirection;
 import de.metas.payment.PaymentId;
 import de.metas.ui.web.view.IViewRow;
 import de.metas.ui.web.view.ViewRowFieldNameAndJsonValues;
@@ -45,7 +47,6 @@ import lombok.NonNull;
 public class PaymentRow implements IViewRow
 {
 	@ViewColumn(seqNo = 10, widgetType = DocumentFieldWidgetType.YesNo, widgetSize = WidgetSize.Small, captionKey = "IsReceipt")
-	@Getter
 	private final boolean inboundPayment;
 
 	@ViewColumn(seqNo = 20, widgetType = DocumentFieldWidgetType.Text, widgetSize = WidgetSize.Small, captionKey = "DocumentNo")
@@ -72,8 +73,9 @@ public class PaymentRow implements IViewRow
 	private final DocumentId rowId;
 	@Getter
 	private final PaymentId paymentId;
-	@Getter
 	private final ClientAndOrgId clientAndOrgId;
+	@Getter
+	private final PaymentDirection paymentDirection;
 
 	private final ViewRowFieldNameAndJsonValuesHolder<PaymentRow> values;
 
@@ -86,18 +88,20 @@ public class PaymentRow implements IViewRow
 			@NonNull final LookupValue bpartner,
 			@NonNull final Amount payAmt,
 			@NonNull final Amount openAmt,
-			final boolean inboundPayment)
+			@NonNull final PaymentDirection paymentDirection)
 	{
-		rowId = convertPaymentIdToDocumentId(paymentId);
-		this.paymentId = paymentId;
-		this.clientAndOrgId = clientAndOrgId;
+		this.inboundPayment = paymentDirection.isInboundPayment();
 		this.documentNo = documentNo;
 		this.dateTrx = dateTrx;
 		this.bpartner = bpartner;
 		this.payAmt = payAmt;
 		this.openAmt = openAmt;
 		this.currencyCode = Amount.getCommonCurrencyCodeOfAll(payAmt, openAmt).toThreeLetterCode();
-		this.inboundPayment = inboundPayment;
+
+		rowId = convertPaymentIdToDocumentId(paymentId);
+		this.paymentId = paymentId;
+		this.clientAndOrgId = clientAndOrgId;
+		this.paymentDirection = paymentDirection;
 
 		values = ViewRowFieldNameAndJsonValuesHolder.newInstance(PaymentRow.class);
 	}
@@ -116,6 +120,11 @@ public class PaymentRow implements IViewRow
 	public DocumentId getId()
 	{
 		return rowId;
+	}
+
+	public OrgId getOrgId()
+	{
+		return clientAndOrgId.getOrgId();
 	}
 
 	@Override

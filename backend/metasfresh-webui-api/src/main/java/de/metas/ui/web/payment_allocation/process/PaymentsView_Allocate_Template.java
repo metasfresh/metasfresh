@@ -1,23 +1,13 @@
 package de.metas.ui.web.payment_allocation.process;
 
-import java.time.LocalDate;
-import java.util.List;
-
-import javax.annotation.OverridingMethodsMustInvokeSuper;
-
 import org.compiere.SpringContextHolder;
 
-import com.google.common.collect.ImmutableList;
-
-import de.metas.banking.payment.paymentallocation.service.AllocationAmounts;
-import de.metas.banking.payment.paymentallocation.service.PayableDocument;
-import de.metas.banking.payment.paymentallocation.service.PaymentAllocationBuilder;
-import de.metas.banking.payment.paymentallocation.service.PaymentDocument;
-import de.metas.money.Money;
+import de.metas.banking.payment.paymentallocation.IPaymentAllocationBL;
+import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingServiceCompanyService;
 import de.metas.money.MoneyService;
-import de.metas.ui.web.payment_allocation.InvoiceRow;
-import de.metas.ui.web.payment_allocation.PaymentRow;
-import de.metas.util.time.SystemTime;
+import de.metas.ui.web.payment_allocation.process.PaymentsViewAllocateCommand.PaymentsViewAllocateCommandBuilder;
+import de.metas.util.Services;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -29,12 +19,12 @@ import de.metas.util.time.SystemTime;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -44,12 +34,14 @@ import de.metas.util.time.SystemTime;
 abstract class PaymentsView_Allocate_Template extends PaymentsViewBasedProcess
 {
 	private final MoneyService moneyService = SpringContextHolder.instance.getBean(MoneyService.class);
+	private final InvoiceProcessingServiceCompanyService invoiceProcessingServiceCompanyService = SpringContextHolder.instance.getBean(InvoiceProcessingServiceCompanyService.class);
+	private final IPaymentAllocationBL paymentAllocationBL = Services.get(IPaymentAllocationBL.class);
 
 	@Override
 	protected final String doIt()
 	{
-		preparePaymentAllocationBuilder()
-				.build();
+		newPaymentsViewAllocateCommand()
+				.run();
 
 		// NOTE: the payment and invoice rows will be automatically invalidated (via a cache reset),
 		// when the payment allocation is processed
@@ -65,67 +57,23 @@ abstract class PaymentsView_Allocate_Template extends PaymentsViewBasedProcess
 		invalidatePaymentsAndInvoicesViews();
 	}
 
-	@OverridingMethodsMustInvokeSuper
-	protected PaymentAllocationBuilder preparePaymentAllocationBuilder()
+	protected final PaymentsViewAllocateCommand newPaymentsViewAllocateCommand()
 	{
-		final PaymentRow paymentRow = getSingleSelectedPaymentRowOrNull();
-		if (paymentRow == null)
-		{
-			return null;
-		}
+		final PaymentsViewAllocateCommandBuilder builder = PaymentsViewAllocateCommand.builder()
+				.moneyService(moneyService)
+				.invoiceProcessingServiceCompanyService(invoiceProcessingServiceCompanyService)
+				//
+				.paymentRow(getSingleSelectedPaymentRowOrNull())
+				.invoiceRows(getSelectedInvoiceRows())
+				.allowPurchaseSalesInvoiceCompensation(paymentAllocationBL.isPurchaseSalesInvoiceCompensationAllowed());
 
-		final List<PaymentDocument> paymentDocuments = paymentRow != null
-				? ImmutableList.of(toPaymentDocument(paymentRow))
-				: ImmutableList.of();
+		customizePaymentsViewAllocateCommandBuilder(builder);
 
-		final List<InvoiceRow> invoiceRows = getSelectedInvoiceRows();
-		final ImmutableList<PayableDocument> invoiceDocuments = invoiceRows.stream()
-				.map(this::toPayableDocument)
-				.collect(ImmutableList.toImmutableList());
-
-		final LocalDate dateTrx = SystemTime.asLocalDate();
-		final Money paymentOpenAmt = moneyService.toMoney(paymentRow.getOpenAmt());
-
-		return PaymentAllocationBuilder.newBuilder()
-				.orgId(paymentRow.getClientAndOrgId().getOrgId())
-				.currencyId(paymentOpenAmt.getCurrencyId())
-				.dateTrx(dateTrx)
-				.dateAcct(dateTrx)
-				.paymentDocuments(paymentDocuments)
-				.payableDocuments(invoiceDocuments)
-				.allowPartialAllocations(true);
+		return builder.build();
 	}
 
-	private PayableDocument toPayableDocument(final InvoiceRow row)
+	protected void customizePaymentsViewAllocateCommandBuilder(@NonNull final PaymentsViewAllocateCommandBuilder builder)
 	{
-		final Money openAmt = moneyService.toMoney(row.getOpenAmt());
-		final Money discountAmt = moneyService.toMoney(row.getDiscountAmt());
-
-		return PayableDocument.builder()
-				.invoiceId(row.getInvoiceId())
-				.bpartnerId(row.getBPartnerId())
-				.documentNo(row.getDocumentNo())
-				.isSOTrx(row.getSoTrx().toBoolean())
-				.creditMemo(row.isCreditMemo())
-				.openAmt(openAmt)
-				.amountsToAllocate(AllocationAmounts.builder()
-						.payAmt(openAmt)
-						.discountAmt(discountAmt)
-						.build())
-				.build();
-	}
-
-	private PaymentDocument toPaymentDocument(final PaymentRow row)
-	{
-		final Money openAmt = moneyService.toMoney(row.getOpenAmt());
-
-		return PaymentDocument.builder()
-				.paymentId(row.getPaymentId())
-				.bpartnerId(row.getBPartnerId())
-				.documentNo(row.getDocumentNo())
-				.isSOTrx(row.isInboundPayment())
-				.openAmt(openAmt)
-				.amountToAllocate(openAmt)
-				.build();
+		// nothing on this level
 	}
 }
