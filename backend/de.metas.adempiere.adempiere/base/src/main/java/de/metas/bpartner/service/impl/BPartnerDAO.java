@@ -361,7 +361,17 @@ public class BPartnerDAO implements IBPartnerDAO
 				.findFirst()
 				.orElse(null);
 	}
-
+	
+	@Override
+	public I_C_BPartner_Location getBPartnerLocationByIdEvenInactive(@NonNull final BPartnerLocationId bpartnerLocationId)
+	{
+		return retrieveBPartnerLocations(bpartnerLocationId.getBpartnerId(), true)
+				.stream()
+				.filter(bpLocation -> bpLocation.getC_BPartner_Location_ID() == bpartnerLocationId.getRepoId())
+				.findFirst()
+				.orElse(null);
+	}
+	
 	@Override
 	public I_C_BPartner_Location getBPartnerLocationByIdInTrx(@NonNull final BPartnerLocationId bpartnerLocationId)
 	{
@@ -381,11 +391,9 @@ public class BPartnerDAO implements IBPartnerDAO
 	@Override
 	public List<I_C_BPartner_Location> retrieveBPartnerLocations(@NonNull final I_C_BPartner bpartner)
 	{
-		final Properties ctx = InterfaceWrapperHelper.getCtx(bpartner);
 		final int bpartnerId = bpartner.getC_BPartner_ID();
-		final String trxName = InterfaceWrapperHelper.getTrxName(bpartner);
 
-		return retrieveBPartnerLocations(ctx, bpartnerId, trxName);
+		return retrieveBPartnerLocations(BPartnerId.ofRepoId(bpartnerId));
 	}
 
 	@Override
@@ -413,34 +421,36 @@ public class BPartnerDAO implements IBPartnerDAO
 	}
 
 	@Override
-	public List<I_C_BPartner_Location> retrieveBPartnerLocations(@NonNull final BPartnerId bpartnerId)
+	public ImmutableList<I_C_BPartner_Location> retrieveBPartnerLocations(@NonNull final BPartnerId bpartnerId)
 	{
-		return retrieveBPartnerLocations(Env.getCtx(), bpartnerId.getRepoId(), ITrx.TRXNAME_None);
+		return retrieveBPartnerLocations(bpartnerId, false);
 	}
 
+	
 	@Override
 	@Cached(cacheName = I_C_BPartner_Location.Table_Name + "#by#" + I_C_BPartner_Location.COLUMNNAME_C_BPartner_ID)
-	public ImmutableList<I_C_BPartner_Location> retrieveBPartnerLocations(@CacheCtx final Properties ctx, final int bpartnerId, @CacheTrx final String trxName)
+	public ImmutableList<I_C_BPartner_Location> retrieveBPartnerLocations(@NonNull final BPartnerId bpartnerId, final boolean includeInactive)
 	{
-		if (bpartnerId <= 0)
-		{
-			return ImmutableList.of();
-		}
 		final IQueryBuilder<I_C_BPartner_Location> queryBuilder = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_C_BPartner_Location.class, ctx, trxName)
-				.addEqualsFilter(I_C_BPartner_Location.COLUMNNAME_C_BPartner_ID, bpartnerId)
-				.addOnlyActiveRecordsFilter();
+				.createQueryBuilder(I_C_BPartner_Location.class)
+				.addEqualsFilter(I_C_BPartner_Location.COLUMNNAME_C_BPartner_ID, bpartnerId);
+		
+		if (!includeInactive)
+		{
+			queryBuilder.addOnlyActiveRecordsFilter();
+		}
 
 		queryBuilder.orderBy()
-				.addColumn(I_C_BPartner_Location.COLUMNNAME_C_BPartner_Location_ID);
+				.addColumn(I_C_BPartner_Location.COLUMNNAME_IsActive);
 
 		return queryBuilder
 				.create()
 				.listImmutable(I_C_BPartner_Location.class);
 	}
+	
 
 	@Override
-	public I_C_BPartner_Location getDefaultShipToLocation(final BPartnerId bpartnerId)
+	public I_C_BPartner_Location getDefaultShipToLocation(@NonNull final BPartnerId bpartnerId)
 	{
 		final List<I_C_BPartner_Location> bpLocations = retrieveBPartnerLocations(bpartnerId);
 		if (bpLocations.isEmpty())
@@ -511,7 +521,7 @@ public class BPartnerDAO implements IBPartnerDAO
 	@Override
 	public CountryId getBPartnerLocationCountryId(@NonNull final BPartnerLocationId bpartnerLocationId)
 	{
-		final I_C_BPartner_Location bpLocation = getBPartnerLocationById(bpartnerLocationId); // TODO retrieve it even if inactive
+		final I_C_BPartner_Location bpLocation = getBPartnerLocationByIdEvenInactive(bpartnerLocationId); 
 		return CountryId.ofRepoId(bpLocation.getC_Location().getC_Country_ID());
 	}
 
@@ -818,7 +828,7 @@ public class BPartnerDAO implements IBPartnerDAO
 	public boolean hasMoreLocations(final Properties ctx, final int bpartnerId, final int excludeBPLocationId, final String trxName)
 	{
 		Check.assumeGreaterThanZero(bpartnerId, "bpartnerId");
-		return retrieveBPartnerLocations(ctx, bpartnerId, trxName)
+		return retrieveBPartnerLocations(BPartnerId.ofRepoId(bpartnerId))
 				.stream()
 				.anyMatch(bpartnerLocation -> bpartnerLocation.getC_BPartner_Location_ID() != excludeBPLocationId);
 	}
@@ -1030,7 +1040,7 @@ public class BPartnerDAO implements IBPartnerDAO
 
 	private List<I_C_BPartner_Location> retrieveBPartnerLocationsInTrx(final BPartnerId bpartnerId)
 	{
-		return retrieveBPartnerLocations(Env.getCtx(), bpartnerId.getRepoId(), ITrx.TRXNAME_ThreadInherited);
+		return retrieveBPartnerLocations(bpartnerId);
 	}
 
 	@Override
@@ -1610,4 +1620,5 @@ public class BPartnerDAO implements IBPartnerDAO
 
 		return createLocationIdOrNull(partnerId, billToLocation);
 	}
+
 }
