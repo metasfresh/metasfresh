@@ -1,26 +1,29 @@
 package de.metas.ui.web.window.model;
 
-import java.util.List;
 import java.util.Properties;
+import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
 
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.ZoomInfoFactory;
 import org.adempiere.model.ZoomInfoFactory.IZoomSource;
 import org.adempiere.model.ZoomInfoFactory.ZoomInfo;
 import org.compiere.model.I_AD_Column;
 import org.compiere.util.Evaluatee;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
 import com.google.common.base.MoreObjects;
-import com.google.common.collect.ImmutableList;
+import com.google.common.base.Stopwatch;
 
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
+import de.metas.logging.LogManager;
+import de.metas.security.IUserRolePermissions;
 import de.metas.ui.web.document.filter.provider.userQuery.MQueryDocumentFilterHelper;
 import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.datatypes.DocumentPath;
@@ -57,47 +60,86 @@ import lombok.NonNull;
 @Service
 public class DocumentReferencesService
 {
-	@Autowired
-	private DocumentCollection documentCollection;
+	private static final Logger logger = LogManager.getLogger(DocumentReferencesService.class);
+	private final DocumentCollection documentCollection;
 
-	public List<DocumentReference> getDocumentReferences(@NonNull final DocumentPath documentPath)
+	public DocumentReferencesService(@NonNull final DocumentCollection documentCollection)
+	{
+		this.documentCollection = documentCollection;
+	}
+
+	public Stream<DocumentReference> getDocumentReferences(
+			@NonNull final DocumentPath documentPath,
+			@NonNull final IUserRolePermissions rolePermissions)
 	{
 		// Document with composed keys does not support references
 		if (documentPath.isComposedKey())
 		{
-			return ImmutableList.of();
+			return Stream.empty();
 		}
 
-		return documentCollection.forDocumentReadonly(documentPath, document -> {
+		final ZoomInfoFactory zoomInfoFactory = ZoomInfoFactory.get();
 
-			if (document.isNew())
-			{
-				return ImmutableList.of();
-			}
+		final Stopwatch stopwatch = Stopwatch.createStarted();
+		final Stream<DocumentReference> documentReferences = documentCollection.forDocumentReadonly(
+				documentPath,
+				document -> {
+					if (document.isNew())
+					{
+						return Stream.empty();
+					}
 
-			final DocumentAsZoomSource zoomSource = new DocumentAsZoomSource(document);
-			final ITranslatableString filterCaption = extractFilterCaption(document);
+					final ITranslatableString filterCaption = extractFilterCaption(document);
 
-			return ZoomInfoFactory.get()
-					.streamZoomInfos(zoomSource)
-					.map(zoomInfo -> createDocumentReference(zoomInfo, filterCaption))
-					.collect(ImmutableList.toImmutableList());
-		});
+					final DocumentAsZoomSource zoomSource = new DocumentAsZoomSource(document);
+					return zoomInfoFactory
+							.streamZoomInfos(zoomSource, rolePermissions)
+							.map(zoomInfo -> toDocumentReference(zoomInfo, filterCaption));
+				});
+		stopwatch.stop();
+
+		logger.info("Fetched initial document references stream for {} in {}", documentPath, stopwatch);
+
+		return documentReferences;
 	}
 
-	public DocumentReference getDocumentReference(final DocumentPath sourceDocumentPath, final WindowId targetWindowId)
+	private static DocumentReference toDocumentReference(
+			@NonNull final ZoomInfo zoomInfo,
+			@NonNull final ITranslatableString filterCaption)
 	{
+		return DocumentReference.builder()
+				.id(zoomInfo.getId())
+				.internalName(zoomInfo.getInternalName())
+				.caption(zoomInfo.getLabel())
+				.windowId(WindowId.of(zoomInfo.getAdWindowId()))
+				.documentsCount(zoomInfo.getRecordCount())
+				.filter(MQueryDocumentFilterHelper.createDocumentFilterFromMQuery(zoomInfo.getQuery(), filterCaption))
+				.loadDuration(zoomInfo.getRecordCountDuration())
+				.build();
+	}
+
+	public DocumentReference getDocumentReference(
+			final DocumentPath sourceDocumentPath,
+			final WindowId targetWindowId,
+			@NonNull final IUserRolePermissions rolePermissions)
+	{
+		final ZoomInfoFactory zoomInfoFactory = ZoomInfoFactory.get();
+
 		return documentCollection.forDocumentReadonly(sourceDocumentPath, sourceDocument -> {
 			if (sourceDocument.isNew())
 			{
-				throw new IllegalArgumentException("New documents cannot be referenced: " + sourceDocument);
+				throw new AdempiereException("New documents cannot be referenced: " + sourceDocument);
 			}
 
 			final DocumentAsZoomSource zoomSource = new DocumentAsZoomSource(sourceDocument);
+			final ZoomInfo zoomInfo = zoomInfoFactory.retrieveZoomInfo(
+					zoomSource,
+					targetWindowId.toAdWindowId(),
+					rolePermissions);
 
-			final ZoomInfo zoomInfo = ZoomInfoFactory.get().retrieveZoomInfo(zoomSource, targetWindowId.toAdWindowId());
 			final ITranslatableString filterCaption = extractFilterCaption(sourceDocument);
-			return createDocumentReference(zoomInfo, filterCaption);
+
+			return toDocumentReference(zoomInfo, filterCaption);
 		});
 	}
 
@@ -133,21 +175,6 @@ public class DocumentReferencesService
 
 		// Window caption + document info
 		return TranslatableStrings.join(" ", windowCaption, documentSummary);
-	}
-
-	private static final DocumentReference createDocumentReference(
-			@NonNull final ZoomInfo zoomInfo,
-			@NonNull final ITranslatableString filterCaption)
-	{
-		return DocumentReference.builder()
-				.id(zoomInfo.getId())
-				.internalName(zoomInfo.getInternalName())
-				.caption(zoomInfo.getLabel())
-				.windowId(WindowId.of(zoomInfo.getAdWindowId()))
-				.documentsCount(zoomInfo.getRecordCount())
-				.filter(MQueryDocumentFilterHelper.createDocumentFilterFromMQuery(zoomInfo.getQuery(), filterCaption))
-				.loadDuration(zoomInfo.getRecordCountDuration())
-				.build();
 	}
 
 	private static final class DocumentAsZoomSource implements IZoomSource

@@ -4,6 +4,8 @@ import java.time.Duration;
 import java.util.Collection;
 import java.util.List;
 
+import javax.annotation.Nullable;
+
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
@@ -45,7 +47,8 @@ import lombok.NonNull;
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 public final class JSONDocumentReference
 {
-	static JSONDocumentReference of(final DocumentReference documentReference, final JSONOptions jsonOpts)
+	@Nullable
+	public static JSONDocumentReference of(final DocumentReference documentReference, final JSONOptions jsonOpts)
 	{
 		try
 		{
@@ -91,7 +94,7 @@ public final class JSONDocumentReference
 	private final String loadDurationStr;
 
 	private JSONDocumentReference(
-			@NonNull final DocumentReference documentReference, 
+			@NonNull final DocumentReference documentReference,
 			@NonNull final JSONOptions jsonOpts)
 	{
 		final String adLanguage = jsonOpts.getAdLanguage();
@@ -106,11 +109,6 @@ public final class JSONDocumentReference
 		this.filter = JSONDocumentFilter.of(filter, jsonOpts);
 
 		final Duration loadDuration = documentReference.getLoadDuration();
-		this.loadDurationStr = loadDuration != null ? formatDuration(loadDuration) : null;
-	}
-
-	private static String formatDuration(final Duration loadDuration)
-	{
-		return TimeUtil.formatElapsed(loadDuration);
+		this.loadDurationStr = loadDuration != null ? TimeUtil.formatElapsed(loadDuration) : null;
 	}
 }

@@ -16,12 +16,13 @@ package org.adempiere.model;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.time.Duration;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
+import java.util.function.IntSupplier;
+
+import javax.annotation.Nullable;
 
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.trx.api.ITrx;
@@ -41,17 +42,14 @@ import org.compiere.util.Util.ArrayKey;
 import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
-import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 
-import ch.qos.logback.classic.Level;
 import de.metas.cache.CCache;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.ImmutableTranslatableString;
 import de.metas.i18n.ImmutableTranslatableString.ImmutableTranslatableStringBuilder;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
-import de.metas.util.Loggables;
 import de.metas.util.Services;
 import de.metas.util.lang.CoalesceUtil;
 import lombok.NonNull;
@@ -79,8 +77,7 @@ import lombok.NonNull;
 	@Override
 	public List<ZoomInfo> retrieveZoomInfos(
 			@NonNull final IZoomSource source,
-			final AdWindowId targetAD_Window_ID,
-			final boolean checkRecordsCount)
+			@Nullable final AdWindowId targetWindowId)
 	{
 		final List<GenericZoomInfoDescriptor> zoomInfoDescriptors = getZoomInfoDescriptors(source.getKeyColumnNameOrNull());
 		if (zoomInfoDescriptors.isEmpty())
@@ -91,8 +88,8 @@ import lombok.NonNull;
 		final ImmutableList.Builder<ZoomInfo> result = ImmutableList.builder();
 		for (final GenericZoomInfoDescriptor zoomInfoDescriptor : zoomInfoDescriptors)
 		{
-			final AdWindowId AD_Window_ID = zoomInfoDescriptor.getTargetAD_Window_ID();
-			if (targetAD_Window_ID != null && !AdWindowId.equals(targetAD_Window_ID, AD_Window_ID))
+			final AdWindowId windowId = zoomInfoDescriptor.getTargetAD_Window_ID();
+			if (targetWindowId != null && !AdWindowId.equals(targetWindowId, windowId))
 			{
 				continue;
 			}
@@ -104,18 +101,16 @@ import lombok.NonNull;
 				continue;
 			}
 
-			if (checkRecordsCount)
-			{
-				updateRecordCount(query, zoomInfoDescriptor, source.getTableName());
-			}
+			final IntSupplier recordsCountSupplier = createRecordsCountSupplier(query, zoomInfoDescriptor, source.getTableName());
 
-			final String zoomInfoId = "generic-" + AD_Window_ID;
-			result.add(ZoomInfoFactory.ZoomInfo.of(
-					zoomInfoId,
-					zoomInfoDescriptor.getInternalName(),
-					AD_Window_ID,
-					query,
-					name));
+			result.add(ZoomInfo.builder()
+					.zoomInfoId("generic-" + windowId.getRepoId())
+					.internalName(zoomInfoDescriptor.getInternalName())
+					.windowId(windowId)
+					.query(query)
+					.destinationDisplay(name)
+					.recordsCountSupplier(recordsCountSupplier)
+					.build());
 		}
 
 		return result.build();
@@ -313,14 +308,23 @@ import lombok.NonNull;
 		return query;
 	}
 
-	private void updateRecordCount(final MQuery query, final GenericZoomInfoDescriptor zoomInfoDescriptor, final String sourceTableName)
+	private static IntSupplier createRecordsCountSupplier(
+			final MQuery query,
+			final GenericZoomInfoDescriptor zoomInfoDescriptor,
+			final String sourceTableName)
 	{
-		final Stopwatch stopwatch = Stopwatch.createStarted();
+		final String sql = buildCountSQL(query, zoomInfoDescriptor, sourceTableName);
+		return () -> DB.getSQLValueEx(ITrx.TRXNAME_None, sql);
+	}
 
-		final String sqlCount = "SELECT COUNT(*) FROM " + query.getTableName() + " WHERE " + query.getWhereClause(false);
+	private static String buildCountSQL(
+			final MQuery query,
+			final GenericZoomInfoDescriptor zoomInfoDescriptor,
+			final String sourceTableName)
+	{
+		String sqlCount = "SELECT COUNT(1) FROM " + query.getTableName() + " WHERE " + query.getWhereClause(false);
 
 		Boolean isSO = zoomInfoDescriptor.getIsSOTrx();
-		String sqlCountAdd = "";
 		if (isSO != null && zoomInfoDescriptor.isTargetHasIsSOTrxColumn())
 		{
 			//
@@ -335,19 +339,10 @@ import lombok.NonNull;
 
 			// TODO: handle the case when IsSOTrx is a virtual column
 
-			sqlCountAdd = " AND IsSOTrx=" + DB.TO_BOOLEAN(isSO);
+			sqlCount += " AND IsSOTrx=" + DB.TO_BOOLEAN(isSO);
 		}
 
-		int count = DB.getSQLValue(ITrx.TRXNAME_None, sqlCount + sqlCountAdd);
-		if (count < 0 && isSO != null)     // error try again w/o SO
-		{
-			count = DB.getSQLValue(ITrx.TRXNAME_None, sqlCount);
-		}
-
-		final Duration countDuration = Duration.ofNanos(stopwatch.stop().elapsed(TimeUnit.NANOSECONDS));
-		query.setRecordCount(count, countDuration);
-
-		Loggables.withLogger(logger, Level.DEBUG).addLog("GenericZoomInfoDescriptor {} took {}", zoomInfoDescriptor, countDuration);
+		return sqlCount;
 	}
 
 	private static final class GenericZoomInfoDescriptor

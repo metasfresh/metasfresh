@@ -7,6 +7,7 @@ import java.util.function.Supplier;
 import javax.annotation.Nullable;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.util.Env;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
@@ -193,7 +194,11 @@ public class SqlViewFactory implements IViewFactory
 		}
 		else
 		{
-			final DocumentReference reference = documentReferencesService.getDocumentReference(referencedDocumentPath, targetWindowId);
+			final DocumentReference reference = documentReferencesService.getDocumentReference(
+					referencedDocumentPath,
+					targetWindowId,
+					Env.getUserRolePermissions() // FIXME: avoid using Env here
+			);
 			return reference.getFilter();
 		}
 	}
@@ -271,16 +276,16 @@ public class SqlViewFactory implements IViewFactory
 	{
 		final DocumentFilterDescriptorsProvider filterDescriptors = view.getViewDataRepository().getViewFilterDescriptors();
 		final DocumentFilterList newFilters = filterViewRequest.getFiltersUnwrapped(filterDescriptors);
-//		final DocumentFilterList newFiltersExcludingFacets = newFilters.retainOnlyNonFacetFilters();
-//
-//		final DocumentFilterList currentFiltersExcludingFacets = view.getFilters().retainOnlyNonFacetFilters();
-//
-//		if (DocumentFilterList.equals(currentFiltersExcludingFacets, newFiltersExcludingFacets))
-//		{
-//			// TODO
-//			throw new AdempiereException("TODO");
-//		}
-//		else
+		// final DocumentFilterList newFiltersExcludingFacets = newFilters.retainOnlyNonFacetFilters();
+		//
+		// final DocumentFilterList currentFiltersExcludingFacets = view.getFilters().retainOnlyNonFacetFilters();
+		//
+		// if (DocumentFilterList.equals(currentFiltersExcludingFacets, newFiltersExcludingFacets))
+		// {
+		// // TODO
+		// throw new AdempiereException("TODO");
+		// }
+		// else
 		{
 			return createView(CreateViewRequest.filterViewBuilder(view)
 					.setFilters(newFilters)

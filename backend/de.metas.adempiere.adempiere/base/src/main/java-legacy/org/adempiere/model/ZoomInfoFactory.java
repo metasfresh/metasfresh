@@ -13,13 +13,13 @@
  *****************************************************************************/
 package org.adempiere.model;
 
-import java.io.Serializable;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
-import java.util.Set;
+import java.util.concurrent.TimeUnit;
+import java.util.function.IntSupplier;
 import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
@@ -40,6 +40,7 @@ import org.compiere.util.Evaluatees;
 import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
+import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.i18n.ITranslatableString;
@@ -48,6 +49,7 @@ import de.metas.logging.LogManager;
 import de.metas.security.IUserRolePermissions;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
 
@@ -287,63 +289,51 @@ public class ZoomInfoFactory
 		}
 	}
 
-	/**
-	 * Simple class that contains zoom information. Currently used by
-	 * {@link org.compiere.apps.AZoomAcross}.
-	 *
-	 * @author ts
-	 *
-	 */
-	@SuppressWarnings("serial")
-	public static final class ZoomInfo implements Serializable
+	public static final class ZoomInfo
 	{
-		public static ZoomInfo of(
-				@NonNull final String zoomInfoId,
-				@NonNull final String internalName,
-				final AdWindowId windowId,
-				@NonNull final MQuery query,
-				@NonNull final ITranslatableString destinationDisplay)
-		{
-			return new ZoomInfo(zoomInfoId, internalName, windowId, query, destinationDisplay);
-		}
-
-		private final String _zoomInfoId;
+		private final String zoomInfoId;
 		private final String _internalName;
-		private final ITranslatableString _destinationDisplay;
-		private final MQuery _query;
-		private final AdWindowId _windowId;
+		private final ITranslatableString destinationDisplay;
+		private final MQuery query;
+		private final AdWindowId windowId;
 
+		private final IntSupplier recordsCountSupplier;
+
+		@Builder
 		private ZoomInfo(
 				@NonNull final String zoomInfoId,
 				@NonNull final String internalName,
 				@NonNull final AdWindowId windowId,
 				@NonNull final MQuery query,
-				@NonNull final ITranslatableString destinationDisplay)
+				@NonNull final ITranslatableString destinationDisplay,
+				@NonNull final IntSupplier recordsCountSupplier)
 		{
-			_zoomInfoId = Check.assumeNotEmpty(zoomInfoId, "zoomInfoId is not empty");
-			_internalName = Check.assumeNotEmpty(internalName, "internalName is not empty");
+			this.zoomInfoId = Check.assumeNotEmpty(zoomInfoId, "zoomInfoId is not empty");
+			this._internalName = Check.assumeNotEmpty(internalName, "internalName is not empty");
 
-			_windowId = windowId;
+			this.windowId = windowId;
 
-			_query = query;
-			_destinationDisplay = destinationDisplay;
+			this.query = query;
+			this.destinationDisplay = destinationDisplay;
+
+			this.recordsCountSupplier = recordsCountSupplier;
 		}
 
 		@Override
 		public String toString()
 		{
 			return MoreObjects.toStringHelper(this)
-					.add("zoomInfoId", _zoomInfoId)
+					.add("zoomInfoId", zoomInfoId)
 					.add("internalName", _internalName)
-					.add("display", _destinationDisplay)
-					.add("AD_Window_ID", _windowId)
-					.add("RecordCount", _query.getRecordCount())
+					.add("display", destinationDisplay)
+					.add("AD_Window_ID", windowId)
+					.add("RecordCount", query.getRecordCount())
 					.toString();
 		}
 
 		public String getId()
 		{
-			return _zoomInfoId;
+			return zoomInfoId;
 		}
 
 		public String getInternalName()
@@ -354,28 +344,37 @@ public class ZoomInfoFactory
 		public ITranslatableString getLabel()
 		{
 			final ITranslatableString postfix = TranslatableStrings.constant(" (#" + getRecordCount() + ")");
-			return TranslatableStrings.join("", _destinationDisplay, postfix);
+			return TranslatableStrings.join("", destinationDisplay, postfix);
 		}
 
 		public int getRecordCount()
 		{
-			return _query.getRecordCount();
+			return query.getRecordCount();
 		}
 
 		@Nullable
 		public Duration getRecordCountDuration()
 		{
-			return _query.getRecordCountDuration();
+			return query.getRecordCountDuration();
+		}
+
+		public void updateRecordsCount()
+		{
+			final Stopwatch stopwatch = Stopwatch.createStarted();
+			final int recordsCount = recordsCountSupplier.getAsInt();
+			final Duration recordsCountDuration = Duration.ofNanos(stopwatch.stop().elapsed(TimeUnit.NANOSECONDS));
+			query.setRecordCount(recordsCount, recordsCountDuration);
+			logger.info("Updated records count for {} in {}", this, stopwatch);
 		}
 
 		public AdWindowId getAdWindowId()
 		{
-			return _windowId;
+			return windowId;
 		}
 
 		public MQuery getQuery()
 		{
-			return _query;
+			return query;
 		}
 	}
 
@@ -385,114 +384,130 @@ public class ZoomInfoFactory
 
 	private ZoomInfoFactory()
 	{
-		super();
 	}
 
 	/**
 	 * @param zoomOrigin the source we need zoom targets for
 	 * @return a list of zoom targets. The {@link ZoomInfo#getRecordCount()} of the ZoomInfo's query member might be zero.
 	 */
-	public List<ZoomInfo> retrieveZoomInfos(final IZoomSource zoomOrigin)
+	public List<ZoomInfo> retrieveZoomInfos(
+			@NonNull final IZoomSource zoomOrigin,
+			@NonNull final IUserRolePermissions rolePermissions)
 	{
-		return streamZoomInfos(zoomOrigin).collect(ImmutableList.toImmutableList());
+		final AdWindowId onlyTargetWindowId = null;
+		return streamZoomInfos(zoomOrigin, onlyTargetWindowId, rolePermissions)
+				.collect(ImmutableList.toImmutableList());
 	}
 
-	/**
-	 * Stream all {@link ZoomInfo}s for given {@link IZoomSource}.
-	 */
-	public Stream<ZoomInfo> streamZoomInfos(final IZoomSource zoomOrigin)
+	public Stream<ZoomInfo> streamZoomInfos(
+			@NonNull final IZoomSource zoomOrigin,
+			@NonNull final IUserRolePermissions rolePermissions)
 	{
-		final AdWindowId targetAD_Window_ID = null;
-		final boolean checkRecordsCount = true;
-		return streamZoomInfos(zoomOrigin, targetAD_Window_ID, checkRecordsCount);
+		final AdWindowId onlyTargetWindowId = null;
+		return streamZoomInfos(zoomOrigin, onlyTargetWindowId, rolePermissions);
 	}
 
-	private Stream<ZoomInfo> streamZoomInfos(final IZoomSource zoomOrigin, final AdWindowId targetAD_Window_ID, final boolean checkRecordsCount)
+	public Stream<ZoomInfo> streamZoomInfos(
+			@NonNull final IZoomSource zoomOrigin,
+			@Nullable final AdWindowId onlyTargetWindowId,
+			@NonNull final IUserRolePermissions rolePermissions)
 	{
 		logger.debug("source={}", zoomOrigin);
 
-		final IUserRolePermissions rolePermissions = Env.getUserRolePermissions();
-		final Set<AdWindowId> alreadySeenWindowIds = new HashSet<>();
+		final ImmutableList<ZoomInfo> zoomInfoCandidates = getZoomInfoCandidates(zoomOrigin, onlyTargetWindowId);
+
+		final HashSet<AdWindowId> alreadySeenWindowIds = new HashSet<>();
+
+		return zoomInfoCandidates.stream()
+				.sequential()
+				.filter(zoomInfo -> isEligible(zoomInfo, rolePermissions, alreadySeenWindowIds));
+	}
+
+	private ImmutableList<ZoomInfo> getZoomInfoCandidates(
+			@NonNull final IZoomSource zoomOrigin,
+			@Nullable final AdWindowId onlyTargetWindowId)
+	{
+		final Stopwatch stopwatch = Stopwatch.createStarted();
 
 		final String tableName = zoomOrigin.getTableName();
 		final List<IZoomProvider> zoomProviders = retrieveZoomProviders(tableName);
 
-		return zoomProviders.stream()
-				.flatMap(zoomProvider -> {
-					try
-					{
-						return zoomProvider.retrieveZoomInfos(zoomOrigin, targetAD_Window_ID, checkRecordsCount).stream();
-					}
-					catch (Exception ex)
-					{
-						logger.warn("Failed retrieving zoom infos from {} for {}. Skipped.", zoomProvider, zoomOrigin, ex);
-						return Stream.empty();
-					}
-				})
-				//
-				// Filter out those windows on which current logged in user does not have permissions
-				.filter(zoomInfo -> rolePermissions.checkWindowPermission(zoomInfo.getAdWindowId()).hasReadAccess())
-				//
-				// Filter by targetAD_Window_ID if any.
-				// If not our target window ID, skip it.
-				// This shall not happen because we asked the zoomProvider to return only those for our target window,
-				// but if is happening (because of a bug zoom provider) we shall not be so fragile.
-				.filter(zoomInfo -> {
-					if (targetAD_Window_ID == null)
-					{
-						return true; // accept
-					}
-
-					final AdWindowId adWindowId = zoomInfo.getAdWindowId();
-
+		final ImmutableList.Builder<ZoomInfo> zoomInfoCandidates = ImmutableList.builder();
+		for (final IZoomProvider zoomProvider : zoomProviders)
+		{
+			try
+			{
+				final List<ZoomInfo> zoomInfos = zoomProvider.retrieveZoomInfos(zoomOrigin, onlyTargetWindowId);
+				for (final ZoomInfo zoomInfo : zoomInfos)
+				{
 					// If not our target window ID, skip it
 					// This shall not happen because we asked the zoomProvider to return only those for our target window,
 					// but if is happening (because of a bug zoom provider) we shall not be so fragile.
-					if (!AdWindowId.equals(targetAD_Window_ID, adWindowId))
+					if (onlyTargetWindowId != null && !AdWindowId.equals(onlyTargetWindowId, zoomInfo.getAdWindowId()))
 					{
 						new AdempiereException("Got a ZoomInfo which is not for our target window. Skipping it."
 								+ "\n zoomInfo: " + zoomInfo
-						// + "\n zoomProvider: " + zoomProvider
-								+ "\n targetAD_Window_ID: " + targetAD_Window_ID
-								+ "\n source: " + zoomOrigin
-								+ "\n checkRecordsCount: " + checkRecordsCount)
+								+ "\n zoomProvider: " + zoomProvider
+								+ "\n targetAD_Window_ID: " + onlyTargetWindowId
+								+ "\n source: " + zoomOrigin)
 										.throwIfDeveloperModeOrLogWarningElse(logger);
-						return false; // reject
+						continue;
 					}
 
-					return true; // accept
-				})
-				//
-				// Only consider a window already seen if it actually has record count > 0 (task #1062)
-				.sequential() // important because our filter is stateful
-				.filter(zoomInfo -> {
-					if (!checkRecordsCount)
-					{
-						return true; // accept
-					}
+					zoomInfoCandidates.add(zoomInfo);
+				}
+				zoomInfoCandidates.addAll(zoomInfos);
+			}
+			catch (final Exception ex)
+			{
+				logger.warn("Failed retrieving zoom infos from {} for {}. Skipped.", zoomProvider, zoomOrigin, ex);
+			}
+		}
 
-					if (zoomInfo.getRecordCount() > 0)
-					{
-						final AdWindowId adWindowId = zoomInfo.getAdWindowId();
-						if (!alreadySeenWindowIds.add(adWindowId))
-						{
-							logger.debug("Skipping zoomInfo {} because there is already one for destination '{}'", zoomInfo, adWindowId);
-							return false; // reject
-						}
-					}
+		stopwatch.stop();
+		logger.info("Fetches zoom candidates for source={} in {}", zoomOrigin, stopwatch);
 
-					return true; // accept
-				})
-				//
-				// Filter out those ZoomInfos which have ZERO records (if requested)
-				.filter(zoomInfo -> {
-					if (checkRecordsCount && zoomInfo.getRecordCount() <= 0)
-					{
-						logger.debug("No target records for destination {}", zoomInfo);
-						return false; // reject
-					}
-					return true; // accept
-				});
+		return zoomInfoCandidates.build();
+	}
+
+	private boolean isEligible(
+			@NonNull final ZoomInfo zoomInfo,
+			@NonNull final IUserRolePermissions rolePermissions,
+			@NonNull final HashSet<AdWindowId> alreadySeenWindowIds)
+	{
+		//
+		// Filter out those windows on given user does not have permissions
+		if (!rolePermissions.checkWindowPermission(zoomInfo.getAdWindowId()).hasReadAccess())
+		{
+			return false;
+		}
+
+		//
+		// Only consider a window already seen if it actually has record count > 0 (task #1062)
+		final AdWindowId adWindowId = zoomInfo.getAdWindowId();
+		if (alreadySeenWindowIds.contains(adWindowId))
+		{
+			logger.debug("Skipping zoomInfo {} because there is already one for destination '{}'", zoomInfo, adWindowId);
+			return false;
+		}
+
+		//
+		// Make sure records count is computed
+		zoomInfo.updateRecordsCount();
+
+		//
+		// Filter out those ZoomInfos which have ZERO records (if requested)
+		if (zoomInfo.getRecordCount() <= 0)
+		{
+			logger.debug("No target records for destination {}", zoomInfo);
+			return false;
+		}
+
+		//
+		// We got a valid zoom info
+		// => accept it
+		alreadySeenWindowIds.add(adWindowId);
+		return true;
 	}
 
 	/**
@@ -504,12 +519,14 @@ public class ZoomInfoFactory
 	 * @param targetWindowId target AD_Window_ID (must be provided)
 	 * @return ZoomInfo; never returns <code>null</code>
 	 */
-	public ZoomInfo retrieveZoomInfo(@NonNull final IZoomSource zoomSource, @NonNull final AdWindowId targetWindowId)
+	public ZoomInfo retrieveZoomInfo(
+			@NonNull final IZoomSource zoomSource,
+			@NonNull final AdWindowId targetWindowId,
+			@NonNull final IUserRolePermissions rolePermissions)
 	{
 		// NOTE: we need to check the records count because in case there are multiple ZoomInfos for the same targetWindowId,
 		// we shall pick the one which actually has some data. Usually there would be only one (see #1808)
-		final boolean checkRecordsCount = true;
-		return streamZoomInfos(zoomSource, targetWindowId, checkRecordsCount)
+		return streamZoomInfos(zoomSource, targetWindowId, rolePermissions)
 				.findFirst()
 				.orElseThrow(() -> new AdempiereException("No zoomInfo found for source=" + zoomSource + ", targetWindowId=" + targetWindowId));
 	}

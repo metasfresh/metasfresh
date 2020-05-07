@@ -1,20 +1,19 @@
-package de.metas.ui.web.window.datatypes.json;
+package de.metas.ui.web.window.controller;
 
-import java.util.List;
+import javax.annotation.Nullable;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.collect.ImmutableList;
 
+import de.metas.ui.web.window.datatypes.json.JSONDocumentReferencesGroup;
+import lombok.NonNull;
 import lombok.Value;
 
 /*
  * #%L
  * metasfresh-webui-api
  * %%
- * Copyright (C) 2017 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -34,21 +33,28 @@ import lombok.Value;
 
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 @Value
-public class JSONDocumentReferencesGroupList
+public class JSONDocumentReferencesEvent
 {
-	public static final JSONDocumentReferencesGroupList EMPTY = new JSONDocumentReferencesGroupList(ImmutableList.of());
+	public static final JSONDocumentReferencesEvent COMPLETED = new JSONDocumentReferencesEvent(Type.COMPLETED, null);
 
-	@JsonProperty("groups")
-	private final List<JSONDocumentReferencesGroup> groups;
-
-	@JsonCreator
-	public JSONDocumentReferencesGroupList(@JsonProperty("groups") final List<JSONDocumentReferencesGroup> groups)
+	public static JSONDocumentReferencesEvent partialResult(@NonNull final JSONDocumentReferencesGroup partialGroup)
 	{
-		this.groups = groups == null || groups.isEmpty() ? ImmutableList.of() : ImmutableList.copyOf(groups);
+		return new JSONDocumentReferencesEvent(Type.PARTIAL_RESULT, partialGroup);
 	}
 
-	public boolean isEmpty()
+	private enum Type
 	{
-		return groups.isEmpty();
+		PARTIAL_RESULT, COMPLETED,
+	}
+
+	private final Type type;
+	private final JSONDocumentReferencesGroup partialGroup;
+
+	private JSONDocumentReferencesEvent(
+			@NonNull final Type type,
+			@Nullable final JSONDocumentReferencesGroup partialGroup)
+	{
+		this.type = type;
+		this.partialGroup = partialGroup;
 	}
 }

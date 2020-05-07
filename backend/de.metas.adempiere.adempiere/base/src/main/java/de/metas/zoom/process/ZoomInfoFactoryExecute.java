@@ -5,9 +5,11 @@ import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.model.GenericPO;
 import org.adempiere.model.ZoomInfoFactory;
 import org.adempiere.model.ZoomInfoFactory.POZoomSource;
+import org.compiere.util.Env;
 
 import de.metas.process.JavaProcess;
 import de.metas.process.Param;
+import de.metas.security.IUserRolePermissions;
 import de.metas.util.ILoggable;
 import de.metas.util.Services;
 
@@ -58,7 +60,9 @@ public class ZoomInfoFactoryExecute extends JavaProcess
 		final String tableName = Services.get(IADTableDAO.class).retrieveTableName(tableId);
 		final GenericPO po = new GenericPO(tableName, getCtx(), recordId);
 
-		ZoomInfoFactory.get().retrieveZoomInfos(POZoomSource.of(po, windowId));
+		final POZoomSource zoomSource = POZoomSource.of(po, windowId);
+		final IUserRolePermissions rolePermissions = Env.getUserRolePermissions();
+		ZoomInfoFactory.get().retrieveZoomInfos(zoomSource, rolePermissions);
 
 		return MSG_OK;
 	}
