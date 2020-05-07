@@ -357,7 +357,7 @@ import lombok.NonNull;
 			return buildSqlWhereClause_IsNull(sqlColumnExpr, negate);
 		}
 
-		String sqlValueStr = sqlValue.toString();
+		String sqlValueStr = sqlValue.toString().trim();
 		if (sqlValueStr.isEmpty())
 		{
 			// NO value supplied, it's pointless to enforce a LIKE on that...
