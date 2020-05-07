@@ -1,22 +1,8 @@
-package de.metas.ui.web.window.descriptor;
-
-import java.time.Duration;
-import java.util.Optional;
-import java.util.Set;
-
-import com.google.common.collect.ImmutableSet;
-
-import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
-import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
-import de.metas.ui.web.window.datatypes.WindowId;
-import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor.LookupSource;
-import de.metas.ui.web.window.model.lookup.LookupDataSourceFetcher;
-
 /*
  * #%L
  * metasfresh-webui-api
  * %%
- * Copyright (C) 2016 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -33,6 +19,20 @@ import de.metas.ui.web.window.model.lookup.LookupDataSourceFetcher;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+package de.metas.ui.web.window.descriptor;
+
+import com.google.common.collect.ImmutableSet;
+import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
+import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
+import de.metas.ui.web.window.datatypes.WindowId;
+import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor.LookupSource;
+import de.metas.ui.web.window.model.lookup.LookupDataSourceFetcher;
+import org.adempiere.ad.service.ILookupDAO;
+
+import java.time.Duration;
+import java.util.Optional;
+import java.util.Set;
 
 public interface LookupDescriptor
 {
@@ -84,6 +84,7 @@ public interface LookupDescriptor
 		return Optional.empty();
 	}
 
+	//  // TODO tbp: @teo: HELPME: why these 2 casts don't do anything with their parameter? can you please explain?
 	default <T extends LookupDescriptor> T cast(final Class<T> lookupDescriptorClass)
 	{
 		@SuppressWarnings("unchecked")
@@ -101,5 +102,10 @@ public interface LookupDescriptor
 		}
 
 		return null;
+	}
+
+	default ILookupDAO.ReferenceTooltipType getReferenceTooltipType()
+	{
+		return ILookupDAO.ReferenceTooltipType.Description;
 	}
 }

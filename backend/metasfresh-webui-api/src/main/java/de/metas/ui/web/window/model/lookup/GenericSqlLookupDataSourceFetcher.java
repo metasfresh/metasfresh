@@ -1,40 +1,8 @@
-package de.metas.ui.web.window.model.lookup;
-
-import java.util.List;
-import java.util.Optional;
-
-import org.adempiere.ad.service.impl.LookupDAO.SQLNamePairIterator;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.ad.validationRule.INamePairPredicate;
-import org.compiere.util.DB;
-import org.slf4j.Logger;
-
-import com.google.common.base.MoreObjects;
-import com.google.common.collect.ImmutableList;
-
-import de.metas.cache.CCache.CCacheStats;
-import de.metas.i18n.ITranslatableString;
-import de.metas.i18n.TranslatableStrings;
-import de.metas.logging.LogManager;
-import de.metas.ui.web.window.WindowConstants;
-import de.metas.ui.web.window.datatypes.DebugProperties;
-import de.metas.ui.web.window.datatypes.LookupValue;
-import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
-import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
-import de.metas.ui.web.window.datatypes.LookupValuesList;
-import de.metas.ui.web.window.datatypes.WindowId;
-import de.metas.ui.web.window.descriptor.LookupDescriptor;
-import de.metas.ui.web.window.descriptor.sql.SqlForFetchingLookupById;
-import de.metas.ui.web.window.descriptor.sql.SqlForFetchingLookups;
-import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptor;
-import de.metas.util.StringUtils;
-import lombok.NonNull;
-
 /*
  * #%L
  * metasfresh-webui-api
  * %%
- * Copyright (C) 2016 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -52,9 +20,42 @@ import lombok.NonNull;
  * #L%
  */
 
+package de.metas.ui.web.window.model.lookup;
+
+import com.google.common.base.MoreObjects;
+import com.google.common.collect.ImmutableList;
+import de.metas.cache.CCache.CCacheStats;
+import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.TranslatableStrings;
+import de.metas.logging.LogManager;
+import de.metas.ui.web.window.WindowConstants;
+import de.metas.ui.web.window.datatypes.DebugProperties;
+import de.metas.ui.web.window.datatypes.LookupValue;
+import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
+import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
+import de.metas.ui.web.window.datatypes.LookupValuesList;
+import de.metas.ui.web.window.datatypes.WindowId;
+import de.metas.ui.web.window.descriptor.LookupDescriptor;
+import de.metas.ui.web.window.descriptor.sql.SqlForFetchingLookupById;
+import de.metas.ui.web.window.descriptor.sql.SqlForFetchingLookups;
+import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptor;
+import de.metas.util.StringUtils;
+import lombok.NonNull;
+import org.adempiere.ad.service.ILookupDAO;
+import org.adempiere.ad.service.impl.LookupDAO.SQLNamePairIterator;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.validationRule.INamePairPredicate;
+import org.compiere.util.DB;
+import org.slf4j.Logger;
+
+import java.util.List;
+import java.util.Optional;
+
 public class GenericSqlLookupDataSourceFetcher implements LookupDataSourceFetcher
 {
-	public static final GenericSqlLookupDataSourceFetcher of(final LookupDescriptor lookupDescriptor)
+	private final ILookupDAO.ReferenceTooltipType referenceTooltipType;
+
+	public static GenericSqlLookupDataSourceFetcher of(final LookupDescriptor lookupDescriptor)
 	{
 		return new GenericSqlLookupDataSourceFetcher(lookupDescriptor);
 	}
@@ -89,6 +90,8 @@ public class GenericSqlLookupDataSourceFetcher implements LookupDataSourceFetche
 		isTranslatable = sqlForFetchingLookupByIdExpression.requiresParameter(LookupDataSourceContext.PARAM_AD_Language.getName());
 
 		zoomIntoWindowId = lookupDescriptor.getZoomIntoWindowId();
+
+		referenceTooltipType = sqlLookupDescriptor.getReferenceTooltipType();
 	}
 
 	@Override
@@ -164,7 +167,6 @@ public class GenericSqlLookupDataSourceFetcher implements LookupDataSourceFetche
 	/**
 	 * @param evalCtx
 	 * @return lookup values list
-	 * @see #getRetrieveEntriesParameters()
 	 */
 	@Override
 	public LookupValuesList retrieveEntities(final LookupDataSourceContext evalCtx)
@@ -185,7 +187,7 @@ public class GenericSqlLookupDataSourceFetcher implements LookupDataSourceFetche
 			final LookupValuesList values = data.fetchAll()
 					.stream()
 					.filter(evalCtx::acceptItem)
-					.map(namePair -> LookupValue.fromNamePair(namePair, adLanguage))
+					.map(namePair -> LookupValue.fromNamePair(namePair, adLanguage, this.referenceTooltipType))
 					.collect(LookupValuesList.collect(debugProperties));
 
 			logger.trace("Returning values={} (executed sql: {})", values, sqlForFetching);

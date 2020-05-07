@@ -1,42 +1,8 @@
-package de.metas.ui.web.window.datatypes;
-
-import java.util.Collection;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.function.Function;
-import java.util.function.IntFunction;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.util.KeyNamePair;
-import org.compiere.util.NamePair;
-import org.compiere.util.ValueNamePair;
-import org.compiere.util.ValueNamePairValidationInformation;
-
-import com.google.common.base.Joiner;
-import com.google.common.base.MoreObjects;
-import com.google.common.base.Splitter;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
-
-import de.metas.i18n.ITranslatableString;
-import de.metas.i18n.TranslatableStrings;
-import de.metas.process.IProcessDefaultParametersProvider;
-import de.metas.process.JavaProcess;
-import de.metas.ui.web.process.descriptor.ProcessParamLookupValuesProvider;
-import de.metas.util.lang.ReferenceListAwareEnum;
-import de.metas.util.lang.RepoIdAware;
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Singular;
-
 /*
  * #%L
  * metasfresh-webui-api
  * %%
- * Copyright (C) 2016 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -53,6 +19,39 @@ import lombok.Singular;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+package de.metas.ui.web.window.datatypes;
+
+import com.google.common.base.Joiner;
+import com.google.common.base.MoreObjects;
+import com.google.common.base.Splitter;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.TranslatableStrings;
+import de.metas.process.IProcessDefaultParametersProvider;
+import de.metas.process.JavaProcess;
+import de.metas.ui.web.process.descriptor.ProcessParamLookupValuesProvider;
+import de.metas.util.lang.CoalesceUtil;
+import de.metas.util.lang.ReferenceListAwareEnum;
+import de.metas.util.lang.RepoIdAware;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Singular;
+import org.adempiere.ad.service.ILookupDAO;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.util.KeyNamePair;
+import org.compiere.util.NamePair;
+import org.compiere.util.ValueNamePair;
+import org.compiere.util.ValueNamePairValidationInformation;
+
+import javax.annotation.Nullable;
+import java.util.Collection;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.function.IntFunction;
 
 public abstract class LookupValue
 {
@@ -126,23 +125,36 @@ public abstract class LookupValue
 
 	public static final LookupValue fromNamePair(@Nullable final NamePair namePair)
 	{
-		final String adLanguage = null;
 		final LookupValue defaultValue = null;
-		return fromNamePair(namePair, adLanguage, defaultValue);
+		final String adLanguage = null;
+		final ILookupDAO.ReferenceTooltipType referenceTooltipType = null;
+		return fromNamePair(namePair, adLanguage, defaultValue, referenceTooltipType);
 	}
 
 	public static final LookupValue fromNamePair(
 			@Nullable final NamePair namePair,
-			@Nullable final String adLanguage)
+			@Nullable final String adLanguage
+	)
 	{
 		final LookupValue defaultValue = null;
-		return fromNamePair(namePair, adLanguage, defaultValue);
+		final ILookupDAO.ReferenceTooltipType referenceTooltipType = null;
+		return fromNamePair(namePair, adLanguage, defaultValue, referenceTooltipType);
 	}
 
 	public static final LookupValue fromNamePair(
 			@Nullable final NamePair namePair,
 			@Nullable final String adLanguage,
-			@Nullable final LookupValue defaultValue)
+			@Nullable final ILookupDAO.ReferenceTooltipType referenceTooltipType)
+	{
+		final LookupValue defaultValue = null;
+		return fromNamePair(namePair, adLanguage, defaultValue, referenceTooltipType);
+	}
+
+	public static final LookupValue fromNamePair(
+			@Nullable final NamePair namePair,
+			@Nullable final String adLanguage,
+			@Nullable final LookupValue defaultValue,
+			@Nullable final ILookupDAO.ReferenceTooltipType referenceTooltipType)
 	{
 		if (namePair == null)
 		{
@@ -151,15 +163,25 @@ public abstract class LookupValue
 
 		final ITranslatableString displayNameTrl;
 		final ITranslatableString descriptionTrl;
-		if (adLanguage == null)
+
+		final ILookupDAO.ReferenceTooltipType referenceTooltipTypeNotNull = CoalesceUtil.coalesce(referenceTooltipType, ILookupDAO.ReferenceTooltipType.Description);
+		switch (referenceTooltipTypeNotNull)
 		{
-			displayNameTrl = TranslatableStrings.anyLanguage(namePair.getName());
-			descriptionTrl = TranslatableStrings.anyLanguage(namePair.getDescription());
-		}
-		else
-		{
-			displayNameTrl = TranslatableStrings.singleLanguage(adLanguage, namePair.getName());
-			descriptionTrl = TranslatableStrings.singleLanguage(adLanguage, namePair.getDescription());
+			case TableIdentifier:
+				displayNameTrl = trl(adLanguage, namePair.getName());
+				descriptionTrl = trl(adLanguage, namePair.getName());
+				break;
+			case DescriptionFallbackToTableIdentifier:
+				displayNameTrl = trl(adLanguage, namePair.getName());
+				final ITranslatableString descriptionTrlNullable = trl(adLanguage, namePair.getDescription());
+				descriptionTrl = CoalesceUtil.coalesce(descriptionTrlNullable, displayNameTrl);
+				break;
+			default:
+			case None:
+			case Description:
+				displayNameTrl = trl(adLanguage, namePair.getName());
+				descriptionTrl = trl(adLanguage, namePair.getDescription());
+				break;
 		}
 
 		if (namePair instanceof ValueNamePair)
@@ -178,6 +200,18 @@ public abstract class LookupValue
 		{
 			// shall not happen
 			throw new IllegalArgumentException("Unknown namePair: " + namePair + " (" + namePair.getClass() + ")");
+		}
+	}
+
+	private static ITranslatableString trl(@Nullable final String adLanguage, @Nullable final String value)
+	{
+		if (adLanguage == null)
+		{
+			return TranslatableStrings.anyLanguage(value);
+		}
+		else
+		{
+			return TranslatableStrings.singleLanguage(adLanguage, value);
 		}
 	}
 
@@ -354,7 +388,8 @@ public abstract class LookupValue
 		{
 			return null;
 		}
-		@SuppressWarnings("unchecked") final T value = (T)additionalAttributes.get(name);
+		@SuppressWarnings("unchecked")
+		final T value = (T)additionalAttributes.get(name);
 		return value;
 	}
 
@@ -390,7 +425,8 @@ public abstract class LookupValue
 		}
 		else if (valueObj instanceof Collection)
 		{
-			@SuppressWarnings("unchecked") final Collection<Integer> coll = (Collection<Integer>)valueObj;
+			@SuppressWarnings("unchecked")
+			final Collection<Integer> coll = (Collection<Integer>)valueObj;
 			return ImmutableSet.copyOf(coll);
 		}
 		else

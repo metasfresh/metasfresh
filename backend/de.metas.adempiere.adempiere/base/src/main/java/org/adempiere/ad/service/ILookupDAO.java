@@ -1,10 +1,8 @@
-package org.adempiere.ad.service;
-
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,8 +20,10 @@ package org.adempiere.ad.service;
  * #L%
  */
 
-import java.util.List;
+package org.adempiere.ad.service;
 
+import de.metas.util.ISingletonService;
+import de.metas.util.collections.BlindIterator;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.validationRule.IValidationContext;
 import org.adempiere.ad.validationRule.IValidationRule;
@@ -33,14 +33,12 @@ import org.compiere.util.KeyNamePair;
 import org.compiere.util.NamePair;
 import org.compiere.util.ValueNamePair;
 
-import de.metas.util.ISingletonService;
-import de.metas.util.collections.BlindIterator;
+import java.util.List;
 
 /**
  * Field Lookup DAO methods
  *
  * @author tsa
- *
  */
 public interface ILookupDAO extends ISingletonService
 {
@@ -58,11 +56,42 @@ public interface ILookupDAO extends ISingletonService
 	}
 
 	/**
+	 * This controls what Tooltip value is used for Lists  // TODO tbp: is "Lists correct" ? it should include Table, table direct, search and list, but tabledirect returns null right now (see other TODOs)
+	 */
+	 // TODO tbp: introduce this reflist to ad_table
+	enum ReferenceTooltipType
+	{
+		/**
+		 * Tooltip shows nothing
+		 */
+		None,
+
+		/**
+		 * Tooltip shows Description field if it exists. Else nothing.
+		 */
+		Description,
+
+		/**
+		 * Tooltip shows the table identifier.
+		 */
+		TableIdentifier,
+
+		/**
+		 * Tooltip shows the Description field if it is not null, else the table identifier.
+		 */
+		DescriptionFallbackToTableIdentifier
+	}
+
+	/**
 	 * Immutable Table Reference definition
 	 */
 	interface ITableRefInfo
 	{
-		/** Tell the log reader what to fix when a problem regarding a sloppy table reference is logged. */
+		ReferenceTooltipType getReferenceTooltipType();
+
+		/**
+		 * Tell the log reader what to fix when a problem regarding a sloppy table reference is logged.
+		 */
 		String getIdentifier();
 
 		String getTableName();
@@ -94,7 +123,7 @@ public interface ILookupDAO extends ISingletonService
 		AdWindowId getZoomPO_Window_ID();
 
 		boolean isAutoComplete();
-		
+
 		boolean isShowInactiveValues();
 
 		/**
@@ -118,12 +147,10 @@ public interface ILookupDAO extends ISingletonService
 	 * Contains a set of {@link ValueNamePair} or {@link KeyNamePair} elements.
 	 *
 	 * @author tsa
-	 *
 	 */
 	public interface INamePairIterator extends BlindIterator<NamePair>, AutoCloseable
 	{
 		/**
-		 *
 		 * @return true if this iterator is valid
 		 */
 		boolean isValid();
@@ -135,16 +162,15 @@ public interface ILookupDAO extends ISingletonService
 		 */
 		Object getValidationKey();
 
-		@Override NamePair next();
+		@Override
+		NamePair next();
 
 		/**
-		 *
 		 * @return true if last value was active
 		 */
 		boolean wasActive();
 
 		/**
-		 *
 		 * @return true if underlying elements are of type{@link KeyNamePair}; if false then elements are of type {@link ValueNamePair}
 		 */
 		boolean isNumericKey();
