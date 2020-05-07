@@ -6,10 +6,9 @@ import java.math.BigDecimal;
 
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.test.AdempiereTestHelper;
-import org.junit.Before;
-import org.junit.Test;
-
-import mockit.Mocked;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 /*
  * #%L
@@ -35,13 +34,14 @@ import mockit.Mocked;
 
 public class POUtilsTest
 {
-	@Mocked
 	private PO po;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
+		
+		po = Mockito.mock(PO.class);
 	}
 
 	@Test

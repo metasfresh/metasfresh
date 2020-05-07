@@ -1,12 +1,8 @@
-package de.metas.bpartner.service;
-
-import java.util.Collection;
-
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -23,6 +19,10 @@ import java.util.Collection;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+package de.metas.bpartner.service;
+
+import java.util.Collection;
 
 import java.util.List;
 import java.util.Map;
@@ -148,7 +148,7 @@ public interface IBPartnerDAO extends ISingletonService
 
 	<T extends I_AD_User> T getContactById(BPartnerContactId contactId, Class<T> modelClass);
 
-	EMailAddress getContactEMail(BPartnerContactId contactId);
+	@NonNull EMailAddress getContactEMail(BPartnerContactId contactId);
 
 	PricingSystemId retrievePricingSystemIdOrNullInTrx(BPartnerId bPartnerId, SOTrx soTrx);
 
@@ -193,6 +193,8 @@ public interface IBPartnerDAO extends ISingletonService
 	 * @throws org.adempiere.exceptions.DBMoreThanOneRecordsFoundException if there is more than one matching partner.
 	 */
 	I_C_BPartner retrieveBPartnerByValueOrSuffix(Properties ctx, String bpValue, String bpValueSuffixToFallback);
+
+	boolean hasEmailAddress(@NonNull BPartnerContactId contactId);
 
 	<T extends org.compiere.model.I_AD_User> T retrieveDefaultContactOrNull(I_C_BPartner bPartner, Class<T> clazz);
 

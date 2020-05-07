@@ -184,8 +184,7 @@ public final class CacheMgt
 
 		final SpanMetadata spanMetadata = SpanMetadata.builder()
 				.name("Full CacheReset")
-				.type(Type.CACHE_OPERATION.getCode())
-				.subType(SubType.REMOVE_FROM_CACHE.getCode())
+				.type(Type.CACHE_OPERATION.getCode()).subType(SubType.REMOVE_FROM_CACHE.getCode())
 				.build();
 		return getPerfMonService().monitorSpan(
 				() -> reset0(),
@@ -357,8 +356,7 @@ public final class CacheMgt
 	{
 		final SpanMetadata spanMetadata = SpanMetadata.builder()
 				.name("CacheReset")
-				.type(Type.CACHE_OPERATION.getCode())
-				.subType(SubType.REMOVE_FROM_CACHE.getCode())
+				.type(Type.CACHE_OPERATION.getCode()).subType(SubType.REMOVE_FROM_CACHE.getCode())
 				.label("resetMode", mode.toString())
 				.build();
 		return getPerfMonService().monitorSpan(
