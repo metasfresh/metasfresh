@@ -27,7 +27,7 @@ Map build(final MvnConf mvnConf, final Map scmVars, final boolean forceBuild=fal
 			}
 			final String VERSIONS_PLUGIN='org.codehaus.mojo:versions-maven-plugin:2.7' // make sure we know which plugin version we run
 
-			// set the root-pom's parent pom. Although the parent pom is avaialbe via relativePath, we need it to be this build's version then the root pom is deployed to our maven-repo
+			// set the root-pom's parent pom. Although the parent pom is available via relativePath, we need it to be this build's version then the root pom is deployed to our maven-repo
 			sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode -DparentVersion=${env.MF_VERSION} ${mvnConf.resolveParams} ${VERSIONS_PLUGIN}:update-parent"
 
 			// set the artifact version of everything below ${mvnConf.pomFile}
