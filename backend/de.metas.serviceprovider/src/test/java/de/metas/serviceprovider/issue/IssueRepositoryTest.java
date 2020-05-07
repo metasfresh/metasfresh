@@ -23,9 +23,9 @@
 package de.metas.serviceprovider.issue;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.serviceprovider.external.issuedetails.ExternalIssueDetail;
-import de.metas.serviceprovider.external.issuedetails.ExternalIssueDetailType;
-import de.metas.serviceprovider.external.issuedetails.ExternalIssueDetailsRepository;
+import de.metas.cache.model.IModelCacheInvalidationService;
+import de.metas.serviceprovider.external.label.IssueLabel;
+import de.metas.serviceprovider.external.label.IssueLabelRepository;
 import de.metas.util.Services;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.test.AdempiereTestHelper;
@@ -35,8 +35,10 @@ import org.junit.Test;
 
 import java.math.BigDecimal;
 
+import static de.metas.serviceprovider.TestConstants.MOCK_BUD_6_LABEL;
 import static de.metas.serviceprovider.TestConstants.MOCK_DESCRIPTION;
 import static de.metas.serviceprovider.TestConstants.MOCK_EFFORT_1_30;
+import static de.metas.serviceprovider.TestConstants.MOCK_EST_4_25_LABEL;
 import static de.metas.serviceprovider.TestConstants.MOCK_EXTERNAL_ISSUE_NO;
 import static de.metas.serviceprovider.TestConstants.MOCK_EXTERNAL_URL;
 import static de.metas.serviceprovider.TestConstants.MOCK_MILESTONE_ID;
@@ -51,14 +53,13 @@ import static de.metas.serviceprovider.TestConstants.MOCK_VALUE;
 public class IssueRepositoryTest
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	private final IssueRepository issueRepository = new IssueRepository(queryBL, new ExternalIssueDetailsRepository(queryBL));
+	private final IModelCacheInvalidationService modelCacheInvalidationService =  Services.get(IModelCacheInvalidationService.class);
 
-	private final ImmutableList<ExternalIssueDetail> MOCK_EXTERNAL_DETAILS =
-			ImmutableList.of(ExternalIssueDetail.builder()
-					.type(ExternalIssueDetailType.LABEL)
-					.value(MOCK_VALUE)
-					.orgId(MOCK_ORG_ID)
-					.build());
+	private final IssueRepository issueRepository = new IssueRepository(queryBL, new IssueLabelRepository(queryBL), modelCacheInvalidationService);
+
+	private final ImmutableList<IssueLabel> MOCK_LABELS =
+			ImmutableList.of(IssueLabel.builder().value(MOCK_VALUE).orgId(MOCK_ORG_ID).build(),
+					IssueLabel.builder().value(MOCK_EST_4_25_LABEL).orgId(MOCK_ORG_ID).build());
 
 	private final IssueEntity MOCK_ISSUE_ENTITY = IssueEntity.builder()
 			.assigneeId(MOCK_USER_ID)
@@ -76,9 +77,9 @@ public class IssueRepositoryTest
 			.type(IssueType.EXTERNAL)
 			.isEffortIssue(true)
 			.processed(true)
-			.externalIssueNo(MOCK_EXTERNAL_ISSUE_NO)
+			.externalIssueNo(BigDecimal.valueOf(MOCK_EXTERNAL_ISSUE_NO))
 			.externalIssueURL(MOCK_EXTERNAL_URL)
-			.externalIssueDetails(MOCK_EXTERNAL_DETAILS)
+			.issueLabels(MOCK_LABELS)
 			.build();
 
 
@@ -91,11 +92,26 @@ public class IssueRepositoryTest
 	@Test
 	public void save()
 	{
-		issueRepository.saveWithDetails(MOCK_ISSUE_ENTITY);
+		//1. new record test
+		issueRepository.saveWithLabels(MOCK_ISSUE_ENTITY);
 
-		final IssueEntity storedEntity = issueRepository.getById(MOCK_ISSUE_ENTITY.getIssueId(), true);
+		IssueEntity storedEntity = issueRepository.getById(MOCK_ISSUE_ENTITY.getIssueId(), true);
 
 		Assert.assertEquals(storedEntity, MOCK_ISSUE_ENTITY);
+
+		//2. update labels for existing record
+		final IssueEntity withDiffLabel = MOCK_ISSUE_ENTITY
+				.toBuilder()
+				.issueLabels(ImmutableList.of(
+						IssueLabel.builder().value(MOCK_EST_4_25_LABEL).orgId(MOCK_ORG_ID).build(),
+						IssueLabel.builder().orgId(MOCK_ORG_ID).value(MOCK_BUD_6_LABEL).build()))
+				.build();
+
+		issueRepository.saveWithLabels(withDiffLabel);
+
+		storedEntity = issueRepository.getById(withDiffLabel.getIssueId(), true);
+
+		Assert.assertEquals(storedEntity, withDiffLabel);
 	}
 
 }

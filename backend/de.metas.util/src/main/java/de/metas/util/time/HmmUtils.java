@@ -29,13 +29,14 @@ import java.util.regex.Pattern;
 
 public class HmmUtils
 {
-	private static final Pattern hmmPattern = Pattern.compile("^[0-9]+:[0-5][0-9]$");
+	private static final Pattern hmmPattern = Pattern.compile("^-?[0-9]+:[0-5][0-9]$");
 
+	@NonNull
 	public static String secondsToHmm(final long seconds)
 	{
 		final long hours = seconds / 3600;
 		final long hoursRemainder = seconds - (hours * 3600);
-		final long mins = hoursRemainder / 60;
+		final long mins = hoursRemainder < 0 ? -( hoursRemainder / 60 ) : hoursRemainder / 60;
 
 		return hours + ":" + (mins < 10L ? "0" + mins : mins);
 	}

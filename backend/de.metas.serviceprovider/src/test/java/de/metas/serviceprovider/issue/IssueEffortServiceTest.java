@@ -22,8 +22,8 @@
 
 package de.metas.serviceprovider.issue;
 
-import de.metas.serviceprovider.external.issuedetails.ExternalIssueDetailsRepository;
-import de.metas.serviceprovider.issue.hierarchy.IssueHierarchy;
+import de.metas.cache.model.IModelCacheInvalidationService;
+import de.metas.serviceprovider.external.label.IssueLabelRepository;
 import de.metas.serviceprovider.model.I_S_Issue;
 import de.metas.serviceprovider.timebooking.Effort;
 import de.metas.util.NumberUtils;
@@ -33,8 +33,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.junit.Before;
 import org.junit.Test;
-
-import java.util.List;
 
 import static de.metas.serviceprovider.TestConstants.MOCK_EFFORT_1_00;
 import static de.metas.serviceprovider.TestConstants.MOCK_EFFORT_1_30;
@@ -48,47 +46,16 @@ import static org.junit.Assert.assertEquals;
 public class IssueEffortServiceTest
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	private final ExternalIssueDetailsRepository externalIssueDetailsRepository = new ExternalIssueDetailsRepository(queryBL);
-	private final IssueRepository issueRepository = new IssueRepository(queryBL, externalIssueDetailsRepository);
-	private final IssueEffortService issueEffortService = new IssueEffortService(issueRepository);
+	private final IModelCacheInvalidationService modelCacheInvalidationService =  Services.get(IModelCacheInvalidationService.class);
+	private final IssueLabelRepository issueLabelRepository = new IssueLabelRepository(queryBL);
+	private final IssueRepository issueRepository = new IssueRepository(queryBL, issueLabelRepository, modelCacheInvalidationService);
+	private final IssueHierarchyService issueHierarchyService = new IssueHierarchyService(issueRepository);
+	private final IssueEffortService issueEffortService = new IssueEffortService(issueRepository, issueHierarchyService);
 
 	@Before
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
-	}
-
-	/**
-	 * Given the following issue hierarchy:
-	 *
-	 * ----1----
-	 * ---/-\---
-	 * --2---3--
-	 * --|---|--
-	 * --4---5--
-	 * /-|-\----
-	 * 6-7-8----
-	 *
-	 * When {@link IssueEffortService#buildUpStreamIssueHierarchy(IssueId)} for 8
-	 * Then return: IssueHierarchy(root=1) with nodes: [1,2,4,8]
-	 */
-	@Test
-	public void buildUpStreamIssueHierarchy()
-	{
-		//given
-		prepareDataContext();
-
-		//when
-		final IssueHierarchy issueHierarchy = issueEffortService.buildUpStreamIssueHierarchy(IssueId.ofRepoId(8));
-
-		//then
-		final List<IssueEntity> nodeList = issueHierarchy.listIssues();
-
-		assertEquals(nodeList.size(), 4);
-		assertEquals(nodeList.get(0).getIssueId(), IssueId.ofRepoId(1));
-		assertEquals(nodeList.get(1).getIssueId(), IssueId.ofRepoId(2));
-		assertEquals(nodeList.get(2).getIssueId(), IssueId.ofRepoId(4));
-		assertEquals(nodeList.get(3).getIssueId(), IssueId.ofRepoId(8));
 	}
 
 	/**
@@ -160,7 +127,7 @@ public class IssueEffortServiceTest
 	 * 6-7-8----
 	 *
 	 */
-	private void prepareDataContext()
+	static void prepareDataContext()
 	{
 		buildAndStoreIssueRecord(IssueId.ofRepoId(1), null);
 		buildAndStoreIssueRecord(IssueId.ofRepoId(2), IssueId.ofRepoId(1));
@@ -172,7 +139,7 @@ public class IssueEffortServiceTest
 		buildAndStoreIssueRecord(IssueId.ofRepoId(8), IssueId.ofRepoId(4));
 	}
 
-	private void buildAndStoreIssueRecord(final IssueId issueId, final IssueId parentIssueId)
+	private static void buildAndStoreIssueRecord(final IssueId issueId, final IssueId parentIssueId)
 	{
 		final I_S_Issue record = InterfaceWrapperHelper.newInstance(I_S_Issue.class);
 

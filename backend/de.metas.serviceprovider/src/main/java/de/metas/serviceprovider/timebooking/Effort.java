@@ -23,15 +23,17 @@
 package de.metas.serviceprovider.timebooking;
 
 import de.metas.util.time.HmmUtils;
-import lombok.Data;
+import lombok.NonNull;
+import lombok.Value;
 
 import javax.annotation.Nullable;
 
-@Data
+@Value
 public class Effort
 {
 	long seconds;
 
+	@NonNull
 	public static Effort ofNullable(@Nullable final String hmm)
 	{
 		final long seconds = hmm != null
@@ -41,11 +43,13 @@ public class Effort
 		return new Effort(seconds);
 	}
 
+	@NonNull
 	public static Effort of(final long seconds)
 	{
 		return new Effort(seconds);
 	}
 
+	@NonNull
 	public Effort addNullSafe(@Nullable final Effort effort)
 	{
 		final long secondsToAdd = effort != null
@@ -57,11 +61,13 @@ public class Effort
 		return new Effort(secondsSum);
 	}
 
+	@NonNull
 	public String getHmm()
 	{
 		return HmmUtils.secondsToHmm(seconds);
 	}
 
+	@NonNull
 	public Effort negate()
 	{
 		return new Effort(-seconds);
