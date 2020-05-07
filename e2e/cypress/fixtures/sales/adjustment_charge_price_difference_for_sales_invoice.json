@@ -1,0 +1,8 @@
+{
+    "newProductPrice" : "0.123456",
+    "salesInvoiceTargetDocumentType" : "Sales Invoice",
+    "businessPartnerName" : "Test Lieferant 1",
+    "productName" : "Convenience Salat 250g",
+    "originalQuantity" : 200,
+    "adjustmentChargePriceDifference": "Nachbelastung - Preisdifferenz"
+}

@@ -1,0 +1,21 @@
+{
+  "categoryName1": "Category1",
+  "categoryName2": "Category2",
+  "productComponentName1": "Product Component 1",
+  "productComponentName2": "Product Component 2",
+  "productComponentName3": "Product Component 3",
+  "finishedGoodName": "Finished Good",
+  "productComponentQty1": 25,
+  "productComponentQty2": 20,
+  "productComponentQty3": 50,
+
+  "huQty": 100,
+  "locatorId": "Hauptlager_StdWarehouse_Hauptlager_0_0_0",
+
+  "manufacturingResource": "test",
+  "manufacturingWorkflow": "test",
+  "stdWarehouse": "Hauptlager_StdWarehouse",
+  "manufacturingQtyEntered": 1,
+  "manufacturingDateOrdered": "08/22/2019 10:00 A",
+  "manufacturingDatePromised": "08/23/2019 10:00 A"
+}

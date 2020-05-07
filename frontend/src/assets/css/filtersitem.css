@@ -1,0 +1,18 @@
+.filter-tooltip {
+    margin-top: 10px;
+    left: 25px;
+}
+
+.filter-wrapper {
+    .btn-filter {
+        padding: 0.425rem .6rem;
+        max-width: 300px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+}
+
+.inline-filters {
+    margin-left: 3px;
+    margin-right: 5px;
+}

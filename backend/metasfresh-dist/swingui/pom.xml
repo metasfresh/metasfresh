@@ -1,0 +1,237 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>de.metas.dist</groupId>
+		<artifactId>metasfresh-dist</artifactId>
+		<version>10.0.0</version>
+	</parent>
+
+	<artifactId>metasfresh-dist-swingui</artifactId>
+	<packaging>jar</packaging>
+
+	<properties>
+		<dist.dir>target/swingui</dist.dir>
+		
+		<!-- the main spring-boot jar which shall further down be copied into the lib folder -->
+		<mainJar>${project.name}-${project.version}.jar</mainJar>
+
+		<start-class>de.metas.SwingUIApplication</start-class>
+
+		<!-- Changing from JarLauncher to PropertiesLauncher, because that way we can specify external jars
+			Issue: https://github.com/metasfresh/metasfresh/issues/695 
+		    Also see https://docs.spring.io/spring-boot/docs/current/reference/html/executable-jar.html#executable-jar-property-launcher-features -->
+		<spring.jarLauncherClass>org.springframework.boot.loader.PropertiesLauncher</spring.jarLauncherClass>
+		
+		<!-- See http://www.mojohaus.org/versions-maven-plugin/examples/update-properties.html 
+			and http://stackoverflow.com/questions/3628471/maven-versions-plugin-not-picking-up-properties-from-parent
+		-->
+		<metasfresh.version>[1,10.0.0]</metasfresh.version>
+	</properties>
+
+	<dependencyManagement>
+		<dependencies>
+			<!-- Import dependency management from Spring Boot -->
+			<dependency>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-dependencies</artifactId>
+				<version>${spring-boot.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
+
+
+	<dependencies>
+		<!-- Spring Boot -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-actuator</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-test</artifactId>
+			<scope>test</scope>
+			<exclusions>
+				<!-- excluded to avoid maven-enforcer-plugin error: Duplicate classes found: org.ow2.asm:asm:jar:5.0.3:test, net.minidev:accessors-smart:jar:1.1:test -->
+				<exclusion>
+					<groupId>org.ow2.asm</groupId>
+					<artifactId>asm</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-tx</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-jdbc</artifactId>
+		</dependency>
+
+		<!-- JASPER FONTS Our swing client is currently an uber-jar, and by copying 
+			this stuff into it, we run into trouble as described here: http://community.jaspersoft.com/questions/542314/problem-fonts-input-stream-not-found-netsfjasperreportsfontsfontsxml 
+			==> That is why we don't just add these dependencies to adempiereJasper.commons -->
+		<!-- 06489 Label is not printed when completing Kommissionierung -->
+		<!-- we probably don't need these fonts anymore <dependency> <groupId>de.metas.adempiere.adempiereJasper</groupId> 
+			<artifactId>adempiereJasper-fonts</artifactId> <version>1.0</version> </dependency> -->
+		<!-- 07585 ESR an Debitoren (109078863663) -->
+		<!-- 03301 Mitgliedsrechnung (Jasper) (2012091810000098) -->
+		<!-- 03718 ESR-Schein auf Rechnung fertigstellen (2012121810000028) -->
+		<!-- Thx for the two fonts to http://ansuz.sooke.bc.ca/page/fonts ^^ -->
+		<dependency>
+			<groupId>jp.osdn.ocra</groupId>
+			<artifactId>jp.osdn.ocra</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>jp.osdn.ocrb</groupId>
+			<artifactId>jp.osdn.ocrb</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>metasfresh-dist-base</artifactId>
+			<version>10.0.0</version>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.fresh</groupId>
+			<artifactId>de.metas.fresh.swingui</artifactId>
+			<version>${metasfresh.version}</version>
+		</dependency>
+
+		<!-- Dependency needed in case you want to use de.metas.adempiere.report.jasper.server.LocalJasperServer. 
+			i.e. a developer wants to use embedded jasper server while working/debugging 
+			in eclipse. scope=provided so it's ONLY considered on the local dev station -->
+
+		<dependency>
+			<groupId>de.metas.report</groupId>
+			<artifactId>report-service</artifactId>
+			<version>${metasfresh.version}</version>
+			<scope>provided</scope>
+			<exclusions> <!-- we need this exclusion when running from eclipse -->
+				<exclusion>
+					<groupId>de.codecentric</groupId>
+					<artifactId>spring-boot-admin-starter-client</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+
+
+		<dependency>
+			<groupId>de.metas.report</groupId>
+			<artifactId>de.metas.report.jasper.commons</artifactId>
+			<version>${metasfresh.version}</version>
+		</dependency>
+
+		<!-- https://github.com/metasfresh/metasfresh/issues/523 -->
+		<!-- we need those classes in the webui-api and swing-UI in order to run the MD_Candidate_Request_PP_Order process -->
+		<dependency>
+			<groupId>de.metas.material</groupId>
+			<artifactId>metasfresh-material-dispo-commons</artifactId>
+			<version>${metasfresh.version}</version>
+			<type>jar</type>
+		</dependency>
+
+		<!-- needed to communicate with the app server via REST-over-JMS -->
+		<dependency>
+			<groupId>org.apache.activemq</groupId>
+			<artifactId>activemq-client</artifactId>
+		</dependency>
+
+	</dependencies>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-maven-plugin</artifactId>
+				<version>${spring-boot.version}</version>
+				<executions>
+					<execution>
+						<id>spring-boot-swingui-build-info</id>
+						<goals>
+							<goal>build-info</goal> <!-- create build-info.properties; thanks to https://docs.spring.io/spring-boot/docs/current/reference/html/howto-build.html#howto-build-info -->
+						</goals>
+					</execution>
+					<execution>
+						<id>spring-boot-swingui-create-executable-jar</id>
+						<goals>
+							<goal>repackage</goal>
+						</goals>
+						<configuration>
+							<executable>false</executable>
+							<mainClass>${start-class}</mainClass>
+						</configuration>
+					</execution>
+
+				</executions>
+			</plugin>
+
+			<plugin>
+				<artifactId>maven-resources-plugin</artifactId>
+				<executions>
+					<execution>
+						<!-- copy our start scripts into the into place -->
+						<id>copy-resources-src-main-resources</id>
+						<phase>package</phase>
+						<goals>
+							<goal>copy-resources</goal>
+						</goals>
+						<configuration>
+							<overwrite>true</overwrite>
+							<outputDirectory>${dist.dir}/metasfresh</outputDirectory>
+							<resources>
+								<resource>
+									<directory>src/main/resources</directory>
+									<filtering>true</filtering>
+								</resource>
+							</resources>
+						</configuration>
+					</execution>
+					<execution>
+						<!-- copy or start scripts into the into place -->
+						<id>copy-resources-lib</id>
+						<phase>package</phase>
+						<goals>
+							<goal>copy-resources</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${dist.dir}/metasfresh/lib</outputDirectory>
+							<stripVersion>true</stripVersion>
+							<overwrite>true</overwrite>
+							<resources>
+								<resource>
+									<directory>target</directory>
+									<includes>
+										<include>${mainJar}</include>
+									</includes>
+								</resource>
+							</resources>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+
+			<plugin>
+				<artifactId>maven-assembly-plugin</artifactId>
+				<executions>
+					<execution>
+						<phase>package</phase>
+						<goals>
+							<goal>single</goal>
+						</goals>
+						<configuration>
+							<descriptors>
+								<descriptor>src/main/assembly/client.xml</descriptor>
+							</descriptors>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
+</project>
