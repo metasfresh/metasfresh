@@ -69,7 +69,7 @@ public class CustomerRetentionRepository
 	private final IContractsDAO contractsDAO = Services.get(IContractsDAO.class);
 	private final ContractInvoiceService contractInvoiceService;
 
-	public I_C_Customer_Retention getById(final CustomerRetentionId customerRetentionId)
+	public I_C_Customer_Retention getById(@NonNull final CustomerRetentionId customerRetentionId)
 	{
 		return load(customerRetentionId.getRepoId(), I_C_Customer_Retention.class);
 	}
@@ -97,6 +97,7 @@ public class CustomerRetentionRepository
 	{
 		final I_C_Customer_Retention customerRetention = getById(customerRetentionId);
 
+		Check.assumeNotNull(customerRetention, "Customer retention must not be null");
 		customerRetention.setCustomerRetention(X_C_Customer_Retention.CUSTOMERRETENTION_Neukunde);
 		save(customerRetention);
 	}
@@ -105,6 +106,7 @@ public class CustomerRetentionRepository
 	void setRegularCustomer(@NonNull final CustomerRetentionId customerRetentionId)
 	{
 		final I_C_Customer_Retention customerRetention = getById(customerRetentionId);
+		Check.assumeNotNull(customerRetention, "Customer retention must not be null");
 
 		customerRetention.setCustomerRetention(X_C_Customer_Retention.CUSTOMERRETENTION_Stammkunde);
 		save(customerRetention);
@@ -114,6 +116,7 @@ public class CustomerRetentionRepository
 	void setNonSubscriptionCustomer(@NonNull final CustomerRetentionId customerRetentionId)
 	{
 		final I_C_Customer_Retention customerRetention = getById(customerRetentionId);
+		Check.assumeNotNull(customerRetention, "Customer retention must not be null");
 
 		customerRetention.setCustomerRetention(null);
 		save(customerRetention);
@@ -285,6 +288,5 @@ public class CustomerRetentionRepository
 		{
 			setNewCustomer(customerRetentionId);
 		}
-
 	}
 }
