@@ -6,7 +6,7 @@
 	<parent>
 		<artifactId>de.metas.parent.general</artifactId>
 		<groupId>de.metas</groupId>
-		<version>10.0.0</version>
+		<version>[1,10.0.0]</version> <!-- despite the relative path we can't find the parent-pom without a range and then "versions:update-parent" fails -->
 		<relativePath>../../parent-pom/pom.xml</relativePath>
 	</parent>
 
