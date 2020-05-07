@@ -52,8 +52,6 @@ timestamps
 
 node('agent && linux')
 {
-	dir('backend')
-	{
 	configFileProvider([configFile(fileId: 'metasfresh-global-maven-settings', replaceTokens: true, variable: 'MAVEN_SETTINGS')])
 	{
 		// create our config instance to be used further on
@@ -72,19 +70,20 @@ node('agent && linux')
 		withMaven(jdk: 'java-8', maven: 'maven-3.5.2', mavenLocalRepo: '.repository', mavenOpts: '-Xmx1536M')
 		{
 			// Note: we can't build the "main" and "esb" stuff in parallel, because the esb stuff depends on (at least!) de.metas.printing.api
-      stage('Set versions and build metasfresh')
-      {
-				if(params.MF_SKIP_TO_DIST)
-				{
-					echo "params.MF_SKIP_TO_DIST=true so don't build metasfresh and esb jars and don't invoke downstream jobs"
-				}
-				else
-				{
+      	stage('Set versions and build metasfresh')
+      	{
+			if(params.MF_SKIP_TO_DIST)
+			{
+				echo "params.MF_SKIP_TO_DIST=true so don't build metasfresh and esb jars and don't invoke downstream jobs"
+			}
+			else
+			{
         nexusCreateRepoIfNotExists mvnConf.mvnDeployRepoBaseURL, mvnConf.mvnRepoName
 
 				checkout scm; // i hope this to do all the magic we need
 				sh 'git clean -d --force -x' // clean the workspace
-
+				dir('backend')
+				{
 				// update the parent pom version
  				mvnUpdateParentPomVersion mvnConf
 
@@ -100,16 +99,18 @@ node('agent && linux')
 				// maven.test.failure.ignore=true: continue if tests fail, because we want a full report.
 				// about -Dmetasfresh.assembly.descriptor.version: the versions plugin can't update the version of our shared assembly descriptor de.metas.assemblies. Therefore we need to provide the version from outside via this property
 				sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode -Dmaven.test.failure.ignore=true -Dmetasfresh.assembly.descriptor.version=${MF_VERSION} ${mvnConf.resolveParams} ${mvnConf.deployParam} clean deploy"
-				} // if(params.MF_SKIP_TO_DIST)
-			}
-			stage('Build metasfresh docker image(s)')
-			{
-
-				if(params.MF_SKIP_TO_DIST)
-				{
-					echo "params.MF_SKIP_TO_DIST=true so don't create docker images"
 				}
-				else
+			} // if(params.MF_SKIP_TO_DIST)
+		}
+		stage('Build metasfresh docker image(s)')
+		{
+			if(params.MF_SKIP_TO_DIST)
+			{
+				echo "params.MF_SKIP_TO_DIST=true so don't create docker images"
+			}
+			else
+			{
+				dir('backend')
 				{
 					final DockerConf materialDispoDockerConf = new DockerConf(
 						'metasfresh-material-dispo', // artifactName
@@ -123,14 +124,16 @@ node('agent && linux')
 						.withArtifactName('metasfresh-report')
 						.withWorkDir('de.metas.report/report-service/target/docker');
 					dockerBuildAndPush(reportDockerConf)
-				} // if(params.MF_SKIP_TO_DIST)
-      } // stage
+				} // dir
+			} // if(params.MF_SKIP_TO_DIST)
+      	} // stage
 
 			if(!params.MF_SKIP_TO_DIST)
 			{
-        final MvnConf mvnJacocoConf = mvnConf.withPomFile('pom_for_jacoco_aggregate_coverage_report.xml');
-        mvnUpdateParentPomVersion mvnJacocoConf
-        collectTestResultsAndReportCoverage()
+		// no needed in this legacy branch anymore
+        // final MvnConf mvnJacocoConf = mvnConf.withPomFile('pom_for_jacoco_aggregate_coverage_report.xml');
+        // mvnUpdateParentPomVersion mvnJacocoConf
+        // collectTestResultsAndReportCoverage()
 
         // creating one aggregated jacoco.xml and uploading it to codacy doesn't work right now :-(
         // sh "mvn --settings ${mvnJacocoConf.settingsFile} --file ${mvnJacocoConf.pomFile} --batch-mode ${mvnJacocoConf.resolveParams} org.jacoco:jacoco-maven-plugin:0.7.9:report-aggregate"
@@ -142,7 +145,6 @@ node('agent && linux')
 
 	// clean up the workspace after (successfull) builds
 	cleanWs cleanWhenAborted: false, cleanWhenFailure: false
-	} //dir
 } // node
 
 // this map is populated in the "Invoke downstream jobs" stage
