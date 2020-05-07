@@ -255,7 +255,7 @@ public class CustomerRetentionRepository
 		}
 	}
 
-	public void deteleCustomerRetention(@NonNull final BPartnerId bpartnerId)
+	public void deleteCustomerRetention(@NonNull final BPartnerId bpartnerId)
 	{
 		final I_C_Customer_Retention customerRetention = retrieveExistingCustomerRetention(bpartnerId);
 
