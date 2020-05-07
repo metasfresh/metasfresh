@@ -38,8 +38,6 @@ package org.adempiere.model;
 import java.util.List;
 
 import org.adempiere.ad.element.api.AdWindowId;
-import org.adempiere.model.ZoomInfoFactory.IZoomSource;
-import org.adempiere.model.ZoomInfoFactory.ZoomInfo;
 
 /**
  *

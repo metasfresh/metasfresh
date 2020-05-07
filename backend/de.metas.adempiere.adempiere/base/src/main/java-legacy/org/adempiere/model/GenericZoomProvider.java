@@ -28,8 +28,6 @@ import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.window.api.IADWindowDAO;
 import org.adempiere.exceptions.DBException;
-import org.adempiere.model.ZoomInfoFactory.IZoomSource;
-import org.adempiere.model.ZoomInfoFactory.ZoomInfo;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.compiere.model.I_AD_Window;
 import org.compiere.model.I_M_RMA;
@@ -52,6 +50,7 @@ import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.lang.CoalesceUtil;
+import de.metas.util.lang.Priority;
 import lombok.NonNull;
 
 /**
@@ -69,6 +68,8 @@ import lombok.NonNull;
 
 	private final CCache<String, List<GenericZoomInfoDescriptor>> keyColumnName2descriptors = //
 			CCache.newLRUCache(I_AD_Window.Table_Name + "#GenericZoomInfoDescriptors", 100, 0);
+
+	private final Priority zoomInfoPriority = Priority.LOWEST;
 
 	private GenericZoomProvider()
 	{
@@ -104,9 +105,10 @@ import lombok.NonNull;
 			final IntSupplier recordsCountSupplier = createRecordsCountSupplier(query, zoomInfoDescriptor, source.getTableName());
 
 			result.add(ZoomInfo.builder()
-					.zoomInfoId("generic-" + windowId.getRepoId())
+					.id("generic-" + windowId.getRepoId())
 					.internalName(zoomInfoDescriptor.getInternalName())
-					.windowId(windowId)
+					.adWindowId(windowId)
+					.priority(zoomInfoPriority)
 					.query(query)
 					.destinationDisplay(name)
 					.recordsCountSupplier(recordsCountSupplier)

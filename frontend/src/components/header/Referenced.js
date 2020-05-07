@@ -109,7 +109,10 @@ class Referenced extends Component {
       const referenceToAdd = referencesToAddById[existingReference.id];
       delete referencesToAddById[existingReference.id];
 
-      if (referenceToAdd) {
+      if (
+        referenceToAdd &&
+        referenceToAdd.priority < existingReference.priority
+      ) {
         references.push(referenceToAdd);
       } else {
         references.push(existingReference);

@@ -9,9 +9,9 @@ import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.IZoomSource;
+import org.adempiere.model.ZoomInfo;
 import org.adempiere.model.ZoomInfoFactory;
-import org.adempiere.model.ZoomInfoFactory.IZoomSource;
-import org.adempiere.model.ZoomInfoFactory.ZoomInfo;
 import org.compiere.model.I_AD_Column;
 import org.compiere.util.Evaluatee;
 import org.slf4j.Logger;
@@ -107,11 +107,18 @@ public class DocumentReferencesService
 			@NonNull final ZoomInfo zoomInfo,
 			@NonNull final ITranslatableString filterCaption)
 	{
+		final WindowId windowId = WindowId.of(zoomInfo.getAdWindowId());
+
+		// NOTE: we use the windowId as the ID because we want to have only one document reference per window.
+		// In case of multiple references, the one with highest priority shall be picked.\\
+		final String id = windowId.toJson();
+
 		return DocumentReference.builder()
-				.id(zoomInfo.getId())
+				.id(id)
 				.internalName(zoomInfo.getInternalName())
 				.caption(zoomInfo.getLabel())
-				.windowId(WindowId.of(zoomInfo.getAdWindowId()))
+				.windowId(windowId)
+				.priority(zoomInfo.getPriority())
 				.documentsCount(zoomInfo.getRecordCount())
 				.filter(MQueryDocumentFilterHelper.createDocumentFilterFromMQuery(zoomInfo.getQuery(), filterCaption))
 				.loadDuration(zoomInfo.getRecordCountDuration())

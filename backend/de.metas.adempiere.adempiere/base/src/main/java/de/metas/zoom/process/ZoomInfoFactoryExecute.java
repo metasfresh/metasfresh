@@ -3,8 +3,8 @@ package de.metas.zoom.process;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.model.GenericPO;
+import org.adempiere.model.POZoomSource;
 import org.adempiere.model.ZoomInfoFactory;
-import org.adempiere.model.ZoomInfoFactory.POZoomSource;
 import org.compiere.util.Env;
 
 import de.metas.process.JavaProcess;

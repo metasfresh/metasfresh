@@ -21,7 +21,6 @@ import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentReference;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentReferencesGroup;
-import de.metas.ui.web.window.datatypes.json.JSONDocumentReferencesGroupList;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.ui.web.window.model.DocumentReference;
 import de.metas.ui.web.window.model.DocumentReferencesService;
@@ -93,29 +92,6 @@ public class DocumentReferencesRestController
 				.jsonOpts(newJSONOptions())
 				.userRolePermissionsKey(userSession.getUserRolePermissionsKey())
 				.build();
-	}
-
-	@GetMapping("/{windowId}/{documentId}/references")
-	public JSONDocumentReferencesGroupList getRootDocumentReferences(
-			@PathVariable("windowId") final String windowIdStr,
-			@PathVariable("documentId") final String documentId)
-	{
-		userSession.assertLoggedIn();
-
-		final DocumentPath documentPath = DocumentPath.rootDocumentPath(
-				WindowId.fromJson(windowIdStr),
-				documentId);
-
-		final List<DocumentReference> documentReferences = documentReferencesService.getDocumentReferences(documentPath, userSession.getUserRolePermissions())
-				.collect(ImmutableList.toImmutableList());
-		if (documentReferences.isEmpty())
-		{
-			return JSONDocumentReferencesGroupList.EMPTY;
-		}
-
-		final JSONDocumentReferencesGroupsAggregator aggregator = newJSONDocumentReferencesGroupsAggregator();
-
-		return aggregator.addAll(documentReferences).flush();
 	}
 
 	@GetMapping("/{windowId}/{documentId}/references/sse")

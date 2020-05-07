@@ -78,6 +78,9 @@ public final class JSONDocumentReference
 
 	@JsonProperty("id")
 	private final String id;
+	@JsonProperty("priority")
+	private final int priority;
+
 	@JsonProperty("internalName")
 	private final String internalName;
 	@JsonProperty("caption")
@@ -100,6 +103,8 @@ public final class JSONDocumentReference
 		final String adLanguage = jsonOpts.getAdLanguage();
 
 		id = documentReference.getId();
+		priority = documentReference.getPriority().toInt();
+
 		internalName = documentReference.getInternalName();
 		caption = documentReference.getCaption(adLanguage);
 		windowId = documentReference.getWindowId();

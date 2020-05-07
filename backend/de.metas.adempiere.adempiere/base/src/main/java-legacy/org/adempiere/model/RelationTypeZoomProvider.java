@@ -17,9 +17,6 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.window.api.IADWindowDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.PORelationException;
-import org.adempiere.model.ZoomInfoFactory.IZoomSource;
-import org.adempiere.model.ZoomInfoFactory.POZoomSource;
-import org.adempiere.model.ZoomInfoFactory.ZoomInfo;
 import org.adempiere.util.lang.IPair;
 import org.adempiere.util.lang.ImmutablePair;
 import org.compiere.model.MQuery;
@@ -37,6 +34,7 @@ import de.metas.i18n.ITranslatableString;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.lang.Priority;
 import lombok.NonNull;
 import lombok.ToString;
 import lombok.Value;
@@ -80,6 +78,8 @@ public class RelationTypeZoomProvider implements IZoomProvider
 	private final ZoomProviderDestination source;
 	private final ZoomProviderDestination target;
 
+	private final Priority zoomInfoPriority = Priority.MEDIUM;
+
 	private RelationTypeZoomProvider(final Builder builder)
 	{
 		directed = builder.isDirected();
@@ -88,7 +88,8 @@ public class RelationTypeZoomProvider implements IZoomProvider
 
 		isTableRecordIdTarget = builder.isTableRecordIdTarget();
 
-		source = isTableRecordIdTarget ? null
+		source = isTableRecordIdTarget
+				? null
 				: ZoomProviderDestination.builder()
 						.adReferenceId(builder.getSource_Reference_ID())
 						.tableRefInfo(builder.getSourceTableRefInfoOrNull())
@@ -96,14 +97,12 @@ public class RelationTypeZoomProvider implements IZoomProvider
 						.tableRecordIdTarget(isTableRecordIdTarget)
 						.build();
 
-		target =
-
-				ZoomProviderDestination.builder()
-						.adReferenceId(builder.getTarget_Reference_ID())
-						.tableRefInfo(builder.getTargetTableRefInfoOrNull())
-						.roleDisplayName(builder.getTargetRoleDisplayName())
-						.tableRecordIdTarget(isTableRecordIdTarget)
-						.build();
+		target = ZoomProviderDestination.builder()
+				.adReferenceId(builder.getTarget_Reference_ID())
+				.tableRefInfo(builder.getTargetTableRefInfoOrNull())
+				.roleDisplayName(builder.getTargetRoleDisplayName())
+				.tableRecordIdTarget(isTableRecordIdTarget)
+				.build();
 
 	}
 
@@ -170,9 +169,10 @@ public class RelationTypeZoomProvider implements IZoomProvider
 
 		return ImmutableList.of(
 				ZoomInfo.builder()
-						.zoomInfoId(getZoomInfoId())
+						.id(getZoomInfoId())
 						.internalName(getInternalName())
-						.windowId(adWindowId)
+						.adWindowId(adWindowId)
+						.priority(zoomInfoPriority)
 						.query(query)
 						.destinationDisplay(display)
 						.recordsCountSupplier(createRecordsCountSupplier(query))

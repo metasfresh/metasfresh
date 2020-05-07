@@ -8,8 +8,6 @@ import javax.annotation.Nullable;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.window.api.IADWindowDAO;
-import org.adempiere.model.ZoomInfoFactory.IZoomSource;
-import org.adempiere.model.ZoomInfoFactory.ZoomInfo;
 import org.compiere.model.I_Fact_Acct;
 import org.compiere.model.MQuery;
 import org.compiere.model.MQuery.Operator;
@@ -18,6 +16,7 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.i18n.ITranslatableString;
 import de.metas.util.Services;
+import de.metas.util.lang.Priority;
 import lombok.NonNull;
 
 /*
@@ -46,6 +45,8 @@ public class FactAcctZoomProvider implements IZoomProvider
 {
 	public static final transient FactAcctZoomProvider instance = new FactAcctZoomProvider();
 	private static final String COLUMNNAME_Posted = "Posted";
+
+	private final Priority zoomInfoPriority = Priority.HIGHEST;
 
 	private FactAcctZoomProvider()
 	{
@@ -93,9 +94,10 @@ public class FactAcctZoomProvider implements IZoomProvider
 
 		return ImmutableList.of(
 				ZoomInfo.builder()
-						.zoomInfoId(I_Fact_Acct.Table_Name)
+						.id(I_Fact_Acct.Table_Name)
 						.internalName(I_Fact_Acct.Table_Name)
-						.windowId(factAcctWindowId)
+						.adWindowId(factAcctWindowId)
+						.priority(zoomInfoPriority)
 						.query(query)
 						.destinationDisplay(destinationDisplay)
 						.recordsCountSupplier(recordsCountSupplier)
