@@ -204,6 +204,7 @@ public class RecordChangeLogEntryLoader
 		return recordRef2LocationIds.build();
 	}
 
+	/** @return location table record references with {@code C_Location} records */
 	private static ImmutableListMultimap<TableRecordReference, I_C_Location> extractLocationRecords(
 			@NonNull final ImmutableListMultimap<TableRecordReference, LocationId> locationIds)
 	{
