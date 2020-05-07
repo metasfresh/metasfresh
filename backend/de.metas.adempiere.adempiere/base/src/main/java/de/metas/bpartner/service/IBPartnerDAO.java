@@ -122,6 +122,12 @@ public interface IBPartnerDAO extends ISingletonService
 
 	List<I_C_BPartner_Location> retrieveBPartnerLocations(Properties ctx, int bpartnerId, String trxName);
 	
+	/**
+	 * @param bpartnerId
+	 * @return all locations, also inactive ones
+	 */
+	List<I_C_BPartner_Location> retrieveAllBPartnerLocations(final BPartnerId bpartnerId);
+
 	List<I_C_BPartner_Location> retrieveBPartnerLocations(I_C_BPartner bpartner);
 
 	Set<CountryId> retrieveBPartnerLocationCountryIds(BPartnerId bpartnerId);

@@ -365,7 +365,11 @@ public class BPartnerDAO implements IBPartnerDAO
 	@Override
 	public I_C_BPartner_Location getBPartnerLocationByIdEvenInactive(@NonNull final BPartnerLocationId bpartnerLocationId)
 	{
-		return load(bpartnerLocationId, I_C_BPartner_Location.class);
+		return retrieveAllBPartnerLocations(bpartnerLocationId.getBpartnerId())
+				.stream()
+				.filter(bpLocation -> bpLocation.getC_BPartner_Location_ID() == bpartnerLocationId.getRepoId())
+				.findFirst()
+				.orElse(null);
 	}
 	
 	@Override
@@ -445,6 +449,24 @@ public class BPartnerDAO implements IBPartnerDAO
 				.listImmutable(I_C_BPartner_Location.class);
 	}
 	
+	
+	@Override
+	@Cached(cacheName = I_C_BPartner_Location.Table_Name + "#by#" + I_C_BPartner_Location.COLUMNNAME_C_BPartner_ID)
+	public ImmutableList<I_C_BPartner_Location> retrieveAllBPartnerLocations(@NonNull final BPartnerId bpartnerId)
+	{
+		final IQueryBuilder<I_C_BPartner_Location> queryBuilder = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_C_BPartner_Location.class)
+				.addEqualsFilter(I_C_BPartner_Location.COLUMNNAME_C_BPartner_ID, bpartnerId);
+
+		queryBuilder.orderBy()
+				.addColumn(I_C_BPartner_Location.COLUMNNAME_IsActive);
+
+		return queryBuilder
+				.create()
+				.listImmutable(I_C_BPartner_Location.class);
+	}
+	
+
 	@Override
 	public I_C_BPartner_Location getDefaultShipToLocation(@NonNull final BPartnerId bpartnerId)
 	{
