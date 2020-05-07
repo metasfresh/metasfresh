@@ -2,13 +2,14 @@ package de.metas.ui.web.payment_allocation.process;
 
 import org.compiere.util.DisplayType;
 
-import de.metas.banking.payment.paymentallocation.service.PaymentAllocationBuilder;
 import de.metas.banking.payment.paymentallocation.service.PaymentAllocationBuilder.PayableRemainingOpenAmtPolicy;
 import de.metas.banking.payment.paymentallocation.service.PaymentAllocationResult;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.ui.web.payment_allocation.process.PaymentsViewAllocateCommand.PaymentsViewAllocateCommandBuilder;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -35,27 +36,20 @@ import de.metas.process.ProcessPreconditionsResolution;
 public class PaymentsView_AllocateAndWriteOff extends PaymentsView_Allocate_Template implements IProcessPrecondition
 {
 	@Override
-	protected PaymentAllocationBuilder preparePaymentAllocationBuilder()
+	protected void customizePaymentsViewAllocateCommandBuilder(@NonNull final PaymentsViewAllocateCommandBuilder builder)
 	{
-		final PaymentAllocationBuilder builder = super.preparePaymentAllocationBuilder();
-		if (builder == null)
-		{
-			return null;
-		}
-
-		return builder.payableRemainingOpenAmtPolicy(PayableRemainingOpenAmtPolicy.WRITE_OFF);
+		builder.payableRemainingOpenAmtPolicy(PayableRemainingOpenAmtPolicy.WRITE_OFF);
 	}
 
 	@Override
 	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
 	{
-		final PaymentAllocationBuilder builder = preparePaymentAllocationBuilder();
-		if (builder == null)
+		final PaymentAllocationResult result = newPaymentsViewAllocateCommand().dryRun().orElse(null);
+		if (result == null)
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("invalid");
 		}
 
-		final PaymentAllocationResult result = builder.dryRun().build();
 		if (result.getCandidates().isEmpty())
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("nothing to allocate");

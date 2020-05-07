@@ -19,6 +19,7 @@ import de.metas.invoice.InvoiceDocBaseType;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingFeeCalculation;
 import de.metas.organization.ClientAndOrgId;
+import de.metas.organization.OrgId;
 import de.metas.ui.web.view.IViewRow;
 import de.metas.ui.web.view.ViewRowFieldNameAndJsonValues;
 import de.metas.ui.web.view.ViewRowFieldNameAndJsonValuesHolder;
@@ -97,7 +98,6 @@ public class InvoiceRow implements IViewRow
 	private final DocumentId rowId;
 	@Getter
 	private final InvoiceId invoiceId;
-	@Getter
 	private final ClientAndOrgId clientAndOrgId;
 	@Getter
 	private final InvoiceDocBaseType docBaseType;
@@ -174,9 +174,22 @@ public class InvoiceRow implements IViewRow
 	}
 
 	@Override
+	public String toString()
+	{
+		return MoreObjects.toStringHelper(this)
+				.addValue(values.get(this))
+				.toString();
+	}
+
+	@Override
 	public DocumentId getId()
 	{
 		return rowId;
+	}
+
+	public OrgId getOrgId()
+	{
+		return clientAndOrgId.getOrgId();
 	}
 
 	@Override
