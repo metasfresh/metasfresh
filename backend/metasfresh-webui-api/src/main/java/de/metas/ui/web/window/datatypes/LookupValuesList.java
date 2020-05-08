@@ -1,5 +1,17 @@
 package de.metas.ui.web.window.datatypes;
 
+import com.google.common.base.MoreObjects;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableListMultimap;
+import com.google.common.collect.ImmutableSet;
+import de.metas.util.GuavaCollectors;
+import de.metas.util.lang.RepoIdAware;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NonNull;
+
+import javax.annotation.Nullable;
+import javax.annotation.concurrent.Immutable;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Set;
@@ -10,20 +22,6 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Collector;
 import java.util.stream.Stream;
-
-import javax.annotation.Nullable;
-import javax.annotation.concurrent.Immutable;
-
-import com.google.common.base.MoreObjects;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableListMultimap;
-import com.google.common.collect.ImmutableSet;
-
-import de.metas.util.GuavaCollectors;
-import de.metas.util.lang.RepoIdAware;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.NonNull;
 
 /*
  * #%L
@@ -51,7 +49,6 @@ import lombok.NonNull;
  * A list of {@link LookupValue}s with some more debug properties attached.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 @Immutable
 @EqualsAndHashCode(exclude = "debugProperties")
@@ -72,7 +69,7 @@ public final class LookupValuesList implements Iterable<LookupValue>
 	 *
 	 * @param debugProperties optional debug properties, <code>null</code> is also OK.
 	 */
-	public static Collector<LookupValue, ?, LookupValuesList> collect(final DebugProperties debugProperties)
+	public static Collector<LookupValue, ?, LookupValuesList> collect(@Nullable final DebugProperties debugProperties)
 	{
 		final Supplier<ImmutableListMultimap.Builder<Object, LookupValue>> supplier = ImmutableListMultimap.Builder::new;
 		final BiConsumer<ImmutableListMultimap.Builder<Object, LookupValue>, LookupValue> accumulator = (builder, item) -> builder.put(item.getId(), item);
@@ -137,7 +134,9 @@ public final class LookupValuesList implements Iterable<LookupValue>
 		this.debugProperties = debugProperties != null ? debugProperties : DebugProperties.EMPTY;
 	}
 
-	/** Empty constructor */
+	/**
+	 * Empty constructor
+	 */
 	private LookupValuesList()
 	{
 		valuesById = ImmutableListMultimap.of();
@@ -271,7 +270,7 @@ public final class LookupValuesList implements Iterable<LookupValue>
 
 	/**
 	 * Filters, skips <code>offset</code> items and limits the result to <code>maxSize</code>.
-	 *
+	 * <p>
 	 * NOTE: please mind the operations order, i.e. first we filter and then we skip and limit.
 	 *
 	 * @param filter
@@ -299,7 +298,7 @@ public final class LookupValuesList implements Iterable<LookupValue>
 		}
 		else
 		{
-			final ImmutableListMultimap<Object, LookupValue> valuesByIdNew = ImmutableListMultimap.<Object, LookupValue> builder()
+			final ImmutableListMultimap<Object, LookupValue> valuesByIdNew = ImmutableListMultimap.<Object, LookupValue>builder()
 					.putAll(valuesById)
 					.put(lookupValue.getId(), lookupValue)
 					.build();
@@ -342,15 +341,17 @@ public final class LookupValuesList implements Iterable<LookupValue>
 
 	/**
 	 * @return true if the lookup values are in a precise order (no matter which one is that);
-	 *         When converting to JSON (so when the AD_Language will be also known),
-	 *         a not ordered list will be automatically sorted alphabetically by caption.
+	 * When converting to JSON (so when the AD_Language will be also known),
+	 * a not ordered list will be automatically sorted alphabetically by caption.
 	 */
 	public boolean isOrdered()
 	{
 		return ordered;
 	}
 
-	/** @see #isOrdered() */
+	/**
+	 * @see #isOrdered()
+	 */
 	public LookupValuesList ordered(final boolean ordered)
 	{
 		return this.ordered != ordered
@@ -358,7 +359,9 @@ public final class LookupValuesList implements Iterable<LookupValue>
 				: this;
 	}
 
-	/** @see #isOrdered() */
+	/**
+	 * @see #isOrdered()
+	 */
 	public LookupValuesList notOrdered()
 	{
 		return ordered(false);

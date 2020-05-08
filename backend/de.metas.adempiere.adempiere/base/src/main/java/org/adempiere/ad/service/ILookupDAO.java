@@ -122,7 +122,7 @@ public interface ILookupDAO extends ISingletonService
 	 *
 	 * @author tsa
 	 */
-	public interface INamePairIterator extends BlindIterator<NamePair>, AutoCloseable
+	interface INamePairIterator extends BlindIterator<NamePair>, AutoCloseable
 	{
 		/**
 		 * @return true if this iterator is valid
@@ -131,8 +131,6 @@ public interface ILookupDAO extends ISingletonService
 
 		/**
 		 * Gets validation key of data in loaded context.
-		 *
-		 * @return
 		 */
 		Object getValidationKey();
 
@@ -158,13 +156,11 @@ public interface ILookupDAO extends ISingletonService
 	/**
 	 * Same as {@link #retrieveTableRefInfoOrNull(int)} but in case the {@link ITableRefInfo} was not found, an warning is logged
 	 *
-	 * @param AD_Reference_Value_ID
 	 * @return table reference info or <code>null</code> if not found
 	 */
 	ITableRefInfo retrieveTableRefInfo(int AD_Reference_Value_ID);
 
 	/**
-	 * @param AD_Reference_Value_ID
 	 * @return true if given reference is a table reference
 	 */
 	boolean isTableReference(int AD_Reference_Value_ID);
@@ -179,45 +175,28 @@ public interface ILookupDAO extends ISingletonService
 
 	/**
 	 * Retrieves all elements of <code>lookupInfo</code> in given <code>validationCtx</code> context
-	 *
-	 * @param validationCtx
-	 * @param lookupInfo
 	 */
 	INamePairIterator retrieveLookupValues(IValidationContext validationCtx, MLookupInfo lookupInfo);
 
 	/**
 	 * Retrieves all elements of <code>lookupInfo</code> in given <code>validationCtx</code> context
 	 *
-	 * @param validationCtx
-	 * @param lookupInfo
 	 * @param additionalValidationRule optional additional validation rule to be applied on top of lookupInfo's validation rule
 	 */
 	INamePairIterator retrieveLookupValues(IValidationContext validationCtx, MLookupInfo lookupInfo, IValidationRule additionalValidationRule);
 
 	/**
 	 * Directly retrieves a data element identified by <code>key</code>.
-	 *
-	 * @param validationCtx
-	 * @param lookupInfo
-	 * @param key
-	 * @return
 	 */
 	NamePair retrieveLookupValue(IValidationContext validationCtx, MLookupInfo lookupInfo, Object key);
 
 	/**
 	 * Creates a validation key to be used when checking if data is valid in a given context
-	 *
-	 * @param validationCtx
-	 * @param lookupInfo
-	 * @return
 	 */
 	Object createValidationKey(IValidationContext validationCtx, MLookupInfo lookupInfo);
 
 	/**
 	 * Retrieve TableRefInfo or null
-	 *
-	 * @param AD_Reference_ID
-	 * @return
 	 */
 	ITableRefInfo retrieveTableRefInfoOrNull(int AD_Reference_ID);
 }

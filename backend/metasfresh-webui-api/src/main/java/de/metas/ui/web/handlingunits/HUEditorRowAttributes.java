@@ -42,6 +42,7 @@ import org.adempiere.util.lang.ExtendedMemorizingSupplier;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.X_M_Attribute;
 
+import javax.annotation.Nullable;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.Collection;
@@ -74,7 +75,7 @@ import java.util.stream.Collectors;
 
 public class HUEditorRowAttributes implements IViewRowAttributes
 {
-	public static final HUEditorRowAttributes cast(final IViewRowAttributes attributes)
+	public static HUEditorRowAttributes cast(final IViewRowAttributes attributes)
 	{
 		return (HUEditorRowAttributes)attributes;
 	}
@@ -93,7 +94,7 @@ public class HUEditorRowAttributes implements IViewRowAttributes
 	/* package */ HUEditorRowAttributes(
 			@NonNull final DocumentPath documentPath,
 			@NonNull final IAttributeStorage attributesStorage,
-			@NonNull ImmutableSet<ProductId> productIDs,
+			@NonNull final ImmutableSet<ProductId> productIDs,
 			final boolean readonly)
 	{
 		this.documentPath = documentPath;
@@ -137,7 +138,7 @@ public class HUEditorRowAttributes implements IViewRowAttributes
 		AttributeStorage2ExecutionEventsForwarder.bind(attributesStorage, documentPath);
 	}
 
-	private static final boolean extractIsReadonly(final IAttributeStorage attributesStorage)
+	private static boolean extractIsReadonly(final IAttributeStorage attributesStorage)
 	{
 		final I_M_HU hu = IHUAware.getM_HUOrNull(attributesStorage);
 		if (hu == null)
@@ -195,7 +196,7 @@ public class HUEditorRowAttributes implements IViewRowAttributes
 		return jsonDocument;
 	}
 
-	private final JSONDocumentField toJSONDocumentField(final IAttributeValue attributeValue, final JSONOptions jsonOpts)
+	private JSONDocumentField toJSONDocumentField(final IAttributeValue attributeValue, final JSONOptions jsonOpts)
 	{
 		final String fieldName = HUEditorRowAttributesHelper.extractAttributeName(attributeValue);
 		final Object jsonValue = HUEditorRowAttributesHelper.extractJSONValue(attributesStorage, attributeValue, jsonOpts);
@@ -254,7 +255,8 @@ public class HUEditorRowAttributes implements IViewRowAttributes
 		}
 	}
 
-	private final Object convertFromJson(final I_M_Attribute attribute, final Object jsonValue)
+	@Nullable
+	private Object convertFromJson(final I_M_Attribute attribute, final Object jsonValue)
 	{
 		if (jsonValue == null)
 		{

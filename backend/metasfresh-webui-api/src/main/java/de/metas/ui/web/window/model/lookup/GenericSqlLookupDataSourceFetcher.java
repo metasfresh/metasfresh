@@ -165,7 +165,6 @@ public class GenericSqlLookupDataSourceFetcher implements LookupDataSourceFetche
 	}
 
 	/**
-	 * @param evalCtx
 	 * @return lookup values list
 	 */
 	@Override
@@ -214,7 +213,7 @@ public class GenericSqlLookupDataSourceFetcher implements LookupDataSourceFetche
 
 		final String displayName = nameAndDescriptionAndActive[0];
 		final String description = nameAndDescriptionAndActive.length >= 2 ? nameAndDescriptionAndActive[1] : null;
-		final boolean active = nameAndDescriptionAndActive.length >= 3 ? StringUtils.toBoolean(nameAndDescriptionAndActive[2]) : true;
+		final boolean active = nameAndDescriptionAndActive.length < 3 || StringUtils.toBoolean(nameAndDescriptionAndActive[2]);
 
 		final ITranslatableString displayNameTrl;
 		final ITranslatableString descriptionTrl;
