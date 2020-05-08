@@ -79,23 +79,28 @@ public final class JSONDocumentReference
 
 	@JsonProperty("id")
 	private final String id;
+
 	@JsonProperty("priority")
 	private final int priority;
 
 	@JsonProperty("internalName")
 	private final String internalName;
+
 	@JsonProperty("caption")
 	private final String caption;
-	@JsonProperty("documentType")
-	private final WindowId windowId;
+
+	@JsonProperty("targetWindowId")
+	private final WindowId targetWindowId;
+
 	@JsonProperty("documentsCount")
 	private final int documentsCount;
+
 	@JsonProperty("filter")
 	private final JSONDocumentFilter filter;
 
 	@JsonProperty("loadDuration")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
-	private final String loadDurationStr;
+	private final String loadDuration;
 
 	private JSONDocumentReference(
 			@NonNull final DocumentReference documentReference,
@@ -108,13 +113,13 @@ public final class JSONDocumentReference
 
 		internalName = documentReference.getInternalName();
 		caption = documentReference.getCaption(adLanguage);
-		windowId = documentReference.getWindowId();
+		targetWindowId = documentReference.getWindowId();
 		documentsCount = documentReference.getDocumentsCount();
 
 		final DocumentFilter filter = documentReference.getFilter();
 		this.filter = JSONDocumentFilter.of(filter, jsonOpts);
 
 		final Duration loadDuration = documentReference.getLoadDuration();
-		this.loadDurationStr = loadDuration != null ? TimeUtil.formatElapsed(loadDuration) : null;
+		this.loadDuration = loadDuration != null ? TimeUtil.formatElapsed(loadDuration) : null;
 	}
 }

@@ -102,13 +102,13 @@ class TableContextMenu extends Component {
     });
   };
 
-  handleReferenceClick = (refType, filter) => {
+  handleReferenceClick = (targetWindowId, filter) => {
     const { dispatch, windowId, docId, tabId, selected } = this.props;
 
-    dispatch(setFilter(filter, refType));
+    dispatch(setFilter(filter, targetWindowId));
 
     window.open(
-      `/window/${refType}?refType=${windowId}&refId=${docId}&refTabId=${tabId}&refRowIds=${JSON.stringify(
+      `/window/${targetWindowId}?refType=${windowId}&refId=${docId}&refTabId=${tabId}&refRowIds=${JSON.stringify(
         selected || []
       )}`,
       '_blank'
@@ -219,15 +219,18 @@ class TableContextMenu extends Component {
     return (
       <Fragment>
         <hr className="context-menu-separator" />
-        {references.map((item, index) => (
+        {references.map((reference) => (
           <div
             className="context-menu-item"
-            key={index}
+            key={`reference_${reference.id}`}
             onClick={() => {
-              this.handleReferenceClick(item.documentType, item.filter);
+              this.handleReferenceClick(
+                reference.targetWindowId,
+                reference.filter
+              );
             }}
           >
-            <i className="meta-icon-share" /> {item.caption}
+            <i className="meta-icon-share" /> {reference.caption}
           </div>
         ))}
         {loadingReferences ? <Loader /> : null}

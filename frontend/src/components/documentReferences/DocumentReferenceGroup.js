@@ -18,7 +18,7 @@ export default class DocumentReferenceGroup extends Component {
           <DocumentReferenceItem
             key={reference.id}
             caption={reference.caption}
-            targetWindowId={reference.documentType}
+            targetWindowId={reference.targetWindowId}
             filter={reference.filter}
             onClick={onReferenceItemClick}
           />

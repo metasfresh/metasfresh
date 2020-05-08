@@ -4,6 +4,7 @@ import javax.annotation.Nullable;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
+import com.fasterxml.jackson.annotation.JsonInclude;
 
 import lombok.NonNull;
 import lombok.Value;
@@ -47,6 +48,8 @@ public class JSONDocumentReferencesEvent
 	}
 
 	private final Type type;
+
+	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private final JSONDocumentReferencesGroup partialGroup;
 
 	private JSONDocumentReferencesEvent(
