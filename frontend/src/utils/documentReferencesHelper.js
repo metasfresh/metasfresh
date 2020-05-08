@@ -1,43 +1,38 @@
-export function mergePartialGroupToGroupsArray(groups, partialGroup) {
-  if (!partialGroup) {
+export function mergePartialGroupToGroupsArray(groups, groupToAdd) {
+  if (!groupToAdd) {
     return groups;
   }
 
-  let result = [];
-  let partialGroupMerged = false;
+  var groupAdded = false;
 
-  for (const group of groups) {
-    if (!partialGroupMerged && group.caption === partialGroup.caption) {
-      const changedGroup = mergeReferencesToGroup(
-        group,
-        partialGroup.references
-      );
-
-      result.push(changedGroup);
-      partialGroupMerged = true;
+  const result = groups.map((group) => {
+    if (!groupAdded && group.caption === groupToAdd.caption) {
+      groupAdded = true;
+      return mergeReferencesToGroup(group, groupToAdd.references);
     } else {
-      result.push(group);
+      return group;
     }
-  }
+  });
 
-  if (!partialGroupMerged) {
-    result.push(partialGroup);
-    partialGroupMerged = true;
+  if (!groupAdded) {
+    result.push(groupToAdd);
+    groupAdded = true;
   }
 
   //
   // Sort groups by caption alphabetically, keep miscGroup last.
-  result = result.sort((group1, group2) => {
-    if (group1.miscGroup == group2.miscGroup) {
-      return group1.caption.localeCompare(group2.caption);
-    } else if (group1.miscGroup) {
-      return +1; // keep misc group last
-    } else {
-      return -1;
-    }
-  });
+  return result.sort(compareGroupsByCaption);
+}
 
-  return result;
+/** Sort groups by caption alphabetically, keep miscGroup last. */
+function compareGroupsByCaption(group1, group2) {
+  if (group1.miscGroup == group2.miscGroup) {
+    return group1.caption.localeCompare(group2.caption);
+  } else if (group1.miscGroup) {
+    return +1; // keep misc group last
+  } else {
+    return -1;
+  }
 }
 
 function mergeReferencesToGroup(group, referencesToAdd) {
@@ -59,32 +54,35 @@ export function mergeReferencesToReferences(
     return existingReferences;
   }
 
-  const referencesToAddById = {};
-  referencesToAdd.forEach((reference) => {
-    referencesToAddById[reference.id] = reference;
-  });
-
-  let references = [];
-
-  for (const existingReference of existingReferences) {
-    const referenceToAdd = referencesToAddById[existingReference.id];
-    delete referencesToAddById[existingReference.id];
-
-    if (
-      referenceToAdd &&
-      referenceToAdd.priority < existingReference.priority
-    ) {
-      references.push(referenceToAdd);
-    } else {
-      references.push(existingReference);
-    }
-  }
-
-  Object.values(referencesToAddById).forEach((referenceToAdd) =>
-    references.push(referenceToAdd)
+  const referencesToAddById = referencesToAdd.reduce(
+    (accum, reference) => ({ ...accum, [reference.id]: reference }),
+    {}
   );
 
-  return references.sort((reference1, reference2) => {
-    return reference1.caption.localeCompare(reference2.caption);
-  });
+  // Merge referencesToAdd to existing references
+  const existingReferencesMerged = existingReferences.map(
+    (existingReference) => {
+      const referenceToAdd = referencesToAddById[existingReference.id];
+      delete referencesToAddById[existingReference.id];
+
+      return combineReferences(existingReference, referenceToAdd);
+    }
+  );
+
+  return [
+    ...existingReferencesMerged,
+    ...Object.values(referencesToAddById), // remaining refences to add
+  ].sort(compareReferencesByCaption);
+}
+
+function combineReferences(existingReference, referenceToAdd) {
+  if (referenceToAdd && referenceToAdd.priority < existingReference.priority) {
+    return referenceToAdd;
+  } else {
+    return existingReference;
+  }
+}
+
+function compareReferencesByCaption(reference1, reference2) {
+  return reference1.caption.localeCompare(reference2.caption);
 }
