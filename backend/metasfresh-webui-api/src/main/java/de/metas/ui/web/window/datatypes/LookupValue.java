@@ -125,15 +125,15 @@ public abstract class LookupValue
 		}
 	}
 
-	@SuppressWarnings("ConstantConditions")
-	@Nullable
-	public static LookupValue fromNamePair(@Nullable final NamePair namePair)
-	{
-		final LookupValue defaultValue = null;
-		final String adLanguage = null;
-		final ReferenceTooltipType referenceTooltipType = null;
-		return fromNamePair(namePair, adLanguage, defaultValue, referenceTooltipType);
-	}
+	// @SuppressWarnings("ConstantConditions")
+	// @Nullable
+	// public static LookupValue fromNamePair(@Nullable final NamePair namePair)
+	// {
+	// 	final LookupValue defaultValue = null;
+	// 	final String adLanguage = null;
+	// 	final ReferenceTooltipType referenceTooltipType = ReferenceTooltipType.Description;  // TODO tbp: how to figure out which is the default?
+	// 	return fromNamePair(namePair, adLanguage, defaultValue, referenceTooltipType);
+	// }
 
 	// public static LookupValue fromNamePair(
 	// 		@Nullable final NamePair namePair,
@@ -150,7 +150,7 @@ public abstract class LookupValue
 	public static LookupValue fromNamePair(
 			@Nullable final NamePair namePair,
 			@Nullable final String adLanguage,
-			@Nullable final ReferenceTooltipType referenceTooltipType)
+			@NonNull final ReferenceTooltipType referenceTooltipType)
 	{
 		final LookupValue defaultValue = null;
 		return fromNamePair(namePair, adLanguage, defaultValue, referenceTooltipType);
@@ -161,7 +161,7 @@ public abstract class LookupValue
 			@Nullable final NamePair namePair,
 			@Nullable final String adLanguage,
 			@Nullable final LookupValue defaultValue,
-			@Nullable final ReferenceTooltipType referenceTooltipType)
+			@NonNull final ReferenceTooltipType referenceTooltipType)
 	{
 		if (namePair == null)
 		{
@@ -171,8 +171,7 @@ public abstract class LookupValue
 		final ITranslatableString displayNameTrl;
 		final ITranslatableString descriptionTrl;
 
-		final ReferenceTooltipType referenceTooltipTypeNotNull = CoalesceUtil.coalesce(referenceTooltipType, ReferenceTooltipType.Description);
-		switch (referenceTooltipTypeNotNull)
+		switch (referenceTooltipType)
 		{
 			case TableIdentifier:
 				displayNameTrl = trl(adLanguage, namePair.getName());

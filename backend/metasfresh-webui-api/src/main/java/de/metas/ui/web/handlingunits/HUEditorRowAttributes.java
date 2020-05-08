@@ -1,23 +1,8 @@
 package de.metas.ui.web.handlingunits;
 
-import java.time.LocalDate;
-import java.time.ZoneId;
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
-import java.util.function.Supplier;
-import java.util.stream.Collectors;
-
-import org.adempiere.mm.attributes.api.AttributeConstants;
-import org.adempiere.mm.attributes.spi.IAttributeValueContext;
-import org.adempiere.mm.attributes.spi.impl.DefaultAttributeValueContext;
-import org.adempiere.util.lang.ExtendedMemorizingSupplier;
-import org.compiere.model.I_M_Attribute;
-import org.compiere.model.X_M_Attribute;
-
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableSet;
-
+import de.metas.adempiere.service.impl.ReferenceTooltipType;
 import de.metas.handlingunits.IHUAware;
 import de.metas.handlingunits.attribute.HUAttributeConstants;
 import de.metas.handlingunits.attribute.IAttributeValue;
@@ -45,9 +30,25 @@ import de.metas.ui.web.window.model.IDocumentChangesCollector;
 import de.metas.ui.web.window.model.MutableDocumentFieldChangedEvent;
 import de.metas.ui.web.window.model.lookup.LookupValueFilterPredicates;
 import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
+import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.mm.attributes.api.AttributeConstants;
+import org.adempiere.mm.attributes.spi.IAttributeValueContext;
+import org.adempiere.mm.attributes.spi.impl.DefaultAttributeValueContext;
+import org.adempiere.util.lang.ExtendedMemorizingSupplier;
+import org.compiere.model.I_M_Attribute;
+import org.compiere.model.X_M_Attribute;
+
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 /*
  * #%L
@@ -285,12 +286,13 @@ public class HUEditorRowAttributes implements IViewRowAttributes
 	public LookupValuesList getAttributeTypeahead(final String attributeName, final String query)
 	{
 		final I_M_Attribute attribute = attributesStorage.getAttributeByValueKeyOrNull(attributeName);
+		final ReferenceTooltipType referenceTooltipType = Services.get(IADTableDAO.class).getReferenceTooltipTypeByTableName(I_M_Attribute.Table_Name);
 
 		return attributesStorage
 				.getAttributeValue(attribute)
 				.getAvailableValues()
 				.stream()
-				.map(itemNP -> LookupValue.fromNamePair(itemNP))
+				.map(itemNP -> LookupValue.fromNamePair(itemNP, null, referenceTooltipType))
 				.collect(LookupValuesList.collect())
 				.filter(LookupValueFilterPredicates.of(query), 0, 10);
 	}
@@ -299,12 +301,13 @@ public class HUEditorRowAttributes implements IViewRowAttributes
 	public LookupValuesList getAttributeDropdown(final String attributeName)
 	{
 		final I_M_Attribute attribute = attributesStorage.getAttributeByValueKeyOrNull(attributeName);
+		final ReferenceTooltipType referenceTooltipType = Services.get(IADTableDAO.class).getReferenceTooltipTypeByTableName(I_M_Attribute.Table_Name);
 
 		return attributesStorage
 				.getAttributeValue(attribute)
 				.getAvailableValues()
 				.stream()
-				.map(itemNP -> LookupValue.fromNamePair(itemNP))
+				.map(itemNP -> LookupValue.fromNamePair(itemNP, null, referenceTooltipType))
 				.collect(LookupValuesList.collect());
 	}
 
