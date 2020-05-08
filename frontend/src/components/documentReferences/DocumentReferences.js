@@ -58,7 +58,7 @@ class DocumentReferences extends Component {
     dispatch(setFilter(filter, targetWindowId));
 
     const url = `/window/${targetWindowId}?refType=${windowId}&refId=${documentId}`;
-    
+
     if (ctrlKeyPressed) {
       window.open(url, '_blank');
     } else {
