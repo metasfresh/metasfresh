@@ -159,6 +159,7 @@ public class TranslatableStrings
 		return ConstantTranslatableString.anyLanguage(value);
 	}
 
+	@NonNull
 	public ITranslatableString singleLanguage(@Nullable final String adLanguage, @Nullable final String value)
 	{
 		if (Check.isEmpty(adLanguage, true))
@@ -206,9 +207,11 @@ public class TranslatableStrings
 		{
 			return true;
 		}
-		else if (trl instanceof ConstantTranslatableString)
+		else if (trl instanceof ConstantTranslatableString
+				|| trl instanceof ImmutableTranslatableString
+		)
 		{
-			return Check.isEmpty(trl.getDefaultValue(), true);
+			return Check.isBlank(trl.getDefaultValue());
 		}
 		else
 		{
