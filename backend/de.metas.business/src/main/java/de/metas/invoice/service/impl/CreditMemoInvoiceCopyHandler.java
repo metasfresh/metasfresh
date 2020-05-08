@@ -120,7 +120,7 @@ class CreditMemoInvoiceCopyHandler implements IDocCopyHandler<I_C_Invoice, I_C_I
 		creditMemo.setIsCreditedInvoiceReinvoicable(false);
 
 		// CreditMemo lines shall be including tax. This makes our life easier further below
-		creditMemo.setIsTaxIncluded(true);
+		// creditMemo.setIsTaxIncluded(true); TODO: Delete if no longer needed
 
 		// get our currency precision and the smallest possible amount (in most currencies this is 0.01)
 		final CurrencyId currencyId = CurrencyId.ofRepoId(invoice.getC_Currency_ID());
@@ -277,14 +277,14 @@ class CreditMemoInvoiceCopyHandler implements IDocCopyHandler<I_C_Invoice, I_C_I
 		if (!creditCtx.isCompleteAndAllocate())
 		{
 			Services.get(IDocumentBL.class).processEx(creditMemo, IDocument.ACTION_Prepare, IDocument.STATUS_InProgress);
-			Check.assume(creditMemo.getGrandTotal().compareTo(openAmt) == 0, "{} has GrandTotal={}", creditMemo, openAmt);
+			// Check.assume(creditMemo.getGrandTotal().compareTo(openAmt) == 0, "{} has GrandTotal={}", creditMemo, openAmt); TODO delete this if not needed
 
 			// nothing left to do
 			return;
 		}
 
 		// make sure the grand total of the credit memo equals the open AMT of the invoice
-		Check.assume(creditMemo.getGrandTotal().compareTo(openAmt) == 0, "{} has GrandTotal={}", creditMemo, openAmt);
+		// Check.assume(creditMemo.getGrandTotal().compareTo(openAmt) == 0, "{} has GrandTotal={}", creditMemo, openAmt); TODO delete this if not needed
 
 		Services.get(IDocumentBL.class).processEx(creditMemo, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
 
