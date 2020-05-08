@@ -65,14 +65,8 @@ import lombok.Value;
 @Value
 public class RecordRefWithLogEntryProcessor
 {
-	// @NonNull
-	// Predicate<String> skipColumnNamePredicate;
-
 	@NonNull
 	Predicate<RecordRefWithLogEntry> referencesLocationTablePredicate;
-
-	// @NonNull
-	// Function<POInfoColumn, ITranslatableString> columnTrlProvider;
 
 	@NonNull
 	BiFunction<TableRecordReference, ImmutableList<I_C_Location>, ImmutableList<RecordRefWithLogEntry>> derivedLocationEntriesProvider;
@@ -90,18 +84,6 @@ public class RecordRefWithLogEntryProcessor
 		try (final MDCCloseable valueMDC = TableRecordMDC.putTableRecordReference(recordRefWithLogEntry.getRecordRef()))
 		{
 			logger.debug("Found a recordChangeLogEntry for C_Location_ID that has ValueOld=NULL; -> excluding it; recordChangeLogEntry={}", recordRefWithLogEntry.getRecordChangeLogEntry());
-			return false;
-		}
-	};
-
-	private static final Predicate<RecordRefWithLogEntry> LOCATION_ID_NEW_VALUE_NOT_NULL = recordRefWithLogEntry -> {
-		if (recordRefWithLogEntry.getRecordChangeLogEntry().getValueNew() != null)
-		{
-			return true; // all is well
-		}
-		try (final MDCCloseable valueMDC = TableRecordMDC.putTableRecordReference(recordRefWithLogEntry.getRecordRef()))
-		{
-			logger.debug("Found a recordChangeLogEntry for C_Location_ID that has ValueNew=NULL; -> excluding it; recordChangeLogEntry={}", recordRefWithLogEntry.getRecordChangeLogEntry());
 			return false;
 		}
 	};
