@@ -125,26 +125,6 @@ public abstract class LookupValue
 		}
 	}
 
-	// @SuppressWarnings("ConstantConditions")
-	// @Nullable
-	// public static LookupValue fromNamePair(@Nullable final NamePair namePair)
-	// {
-	// 	final LookupValue defaultValue = null;
-	// 	final String adLanguage = null;
-	// 	final ReferenceTooltipType referenceTooltipType = ReferenceTooltipType.Description;  // TODO tbp: how to figure out which is the default?
-	// 	return fromNamePair(namePair, adLanguage, defaultValue, referenceTooltipType);
-	// }
-
-	// public static LookupValue fromNamePair(
-	// 		@Nullable final NamePair namePair,
-	// 		@Nullable final String adLanguage
-	// )
-	// {
-	// 	final LookupValue defaultValue = null;
-	// 	final ReferenceTooltipType referenceTooltipType = null;
-	// 	return fromNamePair(namePair, adLanguage, defaultValue, referenceTooltipType);
-	// }
-
 	@SuppressWarnings("ConstantConditions")
 	@Nullable
 	public static LookupValue fromNamePair(
