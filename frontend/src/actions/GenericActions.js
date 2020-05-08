@@ -218,11 +218,9 @@ export function referencesEventSource({
   onPartialResult,
   onComplete,
 }) {
-  var url = `${config.API_URL}/window/${windowId}/${documentId}`;
-  if (rowId) {
-    url = url + `/${tabId}/${rowId}`;
-  }
-  url = url + '/references/sse';
+  const url = `${config.API_URL}/window/${windowId}/${documentId}${
+    rowId ? `/${tabId}/${rowId}` : ''
+  }/references/sse`;
 
   var eventSource = new EventSource(url, { withCredentials: true });
 
