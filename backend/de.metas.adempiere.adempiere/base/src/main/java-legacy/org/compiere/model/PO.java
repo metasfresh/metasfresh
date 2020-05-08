@@ -663,7 +663,7 @@ public abstract class PO
 		final int defaultValue = 0;
 		return get_ValueAsInt(index, defaultValue);
 	}
-	
+
 	public final Integer get_ValueAsInt(final int index, final Integer defaultValue)
 	{
 		final Object value = get_Value(index);
@@ -3154,13 +3154,6 @@ public abstract class PO
 			}
 		}
 
-		//
-		// Deferred processing of this po (metas-ts 1076)
-		if (success)
-		{
-			fireModelChange(ModelChangeType.SUBSEQUENT);
-		}
-
 		// Return "success"
 		return success;
 	}	// saveFinish
@@ -5004,7 +4997,7 @@ public abstract class PO
 		final int defaultValue = 0;
 		return get_ValueAsInt(columnName, defaultValue);
 	}
-	
+
 	@Override
 	public final Integer get_ValueAsInt(final String columnName, final Integer defaultValue)
 	{
