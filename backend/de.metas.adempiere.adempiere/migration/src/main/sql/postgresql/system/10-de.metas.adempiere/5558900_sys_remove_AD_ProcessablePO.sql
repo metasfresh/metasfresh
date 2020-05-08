@@ -15,8 +15,6 @@ DELETE FROM  AD_Window_Trl WHERE AD_Window_ID=540099
 DELETE FROM AD_Window WHERE AD_Window_ID=540099
 ;
 
-DROP TABLE AD_ProcessablePO;
-
 -- 2020-05-08T14:45:10.320Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 DELETE FROM AD_Table_Process WHERE AD_Table_Process_ID=540390
@@ -52,8 +50,6 @@ DELETE FROM  AD_Element_Trl WHERE AD_Element_ID=541292
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 DELETE FROM AD_Element WHERE AD_Element_ID=541292
 ;
-
-DROP TABLE AD_POProcessor;
 
 DELETE FROM AD_Menu WHERE ad_window_id=540108;
 -- 2020-05-08T14:54:39.467Z
@@ -110,4 +106,3 @@ UPDATE AD_Menu SET EntityType='de.metas.dataentry',Updated=TO_TIMESTAMP('2020-05
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 DELETE FROM AD_EntityType WHERE AD_EntityType_ID=540027
 ;
-
