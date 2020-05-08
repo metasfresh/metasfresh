@@ -1,16 +1,8 @@
-package org.adempiere.ad.table.api.impl;
-
-import static org.adempiere.model.InterfaceWrapperHelper.createOld;
-import static org.adempiere.model.InterfaceWrapperHelper.getCtx;
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -28,14 +20,16 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
  * #L%
  */
 
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Properties;
-import java.util.Set;
+package org.adempiere.ad.table.api.impl;
 
-import javax.annotation.Nullable;
-
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import de.metas.adempiere.service.impl.ReferenceTooltipType;
+import de.metas.document.DocumentConstants;
+import de.metas.i18n.ITranslatableString;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.UpperCaseQueryFilterModifier;
@@ -57,14 +51,20 @@ import org.compiere.model.X_AD_SQLColumn_SourceTableColumn;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
+import javax.annotation.Nullable;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Properties;
+import java.util.Set;
 
-import de.metas.document.DocumentConstants;
-import de.metas.i18n.ITranslatableString;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import lombok.NonNull;
+import static org.adempiere.model.InterfaceWrapperHelper.createOld;
+import static org.adempiere.model.InterfaceWrapperHelper.getCtx;
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+
+
 
 public class ADTableDAO implements IADTableDAO
 {
@@ -389,5 +389,12 @@ public class ADTableDAO implements IADTableDAO
 	public void validate(@NonNull final I_AD_SQLColumn_SourceTableColumn record)
 	{
 		toColumnSqlSourceDescriptor(record); // shall throw exception if not valid
+	}
+
+	@Override
+	public @NonNull ReferenceTooltipType getReferenceTooltipTypeByTableName(@NonNull final String tableName)
+	{
+		//  // TODO tbp: implement this
+		return ReferenceTooltipType.Description;
 	}
 }
