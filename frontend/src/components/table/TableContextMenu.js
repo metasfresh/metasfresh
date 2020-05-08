@@ -126,9 +126,12 @@ class TableContextMenu extends Component {
   };
 
   handleOpenNewTab = () => {
-    const { selected, windowId, onOpenNewTab } = this.props;
+    const { onOpenNewTab, windowId, selected } = this.props;
 
-    onOpenNewTab(windowId, selected);
+    onOpenNewTab({
+      windowId,
+      rowIds: selected,
+    });
   };
 
   render() {
