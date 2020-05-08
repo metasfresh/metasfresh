@@ -3,12 +3,10 @@ import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { push } from 'react-router-redux';
-
-import { referencesEventSource } from '../../actions/GenericActions';
 import { setFilter } from '../../actions/ListActions';
+import { referencesEventSource } from '../../api/documentReferences';
 import { mergePartialGroupToGroupsArray } from '../../utils/documentReferencesHelper';
 import Loader from '../app/Loader';
-
 import DocumentReferenceGroup from './DocumentReferenceGroup';
 
 /**

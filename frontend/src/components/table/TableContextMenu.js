@@ -5,7 +5,7 @@ import counterpart from 'counterpart';
 
 import Loader from '../app/Loader';
 
-import { referencesEventSource } from '../../actions/GenericActions';
+import { referencesEventSource } from '../../api/documentReferences';
 import { mergeReferencesToReferences } from '../../utils/documentReferencesHelper';
 import { setFilter } from '../../actions/ListActions';
 import keymap from '../../shortcuts/keymap';
