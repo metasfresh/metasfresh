@@ -1,4 +1,4 @@
-package de.metas.ui.web.window.controller;
+package de.metas.ui.web.document.references.controller;
 
 import java.util.Collection;
 import java.util.Comparator;
@@ -9,14 +9,14 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
+import de.metas.ui.web.document.references.DocumentReference;
+import de.metas.ui.web.document.references.json.JSONDocumentReference;
+import de.metas.ui.web.document.references.json.JSONDocumentReferencesGroup;
+import de.metas.ui.web.document.references.json.JSONDocumentReferencesGroupList;
+import de.metas.ui.web.document.references.json.JSONDocumentReferencesGroup.JSONDocumentReferencesGroupBuilder;
 import de.metas.ui.web.menu.MenuNode;
 import de.metas.ui.web.menu.MenuTree;
-import de.metas.ui.web.window.datatypes.json.JSONDocumentReference;
-import de.metas.ui.web.window.datatypes.json.JSONDocumentReferencesGroup;
-import de.metas.ui.web.window.datatypes.json.JSONDocumentReferencesGroup.JSONDocumentReferencesGroupBuilder;
-import de.metas.ui.web.window.datatypes.json.JSONDocumentReferencesGroupList;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
-import de.metas.ui.web.window.model.DocumentReference;
 import de.metas.util.lang.UIDStringUtil;
 import lombok.Builder;
 import lombok.NonNull;

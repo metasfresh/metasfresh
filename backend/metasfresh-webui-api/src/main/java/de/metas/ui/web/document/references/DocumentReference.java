@@ -1,4 +1,4 @@
-package de.metas.ui.web.window.model;
+package de.metas.ui.web.document.references;
 
 import java.time.Duration;
 

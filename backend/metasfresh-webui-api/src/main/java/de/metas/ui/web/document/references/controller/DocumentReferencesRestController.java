@@ -1,4 +1,4 @@
-package de.metas.ui.web.window.controller;
+package de.metas.ui.web.document.references.controller;
 
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -20,17 +20,18 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
+import de.metas.ui.web.document.references.DocumentReference;
+import de.metas.ui.web.document.references.DocumentReferenceCandidate;
+import de.metas.ui.web.document.references.json.JSONDocumentReference;
+import de.metas.ui.web.document.references.json.JSONDocumentReferencesGroup;
+import de.metas.ui.web.document.references.service.DocumentReferencesService;
 import de.metas.ui.web.menu.MenuTree;
 import de.metas.ui.web.menu.MenuTreeRepository;
 import de.metas.ui.web.session.UserSession;
+import de.metas.ui.web.window.controller.WindowRestController;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.WindowId;
-import de.metas.ui.web.window.datatypes.json.JSONDocumentReference;
-import de.metas.ui.web.window.datatypes.json.JSONDocumentReferencesGroup;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
-import de.metas.ui.web.window.model.DocumentReference;
-import de.metas.ui.web.window.model.DocumentReferenceCandidate;
-import de.metas.ui.web.window.model.DocumentReferencesService;
 import de.metas.util.Services;
 import io.swagger.annotations.Api;
 import lombok.Builder;

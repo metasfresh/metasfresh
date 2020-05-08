@@ -1,4 +1,4 @@
-package de.metas.ui.web.window.datatypes.json;
+package de.metas.ui.web.document.references.json;
 
 import java.util.List;
 
@@ -8,6 +8,8 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableList;
 
+import lombok.Builder;
+import lombok.Singular;
 import lombok.Value;
 
 /*
@@ -34,21 +36,31 @@ import lombok.Value;
 
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 @Value
-public class JSONDocumentReferencesGroupList
+public class JSONDocumentReferencesGroup
 {
-	public static final JSONDocumentReferencesGroupList EMPTY = new JSONDocumentReferencesGroupList(ImmutableList.of());
+	@JsonProperty("caption")
+	private final String caption;
 
-	@JsonProperty("groups")
-	private final List<JSONDocumentReferencesGroup> groups;
+	@JsonProperty("references")
+	private final List<JSONDocumentReference> references;
+
+	@JsonProperty("miscGroup")
+	private final boolean miscGroup;
 
 	@JsonCreator
-	public JSONDocumentReferencesGroupList(@JsonProperty("groups") final List<JSONDocumentReferencesGroup> groups)
+	@Builder
+	private JSONDocumentReferencesGroup(
+			@JsonProperty("caption") final String caption,
+			@JsonProperty("miscGroup") final boolean isMiscGroup,
+			@JsonProperty("references") @Singular final List<JSONDocumentReference> references)
 	{
-		this.groups = groups == null || groups.isEmpty() ? ImmutableList.of() : ImmutableList.copyOf(groups);
+		this.caption = caption;
+		this.miscGroup = isMiscGroup;
+		this.references = references == null || references.isEmpty() ? ImmutableList.of() : ImmutableList.copyOf(references);
 	}
 
 	public boolean isEmpty()
 	{
-		return groups.isEmpty();
+		return getReferences().isEmpty();
 	}
 }

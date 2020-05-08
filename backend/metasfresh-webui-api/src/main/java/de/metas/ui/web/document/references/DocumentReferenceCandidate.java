@@ -1,4 +1,4 @@
-package de.metas.ui.web.window.model;
+package de.metas.ui.web.document.references;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -80,7 +80,7 @@ public class DocumentReferenceCandidate
 				.map(zoomInfo -> toDocumentReference(zoomInfo, filterCaption));
 	}
 
-	static DocumentReference toDocumentReference(
+	public static DocumentReference toDocumentReference(
 			@NonNull final ZoomInfo zoomInfo,
 			@NonNull final ITranslatableString filterCaption)
 	{

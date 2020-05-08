@@ -1,4 +1,4 @@
-package de.metas.ui.web.window.controller;
+package de.metas.ui.web.document.references.controller;
 
 import java.io.IOException;
 import java.util.Collection;
@@ -8,7 +8,7 @@ import org.slf4j.Logger;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import de.metas.logging.LogManager;
-import de.metas.ui.web.window.datatypes.json.JSONDocumentReferencesGroup;
+import de.metas.ui.web.document.references.json.JSONDocumentReferencesGroup;
 import lombok.Getter;
 import lombok.NonNull;
 

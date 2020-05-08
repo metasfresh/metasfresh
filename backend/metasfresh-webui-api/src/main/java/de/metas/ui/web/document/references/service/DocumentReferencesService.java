@@ -1,4 +1,4 @@
-package de.metas.ui.web.window.model;
+package de.metas.ui.web.document.references.service;
 
 import java.util.Properties;
 
@@ -24,12 +24,17 @@ import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
 import de.metas.security.IUserRolePermissions;
+import de.metas.ui.web.document.filter.DocumentFilter;
+import de.metas.ui.web.document.references.DocumentReference;
+import de.metas.ui.web.document.references.DocumentReferenceCandidate;
 import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDataBindingDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
+import de.metas.ui.web.window.model.Document;
+import de.metas.ui.web.window.model.DocumentCollection;
 import de.metas.util.Services;
 import lombok.Getter;
 import lombok.NonNull;
@@ -102,6 +107,15 @@ public class DocumentReferencesService
 		logger.debug("Fetched initial document references stream for {} in {}", documentPath, stopwatch);
 
 		return documentReferences;
+	}
+
+	public DocumentFilter getDocumentReferenceFilter(
+			final DocumentPath sourceDocumentPath,
+			final WindowId targetWindowId,
+			@NonNull final IUserRolePermissions rolePermissions)
+	{
+		final DocumentReference documentReference = getDocumentReference(sourceDocumentPath, targetWindowId, rolePermissions);
+		return documentReference.getFilter();
 	}
 
 	public DocumentReference getDocumentReference(

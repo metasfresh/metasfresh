@@ -24,6 +24,7 @@ import de.metas.ui.web.document.filter.DocumentFilterParamDescriptor;
 import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProvider;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverterDecorator;
 import de.metas.ui.web.document.geo_location.GeoLocationDocumentService;
+import de.metas.ui.web.document.references.service.DocumentReferencesService;
 import de.metas.ui.web.view.descriptor.SqlViewBinding;
 import de.metas.ui.web.view.descriptor.SqlViewBindingFactory;
 import de.metas.ui.web.view.descriptor.SqlViewCustomizerMap;
@@ -36,8 +37,6 @@ import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.factory.DocumentDescriptorFactory;
-import de.metas.ui.web.window.model.DocumentReference;
-import de.metas.ui.web.window.model.DocumentReferencesService;
 import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 
@@ -194,12 +193,11 @@ public class SqlViewFactory implements IViewFactory
 		}
 		else
 		{
-			final DocumentReference reference = documentReferencesService.getDocumentReference(
+			return documentReferencesService.getDocumentReferenceFilter(
 					referencedDocumentPath,
 					targetWindowId,
 					Env.getUserRolePermissions() // FIXME: avoid using Env here
 			);
-			return reference.getFilter();
 		}
 	}
 

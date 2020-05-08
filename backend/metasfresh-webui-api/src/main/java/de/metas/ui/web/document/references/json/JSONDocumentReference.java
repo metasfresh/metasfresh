@@ -1,4 +1,4 @@
-package de.metas.ui.web.window.datatypes.json;
+package de.metas.ui.web.document.references.json;
 
 import java.time.Duration;
 import java.util.Collection;
@@ -18,8 +18,9 @@ import com.google.common.collect.ImmutableList;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.json.JSONDocumentFilter;
+import de.metas.ui.web.document.references.DocumentReference;
 import de.metas.ui.web.window.datatypes.WindowId;
-import de.metas.ui.web.window.model.DocumentReference;
+import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import lombok.NonNull;
 
 /*
