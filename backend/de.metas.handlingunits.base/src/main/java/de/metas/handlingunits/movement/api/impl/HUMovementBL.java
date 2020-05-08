@@ -35,7 +35,6 @@ import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
-import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.util.Env;
@@ -54,6 +53,8 @@ import de.metas.product.acct.api.ActivityId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+
+import javax.annotation.Nullable;
 
 public class HUMovementBL implements IHUMovementBL
 {
@@ -81,6 +82,7 @@ public class HUMovementBL implements IHUMovementBL
 		InterfaceWrapperHelper.save(movementLine);
 	}
 
+	@Nullable
 	@Override
 	public I_M_Warehouse getDirectMove_Warehouse(final Properties ctx, final boolean throwEx)
 	{
