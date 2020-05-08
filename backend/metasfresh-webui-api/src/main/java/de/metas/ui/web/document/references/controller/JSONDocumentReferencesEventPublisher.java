@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import de.metas.logging.LogManager;
+import de.metas.ui.web.document.references.json.JSONDocumentReferencesEvent;
 import de.metas.ui.web.document.references.json.JSONDocumentReferencesGroup;
 import lombok.Getter;
 import lombok.NonNull;
@@ -34,7 +35,7 @@ import lombok.NonNull;
  * #L%
  */
 
-public class JSONDocumentReferencesEventPublisher
+class JSONDocumentReferencesEventPublisher
 {
 	public static JSONDocumentReferencesEventPublisher newInstance()
 	{

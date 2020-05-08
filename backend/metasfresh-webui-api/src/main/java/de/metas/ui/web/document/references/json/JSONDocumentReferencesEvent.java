@@ -1,11 +1,10 @@
-package de.metas.ui.web.document.references.controller;
+package de.metas.ui.web.document.references.json;
 
 import javax.annotation.Nullable;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 
-import de.metas.ui.web.document.references.json.JSONDocumentReferencesGroup;
 import lombok.NonNull;
 import lombok.Value;
 
