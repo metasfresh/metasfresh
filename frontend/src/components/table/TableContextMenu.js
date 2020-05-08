@@ -6,7 +6,10 @@ import counterpart from 'counterpart';
 import Loader from '../app/Loader';
 
 import { referencesEventSource } from '../../api/documentReferences';
-import { mergeReferencesToReferences } from '../../utils/documentReferencesHelper';
+import {
+  buildRelatedDocumentsViewUrl,
+  mergeReferencesToReferences,
+} from '../../utils/documentReferencesHelper';
 import { setFilter } from '../../actions/ListActions';
 import keymap from '../../shortcuts/keymap';
 
@@ -105,14 +108,16 @@ class TableContextMenu extends Component {
   handleReferenceClick = (targetWindowId, filter) => {
     const { dispatch, windowId, docId, tabId, selected } = this.props;
 
-    dispatch(setFilter(filter, targetWindowId));
+    const url = buildRelatedDocumentsViewUrl({
+      targetWindowId,
+      windowId,
+      documentId: docId,
+      tabId,
+      rowIds: selected,
+    });
 
-    window.open(
-      `/window/${targetWindowId}?refType=${windowId}&refId=${docId}&refTabId=${tabId}&refRowIds=${JSON.stringify(
-        selected || []
-      )}`,
-      '_blank'
-    );
+    dispatch(setFilter(filter, targetWindowId));
+    window.open(url, '_blank');
   };
 
   handleOpenNewTab = () => {

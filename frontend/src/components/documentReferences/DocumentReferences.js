@@ -5,7 +5,10 @@ import { connect } from 'react-redux';
 import { push } from 'react-router-redux';
 import { setFilter } from '../../actions/ListActions';
 import { referencesEventSource } from '../../api/documentReferences';
-import { mergePartialGroupToGroupsArray } from '../../utils/documentReferencesHelper';
+import {
+  buildRelatedDocumentsViewUrl,
+  mergePartialGroupToGroupsArray,
+} from '../../utils/documentReferencesHelper';
 import Loader from '../app/Loader';
 import DocumentReferenceGroup from './DocumentReferenceGroup';
 
@@ -55,9 +58,13 @@ class DocumentReferences extends Component {
   handleReferenceClick = ({ targetWindowId, filter, ctrlKeyPressed }) => {
     const { dispatch, windowId, documentId } = this.props;
 
-    dispatch(setFilter(filter, targetWindowId));
+    const url = buildRelatedDocumentsViewUrl({
+      targetWindowId,
+      windowId,
+      documentId,
+    });
 
-    const url = `/window/${targetWindowId}?refType=${windowId}&refId=${documentId}`;
+    dispatch(setFilter(filter, targetWindowId));
 
     if (ctrlKeyPressed) {
       window.open(url, '_blank');

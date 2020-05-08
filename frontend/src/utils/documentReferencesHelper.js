@@ -1,3 +1,22 @@
+import { getQueryString } from '.';
+
+export function buildRelatedDocumentsViewUrl({
+  targetWindowId,
+  windowId,
+  documentId,
+  tabId,
+  rowIds,
+}) {
+  const urlParams = getQueryString({
+    refType: windowId,
+    refId: documentId,
+    refTabId: tabId,
+    refRowIds: tabId ? JSON.stringify(rowIds || []) : undefined,
+  });
+
+  return `/window/${targetWindowId}?${urlParams}`;
+}
+
 export function mergePartialGroupToGroupsArray(groups, groupToAdd) {
   if (!groupToAdd) {
     return groups;
