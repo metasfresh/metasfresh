@@ -22,29 +22,55 @@
 
 package de.metas.adempiere.service.impl;
 
+import de.metas.util.lang.ReferenceListAwareEnum;
+import de.metas.util.lang.ReferenceListAwareEnums;
+import lombok.Getter;
+import lombok.NonNull;
+import org.compiere.model.X_AD_Table;
+
 /**
- * This controls what Tooltip value is used for Lists  // TODO tbp: is "Lists correct" ? it should include Table, table direct, search and list, but tabledirect returns null right now (see other TODOs)
+ * This controls what Tooltip value is used for Lists
  */
- // TODO tbp: introduce this reflist to ad_table
-public enum ReferenceTooltipType
+// TODO tbp: introduce this reflist to ad_table
+public enum ReferenceTooltipType implements ReferenceListAwareEnum
 {
 	/**
 	 * Tooltip shows nothing
 	 */
-	None,
+	None(X_AD_Table.ACCESSLEVEL_All), //  // TODO tbp: introduce the ref list to ad table
 
 	/**
 	 * Tooltip shows Description field if it exists. Else nothing.
 	 */
-	Description,
+	Description("Description"), //  // TODO tbp: introduce the ref list to ad table
 
 	/**
 	 * Tooltip shows the table identifier.
 	 */
-	TableIdentifier,
+	TableIdentifier("TableIdentifier"), //  // TODO tbp: introduce the ref list to ad table
 
 	/**
 	 * Tooltip shows the Description field if it is not null, else the table identifier.
 	 */
-	DescriptionFallbackToTableIdentifier
+	DescriptionFallbackToTableIdentifier("DescriptionFallbackToTableIdentifier"); //  // TODO tbp: introduce the ref list to ad table
+
+	@Getter
+	private final String code;
+
+	ReferenceTooltipType(final String code)
+	{
+		this.code = code;
+	}
+
+	public static ReferenceTooltipType ofCode(@NonNull final String code)
+	{
+		return index.ofCode(code);
+	}
+
+	public static ReferenceTooltipType ofNullableCode(final String code)
+	{
+		return index.ofNullableCode(code);
+	}
+
+	private static final ReferenceListAwareEnums.ValuesIndex<ReferenceTooltipType> index = ReferenceListAwareEnums.index(values());
 }
