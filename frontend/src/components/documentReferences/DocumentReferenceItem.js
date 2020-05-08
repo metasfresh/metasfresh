@@ -7,7 +7,13 @@ export default class DocumentReferenceItem extends Component {
     return (
       <div
         className="subheader-item js-subheader-item"
-        onClick={() => onClick(targetWindowId, filter)}
+        onClick={(e) =>
+          onClick({
+            targetWindowId,
+            filter,
+            ctrlKeyPressed: e.ctrlKey,
+          })
+        }
         tabIndex={0}
       >
         {caption}

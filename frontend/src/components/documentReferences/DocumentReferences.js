@@ -52,13 +52,18 @@ class DocumentReferences extends Component {
     });
   };
 
-  handleReferenceClick = (targetWindowId, filter) => {
+  handleReferenceClick = ({ targetWindowId, filter, ctrlKeyPressed }) => {
     const { dispatch, windowId, documentId } = this.props;
 
     dispatch(setFilter(filter, targetWindowId));
-    dispatch(
-      push(`/window/${targetWindowId}?refType=${windowId}&refId=${documentId}`)
-    );
+
+    const url = `/window/${targetWindowId}?refType=${windowId}&refId=${documentId}`;
+    
+    if (ctrlKeyPressed) {
+      window.open(url, '_blank');
+    } else {
+      dispatch(push(url));
+    }
   };
 
   handleKeyDown = (e) => {
