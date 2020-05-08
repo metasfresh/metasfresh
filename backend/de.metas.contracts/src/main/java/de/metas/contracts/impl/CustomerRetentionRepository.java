@@ -68,7 +68,7 @@ public class CustomerRetentionRepository
 	private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
 	private final IContractsDAO contractsDAO = Services.get(IContractsDAO.class);
 	private final ContractInvoiceService contractInvoiceService;
-	
+
 	public I_C_Customer_Retention getById(@NonNull final CustomerRetentionId customerRetentionId)
 	{
 		return load(customerRetentionId.getRepoId(), I_C_Customer_Retention.class);
@@ -210,11 +210,11 @@ public class CustomerRetentionRepository
 		final CustomerRetentionId customerRetentionId = retrieveOrCreateCustomerRetention(bpartnerId);
 
 		updateCustomerRetentionAfterInvoiceId(customerRetentionId, invoiceId);
-		}
+	}
 
 	private void updateCustomerRetentionAfterInvoiceId(@NonNull final CustomerRetentionId customerRetentionId,
 			@NonNull final InvoiceId invoiceId)
-		{
+	{
 
 		final InvoiceId predecessorSalesContractInvoiceId = contractInvoiceService.retrievePredecessorSalesContractInvoiceId(invoiceId);
 
@@ -249,12 +249,12 @@ public class CustomerRetentionRepository
 			if (dateExceedsThreshold(dateToCompareThreshold, lastInvoiceDate))
 			{
 				setNewCustomer(customerRetentionId);
-		}
+			}
 
 			else
 			{
 				setRegularCustomer(customerRetentionId);
-	}
+			}
 		}
 	}
 
@@ -274,7 +274,7 @@ public class CustomerRetentionRepository
 		{
 			// nothing to do
 			return;
-}
+		}
 
 		final I_C_Order order = orderDAO.getById(orderId);
 
