@@ -24,6 +24,7 @@ package org.adempiere.ad.service.impl;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
+import de.metas.adempiere.service.impl.ReferenceTooltipType;
 import de.metas.adempiere.util.cache.annotations.CacheAllowMutable;
 import de.metas.i18n.AdMessageKey;
 import de.metas.logging.LogManager;

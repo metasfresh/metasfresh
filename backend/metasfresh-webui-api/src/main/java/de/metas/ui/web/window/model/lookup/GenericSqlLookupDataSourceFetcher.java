@@ -24,6 +24,7 @@ package de.metas.ui.web.window.model.lookup;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
+import de.metas.adempiere.service.impl.ReferenceTooltipType;
 import de.metas.cache.CCache.CCacheStats;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
@@ -41,7 +42,6 @@ import de.metas.ui.web.window.descriptor.sql.SqlForFetchingLookups;
 import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptor;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
-import org.adempiere.ad.service.ILookupDAO;
 import org.adempiere.ad.service.impl.LookupDAO.SQLNamePairIterator;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.validationRule.INamePairPredicate;
@@ -53,7 +53,7 @@ import java.util.Optional;
 
 public class GenericSqlLookupDataSourceFetcher implements LookupDataSourceFetcher
 {
-	private final ILookupDAO.ReferenceTooltipType referenceTooltipType;
+	private final ReferenceTooltipType referenceTooltipType;
 
 	public static GenericSqlLookupDataSourceFetcher of(final LookupDescriptor lookupDescriptor)
 	{

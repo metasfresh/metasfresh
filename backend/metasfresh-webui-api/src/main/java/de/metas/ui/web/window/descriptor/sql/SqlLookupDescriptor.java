@@ -24,6 +24,7 @@ package de.metas.ui.web.window.descriptor.sql;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableSet;
+import de.metas.adempiere.service.impl.ReferenceTooltipType;
 import de.metas.i18n.TranslatableParameterizedString;
 import de.metas.security.IUserRolePermissions;
 import de.metas.security.impl.AccessSqlStringExpression;
@@ -50,8 +51,6 @@ import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.ad.expression.api.TranslatableParameterizedStringExpression;
 import org.adempiere.ad.expression.api.impl.CompositeStringExpression;
 import org.adempiere.ad.expression.api.impl.ConstantStringExpression;
-import org.adempiere.ad.service.ILookupDAO;
-import org.adempiere.ad.service.impl.LookupDAO;
 import org.adempiere.ad.validationRule.INamePairPredicate;
 import org.adempiere.ad.validationRule.IValidationRule;
 import org.adempiere.ad.validationRule.impl.CompositeValidationRule;
@@ -157,7 +156,7 @@ public final class SqlLookupDescriptor implements ISqlLookupDescriptor
 	private final ImmutableSet<String> dependsOnTableNames;
 	private final GenericSqlLookupDataSourceFetcher lookupDataSourceFetcher;
 	@NonNull
-	private final ILookupDAO.ReferenceTooltipType referenceTooltipType;
+	private final ReferenceTooltipType referenceTooltipType;
 
 	private SqlLookupDescriptor(final Builder builder)
 	{
@@ -297,7 +296,7 @@ public final class SqlLookupDescriptor implements ISqlLookupDescriptor
 	}
 
 	@Override
-	public ILookupDAO.ReferenceTooltipType getReferenceTooltipType()
+	public ReferenceTooltipType getReferenceTooltipType()
 	{
 		return referenceTooltipType;
 	}
@@ -353,7 +352,7 @@ public final class SqlLookupDescriptor implements ISqlLookupDescriptor
 		private int entityTypeIndex = -1;
 
 		private AdWindowId zoomIntoAdWindowId = null;
-		private ILookupDAO.ReferenceTooltipType referenceTooltipType;
+		private ReferenceTooltipType referenceTooltipType;
 
 		private Builder()
 		{
@@ -806,13 +805,13 @@ public final class SqlLookupDescriptor implements ISqlLookupDescriptor
 			return validationRuleEffective.getDependsOnTableNames();
 		}
 
-		public ILookupDAO.ReferenceTooltipType getReferenceTooltipType()
+		public ReferenceTooltipType getReferenceTooltipType()
 		{
 			return referenceTooltipType;
 		}
 
 				 // TODO teo:  HELPME: probabaly this should be used in more places, ie for TableDirect. how? see other TODOs
-		public void setReferenceTooltipType(final ILookupDAO.ReferenceTooltipType referenceTooltipType)
+		public void setReferenceTooltipType(final ReferenceTooltipType referenceTooltipType)
 		{
 			this.referenceTooltipType = referenceTooltipType;
 		}

@@ -27,6 +27,7 @@ import com.google.common.base.MoreObjects;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import de.metas.adempiere.service.impl.ReferenceTooltipType;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.process.IProcessDefaultParametersProvider;
@@ -38,7 +39,6 @@ import de.metas.util.lang.RepoIdAware;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
-import org.adempiere.ad.service.ILookupDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.KeyNamePair;
 import org.compiere.util.NamePair;
@@ -127,7 +127,7 @@ public abstract class LookupValue
 	{
 		final LookupValue defaultValue = null;
 		final String adLanguage = null;
-		final ILookupDAO.ReferenceTooltipType referenceTooltipType = null;
+		final ReferenceTooltipType referenceTooltipType = null;
 		return fromNamePair(namePair, adLanguage, defaultValue, referenceTooltipType);
 	}
 
@@ -137,14 +137,14 @@ public abstract class LookupValue
 	)
 	{
 		final LookupValue defaultValue = null;
-		final ILookupDAO.ReferenceTooltipType referenceTooltipType = null;
+		final ReferenceTooltipType referenceTooltipType = null;
 		return fromNamePair(namePair, adLanguage, defaultValue, referenceTooltipType);
 	}
 
 	public static final LookupValue fromNamePair(
 			@Nullable final NamePair namePair,
 			@Nullable final String adLanguage,
-			@Nullable final ILookupDAO.ReferenceTooltipType referenceTooltipType)
+			@Nullable final ReferenceTooltipType referenceTooltipType)
 	{
 		final LookupValue defaultValue = null;
 		return fromNamePair(namePair, adLanguage, defaultValue, referenceTooltipType);
@@ -154,7 +154,7 @@ public abstract class LookupValue
 			@Nullable final NamePair namePair,
 			@Nullable final String adLanguage,
 			@Nullable final LookupValue defaultValue,
-			@Nullable final ILookupDAO.ReferenceTooltipType referenceTooltipType)
+			@Nullable final ReferenceTooltipType referenceTooltipType)
 	{
 		if (namePair == null)
 		{
@@ -164,7 +164,7 @@ public abstract class LookupValue
 		final ITranslatableString displayNameTrl;
 		final ITranslatableString descriptionTrl;
 
-		final ILookupDAO.ReferenceTooltipType referenceTooltipTypeNotNull = CoalesceUtil.coalesce(referenceTooltipType, ILookupDAO.ReferenceTooltipType.Description);
+		final ReferenceTooltipType referenceTooltipTypeNotNull = CoalesceUtil.coalesce(referenceTooltipType, ReferenceTooltipType.Description);
 		switch (referenceTooltipTypeNotNull)
 		{
 			case TableIdentifier:

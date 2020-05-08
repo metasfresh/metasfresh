@@ -22,6 +22,7 @@
 package org.compiere.model;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.adempiere.service.impl.ReferenceTooltipType;
 import de.metas.i18n.TranslatableParameterizedString;
 import de.metas.logging.LogManager;
 import de.metas.security.IUserRolePermissions;
@@ -31,7 +32,6 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.element.api.AdWindowId;
-import org.adempiere.ad.service.ILookupDAO;
 import org.adempiere.ad.validationRule.IValidationRule;
 import org.adempiere.ad.validationRule.IValidationRuleFactory;
 import org.adempiere.ad.validationRule.impl.CompositeValidationRule;
@@ -129,7 +129,7 @@ public final class MLookupInfo implements Serializable, Cloneable
 	private boolean showInactiveValues = false;
 
 	private boolean translated = false;
-	private ILookupDAO.ReferenceTooltipType referenceTooltipType;
+	private ReferenceTooltipType referenceTooltipType;
 
 	/**************************************************************************
 	 * Constructor.
@@ -610,12 +610,12 @@ public final class MLookupInfo implements Serializable, Cloneable
 		return translated;
 	}
 
-	public void setReferenceTooltipType(final ILookupDAO.ReferenceTooltipType referenceTooltipType)
+	public void setReferenceTooltipType(final ReferenceTooltipType referenceTooltipType)
 	{
 		this.referenceTooltipType = referenceTooltipType;
 	}
 
-	public ILookupDAO.ReferenceTooltipType getReferenceTooltipType()
+	public ReferenceTooltipType getReferenceTooltipType()
 	{
 		return referenceTooltipType;
 	}

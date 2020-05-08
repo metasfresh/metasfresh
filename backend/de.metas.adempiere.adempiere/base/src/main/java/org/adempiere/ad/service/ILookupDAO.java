@@ -22,6 +22,7 @@
 
 package org.adempiere.ad.service;
 
+import de.metas.adempiere.service.impl.ReferenceTooltipType;
 import de.metas.util.ISingletonService;
 import de.metas.util.collections.BlindIterator;
 import org.adempiere.ad.element.api.AdWindowId;
@@ -53,33 +54,6 @@ public interface ILookupDAO extends ISingletonService
 		String getColumnName();
 
 		String getTableName();
-	}
-
-	/**
-	 * This controls what Tooltip value is used for Lists  // TODO tbp: is "Lists correct" ? it should include Table, table direct, search and list, but tabledirect returns null right now (see other TODOs)
-	 */
-	 // TODO tbp: introduce this reflist to ad_table
-	enum ReferenceTooltipType
-	{
-		/**
-		 * Tooltip shows nothing
-		 */
-		None,
-
-		/**
-		 * Tooltip shows Description field if it exists. Else nothing.
-		 */
-		Description,
-
-		/**
-		 * Tooltip shows the table identifier.
-		 */
-		TableIdentifier,
-
-		/**
-		 * Tooltip shows the Description field if it is not null, else the table identifier.
-		 */
-		DescriptionFallbackToTableIdentifier
 	}
 
 	/**

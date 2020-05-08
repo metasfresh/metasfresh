@@ -23,12 +23,12 @@
 package de.metas.ui.web.window.descriptor;
 
 import com.google.common.collect.ImmutableSet;
+import de.metas.adempiere.service.impl.ReferenceTooltipType;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor.LookupSource;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceFetcher;
-import org.adempiere.ad.service.ILookupDAO;
 
 import java.time.Duration;
 import java.util.Optional;
@@ -104,8 +104,8 @@ public interface LookupDescriptor
 		return null;
 	}
 
-	default ILookupDAO.ReferenceTooltipType getReferenceTooltipType()
+	default ReferenceTooltipType getReferenceTooltipType()
 	{
-		return ILookupDAO.ReferenceTooltipType.Description;
+		return ReferenceTooltipType.Description;
 	}
 }
