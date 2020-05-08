@@ -147,7 +147,8 @@ public class RecordRefWithLogEntryProcessor
 		final Comparator<RecordChangeLogEntry> comparator = Comparator
 				.comparing(RecordChangeLogEntry::getChangedTimestamp)
 				.thenComparing(RecordChangeLogEntry::getColumnName)
-				.thenComparing(r -> Objects.hashCode(r.getValueNew()));
+				.thenComparing(r -> Objects.hashCode(r.getValueNew())) // changeTimestamp and columnName should always differ, but let's make unit-testing a bit easier
+				.thenComparing(r -> Objects.hashCode(r.getValueOld()));
 		return new TreeSet<RecordChangeLogEntry>(comparator);
 	}
 

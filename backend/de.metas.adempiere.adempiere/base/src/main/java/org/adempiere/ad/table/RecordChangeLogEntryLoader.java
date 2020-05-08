@@ -120,6 +120,57 @@ public class RecordChangeLogEntryLoader
 		return false;
 	}
 
+	/**
+	 * @param unOrderedLocationRecords {@link I_C_Location} records that are referenced from the change log of {@code recordRef}; may or may not be ordered.
+	 */
+	private static ImmutableList<RecordRefWithLogEntry> deriveLocationLogEntries(
+			@NonNull final TableRecordReference recordRef,
+			@NonNull final ImmutableList<I_C_Location> unOrderedLocationRecords)
+	{
+		final POInfo poInfo = POInfo.getPOInfo(I_C_Location.Table_Name);
+		final ImmutableList.Builder<RecordRefWithLogEntry> result = ImmutableList.builder();
+	
+		final ArrayList<I_C_Location> orderedLocationRecords = new ArrayList<>(unOrderedLocationRecords);
+		Collections.sort(orderedLocationRecords, Comparator.comparing(I_C_Location::getCreated));
+	
+		for (int recordIdx = 1; recordIdx < orderedLocationRecords.size(); recordIdx++)
+		{
+			final I_C_Location oldRecord = orderedLocationRecords.get(recordIdx - 1);
+			final I_C_Location newRecord = orderedLocationRecords.get(recordIdx);
+			for (int columnIdx = 0; columnIdx < poInfo.getColumnCount(); columnIdx++)
+			{
+				final String columnName = poInfo.getColumnName(columnIdx);
+				if (isSkipLocationColumnName(columnName))
+				{
+					continue;
+				}
+	
+				final Object oldValue = getValueOrNull(oldRecord, columnName);
+				final Object newValue = getValueOrNull(newRecord, columnName);
+				if (Objects.equals(oldValue, newValue))
+				{
+					continue;
+				}
+	
+				final POInfoColumn columnInfo = poInfo.getColumn(columnIdx);
+	
+				final ITranslatableString columnTrl = retrieveColumnTrl(columnInfo);
+	
+				final RecordChangeLogEntry logEntry = RecordChangeLogEntry.builder()
+						.changedByUserId(UserId.ofRepoIdOrNull(newRecord.getCreatedBy()))
+						.changedTimestamp(TimeUtil.asInstant(newRecord.getCreated()))
+						.columnDisplayName(columnTrl)
+						.columnName(columnInfo.getColumnName())
+						.displayType(columnInfo.getDisplayType())
+						.valueNew(newValue)
+						.valueOld(oldValue)
+						.build();
+				result.add(new RecordRefWithLogEntry(recordRef, logEntry));
+			}
+		}
+		return result.build();
+	}
+
 	private static boolean isReferencesLocationTable(@NonNull final RecordRefWithLogEntry recordRefWithLogEntry)
 	{
 		final RecordChangeLogEntry logEntry = recordRefWithLogEntry.getRecordChangeLogEntry();
@@ -152,50 +203,6 @@ public class RecordChangeLogEntryLoader
 				completeSQL.getSqlParams(),
 				RecordChangeLogEntryLoader::createTableRefWithLogEntry);
 		return recordRefWithLogEntries;
-	}
-
-	@Value
-	@VisibleForTesting
-	static class SqlWithParams
-	{
-		@NonNull
-		String sql;
-
-		@NonNull
-		ImmutableList<Object> sqlParams;
-
-		@VisibleForTesting
-		static SqlWithParams createEmpty()
-		{
-			return new SqlWithParams("", ImmutableList.of());
-		}
-
-		@VisibleForTesting
-		SqlWithParams add(@NonNull final SqlWithParams sqlWithParams)
-		{
-			StringBuilder completeSQL = new StringBuilder(sql);
-			ImmutableList.Builder<Object> completeParams = ImmutableList.builder().addAll(sqlParams);
-
-			final boolean firstSQL = completeSQL.length() == 0;
-			if (!firstSQL)
-			{
-				completeSQL.append(" UNION\n");
-			}
-
-			completeSQL.append(sqlWithParams.getSql());
-			completeSQL.append("\n");
-
-			completeParams.addAll(sqlWithParams.getSqlParams());
-
-			return new SqlWithParams(completeSQL.toString(), completeParams.build());
-		}
-
-		@VisibleForTesting
-		SqlWithParams withFinalOrderByClause(@NonNull final String orderBy)
-		{
-			final StringBuilder completeSQL = new StringBuilder(sql).append(orderBy);
-			return new SqlWithParams(completeSQL.toString(), sqlParams);
-		}
 	}
 
 	private static SqlWithParams createAD_ChangeLog_SQL(
@@ -284,55 +291,48 @@ public class RecordChangeLogEntryLoader
 		return columnTrl;
 	}
 
-	/**
-	 * @param unOrderedLocationRecords {@link I_C_Location} records that are referenced from the change log of {@code recordRef}; may or may not be ordered.
-	 */
-	private static ImmutableList<RecordRefWithLogEntry> deriveLocationLogEntries(
-			@NonNull final TableRecordReference recordRef,
-			@NonNull final ImmutableList<I_C_Location> unOrderedLocationRecords)
+	@Value
+	@VisibleForTesting
+	static class SqlWithParams
 	{
-		final POInfo poInfo = POInfo.getPOInfo(I_C_Location.Table_Name);
-		final ImmutableList.Builder<RecordRefWithLogEntry> result = ImmutableList.builder();
-
-		final ArrayList<I_C_Location> orderedLocationRecords = new ArrayList<>(unOrderedLocationRecords);
-		Collections.sort(orderedLocationRecords, Comparator.comparing(I_C_Location::getCreated));
-
-		for (int recordIdx = 1; recordIdx < orderedLocationRecords.size(); recordIdx++)
+		@NonNull
+		String sql;
+	
+		@NonNull
+		ImmutableList<Object> sqlParams;
+	
+		@VisibleForTesting
+		static SqlWithParams createEmpty()
 		{
-			final I_C_Location oldRecord = orderedLocationRecords.get(recordIdx - 1);
-			final I_C_Location newRecord = orderedLocationRecords.get(recordIdx);
-			for (int columnIdx = 0; columnIdx < poInfo.getColumnCount(); columnIdx++)
-			{
-				final String columnName = poInfo.getColumnName(columnIdx);
-				if (isSkipLocationColumnName(columnName))
-				{
-					continue;
-				}
-
-				final Object oldValue = getValueOrNull(oldRecord, columnName);
-				final Object newValue = getValueOrNull(newRecord, columnName);
-				if (Objects.equals(oldValue, newValue))
-				{
-					continue;
-				}
-
-				final POInfoColumn columnInfo = poInfo.getColumn(columnIdx);
-
-				final ITranslatableString columnTrl = retrieveColumnTrl(columnInfo);
-
-				final RecordChangeLogEntry logEntry = RecordChangeLogEntry.builder()
-						.changedByUserId(UserId.ofRepoIdOrNull(newRecord.getCreatedBy()))
-						.changedTimestamp(TimeUtil.asInstant(newRecord.getCreated()))
-						.columnDisplayName(columnTrl)
-						.columnName(columnInfo.getColumnName())
-						.displayType(columnInfo.getDisplayType())
-						.valueNew(newValue)
-						.valueOld(oldValue)
-						.build();
-				result.add(new RecordRefWithLogEntry(recordRef, logEntry));
-			}
+			return new SqlWithParams("", ImmutableList.of());
 		}
-		return result.build();
+	
+		@VisibleForTesting
+		SqlWithParams add(@NonNull final SqlWithParams sqlWithParams)
+		{
+			StringBuilder completeSQL = new StringBuilder(sql);
+			ImmutableList.Builder<Object> completeParams = ImmutableList.builder().addAll(sqlParams);
+	
+			final boolean firstSQL = completeSQL.length() == 0;
+			if (!firstSQL)
+			{
+				completeSQL.append(" UNION\n");
+			}
+	
+			completeSQL.append(sqlWithParams.getSql());
+			completeSQL.append("\n");
+	
+			completeParams.addAll(sqlWithParams.getSqlParams());
+	
+			return new SqlWithParams(completeSQL.toString(), completeParams.build());
+		}
+	
+		@VisibleForTesting
+		SqlWithParams withFinalOrderByClause(@NonNull final String orderBy)
+		{
+			final StringBuilder completeSQL = new StringBuilder(sql).append(orderBy);
+			return new SqlWithParams(completeSQL.toString(), sqlParams);
+		}
 	}
 
 }
