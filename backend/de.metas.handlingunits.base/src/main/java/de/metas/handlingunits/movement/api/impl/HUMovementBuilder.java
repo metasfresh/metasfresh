@@ -1,10 +1,8 @@
-package de.metas.handlingunits.movement.api.impl;
-
 /*
  * #%L
  * de.metas.handlingunits.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -21,6 +19,8 @@ package de.metas.handlingunits.movement.api.impl;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+package de.metas.handlingunits.movement.api.impl;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -146,13 +146,6 @@ public class HUMovementBuilder
 	public final HUMovementBuilder setMovementDate(final Date movementDate)
 	{
 		_movementDate = movementDate;
-		return this;
-	}
-
-	public HUMovementBuilder setWarehouseFrom(final I_M_Warehouse warehouseFrom)
-	{
-		_warehouseFrom = warehouseFrom;
-		_locatorFrom = null;
 		return this;
 	}
 
