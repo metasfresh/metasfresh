@@ -54,6 +54,7 @@ public enum ReferenceTooltipType implements ReferenceListAwareEnum
 	 */
 	DescriptionFallbackToTableIdentifier("DescriptionFallbackToTableIdentifier"); //  // TODO tbp: introduce the ref list to ad table
 
+	public static final ReferenceTooltipType DEFAULT = DescriptionFallbackToTableIdentifier;
 	@Getter
 	private final String code;
 

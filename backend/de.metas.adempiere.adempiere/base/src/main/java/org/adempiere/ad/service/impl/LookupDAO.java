@@ -90,6 +90,7 @@ public class LookupDAO implements ILookupDAO
 			.setTableName(I_C_ValidCombination.Table_Name)
 			.setKeyColumn(I_C_ValidCombination.COLUMNNAME_C_ValidCombination_ID)
 			.setAutoComplete(true)
+			.setReferenceTooltipType(Services.get(IADTableDAO.class).getReferenceTooltipTypeByTableName(I_C_ValidCombination.Table_Name))  // TODO tbp: i'm not sure this works
 			.build();
 
 	/* package */static class ColumnInfo implements IColumnInfo
@@ -543,7 +544,7 @@ public class LookupDAO implements ILookupDAO
 				final boolean autoComplete = StringUtils.toBoolean(rs.getString(13));
 				final boolean showInactiveValues = StringUtils.toBoolean(rs.getString(14));
 				final String referenceName = rs.getString("ReferenceName");
-				final ReferenceTooltipType tableIdentifier = ReferenceTooltipType.TableIdentifier; // TODO tbp: this should not be hardcoded, but taken from the result set
+				final ReferenceTooltipType referenceTooltipType = ReferenceTooltipType.DescriptionFallbackToTableIdentifier; // TODO tbp: this should not be hardcoded, but taken from the result set
 
 				tableRefInfo = TableRefInfo.builder()
 						.setIdentifier("AD_Reference[ID=" + AD_Reference_ID + ",Name=" + referenceName + "]")
@@ -560,7 +561,7 @@ public class LookupDAO implements ILookupDAO
 						.setZoomAD_Window_ID_Override(zoomAD_Window_ID_Override)
 						.setAutoComplete(autoComplete)
 						.setShowInactiveValues(showInactiveValues)
-						.setReferenceTooltipType(tableIdentifier)
+						.setReferenceTooltipType(referenceTooltipType)
 						.build();
 			}
 
@@ -617,13 +618,15 @@ public class LookupDAO implements ILookupDAO
 			autoComplete = table.isAutocomplete();
 		}
 
-		final ITableRefInfo tableRefInfo = TableRefInfo.builder()
+		final ReferenceTooltipType referenceTooltipType = Services.get(IADTableDAO.class).getReferenceTooltipTypeByTableName(tableName);
+
+		return TableRefInfo.builder()
 				.setIdentifier("Direct[FromColumn" + columnName + ",To=" + tableName + "." + columnName + "]")
 				.setTableName(tableName)
 				.setKeyColumn(keyColumn)
 				.setAutoComplete(autoComplete)
-				.build();// // TODO tbp: HELPME: what reference tooltip type to set here??? this is hit for tablename = C_BPartner during web rest api application startup
-		return tableRefInfo;
+				.setReferenceTooltipType(referenceTooltipType)
+				.build();
 	}
 
 	@Override
