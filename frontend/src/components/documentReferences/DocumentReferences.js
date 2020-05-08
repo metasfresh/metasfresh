@@ -104,7 +104,14 @@ class DocumentReferences extends Component {
         break;
       case 'Enter':
         e.preventDefault();
-        document.activeElement.click();
+        document.activeElement.dispatchEvent(
+          new MouseEvent('click', {
+            bubbles: true,
+            cancelable: true,
+            view: window,
+            ctrlKey: e.ctrlKey,
+          })
+        );
         break;
     }
   };
