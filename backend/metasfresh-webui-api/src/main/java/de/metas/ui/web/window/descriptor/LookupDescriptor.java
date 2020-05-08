@@ -106,6 +106,6 @@ public interface LookupDescriptor
 
 	default ReferenceTooltipType getReferenceTooltipType()
 	{
-		return ReferenceTooltipType.Description;
+		return ReferenceTooltipType.DEFAULT;
 	}
 }

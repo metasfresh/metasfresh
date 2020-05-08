@@ -53,6 +53,7 @@ import java.util.Optional;
 
 public class GenericSqlLookupDataSourceFetcher implements LookupDataSourceFetcher
 {
+	@NonNull
 	private final ReferenceTooltipType referenceTooltipType;
 
 	public static GenericSqlLookupDataSourceFetcher of(final LookupDescriptor lookupDescriptor)

@@ -244,7 +244,6 @@ public class LookupDAO implements ILookupDAO
 	public static final class TableRefInfoBuilder
 	{
 		public ReferenceTooltipType referenceTooltipType;
-
 		private String identifier; // used only for debugging
 		private String tableName;
 		private String keyColumn;
@@ -353,7 +352,7 @@ public class LookupDAO implements ILookupDAO
 			return this;
 		}
 
-		public TableRefInfoBuilder setReferenceTooltipType(final ReferenceTooltipType referenceTooltipType)
+		public TableRefInfoBuilder setReferenceTooltipType(@NonNull final ReferenceTooltipType referenceTooltipType)
 		{
 			this.referenceTooltipType = referenceTooltipType;
 			return this;

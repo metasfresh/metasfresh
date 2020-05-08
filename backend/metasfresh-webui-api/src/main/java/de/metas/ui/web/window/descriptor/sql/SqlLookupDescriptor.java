@@ -352,7 +352,8 @@ public final class SqlLookupDescriptor implements ISqlLookupDescriptor
 		private int entityTypeIndex = -1;
 
 		private AdWindowId zoomIntoAdWindowId = null;
-		private ReferenceTooltipType referenceTooltipType;
+		@NonNull
+		private ReferenceTooltipType referenceTooltipType = ReferenceTooltipType.DEFAULT;
 
 		private Builder()
 		{
@@ -483,9 +484,11 @@ public final class SqlLookupDescriptor implements ISqlLookupDescriptor
 					entityTypeIndex = MLookupFactory.COLUMNINDEX_EntityType;
 				}
 			}
-			//
-			// Description value
-			referenceTooltipType = lookupInfo.getReferenceTooltipType();
+
+			if (lookupInfo.getReferenceTooltipType() != null)
+			{
+				referenceTooltipType = lookupInfo.getReferenceTooltipType();
+			}
 		}
 
 		private void setSqlExpressions_PAttribute()
@@ -810,8 +813,8 @@ public final class SqlLookupDescriptor implements ISqlLookupDescriptor
 			return referenceTooltipType;
 		}
 
-				 // TODO teo:  HELPME: probabaly this should be used in more places, ie for TableDirect. how? see other TODOs
-		public void setReferenceTooltipType(final ReferenceTooltipType referenceTooltipType)
+		// TODO teo:  HELPME: probabaly this should be used in more places, ie for TableDirect. how? see other TODOs
+		public void setReferenceTooltipType(@NonNull final ReferenceTooltipType referenceTooltipType)
 		{
 			this.referenceTooltipType = referenceTooltipType;
 		}

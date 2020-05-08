@@ -33,7 +33,6 @@ import de.metas.i18n.TranslatableStrings;
 import de.metas.process.IProcessDefaultParametersProvider;
 import de.metas.process.JavaProcess;
 import de.metas.ui.web.process.descriptor.ProcessParamLookupValuesProvider;
-import de.metas.util.lang.CoalesceUtil;
 import de.metas.util.lang.ReferenceListAwareEnum;
 import de.metas.util.lang.RepoIdAware;
 import lombok.Builder;
@@ -159,8 +158,15 @@ public abstract class LookupValue
 				break;
 			case DescriptionFallbackToTableIdentifier:
 				displayNameTrl = trl(adLanguage, namePair.getName());
-				final ITranslatableString descriptionTrlNullable = trl(adLanguage, namePair.getDescription());
-				descriptionTrl = CoalesceUtil.coalesce(descriptionTrlNullable, displayNameTrl);
+				final ITranslatableString maybeBlankDescription = trl(adLanguage, namePair.getDescription());
+				if (!TranslatableStrings.isBlank(maybeBlankDescription))
+				{
+					descriptionTrl = maybeBlankDescription;
+				}
+				else
+				{
+					descriptionTrl = displayNameTrl;
+				}
 				break;
 			default:
 			case None:
@@ -189,6 +195,7 @@ public abstract class LookupValue
 		}
 	}
 
+	@NonNull
 	private static ITranslatableString trl(@Nullable final String adLanguage, @Nullable final String value)
 	{
 		if (adLanguage == null)

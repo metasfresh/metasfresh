@@ -775,8 +775,7 @@ public class MLookupFactory
 		lookupInfo.setAutoComplete(tableRefInfo.isAutoComplete());
 		lookupInfo.setTranslated(isTranslated);
 		lookupInfo.setShowInactiveValues(tableRefInfo.isShowInactiveValues());
-		lookupInfo.setReferenceTooltipType(tableRefInfo.getReferenceTooltipType());//  TODO @teo HELPME: for table ad_user or M_PriceList ref tooltip type is null because it's taken from a table direct. how to fix that?
-
+		lookupInfo.setReferenceTooltipType(tableRefInfo.getReferenceTooltipType());
 
 		return lookupInfo;
 	}
