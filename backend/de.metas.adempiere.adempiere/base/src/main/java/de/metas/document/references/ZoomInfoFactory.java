@@ -14,9 +14,9 @@
 package de.metas.document.references;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Stream;
+import java.util.Objects;
 
 import javax.annotation.Nullable;
 
@@ -62,35 +62,25 @@ public class ZoomInfoFactory
 			@NonNull final IUserRolePermissions rolePermissions)
 	{
 		final AdWindowId onlyTargetWindowId = null;
-		return streamZoomInfos(zoomOrigin, onlyTargetWindowId, rolePermissions)
+		final HashMap<AdWindowId, Priority> alreadySeenWindowIds = new HashMap<>();
+
+		return getZoomInfoCandidates(zoomOrigin, onlyTargetWindowId, rolePermissions)
+				.stream()
+				.sequential()
+				.map(candidate -> candidate.evaluate(alreadySeenWindowIds).orElse(null))
+				.filter(Objects::nonNull)
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	public Stream<ZoomInfo> streamZoomInfos(
+	public ImmutableList<ZoomInfoCandidate> getZoomInfoCandidates(
 			@NonNull final IZoomSource zoomOrigin,
 			@NonNull final IUserRolePermissions rolePermissions)
 	{
 		final AdWindowId onlyTargetWindowId = null;
-		return streamZoomInfos(zoomOrigin, onlyTargetWindowId, rolePermissions);
+		return getZoomInfoCandidates(zoomOrigin, onlyTargetWindowId, rolePermissions);
 	}
 
-	private Stream<ZoomInfo> streamZoomInfos(
-			@NonNull final IZoomSource zoomSource,
-			@Nullable final AdWindowId onlyTargetWindowId,
-			@NonNull final IUserRolePermissions rolePermissions)
-	{
-		logger.debug("source={}", zoomSource);
-
-		final ImmutableList<ZoomInfo> zoomInfoCandidates = getZoomInfoCandidates(zoomSource, onlyTargetWindowId, rolePermissions);
-
-		final ConcurrentHashMap<AdWindowId, Priority> alreadySeenWindowIds = new ConcurrentHashMap<>();
-
-		return zoomInfoCandidates.stream()
-				.sequential()
-				.filter(zoomInfo -> isEligible(zoomInfo, alreadySeenWindowIds));
-	}
-
-	private ImmutableList<ZoomInfo> getZoomInfoCandidates(
+	private ImmutableList<ZoomInfoCandidate> getZoomInfoCandidates(
 			@NonNull final IZoomSource zoomSource,
 			@Nullable final AdWindowId onlyTargetWindowId,
 			@NonNull final IUserRolePermissions rolePermissions)
@@ -100,22 +90,21 @@ public class ZoomInfoFactory
 		final String tableName = zoomSource.getTableName();
 		final List<IZoomProvider> zoomProviders = retrieveZoomProviders(tableName);
 
-		final ImmutableList.Builder<ZoomInfo> zoomInfoCandidates = ImmutableList.builder();
+		final ImmutableList.Builder<ZoomInfoCandidate> zoomInfoCandidates = ImmutableList.builder();
 		for (final IZoomProvider zoomProvider : zoomProviders)
 		{
 			try
 			{
-				final List<ZoomInfo> zoomInfos = zoomProvider.retrieveZoomInfos(zoomSource, onlyTargetWindowId);
-				for (final ZoomInfo zoomInfo : zoomInfos)
+				for (final ZoomInfoCandidate zoomInfoCandidate : zoomProvider.retrieveZoomInfos(zoomSource, onlyTargetWindowId))
 				{
 					// If not our target window ID, skip it
 					// This shall not happen because we asked the zoomProvider to return only those for our target window,
 					// but if is happening (because of a bug zoom provider) we shall not be so fragile.
 					if (onlyTargetWindowId != null
-							&& !AdWindowId.equals(onlyTargetWindowId, zoomInfo.getAdWindowId()))
+							&& !AdWindowId.equals(onlyTargetWindowId, zoomInfoCandidate.getAdWindowId()))
 					{
 						new AdempiereException("Got a ZoomInfo which is not for our target window. Skipping it."
-								+ "\n zoomInfo: " + zoomInfo
+								+ "\n zoomInfo: " + zoomInfoCandidate
 								+ "\n zoomProvider: " + zoomProvider
 								+ "\n targetAD_Window_ID: " + onlyTargetWindowId
 								+ "\n source: " + zoomSource)
@@ -125,14 +114,14 @@ public class ZoomInfoFactory
 
 					//
 					// Filter out those windows on given user does not have permissions
-					if (!rolePermissions.checkWindowPermission(zoomInfo.getAdWindowId()).hasReadAccess())
+					if (!rolePermissions.checkWindowPermission(zoomInfoCandidate.getAdWindowId()).hasReadAccess())
 					{
 						continue;
 					}
 
 					//
 					// Collect eligible zoom info candidate
-					zoomInfoCandidates.add(zoomInfo);
+					zoomInfoCandidates.add(zoomInfoCandidate);
 				}
 			}
 			catch (final Exception ex)
@@ -145,40 +134,6 @@ public class ZoomInfoFactory
 		logger.debug("Fetched zoom candidates for source={} in {}", zoomSource, stopwatch);
 
 		return zoomInfoCandidates.build();
-	}
-
-	private static boolean isEligible(
-			@NonNull final ZoomInfo zoomInfo,
-			@NonNull final ConcurrentHashMap<AdWindowId, Priority> alreadySeenWindowIds)
-	{
-		//
-		// Only consider a window already seen if it actually has record count > 0 (task #1062)
-		final AdWindowId adWindowId = zoomInfo.getAdWindowId();
-		final Priority alreadySeenZoomInfoPriority = alreadySeenWindowIds.get(adWindowId);
-		if (alreadySeenZoomInfoPriority != null
-				&& alreadySeenZoomInfoPriority.isHigherThan(zoomInfo.getPriority()))
-		{
-			logger.debug("Skipping zoomInfo {} because there is already one for destination '{}'", zoomInfo, adWindowId);
-			return false;
-		}
-
-		//
-		// Make sure records count is computed
-		zoomInfo.updateRecordsCount();
-
-		//
-		// Filter out those ZoomInfos which have ZERO records (if requested)
-		if (zoomInfo.getRecordCount() <= 0)
-		{
-			logger.debug("No target records for destination {}", zoomInfo);
-			return false;
-		}
-
-		//
-		// We got a valid zoom info
-		// => accept it
-		alreadySeenWindowIds.put(adWindowId, zoomInfo.getPriority());
-		return true;
 	}
 
 	/**
@@ -197,7 +152,13 @@ public class ZoomInfoFactory
 	{
 		// NOTE: we need to check the records count because in case there are multiple ZoomInfos for the same targetWindowId,
 		// we shall pick the one which actually has some data. Usually there would be only one (see #1808)
-		return streamZoomInfos(zoomSource, targetWindowId, rolePermissions)
+
+		final HashMap<AdWindowId, Priority> alreadySeenWindowIds = new HashMap<>();
+
+		return getZoomInfoCandidates(zoomSource, targetWindowId, rolePermissions)
+				.stream()
+				.map(candidate -> candidate.evaluate(alreadySeenWindowIds).orElse(null))
+				.filter(Objects::nonNull)
 				.findFirst()
 				.orElseThrow(() -> new AdempiereException("No zoomInfo found for source=" + zoomSource + ", targetWindowId=" + targetWindowId));
 	}

@@ -53,7 +53,7 @@ class FactAcctZoomProvider implements IZoomProvider
 	}
 
 	@Override
-	public List<ZoomInfo> retrieveZoomInfos(
+	public List<ZoomInfoCandidate> retrieveZoomInfos(
 			@NonNull final IZoomSource source,
 			@Nullable final AdWindowId targetWindowId)
 	{
@@ -93,7 +93,7 @@ class FactAcctZoomProvider implements IZoomProvider
 		final IntSupplier recordsCountSupplier = createRecordsCountSupplier(source);
 
 		return ImmutableList.of(
-				ZoomInfo.builder()
+				ZoomInfoCandidate.builder()
 						.id(I_Fact_Acct.Table_Name)
 						.internalName(I_Fact_Acct.Table_Name)
 						.adWindowId(factAcctWindowId)

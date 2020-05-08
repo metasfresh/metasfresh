@@ -1,21 +1,15 @@
 package de.metas.document.references;
 
 import java.time.Duration;
-import java.util.concurrent.TimeUnit;
-import java.util.function.IntSupplier;
 
 import javax.annotation.Nullable;
 
 import org.adempiere.ad.element.api.AdWindowId;
 import org.compiere.model.MQuery;
-import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
-import com.google.common.base.Stopwatch;
 
 import de.metas.i18n.ITranslatableString;
-import de.metas.i18n.TranslatableStrings;
-import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.lang.Priority;
 import lombok.Builder;
@@ -46,13 +40,12 @@ import lombok.NonNull;
 
 public final class ZoomInfo
 {
-	private static final Logger logger = LogManager.getLogger(ZoomInfo.class);
-
 	@Getter
 	private final String id;
 	@Getter
 	private final String internalName;
-	private final ITranslatableString destinationDisplay;
+	@Getter
+	private final ITranslatableString caption;
 	@Getter
 	private final MQuery query;
 	@Getter
@@ -60,17 +53,14 @@ public final class ZoomInfo
 	@Getter
 	private final Priority priority;
 
-	private final IntSupplier recordsCountSupplier;
-
 	@Builder
 	private ZoomInfo(
 			@NonNull final String id,
 			@NonNull final String internalName,
 			@NonNull final AdWindowId adWindowId,
 			@NonNull final Priority priority,
-			@NonNull final MQuery query,
-			@NonNull final ITranslatableString destinationDisplay,
-			@NonNull final IntSupplier recordsCountSupplier)
+			@NonNull final ITranslatableString caption,
+			@NonNull final MQuery query)
 	{
 		this.id = Check.assumeNotEmpty(id, "id is not empty");
 		this.internalName = Check.assumeNotEmpty(internalName, "internalName is not empty");
@@ -78,10 +68,9 @@ public final class ZoomInfo
 		this.adWindowId = adWindowId;
 		this.priority = priority;
 
-		this.query = query;
-		this.destinationDisplay = destinationDisplay;
+		this.caption = caption;
 
-		this.recordsCountSupplier = recordsCountSupplier;
+		this.query = query;
 	}
 
 	@Override
@@ -90,16 +79,10 @@ public final class ZoomInfo
 		return MoreObjects.toStringHelper(this)
 				.add("id", id)
 				.add("internalName", internalName)
-				.add("display", destinationDisplay)
+				.add("caption", caption.getDefaultValue())
 				.add("AD_Window_ID", adWindowId)
 				.add("RecordCount", query.getRecordCount())
 				.toString();
-	}
-
-	public ITranslatableString getLabel()
-	{
-		final ITranslatableString postfix = TranslatableStrings.constant(" (#" + getRecordCount() + ")");
-		return TranslatableStrings.join("", destinationDisplay, postfix);
 	}
 
 	public int getRecordCount()
@@ -111,14 +94,5 @@ public final class ZoomInfo
 	public Duration getRecordCountDuration()
 	{
 		return query.getRecordCountDuration();
-	}
-
-	public void updateRecordsCount()
-	{
-		final Stopwatch stopwatch = Stopwatch.createStarted();
-		final int recordsCount = recordsCountSupplier.getAsInt();
-		final Duration recordsCountDuration = Duration.ofNanos(stopwatch.stop().elapsed(TimeUnit.NANOSECONDS));
-		query.setRecordCount(recordsCount, recordsCountDuration);
-		logger.debug("Updated records count for {} in {}", this, stopwatch);
 	}
 }

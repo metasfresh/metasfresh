@@ -1,7 +1,6 @@
 package de.metas.ui.web.window.model;
 
 import java.util.Properties;
-import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
 
@@ -16,6 +15,7 @@ import org.springframework.stereotype.Service;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Stopwatch;
+import com.google.common.collect.ImmutableList;
 
 import de.metas.document.references.IZoomSource;
 import de.metas.document.references.ZoomInfo;
@@ -24,7 +24,6 @@ import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
 import de.metas.security.IUserRolePermissions;
-import de.metas.ui.web.document.filter.provider.userQuery.MQueryDocumentFilterHelper;
 import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.WindowId;
@@ -68,61 +67,41 @@ public class DocumentReferencesService
 		this.documentCollection = documentCollection;
 	}
 
-	public Stream<DocumentReference> getDocumentReferences(
+	public ImmutableList<DocumentReferenceCandidate> getDocumentReferenceCandidates(
 			@NonNull final DocumentPath documentPath,
 			@NonNull final IUserRolePermissions rolePermissions)
 	{
 		// Document with composed keys does not support references
 		if (documentPath.isComposedKey())
 		{
-			return Stream.empty();
+			return ImmutableList.of();
 		}
 
 		final ZoomInfoFactory zoomInfoFactory = ZoomInfoFactory.get();
 
 		final Stopwatch stopwatch = Stopwatch.createStarted();
-		final Stream<DocumentReference> documentReferences = documentCollection.forDocumentReadonly(
+		final ImmutableList<DocumentReferenceCandidate> documentReferences = documentCollection.forDocumentReadonly(
 				documentPath,
 				document -> {
 					if (document.isNew())
 					{
-						return Stream.empty();
+						return ImmutableList.of();
 					}
 
 					final ITranslatableString filterCaption = extractFilterCaption(document);
 
 					final DocumentAsZoomSource zoomSource = new DocumentAsZoomSource(document);
 					return zoomInfoFactory
-							.streamZoomInfos(zoomSource, rolePermissions)
-							.map(zoomInfo -> toDocumentReference(zoomInfo, filterCaption));
+							.getZoomInfoCandidates(zoomSource, rolePermissions)
+							.stream()
+							.map(zoomInfoCandidate -> new DocumentReferenceCandidate(zoomInfoCandidate, filterCaption))
+							.collect(ImmutableList.toImmutableList());
 				});
 		stopwatch.stop();
 
 		logger.debug("Fetched initial document references stream for {} in {}", documentPath, stopwatch);
 
 		return documentReferences;
-	}
-
-	private static DocumentReference toDocumentReference(
-			@NonNull final ZoomInfo zoomInfo,
-			@NonNull final ITranslatableString filterCaption)
-	{
-		final WindowId windowId = WindowId.of(zoomInfo.getAdWindowId());
-
-		// NOTE: we use the windowId as the ID because we want to have only one document reference per window.
-		// In case of multiple references, the one with highest priority shall be picked.\\
-		final String id = windowId.toJson();
-
-		return DocumentReference.builder()
-				.id(id)
-				.internalName(zoomInfo.getInternalName())
-				.caption(zoomInfo.getLabel())
-				.windowId(windowId)
-				.priority(zoomInfo.getPriority())
-				.documentsCount(zoomInfo.getRecordCount())
-				.filter(MQueryDocumentFilterHelper.createDocumentFilterFromMQuery(zoomInfo.getQuery(), filterCaption))
-				.loadDuration(zoomInfo.getRecordCountDuration())
-				.build();
 	}
 
 	public DocumentReference getDocumentReference(
@@ -146,7 +125,7 @@ public class DocumentReferencesService
 
 			final ITranslatableString filterCaption = extractFilterCaption(sourceDocument);
 
-			return toDocumentReference(zoomInfo, filterCaption);
+			return DocumentReferenceCandidate.toDocumentReference(zoomInfo, filterCaption);
 		});
 	}
 

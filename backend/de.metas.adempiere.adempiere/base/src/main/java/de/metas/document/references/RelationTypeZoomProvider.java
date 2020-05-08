@@ -121,7 +121,7 @@ public class RelationTypeZoomProvider implements IZoomProvider
 	}
 
 	@Override
-	public List<ZoomInfo> retrieveZoomInfos(
+	public List<ZoomInfoCandidate> retrieveZoomInfos(
 			@NonNull final IZoomSource zoomOrigin,
 			@Nullable final AdWindowId targetAdWindowId)
 	{
@@ -168,7 +168,7 @@ public class RelationTypeZoomProvider implements IZoomProvider
 		final MQuery query = mkZoomOriginQuery(zoomOrigin);
 
 		return ImmutableList.of(
-				ZoomInfo.builder()
+				ZoomInfoCandidate.builder()
 						.id(getZoomInfoId())
 						.internalName(getInternalName())
 						.adWindowId(adWindowId)

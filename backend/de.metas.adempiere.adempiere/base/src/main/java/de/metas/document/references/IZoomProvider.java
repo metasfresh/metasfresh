@@ -55,5 +55,5 @@ public interface IZoomProvider
 	 *            WARNING, this might be an expensive operation.
 	 * @return a list of zoom targets. The {@link ZoomInfo#getRecordCount()} of the ZoomInfo's query member might be zero.
 	 */
-	List<ZoomInfo> retrieveZoomInfos(IZoomSource source, final AdWindowId targetAD_Window_ID);
+	List<ZoomInfoCandidate> retrieveZoomInfos(IZoomSource source, final AdWindowId targetAD_Window_ID);
 }

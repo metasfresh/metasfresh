@@ -76,7 +76,7 @@ import lombok.NonNull;
 	}
 
 	@Override
-	public List<ZoomInfo> retrieveZoomInfos(
+	public List<ZoomInfoCandidate> retrieveZoomInfos(
 			@NonNull final IZoomSource source,
 			@Nullable final AdWindowId targetWindowId)
 	{
@@ -86,7 +86,7 @@ import lombok.NonNull;
 			return ImmutableList.of();
 		}
 
-		final ImmutableList.Builder<ZoomInfo> result = ImmutableList.builder();
+		final ImmutableList.Builder<ZoomInfoCandidate> result = ImmutableList.builder();
 		for (final GenericZoomInfoDescriptor zoomInfoDescriptor : zoomInfoDescriptors)
 		{
 			final AdWindowId windowId = zoomInfoDescriptor.getTargetAD_Window_ID();
@@ -104,7 +104,7 @@ import lombok.NonNull;
 
 			final IntSupplier recordsCountSupplier = createRecordsCountSupplier(query, zoomInfoDescriptor, source.getTableName());
 
-			result.add(ZoomInfo.builder()
+			result.add(ZoomInfoCandidate.builder()
 					.id("generic-" + windowId.getRepoId())
 					.internalName(zoomInfoDescriptor.getInternalName())
 					.adWindowId(windowId)

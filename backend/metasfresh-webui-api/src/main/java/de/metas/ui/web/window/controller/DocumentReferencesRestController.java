@@ -1,11 +1,15 @@
 package de.metas.ui.web.window.controller;
 
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.stream.Stream;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
+import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.concurrent.CustomizableThreadFactory;
+import org.slf4j.Logger;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -15,6 +19,8 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.i18n.IMsgBL;
+import de.metas.logging.LogManager;
+import de.metas.ui.web.menu.MenuTree;
 import de.metas.ui.web.menu.MenuTreeRepository;
 import de.metas.ui.web.session.UserSession;
 import de.metas.ui.web.window.datatypes.DocumentPath;
@@ -23,10 +29,13 @@ import de.metas.ui.web.window.datatypes.json.JSONDocumentReference;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentReferencesGroup;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.ui.web.window.model.DocumentReference;
+import de.metas.ui.web.window.model.DocumentReferenceCandidate;
 import de.metas.ui.web.window.model.DocumentReferencesService;
 import de.metas.util.Services;
 import io.swagger.annotations.Api;
+import lombok.Builder;
 import lombok.NonNull;
+import lombok.Value;
 
 /*
  * #%L
@@ -57,11 +66,13 @@ public class DocumentReferencesRestController
 {
 	public static final String ENDPOINT = WindowRestController.ENDPOINT;
 
+	private static final Logger logger = LogManager.getLogger(DocumentReferencesRestController.class);
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final UserSession userSession;
 	private final DocumentReferencesService documentReferencesService;
 	private final MenuTreeRepository menuTreeRepository;
 
+	private static final String SYSCONFIG_SSE_EXECUTOR_MAX_POOL_SIZE = "webui.documentReferencesRestController.sseExecutor.maxPoolSize";
 	private final ExecutorService sseExecutor;
 
 	public DocumentReferencesRestController(
@@ -73,10 +84,28 @@ public class DocumentReferencesRestController
 		this.documentReferencesService = documentReferencesService;
 		this.menuTreeRepository = menuTreeRepository;
 
-		this.sseExecutor = Executors.newCachedThreadPool(CustomizableThreadFactory.builder()
+		this.sseExecutor = createSseExecutor();
+		logger.info("Created {}", sseExecutor);
+	}
+
+	private static ExecutorService createSseExecutor()
+	{
+		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+		final int maxPoolSize = sysConfigBL.getIntValue(SYSCONFIG_SSE_EXECUTOR_MAX_POOL_SIZE, 20);
+
+		final CustomizableThreadFactory threadFactory = CustomizableThreadFactory.builder()
 				.setDaemon(true)
-				.setThreadNamePrefix(getClass().getSimpleName() + "-SSE-")
-				.build());
+				.setThreadNamePrefix(DocumentReferencesRestController.class.getSimpleName() + "-SSE-")
+				.build();
+
+		return new ThreadPoolExecutor(
+				5, // corePoolSize
+				maxPoolSize,
+				60L, // keepAliveTime
+				TimeUnit.SECONDS, // keepAliveTime unit
+				new LinkedBlockingQueue<Runnable>(), // workQueue
+				threadFactory);
+
 	}
 
 	private JSONOptions newJSONOptions()
@@ -84,22 +113,13 @@ public class DocumentReferencesRestController
 		return JSONOptions.prepareFrom(userSession).build();
 	}
 
-	private JSONDocumentReferencesGroupsAggregator newJSONDocumentReferencesGroupsAggregator()
-	{
-		return JSONDocumentReferencesGroupsAggregator.builder()
-				.menuTreeRepository(menuTreeRepository)
-				.msgBL(msgBL)
-				.jsonOpts(newJSONOptions())
-				.userRolePermissionsKey(userSession.getUserRolePermissionsKey())
-				.build();
-	}
-
 	@GetMapping("/{windowId}/{documentId}/references/sse")
 	public SseEmitter streamRootDocumentReferences(
 			@PathVariable("windowId") final String windowIdStr,
 			@PathVariable("documentId") final String documentId)
 	{
-		final SseEmitter emitter = new SseEmitter();
+		final JSONDocumentReferencesEventPublisher publisher = JSONDocumentReferencesEventPublisher.newInstance();
+
 		try
 		{
 			userSession.assertLoggedIn();
@@ -108,31 +128,84 @@ public class DocumentReferencesRestController
 					WindowId.fromJson(windowIdStr),
 					documentId);
 
-			final Stream<DocumentReference> documentReferences = documentReferencesService.getDocumentReferences(
+			final List<DocumentReferenceCandidate> documentReferenceCandidates = documentReferencesService.getDocumentReferenceCandidates(
 					documentPath,
 					userSession.getUserRolePermissions());
+			if (documentReferenceCandidates.isEmpty())
+			{
+				publisher.publishCompleted();
+				return publisher.getSseEmiter();
+			}
 
-			final JSONDocumentReferencesGroupsAggregator aggregator = newJSONDocumentReferencesGroupsAggregator();
+			final JSONOptions jsonOpts = newJSONOptions();
+			final MenuTree menuTree = menuTreeRepository.getMenuTree(
+					userSession.getUserRolePermissionsKey(),
+					jsonOpts.getAdLanguage());
 
-			sseExecutor.execute(() -> {
-				try
-				{
-					documentReferences.forEach(documentReference -> aggregator.addAndFlush(documentReference, emitter));
-					emitter.send(JSONDocumentReferencesEvent.COMPLETED);
-					emitter.complete();
-				}
-				catch (Exception ex)
-				{
-					emitter.completeWithError(ex);
-				}
-			});
+			final AsyncRunContext context = AsyncRunContext.builder()
+					.jsonOpts(jsonOpts)
+					.menuTree(menuTree)
+					.publisher(publisher)
+					.build();
+
+			evaluateAndPublishAll(documentReferenceCandidates, context);
 		}
-		catch (Exception ex)
+		catch (final Exception ex)
 		{
-			emitter.completeWithError(ex);
+			publisher.publishCompletedWithError(ex);
 		}
 
-		return emitter;
+		return publisher.getSseEmiter();
+	}
+
+	private void evaluateAndPublishAll(
+			@NonNull final List<DocumentReferenceCandidate> documentReferenceCandidates,
+			@NonNull final AsyncRunContext context)
+	{
+		final CompletableFuture<?>[] futures = documentReferenceCandidates.stream()
+				.map(documentReferenceCandidate -> evaluateAndPublish(documentReferenceCandidate, context))
+				.toArray(size -> new CompletableFuture[size]);
+
+		if (futures.length == 0)
+		{
+			return;
+		}
+
+		CompletableFuture.allOf(futures)
+				.whenComplete((voidResult, exception) -> {
+					context.getPublisher().publishCompleted();
+
+					if (exception != null)
+					{
+						logger.warn("Failed processing some of the partial results", exception);
+					}
+				});
+	}
+
+	private CompletableFuture<Void> evaluateAndPublish(
+			@NonNull final DocumentReferenceCandidate documentReferenceCandidate,
+			@NonNull final AsyncRunContext context)
+	{
+		return CompletableFuture.runAsync(
+				() -> evaluateAndPublishNow(documentReferenceCandidate, context),
+				sseExecutor);
+	}
+
+	private void evaluateAndPublishNow(
+			@NonNull final DocumentReferenceCandidate documentReferenceCandidate,
+			@NonNull final AsyncRunContext context)
+	{
+		final DocumentReference documentReference = documentReferenceCandidate.evaluate().orElse(null);
+		if (documentReference != null)
+		{
+			final JSONDocumentReferencesGroupsAggregator aggregator = JSONDocumentReferencesGroupsAggregator.builder()
+					.menuTree(context.getMenuTree())
+					.msgBL(msgBL)
+					.jsonOpts(context.getJsonOpts())
+					.build();
+
+			aggregator.addAndFlush(documentReference, context.getPublisher());
+		}
 	}
 
 	@GetMapping("/{windowId}/{documentId}/{tabId}/{rowId}/references")
@@ -147,13 +220,29 @@ public class DocumentReferencesRestController
 		// Get document references
 		final WindowId windowId = WindowId.fromJson(windowIdStr);
 		final DocumentPath documentPath = DocumentPath.includedDocumentPath(windowId, documentIdStr, tabIdStr, rowIdStr);
-		final List<DocumentReference> documentReferences = documentReferencesService.getDocumentReferences(documentPath, userSession.getUserRolePermissions())
-				.collect(ImmutableList.toImmutableList());
+		final ImmutableList<DocumentReference> documentReferences = DocumentReferenceCandidate.evaluateAll(
+				documentReferencesService.getDocumentReferenceCandidates(
+						documentPath,
+						userSession.getUserRolePermissions()));
 
 		final JSONOptions jsonOpts = newJSONOptions();
 		return JSONDocumentReferencesGroup.builder()
 				.caption("References")
 				.references(JSONDocumentReference.ofList(documentReferences, jsonOpts))
 				.build();
+	}
+
+	@Value
+	@Builder
+	private static class AsyncRunContext
+	{
+		@NonNull
+		JSONOptions jsonOpts;
+
+		@NonNull
+		MenuTree menuTree;
+
+		@NonNull
+		JSONDocumentReferencesEventPublisher publisher;
 	}
 }

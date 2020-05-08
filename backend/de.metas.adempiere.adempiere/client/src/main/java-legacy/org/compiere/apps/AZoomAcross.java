@@ -86,8 +86,8 @@ public class AZoomAcross
 		final List<ZoomInfo> zoomInfos = retrieveZoomTargets(source);
 		for (final ZoomInfo zoomInfo : zoomInfos)
 		{
-			final String labelCaption = zoomInfo.getLabel().translate(adLanguage);
-			m_popup.add(labelCaption).addActionListener(event -> launch(zoomInfo));
+			final String caption = zoomInfo.getCaption().translate(adLanguage);
+			m_popup.add(caption).addActionListener(event -> launch(zoomInfo));
 		}
 
 		if (zoomInfos.isEmpty())

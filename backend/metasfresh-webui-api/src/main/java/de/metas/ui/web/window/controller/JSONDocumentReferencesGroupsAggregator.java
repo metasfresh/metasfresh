@@ -1,22 +1,16 @@
 package de.metas.ui.web.window.controller;
 
-import java.io.IOException;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 
-import org.adempiere.exceptions.AdempiereException;
-import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
-
 import com.google.common.collect.ImmutableList;
 
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
-import de.metas.security.UserRolePermissionsKey;
 import de.metas.ui.web.menu.MenuNode;
 import de.metas.ui.web.menu.MenuTree;
-import de.metas.ui.web.menu.MenuTreeRepository;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentReference;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentReferencesGroup;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentReferencesGroup.JSONDocumentReferencesGroupBuilder;
@@ -52,7 +46,7 @@ import lombok.NonNull;
 /**
  * Aggregates {@link DocumentReferences} to {@link JSONDocumentReferencesGroupList}s.
  */
-public class JSONDocumentReferencesGroupsAggregator
+final class JSONDocumentReferencesGroupsAggregator
 {
 	private static final AdMessageKey MSG_MiscGroupCaption = AdMessageKey.of("DocumentReferences.group.Others");
 
@@ -70,13 +64,11 @@ public class JSONDocumentReferencesGroupsAggregator
 
 	@Builder
 	private JSONDocumentReferencesGroupsAggregator(
-			@NonNull final MenuTreeRepository menuTreeRepository,
+			@NonNull final MenuTree menuTree,
 			@NonNull final IMsgBL msgBL,
-			@NonNull final JSONOptions jsonOpts,
-			//
-			@NonNull final UserRolePermissionsKey userRolePermissionsKey)
+			@NonNull final JSONOptions jsonOpts)
 	{
-		menuTree = menuTreeRepository.getMenuTree(userRolePermissionsKey, jsonOpts.getAdLanguage());
+		this.menuTree = menuTree;
 
 		othersMenuCaption = msgBL
 				.getTranslatableMsgText(MSG_MiscGroupCaption)
@@ -142,25 +134,10 @@ public class JSONDocumentReferencesGroupsAggregator
 
 	public void addAndFlush(
 			@NonNull final DocumentReference documentReference,
-			@NonNull final SseEmitter sseEmiter)
+			@NonNull final JSONDocumentReferencesEventPublisher publisher)
 	{
 		add(documentReference);
 		final ImmutableList<JSONDocumentReferencesGroup> groups = flushGroups();
-		if (groups.isEmpty())
-		{
-			return;
-		}
-
-		for (final JSONDocumentReferencesGroup group : groups)
-		{
-			try
-			{
-				sseEmiter.send(JSONDocumentReferencesEvent.partialResult(group));
-			}
-			catch (final IOException ex)
-			{
-				throw new AdempiereException("Failed sending " + group, ex);
-			}
-		}
+		publisher.publishPartialResults(groups);
 	}
 }
