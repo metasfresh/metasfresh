@@ -57,7 +57,8 @@ public abstract class LookupValue
 {
 	protected final ValueNamePairValidationInformation validationInformation;
 
-	public static final Object normalizeId(final Object idObj, final boolean numericKey)
+	@Nullable
+	public static Object normalizeId(final Object idObj, final boolean numericKey)
 	{
 		if (idObj == null)
 		{
@@ -107,7 +108,8 @@ public abstract class LookupValue
 		}
 	}
 
-	public static final LookupValue fromObject(@Nullable final Object id, final String displayName)
+	@Nullable
+	public static LookupValue fromObject(@Nullable final Object id, final String displayName)
 	{
 		if (id == null)
 		{
@@ -123,7 +125,9 @@ public abstract class LookupValue
 		}
 	}
 
-	public static final LookupValue fromNamePair(@Nullable final NamePair namePair)
+	@SuppressWarnings("ConstantConditions")
+	@Nullable
+	public static LookupValue fromNamePair(@Nullable final NamePair namePair)
 	{
 		final LookupValue defaultValue = null;
 		final String adLanguage = null;
@@ -131,17 +135,19 @@ public abstract class LookupValue
 		return fromNamePair(namePair, adLanguage, defaultValue, referenceTooltipType);
 	}
 
-	public static final LookupValue fromNamePair(
-			@Nullable final NamePair namePair,
-			@Nullable final String adLanguage
-	)
-	{
-		final LookupValue defaultValue = null;
-		final ReferenceTooltipType referenceTooltipType = null;
-		return fromNamePair(namePair, adLanguage, defaultValue, referenceTooltipType);
-	}
+	// public static LookupValue fromNamePair(
+	// 		@Nullable final NamePair namePair,
+	// 		@Nullable final String adLanguage
+	// )
+	// {
+	// 	final LookupValue defaultValue = null;
+	// 	final ReferenceTooltipType referenceTooltipType = null;
+	// 	return fromNamePair(namePair, adLanguage, defaultValue, referenceTooltipType);
+	// }
 
-	public static final LookupValue fromNamePair(
+	@SuppressWarnings("ConstantConditions")
+	@Nullable
+	public static LookupValue fromNamePair(
 			@Nullable final NamePair namePair,
 			@Nullable final String adLanguage,
 			@Nullable final ReferenceTooltipType referenceTooltipType)
@@ -150,7 +156,8 @@ public abstract class LookupValue
 		return fromNamePair(namePair, adLanguage, defaultValue, referenceTooltipType);
 	}
 
-	public static final LookupValue fromNamePair(
+	@Nullable
+	public static LookupValue fromNamePair(
 			@Nullable final NamePair namePair,
 			@Nullable final String adLanguage,
 			@Nullable final LookupValue defaultValue,
@@ -347,7 +354,7 @@ public abstract class LookupValue
 	public final boolean isActive()
 	{
 		final Boolean active = getActive();
-		return active == null || active.booleanValue();
+		return active == null || active;
 	}
 
 	protected Boolean getActive()
@@ -382,6 +389,7 @@ public abstract class LookupValue
 		return additionalAttributes != null ? additionalAttributes : ImmutableMap.of();
 	}
 
+	@Nullable
 	public <T> T getAttribute(final String name)
 	{
 		if (additionalAttributes == null)
@@ -393,6 +401,7 @@ public abstract class LookupValue
 		return value;
 	}
 
+	@SuppressWarnings("unused")
 	public int getAttributeAsInt(final String name, final int defaultValue)
 	{
 		final Object valueObj = getAttribute(name);
@@ -416,6 +425,7 @@ public abstract class LookupValue
 		}
 	}
 
+	@SuppressWarnings("unused")
 	public Set<Integer> getAttributeAsIntSet(final String name)
 	{
 		final Object valueObj = getAttribute(name);
@@ -511,8 +521,8 @@ public abstract class LookupValue
 				@NonNull final String id,
 				@Nullable final ITranslatableString displayName,
 				@Nullable final ITranslatableString description,
-				@Singular final Map<String, Object> attributes,
-				final Boolean active,
+				@Nullable @Singular final Map<String, Object> attributes,
+				@Nullable final Boolean active,
 				@Nullable final ValueNamePairValidationInformation validationInformation)
 		{
 			super(id,
@@ -589,6 +599,7 @@ public abstract class LookupValue
 					null/* active */);
 		}
 
+		@Nullable
 		public static IntegerLookupValue of(final StringLookupValue stringLookupValue)
 		{
 			if (stringLookupValue == null)
@@ -619,8 +630,8 @@ public abstract class LookupValue
 				final int id,
 				@Nullable final ITranslatableString displayName,
 				@Nullable final ITranslatableString description,
-				@Singular final Map<String, Object> attributes,
-				final Boolean active)
+				@Nullable @Singular final Map<String, Object> attributes,
+				@Nullable final Boolean active)
 		{
 			super(id,
 					displayName,

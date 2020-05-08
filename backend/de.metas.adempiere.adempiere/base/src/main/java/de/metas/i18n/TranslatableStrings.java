@@ -154,7 +154,7 @@ public class TranslatableStrings
 		return ConstantTranslatableString.of(value);
 	}
 
-	public ITranslatableString anyLanguage(final String value)
+	public ITranslatableString anyLanguage(@Nullable final String value)
 	{
 		return ConstantTranslatableString.anyLanguage(value);
 	}
@@ -170,6 +170,7 @@ public class TranslatableStrings
 		return ofMap(ImmutableMap.of(adLanguage, valueNorm), valueNorm);
 	}
 
+	@NonNull
 	public ITranslatableString empty()
 	{
 		return ConstantTranslatableString.EMPTY;
@@ -215,7 +216,8 @@ public class TranslatableStrings
 		}
 	}
 
-	public ITranslatableString nullToEmpty(final ITranslatableString trl)
+	@NonNull
+	public ITranslatableString nullToEmpty(@Nullable final ITranslatableString trl)
 	{
 		return trl != null ? trl : empty();
 	}
