@@ -210,19 +210,6 @@ export function rowActionsRequest({ windowId, documentId, tabId, rowId }) {
   );
 }
 
-export function referencesRequest(windowId, documentId, tabId, rowId) {
-  return axios.get(
-    config.API_URL +
-      '/window/' +
-      windowId +
-      '/' +
-      documentId +
-      (tabId ? '/' + tabId : '') +
-      (rowId ? '/' + rowId : '') +
-      '/references'
-  );
-}
-
 export function referencesEventSource({
   windowId,
   documentId,
