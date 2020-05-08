@@ -9,10 +9,12 @@ import { setFilter } from '../../actions/ListActions';
 import { mergePartialGroupToGroupsArray } from '../../utils/documentReferencesHelper';
 import Loader from '../app/Loader';
 
+import DocumentReferenceGroup from './DocumentReferenceGroup';
+
 /**
  * Document related documents (references) component
  */
-class Referenced extends Component {
+class DocumentReferences extends Component {
   constructor(props) {
     super(props);
 
@@ -23,11 +25,11 @@ class Referenced extends Component {
   }
 
   componentDidMount = () => {
-    const { windowType, docId } = this.props;
+    const { windowId, documentId } = this.props;
 
     referencesEventSource({
-      windowId: windowType,
-      documentId: docId,
+      windowId: windowId,
+      documentId: documentId,
 
       onPartialResult: (partialGroup) => {
         const data = this.state.data || [];
@@ -52,11 +54,13 @@ class Referenced extends Component {
     });
   };
 
-  handleReferenceClick = (type, filter) => {
-    const { dispatch, windowType, docId } = this.props;
+  handleReferenceClick = (targetWindowId, filter) => {
+    const { dispatch, windowId, documentId } = this.props;
 
-    dispatch(setFilter(filter, type));
-    dispatch(push(`/window/${type}?refType=${windowType}&refId=${docId}`));
+    dispatch(setFilter(filter, targetWindowId));
+    dispatch(
+      push(`/window/${targetWindowId}?refType=${windowId}&refId=${documentId}`)
+    );
   };
 
   handleKeyDown = (e) => {
@@ -95,44 +99,6 @@ class Referenced extends Component {
     }
   };
 
-  renderData = () => {
-    const { loading, data } = this.state;
-
-    if (data && data.length) {
-      return data.map((item) => {
-        return [
-          <div
-            key="caption"
-            className={`subheader-caption reference_${item.internalName}`}
-          >
-            {item.caption}
-          </div>,
-        ].concat(
-          item.references.map((ref, refKey) => (
-            <div
-              className={`subheader-item js-subheader-item reference_${
-                ref.internalName
-              }`}
-              onClick={() => {
-                this.handleReferenceClick(ref.documentType, ref.filter);
-              }}
-              key={refKey}
-              tabIndex={0}
-            >
-              {ref.caption}
-            </div>
-          ))
-        );
-      });
-    } else if (!loading) {
-      return (
-        <div className="subheader-item subheader-item-disabled">
-          {counterpart.translate('window.sideList.referenced.empty')}
-        </div>
-      );
-    }
-  };
-
   render() {
     const { loading } = this.state;
     return (
@@ -142,16 +108,37 @@ class Referenced extends Component {
         tabIndex={0}
       >
         {this.renderData()}
-        {loading ? <Loader /> : null}
+        {loading ? <Loader key="loader" /> : null}
       </div>
     );
   }
+
+  renderData = () => {
+    const { loading, data } = this.state;
+
+    if (data && data.length) {
+      return data.map((group) => (
+        <DocumentReferenceGroup
+          key={group.caption}
+          caption={group.caption}
+          references={group.references}
+          onReferenceItemClick={this.handleReferenceClick}
+        />
+      ));
+    } else if (!loading) {
+      return (
+        <div className="subheader-item subheader-item-disabled">
+          {counterpart.translate('window.sideList.referenced.empty')}
+        </div>
+      );
+    }
+  };
 }
 
-Referenced.propTypes = {
-  windowType: PropTypes.string.isRequired,
-  docId: PropTypes.string.isRequired,
+DocumentReferences.propTypes = {
+  windowId: PropTypes.string.isRequired,
+  documentId: PropTypes.string.isRequired,
   dispatch: PropTypes.func.isRequired,
 };
 
-export default connect()(Referenced);
+export default connect()(DocumentReferences);

@@ -8,7 +8,7 @@ import keymap from '../../shortcuts/keymap';
 import DocumentList from '../app/DocumentList';
 import Tooltips from '../tooltips/Tooltips';
 import Attachments from './Attachments';
-import Referenced from './Referenced';
+import DocumentReferences from '../documentReferences/DocumentReferences';
 
 /**
  * @file Class based component.
@@ -109,7 +109,7 @@ class SideList extends Component {
           />
         );
       case 1:
-        return <Referenced {...{ windowType, docId }} />;
+        return <DocumentReferences windowId={windowType} documentId={docId} />;
       case 2:
         return <Attachments {...{ windowType, docId }} />;
     }
