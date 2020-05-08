@@ -21,7 +21,7 @@ class TableContextMenu extends Component {
         x: 0,
         y: 0,
       },
-      loadingReferences: true,
+      loadingReferences: false,
       references: [],
     };
   }
@@ -78,6 +78,11 @@ class TableContextMenu extends Component {
 
   loadReferences = () => {
     const { windowId, docId, tabId, selected } = this.props;
+
+    this.setState({
+      ...this.state,
+      loadingReferences: true,
+    });
 
     referencesEventSource({
       windowId: windowId,
