@@ -129,6 +129,7 @@ public final class MLookupInfo implements Serializable, Cloneable
 	private boolean showInactiveValues = false;
 
 	private boolean translated = false;
+
 	private ReferenceTooltipType referenceTooltipType;
 
 	/**************************************************************************
@@ -574,7 +575,7 @@ public final class MLookupInfo implements Serializable, Cloneable
 	{
 		return this.autoComplete;
 	}
-	
+
 	void setShowInactiveValues(boolean showInactiveValues)
 	{
 		this.showInactiveValues = showInactiveValues;
@@ -610,7 +611,7 @@ public final class MLookupInfo implements Serializable, Cloneable
 		return translated;
 	}
 
-	public void setReferenceTooltipType(final ReferenceTooltipType referenceTooltipType)
+	public void setReferenceTooltipType(@NonNull final ReferenceTooltipType referenceTooltipType)
 	{
 		this.referenceTooltipType = referenceTooltipType;
 	}
