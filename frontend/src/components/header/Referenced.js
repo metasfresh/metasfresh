@@ -6,6 +6,7 @@ import { push } from 'react-router-redux';
 
 import { referencesEventSource } from '../../actions/GenericActions';
 import { setFilter } from '../../actions/ListActions';
+import { mergePartialGroupToGroupsArray } from '../../utils/documentReferencesHelper';
 import Loader from '../app/Loader';
 
 /**
@@ -34,7 +35,7 @@ class Referenced extends Component {
           {
             ...this.state,
             loading: true,
-            data: this.mergePartialGroupToGroupsArray(data, partialGroup),
+            data: mergePartialGroupToGroupsArray(data, partialGroup),
           },
           () => {
             this.referenced && this.referenced.focus();
@@ -50,85 +51,6 @@ class Referenced extends Component {
       },
     });
   };
-
-  mergePartialGroupToGroupsArray(groups, partialGroup) {
-    if (!partialGroup) {
-      return groups;
-    }
-
-    let result = [];
-    let partialGroupMerged = false;
-
-    for (const group of groups) {
-      if (!partialGroupMerged && group.caption === partialGroup.caption) {
-        const changedGroup = this.mergeReferencesToGroup(
-          group,
-          partialGroup.references
-        );
-
-        result.push(changedGroup);
-        partialGroupMerged = true;
-      } else {
-        result.push(group);
-      }
-    }
-
-    if (!partialGroupMerged) {
-      result.push(partialGroup);
-      partialGroupMerged = true;
-    }
-
-    //
-    // Sort groups by caption alphabetically, keep miscGroup last.
-    result = result.sort((group1, group2) => {
-      if (group1.miscGroup == group2.miscGroup) {
-        return group1.caption.localeCompare(group2.caption);
-      } else if (group1.miscGroup) {
-        return +1; // keep misc group last
-      } else {
-        return -1;
-      }
-    });
-
-    return result;
-  }
-
-  mergeReferencesToGroup(group, referencesToAdd) {
-    if (!referencesToAdd || !referencesToAdd.length) {
-      return group;
-    }
-
-    const referencesToAddById = {};
-    referencesToAdd.forEach((reference) => {
-      referencesToAddById[reference.id] = reference;
-    });
-
-    let references = [];
-
-    for (const existingReference of group.references) {
-      const referenceToAdd = referencesToAddById[existingReference.id];
-      delete referencesToAddById[existingReference.id];
-
-      if (
-        referenceToAdd &&
-        referenceToAdd.priority < existingReference.priority
-      ) {
-        references.push(referenceToAdd);
-      } else {
-        references.push(existingReference);
-      }
-    }
-
-    Object.values(referencesToAddById).forEach((referenceToAdd) =>
-      references.push(referenceToAdd)
-    );
-
-    references = references.sort((reference1, reference2) => {
-      return reference1.caption.localeCompare(reference2.caption);
-    });
-
-    return { ...group, references };
-  }
 
   handleReferenceClick = (type, filter) => {
     const { dispatch, windowType, docId } = this.props;

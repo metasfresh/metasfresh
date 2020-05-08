@@ -1,9 +1,12 @@
 import PropTypes from 'prop-types';
-import React, { Component } from 'react';
+import React, { Component, Fragment } from 'react';
 import { connect } from 'react-redux';
 import counterpart from 'counterpart';
 
-import { referencesRequest } from '../../actions/GenericActions';
+import Loader from '../app/Loader';
+
+import { referencesEventSource } from '../../actions/GenericActions';
+import { mergeReferencesToReferences } from '../../utils/documentReferencesHelper';
 import { setFilter } from '../../actions/ListActions';
 import keymap from '../../shortcuts/keymap';
 
@@ -15,6 +18,7 @@ class TableContextMenu extends Component {
         x: 0,
         y: 0,
       },
+      loadingReferences: true,
       references: [],
     };
   }
@@ -39,7 +43,7 @@ class TableContextMenu extends Component {
     );
 
     if (docId) {
-      this.getReferences();
+      this.loadReferences();
     }
   }
 
@@ -69,13 +73,32 @@ class TableContextMenu extends Component {
     });
   };
 
-  getReferences = () => {
-    const { docId, tabId, windowId, selected } = this.props;
+  loadReferences = () => {
+    const { windowId, docId, tabId, selected } = this.props;
 
-    referencesRequest(windowId, docId, tabId, selected[0]).then((response) => {
-      this.setState({
-        references: response.data.references,
-      });
+    referencesEventSource({
+      windowId: windowId,
+      documentId: docId,
+      tabId: tabId,
+      rowId: selected[0],
+
+      onPartialResult: (partialGroup) => {
+        this.setState({
+          ...this.state,
+          loadingReferences: true,
+          references: mergeReferencesToReferences(
+            this.state.references,
+            partialGroup.references
+          ),
+        });
+      },
+
+      onComplete: () => {
+        this.setState({
+          ...this.state,
+          loadingReferences: false,
+        });
+      },
     });
   };
 
@@ -109,7 +132,7 @@ class TableContextMenu extends Component {
       handleZoomInto,
     } = this.props;
 
-    const { contextMenu, references } = this.state;
+    const { contextMenu } = this.state;
 
     const isSelectedOne = selected.length === 1;
     const showFieldEdit =
@@ -181,21 +204,34 @@ class TableContextMenu extends Component {
           </div>
         )}
 
-        {references && <hr className="context-menu-separator" />}
-
-        {references &&
-          references.map((item, index) => (
-            <div
-              className="context-menu-item"
-              key={index}
-              onClick={() => {
-                this.handleReferenceClick(item.documentType, item.filter);
-              }}
-            >
-              <i className="meta-icon-share" /> {item.caption}
-            </div>
-          ))}
+        {this.renderReferences()}
       </div>
+    );
+  }
+
+  renderReferences() {
+    const { loadingReferences, references } = this.state;
+
+    if (!references && !loadingReferences) {
+      return;
+    }
+
+    return (
+      <Fragment>
+        <hr className="context-menu-separator" />
+        {references.map((item, index) => (
+          <div
+            className="context-menu-item"
+            key={index}
+            onClick={() => {
+              this.handleReferenceClick(item.documentType, item.filter);
+            }}
+          >
+            <i className="meta-icon-share" /> {item.caption}
+          </div>
+        ))}
+        {loadingReferences ? <Loader /> : null}
+      </Fragment>
     );
   }
 }

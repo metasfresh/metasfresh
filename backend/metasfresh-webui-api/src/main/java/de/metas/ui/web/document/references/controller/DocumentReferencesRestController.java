@@ -16,14 +16,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
-import com.google.common.collect.ImmutableList;
-
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.document.references.DocumentReference;
 import de.metas.ui.web.document.references.DocumentReferenceCandidate;
-import de.metas.ui.web.document.references.json.JSONDocumentReference;
-import de.metas.ui.web.document.references.json.JSONDocumentReferencesGroup;
 import de.metas.ui.web.document.references.service.DocumentReferencesService;
 import de.metas.ui.web.menu.MenuTree;
 import de.metas.ui.web.menu.MenuTreeRepository;
@@ -119,15 +115,33 @@ public class DocumentReferencesRestController
 			@PathVariable("windowId") final String windowIdStr,
 			@PathVariable("documentId") final String documentId)
 	{
+		final DocumentPath documentPath = DocumentPath.rootDocumentPath(
+				WindowId.fromJson(windowIdStr),
+				documentId);
+
+		return streamRootDocumentReferences(documentPath);
+	}
+
+	@GetMapping("/{windowId}/{documentId}/{tabId}/{rowId}/references/sse")
+	public SseEmitter streamIncludedDocumentReferences(
+			@PathVariable("windowId") final String windowIdStr,
+			@PathVariable("documentId") final String documentIdStr,
+			@PathVariable("tabId") final String tabIdStr,
+			@PathVariable("rowId") final String rowIdStr)
+	{
+		final WindowId windowId = WindowId.fromJson(windowIdStr);
+		final DocumentPath documentPath = DocumentPath.includedDocumentPath(windowId, documentIdStr, tabIdStr, rowIdStr);
+
+		return streamRootDocumentReferences(documentPath);
+	}
+
+	private SseEmitter streamRootDocumentReferences(final DocumentPath documentPath)
+	{
 		final JSONDocumentReferencesEventPublisher publisher = JSONDocumentReferencesEventPublisher.newInstance();
 
 		try
 		{
 			userSession.assertLoggedIn();
-
-			final DocumentPath documentPath = DocumentPath.rootDocumentPath(
-					WindowId.fromJson(windowIdStr),
-					documentId);
 
 			final List<DocumentReferenceCandidate> documentReferenceCandidates = documentReferencesService.getDocumentReferenceCandidates(
 					documentPath,
@@ -207,30 +221,6 @@ public class DocumentReferencesRestController
 
 			aggregator.addAndFlush(documentReference, context.getPublisher());
 		}
-	}
-
-	@GetMapping("/{windowId}/{documentId}/{tabId}/{rowId}/references")
-	public JSONDocumentReferencesGroup getIncludedDocumentReferences(
-			@PathVariable("windowId") final String windowIdStr,
-			@PathVariable("documentId") final String documentIdStr,
-			@PathVariable("tabId") final String tabIdStr,
-			@PathVariable("rowId") final String rowIdStr)
-	{
-		userSession.assertLoggedIn();
-
-		// Get document references
-		final WindowId windowId = WindowId.fromJson(windowIdStr);
-		final DocumentPath documentPath = DocumentPath.includedDocumentPath(windowId, documentIdStr, tabIdStr, rowIdStr);
-		final ImmutableList<DocumentReference> documentReferences = DocumentReferenceCandidate.evaluateAll(
-				documentReferencesService.getDocumentReferenceCandidates(
-						documentPath,
-						userSession.getUserRolePermissions()));
-
-		final JSONOptions jsonOpts = newJSONOptions();
-		return JSONDocumentReferencesGroup.builder()
-				.caption("References")
-				.references(JSONDocumentReference.ofList(documentReferences, jsonOpts))
-				.build();
 	}
 
 	@Value

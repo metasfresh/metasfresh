@@ -226,13 +226,18 @@ export function referencesRequest(windowId, documentId, tabId, rowId) {
 export function referencesEventSource({
   windowId,
   documentId,
+  tabId,
+  rowId,
   onPartialResult,
   onComplete,
 }) {
-  var eventSource = new EventSource(
-    `${config.API_URL}/window/${windowId}/${documentId}/references/sse`,
-    { withCredentials: true }
-  );
+  var url = `${config.API_URL}/window/${windowId}/${documentId}`;
+  if (rowId) {
+    url = url + `/${tabId}/${rowId}`;
+  }
+  url = url + '/references/sse';
+
+  var eventSource = new EventSource(url, { withCredentials: true });
 
   eventSource.onmessage = (event) => {
     const data = JSON.parse(event.data);
