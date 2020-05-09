@@ -10,7 +10,7 @@ import TableContextShortcuts from './keyshortcuts/TableContextShortcuts';
 import keymap from '../shortcuts/keymap';
 import Tabs, { TabSingleEntry } from './tabs/Tabs';
 import Tooltips from './tooltips/Tooltips';
-import ElementsLine from './window/ElementsLine';
+import ElementGroup from './window/ElementGroup';
 import Dropzone from './Dropzone';
 import Separator from './Separator';
 import { INITIALLY_OPEN, INITIALLY_CLOSED } from '../constants/Constants';
@@ -47,6 +47,7 @@ class Window extends PureComponent {
 
     this.toggleTableFullScreen = this.toggleTableFullScreen.bind(this);
     this.handleBlurWidget = this.handleBlurWidget.bind(this);
+    this.requestElementGroupFocus = this.requestElementGroupFocus.bind(this);
   }
 
   componentMountUpdate() {
@@ -470,88 +471,44 @@ class Window extends PureComponent {
    * @param {*} isFirst
    */
   renderElementGroups = (groups, isFirst) => {
-    const { isModal } = this.props;
+    const { windowId } = this.props.layout;
+    const { tabId, rowId, dataId } = this.props;
+    const { data } = this.props;
+    const { isModal, isAdvanced } = this.props;
+    const { fullScreen } = this.state;
 
-    return groups.map((elem, id) => {
-      const { type, elementsLine } = elem;
-      const shouldBeFocused = isFirst && id === 0;
+    return groups.map((elementGroupLayout, elementGroupIndex) => {
+      const shouldBeFocused = isFirst && elementGroupIndex === 0;
       const tabIndex =
-        type === 'primary'
+        elementGroupLayout.type === 'primary'
           ? this.tabIndex.firstColumn
           : this.tabIndex.secondColumn;
 
       return (
-        elementsLine &&
-        elementsLine.length > 0 && (
-          <div
-            key={'elemGroups' + id}
-            ref={(c) => {
-              if (this.focused) return;
-              if (isModal && shouldBeFocused && c) c.focus();
-              this.focused = true;
-            }}
-            className={classnames('panel panel-spaced panel-distance', {
-              'panel-bordered panel-primary': type === 'primary',
-              'panel-secondary': type !== 'primary',
-            })}
-          >
-            {this.renderElementsLinesArray(
-              elementsLine,
-              tabIndex,
-              shouldBeFocused
-            )}
-          </div>
-        )
+        <ElementGroup
+          key={'elemGroups' + elementGroupIndex}
+          //
+          elementGroupLayout={elementGroupLayout}
+          //
+          windowId={windowId}
+          tabId={tabId}
+          rowId={rowId}
+          dataId={dataId}
+          //
+          data={data}
+          //
+          shouldBeFocused={shouldBeFocused}
+          tabIndex={tabIndex}
+          isModal={isModal}
+          isAdvanced={isAdvanced}
+          isFullScreen={fullScreen}
+          //
+          onBlurWidget={this.handleBlurWidget}
+          addRefToWidgets={this.addRefToWidgets}
+          requestElementGroupFocus={this.requestElementGroupFocus}
+        />
       );
     });
-  };
-
-  /**
-   * @method renderElementsLine
-   * @summary ToDo: Describe the method.
-   * @param {*} elementsLineLayoutArray
-   * @param {*} tabIndex
-   * @param {*} shouldBeFocused
-   */
-  renderElementsLinesArray = (
-    elementsLineLayoutArray,
-    tabIndex,
-    shouldBeFocused
-  ) => {
-    const { windowId } = this.props.layout;
-    const { tabId, rowId, dataId } = this.props;
-    const { data } = this.props;
-    const { modal, isAdvanced } = this.props;
-    const { fullScreen } = this.state;
-
-    return elementsLineLayoutArray.map(
-      (elementsLineLayout, elementsLineIndex) => {
-        const isFocused = shouldBeFocused && elementsLineIndex === 0;
-
-        return (
-          <ElementsLine
-            key={'line' + elementsLineIndex}
-            elementsLineLayout={elementsLineLayout}
-            //
-            windowId={windowId}
-            tabId={tabId}
-            rowId={rowId}
-            dataId={dataId}
-            //
-            data={data}
-            //
-            isFocused={isFocused}
-            tabIndex={tabIndex}
-            isModal={modal}
-            isAdvanced={isAdvanced}
-            isFullScreen={fullScreen}
-            //
-            onBlurWidget={this.handleBlurWidget}
-            addRefToWidgets={this.addRefToWidgets}
-          />
-        );
-      }
-    );
   };
 
   /**
@@ -591,6 +548,13 @@ class Window extends PureComponent {
     }
   }
 
+  requestElementGroupFocus(elementGroupComponent) {
+    if (!this.elementGroupFocused) {
+      elementGroupComponent.focus();
+      this.elementGroupFocused = true;
+    }
+  }
+
   /**
    * @method render
    * @summary ToDo: Describe the method.
@@ -605,6 +569,7 @@ class Window extends PureComponent {
     } = this.props;
 
     this.widgets = [];
+    this.elementGroupFocused = false;
 
     return (
       <div key="window" className="window-wrapper">
