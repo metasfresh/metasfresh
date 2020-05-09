@@ -275,7 +275,7 @@ TableContextMenu.propTypes = {
   windowId: PropTypes.string,
   selected: PropTypes.array,
   blur: PropTypes.any,
-  mainTable: PropTypes.any,
+  mainTable: PropTypes.bool,
   handleAdvancedEdit: PropTypes.func,
   handleDelete: PropTypes.func,
   handleFieldEdit: PropTypes.func,
