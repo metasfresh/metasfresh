@@ -11,7 +11,7 @@ class ElementsLine extends PureComponent {
       elementsLineLayout.elements === undefined ||
       elementsLineLayout.elements.length == 0
     ) {
-      return;
+      return null;
     }
 
     return (

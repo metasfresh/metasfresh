@@ -17,7 +17,7 @@ class ElementGroup extends PureComponent {
       elementGroupLayout.elementsLine === undefined ||
       elementGroupLayout.elementsLine.length == 0
     ) {
-      return;
+      return null;
     }
 
     return (
