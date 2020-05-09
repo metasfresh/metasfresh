@@ -25,4 +25,6 @@ export function referencesEventSource({
   eventSource.onerror = () => {
     eventSource.close();
   };
+
+  return eventSource;
 }

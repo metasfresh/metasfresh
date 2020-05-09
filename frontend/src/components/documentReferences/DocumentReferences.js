@@ -28,7 +28,8 @@ class DocumentReferences extends Component {
   componentDidMount = () => {
     const { windowId, documentId } = this.props;
 
-    referencesEventSource({
+    this.closeEventSource();
+    this.eventSource = referencesEventSource({
       windowId: windowId,
       documentId: documentId,
 
@@ -51,8 +52,21 @@ class DocumentReferences extends Component {
           ...this.state,
           loading: false,
         });
+
+        this.closeEventSource();
       },
     });
+  };
+
+  componentWillUnmount = () => {
+    this.closeEventSource();
+  };
+
+  closeEventSource = () => {
+    if (this.eventSource) {
+      this.eventSource.close();
+      delete this.eventSource;
+    }
   };
 
   handleReferenceClick = ({ targetWindowId, filter, ctrlKeyPressed }) => {

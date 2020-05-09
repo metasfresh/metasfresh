@@ -50,6 +50,17 @@ class TableContextMenu extends Component {
     }
   }
 
+  componentWillUnmount = () => {
+    this.closeEventSource();
+  };
+
+  closeEventSource = () => {
+    if (this.eventSource) {
+      this.eventSource.close();
+      delete this.eventSource;
+    }
+  };
+
   adjustElementPositionToFitInScreen = (dir, pos, element) => {
     if (element) {
       const windowSize = dir === 'x' ? window.innerWidth : window.innerHeight;
@@ -94,7 +105,8 @@ class TableContextMenu extends Component {
       loadingReferences: true,
     });
 
-    referencesEventSource({
+    this.closeEventSource();
+    this.eventSource = referencesEventSource({
       windowId: windowId,
       documentId: docId,
       tabId: tabId,
