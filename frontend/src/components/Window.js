@@ -10,7 +10,7 @@ import TableContextShortcuts from './keyshortcuts/TableContextShortcuts';
 import keymap from '../shortcuts/keymap';
 import Tabs, { TabSingleEntry } from './tabs/Tabs';
 import Tooltips from './tooltips/Tooltips';
-import MasterWidget from './widget/MasterWidget';
+import Element from './window/Element';
 import Dropzone from './Dropzone';
 import Separator from './Separator';
 import { INITIALLY_OPEN, INITIALLY_CLOSED } from '../constants/Constants';
@@ -333,38 +333,42 @@ class Window extends PureComponent {
    * @param {*} extendedData
    */
   renderSections = (sections, dataEntry, extendedData = {}) => {
-    return sections.map((elem, idx) => {
-      const { title, columns, closableMode } = elem;
-      const isFirst = idx === 0;
-      const sectionCollapsed =
-        dataEntry && this.sectionCollapsed(idx, extendedData.tabId);
-      const collapsible =
-        closableMode === INITIALLY_OPEN || closableMode === INITIALLY_CLOSED;
+    return sections.map((section, sectionIndex) =>
+      this.renderSection({ section, sectionIndex, dataEntry, extendedData })
+    );
+  };
 
-      return (
+  renderSection = ({ section, sectionIndex, dataEntry, extendedData }) => {
+    const { title, columns, closableMode } = section;
+    const isFirst = sectionIndex === 0;
+    const sectionCollapsed =
+      dataEntry && this.sectionCollapsed(sectionIndex, extendedData.tabId);
+    const collapsible =
+      closableMode === INITIALLY_OPEN || closableMode === INITIALLY_CLOSED;
+
+    return (
+      <div
+        key={`section-${sectionIndex}`}
+        className={classnames('section', { collapsed: sectionCollapsed })}
+      >
+        {title && (
+          <Separator
+            {...{ title, idx: sectionIndex, sectionCollapsed, collapsible }}
+            tabId={extendedData.tabId}
+            onClick={this.toggleSection}
+          />
+        )}
         <div
-          key={`section-${idx}`}
-          className={classnames('section', { collapsed: sectionCollapsed })}
+          className={classnames('row', {
+            'collapsible-section': collapsible,
+            collapsed: sectionCollapsed,
+          })}
         >
-          {title && (
-            <Separator
-              {...{ title, idx, sectionCollapsed, collapsible }}
-              tabId={extendedData.tabId}
-              onClick={this.toggleSection}
-            />
-          )}
-          <div
-            className={classnames('row', {
-              'collapsible-section': collapsible,
-              collapsed: sectionCollapsed,
-            })}
-          >
-            {columns &&
-              this.renderColumns(columns, isFirst, dataEntry, extendedData)}
-          </div>
+          {columns &&
+            this.renderColumns(columns, isFirst, dataEntry, extendedData)}
         </div>
-      );
-    });
+      </div>
+    );
   };
 
   /**
@@ -532,38 +536,25 @@ class Window extends PureComponent {
     const { data, modal, tabId, rowId, dataId, isAdvanced } = this.props;
     const { fullScreen } = this.state;
 
-    return elements.map((elem, id) => {
-      const autoFocus = isFocused && id === 0;
-      const widgetData = elem.fields.map((item) => data[item.field] || -1);
-      const fieldName = elem.fields ? elem.fields[0].field : '';
-      const relativeDocId = data.ID && data.ID.value;
-
-      return (
-        <MasterWidget
-          ref={(c) => {
-            if (c) {
-              this.widgets.push(c);
-            }
-          }}
-          entity="window"
-          key={'element' + id}
-          windowType={windowId}
-          dataId={dataId}
-          widgetData={widgetData}
-          isModal={!!modal}
-          tabId={tabId}
-          rowId={rowId}
-          relativeDocId={relativeDocId}
-          isAdvanced={isAdvanced}
-          tabIndex={tabIndex}
-          autoFocus={!modal && autoFocus}
-          fullScreen={fullScreen}
-          fieldName={fieldName}
-          onBlurWidget={this.handleBlurWidget}
-          {...elem}
-        />
-      );
-    });
+    return elements.map((elementLayout, elementIndex) => (
+      <Element
+        key={'element' + elementIndex}
+        elementLayout={elementLayout}
+        elementIndex={elementIndex}
+        windowId={windowId}
+        tabId={tabId}
+        rowId={rowId}
+        dataId={dataId}
+        data={data}
+        isFocused={isFocused}
+        tabIndex={tabIndex}
+        isModal={modal}
+        isAdvanced={isAdvanced}
+        isFullScreen={fullScreen}
+        onBlurWidget={this.handleBlurWidget}
+        addRefToWidgets={this.addRefToWidgets}
+      />
+    ));
   };
 
   /**
