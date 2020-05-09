@@ -271,7 +271,7 @@ TableContextMenu.propTypes = {
   supportZoomInto: PropTypes.bool,
   supportFieldEdit: PropTypes.bool,
   docId: PropTypes.string,
-  tabId: PropTypes.any,
+  tabId: PropTypes.string,
   windowId: PropTypes.string,
   selected: PropTypes.array,
   blur: PropTypes.func,
