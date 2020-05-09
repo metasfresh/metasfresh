@@ -53,19 +53,14 @@ public interface IEventBus
 	 */
 	void subscribe(IEventListener listener);
 
+	void unsubscribe(IEventListener listener);
+
 	/**
 	 * Subscribe to this bus.
 	 */
 	void subscribe(Consumer<Event> eventConsumer);
 
 	<T> void subscribeOn(Class<T> type, Consumer<T> eventConsumer);
-
-	/**
-	 * Subscribe to this bus. Same as {@link #subscribe(IEventListener)} but this will register a weak reference to listener,
-	 * so as long as the listener is no longer referenced, it will auto-magically unregistered from this bus.
-	 */
-	@Deprecated
-	void subscribeWeak(IEventListener listener);
 
 	/**
 	 * Post given event on this bus.

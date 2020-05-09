@@ -6,6 +6,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.adempiere.ad.dao.cache.CacheInvalidateMultiRequestSerializer;
 import org.slf4j.Logger;
+import org.slf4j.MDC.MDCCloseable;
 
 import com.google.common.collect.ImmutableSet;
 
@@ -17,6 +18,7 @@ import de.metas.event.IEventBusFactory;
 import de.metas.event.IEventListener;
 import de.metas.event.Topic;
 import de.metas.event.Type;
+import de.metas.event.impl.EventMDC;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -107,9 +109,6 @@ final class CacheInvalidationRemoteHandler implements IEventListener
 
 	/**
 	 * Broadcast a cache invalidation request.
-	 *
-	 * @param tableName
-	 * @param recordId
 	 */
 	public void postEvent(final CacheInvalidateMultiRequest request)
 	{
@@ -129,11 +128,13 @@ final class CacheInvalidationRemoteHandler implements IEventListener
 
 		// Broadcast the event.
 		final Event event = createEventFromRequest(request);
-		Services.get(IEventBusFactory.class)
-				.getEventBus(TOPIC_CacheInvalidation)
-				.postEvent(event);
-
-		logger.debug("Broadcasting cache invalidation of {}, event={}", request, event);
+		try (final MDCCloseable mdc = EventMDC.putEvent(event))
+		{
+			logger.debug("Broadcasting cacheInvalidateMultiRequest={}", request);
+			Services.get(IEventBusFactory.class)
+					.getEventBus(TOPIC_CacheInvalidation)
+					.postEvent(event);
+		}
 	}
 
 	private boolean isAllowBroadcast(final CacheInvalidateMultiRequest multiRequest)
@@ -157,19 +158,20 @@ final class CacheInvalidationRemoteHandler implements IEventListener
 		// If we would not do so, we would have an infinite loop here.
 		if (event.isLocalEvent())
 		{
+			logger.debug("onEvent - ignoring local event={}", event);
 			return;
 		}
 
 		final CacheInvalidateMultiRequest request = createRequestFromEvent(event);
 		if (request == null)
 		{
-			logger.debug("Ignored event: {}", event);
+			logger.debug("onEvent - ignoring event without payload; event={}", event);
 			return;
 		}
 
 		//
 		// Reset cache for TableName/Record_ID
-		logger.debug("Resetting local cache for {} because we got remote event: {}", request, event);
+		logger.debug("onEvent - resetting local cache for request {} because we got remote event={}", request, event);
 		CacheMgt.get().reset(request, CacheMgt.ResetMode.LOCAL); // don't broadcast it anymore because else we would introduce recursion
 	}
 
@@ -187,7 +189,6 @@ final class CacheInvalidationRemoteHandler implements IEventListener
 		final String jsonRequest = event.getProperty(EVENT_PROPERTY);
 		if (Check.isEmpty(jsonRequest, true))
 		{
-			logger.debug("Ignored event without request: {}", event);
 			return null;
 		}
 

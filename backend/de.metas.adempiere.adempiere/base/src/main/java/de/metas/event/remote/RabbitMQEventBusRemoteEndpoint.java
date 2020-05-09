@@ -57,11 +57,11 @@ public class RabbitMQEventBusRemoteEndpoint implements IEventBusRemoteEndpoint
 
 	public RabbitMQEventBusRemoteEndpoint(@NonNull final AmqpTemplate amqpTemplate)
 	{
-		senderId = EventBusConstants.getSenderId();
+		this.senderId = EventBusConstants.getSenderId();
 		this.amqpTemplate = amqpTemplate;
 	}
 
-	@RabbitListener(queues = AMQPEventBusConfiguration.EVENTS_QUEUE_NAME_SPEL)
+	@RabbitListener(queues = RabbitMQEventBusConfiguration.EVENTS_QUEUE_NAME_SPEL)
 	public void onRemoteEvent(
 			@Payload final Event event,
 			@Header(HEADER_SenderId) final String senderId,
@@ -69,24 +69,7 @@ public class RabbitMQEventBusRemoteEndpoint implements IEventBusRemoteEndpoint
 	{
 		try
 		{
-			if (Objects.equals(getSenderId(), senderId))
-			{
-				return;
-			}
-
-			final Topic topic = Topic.of(topicName, Type.REMOTE);
-			final IEventBus eventBus = Services.get(IEventBusFactory.class).getEventBusIfExists(topic);
-			if (eventBus == null)
-			{
-				return;
-			}
-
-			event.markReceivedByEventBusId(createEventBusId(topicName));
-
-			eventBus.postEvent(event);
-
-			final long durationMillis = System.currentTimeMillis() - event.getWhen().toEpochMilli();
-			logger.debug("Received event in {}ms, topic={}: {}", durationMillis, topicName, event);
+			onRemoteEvent0(event, senderId, topicName);
 		}
 		catch (final Exception ex)
 		{
@@ -94,31 +77,58 @@ public class RabbitMQEventBusRemoteEndpoint implements IEventBusRemoteEndpoint
 		}
 	}
 
+	private void onRemoteEvent0(final Event event, final String senderId, final String topicName)
+	{
+		if (Objects.equals(getSenderId(), senderId))
+		{
+			return;
+		}
+
+		final Topic topic = Topic.of(topicName, Type.REMOTE);
+		final IEventBus localEventBus = Services.get(IEventBusFactory.class).getEventBusIfExists(topic);
+		if (localEventBus == null)
+		{
+			return;
+		}
+
+		event.markReceivedByEventBusId(createEventBusId(topicName));
+
+		localEventBus.postEvent(event);
+
+		final long durationMillis = System.currentTimeMillis() - event.getWhen().toEpochMilli();
+		logger.debug("Received and processed event in {}ms, topic={}: {}", durationMillis, topicName, event);
+	}
+
 	@Override
 	public void sendEvent(final String topicName, final Event event)
 	{
 		try
 		{
-			// If the event comes from this bus, don't forward it back
-			final String eventBusId = createEventBusId(topicName);
-			if (event.wasReceivedByEventBusId(eventBusId))
-			{
-				return;
-			}
-
-			amqpTemplate.convertAndSend(AMQPEventBusConfiguration.EVENTS_EXCHANGE_NAME, "", event, message -> {
-				final Map<String, Object> headers = message.getMessageProperties().getHeaders();
-				headers.put(HEADER_SenderId, getSenderId());
-				headers.put(HEADER_TopicName, topicName);
-				return message;
-			});
-
-			logger.debug("Send event; topicName={}; event={}",topicName, event);
+			sendEvent0(topicName, event);
 		}
 		catch (final Exception e)
 		{
 			logger.warn(StringUtils.formatMessage("Failed to send event to topic name. Ignored; topicName={}; event={}", topicName, event), e);
 		}
+	}
+
+	private void sendEvent0(final String topicName, final Event event)
+	{
+		// If the event comes from this bus, don't forward it back
+		final String eventBusId = createEventBusId(topicName);
+		if (event.wasReceivedByEventBusId(eventBusId))
+		{
+			return;
+		}
+
+		amqpTemplate.convertAndSend(RabbitMQEventBusConfiguration.EVENTS_EXCHANGE_NAME, "", event, message -> {
+			final Map<String, Object> headers = message.getMessageProperties().getHeaders();
+			headers.put(HEADER_SenderId, getSenderId());
+			headers.put(HEADER_TopicName, topicName);
+			return message;
+		});
+
+		logger.debug("Send event; topicName={}; event={}", topicName, event);
 	}
 
 	private final String createEventBusId(final String topicName)

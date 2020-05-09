@@ -1,5 +1,9 @@
 package de.metas.event.impl;
 
+import java.util.IdentityHashMap;
+import java.util.Objects;
+import java.util.Map.Entry;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -22,7 +26,6 @@ package de.metas.event.impl;
  * #L%
  */
 
-import java.lang.ref.WeakReference;
 import java.util.concurrent.ExecutorService;
 import java.util.function.Consumer;
 
@@ -40,6 +43,7 @@ import com.google.common.eventbus.SubscriberExceptionContext;
 import com.google.common.eventbus.SubscriberExceptionHandler;
 
 import de.metas.event.Event;
+import de.metas.event.Event.Builder;
 import de.metas.event.EventBusConstants;
 import de.metas.event.IEventBus;
 import de.metas.event.IEventListener;
@@ -47,6 +51,11 @@ import de.metas.event.Type;
 import de.metas.event.log.EventLogEntryCollector;
 import de.metas.event.log.EventLogService;
 import de.metas.event.log.EventLogUserService;
+import de.metas.monitoring.adapter.NoopPerformanceMonitoringService;
+import de.metas.monitoring.adapter.PerformanceMonitoringService;
+import de.metas.monitoring.adapter.PerformanceMonitoringService.SpanMetadata;
+import de.metas.monitoring.adapter.PerformanceMonitoringService.TransactionMetadata;
+import de.metas.monitoring.adapter.PerformanceMonitoringService.TransactionMetadata.TransactionMetadataBuilder;
 import de.metas.util.Check;
 import de.metas.util.JSONObjectMapper;
 import lombok.AllArgsConstructor;
@@ -71,12 +80,16 @@ final class EventBus implements IEventBus
 		}
 	};
 
+	private static final String PROP_TRACE_INFO_PREFIX = "traceInfo.";
+
 	private static final String PROP_Body = "body";
 	private static final JSONObjectMapper<Object> sharedJsonSerializer = JSONObjectMapper.forClass(Object.class);
 
 	@Getter
 	private final String topicName;
 	private com.google.common.eventbus.EventBus eventBus;
+
+	private final IdentityHashMap<IEventListener, GuavaEventListenerAdapter> subscribedEventListener2GuavaListener = new IdentityHashMap<>();
 
 	@Getter
 	private boolean destroyed = false;
@@ -141,21 +154,6 @@ final class EventBus implements IEventBus
 	}
 
 	@Override
-	public void subscribe(@NonNull final IEventListener listener)
-	{
-		// Do nothing if destroyed
-		if (destroyed)
-		{
-			logger.warn("Attempt to register a listener to a destroyed bus. Ignored. \n Bus: {} \n Listener: {}", this, listener);
-			return;
-		}
-
-		final GuavaEventListenerAdapter listenerAdapter = new GuavaEventListenerAdapter(listener);
-		eventBus.register(listenerAdapter);
-		logger.trace("{} - Registered: {}", this, listener);
-	}
-
-	@Override
 	public void subscribe(@NonNull Consumer<Event> eventConsumer)
 	{
 		final IEventListener listener = (eventBus, event) -> eventConsumer.accept(event);
@@ -169,7 +167,7 @@ final class EventBus implements IEventBus
 	}
 
 	@Override
-	public void subscribeWeak(@NonNull final IEventListener listener)
+	public void subscribe(@NonNull final IEventListener listener)
 	{
 		// Do nothing if destroyed
 		if (destroyed)
@@ -178,9 +176,40 @@ final class EventBus implements IEventBus
 			return;
 		}
 
-		final WeakGuavaEventListenerAdapter listenerAdapter = new WeakGuavaEventListenerAdapter(listener);
+		final GuavaEventListenerAdapter listenerAdapter = new GuavaEventListenerAdapter(listener);
+
+		subscribedEventListener2GuavaListener.put(listener, listenerAdapter);
+
 		eventBus.register(listenerAdapter);
-		logger.trace("{} - Registered(weak): {}", this, listener);
+		logger.debug("registered listener; Listener: {}; Bus:\n{}", listener, this);
+	}
+
+	@Override
+	public void unsubscribe(@NonNull final IEventListener listener)
+	{
+		// Do nothing if destroyed
+		if (destroyed)
+		{
+			logger.warn("Attempt to unregister a listener from a destroyed bus. -> Ignore; Listener: {}; Bus:\n{}", listener, this);
+			return;
+		}
+
+		final GuavaEventListenerAdapter listenerAdapter = subscribedEventListener2GuavaListener.get(listener);
+		if (listenerAdapter == null)
+		{
+			logger.warn("Attempt to unregister a listener that is aparently not registered. -> Ignore; Listener: {}; Bus:\n{}", listener, this);
+			return;
+		}
+
+		try
+		{
+			eventBus.unregister(listenerAdapter);
+			logger.debug("unregistered listener; Listener: {}; Bus:\n{}", listener, this);
+		}
+		catch (final IllegalArgumentException e)
+		{
+			logger.warn("Attempt to unregister a listener, but internal event bus sais was not registered; -> Ignore; Listener: {}; Bus:\n{}", listener, this);
+		}
 	}
 
 	@Override
@@ -205,23 +234,36 @@ final class EventBus implements IEventBus
 				return;
 			}
 
-			final Event eventToPost;
+			final Builder eventToPostBuilder;
 
 			// as long as we have just one common event-log-DB, we store events only on the machine they were created on, in order to avoid duplicates.
 			if (event.isShallBeLogged() && event.isLocalEvent())
 			{
-				eventToPost = event.withStatusWasLogged();
+				eventToPostBuilder = event.withStatusWasLogged().toBuilder();
 
 				final EventLogService eventLogService = SpringContextHolder.instance.getBean(EventLogService.class);
-				eventLogService.saveEvent(eventToPost, this);
+				eventLogService.saveEvent(eventToPostBuilder.build(), this);
 			}
 			else
 			{
-				eventToPost = event;
+				eventToPostBuilder = event.toBuilder();
 			}
 
-			logger.debug("{} - Posting event: {}", this, event);
-			eventBus.post(eventToPost);
+			final PerformanceMonitoringService perfMonService = SpringContextHolder.instance.getBeanOr(PerformanceMonitoringService.class, NoopPerformanceMonitoringService.INSTANCE);
+
+			final SpanMetadata request = SpanMetadata.builder()
+					.type(de.metas.monitoring.adapter.PerformanceMonitoringService.Type.LOCAL_EVENT_POST.getCode())
+					.name("Post local-event on topic " + topicName)
+					.label("de.metas.event.local-event.senderId", event.getSenderId())
+					.label("de.metas.event.local-event.topicName", topicName)
+					// allow perfMonService to inject properties into the event which enable distributed tracing
+					.distributedHeadersInjector((name, value) -> eventToPostBuilder.putProperty(PROP_TRACE_INFO_PREFIX + name, value))
+					.build();
+			perfMonService.monitorSpan(() -> {
+				final Event eventToPost = eventToPostBuilder.build();
+				logger.debug("{} - Posting event: {}", this, eventToPost);
+				eventBus.post(eventToPost);
+			}, request);
 		}
 	}
 
@@ -248,7 +290,7 @@ final class EventBus implements IEventBus
 		{
 			try (final MDCCloseable mdc = EventMDC.putEvent(event))
 			{
-				logger.debug("TypedConsumerAsEventListener received event; eventBodyType={}", eventBodyType.getName());
+				logger.debug("TypedConsumerAsEventListener.onEvent - eventBodyType={}", eventBodyType.getName());
 
 				final String json = event.getPropertyAsString(PROP_Body);
 				final T obj = jsonDeserializer.readValue(json);
@@ -270,41 +312,32 @@ final class EventBus implements IEventBus
 		{
 			try (final MDCCloseable mdc = EventMDC.putEvent(event))
 			{
-				logger.debug("GuavaEventListenerAdapter received event; referenced eventListener={}", eventListener);
+				// extract possible remote tracing infos from the event and create a (distributed) monitoring transaction.
+				final PerformanceMonitoringService perfMonService = SpringContextHolder.instance.getBeanOr(PerformanceMonitoringService.class, NoopPerformanceMonitoringService.INSTANCE);
 
-				invokeEventListener(this.eventListener, event);
-			}
-		}
-	}
-
-	@ToString
-	private class WeakGuavaEventListenerAdapter
-	{
-		@NonNull
-		private final WeakReference<IEventListener> eventListenerRef;
-
-		private WeakGuavaEventListenerAdapter(@NonNull final IEventListener eventListener)
-		{
-			eventListenerRef = new WeakReference<>(eventListener);
-		}
-
-		@Subscribe
-		public void onEvent(final Event event)
-		{
-			final IEventListener eventListener = eventListenerRef.get();
-			if (eventListener == null)
-			{
-				final com.google.common.eventbus.EventBus guavaEventBus = EventBus.this.eventBus;
-				if (guavaEventBus != null)
+				final TransactionMetadataBuilder transactionMetadata = TransactionMetadata.builder();
+				for (final Entry<String, Object> entry : event.getProperties().entrySet())
 				{
-					guavaEventBus.unregister(this);
+					final String key = entry.getKey();
+					if (key.startsWith(PROP_TRACE_INFO_PREFIX))
+					{
+						transactionMetadata.distributedTransactionHeader(
+								key.substring(PROP_TRACE_INFO_PREFIX.length()),
+								Objects.toString(entry.getValue()));
+					}
 				}
-				return;
-			}
-			try (final MDCCloseable mdc = EventMDC.putEvent(event))
-			{
-				logger.debug("GuavaEventListenerAdapter received event; referenced eventListener={}", eventListener);
-				invokeEventListener(eventListener, event);
+				transactionMetadata
+						.name("Process remote-event on topic " + topicName)
+						.type(de.metas.monitoring.adapter.PerformanceMonitoringService.Type.LOCAL_EVENT_PROCESS)
+						.label("de.metas.event.remote-event.senderId", event.getSenderId())
+						.label("de.metas.event.remote-event.topicName", topicName)
+						.label("de.metas.event.remote-event.endpointImpl", this.getClass().getSimpleName());
+
+				perfMonService.monitorTransaction(() -> {
+					// actually invoke the event listener
+					logger.debug("GuavaEventListenerAdapter.onEvent - eventListener to invoke={}", eventListener);
+					invokeEventListener(this.eventListener, event);
+				}, transactionMetadata.build());
 			}
 		}
 	}
@@ -343,7 +376,7 @@ final class EventBus implements IEventBus
 			}
 			else
 			{
-				logger.warn("Got exception will invoking {} with {}", eventListener, event, ex);
+				logger.warn("Got exception while invoking {} with {}", eventListener, event, ex);
 			}
 		}
 		finally

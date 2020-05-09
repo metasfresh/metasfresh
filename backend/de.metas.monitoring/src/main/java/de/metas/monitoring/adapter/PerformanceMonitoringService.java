@@ -2,7 +2,7 @@ package de.metas.monitoring.adapter;
 
 import java.util.Map;
 import java.util.concurrent.Callable;
-
+import java.util.function.BiConsumer;
 import javax.annotation.Nullable;
 
 import lombok.Builder;
@@ -36,16 +36,16 @@ import lombok.Value;
 public interface PerformanceMonitoringService
 {
 	/** Invoke the given {@code callable} as a span. Capture exception and re-throw it, wrapped as RuntimeException if required. */
-	<V> V monitorSpan(Callable<V> callable, SpanMetadata request);
+	<V> V monitorSpan(Callable<V> callable, SpanMetadata metadata);
 
-	default void monitorSpan(Runnable runnable, SpanMetadata request)
+	default void monitorSpan(Runnable runnable, SpanMetadata metadata)
 	{
 		monitorSpan(
 				() -> {
 					runnable.run();
 					return null;
 				},
-				request);
+				metadata);
 	}
 
 	@Value
@@ -66,6 +66,9 @@ public interface PerformanceMonitoringService
 
 		@Singular
 		Map<String, String> labels;
+
+		@Nullable
+		BiConsumer<String, String> distributedHeadersInjector;
 	}
 
 	/** Invoke the given {@code callable} as a transaction. Capture exception and re-throw it, wrapped as RuntimeException if required. */
@@ -95,6 +98,9 @@ public interface PerformanceMonitoringService
 
 		@NonNull
 		Type type;
+
+		@Singular
+		Map<String, String> distributedTransactionHeaders;
 	}
 
 	public enum Type
@@ -109,7 +115,15 @@ public interface PerformanceMonitoringService
 
 		REST_API_PROCESSING("rest-API"),
 
-		CACHE_OPERATION("cache-operation");
+		CACHE_OPERATION("cache-operation"),
+
+		REMOTE_EVENT_POST("remote-event-post"),
+
+		REMOTE_EVENT_PROCESS("remote-event-process"),
+
+		LOCAL_EVENT_POST("local-event-post"),
+
+		LOCAL_EVENT_PROCESS("local-event-process");
 
 		private Type(String code)
 		{
