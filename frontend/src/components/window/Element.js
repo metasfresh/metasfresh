@@ -45,16 +45,20 @@ class Element extends PureComponent {
 Element.propTypes = {
   elementLayout: PropTypes.object.isRequired,
   elementIndex: PropTypes.number.isRequired,
+  //
   windowId: PropTypes.string.isRequired,
   tabId: PropTypes.string,
   rowId: PropTypes.string,
+  dataId: PropTypes.string,
+  //
+  data: PropTypes.oneOfType([PropTypes.shape(), PropTypes.array]), // TODO: type here should point to a hidden issue?
+  //
   isFocused: PropTypes.bool,
   isModal: PropTypes.bool,
   isAdvanced: PropTypes.bool,
   isFullScreen: PropTypes.bool,
-  data: PropTypes.oneOfType([PropTypes.shape(), PropTypes.array]), // TODO: type here should point to a hidden issue?
-  dataId: PropTypes.string,
   tabIndex: PropTypes.number,
+  //
   onBlurWidget: PropTypes.func.isRequired,
   addRefToWidgets: PropTypes.func.isRequired,
 };

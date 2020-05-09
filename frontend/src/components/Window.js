@@ -10,7 +10,7 @@ import TableContextShortcuts from './keyshortcuts/TableContextShortcuts';
 import keymap from '../shortcuts/keymap';
 import Tabs, { TabSingleEntry } from './tabs/Tabs';
 import Tooltips from './tooltips/Tooltips';
-import Element from './window/Element';
+import ElementsLine from './window/ElementsLine';
 import Dropzone from './Dropzone';
 import Separator from './Separator';
 import { INITIALLY_OPEN, INITIALLY_CLOSED } from '../constants/Constants';
@@ -495,7 +495,11 @@ class Window extends PureComponent {
               'panel-secondary': type !== 'primary',
             })}
           >
-            {this.renderElementsLine(elementsLine, tabIndex, shouldBeFocused)}
+            {this.renderElementsLinesArray(
+              elementsLine,
+              tabIndex,
+              shouldBeFocused
+            )}
           </div>
         )
       );
@@ -505,56 +509,49 @@ class Window extends PureComponent {
   /**
    * @method renderElementsLine
    * @summary ToDo: Describe the method.
-   * @param {*} elementsLine
+   * @param {*} elementsLineLayoutArray
    * @param {*} tabIndex
    * @param {*} shouldBeFocused
    */
-  renderElementsLine = (elementsLine, tabIndex, shouldBeFocused) => {
-    return elementsLine.map((elem, id) => {
-      const { elements } = elem;
-      const isFocused = shouldBeFocused && id === 0;
-      return (
-        elements &&
-        elements.length > 0 && (
-          <div className="elements-line" key={'line' + id}>
-            {this.renderElements(elements, tabIndex, isFocused)}
-          </div>
-        )
-      );
-    });
-  };
-
-  /**
-   * @method renderElements
-   * @summary ToDo: Describe the method.
-   * @param {*} elements
-   * @param {*} tabIndex
-   * @param {*} isFocused
-   */
-  renderElements = (elements, tabIndex, isFocused) => {
+  renderElementsLinesArray = (
+    elementsLineLayoutArray,
+    tabIndex,
+    shouldBeFocused
+  ) => {
     const { windowId } = this.props.layout;
-    const { data, modal, tabId, rowId, dataId, isAdvanced } = this.props;
+    const { tabId, rowId, dataId } = this.props;
+    const { data } = this.props;
+    const { modal, isAdvanced } = this.props;
     const { fullScreen } = this.state;
 
-    return elements.map((elementLayout, elementIndex) => (
-      <Element
-        key={'element' + elementIndex}
-        elementLayout={elementLayout}
-        elementIndex={elementIndex}
-        windowId={windowId}
-        tabId={tabId}
-        rowId={rowId}
-        dataId={dataId}
-        data={data}
-        isFocused={isFocused}
-        tabIndex={tabIndex}
-        isModal={modal}
-        isAdvanced={isAdvanced}
-        isFullScreen={fullScreen}
-        onBlurWidget={this.handleBlurWidget}
-        addRefToWidgets={this.addRefToWidgets}
-      />
-    ));
+    return elementsLineLayoutArray.map(
+      (elementsLineLayout, elementsLineIndex) => {
+        const isFocused = shouldBeFocused && elementsLineIndex === 0;
+
+        return (
+          <ElementsLine
+            key={'line' + elementsLineIndex}
+            elementsLineLayout={elementsLineLayout}
+            //
+            windowId={windowId}
+            tabId={tabId}
+            rowId={rowId}
+            dataId={dataId}
+            //
+            data={data}
+            //
+            isFocused={isFocused}
+            tabIndex={tabIndex}
+            isModal={modal}
+            isAdvanced={isAdvanced}
+            isFullScreen={fullScreen}
+            //
+            onBlurWidget={this.handleBlurWidget}
+            addRefToWidgets={this.addRefToWidgets}
+          />
+        );
+      }
+    );
   };
 
   /**
