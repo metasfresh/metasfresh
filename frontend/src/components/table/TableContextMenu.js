@@ -18,8 +18,8 @@ class TableContextMenu extends Component {
     super(props);
     this.state = {
       contextMenu: {
-        x: 0,
-        y: 0,
+        x: props.x,
+        y: props.y,
       },
       loadingReferences: false,
       references: [],
@@ -36,7 +36,7 @@ class TableContextMenu extends Component {
       docId,
     } = this.props;
 
-    this.setPosition(
+    this.updateContextMenuState(
       x,
       y,
       fieldName,
@@ -50,7 +50,7 @@ class TableContextMenu extends Component {
     }
   }
 
-  getPosition = (dir, pos, element) => {
+  adjustElementPositionToFitInScreen = (dir, pos, element) => {
     if (element) {
       const windowSize = dir === 'x' ? window.innerWidth : window.innerHeight;
       const elementSize =
@@ -61,14 +61,24 @@ class TableContextMenu extends Component {
       } else {
         return windowSize - elementSize;
       }
+    } else {
+      return pos;
     }
   };
 
-  setPosition = (x, y, fieldName, supportZoomInto, supportFieldEdit, elem) => {
+  updateContextMenuState = (
+    x,
+    y,
+    fieldName,
+    supportZoomInto,
+    supportFieldEdit,
+    elem
+  ) => {
     this.setState({
+      ...this.state,
       contextMenu: {
-        x: this.getPosition('x', x, elem),
-        y: this.getPosition('y', y, elem),
+        x: this.adjustElementPositionToFitInScreen('x', x, elem),
+        y: this.adjustElementPositionToFitInScreen('y', y, elem),
         fieldName,
         supportZoomInto,
         supportFieldEdit,
