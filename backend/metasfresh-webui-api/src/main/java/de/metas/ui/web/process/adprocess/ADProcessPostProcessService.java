@@ -12,7 +12,6 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.PlainContextAware;
-import org.adempiere.model.RecordZoomWindowFinder;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 import org.compiere.util.MimeType;
@@ -22,6 +21,7 @@ import org.slf4j.Logger;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.document.references.RecordZoomWindowFinder;
 import de.metas.logging.LogManager;
 import de.metas.printing.esb.base.util.Check;
 import de.metas.process.JavaProcess;

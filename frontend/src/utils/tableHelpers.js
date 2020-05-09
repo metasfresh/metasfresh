@@ -86,10 +86,14 @@ export function handleCopy(e) {
   e.clipboardData.setData('text/plain', textValue);
 }
 
-export function handleOpenNewTab(selected, type) {
-  for (let i = 0; i < selected.length; i++) {
-    window.open(`/window/${type}/${selected[i]}`, '_blank');
+export function handleOpenNewTab({ windowId, rowIds }) {
+  if (!rowIds) {
+    return;
   }
+
+  rowIds.forEach((rowId) => {
+    window.open(`/window/${windowId}/${rowId}`, '_blank');
+  });
 }
 
 export function shouldRenderColumn(column) {

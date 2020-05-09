@@ -1,27 +1,23 @@
-package org.adempiere.model;
+package de.metas.document.references;
 
-import java.time.Duration;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
+import java.util.function.IntSupplier;
+
+import javax.annotation.Nullable;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.window.api.IADWindowDAO;
-import org.adempiere.model.ZoomInfoFactory.IZoomSource;
-import org.adempiere.model.ZoomInfoFactory.ZoomInfo;
 import org.compiere.model.I_Fact_Acct;
 import org.compiere.model.MQuery;
 import org.compiere.model.MQuery.Operator;
-import org.slf4j.Logger;
 
-import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 
-import ch.qos.logback.classic.Level;
 import de.metas.i18n.ITranslatableString;
-import de.metas.logging.LogManager;
-import de.metas.util.Loggables;
 import de.metas.util.Services;
+import de.metas.util.lang.Priority;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -45,19 +41,21 @@ import de.metas.util.Services;
  * #L%
  */
 
-public class FactAcctZoomProvider implements IZoomProvider
+class FactAcctZoomProvider implements IZoomProvider
 {
-	private static final Logger logger = LogManager.getLogger(FactAcctZoomProvider.class);
-
 	public static final transient FactAcctZoomProvider instance = new FactAcctZoomProvider();
 	private static final String COLUMNNAME_Posted = "Posted";
+
+	private final Priority zoomInfoPriority = Priority.HIGHEST;
 
 	private FactAcctZoomProvider()
 	{
 	}
 
 	@Override
-	public List<ZoomInfo> retrieveZoomInfos(final IZoomSource source, final AdWindowId targetAD_Window_ID, final boolean checkRecordsCount)
+	public List<ZoomInfoCandidate> retrieveZoomInfos(
+			@NonNull final IZoomSource source,
+			@Nullable final AdWindowId targetWindowId)
 	{
 		//
 		// Get the Fact_Acct AD_Window_ID
@@ -68,7 +66,7 @@ public class FactAcctZoomProvider implements IZoomProvider
 		}
 
 		// If not our target window ID, return nothing
-		if (targetAD_Window_ID != null && !AdWindowId.equals(targetAD_Window_ID, factAcctWindowId))
+		if (targetWindowId != null && !AdWindowId.equals(targetWindowId, factAcctWindowId))
 		{
 			return ImmutableList.of();
 		}
@@ -89,30 +87,33 @@ public class FactAcctZoomProvider implements IZoomProvider
 		query.addRestriction(I_Fact_Acct.COLUMNNAME_AD_Table_ID, Operator.EQUAL, source.getAD_Table_ID());
 		query.addRestriction(I_Fact_Acct.COLUMNNAME_Record_ID, Operator.EQUAL, source.getRecord_ID());
 
-		if (checkRecordsCount)
-		{
-			final Stopwatch stopwatch = Stopwatch.createStarted();
+		final IADWindowDAO adWindowDAO = Services.get(IADWindowDAO.class);
+		final ITranslatableString destinationDisplay = adWindowDAO.retrieveWindowName(factAcctWindowId);
 
-			final int count = Services.get(IQueryBL.class).createQueryBuilder(I_Fact_Acct.class)
-					.addEqualsFilter(I_Fact_Acct.COLUMN_AD_Table_ID, source.getAD_Table_ID())
-					.addEqualsFilter(I_Fact_Acct.COLUMN_Record_ID, source.getRecord_ID())
-					.create()
-					.count();
+		final IntSupplier recordsCountSupplier = createRecordsCountSupplier(source);
 
-			final Duration countDuration = Duration.ofNanos(stopwatch.stop().elapsed(TimeUnit.NANOSECONDS));
-			query.setRecordCount(count, countDuration);
+		return ImmutableList.of(
+				ZoomInfoCandidate.builder()
+						.id(I_Fact_Acct.Table_Name)
+						.internalName(I_Fact_Acct.Table_Name)
+						.adWindowId(factAcctWindowId)
+						.priority(zoomInfoPriority)
+						.query(query)
+						.destinationDisplay(destinationDisplay)
+						.recordsCountSupplier(recordsCountSupplier)
+						.build());
+	}
 
-			Loggables.withLogger(logger, Level.DEBUG).addLog("FactAcctZoomProvider {} took {}", this, countDuration);
-		}
-
-		//
-		final ITranslatableString destinationDisplay = Services.get(IADWindowDAO.class).retrieveWindowName(factAcctWindowId);
-		return ImmutableList.of(ZoomInfo.of(
-				I_Fact_Acct.Table_Name/* id */,
-				I_Fact_Acct.Table_Name/* internalName */,
-				factAcctWindowId,
-				query,
-				destinationDisplay));
+	private static IntSupplier createRecordsCountSupplier(final IZoomSource source)
+	{
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+		final int adTableId = source.getAD_Table_ID();
+		final int recordId = source.getRecord_ID();
+		return () -> queryBL.createQueryBuilder(I_Fact_Acct.class)
+				.addEqualsFilter(I_Fact_Acct.COLUMN_AD_Table_ID, adTableId)
+				.addEqualsFilter(I_Fact_Acct.COLUMN_Record_ID, recordId)
+				.create()
+				.count();
 	}
 
 }

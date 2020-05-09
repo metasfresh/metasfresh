@@ -337,7 +337,7 @@ export default class DocumentList extends Component {
                 cols={layout.elements}
                 collapsible={layout.collapsible}
                 expandedDepth={layout.expandedDepth}
-                tabId={1}
+                tabId={'1'}
                 windowId={windowType}
                 emptyText={layout.emptyResultText}
                 emptyHint={layout.emptyResultHint}
