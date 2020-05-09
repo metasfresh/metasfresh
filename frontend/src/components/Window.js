@@ -5,12 +5,11 @@ import counterpart from 'counterpart';
 import PropTypes from 'prop-types';
 
 import Table from './table/Table';
-import EntryTable from './table/EntryTable';
 import TableContextShortcuts from './keyshortcuts/TableContextShortcuts';
 import keymap from '../shortcuts/keymap';
 import Tabs, { TabSingleEntry } from './tabs/Tabs';
 import Tooltips from './tooltips/Tooltips';
-import ElementGroup from './window/ElementGroup';
+import Column from './window/Column';
 import Dropzone from './Dropzone';
 import Separator from './Separator';
 import { INITIALLY_OPEN, INITIALLY_CLOSED } from '../constants/Constants';
@@ -32,17 +31,9 @@ class Window extends PureComponent {
     };
 
     if (props.isModal) {
-      this.tabIndex = {
-        firstColumn: 0,
-        secondColumn: 0,
-        tabs: 0,
-      };
+      this.tabIndex = { tabs: 0 };
     } else {
-      this.tabIndex = {
-        firstColumn: 1,
-        secondColumn: 2,
-        tabs: 3,
-      };
+      this.tabIndex = { tabs: 3 };
     }
 
     this.toggleTableFullScreen = this.toggleTableFullScreen.bind(this);
@@ -201,9 +192,9 @@ class Window extends PureComponent {
 
       tabsByIds[elem.tabId] = elem;
 
-      const dataEntry = singleRowDetailView || false;
+      const isDataEntry = singleRowDetailView || false;
 
-      if (dataEntry) {
+      if (isDataEntry) {
         tabsArray.push(
           <TabSingleEntry
             docId={dataId}
@@ -222,7 +213,7 @@ class Window extends PureComponent {
               internalName,
             }}
           >
-            {sections && this.renderSections(sections, dataEntry, { tabId })}
+            {sections && this.renderSections(sections, isDataEntry, { tabId })}
             <button
               className="btn-icon btn-meta-outline-secondary pointer btn-fullscreen"
               onClick={this.toggleTableFullScreen}
@@ -330,20 +321,20 @@ class Window extends PureComponent {
    * @method renderSections
    * @summary ToDo: Describe the method.
    * @param {*} sections
-   * @param {*} dataEntry
+   * @param {*} isDataEntry
    * @param {*} extendedData
    */
-  renderSections = (sections, dataEntry, extendedData = {}) => {
+  renderSections = (sections, isDataEntry, extendedData = {}) => {
     return sections.map((section, sectionIndex) =>
-      this.renderSection({ section, sectionIndex, dataEntry, extendedData })
+      this.renderSection({ section, sectionIndex, isDataEntry, extendedData })
     );
   };
 
-  renderSection = ({ section, sectionIndex, dataEntry, extendedData }) => {
+  renderSection = ({ section, sectionIndex, isDataEntry, extendedData }) => {
     const { title, columns, closableMode } = section;
     const isFirst = sectionIndex === 0;
     const sectionCollapsed =
-      dataEntry && this.sectionCollapsed(sectionIndex, extendedData.tabId);
+      isDataEntry && this.sectionCollapsed(sectionIndex, extendedData.tabId);
     const collapsible =
       closableMode === INITIALLY_OPEN || closableMode === INITIALLY_CLOSED;
 
@@ -366,7 +357,7 @@ class Window extends PureComponent {
           })}
         >
           {columns &&
-            this.renderColumns(columns, isFirst, dataEntry, extendedData)}
+            this.renderColumns(columns, isFirst, isDataEntry, extendedData)}
         </div>
       </div>
     );
@@ -377,31 +368,52 @@ class Window extends PureComponent {
    * @summary ToDo: Describe the method.
    * @param {*} columns
    * @param {*} isSectionFirst
-   * @param {*} dataEntry
+   * @param {*} isDataEntry
    * @param {*} extendedData
    */
-  renderColumns = (columns, isSectionFirst, dataEntry, extendedData) => {
+  renderColumns = (columns, isSectionFirst, isDataEntry, extendedData) => {
+    const { windowId } = this.props.layout;
+    const { tabId, rowId, dataId } = this.props;
+    const { data } = this.props;
+    const { isModal, isAdvanced } = this.props;
+    const { fullScreen } = this.state;
+
     const maxRows = 12;
     const colWidth = Math.floor(maxRows / columns.length);
 
-    return columns.map((elem, id) => {
-      const isFirst = id === 0 && isSectionFirst;
-      const elementGroups = elem.elementGroups;
+    const rowData = isDataEntry
+      ? this.props.rowData.get(extendedData.tabId)
+      : undefined;
 
-      if (dataEntry) {
-        return (
-          <div className="col-sm-12" key={`col-${id}`}>
-            {this.renderEntryTable(elementGroups, extendedData)}
-          </div>
-        );
-      } else {
-        return (
-          <div className={`col-sm-${colWidth}`} key={`col-${id}`}>
-            {elementGroups &&
-              this.renderElementGroups(elementGroups, isFirst, extendedData)}
-          </div>
-        );
-      }
+    return columns.map((columnLayout, columnIndex) => {
+      const isFirst = columnIndex === 0 && isSectionFirst;
+      return (
+        <Column
+          key={`col-${columnIndex}`}
+          //
+          columnLayout={columnLayout}
+          colWidth={colWidth}
+          //
+          windowId={windowId}
+          tabId={tabId}
+          rowId={rowId}
+          dataId={dataId}
+          //
+          data={data}
+          isDataEntry={isDataEntry}
+          extendedData={extendedData}
+          rowData={rowData}
+          //
+          isFirst={isFirst}
+          isModal={isModal}
+          isAdvanced={isAdvanced}
+          isFullScreen={fullScreen}
+          //
+          onBlurWidget={this.handleBlurWidget}
+          addRefToWidgets={this.addRefToWidgets}
+          requestElementGroupFocus={this.requestElementGroupFocus}
+        />
+      );
     });
   };
 
@@ -414,101 +426,6 @@ class Window extends PureComponent {
     if (c) {
       this.widgets.push(c);
     }
-  };
-
-  /**
-   * @method renderEntryTable
-   * @summary ToDo: Describe the method.
-   * @param {*} idx
-   * @param {*} tabId
-   */
-  renderEntryTable = (groups, extendedData) => {
-    const rows = groups.reduce((rowsArray, group) => {
-      const cols = [];
-      group.elementsLine.forEach((line) => {
-        if (line && line.elements && line.elements.length) {
-          cols.push(line.elements[0]);
-        }
-      });
-
-      rowsArray.push({
-        cols,
-        colsCount: group.columnCount,
-      });
-
-      return rowsArray;
-    }, []);
-    const rowData = this.props.rowData.get(extendedData.tabId);
-    const { fullScreen } = this.state;
-
-    return (
-      <div
-        className={classnames(
-          'panel panel-primary panel-bordered',
-          'panel-bordered-force table-flex-wrapper',
-          'document-list-table js-not-unselect'
-        )}
-      >
-        <EntryTable
-          {...{
-            ...this.props,
-            rows,
-            rowData,
-            extendedData,
-            fullScreen,
-          }}
-          addRefToWidgets={this.addRefToWidgets}
-          handleBlurWidget={this.handleBlurWidget}
-        />
-      </div>
-    );
-  };
-
-  /**
-   * @method renderElementGroups
-   * @summary ToDo: Describe the method.
-   * @param {*} groups
-   * @param {*} isFirst
-   */
-  renderElementGroups = (groups, isFirst) => {
-    const { windowId } = this.props.layout;
-    const { tabId, rowId, dataId } = this.props;
-    const { data } = this.props;
-    const { isModal, isAdvanced } = this.props;
-    const { fullScreen } = this.state;
-
-    return groups.map((elementGroupLayout, elementGroupIndex) => {
-      const shouldBeFocused = isFirst && elementGroupIndex === 0;
-      const tabIndex =
-        elementGroupLayout.type === 'primary'
-          ? this.tabIndex.firstColumn
-          : this.tabIndex.secondColumn;
-
-      return (
-        <ElementGroup
-          key={'elemGroups' + elementGroupIndex}
-          //
-          elementGroupLayout={elementGroupLayout}
-          //
-          windowId={windowId}
-          tabId={tabId}
-          rowId={rowId}
-          dataId={dataId}
-          //
-          data={data}
-          //
-          shouldBeFocused={shouldBeFocused}
-          tabIndex={tabIndex}
-          isModal={isModal}
-          isAdvanced={isAdvanced}
-          isFullScreen={fullScreen}
-          //
-          onBlurWidget={this.handleBlurWidget}
-          addRefToWidgets={this.addRefToWidgets}
-          requestElementGroupFocus={this.requestElementGroupFocus}
-        />
-      );
-    });
   };
 
   /**
