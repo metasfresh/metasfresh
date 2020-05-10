@@ -15,3 +15,15 @@ To change host and port, you can use `-Dlogstash.hort=yourhost -Dlogstash.port=y
 
 With that you can go to Kibana on http://localhost:5601/ and there you can discover the "index pattern" logstash-* .
 
+Note: if you run into the following problem with docker-desktop
+
+## Trouble-Shooting
+
+```
+ERROR: for elk_elk_1  Cannot create container for service elk: status code not OK but 500: {"Message":"Unhandled exception: Drive has not been shared"}
+```
+
+then you probably need to 
+* open the settings
+* go to "Reousrces" => "File sharing"
+* and make the respective drive available
