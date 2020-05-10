@@ -7,7 +7,7 @@ import { connect } from 'react-redux';
 import { List } from 'immutable';
 
 import { patchRequest } from '../../api';
-import { connectWS, disconnectWS } from '../../utils/websockets';
+import wsConnection from '../../utils/websockets';
 import {
   changeKPIItem,
   changeTargetIndicatorsItem,
@@ -53,7 +53,7 @@ export class DraggableWrapper extends Component {
       websocketEndpoint !== null &&
       prevState.websocketEndpoint !== websocketEndpoint
     ) {
-      connectWS.call(this, websocketEndpoint, (msg) => {
+      wsConnection.subscribeTopic(websocketEndpoint, (msg) => {
         msg.events.map((event) => {
           switch (event.widgetType) {
             case 'TargetIndicator':
@@ -69,7 +69,8 @@ export class DraggableWrapper extends Component {
   };
 
   componentWillUnmount = () => {
-    disconnectWS.call(this);
+    const { websocketEndpoint } = this.state;
+    wsConnection.unsubscribeTopic(websocketEndpoint);
   };
 
   handleFocus = (name) => {

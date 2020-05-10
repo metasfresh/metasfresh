@@ -13,7 +13,7 @@ import {
   sortTab,
   updateTabRowsData,
 } from '../actions/WindowActions';
-import { connectWS, disconnectWS } from '../utils/websockets';
+import wsConnection from '../utils/websockets';
 import { getTab, getRowsData } from '../api';
 
 import MasterWindow from '../components/app/MasterWindow';
@@ -36,11 +36,14 @@ class MasterWindowContainer extends Component {
       // displayed in tabs. This is the only place we're updating this apart of
       // initial load (so contrary to what we used to do, we're not handling responses
       // from any user actions now, like batch entry for instance)
-      disconnectWS.call(this);
+
+      // TODO:  check if subscription already exist
+
+      // wsConnection.unsubscribeTopic(master.websocket);
       // ^^ - for the case where we come from different area like Phonecall Schedule and then
       // we go via it to Sales Order master.websocket is changed and by doing that we assure that
       // communication is set on the right master.websocket . disconnectWS clears the WS
-      connectWS.call(this, master.websocket, async (msg) => {
+      wsConnection.subscribeTopic(master.websocket, async (msg) => {
         this.onWebsocketEvent(msg);
       });
     }
@@ -188,10 +191,10 @@ class MasterWindowContainer extends Component {
   }
 
   componentWillUnmount() {
-    const { clearMasterData } = this.props;
+    const { clearMasterData, master } = this.props;
 
     clearMasterData();
-    disconnectWS.call(this);
+    wsConnection.unsubscribeTopic(master.websocket);
   }
 
   render() {

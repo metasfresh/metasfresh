@@ -8,7 +8,7 @@ import { connect } from 'react-redux';
 import { getData, patchRequest } from '../api';
 import { addCard } from '../actions/BoardActions';
 import { deleteRequest, getRequest } from '../actions/GenericActions';
-import { connectWS, disconnectWS } from '../utils/websockets';
+import wsConnection from '../utils/websockets';
 
 import BlankPage from '../components/BlankPage';
 import Container from '../components/Container';
@@ -48,7 +48,8 @@ class Board extends Component {
    * @summary ToDo: Describe the method
    */
   componentWillUnmount = () => {
-    disconnectWS.call(this);
+    const { board } = this.state;
+    wsConnection.subscribeTopic(board.websocketEndpoint);
   };
 
   /**
@@ -88,7 +89,7 @@ class Board extends Component {
             board: res.data,
           },
           () => {
-            connectWS.call(this, res.data.websocketEndpoint, (msg) => {
+            wsConnection.subscribeTopic(res.data.websocketEndpoint, (msg) => {
               msg.events.map((event) => {
                 switch (event.changeType) {
                   case 'laneCardsChanged':

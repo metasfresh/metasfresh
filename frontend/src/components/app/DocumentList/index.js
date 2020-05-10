@@ -37,7 +37,7 @@ import {
   deselectTableItems,
   removeSelectedTableItems,
 } from '../../../actions/WindowActions';
-import { connectWS, disconnectWS } from '../../../utils/websockets';
+import wsConnection from '../../../utils/websockets';
 import { getSelectionDirect } from '../../../reducers/windowHandler';
 import {
   DLpropTypes,
@@ -93,7 +93,7 @@ class DocumentListContainer extends Component {
     const { isModal, windowType, viewId } = this.props;
 
     this.mounted = false;
-    disconnectWS.call(this);
+    wsConnection.unsubscribeTopic(`/view/${viewId}`);
 
     this.props.deleteView(isModal ? viewId : windowType);
   }
@@ -192,7 +192,7 @@ class DocumentListContainer extends Component {
     const { windowType, deselectTableItems, updateViewData } = this.props;
     const viewId = customViewId ? customViewId : this.props.viewId;
 
-    connectWS.call(this, `/view/${viewId}`, (msg) => {
+    wsConnection.subscribeTopic( `/view/${viewId}`, (msg) => {
       const { fullyChanged, changedIds } = msg;
 
       if (changedIds) {

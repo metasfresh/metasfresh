@@ -82,7 +82,7 @@ const createInitialState = function(state = {}) {
 
 describe("MasterWindowContainer", () => {
   // describe("'integration' tests:", () => {
-    it("renders without errors", async (done) => {
+    it.skip("renders without errors", async (done) => {
       const initialState = createInitialState();
       const store = createStore(
         rootReducer,
@@ -179,7 +179,7 @@ describe("MasterWindowContainer", () => {
       server.close();
     });
 
-    it("renders without errors", async done => {
+    it.skip("renders without errors", async done => {
       const initialState = createInitialState();
       const store = createStore(
         rootReducer,
