@@ -17,11 +17,11 @@ class WS {
     }
 
     this.sockClient.onConnect = function() {
-      console.log('CONNECTED:', this);
+      // console.log('CONNECTED:', this);
     };
 
     this.sockClient.onDisconnect = function() {
-      console.log('DISCONNECTED:', this);
+      // console.log('DISCONNECTED:', this);
     };
 
     return WS.instance;
@@ -46,18 +46,9 @@ class WS {
   };
 
   subscribeTopic = (topic, onMessageCallback) => {
-    console.log('TOPIC =>', topic);
-    console.log('CB =>', onMessageCallback);
-
-    // const subscriptionItem = { route: topic, onMessageCallback };
-    // this.subscriptions.push(subscriptionItem);
-
-    //   //this.sockClient.connected &&
-
-    //   this.subscriptions.forEach((item) => {
-    //     console.log('ITEM:', item)
-    //   });
-
+    // console.log('TOPIC =>', topic);
+    // console.log('CB =>', onMessageCallback);
+    // TODO: multiple subscription store ;)
     this.sockClient.subscribe(topic, (msg) => {
       onMessageCallback && onMessageCallback(msg);
     });

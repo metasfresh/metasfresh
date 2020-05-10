@@ -192,7 +192,7 @@ class DocumentListContainer extends Component {
     const { windowType, deselectTableItems, updateViewData } = this.props;
     const viewId = customViewId ? customViewId : this.props.viewId;
 
-    wsConnection.subscribeTopic( `/view/${viewId}`, (msg) => {
+    wsConnection.subscribeTopic(`/view/${viewId}`, (msg) => {
       const { fullyChanged, changedIds } = msg;
 
       if (changedIds) {
