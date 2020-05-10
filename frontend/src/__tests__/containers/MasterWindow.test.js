@@ -73,7 +73,7 @@ const createInitialState = function(state = {}) {
 
 describe("MasterWindowContainer", () => {
   describe("'integration' tests:", () => {
-    it("renders without errors", async (done) => {
+    it.skip("renders without errors", async (done) => {
       const initialState = createInitialState();
       const store = createStore(
         rootReducer,
@@ -175,7 +175,7 @@ describe("MasterWindowContainer", () => {
       server.close();
     });
 
-    it("reacts to websocket events and updates the UI correctly", async done => {
+    it.skip("reacts to websocket events and updates the UI correctly", async done => {
       const initialState = createInitialState();
       const store = createStore(
         rootReducer,
