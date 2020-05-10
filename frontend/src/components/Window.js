@@ -6,7 +6,7 @@ import PropTypes from 'prop-types';
 import Table from './table/Table';
 import TableContextShortcuts from './keyshortcuts/TableContextShortcuts';
 import keymap from '../shortcuts/keymap';
-import Tabs, { TabSingleEntry } from './tabs/Tabs';
+import Tabs, { TabSingleEntry } from './window/Tabs';
 import Tooltips from './tooltips/Tooltips';
 import Section from './window/Section';
 import Dropzone from './Dropzone';
