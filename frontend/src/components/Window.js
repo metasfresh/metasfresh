@@ -10,7 +10,7 @@ import Tabs, { TabSingleEntry } from './window/Tabs';
 import Tooltips from './tooltips/Tooltips';
 import Section from './window/Section';
 import Dropzone from './Dropzone';
-import { INITIALLY_OPEN, INITIALLY_CLOSED } from '../constants/Constants';
+import { INITIALLY_CLOSED } from '../constants/Constants';
 
 /**
  * @file Class based component.
