@@ -1,6 +1,5 @@
 import React, { PureComponent } from 'react';
 import ReactDOM from 'react-dom';
-import classnames from 'classnames';
 import counterpart from 'counterpart';
 import PropTypes from 'prop-types';
 
@@ -9,9 +8,8 @@ import TableContextShortcuts from './keyshortcuts/TableContextShortcuts';
 import keymap from '../shortcuts/keymap';
 import Tabs, { TabSingleEntry } from './tabs/Tabs';
 import Tooltips from './tooltips/Tooltips';
-import Column from './window/Column';
+import Section from './window/Section';
 import Dropzone from './Dropzone';
-import Separator from './Separator';
 import { INITIALLY_OPEN, INITIALLY_CLOSED } from '../constants/Constants';
 
 /**
@@ -111,13 +109,14 @@ class Window extends PureComponent {
   };
 
   /**
-   * @method toggleSection
+   * @method toggleSectionCollapsed
    * @summary ToDo: Describe the method.
    * @param {*} idx
    * @param {*} tabId
    */
-  toggleSection = (idx, tabId = '') => {
+  toggleSectionCollapsed = (idx, tabId = '') => {
     this.setState({
+      ...this.state,
       collapsedSections: {
         ...this.state.collapsedSections,
         [`${tabId}_${idx}`]: !this.state.collapsedSections[`${tabId}_${idx}`],
@@ -131,7 +130,7 @@ class Window extends PureComponent {
    * @param {*} idx
    * @param {*} tabId
    */
-  sectionCollapsed = (idx, tabId = '') => {
+  isSectionCollapsed = (idx, tabId = '') => {
     return this.state.collapsedSections[`${tabId}_${idx}`];
   };
 
@@ -325,74 +324,27 @@ class Window extends PureComponent {
    * @param {*} extendedData
    */
   renderSections = (sections, isDataEntry, extendedData = {}) => {
-    return sections.map((section, sectionIndex) =>
-      this.renderSection({ section, sectionIndex, isDataEntry, extendedData })
-    );
-  };
-
-  renderSection = ({ section, sectionIndex, isDataEntry, extendedData }) => {
-    const { title, columns, closableMode } = section;
-    const isFirst = sectionIndex === 0;
-    const sectionCollapsed =
-      isDataEntry && this.sectionCollapsed(sectionIndex, extendedData.tabId);
-    const collapsible =
-      closableMode === INITIALLY_OPEN || closableMode === INITIALLY_CLOSED;
-
-    return (
-      <div
-        key={`section-${sectionIndex}`}
-        className={classnames('section', { collapsed: sectionCollapsed })}
-      >
-        {title && (
-          <Separator
-            {...{ title, idx: sectionIndex, sectionCollapsed, collapsible }}
-            tabId={extendedData.tabId}
-            onClick={this.toggleSection}
-          />
-        )}
-        <div
-          className={classnames('row', {
-            'collapsible-section': collapsible,
-            collapsed: sectionCollapsed,
-          })}
-        >
-          {columns &&
-            this.renderColumns(columns, isFirst, isDataEntry, extendedData)}
-        </div>
-      </div>
-    );
-  };
-
-  /**
-   * @method renderColumns
-   * @summary ToDo: Describe the method.
-   * @param {*} columns
-   * @param {*} isSectionFirst
-   * @param {*} isDataEntry
-   * @param {*} extendedData
-   */
-  renderColumns = (columns, isSectionFirst, isDataEntry, extendedData) => {
     const { windowId } = this.props.layout;
     const { tabId, rowId, dataId } = this.props;
     const { data } = this.props;
     const { isModal, isAdvanced } = this.props;
     const { fullScreen } = this.state;
 
-    const maxRows = 12;
-    const colWidth = Math.floor(maxRows / columns.length);
-
     const rowData = isDataEntry
       ? this.props.rowData.get(extendedData.tabId)
       : undefined;
 
-    return columns.map((columnLayout, columnIndex) => {
-      const isFirst = columnIndex === 0 && isSectionFirst;
+    return sections.map((sectionLayout, sectionIndex) => {
+      const isSectionCollapsed =
+        isDataEntry &&
+        this.isSectionCollapsed(sectionIndex, extendedData.tabId);
+
       return (
-        <Column
-          key={`col-${columnIndex}`}
+        <Section
+          key={`section-${sectionIndex}`}
           //
-          columnLayout={columnLayout}
-          colWidth={colWidth}
+          sectionLayout={sectionLayout}
+          sectionIndex={sectionIndex}
           //
           windowId={windowId}
           tabId={tabId}
@@ -404,7 +356,6 @@ class Window extends PureComponent {
           extendedData={extendedData}
           rowData={rowData}
           //
-          isFirst={isFirst}
           isModal={isModal}
           isAdvanced={isAdvanced}
           isFullScreen={fullScreen}
@@ -412,13 +363,16 @@ class Window extends PureComponent {
           onBlurWidget={this.handleBlurWidget}
           addRefToWidgets={this.addRefToWidgets}
           requestElementGroupFocus={this.requestElementGroupFocus}
+          //
+          isSectionCollapsed={isSectionCollapsed}
+          toggleSectionCollapsed={this.toggleSectionCollapsed}
         />
       );
     });
   };
 
   /**
-   * @method toggleSection
+   * @method addRefToWidgets
    * @summary ToDo: Describe the method.
    * @param {*} c
    */
