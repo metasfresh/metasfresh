@@ -25,11 +25,18 @@ export function deleteTable(id) {
   };
 }
 
-// TODO: This should accept id, and return object with payload { id, others }
+// TODO: Legacy version. Remove once we switch to rendering tables from redux
 export function setActiveSort(data) {
   return {
     type: types.SET_ACTIVE_SORT,
     payload: data,
+  };
+}
+
+export function setActiveSortNEW(id, active) {
+  return {
+    type: types.SET_ACTIVE_SORT_NEW,
+    payload: { id, active },
   };
 }
 

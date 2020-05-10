@@ -2,7 +2,8 @@ import React, { PureComponent } from 'react';
 import classnames from 'classnames';
 import { shouldRenderColumn } from '../../utils/tableHelpers';
 import PropTypes from 'prop-types';
-import { setActiveSort } from '../../actions/TableActions';
+import { setActiveSort, setActiveSortNEW } from '../../actions/TableActions';
+import { getTableId } from '../../reducers/tables';
 import { connect } from 'react-redux';
 
 class TableHeader extends PureComponent {
@@ -34,8 +35,19 @@ class TableHeader extends PureComponent {
     if (!sortable) {
       return;
     }
-    const { sort, deselect, page, tabId, setActiveSort } = this.props;
+    const {
+      sort,
+      deselect,
+      page,
+      tabId,
+      windowType,
+      docId,
+      viewId,
+      setActiveSort,
+      setActiveSortNEW,
+    } = this.props;
     const stateFields = this.state.fields;
+    const tableId = getTableId({ windowType, viewId, docId, tabId });
     let fields = {};
     let sortingValue = null;
 
@@ -57,7 +69,12 @@ class TableHeader extends PureComponent {
 
     sort(sortingValue, field, true, page, tabId);
     setActiveSort(true);
-    setTimeout(() => setActiveSort(false), 1000);
+    setActiveSortNEW(tableId, true);
+
+    setTimeout(() => {
+      setActiveSort(false);
+      setActiveSortNEW(tableId, false);
+    }, 1000);
     deselect();
   };
 
@@ -128,21 +145,22 @@ TableHeader.propTypes = {
   orderBy: PropTypes.array,
   sort: PropTypes.any,
   tabId: PropTypes.any,
+  windowType: PropTypes.string,
+  docId: PropTypes.string,
+  viewId: PropTypes.string,
   deselect: PropTypes.any,
   page: PropTypes.any,
   getSizeClass: PropTypes.func,
   cols: PropTypes.any,
   indentSupported: PropTypes.any,
-  setActiveSort: PropTypes.any,
-};
-
-const mapDispatchToProps = (dispatch) => {
-  return {
-    setActiveSort: (data) => dispatch(setActiveSort(data)),
-  };
+  setActiveSort: PropTypes.func,
+  setActiveSortNEW: PropTypes.func,
 };
 
 export default connect(
   null,
-  mapDispatchToProps
+  {
+    setActiveSort,
+    setActiveSortNEW,
+  }
 )(TableHeader);

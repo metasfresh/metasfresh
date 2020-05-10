@@ -6,6 +6,12 @@ export const SET_ACTIVE_SORT = 'SET_ACTIVE_SORT';
 
 /**
  * @constant
+ * @type {string} Temporary. Will replace `SET_ACTIVE_SORT`
+ */
+export const SET_ACTIVE_SORT_NEW = 'SET_ACTIVE_SORT_NEW';
+
+/**
+ * @constant
  * @type {string} Init new table.
  */
 export const CREATE_TABLE = 'CREATE_TABLE';
