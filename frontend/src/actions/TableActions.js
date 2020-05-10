@@ -1,4 +1,5 @@
 import { List as iList, Map as iMap } from 'immutable';
+import { reduce } from 'lodash';
 import * as types from '../constants/ActionTypes';
 
 import { getView } from '../reducers/viewHandler';
@@ -17,7 +18,7 @@ function updateTable(id, data) {
   };
 }
 
-function deleteTable(id) {
+export function deleteTable(id) {
   return {
     type: types.DELETE_TABLE,
     payload: { id },
@@ -33,26 +34,58 @@ export function setActiveSort(data) {
 }
 
 function createTableData(rawData) {
-  return {
+  const dataObject = {
     windowType: rawData.windowType || rawData.windowId,
     viewId: rawData.viewId,
     docId: rawData.id,
     tabId: rawData.tabId,
-    headerProperties: rawData.headerProperties,
-    headerElements: iList(rawData.elements),
     emptyText: rawData.emptyResultText,
     emptyHint: rawData.emptyResultHint,
     page: rawData.page,
     size: rawData.size,
-    orderBy: rawData.orderBy,
     queryLimit: rawData.queryLimit,
-    columns: iMap(rawData.columnsByFieldName),
-    rows: iList(rawData.result),
     pageLength: rawData.pageLength,
     firstRow: rawData.firstRow,
+    tabIndex: rawData.tabIndex,
+    internalName: rawData.internalName,
+    queryOnActivate: rawData.queryOnActivate,
+    supportQuickInput: rawData.supportQuickInput,
+    allowCreateNew: rawData.allowCreateNew,
+    allowCreateNewReason: rawData.allowCreateNewReason,
+    allowDelete: rawData.allowDelete,
+    stale: rawData.stale,
+
+    headerProperties: rawData.headerProperties
+      ? iMap(rawData.headerProperties)
+      : undefined,
+    headerElements: rawData.headerElements
+      ? iList(rawData.headerElements)
+      : undefined,
+    orderBy: rawData.orderBy ? iList(rawData.orderBy) : undefined,
+    columns: rawData.columns ? iList(rawData.columns) : undefined,
+    rows: rawData.result ? iList(rawData.result) : undefined,
+    defaultOrderBys: rawData.defaultOrderBys
+      ? iList(rawData.defaultOrderBys)
+      : undefined,
   };
+
+  // we're removing any keys without a value ta make merging with the existing data
+  // easier/faster
+  return reduce(
+    dataObject,
+    (result, value, key) => {
+      if (typeof value !== 'undefined') {
+        result[key] = value;
+      }
+      return result;
+    },
+    {}
+  );
 }
 
+/*
+ * Create a new table entry for grids using data from the window layout (so not populated with data yet)
+ */
 export function createGridTable(tableId, tableResponse) {
   return (dispatch, getState) => {
     const windowType = tableResponse.windowType || tableResponse.windowId;
@@ -63,10 +96,16 @@ export function createGridTable(tableId, tableResponse) {
   };
 }
 
+/*
+ * Populate grid table with data and initial settings
+ */
 export function updateGridTable(tableId, tableResponse) {
   return (dispatch, getState) => {
     const tableExists = getState().tables.get(tableId);
-    const tableData = createTableData(tableResponse);
+    const tableData = createTableData({
+      ...tableResponse,
+      columns: Object.values(tableResponse.columnsByFieldName),
+    });
 
     if (tableExists) {
       dispatch(updateTable(tableId, tableData));
@@ -76,6 +115,9 @@ export function updateGridTable(tableId, tableResponse) {
   };
 }
 
+/*
+ * Create a new table entry for the details view when it's created, setting only the ids
+ */
 export function createTabTable(tableId, tableResponse) {
   return (dispatch) => {
     const tableData = createTableData(tableResponse);
@@ -84,10 +126,16 @@ export function createTabTable(tableId, tableResponse) {
   };
 }
 
+/*
+ * Update table entry for the details view with layout and data rows
+ */
 export function updateTabTable(tableId, tableResponse) {
   return (dispatch, getState) => {
     const tableExists = getState().tables.get(tableId);
-    const tableData = createTableData(tableResponse);
+    const tableData = createTableData({
+      ...tableResponse,
+      columns: tableResponse.elements,
+    });
 
     if (tableExists) {
       dispatch(updateTable(tableId, tableData));
@@ -96,3 +144,5 @@ export function updateTabTable(tableId, tableResponse) {
     }
   };
 }
+
+// TODO: selections, other small updates

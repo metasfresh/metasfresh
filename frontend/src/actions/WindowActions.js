@@ -667,13 +667,12 @@ export function createWindow(
         }
 
         const data = response.data[0];
-        const docId = data.id;
         const tabs = data.includedTabsInfo;
-
-        console.log('createWindow.initWindow response: ', data, tabs)
+        let docId = data.id;
 
         if (tabs) {
           Object.values(tabs).forEach(tab => {
+            const { tabId } = tab;
             const tableId = `${windowType}_${docId}_${tabId}`;
             const tableData = {
               windowType,
@@ -705,6 +704,8 @@ export function createWindow(
           dispatch(updateModal(null, docId));
         }
 
+        // TODO: Is `elem` ever different than 0 ? 
+        docId = response.data[elem].id;
         dispatch(
           initDataSuccess({
             data: parseToDisplay(response.data[elem].fieldsByName),
@@ -732,15 +733,24 @@ export function createWindow(
 
         return (
           getLayout('window', windowType, tabId, null, null, isAdvanced)
-            .then((response) => {
-              console.log('getLayout response: ', response.data, windowType, tabId, docId)
+            .then(({ data }) => {
+              const layoutTabs = data.tabs;
 
-              // const tableId = `${windowType}_${docId}_${tabId}`;
-              // const tableData = { result: response };
+              if (layoutTabs.length) {
+                Object.values(layoutTabs).forEach(tab => {
+                  const { tabId } = tab;
+                  const tableId = `${windowType}_${docId}_${tabId}`;
+                  const tableData = {
+                    windowType,
+                    docId,
+                    tabId,
+                    ...tab,
+                  }
+                  dispatch(updateTabTable(tableId, tableData))
+                });
+              }
 
-              // dispatch(updateTabTable(tableId, tableData));
-
-              dispatch(initLayoutSuccess(response.data, getScope(isModal)))
+              dispatch(initLayoutSuccess(data, getScope(isModal)))
             })
             // TODO: looks like this can be removed ?
             // .then((response) => {

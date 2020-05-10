@@ -9,21 +9,30 @@ export const tableState = {
   tabId: null,
   selected: iList(),
   rows: iList(),
-  columns: iMap(),
+
+  // TODO: We need to figure out how to handle the fact, that columns for
+  // grid come as an object, while for the details view (tabs) as a list with
+  // more data.
+  columns: iList(),
   activeSort: false,
-  headerProperties: {},
+  headerProperties: iMap(),
   headerElements: iList(),
   emptyText: null,
   emptyHint: null,
   page: 0,
   firstRow: 0,
   size: 0,
-  orderBy: [],
+  orderBy: iList(),
+  defaultOrderBys: iList(),
   pageLength: 0,
   queryLimit: 0,
   queryLimitHit: false,
   dataPending: false,
   dataError: false,
+  tabIndex: 0,
+  internalName: null,
+  queryOnActivate: true,
+  supportQuickInput: true,
 
   // includedTabsInfo
   allowCreateNew: true,
@@ -56,8 +65,13 @@ export default function table(state = initialState, action) {
     }
     case types.DELETE_TABLE: {
       const { id } = action.payload;
+      const newLength = state.get('length') - 1;
 
-      return state.delete(id);
+      return state.withMutations((map) => {
+        map
+          .set('length', newLength)
+          .delete(id);
+      });
     }
     default: {
       return state;

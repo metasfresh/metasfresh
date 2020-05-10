@@ -22,6 +22,7 @@ import {
   deleteView,
   updateViewData,
 } from '../../../actions/ViewActions';
+import { deleteTable } from '../../../actions/TableActions';
 import { clearAllFilters } from '../../../actions/FiltersActions';
 import {
   closeListIncludedView,
@@ -90,12 +91,13 @@ class DocumentListContainer extends Component {
   };
 
   componentWillUnmount() {
-    const { isModal, windowType, viewId } = this.props;
+    const { isModal, windowType, viewId, deleteView, deleteTable } = this.props;
 
     this.mounted = false;
     disconnectWS.call(this);
 
-    this.props.deleteView(isModal ? viewId : windowType);
+    deleteView(isModal ? viewId : windowType);
+    deleteTable(`${windowType}_${viewId}`);
   }
 
   UNSAFE_componentWillReceiveProps(nextProps) {
@@ -524,6 +526,8 @@ class DocumentListContainer extends Component {
 
         const pageColumnInfosByFieldName = response.columnsByFieldName;
 
+        // TODO: There is some sorcery happening here. Why we're doing this instead
+        // of fetching complete columns from the API like we do for the details view ??
         mergeColumnInfosIntoViewRows(
           pageColumnInfosByFieldName,
           response.result
@@ -859,6 +863,7 @@ export default withRouterAndRef(
       fetchLayout,
       createView,
       filterView,
+      deleteTable,
       setListIncludedView,
       indicatorState,
       closeListIncludedView,
