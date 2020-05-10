@@ -62,7 +62,7 @@ public interface I_S_ExternalProjectReference
 	 * Set Project.
 	 * Financial Project
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -72,7 +72,7 @@ public interface I_S_ExternalProjectReference
 	 * Get Project.
 	 * Financial Project
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -110,7 +110,7 @@ public interface I_S_ExternalProjectReference
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
-	 * Set ExternalProjectOwner.
+	 * Set External project owner.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
@@ -119,7 +119,7 @@ public interface I_S_ExternalProjectReference
 	public void setExternalProjectOwner (java.lang.String ExternalProjectOwner);
 
 	/**
-	 * Get ExternalProjectOwner.
+	 * Get External project owner.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true

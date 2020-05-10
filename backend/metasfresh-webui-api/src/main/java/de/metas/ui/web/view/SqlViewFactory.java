@@ -7,6 +7,7 @@ import java.util.function.Supplier;
 import javax.annotation.Nullable;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.util.Env;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
@@ -23,6 +24,7 @@ import de.metas.ui.web.document.filter.DocumentFilterParamDescriptor;
 import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProvider;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverterDecorator;
 import de.metas.ui.web.document.geo_location.GeoLocationDocumentService;
+import de.metas.ui.web.document.references.service.DocumentReferencesService;
 import de.metas.ui.web.view.descriptor.SqlViewBinding;
 import de.metas.ui.web.view.descriptor.SqlViewBindingFactory;
 import de.metas.ui.web.view.descriptor.SqlViewCustomizerMap;
@@ -35,8 +37,6 @@ import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.factory.DocumentDescriptorFactory;
-import de.metas.ui.web.window.model.DocumentReference;
-import de.metas.ui.web.window.model.DocumentReferencesService;
 import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 
@@ -193,8 +193,11 @@ public class SqlViewFactory implements IViewFactory
 		}
 		else
 		{
-			final DocumentReference reference = documentReferencesService.getDocumentReference(referencedDocumentPath, targetWindowId);
-			return reference.getFilter();
+			return documentReferencesService.getDocumentReferenceFilter(
+					referencedDocumentPath,
+					targetWindowId,
+					Env.getUserRolePermissions() // FIXME: avoid using Env here
+			);
 		}
 	}
 
@@ -271,16 +274,16 @@ public class SqlViewFactory implements IViewFactory
 	{
 		final DocumentFilterDescriptorsProvider filterDescriptors = view.getViewDataRepository().getViewFilterDescriptors();
 		final DocumentFilterList newFilters = filterViewRequest.getFiltersUnwrapped(filterDescriptors);
-//		final DocumentFilterList newFiltersExcludingFacets = newFilters.retainOnlyNonFacetFilters();
-//
-//		final DocumentFilterList currentFiltersExcludingFacets = view.getFilters().retainOnlyNonFacetFilters();
-//
-//		if (DocumentFilterList.equals(currentFiltersExcludingFacets, newFiltersExcludingFacets))
-//		{
-//			// TODO
-//			throw new AdempiereException("TODO");
-//		}
-//		else
+		// final DocumentFilterList newFiltersExcludingFacets = newFilters.retainOnlyNonFacetFilters();
+		//
+		// final DocumentFilterList currentFiltersExcludingFacets = view.getFilters().retainOnlyNonFacetFilters();
+		//
+		// if (DocumentFilterList.equals(currentFiltersExcludingFacets, newFiltersExcludingFacets))
+		// {
+		// // TODO
+		// throw new AdempiereException("TODO");
+		// }
+		// else
 		{
 			return createView(CreateViewRequest.filterViewBuilder(view)
 					.setFilters(newFilters)

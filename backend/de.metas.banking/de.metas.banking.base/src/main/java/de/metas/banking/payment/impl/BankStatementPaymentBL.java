@@ -48,6 +48,7 @@ import de.metas.payment.TenderType;
 import de.metas.payment.api.DefaultPaymentBuilder;
 import de.metas.payment.api.IPaymentBL;
 import de.metas.payment.api.PaymentQuery;
+import de.metas.payment.api.PaymentReconcileReference;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -93,7 +94,6 @@ public class BankStatementPaymentBL implements IBankStatementPaymentBL
 		}
 
 		final Set<PaymentId> eligiblePaymentIds = findEligiblePaymentIds(bankStatementLine, bpartnerId, 2);
-		//noinspection StatementWithEmptyBody
 		if (eligiblePaymentIds.size() > 1)
 		{
 			// Don't create a new Payment and don't link any of the existing payments if there are multiple payments found.
@@ -229,11 +229,14 @@ public class BankStatementPaymentBL implements IBankStatementPaymentBL
 		bankStatementDAO.save(bankStatementLine);
 
 		//
-		// ReConcile payment if bank statement is processed
+		// Reconcile payment if bank statement is processed
 		final DocStatus bankStatementDocStatus = DocStatus.ofCode(bankStatement.getDocStatus());
 		if (bankStatementDocStatus.isCompleted())
 		{
-			paymentBL.markReconciledAndSave(payment);
+			final PaymentReconcileReference reconcileRef = PaymentReconcileReference.bankStatementLine(
+					BankStatementId.ofRepoId(bankStatementLine.getC_BankStatement_ID()),
+					BankStatementLineId.ofRepoId(bankStatementLine.getC_BankStatementLine_ID()));
+			paymentBL.markReconciledAndSave(payment, reconcileRef);
 		}
 
 		bankStatementListenersService.firePaymentLinked(PaymentLinkResult.builder()

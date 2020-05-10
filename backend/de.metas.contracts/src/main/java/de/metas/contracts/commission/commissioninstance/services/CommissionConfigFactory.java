@@ -256,25 +256,25 @@ public class CommissionConfigFactory
 	{
 
 		final ProductCategoryId settingsProductCategoryId = ProductCategoryId.ofRepoIdOrNull(settingsLineRecord.getM_Product_Category_ID());
-
+		StringBuilder logMessage = new StringBuilder("SeqNo ").append(settingsLineRecord.getSeqNo()).append(": ");
 		final boolean productMatches;
 		if (settingsProductCategoryId == null)
 		{
-			logger.debug("settingsProductCategoryId is null; => product matches");
+			logMessage.append("settingsProductCategoryId is null; ->productMatches=true;");
 			productMatches = true;
 		}
 		else
 		{
 			final boolean productCategoryIdEquals = settingsProductCategoryId.equals(salesProductCategoryId);
 			productMatches = settingsLineRecord.isExcludeProductCategory() ? !productCategoryIdEquals : productCategoryIdEquals;
+			logger.debug("productCategoryIds match and excludeProductCategory={}; -> productMatches={}",settingsLineRecord.isExcludeProductCategory(),productMatches);
 		}
-
 		final boolean customerMatches;
 		final BPGroupId settingsCustomerGroupId = BPGroupId.ofRepoIdOrNull(settingsLineRecord.getCustomer_Group_ID());
 		final BPartnerId settingsCustomerId = BPartnerId.ofRepoIdOrNull(settingsLineRecord.getC_BPartner_Customer_ID());
 		if (settingsCustomerGroupId == null && settingsCustomerId == null)
 		{
-			logger.debug("settingsCustomerGroupId and settingsCustomerId are null; => customer matches");
+			logger.debug("settingsCustomerGroupId and settingsCustomerId are null; => customerMatches=true");
 			customerMatches = true;
 		}
 		else
@@ -283,9 +283,10 @@ public class CommissionConfigFactory
 			final boolean partnerIdEquals = Objects.equals(settingsCustomerId, customerPartnerId);
 			final boolean groupOrPartnerEquals = groupIdEquals || partnerIdEquals;
 			customerMatches = settingsLineRecord.isExcludeBPGroup() ? !groupOrPartnerEquals : groupOrPartnerEquals;
-		}
+			logger.debug("bpartnerGroupIds match={}; partnerIds match={}; excludeBPGroup={}; -> customerMatches={}",groupIdEquals,partnerIdEquals,settingsLineRecord.isExcludeBPGroup(), customerMatches);}
 
 		final boolean settingsLineMatches = customerMatches && productMatches;
+		logger.debug("customerMatches={}; productMatches={}; -> settingsLineMatches={}", customerMatches, productMatches, settingsLineMatches);
 		return settingsLineMatches;
 	}
 

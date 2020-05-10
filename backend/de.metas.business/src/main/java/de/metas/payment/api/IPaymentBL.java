@@ -119,9 +119,15 @@ public interface IPaymentBL extends ISingletonService
 
 	void updateDiscountAndPayAmtFromInvoiceIfAny(I_C_Payment payment);
 
-	void markReconciled(@NonNull Collection<PaymentId> paymentIds);
+	void markReconciled(@NonNull Collection<PaymentReconcileRequest> requests);
 
-	void markReconciledAndSave(@NonNull I_C_Payment payment);
+	void markReconciled(
+			@NonNull Collection<PaymentReconcileRequest> requests,
+			@NonNull Collection<I_C_Payment> preloadedPayments);
+
+	void markReconciledAndSave(
+			@NonNull I_C_Payment payment,
+			@NonNull PaymentReconcileReference reconcileRef);
 
 	void markNotReconciled(@NonNull Collection<PaymentId> paymentIds);
 

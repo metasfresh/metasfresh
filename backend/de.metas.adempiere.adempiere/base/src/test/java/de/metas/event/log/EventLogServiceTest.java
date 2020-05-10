@@ -8,8 +8,9 @@ import java.util.UUID;
 
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.test.AdempiereTestHelper;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 import com.google.common.collect.ImmutableList;
 
@@ -18,8 +19,6 @@ import de.metas.event.IEventBus;
 import de.metas.event.Type;
 import de.metas.event.model.I_AD_EventLog;
 import de.metas.event.model.I_AD_EventLog_Entry;
-import mockit.Expectations;
-import mockit.Mocked;
 
 /*
  * #%L
@@ -51,21 +50,18 @@ public class EventLogServiceTest
 
 	private EventLogService eventLogService;
 
-	@Mocked
 	private IEventBus eventBus;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
+
 		eventLogService = new EventLogService();
 
-		// @formatter:off
-		new Expectations()
-		{{
-			eventBus.getTopicName(); result = MOCKED_EVENT_BUS_NAME;
-			eventBus.getType(); result = MOCKED_EVENT_BUS_TYPE;
-		}};	// @formatter:on
+		eventBus = Mockito.mock(IEventBus.class);
+		Mockito.doReturn(MOCKED_EVENT_BUS_NAME).when(eventBus).getTopicName();
+		Mockito.doReturn(MOCKED_EVENT_BUS_TYPE).when(eventBus).getType();
 	}
 
 	@Test

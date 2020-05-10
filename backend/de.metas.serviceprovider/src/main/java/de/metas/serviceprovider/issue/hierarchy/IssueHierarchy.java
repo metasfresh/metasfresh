@@ -24,14 +24,13 @@ package de.metas.serviceprovider.issue.hierarchy;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.serviceprovider.issue.IssueEntity;
+import de.metas.serviceprovider.issue.IssueId;
 import de.metas.util.Node;
 import lombok.NonNull;
-import lombok.Value;
 
-@Value
 public class IssueHierarchy
 {
-	Node<IssueEntity> root;
+	private final Node<IssueEntity> root;
 
 	public static IssueHierarchy of(@NonNull final Node<IssueEntity> root)
 	{
@@ -47,6 +46,11 @@ public class IssueHierarchy
 				.stream()
 				.map(Node::getValue)
 				.collect(ImmutableList.toImmutableList());
+	}
+
+	public boolean hasNodeForId(@NonNull final IssueId issueId)
+	{
+		return listIssues().stream().map(IssueEntity::getIssueId).anyMatch(issueId::equals);
 	}
 
 	private IssueHierarchy(final Node<IssueEntity> root)

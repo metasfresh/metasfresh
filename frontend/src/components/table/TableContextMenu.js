@@ -1,9 +1,15 @@
 import PropTypes from 'prop-types';
-import React, { Component } from 'react';
+import React, { Component, Fragment } from 'react';
 import { connect } from 'react-redux';
 import counterpart from 'counterpart';
 
-import { referencesRequest } from '../../actions/GenericActions';
+import Loader from '../app/Loader';
+
+import { referencesEventSource } from '../../api/documentReferences';
+import {
+  buildRelatedDocumentsViewUrl,
+  mergeReferencesToReferences,
+} from '../../utils/documentReferencesHelper';
 import { setFilter } from '../../actions/ListActions';
 import keymap from '../../shortcuts/keymap';
 
@@ -12,9 +18,10 @@ class TableContextMenu extends Component {
     super(props);
     this.state = {
       contextMenu: {
-        x: 0,
-        y: 0,
+        x: props.x,
+        y: props.y,
       },
+      loadingReferences: false,
       references: [],
     };
   }
@@ -29,7 +36,7 @@ class TableContextMenu extends Component {
       docId,
     } = this.props;
 
-    this.setPosition(
+    this.updateContextMenuState(
       x,
       y,
       fieldName,
@@ -39,11 +46,22 @@ class TableContextMenu extends Component {
     );
 
     if (docId) {
-      this.getReferences();
+      this.loadReferences();
     }
   }
 
-  getPosition = (dir, pos, element) => {
+  componentWillUnmount = () => {
+    this.closeEventSource();
+  };
+
+  closeEventSource = () => {
+    if (this.eventSource) {
+      this.eventSource.close();
+      delete this.eventSource;
+    }
+  };
+
+  adjustElementPositionToFitInScreen = (dir, pos, element) => {
     if (element) {
       const windowSize = dir === 'x' ? window.innerWidth : window.innerHeight;
       const elementSize =
@@ -54,14 +72,24 @@ class TableContextMenu extends Component {
       } else {
         return windowSize - elementSize;
       }
+    } else {
+      return pos;
     }
   };
 
-  setPosition = (x, y, fieldName, supportZoomInto, supportFieldEdit, elem) => {
+  updateContextMenuState = (
+    x,
+    y,
+    fieldName,
+    supportZoomInto,
+    supportFieldEdit,
+    elem
+  ) => {
     this.setState({
+      ...this.state,
       contextMenu: {
-        x: this.getPosition('x', x, elem),
-        y: this.getPosition('y', y, elem),
+        x: this.adjustElementPositionToFitInScreen('x', x, elem),
+        y: this.adjustElementPositionToFitInScreen('y', y, elem),
         fieldName,
         supportZoomInto,
         supportFieldEdit,
@@ -69,35 +97,63 @@ class TableContextMenu extends Component {
     });
   };
 
-  getReferences = () => {
-    const { docId, tabId, windowId, selected } = this.props;
+  loadReferences = () => {
+    const { windowId, docId, tabId, selected } = this.props;
 
-    referencesRequest('window', windowId, docId, tabId, selected[0]).then(
-      (response) => {
+    this.setState({
+      ...this.state,
+      loadingReferences: true,
+    });
+
+    this.closeEventSource();
+    this.eventSource = referencesEventSource({
+      windowId: windowId,
+      documentId: docId,
+      tabId: tabId,
+      rowId: selected[0],
+
+      onPartialResult: (partialGroup) => {
         this.setState({
-          references: response.data.references,
+          ...this.state,
+          loadingReferences: true,
+          references: mergeReferencesToReferences(
+            this.state.references,
+            partialGroup.references
+          ),
         });
-      }
-    );
+      },
+
+      onComplete: () => {
+        this.setState({
+          ...this.state,
+          loadingReferences: false,
+        });
+      },
+    });
   };
 
-  handleReferenceClick = (refType, filter) => {
+  handleReferenceClick = (targetWindowId, filter) => {
     const { dispatch, windowId, docId, tabId, selected } = this.props;
 
-    dispatch(setFilter(filter, refType));
+    const url = buildRelatedDocumentsViewUrl({
+      targetWindowId,
+      windowId,
+      documentId: docId,
+      tabId,
+      rowIds: selected,
+    });
 
-    window.open(
-      `/window/${refType}?refType=${windowId}&refId=${docId}&refTabId=${tabId}&refRowIds=${JSON.stringify(
-        selected || []
-      )}`,
-      '_blank'
-    );
+    dispatch(setFilter(filter, targetWindowId));
+    window.open(url, '_blank');
   };
 
   handleOpenNewTab = () => {
-    const { selected, windowId, onOpenNewTab } = this.props;
+    const { onOpenNewTab, windowId, selected } = this.props;
 
-    onOpenNewTab(windowId, selected);
+    onOpenNewTab({
+      windowId,
+      rowIds: selected,
+    });
   };
 
   render() {
@@ -111,7 +167,7 @@ class TableContextMenu extends Component {
       handleZoomInto,
     } = this.props;
 
-    const { contextMenu, references } = this.state;
+    const { contextMenu } = this.state;
 
     const isSelectedOne = selected.length === 1;
     const showFieldEdit =
@@ -183,21 +239,37 @@ class TableContextMenu extends Component {
           </div>
         )}
 
-        {references && <hr className="context-menu-separator" />}
-
-        {references &&
-          references.map((item, index) => (
-            <div
-              className="context-menu-item"
-              key={index}
-              onClick={() => {
-                this.handleReferenceClick(item.documentType, item.filter);
-              }}
-            >
-              <i className="meta-icon-share" /> {item.caption}
-            </div>
-          ))}
+        {this.renderReferences()}
       </div>
+    );
+  }
+
+  renderReferences() {
+    const { loadingReferences, references } = this.state;
+
+    if (!references && !loadingReferences) {
+      return;
+    }
+
+    return (
+      <Fragment>
+        <hr className="context-menu-separator" />
+        {references.map((reference) => (
+          <div
+            className="context-menu-item"
+            key={`reference_${reference.id}`}
+            onClick={() => {
+              this.handleReferenceClick(
+                reference.targetWindowId,
+                reference.filter
+              );
+            }}
+          >
+            <i className="meta-icon-share" /> {reference.caption}
+          </div>
+        ))}
+        {loadingReferences ? <Loader /> : null}
+      </Fragment>
     );
   }
 }
@@ -211,11 +283,11 @@ TableContextMenu.propTypes = {
   supportZoomInto: PropTypes.bool,
   supportFieldEdit: PropTypes.bool,
   docId: PropTypes.string,
-  tabId: PropTypes.any,
+  tabId: PropTypes.string,
   windowId: PropTypes.string,
   selected: PropTypes.array,
-  blur: PropTypes.any,
-  mainTable: PropTypes.any,
+  blur: PropTypes.func,
+  mainTable: PropTypes.bool,
   handleAdvancedEdit: PropTypes.func,
   handleDelete: PropTypes.func,
   handleFieldEdit: PropTypes.func,
