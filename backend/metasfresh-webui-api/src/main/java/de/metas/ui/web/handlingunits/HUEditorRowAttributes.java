@@ -288,7 +288,7 @@ public class HUEditorRowAttributes implements IViewRowAttributes
 	public LookupValuesList getAttributeTypeahead(final String attributeName, final String query)
 	{
 		final I_M_Attribute attribute = attributesStorage.getAttributeByValueKeyOrNull(attributeName);
-		final TooltipType tooltipType = Services.get(IADTableDAO.class).getReferenceTooltipTypeByTableName(I_M_Attribute.Table_Name);
+		final TooltipType tooltipType = Services.get(IADTableDAO.class).getTooltipTypeByTableName(I_M_Attribute.Table_Name);
 
 		return attributesStorage
 				.getAttributeValue(attribute)
@@ -303,7 +303,7 @@ public class HUEditorRowAttributes implements IViewRowAttributes
 	public LookupValuesList getAttributeDropdown(final String attributeName)
 	{
 		final I_M_Attribute attribute = attributesStorage.getAttributeByValueKeyOrNull(attributeName);
-		final TooltipType tooltipType = Services.get(IADTableDAO.class).getReferenceTooltipTypeByTableName(I_M_Attribute.Table_Name);
+		final TooltipType tooltipType = Services.get(IADTableDAO.class).getTooltipTypeByTableName(I_M_Attribute.Table_Name);
 
 		return attributesStorage
 				.getAttributeValue(attribute)

@@ -42,6 +42,7 @@ import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.window.api.IADWindowDAO;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.proxy.Cached;
 import org.compiere.Adempiere;
 import org.compiere.model.I_AD_Column;
 import org.compiere.model.I_AD_Element;
@@ -50,6 +51,7 @@ import org.compiere.model.I_AD_Table;
 import org.compiere.model.X_AD_SQLColumn_SourceTableColumn;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.compiere.util.Trx;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -63,8 +65,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.getCtx;
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-
-
 
 public class ADTableDAO implements IADTableDAO
 {
@@ -392,9 +392,19 @@ public class ADTableDAO implements IADTableDAO
 	}
 
 	@Override
-	public @NonNull TooltipType getReferenceTooltipTypeByTableName(@NonNull final String tableName)
+	@Cached(cacheName = "TooltipType" + "#By#" + I_AD_Table.COLUMNNAME_TableName)
+	public @NonNull TooltipType getTooltipTypeByTableName(@NonNull final String tableName)
 	{
-		//  // TODO tbp: implement this
-		return TooltipType.DescriptionFallbackToTableIdentifier;
+		/*
+		 * Implementation detail: cannot use `retrieveTable(tableName)` as we will get an error `java.lang.IllegalStateException: Recursive load of: interface org.adempiere.ad.service.ILookupDAO`.
+		 */
+
+		final String sql = " SELECT " + I_AD_Table.COLUMNNAME_TooltipType
+				+ " FROM " + I_AD_Table.Table_Name
+				+ " WHERE " + I_AD_Table.COLUMNNAME_TableName + " ilike ?";
+
+		final String tooltipTypeString = DB.getSQLValueStringEx(Trx.TRXNAME_ThreadInherited, sql, tableName);
+
+		return TooltipType.ofCode(tooltipTypeString);
 	}
 }

@@ -149,7 +149,7 @@ import java.util.List;
 		final IAttributeValuesProvider valuesProvider = attributeValue.getAttributeValuesProvider();
 		final Evaluatee evalCtx = valuesProvider.prepareContext(attributesStorage);
 		final NamePair valueNP = valuesProvider.getAttributeValueOrNull(evalCtx, value);
-		final TooltipType tooltipType = Services.get(IADTableDAO.class).getReferenceTooltipTypeByTableName(I_M_Attribute.Table_Name);
+		final TooltipType tooltipType = Services.get(IADTableDAO.class).getTooltipTypeByTableName(I_M_Attribute.Table_Name);
 
 		return LookupValue.fromNamePair(valueNP, null, tooltipType);
 	}

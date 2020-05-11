@@ -194,5 +194,5 @@ public interface IADTableDAO extends ISingletonService
 
 	void validate(I_AD_SQLColumn_SourceTableColumn record);
 
-	@NonNull TooltipType getReferenceTooltipTypeByTableName(@NonNull String tableName);
+	@NonNull TooltipType getTooltipTypeByTableName(@NonNull String tableName);
 }

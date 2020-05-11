@@ -164,7 +164,7 @@ public final class ASILookupDescriptor implements LookupDescriptor, LookupDataSo
 	public LookupValue retrieveLookupValueById(final LookupDataSourceContext evalCtx)
 	{
 		final Object id = evalCtx.getIdToFilter();
-		final TooltipType tooltipType = Services.get(IADTableDAO.class).getReferenceTooltipTypeByTableName(evalCtx.getTableName());
+		final TooltipType tooltipType = Services.get(IADTableDAO.class).getTooltipTypeByTableName(evalCtx.getTableName());
 		final NamePair valueNP = attributeValuesProvider.getAttributeValueOrNull(evalCtx, id);
 		return LookupValue.fromNamePair(valueNP, evalCtx.getAD_Language(), LOOKUPVALUE_NULL, tooltipType);
 	}

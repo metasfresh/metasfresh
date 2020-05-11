@@ -90,7 +90,7 @@ public class LookupDAO implements ILookupDAO
 			.setTableName(I_C_ValidCombination.Table_Name)
 			.setKeyColumn(I_C_ValidCombination.COLUMNNAME_C_ValidCombination_ID)
 			.setAutoComplete(true)
-			.setTooltipType(Services.get(IADTableDAO.class).getReferenceTooltipTypeByTableName(I_C_ValidCombination.Table_Name))  // TODO tbp: i'm not sure this works
+			.setTooltipType(Services.get(IADTableDAO.class).getTooltipTypeByTableName(I_C_ValidCombination.Table_Name))
 			.build();
 
 	/* package */static class ColumnInfo implements IColumnInfo
@@ -508,6 +508,7 @@ public class LookupDAO implements ILookupDAO
 				+ "t." + I_AD_Table.COLUMNNAME_IsAutocomplete // 13
 				+ ", rt." + I_AD_Ref_Table.COLUMNNAME_ShowInactiveValues // 14
 				+ ", r.Name as ReferenceName"
+				+ ", t.TooltipType as TooltipType "
 				// #2340 Also collect information about the ref table being a reference target
 				+ " FROM AD_Ref_Table rt"
 				+ " INNER JOIN AD_Reference r on (r.AD_Reference_ID=rt.AD_Reference_ID)"
@@ -543,7 +544,7 @@ public class LookupDAO implements ILookupDAO
 				final boolean autoComplete = StringUtils.toBoolean(rs.getString(13));
 				final boolean showInactiveValues = StringUtils.toBoolean(rs.getString(14));
 				final String referenceName = rs.getString("ReferenceName");
-				final TooltipType tooltipType = TooltipType.DescriptionFallbackToTableIdentifier; // TODO tbp: this should not be hardcoded, but taken from the result set
+				final TooltipType tooltipType = TooltipType.ofCode(rs.getString("TooltipType"));
 
 				tableRefInfo = TableRefInfo.builder()
 						.setIdentifier("AD_Reference[ID=" + AD_Reference_ID + ",Name=" + referenceName + "]")
@@ -617,7 +618,7 @@ public class LookupDAO implements ILookupDAO
 			autoComplete = table.isAutocomplete();
 		}
 
-		final TooltipType tooltipType = Services.get(IADTableDAO.class).getReferenceTooltipTypeByTableName(tableName);
+		final TooltipType tooltipType = Services.get(IADTableDAO.class).getTooltipTypeByTableName(tableName);
 
 		return TableRefInfo.builder()
 				.setIdentifier("Direct[FromColumn" + columnName + ",To=" + tableName + "." + columnName + "]")
