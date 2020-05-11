@@ -936,7 +936,7 @@ public class MLookupFactory
 	 * @return SELECT Column FROM TableName WHERE BaseTable.BaseColumn=TableName.ColumnName
 	 */
 	static public String getLookup_TableDirEmbed(final LanguageInfo languageInfo, final String ColumnName, final String BaseTable, final String BaseColumn)
-	{// TODO tbp: HELPME: what reference tooltip type to set here??? this is hit for BaseTable = C_BPartner or M_PriceList_Version
+	{
 		final int windowNo = Env.WINDOW_None; // NOTE: for TableDir WindowNo, is not important
 		final MLookupInfo lookupInfo = getLookup_TableDir(windowNo, ColumnName);
 		if (lookupInfo == null)
