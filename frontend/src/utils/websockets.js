@@ -1,7 +1,7 @@
 // import { noConnection } from '../actions/WindowActions';
 // import { setWebsocketsStatus } from '../actions/WebsocketsActions';
 // import { store } from '../containers/App';
-import { getUserSession } from '../api';
+// import { getUserSession } from '../api';
 // import _ from 'lodash';
 
 import { getWSformatURLfromHTTP } from './index';
