@@ -1,19 +1,16 @@
 import React, { PureComponent } from 'react';
 import ReactDOM from 'react-dom';
-import classnames from 'classnames';
 import counterpart from 'counterpart';
 import PropTypes from 'prop-types';
 
 import Table from './table/Table';
-import EntryTable from './table/EntryTable';
 import TableContextShortcuts from './keyshortcuts/TableContextShortcuts';
 import keymap from '../shortcuts/keymap';
-import Tabs, { TabSingleEntry } from './tabs/Tabs';
+import Tabs, { TabSingleEntry } from './window/Tabs';
 import Tooltips from './tooltips/Tooltips';
-import MasterWidget from './widget/MasterWidget';
+import Section from './window/Section';
 import Dropzone from './Dropzone';
-import Separator from './Separator';
-import { INITIALLY_OPEN, INITIALLY_CLOSED } from '../constants/Constants';
+import { INITIALLY_CLOSED } from '../constants/Constants';
 
 /**
  * @file Class based component.
@@ -32,21 +29,14 @@ class Window extends PureComponent {
     };
 
     if (props.isModal) {
-      this.tabIndex = {
-        firstColumn: 0,
-        secondColumn: 0,
-        tabs: 0,
-      };
+      this.tabIndex = { tabs: 0 };
     } else {
-      this.tabIndex = {
-        firstColumn: 1,
-        secondColumn: 2,
-        tabs: 3,
-      };
+      this.tabIndex = { tabs: 3 };
     }
 
     this.toggleTableFullScreen = this.toggleTableFullScreen.bind(this);
     this.handleBlurWidget = this.handleBlurWidget.bind(this);
+    this.requestElementGroupFocus = this.requestElementGroupFocus.bind(this);
   }
 
   componentMountUpdate() {
@@ -119,13 +109,14 @@ class Window extends PureComponent {
   };
 
   /**
-   * @method toggleSection
+   * @method toggleSectionCollapsed
    * @summary ToDo: Describe the method.
    * @param {*} idx
    * @param {*} tabId
    */
-  toggleSection = (idx, tabId = '') => {
+  toggleSectionCollapsed = (idx, tabId = '') => {
     this.setState({
+      ...this.state,
       collapsedSections: {
         ...this.state.collapsedSections,
         [`${tabId}_${idx}`]: !this.state.collapsedSections[`${tabId}_${idx}`],
@@ -139,7 +130,7 @@ class Window extends PureComponent {
    * @param {*} idx
    * @param {*} tabId
    */
-  sectionCollapsed = (idx, tabId = '') => {
+  isSectionCollapsed = (idx, tabId = '') => {
     return this.state.collapsedSections[`${tabId}_${idx}`];
   };
 
@@ -200,9 +191,9 @@ class Window extends PureComponent {
 
       tabsByIds[elem.tabId] = elem;
 
-      const dataEntry = singleRowDetailView || false;
+      const isDataEntry = singleRowDetailView || false;
 
-      if (dataEntry) {
+      if (isDataEntry) {
         tabsArray.push(
           <TabSingleEntry
             docId={dataId}
@@ -221,7 +212,7 @@ class Window extends PureComponent {
               internalName,
             }}
           >
-            {sections && this.renderSections(sections, dataEntry, { tabId })}
+            {sections && this.renderSections(sections, isDataEntry, { tabId })}
             <button
               className="btn-icon btn-meta-outline-secondary pointer btn-fullscreen"
               onClick={this.toggleTableFullScreen}
@@ -329,79 +320,59 @@ class Window extends PureComponent {
    * @method renderSections
    * @summary ToDo: Describe the method.
    * @param {*} sections
-   * @param {*} dataEntry
+   * @param {*} isDataEntry
    * @param {*} extendedData
    */
-  renderSections = (sections, dataEntry, extendedData = {}) => {
-    return sections.map((elem, idx) => {
-      const { title, columns, closableMode } = elem;
-      const isFirst = idx === 0;
-      const sectionCollapsed =
-        dataEntry && this.sectionCollapsed(idx, extendedData.tabId);
-      const collapsible =
-        closableMode === INITIALLY_OPEN || closableMode === INITIALLY_CLOSED;
+  renderSections = (sections, isDataEntry, extendedData = {}) => {
+    const { windowId } = this.props.layout;
+    const { tabId, rowId, dataId } = this.props;
+    const { data } = this.props;
+    const { isModal, isAdvanced } = this.props;
+    const { fullScreen } = this.state;
+
+    const rowData = isDataEntry
+      ? this.props.rowData.get(extendedData.tabId)
+      : undefined;
+
+    return sections.map((sectionLayout, sectionIndex) => {
+      const isSectionCollapsed =
+        isDataEntry &&
+        this.isSectionCollapsed(sectionIndex, extendedData.tabId);
 
       return (
-        <div
-          key={`section-${idx}`}
-          className={classnames('section', { collapsed: sectionCollapsed })}
-        >
-          {title && (
-            <Separator
-              {...{ title, idx, sectionCollapsed, collapsible }}
-              tabId={extendedData.tabId}
-              onClick={this.toggleSection}
-            />
-          )}
-          <div
-            className={classnames('row', {
-              'collapsible-section': collapsible,
-              collapsed: sectionCollapsed,
-            })}
-          >
-            {columns &&
-              this.renderColumns(columns, isFirst, dataEntry, extendedData)}
-          </div>
-        </div>
+        <Section
+          key={`section-${sectionIndex}`}
+          //
+          sectionLayout={sectionLayout}
+          sectionIndex={sectionIndex}
+          //
+          windowId={windowId}
+          tabId={tabId}
+          rowId={rowId}
+          dataId={dataId}
+          //
+          data={data}
+          isDataEntry={isDataEntry}
+          extendedData={extendedData}
+          rowData={rowData}
+          //
+          isModal={isModal}
+          isAdvanced={isAdvanced}
+          isFullScreen={fullScreen}
+          //
+          onBlurWidget={this.handleBlurWidget}
+          addRefToWidgets={this.addRefToWidgets}
+          requestElementGroupFocus={this.requestElementGroupFocus}
+          //
+          isSectionCollapsed={isSectionCollapsed}
+          toggleSectionCollapsed={this.toggleSectionCollapsed}
+        />
       );
     });
   };
 
   /**
-   * @method renderColumns
-   * @summary ToDo: Describe the method.
-   * @param {*} columns
-   * @param {*} isSectionFirst
-   * @param {*} dataEntry
-   * @param {*} extendedData
-   */
-  renderColumns = (columns, isSectionFirst, dataEntry, extendedData) => {
-    const maxRows = 12;
-    const colWidth = Math.floor(maxRows / columns.length);
-
-    return columns.map((elem, id) => {
-      const isFirst = id === 0 && isSectionFirst;
-      const elementGroups = elem.elementGroups;
-
-      if (dataEntry) {
-        return (
-          <div className="col-sm-12" key={`col-${id}`}>
-            {this.renderEntryTable(elementGroups, extendedData)}
-          </div>
-        );
-      } else {
-        return (
-          <div className={`col-sm-${colWidth}`} key={`col-${id}`}>
-            {elementGroups &&
-              this.renderElementGroups(elementGroups, isFirst, extendedData)}
-          </div>
-        );
-      }
-    });
-  };
-
-  /**
-   * @method toggleSection
+   * @method addRefToWidgets
    * @summary ToDo: Describe the method.
    * @param {*} c
    */
@@ -409,161 +380,6 @@ class Window extends PureComponent {
     if (c) {
       this.widgets.push(c);
     }
-  };
-
-  /**
-   * @method renderEntryTable
-   * @summary ToDo: Describe the method.
-   * @param {*} idx
-   * @param {*} tabId
-   */
-  renderEntryTable = (groups, extendedData) => {
-    const rows = groups.reduce((rowsArray, group) => {
-      const cols = [];
-      group.elementsLine.forEach((line) => {
-        if (line && line.elements && line.elements.length) {
-          cols.push(line.elements[0]);
-        }
-      });
-
-      rowsArray.push({
-        cols,
-        colsCount: group.columnCount,
-      });
-
-      return rowsArray;
-    }, []);
-    const rowData = this.props.rowData.get(extendedData.tabId);
-    const { fullScreen } = this.state;
-
-    return (
-      <div
-        className={classnames(
-          'panel panel-primary panel-bordered',
-          'panel-bordered-force table-flex-wrapper',
-          'document-list-table js-not-unselect'
-        )}
-      >
-        <EntryTable
-          {...{
-            ...this.props,
-            rows,
-            rowData,
-            extendedData,
-            fullScreen,
-          }}
-          addRefToWidgets={this.addRefToWidgets}
-          handleBlurWidget={this.handleBlurWidget}
-        />
-      </div>
-    );
-  };
-
-  /**
-   * @method renderElementGroups
-   * @summary ToDo: Describe the method.
-   * @param {*} groups
-   * @param {*} isFirst
-   */
-  renderElementGroups = (groups, isFirst) => {
-    const { isModal } = this.props;
-
-    return groups.map((elem, id) => {
-      const { type, elementsLine } = elem;
-      const shouldBeFocused = isFirst && id === 0;
-      const tabIndex =
-        type === 'primary'
-          ? this.tabIndex.firstColumn
-          : this.tabIndex.secondColumn;
-
-      return (
-        elementsLine &&
-        elementsLine.length > 0 && (
-          <div
-            key={'elemGroups' + id}
-            ref={(c) => {
-              if (this.focused) return;
-              if (isModal && shouldBeFocused && c) c.focus();
-              this.focused = true;
-            }}
-            className={classnames('panel panel-spaced panel-distance', {
-              'panel-bordered panel-primary': type === 'primary',
-              'panel-secondary': type !== 'primary',
-            })}
-          >
-            {this.renderElementsLine(elementsLine, tabIndex, shouldBeFocused)}
-          </div>
-        )
-      );
-    });
-  };
-
-  /**
-   * @method renderElementsLine
-   * @summary ToDo: Describe the method.
-   * @param {*} elementsLine
-   * @param {*} tabIndex
-   * @param {*} shouldBeFocused
-   */
-  renderElementsLine = (elementsLine, tabIndex, shouldBeFocused) => {
-    return elementsLine.map((elem, id) => {
-      const { elements } = elem;
-      const isFocused = shouldBeFocused && id === 0;
-      return (
-        elements &&
-        elements.length > 0 && (
-          <div className="elements-line" key={'line' + id}>
-            {this.renderElements(elements, tabIndex, isFocused)}
-          </div>
-        )
-      );
-    });
-  };
-
-  /**
-   * @method renderElements
-   * @summary ToDo: Describe the method.
-   * @param {*} elements
-   * @param {*} tabIndex
-   * @param {*} isFocused
-   */
-  renderElements = (elements, tabIndex, isFocused) => {
-    const { windowId } = this.props.layout;
-    const { data, modal, tabId, rowId, dataId, isAdvanced } = this.props;
-    const { fullScreen } = this.state;
-
-    return elements.map((elem, id) => {
-      const autoFocus = isFocused && id === 0;
-      const widgetData = elem.fields.map((item) => data[item.field] || -1);
-      const fieldName = elem.fields ? elem.fields[0].field : '';
-      const relativeDocId = data.ID && data.ID.value;
-
-      return (
-        <MasterWidget
-          ref={(c) => {
-            if (c) {
-              this.widgets.push(c);
-            }
-          }}
-          entity="window"
-          key={'element' + id}
-          windowType={windowId}
-          dataId={dataId}
-          widgetData={widgetData}
-          isModal={!!modal}
-          tabId={tabId}
-          rowId={rowId}
-          relativeDocId={relativeDocId}
-          isAdvanced={isAdvanced}
-          tabIndex={tabIndex}
-          autoFocus={!modal && autoFocus}
-          fullScreen={fullScreen}
-          fieldName={fieldName}
-          onBlurWidget={this.handleBlurWidget}
-          {...elem}
-        />
-      );
-    });
   };
 
   /**
@@ -603,6 +419,13 @@ class Window extends PureComponent {
     }
   }
 
+  requestElementGroupFocus(elementGroupComponent) {
+    if (!this.elementGroupFocused) {
+      elementGroupComponent.focus();
+      this.elementGroupFocused = true;
+    }
+  }
+
   /**
    * @method render
    * @summary ToDo: Describe the method.
@@ -617,6 +440,7 @@ class Window extends PureComponent {
     } = this.props;
 
     this.widgets = [];
+    this.elementGroupFocused = false;
 
     return (
       <div key="window" className="window-wrapper">

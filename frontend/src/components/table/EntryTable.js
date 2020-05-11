@@ -52,11 +52,11 @@ export default class EntryTable extends Component {
       rowData,
       extendedData,
       addRefToWidgets,
-      handleBlurWidget,
-      layout,
+      onBlurWidget,
+      windowId,
       dataId,
       tabIndex,
-      fullScreen,
+      isFullScreen,
     } = this.props;
     const { tooltipToggled } = this.state;
     const renderedArray = [];
@@ -100,7 +100,7 @@ export default class EntryTable extends Component {
               <MasterWidget
                 ref={addRefToWidgets}
                 entity="window"
-                windowType={layout.windowId}
+                windowType={windowId}
                 dataId={dataId}
                 dataEntry={true}
                 fieldName={fieldName}
@@ -111,8 +111,8 @@ export default class EntryTable extends Component {
                 relativeDocId={relativeDocId}
                 isAdvanced={false}
                 tabIndex={tabIndex}
-                fullScreen={fullScreen}
-                onBlurWidget={handleBlurWidget}
+                fullScreen={isFullScreen}
+                onBlurWidget={onBlurWidget}
                 {...elem}
               />
               {tooltipWidget && (
@@ -136,11 +136,6 @@ export default class EntryTable extends Component {
     return null;
   };
 
-  /**
-   * @method render
-   * @summary ToDo: Describe the method
-   * @todo Write the documentation
-   */
   render() {
     const { rows } = this.props;
 
@@ -160,29 +155,19 @@ export default class EntryTable extends Component {
   }
 }
 
-/**
- * @typedef {object} Props Component props
- * @prop {*} data
- * @prop {*} rowData
- * @prop {*} extendedData
- * @prop {*} addRefToWidget
- * @prop {*} handleBlurWidget
- * @prop {*} layout
- * @prop {*} dataId
- * @prop {*} tabIndex
- * @prop {*} fullScreen
- * @prop {*} rows
- * @todo Check props. Which proptype? Required or optional?
- */
 EntryTable.propTypes = {
-  data: PropTypes.any,
+  rows: PropTypes.array.isRequired,
+  //
+  windowId: PropTypes.string.isRequired,
+  dataId: PropTypes.string,
+  //
+  data: PropTypes.oneOfType([PropTypes.shape(), PropTypes.array]), // TODO: type here should point to a hidden issue?
   rowData: PropTypes.any,
   extendedData: PropTypes.any,
-  addRefToWidgets: PropTypes.any,
-  handleBlurWidget: PropTypes.any,
-  layout: PropTypes.any,
-  dataId: PropTypes.any,
+  //
   tabIndex: PropTypes.any,
-  fullScreen: PropTypes.any,
-  rows: PropTypes.any,
+  isFullScreen: PropTypes.bool,
+  //
+  addRefToWidgets: PropTypes.func.isRequired,
+  onBlurWidget: PropTypes.func.isRequired,
 };
