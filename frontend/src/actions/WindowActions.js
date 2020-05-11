@@ -703,7 +703,7 @@ export function createWindow(
         dispatch(updateModal(null, docId));
       }
 
-      // TODO: Is `elem` ever different than 0 ? 
+      // TODO: Is `elem` ever different than 0 ?
       docId = response.data[elem].id;
       dispatch(
         initDataSuccess({
