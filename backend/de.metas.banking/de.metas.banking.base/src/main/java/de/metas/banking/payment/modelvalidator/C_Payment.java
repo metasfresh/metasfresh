@@ -1,11 +1,3 @@
-/**
- *
- */
-package de.metas.banking.payment.modelvalidator;
-
-import java.util.Collection;
-
-import org.adempiere.ad.modelvalidator.IModelValidationEngine;
 
 /*
  * #%L
@@ -29,9 +21,6 @@ import org.adempiere.ad.modelvalidator.IModelValidationEngine;
  * #L%
  */
 
-/**
- *
- */
 package de.metas.banking.payment.modelvalidator;
 
 import com.google.common.collect.ImmutableList;
@@ -51,15 +40,11 @@ import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.ModelValidator;
 
-import com.google.common.collect.ImmutableList;
-
-import de.metas.banking.service.IBankStatementBL;
-import de.metas.banking.service.ICashStatementBL;
-import de.metas.payment.PaymentId;
-import de.metas.payment.api.IPaymentBL;
 import de.metas.payment.api.PaymentReconcileReference;
 import de.metas.payment.api.PaymentReconcileRequest;
-import lombok.NonNull;
+
+import java.util.Collection;
+
 
 /**
  * @author cg
