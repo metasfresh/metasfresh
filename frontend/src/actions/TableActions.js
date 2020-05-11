@@ -4,6 +4,10 @@ import * as types from '../constants/ActionTypes';
 
 import { getView } from '../reducers/viewHandler';
 
+/**
+ * @method createTable
+ * @summary Add a new table entry to the redux store
+ */
 function createTable(id, data) {
   return {
     type: types.CREATE_TABLE,
@@ -11,6 +15,11 @@ function createTable(id, data) {
   };
 }
 
+/**
+ * @method updateTable
+ * @summary Perform a major update (many values at once) of a table entry. Think
+ * rows/columns
+ */
 function updateTable(id, data) {
   return {
     type: types.UPDATE_TABLE,
@@ -18,6 +27,10 @@ function updateTable(id, data) {
   };
 }
 
+/**
+ * @method deleteTable
+ * @summary Remove the table with specified `id` from the store
+ */
 export function deleteTable(id) {
   return {
     type: types.DELETE_TABLE,
@@ -33,6 +46,11 @@ export function setActiveSort(data) {
   };
 }
 
+/**
+ * @method setActiveSortNEW
+ * @summary Change the value of the `activeSort` setting for specified table
+ * @todo rename to `setActiveSort` once we switch to tables driven by redux
+ */
 export function setActiveSortNEW(id, active) {
   return {
     type: types.SET_ACTIVE_SORT_NEW,
@@ -40,6 +58,11 @@ export function setActiveSortNEW(id, active) {
   };
 }
 
+/**
+ * @method createTableData
+ * @summary Helper function to grab raw data and format it accordingly to the
+ * values in store.
+ */
 function createTableData(rawData) {
   const dataObject = {
     windowType: rawData.windowType || rawData.windowId,
@@ -61,15 +84,14 @@ function createTableData(rawData) {
     allowCreateNewReason: rawData.allowCreateNewReason,
     allowDelete: rawData.allowDelete,
     stale: rawData.stale,
-
     headerProperties: rawData.headerProperties
       ? iMap(rawData.headerProperties)
       : undefined,
     headerElements: rawData.headerElements
-      ? iList(rawData.headerElements)
+      ? iMap(rawData.headerElements)
       : undefined,
     orderBy: rawData.orderBy ? iList(rawData.orderBy) : undefined,
-    columns: rawData.columns ? iList(rawData.columns) : undefined,
+    columns: rawData.elements ? iList(rawData.elements) : undefined,
     rows: rawData.result ? iList(rawData.result) : undefined,
     defaultOrderBys: rawData.defaultOrderBys
       ? iList(rawData.defaultOrderBys)
@@ -90,6 +112,8 @@ function createTableData(rawData) {
   );
 }
 
+// THUNK ACTION CREATORS
+
 /*
  * Create a new table entry for grids using data from the window layout (so not populated with data yet)
  */
@@ -109,14 +133,23 @@ export function createGridTable(tableId, tableResponse) {
 export function updateGridTable(tableId, tableResponse) {
   return (dispatch, getState) => {
     const tableExists = getState().tables.get(tableId);
-    const tableData = createTableData({
-      ...tableResponse,
-      columns: Object.values(tableResponse.columnsByFieldName),
-    });
 
     if (tableExists) {
+      const tableData = createTableData({
+        ...tableResponse,
+        headerElements: tableResponse.columnsByFieldName,
+      });
+
       dispatch(updateTable(tableId, tableData));
     } else {
+      const windowType = tableResponse.windowType || tableResponse.windowId;
+      const tableLayout = getView(getState(), windowType).layout;
+      const tableData = createTableData({
+        ...tableResponse,
+        ...tableLayout,
+        headerElements: tableResponse.columnsByFieldName,
+      });
+
       dispatch(createTable(tableId, tableData));
     }
   };
@@ -139,10 +172,7 @@ export function createTabTable(tableId, tableResponse) {
 export function updateTabTable(tableId, tableResponse) {
   return (dispatch, getState) => {
     const tableExists = getState().tables.get(tableId);
-    const tableData = createTableData({
-      ...tableResponse,
-      columns: tableResponse.elements,
-    });
+    const tableData = createTableData(tableResponse);
 
     if (tableExists) {
       dispatch(updateTable(tableId, tableData));

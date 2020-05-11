@@ -4,6 +4,8 @@ import { deleteView } from '../actions/ViewActions';
  * Navigation middleware that resets the view (or actually the viewHandler state)
  * whenever there's a `push` action to the browser history.
  */
+// TODO: For this to work properly we'd need to somehow get
+// the windowId/viewId/docId/*tabId
 const navigationMiddleware = ({ dispatch }) => (next) => (action) => {
   const nextAction = next(action);
 

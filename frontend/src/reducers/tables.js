@@ -9,14 +9,13 @@ export const tableState = {
   tabId: null,
   selected: iList(),
   rows: iList(),
-
-  // TODO: We need to figure out how to handle the fact, that columns for
-  // grid come as an object, while for the details view (tabs) as a list with
-  // more data.
+  // row columns
   columns: iList(),
   activeSort: false,
   headerProperties: iMap(),
-  headerElements: iList(),
+
+  //header columns
+  headerElements: iMap(),
   emptyText: null,
   emptyHint: null,
   page: 0,
