@@ -25,6 +25,7 @@ package org.adempiere.ad.table.api.impl;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.adempiere.service.impl.TooltipType;
+import de.metas.cache.CCache;
 import de.metas.document.DocumentConstants;
 import de.metas.i18n.ITranslatableString;
 import de.metas.util.Check;
@@ -42,7 +43,6 @@ import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.window.api.IADWindowDAO;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.proxy.Cached;
 import org.compiere.Adempiere;
 import org.compiere.model.I_AD_Column;
 import org.compiere.model.I_AD_Element;
@@ -59,6 +59,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
+import java.util.function.Supplier;
 
 import static org.adempiere.model.InterfaceWrapperHelper.createOld;
 import static org.adempiere.model.InterfaceWrapperHelper.getCtx;
@@ -75,6 +76,12 @@ public class ADTableDAO implements IADTableDAO
 			"IsActive",
 			"Created", "CreatedBy",
 			"Updated", "UpdatedBy");
+
+	private final CCache<String, TooltipType> tableTooltipTypeCache = CCache.<String, TooltipType>builder()
+			.cacheMapType(CCache.CacheMapType.HashMap)
+			.initialCapacity(100)
+			.expireMinutes(CCache.EXPIREMINUTES_Never)
+			.build();
 
 	@Override
 	public I_AD_Column retrieveColumn(@NonNull final AdTableId tableId, @NonNull final String columnName)
@@ -392,19 +399,20 @@ public class ADTableDAO implements IADTableDAO
 	}
 
 	@Override
-	@Cached(cacheName = "TooltipType" + "#By#" + I_AD_Table.COLUMNNAME_TableName)
 	public @NonNull TooltipType getTooltipTypeByTableName(@NonNull final String tableName)
 	{
 		/*
 		 * Implementation detail: cannot use `retrieveTable(tableName)` as we will get an error `java.lang.IllegalStateException: Recursive load of: interface org.adempiere.ad.service.ILookupDAO`.
 		 */
 
-		final String sql = " SELECT " + I_AD_Table.COLUMNNAME_TooltipType
-				+ " FROM " + I_AD_Table.Table_Name
-				+ " WHERE " + I_AD_Table.COLUMNNAME_TableName + " ilike ?";
+		return tableTooltipTypeCache.get(tableName, (Supplier<TooltipType>)() -> {
+			final String sql = " SELECT " + I_AD_Table.COLUMNNAME_TooltipType
+					+ " FROM " + I_AD_Table.Table_Name
+					+ " WHERE " + I_AD_Table.COLUMNNAME_TableName + " ilike ?";
 
-		final String tooltipTypeString = DB.getSQLValueStringEx(Trx.TRXNAME_ThreadInherited, sql, tableName);
+			final String tooltipTypeString = DB.getSQLValueStringEx(Trx.TRXNAME_ThreadInherited, sql, tableName);
 
-		return TooltipType.ofCode(tooltipTypeString);
+			return TooltipType.ofCode(tooltipTypeString);
+		});
 	}
 }

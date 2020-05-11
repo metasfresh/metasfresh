@@ -84,7 +84,6 @@ public interface LookupDescriptor
 		return Optional.empty();
 	}
 
-	//  // TODO tbp: @teo: HELPME: why these 2 casts don't do anything with their parameter? can you please explain?
 	default <T extends LookupDescriptor> T cast(final Class<T> lookupDescriptorClass)
 	{
 		@SuppressWarnings("unchecked")
