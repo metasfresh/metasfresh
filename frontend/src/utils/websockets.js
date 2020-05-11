@@ -1,8 +1,10 @@
 // import { noConnection } from '../actions/WindowActions';
 // import { setWebsocketsStatus } from '../actions/WebsocketsActions';
 // import { store } from '../containers/App';
-// import { getUserSession } from '../api';
+import { getUserSession } from '../api';
 // import _ from 'lodash';
+
+import { getWSformatURLfromHTTP } from './index';
 
 import Stomp from 'stompjs/lib/stomp.min.js';
 class WS {
@@ -11,11 +13,13 @@ class WS {
       WS.instance = this;
     }
     this.subscriptions = [];
+
     if (!this.sockClient) {
-      this.sockClient = Stomp.Stomp.client(config.WS_URL);
+      this.sockClient = Stomp.Stomp.client(
+        getWSformatURLfromHTTP(config.WS_URL)
+      );
       this.sockClient.connect({}, () => {});
     }
-
     this.sockClient.onConnect = function() {
       // console.log('CONNECTED:', this);
     };

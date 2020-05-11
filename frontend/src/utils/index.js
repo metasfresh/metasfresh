@@ -169,3 +169,13 @@ export function preFormatPostDATA({ target, postData }) {
   }
   return dataToSend;
 }
+
+/**
+ * Return a ws:// format URL from httpURL
+ * @param {string} httpURL
+ */
+export function getWSformatURLfromHTTP(httpURL) {
+  let formattedWS = httpURL.replace('https://', 'ws://');
+  formattedWS = httpURL.replace('http://', 'ws://');
+  return `${formattedWS}/websocket`;
+}
