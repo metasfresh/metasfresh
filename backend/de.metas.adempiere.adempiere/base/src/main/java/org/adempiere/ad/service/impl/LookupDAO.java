@@ -90,7 +90,7 @@ public class LookupDAO implements ILookupDAO
 			.setTableName(I_C_ValidCombination.Table_Name)
 			.setKeyColumn(I_C_ValidCombination.COLUMNNAME_C_ValidCombination_ID)
 			.setAutoComplete(true)
-			.setTooltipType(Services.get(IADTableDAO.class).getTooltipTypeByTableName(I_C_ValidCombination.Table_Name))
+			.setTooltipType(TooltipType.DEFAULT)
 			.build();
 
 	/* package */static class ColumnInfo implements IColumnInfo
