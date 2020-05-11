@@ -19,11 +19,17 @@ def build(final MvnConf mvnConf, final Map scmVars, final boolean forceBuild=fal
 			<h3>EDI</h3>
 		"""
 
-	def previousCommitNotNull = scmVars.GIT_PREVIOUS_SUCCESSFUL_COMMIT ?: "HEAD~1"
-	def vgitout = sh(returnStdout: true, script: "git diff --name-only ${previousCommitNotNull} ${scmVars.GIT_COMMIT} .").trim()
-	echo "git diff output (modified files):\n>>>>>\n${vgitout}\n<<<<<"
-	def anyFileChanged = !vgitout.isEmpty() // see if anything at all changed in this folder
-	echo "Any file changed compared to last build: ${anyFileChanged}"
+	def anyFileChanged
+	try {
+		def vgitout = sh(returnStdout: true, script: "git diff --name-only ${scmVars.GIT_PREVIOUS_SUCCESSFUL_COMMIT} ${scmVars.GIT_COMMIT} .").trim()
+		echo "git diff output (modified files):\n>>>>>\n${vgitout}\n<<<<<"
+		anyFileChanged = !vgitout.isEmpty()
+		// see if anything at all changed in this folder
+		echo "Any file changed compared to last build: ${anyFileChanged}"
+	} catch (ignored) {
+		echo "git diff error => assume something must have changed"
+		anyFileChanged = true
+	}
 
 	if(scmVars.GIT_COMMIT && scmVars.GIT_PREVIOUS_SUCCESSFUL_COMMIT && !anyFileChanged && !forceBuild)
 	{
