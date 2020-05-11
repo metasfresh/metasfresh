@@ -1,12 +1,8 @@
-package org.adempiere.warehouse.api.impl;
-
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
-
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -23,6 +19,10 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+package org.adempiere.warehouse.api.impl;
+
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 import java.util.List;
 
@@ -42,6 +42,8 @@ import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+
+import javax.annotation.Nullable;
 
 public class WarehouseBL implements IWarehouseBL
 {
@@ -141,6 +143,7 @@ public class WarehouseBL implements IWarehouseBL
 		return location;
 	}
 
+	@Nullable
 	@Override
 	public CountryId getCountryId(@NonNull final WarehouseId warehouseId)
 	{
