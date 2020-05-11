@@ -29,6 +29,10 @@ import {
 
 import { createGridTable, updateGridTable } from './TableActions';
 
+/**
+ * @method resetView
+ * @summary
+ */
 export function resetView(id) {
   return {
     type: RESET_VIEW,
@@ -36,6 +40,10 @@ export function resetView(id) {
   };
 }
 
+/**
+ * @method deleteView
+ * @summary
+ */
 export function deleteView(id) {
   return {
     type: DELETE_VIEW,
@@ -43,6 +51,10 @@ export function deleteView(id) {
   };
 }
 
+/**
+ * @method fetchDocumentPending
+ * @summary
+ */
 function fetchDocumentPending(id) {
   return {
     type: FETCH_DOCUMENT_PENDING,
@@ -50,6 +62,10 @@ function fetchDocumentPending(id) {
   };
 }
 
+/**
+ * @method fetchDocumentSuccess
+ * @summary
+ */
 function fetchDocumentSuccess(id, data) {
   return {
     type: FETCH_DOCUMENT_SUCCESS,
@@ -57,6 +73,10 @@ function fetchDocumentSuccess(id, data) {
   };
 }
 
+/**
+ * @method fetchDocumentError
+ * @summary
+ */
 function fetchDocumentError(id, error) {
   return {
     type: FETCH_DOCUMENT_ERROR,
@@ -64,6 +84,10 @@ function fetchDocumentError(id, error) {
   };
 }
 
+/**
+ * @method fetchLayoutPending
+ * @summary
+ */
 function fetchLayoutPending(id) {
   return {
     type: FETCH_LAYOUT_PENDING,
@@ -71,6 +95,10 @@ function fetchLayoutPending(id) {
   };
 }
 
+/**
+ * @method fetchLayoutSuccess
+ * @summary
+ */
 function fetchLayoutSuccess(id, layout) {
   return {
     type: FETCH_LAYOUT_SUCCESS,
@@ -78,6 +106,10 @@ function fetchLayoutSuccess(id, layout) {
   };
 }
 
+/**
+ * @method fetchLayoutError
+ * @summary
+ */
 function fetchLayoutError(id, error) {
   return {
     type: FETCH_LAYOUT_ERROR,
@@ -85,6 +117,10 @@ function fetchLayoutError(id, error) {
   };
 }
 
+/**
+ * @method createViewPending
+ * @summary
+ */
 function createViewPending(id) {
   return {
     type: CREATE_VIEW,
@@ -92,6 +128,10 @@ function createViewPending(id) {
   };
 }
 
+/**
+ * @method createViewSuccess
+ * @summary
+ */
 function createViewSuccess(id, data) {
   return {
     type: CREATE_VIEW_SUCCESS,
@@ -99,6 +139,10 @@ function createViewSuccess(id, data) {
   };
 }
 
+/**
+ * @method createViewError
+ * @summary
+ */
 function createViewError(id, error) {
   return {
     type: CREATE_VIEW_ERROR,
@@ -106,6 +150,10 @@ function createViewError(id, error) {
   };
 }
 
+/**
+ * @method filterViewPending
+ * @summary
+ */
 function filterViewPending(id) {
   return {
     type: FILTER_VIEW_PENDING,
@@ -113,6 +161,10 @@ function filterViewPending(id) {
   };
 }
 
+/**
+ * @method filterViewSuccess
+ * @summary
+ */
 function filterViewSuccess(id, data) {
   return {
     type: FILTER_VIEW_SUCCESS,
@@ -120,6 +172,10 @@ function filterViewSuccess(id, data) {
   };
 }
 
+/**
+ * @method filterViewError
+ * @summary
+ */
 function filterViewError(id, error) {
   return {
     type: FILTER_VIEW_ERROR,
@@ -127,6 +183,10 @@ function filterViewError(id, error) {
   };
 }
 
+/**
+ * @method updateViewData
+ * @summary
+ */
 export function updateViewData(id, rows, tabId) {
   return {
     type: UPDATE_VIEW_DATA,
@@ -138,6 +198,10 @@ export function updateViewData(id, rows, tabId) {
   };
 }
 
+/**
+ * @method fetchLocationConfigSuccess
+ * @summary
+ */
 function fetchLocationConfigSuccess(id, data) {
   return {
     type: FETCH_LOCATION_CONFIG_SUCCESS,
@@ -145,6 +209,10 @@ function fetchLocationConfigSuccess(id, data) {
   };
 }
 
+/**
+ * @method fetchLocationConfigError
+ * @summary
+ */
 function fetchLocationConfigError(id, error) {
   return {
     type: FETCH_LOCATION_CONFIG_ERROR,
@@ -152,6 +220,10 @@ function fetchLocationConfigError(id, error) {
   };
 }
 
+/**
+ * @method addLocationData
+ * @summary
+ */
 export function addLocationData(id, locationData) {
   return {
     type: ADD_VIEW_LOCATION_DATA,
@@ -161,6 +233,19 @@ export function addLocationData(id, locationData) {
 
 // THUNK ACTIONS
 
+/**
+ * @method fetchDocument
+ * @summary Get grid rows
+ *
+ * @param {*} windowType
+ * @param {*} viewId
+ * @param {number} page
+ * @param {number} pageLength
+ * @param {*} orderBy
+ * @param {bool} useViewId - flag defining if we should be using the viewId, or not.
+ * set to `true` for modals.
+ * @param {*} modalId - used together with `useViewId`
+ */
 export function fetchDocument({
   windowType,
   viewId,
@@ -207,6 +292,10 @@ export function fetchDocument({
   };
 }
 
+/**
+ * @method createView
+ * @summary create a new grid view
+ */
 export function createView({
   windowType,
   viewType,
@@ -251,6 +340,10 @@ export function createView({
   };
 }
 
+/**
+ * @method fetchLayout
+ * @summary fetch layout data for the grid view
+ */
 export function fetchLayout(
   windowType,
   viewType,
@@ -277,6 +370,10 @@ export function fetchLayout(
 }
 
 // TODO: Update table on filtering
+/**
+ * @method filterView
+ * @summary filter grid view
+ */
 export function filterView(windowId, viewId, filters, useViewId = false) {
   return (dispatch) => {
     const identifier = useViewId ? viewId : windowId;
@@ -297,6 +394,10 @@ export function filterView(windowId, viewId, filters, useViewId = false) {
   };
 }
 
+/**
+ * @method fetchLocationConfig
+ * @summary Get the location search configuration from the API
+ */
 export function fetchLocationConfig(windowId, viewId = null) {
   return (dispatch) => {
     const identifier = viewId ? viewId : windowId;

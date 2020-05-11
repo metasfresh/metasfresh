@@ -91,6 +91,9 @@ import { createTabTable, updateTabTable } from './TableActions';
 import { toggleFullScreen, preFormatPostDATA } from '../utils';
 import { getScope, parseToDisplay } from '../utils/documentListHelper';
 
+/*
+ * Action creator called when quick actions are successfully fetched
+ */
 export function fetchedQuickActions(windowId, id, data) {
   return {
     type: FETCHED_QUICK_ACTIONS,
@@ -102,6 +105,9 @@ export function fetchedQuickActions(windowId, id, data) {
   };
 }
 
+/*
+ * Action creator to delete quick actions from the store
+ */
 export function deleteQuickActions(windowId, id) {
   return {
     type: DELETE_QUICK_ACTIONS,
@@ -525,7 +531,8 @@ export function deselectTableItems(ids, windowType, viewId) {
 // TODO: Just a quick thunk action creator to test Tables reducer
 // but looks like this can actually replace the `initTabs`.
 /*
- * Action creator for fetching single tab's rows
+ * @method fetchTab
+ * @summary Action creator for fetching single tab's rows
  */
 export function fetchTab(tabId, windowType, docId) {
   return (dispatch) => {
