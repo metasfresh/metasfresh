@@ -1,32 +1,9 @@
 package de.metas.ui.web.view;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.stream.Stream;
-
-import javax.annotation.PostConstruct;
-
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.lang.IAutoCloseable;
-import org.adempiere.util.lang.MutableInt;
-import org.adempiere.util.lang.impl.TableRecordReferenceSet;
-import org.compiere.Adempiere;
-import org.compiere.util.DB;
-import org.slf4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.scheduling.annotation.Async;
-import org.springframework.stereotype.Repository;
-
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Streams;
-
 import de.metas.logging.LogManager;
 import de.metas.ui.web.base.model.I_T_WEBUI_ViewSelection;
 import de.metas.ui.web.base.model.I_T_WEBUI_ViewSelectionLine;
@@ -41,7 +18,28 @@ import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.controller.DocumentPermissionsHelper;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.service.ISysConfigBL;
+import org.adempiere.util.lang.IAutoCloseable;
+import org.adempiere.util.lang.MutableInt;
+import org.adempiere.util.lang.impl.TableRecordReferenceSet;
+import org.compiere.Adempiere;
+import org.compiere.util.DB;
+import org.slf4j.Logger;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.stereotype.Repository;
+
+import javax.annotation.PostConstruct;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Stream;
 
 /*
  * #%L
@@ -71,27 +69,26 @@ public class ViewsRepository implements IViewsRepository
 	private static final Logger logger = LogManager.getLogger(ViewsRepository.class);
 
 	private final ImmutableMap<ViewFactoryKey, IViewFactory> factories;
-	@Autowired
-	private SqlViewFactory defaultFactory;
+	private final SqlViewFactory defaultFactory;
 
-	@Autowired
-	private MenuTreeRepository menuTreeRepo;
+	private final MenuTreeRepository menuTreeRepo;
 
 	@Value("${metasfresh.webui.view.truncateOnStartUp:true}")
 	private boolean truncateSelectionOnStartUp;
 
 	private final ImmutableMap<WindowId, IViewsIndexStorage> viewsIndexStorages;
-	private final IViewsIndexStorage defaultViewsIndexStorage = new DefaultViewsRepositoryStorage();
+	private final IViewsIndexStorage defaultViewsIndexStorage;
 
 	/**
-	 *
-	 * @param neededForDBAccess not used in here, but we need to cause spring to initialize it <b>before</b> this component can be initialized.
-	 *            So, if you clean this up, please make sure that the webui-API still starts up ^^.
+	 * @param DO_NOT_DELETE_neededForDBAccess not used in here, but we need to cause spring to initialize it <b>before</b> this component can be initialized.
+	 *                                        So, if you clean this up, please make sure that the webui-API still starts up ^^.
 	 */
 	public ViewsRepository(
-			@NonNull final Adempiere neededForDBAccess,
+			@SuppressWarnings("unused") @NonNull final Adempiere DO_NOT_DELETE_neededForDBAccess,
 			@NonNull final List<IViewFactory> viewFactories,
-			@NonNull final Optional<List<IViewsIndexStorage>> viewIndexStorages)
+			@SuppressWarnings("OptionalUsedAsFieldOrParameterType") @NonNull final Optional<List<IViewsIndexStorage>> viewIndexStorages,
+			final SqlViewFactory defaultFactory,
+			final MenuTreeRepository menuTreeRepo)
 	{
 		factories = createFactoriesMap(viewFactories);
 		factories.values().forEach(viewFactory -> viewFactory.setViewsRepository(this));
@@ -100,6 +97,11 @@ public class ViewsRepository implements IViewsRepository
 		this.viewsIndexStorages = createViewIndexStoragesMap(viewIndexStorages.orElseGet(ImmutableList::of));
 		this.viewsIndexStorages.values().forEach(viewsIndexStorage -> viewsIndexStorage.setViewsRepository(this));
 		logger.info("Registered following view index storages: {}", this.viewsIndexStorages);
+		this.defaultFactory = defaultFactory;
+		this.menuTreeRepo = menuTreeRepo;
+
+		final int viewExpirationTimeoutInMinutes = Services.get(ISysConfigBL.class).getIntValue("de.metas.ui.web.view.ViewExpirationTimeoutInMinutes", 60);
+		defaultViewsIndexStorage = new DefaultViewsRepositoryStorage(viewExpirationTimeoutInMinutes);
 	}
 
 	@PostConstruct
@@ -163,7 +165,7 @@ public class ViewsRepository implements IViewsRepository
 		return ImmutableMap.copyOf(factories);
 	}
 
-	private static ImmutableMap<WindowId, IViewsIndexStorage> createViewIndexStoragesMap(List<IViewsIndexStorage> viewsIndexStorages)
+	private static ImmutableMap<WindowId, IViewsIndexStorage> createViewIndexStoragesMap(final List<IViewsIndexStorage> viewsIndexStorages)
 	{
 		final ImmutableMap.Builder<WindowId, IViewsIndexStorage> map = ImmutableMap.builder();
 
@@ -184,7 +186,7 @@ public class ViewsRepository implements IViewsRepository
 		return map.build();
 	}
 
-	private final IViewFactory getFactory(final WindowId windowId, final JSONViewDataType viewType)
+	private IViewFactory getFactory(final WindowId windowId, final JSONViewDataType viewType)
 	{
 		IViewFactory factory = factories.get(ViewFactoryKey.of(windowId, viewType));
 		if (factory != null)
@@ -398,7 +400,7 @@ public class ViewsRepository implements IViewsRepository
 			return;
 		}
 
-		try (final IAutoCloseable c = ViewChangesCollector.currentOrNewThreadLocalCollector())
+		try (final IAutoCloseable ignored = ViewChangesCollector.currentOrNewThreadLocalCollector())
 		{
 			final MutableInt notifiedCount = MutableInt.zero();
 			streamAllViews()
