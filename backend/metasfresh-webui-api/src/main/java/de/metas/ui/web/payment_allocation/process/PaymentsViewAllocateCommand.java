@@ -9,7 +9,6 @@ import javax.annotation.Nullable;
 import org.adempiere.exceptions.AdempiereException;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 
 import de.metas.banking.payment.paymentallocation.service.AllocationAmounts;
 import de.metas.banking.payment.paymentallocation.service.PayableDocument;
@@ -17,11 +16,11 @@ import de.metas.banking.payment.paymentallocation.service.PaymentAllocationBuild
 import de.metas.banking.payment.paymentallocation.service.PaymentAllocationBuilder.PayableRemainingOpenAmtPolicy;
 import de.metas.banking.payment.paymentallocation.service.PaymentAllocationResult;
 import de.metas.banking.payment.paymentallocation.service.PaymentDocument;
-import de.metas.currency.CurrencyCode;
+import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingFeeCalculation;
+import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingServiceCompanyService;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.money.MoneyService;
-import de.metas.organization.OrgId;
 import de.metas.ui.web.payment_allocation.InvoiceRow;
 import de.metas.ui.web.payment_allocation.PaymentRow;
 import de.metas.util.lang.CoalesceUtil;
@@ -55,24 +54,32 @@ import lombok.Singular;
 public class PaymentsViewAllocateCommand
 {
 	private final MoneyService moneyService;
+	private final InvoiceProcessingServiceCompanyService invoiceProcessingServiceCompanyService;
 
 	private final PaymentRow paymentRow;
 	private final List<InvoiceRow> invoiceRows;
 	private final PayableRemainingOpenAmtPolicy payableRemainingOpenAmtPolicy;
+	private final boolean allowPurchaseSalesInvoiceCompensation;
 	private final LocalDate dateTrx;
 
 	@Builder
 	private PaymentsViewAllocateCommand(
 			@NonNull final MoneyService moneyService,
+			@NonNull final InvoiceProcessingServiceCompanyService invoiceProcessingServiceCompanyService,
+			//
 			@Nullable final PaymentRow paymentRow,
 			@NonNull @Singular final ImmutableList<InvoiceRow> invoiceRows,
 			@Nullable final PayableRemainingOpenAmtPolicy payableRemainingOpenAmtPolicy,
+			@NonNull final Boolean allowPurchaseSalesInvoiceCompensation,
 			@Nullable final LocalDate dateTrx)
 	{
 		this.moneyService = moneyService;
+		this.invoiceProcessingServiceCompanyService = invoiceProcessingServiceCompanyService;
+
 		this.paymentRow = paymentRow;
 		this.invoiceRows = invoiceRows;
 		this.payableRemainingOpenAmtPolicy = CoalesceUtil.coalesce(payableRemainingOpenAmtPolicy, PayableRemainingOpenAmtPolicy.DO_NOTHING);
+		this.allowPurchaseSalesInvoiceCompensation = allowPurchaseSalesInvoiceCompensation;
 		this.dateTrx = dateTrx != null ? dateTrx : SystemTime.asLocalDate();
 	}
 
@@ -118,88 +125,44 @@ public class PaymentsViewAllocateCommand
 				.collect(ImmutableList.toImmutableList());
 
 		return PaymentAllocationBuilder.newBuilder()
-				.orgId(getOrgId())
-				.currencyId(getCurrencyId())
+				.invoiceProcessingServiceCompanyService(invoiceProcessingServiceCompanyService)
+				//
 				.dateTrx(dateTrx)
 				.dateAcct(dateTrx)
 				.paymentDocuments(paymentDocuments)
 				.payableDocuments(invoiceDocuments)
 				.allowPartialAllocations(true)
-				.payableRemainingOpenAmtPolicy(payableRemainingOpenAmtPolicy);
-	}
-
-	private OrgId getOrgId()
-	{
-		if (paymentRow != null)
-		{
-			return paymentRow.getOrgId();
-		}
-
-		if (!invoiceRows.isEmpty())
-		{
-			final ImmutableSet<OrgId> invoiceOrgIds = invoiceRows.stream()
-					.map(invoiceRow -> invoiceRow.getOrgId())
-					.collect(ImmutableSet.toImmutableSet());
-			if (invoiceOrgIds.size() != 1)
-			{
-				throw new AdempiereException("More than one organization found");
-			}
-			else
-			{
-				return invoiceOrgIds.iterator().next();
-			}
-		}
-
-		throw new AdempiereException("Cannot detect organization if no payments and no invoices were specified");
-	}
-
-	private CurrencyId getCurrencyId()
-	{
-		final CurrencyCode currencyCode = getCurrencyCode();
-		return moneyService.getCurrencyIdByCurrencyCode(currencyCode);
-	}
-
-	private CurrencyCode getCurrencyCode()
-	{
-		if (paymentRow != null)
-		{
-			return paymentRow.getOpenAmt().getCurrencyCode();
-		}
-
-		if (!invoiceRows.isEmpty())
-		{
-			final ImmutableSet<CurrencyCode> invoiceCurrencyCodes = invoiceRows.stream()
-					.map(invoiceRow -> invoiceRow.getOpenAmt().getCurrencyCode())
-					.collect(ImmutableSet.toImmutableSet());
-			if (invoiceCurrencyCodes.size() != 1)
-			{
-				throw new AdempiereException("More than one currency found");
-			}
-			else
-			{
-				return invoiceCurrencyCodes.iterator().next();
-			}
-		}
-
-		throw new AdempiereException("Cannot detect currency if no payments and no invoices were specified");
+				.payableRemainingOpenAmtPolicy(payableRemainingOpenAmtPolicy)
+				.allowPurchaseSalesInvoiceCompensation(allowPurchaseSalesInvoiceCompensation);
 	}
 
 	private PayableDocument toPayableDocument(final InvoiceRow row)
 	{
 		final Money openAmt = moneyService.toMoney(row.getOpenAmt());
 		final Money discountAmt = moneyService.toMoney(row.getDiscountAmt());
+		final CurrencyId currencyId = openAmt.getCurrencyId();
+
+		final InvoiceProcessingFeeCalculation invoiceProcessingFeeCalculation = row.getServiceFeeCalculation();
+		final Money invoiceProcessingFee = invoiceProcessingFeeCalculation != null
+				? moneyService.toMoney(invoiceProcessingFeeCalculation.getFeeAmountIncludingTax())
+				: Money.zero(currencyId);
+
+		final Money payAmt = openAmt.subtract(discountAmt).subtract(invoiceProcessingFee);
 
 		return PayableDocument.builder()
+				.orgId(row.getOrgId())
 				.invoiceId(row.getInvoiceId())
 				.bpartnerId(row.getBPartnerId())
 				.documentNo(row.getDocumentNo())
-				.isSOTrx(row.getSoTrx().toBoolean())
-				.creditMemo(row.isCreditMemo())
+				.soTrx(row.getDocBaseType().getSoTrx())
+				.creditMemo(row.getDocBaseType().isCreditMemo())
 				.openAmt(openAmt)
 				.amountsToAllocate(AllocationAmounts.builder()
-						.payAmt(openAmt)
+						.payAmt(payAmt)
 						.discountAmt(discountAmt)
+						.invoiceProcessingFee(invoiceProcessingFee)
 						.build())
+				.invoiceProcessingFeeCalculation(invoiceProcessingFeeCalculation)
 				.build();
 	}
 
@@ -208,6 +171,7 @@ public class PaymentsViewAllocateCommand
 		final Money openAmt = moneyService.toMoney(row.getOpenAmt());
 
 		return PaymentDocument.builder()
+				.orgId(row.getOrgId())
 				.paymentId(row.getPaymentId())
 				.bpartnerId(row.getBPartnerId())
 				.documentNo(row.getDocumentNo())
