@@ -178,19 +178,20 @@ final class CacheInvalidationRemoteHandler implements IEventListener
 		// If we would not do so, we would have an infinite loop here.
 		if (event.isLocalEvent())
 		{
+			logger.debug("onEvent - ignoring local event={}", event);
 			return;
 		}
 
 		final CacheInvalidateMultiRequest request = createRequestFromEvent(event);
 		if (request == null)
 		{
-			logger.debug("Ignored event: {}", event);
+			logger.debug("onEvent - ignoring event without payload; event={}", event);
 			return;
 		}
 
 		//
 		// Reset cache for TableName/Record_ID
-		logger.debug("Resetting local cache for {} because we got remote event: {}", request, event);
+		logger.debug("onEvent - resetting local cache for request {} because we got remote event={}", request, event);
 		CacheMgt.get().reset(request, CacheMgt.ResetMode.LOCAL); // don't broadcast it anymore because else we would introduce recursion
 	}
 
@@ -209,7 +210,6 @@ final class CacheInvalidationRemoteHandler implements IEventListener
 		final String jsonRequest = event.getProperty(EVENT_PROPERTY);
 		if (Check.isEmpty(jsonRequest, true))
 		{
-			logger.debug("Ignored event without request: {}", event);
 			return null;
 		}
 

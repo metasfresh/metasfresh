@@ -231,7 +231,7 @@ final class EventBus implements IEventBus
 			{
 				eventToPost = event.withStatusWasLogged();
 
-			final EventLogService eventLogService = SpringContextHolder.instance.getBean(EventLogService.class);
+				final EventLogService eventLogService = SpringContextHolder.instance.getBean(EventLogService.class);
 				eventLogService.saveEvent(eventToPost, this);
 			}
 			else
@@ -239,7 +239,7 @@ final class EventBus implements IEventBus
 				eventToPost = event;
 			}
 
-		logger.debug("{} - Posting event: {}", this, eventToPost);
+			logger.debug("{} - Posting event: {}", this, eventToPost);
 			eventBus.post(eventToPost);
 		}
 	}
@@ -267,7 +267,7 @@ final class EventBus implements IEventBus
 		{
 			try (final MDCCloseable mdc = EventMDC.putEvent(event))
 			{
-				logger.debug("TypedConsumerAsEventListener received event; eventBodyType={}", eventBodyType.getName());
+				logger.debug("TypedConsumerAsEventListener.onEvent - eventBodyType={}", eventBodyType.getName());
 
 				final String json = event.getPropertyAsString(PROP_Body);
 				final T obj = jsonDeserializer.readValue(json);
@@ -289,8 +289,7 @@ final class EventBus implements IEventBus
 		{
 			try (final MDCCloseable mdc = EventMDC.putEvent(event))
 			{
-				logger.debug("GuavaEventListenerAdapter received event; referenced eventListener={}", eventListener);
-
+				logger.debug("GuavaEventListenerAdapter.onEvent - eventListener to invoke={}", eventListener);
 				invokeEventListener(this.eventListener, event);
 			}
 		}
@@ -330,8 +329,8 @@ final class EventBus implements IEventBus
 			}
 			else
 			{
-				logger.warn("Got exception will invoking {} with {}", eventListener, event, ex);
-		}
+				logger.warn("Got exception while invoking eventListener={} with event={}", eventListener, event, ex);
+			}
 		}
 		finally
 		{
