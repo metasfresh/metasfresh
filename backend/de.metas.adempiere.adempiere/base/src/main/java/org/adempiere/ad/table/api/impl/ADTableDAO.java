@@ -395,6 +395,6 @@ public class ADTableDAO implements IADTableDAO
 	public @NonNull ReferenceTooltipType getReferenceTooltipTypeByTableName(@NonNull final String tableName)
 	{
 		//  // TODO tbp: implement this
-		return ReferenceTooltipType.Description;
+		return ReferenceTooltipType.DescriptionFallbackToTableIdentifier;
 	}
 }
