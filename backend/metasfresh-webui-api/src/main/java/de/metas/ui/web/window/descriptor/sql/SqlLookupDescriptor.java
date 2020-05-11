@@ -813,7 +813,6 @@ public final class SqlLookupDescriptor implements ISqlLookupDescriptor
 			return tooltipType;
 		}
 
-		// TODO teo:  HELPME: probabaly this should be used in more places, ie for TableDirect. how? see other TODOs
 		public void setTooltipType(@NonNull final TooltipType tooltipType)
 		{
 			this.tooltipType = tooltipType;
