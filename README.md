@@ -1,4 +1,4 @@
-# <img src='/images/metasfresh_logo_green.jpg' height='60' alt='metasfresh Logo' aria-label='metasfresh.com' /></a>
+# <img src='/images/metasfresh-logo-slogan-969x248.png' height='60' alt='metasfresh Logo - We do Open Source ERP' aria-label='metasfresh.com' /></a>
 
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/30ecd0d9ba8a4561a60335644b592418)](https://www.codacy.com/gh/metasfresh/metasfresh?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=metasfresh/metasfresh&amp;utm_campaign=Badge_Grade)
 [![release](https://img.shields.io/badge/release-5.144-blue.svg)](https://github.com/metasfresh/metasfresh/releases/tag/5.144)
