@@ -34,25 +34,11 @@ public enum ModelChangeType implements TimingType
 
 	AFTER_NEW_REPLICATION(ModelValidator.TYPE_AFTER_NEW_REPLICATION), AFTER_CHANGE_REPLICATION(ModelValidator.TYPE_AFTER_CHANGE_REPLICATION), BEFORE_DELETE_REPLICATION(ModelValidator.TYPE_BEFORE_DELETE_REPLICATION),
 
-	BEFORE_SAVE_TRX(ModelValidator.TYPE_BEFORE_SAVE_TRX), // metas: tsa: 02380
-
-	/**
-	 * <ul>
-	 * <li>Subsequent processing takes place after the po has basically been saved validated and saved</li>
-	 * <li>This processing can take place immediately after the actual processing, but also later on (e.g. batch-processing on the server)</li>
-	 * <li>If the model validator's modelChange() method throws an exception or returns a string, an AD_Issue is created</li>
-	 * </ul>
-	 *
-	 * @deprecated see {@link ModelValidator#TYPE_SUBSEQUENT}
-	 */
-	// metas-ts 0176
-	@Deprecated
-	SUBSEQUENT(ModelValidator.TYPE_SUBSEQUENT);
+	BEFORE_SAVE_TRX(ModelValidator.TYPE_BEFORE_SAVE_TRX); // metas: tsa: 02380
 
 	//
 	// Implementation
 	//
-
 	private final int changeType;
 
 	ModelChangeType(final int changeType)
@@ -125,8 +111,7 @@ public enum ModelChangeType implements TimingType
 				|| this == AFTER_NEW_REPLICATION
 				|| this == AFTER_CHANGE
 				|| this == AFTER_CHANGE_REPLICATION
-				|| this == AFTER_DELETE
-				|| this == SUBSEQUENT;
+				|| this == AFTER_DELETE;
 	}
 
 	public boolean isBeforeSaveTrx()
