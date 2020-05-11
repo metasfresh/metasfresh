@@ -82,10 +82,6 @@ public interface I_AD_Table
 	 */
 	public int getAD_Client_ID();
 
-	public org.compiere.model.I_AD_Client getAD_Client();
-
-    /** Column definition for AD_Client_ID */
-    public static final org.adempiere.model.ModelColumn<I_AD_Table, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_AD_Table, org.compiere.model.I_AD_Client>(I_AD_Table.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
     /** Column name AD_Client_ID */
     public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
@@ -93,7 +89,7 @@ public interface I_AD_Table
 	 * Set Sektion.
 	 * Organisatorische Einheit des Mandanten
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -103,18 +99,12 @@ public interface I_AD_Table
 	 * Get Sektion.
 	 * Organisatorische Einheit des Mandanten
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	public int getAD_Org_ID();
 
-	public org.compiere.model.I_AD_Org getAD_Org();
-
-	public void setAD_Org(org.compiere.model.I_AD_Org AD_Org);
-
-    /** Column definition for AD_Org_ID */
-    public static final org.adempiere.model.ModelColumn<I_AD_Table, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<I_AD_Table, org.compiere.model.I_AD_Org>(I_AD_Table.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
     /** Column name AD_Org_ID */
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
@@ -249,8 +239,6 @@ public interface I_AD_Table
 	 */
 	public int getCreatedBy();
 
-    /** Column definition for CreatedBy */
-    public static final org.adempiere.model.ModelColumn<I_AD_Table, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<I_AD_Table, org.compiere.model.I_AD_User>(I_AD_Table.class, "CreatedBy", org.compiere.model.I_AD_User.class);
     /** Column name CreatedBy */
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
@@ -577,7 +565,6 @@ public interface I_AD_Table
 
 	/**
 	 * Set Name.
-	 * Alphanumeric identifier of the entity
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
@@ -587,7 +574,6 @@ public interface I_AD_Table
 
 	/**
 	 * Get Name.
-	 * Alphanumeric identifier of the entity
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
@@ -601,7 +587,7 @@ public interface I_AD_Table
     public static final String COLUMNNAME_Name = "Name";
 
 	/**
-	 * Set Personal Data Category.
+	 * Set Datenschutz-Kategorie.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
@@ -610,7 +596,7 @@ public interface I_AD_Table
 	public void setPersonalDataCategory (java.lang.String PersonalDataCategory);
 
 	/**
-	 * Get Personal Data Category.
+	 * Get Datenschutz-Kategorie.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
@@ -701,6 +687,54 @@ public interface I_AD_Table
     public static final String COLUMNNAME_TableName = "TableName";
 
 	/**
+	 * Set Technical note.
+	 * A note that is not indended for the user documentation, but for developers, customizers etc
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setTechnicalNote (java.lang.String TechnicalNote);
+
+	/**
+	 * Get Technical note.
+	 * A note that is not indended for the user documentation, but for developers, customizers etc
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getTechnicalNote();
+
+    /** Column definition for TechnicalNote */
+    public static final org.adempiere.model.ModelColumn<I_AD_Table, Object> COLUMN_TechnicalNote = new org.adempiere.model.ModelColumn<I_AD_Table, Object>(I_AD_Table.class, "TechnicalNote", null);
+    /** Column name TechnicalNote */
+    public static final String COLUMNNAME_TechnicalNote = "TechnicalNote";
+
+	/**
+	 * Set Tooltip Type.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setTooltipType (java.lang.String TooltipType);
+
+	/**
+	 * Get Tooltip Type.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getTooltipType();
+
+    /** Column definition for TooltipType */
+    public static final org.adempiere.model.ModelColumn<I_AD_Table, Object> COLUMN_TooltipType = new org.adempiere.model.ModelColumn<I_AD_Table, Object>(I_AD_Table.class, "TooltipType", null);
+    /** Column name TooltipType */
+    public static final String COLUMNNAME_TooltipType = "TooltipType";
+
+	/**
 	 * Get Aktualisiert.
 	 * Date this record was updated
 	 *
@@ -725,8 +759,6 @@ public interface I_AD_Table
 	 */
 	public int getUpdatedBy();
 
-    /** Column definition for UpdatedBy */
-    public static final org.adempiere.model.ModelColumn<I_AD_Table, org.compiere.model.I_AD_User> COLUMN_UpdatedBy = new org.adempiere.model.ModelColumn<I_AD_Table, org.compiere.model.I_AD_User>(I_AD_Table.class, "UpdatedBy", org.compiere.model.I_AD_User.class);
     /** Column name UpdatedBy */
     public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
 }

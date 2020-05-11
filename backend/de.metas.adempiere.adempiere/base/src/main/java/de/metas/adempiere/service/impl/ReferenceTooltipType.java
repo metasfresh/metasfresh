@@ -31,30 +31,25 @@ import org.compiere.model.X_AD_Table;
 /**
  * This controls what Tooltip value is used for Lists
  */
-// TODO tbp: introduce this reflist to ad_table
 public enum ReferenceTooltipType implements ReferenceListAwareEnum
 {
 	/**
-	 * Tooltip shows nothing
-	 */
-	None(X_AD_Table.ACCESSLEVEL_All), //  // TODO tbp: introduce the ref list to ad table
-
-	/**
 	 * Tooltip shows Description field if it exists. Else nothing.
 	 */
-	Description("Description"), //  // TODO tbp: introduce the ref list to ad table
+	Description(X_AD_Table.TOOLTIPTYPE_Description),
 
 	/**
 	 * Tooltip shows the table identifier.
 	 */
-	TableIdentifier("TableIdentifier"), //  // TODO tbp: introduce the ref list to ad table
+	TableIdentifier(X_AD_Table.TOOLTIPTYPE_TableIdentifier),
 
 	/**
 	 * Tooltip shows the Description field if it is not null, else the table identifier.
 	 */
-	DescriptionFallbackToTableIdentifier("DescriptionFallbackToTableIdentifier"); //  // TODO tbp: introduce the ref list to ad table
+	DescriptionFallbackToTableIdentifier(X_AD_Table.TOOLTIPTYPE_DescriptionFallbackToTableIdentifier);
 
 	public static final ReferenceTooltipType DEFAULT = DescriptionFallbackToTableIdentifier;
+
 	@Getter
 	private final String code;
 

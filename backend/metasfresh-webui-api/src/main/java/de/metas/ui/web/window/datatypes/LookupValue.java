@@ -169,7 +169,6 @@ public abstract class LookupValue
 				}
 				break;
 			default:
-			case None:
 			case Description:
 				displayNameTrl = trl(adLanguage, namePair.getName());
 				descriptionTrl = trl(adLanguage, namePair.getDescription());
