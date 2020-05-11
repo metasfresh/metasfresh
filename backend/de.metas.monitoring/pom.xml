@@ -13,7 +13,7 @@
 	<version>10.0.0</version>
 
 	<properties>
-		<elastic-apm.version>1.13.0</elastic-apm.version>
+		<elastic-apm.version>1.15.0</elastic-apm.version>
 		<metasfresh.version>[1,10.0.0]</metasfresh.version>
 	</properties>
 

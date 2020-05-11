@@ -117,13 +117,7 @@ public interface PerformanceMonitoringService
 
 		CACHE_OPERATION("cache-operation"),
 
-		REMOTE_EVENT_POST("remote-event-post"),
-
-		REMOTE_EVENT_PROCESS("remote-event-process"),
-
-		LOCAL_EVENT_POST("local-event-post"),
-
-		LOCAL_EVENT_PROCESS("local-event-process");
+		EVENTBUS_REMOTE_ENDPOINT("eventbus-remote-endpoint");
 
 		private Type(String code)
 		{
@@ -142,7 +136,11 @@ public interface PerformanceMonitoringService
 
 		CACHE_INVALIDATE("cache-invalidate"),
 
-		CACHE_LOAD("cache-load");
+		CACHE_LOAD("cache-load"),
+
+		EVENT_SEND("event-send"),
+
+		EVENT_RECEIVE("event-receive");
 
 		private SubType(String code)
 		{

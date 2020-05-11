@@ -22,7 +22,7 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.SetMultimap;
 
-import de.metas.event.EventBusConstants;
+import de.metas.event.EventBusConfig;
 import de.metas.event.IEventBus;
 import de.metas.event.IEventBusFactory;
 import de.metas.event.IEventListener;
@@ -75,8 +75,8 @@ public class EventBusFactory implements IEventBusFactory
 		JMXRegistry.get().registerJMX(new JMXEventBusManager(remoteEndpoint), OnJMXAlreadyExistsPolicy.Replace);
 
 		// Setup default user notification topics
-		addAvailableUserNotificationsTopic(EventBusConstants.TOPIC_GeneralUserNotifications);
-		addAvailableUserNotificationsTopic(EventBusConstants.TOPIC_GeneralUserNotificationsLocal);
+		addAvailableUserNotificationsTopic(EventBusConfig.TOPIC_GeneralUserNotifications);
+		addAvailableUserNotificationsTopic(EventBusConfig.TOPIC_GeneralUserNotificationsLocal);
 	}
 
 	@Override
@@ -142,7 +142,7 @@ public class EventBusFactory implements IEventBusFactory
 		// because if we would return null or fail here a lot of BLs could fail.
 		if (Type.REMOTE.equals(topic.getType()))
 		{
-			if (!EventBusConstants.isEnabled())
+			if (!EventBusConfig.isEnabled())
 			{
 				logger.warn("Remote events are disabled via EventBusConstants. Creating local-only eventBus for topic={}", topic);
 			}
@@ -165,7 +165,7 @@ public class EventBusFactory implements IEventBusFactory
 	private ExecutorService createExecutorOrNull(@NonNull final String eventBusName)
 	{
 		// Setup EventBus executor
-		if (EventBusConstants.isEventBusPostEventsAsync())
+		if (EventBusConfig.isEventBusPostEventsAsync())
 		{
 			return Executors.newSingleThreadExecutor(CustomizableThreadFactory.builder()
 					.setThreadNamePrefix(getClass().getName() + "-" + eventBusName + "-AsyncExecutor")

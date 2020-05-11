@@ -25,10 +25,12 @@ package de.metas.event;
 import java.lang.management.ManagementFactory;
 import java.util.UUID;
 
+import org.adempiere.service.ISysConfigBL;
 import org.compiere.Adempiere;
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
+import de.metas.util.Services;
 
 /**
  * Misc {@link IEventBus} related constants.
@@ -36,7 +38,7 @@ import de.metas.logging.LogManager;
  * @author tsa
  *
  */
-public final class EventBusConstants
+public final class EventBusConfig
 {
 	public static Logger getLogger(final Class<?> clazz)
 	{
@@ -45,8 +47,7 @@ public final class EventBusConstants
 
 	private static boolean distributedEventsEnabled = true;
 
-
-	private EventBusConstants()
+	private EventBusConfig()
 	{
 	}
 
@@ -73,14 +74,14 @@ public final class EventBusConstants
 		}
 
 		distributedEventsEnabled = false;
-		getLogger(EventBusConstants.class).info("Distributed events broadcasting disabled");
+		getLogger(EventBusConfig.class).info("Distributed events broadcasting disabled");
 	}
 
 	/**
 	 * Topic used for general notifications. To be used mainly for broadcasting messages to everybody.
 	 */
 	public static final Topic TOPIC_GeneralUserNotifications = Topic.remote("de.metas.event.GeneralNotifications");
-	
+
 	/**
 	 * Topic used for general notifications inside this JVM instance.
 	 *
@@ -94,13 +95,13 @@ public final class EventBusConstants
 	private static final String SENDER_ID = ManagementFactory.getRuntimeMXBean().getName() + "-" + UUID.randomUUID().toString();
 
 	/** @return world wide unique Sender ID of this JVM instance */
-	public static final String getSenderId()
+	public static String getSenderId()
 	{
 		return SENDER_ID;
 	}
 
 	/** @return true of calls to {@link IEventBus#postEvent(Event)} shall be performed asynchronously */
-	public static final boolean isEventBusPostEventsAsync()
+	public static boolean isEventBusPostEventsAsync()
 	{
 		// NOTE: in case of unit tests which are checking what notifications were arrived,
 		// allowing the events to be posted async could be a problem because the event might arrive after the check.
@@ -110,7 +111,12 @@ public final class EventBusConstants
 		}
 
 		// Default: yes, we go async all the way!
-		return true;
+		return Services.get(ISysConfigBL.class).getBooleanValue("de.metas.event.EventBusPostEventsAsync", false);
+	}
+
+	public static boolean isEventsWithTracingInfos()
+	{
+		return Services.get(ISysConfigBL.class).getBooleanValue("de.metas.event.EventsWithTracingInfos", false);
 	}
 
 }

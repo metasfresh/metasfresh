@@ -1,8 +1,7 @@
 package de.metas.event.impl;
 
 import java.util.IdentityHashMap;
-import java.util.Objects;
-import java.util.Map.Entry;
+
 
 /*
  * #%L
@@ -43,19 +42,13 @@ import com.google.common.eventbus.SubscriberExceptionContext;
 import com.google.common.eventbus.SubscriberExceptionHandler;
 
 import de.metas.event.Event;
-import de.metas.event.Event.Builder;
-import de.metas.event.EventBusConstants;
+import de.metas.event.EventBusConfig;
 import de.metas.event.IEventBus;
 import de.metas.event.IEventListener;
 import de.metas.event.Type;
 import de.metas.event.log.EventLogEntryCollector;
 import de.metas.event.log.EventLogService;
 import de.metas.event.log.EventLogUserService;
-import de.metas.monitoring.adapter.NoopPerformanceMonitoringService;
-import de.metas.monitoring.adapter.PerformanceMonitoringService;
-import de.metas.monitoring.adapter.PerformanceMonitoringService.SpanMetadata;
-import de.metas.monitoring.adapter.PerformanceMonitoringService.TransactionMetadata;
-import de.metas.monitoring.adapter.PerformanceMonitoringService.TransactionMetadata.TransactionMetadataBuilder;
 import de.metas.util.Check;
 import de.metas.util.JSONObjectMapper;
 import lombok.AllArgsConstructor;
@@ -65,7 +58,7 @@ import lombok.ToString;
 
 final class EventBus implements IEventBus
 {
-	private static final transient Logger logger = EventBusConstants.getLogger(EventBus.class);
+	private static final transient Logger logger = EventBusConfig.getLogger(EventBus.class);
 
 	/** Log all event bus exceptions */
 	private static final SubscriberExceptionHandler exceptionHandler = new SubscriberExceptionHandler()
@@ -79,8 +72,6 @@ final class EventBus implements IEventBus
 			logger.error(errmsg, exception);
 		}
 	};
-
-	private static final String PROP_TRACE_INFO_PREFIX = "traceInfo.";
 
 	private static final String PROP_Body = "body";
 	private static final JSONObjectMapper<Object> sharedJsonSerializer = JSONObjectMapper.forClass(Object.class);
@@ -234,36 +225,23 @@ final class EventBus implements IEventBus
 				return;
 			}
 
-			final Builder eventToPostBuilder;
+			final Event eventToPost;
 
 			// as long as we have just one common event-log-DB, we store events only on the machine they were created on, in order to avoid duplicates.
 			if (event.isShallBeLogged() && event.isLocalEvent())
 			{
-				eventToPostBuilder = event.withStatusWasLogged().toBuilder();
+				eventToPost = event.withStatusWasLogged();
 
 				final EventLogService eventLogService = SpringContextHolder.instance.getBean(EventLogService.class);
-				eventLogService.saveEvent(eventToPostBuilder.build(), this);
+				eventLogService.saveEvent(eventToPost, this);
 			}
 			else
 			{
-				eventToPostBuilder = event.toBuilder();
+				eventToPost = event;
 			}
 
-			final PerformanceMonitoringService perfMonService = SpringContextHolder.instance.getBeanOr(PerformanceMonitoringService.class, NoopPerformanceMonitoringService.INSTANCE);
-
-			final SpanMetadata request = SpanMetadata.builder()
-					.type(de.metas.monitoring.adapter.PerformanceMonitoringService.Type.LOCAL_EVENT_POST.getCode())
-					.name("Post local-event on topic " + topicName)
-					.label("de.metas.event.local-event.senderId", event.getSenderId())
-					.label("de.metas.event.local-event.topicName", topicName)
-					// allow perfMonService to inject properties into the event which enable distributed tracing
-					.distributedHeadersInjector((name, value) -> eventToPostBuilder.putProperty(PROP_TRACE_INFO_PREFIX + name, value))
-					.build();
-			perfMonService.monitorSpan(() -> {
-				final Event eventToPost = eventToPostBuilder.build();
-				logger.debug("{} - Posting event: {}", this, eventToPost);
-				eventBus.post(eventToPost);
-			}, request);
+			logger.debug("{} - Posting event: {}", this, eventToPost);
+			eventBus.post(eventToPost);
 		}
 	}
 
@@ -312,32 +290,8 @@ final class EventBus implements IEventBus
 		{
 			try (final MDCCloseable mdc = EventMDC.putEvent(event))
 			{
-				// extract possible remote tracing infos from the event and create a (distributed) monitoring transaction.
-				final PerformanceMonitoringService perfMonService = SpringContextHolder.instance.getBeanOr(PerformanceMonitoringService.class, NoopPerformanceMonitoringService.INSTANCE);
-
-				final TransactionMetadataBuilder transactionMetadata = TransactionMetadata.builder();
-				for (final Entry<String, Object> entry : event.getProperties().entrySet())
-				{
-					final String key = entry.getKey();
-					if (key.startsWith(PROP_TRACE_INFO_PREFIX))
-					{
-						transactionMetadata.distributedTransactionHeader(
-								key.substring(PROP_TRACE_INFO_PREFIX.length()),
-								Objects.toString(entry.getValue()));
-					}
-				}
-				transactionMetadata
-						.name("Process remote-event on topic " + topicName)
-						.type(de.metas.monitoring.adapter.PerformanceMonitoringService.Type.LOCAL_EVENT_PROCESS)
-						.label("de.metas.event.remote-event.senderId", event.getSenderId())
-						.label("de.metas.event.remote-event.topicName", topicName)
-						.label("de.metas.event.remote-event.endpointImpl", this.getClass().getSimpleName());
-
-				perfMonService.monitorTransaction(() -> {
-					// actually invoke the event listener
-					logger.debug("GuavaEventListenerAdapter.onEvent - eventListener to invoke={}", eventListener);
-					invokeEventListener(this.eventListener, event);
-				}, transactionMetadata.build());
+				logger.debug("GuavaEventListenerAdapter.onEvent - eventListener to invoke={}", eventListener);
+				invokeEventListener(this.eventListener, event);
 			}
 		}
 	}
