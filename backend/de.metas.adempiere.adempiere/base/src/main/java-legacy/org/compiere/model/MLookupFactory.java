@@ -775,7 +775,7 @@ public class MLookupFactory
 		lookupInfo.setAutoComplete(tableRefInfo.isAutoComplete());
 		lookupInfo.setTranslated(isTranslated);
 		lookupInfo.setShowInactiveValues(tableRefInfo.isShowInactiveValues());
-		lookupInfo.setReferenceTooltipType(tableRefInfo.getReferenceTooltipType());
+		lookupInfo.setTooltipType(tableRefInfo.getTooltipType());
 
 		return lookupInfo;
 	}

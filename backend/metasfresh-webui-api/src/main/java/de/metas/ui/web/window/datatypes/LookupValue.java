@@ -27,7 +27,7 @@ import com.google.common.base.MoreObjects;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import de.metas.adempiere.service.impl.ReferenceTooltipType;
+import de.metas.adempiere.service.impl.TooltipType;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.process.IProcessDefaultParametersProvider;
@@ -129,10 +129,10 @@ public abstract class LookupValue
 	public static LookupValue fromNamePair(
 			@Nullable final NamePair namePair,
 			@Nullable final String adLanguage,
-			@NonNull final ReferenceTooltipType referenceTooltipType)
+			@NonNull final TooltipType tooltipType)
 	{
 		final LookupValue defaultValue = null;
-		return fromNamePair(namePair, adLanguage, defaultValue, referenceTooltipType);
+		return fromNamePair(namePair, adLanguage, defaultValue, tooltipType);
 	}
 
 	@Nullable
@@ -140,7 +140,7 @@ public abstract class LookupValue
 			@Nullable final NamePair namePair,
 			@Nullable final String adLanguage,
 			@Nullable final LookupValue defaultValue,
-			@NonNull final ReferenceTooltipType referenceTooltipType)
+			@NonNull final TooltipType tooltipType)
 	{
 		if (namePair == null)
 		{
@@ -150,7 +150,7 @@ public abstract class LookupValue
 		final ITranslatableString displayNameTrl;
 		final ITranslatableString descriptionTrl;
 
-		switch (referenceTooltipType)
+		switch (tooltipType)
 		{
 			case TableIdentifier:
 				displayNameTrl = trl(adLanguage, namePair.getName());

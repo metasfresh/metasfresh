@@ -23,7 +23,7 @@
 package de.metas.ui.web.pattribute;
 
 import com.google.common.collect.ImmutableSet;
-import de.metas.adempiere.service.impl.ReferenceTooltipType;
+import de.metas.adempiere.service.impl.TooltipType;
 import de.metas.cache.CCache.CCacheStats;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.ui.web.window.datatypes.LookupValue;
@@ -164,9 +164,9 @@ public final class ASILookupDescriptor implements LookupDescriptor, LookupDataSo
 	public LookupValue retrieveLookupValueById(final LookupDataSourceContext evalCtx)
 	{
 		final Object id = evalCtx.getIdToFilter();
-		final ReferenceTooltipType referenceTooltipType = Services.get(IADTableDAO.class).getReferenceTooltipTypeByTableName(evalCtx.getTableName());
+		final TooltipType tooltipType = Services.get(IADTableDAO.class).getReferenceTooltipTypeByTableName(evalCtx.getTableName());
 		final NamePair valueNP = attributeValuesProvider.getAttributeValueOrNull(evalCtx, id);
-		return LookupValue.fromNamePair(valueNP, evalCtx.getAD_Language(), LOOKUPVALUE_NULL, referenceTooltipType);
+		return LookupValue.fromNamePair(valueNP, evalCtx.getAD_Language(), LOOKUPVALUE_NULL, tooltipType);
 	}
 
 	@Override

@@ -22,7 +22,7 @@
 
 package org.adempiere.ad.table.api;
 
-import de.metas.adempiere.service.impl.ReferenceTooltipType;
+import de.metas.adempiere.service.impl.TooltipType;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -194,5 +194,5 @@ public interface IADTableDAO extends ISingletonService
 
 	void validate(I_AD_SQLColumn_SourceTableColumn record);
 
-	@NonNull ReferenceTooltipType getReferenceTooltipTypeByTableName(@NonNull String tableName);
+	@NonNull TooltipType getReferenceTooltipTypeByTableName(@NonNull String tableName);
 }

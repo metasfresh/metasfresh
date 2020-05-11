@@ -24,7 +24,7 @@ package org.adempiere.ad.table.api.impl;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import de.metas.adempiere.service.impl.ReferenceTooltipType;
+import de.metas.adempiere.service.impl.TooltipType;
 import de.metas.document.DocumentConstants;
 import de.metas.i18n.ITranslatableString;
 import de.metas.util.Check;
@@ -392,9 +392,9 @@ public class ADTableDAO implements IADTableDAO
 	}
 
 	@Override
-	public @NonNull ReferenceTooltipType getReferenceTooltipTypeByTableName(@NonNull final String tableName)
+	public @NonNull TooltipType getReferenceTooltipTypeByTableName(@NonNull final String tableName)
 	{
 		//  // TODO tbp: implement this
-		return ReferenceTooltipType.DescriptionFallbackToTableIdentifier;
+		return TooltipType.DescriptionFallbackToTableIdentifier;
 	}
 }

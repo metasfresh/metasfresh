@@ -24,7 +24,7 @@ package org.adempiere.ad.service.impl;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
-import de.metas.adempiere.service.impl.ReferenceTooltipType;
+import de.metas.adempiere.service.impl.TooltipType;
 import de.metas.adempiere.util.cache.annotations.CacheAllowMutable;
 import de.metas.i18n.AdMessageKey;
 import de.metas.logging.LogManager;
@@ -90,7 +90,7 @@ public class LookupDAO implements ILookupDAO
 			.setTableName(I_C_ValidCombination.Table_Name)
 			.setKeyColumn(I_C_ValidCombination.COLUMNNAME_C_ValidCombination_ID)
 			.setAutoComplete(true)
-			.setReferenceTooltipType(Services.get(IADTableDAO.class).getReferenceTooltipTypeByTableName(I_C_ValidCombination.Table_Name))  // TODO tbp: i'm not sure this works
+			.setTooltipType(Services.get(IADTableDAO.class).getReferenceTooltipTypeByTableName(I_C_ValidCombination.Table_Name))  // TODO tbp: i'm not sure this works
 			.build();
 
 	/* package */static class ColumnInfo implements IColumnInfo
@@ -166,12 +166,12 @@ public class LookupDAO implements ILookupDAO
 		private final AdWindowId zoomAD_Window_ID_Override;
 		private final boolean autoComplete;
 		private final boolean showInactiveValues;
-		@NonNull ReferenceTooltipType referenceTooltipType;
+		@NonNull TooltipType tooltipType;
 
 		@Override
-		public ReferenceTooltipType getReferenceTooltipType()
+		public TooltipType getTooltipType()
 		{
-			return referenceTooltipType;
+			return tooltipType;
 		}
 
 		private TableRefInfo(@NonNull final TableRefInfoBuilder builder)
@@ -226,7 +226,7 @@ public class LookupDAO implements ILookupDAO
 			autoComplete = builder.autoComplete;
 
 			showInactiveValues = builder.showInactiveValues;
-			referenceTooltipType = builder.referenceTooltipType;
+			tooltipType = builder.tooltipType;
 		}
 
 		@Override
@@ -243,7 +243,7 @@ public class LookupDAO implements ILookupDAO
 	@VisibleForTesting
 	public static final class TableRefInfoBuilder
 	{
-		public ReferenceTooltipType referenceTooltipType;
+		public TooltipType tooltipType;
 		private String identifier; // used only for debugging
 		private String tableName;
 		private String keyColumn;
@@ -352,9 +352,9 @@ public class LookupDAO implements ILookupDAO
 			return this;
 		}
 
-		public TableRefInfoBuilder setReferenceTooltipType(@NonNull final ReferenceTooltipType referenceTooltipType)
+		public TableRefInfoBuilder setTooltipType(@NonNull final TooltipType tooltipType)
 		{
-			this.referenceTooltipType = referenceTooltipType;
+			this.tooltipType = tooltipType;
 			return this;
 		}
 	}
@@ -543,7 +543,7 @@ public class LookupDAO implements ILookupDAO
 				final boolean autoComplete = StringUtils.toBoolean(rs.getString(13));
 				final boolean showInactiveValues = StringUtils.toBoolean(rs.getString(14));
 				final String referenceName = rs.getString("ReferenceName");
-				final ReferenceTooltipType referenceTooltipType = ReferenceTooltipType.DescriptionFallbackToTableIdentifier; // TODO tbp: this should not be hardcoded, but taken from the result set
+				final TooltipType tooltipType = TooltipType.DescriptionFallbackToTableIdentifier; // TODO tbp: this should not be hardcoded, but taken from the result set
 
 				tableRefInfo = TableRefInfo.builder()
 						.setIdentifier("AD_Reference[ID=" + AD_Reference_ID + ",Name=" + referenceName + "]")
@@ -560,7 +560,7 @@ public class LookupDAO implements ILookupDAO
 						.setZoomAD_Window_ID_Override(zoomAD_Window_ID_Override)
 						.setAutoComplete(autoComplete)
 						.setShowInactiveValues(showInactiveValues)
-						.setReferenceTooltipType(referenceTooltipType)
+						.setTooltipType(tooltipType)
 						.build();
 			}
 
@@ -617,14 +617,14 @@ public class LookupDAO implements ILookupDAO
 			autoComplete = table.isAutocomplete();
 		}
 
-		final ReferenceTooltipType referenceTooltipType = Services.get(IADTableDAO.class).getReferenceTooltipTypeByTableName(tableName);
+		final TooltipType tooltipType = Services.get(IADTableDAO.class).getReferenceTooltipTypeByTableName(tableName);
 
 		return TableRefInfo.builder()
 				.setIdentifier("Direct[FromColumn" + columnName + ",To=" + tableName + "." + columnName + "]")
 				.setTableName(tableName)
 				.setKeyColumn(keyColumn)
 				.setAutoComplete(autoComplete)
-				.setReferenceTooltipType(referenceTooltipType)
+				.setTooltipType(tooltipType)
 				.build();
 	}
 

@@ -2,7 +2,7 @@ package de.metas.ui.web.handlingunits;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableSet;
-import de.metas.adempiere.service.impl.ReferenceTooltipType;
+import de.metas.adempiere.service.impl.TooltipType;
 import de.metas.handlingunits.IHUAware;
 import de.metas.handlingunits.attribute.HUAttributeConstants;
 import de.metas.handlingunits.attribute.IAttributeValue;
@@ -288,13 +288,13 @@ public class HUEditorRowAttributes implements IViewRowAttributes
 	public LookupValuesList getAttributeTypeahead(final String attributeName, final String query)
 	{
 		final I_M_Attribute attribute = attributesStorage.getAttributeByValueKeyOrNull(attributeName);
-		final ReferenceTooltipType referenceTooltipType = Services.get(IADTableDAO.class).getReferenceTooltipTypeByTableName(I_M_Attribute.Table_Name);
+		final TooltipType tooltipType = Services.get(IADTableDAO.class).getReferenceTooltipTypeByTableName(I_M_Attribute.Table_Name);
 
 		return attributesStorage
 				.getAttributeValue(attribute)
 				.getAvailableValues()
 				.stream()
-				.map(itemNP -> LookupValue.fromNamePair(itemNP, null, referenceTooltipType))
+				.map(itemNP -> LookupValue.fromNamePair(itemNP, null, tooltipType))
 				.collect(LookupValuesList.collect())
 				.filter(LookupValueFilterPredicates.of(query), 0, 10);
 	}
@@ -303,13 +303,13 @@ public class HUEditorRowAttributes implements IViewRowAttributes
 	public LookupValuesList getAttributeDropdown(final String attributeName)
 	{
 		final I_M_Attribute attribute = attributesStorage.getAttributeByValueKeyOrNull(attributeName);
-		final ReferenceTooltipType referenceTooltipType = Services.get(IADTableDAO.class).getReferenceTooltipTypeByTableName(I_M_Attribute.Table_Name);
+		final TooltipType tooltipType = Services.get(IADTableDAO.class).getReferenceTooltipTypeByTableName(I_M_Attribute.Table_Name);
 
 		return attributesStorage
 				.getAttributeValue(attribute)
 				.getAvailableValues()
 				.stream()
-				.map(itemNP -> LookupValue.fromNamePair(itemNP, null, referenceTooltipType))
+				.map(itemNP -> LookupValue.fromNamePair(itemNP, null, tooltipType))
 				.collect(LookupValuesList.collect());
 	}
 

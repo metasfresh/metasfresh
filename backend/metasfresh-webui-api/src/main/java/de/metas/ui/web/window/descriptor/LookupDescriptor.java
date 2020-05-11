@@ -23,7 +23,7 @@
 package de.metas.ui.web.window.descriptor;
 
 import com.google.common.collect.ImmutableSet;
-import de.metas.adempiere.service.impl.ReferenceTooltipType;
+import de.metas.adempiere.service.impl.TooltipType;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
 import de.metas.ui.web.window.datatypes.WindowId;
@@ -104,8 +104,8 @@ public interface LookupDescriptor
 		return null;
 	}
 
-	default ReferenceTooltipType getReferenceTooltipType()
+	default TooltipType getTooltipType()
 	{
-		return ReferenceTooltipType.DEFAULT;
+		return TooltipType.DEFAULT;
 	}
 }

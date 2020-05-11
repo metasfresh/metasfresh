@@ -1,6 +1,6 @@
 package de.metas.ui.web.handlingunits;
 
-import de.metas.adempiere.service.impl.ReferenceTooltipType;
+import de.metas.adempiere.service.impl.TooltipType;
 import de.metas.device.adempiere.AttributesDevicesHub.AttributeDeviceAccessor;
 import de.metas.device.adempiere.IDevicesHubFactory;
 import de.metas.handlingunits.attribute.IAttributeValue;
@@ -149,9 +149,9 @@ import java.util.List;
 		final IAttributeValuesProvider valuesProvider = attributeValue.getAttributeValuesProvider();
 		final Evaluatee evalCtx = valuesProvider.prepareContext(attributesStorage);
 		final NamePair valueNP = valuesProvider.getAttributeValueOrNull(evalCtx, value);
-		final ReferenceTooltipType referenceTooltipType = Services.get(IADTableDAO.class).getReferenceTooltipTypeByTableName(I_M_Attribute.Table_Name);
+		final TooltipType tooltipType = Services.get(IADTableDAO.class).getReferenceTooltipTypeByTableName(I_M_Attribute.Table_Name);
 
-		return LookupValue.fromNamePair(valueNP, null, referenceTooltipType);
+		return LookupValue.fromNamePair(valueNP, null, tooltipType);
 	}
 
 	public static DocumentFieldWidgetType extractWidgetType(final IAttributeValue attributeValue)

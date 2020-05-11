@@ -24,7 +24,7 @@ package de.metas.ui.web.window.descriptor.sql;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableSet;
-import de.metas.adempiere.service.impl.ReferenceTooltipType;
+import de.metas.adempiere.service.impl.TooltipType;
 import de.metas.i18n.TranslatableParameterizedString;
 import de.metas.security.IUserRolePermissions;
 import de.metas.security.impl.AccessSqlStringExpression;
@@ -156,7 +156,7 @@ public final class SqlLookupDescriptor implements ISqlLookupDescriptor
 	private final ImmutableSet<String> dependsOnTableNames;
 	private final GenericSqlLookupDataSourceFetcher lookupDataSourceFetcher;
 	@NonNull
-	private final ReferenceTooltipType referenceTooltipType;
+	private final TooltipType tooltipType;
 
 	private SqlLookupDescriptor(final Builder builder)
 	{
@@ -174,7 +174,7 @@ public final class SqlLookupDescriptor implements ISqlLookupDescriptor
 		lookupSourceType = builder.getLookupSourceType();
 		dependsOnFieldNames = ImmutableSet.copyOf(builder.dependsOnFieldNames);
 		dependsOnTableNames = ImmutableSet.copyOf(builder.getDependsOnTableNames());
-		referenceTooltipType = builder.getReferenceTooltipType();
+		tooltipType = builder.getTooltipType();
 
 		lookupDataSourceFetcher = GenericSqlLookupDataSourceFetcher.of(this); // keep it last!
 	}
@@ -296,9 +296,9 @@ public final class SqlLookupDescriptor implements ISqlLookupDescriptor
 	}
 
 	@Override
-	public ReferenceTooltipType getReferenceTooltipType()
+	public TooltipType getTooltipType()
 	{
-		return referenceTooltipType;
+		return tooltipType;
 	}
 
 	public INamePairPredicate getPostQueryPredicate()
@@ -353,7 +353,7 @@ public final class SqlLookupDescriptor implements ISqlLookupDescriptor
 
 		private AdWindowId zoomIntoAdWindowId = null;
 		@NonNull
-		private ReferenceTooltipType referenceTooltipType = ReferenceTooltipType.DEFAULT;
+		private TooltipType tooltipType = TooltipType.DEFAULT;
 
 		private Builder()
 		{
@@ -485,9 +485,9 @@ public final class SqlLookupDescriptor implements ISqlLookupDescriptor
 				}
 			}
 
-			if (lookupInfo.getReferenceTooltipType() != null)
+			if (lookupInfo.getTooltipType() != null)
 			{
-				referenceTooltipType = lookupInfo.getReferenceTooltipType();
+				tooltipType = lookupInfo.getTooltipType();
 			}
 		}
 
@@ -808,15 +808,15 @@ public final class SqlLookupDescriptor implements ISqlLookupDescriptor
 			return validationRuleEffective.getDependsOnTableNames();
 		}
 
-		public ReferenceTooltipType getReferenceTooltipType()
+		public TooltipType getTooltipType()
 		{
-			return referenceTooltipType;
+			return tooltipType;
 		}
 
 		// TODO teo:  HELPME: probabaly this should be used in more places, ie for TableDirect. how? see other TODOs
-		public void setReferenceTooltipType(@NonNull final ReferenceTooltipType referenceTooltipType)
+		public void setTooltipType(@NonNull final TooltipType tooltipType)
 		{
-			this.referenceTooltipType = referenceTooltipType;
+			this.tooltipType = tooltipType;
 		}
 	}
 }

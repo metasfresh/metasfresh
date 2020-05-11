@@ -24,7 +24,7 @@ package de.metas.ui.web.window.model.lookup;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
-import de.metas.adempiere.service.impl.ReferenceTooltipType;
+import de.metas.adempiere.service.impl.TooltipType;
 import de.metas.cache.CCache.CCacheStats;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
@@ -54,7 +54,7 @@ import java.util.Optional;
 public class GenericSqlLookupDataSourceFetcher implements LookupDataSourceFetcher
 {
 	@NonNull
-	private final ReferenceTooltipType referenceTooltipType;
+	private final TooltipType tooltipType;
 
 	public static GenericSqlLookupDataSourceFetcher of(final LookupDescriptor lookupDescriptor)
 	{
@@ -92,7 +92,7 @@ public class GenericSqlLookupDataSourceFetcher implements LookupDataSourceFetche
 
 		zoomIntoWindowId = lookupDescriptor.getZoomIntoWindowId();
 
-		referenceTooltipType = sqlLookupDescriptor.getReferenceTooltipType();
+		tooltipType = sqlLookupDescriptor.getTooltipType();
 	}
 
 	@Override
@@ -187,7 +187,7 @@ public class GenericSqlLookupDataSourceFetcher implements LookupDataSourceFetche
 			final LookupValuesList values = data.fetchAll()
 					.stream()
 					.filter(evalCtx::acceptItem)
-					.map(namePair -> LookupValue.fromNamePair(namePair, adLanguage, this.referenceTooltipType))
+					.map(namePair -> LookupValue.fromNamePair(namePair, adLanguage, this.tooltipType))
 					.collect(LookupValuesList.collect(debugProperties));
 
 			logger.trace("Returning values={} (executed sql: {})", values, sqlForFetching);

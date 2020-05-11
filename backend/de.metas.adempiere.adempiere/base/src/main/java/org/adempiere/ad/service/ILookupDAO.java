@@ -22,7 +22,7 @@
 
 package org.adempiere.ad.service;
 
-import de.metas.adempiere.service.impl.ReferenceTooltipType;
+import de.metas.adempiere.service.impl.TooltipType;
 import de.metas.util.ISingletonService;
 import de.metas.util.collections.BlindIterator;
 import org.adempiere.ad.element.api.AdWindowId;
@@ -61,7 +61,7 @@ public interface ILookupDAO extends ISingletonService
 	 */
 	interface ITableRefInfo
 	{
-		ReferenceTooltipType getReferenceTooltipType();
+		TooltipType getTooltipType();
 
 		/**
 		 * Tell the log reader what to fix when a problem regarding a sloppy table reference is logged.

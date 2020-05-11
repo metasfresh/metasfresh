@@ -22,7 +22,7 @@
 package org.compiere.model;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.adempiere.service.impl.ReferenceTooltipType;
+import de.metas.adempiere.service.impl.TooltipType;
 import de.metas.i18n.TranslatableParameterizedString;
 import de.metas.logging.LogManager;
 import de.metas.security.IUserRolePermissions;
@@ -130,7 +130,7 @@ public final class MLookupInfo implements Serializable, Cloneable
 
 	private boolean translated = false;
 
-	private ReferenceTooltipType referenceTooltipType;
+	private TooltipType tooltipType;
 
 	/**************************************************************************
 	 * Constructor.
@@ -611,13 +611,13 @@ public final class MLookupInfo implements Serializable, Cloneable
 		return translated;
 	}
 
-	public void setReferenceTooltipType(@NonNull final ReferenceTooltipType referenceTooltipType)
+	public void setTooltipType(@NonNull final TooltipType tooltipType)
 	{
-		this.referenceTooltipType = referenceTooltipType;
+		this.tooltipType = tooltipType;
 	}
 
-	public ReferenceTooltipType getReferenceTooltipType()
+	public TooltipType getTooltipType()
 	{
-		return referenceTooltipType;
+		return tooltipType;
 	}
 }   // MLookupInfo

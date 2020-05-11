@@ -31,7 +31,7 @@ import org.compiere.model.X_AD_Table;
 /**
  * This controls what Tooltip value is used for Lists
  */
-public enum ReferenceTooltipType implements ReferenceListAwareEnum
+public enum TooltipType implements ReferenceListAwareEnum
 {
 	/**
 	 * Tooltip shows Description field if it exists. Else nothing.
@@ -48,25 +48,25 @@ public enum ReferenceTooltipType implements ReferenceListAwareEnum
 	 */
 	DescriptionFallbackToTableIdentifier(X_AD_Table.TOOLTIPTYPE_DescriptionFallbackToTableIdentifier);
 
-	public static final ReferenceTooltipType DEFAULT = DescriptionFallbackToTableIdentifier;
+	public static final TooltipType DEFAULT = DescriptionFallbackToTableIdentifier;
 
 	@Getter
 	private final String code;
 
-	ReferenceTooltipType(final String code)
+	TooltipType(final String code)
 	{
 		this.code = code;
 	}
 
-	public static ReferenceTooltipType ofCode(@NonNull final String code)
+	public static TooltipType ofCode(@NonNull final String code)
 	{
 		return index.ofCode(code);
 	}
 
-	public static ReferenceTooltipType ofNullableCode(final String code)
+	public static TooltipType ofNullableCode(final String code)
 	{
 		return index.ofNullableCode(code);
 	}
 
-	private static final ReferenceListAwareEnums.ValuesIndex<ReferenceTooltipType> index = ReferenceListAwareEnums.index(values());
+	private static final ReferenceListAwareEnums.ValuesIndex<TooltipType> index = ReferenceListAwareEnums.index(values());
 }
