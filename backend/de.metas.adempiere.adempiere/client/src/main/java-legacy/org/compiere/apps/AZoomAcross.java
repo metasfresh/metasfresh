@@ -24,10 +24,6 @@ import javax.swing.JPopupMenu;
 
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.model.ZoomInfoFactory;
-import org.adempiere.model.ZoomInfoFactory.IZoomSource;
-import org.adempiere.model.ZoomInfoFactory.POZoomSource;
-import org.adempiere.model.ZoomInfoFactory.ZoomInfo;
 import org.compiere.model.MQuery;
 import org.compiere.model.PO;
 import org.compiere.model.Query;
@@ -37,6 +33,10 @@ import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.document.references.IZoomSource;
+import de.metas.document.references.POZoomSource;
+import de.metas.document.references.ZoomInfo;
+import de.metas.document.references.ZoomInfoFactory;
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import de.metas.util.Services;
@@ -84,10 +84,10 @@ public class AZoomAcross
 		final String adLanguage = Env.getAD_Language(Env.getCtx());
 
 		final List<ZoomInfo> zoomInfos = retrieveZoomTargets(source);
-		for (final ZoomInfoFactory.ZoomInfo zoomInfo : zoomInfos)
+		for (final ZoomInfo zoomInfo : zoomInfos)
 		{
-			final String labelCaption = zoomInfo.getLabel().translate(adLanguage);
-			m_popup.add(labelCaption).addActionListener(event -> launch(zoomInfo));
+			final String caption = zoomInfo.getCaption().translate(adLanguage);
+			m_popup.add(caption).addActionListener(event -> launch(zoomInfo));
 		}
 
 		if (zoomInfos.isEmpty())
@@ -104,17 +104,17 @@ public class AZoomAcross
 
 	private static final Logger logger = LogManager.getLogger(AZoomAcross.class);
 
-	private List<ZoomInfoFactory.ZoomInfo> retrieveZoomTargets(final IZoomSource source)
+	private List<ZoomInfo> retrieveZoomTargets(final IZoomSource source)
 	{
 		if (source == null)
 		{
 			return ImmutableList.of(); // guard against NPE
 		}
 
-		final List<ZoomInfoFactory.ZoomInfo> zoomInfos = new ArrayList<>();
+		final List<ZoomInfo> zoomInfos = new ArrayList<>();
 		final ZoomInfoFactory zoomProvider = ZoomInfoFactory.get();
 		zoomProvider.disableFactAcctZoomProvider(); // in Swing this is not needed because we have the Posted button
-		for (final ZoomInfoFactory.ZoomInfo zoomInfo : zoomProvider.retrieveZoomInfos(source))
+		for (final ZoomInfo zoomInfo : zoomProvider.retrieveZoomInfos(source, Env.getUserRolePermissions()))
 		{
 			zoomInfos.add(zoomInfo);
 		}
@@ -127,7 +127,7 @@ public class AZoomAcross
 	 *
 	 * @param pp KeyPair
 	 */
-	private void launch(final ZoomInfoFactory.ZoomInfo zoomInfo)
+	private void launch(final ZoomInfo zoomInfo)
 	{
 		final AdWindowId adWindowId = zoomInfo.getAdWindowId();
 		final MQuery query = zoomInfo.getQuery();

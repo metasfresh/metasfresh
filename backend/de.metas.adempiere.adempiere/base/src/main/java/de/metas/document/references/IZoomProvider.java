@@ -11,7 +11,7 @@
  * with this program; if not, write to the Free Software Foundation, Inc., *
  * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA. *
  *****************************************************************************/
-package org.adempiere.model;
+package de.metas.document.references;
 
 /*
  * #%L
@@ -38,8 +38,6 @@ package org.adempiere.model;
 import java.util.List;
 
 import org.adempiere.ad.element.api.AdWindowId;
-import org.adempiere.model.ZoomInfoFactory.IZoomSource;
-import org.adempiere.model.ZoomInfoFactory.ZoomInfo;
 
 /**
  *
@@ -57,5 +55,5 @@ public interface IZoomProvider
 	 *            WARNING, this might be an expensive operation.
 	 * @return a list of zoom targets. The {@link ZoomInfo#getRecordCount()} of the ZoomInfo's query member might be zero.
 	 */
-	List<ZoomInfo> retrieveZoomInfos(IZoomSource source, final AdWindowId targetAD_Window_ID, final boolean checkRecordsCount);
+	List<ZoomInfoCandidate> retrieveZoomInfos(IZoomSource source, final AdWindowId targetAD_Window_ID);
 }

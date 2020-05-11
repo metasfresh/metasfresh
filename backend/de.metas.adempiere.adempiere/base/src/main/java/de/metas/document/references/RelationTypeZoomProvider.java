@@ -1,9 +1,8 @@
-package org.adempiere.model;
+package de.metas.document.references;
 
-import java.time.Duration;
 import java.util.List;
 import java.util.Properties;
-import java.util.concurrent.TimeUnit;
+import java.util.function.IntSupplier;
 
 import javax.annotation.Nullable;
 
@@ -18,9 +17,6 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.window.api.IADWindowDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.PORelationException;
-import org.adempiere.model.ZoomInfoFactory.IZoomSource;
-import org.adempiere.model.ZoomInfoFactory.POZoomSource;
-import org.adempiere.model.ZoomInfoFactory.ZoomInfo;
 import org.adempiere.util.lang.IPair;
 import org.adempiere.util.lang.ImmutablePair;
 import org.compiere.model.MQuery;
@@ -31,16 +27,14 @@ import org.compiere.util.Evaluatee;
 import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
-import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 
-import ch.qos.logback.classic.Level;
 import de.metas.adempiere.service.IColumnBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
-import de.metas.util.Loggables;
 import de.metas.util.Services;
+import de.metas.util.lang.Priority;
 import lombok.NonNull;
 import lombok.ToString;
 import lombok.Value;
@@ -84,6 +78,8 @@ public class RelationTypeZoomProvider implements IZoomProvider
 	private final ZoomProviderDestination source;
 	private final ZoomProviderDestination target;
 
+	private final Priority zoomInfoPriority = Priority.MEDIUM;
+
 	private RelationTypeZoomProvider(final Builder builder)
 	{
 		directed = builder.isDirected();
@@ -92,7 +88,8 @@ public class RelationTypeZoomProvider implements IZoomProvider
 
 		isTableRecordIdTarget = builder.isTableRecordIdTarget();
 
-		source = isTableRecordIdTarget ? null
+		source = isTableRecordIdTarget
+				? null
 				: ZoomProviderDestination.builder()
 						.adReferenceId(builder.getSource_Reference_ID())
 						.tableRefInfo(builder.getSourceTableRefInfoOrNull())
@@ -100,14 +97,12 @@ public class RelationTypeZoomProvider implements IZoomProvider
 						.tableRecordIdTarget(isTableRecordIdTarget)
 						.build();
 
-		target =
-
-				ZoomProviderDestination.builder()
-						.adReferenceId(builder.getTarget_Reference_ID())
-						.tableRefInfo(builder.getTargetTableRefInfoOrNull())
-						.roleDisplayName(builder.getTargetRoleDisplayName())
-						.tableRecordIdTarget(isTableRecordIdTarget)
-						.build();
+		target = ZoomProviderDestination.builder()
+				.adReferenceId(builder.getTarget_Reference_ID())
+				.tableRefInfo(builder.getTargetTableRefInfoOrNull())
+				.roleDisplayName(builder.getTargetRoleDisplayName())
+				.tableRecordIdTarget(isTableRecordIdTarget)
+				.build();
 
 	}
 
@@ -126,7 +121,9 @@ public class RelationTypeZoomProvider implements IZoomProvider
 	}
 
 	@Override
-	public List<ZoomInfo> retrieveZoomInfos(final IZoomSource zoomOrigin, final AdWindowId targetAdWindowId, final boolean checkRecordsCount)
+	public List<ZoomInfoCandidate> retrieveZoomInfos(
+			@NonNull final IZoomSource zoomOrigin,
+			@Nullable final AdWindowId targetAdWindowId)
 	{
 		final AdWindowId adWindowId;
 		final ITranslatableString display;
@@ -170,15 +167,16 @@ public class RelationTypeZoomProvider implements IZoomProvider
 
 		final MQuery query = mkZoomOriginQuery(zoomOrigin);
 
-		if (checkRecordsCount)
-		{
-			updateRecordsCountAndZoomValue(query);
-		}
-
-		return ImmutableList.of(ZoomInfo.of(
-				getZoomInfoId(),
-				getInternalName(),
-				adWindowId, query, display));
+		return ImmutableList.of(
+				ZoomInfoCandidate.builder()
+						.id(getZoomInfoId())
+						.internalName(getInternalName())
+						.adWindowId(adWindowId)
+						.priority(zoomInfoPriority)
+						.query(query)
+						.destinationDisplay(display)
+						.recordsCountSupplier(createRecordsCountSupplier(query))
+						.build());
 	}
 
 	public boolean isDirected()
@@ -286,7 +284,7 @@ public class RelationTypeZoomProvider implements IZoomProvider
 		{
 			String originRecordIdName = null;
 
-			final List<TableRecordIdDescriptor> tableRecordIdDescriptors = tableRecordIdDAO.retrieveTableRecordIdReferences(originTableName);
+			final List<TableRecordIdDescriptor> tableRecordIdDescriptors = tableRecordIdDAO.getTableRecordIdReferences(originTableName);
 
 			for (final TableRecordIdDescriptor tableRecordIdDescriptor : tableRecordIdDescriptors)
 			{
@@ -374,26 +372,24 @@ public class RelationTypeZoomProvider implements IZoomProvider
 		return whereParsed;
 	}
 
-	private void updateRecordsCountAndZoomValue(final MQuery query)
+	private static IntSupplier createRecordsCountSupplier(final MQuery query)
 	{
-		final Stopwatch stopwatch = Stopwatch.createStarted();
 		final String sqlCommon = " FROM " + query.getZoomTableName() + " WHERE " + query.getWhereClause(false);
+		final String sqlCount = "SELECT COUNT(1) " + sqlCommon;
 
-		final String sqlCount = "SELECT COUNT(*) " + sqlCommon;
-		final int count = DB.getSQLValueEx(ITrx.TRXNAME_None, sqlCount);
+		return () -> {
+			final int recordsCount = DB.getSQLValueEx(ITrx.TRXNAME_None, sqlCount);
 
-		if (count > 0)
-		{
-			final String sqlFirstKey = "SELECT " + query.getZoomColumnName() + sqlCommon;
+			// FIXME: side effect to set MQuery.zoomValue, needed only in Swing
+			if (recordsCount > 0)
+			{
+				final String sqlFirstKey = "SELECT " + query.getZoomColumnName() + sqlCommon;
+				final int firstKey = DB.getSQLValueEx(ITrx.TRXNAME_None, sqlFirstKey);
+				query.setZoomValue(firstKey);
+			}
 
-			final int firstKey = DB.getSQLValueEx(ITrx.TRXNAME_None, sqlFirstKey);
-			query.setZoomValue(firstKey);
-		}
-
-		final Duration countDuration = Duration.ofNanos(stopwatch.stop().elapsed(TimeUnit.NANOSECONDS));
-		query.setRecordCount(count, countDuration);
-
-		Loggables.withLogger(logger, Level.DEBUG).addLog("RelationTypeZoomProvider {} took {}", this, countDuration);
+			return recordsCount;
+		};
 	}
 
 	/**

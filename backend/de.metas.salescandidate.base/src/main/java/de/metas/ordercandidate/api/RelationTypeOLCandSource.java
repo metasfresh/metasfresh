@@ -4,7 +4,6 @@ import java.util.stream.Stream;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.model.RelationTypeZoomProvidersFactory;
 import org.compiere.model.PO;
 import org.compiere.util.Env;
 
@@ -12,6 +11,7 @@ import com.google.common.base.MoreObjects;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.document.DocTypeId;
+import de.metas.document.references.RelationTypeZoomProvidersFactory;
 import de.metas.freighcost.FreightCostRule;
 import de.metas.order.BPartnerOrderParams;
 import de.metas.order.DeliveryRule;
