@@ -122,13 +122,13 @@ void testSQLMigrationScripts(
 			echo "git diff output (modified files):\n>>>>>\n${vgitout}\n<<<<<"
 			anyFileChanged = !vgitout.contains(".sql") // see if any .sql file changed in this folder
 			// see if anything at all changed in this folder
-			echo "Any *.sql* file changed compared to last build: ${anySqlFileChanged}"
+			echo "Any *.sql* file changed compared to last build: ${anyFileChanged}"
 		} catch (ignored) {
 			echo "git diff error => assume something must have changed"
 			anyFileChanged = true
 		}
 
-		if(scmVars.GIT_COMMIT && scmVars.GIT_PREVIOUS_SUCCESSFUL_COMMIT && !anySqlFileChanged)
+		if(scmVars.GIT_COMMIT && scmVars.GIT_PREVIOUS_SUCCESSFUL_COMMIT && !anyFileChanged)
 		{
 			echo "no *.sql changes happened; skip applying SQL migration scripts";
 			return;
