@@ -11,6 +11,7 @@ import {
   deleteStaticFilter,
   getViewRowsByIds,
 } from '../../../api';
+import { getTableId } from '../../../reducers/tables';
 import {
   addViewLocationData,
   createView,
@@ -97,7 +98,7 @@ class DocumentListContainer extends Component {
     disconnectWS.call(this);
 
     deleteView(isModal ? viewId : windowType);
-    deleteTable(`${windowType}_${viewId}`);
+    deleteTable(getTableId({ windowType, viewId }));
   }
 
   UNSAFE_componentWillReceiveProps(nextProps) {
@@ -152,8 +153,8 @@ class DocumentListContainer extends Component {
           location.hash === '#notification')) ||
       nextRefId !== refId
     ) {
-      // TODO: Check if handling reset only via middleware is enough
       resetView(windowType);
+      deleteTable(getTableId({ windowType, viewId }));
 
       this.setState(
         {
@@ -526,8 +527,7 @@ class DocumentListContainer extends Component {
 
         const pageColumnInfosByFieldName = response.columnsByFieldName;
 
-        // TODO: There is some sorcery happening here. Why we're doing this instead
-        // of fetching complete columns from the API like we do for the details view ??
+        // TODO: There is some sorcery happening here. Why are we doing this ?
         mergeColumnInfosIntoViewRows(
           pageColumnInfosByFieldName,
           response.result
