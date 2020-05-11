@@ -132,25 +132,29 @@ export function createGridTable(tableId, tableResponse) {
  */
 export function updateGridTable(tableId, tableResponse) {
   return (dispatch, getState) => {
-    const tableExists = getState().tables.get(tableId);
+    const tables = getState().tables;
 
-    if (tableExists) {
-      const tableData = createTableData({
-        ...tableResponse,
-        headerElements: tableResponse.columnsByFieldName,
-      });
+    if (tables) {
+      const tableExists = tables.get(tableId);
 
-      dispatch(updateTable(tableId, tableData));
-    } else {
-      const windowType = tableResponse.windowType || tableResponse.windowId;
-      const tableLayout = getView(getState(), windowType).layout;
-      const tableData = createTableData({
-        ...tableResponse,
-        ...tableLayout,
-        headerElements: tableResponse.columnsByFieldName,
-      });
+      if (tableExists) {
+        const tableData = createTableData({
+          ...tableResponse,
+          headerElements: tableResponse.columnsByFieldName,
+        });
 
-      dispatch(createTable(tableId, tableData));
+        dispatch(updateTable(tableId, tableData));
+      } else {
+        const windowType = tableResponse.windowType || tableResponse.windowId;
+        const tableLayout = getView(getState(), windowType).layout;
+        const tableData = createTableData({
+          ...tableResponse,
+          ...tableLayout,
+          headerElements: tableResponse.columnsByFieldName,
+        });
+
+        dispatch(createTable(tableId, tableData));
+      }
     }
   };
 }
@@ -171,13 +175,17 @@ export function createTabTable(tableId, tableResponse) {
  */
 export function updateTabTable(tableId, tableResponse) {
   return (dispatch, getState) => {
-    const tableExists = getState().tables.get(tableId);
-    const tableData = createTableData(tableResponse);
+    const tables = getState().tables;
 
-    if (tableExists) {
-      dispatch(updateTable(tableId, tableData));
-    } else {
-      dispatch(createTable(tableId, tableData));
+    if (tables) {
+      const tableExists = tables.get(tableId);
+      const tableData = createTableData(tableResponse);
+
+      if (tableExists) {
+        dispatch(updateTable(tableId, tableData));
+      } else {
+        dispatch(createTable(tableId, tableData));
+      }
     }
   };
 }
