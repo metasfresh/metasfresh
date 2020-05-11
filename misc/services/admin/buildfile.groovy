@@ -17,16 +17,27 @@ def build(final MvnConf mvnConf, final Map scmVars, final boolean forceBuild=fal
 		currentBuild.description= """${currentBuild.description}<p/>
 			<h3>admin</h3>
 		"""
-		def status = sh(returnStatus: true, script: "git diff --name-only ${scmVars.GIT_PREVIOUS_SUCCESSFUL_COMMIT} ${scmVars.GIT_COMMIT} . | grep .") // see if anything at all changed in this folder
-			echo "status of git dif command=${status}"
-			if(scmVars.GIT_COMMIT && scmVars.GIT_PREVIOUS_SUCCESSFUL_COMMIT && status != 0 && !forceBuild)
-		{
-			currentBuild.description= """${currentBuild.description}<p/>
-			No changes happened in admin.
-			"""
-			echo "no changes happened in admin; skip building admin";
-			return;
-		}
+
+	def anyFileChanged
+	try {
+		def vgitout = sh(returnStdout: true, script: "git diff --name-only ${scmVars.GIT_PREVIOUS_SUCCESSFUL_COMMIT} ${scmVars.GIT_COMMIT} .").trim()
+		echo "git diff output (modified files):\n>>>>>\n${vgitout}\n<<<<<"
+		anyFileChanged = !vgitout.isEmpty()
+		// see if anything at all changed in this folder
+		echo "Any file changed compared to last build: ${anyFileChanged}"
+	} catch (ignored) {
+		echo "git diff error => assume something must have changed"
+		anyFileChanged = true
+	}
+
+	if(scmVars.GIT_COMMIT && scmVars.GIT_PREVIOUS_SUCCESSFUL_COMMIT && !anyFileChanged && !forceBuild)
+	{
+		currentBuild.description= """${currentBuild.description}<p/>
+					No changes happened in admin.
+					"""
+		echo "no changes happened in admin; skip building admin";
+		return;
+	}
 
 		// set the root-pom's parent pom. Although the parent pom is avaialbe via relativePath, we need it to be this build's version then the root pom is deployed to our maven-repo
 		sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode -DparentVersion=${env.MF_VERSION} ${mvnConf.resolveParams} ${VERSIONS_PLUGIN}:update-parent"
