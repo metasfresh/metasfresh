@@ -180,11 +180,12 @@ class MasterWindowContainer extends Component {
       sortingOrder = (ordering.ascending ? '+' : '-') + ordering.fieldName;
     }
 
-    getTabRequest(activeTabId, params.windowType, master.docId, sortingOrder).then(
-      (tab) => {
-        addRowData({ [activeTabId]: tab }, 'master');
-      }
-    );
+    getTabRequest(
+      activeTabId,
+      params.windowType,
+      master.docId,
+      sortingOrder
+    ).then((tab) => addRowData({ [activeTabId]: tab }, 'master'));
   }
 
   componentWillUnmount() {

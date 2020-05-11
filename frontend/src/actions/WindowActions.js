@@ -660,111 +660,109 @@ export function createWindow(
 
     // this chain is really important,
     // to do not re-render widgets on init
-    return dispatch(initWindow(windowType, documentId, tabId, rowId, isAdvanced)).then(
-      (response) => {
-        if (!response || !response.data) {
-          return Promise.resolve(null);
-        }
-
-        const data = response.data[0];
-        const tabs = data.includedTabsInfo;
-        let docId = data.id;
-
-        if (tabs) {
-          Object.values(tabs).forEach(tab => {
-            const { tabId } = tab;
-            const tableId = `${windowType}_${docId}_${tabId}`;
-            const tableData = {
-              windowType,
-              docId,
-              tabId,
-              ...tab,
-            }
-            dispatch(createTabTable(tableId, tableData))
-          });
-        }
-
-        if (documentId == 'NEW' && !isModal) {
-          dispatch(setLatestNewDocument(docId));
-          // redirect immedietely
-          return dispatch(
-            replace(`/window/${windowType}/${docId}`)
-          );
-        }
-
-        let elem = 0;
-
-        response.data.forEach((value, index) => {
-          if (value.rowId === rowId) {
-            elem = index;
-          }
-        });
-
-        if (documentId === 'NEW') {
-          dispatch(updateModal(null, docId));
-        }
-
-        // TODO: Is `elem` ever different than 0 ? 
-        docId = response.data[elem].id;
-        dispatch(
-          initDataSuccess({
-            data: parseToDisplay(response.data[elem].fieldsByName),
-            docId,
-            saveStatus: data.saveStatus,
-            scope: getScope(isModal),
-            standardActions: data.standardActions,
-            validStatus: data.validStatus,
-            includedTabsInfo: data.includedTabsInfo,
-            websocket: data.websocketEndpoint,
-          })
-        );
-
-        if (isModal) {
-          if (rowId === 'NEW') {
-            dispatch(
-              mapDataToState(response.data, false, 'NEW', docId, windowType)
-            );
-            dispatch(updateStatus(response.data));
-            dispatch(updateModal(data.rowId));
-          }
-        } else {
-          dispatch(getWindowBreadcrumb(windowType));
-        }
-
-        return (
-          getLayout('window', windowType, tabId, null, null, isAdvanced)
-            .then(({ data }) => {
-              const layoutTabs = data.tabs;
-
-              if (layoutTabs.length) {
-                Object.values(layoutTabs).forEach(tab => {
-                  const { tabId } = tab;
-                  const tableId = `${windowType}_${docId}_${tabId}`;
-                  const tableData = {
-                    windowType,
-                    docId,
-                    tabId,
-                    ...tab,
-                  }
-                  dispatch(updateTabTable(tableId, tableData))
-                });
-              }
-
-              dispatch(initLayoutSuccess(data, getScope(isModal)))
-            })
-            // TODO: looks like this can be removed ?
-            // .then((response) => {
-            //   if (!isModal) {
-            //     return dispatch(
-            //       initTabs(response.layout.tabs, windowType, docId, isModal)
-            //     );
-            //   }
-            //   return Promise.resolve(null);
-            // })
-            .catch((e) => Promise.reject(e))
-        );
+    return dispatch(
+      initWindow(windowType, documentId, tabId, rowId, isAdvanced)
+    ).then((response) => {
+      if (!response || !response.data) {
+        return Promise.resolve(null);
       }
-    );
+
+      const data = response.data[0];
+      const tabs = data.includedTabsInfo;
+      let docId = data.id;
+
+      if (tabs) {
+        Object.values(tabs).forEach((tab) => {
+          const { tabId } = tab;
+          const tableId = `${windowType}_${docId}_${tabId}`;
+          const tableData = {
+            windowType,
+            docId,
+            tabId,
+            ...tab,
+          };
+          dispatch(createTabTable(tableId, tableData));
+        });
+      }
+
+      if (documentId == 'NEW' && !isModal) {
+        dispatch(setLatestNewDocument(docId));
+        // redirect immedietely
+        return dispatch(replace(`/window/${windowType}/${docId}`));
+      }
+
+      let elem = 0;
+
+      response.data.forEach((value, index) => {
+        if (value.rowId === rowId) {
+          elem = index;
+        }
+      });
+
+      if (documentId === 'NEW') {
+        dispatch(updateModal(null, docId));
+      }
+
+      // TODO: Is `elem` ever different than 0 ? 
+      docId = response.data[elem].id;
+      dispatch(
+        initDataSuccess({
+          data: parseToDisplay(response.data[elem].fieldsByName),
+          docId,
+          saveStatus: data.saveStatus,
+          scope: getScope(isModal),
+          standardActions: data.standardActions,
+          validStatus: data.validStatus,
+          includedTabsInfo: data.includedTabsInfo,
+          websocket: data.websocketEndpoint,
+        })
+      );
+
+      if (isModal) {
+        if (rowId === 'NEW') {
+          dispatch(
+            mapDataToState(response.data, false, 'NEW', docId, windowType)
+          );
+          dispatch(updateStatus(response.data));
+          dispatch(updateModal(data.rowId));
+        }
+      } else {
+        dispatch(getWindowBreadcrumb(windowType));
+      }
+
+      return (
+        getLayout('window', windowType, tabId, null, null, isAdvanced)
+          .then(({ data }) => {
+            const layoutTabs = data.tabs;
+
+            if (layoutTabs.length) {
+              Object.values(layoutTabs).forEach((tab) => {
+                const { tabId } = tab;
+                const tableId = `${windowType}_${docId}_${tabId}`;
+                const tableData = {
+                  windowType,
+                  docId,
+                  tabId,
+                  ...tab,
+                };
+                dispatch(updateTabTable(tableId, tableData));
+              });
+            }
+
+            dispatch(initLayoutSuccess(data, getScope(isModal)));
+          })
+          // TODO: looks like this can be removed ?
+          // .then((response) => {
+          //   if (!isModal) {
+          //     return dispatch(
+          //       initTabs(response.layout.tabs, windowType, docId, isModal)
+          //     );
+          //   }
+          //   return Promise.resolve(null);
+          // })
+          .catch((e) => Promise.reject(e))
+      );
+    });
   };
 }
 
