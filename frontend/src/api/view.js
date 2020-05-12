@@ -180,7 +180,7 @@ export function locationConfigRequest() {
   return get(`${config.API_URL}/geolocation/config`);
 }
 
-export function deleteView(windowId, viewId, action) {
+export function deleteViewRequest(windowId, viewId, action) {
   return del(
     `${config.API_URL}/documentView/${windowId}/${viewId}${
       action ? `?action=${action}` : ''

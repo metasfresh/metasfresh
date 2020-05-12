@@ -6,7 +6,7 @@ import classnames from 'classnames';
 
 import { PATCH_RESET } from '../../constants/ActionTypes';
 import { closeListIncludedView } from '../../actions/ListActions';
-import { deleteView } from '../../api';
+import { deleteViewRequest } from '../../api';
 import { addNotification } from '../../actions/AppActions';
 import {
   closeModal,
@@ -232,8 +232,7 @@ class RawModal extends Component {
       }
 
       await this.removeModal();
-
-      await deleteView(windowType, viewId, type);
+      await deleteViewRequest(windowType, viewId, type);
     }
   };
 
