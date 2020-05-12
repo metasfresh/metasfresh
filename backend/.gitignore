@@ -6,6 +6,8 @@
 *.diff
 **/.classpath
 **/.project
+**/.temp-.jar
+
 
 **/activemq-data/
 
