@@ -6,7 +6,8 @@
 *.diff
 **/.classpath
 **/.project
-**/.temp-metasfresh-*.jar
+**/.temp-.jar
+
 
 **/activemq-data/
 
@@ -31,7 +32,6 @@ de.metas.endcustomer.mf15/metasfresh.properties
 
 # Ignore JRebel files because those contains file paths from local system
 **/rebel.xml
-
 
 de.metas.shipper.gateway.go/src/main/resources/application.properties
 de.metas.vertical.pharma.msv3.server/application.properties
