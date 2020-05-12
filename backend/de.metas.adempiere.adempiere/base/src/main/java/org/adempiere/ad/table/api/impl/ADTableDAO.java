@@ -1,16 +1,8 @@
-package org.adempiere.ad.table.api.impl;
-
-import static org.adempiere.model.InterfaceWrapperHelper.createOld;
-import static org.adempiere.model.InterfaceWrapperHelper.getCtx;
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -28,14 +20,17 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
  * #L%
  */
 
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Properties;
-import java.util.Set;
+package org.adempiere.ad.table.api.impl;
 
-import javax.annotation.Nullable;
-
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import de.metas.adempiere.service.impl.TooltipType;
+import de.metas.cache.CCache;
+import de.metas.document.DocumentConstants;
+import de.metas.i18n.ITranslatableString;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.UpperCaseQueryFilterModifier;
@@ -56,15 +51,21 @@ import org.compiere.model.I_AD_Table;
 import org.compiere.model.X_AD_SQLColumn_SourceTableColumn;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.compiere.util.Trx;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
+import javax.annotation.Nullable;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Properties;
+import java.util.Set;
+import java.util.function.Supplier;
 
-import de.metas.document.DocumentConstants;
-import de.metas.i18n.ITranslatableString;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import lombok.NonNull;
+import static org.adempiere.model.InterfaceWrapperHelper.createOld;
+import static org.adempiere.model.InterfaceWrapperHelper.getCtx;
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 public class ADTableDAO implements IADTableDAO
 {
@@ -75,6 +76,13 @@ public class ADTableDAO implements IADTableDAO
 			"IsActive",
 			"Created", "CreatedBy",
 			"Updated", "UpdatedBy");
+
+	private final CCache<String, TooltipType> tableTooltipTypeCache = CCache.<String, TooltipType> builder()
+			.cacheMapType(CCache.CacheMapType.HashMap)
+			.tableName(I_AD_Table.Table_Name)
+			.initialCapacity(100)
+			.expireMinutes(CCache.EXPIREMINUTES_Never)
+			.build();
 
 	@Override
 	public I_AD_Column retrieveColumn(@NonNull final AdTableId tableId, @NonNull final String columnName)
@@ -389,5 +397,24 @@ public class ADTableDAO implements IADTableDAO
 	public void validate(@NonNull final I_AD_SQLColumn_SourceTableColumn record)
 	{
 		toColumnSqlSourceDescriptor(record); // shall throw exception if not valid
+	}
+
+	@Override
+	public @NonNull TooltipType getTooltipTypeByTableName(@NonNull final String tableName)
+	{
+		/*
+		 * Implementation detail: using IQueryBL related libraries will likely get the following error:
+		 * `java.lang.IllegalStateException: Recursive load of: interface org.adempiere.ad.service.<someInterface>`
+		 * during startup
+		 */
+		return tableTooltipTypeCache.get(tableName, (Supplier<TooltipType>)() -> {
+			final String sql = " SELECT " + I_AD_Table.COLUMNNAME_TooltipType
+					+ " FROM " + I_AD_Table.Table_Name
+					+ " WHERE " + I_AD_Table.COLUMNNAME_TableName + " ilike ?";
+
+			final String tooltipTypeString = DB.getSQLValueStringEx(Trx.TRXNAME_ThreadInherited, sql, tableName);
+
+			return TooltipType.ofCode(tooltipTypeString);
+		});
 	}
 }

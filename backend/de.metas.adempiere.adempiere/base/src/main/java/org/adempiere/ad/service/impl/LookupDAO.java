@@ -1,13 +1,39 @@
+/*
+ * #%L
+ * de.metas.adempiere.adempiere.base
+ * %%
+ * Copyright (C) 2020 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package org.adempiere.ad.service.impl;
 
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
-
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
+import de.metas.adempiere.service.impl.TooltipType;
+import de.metas.adempiere.util.cache.annotations.CacheAllowMutable;
+import de.metas.i18n.AdMessageKey;
+import de.metas.logging.LogManager;
+import de.metas.security.permissions.UIDisplayedEntityTypes;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import de.metas.util.StringUtils;
+import lombok.NonNull;
+import lombok.Value;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.IStringExpression;
@@ -45,40 +71,13 @@ import org.compiere.util.ValueNamePair;
 import org.compiere.util.ValueNamePairValidationInformation;
 import org.slf4j.Logger;
 
-/*
- * #%L
- * de.metas.adempiere.adempiere.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableList;
-
-import de.metas.adempiere.util.cache.annotations.CacheAllowMutable;
-import de.metas.i18n.AdMessageKey;
-import de.metas.logging.LogManager;
-import de.metas.security.permissions.UIDisplayedEntityTypes;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import de.metas.util.StringUtils;
-import lombok.NonNull;
-import lombok.Value;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
 
 public class LookupDAO implements ILookupDAO
 {
@@ -86,20 +85,12 @@ public class LookupDAO implements ILookupDAO
 
 	private final static String COLUMNNAME_Value = "Value";
 
-	private static final ITableRefInfo tableRefInfo_Account = TableRefInfo.builder()
-			.setIdentifier("Account - C_ValidCombination_ID")
-			.setTableName(I_C_ValidCombination.Table_Name)
-			.setKeyColumn(I_C_ValidCombination.COLUMNNAME_C_ValidCombination_ID)
-			.setAutoComplete(true)
-			.build();
-
 	/* package */static class ColumnInfo implements IColumnInfo
 	{
 		private final String ColumnName;
 		private final String TableName;
 		private final int AD_Reference_Value_ID;
 		private final boolean parent;
-		// String ValidationCode = "";
 		private final int AD_Val_Rule_ID;
 
 		public ColumnInfo(final String tableName, final String columnName, final int adReferenceValueId, final boolean isParent, final int adValRuleId)
@@ -146,6 +137,7 @@ public class LookupDAO implements ILookupDAO
 	@VisibleForTesting
 	public static final class TableRefInfo implements ITableRefInfo
 	{
+
 		public static TableRefInfoBuilder builder()
 		{
 			return new TableRefInfoBuilder();
@@ -165,6 +157,14 @@ public class LookupDAO implements ILookupDAO
 		private final AdWindowId zoomAD_Window_ID_Override;
 		private final boolean autoComplete;
 		private final boolean showInactiveValues;
+		@NonNull
+		TooltipType tooltipType;
+
+		@Override
+		public TooltipType getTooltipType()
+		{
+			return tooltipType;
+		}
 
 		private TableRefInfo(@NonNull final TableRefInfoBuilder builder)
 		{
@@ -216,8 +216,9 @@ public class LookupDAO implements ILookupDAO
 			zoomAD_Window_ID_Override = builder.zoomAD_Window_ID_Override;
 
 			autoComplete = builder.autoComplete;
-			
+
 			showInactiveValues = builder.showInactiveValues;
+			tooltipType = builder.tooltipType;
 		}
 
 		@Override
@@ -234,6 +235,7 @@ public class LookupDAO implements ILookupDAO
 	@VisibleForTesting
 	public static final class TableRefInfoBuilder
 	{
+		public TooltipType tooltipType;
 		private String identifier; // used only for debugging
 		private String tableName;
 		private String keyColumn;
@@ -335,16 +337,23 @@ public class LookupDAO implements ILookupDAO
 			this.autoComplete = autoComplete;
 			return this;
 		}
-		
+
 		public TableRefInfoBuilder setShowInactiveValues(final boolean showInactiveValues)
 		{
 			this.showInactiveValues = showInactiveValues;
+			return this;
+		}
+
+		public TableRefInfoBuilder setTooltipType(@NonNull final TooltipType tooltipType)
+		{
+			this.tooltipType = tooltipType;
 			return this;
 		}
 	}
 
 	/* package */class LookupDisplayInfo implements ILookupDisplayInfo
 	{
+
 		private final List<ILookupDisplayColumn> lookupDisplayColumns;
 		private final AdWindowId zoomWindow;
 		private final AdWindowId zoomWindowPO;
@@ -491,6 +500,7 @@ public class LookupDAO implements ILookupDAO
 				+ "t." + I_AD_Table.COLUMNNAME_IsAutocomplete // 13
 				+ ", rt." + I_AD_Ref_Table.COLUMNNAME_ShowInactiveValues // 14
 				+ ", r.Name as ReferenceName"
+				+ ", t.TooltipType as TooltipType "
 				// #2340 Also collect information about the ref table being a reference target
 				+ " FROM AD_Ref_Table rt"
 				+ " INNER JOIN AD_Reference r on (r.AD_Reference_ID=rt.AD_Reference_ID)"
@@ -526,6 +536,7 @@ public class LookupDAO implements ILookupDAO
 				final boolean autoComplete = StringUtils.toBoolean(rs.getString(13));
 				final boolean showInactiveValues = StringUtils.toBoolean(rs.getString(14));
 				final String referenceName = rs.getString("ReferenceName");
+				final TooltipType tooltipType = TooltipType.ofCode(rs.getString("TooltipType"));
 
 				tableRefInfo = TableRefInfo.builder()
 						.setIdentifier("AD_Reference[ID=" + AD_Reference_ID + ",Name=" + referenceName + "]")
@@ -542,6 +553,7 @@ public class LookupDAO implements ILookupDAO
 						.setZoomAD_Window_ID_Override(zoomAD_Window_ID_Override)
 						.setAutoComplete(autoComplete)
 						.setShowInactiveValues(showInactiveValues)
+						.setTooltipType(tooltipType)
 						.build();
 			}
 
@@ -598,19 +610,28 @@ public class LookupDAO implements ILookupDAO
 			autoComplete = table.isAutocomplete();
 		}
 
-		final ITableRefInfo tableRefInfo = TableRefInfo.builder()
+		final TooltipType tooltipType = Services.get(IADTableDAO.class).getTooltipTypeByTableName(tableName);
+
+		return TableRefInfo.builder()
 				.setIdentifier("Direct[FromColumn" + columnName + ",To=" + tableName + "." + columnName + "]")
 				.setTableName(tableName)
 				.setKeyColumn(keyColumn)
 				.setAutoComplete(autoComplete)
+				.setTooltipType(tooltipType)
 				.build();
-		return tableRefInfo;
 	}
 
 	@Override
 	public ITableRefInfo retrieveAccountTableRefInfo()
 	{
-		return tableRefInfo_Account;
+		final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
+		return TableRefInfo.builder()
+				.setIdentifier("Account - C_ValidCombination_ID")
+				.setTableName(I_C_ValidCombination.Table_Name)
+				.setKeyColumn(I_C_ValidCombination.COLUMNNAME_C_ValidCombination_ID)
+				.setAutoComplete(true)
+				.setTooltipType(adTableDAO.getTooltipTypeByTableName(I_C_ValidCombination.Table_Name))
+				.build();
 	}
 
 	@Override

@@ -1,10 +1,8 @@
-package org.adempiere.ad.service;
-
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,8 +20,11 @@ package org.adempiere.ad.service;
  * #L%
  */
 
-import java.util.List;
+package org.adempiere.ad.service;
 
+import de.metas.adempiere.service.impl.TooltipType;
+import de.metas.util.ISingletonService;
+import de.metas.util.collections.BlindIterator;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.validationRule.IValidationContext;
 import org.adempiere.ad.validationRule.IValidationRule;
@@ -33,14 +34,12 @@ import org.compiere.util.KeyNamePair;
 import org.compiere.util.NamePair;
 import org.compiere.util.ValueNamePair;
 
-import de.metas.util.ISingletonService;
-import de.metas.util.collections.BlindIterator;
+import java.util.List;
 
 /**
  * Field Lookup DAO methods
  *
  * @author tsa
- *
  */
 public interface ILookupDAO extends ISingletonService
 {
@@ -62,7 +61,11 @@ public interface ILookupDAO extends ISingletonService
 	 */
 	interface ITableRefInfo
 	{
-		/** Tell the log reader what to fix when a problem regarding a sloppy table reference is logged. */
+		TooltipType getTooltipType();
+
+		/**
+		 * Tell the log reader what to fix when a problem regarding a sloppy table reference is logged.
+		 */
 		String getIdentifier();
 
 		String getTableName();
@@ -94,7 +97,7 @@ public interface ILookupDAO extends ISingletonService
 		AdWindowId getZoomPO_Window_ID();
 
 		boolean isAutoComplete();
-		
+
 		boolean isShowInactiveValues();
 
 		/**
@@ -118,33 +121,28 @@ public interface ILookupDAO extends ISingletonService
 	 * Contains a set of {@link ValueNamePair} or {@link KeyNamePair} elements.
 	 *
 	 * @author tsa
-	 *
 	 */
-	public interface INamePairIterator extends BlindIterator<NamePair>, AutoCloseable
+	interface INamePairIterator extends BlindIterator<NamePair>, AutoCloseable
 	{
 		/**
-		 *
 		 * @return true if this iterator is valid
 		 */
 		boolean isValid();
 
 		/**
 		 * Gets validation key of data in loaded context.
-		 *
-		 * @return
 		 */
 		Object getValidationKey();
 
-		@Override NamePair next();
+		@Override
+		NamePair next();
 
 		/**
-		 *
 		 * @return true if last value was active
 		 */
 		boolean wasActive();
 
 		/**
-		 *
 		 * @return true if underlying elements are of type{@link KeyNamePair}; if false then elements are of type {@link ValueNamePair}
 		 */
 		boolean isNumericKey();
@@ -158,13 +156,11 @@ public interface ILookupDAO extends ISingletonService
 	/**
 	 * Same as {@link #retrieveTableRefInfoOrNull(int)} but in case the {@link ITableRefInfo} was not found, an warning is logged
 	 *
-	 * @param AD_Reference_Value_ID
 	 * @return table reference info or <code>null</code> if not found
 	 */
 	ITableRefInfo retrieveTableRefInfo(int AD_Reference_Value_ID);
 
 	/**
-	 * @param AD_Reference_Value_ID
 	 * @return true if given reference is a table reference
 	 */
 	boolean isTableReference(int AD_Reference_Value_ID);
@@ -179,45 +175,28 @@ public interface ILookupDAO extends ISingletonService
 
 	/**
 	 * Retrieves all elements of <code>lookupInfo</code> in given <code>validationCtx</code> context
-	 *
-	 * @param validationCtx
-	 * @param lookupInfo
 	 */
 	INamePairIterator retrieveLookupValues(IValidationContext validationCtx, MLookupInfo lookupInfo);
 
 	/**
 	 * Retrieves all elements of <code>lookupInfo</code> in given <code>validationCtx</code> context
 	 *
-	 * @param validationCtx
-	 * @param lookupInfo
 	 * @param additionalValidationRule optional additional validation rule to be applied on top of lookupInfo's validation rule
 	 */
 	INamePairIterator retrieveLookupValues(IValidationContext validationCtx, MLookupInfo lookupInfo, IValidationRule additionalValidationRule);
 
 	/**
 	 * Directly retrieves a data element identified by <code>key</code>.
-	 *
-	 * @param validationCtx
-	 * @param lookupInfo
-	 * @param key
-	 * @return
 	 */
 	NamePair retrieveLookupValue(IValidationContext validationCtx, MLookupInfo lookupInfo, Object key);
 
 	/**
 	 * Creates a validation key to be used when checking if data is valid in a given context
-	 *
-	 * @param validationCtx
-	 * @param lookupInfo
-	 * @return
 	 */
 	Object createValidationKey(IValidationContext validationCtx, MLookupInfo lookupInfo);
 
 	/**
 	 * Retrieve TableRefInfo or null
-	 *
-	 * @param AD_Reference_ID
-	 * @return
 	 */
 	ITableRefInfo retrieveTableRefInfoOrNull(int AD_Reference_ID);
 }
