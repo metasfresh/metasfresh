@@ -142,10 +142,10 @@ public interface IADTableDAO extends ISingletonService
 	 *
 	 * @param tableName  case insensitive
 	 * @param columnName case insensitive
-	 * @param trxnameThreadinherited    may be <code>null</code>. If you call this method with null, then the query builder will be created with {@link org.adempiere.ad.trx.api.ITrx#TRXNAME_None}.
+	 * @param trxname    may be <code>null</code>. If you call this method with null, then the query builder will be created with {@link org.adempiere.ad.trx.api.ITrx#TRXNAME_None}.
 	 * @return
 	 */
-	IQueryBuilder<I_AD_Column> retrieveColumnQueryBuilder(String tableName, String columnName, String trxnameThreadinherited);
+	IQueryBuilder<I_AD_Column> retrieveColumnQueryBuilder(String tableName, String columnName, String trxname);
 
 	I_AD_Table retrieveTable(AdTableId tableId);
 
