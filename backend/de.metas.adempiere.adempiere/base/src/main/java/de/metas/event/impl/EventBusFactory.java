@@ -135,7 +135,7 @@ public class EventBusFactory implements IEventBusFactory
 	private final EventBus createEventBus(final Topic topic)
 	{
 		// Create the event bus
-		final EventBus eventBus = new EventBus(topic.getName(), createExecutorOrNull(topic.getName()));
+		final EventBus eventBus = new EventBus(topic.getName(), createExecutorOrNull(topic));
 
 		// Bind the EventBus to remote endpoint (only if the system is enabled).
 		// If is not enabled we will use only local event buses,
@@ -162,13 +162,13 @@ public class EventBusFactory implements IEventBusFactory
 		return eventBus;
 	}
 
-	private ExecutorService createExecutorOrNull(@NonNull final String eventBusName)
+	private ExecutorService createExecutorOrNull(@NonNull final Topic topic)
 	{
 		// Setup EventBus executor
-		if (EventBusConfig.isEventBusPostEventsAsync())
+		if (EventBusConfig.isEventBusPostAsync(topic))
 		{
 			return Executors.newSingleThreadExecutor(CustomizableThreadFactory.builder()
-					.setThreadNamePrefix(getClass().getName() + "-" + eventBusName + "-AsyncExecutor")
+					.setThreadNamePrefix(getClass().getName() + "-" + topic.getName() + "-AsyncExecutor")
 					.setDaemon(true)
 					.build());
 		}

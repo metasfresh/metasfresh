@@ -23,14 +23,20 @@ package de.metas.event;
  */
 
 import java.lang.management.ManagementFactory;
+import java.util.Map;
 import java.util.UUID;
 
+import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.Adempiere;
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
+import de.metas.organization.OrgId;
+import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
+import lombok.NonNull;
 
 /**
  * Misc {@link IEventBus} related constants.
@@ -101,7 +107,7 @@ public final class EventBusConfig
 	}
 
 	/** @return true of calls to {@link IEventBus#postEvent(Event)} shall be performed asynchronously */
-	public static boolean isEventBusPostEventsAsync()
+	public static boolean isEventBusPostAsync(@NonNull final Topic topic)
 	{
 		// NOTE: in case of unit tests which are checking what notifications were arrived,
 		// allowing the events to be posted async could be a problem because the event might arrive after the check.
@@ -110,8 +116,14 @@ public final class EventBusConfig
 			return false;
 		}
 
-		// Default: yes, we go async all the way!
-		return Services.get(ISysConfigBL.class).getBooleanValue("de.metas.event.EventBusPostEventsAsync", false);
+		final Map<String, String> valuesForPrefix = Services.get(ISysConfigBL.class).getValuesForPrefix("de.metas.event.asyncEventBus", ClientId.SYSTEM.getRepoId(), OrgId.ANY.getRepoId());
+		final String valueForTopic = valuesForPrefix.get("de.metas.event.asyncEventBus" + ".topic_" + topic.getName());
+		if (Check.isNotBlank(valueForTopic))
+		{
+			return StringUtils.toBoolean(valueForTopic, false);
+		}
+		final String standardValue = valuesForPrefix.get("de.metas.event.asyncEventBus");
+		return StringUtils.toBoolean(standardValue, false);
 	}
 
 	public static boolean isEventsWithTracingInfos()
