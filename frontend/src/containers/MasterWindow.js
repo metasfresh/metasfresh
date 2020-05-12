@@ -4,6 +4,7 @@ import { connect } from 'react-redux';
 import { push } from 'react-router-redux';
 import { forEach, get } from 'lodash';
 
+import { getTableId } from '../reducers/tables';
 import { addNotification } from '../actions/AppActions';
 import {
   addRowData,
@@ -13,6 +14,7 @@ import {
   sortTab,
   updateTabRowsData,
 } from '../actions/WindowActions';
+import { deleteTable } from '../actions/TableActions';
 import { connectWS, disconnectWS } from '../utils/websockets';
 import { getTabRequest, getRowsData } from '../api';
 
@@ -188,10 +190,28 @@ class MasterWindowContainer extends Component {
     ).then((tab) => addRowData({ [activeTabId]: tab }, 'master'));
   }
 
+  deleteTabsTables = () => {
+    const {
+      master: { includedTabsInfo },
+      params: { windowType, docId },
+      deleteTable,
+    } = this.props;
+
+    const tabs = Object.keys(includedTabsInfo);
+
+    if (tabs) {
+      tabs.forEach((tabId) => {
+        const tableId = getTableId({ windowType, docId, tabId });
+        deleteTable(tableId);
+      });
+    }
+  };
+
   componentWillUnmount() {
     const { clearMasterData } = this.props;
 
     clearMasterData();
+    this.deleteTabsTables();
     disconnectWS.call(this);
   }
 
@@ -241,14 +261,15 @@ MasterWindowContainer.propTypes = {
   processStatus: PropTypes.any,
   enableTutorial: PropTypes.any,
   location: PropTypes.any,
-  clearMasterData: PropTypes.func,
-  addNotification: PropTypes.func,
-  addRowData: PropTypes.func,
-  attachFileAction: PropTypes.func,
-  fireUpdateData: PropTypes.func,
-  sortTab: PropTypes.func,
-  updateTabRowsData: PropTypes.func,
-  push: PropTypes.func,
+  clearMasterData: PropTypes.func.isRequired,
+  addNotification: PropTypes.func.isRequired,
+  addRowData: PropTypes.func.isRequired,
+  attachFileAction: PropTypes.func.isRequired,
+  fireUpdateData: PropTypes.func.isRequired,
+  sortTab: PropTypes.func.isRequired,
+  updateTabRowsData: PropTypes.func.isRequired,
+  push: PropTypes.func.isRequired,
+  deleteTable: PropTypes.func.isRequired,
 };
 
 /**
@@ -282,5 +303,6 @@ export default connect(
     sortTab,
     updateTabRowsData,
     push,
+    deleteTable,
   }
 )(MasterWindowContainer);

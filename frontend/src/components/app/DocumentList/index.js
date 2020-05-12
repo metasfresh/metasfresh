@@ -118,6 +118,7 @@ class DocumentListContainer extends Component {
       viewId,
       resetView,
       clearAllFilters,
+      deleteTable,
     } = this.props;
     const { staticFilterCleared } = this.state;
 

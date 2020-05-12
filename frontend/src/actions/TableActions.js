@@ -1,7 +1,7 @@
-import { List as iList, Map as iMap } from 'immutable';
-import { reduce } from 'lodash';
+import { reduce, cloneDeep } from 'lodash';
 import * as types from '../constants/ActionTypes';
 
+import { getTable } from '../reducers/tables';
 import { getView } from '../reducers/viewHandler';
 
 /**
@@ -58,10 +58,12 @@ export function setActiveSortNEW(id, active) {
   };
 }
 
+// TODO: selections, other small updates
+
 /**
  * @method createTableData
- * @summary Helper function to grab raw data and format it accordingly to the
- * values in store.
+ * @summary Helper function to grab raw data and format/name it accordingly to
+ * the values in the store.
  */
 function createTableData(rawData) {
   const dataObject = {
@@ -85,16 +87,17 @@ function createTableData(rawData) {
     allowDelete: rawData.allowDelete,
     stale: rawData.stale,
     headerProperties: rawData.headerProperties
-      ? iMap(rawData.headerProperties)
+      ? rawData.headerProperties
       : undefined,
-    headerElements: rawData.headerElements
-      ? iMap(rawData.headerElements)
-      : undefined,
-    orderBy: rawData.orderBy ? iList(rawData.orderBy) : undefined,
-    columns: rawData.elements ? iList(rawData.elements) : undefined,
-    rows: rawData.result ? iList(rawData.result) : undefined,
+    headerElements: rawData.headerElements ? rawData.headerElements : undefined,
+    orderBy: rawData.orderBy ? rawData.orderBy : undefined,
+    
+    // immer freezes objects to make them immutable, so we have to make a deep copy
+    // of entries as otherwise we're just passing references to frozen objects
+    columns: rawData.elements ? cloneDeep(rawData.elements) : undefined,
+    rows: rawData.result ? cloneDeep(rawData.result) : undefined,
     defaultOrderBys: rawData.defaultOrderBys
-      ? iList(rawData.defaultOrderBys)
+      ? rawData.defaultOrderBys
       : undefined,
   };
 
@@ -132,10 +135,10 @@ export function createGridTable(tableId, tableResponse) {
  */
 export function updateGridTable(tableId, tableResponse) {
   return (dispatch, getState) => {
-    const tables = getState().tables;
+    const state = getState();
 
-    if (tables) {
-      const tableExists = tables.get(tableId);
+    if (state.tables) {
+      const tableExists = getTable(tableId, state);
 
       if (tableExists) {
         const tableData = createTableData({
@@ -175,10 +178,10 @@ export function createTabTable(tableId, tableResponse) {
  */
 export function updateTabTable(tableId, tableResponse) {
   return (dispatch, getState) => {
-    const tables = getState().tables;
+    const state = getState();
 
-    if (tables) {
-      const tableExists = tables.get(tableId);
+    if (state.tables) {
+      const tableExists = getTable(tableId, state);
       const tableData = createTableData(tableResponse);
 
       if (tableExists) {
@@ -189,5 +192,3 @@ export function updateTabTable(tableId, tableResponse) {
     }
   };
 }
-
-// TODO: selections, other small updates
