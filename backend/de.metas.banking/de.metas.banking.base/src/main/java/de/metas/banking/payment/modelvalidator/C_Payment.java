@@ -1,3 +1,4 @@
+
 /*
  * #%L
  * de.metas.banking.base
@@ -20,9 +21,6 @@
  * #L%
  */
 
-/**
- *
- */
 package de.metas.banking.payment.modelvalidator;
 
 import com.google.common.collect.ImmutableList;
@@ -41,6 +39,12 @@ import org.adempiere.model.CopyRecordFactory;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.ModelValidator;
+
+import de.metas.payment.api.PaymentReconcileReference;
+import de.metas.payment.api.PaymentReconcileRequest;
+
+import java.util.Collection;
+
 
 /**
  * @author cg
@@ -113,10 +117,14 @@ public class C_Payment
 		final PaymentId paymentId = PaymentId.ofRepoId(payment.getC_Payment_ID());
 		if (!bankStatementBL.isPaymentOnBankStatement(paymentId))
 		{
-			paymentBL.markReconciledAndSave(payment);
-
 			final PaymentId reversalId = PaymentId.ofRepoId(payment.getReversal_ID());
-			paymentBL.markReconciled(ImmutableList.of(reversalId));
+
+			final ImmutableList<PaymentReconcileRequest> requests = ImmutableList.of(
+					PaymentReconcileRequest.of(paymentId, PaymentReconcileReference.reversal(reversalId)),
+					PaymentReconcileRequest.of(reversalId, PaymentReconcileReference.reversal(paymentId)));
+
+			final Collection<I_C_Payment> preloadedPayments = ImmutableList.of(payment);
+			paymentBL.markReconciled(requests, preloadedPayments);
 		}
 	}
 

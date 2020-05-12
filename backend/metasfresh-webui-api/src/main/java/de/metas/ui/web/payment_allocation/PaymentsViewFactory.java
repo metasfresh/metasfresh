@@ -2,6 +2,7 @@ package de.metas.ui.web.payment_allocation;
 
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
 import org.adempiere.exceptions.AdempiereException;
@@ -66,7 +67,7 @@ public class PaymentsViewFactory implements IViewFactory, IViewsIndexStorage
 
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final PaymentAndInvoiceRowsRepo rowsRepo;
-	private final DefaultViewsRepositoryStorage views = new DefaultViewsRepositoryStorage();
+	private final DefaultViewsRepositoryStorage views = new DefaultViewsRepositoryStorage(TimeUnit.HOURS.toMinutes(1));
 
 	public PaymentsViewFactory(
 			@NonNull final PaymentAndInvoiceRowsRepo rowsRepo)

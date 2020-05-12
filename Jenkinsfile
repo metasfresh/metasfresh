@@ -56,8 +56,8 @@ try
 			)
 			echo "mvnConf=${mvnConf.toString()}"
 
-			final def scmVars = checkout scm // i hope this to do all the magic we need
-			//echo "scmVars=${scmVars}"
+			final def scmVars = checkout scm
+			echo "git debug scmVars=>>>>>${scmVars}<<<<<"
 
 			currentBuild.description = """${currentBuild.description}
 			<b>
@@ -75,13 +75,13 @@ try
 			withEnv(["MF_VERSION=${MF_VERSION}"])
 			{
 				// disable automatic fingerprinting and archiving by artifactsPublisher, because in particular the archiving takes up too much space on the jenkins server.
-				withMaven(jdk: 'java-8', maven: 'maven-3.6.3', mavenLocalRepo: '.repository', mavenOpts: '-Xmx1536M', options: [artifactsPublisher(disabled: true)])
+				withMaven(jdk: 'java-8', maven: 'maven-3.5.4', mavenLocalRepo: '.repository', mavenOpts: '-Xmx1536M', options: [artifactsPublisher(disabled: true)])
 				{
 					nexusCreateRepoIfNotExists(mvnConf.mvnDeployRepoBaseURL, mvnConf.mvnRepoName)
 					dir('misc/parent-pom')
 					{
 						def parentPom = load('buildfile.groovy')
-						parentPom.build(mvnConf, scmVars) // in there we don't do diff..we always build&deploy it.
+						parentPom.build(mvnConf, scmVars, params.MF_FORCE_FULL_BUILD)
 					}
 					// note: to do some of this in parallel, we first need to make sure that the different parts don't concurrently write to the build description
 					dir('frontend')
