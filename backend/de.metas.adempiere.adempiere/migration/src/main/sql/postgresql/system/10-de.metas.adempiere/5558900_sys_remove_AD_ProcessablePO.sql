@@ -102,6 +102,23 @@ DELETE FROM AD_Element WHERE AD_Element_ID=1002291
 UPDATE AD_Menu SET EntityType='de.metas.dataentry',Updated=TO_TIMESTAMP('2020-05-08 16:56:15','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Menu_ID=541293
 ;
 
+-- correction by rc
+-- select * from ad_element where entitytype = 'de.metas.processing';
+-- ->
+-- 
+-- 541292	0	0	Y	2011-04-13 14:23:29.000000 +02:00	100	2011-04-13 14:23:29.000000 +02:00	100	AD_ProcessablePO_ID	de.metas.processing	AD_ProcessablePO	AD_ProcessablePO											
+-- 541293	0	0	Y	2011-04-13 15:26:32.000000 +02:00	100	2011-04-13 15:26:32.000000 +02:00	100	IsProcessDirectly	de.metas.processing	Sofort verarbeiten	Sofort verarbeiten											
+-- 1002290	0	0	Y	2018-11-06 22:53:08.554379 +01:00	99	2018-11-06 22:53:08.554379 +01:00	99		de.metas.processing	Verarbeitet	Verarbeitet	Checkbox sagt aus, ob der Beleg verarbeitet wurde. 	Verarbeitete Belege dürfen in der Regel nich mehr geändert werden.									
+
+
+
+UPDATE AD_Element set entityType = 'de.metas.dataentry' where ad_element_ID in (541292,
+541293,
+1002290);
+
+-- end of correction
+
+
 -- 2020-05-08T14:56:21.985Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 DELETE FROM AD_EntityType WHERE AD_EntityType_ID=540027
