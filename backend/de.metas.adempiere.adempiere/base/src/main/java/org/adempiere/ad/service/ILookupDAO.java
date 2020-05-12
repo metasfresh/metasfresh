@@ -98,8 +98,6 @@ public interface ILookupDAO extends ISingletonService
 
 		boolean isAutoComplete();
 
-		boolean isShowInactiveValues();
-
 		/**
 		 * Check if the keyColumn ends with "_ID"
 		 */

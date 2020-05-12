@@ -216,7 +216,6 @@ public class LookupDAO implements ILookupDAO
 
 			autoComplete = builder.autoComplete;
 
-			showInactiveValues = builder.showInactiveValues;
 			tooltipType = builder.tooltipType;
 		}
 
@@ -335,12 +334,6 @@ public class LookupDAO implements ILookupDAO
 			this.autoComplete = autoComplete;
 			return this;
 		}
-
-		public TableRefInfoBuilder setShowInactiveValues(final boolean showInactiveValues)
-		{
-			this.showInactiveValues = showInactiveValues;
-			return this;
-	}
 
 		public TableRefInfoBuilder setTooltipType(@NonNull final TooltipType tooltipType)
 		{

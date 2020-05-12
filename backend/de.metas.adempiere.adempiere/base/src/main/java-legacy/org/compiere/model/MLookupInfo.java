@@ -575,11 +575,6 @@ public final class MLookupInfo implements Serializable, Cloneable
 		return this.autoComplete;
 	}
 
-	void setShowInactiveValues(boolean showInactiveValues)
-	{
-		this.showInactiveValues = showInactiveValues;
-	}
-
 	void setQueryHasEntityType(boolean queryHasEntityType)
 	{
 		this.queryHasEntityType = queryHasEntityType;
