@@ -85,21 +85,12 @@ public class LookupDAO implements ILookupDAO
 
 	private final static String COLUMNNAME_Value = "Value";
 
-	private static final ITableRefInfo tableRefInfo_Account = TableRefInfo.builder()
-			.setIdentifier("Account - C_ValidCombination_ID")
-			.setTableName(I_C_ValidCombination.Table_Name)
-			.setKeyColumn(I_C_ValidCombination.COLUMNNAME_C_ValidCombination_ID)
-			.setAutoComplete(true)
-			.setTooltipType(TooltipType.DEFAULT)
-			.build();
-
 	/* package */static class ColumnInfo implements IColumnInfo
 	{
 		private final String ColumnName;
 		private final String TableName;
 		private final int AD_Reference_Value_ID;
 		private final boolean parent;
-		// String ValidationCode = "";
 		private final int AD_Val_Rule_ID;
 
 		public ColumnInfo(final String tableName, final String columnName, final int adReferenceValueId, final boolean isParent, final int adValRuleId)
@@ -166,7 +157,8 @@ public class LookupDAO implements ILookupDAO
 		private final AdWindowId zoomAD_Window_ID_Override;
 		private final boolean autoComplete;
 		private final boolean showInactiveValues;
-		@NonNull TooltipType tooltipType;
+		@NonNull
+		TooltipType tooltipType;
 
 		@Override
 		public TooltipType getTooltipType()
@@ -632,7 +624,14 @@ public class LookupDAO implements ILookupDAO
 	@Override
 	public ITableRefInfo retrieveAccountTableRefInfo()
 	{
-		return tableRefInfo_Account;
+		final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
+		return TableRefInfo.builder()
+				.setIdentifier("Account - C_ValidCombination_ID")
+				.setTableName(I_C_ValidCombination.Table_Name)
+				.setKeyColumn(I_C_ValidCombination.COLUMNNAME_C_ValidCombination_ID)
+				.setAutoComplete(true)
+				.setTooltipType(adTableDAO.getTooltipTypeByTableName(I_C_ValidCombination.Table_Name))
+				.build();
 	}
 
 	@Override

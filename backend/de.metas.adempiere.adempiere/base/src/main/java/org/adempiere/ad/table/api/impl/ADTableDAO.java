@@ -77,8 +77,9 @@ public class ADTableDAO implements IADTableDAO
 			"Created", "CreatedBy",
 			"Updated", "UpdatedBy");
 
-	private final CCache<String, TooltipType> tableTooltipTypeCache = CCache.<String, TooltipType>builder()
+	private final CCache<String, TooltipType> tableTooltipTypeCache = CCache.<String, TooltipType> builder()
 			.cacheMapType(CCache.CacheMapType.HashMap)
+			.tableName(I_AD_Table.Table_Name)
 			.initialCapacity(100)
 			.expireMinutes(CCache.EXPIREMINUTES_Never)
 			.build();
@@ -402,9 +403,10 @@ public class ADTableDAO implements IADTableDAO
 	public @NonNull TooltipType getTooltipTypeByTableName(@NonNull final String tableName)
 	{
 		/*
-		 * Implementation detail: cannot use `retrieveTable(tableName)` as we will get an error `java.lang.IllegalStateException: Recursive load of: interface org.adempiere.ad.service.ILookupDAO`.
+		 * Implementation detail: Implementation detail: using IQueryBL related libraries will likely get the following error:
+		 * `java.lang.IllegalStateException: Recursive load of: interface org.adempiere.ad.service.<someInterface>`.
+		 * during startup
 		 */
-
 		return tableTooltipTypeCache.get(tableName, (Supplier<TooltipType>)() -> {
 			final String sql = " SELECT " + I_AD_Table.COLUMNNAME_TooltipType
 					+ " FROM " + I_AD_Table.Table_Name
