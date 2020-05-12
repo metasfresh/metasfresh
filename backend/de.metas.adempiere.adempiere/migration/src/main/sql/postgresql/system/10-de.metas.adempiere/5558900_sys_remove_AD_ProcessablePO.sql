@@ -89,13 +89,13 @@ DELETE FROM AD_Element WHERE AD_Element_ID=541293
 
 -- 2020-05-08T14:55:22.403Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-DELETE FROM  AD_Element_Trl WHERE AD_Element_ID=1002291
-;
+--DELETE FROM  AD_Element_Trl WHERE AD_Element_ID=1002291
+--;
 
 -- 2020-05-08T14:55:22.409Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-DELETE FROM AD_Element WHERE AD_Element_ID=1002291
-;
+--DELETE FROM AD_Element WHERE AD_Element_ID=1002291
+--;
 
 -- 2020-05-08T14:56:15.821Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
