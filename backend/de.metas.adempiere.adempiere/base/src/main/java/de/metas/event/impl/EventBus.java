@@ -66,7 +66,7 @@ final class EventBus implements IEventBus
 		@Override
 		public void handleException(final Throwable exception, final SubscriberExceptionContext context)
 		{
-			String errmsg = "Could not dispatch event: " + context.getSubscriber() + " to " + context.getSubscriberMethod()
+			final String errmsg = "Could not dispatch event: " + context.getSubscriber() + " to " + context.getSubscriberMethod()
 					+ "\n Event: " + context.getEvent()
 					+ "\n Bus: " + context.getEventBus();
 			logger.error(errmsg, exception);
@@ -84,6 +84,9 @@ final class EventBus implements IEventBus
 
 	@Getter
 	private boolean destroyed = false;
+
+	@Getter
+	private final boolean async;
 
 	/**
 	 * The default type is local, unless the factory makes this event bus "remote" by registering some sort of forwarder-subscriber.
@@ -106,10 +109,13 @@ final class EventBus implements IEventBus
 		if (executor == null)
 		{
 			this.eventBus = new com.google.common.eventbus.EventBus(exceptionHandler);
+			this.async = false;
+
 		}
 		else
 		{
 			this.eventBus = new com.google.common.eventbus.AsyncEventBus(executor, exceptionHandler);
+			this.async = true;
 		}
 	}
 

@@ -65,6 +65,7 @@ public class RabbitMQEventBusRemoteEndpoint implements IEventBusRemoteEndpoint
 	private final AmqpTemplate amqpTemplate;
 
 	private final IEventListener eventBus2amqpListener = EventBus2RemoteEndpointHandler.newInstance(this);
+	private boolean boundToAsyncEventBus;
 
 	public RabbitMQEventBusRemoteEndpoint(@NonNull final AmqpTemplate amqpTemplate)
 	{
@@ -78,29 +79,47 @@ public class RabbitMQEventBusRemoteEndpoint implements IEventBusRemoteEndpoint
 			@Header(HEADER_SenderId) final String senderId,
 			@Header(HEADER_TopicName) final String topicName)
 	{
+		final Topic topic = Topic.of(topicName, Type.REMOTE);
+		final IEventBus localEventBus = Services.get(IEventBusFactory.class).getEventBusIfExists(topic);
+		if (localEventBus == null)
+		{
+			logger.debug("onRemoteEvent - localEventBus for topicName={} is null; -> ignoring event", topicName);
+			return;
+		}
+		if (Objects.equals(getSenderId(), senderId))
+		{
+			logger.debug("onRemoteEvent - event's senderId is equal to the *local* sender id; -> ignoring event", senderId);
+			return;
+		}
+
+		final boolean monitorIncomingEvents = EventBusConfig.isMonitorIncomingEvents();
+		final boolean localEventBusAsync = localEventBus.isAsync();
 		try
 		{
-			if (EventBusConfig.isEventsWithTracingInfos())
+			if (monitorIncomingEvents && !localEventBusAsync)
 			{
-				extractInfosAndMonitorTransaction(event, senderId, topicName);
+				logger.debug("onRemoteEvent - localEventBus is not async and isMonitorIncomingEvents=true; -> monitoring event processing; localEventBus={}", localEventBus);
+				extractInfosAndMonitor(localEventBus, event, senderId, topicName);
 			}
 			else
 			{
-				onRemoteEvent0(event, senderId, topicName);
+				logger.debug("onRemoteEvent - localEventBus.isAsync={} and isMonitorIncomingEvents={}; -> cannot monitor event processing; localEventBus={}", localEventBusAsync, monitorIncomingEvents, localEventBus);
+				onRemoteEvent0(localEventBus, event, senderId, topicName);
 			}
 		}
 		catch (final Exception ex)
 		{
-			logger.warn("Failed forwarding event to topic {}: {}", topicName, event, ex);
+			logger.warn("onRemoteEvent - Failed forwarding event to topic {}: {}", topicName, event, ex);
 		}
 	}
 
-	private void extractInfosAndMonitorTransaction(
+	private void extractInfosAndMonitor(
+			@NonNull final IEventBus localEventBus,
 			@NonNull final Event event,
 			@NonNull final String senderId,
 			@NonNull final String topicName)
 	{
-		// extract possible remote tracing infos from the event and create a (distributed) monitoring transaction.
+		// extract remote tracing infos from the event (if there are any) and create a (distributed) monitoring transaction.
 		final PerformanceMonitoringService perfMonService = SpringContextHolder.instance.getBeanOr(PerformanceMonitoringService.class, NoopPerformanceMonitoringService.INSTANCE);
 
 		final TransactionMetadataBuilder transactionMetadata = TransactionMetadata.builder();
@@ -115,34 +134,23 @@ public class RabbitMQEventBusRemoteEndpoint implements IEventBusRemoteEndpoint
 			}
 		}
 		transactionMetadata
-				.name("Process remote-event on topic " + topicName)
+				.name("Process remote-event; topic={}" + topicName)
 				.type(de.metas.monitoring.adapter.PerformanceMonitoringService.Type.EVENTBUS_REMOTE_ENDPOINT)
 				.label("de.metas.event.remote-event.senderId", event.getSenderId())
 				.label("de.metas.event.remote-event.topicName", topicName)
 				.label("de.metas.event.remote-event.endpointImpl", this.getClass().getSimpleName());
 
-		perfMonService.monitorTransaction(() -> {
-			onRemoteEvent0(event, senderId, topicName);
-		}, transactionMetadata.build());
+		perfMonService.monitorTransaction(
+				() -> onRemoteEvent0(localEventBus, event, senderId, topicName),
+				transactionMetadata.build());
 	}
 
 	private void onRemoteEvent0(
+			@NonNull final IEventBus localEventBus,
 			@NonNull final Event event,
 			@NonNull final String senderId,
 			@NonNull final String topicName)
 	{
-		if (Objects.equals(getSenderId(), senderId))
-		{
-			return;
-		}
-
-		final Topic topic = Topic.of(topicName, Type.REMOTE);
-		final IEventBus localEventBus = Services.get(IEventBusFactory.class).getEventBusIfExists(topic);
-		if (localEventBus == null)
-		{
-			return;
-		}
-
 		event.markReceivedByEventBusId(createEventBusId(topicName));
 
 		localEventBus.postEvent(event);
@@ -156,7 +164,7 @@ public class RabbitMQEventBusRemoteEndpoint implements IEventBusRemoteEndpoint
 	{
 		try
 		{
-			if (EventBusConfig.isEventsWithTracingInfos())
+			if (EventBusConfig.isMonitorIncomingEvents())
 			{
 				addInfosAndMonitorSpan(topicName, event);
 			}
@@ -211,7 +219,7 @@ public class RabbitMQEventBusRemoteEndpoint implements IEventBusRemoteEndpoint
 		logger.debug("Send event; topicName={}; event={}", topicName, event);
 	}
 
-	private final String createEventBusId(final String topicName)
+	private String createEventBusId(final String topicName)
 	{
 		return getSenderId() + "_" + topicName;
 	}
@@ -224,6 +232,7 @@ public class RabbitMQEventBusRemoteEndpoint implements IEventBusRemoteEndpoint
 	@Override
 	public boolean bindIfNeeded(@NonNull final IEventBus eventBus)
 	{
+		this.boundToAsyncEventBus = eventBus.isAsync();
 		eventBus.subscribe(eventBus2amqpListener);
 		return true; // need to return true, otherwise, the system will only create "local" topics
 	}

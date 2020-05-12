@@ -11,7 +11,7 @@ import de.metas.util.Loggables;
 import lombok.NonNull;
 
 /**
- * Forward {@link Event}s from {@link IEventBus} to the remote endpoint (AMQP).
+ * Forward {@link Event}s from {@link IEventBus} to the remote endpoint (RabbitMQ).
  *
  * @author tsa
  *
@@ -20,7 +20,7 @@ class EventBus2RemoteEndpointHandler implements IEventListener
 {
 	private static final Logger logger = LogManager.getLogger(EventBus2RemoteEndpointHandler.class);
 
-	public static final EventBus2RemoteEndpointHandler newInstance(final IEventBusRemoteEndpoint remoteEndpoint)
+	public static EventBus2RemoteEndpointHandler newInstance(final IEventBusRemoteEndpoint remoteEndpoint)
 	{
 		return new EventBus2RemoteEndpointHandler(remoteEndpoint);
 	}

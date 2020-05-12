@@ -42,7 +42,6 @@ import lombok.NonNull;
  * Misc {@link IEventBus} related constants.
  *
  * @author tsa
- *
  */
 public final class EventBusConfig
 {
@@ -67,9 +66,9 @@ public final class EventBusConfig
 
 	/**
 	 * Locally disable distributed events.
-	 *
+	 * <p>
 	 * So, EventBus system will work, but all busses will be local, nothing will be broadcasted on network.
-	 *
+	 * <p>
 	 * To be used by tools build on top of ADempiere, which require only a minimal set of functionalities.
 	 */
 	public static void disableDistributedEvents()
@@ -90,7 +89,7 @@ public final class EventBusConfig
 
 	/**
 	 * Topic used for general notifications inside this JVM instance.
-	 *
+	 * <p>
 	 * Compared to {@link #TOPIC_GeneralUserNotifications}, this topic is NOT broadcasting the events remotely.
 	 */
 	public static final Topic TOPIC_GeneralUserNotificationsLocal = TOPIC_GeneralUserNotifications.toLocal();
@@ -116,19 +115,25 @@ public final class EventBusConfig
 			return false;
 		}
 
-		final Map<String, String> valuesForPrefix = Services.get(ISysConfigBL.class).getValuesForPrefix("de.metas.event.asyncEventBus", ClientId.SYSTEM.getRepoId(), OrgId.ANY.getRepoId());
-		final String valueForTopic = valuesForPrefix.get("de.metas.event.asyncEventBus" + ".topic_" + topic.getName());
+		final String nameForAllTopics = "de.metas.event.asyncEventBus";
+		final Map<String, String> valuesForPrefix = Services.get(ISysConfigBL.class).getValuesForPrefix(nameForAllTopics, ClientId.SYSTEM.getRepoId(), OrgId.ANY.getRepoId());
+
+		final String keyForTopic = nameForAllTopics + ".topic_" + topic.getName();
+		final String valueForTopic = valuesForPrefix.get(keyForTopic);
 		if (Check.isNotBlank(valueForTopic))
 		{
+			getLogger(EventBusConfig.class).debug("SysConfig returned value={} for keyForTopic={}", valueForTopic, keyForTopic);
 			return StringUtils.toBoolean(valueForTopic, false);
 		}
-		final String standardValue = valuesForPrefix.get("de.metas.event.asyncEventBus");
+
+		final String standardValue = valuesForPrefix.get(nameForAllTopics);
+		getLogger(EventBusConfig.class).debug("SysConfig returned value={} for keyForTopic={}", standardValue, keyForTopic);
 		return StringUtils.toBoolean(standardValue, false);
 	}
 
-	public static boolean isEventsWithTracingInfos()
+	public static boolean isMonitorIncomingEvents()
 	{
-		return Services.get(ISysConfigBL.class).getBooleanValue("de.metas.event.EventsWithTracingInfos", false);
+		return Services.get(ISysConfigBL.class).getBooleanValue("de.metas.event.MonitorIncomingEvents", false);
 	}
 
 }

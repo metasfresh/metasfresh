@@ -33,6 +33,8 @@ import de.metas.event.remote.IEventBusRemoteEndpoint;
 import de.metas.logging.LogManager;
 import lombok.NonNull;
 
+import javax.annotation.Nullable;
+
 @Service
 public class EventBusFactory implements IEventBusFactory
 {
@@ -45,19 +47,14 @@ public class EventBusFactory implements IEventBusFactory
 	private final SetMultimap<Topic, IEventListener> globalEventListeners = HashMultimap.create();
 
 	private final LoadingCache<Topic, EventBus> topic2eventBus = CacheBuilder.newBuilder()
-			.removalListener(new RemovalListener<Topic, EventBus>()
-			{
-				@Override
-				public void onRemoval(final RemovalNotification<Topic, EventBus> notification)
-				{
-					final EventBus eventBus = notification.getValue();
-					destroyEventBus(eventBus);
-				}
+			.removalListener((RemovalListener<Topic, EventBus>)notification -> {
+				final EventBus eventBus = notification.getValue();
+				destroyEventBus(eventBus);
 			})
 			.build(new CacheLoader<Topic, EventBus>()
 			{
 				@Override
-				public EventBus load(final Topic topic) throws Exception
+				public EventBus load(final @NonNull Topic topic) throws Exception
 				{
 					return createEventBus(topic);
 				}
@@ -100,6 +97,7 @@ public class EventBusFactory implements IEventBusFactory
 		}
 	}
 
+	@Nullable
 	@Override
 	public IEventBus getEventBusIfExists(@NonNull final Topic topic)
 	{
@@ -128,11 +126,8 @@ public class EventBusFactory implements IEventBusFactory
 	 * If the remote event forwarding system is enabled <b>and</b> if the type of the given <code>topic</code> is {@link Type#REMOTE},
 	 * then the event bus is also bound to a remote endpoint.
 	 * Otherwise the event bus will only be local.
-	 *
-	 * @param topic
-	 * @return
 	 */
-	private final EventBus createEventBus(final Topic topic)
+	private EventBus createEventBus(@NonNull final Topic topic)
 	{
 		// Create the event bus
 		final EventBus eventBus = new EventBus(topic.getName(), createExecutorOrNull(topic));
@@ -162,6 +157,7 @@ public class EventBusFactory implements IEventBusFactory
 		return eventBus;
 	}
 
+	@Nullable
 	private ExecutorService createExecutorOrNull(@NonNull final Topic topic)
 	{
 		// Setup EventBus executor
