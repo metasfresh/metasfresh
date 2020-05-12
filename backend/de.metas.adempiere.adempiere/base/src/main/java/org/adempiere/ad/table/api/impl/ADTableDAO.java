@@ -403,8 +403,8 @@ public class ADTableDAO implements IADTableDAO
 	public @NonNull TooltipType getTooltipTypeByTableName(@NonNull final String tableName)
 	{
 		/*
-		 * Implementation detail: Implementation detail: using IQueryBL related libraries will likely get the following error:
-		 * `java.lang.IllegalStateException: Recursive load of: interface org.adempiere.ad.service.<someInterface>`.
+		 * Implementation detail: using IQueryBL related libraries will likely get the following error:
+		 * `java.lang.IllegalStateException: Recursive load of: interface org.adempiere.ad.service.<someInterface>`
 		 * during startup
 		 */
 		return tableTooltipTypeCache.get(tableName, (Supplier<TooltipType>)() -> {
