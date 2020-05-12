@@ -1,13 +1,6 @@
 package de.metas.ui.web.handlingunits;
 
-import java.util.List;
-
-import org.adempiere.mm.attributes.spi.IAttributeValuesProvider;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_M_Attribute;
-import org.compiere.util.Evaluatee;
-import org.compiere.util.NamePair;
-
+import de.metas.adempiere.service.impl.TooltipType;
 import de.metas.device.adempiere.AttributesDevicesHub.AttributeDeviceAccessor;
 import de.metas.device.adempiere.IDevicesHubFactory;
 import de.metas.handlingunits.attribute.IAttributeValue;
@@ -26,6 +19,15 @@ import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.mm.attributes.spi.IAttributeValuesProvider;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_M_Attribute;
+import org.compiere.util.Evaluatee;
+import org.compiere.util.NamePair;
+
+import javax.annotation.Nullable;
+import java.util.List;
 
 /*
  * #%L
@@ -53,7 +55,6 @@ import lombok.NonNull;
  * Collection of helper methods for building HU attributes layout, extracting widgetType etc.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 /* package */final class HUEditorRowAttributesHelper
 {
@@ -134,6 +135,7 @@ import lombok.NonNull;
 		return jsonValue;
 	}
 
+	@Nullable
 	private static Object extractValueAndResolve(
 			@NonNull final IAttributeStorage attributesStorage,
 			@NonNull final IAttributeValue attributeValue)
@@ -147,7 +149,9 @@ import lombok.NonNull;
 		final IAttributeValuesProvider valuesProvider = attributeValue.getAttributeValuesProvider();
 		final Evaluatee evalCtx = valuesProvider.prepareContext(attributesStorage);
 		final NamePair valueNP = valuesProvider.getAttributeValueOrNull(evalCtx, value);
-		return LookupValue.fromNamePair(valueNP);
+		final TooltipType tooltipType = Services.get(IADTableDAO.class).getTooltipTypeByTableName(I_M_Attribute.Table_Name);
+
+		return LookupValue.fromNamePair(valueNP, null, tooltipType);
 	}
 
 	public static DocumentFieldWidgetType extractWidgetType(final IAttributeValue attributeValue)

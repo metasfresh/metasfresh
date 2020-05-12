@@ -1,42 +1,8 @@
-package de.metas.ui.web.window.datatypes;
-
-import java.util.Collection;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.function.Function;
-import java.util.function.IntFunction;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.util.KeyNamePair;
-import org.compiere.util.NamePair;
-import org.compiere.util.ValueNamePair;
-import org.compiere.util.ValueNamePairValidationInformation;
-
-import com.google.common.base.Joiner;
-import com.google.common.base.MoreObjects;
-import com.google.common.base.Splitter;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
-
-import de.metas.i18n.ITranslatableString;
-import de.metas.i18n.TranslatableStrings;
-import de.metas.process.IProcessDefaultParametersProvider;
-import de.metas.process.JavaProcess;
-import de.metas.ui.web.process.descriptor.ProcessParamLookupValuesProvider;
-import de.metas.util.lang.ReferenceListAwareEnum;
-import de.metas.util.lang.RepoIdAware;
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Singular;
-
 /*
  * #%L
  * metasfresh-webui-api
  * %%
- * Copyright (C) 2016 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -54,11 +20,44 @@ import lombok.Singular;
  * #L%
  */
 
+package de.metas.ui.web.window.datatypes;
+
+import com.google.common.base.Joiner;
+import com.google.common.base.MoreObjects;
+import com.google.common.base.Splitter;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+import de.metas.adempiere.service.impl.TooltipType;
+import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.TranslatableStrings;
+import de.metas.process.IProcessDefaultParametersProvider;
+import de.metas.process.JavaProcess;
+import de.metas.ui.web.process.descriptor.ProcessParamLookupValuesProvider;
+import de.metas.util.lang.ReferenceListAwareEnum;
+import de.metas.util.lang.RepoIdAware;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Singular;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.util.KeyNamePair;
+import org.compiere.util.NamePair;
+import org.compiere.util.ValueNamePair;
+import org.compiere.util.ValueNamePairValidationInformation;
+
+import javax.annotation.Nullable;
+import java.util.Collection;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.function.IntFunction;
+
 public abstract class LookupValue
 {
 	protected final ValueNamePairValidationInformation validationInformation;
 
-	public static final Object normalizeId(final Object idObj, final boolean numericKey)
+	@Nullable
+	public static Object normalizeId(final Object idObj, final boolean numericKey)
 	{
 		if (idObj == null)
 		{
@@ -108,7 +107,8 @@ public abstract class LookupValue
 		}
 	}
 
-	public static final LookupValue fromObject(@Nullable final Object id, final String displayName)
+	@Nullable
+	public static LookupValue fromObject(@Nullable final Object id, final String displayName)
 	{
 		if (id == null)
 		{
@@ -124,25 +124,23 @@ public abstract class LookupValue
 		}
 	}
 
-	public static final LookupValue fromNamePair(@Nullable final NamePair namePair)
-	{
-		final String adLanguage = null;
-		final LookupValue defaultValue = null;
-		return fromNamePair(namePair, adLanguage, defaultValue);
-	}
-
-	public static final LookupValue fromNamePair(
-			@Nullable final NamePair namePair,
-			@Nullable final String adLanguage)
-	{
-		final LookupValue defaultValue = null;
-		return fromNamePair(namePair, adLanguage, defaultValue);
-	}
-
-	public static final LookupValue fromNamePair(
+	@SuppressWarnings("ConstantConditions")
+	@Nullable
+	public static LookupValue fromNamePair(
 			@Nullable final NamePair namePair,
 			@Nullable final String adLanguage,
-			@Nullable final LookupValue defaultValue)
+			@NonNull final TooltipType tooltipType)
+	{
+		final LookupValue defaultValue = null;
+		return fromNamePair(namePair, adLanguage, defaultValue, tooltipType);
+	}
+
+	@Nullable
+	public static LookupValue fromNamePair(
+			@Nullable final NamePair namePair,
+			@Nullable final String adLanguage,
+			@Nullable final LookupValue defaultValue,
+			@NonNull final TooltipType tooltipType)
 	{
 		if (namePair == null)
 		{
@@ -151,15 +149,30 @@ public abstract class LookupValue
 
 		final ITranslatableString displayNameTrl;
 		final ITranslatableString descriptionTrl;
-		if (adLanguage == null)
+
+		switch (tooltipType)
 		{
-			displayNameTrl = TranslatableStrings.anyLanguage(namePair.getName());
-			descriptionTrl = TranslatableStrings.anyLanguage(namePair.getDescription());
-		}
-		else
-		{
-			displayNameTrl = TranslatableStrings.singleLanguage(adLanguage, namePair.getName());
-			descriptionTrl = TranslatableStrings.singleLanguage(adLanguage, namePair.getDescription());
+			case TableIdentifier:
+				displayNameTrl = trl(adLanguage, namePair.getName());
+				descriptionTrl = trl(adLanguage, namePair.getName());
+				break;
+			case DescriptionFallbackToTableIdentifier:
+				displayNameTrl = trl(adLanguage, namePair.getName());
+				final ITranslatableString maybeBlankDescription = trl(adLanguage, namePair.getDescription());
+				if (!TranslatableStrings.isBlank(maybeBlankDescription))
+				{
+					descriptionTrl = maybeBlankDescription;
+				}
+				else
+				{
+					descriptionTrl = displayNameTrl;
+				}
+				break;
+			default:
+			case Description:
+				displayNameTrl = trl(adLanguage, namePair.getName());
+				descriptionTrl = trl(adLanguage, namePair.getDescription());
+				break;
 		}
 
 		if (namePair instanceof ValueNamePair)
@@ -178,6 +191,19 @@ public abstract class LookupValue
 		{
 			// shall not happen
 			throw new IllegalArgumentException("Unknown namePair: " + namePair + " (" + namePair.getClass() + ")");
+		}
+	}
+
+	@NonNull
+	private static ITranslatableString trl(@Nullable final String adLanguage, @Nullable final String value)
+	{
+		if (adLanguage == null)
+		{
+			return TranslatableStrings.anyLanguage(value);
+		}
+		else
+		{
+			return TranslatableStrings.singleLanguage(adLanguage, value);
 		}
 	}
 
@@ -313,7 +339,7 @@ public abstract class LookupValue
 	public final boolean isActive()
 	{
 		final Boolean active = getActive();
-		return active == null || active.booleanValue();
+		return active == null || active;
 	}
 
 	protected Boolean getActive()
@@ -348,16 +374,19 @@ public abstract class LookupValue
 		return additionalAttributes != null ? additionalAttributes : ImmutableMap.of();
 	}
 
+	@Nullable
 	public <T> T getAttribute(final String name)
 	{
 		if (additionalAttributes == null)
 		{
 			return null;
 		}
-		@SuppressWarnings("unchecked") final T value = (T)additionalAttributes.get(name);
+		@SuppressWarnings("unchecked")
+		final T value = (T)additionalAttributes.get(name);
 		return value;
 	}
 
+	@SuppressWarnings("unused")
 	public int getAttributeAsInt(final String name, final int defaultValue)
 	{
 		final Object valueObj = getAttribute(name);
@@ -381,6 +410,7 @@ public abstract class LookupValue
 		}
 	}
 
+	@SuppressWarnings("unused")
 	public Set<Integer> getAttributeAsIntSet(final String name)
 	{
 		final Object valueObj = getAttribute(name);
@@ -390,7 +420,8 @@ public abstract class LookupValue
 		}
 		else if (valueObj instanceof Collection)
 		{
-			@SuppressWarnings("unchecked") final Collection<Integer> coll = (Collection<Integer>)valueObj;
+			@SuppressWarnings("unchecked")
+			final Collection<Integer> coll = (Collection<Integer>)valueObj;
 			return ImmutableSet.copyOf(coll);
 		}
 		else
@@ -475,8 +506,8 @@ public abstract class LookupValue
 				@NonNull final String id,
 				@Nullable final ITranslatableString displayName,
 				@Nullable final ITranslatableString description,
-				@Singular final Map<String, Object> attributes,
-				final Boolean active,
+				@Nullable @Singular final Map<String, Object> attributes,
+				@Nullable final Boolean active,
 				@Nullable final ValueNamePairValidationInformation validationInformation)
 		{
 			super(id,
@@ -553,6 +584,7 @@ public abstract class LookupValue
 					null/* active */);
 		}
 
+		@Nullable
 		public static IntegerLookupValue of(final StringLookupValue stringLookupValue)
 		{
 			if (stringLookupValue == null)
@@ -583,8 +615,8 @@ public abstract class LookupValue
 				final int id,
 				@Nullable final ITranslatableString displayName,
 				@Nullable final ITranslatableString description,
-				@Singular final Map<String, Object> attributes,
-				final Boolean active)
+				@Nullable @Singular final Map<String, Object> attributes,
+				@Nullable final Boolean active)
 		{
 			super(id,
 					displayName,

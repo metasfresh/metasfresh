@@ -1,15 +1,16 @@
 package de.metas.ui.web.window.model.lookup;
 
-import java.util.List;
-import java.util.Optional;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.cache.CCache.CCacheStats;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.datatypes.WindowId;
+import lombok.NonNull;
+
+import javax.annotation.Nullable;
+import java.util.List;
+import java.util.Optional;
 
 /*
  * #%L
@@ -44,7 +45,8 @@ public interface LookupDataSourceFetcher
 
 	LookupDataSourceContext.Builder newContextForFetchingById(Object id);
 
-	LookupValue retrieveLookupValueById(LookupDataSourceContext evalCtx);
+	@Nullable
+	LookupValue retrieveLookupValueById(@NonNull LookupDataSourceContext evalCtx);
 
 	LookupDataSourceContext.Builder newContextForFetchingList();
 
@@ -60,10 +62,14 @@ public interface LookupDataSourceFetcher
 	default List<CCacheStats> getCacheStats() { return ImmutableList.of(); }
 	//@formatter:on
 
-	/** @return tableName if available */
+	/**
+	 * @return tableName if available
+	 */
 	Optional<String> getLookupTableName();
 
-	/** @return optional WindowId to be used when zooming into */
+	/**
+	 * @return optional WindowId to be used when zooming into
+	 */
 	Optional<WindowId> getZoomIntoWindowId();
 
 	void cacheInvalidate();

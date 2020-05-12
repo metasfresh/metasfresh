@@ -1,40 +1,8 @@
-package de.metas.ui.web.pattribute;
-
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-
-import org.adempiere.mm.attributes.AttributeValueId;
-import org.adempiere.mm.attributes.api.IAttributesBL;
-import org.adempiere.mm.attributes.spi.IAttributeValuesProvider;
-import org.compiere.model.I_M_Attribute;
-import org.compiere.model.I_M_AttributeValue;
-import org.compiere.util.CtxName;
-import org.compiere.util.CtxNames;
-import org.compiere.util.NamePair;
-
-import com.google.common.collect.ImmutableSet;
-
-import de.metas.cache.CCache.CCacheStats;
-import de.metas.i18n.TranslatableStrings;
-import de.metas.ui.web.window.datatypes.LookupValue;
-import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
-import de.metas.ui.web.window.datatypes.LookupValuesList;
-import de.metas.ui.web.window.datatypes.WindowId;
-import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor.LookupSource;
-import de.metas.ui.web.window.descriptor.LookupDescriptor;
-import de.metas.ui.web.window.model.lookup.LookupDataSourceContext;
-import de.metas.ui.web.window.model.lookup.LookupDataSourceFetcher;
-import de.metas.ui.web.window.model.lookup.LookupValueFilterPredicates.LookupValueFilterPredicate;
-import de.metas.util.Services;
-import lombok.NonNull;
-import lombok.ToString;
-
 /*
  * #%L
  * metasfresh-webui-api
  * %%
- * Copyright (C) 2016 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -51,6 +19,38 @@ import lombok.ToString;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+package de.metas.ui.web.pattribute;
+
+import com.google.common.collect.ImmutableSet;
+import de.metas.adempiere.service.impl.TooltipType;
+import de.metas.cache.CCache.CCacheStats;
+import de.metas.i18n.TranslatableStrings;
+import de.metas.ui.web.window.datatypes.LookupValue;
+import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
+import de.metas.ui.web.window.datatypes.LookupValuesList;
+import de.metas.ui.web.window.datatypes.WindowId;
+import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor.LookupSource;
+import de.metas.ui.web.window.descriptor.LookupDescriptor;
+import de.metas.ui.web.window.model.lookup.LookupDataSourceContext;
+import de.metas.ui.web.window.model.lookup.LookupDataSourceFetcher;
+import de.metas.ui.web.window.model.lookup.LookupValueFilterPredicates.LookupValueFilterPredicate;
+import de.metas.util.Services;
+import lombok.NonNull;
+import lombok.ToString;
+import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.mm.attributes.AttributeValueId;
+import org.adempiere.mm.attributes.api.IAttributesBL;
+import org.adempiere.mm.attributes.spi.IAttributeValuesProvider;
+import org.compiere.model.I_M_Attribute;
+import org.compiere.model.I_M_AttributeValue;
+import org.compiere.util.CtxName;
+import org.compiere.util.CtxNames;
+import org.compiere.util.NamePair;
+
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 
 @ToString
 public final class ASILookupDescriptor implements LookupDescriptor, LookupDataSourceFetcher
@@ -164,8 +164,9 @@ public final class ASILookupDescriptor implements LookupDescriptor, LookupDataSo
 	public LookupValue retrieveLookupValueById(final LookupDataSourceContext evalCtx)
 	{
 		final Object id = evalCtx.getIdToFilter();
+		final TooltipType tooltipType = Services.get(IADTableDAO.class).getTooltipTypeByTableName(evalCtx.getTableName());
 		final NamePair valueNP = attributeValuesProvider.getAttributeValueOrNull(evalCtx, id);
-		return LookupValue.fromNamePair(valueNP, evalCtx.getAD_Language(), LOOKUPVALUE_NULL);
+		return LookupValue.fromNamePair(valueNP, evalCtx.getAD_Language(), LOOKUPVALUE_NULL, tooltipType);
 	}
 
 	@Override
