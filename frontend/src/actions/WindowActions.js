@@ -662,7 +662,7 @@ export function createWindow(
   isAdvanced
 ) {
   return (dispatch) => {
-    if (documentId == 'new') {
+    if (documentId.toLowerCase() === 'new') {
       documentId = 'NEW';
     }
 
@@ -693,7 +693,7 @@ export function createWindow(
         });
       }
 
-      if (documentId == 'NEW' && !isModal) {
+      if (documentId === 'NEW' && !isModal) {
         dispatch(setLatestNewDocument(docId));
         // redirect immedietely
         return dispatch(replace(`/window/${windowType}/${docId}`));
