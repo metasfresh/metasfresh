@@ -528,7 +528,7 @@ class DocumentListContainer extends Component {
 
         const pageColumnInfosByFieldName = response.columnsByFieldName;
 
-        // TODO: There is some sorcery happening here. Why are we doing this ?
+        // https://github.com/metasfresh/me03/issues/4734
         mergeColumnInfosIntoViewRows(
           pageColumnInfosByFieldName,
           response.result

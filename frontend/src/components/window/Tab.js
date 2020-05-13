@@ -35,16 +35,15 @@ class Tab extends Component {
         : '';
 
       if (singleRowView) {
-        fetchTab(tabId, windowId, docId).then((res) => {
+        fetchTab({ tabId, windowType: windowId, docId, query }).then((res) => {
           if (res.length) {
             updateMasterData(res[0]);
             addRowData({ [tabId]: res }, 'master');
             onChange && onChange();
           }
         });
-        fetchTab(tabId, windowId, docId);
       } else {
-        fetchTab(tabId, windowId, docId, query).then((res) => {
+        fetchTab({ tabId, windowType: windowId, docId, query }).then((res) => {
           addRowData({ [tabId]: res }, 'master');
           onChange && onChange();
         });

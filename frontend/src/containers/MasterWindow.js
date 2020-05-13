@@ -197,13 +197,16 @@ class MasterWindowContainer extends Component {
       deleteTable,
     } = this.props;
 
-    const tabs = Object.keys(includedTabsInfo);
+    // if this is falsy, it was a details view without tabs
+    if (includedTabsInfo) {
+      const tabs = Object.keys(includedTabsInfo);
 
-    if (tabs) {
-      tabs.forEach((tabId) => {
-        const tableId = getTableId({ windowType, docId, tabId });
-        deleteTable(tableId);
-      });
+      if (tabs) {
+        tabs.forEach((tabId) => {
+          const tableId = getTableId({ windowType, docId, tabId });
+          deleteTable(tableId);
+        });
+      }
     }
   };
 

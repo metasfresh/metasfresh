@@ -72,6 +72,7 @@ import {
   startProcess,
   formatParentUrl,
 } from '../api';
+import { getTableId } from '../reducers/tables';
 import {
   addNotification,
   setNotificationProgress,
@@ -534,11 +535,11 @@ export function deselectTableItems(ids, windowType, viewId) {
  * @method fetchTab
  * @summary Action creator for fetching single tab's rows
  */
-export function fetchTab(tabId, windowType, docId) {
+export function fetchTab({ tabId, windowType, docId, query }) {
   return (dispatch) => {
-    return getTabRequest(tabId, windowType, docId)
+    return getTabRequest(tabId, windowType, docId, query)
       .then((response) => {
-        const tableId = `${windowType}_${docId}_${tabId}`;
+        const tableId = getTableId({ windowType, docId, tabId });
         const tableData = { result: response };
 
         dispatch(updateTabTable(tableId, tableData));
@@ -681,7 +682,7 @@ export function createWindow(
       if (tabs) {
         Object.values(tabs).forEach((tab) => {
           const { tabId } = tab;
-          const tableId = `${windowType}_${docId}_${tabId}`;
+          const tableId = getTableId({ windowType, docId, tabId });
           const tableData = {
             windowType,
             docId,
@@ -742,10 +743,10 @@ export function createWindow(
           .then(({ data }) => {
             const layoutTabs = data.tabs;
 
-            if (layoutTabs.length) {
+            if (layoutTabs) {
               Object.values(layoutTabs).forEach((tab) => {
                 const { tabId } = tab;
-                const tableId = `${windowType}_${docId}_${tabId}`;
+                const tableId = getTableId({ windowType, docId, tabId });
                 const tableData = {
                   windowType,
                   docId,

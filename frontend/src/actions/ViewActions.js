@@ -5,7 +5,7 @@ import {
   getViewLayout,
   locationConfigRequest,
 } from '../api';
-
+import { getTableId } from '../reducers/tables';
 import {
   ADD_VIEW_LOCATION_DATA,
   FETCH_DOCUMENT_PENDING,
@@ -26,7 +26,6 @@ import {
   RESET_VIEW,
   DELETE_VIEW,
 } from '../constants/ActionTypes';
-
 import { createGridTable, updateGridTable } from './TableActions';
 
 /**
@@ -276,7 +275,7 @@ export function fetchDocument({
       .then((response) => {
         dispatch(fetchDocumentSuccess(identifier, response.data));
 
-        const tableId = `${windowType}_${viewId}`;
+        const tableId = getTableId({ windowType, viewId });
         const tableData = { windowType, viewId, ...response.data };
 
         dispatch(updateGridTable(tableId, tableData));
@@ -324,7 +323,7 @@ export function createView({
         dispatch(createViewSuccess(identifier, response.data));
 
         const { viewId } = response.data;
-        const tableId = `${windowType}_${viewId}`;
+        const tableId = getTableId({ windowType, viewId });
         const tableData = { windowType, viewId };
 
         dispatch(createGridTable(tableId, tableData));
