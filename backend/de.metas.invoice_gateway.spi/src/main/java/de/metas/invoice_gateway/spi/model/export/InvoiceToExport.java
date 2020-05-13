@@ -50,7 +50,8 @@ public class InvoiceToExport
 	@NonNull
 	InvoiceId id;
 
-	@NonNull
+	/** invoices can have an empty docSubType, so this needs to be nullable. */
+	@Nullable
 	String docSubType;
 
 	@NonNull

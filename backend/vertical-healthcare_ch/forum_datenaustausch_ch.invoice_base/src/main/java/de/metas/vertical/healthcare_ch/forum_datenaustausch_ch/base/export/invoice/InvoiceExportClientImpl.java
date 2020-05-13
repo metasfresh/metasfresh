@@ -134,7 +134,7 @@ public class InvoiceExportClientImpl implements InvoiceExportClient
 		final HealthCareInvoiceDocSubType docType = HealthCareInvoiceDocSubType.ofCodeOrNull(invoice.getDocSubType());
 		if (docType == null)
 		{
-			logger.debug("The givee invoice's DocSubType={} is not related to this export client implementation; -> return false");
+			logger.debug("The given invoice's DocSubType={} is not related to this export client implementation; -> return false");
 			return false;
 		}
 		if (HealthCareInvoiceDocSubType.EA.equals(docType))

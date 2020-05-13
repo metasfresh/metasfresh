@@ -5,7 +5,6 @@ import static java.math.BigDecimal.TEN;
 import java.time.Instant;
 import java.util.GregorianCalendar;
 
-import org.junit.Test;
 
 import de.metas.invoice_gateway.spi.model.BPartner;
 import de.metas.invoice_gateway.spi.model.BPartnerId;
@@ -14,6 +13,7 @@ import de.metas.invoice_gateway.spi.model.InvoiceId;
 import de.metas.invoice_gateway.spi.model.MetasfreshVersion;
 import de.metas.invoice_gateway.spi.model.Money;
 import de.metas.invoice_gateway.spi.model.export.InvoiceToExport;
+import org.junit.jupiter.api.Test;
 
 /*
  * #%L
@@ -41,7 +41,7 @@ public class Invoice440ExportClientTest
 {
 
 	@Test
-	public void test()
+	void test()
 	{
 		final InvoiceId invoiceId = InvoiceId.ofRepoId(10);
 
