@@ -91,7 +91,7 @@ function createTableData(rawData) {
       : undefined,
     headerElements: rawData.headerElements ? rawData.headerElements : undefined,
     orderBy: rawData.orderBy ? rawData.orderBy : undefined,
-    
+
     // immer freezes objects to make them immutable, so we have to make a deep copy
     // of entries as otherwise we're just passing references to frozen objects
     columns: rawData.elements ? cloneDeep(rawData.elements) : undefined,
