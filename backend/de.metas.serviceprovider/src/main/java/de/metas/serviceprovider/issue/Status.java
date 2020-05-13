@@ -26,6 +26,8 @@ import com.google.common.collect.ImmutableList;
 import de.metas.util.lang.ReferenceListAwareEnum;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
 import java.util.Arrays;
@@ -53,6 +55,14 @@ public enum Status implements ReferenceListAwareEnum
 		return Arrays.stream(values())
 				.filter(status -> status.getCode().equals(code))
 				.findFirst();
+	}
+
+	public static Status ofCode(@NonNull final String code)
+	{
+		return Arrays.stream(values())
+				.filter(status -> status.getCode().equals(code))
+				.findFirst()
+				.orElseThrow(() -> new AdempiereException("Unknown status!").appendParametersToMessage().setParameter("Code", code));
 	}
 
 	public static ImmutableList<String> listCodes()
