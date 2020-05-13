@@ -196,7 +196,9 @@ public class WorkPackageQueue implements IWorkPackageQueue
 	@Override
 	public I_C_Queue_WorkPackage pollAndLock(final long timeoutMillis)
 	{
+		logger.debug("Going to obtain mainLock");
 		mainLock.lock();
+		logger.debug("Obtained mainLock");
 		try
 		{
 			return pollAndLock0(timeoutMillis);
@@ -251,7 +253,7 @@ public class WorkPackageQueue implements IWorkPackageQueue
 			}
 
 			// Try fetching the workpackage again
-			logger.trace("Retry retrieving next workpackage");
+			logger.debug("Retry retrieving next workpackage");
 			workPackage = retrieveAndLock(query);
 		}
 

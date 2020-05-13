@@ -49,7 +49,6 @@ import org.compiere.SpringContextHolder;
 import org.compiere.util.Env;
 import org.compiere.util.TrxRunnable;
 import org.slf4j.Logger;
-import org.slf4j.MDC;
 import org.slf4j.MDC.MDCCloseable;
 
 import ch.qos.logback.classic.Level;
@@ -76,6 +75,7 @@ import de.metas.lock.api.ILock;
 import de.metas.lock.api.ILockManager;
 import de.metas.lock.exceptions.LockFailedException;
 import de.metas.logging.LogManager;
+import de.metas.logging.TableRecordMDC;
 import de.metas.monitoring.adapter.NoopPerformanceMonitoringService;
 import de.metas.monitoring.adapter.PerformanceMonitoringService;
 import de.metas.monitoring.adapter.PerformanceMonitoringService.TransactionMetadata;
@@ -155,8 +155,8 @@ import lombok.NonNull;
 				TransactionMetadata.builder()
 						.type(Type.ASYNC_WORKPACKAGE)
 						.name("Workpackage-Processor - " + queueProcessor.getName())
-						.label("queueProcessor.name", queueProcessor.getName())
-						.label("recordId", Integer.toString(workPackage.getC_Queue_WorkPackage_ID()))
+						.label("de.metas.async.queueProcessor.name", queueProcessor.getName())
+						.label("de.metas.async.C_Queue_WorkPackage_ID", Integer.toString(workPackage.getC_Queue_WorkPackage_ID()))
 						.build());
 	}
 
@@ -169,7 +169,7 @@ import lombok.NonNull;
 
 		try (final IAutoCloseable contextRestorer = Env.switchContext(processingCtx);
 				final IAutoCloseable loggableRestorer = Loggables.temporarySetLoggable(loggable);
-				final MDCCloseable mdcRestorer = MDC.putCloseable("C_Queue_WorkPackage_ID", Integer.toString(workPackage.getC_Queue_WorkPackage_ID()));)
+				final MDCCloseable workPackageMDC = TableRecordMDC.putTableRecordReference(workPackage);)
 		{
 			final IMutable<Result> resultRef = new Mutable<>(null);
 
