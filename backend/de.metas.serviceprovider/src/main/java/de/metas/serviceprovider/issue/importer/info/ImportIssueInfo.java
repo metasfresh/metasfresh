@@ -29,6 +29,7 @@ import de.metas.serviceprovider.external.ExternalId;
 import de.metas.serviceprovider.external.label.IssueLabel;
 import de.metas.serviceprovider.external.project.ExternalProjectType;
 import de.metas.serviceprovider.issue.IssueId;
+import de.metas.serviceprovider.issue.Status;
 import de.metas.uom.UomId;
 import de.metas.user.UserId;
 import lombok.Builder;
@@ -66,7 +67,11 @@ public class ImportIssueInfo
 	@Nullable
 	String description;
 
-	boolean processed;
+	@Nullable
+	Status status;
+
+	@Nullable
+	String deliveryPlatform;
 
 	@Nullable
 	UserId assigneeId;

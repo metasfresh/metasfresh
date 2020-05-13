@@ -106,11 +106,11 @@ public class Node<T>
 	 *  if {@code getUpStream()} it's called for node 8,
 	 *  it will return: [8,4,2,1]
 	 */
-	public List<Node<T>> getUpStream()
+	public ArrayList<Node<T>> getUpStream()
 	{
 		Node<T> currentNode = this;
 
-		final List<Node<T>> upStream = new ArrayList<>();
+		final ArrayList<Node<T>> upStream = new ArrayList<>();
 		upStream.add(currentNode);
 
 		while (currentNode.parent != null)

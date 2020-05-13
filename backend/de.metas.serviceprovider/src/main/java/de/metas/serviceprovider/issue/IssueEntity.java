@@ -22,11 +22,10 @@
 
 package de.metas.serviceprovider.issue;
 
-import com.google.common.collect.ImmutableList;
 import de.metas.organization.OrgId;
 import de.metas.project.ProjectId;
-import de.metas.serviceprovider.external.label.IssueLabel;
 import de.metas.serviceprovider.milestone.MilestoneId;
+import de.metas.serviceprovider.timebooking.Effort;
 import de.metas.uom.UomId;
 import de.metas.user.UserId;
 import lombok.Builder;
@@ -35,6 +34,9 @@ import lombok.NonNull;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.time.Instant;
+import java.util.Objects;
+import java.util.stream.Stream;
 
 @Data
 @Builder(toBuilder = true)
@@ -67,11 +69,11 @@ public class IssueEntity
 	@Nullable
 	private BigDecimal budgetedEffort;
 
-	@Nullable
-	private String issueEffort;
+	@NonNull
+	private Effort issueEffort;
 
-	@Nullable
-	private String aggregatedEffort;
+	@NonNull
+	private Effort aggregatedEffort;
 
 	@NonNull
 	private String name;
@@ -85,17 +87,25 @@ public class IssueEntity
 	@NonNull
 	private IssueType type;
 
-	private boolean processed;
-
 	private boolean isEffortIssue;
 
 	@Nullable
 	private BigDecimal externalIssueNo;
+
+	@Nullable
+	private Status status;
+
+	@Nullable
+	private String deliveryPlatform;
+
 	@Nullable
 	private String externalIssueURL;
 
-	@NonNull
-	private ImmutableList<IssueLabel> issueLabels;
+	@Nullable
+	private Instant latestActivityOnSubIssues;
+
+	@Nullable
+	private Instant latestActivityOnIssue;
 
 	public void setEstimatedEffortIfNull(@Nullable final BigDecimal estimatedEffort)
 	{
@@ -111,5 +121,44 @@ public class IssueEntity
 		{
 			this.budgetedEffort = budgetedEffort;
 		}
+	}
+
+	public void addAggregatedEffort(@Nullable final Effort effort)
+	{
+		this.aggregatedEffort = aggregatedEffort.addNullSafe(effort);
+	}
+
+	public void addIssueEffort(@Nullable final Effort effort)
+	{
+		this.issueEffort = issueEffort.addNullSafe(effort);
+	}
+
+	public void updateLatestActivityOnSubIssues(@Nullable final Instant newActivityDate)
+	{
+		final Instant currentActivityDate = this.latestActivityOnSubIssues != null ? this.latestActivityOnSubIssues : Instant.MIN;
+
+		if (newActivityDate != null && newActivityDate.isAfter(currentActivityDate))
+		{
+			this.latestActivityOnSubIssues = newActivityDate;
+		}
+	}
+
+	public void updateLatestActivityOnIssue(@Nullable final Instant newActivityDate)
+	{
+		final Instant currentActivityDate = this.latestActivityOnIssue != null ? this.latestActivityOnIssue : Instant.MIN;
+
+		if (newActivityDate != null && newActivityDate.isAfter(currentActivityDate))
+		{
+			this.latestActivityOnIssue = newActivityDate;
+		}
+	}
+
+	@Nullable
+	public Instant getLatestActivity()
+	{
+		return Stream.of(latestActivityOnIssue, latestActivityOnSubIssues)
+				.filter(Objects::nonNull)
+				.max(Instant::compareTo)
+				.orElse(null);
 	}
 }

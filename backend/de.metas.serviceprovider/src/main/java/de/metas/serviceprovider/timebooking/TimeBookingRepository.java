@@ -22,6 +22,7 @@
 
 package de.metas.serviceprovider.timebooking;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.organization.OrgId;
 import de.metas.serviceprovider.issue.IssueId;
 import de.metas.serviceprovider.model.I_S_TimeBooking;
@@ -71,6 +72,19 @@ public class TimeBookingRepository
 				.create()
 				.firstOnlyOptional(I_S_TimeBooking.class)
 				.map(this::buildTimeBooking);
+	}
+
+	public ImmutableList<TimeBooking> getAllByIssueId(@NonNull final IssueId issueId)
+	{
+		return queryBL
+				.createQueryBuilder(I_S_TimeBooking.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_S_TimeBooking.COLUMNNAME_S_Issue_ID, issueId.getRepoId())
+				.create()
+				.list()
+				.stream()
+				.map(this::buildTimeBooking)
+				.collect(ImmutableList.toImmutableList());
 	}
 
 	private TimeBooking buildTimeBooking(@NonNull final I_S_TimeBooking record)

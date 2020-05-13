@@ -15,7 +15,7 @@ public class X_S_Issue extends org.compiere.model.PO implements I_S_Issue, org.c
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1557635338L;
+	private static final long serialVersionUID = -288759298L;
 
     /** Standard Constructor */
     public X_S_Issue (Properties ctx, int S_Issue_ID, String trxName)
@@ -31,6 +31,7 @@ public class X_S_Issue extends org.compiere.model.PO implements I_S_Issue, org.c
 			setName (null);
 			setProcessed (false); // N
 			setS_Issue_ID (0);
+			setStatus (null); // Pending
 			setValue (null);
         } */
     }
@@ -141,6 +142,25 @@ public class X_S_Issue extends org.compiere.model.PO implements I_S_Issue, org.c
 		return ii.intValue();
 	}
 
+	/** Set Delivery platform.
+		@param DeliveryPlatform 
+		Specifies the instances where the issue was deployed.
+	  */
+	@Override
+	public void setDeliveryPlatform (java.lang.String DeliveryPlatform)
+	{
+		set_Value (COLUMNNAME_DeliveryPlatform, DeliveryPlatform);
+	}
+
+	/** Get Delivery platform.
+		@return Specifies the instances where the issue was deployed.
+	  */
+	@Override
+	public java.lang.String getDeliveryPlatform () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_DeliveryPlatform);
+	}
+
 	/** Set Beschreibung.
 		@param Description Beschreibung	  */
 	@Override
@@ -177,6 +197,21 @@ public class X_S_Issue extends org.compiere.model.PO implements I_S_Issue, org.c
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** Set Effort delivery platform.
+		@param EffortDeliveryPlatform Effort delivery platform	  */
+	@Override
+	public void setEffortDeliveryPlatform (java.lang.String EffortDeliveryPlatform)
+	{
+		throw new IllegalArgumentException ("EffortDeliveryPlatform is virtual column");	}
+
+	/** Get Effort delivery platform.
+		@return Effort delivery platform	  */
+	@Override
+	public java.lang.String getEffortDeliveryPlatform () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_EffortDeliveryPlatform);
 	}
 
 	/** Set Geschätzter Aufwand.
@@ -218,6 +253,76 @@ public class X_S_Issue extends org.compiere.model.PO implements I_S_Issue, org.c
 		if (bd == null)
 			 return BigDecimal.ZERO;
 		return bd;
+	}
+
+	/** Set hasInternalEffortIssue.
+		@param hasInternalEffortIssue hasInternalEffortIssue	  */
+	@Override
+	public void sethasInternalEffortIssue (boolean hasInternalEffortIssue)
+	{
+		throw new IllegalArgumentException ("hasInternalEffortIssue is virtual column");	}
+
+	/** Get hasInternalEffortIssue.
+		@return hasInternalEffortIssue	  */
+	@Override
+	public boolean ishasInternalEffortIssue () 
+	{
+		Object oo = get_Value(COLUMNNAME_hasInternalEffortIssue);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
+	/** Set Internal assignee.
+		@param Internal_Assignee_ID Internal assignee	  */
+	@Override
+	public void setInternal_Assignee_ID (int Internal_Assignee_ID)
+	{
+		throw new IllegalArgumentException ("Internal_Assignee_ID is virtual column");	}
+
+	/** Get Internal assignee.
+		@return Internal assignee	  */
+	@Override
+	public int getInternal_Assignee_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_Internal_Assignee_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public de.metas.serviceprovider.model.I_S_Issue getInternal_Effort_S_Issue()
+	{
+		return get_ValueAsPO(COLUMNNAME_Internal_Effort_S_Issue_ID, de.metas.serviceprovider.model.I_S_Issue.class);
+	}
+
+	@Override
+	public void setInternal_Effort_S_Issue(de.metas.serviceprovider.model.I_S_Issue Internal_Effort_S_Issue)
+	{
+		set_ValueFromPO(COLUMNNAME_Internal_Effort_S_Issue_ID, de.metas.serviceprovider.model.I_S_Issue.class, Internal_Effort_S_Issue);
+	}
+
+	/** Set Internal effort issue.
+		@param Internal_Effort_S_Issue_ID Internal effort issue	  */
+	@Override
+	public void setInternal_Effort_S_Issue_ID (int Internal_Effort_S_Issue_ID)
+	{
+		throw new IllegalArgumentException ("Internal_Effort_S_Issue_ID is virtual column");	}
+
+	/** Get Internal effort issue.
+		@return Internal effort issue	  */
+	@Override
+	public int getInternal_Effort_S_Issue_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_Internal_Effort_S_Issue_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	/** Set Invoiceable effort.
@@ -357,7 +462,8 @@ public class X_S_Issue extends org.compiere.model.PO implements I_S_Issue, org.c
 	@Override
 	public void setLatestActivity (java.sql.Timestamp LatestActivity)
 	{
-		throw new IllegalArgumentException ("LatestActivity is virtual column");	}
+		set_ValueNoCheck (COLUMNNAME_LatestActivity, LatestActivity);
+	}
 
 	/** Get Latest activity.
 		@return Latest activity	  */
@@ -365,6 +471,22 @@ public class X_S_Issue extends org.compiere.model.PO implements I_S_Issue, org.c
 	public java.sql.Timestamp getLatestActivity () 
 	{
 		return (java.sql.Timestamp)get_Value(COLUMNNAME_LatestActivity);
+	}
+
+	/** Set Latest activity on sub issues.
+		@param LatestActivityOnSubIssues Latest activity on sub issues	  */
+	@Override
+	public void setLatestActivityOnSubIssues (java.sql.Timestamp LatestActivityOnSubIssues)
+	{
+		set_Value (COLUMNNAME_LatestActivityOnSubIssues, LatestActivityOnSubIssues);
+	}
+
+	/** Get Latest activity on sub issues.
+		@return Latest activity on sub issues	  */
+	@Override
+	public java.sql.Timestamp getLatestActivityOnSubIssues () 
+	{
+		return (java.sql.Timestamp)get_Value(COLUMNNAME_LatestActivityOnSubIssues);
 	}
 
 	/** Set Fälligkeitsdatum.
@@ -547,6 +669,36 @@ public class X_S_Issue extends org.compiere.model.PO implements I_S_Issue, org.c
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** 
+	 * Status AD_Reference_ID=541142
+	 * Reference name: S_Issue_Status
+	 */
+	public static final int STATUS_AD_Reference_ID=541142;
+	/** In progress = InProgress */
+	public static final String STATUS_InProgress = "InProgress";
+	/** Closed = Closed */
+	public static final String STATUS_Closed = "Closed";
+	/** Pending = Pending */
+	public static final String STATUS_Pending = "Pending";
+	/** Delivered = Delivered */
+	public static final String STATUS_Delivered = "Delivered";
+	/** Set Status.
+		@param Status Status	  */
+	@Override
+	public void setStatus (java.lang.String Status)
+	{
+
+		set_Value (COLUMNNAME_Status, Status);
+	}
+
+	/** Get Status.
+		@return Status	  */
+	@Override
+	public java.lang.String getStatus () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_Status);
 	}
 
 	/** Set Suchschlüssel.

@@ -22,14 +22,24 @@
 
 package de.metas.serviceprovider.github;
 
+import com.google.common.base.Joiner;
+import de.metas.serviceprovider.issue.Status;
 import de.metas.uom.UomId;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+
+import java.util.regex.Pattern;
 
 public interface GithubImporterConstants
 {
 	int CHUNK_SIZE = 100;
 	UomId HOUR_UOM_ID = UomId.ofRepoId(101);
+
+	Pattern STATUS_PATTERN = Pattern.compile("^status:(?<status>" + Joiner.on("|").join(Status.listCodes()) +")$");
+	String STATUS_GROUP = "status";
+
+	Pattern DELIVERY_PLATFORM_PATTERN = Pattern.compile("^ins:(?<platform>[A-Za-z0-9]+)$");
+	String DELIVERY_PLATFORM_GROUP = "platform";
 
 	@AllArgsConstructor
 	@Getter

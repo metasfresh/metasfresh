@@ -14,7 +14,7 @@ public class X_S_IssueLabel extends org.compiere.model.PO implements I_S_IssueLa
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1700391006L;
+	private static final long serialVersionUID = 285207525L;
 
     /** Standard Constructor */
     public X_S_IssueLabel (Properties ctx, int S_IssueLabel_ID, String trxName)

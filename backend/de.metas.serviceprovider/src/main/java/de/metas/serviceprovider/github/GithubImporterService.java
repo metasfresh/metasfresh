@@ -24,6 +24,7 @@ package de.metas.serviceprovider.github;
 
 import ch.qos.logback.classic.Level;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Joiner;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 import de.metas.issue.tracking.github.api.v3.model.FetchIssueByIdRequest;
@@ -49,6 +50,7 @@ import de.metas.serviceprovider.github.link.GithubIssueLink;
 import de.metas.serviceprovider.github.link.GithubIssueLinkMatcher;
 import de.metas.serviceprovider.issue.IssueEntity;
 import de.metas.serviceprovider.issue.IssueRepository;
+import de.metas.serviceprovider.issue.Status;
 import de.metas.serviceprovider.issue.importer.IssueImporter;
 import de.metas.serviceprovider.issue.importer.info.ImportIssueInfo;
 import de.metas.serviceprovider.issue.importer.info.ImportIssuesRequest;
@@ -76,7 +78,11 @@ import java.util.regex.Pattern;
 import static de.metas.issue.tracking.github.api.v3.GitHubApiConstants.LabelType.BUDGET;
 import static de.metas.issue.tracking.github.api.v3.GitHubApiConstants.LabelType.ESTIMATION;
 import static de.metas.serviceprovider.github.GithubImporterConstants.CHUNK_SIZE;
+import static de.metas.serviceprovider.github.GithubImporterConstants.DELIVERY_PLATFORM_GROUP;
+import static de.metas.serviceprovider.github.GithubImporterConstants.DELIVERY_PLATFORM_PATTERN;
 import static de.metas.serviceprovider.github.GithubImporterConstants.HOUR_UOM_ID;
+import static de.metas.serviceprovider.github.GithubImporterConstants.STATUS_GROUP;
+import static de.metas.serviceprovider.github.GithubImporterConstants.STATUS_PATTERN;
 import static de.metas.serviceprovider.issue.importer.ImportConstants.IMPORT_LOG_MESSAGE_PREFIX;
 
 @Service
@@ -223,7 +229,6 @@ public class GithubImporterService implements IssueImporter
 				.externalIssueNo(issue.getNumber())
 				.name(issue.getTitle())
 				.description(issue.getBody())
-				.processed(ResourceState.CLOSED.getValue().equals(issue.getState()))
 				.orgId(importIssuesRequest.getOrgId())
 				.projectId(importIssuesRequest.getProjectId())
 				.effortUomId(HOUR_UOM_ID);
@@ -239,6 +244,11 @@ public class GithubImporterService implements IssueImporter
 		}
 
 		processLabels(issue.getLabelList(), importInfoBuilder, importIssuesRequest.getOrgId());
+
+		if (ResourceState.CLOSED.getValue().equals(issue.getState()))
+		{
+			importInfoBuilder.status(Status.CLOSED);
+		}
 
 		lookForParentIssue(importIssuesRequest, importInfoBuilder, seenExternalIdsByKey, issue.getBody());
 
@@ -265,8 +275,10 @@ public class GithubImporterService implements IssueImporter
 			@NonNull final OrgId orgId)
 	{
 		final List<IssueLabel> issueLabelList = new ArrayList<>();
+		final List<String> deliveryPlatformList = new ArrayList<>();
 		BigDecimal budget = BigDecimal.ZERO;
 		BigDecimal estimation = BigDecimal.ZERO;
+		Optional<Status> status = Optional.empty();
 
 		if (!Check.isEmpty(labelList))
 		{
@@ -281,12 +293,22 @@ public class GithubImporterService implements IssueImporter
 						.build();
 
 				issueLabelList.add(issueLabel);
+
+				status = status.isPresent() ? status : getStatusFromLabel(label);
+				getDeliveryPlatformFromLabel(label).ifPresent(deliveryPlatformList::add);
 			}
 		}
 
 		importIssueInfoBuilder.budget(budget);
 		importIssueInfoBuilder.estimation(estimation);
 		importIssueInfoBuilder.issueLabels(ImmutableList.copyOf(issueLabelList));
+
+		status.ifPresent(importIssueInfoBuilder::status);
+
+		if (!deliveryPlatformList.isEmpty())
+		{
+			importIssueInfoBuilder.deliveryPlatform(Joiner.on(",").join(deliveryPlatformList));
+		}
 	}
 
 	@NonNull
@@ -295,6 +317,22 @@ public class GithubImporterService implements IssueImporter
 		final Matcher matcher = valuePattern.matcher(label.getName());
 
 		return matcher.matches() ? NumberUtils.asBigDecimal(matcher.group(1)) : BigDecimal.ZERO;
+	}
+
+	@NonNull
+	private Optional<Status> getStatusFromLabel(final Label label)
+	{
+		final Matcher matcher = STATUS_PATTERN.matcher(label.getName());
+
+		return matcher.matches() ? Status.ofCodeOptional(matcher.group(STATUS_GROUP)) : Optional.empty();
+	}
+
+	@NonNull
+	private Optional<String> getDeliveryPlatformFromLabel(final Label label)
+	{
+		final Matcher matcher = DELIVERY_PLATFORM_PATTERN.matcher(label.getName());
+
+		return matcher.matches() ? Optional.of(matcher.group(DELIVERY_PLATFORM_GROUP)) : Optional.empty();
 	}
 
 	@Nullable
@@ -337,7 +375,7 @@ public class GithubImporterService implements IssueImporter
 
 		//first check if the parent exists in mf
 		final Optional<IssueEntity> issueEntity =
-				issueRepository.getByExternalURLOptional(parentIssueLink.get().getUrl(), false);
+				issueRepository.getByExternalURLOptional(parentIssueLink.get().getUrl());
 
 		if (issueEntity.isPresent())
 		{
