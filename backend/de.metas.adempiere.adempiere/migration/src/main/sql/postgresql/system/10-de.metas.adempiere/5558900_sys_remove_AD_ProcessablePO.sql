@@ -97,6 +97,11 @@ DELETE FROM AD_Element WHERE AD_Element_ID=541293
 --DELETE FROM AD_Element WHERE AD_Element_ID=1002291
 --;
 
+UPDATE AD_Element SET EntityType='D',Updated=TO_TIMESTAMP('2020-05-13 16:56:15','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=1002291
+;
+
+
+
 -- 2020-05-08T14:56:15.821Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 UPDATE AD_Menu SET EntityType='de.metas.dataentry',Updated=TO_TIMESTAMP('2020-05-08 16:56:15','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Menu_ID=541293
