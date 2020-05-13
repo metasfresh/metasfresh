@@ -1,10 +1,8 @@
-package org.adempiere.ad.table.api;
-
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,11 +20,11 @@ package org.adempiere.ad.table.api;
  * #L%
  */
 
-import java.util.List;
-import java.util.Optional;
-import java.util.Properties;
-import java.util.Set;
+package org.adempiere.ad.table.api;
 
+import de.metas.adempiere.service.impl.TooltipType;
+import de.metas.util.ISingletonService;
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.exceptions.AdempiereException;
@@ -35,7 +33,10 @@ import org.compiere.model.I_AD_Element;
 import org.compiere.model.I_AD_SQLColumn_SourceTableColumn;
 import org.compiere.model.I_AD_Table;
 
-import de.metas.util.ISingletonService;
+import java.util.List;
+import java.util.Optional;
+import java.util.Properties;
+import java.util.Set;
 
 public interface IADTableDAO extends ISingletonService
 {
@@ -43,7 +44,6 @@ public interface IADTableDAO extends ISingletonService
 	 * @param tableName
 	 * @param columnName
 	 * @return {@link I_AD_Column} if column was found
-	 *
 	 * @throws AdempiereException if table was not found
 	 * @throws AdempiereException if column was not found
 	 */
@@ -52,7 +52,6 @@ public interface IADTableDAO extends ISingletonService
 	I_AD_Column retrieveColumn(AdTableId tableId, String columnName);
 
 	/**
-	 *
 	 * @param columnName
 	 * @return the element with the given <code>columnName</code> or <code>null</code>. Note that {@link I_AD_Element#COLUMNNAME_ColumnName} is unique.
 	 */
@@ -62,7 +61,6 @@ public interface IADTableDAO extends ISingletonService
 	 * @param tableName
 	 * @param columnName
 	 * @return {@link I_AD_Column} if column was found, or <code>null</code> otherwise
-	 *
 	 * @throws AdempiereException if table was not found
 	 */
 	I_AD_Column retrieveColumnOrNull(String tableName, String columnName);
@@ -71,7 +69,6 @@ public interface IADTableDAO extends ISingletonService
 	 * @param tableName
 	 * @param columnName
 	 * @return true if table contains selected column, false otherwise
-	 *
 	 * @throws AdempiereException if table was not found
 	 */
 	boolean hasColumnName(String tableName, String columnName);
@@ -83,7 +80,6 @@ public interface IADTableDAO extends ISingletonService
 	String retrieveColumnName(int adColumnId);
 
 	/**
-	 *
 	 * @param adTableId
 	 * @return the name for the given <code>AD_Table_ID</code> or <code>null</code> if the given ID is less or equal zero
 	 */
@@ -144,12 +140,12 @@ public interface IADTableDAO extends ISingletonService
 	/**
 	 * REtrieves a query builder for the given parameters (case insensitive!) that can be refined further.
 	 *
-	 * @param tableName case insensitive
+	 * @param tableName  case insensitive
 	 * @param columnName case insensitive
-	 * @param trxname may be <code>null</code>. If you call this method with null, then the query builder will be created with {@link org.adempiere.ad.trx.api.ITrx#TRXNAME_None}.
+	 * @param trxname    may be <code>null</code>. If you call this method with null, then the query builder will be created with {@link org.adempiere.ad.trx.api.ITrx#TRXNAME_None}.
 	 * @return
 	 */
-	IQueryBuilder<I_AD_Column> retrieveColumnQueryBuilder(String tableName, String columnName, String trxnameThreadinherited);
+	IQueryBuilder<I_AD_Column> retrieveColumnQueryBuilder(String tableName, String columnName, String trxname);
 
 	I_AD_Table retrieveTable(AdTableId tableId);
 
@@ -197,4 +193,6 @@ public interface IADTableDAO extends ISingletonService
 	List<ColumnSqlSourceDescriptor> retrieveColumnSqlSourceDescriptors();
 
 	void validate(I_AD_SQLColumn_SourceTableColumn record);
+
+	@NonNull TooltipType getTooltipTypeByTableName(@NonNull String tableName);
 }

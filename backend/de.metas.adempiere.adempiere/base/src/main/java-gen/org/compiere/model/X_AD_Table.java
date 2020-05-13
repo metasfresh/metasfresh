@@ -14,7 +14,7 @@ public class X_AD_Table extends org.compiere.model.PO implements I_AD_Table, org
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1161476834L;
+	private static final long serialVersionUID = 85997389L;
 
     /** Standard Constructor */
     public X_AD_Table (Properties ctx, int AD_Table_ID, String trxName)
@@ -36,6 +36,7 @@ public class X_AD_Table extends org.compiere.model.PO implements I_AD_Table, org
 			setPersonalDataCategory (null); // NP
 			setReplicationType (null); // L
 			setTableName (null);
+			setTooltipType (null); // DTI
         } */
     }
 
@@ -139,7 +140,7 @@ public class X_AD_Table extends org.compiere.model.PO implements I_AD_Table, org
 	}
 
 	@Override
-	public org.compiere.model.I_AD_Val_Rule getAD_Val_Rule() throws RuntimeException
+	public org.compiere.model.I_AD_Val_Rule getAD_Val_Rule()
 	{
 		return get_ValueAsPO(COLUMNNAME_AD_Val_Rule_ID, org.compiere.model.I_AD_Val_Rule.class);
 	}
@@ -176,7 +177,7 @@ public class X_AD_Table extends org.compiere.model.PO implements I_AD_Table, org
 	}
 
 	@Override
-	public org.compiere.model.I_AD_Window getAD_Window() throws RuntimeException
+	public org.compiere.model.I_AD_Window getAD_Window()
 	{
 		return get_ValueAsPO(COLUMNNAME_AD_Window_ID, org.compiere.model.I_AD_Window.class);
 	}
@@ -506,9 +507,7 @@ public class X_AD_Table extends org.compiere.model.PO implements I_AD_Table, org
 	}
 
 	/** Set Name.
-		@param Name 
-		Alphanumeric identifier of the entity
-	  */
+		@param Name Name	  */
 	@Override
 	public void setName (java.lang.String Name)
 	{
@@ -516,8 +515,7 @@ public class X_AD_Table extends org.compiere.model.PO implements I_AD_Table, org
 	}
 
 	/** Get Name.
-		@return Alphanumeric identifier of the entity
-	  */
+		@return Name	  */
 	@Override
 	public java.lang.String getName () 
 	{
@@ -535,8 +533,8 @@ public class X_AD_Table extends org.compiere.model.PO implements I_AD_Table, org
 	public static final String PERSONALDATACATEGORY_Personal = "P";
 	/** SensitivePersonal = SP */
 	public static final String PERSONALDATACATEGORY_SensitivePersonal = "SP";
-	/** Set Personal Data Category.
-		@param PersonalDataCategory Personal Data Category	  */
+	/** Set Datenschutz-Kategorie.
+		@param PersonalDataCategory Datenschutz-Kategorie	  */
 	@Override
 	public void setPersonalDataCategory (java.lang.String PersonalDataCategory)
 	{
@@ -544,8 +542,8 @@ public class X_AD_Table extends org.compiere.model.PO implements I_AD_Table, org
 		set_Value (COLUMNNAME_PersonalDataCategory, PersonalDataCategory);
 	}
 
-	/** Get Personal Data Category.
-		@return Personal Data Category	  */
+	/** Get Datenschutz-Kategorie.
+		@return Datenschutz-Kategorie	  */
 	@Override
 	public java.lang.String getPersonalDataCategory () 
 	{
@@ -553,7 +551,7 @@ public class X_AD_Table extends org.compiere.model.PO implements I_AD_Table, org
 	}
 
 	@Override
-	public org.compiere.model.I_AD_Window getPO_Window() throws RuntimeException
+	public org.compiere.model.I_AD_Window getPO_Window()
 	{
 		return get_ValueAsPO(COLUMNNAME_PO_Window_ID, org.compiere.model.I_AD_Window.class);
 	}
@@ -634,5 +632,52 @@ public class X_AD_Table extends org.compiere.model.PO implements I_AD_Table, org
 	public java.lang.String getTableName () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_TableName);
+	}
+
+	/** Set Technical note.
+		@param TechnicalNote 
+		A note that is not indended for the user documentation, but for developers, customizers etc
+	  */
+	@Override
+	public void setTechnicalNote (java.lang.String TechnicalNote)
+	{
+		set_Value (COLUMNNAME_TechnicalNote, TechnicalNote);
+	}
+
+	/** Get Technical note.
+		@return A note that is not indended for the user documentation, but for developers, customizers etc
+	  */
+	@Override
+	public java.lang.String getTechnicalNote () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_TechnicalNote);
+	}
+
+	/** 
+	 * TooltipType AD_Reference_ID=541141
+	 * Reference name: TooltipType
+	 */
+	public static final int TOOLTIPTYPE_AD_Reference_ID=541141;
+	/** DescriptionFallbackToTableIdentifier = DTI */
+	public static final String TOOLTIPTYPE_DescriptionFallbackToTableIdentifier = "DTI";
+	/** TableIdentifier = T */
+	public static final String TOOLTIPTYPE_TableIdentifier = "T";
+	/** Description = D */
+	public static final String TOOLTIPTYPE_Description = "D";
+	/** Set Tooltip Type.
+		@param TooltipType Tooltip Type	  */
+	@Override
+	public void setTooltipType (java.lang.String TooltipType)
+	{
+
+		set_Value (COLUMNNAME_TooltipType, TooltipType);
+	}
+
+	/** Get Tooltip Type.
+		@return Tooltip Type	  */
+	@Override
+	public java.lang.String getTooltipType () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_TooltipType);
 	}
 }
