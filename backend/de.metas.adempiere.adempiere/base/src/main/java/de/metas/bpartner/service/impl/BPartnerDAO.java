@@ -1354,17 +1354,6 @@ public class BPartnerDAO implements IBPartnerDAO
 		return BPartnerId.optionalOfRepoId(bpartnerRepoId);
 	}
 
-	@Override
-	public ImmutableSet<BPartnerId> retrieveAllCustomerIDs()
-	{
-		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_C_BPartner.class)
-				.addOnlyActiveRecordsFilter()
-				.addOnlyContextClient()
-				.addEqualsFilter(I_C_BPartner.COLUMNNAME_IsCustomer, true)
-				.create()
-				.listIds(BPartnerId::ofRepoId);
-	}
 
 	private <T> IQueryBuilder<T> createQueryBuilder(
 			final boolean outOfTrx,
@@ -1382,7 +1371,7 @@ public class BPartnerDAO implements IBPartnerDAO
 					.createQueryBuilder(modelClass);
 		}
 		return queryBuilder
-				//.addOnlyActiveRecordsFilter() // don't generally rule out inactive partners
+				// .addOnlyActiveRecordsFilter() // don't generally rule out inactive partners
 				.orderByDescending(I_AD_Org.COLUMNNAME_AD_Org_ID); // prefer "more specific" AD_Org_IDs > 0;
 	}
 
