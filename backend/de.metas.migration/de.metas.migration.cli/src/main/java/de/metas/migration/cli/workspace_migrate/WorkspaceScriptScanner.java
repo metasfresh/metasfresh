@@ -132,32 +132,55 @@ class WorkspaceScriptScanner implements IScriptScanner
 		return scriptsIterator;
 	}
 
-	private List<IScript> getScriptFilesRecursivelly(final File dir, final DirectoryProperties dirProps)
+	private List<IScript> getScriptFilesRecursivelly(@NonNull final File dir, @NonNull final DirectoryProperties dirProps)
 	{
 		final ArrayList<IScript> result = new ArrayList<>();
-		for (final File projectDir : dir.listFiles(f -> isProjectDir(f)))
+		for (final File childDir : dir.listFiles(f -> isEligibleForCheckingScriptFilesRecursive(f)))
 		{
-			final DirectoryProperties projectDirProps = DirectoryProperties.ofDirectory(projectDir)
+			final DirectoryProperties projectDirProps = DirectoryProperties.ofDirectory(childDir)
 					.mergeFromParent(dirProps);
 			if (!projectDirProps.hasAnyOfLabels(acceptLabels))
 			{
-				logger.info("Skip scanning {} because labels '{}' are not accepted ones: {}", projectDir, projectDirProps.getLabels(), acceptLabels);
+				logger.info("Skip scanning {} because labels '{}' are not accepted ones: {}", childDir, projectDirProps.getLabels(), acceptLabels);
 				continue;
 			}
 
-			final String defaultProjectName = getDefaultProjectName(projectDir);
-			result.addAll(getScriptFilesFromProjectDir(projectDir, defaultProjectName));
+			if (isMavenProjectDir(childDir))
+			{
+				final String defaultProjectName = getDefaultProjectName(childDir);
+				result.addAll(getScriptFilesFromProjectDir(childDir, defaultProjectName));
+			}
 
-			result.addAll(getScriptFilesRecursivelly(projectDir, projectDirProps));
+			result.addAll(getScriptFilesRecursivelly(childDir, projectDirProps));
 		}
 
 		return result;
 	}
 
-	private static boolean isProjectDir(final File dir)
+	private static boolean isEligibleForCheckingScriptFilesRecursive(final File file)
 	{
-		return dir.isDirectory()
-				&& new File(dir, "pom.xml").exists();
+		return isGitRepositoryRoot(file) || isProjectsGroupDir(file) || isMavenProjectDir(file);
+	}
+
+	private static boolean isGitRepositoryRoot(final File dir)
+	{
+		if (!dir.isDirectory())
+		{
+			return false;
+		}
+
+		final File gitDir = new File(dir, ".git");
+		return gitDir.exists() && gitDir.isDirectory();
+	}
+
+	private static boolean isProjectsGroupDir(final File dir)
+	{
+		return dir.isDirectory() && "backend".equals(dir.getName()); // metasfresh/backend
+	}
+
+	private static boolean isMavenProjectDir(final File dir)
+	{
+		return dir.isDirectory() && new File(dir, "pom.xml").exists();
 	}
 
 	private List<IScript> getScriptFilesFromProjectDir(final File projectDir, final String defaultProjectName)
