@@ -324,7 +324,7 @@ public class GithubImporterService implements IssueImporter
 	{
 		final Matcher matcher = STATUS_PATTERN.matcher(label.getName());
 
-		return matcher.matches() ? Status.ofCode(matcher.group(STATUS_GROUP)) : Optional.empty();
+		return matcher.matches() ? Status.ofCodeOptional(matcher.group(STATUS_GROUP)) : Optional.empty();
 	}
 
 	@NonNull

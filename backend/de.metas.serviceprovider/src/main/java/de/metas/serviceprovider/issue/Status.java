@@ -48,7 +48,7 @@ public enum Status implements ReferenceListAwareEnum
 
 	private final String code;
 
-	public static Optional<Status> ofCode(@Nullable final String code)
+	public static Optional<Status> ofCodeOptional(@Nullable final String code)
 	{
 		return Arrays.stream(values())
 				.filter(status -> status.getCode().equals(code))

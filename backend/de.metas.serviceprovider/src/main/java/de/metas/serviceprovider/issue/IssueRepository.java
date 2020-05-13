@@ -122,7 +122,7 @@ public class IssueRepository
 	{
 		return queryBL.createQueryBuilder(I_S_Issue.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_S_Issue.COLUMNNAME_S_Parent_Issue_ID, parentIssueId.getRepoId())
+				.addEqualsFilter(I_S_Issue.COLUMNNAME_S_Parent_Issue_ID, parentIssueId)
 				.create()
 				.list()
 				.stream()
@@ -211,7 +211,7 @@ public class IssueRepository
 				.orElseThrow( () ->new AdempiereException("Unknown IssueType!").appendParametersToMessage()
 						.setParameter("I_S_Issue", record));
 
-		final Status status = Status.ofCode(record.getStatus())
+		final Status status = Status.ofCodeOptional(record.getStatus())
 				.orElseThrow( () ->new AdempiereException("Unknown Status!").appendParametersToMessage()
 						.setParameter("I_S_Issue", record));
 
