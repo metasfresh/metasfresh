@@ -120,7 +120,7 @@ void testSQLMigrationScripts(
 		try {
 			def vgitout = sh(returnStdout: true, script: "git diff --name-only ${scmVars.GIT_PREVIOUS_SUCCESSFUL_COMMIT} ${scmVars.GIT_COMMIT} .").trim()
 			echo "git diff output (modified files):\n>>>>>\n${vgitout}\n<<<<<"
-			anyFileChanged = !vgitout.contains(".sql") // see if any .sql file changed in this folder
+			anyFileChanged = vgitout.contains(".sql") // see if any .sql file changed in this folder
 			// see if anything at all changed in this folder
 			echo "Any *.sql* file changed compared to last build: ${anyFileChanged}"
 		} catch (ignored) {
