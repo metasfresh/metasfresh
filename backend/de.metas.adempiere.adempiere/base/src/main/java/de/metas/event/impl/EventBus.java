@@ -1,5 +1,8 @@
 package de.metas.event.impl;
 
+import java.util.IdentityHashMap;
+
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -22,7 +25,6 @@ package de.metas.event.impl;
  * #L%
  */
 
-import java.lang.ref.WeakReference;
 import java.util.concurrent.ExecutorService;
 import java.util.function.Consumer;
 
@@ -40,7 +42,7 @@ import com.google.common.eventbus.SubscriberExceptionContext;
 import com.google.common.eventbus.SubscriberExceptionHandler;
 
 import de.metas.event.Event;
-import de.metas.event.EventBusConstants;
+import de.metas.event.EventBusConfig;
 import de.metas.event.IEventBus;
 import de.metas.event.IEventListener;
 import de.metas.event.Type;
@@ -56,7 +58,7 @@ import lombok.ToString;
 
 final class EventBus implements IEventBus
 {
-	private static final transient Logger logger = EventBusConstants.getLogger(EventBus.class);
+	private static final transient Logger logger = EventBusConfig.getLogger(EventBus.class);
 
 	/** Log all event bus exceptions */
 	private static final SubscriberExceptionHandler exceptionHandler = new SubscriberExceptionHandler()
@@ -64,7 +66,7 @@ final class EventBus implements IEventBus
 		@Override
 		public void handleException(final Throwable exception, final SubscriberExceptionContext context)
 		{
-			String errmsg = "Could not dispatch event: " + context.getSubscriber() + " to " + context.getSubscriberMethod()
+			final String errmsg = "Could not dispatch event: " + context.getSubscriber() + " to " + context.getSubscriberMethod()
 					+ "\n Event: " + context.getEvent()
 					+ "\n Bus: " + context.getEventBus();
 			logger.error(errmsg, exception);
@@ -78,8 +80,13 @@ final class EventBus implements IEventBus
 	private final String topicName;
 	private com.google.common.eventbus.EventBus eventBus;
 
+	private final IdentityHashMap<IEventListener, GuavaEventListenerAdapter> subscribedEventListener2GuavaListener = new IdentityHashMap<>();
+
 	@Getter
 	private boolean destroyed = false;
+
+	@Getter
+	private final boolean async;
 
 	/**
 	 * The default type is local, unless the factory makes this event bus "remote" by registering some sort of forwarder-subscriber.
@@ -102,10 +109,13 @@ final class EventBus implements IEventBus
 		if (executor == null)
 		{
 			this.eventBus = new com.google.common.eventbus.EventBus(exceptionHandler);
+			this.async = false;
+
 		}
 		else
 		{
 			this.eventBus = new com.google.common.eventbus.AsyncEventBus(executor, exceptionHandler);
+			this.async = true;
 		}
 	}
 
@@ -141,21 +151,6 @@ final class EventBus implements IEventBus
 	}
 
 	@Override
-	public void subscribe(@NonNull final IEventListener listener)
-	{
-		// Do nothing if destroyed
-		if (destroyed)
-		{
-			logger.warn("Attempt to register a listener to a destroyed bus. Ignored. \n Bus: {} \n Listener: {}", this, listener);
-			return;
-		}
-
-		final GuavaEventListenerAdapter listenerAdapter = new GuavaEventListenerAdapter(listener);
-		eventBus.register(listenerAdapter);
-		logger.trace("{} - Registered: {}", this, listener);
-	}
-
-	@Override
 	public void subscribe(@NonNull Consumer<Event> eventConsumer)
 	{
 		final IEventListener listener = (eventBus, event) -> eventConsumer.accept(event);
@@ -169,7 +164,7 @@ final class EventBus implements IEventBus
 	}
 
 	@Override
-	public void subscribeWeak(@NonNull final IEventListener listener)
+	public void subscribe(@NonNull final IEventListener listener)
 	{
 		// Do nothing if destroyed
 		if (destroyed)
@@ -178,9 +173,40 @@ final class EventBus implements IEventBus
 			return;
 		}
 
-		final WeakGuavaEventListenerAdapter listenerAdapter = new WeakGuavaEventListenerAdapter(listener);
+		final GuavaEventListenerAdapter listenerAdapter = new GuavaEventListenerAdapter(listener);
+
+		subscribedEventListener2GuavaListener.put(listener, listenerAdapter);
+
 		eventBus.register(listenerAdapter);
-		logger.trace("{} - Registered(weak): {}", this, listener);
+		logger.debug("registered listener; Listener: {}; Bus:\n{}", listener, this);
+	}
+
+	@Override
+	public void unsubscribe(@NonNull final IEventListener listener)
+	{
+		// Do nothing if destroyed
+		if (destroyed)
+		{
+			logger.warn("Attempt to unregister a listener from a destroyed bus. -> Ignore; Listener: {}; Bus:\n{}", listener, this);
+			return;
+		}
+
+		final GuavaEventListenerAdapter listenerAdapter = subscribedEventListener2GuavaListener.get(listener);
+		if (listenerAdapter == null)
+		{
+			logger.warn("Attempt to unregister a listener that is aparently not registered. -> Ignore; Listener: {}; Bus:\n{}", listener, this);
+			return;
+		}
+
+		try
+		{
+			eventBus.unregister(listenerAdapter);
+			logger.debug("unregistered listener; Listener: {}; Bus:\n{}", listener, this);
+		}
+		catch (final IllegalArgumentException e)
+		{
+			logger.warn("Attempt to unregister a listener, but internal event bus sais was not registered; -> Ignore; Listener: {}; Bus:\n{}", listener, this);
+		}
 	}
 
 	@Override
@@ -220,7 +246,7 @@ final class EventBus implements IEventBus
 				eventToPost = event;
 			}
 
-			logger.debug("{} - Posting event: {}", this, event);
+			logger.debug("{} - Posting event: {}", this, eventToPost);
 			eventBus.post(eventToPost);
 		}
 	}
@@ -248,7 +274,7 @@ final class EventBus implements IEventBus
 		{
 			try (final MDCCloseable mdc = EventMDC.putEvent(event))
 			{
-				logger.debug("TypedConsumerAsEventListener received event; eventBodyType={}", eventBodyType.getName());
+				logger.debug("TypedConsumerAsEventListener.onEvent - eventBodyType={}", eventBodyType.getName());
 
 				final String json = event.getPropertyAsString(PROP_Body);
 				final T obj = jsonDeserializer.readValue(json);
@@ -270,41 +296,8 @@ final class EventBus implements IEventBus
 		{
 			try (final MDCCloseable mdc = EventMDC.putEvent(event))
 			{
-				logger.debug("GuavaEventListenerAdapter received event; referenced eventListener={}", eventListener);
-
+				logger.debug("GuavaEventListenerAdapter.onEvent - eventListener to invoke={}", eventListener);
 				invokeEventListener(this.eventListener, event);
-			}
-		}
-	}
-
-	@ToString
-	private class WeakGuavaEventListenerAdapter
-	{
-		@NonNull
-		private final WeakReference<IEventListener> eventListenerRef;
-
-		private WeakGuavaEventListenerAdapter(@NonNull final IEventListener eventListener)
-		{
-			eventListenerRef = new WeakReference<>(eventListener);
-		}
-
-		@Subscribe
-		public void onEvent(final Event event)
-		{
-			final IEventListener eventListener = eventListenerRef.get();
-			if (eventListener == null)
-			{
-				final com.google.common.eventbus.EventBus guavaEventBus = EventBus.this.eventBus;
-				if (guavaEventBus != null)
-				{
-					guavaEventBus.unregister(this);
-				}
-				return;
-			}
-			try (final MDCCloseable mdc = EventMDC.putEvent(event))
-			{
-				logger.debug("GuavaEventListenerAdapter received event; referenced eventListener={}", eventListener);
-				invokeEventListener(eventListener, event);
 			}
 		}
 	}
@@ -343,7 +336,7 @@ final class EventBus implements IEventBus
 			}
 			else
 			{
-				logger.warn("Got exception will invoking {} with {}", eventListener, event, ex);
+				logger.warn("Got exception while invoking {} with {}", eventListener, event, ex);
 			}
 		}
 		finally

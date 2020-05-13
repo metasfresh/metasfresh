@@ -144,7 +144,7 @@ class SwingEventNotifierFrame extends JFrame
 
 		//
 		// Subscribe to user notifications
-		Services.get(IEventBusFactory.class).registerWeakUserNotificationsListener(eventListener);
+		Services.get(IEventBusFactory.class).registerUserNotificationsListener(eventListener);
 
 		//
 		// Schedule and UI update of this frame

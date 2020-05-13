@@ -648,7 +648,7 @@ public final class Check
 	}
 
 	/**
-	 * @return return true if the string is null, las length 0, or contains only whitespace.
+	 * @return return true if the string is null, has length 0, or contains only whitespace.
 	 */
 	public static boolean isBlank(@Nullable final String str)
 	{
