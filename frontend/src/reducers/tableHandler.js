@@ -1,4 +1,4 @@
-import * as types from '../constants/TableTypes';
+import * as types from '../constants/ActionTypes';
 
 export const initialState = {
   activeSort: false,

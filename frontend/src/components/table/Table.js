@@ -1163,6 +1163,7 @@ class Table extends Component {
       docId,
       rowData,
       tabId,
+      viewId,
       readonly,
       size,
       handleChangePage,
@@ -1297,7 +1298,10 @@ class Table extends Component {
                     page,
                     indentSupported,
                     tabId,
+                    docId,
+                    viewId,
                   }}
+                  windowType={windowId}
                   getSizeClass={getSizeClass}
                   deselect={this.deselectAllProducts}
                 />

@@ -11,6 +11,7 @@ import {
   deleteStaticFilter,
   getViewRowsByIds,
 } from '../../../api';
+import { getTableId } from '../../../reducers/tables';
 import {
   addViewLocationData,
   createView,
@@ -22,6 +23,7 @@ import {
   deleteView,
   updateViewData,
 } from '../../../actions/ViewActions';
+import { deleteTable } from '../../../actions/TableActions';
 import { clearAllFilters } from '../../../actions/FiltersActions';
 import {
   closeListIncludedView,
@@ -90,12 +92,13 @@ class DocumentListContainer extends Component {
   };
 
   componentWillUnmount() {
-    const { isModal, windowType, viewId } = this.props;
+    const { isModal, windowType, viewId, deleteView, deleteTable } = this.props;
 
     this.mounted = false;
     disconnectWS.call(this);
 
-    this.props.deleteView(isModal ? viewId : windowType);
+    deleteView(isModal ? viewId : windowType);
+    deleteTable(getTableId({ windowType, viewId }));
   }
 
   UNSAFE_componentWillReceiveProps(nextProps) {
@@ -115,6 +118,7 @@ class DocumentListContainer extends Component {
       viewId,
       resetView,
       clearAllFilters,
+      deleteTable,
     } = this.props;
     const { staticFilterCleared } = this.state;
 
@@ -150,8 +154,8 @@ class DocumentListContainer extends Component {
           location.hash === '#notification')) ||
       nextRefId !== refId
     ) {
-      // TODO: Check if handling reset only via middleware is enough
       resetView(windowType);
+      deleteTable(getTableId({ windowType, viewId }));
 
       this.setState(
         {
@@ -391,7 +395,7 @@ class DocumentListContainer extends Component {
     const { filtersActive } = this.state;
 
     createView({
-      windowId: windowType,
+      windowType,
       viewType: type,
       filters: filtersActive.toIndexedSeq().toArray(),
       refDocType: refType,
@@ -493,15 +497,15 @@ class DocumentListContainer extends Component {
       modalId = viewId;
     }
 
-    return fetchDocument(
+    return fetchDocument({
       windowType,
-      id,
+      viewId: id,
       page,
-      this.pageLength,
-      sortingQuery,
-      isModal,
-      modalId
-    )
+      pageLength: this.pageLength,
+      orderBy: sortingQuery,
+      useViewId: isModal,
+      modalId,
+    })
       .then((response) => {
         const result = response.result;
         const resultById = {};
@@ -524,6 +528,7 @@ class DocumentListContainer extends Component {
 
         const pageColumnInfosByFieldName = response.columnsByFieldName;
 
+        // https://github.com/metasfresh/me03/issues/4734
         mergeColumnInfosIntoViewRows(
           pageColumnInfosByFieldName,
           response.result
@@ -859,6 +864,7 @@ export default withRouterAndRef(
       fetchLayout,
       createView,
       filterView,
+      deleteTable,
       setListIncludedView,
       indicatorState,
       closeListIncludedView,

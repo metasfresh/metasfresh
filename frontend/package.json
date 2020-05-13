@@ -135,6 +135,7 @@
     "detect-browser": "4.8.0",
     "file-loader": "2.0.0",
     "google-map-react": "1.1.5",
+    "immer": "^6.0.5",
     "immutability-helper": "2.1.2",
     "immutable": "4.0.0-rc.12",
     "intro.js": "2.9.3",
