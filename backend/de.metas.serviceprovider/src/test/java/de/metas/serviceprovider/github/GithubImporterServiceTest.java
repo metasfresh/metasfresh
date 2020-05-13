@@ -34,7 +34,6 @@ import de.metas.issue.tracking.github.api.v3.service.GithubClient;
 import de.metas.serviceprovider.ImportQueue;
 import de.metas.serviceprovider.external.ExternalSystem;
 import de.metas.serviceprovider.external.label.IssueLabel;
-import de.metas.serviceprovider.external.label.IssueLabelRepository;
 import de.metas.serviceprovider.external.project.ExternalProjectRepository;
 import de.metas.serviceprovider.external.reference.ExternalReferenceRepository;
 import de.metas.serviceprovider.github.link.GithubIssueLinkMatcher;
@@ -94,7 +93,7 @@ public class GithubImporterServiceTest
 
 	private final ExternalReferenceRepository externalReferenceRepository = new ExternalReferenceRepository(queryBL);
 
-	private final IssueRepository issueRepository = new IssueRepository(queryBL, new IssueLabelRepository(queryBL), modelCacheInvalidationService);
+	private final IssueRepository issueRepository = new IssueRepository(queryBL, modelCacheInvalidationService);
 
 	private final ExternalProjectRepository externalProjectRepository = new ExternalProjectRepository(queryBL);
 

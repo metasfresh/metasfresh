@@ -42,7 +42,6 @@ import de.metas.util.time.HmmUtils;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
@@ -97,7 +96,7 @@ public class TimeBookingsImporterService
 		{
 			final boolean isNewRecord = importTimeInfo.getTimeBookingId() == null;
 
-			final IssueEntity issueEntity = issueRepository.getById(importTimeInfo.getIssueId(), false);
+			final IssueEntity issueEntity = issueRepository.getById(importTimeInfo.getIssueId());
 
 			final TimeBooking timeBooking = TimeBooking
 					.builder()

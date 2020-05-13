@@ -2,7 +2,7 @@
  * #%L
  * de.metas.serviceprovider.base
  * %%
- * Copyright (C) 2019 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,10 +20,15 @@
  * #L%
  */
 
-package de.metas.serviceprovider.issue;
+package de.metas.serviceprovider.issue.interceptor;
 
+import de.metas.logging.LogManager;
 import de.metas.serviceprovider.external.reference.ExternalReferenceRepository;
 import de.metas.serviceprovider.external.reference.ExternalReferenceType;
+import de.metas.serviceprovider.issue.IssueEntity;
+import de.metas.serviceprovider.issue.IssueId;
+import de.metas.serviceprovider.issue.IssueRepository;
+import de.metas.serviceprovider.issue.IssueService;
 import de.metas.serviceprovider.issue.hierarchy.IssueHierarchy;
 import de.metas.serviceprovider.model.I_S_Issue;
 import de.metas.serviceprovider.timebooking.Effort;
@@ -38,22 +43,30 @@ import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.ModelValidator;
+import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
+
+import java.sql.Timestamp;
+import java.time.Instant;
+import java.util.Objects;
+import java.util.stream.Stream;
 
 @Interceptor(I_S_Issue.class)
 @Callout(I_S_Issue.class)
 @Component
 public class S_Issue
 {
-	private final ExternalReferenceRepository externalReferenceRepository;
-	private final IssueEffortService issueEffortService;
-	private final IssueHierarchyService issueHierarchyService;
+	private final Logger log = LogManager.getLogger(getClass());
 
-	public S_Issue(final ExternalReferenceRepository externalReferenceRepository, final IssueEffortService issueEffortService, final IssueHierarchyService issueHierarchyService)
+	private final ExternalReferenceRepository externalReferenceRepository;
+	private final IssueService issueService;
+	private final IssueRepository issueRepository;
+
+	public S_Issue(final ExternalReferenceRepository externalReferenceRepository, final IssueService issueService, final IssueRepository issueRepository)
 	{
 		this.externalReferenceRepository = externalReferenceRepository;
-		this.issueEffortService = issueEffortService;
-		this.issueHierarchyService = issueHierarchyService;
+		this.issueService = issueService;
+		this.issueRepository = issueRepository;
 	}
 
 	@Init
@@ -73,24 +86,22 @@ public class S_Issue
 	{
 		final I_S_Issue oldRecord = InterfaceWrapperHelper.createOld(record, I_S_Issue.class);
 
-		if (record.getS_Parent_Issue_ID() != oldRecord.getS_Parent_Issue_ID())
-		{
-			final Effort effort = Effort.ofNullable(record.getAggregatedEffort());
+		final Instant latestActivity = Stream.of(record.getLatestActivity(), record.getLatestActivityOnSubIssues())
+										.filter(Objects::nonNull)
+										.map(Timestamp::toInstant)
+										.max(Instant::compareTo)
+										.orElse(null);
 
-			final IssueId currentParent = IssueId.ofRepoIdOrNull(record.getS_Parent_Issue_ID());
+		final HandleParentChangedRequest handleParentChangedRequest = HandleParentChangedRequest
+				.builder()
+				.currentParentId(IssueId.ofRepoIdOrNull(record.getS_Parent_Issue_ID()))
+				.currentEffort(Effort.ofNullable(record.getAggregatedEffort()))
+				.oldParentId(IssueId.ofRepoIdOrNull(oldRecord.getS_Parent_Issue_ID()))
+				.oldEffort(Effort.ofNullable(oldRecord.getAggregatedEffort()))
+				.latestActivity(latestActivity)
+				.build();
 
-			if (currentParent != null)
-			{
-				issueEffortService.addAggregatedEffort(currentParent, effort);
-			}
-
-			final IssueId oldParent = IssueId.ofRepoIdOrNull(oldRecord.getS_Parent_Issue_ID());
-
-			if (oldParent != null)
-			{
-				issueEffortService.addAggregatedEffort(oldParent, effort.negate());
-			}
-		}
+		issueService.handleParentChanged(handleParentChangedRequest);
 	}
 
 	@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE, ifColumnsChanged = I_S_Issue.COLUMNNAME_IsActive)
@@ -111,11 +122,16 @@ public class S_Issue
 		}
 	}
 
-	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE, ifColumnsChanged = I_S_Issue.COLUMNNAME_S_Parent_Issue_ID)
+	@ModelChange(timings = {ModelValidator.TYPE_BEFORE_CHANGE, ModelValidator.TYPE_BEFORE_NEW}, ifColumnsChanged = I_S_Issue.COLUMNNAME_S_Parent_Issue_ID)
 	public void overwriteParentIssueId(@NonNull final I_S_Issue record)
 	{
-		if (isParentAlreadyInHierarchy(record))
+		if (isParentAlreadyInHierarchy(record)
+				|| parentAlreadyHasAnEffortIssueAssigned(record)
+				|| isBudgetChildForParentEffort(record))
 		{
+			log.warn("*** Overwriting S_Issue.S_Parent_Issue_ID to null! S_Issue_ID: {} S_Parent_Issue_ID: {}! "
+					, record.getS_Issue_ID(), record.getS_Parent_Issue_ID());
+
 			record.setS_Parent_Issue_ID(-1);
 		}
 	}
@@ -130,22 +146,66 @@ public class S_Issue
 					.setParameter("ParentIssueId", record.getS_Parent_Issue_ID())
 					.setParameter("TargetIssueId", record.getS_Issue_ID());
 		}
+
+		if (parentAlreadyHasAnEffortIssueAssigned(record))
+		{
+			throw new AdempiereException("There is already an Effort issue created for the requested parent!")
+					.appendParametersToMessage()
+					.setParameter("ParentIssueId", record.getS_Parent_Issue_ID())
+					.setParameter("TargetIssueId", record.getS_Issue_ID());
+		}
+
+		if (isBudgetChildForParentEffort(record))
+		{
+			throw new AdempiereException("A budget issue cannot have an effort one as parent!")
+					.appendParametersToMessage()
+					.setParameter("ParentIssueId", record.getS_Parent_Issue_ID())
+					.setParameter("TargetIssueId", record.getS_Issue_ID());
+		}
 	}
 
 	private boolean isParentAlreadyInHierarchy(@NonNull final I_S_Issue record)
 	{
-		final IssueId currentIssueID = IssueId.ofRepoId(record.getS_Issue_ID());
+		final IssueId currentIssueID = IssueId.ofRepoIdOrNull(record.getS_Issue_ID());
+		if (currentIssueID == null)
+		{
+			return false; //means it's a new record so it doesn't have any children
+		}
 
 		final IssueId parentIssueID = IssueId.ofRepoIdOrNull(record.getS_Parent_Issue_ID());
 
 		if (parentIssueID != null)
 		{
-			final IssueHierarchy issueHierarchy = issueHierarchyService.buildUpStreamIssueHierarchy(parentIssueID);
+			final IssueHierarchy issueHierarchy = issueRepository.buildUpStreamIssueHierarchy(parentIssueID);
 
 			return issueHierarchy.hasNodeForId(currentIssueID);
 		}
 
 		return false;
+	}
+
+	private boolean parentAlreadyHasAnEffortIssueAssigned(@NonNull final I_S_Issue record)
+	{
+		if (record.isEffortIssue())
+		{
+			final I_S_Issue parentIssue = record.getS_Parent_Issue();
+
+			if (parentIssue != null && !parentIssue.isEffortIssue())
+			{
+				return issueRepository.getDirectlyLinkedSubIssues(IssueId.ofRepoId(parentIssue.getS_Issue_ID()))
+						.stream()
+						.anyMatch(IssueEntity::isEffortIssue);
+			}
+		}
+
+		return false;
+	}
+
+	private boolean isBudgetChildForParentEffort(@NonNull  final I_S_Issue record)
+	{
+		return !record.isEffortIssue()
+				&& record.getS_Parent_Issue() != null
+				&& record.getS_Parent_Issue().isEffortIssue();
 	}
 
 }

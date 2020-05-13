@@ -183,6 +183,31 @@ public interface I_S_Issue
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
+	 * Set Delivery platform.
+	 * Specifies the instances where the issue was deployed.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setDeliveryPlatform (java.lang.String DeliveryPlatform);
+
+	/**
+	 * Get Delivery platform.
+	 * Specifies the instances where the issue was deployed.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getDeliveryPlatform();
+
+    /** Column definition for DeliveryPlatform */
+    public static final org.adempiere.model.ModelColumn<I_S_Issue, Object> COLUMN_DeliveryPlatform = new org.adempiere.model.ModelColumn<I_S_Issue, Object>(I_S_Issue.class, "DeliveryPlatform", null);
+    /** Column name DeliveryPlatform */
+    public static final String COLUMNNAME_DeliveryPlatform = "DeliveryPlatform";
+
+	/**
 	 * Set Beschreibung.
 	 *
 	 * <br>Type: TextLong
@@ -225,6 +250,31 @@ public interface I_S_Issue
 
     /** Column name Effort_UOM_ID */
     public static final String COLUMNNAME_Effort_UOM_ID = "Effort_UOM_ID";
+
+	/**
+	 * Set Effort delivery platform.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	public void setEffortDeliveryPlatform (java.lang.String EffortDeliveryPlatform);
+
+	/**
+	 * Get Effort delivery platform.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 */
+	public java.lang.String getEffortDeliveryPlatform();
+
+    /** Column definition for EffortDeliveryPlatform */
+    public static final org.adempiere.model.ModelColumn<I_S_Issue, Object> COLUMN_EffortDeliveryPlatform = new org.adempiere.model.ModelColumn<I_S_Issue, Object>(I_S_Issue.class, "EffortDeliveryPlatform", null);
+    /** Column name EffortDeliveryPlatform */
+    public static final String COLUMNNAME_EffortDeliveryPlatform = "EffortDeliveryPlatform";
 
 	/**
 	 * Set Geschätzter Aufwand.
@@ -273,6 +323,84 @@ public interface I_S_Issue
     public static final org.adempiere.model.ModelColumn<I_S_Issue, Object> COLUMN_ExternalIssueNo = new org.adempiere.model.ModelColumn<I_S_Issue, Object>(I_S_Issue.class, "ExternalIssueNo", null);
     /** Column name ExternalIssueNo */
     public static final String COLUMNNAME_ExternalIssueNo = "ExternalIssueNo";
+
+	/**
+	 * Set hasInternalEffortIssue.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	public void sethasInternalEffortIssue (boolean hasInternalEffortIssue);
+
+	/**
+	 * Get hasInternalEffortIssue.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 */
+	public boolean ishasInternalEffortIssue();
+
+    /** Column definition for hasInternalEffortIssue */
+    public static final org.adempiere.model.ModelColumn<I_S_Issue, Object> COLUMN_hasInternalEffortIssue = new org.adempiere.model.ModelColumn<I_S_Issue, Object>(I_S_Issue.class, "hasInternalEffortIssue", null);
+    /** Column name hasInternalEffortIssue */
+    public static final String COLUMNNAME_hasInternalEffortIssue = "hasInternalEffortIssue";
+
+	/**
+	 * Set Internal assignee.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	public void setInternal_Assignee_ID (int Internal_Assignee_ID);
+
+	/**
+	 * Get Internal assignee.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 */
+	public int getInternal_Assignee_ID();
+
+    /** Column name Internal_Assignee_ID */
+    public static final String COLUMNNAME_Internal_Assignee_ID = "Internal_Assignee_ID";
+
+	/**
+	 * Set Internal effort issue.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	public void setInternal_Effort_S_Issue_ID (int Internal_Effort_S_Issue_ID);
+
+	/**
+	 * Get Internal effort issue.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 */
+	public int getInternal_Effort_S_Issue_ID();
+
+	public de.metas.serviceprovider.model.I_S_Issue getInternal_Effort_S_Issue();
+
+	@Deprecated
+	public void setInternal_Effort_S_Issue(de.metas.serviceprovider.model.I_S_Issue Internal_Effort_S_Issue);
+
+    /** Column definition for Internal_Effort_S_Issue_ID */
+    public static final org.adempiere.model.ModelColumn<I_S_Issue, de.metas.serviceprovider.model.I_S_Issue> COLUMN_Internal_Effort_S_Issue_ID = new org.adempiere.model.ModelColumn<I_S_Issue, de.metas.serviceprovider.model.I_S_Issue>(I_S_Issue.class, "Internal_Effort_S_Issue_ID", de.metas.serviceprovider.model.I_S_Issue.class);
+    /** Column name Internal_Effort_S_Issue_ID */
+    public static final String COLUMNNAME_Internal_Effort_S_Issue_ID = "Internal_Effort_S_Issue_ID";
 
 	/**
 	 * Set Invoiceable effort.
@@ -448,10 +576,8 @@ public interface I_S_Issue
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
-	 * @deprecated Please don't use it because this is a virtual column
+	 * <br>Virtual Column: false
 	 */
-	@Deprecated
 	public void setLatestActivity (java.sql.Timestamp LatestActivity);
 
 	/**
@@ -459,7 +585,7 @@ public interface I_S_Issue
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
+	 * <br>Virtual Column: false
 	 */
 	public java.sql.Timestamp getLatestActivity();
 
@@ -467,6 +593,29 @@ public interface I_S_Issue
     public static final org.adempiere.model.ModelColumn<I_S_Issue, Object> COLUMN_LatestActivity = new org.adempiere.model.ModelColumn<I_S_Issue, Object>(I_S_Issue.class, "LatestActivity", null);
     /** Column name LatestActivity */
     public static final String COLUMNNAME_LatestActivity = "LatestActivity";
+
+	/**
+	 * Set Latest activity on sub issues.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setLatestActivityOnSubIssues (java.sql.Timestamp LatestActivityOnSubIssues);
+
+	/**
+	 * Get Latest activity on sub issues.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.sql.Timestamp getLatestActivityOnSubIssues();
+
+    /** Column definition for LatestActivityOnSubIssues */
+    public static final org.adempiere.model.ModelColumn<I_S_Issue, Object> COLUMN_LatestActivityOnSubIssues = new org.adempiere.model.ModelColumn<I_S_Issue, Object>(I_S_Issue.class, "LatestActivityOnSubIssues", null);
+    /** Column name LatestActivityOnSubIssues */
+    public static final String COLUMNNAME_LatestActivityOnSubIssues = "LatestActivityOnSubIssues";
 
 	/**
 	 * Set Fälligkeitsdatum.
@@ -663,6 +812,29 @@ public interface I_S_Issue
     public static final org.adempiere.model.ModelColumn<I_S_Issue, de.metas.serviceprovider.model.I_S_Issue> COLUMN_S_Parent_Issue_ID = new org.adempiere.model.ModelColumn<I_S_Issue, de.metas.serviceprovider.model.I_S_Issue>(I_S_Issue.class, "S_Parent_Issue_ID", de.metas.serviceprovider.model.I_S_Issue.class);
     /** Column name S_Parent_Issue_ID */
     public static final String COLUMNNAME_S_Parent_Issue_ID = "S_Parent_Issue_ID";
+
+	/**
+	 * Set Status.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setStatus (java.lang.String Status);
+
+	/**
+	 * Get Status.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getStatus();
+
+    /** Column definition for Status */
+    public static final org.adempiere.model.ModelColumn<I_S_Issue, Object> COLUMN_Status = new org.adempiere.model.ModelColumn<I_S_Issue, Object>(I_S_Issue.class, "Status", null);
+    /** Column name Status */
+    public static final String COLUMNNAME_Status = "Status";
 
 	/**
 	 * Get Aktualisiert.

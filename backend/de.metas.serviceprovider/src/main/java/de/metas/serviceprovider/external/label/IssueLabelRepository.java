@@ -22,8 +22,8 @@
 
 package de.metas.serviceprovider.external.label;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
-import de.metas.organization.OrgId;
 import de.metas.serviceprovider.issue.IssueId;
 import de.metas.serviceprovider.model.I_S_IssueLabel;
 import de.metas.util.Check;
@@ -45,14 +45,6 @@ public class IssueLabelRepository
 		this.queryBL = queryBL;
 	}
 
-	public ImmutableList<IssueLabel> getByIssueId(@NonNull final IssueId issueId)
-	{
-		return getRecordsByIssueId(issueId)
-				.stream()
-				.map(this::of)
-				.collect(ImmutableList.toImmutableList());
-	}
-
 	public void persistLabels(@NonNull final IssueId issueId,
 							  @NonNull final ImmutableList<IssueLabel> issueLabels)
 	{
@@ -67,8 +59,9 @@ public class IssueLabelRepository
 		persistLabels(newLabels, existingLabels);
 	}
 
+	@VisibleForTesting
 	@NonNull
-	private ImmutableList<I_S_IssueLabel> getRecordsByIssueId(@NonNull final IssueId issueId)
+	ImmutableList<I_S_IssueLabel> getRecordsByIssueId(@NonNull final IssueId issueId)
 	{
 		return queryBL.createQueryBuilder(I_S_IssueLabel.class)
 				.addOnlyActiveRecordsFilter()
@@ -91,16 +84,8 @@ public class IssueLabelRepository
 		return record;
 	}
 
-	private IssueLabel of(@NonNull final I_S_IssueLabel record)
-	{
-		return IssueLabel.builder()
-				.value(record.getLabel())
-				.orgId(OrgId.ofRepoId(record.getAD_Org_ID()))
-				.build();
-	}
-
 	private void persistLabels(@NonNull final List<I_S_IssueLabel> newLabels,
-			                        @NonNull final List<I_S_IssueLabel> existingLabels)
+			                   @NonNull final List<I_S_IssueLabel> existingLabels)
 	{
 
 		if (Check.isEmpty(newLabels))

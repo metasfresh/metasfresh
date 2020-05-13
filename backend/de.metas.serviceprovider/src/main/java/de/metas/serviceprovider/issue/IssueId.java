@@ -57,4 +57,9 @@ public class IssueId implements RepoIdAware
 	{
 		return getRepoId();
 	}
+
+	public boolean equalsNullSafe(@Nullable final IssueId issueId)
+	{
+		return issueId != null && issueId.getRepoId() == this.repoId;
+	}
 }
