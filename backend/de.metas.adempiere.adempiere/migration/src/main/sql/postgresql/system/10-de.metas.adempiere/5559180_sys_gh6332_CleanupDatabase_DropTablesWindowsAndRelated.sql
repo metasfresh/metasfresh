@@ -279,9 +279,9 @@ DELETE FROM AD_Table WHERE AD_Table_ID=455
 
 ------------------------------
 -- select from the tables (debug)
-select * from  c_bankaccount_acct;
-select * from  c_bankaccountdoc;
-select * from  u_posterminal;
+-- select * from  c_bankaccount_acct;
+-- select * from  c_bankaccountdoc;
+-- select * from  u_posterminal;
 
 
 
@@ -292,9 +292,9 @@ create table backup.u_posterminal_gh6332 as SELECT * FROM u_posterminal;
 
 
 -- select from the backup tables (debug)
-select * from  backup.c_bankaccount_acct_gh6332;
-select * from  backup.c_bankaccountdoc_gh6332;
-select * from  backup.u_posterminal_gh6332;
+-- select * from  backup.c_bankaccount_acct_gh6332;
+-- select * from  backup.c_bankaccountdoc_gh6332;
+-- select * from  backup.u_posterminal_gh6332;
 
 
 
@@ -304,4 +304,3 @@ drop table if exists u_posterminal;
 drop table if exists c_bankaccount_acct;
 drop table if exists c_bankaccountdoc;
 ;
-
