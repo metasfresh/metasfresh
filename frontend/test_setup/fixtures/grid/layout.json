@@ -1,0 +1,544 @@
+{
+  "layout1": {
+    "type": "143",
+    "windowId": "143",
+    "caption": "Order",
+    "description": "Order Header",
+    "emptyResultText": "There are no detail rows",
+    "emptyResultHint": "You can create them in this window.",
+    "elements": [
+      {
+        "caption": "Target Document Type",
+        "description": "Target document type for conversing documents",
+        "widgetType": "List",
+        "type": "secondary",
+        "size": "M",
+        "gridAlign": "left",
+        "viewEditorRenderMode": "never",
+        "sortable": true,
+        "fields": [
+          {
+            "field": "C_DocTypeTarget_ID",
+            "caption": "Target Document Type",
+            "emptyText": "none",
+            "clearValueText": "none",
+            "source": "list",
+            "lookupSearchStringMinLength": -1,
+            "lookupSearchStartDelayMillis": 500,
+            "supportZoomInto": true
+          }
+        ]
+      },
+      {
+        "caption": "No.",
+        "description": "Document sequence number of the document",
+        "widgetType": "Text",
+        "maxLength": 30,
+        "size": "S",
+        "gridAlign": "left",
+        "viewEditorRenderMode": "never",
+        "sortable": true,
+        "fields": [
+          {
+            "field": "DocumentNo",
+            "caption": "No.",
+            "emptyText": "none",
+            "clearValueText": "none"
+          }
+        ]
+      },
+      {
+        "caption": "Date",
+        "description": "Date of Order",
+        "widgetType": "Date",
+        "size": "S",
+        "gridAlign": "right",
+        "viewEditorRenderMode": "never",
+        "sortable": true,
+        "fields": [
+          {
+            "field": "DateOrdered",
+            "caption": "Date",
+            "emptyText": "none",
+            "clearValueText": "none"
+          }
+        ]
+      },
+      {
+        "caption": "Business Partner ",
+        "description": "Identifies a Business Partner",
+        "widgetType": "Lookup",
+        "type": "primary",
+        "size": "L",
+        "gridAlign": "left",
+        "viewEditorRenderMode": "never",
+        "sortable": true,
+        "fields": [
+          {
+            "field": "C_BPartner_ID",
+            "caption": "Business Partner ",
+            "emptyText": "Business Partner ",
+            "clearValueText": "none",
+            "source": "lookup",
+            "lookupSearchStringMinLength": -1,
+            "lookupSearchStartDelayMillis": 500,
+            "supportZoomInto": true
+          },
+          {
+            "field": "C_BPartner_Location_ID",
+            "caption": "Partner Location",
+            "emptyText": "Partner Location",
+            "clearValueText": "none",
+            "source": "list",
+            "lookupSearchStringMinLength": -1,
+            "lookupSearchStartDelayMillis": 500,
+            "supportZoomInto": true
+          },
+          {
+            "field": "AD_User_ID",
+            "caption": "User/Contact",
+            "emptyText": "User/Contact",
+            "clearValueText": "none",
+            "source": "list",
+            "lookupSearchStringMinLength": -1,
+            "lookupSearchStartDelayMillis": 500,
+            "supportZoomInto": true
+          },
+          {
+            "field": "C_BPartner_Memo",
+            "caption": "Geschäftspartner-Memo",
+            "type": "Tooltip",
+            "tooltipIconName": "text",
+            "emptyText": "none",
+            "clearValueText": "none"
+          }
+        ]
+      },
+      {
+        "caption": "Partner Location",
+        "description": "Identifies the (ship to) address for this Business Partner",
+        "widgetType": "List",
+        "gridAlign": "left",
+        "viewEditorRenderMode": "never",
+        "sortable": true,
+        "fields": [
+          {
+            "field": "C_BPartner_Location_ID",
+            "caption": "Partner Location",
+            "emptyText": "none",
+            "clearValueText": "none",
+            "source": "list",
+            "lookupSearchStringMinLength": -1,
+            "lookupSearchStartDelayMillis": 500,
+            "supportZoomInto": true
+          }
+        ]
+      },
+      {
+        "caption": "Order Reference",
+        "description": "Transaction Reference Number (Sales Order, Purchase Order) of your Business Partner",
+        "widgetType": "Text",
+        "maxLength": 40,
+        "size": "S",
+        "gridAlign": "left",
+        "viewEditorRenderMode": "never",
+        "sortable": true,
+        "fields": [
+          {
+            "field": "POReference",
+            "caption": "Order Reference",
+            "emptyText": "none",
+            "clearValueText": "none"
+          }
+        ]
+      },
+      {
+        "caption": "unloading address",
+        "description": "",
+        "widgetType": "List",
+        "gridAlign": "left",
+        "viewEditorRenderMode": "never",
+        "sortable": true,
+        "fields": [
+          {
+            "field": "HandOver_Location_ID",
+            "caption": "unloading address",
+            "emptyText": "none",
+            "clearValueText": "none",
+            "source": "list",
+            "lookupSearchStringMinLength": -1,
+            "lookupSearchStartDelayMillis": 500,
+            "supportZoomInto": true
+          }
+        ]
+      },
+      {
+        "caption": "Date Promised",
+        "description": "Date Order was promised",
+        "widgetType": "ZonedDateTime",
+        "size": "M",
+        "gridAlign": "right",
+        "viewEditorRenderMode": "never",
+        "sortable": true,
+        "fields": [
+          {
+            "field": "DatePromised",
+            "caption": "Date Promised",
+            "emptyText": "none",
+            "clearValueText": "none"
+          }
+        ]
+      },
+      {
+        "caption": "Pricing System",
+        "description": "",
+        "widgetType": "Lookup",
+        "type": "secondary",
+        "gridAlign": "left",
+        "viewEditorRenderMode": "never",
+        "sortable": true,
+        "fields": [
+          {
+            "field": "M_PricingSystem_ID",
+            "caption": "Pricing System",
+            "emptyText": "none",
+            "clearValueText": "none",
+            "source": "lookup",
+            "lookupSearchStringMinLength": -1,
+            "lookupSearchStartDelayMillis": 500,
+            "supportZoomInto": true
+          }
+        ]
+      },
+      {
+        "caption": "Currency",
+        "description": "The Currency for this record",
+        "widgetType": "List",
+        "size": "S",
+        "gridAlign": "left",
+        "viewEditorRenderMode": "never",
+        "sortable": true,
+        "fields": [
+          {
+            "field": "C_Currency_ID",
+            "caption": "Currency",
+            "emptyText": "none",
+            "clearValueText": "none",
+            "source": "list",
+            "lookupSearchStringMinLength": -1,
+            "lookupSearchStartDelayMillis": 500,
+            "supportZoomInto": true
+          }
+        ]
+      },
+      {
+        "caption": "Document Status",
+        "description": "The current status of the document",
+        "widgetType": "List",
+        "size": "S",
+        "gridAlign": "left",
+        "viewEditorRenderMode": "never",
+        "sortable": true,
+        "fields": [
+          {
+            "field": "DocStatus",
+            "caption": "Document Status",
+            "emptyText": "none",
+            "clearValueText": "none",
+            "source": "list",
+            "lookupSearchStringMinLength": -1,
+            "lookupSearchStartDelayMillis": 500
+          }
+        ]
+      },
+      {
+        "caption": "Posting status",
+        "description": "Posting status",
+        "widgetType": "List",
+        "gridAlign": "left",
+        "viewEditorRenderMode": "never",
+        "sortable": true,
+        "fields": [
+          {
+            "field": "Posted",
+            "caption": "Posting status",
+            "emptyText": "none",
+            "clearValueText": "none",
+            "source": "list",
+            "lookupSearchStringMinLength": -1,
+            "lookupSearchStartDelayMillis": 500
+          }
+        ]
+      },
+      {
+        "caption": "Organisation",
+        "description": "Organisational entity within client",
+        "widgetType": "Lookup",
+        "type": "secondary",
+        "size": "M",
+        "gridAlign": "left",
+        "viewEditorRenderMode": "never",
+        "sortable": true,
+        "fields": [
+          {
+            "field": "AD_Org_ID",
+            "caption": "Organisation",
+            "emptyText": "none",
+            "clearValueText": "none",
+            "source": "lookup",
+            "lookupSearchStringMinLength": -1,
+            "lookupSearchStartDelayMillis": 500,
+            "supportZoomInto": true
+          }
+        ]
+      }
+    ],
+    "filters": [
+      {
+        "filterId": "default-date",
+        "caption": "Date",
+        "inlineRenderMode": "button",
+        "parametersLayoutType": "panel",
+        "parameters": [
+          {
+            "caption": "Date",
+            "parameterName": "DateOrdered",
+            "widgetType": "Date",
+            "range": true,
+            "defaultValue": null,
+            "defaultValueTo": null,
+            "mandatory": false,
+            "displayed": true,
+            "readonly": false,
+            "type": "primary"
+          }
+        ],
+        "debugProperties": {
+          "sortNo": -2147483648
+        },
+        "sortNo": -2147483648
+      },
+      {
+        "caption": "Filter",
+        "includedFilters": [
+          {
+            "filterId": "default",
+            "caption": "Default",
+            "inlineRenderMode": "button",
+            "parametersLayoutType": "panel",
+            "parameters": [
+              {
+                "caption": "Date Promised",
+                "parameterName": "DatePromised",
+                "widgetType": "Date",
+                "range": true,
+                "defaultValue": null,
+                "defaultValueTo": null,
+                "mandatory": false,
+                "displayed": true,
+                "readonly": false,
+                "type": "primary"
+              },
+              {
+                "caption": "Business Partner ",
+                "parameterName": "C_BPartner_ID",
+                "widgetType": "Lookup",
+                "range": false,
+                "defaultValue": null,
+                "defaultValueTo": null,
+                "mandatory": false,
+                "displayed": true,
+                "readonly": false,
+                "type": "primary"
+              },
+              {
+                "caption": "No.",
+                "parameterName": "DocumentNo",
+                "widgetType": "Text",
+                "range": false,
+                "defaultValue": null,
+                "defaultValueTo": null,
+                "mandatory": false,
+                "displayed": true,
+                "readonly": false,
+                "type": "primary"
+              },
+              {
+                "caption": "Order Reference",
+                "parameterName": "POReference",
+                "widgetType": "Text",
+                "range": false,
+                "defaultValue": null,
+                "defaultValueTo": null,
+                "mandatory": false,
+                "displayed": true,
+                "readonly": false,
+                "type": "primary"
+              },
+              {
+                "caption": "Document Type",
+                "parameterName": "C_DocType_ID",
+                "widgetType": "List",
+                "range": false,
+                "defaultValue": null,
+                "defaultValueTo": null,
+                "mandatory": false,
+                "displayed": true,
+                "readonly": false,
+                "type": "primary"
+              },
+              {
+                "caption": "Document Status",
+                "parameterName": "DocStatus",
+                "widgetType": "List",
+                "range": false,
+                "defaultValue": null,
+                "defaultValueTo": null,
+                "mandatory": false,
+                "displayed": true,
+                "readonly": false,
+                "type": "primary"
+              },
+              {
+                "caption": "Created By",
+                "parameterName": "CreatedBy",
+                "widgetType": "List",
+                "range": false,
+                "defaultValue": null,
+                "defaultValueTo": null,
+                "mandatory": false,
+                "displayed": true,
+                "readonly": false,
+                "type": "primary"
+              },
+              {
+                "caption": "Organisation",
+                "parameterName": "AD_Org_ID",
+                "widgetType": "Lookup",
+                "range": false,
+                "defaultValue": null,
+                "defaultValueTo": null,
+                "mandatory": false,
+                "displayed": true,
+                "readonly": false,
+                "type": "primary"
+              },
+              {
+                "caption": "Tour",
+                "parameterName": "M_Tour_ID",
+                "widgetType": "Lookup",
+                "range": false,
+                "defaultValue": null,
+                "defaultValueTo": null,
+                "mandatory": false,
+                "displayed": true,
+                "readonly": false,
+                "type": "primary"
+              }
+            ],
+            "debugProperties": {
+              "sortNo": 10000
+            },
+            "sortNo": 10000
+          },
+          {
+            "filterId": "location-area-search",
+            "caption": "Area Search",
+            "inlineRenderMode": "button",
+            "parametersLayoutType": "panel",
+            "parameters": [
+              {
+                "caption": "Street & House No.",
+                "parameterName": "Address1",
+                "widgetType": "Text",
+                "range": false,
+                "defaultValue": null,
+                "defaultValueTo": null,
+                "mandatory": false,
+                "displayed": true,
+                "readonly": false,
+                "type": "primary"
+              },
+              {
+                "caption": "ZIP",
+                "parameterName": "Postal",
+                "widgetType": "Text",
+                "range": false,
+                "defaultValue": null,
+                "defaultValueTo": null,
+                "mandatory": false,
+                "displayed": true,
+                "readonly": false,
+                "type": "primary"
+              },
+              {
+                "caption": "City",
+                "parameterName": "City",
+                "widgetType": "Text",
+                "range": false,
+                "defaultValue": null,
+                "defaultValueTo": null,
+                "mandatory": false,
+                "displayed": true,
+                "readonly": false,
+                "type": "primary"
+              },
+              {
+                "caption": "Country",
+                "parameterName": "C_Country_ID",
+                "widgetType": "Lookup",
+                "range": false,
+                "defaultValue": null,
+                "defaultValueTo": null,
+                "mandatory": false,
+                "displayed": true,
+                "readonly": false,
+                "type": "primary"
+              },
+              {
+                "caption": "Distance",
+                "parameterName": "Distance",
+                "widgetType": "Integer",
+                "range": false,
+                "defaultValue": null,
+                "defaultValueTo": null,
+                "mandatory": false,
+                "displayed": true,
+                "readonly": false,
+                "type": "primary"
+              },
+              {
+                "caption": "Visitors Address",
+                "parameterName": "VisitorsAddress",
+                "widgetType": "YesNo",
+                "range": false,
+                "defaultValue": null,
+                "defaultValueTo": null,
+                "mandatory": false,
+                "displayed": true,
+                "readonly": false,
+                "type": "primaryLongLabels"
+              }
+            ],
+            "debugProperties": {
+              "sortNo": 40000
+            },
+            "sortNo": 40000
+          }
+        ],
+        "debugProperties": {}
+      }
+    ],
+    "supportAttributes": false,
+    "supportTree": false,
+    "allowedCloseActions": [
+      "DONE"
+    ],
+    "includedView": null,
+    "supportIncludedView": false,
+    "supportIncludedViewOnSelect": null,
+    "supportNewRecord": false,
+    "supportOpenRecord": true,
+    "supportGeoLocations": true
+  }
+}
