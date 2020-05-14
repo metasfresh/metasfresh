@@ -6,6 +6,7 @@ import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.util.Env;
@@ -23,9 +24,17 @@ import de.metas.adempiere.gui.search.impl.OrderLineHUPackingAware;
 import de.metas.adempiere.gui.search.impl.PlainHUPackingAware;
 import de.metas.bpartner.BPartnerId;
 import de.metas.logging.LogManager;
+import de.metas.money.Money;
+import de.metas.money.grossprofit.CalculateProfitPriceActualRequest;
+import de.metas.money.grossprofit.ProfitPriceActualFactory;
 import de.metas.order.IOrderDAO;
+import de.metas.order.IOrderLineBL;
 import de.metas.order.OrderId;
+import de.metas.order.OrderLine;
 import de.metas.order.OrderLineId;
+import de.metas.order.OrderLinePriceUpdateRequest;
+import de.metas.order.OrderLineRepository;
+import de.metas.order.OrderLinePriceUpdateRequest.ResultUOM;
 import de.metas.product.IProductBL;
 import de.metas.ui.web.order.products_proposal.model.ProductProposalPrice;
 import de.metas.ui.web.order.products_proposal.model.ProductsProposalRow;
@@ -61,8 +70,11 @@ public final class OrderLinesFromProductProposalsProducer
 	private static final Logger logger = LogManager.getLogger(OrderLinesFromProductProposalsProducer.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IOrderDAO ordersRepo = Services.get(IOrderDAO.class);
+	private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
 	private final IHUPackingAwareBL huPackingAwareBL = Services.get(IHUPackingAwareBL.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
+	private final OrderLineRepository orderLineRepository = SpringContextHolder.instance.getBean(OrderLineRepository.class);
+	private final ProfitPriceActualFactory profitPriceActualFactory = SpringContextHolder.instance.getBean(ProfitPriceActualFactory.class);
 
 	private final OrderId orderId;
 	private final ImmutableList<ProductsProposalRow> rows;
@@ -128,11 +140,11 @@ public final class OrderLinesFromProductProposalsProducer
 
 	private void updateOrderLine(
 			final I_C_Order order,
-			final I_C_OrderLine newOrderLine,
+			final I_C_OrderLine newOrderLineRecord,
 			final ProductsProposalRow fromRow)
 	{
 		final IHUPackingAware rowPackingAware = createHUPackingAware(order, fromRow);
-		final IHUPackingAware orderLinePackingAware = OrderLineHUPackingAware.of(newOrderLine);
+		final IHUPackingAware orderLinePackingAware = OrderLineHUPackingAware.of(newOrderLineRecord);
 
 		huPackingAwareBL.prepareCopyFrom(rowPackingAware)
 				.overridePartner(false)
@@ -141,10 +153,32 @@ public final class OrderLinesFromProductProposalsProducer
 
 		final ProductProposalPrice price = fromRow.getPrice();
 		// IMPORTANT: manual price is always true because we want to make sure the price the sales guy saw in proposals list is the price which gets into order line
-		newOrderLine.setIsManualPrice(true);
-		newOrderLine.setPriceEntered(price.getUserEnteredPriceValue());
+		newOrderLineRecord.setIsManualPrice(true);
+		newOrderLineRecord.setPriceEntered(price.getUserEnteredPriceValue());
 
-		newOrderLine.setDescription(fromRow.getDescription());
+		orderLineBL.updatePrices(OrderLinePriceUpdateRequest.builder()
+				.orderLine(newOrderLineRecord)
+				.resultUOM(ResultUOM.PRICE_UOM)
+				.updatePriceEnteredAndDiscountOnlyIfNotAlreadySet(true)
+				.updateLineNetAmt(true)
+				.build());
+
+		final OrderLine orderLine = orderLineRepository.ofRecord(newOrderLineRecord);
+
+		final CalculateProfitPriceActualRequest request = CalculateProfitPriceActualRequest.builder()
+				.bPartnerId(orderLine.getBPartnerId())
+				.productId(orderLine.getProductId())
+				.date(orderLine.getDatePromised().toLocalDate())
+				.baseAmount(orderLine.getPriceActual().toMoney())
+				.paymentTermId(orderLine.getPaymentTermId())
+				.quantity(orderLine.getOrderedQty())
+				.build();
+
+		final Money profitBasePrice = profitPriceActualFactory.calculateProfitPriceActual(request);
+
+		newOrderLineRecord.setProfitPriceActual(profitBasePrice.toBigDecimal());
+
+		newOrderLineRecord.setDescription(fromRow.getDescription());
 	}
 
 	private IHUPackingAware createHUPackingAware(
