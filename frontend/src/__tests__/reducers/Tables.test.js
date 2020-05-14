@@ -1,11 +1,7 @@
-import nock from 'nock';
 import produce from 'immer';
 import merge from 'merge';
 
-import {
-  deleteTable,
-  setactiveSortNEW,
-} from '../../actions/TableActions';
+import { deleteTable } from '../../actions/TableActions';
 import * as ACTION_TYPES from '../../constants/ActionTypes';
 import reducer, { initialState, tableState } from '../../reducers/tables';
 
@@ -44,7 +40,10 @@ describe('Tables reducer', () => {
           data: basicData,
         }
       })
-    ).toEqual(expect.objectContaining({ [id]: { ...basicData }, length: 1 }));
+    ).toEqual(expect.objectContaining({
+      [id]: expect.objectContaining({ ...basicData, queryLimit: 0 }),
+      length: 1,
+    }));
   });
 
   it('Should handle UPDATE_TABLE', () => {
