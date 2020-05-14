@@ -17,6 +17,7 @@ import org.compiere.util.TimeUtil;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.BooleanWithReason;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.Language;
@@ -88,6 +89,9 @@ import lombok.NonNull;
 
 final class OrderLinePriceCalculator
 {
+	private static final AdMessageKey MSG_Enforced = AdMessageKey.of("Enforced");
+	private static final AdMessageKey MSG_NotEnforced = AdMessageKey.of("NotEnforced");
+
 	private final IPricingBL pricingBL = Services.get(IPricingBL.class);
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 	private final IPricingConditionsRepository pricingConditionsRepo = Services.get(IPricingConditionsRepository.class);
@@ -199,7 +203,7 @@ final class OrderLinePriceCalculator
 		if (enforcePriceLimit.isTrue())
 		{
 			msg = TranslatableStrings.builder()
-					.appendADMessage("Enforced")
+					.appendADMessage(MSG_Enforced)
 					.append(": ")
 					.append(enforcePriceLimit.getReason())
 					.build();
@@ -207,7 +211,7 @@ final class OrderLinePriceCalculator
 		else
 		{
 			msg = TranslatableStrings.builder()
-					.appendADMessage("NotEnforced")
+					.appendADMessage(MSG_NotEnforced)
 					.append(": ")
 					.append(enforcePriceLimit.getReason())
 					.build();
