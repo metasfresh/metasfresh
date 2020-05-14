@@ -43,6 +43,8 @@ class Labels extends Component {
       entity,
       subentity,
       subentityId,
+      tabId,
+      rowId,
       viewId,
     } = this.props;
 
@@ -52,6 +54,8 @@ class Labels extends Component {
       entity,
       subentity,
       subentityId,
+      tabId,
+      rowId,
       viewId,
       propertyName: name,
     });
@@ -404,6 +408,8 @@ Labels.propTypes = {
   entity: PropTypes.any,
   subentity: PropTypes.any,
   subentityId: PropTypes.any,
+  tabId: PropTypes.string,
+  rowId: PropTypes.string,
   viewId: PropTypes.any,
 };
 

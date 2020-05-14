@@ -974,6 +974,8 @@ export class RawWidget extends Component {
             entity={entity}
             subentity={subentity}
             subentityId={subentityId}
+            tabId={tabId}
+            rowId={rowId}
             windowType={windowType}
             viewId={viewId}
             selected={values}
