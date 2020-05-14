@@ -9,6 +9,7 @@ import currentDevice from 'current-device';
 import counterpart from 'counterpart';
 import uuid from 'uuid/v4';
 
+import { updateTableSelection } from '../../actions/TableActions';
 import { deleteRequest } from '../../actions/GenericActions';
 import {
   deleteLocal,
@@ -139,6 +140,7 @@ class Table extends Component {
           defaultSelected && defaultSelected !== null ? defaultSelected : [],
       });
     } else if (!disconnectFromState && !selectedEqual && selected.length) {
+      dispatch(updateTableSelection({ windowId, viewId, ids: selected }));
       dispatch(
         selectTableItems({
           windowType: windowId,
@@ -375,6 +377,7 @@ class Table extends Component {
       const { selected } = this.state;
 
       if (tabInfo) {
+        dispatch(updateTableSelection({ windowId, viewId, ids: selected }));
         dispatch(
           selectTableItems({
             windowType: windowId,
@@ -385,6 +388,7 @@ class Table extends Component {
       }
 
       if (!disconnectFromState) {
+        dispatch(updateTableSelection({ windowId, viewId, ids: selected }));
         dispatch(
           selectTableItems({
             windowType: windowId,
@@ -406,6 +410,7 @@ class Table extends Component {
     this.setState({ selected: [...ids] });
 
     if (tabInfo) {
+      dispatch(updateTableSelection({ windowId, viewId, ids }));
       dispatch(
         selectTableItems({
           windowType: windowId,
@@ -438,6 +443,7 @@ class Table extends Component {
       },
       () => {
         if (tabInfo) {
+          dispatch(updateTableSelection({ windowId, viewId, ids: [id] }));
           dispatch(
             selectTableItems({
               windowType: windowId,
@@ -479,6 +485,7 @@ class Table extends Component {
     );
 
     if (tabInfo) {
+      dispatch(updateTableSelection({ windowId, viewId, ids: [] }));
       dispatch(
         selectTableItems({
           windowType: windowId,

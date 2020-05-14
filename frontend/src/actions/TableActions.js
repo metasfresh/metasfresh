@@ -192,3 +192,13 @@ export function updateTabTable(tableId, tableResponse) {
     }
   };
 }
+
+/**
+ * Update table selection - select items
+ */
+export function updateTableSelection({ windowId, viewId, ids }) {
+  return {
+    type: types.UPDATE_TABLE_SELECTION,
+    payload: { windowId, viewId, selection: ids },
+  };
+}

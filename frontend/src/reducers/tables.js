@@ -107,6 +107,13 @@ const reducer = produce((draftState, action) => {
       return;
     }
 
+    case types.UPDATE_TABLE_SELECTION: {
+      // const { id } = action.payload;
+      // console.log(action.payload);
+
+      return;
+    }
+
     case types.SET_ACTIVE_SORT_NEW: {
       const { id, active } = action.payload;
 
