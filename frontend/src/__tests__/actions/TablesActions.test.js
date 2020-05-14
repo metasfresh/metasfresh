@@ -29,6 +29,9 @@ import gridDataFixtures from '../../../test_setup/fixtures/grid/data.json';
 import gridLayoutFixtures from '../../../test_setup/fixtures/grid/layout.json';
 import gridRowFixtures from '../../../test_setup/fixtures/grid/row_data.json';
 
+const middlewares = [thunk];
+const mockStore = configureStore(middlewares);
+
 const createStore = function(state = {}) {
   const res = merge.recursive(
     true,
@@ -51,14 +54,34 @@ describe('TableActions general', () => {
     expect(action.payload).toHaveProperty('id', payload.id);
   });
 
-  it.skip(`dispatches 'SET_ACTIVE_SORT_NEW' action when setting active sort`, () => {
+  it(`dispatches 'SET_ACTIVE_SORT_NEW' action when setting active sort`, () => {
+    const { windowType, viewId } = gridProps.props1;
+    const layoutResponse = gridLayoutFixtures.layout1;
+    const id = getTableId({ windowType, viewId });
+    const initialState = createStore({
+      viewHandler: {
+        views: {
+          [windowType]: {
+            layout: { ...layoutResponse },
+          },
+        },
+      },
+    });
+    const store = mockStore(initialState); 
+    const payload = {
+      id,
+      active: true,
+    };
+    const expectedActions = [
+      { type: ACTION_TYPES.SET_ACTIVE_SORT_NEW, payload },
+    ]
+
+    store.dispatch(setActiveSortNEW(id, payload.active));
+    expect(store.getActions()).toEqual(expect.arrayContaining(expectedActions));
   });
 });
 
 describe('TableActions grid', () => {
-  const propsData = masterWindowProps.props1;
-  const middlewares = [thunk];
-  const mockStore = configureStore(middlewares);
 
   it(`dispatches 'CREATE_TABLE' action when creating a new view`, () => {
     const { windowType, viewId } = gridProps.props1;
@@ -84,7 +107,7 @@ describe('TableActions grid', () => {
       { type: ACTION_TYPES.CREATE_TABLE, payload },
     ]
 
-    return store.dispatch(createGridTable(id, dataResponse)).then(() => {
+    store.dispatch(createGridTable(id, dataResponse)).then(() => {
       expect(store.getActions()).toEqual(expect.arrayContaining(expectedActions));
     });
   });
