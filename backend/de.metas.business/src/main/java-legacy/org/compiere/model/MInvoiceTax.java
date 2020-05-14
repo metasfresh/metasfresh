@@ -247,9 +247,12 @@ public class MInvoiceTax extends X_C_InvoiceTax
 				foundInvoiceLines = true;
 				// BaseAmt
 				BigDecimal baseAmt = rs.getBigDecimal(1);
+				System.out.println(baseAmt + " (baseAmt)");
 				taxBaseAmt = taxBaseAmt.add(baseAmt);
+				System.out.println(taxBaseAmt + " (taxBaseAmt)");
 				// TaxAmt
 				BigDecimal amt = rs.getBigDecimal(2);
+				System.out.println(amt + " (amt)");
 				if (amt == null)
 				{
 					amt = Env.ZERO;
@@ -269,10 +272,13 @@ public class MInvoiceTax extends X_C_InvoiceTax
 				else
 				{
 					amt = taxBL.calculateTax(tax, baseAmt, isTaxIncluded(), getPrecision());
+					
+					System.out.println(amt + " (amt)");
 				}
 				//
 				taxAmt = taxAmt.add(amt);
 
+				System.out.println(taxAmt + " (taxAmt)");
 				final boolean lineIsPackingMaterial = DisplayType.toBoolean(rs.getString(4));
 				if (lineIsPackingMaterial)
 				{
@@ -299,6 +305,7 @@ public class MInvoiceTax extends X_C_InvoiceTax
 		if (documentLevel || taxAmt.signum() == 0)
 		{
 			taxAmt = taxBL.calculateTax(tax, taxBaseAmt, isTaxIncluded(), getPrecision());
+			System.out.println(taxAmt + " (taxAmt)");
 		}
 		setTaxAmt(taxAmt);
 

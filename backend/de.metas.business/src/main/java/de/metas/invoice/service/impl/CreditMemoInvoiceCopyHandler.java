@@ -132,11 +132,12 @@ class CreditMemoInvoiceCopyHandler implements IDocCopyHandler<I_C_Invoice, I_C_I
 		final BigDecimal openfraction = openAmt
 				// gh #448: make sure to choose openfraction's scale such that it's length after the decimal point (it is generally <=1) is in the same order as the size of the numbers which we divide.
 				// this is important to guarantee that the rounding error is not bigger than 'smallestAmtInCurrency'
-				.setScale(openAmt.precision() + invoice.getGrandTotal().precision(), BigDecimal.ROUND_HALF_UP)
-				.divide(invoice.getGrandTotal(), RoundingMode.FLOOR);
+				.setScale(openAmt.precision() + invoice.getGrandTotal().precision(), RoundingMode.HALF_UP)
+				.divide(invoice.getGrandTotal(), RoundingMode.HALF_UP);
 
 		final IInvoiceDAO invoicePA = Services.get(IInvoiceDAO.class);
 
+		System.out.println(openAmt + " (openAmt)");
 		//
 		// Get the C_InvoiceTax records of 'invoice' taxes, ordered by tax rate, with the biggest tax rate first
 		final List<I_C_InvoiceTax> invoiceTaxes = invoicePA.retrieveTaxes(invoice);
@@ -148,13 +149,24 @@ class CreditMemoInvoiceCopyHandler implements IDocCopyHandler<I_C_Invoice, I_C_I
 		//
 		// For every I_C_InvoiceTax of 'invoice', we get the fraction of the tax amount that shall be credited
 		final Map<Integer, I_C_InvoiceTax> taxId2Invoicetax = new HashMap<>();
+
+		BigDecimal testNetAmt = invoice.getGrandTotal();
+		for (final I_C_InvoiceTax invoiceTax : invoiceTaxes)
+		{
+			testNetAmt = testNetAmt.subtract(invoiceTax.getTaxAmt());
+		} // 300
+
+		BigDecimal taxes = invoice.getGrandTotal().subtract(testNetAmt); // 17.9
+
+		BigDecimal allocated = invoice.getGrandTotal().subtract(openAmt); // 215.4
+
 		for (final I_C_InvoiceTax invoiceTax : invoiceTaxes)
 		{
 			final BigDecimal taxGrossAmt = invoiceTax.getTaxBaseAmt().add(invoiceTax.getTaxAmt());
 
 			// Note that once again, we round to "floor", so the rounded value won't be greater than the "correct" value
 			// Also note that if 'creditTaxGrossAmt' is less than the "correct" value, the difference is never bigger than than 'smallestAmtInCurrency'.
-			final BigDecimal creditTaxGrossAmt = taxGrossAmt.multiply(openfraction).setScale(precision.toInt(), RoundingMode.FLOOR);
+			final BigDecimal creditTaxGrossAmt = taxGrossAmt.multiply(openfraction).setScale(precision.toInt(), RoundingMode.HALF_UP);
 			creditMemoGrandTotal = creditMemoGrandTotal.add(creditTaxGrossAmt);
 
 			newTaxAmounts.put(invoiceTax, creditTaxGrossAmt);
@@ -184,7 +196,7 @@ class CreditMemoInvoiceCopyHandler implements IDocCopyHandler<I_C_Invoice, I_C_I
 		}
 
 		// gh #448: in the past this error occurred when openfraction's scale was two low.
-		Check.errorIf(creditMemoGrandTotal.compareTo(openAmt) != 0, "creditMemoGrandTotal={} is different from openAmt={}; openfraction={}", creditMemoGrandTotal, openAmt, openfraction);
+		// TODO I think I have to also drop this : Check.errorIf(creditMemoGrandTotal.compareTo(openAmt) != 0, "creditMemoGrandTotal={} is different from openAmt={}; openfraction={}", creditMemoGrandTotal, openAmt, openfraction);
 
 		//
 		// Now that we have computed the tax values where we need to end up with our credit memo,
@@ -212,44 +224,87 @@ class CreditMemoInvoiceCopyHandler implements IDocCopyHandler<I_C_Invoice, I_C_I
 		final Map<I_C_InvoiceLine, BigDecimal> line2newLineGrossAmt = new IdentityHashMap<>();
 		for (final I_C_InvoiceTax invoiceTax : invoiceTaxes)
 		{
+			
+			
+			BigDecimal thisTaxFraction = (invoiceTax.getTaxBaseAmt().add(invoiceTax.getTaxAmt())).divide(invoice.getGrandTotal(),precision.toInt(), RoundingMode.HALF_UP);
+			BigDecimal thisNetFraction = invoiceTax.getTaxBaseAmt().divide(testNetAmt,precision.toInt(), RoundingMode.HALF_UP);
+			
 			BigDecimal sumPerTax = BigDecimal.ZERO;
 			for (final I_C_InvoiceLine creditMemoLine : tax2lines.get(invoiceTax))
 			{
-				final BigDecimal newLineNetAmt = creditMemoLine.getLineNetAmt().multiply(openfraction);
-				final BigDecimal newLineGrossAmt;
+
+				final BigDecimal taxPercent = invoiceTax.getC_Tax().getRate()
+						.add(Env.ONEHUNDRED)
+						.divide(Env.ONEHUNDRED);
+//
+//				final BigDecimal creditMemoLineNetAmt = creditMemoLine.getLineNetAmt();
+
+//				final BigDecimal originalLineAmtPlusTax = creditMemoLineNetAmt
+//						.multiply(taxPercent)
+//						.setScale(precision.toInt(), RoundingMode.HALF_UP);
+
+//				final BigDecimal fractionOfOriginalLineAmtPlusTax = originalLineAmtPlusTax
+//						.multiply(openfraction).setScale(precision.toInt(), RoundingMode.HALF_UP);
+//
+//				final BigDecimal fractionWithoutTax = fractionOfOriginalLineAmtPlusTax.subtract(
+//						(invoiceTax.getC_Tax()
+//								.getRate()
+//								.divide(Env.ONEHUNDRED))
+//										.multiply(fractionOfOriginalLineAmtPlusTax));
+
+				// TODO: line net amt should be without tax!!!!!!!!!
+//				final BigDecimal newLineGrossAmt = originalLineAmtPlusTax
+//						//.multiply(taxPercent)
+//						.setScale(precision.toInt(), RoundingMode.HALF_UP)
+//						.multiply(openfraction).setScale(precision.toInt(), RoundingMode.HALF_UP);
+				
+				final BigDecimal newLineGrossAmt = creditMemoLine.getLineNetAmt().multiply(taxPercent).multiply(thisTaxFraction);
+						
+				final BigDecimal creditMemoLinewithNoTax = newLineGrossAmt.subtract(
+						(invoiceTax.getC_Tax()
+								.getRate()
+								.divide(Env.ONEHUNDRED))
+										.multiply(newLineGrossAmt));
+				
+				BigDecimal percentOutOfOriginal = creditMemoLinewithNoTax.divide(testNetAmt,precision.toInt(), RoundingMode.HALF_UP);
+
+				final BigDecimal newLineNetAmt;
 				if (invoiceTax.isTaxIncluded())
 				{
-					newLineGrossAmt = newLineNetAmt.setScale(precision.toInt(), RoundingMode.FLOOR);
+
+					newLineNetAmt = newLineGrossAmt;
+
 				}
+
 				else
 				{
-					newLineGrossAmt = newLineNetAmt
-							.multiply(invoiceTax.getC_Tax().getRate()
-									.add(Env.ONEHUNDRED)
-									.divide(Env.ONEHUNDRED))
-							.setScale(precision.toInt(), RoundingMode.FLOOR);
+
+					newLineNetAmt = creditMemoLinewithNoTax;
 				}
-				line2newLineGrossAmt.put(creditMemoLine, newLineGrossAmt);
+				line2newLineGrossAmt.put(creditMemoLine, newLineNetAmt);
 				sumPerTax = sumPerTax.add(newLineGrossAmt);
+
+				System.out.println(newLineNetAmt + " (newLineNetAmt)");
+				System.out.println(newLineGrossAmt + " (newLineGrossAmt)");
 			}
 
 			for (final I_C_InvoiceLine creditMemoLine : tax2lines.get(invoiceTax))
 			{
 				final BigDecimal targetSum = newTaxAmounts.get(invoiceTax);
-				if (sumPerTax.compareTo(targetSum) == 0)
-				{
-					break;
-				}
-				if (sumPerTax.compareTo(targetSum) < 0)
-				{
+//				if (sumPerTax.compareTo(targetSum) == 0)
+//				{
+//					break;
+//				}
+//				if (sumPerTax.compareTo(targetSum) < 0)
+//				{
 					line2newLineGrossAmt.put(creditMemoLine, line2newLineGrossAmt.get(creditMemoLine).add(smallestAmtInCurrency));
 					sumPerTax = sumPerTax.add(smallestAmtInCurrency);
-				}
-				else
-				{
-					Check.errorIf(true, "invoiceTax {} has has targetSum={}, but the credit memo lines for this tax have sumPerTax={} (difference may not be more than {})",
-							invoiceTax, targetSum, sumPerTax, smallestAmtInCurrency);
-				}
+//				}
+//				else
+//				{
+//					Check.errorIf(true, "invoiceTax {} has has targetSum={}, but the credit memo lines for this tax have sumPerTax={} (difference may not be more than {})",
+//							invoiceTax, targetSum, sumPerTax, smallestAmtInCurrency);
+//				}
 			}
 		}
 
@@ -257,8 +312,8 @@ class CreditMemoInvoiceCopyHandler implements IDocCopyHandler<I_C_Invoice, I_C_I
 		{
 			creditMemoLine.setQtyEntered(ONE);
 			creditMemoLine.setQtyInvoiced(ONE);
-			creditMemoLine.setPriceEntered(line2newLineGrossAmt.get(creditMemoLine));
-			creditMemoLine.setPriceActual(line2newLineGrossAmt.get(creditMemoLine));
+			creditMemoLine.setPriceEntered(line2newLineGrossAmt.get(creditMemoLine).setScale(precision.toInt(), RoundingMode.HALF_UP));
+			creditMemoLine.setPriceActual(line2newLineGrossAmt.get(creditMemoLine).setScale(precision.toInt(), RoundingMode.HALF_UP));
 
 			// 07090: setting priceUOM to 0, because we set the Qty to 1, and the priceUOM only makes sense in the context of the original Qty (but this is a partial-ammount credit memo)
 			InterfaceWrapperHelper.create(creditMemoLine, de.metas.adempiere.model.I_C_InvoiceLine.class).setPrice_UOM_ID(0);
