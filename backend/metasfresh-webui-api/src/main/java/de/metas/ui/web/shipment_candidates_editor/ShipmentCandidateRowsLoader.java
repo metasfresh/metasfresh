@@ -143,6 +143,12 @@ final class ShipmentCandidateRowsLoader
 		return OrderAndLineId.ofRepoIdsOrNull(record.getC_Order_ID(), record.getC_OrderLine_ID());
 	}
 
+	/**
+	 * Please keep the calculation of
+	 * - QtyEnteredTU,
+	 * - QtyEntered <-> qtyToDeliverUserEntered
+	 * in sync with the customer report `Docs_Sales_Order_BOM_Details`.
+	 */
 	private ShipmentCandidateRow toShipmentCandidateRow(@NonNull final I_M_ShipmentSchedule record)
 	{
 		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNone(record.getM_AttributeSetInstance_ID());
