@@ -53,19 +53,14 @@ public interface IEventBus
 	 */
 	void subscribe(IEventListener listener);
 
+	void unsubscribe(IEventListener listener);
+
 	/**
 	 * Subscribe to this bus.
 	 */
 	void subscribe(Consumer<Event> eventConsumer);
 
 	<T> void subscribeOn(Class<T> type, Consumer<T> eventConsumer);
-
-	/**
-	 * Subscribe to this bus. Same as {@link #subscribe(IEventListener)} but this will register a weak reference to listener,
-	 * so as long as the listener is no longer referenced, it will auto-magically unregistered from this bus.
-	 */
-	@Deprecated
-	void subscribeWeak(IEventListener listener);
 
 	/**
 	 * Post given event on this bus.
@@ -75,7 +70,12 @@ public interface IEventBus
 	void postObject(Object obj);
 
 	/**
-	 * @return true if the bus was destroyed and it no longer accepts events.
+	 * @return {@code true} if the bus was destroyed and it no longer accepts events.
 	 */
 	boolean isDestroyed();
+
+	/**
+	 * @return {@code true} if events are submitted to a dedicated worker thread such that the invoker of {@link #postEvent(Event)} doesn't have to wait for the listeners to be invoked.
+	 */
+	boolean isAsync();
 }

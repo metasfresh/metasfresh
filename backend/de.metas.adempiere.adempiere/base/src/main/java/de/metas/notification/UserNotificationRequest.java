@@ -16,7 +16,7 @@ import org.springframework.core.io.Resource;
 
 import com.google.common.collect.ImmutableList;
 
-import de.metas.event.EventBusConstants;
+import de.metas.event.EventBusConfig;
 import de.metas.event.Topic;
 import de.metas.user.UserId;
 import de.metas.util.Check;
@@ -57,7 +57,7 @@ public class UserNotificationRequest
 	Recipient recipient;
 	UserNotificationsConfig notificationsConfig;
 
-	private static final NotificationGroupName DEFAULT_NotificationGroupName = NotificationGroupName.of(EventBusConstants.TOPIC_GeneralUserNotifications.getName());
+	private static final NotificationGroupName DEFAULT_NotificationGroupName = NotificationGroupName.of(EventBusConfig.TOPIC_GeneralUserNotifications.getName());
 	NotificationGroupName notificationGroupName;
 
 	boolean important;

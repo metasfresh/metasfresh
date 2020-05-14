@@ -100,7 +100,8 @@ Map build(final MvnConf mvnConf, final Map scmVars, final boolean forceBuild=fal
 				params.MF_SQL_SEED_DUMP_URL, 
 				metasfreshDistSQLOnlyURL, 
 				publishedDBInitDockerImageName,
-				scmVars)
+				scmVars,
+				forceBuild)
 			
 		} // stage build Backend
 
@@ -111,7 +112,8 @@ void testSQLMigrationScripts(
 	final String sqlSeedDumpURL, 
 	final String metasfreshDistSQLOnlyURL, 
 	final String dbInitDockerImageName,
-	final Map scmVars)
+	final Map scmVars,
+	final boolean forceBuild)
 {
 	stage('Test SQL-Migrationscripts')
 	{
@@ -128,7 +130,7 @@ void testSQLMigrationScripts(
 			anyFileChanged = true
 		}
 
-		if(scmVars.GIT_COMMIT && scmVars.GIT_PREVIOUS_SUCCESSFUL_COMMIT && !anyFileChanged)
+		if(scmVars.GIT_COMMIT && scmVars.GIT_PREVIOUS_SUCCESSFUL_COMMIT && !anyFileChanged && !forceBuild)
 		{
 			echo "no *.sql changes happened; skip applying SQL migration scripts";
 			return;

@@ -23,20 +23,27 @@ package de.metas.event;
  */
 
 import java.lang.management.ManagementFactory;
+import java.util.Map;
 import java.util.UUID;
 
+import org.adempiere.service.ClientId;
+import org.adempiere.service.ISysConfigBL;
 import org.compiere.Adempiere;
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
+import de.metas.organization.OrgId;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import de.metas.util.StringUtils;
+import lombok.NonNull;
 
 /**
  * Misc {@link IEventBus} related constants.
  *
  * @author tsa
- *
  */
-public final class EventBusConstants
+public final class EventBusConfig
 {
 	public static Logger getLogger(final Class<?> clazz)
 	{
@@ -45,8 +52,7 @@ public final class EventBusConstants
 
 	private static boolean distributedEventsEnabled = true;
 
-
-	private EventBusConstants()
+	private EventBusConfig()
 	{
 	}
 
@@ -60,9 +66,9 @@ public final class EventBusConstants
 
 	/**
 	 * Locally disable distributed events.
-	 *
+	 * <p>
 	 * So, EventBus system will work, but all busses will be local, nothing will be broadcasted on network.
-	 *
+	 * <p>
 	 * To be used by tools build on top of ADempiere, which require only a minimal set of functionalities.
 	 */
 	public static void disableDistributedEvents()
@@ -73,17 +79,17 @@ public final class EventBusConstants
 		}
 
 		distributedEventsEnabled = false;
-		getLogger(EventBusConstants.class).info("Distributed events broadcasting disabled");
+		getLogger(EventBusConfig.class).info("Distributed events broadcasting disabled");
 	}
 
 	/**
 	 * Topic used for general notifications. To be used mainly for broadcasting messages to everybody.
 	 */
 	public static final Topic TOPIC_GeneralUserNotifications = Topic.remote("de.metas.event.GeneralNotifications");
-	
+
 	/**
 	 * Topic used for general notifications inside this JVM instance.
-	 *
+	 * <p>
 	 * Compared to {@link #TOPIC_GeneralUserNotifications}, this topic is NOT broadcasting the events remotely.
 	 */
 	public static final Topic TOPIC_GeneralUserNotificationsLocal = TOPIC_GeneralUserNotifications.toLocal();
@@ -94,13 +100,13 @@ public final class EventBusConstants
 	private static final String SENDER_ID = ManagementFactory.getRuntimeMXBean().getName() + "-" + UUID.randomUUID().toString();
 
 	/** @return world wide unique Sender ID of this JVM instance */
-	public static final String getSenderId()
+	public static String getSenderId()
 	{
 		return SENDER_ID;
 	}
 
 	/** @return true of calls to {@link IEventBus#postEvent(Event)} shall be performed asynchronously */
-	public static final boolean isEventBusPostEventsAsync()
+	public static boolean isEventBusPostAsync(@NonNull final Topic topic)
 	{
 		// NOTE: in case of unit tests which are checking what notifications were arrived,
 		// allowing the events to be posted async could be a problem because the event might arrive after the check.
@@ -109,8 +115,25 @@ public final class EventBusConstants
 			return false;
 		}
 
-		// Default: yes, we go async all the way!
-		return true;
+		final String nameForAllTopics = "de.metas.event.asyncEventBus";
+		final Map<String, String> valuesForPrefix = Services.get(ISysConfigBL.class).getValuesForPrefix(nameForAllTopics, ClientId.SYSTEM.getRepoId(), OrgId.ANY.getRepoId());
+
+		final String keyForTopic = nameForAllTopics + ".topic_" + topic.getName();
+		final String valueForTopic = valuesForPrefix.get(keyForTopic);
+		if (Check.isNotBlank(valueForTopic))
+		{
+			getLogger(EventBusConfig.class).debug("SysConfig returned value={} for keyForTopic={}", valueForTopic, keyForTopic);
+			return StringUtils.toBoolean(valueForTopic, false);
+		}
+
+		final String standardValue = valuesForPrefix.get(nameForAllTopics);
+		getLogger(EventBusConfig.class).debug("SysConfig returned value={} for keyForTopic={}", standardValue, keyForTopic);
+		return StringUtils.toBoolean(standardValue, false);
+	}
+
+	public static boolean isMonitorIncomingEvents()
+	{
+		return Services.get(ISysConfigBL.class).getBooleanValue("de.metas.event.MonitorIncomingEvents", false);
 	}
 
 }

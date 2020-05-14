@@ -64,10 +64,9 @@ abstract class ForwardingEventBus implements IEventBus
 	}
 
 	@Override
-	@Deprecated
-	public void subscribeWeak(final IEventListener listener)
+	public void unsubscribe(final IEventListener listener)
 	{
-		delegate().subscribeWeak(listener);
+		delegate().unsubscribe(listener);
 	}
 
 	@Override
@@ -90,4 +89,7 @@ abstract class ForwardingEventBus implements IEventBus
 	{
 		return delegate().isDestroyed();
 	}
+
+	@Override
+	public boolean isAsync() { return delegate.isAsync(); }
 }
