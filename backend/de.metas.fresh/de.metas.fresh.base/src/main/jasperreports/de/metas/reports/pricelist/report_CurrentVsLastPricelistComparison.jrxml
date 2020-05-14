@@ -170,10 +170,10 @@
 						<subreportParameterExpression><![CDATA[$F{ad_org_id}]]></subreportParameterExpression>
 					</subreportParameter>
 					<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
-					<subreportExpression><![CDATA["de/metas/docs/generics/report_bpblock_short.jasper"]]></subreportExpression>
+					<subreportExpression><![CDATA["de/metas/docs/generics/report_bpblock_intercheese_custom.jasper"]]></subreportExpression>
 				</subreport>
 				<subreport isUsingCache="true">
-					<reportElement key="subreport-8" x="378" y="113" width="217" height="127" uuid="38f52446-b0c0-4196-9f17-6910b23e03b1"/>
+					<reportElement key="subreport-8" x="341" y="113" width="217" height="127" uuid="38f52446-b0c0-4196-9f17-6910b23e03b1"/>
 					<subreportParameter name="org_id">
 						<subreportParameterExpression><![CDATA[$F{ad_org_id}]]></subreportParameterExpression>
 					</subreportParameter>
@@ -189,7 +189,7 @@
 						<subreportParameterExpression><![CDATA[$F{ad_org_id}]]></subreportParameterExpression>
 					</subreportParameter>
 					<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
-					<subreportExpression><![CDATA["de/metas/docs/generics/report_logo.jasper"]]></subreportExpression>
+					<subreportExpression><![CDATA["de/metas/docs/generics/report_logo_left_aligned.jasper"]]></subreportExpression>
 				</subreport>
 			</band>
 			<band height="40" splitType="Stretch">
