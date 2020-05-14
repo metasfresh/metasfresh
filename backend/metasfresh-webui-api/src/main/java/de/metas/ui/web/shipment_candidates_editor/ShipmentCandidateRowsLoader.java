@@ -5,6 +5,7 @@ import java.time.ZonedDateTime;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 import javax.annotation.Nullable;
@@ -12,7 +13,6 @@ import javax.annotation.Nullable;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.warehouse.WarehouseId;
 
-import java.util.Objects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
@@ -165,7 +165,7 @@ final class ShipmentCandidateRowsLoader
 				.packingInfo(packingInfo)
 				.preparationDate(extractPreparationTime(record))
 				//
-				.qtyOrdered(packingInfo.computeQtyUserEnteredByQtyCUs(qtyOrdered))
+				.qtyOrdered(qtyOrdered)
 				//
 				.qtyToDeliverUserEnteredInitial(qtyToDeliverUserEntered)
 				.qtyToDeliverUserEntered(qtyToDeliverUserEntered)
