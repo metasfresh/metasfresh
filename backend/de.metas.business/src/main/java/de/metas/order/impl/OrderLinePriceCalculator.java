@@ -10,12 +10,14 @@ import javax.annotation.Nullable;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.X_C_OrderLine;
 import org.compiere.util.TimeUtil;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.BooleanWithReason;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.Language;
@@ -24,10 +26,15 @@ import de.metas.interfaces.I_C_OrderLine;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
 import de.metas.money.CurrencyId;
+import de.metas.money.Money;
+import de.metas.money.grossprofit.CalculateProfitPriceActualRequest;
+import de.metas.money.grossprofit.ProfitPriceActualFactory;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderLineBL;
+import de.metas.order.OrderLine;
 import de.metas.order.OrderLinePriceUpdateRequest;
 import de.metas.order.OrderLinePriceUpdateRequest.ResultUOM;
+import de.metas.order.OrderLineRepository;
 import de.metas.order.PriceAndDiscount;
 import de.metas.organization.OrgId;
 import de.metas.payment.paymentterm.PaymentTermId;
@@ -82,6 +89,9 @@ import lombok.NonNull;
 
 final class OrderLinePriceCalculator
 {
+	private static final AdMessageKey MSG_Enforced = AdMessageKey.of("Enforced");
+	private static final AdMessageKey MSG_NotEnforced = AdMessageKey.of("NotEnforced");
+
 	private final IPricingBL pricingBL = Services.get(IPricingBL.class);
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 	private final IPricingConditionsRepository pricingConditionsRepo = Services.get(IPricingConditionsRepository.class);
@@ -151,8 +161,8 @@ final class OrderLinePriceCalculator
 		orderLine.setPriceList(pricingResult.getPriceList());
 		orderLine.setPriceStd(pricingResult.getPriceStd());
 		orderLine.setPrice_UOM_ID(UomId.toRepoId(pricingResult.getPriceUomId())); // 07090: when setting a priceActual, we also need to specify a PriceUOM
-		orderLine.setBase_Commission_Points_Per_Price_UOM( pricingResult.getBaseCommissionPointsPerPriceUOM() );
-		orderLine.setTraded_Commission_Percent( Percent.toBigDecimalOrNull( pricingResult.getTradedCommissionPercent() ) );
+		orderLine.setBase_Commission_Points_Per_Price_UOM(pricingResult.getBaseCommissionPointsPerPriceUOM());
+		orderLine.setTraded_Commission_Percent(Percent.toBigDecimalOrNull(pricingResult.getTradedCommissionPercent()));
 
 		//
 		// C_Currency_ID, M_PriceList_Version_ID
@@ -180,6 +190,11 @@ final class OrderLinePriceCalculator
 				orderLineBL.updateLineNetAmtFromQty(orderLineBL.getQtyEntered(orderLine), orderLine);
 			}
 		}
+
+		if (request.isUpdateProfitPriceActual())
+		{
+			updateProfitPriceActual(orderLine);
+		}
 	}
 
 	private String buildPriceLimitNote(final BooleanWithReason enforcePriceLimit)
@@ -188,7 +203,7 @@ final class OrderLinePriceCalculator
 		if (enforcePriceLimit.isTrue())
 		{
 			msg = TranslatableStrings.builder()
-					.appendADMessage("Enforced")
+					.appendADMessage(MSG_Enforced)
 					.append(": ")
 					.append(enforcePriceLimit.getReason())
 					.build();
@@ -196,7 +211,7 @@ final class OrderLinePriceCalculator
 		else
 		{
 			msg = TranslatableStrings.builder()
-					.appendADMessage("NotEnforced")
+					.appendADMessage(MSG_NotEnforced)
 					.append(": ")
 					.append(enforcePriceLimit.getReason())
 					.build();
@@ -506,6 +521,27 @@ final class OrderLinePriceCalculator
 		}
 
 		return true;
+	}
+
+	private void updateProfitPriceActual(final I_C_OrderLine orderLineRecord)
+	{
+		final OrderLineRepository orderLineRepository = SpringContextHolder.instance.getBean(OrderLineRepository.class);
+		final ProfitPriceActualFactory profitPriceActualFactory = SpringContextHolder.instance.getBean(ProfitPriceActualFactory.class);
+
+		final OrderLine orderLine = orderLineRepository.ofRecord(orderLineRecord);
+
+		final CalculateProfitPriceActualRequest request = CalculateProfitPriceActualRequest.builder()
+				.bPartnerId(orderLine.getBPartnerId())
+				.productId(orderLine.getProductId())
+				.date(orderLine.getDatePromised().toLocalDate())
+				.baseAmount(orderLine.getPriceActual().toMoney())
+				.paymentTermId(orderLine.getPaymentTermId())
+				.quantity(orderLine.getOrderedQty())
+				.build();
+
+		final Money profitBasePrice = profitPriceActualFactory.calculateProfitPriceActual(request);
+
+		orderLineRecord.setProfitPriceActual(profitBasePrice.toBigDecimal());
 	}
 
 	public TaxCategoryId computeTaxCategoryId()
