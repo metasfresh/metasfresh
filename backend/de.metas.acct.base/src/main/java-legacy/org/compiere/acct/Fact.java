@@ -16,7 +16,24 @@
  *****************************************************************************/
 package org.compiere.acct;
 
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.function.Consumer;
+
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.acct.FactTrxLines.FactTrxLinesType;
+import org.compiere.model.I_C_ElementValue;
+import org.compiere.model.MAccount;
+import org.compiere.util.Env;
+import org.slf4j.Logger;
+
 import com.google.common.collect.ImmutableList;
+
 import de.metas.acct.api.AccountId;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaElement;
@@ -39,21 +56,6 @@ import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
 import lombok.ToString;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.acct.FactTrxLines.FactTrxLinesType;
-import org.compiere.model.I_C_ElementValue;
-import org.compiere.model.MAccount;
-import org.compiere.util.Env;
-import org.slf4j.Logger;
-
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.function.Consumer;
 
 /**
  * Accounting Fact
@@ -1072,6 +1074,10 @@ public final class Fact
 			if (docLine != null && (docLine.getAmtAcctDr() != null || docLine.getAmtAcctCr() != null))
 			{
 				line.setAmtAcct(docLine.getAmtAcctDr(), docLine.getAmtAcctCr());
+			}
+			else
+			{
+				line.convert();
 			}
 
 			//
