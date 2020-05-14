@@ -146,7 +146,8 @@ final class ShipmentCandidateRowsLoader
 	private ShipmentCandidateRow toShipmentCandidateRow(@NonNull final I_M_ShipmentSchedule record)
 	{
 		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNone(record.getM_AttributeSetInstance_ID());
-		final BigDecimal qtyOrdered = shipmentScheduleEffectiveBL.computeQtyOrdered(record);
+		final int qtyOrderedTU = record.getQtyOrdered_TU().intValue();
+		// final BigDecimal qtyOrdered = shipmentScheduleEffectiveBL.computeQtyOrdered(record);
 
 		final boolean catchWeight = shipmentScheduleBL.isCatchWeight(record);
 		final BigDecimal qtyToDeliverCatchOverride = extractQtyToDeliverCatchOverride(record);
@@ -165,7 +166,7 @@ final class ShipmentCandidateRowsLoader
 				.packingInfo(packingInfo)
 				.preparationDate(extractPreparationTime(record))
 				//
-				.qtyOrdered(qtyOrdered)
+				.qtyOrderedTU(qtyOrderedTU)
 				//
 				.qtyToDeliverUserEnteredInitial(qtyToDeliverUserEntered)
 				.qtyToDeliverUserEntered(qtyToDeliverUserEntered)

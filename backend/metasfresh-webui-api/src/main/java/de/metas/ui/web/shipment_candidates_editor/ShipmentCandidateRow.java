@@ -75,8 +75,8 @@ public final class ShipmentCandidateRow implements IViewRow, WebuiASIEditingInfo
 	@ViewColumn(seqNo = 50, widgetType = DocumentFieldWidgetType.ProductAttributes, fieldName = FIELD_asi, captionKey = "M_AttributeSetInstance_ID", editor = ViewEditorRenderMode.ALWAYS)
 	private final LookupValue asi;
 
-	@ViewColumn(seqNo = 60, widgetType = DocumentFieldWidgetType.Quantity, widgetSize = WidgetSize.Small, captionKey = "QtyOrdered")
-	private final BigDecimal qtyOrdered;
+	@ViewColumn(seqNo = 60, widgetType = DocumentFieldWidgetType.Integer, widgetSize = WidgetSize.Small, captionKey = "QtyOrdered_TU")
+	private final int qtyOrderedTU;
 
 	public static final String FIELD_qtyToDeliverUserEntered = "qtyToDeliverUserEntered";
 	@ViewColumn(seqNo = 70, widgetType = DocumentFieldWidgetType.Quantity, fieldName = FIELD_qtyToDeliverUserEntered, widgetSize = WidgetSize.Small, captionKey = "QtyToDeliver_Override", editor = ViewEditorRenderMode.ALWAYS)
@@ -127,7 +127,7 @@ public final class ShipmentCandidateRow implements IViewRow, WebuiASIEditingInfo
 			@NonNull final LookupValue warehouse,
 			@NonNull final LookupValue product,
 			@NonNull final PackingInfo packingInfo,
-			@NonNull final BigDecimal qtyOrdered,
+			@NonNull final Integer qtyOrderedTU,
 			@NonNull final BigDecimal qtyToDeliverUserEnteredInitial,
 			@NonNull final BigDecimal qtyToDeliverUserEntered,
 			//
@@ -150,7 +150,7 @@ public final class ShipmentCandidateRow implements IViewRow, WebuiASIEditingInfo
 		this.packingInfo = packingInfo;
 		this.packingDescription = this.packingInfo != null ? this.packingInfo.getDescription() : null;
 
-		this.qtyOrdered = qtyOrdered;
+		this.qtyOrderedTU = qtyOrderedTU;
 
 		this.qtyToDeliverUserEnteredInitial = qtyToDeliverUserEnteredInitial;
 		this.qtyToDeliverUserEntered = qtyToDeliverUserEntered;
