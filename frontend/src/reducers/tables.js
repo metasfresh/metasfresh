@@ -79,7 +79,10 @@ const reducer = produce((draftState, action) => {
       const { id, data } = action.payload;
       const newLength = draftState.length + 1;
 
-      draftState[id] = data;
+      draftState[id] = {
+        ...tableState,
+        ...data,
+      };
       draftState.length = newLength;
 
       return;
