@@ -22,21 +22,7 @@
 
 package de.metas.banking.service.impl;
 
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
-import java.util.Set;
-
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_BankStatement;
-import org.compiere.model.I_C_BankStatementLine;
-import org.compiere.model.I_C_Invoice;
-import org.compiere.model.MPeriod;
-import org.compiere.model.X_C_DocType;
-
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.acct.api.IFactAcctDAO;
 import de.metas.banking.BankStatementId;
 import de.metas.banking.BankStatementLineId;
@@ -44,12 +30,25 @@ import de.metas.banking.BankStatementLineReferenceList;
 import de.metas.banking.service.IBankStatementBL;
 import de.metas.banking.service.IBankStatementDAO;
 import de.metas.banking.service.IBankStatementListenerService;
+import de.metas.currency.Amount;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.payment.PaymentId;
 import de.metas.payment.api.IPaymentBL;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_BankStatement;
+import org.compiere.model.I_C_BankStatementLine;
+import org.compiere.model.I_C_Invoice;
+import org.compiere.model.MPeriod;
+import org.compiere.model.X_C_DocType;
+
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Properties;
+import java.util.Set;
 
 public class BankStatementBL implements IBankStatementBL
 {
@@ -229,11 +228,13 @@ public class BankStatementBL implements IBankStatementBL
 	public void updateLineFromInvoice(final @NonNull I_C_BankStatementLine bankStatementLine, @NonNull final InvoiceId invoiceId)
 	{
 		final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
+		final Amount openAmt = Services.get(IInvoiceDAO.class).retrieveOpenAmt(invoiceId);
+
 		final I_C_Invoice invoice = invoiceDAO.getByIdInTrx(invoiceId);
 
 		bankStatementLine.setC_BPartner_ID(invoice.getC_BPartner_ID());
-		bankStatementLine.setStmtAmt(invoice.getGrandTotal());
-		bankStatementLine.setTrxAmt(invoice.getGrandTotal());
+		bankStatementLine.setStmtAmt(openAmt.getAsBigDecimal());
+		bankStatementLine.setTrxAmt(openAmt.getAsBigDecimal());
 		bankStatementLine.setC_Currency_ID(invoice.getC_Currency_ID());
 	}
 
