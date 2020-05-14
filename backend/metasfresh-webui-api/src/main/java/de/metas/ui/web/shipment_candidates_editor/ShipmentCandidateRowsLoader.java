@@ -5,6 +5,7 @@ import java.time.ZonedDateTime;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 import javax.annotation.Nullable;
@@ -12,7 +13,6 @@ import javax.annotation.Nullable;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.warehouse.WarehouseId;
 
-import java.util.Objects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
@@ -146,7 +146,8 @@ final class ShipmentCandidateRowsLoader
 	private ShipmentCandidateRow toShipmentCandidateRow(@NonNull final I_M_ShipmentSchedule record)
 	{
 		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNone(record.getM_AttributeSetInstance_ID());
-		final BigDecimal qtyOrdered = shipmentScheduleEffectiveBL.computeQtyOrdered(record);
+		final int qtyOrderedTU = record.getQtyOrdered_TU().intValue();
+		// final BigDecimal qtyOrdered = shipmentScheduleEffectiveBL.computeQtyOrdered(record);
 
 		final boolean catchWeight = shipmentScheduleBL.isCatchWeight(record);
 		final BigDecimal qtyToDeliverCatchOverride = extractQtyToDeliverCatchOverride(record);
@@ -165,7 +166,7 @@ final class ShipmentCandidateRowsLoader
 				.packingInfo(packingInfo)
 				.preparationDate(extractPreparationTime(record))
 				//
-				.qtyOrdered(packingInfo.computeQtyUserEnteredByQtyCUs(qtyOrdered))
+				.qtyOrderedTU(qtyOrderedTU)
 				//
 				.qtyToDeliverUserEnteredInitial(qtyToDeliverUserEntered)
 				.qtyToDeliverUserEntered(qtyToDeliverUserEntered)
