@@ -134,7 +134,7 @@ public class RabbitMQEventBusRemoteEndpoint implements IEventBusRemoteEndpoint
 			}
 		}
 		transactionMetadata
-				.name("Process remote-event; topic={}" + topicName)
+				.name("Process remote-event; topic=" + topicName)
 				.type(de.metas.monitoring.adapter.PerformanceMonitoringService.Type.EVENTBUS_REMOTE_ENDPOINT)
 				.label("de.metas.event.remote-event.senderId", event.getSenderId())
 				.label("de.metas.event.remote-event.topicName", topicName)
