@@ -1,7 +1,6 @@
 import { reduce, cloneDeep } from 'lodash';
 import * as types from '../constants/ActionTypes';
 
-import { getTable } from '../reducers/tables';
 import { getView } from '../reducers/viewHandler';
 
 /**
@@ -140,7 +139,7 @@ export function updateGridTable(tableId, tableResponse) {
     const state = getState();
 
     if (state.tables) {
-      const tableExists = getTable(tableId, state);
+      const tableExists = state.tables[tableId];
 
       if (tableExists) {
         const tableData = createTableData({
@@ -189,7 +188,7 @@ export function updateTabTable(tableId, tableResponse) {
     const state = getState();
 
     if (state.tables) {
-      const tableExists = getTable(tableId, state);
+      const tableExists = state.tables[tableId];
       const tableData = createTableData(tableResponse);
 
       if (tableExists) {
