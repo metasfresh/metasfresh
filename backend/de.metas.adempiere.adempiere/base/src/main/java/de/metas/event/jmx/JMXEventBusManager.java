@@ -2,7 +2,7 @@ package de.metas.event.jmx;
 
 import org.adempiere.util.jmx.IJMXNameAware;
 
-import de.metas.event.EventBusConstants;
+import de.metas.event.EventBusConfig;
 import de.metas.event.remote.IEventBusRemoteEndpoint;
 
 public class JMXEventBusManager implements JMXEventBusManagerMBean, IJMXNameAware
@@ -13,7 +13,7 @@ public class JMXEventBusManager implements JMXEventBusManagerMBean, IJMXNameAwar
 	public JMXEventBusManager(final IEventBusRemoteEndpoint remoteEndpoint)
 	{
 		super();
-		this.jmxName = EventBusConstants.JMX_BASE_NAME + ":type=EventBusManager";
+		this.jmxName = EventBusConfig.JMX_BASE_NAME + ":type=EventBusManager";
 		this.remoteEndpoint = remoteEndpoint;
 	}
 
@@ -26,7 +26,7 @@ public class JMXEventBusManager implements JMXEventBusManagerMBean, IJMXNameAwar
 	@Override
 	public boolean isEnabled()
 	{
-		return EventBusConstants.isEnabled();
+		return EventBusConfig.isEnabled();
 	}
 	
 	@Override
@@ -44,6 +44,6 @@ public class JMXEventBusManager implements JMXEventBusManagerMBean, IJMXNameAwar
 	@Override
 	public String getSenderId()
 	{
-		return EventBusConstants.getSenderId();
+		return EventBusConfig.getSenderId();
 	}
 }
