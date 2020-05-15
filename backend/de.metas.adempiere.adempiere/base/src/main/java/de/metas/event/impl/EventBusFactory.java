@@ -22,7 +22,7 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.SetMultimap;
 
-import de.metas.event.EventBusConstants;
+import de.metas.event.EventBusConfig;
 import de.metas.event.IEventBus;
 import de.metas.event.IEventBusFactory;
 import de.metas.event.IEventListener;
@@ -32,6 +32,8 @@ import de.metas.event.jmx.JMXEventBusManager;
 import de.metas.event.remote.IEventBusRemoteEndpoint;
 import de.metas.logging.LogManager;
 import lombok.NonNull;
+
+import javax.annotation.Nullable;
 
 @Service
 public class EventBusFactory implements IEventBusFactory
@@ -45,19 +47,14 @@ public class EventBusFactory implements IEventBusFactory
 	private final SetMultimap<Topic, IEventListener> globalEventListeners = HashMultimap.create();
 
 	private final LoadingCache<Topic, EventBus> topic2eventBus = CacheBuilder.newBuilder()
-			.removalListener(new RemovalListener<Topic, EventBus>()
-			{
-				@Override
-				public void onRemoval(final RemovalNotification<Topic, EventBus> notification)
-				{
-					final EventBus eventBus = notification.getValue();
-					destroyEventBus(eventBus);
-				}
+			.removalListener((RemovalListener<Topic, EventBus>)notification -> {
+				final EventBus eventBus = notification.getValue();
+				destroyEventBus(eventBus);
 			})
 			.build(new CacheLoader<Topic, EventBus>()
 			{
 				@Override
-				public EventBus load(final Topic topic) throws Exception
+				public EventBus load(final @NonNull Topic topic) throws Exception
 				{
 					return createEventBus(topic);
 				}
@@ -75,8 +72,8 @@ public class EventBusFactory implements IEventBusFactory
 		JMXRegistry.get().registerJMX(new JMXEventBusManager(remoteEndpoint), OnJMXAlreadyExistsPolicy.Replace);
 
 		// Setup default user notification topics
-		addAvailableUserNotificationsTopic(EventBusConstants.TOPIC_GeneralUserNotifications);
-		addAvailableUserNotificationsTopic(EventBusConstants.TOPIC_GeneralUserNotificationsLocal);
+		addAvailableUserNotificationsTopic(EventBusConfig.TOPIC_GeneralUserNotifications);
+		addAvailableUserNotificationsTopic(EventBusConfig.TOPIC_GeneralUserNotificationsLocal);
 	}
 
 	@Override
@@ -100,6 +97,7 @@ public class EventBusFactory implements IEventBusFactory
 		}
 	}
 
+	@Nullable
 	@Override
 	public IEventBus getEventBusIfExists(@NonNull final Topic topic)
 	{
@@ -128,21 +126,18 @@ public class EventBusFactory implements IEventBusFactory
 	 * If the remote event forwarding system is enabled <b>and</b> if the type of the given <code>topic</code> is {@link Type#REMOTE},
 	 * then the event bus is also bound to a remote endpoint.
 	 * Otherwise the event bus will only be local.
-	 *
-	 * @param topic
-	 * @return
 	 */
-	private final EventBus createEventBus(final Topic topic)
+	private EventBus createEventBus(@NonNull final Topic topic)
 	{
 		// Create the event bus
-		final EventBus eventBus = new EventBus(topic.getName(), createExecutorOrNull(topic.getName()));
+		final EventBus eventBus = new EventBus(topic.getName(), createExecutorOrNull(topic));
 
 		// Bind the EventBus to remote endpoint (only if the system is enabled).
 		// If is not enabled we will use only local event buses,
 		// because if we would return null or fail here a lot of BLs could fail.
 		if (Type.REMOTE.equals(topic.getType()))
 		{
-			if (!EventBusConstants.isEnabled())
+			if (!EventBusConfig.isEnabled())
 			{
 				logger.warn("Remote events are disabled via EventBusConstants. Creating local-only eventBus for topic={}", topic);
 			}
@@ -162,13 +157,14 @@ public class EventBusFactory implements IEventBusFactory
 		return eventBus;
 	}
 
-	private ExecutorService createExecutorOrNull(@NonNull final String eventBusName)
+	@Nullable
+	private ExecutorService createExecutorOrNull(@NonNull final Topic topic)
 	{
 		// Setup EventBus executor
-		if (EventBusConstants.isEventBusPostEventsAsync())
+		if (EventBusConfig.isEventBusPostAsync(topic))
 		{
 			return Executors.newSingleThreadExecutor(CustomizableThreadFactory.builder()
-					.setThreadNamePrefix(getClass().getName() + "-" + eventBusName + "-AsyncExecutor")
+					.setThreadNamePrefix(getClass().getName() + "-" + topic.getName() + "-AsyncExecutor")
 					.setDaemon(true)
 					.build());
 		}

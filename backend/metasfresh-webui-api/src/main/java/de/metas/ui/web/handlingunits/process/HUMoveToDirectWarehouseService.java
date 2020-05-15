@@ -1,37 +1,8 @@
-package de.metas.ui.web.handlingunits.process;
-
-import java.sql.Timestamp;
-import java.util.Iterator;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.PlainContextAware;
-import org.adempiere.util.lang.IAutoCloseable;
-import org.compiere.model.I_M_Warehouse;
-import org.compiere.util.Env;
-import org.slf4j.Logger;
-
-import com.google.common.collect.ImmutableSet;
-
-import de.metas.handlingunits.HuId;
-import de.metas.handlingunits.IHandlingUnitsBL;
-import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.movement.api.IHUMovementBL;
-import de.metas.handlingunits.movement.api.impl.HUMovementBuilder;
-import de.metas.interfaces.I_M_Movement;
-import de.metas.logging.LogManager;
-import de.metas.ui.web.handlingunits.HUEditorView;
-import de.metas.ui.web.view.event.ViewChangesCollector;
-import de.metas.ui.web.window.model.DocumentCollection;
-import de.metas.util.ILoggable;
-import de.metas.util.Loggables;
-import de.metas.util.Services;
-import lombok.NonNull;
-
 /*
  * #%L
  * metasfresh-webui-api
  * %%
- * Copyright (C) 2017 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -49,11 +20,37 @@ import lombok.NonNull;
  * #L%
  */
 
+package de.metas.ui.web.handlingunits.process;
+
+import com.google.common.collect.ImmutableSet;
+import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.movement.api.IHUMovementBL;
+import de.metas.handlingunits.movement.api.impl.HUMovementBuilder;
+import de.metas.interfaces.I_M_Movement;
+import de.metas.logging.LogManager;
+import de.metas.ui.web.handlingunits.HUEditorView;
+import de.metas.ui.web.view.event.ViewChangesCollector;
+import de.metas.ui.web.window.model.DocumentCollection;
+import de.metas.util.ILoggable;
+import de.metas.util.Loggables;
+import de.metas.util.Services;
+import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.PlainContextAware;
+import org.adempiere.util.lang.IAutoCloseable;
+import org.compiere.model.I_M_Warehouse;
+import org.compiere.util.Env;
+import org.slf4j.Logger;
+
+import java.sql.Timestamp;
+import java.util.Iterator;
+
 /**
  * HU Editor service: Move selected HUs to direct warehouse (aka Materialentnahme)
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 public class HUMoveToDirectWarehouseService
 {
@@ -86,7 +83,7 @@ public class HUMoveToDirectWarehouseService
 	{
 		checkPreconditions();
 
-		try (final IAutoCloseable c = ViewChangesCollector.currentOrNewThreadLocalCollector())
+		try (final IAutoCloseable ignored = ViewChangesCollector.currentOrNewThreadLocalCollector())
 		{
 			//
 			// Move the HUs, one by one
@@ -123,10 +120,8 @@ public class HUMoveToDirectWarehouseService
 
 	/**
 	 * Generate a movement which will move given HU to {@link #getTargetWarehouse()}.
-	 *
-	 * @param hu
 	 */
-	private final void generateMovement(@NonNull final I_M_HU hu)
+	private void generateMovement(@NonNull final I_M_HU hu)
 	{
 		final I_M_Warehouse targetWarehouse = getTargetWarehouse();
 
@@ -136,7 +131,7 @@ public class HUMoveToDirectWarehouseService
 			// Move the HU
 			final I_M_Movement movement = new HUMovementBuilder()
 					.setContextInitial(PlainContextAware.newWithThreadInheritedTrx())
-					.setWarehouseFrom(IHandlingUnitsBL.extractWarehouse(hu))
+					.setLocatorFrom(IHandlingUnitsBL.extractLocator(hu))
 					.setWarehouseTo(targetWarehouse)
 					.setMovementDate(getMovementDate())
 					.setDescription(getDescription())
@@ -202,7 +197,7 @@ public class HUMoveToDirectWarehouseService
 		return this;
 	}
 
-	private final boolean isFailOnFirstError()
+	private boolean isFailOnFirstError()
 	{
 		return _failOnFirstError;
 	}
@@ -230,7 +225,7 @@ public class HUMoveToDirectWarehouseService
 		return this;
 	}
 
-	private final void notifyHUMoved(final I_M_HU hu)
+	private void notifyHUMoved(final I_M_HU hu)
 	{
 		final HuId huId = HuId.ofRepoId(hu.getM_HU_ID());
 
@@ -260,6 +255,7 @@ public class HUMoveToDirectWarehouseService
 	/**
 	 * @return target warehouse where the HUs will be moved to.
 	 */
+	@NonNull
 	private I_M_Warehouse getTargetWarehouse()
 	{
 		if (_targetWarehouse == null)

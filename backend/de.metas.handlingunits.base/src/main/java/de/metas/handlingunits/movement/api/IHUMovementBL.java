@@ -1,16 +1,38 @@
+/*
+ * #%L
+ * de.metas.handlingunits.base
+ * %%
+ * Copyright (C) 2020 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.handlingunits.movement.api;
-
-import java.util.List;
-import java.util.Properties;
-
-import org.compiere.model.I_M_Locator;
-import org.compiere.model.I_M_Warehouse;
 
 import de.metas.handlingunits.IHUAssignmentBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_MovementLine;
 import de.metas.interfaces.I_M_Movement;
 import de.metas.util.ISingletonService;
+import org.compiere.model.I_M_Locator;
+import org.compiere.model.I_M_Warehouse;
+
+import javax.annotation.Nullable;
+import java.util.List;
+import java.util.Properties;
 
 public interface IHUMovementBL extends ISingletonService
 {
@@ -27,7 +49,7 @@ public interface IHUMovementBL extends ISingletonService
 
 	/**
 	 * NOTE: Only use for packing material Movement Lines!!!! Note 2: the movement line is saved
-	 *
+	 * <p>
 	 * Set the correct activity in the movement line In the case of packing material movement lines, this is always the activity of the prosuct ( Usually Gebinde)
 	 *
 	 * @param movementLine
@@ -45,17 +67,17 @@ public interface IHUMovementBL extends ISingletonService
 	/**
 	 * Method uses <code>AD_SysConfig</code> {@value #SYSCONFIG_DirectMove_Warehouse_ID} to get the {@link I_M_Warehouse} for direct movements.
 	 *
-	 * @param ctx the context we use to get the <code>AD_Client_ID</code> and <code>AD_Org_ID</code> used to retrieve the AD_SysConfig value.
+	 * @param ctx     the context we use to get the <code>AD_Client_ID</code> and <code>AD_Org_ID</code> used to retrieve the AD_SysConfig value.
 	 * @param throwEx if <code>true</code> then the method throws a exception rather than of returning <code>null</code>.
-	 *
-	 * @task http://dewiki908/mediawiki/index.php/08205_HU_Pos_Inventory_move_Button_%28105838505937%29
 	 * @return {@link I_M_Warehouse} for direct movements or <code>null</code>.
+	 * @task http://dewiki908/mediawiki/index.php/08205_HU_Pos_Inventory_move_Button_%28105838505937%29
 	 */
+	@Nullable
 	I_M_Warehouse getDirectMove_Warehouse(Properties ctx, boolean throwEx);
 
 	/**
 	 * Assigns given HU to given movement line
-	 * 
+	 *
 	 * @param movementLine
 	 * @param hu
 	 * @param isTransferPackingMaterials

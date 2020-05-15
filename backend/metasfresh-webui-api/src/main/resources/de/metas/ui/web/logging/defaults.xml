@@ -64,13 +64,6 @@
 	<include resource="de/metas/ui/web/logging/FILE-byLoggedUser.xml" />
 	<include resource="de/metas/ui/web/logging/FILE-byLoggedUserAndRemoteAddr.xml" />
 
-	<!-- Allow to enable logstash logging from outside; see https://github.com/metasfresh/metasfresh/issues/1504 -->
-	<!-- Logging to logstash is disabled by default, because it requeries additional infrastructure (i.e. an ELK stack).
-	     If you are a dev in need of a local ELK stack, you can take a look at
-		 https://github.com/metasfresh/metasfresh-dev/tree/master/vagrant 
-	-->
-	<springProperty scope="context" name="LOGSTASH_ENABLED" source="logstash.enabled" defaultValue="false" />
-
 	<!-- Configure root logger -->
 	<root level="INFO">
 		<appender-ref ref="CONSOLE" />
@@ -81,7 +74,6 @@
 		<!-- appender-ref ref="FILE-byRemoteAddr" / -->
 		<!-- appender-ref ref="FILE-byLoggedUser" / -->
 		<appender-ref ref="FILE-byLoggedUserAndRemoteAddr" />
-	
 	</root>
 
 	<!-- see http://codecentric.github.io/spring-boot-admin/1.3.0/#loglevel-management -->
