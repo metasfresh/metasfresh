@@ -173,7 +173,7 @@
 					<subreportExpression><![CDATA["de/metas/docs/generics/report_bpblock_shorter_left_margin.jasper"]]></subreportExpression>
 				</subreport>
 				<subreport isUsingCache="true">
-					<reportElement key="subreport-8" x="285" y="134" width="309" height="100" uuid="38f52446-b0c0-4196-9f17-6910b23e03b1"/>
+					<reportElement key="subreport-8" x="340" y="135" width="220" height="100" uuid="38f52446-b0c0-4196-9f17-6910b23e03b1"/>
 					<subreportParameter name="org_id">
 						<subreportParameterExpression><![CDATA[$F{ad_org_id}]]></subreportParameterExpression>
 					</subreportParameter>
@@ -181,7 +181,7 @@
 						<subreportParameterExpression><![CDATA["Y"]]></subreportParameterExpression>
 					</subreportParameter>
 					<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
-					<subreportExpression><![CDATA["de/metas/docs/generics/report_orgblock.jasper"]]></subreportExpression>
+					<subreportExpression><![CDATA["de/metas/docs/generics/report_orgblock_right.jasper"]]></subreportExpression>
 				</subreport>
 				<subreport isUsingCache="true">
 					<reportElement key="subreport-4" x="0" y="28" width="595" height="85" uuid="6f9a7ef2-a0c3-4923-836d-a79c0f84ba2c"/>
