@@ -109,6 +109,8 @@ class Labels extends Component {
         entity,
         subentity,
         subentityId,
+        tabId,
+        rowId,
         viewId,
       } = this.props;
 
@@ -118,6 +120,8 @@ class Labels extends Component {
         entity,
         subentity,
         subentityId,
+        tabId,
+        rowId,
         viewId,
         propertyName: name,
         query: typeAhead,

@@ -27,6 +27,7 @@ import de.metas.organization.OrgId;
 import de.metas.project.ProjectId;
 import de.metas.serviceprovider.external.ExternalId;
 import de.metas.serviceprovider.external.label.IssueLabel;
+import de.metas.serviceprovider.external.project.ExternalProjectReferenceId;
 import de.metas.serviceprovider.external.project.ExternalProjectType;
 import de.metas.serviceprovider.issue.IssueId;
 import de.metas.serviceprovider.issue.Status;
@@ -45,6 +46,9 @@ public class ImportIssueInfo
 {
 	@Nullable
 	ProjectId projectId;
+
+	@NonNull
+	ExternalProjectReferenceId externalProjectReferenceId;
 
 	@NonNull
 	OrgId orgId;
