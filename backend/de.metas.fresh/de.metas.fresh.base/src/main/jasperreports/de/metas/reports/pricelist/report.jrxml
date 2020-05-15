@@ -60,7 +60,7 @@ WHERE
 				<subreportExpression><![CDATA["de/metas/reports/pricelist/report_description.jasper"]]></subreportExpression>
 			</subreport>
 			<subreport isUsingCache="true">
-				<reportElement key="subreport-6" x="0" y="136" width="309" height="96" uuid="9fdef315-bd26-44e1-9643-da46f47a98b0">
+				<reportElement key="subreport-6" x="0" y="136" width="270" height="96" uuid="9fdef315-bd26-44e1-9643-da46f47a98b0">
 					<printWhenExpression><![CDATA[new Boolean ($P{C_BPartner_Location_ID} != null)]]></printWhenExpression>
 				</reportElement>
 				<subreportParameter name="bp_loc_id">
@@ -73,7 +73,7 @@ WHERE
 				<subreportExpression><![CDATA["de/metas/docs/generics/report_bpblock_shorter_left_margin.jasper"]]></subreportExpression>
 			</subreport>
 			<subreport isUsingCache="true">
-				<reportElement key="subreport-8" x="395" y="117" width="180" height="100" uuid="c5d77fa4-7184-4f47-a49b-955bd96be83c"/>
+				<reportElement key="subreport-8" x="285" y="134" width="309" height="100" uuid="c5d77fa4-7184-4f47-a49b-955bd96be83c"/>
 				<subreportParameter name="org_id">
 					<subreportParameterExpression><![CDATA[$F{ad_org_id}]]></subreportParameterExpression>
 				</subreportParameter>

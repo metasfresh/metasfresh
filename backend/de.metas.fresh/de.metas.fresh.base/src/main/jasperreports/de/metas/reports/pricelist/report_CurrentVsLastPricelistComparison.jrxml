@@ -160,7 +160,7 @@
 		<groupHeader>
 			<band height="240">
 				<subreport isUsingCache="true">
-					<reportElement key="subreport-6" x="0" y="136" width="309" height="96" uuid="bea083b6-7b31-4a4f-b59f-b8ad03573da5">
+					<reportElement key="subreport-6" x="0" y="136" width="270" height="96" uuid="bea083b6-7b31-4a4f-b59f-b8ad03573da5">
 						<printWhenExpression><![CDATA[new Boolean ($F{c_bpartner_location_id} != null)]]></printWhenExpression>
 					</reportElement>
 					<subreportParameter name="bp_loc_id">
@@ -173,7 +173,7 @@
 					<subreportExpression><![CDATA["de/metas/docs/generics/report_bpblock_shorter_left_margin.jasper"]]></subreportExpression>
 				</subreport>
 				<subreport isUsingCache="true">
-					<reportElement key="subreport-8" x="395" y="113" width="180" height="100" uuid="38f52446-b0c0-4196-9f17-6910b23e03b1"/>
+					<reportElement key="subreport-8" x="285" y="134" width="309" height="100" uuid="38f52446-b0c0-4196-9f17-6910b23e03b1"/>
 					<subreportParameter name="org_id">
 						<subreportParameterExpression><![CDATA[$F{ad_org_id}]]></subreportParameterExpression>
 					</subreportParameter>
