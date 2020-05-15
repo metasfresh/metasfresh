@@ -3,7 +3,7 @@ import configureStore from 'redux-mock-store';
 import produce from 'immer';
 import merge from 'merge';
 
-import tablesHandler, { getTableId } from '../../reducers/tables';
+import tablesHandler, { tableState, getTableId } from '../../reducers/tables';
 import viewHandler from '../../reducers/viewHandler';
 import { fetchTab, createWindow } from '../../actions/WindowActions';
 import {
@@ -82,7 +82,6 @@ describe('TableActions general', () => {
 });
 
 describe('TableActions grid', () => {
-
   it(`dispatches 'CREATE_TABLE' action when creating a new view`, () => {
     const { windowType, viewId } = gridProps.props1;
     const layoutResponse = gridLayoutFixtures.layout1;
@@ -107,8 +106,50 @@ describe('TableActions grid', () => {
       { type: ACTION_TYPES.CREATE_TABLE, payload },
     ]
 
-    store.dispatch(createGridTable(id, dataResponse)).then(() => {
+    return store.dispatch(createGridTable(id, dataResponse)).then(() => {
       expect(store.getActions()).toEqual(expect.arrayContaining(expectedActions));
     });
   });
-})
+
+  it(`dispatches 'UPDATE_TABLE' action after loading data to the view`, () => {
+    const { windowType, viewId } = gridProps.props1;
+    const layoutResponse = gridLayoutFixtures.layout1;
+    const dataResponse = gridDataFixtures.data1;
+    const rowResponse = gridRowFixtures.data1;
+    const id = getTableId({ windowType, viewId });
+    const tableData_create = createTableData({ ...dataResponse, ...layoutResponse });
+    const tableData_update = createTableData({
+      ...rowResponse,
+      headerElements: rowResponse.columnsByFieldName,
+    });
+    const initialState = createStore({
+      viewHandler: {
+        views: {
+          [windowType]: {
+            layout: { ...layoutResponse },
+          },
+        },
+      },
+      tables: {
+        length: 1,
+        [id]: {
+          ...tableState,
+          ...tableData_create,
+        }
+      }
+    });
+
+    const store = mockStore(initialState); 
+    const payload = {
+      id,
+      data: tableData_update,
+    };
+    const expectedActions = [
+      { type: ACTION_TYPES.UPDATE_TABLE, payload },
+    ]
+
+    return store.dispatch(updateGridTable(id, rowResponse)).then(() => {
+      expect(store.getActions()).toEqual(expect.arrayContaining(expectedActions));
+    })
+  });
+});
