@@ -89,9 +89,9 @@ const reducer = produce((draftState, action) => {
     }
     case types.UPDATE_TABLE: {
       const { id, data } = action.payload;
-
+      const prevTableStruct = draftState[id] ? draftState[id] : tableState;
       draftState[id] = {
-        ...draftState[id],
+        ...prevTableStruct,
         ...data,
       };
 
