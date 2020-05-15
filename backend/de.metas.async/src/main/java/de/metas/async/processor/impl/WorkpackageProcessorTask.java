@@ -49,6 +49,7 @@ import org.compiere.SpringContextHolder;
 import org.compiere.util.Env;
 import org.compiere.util.TrxRunnable;
 import org.slf4j.Logger;
+import org.slf4j.MDC;
 import org.slf4j.MDC.MDCCloseable;
 
 import ch.qos.logback.classic.Level;
