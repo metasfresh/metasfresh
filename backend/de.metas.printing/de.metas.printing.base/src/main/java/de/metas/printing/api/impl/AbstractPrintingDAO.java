@@ -191,27 +191,6 @@ public abstract class AbstractPrintingDAO implements IPrintingDAO
 
 	@Nullable
 	@Override
-	public final List<I_AD_Printer> retrievePrintersOrNull(final I_AD_PrinterHW printerHW)
-	{
-		final List<I_AD_Printer_Matching> matchings = retrievePrinterMatchings(printerHW);
-		if (matchings == null)
-		{
-			return null;
-		}
-
-		final List<I_AD_Printer> printers = new ArrayList<>();
-		for (final I_AD_Printer_Matching matching : matchings)
-		{
-			final I_AD_Printer printer = load(matching.getAD_Printer_ID(), I_AD_Printer.class);
-			printers.add(printer);
-		}
-
-		return printers;
-
-	}
-
-	@Nullable
-	@Override
 	public final I_AD_Printer_Config retrievePrinterConfig(final IContextAware ctx, final String hostKey, final int userToPrintId)
 	{
 		final IQueryBuilder<I_AD_Printer_Config> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_AD_Printer_Config.class, ctx)
@@ -356,22 +335,6 @@ public abstract class AbstractPrintingDAO implements IPrintingDAO
 				.addOnlyActiveRecordsFilter()
 				.create()
 				.firstOnly(I_AD_Print_Clients.class);
-	}
-
-	@Override
-	public final List<I_C_Print_Job_Line> retrievePrintJobLines(final I_C_Printing_Queue printingQueue)
-	{
-		final Properties ctx = InterfaceWrapperHelper.getCtx(printingQueue);
-		final String trxName = InterfaceWrapperHelper.getTrxName(printingQueue);
-
-		return Services.get(IQueryBL.class).createQueryBuilder(I_C_Print_Job_Line.class, ctx, trxName)
-				.addEqualsFilter(I_C_Print_Job_Line.COLUMNNAME_C_Printing_Queue_ID, printingQueue.getC_Printing_Queue_ID())
-				.addOnlyActiveRecordsFilter()
-				.orderBy()
-				.addColumnAscending(I_C_Print_Job_Line.COLUMNNAME_SeqNo)
-				.endOrderBy()
-				.create()
-				.list(I_C_Print_Job_Line.class);
 	}
 
 	@Nullable
