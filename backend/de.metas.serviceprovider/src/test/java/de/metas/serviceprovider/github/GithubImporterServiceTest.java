@@ -61,6 +61,7 @@ import static de.metas.serviceprovider.TestConstants.MOCK_EST_4_25_LABEL;
 import static de.metas.serviceprovider.TestConstants.MOCK_EXTERNAL_ID;
 import static de.metas.serviceprovider.TestConstants.MOCK_EXTERNAL_ISSUE_NO;
 import static de.metas.serviceprovider.TestConstants.MOCK_EXTERNAL_PROJECT_OWNER;
+import static de.metas.serviceprovider.TestConstants.MOCK_EXTERNAL_PROJECT_REFERENCE_ID_ACTIVE;
 import static de.metas.serviceprovider.TestConstants.MOCK_EXTERNAL_PROJECT_TYPE;
 import static de.metas.serviceprovider.TestConstants.MOCK_EXTERNAL_REFERENCE;
 import static de.metas.serviceprovider.TestConstants.MOCK_EXTERNAL_SYSTEM;
@@ -240,6 +241,7 @@ public class GithubImporterServiceTest
 	{
 		return ImportIssuesRequest
 				.builder()
+				.externalProjectReferenceId(MOCK_EXTERNAL_PROJECT_REFERENCE_ID_ACTIVE)
 				.externalProjectType(MOCK_EXTERNAL_PROJECT_TYPE)
 				.issueNoList(ImmutableList.of())
 				.oAuthToken(MOCK_AUTH_TOKEN)

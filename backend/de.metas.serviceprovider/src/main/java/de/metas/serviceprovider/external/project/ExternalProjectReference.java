@@ -36,6 +36,9 @@ import javax.annotation.Nullable;
 public class ExternalProjectReference
 {
 	@NonNull
+	ExternalProjectReferenceId externalProjectReferenceId;
+
+	@NonNull
 	ExternalProjectType externalProjectType;
 
 	@NonNull
