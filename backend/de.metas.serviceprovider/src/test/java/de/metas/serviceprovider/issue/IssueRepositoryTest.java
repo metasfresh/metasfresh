@@ -38,6 +38,7 @@ import java.util.List;
 import static de.metas.serviceprovider.TestConstants.MOCK_DESCRIPTION;
 import static de.metas.serviceprovider.TestConstants.MOCK_EFFORT_1_30;
 import static de.metas.serviceprovider.TestConstants.MOCK_EXTERNAL_ISSUE_NO;
+import static de.metas.serviceprovider.TestConstants.MOCK_EXTERNAL_PROJECT_REFERENCE_ID_ACTIVE;
 import static de.metas.serviceprovider.TestConstants.MOCK_EXTERNAL_URL;
 import static de.metas.serviceprovider.TestConstants.MOCK_INSTANT;
 import static de.metas.serviceprovider.TestConstants.MOCK_MILESTONE_ID;
@@ -61,6 +62,7 @@ public class IssueRepositoryTest
 	private final IssueEntity MOCK_ISSUE_ENTITY = IssueEntity.builder()
 			.assigneeId(MOCK_USER_ID)
 			.orgId(MOCK_ORG_ID)
+			.externalProjectReferenceId(MOCK_EXTERNAL_PROJECT_REFERENCE_ID_ACTIVE)
 			.projectId(MOCK_PROJECT_ID)
 			.effortUomId(MOCK_UOM_ID)
 			.milestoneId(MOCK_MILESTONE_ID)

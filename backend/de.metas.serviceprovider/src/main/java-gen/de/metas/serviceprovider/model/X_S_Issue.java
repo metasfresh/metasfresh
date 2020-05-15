@@ -15,7 +15,7 @@ public class X_S_Issue extends org.compiere.model.PO implements I_S_Issue, org.c
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -288759298L;
+	private static final long serialVersionUID = 286234347L;
 
     /** Standard Constructor */
     public X_S_Issue (Properties ctx, int S_Issue_ID, String trxName)
@@ -579,6 +579,40 @@ public class X_S_Issue extends org.compiere.model.PO implements I_S_Issue, org.c
 		if (bd == null)
 			 return BigDecimal.ZERO;
 		return bd;
+	}
+
+	@Override
+	public de.metas.serviceprovider.model.I_S_ExternalProjectReference getS_ExternalProjectReference()
+	{
+		return get_ValueAsPO(COLUMNNAME_S_ExternalProjectReference_ID, de.metas.serviceprovider.model.I_S_ExternalProjectReference.class);
+	}
+
+	@Override
+	public void setS_ExternalProjectReference(de.metas.serviceprovider.model.I_S_ExternalProjectReference S_ExternalProjectReference)
+	{
+		set_ValueFromPO(COLUMNNAME_S_ExternalProjectReference_ID, de.metas.serviceprovider.model.I_S_ExternalProjectReference.class, S_ExternalProjectReference);
+	}
+
+	/** Set External project reference ID.
+		@param S_ExternalProjectReference_ID External project reference ID	  */
+	@Override
+	public void setS_ExternalProjectReference_ID (int S_ExternalProjectReference_ID)
+	{
+		if (S_ExternalProjectReference_ID < 1) 
+			set_Value (COLUMNNAME_S_ExternalProjectReference_ID, null);
+		else 
+			set_Value (COLUMNNAME_S_ExternalProjectReference_ID, Integer.valueOf(S_ExternalProjectReference_ID));
+	}
+
+	/** Get External project reference ID.
+		@return External project reference ID	  */
+	@Override
+	public int getS_ExternalProjectReference_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_S_ExternalProjectReference_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	/** Set Issue.

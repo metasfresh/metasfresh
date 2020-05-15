@@ -28,6 +28,7 @@ import de.metas.cache.model.IModelCacheInvalidationService;
 import de.metas.cache.model.ModelCacheInvalidationTiming;
 import de.metas.organization.OrgId;
 import de.metas.project.ProjectId;
+import de.metas.serviceprovider.external.project.ExternalProjectReferenceId;
 import de.metas.serviceprovider.issue.hierarchy.IssueHierarchy;
 import de.metas.serviceprovider.milestone.MilestoneId;
 import de.metas.serviceprovider.model.I_S_Issue;
@@ -217,6 +218,7 @@ public class IssueRepository
 
 		return IssueEntity.builder()
 				.orgId(OrgId.ofRepoId(record.getAD_Org_ID()))
+				.externalProjectReferenceId(ExternalProjectReferenceId.ofRepoIdOrNull(record.getS_ExternalProjectReference_ID()))
 				.projectId(ProjectId.ofRepoIdOrNull(record.getC_Project_ID()))
 				.issueId(IssueId.ofRepoId(record.getS_Issue_ID()))
 				.parentIssueId(IssueId.ofRepoIdOrNull(record.getS_Parent_Issue_ID()))
@@ -249,6 +251,7 @@ public class IssueRepository
 		record.setAD_Org_ID(issueEntity.getOrgId().getRepoId());
 		record.setAD_User_ID(NumberUtils.asInt(issueEntity.getAssigneeId(), -1));
 		record.setC_Project_ID(NumberUtils.asInt(issueEntity.getProjectId(), -1));
+		record.setS_ExternalProjectReference_ID(NumberUtils.asInt(issueEntity.getExternalProjectReferenceId(), -1));
 		record.setS_Parent_Issue_ID(NumberUtils.asInt(issueEntity.getParentIssueId(), -1));
 
 		record.setName(issueEntity.getName());

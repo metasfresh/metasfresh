@@ -223,6 +223,7 @@ public class GithubImporterService implements IssueImporter
 
 		final ImportIssueInfo.ImportIssueInfoBuilder importInfoBuilder = ImportIssueInfo
 				.builder()
+				.externalProjectReferenceId(importIssuesRequest.getExternalProjectReferenceId())
 				.externalProjectType(importIssuesRequest.getExternalProjectType())
 				.externalIssueId(ExternalId.of(ExternalSystem.GITHUB, issue.getId()))
 				.externalIssueURL(issue.getHtmlUrl())
@@ -437,6 +438,7 @@ public class GithubImporterService implements IssueImporter
 		final ImportIssuesRequest importIssuesRequest = ImportIssuesRequest
 				.builder()
 				.orgId(externalProjectReference.get().getOrgId())
+				.externalProjectReferenceId(externalProjectReference.get().getExternalProjectReferenceId())
 				.projectId(externalProjectReference.get().getProjectId())
 				.repoId(externalProjectReference.get().getExternalProjectReference())
 				.repoOwner(externalProjectReference.get().getProjectOwner())

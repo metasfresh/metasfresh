@@ -215,6 +215,7 @@ public class IssueImporterService
 
 		return IssueEntity.builder()
 				.orgId(importIssueInfo.getOrgId())
+				.externalProjectReferenceId(importIssueInfo.getExternalProjectReferenceId())
 				.projectId(importIssueInfo.getProjectId())
 				.parentIssueId(parentIssueId)
 				.assigneeId(importIssueInfo.getAssigneeId())
@@ -251,6 +252,7 @@ public class IssueImporterService
 		final IssueEntity mergedIssueEntity = existingEffortIssue
 				.toBuilder()
 				.parentIssueId(parentIssueId)
+				.externalProjectReferenceId(importIssueInfo.getExternalProjectReferenceId())
 				.projectId(importIssueInfo.getProjectId())
 				.assigneeId(importIssueInfo.getAssigneeId())
 				.isEffortIssue(ExternalProjectType.EFFORT.equals(importIssueInfo.getExternalProjectType()))

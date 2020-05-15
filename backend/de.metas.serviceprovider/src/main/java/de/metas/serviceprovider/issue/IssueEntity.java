@@ -24,6 +24,7 @@ package de.metas.serviceprovider.issue;
 
 import de.metas.organization.OrgId;
 import de.metas.project.ProjectId;
+import de.metas.serviceprovider.external.project.ExternalProjectReferenceId;
 import de.metas.serviceprovider.milestone.MilestoneId;
 import de.metas.serviceprovider.timebooking.Effort;
 import de.metas.uom.UomId;
@@ -47,6 +48,9 @@ public class IssueEntity
 
 	@Nullable
 	private UserId assigneeId;
+
+	@Nullable
+	private ExternalProjectReferenceId externalProjectReferenceId;
 
 	@Nullable
 	private ProjectId projectId;

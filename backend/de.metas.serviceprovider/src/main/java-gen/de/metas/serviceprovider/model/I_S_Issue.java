@@ -737,6 +737,33 @@ public interface I_S_Issue
     public static final String COLUMNNAME_RoughEstimation = "RoughEstimation";
 
 	/**
+	 * Set External project reference ID.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setS_ExternalProjectReference_ID (int S_ExternalProjectReference_ID);
+
+	/**
+	 * Get External project reference ID.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getS_ExternalProjectReference_ID();
+
+	public de.metas.serviceprovider.model.I_S_ExternalProjectReference getS_ExternalProjectReference();
+
+	public void setS_ExternalProjectReference(de.metas.serviceprovider.model.I_S_ExternalProjectReference S_ExternalProjectReference);
+
+    /** Column definition for S_ExternalProjectReference_ID */
+    public static final org.adempiere.model.ModelColumn<I_S_Issue, de.metas.serviceprovider.model.I_S_ExternalProjectReference> COLUMN_S_ExternalProjectReference_ID = new org.adempiere.model.ModelColumn<I_S_Issue, de.metas.serviceprovider.model.I_S_ExternalProjectReference>(I_S_Issue.class, "S_ExternalProjectReference_ID", de.metas.serviceprovider.model.I_S_ExternalProjectReference.class);
+    /** Column name S_ExternalProjectReference_ID */
+    public static final String COLUMNNAME_S_ExternalProjectReference_ID = "S_ExternalProjectReference_ID";
+
+	/**
 	 * Set Issue.
 	 *
 	 * <br>Type: ID
