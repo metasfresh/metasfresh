@@ -256,7 +256,7 @@ describe('TableActions tab', () => {
     const expectedActions = [];
     const dispatchedActions = [];
 
-    Object.values(layoutResponse.tabs).forEach(tab => {
+    layoutResponse.tabs.forEach(tab => {
       const tableId = getTableId({ windowType, docId, tabId: tab.tabId });
       const dataResponse = {
         windowType,
@@ -277,6 +277,62 @@ describe('TableActions tab', () => {
     });
 
     return Promise.all(dispatchedActions).then(() => {
+      expect(store.getActions()).toEqual(expect.arrayContaining(expectedActions));
+    });
+  });
+
+  it(`dispatches 'UPDATE_TABLE' action when populating table with rows data`, () => {
+    const { params: { windowType, docId } } = masterWindowProps.props1;
+    const masterWindowResponse = masterDataFixtures.data1[0];
+    const layoutResponse = masterLayoutFixtures.layout1;
+    const rowDataResponse = masterRowFixtures.row_data1;
+
+    const initialStateTables = {}
+
+    Object.values(masterWindowResponse.includedTabsInfo).forEach(tab => {
+      const tableId = getTableId({ windowType, docId, tabId: tab.tabId });
+      const fullTab = {
+        ...tab,
+        ...layoutResponse.tabs[tab.tabId]
+      };
+      const initialStateData = {
+        windowType,
+        docId,
+        tableId,
+        ...fullTab
+      };
+
+      initialStateTables[tableId] = initialStateData;
+    });
+
+    const initialState = createStore({
+      viewHandler: {
+        views: {
+          [windowType]: {
+            layout: { ...layoutResponse },
+          },
+        },
+      },
+      tables: {
+        length: Object.values(masterWindowResponse.includedTabsInfo).length,
+        ...initialStateTables,
+      }
+    });
+
+    const store = mockStore(initialState);
+    const tabId = rowDataResponse[0].tabId;
+    const tableId = getTableId({ windowType, docId, tabId, });
+    const tableData = createTableData({ result: rowDataResponse });
+    const payload = {
+      id: tableId,
+      data: {...tableData},
+    };
+
+    const expectedActions= [
+      { type: ACTION_TYPES.UPDATE_TABLE, payload },
+    ];
+
+    return store.dispatch(updateTabTable(tableId, { result: rowDataResponse })).then(() => {
       expect(store.getActions()).toEqual(expect.arrayContaining(expectedActions));
     });
   });

@@ -10,7 +10,7 @@
     "start": "node server.js",
     "storybook": "node .storybook/findStories && start-storybook -p 6006",
     "stylelint": "stylelint 'src/assets/**/*.css'",
-    "test:watch": "jest --watch --verbose --env=./test_setup/custom_test_env.js",
+    "test:watch": "jest --watch --verbose false --env=./test_setup/custom_test_env.js",
     "test": "jest --env=./test_setup/custom_test_env.js"
   },
   "jest": {

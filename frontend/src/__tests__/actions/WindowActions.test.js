@@ -34,10 +34,6 @@ describe('WindowActions thunks', () => {
   const mockStore = configureStore(middlewares);
 
   describe('init', () => {
-    // afterEach(() => {
-    //   nock.restore();
-    // });
-
     it(`dispatches 'INIT_WINDOW' and 'INIT_DATA_SUCCESS' actions`, () => {
       const store = mockStore();
       const { params: { windowType, docId } } = propsData;
@@ -164,59 +160,7 @@ describe('WindowActions thunks', () => {
       });
     });
 
-    it.skip(`dispatches 'UPDATE_TABLE' action when tab is fetched`, () => {
-      // const store = mockStore();
-      // const dataResponse = dataFixtures.data1;
-      // const { params: { windowType, docId } } = propsData;
-      // const data = {
-      //   data: parseToDisplay(dataResponse[0].fieldsByName),
-      //   docId,
-      //   saveStatus: dataResponse[0].saveStatus,
-      //   scope: getScope(false),
-      //   standardActions: dataResponse[0].standardActions,
-      //   validStatus: dataResponse[0].validStatus,
-      //   includedTabsInfo: dataResponse[0].includedTabsInfo,
-      //   websocket: dataResponse[0].websocketEndpoint,
-      // }
-      // const layoutData = layoutFixtures.layout1;
-      // const tabId = layoutData.tabs[0].tabId;
-      // const tabsData = [{
-      //   windowId: windowType,
-      //   id: docId,
-      //   tabId: tabId,
-      //   tabid: tabId,
-      //   rowId: '1',
-      //   fieldsByName: {},
-      //   validStatus: {},
-      //   saveStatus: {},
-      //   standardActions: [],
-      //   websocketEndpoint: '',
-      // }];
-
-      // nock(config.API_URL)
-      //   .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
-      //   .get(`/window/${windowType}/${docId}/`)
-      //   .reply(200, dataResponse);
-
-      // nock(config.API_URL)
-      //   .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
-      //   .get(`/window/${windowType}/layout`)
-      //   .reply(200, layoutFixtures.layout1);
-
-      // nock(config.API_URL)
-      //   .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
-      //   .get(`/window/${windowType}/${docId}/${tabId}/`)
-      //   .reply(200, tabsData);
-
-      // const expectedActions = [
-      //   { type: ACTION_TYPES.INIT_WINDOW },
-      //   { type: ACTION_TYPES.INIT_DATA_SUCCESS, ...data }
-      // ]
-
-      // return store.dispatch(createWindow(windowType, docId, undefined, undefined, false)).then(() => {
-      //   expect(store.getActions()).toEqual(expect.arrayContaining(expectedActions));
-      // });
-    });
+    it.todo(`dispatches 'UPDATE_TABLE' action when tab is fetched`);
 
     // @TODO: load tabs using `row_data.json` data
 
