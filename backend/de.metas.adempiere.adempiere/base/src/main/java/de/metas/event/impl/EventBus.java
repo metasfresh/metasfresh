@@ -2,6 +2,7 @@ package de.metas.event.impl;
 
 import java.util.IdentityHashMap;
 
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base

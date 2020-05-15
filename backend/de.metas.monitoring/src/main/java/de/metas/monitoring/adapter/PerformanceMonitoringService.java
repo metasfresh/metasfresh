@@ -134,7 +134,7 @@ public interface PerformanceMonitoringService
 
 		DOC_VALIDATE("docValidate"),
 
-		REMOVE_FROM_CACHE("removeFromCache"),
+		CACHE_INVALIDATE("cache-invalidate"),
 
 		ADD_TO_CACHE("addToCache"),
 
