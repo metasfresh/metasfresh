@@ -107,9 +107,6 @@ public class PrintJobLinesAggregator implements IPrintJobLinesAggregator
 
 	/**
 	 * NOTE: trxName from printJob will be used
-	 *
-	 * @param printCtx
-	 * @param printJobInstructions
 	 */
 	public PrintJobLinesAggregator(final IPrintPackageCtx printCtx,
 			final I_C_Print_Job_Instructions printJobInstructions)
@@ -163,7 +160,7 @@ public class PrintJobLinesAggregator implements IPrintJobLinesAggregator
 	}
 
 	private void add0(final I_C_Print_Job_Line jobLine,
-			final Mutable<ArrayKey> preceedingKey)
+			final Mutable<ArrayKey> precedingKey)
 	{
 		//
 		// Retrieve Print Job Line's Details
@@ -317,10 +314,10 @@ public class PrintJobLinesAggregator implements IPrintJobLinesAggregator
 		{
 			final Pair<ArrayKey, I_C_Print_PackageInfo> keyAndPackageInfo = getCreatePrintPackageInfo(
 					archivePart,
-					preceedingKey.getValue()
+					precedingKey.getValue()
 					);
 			addArchivePartToMap(keyAndPackageInfo.getSecond(), archivePart);
-			preceedingKey.setValue(keyAndPackageInfo.getFirst());
+			precedingKey.setValue(keyAndPackageInfo.getFirst());
 		}
 	}
 
@@ -454,13 +451,10 @@ public class PrintJobLinesAggregator implements IPrintJobLinesAggregator
 	}
 
 	/**
-	 *
-	 * @param routing
-	 * @param preceedingGroupKey used to prevent multiple job lines from from being split, i.e 50-times the first part of each job line, then 50-time the 2nd part.
-	 * @return
+	 * @param precedingGroupKey used to prevent multiple job lines from from being split, i.e 50-times the first part of each job line, then 50-time the 2nd part.
 	 */
 	private Pair<ArrayKey, I_C_Print_PackageInfo> getCreatePrintPackageInfo(final ArchivePart archivePart,
-			final ArrayKey preceedingGroupKey)
+			final ArrayKey precedingGroupKey)
 	{
 		final I_AD_PrinterRouting routing = archivePart.getAD_PrinterRouting();
 
@@ -502,7 +496,7 @@ public class PrintJobLinesAggregator implements IPrintJobLinesAggregator
 				hwMediaTrayID,
 				calX,
 				calY,
-				preceedingGroupKey);
+				precedingGroupKey);
 		return printPackageInfo;
 	}
 
@@ -557,10 +551,6 @@ public class PrintJobLinesAggregator implements IPrintJobLinesAggregator
 
 	/**
 	 * Add {@link ArchivePart} to internal map.
-	 *
-	 * @param printPackageInfo
-	 * @param archiveData
-	 * @param routing
 	 */
 	private void addArchivePartToMap(final I_C_Print_PackageInfo printPackageInfo, final ArchivePart archivePart)
 	{
@@ -576,10 +566,9 @@ public class PrintJobLinesAggregator implements IPrintJobLinesAggregator
 	}
 
 	/**
-	 * Iterates all values of the {@link #mapPrintPackageInfos} map and appends their PDF data to the given <code>out</code> stream, while updating the individual {@link I_C_Print_PackageInfo}s'
+	 * Iterates all values of the {@link #printPackageInfos} map and appends their PDF data to the given <code>out</code> stream, while updating the individual {@link I_C_Print_PackageInfo}s'
 	 * <code>pageFrom</code> and <code>pageTo</code> values.
 	 *
-	 * @param out
 	 * @return number of pages created in out stream
 	 */
 	private int createPDFData(final OutputStream out)

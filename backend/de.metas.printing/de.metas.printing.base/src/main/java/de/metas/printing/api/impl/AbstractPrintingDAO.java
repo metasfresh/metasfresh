@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import javax.annotation.Nullable;
 import javax.print.attribute.standard.MediaSize;
 
 import org.adempiere.ad.dao.IQueryBL;
@@ -188,6 +189,7 @@ public abstract class AbstractPrintingDAO implements IPrintingDAO
 		}
 	}
 
+	@Nullable
 	@Override
 	public final List<I_AD_Printer> retrievePrintersOrNull(final I_AD_PrinterHW printerHW)
 	{
@@ -208,6 +210,7 @@ public abstract class AbstractPrintingDAO implements IPrintingDAO
 
 	}
 
+	@Nullable
 	@Override
 	public final I_AD_Printer_Config retrievePrinterConfig(final IContextAware ctx, final String hostKey, final int userToPrintId)
 	{
@@ -240,6 +243,7 @@ public abstract class AbstractPrintingDAO implements IPrintingDAO
 		return matching;
 	}
 
+	@Nullable
 	@Override
 	public final I_AD_Printer_Matching retrievePrinterMatchingOrNull(final String hostKey, final I_AD_Printer printer)
 	{
@@ -270,6 +274,7 @@ public abstract class AbstractPrintingDAO implements IPrintingDAO
 				.list();
 	}
 
+	@Nullable
 	@Override
 	public final I_AD_PrinterTray_Matching retrievePrinterTrayMatching(final I_AD_Printer_Matching matching, final I_AD_PrinterRouting routing, final boolean throwExIfMissing)
 	{
@@ -332,7 +337,7 @@ public abstract class AbstractPrintingDAO implements IPrintingDAO
 	public final boolean isUpdatePrintingQueueAggregationKey(final I_C_Printing_Queue_Recipient recipient)
 	{
 		final Boolean disabled = DYNATTR_DisableAggregationKeyUpdate.getValue(recipient);
-		return disabled != null && disabled ? false : true;
+		return disabled == null || !disabled;
 	}
 
 	@Override
@@ -341,6 +346,7 @@ public abstract class AbstractPrintingDAO implements IPrintingDAO
 		DYNATTR_DisableAggregationKeyUpdate.setValue(recipient, true);
 	}
 
+	@Nullable
 	@Override
 	public final I_AD_Print_Clients retrievePrintClientsEntry(final Properties ctx, final String hostKey)
 	{
@@ -358,12 +364,6 @@ public abstract class AbstractPrintingDAO implements IPrintingDAO
 		final Properties ctx = InterfaceWrapperHelper.getCtx(printingQueue);
 		final String trxName = InterfaceWrapperHelper.getTrxName(printingQueue);
 
-		final StringBuilder whereClause = new StringBuilder();
-		final List<Object> params = new ArrayList<>();
-
-		whereClause.append(I_C_Print_Job_Line.COLUMNNAME_C_Printing_Queue_ID).append("=?");
-		params.add(printingQueue.getC_Printing_Queue_ID());
-
 		return Services.get(IQueryBL.class).createQueryBuilder(I_C_Print_Job_Line.class, ctx, trxName)
 				.addEqualsFilter(I_C_Print_Job_Line.COLUMNNAME_C_Printing_Queue_ID, printingQueue.getC_Printing_Queue_ID())
 				.addOnlyActiveRecordsFilter()
@@ -374,6 +374,7 @@ public abstract class AbstractPrintingDAO implements IPrintingDAO
 				.list(I_C_Print_Job_Line.class);
 	}
 
+	@Nullable
 	@Override
 	public final I_AD_PrinterHW_MediaSize retrieveMediaSize(
 			@NonNull final I_AD_PrinterHW hwPrinter,
@@ -446,8 +447,9 @@ public abstract class AbstractPrintingDAO implements IPrintingDAO
 				.first(); // note: right now IDK why it's first an not firstOnly
 	}
 
+	@Nullable
 	@Override
-	public final I_AD_PrinterHW retrieveVirtualPrinter(final Properties ctx, String hostkey, final String trxName)
+	public final I_AD_PrinterHW retrieveVirtualPrinterOrNull(final Properties ctx, final String hostkey, final String trxName)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 

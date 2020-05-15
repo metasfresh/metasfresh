@@ -53,8 +53,6 @@ public interface IPrintJobBL extends ISingletonService
 	 * <p>
 	 * This method is skipping items which were already printed (see {@link I_C_Printing_Queue#isProcessed()})
 	 *
-	 * @param source
-	 * @param printJobContext
 	 * @return number of created print jobs
 	 */
 	int createPrintJobs(IPrintingQueueSource source, ContextForAsyncProcessing printJobContext);
@@ -78,7 +76,7 @@ public interface IPrintJobBL extends ISingletonService
 	/**
 	 * Creates an instructions record for the given print job.
 	 *
-	 * @param userToPrintId the user that shall actually do the printing. Note that if this user's printing config forwards to a shared config, then the instructions instance is created for the shared
+	 * @param userToPrintId the user for whom we shall actually do the printing. Note that if this user's printing config forwards to a shared config, then the instructions instance is created for the shared
 	 *            config's user
 	 * @param createWithSpecificHostKey if <code>false</code>, then
 	 *            <ul>
@@ -99,10 +97,7 @@ public interface IPrintJobBL extends ISingletonService
 	List<I_C_Print_Job_Detail> getCreatePrintJobDetails(I_C_Print_Job_Line printJobLine);
 
 	/**
-	 * enqueue print job instructions for async pdf printing
-	 *
-	 * @param jobInstructions
-	 * @param asyncBatch
+	 * Enqueue print job instructions for async pdf printing
 	 */
 	void enqueuePrintJobInstructions(I_C_Print_Job_Instructions jobInstructions, I_C_Async_Batch asyncBatch);
 }

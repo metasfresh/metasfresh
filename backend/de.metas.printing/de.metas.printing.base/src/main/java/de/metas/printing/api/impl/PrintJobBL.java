@@ -238,9 +238,6 @@ public class PrintJobBL implements IPrintJobBL
 
 	/**
 	 * Builds a list from all C_Print_Job_Instructions that have a PDF printer set
-	 *
-	 * @param printJobInstructions
-	 * @return
 	 */
 	private List<I_C_Print_Job_Instructions> collectPDFPrintJobInstructions(final List<I_C_Print_Job_Instructions> printJobInstructions)
 	{
@@ -322,10 +319,6 @@ public class PrintJobBL implements IPrintJobBL
 	 *
 	 * Note that <code>items</code> contains both the source's items and related items.
 	 *
-	 * @param source
-	 * @param items
-	 * @param printingQueueProcessingInfo
-	 * @param trxName
 	 * @return one print job instruction per user-to-print
 	 */
 	private List<I_C_Print_Job_Instructions> createPrintJobInstructionsAndPrintJobs0(final IPrintingQueueSource source,
@@ -353,7 +346,7 @@ public class PrintJobBL implements IPrintJobBL
 				if (lastItemCopies >= 0 && item.getCopies() != lastItemCopies)
 				{
 					logger.info("The last item had copies = {}, the current one has copies = {}; not adding further items to printJob = {}",
-							new Object[] { lastItemCopies, item.getCopies(), printJob });
+							 lastItemCopies, item.getCopies(), printJob);
 					break;
 				}
 
@@ -527,7 +520,7 @@ public class PrintJobBL implements IPrintJobBL
 
 		final String trxName = InterfaceWrapperHelper.getTrxName(instructions);
 		// set printer for pdf printing
-		instructions.setAD_PrinterHW(printingDAO.retrieveVirtualPrinter(ctx, hostKey, trxName));
+		instructions.setAD_PrinterHW(printingDAO.retrieveVirtualPrinterOrNull(ctx, hostKey, trxName));
 
 		InterfaceWrapperHelper.save(instructions);
 		return instructions;

@@ -162,16 +162,11 @@ public interface IPrintingDAO extends ISingletonService
 	I_AD_Printer_Config retrievePrinterConfig(IContextAware ctx, String hostKey, int userToPrintId);
 
 	/**
-	 *
-	 * @param hostKey
-	 * @param routing
 	 * @return {@link I_AD_Printer_Matching}; never returns null
 	 */
 	I_AD_Printer_Matching retrievePrinterMatching(String hostKey, I_AD_PrinterRouting routing);
 
 	/**
-	 *
-	 * @param printingQueue
 	 * @return empty list if the given queue item has no recipients or if {@link I_C_Printing_Queue#COLUMN_IsPrintoutForOtherUser} <code>='N'</code>.
 	 */
 	List<Integer> retrievePrintingQueueRecipientIDs(I_C_Printing_Queue item);
@@ -191,8 +186,6 @@ public interface IPrintingDAO extends ISingletonService
 
 	/**
 	 * Ensure that the aggregation key of the given {@code recipients} printing queue item won't be updated via model interceptor when the given recipient is saved.
-	 *
-	 * @param recipient
 	 */
 	void setDisableAggregationKeyUpdate(I_C_Printing_Queue_Recipient recipient);
 
@@ -204,28 +197,17 @@ public interface IPrintingDAO extends ISingletonService
 	 * </ul>
 	 *
 	 * NOTE: this method locks the returned object
-	 *
-	 * @param ctx
-	 * @param trxName
-	 * @return
 	 */
 	I_C_Print_Job_Instructions retrieveAndLockNextPrintJobInstructions(Properties ctx, String trxName);
 
 	/**
 	 * Retrieve all (active and inactive) {@link I_AD_PrinterHW_MediaSize}.
-	 *
-	 * @param printerHW
-	 * @return
 	 */
 	List<I_AD_PrinterHW_MediaSize> retrieveMediaSizes(I_AD_PrinterHW printerHW);
 
 	/**
-	 *
-	 * @param hwPrinter
-	 * @param mediaSize
 	 * @param createIfNotExists if <code>true</code> then the record is created on the fly if necessary. Background is that currently we don't handle different mediasizes anyways. We just need a
 	 *            record for A4 to be present. So if an exotic printer does not have it, just create it on the fly and make no fuss about it. See task 08458
-	 * @return
 	 */
 	I_AD_PrinterHW_MediaSize retrieveMediaSize(I_AD_PrinterHW hwPrinter, MediaSize mediaSize, boolean createIfNotExists);
 
@@ -244,9 +226,6 @@ public interface IPrintingDAO extends ISingletonService
 	/**
 	 * Converts {@link IPrintingQueueQuery} to current database {@link IQuery} implementation.
 	 *
-	 * @param ctx
-	 * @param queueQuery
-	 * @param trxName
 	 * @return database's {@link IQuery}
 	 */
 	IQuery<I_C_Printing_Queue> createQuery(Properties ctx, IPrintingQueueQuery queueQuery, String trxName);
@@ -255,10 +234,6 @@ public interface IPrintingDAO extends ISingletonService
 	 * Returns all logical printers for the given org.
 	 * <p>
 	 * <b>IMPORTANT:</b> the printers are returned with internal TrxName=<code>null</code>!
-	 *
-	 * @param ctx
-	 * @param adOrgId
-	 * @return
 	 */
 	List<I_AD_Printer> retrievePrinters(Properties ctx, int adOrgId);
 
@@ -274,42 +249,27 @@ public interface IPrintingDAO extends ISingletonService
 
 	/**
 	 * retrieve print job lines based on printing queue
-	 *
-	 * @param printingQueue
-	 * @return
 	 */
 	List<I_C_Print_Job_Line> retrievePrintJobLines(I_C_Printing_Queue printingQueue);
 
 	/**
 	 * Retrieve <b>the latest</b> printing queue for the given {@code archive}.
-	 * @param archive
-	 * @return
 	 */
 	I_C_Printing_Queue retrievePrintingQueue(I_AD_Archive archive);
 
 	/**
 	 * gets a list of printing package infos
-	 *
-	 * @param printPackage
-	 * @return
 	 */
 	List<I_C_Print_PackageInfo> retrievePrintPackageInfos(I_C_Print_Package printPackage);
 
 	/**
 	 * retrieve package data
-	 *
-	 * @param printPackage
-	 * @return
 	 */
 	I_C_PrintPackageData retrievePrintPackageData(I_C_Print_Package printPackage);
 
 	/**
 	 * retrieves a printer which has the output type PDF
 	 * <ul> virtual printer because is not a real hardware printer
-	 *
-	 * @param ctx
-	 * @param trxName
-	 * @return
 	 */
 	I_AD_PrinterHW retrieveVirtualPrinter(final Properties ctx, String hostkey, final String trxName);
 
