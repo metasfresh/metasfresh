@@ -1373,17 +1373,6 @@ public class BPartnerDAO implements IBPartnerDAO
 		return BPartnerId.optionalOfRepoId(bpartnerRepoId);
 	}
 
-	@Override
-	public ImmutableSet<BPartnerId> retrieveAllCustomerIDs()
-	{
-		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_C_BPartner.class)
-				.addOnlyActiveRecordsFilter()
-				.addOnlyContextClient()
-				.addEqualsFilter(I_C_BPartner.COLUMNNAME_IsCustomer, true)
-				.create()
-				.listIds(BPartnerId::ofRepoId);
-	}
 
 	private <T> IQueryBuilder<T> createQueryBuilder(
 			@NonNull final Class<T> modelClass)

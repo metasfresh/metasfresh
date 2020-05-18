@@ -65,7 +65,6 @@ public class RabbitMQEventBusRemoteEndpoint implements IEventBusRemoteEndpoint
 	private final AmqpTemplate amqpTemplate;
 
 	private final IEventListener eventBus2amqpListener = EventBus2RemoteEndpointHandler.newInstance(this);
-	private boolean boundToAsyncEventBus;
 
 	public RabbitMQEventBusRemoteEndpoint(@NonNull final AmqpTemplate amqpTemplate)
 	{
@@ -162,6 +161,12 @@ public class RabbitMQEventBusRemoteEndpoint implements IEventBusRemoteEndpoint
 	@Override
 	public void sendEvent(final String topicName, final Event event)
 	{
+		// If the event comes from this bus, don't forward it back
+		final String eventBusId = createEventBusId(topicName);
+		if (event.wasReceivedByEventBusId(eventBusId))
+		{
+			return;
+		}
 		try
 		{
 			if (EventBusConfig.isMonitorIncomingEvents())
@@ -232,7 +237,6 @@ public class RabbitMQEventBusRemoteEndpoint implements IEventBusRemoteEndpoint
 	@Override
 	public boolean bindIfNeeded(@NonNull final IEventBus eventBus)
 	{
-		this.boundToAsyncEventBus = eventBus.isAsync();
 		eventBus.subscribe(eventBus2amqpListener);
 		return true; // need to return true, otherwise, the system will only create "local" topics
 	}

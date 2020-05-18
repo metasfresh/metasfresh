@@ -5,13 +5,11 @@ import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.compiere.model.I_C_Invoice;
-import org.compiere.model.I_C_OrderLine;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
 
@@ -24,7 +22,6 @@ import de.metas.invoice.InvoiceId;
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
-import de.metas.order.compensationGroup.OrderGroupCompensationUtils;
 import de.metas.util.Services;
 import de.metas.util.lang.CoalesceUtil;
 import lombok.NonNull;
