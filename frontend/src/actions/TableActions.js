@@ -1,5 +1,6 @@
 import { reduce, cloneDeep } from 'lodash';
 import * as types from '../constants/ActionTypes';
+import { UPDATE_TABLE_SELECTION } from '../constants/actions/TableTypes';
 
 import { getTable } from '../reducers/tables';
 import { getView } from '../reducers/viewHandler';
@@ -196,9 +197,9 @@ export function updateTabTable(tableId, tableResponse) {
 /**
  * Update table selection - select items
  */
-export function updateTableSelection({ windowId, viewId, ids }) {
+export function updateTableSelection({ tableId, ids }) {
   return {
-    type: types.UPDATE_TABLE_SELECTION,
-    payload: { windowId, viewId, selection: ids },
+    type: UPDATE_TABLE_SELECTION,
+    payload: { tableId, selection: ids },
   };
 }

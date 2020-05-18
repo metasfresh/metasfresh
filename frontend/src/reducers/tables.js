@@ -3,6 +3,7 @@ import { get } from 'lodash';
 import { createSelector } from 'reselect';
 
 import * as types from '../constants/ActionTypes';
+import { UPDATE_TABLE_SELECTION } from '../constants/actions/TableTypes';
 
 export const tableState = {
   windowType: null,
@@ -107,9 +108,8 @@ const reducer = produce((draftState, action) => {
       return;
     }
 
-    case types.UPDATE_TABLE_SELECTION: {
-      const { windowId, viewId, selection } = action.payload;
-      const tableId = getTableId({ windowType: windowId, viewId });
+    case UPDATE_TABLE_SELECTION: {
+      const { tableId, selection } = action.payload;
       draftState[tableId] = {
         ...draftState[tableId],
         selected: selection,
