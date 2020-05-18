@@ -89,9 +89,9 @@ const reducer = produce((draftState, action) => {
     }
     case types.UPDATE_TABLE: {
       const { id, data } = action.payload;
-
+      const prevTableStruct = draftState[id] ? draftState[id] : tableState;
       draftState[id] = {
-        ...draftState[id],
+        ...prevTableStruct,
         ...data,
       };
 
@@ -108,8 +108,12 @@ const reducer = produce((draftState, action) => {
     }
 
     case types.UPDATE_TABLE_SELECTION: {
-      // const { id } = action.payload;
-      // console.log(action.payload);
+      const { windowId, viewId, selection } = action.payload;
+      const tableId = getTableId({ windowType: windowId, viewId });
+      draftState[tableId] = {
+        ...draftState[tableId],
+        selected: selection,
+      };
 
       return;
     }

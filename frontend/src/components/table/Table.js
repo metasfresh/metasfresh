@@ -59,6 +59,7 @@ class Table extends Component {
     const { rowData, tabId } = this.props;
     //selecting first table elem while getting indent data
     this._isMounted = true;
+
     if (rowData.get(`${tabId}`)) {
       this.getIndentData(true);
     }
@@ -91,6 +92,23 @@ class Table extends Component {
       page,
     } = this.props;
     const { selected, rows } = this.state;
+
+    /**
+     * Selection by default of first row if nothing selected 
+     */
+    if ((_.isEmpty(defaultSelected) || _.isEmpty(selected)) && !_.isEmpty(rows)){
+      this.setState({ selected: [rows[0].id] });
+      dispatch(updateTableSelection({ windowId, viewId, ids: [rows[0].id] }));
+      dispatch(
+        selectTableItems({
+          windowType: windowId,
+          viewId,
+          ids: selected,
+        })
+      );
+    }
+
+
     const selectedEqual = _.isEqual(prevState.selected, selected);
     const defaultSelectedEqual = _.isEqual(
       prevProps.defaultSelected,
