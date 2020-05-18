@@ -80,6 +80,8 @@ public class OrderLinePriceUpdateRequest
 
 	@Default
 	boolean applyPriceLimitRestrictions = true;
+	
+	boolean updateProfitPriceActual;
 
 	//
 	//
