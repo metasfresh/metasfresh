@@ -269,6 +269,9 @@ public class BankStatementDocumentHandler implements DocumentHandler
 
 		//
 		bankStatement.setProcessed(true);
+		
+		bankStatementDAO.updateBankStatementLinesProcessedFlag(bankStatementId, true);
+		
 		bankStatement.setDocAction(IDocument.ACTION_Close);
 		return IDocument.STATUS_Completed;
 	}
