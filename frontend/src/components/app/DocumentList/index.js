@@ -808,8 +808,6 @@ class DocumentListContainer extends Component {
     } = this.props;
     let { selected } = this.getSelected();
 
-    // console.log('PROPS: ', this.props)
-
     const hasIncluded =
       layout &&
       layout.includedView &&
