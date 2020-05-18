@@ -617,7 +617,6 @@ export const UPDATE_TAB_ROWS_DATA = 'UPDATE_TAB_ROWS_DATA';
  */
 export const SET_LANGUAGES = 'SET_LANGUAGES';
 
-
 /**
  * @constant
  * @type {string} update table selection

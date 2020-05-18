@@ -94,7 +94,7 @@ class Table extends Component {
     const { selected, rows } = this.state;
 
     /**
-     * Selection by default of first row if nothing selected 
+     * Selection by default of first row if nothing selected
      */
     if (
       (_.isEmpty(defaultSelected) || _.isEmpty(selected)) &&
@@ -110,7 +110,6 @@ class Table extends Component {
         })
       );
     }
-
 
     const selectedEqual = _.isEqual(prevState.selected, selected);
     const defaultSelectedEqual = _.isEqual(
