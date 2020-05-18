@@ -96,7 +96,10 @@ class Table extends Component {
     /**
      * Selection by default of first row if nothing selected 
      */
-    if ((_.isEmpty(defaultSelected) || _.isEmpty(selected)) && !_.isEmpty(rows)){
+    if (
+      (_.isEmpty(defaultSelected) || _.isEmpty(selected)) &&
+      !_.isEmpty(rows)
+    ) {
       this.setState({ selected: [rows[0].id] });
       dispatch(updateTableSelection({ windowId, viewId, ids: [rows[0].id] }));
       dispatch(
