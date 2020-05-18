@@ -25,7 +25,6 @@ import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.util.Services;
 import lombok.Builder;
-import lombok.NonNull;
 
 /*
  * #%L
@@ -65,9 +64,9 @@ public class ShipmentCandidateRowsLoaderTest
 
 	@Builder(builderMethodName = "shipmentSchedule", builderClassName = "$ShipmentScheduleBuilder")
 	private ShipmentScheduleId createShipmentScheduleId(
-			@NonNull final String qtyOrderedCU,
-			final String qtyOrderedTU,
-			final String qtyItemCapacity)
+			final String qtyOrderedCU,
+			final String qtyItemCapacity,
+			final String qtyToDeliverCU)
 	{
 		final I_C_UOM uomEach = BusinessTestHelper.createUomEach();
 		final I_M_Product product = BusinessTestHelper.createProduct("product", uomEach);
@@ -79,9 +78,10 @@ public class ShipmentCandidateRowsLoaderTest
 		shipmentSchedule.setC_BPartner_ID(customer.getC_BPartner_ID());
 		shipmentSchedule.setM_Warehouse_ID(1111);
 
-		shipmentSchedule.setQtyOrdered_Calculated(new BigDecimal(qtyOrderedCU));
-		shipmentSchedule.setQtyOrdered_TU(qtyOrderedTU != null ? new BigDecimal(qtyOrderedTU) : null);
+		shipmentSchedule.setQtyOrdered_Calculated(qtyOrderedCU != null ? new BigDecimal(qtyOrderedCU) : null);
 		shipmentSchedule.setQtyItemCapacity(qtyItemCapacity != null ? new BigDecimal(qtyItemCapacity) : null);
+
+		shipmentSchedule.setQtyToDeliver(qtyToDeliverCU != null ? new BigDecimal(qtyToDeliverCU) : null);
 
 		saveRecord(shipmentSchedule);
 
@@ -104,33 +104,120 @@ public class ShipmentCandidateRowsLoaderTest
 	}
 
 	@Nested
-	public class getQtyOrdered_CU_or_TU
+	public class extractPackingInfo
 	{
 		@Test
-		public void withPackingInstructions_expect_TUs()
+		public void withQtyItemCapacitySet()
 		{
-			final ShipmentCandidateRowsLoader loader = newShipmentCandidateRowsLoader(
-					shipmentSchedule().qtyOrderedCU("5").qtyOrderedTU("6").qtyItemCapacity("666").build() //
-			);
-
-			final List<ShipmentCandidateRow> rows = ImmutableList.copyOf(loader.load().getAllRows());
-			assertThat(rows).hasSize(1);
-			final ShipmentCandidateRow row = rows.get(0);
-			assertThat(row.getQtyOrdered_CU_or_TU()).isEqualTo("6");
+			final I_M_ShipmentSchedule sched = newInstance(I_M_ShipmentSchedule.class);
+			sched.setQtyItemCapacity(new BigDecimal("3"));
+			sched.setPackDescription("pack description");
+			assertThat(ShipmentCandidateRowsLoader.extractPackingInfo(sched))
+					.isEqualTo(PackingInfo.builder()
+							.qtyCUsPerTU(new BigDecimal("3"))
+							.description("pack description")
+							.build());
 		}
 
 		@Test
-		public void withoutPackingInstructions_expect_CUs()
+		public void withoutQtyItemCapacitySet()
+		{
+			final I_M_ShipmentSchedule sched = newInstance(I_M_ShipmentSchedule.class);
+			assertThat(ShipmentCandidateRowsLoader.extractPackingInfo(sched)).isSameAs(PackingInfo.NONE);
+		}
+
+		@Test
+		public void withZeroQtyItemCapacitySet()
+		{
+			final I_M_ShipmentSchedule sched = newInstance(I_M_ShipmentSchedule.class);
+			sched.setQtyItemCapacity(new BigDecimal("0"));
+			assertThat(ShipmentCandidateRowsLoader.extractPackingInfo(sched)).isSameAs(PackingInfo.NONE);
+		}
+	}
+
+	@Nested
+	public class qtyOrdered
+	{
+		@Test
+		public void with_1CUs_2CUsPerTU()
 		{
 			final ShipmentCandidateRowsLoader loader = newShipmentCandidateRowsLoader(
-					shipmentSchedule().qtyOrderedCU("5").qtyOrderedTU("6").qtyItemCapacity(null).build() //
+					shipmentSchedule().qtyOrderedCU("1").qtyItemCapacity("2").build() //
 			);
 
 			final List<ShipmentCandidateRow> rows = ImmutableList.copyOf(loader.load().getAllRows());
 			assertThat(rows).hasSize(1);
 			final ShipmentCandidateRow row = rows.get(0);
-			assertThat(row.getQtyOrdered_CU_or_TU()).isEqualTo("5");
+			assertThat(row.getQtyOrdered()).isEqualTo("1");
 		}
 
+		@Test
+		public void with_3CUs_2CUsPerTU()
+		{
+			final ShipmentCandidateRowsLoader loader = newShipmentCandidateRowsLoader(
+					shipmentSchedule().qtyOrderedCU("3").qtyItemCapacity("2").build() //
+			);
+
+			final List<ShipmentCandidateRow> rows = ImmutableList.copyOf(loader.load().getAllRows());
+			assertThat(rows).hasSize(1);
+			final ShipmentCandidateRow row = rows.get(0);
+			assertThat(row.getQtyOrdered()).isEqualTo("2");
+		}
+
+		@Test
+		public void with_3CUs_NoPackingInfo()
+		{
+			final ShipmentCandidateRowsLoader loader = newShipmentCandidateRowsLoader(
+					shipmentSchedule().qtyOrderedCU("3").qtyItemCapacity(null).build() //
+			);
+
+			final List<ShipmentCandidateRow> rows = ImmutableList.copyOf(loader.load().getAllRows());
+			assertThat(rows).hasSize(1);
+			final ShipmentCandidateRow row = rows.get(0);
+			assertThat(row.getQtyOrdered()).isEqualTo("3");
+		}
+	}
+
+	@Nested
+	public class qtyToDeliver
+	{
+		@Test
+		public void with_1CUs_2CUsPerTU()
+		{
+			final ShipmentCandidateRowsLoader loader = newShipmentCandidateRowsLoader(
+					shipmentSchedule().qtyOrderedCU("9999").qtyToDeliverCU("1").qtyItemCapacity("2").build() //
+			);
+
+			final List<ShipmentCandidateRow> rows = ImmutableList.copyOf(loader.load().getAllRows());
+			assertThat(rows).hasSize(1);
+			final ShipmentCandidateRow row = rows.get(0);
+			assertThat(row.getQtyToDeliverUserEntered()).isEqualTo("1");
+		}
+
+		@Test
+		public void with_3CUs_2CUsPerTU()
+		{
+			final ShipmentCandidateRowsLoader loader = newShipmentCandidateRowsLoader(
+					shipmentSchedule().qtyOrderedCU("9999").qtyToDeliverCU("3").qtyItemCapacity("2").build() //
+			);
+
+			final List<ShipmentCandidateRow> rows = ImmutableList.copyOf(loader.load().getAllRows());
+			assertThat(rows).hasSize(1);
+			final ShipmentCandidateRow row = rows.get(0);
+			assertThat(row.getQtyToDeliverUserEntered()).isEqualTo("2");
+		}
+
+		@Test
+		public void with_3CUs_NoPackingInfo()
+		{
+			final ShipmentCandidateRowsLoader loader = newShipmentCandidateRowsLoader(
+					shipmentSchedule().qtyOrderedCU("9999").qtyToDeliverCU("3").qtyItemCapacity(null).build() //
+			);
+
+			final List<ShipmentCandidateRow> rows = ImmutableList.copyOf(loader.load().getAllRows());
+			assertThat(rows).hasSize(1);
+			final ShipmentCandidateRow row = rows.get(0);
+			assertThat(row.getQtyToDeliverUserEntered()).isEqualTo("3");
+		}
 	}
 }
