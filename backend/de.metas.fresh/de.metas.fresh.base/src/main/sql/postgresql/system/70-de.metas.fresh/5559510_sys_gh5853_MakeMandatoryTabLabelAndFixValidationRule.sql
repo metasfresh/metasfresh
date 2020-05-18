@@ -35,3 +35,9 @@ UPDATE AD_Column SET ReadOnlyLogic='@AD_UI_ElementType@=''L''',Updated=TO_TIMEST
 UPDATE AD_Column SET MandatoryLogic='@AD_UI_ElementType@=''L''',Updated=TO_TIMESTAMP('2020-05-18 12:04:18','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=557051
 ;
 
+
+-- 2020-05-18T09:18:22.815Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET MandatoryLogic='@AD_UI_ElementType@=''L''', ReadOnlyLogic='',Updated=TO_TIMESTAMP('2020-05-18 12:18:22','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=557050
+;
+
