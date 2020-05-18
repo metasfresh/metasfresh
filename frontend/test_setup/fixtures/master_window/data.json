@@ -653,14 +653,16 @@
       },
       "includedTabsInfo": {
         "AD_Tab-187": {
-          "tabid": "AD_Tab-187",
+          "tabId": "AD_Tab-187",
           "allowCreateNew": true,
-          "allowDelete": true
+          "allowDelete": true,
+          "stale": true
         },
         "AD_Tab-236": {
-          "tabid": "AD_Tab-236",
+          "tabId": "AD_Tab-236",
           "allowCreateNew": false,
-          "allowDelete": false
+          "allowDelete": false,
+          "stale": true
         }
       },
       "standardActions": [

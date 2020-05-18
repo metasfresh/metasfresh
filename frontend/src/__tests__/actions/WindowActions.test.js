@@ -3,7 +3,12 @@ import nock from 'nock';
 import configureStore from 'redux-mock-store';
 import { Set } from 'immutable';
 
-import { createWindow, initWindow, updateTabRowsData } from '../../actions/WindowActions';
+import {
+  createWindow,
+  initWindow,
+  updateTabRowsData,
+  fetchTab,
+} from '../../actions/WindowActions';
 import * as ACTION_TYPES from '../../constants/ActionTypes';
 import { getScope, parseToDisplay } from '../../utils/documentListHelper';
 
@@ -29,10 +34,6 @@ describe('WindowActions thunks', () => {
   const mockStore = configureStore(middlewares);
 
   describe('init', () => {
-    // afterEach(() => {
-    //   nock.restore();
-    // });
-
     it(`dispatches 'INIT_WINDOW' and 'INIT_DATA_SUCCESS' actions`, () => {
       const store = mockStore();
       const { params: { windowType, docId } } = propsData;
@@ -158,6 +159,8 @@ describe('WindowActions thunks', () => {
         expect(store.getActions()).toEqual(expect.arrayContaining(expectedActions));
       });
     });
+
+    it.todo(`dispatches 'UPDATE_TABLE' action when tab is fetched`);
 
     // @TODO: load tabs using `row_data.json` data
 
