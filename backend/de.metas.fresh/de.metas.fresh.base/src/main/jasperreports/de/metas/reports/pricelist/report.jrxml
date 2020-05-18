@@ -38,7 +38,7 @@ WHERE
 		<band height="290" splitType="Stretch">
 			<printWhenExpression><![CDATA[new Boolean(true)]]></printWhenExpression>
 			<subreport isUsingCache="true">
-				<reportElement key="subreport-4" x="0" y="28" width="595" height="85" uuid="1774ba6e-e895-4a71-8239-d4da3bf6e1b3"/>
+				<reportElement key="subreport-4" x="0" y="26" width="595" height="85" uuid="1774ba6e-e895-4a71-8239-d4da3bf6e1b3"/>
 				<subreportParameter name="org_id">
 					<subreportParameterExpression><![CDATA[$F{ad_org_id}]]></subreportParameterExpression>
 				</subreportParameter>
@@ -73,7 +73,7 @@ WHERE
 				<subreportExpression><![CDATA["de/metas/docs/generics/report_bpblock_shorter_left_margin.jasper"]]></subreportExpression>
 			</subreport>
 			<subreport isUsingCache="true">
-				<reportElement key="subreport-8" x="340" y="135" width="220" height="100" uuid="c5d77fa4-7184-4f47-a49b-955bd96be83c"/>
+				<reportElement key="subreport-8" x="391" y="136" width="204" height="100" uuid="c5d77fa4-7184-4f47-a49b-955bd96be83c"/>
 				<subreportParameter name="org_id">
 					<subreportParameterExpression><![CDATA[$F{ad_org_id}]]></subreportParameterExpression>
 				</subreportParameter>
@@ -81,7 +81,7 @@ WHERE
 					<subreportParameterExpression><![CDATA[$F{issopricelist}]]></subreportParameterExpression>
 				</subreportParameter>
 				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
-				<subreportExpression><![CDATA["de/metas/docs/generics/report_orgblock_right.jasper"]]></subreportExpression>
+				<subreportExpression><![CDATA["de/metas/docs/generics/report_orgblock.jasper"]]></subreportExpression>
 			</subreport>
 		</band>
 	</title>
