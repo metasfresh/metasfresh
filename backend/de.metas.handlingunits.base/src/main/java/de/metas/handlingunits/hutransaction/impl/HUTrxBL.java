@@ -192,7 +192,7 @@ public class HUTrxBL implements IHUTrxBL
 	}
 
 	@Override
-	public void setParentHU(final IHUContext huContext, @Nullable final @Nullable I_M_HU_Item parentHUItem, final I_M_HU hu)
+	public void setParentHU(final IHUContext huContext, @Nullable final I_M_HU_Item parentHUItem, final I_M_HU hu)
 	{
 		final boolean destroyOldParentIfEmptyStorage = true;
 		setParentHU(huContext, parentHUItem, hu, destroyOldParentIfEmptyStorage);
@@ -200,8 +200,8 @@ public class HUTrxBL implements IHUTrxBL
 
 	@Override
 	public void setParentHU(final IHUContext huContext,
-			@Nullable final @Nullable I_M_HU_Item parentHUItem,
-			final @NonNull I_M_HU hu,
+			@Nullable final I_M_HU_Item parentHUItem,
+			@NonNull final I_M_HU hu,
 			final boolean destroyOldParentIfEmptyStorage)
 	{
 		// TODO: handle in HUTrx / allocation
