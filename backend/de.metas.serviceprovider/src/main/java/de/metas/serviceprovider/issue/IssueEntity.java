@@ -36,6 +36,7 @@ import lombok.NonNull;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.Objects;
 import java.util.stream.Stream;
 
@@ -72,6 +73,12 @@ public class IssueEntity
 
 	@Nullable
 	private BigDecimal budgetedEffort;
+
+	@Nullable
+	private BigDecimal roughEstimation;
+
+	@Nullable
+	private LocalDate plannedUATDate;
 
 	@NonNull
 	private Effort issueEffort;
@@ -127,6 +134,14 @@ public class IssueEntity
 		}
 	}
 
+	public void setRoughEstimationIfNull(@Nullable final BigDecimal roughEstimation)
+	{
+		if ( this.roughEstimation == null || this.roughEstimation.signum() == 0 )
+		{
+			this.roughEstimation = roughEstimation;
+		}
+	}
+
 	public void addAggregatedEffort(@Nullable final Effort effort)
 	{
 		this.aggregatedEffort = aggregatedEffort.addNullSafe(effort);
@@ -135,26 +150,6 @@ public class IssueEntity
 	public void addIssueEffort(@Nullable final Effort effort)
 	{
 		this.issueEffort = issueEffort.addNullSafe(effort);
-	}
-
-	public void updateLatestActivityOnSubIssues(@Nullable final Instant newActivityDate)
-	{
-		final Instant currentActivityDate = this.latestActivityOnSubIssues != null ? this.latestActivityOnSubIssues : Instant.MIN;
-
-		if (newActivityDate != null && newActivityDate.isAfter(currentActivityDate))
-		{
-			this.latestActivityOnSubIssues = newActivityDate;
-		}
-	}
-
-	public void updateLatestActivityOnIssue(@Nullable final Instant newActivityDate)
-	{
-		final Instant currentActivityDate = this.latestActivityOnIssue != null ? this.latestActivityOnIssue : Instant.MIN;
-
-		if (newActivityDate != null && newActivityDate.isAfter(currentActivityDate))
-		{
-			this.latestActivityOnIssue = newActivityDate;
-		}
 	}
 
 	@Nullable

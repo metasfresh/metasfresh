@@ -45,6 +45,7 @@ import org.springframework.stereotype.Repository;
 
 import javax.annotation.Nullable;
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -216,6 +217,10 @@ public class IssueRepository
 				.orElseThrow( () ->new AdempiereException("Unknown Status!").appendParametersToMessage()
 						.setParameter("I_S_Issue", record));
 
+		final LocalDate plannedUATDate = record.getPlannedUATDate() != null
+				? record.getPlannedUATDate().toLocalDateTime().toLocalDate()
+				: null;
+
 		return IssueEntity.builder()
 				.orgId(OrgId.ofRepoId(record.getAD_Org_ID()))
 				.externalProjectReferenceId(ExternalProjectReferenceId.ofRepoIdOrNull(record.getS_ExternalProjectReference_ID()))
@@ -231,9 +236,11 @@ public class IssueRepository
 				.type(issueType)
 				.status(status)
 				.deliveryPlatform(record.getDeliveryPlatform())
+				.plannedUATDate(plannedUATDate)
 				.isEffortIssue(record.isEffortIssue())
 				.estimatedEffort(record.getEstimatedEffort())
 				.budgetedEffort(record.getBudgetedEffort())
+				.roughEstimation(record.getRoughEstimation())
 				.issueEffort(Effort.ofNullable(record.getIssueEffort()))
 				.aggregatedEffort(Effort.ofNullable(record.getAggregatedEffort()))
 				.latestActivityOnIssue(record.getLatestActivity() != null ? record.getLatestActivity().toInstant() : null)
@@ -262,6 +269,7 @@ public class IssueRepository
 		record.setIsEffortIssue(issueEntity.isEffortIssue());
 
 		record.setS_Milestone_ID(NumberUtils.asInt(issueEntity.getMilestoneId(), -1));
+		record.setRoughEstimation(issueEntity.getRoughEstimation());
 		record.setEstimatedEffort(issueEntity.getEstimatedEffort());
 		record.setBudgetedEffort(issueEntity.getBudgetedEffort());
 		record.setEffort_UOM_ID(issueEntity.getEffortUomId().getRepoId());
@@ -278,6 +286,10 @@ public class IssueRepository
 		{
 			record.setStatus(issueEntity.getStatus().getCode());
 		}
+
+		record.setPlannedUATDate(issueEntity.getPlannedUATDate() != null
+				? Timestamp.valueOf(issueEntity.getPlannedUATDate().atStartOfDay())
+				: null);
 
 		record.setDeliveryPlatform(issueEntity.getDeliveryPlatform());
 

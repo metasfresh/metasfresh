@@ -40,6 +40,7 @@ import de.metas.serviceprovider.issue.IssueEntity;
 import de.metas.serviceprovider.issue.IssueId;
 import de.metas.serviceprovider.issue.IssueRepository;
 import de.metas.serviceprovider.issue.IssueType;
+import de.metas.serviceprovider.issue.Status;
 import de.metas.serviceprovider.issue.importer.info.ImportIssueInfo;
 import de.metas.serviceprovider.issue.importer.info.ImportIssuesRequest;
 import de.metas.serviceprovider.issue.importer.info.ImportMilestoneInfo;
@@ -63,6 +64,7 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
+import static de.metas.serviceprovider.issue.Status.INVOICED;
 import static de.metas.serviceprovider.issue.importer.ImportConstants.IMPORT_LOG_MESSAGE_PREFIX;
 import static de.metas.serviceprovider.model.X_S_IssueLabel.LABEL_AD_Reference_ID;
 
@@ -227,6 +229,7 @@ public class IssueImporterService
 				.isEffortIssue(ExternalProjectType.EFFORT.equals(importIssueInfo.getExternalProjectType()))
 				.estimatedEffort(importIssueInfo.getEstimation())
 				.budgetedEffort(importIssueInfo.getBudget())
+				.roughEstimation(importIssueInfo.getRoughEstimation())
 				.effortUomId(importIssueInfo.getEffortUomId())
 				.externalIssueNo(NumberUtils.asBigDecimal(importIssueInfo.getExternalIssueNo()))
 				.externalIssueURL(importIssueInfo.getExternalIssueURL())
@@ -234,6 +237,7 @@ public class IssueImporterService
 				.aggregatedEffort(Effort.ZERO)
 				.status(importIssueInfo.getStatus())
 				.deliveryPlatform(importIssueInfo.getDeliveryPlatform())
+				.plannedUATDate(importIssueInfo.getPlannedUATDate())
 				.build();
 	}
 
@@ -249,6 +253,10 @@ public class IssueImporterService
 				? importIssueInfo.getMilestone().getMilestoneId()
 				: null;
 
+		final Status status = INVOICED.equals(existingEffortIssue.getStatus())
+				? INVOICED
+				: importIssueInfo.getStatus();
+
 		final IssueEntity mergedIssueEntity = existingEffortIssue
 				.toBuilder()
 				.parentIssueId(parentIssueId)
@@ -260,12 +268,14 @@ public class IssueImporterService
 				.externalIssueNo(NumberUtils.asBigDecimal(importIssueInfo.getExternalIssueNo()))
 				.externalIssueURL(importIssueInfo.getExternalIssueURL())
 				.milestoneId(milestoneId)
-				.status(importIssueInfo.getStatus())
+				.status(status)
 				.deliveryPlatform(importIssueInfo.getDeliveryPlatform())
+				.plannedUATDate(importIssueInfo.getPlannedUATDate())
 				.build();
 
 		mergedIssueEntity.setBudgetedEffortIfNull(importIssueInfo.getBudget());
 		mergedIssueEntity.setEstimatedEffortIfNull(importIssueInfo.getEstimation());
+		mergedIssueEntity.setRoughEstimationIfNull(importIssueInfo.getRoughEstimation());
 
 		return mergedIssueEntity;
 	}
