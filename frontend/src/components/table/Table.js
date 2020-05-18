@@ -98,6 +98,7 @@ class Table extends Component {
      */
     if (
       (_.isEmpty(defaultSelected) || _.isEmpty(selected)) &&
+      selected[0] === undefined &&
       !_.isEmpty(rows)
     ) {
       this.setState({ selected: [rows[0].id] });
