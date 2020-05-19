@@ -66,7 +66,7 @@ class ThreadPoolQueueProcessor extends AbstractQueueProcessor
 		// Create the tasks executor
 		{
 			final CustomizableThreadFactory threadFactory = CustomizableThreadFactory.builder()
-					.setThreadNamePrefix("de.metas.async.processor.impl.ThreadPoolQueueProcessor-" + name)
+					.setThreadNamePrefix("async-ThreadPoolQueueProcessor-" + name)
 					.setDaemon(true)
 					.build();
 
@@ -77,7 +77,7 @@ class ThreadPoolQueueProcessor extends AbstractQueueProcessor
 					new SynchronousQueue<Runnable>(),
 					threadFactory);
 			// If we have a KeepAliveTimeMillis in processor definition, then we apply the timeout for core threads too
-			threadPoolExecutor.allowCoreThreadTimeOut(config.getKeepAliveTimeMillis() > 0);
+			// threadPoolExecutor.allowCoreThreadTimeOut(config.getKeepAliveTimeMillis() > 0);
 
 			this.executor = BlockingExecutorWrapper.builder()
 					.delegate(threadPoolExecutor)

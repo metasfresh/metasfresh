@@ -71,7 +71,7 @@ public class QueueProcessorsExecutor implements IQueueProcessorsExecutor
 {
 	private static final transient Logger logger = LogManager.getLogger(QueueProcessorsExecutor.class);
 
-	private final String threadNamePrefix = "QueueProcessorsExecutor";
+	private final String threadNamePrefix = "async-QueueProcessorsExecutor";
 	private final ThreadPoolExecutor threadExecutor;
 	private final Map<Integer, QueueProcessorDescriptor> queueProcessorDescriptors = new ConcurrentHashMap<>();
 	private final ReentrantLock mainLock = new ReentrantLock();

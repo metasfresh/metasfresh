@@ -59,9 +59,9 @@ public class BlockingExecutorWrapper implements ExecutorService
 	{
 		try
 		{
-			logger.debug("Going to aquire semaphore");
+			logger.debug("Going to acquire semaphore");
 			semaphore.acquire();
-			logger.debug("Done aquiring semaphore");
+			logger.debug("Done acquiring semaphore");
 		}
 		catch (InterruptedException e)
 		{
@@ -72,7 +72,7 @@ public class BlockingExecutorWrapper implements ExecutorService
 		final Runnable wrapped = () -> {
 			try
 			{
-				logger.debug("Going tu run command");
+				logger.debug("Going to run command");
 				command.run();
 				logger.debug("Done running command");
 			}

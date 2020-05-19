@@ -1,15 +1,21 @@
 package de.metas.event.log;
 
+import static org.assertj.core.api.Assertions.anyOf;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.time.Instant;
+import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 
 import org.adempiere.ad.wrapper.POJOLookupMap;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Matchers;
 import org.mockito.Mockito;
 
 import com.google.common.collect.ImmutableList;
@@ -57,9 +63,9 @@ public class EventLogServiceTest
 	{
 		AdempiereTestHelper.get().init();
 
-		eventLogService = new EventLogService();
+		eventLogService = new EventLogService(mock(EventLogsRepository.class));
 
-		eventBus = Mockito.mock(IEventBus.class);
+		eventBus = mock(IEventBus.class);
 		Mockito.doReturn(MOCKED_EVENT_BUS_NAME).when(eventBus).getTopicName();
 		Mockito.doReturn(MOCKED_EVENT_BUS_TYPE).when(eventBus).getType();
 	}
@@ -90,72 +96,46 @@ public class EventLogServiceTest
 		assertThat(eventLogEntryRecords).as("just string the event log does not mean any entries were created").isEmpty();
 	}
 
-	@SuppressWarnings({ "unchecked", "rawtypes" })
 	@Test
 	public void loadEvent()
 	{
 		final Event event = createSimpleEvent();
-		eventLogService.saveEvent(event, eventBus);
-		final EventLogEntry eventLog1 = EventLogEntry.builder()
-				.uuid(event.getUuid())
-				.clientId(20)
-				.orgId(30)
-				.processed(true)
-				.message("logs as processed, but doesn't provide handler class info")
-				.build();
-		eventLogService.saveEventLogEntries(ImmutableList.of(eventLog1));
+		final EventLogId eventLogId = eventLogService.saveEvent(event, eventBus);
 
-		final EventLogEntry eventLog2 = EventLogEntry.builder()
-				.uuid(event.getUuid())
-				.clientId(20)
-				.orgId(30)
-				.processed(false)
-				.eventHandlerClass(String.class)
-				.message("logs as not (yet) processed and provides handler class info")
-				.build();
-		eventLogService.saveEventLogEntries(ImmutableList.of(eventLog2));
+		final I_AD_EventLog_Entry eventLogEntryRecord1 = InterfaceWrapperHelper.newInstance(I_AD_EventLog_Entry.class);
+		eventLogEntryRecord1.setAD_EventLog_ID(eventLogId.getRepoId());
+		eventLogEntryRecord1.setAD_Org_ID(30);
+		eventLogEntryRecord1.setProcessed(true);
+		eventLogEntryRecord1.setMsgText("logs as processed, but doesn't provide handler class info");
+		InterfaceWrapperHelper.saveRecord(eventLogEntryRecord1);
 
-		final EventLogEntry eventLog3 = EventLogEntry.builder()
-				.uuid(event.getUuid())
-				.clientId(20)
-				.orgId(30)
-				.processed(true)
-				.eventHandlerClass(String.class)
-				.message("logs as processed and provides handler class info")
-				.build();
-		eventLogService.saveEventLogEntries(ImmutableList.of(eventLog3));
+		final I_AD_EventLog_Entry eventLogEntryRecord2 = InterfaceWrapperHelper.newInstance(I_AD_EventLog_Entry.class);
+		eventLogEntryRecord2.setAD_EventLog_ID(eventLogId.getRepoId());
+		eventLogEntryRecord2.setAD_Org_ID(30);
+		eventLogEntryRecord2.setProcessed(false);
+		eventLogEntryRecord2.setMsgText("logs as not (yet) processed and provides handler class info");
+		eventLogEntryRecord2.setClassname(String.class.getName());
+		InterfaceWrapperHelper.saveRecord(eventLogEntryRecord2);
 
-		final EventLogEntry eventLog4 = EventLogEntry.builder()
-				.uuid(event.getUuid())
-				.clientId(20)
-				.orgId(30)
-				.processed(true)
-				.eventHandlerClass(Integer.class)
-				.message("logs as processed and provides handler class info")
-				.build();
-		eventLogService.saveEventLogEntries(ImmutableList.of(eventLog4));
-
-		final EventLogEntry eventLog5 = EventLogEntry.builder()
-				.uuid(event.getUuid())
-				.clientId(20)
-				.orgId(30)
-				.processed(false)
-				.eventHandlerClass(Boolean.class)
-				.message("logs as not processed and provides handler class info")
-				.build();
-		eventLogService.saveEventLogEntries(ImmutableList.of(eventLog5));
+		final I_AD_EventLog_Entry eventLogEntryRecord3 = InterfaceWrapperHelper.newInstance(I_AD_EventLog_Entry.class);
+		eventLogEntryRecord3.setAD_EventLog_ID(eventLogId.getRepoId());
+		eventLogEntryRecord3.setAD_Org_ID(30);
+		eventLogEntryRecord3.setProcessed(true);
+		eventLogEntryRecord3.setMsgText("logs as processed and provides handler class info");
+		eventLogEntryRecord3.setClassname(String.class.getName());
+		InterfaceWrapperHelper.saveRecord(eventLogEntryRecord3);
 
 		final POJOLookupMap pojoLookupMap = POJOLookupMap.get();
 		final List<I_AD_EventLog> eventLogRecords = pojoLookupMap.getRecords(I_AD_EventLog.class);
 		assertThat(eventLogRecords).hasSize(1);
 
-		final EventLogId eventLogId = EventLogId.ofRepoId(eventLogRecords.get(0).getAD_EventLog_ID());
+		assertThat( EventLogId.ofRepoId(eventLogRecords.get(0).getAD_EventLog_ID())).isEqualTo(eventLogId);
 
 		final Event loadedEvent = eventLogService.loadEventForReposting(eventLogId);
 		final List<Object> processedbyHandlerInfo = loadedEvent.getProperty(EventLogUserService.PROPERTY_PROCESSED_BY_HANDLER_CLASS_NAMES);
 		assertThat(processedbyHandlerInfo).isNotNull();
 		assertThat(processedbyHandlerInfo).isInstanceOf(List.class);
-		assertThat((List)processedbyHandlerInfo).containsOnly(Integer.class.getName(), String.class.getName());
+		assertThat((List)processedbyHandlerInfo).containsOnly(String.class.getName());
 	}
 
 	private Event createSimpleEvent()
