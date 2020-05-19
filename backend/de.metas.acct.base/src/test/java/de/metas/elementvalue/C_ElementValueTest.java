@@ -1,31 +1,3 @@
-/**
- *
- */
-package de.metas.elementvalue;
-
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
-import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.test.AdempiereTestHelper;
-import org.compiere.SpringContextHolder;
-import org.compiere.model.I_AD_TreeNode;
-import org.compiere.model.I_C_Element;
-import org.compiere.model.I_C_ElementValue;
-import org.compiere.model.X_C_Element;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
-import de.metas.acct.api.IAcctSchemaDAO;
-import de.metas.acct.model.validator.C_ElementValue;
-import de.metas.treenode.TreeNodeRepository;
-import de.metas.treenode.TreeNodeService;
-import de.metas.util.Services;
-import lombok.Builder;
-import lombok.NonNull;
-
 /*
  * #%L
  * de.metas.acct.base
@@ -47,6 +19,35 @@ import lombok.NonNull;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+/**
+ *
+ */
+package de.metas.elementvalue;
+
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import de.metas.acct.api.impl.ElementValueId;
+import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_AD_TreeNode;
+import org.compiere.model.I_C_Element;
+import org.compiere.model.I_C_ElementValue;
+import org.compiere.model.X_C_Element;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import de.metas.acct.api.IAcctSchemaDAO;
+import de.metas.acct.model.validator.C_ElementValue;
+import de.metas.treenode.TreeNodeRepository;
+import de.metas.treenode.TreeNodeService;
+import de.metas.util.Services;
+import lombok.Builder;
+import lombok.NonNull;
 
 public class C_ElementValueTest
 {
