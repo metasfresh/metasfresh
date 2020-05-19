@@ -21,7 +21,7 @@
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
 	<import value="net.sf.jasperreports.engine.data.*"/>
-	<style name="StyleBOLD" mode="Opaque" fill="Solid" pattern="" fontName="Arial" fontSize="9" isBold="false">
+	<style name="StyleBOLD" mode="Opaque" forecolor="#F4834F" fill="Solid" pattern="" fontName="Arial" fontSize="9" isBold="false">
 		<conditionalStyle>
 			<conditionExpression><![CDATA[Boolean.valueOf($F{hasaltprice}.intValue() > 0 && $F{pricestd}.compareTo($F{altpricestd}) != 0)]]></conditionExpression>
 			<style fontName="Arial" fontSize="9" isBold="true"/>
@@ -173,7 +173,7 @@
 					<subreportExpression><![CDATA["de/metas/docs/generics/report_bpblock_shorter_left_margin.jasper"]]></subreportExpression>
 				</subreport>
 				<subreport isUsingCache="true">
-					<reportElement key="subreport-8" x="391" y="136" width="204" height="100" uuid="38f52446-b0c0-4196-9f17-6910b23e03b1"/>
+					<reportElement key="subreport-8" x="395" y="136" width="200" height="100" uuid="38f52446-b0c0-4196-9f17-6910b23e03b1"/>
 					<subreportParameter name="org_id">
 						<subreportParameterExpression><![CDATA[$F{ad_org_id}]]></subreportParameterExpression>
 					</subreportParameter>
@@ -181,7 +181,7 @@
 						<subreportParameterExpression><![CDATA["Y"]]></subreportParameterExpression>
 					</subreportParameter>
 					<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
-					<subreportExpression><![CDATA["de/metas/docs/generics/report_orgblock.jasper"]]></subreportExpression>
+					<subreportExpression><![CDATA["de/metas/docs/generics/report_orgblock_ic_text_color.jasper"]]></subreportExpression>
 				</subreport>
 				<subreport isUsingCache="true">
 					<reportElement key="subreport-4" x="0" y="26" width="595" height="85" uuid="6f9a7ef2-a0c3-4923-836d-a79c0f84ba2c"/>
