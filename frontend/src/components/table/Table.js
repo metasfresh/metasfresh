@@ -9,7 +9,9 @@ import currentDevice from 'current-device';
 import counterpart from 'counterpart';
 import uuid from 'uuid/v4';
 
+import { updateTableSelection } from '../../actions/TableActions';
 import { deleteRequest } from '../../actions/GenericActions';
+import { getTableId } from '../../reducers/tables';
 import {
   deleteLocal,
   openModal,
@@ -58,6 +60,7 @@ class Table extends Component {
     const { rowData, tabId } = this.props;
     //selecting first table elem while getting indent data
     this._isMounted = true;
+
     if (rowData.get(`${tabId}`)) {
       this.getIndentData(true);
     }
@@ -90,6 +93,31 @@ class Table extends Component {
       page,
     } = this.props;
     const { selected, rows } = this.state;
+
+    /**
+     * Selection by default of first row if nothing selected
+     */
+    if (
+      (_.isEmpty(defaultSelected) || _.isEmpty(selected)) &&
+      selected[0] === undefined &&
+      !_.isEmpty(rows)
+    ) {
+      this.setState({ selected: [rows[0].id] });
+      dispatch(
+        updateTableSelection({
+          tableId: getTableId({ windowType: windowId, viewId }),
+          ids: [rows[0].id],
+        })
+      );
+      dispatch(
+        selectTableItems({
+          windowType: windowId,
+          viewId,
+          ids: selected,
+        })
+      );
+    } // end of selection for the first row if nothing selected
+
     const selectedEqual = _.isEqual(prevState.selected, selected);
     const defaultSelectedEqual = _.isEqual(
       prevProps.defaultSelected,
@@ -139,6 +167,12 @@ class Table extends Component {
           defaultSelected && defaultSelected !== null ? defaultSelected : [],
       });
     } else if (!disconnectFromState && !selectedEqual && selected.length) {
+      dispatch(
+        updateTableSelection({
+          tableId: getTableId({ windowType: windowId, viewId }),
+          ids: selected,
+        })
+      );
       dispatch(
         selectTableItems({
           windowType: windowId,
@@ -376,6 +410,12 @@ class Table extends Component {
 
       if (tabInfo) {
         dispatch(
+          updateTableSelection({
+            tableId: getTableId({ windowType: windowId, viewId }),
+            ids: selected,
+          })
+        );
+        dispatch(
           selectTableItems({
             windowType: windowId,
             viewId,
@@ -385,6 +425,12 @@ class Table extends Component {
       }
 
       if (!disconnectFromState) {
+        dispatch(
+          updateTableSelection({
+            tableId: getTableId({ windowType: windowId, viewId }),
+            ids: selected,
+          })
+        );
         dispatch(
           selectTableItems({
             windowType: windowId,
@@ -406,6 +452,12 @@ class Table extends Component {
     this.setState({ selected: [...ids] });
 
     if (tabInfo) {
+      dispatch(
+        updateTableSelection({
+          tableId: getTableId({ windowType: windowId, viewId }),
+          ids,
+        })
+      );
       dispatch(
         selectTableItems({
           windowType: windowId,
@@ -438,6 +490,12 @@ class Table extends Component {
       },
       () => {
         if (tabInfo) {
+          dispatch(
+            updateTableSelection({
+              tableId: getTableId({ windowType: windowId, viewId }),
+              ids: [id],
+            })
+          );
           dispatch(
             selectTableItems({
               windowType: windowId,
@@ -479,6 +537,12 @@ class Table extends Component {
     );
 
     if (tabInfo) {
+      dispatch(
+        updateTableSelection({
+          tableId: getTableId({ windowType: windowId, viewId }),
+          ids: [],
+        })
+      );
       dispatch(
         selectTableItems({
           windowType: windowId,

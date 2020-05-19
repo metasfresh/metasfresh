@@ -27,3 +27,9 @@ export const UPDATE_TABLE = 'UPDATE_TABLE';
  * @type {string} Delete table from the state
  */
 export const DELETE_TABLE = 'DELETE_TABLE';
+
+/**
+ * @constant
+ * @type {string} update table selection
+ */
+export const UPDATE_TABLE_SELECTION = 'UPDATE_TABLE_SELECTION';
