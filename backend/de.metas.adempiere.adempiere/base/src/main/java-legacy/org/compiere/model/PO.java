@@ -3154,13 +3154,6 @@ public abstract class PO
 			}
 		}
 
-		//
-		// Deferred processing of this po (metas-ts 1076)
-		if (success)
-		{
-			fireModelChange(ModelChangeType.SUBSEQUENT);
-		}
-
 		// Return "success"
 		return success;
 	}	// saveFinish

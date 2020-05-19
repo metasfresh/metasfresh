@@ -117,7 +117,7 @@ public class C_Print_Job_Instructions_Create extends JavaProcess
 						lastLine,
 						p_copies);
 
-		return "@Created@";
+		return MSG_OK;
 	}
 
 	public I_C_Print_Job_Instructions getC_Print_Job_Instructions()

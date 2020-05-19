@@ -34,8 +34,6 @@ import org.adempiere.context.SwingContextProvider;
 import org.adempiere.context.ThreadLocalContextProvider;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.plaf.AdempierePLAF;
-import org.adempiere.processing.service.IProcessingService;
-import org.adempiere.processing.service.impl.ProcessingService;
 import org.adempiere.service.IClientDAO;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.db.CConnection;
@@ -763,11 +761,6 @@ public class Adempiere
 		{
 			logger.warn("Not started: " + className + " - " + e.getMessage());
 		}
-
-		// metas: begin
-		Services.registerService(IProcessingService.class, ProcessingService.get());
-		// metas: end
-
 		return true;
 	}	// startupEnvironment
 

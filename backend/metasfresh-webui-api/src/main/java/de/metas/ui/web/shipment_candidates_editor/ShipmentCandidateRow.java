@@ -13,6 +13,7 @@ import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.util.ASIEditingInfo;
 import org.adempiere.mm.attributes.util.ASIEditingInfo.WindowType;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 
 import de.metas.inoutcandidate.api.ShipmentScheduleId;
@@ -33,7 +34,9 @@ import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.ViewEditorRenderMode;
 import de.metas.ui.web.window.descriptor.WidgetSize;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NonNull;
+import lombok.ToString;
 
 /*
  * #%L
@@ -57,6 +60,7 @@ import lombok.NonNull;
  * #L%
  */
 
+@ToString
 public final class ShipmentCandidateRow implements IViewRow, WebuiASIEditingInfoAware
 {
 	@ViewColumn(seqNo = 10, widgetType = DocumentFieldWidgetType.Lookup, widgetSize = WidgetSize.Small, captionKey = "C_OrderSO_ID")
@@ -76,10 +80,13 @@ public final class ShipmentCandidateRow implements IViewRow, WebuiASIEditingInfo
 	private final LookupValue asi;
 
 	@ViewColumn(seqNo = 60, widgetType = DocumentFieldWidgetType.Quantity, widgetSize = WidgetSize.Small, captionKey = "QtyOrdered")
+	@Getter
 	private final BigDecimal qtyOrdered;
 
 	public static final String FIELD_qtyToDeliverUserEntered = "qtyToDeliverUserEntered";
 	@ViewColumn(seqNo = 70, widgetType = DocumentFieldWidgetType.Quantity, fieldName = FIELD_qtyToDeliverUserEntered, widgetSize = WidgetSize.Small, captionKey = "QtyToDeliver_Override", editor = ViewEditorRenderMode.ALWAYS)
+	@Getter
+	@VisibleForTesting
 	private final BigDecimal qtyToDeliverUserEntered;
 
 	@ViewColumn(seqNo = 80, widgetType = DocumentFieldWidgetType.Lookup, widgetSize = WidgetSize.Medium, captionKey = "PackDescription")
@@ -148,7 +155,7 @@ public final class ShipmentCandidateRow implements IViewRow, WebuiASIEditingInfo
 		this.product = product;
 
 		this.packingInfo = packingInfo;
-		this.packingDescription = this.packingInfo != null ? this.packingInfo.getDescription() : null;
+		this.packingDescription = this.packingInfo.getDescription();
 
 		this.qtyOrdered = qtyOrdered;
 

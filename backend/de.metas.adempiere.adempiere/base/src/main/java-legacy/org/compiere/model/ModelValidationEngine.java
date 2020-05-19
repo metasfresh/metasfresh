@@ -51,8 +51,6 @@ import org.adempiere.ad.trx.api.ITrxRunConfig.OnRunnableSuccess;
 import org.adempiere.ad.trx.api.ITrxRunConfig.TrxPropagation;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.processing.model.MADProcessablePO;
-import org.adempiere.processing.service.IProcessingService;
 import org.adempiere.util.LegacyAdapters;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.Adempiere.RunMode;
@@ -945,7 +943,6 @@ public class ModelValidationEngine implements IModelValidationEngine
 		}
 	}
 
-	@SuppressWarnings("deprecation")
 	private void invokeModelChangeMethod(
 			@NonNull final PO po,
 			@NonNull final ModelChangeType changeType,
@@ -959,57 +956,27 @@ public class ModelValidationEngine implements IModelValidationEngine
 				return;
 			}
 
-			if (changeType == ModelChangeType.SUBSEQUENT)
-			{
-				handleTypeSubsequent(po, validator);
-			}
-			else
-			{
-				final Stopwatch stopwatch = Stopwatch.createStarted();
+		final Stopwatch stopwatch = Stopwatch.createStarted();
 				try
-				{
+		{
 
-					// the default cause
-					final String error = validator.modelChange(po, changeType.toInt());
-					if (!Check.isEmpty(error))
-					{
-						throw new AdempiereException(error);
-					}
+			// the default cause
+			final String error = validator.modelChange(po, changeType.toInt());
+			if (!Check.isEmpty(error))
+			{
+				throw new AdempiereException(error);
+			}
 
 					logger.debug("Executed in {}: {} ({}) for {}", stopwatch, validator, changeType, po);
-				}
-				catch (final Exception ex)
-				{
-					logger.debug("Failed executing in {}: {} ({}) for {}", stopwatch, validator, changeType, po, ex);
-					throw AdempiereException.wrapIfNeeded(ex);
-				}
-			}
-		}
-	}
-
-	private void handleTypeSubsequent(
-			@NonNull final PO po,
-			@NonNull final ModelValidator validator)
-	{
-		try
-		{
-			if (m_modelChangeSubsequent.containsKey(validator))
-			{
-				// create a queue record
-				final MADProcessablePO processablePO = MADProcessablePO.createOrRetrieveFor(po, validator);
-
-				if (m_modelChangeSubsequent.get(validator))
-				{
-					// process 'po' right now. If a problem occurs, record it in 'processablePO'
-					Services.get(IProcessingService.class).process(processablePO, null);
-				}
-			}
 		}
 		catch (final Exception ex)
 		{
+					logger.debug("Failed executing in {}: {} ({}) for {}", stopwatch, validator, changeType, po, ex);
 			throw AdempiereException.wrapIfNeeded(ex);
 		}
 	}
+
+				}
 
 	/**************************************************************************
 	 * Add Document Validation Listener

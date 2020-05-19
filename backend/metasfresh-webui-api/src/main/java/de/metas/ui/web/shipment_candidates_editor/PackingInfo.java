@@ -86,7 +86,7 @@ final class PackingInfo
 
 	private BigDecimal computeQtyTUsByQtyCUs(final BigDecimal qtyCUs)
 	{
-		return qtyCUs.divide(qtyCUsPerTU, 0, RoundingMode.DOWN);
+		return qtyCUs.divide(qtyCUsPerTU, 0, RoundingMode.UP);
 	}
 
 	private BigDecimal computeQtyCUsByQtyTUs(final BigDecimal qtyTUs)

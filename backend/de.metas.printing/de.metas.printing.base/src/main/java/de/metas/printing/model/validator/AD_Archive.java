@@ -68,8 +68,6 @@ public class AD_Archive
 
 	/**
 	 * If direct print is required for given {@link AD_Archive} then this method enqueues the archive to printing queue.
-	 * 
-	 * @param archive
 	 */
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE },
 			ifColumnsChanged = {
@@ -86,7 +84,7 @@ public class AD_Archive
 
 		I_C_Printing_Queue item = null;
 
-		final boolean enqueueToPrintQueue = isEnqueToPrintingQueue(archive);
+		final boolean enqueueToPrintQueue = isEnqueueToPrintingQueue(archive);
 		if (enqueueToPrintQueue)
 		{
 			item = Services.get(IPrintingQueueBL.class).enqueue(archive);
@@ -101,8 +99,6 @@ public class AD_Archive
 
 	/**
 	 * Directly create the print job. That means it will be printed now.
-	 * 
-	 * @param printingQueue
 	 */
 	private void forwardToJob(final I_C_Printing_Queue printingQueue)
 	{
@@ -111,7 +107,7 @@ public class AD_Archive
 		Services.get(IPrintJobBL.class).createPrintJobs(source);
 	}
 
-	private final boolean isEnqueToPrintingQueue(final I_AD_Archive archive)
+	private final boolean isEnqueueToPrintingQueue(final I_AD_Archive archive)
 	{
 		// If we need to create a print job, then we shall enqueue to printing queue first
 		if (isCreatePrintJob(archive))

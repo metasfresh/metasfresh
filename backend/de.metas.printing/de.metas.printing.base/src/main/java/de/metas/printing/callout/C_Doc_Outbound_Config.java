@@ -41,8 +41,6 @@ public class C_Doc_Outbound_Config
 	 * If <code>IsCreatePrintJob</code> is set to <code>true</code>, then also set <code>IsDirectEnqueue</code>, because without a printing queue, there is no print job.
 	 * <p>
 	 * Note that this is mainly for the user. The business logics (=>AD_Archive) already behave like this for some time.
-	 * 
-	 * @param config
 	 * @task http://dewiki908/mediawiki/index.php/09417_Massendruck_-_Sofort-Druckjob_via_Ausgehende-Belege_konfig_einstellbar_%28101934367465%29
 	 */
 	@CalloutMethod(columnNames = { I_C_Doc_Outbound_Config.COLUMNNAME_IsCreatePrintJob })
@@ -58,8 +56,6 @@ public class C_Doc_Outbound_Config
 	 * If <code>IsDirectEnqueue</code> is set to <code>false</code>, then also unset <code>IsCreatePrintJob</code>, because without a printing queue, there is no print job.
 	 * <p>
 	 * Note that this is mainly for the user. The business logics (=>AD_Archive) already behave like this for some time.
-	 * 
-	 * @param config
 	 * @task http://dewiki908/mediawiki/index.php/09417_Massendruck_-_Sofort-Druckjob_via_Ausgehende-Belege_konfig_einstellbar_%28101934367465%29
 	 */
 	@CalloutMethod(columnNames = { I_C_Doc_Outbound_Config.COLUMNNAME_IsDirectEnqueue })

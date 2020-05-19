@@ -2,7 +2,6 @@ import { reduce, cloneDeep } from 'lodash';
 import * as types from '../constants/ActionTypes';
 import { UPDATE_TABLE_SELECTION } from '../constants/actions/TableTypes';
 
-import { getTable } from '../reducers/tables';
 import { getView } from '../reducers/viewHandler';
 
 /**
@@ -66,7 +65,7 @@ export function setActiveSortNEW(id, active) {
  * @summary Helper function to grab raw data and format/name it accordingly to
  * the values in the store.
  */
-function createTableData(rawData) {
+export function createTableData(rawData) {
   const dataObject = {
     windowType: rawData.windowType || rawData.windowId,
     viewId: rawData.viewId,
@@ -128,6 +127,8 @@ export function createGridTable(tableId, tableResponse) {
     const tableData = createTableData({ ...tableResponse, ...tableLayout });
 
     dispatch(createTable(tableId, tableData));
+
+    return Promise.resolve(tableData);
   };
 }
 
@@ -139,7 +140,7 @@ export function updateGridTable(tableId, tableResponse) {
     const state = getState();
 
     if (state.tables) {
-      const tableExists = getTable(tableId, state);
+      const tableExists = state.tables[tableId];
 
       if (tableExists) {
         const tableData = createTableData({
@@ -159,7 +160,11 @@ export function updateGridTable(tableId, tableResponse) {
 
         dispatch(createTable(tableId, tableData));
       }
+
+      return Promise.resolve(true);
     }
+
+    return Promise.resolve(false);
   };
 }
 
@@ -171,6 +176,8 @@ export function createTabTable(tableId, tableResponse) {
     const tableData = createTableData(tableResponse);
 
     dispatch(createTable(tableId, tableData));
+
+    return Promise.resolve(tableData);
   };
 }
 
@@ -182,7 +189,7 @@ export function updateTabTable(tableId, tableResponse) {
     const state = getState();
 
     if (state.tables) {
-      const tableExists = getTable(tableId, state);
+      const tableExists = state.tables[tableId];
       const tableData = createTableData(tableResponse);
 
       if (tableExists) {
@@ -190,7 +197,11 @@ export function updateTabTable(tableId, tableResponse) {
       } else {
         dispatch(createTable(tableId, tableData));
       }
+
+      return Promise.resolve(true);
     }
+
+    return Promise.resolve(false);
   };
 }
 

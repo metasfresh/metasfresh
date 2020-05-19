@@ -1,3 +1,25 @@
+/*
+ * #%L
+ * de.metas.handlingunits.base
+ * %%
+ * Copyright (C) 2020 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.handlingunits.movement.api.impl;
 
 import java.util.HashMap;
@@ -13,7 +35,6 @@ import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
-import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.util.Env;
@@ -32,6 +53,8 @@ import de.metas.product.acct.api.ActivityId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+
+import javax.annotation.Nullable;
 
 public class HUMovementBL implements IHUMovementBL
 {
@@ -59,6 +82,7 @@ public class HUMovementBL implements IHUMovementBL
 		InterfaceWrapperHelper.save(movementLine);
 	}
 
+	@Nullable
 	@Override
 	public I_M_Warehouse getDirectMove_Warehouse(final Properties ctx, final boolean throwEx)
 	{
@@ -126,7 +150,7 @@ public class HUMovementBL implements IHUMovementBL
 			{
 				movementBuilder = new HUMovementBuilder();
 				movementBuilder.setContextInitial(initialContext);
-				movementBuilder.setWarehouseFrom(Services.get(IWarehouseDAO.class).getById(sourceWarehouseId));
+				movementBuilder.setLocatorFrom(IHandlingUnitsBL.extractLocator(hu));
 				movementBuilder.setLocatorTo(locatorTo);
 
 				warehouseId2builder.put(sourceWarehouseId, movementBuilder);

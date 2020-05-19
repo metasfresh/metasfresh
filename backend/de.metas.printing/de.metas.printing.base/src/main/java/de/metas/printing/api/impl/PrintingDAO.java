@@ -406,24 +406,6 @@ public class PrintingDAO extends AbstractPrintingDAO
 		return result;
 	}
 
-	@Override
-	public void runWithTrxName(final String trxName, final Runnable runnable)
-	{
-		Check.assumeNotNull(runnable, "runnable not null");
-
-		final String allowedTrxNamePrefix = Util.same(trxName, ITrx.TRXNAME_None) ? ITrx.TRXNAME_PREFIX_LOCAL : trxName;
-
-		DB.saveConstraints();
-		try
-		{
-			DB.getConstraints().addAllowedTrxNamePrefix(allowedTrxNamePrefix);
-			runnable.run();
-		}
-		finally
-		{
-			DB.restoreConstraints();
-		}
-	}
 
 	@Override
 	public List<I_AD_Printer> retrievePrinters(final Properties ctx, final int adOrgId)

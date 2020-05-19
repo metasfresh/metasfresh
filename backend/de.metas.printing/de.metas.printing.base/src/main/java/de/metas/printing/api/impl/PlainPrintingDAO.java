@@ -319,13 +319,6 @@ public class PlainPrintingDAO extends AbstractPrintingDAO
 		return lookupMap.getRecords(I_AD_PrinterHW_MediaTray.class, pojo -> pojo.getAD_PrinterHW_ID() == printerHW.getAD_PrinterHW_ID());
 	}
 
-	@Override
-	public void runWithTrxName(final String trxName, final Runnable runnable)
-	{
-		// nothing special on this level because we are not dealing with trx constraints
-		runnable.run();
-	}
-
 	public I_C_Print_Job_Instructions retrievePrintJobInstructionsForPrintJob(final I_C_Print_Job printJob)
 	{
 		return lookupMap.getFirstOnly(I_C_Print_Job_Instructions.class, pojo -> pojo.getC_Print_Job_ID() == printJob.getC_Print_Job_ID());

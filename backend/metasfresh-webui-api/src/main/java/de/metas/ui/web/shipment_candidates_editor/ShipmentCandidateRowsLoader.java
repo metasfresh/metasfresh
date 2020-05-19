@@ -5,6 +5,7 @@ import java.time.ZonedDateTime;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 import javax.annotation.Nullable;
@@ -12,7 +13,7 @@ import javax.annotation.Nullable;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.warehouse.WarehouseId;
 
-import java.util.Objects;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
@@ -215,7 +216,8 @@ final class ShipmentCandidateRowsLoader
 		return productsLookup.findById(productId);
 	}
 
-	private static PackingInfo extractPackingInfo(@NonNull final I_M_ShipmentSchedule record)
+	@VisibleForTesting
+	static PackingInfo extractPackingInfo(@NonNull final I_M_ShipmentSchedule record)
 	{
 		final BigDecimal qtyCUsPerTU = record.getQtyItemCapacity();
 		if (qtyCUsPerTU == null || qtyCUsPerTU.signum() <= 0)

@@ -20,7 +20,6 @@ public interface IEventBusRemoteEndpoint
 	 * Do nothing if binding is disabled according to the current config. See <a href="http://dewiki908/mediawiki/index.php/de.metas.event-Overview">de.metas.event-Overview</a> and/or
 	 * {@link SysconfigBackedAllowRemoteBindingPredicate} for details.
 	 *
-	 * @param eventBus
 	 * @return <code>true</code> iff the event bus was actually bound to the endpoint.
 	 *
 	 */

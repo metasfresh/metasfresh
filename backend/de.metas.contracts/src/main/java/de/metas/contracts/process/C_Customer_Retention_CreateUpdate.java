@@ -1,14 +1,13 @@
 package de.metas.contracts.process;
 
+import java.util.Iterator;
+
 import org.compiere.SpringContextHolder;
 
-import com.google.common.collect.ImmutableSet;
-
 import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.contracts.bpartner.ContractPartnerRepository;
 import de.metas.contracts.impl.CustomerRetentionRepository;
 import de.metas.process.JavaProcess;
-import de.metas.util.Services;
 
 /*
  * #%L
@@ -37,15 +36,17 @@ public class C_Customer_Retention_CreateUpdate extends JavaProcess
 
 	final CustomerRetentionRepository customerRetentionRepo = SpringContextHolder.instance.getBean(CustomerRetentionRepository.class);
 
-	final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
+	final ContractPartnerRepository contractPartnerRepo = SpringContextHolder.instance.getBean(ContractPartnerRepository.class);
 
 	@Override
 	protected String doIt() throws Exception
 	{
-		final ImmutableSet<BPartnerId> customers = bpartnerDAO.retrieveAllCustomerIDs();
+		final Iterator<BPartnerId> customers = contractPartnerRepo.retrieveAllPartnersWithContracts();
 
-		customers.stream()
-				.forEach(customerId -> customerRetentionRepo.createUpdateCustomerRetention(customerId));
+		while(customers.hasNext())
+		{
+			customerRetentionRepo.createUpdateCustomerRetention(customers.next());
+		}
 
 		return MSG_OK;
 	}

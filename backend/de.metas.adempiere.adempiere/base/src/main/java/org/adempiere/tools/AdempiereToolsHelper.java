@@ -28,7 +28,7 @@ import org.compiere.model.ModelValidationEngine;
 import org.compiere.util.Env;
 
 import de.metas.adempiere.addon.impl.AddonStarter;
-import de.metas.event.EventBusConstants;
+import de.metas.event.EventBusConfig;
 import de.metas.logging.LogManager;
 
 /**
@@ -60,7 +60,7 @@ public final class AdempiereToolsHelper
 	public void startupMinimal(RunMode runMode)
 	{
 		// Disable distributed events because we don't want to broadcast events to network.
-		EventBusConstants.disableDistributedEvents();
+		EventBusConfig.disableDistributedEvents();
 		
 		AddonStarter.warnIfPropertiesFileMissing = false; // don't warn because it we know it's missing.
 		

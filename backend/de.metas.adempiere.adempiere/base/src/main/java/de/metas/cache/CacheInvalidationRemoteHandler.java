@@ -5,6 +5,7 @@ import java.util.function.Function;
 
 import org.adempiere.ad.dao.cache.CacheInvalidateMultiRequestSerializer;
 import org.slf4j.Logger;
+import org.slf4j.MDC.MDCCloseable;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSet;
@@ -17,6 +18,7 @@ import de.metas.event.IEventBusFactory;
 import de.metas.event.IEventListener;
 import de.metas.event.Topic;
 import de.metas.event.Type;
+import de.metas.event.impl.EventMDC;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -127,9 +129,6 @@ final class CacheInvalidationRemoteHandler implements IEventListener
 
 	/**
 	 * Broadcast a cache invalidation request.
-	 *
-	 * @param tableName
-	 * @param recordId
 	 */
 	public void postEvent(final CacheInvalidateMultiRequest request)
 	{
@@ -149,11 +148,13 @@ final class CacheInvalidationRemoteHandler implements IEventListener
 
 		// Broadcast the event.
 		final Event event = createEventFromRequest(request);
-		Services.get(IEventBusFactory.class)
-				.getEventBus(TOPIC_CacheInvalidation)
-				.postEvent(event);
-
-		logger.debug("Broadcasting cache invalidation of {}, event={}", request, event);
+		try (final MDCCloseable mdc = EventMDC.putEvent(event))
+		{
+			logger.debug("Broadcasting cacheInvalidateMultiRequest={}", request);
+			Services.get(IEventBusFactory.class)
+					.getEventBus(TOPIC_CacheInvalidation)
+					.postEvent(event);
+		}
 	}
 
 	private boolean isAllowBroadcast(final CacheInvalidateMultiRequest multiRequest)
