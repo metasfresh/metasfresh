@@ -11,12 +11,12 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.currency.CurrencyRepository;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.IHUPIItemProductBL;
 import de.metas.handlingunits.model.I_C_OrderLine;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
-import de.metas.money.CurrencyId;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
@@ -56,11 +56,14 @@ public class OrderProductProposalsService
 	private final IPriceListDAO priceListsRepo = Services.get(IPriceListDAO.class);
 	private final IHUPIItemProductBL packingMaterialsService = Services.get(IHUPIItemProductBL.class);
 	private final IBPartnerBL bpartnersService;
+	private final CurrencyRepository currencyRepo;
 
 	public OrderProductProposalsService(
-			@NonNull final IBPartnerBL bpartnersService)
+			@NonNull final IBPartnerBL bpartnersService,
+			@NonNull final CurrencyRepository currencyRepo)
 	{
 		this.bpartnersService = bpartnersService;
+		this.currencyRepo = currencyRepo;
 	}
 
 	public Order getOrderById(@NonNull final OrderId orderId)
@@ -85,7 +88,7 @@ public class OrderProductProposalsService
 				.priceListId(priceListId)
 				.priceListVersionId(priceListVersionId)
 				.countryId(CountryId.ofRepoIdOrNull(priceList.getC_Country_ID()))
-				.currencyId(CurrencyId.ofRepoId(priceList.getC_Currency_ID()))
+				.currency(currencyRepo.getById(priceList.getC_Currency_ID()))
 				.lines(ordersRepo.retrieveOrderLines(orderId, I_C_OrderLine.class)
 						.stream()
 						.map(this::toOrderLine)
@@ -103,6 +106,7 @@ public class OrderProductProposalsService
 				.packingMaterialId(packingMaterialId)
 				.packingMaterialWithInfiniteCapacity(packingMaterialsService.isInfiniteCapacity(packingMaterialId))
 				.priceActual(record.getPriceActual())
+				.priceEntered(record.getPriceEntered())
 				.qtyEnteredCU(record.getQtyEntered())
 				.qtyEnteredTU(record.getQtyEnteredTU().intValue())
 				.description(record.getDescription())
