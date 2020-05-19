@@ -25,8 +25,6 @@ package de.metas.issue.tracking.github.api.v3;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
-import java.util.regex.Pattern;
-
 public interface GitHubApiConstants
 {
 	@AllArgsConstructor
@@ -59,15 +57,6 @@ public interface GitHubApiConstants
 		SINCE("since");
 
 		private final String value;
-	}
-
-	@AllArgsConstructor
-	@Getter
-	enum LabelType{
-		BUDGET(Pattern.compile("^bud:([0-9]+\\.?[0-9]*)$")),
-		ESTIMATION(Pattern.compile("^est:([0-9]+\\.?[0-9]*)$"));
-
-		private final Pattern pattern;
 	}
 
 	@AllArgsConstructor

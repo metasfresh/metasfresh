@@ -35,6 +35,7 @@ import org.junit.Test;
 import java.math.BigDecimal;
 import java.util.List;
 
+import static de.metas.serviceprovider.TestConstants.MOCK_DATE_2020_03_01;
 import static de.metas.serviceprovider.TestConstants.MOCK_DESCRIPTION;
 import static de.metas.serviceprovider.TestConstants.MOCK_EFFORT_1_30;
 import static de.metas.serviceprovider.TestConstants.MOCK_EXTERNAL_ISSUE_NO;
@@ -68,6 +69,7 @@ public class IssueRepositoryTest
 			.milestoneId(MOCK_MILESTONE_ID)
 			.budgetedEffort(BigDecimal.ONE)
 			.estimatedEffort(BigDecimal.ONE)
+			.roughEstimation(BigDecimal.ONE)
 			.issueEffort(Effort.ofNullable(MOCK_EFFORT_1_30))
 			.aggregatedEffort(Effort.ofNullable(MOCK_EFFORT_1_30))
 			.name(MOCK_NAME)
@@ -77,6 +79,7 @@ public class IssueRepositoryTest
 			.isEffortIssue(true)
 			.latestActivityOnSubIssues(MOCK_INSTANT)
 			.latestActivityOnIssue(MOCK_INSTANT)
+			.plannedUATDate(MOCK_DATE_2020_03_01)
 			.deliveryPlatform(MOCK_VALUE)
 			.status(Status.IN_PROGRESS)
 			.externalIssueNo(BigDecimal.valueOf(MOCK_EXTERNAL_ISSUE_NO))
