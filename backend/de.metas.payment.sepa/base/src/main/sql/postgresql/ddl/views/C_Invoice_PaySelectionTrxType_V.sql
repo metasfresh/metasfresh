@@ -4,7 +4,7 @@ CREATE OR REPLACE VIEW C_Invoice_PaySelectionTrxType_V AS
 SELECT C_Invoice_ID,
 	CASE 
 		WHEN /* CREDIT_TRANSFER_TO_VENDOR - "OUT" */ i.IsSOTrx='N' AND i.PaymentRule IN ('T'/*DirectDeposit*/, 'P'/*OnCredit*/) AND i.DocStatus IN ('CO', 'CL') THEN 'CT'
-		WHEN /* DIRECT_DEBIT_FROM_CUSTOMER - "CDD" */ i.IsSOTrx='Y' AND dt.DocBaseType != 'ARC' AND i.PaymentRule IN ('D'/*DirectDebit*/, 'P'/*OnCredit*/) AND i.DocStatus IN ('CO', 'CL') THEN 'DD'
+		WHEN /* DIRECT_DEBIT_FROM_CUSTOMER - "CDD" */ i.IsSOTrx='Y' AND dt.DocBaseType = 'ARI' AND i.PaymentRule IN ('D'/*DirectDebit*/, 'P'/*OnCredit*/) AND i.DocStatus IN ('CO', 'CL') THEN 'DD'
 		WHEN /* CREDIT_TRANSFER_TO_CUSTOMER - "CRE" */ i.IsSOTrx='Y' AND dt.DocBaseType = 'ARC' AND i.PaymentRule IN ('T'/*DirectDeposit*/, 'P'/*OnCredit*/) AND i.DocStatus IN ('CO', 'CL') THEN 'CT'
 		ELSE /* not compatible to any type */ 'XX'
 	END AS PaySelectionTrxType,
