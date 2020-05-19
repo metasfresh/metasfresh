@@ -360,9 +360,10 @@ public class GithubImporterService implements IssueImporter
 		{
 			plannedUATDate = LocalDate.from(PLANNED_UAT_DATE_FORMAT.parse(matcher.group(PLANNED_UAT.getGroupName())));
 		}
-		catch (Exception e)
+		catch (final Exception e)
 		{
-			log.error("{} : cannot extract planned UAT date from : {}", IMPORT_LOG_MESSAGE_PREFIX, label.getName());
+			log.error("{} : cannot extract planned UAT date from : {}, ex: {} ",
+					IMPORT_LOG_MESSAGE_PREFIX, label.getName(), e);
 		}
 
 		return Optional.ofNullable(plannedUATDate);

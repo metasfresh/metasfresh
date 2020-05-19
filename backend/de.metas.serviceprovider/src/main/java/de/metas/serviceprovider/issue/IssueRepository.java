@@ -41,11 +41,10 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
 
 import javax.annotation.Nullable;
-import java.sql.Timestamp;
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -217,10 +216,6 @@ public class IssueRepository
 				.orElseThrow( () ->new AdempiereException("Unknown Status!").appendParametersToMessage()
 						.setParameter("I_S_Issue", record));
 
-		final LocalDate plannedUATDate = record.getPlannedUATDate() != null
-				? record.getPlannedUATDate().toLocalDateTime().toLocalDate()
-				: null;
-
 		return IssueEntity.builder()
 				.orgId(OrgId.ofRepoId(record.getAD_Org_ID()))
 				.externalProjectReferenceId(ExternalProjectReferenceId.ofRepoIdOrNull(record.getS_ExternalProjectReference_ID()))
@@ -236,7 +231,7 @@ public class IssueRepository
 				.type(issueType)
 				.status(status)
 				.deliveryPlatform(record.getDeliveryPlatform())
-				.plannedUATDate(plannedUATDate)
+				.plannedUATDate(TimeUtil.asLocalDate(record.getPlannedUATDate()))
 				.isEffortIssue(record.isEffortIssue())
 				.estimatedEffort(record.getEstimatedEffort())
 				.budgetedEffort(record.getBudgetedEffort())
@@ -276,20 +271,15 @@ public class IssueRepository
 		record.setIssueEffort(issueEntity.getIssueEffort().getHmm());
 		record.setAggregatedEffort(issueEntity.getAggregatedEffort().getHmm());
 
-		record.setLatestActivityOnSubIssues(issueEntity.getLatestActivityOnSubIssues() != null
-				? Timestamp.from(issueEntity.getLatestActivityOnSubIssues()) : null);
-
-		record.setLatestActivity(issueEntity.getLatestActivityOnIssue() != null
-				? Timestamp.from(issueEntity.getLatestActivityOnIssue()) : null);
+		record.setLatestActivityOnSubIssues(TimeUtil.asTimestamp(issueEntity.getLatestActivityOnSubIssues()));
+		record.setLatestActivity(TimeUtil.asTimestamp(issueEntity.getLatestActivityOnIssue()));
 
 		if (issueEntity.getStatus() != null)
 		{
 			record.setStatus(issueEntity.getStatus().getCode());
 		}
 
-		record.setPlannedUATDate(issueEntity.getPlannedUATDate() != null
-				? Timestamp.valueOf(issueEntity.getPlannedUATDate().atStartOfDay())
-				: null);
+		record.setPlannedUATDate(TimeUtil.asTimestamp(issueEntity.getPlannedUATDate()));
 
 		record.setDeliveryPlatform(issueEntity.getDeliveryPlatform());
 

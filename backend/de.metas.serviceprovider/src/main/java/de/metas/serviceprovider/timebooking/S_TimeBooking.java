@@ -81,7 +81,7 @@ public class S_TimeBooking
 	public void recomputeIssueProgressAfterDelete(@NonNull final I_S_TimeBooking record)
 	{
 		final IssueId issueId = IssueId.ofRepoId(record.getS_Issue_ID());
-		final Effort removedEffort = Effort.of(record.getBookedSeconds().longValue());
+		final Effort removedEffort = Effort.ofSeconds(record.getBookedSeconds().longValue());
 
 		final AddIssueProgressRequest addIssueProgressRequest = AddIssueProgressRequest
 				.builder()
@@ -99,7 +99,7 @@ public class S_TimeBooking
 
 		if (record.getS_Issue_ID() != oldRecord.getS_Issue_ID())
 		{
-			final Effort bookedEffort = Effort.of(record.getBookedSeconds().longValue());
+			final Effort bookedEffort = Effort.ofSeconds(record.getBookedSeconds().longValue());
 
 			//1. add the progress for the new issue
 			final AddIssueProgressRequest addIssueProgressRequest = AddIssueProgressRequest
@@ -152,7 +152,7 @@ public class S_TimeBooking
 		final AddIssueProgressRequest addIssueProgressRequest = AddIssueProgressRequest
 				.builder()
 				.issueId(IssueId.ofRepoId(record.getS_Issue_ID()))
-				.bookedEffort(Effort.of(deltaBookedSeconds))
+				.bookedEffort(Effort.ofSeconds(deltaBookedSeconds))
 				.build();
 
 		issueService.addIssueProgress(addIssueProgressRequest);

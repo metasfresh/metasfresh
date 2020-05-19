@@ -118,7 +118,7 @@ public class IssueEntity
 	@Nullable
 	private Instant latestActivityOnIssue;
 
-	public void setEstimatedEffortIfNull(@Nullable final BigDecimal estimatedEffort)
+	public void setEstimatedEffortIfNotSet(@Nullable final BigDecimal estimatedEffort)
 	{
 		if ( this.estimatedEffort == null || this.estimatedEffort.signum() == 0 )
 		{
@@ -126,7 +126,7 @@ public class IssueEntity
 		}
 	}
 
-	public void setBudgetedEffortIfNull(@Nullable final BigDecimal budgetedEffort)
+	public void setBudgetedEffortIfNotSet(@Nullable final BigDecimal budgetedEffort)
 	{
 		if ( this.budgetedEffort == null || this.budgetedEffort.signum() == 0 )
 		{
@@ -134,7 +134,7 @@ public class IssueEntity
 		}
 	}
 
-	public void setRoughEstimationIfNull(@Nullable final BigDecimal roughEstimation)
+	public void setRoughEstimationIfNotSet(@Nullable final BigDecimal roughEstimation)
 	{
 		if ( this.roughEstimation == null || this.roughEstimation.signum() == 0 )
 		{

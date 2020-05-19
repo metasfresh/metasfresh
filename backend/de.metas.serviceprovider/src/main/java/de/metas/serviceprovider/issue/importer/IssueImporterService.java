@@ -253,6 +253,7 @@ public class IssueImporterService
 				? importIssueInfo.getMilestone().getMilestoneId()
 				: null;
 
+		//INVOICED can be set only from mf, after the issue was invoiced, so it should be preserved
 		final Status status = INVOICED.equals(existingEffortIssue.getStatus())
 				? INVOICED
 				: importIssueInfo.getStatus();
@@ -273,9 +274,9 @@ public class IssueImporterService
 				.plannedUATDate(importIssueInfo.getPlannedUATDate())
 				.build();
 
-		mergedIssueEntity.setBudgetedEffortIfNull(importIssueInfo.getBudget());
-		mergedIssueEntity.setEstimatedEffortIfNull(importIssueInfo.getEstimation());
-		mergedIssueEntity.setRoughEstimationIfNull(importIssueInfo.getRoughEstimation());
+		mergedIssueEntity.setBudgetedEffortIfNotSet(importIssueInfo.getBudget());
+		mergedIssueEntity.setEstimatedEffortIfNotSet(importIssueInfo.getEstimation());
+		mergedIssueEntity.setRoughEstimationIfNotSet(importIssueInfo.getRoughEstimation());
 
 		return mergedIssueEntity;
 	}

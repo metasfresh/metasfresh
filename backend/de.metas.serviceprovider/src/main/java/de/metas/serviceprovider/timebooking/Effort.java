@@ -46,7 +46,7 @@ public class Effort
 	}
 
 	@NonNull
-	public static Effort of(final long seconds)
+	public static Effort ofSeconds(final long seconds)
 	{
 		return new Effort(seconds);
 	}
