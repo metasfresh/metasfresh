@@ -39,6 +39,7 @@ import lombok.Value;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 
 @Value
 @Builder
@@ -62,6 +63,9 @@ public class ImportIssueInfo
 	@Nullable
 	BigDecimal budget;
 
+	@Nullable
+	BigDecimal roughEstimation;
+
 	@NonNull
 	UomId effortUomId;
 
@@ -76,6 +80,9 @@ public class ImportIssueInfo
 
 	@Nullable
 	String deliveryPlatform;
+
+	@Nullable
+	LocalDate plannedUATDate;
 
 	@Nullable
 	UserId assigneeId;

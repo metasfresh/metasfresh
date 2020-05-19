@@ -25,6 +25,7 @@ package de.metas.serviceprovider.issue;
 import de.metas.cache.model.IModelCacheInvalidationService;
 import de.metas.serviceprovider.issue.interceptor.AddIssueProgressRequest;
 import de.metas.serviceprovider.timebooking.Effort;
+import de.metas.serviceprovider.timebooking.TimeBooking;
 import de.metas.serviceprovider.timebooking.TimeBookingRepository;
 import de.metas.util.Services;
 import org.adempiere.ad.dao.IQueryBL;
@@ -40,6 +41,8 @@ import static de.metas.serviceprovider.TestConstants.MOCK_DATE_2020_03_12;
 import static de.metas.serviceprovider.TestConstants.MOCK_EFFORT_1_00;
 import static de.metas.serviceprovider.TestConstants.MOCK_EFFORT_1_30;
 import static de.metas.serviceprovider.TestConstants.MOCK_EFFORT_2_30;
+import static de.metas.serviceprovider.TestConstants.MOCK_ORG_ID;
+import static de.metas.serviceprovider.TestConstants.MOCK_USER_ID;
 import static de.metas.serviceprovider.issue.IssueTestHelper.buildAndStoreIssueRecord;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
@@ -92,7 +95,7 @@ public class IssueServiceTest
 	 * When: {@link IssueService#addIssueProgress(AddIssueProgressRequest)} where request is:
 	 * 	- IssueId = 8
 	 * 	- bookedEffort = 1:00
-	 * 	- bookedDate = MOCK_DATE_2020_03_12
+	 * 	- bookedDate of the latest added S_TimeBooking = MOCK_DATE_2020_03_12
 	 * Then:
 	 *      	node 1) - latestActivityOnIssue = null
 	 *                  - latestActivityOnSubIssues = MOCK_DATE_2020_03_12
@@ -123,11 +126,23 @@ public class IssueServiceTest
 		prepareDataContext();
 
 		final Instant instant_2020_03_12 = MOCK_DATE_2020_03_12.atStartOfDay(ZoneId.systemDefault()).toInstant();
+		final Effort bookedEffort = Effort.ofNullable(MOCK_EFFORT_1_00);
+
+		final TimeBooking timeBooking = TimeBooking
+				.builder()
+				.issueId(IssueId.ofRepoId(8))
+				.performingUserId(MOCK_USER_ID)
+				.hoursAndMins(bookedEffort.getHmm())
+				.bookedSeconds(bookedEffort.getSeconds())
+				.bookedDate(instant_2020_03_12)
+				.orgId(MOCK_ORG_ID)
+				.build();
+
+		timeBookingRepository.save(timeBooking);
 
 		final AddIssueProgressRequest addIssueProgressRequest = AddIssueProgressRequest
 				.builder()
 				.issueId(IssueId.ofRepoId(8))
-				.bookedDate(instant_2020_03_12)
 				.bookedEffort(Effort.ofNullable(MOCK_EFFORT_1_00))
 				.build();
 
@@ -154,95 +169,6 @@ public class IssueServiceTest
 		assertEquals(MOCK_EFFORT_2_30, issueRepository.getById(IssueId.ofRepoId(1)).getAggregatedEffort().getHmm());
 		assertEquals(instant_2020_03_12, issueRepository.getById(IssueId.ofRepoId(1)).getLatestActivityOnSubIssues());
 		assertNull(issueRepository.getById(IssueId.ofRepoId(1)).getLatestActivityOnIssue());
-
-		assertNull(issueRepository.getById(IssueId.ofRepoId(7)).getLatestActivity());
-		assertNull(issueRepository.getById(IssueId.ofRepoId(6)).getLatestActivity());
-		assertNull(issueRepository.getById(IssueId.ofRepoId(5)).getLatestActivity());
-		assertNull(issueRepository.getById(IssueId.ofRepoId(3)).getLatestActivity());
-	}
-
-	/**
-	 * Given the following issue hierarchy:
-	 *
-	 * ----1----
-	 * ---/-\---
-	 * --2---3--
-	 * --|---|--
-	 * --4---5--
-	 * /-|-\----
-	 * 6-7-8----
-	 *
-	 * with issues having:
-	 *      	node 1) - latestActivityOnIssue = null
-	 *                  - latestActivityOnSubIssues = MOCK_DATE_2020_03_07
-	 *                  - aggregatedEffort = 1:30
-	 *                  - issueEffort = 0:00
-	 *
-	 *          node 2) - latestActivityOnIssue = null
-	 *                  - latestActivityOnSubIssues = MOCK_DATE_2020_03_07
-	 *                  - aggregatedEffort = 1:30
-	 *                  - issueEffort = 0:00
-	 *
-	 *          node 4) - latestActivityOnIssue = null
-	 *                  - latestActivityOnSubIssues = null
-	 *                  - aggregatedEffort = 1:30
-	 *                  - issueEffort = 0:00
-	 *
-	 *          node 8) - latestActivityOnIssue = MOCK_DATE_2020_03_07
-	 *                  - latestActivityOnSubIssues = null
-	 *                  - aggregatedEffort = 1:30
-	 *                  - issueEffort = 1:30
-	 * When: {@link IssueService#recomputeIssueProgress(IssueId, Effort)} where:
-	 * 	- IssueId = 8
-	 * 	- movedEffort = 1:30
-	 * Then:
-	 *      	node 1) - latestActivityOnIssue = null
-	 *                  - latestActivityOnSubIssues = null
-	 *                  - aggregatedEffort = 0:00
-	 *                  - issueEffort = 0:00
-	 *
-	 *          node 2) - latestActivityOnIssue = null
-	 *                  - latestActivityOnSubIssues = null
-	 *                  - aggregatedEffort = 0:00
-	 *                  - issueEffort = 0:00
-	 *
-	 *          node 4) - latestActivityOnIssue = null
-	 *                  - latestActivityOnSubIssues = null
-	 *                  - aggregatedEffort = 2:30
-	 *                  - issueEffort = 0:00
-	 *
-	 *          node 8) - latestActivityOnIssue = null
-	 *                  - latestActivityOnSubIssues = null
-	 *                  - aggregatedEffort = 0:00
-	 *                  - issueEffort = 0:00
-	 *
-	 *  - meanwhile [3,5,6,7] will not be altered
-	 */
-	@Test
-	public void recomputeIssueProgress()
-	{
-		//Given
-		prepareDataContext();
-
-		//when
-		issueService.recomputeIssueProgress(IssueId.ofRepoId(8), Effort.ofNullable(MOCK_EFFORT_1_30));
-
-		//then
-		assertEquals(Effort.ZERO, issueRepository.getById(IssueId.ofRepoId(8)).getIssueEffort());
-		assertEquals(Effort.ZERO, issueRepository.getById(IssueId.ofRepoId(8)).getAggregatedEffort());
-		assertNull(issueRepository.getById(IssueId.ofRepoId(8)).getLatestActivity());
-
-		assertEquals(Effort.ZERO, issueRepository.getById(IssueId.ofRepoId(4)).getIssueEffort());
-		assertEquals(Effort.ZERO, issueRepository.getById(IssueId.ofRepoId(4)).getAggregatedEffort());
-		assertNull(issueRepository.getById(IssueId.ofRepoId(4)).getLatestActivity());
-
-		assertEquals(Effort.ZERO, issueRepository.getById(IssueId.ofRepoId(2)).getIssueEffort());
-		assertEquals(Effort.ZERO, issueRepository.getById(IssueId.ofRepoId(2)).getAggregatedEffort());
-		assertNull(issueRepository.getById(IssueId.ofRepoId(2)).getLatestActivity());
-
-		assertEquals(Effort.ZERO, issueRepository.getById(IssueId.ofRepoId(1)).getIssueEffort());
-		assertEquals(Effort.ZERO, issueRepository.getById(IssueId.ofRepoId(1)).getAggregatedEffort());
-		assertNull(issueRepository.getById(IssueId.ofRepoId(1)).getLatestActivity());
 
 		assertNull(issueRepository.getById(IssueId.ofRepoId(7)).getLatestActivity());
 		assertNull(issueRepository.getById(IssueId.ofRepoId(6)).getLatestActivity());

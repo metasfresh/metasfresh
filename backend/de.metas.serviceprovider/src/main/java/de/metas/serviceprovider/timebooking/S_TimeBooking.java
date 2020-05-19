@@ -81,9 +81,15 @@ public class S_TimeBooking
 	public void recomputeIssueProgressAfterDelete(@NonNull final I_S_TimeBooking record)
 	{
 		final IssueId issueId = IssueId.ofRepoId(record.getS_Issue_ID());
-		final Effort removedEffort = Effort.of(record.getBookedSeconds().longValue());
+		final Effort removedEffort = Effort.ofSeconds(record.getBookedSeconds().longValue());
 
-		issueService.recomputeIssueProgress(issueId, removedEffort);
+		final AddIssueProgressRequest addIssueProgressRequest = AddIssueProgressRequest
+				.builder()
+				.issueId(issueId)
+				.bookedEffort(removedEffort.negate())
+				.build();
+
+		issueService.addIssueProgress(addIssueProgressRequest);
 	}
 
 	@ModelChange(timings = {ModelValidator.TYPE_AFTER_CHANGE}, ifColumnsChanged = {I_S_TimeBooking.COLUMNNAME_S_Issue_ID})
@@ -93,21 +99,25 @@ public class S_TimeBooking
 
 		if (record.getS_Issue_ID() != oldRecord.getS_Issue_ID())
 		{
+			final Effort bookedEffort = Effort.ofSeconds(record.getBookedSeconds().longValue());
+
 			//1. add the progress for the new issue
 			final AddIssueProgressRequest addIssueProgressRequest = AddIssueProgressRequest
 					.builder()
 					.issueId(IssueId.ofRepoId(record.getS_Issue_ID()))
-					.bookedEffort(Effort.of(record.getBookedSeconds().longValue()))
-					.bookedDate(record.getBookedDate().toInstant())
+					.bookedEffort(bookedEffort)
 					.build();
 
 			issueService.addIssueProgress(addIssueProgressRequest);
 
 			//2. recompute the progress for the old one
-			final IssueId oldIssueId = IssueId.ofRepoId(oldRecord.getS_Issue_ID());
-			final Effort movedEffort = Effort.of(record.getBookedSeconds().longValue());
+			final AddIssueProgressRequest recomputeProgressReq = AddIssueProgressRequest
+					.builder()
+					.issueId(IssueId.ofRepoId(oldRecord.getS_Issue_ID()))
+					.bookedEffort(bookedEffort.negate())
+					.build();
 
-			issueService.recomputeIssueProgress(oldIssueId, movedEffort);
+			issueService.addIssueProgress(recomputeProgressReq);
 		}
 	}
 
@@ -129,7 +139,7 @@ public class S_TimeBooking
 		}
 	}
 
-	@ModelChange(timings = {ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE},
+	@ModelChange(timings = {ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE},
 			     ifColumnsChanged = {I_S_TimeBooking.COLUMNNAME_BookedDate,I_S_TimeBooking.COLUMNNAME_HoursAndMinutes})
 	public void addIssueProgress(@NonNull final I_S_TimeBooking record)
 	{
@@ -142,8 +152,7 @@ public class S_TimeBooking
 		final AddIssueProgressRequest addIssueProgressRequest = AddIssueProgressRequest
 				.builder()
 				.issueId(IssueId.ofRepoId(record.getS_Issue_ID()))
-				.bookedDate(record.getBookedDate().toInstant())
-				.bookedEffort(Effort.of(deltaBookedSeconds))
+				.bookedEffort(Effort.ofSeconds(deltaBookedSeconds))
 				.build();
 
 		issueService.addIssueProgress(addIssueProgressRequest);

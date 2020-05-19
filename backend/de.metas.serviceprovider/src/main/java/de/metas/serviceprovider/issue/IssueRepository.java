@@ -41,10 +41,10 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
 
 import javax.annotation.Nullable;
-import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -231,9 +231,11 @@ public class IssueRepository
 				.type(issueType)
 				.status(status)
 				.deliveryPlatform(record.getDeliveryPlatform())
+				.plannedUATDate(TimeUtil.asLocalDate(record.getPlannedUATDate()))
 				.isEffortIssue(record.isEffortIssue())
 				.estimatedEffort(record.getEstimatedEffort())
 				.budgetedEffort(record.getBudgetedEffort())
+				.roughEstimation(record.getRoughEstimation())
 				.issueEffort(Effort.ofNullable(record.getIssueEffort()))
 				.aggregatedEffort(Effort.ofNullable(record.getAggregatedEffort()))
 				.latestActivityOnIssue(record.getLatestActivity() != null ? record.getLatestActivity().toInstant() : null)
@@ -262,22 +264,22 @@ public class IssueRepository
 		record.setIsEffortIssue(issueEntity.isEffortIssue());
 
 		record.setS_Milestone_ID(NumberUtils.asInt(issueEntity.getMilestoneId(), -1));
+		record.setRoughEstimation(issueEntity.getRoughEstimation());
 		record.setEstimatedEffort(issueEntity.getEstimatedEffort());
 		record.setBudgetedEffort(issueEntity.getBudgetedEffort());
 		record.setEffort_UOM_ID(issueEntity.getEffortUomId().getRepoId());
 		record.setIssueEffort(issueEntity.getIssueEffort().getHmm());
 		record.setAggregatedEffort(issueEntity.getAggregatedEffort().getHmm());
 
-		record.setLatestActivityOnSubIssues(issueEntity.getLatestActivityOnSubIssues() != null
-				? Timestamp.from(issueEntity.getLatestActivityOnSubIssues()) : null);
-
-		record.setLatestActivity(issueEntity.getLatestActivityOnIssue() != null
-				? Timestamp.from(issueEntity.getLatestActivityOnIssue()) : null);
+		record.setLatestActivityOnSubIssues(TimeUtil.asTimestamp(issueEntity.getLatestActivityOnSubIssues()));
+		record.setLatestActivity(TimeUtil.asTimestamp(issueEntity.getLatestActivityOnIssue()));
 
 		if (issueEntity.getStatus() != null)
 		{
 			record.setStatus(issueEntity.getStatus().getCode());
 		}
+
+		record.setPlannedUATDate(TimeUtil.asTimestamp(issueEntity.getPlannedUATDate()));
 
 		record.setDeliveryPlatform(issueEntity.getDeliveryPlatform());
 
