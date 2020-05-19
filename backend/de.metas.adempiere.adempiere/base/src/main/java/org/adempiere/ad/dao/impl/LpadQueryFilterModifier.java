@@ -95,6 +95,6 @@ public class LpadQueryFilterModifier implements IQueryFilterModifier
 
 		final String str = (String)value;
 
-		return StringUtils.leftPad(str.trim(), size, padStr);
+		return StringUtils.leftPad(str.trim(), size, padStr).subSequence(0,10);
 	}
 }
