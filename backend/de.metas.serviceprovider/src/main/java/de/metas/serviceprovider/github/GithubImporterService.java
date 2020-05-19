@@ -362,7 +362,7 @@ public class GithubImporterService implements IssueImporter
 		}
 		catch (final Exception e)
 		{
-			log.error("{} : cannot extract planned UAT date from : {}, ex: {} ",
+			log.error("{} : cannot extract planned UAT date from : {}",
 					IMPORT_LOG_MESSAGE_PREFIX, label.getName(), e);
 		}
 
