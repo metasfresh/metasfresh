@@ -346,7 +346,7 @@ import lombok.NonNull;
 		}
 		else
 		{
-			return DB.buildSqlList(sqlParams.toList());
+			return DB.buildSqlList(sqlValues);
 		}
 	}
 
