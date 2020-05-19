@@ -46,6 +46,22 @@ class RPadQueryFilterModifierTest
 		testConvertValue("1234567890", "12345678901234567890", modifier);
 	}
 
+	@Test
+	public void test_convertValuePadIsSpace()
+	{
+		final RPadQueryFilterModifier modifier = new RPadQueryFilterModifier(10, " ");
+		testConvertValue(null, null, modifier);
+		testConvertValue("          ", "", modifier);
+		testConvertValue("          ", "    ", modifier);
+		testConvertValue("1         ", "1", modifier);
+		testConvertValue("123456    ", "123456", modifier);
+		testConvertValue("X1234560  ", "X1234560", modifier);
+		testConvertValue("0X1234560 ", "0X1234560", modifier);
+		testConvertValue("123456    ", "    123456    ", modifier);
+		testConvertValue("1234567890", "1234567890", modifier);
+		testConvertValue("1234567890", "12345678901234567890", modifier);
+	}
+
 	private void testConvertValue(@Nullable final String resultExpected, @Nullable final String value, final RPadQueryFilterModifier modifier)
 	{
 		final String columnName = "Dummy"; // N/A

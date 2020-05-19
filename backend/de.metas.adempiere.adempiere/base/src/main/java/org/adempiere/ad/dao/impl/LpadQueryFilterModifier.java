@@ -45,7 +45,7 @@ public class LpadQueryFilterModifier implements IQueryFilterModifier
 		Check.assume(size > 0, "size > 0");
 		this.size = size;
 
-		Check.assumeNotEmpty(padStr, "padStr not empty");
+		Check.errorUnless(!padStr.isEmpty(), "padStr not empty");
 		this.padStr = padStr;
 	}
 
