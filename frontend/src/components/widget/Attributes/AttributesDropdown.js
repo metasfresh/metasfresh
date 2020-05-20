@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types';
-import React, { Component } from 'react';
+import React, { PureComponent } from 'react';
 import onClickOutside from 'react-onclickoutside';
 import { Map } from 'immutable';
 import classnames from 'classnames';
@@ -10,7 +10,7 @@ import RawWidget from '../RawWidget';
  * @module AttributesDropdown
  * @extends Component
  */
-class AttributesDropdown extends Component {
+class AttributesDropdown extends PureComponent {
   constructor(props) {
     super(props);
     this.selector = React.createRef();
