@@ -131,14 +131,18 @@ class AttributesDropdown extends Component {
    */
   render() {
     const { isVisible, dropdownCoords } = this.state;
-
+    const BOTTOM_OFFSET = 230; // value from where we show the dropup
     return (
       <div
         ref={this.selector}
         className={classnames(
           'attributes-dropdown panel-shadowed panel-primary panel-bordered panel-spaced',
           { 'hidden ': !isVisible },
-          { 'attributes-dropup': dropdownCoords && dropdownCoords.y > 680 }
+          {
+            'attributes-dropup':
+              dropdownCoords &&
+              window.innerHeight - dropdownCoords.y < BOTTOM_OFFSET,
+          }
         )}
       >
         {this.renderFields()}
