@@ -82,7 +82,7 @@ public class RPadQueryFilterModifier implements IQueryFilterModifier
 
 		final String str = (String)value;
 
-		return StringUtils.rightPad(str.trim(), size, padStr).subSequence(0, 10);
+		return StringUtils.rightPad(str.trim(), size, padStr).subSequence(0, size);
 	}
 
 	@Override

@@ -62,6 +62,13 @@ class RPadQueryFilterModifierTest
 		testConvertValue("1234567890", "12345678901234567890", modifier);
 	}
 
+	@Test
+	public void test_convertValuePadIsSpaceDifferentSize()
+	{
+		final RPadQueryFilterModifier modifier = new RPadQueryFilterModifier(21, " ");
+		testConvertValue("123456789012345678901", "1234567890123456789012345", modifier);
+	}
+
 	private void testConvertValue(@Nullable final String resultExpected, @Nullable final String value, final RPadQueryFilterModifier modifier)
 	{
 		final String columnName = "Dummy"; // N/A
