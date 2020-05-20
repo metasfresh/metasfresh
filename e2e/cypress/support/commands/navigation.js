@@ -216,6 +216,8 @@ Cypress.Commands.add('selectItemUsingBarcodeFilter', huValue1 => {
     .find('input[type=text]')
     .wait(500)
     .type(`${huValue1}{enter}`)
+  cy.wait(500);
+  cy.get('[data-cy=cell-Value] > :nth-child(1) > .cell-text-wrapper').click();
 });
 
 /**
