@@ -435,9 +435,11 @@ class SubHeader extends Component {
         {windowId && viewId && (
           <a
             className="subheader-item js-subheader-item"
-            href={`${config.API_URL}/documentView/${windowId}/${
-              viewId
-            }/export/excel?selectedIds=${selected.join(',')}`}
+            href={`${
+              config.API_URL
+            }/documentView/${windowId}/${viewId}/export/excel?selectedIds=${selected.join(
+              ','
+            )}`}
             download
             onClick={this.handleDownloadSelected}
             style={{
@@ -582,7 +584,6 @@ SubHeader.propTypes = {
   selected: PropTypes.any,
   siteName: PropTypes.any,
   standardActions: PropTypes.any,
-  viewId: PropTypes.string,
   windowId: PropTypes.string,
 };
 

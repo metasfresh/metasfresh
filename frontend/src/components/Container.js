@@ -178,7 +178,9 @@ class Container extends PureComponent {
                   processStatus={processStatus}
                   includedView={includedView}
                   inBackground={
-                    includedView && includedView.windowType && includedView.viewId
+                    includedView &&
+                    includedView.windowType &&
+                    includedView.viewId
                   }
                   inModal={modal.visible}
                 />
