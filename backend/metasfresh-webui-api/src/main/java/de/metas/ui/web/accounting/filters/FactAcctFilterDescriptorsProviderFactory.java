@@ -35,6 +35,7 @@ import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.element.api.AdTabId;
+import org.compiere.model.I_Fact_Acct;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nullable;
@@ -44,6 +45,7 @@ import java.util.Collection;
 public class FactAcctFilterDescriptorsProviderFactory implements DocumentFilterDescriptorsProviderFactory
 {
 	public static final String FACT_ACCT_TRANSACTIONS_VIEW = "Fact_Acct_Transactions_View";
+	public static final String FACT_ACCT_TABLE = I_Fact_Acct.Table_Name;
 	private final transient IMsgBL msgBL = Services.get(IMsgBL.class);
 
 	public FactAcctFilterDescriptorsProviderFactory()
@@ -57,7 +59,7 @@ public class FactAcctFilterDescriptorsProviderFactory implements DocumentFilterD
 			@Nullable final String tableName,
 			@Nullable final Collection<DocumentFieldDescriptor> fields)
 	{
-		if (!FACT_ACCT_TRANSACTIONS_VIEW.equals(tableName))
+		if (isWrongTable(tableName))
 		{
 			return NullDocumentFilterDescriptorsProvider.instance;
 		}
@@ -81,5 +83,10 @@ public class FactAcctFilterDescriptorsProviderFactory implements DocumentFilterD
 						//
 						.build()
 		);
+	}
+
+	private boolean isWrongTable(@Nullable final String tableName)
+	{
+		return !(FACT_ACCT_TRANSACTIONS_VIEW.equals(tableName) || FACT_ACCT_TABLE.equals(tableName));
 	}
 }
