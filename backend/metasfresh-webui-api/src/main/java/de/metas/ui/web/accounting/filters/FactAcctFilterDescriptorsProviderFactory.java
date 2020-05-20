@@ -68,6 +68,7 @@ public class FactAcctFilterDescriptorsProviderFactory implements DocumentFilterD
 				DocumentFilterDescriptor.builder()
 						.setFilterId(FactAcctFilterConverter.FILTER_ID)
 						.setSortNo(DocumentFilterDescriptorsConstants.SORT_NO_FACT_ACCT)
+						.setFrequentUsed(true)
 						.setDisplayName(msgBL.translatable("AccountNumber"))
 						//
 						.addParameter(DocumentFilterParamDescriptor.builder()
