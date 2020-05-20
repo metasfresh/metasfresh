@@ -148,3 +148,8 @@ UPDATE AD_Element_Trl SET IsTranslated='N',Updated=TO_TIMESTAMP('2020-05-19 15:0
 /* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(542901,'fr_CH') 
 ;
 
+-- 2020-05-20T09:21:23.797Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET SeqNoGrid=200, IsDisplayedGrid='Y',Updated=TO_TIMESTAMP('2020-05-20 12:21:23','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=543370
+;
+
