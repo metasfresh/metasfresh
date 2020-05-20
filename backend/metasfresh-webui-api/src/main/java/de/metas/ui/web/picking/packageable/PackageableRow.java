@@ -148,7 +148,7 @@ public final class PackageableRow implements IViewRow
 		this.product = product;
 		this.qtyOrdered = qtyOrdered;
 		this.qtyPicked = qtyPicked;
-		this.picked = qtyPicked != null && qtyPicked.toBigDecimal().compareTo(qtyOrdered.toBigDecimal()) >= 0;
+		this.picked = qtyPicked != null && qtyPicked.compareTo(qtyOrdered) >= 0;
 		this.bpartner = bpartner;
 		this.preparationDate = preparationDate;
 		this.shipmentScheduleId = shipmentScheduleId;
