@@ -42,6 +42,9 @@ import de.metas.bpartner.service.OrgHasNoBPartnerLinkException;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.cache.annotation.CacheTrx;
 import de.metas.email.EMailAddress;
+import de.metas.i18n.AdMessageKey;
+import de.metas.i18n.IMsgBL;
+import de.metas.i18n.ITranslatableString;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
 import de.metas.location.ILocationDAO;
@@ -94,6 +97,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -118,6 +122,8 @@ public class BPartnerDAO implements IBPartnerDAO
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	private final GLNLoadingCache glnsLoadingCache = new GLNLoadingCache();
+
+	private static final String MSG_ADDRESS_INACTIVE = "webui.salesorder.clone.inactivelocation";
 
 	@Override
 	public void save(@NonNull final I_C_BPartner bpartner)
@@ -361,7 +367,7 @@ public class BPartnerDAO implements IBPartnerDAO
 				.findFirst()
 				.orElse(null);
 	}
-	
+
 	@Override
 	public I_C_BPartner_Location getBPartnerLocationByIdEvenInactive(@NonNull final BPartnerLocationId bpartnerLocationId)
 	{
@@ -371,7 +377,7 @@ public class BPartnerDAO implements IBPartnerDAO
 				.findFirst()
 				.orElse(null);
 	}
-	
+
 	@Override
 	public I_C_BPartner_Location getBPartnerLocationByIdInTrx(@NonNull final BPartnerLocationId bpartnerLocationId)
 	{
@@ -426,7 +432,6 @@ public class BPartnerDAO implements IBPartnerDAO
 		return retrieveBPartnerLocations(bpartnerId, false);
 	}
 
-	
 	@Override
 	@Cached(cacheName = I_C_BPartner_Location.Table_Name + "#by#" + I_C_BPartner_Location.COLUMNNAME_C_BPartner_ID)
 	public ImmutableList<I_C_BPartner_Location> retrieveBPartnerLocations(@NonNull final BPartnerId bpartnerId, final boolean includeInactive)
@@ -434,7 +439,7 @@ public class BPartnerDAO implements IBPartnerDAO
 		final IQueryBuilder<I_C_BPartner_Location> queryBuilder = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_BPartner_Location.class)
 				.addEqualsFilter(I_C_BPartner_Location.COLUMNNAME_C_BPartner_ID, bpartnerId);
-		
+
 		if (!includeInactive)
 		{
 			queryBuilder.addOnlyActiveRecordsFilter();
@@ -447,7 +452,6 @@ public class BPartnerDAO implements IBPartnerDAO
 				.create()
 				.listImmutable(I_C_BPartner_Location.class);
 	}
-	
 
 	@Override
 	public I_C_BPartner_Location getDefaultShipToLocation(@NonNull final BPartnerId bpartnerId)
@@ -492,11 +496,21 @@ public class BPartnerDAO implements IBPartnerDAO
 	@Override
 	public CountryId retrieveBPartnerLocationCountryId(@NonNull final BPartnerLocationId bpLocationId)
 	{
-		final I_C_BPartner_Location bpLocation = getBPartnerLocationById(bpLocationId);
-		final LocationId locationId = LocationId.ofRepoId(bpLocation.getC_Location_ID());
+		try
+		{
+			final I_C_BPartner_Location bpLocation = getBPartnerLocationById(bpLocationId);
+			final LocationId locationId = LocationId.ofRepoId(bpLocation.getC_Location_ID());
 
-		final ILocationDAO locationRepos = Services.get(ILocationDAO.class);
-		return locationRepos.getCountryIdByLocationId(locationId);
+			final ILocationDAO locationRepos = Services.get(ILocationDAO.class);
+			return locationRepos.getCountryIdByLocationId(locationId);
+		}
+		catch (NullPointerException ex)
+		{
+			final IMsgBL msgBL = Services.get(IMsgBL.class);
+			final ITranslatableString message = msgBL.getTranslatableMsgText(AdMessageKey.of(MSG_ADDRESS_INACTIVE), Collections.emptyList());
+			throw new AdempiereException(message).markAsUserValidationError();
+		}
+
 	}
 
 	@Override
@@ -521,7 +535,7 @@ public class BPartnerDAO implements IBPartnerDAO
 	@Override
 	public CountryId getBPartnerLocationCountryId(@NonNull final BPartnerLocationId bpartnerLocationId)
 	{
-		final I_C_BPartner_Location bpLocation = getBPartnerLocationByIdEvenInactive(bpartnerLocationId); 
+		final I_C_BPartner_Location bpLocation = getBPartnerLocationByIdEvenInactive(bpartnerLocationId);
 		return CountryId.ofRepoId(bpLocation.getC_Location().getC_Country_ID());
 	}
 
@@ -1372,7 +1386,6 @@ public class BPartnerDAO implements IBPartnerDAO
 				.firstId();
 		return BPartnerId.optionalOfRepoId(bpartnerRepoId);
 	}
-
 
 	private <T> IQueryBuilder<T> createQueryBuilder(
 			@NonNull final Class<T> modelClass)
