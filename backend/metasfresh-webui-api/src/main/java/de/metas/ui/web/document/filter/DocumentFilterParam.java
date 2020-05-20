@@ -23,6 +23,8 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
 
+import javax.annotation.Nullable;
+
 /*
  * #%L
  * metasfresh-webui-api
@@ -144,7 +146,7 @@ public final class DocumentFilterParam
 		return getSqlWhereClause() != null;
 	}
 
-	public String getValueAsString()
+	@Nullable public String getValueAsString()
 	{
 		return value != null ? value.toString() : null;
 	}
