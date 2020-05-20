@@ -281,7 +281,7 @@ class Header extends Component {
     childViewSelectedIds,
     staticModalType
   ) => {
-    const { dispatch, query } = this.props;
+    const { dispatch, viewId } = this.props;
 
     dispatch(
       openModal(
@@ -291,7 +291,7 @@ class Header extends Component {
         null,
         null,
         isAdvanced,
-        query && query.viewId,
+        viewId,
         selected,
         null,
         null,
@@ -549,7 +549,7 @@ class Header extends Component {
       showSidelist,
       inbox,
       entity,
-      query,
+      viewId,
       showIndicator,
       windowId,
       // TODO: We should be using indicator from the state instead of another variable
@@ -791,11 +791,10 @@ class Header extends Component {
             disableOnClickOutside={!isSubheaderShow}
             breadcrumb={breadcrumb}
             notfound={notfound}
-            query={query}
             entity={entity}
             dataId={dataId}
             windowId={windowId}
-            viewId={query && query.viewId}
+            viewId={viewId}
             siteName={siteName}
             editmode={editmode}
             handleEditModeToggle={handleEditModeToggle}
@@ -896,7 +895,7 @@ class Header extends Component {
  * @prop {object} me
  * @prop {*} notfound
  * @prop {*} plugins
- * @prop {*} query
+ * @prop {*} viewId
  * @prop {*} showSidelist
  * @prop {*} showIndicator
  * @prop {*} siteName
@@ -922,7 +921,7 @@ Header.propTypes = {
   me: PropTypes.object.isRequired,
   notfound: PropTypes.any,
   plugins: PropTypes.any,
-  query: PropTypes.any,
+  viewId: PropTypes.any,
   showSidelist: PropTypes.any,
   showIndicator: PropTypes.any,
   siteName: PropTypes.any,

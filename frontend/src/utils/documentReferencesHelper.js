@@ -11,7 +11,7 @@ export function buildRelatedDocumentsViewUrl({
     refType: windowId,
     refId: documentId,
     refTabId: tabId,
-    refRowIds: tabId ? JSON.stringify(rowIds || []) : undefined,
+    refRowIds: tabId && rowIds ? JSON.stringify(rowIds) : null,
   });
 
   return `/window/${targetWindowId}?${urlParams}`;
