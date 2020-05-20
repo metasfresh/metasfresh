@@ -41,6 +41,7 @@ public class C_Project
 		// register ourselves
 		final IProgramaticCalloutProvider programaticCalloutProvider = Services.get(IProgramaticCalloutProvider.class);
 		programaticCalloutProvider.registerAnnotatedCallout(this);
+		CopyRecordFactory.enableForTableName(I_C_Project.Table_Name);
 	}
 
 	@CalloutMethod(columnNames = I_C_Project.COLUMNNAME_C_ProjectType_ID)
