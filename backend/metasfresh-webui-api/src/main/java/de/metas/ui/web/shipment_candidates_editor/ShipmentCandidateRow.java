@@ -13,6 +13,7 @@ import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.util.ASIEditingInfo;
 import org.adempiere.mm.attributes.util.ASIEditingInfo.WindowType;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 
 import de.metas.inoutcandidate.api.ShipmentScheduleId;
@@ -78,12 +79,14 @@ public final class ShipmentCandidateRow implements IViewRow, WebuiASIEditingInfo
 	@ViewColumn(seqNo = 50, widgetType = DocumentFieldWidgetType.ProductAttributes, fieldName = FIELD_asi, captionKey = "M_AttributeSetInstance_ID", editor = ViewEditorRenderMode.ALWAYS)
 	private final LookupValue asi;
 
-	@ViewColumn(seqNo = 60, widgetType = DocumentFieldWidgetType.Integer, widgetSize = WidgetSize.Small, captionKey = "QtyOrdered")
+	@ViewColumn(seqNo = 60, widgetType = DocumentFieldWidgetType.Quantity, widgetSize = WidgetSize.Small, captionKey = "QtyOrdered")
 	@Getter
-	private final BigDecimal qtyOrdered_CU_or_TU;
+	private final BigDecimal qtyOrdered;
 
 	public static final String FIELD_qtyToDeliverUserEntered = "qtyToDeliverUserEntered";
 	@ViewColumn(seqNo = 70, widgetType = DocumentFieldWidgetType.Quantity, fieldName = FIELD_qtyToDeliverUserEntered, widgetSize = WidgetSize.Small, captionKey = "QtyToDeliver_Override", editor = ViewEditorRenderMode.ALWAYS)
+	@Getter
+	@VisibleForTesting
 	private final BigDecimal qtyToDeliverUserEntered;
 
 	@ViewColumn(seqNo = 80, widgetType = DocumentFieldWidgetType.Lookup, widgetSize = WidgetSize.Medium, captionKey = "PackDescription")
@@ -120,8 +123,6 @@ public final class ShipmentCandidateRow implements IViewRow, WebuiASIEditingInfo
 	private final BigDecimal qtyToDeliverUserEnteredInitial;
 	private final BigDecimal qtyToDeliverCatchOverrideInitial;
 	private final AttributeSetInstanceId asiIdInitial;
-	private final BigDecimal qtyOrderedCU;
-	private final int qtyOrderedTU;
 
 	@Builder(toBuilder = true)
 	private ShipmentCandidateRow(
@@ -133,8 +134,7 @@ public final class ShipmentCandidateRow implements IViewRow, WebuiASIEditingInfo
 			@NonNull final LookupValue warehouse,
 			@NonNull final LookupValue product,
 			@NonNull final PackingInfo packingInfo,
-			@NonNull final BigDecimal qtyOrderedCU,
-			@NonNull final Integer qtyOrderedTU,
+			@NonNull final BigDecimal qtyOrdered,
 			@NonNull final BigDecimal qtyToDeliverUserEnteredInitial,
 			@NonNull final BigDecimal qtyToDeliverUserEntered,
 			//
@@ -157,11 +157,7 @@ public final class ShipmentCandidateRow implements IViewRow, WebuiASIEditingInfo
 		this.packingInfo = packingInfo;
 		this.packingDescription = this.packingInfo.getDescription();
 
-		this.qtyOrderedCU = qtyOrderedCU;
-		this.qtyOrderedTU = qtyOrderedTU;
-		this.qtyOrdered_CU_or_TU = packingInfo.isNone()
-				? qtyOrderedCU
-				: BigDecimal.valueOf(qtyOrderedTU);
+		this.qtyOrdered = qtyOrdered;
 
 		this.qtyToDeliverUserEnteredInitial = qtyToDeliverUserEnteredInitial;
 		this.qtyToDeliverUserEntered = qtyToDeliverUserEntered;
