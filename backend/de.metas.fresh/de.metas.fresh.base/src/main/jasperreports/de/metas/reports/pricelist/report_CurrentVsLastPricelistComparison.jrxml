@@ -181,7 +181,7 @@
 						<subreportParameterExpression><![CDATA["Y"]]></subreportParameterExpression>
 					</subreportParameter>
 					<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
-					<subreportExpression><![CDATA["de/metas/docs/generics/report_orgblock_ic_text_color.jasper"]]></subreportExpression>
+					<subreportExpression><![CDATA["de/metas/docs/generics/report_orgblock.jasper"]]></subreportExpression>
 				</subreport>
 				<subreport isUsingCache="true">
 					<reportElement key="subreport-4" x="0" y="26" width="595" height="85" uuid="6f9a7ef2-a0c3-4923-836d-a79c0f84ba2c"/>

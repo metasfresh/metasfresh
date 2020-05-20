@@ -81,7 +81,7 @@ WHERE
 					<subreportParameterExpression><![CDATA[$F{issopricelist}]]></subreportParameterExpression>
 				</subreportParameter>
 				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
-				<subreportExpression><![CDATA["de/metas/docs/generics/report_orgblock_ic_text_color.jasper"]]></subreportExpression>
+				<subreportExpression><![CDATA["de/metas/docs/generics/report_orgblock.jasper"]]></subreportExpression>
 			</subreport>
 		</band>
 	</title>
