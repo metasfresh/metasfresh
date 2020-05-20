@@ -43,7 +43,8 @@ public class LpadQueryFilterModifier implements IQueryFilterModifier
 		Check.assume(size > 0, "size > 0");
 		this.size = size;
 
-		Check.errorUnless(!padStr.isEmpty(), "padStr not empty");
+		// implementation detail: we're not using `Check.assumeNotEmpty` as that one trims the string, but we want to allow padding with space
+		Check.errorIf(padStr.isEmpty(), "padStr not empty");
 		this.padStr = padStr;
 	}
 
