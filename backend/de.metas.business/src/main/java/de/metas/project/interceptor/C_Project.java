@@ -3,6 +3,7 @@ package de.metas.project.interceptor;
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
+import org.adempiere.model.CopyRecordFactory;
 import org.compiere.model.I_C_Project;
 import org.springframework.stereotype.Component;
 
@@ -41,6 +42,7 @@ public class C_Project
 		// register ourselves
 		final IProgramaticCalloutProvider programaticCalloutProvider = Services.get(IProgramaticCalloutProvider.class);
 		programaticCalloutProvider.registerAnnotatedCallout(this);
+		CopyRecordFactory.enableForTableName(I_C_Project.Table_Name);
 	}
 
 	@CalloutMethod(columnNames = I_C_Project.COLUMNNAME_C_ProjectType_ID)
