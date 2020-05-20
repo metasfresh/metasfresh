@@ -38,6 +38,8 @@ import java.util.Properties;
 
 public class ElementValueDAO implements IElementValueDAO
 {
+	final IQueryBL queryBL = Services.get(IQueryBL.class);
+
 	@Cached(cacheName = I_C_ElementValue.Table_Name, expireMinutes = Cached.EXPIREMINUTES_Never)
 	@Override
 	public I_C_ElementValue retrieveById(@CacheCtx final Properties ctx, final int elementValueId)
@@ -56,7 +58,6 @@ public class ElementValueDAO implements IElementValueDAO
 
 		final RPadQueryFilterModifier lpadModifier = new RPadQueryFilterModifier(20, " ");
 
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		return queryBL.createQueryBuilder(I_C_ElementValue.class)
 				.addBetweenFilter(I_C_ElementValue.COLUMNNAME_Value, valueFrom, valueTo, lpadModifier)
 				.addOnlyActiveRecordsFilter()
