@@ -33,6 +33,7 @@ import de.metas.ui.web.document.filter.sql.SqlParamsCollector;
 import de.metas.ui.web.window.model.sql.SqlOptions;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.exceptions.FillMandatoryException;
 import org.compiere.model.I_Fact_Acct;
 import org.compiere.util.DB;
 
@@ -62,11 +63,25 @@ public class FactAcctFilterConverter implements SqlDocumentFilterConverter
 			@NonNull final SqlOptions sqlOpts,
 			final SqlDocumentFilterConverterContext ignored)
 	{
-		final String accountValueFrom = filter.getParameterValueAsString(PARAM_ACCOUNT_VALUE_FROM, "-1");
-		final String accountValueTo = filter.getParameterValueAsString(PARAM_ACCOUNT_VALUE_TO, "-1");
+		final String accountValueFrom = filter.getParameterValueAsString(PARAM_ACCOUNT_VALUE_FROM, null);
+		final String accountValueTo = filter.getParameterValueAsString(PARAM_ACCOUNT_VALUE_TO, null);
+
+		if (accountValueFrom == null)
+		{
+			throw new FillMandatoryException(PARAM_ACCOUNT_VALUE_FROM);
+		}
+		if (accountValueTo == null)
+		{
+			throw new FillMandatoryException(PARAM_ACCOUNT_VALUE_TO);
+		}
 
 		final IElementValueDAO elementValueDAO = Services.get(IElementValueDAO.class);
 		final ImmutableSet<ElementValueId> ids = elementValueDAO.getElementValueIdsBetween(accountValueFrom, accountValueTo);
+
+		if (ids.isEmpty())
+		{
+			return "(false)";
+		}
 
 		final String columnName = sqlOpts.getTableNameOrAlias() + "." + I_Fact_Acct.COLUMNNAME_Account_ID;
 		return "(" + DB.buildSqlList(columnName, ids) + ")";
