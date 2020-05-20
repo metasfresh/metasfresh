@@ -33,7 +33,7 @@ import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
 
-import de.metas.ui.web.document.filter.provider.fact_acct.FactAcctFilterConverter;
+import de.metas.ui.web.accounting.filters.FactAcctFilterConverter;
 import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.ad.expression.api.impl.ConstantStringExpression;
 import org.adempiere.exceptions.AdempiereException;

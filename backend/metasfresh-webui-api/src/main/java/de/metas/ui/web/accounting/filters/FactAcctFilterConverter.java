@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.ui.web.document.filter.provider.fact_acct;
+package de.metas.ui.web.accounting.filters;
 
 import com.google.common.collect.ImmutableSet;
 import com.jgoodies.common.base.Objects;

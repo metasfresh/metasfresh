@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.ui.web.document.filter.provider.fact_acct;
+package de.metas.ui.web.accounting.filters;
 
 import de.metas.i18n.IMsgBL;
 import de.metas.ui.web.document.filter.DocumentFilterDescriptor;
@@ -41,12 +41,12 @@ import javax.annotation.Nullable;
 import java.util.Collection;
 
 @Component
-public class FactAcctDocumentService implements DocumentFilterDescriptorsProviderFactory
+public class FactAcctFilterDescriptorsProviderFactory implements DocumentFilterDescriptorsProviderFactory
 {
 	public static final String FACT_ACCT_TRANSACTIONS_VIEW = "Fact_Acct_Transactions_View";
 	private final transient IMsgBL msgBL = Services.get(IMsgBL.class);
 
-	public FactAcctDocumentService()
+	public FactAcctFilterDescriptorsProviderFactory()
 	{
 	}
 
