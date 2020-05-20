@@ -82,6 +82,7 @@ public class RPadQueryFilterModifier implements IQueryFilterModifier
 
 		final String str = (String)value;
 
+		// implementation detail: we use `subSequence` because we want to match the Postgres RPAD implementation. The returned string is of the EXACT required length, even if that means the string will be shortened.
 		return StringUtils.rightPad(str.trim(), size, padStr).subSequence(0, size);
 	}
 

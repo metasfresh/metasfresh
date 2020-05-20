@@ -22,17 +22,15 @@
 
 package org.adempiere.ad.dao.impl;
 
-import java.util.List;
-
+import de.metas.util.Check;
+import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryFilterModifier;
 import org.apache.commons.lang3.StringUtils;
 import org.compiere.util.DB;
 
-import de.metas.util.Check;
-import lombok.EqualsAndHashCode;
-
 import javax.annotation.Nullable;
+import java.util.List;
 
 @EqualsAndHashCode
 public class LpadQueryFilterModifier implements IQueryFilterModifier
@@ -95,6 +93,7 @@ public class LpadQueryFilterModifier implements IQueryFilterModifier
 
 		final String str = (String)value;
 
-		return StringUtils.leftPad(str.trim(), size, padStr).subSequence(0,size);
+		// implementation detail: we use `subSequence` because we want to match the Postgres LPAD implementation. The returned string is of the EXACT required length, even if that means the string will be shortened.
+		return StringUtils.leftPad(str.trim(), size, padStr).subSequence(0, size);
 	}
 }
