@@ -81,7 +81,7 @@ export default class DocumentList extends Component {
       {
         rowEdited: val,
       },
-      () => this.updateQuickActions()
+      this.updateQuickActions
     );
   };
 
@@ -99,6 +99,18 @@ export default class DocumentList extends Component {
     this.setState({
       toggleWidth: widthIdx,
     });
+  };
+
+  /**
+   * @method handleRefs
+   * @summary Store ref to the quick actions component
+   */
+  setQuickActionsRef = (ref) => {
+    this.quickActionsComponent = ref;
+  };
+
+  setTableRef = (ref) => {
+    this.table = ref;
   };
 
   render() {
@@ -283,9 +295,7 @@ export default class DocumentList extends Component {
               <QuickActions
                 className="header-element align-items-center"
                 processStatus={processStatus}
-                ref={(c) => {
-                  this.quickActionsComponent = c;
-                }}
+                ref={this.setQuickActionsRef}
                 selected={selected}
                 viewId={viewId}
                 windowType={windowType}
@@ -333,7 +343,7 @@ export default class DocumentList extends Component {
             <div className="row table-row">
               <Table
                 entity="documentView"
-                ref={(c) => (this.table = c)}
+                ref={this.setTableRef}
                 rowData={rowData}
                 cols={layout.elements}
                 collapsible={layout.collapsible}
