@@ -284,7 +284,7 @@ class Board extends Component {
       <Container
         entity="board"
         siteName={board && board.caption}
-        windowType={board && board.boardId && String(board.boardId)}
+        windowId={board && board.boardId && String(board.boardId)}
         {...{ modal, rawModal, pluginModal, breadcrumb, indicator }}
       >
         {sidenav && (

@@ -195,7 +195,7 @@ class RawModal extends Component {
       dispatch,
       closeCallback,
       viewId,
-      windowType,
+      windowId,
       requests,
       rawModal,
     } = this.props;
@@ -232,7 +232,7 @@ class RawModal extends Component {
       }
 
       await this.removeModal();
-      await deleteViewRequest(windowType, viewId, type);
+      await deleteViewRequest(windowId, viewId, type);
     }
   };
 
@@ -242,14 +242,14 @@ class RawModal extends Component {
    * @summary ToDo: Describe the method.
    */
   removeModal = async () => {
-    const { dispatch, modalVisible, windowType, viewId } = this.props;
+    const { dispatch, modalVisible, windowId, viewId } = this.props;
 
     await Promise.all(
       [
         closeRawModal(),
         closeModal(),
         closeListIncludedView({
-          windowType,
+          windowType: windowId,
           viewId,
           forceClose: true,
         }),
@@ -419,7 +419,7 @@ ModalButton.propTypes = {
  * @prop {func} [closeCallback]
  * @prop {node} [children]
  * @prop {array} [allowedCloseActions]
- * @prop {string} [windowType]
+ * @prop {string} [windowId]
  * @prop {string} [viewId]
  * @prop {string|node} [masterDocumentList]
  * @prop {string|node} [modalTitle]
@@ -429,9 +429,9 @@ ModalButton.propTypes = {
  * @prop {object} requests
  * @prop {bool} success
  * @prop {*} [name]
- * @prop {*} [onShowTooltip]
- * @prop {*} [onHideTooltip]
- * @prop {*} [onClick]
+ * @prop {func} [onShowTooltip]
+ * @prop {func} [onHideTooltip]
+ * @prop {func} [onClick]
  * @prop {*} [tabIndex]
  */
 RawModal.propTypes = {
@@ -439,7 +439,7 @@ RawModal.propTypes = {
   closeCallback: PropTypes.func,
   children: PropTypes.node,
   allowedCloseActions: PropTypes.array,
-  windowType: PropTypes.string,
+  windowId: PropTypes.string,
   viewId: PropTypes.string,
   masterDocumentList: PropTypes.any,
   modalTitle: PropTypes.oneOfType([PropTypes.string, PropTypes.node]),
