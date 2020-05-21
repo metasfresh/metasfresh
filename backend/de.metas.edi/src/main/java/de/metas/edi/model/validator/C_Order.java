@@ -1,5 +1,7 @@
 package de.metas.edi.model.validator;
 
+
+
 /*
  * #%L
  * de.metas.edi
@@ -13,15 +15,14 @@ package de.metas.edi.model.validator;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
@@ -113,21 +114,45 @@ public class C_Order
 		}
 	}
 
+	@ModelChange(timings = ModelValidator.TYPE_BEFORE_NEW)
+	public void setEdiEnabledForNewOrder(final I_C_Order order)
+	{
+		final boolean ediEnabledByInputDataSource;
+		final I_AD_InputDataSource orderInputDataSource = order.getAD_InputDataSource();
+		if (orderInputDataSource == null)
+		{
+			ediEnabledByInputDataSource = false;
+		}
+		else
+		{
+			ediEnabledByInputDataSource = Services.get(IEDIInputDataSourceBL.class).isEDIInputDataSource(orderInputDataSource);
+		}
+
+		final boolean ediEnabledByBPartner;
+		final I_C_BPartner partner = InterfaceWrapperHelper.create(order.getC_BPartner(), de.metas.edi.model.I_C_BPartner.class);
+		if (partner == null)
+		{
+			ediEnabledByBPartner = false;
+		}
+		else
+		{
+			ediEnabledByBPartner = partner.isEdiRecipient();
+		}
+		order.setIsEdiEnabled(ediEnabledByInputDataSource || ediEnabledByBPartner);
+	}
+
 	/**
 	 * @param order
 	 * @task http://dewiki908/mediawiki/index.php/08926_EDI-Ausschalten_f%C3%BCr_bestimmte_Belege_%28109751792947%29
 	 */
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
-			ifColumnsChanged = { I_C_Order.COLUMNNAME_AD_InputDataSource_ID }
-			)
+	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE, ifColumnsChanged = I_C_Order.COLUMNNAME_AD_InputDataSource_ID)
 	public void updateEdiEnabled(final I_C_Order order)
 	{
-
 		final I_AD_InputDataSource orderInputDataSource = order.getAD_InputDataSource();
 
 		if (orderInputDataSource == null)
 		{
-			// nothing to ro
+			// nothing to do
 			return;
 		}
 
@@ -138,8 +163,7 @@ public class C_Order
 		}
 	}
 
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
-			ifColumnsChanged = { I_C_Order.COLUMNNAME_C_BPartner_ID })
+	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE, ifColumnsChanged = I_C_Order.COLUMNNAME_C_BPartner_ID)
 	public void onPartnerChange(final I_C_Order order)
 	{
 
@@ -160,6 +184,5 @@ public class C_Order
 			order.setIsEdiEnabled(false);
 		}
 	}
-
 
 }
