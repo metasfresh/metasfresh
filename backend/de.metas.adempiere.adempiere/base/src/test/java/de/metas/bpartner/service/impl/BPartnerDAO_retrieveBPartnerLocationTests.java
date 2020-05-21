@@ -182,25 +182,6 @@ public class BPartnerDAO_retrieveBPartnerLocationTests
 		assertThat(bpartnerLocationId.getRepoId()).isEqualTo(billLocationRecord2.getC_BPartner_Location_ID());
 	}
 	
-	
-	@Test
-	void bpartnerLocationByIdEvenInactive()
-	{
-		final BPartnerId bpartnerId = createBPartnerWithName("BPartner");
-
-		final I_C_BPartner_Location locationRecord = new BPLocationBuilder(bpartnerId)
-				.active(false)
-				.createRecord();
-
-		final BPartnerLocationId bpartnerLocationId = BPartnerLocationId.ofRepoId(bpartnerId, locationRecord.getC_BPartner_Location_ID());
-		
-		final I_C_BPartner_Location expectedlocationRecord = bpartnerDAO.getBPartnerLocationByIdEvenInactive(bpartnerLocationId);
-		assertThat(expectedlocationRecord).isNotNull();
-		assertThat(expectedlocationRecord.getC_BPartner_Location_ID()).isEqualTo(locationRecord.getC_BPartner_Location_ID());
-	}
-	
-
-
 	@Test
 	void bpartnerLocationCountryIdWithIactiveLocation()
 	{
