@@ -29,7 +29,7 @@ class Container extends PureComponent {
       processStatus,
       docSummaryData,
       dataId,
-      windowType,
+      windowId,
       breadcrumb,
       references,
       actions,
@@ -87,7 +87,7 @@ class Container extends PureComponent {
           // Forcing refresh component
           <Header
             docStatus={docActionElem}
-            windowId={windowType}
+            windowId={windowId}
             {...{
               entity,
               docStatusData,
@@ -125,11 +125,11 @@ class Container extends PureComponent {
           {modal.visible && (
             <Modal
               {...modal}
-              windowType={modal.type}
+              windowId={modal.type}
               dataId={modal.dataId ? modal.dataId : dataId}
               modalTitle={modal.title}
               modalViewId={modal.viewId}
-              parentType={windowType}
+              parentType={windowId}
               parentDataId={dataId}
               viewId={viewId}
               rawModalVisible={rawModal.visible}
@@ -154,7 +154,7 @@ class Container extends PureComponent {
               modalTitle={rawModal.title}
               modalDescription={rawModal.description}
               allowedCloseActions={rawModal.allowedCloseActions}
-              windowType={rawModal.windowId}
+              windowId={rawModal.windowId}
               viewId={rawModal.viewId}
               masterDocumentList={masterDocumentList}
             >
@@ -210,7 +210,7 @@ class Container extends PureComponent {
           {pluginModalVisible && (
             <PluginModalComponent
               docId={docId}
-              windowType={windowType}
+              windowId={windowId}
               dataId={dataId}
               entity={entity}
               viewId={viewId}
@@ -250,23 +250,23 @@ class Container extends PureComponent {
  * @prop {bool} isDocumentNotSaved
  * @prop {*} masterDocumentList
  * @prop {*} modal
- * @prop {*} modalDescription
- * @prop {*} modalTitle
- * @prop {*} notfound
+ * @prop {string} modalDescription
+ * @prop {string} modalTitle
+ * @prop {bool} notfound
  * @prop {*} noMargin
  * @prop {*} pluginComponents
  * @prop {object} pluginModal
  * @prop {*} pluginComponents
  * @prop {*} processStatus
- * @prop {*} viewId
- * @prop {*} rawModal
+ * @prop {string} viewId
+ * @prop {object} rawModal
  * @prop {*} references
  * @prop {*} showIndicator
  * @prop {*} showSidelist
  * @prop {*} setModalDescription
  * @prop {*} setModalTitle
- * @prop {*} siteName
- * @prop {*} windowType
+ * @prop {string} siteName
+ * @prop {string} windowId
  */
 Container.propTypes = {
   actions: PropTypes.any,
@@ -293,14 +293,14 @@ Container.propTypes = {
   isDocumentNotSaved: PropTypes.any,
   masterDocumentList: PropTypes.any,
   modal: PropTypes.any,
-  modalDescription: PropTypes.any,
-  modalTitle: PropTypes.any,
+  modalDescription: PropTypes.string,
+  modalTitle: PropTypes.string,
   noMargin: PropTypes.any,
   notfound: PropTypes.bool,
   pluginModal: PropTypes.object,
   pluginComponents: PropTypes.any,
   processStatus: PropTypes.any,
-  viewId: PropTypes.any,
+  viewId: PropTypes.string,
   rawModal: PropTypes.any,
   references: PropTypes.any,
   showIndicator: PropTypes.any,
@@ -308,7 +308,7 @@ Container.propTypes = {
   siteName: PropTypes.any,
   setRawModalDescription: PropTypes.any,
   setRawModalTitle: PropTypes.any,
-  windowType: PropTypes.any,
+  windowId: PropTypes.string,
 };
 
 /**
@@ -316,10 +316,10 @@ Container.propTypes = {
  * @summary ToDo: Describe the method.
  * @param {object} state
  */
-const mapStateToProps = (state, { windowType }) => {
-  let master = getView(windowType);
+const mapStateToProps = (state, { windowId }) => {
+  let master = getView(windowId);
 
-  if (!master || !windowType) {
+  if (!master || !windowId) {
     master = viewState;
   }
 

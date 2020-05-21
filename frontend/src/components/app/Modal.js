@@ -91,15 +91,15 @@ class Modal extends Component {
    * @method componentDidUpdate
    * @summary ToDo: Describe the method.
    * @param {object} prevProps
-   * @prop {*} windowType
-   * @prop {*} viewId
+   * @prop {string} windowId
+   * @prop {string} viewId
    * @prop {*} indicator
    */
   async componentDidUpdate(prevProps) {
-    const { windowType, viewId, indicator } = this.props;
+    const { windowId, viewId, indicator } = this.props;
     const { waitingFetch } = this.state;
 
-    if (prevProps.windowType !== windowType || prevProps.viewId !== viewId) {
+    if (prevProps.windowId !== windowId || prevProps.viewId !== viewId) {
       await this.init();
     }
 
@@ -158,7 +158,7 @@ class Modal extends Component {
   init = async () => {
     const {
       dispatch,
-      windowType,
+      windowId,
       dataId,
       tabId,
       rowId,
@@ -182,13 +182,13 @@ class Modal extends Component {
         {
           if (staticModalType === 'about') {
             request = dispatch(
-              fetchChangeLog(windowType, dataId, tabId, rowId)
+              fetchChangeLog(windowId, dataId, tabId, rowId)
             );
           }
           if (staticModalType === 'comments') {
             request = dispatch(
               callAPI({
-                windowId: windowType,
+                windowId: windowId,
                 docId: dataId,
                 tabId,
                 rowId,
@@ -211,7 +211,7 @@ class Modal extends Component {
       case 'window':
         try {
           await dispatch(
-            createWindow(windowType, dataId, tabId, rowId, true, isAdvanced)
+            createWindow(windowId, dataId, tabId, rowId, true, isAdvanced)
           );
         } catch (error) {
           this.handleClose();
@@ -228,7 +228,7 @@ class Modal extends Component {
 
         try {
           const options = {
-            processType: windowType,
+            processType: windowId,
             viewId: modalViewId,
             type: parentType,
             ids: modalViewId
@@ -280,7 +280,7 @@ class Modal extends Component {
       dispatch,
       closeCallback,
       dataId,
-      windowType,
+      windowId,
       parentType,
       parentDataId,
       triggerField,
@@ -290,7 +290,7 @@ class Modal extends Component {
     const { isNew, isNewDoc } = this.state;
 
     if (isNewDoc) {
-      processNewRecord('window', windowType, dataId).then((response) => {
+      processNewRecord('window', windowId, dataId).then((response) => {
         dispatch(
           patch(
             'window',
@@ -309,7 +309,7 @@ class Modal extends Component {
       if (closeCallback) {
         closeCallback({
           isNew,
-          windowType,
+          windowType: windowId,
           documentId: dataId,
           tabId,
           rowId,
@@ -373,7 +373,7 @@ class Modal extends Component {
    * @summary ToDo: Describe the method
    */
   handleStart = () => {
-    const { dispatch, layout, windowType, indicator } = this.props;
+    const { dispatch, layout, windowId, indicator } = this.props;
 
     if (indicator === 'pending') {
       this.setState({ waitingFetch: true, pending: true });
@@ -388,11 +388,11 @@ class Modal extends Component {
         let response;
 
         try {
-          response = await startProcess(windowType, layout.pinstanceId);
+          response = await startProcess(windowId, layout.pinstanceId);
 
           const action = handleProcessResponse(
             response,
-            windowType,
+            windowId,
             layout.pinstanceId
           );
 
@@ -425,7 +425,7 @@ class Modal extends Component {
       rowId,
       dataId,
       modalType,
-      windowType,
+      windowId,
       isAdvanced,
       staticModalType,
     } = this.props;
@@ -438,7 +438,7 @@ class Modal extends Component {
           content = <ChangeLogModal data={data} />;
         }
         if (staticModalType === 'comments') {
-          content = <CommentsPanel windowId={windowType} docId={dataId} />;
+          content = <CommentsPanel windowId={windowId} docId={dataId} />;
         }
         return (
           <div className="window-wrapper">
@@ -469,7 +469,7 @@ class Modal extends Component {
           <Process
             data={data}
             layout={layout}
-            type={windowType}
+            type={windowId}
             disabled={pending}
           />
         );
@@ -616,7 +616,7 @@ class Modal extends Component {
    * @summary ToDo: Describe the method
    */
   renderOverlay = () => {
-    const { data, layout, windowType, modalType, isNewDoc } = this.props;
+    const { data, layout, windowId, modalType, isNewDoc } = this.props;
     const { pending } = this.state;
 
     const applyHandler =
@@ -658,7 +658,7 @@ class Modal extends Component {
 
     return (
       <OverlayField
-        type={windowType}
+        type={windowId}
         disabled={pending}
         data={data}
         layout={layout}
@@ -730,8 +730,8 @@ class Modal extends Component {
  * @prop {*} [rawModalVisible]
  * @prop {string} [rowId]
  * @prop {*} [triggerField]
- * @prop {*} [viewId]
- * @prop {*} [windowType]
+ * @prop {string} [viewId]
+ * @prop {string} [windowId]
  */
 Modal.propTypes = {
   dispatch: PropTypes.func.isRequired,
@@ -761,8 +761,8 @@ Modal.propTypes = {
   rawModalVisible: PropTypes.any,
   rowId: PropTypes.string,
   triggerField: PropTypes.any,
-  viewId: PropTypes.any,
-  windowType: PropTypes.any,
+  viewId: PropTypes.string,
+  windowId: PropTypes.string,
 };
 
 /**

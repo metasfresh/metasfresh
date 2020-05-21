@@ -27,16 +27,12 @@ class DocList extends Component {
     const { query } = this.props;
     const { query: nextQuery } = nextProps;
 
-    if (_.isEqual(query, nextQuery)) {
-      return false;
-    }
-
-    return true;
+    return !_.isEqual(query, nextQuery);
   }
 
   componentDidMount = () => {
     const {
-      windowType,
+      windowId,
       latestNewDocument,
       query,
       getWindowBreadcrumb,
@@ -44,11 +40,11 @@ class DocList extends Component {
       selectTableItems,
     } = this.props;
 
-    getWindowBreadcrumb(windowType);
+    getWindowBreadcrumb(windowId);
 
     if (latestNewDocument) {
       selectTableItems({
-        windowType: windowType,
+        windowType: windowId,
         viewId: query.viewId,
         ids: [latestNewDocument],
       });
@@ -57,10 +53,10 @@ class DocList extends Component {
   };
 
   componentDidUpdate = (prevProps) => {
-    const { windowType, getWindowBreadcrumb } = this.props;
+    const { windowId, getWindowBreadcrumb } = this.props;
 
-    if (prevProps.windowType !== windowType) {
-      getWindowBreadcrumb(windowType);
+    if (prevProps.windowId !== windowId) {
+      getWindowBreadcrumb(windowId);
     }
   };
 
@@ -82,9 +78,17 @@ class DocList extends Component {
     this.masterDocumentList.updateQuickActions(childSelection);
   };
 
+  /**
+   * @method handleDocListRef
+   * @summary Store ref to the main DocumentList
+   */
+  handleDocListRef = (ref) => {
+    this.masterDocumentList = ref;
+  };
+
   render() {
     const {
-      windowType,
+      windowId,
       query,
       modal,
       rawModal,
@@ -109,7 +113,7 @@ class DocList extends Component {
         entity="documentView"
         modal={modal}
         rawModal={rawModal}
-        windowType={windowType}
+        windowId={windowId}
         viewId={viewId}
         processStatus={processStatus}
         includedView={includedView}
@@ -124,12 +128,10 @@ class DocList extends Component {
           })}
         >
           <DocumentList
-            ref={(element) => {
-              this.masterDocumentList = element ? element : null;
-            }}
+            ref={this.handleDocListRef}
             type="grid"
             updateUri={this.updateUriCallback}
-            windowType={windowType}
+            windowType={windowId}
             refRowIds={refRowIds}
             includedView={includedView}
             inBackground={rawModal.visible}
@@ -153,7 +155,7 @@ class DocList extends Component {
                 type="includedView"
                 windowType={includedView.windowType}
                 defaultViewId={includedView.viewId}
-                parentWindowType={windowType}
+                parentWindowType={windowId}
                 parentDefaultViewId={viewId}
                 updateParentSelectedIds={this.handleUpdateParentSelectedIds}
                 viewProfileId={includedView.viewProfileId}
@@ -190,7 +192,7 @@ class DocList extends Component {
  * @prop {string} processStatus
  * @prop {object} query - routing query
  * @prop {object} rawModal
- * @prop {object} windowType
+ * @prop {string} windowId
  */
 DocList.propTypes = {
   includedView: PropTypes.object,
@@ -201,7 +203,7 @@ DocList.propTypes = {
   query: PropTypes.object.isRequired,
   pathname: PropTypes.string.isRequired,
   rawModal: PropTypes.object.isRequired,
-  windowType: PropTypes.string,
+  windowId: PropTypes.string,
   getWindowBreadcrumb: PropTypes.func.isRequired,
   selectTableItems: PropTypes.func.isRequired,
   setLatestNewDocument: PropTypes.func.isRequired,

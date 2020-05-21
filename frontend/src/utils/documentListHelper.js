@@ -20,6 +20,8 @@ const DLpropTypes = {
   page: PropTypes.number,
   sort: PropTypes.string,
   defaultViewId: PropTypes.string,
+
+  // TODO: Eventually this should be renamed to `refWindowId`
   refType: PropTypes.string,
   refId: PropTypes.string,
   refTabId: PropTypes.string,

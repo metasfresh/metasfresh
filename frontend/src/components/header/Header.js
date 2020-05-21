@@ -921,7 +921,7 @@ Header.propTypes = {
   me: PropTypes.object.isRequired,
   notfound: PropTypes.any,
   plugins: PropTypes.any,
-  viewId: PropTypes.any,
+  viewId: PropTypes.string,
   showSidelist: PropTypes.any,
   showIndicator: PropTypes.any,
   siteName: PropTypes.any,

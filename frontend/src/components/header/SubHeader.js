@@ -579,7 +579,7 @@ SubHeader.propTypes = {
   notfound: PropTypes.any,
   openModal: PropTypes.func,
   openModalRow: PropTypes.func,
-  viewId: PropTypes.any,
+  viewId: PropTypes.string,
   redirect: PropTypes.any,
   selected: PropTypes.any,
   siteName: PropTypes.any,
