@@ -85,7 +85,7 @@ public class TableRecordIdDAO_Test
 		final String tableName = "AD_ChangeLog";
 
 		final TableRecordIdDAO instanceUnderTest = setupTableRecordDaoWithDistinctIDs(ImmutableSet.of(adfieldTableID));
-		final List<TableRecordIdDescriptor> tableRecordReferences = instanceUnderTest.getTableRecordIdReferences(tableName);
+		final List<TableRecordIdDescriptor> tableRecordReferences = instanceUnderTest.retrieveTableRecordIdReferences(tableName);
 
 		assertThat(tableRecordReferences.size()).isEqualTo(1);
 
@@ -120,7 +120,7 @@ public class TableRecordIdDAO_Test
 		final String tableName = "AD_ChangeLog";
 
 		final TableRecordIdDAO instanceUnderTest = setupTableRecordDaoWithDistinctIDs(ImmutableSet.of(adfieldTableID));
-		final List<TableRecordIdDescriptor> tableRecordReferences = instanceUnderTest.getTableRecordIdReferences(tableName);
+		final List<TableRecordIdDescriptor> tableRecordReferences = instanceUnderTest.retrieveTableRecordIdReferences(tableName);
 
 		assertThat(tableRecordReferences.size()).isEqualTo(1);
 
@@ -163,7 +163,7 @@ public class TableRecordIdDAO_Test
 		final String tableName = "AD_ChangeLog";
 
 		final TableRecordIdDAO instanceUnderTest = setupTableRecordDaoWithDistinctIDs(ImmutableSet.of(adfieldTableID));
-		final List<TableRecordIdDescriptor> tableRecordReferences = instanceUnderTest.getTableRecordIdReferences(tableName);
+		final List<TableRecordIdDescriptor> tableRecordReferences = instanceUnderTest.retrieveTableRecordIdReferences(tableName);
 
 		final TableRecordIdDescriptor expectedactualTableRecordIdDescriptor_Record_ID = createTableRecordIdDescriptor("AD_ChangeLog", Mocked_I_AD_ChangeLog.COLUMNNAME_Record_ID, "AD_Field");
 		final TableRecordIdDescriptor expectedactualTableRecordIdDescriptor_Prefix_Record_ID = createTableRecordIdDescriptor("AD_ChangeLog", Mocked_I_AD_ChangeLog.COLUMNNAME_AD_Field_Record_ID, "AD_Field");
