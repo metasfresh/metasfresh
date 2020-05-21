@@ -26,6 +26,7 @@ import de.metas.ordercandidate.api.OLCandCreateRequest;
 import de.metas.ordercandidate.api.OLCandCreateRequest.OLCandCreateRequestBuilder;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentRule;
+import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.rest_api.common.MetasfreshId;
 import de.metas.rest_api.exception.MissingPropertyException;
@@ -125,6 +126,8 @@ class JsonConverters
 
 		final PaymentRule paymentRule = masterdataProvider.getPaymentRule(request);
 
+		final PaymentTermId paymentTermId = masterdataProvider.getPaymentTermId(request, orgId);
+
 		final UomId uomId;
 		if (!isEmpty(request.getUomCode(), true))
 		{
@@ -180,6 +183,8 @@ class JsonConverters
 				.paymentRule(paymentRule)
 
 				.salesRepId(salesRepId)
+
+				.paymentTermId(paymentTermId)
 		//
 		;
 	}
