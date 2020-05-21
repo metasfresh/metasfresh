@@ -230,6 +230,8 @@ public class OrderCandidatesRestControllerImplTest
 
 			testMasterdata.createDocType(DocBaseAndSubType.of(X_C_DocType.DOCBASETYPE_SalesOrder,
 					X_C_DocType.DOCSUBTYPE_PrepayOrder));
+			
+			testMasterdata.createPaymentTerm("paymentTermValue", "paymentTermExternalId");
 		}
 
 		final CurrencyService currencyService = new CurrencyService();
@@ -443,6 +445,7 @@ public class OrderCandidatesRestControllerImplTest
 				.shipper("val-DPD")
 				.salesPartnerCode("SalesRep")
 				.paymentRule(JSONPaymentRule.Paypal)
+				.paymentTerm("val-paymentTermValue")
 				.orderDocType(OrderDocType.PrepayOrder)
 				.shipper("val-DPD")
 				.build());
@@ -547,6 +550,7 @@ public class OrderCandidatesRestControllerImplTest
 				.shipper("val-DPD")
 				.salesPartnerCode("SalesRep")
 				.paymentRule(JSONPaymentRule.Paypal)
+				.paymentTerm("ext-paymentTermExternalId")
 				.orderDocType(OrderDocType.PrepayOrder)
 				.shipper("val-DPD")
 				.warehouseDestCode("testWarehouseDest")
@@ -629,6 +633,7 @@ public class OrderCandidatesRestControllerImplTest
 				.shipper("val-DPD")
 				.salesPartnerCode("SalesRep")
 				.paymentRule(JSONPaymentRule.DirectDebit)
+				.paymentTerm("val-paymentTermValue")
 				.orderDocType(OrderDocType.PrepayOrder)
 				.shipper("val-DPD")
 				.warehouseDestCode("testWarehouseDest")
@@ -675,6 +680,7 @@ public class OrderCandidatesRestControllerImplTest
 				.shipper("val-DPD")
 				.salesPartnerCode("SalesRep")
 				.paymentRule(JSONPaymentRule.Paypal)
+				.paymentTerm("val-paymentTermValue")
 				.orderDocType(OrderDocType.PrepayOrder)
 				.shipper("val-DPD")
 				.bpartner(JsonRequestBPartnerLocationAndContact.builder()
@@ -790,6 +796,7 @@ public class OrderCandidatesRestControllerImplTest
 				.shipper("val-DPD")
 				.salesPartnerCode("SalesRep")
 				.paymentRule(JSONPaymentRule.Paypal)
+				.paymentTerm("val-paymentTermValue")
 				.orderDocType(OrderDocType.PrepayOrder)
 				.shipper("val-DPD")
 
@@ -900,6 +907,7 @@ public class OrderCandidatesRestControllerImplTest
 				.paymentRule(JSONPaymentRule.DirectDebit)
 				.orderDocType(OrderDocType.PrepayOrder)
 				.shipper("val-DPD")
+				.paymentTerm("val-paymentTermValue")
 
 				.product(JsonProductInfo.builder()
 						.code("productCode")
