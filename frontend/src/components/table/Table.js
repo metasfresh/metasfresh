@@ -1420,23 +1420,26 @@ class Table extends Component {
 
         {allowShortcut && (
           <DocumentListContextShortcuts
-            handleAdvancedEdit={
+            windowId={windowId}
+            tabId={tabId}
+            selected={null}
+            onAdvancedEdit={
               selected && selected.length > 0 && selected[0]
-                ? () => this.handleAdvancedEdit(windowId, tabId, selected)
+                ? this.handleAdvancedEdit
                 : undefined
             }
-            handleOpenNewTab={
+            onOpenNewTab={
               selected && selected.length > 0 && selected[0] && mainTable
-                ? () => handleOpenNewTab(selected, windowId)
+                ? handleOpenNewTab
                 : undefined
             }
-            handleDelete={
+            onDelete={
               selected && selected.length > 0 && selected[0]
                 ? this.handleDelete
                 : undefined
             }
-            getAllLeafs={this.getAllLeafs}
-            handleIndent={this.handleShortcutIndent}
+            onGetAllLeafs={this.getAllLeafs}
+            onIndent={this.handleShortcutIndent}
           />
         )}
 
