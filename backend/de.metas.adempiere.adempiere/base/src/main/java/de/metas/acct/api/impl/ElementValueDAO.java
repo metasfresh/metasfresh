@@ -28,6 +28,7 @@ import de.metas.cache.annotation.CacheCtx;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.impl.CompareQueryFilter;
 import org.adempiere.ad.dao.impl.RPadQueryFilterModifier;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -54,13 +55,71 @@ public class ElementValueDAO implements IElementValueDAO
 	@Override
 	public @NonNull ImmutableSet<ElementValueId> getElementValueIdsBetween(@NonNull final String valueFrom, @NonNull final String valueTo)
 	{
-		// TODO @tbp @teo: this query needs to be refined and its test updated after a discussion with mark
+		/*
+Implementation detail: Similar to: org.compiere.apps.search.Info.Worker.loadData, which is called from org.compiere.acct.AcctViewer.actionButton, when searching from an account.
 
-		final RPadQueryFilterModifier lpadModifier = new RPadQueryFilterModifier(20, " ");
+ValueFrom sql:
+SELECT ev.c_elementvalue_id, ev.value, ev.name
+FROM c_elementvalue ev
+WHERE TRUE
+  AND IsActive = 'Y'
+  AND (IsSummary = 'N' OR IsSummary IS NULL)
+  AND C_Element_ID = 1000000
+  AND Value LIKE '10%'
+ORDER BY value Asc
+LIMIT 1
+;
+
+
+ValueTo sql:
+SELECT ev.c_elementvalue_id, ev.value, ev.name
+FROM c_elementvalue ev
+WHERE TRUE
+  AND IsActive = 'Y'
+  AND (IsSummary = 'N' OR IsSummary IS NULL)
+  AND C_Element_ID = 1000000
+  AND Value LIKE '11%'
+ORDER BY value DESC
+LIMIT 1
+;
+
+
+Query similar to org.compiere.acct.AcctViewerData.appendAccountWhereClause:
+SELECT ce.c_elementvalue_id
+FROM c_elementvalue ce
+WHERE (
+          LPAD(trim(ce.Value), 20, '0')
+              BETWEEN
+             	 (SELECT LPAD(trim(ev.Value), 20, '0') FROM C_ElementValue ev WHERE ev.C_ElementValue_ID = $idFrom)
+              AND
+             	 (SELECT LPAD(trim(ev.Value), 20, '0') FROM C_ElementValue ev WHERE ev.C_ElementValue_ID = $idTo)
+          )
+;
+
+Observation, even if the original query uses LPAD, RPAD gives better results from my testing
+ */
+
+		final RPadQueryFilterModifier rpad = new RPadQueryFilterModifier(20, "0");
+
+		final I_C_ElementValue from = queryBL.createQueryBuilder(I_C_ElementValue.class)
+				.addOnlyActiveRecordsFilter()
+				.addCompareFilter(I_C_ElementValue.COLUMNNAME_Value, CompareQueryFilter.Operator.STRING_LIKE_IGNORECASE, valueFrom + "%")
+				.setLimit(1)
+				.orderBy(I_C_ElementValue.COLUMNNAME_Value)
+				.create()
+				.first();
+
+		final I_C_ElementValue to = queryBL.createQueryBuilder(I_C_ElementValue.class)
+				.addOnlyActiveRecordsFilter()
+				.addCompareFilter(I_C_ElementValue.COLUMNNAME_Value, CompareQueryFilter.Operator.STRING_LIKE_IGNORECASE, valueTo + "%")
+				.setLimit(1)
+				.orderByDescending(I_C_ElementValue.COLUMNNAME_Value)
+				.create()
+				.first();
 
 		return queryBL.createQueryBuilder(I_C_ElementValue.class)
-				.addBetweenFilter(I_C_ElementValue.COLUMNNAME_Value, valueFrom, valueTo, lpadModifier)
 				.addOnlyActiveRecordsFilter()
+				.addBetweenFilter(I_C_ElementValue.COLUMNNAME_Value, from.getValue(), to.getValue(), rpad)
 				.create()
 				.listIds(ElementValueId::ofRepoId);
 	}
