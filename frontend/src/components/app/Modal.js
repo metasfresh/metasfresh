@@ -181,9 +181,7 @@ class Modal extends Component {
       case 'static':
         {
           if (staticModalType === 'about') {
-            request = dispatch(
-              fetchChangeLog(windowId, dataId, tabId, rowId)
-            );
+            request = dispatch(fetchChangeLog(windowId, dataId, tabId, rowId));
           }
           if (staticModalType === 'comments') {
             request = dispatch(
