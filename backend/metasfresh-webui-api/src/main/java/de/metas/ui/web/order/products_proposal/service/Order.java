@@ -8,10 +8,10 @@ import javax.annotation.Nullable;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.currency.Currency;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
-import de.metas.money.CurrencyId;
 import de.metas.order.OrderId;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PriceListVersionId;
@@ -74,7 +74,8 @@ public class Order
 	CountryId countryId;
 
 	@NonNull
-	CurrencyId currencyId;
+	Currency currency;
+	
 
 	@NonNull
 	ImmutableList<OrderLine> lines;
