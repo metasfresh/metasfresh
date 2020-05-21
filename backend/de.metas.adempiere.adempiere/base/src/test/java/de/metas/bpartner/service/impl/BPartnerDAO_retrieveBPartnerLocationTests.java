@@ -3,7 +3,6 @@ package de.metas.bpartner.service.impl;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertAll;
 
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_BPartner;
@@ -181,20 +180,7 @@ public class BPartnerDAO_retrieveBPartnerLocationTests
 		assertThat(bpartnerLocationId.getRepoId()).isNotEqualTo(billLocationRecord1.getC_BPartner_Location_ID());
 		assertThat(bpartnerLocationId.getRepoId()).isEqualTo(billLocationRecord2.getC_BPartner_Location_ID());
 	}
-	
-	@Test
-	void bpartnerLocationCountryIdWithIactiveLocation()
-	{
-		final BPartnerId bpartnerId = createBPartnerWithName("BPartner");
 
-		final I_C_BPartner_Location locationRecord = new BPLocationBuilder(bpartnerId)
-				.active(false)
-				.createRecord();
-
-		final BPartnerLocationId bpartnerLocationId = BPartnerLocationId.ofRepoId(bpartnerId, locationRecord.getC_BPartner_Location_ID());
-		
-		assertAll(() ->bpartnerDAO.getBPartnerLocationCountryId(bpartnerLocationId));
-	}
 	
 	
 	private void createBillBPRelation(final BPartnerLocationId deliveryLocationId, final BPartnerLocationId billLocationRecord1Id)
