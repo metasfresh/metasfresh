@@ -43,8 +43,6 @@ import de.metas.cache.annotation.CacheCtx;
 import de.metas.cache.annotation.CacheTrx;
 import de.metas.email.EMailAddress;
 import de.metas.i18n.AdMessageKey;
-import de.metas.i18n.IMsgBL;
-import de.metas.i18n.ITranslatableString;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
 import de.metas.location.ILocationDAO;
@@ -97,7 +95,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -123,8 +120,6 @@ public class BPartnerDAO implements IBPartnerDAO
 
 	private final GLNLoadingCache glnsLoadingCache = new GLNLoadingCache();
 
-	private final IMsgBL msgBL = Services.get(IMsgBL.class);
-	private final ILocationDAO locationRepos = Services.get(ILocationDAO.class);
 	private static final AdMessageKey MSG_ADDRESS_INACTIVE = AdMessageKey.of("webui.salesorder.clone.inactivelocation");
 
 	@Override
@@ -501,8 +496,7 @@ public class BPartnerDAO implements IBPartnerDAO
 		final I_C_BPartner_Location bpLocation = getBPartnerLocationById(bpLocationId);
 		if (bpLocation == null)
 		{
-			final ITranslatableString message = msgBL.getTranslatableMsgText(MSG_ADDRESS_INACTIVE, Collections.emptyList());
-			throw new AdempiereException(message).markAsUserValidationError();
+			throw new AdempiereException(MSG_ADDRESS_INACTIVE).markAsUserValidationError();
 		}
 		final LocationId locationId = LocationId.ofRepoId(bpLocation.getC_Location_ID());
 
