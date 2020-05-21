@@ -151,6 +151,17 @@ export const initialState = {
 
 export const NO_SELECTION = [];
 
+const getQuickactionsData = (state, { windowType, viewId }) => {
+  const key = `${windowType}${viewId ? `-${viewId}` : ''}`;
+
+  return state.windowHandler.quickActions[key] || NO_SELECTION;
+};
+
+export const getQuickactions = createSelector(
+  [getQuickactionsData],
+  (actions) => actions
+);
+
 /* This is an improved function for getting selected rows, as it immediately reacts
  * to any changes to the selectionsHash variable in the state. This variable is set
  * with a random uuid hash whenever table row is selected/deleted.
