@@ -123,7 +123,9 @@ public class BPartnerDAO implements IBPartnerDAO
 
 	private final GLNLoadingCache glnsLoadingCache = new GLNLoadingCache();
 
-	private static final String MSG_ADDRESS_INACTIVE = "webui.salesorder.clone.inactivelocation";
+	private final IMsgBL msgBL = Services.get(IMsgBL.class);
+	private final ILocationDAO locationRepos = Services.get(ILocationDAO.class);
+	private static final AdMessageKey MSG_ADDRESS_INACTIVE = AdMessageKey.of("webui.salesorder.clone.inactivelocation");
 
 	@Override
 	public void save(@NonNull final I_C_BPartner bpartner)
@@ -496,21 +498,16 @@ public class BPartnerDAO implements IBPartnerDAO
 	@Override
 	public CountryId retrieveBPartnerLocationCountryId(@NonNull final BPartnerLocationId bpLocationId)
 	{
-		try
+		final I_C_BPartner_Location bpLocation = getBPartnerLocationById(bpLocationId);
+		if (bpLocation == null)
 		{
-			final I_C_BPartner_Location bpLocation = getBPartnerLocationById(bpLocationId);
-			final LocationId locationId = LocationId.ofRepoId(bpLocation.getC_Location_ID());
-
-			final ILocationDAO locationRepos = Services.get(ILocationDAO.class);
-			return locationRepos.getCountryIdByLocationId(locationId);
-		}
-		catch (NullPointerException ex)
-		{
-			final IMsgBL msgBL = Services.get(IMsgBL.class);
-			final ITranslatableString message = msgBL.getTranslatableMsgText(AdMessageKey.of(MSG_ADDRESS_INACTIVE), Collections.emptyList());
+			final ITranslatableString message = msgBL.getTranslatableMsgText(MSG_ADDRESS_INACTIVE, Collections.emptyList());
 			throw new AdempiereException(message).markAsUserValidationError();
 		}
+		final LocationId locationId = LocationId.ofRepoId(bpLocation.getC_Location_ID());
 
+		final ILocationDAO locationRepos = Services.get(ILocationDAO.class);
+		return locationRepos.getCountryIdByLocationId(locationId);
 	}
 
 	@Override
