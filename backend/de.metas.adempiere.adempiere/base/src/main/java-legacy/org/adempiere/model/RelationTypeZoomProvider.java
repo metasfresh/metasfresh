@@ -286,7 +286,7 @@ public class RelationTypeZoomProvider implements IZoomProvider
 		{
 			String originRecordIdName = null;
 
-			final List<TableRecordIdDescriptor> tableRecordIdDescriptors = tableRecordIdDAO.retrieveTableRecordIdReferences(originTableName);
+			final List<TableRecordIdDescriptor> tableRecordIdDescriptors = tableRecordIdDAO.getTableRecordIdReferences(originTableName);
 
 			for (final TableRecordIdDescriptor tableRecordIdDescriptor : tableRecordIdDescriptors)
 			{
