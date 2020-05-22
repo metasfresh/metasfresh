@@ -133,7 +133,6 @@ describe('Pick the SO', function() {
 
 describe('Generate the Shipment', function() {
   it('Open the Referenced Shipment Disposition', function() {
-    // let soRecordId = 1000009;
     salesOrders.visit(soRecordId);
     cy.openReferencedDocuments('M_ShipmentSchedule');
 
