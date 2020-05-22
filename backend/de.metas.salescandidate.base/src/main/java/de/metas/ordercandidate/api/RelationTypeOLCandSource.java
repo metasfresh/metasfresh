@@ -107,7 +107,7 @@ final class RelationTypeOLCandSource implements OLCandSource
 		final FreightCostRule freightCostRule = olCandBL.getFreightCostRule(params, orderDefaults);
 		final InvoiceRule invoiceRule = olCandBL.getInvoiceRule(params, orderDefaults);
 		final PaymentRule paymentRule = olCandBL.getPaymentRule(params, orderDefaults, olCandRecord);
-		final PaymentTermId paymentTermId = olCandBL.getPaymentTermId(params, orderDefaults);
+		final PaymentTermId paymentTermId = olCandBL.getPaymentTermId(params, orderDefaults, olCandRecord);
 		final PricingSystemId pricingSystemId = olCandBL.getPricingSystemId(olCandRecord, params, orderDefaults);
 		final ShipperId shipperId = olCandBL.getShipperId(params, orderDefaults, olCandRecord);
 		final DocTypeId orderDocTypeId = olCandBL.getOrderDocTypeId(orderDefaults, olCandRecord);

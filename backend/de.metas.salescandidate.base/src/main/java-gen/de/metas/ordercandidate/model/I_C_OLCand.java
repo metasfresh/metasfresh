@@ -567,7 +567,30 @@ public interface I_C_OLCand
     public static final org.adempiere.model.ModelColumn<I_C_OLCand, Object> COLUMN_C_OLCand_ID = new org.adempiere.model.ModelColumn<I_C_OLCand, Object>(I_C_OLCand.class, "C_OLCand_ID", null);
     /** Column name C_OLCand_ID */
     public static final String COLUMNNAME_C_OLCand_ID = "C_OLCand_ID";
+    
+    /**
+	 * Set Zahlungsbedingung.
+	 * Die Bedingungen für die Bezahlung dieses Vorgangs
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setC_PaymentTerm_ID (int C_PaymentTerm_ID);
 
+	/**
+	 * Get Zahlungsbedingung.
+	 * Die Bedingungen für die Bezahlung dieses Vorgangs
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getC_PaymentTerm_ID();
+
+    /** Column name C_PaymentTerm_ID */
+    public static final String COLUMNNAME_C_PaymentTerm_ID = "C_PaymentTerm_ID";
+    
 	/**
 	 * Get Erstellt.
 	 * Datum, an dem dieser Eintrag erstellt wurde

@@ -1358,6 +1358,10 @@ public class TimeUtil
 		return new Timestamp(Date.from(instant).getTime());
 	}
 
+	/**
+	 * NOTE: please consider using {@link #asTimestamp(LocalDate, ZoneId)} with the respective org's time zone instead (see {@link de.metas.organization.IOrgDAO#getTimeZone(de.metas.organization.OrgId)}).
+	 * Will be deprecated in future but atm we cannot because there are a lot of cases when we have to use it.
+	 */
 	public static Timestamp asTimestamp(@Nullable final LocalDate localDate)
 	{
 		final ZoneId timezone = null;
@@ -1638,11 +1642,19 @@ public class TimeUtil
 		}
 	}
 
-	// @Deprecated
-	// public static LocalTime asLocalTime(final LocalTime localTime)
-	// {
-	// return localTime;
-	// }
+	public static LocalDate asLocalDate(@Nullable final Timestamp timestamp, @NonNull final ZoneId zoneId)
+	{
+		return timestamp != null
+				? timestamp.toInstant().atZone(zoneId).toLocalDate()
+				: null;
+	}
+
+	public static LocalDate asLocalDate(@Nullable final ZonedDateTime zonedDateTime, @NonNull final ZoneId zoneId)
+	{
+		return zonedDateTime != null
+				? convertToTimeZone(zonedDateTime, zoneId).toLocalDate()
+				: null;
+	}
 
 	public static LocalTime asLocalTime(final Object obj)
 	{
@@ -1684,6 +1696,10 @@ public class TimeUtil
 		else if (obj instanceof Timestamp)
 		{
 			return ((Timestamp)obj).toLocalDateTime();
+		}
+		else if (obj instanceof ZonedDateTime)
+		{
+			return ((ZonedDateTime)obj).toLocalDateTime();
 		}
 		else
 		{

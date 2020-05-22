@@ -14,13 +14,13 @@ import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
-
-import static org.compiere.model.I_C_BPartner_Location.*;
+import static org.compiere.model.I_C_BPartner_Location.COLUMNNAME_ExternalId;
 
 import java.io.InputStream;
 import java.math.BigDecimal;
 import java.net.URI;
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.time.Month;
 import java.time.ZoneId;
 import java.util.List;
@@ -118,6 +118,7 @@ import de.metas.uom.UomId;
 import de.metas.user.UserRepository;
 import de.metas.util.JSONObjectMapper;
 import de.metas.util.Services;
+import de.metas.util.time.FixedTimeSource;
 import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 import mockit.Mocked;
@@ -146,7 +147,11 @@ import mockit.Mocked;
 
 public class OrderCandidatesRestControllerImplTest
 {
-	private static final long DEFAULT_TIME = 1584400036193L; // some time on 2020-03-16
+	private static final FixedTimeSource FIXED_TIME_SOURCE = FixedTimeSource.ofZonedDateTime(
+			LocalDate.parse("2020-03-16")
+					.atTime(LocalTime.parse("23:07:16.193"))
+					.atZone(ZoneId.of("Europe/Berlin")));
+
 
 	@Rule
 	public AdempiereTestWatcher testWatcher = new AdempiereTestWatcher();
@@ -190,22 +195,24 @@ public class OrderCandidatesRestControllerImplTest
 	{
 		AdempiereTestHelper.get().init();
 
-		SystemTime.setTimeSource(() -> DEFAULT_TIME);
+		SystemTime.setTimeSource(FIXED_TIME_SOURCE);
 
 		Services.registerService(IBPartnerBL.class, new BPartnerBL(new UserRepository()));
 
 		olCandBL = new OLCandBL(new BPartnerOrderParamsRepository());
 		Services.registerService(IOLCandBL.class, olCandBL);
 
+		final I_AD_Org defaultOrgRecord;
+
 		{ // create the master data requested to process the data from our json file
 			testMasterdata = new TestMasterdata();
 
-			final I_AD_Org org = InterfaceWrapperHelper.newInstance(I_AD_Org.class);
-			org.setValue("001");
-			saveRecord(org);
+			defaultOrgRecord = InterfaceWrapperHelper.newInstance(I_AD_Org.class);
+			defaultOrgRecord.setValue("001");
+			saveRecord(defaultOrgRecord);
 
 			final I_AD_OrgInfo orgInfo = InterfaceWrapperHelper.newInstance(I_AD_OrgInfo.class);
-			orgInfo.setAD_Org_ID(org.getAD_Org_ID());
+			orgInfo.setAD_Org_ID(defaultOrgRecord.getAD_Org_ID());
 			orgInfo.setStoreCreditCardData(StoreCreditCardNumberMode.DONT_STORE.getCode());
 			orgInfo.setTimeZone(ZoneId.of("Europe/Berlin").getId());
 			saveRecord(orgInfo);
@@ -230,6 +237,8 @@ public class OrderCandidatesRestControllerImplTest
 
 			testMasterdata.createDocType(DocBaseAndSubType.of(X_C_DocType.DOCBASETYPE_SalesOrder,
 					X_C_DocType.DOCSUBTYPE_PrepayOrder));
+			
+			testMasterdata.createPaymentTerm("paymentTermValue", "paymentTermExternalId");
 		}
 
 		final CurrencyService currencyService = new CurrencyService();
@@ -443,6 +452,7 @@ public class OrderCandidatesRestControllerImplTest
 				.shipper("val-DPD")
 				.salesPartnerCode("SalesRep")
 				.paymentRule(JSONPaymentRule.Paypal)
+				.paymentTerm("val-paymentTermValue")
 				.orderDocType(OrderDocType.PrepayOrder)
 				.shipper("val-DPD")
 				.build());
@@ -547,6 +557,7 @@ public class OrderCandidatesRestControllerImplTest
 				.shipper("val-DPD")
 				.salesPartnerCode("SalesRep")
 				.paymentRule(JSONPaymentRule.Paypal)
+				.paymentTerm("ext-paymentTermExternalId")
 				.orderDocType(OrderDocType.PrepayOrder)
 				.shipper("val-DPD")
 				.warehouseDestCode("testWarehouseDest")
@@ -629,6 +640,7 @@ public class OrderCandidatesRestControllerImplTest
 				.shipper("val-DPD")
 				.salesPartnerCode("SalesRep")
 				.paymentRule(JSONPaymentRule.DirectDebit)
+				.paymentTerm("val-paymentTermValue")
 				.orderDocType(OrderDocType.PrepayOrder)
 				.shipper("val-DPD")
 				.warehouseDestCode("testWarehouseDest")
@@ -675,6 +687,7 @@ public class OrderCandidatesRestControllerImplTest
 				.shipper("val-DPD")
 				.salesPartnerCode("SalesRep")
 				.paymentRule(JSONPaymentRule.Paypal)
+				.paymentTerm("val-paymentTermValue")
 				.orderDocType(OrderDocType.PrepayOrder)
 				.shipper("val-DPD")
 				.bpartner(JsonRequestBPartnerLocationAndContact.builder()
@@ -790,6 +803,7 @@ public class OrderCandidatesRestControllerImplTest
 				.shipper("val-DPD")
 				.salesPartnerCode("SalesRep")
 				.paymentRule(JSONPaymentRule.Paypal)
+				.paymentTerm("val-paymentTermValue")
 				.orderDocType(OrderDocType.PrepayOrder)
 				.shipper("val-DPD")
 
@@ -900,6 +914,7 @@ public class OrderCandidatesRestControllerImplTest
 				.paymentRule(JSONPaymentRule.DirectDebit)
 				.orderDocType(OrderDocType.PrepayOrder)
 				.shipper("val-DPD")
+				.paymentTerm("val-paymentTermValue")
 
 				.product(JsonProductInfo.builder()
 						.code("productCode")

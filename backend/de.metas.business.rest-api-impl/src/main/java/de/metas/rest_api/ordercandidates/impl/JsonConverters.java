@@ -2,6 +2,7 @@ package de.metas.rest_api.ordercandidates.impl;
 
 import static de.metas.util.Check.isEmpty;
 
+import java.time.ZoneId;
 import java.util.List;
 
 import javax.annotation.Nullable;
@@ -26,6 +27,7 @@ import de.metas.ordercandidate.api.OLCandCreateRequest;
 import de.metas.ordercandidate.api.OLCandCreateRequest.OLCandCreateRequestBuilder;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentRule;
+import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.rest_api.common.MetasfreshId;
 import de.metas.rest_api.exception.MissingPropertyException;
@@ -68,7 +70,7 @@ import lombok.NonNull;
  */
 
 @Service
-class JsonConverters
+public class JsonConverters
 {
 	private final CurrencyService currencyService;
 	private final DocTypeService docTypeService;
@@ -95,7 +97,7 @@ class JsonConverters
 			throw new AdempiereException("@FillMandatory@ @POReference@: " + request);
 		}
 
-		final OrgId orgId = masterdataProvider.getCreateOrgId(request.getOrg());
+		final OrgId orgId = masterdataProvider.getCreateOrgIdInTrx(request.getOrg());
 
 		final ProductInfo productInfo = masterdataProvider.getCreateProductInfo(request.getProduct(), orgId);
 
@@ -124,6 +126,8 @@ class JsonConverters
 		final BPartnerId salesRepId = masterdataProvider.getSalesRepId(request, orgId);
 
 		final PaymentRule paymentRule = masterdataProvider.getPaymentRule(request);
+
+		final PaymentTermId paymentTermId = masterdataProvider.getPaymentTermId(request, orgId);
 
 		final UomId uomId;
 		if (!isEmpty(request.getUomCode(), true))
@@ -180,6 +184,8 @@ class JsonConverters
 				.paymentRule(paymentRule)
 
 				.salesRepId(salesRepId)
+
+				.paymentTermId(paymentTermId)
 		//
 		;
 	}
@@ -259,13 +265,16 @@ class JsonConverters
 			@NonNull final OLCand olCand,
 			@NonNull final MasterdataProvider masterdataProvider)
 	{
+		final OrgId orgId = OrgId.ofRepoId(olCand.getAD_Org_ID());
+		final ZoneId orgTimeZone = masterdataProvider.getOrgTimeZone(orgId);
+
 		return JsonOLCand.builder()
 				.id(olCand.getId())
 				.poReference(olCand.getPOReference())
 				.externalLineId(olCand.getExternalLineId())
 				.externalHeaderId(olCand.getExternalHeaderId())
 				//
-				.org(masterdataProvider.getJsonOrganizationById(olCand.getAD_Org_ID()))
+				.org(masterdataProvider.getJsonOrganizationById(orgId))
 				//
 				.bpartner(toJson(olCand.getBPartnerInfo(), masterdataProvider))
 				.billBPartner(toJson(olCand.getBillBPartnerInfo(), masterdataProvider))
@@ -273,7 +282,7 @@ class JsonConverters
 				.handOverBPartner(toJson(olCand.getHandOverBPartnerInfo().orElse(null), masterdataProvider))
 				//
 				.dateOrdered(olCand.getDateDoc())
-				.datePromised(TimeUtil.asLocalDate(olCand.getDatePromised()))
+				.datePromised(TimeUtil.asLocalDate(olCand.getDatePromised(), orgTimeZone))
 				.flatrateConditionsId(olCand.getFlatrateConditionsId())
 				//
 				.productId(olCand.getM_Product_ID())
