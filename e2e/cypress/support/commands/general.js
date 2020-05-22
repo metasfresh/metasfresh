@@ -33,6 +33,8 @@ import { loginSuccess } from '../../../src/actions/AppActions';
 import Auth from '../../../src/services/Auth';
 import config from '../../config';
 import nextTabbable from './nextTabbable';
+import { humanReadableNow } from '../utils/utils';
+import { RewriteURL } from '../utils/constants';
 
 context('Reusable "login" custom command using API', function() {
   Cypress.Commands.add('loginViaAPI', (username, password, redirect) => {
@@ -206,7 +208,13 @@ Cypress.Commands.add('waitForHeader', (pageName, breadcrumbNr) => {
 });
 
 function visitTableWindow(windowId) {
+  const quickActionsAlias = 'quickActions_' + humanReadableNow();
+  cy.server();
+  cy.route('GET', new RegExp(RewriteURL.QuickActions)).as(quickActionsAlias);
+
   cy.visit(`/window/${windowId}`);
+
+  cy.wait(`@${quickActionsAlias}`);
 }
 
 function visitDetailWindow(windowId, recordId) {
@@ -227,7 +235,7 @@ function performDocumentViewAction(windowId, documentViewAction) {
   cy.server();
   const layoutAliasName = `visitWindow-layout-${new Date().getTime()}`;
   cy.route('GET', new RegExp(`/rest/api/window/${windowId}/layout`)).as(layoutAliasName);
-  
+
   // - removed below lines because is redundant code.. that GET call is actually done by documentViewAction ..
   // const dataAliasName = `visitWindow-data-${new Date().getTime()}`;
   // cy.route('GET', new RegExp(`/rest/api/window/${windowId}/[0-9]+$`)).as(dataAliasName);
@@ -235,7 +243,6 @@ function performDocumentViewAction(windowId, documentViewAction) {
   documentViewAction();
 
   cy.wait(`@${layoutAliasName}`);
-
 
   // - Also remmoved below lines as timeout is too big
   // cy.wait(`@${dataAliasName}`);
@@ -256,6 +263,7 @@ Cypress.Commands.add('visitWindow', (windowId, recordId) => {
   } else {
     visitDetailWindow(windowId, recordId);
   }
+  cy.waitForSaveIndicator();
 });
 
 Cypress.Commands.add('readAllNotifications', () => {
@@ -467,8 +475,8 @@ Cypress.Commands.add('openNotificationContaining', (expectedValue, destinationWi
 Cypress.Commands.add('selectLeftTable', function() {
   cy.log('Select left table');
   cy.waitForSaveIndicator();
-  cy.get('.modal-content-wrapper .table-flex-wrapper .document-list-table').within(el => {
-    el = el[0].parentElement;
+  cy.get('.modal-content-wrapper .document-list-included').within(el => {
+    el = el[0];
     return cy.wrap(el);
   });
 });
@@ -476,8 +484,8 @@ Cypress.Commands.add('selectLeftTable', function() {
 Cypress.Commands.add('selectRightTable', function() {
   cy.log('Select right table');
   cy.waitForSaveIndicator();
-  cy.get('.modal-content-wrapper .table-flex-wrapper .document-list-table').within(el => {
-    el = el[1].parentElement;
+  cy.get('.modal-content-wrapper .document-list-included').within(el => {
+    el = el[1];
     return cy.wrap(el);
   });
 });

@@ -1,7 +1,7 @@
 import { salesOrders } from '../../page_objects/sales_orders';
 import { SalesOrder, SalesOrderLine } from '../../support/utils/sales_order';
 import { DocumentStatusKey } from '../../support/utils/constants';
-import { applyFilters, selectNotFrequentFilterWidget, toggleNotFrequentFilters } from '../../support/functions';
+import { applyFilters, clearNotFrequentFilters, selectNotFrequentFilterWidget, toggleNotFrequentFilters } from '../../support/functions';
 import { Builder } from '../../support/utils/builder';
 
 let productName;
@@ -46,28 +46,22 @@ describe('Create test data', function() {
   });
 
   it('Create first single-HU inventory doc', function() {
-    cy.fixture('picking/pick_HUs_and_create_shipment.json').then(f => {
-      Builder.createHUWithStock(f['productName'], f['productQty'], f['locatorId']).then(huVal => (huValue1 = huVal));
-    });
+    Builder.createHUWithStock(productName, productQty, locatorId).then(huVal => (huValue1 = huVal));
   });
 
   it('Create second single-HU inventory doc', function() {
-    cy.fixture('picking/pick_HUs_and_create_shipment.json').then(f => {
-      Builder.createHUWithStock(f['productName'], f['productQty'], f['locatorId']).then(huVal => (huValue2 = huVal));
-    });
+    Builder.createHUWithStock(productName, productQty, locatorId).then(huVal => (huValue2 = huVal));
   });
 
   it('Create Sales Order', function() {
-    cy.fixture('picking/pick_HUs_and_create_shipment.json').then(f => {
-      new SalesOrder()
-        .setBPartner(f['businessPartnerName'])
-        .addLine(new SalesOrderLine().setProduct(f['productName']).setQuantity(f['soProductQuantity']))
-        .apply();
-      cy.completeDocument();
+    new SalesOrder()
+      .setBPartner(businessPartnerName)
+      .addLine(new SalesOrderLine().setProduct(productName).setQuantity(soProductQuantity))
+      .apply();
+    cy.completeDocument();
 
-      cy.getCurrentWindowRecordId().then(id => (soRecordId = id));
-      cy.getStringFieldValue('DocumentNo').then(docNO => (soDocNumber = docNO));
-    });
+    cy.getCurrentWindowRecordId().then(id => (soRecordId = id));
+    cy.getStringFieldValue('DocumentNo').then(docNO => (soDocNumber = docNO));
   });
 });
 
@@ -90,10 +84,9 @@ describe('Pick the SO', function() {
     });
     cy.executeQuickActionWithRightSideTable('WEBUI_Picking_HUEditor_Launcher');
 
-    cy.selectItemUsingBarcodeFilter(huValue1);
-    // cy.selectRightTable().within(() => {
-    //   cy.selectRowByColumnAndValue({ column: huSelectionHuCodeColumn, value: huValue1 }, false, true);
-    // });
+    cy.selectRightTable().within(() => {
+      cy.selectItemUsingBarcodeFilter({ column: huSelectionHuCodeColumn, value: huValue1 }, false, true);
+    });
 
     cy.executeQuickAction('WEBUI_Picking_HUEditor_PickHU', true, false);
   });
@@ -103,10 +96,11 @@ describe('Pick the SO', function() {
       cy.selectRowByColumnAndValue({ column: orderColumn, value: soDocNumber }, false, true);
     });
     cy.executeQuickActionWithRightSideTable('WEBUI_Picking_HUEditor_Launcher');
-    cy.selectItemUsingBarcodeFilter(huValue2);
-    // cy.selectRightTable().within(() => {
-    //   cy.selectRowByColumnAndValue({ column: huSelectionHuCodeColumn, value: huValue2 }, false, true);
-    // });
+
+    cy.selectRightTable().within(() => {
+      cy.selectItemUsingBarcodeFilter({ column: huSelectionHuCodeColumn, value: huValue2 }, false, true);
+    });
+
     cy.executeQuickAction('WEBUI_Picking_HUEditor_PickHU', true, false);
   });
 
@@ -131,67 +125,68 @@ describe('Pick the SO', function() {
   });
 });
 
-// describe('Generate the Shipment', function() {
-//   it('Open the Referenced Shipment Disposition', function() {
-//     salesOrders.visit(soRecordId);
-//     cy.openReferencedDocuments('M_ShipmentSchedule');
+describe('Generate the Shipment', function() {
+  it('Open the Referenced Shipment Disposition', function() {
+    salesOrders.visit(soRecordId);
+    cy.openReferencedDocuments('M_ShipmentSchedule');
 
-//     cy.expectNumberOfRows(1);
-//     cy.selectNthRow(0).dblclick();
-//   });
+    cy.expectNumberOfRows(1);
+    cy.selectNthRow(0).dblclick();
+  });
 
-//   it('Shipment Disposition checks', function() {
-//     cy.expectCheckboxValue('IsToRecompute', false);
-//     cy.getStringFieldValue('C_BPartner_ID').should('contain', businessPartnerName);
-//     cy.getStringFieldValue('M_Product_ID').should('contain', productName);
-//     cy.getStringFieldValue('C_Order_ID').should('equal', soDocNumber);
-//     cy.getStringFieldValue('QtyOrdered_Calculated').should('equal', soProductQuantity.toString(10));
-//     cy.getStringFieldValue('QtyToDeliver ').should('equal', '0');
-//     cy.getStringFieldValue('QtyPickList ').should('equal', soProductQuantity.toString(10));
-//   });
+  it('Shipment Disposition checks', function() {
+    cy.expectCheckboxValue('IsToRecompute', false);
+    cy.getStringFieldValue('C_BPartner_ID').should('contain', businessPartnerName);
+    cy.getStringFieldValue('M_Product_ID').should('contain', productName);
+    cy.getStringFieldValue('C_Order_ID').should('equal', soDocNumber);
+    cy.getStringFieldValue('QtyOrdered_Calculated').should('equal', soProductQuantity.toString(10));
+    cy.getStringFieldValue('QtyToDeliver ').should('equal', '0');
+    cy.getStringFieldValue('QtyPickList ').should('equal', soProductQuantity.toString(10));
+  });
 
-//   it('Run action "Generate shipments"', function() {
-//     cy.readAllNotifications();
-//     cy.executeHeaderAction('M_ShipmentSchedule_EnqueueSelection');
-//     cy.selectInListField('QuantityType', shipmentQuantityTypeOption, true, null, true);
-//     cy.expectCheckboxValue('IsCompleteShipments', true, true);
-//     cy.expectCheckboxValue('IsShipToday', false, true);
+  it('Run action "Generate shipments"', function() {
+    cy.readAllNotifications();
+    cy.executeHeaderAction('M_ShipmentSchedule_EnqueueSelection');
+    cy.selectInListField('QuantityType', shipmentQuantityTypeOption, true, null, true);
+    cy.expectCheckboxValue('IsCompleteShipments', true, true);
+    cy.expectCheckboxValue('IsShipToday', false, true);
 
-//     cy.pressStartButton();
-//     cy.getNotificationModal(shipmentNotificationModalText);
-//     cy.expectCheckboxValue('Processed', true);
-//   });
+    cy.pressStartButton();
+    cy.getNotificationModal(shipmentNotificationModalText);
+    cy.expectCheckboxValue('Processed', true);
+  });
 
-//   it('Open notifications and go to the shipment', function() {
-//     cy.openInboxNotificationWithText(businessPartnerName);
-//   });
+  it('Open notifications and go to the shipment', function() {
+    cy.openInboxNotificationWithText(businessPartnerName);
+  });
 
-//   it('Shipment checks', function() {
-//     cy.expectDocumentStatus(DocumentStatusKey.Completed);
-//     cy.getStringFieldValue('C_BPartner_ID').should('contain', businessPartnerName);
-//     cy.selectTab('M_HU_Assignment');
-//     cy.expectNumberOfRows(2);
-//     cy.selectRowByColumnAndValue({ column: handlingUnitsShipmentColumn, value: huValue1 });
-//     cy.selectRowByColumnAndValue({ column: handlingUnitsShipmentColumn, value: huValue2 });
-//   });
+  it('Shipment checks', function() {
+    cy.expectDocumentStatus(DocumentStatusKey.Completed);
+    cy.getStringFieldValue('C_BPartner_ID').should('contain', businessPartnerName);
+    cy.selectTab('M_HU_Assignment');
+    cy.expectNumberOfRows(2);
+    cy.selectRowByColumnAndValue({ column: handlingUnitsShipmentColumn, value: huValue1 });
+    cy.selectRowByColumnAndValue({ column: handlingUnitsShipmentColumn, value: huValue2 });
+  });
 
-//   it('Visit HU Editor and expect the 2 HUs have Packing Status Shipped', function() {
-//     cy.visitWindow(540189);
-//     toggleNotFrequentFilters();
-//     selectNotFrequentFilterWidget('default');
-//     cy.selectInListField('HUStatus', expectedPackingStatus, false, null, true);
-//     cy.writeIntoStringField('Value', huValue1, false, null, true);
-//     applyFilters();
+  it('Visit HU Editor and expect the 2 HUs have Packing Status Shipped', function() {
+    cy.visitWindow(540189);
+    clearNotFrequentFilters();
+    toggleNotFrequentFilters();
+    selectNotFrequentFilterWidget('default');
+    cy.selectInListField('HUStatus', expectedPackingStatus, false, null, true);
+    cy.writeIntoStringField('Value', huValue1, false, null, true);
+    applyFilters();
+    cy.expectNumberOfRows(1);
 
-//     cy.expectNumberOfRows(1);
-
-//     cy.visitWindow(540189);
-//     toggleNotFrequentFilters();
-//     selectNotFrequentFilterWidget('default');
-//     cy.selectInListField('HUStatus', expectedPackingStatus, false, null, true);
-//     cy.writeIntoStringField('Value', huValue2, false, null, true);
-//     applyFilters();
-
-//     cy.expectNumberOfRows(1);
-//   });
-// });
+    //
+    cy.visitWindow(540189);
+    clearNotFrequentFilters();
+    toggleNotFrequentFilters();
+    selectNotFrequentFilterWidget('default');
+    cy.selectInListField('HUStatus', expectedPackingStatus, false, null, true);
+    cy.writeIntoStringField('Value', huValue2, false, null, true);
+    applyFilters();
+    cy.expectNumberOfRows(1);
+  });
+});
