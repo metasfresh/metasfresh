@@ -2,7 +2,6 @@ import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import classnames from 'classnames';
-import _ from 'lodash';
 
 import { updateUri } from '../actions/AppActions';
 import { getWindowBreadcrumb } from '../actions/MenuActions';
@@ -23,13 +22,6 @@ const EMPTY_OBJECT = {};
  * @extends Component
  */
 class DocList extends Component {
-  shouldComponentUpdate(nextProps) {
-    const { query } = this.props;
-    const { query: nextQuery } = nextProps;
-
-    return !_.isEqual(query, nextQuery);
-  }
-
   componentDidMount = () => {
     const {
       windowId,
