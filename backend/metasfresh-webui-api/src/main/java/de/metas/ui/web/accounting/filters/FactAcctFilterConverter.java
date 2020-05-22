@@ -31,9 +31,9 @@ import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverter;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverterContext;
 import de.metas.ui.web.document.filter.sql.SqlParamsCollector;
 import de.metas.ui.web.window.model.sql.SqlOptions;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.exceptions.FillMandatoryException;
 import org.compiere.model.I_Fact_Acct;
 import org.compiere.util.DB;
 
@@ -41,7 +41,7 @@ public class FactAcctFilterConverter implements SqlDocumentFilterConverter
 {
 	public static final transient FactAcctFilterConverter instance = new FactAcctFilterConverter();
 
-	static final String FILTER_ID = "fact-acct";
+	static final String FILTER_ID = "accountId";
 
 	public static final String PARAM_ACCOUNT_VALUE_FROM = "AccountValueFrom";
 	public static final String PARAM_ACCOUNT_VALUE_TO = "AccountValueTo";
@@ -66,16 +66,11 @@ public class FactAcctFilterConverter implements SqlDocumentFilterConverter
 		final String accountValueFrom = filter.getParameterValueAsString(PARAM_ACCOUNT_VALUE_FROM, null);
 		final String accountValueTo = filter.getParameterValueAsString(PARAM_ACCOUNT_VALUE_TO, null);
 
-		if (accountValueFrom == null)
-		{
-			throw new FillMandatoryException(PARAM_ACCOUNT_VALUE_FROM);
-		}
-		if (accountValueTo == null)
-		{
-			throw new FillMandatoryException(PARAM_ACCOUNT_VALUE_TO);
-		}
+		Check.assumeNotEmpty(accountValueFrom, "AccountValueFrom not empty");
+		Check.assumeNotEmpty(accountValueTo, "AccountValueTo not empty");
 
 		final IElementValueDAO elementValueDAO = Services.get(IElementValueDAO.class);
+		@SuppressWarnings("ConstantConditions") // needed because intellij believes we could be sending nulls to getElementValueIdsBetween
 		final ImmutableSet<ElementValueId> ids = elementValueDAO.getElementValueIdsBetween(accountValueFrom, accountValueTo);
 
 		if (ids.isEmpty())

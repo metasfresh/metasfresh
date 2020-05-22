@@ -44,8 +44,8 @@ import java.util.Collection;
 @Component
 public class FactAcctFilterDescriptorsProviderFactory implements DocumentFilterDescriptorsProviderFactory
 {
-	public static final String FACT_ACCT_TRANSACTIONS_VIEW = "Fact_Acct_Transactions_View";
-	public static final String FACT_ACCT_TABLE = I_Fact_Acct.Table_Name;
+	private static final String FACT_ACCT_TRANSACTIONS_VIEW = "Fact_Acct_Transactions_View";
+	private static final String FACT_ACCT_TABLE = I_Fact_Acct.Table_Name;
 	private final transient IMsgBL msgBL = Services.get(IMsgBL.class);
 
 	public FactAcctFilterDescriptorsProviderFactory()
@@ -59,7 +59,7 @@ public class FactAcctFilterDescriptorsProviderFactory implements DocumentFilterD
 			@Nullable final String tableName,
 			@Nullable final Collection<DocumentFieldDescriptor> fields)
 	{
-		if (isWrongTable(tableName))
+		if (!isValidTable(tableName))
 		{
 			return NullDocumentFilterDescriptorsProvider.instance;
 		}
@@ -72,11 +72,13 @@ public class FactAcctFilterDescriptorsProviderFactory implements DocumentFilterD
 						.setDisplayName(msgBL.translatable("AccountNumber"))
 						//
 						.addParameter(DocumentFilterParamDescriptor.builder()
+								.setMandatory(true)
 								.setFieldName(FactAcctFilterConverter.PARAM_ACCOUNT_VALUE_FROM)
 								.setDisplayName(msgBL.translatable(FactAcctFilterConverter.PARAM_ACCOUNT_VALUE_FROM))
 								.setWidgetType(DocumentFieldWidgetType.Text)
 						)
 						.addParameter(DocumentFilterParamDescriptor.builder()
+								.setMandatory(true)
 								.setFieldName(FactAcctFilterConverter.PARAM_ACCOUNT_VALUE_TO)
 								.setDisplayName(msgBL.translatable(FactAcctFilterConverter.PARAM_ACCOUNT_VALUE_TO))
 								.setWidgetType(DocumentFieldWidgetType.Text)
@@ -86,8 +88,8 @@ public class FactAcctFilterDescriptorsProviderFactory implements DocumentFilterD
 		);
 	}
 
-	private boolean isWrongTable(@Nullable final String tableName)
+	private boolean isValidTable(@Nullable final String tableName)
 	{
-		return !(FACT_ACCT_TRANSACTIONS_VIEW.equals(tableName) || FACT_ACCT_TABLE.equals(tableName));
+		return (FACT_ACCT_TRANSACTIONS_VIEW.equals(tableName) || FACT_ACCT_TABLE.equals(tableName));
 	}
 }
