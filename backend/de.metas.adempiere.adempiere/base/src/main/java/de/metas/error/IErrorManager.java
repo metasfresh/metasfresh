@@ -19,4 +19,6 @@ public interface IErrorManager extends ISingletonService
 	 * Creates, saves and returns an {@link AdIssueId} based on given {@link Throwable} object.
 	 */
 	AdIssueId createIssue(Throwable t);
+
+	AdIssueId createIssue(IssueCreateRequest request);
 }

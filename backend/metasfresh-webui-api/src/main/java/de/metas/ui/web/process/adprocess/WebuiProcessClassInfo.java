@@ -4,6 +4,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Stream;
@@ -15,7 +16,6 @@ import org.reflections.ReflectionUtils;
 import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
-import java.util.Objects;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
@@ -298,7 +298,14 @@ public final class WebuiProcessClassInfo
 		catch (IllegalAccessException | InvocationTargetException e)
 		{
 			final Throwable cause = AdempiereException.extractCause(e);
-			throw new AdempiereException("Failed invoking " + method + " using " + methodParams, cause);
+			if (cause instanceof AdempiereException)
+			{
+				throw AdempiereException.wrapIfNeeded(cause);
+			}
+			else
+			{
+				throw new AdempiereException("Failed invoking " + method + " using " + methodParams, cause);
+			}
 		}
 		catch (final Exception e)
 		{

@@ -30,6 +30,7 @@ import org.adempiere.util.logging.LoggingHelper;
 import org.compiere.model.Null;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
+import org.slf4j.MDC;
 
 import com.google.common.collect.ImmutableMap;
 
@@ -67,6 +68,10 @@ public class AdempiereException extends RuntimeException
 		if (throwable == null)
 		{
 			return null;
+		}
+		if (throwable instanceof AdempiereException)
+		{
+			return (AdempiereException)throwable;
 		}
 
 		final Throwable cause = extractCause(throwable);
@@ -230,6 +235,7 @@ public class AdempiereException extends RuntimeException
 	private boolean userValidationError;
 
 	private Map<String, Object> parameters = null;
+	private final Map<String, String> mdcContextMap;
 
 	private boolean appendParametersToMessage = false;
 
@@ -246,24 +252,28 @@ public class AdempiereException extends RuntimeException
 	{
 		this.adLanguage = captureLanguageOnConstructionTime ? Env.getAD_Language() : null;
 		this.messageTrl = Services.get(IMsgBL.class).parseTranslatableString(message);
+		this.mdcContextMap = captureMDCContextMap();
 	}
 
 	public AdempiereException(@NonNull final ITranslatableString message)
 	{
 		this.adLanguage = captureLanguageOnConstructionTime ? Env.getAD_Language() : null;
 		this.messageTrl = message;
+		this.mdcContextMap = captureMDCContextMap();
 	}
 
 	public AdempiereException(@NonNull final AdMessageKey messageKey)
 	{
 		this.adLanguage = captureLanguageOnConstructionTime ? Env.getAD_Language() : null;
 		this.messageTrl = Services.get(IMsgBL.class).getTranslatableMsgText(messageKey);
+		this.mdcContextMap = captureMDCContextMap();
 	}
 
 	public AdempiereException(final String adLanguage, @NonNull final AdMessageKey adMessage, final Object... params)
 	{
 		this.messageTrl = Services.get(IMsgBL.class).getTranslatableMsgText(adMessage, params);
 		this.adLanguage = captureLanguageOnConstructionTime ? adLanguage : null;
+		this.mdcContextMap = captureMDCContextMap();
 
 		setParameter("AD_Language", this.adLanguage);
 		setParameter("AD_Message", adMessage);
@@ -279,6 +289,7 @@ public class AdempiereException extends RuntimeException
 		super(cause);
 		this.adLanguage = captureLanguageOnConstructionTime ? Env.getAD_Language() : null;
 		this.messageTrl = TranslatableStrings.empty();
+		this.mdcContextMap = captureMDCContextMap();
 	}
 
 	public AdempiereException(final String plainMessage, final Throwable cause)
@@ -286,6 +297,7 @@ public class AdempiereException extends RuntimeException
 		super(cause);
 		this.adLanguage = captureLanguageOnConstructionTime ? Env.getAD_Language() : null;
 		this.messageTrl = TranslatableStrings.constant(plainMessage);
+		this.mdcContextMap = captureMDCContextMap();
 	}
 
 	public AdempiereException(@NonNull final ITranslatableString message, final Throwable cause)
@@ -293,6 +305,15 @@ public class AdempiereException extends RuntimeException
 		super(cause);
 		this.adLanguage = captureLanguageOnConstructionTime ? Env.getAD_Language() : null;
 		this.messageTrl = message;
+		this.mdcContextMap = captureMDCContextMap();
+	}
+
+	private static Map<String, String> captureMDCContextMap()
+	{
+		final Map<String, String> map = MDC.getCopyOfContextMap();
+		return map != null && !map.isEmpty()
+				? map
+				: ImmutableMap.of();
 	}
 
 	protected final ITranslatableString getOriginalMessage()
@@ -681,6 +702,11 @@ public class AdempiereException extends RuntimeException
 			message.append("\n");
 		}
 		message.append(parametersStr);
+	}
+
+	public String getMDC(@NonNull final String name)
+	{
+		return mdcContextMap.get(name);
 	}
 
 	/**
