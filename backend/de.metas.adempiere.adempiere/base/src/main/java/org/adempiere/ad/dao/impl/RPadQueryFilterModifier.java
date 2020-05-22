@@ -22,33 +22,40 @@
 
 package org.adempiere.ad.dao.impl;
 
-import java.util.List;
-
+import de.metas.util.Check;
+import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryFilterModifier;
-
-import lombok.EqualsAndHashCode;
+import org.apache.commons.lang3.StringUtils;
+import org.compiere.util.DB;
 
 import javax.annotation.Nullable;
+import java.util.List;
 
 @EqualsAndHashCode
-public final class UpperCaseQueryFilterModifier implements IQueryFilterModifier
+public class RPadQueryFilterModifier implements IQueryFilterModifier
 {
-	public static final transient UpperCaseQueryFilterModifier instance = new UpperCaseQueryFilterModifier();
+	private final int size;
+	private final String padStr;
 
-	private UpperCaseQueryFilterModifier()
+	public RPadQueryFilterModifier(final int size, @NonNull final String padStr)
 	{
+		Check.assume(size > 0, "size > 0");
+		this.size = size;
+
+		// implementation detail: we're not using `Check.assumeNotEmpty` as that one trims the string, but we want to allow padding with space
+		Check.errorIf(padStr.isEmpty(), "padStr not empty");
+		this.padStr = padStr;
 	}
 
 	@Override
-	public @NonNull String getColumnSql(@NonNull String columnName)
+	public @NonNull String getColumnSql(final @NonNull String columnName)
 	{
-		final String columnSqlNew = "UPPER(" + columnName + ")";
-		return columnSqlNew;
+		return buildSql(columnName);
 	}
 
 	@Override
-	public String getValueSql(Object value, List<Object> params)
+	public String getValueSql(final Object value, final List<Object> params)
 	{
 		final String valueSql;
 		if (value instanceof ModelColumnNameValue<?>)
@@ -62,7 +69,7 @@ public final class UpperCaseQueryFilterModifier implements IQueryFilterModifier
 			params.add(value);
 		}
 
-		return "UPPER(" + valueSql + ")";
+		return buildSql(valueSql);
 	}
 
 	@Nullable
@@ -75,7 +82,20 @@ public final class UpperCaseQueryFilterModifier implements IQueryFilterModifier
 		}
 
 		final String str = (String)value;
-		return str.toUpperCase();
+
+		// implementation detail: we use `subSequence` because we want to match the Postgres RPAD implementation. The returned string is of the EXACT required length, even if that means the string will be shortened.
+		return StringUtils.rightPad(str.trim(), size, padStr).subSequence(0, size);
 	}
 
+	@Override
+	public String toString()
+	{
+		return "RPAD[size=" + size + ", padStr=" + padStr + "]";
+	}
+
+	@NonNull
+	private String buildSql(@NonNull final String columnNameOrValue)
+	{
+		return "RPAD(TRIM(" + columnNameOrValue + "), " + size + ", " + DB.TO_STRING(padStr) + ")";
+	}
 }
