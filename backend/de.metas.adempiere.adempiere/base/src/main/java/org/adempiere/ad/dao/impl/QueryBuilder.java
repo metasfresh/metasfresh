@@ -541,13 +541,6 @@ import lombok.NonNull;
 	}
 
 	@Override
-	public IQueryBuilder<T> addStringLikeFilter(final ModelColumn<T, ?> column, final String substring, final boolean ignoreCase)
-	{
-		final String columnName = column.getColumnName();
-		return addStringLikeFilter(columnName, substring, ignoreCase);
-	}
-
-	@Override
 	public IQueryBuilder<T> addCoalesceEqualsFilter(final Object value, final String... columnNames)
 	{
 		filters.addCoalesceEqualsFilter(value, columnNames);
