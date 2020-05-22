@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types';
-import React, { Component } from 'react';
+import React, { PureComponent } from 'react';
 import { connect } from 'react-redux';
 import classnames from 'classnames';
 
@@ -21,7 +21,7 @@ const EMPTY_OBJECT = {};
  * @module DocList
  * @extends Component
  */
-class DocList extends Component {
+class DocList extends PureComponent {
   componentDidMount = () => {
     const {
       windowId,
