@@ -17,6 +17,7 @@ import de.metas.error.IssueCreateRequest;
 import de.metas.process.AdProcessId;
 import de.metas.process.PInstanceId;
 import de.metas.process.ProcessMDC;
+import de.metas.util.Check;
 import de.metas.util.NumberUtils;
 import de.metas.util.Services;
 import de.metas.util.lang.RepoIdAware;
@@ -136,19 +137,14 @@ public class ErrorManager implements IErrorManager
 		final Throwable throwable = request.getThrowable();
 		if (throwable != null)
 		{
-			//
-			// Summary
-			if (summary != null && summary.length() > 0)
-			{
-				summary = throwable.toString() + " " + summary;
-			}
-			if (summary == null || summary.length() == 0)
-			{
-				summary = throwable.toString();
-			}
+			final String throwableMessage = AdempiereException.extractMessage(throwable);
+
+			summary = Check.isNotBlank(summary)
+					? throwableMessage + " " + summary
+					: throwableMessage;
 		}
 
-		if (summary == null || summary.isEmpty())
+		if (Check.isBlank(summary))
 		{
 			summary = "??";
 		}
