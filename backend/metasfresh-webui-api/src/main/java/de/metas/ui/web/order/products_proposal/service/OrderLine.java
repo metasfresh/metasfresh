@@ -49,6 +49,9 @@ public class OrderLine
 
 	@NonNull
 	BigDecimal priceActual;
+	
+	@NonNull
+	BigDecimal priceEntered;
 
 	@NonNull
 	BigDecimal qtyEnteredCU;

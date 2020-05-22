@@ -125,7 +125,7 @@ export const getRoutes = (store, auth, plugins) => {
   const DocListRoute = (nextState) => (
     <DocList
       query={nextState.location.query}
-      windowType={nextState.params.windowType}
+      windowId={nextState.params.windowId}
     />
   );
   const BoardRoute = (nextState) => (
@@ -137,7 +137,7 @@ export const getRoutes = (store, auth, plugins) => {
 
   const childRoutes = [
     {
-      path: '/window/:windowType',
+      path: '/window/:windowId',
       // eslint-disable-next-line react/display-name
       component: DocListRoute,
     },
