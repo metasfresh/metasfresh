@@ -21,6 +21,7 @@ export default class DocumentReferenceGroup extends Component {
             targetWindowId={reference.targetWindowId}
             filter={reference.filter}
             onClick={onReferenceItemClick}
+            internalName={reference.internalName}
           />
         ))}
       </Fragment>

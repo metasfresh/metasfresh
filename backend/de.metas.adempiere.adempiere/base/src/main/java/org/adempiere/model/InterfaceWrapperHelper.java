@@ -309,14 +309,8 @@ public class InterfaceWrapperHelper
 	 * <p>
 	 * Note: if you want to load a record from <code>(AD_Table_ID, Reference_ID)</code>,<br>
 	 * then it's probably better to use e.g. {@link org.adempiere.util.lang.impl.TableRecordReference#of(int, int)}.
-	 *
-	 * @param ctx
-	 * @param id
-	 * @param cl
-	 * @param trxName
-	 * @return
 	 */
-	public static <T> T create(final Properties ctx, final int id, final Class<T> cl, final String trxName)
+	public static <T> T create(final Properties ctx, final int id, final Class<T> cl, @Nullable final String trxName)
 	{
 		if (getInMemoryDatabaseForModel(cl) != null)
 		{
