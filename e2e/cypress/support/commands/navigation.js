@@ -1,4 +1,3 @@
-import { RewriteURL } from '../utils/constants';
 import { humanReadableNow } from '../../support/utils/utils';
 import { checkIfWindowCanExecuteActions } from './commands_utils';
 /*
@@ -204,21 +203,28 @@ Cypress.Commands.add('selectRowByColumnAndValue', (columnAndValue, modal = false
  * Select a single item using the Barcode lookup
  *
  */
-Cypress.Commands.add('selectItemUsingBarcodeFilter', huValue1 => {
-  cy.get('.filters-not-frequent > .btn')
-    .eq(0)
-    .click({ force: true });
-  cy.wait(500);
-  cy.get('li:contains("Barcode")')
-    .eq(0)
-    .click({ force: true });
-  cy.get('label:contains("Barcode")')
+Cypress.Commands.add('selectItemUsingBarcodeFilter', (columnAndValue) => {
+  cy.log(`Select HU using BarcodeFilter by ${JSON.stringify(columnAndValue)}`);
+  cy.waitForSaveIndicator(true);
+
+  const barcodeFilterIdentifier = 'barcode';
+  const filterSearch = `.filter-option-${barcodeFilterIdentifier}`; // todo @petrica: this should use a data-cy attribute. each filter is sent by backed with a unique identifier
+
+  cy.get('.filters-not-frequent')
+    .click()
+    .within(_ => {
+      cy.get(filterSearch).click();
+    });
+
+  cy.get('label:contains("Barcode")') // todo @petrica: this label should use a data-cy attribute
     .siblings()
     .find('input[type=text]')
-    .wait(500)
-    .type(`${huValue1}{enter}`)
-  cy.wait(500);
-  cy.get('[data-cy=cell-Value] > :nth-child(1) > .cell-text-wrapper').click();
+    .type(columnAndValue.value)
+    .type('{enter}');
+
+  cy.waitForSaveIndicator(true);
+
+  cy.selectRowByColumnAndValue(columnAndValue);
 });
 
 /**
