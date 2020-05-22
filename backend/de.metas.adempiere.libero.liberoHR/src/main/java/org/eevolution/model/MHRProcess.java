@@ -726,7 +726,7 @@ public class MHRProcess extends X_HR_Process implements IDocument
 		}
 		else
 		{
-			throw new AdempiereException(); // TODO ?? is necessary
+			throw new AdempiereException("Type not supported: " + concept.getType());
 		}
 
 	}
