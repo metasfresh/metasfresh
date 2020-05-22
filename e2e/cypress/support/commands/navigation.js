@@ -52,17 +52,18 @@ Cypress.Commands.add('openReferencedDocuments', (referenceId, retriesLeft = 8) =
   checkIfWindowCanExecuteActions();
 
   if (retriesLeft >= 1) {
-    const referencesAliasName = `references-${date}`;
-    cy.server();
-    cy.route('GET', new RegExp(RewriteURL.REFERENCES)).as(referencesAliasName);
+    // const referencesAliasName = `references-${date}`;
+    // cy.server();
+    // -- removed this as calls to SSE (eventSource) are not recorded, they were introduced in me03/issues -> #4383
+    // cy.route('GET', new RegExp(RewriteURL.REFERENCES)).as(referencesAliasName);
 
     cy.get('body').type('{alt}6'); // open referenced docs
-    cy.wait(`@${referencesAliasName}`, timeout);
+    // cy.wait(`@${referencesAliasName}`, timeout);  -- this has been also removed due to the reason mentioned above
     cy.get('.order-list-panel .order-list-loader', timeout).should('not.exist');
 
     return cy.get('body').then(body => {
-      if (body.find(`.reference_${referenceId}`).length > 0) {
-        return cy.get(`.reference_${referenceId}`).click();
+      if (body.find(`[data-cy="reference-${referenceId}"]`).length > 0) {
+        return cy.get(`[data-cy="reference-${referenceId}"]`).click();
       } else {
         cy.wait(1000);
         cy.get('body').type('{alt}5'); // close referenced docs by switching to something else
@@ -71,7 +72,7 @@ Cypress.Commands.add('openReferencedDocuments', (referenceId, retriesLeft = 8) =
     });
   }
   cy.get('body').type('{alt}6'); // open referenced docs
-  return cy.get(`.reference_${referenceId}`).click(); // one more time just because we need to throw the error
+  return cy.get(`[data-cy="reference-${referenceId}"]`).click(); // one more time just because we need to throw the error
 });
 
 /**
