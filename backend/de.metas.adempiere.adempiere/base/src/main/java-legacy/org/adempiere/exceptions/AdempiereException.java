@@ -42,7 +42,6 @@ import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.Language;
 import de.metas.i18n.TranslatableStringBuilder;
 import de.metas.i18n.TranslatableStrings;
-import de.metas.logging.MetasfreshLastError;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -239,15 +238,6 @@ public class AdempiereException extends RuntimeException
 
 	private boolean appendParametersToMessage = false;
 
-	/**
-	 * Default Constructor (saved logger error will be used as message)
-	 */
-	@Deprecated
-	public AdempiereException()
-	{
-		this(getMessageFromLogger());
-	}
-
 	public AdempiereException(final String message)
 	{
 		this.adLanguage = captureLanguageOnConstructionTime ? Env.getAD_Language() : null;
@@ -407,42 +397,6 @@ public class AdempiereException extends RuntimeException
 	protected final String getADLanguage()
 	{
 		return coalesceSuppliers(() -> adLanguage, () -> Env.getAD_Language());
-	}
-
-	/**
-	 * @return error message from logger
-	 * @see MetasfreshLastError#retrieveError()
-	 */
-	private static String getMessageFromLogger()
-	{
-		//
-		// Check last error
-		final org.compiere.util.ValueNamePair err = MetasfreshLastError.retrieveError();
-		String msg = null;
-		if (err != null)
-		{
-			msg = err.getName();
-		}
-
-		//
-		// Check last exception
-		if (msg == null)
-		{
-			final Throwable ex = MetasfreshLastError.retrieveException();
-			if (ex != null)
-			{
-				msg = ex.getLocalizedMessage();
-			}
-		}
-
-		//
-		// Fallback: no last error found => use Unknown error message
-		if (msg == null)
-		{
-			msg = "UnknownError";
-		}
-
-		return msg;
 	}
 
 	/**
