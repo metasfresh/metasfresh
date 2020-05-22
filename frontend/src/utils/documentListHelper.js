@@ -5,7 +5,7 @@ import currentDevice from 'current-device';
 
 import { getItemsByProperty, nullToEmptyStrings } from './index';
 import { getSelectionInstant } from '../reducers/windowHandler';
-import { viewState } from '../reducers/viewHandler';
+import { viewState, getView } from '../reducers/viewHandler';
 import { TIME_REGEX_TEST } from '../constants/Constants';
 
 /**
@@ -33,6 +33,8 @@ const DLpropTypes = {
   selected: PropTypes.array.isRequired,
   isModal: PropTypes.bool,
   inModal: PropTypes.bool,
+  modal: PropTypes.object,
+  rawModalVisible: PropTypes.bool,
 };
 
 /**
@@ -52,7 +54,7 @@ const DLmapStateToProps = (state, props) => {
     refTabId: queryRefTabId,
   } = props;
   const identifier = isModal ? defaultViewId : windowType;
-  let master = state.viewHandler.views[identifier];
+  let master = getView(state, identifier);
 
   if (!master) {
     master = viewState;
@@ -77,6 +79,7 @@ const DLmapStateToProps = (state, props) => {
     viewId,
     reduxData: master,
     layout: master.layout,
+    layoutPending: master.layoutPending,
     refType: queryRefType,
     refId: queryRefId,
     refTabId: queryRefTabId,
@@ -110,6 +113,7 @@ const DLmapStateToProps = (state, props) => {
         )
       : NO_SELECTION,
     modal: state.windowHandler.modal,
+    rawModalVisible: state.windowHandler.rawModal.visible,
     filters: state.filters,
     table: state.table,
   };

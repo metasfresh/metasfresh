@@ -322,7 +322,7 @@ class DocumentListContainer extends Component {
         if (this.mounted) {
           const { allowedCloseActions } = response;
 
-          if (allowedCloseActions) {
+          if (allowedCloseActions && isModal) {
             updateRawModal(windowType, { allowedCloseActions });
           }
 
@@ -479,6 +479,7 @@ class DocumentListContainer extends Component {
       updateRawModal,
       viewId,
       isModal,
+      rawModalVisible,
     } = this.props;
 
     indicatorState('pending');
@@ -562,14 +563,16 @@ class DocumentListContainer extends Component {
             }
           });
 
-          // process modal specific
-          const { parentViewId, parentWindowId, headerProperties } = response;
+          if (rawModalVisible) {
+            // process modal specific
+            const { parentViewId, parentWindowId, headerProperties } = response;
 
-          updateRawModal(windowType, {
-            parentViewId,
-            parentWindowId,
-            headerProperties,
-          });
+            updateRawModal(windowType, {
+              parentViewId,
+              parentWindowId,
+              headerProperties,
+            });
+          }
         }
 
         indicatorState('saved');
@@ -803,6 +806,7 @@ class DocumentListContainer extends Component {
     const {
       includedView,
       layout,
+      layoutPending,
       reduxData: { rowData, pending },
     } = this.props;
     let { selected } = this.getSelected();
@@ -827,7 +831,7 @@ class DocumentListContainer extends Component {
       <DocumentList
         {...this.props}
         {...this.state}
-        triggerSpinner={layout.pending || pending}
+        triggerSpinner={layoutPending || pending}
         hasIncluded={hasIncluded}
         selectionValid={selectionValid}
         onToggleState={this.toggleState}

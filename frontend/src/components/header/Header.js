@@ -554,7 +554,7 @@ class Header extends Component {
       windowId,
       // TODO: We should be using indicator from the state instead of another variable
       isDocumentNotSaved,
-      notfound,
+      notFound,
       docId,
       me,
       editmode,
@@ -790,7 +790,7 @@ class Header extends Component {
             redirect={this.redirect}
             disableOnClickOutside={!isSubheaderShow}
             breadcrumb={breadcrumb}
-            notfound={notfound}
+            notfound={notFound}
             entity={entity}
             dataId={dataId}
             windowId={windowId}
@@ -893,7 +893,7 @@ class Header extends Component {
  * @prop {object} inbox
  * @prop {bool} isDocumentNotSaved
  * @prop {object} me
- * @prop {*} notfound
+ * @prop {*} notFound
  * @prop {*} plugins
  * @prop {*} viewId
  * @prop {*} showSidelist
@@ -919,7 +919,7 @@ Header.propTypes = {
   inbox: PropTypes.object.isRequired,
   isDocumentNotSaved: PropTypes.bool,
   me: PropTypes.object.isRequired,
-  notfound: PropTypes.any,
+  notFound: PropTypes.any,
   plugins: PropTypes.any,
   viewId: PropTypes.string,
   showSidelist: PropTypes.any,
