@@ -4,6 +4,8 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.ThreadPoolExecutor;
+
+import org.adempiere.util.lang.IAutoCloseable;
 import org.slf4j.Logger;
 
 import lombok.Builder;
@@ -32,13 +34,16 @@ import lombok.experimental.Delegate;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-/** Thx to https://stackoverflow.com/questions/3446011/threadpoolexecutor-block-when-queue-is-full */
+
+/**
+ * Thx to https://stackoverflow.com/questions/3446011/threadpoolexecutor-block-when-queue-is-full
+ */
 @ToString
 public class BlockingExecutorWrapper implements ExecutorService
 {
 	private final Semaphore semaphore;
 
-	@Delegate(excludes = Executor.class)
+	@Delegate(excludes = Executor.class) // don't delegate to Executor.execute(); of that, we have our own
 	private final ThreadPoolExecutor delegate;
 
 	private @NonNull Logger logger;
@@ -63,26 +68,22 @@ public class BlockingExecutorWrapper implements ExecutorService
 			semaphore.acquire();
 			logger.debug("Done acquiring semaphore");
 		}
-		catch (InterruptedException e)
+		catch (final InterruptedException e)
 		{
 			logger.debug("execute - InterruptedException while acquiring semaphore for command=" + command + ";-> return", e);
 			return;
 		}
 
-		final Runnable wrapped = () -> {
-			try
-			{
-				logger.debug("Going to run command");
-				command.run();
-				logger.debug("Done running command");
-			}
-			finally
-			{
-				semaphore.release();
-				logger.debug("Semaphore released");
-			}
-		};
-
-		delegate.execute(wrapped);
+		try(final IAutoCloseable ignored = ()-> semaphore.release())
+		{
+			logger.debug("execute - Going to run command");
+			delegate.execute(command); // we don't expect a RejectedExecutionException
+			logger.debug("execute - Done running command");
+		}
+		catch (final Throwable t)
+		{
+			logger.error("execute - Caught throwable while running command=" + command + "; -> rethrow", t);
+			throw t;
+		}
 	}
 }

@@ -130,7 +130,7 @@ public class TestQueue_InheritPriority
 		InterfaceWrapperHelper.save(wp1);
 
 		final Helper helper = new Helper();
-		final I_C_Queue_Processor queueProcessorDef = helper.createQueueProcessor("Test_forwardWorkPackagePrio", 10, 10, 1000);
+		final I_C_Queue_Processor queueProcessorDef = helper.createQueueProcessor("Test_forwardWorkPackagePrio", 10, 1000);
 
 		final I_C_Queue_PackageProcessor retrievePackageProcessorDefByClass = queueDAO.retrievePackageProcessorDefByClass(ctx, TestQueue_InheritPriority_WorkPackageProcessor.class);
 		helper.assignPackageProcessor(queueProcessorDef, retrievePackageProcessorDefByClass);

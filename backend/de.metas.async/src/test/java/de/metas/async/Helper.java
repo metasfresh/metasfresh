@@ -90,8 +90,7 @@ public class Helper
 	}
 
 	public I_C_Queue_Processor createQueueProcessor(
-			final String name, final int poolSize, final int maxPoolSize, final int keepAliveTimeMillis
-	)
+			final String name, final int poolSize, final int keepAliveTimeMillis)
 	{
 		final I_C_Queue_Processor queueProcessorDef = InterfaceWrapperHelper.create(ctx, I_C_Queue_Processor.class, ITrx.TRXNAME_None);
 		queueProcessorDef.setName(name);

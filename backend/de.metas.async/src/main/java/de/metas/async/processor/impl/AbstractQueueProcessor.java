@@ -179,8 +179,8 @@ public abstract class AbstractQueueProcessor implements IQueueProcessor
 	{
 		final IWorkPackageQueue queue = getQueue();
 		final I_C_Queue_WorkPackage workPackage;
-		try (final MDCCloseable queueMDC = MDC.putCloseable("queue", queue.toString());
-				final MDCCloseable startMDC = MDC.putCloseable("queue.pollAndLockStart", Long.toString(SystemTime.millis()));)
+		try (final MDCCloseable ignored = MDC.putCloseable("queue", queue.toString());
+				final MDCCloseable ignored1 = MDC.putCloseable("queue.pollAndLockStart", Long.toString(SystemTime.millis()));)
 		{
 			logger.debug("pollAndSubmitNextWorkPackageTask - going to invoke queue.pollAndLock() with timeout={} on queue={}", queuePollingTimeout, queue);
 			workPackage = queue.pollAndLock(queuePollingTimeout);
@@ -197,18 +197,18 @@ public abstract class AbstractQueueProcessor implements IQueueProcessor
 			final WorkpackageProcessorTask task = new WorkpackageProcessorTask(this, workPackageProcessor, workPackage, logsRepository);
 			executeTask(task);
 			success = true;
+			return true;
 		}
 		finally
 		{
 			if (!success)
 			{
-				logger.info("Submiting for processing next workpackage failed. Trying to unlock {}.", workPackage);
+				logger.info("Submitting for processing next workpackage failed. Trying to unlock {}.", workPackage);
 				queue.unlockNoFail(workPackage);
 
 				getEventDispatcher().unregisterListeners(workPackage.getC_Queue_WorkPackage_ID());
 			}
 		}
-		return success;
 	}
 
 	@Override

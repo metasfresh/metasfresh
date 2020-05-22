@@ -105,7 +105,7 @@ public class EventLogsRepository
 				+ I_AD_EventLog_Entry.COLUMNNAME_MsgText + "," // 11
 				+ I_AD_EventLog_Entry.COLUMNNAME_Classname + "," // 12
 				+ I_AD_EventLog_Entry.COLUMNNAME_Updated + "," // 13
-				+ I_AD_EventLog_Entry.COLUMNNAME_UpdatedBy + ","  // 14
+				+ I_AD_EventLog_Entry.COLUMNNAME_UpdatedBy  // 14
 				+ ")"
 				+ " VALUES ("
 				+ "?," // 1 - AD_Client_ID
