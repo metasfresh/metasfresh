@@ -23,13 +23,6 @@ const EMPTY_OBJECT = {};
  * @extends Component
  */
 class DocList extends Component {
-  shouldComponentUpdate(nextProps) {
-    const { query } = this.props;
-    const { query: nextQuery } = nextProps;
-
-    return !_.isEqual(query, nextQuery);
-  }
-
   componentDidMount = () => {
     const {
       windowId,
