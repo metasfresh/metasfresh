@@ -209,7 +209,7 @@ de.metas.rest_api.ordercandidates.impl.OrderCandidatesRestControllerImplTest.bil
     "datePromised": {
       "year": 2019,
       "month": 11,
-      "day": 22,
+      "day": 21,
       "leapYear": false
     },
     "flatrateConditionsId": 0,

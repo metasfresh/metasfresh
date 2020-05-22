@@ -97,7 +97,7 @@ import lombok.NonNull;
 @RestController
 @RequestMapping(OrderCandidatesRestEndpoint.ENDPOINT)
 @Profile(Profiles.PROFILE_App)
-class OrderCandidatesRestControllerImpl implements OrderCandidatesRestEndpoint
+public class OrderCandidatesRestControllerImpl implements OrderCandidatesRestEndpoint
 {
 	public static final String DATA_SOURCE_INTERNAL_NAME = "SOURCE." + OrderCandidatesRestControllerImpl.class.getName();
 
@@ -125,7 +125,7 @@ class OrderCandidatesRestControllerImpl implements OrderCandidatesRestEndpoint
 	}
 
 	@VisibleForTesting
-	void setPermissionServiceFactory(@NonNull final PermissionServiceFactory permissionServiceFactory)
+	public void setPermissionServiceFactory(@NonNull final PermissionServiceFactory permissionServiceFactory)
 	{
 		this.permissionServiceFactory = permissionServiceFactory;
 	}
@@ -179,7 +179,7 @@ class OrderCandidatesRestControllerImpl implements OrderCandidatesRestEndpoint
 			@NonNull final JsonOLCandCreateRequest request,
 			@NonNull final MasterdataProvider masterdataProvider)
 	{
-		final OrgId orgId = masterdataProvider.getCreateOrgId(request.getOrg());
+		final OrgId orgId = masterdataProvider.getCreateOrgIdInTrx(request.getOrg());
 		masterdataProvider.assertCanCreateNewOLCand(orgId);
 	}
 
@@ -218,7 +218,7 @@ class OrderCandidatesRestControllerImpl implements OrderCandidatesRestEndpoint
 			@NonNull final JsonOLCandCreateRequest json,
 			@NonNull final MasterdataProvider masterdataProvider)
 	{
-		final OrgId orgId = masterdataProvider.getCreateOrgId(json.getOrg());
+		final OrgId orgId = masterdataProvider.getCreateOrgIdInTrx(json.getOrg());
 
 		final BPartnerInfo bpartnerInfo = masterdataProvider.getCreateBPartnerInfoInTrx(json.getBpartner(), true/* billTo */, orgId);
 		final BPartnerInfo billBPartnerInfo = masterdataProvider.getCreateBPartnerInfoInTrx(json.getBillBPartner(), true/* billTo */, orgId);
@@ -269,7 +269,7 @@ class OrderCandidatesRestControllerImpl implements OrderCandidatesRestEndpoint
 		{
 			throw new AdempiereException("@NotFound@ @C_BPartner_Location_ID@");
 		}
-		final OrgId orgId = masterdataProvider.getCreateOrgId(json.getOrg());
+		final OrgId orgId = masterdataProvider.getCreateOrgIdInTrx(json.getOrg());
 		final ZoneId timeZone = orgDAO.getTimeZone(orgId);
 
 		final ZonedDateTime dateEffective = CoalesceUtil.coalesceSuppliers(
@@ -328,7 +328,9 @@ class OrderCandidatesRestControllerImpl implements OrderCandidatesRestEndpoint
 				request.getDataSource(),
 				"int-" + DATA_SOURCE_INTERNAL_NAME);
 
-		final InputDataSourceId dataSourceId = masterdataProvider.getDataSourceId(dataSourceInternalNameToUse, masterdataProvider.getCreateOrgId(request.getOrg()));
+		final InputDataSourceId dataSourceId = masterdataProvider.getDataSourceId(
+				dataSourceInternalNameToUse,
+				masterdataProvider.getCreateOrgIdInTrx(request.getOrg()));
 		if (dataSourceId == null)
 		{
 			throw MissingResourceException.builder()

@@ -202,15 +202,17 @@ public class OrderCandidatesRestControllerImplTest
 		olCandBL = new OLCandBL(new BPartnerOrderParamsRepository());
 		Services.registerService(IOLCandBL.class, olCandBL);
 
+		final I_AD_Org defaultOrgRecord;
+
 		{ // create the master data requested to process the data from our json file
 			testMasterdata = new TestMasterdata();
 
-			final I_AD_Org org = InterfaceWrapperHelper.newInstance(I_AD_Org.class);
-			org.setValue("001");
-			saveRecord(org);
+			defaultOrgRecord = InterfaceWrapperHelper.newInstance(I_AD_Org.class);
+			defaultOrgRecord.setValue("001");
+			saveRecord(defaultOrgRecord);
 
 			final I_AD_OrgInfo orgInfo = InterfaceWrapperHelper.newInstance(I_AD_OrgInfo.class);
-			orgInfo.setAD_Org_ID(org.getAD_Org_ID());
+			orgInfo.setAD_Org_ID(defaultOrgRecord.getAD_Org_ID());
 			orgInfo.setStoreCreditCardData(StoreCreditCardNumberMode.DONT_STORE.getCode());
 			orgInfo.setTimeZone(ZoneId.of("Europe/Berlin").getId());
 			saveRecord(orgInfo);
