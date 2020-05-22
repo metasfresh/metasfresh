@@ -33,6 +33,8 @@ import { loginSuccess } from '../../../src/actions/AppActions';
 import Auth from '../../../src/services/Auth';
 import config from '../../config';
 import nextTabbable from './nextTabbable';
+import { humanReadableNow } from '../utils/utils';
+import { RewriteURL } from '../utils/constants';
 
 context('Reusable "login" custom command using API', function() {
   Cypress.Commands.add('loginViaAPI', (username, password, redirect) => {
@@ -206,7 +208,13 @@ Cypress.Commands.add('waitForHeader', (pageName, breadcrumbNr) => {
 });
 
 function visitTableWindow(windowId) {
+  const quickActionsAlias = 'quickActions_' + humanReadableNow();
+  cy.server();
+  cy.route('GET', new RegExp(RewriteURL.QuickActions)).as(quickActionsAlias);
+
   cy.visit(`/window/${windowId}`);
+
+  cy.wait(`@${quickActionsAlias}`);
 }
 
 function visitDetailWindow(windowId, recordId) {
@@ -255,6 +263,7 @@ Cypress.Commands.add('visitWindow', (windowId, recordId) => {
   } else {
     visitDetailWindow(windowId, recordId);
   }
+  cy.waitForSaveIndicator();
 });
 
 Cypress.Commands.add('readAllNotifications', () => {
