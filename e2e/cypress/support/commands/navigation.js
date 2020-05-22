@@ -1,5 +1,6 @@
-import { humanReadableNow } from '../../support/utils/utils';
+import { humanReadableNow } from '../utils/utils';
 import { checkIfWindowCanExecuteActions } from './commands_utils';
+import { RewriteURL } from '../utils/constants';
 /*
  * Basic command for clicking a button element having a certain text
  * @param text string to search for in the button
@@ -203,18 +204,32 @@ Cypress.Commands.add('selectRowByColumnAndValue', (columnAndValue, modal = false
  * Select a single item using the Barcode lookup
  *
  */
-Cypress.Commands.add('selectItemUsingBarcodeFilter', (columnAndValue) => {
+Cypress.Commands.add('selectItemUsingBarcodeFilter', (columnAndValue, modal = false, force = false) => {
   cy.log(`Select HU using BarcodeFilter by ${JSON.stringify(columnAndValue)}`);
-  cy.waitForSaveIndicator(true);
 
   const barcodeFilterIdentifier = 'barcode';
-  const filterSearch = `.filter-option-${barcodeFilterIdentifier}`; // todo @petrica: this should use a data-cy attribute. each filter is sent by backed with a unique identifier
+  let barcodeFilterPath = `.filter-option-${barcodeFilterIdentifier}`; // todo @petrica: this should use a data-cy attribute. each filter is sent by backed with a unique identifier. after that is done, it can be inlined.
+  let filtersPath = '.filters-not-frequent';
 
-  cy.get('.filters-not-frequent')
+  const timeout = { timeout: 10000 };
+
+  if (modal) {
+    filtersPath = '.modal-content-wrapper ' + filtersPath;
+  }
+
+  if (!force) {
+    cy.waitForSaveIndicator();
+  }
+
+  cy.get(filtersPath, timeout)
     .click()
-    .within(_ => {
-      cy.get(filterSearch).click();
+    .within(() => {
+      cy.get(barcodeFilterPath).click();
     });
+
+  const quickActionsAlias = 'quickActions_' + humanReadableNow();
+  cy.server();
+  cy.route('GET', new RegExp(RewriteURL.QuickActions)).as(quickActionsAlias);
 
   cy.get('label:contains("Barcode")') // todo @petrica: this label should use a data-cy attribute
     .siblings()
@@ -222,9 +237,17 @@ Cypress.Commands.add('selectItemUsingBarcodeFilter', (columnAndValue) => {
     .type(columnAndValue.value)
     .type('{enter}');
 
-  cy.waitForSaveIndicator(true);
+  if (!force) {
+    cy.waitForSaveIndicator();
+  }
 
-  cy.selectRowByColumnAndValue(columnAndValue);
+  // Workaround:
+  // if not doing this wait, we may get `element detached` errors
+  // ref: https://github.com/cypress-io/cypress/issues/7306
+  // in the future cypress may retry on element detached, but that's not the case as of 2020-05-22
+  cy.wait(`@${quickActionsAlias}`);
+
+  return cy.selectRowByColumnAndValue(columnAndValue, modal, force);
 });
 
 /**
