@@ -2,7 +2,6 @@ import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import classnames from 'classnames';
-import _ from 'lodash';
 
 import { updateUri } from '../actions/AppActions';
 import { getWindowBreadcrumb } from '../actions/MenuActions';
