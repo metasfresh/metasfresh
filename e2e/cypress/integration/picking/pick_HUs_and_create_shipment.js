@@ -1,7 +1,7 @@
 import { salesOrders } from '../../page_objects/sales_orders';
 import { SalesOrder, SalesOrderLine } from '../../support/utils/sales_order';
 import { DocumentStatusKey } from '../../support/utils/constants';
-import { applyFilters, selectNotFrequentFilterWidget, toggleNotFrequentFilters } from '../../support/functions';
+import { applyFilters, clearNotFrequentFilters, selectNotFrequentFilterWidget, toggleNotFrequentFilters } from '../../support/functions';
 import { Builder } from '../../support/utils/builder';
 
 let productName;
@@ -84,12 +84,9 @@ describe('Pick the SO', function() {
     });
     cy.executeQuickActionWithRightSideTable('WEBUI_Picking_HUEditor_Launcher');
 
-    cy.selectItemUsingBarcodeFilter(huValue1);
-    // -- commented the code below because it does not work when there are multiple pages
-    //    instead we are now using the selection using filter and barcode which is more reliable for such cases
-    // cy.selectRightTable().within(() => {
-    //   cy.selectRowByColumnAndValue({ column: huSelectionHuCodeColumn, value: huValue1 }, false, true);
-    // });
+    cy.selectRightTable().within(() => {
+      cy.selectItemUsingBarcodeFilter({ column: huSelectionHuCodeColumn, value: huValue1 }, false, true);
+    });
 
     cy.executeQuickAction('WEBUI_Picking_HUEditor_PickHU', true, false);
   });
@@ -99,7 +96,10 @@ describe('Pick the SO', function() {
       cy.selectRowByColumnAndValue({ column: orderColumn, value: soDocNumber }, false, true);
     });
     cy.executeQuickActionWithRightSideTable('WEBUI_Picking_HUEditor_Launcher');
-    cy.selectItemUsingBarcodeFilter(huValue2);
+
+    cy.selectRightTable().within(() => {
+      cy.selectItemUsingBarcodeFilter({ column: huSelectionHuCodeColumn, value: huValue2 }, false, true);
+    });
 
     cy.executeQuickAction('WEBUI_Picking_HUEditor_PickHU', true, false);
   });
@@ -171,21 +171,22 @@ describe('Generate the Shipment', function() {
 
   it('Visit HU Editor and expect the 2 HUs have Packing Status Shipped', function() {
     cy.visitWindow(540189);
+    clearNotFrequentFilters();
     toggleNotFrequentFilters();
     selectNotFrequentFilterWidget('default');
     cy.selectInListField('HUStatus', expectedPackingStatus, false, null, true);
     cy.writeIntoStringField('Value', huValue1, false, null, true);
     applyFilters();
-
     cy.expectNumberOfRows(1);
 
+    //
     cy.visitWindow(540189);
+    clearNotFrequentFilters();
     toggleNotFrequentFilters();
     selectNotFrequentFilterWidget('default');
     cy.selectInListField('HUStatus', expectedPackingStatus, false, null, true);
     cy.writeIntoStringField('Value', huValue2, false, null, true);
     applyFilters();
-
     cy.expectNumberOfRows(1);
   });
 });
