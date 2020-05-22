@@ -56,9 +56,13 @@ public final class SystemTime
 		return getTimeSource().millis();
 	}
 
-	public static ZoneId zoneId()
+	/**
+	 * For WEBUI/Json please use de.metas.ui.web.window.datatypes.json.DateTimeConverters#toJson(java.time.ZonedDateTime, java.time.ZoneId)
+	 * For NON webui please use use de.metas.organization.IOrgDAO.getTimeZone(OrgId)
+	 */
+	public ZoneId zoneId()
 	{
-		return ZoneId.systemDefault();
+		return getTimeSource().zoneId();
 	}
 
 	public static GregorianCalendar asGregorianCalendar()
