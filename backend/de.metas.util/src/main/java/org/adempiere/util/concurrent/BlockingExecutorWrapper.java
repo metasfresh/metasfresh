@@ -2,6 +2,7 @@ package org.adempiere.util.concurrent;
 
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.ThreadPoolExecutor;
 
@@ -64,26 +65,53 @@ public class BlockingExecutorWrapper implements ExecutorService
 	{
 		try
 		{
-			logger.debug("Going to acquire semaphore");
+			logger.debug("Going to acquire semaphore{}", semaphore.toString());
 			semaphore.acquire();
-			logger.debug("Done acquiring semaphore");
+			logger.debug("Done acquiring semaphore={}", semaphore.toString());
 		}
 		catch (final InterruptedException e)
 		{
-			logger.debug("execute - InterruptedException while acquiring semaphore for command=" + command + ";-> return", e);
+			logger.warn("execute - InterruptedException while acquiring semaphore=" + semaphore + " for command=" + command + ";-> return", e);
 			return;
 		}
 
-		try(final IAutoCloseable ignored = ()-> semaphore.release())
+		// wrap 'command' into another runnable, so we can in the end release the semaphore.
+		final Runnable r = new Runnable()
 		{
-			logger.debug("execute - Going to run command");
-			delegate.execute(command); // we don't expect a RejectedExecutionException
-			logger.debug("execute - Done running command");
+			public String toString()
+			{
+				return "runnable-wrapper-for[" + command + "]";
+			}
+
+			public void run()
+			{
+				try
+				{
+					logger.debug("execute - Going to invoke command.run() within delegate thread-pool");
+					command.run();
+					logger.debug("execute - Done invoking command.run() within delegate thread-pool");
+				}
+				catch (final Throwable t)
+				{
+					logger.error("execute - Caught throwable while running command=" + command + "; -> rethrow", t);
+					throw t;
+				}
+				finally
+				{
+					semaphore.release();
+					logger.debug("Released semaphore={}", semaphore);
+				}
+			}
+		};
+		try
+		{
+			delegate.execute(r); // don't expect RejectedExecutionException because delegate has a small queue that can hold runnables after semaphore-release and before they can actually start
 		}
-		catch (final Throwable t)
+		catch (final RejectedExecutionException e)
 		{
-			logger.error("execute - Caught throwable while running command=" + command + "; -> rethrow", t);
-			throw t;
+			semaphore.release();
+			logger.error("execute - Caught RejectedExecutionException while trying to submit task=" + r + " to delegate thread-pool=" + delegate + "; -> released semaphore=" + semaphore + " and rethrow", e);
+			throw e;
 		}
 	}
 }

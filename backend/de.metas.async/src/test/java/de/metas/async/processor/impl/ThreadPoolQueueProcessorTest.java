@@ -30,6 +30,8 @@ import java.util.concurrent.CancellationException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
+import ch.qos.logback.classic.Level;
+import de.metas.logging.LogManager;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -56,7 +58,7 @@ public class ThreadPoolQueueProcessorTest extends QueueProcessorTestBase
 	@Override
 	protected void beforeTestCustomized()
 	{
-		// CLogMgt.setLevel(Level.FINE);
+		// LogManager.setLevel(Level.DEBUG);
 	}
 
 	private void setupQueueProcessor(final int poolSize)
@@ -143,58 +145,46 @@ public class ThreadPoolQueueProcessorTest extends QueueProcessorTestBase
 	@Test
 	public void test_workpackages_OOME() throws Exception
 	{
+		LogManager.setLevel(Level.DEBUG);
+		LogManager.setLoggerLevel("org.adempiere.ad.trx.api.impl.AbstractTrx", Level.INFO);
+		LogManager.setLoggerLevel("de.metas.util.Services", Level.INFO);
+		LogManager.setLoggerLevel("de.metas.async.spi.impl.SysconfigBackedSizeBasedWorkpackagePrioConfig", Level.INFO);
 		setupQueueProcessor(1);
 
 		final IWorkPackageQueue workpackageQueue = Services.get(IWorkPackageQueueFactory.class).getQueueForEnqueuing(ctx, StaticMockedWorkpackageProcessor.class);
 
 		final List<I_C_Queue_WorkPackage> workpackages = helper.createAndEnqueueWorkpackages(workpackageQueue, 5, false);
+		assertThat(workpackages).hasSize(5); // guard
 
 		final MockedWorkpackageProcessor workpackageProcessor = StaticMockedWorkpackageProcessor.getMockedWorkpackageProcessor();
 		workpackageProcessor
 				.setDefaultResult(Result.SUCCESS)
 				.setOutOfMemoryError(workpackages.get(3), "test OOME");
-
 		helper.markReadyForProcessing(workpackages);
 
-		final List<I_C_Queue_WorkPackage> processedWorkpackages = workpackageProcessor.getProcessedWorkpackages();
+		final List<I_C_Queue_WorkPackage> processedWPs = workpackageProcessor.getProcessedWorkpackages();
 
-		helper.waitUntilSize(processedWorkpackages, workpackages.size(), 0 * 1000); // wait max 5secs for all WPs to be processed
+		helper.waitUntilSize(processedWPs, workpackages.size(), 0);
 
-		assertThat(processedWorkpackages)
+		assertThat(processedWPs)
 				.as("Processed workpackages list shall have same size as initial workpackages list")
-				.hasSize(processedWorkpackages.size());
+				.hasSize(processedWPs.size());
 
-		// because we process in parallel it's impossible to make sure first package will be prio1
-		// Assert.assertEquals("Priority 1 packages shall be processed first", workpackages.get(7), processedWorkpackages.get(0));
+		assertThat(processedWPs.get(0).isProcessed()).as("Workpackage - Invalid Processed: %s", processedWPs.get(0)).isTrue();
+		assertThat(processedWPs.get(0).isError()).as("Workpackage - Invalid IsError: %s", processedWPs.get(0)).isFalse();
 
-		for (final I_C_Queue_WorkPackage wp : processedWorkpackages)
-		{
-			final RuntimeException rteExpected = workpackageProcessor.getRuntimeExceptionFor(wp);
-			final OutOfMemoryError oomeExpected = workpackageProcessor.getOutOfMemoryErrorFor(wp);
-			if (rteExpected != null)
-			{
-				assertThat(wp.getErrorMsg())
-						.as("Workpackage - Invalid ErrorMsg: %s", wp).startsWith(rteExpected.getMessage());
-				assertThat(wp.isProcessed())
-						.as("Workpackage - Invalid Processed: " + wp).isFalse();
-				assertThat(wp.isError()).as("Workpackage - Invalid IsError: " + wp).isTrue();
-			}
-			else if (oomeExpected != null)
-			{
-				assertThat(wp.getErrorMsg())
-						.as("Workpackage - Invalid ErrorMsg: %s", wp).startsWith("OutOfMemoryError: "+oomeExpected.getMessage());
-				assertThat(wp.isProcessed())
-						.as("Workpackage - Invalid Processed: " + wp).isFalse();
-				assertThat(wp.isError()).as("Workpackage - Invalid IsError: " + wp).isTrue();
-			}
-			else
-			{
-				assertThat(wp.isProcessed())
-						.as("Workpackage - Invalid Processed: " + wp).isTrue();
-				assertThat(wp.isError()).
-						as("Workpackage - Invalid IsError: " + wp).isFalse();
-			}
-		}
+		assertThat(processedWPs.get(1).isProcessed()).as("Workpackage - Invalid Processed: %s", processedWPs.get(1)).isTrue();
+		assertThat(processedWPs.get(1).isError()).as("Workpackage - Invalid IsError: %s", processedWPs.get(1)).isFalse();
+
+		assertThat(processedWPs.get(2).isProcessed()).as("Workpackage - Invalid Processed: %s", processedWPs.get(2)).isTrue();
+		assertThat(processedWPs.get(2).isError()).as("Workpackage - Invalid IsError: %s", processedWPs.get(2)).isFalse();
+
+		assertThat(processedWPs.get(3).getErrorMsg()).as("Workpackage - Invalid ErrorMsg: %s", processedWPs.get(3)).startsWith("OutOfMemoryError: test OOME");
+		assertThat(processedWPs.get(3).isProcessed()).as("Workpackage - Invalid Processed: %s", processedWPs.get(3)).isFalse();
+		assertThat(processedWPs.get(3).isError()).as("Workpackage - Invalid IsError: " + processedWPs.get(3)).isTrue();
+
+		assertThat(processedWPs.get(4).isProcessed()).as("Workpackage - Invalid Processed: %s", processedWPs.get(0)).isTrue();
+		assertThat(processedWPs.get(4).isError()).as("Workpackage - Invalid IsError: %s", processedWPs.get(0)).isFalse();
 
 		helper.assertNothingLocked();
 	}

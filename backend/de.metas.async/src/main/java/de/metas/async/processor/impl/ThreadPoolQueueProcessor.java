@@ -1,5 +1,6 @@
 package de.metas.async.processor.impl;
 
+import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.SynchronousQueue;
 
@@ -66,18 +67,23 @@ class ThreadPoolQueueProcessor extends AbstractQueueProcessor
 		// Create the tasks executor
 		{
 			final CustomizableThreadFactory threadFactory = CustomizableThreadFactory.builder()
-					.setThreadNamePrefix("async-ThreadPoolQueueProcessor-" + name)
+					.setThreadNamePrefix("async-Worker-" + name)
 					.setDaemon(true)
 					.build();
 
-			final ThreadPoolExecutor threadPoolExecutor = new ThreadPoolExecutor(config.getPoolSize(),
+			// About threadPoolQueue: we must be able to hold max 1 runnable for each thread of the pool,
+			// because within BlockingExecutorWrapper the semaphore is released by the runnable before it's done.
+			// That means that the next runnable can be submitted before the runnable "really" made place within the thread pool.
+			// That means we need to be able to enqueue the next runnable.
+			final ArrayBlockingQueue threadPoolQueue = new ArrayBlockingQueue<>(config.getPoolSize());
+			final ThreadPoolExecutor threadPoolExecutor = new ThreadPoolExecutor(config.getPoolSize()/*corePoolSize*/,
 					config.getPoolSize(),
-					1,
+					config.getKeepAliveTimeMillis(),
 					TimeUnit.MILLISECONDS,
-					new SynchronousQueue<Runnable>(),
+					threadPoolQueue,
 					threadFactory);
 			// If we have a KeepAliveTimeMillis in processor definition, then we apply the timeout for core threads too
-			// threadPoolExecutor.allowCoreThreadTimeOut(config.getKeepAliveTimeMillis() > 0);
+			 threadPoolExecutor.allowCoreThreadTimeOut(config.getKeepAliveTimeMillis() > 0);
 
 			this.executor = BlockingExecutorWrapper.builder()
 					.delegate(threadPoolExecutor)

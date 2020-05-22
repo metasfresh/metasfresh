@@ -159,7 +159,7 @@ public abstract class AbstractQueueProcessor implements IQueueProcessor
 					{
 						logger.warn(error.getLocalizedMessage(), error);
 					}
-					logger.info("Previous pollAndSubmit was not successfull. Sleeping 1000ms");
+					logger.info("Previous pollAndSubmit was not successful. Sleeping 1000ms");
 					try
 					{
 						Thread.sleep(1000);
