@@ -54,7 +54,6 @@ public interface ITrxListenerManager
 
 		/**
 		 * <li>Every timing can registered within "none", i.e. outside of any listener method.
-		 * <li>{@link #UNSPECIFIED} can only be registered if the current timing it runs within is {@link #NONE}
 		 * <li>otherwise, a listener can be registered within another listener's method, if its timing is after that other listener method's timing.<br>
 		 * e.g. within a beforeComlete() (=> otherTiming) method you can register a listener for "afterRollBack" (=> this timing)
 		 */
@@ -178,10 +177,8 @@ public interface ITrxListenerManager
 	}
 
 	/**
-	 * This method shall only be called by the framework. Instead, call {@link #newEventListener()}
+	 * This method shall only be called by the framework. Instead, call {@link #newEventListener(TrxEventTiming)}
 	 * and be sure to call {@link RegisterListenerRequest#registerHandlingMethod(EventHandlingMethod)} at the end.
-	 *
-	 * @param listener
 	 */
 	void registerListener(RegisterListenerRequest listener);
 
