@@ -154,7 +154,7 @@ public class EventLogUserService
 	public void invokeHandlerAndLog(@NonNull final InvokeHandlerAndLogRequest request)
 	{
 		if (request.isOnlyIfNotAlreadyProcessed()
-				&& wasEventProcessedbyHandler(request.getHandlerClass()))
+				&& wasEventProcessedByHandler(request.getHandlerClass()))
 		{
 			return;
 		}
@@ -177,7 +177,7 @@ public class EventLogUserService
 		}
 	}
 
-	private boolean wasEventProcessedbyHandler(@NonNull final Class<?> handlerClass)
+	private boolean wasEventProcessedByHandler(@NonNull final Class<?> handlerClass)
 	{
 		final EventLogEntryCollector eventLogCollector = EventLogEntryCollector.getThreadLocal();
 
