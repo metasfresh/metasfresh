@@ -386,22 +386,12 @@ import lombok.ToString;
 	private final void postAfterTrxCommit(@NonNull final Runnable postRunnable)
 	{
 		final ITrxListenerManager trxListenerManager = trxManager.getCurrentTrxListenerManagerOrAutoCommit();
-
-		if (trxListenerManager.canRegisterOnTiming(TrxEventTiming.AFTER_COMMIT))
-		{
-			trxListenerManager
-					.newEventListener(TrxEventTiming.AFTER_COMMIT)
-					.registerHandlingMethod(innerTrx -> invokeRunnable(postRunnable));
-		}
-		else
-		{
-			// We can't register postRunnable's invocation to after-commit if we are already running within an after-commit-listener to start with.
-			// This is the case when DocumentPostRequest's are processed synchronously.
-			invokeRunnable(postRunnable);
-		}
+		trxListenerManager
+				.newEventListener(TrxEventTiming.AFTER_COMMIT)
+				.registerHandlingMethod(innerTrx -> invokeRunnable(postRunnable));
 	}
 
-	private void invokeRunnable(final @NonNull Runnable postRunnable)
+	private void invokeRunnable(@NonNull final Runnable postRunnable)
 	{
 		try
 		{
