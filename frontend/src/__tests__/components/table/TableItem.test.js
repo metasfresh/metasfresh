@@ -2,7 +2,7 @@ import React from 'react';
 import { shallow, render } from 'enzyme';
 import renderer from 'react-test-renderer';
 
-import fixtures from '../../../../test_setup/fixtures/table_item_props.json'
+import fixtures from '../../../../test_setup/fixtures/table/table_item_props.json'
 
 import TableItem from '../../../components/table/TableItem';
 
