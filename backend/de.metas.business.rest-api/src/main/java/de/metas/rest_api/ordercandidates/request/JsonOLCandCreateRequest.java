@@ -218,6 +218,12 @@ public final class JsonOLCandCreateRequest
 	@ApiModelProperty(value = "Specifies the value for the shipper that will propagate to the created order")
 	@JsonInclude(Include.NON_NULL)
 	String shipper;
+	
+	
+	@ApiModelProperty(value = "Specifies the value or the externalId of the payment term that will propagate to the created order")
+	@JsonInclude(Include.NON_NULL)
+	String paymentTerm;
+	
 
 	@JsonCreator
 	@Builder(toBuilder = true)
@@ -251,7 +257,8 @@ public final class JsonOLCandCreateRequest
 			@JsonProperty("orderDocType") final @Nullable OrderDocType orderDocType,
 			@JsonProperty("paymentRule") final @Nullable JSONPaymentRule paymentRule,
 			@JsonProperty("salesPartnerCode") final @Nullable String salesPartnerCode,
-			@JsonProperty("shipper") final @Nullable String shipper)
+			@JsonProperty("shipper") final @Nullable String shipper,
+			@JsonProperty("paymentTerm") final @Nullable String paymentTerm)
 	{
 		this.org = org;
 		this.externalLineId = externalLineId;
@@ -284,6 +291,8 @@ public final class JsonOLCandCreateRequest
 		this.paymentRule = paymentRule;
 		this.salesPartnerCode = salesPartnerCode;
 		this.shipper = shipper;
+		
+		this.paymentTerm = paymentTerm;
 	}
 
 	/**

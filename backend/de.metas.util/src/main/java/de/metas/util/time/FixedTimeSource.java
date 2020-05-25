@@ -81,4 +81,11 @@ public class FixedTimeSource implements TimeSource
 	{
 		return date;
 	}
+
+	public FixedTimeSource plusSeconds(final long secondsToAdd)
+	{
+		Check.assumeGreaterThanZero(secondsToAdd, "secondsToAdd");
+		final ZonedDateTime newDate = date.plusSeconds(secondsToAdd);
+		return new FixedTimeSource(newDate);
+	}
 }
