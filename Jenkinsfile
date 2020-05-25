@@ -194,20 +194,20 @@ stage('Invoke downstream jobs')
 
 		// if params.MF_SKIP_TO_DIST is true, it might mean that we were invoked via a change in metasfresh-webui or metasfresh-webui-frontend..
 		// note: if params.MF_UPSTREAM_JOBNAME is set, it means that we were called from upstream and therefore also params.MF_UPSTREAM_ARTIFACT_VERSION is set
-		if(params.MF_UPSTREAM_JOBNAME == 'metasfresh-webui')
+		if(params.MF_UPSTREAM_JOBNAME == 'metasfresh-webui-legacy')
 		{
-			// note: we call it "metasfresh-webui" (as opposed to "metasfresh-webui-api"), because it's the repo's and the build job's name.
+			// note: we call it "metasfresh-webui-legacy" (as opposed to "metasfresh-webui-legacy-api"), because it's the repo's and the build job's name.
 			MF_ARTIFACT_VERSIONS['metasfresh-webui']=params.MF_UPSTREAM_ARTIFACT_VERSION;
 			echo "Set MF_ARTIFACT_VERSIONS.metasfresh-webui=${MF_ARTIFACT_VERSIONS['metasfresh-webui']}"
 		}
 
-		if(params.MF_UPSTREAM_JOBNAME == 'metasfresh-webui-frontend')
+		if(params.MF_UPSTREAM_JOBNAME == 'metasfresh-webui-frontend-legacy')
 		{
 			MF_ARTIFACT_VERSIONS['metasfresh-webui-frontend']=params.MF_UPSTREAM_ARTIFACT_VERSION;
 			echo "Set MF_ARTIFACT_VERSIONS.metasfresh-webui-frontend=${MF_ARTIFACT_VERSIONS['metasfresh-webui-frontend']}"
 		}
 
-		if(params.MF_UPSTREAM_JOBNAME == 'metasfresh-procurement-webui')
+		if(params.MF_UPSTREAM_JOBNAME == 'metasfresh-procurement-webui-legacy')
 		{
 			MF_ARTIFACT_VERSIONS['metasfresh-procurement-webui']=params.MF_UPSTREAM_ARTIFACT_VERSION;
 			echo "Set MF_ARTIFACT_VERSIONS.metasfresh-procurement-webui=${MF_ARTIFACT_VERSIONS['metasfresh-procurement-webui']}"
@@ -233,7 +233,7 @@ stage('Invoke downstream jobs')
           MF_ARTIFACT_VERSIONS['metasfresh-parent'],
           MF_VERSION,
           true, // wait=true
-          'metasfresh-webui')
+          'metasfresh-webui-legacy')
 
 				MF_ARTIFACT_VERSIONS['metasfresh-webui'] = webuiDownStreamBuildResult.buildVariables.MF_VERSION
 				MF_DOCKER_IMAGES['metasfresh-webui'] = webuiDownStreamBuildResult.buildVariables.MF_DOCKER_IMAGE
@@ -242,26 +242,6 @@ stage('Invoke downstream jobs')
 This build triggered the <b>metasfresh-webui</b> jenkins job <a href="${webuiDownStreamBuildResult.absoluteUrl}">${webuiDownStreamBuildResult.displayName}</a>
 				"""
 			},
-			// So why did we invoke metasfresh-e2e anyways?
-			// It does not depend on metasfresh after all.
-			// TODO: see what negative impacts we have without triggering it and the probably remove this block
-			// Result 1: running this used to provide us with an actual metasfresh-e2e docker image; but we can as well let the downstam branch sort this out
-			/* metasfresh_e2e: {
-
-				final def misc = new de.metas.jenkins.Misc();
-				final String metasfreshE2eJobName = misc.getEffectiveDownStreamJobName('metasfresh-e2e', MF_UPSTREAM_BRANCH);
-
-				final def e2eDownStreamBuildResult = build job: metasfreshE2eJobName,
-					parameters: [
-						string(name: 'MF_TRIGGER_DOWNSTREAM_BUILDS', value: false)
-					],
-					wait: true,
-					propagate: false
-
-				currentBuild.description="""${currentBuild.description}<p/>
-This build triggered the <b>metasfresh-e2e</b> jenkins job <a href="${e2eDownStreamBuildResult.absoluteUrl}">${e2eDownStreamBuildResult.displayName}</a>
-				"""
-			},*/
 			metasfresh_procurement_webui: {
 				// yup, metasfresh-procurement-webui does share *some* code with this repo
 				final def procurementWebuiDownStreamBuildResult = invokeDownStreamJobs(
@@ -270,7 +250,7 @@ This build triggered the <b>metasfresh-e2e</b> jenkins job <a href="${e2eDownStr
           MF_ARTIFACT_VERSIONS['metasfresh-parent'],
           MF_VERSION,
           true, // wait=true
-          'metasfresh-procurement-webui');
+          'metasfresh-procurement-webui-legacy');
 				MF_ARTIFACT_VERSIONS['metasfresh-procurement-webui'] = procurementWebuiDownStreamBuildResult.buildVariables.MF_VERSION;
 
 				// note that as of now, metasfresh-procurement-webui does not publish a docker image
@@ -318,7 +298,7 @@ This build triggered the <b>metasfresh-procurement-webui</b> jenkins job <a href
 	// Wait for their result, because they will apply our SQL migration scripts and when one fails, we want this job to also fail.
 	parallel (
 		metasfresh_dist: {
-			final def metasFreshDistBuildResult = build job: misc.getEffectiveDownStreamJobName('metasfresh-dist', MF_UPSTREAM_BRANCH),
+			final def metasFreshDistBuildResult = build job: misc.getEffectiveDownStreamJobName('metasfresh-dist-legacy', MF_UPSTREAM_BRANCH),
 			  parameters: distJobParameters,
 			  wait: true
 
@@ -326,16 +306,6 @@ This build triggered the <b>metasfresh-procurement-webui</b> jenkins job <a href
 This build triggered the <b>metasfresh-dist</b> jenkins job <a href="${metasFreshDistBuildResult.absoluteUrl}">${metasFreshDistBuildResult.displayName}</a>
 				"""
 		}
-		// we currently don't invoke zapier, because the things we invoke are legacy and we don't need them be build from master anymore
-		// , zapier: {
-		// 	invokeZapier(env.BUILD_NUMBER, // upstreamBuildNo
-		// 		MF_UPSTREAM_BRANCH, // upstreamBranch
-		// 		MF_ARTIFACT_VERSIONS['metasfresh'], // metasfreshVersion
-		// 		MF_ARTIFACT_VERSIONS['metasfresh-procurement-webui'], // metasfreshProcurementWebuiVersion
-		// 		MF_ARTIFACT_VERSIONS['metasfresh-webui'], // metasfreshWebuiApiVersion
-		// 		MF_ARTIFACT_VERSIONS['metasfresh-webui-frontend'] // metasfreshWebuiFrontendVersion
-		// 	)
-		// }
 	)
 } // stage
 } // timestamps
@@ -390,65 +360,3 @@ Map invokeDownStreamJobs(
 	return buildResult;
 }
 
-// Currently not invoked. Might be used again it future though
-// void invokeZapier(
-//   final String upstreamBuildNo,
-//   final String upstreamBranch,
-//   final String metasfreshVersion,
-//   final String metasfreshProcurementWebuiVersion,
-//   final String metasfreshWebuiApiVersion,
-//   final String metasfreshWebuiFrontendVersion
-//     )
-// {
-//   // now that the "basic" build is done, notify zapier so we can do further things external to this jenkins instance
-//   // note: even with "skiptodist=true we do this, because we still want to make the notifcations
-
-//   echo "Going to notify external systems via zapier webhook"
-
-//     final def hook = registerWebhook()
-//     echo "Waiting for POST to ${hook.getURL()}"
-
-// 		final jsonPayload = """{
-// 				\"MF_UPSTREAM_BUILDNO\":\"${upstreamBuildNo}\",
-// 				\"MF_UPSTREAM_BRANCH\":\"${upstreamBranch}\",
-// 				\"MF_METASFRESH_VERSION\":\"${metasfreshVersion}\",
-// 				\"MF_METASFRESH_PROCUREMENT_WEBUI_VERSION\":\"${metasfreshProcurementWebuiVersion}\",
-// 				\"MF_METASFRESH_WEBUI_API_VERSION\":\"${metasfreshWebuiApiVersion}\",
-// 				\"MF_METASFRESH_WEBUI_FRONTEND_VERSION\":\"${metasfreshWebuiFrontendVersion}\",
-// 				\"MF_WEBHOOK_CALLBACK_URL\":\"${hook.getURL()}\"
-// 		}"""
-
-// 		// invoke zapier to trigger external jobs
-//   	nodeIfNeeded('linux')
-//   	{
-//   			sh "curl -X POST -d \'${jsonPayload}\' ${createZapierUrl()}";
-//   	}
-// 		waitForWebhookCall(hook);
-// }
-
-// String createZapierUrl()
-// {
-// 	  withCredentials([string(credentialsId: 'zapier-metasfresh-build-notification-webhook', variable: 'zapier_WEBHOOK_SECRET')])
-// 	  {
-// 	    // the zapier secret contains a trailing slash and another slash that is somewhere in the middle.
-// 	  	return "https://hooks.zapier.com/hooks/catch/${zapier_WEBHOOK_SECRET}"
-// 		}
-// }
-
-// void waitForWebhookCall(final def hook)
-// {
-// 	    echo "Wait 30 minutes for the zapier-triggered downstream jobs to succeed or fail"
-// 	    timeout(time: 30, unit: 'MINUTES')
-// 	    {
-// 				// stop and wait, for someone to do e.g. curl -X POST -d 'OK' <hook-URL>
-// 	      final def message = waitForWebhook hook ?: '<webhook returned NULL>'
-// 	      if(message.trim() == 'OK')
-// 	      {
-// 					echo "The external jobs that were invoked by zapier succeeeded; message='${message}'; hook-URL=${hook.getURL()}"
-// 	      }
-// 				else
-// 				{
-// 					error "An external job that was invoked by zapier failed; message='${message}'; hook-URL=${hook.getURL()}"
-// 				}
-// 	    }
-// }
