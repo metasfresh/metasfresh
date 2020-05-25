@@ -1,13 +1,5 @@
 package de.metas.i18n;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-import de.metas.currency.Amount;
-import de.metas.util.Check;
-import lombok.NonNull;
-import lombok.experimental.UtilityClass;
-
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -26,6 +18,16 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collector;
 import java.util.stream.Stream;
+
+import javax.annotation.Nullable;
+
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+
+import de.metas.currency.Amount;
+import de.metas.util.Check;
+import lombok.NonNull;
+import lombok.experimental.UtilityClass;
 
 /*
  * #%L
@@ -334,9 +336,54 @@ public class TranslatableStrings
 		return ofMap(trlMap, trl.getDefaultValue());
 	}
 
-	@SuppressWarnings("unused")
 	public ITranslatableString ofTimeZone(@NonNull final ZoneId timeZone, @NonNull final TextStyle textStyle)
 	{
 		return TimeZoneTranslatableString.ofZoneId(timeZone, textStyle);
+	}
+	
+	public static ITranslatableString parse(@Nullable final String text)
+	{
+		if (text == null || text.isEmpty())
+		{
+			return TranslatableStrings.empty();
+		}
+
+		final TranslatableStringBuilder builder = TranslatableStrings.builder();
+
+		String inStr = text;
+		int idx = inStr.indexOf('@');
+		while (idx != -1)
+		{
+			builder.append(inStr.substring(0, idx)); // up to @
+			inStr = inStr.substring(idx + 1, inStr.length()); // from first @
+
+			final int j = inStr.indexOf('@'); // next @
+			if (j < 0) // no second tag
+			{
+				inStr = "@" + inStr;
+				break;
+			}
+
+			final String token = inStr.substring(0, j);
+			if (token.isEmpty())
+			{
+				builder.append("@");
+			}
+			else
+			{
+				builder.appendADElement(token); // replace context
+			}
+
+			inStr = inStr.substring(j + 1, inStr.length());	// from second @
+			idx = inStr.indexOf('@');
+		}
+
+		// add remainder
+		if (inStr != null && inStr.length() > 0)
+		{
+			builder.append(inStr);
+		}
+
+		return builder.build();
 	}
 }
