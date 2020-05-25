@@ -340,7 +340,9 @@ Map invokeDownStreamJobs(
 			string(name: 'MF_UPSTREAM_BUILDNO', value: buildId), // can be used together with the upstream branch name to construct this upstream job's URL
 			string(name: 'MF_UPSTREAM_VERSION', value: metasfreshVersion), // the downstream job shall use *this* metasfresh.version, as opposed to whatever is the latest at the time it runs
 			booleanParam(name: 'MF_TRIGGER_DOWNSTREAM_BUILDS', value: false) // the job shall just run but not trigger further builds because we are doing all the orchestration
-		], wait: wait
+		], 
+		wait: wait, 
+		propagate: false // don't propagate errors because of that "jmockit issue"
 
 	echo "Job invokation done; buildResult.getBuildVariables()=${buildResult.getBuildVariables()}"
 	return buildResult.getBuildVariables();
