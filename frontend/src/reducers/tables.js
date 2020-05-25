@@ -12,6 +12,8 @@ export const initialTableState = {
   tabId: null,
   selected: [],
   rows: [],
+  collapsedRows: [],
+  collapsedParentsRows: [],
   // row columns
   columns: [],
   activeSort: false,

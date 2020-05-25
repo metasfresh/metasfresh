@@ -2,6 +2,8 @@ import currentDevice from 'current-device';
 import PropTypes from 'prop-types';
 import uuid from 'uuid/v4';
 
+const EMPTY_ARRAY = [];
+
 const propTypes = {
   // from @connect
   dispatch: PropTypes.func.isRequired,
@@ -15,17 +17,21 @@ const propTypes = {
   disableOnClickOutside: PropTypes.func,
   limitOnClickOutside: PropTypes.bool,
   supportOpenRecord: PropTypes.bool,
+
+  rows: PropTypes.array.isRequired,
+  columns: PropTypes.array.isRequired,
+  selected: PropTypes.array.isRequired,
 };
 
 export function constructorFn(props) {
   const { defaultSelected, rowEdited } = props;
 
   this.state = {
-    // TODO: Maybe we sholud move this to redux ?
-    selected:
-      defaultSelected && defaultSelected !== null
-        ? defaultSelected
-        : [undefined],
+    // TODO: Check if the `defaultSelected` case is handled via redux properly
+    // selected:
+    //   defaultSelected && defaultSelected !== null
+    //     ? defaultSelected
+    //     : [undefined],
     listenOnKeys: true,
     contextMenu: {
       open: false,
@@ -38,11 +44,11 @@ export function constructorFn(props) {
     dataHash: uuid(),
     promptOpen: false,
     isBatchEntry: false,
-    rows: [],
-    collapsedRows: [],
-    collapsedParentsRows: [],
+    // rows: [],
+    collapsedRows: EMPTY_ARRAY,
+    collapsedParentsRows: EMPTY_ARRAY,
     pendingInit: true,
-    collapsedArrayMap: [],
+    collapsedArrayMap: EMPTY_ARRAY,
     rowEdited: rowEdited,
     tableRefreshToggle: false,
   };
