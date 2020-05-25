@@ -6,7 +6,6 @@ import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.ThreadPoolExecutor;
 
-import org.adempiere.util.lang.IAutoCloseable;
 import org.slf4j.Logger;
 
 import lombok.Builder;
