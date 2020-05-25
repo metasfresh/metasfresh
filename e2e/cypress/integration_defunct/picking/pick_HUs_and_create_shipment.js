@@ -1,7 +1,7 @@
 import { salesOrders } from '../../page_objects/sales_orders';
 import { SalesOrder, SalesOrderLine } from '../../support/utils/sales_order';
 import { DocumentStatusKey } from '../../support/utils/constants';
-import { applyFilters, selectNotFrequentFilterWidget, toggleNotFrequentFilters } from '../../support/functions';
+import { applyFilters, clearNotFrequentFilters, selectNotFrequentFilterWidget, toggleNotFrequentFilters } from '../../support/functions';
 import { Builder } from '../../support/utils/builder';
 
 let productName;
@@ -177,6 +177,7 @@ describe('Generate the Shipment', function() {
 
   it('Visit HU Editor and expect the 2 HUs have Packing Status Shipped', function() {
     cy.visitWindow(540189);
+    clearNotFrequentFilters();
     toggleNotFrequentFilters();
     selectNotFrequentFilterWidget('default');
     cy.selectInListField('HUStatus', expectedPackingStatus, false, null, true);
@@ -186,6 +187,7 @@ describe('Generate the Shipment', function() {
     cy.expectNumberOfRows(1);
 
     cy.visitWindow(540189);
+    clearNotFrequentFilters();
     toggleNotFrequentFilters();
     selectNotFrequentFilterWidget('default');
     cy.selectInListField('HUStatus', expectedPackingStatus, false, null, true);

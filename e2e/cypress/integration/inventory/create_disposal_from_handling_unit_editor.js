@@ -23,7 +23,7 @@
 import { Product } from '../../support/utils/product';
 import { Inventory, InventoryLine } from '../../support/utils/inventory';
 import { getLanguageSpecific, appendHumanReadableNow } from '../../support/utils/utils';
-import { applyFilters, selectNotFrequentFilterWidget, toggleNotFrequentFilters } from '../../support/functions';
+import { applyFilters, clearNotFrequentFilters, selectNotFrequentFilterWidget, toggleNotFrequentFilters } from '../../support/functions';
 
 let productName;
 let productQty;
@@ -78,6 +78,7 @@ describe('Create a single HU', function() {
 describe('Create disposal from HU Editor', function() {
   it('Visit HU Editor, filter for the product, and expect a single row', function() {
     cy.visitWindow(540189);
+    clearNotFrequentFilters();
     toggleNotFrequentFilters();
     selectNotFrequentFilterWidget('default');
     cy.writeIntoLookupListField('M_Product_ID', productName, productName, false, false, null, true);
@@ -102,6 +103,7 @@ describe('Create disposal from HU Editor', function() {
 
   it('Visit HU Editor, filter for the product, and expect no records', function() {
     cy.visitWindow(540189);
+    clearNotFrequentFilters();
     toggleNotFrequentFilters();
     selectNotFrequentFilterWidget('default');
     cy.writeIntoLookupListField('M_Product_ID', productName, productName, false, false, null, true);
