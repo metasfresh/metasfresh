@@ -77,7 +77,6 @@ Also, you'll need to configure the login credentials/API endpoints. One file is 
 
 - `cypress/config.js` - stores API endpoints and login credentials
 
-There is a file `cypress/config.js_template` which you can copy to `cypress/config.js` and edit according to your needs.
 There are 2 files: 
 - `cypress/config.js_template_local`
 - `cypress/config.js_template_remote`
