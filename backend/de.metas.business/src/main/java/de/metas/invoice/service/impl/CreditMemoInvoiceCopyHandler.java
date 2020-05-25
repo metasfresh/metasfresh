@@ -50,7 +50,7 @@ class CreditMemoInvoiceCopyHandler implements IDocCopyHandler<I_C_Invoice, I_C_I
 {
 	private final InvoiceCreditContext creditCtx;
 	private final BigDecimal openAmt;
-	
+
 	@SuppressWarnings("unused")
 	private final String trxName;
 
@@ -112,7 +112,7 @@ class CreditMemoInvoiceCopyHandler implements IDocCopyHandler<I_C_Invoice, I_C_I
 		}
 		else
 		{
-			logger.warn("The credit memo {} should be a partial allocation of invoice {}.", creditMemo,  invoice);
+			logger.warn("The credit memo {} should be a partial allocation of invoice {}.", creditMemo, invoice);
 
 			return;
 		}
@@ -127,9 +127,6 @@ class CreditMemoInvoiceCopyHandler implements IDocCopyHandler<I_C_Invoice, I_C_I
 			// nothing left to do
 			return;
 		}
-
-		// make sure the grand total of the credit memo equals the open AMT of the invoice
-		Check.assume(creditMemo.getGrandTotal().compareTo(openAmt) == 0, "{} has GrandTotal={}", creditMemo, openAmt);
 
 		Services.get(IDocumentBL.class).processEx(creditMemo, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
 
