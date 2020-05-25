@@ -1,13 +1,13 @@
 package de.metas.handlingunits;
 
-import java.util.Objects;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
-
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
 import lombok.Value;
+
+import javax.annotation.Nullable;
+import java.util.Objects;
 
 /*
  * #%L
@@ -64,6 +64,11 @@ public class HUPIItemProductId implements RepoIdAware
 	public static int toRepoId(final HUPIItemProductId id)
 	{
 		return id != null ? id.getRepoId() : -1;
+	}
+
+	public static boolean isRegular(@Nullable final HUPIItemProductId id)
+	{
+		return id != null && id.isRegular();
 	}
 
 	public static final HUPIItemProductId TEMPLATE_HU = new HUPIItemProductId(100);

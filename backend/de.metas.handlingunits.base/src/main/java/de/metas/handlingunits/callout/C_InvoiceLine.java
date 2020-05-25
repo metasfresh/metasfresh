@@ -22,17 +22,15 @@ package de.metas.handlingunits.callout;
  * #L%
  */
 
-
-import org.adempiere.ad.callout.annotations.Callout;
-import org.adempiere.ad.callout.annotations.CalloutMethod;
-import org.adempiere.ad.callout.api.ICalloutField;
-
 import de.metas.adempiere.gui.search.IHUPackingAware;
 import de.metas.adempiere.gui.search.IHUPackingAwareBL;
 import de.metas.adempiere.gui.search.impl.InvoiceLineHUPackingAware;
 import de.metas.handlingunits.model.I_C_InvoiceLine;
-import de.metas.util.Services;
 import de.metas.invoice.IInvoiceLineBL;
+import de.metas.util.Services;
+import org.adempiere.ad.callout.annotations.Callout;
+import org.adempiere.ad.callout.annotations.CalloutMethod;
+import org.adempiere.ad.callout.api.ICalloutField;
 
 @Callout(I_C_InvoiceLine.class)
 public class C_InvoiceLine
@@ -48,7 +46,7 @@ public class C_InvoiceLine
 	@CalloutMethod(columnNames = { I_C_InvoiceLine.COLUMNNAME_QtyEnteredTU, I_C_InvoiceLine.COLUMNNAME_M_HU_PI_Item_Product_ID })
 	public void onQtyEnteredChange(final I_C_InvoiceLine invoiceLine, final ICalloutField field)
 	{
-		final IHUPackingAware packingAware = new InvoiceLineHUPackingAware(invoiceLine);
+		final IHUPackingAware packingAware = InvoiceLineHUPackingAware.of(invoiceLine);
 		final Integer qtyPacks = packingAware.getQtyTU().intValue();
 		Services.get(IHUPackingAwareBL.class).setQtyCUFromQtyTU(packingAware, qtyPacks);
 
