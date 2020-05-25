@@ -27,13 +27,16 @@ class TableCell extends PureComponent {
 
   static getDateFormat = (fieldType) => DATE_FIELD_FORMATS[fieldType];
 
-  static createDate = (fieldValue, fieldType) => {
+  static createDate = ({ fieldValue, fieldType, activeLocale }) => {
+    const languageKey = activeLocale ? activeLocale.key : null;
     if (fieldValue) {
       return !Moment.isMoment(fieldValue) && fieldValue.match(TIME_REGEX_TEST)
-        ? Moment.utc(Moment.duration(fieldValue).asMilliseconds()).format(
-            TIME_FORMAT
-          )
-        : Moment(fieldValue).format(TableCell.getDateFormat(fieldType));
+        ? Moment.utc(Moment.duration(fieldValue).asMilliseconds())
+            .locale(languageKey)
+            .format(TIME_FORMAT)
+        : Moment(fieldValue)
+            .locale(languageKey)
+            .format(TableCell.getDateFormat(fieldType));
     }
 
     return '';
@@ -82,12 +85,13 @@ class TableCell extends PureComponent {
 
   // @TODO: THIS NEEDS URGENT REFACTORING, WHY THE HECK ARE WE RETURNING
   // SIX DIFFERENT TYPES OF VALUES HERE ? UBER-BAD DESIGN !
-  static fieldValueToString = (
+  static fieldValueToString = ({
     fieldValue,
     fieldType = 'Text',
     precision = null,
-    isGerman
-  ) => {
+    isGerman,
+    activeLocale,
+  }) => {
     if (fieldValue === null) {
       return '';
     }
@@ -102,7 +106,7 @@ class TableCell extends PureComponent {
 
         return DATE_FIELD_TYPES.includes(fieldType) ||
           TIME_FIELD_TYPES.includes(fieldType)
-          ? TableCell.createDate(fieldValue, fieldType)
+          ? TableCell.createDate({ fieldValue, fieldType, activeLocale })
           : fieldValue.caption;
       }
       case 'boolean': {
@@ -117,7 +121,7 @@ class TableCell extends PureComponent {
           DATE_FIELD_TYPES.includes(fieldType) ||
           TIME_FIELD_TYPES.includes(fieldType)
         ) {
-          return TableCell.createDate(fieldValue, fieldType);
+          return TableCell.createDate({ fieldValue, fieldType, activeLocale });
         } else if (AMOUNT_FIELD_TYPES.includes(fieldType)) {
           return TableCell.createAmount(fieldValue, precision, isGerman);
         } else if (SPECIAL_FIELD_TYPES.includes(fieldType)) {
@@ -260,18 +264,19 @@ class TableCell extends PureComponent {
       modalVisible,
       onClickOutside,
       isGerman,
+      activeLocale,
     } = this.props;
     const widgetData = getWidgetData(item, isEditable, supportFieldEdit);
-
     const docId = `${this.props.docId}`;
     const { tooltipToggled } = this.state;
     const tdValue = !isEdited
-      ? TableCell.fieldValueToString(
-          widgetData[0].value,
-          item.widgetType,
-          widgetData[0].precision,
-          isGerman
-        )
+      ? TableCell.fieldValueToString({
+          fieldValue: widgetData[0].value,
+          fieldType: item.widgetType,
+          precision: widgetData[0].precision,
+          isGerman,
+          activeLocale,
+        })
       : null;
     const description =
       widgetData[0].value && widgetData[0].value.description
@@ -431,6 +436,7 @@ TableCell.propTypes = {
   viewId: PropTypes.string,
   modalVisible: PropTypes.bool,
   docId: PropTypes.any,
+  activeLocale: PropTypes.object,
 };
 
 export default TableCell;
