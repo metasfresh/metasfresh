@@ -43,6 +43,11 @@
 					<groupId>org.apache.lucene</groupId>
 					<artifactId>lucene-queries</artifactId>
 				</exclusion>
+				<!--  exclude olap4j because we don't need it and jasperreports 6.2.1 uses the rather obscure version 0.9.7.309-JS-3 which i can't find -->
+				<exclusion>
+					<groupId>org.olap4j</groupId>
+					<artifactId>olap4j</artifactId>
+				</exclusion>
 			</exclusions>
 		</dependency>
 		<dependency>
