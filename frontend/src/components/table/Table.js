@@ -3,7 +3,7 @@ import { is } from 'immutable';
 import * as _ from 'lodash';
 import React, { Component } from 'react';
 import onClickOutside from 'react-onclickoutside';
-import { connect } from 'react-redux';
+// import { connect } from 'react-redux';
 import classnames from 'classnames';
 import currentDevice from 'current-device';
 import counterpart from 'counterpart';
@@ -63,10 +63,6 @@ class Table extends Component {
     //selecting first table elem while getting indent data
     this._isMounted = true;
 
-    if (rowData.get(`${tabId}`)) {
-      console.log('HERE')
-      this.getIndentData(true);
-    }
     if (this.props.autofocus) {
       this.table.focus();
     }
@@ -79,170 +75,8 @@ class Table extends Component {
   //   }
   // }
 
-  componentDidUpdate(prevProps, prevState) {
-    const {
-      dispatch,
-      mainTable,
-      open,
-      rowData,
-      defaultSelected,
-      disconnectFromState,
-      windowId,
-      refreshSelection,
-      openIncludedViewOnSelect,
-      viewId,
-      tabId,
-      isModal,
-      hasIncluded,
-      page,
-
-      selected,
-      rows,
-    } = this.props;
-    // const { selected, rows } = this.state;
-    // console.log('ROWDATA: ', rowData)
-
-    /**
-     * Selection by default of first row if nothing selected
-     */
-    if (
-      (_.isEmpty(defaultSelected) || _.isEmpty(selected)) &&
-      selected[0] === undefined &&
-      !_.isEmpty(rows)
-    ) {
-      // this.setState({ selected: [rows[0].id] });
-      // dispatch(
-      //   updateTableSelection({
-      //     tableId: getTableId({ windowType: windowId, viewId }),
-      //     ids: [rows[0].id],
-      //   })
-      // );
-
-    } // end of selection for the first row if nothing selected
-
-    const selectedEqual = _.isEqual(prevState.selected, selected);
-    // const defaultSelectedEqual = _.isEqual(
-    //   prevProps.defaultSelected,
-    //   defaultSelected
-    // );
-
-    if (!this._isMounted) {
-      return;
-    }
-
-    if (rows && !_.isEqual(prevState.rows, rows)) {
-      // this.setState({
-      //   collapsedRows: EMPTY_ARRAY,
-      //   collapsedParentsRows: EMPTY_ARRAY,
-      // });
-
-      if (isModal && !hasIncluded) {
-        let firstRow = rows[0];
-
-        if (firstRow) {
-          if (openIncludedViewOnSelect) {
-            // this.showSelectedIncludedView([firstRow.id]);
-          }
-
-          if (firstRow.id && !selectedEqual) {
-            // this.selectOneProduct(firstRow.id);
-          }
-        }
-      }
-    }
-    else if (page !== prevProps.page) {
-      // this.setState({
-      //   collapsedRows: EMPTY_ARRAY,
-      //   collapsedParentsRows: EMPTY_ARRAY,
-      // });
-    }
-
-    if (mainTable && open) {
-      this.table.focus();
-    }
-
-    // if (
-    //   (!defaultSelectedEqual && !selectedEqual) ||
-    //   (refreshSelection && prevProps.refreshSelection !== refreshSelection)
-    // ) {
-    //   this.setState({
-    //     selected:
-    //       defaultSelected && defaultSelected !== null ? defaultSelected : [],
-    //   });
-    // } else if (!disconnectFromState && !selectedEqual && selected.length) {
-    //   dispatch(
-    //     updateTableSelection({
-    //       tableId: getTableId({ windowType: windowId, viewId }),
-    //       ids: selected,
-    //     })
-    //   );
-    //   dispatch(
-    //     selectTableItems({
-    //       windowType: windowId,
-    //       viewId,
-    //       ids: selected,
-    //     })
-    //   );
-    // }
-
-    if (prevProps.viewId !== viewId && rowData.get(`${tabId}`)) {
-      if (defaultSelected && defaultSelected.length === 0) {
-        // this.setState({ selected: [] });
-
-        // dispatch(
-        //   updateTableSelection({
-        //     tableId: getTableId({ windowType: windowId, viewId }),
-        //     ids: EMPTY_ARRAY,
-        //   })
-        // );
-      }
-
-      // this.setState({
-      //   collapsedRows: EMPTY_ARRAY,
-      //   collapsedParentsRows: EMPTY_ARRAY,
-      // });
-
-      const firstLoad =
-        prevProps.rowData.get(`${tabId}`) &&
-        prevProps.rowData.get(`${tabId}`).size &&
-        rowData.get(`${tabId}`).size
-          ? false
-          : true;
-
-      // this.getIndentData(firstLoad);
-    } else if (rowData.get(`${tabId}`) && !is(prevProps.rowData, rowData)) {
-      let firstLoad = rowData.get(`${tabId}`).size ? false : true;
-
-      if (
-        prevProps.rowData.get(`${tabId}`) &&
-        !prevProps.rowData.get(`${tabId}`).size &&
-        rowData.get(`${tabId}`).size
-      ) {
-        firstLoad = true;
-      }
-
-      // this.getIndentData(firstLoad);
-    }
-  }
-
   componentWillUnmount() {
-    const {
-      showIncludedViewOnSelect,
-      viewId,
-      windowType,
-      isIncluded,
-    } = this.props;
-
     this._isMounted = false;
-
-    this.deselectAllProducts();
-    if (showIncludedViewOnSelect && !isIncluded) {
-      showIncludedViewOnSelect({
-        showIncludedView: false,
-        windowType,
-        viewId,
-      });
-    }
   }
 
   showSelectedIncludedView = (selected) => {
@@ -906,33 +740,33 @@ class Table extends Component {
     });
   };
 
-  openModal = (windowType, tabId, rowId) => {
-    const { dispatch } = this.props;
+  // openModal = (windowType, tabId, rowId) => {
+  //   const { dispatch } = this.props;
 
-    dispatch(openModal('Add new', windowType, 'window', tabId, rowId));
-  };
+  //   dispatch(openModal('Add new', windowType, 'window', tabId, rowId));
+  // };
 
-  openTableModal = () => {
-    const { dispatch, windowId, tabId } = this.props;
+  // openTableModal = () => {
+  //   const { dispatch, windowId, tabId } = this.props;
 
-    dispatch(openModal('Add new', windowId, 'window', tabId, 'NEW'));
-  };
+  //   dispatch(openModal('Add new', windowId, 'window', tabId, 'NEW'));
+  // };
 
   /**
    * @method handleAdvancedEdit
    * @summary Handles advanced edit - i.e case when ALT+E key combinations are being used
    *          Active only on subtables
    */
-  handleAdvancedEdit = () => {
-    const { dispatch, windowId, tabId, docId, selected } = this.props;
-    // const { selected } = this.state;
+  // handleAdvancedEdit = () => {
+  //   const { dispatch, windowId, tabId, docId, selected } = this.props;
+  //   // const { selected } = this.state;
 
-    if (docId) {
-      dispatch(
-        openModal('Advanced edit', windowId, 'window', tabId, selected[0], true)
-      );
-    }
-  };
+  //   if (docId) {
+  //     dispatch(
+  //       openModal('Advanced edit', windowId, 'window', tabId, selected[0], true)
+  //     );
+  //   }
+  // };
 
   handleDelete = () => {
     this.setState({
@@ -979,28 +813,28 @@ class Table extends Component {
     );
   };
 
-  handleZoomInto = (fieldName) => {
-    const { entity, windowId, docId, tabId, viewId, selected } = this.props;
-    // const { selected } = this.state;
+  // handleZoomInto = (fieldName) => {
+  //   const { entity, windowId, docId, tabId, viewId, selected } = this.props;
+  //   // const { selected } = this.state;
 
-    getZoomIntoWindow(
-      entity,
-      windowId,
-      docId,
-      entity === 'window' ? tabId : viewId,
-      selected[0],
-      fieldName
-    ).then((res) => {
-      res &&
-        res.data &&
-        window.open(
-          `/window/${res.data.documentPath.windowId}/${
-            res.data.documentPath.documentId
-          }`,
-          '_blank'
-        );
-    });
-  };
+  //   getZoomIntoWindow(
+  //     entity,
+  //     windowId,
+  //     docId,
+  //     entity === 'window' ? tabId : viewId,
+  //     selected[0],
+  //     fieldName
+  //   ).then((res) => {
+  //     res &&
+  //       res.data &&
+  //       window.open(
+  //         `/window/${res.data.documentPath.windowId}/${
+  //           res.data.documentPath.documentId
+  //         }`,
+  //         '_blank'
+  //       );
+  //   });
+  // };
 
   // TODO: This should be moved to `TableItem` container ?
   handleRowCollapse = (node, collapsed) => {
@@ -1513,37 +1347,8 @@ class Table extends Component {
 
 Table.propTypes = propTypes;
 
-const mapStateToProps = (state, props) => {
-  const { windowId, docId, tabId, viewId } = props;
-
-  // console.log('windowId, docId, tabId, viewId: ', windowId, docId, tabId, viewId);
-  const tableId = getTableId({ windowType: windowId, viewId, docId, tabId });
-  const table = getTable(state, tableId);
-
-  return {
-    rows: table.rows,
-    columns: table.columns,
-    selected: table.selected,
-
-    allowShortcut: state.windowHandler.allowShortcut,
-    allowOutsideClick: state.windowHandler.allowOutsideClick,
-    modalVisible: state.windowHandler.modal.visible,
-    isGerman:
-      state.appHandler.me.language && state.appHandler.me.language.key
-        ? state.appHandler.me.language.key.includes('de')
-        : false,
-    activeSort: state.table ? state.table.activeSort : false,
-  };
-};
-
 const clickOutsideConfig = {
   excludeScrollbar: true,
 };
 
-export { Table };
-export default connect(
-  mapStateToProps,
-  false,
-  false,
-  { forwardRef: true }
-)(onClickOutside(Table, clickOutsideConfig));
+export default onClickOutside(Table, clickOutsideConfig);

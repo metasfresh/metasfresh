@@ -16,7 +16,7 @@ import BlankPage from '../BlankPage';
 import DataLayoutWrapper from '../DataLayoutWrapper';
 import Filters from '../filters/Filters';
 import FiltersStatic from '../filters/FiltersStatic';
-import Table from '../table/Table';
+import Table from '../../containers/Table';
 import QuickActions from './QuickActions';
 import SelectionAttributes from './SelectionAttributes';
 import GeoMap from '../maps/GeoMap';

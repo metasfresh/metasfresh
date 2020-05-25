@@ -14,6 +14,7 @@ export const initialTableState = {
   rows: [],
   collapsedRows: [],
   collapsedParentsRows: [],
+  collapsedArrayMap: [],
   // row columns
   columns: [],
   activeSort: false,

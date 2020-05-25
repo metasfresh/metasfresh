@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom';
 import counterpart from 'counterpart';
 import PropTypes from 'prop-types';
 
-import Table from './table/Table';
+import Table from '../containers/Table';
 import TableContextShortcuts from './keyshortcuts/TableContextShortcuts';
 import keymap from '../shortcuts/keymap';
 import Tabs, { TabSingleEntry } from './window/Tabs';
