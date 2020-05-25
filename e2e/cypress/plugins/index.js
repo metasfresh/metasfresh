@@ -15,6 +15,7 @@ const webpackPre = require('@cypress/webpack-preprocessor');
 const webpack = require('webpack');
 const { initPlugin } = require('cypress-plugin-snapshots/plugin');
 const task = require('cypress-skip-and-only-ui/task');
+const ourConfig = require('../config.js');
 
 module.exports = (on, config) => {
   const options = {
@@ -46,6 +47,11 @@ module.exports = (on, config) => {
   //     return args
   //   }
   // })
+
+  // modify base url if it exists in our config.js file located in /e2e/cypress/config.js
+  if (ourConfig.FRONTEND_URL) {
+    config.baseUrl = ourConfig.FRONTEND_URL;
+  }
 
   return config;
 };
