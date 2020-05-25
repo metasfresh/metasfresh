@@ -25,6 +25,7 @@ package de.metas.handlingunits.shipmentschedule.api;
 import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.HUConstants;
+import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
@@ -591,11 +592,11 @@ public class ShipmentScheduleWithHUService
 			}
 
 			// skip LU creation when there is no LU Packing Instruction Version for this TU, eg.
-			// - Paloxe, as it can be placed directly in a truck, without a Pallet (explicit requirement)
+			// - Paloxe, as it can be placed directly in a truck, without a Pallet
 			// - any other TUs/LUs which are misconfigured (side effect)
 			{
 				final I_M_HU_PI_Version tuPIVersion = handlingUnitsBL.getEffectivePIVersion(tuHU);
-				final I_M_HU_PI tuPI = tuPIVersion.getM_HU_PI();
+				final I_M_HU_PI tuPI = handlingUnitsDAO.getPackingInstructionById(HuPackingInstructionsId.ofRepoId(tuPIVersion.getM_HU_PI_ID()));
 				final I_M_HU_PI_Item luPIItem = handlingUnitsDAO.retrieveDefaultParentPIItem(tuPI, X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit, null);
 				if (luPIItem == null)
 				{
