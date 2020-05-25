@@ -15,7 +15,7 @@ public class X_S_Issue extends org.compiere.model.PO implements I_S_Issue, org.c
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 286234347L;
+	private static final long serialVersionUID = 1918761460L;
 
     /** Standard Constructor */
     public X_S_Issue (Properties ctx, int S_Issue_ID, String trxName)
@@ -31,7 +31,7 @@ public class X_S_Issue extends org.compiere.model.PO implements I_S_Issue, org.c
 			setName (null);
 			setProcessed (false); // N
 			setS_Issue_ID (0);
-			setStatus (null); // Pending
+			setStatus (null); // New
 			setValue (null);
         } */
     }
@@ -219,7 +219,7 @@ public class X_S_Issue extends org.compiere.model.PO implements I_S_Issue, org.c
 	@Override
 	public void setEstimatedEffort (java.math.BigDecimal EstimatedEffort)
 	{
-		set_Value (COLUMNNAME_EstimatedEffort, EstimatedEffort);
+		set_ValueNoCheck (COLUMNNAME_EstimatedEffort, EstimatedEffort);
 	}
 
 	/** Get Geschätzter Aufwand.
@@ -295,6 +295,39 @@ public class X_S_Issue extends org.compiere.model.PO implements I_S_Issue, org.c
 		return ii.intValue();
 	}
 
+	/** Set Internal budget.
+		@param Internal_Budgeted Internal budget	  */
+	@Override
+	public void setInternal_Budgeted (java.math.BigDecimal Internal_Budgeted)
+	{
+		throw new IllegalArgumentException ("Internal_Budgeted is virtual column");	}
+
+	/** Get Internal budget.
+		@return Internal budget	  */
+	@Override
+	public java.math.BigDecimal getInternal_Budgeted () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Internal_Budgeted);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
+	}
+
+	/** Set Internal due date.
+		@param Internal_DueDate Internal due date	  */
+	@Override
+	public void setInternal_DueDate (java.sql.Timestamp Internal_DueDate)
+	{
+		throw new IllegalArgumentException ("Internal_DueDate is virtual column");	}
+
+	/** Get Internal due date.
+		@return Internal due date	  */
+	@Override
+	public java.sql.Timestamp getInternal_DueDate () 
+	{
+		return (java.sql.Timestamp)get_Value(COLUMNNAME_Internal_DueDate);
+	}
+
 	@Override
 	public de.metas.serviceprovider.model.I_S_Issue getInternal_Effort_S_Issue()
 	{
@@ -325,6 +358,109 @@ public class X_S_Issue extends org.compiere.model.PO implements I_S_Issue, org.c
 		return ii.intValue();
 	}
 
+	/** Set Internal estimated effort.
+		@param Internal_EstimatedEffort Internal estimated effort	  */
+	@Override
+	public void setInternal_EstimatedEffort (java.math.BigDecimal Internal_EstimatedEffort)
+	{
+		throw new IllegalArgumentException ("Internal_EstimatedEffort is virtual column");	}
+
+	/** Get Internal estimated effort.
+		@return Internal estimated effort	  */
+	@Override
+	public java.math.BigDecimal getInternal_EstimatedEffort () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Internal_EstimatedEffort);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
+	}
+
+	/** Set Internal planned UAT date.
+		@param Internal_PlannedUATDate Internal planned UAT date	  */
+	@Override
+	public void setInternal_PlannedUATDate (java.sql.Timestamp Internal_PlannedUATDate)
+	{
+		throw new IllegalArgumentException ("Internal_PlannedUATDate is virtual column");	}
+
+	/** Get Internal planned UAT date.
+		@return Internal planned UAT date	  */
+	@Override
+	public java.sql.Timestamp getInternal_PlannedUATDate () 
+	{
+		return (java.sql.Timestamp)get_Value(COLUMNNAME_Internal_PlannedUATDate);
+	}
+
+	/** Set Internal rough estimation.
+		@param Internal_RoughEstimation Internal rough estimation	  */
+	@Override
+	public void setInternal_RoughEstimation (java.math.BigDecimal Internal_RoughEstimation)
+	{
+		throw new IllegalArgumentException ("Internal_RoughEstimation is virtual column");	}
+
+	/** Get Internal rough estimation.
+		@return Internal rough estimation	  */
+	@Override
+	public java.math.BigDecimal getInternal_RoughEstimation () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Internal_RoughEstimation);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
+	}
+
+	@Override
+	public de.metas.serviceprovider.model.I_S_Milestone getInternal_S_Milestone()
+	{
+		return get_ValueAsPO(COLUMNNAME_Internal_S_Milestone_ID, de.metas.serviceprovider.model.I_S_Milestone.class);
+	}
+
+	@Override
+	public void setInternal_S_Milestone(de.metas.serviceprovider.model.I_S_Milestone Internal_S_Milestone)
+	{
+		set_ValueFromPO(COLUMNNAME_Internal_S_Milestone_ID, de.metas.serviceprovider.model.I_S_Milestone.class, Internal_S_Milestone);
+	}
+
+	/** Set Internal milestone.
+		@param Internal_S_Milestone_ID Internal milestone	  */
+	@Override
+	public void setInternal_S_Milestone_ID (int Internal_S_Milestone_ID)
+	{
+		throw new IllegalArgumentException ("Internal_S_Milestone_ID is virtual column");	}
+
+	/** Get Internal milestone.
+		@return Internal milestone	  */
+	@Override
+	public int getInternal_S_Milestone_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_Internal_S_Milestone_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Internal-Approved.
+		@param InternalApproved Internal-Approved	  */
+	@Override
+	public void setInternalApproved (boolean InternalApproved)
+	{
+		throw new IllegalArgumentException ("InternalApproved is virtual column");	}
+
+	/** Get Internal-Approved.
+		@return Internal-Approved	  */
+	@Override
+	public boolean isInternalApproved () 
+	{
+		Object oo = get_Value(COLUMNNAME_InternalApproved);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
 	/** Set Invoiceable effort.
 		@param InvoiceableEffort Invoiceable effort	  */
 	@Override
@@ -342,6 +478,22 @@ public class X_S_Issue extends org.compiere.model.PO implements I_S_Issue, org.c
 		if (bd == null)
 			 return BigDecimal.ZERO;
 		return bd;
+	}
+
+	/** Set Invoiced date.
+		@param InvoicedDate Invoiced date	  */
+	@Override
+	public void setInvoicedDate (java.sql.Timestamp InvoicedDate)
+	{
+		set_Value (COLUMNNAME_InvoicedDate, InvoicedDate);
+	}
+
+	/** Get Invoiced date.
+		@return Invoiced date	  */
+	@Override
+	public java.sql.Timestamp getInvoicedDate () 
+	{
+		return (java.sql.Timestamp)get_Value(COLUMNNAME_InvoicedDate);
 	}
 
 	/** Set Freigegeben.
@@ -718,6 +870,10 @@ public class X_S_Issue extends org.compiere.model.PO implements I_S_Issue, org.c
 	public static final String STATUS_Pending = "Pending";
 	/** Delivered = Delivered */
 	public static final String STATUS_Delivered = "Delivered";
+	/** New = New */
+	public static final String STATUS_New = "New";
+	/** Invoiced = Invoiced */
+	public static final String STATUS_Invoiced = "Invoiced";
 	/** Set Status.
 		@param Status Status	  */
 	@Override

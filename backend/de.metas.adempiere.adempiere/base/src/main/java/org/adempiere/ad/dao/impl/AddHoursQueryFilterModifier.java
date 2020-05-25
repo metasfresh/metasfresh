@@ -1,10 +1,8 @@
-package org.adempiere.ad.dao.impl;
-
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,6 +20,8 @@ package org.adempiere.ad.dao.impl;
  * #L%
  */
 
+package org.adempiere.ad.dao.impl;
+
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -34,6 +34,8 @@ import org.compiere.util.TimeUtil;
 import de.metas.util.Check;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
+
+import javax.annotation.Nullable;
 
 /**
  * Column Value Modifier which adds hours (from specified SQL Column) to the main column value.
@@ -61,12 +63,12 @@ public final class AddHoursQueryFilterModifier implements IQueryFilterModifier
 	}
 
 	@Override
-	public String getColumnSql(String columnSql)
+	public @NonNull String getColumnSql(@NonNull String columnName)
 	{
 		final StringBuilder sb = new StringBuilder();
 
 		sb.append(SQL_FUNC_AddHours).append("(");
-		sb.append(columnSql); // Param 1: Date Column
+		sb.append(columnName); // Param 1: Date Column
 		sb.append(", ");
 		sb.append(hoursColumnSql); // Param 2: Hours Column
 		sb.append(")");
@@ -80,8 +82,9 @@ public final class AddHoursQueryFilterModifier implements IQueryFilterModifier
 		return NullQueryFilterModifier.instance.getValueSql(value, params);
 	}
 
+	@Nullable
 	@Override
-	public Object convertValue(final String columnName, Object value, final Object model)
+	public Object convertValue(@Nullable final String columnName, @Nullable Object value, final @Nullable Object model)
 	{
 		//
 		// Constant: don't change the value

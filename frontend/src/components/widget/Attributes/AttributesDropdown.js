@@ -1,8 +1,8 @@
 import PropTypes from 'prop-types';
-import React, { Component } from 'react';
+import React, { PureComponent } from 'react';
 import onClickOutside from 'react-onclickoutside';
 import { Map } from 'immutable';
-
+import classnames from 'classnames';
 import RawWidget from '../RawWidget';
 
 /**
@@ -10,14 +10,19 @@ import RawWidget from '../RawWidget';
  * @module AttributesDropdown
  * @extends Component
  */
-class AttributesDropdown extends Component {
+class AttributesDropdown extends PureComponent {
   constructor(props) {
     super(props);
-
+    this.selector = React.createRef();
     this.state = {
       patchCallbacks: Map(),
     };
   }
+
+  componentDidMount = () => {
+    const componentCoords = this.selector.current.getBoundingClientRect();
+    this.setState({ isVisible: true, dropdownCoords: componentCoords });
+  };
 
   /**
    * @method handleClickOutside
@@ -125,8 +130,21 @@ class AttributesDropdown extends Component {
    * @todo Write the documentation
    */
   render() {
+    const { isVisible, dropdownCoords } = this.state;
+    const BOTTOM_OFFSET = 230; // value from where we show the dropup
     return (
-      <div className="attributes-dropdown panel-shadowed panel-primary panel-bordered panel-spaced">
+      <div
+        ref={this.selector}
+        className={classnames(
+          'attributes-dropdown panel-shadowed panel-primary panel-bordered panel-spaced',
+          { 'hidden ': !isVisible },
+          {
+            'attributes-dropup':
+              dropdownCoords &&
+              window.innerHeight - dropdownCoords.y < BOTTOM_OFFSET,
+          }
+        )}
+      >
         {this.renderFields()}
       </div>
     );

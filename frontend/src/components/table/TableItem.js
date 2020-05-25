@@ -715,7 +715,8 @@ TableItem.propTypes = {
   tabIndex: PropTypes.number,
   entity: PropTypes.string,
   getSizeClass: PropTypes.func,
-  colspan: PropTypes.string,
+  colspan: PropTypes.oneOfType([PropTypes.bool, PropTypes.string]),
+  // TODO: ^^ We cannot allow having a prop which is sometimes bool and sometimes string
   viewId: PropTypes.string,
   docId: PropTypes.string,
   windowId: PropTypes.string,

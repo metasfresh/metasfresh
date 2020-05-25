@@ -56,7 +56,6 @@ import {
 } from '../../../utils/documentListHelper';
 
 import DocumentList from './DocumentList';
-import withRouterAndRef from '../../hoc/WithRouterAndRef';
 
 class DocumentListContainer extends Component {
   constructor(props) {
@@ -854,33 +853,31 @@ class DocumentListContainer extends Component {
  */
 DocumentListContainer.propTypes = { ...DLpropTypes };
 
-export default withRouterAndRef(
-  connect(
-    DLmapStateToProps,
-    {
-      resetView,
-      deleteView,
-      fetchDocument,
-      fetchLayout,
-      createView,
-      filterView,
-      deleteTable,
-      setListIncludedView,
-      indicatorState,
-      closeListIncludedView,
-      setListPagination,
-      setListSorting,
-      setListId,
-      push,
-      updateRawModal,
-      selectTableItems,
-      deselectTableItems,
-      removeSelectedTableItems,
-      updateViewData,
-      fetchLocationConfig,
-      clearAllFilters,
-    },
-    null,
-    { forwardRef: true }
-  )(DocumentListContainer)
-);
+export default connect(
+  DLmapStateToProps,
+  {
+    resetView,
+    deleteView,
+    fetchDocument,
+    fetchLayout,
+    createView,
+    filterView,
+    deleteTable,
+    setListIncludedView,
+    indicatorState,
+    closeListIncludedView,
+    setListPagination,
+    setListSorting,
+    setListId,
+    push,
+    updateRawModal,
+    selectTableItems,
+    deselectTableItems,
+    removeSelectedTableItems,
+    updateViewData,
+    fetchLocationConfig,
+    clearAllFilters,
+  },
+  null,
+  { forwardRef: true }
+)(DocumentListContainer);

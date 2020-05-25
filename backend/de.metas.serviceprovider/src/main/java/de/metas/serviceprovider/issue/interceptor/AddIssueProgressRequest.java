@@ -28,9 +28,6 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
-import javax.annotation.Nullable;
-import java.time.Instant;
-
 @Value
 @Builder
 public class AddIssueProgressRequest
@@ -40,7 +37,4 @@ public class AddIssueProgressRequest
 
 	@NonNull
 	Effort bookedEffort;
-
-	@Nullable
-	Instant bookedDate;
 }

@@ -700,8 +700,14 @@ public class ADWindowDAO implements IADWindowDAO
 		targetElement.setAD_Org_ID(targetElementGroup.getAD_Org_ID());
 		targetElement.setAD_UI_ElementGroup_ID(targetElementGroupId.getRepoId());
 
-		final AdTabId tabId = getTabId(targetElementGroup);
-		targetElement.setAD_Tab_ID(tabId.getRepoId());
+		final AdTabId targetTabId = getTabId(targetElementGroup);
+		targetElement.setAD_Tab_ID(targetTabId.getRepoId());
+
+		final Optional<AdFieldId> targetFieldId = getTargetFieldId(sourceElement, targetTabId);
+		if (targetFieldId.isPresent())
+		{
+			targetElement.setAD_Field_ID(targetFieldId.get().getRepoId());
+		}
 
 		//
 		// Labels

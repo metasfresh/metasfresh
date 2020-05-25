@@ -1,10 +1,8 @@
-package org.adempiere.ad.dao.impl;
-
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,12 +20,16 @@ package org.adempiere.ad.dao.impl;
  * #L%
  */
 
+package org.adempiere.ad.dao.impl;
+
 import java.util.List;
 
 import org.adempiere.ad.dao.IQueryFilterModifier;
 
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
+
+import javax.annotation.Nullable;
 
 /**
  * Filters for substrings. This filter creates SQL like <code>column LIKE '%value%'</code>.
@@ -90,16 +92,17 @@ public class StringLikeFilter<T> extends CompareQueryFilter<T>
 		 * Just prepends a space to the given <code>columnSql</code>.
 		 */
 		@Override
-		public String getColumnSql(final String columnSql)
+		public @NonNull String getColumnSql(final @NonNull String columnName)
 		{
-			return columnSql + " "; // nothing more to do
+			return columnName + " "; // nothing more to do
 		}
 
 		/**
 		 * Uppercases the given {@code value} if {@code ignoreCase} was specified.
 		 */
+		@Nullable
 		@Override
-		public Object convertValue(final String columnName, final Object value, final Object model)
+		public Object convertValue(@Nullable final String columnName, @Nullable final Object value, final @Nullable Object model)
 		{
 			if (value == null)
 			{

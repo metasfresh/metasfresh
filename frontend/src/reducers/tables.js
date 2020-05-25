@@ -3,8 +3,9 @@ import { get } from 'lodash';
 import { createSelector } from 'reselect';
 
 import * as types from '../constants/ActionTypes';
+import { UPDATE_TABLE_SELECTION } from '../constants/actions/TableTypes';
 
-export const tableState = {
+export const initialTableState = {
   windowType: null,
   viewId: null,
   docId: null,
@@ -60,7 +61,7 @@ export const getTableId = ({ windowType, viewId, docId, tabId }) => {
  * @summary selector function for `getTable`
  */
 const selectTableHelper = (state, id) => {
-  return get(state, ['tables', id], tableState);
+  return get(state, ['tables', id], initialTableState);
 };
 
 /**
@@ -80,7 +81,7 @@ const reducer = produce((draftState, action) => {
       const newLength = draftState.length + 1;
 
       draftState[id] = {
-        ...tableState,
+        ...initialTableState,
         ...data,
       };
       draftState.length = newLength;
@@ -89,7 +90,9 @@ const reducer = produce((draftState, action) => {
     }
     case types.UPDATE_TABLE: {
       const { id, data } = action.payload;
-      const prevTableStruct = draftState[id] ? draftState[id] : tableState;
+      const prevTableStruct = draftState[id]
+        ? draftState[id]
+        : initialTableState;
       draftState[id] = {
         ...prevTableStruct,
         ...data,
@@ -104,6 +107,20 @@ const reducer = produce((draftState, action) => {
       draftState.length = newLength;
       delete draftState[id];
 
+      return;
+    }
+
+    case UPDATE_TABLE_SELECTION: {
+      const { tableId, selection } = action.payload;
+      draftState[tableId] = {
+        ...draftState[tableId],
+        selected: selection,
+      };
+      /**
+       * TODO: for Kuba to fix when refactoring the Table component => this
+       * TODO: has to be fixed to just be draftState[id].selected = selection . For that pls make sure that this action is done when
+       * TODO: data exists in the draftState[id] (table structure for the corresponding id already present)
+       */
       return;
     }
 

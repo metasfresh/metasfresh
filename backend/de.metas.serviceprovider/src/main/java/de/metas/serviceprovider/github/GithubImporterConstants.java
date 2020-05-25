@@ -28,6 +28,7 @@ import de.metas.uom.UomId;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
+import java.time.format.DateTimeFormatter;
 import java.util.regex.Pattern;
 
 public interface GithubImporterConstants
@@ -35,11 +36,7 @@ public interface GithubImporterConstants
 	int CHUNK_SIZE = 100;
 	UomId HOUR_UOM_ID = UomId.ofRepoId(101);
 
-	Pattern STATUS_PATTERN = Pattern.compile("^status:(?<status>" + Joiner.on("|").join(Status.listCodes()) +")$");
-	String STATUS_GROUP = "status";
-
-	Pattern DELIVERY_PLATFORM_PATTERN = Pattern.compile("^ins:(?<platform>[A-Za-z0-9]+)$");
-	String DELIVERY_PLATFORM_GROUP = "platform";
+	DateTimeFormatter PLANNED_UAT_DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
 	@AllArgsConstructor
 	@Getter
@@ -49,5 +46,19 @@ public interface GithubImporterConstants
 		LOOK_FOR_PARENT("lookForParent");
 
 		private final String name;
+	}
+
+	@AllArgsConstructor
+	@Getter
+	enum LabelType{
+		BUDGET(Pattern.compile("^bud:(?<bud>[0-9]+(\\.[0-9]+)?)$"), "bud"),
+		ESTIMATION(Pattern.compile("^est:(?<est>[0-9]+(\\.[0-9]+)?)$"), "est"),
+		STATUS(Pattern.compile("^status:(?<status>" + Joiner.on("|").join(Status.listCodes()) +")$"), "status"),
+		DELIVERY_PLATFORM(Pattern.compile("^ins:(?<platform>[A-Za-z0-9]+)$"),"platform"),
+		PLANNED_UAT(Pattern.compile("^p_uat:(?<uat>[0-9]{4}-[01][0-9]-[0-3][0-9])$"), "uat"),
+		ROUGH_EST(Pattern.compile("^p_est:(?<pest>[0-9]+(\\.[0-9]+)?)$"), "pest");
+
+		private final Pattern pattern;
+		private final String groupName;
 	}
 }

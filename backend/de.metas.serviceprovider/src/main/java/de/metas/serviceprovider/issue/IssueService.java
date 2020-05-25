@@ -26,7 +26,6 @@ import com.google.common.collect.ImmutableList;
 import de.metas.serviceprovider.issue.hierarchy.IssueHierarchy;
 import de.metas.serviceprovider.issue.interceptor.AddIssueProgressRequest;
 import de.metas.serviceprovider.issue.interceptor.HandleParentChangedRequest;
-import de.metas.serviceprovider.timebooking.Effort;
 import de.metas.serviceprovider.timebooking.TimeBooking;
 import de.metas.serviceprovider.timebooking.TimeBookingRepository;
 import lombok.NonNull;
@@ -54,9 +53,11 @@ public class IssueService
 		{
 			final IssueHierarchy issueHierarchy = issueRepository.buildUpStreamIssueHierarchy(request.getCurrentParentId());
 
-			issueHierarchy.listIssues().forEach(issue -> {
+			issueHierarchy
+					.getUpStreamForId(request.getCurrentParentId())
+					.forEach(issue -> {
 						issue.addAggregatedEffort(request.getCurrentEffort());
-						issue.updateLatestActivityOnSubIssues(request.getLatestActivity());
+						recomputeLatestActivityOnSubIssues(issue);
 
 						issueRepository.save(issue);
 					}
@@ -88,48 +89,20 @@ public class IssueService
 		issueEntity.addIssueEffort(request.getBookedEffort());
 		issueEntity.addAggregatedEffort(request.getBookedEffort());
 
-		issueEntity.updateLatestActivityOnIssue(request.getBookedDate());
+		recomputeLatestActivityOnIssue(issueEntity);
 
 		issueRepository.save(issueEntity);
 
 		if(issueEntity.getParentIssueId() != null)
 		{
-			issueRepository.buildUpStreamIssueHierarchy(issueEntity.getParentIssueId())
-					.listIssues()
-					.forEach(parentIssue ->
-					{
-						parentIssue.addAggregatedEffort(request.getBookedEffort());
-						parentIssue.updateLatestActivityOnSubIssues(request.getBookedDate());
-						issueRepository.save(parentIssue);
-					});
-		}
-	}
-
-	public void recomputeIssueProgress(@NonNull final IssueId issueId, @NonNull final Effort movedEffort)
-	{
-		final ImmutableList<TimeBooking> timeBookings = timeBookingRepository.getAllByIssueId(issueId);
-
-		final Instant latestActivityDate = timeBookings.stream()
-				.map(TimeBooking::getBookedDate)
-				.max(Instant::compareTo)
-				.orElse(null);
-
-		final IssueEntity issueEntity = issueRepository.getById(issueId);
-
-		issueEntity.addIssueEffort(movedEffort.negate());
-		issueEntity.addAggregatedEffort(movedEffort.negate());
-		issueEntity.setLatestActivityOnIssue(latestActivityDate);
-
-		issueRepository.save(issueEntity);
-
-		if (issueEntity.getParentIssueId() != null)
-		{
-			issueRepository.buildUpStreamIssueHierarchy(issueEntity.getParentIssueId())
+			issueRepository
+					.buildUpStreamIssueHierarchy(issueEntity.getParentIssueId())
 					.getUpStreamForId(issueEntity.getParentIssueId())
 					.forEach(parentIssue ->
 					{
+						parentIssue.addAggregatedEffort(request.getBookedEffort());
+
 						recomputeLatestActivityOnSubIssues(parentIssue);
-						parentIssue.addAggregatedEffort(movedEffort.negate());
 
 						issueRepository.save(parentIssue);
 					});
@@ -148,5 +121,17 @@ public class IssueService
 				.orElse(null);
 
 		issueEntity.setLatestActivityOnSubIssues(mostRecentActivity);
+	}
+
+	private void recomputeLatestActivityOnIssue(@NonNull final IssueEntity issueEntity)
+	{
+		final ImmutableList<TimeBooking> timeBookings = timeBookingRepository.getAllByIssueId(issueEntity.getIssueId());
+
+		final Instant latestActivityDate = timeBookings.stream()
+				.map(TimeBooking::getBookedDate)
+				.max(Instant::compareTo)
+				.orElse(null);
+
+		issueEntity.setLatestActivityOnIssue(latestActivityDate);
 	}
 }

@@ -373,6 +373,56 @@ public interface I_S_Issue
     public static final String COLUMNNAME_Internal_Assignee_ID = "Internal_Assignee_ID";
 
 	/**
+	 * Set Internal budget.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	public void setInternal_Budgeted (java.math.BigDecimal Internal_Budgeted);
+
+	/**
+	 * Get Internal budget.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 */
+	public java.math.BigDecimal getInternal_Budgeted();
+
+    /** Column definition for Internal_Budgeted */
+    public static final org.adempiere.model.ModelColumn<I_S_Issue, Object> COLUMN_Internal_Budgeted = new org.adempiere.model.ModelColumn<I_S_Issue, Object>(I_S_Issue.class, "Internal_Budgeted", null);
+    /** Column name Internal_Budgeted */
+    public static final String COLUMNNAME_Internal_Budgeted = "Internal_Budgeted";
+
+	/**
+	 * Set Internal due date.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	public void setInternal_DueDate (java.sql.Timestamp Internal_DueDate);
+
+	/**
+	 * Get Internal due date.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 */
+	public java.sql.Timestamp getInternal_DueDate();
+
+    /** Column definition for Internal_DueDate */
+    public static final org.adempiere.model.ModelColumn<I_S_Issue, Object> COLUMN_Internal_DueDate = new org.adempiere.model.ModelColumn<I_S_Issue, Object>(I_S_Issue.class, "Internal_DueDate", null);
+    /** Column name Internal_DueDate */
+    public static final String COLUMNNAME_Internal_DueDate = "Internal_DueDate";
+
+	/**
 	 * Set Internal effort issue.
 	 *
 	 * <br>Type: Search
@@ -403,6 +453,136 @@ public interface I_S_Issue
     public static final String COLUMNNAME_Internal_Effort_S_Issue_ID = "Internal_Effort_S_Issue_ID";
 
 	/**
+	 * Set Internal estimated effort.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	public void setInternal_EstimatedEffort (java.math.BigDecimal Internal_EstimatedEffort);
+
+	/**
+	 * Get Internal estimated effort.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 */
+	public java.math.BigDecimal getInternal_EstimatedEffort();
+
+    /** Column definition for Internal_EstimatedEffort */
+    public static final org.adempiere.model.ModelColumn<I_S_Issue, Object> COLUMN_Internal_EstimatedEffort = new org.adempiere.model.ModelColumn<I_S_Issue, Object>(I_S_Issue.class, "Internal_EstimatedEffort", null);
+    /** Column name Internal_EstimatedEffort */
+    public static final String COLUMNNAME_Internal_EstimatedEffort = "Internal_EstimatedEffort";
+
+	/**
+	 * Set Internal planned UAT date.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	public void setInternal_PlannedUATDate (java.sql.Timestamp Internal_PlannedUATDate);
+
+	/**
+	 * Get Internal planned UAT date.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 */
+	public java.sql.Timestamp getInternal_PlannedUATDate();
+
+    /** Column definition for Internal_PlannedUATDate */
+    public static final org.adempiere.model.ModelColumn<I_S_Issue, Object> COLUMN_Internal_PlannedUATDate = new org.adempiere.model.ModelColumn<I_S_Issue, Object>(I_S_Issue.class, "Internal_PlannedUATDate", null);
+    /** Column name Internal_PlannedUATDate */
+    public static final String COLUMNNAME_Internal_PlannedUATDate = "Internal_PlannedUATDate";
+
+	/**
+	 * Set Internal rough estimation.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	public void setInternal_RoughEstimation (java.math.BigDecimal Internal_RoughEstimation);
+
+	/**
+	 * Get Internal rough estimation.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 */
+	public java.math.BigDecimal getInternal_RoughEstimation();
+
+    /** Column definition for Internal_RoughEstimation */
+    public static final org.adempiere.model.ModelColumn<I_S_Issue, Object> COLUMN_Internal_RoughEstimation = new org.adempiere.model.ModelColumn<I_S_Issue, Object>(I_S_Issue.class, "Internal_RoughEstimation", null);
+    /** Column name Internal_RoughEstimation */
+    public static final String COLUMNNAME_Internal_RoughEstimation = "Internal_RoughEstimation";
+
+	/**
+	 * Set Internal milestone.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	public void setInternal_S_Milestone_ID (int Internal_S_Milestone_ID);
+
+	/**
+	 * Get Internal milestone.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 */
+	public int getInternal_S_Milestone_ID();
+
+	public de.metas.serviceprovider.model.I_S_Milestone getInternal_S_Milestone();
+
+	@Deprecated
+	public void setInternal_S_Milestone(de.metas.serviceprovider.model.I_S_Milestone Internal_S_Milestone);
+
+    /** Column definition for Internal_S_Milestone_ID */
+    public static final org.adempiere.model.ModelColumn<I_S_Issue, de.metas.serviceprovider.model.I_S_Milestone> COLUMN_Internal_S_Milestone_ID = new org.adempiere.model.ModelColumn<I_S_Issue, de.metas.serviceprovider.model.I_S_Milestone>(I_S_Issue.class, "Internal_S_Milestone_ID", de.metas.serviceprovider.model.I_S_Milestone.class);
+    /** Column name Internal_S_Milestone_ID */
+    public static final String COLUMNNAME_Internal_S_Milestone_ID = "Internal_S_Milestone_ID";
+
+	/**
+	 * Set Internal-Approved.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	public void setInternalApproved (boolean InternalApproved);
+
+	/**
+	 * Get Internal-Approved.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 */
+	public boolean isInternalApproved();
+
+    /** Column definition for InternalApproved */
+    public static final org.adempiere.model.ModelColumn<I_S_Issue, Object> COLUMN_InternalApproved = new org.adempiere.model.ModelColumn<I_S_Issue, Object>(I_S_Issue.class, "InternalApproved", null);
+    /** Column name InternalApproved */
+    public static final String COLUMNNAME_InternalApproved = "InternalApproved";
+
+	/**
 	 * Set Invoiceable effort.
 	 *
 	 * <br>Type: Number
@@ -424,6 +604,29 @@ public interface I_S_Issue
     public static final org.adempiere.model.ModelColumn<I_S_Issue, Object> COLUMN_InvoiceableEffort = new org.adempiere.model.ModelColumn<I_S_Issue, Object>(I_S_Issue.class, "InvoiceableEffort", null);
     /** Column name InvoiceableEffort */
     public static final String COLUMNNAME_InvoiceableEffort = "InvoiceableEffort";
+
+	/**
+	 * Set Invoiced date.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setInvoicedDate (java.sql.Timestamp InvoicedDate);
+
+	/**
+	 * Get Invoiced date.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.sql.Timestamp getInvoicedDate();
+
+    /** Column definition for InvoicedDate */
+    public static final org.adempiere.model.ModelColumn<I_S_Issue, Object> COLUMN_InvoicedDate = new org.adempiere.model.ModelColumn<I_S_Issue, Object>(I_S_Issue.class, "InvoicedDate", null);
+    /** Column name InvoicedDate */
+    public static final String COLUMNNAME_InvoicedDate = "InvoicedDate";
 
 	/**
 	 * Set Aktiv.

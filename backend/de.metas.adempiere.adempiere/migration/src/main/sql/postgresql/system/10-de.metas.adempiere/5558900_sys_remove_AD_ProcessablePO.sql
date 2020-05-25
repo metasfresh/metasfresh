@@ -123,6 +123,8 @@ UPDATE AD_Element set entityType = 'de.metas.dataentry' where ad_element_ID in (
 
 -- end of correction
 
+-- another correction
+UPDATE AD_Element SET EntityType='D', Updated='2020-05-19 08:13:08.556862+02', UpdatedBy=99 WHERE EntityType='de.metas.processing';
 
 -- 2020-05-08T14:56:21.985Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator

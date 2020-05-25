@@ -386,7 +386,7 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 	private String buildSelectSQL_MatchRequirement()
 	{
 		final String whereCreditTransferToVendor = " i.IsSOTrx='N' AND i.PaymentRule IN ('" + PaymentRule.DirectDeposit.getCode() + "','" + PaymentRule.OnCredit.getCode() + "') ";
-		final String whereDirectDebitFromCustomer = " i.IsSOTrx='Y' AND dt.DocBaseType!='ARC' AND i.PaymentRule IN ('" + PaymentRule.DirectDebit.getCode() + "') ";
+		final String whereDirectDebitFromCustomer = " i.IsSOTrx='Y' AND dt.DocBaseType ='ARI' AND i.PaymentRule IN ('" + PaymentRule.DirectDebit.getCode() + "','" + PaymentRule.OnCredit.getCode() + "') ";
 		final String whereCreditTransferToCustomer = " i.IsSOTrx='Y' AND dt.DocBaseType='ARC' AND i.PaymentRule IN ('" + PaymentRule.DirectDeposit.getCode() + "','" + PaymentRule.OnCredit.getCode() + "') ";
 
 		final InvoiceMatchingMode matchRequirement = getMatchRequirement().orElse(null);

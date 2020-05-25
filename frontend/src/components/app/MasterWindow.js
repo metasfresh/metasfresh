@@ -344,7 +344,7 @@ export default class MasterWindow extends Component {
         closeModalCallback={this.closeModalCallback}
         setModalTitle={this.setModalTitle}
         docActionElem={docActionElement}
-        windowType={params.windowType}
+        windowId={params.windowType}
         docId={params.docId}
         showSidelist
         showIndicator={!modal.visible}

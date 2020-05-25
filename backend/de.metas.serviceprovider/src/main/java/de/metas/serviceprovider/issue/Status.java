@@ -37,16 +37,20 @@ import java.util.stream.Stream;
 import static de.metas.serviceprovider.model.X_S_Issue.STATUS_Closed;
 import static de.metas.serviceprovider.model.X_S_Issue.STATUS_Delivered;
 import static de.metas.serviceprovider.model.X_S_Issue.STATUS_InProgress;
+import static de.metas.serviceprovider.model.X_S_Issue.STATUS_Invoiced;
+import static de.metas.serviceprovider.model.X_S_Issue.STATUS_New;
 import static de.metas.serviceprovider.model.X_S_Issue.STATUS_Pending;
 
 @AllArgsConstructor
 @Getter
 public enum Status implements ReferenceListAwareEnum
 {
+	NEW(STATUS_New),
 	IN_PROGRESS(STATUS_InProgress),
 	CLOSED(STATUS_Closed),
 	PENDING(STATUS_Pending),
-	DELIVERED(STATUS_Delivered);
+	DELIVERED(STATUS_Delivered),
+	INVOICED(STATUS_Invoiced);
 
 	private final String code;
 
