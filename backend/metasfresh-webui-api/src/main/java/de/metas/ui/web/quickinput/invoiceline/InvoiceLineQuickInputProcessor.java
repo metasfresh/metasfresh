@@ -1,25 +1,25 @@
 package de.metas.ui.web.quickinput.invoiceline;
 
-import java.util.Set;
-
-import org.adempiere.invoice.service.IInvoiceBL;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_Invoice;
-
 import com.google.common.collect.ImmutableSet;
-
+import de.metas.adempiere.gui.search.IHUPackingAwareBL;
+import de.metas.adempiere.gui.search.impl.InvoiceLineHUPackingAware;
+import de.metas.adempiere.gui.search.impl.PlainHUPackingAware;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner_product.IBPartnerProductBL;
+import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.invoice.IInvoiceLineBL;
 import de.metas.product.ProductId;
-import de.metas.quantity.StockQtyAndUOMQty;
-import de.metas.quantity.StockQtyAndUOMQtys;
 import de.metas.ui.web.quickinput.IQuickInputProcessor;
 import de.metas.ui.web.quickinput.QuickInput;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
+import org.adempiere.invoice.service.IInvoiceBL;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_Invoice;
+
+import java.util.Set;
 
 /*
  * #%L
@@ -46,6 +46,8 @@ import de.metas.util.Services;
 public class InvoiceLineQuickInputProcessor implements IQuickInputProcessor
 {
 
+	private final IHUPackingAwareBL huPackingAwareBL = Services.get(IHUPackingAwareBL.class);
+
 	@Override
 	public Set<DocumentId> process(final QuickInput quickInput)
 	{
@@ -65,8 +67,19 @@ public class InvoiceLineQuickInputProcessor implements IQuickInputProcessor
 
 		invoiceBL.setProductAndUOM(invoiceLine, invoiceLineQuickInput.getM_Product_ID());
 
-		final StockQtyAndUOMQty qtyInStockUom = StockQtyAndUOMQtys.createConvert(invoiceLineQuickInput.getQty(), productId, UomId.ofRepoId(invoiceLine.getC_UOM_ID()));
-		invoiceBL.setQtys(invoiceLine, qtyInStockUom);
+		final PlainHUPackingAware huPackingAware = new PlainHUPackingAware();
+		huPackingAware.setBpartnerId(partnerId);
+		huPackingAware.setInDispute(false);
+		huPackingAware.setProductId(productId);
+		huPackingAware.setUomId( UomId.ofRepoIdOrNull( invoiceLine.getC_UOM_ID() ) );
+		huPackingAware.setPiItemProductId(invoiceLineQuickInput.getM_HU_PI_Item_Product_ID() > 0
+				? HUPIItemProductId.ofRepoId(invoiceLineQuickInput.getM_HU_PI_Item_Product_ID())
+				: HUPIItemProductId.VIRTUAL_HU);
+
+		huPackingAwareBL.computeAndSetQtysForNewHuPackingAware(huPackingAware, invoiceLineQuickInput.getQty());
+		huPackingAwareBL.prepareCopyFrom(huPackingAware)
+				.overridePartner(false)
+				.copyTo(InvoiceLineHUPackingAware.of(invoiceLine));
 
 		invoiceLineBL.updatePrices(invoiceLine);
 		// invoiceBL.setLineNetAmt(invoiceLine); // not needed; will be called on save
@@ -77,5 +90,4 @@ public class InvoiceLineQuickInputProcessor implements IQuickInputProcessor
 		final DocumentId documentId = DocumentId.of(invoiceLine.getC_InvoiceLine_ID());
 		return ImmutableSet.of(documentId);
 	}
-
 }
