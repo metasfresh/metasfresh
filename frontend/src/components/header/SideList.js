@@ -5,7 +5,7 @@ import onClickOutside from 'react-onclickoutside';
 import { connect } from 'react-redux';
 
 import keymap from '../../shortcuts/keymap';
-import DocumentList from '../app/DocumentList';
+import DocumentList from '../../containers/DocumentList';
 import Tooltips from '../tooltips/Tooltips';
 import Attachments from './Attachments';
 import DocumentReferences from '../documentReferences/DocumentReferences';

@@ -10,7 +10,7 @@ import {
   setLatestNewDocument,
 } from '../actions/WindowActions';
 import Container from '../components/Container';
-import DocumentList from '../components/app/DocumentList';
+import DocumentList from './DocumentList';
 import Overlay from '../components/app/Overlay';
 
 const EMPTY_ARRAY = [];

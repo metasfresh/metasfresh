@@ -3,23 +3,23 @@ import cx from 'classnames';
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 
-import { PROCESS_NAME } from '../../../constants/Constants';
+import { PROCESS_NAME } from '../../constants/Constants';
 import {
   NO_VIEW,
   PANEL_WIDTHS,
   GEO_PANEL_STATES,
   filtersToMap,
   DLpropTypes,
-} from '../../../utils/documentListHelper';
-import Spinner from '../../app/SpinnerOverlay';
-import BlankPage from '../../BlankPage';
-import DataLayoutWrapper from '../../DataLayoutWrapper';
-import Filters from '../../filters/Filters';
-import FiltersStatic from '../../filters/FiltersStatic';
-import Table from '../../table/Table';
-import QuickActions from '../QuickActions';
-import SelectionAttributes from '../SelectionAttributes';
-import GeoMap from '../../maps/GeoMap';
+} from '../../utils/documentListHelper';
+import Spinner from './SpinnerOverlay';
+import BlankPage from '../BlankPage';
+import DataLayoutWrapper from '../DataLayoutWrapper';
+import Filters from '../filters/Filters';
+import FiltersStatic from '../filters/FiltersStatic';
+import Table from '../table/Table';
+import QuickActions from './QuickActions';
+import SelectionAttributes from './SelectionAttributes';
+import GeoMap from '../maps/GeoMap';
 
 /**
  * @file Class based component.
@@ -177,6 +177,7 @@ export default class DocumentList extends Component {
       styleObject.flex = PANEL_WIDTHS[toggleWidth];
     }
 
+    // TODO: Why this is not handled via redux ?
     if (!selectionValid) {
       selected = null;
     }

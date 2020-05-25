@@ -8,7 +8,7 @@ import {
   setRawModalDescription,
 } from '../actions/WindowActions';
 
-import DocumentList from './app/DocumentList';
+import DocumentList from '../containers/DocumentList';
 import ErrorScreen from './app/ErrorScreen';
 import Modal from './app/Modal';
 import RawModal from './app/RawModal';

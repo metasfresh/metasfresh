@@ -5,13 +5,13 @@ import { Map as iMap, Set as iSet } from 'immutable';
 import currentDevice from 'current-device';
 import { get } from 'lodash';
 
-import { LOCATION_SEARCH_NAME } from '../../../constants/Constants';
+import { LOCATION_SEARCH_NAME } from '../constants/Constants';
 import {
   locationSearchRequest,
   deleteStaticFilter,
   getViewRowsByIds,
-} from '../../../api';
-import { getTableId } from '../../../reducers/tables';
+} from '../api';
+import { getTableId } from '../reducers/tables';
 import {
   addViewLocationData,
   createView,
@@ -22,25 +22,25 @@ import {
   resetView,
   deleteView,
   updateViewData,
-} from '../../../actions/ViewActions';
-import { deleteTable } from '../../../actions/TableActions';
-import { clearAllFilters } from '../../../actions/FiltersActions';
+} from '../actions/ViewActions';
+import { deleteTable } from '../actions/TableActions';
+import { clearAllFilters } from '../actions/FiltersActions';
 import {
   closeListIncludedView,
   setListId,
   setListIncludedView,
   setPagination as setListPagination,
   setSorting as setListSorting,
-} from '../../../actions/ListActions';
+} from '../actions/ListActions';
 import {
   updateRawModal,
   indicatorState,
   selectTableItems,
   deselectTableItems,
   removeSelectedTableItems,
-} from '../../../actions/WindowActions';
-import { connectWS, disconnectWS } from '../../../utils/websockets';
-import { getSelectionDirect } from '../../../reducers/windowHandler';
+} from '../actions/WindowActions';
+import { connectWS, disconnectWS } from '../utils/websockets';
+import { getSelectionDirect } from '../reducers/windowHandler';
 import {
   DLpropTypes,
   DLmapStateToProps,
@@ -53,9 +53,9 @@ import {
   mergeRows,
   parseToDisplay,
   getRowsData,
-} from '../../../utils/documentListHelper';
+} from '../utils/documentListHelper';
 
-import DocumentList from './DocumentList';
+import DocumentList from '../components/app/DocumentList';
 
 class DocumentListContainer extends Component {
   constructor(props) {
