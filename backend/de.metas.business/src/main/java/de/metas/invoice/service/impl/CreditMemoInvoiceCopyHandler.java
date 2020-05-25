@@ -123,7 +123,6 @@ class CreditMemoInvoiceCopyHandler implements IDocCopyHandler<I_C_Invoice, I_C_I
 		if (!creditCtx.isCompleteAndAllocate())
 		{
 			Services.get(IDocumentBL.class).processEx(creditMemo, IDocument.ACTION_Prepare, IDocument.STATUS_InProgress);
-			Check.assume(creditMemo.getGrandTotal().compareTo(openAmt) == 0, "{} has GrandTotal={}", creditMemo, openAmt);
 
 			// nothing left to do
 			return;
