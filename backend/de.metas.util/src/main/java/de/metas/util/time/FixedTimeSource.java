@@ -6,6 +6,7 @@ import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 
+import de.metas.util.Check;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.ToString;

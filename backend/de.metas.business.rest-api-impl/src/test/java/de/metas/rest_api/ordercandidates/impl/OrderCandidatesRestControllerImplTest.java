@@ -43,6 +43,7 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.X_C_DocType;
 import org.compiere.util.MimeType;
+import org.junit.Rule;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -374,7 +375,7 @@ public class OrderCandidatesRestControllerImplTest
 	}
 
 	/**
-	 * Asserts that every {@link AttachmentEntry.Type} has a matching {@link JsonAttachment.Type} and vice versa
+	 * Asserts that every {@link AttachmentEntry.Type} has a matching {@link JsonAttachmentType} and vice versa
 	 */
 	@Test
 	public void jsonAttachmentTypes()
