@@ -1,9 +1,5 @@
 package de.metas.async.processor.impl;
 
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.SynchronousQueue;
-
 /*
  * #%L
  * de.metas.async
@@ -26,6 +22,8 @@ import java.util.concurrent.SynchronousQueue;
  * #L%
  */
 
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -83,14 +81,13 @@ class ThreadPoolQueueProcessor extends AbstractQueueProcessor
 					threadPoolQueue,
 					threadFactory);
 			// If we have a KeepAliveTimeMillis in processor definition, then we apply the timeout for core threads too
-			 threadPoolExecutor.allowCoreThreadTimeOut(config.getKeepAliveTimeMillis() > 0);
+			threadPoolExecutor.allowCoreThreadTimeOut(config.getKeepAliveTimeMillis() > 0);
 
 			this.executor = BlockingExecutorWrapper.builder()
 					.delegate(threadPoolExecutor)
 					.loggerToUse(loggerForExecutor)
 					.poolSize(config.getPoolSize())
 					.build();
-
 		}
 
 		this.running = new AtomicBoolean(true);
@@ -170,7 +167,7 @@ class ThreadPoolQueueProcessor extends AbstractQueueProcessor
 			}
 			catch (InterruptedException e)
 			{
-				logger.warn("Failed shutdowning executor for " + name + ". Retry " + retryCount + " more times.");
+				logger.warn("Failed shutting down executor for " + name + ". Retry " + retryCount + " more times.");
 				terminated = false;
 			}
 			retryCount--;

@@ -400,8 +400,6 @@ public class XmlToOLCandsService
 		switch (context.getTargetDocType())
 		{
 			case KV:
-				requestBuilder.bpartner(createReadOnlyInvoiceRecipient(context));
-				break;
 			case KT:
 				requestBuilder.bpartner(createReadOnlyInvoiceRecipient(context));
 				break;
