@@ -1008,6 +1008,7 @@ class Table extends Component {
       focusOnFieldName,
       modalVisible,
       isGerman,
+      activeLocale,
     } = this.props;
 
     const {
@@ -1039,6 +1040,7 @@ class Table extends Component {
         {...{
           page: this.props.page,
           entity,
+          activeLocale,
           cols,
           windowId,
           mainTable,
@@ -1364,6 +1366,7 @@ const mapStateToProps = (state) => ({
   allowShortcut: state.windowHandler.allowShortcut,
   allowOutsideClick: state.windowHandler.allowOutsideClick,
   modalVisible: state.windowHandler.modal.visible,
+  activeLocale: state.appHandler.me.language,
   isGerman: state.appHandler.me.language
     ? state.appHandler.me.language.key.includes('de')
     : false,
