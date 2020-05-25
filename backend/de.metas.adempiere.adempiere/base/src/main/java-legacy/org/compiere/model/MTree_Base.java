@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
+import de.metas.logging.LogManager;
 import org.adempiere.ad.migration.logger.IMigrationLogger;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
@@ -53,10 +54,8 @@ import lombok.NonNull;
  */
 public class MTree_Base extends X_AD_Tree
 {
+	private static final Logger log = LogManager.getLogger(MTree_Base.class);
 
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = -7657958239525901547L;
 
 	public static final int ROOT_Node_ID = 0;
@@ -350,7 +349,6 @@ public class MTree_Base extends X_AD_Tree
 	/**
 	 * Get Source TableName (i.e. where to get the name and color)
 	 * 
-	 * @param tableNameOnly if false return From clause (alias = t)
 	 * @return source table name, e.g. AD_Org or null
 	 */
 	public String getSourceTableName()
@@ -462,8 +460,6 @@ public class MTree_Base extends X_AD_Tree
 	/**
 	 * Move node from parent to another
 	 * 
-	 * @param from
-	 * @param to
 	 * @throws AdempiereException if an exception occurs
 	 */
 	public void updateNodeChildren(final MTreeNode parent, final List<MTreeNode> children)
@@ -594,7 +590,7 @@ public class MTree_Base extends X_AD_Tree
 		final int AD_Client_ID = po.getAD_Client_ID();
 		final String treeTableName = MTree.getNodeTableName(AD_Table_ID);
 		final String trxName = po.get_TrxName();
-		final Logger log = po.get_Logger();
+
 		
 		final IPOTreeSupport treeSupport = treeSupportFactory.get(po.get_TableName());
 		final int AD_Tree_ID = treeSupport.getAD_Tree_ID(po);
@@ -659,9 +655,9 @@ public class MTree_Base extends X_AD_Tree
 		if (treeTableName == null)
 			return false;
 		final String trxName = po.get_TrxName();
-		final Logger log = po.get_Logger();
+
 		//
-		// Check childrens:
+		// Check children:
 		List<MTreeNode> children = fetchNodes(AD_Table_ID, "Parent_ID=?", new Object[] { id }, trxName);
 		if (children.size() > 0)
 		{

@@ -40,9 +40,6 @@ public interface IArchiveStorage
 	 * Initialize storage handler.
 	 * 
 	 * NOTE: don't call it directly, it's called by API
-	 * 
-	 * @param ctx
-	 * @param adClientId
 	 */
 	void init(Properties ctx, int adClientId);
 

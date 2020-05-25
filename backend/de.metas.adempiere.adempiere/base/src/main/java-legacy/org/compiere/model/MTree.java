@@ -63,6 +63,8 @@ import de.metas.util.Services;
 @SuppressWarnings("serial")
 public class MTree extends MTree_Base
 {
+	private static final Logger log = LogManager.getLogger(MTree.class);
+
 	public static final Builder builder()
 	{
 		return new Builder();
@@ -219,7 +221,7 @@ public class MTree extends MTree_Base
 	/*************************************************************************
 	 * Load Nodes and Bar
 	 *
-	 * @param AD_User_ID user for tree bar
+	 * @param userId user for tree bar
 	 */
 	private void loadNodes(final UserId userId)
 	{

@@ -13,7 +13,7 @@
 
 
 - Create config. In that case run:
-> cp src/config.js.dist src/config.js
+> cp config.js.dist config.js
 
 ### Dev environment
 
