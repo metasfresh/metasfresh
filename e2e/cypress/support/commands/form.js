@@ -2,6 +2,11 @@ import { confirmCalendarDay } from '../functions';
 import { RewriteURL } from '../utils/constants';
 
 // thx to https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/replace
+/**
+ * TODO tbp: I don't know what's the point of this function.
+ *    And since idk what it does, I want to remove it as it looks useless to me.
+ *    Check what this does and remove it if it's useless
+ */
 function removeSubstringsWithCurlyBrackets(stringValue) {
   const regex = /{.*}/gi;
 
@@ -108,6 +113,9 @@ Cypress.Commands.add('resetListValue', (fieldName, modal, rewriteUrl = null) => 
     .find('.meta-icon-close-alt')
     .click();
 
+  // todo rename resetListValue to something with Clear, so that all "clearing" methods have the same name (ie clear Field value)
+  // todo make this work for lists as well, and rename properly
+  // todo check if there are any other clearing/resetting methods
   cy.get(path).waitForFieldValue(`@${patchListValueAliasName}`, fieldName);
 });
 
@@ -260,6 +268,9 @@ Cypress.Commands.add('writeIntoTextField', (fieldName, stringValue, modal = fals
  * @param {boolean} skipRequest - if set to true, the PATCH request will be skipped
  */
 Cypress.Commands.add('writeIntoLookupListField', (fieldName, partialValue, expectedListValue, typeList = false, modal = false, rewriteUrl = null, skipRequest = false) => {
+  // TODO: i believe we can get rid of param typeList. It should be calculated depending on skipRequest.
+  //    Or even better: we could clear the LookupList value before setting it, hence always expecting a value, and no longer skipping request checks.
+  // TODO: rename this function to "selectInSearchField"
   let path = `#lookup_${fieldName}`;
   if (modal) {
     path = `.panel-modal ${path}`;
