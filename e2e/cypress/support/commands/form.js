@@ -29,7 +29,7 @@ Cypress.Commands.add('clearField', (fieldName, modal) => {
 Cypress.Commands.add('getStringFieldValue', (fieldName, modal) => {
   cy.log(`getStringFieldValue - fieldName=${fieldName}; modal=${modal}`);
 
-  cy.waitForSaveIndicator(); 
+  cy.waitForSaveIndicator();
 
   const path = createFieldPath(fieldName, modal);
   return cy
@@ -108,7 +108,7 @@ Cypress.Commands.add('resetListValue', (fieldName, modal, rewriteUrl = null) => 
   cy.route('PATCH', new RegExp(patchUrlPattern)).as(patchListValueAliasName);
 
   const path = createFieldPath(fieldName, modal);
-  
+
   cy.get(path)
     .find('.meta-icon-close-alt')
     .click();
@@ -297,11 +297,11 @@ Cypress.Commands.add('writeIntoLookupListField', (fieldName, partialValue, expec
       );
     }
 
-      // this is extremely fiddly when selecting from a combo field such as bpartner address.
-      // it will work locally, but most of the times will fail in jenkins.
-      // Please create the tests such that adding an address in a combo field is not mandatory!
-      return cy.get('.lookup-dropdown').click();
-    });
+    // this is extremely fiddly when selecting from a combo field such as bpartner address.
+    // it will work locally, but most of the times will fail in jenkins.
+    // Please create the tests such that adding an address in a combo field is not mandatory!
+    return cy.get('.lookup-dropdown').click();
+  });
 
   cy.get('.input-dropdown-list').should('exist');
   cy.contains('.input-dropdown-list-option', expectedListValue).click();
