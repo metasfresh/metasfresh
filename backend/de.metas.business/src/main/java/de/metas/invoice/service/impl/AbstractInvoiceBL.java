@@ -166,8 +166,6 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		Check.assume(invoice.getGrandTotal().signum() != 0, "GrandTotal!=0 for {}", invoice);
 
 		final Properties ctx = InterfaceWrapperHelper.getCtx(invoice);
-		final String trxName = InterfaceWrapperHelper.getTrxName(invoice);
-
 		//
 		// 'openAmt is the amount that shall end up in the credit memo's GrandTotal
 		final BigDecimal openAmt = Services.get(IAllocationDAO.class).retrieveOpenAmt(invoice,
@@ -187,7 +185,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 						creditCtx.isReferenceOriginalOrder(), // setOrderRef == creditCtx.isReferenceOriginalOrder()
 						creditCtx.isReferenceInvoice(), // setInvoiceRef == creditCtx.isReferenceInvoice()
 						true, // copyLines == true
-						new CreditMemoInvoiceCopyHandler(ctx, creditCtx, openAmt, trxName)),
+						new CreditMemoInvoiceCopyHandler(creditCtx)),
 				I_C_Invoice.class);
 		return creditMemo;
 	}

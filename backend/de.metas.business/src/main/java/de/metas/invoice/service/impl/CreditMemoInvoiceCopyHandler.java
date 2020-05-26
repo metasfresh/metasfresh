@@ -1,43 +1,14 @@
 package de.metas.invoice.service.impl;
 
-/*
- * #%L
- * de.metas.swat.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.math.BigDecimal;
-import java.util.Properties;
-
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_InvoiceLine;
-import org.slf4j.Logger;
 
-import de.metas.allocation.api.IAllocationDAO;
 import de.metas.document.IDocCopyHandler;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.invoice.InvoiceCreditContext;
 import de.metas.invoice.service.IInvoiceBL;
-import de.metas.logging.LogManager;
-import de.metas.util.Check;
 import de.metas.util.Services;
 
 /**
@@ -49,21 +20,10 @@ import de.metas.util.Services;
 class CreditMemoInvoiceCopyHandler implements IDocCopyHandler<I_C_Invoice, I_C_InvoiceLine>
 {
 	private final InvoiceCreditContext creditCtx;
-	private final BigDecimal openAmt;
 
-	@SuppressWarnings("unused")
-	private final String trxName;
-
-	private static final transient Logger logger = LogManager.getLogger(CreditMemoInvoiceCopyHandler.class);
-
-	public CreditMemoInvoiceCopyHandler(final Properties ctx,
-			final InvoiceCreditContext creditCtx,
-			final BigDecimal openAmt,
-			final String trxName)
+	public CreditMemoInvoiceCopyHandler(final InvoiceCreditContext creditCtx)
 	{
 		this.creditCtx = creditCtx;
-		this.openAmt = openAmt;
-		this.trxName = trxName;
 	}
 
 	@Override
@@ -85,8 +45,6 @@ class CreditMemoInvoiceCopyHandler implements IDocCopyHandler<I_C_Invoice, I_C_I
 
 		creditMemo.setIsCreditedInvoiceReinvoicable(creditCtx.isCreditedInvoiceReinvoicable()); // task 08927
 
-		handlePartialRequests(invoice, creditMemo);
-
 		completeAndAllocateCreditMemo(invoice, creditMemo);
 	}
 
@@ -94,28 +52,6 @@ class CreditMemoInvoiceCopyHandler implements IDocCopyHandler<I_C_Invoice, I_C_I
 	public CreditMemoInvoiceLineCopyHandler getDocLineCopyHandler()
 	{
 		return CreditMemoInvoiceLineCopyHandler.getInstance();
-	}
-
-	/**
-	 * Task https://github.com/metasfresh/metasfresh/issues/6615
-	 * When a credit memo comes after a partial allocation, we no longer do the automatic calculation per lines and taxes,
-	 * but create a credit memo based on the whole qtys and prices of the invoice and let the user decide what they do next.
-	 */
-	private void handlePartialRequests(final de.metas.adempiere.model.I_C_Invoice invoice,
-			final de.metas.adempiere.model.I_C_Invoice creditMemo)
-	{
-		final BigDecimal allocatedAmt = Services.get(IAllocationDAO.class).retrieveAllocatedAmt(invoice);
-		if (allocatedAmt == null || allocatedAmt.signum() == 0)
-		{
-			// skip non-partial lines (a line is partially allocated if the allocated amount is not null or 0)
-			return;
-		}
-		else
-		{
-			logger.warn("The credit memo {} should be a partial allocation of invoice {}.", creditMemo, invoice);
-
-			return;
-		}
 	}
 
 	private void completeAndAllocateCreditMemo(final de.metas.adempiere.model.I_C_Invoice invoice, final de.metas.adempiere.model.I_C_Invoice creditMemo)
