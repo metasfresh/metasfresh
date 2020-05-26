@@ -37,7 +37,7 @@ FROM (
          --Docnote TRL
          SELECT NULL                   AS textleft,
                 CASE
-                    WHEN ddo.descriptionbottom IS NOT NULL
+                    WHEN ddo.description IS NOT NULL
                         THEN E'\n\n\n'
                         ELSE ''
                 END || dt.documentnote AS textcenter,
@@ -51,7 +51,7 @@ FROM (
          UNION
          ---------------------------------------------------------------------------------------------
          --Descriptionbottom
-         SELECT ddo.descriptionbottom AS textleft,
+         SELECT ddo.description AS textleft,
                 NULL                  AS textcenter,
                 NULL                  AS language,
                 ddo.dd_order_id       AS dd_order_id,
