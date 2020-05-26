@@ -3,7 +3,6 @@ import { get } from 'lodash';
 import { createSelector } from 'reselect';
 
 import * as types from '../constants/ActionTypes';
-import { UPDATE_TABLE_SELECTION } from '../constants/actions/TableTypes';
 
 export const initialTableState = {
   windowType: null,
@@ -113,7 +112,7 @@ const reducer = produce((draftState, action) => {
       return;
     }
 
-    case UPDATE_TABLE_SELECTION: {
+    case types.UPDATE_TABLE_SELECTION: {
       const { tableId, selection } = action.payload;
       draftState[tableId] = {
         ...draftState[tableId],
@@ -125,6 +124,12 @@ const reducer = produce((draftState, action) => {
        * TODO: data exists in the draftState[id] (table structure for the corresponding id already present)
        */
       return;
+    }
+
+    case types.COLLAPSE_TABLE_ROWS: {
+      const { tableId, keyProperty } = action.payload;
+
+      return draftState;
     }
 
     case types.SET_ACTIVE_SORT_NEW: {

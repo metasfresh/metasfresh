@@ -25,13 +25,13 @@ export const containerPropTypes = {
 
 export const componentPropTypes = {
   ...containerPropTypes,
-  // onSelect={this.handleSelect}
-  // onSelectOne={this.handleSelectOne}
-  // onSelectRange={this.handleSelectRange}
-  // onSelectAll={this.handleSelectAll}
-  // onDeselectAll={this.handleDeselectAll}
-  // onDeselect={this.handleDeselect}
-}
+  onSelect: PropTypes.func.isRequired,
+  onSelectOne: PropTypes.func.isRequired,
+  onSelectRange: PropTypes.func.isRequired,
+  onSelectAll: PropTypes.func.isRequired,
+  onDeselectAll: PropTypes.func.isRequired,
+  onDeselect: PropTypes.func.isRequired,
+};
 
 export function constructorFn(props) {
   const { defaultSelected, rowEdited } = props;

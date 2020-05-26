@@ -33,3 +33,9 @@ export const DELETE_TABLE = 'DELETE_TABLE';
  * @type {string} update table selection
  */
 export const UPDATE_TABLE_SELECTION = 'UPDATE_TABLE_SELECTION';
+
+/**
+ * @constant
+ * @type {string} handle toggling table rows
+ */
+export const COLLAPSE_TABLE_ROWS = 'COLLAPSE_TABLE_ROWS';

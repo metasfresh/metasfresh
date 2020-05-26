@@ -1,26 +1,9 @@
-import update from 'immutability-helper';
-// import { is } from 'immutable';
-// import * as _ from 'lodash';
 import React, { PureComponent } from 'react';
 import onClickOutside from 'react-onclickoutside';
-// import { connect } from 'react-redux';
 import classnames from 'classnames';
 import currentDevice from 'current-device';
 import counterpart from 'counterpart';
-// import uuid from 'uuid/v4';
 
-import { updateTableSelection } from '../../actions/TableActions';
-// import { deleteRequest } from '../../actions/GenericActions';
-import {
-  getTableId,
-  getTable } from '../../reducers/tables';
-import {
-  // deleteLocal,
-  // openModal,
-  // selectTableItems,
-  deselectTableItems,
-} from '../../actions/WindowActions';
-// import { getZoomIntoWindow } from '../../api';
 import {
   getSizeClass,
   handleCopy,
@@ -28,11 +11,7 @@ import {
   componentPropTypes,
   constructorFn,
 } from '../../utils/tableHelpers';
-import {
-  // getRowsData,
-  mapIncluded,
-  collapsedMap,
-} from '../../utils/documentListHelper';
+import { mapIncluded } from '../../utils/documentListHelper';
 
 import Prompt from '../app/Prompt';
 import DocumentListContextShortcuts from '../keyshortcuts/DocumentListContextShortcuts';
@@ -46,8 +25,8 @@ import TablePagination from './TablePagination';
 const MOBILE_TABLE_SIZE_LIMIT = 30; // subjective number, based on empiric testing
 const isMobileOrTablet =
   currentDevice.type === 'mobile' || currentDevice.type === 'tablet';
-// const EMPTY_ARRAY = [];
 
+// TODO: Remove
 let RENDERS = 0;
 
 class Table extends PureComponent {
