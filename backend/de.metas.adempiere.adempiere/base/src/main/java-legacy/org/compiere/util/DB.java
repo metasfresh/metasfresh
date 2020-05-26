@@ -144,10 +144,11 @@ public final class DB
 		 */
 		ThrowException,
 		/**
-		 * Save the exception using {@link CLogger#saveError(String, Exception)} methods.
+		 * Save the exception using {@link MetasfreshLastError#saveError(Logger, String, Throwable)} methods.
 		 * <p>
 		 * NOTE: this is totally legacy and you shall no longer use it.
 		 */
+		@Deprecated
 		SaveError,
 		/**
 		 * Ignore the error but log it.
@@ -561,7 +562,7 @@ public final class DB
 		return prepareStatement(sql, ResultSet.TYPE_FORWARD_ONLY, concurrency, null);
 	}    // prepareStatement
 
-	public static CPreparedStatement prepareStatement(final String sql, final String trxName)
+	public static CPreparedStatement prepareStatement(final String sql, @Nullable final String trxName)
 	{
 		int concurrency = ResultSet.CONCUR_READ_ONLY;
 		final String upper = sql.toUpperCase();
@@ -614,7 +615,7 @@ public final class DB
 	 * @return a connection and prepared statement that will internally fetch only 1000 rows at a time, in order not to overuse local memory.
 	 * Please make sure to close them both!
 	 *
-	 * @see https://jdbc.postgresql.org/documentation/head/query.html
+	 * Also see https://jdbc.postgresql.org/documentation/head/query.html
 	 */
 	public static ImmutablePair<Connection, PreparedStatement> prepareConnectionAndStatementForDataExport(
 			@NonNull final String sqlSelect,
@@ -1060,8 +1061,7 @@ public final class DB
 	/**
 	 * Prepares and executes a callable statement and makes sure that its closed at the end.
 	 *
-	 * @param function something like <code>"select " + function + "(?,?,?)"</code>
-	 * @param params
+	 * @param functionCall something like <code>"select " + function + "(?,?,?)"</code>
 	 */
 	public static void executeFunctionCallEx(
 			final String trxName,
@@ -1166,7 +1166,6 @@ public final class DB
 	 * Get Row Set. When a Rowset is closed, it also closes the underlying connection. If the created RowSet is transfered by RMI, closing it makes no difference
 	 *
 	 * @param sql sql
-	 * @param local local RowSet (own connection)
 	 * @return row set or null
 	 */
 	public static RowSet getRowSet(final String sql, final List<Object> sqlParams)
@@ -2106,7 +2105,7 @@ public final class DB
 	 *
 	 * @param st
 	 */
-	public static void close(final Statement st)
+	public static void close(@Nullable final Statement st)
 	{
 		try
 		{
@@ -2429,7 +2428,6 @@ public final class DB
 	 * </pre>
 	 *
 	 * @param paramsIn
-	 * @param paramsOut
 	 * @return SQL list
 	 * @see #buildSqlList(Collection, List)
 	 */

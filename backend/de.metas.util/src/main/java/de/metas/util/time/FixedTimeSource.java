@@ -6,6 +6,7 @@ import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 
+import de.metas.util.Check;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.ToString;
@@ -80,5 +81,12 @@ public class FixedTimeSource implements TimeSource
 	public ZonedDateTime asZonedDateTime()
 	{
 		return date;
+	}
+
+	public FixedTimeSource plusSeconds(final long secondsToAdd)
+	{
+		Check.assumeGreaterThanZero(secondsToAdd, "secondsToAdd");
+		final ZonedDateTime newDate = date.plusSeconds(secondsToAdd);
+		return new FixedTimeSource(newDate);
 	}
 }

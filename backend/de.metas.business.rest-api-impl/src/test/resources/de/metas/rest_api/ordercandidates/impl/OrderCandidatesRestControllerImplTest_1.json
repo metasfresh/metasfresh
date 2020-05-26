@@ -143,6 +143,7 @@
 	"qty": 1,
 	"salesPartnerCode": "ABC-DEF-12345",
 	"paymentRule": "OnCredit",
+    "paymentTerm": "val-paymentTermValue",
 	"shipper": "val-Standard",
 	"dataSource": "int-SOURCE.de.metas.rest_api.ordercandidates.impl.OrderCandidatesRestControllerImpl_B2C",
 	"dataDest": "int-DEST.de.metas.ordercandidate",

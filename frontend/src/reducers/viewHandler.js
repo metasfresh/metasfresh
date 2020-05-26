@@ -26,10 +26,11 @@ import {
 export const viewState = {
   layout: {
     activeTab: null,
-    pending: false,
-    error: null,
-    notfound: false,
   },
+  layoutPending: false,
+  layoutError: null,
+  layoutNotFound: false,
+
   // rowData is an immutable Map with tabId's as keys, and Lists as values.
   // List's elements are plain objects for now
   rowData: iMap(),
@@ -50,7 +51,7 @@ export const viewState = {
   orderBy: null,
   queryLimitHit: null,
   mapConfig: null,
-  notfound: false,
+  notFound: false,
   pending: false,
   error: null,
   isActive: false,
@@ -93,11 +94,8 @@ export default function viewHandler(state = initialState, action) {
           ...state.views,
           [`${id}`]: {
             ...view,
-            layout: {
-              ...view.layout,
-              notfound: false,
-              pending: true,
-            },
+            layoutPending: true,
+            layoutNotFound: false,
           },
         },
       };
@@ -112,11 +110,11 @@ export default function viewHandler(state = initialState, action) {
           ...state.views,
           [`${id}`]: {
             ...view,
+            layoutPending: false,
+            layoutError: false,
             layout: {
               ...view.layout,
               ...layout,
-              error: null,
-              pending: false,
             },
           },
         },
@@ -132,12 +130,9 @@ export default function viewHandler(state = initialState, action) {
           ...state.views,
           [`${id}`]: {
             ...view,
-            layout: {
-              ...view.layout,
-              notfound: true,
-              error,
-              pending: false,
-            },
+            layoutPending: false,
+            layoutError: error,
+            layoutNotFound: true,
           },
         },
       };
@@ -153,7 +148,7 @@ export default function viewHandler(state = initialState, action) {
           ...state.views,
           [`${id}`]: {
             ...view,
-            notfound: false,
+            notFound: false,
             pending: true,
             error: null,
           },
@@ -221,7 +216,7 @@ export default function viewHandler(state = initialState, action) {
           [`${id}`]: {
             ...view,
             pending: false,
-            notfound: true,
+            notFound: true,
             error,
           },
         },
@@ -257,7 +252,7 @@ export default function viewHandler(state = initialState, action) {
             ...view,
             viewId,
             pending: false,
-            notfound: false,
+            notFound: false,
           },
         },
       };
@@ -273,7 +268,7 @@ export default function viewHandler(state = initialState, action) {
           [`${id}`]: {
             ...view,
             pending: false,
-            notfound: true,
+            notFound: true,
             error,
           },
         },
@@ -289,7 +284,7 @@ export default function viewHandler(state = initialState, action) {
           ...state.views,
           [`${id}`]: {
             ...view,
-            notfound: false,
+            notFound: false,
             pending: true,
             error: null,
           },
@@ -330,7 +325,7 @@ export default function viewHandler(state = initialState, action) {
           [`${id}`]: {
             ...view,
             pending: false,
-            notfound: true,
+            notFound: true,
             error,
           },
         },

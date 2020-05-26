@@ -1,31 +1,34 @@
+/*
+ * #%L
+ * de.metas.handlingunits.base
+ * %%
+ * Copyright (C) 2020 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.handlingunits.shipmentschedule.api;
 
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Properties;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.lang.IContextAware;
-import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_InOutLine;
-import org.compiere.util.Env;
-import org.slf4j.Logger;
-import org.springframework.stereotype.Service;
-
-import com.google.common.collect.ImmutableList;
-
 import ch.qos.logback.classic.Level;
+import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.HUConstants;
+import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.IMutableHUContext;
 import de.metas.handlingunits.allocation.IAllocationRequest;
 import de.metas.handlingunits.allocation.IAllocationResult;
@@ -41,8 +44,12 @@ import de.metas.handlingunits.allocation.transfer.HUTransformService.HUsToNewCUs
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
+import de.metas.handlingunits.model.I_M_HU_PI;
+import de.metas.handlingunits.model.I_M_HU_PI_Item;
+import de.metas.handlingunits.model.I_M_HU_PI_Version;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.handlingunits.model.X_M_HU;
+import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.shipmentschedule.api.impl.ShipmentScheduleQtyPickedProductStorage;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
@@ -68,28 +75,23 @@ import de.metas.util.time.SystemTime;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ISysConfigBL;
+import org.adempiere.util.lang.IContextAware;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_InOutLine;
+import org.compiere.util.Env;
+import org.slf4j.Logger;
+import org.springframework.stereotype.Service;
 
-/*
- * #%L
- * de.metas.handlingunits.base
- * %%
- * Copyright (C) 2019 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Properties;
 
 @Service
 public class ShipmentScheduleWithHUService
@@ -116,8 +118,8 @@ public class ShipmentScheduleWithHUService
 	}
 
 	/**
-	 * Create {@link IShipmentScheduleWithHU} (i.e. candidates) for given <code>schedule</code>.
-	 *
+	 * Create {@link ShipmentScheduleWithHU} (i.e. candidates) for given <code>schedule</code>.
+	 * <p>
 	 * NOTE: this method will create missing LUs before.
 	 *
 	 * @return one single candidate if there are no {@link I_M_ShipmentSchedule_QtyPicked} for the given schedule. One candidate per {@link I_M_ShipmentSchedule_QtyPicked} otherwise.
@@ -168,8 +170,8 @@ public class ShipmentScheduleWithHUService
 			final IProductBL productBL = Services.get(IProductBL.class);
 			if (productBL.isStocked(ProductId.ofRepoId(scheduleRecord.getM_Product_ID())))
 			{
-			result.addAll(pickHUsOnTheFly(scheduleRecord, qtyToDeliver, huContext));
-		}
+				result.addAll(pickHUsOnTheFly(scheduleRecord, qtyToDeliver, huContext));
+			}
 			else
 			{
 				Loggables.withLogger(logger, Level.DEBUG).addLog("ProductId={} is not stocked; skip picking it on the fly", scheduleRecord.getM_Product_ID());
@@ -222,7 +224,7 @@ public class ShipmentScheduleWithHUService
 
 		Loggables.withLogger(logger, Level.DEBUG)
 				.addLog("SysConfig {}={} for AD_Client_ID={} and AD_Org_ID={}",
-				SYSCFG_PICK_AVAILABLE_HUS_ON_THE_FLY, pickAvailableHUsOntheFly, adClientId, adOrgId);
+						SYSCFG_PICK_AVAILABLE_HUS_ON_THE_FLY, pickAvailableHUsOntheFly, adClientId, adOrgId);
 
 		return pickAvailableHUsOntheFly;
 	}
@@ -386,7 +388,7 @@ public class ShipmentScheduleWithHUService
 	private Collection<? extends ShipmentScheduleWithHU> createShipmentScheduleWithHUForPick(
 			@NonNull final I_M_ShipmentSchedule schedule,
 			@NonNull final IHUContext huContext,
-			@Nullable final M_ShipmentSchedule_QuantityTypeToUse quantityType)
+			@NonNull final M_ShipmentSchedule_QuantityTypeToUse quantityType)
 	{
 		List<I_M_ShipmentSchedule_QtyPicked> qtyPickedRecords = retrieveQtyPickedRecords(schedule);
 		if (qtyPickedRecords.isEmpty())
@@ -399,7 +401,7 @@ public class ShipmentScheduleWithHUService
 
 		//
 		// Create necessary LUs (if any)
-		createLUs(schedule, quantityType);
+		createLUsIfNeeded(schedule, quantityType);
 
 		// retrieve the qty picked entries again, some new ones might have been created on LU creation
 		qtyPickedRecords = retrieveQtyPickedRecords(schedule);
@@ -430,15 +432,12 @@ public class ShipmentScheduleWithHUService
 
 	/**
 	 * @return records that do not have an {@link I_M_InOutLine} assigned to them and that also have
-	 *         <ul>
-	 *         <li>either no HU assigned to them, or</li>
-	 *         <li>HUs which are already picked or shipped assigned to them</li>
-	 *         </ul>
-	 *
-	 *         Hint: also take a look at {@link #isPickedOrShippedOrNoHU(I_M_ShipmentSchedule_QtyPicked)}.
-	 *
-	 * @task https://github.com/metasfresh/metasfresh/issues/759
-	 * @task https://github.com/metasfresh/metasfresh/issues/1174
+	 * <ul>
+	 * <li>either no HU assigned to them, or</li>
+	 * <li>HUs which are already picked or shipped assigned to them</li>
+	 * </ul>
+	 * <p>
+	 * Hint: also take a look at {@link #isPickedOrShippedOrNoHU(I_M_ShipmentSchedule_QtyPicked)}.
 	 */
 	private List<I_M_ShipmentSchedule_QtyPicked> retrieveQtyPickedRecords(final I_M_ShipmentSchedule schedule)
 	{
@@ -446,7 +445,7 @@ public class ShipmentScheduleWithHUService
 
 		final List<I_M_ShipmentSchedule_QtyPicked> unshippedHUs = shipmentScheduleAllocDAO.retrieveNotOnShipmentLineRecords(schedule, I_M_ShipmentSchedule_QtyPicked.class)
 				.stream()
-				.filter(r -> isPickedOrShippedOrNoHU(r))
+				.filter(this::isPickedOrShippedOrNoHU)
 				.collect(ImmutableList.toImmutableList());
 
 		// if we have an "undone" picking, i.e. positive and negative values sum up to zero, then return an empty list
@@ -465,10 +464,10 @@ public class ShipmentScheduleWithHUService
 
 	/**
 	 * Create LUs for given shipment schedule.
-	 *
+	 * <p>
 	 * After calling this method, all our TUs from QtyPicked records shall have an LU.
 	 */
-	private void createLUs(
+	private void createLUsIfNeeded(
 			@NonNull final I_M_ShipmentSchedule schedule,
 			@NonNull final M_ShipmentSchedule_QuantityTypeToUse quantityType)
 	{
@@ -505,10 +504,6 @@ public class ShipmentScheduleWithHUService
 	/**
 	 * Returns {@code true} if there is either no HU assigned to the given {@code schedQtyPicked} or if that HU is either picked or shipped.
 	 * If you don't see why it could possibly be already shipped, please take a look at issue <a href="https://github.com/metasfresh/metasfresh/issues/1174">#1174</a>.
-	 *
-	 * @param schedQtyPicked
-	 *
-	 * @task https://github.com/metasfresh/metasfresh/issues/1174
 	 */
 	private boolean isPickedOrShippedOrNoHU(final I_M_ShipmentSchedule_QtyPicked schedQtyPicked)
 	{
@@ -545,6 +540,7 @@ public class ShipmentScheduleWithHUService
 	private void createLUsForTUs(final I_M_ShipmentSchedule schedule, final List<I_M_ShipmentSchedule_QtyPicked> qtyPickedRecords)
 	{
 		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 
 		//
 		// Create HUContext from "schedule" because we want to get the Ctx and TrxName from there
@@ -595,6 +591,19 @@ public class ShipmentScheduleWithHUService
 				continue;
 			}
 
+			// skip LU creation when there is no LU Packing Instruction Version for this TU, eg.
+			// - Paloxe, as it can be placed directly in a truck, without a Pallet
+			// - any other TUs/LUs which are misconfigured (side effect)
+			{
+				final I_M_HU_PI_Version tuPIVersion = handlingUnitsBL.getEffectivePIVersion(tuHU);
+				final I_M_HU_PI tuPI = handlingUnitsDAO.getPackingInstructionById(HuPackingInstructionsId.ofRepoId(tuPIVersion.getM_HU_PI_ID()));
+				final I_M_HU_PI_Item luPIItem = handlingUnitsDAO.retrieveDefaultParentPIItem(tuPI, X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit, null);
+				if (luPIItem == null)
+				{
+					continue;
+				}
+			}
+
 			luLoader.addTU(tuHU);
 
 			// NOTE: after TU was added to an LU we expect this qtyPickedRecord to be updated and M_LU_HU_ID to be set
@@ -605,10 +614,8 @@ public class ShipmentScheduleWithHUService
 
 	/**
 	 * Create LUs for the whole QtyToDeliver from shipment schedule.
-	 *
+	 * <p>
 	 * Note: this method is not checking current QtyPicked records (because we assume there are none).
-	 *
-	 * @param schedule
 	 */
 	private void createLUsForQtyToDeliver(final I_M_ShipmentSchedule schedule)
 	{

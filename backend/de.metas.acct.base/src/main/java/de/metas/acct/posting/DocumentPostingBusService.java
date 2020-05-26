@@ -99,7 +99,7 @@ public class DocumentPostingBusService
 	}
 
 	@Autowired
-	public void registerHandlers(final Optional<List<DocumentPostRequestHandler>> handlers)
+	public void registerHandlers(@NonNull final Optional<List<DocumentPostRequestHandler>> handlers)
 	{
 		if (handlers.isPresent())
 		{
@@ -133,7 +133,7 @@ public class DocumentPostingBusService
 		}
 
 		@Override
-		public void onEvent(final IEventBus eventBus, final Event event)
+		public void onEvent(@NonNull final IEventBus eventBus, @NonNull final Event event)
 		{
 			final DocumentPostRequest request = extractDocumentPostRequest(event);
 
@@ -148,18 +148,18 @@ public class DocumentPostingBusService
 			}
 		}
 
-		private void handleRequest(final DocumentPostRequest request)
+		private void handleRequest(@NonNull final DocumentPostRequest request)
 		{
 			handler.handleRequest(request);
 		}
 
-		private IAutoCloseable switchCtx(final DocumentPostRequest request)
+		private IAutoCloseable switchCtx(@NonNull final DocumentPostRequest request)
 		{
 			final Properties ctx = createCtx(request);
 			return Env.switchContext(ctx);
 		}
 
-		private Properties createCtx(final DocumentPostRequest request)
+		private Properties createCtx(@NonNull final DocumentPostRequest request)
 		{
 			final Properties ctx = Env.newTemporaryCtx();
 			Env.setClientId(ctx, request.getClientId());

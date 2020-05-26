@@ -72,8 +72,8 @@ public abstract class TrxOnCommitCollectorFactory<CollectorType, ItemType>
 			//
 			// Get/create the transaction level collector
 			final AtomicBoolean itemWasCollected = new AtomicBoolean(false);
-			final String trxProperyName = getTrxProperyName();
-			final CollectorType collector = trx.getProperty(trxProperyName, new Supplier<CollectorType>()
+			final String trxPropertyName = getTrxProperyName();
+			final CollectorType collector = trx.getProperty(trxPropertyName, new Supplier<CollectorType>()
 			{
 				/** @return new collector */
 				@Override
@@ -95,7 +95,7 @@ public abstract class TrxOnCommitCollectorFactory<CollectorType, ItemType>
 								// Get the transaction level collector.
 								// The collector is removed to avoid double processing.
 								// If there is no collector, do nothing.
-								final CollectorType innerCollector = innerTrx.setProperty(trxProperyName, null);
+								final CollectorType innerCollector = innerTrx.setProperty(trxPropertyName, null);
 								if (innerCollector == null)
 								{
 									return;
@@ -113,7 +113,7 @@ public abstract class TrxOnCommitCollectorFactory<CollectorType, ItemType>
 								// Get the transaction level collector.
 								// The collector is removed to avoid double processing.
 								// If there is no collector, do nothing.
-								final CollectorType innerCollector = innerTrx.setProperty(trxProperyName, null);
+								final CollectorType innerCollector = innerTrx.setProperty(trxPropertyName, null);
 								if (innerCollector == null)
 								{
 									return;
@@ -142,9 +142,6 @@ public abstract class TrxOnCommitCollectorFactory<CollectorType, ItemType>
 
 	/**
 	 * Extracts and returns the trxName to be used from given item
-	 *
-	 * @param item
-	 * @return trxName
 	 */
 	protected abstract String extractTrxNameFromItem(final ItemType item);
 
@@ -160,9 +157,6 @@ public abstract class TrxOnCommitCollectorFactory<CollectorType, ItemType>
 
 	/**
 	 * Adds the given item to collector.
-	 *
-	 * @param collector
-	 * @param item
 	 */
 	protected abstract void collectItem(final CollectorType collector, final ItemType item);
 
@@ -187,5 +181,4 @@ public abstract class TrxOnCommitCollectorFactory<CollectorType, ItemType>
 	{
 		// nothing at this level
 	}
-
 }

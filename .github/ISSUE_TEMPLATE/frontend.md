@@ -2,11 +2,10 @@
 name: Frontend
 about: This template shall help with our standard issue workflow
 title: ''
-labels: ''
+labels: frontend
 assignees: ''
 
 ---
-
 
 ### Is this a bug or feature request?
 

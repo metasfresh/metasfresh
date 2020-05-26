@@ -47,7 +47,7 @@ class Container extends PureComponent {
       hideHeader,
       handleDeletedStatus,
       dropzoneFocused,
-      notfound,
+      notFound,
       rawModal,
       modal,
       pluginModal,
@@ -105,7 +105,7 @@ class Container extends PureComponent {
               breadcrumb,
               dataId,
               dropzoneFocused,
-              notfound,
+              notFound,
               docId,
               editmode,
               handleEditModeToggle,
@@ -252,7 +252,7 @@ class Container extends PureComponent {
  * @prop {*} modal
  * @prop {string} modalDescription
  * @prop {string} modalTitle
- * @prop {bool} notfound
+ * @prop {bool} notFound
  * @prop {*} noMargin
  * @prop {*} pluginComponents
  * @prop {object} pluginModal
@@ -296,7 +296,7 @@ Container.propTypes = {
   modalDescription: PropTypes.string,
   modalTitle: PropTypes.string,
   noMargin: PropTypes.any,
-  notfound: PropTypes.bool,
+  notFound: PropTypes.bool,
   pluginModal: PropTypes.object,
   pluginComponents: PropTypes.any,
   processStatus: PropTypes.any,
@@ -324,7 +324,7 @@ const mapStateToProps = (state, { windowId }) => {
   }
 
   return {
-    notfound: master.notfound,
+    notFound: master.notFound,
     connectionError: state.windowHandler.connectionError || false,
     pluginComponents: state.pluginsHandler.components,
     pluginModal: state.windowHandler.pluginModal,

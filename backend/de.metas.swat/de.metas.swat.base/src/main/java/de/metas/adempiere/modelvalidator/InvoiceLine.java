@@ -89,12 +89,10 @@ public class InvoiceLine implements ModelValidator
 	@Override
 	public String modelChange(final PO po, int type)
 	{
-
 		assert po instanceof MInvoiceLine : po;
 
 		if (type == TYPE_BEFORE_CHANGE || type == TYPE_BEFORE_NEW)
 		{
-
 			final IInvoiceLineBL invoiceLineBL = Services.get(IInvoiceLineBL.class);
 			final I_C_InvoiceLine il = InterfaceWrapperHelper.create(po, I_C_InvoiceLine.class);
 
@@ -124,41 +122,6 @@ public class InvoiceLine implements ModelValidator
 				il.saveEx();
 			}
 		}
-		// 02362: begin
-		else if (type == TYPE_AFTER_CHANGE)
-		{
-			// This code is wrong because it changes il, but is executed after il was saved.
-			// So this change won't be in the persisted il anyways.
-			// TODO: check if this code is "accidentally" important (by setting the discount to a value that is then used by a *different* model interceptor),
-			// or if we can just drop it.
-			final I_C_InvoiceLine il = InterfaceWrapperHelper.create(po, I_C_InvoiceLine.class);
-			if (!il.isProcessed())
-			{
-				final BigDecimal PriceList = il.getPriceList();
-				final BigDecimal PriceActual = il.getPriceActual();
-				BigDecimal Discount;
-				if (PriceList.intValue() == 0)
-				{
-					Discount = Env.ZERO;
-				}
-				else
-				{
-					Discount = new BigDecimal(
-							(PriceList.doubleValue() - PriceActual.doubleValue())
-									/ PriceList.doubleValue() * 100.0);
-					if (Discount.scale() > 2)
-					{
-						Discount = Discount.setScale(2, BigDecimal.ROUND_HALF_UP);
-					}
-				}
-				if (Discount.scale() > 2)
-				{
-					Discount = Discount.setScale(2, BigDecimal.ROUND_HALF_UP);
-				}
-				il.setDiscount(Discount);
-			}
-		}
-		// 02362: end
 		return null;
 	}
 

@@ -26,6 +26,7 @@ import java.util.List;
 
 import java.util.Properties;
 
+import org.adempiere.ad.trx.api.ITrxListenerManager;
 import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
@@ -62,7 +63,7 @@ import lombok.NonNull;
 import lombok.ToString;
 
 @ToString(of = { "_force", "_clientId", "_documentRef", "_postImmediate", "_postWithoutServer", "_failOnError" })
-/* package */class PostingRequestBuilder implements IPostingRequestBuilder
+		/* package */class PostingRequestBuilder implements IPostingRequestBuilder
 {
 	public static final Topic NOTIFICATIONS_TOPIC = Topic.remote("de.metas.acct.UserNotifications");
 
@@ -345,7 +346,7 @@ import lombok.ToString;
 
 	/**
 	 * Method called when the posting is complete (with or without errors).
-	 *
+	 * <p>
 	 * This method will set the {@link #isPosted()} flag and it will also throw the posting exception in case is configured to do so
 	 *
 	 * @throws PostingExecutionException in case there was a posting exception and {@link #isFailOnError()}
@@ -377,27 +378,29 @@ import lombok.ToString;
 	}
 
 	/**
-	 * Execute the posting after given transaction is commited.
-	 * If the transaction was already commited, the posting is executed right away (synchronously).
+	 * Execute the posting after transaction is committed.
+	 * If the transaction was already committed, the posting is executed right away (synchronously).
 	 *
-	 * @param trxName
 	 * @param postRunnable runnable that shall do the actual posting; it is assumed that the runnable WILL NOT throw any exceptions.
 	 */
 	private final void postAfterTrxCommit(@NonNull final Runnable postRunnable)
 	{
-		trxManager.getCurrentTrxListenerManagerOrAutoCommit()
+		final ITrxListenerManager trxListenerManager = trxManager.getCurrentTrxListenerManagerOrAutoCommit();
+		trxListenerManager
 				.newEventListener(TrxEventTiming.AFTER_COMMIT)
-				.invokeMethodJustOnce(false) // invoking the method on *every* commit, because that's how it was and I can't check now if it's really needed
-				.registerHandlingMethod(innerTrx -> {
-					try
-					{
-						postRunnable.run();
-					}
-					catch (Exception ex)
-					{
-						setPostedError(ex);
-					}
-					postingComplete();
-				});
+				.registerHandlingMethod(innerTrx -> invokeRunnable(postRunnable));
+	}
+
+	private void invokeRunnable(@NonNull final Runnable postRunnable)
+	{
+		try
+		{
+			postRunnable.run();
+		}
+		catch (Exception ex)
+		{
+			setPostedError(ex);
+		}
+		postingComplete();
 	}
 }

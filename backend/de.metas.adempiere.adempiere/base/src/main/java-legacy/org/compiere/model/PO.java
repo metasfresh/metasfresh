@@ -287,6 +287,7 @@ public abstract class PO
 
 	/** Logger */
 	protected transient final Logger log = LogManager.getLogger(getClass());
+
 	/** Static Logger */
 	private static final Logger s_log = LogManager.getLogger(PO.class);
 
@@ -320,7 +321,7 @@ public abstract class PO
 	/**
 	 * Flag to indicate if this object is stale and needs to be reloaded before any get/set operation
 	 *
-	 * @see http://dewiki908/mediawiki/index.php/01537:_Speed_optimizations_for_new_record_saving_%282011052610000028%29
+	 * Also see http://dewiki908/mediawiki/index.php/01537:_Speed_optimizations_for_new_record_saving_%282011052610000028%29
 	 */
 	private boolean m_stale = false;
 
@@ -612,10 +613,9 @@ public abstract class PO
 	}
 
 	/**
-	 * Get Logger
-	 *
-	 * @return logger
+	 * @return logger that is still used in some legacy classes
 	 */
+	@Deprecated
 	public final Logger get_Logger()
 	{
 		return log;
@@ -2616,21 +2616,12 @@ public abstract class PO
 
 	/**
 	 * Get Translation of column
-	 *
-	 * @param ctx context
-	 * @param columnName
-	 * @return translation
 	 */
 	public final String get_Translation(final String columnName)
 	{
 		return get_Translation(columnName, Env.getAD_Language(getCtx()));
 	}
 
-	/**
-	 * Is new record
-	 *
-	 * @return true if new
-	 */
 	public final boolean is_new()
 	{
 		return m_createNew;
@@ -3424,7 +3415,7 @@ public abstract class PO
 		{
 			if (log.isDebugEnabled())
 			{
-				log.debug("[" + m_trxName + "] - " + p_info.getTableName() + "." + where);
+				log.trace("PO has changes; tableNAme={}; whereClause={}", p_info.getTableName(), where);
 			}
 
 			if (!updated) 	// Updated not explicitly set

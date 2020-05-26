@@ -1,11 +1,16 @@
-package de.metas.inoutcandidate.process;
+package de.metas.payment.paymentterm.impl;
 
-import de.metas.inoutcandidate.async.UpdateInvalidShipmentSchedulesWorkpackageProcessor;
-import de.metas.process.JavaProcess;
+import javax.annotation.Nullable;
+
+import de.metas.organization.OrgId;
+import de.metas.util.lang.ExternalId;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
 
 /*
  * #%L
- * de.metas.swat.base
+ * de.metas.business
  * %%
  * Copyright (C) 2020 metas GmbH
  * %%
@@ -24,16 +29,24 @@ import de.metas.process.JavaProcess;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-/**
- * Enqueue any M_ShipmentSchedules which are flagged for recomputation to {@link UpdateInvalidShipmentSchedulesWorkpackageProcessor}.
- * This is usually done automatically, but in some debug situations, you might have inserted {@code M_ShipmentSchedule_Recompute} records manually.
- */
-public class M_ShipmentSchedule_UpdateAsync extends JavaProcess
+
+@Value
+public class PaymentTermQuery
 {
-	@Override
-	protected String doIt()
+	OrgId orgId;
+
+	ExternalId externalId;
+
+	String value;
+
+	@Builder(toBuilder = true)
+	private PaymentTermQuery(
+			@NonNull final OrgId orgId,
+			@Nullable final ExternalId externalId,
+			@Nullable final String value)
 	{
-		UpdateInvalidShipmentSchedulesWorkpackageProcessor.schedule();
-		return MSG_OK;
+		this.orgId = orgId;
+		this.externalId = externalId;
+		this.value = value;
 	}
 }
