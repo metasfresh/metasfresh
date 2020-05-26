@@ -1,6 +1,5 @@
 import { reduce, cloneDeep } from 'lodash';
 import * as types from '../constants/ActionTypes';
-import { UPDATE_TABLE_SELECTION } from '../constants/actions/TableTypes';
 
 import { getView } from '../reducers/viewHandler';
 
@@ -38,23 +37,36 @@ export function deleteTable(id) {
   };
 }
 
-// TODO: Legacy version. Remove once we switch to rendering tables from redux
-export function setActiveSort(data) {
+/**
+ * @method setActiveSort
+ * @summary Change the value of the `activeSort` setting for specified table
+ * @todo rename to `setActiveSort` once we switch to tables driven by redux
+ */
+export function setActiveSort(id, active) {
   return {
     type: types.SET_ACTIVE_SORT,
-    payload: data,
+    payload: { id, active },
+  };
+}
+
+
+/**
+ * Update table selection - select items
+ */
+export function updateTableSelection({ tableId, ids }) {
+  return {
+    type: types.UPDATE_TABLE_SELECTION,
+    payload: { tableId, selection: ids },
   };
 }
 
 /**
- * @method setActiveSortNEW
- * @summary Change the value of the `activeSort` setting for specified table
- * @todo rename to `setActiveSort` once we switch to tables driven by redux
+ * Toggle table rows
  */
-export function setActiveSortNEW(id, active) {
+export function collapseTableRows({ tableId, collapsed, node, keyProperty }) {
   return {
-    type: types.SET_ACTIVE_SORT_NEW,
-    payload: { id, active },
+    type: types.COLLAPSE_TABLE_ROWS,
+    payload: { tableId, keyProperty, collapsed, node },
   };
 }
 
@@ -202,15 +214,5 @@ export function updateTabTable(tableId, tableResponse) {
     }
 
     return Promise.resolve(false);
-  };
-}
-
-/**
- * Update table selection - select items
- */
-export function updateTableSelection({ tableId, ids }) {
-  return {
-    type: UPDATE_TABLE_SELECTION,
-    payload: { tableId, selection: ids },
   };
 }

@@ -4,6 +4,8 @@ import { createSelector } from 'reselect';
 
 import * as types from '../constants/ActionTypes';
 
+// const NO_SELECTION = [];
+
 export const initialTableState = {
   windowType: null,
   viewId: null,
@@ -75,6 +77,15 @@ export const getTable = createSelector(
   (table) => table
 );
 
+const getSelectionData = (state, tableId) => {
+  return getTable(state, tableId).selected;
+};
+
+export const getSelection = createSelector(
+  [getSelectionData],
+  (items) => items
+);
+
 const reducer = produce((draftState, action) => {
   switch (action.type) {
     // CRUD
@@ -127,12 +138,58 @@ const reducer = produce((draftState, action) => {
     }
 
     case types.COLLAPSE_TABLE_ROWS: {
-      const { tableId, keyProperty } = action.payload;
+      const { tableId, keyProperty, node, collapsed } = action.payload;
+      // // TODO: This should be an action creator `collapseRows` or something
+      // handleRowCollapse = (node, collapsed) => {
+      //   const { keyProperty } = this.props;
+      //   const {
+      //     collapsedParentsRows,
+      //     collapsedRows,
+      //     collapsedArrayMap,
+      //   } = this.state;
 
+      //   this.setState({
+      //     collapsedArrayMap: collapsedMap(node, collapsed, collapsedArrayMap),
+      //   });
+
+      //   if (collapsed) {
+      //     this.setState((prev) => ({
+      //       collapsedParentsRows: update(prev.collapsedParentsRows, {
+      //         $splice: [[prev.collapsedParentsRows.indexOf(node[keyProperty]), 1]],
+      //       }),
+      //     }));
+      //   } else {
+      //     if (collapsedParentsRows.indexOf(node[keyProperty]) > -1) return;
+
+      //     this.setState((prev) => ({
+      //       collapsedParentsRows: prev.collapsedParentsRows.concat(
+      //         node[keyProperty]
+      //       ),
+      //     }));
+      //   }
+
+      //   node.includedDocuments &&
+      //     node.includedDocuments.map((node) => {
+      //       if (collapsed) {
+      //         this.setState((prev) => ({
+      //           collapsedRows: update(prev.collapsedRows, {
+      //             $splice: [[prev.collapsedRows.indexOf(node[keyProperty]), 1]],
+      //           }),
+      //         }));
+      //       } else {
+      //         if (collapsedRows.indexOf(node[keyProperty]) > -1) return;
+
+      //         this.setState((prev) => ({
+      //           collapsedRows: prev.collapsedRows.concat(node[keyProperty]),
+      //         }));
+      //         node.includedDocuments && this.handleRowCollapse(node, collapsed);
+      //       }
+      //     });
+      // };
       return draftState;
     }
 
-    case types.SET_ACTIVE_SORT_NEW: {
+    case types.SET_ACTIVE_SORT: {
       const { id, active } = action.payload;
 
       draftState[id].activeSort = active;

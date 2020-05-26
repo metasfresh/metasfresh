@@ -12,7 +12,7 @@ import {
   updateGridTable,
   updateTabTable,
   deleteTable,
-  setActiveSortNEW,
+  setActiveSort,
 } from '../../actions/TableActions';
 import * as ACTION_TYPES from '../../constants/ActionTypes';
 
@@ -51,7 +51,7 @@ describe('TableActions general', () => {
     expect(action.payload).toHaveProperty('id', payload.id);
   });
 
-  it(`dispatches 'SET_ACTIVE_SORT_NEW' action when setting active sort`, () => {
+  it(`dispatches 'SET_ACTIVE_SORT' action when setting active sort`, () => {
     const { windowType, viewId } = gridProps.props1;
     const layoutResponse = gridLayoutFixtures.layout1;
     const id = getTableId({ windowType, viewId });
@@ -70,10 +70,10 @@ describe('TableActions general', () => {
       active: true,
     };
     const expectedActions = [
-      { type: ACTION_TYPES.SET_ACTIVE_SORT_NEW, payload },
+      { type: ACTION_TYPES.SET_ACTIVE_SORT, payload },
     ];
 
-    store.dispatch(setActiveSortNEW(id, payload.active));
+    store.dispatch(setActiveSort(id, payload.active));
     expect(store.getActions()).toEqual(expect.arrayContaining(expectedActions));
   });
 });

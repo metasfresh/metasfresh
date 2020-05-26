@@ -1,14 +1,8 @@
 /**
  * @constant
- * @type {string} ToDo: Description for the constant.
+ * @type {string} Toggles `activeSort` in table
  */
 export const SET_ACTIVE_SORT = 'SET_ACTIVE_SORT';
-
-/**
- * @constant
- * @type {string} Temporary. Will replace `SET_ACTIVE_SORT`
- */
-export const SET_ACTIVE_SORT_NEW = 'SET_ACTIVE_SORT_NEW';
 
 /**
  * @constant

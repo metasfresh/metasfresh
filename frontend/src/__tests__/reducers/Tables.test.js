@@ -123,7 +123,7 @@ describe('Tables reducer', () => {
     });
 
     const updateAction = {
-      type: ACTION_TYPES.SET_ACTIVE_SORT_NEW,
+      type: ACTION_TYPES.SET_ACTIVE_SORT,
       payload: {
         id,
         active: true,
