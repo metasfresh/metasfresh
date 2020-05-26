@@ -1,14 +1,15 @@
 import React from 'react';
-import { shallow, render } from 'enzyme';
+import { shallow, render, mount } from 'enzyme';
 import renderer from 'react-test-renderer';
 import tableProps from '../../../../test_setup/fixtures/table/table.json';
 import Table from '../../../components/table/Table';
+import { ShortcutProvider } from '../../../components/keyshortcuts/ShortcutProvider';
 import { initialState as appHandlerState } from '../../../reducers/appHandler';
 import { initialState as windowHandlerState } from '../../../reducers/windowHandler';
 import { Provider } from 'react-redux';
 import configureStore from 'redux-mock-store';
 import merge from 'merge';
-import DataLayoutWrapper from '../../../components/DataLayoutWrapper';
+import keymap from '../../../shortcuts/keymap';
 
 const mockStore = configureStore([]);
 
@@ -92,28 +93,29 @@ describe('Table', () => {
     expect(wrapperProps.stopPropagation).toEqual(false);
   });
 
-  // it('renders without errors with store data', () => {
-  //   const initialState = createStore({
-  //     windowHandler: {
-  //       allowShortcut: true,
-  //       modal: {
-  //         visible: false,
-  //       },
-  //     },
-  //   });
-  //   const store = mockStore(initialState);
-  //   tableProps.rowData = rowData;
-  //   const wrapper = shallow(
-  //     <Provider store={store}>
-  //       <Table {...tableProps} />
-  //     </Provider>
-  //   );
-  //   const html = wrapper.html();
-  //   console.log(html);
+  it('renders without errors with store data', () => {
+    const initialState = createStore({
+      windowHandler: {
+        allowShortcut: true,
+        modal: {
+          visible: false,
+        },
+      },
+    });
+    const store = mockStore(initialState);
+    tableProps.rowData = rowData;
+    const wrapper = mount(
+      <ShortcutProvider hotkeys={{}} keymap={{}}>
+        <Provider store={store}>
+          <Table {...tableProps} />
+        </Provider>
+      </ShortcutProvider>
+    );
+    const html = wrapper.html();
+    console.log(html);
 
-  //   expect(html).toContain('something');
-
-  // });
-
-
+    expect(html).toContain(
+      'table table-bordered-vertically table-striped js-table table-read-only'
+    );
+  });
 });
