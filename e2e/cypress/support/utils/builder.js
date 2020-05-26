@@ -25,7 +25,7 @@ export class Builder {
 
     let priceListVersion;
     cy.fixture('price/pricelistversion.json').then(priceListVersionJson => {
-      priceListVersion = Object.assign(new PriceListVersion(), priceListVersionJson).setName(priceListVersionName);
+      priceListVersion = Object.assign(new PriceListVersion(), priceListVersionJson);
     });
 
     cy.fixture('price/pricelist.json').then(pricelistJson => {
