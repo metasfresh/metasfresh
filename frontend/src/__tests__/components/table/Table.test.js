@@ -112,7 +112,6 @@ describe('Table', () => {
       </ShortcutProvider>
     );
     const html = wrapper.html();
-    console.log(html);
 
     expect(html).toContain(
       'table table-bordered-vertically table-striped js-table table-read-only'
