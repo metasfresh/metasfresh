@@ -207,20 +207,20 @@ Cypress.Commands.add('writeIntoStringField', (fieldName, stringValue, modal, rew
   const patchUrlPattern = rewriteUrl || RewriteURL.Generic; // todo @TheBestPessimist: get rid of rewriteUrl parameter everywhere and just use "generic". it's useless in the way we're using it now.
   cy.log(`writeIntoStringField - fieldName=${fieldName}; stringValue=${stringValue}; modal=${modal}; patchUrlPattern=${patchUrlPattern}`);
 
+  const path = createFieldPath(fieldName, modal);
+  cy.get(path)
+    .find('input')
+    .type('{selectall}')
+    .type(stringValue);
+
   if (!noRequest) {
     cy.server();
     cy.route('PATCH', new RegExp(patchUrlPattern)).as(aliasName);
   }
 
-  if (stringValue) {
-    const path = createFieldPath(fieldName, modal);
-    cy.get(path)
-      .find('input')
-      .type('{selectall}')
-      .wait(500)
-      .type(stringValue)
-      .type('{enter}');
-  }
+  cy.get(path)
+    .type('{enter}');
+
   if (!noRequest) {
     cy.waitForFieldValue(`@${aliasName}`, fieldName, expectedPatchValue);
   }
