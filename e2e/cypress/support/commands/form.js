@@ -203,7 +203,7 @@ Cypress.Commands.add('selectOffsetDateViaPicker', (fieldName, dayOffset, modal) 
  */
 Cypress.Commands.add('writeIntoStringField', (fieldName, stringValue, modal, rewriteUrl, noRequest) => {
   const aliasName = `writeIntoStringField-${fieldName}-${new Date().getTime()}`;
-  const expectedPatchValue = stringValue ? removeSubstringsWithCurlyBrackets(stringValue) : stringValue;
+  const expectedPatchValue = removeSubstringsWithCurlyBrackets(`${stringValue}`);
   const patchUrlPattern = rewriteUrl || RewriteURL.Generic; // todo @TheBestPessimist: get rid of rewriteUrl parameter everywhere and just use "generic". it's useless in the way we're using it now.
   cy.log(`writeIntoStringField - fieldName=${fieldName}; stringValue=${stringValue}; modal=${modal}; patchUrlPattern=${patchUrlPattern}`);
 
@@ -240,7 +240,7 @@ Cypress.Commands.add('writeIntoTextField', (fieldName, stringValue, modal = fals
   cy.log(`writeIntoTextField - fieldName=${fieldName}; stringValue=${stringValue}; modal=${modal}`);
 
   const aliasName = `writeIntoTextField-${fieldName}-${new Date().getTime()}`;
-  const expectedPatchValue = stringValue ? removeSubstringsWithCurlyBrackets(stringValue) : stringValue;
+  const expectedPatchValue = removeSubstringsWithCurlyBrackets(`${stringValue}`);
   // in the default pattern we want to match URLs that do *not* end with "/NEW"
   const patchUrlPattern = rewriteUrl || '/rest/api/window/.*[^/][^N][^E][^W]$';
 
@@ -278,7 +278,7 @@ Cypress.Commands.add('writeIntoLookupListField', (fieldName, partialValue, expec
 
   const aliasName = `writeIntoLookupListField-${fieldName}-${new Date().getTime()}`;
   //the value to wait for would not be e.g. "Letter", but {key: "540408", caption: "Letter"}
-  const expectedPatchValue = partialValue ? removeSubstringsWithCurlyBrackets(partialValue) : partialValue;
+  const expectedPatchValue = removeSubstringsWithCurlyBrackets(`${partialValue}`);
   // in the default pattern we want to match URLs that do *not* end with "/NEW"
   const patchUrlPattern = rewriteUrl || '/rest/api/window';
   if (!skipRequest) {
