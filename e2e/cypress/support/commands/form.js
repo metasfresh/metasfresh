@@ -285,20 +285,17 @@ Cypress.Commands.add('writeIntoLookupListField', (fieldName, partialValue, expec
     cy.server();
     cy.route('PATCH', new RegExp(patchUrlPattern)).as(aliasName);
   }
-  if (partialValue) {
-    cy.get(path).within(el => {
-      if (el.find('.lookup-widget-wrapper input').length) {
-        return (
-          cy
-            .get('input')
-            // we can't use `clear` here as sometimes it triggers request to the server
-            // and then the whole flow becomes flaky
-            .wait(500)
-            .type('{selectall}')
-            .wait(500)
-            .type(partialValue)
-        );
-      }
+  cy.get(path).within(el => {
+    if (el.find('.lookup-widget-wrapper input').length) {
+      return (
+        cy
+          .get('input')
+          // we can't use `clear` here as sometimes it triggers request to the server
+          // and then the whole flow becomes flaky
+          .type('{selectall}')
+          .type(partialValue)
+      );
+    }
 
       // this is extremely fiddly when selecting from a combo field such as bpartner address.
       // it will work locally, but most of the times will fail in jenkins.
@@ -306,13 +303,12 @@ Cypress.Commands.add('writeIntoLookupListField', (fieldName, partialValue, expec
       return cy.get('.lookup-dropdown').click();
     });
 
-    cy.get('.input-dropdown-list').should('exist');
-    cy.contains('.input-dropdown-list-option', expectedListValue).click(/*{ force: true }*/);
-    if (!skipRequest) {
-      cy.waitForFieldValue(`@${aliasName}`, fieldName, expectedPatchValue, typeList /*expectEmptyRequest*/);
-    }
-    cy.get('.input-dropdown-list .input-dropdown-list-header').should('not.exist');
+  cy.get('.input-dropdown-list').should('exist');
+  cy.contains('.input-dropdown-list-option', expectedListValue).click();
+  if (!skipRequest) {
+    cy.waitForFieldValue(`@${aliasName}`, fieldName, expectedPatchValue, typeList /*expectEmptyRequest*/);
   }
+  cy.get('.input-dropdown-list .input-dropdown-list-header').should('not.exist');
 });
 
 /**
