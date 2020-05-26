@@ -166,7 +166,7 @@ class Window extends PureComponent {
    */
   getTabs = (tabs, dataId, tabsArray, tabsByIds, parentTab) => {
     const { windowId } = this.props.layout;
-    const { rowData, newRow, tabsInfo, sort, allowShortcut } = this.props;
+    const { newRow, tabsInfo, sort, allowShortcut } = this.props;
     const { fullScreen, isSectionExpandTooltipShow } = this.state;
 
     tabs.forEach((elem) => {
@@ -174,7 +174,6 @@ class Window extends PureComponent {
         tabId,
         caption,
         description,
-        elements,
         sections,
         internalName,
         emptyResultText,
@@ -204,7 +203,6 @@ class Window extends PureComponent {
             {...{
               caption,
               description,
-              rowData,
               tabId,
               windowId,
               sort,
@@ -251,7 +249,6 @@ class Window extends PureComponent {
             {...{
               caption,
               description,
-              rowData,
               tabId,
               windowId,
               sort,
@@ -261,7 +258,6 @@ class Window extends PureComponent {
             entity="window"
             keyProperty="rowId"
             key={tabId}
-            cols={elements}
             orderBy={defaultOrderBys}
             docId={dataId}
             emptyText={emptyResultText}

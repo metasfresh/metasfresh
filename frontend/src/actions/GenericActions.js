@@ -32,6 +32,7 @@ export function createInstance(entity, docType, docId, tabId, subentity) {
 //   );
 // }
 
+// TODO: This should be moved to the api
 export function completeRequest(
   entity,
   docType,
@@ -50,6 +51,7 @@ export function completeRequest(
   );
 }
 
+// TODO: This should be moved to the api
 export function autocompleteRequest({
   attribute,
   docId,
@@ -73,6 +75,7 @@ export function autocompleteRequest({
   `);
 }
 
+// TODO: This should be moved to the api
 export function autocompleteModalRequest({
   docId,
   docType,
@@ -91,6 +94,7 @@ export function autocompleteModalRequest({
   `);
 }
 
+// TODO: This should be moved to the api
 export function dropdownRequest({
   attribute,
   docId,
@@ -113,6 +117,7 @@ export function dropdownRequest({
   }${propertyName}/dropdown`);
 }
 
+// TODO: This should be moved to the api
 export function dropdownModalRequest({
   windowId,
   entity,
@@ -126,6 +131,7 @@ export function dropdownModalRequest({
     }/${entity}/${windowId}/${viewId}/${rowId}/edit/${fieldName}/dropdown`);
 }
 
+// TODO: This should be moved to the api
 export function deleteRequest(
   entity,
   docType,

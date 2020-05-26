@@ -345,11 +345,8 @@ export default class DocumentList extends Component {
               <Table
                 entity="documentView"
                 ref={this.setTableRef}
-                rowData={rowData}
-                cols={layout.elements}
                 collapsible={layout.collapsible}
                 expandedDepth={layout.expandedDepth}
-                tabId={'1'}
                 windowId={windowType}
                 emptyText={layout.emptyResultText}
                 emptyHint={layout.emptyResultHint}
@@ -363,7 +360,9 @@ export default class DocumentList extends Component {
                 onSelectionChanged={updateParentSelectedIds}
                 mainTable={true}
                 updateDocList={onFetchLayoutAndData}
+
                 sort={onSortData}
+
                 tabIndex={0}
                 indentSupported={layout.supportTree}
                 disableOnClickOutside={clickOutsideLock}

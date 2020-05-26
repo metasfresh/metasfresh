@@ -4,7 +4,7 @@ import uuid from 'uuid/v4';
 
 const EMPTY_ARRAY = [];
 
-const propTypes = {
+export const containerPropTypes = {
   // from @connect
   dispatch: PropTypes.func.isRequired,
 
@@ -22,6 +22,16 @@ const propTypes = {
   columns: PropTypes.array.isRequired,
   selected: PropTypes.array.isRequired,
 };
+
+export const componentPropTypes = {
+  ...containerPropTypes,
+  // onSelect={this.handleSelect}
+  // onSelectOne={this.handleSelectOne}
+  // onSelectRange={this.handleSelectRange}
+  // onSelectAll={this.handleSelectAll}
+  // onDeselectAll={this.handleDeselectAll}
+  // onDeselect={this.handleDeselect}
+}
 
 export function constructorFn(props) {
   const { defaultSelected, rowEdited } = props;
@@ -121,5 +131,3 @@ export function shouldRenderColumn(column) {
 
   return column.restrictToMediaTypes.indexOf(mediaType) !== -1;
 }
-
-export { propTypes };

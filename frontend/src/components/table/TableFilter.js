@@ -136,6 +136,7 @@ class TableFilter extends Component {
     );
   };
 
+  // TODO: Rewrite this to not create shortcut actions on each render
   generateShortcuts = () => {
     let { actions } = this.props;
     const shortcutActions = [];
