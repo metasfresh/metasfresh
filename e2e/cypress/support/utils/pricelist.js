@@ -62,7 +62,7 @@ export class PriceList {
     describe(`Create new PriceList ${priceList.name}`, function() {
       cy.visitWindow('540321', 'NEW', 'priceListObj');
       cy.writeIntoStringField('Name', priceList.name);
-      cy.selectInListField('C_Country_ID', priceList.country);
+      cy.writeIntoLookupListField('C_Country_ID', priceList.country, priceList.country, false, false, null, true);
       cy.selectInListField('C_Currency_ID', priceList.currency);
       cy.writeIntoStringField('PricePrecision', priceList.pricePrecision);
       cy.writeIntoLookupListField('M_PricingSystem_ID', priceList.priceSystem, priceList.priceSystem);
