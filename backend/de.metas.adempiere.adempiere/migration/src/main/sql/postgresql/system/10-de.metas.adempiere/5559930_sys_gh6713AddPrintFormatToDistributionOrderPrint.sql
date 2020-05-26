@@ -1,13 +1,3 @@
--- 2020-05-25T12:59:55.337Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE AD_Process SET JasperReport='@PREFIX@de/metas/docs/sales/distributionorder/report.jasper',Updated=TO_TIMESTAMP('2020-05-25 15:59:55','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=53044
-;
-
--- 2020-05-25T13:19:32.859Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE AD_Process SET Type='Java',Updated=TO_TIMESTAMP('2020-05-25 16:19:32','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=53044
-;
-
 -- 2020-05-25T14:01:41.339Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 INSERT INTO AD_Process (AccessLevel,AD_Client_ID,AD_Org_ID,AD_Process_ID,AllowProcessReRun,Classname,Created,CreatedBy,EntityType,IsActive,IsApplySecuritySettings,IsBetaFunctionality,IsDirectPrint,IsNotifyUserAfterExecution,IsOneInstanceOnly,IsReport,IsServerProcess,IsTranslateExcelHeaders,IsUseBPartnerLanguage,JasperReport,Name,RefreshAllAfterExecution,ShowHelp,Type,Updated,UpdatedBy,Value) VALUES ('3',0,0,584695,'N','de.metas.report.jasper.client.process.JasperReportStarter',TO_TIMESTAMP('2020-05-25 17:01:41','YYYY-MM-DD HH24:MI:SS'),100,'U','Y','N','Y','Y','N','N','Y','N','Y','Y','@PREFIX@de/metas/docs/sales/distributionorder/report.jasper','Distributionaufstrag (Jasper)','N','N','JasperReportsSQL',TO_TIMESTAMP('2020-05-25 17:01:41','YYYY-MM-DD HH24:MI:SS'),100,'Distributionaufstrag (Jasper)')

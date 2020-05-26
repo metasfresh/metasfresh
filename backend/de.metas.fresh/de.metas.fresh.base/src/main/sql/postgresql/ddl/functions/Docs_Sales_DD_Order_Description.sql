@@ -8,7 +8,7 @@ CREATE TABLE de_metas_endcustomer_fresh_reports.Docs_Sales_DD_Order_Description
 (
     Description Character Varying(255),
     DocumentNo  Character Varying(30),
-    --     MovementDate Timestamp WITHOUT TIME ZONE,
+    dateordered  Timestamp WITHOUT TIME ZONE,
     Reference   Character Varying(40),
     BP_Value    Character Varying(40),
     Cont_Name   Character Varying(40),
@@ -32,7 +32,7 @@ AS
 $$
 SELECT ddo.description                       AS description,
        ddo.documentno                        AS documentno,
-       -- 	ddo.movementdate,
+       ddo.dateordered,
        ddo.poreference                       AS reference,
        bp.value                              AS bp_value,
        Coalesce(cogr.name, '') ||

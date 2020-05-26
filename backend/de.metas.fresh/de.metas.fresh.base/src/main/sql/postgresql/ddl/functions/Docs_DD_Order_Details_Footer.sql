@@ -1,4 +1,4 @@
---DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_DD_Order_Details_Footer( IN DD_Order_ID numeric, IN AD_Language Character Varying (6) );
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_DD_Order_Details_Footer( IN DD_Order_ID numeric, IN AD_Language Character Varying (6) );
 CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_DD_Order_Details_Footer(IN DD_Order_ID numeric,
                                                                                            IN AD_Language Character Varying(6))
 
@@ -52,11 +52,11 @@ FROM (
          ---------------------------------------------------------------------------------------------
          --Descriptionbottom
          SELECT ddo.description AS textleft,
-                NULL                  AS textcenter,
-                NULL                  AS language,
-                ddo.dd_order_id       AS dd_order_id,
-                'descr'               AS tag,
-                2                     AS pozition
+                NULL            AS textcenter,
+                NULL            AS language,
+                ddo.dd_order_id AS dd_order_id,
+                'descr'         AS tag,
+                2               AS pozition
          FROM dd_order ddo
          WHERE ddo.isActive = 'Y'
      ) footer

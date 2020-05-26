@@ -6,18 +6,17 @@ DROP TABLE IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Sales_DD_Order_Root
 
 CREATE TABLE de_metas_endcustomer_fresh_reports.Docs_Sales_DD_Order_Root
 (
-    AD_User_ID                           numeric(10, 0),
-    AD_Org_ID                            numeric(10, 0),
-    DD_Order_ID                          numeric(10, 0),
-    DocStatus                            Character(2),
-    C_BPartner_ID                        numeric(10, 0),
-    C_BPartner_Location_ID               numeric(10, 0),
-    PrintName                            Character Varying(60),
-    AD_Language                          Text,
-    IsHidePackingMaterialInShipmentPrint Character(1),
-    email                                Character Varying(50),
-    displayhu                            text,
-    issourcesupplycert                   character(1)
+    AD_User_ID             numeric(10, 0),
+    AD_Org_ID              numeric(10, 0),
+    DD_Order_ID            numeric(10, 0),
+    DocStatus              Character(2),
+    C_BPartner_ID          numeric(10, 0),
+    C_BPartner_Location_ID numeric(10, 0),
+    PrintName              Character Varying(60),
+    AD_Language            Text,
+    email                  Character Varying(50),
+    displayhu              text,
+    issourcesupplycert     character(1)
 )
 ;
 
@@ -39,7 +38,6 @@ SELECT ddo.ad_user_id,
                ELSE COALESCE(dtt.printname, dt.printname)
        END                                                              AS printname,
        CASE WHEN ddo.DocStatus IN ('DR', 'IP') THEN 'de_CH' ELSE $2 END AS AD_Language,
-       isHidePackingMaterialInShipmentPrint,
        mb.email,
        CASE
            WHEN
@@ -48,7 +46,6 @@ SELECT ddo.ad_user_id,
                        FROM DD_Orderline ddol
                                 INNER JOIN M_Product p ON ddol.M_Product_ID = p.M_Product_ID AND p.isActive = 'Y'
                                 INNER JOIN M_Product_Category pc ON p.M_Product_Category_ID = pc.M_Product_Category_ID AND pc.isActive = 'Y'
-                       WHERE pc.M_Product_Category_ID = getSysConfigAsNumeric('PackingMaterialProductCategoryID', ddol.AD_Client_ID, ddol.AD_Org_ID)
                          AND ddo.DD_Order_ID = ddol.DD_Order_ID
                          AND ddol.isActive = 'Y'
                    )
@@ -82,64 +79,6 @@ $$
     LANGUAGE SQL STABLE
 ;
 
-DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Sales_DD_Order_Details_HU (IN Record_ID numeric, IN AD_Language Character Varying(6))
-;
-
-DROP TABLE IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Sales_DD_Order_Details_HU
-;
-
-CREATE TABLE de_metas_endcustomer_fresh_reports.Docs_Sales_DD_Order_Details_HU
-(
-    MovementQty numeric,
-    Name        Character Varying,
-    UOMSymbol   Character Varying(10),
-    Description Character Varying
-)
-;
-
-
-CREATE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Sales_DD_Order_Details_HU(IN Record_ID   numeric,
-                                                                                  IN AD_Language Character Varying(6))
-    RETURNS SETOF de_metas_endcustomer_fresh_reports.Docs_Sales_DD_Order_Details_HU
-AS
-$$
-SELECT SUM(ddol.QtyEntered)                    AS MovementQty,
-       COALESCE(pt.Name, p.name)               AS Name,
-       COALESCE(uomt.UOMSymbol, uom.UOMSymbol) AS UOMSymbol,
-       ddol.Description
-FROM DD_Order ddo
-         INNER JOIN DD_Orderline ddol ON ddo.DD_Order_ID = ddol.DD_Order_ID AND ddol.isActive = 'Y'
-    -- Product and its translation
-         LEFT OUTER JOIN M_Product p ON ddol.M_Product_ID = p.M_Product_ID AND p.isActive = 'Y'
-         LEFT OUTER JOIN M_Product_Trl pt ON ddol.M_Product_ID = pt.M_Product_ID AND pt.AD_Language = $2 AND pt.isActive = 'Y'
-         LEFT OUTER JOIN M_Product_Category pc ON p.M_Product_Category_ID = pc.M_Product_Category_ID AND pc.isActive = 'Y'
-    -- Unit of measurement and its translation
-         LEFT OUTER JOIN C_UOM uom ON ddol.C_UOM_ID = uom.C_UOM_ID AND uom.isActive = 'Y'
-         LEFT OUTER JOIN C_UOM_Trl uomt ON ddol.C_UOM_ID = uomt.C_UOM_ID AND uomt.AD_Language = $2 AND uomt.isActive = 'Y'
-    --ordering gebinde if config exists
-         LEFT OUTER JOIN C_BPartner bp ON ddo.C_BPartner_ID = bp.C_BPartner_ID AND bp.isActive = 'Y'
-         LEFT OUTER JOIN C_DocType dt ON ddo.C_DocType_ID = dt.C_DocType_ID AND dt.isActive = 'Y'
-         LEFT OUTER JOIN C_DocLine_Sort dls ON dt.DocBaseType = dls.DocBaseType AND dls.isActive = 'Y'
-    AND EXISTS(
-                                                       SELECT 0
-                                                       FROM C_BP_DocLine_Sort bpdls
-                                                       WHERE bpdls.C_DocLine_Sort_ID = dls.C_DocLine_Sort_ID
-                                                         AND bpdls.C_BPartner_ID = bp.C_BPartner_ID
-                                                         AND bpdls.isActive = 'Y'
-                                                   )
-         LEFT OUTER JOIN C_DocLine_Sort_Item dlsi ON dls.C_DocLine_Sort_ID = dlsi.C_DocLine_Sort_ID AND dlsi.M_Product_ID = ddol.M_Product_ID AND dlsi.isActive = 'Y'
-
-WHERE ddo.DD_Order_ID = $1
-  AND ddo.isActive = 'Y'
-  AND pc.M_Product_Category_ID = getSysConfigAsNumeric('PackingMaterialProductCategoryID', ddol.AD_Client_ID, ddol.AD_Org_ID)
-  AND QtyEntered != 0 -- Don't display lines without a Qty. See 08293
-GROUP BY COALESCE(pt.Name, p.name), COALESCE(uomt.UOMSymbol, uom.UOMSymbol), dlsi.SeqNo, ddol.description
-ORDER BY dlsi.SeqNo NULLS LAST
-
-$$
-    LANGUAGE SQL STABLE
-;
-
 DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Sales_DD_Order_Details (IN Record_ID numeric, IN AD_Language Character Varying(6))
 ;
 
@@ -156,12 +95,7 @@ CREATE TABLE de_metas_endcustomer_fresh_reports.Docs_Sales_DD_Order_Details
     qtyEntered           Numeric,
     UOMSymbol            Character Varying(10),
     LineNetAmt           Numeric,
-    IsDiscountPrinted    Character(1),
     Description          Character Varying,
-    bp_product_no        character varying(30),
-    bp_product_name      character varying(100),
-    best_before_date     text,
-    lotno                character varying,
     p_value              character varying(30),
     p_description        character varying(255),
     dd_order_description character varying(255),
@@ -190,14 +124,9 @@ SELECT ddol.line,
        uomt.uomsymbol                                                                     AS UOMSymbol,
 
        ddol.linenetamt                                                                    AS linenetamt,
-       bp.isDiscountPrinted,
 
        ddol.Description,
        -- in case there is no C_BPartner_Product, fallback to the default ones
-       COALESCE(NULLIF(bpp.ProductNo, ''), p.value)                                       AS bp_product_no,
-       COALESCE(NULLIF(bpp.ProductName, ''), pt.Name, p.name)                             AS bp_product_name,
-       to_char(att.best_before_date :: date, 'MM.YYYY')                                   AS best_before_date,
-       att.lotno,
        p.value                                                                            AS p_value,
        p.description                                                                      AS p_description,
        ddo.description                                                                    AS dd_order_description,
@@ -206,7 +135,6 @@ SELECT ddol.line,
 
 FROM DD_Orderline ddol
          INNER JOIN DD_Order ddo ON ddol.DD_Order_ID = ddo.DD_Order_ID AND ddo.isActive = 'Y'
-         LEFT OUTER JOIN C_BPartner bp ON ddo.C_BPartner_ID = bp.C_BPartner_ID AND bp.isActive = 'Y'
 
     -- Get Packing instruction
          LEFT OUTER JOIN
@@ -271,13 +199,8 @@ FROM DD_Orderline ddol
     GROUP BY at.M_AttributeSetInstance_ID
 ) att ON ddol.M_AttributeSetInstance_ID = att.M_AttributeSetInstance_ID
 
-         LEFT OUTER JOIN
-     de_metas_endcustomer_fresh_reports.getC_BPartner_Product_Details(p.M_Product_ID, bp.C_BPartner_ID,
-                                                                      att.M_AttributeSetInstance_ID) AS bpp ON 1 = 1
 WHERE ddol.DD_Order_ID = $1
   AND ddol.isActive = 'Y'
-  AND (COALESCE(pc.M_Product_Category_ID, -1) !=
-       getSysConfigAsNumeric('PackingMaterialProductCategoryID', ddol.AD_Client_ID, ddol.AD_Org_ID))
   AND ddol.QtyEntered != 0 -- Don't display lines without a Qty. See 08293
 ORDER BY line
 
@@ -296,7 +219,7 @@ CREATE TABLE de_metas_endcustomer_fresh_reports.Docs_Sales_DD_Order_Description
 (
     Description Character Varying(255),
     DocumentNo  Character Varying(30),
-    --     MovementDate Timestamp WITHOUT TIME ZONE,
+    dateordered  Timestamp WITHOUT TIME ZONE,
     Reference   Character Varying(40),
     BP_Value    Character Varying(40),
     Cont_Name   Character Varying(40),
@@ -320,7 +243,7 @@ AS
 $$
 SELECT ddo.description                       AS description,
        ddo.documentno                        AS documentno,
-       -- 	ddo.movementdate,
+       ddo.dateordered,
        ddo.poreference                       AS reference,
        bp.value                              AS bp_value,
        Coalesce(cogr.name, '') ||
@@ -364,7 +287,7 @@ $$
     LANGUAGE SQL STABLE
 ;
 
---DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_DD_Order_Details_Footer( IN DD_Order_ID numeric, IN AD_Language Character Varying (6) );
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_DD_Order_Details_Footer( IN DD_Order_ID numeric, IN AD_Language Character Varying (6) );
 CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_DD_Order_Details_Footer(IN DD_Order_ID numeric,
                                                                                            IN AD_Language Character Varying(6))
 

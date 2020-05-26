@@ -14,12 +14,7 @@ CREATE TABLE de_metas_endcustomer_fresh_reports.Docs_Sales_DD_Order_Details
     qtyEntered           Numeric,
     UOMSymbol            Character Varying(10),
     LineNetAmt           Numeric,
-    IsDiscountPrinted    Character(1),
     Description          Character Varying,
-    bp_product_no        character varying(30),
-    bp_product_name      character varying(100),
-    best_before_date     text,
-    lotno                character varying,
     p_value              character varying(30),
     p_description        character varying(255),
     dd_order_description character varying(255),
@@ -48,14 +43,9 @@ SELECT ddol.line,
        uomt.uomsymbol                                                                     AS UOMSymbol,
 
        ddol.linenetamt                                                                    AS linenetamt,
-       bp.isDiscountPrinted,
 
        ddol.Description,
        -- in case there is no C_BPartner_Product, fallback to the default ones
-       COALESCE(NULLIF(bpp.ProductNo, ''), p.value)                                       AS bp_product_no,
-       COALESCE(NULLIF(bpp.ProductName, ''), pt.Name, p.name)                             AS bp_product_name,
-       to_char(att.best_before_date :: date, 'MM.YYYY')                                   AS best_before_date,
-       att.lotno,
        p.value                                                                            AS p_value,
        p.description                                                                      AS p_description,
        ddo.description                                                                    AS dd_order_description,
@@ -64,7 +54,6 @@ SELECT ddol.line,
 
 FROM DD_Orderline ddol
          INNER JOIN DD_Order ddo ON ddol.DD_Order_ID = ddo.DD_Order_ID AND ddo.isActive = 'Y'
-         LEFT OUTER JOIN C_BPartner bp ON ddo.C_BPartner_ID = bp.C_BPartner_ID AND bp.isActive = 'Y'
 
     -- Get Packing instruction
          LEFT OUTER JOIN
@@ -129,13 +118,8 @@ FROM DD_Orderline ddol
     GROUP BY at.M_AttributeSetInstance_ID
 ) att ON ddol.M_AttributeSetInstance_ID = att.M_AttributeSetInstance_ID
 
-         LEFT OUTER JOIN
-     de_metas_endcustomer_fresh_reports.getC_BPartner_Product_Details(p.M_Product_ID, bp.C_BPartner_ID,
-                                                                      att.M_AttributeSetInstance_ID) AS bpp ON 1 = 1
 WHERE ddol.DD_Order_ID = $1
   AND ddol.isActive = 'Y'
-  AND (COALESCE(pc.M_Product_Category_ID, -1) !=
-       getSysConfigAsNumeric('PackingMaterialProductCategoryID', ddol.AD_Client_ID, ddol.AD_Org_ID))
   AND ddol.QtyEntered != 0 -- Don't display lines without a Qty. See 08293
 ORDER BY line
 

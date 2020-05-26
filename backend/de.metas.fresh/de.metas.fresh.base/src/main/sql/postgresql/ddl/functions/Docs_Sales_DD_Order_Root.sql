@@ -6,18 +6,17 @@ DROP TABLE IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Sales_DD_Order_Root
 
 CREATE TABLE de_metas_endcustomer_fresh_reports.Docs_Sales_DD_Order_Root
 (
-    AD_User_ID                           numeric(10, 0),
-    AD_Org_ID                            numeric(10, 0),
-    DD_Order_ID                          numeric(10, 0),
-    DocStatus                            Character(2),
-    C_BPartner_ID                        numeric(10, 0),
-    C_BPartner_Location_ID               numeric(10, 0),
-    PrintName                            Character Varying(60),
-    AD_Language                          Text,
-    IsHidePackingMaterialInShipmentPrint Character(1),
-    email                                Character Varying(50),
-    displayhu                            text,
-    issourcesupplycert                   character(1)
+    AD_User_ID             numeric(10, 0),
+    AD_Org_ID              numeric(10, 0),
+    DD_Order_ID            numeric(10, 0),
+    DocStatus              Character(2),
+    C_BPartner_ID          numeric(10, 0),
+    C_BPartner_Location_ID numeric(10, 0),
+    PrintName              Character Varying(60),
+    AD_Language            Text,
+    email                  Character Varying(50),
+    displayhu              text,
+    issourcesupplycert     character(1)
 )
 ;
 
@@ -39,7 +38,6 @@ SELECT ddo.ad_user_id,
                ELSE COALESCE(dtt.printname, dt.printname)
        END                                                              AS printname,
        CASE WHEN ddo.DocStatus IN ('DR', 'IP') THEN 'de_CH' ELSE $2 END AS AD_Language,
-       isHidePackingMaterialInShipmentPrint,
        mb.email,
        CASE
            WHEN
@@ -48,9 +46,8 @@ SELECT ddo.ad_user_id,
                        FROM DD_Orderline ddol
                                 INNER JOIN M_Product p ON ddol.M_Product_ID = p.M_Product_ID AND p.isActive = 'Y'
                                 INNER JOIN M_Product_Category pc ON p.M_Product_Category_ID = pc.M_Product_Category_ID AND pc.isActive = 'Y'
-                       WHERE pc.M_Product_Category_ID = getSysConfigAsNumeric('PackingMaterialProductCategoryID', ddol.AD_Client_ID, ddol.AD_Org_ID)
-                         AND ddo.DD_Order_ID = ddol.DD_Order_ID
-                         AND ddol.isActive = 'Y'
+                           AND ddo.DD_Order_ID = ddol.DD_Order_ID
+                           AND ddol.isActive = 'Y'
                    )
                THEN 'Y'
                ELSE 'N'
@@ -81,4 +78,3 @@ WHERE ddo.DD_Order_ID = $1
 $$
     LANGUAGE SQL STABLE
 ;
-

@@ -7,6 +7,7 @@
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="dev.xml"/>
+	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
 	<import value="net.sf.jasperreports.engine.data.*"/>
@@ -19,19 +20,51 @@
 		<![CDATA[SELECT * FROM de_metas_endcustomer_fresh_reports.Docs_Sales_DD_Order_Description( $P{RECORD_ID}, $P{ad_language} )
 ;]]>
 	</queryString>
-	<field name="description" class="java.lang.String"/>
-	<field name="documentno" class="java.lang.String"/>
-	<field name="reference" class="java.lang.String"/>
-	<field name="bp_value" class="java.lang.String"/>
-	<field name="cont_name" class="java.lang.String"/>
-	<field name="cont_phone" class="java.lang.String"/>
-	<field name="cont_fax" class="java.lang.String"/>
-	<field name="cont_email" class="java.lang.String"/>
-	<field name="sr_name" class="java.lang.String"/>
-	<field name="sr_phone" class="java.lang.String"/>
-	<field name="sr_fax" class="java.lang.String"/>
-	<field name="sr_email" class="java.lang.String"/>
-	<field name="printname" class="java.lang.String"/>
+	<field name="description" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="description"/>
+	</field>
+	<field name="documentno" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="documentno"/>
+	</field>
+	<field name="dateordered" class="java.sql.Timestamp">
+		<property name="com.jaspersoft.studio.field.label" value="dateordered"/>
+	</field>
+	<field name="reference" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="reference"/>
+	</field>
+	<field name="bp_value" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="bp_value"/>
+	</field>
+	<field name="cont_name" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="cont_name"/>
+	</field>
+	<field name="cont_phone" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="cont_phone"/>
+	</field>
+	<field name="cont_fax" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="cont_fax"/>
+	</field>
+	<field name="cont_email" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="cont_email"/>
+	</field>
+	<field name="sr_name" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="sr_name"/>
+	</field>
+	<field name="sr_phone" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="sr_phone"/>
+	</field>
+	<field name="sr_fax" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="sr_fax"/>
+	</field>
+	<field name="sr_email" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="sr_email"/>
+	</field>
+	<field name="printname" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="printname"/>
+	</field>
+	<field name="order_docno" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="order_docno"/>
+	</field>
 	<background>
 		<band splitType="Stretch"/>
 	</background>
@@ -146,7 +179,7 @@
 				<textElement textAlignment="Right">
 					<font size="9"/>
 				</textElement>
-				<textFieldExpression><![CDATA["abc"]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{dateordered}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true">
 				<reportElement key="textField-24" mode="Transparent" x="37" y="176" width="508" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="80600e83-f699-43c7-84f3-f9eb1946846b"/>
