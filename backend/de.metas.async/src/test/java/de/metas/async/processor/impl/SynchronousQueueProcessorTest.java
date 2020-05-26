@@ -60,7 +60,7 @@ public class SynchronousQueueProcessorTest extends QueueProcessorTestBase
 		final MockedWorkpackageProcessor workpackageProcessor = StaticMockedWorkpackageProcessor.getMockedWorkpackageProcessor();
 		workpackageProcessor
 				.setDefaultResult(Result.SUCCESS)
-				.setException(workpackages.get(5), "test error");
+				.setRuntimeException(workpackages.get(5), "test error");
 
 		workpackages.get(7).setPriority(X_C_Queue_WorkPackage.PRIORITY_Urgent);
 		InterfaceWrapperHelper.save(workpackages.get(7));
@@ -76,11 +76,11 @@ public class SynchronousQueueProcessorTest extends QueueProcessorTestBase
 
 		for (I_C_Queue_WorkPackage wp : processedWorkpackages)
 		{
-			final String errorExpected = workpackageProcessor.getException(wp);
-			if (errorExpected != null)
+			final RuntimeException rteExpected = workpackageProcessor.getRuntimeExceptionFor(wp);
+			if (rteExpected != null)
 			{
 				// Exception
-				assertThat(wp.getErrorMsg()).as("Workpackage - Invalid ErrorMsg: %s", wp).startsWith(errorExpected);
+				assertThat(wp.getErrorMsg()).as("Workpackage - Invalid ErrorMsg: %s", wp).startsWith(rteExpected.getMessage());
 				Assert.assertEquals("Workpackage - Invalid Processed: " + wp, false, wp.isProcessed());
 				Assert.assertEquals("Workpackage - Invalid IsError: " + wp, true, wp.isError());
 			}
@@ -125,7 +125,7 @@ public class SynchronousQueueProcessorTest extends QueueProcessorTestBase
 
 		//
 		// Setup Queue Processor and Work Package processors
-		final I_C_Queue_Processor queueProcessorDef = helper.createQueueProcessor("Test_" + testName.getMethodName(), 10, 10, 1000);
+		final I_C_Queue_Processor queueProcessorDef = helper.createQueueProcessor("Test_" + testName.getMethodName(), 10, 1000);
 
 		// create a package processor with a wrong class name.
 		final I_C_Queue_PackageProcessor packageProcessor1 = helper.createPackageProcessor(ctx, StaticMockedWorkpackageProcessor.class);

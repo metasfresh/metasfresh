@@ -27,6 +27,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
 
+import de.metas.util.ILoggable;
 import org.compiere.SpringContextHolder;
 import org.slf4j.Logger;
 import org.slf4j.MDC.MDCCloseable;
@@ -71,20 +72,25 @@ public class CustomerTradeMarginPricingRule implements IPricingRule
 	private final MoneyService moneyService = SpringContextHolder.instance.getBean(MoneyService.class);
 
 	@Override
-	public boolean applies(IPricingContext pricingCtx, IPricingResult result)
+	public boolean applies(@NonNull final IPricingContext pricingCtx, @NonNull final IPricingResult result)
 	{
+		final ILoggable loggable = Loggables.withLogger(logger, Level.DEBUG);
 		if (!result.isCalculated())
 		{
-			Loggables.withLogger(logger, Level.DEBUG).addLog("Not applying due to missing calculated price!");
+			loggable.addLog("applies - pricingResult.isCalculated=false -> return false");
 			return false;
 		}
 		final BPartnerId customerId = pricingCtx.getBPartnerId();
+		if (customerId == null)
+		{
+			loggable.addLog("applies - CustomerId is null; -> return false");
+			return false;
+		}
 
 		final BPartnerId salesRepId = Services.get(IBPartnerBL.class).getBPartnerSalesRepId(customerId);
-
 		if (salesRepId == null)
 		{
-			Loggables.withLogger(logger, Level.DEBUG).addLog("Not applying due to missing sales rep!");
+			loggable.addLog("applies - SalesRepId is null for customerId={}; -> return false",customerId.getRepoId());
 			return false;
 		}
 
@@ -96,10 +102,11 @@ public class CustomerTradeMarginPricingRule implements IPricingRule
 
 		if (!customerTradeMarginService.getCustomerTradeMarginForCriteria(customerTradeMarginSearchCriteria).isPresent())
 		{
-			Loggables.withLogger(logger, Level.DEBUG).addLog("Not applying due to missing customer trade margin settings!");
+			loggable.addLog("applies - missing customer trade margins; customerTradeMarginSearchCriteria={}; -> return false", customerTradeMarginSearchCriteria);
 			return false;
 		}
 
+		loggable.addLog("applies  customerTradeMarginSearchCriteria={}; -> return true", customerTradeMarginSearchCriteria);
 		return true;
 	}
 
@@ -118,9 +125,10 @@ public class CustomerTradeMarginPricingRule implements IPricingRule
 
 		final Optional<CustomerTradeMarginSettings> customerTradeMarginSettings = customerTradeMarginService.getCustomerTradeMarginForCriteria(customerTradeMarginSearchCriteria);
 
+		final ILoggable loggable = Loggables.withLogger(logger, Level.DEBUG);
 		if (!customerTradeMarginSettings.isPresent())
 		{
-			Loggables.withLogger(logger, Level.DEBUG).addLog("Not applying due to missing customer trade margin settings!");
+			loggable.addLog("calculate - missing customer trade margins; customerTradeMarginSearchCriteria={}; -> return", customerTradeMarginSearchCriteria);
 			return;
 		}
 
@@ -135,7 +143,7 @@ public class CustomerTradeMarginPricingRule implements IPricingRule
 
 		if (!forecastCommissionInstance.isPresent())
 		{
-			Loggables.withLogger(logger, Level.DEBUG).addLog("Not applying! Forecast commission instance couldn't be created!");
+			loggable.addLog("calculate - Not applying! Forecast commission instance couldn't be created!");
 			return;
 		}
 
@@ -146,7 +154,7 @@ public class CustomerTradeMarginPricingRule implements IPricingRule
 
 		if (share2TradedCommissionPoints.isEmpty())
 		{
-			Loggables.withLogger(logger, Level.DEBUG).addLog("Not applying! tradedCommissionPointsPerPriceUOM couldn't be calculated");
+			loggable.addLog("calculate - Not applying! tradedCommissionPointsPerPriceUOM couldn't be calculated");
 			return;
 		}
 
@@ -171,7 +179,7 @@ public class CustomerTradeMarginPricingRule implements IPricingRule
 
 				if (!tradedCommissionPointsValue.isPresent())
 				{
-					Loggables.withLogger(logger, Level.DEBUG).addLog("Not applying! tradedCommissionPoints monetary amount couldn't be calculated");
+					loggable.addLog("calculate - Not applying! tradedCommissionPoints monetary amount couldn't be calculated");
 					return;
 				}
 
@@ -188,8 +196,8 @@ public class CustomerTradeMarginPricingRule implements IPricingRule
 		result.setPriceStd(priceBeforeApplyingRule.toBigDecimal().subtract(customerTradeMarginPerPriceUOMSum.toBigDecimal()));
 		result.setCalculated(true);
 
-		Loggables.withLogger(logger, Level.DEBUG)
-				.addLog("Price before applying rule: {} currencyID: {}, Price after applying rule: {} currencyID :{}",
+		loggable
+				.addLog("calculate - Price before applying rule: {} currencyID: {}, Price after applying rule: {} currencyID :{}",
 						priceBeforeApplyingRule.toBigDecimal(), priceBeforeApplyingRule.getCurrencyId().getRepoId(),
 						result.getPriceStd(), result.getCurrencyId().getRepoId());
 	}

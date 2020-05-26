@@ -14,6 +14,7 @@ import de.metas.impex.InputDataSourceId;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentRule;
+import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.product.ProductId;
 import de.metas.shipping.ShipperId;
@@ -102,6 +103,8 @@ public class OLCandCreateRequest
 
 	PaymentRule paymentRule;
 
+	PaymentTermId paymentTermId;
+
 	@Builder
 	private OLCandCreateRequest(
 			@Nullable final String externalLineId,
@@ -133,7 +136,8 @@ public class OLCandCreateRequest
 			@Nullable final WarehouseId warehouseDestId,
 			@Nullable final ShipperId shipperId,
 			@Nullable final BPartnerId salesRepId,
-			@Nullable final PaymentRule paymentRule)
+			@Nullable final PaymentRule paymentRule,
+			@Nullable final PaymentTermId paymentTermId)
 	{
 		// Check.assume(qty.signum() > 0, "qty > 0"); qty might very well also be <= 0
 
@@ -176,5 +180,7 @@ public class OLCandCreateRequest
 		this.warehouseDestId = warehouseDestId;
 
 		this.paymentRule = paymentRule;
+
+		this.paymentTermId = paymentTermId;
 	}
 }

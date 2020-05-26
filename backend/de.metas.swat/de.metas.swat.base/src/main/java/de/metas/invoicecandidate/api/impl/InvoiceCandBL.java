@@ -1356,7 +1356,6 @@ public class InvoiceCandBL implements IInvoiceCandBL
 					Services.get(ITrxManager.class)
 							.getTrxListenerManagerOrAutoCommit(ITrx.TRXNAME_ThreadInherited)
 							.newEventListener(TrxEventTiming.AFTER_COMMIT)
-							.registerWeakly(false) // register "hard", because that's how it was before
 							.invokeMethodJustOnce(false) // invoke the handling method on *every* commit, because that's how it was and I can't check now if it's really needed
 							.registerHandlingMethod(transaction -> setQtyAndPriceOverride(invoiceCandidateId, qtyToInvoice_Override, priceEntered_Override));
 				}
@@ -1424,19 +1423,15 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	}
 
 	/**
-	 * Set the qtyToInvoice_Override and Price_Entered_Override in the invoice candidate given by its ID
+	 * Set the qtyToInvoice_Override and Price_Entered_Override in the invoice candidate given by its ID.
 	 */
 	private static void setQtyAndPriceOverride(final int invoiceCandidateId, final BigDecimal qtyToInvoiceOverride, final BigDecimal priceEnteredOverride)
 	{
-		final I_C_Invoice_Candidate invoiceCandidate = InterfaceWrapperHelper.create(Env.getCtx(), invoiceCandidateId, I_C_Invoice_Candidate.class, ITrx.TRXNAME_ThreadInherited);
-
-		invoiceCandidate.setQtyToInvoice_Override(qtyToInvoiceOverride);
-
-		invoiceCandidate.setPriceEntered_Override(priceEnteredOverride);
-
-		invoiceCandidate.setQtyToInvoice_OverrideFulfilled(ZERO);
-
-		InterfaceWrapperHelper.save(invoiceCandidate);
+			final I_C_Invoice_Candidate invoiceCandidate = InterfaceWrapperHelper.load(invoiceCandidateId, I_C_Invoice_Candidate.class);
+			invoiceCandidate.setQtyToInvoice_Override(qtyToInvoiceOverride);
+			invoiceCandidate.setPriceEntered_Override(priceEnteredOverride);
+			invoiceCandidate.setQtyToInvoice_OverrideFulfilled(ZERO);
+			InterfaceWrapperHelper.save(invoiceCandidate);
 	}
 
 	@Override

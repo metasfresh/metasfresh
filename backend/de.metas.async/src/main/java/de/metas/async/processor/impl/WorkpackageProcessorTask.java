@@ -28,6 +28,7 @@ import java.util.Properties;
 
 import javax.annotation.Nullable;
 
+import lombok.ToString;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.ad.trx.api.ITrx;
@@ -93,7 +94,8 @@ import de.metas.util.lang.CoalesceUtil;
 import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 
-/* package */class WorkpackageProcessorTask implements Runnable
+@ToString(exclude = { "queueDAO", "workpackageParamDAO", "contextFactory", "iAsyncBatchBL", "logsRepository", "workPackageProcessorOriginal" })
+class WorkpackageProcessorTask implements Runnable
 {
 	private static final String MSG_PROCESSING_ERROR_NOTIFICATION_TEXT = "de.metas.async.WorkpackageProcessorTask.ProcessingErrorNotificationText";
 	private static final String MSG_PROCESSING_ERROR_NOTIFICATION_TITLE = "de.metas.async.WorkpackageProcessorTask.ProcessingErrorNotificationTitle";
@@ -156,8 +158,8 @@ import lombok.NonNull;
 				TransactionMetadata.builder()
 						.type(Type.ASYNC_WORKPACKAGE)
 						.name("Workpackage-Processor - " + queueProcessor.getName())
-						.label("queueProcessor.name", queueProcessor.getName())
-						.label("recordId", Integer.toString(workPackage.getC_Queue_WorkPackage_ID()))
+						.label("de.metas.async.queueProcessor.name", queueProcessor.getName())
+						.label("de.metas.async.C_Queue_WorkPackage_ID", Integer.toString(workPackage.getC_Queue_WorkPackage_ID()))
 						.build());
 	}
 
@@ -380,7 +382,7 @@ import lombok.NonNull;
 
 	/**
 	 * Method invoked after workpackage is processed. The method is invoked in any case (success, skip, error).
-	 *
+	 * <p>
 	 * NOTE: this method is protected to be easily to unit test (i.e. decouple queueProcessor)
 	 *
 	 * @param releaseElementLockIfAny if <code>true</code> (which is usually the case) and there is a lock on the work package elements, that lock is released in this method.

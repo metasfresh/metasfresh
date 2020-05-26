@@ -3,6 +3,7 @@ package de.metas.security.permissions.bpartner_hierarchy;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -11,6 +12,7 @@ import java.util.Optional;
 
 import javax.annotation.Nullable;
 
+import de.metas.event.log.EventLogsRepository;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
@@ -93,7 +95,7 @@ public class BPartnerHierarchyRecordAccessHandlerTest
 	{
 		AdempiereTestHelper.get().init();
 
-		SpringContextHolder.registerJUnitBean(new EventLogService());
+		SpringContextHolder.registerJUnitBean(new EventLogService(mock(EventLogsRepository.class)));
 		final PlainEventBusFactory eventBusFactory = new PlainEventBusFactory();
 
 		createAD_Role_Record_Access_Config();

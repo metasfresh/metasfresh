@@ -27,6 +27,8 @@ import java.util.Properties;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.slf4j.Logger;
+import org.slf4j.MDC;
+import org.slf4j.MDC.MDCCloseable;
 
 import de.metas.async.api.IWorkPackageQueue;
 import de.metas.async.api.IWorkpackageLogsRepository;
@@ -42,11 +44,12 @@ import de.metas.async.spi.IWorkpackageProcessor;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 
 public abstract class AbstractQueueProcessor implements IQueueProcessor
 {
-	protected final transient Logger logger = LogManager.getLogger(getClass());
+	private static final Logger logger = LogManager.getLogger(AbstractQueueProcessor.class);
 
 	private final IWorkPackageQueue queue;
 	private long queuePollingTimeout = IWorkPackageQueue.TIMEOUT_Infinite;
@@ -128,6 +131,7 @@ public abstract class AbstractQueueProcessor implements IQueueProcessor
 				error = e;
 				success = false;
 			}
+			logger.debug("run - pollAndSubmitNextWorkPackageTask returned success={}; skip={}; error={}", success, skip, error);
 
 			if (!success)
 			{
@@ -155,7 +159,7 @@ public abstract class AbstractQueueProcessor implements IQueueProcessor
 					{
 						logger.warn(error.getLocalizedMessage(), error);
 					}
-					logger.info("Previous pollAndSubmit was not successfull. Sleeping 1000ms");
+					logger.info("Previous pollAndSubmit was not successful. Sleeping 1000ms");
 					try
 					{
 						Thread.sleep(1000);
@@ -174,13 +178,18 @@ public abstract class AbstractQueueProcessor implements IQueueProcessor
 	private boolean pollAndSubmitNextWorkPackageTask()
 	{
 		final IWorkPackageQueue queue = getQueue();
-
-		final I_C_Queue_WorkPackage workPackage = queue.pollAndLock(queuePollingTimeout);
-		if (workPackage == null)
+		final I_C_Queue_WorkPackage workPackage;
+		try (final MDCCloseable ignored = MDC.putCloseable("queue", queue.toString());
+				final MDCCloseable ignored1 = MDC.putCloseable("queue.pollAndLockStart", Long.toString(SystemTime.millis()));)
 		{
-			return false;
+			logger.debug("pollAndSubmitNextWorkPackageTask - going to invoke queue.pollAndLock() with timeout={} on queue={}", queuePollingTimeout, queue);
+			workPackage = queue.pollAndLock(queuePollingTimeout);
+			if (workPackage == null)
+			{
+				logger.debug("pollAndSubmitNextWorkPackageTask - queue returned workPackage", queuePollingTimeout, queue);
+				return false;
+			}
 		}
-
 		boolean success = false;
 		try
 		{
@@ -188,18 +197,18 @@ public abstract class AbstractQueueProcessor implements IQueueProcessor
 			final WorkpackageProcessorTask task = new WorkpackageProcessorTask(this, workPackageProcessor, workPackage, logsRepository);
 			executeTask(task);
 			success = true;
+			return true;
 		}
 		finally
 		{
 			if (!success)
 			{
-				logger.info("Submiting for processing next workpackage failed. Trying to unlock {}.", workPackage);
+				logger.info("Submitting for processing next workpackage failed. Trying to unlock {}.", workPackage);
 				queue.unlockNoFail(workPackage);
 
 				getEventDispatcher().unregisterListeners(workPackage.getC_Queue_WorkPackage_ID());
 			}
 		}
-		return success;
 	}
 
 	@Override
