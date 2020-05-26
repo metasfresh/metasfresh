@@ -131,29 +131,6 @@ export function dropdownModalRequest({
     }/${entity}/${windowId}/${viewId}/${rowId}/edit/${fieldName}/dropdown`);
 }
 
-// TODO: This should be moved to the api
-export function deleteRequest(
-  entity,
-  docType,
-  docId,
-  tabId,
-  ids,
-  subentity,
-  subentityId
-) {
-  return axios.delete(
-    config.API_URL +
-      '/' +
-      entity +
-      (docType ? '/' + docType : '') +
-      (docId ? '/' + docId : '') +
-      (tabId ? '/' + tabId : '') +
-      (subentity ? '/' + subentity : '') +
-      (subentityId ? '/' + subentityId : '') +
-      (ids ? '?ids=' + ids : '')
-  );
-}
-
 export function duplicateRequest(entity, docType, docId) {
   return axios.post(
     config.API_URL +
