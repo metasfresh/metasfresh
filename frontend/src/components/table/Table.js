@@ -11,7 +11,6 @@ import {
   componentPropTypes,
   constructorFn,
 } from '../../utils/tableHelpers';
-import { mapIncluded } from '../../utils/documentListHelper';
 
 import Prompt from '../app/Prompt';
 import DocumentListContextShortcuts from '../keyshortcuts/DocumentListContextShortcuts';
@@ -26,7 +25,7 @@ const MOBILE_TABLE_SIZE_LIMIT = 30; // subjective number, based on empiric testi
 const isMobileOrTablet =
   currentDevice.type === 'mobile' || currentDevice.type === 'tablet';
 
-// TODO: Remove
+// TODO: Remove when cleaning up
 let RENDERS = 0;
 
 class Table extends PureComponent {
@@ -51,227 +50,12 @@ class Table extends PureComponent {
     this._isMounted = false;
   }
 
-  getAllLeafs = () => {
-    const { rows, selected, onSelectRange } = this.props;
-    let leafs = [];
-    let leafsIds = [];
-
-    rows.map((item) => {
-      if (item.id === selected[0]) {
-        leafs = mapIncluded(item);
-      }
-    });
-
-    leafs.map((item) => {
-      leafsIds = leafsIds.concat(item.id);
-    });
-
-    onSelectRange(leafsIds);
-  };
-
   setListenTrue = () => {
     this.setState({ listenOnKeys: true });
   };
 
   setListenFalse = () => {
     this.setState({ listenOnKeys: false });
-  };
-
-  triggerFocus = (idFocused, idFocusedDown) => {
-    if (this.table) {
-      const rowSelected = this.table.getElementsByClassName('row-selected');
-
-      if (rowSelected.length > 0) {
-        if (typeof idFocused == 'number') {
-          rowSelected[0].children[idFocused].focus();
-        }
-        if (typeof idFocusedDown == 'number') {
-          rowSelected[rowSelected.length - 1].children[idFocusedDown].focus();
-        }
-      }
-    }
-  };
-
-  handleClickOutside = (event) => {
-    const {
-      showIncludedViewOnSelect,
-      viewId,
-      windowType,
-      inBackground,
-      allowOutsideClick,
-      limitOnClickOutside,
-      onDeselectAll,
-    } = this.props;
-    const parentNode = event.target.parentNode;
-    const closeIncluded =
-      limitOnClickOutside &&
-      (parentNode.className.includes('document-list-wrapper') ||
-        event.target.className.includes('document-list-wrapper'))
-        ? parentNode.className.includes('document-list-has-included')
-        : true;
-
-    if (
-      allowOutsideClick &&
-      parentNode &&
-      parentNode !== document &&
-      !parentNode.className.includes('notification') &&
-      !inBackground &&
-      closeIncluded
-    ) {
-      const item = event.path || (event.composedPath && event.composedPath());
-
-      if (item) {
-        for (let i = 0; i < item.length; i++) {
-          if (
-            item[i].classList &&
-            item[i].classList.contains('js-not-unselect')
-          ) {
-            return;
-          }
-        }
-      } else if (parentNode.className.includes('js-not-unselect')) {
-        return;
-      }
-
-      onDeselectAll();
-
-      if (showIncludedViewOnSelect) {
-        showIncludedViewOnSelect({
-          showIncludedView: false,
-          windowType,
-          viewId,
-        });
-      }
-    }
-  };
-
-  handleKeyDown = (e) => {
-    const {
-      keyProperty,
-      mainTable,
-      readonly,
-      closeOverlays,
-      selected,
-      rows,
-      onShowSelectedIncludedView,
-      onSelect,
-      onSelectOne,
-    } = this.props;
-    const { listenOnKeys, collapsedArrayMap } = this.state;
-
-    if (!listenOnKeys) {
-      return;
-    }
-
-    const selectRange = e.shiftKey;
-    const nodeList = Array.prototype.slice.call(
-      document.activeElement.parentElement.children
-    );
-    const idActive = nodeList.indexOf(document.activeElement);
-    let idFocused = null;
-
-    if (idActive > -1) {
-      idFocused = idActive;
-    }
-
-    switch (e.key) {
-      case 'ArrowDown': {
-        e.preventDefault();
-
-        const array =
-          collapsedArrayMap.length > 0
-            ? collapsedArrayMap.map((item) => item[keyProperty])
-            : rows.map((item) => item[keyProperty]);
-        const currentId = array.findIndex(
-          (x) => x === selected[selected.length - 1]
-        );
-
-        if (currentId >= array.length - 1) {
-          return;
-        }
-
-        if (!selectRange) {
-          onSelectOne(
-            array[currentId + 1],
-            false,
-            idFocused,
-            onShowSelectedIncludedView([array[currentId + 1]])
-          );
-        } else {
-          onSelect(array[currentId + 1], false, idFocused);
-        }
-        break;
-      }
-      case 'ArrowUp': {
-        e.preventDefault();
-
-        const array =
-          collapsedArrayMap.length > 0
-            ? collapsedArrayMap.map((item) => item[keyProperty])
-            : rows.map((item) => item[keyProperty]);
-        const currentId = array.findIndex(
-          (x) => x === selected[selected.length - 1]
-        );
-
-        if (currentId <= 0) {
-          return;
-        }
-
-        if (!selectRange) {
-          onSelectOne(
-            array[currentId - 1],
-            idFocused,
-            false,
-            onShowSelectedIncludedView([array[currentId - 1]])
-          );
-        } else {
-          onSelect(array[currentId - 1], idFocused, false);
-        }
-        break;
-      }
-      case 'ArrowLeft':
-        e.preventDefault();
-        if (document.activeElement.previousSibling) {
-          document.activeElement.previousSibling.focus();
-        }
-        break;
-      case 'ArrowRight':
-        e.preventDefault();
-        if (document.activeElement.nextSibling) {
-          document.activeElement.nextSibling.focus();
-        }
-        break;
-      case 'Tab':
-        if (mainTable) {
-          e.preventDefault();
-          const focusedElem = document.getElementsByClassName(
-            'js-attributes'
-          )[0];
-          if (focusedElem) {
-            focusedElem.getElementsByTagName('input')[0].focus();
-          }
-          break;
-        } else {
-          if (e.shiftKey) {
-            //passing focus over table cells backwards
-            this.table.focus();
-          } else {
-            //passing focus over table cells
-            this.tfoot.focus();
-          }
-        }
-        break;
-      case 'Enter':
-        if (selected.length <= 1 && readonly) {
-          e.preventDefault();
-
-          this.handleDoubleClick(selected[selected.length - 1]);
-        }
-        break;
-      case 'Escape':
-        closeOverlays && closeOverlays();
-        break;
-    }
   };
 
   closeContextMenu = () => {
@@ -282,103 +66,12 @@ class Table extends PureComponent {
     });
   };
 
-  handleDoubleClick = (id) => {
-    const { isIncluded, onDoubleClick } = this.props;
+  handleSelect = (id, idFocused, idFocusedDown, cb) => {
+    const { onSelect } = this.props;
 
-    if (!isIncluded) {
-      onDoubleClick && onDoubleClick(id);
-    }
-  };
+    onSelect(id, idFocused, idFocusedDown, cb);
 
-  handleClick = (e, item) => {
-    const {
-      onSelectionChanged,
-      openIncludedViewOnSelect,
-      showIncludedViewOnSelect,
-      keyProperty,
-      updateQuickActions,
-      selected,
-      onSelect,
-      onSelectOne,
-      onSelectRange,
-      onDeselect,
-    } = this.props;
-    const id = item[keyProperty];
-    let selectionValue = false;
-
-    if (e.button === 0) {
-      const selectMore = e.metaKey || e.ctrlKey;
-      const selectRange = e.shiftKey;
-      const isSelected = selected.indexOf(id) > -1;
-      const isAnySelected = selected.length > 0;
-
-      let newSelection;
-
-      if (selectMore || isMobileOrTablet) {
-        if (isSelected) {
-          newSelection = onDeselect(id);
-        } else {
-          newSelection = onSelect(id);
-        }
-      } else if (selectRange) {
-        if (isAnySelected) {
-          newSelection = this.getProductRange(id);
-          onSelectRange(newSelection);
-        } else {
-          newSelection = [id];
-          onSelectOne(id);
-        }
-      } else {
-        updateQuickActions && updateQuickActions(id);
-        newSelection = [id];
-        onSelectOne(id);
-      }
-
-      if (onSelectionChanged) {
-        onSelectionChanged(newSelection);
-      }
-
-      selectionValue = newSelection.length > 0;
-    }
-    selectionValue = true;
-
-    if (openIncludedViewOnSelect) {
-      showIncludedViewOnSelect({
-        showIncludedView: selectionValue && item.supportIncludedViews,
-        forceClose: !selectionValue,
-        windowType: item.supportIncludedViews
-          ? item.includedView.windowType || item.includedView.windowId
-          : null,
-        viewId: item.supportIncludedViews ? item.includedView.viewId : '',
-      });
-    }
-  };
-
-  handleRightClick = (e, id, fieldName, supportZoomInto, supportFieldEdit) => {
-    e.preventDefault();
-
-    const { selected, onSelectOne } = this.props;
-    const { clientX, clientY } = e;
-
-    if (selected.indexOf(id) > -1) {
-      this.setContextMenu(
-        clientX,
-        clientY,
-        fieldName,
-        supportZoomInto,
-        supportFieldEdit
-      );
-    } else {
-      onSelectOne(id, null, null, () => {
-        this.setContextMenu(
-          clientX,
-          clientY,
-          fieldName,
-          supportZoomInto,
-          supportFieldEdit
-        );
-      });
-    }
+    this.triggerFocus(idFocused, idFocusedDown);
   };
 
   setContextMenu = (
@@ -503,6 +196,300 @@ class Table extends PureComponent {
     this.tfoot = ref;
   };
 
+  triggerFocus = (idFocused, idFocusedDown) => {
+    if (this.table) {
+      const rowSelected = this.table.getElementsByClassName('row-selected');
+
+      if (rowSelected.length > 0) {
+        if (typeof idFocused == 'number') {
+          rowSelected[0].children[idFocused].focus();
+        }
+        if (typeof idFocusedDown == 'number') {
+          rowSelected[rowSelected.length - 1].children[idFocusedDown].focus();
+        }
+      }
+    }
+  };
+
+  handleClickOutside = (event) => {
+    const {
+      showIncludedViewOnSelect,
+      viewId,
+      windowType,
+      inBackground,
+      allowOutsideClick,
+      limitOnClickOutside,
+      onDeselectAll,
+    } = this.props;
+    const parentNode = event.target.parentNode;
+    const closeIncluded =
+      limitOnClickOutside &&
+      (parentNode.className.includes('document-list-wrapper') ||
+        event.target.className.includes('document-list-wrapper'))
+        ? parentNode.className.includes('document-list-has-included')
+        : true;
+
+    if (
+      allowOutsideClick &&
+      parentNode &&
+      parentNode !== document &&
+      !parentNode.className.includes('notification') &&
+      !inBackground &&
+      closeIncluded
+    ) {
+      const item = event.path || (event.composedPath && event.composedPath());
+
+      if (item) {
+        for (let i = 0; i < item.length; i++) {
+          if (
+            item[i].classList &&
+            item[i].classList.contains('js-not-unselect')
+          ) {
+            return;
+          }
+        }
+      } else if (parentNode.className.includes('js-not-unselect')) {
+        return;
+      }
+
+      onDeselectAll();
+
+      if (showIncludedViewOnSelect) {
+        showIncludedViewOnSelect({
+          showIncludedView: false,
+          windowType,
+          viewId,
+        });
+      }
+    }
+  };
+
+  handleKeyDown = (e) => {
+    const {
+      keyProperty,
+      mainTable,
+      readonly,
+      closeOverlays,
+      selected,
+      rows,
+      onShowSelectedIncludedView,
+      // onSelect,
+      // onSelectOne,
+    } = this.props;
+    const { listenOnKeys, collapsedArrayMap } = this.state;
+
+    if (!listenOnKeys) {
+      return;
+    }
+
+    const selectRange = e.shiftKey;
+    const nodeList = Array.prototype.slice.call(
+      document.activeElement.parentElement.children
+    );
+    const idActive = nodeList.indexOf(document.activeElement);
+    let idFocused = null;
+
+    if (idActive > -1) {
+      idFocused = idActive;
+    }
+
+    switch (e.key) {
+      case 'ArrowDown': {
+        e.preventDefault();
+
+        const array =
+          collapsedArrayMap.length > 0
+            ? collapsedArrayMap.map((item) => item[keyProperty])
+            : rows.map((item) => item[keyProperty]);
+        const currentId = array.findIndex(
+          (x) => x === selected[selected.length - 1]
+        );
+
+        if (currentId >= array.length - 1) {
+          return;
+        }
+
+        if (!selectRange) {
+          this.handleSelect(
+            array[currentId + 1],
+            false,
+            idFocused,
+            onShowSelectedIncludedView([array[currentId + 1]])
+          );
+        } else {
+          this.handleSelect(array[currentId + 1], false, idFocused);
+        }
+        break;
+      }
+      case 'ArrowUp': {
+        e.preventDefault();
+
+        const array =
+          collapsedArrayMap.length > 0
+            ? collapsedArrayMap.map((item) => item[keyProperty])
+            : rows.map((item) => item[keyProperty]);
+        const currentId = array.findIndex(
+          (x) => x === selected[selected.length - 1]
+        );
+
+        if (currentId <= 0) {
+          return;
+        }
+
+        if (!selectRange) {
+          this.handleSelect(
+            array[currentId - 1],
+            idFocused,
+            false,
+            onShowSelectedIncludedView([array[currentId - 1]])
+          );
+        } else {
+          this.handleSelect(array[currentId - 1], idFocused, false);
+        }
+        break;
+      }
+      case 'ArrowLeft':
+        e.preventDefault();
+        if (document.activeElement.previousSibling) {
+          document.activeElement.previousSibling.focus();
+        }
+        break;
+      case 'ArrowRight':
+        e.preventDefault();
+        if (document.activeElement.nextSibling) {
+          document.activeElement.nextSibling.focus();
+        }
+        break;
+      case 'Tab':
+        if (mainTable) {
+          e.preventDefault();
+          const focusedElem = document.getElementsByClassName(
+            'js-attributes'
+          )[0];
+          if (focusedElem) {
+            focusedElem.getElementsByTagName('input')[0].focus();
+          }
+          break;
+        } else {
+          if (e.shiftKey) {
+            //passing focus over table cells backwards
+            this.table.focus();
+          } else {
+            //passing focus over table cells
+            this.tfoot.focus();
+          }
+        }
+        break;
+      case 'Enter':
+        if (selected.length <= 1 && readonly) {
+          e.preventDefault();
+
+          this.handleDoubleClick(selected[selected.length - 1]);
+        }
+        break;
+      case 'Escape':
+        closeOverlays && closeOverlays();
+        break;
+    }
+  };
+
+  handleDoubleClick = (id) => {
+    const { isIncluded, onDoubleClick } = this.props;
+
+    if (!isIncluded) {
+      onDoubleClick && onDoubleClick(id);
+    }
+  };
+
+  handleClick = (e, item) => {
+    const {
+      onSelectionChanged,
+      openIncludedViewOnSelect,
+      showIncludedViewOnSelect,
+      keyProperty,
+      updateQuickActions,
+      selected,
+      onSelect,
+      onDeselect,
+    } = this.props;
+    const id = item[keyProperty];
+    let selectionValue = false;
+
+    if (e.button === 0) {
+      const selectMore = e.metaKey || e.ctrlKey;
+      const selectRange = e.shiftKey;
+      const isSelected = selected.indexOf(id) > -1;
+      const isAnySelected = selected.length > 0;
+
+      let newSelection;
+
+      if (selectMore || isMobileOrTablet) {
+        if (isSelected) {
+          newSelection = onDeselect(id);
+        } else {
+          newSelection = onSelect(id);
+        }
+      } else if (selectRange) {
+        if (isAnySelected) {
+          newSelection = this.getProductRange(id);
+          onSelect(newSelection);
+        } else {
+          newSelection = [id];
+          onSelect(id);
+        }
+      } else {
+        updateQuickActions && updateQuickActions(id);
+        newSelection = [id];
+        onSelect(id);
+      }
+
+      if (onSelectionChanged) {
+        onSelectionChanged(newSelection);
+      }
+
+      selectionValue = newSelection.length > 0;
+    }
+    selectionValue = true;
+
+    if (openIncludedViewOnSelect) {
+      showIncludedViewOnSelect({
+        showIncludedView: selectionValue && item.supportIncludedViews,
+        forceClose: !selectionValue,
+        windowType: item.supportIncludedViews
+          ? item.includedView.windowType || item.includedView.windowId
+          : null,
+        viewId: item.supportIncludedViews ? item.includedView.viewId : '',
+      });
+    }
+  };
+
+  handleRightClick = (e, id, fieldName, supportZoomInto, supportFieldEdit) => {
+    e.preventDefault();
+
+    const { selected } = this.props;
+    const { clientX, clientY } = e;
+
+    if (selected.indexOf(id) > -1) {
+      this.setContextMenu(
+        clientX,
+        clientY,
+        fieldName,
+        supportZoomInto,
+        supportFieldEdit
+      );
+    } else {
+      this.handleSelect(id, null, null, () => {
+        this.setContextMenu(
+          clientX,
+          clientY,
+          fieldName,
+          supportZoomInto,
+          supportFieldEdit
+        );
+      });
+    }
+  };
+
   renderTableBody = () => {
     const {
       tabId,
@@ -528,7 +515,7 @@ class Table extends PureComponent {
       rows,
       selected,
       onItemChange,
-      onSelectRange,
+      onSelect,
       onRowCollapse,
       collapsedRows,
       collapsedParentsRows,
@@ -607,13 +594,13 @@ class Table extends PureComponent {
               selected[0] === 'all')) ||
           (selected && !selected[0] && focusOnFieldName && i === 0)
         }
-        handleSelect={onSelectRange}
+        handleSelect={onSelect}
         contextType={item.type}
         caption={item.caption ? item.caption : ''}
         colspan={item.colspan}
         notSaved={item.saveStatus && !item.saveStatus.saved}
         getSizeClass={getSizeClass}
-        handleRowCollapse={onRowCollapse}
+        onRowCollapse={onRowCollapse}
         onItemChange={onItemChange}
         onCopy={handleCopy}
       />
@@ -621,9 +608,9 @@ class Table extends PureComponent {
   };
 
   renderEmptyInfo = (rows) => {
-    const { emptyText, emptyHint, pendingInit } = this.props;
+    const { emptyText, emptyHint, pending } = this.props;
 
-    if (pendingInit) {
+    if (pending) {
       return false;
     }
 
@@ -678,19 +665,15 @@ class Table extends PureComponent {
       rows,
       selected,
       onHandleZoomInto,
-      onSelectRange,
+      onSelect,
       onSelectAll,
       onDeselectAll,
+      onGetAllLeaves,
+
+      tableRefreshToggle,
     } = this.props;
 
-    const {
-      contextMenu,
-      promptOpen,
-      isBatchEntry,
-
-      // TODO: Move to state/container/redux ?
-      tableRefreshToggle,
-    } = this.state;
+    const { contextMenu, promptOpen, isBatchEntry } = this.state;
 
     let showPagination = page && pageLength;
     if (currentDevice.type === 'mobile' || currentDevice.type === 'tablet') {
@@ -825,8 +808,8 @@ class Table extends PureComponent {
               pageLength={pageLength}
               rowLength={rows.length}
               handleSelectAll={onSelectAll}
-              handleSelectRange={onSelectRange}
-              TODO={1/* SHOULD THIS BE onDeselect ? */}
+              handleSelectRange={onSelect}
+              TODO={1 /* SHOULD THIS BE onDeselect ? */}
               deselect={onDeselectAll}
               onDeselectAll={onDeselectAll}
             />
@@ -863,7 +846,7 @@ class Table extends PureComponent {
                 ? this.handleDelete
                 : null
             }
-            onGetAllLeafs={this.getAllLeafs}
+            onGetAllLeaves={onGetAllLeaves}
             onIndent={this.handleShortcutIndent}
           />
         )}

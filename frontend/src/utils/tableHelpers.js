@@ -2,32 +2,42 @@ import currentDevice from 'current-device';
 import PropTypes from 'prop-types';
 import uuid from 'uuid/v4';
 
-const EMPTY_ARRAY = [];
-
 export const containerPropTypes = {
-  // from @connect
-  dispatch: PropTypes.func.isRequired,
-
   // from <DocumentList>
   autofocus: PropTypes.bool,
   rowEdited: PropTypes.bool,
   onSelectionChanged: PropTypes.func,
   onRowEdited: PropTypes.func,
   defaultSelected: PropTypes.array,
-  disableOnClickOutside: PropTypes.func,
+  disableOnClickOutside: PropTypes.bool,
   limitOnClickOutside: PropTypes.bool,
   supportOpenRecord: PropTypes.bool,
 
+  // from redux
   rows: PropTypes.array.isRequired,
   columns: PropTypes.array.isRequired,
   selected: PropTypes.array.isRequired,
+  collapsedParentsRows: PropTypes.array.isRequired,
+  collapsedRows: PropTypes.array.isRequired,
+  collapsedArrayMap: PropTypes.array.isRequired,
+  allowShortcut: PropTypes.bool,
+  allowOutsideClick: PropTypes.bool,
+  modalVisible: PropTypes.bool,
+  isGerman: PropTypes.bool,
+  activeSort: PropTypes.bool,
+
+  // action creators
+  collapseTableRows: PropTypes.func.isRequired,
+  deleteLocal: PropTypes.func.isRequired,
+  deselectTableItems: PropTypes.func.isRequired,
+  openModal: PropTypes.func.isRequired,
+  updateTableSelection: PropTypes.func.isRequired,
 };
 
 export const componentPropTypes = {
   ...containerPropTypes,
   onSelect: PropTypes.func.isRequired,
-  onSelectOne: PropTypes.func.isRequired,
-  onSelectRange: PropTypes.func.isRequired,
+  onGetAllLeaves: PropTypes.func.isRequired,
   onSelectAll: PropTypes.func.isRequired,
   onDeselectAll: PropTypes.func.isRequired,
   onDeselect: PropTypes.func.isRequired,
@@ -54,11 +64,7 @@ export function constructorFn(props) {
     dataHash: uuid(),
     promptOpen: false,
     isBatchEntry: false,
-    // rows: [],
-    collapsedRows: EMPTY_ARRAY,
-    collapsedParentsRows: EMPTY_ARRAY,
     pendingInit: true,
-    collapsedArrayMap: EMPTY_ARRAY,
     rowEdited: rowEdited,
     tableRefreshToggle: false,
   };

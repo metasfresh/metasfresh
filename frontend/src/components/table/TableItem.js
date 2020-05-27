@@ -546,16 +546,17 @@ class TableItem extends Component {
     return res;
   };
 
-  handleIndentSelect = (e, id, elem) => {
-    const { handleSelect } = this.props;
+  handleIndentSelect = (e) => {
+    const { handleSelect, rowId, includedDocuments } = this.props;
+
     e.stopPropagation();
-    handleSelect(this.nestedSelect(elem).concat([id]));
+    handleSelect(this.nestedSelect(includedDocuments).concat([rowId]));
   };
 
-  onRowCollapse = () => {
-    const { item, collapsed, handleRowCollapse } = this.props;
+  handleRowCollapse = () => {
+    const { item, collapsed, onRowCollapse } = this.props;
 
-    handleRowCollapse(item, collapsed);
+    onRowCollapse(item, collapsed);
   };
 
   getIconClassName = (huType) => {
@@ -581,9 +582,7 @@ class TableItem extends Component {
       indent,
       lastChild,
       includedDocuments,
-      rowId,
       collapsed,
-      // onRowCollapse,
       collapsible,
     } = this.props;
 
@@ -621,22 +620,19 @@ class TableItem extends Component {
         {includedDocuments && collapsible ? (
           collapsed ? (
             <i
-              onClick={this.onRowCollapse}
+              onClick={this.handleRowCollapse}
               className="meta-icon-plus indent-collapse-icon"
             />
           ) : (
             <i
-              onClick={this.onRowCollapse}
+              onClick={this.handleRowCollapse}
               className="meta-icon-minus indent-collapse-icon"
             />
           )
         ) : (
           ''
         )}
-        <div
-          className="indent-icon"
-          onClick={(e) => this.handleIndentSelect(e, rowId, includedDocuments)}
-        >
+        <div className="indent-icon" onClick={this.handleIndentSelect}>
           <i className={this.getIconClassName(huType)} />
         </div>
       </div>
@@ -649,7 +645,9 @@ class TableItem extends Component {
       odd,
       indentSupported,
       indent,
+      // TODO: I think this can be removed
       contextType,
+
       lastChild,
       processed,
       includedDocuments,
@@ -701,7 +699,7 @@ TableItem.propTypes = {
   caption: PropTypes.string,
   dataHash: PropTypes.string.isRequired,
   changeListenOnTrue: PropTypes.func,
-  handleRowCollapse: PropTypes.func,
+  onRowCollapse: PropTypes.func,
   handleRightClick: PropTypes.func,
   fieldsByName: PropTypes.object,
   indent: PropTypes.array,

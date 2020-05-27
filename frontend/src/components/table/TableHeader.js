@@ -10,6 +10,7 @@ class TableHeader extends PureComponent {
   constructor(props) {
     super(props);
 
+    // TODO: Do we have to define this, if it's an empty object ?
     this.state = {};
   }
 
@@ -62,6 +63,7 @@ class TableHeader extends PureComponent {
       fields[field] = sortingValue;
     }
 
+    // TODO: We don't have to spread `fields` as it's a new object anyway
     this.setState({
       fields: { ...fields },
     });

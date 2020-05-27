@@ -29,11 +29,11 @@ export default class DocumentListContextShortcuts extends PureComponent {
 
       return false;
     },
-    SELECT_ALL_LEAFS: (event) => {
+    SELECT_ALL_LEAVES: (event) => {
       event.preventDefault();
 
-      if (this.props.onGetAllLeafs) {
-        this.props.onGetAllLeafs();
+      if (this.props.onGetAllLeaves) {
+        this.props.onGetAllLeaves();
       }
     },
     EXPAND_INDENT: (event) => {
@@ -83,9 +83,9 @@ export default class DocumentListContextShortcuts extends PureComponent {
           handler={this.handlers.ADVANCED_EDIT}
         />
         <Shortcut
-          key="SELECT_ALL_LEAFS"
-          name="SELECT_ALL_LEAFS"
-          handler={this.handlers.SELECT_ALL_LEAFS}
+          key="SELECT_ALL_LEAVES"
+          name="SELECT_ALL_LEAVES"
+          handler={this.handlers.SELECT_ALL_LEAVES}
         />
         <Shortcut
           key="EXPAND_INDENT"
@@ -106,7 +106,7 @@ DocumentListContextShortcuts.propTypes = {
   onOpenNewTab: PropTypes.func,
   onDelete: PropTypes.func,
   onAdvancedEdit: PropTypes.func,
-  onGetAllLeafs: PropTypes.any,
+  onGetAllLeaves: PropTypes.any,
   onIndent: PropTypes.func,
   commentsOpened: PropTypes.bool,
   windowId: PropTypes.string,
