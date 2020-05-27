@@ -1,15 +1,13 @@
 import React from 'react';
-import { shallow, render, mount } from 'enzyme';
-import renderer from 'react-test-renderer';
+import { shallow, mount } from 'enzyme';
 import tableProps from '../../../../test_setup/fixtures/table/table.json';
-import Table from '../../../components/table/Table';
+import Table, { Table as TableDisconnected } from '../../../components/table/Table';
 import { ShortcutProvider } from '../../../components/keyshortcuts/ShortcutProvider';
 import { initialState as appHandlerState } from '../../../reducers/appHandler';
 import { initialState as windowHandlerState } from '../../../reducers/windowHandler';
 import { Provider } from 'react-redux';
 import configureStore from 'redux-mock-store';
 import merge from 'merge';
-import keymap from '../../../shortcuts/keymap';
 
 const mockStore = configureStore([]);
 
@@ -38,6 +36,24 @@ const createStore = function(state = {}) {
 
   return res;
 };
+
+const initialState = createStore({
+  windowHandler: {
+    allowShortcut: true,
+    modal: {
+      visible: false,
+    },
+  },
+});
+const store = mockStore(initialState);
+tableProps.rowData = rowData;
+const tableWrapper = mount(
+  <ShortcutProvider hotkeys={{}} keymap={{}}>
+    <Provider store={store}>
+      <Table {...tableProps} />
+    </Provider>
+  </ShortcutProvider>
+);
 
 describe('Table', () => {
   it('renders without errors with bare props', () => {
@@ -94,27 +110,71 @@ describe('Table', () => {
   });
 
   it('renders without errors with store data', () => {
-    const initialState = createStore({
-      windowHandler: {
-        allowShortcut: true,
-        modal: {
-          visible: false,
-        },
-      },
-    });
-    const store = mockStore(initialState);
-    tableProps.rowData = rowData;
-    const wrapper = mount(
-      <ShortcutProvider hotkeys={{}} keymap={{}}>
-        <Provider store={store}>
-          <Table {...tableProps} />
-        </Provider>
-      </ShortcutProvider>
-    );
-    const html = wrapper.html();
+    const html = tableWrapper.html();
 
     expect(html).toContain(
       'table table-bordered-vertically table-striped js-table table-read-only'
     );
   });
+
+  // it('Cell is selected and row focused', async () => {
+  //   const test = rowData.get('1');
+
+  //   await tableWrapper.setState({ rows: test });
+  //   tableWrapper.update();
+  //   //expect(tableWrapper.state('currentItem')).toEqual(fixtureCurrentItemState);
+  //   console.log(tableWrapper.debug());
+  //   const html = tableWrapper.html();
+  //   console.log(html)
+  //   });
+
+  // });
+
+  it('checks state setting', async () => {
+    const test = rowData.get('1');
+    const tableDiscWrapper = mount(
+      <ShortcutProvider hotkeys={{}} keymap={{}}>
+        <Provider store={store}>
+          <TableDisconnected {...tableProps} />
+        </Provider>
+      </ShortcutProvider>
+    );
+    tableDiscWrapper.setState({ rows: test }, () => {
+      tableDiscWrapper.update();
+      console.log(tableDiscWrapper.state());
+      console.log(tableDiscWrapper.html());
+    });
+  });
+
+  it('Lookup widget is focused on selecting row', () => {});
+
+  it('Lookup widget is blurred on patch and re-focused on key', () => {});
+
+  it('Lookup widget is blurred on keys', () => {});
+
+  it('Lookup widget is re-focused on select after traversing back', () => {});
+
+  it('Number widget is focused on selecting row', () => {});
+
+  it('Number widget is blurred on patch and re-focused on key', () => {});
+
+  it('Number widget is blurred on keys', () => {});
+
+  it('Number widget is re-focused on select after traversing back', () => {});
+
+  it('Text widget is focused on selecting row', () => {});
+
+  it('Text widget is blurred on patch and re-focused on key', () => {});
+
+  it('Text widget is blurred on keys', () => {});
+
+  it('Text widget is re-focused on select after traversing back', () => {});
+
+  it('Textarea widget is focused on selecting row', () => {});
+
+  it('Textarea widget is blurred on patch and re-focused on key', () => {});
+
+  it('Textarea widget is blurred on keys', () => {});
+
+  it('Textarea widget is re-focused on select after traversing back', () => {});
 });
