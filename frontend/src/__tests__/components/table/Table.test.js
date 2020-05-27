@@ -117,20 +117,7 @@ describe('Table', () => {
     );
   });
 
-  // it('Cell is selected and row focused', async () => {
-  //   const test = rowData.get('1');
-
-  //   await tableWrapper.setState({ rows: test });
-  //   tableWrapper.update();
-  //   //expect(tableWrapper.state('currentItem')).toEqual(fixtureCurrentItemState);
-  //   console.log(tableWrapper.debug());
-  //   const html = tableWrapper.html();
-  //   console.log(html)
-  //   });
-
-  // });
-
-  it('checks state setting', async () => {
+  it('Cell is selected and row focused', async () => {
     const test = rowData.get('1');
     const tableDiscWrapper = mount(
       <ShortcutProvider hotkeys={{}} keymap={{}}>
@@ -141,8 +128,8 @@ describe('Table', () => {
     );
     tableDiscWrapper.setState({ rows: test }, () => {
       tableDiscWrapper.update();
-      console.log(tableDiscWrapper.state());
-      console.log(tableDiscWrapper.html());
+      // console.log(tableDiscWrapper.state());
+      // console.log(tableDiscWrapper.html());
     });
   });
 
