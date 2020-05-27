@@ -109,7 +109,7 @@ public class WEBUI_CreateRequest extends JavaProcess
 			return;
 		}
 		final DocumentPath documentPath = DocumentPath.builder()
-				.setDocumentType(WindowId.of(requestWindowId.get()))
+				.setDocumentType(WindowId.of(requestWindowId.get().getRepoId()))
 				.setDocumentId(DocumentId.NEW_ID_STRING)
 				.allowNewDocumentId()
 				.build();
@@ -143,7 +143,7 @@ public class WEBUI_CreateRequest extends JavaProcess
 			return;
 		}
 		final DocumentPath documentPath = DocumentPath.builder()
-				.setDocumentType(WindowId.of(requestWindowId.get()))
+				.setDocumentType(WindowId.of(requestWindowId.get().getRepoId()))
 				.setDocumentId(DocumentId.NEW_ID_STRING)
 				.allowNewDocumentId()
 				.build();
@@ -167,7 +167,7 @@ public class WEBUI_CreateRequest extends JavaProcess
 			return;
 		}
 		final DocumentPath documentPath = DocumentPath.builder()
-				.setDocumentType(WindowId.of(requestWindowId.get()))
+				.setDocumentType(WindowId.of(requestWindowId.get().getRepoId()))
 				.setDocumentId(DocumentId.NEW_ID_STRING)
 				.allowNewDocumentId()
 				.build();
