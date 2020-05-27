@@ -211,7 +211,9 @@ Cypress.Commands.add('writeIntoStringField', (fieldName, stringValue, modal, rew
   cy.get(path)
     .find('input')
     .type('{selectall}')
-    .type(stringValue);
+    .type(stringValue, { delay: 20 });
+  // if a typed string has missing characters, maybe the delay of type is not good and we should try another workaround.
+  // for more details see: https://github.com/cypress-io/cypress/issues/3817
 
   if (!noRequest) {
     cy.server();
@@ -219,6 +221,7 @@ Cypress.Commands.add('writeIntoStringField', (fieldName, stringValue, modal, rew
   }
 
   cy.get(path)
+    .find('input')
     .type('{enter}');
 
   if (!noRequest) {
