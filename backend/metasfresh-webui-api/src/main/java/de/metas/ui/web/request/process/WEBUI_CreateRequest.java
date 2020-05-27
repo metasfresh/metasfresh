@@ -17,15 +17,17 @@ import de.metas.ui.web.window.model.NullDocumentChangesCollector;
 import de.metas.user.UserId;
 import de.metas.user.api.IUserDAO;
 import de.metas.util.Services;
-import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.ad.element.api.AdWindowId;
+import org.adempiere.model.RecordZoomWindowFinder;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.SpringContextHolder;
-import org.compiere.model.I_AD_Table;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_R_Request;
 import org.springframework.beans.factory.annotation.Autowired;
+
+import java.util.Optional;
 
 /*
  * #%L
@@ -57,8 +59,7 @@ public class WEBUI_CreateRequest extends JavaProcess
 	private final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
 	private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
 	private final IUserDAO userDAO = Services.get(IUserDAO.class);
-	private final IADTableDAO tableDAO = Services.get(IADTableDAO.class);
-	final I_AD_Table table = tableDAO.retrieveTableOrNull(I_R_Request.Table_Name);
+	private final Optional<AdWindowId> requestWindowId = RecordZoomWindowFinder.findAdWindowId(I_R_Request.Table_Name);
 
 	public WEBUI_CreateRequest()
 	{
@@ -103,12 +104,12 @@ public class WEBUI_CreateRequest extends JavaProcess
 		{
 			events.add(JSONDocumentChangedEvent.replace(I_R_Request.COLUMNNAME_AD_User_ID, defaultContact.getAD_User_ID()));
 		}
-		if (table == null)
+		if (!requestWindowId.isPresent())
 		{
 			return;
 		}
 		final DocumentPath documentPath = DocumentPath.builder()
-				.setDocumentType(WindowId.of(table.getAD_Window_ID()))
+				.setDocumentType(WindowId.of(requestWindowId.get()))
 				.setDocumentId(DocumentId.NEW_ID_STRING)
 				.allowNewDocumentId()
 				.build();
@@ -137,12 +138,12 @@ public class WEBUI_CreateRequest extends JavaProcess
 			events.add(JSONDocumentChangedEvent.replace(I_R_Request.COLUMNNAME_AD_User_ID, defaultContact.getAD_User_ID()));
 		}
 
-		if (table == null)
+		if (!requestWindowId.isPresent())
 		{
 			return;
 		}
 		final DocumentPath documentPath = DocumentPath.builder()
-				.setDocumentType(WindowId.of(table.getAD_Window_ID()))
+				.setDocumentType(WindowId.of(requestWindowId.get()))
 				.setDocumentId(DocumentId.NEW_ID_STRING)
 				.allowNewDocumentId()
 				.build();
@@ -161,12 +162,12 @@ public class WEBUI_CreateRequest extends JavaProcess
 		events.add(JSONDocumentChangedEvent.replace(I_R_Request.COLUMNNAME_AD_User_ID, user.getAD_User_ID()));
 		events.add(JSONDocumentChangedEvent.replace(I_R_Request.COLUMNNAME_C_BPartner_ID, user.getC_BPartner_ID()));
 
-		if (table == null)
+		if (!requestWindowId.isPresent())
 		{
 			return;
 		}
 		final DocumentPath documentPath = DocumentPath.builder()
-				.setDocumentType(WindowId.of(table.getAD_Window_ID()))
+				.setDocumentType(WindowId.of(requestWindowId.get()))
 				.setDocumentId(DocumentId.NEW_ID_STRING)
 				.allowNewDocumentId()
 				.build();
