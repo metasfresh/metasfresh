@@ -57,7 +57,7 @@ public interface IPricingBL extends ISingletonService
 	 * Creates and editable pricing context, initialized with given values.
 	 *
 	 * @param C_UOM_ID the uom of the given {@code qty}.
-	 * @deprecated please use {@link #createInitialContext(ProductId, BPartnerId, Quantity, SOTrx)} instead.
+	 * @deprecated please use {@link #createInitialContext(OrgId, ProductId, BPartnerId, Quantity, SOTrx)} instead.
 	 */
 	@Deprecated
 	IEditablePricingContext createInitialContext(int AD_Org_ID, int M_Product_ID, int C_BPartner_ID, int C_UOM_ID, BigDecimal qty, boolean isSOTrx);
