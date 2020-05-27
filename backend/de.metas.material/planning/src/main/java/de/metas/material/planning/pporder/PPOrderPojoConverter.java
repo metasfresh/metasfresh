@@ -9,6 +9,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
+import de.metas.quantity.Quantitys;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UomId;
 import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
@@ -124,16 +126,17 @@ public class PPOrderPojoConverter
 
 		final UomId lineUomId = UomId.ofRepoId(ppOrderLineRecord.getC_UOM_ID());
 		final ProductId lineProductId = ProductId.ofRepoId(ppOrderLineRecord.getM_Product_ID());
-		final BigDecimal qtyRequired = uomConversionBL.convertToProductUOM(lineProductId, ppOrderLineRecord.getQtyRequiered(), lineUomId);
-		final BigDecimal qtyDelivered = uomConversionBL.convertToProductUOM(lineProductId, ppOrderLineRecord.getQtyDelivered(), lineUomId);
+
+		final Quantity qtyRequired = uomConversionBL.convertToProductUOM(Quantitys.create(ppOrderLineRecord.getQtyRequiered(), lineUomId), lineProductId);
+		final Quantity qtyDelivered = uomConversionBL.convertToProductUOM(Quantitys.create( ppOrderLineRecord.getQtyDelivered(), lineUomId), lineProductId);
 
 		return PPOrderLine.builder()
 				.productDescriptor(productDescriptorFactory.createProductDescriptor(ppOrderLineRecord))
 				.description(ppOrderLineRecord.getDescription())
 				.ppOrderLineId(ppOrderLineRecord.getPP_Order_BOMLine_ID())
 				.productBomLineId(ppOrderLineRecord.getPP_Product_BOMLine_ID())
-				.qtyRequired(qtyRequired)
-				.qtyDelivered(qtyDelivered)
+				.qtyRequired(qtyRequired.toBigDecimal())
+				.qtyDelivered(qtyDelivered.toBigDecimal())
 				.issueOrReceiveDate(issueOrReceiveDate)
 				.receipt(receipt)
 				.build();
