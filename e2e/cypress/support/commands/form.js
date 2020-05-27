@@ -219,6 +219,7 @@ Cypress.Commands.add('writeIntoStringField', (fieldName, stringValue, modal, rew
   }
 
   cy.get(path)
+    .find('input')
     .type('{enter}');
 
   if (!noRequest) {
