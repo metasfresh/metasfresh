@@ -35,7 +35,6 @@ import lombok.Value;
  */
 
 @Value
-@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 public class SupplyRequiredEvent implements MaterialEvent
 {
 	public static final String TYPE = "SupplyRequiredEvent";
