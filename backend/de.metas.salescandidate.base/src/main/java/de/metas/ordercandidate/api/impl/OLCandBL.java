@@ -238,17 +238,22 @@ public class OLCandBL implements IOLCandBL
 	}
 
 	@Override
-	public PaymentTermId getPaymentTermId(@Nullable final BPartnerOrderParams bPartnerOrderParams, @Nullable final OLCandOrderDefaults orderDefaults)
+	public PaymentTermId getPaymentTermId(@Nullable final BPartnerOrderParams bPartnerOrderParams,
+			@Nullable final OLCandOrderDefaults orderDefaults,
+			@Nullable I_C_OLCand orderCandidateRecord)
 	{
-		if (bPartnerOrderParams != null && bPartnerOrderParams.getPaymentTermId().isPresent())
-		{
-			return bPartnerOrderParams.getPaymentTermId().get();
-		}
-		if (orderDefaults != null)
-		{
-			return orderDefaults.getPaymentTermId();
-		}
-		return null;
+		final PaymentTermId orderCandidatePaymenTermId = orderCandidateRecord == null ? null
+				: PaymentTermId.ofRepoIdOrNull(orderCandidateRecord.getC_PaymentTerm_ID());
+
+		final PaymentTermId bpartnerOrderParamsPaymentTermId = bPartnerOrderParams == null ? null
+				: bPartnerOrderParams.getPaymentTermId().orElse(null);
+
+		final PaymentTermId orderDefaultsPaymentTermId = orderDefaults == null ? null
+				: orderDefaults.getPaymentTermId();
+
+		return coalesce(orderCandidatePaymenTermId,
+				bpartnerOrderParamsPaymentTermId,
+				orderDefaultsPaymentTermId);
 	}
 
 	@Override

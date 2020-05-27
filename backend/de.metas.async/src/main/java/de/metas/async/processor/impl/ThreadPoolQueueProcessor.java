@@ -26,6 +26,8 @@ import java.util.concurrent.SynchronousQueue;
  * #L%
  */
 
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -90,7 +92,6 @@ class ThreadPoolQueueProcessor extends AbstractQueueProcessor
 					.loggerToUse(loggerForExecutor)
 					.poolSize(config.getPoolSize())
 					.build();
-
 		}
 
 		this.running = new AtomicBoolean(true);
@@ -170,7 +171,7 @@ class ThreadPoolQueueProcessor extends AbstractQueueProcessor
 			}
 			catch (InterruptedException e)
 			{
-				logger.warn("Failed shutdowning executor for " + name + ". Retry " + retryCount + " more times.");
+				logger.warn("Failed shutting down executor for " + name + ". Retry " + retryCount + " more times.");
 				terminated = false;
 			}
 			retryCount--;

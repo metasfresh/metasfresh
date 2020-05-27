@@ -105,16 +105,6 @@ public interface IInvoiceCandBL extends ISingletonService
 
 	/**
 	 * Creates <code>de.metas.async</code> work packages from for those invoice candidates that are selected via <code>T_Selection</code> with the given <code>AD_PInstance_ID</code>.
-	 *
-	 * @param adPInstance the process instance of the process that does the enqueuing.
-	 * @param onlyApprovedForInvoicing if true, then enqueue only candidates flagged as {@link I_C_Invoice_Candidate#COLUMNNAME_ApprovalForInvoicing}
-	 * @param consolidateApprovedICs <b>ignored, unless <code>onlyApprovedForInvoicing</code> is true </b>. If true then the system will rekey the ICs in question according to the default
-	 *            C_Aggregation, assuming that is is the most basic one with the smallest possible number of items and thus the under under which the most ICs have an equal HeaderAggregationKey.
-	 * @param ignoreInvoiceSchedule
-	 * @param loggable <b>may not be null</b>. Use {@link de.metas.util.NullLoggable} if you don't have any other loggable.
-	 * @param trxName
-	 *
-	 * @return the number of enqueued workpackages
 	 */
 	IInvoiceCandidateEnqueuer enqueueForInvoicing();
 
@@ -213,8 +203,7 @@ public interface IInvoiceCandBL extends ISingletonService
 	 * This information is currently used by {@link de.metas.invoicecandidate.process.C_Invoice_Candidate_Update}.
 	 *
 	 * Used inside the invalidate code within {@link IInvoiceCandDAO}, to avoid invalidating candidates while the process validates or creates them.
-	 *
-	 * @param candidate
+	 * 
 	 * @return
 	 */
 	boolean isUpdateProcessInProgress();
@@ -257,7 +246,7 @@ public interface IInvoiceCandBL extends ISingletonService
 	void handleCompleteForInvoice(org.compiere.model.I_C_Invoice invoice);
 
 	/**
-	 * Set the {@value I_C_Invoice_Candidate#COLUMN_Processed_Calc} and <code>Processed</code> flags of the given <code>candidate</code>.<br>
+	 * Set the {@value I_C_Invoice_Candidate#COLUMNNAME_Processed_Calc} and <code>Processed</code> flags of the given <code>candidate</code>.<br>
 	 * <code>Processed_Calc</code> can be overridden by <code>Processed_Override</code>.
 	 * If it is not overridden, then the <code>Processed_Calc</code> value is copied into <code>Processed</code>.
 	 * <p>
@@ -406,7 +395,7 @@ public interface IInvoiceCandBL extends ISingletonService
 	 * Note: This behavior is determined by the value of the sys config {@code C_Invoice_Candidate_Close_PartiallyInvoice}.
 	 * The candidates will be closed only if the sys config is set to 'Y'.
 	 *
-	 * @see IInvoiceCandBL#isCloseIfPartiallyInvoiced()
+	 * @see IInvoiceCandBL#isCloseIfPartiallyInvoiced(OrgId) 
 	 */
 	void closePartiallyInvoiced_InvoiceCandidates(I_C_Invoice invoice);
 

@@ -3415,7 +3415,7 @@ public abstract class PO
 		{
 			if (log.isDebugEnabled())
 			{
-				log.debug("[" + m_trxName + "] - " + p_info.getTableName() + "." + where);
+				log.trace("PO has changes; tableNAme={}; whereClause={}", p_info.getTableName(), where);
 			}
 
 			if (!updated) 	// Updated not explicitly set

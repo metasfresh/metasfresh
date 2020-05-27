@@ -22,26 +22,7 @@
 
 package de.metas.handlingunits;
 
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryOrderBy;
-import org.adempiere.ad.dao.IQueryOrderBy.Direction;
-import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
-import org.adempiere.util.lang.IContextAware;
-import org.adempiere.util.lang.IPair;
-import org.adempiere.warehouse.WarehouseId;
-import org.compiere.model.I_M_Locator;
-import org.compiere.model.I_M_Product;
-import org.compiere.model.I_M_Warehouse;
-
 import com.google.common.collect.ImmutableMap;
-
 import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.model.I_DD_NetworkDistribution;
 import de.metas.handlingunits.model.I_M_HU;
@@ -53,8 +34,25 @@ import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
 import de.metas.handlingunits.model.X_M_HU_Item;
 import de.metas.util.ISingletonService;
 import de.metas.util.Services;
+import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryOrderBy;
+import org.adempiere.ad.dao.IQueryOrderBy.Direction;
+import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
+import org.adempiere.util.lang.IContextAware;
+import org.adempiere.util.lang.IPair;
+import org.adempiere.warehouse.WarehouseId;
+import org.compiere.model.I_M_Locator;
+import org.compiere.model.I_M_Product;
+import org.compiere.model.I_M_Warehouse;
 
 import javax.annotation.Nullable;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 
 public interface IHandlingUnitsDAO extends ISingletonService
 {
@@ -185,8 +183,7 @@ public interface IHandlingUnitsDAO extends ISingletonService
 	 * Retrieve (active) {@link I_M_HU_PI_Item}s for the given parameters.
 	 *
 	 * @param version   mandatory. Only return items that reference this version.
-	 * @param partnerId optional. If not {@code null}, then exclude items with {@link X_M_HU_Item#ITEMTYPE_HandlingUnit} that have a different {@link I_M_HU_PI_Item#COLUMN_C_BPartner_ID}.
-	 * @return
+	 * @param bpartnerId optional. If not {@code null}, then exclude items with {@link X_M_HU_Item#ITEMTYPE_HandlingUnit} that have a different {@link I_M_HU_PI_Item#COLUMNNAME_C_BPartner_ID}.
 	 */
 	List<I_M_HU_PI_Item> retrievePIItems(final I_M_HU_PI_Version version, final BPartnerId bpartnerId);
 
@@ -258,13 +255,8 @@ public interface IHandlingUnitsDAO extends ISingletonService
 
 	/**
 	 * Retrieve first parent item if more are defined.
-	 *
-	 * @param huPI
-	 * @param huUnitType
-	 * @param bpartner
-	 * @return
 	 */
-	I_M_HU_PI_Item retrieveDefaultParentPIItem(I_M_HU_PI huPI, String huUnitType, BPartnerId bpartnerId);
+	I_M_HU_PI_Item retrieveDefaultParentPIItem(@NonNull I_M_HU_PI huPI, @Nullable String huUnitType, @Nullable BPartnerId bpartnerId);
 
 	/**
 	 * Retrieves the default LU.

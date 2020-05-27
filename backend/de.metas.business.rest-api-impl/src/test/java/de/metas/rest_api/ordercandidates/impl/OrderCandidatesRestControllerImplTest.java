@@ -43,6 +43,7 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.X_C_DocType;
 import org.compiere.util.MimeType;
+import org.junit.Rule;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -155,6 +156,10 @@ public class OrderCandidatesRestControllerImplTest
 					.atTime(LocalTime.parse("23:07:16.193"))
 					.atZone(ZoneId.of("Europe/Berlin")));
 
+
+	@Rule
+	public AdempiereTestWatcher testWatcher = new AdempiereTestWatcher();
+
 	private static final String DATA_SOURCE_INTERNALNAME = "SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController";
 	private static final String DATA_DEST_INVOICECANDIDATE = "DEST.de.metas.invoicecandidate";
 
@@ -234,6 +239,8 @@ public class OrderCandidatesRestControllerImplTest
 
 			testMasterdata.createDocType(DocBaseAndSubType.of(X_C_DocType.DOCBASETYPE_SalesOrder,
 					X_C_DocType.DOCSUBTYPE_PrepayOrder));
+
+			testMasterdata.createPaymentTerm("paymentTermValue", "paymentTermExternalId");
 		}
 
 		final CurrencyService currencyService = new CurrencyService();
@@ -368,7 +375,7 @@ public class OrderCandidatesRestControllerImplTest
 	}
 
 	/**
-	 * Asserts that every {@link AttachmentEntry.Type} has a matching {@link JsonAttachment.Type} and vice versa
+	 * Asserts that every {@link AttachmentEntry.Type} has a matching {@link JsonAttachmentType} and vice versa
 	 */
 	@Test
 	public void jsonAttachmentTypes()
@@ -450,6 +457,7 @@ public class OrderCandidatesRestControllerImplTest
 				.shipper("val-DPD")
 				.salesPartnerCode("SalesRep")
 				.paymentRule(JSONPaymentRule.Paypal)
+				.paymentTerm("val-paymentTermValue")
 				.orderDocType(OrderDocType.PrepayOrder)
 				.shipper("val-DPD")
 				.build());
@@ -557,6 +565,7 @@ public class OrderCandidatesRestControllerImplTest
 				.shipper("val-DPD")
 				.salesPartnerCode("SalesRep")
 				.paymentRule(JSONPaymentRule.Paypal)
+				.paymentTerm("ext-paymentTermExternalId")
 				.orderDocType(OrderDocType.PrepayOrder)
 				.shipper("val-DPD")
 				.warehouseDestCode("testWarehouseDest")
@@ -641,6 +650,7 @@ public class OrderCandidatesRestControllerImplTest
 				.shipper("val-DPD")
 				.salesPartnerCode("SalesRep")
 				.paymentRule(JSONPaymentRule.DirectDebit)
+				.paymentTerm("val-paymentTermValue")
 				.orderDocType(OrderDocType.PrepayOrder)
 				.shipper("val-DPD")
 				.warehouseDestCode("testWarehouseDest")
@@ -718,6 +728,7 @@ public class OrderCandidatesRestControllerImplTest
 				.shipper("val-DPD")
 				.salesPartnerCode("SalesRep")
 				.paymentRule(JSONPaymentRule.Paypal)
+				.paymentTerm("val-paymentTermValue")
 				.orderDocType(OrderDocType.PrepayOrder)
 				.shipper("val-DPD")
 				.bpartner(JsonRequestBPartnerLocationAndContact.builder()
@@ -826,6 +837,7 @@ public class OrderCandidatesRestControllerImplTest
 				.shipper("val-DPD")
 				.salesPartnerCode("SalesRep")
 				.paymentRule(JSONPaymentRule.Paypal)
+				.paymentTerm("val-paymentTermValue")
 				.orderDocType(OrderDocType.PrepayOrder)
 				.shipper("val-DPD")
 
@@ -941,6 +953,7 @@ public class OrderCandidatesRestControllerImplTest
 				.paymentRule(JSONPaymentRule.DirectDebit)
 				.orderDocType(OrderDocType.PrepayOrder)
 				.shipper("val-DPD")
+				.paymentTerm("val-paymentTermValue")
 
 				.product(JsonProductInfo.builder()
 						.code("productCode")

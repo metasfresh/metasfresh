@@ -104,7 +104,7 @@ public class TrxListenerManager implements ITrxListenerManager
 			final String message = StringUtils.formatMessage("Registering another listener within a listener's event handling code might be a development error and that other listener might not be fired."
 					+ "\n trxName={}"
 					+ "\n current trx event timing={}"
-					+ "\n listener that is registerd={}",
+					+ "\n listener that is registered={}",
 					this.trxName,
 					currentTiming,
 					listener);

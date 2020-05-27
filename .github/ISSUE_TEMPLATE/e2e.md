@@ -7,7 +7,6 @@ assignees: ''
 
 ---
 
-
 **Test shall include:**
 
 - Customer Fixtures to use: (if needed)
