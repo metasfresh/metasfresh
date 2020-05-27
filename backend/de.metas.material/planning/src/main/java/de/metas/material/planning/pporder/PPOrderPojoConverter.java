@@ -83,8 +83,8 @@ public class PPOrderPojoConverter
 	{
 		final UomId uomId = UomId.ofRepoId(ppOrderRecord.getC_UOM_ID());
 		final ProductId productId = ProductId.ofRepoId(ppOrderRecord.getM_Product_ID());
-		final BigDecimal qtyRequired = uomConversionBL.convertToProductUOM(productId, ppOrderRecord.getQtyOrdered(), uomId);
-		final BigDecimal qtyDelivered = uomConversionBL.convertToProductUOM(productId, ppOrderRecord.getQtyDelivered(), uomId);
+		final Quantity qtyRequired = uomConversionBL.convertToProductUOM(Quantitys.create(ppOrderRecord.getQtyOrdered(), uomId), productId);
+		final Quantity qtyDelivered = uomConversionBL.convertToProductUOM(Quantitys.create(ppOrderRecord.getQtyDelivered(), uomId), productId);
 
 		return PPOrder.builder()
 				.clientAndOrgId(ClientAndOrgId.ofClientAndOrg(ppOrderRecord.getAD_Client_ID(), ppOrderRecord.getAD_Org_ID()))
@@ -95,8 +95,8 @@ public class PPOrderPojoConverter
 				.ppOrderId(ppOrderRecord.getPP_Order_ID())
 				.productDescriptor(productDescriptorFactory.createProductDescriptor(ppOrderRecord))
 				.productPlanningId(ppOrderRecord.getPP_Product_Planning_ID())
-				.qtyRequired(qtyRequired)
-				.qtyDelivered(qtyDelivered)
+				.qtyRequired(qtyRequired.toBigDecimal())
+				.qtyDelivered(qtyDelivered.toBigDecimal())
 				.warehouseId(WarehouseId.ofRepoId(ppOrderRecord.getM_Warehouse_ID()))
 				.bpartnerId(BPartnerId.ofRepoIdOrNull(ppOrderRecord.getC_BPartner_ID()))
 				.orderLineId(ppOrderRecord.getC_OrderLine_ID())
@@ -126,9 +126,8 @@ public class PPOrderPojoConverter
 
 		final UomId lineUomId = UomId.ofRepoId(ppOrderLineRecord.getC_UOM_ID());
 		final ProductId lineProductId = ProductId.ofRepoId(ppOrderLineRecord.getM_Product_ID());
-
 		final Quantity qtyRequired = uomConversionBL.convertToProductUOM(Quantitys.create(ppOrderLineRecord.getQtyRequiered(), lineUomId), lineProductId);
-		final Quantity qtyDelivered = uomConversionBL.convertToProductUOM(Quantitys.create( ppOrderLineRecord.getQtyDelivered(), lineUomId), lineProductId);
+		final Quantity qtyDelivered = uomConversionBL.convertToProductUOM(Quantitys.create(ppOrderLineRecord.getQtyDelivered(), lineUomId), lineProductId);
 
 		return PPOrderLine.builder()
 				.productDescriptor(productDescriptorFactory.createProductDescriptor(ppOrderLineRecord))
