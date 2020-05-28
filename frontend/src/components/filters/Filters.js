@@ -476,12 +476,12 @@ export default class Filters extends PureComponent {
           : parameter && parameter.widgetType;
 
       const captionValue = activeParameter
-        ? TableCell.fieldValueToString(
-            activeParameter.valueTo
+        ? TableCell.fieldValueToString({
+            fieldValue: activeParameter.valueTo
               ? [activeParameter.value, activeParameter.valueTo]
               : activeParameter.value,
-            filterType
-          )
+            fieldType: filterType,
+          })
         : '';
 
       return {
