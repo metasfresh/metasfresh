@@ -25,7 +25,6 @@ package de.metas.product.impl;
 import java.math.BigDecimal;
 import java.util.Properties;
 
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.MStorage;
@@ -52,7 +51,7 @@ public class StorageBL implements IStorageBL
 			return;
 		}
 
-		final boolean ok = MStorage.add(ctx,
+		MStorage.add(ctx,
 				locator.getM_Warehouse_ID(),
 				locator.getM_Locator_ID(),
 				productId, // M_Product_ID,
@@ -62,11 +61,6 @@ public class StorageBL implements IStorageBL
 				BigDecimal.ZERO, // diffQtyReserved,
 				diffQtyOrdered,  // diffQtyOrdered
 				trxName);
-
-		if (!ok)
-		{
-			throw new AdempiereException();
-		}
 	}
 
 	@Override
@@ -82,7 +76,7 @@ public class StorageBL implements IStorageBL
 			return;
 		}
 
-		final boolean ok = MStorage.add(ctx,
+		MStorage.add(ctx,
 				locator.getM_Warehouse_ID(),
 				locator.getM_Locator_ID(),
 				productId, // M_Product_ID,
@@ -92,11 +86,6 @@ public class StorageBL implements IStorageBL
 				diffQtyReserved, // diffQtyReserved,
 				BigDecimal.ZERO, // diffQtyOrdered
 				trxName);
-
-		if (!ok)
-		{
-			throw new AdempiereException();
-		}
 	}
 
 	@Override
@@ -135,7 +124,7 @@ public class StorageBL implements IStorageBL
 	}
 
 	@Override
-	public boolean add(
+	public void add(
 			final Properties ctx,
 			final int M_Warehouse_ID,
 			final int M_Locator_ID,
@@ -149,10 +138,10 @@ public class StorageBL implements IStorageBL
 	{
 		if (isMStorageDisabled())
 		{
-			return true;
+			return;
 		}
 
-		return MStorage.add(ctx,
+		MStorage.add(ctx,
 				M_Warehouse_ID,
 				M_Locator_ID,
 				M_Product_ID,

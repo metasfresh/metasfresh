@@ -1,20 +1,14 @@
 package de.metas.logging;
 
-import java.util.Properties;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.adempiere.ad.service.ISystemBL;
 import org.adempiere.exceptions.IssueReportableExceptions;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.NullAutoCloseable;
 import org.compiere.model.I_AD_Issue;
-import org.compiere.model.I_AD_System;
 import org.compiere.util.DB;
-import org.compiere.util.Env;
-import org.compiere.util.Util;
 import org.slf4j.ILoggerFactory;
 import org.slf4j.LoggerFactory;
 
@@ -25,7 +19,8 @@ import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.classic.spi.IThrowableProxy;
 import ch.qos.logback.classic.spi.ThrowableProxy;
 import ch.qos.logback.core.UnsynchronizedAppenderBase;
-import de.metas.error.AdIssueId;
+import de.metas.error.IErrorManager;
+import de.metas.error.IssueCreateRequest;
 import de.metas.util.Services;
 
 /*
@@ -228,6 +223,31 @@ public class MetasfreshIssueAppender extends UnsynchronizedAppenderBase<ILogging
 		return true;
 	}
 
+	private final void reportAD_Issue(final ILoggingEvent event)
+	{
+		// Skip creating the issue if database connection is not available or if the system was not configured to AutoReportError
+		if (!DB.isConnected())
+		{
+			return;
+		}
+
+		// Skip creating the issue if database connection is not available or if the system was not configured to AutoReportError
+		final ISystemBL systemBL = Services.get(ISystemBL.class);
+		if (!systemBL.isAutoErrorReport())
+		{
+			return;
+		}
+
+		final IErrorManager errorManager = Services.get(IErrorManager.class);
+		errorManager.createIssue(IssueCreateRequest.builder()
+				.summary(event.getMessage())
+				.sourceClassname(extractSourceClassName(event))
+				.sourceMethodName(extractSourceMethodName(event))
+				.loggerName(event.getLoggerName())
+				.throwable(extractThrowable(event))
+				.build());
+	}
+
 	private static final String extractSourceClassName(final ILoggingEvent event)
 	{
 		if (event == null)
@@ -272,105 +292,5 @@ public class MetasfreshIssueAppender extends UnsynchronizedAppenderBase<ILogging
 		}
 
 		return null;
-	}
-
-	private final void reportAD_Issue(final ILoggingEvent event)
-	{
-		// Temporarily relax our DB constraints
-		DB.saveConstraints();
-		try
-		{
-			DB.getConstraints().setOnlyAllowedTrxNamePrefixes(false).incMaxTrx(1);
-
-			// Skip creating the issue if database connection is not available or if the system was not configured to AutoReportError
-			if (!DB.isConnected())
-			{
-				return;
-			}
-			// Skip creating the issue if database connection is not available or if the system was not configured to AutoReportError
-			final Properties ctx = Env.getCtx();
-			final I_AD_System system = Services.get(ISystemBL.class).get(ctx);
-			if (system == null || !system.isAutoErrorReport())
-			{
-				return;
-			}
-
-			final Throwable throwable = extractThrowable(event);
-
-			//
-			// Create AD_Issue
-			final I_AD_Issue issue = InterfaceWrapperHelper.newInstance(I_AD_Issue.class, PlainContextAware.newOutOfTrx(Env.getCtx())); // create the new issue out-of-trx!
-			{
-				String summary = event.getMessage();
-				issue.setSourceClassName(extractSourceClassName(event));
-				issue.setSourceMethodName(extractSourceMethodName(event));
-				issue.setLoggerName(event.getLoggerName());
-
-				if (throwable != null)
-				{
-					//
-					// Summary
-					if (summary != null && summary.length() > 0)
-					{
-						summary = throwable.toString() + " " + summary;
-					}
-					if (summary == null || summary.length() == 0)
-					{
-						summary = throwable.toString();
-					}
-
-					//
-					// ErrorTrace
-					final StringBuilder errorTrace = new StringBuilder();
-					final StackTraceElement[] tes = throwable.getStackTrace();
-					int count = 0;
-					for (final StackTraceElement element : tes)
-					{
-						final String s = element.toString();
-						if (s.indexOf("adempiere") != -1)
-						{
-							errorTrace.append(s).append("\n");
-							if (count == 0)
-							{
-								final String source = element.getClassName() + "." + element.getMethodName();
-								issue.setSourceClassName(source);
-								issue.setLineNo(element.getLineNumber());
-							}
-							count++;
-						}
-						if (count > 5 || errorTrace.length() > 2000)
-						{
-							break;
-						}
-					}
-					issue.setErrorTrace(errorTrace.toString());
-
-					//
-					// StackTrace
-					final String stackTrace = Util.dumpStackTraceToString(throwable);
-					issue.setStackTrace(stackTrace);
-				}
-
-				if (summary == null || summary.isEmpty())
-				{
-					summary = "??";
-				}
-
-				issue.setIssueSummary(summary);
-				issue.setRecord_ID(1); // just to have something there because it's mandatory
-
-				InterfaceWrapperHelper.save(issue);
-			}
-
-			if (throwable != null)
-			{
-				final AdIssueId adIssueId = AdIssueId.ofRepoId(issue.getAD_Issue_ID());
-				IssueReportableExceptions.markReportedIfPossible(throwable, adIssueId);
-			}
-		}
-		finally
-		{
-			DB.restoreConstraints();
-		}
 	}
 }

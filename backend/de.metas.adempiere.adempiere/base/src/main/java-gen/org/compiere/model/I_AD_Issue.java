@@ -1,29 +1,10 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 package org.compiere.model;
 
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-import org.compiere.util.KeyNamePair;
 
 /** Generated Interface for AD_Issue
  *  @author Adempiere (generated) 
- *  @version Release 3.5.4a
  */
+@SuppressWarnings("javadoc")
 public interface I_AD_Issue 
 {
 
@@ -31,639 +12,1239 @@ public interface I_AD_Issue
     public static final String Table_Name = "AD_Issue";
 
     /** AD_Table_ID=828 */
-    public static final int Table_ID = MTable.getTable_ID(Table_Name);
+//    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
-    KeyNamePair Model = new KeyNamePair(Table_ID, Table_Name);
+//    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
 
-    /** AccessLevel = 6 - System - Client 
+    /** AccessLevel = 6 - System - Client
      */
-    BigDecimal accessLevel = BigDecimal.valueOf(6);
+//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(6);
 
     /** Load Meta Data */
 
+	/**
+	 * Set Asset.
+	 * Asset used internally or by customers
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setA_Asset_ID (int A_Asset_ID);
+
+	/**
+	 * Get Asset.
+	 * Asset used internally or by customers
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getA_Asset_ID();
+
+	public org.compiere.model.I_A_Asset getA_Asset();
+
+	public void setA_Asset(org.compiere.model.I_A_Asset A_Asset);
+
+    /** Column definition for A_Asset_ID */
+    public static final org.adempiere.model.ModelColumn<I_AD_Issue, org.compiere.model.I_A_Asset> COLUMN_A_Asset_ID = new org.adempiere.model.ModelColumn<I_AD_Issue, org.compiere.model.I_A_Asset>(I_AD_Issue.class, "A_Asset_ID", org.compiere.model.I_A_Asset.class);
     /** Column name A_Asset_ID */
     public static final String COLUMNNAME_A_Asset_ID = "A_Asset_ID";
 
-	/** Set Asset.
-	  * Asset used internally or by customers
-	  */
-	public void setA_Asset_ID (int A_Asset_ID);
-
-	/** Get Asset.
-	  * Asset used internally or by customers
-	  */
-	public int getA_Asset_ID();
-
-	public I_A_Asset getA_Asset() throws RuntimeException;
+	/**
+	 * Get Mandant.
+	 * Client/Tenant for this installation.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getAD_Client_ID();
 
     /** Column name AD_Client_ID */
     public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
-	/** Get Client.
-	  * Client/Tenant for this installation.
-	  */
-	public int getAD_Client_ID();
+	/**
+	 * Set Special Form.
+	 * Special Form
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setAD_Form_ID (int AD_Form_ID);
 
+	/**
+	 * Get Special Form.
+	 * Special Form
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getAD_Form_ID();
+
+	public org.compiere.model.I_AD_Form getAD_Form();
+
+	public void setAD_Form(org.compiere.model.I_AD_Form AD_Form);
+
+    /** Column definition for AD_Form_ID */
+    public static final org.adempiere.model.ModelColumn<I_AD_Issue, org.compiere.model.I_AD_Form> COLUMN_AD_Form_ID = new org.adempiere.model.ModelColumn<I_AD_Issue, org.compiere.model.I_AD_Form>(I_AD_Issue.class, "AD_Form_ID", org.compiere.model.I_AD_Form.class);
     /** Column name AD_Form_ID */
     public static final String COLUMNNAME_AD_Form_ID = "AD_Form_ID";
 
-	/** Set Special Form.
-	  * Special Form
-	  */
-	public void setAD_Form_ID (int AD_Form_ID);
+	/**
+	 * Set System-Problem.
+	 * Automatically created or manually entered System Issue
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setAD_Issue_ID (int AD_Issue_ID);
 
-	/** Get Special Form.
-	  * Special Form
-	  */
-	public int getAD_Form_ID();
+	/**
+	 * Get System-Problem.
+	 * Automatically created or manually entered System Issue
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getAD_Issue_ID();
 
-	public I_AD_Form getAD_Form() throws RuntimeException;
-
+    /** Column definition for AD_Issue_ID */
+    public static final org.adempiere.model.ModelColumn<I_AD_Issue, Object> COLUMN_AD_Issue_ID = new org.adempiere.model.ModelColumn<I_AD_Issue, Object>(I_AD_Issue.class, "AD_Issue_ID", null);
     /** Column name AD_Issue_ID */
     public static final String COLUMNNAME_AD_Issue_ID = "AD_Issue_ID";
 
-	/** Set System Issue.
-	  * Automatically created or manually entered System Issue
-	  */
-	public void setAD_Issue_ID (int AD_Issue_ID);
+	/**
+	 * Set Organisation.
+	 * Organisatorische Einheit des Mandanten
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setAD_Org_ID (int AD_Org_ID);
 
-	/** Get System Issue.
-	  * Automatically created or manually entered System Issue
-	  */
-	public int getAD_Issue_ID();
+	/**
+	 * Get Organisation.
+	 * Organisatorische Einheit des Mandanten
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getAD_Org_ID();
 
     /** Column name AD_Org_ID */
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
-	/** Set Organization.
-	  * Organizational entity within client
-	  */
-	public void setAD_Org_ID (int AD_Org_ID);
+	/**
+	 * Set Prozess-Instanz.
+	 * Instanz eines Prozesses
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setAD_PInstance_ID (int AD_PInstance_ID);
 
-	/** Get Organization.
-	  * Organizational entity within client
-	  */
-	public int getAD_Org_ID();
+	/**
+	 * Get Prozess-Instanz.
+	 * Instanz eines Prozesses
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getAD_PInstance_ID();
 
+	public org.compiere.model.I_AD_PInstance getAD_PInstance();
+
+	public void setAD_PInstance(org.compiere.model.I_AD_PInstance AD_PInstance);
+
+    /** Column definition for AD_PInstance_ID */
+    public static final org.adempiere.model.ModelColumn<I_AD_Issue, org.compiere.model.I_AD_PInstance> COLUMN_AD_PInstance_ID = new org.adempiere.model.ModelColumn<I_AD_Issue, org.compiere.model.I_AD_PInstance>(I_AD_Issue.class, "AD_PInstance_ID", org.compiere.model.I_AD_PInstance.class);
+    /** Column name AD_PInstance_ID */
+    public static final String COLUMNNAME_AD_PInstance_ID = "AD_PInstance_ID";
+
+	/**
+	 * Set Prozess.
+	 * Process or Report
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setAD_Process_ID (int AD_Process_ID);
+
+	/**
+	 * Get Prozess.
+	 * Process or Report
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getAD_Process_ID();
+
+	public org.compiere.model.I_AD_Process getAD_Process();
+
+	public void setAD_Process(org.compiere.model.I_AD_Process AD_Process);
+
+    /** Column definition for AD_Process_ID */
+    public static final org.adempiere.model.ModelColumn<I_AD_Issue, org.compiere.model.I_AD_Process> COLUMN_AD_Process_ID = new org.adempiere.model.ModelColumn<I_AD_Issue, org.compiere.model.I_AD_Process>(I_AD_Issue.class, "AD_Process_ID", org.compiere.model.I_AD_Process.class);
     /** Column name AD_Process_ID */
     public static final String COLUMNNAME_AD_Process_ID = "AD_Process_ID";
 
-	/** Set Process.
-	  * Process or Report
-	  */
-	public void setAD_Process_ID (int AD_Process_ID);
+	/**
+	 * Set Fenster.
+	 * Data entry or display window
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setAD_Window_ID (int AD_Window_ID);
 
-	/** Get Process.
-	  * Process or Report
-	  */
-	public int getAD_Process_ID();
+	/**
+	 * Get Fenster.
+	 * Data entry or display window
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getAD_Window_ID();
 
-	public I_AD_Process getAD_Process() throws RuntimeException;
+	public org.compiere.model.I_AD_Window getAD_Window();
 
+	public void setAD_Window(org.compiere.model.I_AD_Window AD_Window);
+
+    /** Column definition for AD_Window_ID */
+    public static final org.adempiere.model.ModelColumn<I_AD_Issue, org.compiere.model.I_AD_Window> COLUMN_AD_Window_ID = new org.adempiere.model.ModelColumn<I_AD_Issue, org.compiere.model.I_AD_Window>(I_AD_Issue.class, "AD_Window_ID", org.compiere.model.I_AD_Window.class);
     /** Column name AD_Window_ID */
     public static final String COLUMNNAME_AD_Window_ID = "AD_Window_ID";
 
-	/** Set Window.
-	  * Data entry or display window
-	  */
-	public void setAD_Window_ID (int AD_Window_ID);
+	/**
+	 * Set Bemerkungen.
+	 * Comments or additional information
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setComments (java.lang.String Comments);
 
-	/** Get Window.
-	  * Data entry or display window
-	  */
-	public int getAD_Window_ID();
+	/**
+	 * Get Bemerkungen.
+	 * Comments or additional information
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getComments();
 
-	public I_AD_Window getAD_Window() throws RuntimeException;
-
+    /** Column definition for Comments */
+    public static final org.adempiere.model.ModelColumn<I_AD_Issue, Object> COLUMN_Comments = new org.adempiere.model.ModelColumn<I_AD_Issue, Object>(I_AD_Issue.class, "Comments", null);
     /** Column name Comments */
     public static final String COLUMNNAME_Comments = "Comments";
 
-	/** Set Comments.
-	  * Comments or additional information
-	  */
-	public void setComments (String Comments);
+	/**
+	 * Get Erstellt.
+	 * Date this record was created
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.sql.Timestamp getCreated();
 
-	/** Get Comments.
-	  * Comments or additional information
-	  */
-	public String getComments();
-
+    /** Column definition for Created */
+    public static final org.adempiere.model.ModelColumn<I_AD_Issue, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_AD_Issue, Object>(I_AD_Issue.class, "Created", null);
     /** Column name Created */
     public static final String COLUMNNAME_Created = "Created";
 
-	/** Get Created.
-	  * Date this record was created
-	  */
-	public Timestamp getCreated();
+	/**
+	 * Get Erstellt durch.
+	 * User who created this records
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getCreatedBy();
 
     /** Column name CreatedBy */
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
-	/** Get Created By.
-	  * User who created this records
-	  */
-	public int getCreatedBy();
+	/**
+	 * Set Datenbank.
+	 * Database Information
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setDatabaseInfo (java.lang.String DatabaseInfo);
 
+	/**
+	 * Get Datenbank.
+	 * Database Information
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getDatabaseInfo();
+
+    /** Column definition for DatabaseInfo */
+    public static final org.adempiere.model.ModelColumn<I_AD_Issue, Object> COLUMN_DatabaseInfo = new org.adempiere.model.ModelColumn<I_AD_Issue, Object>(I_AD_Issue.class, "DatabaseInfo", null);
     /** Column name DatabaseInfo */
     public static final String COLUMNNAME_DatabaseInfo = "DatabaseInfo";
 
-	/** Set Database.
-	  * Database Information
-	  */
-	public void setDatabaseInfo (String DatabaseInfo);
+	/**
+	 * Set DB Address.
+	 * JDBC URL of the database server
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setDBAddress (java.lang.String DBAddress);
 
-	/** Get Database.
-	  * Database Information
-	  */
-	public String getDatabaseInfo();
+	/**
+	 * Get DB Address.
+	 * JDBC URL of the database server
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getDBAddress();
 
+    /** Column definition for DBAddress */
+    public static final org.adempiere.model.ModelColumn<I_AD_Issue, Object> COLUMN_DBAddress = new org.adempiere.model.ModelColumn<I_AD_Issue, Object>(I_AD_Issue.class, "DBAddress", null);
     /** Column name DBAddress */
     public static final String COLUMNNAME_DBAddress = "DBAddress";
 
-	/** Set DB Address.
-	  * JDBC URL of the database server
-	  */
-	public void setDBAddress (String DBAddress);
+	/**
+	 * Set Error Trace.
+	 * System Error Trace
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setErrorTrace (java.lang.String ErrorTrace);
 
-	/** Get DB Address.
-	  * JDBC URL of the database server
-	  */
-	public String getDBAddress();
+	/**
+	 * Get Error Trace.
+	 * System Error Trace
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getErrorTrace();
 
+    /** Column definition for ErrorTrace */
+    public static final org.adempiere.model.ModelColumn<I_AD_Issue, Object> COLUMN_ErrorTrace = new org.adempiere.model.ModelColumn<I_AD_Issue, Object>(I_AD_Issue.class, "ErrorTrace", null);
     /** Column name ErrorTrace */
     public static final String COLUMNNAME_ErrorTrace = "ErrorTrace";
 
-	/** Set Error Trace.
-	  * System Error Trace
-	  */
-	public void setErrorTrace (String ErrorTrace);
+	/**
+	 * Set Aktiv.
+	 * The record is active in the system
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setIsActive (boolean IsActive);
 
-	/** Get Error Trace.
-	  * System Error Trace
-	  */
-	public String getErrorTrace();
+	/**
+	 * Get Aktiv.
+	 * The record is active in the system
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public boolean isActive();
 
+    /** Column definition for IsActive */
+    public static final org.adempiere.model.ModelColumn<I_AD_Issue, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_AD_Issue, Object>(I_AD_Issue.class, "IsActive", null);
     /** Column name IsActive */
     public static final String COLUMNNAME_IsActive = "IsActive";
 
-	/** Set Active.
-	  * The record is active in the system
-	  */
-	public void setIsActive (boolean IsActive);
+	/**
+	 * Set Reproducible.
+	 * Problem can re reproduced in Gardenworld
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setIsReproducible (java.lang.String IsReproducible);
 
-	/** Get Active.
-	  * The record is active in the system
-	  */
-	public boolean isActive();
+	/**
+	 * Get Reproducible.
+	 * Problem can re reproduced in Gardenworld
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getIsReproducible();
 
+    /** Column definition for IsReproducible */
+    public static final org.adempiere.model.ModelColumn<I_AD_Issue, Object> COLUMN_IsReproducible = new org.adempiere.model.ModelColumn<I_AD_Issue, Object>(I_AD_Issue.class, "IsReproducible", null);
     /** Column name IsReproducible */
     public static final String COLUMNNAME_IsReproducible = "IsReproducible";
 
-	/** Set Reproducible.
-	  * Problem can re reproduced in Gardenworld
-	  */
-	public void setIsReproducible (String IsReproducible);
+	/**
+	 * Set Source.
+	 * Issue Source
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setIssueSource (java.lang.String IssueSource);
 
-	/** Get Reproducible.
-	  * Problem can re reproduced in Gardenworld
-	  */
-	public String getIsReproducible();
+	/**
+	 * Get Source.
+	 * Issue Source
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getIssueSource();
 
+    /** Column definition for IssueSource */
+    public static final org.adempiere.model.ModelColumn<I_AD_Issue, Object> COLUMN_IssueSource = new org.adempiere.model.ModelColumn<I_AD_Issue, Object>(I_AD_Issue.class, "IssueSource", null);
     /** Column name IssueSource */
     public static final String COLUMNNAME_IssueSource = "IssueSource";
 
-	/** Set Source.
-	  * Issue Source
-	  */
-	public void setIssueSource (String IssueSource);
+	/**
+	 * Set Issue Summary.
+	 * Issue Summary
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setIssueSummary (java.lang.String IssueSummary);
 
-	/** Get Source.
-	  * Issue Source
-	  */
-	public String getIssueSource();
+	/**
+	 * Get Issue Summary.
+	 * Issue Summary
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getIssueSummary();
 
+    /** Column definition for IssueSummary */
+    public static final org.adempiere.model.ModelColumn<I_AD_Issue, Object> COLUMN_IssueSummary = new org.adempiere.model.ModelColumn<I_AD_Issue, Object>(I_AD_Issue.class, "IssueSummary", null);
     /** Column name IssueSummary */
     public static final String COLUMNNAME_IssueSummary = "IssueSummary";
 
-	/** Set Issue Summary.
-	  * Issue Summary
-	  */
-	public void setIssueSummary (String IssueSummary);
+	/**
+	 * Set Vanilla System.
+	 * The system was NOT compiled from Source - i.e. standard distribution
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setIsVanillaSystem (java.lang.String IsVanillaSystem);
 
-	/** Get Issue Summary.
-	  * Issue Summary
-	  */
-	public String getIssueSummary();
+	/**
+	 * Get Vanilla System.
+	 * The system was NOT compiled from Source - i.e. standard distribution
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getIsVanillaSystem();
 
+    /** Column definition for IsVanillaSystem */
+    public static final org.adempiere.model.ModelColumn<I_AD_Issue, Object> COLUMN_IsVanillaSystem = new org.adempiere.model.ModelColumn<I_AD_Issue, Object>(I_AD_Issue.class, "IsVanillaSystem", null);
     /** Column name IsVanillaSystem */
     public static final String COLUMNNAME_IsVanillaSystem = "IsVanillaSystem";
 
-	/** Set Vanilla System.
-	  * The system was NOT compiled from Source - i.e. standard distribution
-	  */
-	public void setIsVanillaSystem (String IsVanillaSystem);
+	/**
+	 * Set Java Info.
+	 * Java Version Info
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setJavaInfo (java.lang.String JavaInfo);
 
-	/** Get Vanilla System.
-	  * The system was NOT compiled from Source - i.e. standard distribution
-	  */
-	public String getIsVanillaSystem();
+	/**
+	 * Get Java Info.
+	 * Java Version Info
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getJavaInfo();
 
+    /** Column definition for JavaInfo */
+    public static final org.adempiere.model.ModelColumn<I_AD_Issue, Object> COLUMN_JavaInfo = new org.adempiere.model.ModelColumn<I_AD_Issue, Object>(I_AD_Issue.class, "JavaInfo", null);
     /** Column name JavaInfo */
     public static final String COLUMNNAME_JavaInfo = "JavaInfo";
 
-	/** Set Java Info.
-	  * Java Version Info
-	  */
-	public void setJavaInfo (String JavaInfo);
+	/**
+	 * Set Position.
+	 * Line No
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setLineNo (int LineNo);
 
-	/** Get Java Info.
-	  * Java Version Info
-	  */
-	public String getJavaInfo();
+	/**
+	 * Get Position.
+	 * Line No
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getLineNo();
 
+    /** Column definition for LineNo */
+    public static final org.adempiere.model.ModelColumn<I_AD_Issue, Object> COLUMN_LineNo = new org.adempiere.model.ModelColumn<I_AD_Issue, Object>(I_AD_Issue.class, "LineNo", null);
     /** Column name LineNo */
     public static final String COLUMNNAME_LineNo = "LineNo";
 
-	/** Set Line.
-	  * Line No
-	  */
-	public void setLineNo (int LineNo);
+	/**
+	 * Set Local Host.
+	 * Local Host Info
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setLocal_Host (java.lang.String Local_Host);
 
-	/** Get Line.
-	  * Line No
-	  */
-	public int getLineNo();
+	/**
+	 * Get Local Host.
+	 * Local Host Info
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getLocal_Host();
 
+    /** Column definition for Local_Host */
+    public static final org.adempiere.model.ModelColumn<I_AD_Issue, Object> COLUMN_Local_Host = new org.adempiere.model.ModelColumn<I_AD_Issue, Object>(I_AD_Issue.class, "Local_Host", null);
     /** Column name Local_Host */
     public static final String COLUMNNAME_Local_Host = "Local_Host";
 
-	/** Set Local Host.
-	  * Local Host Info
-	  */
-	public void setLocal_Host (String Local_Host);
+	/**
+	 * Set Logger.
+	 * Logger Name
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setLoggerName (java.lang.String LoggerName);
 
-	/** Get Local Host.
-	  * Local Host Info
-	  */
-	public String getLocal_Host();
+	/**
+	 * Get Logger.
+	 * Logger Name
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getLoggerName();
 
+    /** Column definition for LoggerName */
+    public static final org.adempiere.model.ModelColumn<I_AD_Issue, Object> COLUMN_LoggerName = new org.adempiere.model.ModelColumn<I_AD_Issue, Object>(I_AD_Issue.class, "LoggerName", null);
     /** Column name LoggerName */
     public static final String COLUMNNAME_LoggerName = "LoggerName";
 
-	/** Set Logger.
-	  * Logger Name
-	  */
-	public void setLoggerName (String LoggerName);
+	/**
+	 * Set Name.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setName (java.lang.String Name);
 
-	/** Get Logger.
-	  * Logger Name
-	  */
-	public String getLoggerName();
+	/**
+	 * Get Name.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getName();
 
+    /** Column definition for Name */
+    public static final org.adempiere.model.ModelColumn<I_AD_Issue, Object> COLUMN_Name = new org.adempiere.model.ModelColumn<I_AD_Issue, Object>(I_AD_Issue.class, "Name", null);
     /** Column name Name */
     public static final String COLUMNNAME_Name = "Name";
 
-	/** Set Name.
-	  * Alphanumeric identifier of the entity
-	  */
-	public void setName (String Name);
+	/**
+	 * Set Operating System.
+	 * Operating System Info
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setOperatingSystemInfo (java.lang.String OperatingSystemInfo);
 
-	/** Get Name.
-	  * Alphanumeric identifier of the entity
-	  */
-	public String getName();
+	/**
+	 * Get Operating System.
+	 * Operating System Info
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getOperatingSystemInfo();
 
+    /** Column definition for OperatingSystemInfo */
+    public static final org.adempiere.model.ModelColumn<I_AD_Issue, Object> COLUMN_OperatingSystemInfo = new org.adempiere.model.ModelColumn<I_AD_Issue, Object>(I_AD_Issue.class, "OperatingSystemInfo", null);
     /** Column name OperatingSystemInfo */
     public static final String COLUMNNAME_OperatingSystemInfo = "OperatingSystemInfo";
 
-	/** Set Operating System.
-	  * Operating System Info
-	  */
-	public void setOperatingSystemInfo (String OperatingSystemInfo);
+	/**
+	 * Set Verarbeitet.
+	 * Checkbox sagt aus, ob der Datensatz verarbeitet wurde.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setProcessed (boolean Processed);
 
-	/** Get Operating System.
-	  * Operating System Info
-	  */
-	public String getOperatingSystemInfo();
+	/**
+	 * Get Verarbeitet.
+	 * Checkbox sagt aus, ob der Datensatz verarbeitet wurde.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public boolean isProcessed();
 
+    /** Column definition for Processed */
+    public static final org.adempiere.model.ModelColumn<I_AD_Issue, Object> COLUMN_Processed = new org.adempiere.model.ModelColumn<I_AD_Issue, Object>(I_AD_Issue.class, "Processed", null);
     /** Column name Processed */
     public static final String COLUMNNAME_Processed = "Processed";
 
-	/** Set Processed.
-	  * The document has been processed
-	  */
-	public void setProcessed (boolean Processed);
+	/**
+	 * Set Verarbeiten.
+	 *
+	 * <br>Type: Button
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setProcessing (boolean Processing);
 
-	/** Get Processed.
-	  * The document has been processed
-	  */
-	public boolean isProcessed();
+	/**
+	 * Get Verarbeiten.
+	 *
+	 * <br>Type: Button
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public boolean isProcessing();
 
+    /** Column definition for Processing */
+    public static final org.adempiere.model.ModelColumn<I_AD_Issue, Object> COLUMN_Processing = new org.adempiere.model.ModelColumn<I_AD_Issue, Object>(I_AD_Issue.class, "Processing", null);
     /** Column name Processing */
     public static final String COLUMNNAME_Processing = "Processing";
 
-	/** Set Process Now	  */
-	public void setProcessing (boolean Processing);
+	/**
+	 * Set Profile.
+	 * Information to help profiling the system for solving support issues
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setProfileInfo (java.lang.String ProfileInfo);
 
-	/** Get Process Now	  */
-	public boolean isProcessing();
+	/**
+	 * Get Profile.
+	 * Information to help profiling the system for solving support issues
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getProfileInfo();
 
+    /** Column definition for ProfileInfo */
+    public static final org.adempiere.model.ModelColumn<I_AD_Issue, Object> COLUMN_ProfileInfo = new org.adempiere.model.ModelColumn<I_AD_Issue, Object>(I_AD_Issue.class, "ProfileInfo", null);
     /** Column name ProfileInfo */
     public static final String COLUMNNAME_ProfileInfo = "ProfileInfo";
 
-	/** Set Profile.
-	  * Information to help profiling the system for solving support issues
-	  */
-	public void setProfileInfo (String ProfileInfo);
+	/**
+	 * Set Bekanntes Problem.
+	 * Known Issue
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setR_IssueKnown_ID (int R_IssueKnown_ID);
 
-	/** Get Profile.
-	  * Information to help profiling the system for solving support issues
-	  */
-	public String getProfileInfo();
+	/**
+	 * Get Bekanntes Problem.
+	 * Known Issue
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getR_IssueKnown_ID();
 
-    /** Column name Record_ID */
-    public static final String COLUMNNAME_Record_ID = "Record_ID";
+	public org.compiere.model.I_R_IssueKnown getR_IssueKnown();
 
-	/** Set Record ID.
-	  * Direct internal record ID
-	  */
-	public void setRecord_ID (int Record_ID);
+	public void setR_IssueKnown(org.compiere.model.I_R_IssueKnown R_IssueKnown);
 
-	/** Get Record ID.
-	  * Direct internal record ID
-	  */
-	public int getRecord_ID();
-
-    /** Column name ReleaseNo */
-    public static final String COLUMNNAME_ReleaseNo = "ReleaseNo";
-
-	/** Set Release No.
-	  * Internal Release Number
-	  */
-	public void setReleaseNo (String ReleaseNo);
-
-	/** Get Release No.
-	  * Internal Release Number
-	  */
-	public String getReleaseNo();
-
-    /** Column name ReleaseTag */
-    public static final String COLUMNNAME_ReleaseTag = "ReleaseTag";
-
-	/** Set Release Tag.
-	  * Release Tag
-	  */
-	public void setReleaseTag (String ReleaseTag);
-
-	/** Get Release Tag.
-	  * Release Tag
-	  */
-	public String getReleaseTag();
-
-    /** Column name Remote_Addr */
-    public static final String COLUMNNAME_Remote_Addr = "Remote_Addr";
-
-	/** Set Remote Addr.
-	  * Remote Address
-	  */
-	public void setRemote_Addr (String Remote_Addr);
-
-	/** Get Remote Addr.
-	  * Remote Address
-	  */
-	public String getRemote_Addr();
-
-    /** Column name Remote_Host */
-    public static final String COLUMNNAME_Remote_Host = "Remote_Host";
-
-	/** Set Remote Host.
-	  * Remote host Info
-	  */
-	public void setRemote_Host (String Remote_Host);
-
-	/** Get Remote Host.
-	  * Remote host Info
-	  */
-	public String getRemote_Host();
-
-    /** Column name RequestDocumentNo */
-    public static final String COLUMNNAME_RequestDocumentNo = "RequestDocumentNo";
-
-	/** Set Request Document No.
-	  * Adempiere Request Document No
-	  */
-	public void setRequestDocumentNo (String RequestDocumentNo);
-
-	/** Get Request Document No.
-	  * Adempiere Request Document No
-	  */
-	public String getRequestDocumentNo();
-
-    /** Column name ResponseText */
-    public static final String COLUMNNAME_ResponseText = "ResponseText";
-
-	/** Set Response Text.
-	  * Request Response Text
-	  */
-	public void setResponseText (String ResponseText);
-
-	/** Get Response Text.
-	  * Request Response Text
-	  */
-	public String getResponseText();
-
+    /** Column definition for R_IssueKnown_ID */
+    public static final org.adempiere.model.ModelColumn<I_AD_Issue, org.compiere.model.I_R_IssueKnown> COLUMN_R_IssueKnown_ID = new org.adempiere.model.ModelColumn<I_AD_Issue, org.compiere.model.I_R_IssueKnown>(I_AD_Issue.class, "R_IssueKnown_ID", org.compiere.model.I_R_IssueKnown.class);
     /** Column name R_IssueKnown_ID */
     public static final String COLUMNNAME_R_IssueKnown_ID = "R_IssueKnown_ID";
 
-	/** Set Known Issue.
-	  * Known Issue
-	  */
-	public void setR_IssueKnown_ID (int R_IssueKnown_ID);
+	/**
+	 * Set Projekt-Problem.
+	 * Implementation Projects
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setR_IssueProject_ID (int R_IssueProject_ID);
 
-	/** Get Known Issue.
-	  * Known Issue
-	  */
-	public int getR_IssueKnown_ID();
+	/**
+	 * Get Projekt-Problem.
+	 * Implementation Projects
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getR_IssueProject_ID();
 
-	public I_R_IssueKnown getR_IssueKnown() throws RuntimeException;
+	public org.compiere.model.I_R_IssueProject getR_IssueProject();
 
+	public void setR_IssueProject(org.compiere.model.I_R_IssueProject R_IssueProject);
+
+    /** Column definition for R_IssueProject_ID */
+    public static final org.adempiere.model.ModelColumn<I_AD_Issue, org.compiere.model.I_R_IssueProject> COLUMN_R_IssueProject_ID = new org.adempiere.model.ModelColumn<I_AD_Issue, org.compiere.model.I_R_IssueProject>(I_AD_Issue.class, "R_IssueProject_ID", org.compiere.model.I_R_IssueProject.class);
     /** Column name R_IssueProject_ID */
     public static final String COLUMNNAME_R_IssueProject_ID = "R_IssueProject_ID";
 
-	/** Set Issue Project.
-	  * Implementation Projects
-	  */
-	public void setR_IssueProject_ID (int R_IssueProject_ID);
+	/**
+	 * Set System-Problem.
+	 * System creating the issue
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setR_IssueSystem_ID (int R_IssueSystem_ID);
 
-	/** Get Issue Project.
-	  * Implementation Projects
-	  */
-	public int getR_IssueProject_ID();
+	/**
+	 * Get System-Problem.
+	 * System creating the issue
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getR_IssueSystem_ID();
 
-	public I_R_IssueProject getR_IssueProject() throws RuntimeException;
+	public org.compiere.model.I_R_IssueSystem getR_IssueSystem();
 
+	public void setR_IssueSystem(org.compiere.model.I_R_IssueSystem R_IssueSystem);
+
+    /** Column definition for R_IssueSystem_ID */
+    public static final org.adempiere.model.ModelColumn<I_AD_Issue, org.compiere.model.I_R_IssueSystem> COLUMN_R_IssueSystem_ID = new org.adempiere.model.ModelColumn<I_AD_Issue, org.compiere.model.I_R_IssueSystem>(I_AD_Issue.class, "R_IssueSystem_ID", org.compiere.model.I_R_IssueSystem.class);
     /** Column name R_IssueSystem_ID */
     public static final String COLUMNNAME_R_IssueSystem_ID = "R_IssueSystem_ID";
 
-	/** Set Issue System.
-	  * System creating the issue
-	  */
-	public void setR_IssueSystem_ID (int R_IssueSystem_ID);
+	/**
+	 * Set IssueUser.
+	 * User who reported issues
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setR_IssueUser_ID (int R_IssueUser_ID);
 
-	/** Get Issue System.
-	  * System creating the issue
-	  */
-	public int getR_IssueSystem_ID();
+	/**
+	 * Get IssueUser.
+	 * User who reported issues
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getR_IssueUser_ID();
 
-	public I_R_IssueSystem getR_IssueSystem() throws RuntimeException;
+	public org.compiere.model.I_R_IssueUser getR_IssueUser();
 
+	public void setR_IssueUser(org.compiere.model.I_R_IssueUser R_IssueUser);
+
+    /** Column definition for R_IssueUser_ID */
+    public static final org.adempiere.model.ModelColumn<I_AD_Issue, org.compiere.model.I_R_IssueUser> COLUMN_R_IssueUser_ID = new org.adempiere.model.ModelColumn<I_AD_Issue, org.compiere.model.I_R_IssueUser>(I_AD_Issue.class, "R_IssueUser_ID", org.compiere.model.I_R_IssueUser.class);
     /** Column name R_IssueUser_ID */
     public static final String COLUMNNAME_R_IssueUser_ID = "R_IssueUser_ID";
 
-	/** Set IssueUser.
-	  * User who reported issues
-	  */
-	public void setR_IssueUser_ID (int R_IssueUser_ID);
+	/**
+	 * Set Tätigkeit.
+	 * Request from a Business Partner or Prospect
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setR_Request_ID (int R_Request_ID);
 
-	/** Get IssueUser.
-	  * User who reported issues
-	  */
-	public int getR_IssueUser_ID();
+	/**
+	 * Get Tätigkeit.
+	 * Request from a Business Partner or Prospect
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getR_Request_ID();
 
-	public I_R_IssueUser getR_IssueUser() throws RuntimeException;
+	public org.compiere.model.I_R_Request getR_Request();
 
+	public void setR_Request(org.compiere.model.I_R_Request R_Request);
+
+    /** Column definition for R_Request_ID */
+    public static final org.adempiere.model.ModelColumn<I_AD_Issue, org.compiere.model.I_R_Request> COLUMN_R_Request_ID = new org.adempiere.model.ModelColumn<I_AD_Issue, org.compiere.model.I_R_Request>(I_AD_Issue.class, "R_Request_ID", org.compiere.model.I_R_Request.class);
     /** Column name R_Request_ID */
     public static final String COLUMNNAME_R_Request_ID = "R_Request_ID";
 
-	/** Set Request.
-	  * Request from a Business Partner or Prospect
-	  */
-	public void setR_Request_ID (int R_Request_ID);
+	/**
+	 * Set Datensatz-ID.
+	 * Direct internal record ID
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setRecord_ID (int Record_ID);
 
-	/** Get Request.
-	  * Request from a Business Partner or Prospect
-	  */
-	public int getR_Request_ID();
+	/**
+	 * Get Datensatz-ID.
+	 * Direct internal record ID
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getRecord_ID();
 
-	public I_R_Request getR_Request() throws RuntimeException;
+    /** Column definition for Record_ID */
+    public static final org.adempiere.model.ModelColumn<I_AD_Issue, Object> COLUMN_Record_ID = new org.adempiere.model.ModelColumn<I_AD_Issue, Object>(I_AD_Issue.class, "Record_ID", null);
+    /** Column name Record_ID */
+    public static final String COLUMNNAME_Record_ID = "Record_ID";
 
+	/**
+	 * Set Release No.
+	 * Internal Release Number
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setReleaseNo (java.lang.String ReleaseNo);
+
+	/**
+	 * Get Release No.
+	 * Internal Release Number
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getReleaseNo();
+
+    /** Column definition for ReleaseNo */
+    public static final org.adempiere.model.ModelColumn<I_AD_Issue, Object> COLUMN_ReleaseNo = new org.adempiere.model.ModelColumn<I_AD_Issue, Object>(I_AD_Issue.class, "ReleaseNo", null);
+    /** Column name ReleaseNo */
+    public static final String COLUMNNAME_ReleaseNo = "ReleaseNo";
+
+	/**
+	 * Set Release Tag.
+	 * Release Tag
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setReleaseTag (java.lang.String ReleaseTag);
+
+	/**
+	 * Get Release Tag.
+	 * Release Tag
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getReleaseTag();
+
+    /** Column definition for ReleaseTag */
+    public static final org.adempiere.model.ModelColumn<I_AD_Issue, Object> COLUMN_ReleaseTag = new org.adempiere.model.ModelColumn<I_AD_Issue, Object>(I_AD_Issue.class, "ReleaseTag", null);
+    /** Column name ReleaseTag */
+    public static final String COLUMNNAME_ReleaseTag = "ReleaseTag";
+
+	/**
+	 * Set Remote Addr.
+	 * Remote Address
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setRemote_Addr (java.lang.String Remote_Addr);
+
+	/**
+	 * Get Remote Addr.
+	 * Remote Address
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getRemote_Addr();
+
+    /** Column definition for Remote_Addr */
+    public static final org.adempiere.model.ModelColumn<I_AD_Issue, Object> COLUMN_Remote_Addr = new org.adempiere.model.ModelColumn<I_AD_Issue, Object>(I_AD_Issue.class, "Remote_Addr", null);
+    /** Column name Remote_Addr */
+    public static final String COLUMNNAME_Remote_Addr = "Remote_Addr";
+
+	/**
+	 * Set Remote Host.
+	 * Remote host Info
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setRemote_Host (java.lang.String Remote_Host);
+
+	/**
+	 * Get Remote Host.
+	 * Remote host Info
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getRemote_Host();
+
+    /** Column definition for Remote_Host */
+    public static final org.adempiere.model.ModelColumn<I_AD_Issue, Object> COLUMN_Remote_Host = new org.adempiere.model.ModelColumn<I_AD_Issue, Object>(I_AD_Issue.class, "Remote_Host", null);
+    /** Column name Remote_Host */
+    public static final String COLUMNNAME_Remote_Host = "Remote_Host";
+
+	/**
+	 * Set Request Document No.
+	 * Adempiere Request Document No
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setRequestDocumentNo (java.lang.String RequestDocumentNo);
+
+	/**
+	 * Get Request Document No.
+	 * Adempiere Request Document No
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getRequestDocumentNo();
+
+    /** Column definition for RequestDocumentNo */
+    public static final org.adempiere.model.ModelColumn<I_AD_Issue, Object> COLUMN_RequestDocumentNo = new org.adempiere.model.ModelColumn<I_AD_Issue, Object>(I_AD_Issue.class, "RequestDocumentNo", null);
+    /** Column name RequestDocumentNo */
+    public static final String COLUMNNAME_RequestDocumentNo = "RequestDocumentNo";
+
+	/**
+	 * Set Antwort-Text.
+	 * Request Response Text
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setResponseText (java.lang.String ResponseText);
+
+	/**
+	 * Get Antwort-Text.
+	 * Request Response Text
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getResponseText();
+
+    /** Column definition for ResponseText */
+    public static final org.adempiere.model.ModelColumn<I_AD_Issue, Object> COLUMN_ResponseText = new org.adempiere.model.ModelColumn<I_AD_Issue, Object>(I_AD_Issue.class, "ResponseText", null);
+    /** Column name ResponseText */
+    public static final String COLUMNNAME_ResponseText = "ResponseText";
+
+	/**
+	 * Set Source Class.
+	 * Source Class Name
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setSourceClassName (java.lang.String SourceClassName);
+
+	/**
+	 * Get Source Class.
+	 * Source Class Name
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getSourceClassName();
+
+    /** Column definition for SourceClassName */
+    public static final org.adempiere.model.ModelColumn<I_AD_Issue, Object> COLUMN_SourceClassName = new org.adempiere.model.ModelColumn<I_AD_Issue, Object>(I_AD_Issue.class, "SourceClassName", null);
     /** Column name SourceClassName */
     public static final String COLUMNNAME_SourceClassName = "SourceClassName";
 
-	/** Set Source Class.
-	  * Source Class Name
-	  */
-	public void setSourceClassName (String SourceClassName);
+	/**
+	 * Set Source Method.
+	 * Source Method Name
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setSourceMethodName (java.lang.String SourceMethodName);
 
-	/** Get Source Class.
-	  * Source Class Name
-	  */
-	public String getSourceClassName();
+	/**
+	 * Get Source Method.
+	 * Source Method Name
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getSourceMethodName();
 
+    /** Column definition for SourceMethodName */
+    public static final org.adempiere.model.ModelColumn<I_AD_Issue, Object> COLUMN_SourceMethodName = new org.adempiere.model.ModelColumn<I_AD_Issue, Object>(I_AD_Issue.class, "SourceMethodName", null);
     /** Column name SourceMethodName */
     public static final String COLUMNNAME_SourceMethodName = "SourceMethodName";
 
-	/** Set Source Method.
-	  * Source Method Name
-	  */
-	public void setSourceMethodName (String SourceMethodName);
+	/**
+	 * Set Stack Trace.
+	 * System Log Trace
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setStackTrace (java.lang.String StackTrace);
 
-	/** Get Source Method.
-	  * Source Method Name
-	  */
-	public String getSourceMethodName();
+	/**
+	 * Get Stack Trace.
+	 * System Log Trace
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getStackTrace();
 
+    /** Column definition for StackTrace */
+    public static final org.adempiere.model.ModelColumn<I_AD_Issue, Object> COLUMN_StackTrace = new org.adempiere.model.ModelColumn<I_AD_Issue, Object>(I_AD_Issue.class, "StackTrace", null);
     /** Column name StackTrace */
     public static final String COLUMNNAME_StackTrace = "StackTrace";
 
-	/** Set Stack Trace.
-	  * System Log Trace
-	  */
-	public void setStackTrace (String StackTrace);
+	/**
+	 * Set Statistik.
+	 * Information to help profiling the system for solving support issues
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setStatisticsInfo (java.lang.String StatisticsInfo);
 
-	/** Get Stack Trace.
-	  * System Log Trace
-	  */
-	public String getStackTrace();
+	/**
+	 * Get Statistik.
+	 * Information to help profiling the system for solving support issues
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getStatisticsInfo();
 
+    /** Column definition for StatisticsInfo */
+    public static final org.adempiere.model.ModelColumn<I_AD_Issue, Object> COLUMN_StatisticsInfo = new org.adempiere.model.ModelColumn<I_AD_Issue, Object>(I_AD_Issue.class, "StatisticsInfo", null);
     /** Column name StatisticsInfo */
     public static final String COLUMNNAME_StatisticsInfo = "StatisticsInfo";
 
-	/** Set Statistics.
-	  * Information to help profiling the system for solving support issues
-	  */
-	public void setStatisticsInfo (String StatisticsInfo);
+	/**
+	 * Set Support EMail.
+	 * EMail address to send support information and updates to
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setSupportEMail (java.lang.String SupportEMail);
 
-	/** Get Statistics.
-	  * Information to help profiling the system for solving support issues
-	  */
-	public String getStatisticsInfo();
+	/**
+	 * Get Support EMail.
+	 * EMail address to send support information and updates to
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getSupportEMail();
 
+    /** Column definition for SupportEMail */
+    public static final org.adempiere.model.ModelColumn<I_AD_Issue, Object> COLUMN_SupportEMail = new org.adempiere.model.ModelColumn<I_AD_Issue, Object>(I_AD_Issue.class, "SupportEMail", null);
     /** Column name SupportEMail */
     public static final String COLUMNNAME_SupportEMail = "SupportEMail";
 
-	/** Set Support EMail.
-	  * EMail address to send support information and updates to
-	  */
-	public void setSupportEMail (String SupportEMail);
+	/**
+	 * Set System Status.
+	 * Status of the system - Support priority depends on system status
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setSystemStatus (java.lang.String SystemStatus);
 
-	/** Get Support EMail.
-	  * EMail address to send support information and updates to
-	  */
-	public String getSupportEMail();
+	/**
+	 * Get System Status.
+	 * Status of the system - Support priority depends on system status
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getSystemStatus();
 
+    /** Column definition for SystemStatus */
+    public static final org.adempiere.model.ModelColumn<I_AD_Issue, Object> COLUMN_SystemStatus = new org.adempiere.model.ModelColumn<I_AD_Issue, Object>(I_AD_Issue.class, "SystemStatus", null);
     /** Column name SystemStatus */
     public static final String COLUMNNAME_SystemStatus = "SystemStatus";
 
-	/** Set System Status.
-	  * Status of the system - Support priority depends on system status
-	  */
-	public void setSystemStatus (String SystemStatus);
+	/**
+	 * Get Aktualisiert.
+	 * Date this record was updated
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.sql.Timestamp getUpdated();
 
-	/** Get System Status.
-	  * Status of the system - Support priority depends on system status
-	  */
-	public String getSystemStatus();
-
+    /** Column definition for Updated */
+    public static final org.adempiere.model.ModelColumn<I_AD_Issue, Object> COLUMN_Updated = new org.adempiere.model.ModelColumn<I_AD_Issue, Object>(I_AD_Issue.class, "Updated", null);
     /** Column name Updated */
     public static final String COLUMNNAME_Updated = "Updated";
 
-	/** Get Updated.
-	  * Date this record was updated
-	  */
-	public Timestamp getUpdated();
+	/**
+	 * Get Aktualisiert durch.
+	 * User who updated this records
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getUpdatedBy();
 
     /** Column name UpdatedBy */
     public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
 
-	/** Get Updated By.
-	  * User who updated this records
-	  */
-	public int getUpdatedBy();
+	/**
+	 * Set Nutzer-ID/Login.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setUserName (java.lang.String UserName);
 
+	/**
+	 * Get Nutzer-ID/Login.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getUserName();
+
+    /** Column definition for UserName */
+    public static final org.adempiere.model.ModelColumn<I_AD_Issue, Object> COLUMN_UserName = new org.adempiere.model.ModelColumn<I_AD_Issue, Object>(I_AD_Issue.class, "UserName", null);
     /** Column name UserName */
     public static final String COLUMNNAME_UserName = "UserName";
 
-	/** Set Registered EMail.
-	  * Email of the responsible for the System
-	  */
-	public void setUserName (String UserName);
+	/**
+	 * Set Version.
+	 * Version of the table definition
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setVersion (java.lang.String Version);
 
-	/** Get Registered EMail.
-	  * Email of the responsible for the System
-	  */
-	public String getUserName();
+	/**
+	 * Get Version.
+	 * Version of the table definition
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getVersion();
 
+    /** Column definition for Version */
+    public static final org.adempiere.model.ModelColumn<I_AD_Issue, Object> COLUMN_Version = new org.adempiere.model.ModelColumn<I_AD_Issue, Object>(I_AD_Issue.class, "Version", null);
     /** Column name Version */
     public static final String COLUMNNAME_Version = "Version";
-
-	/** Set Version.
-	  * Version of the table definition
-	  */
-	public void setVersion (String Version);
-
-	/** Get Version.
-	  * Version of the table definition
-	  */
-	public String getVersion();
 }
