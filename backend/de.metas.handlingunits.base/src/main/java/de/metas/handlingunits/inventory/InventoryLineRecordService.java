@@ -1,21 +1,5 @@
 package de.metas.handlingunits.inventory;
 
-import static org.adempiere.model.InterfaceWrapperHelper.isNew;
-
-import java.util.List;
-import java.util.Optional;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.exceptions.FillMandatoryException;
-import org.adempiere.mm.attributes.api.PlainAttributeSetInstanceAware;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.warehouse.LocatorId;
-import org.adempiere.warehouse.api.IWarehouseDAO;
-import org.compiere.model.I_M_Inventory;
-import org.springframework.stereotype.Service;
-
 import de.metas.document.DocBaseAndSubType;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUContextFactory;
@@ -57,6 +41,20 @@ import de.metas.quantity.Quantity;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.exceptions.FillMandatoryException;
+import org.adempiere.mm.attributes.api.PlainAttributeSetInstanceAware;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.warehouse.LocatorId;
+import org.adempiere.warehouse.api.IWarehouseDAO;
+import org.compiere.model.I_M_Inventory;
+import org.springframework.stereotype.Service;
+
+import javax.annotation.Nullable;
+import java.util.List;
+import java.util.Optional;
+
+import static org.adempiere.model.InterfaceWrapperHelper.isNew;
 
 /*
  * #%L
@@ -215,6 +213,10 @@ public class InventoryLineRecordService
 						.build();
 				result.inventoryLineHU(resultInventoryLineHU);
 				needToSaveInventoryLine = true;
+			}
+			else
+			{
+				result.inventoryLineHU(inventoryLine.getSingleLineHU());
 			}
 		}
 		else
