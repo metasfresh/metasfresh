@@ -3,6 +3,7 @@ package de.metas.handlingunits.inventory;
 import de.metas.document.DocBaseAndSubType;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUContextFactory;
+import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.allocation.IAllocationDestination;
 import de.metas.handlingunits.allocation.IAllocationRequest;
@@ -24,9 +25,11 @@ import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.hutransaction.IHUTrxBL;
 import de.metas.handlingunits.inventory.InventoryLine.InventoryLineBuilder;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.I_M_HU_Storage;
 import de.metas.handlingunits.model.I_M_InventoryLine;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.storage.IHUStorage;
+import de.metas.handlingunits.storage.IHUStorageDAO;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.handlingunits.storage.impl.PlainProductStorage;
 import de.metas.i18n.IMsgBL;
@@ -37,6 +40,10 @@ import de.metas.inventory.IInventoryBL;
 import de.metas.inventory.InventoryId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.uom.IUOMConversionBL;
+import de.metas.uom.IUOMDAO;
+import de.metas.uom.UOMConversionContext;
+import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -50,8 +57,11 @@ import org.compiere.model.I_M_Inventory;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 import static org.adempiere.model.InterfaceWrapperHelper.isNew;
 
@@ -82,6 +92,10 @@ public class InventoryLineRecordService
 {
 
 	private static final String MSG_EXISTING_LINES_WITH_DIFFERENT_HU_AGGREGATION_TYPE = "de.metas.handlingunits.inventory.ExistingLinesWithDifferentHUAggregationType";
+
+	private final IHUStorageDAO huStorageDAO = Services.get(IHandlingUnitsBL.class).getStorageFactory().getHUStorageDAO();
+	private final IUOMConversionBL uomConversionBL =  Services.get(IUOMConversionBL.class);
+	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 
 	private InventoryRepository inventoryLineRepository;
 
@@ -403,6 +417,41 @@ public class InventoryLineRecordService
 			inventoryLine = inventoryLineRepository.toInventoryLine(inventoryLineRecord);
 		}
 		return computeHUAggregationType(inventoryLine, docBaseAndSubType);
+	}
+
+
+	@NonNull
+	public Optional<Quantity> getBookedQtyFromStorage(@NonNull final I_M_InventoryLine inventoryLineRecord)
+	{
+		Optional<Quantity> bookedQty = Optional.empty();
+
+		final ProductId productId = ProductId.ofRepoIdOrNull(inventoryLineRecord.getM_Product_ID());
+		final UomId inventoryLineUOMId = UomId.ofRepoIdOrNull(inventoryLineRecord.getC_UOM_ID());
+		final HuId huId = HuId.ofRepoIdOrNull(inventoryLineRecord.getM_HU_ID());
+
+		final boolean allIdsPresent = Stream.of(huId, productId, inventoryLineUOMId)
+				.allMatch(Objects::nonNull);
+
+		if (allIdsPresent)
+		{
+			final I_M_HU_Storage huStorage = huStorageDAO.retrieveStorage(inventoryLineRecord.getM_HU(), productId);
+
+			if (huStorage != null)
+			{
+				final UomId storageUOMId = UomId.ofRepoId(huStorage.getC_UOM_ID());
+
+				final BigDecimal qtyInInventoryUOM = uomConversionBL.convertQty(
+						UOMConversionContext.of(productId),
+						huStorage.getQty(),
+						storageUOMId,
+						inventoryLineUOMId);
+
+
+				bookedQty = Optional.of(Quantity.of(qtyInInventoryUOM, uomDAO.getById(inventoryLineUOMId)));
+			}
+		}
+
+		return bookedQty;
 	}
 
 	private static HUAggregationType computeHUAggregationType(
