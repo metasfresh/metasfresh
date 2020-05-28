@@ -1,20 +1,8 @@
 package de.metas.ui.web.view;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-
-import org.adempiere.exceptions.AdempiereException;
-
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.process.RelatedProcessDescriptor;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.DocumentFilterList;
@@ -35,6 +23,17 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
 import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
+
+import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 
 /*
  * #%L
@@ -62,7 +61,6 @@ import lombok.Value;
  * Request to create a new {@link IView}.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 @Value
 public final class CreateViewRequest
@@ -264,10 +262,19 @@ public final class CreateViewRequest
 		}
 	}
 
+	@Nullable
 	public <T> T getParameterAs(@NonNull final String parameterName, @NonNull final Class<T> type)
 	{
 		@SuppressWarnings("unchecked")
 		final T value = (T)getParameters().get(parameterName);
+		return value;
+	}
+
+	@Nullable
+	public <T> Set<T> getParameterAsSet(@NonNull final String parameterName, @NonNull final Class<T> type)
+	{
+		@SuppressWarnings("unchecked")
+		final Set<T> value = (Set<T>)getParameters().get(parameterName);
 		return value;
 	}
 
@@ -573,7 +580,9 @@ public final class CreateViewRequest
 			this.filters = filters;
 		}
 
-		/** empty constructor */
+		/**
+		 * empty constructor
+		 */
 		private WrappedDocumentFilterList()
 		{
 			filters = DocumentFilterList.EMPTY;
