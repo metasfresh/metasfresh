@@ -347,6 +347,15 @@ declare namespace Cypress {
 
 
     /**
+     * Erase the contents of this field.
+     *
+     * @param fieldName - name of the field is question
+     * @param modal - optional, default = false - use true if the field is in a modal overlay
+     */
+    clearField(fieldName: string, modal?: boolean): Chainable<any>
+
+
+    /**
      * Expect specific document status
      * @param expectedDocumentStatus - the status the document should have
      *
@@ -374,15 +383,6 @@ declare namespace Cypress {
 
 
     /**
-     * Erase the contents of this field.
-     *
-     * @param fieldName - name of the field is question
-     * @param modal - optional, default = false - use true if the field is in a modal overlay
-     */
-    clearField(fieldName: string, modal?: boolean): Chainable<any>
-
-
-    /**
      * Basic command for clicking an element with certain selector.
      *
      * @param selector - string used to query for the element
@@ -391,7 +391,7 @@ declare namespace Cypress {
     clickElementWithClass(selector, force): Chainable<any>
 
 
-    /*
+    /**
      * This command allows waiting for the breadcrumb in the header to be visible, which
      * helps make the tests less flaky as even though the page fires load event, some
      * requests may still be pending/running.

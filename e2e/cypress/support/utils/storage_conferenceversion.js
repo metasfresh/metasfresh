@@ -16,21 +16,25 @@ export class StorageConferenceVersion {
     this.productProcessingFee = productProcessingFee;
     return this;
   }
+
   setProductWitholding(productWitholding) {
     cy.log(`StorageConferenceVersionBuilder - set productWitholding = ${productWitholding}`);
     this.productWitholding = productWitholding;
     return this;
   }
+
   setProductRegularPPOrder(productRegularPPOrder) {
     cy.log(`StorageConferenceVersionBuilder - set productRegularPPOrder = ${productRegularPPOrder}`);
     this.productRegularPPOrder = productRegularPPOrder;
     return this;
   }
+
   setProductScrap(productScrap) {
     cy.log(`StorageConferenceVersionBuilder - set productScrap = ${productScrap}`);
     this.productScrap = productScrap;
     return this;
   }
+
   setUOMScrap(uomScrap) {
     cy.log(`StorageConferenceVersionBuilder - set uomScrap = ${uomScrap}`);
     this.uomScrap = uomScrap;
@@ -66,11 +70,13 @@ export class StorageConferenceVersion {
     this.lines.push(costLine);
     return this;
   }
+
   addMonth(month) {
     cy.log(`StorageConferenceVersion - add Months = ${JSON.stringify(month)}`);
     this.months.push(month);
     return this;
   }
+
   addContribution(contribution) {
     cy.log(`StorageConferenceVersion - add contribution = ${JSON.stringify(contribution)}`);
     this.contributions.push(contribution);
@@ -84,10 +90,11 @@ export class StorageConferenceVersion {
     return this;
   }
 }
+
 function applyStorageConferenceVersion(storageConferenceVersion) {
   describe(`Create new StorageConferenceVersion ${storageConferenceVersion.lagerKonferenz}`, function() {
     cy.visitWindow(540364, 'NEW');
-    cy.selectInListField('M_QualityInsp_LagerKonf_ID', storageConferenceVersion.lagerKonferenz);
+    cy.writeIntoLookupListField('M_QualityInsp_LagerKonf_ID', storageConferenceVersion.lagerKonferenz, storageConferenceVersion.lagerKonferenz);
     cy.writeIntoLookupListField('M_Product_ProcessingFee_ID', storageConferenceVersion.productProcessingFee, storageConferenceVersion.productProcessingFee);
     cy.writeIntoLookupListField('M_Product_Witholding_ID', storageConferenceVersion.productWitholding, storageConferenceVersion.productWitholding);
     cy.writeIntoLookupListField('M_Product_RegularPPOrder_ID', storageConferenceVersion.productRegularPPOrder, storageConferenceVersion.productRegularPPOrder);
@@ -124,6 +131,7 @@ function applyCostLine(costLine) {
   cy.selectInListField('C_UOM_ID', costLine.uomId);
   cy.pressDoneButton();
 }
+
 function applyLagerKonfMonth(lagerKonfMonth) {
   cy.selectTab('M_QualityInsp_LagerKonf_Month_Adj');
   cy.pressAddNewButton();
@@ -141,6 +149,7 @@ function applyAdditionalContribution(contribution) {
   cy.writeIntoStringField('Additional_Fee_Amt_Per_UOM', contribution.additionalFeeAmount);
   cy.pressDoneButton();
 }
+
 export class CostLine {
   setPercentFrom(percentFrom) {
     cy.log(`CostLine - set percentFrom = ${percentFrom}`);
@@ -160,6 +169,7 @@ export class CostLine {
     return this;
   }
 }
+
 export class LagerKonfMonth {
   setMonth(month) {
     cy.log(`LagerKonfMonth - set month = ${month}`);
@@ -179,6 +189,7 @@ export class LagerKonfMonth {
     return this;
   }
 }
+
 export class AdditionalContribution {
   setSeqNo(seqNo) {
     cy.log(`AdditionalContribution - set seqNo = ${seqNo}`);
