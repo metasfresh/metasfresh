@@ -34,7 +34,8 @@ const initialState = createStore({
   },
 });
 const store = mockStore(initialState);
-
+entryTableProps.onBlurWidget = jest.fn();
+entryTableProps.addRefToWidgets = jest.fn();
 describe('EntryTable', () => {
   it('renders without errors with the given props', () => {
     const wrapperEntryTable = mount(
@@ -49,4 +50,3 @@ describe('EntryTable', () => {
     );
   });
 });
-
