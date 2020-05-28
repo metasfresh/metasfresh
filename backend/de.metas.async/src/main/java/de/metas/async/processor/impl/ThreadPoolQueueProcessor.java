@@ -1,5 +1,9 @@
 package de.metas.async.processor.impl;
 
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.SynchronousQueue;
+
 /*
  * #%L
  * de.metas.async
@@ -22,8 +26,6 @@ package de.metas.async.processor.impl;
  * #L%
  */
 
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -81,7 +83,7 @@ class ThreadPoolQueueProcessor extends AbstractQueueProcessor
 					threadPoolQueue,
 					threadFactory);
 			// If we have a KeepAliveTimeMillis in processor definition, then we apply the timeout for core threads too
-			threadPoolExecutor.allowCoreThreadTimeOut(config.getKeepAliveTimeMillis() > 0);
+			 threadPoolExecutor.allowCoreThreadTimeOut(config.getKeepAliveTimeMillis() > 0);
 
 			this.executor = BlockingExecutorWrapper.builder()
 					.delegate(threadPoolExecutor)
