@@ -54,7 +54,7 @@ public class PaymentView_Launcher_From_BPartnerSingleDocument extends JavaProces
 		final ImmutableSet<PaymentId> paymentIds = retrievePaymentIds();
 
 		final ViewId viewId = viewsFactory.createView(CreateViewRequest.builder(PaymentsViewFactory.WINDOW_ID)
-				.setFilterOnlyIds(PaymentId.toIntSet(paymentIds))
+				.setFilterOnlyIds(PaymentId.toIntSet(paymentIds))// TODO tbp: fix this to use parameter
 				.build())
 				.getViewId();
 
