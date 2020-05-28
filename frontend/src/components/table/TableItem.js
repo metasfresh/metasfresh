@@ -363,6 +363,7 @@ class TableItem extends PureComponent {
       isGerman,
       isSelected,
       focusOnFieldName,
+      activeLocale,
     } = this.props;
     const {
       edited,
@@ -407,6 +408,7 @@ class TableItem extends PureComponent {
             return (
               <TableCell
                 {...{
+                  activeLocale,
                   getSizeClass,
                   entity,
                   windowId,
@@ -676,6 +678,9 @@ TableItem.propTypes = {
   modalVisible: PropTypes.bool,
   isGerman: PropTypes.bool,
   keyProperty: PropTypes.string,
+  selected: PropTypes.array,
+  page: PropTypes.number,
+  activeLocale: PropTypes.object,
 };
 
 export default TableItem;
