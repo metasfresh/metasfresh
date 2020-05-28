@@ -218,7 +218,7 @@ public class HUPPOrderIssueProducerTest extends AbstractHUTest
 		// => expect to issue until we hit the qty required (calculated based on finished goods receipt) of that component,
 		{
 			final BigDecimal expectedIssuedQtyOnBOMLine = new BigDecimal("57200"); // = 200items x 260(mm/item) + 10% scrap [millimeters]
-			final BigDecimal expectedHUQtyAfterIssue = new BigDecimal("0.9618666476"); // = 1.00 - 0.04(57200mm to rolle)
+			final BigDecimal expectedHUQtyAfterIssue = new BigDecimal("0.9618666475"); // = 1.00 - 0.04(57200mm to rolle)
 			create_OneRoleHU_Issue_And_Test(ppOrder, expectedHUQtyAfterIssue, expectedIssuedQtyOnBOMLine);
 		}
 
@@ -294,7 +294,7 @@ public class HUPPOrderIssueProducerTest extends AbstractHUTest
 			// 8600mm to role: 8600/1500000 = 0.0057333333333333 => rounded to 2 digits, HALF UP = 0.01role
 			// => 0.99=1.00role - 0.01(28600-20000 mm to rolle)
 			final BigDecimal expectedHUQtyAfterIssue = new BigDecimal("0.9942666638");
-			final BigDecimal expectedIssuedQtyOnBOMLine = new BigDecimal("8600");
+			final BigDecimal expectedIssuedQtyOnBOMLine = new BigDecimal("8600.01");
 			create_OneRoleHU_Issue_And_Test(ppOrder, expectedHUQtyAfterIssue, expectedIssuedQtyOnBOMLine);
 		}
 
