@@ -116,30 +116,13 @@ public class WEBUI_M_HU_Pick extends ViewBasedProcessTemplate implements IProces
 	{
 		final HURow row = getSingleHURow();
 		final I_M_HU hu = Services.get(IHandlingUnitsDAO.class).getById(row.getHuId());
-		final Set<ProductId> productIds = Services.get(IHUContextFactory.class)
+		
+		// Multi product HUs are not allowed - see https://github.com/metasfresh/metasfresh/issues/6709
+		return Services.get(IHUContextFactory.class)
 				.createMutableHUContext()
 				.getHUStorageFactory()
 				.getStorage(hu)
-				.getProductStorages()
-				.stream()
-				.map(IHUProductStorage::getProductId)
-				.distinct()
-				.collect(ImmutableSet.toImmutableSet());
-
-		
-		//Empty HUs are not allowed
-		if (productIds.isEmpty())
-		{
-			return false;
-		}
-		
-		// Multi product HUs are not allowed see https://github.com/metasfresh/metasfresh/issues/6709
-		if (productIds.size() > 1)
-		{
-			return false;
-		}
-		
-		return true;
+				.isSingleProductStorage();
 	}
 
 	private Stream<HURow> streamHURows()
