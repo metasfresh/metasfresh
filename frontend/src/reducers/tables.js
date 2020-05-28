@@ -4,7 +4,7 @@ import { createSelector } from 'reselect';
 
 import * as types from '../constants/ActionTypes';
 
-// const NO_SELECTION = [];
+import { createCollapsedMap } from '../utils/documentListHelper';
 
 export const initialTableState = {
   windowType: null,
@@ -14,7 +14,7 @@ export const initialTableState = {
   selected: [],
   rows: [],
   collapsedRows: [],
-  collapsedParentsRows: [],
+  collapsedParentRows: [],
   collapsedArrayMap: [],
   // row columns
   columns: [],
@@ -138,55 +138,56 @@ const reducer = produce((draftState, action) => {
     }
 
     case types.COLLAPSE_TABLE_ROWS: {
-      const { tableId, keyProperty, node, collapsed } = action.payload;
-      // // TODO: This should be an action creator `collapseRows` or something
-      // handleRowCollapse = (node, collapsed) => {
-      //   const { keyProperty } = this.props;
-      //   const {
-      //     collapsedParentsRows,
-      //     collapsedRows,
-      //     collapsedArrayMap,
-      //   } = this.state;
+      const { tableId, keyProperty, node, collapse } = action.payload;
+      const table = draftState[tableId];
+      let { collapsedParentRows, collapsedRows, collapsedArrayMap } = table;
 
-      //   this.setState({
-      //     collapsedArrayMap: collapsedMap(node, collapsed, collapsedArrayMap),
-      //   });
+      const inner = (parentNode) => {
+        collapsedArrayMap = createCollapsedMap(
+          parentNode,
+          collapse,
+          collapsedArrayMap
+        );
 
-      //   if (collapsed) {
-      //     this.setState((prev) => ({
-      //       collapsedParentsRows: update(prev.collapsedParentsRows, {
-      //         $splice: [[prev.collapsedParentsRows.indexOf(node[keyProperty]), 1]],
-      //       }),
-      //     }));
-      //   } else {
-      //     if (collapsedParentsRows.indexOf(node[keyProperty]) > -1) return;
+        if (collapse) {
+          collapsedParentRows.splice(
+            collapsedParentRows.indexOf(parentNode[keyProperty]),
+            1
+          );
+        } else {
+          if (collapsedParentRows.indexOf(parentNode[keyProperty]) > -1) return;
 
-      //     this.setState((prev) => ({
-      //       collapsedParentsRows: prev.collapsedParentsRows.concat(
-      //         node[keyProperty]
-      //       ),
-      //     }));
-      //   }
+          collapsedParentRows = collapsedParentRows.concat(
+            parentNode[keyProperty]
+          );
+        }
 
-      //   node.includedDocuments &&
-      //     node.includedDocuments.map((node) => {
-      //       if (collapsed) {
-      //         this.setState((prev) => ({
-      //           collapsedRows: update(prev.collapsedRows, {
-      //             $splice: [[prev.collapsedRows.indexOf(node[keyProperty]), 1]],
-      //           }),
-      //         }));
-      //       } else {
-      //         if (collapsedRows.indexOf(node[keyProperty]) > -1) return;
+        parentNode.includedDocuments &&
+          parentNode.includedDocuments.map((childNode) => {
+            if (collapse) {
+              collapsedRows.splice(
+                collapsedRows.indexOf(childNode[keyProperty]),
+                1
+              );
+            } else {
+              if (collapsedRows.indexOf(childNode[keyProperty]) > -1) return;
 
-      //         this.setState((prev) => ({
-      //           collapsedRows: prev.collapsedRows.concat(node[keyProperty]),
-      //         }));
-      //         node.includedDocuments && this.handleRowCollapse(node, collapsed);
-      //       }
-      //     });
-      // };
-      return draftState;
+              collapsedRows = collapsedRows.concat(childNode[keyProperty]);
+              childNode.includedDocuments && inner(childNode);
+            }
+          });
+      };
+
+      inner(node);
+
+      draftState[tableId] = {
+        ...table,
+        collapsedArrayMap: collapsedArrayMap,
+        collapsedParentRows: collapsedParentRows,
+        collapsedRows: collapsedRows,
+      };
+
+      return;
     }
 
     case types.SET_ACTIVE_SORT: {

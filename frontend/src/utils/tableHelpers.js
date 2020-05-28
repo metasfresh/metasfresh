@@ -17,7 +17,7 @@ export const containerPropTypes = {
   rows: PropTypes.array.isRequired,
   columns: PropTypes.array.isRequired,
   selected: PropTypes.array.isRequired,
-  collapsedParentsRows: PropTypes.array.isRequired,
+  collapsedParentRows: PropTypes.array.isRequired,
   collapsedRows: PropTypes.array.isRequired,
   collapsedArrayMap: PropTypes.array.isRequired,
   allowShortcut: PropTypes.bool,

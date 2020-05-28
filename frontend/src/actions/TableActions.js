@@ -49,7 +49,6 @@ export function setActiveSort(id, active) {
   };
 }
 
-
 /**
  * Update table selection - select items
  */
@@ -63,10 +62,10 @@ export function updateTableSelection({ tableId, ids }) {
 /**
  * Toggle table rows
  */
-export function collapseTableRows({ tableId, collapsed, node, keyProperty }) {
+export function collapseTableRows({ tableId, collapse, node, keyProperty }) {
   return {
     type: types.COLLAPSE_TABLE_ROWS,
-    payload: { tableId, keyProperty, collapsed, node },
+    payload: { tableId, keyProperty, collapse, node },
   };
 }
 

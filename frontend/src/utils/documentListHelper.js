@@ -403,28 +403,29 @@ export function mapIncluded(node, indent, isParentLastChild = false) {
   return result;
 }
 
-export function collapsedMap(node, isCollapsed, initialMap) {
+/**
+ * Create a flat array of collapsed rows ids including parents and children
+ * @todo rewrite this to not modify `initialMap`.
+ */
+export function createCollapsedMap(node, isCollapsed, initialMap) {
   let collapsedMap = [];
-  if (initialMap) {
-    if (!isCollapsed) {
-      initialMap.splice(
-        initialMap.indexOf(node.includedDocuments[0]),
-        node.includedDocuments.length
-      );
-      collapsedMap = initialMap;
-    } else {
-      initialMap.map((item) => {
-        collapsedMap.push(item);
-        if (item.id === node.id) {
-          collapsedMap = collapsedMap.concat(node.includedDocuments);
-        }
-      });
-    }
+
+  if (!isCollapsed) {
+    initialMap.splice(
+      initialMap.indexOf(node.includedDocuments[0]),
+      node.includedDocuments.length
+    );
+    collapsedMap = initialMap;
   } else {
-    if (node.includedDocuments) {
-      collapsedMap.push(node);
-    }
+    initialMap.map((item) => {
+      collapsedMap.push(item);
+      if (item.id === node.id) {
+        collapsedMap = collapsedMap.concat(node.includedDocuments);
+        // initialMap = initialMap.concat(node.includedDocuments);
+      }
+    });
   }
 
   return collapsedMap;
+  // return initialMap;
 }

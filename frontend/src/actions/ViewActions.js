@@ -278,6 +278,13 @@ export function fetchDocument({
         const tableId = getTableId({ windowType, viewId });
         const tableData = { windowType, viewId, ...response.data };
 
+      // TODO:
+      // if we're updating rows, we should update selection to first row
+      // and rebuild collapsed rows (if needed)
+
+              // if page changed, same - rebuild collapsed, reset selection (HANDLE IN AC)
+
+
         dispatch(updateGridTable(tableId, tableData));
 
         return Promise.resolve(response.data);

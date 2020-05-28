@@ -137,35 +137,36 @@ class Table extends PureComponent {
     this.setState({ promptOpen: false });
   };
 
-  handleShortcutIndent = (expand) => {
+  handleShortcutIndent = (collapse) => {
     const {
-      keyProperty,
+      // keyProperty,
       selected,
       rows,
-      collapsedParentsRows,
+      // collapsedParentsRows,
       onRowCollapse,
     } = this.props;
     let node = null;
-    let isCollapsed = false;
+    // let isCollapsed = false;
 
     selected.length === 1 &&
       rows.map((item) => {
         if (item.id === selected[0]) {
           if (item.includedDocuments) {
-            const keyProp = item[keyProperty];
+            // const keyProp = item[keyProperty];
 
             node = item;
-            isCollapsed = collapsedParentsRows.indexOf(keyProp) > -1;
+            // isCollapsed = collapsedParentsRows.indexOf(keyProp) > -1;
           }
         }
       });
 
     if (node) {
-      if (isCollapsed && expand) {
-        onRowCollapse(node, expand);
-      } else if (!isCollapsed && !expand) {
-        onRowCollapse(node, expand);
-      }
+      // TODO: ? Why we're calling it with the same values, but in ifs ?
+      // if (isCollapsed && expand) {
+      //   onRowCollapse(node, expand);
+      // } else if (!isCollapsed && !expand) {
+        onRowCollapse(node, collapse);
+      // }
     }
   };
 
@@ -518,7 +519,7 @@ class Table extends PureComponent {
       onSelect,
       onRowCollapse,
       collapsedRows,
-      collapsedParentsRows,
+      collapsedParentRows,
 
       // TODO: Get rid of dataHash
       dataHash,
@@ -568,8 +569,8 @@ class Table extends PureComponent {
         key={`row-${i}${viewId ? `-${viewId}` : ''}`}
         dataKey={`row-${i}${viewId ? `-${viewId}` : ''}`}
         collapsed={
-          collapsedParentsRows &&
-          collapsedParentsRows.indexOf(item[keyProperty]) > -1
+          collapsedParentRows.length &&
+          collapsedParentRows.indexOf(item[keyProperty]) > -1
         }
         odd={i & 1}
         ref={(c) => {

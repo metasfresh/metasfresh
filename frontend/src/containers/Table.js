@@ -1,31 +1,23 @@
 import update from 'immutability-helper';
-import { is } from 'immutable';
 import * as _ from 'lodash';
 import React, { PureComponent } from 'react';
 import { connect } from 'react-redux';
 
-import { updateTableSelection } from '../actions/TableActions';
-import { deleteRequest } from '../actions/GenericActions';
+import { getZoomIntoWindow, deleteRequest } from '../api';
 import { getTableId, getTable } from '../reducers/tables';
+
+import {
+  updateTableSelection,
+  collapseTableRows,
+} from '../actions/TableActions';
 import {
   deleteLocal,
   openModal,
-  // selectTableItems,
   deselectTableItems,
 } from '../actions/WindowActions';
-import { getZoomIntoWindow } from '../api';
-import {
-  // getSizeClass,
-  // handleCopy,
-  handleOpenNewTab,
-  containerPropTypes,
-  // constructorFn,
-} from '../utils/tableHelpers';
-import {
-  getRowsData,
-  mapIncluded,
-  collapsedMap,
-} from '../utils/documentListHelper';
+
+import { containerPropTypes } from '../utils/tableHelpers';
+import { mapIncluded } from '../utils/documentListHelper';
 
 import Table from '../components/table/Table';
 
@@ -35,24 +27,20 @@ class TableContainer extends PureComponent {
   constructor(props) {
     super(props);
 
-    // const constr = constructorFn.bind(this);
-    // constr(props);
-    this.state = {
-      pendingInit: false,
-    };
+    this.state = {};
   }
 
-  componentDidMount() {
-    const { /*rowData, tabId*/ rows } = this.props;
-    //selecting first table elem while getting indent data
-    // this._isMounted = true;
+  // componentDidMount() {
+  //   const { /*rowData, tabId*/ rows } = this.props;
+  //   //selecting first table elem while getting indent data
+  //   // this._isMounted = true;
 
-    // if (rowData.get(`${tabId}`)) {
-    if (rows.length) {
-      console.log('HERE')
-      this.getIndentData(true);
-    }
-  }
+  //   // if (rowData.get(`${tabId}`)) {
+  //   // if (rows.length) {
+  //     // console.log('HERE')
+  //     // this.getIndentData(true);
+  //   // }
+  // }
 
   // TODO: Figure out what this is for and why ?
   // UNSAFE_componentWillReceiveProps(nextProps) {
@@ -73,7 +61,7 @@ class TableContainer extends PureComponent {
       // refreshSelection,
       openIncludedViewOnSelect,
       viewId,
-      tabId,
+      // tabId,
       isModal,
       hasIncluded,
       page,
@@ -84,6 +72,20 @@ class TableContainer extends PureComponent {
     // const { selected, rows } = this.state;
     // console.log('ROWDATA: ', rowData)
 
+    if (rows.length && prevProps.rows.length === 0) {
+      document.getElementsByClassName('js-table')[0].focus();
+
+      setTimeout(() => {
+        if (this._isMounted) {
+          // TODO: Figure a better way to do this https://github.com/metasfresh/metasfresh/issues/1679
+          this.setState({
+            tableRefreshToggle: !this.state.mounted,
+          });
+        }
+      }, 1);
+    }
+
+    // TODO: Automatically select first row if `selected` is empty
     /**
      * Selection by default of first row if nothing selected
      */
@@ -132,17 +134,20 @@ class TableContainer extends PureComponent {
         }
       }
     // }
-    else if (page !== prevProps.page) {
-      // this.setState({
-      //   collapsedRows: EMPTY_ARRAY,
-      //   collapsedParentsRows: EMPTY_ARRAY,
-      // });
-    }
+
+    // TODO: in reducer/view's action creator call AC to rebuild collapsed rows
+    // else if (page !== prevProps.page) {
+    // this.setState({
+    //   collapsedRows: EMPTY_ARRAY,
+    //   collapsedParentsRows: EMPTY_ARRAY,
+    // });
+    // }
 
     if (mainTable && open) {
       this.table.focus();
     }
 
+    // TODO: `refreshSelection` seems to be unused now
     // if (
     //   (!defaultSelectedEqual && !selectedEqual) ||
     //   (refreshSelection && prevProps.refreshSelection !== refreshSelection)
@@ -151,6 +156,8 @@ class TableContainer extends PureComponent {
     //     selected:
     //       defaultSelected && defaultSelected !== null ? defaultSelected : [],
     //   });
+
+    // TODO: No table will be disconnected from state anymore, so this has to be rewritten
     // } else if (!disconnectFromState && !selectedEqual && selected.length) {
     //   dispatch(
     //     updateTableSelection({
@@ -169,7 +176,7 @@ class TableContainer extends PureComponent {
 
     // TODO I'm pretty sure we can handle this in reducer
     if (prevProps.viewId !== viewId && rows.length) { // && rowData.get(`${tabId}`)) {
-      if (defaultSelected && defaultSelected.length === 0) {
+      // if (defaultSelected && defaultSelected.length === 0) {
         // this.setState({ selected: [] });
 
         // dispatch(
@@ -178,7 +185,7 @@ class TableContainer extends PureComponent {
         //     ids: EMPTY_ARRAY,
         //   })
         // );
-      }
+      // }
 
       // this.setState({
       //   collapsedRows: EMPTY_ARRAY,
@@ -218,7 +225,8 @@ class TableContainer extends PureComponent {
 
     // this._isMounted = false;
 
-    this.deselectAllProducts();
+    this.handleDeselectAll();
+
     if (showIncludedViewOnSelect && !isIncluded) {
       showIncludedViewOnSelect({
         showIncludedView: false,
@@ -229,296 +237,241 @@ class TableContainer extends PureComponent {
   }
 
   getIndentData = (selectFirst) => {
-    const {
-      // rowData,
-      // tabId,
-      indentSupported,
-      collapsible,
-      expandedDepth,
-      keyProperty,
-      rows,
-      selected,
-    } = this.props;
+    // const {
+    //   // rowData,
+    //   // tabId,
+    //   indentSupported,
+    //   collapsible,
+    //   expandedDepth,
+    //   keyProperty,
+    //   rows,
+    //   selected,
+    // } = this.props;
     // const { selected } = this.state;
-    let rowsData = [];
+    // let rowsData = [];
 
-    if (indentSupported && rows.length) {//rowData.get(`${tabId}`).size) {
+
+    // TODO: There's a layout property `supportTree`, that we should use
+
+
+    // if (indentSupported && rows.length) {//rowData.get(`${tabId}`).size) {
       //rowsData = getRowsData(rowData.get(`${tabId}`));
 
-      let stateChange = {
-        // rows: rowsData,
-        pendingInit: !rows.length, //!rowsData,
-      };
+      // let stateChange = {
+      //   // rows: rowsData,
+      //   pendingInit: !rows.length, //!rowsData,
+      // };
 
-      if (selectFirst) {
-        stateChange = {
-          ...stateChange,
-          // collapsedParentsRows: [],
-          // collapsedRows: [],
-        };
-      }
+      // if (selectFirst) {
+      //   stateChange = {
+      //     ...stateChange,
+      //     // collapsedParentsRows: [],
+      //     // collapsedRows: [],
+      //   };
+      // }
 
-      this.setState(stateChange, () => {
-        // const { rows } = this.state;
-        const firstRow = rows[0];
+      // this.setState(stateChange, () => {
+      // const { rows } = this.state;
+      // const firstRow = rows[0];
 
-        let updatedParentsRows = [...this.state.collapsedParentsRows];
-        let updatedRows = [...this.state.collapsedRows];
+      // let updatedParentsRows = [...this.state.collapsedParentsRows];
+      // let updatedRows = [...this.state.collapsedRows];
 
-        if (firstRow && selectFirst) {
-          let selectedIndex = 0;
-          if (
-            selected &&
-            selected.length === 1 &&
-            selected[0] &&
-            firstRow.id !== selected[0]
-          ) {
-            selectedIndex = _.findIndex(rows, (row) => row.id === selected[0]);
-          }
+      // if (firstRow && selectFirst) {
+      //   let selectedIndex = 0;
+      //   if (
+      //     selected &&
+      //     selected.length === 1 &&
+      //     selected[0] &&
+      //     firstRow.id !== selected[0]
+      //   ) {
+      //     selectedIndex = _.findIndex(rows, (row) => row.id === selected[0]);
+      //   }
 
-          if (!selectedIndex) {
-            this.selectOneProduct(rows[0].id);
-          }
+      //   if (!selectedIndex) {
+      //     this.handleSelectOne(rows[0].id);
+      //   }
 
-          document.getElementsByClassName('js-table')[0].focus();
-        }
+        // TODO: 
+        // document.getElementsByClassName('js-table')[0].focus();
+      // }
 
-        let mapCollapsed = [];
+      // let mapCollapsed = [];
 
-        if (collapsible && rows && rows.length) {
-          rows.map((row) => {
-            if (row.indent.length >= expandedDepth && row.includedDocuments) {
-              mapCollapsed = mapCollapsed.concat(collapsedMap(row));
-              updatedParentsRows = updatedParentsRows.concat(row[keyProperty]);
-            }
-            if (row.indent.length > expandedDepth) {
-              updatedRows = updatedRows.concat(row[keyProperty]);
-            }
-          });
+      // if (collapsible && rows && rows.length) {
+      //   rows.map((row) => {
+      //     if (row.indent.length >= expandedDepth && row.includedDocuments) {
+      //       mapCollapsed = mapCollapsed.concat(collapsedMap(row));
+      //       updatedParentsRows = updatedParentsRows.concat(row[keyProperty]);
+      //     }
+      //     if (row.indent.length > expandedDepth) {
+      //       updatedRows = updatedRows.concat(row[keyProperty]);
+      //     }
+      //   });
 
-          const updatedState = {
-            // dataHash: uuid(),
-          };
+      //   const updatedState = {
+      //     // dataHash: uuid(),
+      //   };
 
-          if (mapCollapsed.length) {
-            updatedState.collapsedArrayMap = mapCollapsed;
-          }
-          if (updatedRows.length) {
-            updatedState.collapsedRows = updatedRows;
-          }
-          if (updatedParentsRows.length) {
-            updatedState.collapsedParentsRows = updatedParentsRows;
-          }
+      //   if (mapCollapsed.length) {
+      //     updatedState.collapsedArrayMap = mapCollapsed;
+      //   }
+      //   if (updatedRows.length) {
+      //     updatedState.collapsedRows = updatedRows;
+      //   }
+      //   if (updatedParentsRows.length) {
+      //     updatedState.collapsedParentsRows = updatedParentsRows;
+      //   }
 
-          if (Object.keys(updatedState).length) {
-            this.setState({ ...updatedState });
-          }
-        }
-      });
-    } else {
+      //   if (Object.keys(updatedState).length) {
+      //     this.setState({ ...updatedState });
+      //   }
+      // }
+      // });
+    // } else {
       // rowsData =
       //   rowData.get(`${tabId}`) && rowData.get(`${tabId}`).size
       //     ? rowData.get(`${tabId}`).toArray()
       //     : [];
 
-
-      this.setState({
-        // rows: rowsData,
-        // dataHash: uuid(),
-
-        // TODO: What is this for ?
-        // pendingInit: !rowData.get(`${tabId}`),
-        pendingInit: !rows.length,
-      });
-    }
-
-    if (rowsData.length) {
-      setTimeout(() => {
-        if (this._isMounted) {
-          this.setState({
-            tableRefreshToggle: !this.state.mounted,
-          });
-        }
-      }, 1);
-    }
+      // this.setState({
+      //   // rows: rowsData,
+      //   // dataHash: uuid(),
+      //   // TODO: What is this for ?
+      //   // pendingInit: !rowData.get(`${tabId}`),
+      //   pendingInit: !rows.length,
+      // });
+    // }
   };
 
-  handleSelect = (id, idFocused, idFocusedDown) => {
+  getAllLeaves = () => {
+    const { rows, selected } = this.props;
+    let leafs = [];
+    let leafsIds = [];
+
+    rows.map((item) => {
+      if (item.id === selected[0]) {
+        leafs = mapIncluded(item);
+      }
+    });
+
+    leafs.map((item) => {
+      leafsIds = leafsIds.concat(item.id);
+    });
+
+    this.handleSelect(leafsIds);
+  };
+
+  handleSelect = (ids) => {
     const {
-      dispatch,
+      updateTableSelection,
       windowId,
-      disconnectFromState,
-      tabInfo,
+      // disconnectFromState,
+      // tabInfo,
       viewId,
-      selected,
+      // selected,
       docId,
       tabId,
     } = this.props;
-    // const { selected } = this.state;
-
     let newSelected = [];
-    if (!selected[0]) {
-      newSelected = [id];
-    } else {
-      newSelected = selected.concat([id]);
+
+    if (ids) {
+      if (!ids.splice) {
+        newSelected = [ids];
+      } else {
+        newSelected = ids;
+      }
     }
 
-    // this.setState({ selected: newSelected }, () => {
-      // const { selected } = this.state;
+    // if (tabInfo) {
+    updateTableSelection({
+      tableId: getTableId({ windowType: windowId, viewId, docId, tabId }),
+      ids: newSelected,
+    });
+    // dispatch(
+    //   selectTableItems({
+    //     windowType: windowId,
+    //     viewId,
+    //     ids: newSelected,
+    //   })
+    // );
+    // }
 
-      // if (tabInfo) {
-        dispatch(
-          updateTableSelection({
-            tableId: getTableId({ windowType: windowId, viewId, docId, tabId }),
-            ids: newSelected,
-          })
-        );
-        // dispatch(
-        //   selectTableItems({
-        //     windowType: windowId,
-        //     viewId,
-        //     ids: newSelected,
-        //   })
-        // );
-      // }
+    // if (!disconnectFromState) {
+    //     updateTableSelection({
+    //       tableId: getTableId({ windowType: windowId, viewId, docId, tabId }),
+    //       ids: newSelected,
+    //     });
+    //   // dispatch(
+    //   //   selectTableItems({
+    //   //     windowType: windowId,
+    //   //     viewId,
+    //   //     ids: newSelected,
+    //   //   })
+    //   // );
+    // }
 
-      if (!disconnectFromState) {
-        dispatch(
-          updateTableSelection({
-            tableId: getTableId({ windowType: windowId, viewId, docId, tabId }),
-            ids: newSelected,
-          })
-        );
-        // dispatch(
-        //   selectTableItems({
-        //     windowType: windowId,
-        //     viewId,
-        //     ids: newSelected,
-        //   })
-        // );
-      }
-
-
-
-
-      this.triggerFocus(idFocused, idFocusedDown);
+    // this.triggerFocus(idFocused, idFocusedDown);
     // });
+    // cb && cb();
 
     return newSelected;
   };
 
-  handleSelectRange = (ids) => {
-    const { dispatch, tabInfo, windowId, viewId, docId, tabId } = this.props;
-
-    // this.setState({ selected: [...ids] });
-
-    // if (tabInfo) {
-      dispatch(
-        updateTableSelection({
-          tableId: getTableId({ windowType: windowId, viewId, docId, tabId }),
-          ids,
-        })
-      );
-      // dispatch(
-      //   selectTableItems({
-      //     windowType: windowId,
-      //     viewId,
-      //     ids,
-      //   })
-      // );
-    // }
-  };
-
   handleSelectAll = () => {
     const { keyProperty, rows } = this.props;
-    // const { rows } = this.state;
     const property = keyProperty ? keyProperty : 'rowId';
     const toSelect = rows.map((item) => item[property]);
 
-    this.handleSelectRange(toSelect);
-  };
-
-  handleSelectOne = (id, idFocused, idFocusedDown, cb) => {
-    const { dispatch, tabInfo, windowId, viewId, docId, tabId } = this.props;
-
-    if (id === null) {
-      id = undefined;
-    }
-
-    // this.setState(
-    //   {
-    //     selected: [id],
-    //   },
-      // () => {
-
-        // TODO: Figure out how are we using this
-        // if (tabInfo) {
-          dispatch(
-            updateTableSelection({
-              tableId: getTableId({ windowType: windowId, viewId, docId, tabId }),
-              ids: [id],
-            })
-          );
-          // dispatch(
-          //   selectTableItems({
-          //     windowType: windowId,
-          //     viewId,
-          //     ids: [id],
-          //   })
-          // );
-        // }
-
-
-
-
-
-
-
-        this.triggerFocus(idFocused, idFocusedDown);
-        cb && cb();
-      // }
-    // );
+    this.handleSelect(toSelect);
   };
 
   handleDeselect = (id) => {
-    const { dispatch, tabInfo, windowId, viewId, selected } = this.props;
-    // const { selected } = this.state;
+    const {
+      deselectTableItems,
+      // tabInfo,
+      windowId,
+      viewId,
+      selected,
+    } = this.props;
+
     const index = selected.indexOf(id);
+
+    // TODO: Move to redux only
     const newSelected = update(selected, { $splice: [[index, 1]] });
 
-    // this.setState({ selected: newSelected }, () => {
-      if (tabInfo || !newSelected.length) {
-        dispatch(deselectTableItems([id], windowId, viewId));
-      }
-    // });
+    if (/*tabInfo ||*/ !newSelected.length) {
+      // TODO: Shouldn't this use `updateTableSelection` ?
+      deselectTableItems([id], windowId, viewId);
+    }
 
     return newSelected;
   };
 
   handleDeselectAll = (callback) => {
-    const { dispatch, tabInfo, windowId, viewId, docId, tabId } = this.props;
+    const {
+      updateTableSelection,
+      // tabInfo,
+      windowId,
+      viewId,
+      docId,
+      tabId,
+    } = this.props;
 
-    // this.setState(
-    //   {
-    //     selected: [undefined],
-    //   },
-    callback && callback()
-    // );
+    callback && callback();
 
     // if (tabInfo) {
-      dispatch(
-        updateTableSelection({
-          tableId: getTableId({ windowType: windowId, viewId, docId, tabId }),
-          ids: EMPTY_ARRAY,
-        })
-      );
-      // dispatch(
-      //   selectTableItems({
-      //     windowType: windowId,
-      //     viewId,
-      //     ids: [],
-      //   })
-      // );
+    updateTableSelection({
+      tableId: getTableId({ windowType: windowId, viewId, docId, tabId }),
+      ids: EMPTY_ARRAY,
+    });
+    // dispatch(
+    //   selectTableItems({
+    //     windowType: windowId,
+    //     viewId,
+    //     ids: [],
+    //   })
+    // );
     // }
   };
 
@@ -528,7 +481,6 @@ class TableContainer extends PureComponent {
       openIncludedViewOnSelect,
       rows,
     } = this.props;
-    // const { rows } = this.state;
 
     if (openIncludedViewOnSelect && selected.length === 1) {
       rows.forEach((item) => {
@@ -549,7 +501,6 @@ class TableContainer extends PureComponent {
     const { mainTable, keyProperty, onRowEdited, rows } = this.props;
 
     if (mainTable) {
-      // const { rows } = this.state;
       if (!rows.length) return;
 
       rows
@@ -567,15 +518,15 @@ class TableContainer extends PureComponent {
   };
 
   openModal = (windowType, tabId, rowId) => {
-    const { dispatch } = this.props;
+    const { openModal } = this.props;
 
-    dispatch(openModal('Add new', windowType, 'window', tabId, rowId));
+    openModal('Add new', windowType, 'window', tabId, rowId);
   };
 
   openTableModal = () => {
-    const { dispatch, windowId, tabId } = this.props;
+    const { openModal, windowId, tabId } = this.props;
 
-    dispatch(openModal('Add new', windowId, 'window', tabId, 'NEW'));
+    openModal('Add new', windowId, 'window', tabId, 'NEW');
   };
 
   /**
@@ -584,32 +535,29 @@ class TableContainer extends PureComponent {
    *          Active only on subtables
    */
   handleAdvancedEdit = () => {
-    const { dispatch, windowId, tabId, docId, selected } = this.props;
-    // const { selected } = this.state;
+    const { openModal, windowId, tabId, docId, selected } = this.props;
 
     if (docId) {
-      dispatch(
-        openModal('Advanced edit', windowId, 'window', tabId, selected[0], true)
-      );
+      openModal('Advanced edit', windowId, 'window', tabId, selected[0], true);
     }
   };
 
   handlePromptSubmit = (selected) => {
     const {
-      dispatch,
+      deleteLocal,
+      // updateTableSelection,
       windowId,
       docId,
       updateDocList,
       tabId,
-      viewId,
+      // viewId,
     } = this.props;
 
-    dispatch(
-      updateTableSelection({
-        tableId: getTableId({ windowType: windowId, viewId, docId, tabId }),
-        ids: [],
-      })
-    );
+    // updateTableSelection({
+    //   tableId: getTableId({ windowType: windowId, viewId, docId, tabId }),
+    //   ids: [],
+    // });
+    this.handleSelect();
 
     // TODO: This should be an action creator
     deleteRequest(
@@ -620,7 +568,8 @@ class TableContainer extends PureComponent {
       selected
     ).then((response) => {
       if (docId) {
-        dispatch(deleteLocal(tabId, selected, 'master', response));
+        // TODO: Check what this is doing
+        deleteLocal(tabId, selected, 'master', response);
       } else {
         updateDocList();
       }
@@ -649,52 +598,18 @@ class TableContainer extends PureComponent {
     });
   };
 
-  // TODO: This should be an action creator `collapseRows` or something
-  handleRowCollapse = (node, collapsed) => {
-    const { keyProperty } = this.props;
+  handleRowCollapse = (node, collapse) => {
     const {
-      collapsedParentsRows,
-      collapsedRows,
-      collapsedArrayMap,
-    } = this.state;
+      collapseTableRows,
+      windowId,
+      viewId,
+      tabId,
+      docId,
+      keyProperty,
+    } = this.props;
+    const tableId = getTableId({ windowId: windowId, viewId, docId, tabId });
 
-    this.setState({
-      collapsedArrayMap: collapsedMap(node, collapsed, collapsedArrayMap),
-    });
-
-    if (collapsed) {
-      this.setState((prev) => ({
-        collapsedParentsRows: update(prev.collapsedParentsRows, {
-          $splice: [[prev.collapsedParentsRows.indexOf(node[keyProperty]), 1]],
-        }),
-      }));
-    } else {
-      if (collapsedParentsRows.indexOf(node[keyProperty]) > -1) return;
-
-      this.setState((prev) => ({
-        collapsedParentsRows: prev.collapsedParentsRows.concat(
-          node[keyProperty]
-        ),
-      }));
-    }
-
-    node.includedDocuments &&
-      node.includedDocuments.map((node) => {
-        if (collapsed) {
-          this.setState((prev) => ({
-            collapsedRows: update(prev.collapsedRows, {
-              $splice: [[prev.collapsedRows.indexOf(node[keyProperty]), 1]],
-            }),
-          }));
-        } else {
-          if (collapsedRows.indexOf(node[keyProperty]) > -1) return;
-
-          this.setState((prev) => ({
-            collapsedRows: prev.collapsedRows.concat(node[keyProperty]),
-          }));
-          node.includedDocuments && this.handleRowCollapse(node, collapsed);
-        }
-      });
+    collapseTableRows({ tableId, collapse, node, keyProperty });
   };
 
   render() {
@@ -707,13 +622,11 @@ class TableContainer extends PureComponent {
         onPromptSubmit={this.handlePromptSubmit}
         onItemChange={this.handleItemChange}
         onSelect={this.handleSelect}
-        onSelectOne={this.handleSelectOne}
-        onSelectRange={this.handleSelectRange}
         onSelectAll={this.handleSelectAll}
         onDeselectAll={this.handleDeselectAll}
         onDeselect={this.handleDeselect}
-
         onRowCollapse={this.handleRowCollapse}
+        onGetAllLeaves={this.getAllLeaves}
       />
     );
   }
@@ -723,8 +636,6 @@ TableContainer.propTypes = containerPropTypes;
 
 const mapStateToProps = (state, props) => {
   const { windowId, docId, tabId, viewId } = props;
-
-  // console.log('windowId, docId, tabId, viewId: ', windowId, docId, tabId, viewId);
   const tableId = getTableId({ windowType: windowId, viewId, docId, tabId });
   const table = getTable(state, tableId);
 
@@ -732,9 +643,11 @@ const mapStateToProps = (state, props) => {
     rows: table.rows,
     columns: table.columns,
     selected: table.selected,
-    collapsedParentsRows: table.collapsedParentsRows,
+    pending: table.dataPending,
+    collapsedParentRows: table.collapsedParentRows,
     collapsedRows: table.collapsedRows,
     collapsedArrayMap: table.collapsedArrayMap,
+    activeSort: table.activeSort,
 
     allowShortcut: state.windowHandler.allowShortcut,
     allowOutsideClick: state.windowHandler.allowOutsideClick,
@@ -743,18 +656,19 @@ const mapStateToProps = (state, props) => {
       state.appHandler.me.language && state.appHandler.me.language.key
         ? state.appHandler.me.language.key.includes('de')
         : false,
-    activeSort: state.table ? state.table.activeSort : false,
   };
 };
-
-// const clickOutsideConfig = {
-//   excludeScrollbar: true,
-// };
 
 export { TableContainer };
 export default connect(
   mapStateToProps,
-  false,
+  {
+    collapseTableRows,
+    deleteLocal,
+    deselectTableItems,
+    openModal,
+    updateTableSelection,
+  },
   false,
   { forwardRef: true }
 )(TableContainer);
