@@ -34,6 +34,8 @@ class Window extends PureComponent {
       this.tabIndex = { tabs: 3 };
     }
 
+    this.widgets = [];
+
     this.toggleTableFullScreen = this.toggleTableFullScreen.bind(this);
     this.handleBlurWidget = this.handleBlurWidget.bind(this);
     this.requestElementGroupFocus = this.requestElementGroupFocus.bind(this);
@@ -435,7 +437,6 @@ class Window extends PureComponent {
       isModal,
     } = this.props;
 
-    this.widgets = [];
     this.elementGroupFocused = false;
 
     return (

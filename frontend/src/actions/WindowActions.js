@@ -529,8 +529,6 @@ export function deselectTableItems(ids, windowType, viewId) {
 
 // THUNK ACTIONS
 
-// TODO: Just a quick thunk action creator to test Tables reducer
-// but looks like this can actually replace the `initTabs`.
 /*
  * @method fetchTab
  * @summary Action creator for fetching single tab's rows
@@ -552,40 +550,6 @@ export function fetchTab({ tabId, windowId, docId, query }) {
       });
   };
 }
-
-// TODO: Figure out if we still need this as it looks like we can just fetch
-// tabs when they're created (in the Tab component's constructor)
-// export function initTabs(layout, windowType, docId, isModal) {
-//   return async (dispatch) => {
-//     const requests = [];
-//     const tabTmp = {};
-
-//     if (layout) {
-//       layout.map((tab, index) => {
-//         tabTmp[tab.tabId] = {};
-
-//         if ((tab.tabId && index === 0) || !tab.queryOnActivate) {
-//           requests.push(getTabRequest(tab.tabId, windowType, docId));
-//         }
-//       });
-
-//       return await Promise.all(requests).then((responses) => {
-//         responses.forEach((res) => {
-//           // needed for finding tabId
-//           const rowZero = res && res[0];
-//           if (rowZero) {
-//             const tabId = rowZero.tabId;
-//             tabTmp[tabId] = res;
-//           }
-//         });
-
-//         dispatch(addRowData(tabTmp, getScope(isModal)));
-//       });
-//     }
-
-//     return Promise.resolve(null);
-//   };
-// }
 
 export function initWindow(windowType, docId, tabId, rowId = null, isAdvanced) {
   return (dispatch) => {
@@ -681,7 +645,7 @@ export function createWindow(
 
       if (tabs) {
         Object.values(tabs).forEach((tab) => {
-          const { tabId } = tab;
+          const tabId = tab.tabId || tab.tabid;
           const tableId = getTableId({ windowId: windowType, docId, tabId });
           const tableData = {
             windowType,
@@ -689,6 +653,7 @@ export function createWindow(
             tabId,
             ...tab,
           };
+
           dispatch(createTabTable(tableId, tableData));
         });
       }
@@ -763,15 +728,6 @@ export function createWindow(
 
             dispatch(initLayoutSuccess(data, getScope(isModal)));
           })
-          // TODO: looks like this can be removed ?
-          // .then((response) => {
-          //   if (!isModal) {
-          //     return dispatch(
-          //       initTabs(response.layout.tabs, windowType, docId, isModal)
-          //     );
-          //   }
-          //   return Promise.resolve(null);
-          // })
           .catch((e) => Promise.reject(e))
       );
     });

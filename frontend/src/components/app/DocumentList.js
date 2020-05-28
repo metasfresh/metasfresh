@@ -347,11 +347,7 @@ export default class DocumentList extends Component {
               <Table
                 entity="documentView"
                 ref={this.setTableRef}
-                collapsible={layout.collapsible}
-                expandedDepth={layout.expandedDepth}
                 windowId={windowType}
-                emptyText={layout.emptyResultText}
-                emptyHint={layout.emptyResultHint}
                 readonly={true}
                 supportOpenRecord={layout.supportOpenRecord}
                 onRowEdited={this.setTableRowEdited}
@@ -360,13 +356,13 @@ export default class DocumentList extends Component {
                 handleChangePage={onChangePage}
                 mainTable={true}
                 updateDocList={onFetchLayoutAndData}
-          
-                _keyProperty="id"
+
+                emptyText={layout.emptyResultText}
+                emptyHint={layout.emptyResultHint}
                 onSelectionChanged={updateParentSelectedIds}
                 sort={onSortData}
                 _defaultSelected={selected}
                 _refreshSelection={refreshSelection}
-                _indentSupported={layout.supportTree}
 
                 tabIndex={0}
                 disableOnClickOutside={clickOutsideLock}

@@ -44,9 +44,10 @@ export const initialTableState = {
   allowCreateNewReason: null,
   allowDelete: true,
   stale: false,
-  supportTree: false,
+
   expandedDepth: 0,
   collapsible: false,
+  indentSupported: false,
 };
 
 // we store the length of the tables structure for the sake of testing and debugging
@@ -105,15 +106,23 @@ const reducer = produce((draftState, action) => {
     }
     case types.UPDATE_TABLE: {
       const { id, data } = action.payload;
+
       const prevTableStruct = draftState[id]
         ? draftState[id]
         : initialTableState;
+      let updatedSelected = {};
+
+      if (data.rows) {
+        updatedSelected = {
+          selected: [data.rows[0]],
+        };
+      }
+
       draftState[id] = {
         ...prevTableStruct,
         ...data,
+        ...updatedSelected,
       };
-
-      console.log('UPDATE_TABLE: ', data, draftState[id]);
 
       return;
     }
