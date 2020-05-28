@@ -36,6 +36,9 @@ const initialState = createStore({
 const store = mockStore(initialState);
 entryTableProps.onBlurWidget = jest.fn();
 entryTableProps.addRefToWidgets = jest.fn();
+const rData = new Map();
+rData.set(0, entryTableProps.rowData[0])
+entryTableProps.rowData = rData;
 describe('EntryTable', () => {
   it('renders without errors with the given props', () => {
     const wrapperEntryTable = mount(
@@ -44,9 +47,14 @@ describe('EntryTable', () => {
       </Provider>
     );
     const html = wrapperEntryTable.html();
-
+    console.log(html)
+    expect(html).toContain(`<table class="table js-table layout-fix">`);
+    expect(html).toContain(`Tab1-Section2-Line1-Field1`);
+    expect(html).toContain(`form-field-100005 form-field-100005_Info`);
     expect(html).toContain(
-      `<table class="table js-table layout-fix"><tbody><tr class="table-row"></tr></tbody></table>`
+      `<div class="input-editable input-dropdown-focused">`
     );
+    expect(html).toContain(`Tab1-Section2-Line1-Field2`);
+    expect(html).toContain(`form-group form-group-table form-field-100006 form-field-100006_Info`);
   });
 });
