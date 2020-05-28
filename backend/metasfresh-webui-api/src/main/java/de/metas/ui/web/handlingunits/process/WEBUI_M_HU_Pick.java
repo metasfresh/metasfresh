@@ -7,13 +7,19 @@ import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.Objects;
+import java.util.Set;
+
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.IHUContextFactory;
+import de.metas.handlingunits.IHandlingUnitsDAO;
+import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.picking.PickFrom;
 import de.metas.handlingunits.picking.PickingCandidateService;
 import de.metas.handlingunits.picking.requests.PickRequest;
+import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.logging.LogManager;
 import de.metas.order.OrderLineId;
@@ -23,6 +29,7 @@ import de.metas.process.IProcessDefaultParametersProvider;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.product.ProductId;
 import de.metas.ui.web.handlingunits.HUEditorRow;
 import de.metas.ui.web.picking.husToPick.HUsToPickViewFactory;
 import de.metas.ui.web.pporder.PPOrderLineRow;
@@ -35,6 +42,7 @@ import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor.LookupSource;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceContext;
 import de.metas.util.GuavaCollectors;
+import de.metas.util.Services;
 import lombok.Builder;
 import lombok.Value;
 
@@ -95,8 +103,26 @@ public class WEBUI_M_HU_Pick extends ViewBasedProcessTemplate implements IProces
 		{
 			return ProcessPreconditionsResolution.rejectBecauseNotSingleSelection();
 		}
+		
+		if (!isEligibleHU())
+		{
+			return ProcessPreconditionsResolution.rejectWithInternalReason("no eligible HU rows found");
+		}
 
 		return ProcessPreconditionsResolution.accept();
+	}
+
+	private boolean isEligibleHU()
+	{
+		final HURow row = getSingleHURow();
+		final I_M_HU hu = Services.get(IHandlingUnitsDAO.class).getById(row.getHuId());
+		
+		// Multi product HUs are not allowed - see https://github.com/metasfresh/metasfresh/issues/6709
+		return Services.get(IHUContextFactory.class)
+				.createMutableHUContext()
+				.getHUStorageFactory()
+				.getStorage(hu)
+				.isSingleProductStorage();
 	}
 
 	private Stream<HURow> streamHURows()
