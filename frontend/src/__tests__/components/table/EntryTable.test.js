@@ -47,7 +47,7 @@ describe('EntryTable', () => {
       </Provider>
     );
     const html = wrapperEntryTable.html();
-    console.log(html)
+
     expect(html).toContain(`<table class="table js-table layout-fix">`);
     expect(html).toContain(`Tab1-Section2-Line1-Field1`);
     expect(html).toContain(`form-field-100005 form-field-100005_Info`);
@@ -55,6 +55,8 @@ describe('EntryTable', () => {
       `<div class="input-editable input-dropdown-focused">`
     );
     expect(html).toContain(`Tab1-Section2-Line1-Field2`);
-    expect(html).toContain(`form-group form-group-table form-field-100006 form-field-100006_Info`);
+    expect(html).toContain(
+      `form-group form-group-table form-field-100006 form-field-100006_Info`
+    );
   });
 });
