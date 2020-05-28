@@ -4,13 +4,12 @@ import { createSelector } from 'reselect';
 
 import * as types from '../constants/ActionTypes';
 
-import { createCollapsedMap } from '../utils/documentListHelper';
-
 export const initialTableState = {
   windowType: null,
   viewId: null,
   docId: null,
   tabId: null,
+  keyProperty: null,
   selected: [],
   rows: [],
   collapsedRows: [],
@@ -45,6 +44,9 @@ export const initialTableState = {
   allowCreateNewReason: null,
   allowDelete: true,
   stale: false,
+  supportTree: false,
+  expandedDepth: 0,
+  collapsible: false,
 };
 
 // we store the length of the tables structure for the sake of testing and debugging
@@ -56,8 +58,8 @@ export const initialState = { length: 0 };
  * provided, we'll use only that for grids, and if not - it's a tab table so document id
  * and tab ids are expected ).
  */
-export const getTableId = ({ windowType, viewId, docId, tabId }) => {
-  return `${windowType}_${viewId ? `${viewId}` : `${docId}_${tabId}`}`;
+export const getTableId = ({ windowId, viewId, docId, tabId }) => {
+  return `${windowId}_${viewId ? viewId : `${docId}_${tabId}`}`;
 };
 
 /**
@@ -111,6 +113,8 @@ const reducer = produce((draftState, action) => {
         ...data,
       };
 
+      console.log('UPDATE_TABLE: ', data, draftState[id]);
+
       return;
     }
     case types.DELETE_TABLE: {
@@ -124,9 +128,9 @@ const reducer = produce((draftState, action) => {
     }
 
     case types.UPDATE_TABLE_SELECTION: {
-      const { tableId, selection } = action.payload;
-      draftState[tableId] = {
-        ...draftState[tableId],
+      const { id, selection } = action.payload;
+      draftState[id] = {
+        ...draftState[id],
         selected: selection,
       };
       /**
@@ -138,49 +142,15 @@ const reducer = produce((draftState, action) => {
     }
 
     case types.COLLAPSE_TABLE_ROWS: {
-      const { tableId, keyProperty, node, collapse } = action.payload;
-      const table = draftState[tableId];
-      let { collapsedParentRows, collapsedRows, collapsedArrayMap } = table;
+      const {
+        id,
+        collapsedArrayMap,
+        collapsedParentRows,
+        collapsedRows,
+      } = action.payload;
+      const table = draftState[id];
 
-      const inner = (parentNode) => {
-        collapsedArrayMap = createCollapsedMap(
-          parentNode,
-          collapse,
-          collapsedArrayMap
-        );
-
-        if (collapse) {
-          collapsedParentRows.splice(
-            collapsedParentRows.indexOf(parentNode[keyProperty]),
-            1
-          );
-        } else {
-          if (collapsedParentRows.indexOf(parentNode[keyProperty]) > -1) return;
-
-          collapsedParentRows = collapsedParentRows.concat(
-            parentNode[keyProperty]
-          );
-        }
-
-        parentNode.includedDocuments &&
-          parentNode.includedDocuments.map((childNode) => {
-            if (collapse) {
-              collapsedRows.splice(
-                collapsedRows.indexOf(childNode[keyProperty]),
-                1
-              );
-            } else {
-              if (collapsedRows.indexOf(childNode[keyProperty]) > -1) return;
-
-              collapsedRows = collapsedRows.concat(childNode[keyProperty]);
-              childNode.includedDocuments && inner(childNode);
-            }
-          });
-      };
-
-      inner(node);
-
-      draftState[tableId] = {
+      draftState[id] = {
         ...table,
         collapsedArrayMap: collapsedArrayMap,
         collapsedParentRows: collapsedParentRows,

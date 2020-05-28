@@ -1,7 +1,9 @@
 import { reduce, cloneDeep } from 'lodash';
-import * as types from '../constants/ActionTypes';
 
+import * as types from '../constants/ActionTypes';
 import { getView } from '../reducers/viewHandler';
+import { getTable } from '../reducers/tables';
+import { createCollapsedMap } from '../utils/documentListHelper';
 
 /**
  * @method createTable
@@ -17,7 +19,7 @@ function createTable(id, data) {
 /**
  * @method updateTable
  * @summary Perform a major update (many values at once) of a table entry. Think
- * rows/columns
+ * rows/columns/initial load
  */
 function updateTable(id, data) {
   return {
@@ -55,17 +57,27 @@ export function setActiveSort(id, active) {
 export function updateTableSelection({ tableId, ids }) {
   return {
     type: types.UPDATE_TABLE_SELECTION,
-    payload: { tableId, selection: ids },
+    payload: { id: tableId, selection: ids },
   };
 }
 
 /**
  * Toggle table rows
  */
-export function collapseTableRows({ tableId, collapse, node, keyProperty }) {
+function collapseRows({
+  tableId,
+  collapsedParentRows,
+  collapsedRows,
+  collapsedArrayMap,
+}) {
   return {
     type: types.COLLAPSE_TABLE_ROWS,
-    payload: { tableId, keyProperty, collapse, node },
+    payload: {
+      id: tableId,
+      collapsedParentRows,
+      collapsedRows,
+      collapsedArrayMap,
+    },
   };
 }
 
@@ -110,6 +122,11 @@ export function createTableData(rawData) {
     defaultOrderBys: rawData.defaultOrderBys
       ? rawData.defaultOrderBys
       : undefined,
+    expandedDepth: rawData.expandedDepth,
+    keyProperty: rawData.keyProperty,
+
+    // TODO: We have both `supportTree` and `collapsible` in the layout response.
+    collapsible: rawData.supportTree,
   };
 
   // we're removing any keys without a value ta make merging with the existing data
@@ -135,7 +152,10 @@ export function createGridTable(tableId, tableResponse) {
   return (dispatch, getState) => {
     const windowType = tableResponse.windowType || tableResponse.windowId;
     const tableLayout = getView(getState(), windowType).layout;
-    const tableData = createTableData({ ...tableResponse, ...tableLayout });
+    const tableData = createTableData({
+      ...tableResponse,
+      ...tableLayout,
+    });
 
     dispatch(createTable(tableId, tableData));
 
@@ -157,9 +177,20 @@ export function updateGridTable(tableId, tableResponse) {
         const tableData = createTableData({
           ...tableResponse,
           headerElements: tableResponse.columnsByFieldName,
+          keyProperty: 'id',
         });
+        const { rows, collapsible, expandedDepth, keyProperty } = tableData;
 
         dispatch(updateTable(tableId, tableData));
+        dispatch(
+          createCollapsedRows({
+            tableId,
+            rows,
+            collapsible,
+            expandedDepth,
+            keyProperty,
+          })
+        );
       } else {
         const windowType = tableResponse.windowType || tableResponse.windowId;
         const tableLayout = getView(getState(), windowType).layout;
@@ -167,9 +198,20 @@ export function updateGridTable(tableId, tableResponse) {
           ...tableResponse,
           ...tableLayout,
           headerElements: tableResponse.columnsByFieldName,
+          keyProperty: 'id',
         });
+        const { rows, collapsible, expandedDepth, keyProperty } = tableData;
 
         dispatch(createTable(tableId, tableData));
+        dispatch(
+          createCollapsedRows({
+            tableId,
+            rows,
+            collapsible,
+            expandedDepth,
+            keyProperty,
+          })
+        );
       }
 
       return Promise.resolve(true);
@@ -184,7 +226,9 @@ export function updateGridTable(tableId, tableResponse) {
  */
 export function createTabTable(tableId, tableResponse) {
   return (dispatch) => {
-    const tableData = createTableData(tableResponse);
+    const tableData = createTableData({
+      ...tableResponse,
+    });
 
     dispatch(createTable(tableId, tableData));
 
@@ -201,7 +245,10 @@ export function updateTabTable(tableId, tableResponse) {
 
     if (state.tables) {
       const tableExists = state.tables[tableId];
-      const tableData = createTableData(tableResponse);
+      const tableData = createTableData({
+        ...tableResponse,
+        keyProperty: 'rowId',
+      });
 
       if (tableExists) {
         dispatch(updateTable(tableId, tableData));
@@ -213,5 +260,103 @@ export function updateTabTable(tableId, tableResponse) {
     }
 
     return Promise.resolve(false);
+  };
+}
+
+function createCollapsedRows({
+  tableId,
+  rows,
+  collapsible,
+  expandedDepth,
+  keyProperty,
+}) {
+  return (dispatch) => {
+    let collapsedArrayMap = [];
+    let collapsedParentRows = []; //[...this.state.collapsedParentsRows];
+    let collapsedRows = []; //[...this.state.collapsedRows];
+
+    if (collapsible && rows && rows.length) {
+      rows.map((row) => {
+        if (row.indent.length >= expandedDepth && row.includedDocuments) {
+          collapsedArrayMap = collapsedArrayMap.concat(collapsedArrayMap(row));
+          collapsedParentRows = collapsedParentRows.concat(row[keyProperty]);
+        }
+        if (row.indent.length > expandedDepth) {
+          collapsedRows = collapsedRows.concat(row[keyProperty]);
+        }
+      });
+    }
+    dispatch(
+      collapseRows({
+        tableId,
+        collapsedParentRows,
+        collapsedRows,
+        collapsedArrayMap,
+      })
+    );
+  };
+}
+
+/*
+ * Create a new table entry for grids using data from the window layout (so not populated with data yet)
+ */
+export function collapseTableRow({ tableId, collapse, node }) {
+  return (dispatch, getState) => {
+    const table = getTable(getState(), tableId);
+    let {
+      collapsedParentRows,
+      collapsedRows,
+      collapsedArrayMap,
+      keyProperty,
+    } = table;
+
+    const inner = (parentNode) => {
+      collapsedArrayMap = createCollapsedMap(
+        parentNode,
+        collapse,
+        collapsedArrayMap
+      );
+
+      if (collapse) {
+        collapsedParentRows.splice(
+          collapsedParentRows.indexOf(parentNode[keyProperty]),
+          1
+        );
+      } else {
+        if (collapsedParentRows.indexOf(parentNode[keyProperty]) > -1) return;
+
+        collapsedParentRows = collapsedParentRows.concat(
+          parentNode[keyProperty]
+        );
+      }
+
+      parentNode.includedDocuments &&
+        parentNode.includedDocuments.map((childNode) => {
+          if (collapse) {
+            collapsedRows.splice(
+              collapsedRows.indexOf(childNode[keyProperty]),
+              1
+            );
+          } else {
+            if (collapsedRows.indexOf(childNode[keyProperty]) > -1) return;
+
+            collapsedRows = collapsedRows.concat(childNode[keyProperty]);
+            childNode.includedDocuments && inner(childNode);
+          }
+        });
+    };
+
+    inner(node);
+
+    const returnData = {
+      tableId,
+      collapsedRows,
+      collapsedParentRows,
+      collapsedArrayMap,
+    };
+
+    dispatch(collapseRows(returnData));
+
+    return Promise.resolve(returnData);
   };
 }

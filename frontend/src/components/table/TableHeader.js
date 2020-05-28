@@ -47,7 +47,7 @@ class TableHeader extends PureComponent {
       setActiveSort,
     } = this.props;
     const stateFields = this.state.fields;
-    const tableId = getTableId({ windowType, viewId, docId, tabId });
+    const tableId = getTableId({ windowId: windowType, viewId, docId, tabId });
     let fields = {};
     let sortingValue = null;
 

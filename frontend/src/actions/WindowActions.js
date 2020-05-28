@@ -535,11 +535,11 @@ export function deselectTableItems(ids, windowType, viewId) {
  * @method fetchTab
  * @summary Action creator for fetching single tab's rows
  */
-export function fetchTab({ tabId, windowType, docId, query }) {
+export function fetchTab({ tabId, windowId, docId, query }) {
   return (dispatch) => {
-    return getTabRequest(tabId, windowType, docId, query)
+    return getTabRequest(tabId, windowId, docId, query)
       .then((response) => {
-        const tableId = getTableId({ windowType, docId, tabId });
+        const tableId = getTableId({ windowId, docId, tabId });
         const tableData = { result: response };
 
         dispatch(updateTabTable(tableId, tableData));
@@ -682,7 +682,7 @@ export function createWindow(
       if (tabs) {
         Object.values(tabs).forEach((tab) => {
           const { tabId } = tab;
-          const tableId = getTableId({ windowType, docId, tabId });
+          const tableId = getTableId({ windowId: windowType, docId, tabId });
           const tableData = {
             windowType,
             docId,
@@ -746,7 +746,11 @@ export function createWindow(
             if (layoutTabs) {
               Object.values(layoutTabs).forEach((tab) => {
                 const { tabId } = tab;
-                const tableId = getTableId({ windowType, docId, tabId });
+                const tableId = getTableId({
+                  windowId: windowType,
+                  docId,
+                  tabId,
+                });
                 const tableData = {
                   windowType,
                   docId,

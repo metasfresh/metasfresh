@@ -203,7 +203,7 @@ class MasterWindowContainer extends Component {
 
       if (tabs) {
         tabs.forEach((tabId) => {
-          const tableId = getTableId({ windowType, docId, tabId });
+          const tableId = getTableId({ windowId: windowType, docId, tabId });
           deleteTable(tableId);
         });
       }

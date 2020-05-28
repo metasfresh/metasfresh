@@ -54,7 +54,7 @@ describe('TableActions general', () => {
   it(`dispatches 'SET_ACTIVE_SORT' action when setting active sort`, () => {
     const { windowType, viewId } = gridProps.props1;
     const layoutResponse = gridLayoutFixtures.layout1;
-    const id = getTableId({ windowType, viewId });
+    const id = getTableId({ windowId: windowType, viewId });
     const initialState = createStore({
       viewHandler: {
         views: {
@@ -83,7 +83,7 @@ describe('TableActions grid', () => {
     const { windowType, viewId } = gridProps.props1;
     const layoutResponse = gridLayoutFixtures.layout1;
     const dataResponse = gridDataFixtures.data1;
-    const id = getTableId({ windowType, viewId });
+    const id = getTableId({ windowId: windowType, viewId });
     const initialState = createStore({
       viewHandler: {
         views: {
@@ -113,7 +113,7 @@ describe('TableActions grid', () => {
     const layoutResponse = gridLayoutFixtures.layout1;
     const dataResponse = gridDataFixtures.data1;
     const rowResponse = gridRowFixtures.data1;
-    const id = getTableId({ windowType, viewId });
+    const id = getTableId({ windowId: windowType, viewId });
     const tableData_create = createTableData({ ...dataResponse, ...layoutResponse });
     const tableData_update = createTableData({
       ...rowResponse,
@@ -155,7 +155,7 @@ describe('TableActions grid', () => {
     const layoutResponse = gridLayoutFixtures.layout1;
     const dataResponse = gridDataFixtures.data1;
     const rowResponse = gridRowFixtures.data1;
-    const id = getTableId({ windowType, viewId });
+    const id = getTableId({ windowId: windowType, viewId });
     const tableData_create = createTableData({ ...dataResponse, ...layoutResponse });
     const tableData_update = createTableData({
       ...rowResponse,
@@ -196,7 +196,7 @@ describe('TableActions tab', () => {
     const dispatchedActions = [];
 
     Object.values(masterWindowData.includedTabsInfo).forEach(tab => {
-      const tableId = getTableId({ windowType, docId, tabId: tab.tabId });
+      const tableId = getTableId({ windowId: windowType, docId, tabId: tab.tabId });
       const dataResponse = {
         windowType,
         docId,
@@ -227,7 +227,7 @@ describe('TableActions tab', () => {
     const initialStateTables = {}
 
     Object.values(masterWindowData.includedTabsInfo).forEach(tab => {
-      const tableId = getTableId({ windowType, docId, tabId: tab.tabId });
+      const tableId = getTableId({ windowId: windowType, docId, tabId: tab.tabId });
       const initialStateData = {
         windowType,
         docId,
@@ -257,7 +257,7 @@ describe('TableActions tab', () => {
     const dispatchedActions = [];
 
     layoutResponse.tabs.forEach(tab => {
-      const tableId = getTableId({ windowType, docId, tabId: tab.tabId });
+      const tableId = getTableId({ windowId: windowType, docId, tabId: tab.tabId });
       const dataResponse = {
         windowType,
         docId,
@@ -290,7 +290,7 @@ describe('TableActions tab', () => {
     const initialStateTables = {}
 
     Object.values(masterWindowResponse.includedTabsInfo).forEach(tab => {
-      const tableId = getTableId({ windowType, docId, tabId: tab.tabId });
+      const tableId = getTableId({ windowId: windowType, docId, tabId: tab.tabId });
       const fullTab = {
         ...tab,
         ...layoutResponse.tabs[tab.tabId]
@@ -321,7 +321,7 @@ describe('TableActions tab', () => {
 
     const store = mockStore(initialState);
     const tabId = rowDataResponse[0].tabId;
-    const tableId = getTableId({ windowType, docId, tabId, });
+    const tableId = getTableId({ windowId: windowType, docId, tabId, });
     const tableData = createTableData({ result: rowDataResponse });
     const payload = {
       id: tableId,

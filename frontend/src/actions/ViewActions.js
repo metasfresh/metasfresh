@@ -275,15 +275,13 @@ export function fetchDocument({
       .then((response) => {
         dispatch(fetchDocumentSuccess(identifier, response.data));
 
-        const tableId = getTableId({ windowType, viewId });
+        const tableId = getTableId({ windowId: windowType, viewId });
         const tableData = { windowType, viewId, ...response.data };
 
       // TODO:
-      // if we're updating rows, we should update selection to first row
-      // and rebuild collapsed rows (if needed)
-
-              // if page changed, same - rebuild collapsed, reset selection (HANDLE IN AC)
-
+        // if we're updating rows, we should update selection to first row
+        // and rebuild collapsed rows (if needed)
+        // if page changed, same - rebuild collapsed, reset selection (HANDLE IN AC)
 
         dispatch(updateGridTable(tableId, tableData));
 
@@ -330,7 +328,7 @@ export function createView({
         dispatch(createViewSuccess(identifier, response.data));
 
         const { viewId } = response.data;
-        const tableId = getTableId({ windowType, viewId });
+        const tableId = getTableId({ windowId: windowType, viewId });
         const tableData = { windowType, viewId };
 
         dispatch(createGridTable(tableId, tableData));

@@ -148,6 +148,8 @@ export default class DocumentList extends Component {
       filtersActive,
       isShowIncluded,
       hasShowIncluded,
+
+      // TODO: Looks, like this is not used
       refreshSelection,
       mapConfig,
       initialValuesNulled,
@@ -354,21 +356,21 @@ export default class DocumentList extends Component {
                 supportOpenRecord={layout.supportOpenRecord}
                 onRowEdited={this.setTableRowEdited}
                 updateQuickActions={this.updateQuickActions}
-                keyProperty="id"
                 onDoubleClick={onRedirectToDocument}
                 handleChangePage={onChangePage}
-                onSelectionChanged={updateParentSelectedIds}
                 mainTable={true}
                 updateDocList={onFetchLayoutAndData}
-
+          
+                _keyProperty="id"
+                onSelectionChanged={updateParentSelectedIds}
                 sort={onSortData}
+                _defaultSelected={selected}
+                _refreshSelection={refreshSelection}
+                _indentSupported={layout.supportTree}
 
                 tabIndex={0}
-                indentSupported={layout.supportTree}
                 disableOnClickOutside={clickOutsideLock}
                 limitOnClickOutside={isModal}
-                defaultSelected={selected}
-                refreshSelection={refreshSelection}
                 queryLimitHit={queryLimitHit}
                 showIncludedViewOnSelect={onShowIncludedViewOnSelect}
                 openIncludedViewOnSelect={

@@ -97,7 +97,7 @@ class DocumentListContainer extends Component {
     disconnectWS.call(this);
 
     deleteView(isModal ? viewId : windowType);
-    deleteTable(getTableId({ windowType, viewId }));
+    deleteTable(getTableId({ windowId: windowType, viewId }));
   }
 
   UNSAFE_componentWillReceiveProps(nextProps) {
@@ -154,7 +154,7 @@ class DocumentListContainer extends Component {
       nextRefId !== refId
     ) {
       resetView(windowType);
-      deleteTable(getTableId({ windowType, viewId }));
+      deleteTable(getTableId({ windowId: windowType, viewId }));
 
       this.setState(
         {
