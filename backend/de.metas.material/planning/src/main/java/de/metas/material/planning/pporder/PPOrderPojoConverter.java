@@ -3,7 +3,6 @@ package de.metas.material.planning.pporder;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.compiere.util.TimeUtil.asInstant;
 
-import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
