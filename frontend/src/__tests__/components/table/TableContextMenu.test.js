@@ -80,7 +80,7 @@ describe('TableContextMenu', () => {
     expect(html).toContain(`<span class="tooltip-inline">Alt+B</span>`);
   });
 
-  it('should ...', () => {
+  it('should shouw delete shortcut when handleDelete function is passed', () => {
     tableCMenuProps.handleDelete = jest.fn();
     const wrapperTableCMenu = mount(
       <Provider store={store}>
