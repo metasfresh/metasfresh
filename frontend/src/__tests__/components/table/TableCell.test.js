@@ -35,12 +35,4 @@ describe('TableCell', () => {
 
     expect(html).toContain(`LongText`);
   });
-
-  it('Changing the widget type should be present in the output', () => {
-    tableCellProps.item.widgetType = 'LongText';
-    const wrapperTableCell = shallow(<TableCell {...tableCellProps} />);
-    const html = wrapperTableCell.html();
-
-    expect(html).toContain(`LongText`);
-  });
 });

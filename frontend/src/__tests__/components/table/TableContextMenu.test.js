@@ -44,6 +44,13 @@ describe('TableContextMenu', () => {
       </Provider>
     );
     const html = wrapperTableCMenu.html();
-    
+
+    expect(html).toContain(
+      `<div class="context-menu context-menu-open panel-bordered panel-primary" tabindex="0">`
+    );
+    expect(html).toContain(`<hr class="context-menu-separator">`);
+    expect(html).toContain(`<i class="meta-icon-settings"></i>`);
   });
 });
+
+// TODO: add more tests in here by mocking the SSE this is tricky
