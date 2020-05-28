@@ -513,7 +513,7 @@ public class ReportEngine implements PrintServiceAttributeListener
 	{
 		if (printerName == null)
 			m_printerName = Services.get(IPrinterRoutingBL.class).getDefaultPrinterName(); // metas: us316
-		// m_printerName = Ini.getProperty(Ini.P_PRINTER); // metas: us316: commented
+			// m_printerName = Ini.getProperty(Ini.P_PRINTER); // metas: us316: commented
 		else
 			m_printerName = printerName;
 	}	// setPrinterName
@@ -1310,10 +1310,10 @@ public class ReportEngine implements PrintServiceAttributeListener
 
 	private static final String[] DOC_BASETABLES = new String[] {
 			"C_Order", "M_InOut", "C_Invoice", "C_Project",
-			"C_DunningRunEntry", "PP_Order", "DD_Order" };
+			"C_DunningRunEntry", "PP_Order", "null", "null", "null", "null", "DD_Order" };
 	private static final String[] DOC_IDS = new String[] {
 			"C_Order_ID", "M_InOut_ID", "C_Invoice_ID", "C_Project_ID",
-			"C_DunningRunEntry_ID", "PP_Order_ID", "DD_Order_ID" };
+			"C_DunningRunEntry_ID", "PP_Order_ID", "null", "null", "null", "null", "DD_Order_ID" };
 	private static final int[] DOC_TABLE_ID = new int[] {
 			getTableId(I_C_Order.class),
 			getTableId(I_M_InOut.class),
@@ -1321,6 +1321,10 @@ public class ReportEngine implements PrintServiceAttributeListener
 			getTableId(I_C_Project.class),
 			I_C_DunningRunEntry.Table_ID,
 			Services.get(IADTableDAO.class).retrieveTableId(I_PP_Order.Table_Name),
+			-1,
+			-1,
+			-1,
+			-1,
 			Services.get(IADTableDAO.class).retrieveTableId(I_DD_Order.Table_Name)};
 
 	/**************************************************************************
@@ -1728,10 +1732,10 @@ public class ReportEngine implements PrintServiceAttributeListener
 		// WalkIn Receipt, WalkIn Invoice,
 		if (DocSubType.equals("WR") || DocSubType.equals("WI"))
 			what[0] = INVOICE;
-		// WalkIn Pickup,
+			// WalkIn Pickup,
 		else if (DocSubType.equals("WP"))
 			what[0] = SHIPMENT;
-		// Offer Binding, Offer Nonbinding, Standard Order
+			// Offer Binding, Offer Nonbinding, Standard Order
 		else
 			return what;
 
