@@ -83,9 +83,12 @@ public class UOMPrecision
 		return precision;
 	}
 
+	/**
+	 * @return always RoundingMode#UP. Example: we convert 300GR to piece; one piece is one kilo; we need one piece and not 0 piece as the result, so we need to round UP.
+	 */
 	public RoundingMode getRoundingMode()
 	{
-		return RoundingMode.HALF_UP;
+		return RoundingMode.UP;
 	}
 
 	public BigDecimal roundIfNeeded(@NonNull final BigDecimal qty)

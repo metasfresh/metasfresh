@@ -81,7 +81,7 @@ public interface IUOMConversionBL extends ISingletonService, QuantityUOMConverte
 	/**
 	 * Creates a new {@link Quantity} object by converting the given {@code quantity} to the given {@code uomTo}.
 	 * <p>
-	 * The new {@link Quantity} object will have {@link #getQty()} and {@link #getUOM()} as their source Qty/UOM.
+	 * The new {@link Quantity} object will have the given {@code quantity}'s properties as their source Qty/UOM.
 	 *
 	 * @param conversionCtx may be {@code null}, *if* the parameters are such that no real conversion has to be done.
 	 *
@@ -102,9 +102,6 @@ public interface IUOMConversionBL extends ISingletonService, QuantityUOMConverte
 	/**
 	 * Convert quantity from <code>uomFrom</code> to product's stocking UOM.
 	 *
-	 * @param conversionCtx
-	 * @param qty
-	 * @param uomFrom
 	 * @return converted quantity; never return NULL.
 	 */
 	BigDecimal convertQtyToProductUOM(UOMConversionContext conversionCtx, BigDecimal qty, I_C_UOM uomFrom);
@@ -112,8 +109,6 @@ public interface IUOMConversionBL extends ISingletonService, QuantityUOMConverte
 	/**
 	 * Convert price from <code>uomFrom</code> to <code>uomTo</code>
 	 *
-	 * @param product
-	 * @param price
 	 * @param uomFrom may not be <code>null</code>.
 	 * @param uomTo may not be <code>null</code>.
 	 * @param pricePrecision precision to be used for resulting price
@@ -126,8 +121,6 @@ public interface IUOMConversionBL extends ISingletonService, QuantityUOMConverte
 	 * <p>
 	 * If qty's actual precision is bigger than UOM standard precision then the qty WON'T be rounded.
 	 *
-	 * @param qty
-	 * @param uom
 	 * @return qty rounded to UOM precision
 	 */
 	BigDecimal adjustToUOMPrecisionWithoutRoundingIfPossible(BigDecimal qty, I_C_UOM uom);
@@ -150,7 +143,7 @@ public interface IUOMConversionBL extends ISingletonService, QuantityUOMConverte
 	 * <p>
 	 * As a rule of thumb, if you want to get QtyEntered from QtOrdered/Moved/Invoiced/Requiered, this is your method.
 	 *
-	 * @param product product from whose stocking UOM we want to convert
+	 * @param productId product from whose stocking UOM we want to convert
 	 * @param uomDest the UOM to which we want to convert
 	 * @param qtyToConvert the Qty in the product's stocking UOM
 	 * @return the converted qty or <code>null</code> if the product's stocking UOM is different from the given <code>uomDest</code> and if there is no conversion rate to use.
