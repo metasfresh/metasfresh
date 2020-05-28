@@ -23,6 +23,7 @@
 package de.metas.ui.web.payment_allocation;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.bpartner.BPartnerId;
 import de.metas.i18n.IMsgBL;
 import de.metas.payment.PaymentId;
 import de.metas.process.AdProcessId;
@@ -70,6 +71,9 @@ public class PaymentsViewFactory implements IViewFactory, IViewsIndexStorage
 	private final PaymentAndInvoiceRowsRepo rowsRepo;
 	private final DefaultViewsRepositoryStorage views = new DefaultViewsRepositoryStorage(TimeUnit.HOURS.toMinutes(1));
 
+	public static final String PARAMETER_TYPE_PAYMENT_IDS = "PAYMENT_IDS";
+	public static final String PARAMETER_TYPE_BPARTNER_ID = "BPARTNER_ID";
+
 	public PaymentsViewFactory(
 			@NonNull final PaymentAndInvoiceRowsRepo rowsRepo)
 	{
@@ -104,10 +108,20 @@ public class PaymentsViewFactory implements IViewFactory, IViewsIndexStorage
 		final ViewId viewId = request.getViewId();
 		viewId.assertWindowId(WINDOW_ID);
 
-		final Set<PaymentId> paymentIds = PaymentId.fromIntSet(request.getFilterOnlyIds());
+		final BPartnerId bPartnerId = request.getParameterAs(PARAMETER_TYPE_BPARTNER_ID, BPartnerId.class);
+		final Set<PaymentId> paymentIds = request.getParameterAsSet(PARAMETER_TYPE_PAYMENT_IDS, PaymentId.class);
 
 		final PaymentAndInvoiceRows paymentAndInvoiceRows;
-		if (paymentIds.isEmpty())
+
+		if (bPartnerId != null)
+		{
+			paymentAndInvoiceRows = rowsRepo.getByBPartnerId(bPartnerId);
+		}
+		else if (paymentIds != null && !paymentIds.isEmpty())
+		{
+			paymentAndInvoiceRows = rowsRepo.getByPaymentIds(paymentIds);
+		}
+		else
 		{
 			// if no payments exist, we allow the window to open with no records.
 			// The user can manually add Payments and Invoices, then reconcile them.
@@ -127,10 +141,6 @@ public class PaymentsViewFactory implements IViewFactory, IViewsIndexStorage
 									.initialRows(ImmutableList.of())
 									.build())
 					.build();
-		}
-		else
-		{
-			paymentAndInvoiceRows = rowsRepo.getByPaymentIds(paymentIds);
 		}
 
 		return PaymentsView.builder()
