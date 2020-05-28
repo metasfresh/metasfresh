@@ -177,8 +177,12 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 
 		//
 		// Update the PaySelection
-		paySelection.setPaySelectionTrxType(invoiceMatchingMode.getPaySelectionTrxType().getCode());
-		InterfaceWrapperHelper.save(paySelection);
+		if (invoiceMatchingMode != null)
+		{
+			paySelection.setPaySelectionTrxType(invoiceMatchingMode.getPaySelectionTrxType().getCode());
+
+			InterfaceWrapperHelper.save(paySelection);
+		}
 
 		// make sure pay selection is invalidated
 		cacheInvalidationForCurrentPaySelection();
