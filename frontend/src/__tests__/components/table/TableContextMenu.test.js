@@ -35,7 +35,7 @@ const initialState = createStore({
 });
 const store = mockStore(initialState);
 
-tableCMenuProps.selected = []; // nothing selected by default
+tableCMenuProps.selected = [];
 describe('TableContextMenu', () => {
   it('renders without errors with the given props', () => {
     const wrapperTableCMenu = mount(
@@ -51,6 +51,48 @@ describe('TableContextMenu', () => {
     expect(html).toContain(`<hr class="context-menu-separator">`);
     expect(html).toContain(`<i class="meta-icon-settings"></i>`);
   });
+
+  it('has the tooltip present when row is selected', () => {
+    tableCMenuProps.selected = ['1000001'];
+    tableCMenuProps.mainTable = false;
+    const wrapperTableCMenu = mount(
+      <Provider store={store}>
+        <TableContextMenu {...tableCMenuProps} />
+      </Provider>
+    );
+    const html = wrapperTableCMenu.html();
+
+    expect(html).toContain(`<i class="meta-icon-edit"></i>`);
+    expect(html).toContain(`<span class="tooltip-inline">Alt+E</span>`);
+  });
+
+  it('should have open selected keymap', () => {
+    tableCMenuProps.selected = ['1000001'];
+    tableCMenuProps.mainTable = true;
+    const wrapperTableCMenu = mount(
+      <Provider store={store}>
+        <TableContextMenu {...tableCMenuProps} />
+      </Provider>
+    );
+    const html = wrapperTableCMenu.html();
+
+    expect(html).toContain(`<i class="meta-icon-file"></i>`);
+    expect(html).toContain(`<span class="tooltip-inline">Alt+B</span>`);
+  });
+
+  it('should ...', () => {
+    tableCMenuProps.handleDelete = jest.fn();
+    const wrapperTableCMenu = mount(
+      <Provider store={store}>
+        <TableContextMenu {...tableCMenuProps} />
+      </Provider>
+    );
+    const html = wrapperTableCMenu.html();
+
+    expect(html).toContain(`<i class="meta-icon-trash"></i>`);
+    expect(html).toContain(`<span class="tooltip-inline">Alt+Y</span>`);
+  });
 });
 
 // TODO: add more tests in here by mocking the SSE this is tricky
+// TODO: this takes more of functional testing than unit testing 
