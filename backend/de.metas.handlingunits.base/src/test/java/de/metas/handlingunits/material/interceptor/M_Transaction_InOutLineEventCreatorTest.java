@@ -206,7 +206,7 @@ public class M_Transaction_InOutLineEventCreatorTest
 
 		return new M_Transaction_HuDescriptor()
 		{
-			public ImmutableList<HUDescriptor> createHuDescriptorsForInOutLine(InOutAndLineId inOutLineId, boolean deleted)
+			public ImmutableList<HUDescriptor> createHuDescriptorsForInOutLine(@NonNull InOutAndLineId inOutLineId, boolean deleted)
 			{
 				return ImmutableList.of(huDescriptor);
 			}

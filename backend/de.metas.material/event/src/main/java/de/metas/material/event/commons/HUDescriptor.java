@@ -43,6 +43,7 @@ public class HUDescriptor
 	ProductDescriptor productDescriptor;
 	int huId;
 
+	/** all quantities are in the product's stocking-UOM */
 	BigDecimal quantity;
 	BigDecimal quantityDelta;
 

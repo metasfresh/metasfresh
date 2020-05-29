@@ -74,10 +74,6 @@ class M_Transaction_HuDescriptor
 	private final IHUAssignmentDAO huAssignmentDAO = Services.get(IHUAssignmentDAO.class);
 	private final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
 
-	public M_Transaction_HuDescriptor()
-	{
-	}
-
 	public ImmutableList<HUDescriptor> createHuDescriptorsForInOutLine(
 			@NonNull final InOutAndLineId inOutLineId,
 			final boolean deleted)
