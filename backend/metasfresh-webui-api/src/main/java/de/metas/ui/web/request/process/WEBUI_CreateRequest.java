@@ -4,13 +4,17 @@ import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.document.references.RecordZoomWindowFinder;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutId;
+import de.metas.process.IProcessPrecondition;
+import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessExecutionResult.RecordsToOpen.OpenTarget;
+import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.process.RunOutOfTrx;
 import de.metas.request.api.IRequestDAO;
 import de.metas.user.UserId;
 import de.metas.user.api.IUserDAO;
 import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.SpringContextHolder;
@@ -45,7 +49,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
  * #L%
  */
 
-public class WEBUI_CreateRequest extends JavaProcess
+public class WEBUI_CreateRequest extends JavaProcess implements IProcessPrecondition
 {
 	private final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
 	private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
@@ -56,6 +60,17 @@ public class WEBUI_CreateRequest extends JavaProcess
 	public WEBUI_CreateRequest()
 	{
 		SpringContextHolder.instance.autowire(this);
+	}
+
+	@Override
+	public ProcessPreconditionsResolution checkPreconditionsApplicable(final @NonNull IProcessPreconditionsContext context)
+	{
+		if (!requestWindowId.isPresent())
+		{
+			return ProcessPreconditionsResolution.reject();
+		}
+
+		return ProcessPreconditionsResolution.accept();
 	}
 
 	@Override
@@ -135,4 +150,5 @@ public class WEBUI_CreateRequest extends JavaProcess
 
 		return request;
 	}
+
 }
