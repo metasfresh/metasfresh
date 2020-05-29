@@ -178,8 +178,6 @@ class Window extends PureComponent {
         description,
         sections,
         internalName,
-        emptyResultText,
-        emptyResultHint,
         queryOnActivate,
         supportQuickInput,
         defaultOrderBys,
@@ -258,17 +256,13 @@ class Window extends PureComponent {
               internalName,
             }}
             entity="window"
-            keyProperty="rowId"
             key={tabId}
             orderBy={defaultOrderBys}
             docId={dataId}
-            emptyText={emptyResultText}
-            emptyHint={emptyResultHint}
             tabIndex={this.tabIndex.tabs}
             queryOnActivate={queryOnActivate}
             supportQuickInput={supportQuickInput}
             tabInfo={tabsInfo && tabsInfo[tabId]}
-            disconnectFromState={true}
           />
         );
       }

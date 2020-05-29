@@ -161,7 +161,7 @@ class Container extends PureComponent {
               <div className="document-lists-wrapper">
                 <DocumentList
                   type="grid"
-                  windowType={rawModal.windowId}
+                  windowId={rawModal.windowId}
                   defaultViewId={rawModal.viewId}
                   viewProfileId={rawModal.profileId}
                   setModalTitle={setRawModalTitle}
@@ -190,7 +190,7 @@ class Container extends PureComponent {
                   includedView.viewId && (
                     <DocumentList
                       type="includedView"
-                      windowType={includedView.windowType}
+                      windowId={includedView.windowType}
                       viewProfileId={includedView.viewProfileId}
                       defaultViewId={includedView.viewId}
                       parentDefaultViewId={rawModal.viewId}

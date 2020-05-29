@@ -123,7 +123,7 @@ class DocList extends PureComponent {
             ref={this.handleDocListRef}
             type="grid"
             updateUri={this.updateUriCallback}
-            windowType={windowId}
+            windowId={windowId}
             refRowIds={refRowIds}
             includedView={includedView}
             inBackground={rawModal.visible}
@@ -145,7 +145,7 @@ class DocList extends PureComponent {
             !modal.visible && (
               <DocumentList
                 type="includedView"
-                windowType={includedView.windowType}
+                windowId={includedView.windowType}
                 defaultViewId={includedView.viewId}
                 parentWindowType={windowId}
                 parentDefaultViewId={viewId}

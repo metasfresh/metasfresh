@@ -75,6 +75,7 @@ export default class DocumentList extends Component {
   /**
    * @method setTableRowEdited
    * @summary ToDo: Describe the method.
+   * @todo TODO: Figure out if we still need this
    */
   setTableRowEdited = (val) => {
     this.setState(
@@ -115,7 +116,7 @@ export default class DocumentList extends Component {
 
   render() {
     const {
-      windowType,
+      windowId,
       viewProfileId,
       open,
       closeOverlays,
@@ -148,9 +149,6 @@ export default class DocumentList extends Component {
       filtersActive,
       isShowIncluded,
       hasShowIncluded,
-
-      // TODO: Looks, like this is not used
-      refreshSelection,
       mapConfig,
       initialValuesNulled,
       triggerSpinner,
@@ -159,7 +157,6 @@ export default class DocumentList extends Component {
       onResetInitialFilters,
       supportAttribute,
       hasIncluded,
-      selectionValid,
       onRedirectToNewDocument,
       onShowIncludedViewOnSelect,
       onClearStaticFilters,
@@ -169,6 +166,7 @@ export default class DocumentList extends Component {
     const { rowData, size, staticFilters, orderBy, queryLimitHit } = reduxData;
     const { rowEdited, clickOutsideLock, toggleWidth } = this.state;
 
+    // TODO: This can probably be handled with redux state query
     let { selected, childSelected, parentSelected } = onGetSelected();
     const modalType = modal ? modal.modalType : null;
     const stopShortcutPropagation =
@@ -177,11 +175,6 @@ export default class DocumentList extends Component {
     const styleObject = {};
     if (toggleWidth !== 0) {
       styleObject.flex = PANEL_WIDTHS[toggleWidth];
-    }
-
-    // TODO: Why this is not handled via redux ?
-    if (!selectionValid) {
-      selected = null;
     }
 
     const blurWhenOpen =
@@ -251,11 +244,11 @@ export default class DocumentList extends Component {
               {layout.filters && (
                 <Filters
                   {...{
-                    windowType,
                     viewId,
                     filtersActive,
                     initialValuesNulled,
                   }}
+                  windowType={windowId}
                   filterData={filtersToMap(layout.filters)}
                   updateDocList={onFilterChange}
                   resetInitialValues={onResetInitialFilters}
@@ -264,7 +257,8 @@ export default class DocumentList extends Component {
 
               {rowData && staticFilters && (
                 <FiltersStatic
-                  {...{ windowType, viewId }}
+                  {...{ viewId }}
+                  windowType={windowId}
                   data={staticFilters}
                   clearFilters={onClearStaticFilters}
                 />
@@ -301,7 +295,7 @@ export default class DocumentList extends Component {
                 ref={this.setQuickActionsRef}
                 selected={selected}
                 viewId={viewId}
-                windowType={windowType}
+                windowType={windowId}
                 viewProfileId={viewProfileId}
                 fetchOnInit={fetchQuickActionsOnInit}
                 disabled={hasIncluded && blurWhenOpen}
@@ -347,7 +341,6 @@ export default class DocumentList extends Component {
               <Table
                 entity="documentView"
                 ref={this.setTableRef}
-                windowId={windowType}
                 readonly={true}
                 supportOpenRecord={layout.supportOpenRecord}
                 onRowEdited={this.setTableRowEdited}
@@ -356,14 +349,8 @@ export default class DocumentList extends Component {
                 handleChangePage={onChangePage}
                 mainTable={true}
                 updateDocList={onFetchLayoutAndData}
-
-                emptyText={layout.emptyResultText}
-                emptyHint={layout.emptyResultHint}
                 onSelectionChanged={updateParentSelectedIds}
                 sort={onSortData}
-                _defaultSelected={selected}
-                _refreshSelection={refreshSelection}
-
                 tabIndex={0}
                 disableOnClickOutside={clickOutsideLock}
                 limitOnClickOutside={isModal}
@@ -392,20 +379,21 @@ export default class DocumentList extends Component {
                   isModal,
                   hasIncluded,
                   viewId,
-                  windowType,
+                  windowId,
                 }}
               >
                 {layout.supportAttributes && !isIncluded && !hasIncluded && (
                   <DataLayoutWrapper
                     className="table-flex-wrapper attributes-selector js-not-unselect"
                     entity="documentView"
-                    {...{ windowType, viewId }}
+                    {...{ viewId }}
+                    windowType={windowId}
                     onRowEdited={this.setTableRowEdited}
                   >
                     <SelectionAttributes
                       supportAttribute={supportAttribute}
                       setClickOutsideLock={this.setClickOutsideLock}
-                      selected={selectionValid ? selected : undefined}
+                      selected={selected}
                       shouldNotUpdate={inBackground}
                     />
                   </DataLayoutWrapper>

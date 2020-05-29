@@ -14,7 +14,7 @@ import { TIME_REGEX_TEST } from '../constants/Constants';
  */
 const DLpropTypes = {
   // from parent
-  windowType: PropTypes.string.isRequired,
+  windowId: PropTypes.string.isRequired,
   viewId: PropTypes.string,
   updateParentSelectedIds: PropTypes.func,
   page: PropTypes.number,
@@ -140,6 +140,7 @@ const filtersToMap = function(filtersArray) {
   return filtersMap;
 };
 
+// TODO: This can probably be removed
 const doesSelectionExist = function({
   data,
   selected,
@@ -359,7 +360,7 @@ function parseDateToReadable(fieldsByName) {
  * flatten array with 1 level deep max(with fieldByName)
  * from includedDocuments data
  */
-export function getRowsData(rowData) {
+export function flattenRows(rowData) {
   let data = [];
   rowData &&
     rowData.map((item) => {
@@ -409,23 +410,26 @@ export function mapIncluded(node, indent, isParentLastChild = false) {
  */
 export function createCollapsedMap(node, isCollapsed, initialMap) {
   let collapsedMap = [];
-
-  if (!isCollapsed) {
-    initialMap.splice(
-      initialMap.indexOf(node.includedDocuments[0]),
-      node.includedDocuments.length
-    );
-    collapsedMap = initialMap;
+  if (initialMap) {
+    if (!isCollapsed) {
+      initialMap.splice(
+        initialMap.indexOf(node.includedDocuments[0]),
+        node.includedDocuments.length
+      );
+      collapsedMap = initialMap;
+    } else {
+      initialMap.map((item) => {
+        collapsedMap.push(item);
+        if (item.id === node.id) {
+          collapsedMap = collapsedMap.concat(node.includedDocuments);
+        }
+      });
+    }
   } else {
-    initialMap.map((item) => {
-      collapsedMap.push(item);
-      if (item.id === node.id) {
-        collapsedMap = collapsedMap.concat(node.includedDocuments);
-        // initialMap = initialMap.concat(node.includedDocuments);
-      }
-    });
+    if (node.includedDocuments) {
+      collapsedMap.push(node);
+    }
   }
 
   return collapsedMap;
-  // return initialMap;
 }
