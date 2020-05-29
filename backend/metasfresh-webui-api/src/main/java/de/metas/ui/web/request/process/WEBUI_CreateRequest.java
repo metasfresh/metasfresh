@@ -1,27 +1,36 @@
 package de.metas.ui.web.request.process;
 
-import com.google.common.collect.ImmutableList;
+import ch.qos.logback.classic.Level;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.document.references.RecordZoomWindowFinder;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutId;
+import de.metas.logging.LogManager;
+import de.metas.process.IProcessPrecondition;
+import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessExecutionResult.RecordsToOpen.OpenTarget;
+import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.process.RunOutOfTrx;
-import de.metas.ui.web.window.WindowConstants;
-import de.metas.ui.web.window.datatypes.DocumentId;
-import de.metas.ui.web.window.datatypes.DocumentPath;
-import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
-import de.metas.ui.web.window.model.DocumentCollection;
-import de.metas.ui.web.window.model.IDocumentChangesCollector.ReasonSupplier;
-import de.metas.ui.web.window.model.NullDocumentChangesCollector;
+import de.metas.request.api.IRequestDAO;
+import de.metas.user.UserId;
+import de.metas.user.api.IUserDAO;
+import de.metas.util.ILoggable;
+import de.metas.util.Loggables;
 import de.metas.util.Services;
+import lombok.NonNull;
+import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_R_Request;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.slf4j.Logger;
+
+import java.util.Optional;
+
+import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 /*
  * #%L
@@ -45,13 +54,15 @@ import org.springframework.beans.factory.annotation.Autowired;
  * #L%
  */
 
-public class WEBUI_CreateRequest extends JavaProcess
+public class WEBUI_CreateRequest extends JavaProcess implements IProcessPrecondition
 {
-	@Autowired
-	private DocumentCollection documentCollection;
+	private static Logger logger = LogManager.getLogger(WEBUI_CreateRequest.class);
 
 	private final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
 	private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
+	private final IUserDAO userDAO = Services.get(IUserDAO.class);
+	private final IRequestDAO requestDAO = Services.get(IRequestDAO.class);
+	private final Optional<AdWindowId> requestWindowId = RecordZoomWindowFinder.findAdWindowId(I_R_Request.Table_Name);
 
 	public WEBUI_CreateRequest()
 	{
@@ -59,80 +70,94 @@ public class WEBUI_CreateRequest extends JavaProcess
 	}
 
 	@Override
+	public ProcessPreconditionsResolution checkPreconditionsApplicable(final @NonNull IProcessPreconditionsContext context)
+	{
+		if (!requestWindowId.isPresent())
+		{
+			final ILoggable loggable = Loggables.withLogger(logger, Level.WARN);
+			loggable.addLog("No default window for the R_Request table");
+			return ProcessPreconditionsResolution.rejectWithInternalReason("No default window for the R_Request table!");
+		}
+
+		return ProcessPreconditionsResolution.accept();
+	}
+
+	@Override
 	@RunOutOfTrx
 	protected String doIt() throws Exception
 	{
 		final String tableName = getTableName();
+		final I_R_Request request;
 		if (I_C_BPartner.Table_Name.equals(tableName))
 		{
 			final I_C_BPartner bPartner = bPartnerDAO.getById(getProcessInfo().getRecord_ID());
-			createRequestFromBPartner(bPartner);
+			request = createRequestFromBPartner(bPartner);
 		}
 		else if (I_M_InOut.Table_Name.equals(tableName))
 		{
 			final I_M_InOut shipment = inOutDAO.getById(InOutId.ofRepoId(getProcessInfo().getRecord_ID()));
-			createRequestFromShipment(shipment);
+			request = createRequestFromShipment(shipment);
+		}
+		else if (I_AD_User.Table_Name.equals(tableName))
+		{
+			final I_AD_User user = userDAO.getById(UserId.ofRepoId(getProcessInfo().getRecord_ID()));
+			request = createRequestFromUser(user);
 		}
 		else
 		{
 			throw new IllegalStateException("Not supported: " + tableName);
 		}
+		save(request);
+		getResult().setRecordToOpen(TableRecordReference.of(request), requestWindowId.get().getRepoId(), OpenTarget.SingleDocumentModal);
+
 		return MSG_OK;
 	}
 
-	private void createRequestFromBPartner(final I_C_BPartner bpartner)
+	private I_R_Request createRequestFromBPartner(final I_C_BPartner bpartner)
 	{
 		final I_AD_User defaultContact = Services.get(IBPartnerDAO.class).retrieveDefaultContactOrNull(bpartner, I_AD_User.class);
 
-		final ImmutableList.Builder<JSONDocumentChangedEvent> events = ImmutableList.builder();
-		events.add(JSONDocumentChangedEvent.replace(I_R_Request.COLUMNNAME_SalesRep_ID, getAD_User_ID()));
-		events.add(JSONDocumentChangedEvent.replace(I_R_Request.COLUMNNAME_C_BPartner_ID, bpartner.getC_BPartner_ID()));
+		final I_R_Request request = requestDAO.createEmptyRequest();
+
+		request.setSalesRep_ID(getAD_User_ID());
+		request.setC_BPartner_ID(bpartner.getC_BPartner_ID());
+
 		if (defaultContact != null)
 		{
-			events.add(JSONDocumentChangedEvent.replace(I_R_Request.COLUMNNAME_AD_User_ID, defaultContact.getAD_User_ID()));
+			request.setAD_User_ID(defaultContact.getAD_User_ID());
 		}
 
-		final DocumentPath documentPath = DocumentPath.builder()
-				.setDocumentType(WindowConstants.WINDOWID_R_Request)
-				.setDocumentId(DocumentId.NEW_ID_STRING)
-				.allowNewDocumentId()
-				.build();
-
-		final DocumentId documentId = documentCollection.forDocumentWritable(documentPath, NullDocumentChangesCollector.instance, document -> {
-			document.processValueChanges(events.build(), ReasonSupplier.NONE);
-			return document.getDocumentId();
-		});
-
-		getResult().setRecordToOpen(TableRecordReference.of(I_R_Request.Table_Name, documentId.toInt()), documentPath.getWindowId().toInt(), OpenTarget.SingleDocumentModal);
+		return request;
 	}
 
-	private void createRequestFromShipment(final I_M_InOut shipment)
+	private I_R_Request createRequestFromShipment(final I_M_InOut shipment)
 	{
 
 		final I_C_BPartner bPartner = bPartnerDAO.getById(shipment.getC_BPartner_ID());
 		final I_AD_User defaultContact = Services.get(IBPartnerDAO.class).retrieveDefaultContactOrNull(bPartner, I_AD_User.class);
+		final I_R_Request request = requestDAO.createEmptyRequest();
 
-		final ImmutableList.Builder<JSONDocumentChangedEvent> events = ImmutableList.builder();
-		events.add(JSONDocumentChangedEvent.replace(I_R_Request.COLUMNNAME_SalesRep_ID, getAD_User_ID()));
-		events.add(JSONDocumentChangedEvent.replace(I_R_Request.COLUMNNAME_C_BPartner_ID, shipment.getC_BPartner_ID()));
-		events.add(JSONDocumentChangedEvent.replace(I_R_Request.COLUMNNAME_M_InOut_ID, shipment.getM_InOut_ID()));
-		events.add(JSONDocumentChangedEvent.replace(I_R_Request.COLUMNNAME_DateDelivered, shipment.getMovementDate()));
+		request.setSalesRep_ID(getAD_User_ID());
+		request.setC_BPartner_ID(shipment.getC_BPartner_ID());
+		request.setM_InOut_ID(shipment.getM_InOut_ID());
+		request.setDateDelivered(shipment.getMovementDate());
+
 		if (defaultContact != null)
 		{
-			events.add(JSONDocumentChangedEvent.replace(I_R_Request.COLUMNNAME_AD_User_ID, defaultContact.getAD_User_ID()));
+			request.setAD_User_ID(defaultContact.getAD_User_ID());
 		}
 
-		final DocumentPath documentPath = DocumentPath.builder()
-				.setDocumentType(WindowConstants.WINDOWID_R_Request)
-				.setDocumentId(DocumentId.NEW_ID_STRING)
-				.allowNewDocumentId()
-				.build();
-
-		final DocumentId documentId = documentCollection.forDocumentWritable(documentPath, NullDocumentChangesCollector.instance, document -> {
-			document.processValueChanges(events.build(), ReasonSupplier.NONE);
-			return document.getDocumentId();
-		});
-
-		getResult().setRecordToOpen(TableRecordReference.of(I_R_Request.Table_Name, documentId.toInt()), documentPath.getWindowId().toInt(), OpenTarget.SingleDocumentModal);
+		return request;
 	}
+
+	private I_R_Request createRequestFromUser(final I_AD_User user)
+	{
+		final I_R_Request request = requestDAO.createEmptyRequest();
+
+		request.setAD_User_ID(user.getAD_User_ID());
+		request.setC_BPartner_ID(user.getC_BPartner_ID());
+
+		return request;
+	}
+
 }
