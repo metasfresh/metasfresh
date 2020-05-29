@@ -6,7 +6,6 @@ import de.metas.handlingunits.inventory.InventoryRepository;
 import de.metas.handlingunits.model.I_M_InventoryLine;
 import de.metas.inventory.HUAggregationType;
 import de.metas.inventory.InventoryLineId;
-import de.metas.quantity.QuantitiesUOMNotMatchingExpection;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMDAO;
 import de.metas.util.Services;
@@ -22,8 +21,6 @@ import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nullable;
-import java.math.BigDecimal;
-import java.util.Optional;
 
 /*
  * #%L
@@ -111,24 +108,6 @@ public class M_InventoryLine
 	@CalloutMethod(columnNames = { I_M_InventoryLine.COLUMNNAME_M_HU_ID, I_M_InventoryLine.COLUMNNAME_M_Product_ID, I_M_InventoryLine.COLUMNNAME_C_UOM_ID })
 	public void setQtyBookedFromHU(@NonNull final I_M_InventoryLine inventoryLineRecord)
 	{
-		final Optional<Quantity> bookedQty = inventoryLineRecordService.getBookedQtyFromStorage(inventoryLineRecord);
-
-		if (bookedQty.isPresent())
-		{
-			if (bookedQty.get().getUomId().getRepoId() != inventoryLineRecord.getC_UOM_ID())
-			{
-				//this should never happen as inventoryLineRecordService.getBookedQtyFromStorage() returns the qty in the inventory line's uom.
-				throw new QuantitiesUOMNotMatchingExpection("Booked and counted quantities don't have the same UOM!")
-						.appendParametersToMessage()
-						.setParameter("InventoryLineUOMID", inventoryLineRecord.getC_UOM_ID())
-						.setParameter("BookedQtyUOMID", bookedQty.get().getUomId());
-			}
-
-			inventoryLineRecord.setQtyBook(bookedQty.get().toBigDecimal());
-		}
-		else
-		{
-			inventoryLineRecord.setQtyBook(BigDecimal.ZERO);
-		}
+		inventoryLineRecordService.setQtyBookedFromStorage(inventoryLineRecord);
 	}
 }

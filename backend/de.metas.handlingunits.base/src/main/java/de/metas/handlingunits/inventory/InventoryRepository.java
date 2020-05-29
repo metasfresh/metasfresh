@@ -550,7 +550,7 @@ public class InventoryRepository
 				.delete();
 	}
 
-	private List<I_M_InventoryLine> retrieveLineRecords(@NonNull final InventoryId inventoryId)
+	public List<I_M_InventoryLine> retrieveLineRecords(@NonNull final InventoryId inventoryId)
 	{
 		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_M_InventoryLine.class)

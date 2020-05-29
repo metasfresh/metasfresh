@@ -39,6 +39,7 @@ import de.metas.inventory.HUAggregationType;
 import de.metas.inventory.IInventoryBL;
 import de.metas.inventory.InventoryId;
 import de.metas.product.ProductId;
+import de.metas.quantity.QuantitiesUOMNotMatchingExpection;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.IUOMDAO;
@@ -106,6 +107,9 @@ public class InventoryLineRecordService
 
 	public void syncToHUs(@NonNull final I_M_Inventory inventoryRecord)
 	{
+		//make sure inventoryLine.qtyBooked is up to date before syncing to HU
+		recomputeQtyBookedFromStorageForInventory(InventoryId.ofRepoId(inventoryRecord.getM_Inventory_ID()));
+
 		final Inventory inventory = inventoryLineRepository.toInventory(inventoryRecord);
 		syncToHUs(inventory);
 	}
@@ -419,9 +423,32 @@ public class InventoryLineRecordService
 		return computeHUAggregationType(inventoryLine, docBaseAndSubType);
 	}
 
+	public void setQtyBookedFromStorage(@NonNull final I_M_InventoryLine inventoryLine)
+	{
+		final Optional<Quantity> bookedQty = getBookedQtyFromStorage(inventoryLine);
+
+		if (bookedQty.isPresent())
+		{
+			if (bookedQty.get().getUomId().getRepoId() != inventoryLine.getC_UOM_ID())
+			{
+				//this should never happen as inventoryLineRecordService.getBookedQtyFromStorage() returns the qty in the inventory line's uom.
+				throw new QuantitiesUOMNotMatchingExpection("Booked and counted quantities don't have the same UOM!")
+						.appendParametersToMessage()
+						.setParameter("InventoryLineUOMID", inventoryLine.getC_UOM_ID())
+						.setParameter("BookedQtyUOMID", bookedQty.get().getUomId());
+			}
+
+			inventoryLine.setQtyBook(bookedQty.get().toBigDecimal());
+		}
+		else
+		{
+			inventoryLine.setQtyBook(BigDecimal.ZERO);
+		}
+	}
+
 
 	@NonNull
-	public Optional<Quantity> getBookedQtyFromStorage(@NonNull final I_M_InventoryLine inventoryLineRecord)
+	private Optional<Quantity> getBookedQtyFromStorage(@NonNull final I_M_InventoryLine inventoryLineRecord)
 	{
 		Optional<Quantity> bookedQty = Optional.empty();
 
@@ -488,5 +515,15 @@ public class InventoryLineRecordService
 					.getTranslatableMsgText(MSG_EXISTING_LINES_WITH_DIFFERENT_HU_AGGREGATION_TYPE);
 			throw new AdempiereException(message).markAsUserValidationError();
 		}
+	}
+
+	private void recomputeQtyBookedFromStorageForInventory(@NonNull final InventoryId inventoryId)
+	{
+		List<I_M_InventoryLine> inventoryLines = inventoryLineRepository.retrieveLineRecords(inventoryId);
+
+		inventoryLines.stream()
+				.peek(this::setQtyBookedFromStorage)
+				.map(inventoryLineRepository::toInventoryLine)
+				.forEach( inventoryLine -> inventoryLineRepository.saveInventoryLine(inventoryLine, inventoryId));
 	}
 }
