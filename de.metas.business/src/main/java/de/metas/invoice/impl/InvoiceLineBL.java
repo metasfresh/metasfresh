@@ -307,19 +307,19 @@ public class InvoiceLineBL implements IInvoiceLineBL
 		else if (uomId != null)
 		{
 			final Quantity result = Quantitys.create(qtyEntered, uomId);
-			logger.debug("invoice line has both Price_UOM_ID=null and C_UOM_ID={}; return result ={}", uomId.getRepoId(), result);
+			logger.debug("invoice line has Price_UOM_ID=null and C_UOM_ID={}; return result ={}", uomId.getRepoId(), result);
 			return result;
 		}
 		else if (productId != null)
 		{
 			final UomId stockUomId = Services.get(IProductBL.class).getStockUOMId(productId);
 			final Quantity result = Quantitys.create(ilRecord.getQtyInvoiced(), stockUomId);
-			logger.debug("invoice line has Price_UOM_ID=null and C_UOM_ID=null and M_Product_ID={}; return result={}", productId.getRepoId(), result);
+			logger.debug("invoice line has Price_UOM_ID=null, C_UOM_ID=null and M_Product_ID={}; return result={}", productId.getRepoId(), result);
 			return result;
 		}
 
 		// this private method shouldn't have called
-		throw new AdempiereException("given param 'invoiceLine' needs to have at least M_Product_ID>0")
+		throw new AdempiereException("given param 'invoiceLine' needs to have at least M_Product_ID>0 or C_UOM_ID>0")
 				.appendParametersToMessage()
 				.setParameter("invoiceLine", ilRecord);
 	}
