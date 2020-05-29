@@ -1,9 +1,11 @@
 package de.metas.ui.web.request.process;
 
+import ch.qos.logback.classic.Level;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.document.references.RecordZoomWindowFinder;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutId;
+import de.metas.logging.LogManager;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
@@ -13,6 +15,8 @@ import de.metas.process.RunOutOfTrx;
 import de.metas.request.api.IRequestDAO;
 import de.metas.user.UserId;
 import de.metas.user.api.IUserDAO;
+import de.metas.util.ILoggable;
+import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.element.api.AdWindowId;
@@ -22,6 +26,7 @@ import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_R_Request;
+import org.slf4j.Logger;
 
 import java.util.Optional;
 
@@ -51,6 +56,8 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 public class WEBUI_CreateRequest extends JavaProcess implements IProcessPrecondition
 {
+	private static Logger logger = LogManager.getLogger(WEBUI_CreateRequest.class);
+
 	private final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
 	private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
 	private final IUserDAO userDAO = Services.get(IUserDAO.class);
@@ -67,7 +74,9 @@ public class WEBUI_CreateRequest extends JavaProcess implements IProcessPrecondi
 	{
 		if (!requestWindowId.isPresent())
 		{
-			return ProcessPreconditionsResolution.reject();
+			final ILoggable loggable = Loggables.withLogger(logger, Level.WARN);
+			loggable.addLog("No default window for the R_Request table");
+			return ProcessPreconditionsResolution.rejectWithInternalReason("No default window for the R_Request table!");
 		}
 
 		return ProcessPreconditionsResolution.accept();
