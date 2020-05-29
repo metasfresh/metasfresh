@@ -275,7 +275,6 @@ class TableQuickInput extends Component {
   };
 
   render() {
-    console.log(JSON.stringify(this.props));
     const { docId } = this.props;
     const { data, layout, id } = this.state;
 
