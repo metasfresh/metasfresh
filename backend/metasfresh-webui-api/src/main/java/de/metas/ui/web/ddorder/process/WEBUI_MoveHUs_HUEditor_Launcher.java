@@ -22,24 +22,14 @@
 
 package de.metas.ui.web.ddorder.process;
 
-import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IHUQueryBuilder;
 import de.metas.handlingunits.IHandlingUnitsDAO;
-import de.metas.handlingunits.allocation.IAllocationDestination;
-import de.metas.handlingunits.allocation.IAllocationRequest;
-import de.metas.handlingunits.allocation.IAllocationSource;
-import de.metas.handlingunits.allocation.impl.AllocationUtils;
-import de.metas.handlingunits.allocation.impl.GenericAllocationSourceDestination;
-import de.metas.handlingunits.allocation.impl.HULoader;
-import de.metas.handlingunits.allocation.impl.HUProducerDestination;
 import de.metas.handlingunits.model.I_DD_OrderLine;
 import de.metas.handlingunits.model.X_M_HU;
-import de.metas.handlingunits.storage.impl.PlainProductStorage;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.ProcessExecutionResult;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.product.ProductId;
-import de.metas.quantity.Quantity;
 import de.metas.ui.web.handlingunits.HUIdsFilterHelper;
 import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
 import de.metas.ui.web.view.CreateViewRequest;
@@ -47,8 +37,6 @@ import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.IViewsRepository;
 import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.util.Services;
-import org.adempiere.warehouse.LocatorId;
-import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.SpringContextHolder;
 
 import static de.metas.ui.web.ddorder.HUsToMoveViewFactory.WINDOW_ID;
@@ -110,42 +98,5 @@ public class WEBUI_MoveHUs_HUEditor_Launcher extends ViewBasedProcessTemplate im
 				.addOnlyWithProductId(ProductId.ofRepoId(orderLine.getM_Product_ID()))
 				.setOnlyActiveHUs(true)
 				.addHUStatusToInclude(X_M_HU.HUSTATUS_Active);
-	}
-
-	//// might not be needed after all
-	private void createNewHU(final I_DD_OrderLine ddOrderLine)
-	{
-		final IAllocationSource source = createInventoryLineAllocationSourceOrDestination(ddOrderLine);
-		final IAllocationDestination huDestination = createHUAllocationDestination(ddOrderLine);
-
-		final IAllocationRequest request = AllocationUtils.createAllocationRequestBuilder()
-				.setHUContext(Services.get(IHUContextFactory.class).createMutableHUContext())
-				.setDateAsToday()
-				.setProduct(ProductId.ofRepoId(ddOrderLine.getM_Product_ID()))
-				.setQuantity(ddOrderLine.getQtyEntered(), ddOrderLine.getC_UOM())
-				.setFromReferencedModel(ddOrderLine)
-				.setForceQtyAllocation(true)
-				.create();
-
-		HULoader.of(source, huDestination)
-				.load(request);
-	}
-
-	private static GenericAllocationSourceDestination createInventoryLineAllocationSourceOrDestination(final I_DD_OrderLine ddOrderLine)
-	{
-		final ProductId productId = ProductId.ofRepoId(ddOrderLine.getM_Product_ID());
-		final Quantity qty = Quantity.of(ddOrderLine.getQtyEntered(), ddOrderLine.getC_UOM());
-		final PlainProductStorage productStorage = new PlainProductStorage(productId, qty.getUOM(), qty.toBigDecimal());
-		return new GenericAllocationSourceDestination(productStorage, ddOrderLine);
-	}
-
-	private static IAllocationDestination createHUAllocationDestination(final I_DD_OrderLine ddOrderLine)
-	{
-		final IWarehouseDAO warehousesRepo = Services.get(IWarehouseDAO.class);
-		final LocatorId locatorId = warehousesRepo.getLocatorIdByRepoIdOrNull(ddOrderLine.getM_Locator_ID());
-
-		return HUProducerDestination.ofVirtualPI()
-				.setHUStatus(X_M_HU.HUSTATUS_Planning)
-				.setLocatorId(locatorId);
 	}
 }
