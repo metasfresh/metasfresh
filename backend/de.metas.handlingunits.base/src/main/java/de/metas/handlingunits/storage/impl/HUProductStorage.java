@@ -112,7 +112,7 @@ import lombok.NonNull;
 	@Override
 	public final Quantity getQty(final I_C_UOM uom)
 	{
-		UOMConversionContext conversionCtx = UOMConversionContext.of(getProductId());
+		final UOMConversionContext conversionCtx = UOMConversionContext.of(getProductId());
 
 		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 		return uomConversionBL.convertQuantityTo(getQty(), conversionCtx, uom);
