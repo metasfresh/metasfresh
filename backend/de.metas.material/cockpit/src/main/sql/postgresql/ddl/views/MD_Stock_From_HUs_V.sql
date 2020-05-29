@@ -1,6 +1,6 @@
+
 DROP VIEW IF EXISTS MD_Stock_From_HUs_V
 ;
-
 CREATE VIEW MD_Stock_From_HUs_V AS
 SELECT s.AD_Client_ID,
        s.AD_Org_ID,
