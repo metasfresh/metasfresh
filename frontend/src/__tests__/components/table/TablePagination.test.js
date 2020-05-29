@@ -46,12 +46,36 @@ describe('TablePagination', () => {
       </Provider>
     );
     const html = wrapperTableCMenu.html();
-    console.log(html);
+
     expect(html).toContain(`<div class="pagination-wrapper js-unselect">`);
     expect(html).toContain(`<div class="pagination-row">`);
     // First page should be selected
     expect(html).toContain(
       `<li class="page-item js-not-unselect active"><a class="page-link">1</a></li>`
     );
+  });
+
+  it('Page 2 should be selected', () => {
+    tablePaginationProps.page = 2;
+    tablePaginationProps.pages = 100;
+    const wrapperTableCMenu = mount(
+      <Provider store={store}>
+        <ShortcutProvider hotkeys={{}} keymap={{}}>
+          <TablePagination {...tablePaginationProps} />
+        </ShortcutProvider>
+      </Provider>
+    );
+    const html = wrapperTableCMenu.html();
+    console.log(html);
+    // page one should not be selected
+    expect(html).toContain(
+      `<li class="page-item js-not-unselect"><a class="page-link">1</a></li>`
+    );
+    // 2nd page should be selected
+    expect(html).toContain(
+      `<li class="page-item js-not-unselect active"><a class="page-link">2</a></li>`
+    );
+
+    expect(html).toContain(`<a class="page-link"><span>»</span></a>`);
   });
 });
