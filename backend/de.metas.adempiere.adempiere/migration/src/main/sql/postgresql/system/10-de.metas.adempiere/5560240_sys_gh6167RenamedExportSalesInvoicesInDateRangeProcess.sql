@@ -13,16 +13,6 @@ UPDATE AD_Process_Trl SET Name='Anzahl Rechnungen pro Organisation',Updated=TO_T
 UPDATE AD_Process_Trl SET Name='Anzahl Rechnungen pro Organisation',Updated=TO_TIMESTAMP('2020-05-29 14:10:16','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Process_ID=541243
 ;
 
--- 2020-05-29T11:10:32.052Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE AD_Process_Trl SET Name=' Export Number of Invoices per Organisation',Updated=TO_TIMESTAMP('2020-05-29 14:10:32','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Process_ID=541243
-;
-
--- 2020-05-29T11:10:37.141Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE AD_Process_Trl SET Name=' Export Number of Invoices per Organisation',Updated=TO_TIMESTAMP('2020-05-29 14:10:37','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='nl_NL' AND AD_Process_ID=541243
-;
-
 -- 2020-05-29T11:15:03.857Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 UPDATE AD_Process_Trl SET Name='Export Number of Invoices per Organisation',Updated=TO_TIMESTAMP('2020-05-29 14:15:03','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Process_ID=541243
