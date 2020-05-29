@@ -57,7 +57,6 @@ describe('TablePagination', () => {
 
   it('Page 2 should be selected', () => {
     tablePaginationProps.page = 2;
-    tablePaginationProps.pages = 100;
     const wrapperTableCMenu = mount(
       <Provider store={store}>
         <ShortcutProvider hotkeys={{}} keymap={{}}>
@@ -66,7 +65,7 @@ describe('TablePagination', () => {
       </Provider>
     );
     const html = wrapperTableCMenu.html();
-    console.log(html);
+
     // page one should not be selected
     expect(html).toContain(
       `<li class="page-item js-not-unselect"><a class="page-link">1</a></li>`
@@ -77,5 +76,33 @@ describe('TablePagination', () => {
     );
 
     expect(html).toContain(`<a class="page-link"><span>»</span></a>`);
+  });
+
+  it('should contain page-link-compressed when compressed is true', () => {
+    tablePaginationProps.compressed = true;
+    const wrapperTableCMenu = mount(
+      <Provider store={store}>
+        <ShortcutProvider hotkeys={{}} keymap={{}}>
+          <TablePagination {...tablePaginationProps} />
+        </ShortcutProvider>
+      </Provider>
+    );
+    const html = wrapperTableCMenu.html();
+
+    expect(html).toContain(`page-link-compressed`);
+  });
+
+  it('should not contain page-link-compressed when compressed is false', () => {
+    tablePaginationProps.compressed = false;
+    const wrapperTableCMenu = mount(
+      <Provider store={store}>
+        <ShortcutProvider hotkeys={{}} keymap={{}}>
+          <TablePagination {...tablePaginationProps} />
+        </ShortcutProvider>
+      </Provider>
+    );
+    const html = wrapperTableCMenu.html();
+
+    expect(html).not.toContain(`page-link-compressed`);
   });
 });
