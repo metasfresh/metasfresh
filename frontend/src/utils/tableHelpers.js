@@ -1,9 +1,12 @@
 import currentDevice from 'current-device';
 import PropTypes from 'prop-types';
-import uuid from 'uuid/v4';
 
 export const containerPropTypes = {
   // from <DocumentList>
+  windowId: PropTypes.number,
+  viewId: PropTypes.string,
+  tabId: PropTypes.string,
+  docId: PropTypes.number,
   autofocus: PropTypes.bool,
   rowEdited: PropTypes.bool,
   onSelectionChanged: PropTypes.func,
@@ -27,7 +30,7 @@ export const containerPropTypes = {
   activeSort: PropTypes.bool,
 
   // action creators
-  collapseTableRows: PropTypes.func.isRequired,
+  collapseTableRow: PropTypes.func.isRequired,
   deleteLocal: PropTypes.func.isRequired,
   deselectTableItems: PropTypes.func.isRequired,
   openModal: PropTypes.func.isRequired,
@@ -44,14 +47,9 @@ export const componentPropTypes = {
 };
 
 export function constructorFn(props) {
-  const { defaultSelected, rowEdited } = props;
+  const { rowEdited } = props;
 
   this.state = {
-    // TODO: Check if the `defaultSelected` case is handled via redux properly
-    // selected:
-    //   defaultSelected && defaultSelected !== null
-    //     ? defaultSelected
-    //     : [undefined],
     listenOnKeys: true,
     contextMenu: {
       open: false,
@@ -61,11 +59,10 @@ export function constructorFn(props) {
       supportZoomInto: false,
       supportFieldEdit: false,
     },
-    dataHash: uuid(),
     promptOpen: false,
     isBatchEntry: false,
     pendingInit: true,
-    rowEdited: rowEdited,
+    rowEdited,
     tableRefreshToggle: false,
   };
 }

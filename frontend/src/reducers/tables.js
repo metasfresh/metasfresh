@@ -3,6 +3,7 @@ import { get } from 'lodash';
 import { createSelector } from 'reselect';
 
 import * as types from '../constants/ActionTypes';
+import { doesSelectionExist } from '../utils/documentListHelper';
 
 export const initialTableState = {
   windowType: null,
@@ -24,6 +25,9 @@ export const initialTableState = {
   headerElements: {},
   emptyText: null,
   emptyHint: null,
+
+  //TODO: Ideally this should sit only in the DocumentList/Window layout
+  // as table should only render rows, and not pagination
   page: 0,
   firstRow: 0,
   size: 0,
@@ -142,6 +146,16 @@ const reducer = produce((draftState, action) => {
         ...draftState[id],
         selected: selection,
       };
+
+    // let selectionValid = false;
+    // if (rowData.has('1')) {
+    //   selectionValid = doesSelectionExist({
+    //     data: rowData.get('1').toJS(),
+    //     selected,
+    //     hasIncluded,
+    //   });
+    // }
+
       /**
        * TODO: for Kuba to fix when refactoring the Table component => this
        * TODO: has to be fixed to just be draftState[id].selected = selection . For that pls make sure that this action is done when

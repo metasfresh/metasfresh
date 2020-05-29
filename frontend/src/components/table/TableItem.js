@@ -70,12 +70,8 @@ class TableItem extends Component {
       nextState.lastSelected = this.props.rowId;
     }
 
-    if (
-      !_.isEqual(
-        _.omit(nextProps, 'dataHash'),
-        _.omit(this.state[nextProps.rowId], 'dataHash')
-      )
-    ) {
+    // TODO: This is a super heavy check and should be removed ASAP
+    if (!_.isEqual(nextProps, this.state[nextProps.rowId])) {
       return true;
     } else {
       if (
@@ -97,11 +93,12 @@ class TableItem extends Component {
       this.handleCellExtend(this.props.isSelected);
     }
 
-    if (this.props.dataHash !== prevProps.dataHash) {
-      this.setState({
-        editedCells: {},
-      });
-    }
+    // TODO: `dataHash` was removed completely from the `Table`
+    // if (this.props.dataHash !== prevProps.dataHash) {
+    //   this.setState({
+    //     editedCells: {},
+    //   });
+    // }
 
     if (focusOnFieldName && isSelected && this.autofocusCell && !activeCell) {
       // eslint-disable-next-line react/no-find-dom-node
@@ -697,7 +694,7 @@ TableItem.propTypes = {
   isSelected: PropTypes.bool,
   odd: PropTypes.number,
   caption: PropTypes.string,
-  dataHash: PropTypes.string.isRequired,
+  // dataHash: PropTypes.string.isRequired,
   changeListenOnTrue: PropTypes.func,
   onRowCollapse: PropTypes.func,
   handleRightClick: PropTypes.func,

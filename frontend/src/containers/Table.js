@@ -28,6 +28,11 @@ class TableContainer extends PureComponent {
     super(props);
 
     this.state = {};
+    this._isMounted = false;
+  }
+
+  componentDidMount() {
+    this._isMounted = true;
   }
 
   componentDidUpdate(prevProps) {
@@ -95,16 +100,7 @@ class TableContainer extends PureComponent {
   };
 
   handleSelect = (ids) => {
-    const {
-      updateTableSelection,
-      windowId,
-      // disconnectFromState,
-      // tabInfo,
-      viewId,
-      // selected,
-      docId,
-      tabId,
-    } = this.props;
+    const { updateTableSelection, windowId, viewId, docId, tabId } = this.props;
     let newSelected = [];
 
     if (ids) {
@@ -115,23 +111,10 @@ class TableContainer extends PureComponent {
       }
     }
 
-    // if (tabInfo) {
     updateTableSelection({
       tableId: getTableId({ windowId, viewId, docId, tabId }),
       ids: newSelected,
     });
-    // }
-
-    // if (!disconnectFromState) {
-    //     updateTableSelection({
-    //       tableId: getTableId({ windowId, viewId, docId, tabId }),
-    //       ids: newSelected,
-    //     });
-    // }
-
-    // this.triggerFocus(idFocused, idFocusedDown);
-    // });
-    // cb && cb();
 
     return newSelected;
   };
@@ -145,20 +128,13 @@ class TableContainer extends PureComponent {
   };
 
   handleDeselect = (id) => {
-    const {
-      deselectTableItems,
-      // tabInfo,
-      windowId,
-      viewId,
-      selected,
-    } = this.props;
-
+    const { deselectTableItems, windowId, viewId, selected } = this.props;
     const index = selected.indexOf(id);
 
     // TODO: Move to redux only
     const newSelected = update(selected, { $splice: [[index, 1]] });
 
-    if (/*tabInfo ||*/ !newSelected.length) {
+    if (!newSelected.length) {
       // TODO: Shouldn't this use `updateTableSelection` ?
       deselectTableItems([id], windowId, viewId);
     }
@@ -167,23 +143,14 @@ class TableContainer extends PureComponent {
   };
 
   handleDeselectAll = (callback) => {
-    const {
-      updateTableSelection,
-      // tabInfo,
-      windowId,
-      viewId,
-      docId,
-      tabId,
-    } = this.props;
+    const { updateTableSelection, windowId, viewId, docId, tabId } = this.props;
 
     callback && callback();
 
-    // if (tabInfo) {
     updateTableSelection({
       tableId: getTableId({ windowId, viewId, docId, tabId }),
       ids: EMPTY_ARRAY,
     });
-    // }
   };
 
   showSelectedIncludedView = (selected) => {
@@ -340,8 +307,10 @@ const mapStateToProps = (state, props) => {
     collapsedRows: table.collapsedRows,
     collapsedArrayMap: table.collapsedArrayMap,
     activeSort: table.activeSort,
-
-    indentSupported: table.collapsible,
+    emptyText: table.emptyText,
+    emptyHint: table.emptyHint,
+    indentSupported: table.indentSupported,
+    collapsible: table.collapsible,
     keyProperty: table.keyProperty,
 
     allowShortcut: state.windowHandler.allowShortcut,

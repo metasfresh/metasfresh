@@ -29,8 +29,6 @@ const isMobileOrTablet =
 let RENDERS = 0;
 
 class Table extends PureComponent {
-  _isMounted = false;
-
   constructor(props) {
     super(props);
 
@@ -39,15 +37,9 @@ class Table extends PureComponent {
   }
 
   componentDidMount() {
-    this._isMounted = true;
-
     if (this.props.autofocus) {
       this.table.focus();
     }
-  }
-
-  componentWillUnmount() {
-    this._isMounted = false;
   }
 
   setListenTrue = () => {
@@ -147,6 +139,8 @@ class Table extends PureComponent {
     } = this.props;
     let node = null;
     // let isCollapsed = false;
+
+    console.log('handleShortcutIndent')
 
     selected.length === 1 &&
       rows.map((item) => {
@@ -274,8 +268,6 @@ class Table extends PureComponent {
       selected,
       rows,
       onShowSelectedIncludedView,
-      // onSelect,
-      // onSelectOne,
     } = this.props;
     const { listenOnKeys, collapsedArrayMap } = this.state;
 
@@ -520,9 +512,6 @@ class Table extends PureComponent {
       onRowCollapse,
       collapsedRows,
       collapsedParentRows,
-
-      // TODO: Get rid of dataHash
-      dataHash,
     } = this.props;
 
     if (!rows.length || !columns.length) {
@@ -565,12 +554,13 @@ class Table extends PureComponent {
           activeSort,
         }}
         cols={columns}
-        dataHash={dataHash}
         key={`row-${i}${viewId ? `-${viewId}` : ''}`}
         dataKey={`row-${i}${viewId ? `-${viewId}` : ''}`}
         collapsed={
-          collapsedParentRows.length &&
-          collapsedParentRows.indexOf(item[keyProperty]) > -1
+          !!(
+            collapsedParentRows.length &&
+            collapsedParentRows.indexOf(item[keyProperty]) > -1
+          )
         }
         odd={i & 1}
         ref={(c) => {

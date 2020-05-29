@@ -3,7 +3,7 @@ import { reduce, cloneDeep } from 'lodash';
 import * as types from '../constants/ActionTypes';
 import { getView } from '../reducers/viewHandler';
 import { getTable } from '../reducers/tables';
-import { createCollapsedMap } from '../utils/documentListHelper';
+import { createCollapsedMap, flattenRows } from '../utils/documentListHelper';
 
 /**
  * @method createTable
@@ -19,7 +19,7 @@ function createTable(id, data) {
 /**
  * @method updateTable
  * @summary Perform a major update (many values at once) of a table entry. Think
- * rows/columns/initial load
+ * initial load
  */
 function updateTable(id, data) {
   return {
@@ -126,7 +126,8 @@ export function createTableData(rawData) {
     keyProperty: rawData.keyProperty,
 
     // TODO: We have both `supportTree` and `collapsible` in the layout response.
-    collapsible: rawData.supportTree,
+    collapsible: rawData.collapsible,
+    indentSupported: rawData.supportTree,
   };
 
   // we're removing any keys without a value ta make merging with the existing data
@@ -179,7 +180,16 @@ export function updateGridTable(tableId, tableResponse) {
           headerElements: tableResponse.columnsByFieldName,
           keyProperty: 'id',
         });
-        const { rows, collapsible, expandedDepth, keyProperty } = tableData;
+        const { collapsible, expandedDepth } = tableExists;
+
+        // Parse `rows` to add `indent` property
+        if (tableData.rows.length) {
+          tableData.rows = flattenRows(tableData.rows);
+        }
+
+        const { rows, keyProperty } = tableData;
+
+        console.log('updateGridTable 1: ')//, tableData, tableResponse)
 
         dispatch(updateTable(tableId, tableData));
         dispatch(
@@ -200,6 +210,13 @@ export function updateGridTable(tableId, tableResponse) {
           headerElements: tableResponse.columnsByFieldName,
           keyProperty: 'id',
         });
+
+        if (tableData.rows.length) {
+          tableData.rows = flattenRows(tableData.rows);
+        }
+
+        console.log('updateGridTable 2: ')//, tableData, tableResponse)
+
         const { rows, collapsible, expandedDepth, keyProperty } = tableData;
 
         dispatch(createTable(tableId, tableData));
@@ -272,28 +289,37 @@ function createCollapsedRows({
 }) {
   return (dispatch) => {
     let collapsedArrayMap = [];
-    let collapsedParentRows = []; //[...this.state.collapsedParentsRows];
-    let collapsedRows = []; //[...this.state.collapsedRows];
+    let collapsedParentRows = [];
+    let collapsedRows = [];
 
-    if (collapsible && rows && rows.length) {
-      rows.map((row) => {
-        if (row.indent.length >= expandedDepth && row.includedDocuments) {
-          collapsedArrayMap = collapsedArrayMap.concat(collapsedArrayMap(row));
-          collapsedParentRows = collapsedParentRows.concat(row[keyProperty]);
-        }
-        if (row.indent.length > expandedDepth) {
-          collapsedRows = collapsedRows.concat(row[keyProperty]);
-        }
-      });
+    if (collapsible && rows.length) {
+      // TODO: Remove
+      try {
+        rows.forEach((row) => {
+          if (row.indent.length >= expandedDepth && row.includedDocuments) {
+            collapsedArrayMap = collapsedArrayMap.concat(
+              createCollapsedMap(row)
+            );
+            collapsedParentRows = collapsedParentRows.concat(row[keyProperty]);
+          } else if (row.indent.length > expandedDepth) {
+            collapsedRows = collapsedRows.concat(row[keyProperty]);
+          }
+        });
+      } catch (e) {
+        console.log('ERROR: ', e);
+      }
     }
-    dispatch(
-      collapseRows({
-        tableId,
-        collapsedParentRows,
-        collapsedRows,
-        collapsedArrayMap,
-      })
-    );
+
+    if (collapsible) {
+      dispatch(
+        collapseRows({
+          tableId,
+          collapsedParentRows,
+          collapsedRows,
+          collapsedArrayMap,
+        })
+      );
+    }
   };
 }
 
@@ -303,12 +329,10 @@ function createCollapsedRows({
 export function collapseTableRow({ tableId, collapse, node }) {
   return (dispatch, getState) => {
     const table = getTable(getState(), tableId);
-    let {
-      collapsedParentRows,
-      collapsedRows,
-      collapsedArrayMap,
-      keyProperty,
-    } = table;
+    let collapsedParentRows = cloneDeep(table.collapsedParentRows);
+    let collapsedRows = cloneDeep(table.collapsedRows);
+    let collapsedArrayMap = cloneDeep(table.collapsedArrayMap);
+    const { keyProperty } = table;
 
     const inner = (parentNode) => {
       collapsedArrayMap = createCollapsedMap(
