@@ -35,7 +35,7 @@ const initialState = createStore({
 });
 const store = mockStore(initialState);
 
-tablePaginationProps.selected = [];
+tablePaginationProps.page = 1;
 describe('TablePagination', () => {
   it('renders without errors with the given props', () => {
     const wrapperTableCMenu = mount(
@@ -46,7 +46,12 @@ describe('TablePagination', () => {
       </Provider>
     );
     const html = wrapperTableCMenu.html();
-
+    console.log(html);
     expect(html).toContain(`<div class="pagination-wrapper js-unselect">`);
+    expect(html).toContain(`<div class="pagination-row">`);
+    // First page should be selected
+    expect(html).toContain(
+      `<li class="page-item js-not-unselect active"><a class="page-link">1</a></li>`
+    );
   });
 });
