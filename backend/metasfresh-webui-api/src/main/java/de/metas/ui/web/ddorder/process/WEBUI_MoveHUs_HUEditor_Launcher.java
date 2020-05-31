@@ -24,7 +24,6 @@ package de.metas.ui.web.ddorder.process;
 
 import de.metas.handlingunits.IHUQueryBuilder;
 import de.metas.handlingunits.IHandlingUnitsDAO;
-import de.metas.handlingunits.model.I_DD_OrderLine;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.ProcessExecutionResult;
@@ -38,12 +37,19 @@ import de.metas.ui.web.view.IViewsRepository;
 import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.util.Services;
 import org.compiere.SpringContextHolder;
+import org.eevolution.api.DDOrderLineId;
+import org.eevolution.api.IDDOrderDAO;
+import org.eevolution.model.I_DD_OrderLine;
 
 import static de.metas.ui.web.ddorder.HUsToMoveViewFactory.WINDOW_ID;
 import static de.metas.ui.web.ddorder.HUsToMoveViewFactory.WINDOW_ID_STRING;
 
 public class WEBUI_MoveHUs_HUEditor_Launcher extends ViewBasedProcessTemplate implements IProcessPrecondition
 {
+
+	private final IViewsRepository viewsRepo = SpringContextHolder.instance.getBean(IViewsRepository.class);
+	private final IDDOrderDAO ddOrderDAO = Services.get(IDDOrderDAO.class);
+	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 
 	public ProcessPreconditionsResolution checkPreconditionsApplicable()
 	{
@@ -59,13 +65,11 @@ public class WEBUI_MoveHUs_HUEditor_Launcher extends ViewBasedProcessTemplate im
 		return ProcessPreconditionsResolution.accept();
 	}
 
-	private final IViewsRepository viewsRepo = SpringContextHolder.instance.getBean(IViewsRepository.class);
-
 	@Override protected String doIt() throws Exception
 	{
-		final I_DD_OrderLine ddOrderLine = getRecord(I_DD_OrderLine.class);
+		final I_DD_OrderLine ddOrderLine = ddOrderDAO.getLineById(DDOrderLineId.ofRepoId(getRecord_ID()));
 
-		final IView husToMove = openHUEditor(ddOrderLine);
+		final IView husToMove = createHUEditor(ddOrderLine);
 
 		getResult().setWebuiViewToOpen(ProcessExecutionResult.WebuiViewToOpen.builder()
 				.viewId(husToMove.getViewId().getViewId())
@@ -76,7 +80,7 @@ public class WEBUI_MoveHUs_HUEditor_Launcher extends ViewBasedProcessTemplate im
 		return MSG_OK;
 	}
 
-	private IView openHUEditor(final I_DD_OrderLine orderLine)
+	private IView createHUEditor(final I_DD_OrderLine orderLine)
 	{
 		final IHUQueryBuilder huQuery = createHUQuery(orderLine);
 
@@ -91,7 +95,7 @@ public class WEBUI_MoveHUs_HUEditor_Launcher extends ViewBasedProcessTemplate im
 
 	private IHUQueryBuilder createHUQuery(final I_DD_OrderLine orderLine)
 	{
-		return Services.get(IHandlingUnitsDAO.class)
+		return handlingUnitsDAO
 				.createHUQueryBuilder()
 				.onlyNotLocked() // not already locked (NOTE: those which were enqueued to Transportation Order are locked)
 				.addOnlyInLocatorId(orderLine.getM_Locator_ID())

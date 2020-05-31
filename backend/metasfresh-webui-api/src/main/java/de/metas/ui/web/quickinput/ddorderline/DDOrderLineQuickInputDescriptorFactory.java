@@ -55,7 +55,7 @@ public class DDOrderLineQuickInputDescriptorFactory implements IQuickInputDescri
 	private final DDOrderLineQuickInputCallout ddOrderLineQuickInputCallout;
 
 	private static final int M_PRODUCT_STOCKED_AD_REFERENCE_ID = 171;
-	private static final int DD_OrderLine_M_HU_PI_Item_Product = 540299;
+	private static final int DD_ORDERLINE_M_HU_PI_ITEM_PRODUCT_AD_VAL_RULE_ID = 540299;
 
 	public DDOrderLineQuickInputDescriptorFactory(final DDOrderLineQuickInputCallout ddOrderLineQuickInputCallout)
 	{
@@ -122,7 +122,7 @@ public class DDOrderLineQuickInputDescriptorFactory implements IQuickInputDescri
 						.setCtxTableName(null)
 						.setCtxColumnName(IDDOrderLineQuickInput.COLUMNNAME_M_HU_PI_Item_Product_ID)
 						.setDisplayType(DisplayType.TableDir)
-						.setAD_Val_Rule_ID(DD_OrderLine_M_HU_PI_Item_Product)
+						.setAD_Val_Rule_ID(DD_ORDERLINE_M_HU_PI_ITEM_PRODUCT_AD_VAL_RULE_ID)
 						.buildProvider())
 				.setValueClass(LookupValue.IntegerLookupValue.class)
 				.setReadonlyLogic(ConstantLogicExpression.FALSE)
