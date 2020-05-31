@@ -46,6 +46,7 @@ import de.metas.edi.model.I_EDI_Document;
 import de.metas.edi.model.I_EDI_Document_Extension;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
 import de.metas.logging.TableRecordMDC;
 import de.metas.util.Services;
@@ -108,7 +109,7 @@ public class C_Invoice
 			ifColumnsChanged = I_C_Invoice.COLUMNNAME_EDIErrorMsg)
 	public void translateEDIErrorMessage(final I_C_Invoice invoiceRecord)
 	{
-		final ITranslatableString errorMsgTrl = msgBL.parseTranslatableString(invoiceRecord.getEDIErrorMsg());
+		final ITranslatableString errorMsgTrl = TranslatableStrings.parse(invoiceRecord.getEDIErrorMsg());
 		invoiceRecord.setEDIErrorMsg(errorMsgTrl.translate(Env.getAD_Language()));
 	}
 

@@ -96,7 +96,7 @@ class DataEntryRestControllerTest
 			dataEntryRestController.getByRecordId0(AdWindowId.ofRepoId(inexistentWindowId), bPartner.getC_BPartner_ID(), Env.getLanguage().getAD_Language()).getBody();
 		})
 				.isInstanceOf(AdempiereException.class)
-				.hasMessage("@NotFound@ @AD_Tab_ID@: (@AD_Window_ID@: 55555)");
+				.hasMessage("NotFound AD_Tab_ID: (AD_Window_ID: 55555)");
 		// final JsonDataEntryResponse shouldBeEmpty = dataEntryRestController.getByRecordId0(AdWindowId.ofRepoId(inexistentWindowId), bPartner.getC_BPartner_ID(), Env.getLanguage().getAD_Language()).getBody();
 		// assertThat(shouldBeEmpty.getStatus()).isEqualTo(HttpStatus.NOT_FOUND.value());
 		// assertThat(shouldBeEmpty.getError()).contains(String.valueOf(inexistentWindowId)).doesNotContain(String.valueOf(bPartner.getC_BPartner_ID()));

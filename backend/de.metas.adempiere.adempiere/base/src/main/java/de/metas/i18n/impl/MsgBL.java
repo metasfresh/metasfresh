@@ -35,7 +35,6 @@ import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.Msg;
-import de.metas.i18n.TranslatableStringBuilder;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.util.Check;
 import lombok.NonNull;
@@ -143,53 +142,6 @@ public class MsgBL implements IMsgBL
 	public ITranslatableString getTranslatableMsgText(@NonNull final AdMessageKey adMessage, final Object... msgParameters)
 	{
 		return new ADMessageTranslatableString(adMessage, msgParameters);
-	}
-
-	@Override
-	public ITranslatableString parseTranslatableString(final String text)
-	{
-		if (text == null || text.isEmpty())
-		{
-			return TranslatableStrings.empty();
-		}
-
-		final TranslatableStringBuilder builder = TranslatableStrings.builder();
-
-		String inStr = text;
-		int idx = inStr.indexOf('@');
-		while (idx != -1)
-		{
-			builder.append(inStr.substring(0, idx)); // up to @
-			inStr = inStr.substring(idx + 1, inStr.length()); // from first @
-
-			final int j = inStr.indexOf('@'); // next @
-			if (j < 0) // no second tag
-			{
-				inStr = "@" + inStr;
-				break;
-			}
-
-			final String token = inStr.substring(0, j);
-			if (token.isEmpty())
-			{
-				builder.append("@");
-			}
-			else
-			{
-				builder.append(translatable(token)); // replace context
-			}
-
-			inStr = inStr.substring(j + 1, inStr.length());	// from second @
-			idx = inStr.indexOf('@');
-		}
-
-		// add remainder
-		if (inStr != null && inStr.length() > 0)
-		{
-			builder.append(inStr);
-		}
-
-		return builder.build();
 	}
 
 	@Override

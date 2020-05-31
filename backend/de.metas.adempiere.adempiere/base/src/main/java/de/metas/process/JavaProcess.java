@@ -47,6 +47,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import de.metas.logging.TableRecordMDC;
@@ -1146,19 +1147,16 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 	 * <li>process summary message will be set from this exception message (i.e. {@link ProcessInfo#getSummary()})
 	 * <li>process will NOT be flagged as error (i.e. {@link ProcessInfo#isError()} will return <code>false</code>)
 	 * </ul>
-	 *
-	 * @author tsa
 	 */
+	@SuppressWarnings("serial")
 	public static final class ProcessCanceledException extends AdempiereException
 	{
-		private static final long serialVersionUID = 1L;
-
 		@VisibleForTesting
-		public static final String MSG_Canceled = "Canceled";
+		public static final AdMessageKey MSG_Canceled = AdMessageKey.of("Canceled");
 
 		public ProcessCanceledException()
 		{
-			super("@" + MSG_Canceled + "@");
+			super(MSG_Canceled);
 		}
 	}
 

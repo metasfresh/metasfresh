@@ -37,6 +37,7 @@ import de.metas.edi.model.I_EDI_Document_Extension;
 import de.metas.esb.edi.model.I_EDI_Desadv;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.util.Services;
 
 public class EDI_DESADVExport extends AbstractExport<I_EDI_Document>
@@ -84,7 +85,7 @@ public class EDI_DESADVExport extends AbstractExport<I_EDI_Document>
 		{
 			document.setEDI_ExportStatus(I_EDI_Document_Extension.EDI_EXPORTSTATUS_Error);
 
-			final ITranslatableString errorMsgTrl = msgBL.parseTranslatableString(e.getLocalizedMessage());
+			final ITranslatableString errorMsgTrl = TranslatableStrings.parse(e.getLocalizedMessage());
 			document.setEDIErrorMsg(errorMsgTrl.translate(Env.getAD_Language()));
 			InterfaceWrapperHelper.save(document);
 

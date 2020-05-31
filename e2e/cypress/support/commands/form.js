@@ -211,9 +211,17 @@ Cypress.Commands.add('writeIntoStringField', (fieldName, stringValue, modal, rew
   cy.get(path)
     .find('input')
     .type('{selectall}')
+    .wait(500)
     .type(stringValue, { delay: 20 });
   // if a typed string has missing characters, maybe the delay of type is not good and we should try another workaround.
   // for more details see: https://github.com/cypress-io/cypress/issues/3817
+  // If you are wondering why we are using the wait(500) above ^^
+  // Notes: 
+  //  - we tried to used `delay` but that did not worked and made the tests to fail with chopped text
+  //  - we picked the easiest solution, there are more complex solutions also but imply much allocated time to fix
+  //    there is such solution documented in the link above (there are two links within to a blog) with event listeners on elements
+  //  https://www.cypress.io/blog/2019/01/22/when-can-the-test-click/
+  //  https://www.cypress.io/blog/2018/02/05/when-can-the-test-start/
 
   if (!noRequest) {
     cy.server();
