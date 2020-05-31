@@ -49,6 +49,7 @@ public class AllocationAmountsTest
 				.discountAmt(euro(999002))
 				.writeOffAmt(euro(999003))
 				.invoiceProcessingFee(euro(999004))
+				.bankFeeAmt(euro(999005))
 				.build();
 	}
 
@@ -93,6 +94,12 @@ public class AllocationAmountsTest
 		}
 
 		@Test
+		public void bankFeeAmt()
+		{
+			AllocationAmounts.builder().bankFeeAmt(euro(1)).build();
+		}
+
+		@Test
 		public void differentCurrencies()
 		{
 			final AllocationAmountsBuilder builder = AllocationAmounts.builder()
@@ -113,6 +120,7 @@ public class AllocationAmountsTest
 				.discountAmt(euro(2))
 				.writeOffAmt(euro(3))
 				.invoiceProcessingFee(euro(4))
+				.bankFeeAmt(euro(5))
 				.build();
 
 		assertThat(amounts.add(amounts))
@@ -121,6 +129,7 @@ public class AllocationAmountsTest
 						.discountAmt(euro(4))
 						.writeOffAmt(euro(6))
 						.invoiceProcessingFee(euro(8))
+						.bankFeeAmt(euro(10))
 						.build());
 	}
 
@@ -132,6 +141,7 @@ public class AllocationAmountsTest
 				.discountAmt(euro(2))
 				.writeOffAmt(euro(3))
 				.invoiceProcessingFee(euro(4))
+				.bankFeeAmt(euro(5))
 				.build();
 
 		assertThat(amounts.subtract(amounts))
@@ -146,6 +156,7 @@ public class AllocationAmountsTest
 				.discountAmt(euro(2))
 				.writeOffAmt(euro(3))
 				.invoiceProcessingFee(euro(4))
+				.bankFeeAmt(euro(5))
 				.build();
 
 		assertThat(amounts.negate())
@@ -154,6 +165,7 @@ public class AllocationAmountsTest
 						.discountAmt(euro(-2))
 						.writeOffAmt(euro(-3))
 						.invoiceProcessingFee(euro(-4))
+						.bankFeeAmt(euro(-5))
 						.build());
 	}
 
@@ -165,9 +177,10 @@ public class AllocationAmountsTest
 				.discountAmt(euro(2))
 				.writeOffAmt(euro(3))
 				.invoiceProcessingFee(euro(4))
+				.bankFeeAmt(euro(5))
 				.build();
 
-		assertThat(amounts.getTotalAmt()).isEqualTo(euro(1 + 2 + 3 + 4));
+		assertThat(amounts.getTotalAmt()).isEqualTo(euro(1 + 2 + 3 + 4 + 5));
 	}
 
 	@Test
@@ -248,6 +261,13 @@ public class AllocationAmountsTest
 			assertThat(amounts.isZero()).isFalse();
 
 			amounts = amounts.withInvoiceProcessingFee(euro(0));
+			assertThat(amounts.isZero()).isFalse();
+
+			amounts = amounts.withBankFeeAmt(euro(0));
+			assertThat(amounts.isZero()).isTrue();
+
+			//
+			// All amounts are set to zero:
 			assertThat(amounts.isZero()).isTrue();
 			assertThat(amounts.getTotalAmt()).isEqualTo(Money.zero(euroCurrencyId));
 		}

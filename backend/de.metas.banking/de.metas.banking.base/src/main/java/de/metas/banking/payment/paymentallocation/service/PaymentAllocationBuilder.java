@@ -151,6 +151,7 @@ public class PaymentAllocationBuilder
 				.discountAmt(candidate.getAmounts().getDiscountAmt())
 				.writeOffAmt(candidate.getAmounts().getWriteOffAmt())
 				.invoiceProcessingFee(candidate.getAmounts().getInvoiceProcessingFee())
+				.bankFeeAmt(candidate.getAmounts().getBankFeeAmt())
 				.build();
 		Check.assumeEquals(amounts, candidate.getAmounts());
 
