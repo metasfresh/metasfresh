@@ -342,6 +342,11 @@ import lombok.NonNull;
 		{
 			invoiceCandDAO.updateMissingPaymentTermIds(selectionId);
 		}
+
+		//
+		// Flag those invoice candidates as approved, since user decided to invoice them.
+		// Also, this will prevent changing the prices, net amounts etc while invoicing.
+		invoiceCandDAO.updateApprovalForInvoicingToTrue(selectionId);
 	}
 
 	/** NOTE: we designed this method for the case of enqueuing a big number of invoice candidates. */
