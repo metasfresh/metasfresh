@@ -1,7 +1,6 @@
 package de.metas.invoicecandidate.api.impl;
 
 import static de.metas.util.lang.CoalesceUtil.coalesce;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 /*
  * #%L
@@ -34,7 +33,6 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.slf4j.MDC.MDCCloseable;
@@ -219,14 +217,6 @@ import lombok.NonNull;
 				}
 
 				workpackageAggregator.setPriority(priorityToUse);
-
-				//
-				// 07666: Set approval back to false after enqueuing and save within transaction
-				try (final IAutoCloseable updateInProgressCloseable = invoiceCandBL.setUpdateProcessInProgress())
-				{
-					icRecord.setApprovalForInvoicing(false);
-					save(icRecord);
-				}
 
 				invoiceCandidateSelectionCount++; // increment AFTER validating that it was approved for invoicing etc
 				totalNetAmtToInvoiceChecksum.add(icRecord);
