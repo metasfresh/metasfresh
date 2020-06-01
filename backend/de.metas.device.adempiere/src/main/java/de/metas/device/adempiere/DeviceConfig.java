@@ -53,7 +53,7 @@ public final class DeviceConfig
 	private final String deviceClassname;
 	private final IDeviceParameterValueSupplier parameterValueSupplier;
 	private final IDeviceRequestClassnamesSupplier requestClassnamesSupplier;
-	private final Set<WarehouseId> assignedWarehouseIds;
+	private final ImmutableSet<WarehouseId> assignedWarehouseIds;
 
 	private DeviceConfig(final DeviceConfig.Builder builder)
 	{
@@ -107,7 +107,7 @@ public final class DeviceConfig
 	}
 
 	/** @return warehouse IDs where this device is available; empty means that it's available to any warehouse */
-	public Set<WarehouseId> getAssignedWarehouseIds()
+	public ImmutableSet<WarehouseId> getAssignedWarehouseIds()
 	{
 		return assignedWarehouseIds;
 	}

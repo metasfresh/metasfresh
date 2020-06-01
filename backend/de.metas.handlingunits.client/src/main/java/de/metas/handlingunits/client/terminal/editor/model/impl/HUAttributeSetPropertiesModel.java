@@ -60,7 +60,7 @@ import de.metas.adempiere.form.terminal.ITerminalLookup;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.adempiere.form.terminal.field.constraint.ITerminalFieldConstraint;
 import de.metas.adempiere.form.terminal.field.constraint.MinMaxNumericFieldConstraint;
-import de.metas.device.adempiere.AttributesDevicesHub.AttributeDeviceAccessor;
+import de.metas.device.adempiere.AttributeDeviceAccessor;
 import de.metas.device.adempiere.IDeviceBL;
 import de.metas.device.adempiere.IDevicesHubFactory;
 import de.metas.device.api.IDeviceRequest;

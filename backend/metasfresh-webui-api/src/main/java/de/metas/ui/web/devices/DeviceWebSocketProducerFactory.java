@@ -2,7 +2,7 @@ package de.metas.ui.web.devices;
 
 import org.springframework.stereotype.Component;
 
-import de.metas.device.adempiere.AttributesDevicesHub.AttributeDeviceAccessor;
+import de.metas.device.adempiere.AttributeDeviceAccessor;
 import de.metas.device.adempiere.IDevicesHubFactory;
 import de.metas.ui.web.websocket.WebSocketConfig;
 import de.metas.ui.web.websocket.WebSocketProducer;

@@ -1,25 +1,16 @@
 package de.metas.device.adempiere;
 
 import java.util.List;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Consumer;
-import java.util.stream.Stream;
-
-import javax.annotation.concurrent.Immutable;
 
 import org.adempiere.util.net.IHostIdentifier;
-import org.adempiere.warehouse.WarehouseId;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 
 import de.metas.device.adempiere.IDeviceConfigPool.IDeviceConfigPoolListener;
 import de.metas.device.api.IDevice;
@@ -85,9 +76,8 @@ public class AttributesDevicesHub
 	}
 
 	@VisibleForTesting
-	public AttributesDevicesHub(final IDeviceConfigPool deviceConfigPool)
+	public AttributesDevicesHub(@NonNull final IDeviceConfigPool deviceConfigPool)
 	{
-		Check.assumeNotNull(deviceConfigPool, "Parameter deviceConfigPool is not null");
 		this.deviceConfigPool = deviceConfigPool;
 		this.deviceConfigPool.addListener(deviceConfigPoolListener);
 	}
@@ -160,9 +150,16 @@ public class AttributesDevicesHub
 			for (final IDeviceRequest<ISingleValueResponse> request : allRequestsFor)
 			{
 				final String deviceName = deviceConfig.getDeviceName();
-				final String displayName = createDeviceDisplayName(deviceDisplayNameCommonPrefix, deviceName);
-				final Set<WarehouseId> assignedWarehouseIds = deviceConfig.getAssignedWarehouseIds();
-				final AttributeDeviceAccessor deviceAccessor = new AttributeDeviceAccessor(displayName, device, deviceName, attributeCode, assignedWarehouseIds, request);
+				
+				final AttributeDeviceAccessor deviceAccessor = AttributeDeviceAccessor.builder()
+						.displayName(createDeviceDisplayName(deviceDisplayNameCommonPrefix, deviceName))
+						.device(device)
+						.deviceName(deviceName)
+						.attributeCode(attributeCode)
+						.assignedWarehouseIds(deviceConfig.getAssignedWarehouseIds())
+						.request(request)
+						.build();
+
 				deviceAccessors.add(deviceAccessor);
 			}
 		}
@@ -209,185 +206,5 @@ public class AttributesDevicesHub
 		}
 
 		return deviceDisplayNameCommonPrefix + deviceName.charAt(deviceDisplayNameCommonPrefix.length());
-	}
-
-	/**
-	 * Facade used to access a given preconfigured device using a preconfigured {@link IDeviceRequest}.
-	 *
-	 * @author metas-dev <dev@metasfresh.com>
-	 *
-	 */
-	@SuppressWarnings("rawtypes")
-	public static final class AttributeDeviceAccessor
-	{
-		private final String displayName;
-		private final IDevice device;
-		private final ImmutableSet<WarehouseId> assignedWarehouseIds;
-		private final IDeviceRequest<ISingleValueResponse> request;
-
-		private final String publicId;
-
-		private AttributeDeviceAccessor(
-				final String displayName,
-				@NonNull final IDevice device,
-				@NonNull final String deviceName,
-				@NonNull final String attributeCode,
-				final Set<WarehouseId> assignedWarehouseIds,
-				@NonNull final IDeviceRequest<ISingleValueResponse> request
-		)
-		{
-			Check.assumeNotEmpty(deviceName, "deviceName is not empty");
-			Check.assumeNotEmpty(attributeCode, "attributeCode is not empty");
-
-			this.displayName = displayName;
-			this.device = device;
-			this.assignedWarehouseIds = ImmutableSet.copyOf(assignedWarehouseIds);
-			this.request = request;
-
-			publicId = deviceName + "-" + attributeCode + "-" + request.getClass().getSimpleName();
-		}
-
-		@Override
-		public String toString()
-		{
-			return MoreObjects.toStringHelper(this)
-					.add("displayName", displayName)
-					.add("request", request)
-					.add("device", device)
-					.add("assignedWarehouseId", assignedWarehouseIds)
-					.add("publicId", publicId)
-					.toString();
-		}
-
-		public String getPublicId()
-		{
-			return publicId;
-		}
-
-		public String getDisplayName()
-		{
-			return displayName;
-		}
-
-		public boolean isAvailableForWarehouse(final WarehouseId warehouseId)
-		{
-			if (assignedWarehouseIds.isEmpty())
-			{
-				return true;
-			}
-
-			return assignedWarehouseIds.contains(warehouseId);
-		}
-
-		public synchronized Object acquireValue()
-		{
-			logger.debug("This: {}, Device: {}; Request: {}", this, device, request);
-
-			final ISingleValueResponse response = device.accessDevice(request);
-			logger.debug("Device {}; Response: {}", device, response);
-
-			return response.getSingleValue();
-		}
-	}
-
-	/**
-	 * List of {@link AttributeDeviceAccessor}s.
-	 *
-	 * It also contains other informations like {@link AttributeDeviceAccessorsList#getWarningMessage()}.
-	 *
-	 * @author metas-dev <dev@metasfresh.com>
-	 */
-	@Immutable
-	public static final class AttributeDeviceAccessorsList
-	{
-		private static AttributeDeviceAccessorsList of(final List<AttributeDeviceAccessor> attributeDeviceAccessors, final String warningMessage)
-		{
-			final String warningMessageNorm = Check.isEmpty(warningMessage, true) ? null : warningMessage;
-			if (attributeDeviceAccessors.isEmpty() && warningMessage == null)
-			{
-				return EMPTY;
-			}
-
-			return new AttributeDeviceAccessorsList(attributeDeviceAccessors, warningMessageNorm);
-		}
-
-		private static final AttributeDeviceAccessorsList EMPTY = new AttributeDeviceAccessorsList();
-
-		private final ImmutableList<AttributeDeviceAccessor> attributeDeviceAccessors;
-		private final ImmutableMap<String, AttributeDeviceAccessor> attributeDeviceAccessorsById;
-		private final String warningMessage;
-
-		private AttributeDeviceAccessorsList(final List<AttributeDeviceAccessor> attributeDeviceAccessors, final String warningMessage)
-		{
-			super();
-			this.attributeDeviceAccessors = ImmutableList.copyOf(attributeDeviceAccessors);
-			attributeDeviceAccessorsById = Maps.uniqueIndex(attributeDeviceAccessors, AttributeDeviceAccessor::getPublicId);
-			this.warningMessage = warningMessage;
-		}
-
-		/** empty/null constructor */
-		private AttributeDeviceAccessorsList()
-		{
-			super();
-			attributeDeviceAccessors = ImmutableList.of();
-			attributeDeviceAccessorsById = ImmutableMap.of();
-			warningMessage = null;
-		}
-
-		@Override
-		public String toString()
-		{
-			return MoreObjects.toStringHelper(this)
-					.omitNullValues()
-					.add("warningMessage", warningMessage)
-					.addValue(attributeDeviceAccessors.isEmpty() ? null : attributeDeviceAccessors)
-					.toString();
-		}
-
-		public List<AttributeDeviceAccessor> getAttributeDeviceAccessors()
-		{
-			return attributeDeviceAccessors;
-		}
-
-		public Stream<AttributeDeviceAccessor> stream()
-		{
-			return attributeDeviceAccessors.stream();
-		}
-
-		public Stream<AttributeDeviceAccessor> stream(final WarehouseId warehouseId)
-		{
-			return stream()
-					.filter(attributeDeviceAccessor -> attributeDeviceAccessor.isAvailableForWarehouse(warehouseId));
-		}
-
-		public AttributeDeviceAccessor getByIdOrNull(final String id)
-		{
-			return attributeDeviceAccessorsById.get(id);
-		}
-
-		/**
-		 * @return warning message(s) fired while the devices were created or configured
-		 */
-		public String getWarningMessage()
-		{
-			return warningMessage;
-		}
-
-		/**
-		 * Convenient (fluent) method to consume {@link #getWarningMessage()} if any.
-		 *
-		 * @param warningMessageConsumer
-		 */
-		public AttributeDeviceAccessorsList consumeWarningMessageIfAny(final Consumer<String> warningMessageConsumer)
-		{
-			if (Check.isEmpty(warningMessage, true))
-			{
-				return this;
-			}
-
-			warningMessageConsumer.accept(warningMessage);
-
-			return this;
-		}
 	}
 }

@@ -13,7 +13,7 @@ import org.compiere.util.Evaluatee;
 import org.compiere.util.NamePair;
 
 import de.metas.adempiere.service.impl.TooltipType;
-import de.metas.device.adempiere.AttributesDevicesHub.AttributeDeviceAccessor;
+import de.metas.device.adempiere.AttributeDeviceAccessor;
 import de.metas.device.adempiere.IDevicesHubFactory;
 import de.metas.handlingunits.attribute.IAttributeValue;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;

@@ -14,8 +14,8 @@ import org.junit.Test;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.device.adempiere.AttributeDeviceAccessor;
 import de.metas.device.adempiere.AttributesDevicesHub;
-import de.metas.device.adempiere.AttributesDevicesHub.AttributeDeviceAccessor;
 import de.metas.util.collections.CollectionUtils;
 
 /*

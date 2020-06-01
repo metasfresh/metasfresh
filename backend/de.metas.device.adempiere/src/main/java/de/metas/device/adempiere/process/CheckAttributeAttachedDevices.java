@@ -16,8 +16,8 @@ import org.slf4j.Logger;
 
 import com.google.common.base.Stopwatch;
 
+import de.metas.device.adempiere.AttributeDeviceAccessor;
 import de.metas.device.adempiere.AttributesDevicesHub;
-import de.metas.device.adempiere.AttributesDevicesHub.AttributeDeviceAccessor;
 import de.metas.device.adempiere.IDevicesHubFactory;
 import de.metas.logging.LogManager;
 import de.metas.process.JavaProcess;
