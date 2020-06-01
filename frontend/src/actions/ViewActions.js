@@ -20,13 +20,12 @@ import {
   FILTER_VIEW_PENDING,
   FILTER_VIEW_SUCCESS,
   FILTER_VIEW_ERROR,
-  UPDATE_VIEW_DATA,
   FETCH_LOCATION_CONFIG_SUCCESS,
   FETCH_LOCATION_CONFIG_ERROR,
   RESET_VIEW,
   DELETE_VIEW,
 } from '../constants/ActionTypes';
-import { createGridTable, updateGridTable } from './TableActions';
+import { createGridTable, updateGridTable, deleteTable } from './TableActions';
 
 /**
  * @method resetView
@@ -179,21 +178,6 @@ function filterViewError(id, error) {
   return {
     type: FILTER_VIEW_ERROR,
     payload: { id, error },
-  };
-}
-
-/**
- * @method updateViewData
- * @summary
- */
-export function updateViewData(id, rows, tabId) {
-  return {
-    type: UPDATE_VIEW_DATA,
-    payload: {
-      id,
-      rows,
-      tabId,
-    },
   };
 }
 
@@ -368,7 +352,6 @@ export function fetchLayout(
   };
 }
 
-// TODO: Update table on filtering
 /**
  * @method filterView
  * @summary filter grid view
@@ -382,6 +365,9 @@ export function filterView(windowId, viewId, filters, useViewId = false) {
     return filterViewRequest(windowId, viewId, filters)
       .then((response) => {
         dispatch(filterViewSuccess(identifier, response.data));
+
+        const tableId = getTableId({ windowId, viewId });
+        dispatch(deleteTable(tableId));
 
         return Promise.resolve(response.data);
       })
