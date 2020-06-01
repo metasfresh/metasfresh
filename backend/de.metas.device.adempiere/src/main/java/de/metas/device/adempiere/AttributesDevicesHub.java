@@ -9,6 +9,7 @@ import java.util.stream.Stream;
 import javax.annotation.concurrent.Immutable;
 
 import org.adempiere.util.net.IHostIdentifier;
+import org.adempiere.warehouse.WarehouseId;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 
@@ -16,6 +17,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
@@ -159,7 +161,7 @@ public class AttributesDevicesHub
 			{
 				final String deviceName = deviceConfig.getDeviceName();
 				final String displayName = createDeviceDisplayName(deviceDisplayNameCommonPrefix, deviceName);
-				final Set<Integer> assignedWarehouseIds = deviceConfig.getAssignedWarehouseIds();
+				final Set<WarehouseId> assignedWarehouseIds = deviceConfig.getAssignedWarehouseIds();
 				final AttributeDeviceAccessor deviceAccessor = new AttributeDeviceAccessor(displayName, device, deviceName, attributeCode, assignedWarehouseIds, request);
 				deviceAccessors.add(deviceAccessor);
 			}
@@ -220,18 +222,18 @@ public class AttributesDevicesHub
 	{
 		private final String displayName;
 		private final IDevice device;
-		private final Set<Integer> assignedWarehouseIds;
+		private final ImmutableSet<WarehouseId> assignedWarehouseIds;
 		private final IDeviceRequest<ISingleValueResponse> request;
 
 		private final String publicId;
 
-		private AttributeDeviceAccessor( //
-				final String displayName, //
-				@NonNull final IDevice device, //
-				@NonNull final String deviceName, //
-				@NonNull final String attributeCode, //
-				final Set<Integer> assignedWarehouseIds, //
-				@NonNull final IDeviceRequest<ISingleValueResponse> request //
+		private AttributeDeviceAccessor(
+				final String displayName,
+				@NonNull final IDevice device,
+				@NonNull final String deviceName,
+				@NonNull final String attributeCode,
+				final Set<WarehouseId> assignedWarehouseIds,
+				@NonNull final IDeviceRequest<ISingleValueResponse> request
 		)
 		{
 			Check.assumeNotEmpty(deviceName, "deviceName is not empty");
@@ -239,7 +241,7 @@ public class AttributesDevicesHub
 
 			this.displayName = displayName;
 			this.device = device;
-			this.assignedWarehouseIds = assignedWarehouseIds;
+			this.assignedWarehouseIds = ImmutableSet.copyOf(assignedWarehouseIds);
 			this.request = request;
 
 			publicId = deviceName + "-" + attributeCode + "-" + request.getClass().getSimpleName();
@@ -267,7 +269,7 @@ public class AttributesDevicesHub
 			return displayName;
 		}
 
-		public boolean isAvailableForWarehouse(final int warehouseId)
+		public boolean isAvailableForWarehouse(final WarehouseId warehouseId)
 		{
 			if (assignedWarehouseIds.isEmpty())
 			{
@@ -352,7 +354,7 @@ public class AttributesDevicesHub
 			return attributeDeviceAccessors.stream();
 		}
 
-		public Stream<AttributeDeviceAccessor> stream(final int warehouseId)
+		public Stream<AttributeDeviceAccessor> stream(final WarehouseId warehouseId)
 		{
 			return stream()
 					.filter(attributeDeviceAccessor -> attributeDeviceAccessor.isAvailableForWarehouse(warehouseId));

@@ -5,6 +5,7 @@ import java.util.Set;
 
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
+import org.adempiere.warehouse.WarehouseId;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -64,29 +65,29 @@ public class SysConfigDeviceConfigPoolTest
 		{
 			final AttributesDevicesHub devicesHub = helper.createDevicesHub();
 			final List<AttributeDeviceAccessor> deviceAccessors = devicesHub.getAttributeDeviceAccessors("WeightGross")
-					.stream(-1) // any
+					.stream((WarehouseId)null) // any
 					.collect(ImmutableList.toImmutableList());
 
 			final AttributeDeviceAccessor deviceAccessor = CollectionUtils.singleElement(deviceAccessors);
 
 			// shall be available for ANY warehouse
-			assertAvailableForWarehouse(deviceAccessor, -1, true);
-			assertAvailableForWarehouse(deviceAccessor, 1, true);
-			assertAvailableForWarehouse(deviceAccessor, 2, true);
+			assertAvailableForWarehouse(deviceAccessor, null, true);
+			assertAvailableForWarehouse(deviceAccessor, WarehouseId.ofRepoId(1), true);
+			assertAvailableForWarehouse(deviceAccessor, WarehouseId.ofRepoId(2), true);
 		}
 	}
 
 	@Test
 	public void testDeviceConfig_WithWarehouse()
 	{
-		final Set<Integer> warehouseIds = ImmutableSet.of(1000001, 1000002);
+		final Set<WarehouseId> warehouseIds = ImmutableSet.of(WarehouseId.ofRepoId(1000001), WarehouseId.ofRepoId(1000002));
 		helper.createDeviceConfigAndAssertValid("device1", "WeightGross", warehouseIds);
 		// POJOLookupMap.get().dumpStatus(); // dump configuration
 
 		//
 		// Test device accessor
 		final AttributesDevicesHub devicesHub = helper.createDevicesHub();
-		for (final int warehouseId : warehouseIds)
+		for (final WarehouseId warehouseId : warehouseIds)
 		{
 			final List<AttributeDeviceAccessor> deviceAccessors = devicesHub.getAttributeDeviceAccessors("WeightGross")
 					.stream(warehouseId)
@@ -96,14 +97,14 @@ public class SysConfigDeviceConfigPoolTest
 
 			// shall be available only for configured warehouse
 			assertAvailableForWarehouse(deviceAccessor, warehouseId, true);
-			assertAvailableForWarehouse(deviceAccessor, -1, false);
-			assertAvailableForWarehouse(deviceAccessor, 1, false);
-			assertAvailableForWarehouse(deviceAccessor, 2, false);
+			assertAvailableForWarehouse(deviceAccessor, (WarehouseId)null, false);
+			assertAvailableForWarehouse(deviceAccessor, WarehouseId.ofRepoId(1), false);
+			assertAvailableForWarehouse(deviceAccessor, WarehouseId.ofRepoId(2), false);
 		}
 
 	}
 
-	private static final void assertAvailableForWarehouse(final AttributeDeviceAccessor deviceAccessor, final int warehouseId, final boolean expectedAvailable)
+	private static final void assertAvailableForWarehouse(final AttributeDeviceAccessor deviceAccessor, final WarehouseId warehouseId, final boolean expectedAvailable)
 	{
 		final String msg = "Expect available for warehouse"
 				+ "\n accessor: " + deviceAccessor

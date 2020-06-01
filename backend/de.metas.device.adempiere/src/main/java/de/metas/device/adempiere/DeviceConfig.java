@@ -3,6 +3,8 @@ package de.metas.device.adempiere;
 import java.util.Collection;
 import java.util.Set;
 
+import org.adempiere.warehouse.WarehouseId;
+
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableSet;
 
@@ -51,7 +53,7 @@ public final class DeviceConfig
 	private final String deviceClassname;
 	private final IDeviceParameterValueSupplier parameterValueSupplier;
 	private final IDeviceRequestClassnamesSupplier requestClassnamesSupplier;
-	private final Set<Integer> assignedWarehouseIds;
+	private final Set<WarehouseId> assignedWarehouseIds;
 
 	private DeviceConfig(final DeviceConfig.Builder builder)
 	{
@@ -105,7 +107,7 @@ public final class DeviceConfig
 	}
 
 	/** @return warehouse IDs where this device is available; empty means that it's available to any warehouse */
-	public Set<Integer> getAssignedWarehouseIds()
+	public Set<WarehouseId> getAssignedWarehouseIds()
 	{
 		return assignedWarehouseIds;
 	}
@@ -117,7 +119,7 @@ public final class DeviceConfig
 		private String deviceClassname;
 		private IDeviceParameterValueSupplier parameterValueSupplier;
 		private IDeviceRequestClassnamesSupplier requestClassnamesSupplier;
-		private Set<Integer> assignedWareouseIds = null;
+		private Set<WarehouseId> assignedWareouseIds = null;
 
 		private Builder(final String deviceName)
 		{
@@ -196,13 +198,13 @@ public final class DeviceConfig
 			return requestClassnamesSupplier;
 		}
 
-		public DeviceConfig.Builder setAssignedWarehouseIds(final Set<Integer> assignedWareouseIds)
+		public DeviceConfig.Builder setAssignedWarehouseIds(final Set<WarehouseId> assignedWareouseIds)
 		{
 			this.assignedWareouseIds = assignedWareouseIds;
 			return this;
 		}
 
-		private Set<Integer> getAssignedWareouseIds()
+		private ImmutableSet<WarehouseId> getAssignedWareouseIds()
 		{
 			return assignedWareouseIds == null ? ImmutableSet.of() : ImmutableSet.copyOf(assignedWareouseIds);
 		}

@@ -27,12 +27,14 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.api.IAttributeSet;
 import org.adempiere.mm.attributes.spi.IAttributeValueCallout;
 import org.adempiere.mm.attributes.spi.IAttributeValueContext;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.util.NamePair;
 
@@ -98,8 +100,6 @@ public interface IAttributeStorage extends IAttributeSet
 	 * @return {@link IAttributeValue}s contained in this storage
 	 */
 	List<IAttributeValue> getAttributeValues();
-
-
 
 	/**
 	 * @return {@link IAttributeValue} for the current attribute set
@@ -388,8 +388,8 @@ public interface IAttributeStorage extends IAttributeSet
 	/**
 	 * @return warehouse on which this attribute storage sits (e.g. in case of a HU, it's the HU's warehouse).
 	 */
-	default int getM_Warehouse_ID()
+	default Optional<WarehouseId> getWarehouseId()
 	{
-		return -1;
+		return Optional.empty();
 	}
 }

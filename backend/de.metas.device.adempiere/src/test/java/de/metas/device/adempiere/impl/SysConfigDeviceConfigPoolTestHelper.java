@@ -7,6 +7,7 @@ import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.net.IHostIdentifier;
 import org.adempiere.util.net.NetUtils;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.util.Env;
 import org.junit.Assert;
 
@@ -48,7 +49,7 @@ public class SysConfigDeviceConfigPoolTestHelper
 
 	private final IHostIdentifier clientHost = NetUtils.getLocalHost();
 
-	public final DeviceConfig createDeviceConfigAndAssertValid(final String deviceName, final String attributeCode, final Set<Integer> warehouseIds)
+	public final DeviceConfig createDeviceConfigAndAssertValid(final String deviceName, final String attributeCode, final Set<WarehouseId> warehouseIds)
 	{
 		createMockedDeviceSysconfigs(deviceName, attributeCode, warehouseIds);
 
@@ -56,7 +57,7 @@ public class SysConfigDeviceConfigPoolTestHelper
 		final List<DeviceConfig> deviceConfigs = configPool.getDeviceConfigsForAttributeCode(attributeCode);
 		final DeviceConfig deviceConfig = CollectionUtils.singleElement(deviceConfigs);
 
-		//System.out.println("Checking " + deviceConfig);
+		// System.out.println("Checking " + deviceConfig);
 		Assert.assertEquals("deviceName", deviceName, deviceConfig.getDeviceName());
 		Assert.assertEquals("attributeCode", ImmutableSet.of(attributeCode), deviceConfig.getAssignedAttributeCodes());
 		Assert.assertEquals("DeviceClass", MOCKED_DEVICE_DeviceClass, deviceConfig.getDeviceClassname());
@@ -66,7 +67,7 @@ public class SysConfigDeviceConfigPoolTestHelper
 		return deviceConfig;
 	}
 
-	private final void createMockedDeviceSysconfigs(final String deviceName, final String attributeCode, final Set<Integer> warehouseIds)
+	private final void createMockedDeviceSysconfigs(final String deviceName, final String attributeCode, final Set<WarehouseId> warehouseIds)
 	{
 		Check.assumeNotEmpty(deviceName, "deviceName is not empty");
 		Check.assumeNotEmpty(attributeCode, "attributeCode is not empty");
@@ -83,7 +84,7 @@ public class SysConfigDeviceConfigPoolTestHelper
 		putSysConfig("de.metas.device." + deviceName + ".AvailableOn1", host);
 		putSysConfig("de.metas.device." + deviceName + "." + attributeCode, MOCKED_DEVICE_RequestClass);
 
-		warehouseIds.forEach(warehouseId -> putSysConfig("de.metas.device." + deviceName + ".M_Warehouse_ID." + warehouseId, String.valueOf(warehouseId)));
+		warehouseIds.forEach(warehouseId -> putSysConfig("de.metas.device." + deviceName + ".M_Warehouse_ID." + warehouseId.getRepoId(), String.valueOf(warehouseId.getRepoId())));
 	}
 
 	private static final void putSysConfig(final String name, final String value)

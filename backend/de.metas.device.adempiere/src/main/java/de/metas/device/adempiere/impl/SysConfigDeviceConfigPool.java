@@ -9,6 +9,7 @@ import java.util.TreeMap;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.ExtendedMemorizingSupplier;
 import org.adempiere.util.net.IHostIdentifier;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_AD_SysConfig;
 import org.slf4j.Logger;
 
@@ -42,11 +43,11 @@ import lombok.NonNull;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -69,7 +70,7 @@ import lombok.NonNull;
 	private static final String DEVICE_PARAM_AttributeInternalName = "AttributeInternalName";
 	private static final String DEVICE_PARAM_M_Warehouse_ID = "M_Warehouse_ID";
 
-	/*package */static final String IPADDRESS_ANY = "0.0.0.0";
+	/* package */static final String IPADDRESS_ANY = "0.0.0.0";
 
 	private final IHostIdentifier clientHost;
 	private final int adClientId;
@@ -241,7 +242,7 @@ import lombok.NonNull;
 	 * @param deviceName
 	 * @return M_Warehouse_IDs
 	 */
-	private Set<Integer> getDeviceWarehouseIds(final String deviceName)
+	private Set<WarehouseId> getDeviceWarehouseIds(final String deviceName)
 	{
 		final String sysconfigPrefix = CFG_DEVICE_PREFIX + "." + deviceName + "." + DEVICE_PARAM_M_Warehouse_ID;
 		return sysConfigBL.getValuesForPrefix(sysconfigPrefix, adClientId, adOrgId)
@@ -250,7 +251,7 @@ import lombok.NonNull;
 				.map(warehouseIdStr -> {
 					try
 					{
-						return Integer.parseInt(warehouseIdStr);
+						return WarehouseId.ofRepoId(Integer.parseInt(warehouseIdStr));
 					}
 					catch (Exception ex)
 					{

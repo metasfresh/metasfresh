@@ -1,5 +1,17 @@
 package de.metas.ui.web.handlingunits;
 
+import java.util.List;
+
+import javax.annotation.Nullable;
+
+import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.mm.attributes.spi.IAttributeValuesProvider;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.warehouse.WarehouseId;
+import org.compiere.model.I_M_Attribute;
+import org.compiere.util.Evaluatee;
+import org.compiere.util.NamePair;
+
 import de.metas.adempiere.service.impl.TooltipType;
 import de.metas.device.adempiere.AttributesDevicesHub.AttributeDeviceAccessor;
 import de.metas.device.adempiere.IDevicesHubFactory;
@@ -19,15 +31,6 @@ import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.ad.table.api.IADTableDAO;
-import org.adempiere.mm.attributes.spi.IAttributeValuesProvider;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_M_Attribute;
-import org.compiere.util.Evaluatee;
-import org.compiere.util.NamePair;
-
-import javax.annotation.Nullable;
-import java.util.List;
 
 /*
  * #%L
@@ -64,7 +67,7 @@ import java.util.List;
 
 	public static ViewRowAttributesLayout createLayout(final IAttributeStorage attributeStorage)
 	{
-		final int warehouseId = attributeStorage.getM_Warehouse_ID();
+		final WarehouseId warehouseId = attributeStorage.getWarehouseId().orElse(null);
 		final List<DocumentLayoutElementDescriptor> elements = attributeStorage.getAttributeValues()
 				.stream()
 				.map(av -> createLayoutElement(av, warehouseId))
@@ -73,7 +76,9 @@ import java.util.List;
 		return ViewRowAttributesLayout.of(elements);
 	}
 
-	private static DocumentLayoutElementDescriptor createLayoutElement(final IAttributeValue attributeValue, final int warehouseId)
+	private static DocumentLayoutElementDescriptor createLayoutElement(
+			@NonNull final IAttributeValue attributeValue,
+			@Nullable final WarehouseId warehouseId)
 	{
 		final I_M_Attribute attribute = attributeValue.getM_Attribute();
 		final IModelTranslationMap attributeTrlMap = InterfaceWrapperHelper.getModelTranslationMap(attribute);
@@ -93,7 +98,9 @@ import java.util.List;
 				.build();
 	}
 
-	private static List<JSONDeviceDescriptor> createDevices(final String attributeCode, final int warehouseId)
+	private static List<JSONDeviceDescriptor> createDevices(
+			@NonNull final String attributeCode,
+			@Nullable final WarehouseId warehouseId)
 	{
 		return Services.get(IDevicesHubFactory.class)
 				.getDefaultAttributesDevicesHub()

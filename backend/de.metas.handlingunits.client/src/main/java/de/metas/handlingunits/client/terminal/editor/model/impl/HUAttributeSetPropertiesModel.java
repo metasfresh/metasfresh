@@ -32,11 +32,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.locks.ReentrantLock;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.mm.attributes.spi.IAttributeValueContext;
 import org.adempiere.mm.attributes.spi.impl.DefaultAttributeValueContext;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.net.NetUtils;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.apps.AppsAction;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.X_M_Attribute;
@@ -73,6 +76,7 @@ import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 public class HUAttributeSetPropertiesModel extends AbstractPropertiesPanelModel
 {
@@ -228,7 +232,9 @@ public class HUAttributeSetPropertiesModel extends AbstractPropertiesPanelModel
 	 * @see #getAdditionalInputMethods(int)
 	 *
 	 */
-	private static List<IInputMethod<?>> mkAdditionalInputMethods(final I_M_Attribute attribute, final int warehouseId)
+	private static List<IInputMethod<?>> mkAdditionalInputMethods(
+			@NonNull final I_M_Attribute attribute,
+			@Nullable final WarehouseId warehouseId)
 	{
 		return Services.get(IDevicesHubFactory.class)
 				.getDefaultAttributesDevicesHub()
@@ -521,7 +527,7 @@ public class HUAttributeSetPropertiesModel extends AbstractPropertiesPanelModel
 	{
 		public static final IndexedAttributeStorage NULL = new IndexedAttributeStorage();
 
-		public static final IndexedAttributeStorage of(final IAttributeStorage attributeStorage)
+		public static IndexedAttributeStorage of(final IAttributeStorage attributeStorage)
 		{
 			if (attributeStorage == null)
 			{
@@ -555,9 +561,7 @@ public class HUAttributeSetPropertiesModel extends AbstractPropertiesPanelModel
 
 		private IndexedAttributeStorage(final IAttributeStorage attributeStorage)
 		{
-			super();
-
-			final int warehouseId = attributeStorage.getM_Warehouse_ID();
+			final WarehouseId warehouseId = attributeStorage.getWarehouseId().orElse(null);
 
 			final List<String> propertyNames = new ArrayList<>();
 			final Map<String, I_M_Attribute> propertyName2attribute = new HashMap<>();
@@ -597,12 +601,12 @@ public class HUAttributeSetPropertiesModel extends AbstractPropertiesPanelModel
 		}
 
 		/** @return attribute storage */
-		public final IAttributeStorage getAttributeStorage()
+		public IAttributeStorage getAttributeStorage()
 		{
 			return attributeStorage;
 		}
 
-		public final boolean isDisposed()
+		public boolean isDisposed()
 		{
 			final HUKeyAttributeStorage huKeyAttributeStorage = HUKeyAttributeStorage.castOrNull(attributeStorage);
 			if (huKeyAttributeStorage != null)
@@ -612,13 +616,13 @@ public class HUAttributeSetPropertiesModel extends AbstractPropertiesPanelModel
 			return false; // not disposed
 		}
 
-		public final List<String> getPropertyNames()
+		public List<String> getPropertyNames()
 		{
 			return propertyNames;
 		}
 
 		/** @return attribute or null */
-		public final I_M_Attribute getM_Attribute(final String propertyName)
+		public I_M_Attribute getM_Attribute(final String propertyName)
 		{
 			return propertyName2attribute.get(propertyName);
 		}
@@ -628,23 +632,23 @@ public class HUAttributeSetPropertiesModel extends AbstractPropertiesPanelModel
 			return propertyName2AdditionalInputAction.get(propertyName);
 		}
 
-		private final IHUAttributesDAO getHUAttributesDAO()
+		private IHUAttributesDAO getHUAttributesDAO()
 		{
 			return attributeStorage.getAttributeStorageFactory().getHUAttributesDAO();
 		}
 
-		public final IAttributeValue getAttributeValue(final I_M_Attribute attribute)
+		public IAttributeValue getAttributeValue(final I_M_Attribute attribute)
 		{
 			return attributeStorage.getAttributeValue(attribute);
 		}
 
-		public final IAttributeValue getAttributeValue(final String propertyName)
+		public IAttributeValue getAttributeValue(final String propertyName)
 		{
 			final I_M_Attribute attribute = getM_Attribute(propertyName);
 			return attributeStorage.getAttributeValue(attribute);
 		}
 
-		public final Object getPropertyValue(final String propertyName)
+		public Object getPropertyValue(final String propertyName)
 		{
 			final I_M_Attribute attribute = getM_Attribute(propertyName);
 			if (attribute == null)
@@ -655,7 +659,7 @@ public class HUAttributeSetPropertiesModel extends AbstractPropertiesPanelModel
 			return getAttributeStorage().getValue(attribute);
 		}
 
-		public final void setPropertyValue(final String propertyName, final Object value)
+		public void setPropertyValue(final String propertyName, final Object value)
 		{
 			try (final IAutoCloseable autoflushDisabler = getHUAttributesDAO().temporaryDisableAutoflush())
 			{
@@ -664,7 +668,7 @@ public class HUAttributeSetPropertiesModel extends AbstractPropertiesPanelModel
 			}
 		}
 
-		public final boolean isVirtualHU()
+		public boolean isVirtualHU()
 		{
 			return virtualHU;
 		}
