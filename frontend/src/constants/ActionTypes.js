@@ -369,24 +369,6 @@ export const NEW_PROCESS_SUCCESS = 'NEW_PROCESS_SUCCESS';
  * @constant
  * @type {string} ToDo: Description for the constant.
  */
-export const REMOVE_TABLE_ITEMS_SELECTION = 'REMOVE_TABLE_ITEMS_SELECTION';
-
-/**
- * @constant
- * @type {string} ToDo: Description for the constant.
- */
-export const SELECT_TABLE_ITEMS = 'SELECT_TABLE_ITEMS';
-
-/**
- * @constant
- * @type {string} ToDo: Description for the constant.
- */
-export const DESELECT_TABLE_ITEMS = 'DESELECT_TABLE_ITEMS';
-
-/**
- * @constant
- * @type {string} ToDo: Description for the constant.
- */
 export const GET_NOTIFICATIONS_SUCCESS = 'GET_NOTIFICATIONS_SUCCESS';
 
 /**

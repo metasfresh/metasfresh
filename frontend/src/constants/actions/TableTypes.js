@@ -24,9 +24,21 @@ export const DELETE_TABLE = 'DELETE_TABLE';
 
 /**
  * @constant
+ * @type {string} Update table rows.
+ */
+export const UPDATE_TABLE_DATA = 'UPDATE_TABLE_DATA';
+
+/**
+ * @constant
  * @type {string} update table selection
  */
 export const UPDATE_TABLE_SELECTION = 'UPDATE_TABLE_SELECTION';
+
+/**
+ * @constant
+ * @type {string} ToDo: Description for the constant.
+ */
+export const DESELECT_TABLE_ITEMS = 'DESELECT_TABLE_ITEMS';
 
 /**
  * @constant

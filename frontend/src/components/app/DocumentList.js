@@ -163,7 +163,7 @@ export default class DocumentList extends Component {
       onSortData,
     } = this.props;
 
-    const { rowData, size, staticFilters, orderBy, queryLimitHit } = reduxData;
+    const { rowData, staticFilters, orderBy, queryLimitHit } = reduxData;
     const { rowEdited, clickOutsideLock, toggleWidth } = this.state;
 
     // TODO: This can probably be handled with redux state query
@@ -366,7 +366,6 @@ export default class DocumentList extends Component {
                 {...{
                   orderBy,
                   rowEdited,
-                  size,
                   pageLength,
                   isIncluded,
                   disconnectFromState,

@@ -20,7 +20,7 @@ import {
   DELETE_QUICK_ACTIONS,
   DELETE_ROW,
   DELETE_TOP_ACTIONS,
-  DESELECT_TABLE_ITEMS,
+  // DESELECT_TABLE_ITEMS,
   DISABLE_SHORTCUT,
   DISABLE_OUTSIDE_CLICK,
   HIDE_SPINNER,
@@ -38,9 +38,7 @@ import {
   PATCH_FAILURE,
   PATCH_REQUEST,
   PATCH_SUCCESS,
-  REMOVE_TABLE_ITEMS_SELECTION,
-  SELECT_TABLE_ITEMS,
-  SET_LATEST_NEW_DOCUMENT,
+  // SET_LATEST_NEW_DOCUMENT,
   SET_RAW_MODAL_DESCRIPTION,
   SET_RAW_MODAL_TITLE,
   SHOW_SPINNER,
@@ -125,12 +123,12 @@ export function deleteTopActions() {
   };
 }
 
-export function setLatestNewDocument(id) {
-  return {
-    type: SET_LATEST_NEW_DOCUMENT,
-    id: id,
-  };
-}
+// export function setLatestNewDocument(id) {
+//   return {
+//     type: SET_LATEST_NEW_DOCUMENT,
+//     id: id,
+//   };
+// }
 
 export function showSpinner(id) {
   return {
@@ -504,29 +502,6 @@ export function indicatorState(state) {
   };
 }
 
-//SELECT ON TABLE
-
-export function removeSelectedTableItems({ windowType, viewId }) {
-  return {
-    type: REMOVE_TABLE_ITEMS_SELECTION,
-    payload: { windowType, viewId },
-  };
-}
-
-export function selectTableItems({ ids, windowType, viewId }) {
-  return {
-    type: SELECT_TABLE_ITEMS,
-    payload: { ids, windowType, viewId: viewId || windowType },
-  };
-}
-
-export function deselectTableItems(ids, windowType, viewId) {
-  return {
-    type: DESELECT_TABLE_ITEMS,
-    payload: { ids, windowType, viewId },
-  };
-}
-
 // THUNK ACTIONS
 
 /*
@@ -659,7 +634,8 @@ export function createWindow(
       }
 
       if (documentId === 'NEW' && !isModal) {
-        dispatch(setLatestNewDocument(docId));
+        // TODO: This is not read anywhere so looks safe to remove
+        // dispatch(setLatestNewDocument(docId));
         // redirect immedietely
         return dispatch(replace(`/window/${windowType}/${docId}`));
       }
@@ -703,33 +679,31 @@ export function createWindow(
         dispatch(getWindowBreadcrumb(windowType));
       }
 
-      return (
-        getLayout('window', windowType, tabId, null, null, isAdvanced)
-          .then(({ data }) => {
-            const layoutTabs = data.tabs;
+      return getLayout('window', windowType, tabId, null, null, isAdvanced)
+        .then(({ data }) => {
+          const layoutTabs = data.tabs;
 
-            if (layoutTabs) {
-              Object.values(layoutTabs).forEach((tab) => {
-                const { tabId } = tab;
-                const tableId = getTableId({
-                  windowId: windowType,
-                  docId,
-                  tabId,
-                });
-                const tableData = {
-                  windowType,
-                  docId,
-                  tabId,
-                  ...tab,
-                };
-                dispatch(updateTabTable(tableId, tableData));
+          if (layoutTabs) {
+            Object.values(layoutTabs).forEach((tab) => {
+              const { tabId } = tab;
+              const tableId = getTableId({
+                windowId: windowType,
+                docId,
+                tabId,
               });
-            }
+              const tableData = {
+                windowType,
+                docId,
+                tabId,
+                ...tab,
+              };
+              dispatch(updateTabTable(tableId, tableData));
+            });
+          }
 
-            dispatch(initLayoutSuccess(data, getScope(isModal)));
-          })
-          .catch((e) => Promise.reject(e))
-      );
+          dispatch(initLayoutSuccess(data, getScope(isModal)));
+        })
+        .catch((e) => Promise.reject(e));
     });
   };
 }
@@ -1387,7 +1361,9 @@ export function handleProcessResponse(response, type, id) {
 
             break;
           case 'selectViewRows':
-            await dispatch(selectTableItems(action.rowIds, action.windowId));
+            console.error('PROCESS selectViewRows handle selection')
+            // TODO: Check if we have parameters to call `updateTableSelection` here
+            // await dispatch(selectTableItems(action.rowIds, action.windowId));
 
             break;
         }
