@@ -1,5 +1,4 @@
 import update from 'immutability-helper';
-// import * as _ from 'lodash';
 import React, { PureComponent } from 'react';
 import { connect } from 'react-redux';
 
@@ -8,20 +7,15 @@ import { getTableId, getTable } from '../reducers/tables';
 
 import {
   updateTableSelection,
+  deselectTableItems,
   collapseTableRow,
 } from '../actions/TableActions';
-import {
-  deleteLocal,
-  openModal,
-  deselectTableItems,
-} from '../actions/WindowActions';
+import { deleteLocal, openModal } from '../actions/WindowActions';
 
 import { containerPropTypes } from '../utils/tableHelpers';
 import { mapIncluded } from '../utils/documentListHelper';
 
 import Table from '../components/table/Table';
-
-const EMPTY_ARRAY = [];
 
 class TableContainer extends PureComponent {
   constructor(props) {
@@ -111,10 +105,10 @@ class TableContainer extends PureComponent {
       }
     }
 
-    updateTableSelection({
-      tableId: getTableId({ windowId, viewId, docId, tabId }),
-      ids: newSelected,
-    });
+    updateTableSelection(
+      getTableId({ windowId, viewId, docId, tabId }),
+      newSelected
+    );
 
     return newSelected;
   };
@@ -129,28 +123,26 @@ class TableContainer extends PureComponent {
 
   handleDeselect = (id) => {
     const { deselectTableItems, windowId, viewId, selected } = this.props;
+    const tableId = getTableId({ windowId, viewId });
     const index = selected.indexOf(id);
 
-    // TODO: Move to redux only
+    // TODO: Do we need this returned value ? Maybe we can handle
+    // this in redux only?
     const newSelected = update(selected, { $splice: [[index, 1]] });
 
     if (!newSelected.length) {
-      // TODO: Shouldn't this use `updateTableSelection` ?
-      deselectTableItems([id], windowId, viewId);
+      deselectTableItems(tableId, [id]);
     }
 
     return newSelected;
   };
 
   handleDeselectAll = (callback) => {
-    const { updateTableSelection, windowId, viewId, docId, tabId } = this.props;
+    const { deselectTableItems, windowId, viewId, docId, tabId } = this.props;
 
     callback && callback();
 
-    updateTableSelection({
-      tableId: getTableId({ windowId, viewId, docId, tabId }),
-      ids: EMPTY_ARRAY,
-    });
+    deselectTableItems(getTableId({ windowId, viewId, docId, tabId }), []);
   };
 
   showSelectedIncludedView = (selected) => {
@@ -312,6 +304,7 @@ const mapStateToProps = (state, props) => {
     indentSupported: table.indentSupported,
     collapsible: table.collapsible,
     keyProperty: table.keyProperty,
+    size: table.size,
 
     allowShortcut: state.windowHandler.allowShortcut,
     allowOutsideClick: state.windowHandler.allowOutsideClick,

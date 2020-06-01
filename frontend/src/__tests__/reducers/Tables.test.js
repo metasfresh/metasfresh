@@ -150,7 +150,7 @@ describe('Tables reducer', () => {
       length: 1,
     });
 
-    const actions = [updateTableSelection({ tableId: id, ids: [100000] })];
+    const actions = [updateTableSelection(id, [100000])];
     const state = actions.reduce(reducer, initialStateData);
 
     expect(state).toEqual(

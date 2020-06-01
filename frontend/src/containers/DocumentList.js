@@ -12,6 +12,8 @@ import {
   getViewRowsByIds,
 } from '../api';
 import { getTableId } from '../reducers/tables';
+import { getSelectionDirect } from '../reducers/windowHandler';
+
 import {
   addViewLocationData,
   createView,
@@ -23,7 +25,12 @@ import {
   deleteView,
   updateViewData,
 } from '../actions/ViewActions';
-import { deleteTable } from '../actions/TableActions';
+import {
+  deleteTable,
+  updateTableSelection,
+  updateGridTableData,
+  deselectTableItems,
+} from '../actions/TableActions';
 import { clearAllFilters } from '../actions/FiltersActions';
 import {
   closeListIncludedView,
@@ -35,12 +42,12 @@ import {
 import {
   updateRawModal,
   indicatorState,
-  selectTableItems,
-  deselectTableItems,
-  removeSelectedTableItems,
+  // selectTableItems,
+  // deselectTableItems,
+  // removeSelectedTableItems,
 } from '../actions/WindowActions';
 import { connectWS, disconnectWS } from '../utils/websockets';
-import { getSelectionDirect } from '../reducers/windowHandler';
+
 import {
   DLpropTypes,
   DLmapStateToProps,
@@ -192,7 +199,13 @@ class DocumentListContainer extends Component {
    * @summary ToDo: Describe the method.
    */
   connectWebSocket = (customViewId) => {
-    const { windowId, deselectTableItems, updateViewData } = this.props;
+    const {
+      windowId,
+      deselectTableItems,
+      updateViewData,
+      updateGridTableData,
+      table,
+    } = this.props;
     const viewId = customViewId ? customViewId : this.props.viewId;
 
     connectWS.call(this, `/view/${viewId}`, (msg) => {
@@ -201,11 +214,14 @@ class DocumentListContainer extends Component {
       if (changedIds) {
         getViewRowsByIds(windowId, viewId, changedIds.join()).then(
           (response) => {
+            const tableId = getTableId({ windowId, viewId });
+            // const toRows = getTable(tableId);
+            const toRows = table.rows;
 
             // TODO: Rewrite to use table reducers
-            const { reduxData } = this.props;
+            // const { reduxData } = this.props;
             const { pageColumnInfosByFieldName, filtersActive } = this.state;
-            const toRows = reduxData.rowData.get('1').toArray();
+            // const toRows = reduxData.rowData.get('1').toArray();
 
             // merge changed rows with data in the store
             const { rows, removedRows } = mergeRows({
@@ -216,7 +232,7 @@ class DocumentListContainer extends Component {
             });
 
             if (removedRows.length) {
-              deselectTableItems(removedRows, windowId, viewId);
+              deselectTableItems(tableId, removedRows);
             } else {
               if (filtersActive.size) {
                 this.filterCurrentView();
@@ -225,24 +241,35 @@ class DocumentListContainer extends Component {
               // force updating actions
               this.updateQuickActions();
             }
+            updateGridTableData(tableId, rows);
 
+            // TODO: Remove
             updateViewData(windowId, rows);
           }
         );
       }
 
       if (fullyChanged === true) {
-        const { selectTableItems, windowId, selections, viewId } = this.props;
-        const selection = getSelectionDirect(selections, windowId, viewId);
+        const {
+          deselectTableItems,
+          windowId,
+          // selections,
+          viewId,
+        } = this.props;
+        // const selection = getSelectionDirect(selections, windowId, viewId);
+        const tableId = getTableId({ windowId, viewId });
 
         // TODO: Use Table's AC
         // Reload Attributes after QuickAction is done
-        selection.length &&
-          selectTableItems({
-            windowType: windowId,
-            viewId,
-            ids: [selection[0]],
-          });
+        // selection.length &&
+        // selectTableItems({
+        //   windowType: windowId,
+        //   viewId,
+        //   ids: [selection[0]],
+        // });
+
+        // TODO: This should be nulled by updated rows anyway. Check if that's true.
+        deselectTableItems(tableId, []);
 
         this.browseView();
         this.updateQuickActions();
@@ -264,27 +291,28 @@ class DocumentListContainer extends Component {
    * @method loadSupportAttributeFlag
    * @summary Load supportAttribute of the selected row from the table.
    */
+   // TODO: FIXIT FELIX
   loadSupportAttributeFlag = ({ selected }) => {
-    const {
-      reduxData: { rowData },
-    } = this.props;
+    // const {
+    //   reduxData: { rowData },
+    // } = this.props;
 
-    if (!rowData) {
-      return;
-    }
-    const rows = flattenRows(rowData.get('1'));
+    // if (!rowData) {
+    //   return;
+    // }
+    // const rows = flattenRows(rowData.get('1'));
 
-    if (selected.length === 1) {
-      const selectedRow = rows.find((row) => row.id === selected[0]);
+    // if (selected.length === 1) {
+    //   const selectedRow = rows.find((row) => row.id === selected[0]);
 
-      this.setState({
-        supportAttribute: selectedRow && selectedRow.supportAttributes,
-      });
-    } else {
-      this.setState({
-        supportAttribute: false,
-      });
-    }
+    //   this.setState({
+    //     supportAttribute: selectedRow && selectedRow.supportAttributes,
+    //   });
+    // } else {
+    //   this.setState({
+    //     supportAttribute: false,
+    //   });
+    // }
   };
 
   // TODO: I think this should be stored in redux too
@@ -478,12 +506,14 @@ class DocumentListContainer extends Component {
       isIncluded,
       fetchDocument,
       indicatorState,
-      selectTableItems,
+      // selectTableItems,
+      updateTableSelection,
       updateRawModal,
       viewId,
       isModal,
       rawModalVisible,
     } = this.props;
+    const tableId = getTableId({ windowId, viewId: id });
 
     indicatorState('pending');
 
@@ -512,6 +542,8 @@ class DocumentListContainer extends Component {
       .then((response) => {
         const result = response.result;
         const resultById = {};
+
+        // TODO: purge, use redux
         const selection = getSelectionDirect(selections, windowId, viewId);
         const forceSelection =
           (type === 'includedView' || isIncluded) &&
@@ -559,11 +591,12 @@ class DocumentListContainer extends Component {
               const selection = [result[0].id];
 
               // TODO: Remove or use `updateTableSelection`
-              selectTableItems({
-                windowType: windowId,
-                viewId,
-                ids: selection,
-              });
+              // selectTableItems({
+              //   windowType: windowId,
+              //   viewId,
+              //   ids: selection,
+              // });
+              updateTableSelection(tableId, selection);
             }
           });
 
@@ -868,12 +901,12 @@ export default connect(
     setListId,
     push,
     updateRawModal,
-    selectTableItems,
+    updateTableSelection,
     deselectTableItems,
-    removeSelectedTableItems,
     updateViewData,
     fetchLocationConfig,
     clearAllFilters,
+    updateGridTableData,
   },
   null,
   { forwardRef: true }

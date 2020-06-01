@@ -247,6 +247,8 @@ class Table extends PureComponent {
         return;
       }
 
+      console.log('DESELECT ALL ?')
+
       onDeselectAll();
 
       if (showIncludedViewOnSelect) {

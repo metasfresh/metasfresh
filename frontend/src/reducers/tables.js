@@ -1,5 +1,5 @@
 import produce from 'immer';
-import { get } from 'lodash';
+import { get, difference } from 'lodash';
 import { createSelector } from 'reselect';
 
 import * as types from '../constants/ActionTypes';
@@ -99,15 +99,24 @@ const reducer = produce((draftState, action) => {
     case types.CREATE_TABLE: {
       const { id, data } = action.payload;
       const newLength = draftState.length + 1;
+      let updatedSelected = {};
+
+      if (data.rows) {
+        updatedSelected = {
+          selected: [data.rows[0][data.keyProperty]],
+        };
+      }
 
       draftState[id] = {
         ...initialTableState,
         ...data,
+        ...updatedSelected,
       };
       draftState.length = newLength;
 
       return;
     }
+
     case types.UPDATE_TABLE: {
       const { id, data } = action.payload;
 
@@ -118,7 +127,7 @@ const reducer = produce((draftState, action) => {
 
       if (data.rows) {
         updatedSelected = {
-          selected: [data.rows[0]],
+          selected: [data.rows[0][data.keyProperty]],
         };
       }
 
@@ -130,6 +139,7 @@ const reducer = produce((draftState, action) => {
 
       return;
     }
+
     case types.DELETE_TABLE: {
       const { id } = action.payload;
       const newLength = draftState.length - 1;
@@ -140,27 +150,66 @@ const reducer = produce((draftState, action) => {
       return;
     }
 
-    case types.UPDATE_TABLE_SELECTION: {
-      const { id, selection } = action.payload;
+    case types.UPDATE_TABLE_DATA: {
+      const { id, rows } = action.payload;
+      const currentSelected = draftState[id].selected;
+      const selectionValid = doesSelectionExist({
+        data: rows,
+        selected: currentSelected,
+      });
+      let updatedSelected = {};
+
+      if (!selectionValid) {
+        updatedSelected = {
+          selected: rows[0],
+        };
+      }
+
       draftState[id] = {
         ...draftState[id],
-        selected: selection,
+        rows,
+        ...updatedSelected,
       };
 
-    // let selectionValid = false;
-    // if (rowData.has('1')) {
-    //   selectionValid = doesSelectionExist({
-    //     data: rowData.get('1').toJS(),
-    //     selected,
-    //     hasIncluded,
-    //   });
-    // }
+      return;
+    }
+
+    case types.UPDATE_TABLE_SELECTION: {
+      const { id, selection } = action.payload;
+
+      const selectionValid = doesSelectionExist({
+        data: draftState[id].rows,
+        selected: selection,
+        // hasIncluded,
+      });
+
+      if (selectionValid) {
+        draftState[id] = {
+          ...draftState[id],
+          selected: selection,
+        };
+      }
 
       /**
        * TODO: for Kuba to fix when refactoring the Table component => this
        * TODO: has to be fixed to just be draftState[id].selected = selection . For that pls make sure that this action is done when
        * TODO: data exists in the draftState[id] (table structure for the corresponding id already present)
        */
+      return;
+    }
+
+    case types.DESELECT_TABLE_ITEMS: {
+      const { id, selection } = action.payload;
+
+      if (selection.length) {
+        draftState[id].selected = difference(
+          draftState[id].selected,
+          selection
+        );
+      } else {
+        draftState[id].selected = [];
+      }
+
       return;
     }
 

@@ -40,6 +40,16 @@ export function deleteTable(id) {
 }
 
 /**
+ * Update table rows
+ */
+function updateTableData(id, rows) {
+  return {
+    type: types.UPDATE_TABLE_DATA,
+    payload: { id, rows },
+  };
+}
+
+/**
  * @method setActiveSort
  * @summary Change the value of the `activeSort` setting for specified table
  * @todo rename to `setActiveSort` once we switch to tables driven by redux
@@ -54,10 +64,21 @@ export function setActiveSort(id, active) {
 /**
  * Update table selection - select items
  */
-export function updateTableSelection({ tableId, ids }) {
+export function updateTableSelection(id, selection) {
   return {
     type: types.UPDATE_TABLE_SELECTION,
-    payload: { id: tableId, selection: ids },
+    payload: { id, selection },
+  };
+}
+
+/**
+ * Update table selection - deselect items or deselect all if an empty `ids`
+ * array is provided
+ */
+export function deselectTableItems(id, selection) {
+  return {
+    type: types.DESELECT_TABLE_ITEMS,
+    payload: { id, selection },
   };
 }
 
@@ -171,6 +192,7 @@ export function updateGridTable(tableId, tableResponse) {
   return (dispatch, getState) => {
     const state = getState();
 
+    // this check is only for unit tests purposes
     if (state.tables) {
       const tableExists = state.tables[tableId];
 
@@ -201,6 +223,8 @@ export function updateGridTable(tableId, tableResponse) {
             keyProperty,
           })
         );
+
+        return Promise.resolve(true);
       } else {
         const windowType = tableResponse.windowType || tableResponse.windowId;
         const tableLayout = getView(getState(), windowType).layout;
@@ -211,7 +235,7 @@ export function updateGridTable(tableId, tableResponse) {
           keyProperty: 'id',
         });
 
-        if (tableData.rows.length) {
+        if (tableData.rows.length && collapsible) {
           tableData.rows = flattenRows(tableData.rows);
         }
 
@@ -230,6 +254,41 @@ export function updateGridTable(tableId, tableResponse) {
           })
         );
       }
+
+      return Promise.resolve(true);
+    }
+
+    return Promise.resolve(false);
+  };
+}
+
+/*
+ * Update `tableId` rows and rebuild collapsed rows if necessary
+ */
+export function updateGridTableData(tableId, rows) {
+  return (dispatch, getState) => {
+    const state = getState();
+
+    if (state.tables) {
+      const table = state.tables[tableId];
+      const { collapsible, expandedDepth, keyProperty } = table;
+
+      if (rows.length && collapsible) {
+        rows = flattenRows(rows);
+      }
+
+      console.log('updateGridTableData: ');
+
+      dispatch(updateTableData(tableId, rows));
+      dispatch(
+        createCollapsedRows({
+          tableId,
+          rows,
+          collapsible,
+          expandedDepth,
+          keyProperty,
+        })
+      );
 
       return Promise.resolve(true);
     }
@@ -293,21 +352,14 @@ function createCollapsedRows({
     let collapsedRows = [];
 
     if (collapsible && rows.length) {
-      // TODO: Remove
-      try {
-        rows.forEach((row) => {
-          if (row.indent.length >= expandedDepth && row.includedDocuments) {
-            collapsedArrayMap = collapsedArrayMap.concat(
-              createCollapsedMap(row)
-            );
-            collapsedParentRows = collapsedParentRows.concat(row[keyProperty]);
-          } else if (row.indent.length > expandedDepth) {
-            collapsedRows = collapsedRows.concat(row[keyProperty]);
-          }
-        });
-      } catch (e) {
-        console.log('ERROR: ', e);
-      }
+      rows.forEach((row) => {
+        if (row.indent.length >= expandedDepth && row.includedDocuments) {
+          collapsedArrayMap = collapsedArrayMap.concat(createCollapsedMap(row));
+          collapsedParentRows = collapsedParentRows.concat(row[keyProperty]);
+        } else if (row.indent.length > expandedDepth) {
+          collapsedRows = collapsedRows.concat(row[keyProperty]);
+        }
+      });
     }
 
     if (collapsible) {
@@ -329,6 +381,10 @@ function createCollapsedRows({
 export function collapseTableRow({ tableId, collapse, node }) {
   return (dispatch, getState) => {
     const table = getTable(getState(), tableId);
+
+    // TODO: We're cloning those arrays, because they're frozen by
+    // immer in the reducer. In ideal case we should not reuse objects
+    // neither here nor in `createCollapsedMap`.
     let collapsedParentRows = cloneDeep(table.collapsedParentRows);
     let collapsedRows = cloneDeep(table.collapsedRows);
     let collapsedArrayMap = cloneDeep(table.collapsedArrayMap);
