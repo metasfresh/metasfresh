@@ -4,8 +4,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.stream.Stream;
 
-import org.compiere.model.I_AD_PInstance;
-import org.compiere.model.I_AD_Process;
+import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 import org.slf4j.MDC.MDCCloseable;
@@ -27,9 +26,9 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 
 import de.metas.logging.LogManager;
-import de.metas.logging.TableRecordMDC;
 import de.metas.process.PInstanceId;
 import de.metas.process.ProcessClassInfo;
+import de.metas.process.ProcessMDC;
 import de.metas.ui.web.cache.ETagResponseEntityBuilder;
 import de.metas.ui.web.config.WebConfig;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
@@ -118,6 +117,19 @@ public class ProcessRestController
 		this.documentsCollection = documentsCollection;
 	}
 
+	private IAutoCloseable putMDC(
+			@NonNull final ProcessId processId,
+			@NonNull final DocumentId pinstanceDocId)
+	{
+		final PInstanceId pinstanceId = PInstanceId.ofRepoIdOrNull(pinstanceDocId.toIntOr(-1));
+		return ProcessMDC.putProcessAndInstanceId(processId.toAdProcessId(), pinstanceId);
+	}
+
+	private MDCCloseable putMDC(@NonNull final ProcessId processId)
+	{
+		return ProcessMDC.putAdProcessId(processId.toAdProcessId());
+	}
+
 	private JSONOptions newJsonOptions()
 	{
 		return JSONOptions.of(userSession);
@@ -163,7 +175,7 @@ public class ProcessRestController
 	{
 		final ProcessId processId = ProcessId.fromJson(adProcessIdStr);
 
-		try (final MDCCloseable processMDC = TableRecordMDC.putTableRecordReference(I_AD_Process.Table_Name, processId.toAdProcessId()))
+		try (final MDCCloseable processMDC = putMDC(processId))
 		{
 			userSession.assertLoggedIn();
 
@@ -186,7 +198,7 @@ public class ProcessRestController
 	{
 		final ProcessId processId = ProcessId.fromJson(processIdStr);
 
-		try (final MDCCloseable processMDC = TableRecordMDC.putTableRecordReference(I_AD_Process.Table_Name, processId.toAdProcessId()))
+		try (final MDCCloseable processMDC = putMDC(processId))
 		{
 			userSession.assertLoggedIn();
 
@@ -233,8 +245,7 @@ public class ProcessRestController
 		final ProcessId processId = ProcessId.fromJson(processIdStr);
 		final DocumentId pinstanceId = DocumentId.of(pinstanceIdStr);
 
-		try (final MDCCloseable pinstanceMDC = TableRecordMDC.putTableRecordReference(I_AD_PInstance.Table_Name, PInstanceId.ofRepoIdOrNull(pinstanceId.toIntOr(-1)));
-				final MDCCloseable processMDC = TableRecordMDC.putTableRecordReference(I_AD_Process.Table_Name, processId.toAdProcessId()))
+		try (final IAutoCloseable mdcCloseable = putMDC(processId, pinstanceId))
 		{
 			userSession.assertLoggedIn();
 
@@ -254,8 +265,7 @@ public class ProcessRestController
 		final ProcessId processId = ProcessId.fromJson(processIdStr);
 		final DocumentId pinstanceId = DocumentId.of(pinstanceIdStr);
 
-		try (final MDCCloseable pinstanceMDC = TableRecordMDC.putTableRecordReference(I_AD_PInstance.Table_Name, PInstanceId.ofRepoIdOrNull(pinstanceId.toIntOr(-1)));
-				final MDCCloseable processMDC = TableRecordMDC.putTableRecordReference(I_AD_Process.Table_Name, processId.toAdProcessId()))
+		try (final IAutoCloseable mdcCloseable = putMDC(processId, pinstanceId))
 		{
 			userSession.assertLoggedIn();
 			Check.assumeNotEmpty(events, "events is not empty");
@@ -284,8 +294,7 @@ public class ProcessRestController
 		final ProcessId processId = ProcessId.fromJson(processIdStr);
 		final DocumentId pinstanceId = DocumentId.of(pinstanceIdStr);
 
-		try (final MDCCloseable pinstanceMDC = TableRecordMDC.putTableRecordReference(I_AD_PInstance.Table_Name, PInstanceId.ofRepoIdOrNull(pinstanceId.toIntOr(-1)));
-				final MDCCloseable processMDC = TableRecordMDC.putTableRecordReference(I_AD_Process.Table_Name, processId.toAdProcessId()))
+		try (final IAutoCloseable mdcCloseable = putMDC(processId, pinstanceId))
 		{
 			userSession.assertLoggedIn();
 
@@ -317,8 +326,7 @@ public class ProcessRestController
 		final ProcessId processId = ProcessId.fromJson(processIdStr);
 		final DocumentId pinstanceId = DocumentId.of(pinstanceIdStr);
 
-		try (final MDCCloseable pinstanceMDC = TableRecordMDC.putTableRecordReference(I_AD_PInstance.Table_Name, PInstanceId.ofRepoIdOrNull(pinstanceId.toIntOr(-1)));
-				final MDCCloseable processMDC = TableRecordMDC.putTableRecordReference(I_AD_Process.Table_Name, processId.toAdProcessId()))
+		try (final IAutoCloseable mdcCloseable = putMDC(processId, pinstanceId))
 		{
 			userSession.assertLoggedIn();
 
@@ -352,8 +360,7 @@ public class ProcessRestController
 		final ProcessId processId = ProcessId.fromJson(processIdStr);
 		final DocumentId pinstanceId = DocumentId.of(pinstanceIdStr);
 
-		try (final MDCCloseable pinstanceMDC = TableRecordMDC.putTableRecordReference(I_AD_PInstance.Table_Name, PInstanceId.ofRepoIdOrNull(pinstanceId.toIntOr(-1)));
-				final MDCCloseable processMDC = TableRecordMDC.putTableRecordReference(I_AD_Process.Table_Name, processId.toAdProcessId()))
+		try (final IAutoCloseable mdcCloseable = putMDC(processId, pinstanceId))
 		{
 			userSession.assertLoggedIn();
 
@@ -379,8 +386,7 @@ public class ProcessRestController
 		final ProcessId processId = ProcessId.fromJson(processIdStr);
 		final DocumentId pinstanceId = DocumentId.of(pinstanceIdStr);
 
-		try (final MDCCloseable pinstanceMDC = TableRecordMDC.putTableRecordReference(I_AD_PInstance.Table_Name, PInstanceId.ofRepoIdOrNull(pinstanceId.toIntOr(-1)));
-				final MDCCloseable processMDC = TableRecordMDC.putTableRecordReference(I_AD_Process.Table_Name, processId.toAdProcessId()))
+		try (final IAutoCloseable mdcCloseable = putMDC(processId, pinstanceId))
 		{
 			userSession.assertLoggedIn();
 
