@@ -35,6 +35,8 @@ export default class DocumentList extends Component {
       toggleWidth: 0,
       // in some scenarios we don't want to reload table data
       // after edit, as it triggers request, collapses rows and looses selection
+      // TODO: This value is not really used anywhere anymore, so it's either
+      // solved elsewhere, or doesn't work
       rowEdited: false,
     };
   }
@@ -161,13 +163,15 @@ export default class DocumentList extends Component {
       onShowIncludedViewOnSelect,
       onClearStaticFilters,
       onSortData,
-    } = this.props;
 
-    const { rowData, staticFilters, orderBy, queryLimitHit } = reduxData;
+      table,
+    } = this.props;
+    const { staticFilters, orderBy, queryLimitHit } = reduxData;
     const { rowEdited, clickOutsideLock, toggleWidth } = this.state;
 
     // TODO: This can probably be handled with redux state query
-    let { selected, childSelected, parentSelected } = onGetSelected();
+    let { childSelected, parentSelected } = onGetSelected();
+    const selected = table.selected;
     const modalType = modal ? modal.modalType : null;
     const stopShortcutPropagation =
       (isIncluded && !!selected) || (inModal && modalType === PROCESS_NAME);
@@ -186,6 +190,7 @@ export default class DocumentList extends Component {
       );
     }
 
+    // TODO: Are there valid cases when we don't want to show those ?
     const showQuickActions = true;
     const showModalResizeBtn =
       layout && isModal && hasIncluded && hasShowIncluded;
@@ -255,7 +260,7 @@ export default class DocumentList extends Component {
                 />
               )}
 
-              {rowData && staticFilters && (
+              {staticFilters && (
                 <FiltersStatic
                   {...{ viewId }}
                   windowType={windowId}
@@ -288,7 +293,7 @@ export default class DocumentList extends Component {
               </div>
             )}
 
-            {rowData && showQuickActions && (
+            {showQuickActions && (
               <QuickActions
                 className="header-element align-items-center"
                 processStatus={processStatus}
@@ -332,10 +337,10 @@ export default class DocumentList extends Component {
           delay={300}
           iconSize={50}
           displayCondition={!!(layout && triggerSpinner)}
-          hideCondition={!!(rowData && !triggerSpinner)}
+          hideCondition={!triggerSpinner}
         />
 
-        {layout && rowData && (
+        {layout && (
           <div className="document-list-body">
             <div className="row table-row">
               <Table
