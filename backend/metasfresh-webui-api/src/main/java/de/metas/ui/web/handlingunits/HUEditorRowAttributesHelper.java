@@ -81,12 +81,13 @@ import lombok.NonNull;
 			@Nullable final WarehouseId warehouseId)
 	{
 		final I_M_Attribute attribute = attributeValue.getM_Attribute();
+		final DocumentFieldWidgetType widgetType = HUEditorRowAttributesHelper.extractWidgetType(attributeValue);
+		
 		final IModelTranslationMap attributeTrlMap = InterfaceWrapperHelper.getModelTranslationMap(attribute);
 		final ITranslatableString caption = attributeTrlMap.getColumnTrl(I_M_Attribute.COLUMNNAME_Name, attribute.getName());
 		final ITranslatableString description = attributeTrlMap.getColumnTrl(I_M_Attribute.COLUMNNAME_Description, attribute.getDescription());
 
-		final String attributeName = HUEditorRowAttributesHelper.extractAttributeName(attributeValue);
-		final DocumentFieldWidgetType widgetType = HUEditorRowAttributesHelper.extractWidgetType(attributeValue);
+		final String attributeName = HUEditorRowAttributesHelper.extractAttributeName(attribute);
 
 		return DocumentLayoutElementDescriptor.builder()
 				.setCaption(caption)
