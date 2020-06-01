@@ -114,10 +114,11 @@ import lombok.NonNull;
 	private static JSONDeviceDescriptor createDevice(final AttributeDeviceAccessor attributeDeviceAccessor)
 	{
 		final String deviceId = attributeDeviceAccessor.getPublicId();
+		
 		return JSONDeviceDescriptor.builder()
-				.setDeviceId(deviceId)
-				.setCaption(attributeDeviceAccessor.getDisplayName())
-				.setWebsocketEndpoint(DeviceWebSocketProducerFactory.buildDeviceTopicName(deviceId))
+				.deviceId(deviceId)
+				.caption(attributeDeviceAccessor.getDisplayName())
+				.websocketEndpoint(DeviceWebSocketProducerFactory.buildDeviceTopicName(deviceId))
 				.build();
 	}
 
