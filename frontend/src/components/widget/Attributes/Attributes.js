@@ -268,6 +268,7 @@ export default class Attributes extends Component {
       attributeType,
       tabIndex,
       readonly,
+      arrIndex,
     } = this.props;
     const { dropdown, data, layout } = this.state;
     const { value } = widgetData;
@@ -306,6 +307,7 @@ export default class Attributes extends Component {
             handlePatch={this.handlePatch}
             handleChange={this.handleChange}
             attrId={attrId}
+            arrIndex={arrIndex}
           />
         )}
       </div>
@@ -348,4 +350,5 @@ Attributes.propTypes = {
   viewId: PropTypes.any,
   fieldName: PropTypes.any,
   entity: PropTypes.any,
+  arrIndex: PropTypes.number,
 };

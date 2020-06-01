@@ -411,6 +411,7 @@ class TableItem extends Component {
       isGerman,
       isSelected,
       focusOnFieldName,
+      arrIndex,
     } = this.props;
     const {
       edited,
@@ -476,6 +477,7 @@ class TableItem extends Component {
                   keyProperty,
                   modalVisible,
                   isGerman,
+                  arrIndex,
                 }}
                 ref={(c) => {
                   if (c && isSelected) {
@@ -730,6 +732,7 @@ TableItem.propTypes = {
   selected: PropTypes.array,
   page: PropTypes.number,
   activeSort: PropTypes.bool,
+  arrIndex: PropTypes.number,
 };
 
 export default TableItem;

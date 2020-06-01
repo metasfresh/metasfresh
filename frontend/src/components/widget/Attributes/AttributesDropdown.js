@@ -131,6 +131,7 @@ class AttributesDropdown extends PureComponent {
    */
   render() {
     const { isVisible, dropdownCoords } = this.state;
+    const { arrIndex } = this.props;
     const BOTTOM_OFFSET = 230; // value from where we show the dropup
     return (
       <div
@@ -141,7 +142,8 @@ class AttributesDropdown extends PureComponent {
           {
             'attributes-dropup':
               dropdownCoords &&
-              window.innerHeight - dropdownCoords.y < BOTTOM_OFFSET,
+              window.innerHeight - dropdownCoords.y < BOTTOM_OFFSET &&
+              arrIndex > 1,
           }
         )}
       >
@@ -178,6 +180,7 @@ AttributesDropdown.propTypes = {
   handlePatch: PropTypes.func.isRequired,
   disableOnClickOutside: PropTypes.func.isRequired,
   enableOnClickOutside: PropTypes.func.isRequired,
+  arrIndex: PropTypes.number,
 };
 
 export default onClickOutside(AttributesDropdown);

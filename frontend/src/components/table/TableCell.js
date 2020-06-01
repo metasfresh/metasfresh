@@ -260,6 +260,7 @@ class TableCell extends PureComponent {
       modalVisible,
       onClickOutside,
       isGerman,
+      arrIndex,
     } = this.props;
     const widgetData = getWidgetData(item, isEditable, supportFieldEdit);
 
@@ -354,6 +355,7 @@ class TableCell extends PureComponent {
               listenOnKeysFalse,
               listenOnKeysTrue,
               onClickOutside,
+              arrIndex,
             }}
             clearValue={this.clearWidgetValue}
             entity={entityEffective}
@@ -431,6 +433,7 @@ TableCell.propTypes = {
   viewId: PropTypes.string,
   modalVisible: PropTypes.bool,
   docId: PropTypes.any,
+  arrIndex: PropTypes.number,
 };
 
 export default TableCell;
