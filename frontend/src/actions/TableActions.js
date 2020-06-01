@@ -64,10 +64,10 @@ export function setActiveSort(id, active) {
 /**
  * Update table selection - select items
  */
-export function updateTableSelection(id, selection) {
+export function updateTableSelection(id, selection, keyProperty) {
   return {
     type: types.UPDATE_TABLE_SELECTION,
-    payload: { id, selection },
+    payload: { id, selection, keyProperty },
   };
 }
 
@@ -211,8 +211,6 @@ export function updateGridTable(tableId, tableResponse) {
 
         const { rows, keyProperty } = tableData;
 
-        console.log('updateGridTable 1: ')//, tableData, tableResponse)
-
         dispatch(updateTable(tableId, tableData));
         dispatch(
           createCollapsedRows({
@@ -238,8 +236,6 @@ export function updateGridTable(tableId, tableResponse) {
         if (tableData.rows.length && collapsible) {
           tableData.rows = flattenRows(tableData.rows);
         }
-
-        console.log('updateGridTable 2: ')//, tableData, tableResponse)
 
         const { rows, collapsible, expandedDepth, keyProperty } = tableData;
 
@@ -277,18 +273,19 @@ export function updateGridTableData(tableId, rows) {
         rows = flattenRows(rows);
       }
 
-      console.log('updateGridTableData: ');
-
       dispatch(updateTableData(tableId, rows));
-      dispatch(
-        createCollapsedRows({
-          tableId,
-          rows,
-          collapsible,
-          expandedDepth,
-          keyProperty,
-        })
-      );
+
+      if (collapsible) {
+        dispatch(
+          createCollapsedRows({
+            tableId,
+            rows,
+            collapsible,
+            expandedDepth,
+            keyProperty,
+          })
+        );
+      }
 
       return Promise.resolve(true);
     }
