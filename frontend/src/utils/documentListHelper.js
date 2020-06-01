@@ -53,7 +53,6 @@ const DLpropTypes = {
   updateRawModal: PropTypes.func.isRequired,
   updateTableSelection: PropTypes.func.isRequired,
   deselectTableItems: PropTypes.func.isRequired,
-  updateViewData: PropTypes.func.isRequired,
   fetchLocationConfig: PropTypes.func.isRequired,
   clearAllFilters: PropTypes.func.isRequired,
 };
@@ -169,14 +168,15 @@ const filtersToMap = function(filtersArray) {
 const doesSelectionExist = function({
   data,
   selected,
-  hasIncluded = false,
+  // hasIncluded = false,
+  keyProperty = 'id',
 } = {}) {
   // When the rows are changing we should ensure
   // that selection still exist
   // TODO: I think this param can be removed altogether
-  if (hasIncluded) {
-    return true;
-  }
+  // if (hasIncluded) {
+  //   return true;
+  // }
 
   if (selected && selected[0] === 'all') {
     return true;
@@ -195,7 +195,7 @@ const doesSelectionExist = function({
     data.length &&
     selected &&
     selected[0] &&
-    getItemsByProperty(rows, 'id', selected[0]).length
+    getItemsByProperty(rows, keyProperty, selected[0]).length
   );
 };
 

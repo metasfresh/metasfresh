@@ -64,8 +64,6 @@ class TableContainer extends PureComponent {
 
     this._isMounted = false;
 
-    this.handleDeselectAll();
-
     if (showIncludedViewOnSelect && !isIncluded) {
       showIncludedViewOnSelect({
         showIncludedView: false,
@@ -94,7 +92,14 @@ class TableContainer extends PureComponent {
   };
 
   handleSelect = (ids) => {
-    const { updateTableSelection, windowId, viewId, docId, tabId } = this.props;
+    const {
+      updateTableSelection,
+      windowId,
+      viewId,
+      docId,
+      tabId,
+      keyProperty,
+    } = this.props;
     let newSelected = [];
 
     if (ids) {
@@ -107,7 +112,8 @@ class TableContainer extends PureComponent {
 
     updateTableSelection(
       getTableId({ windowId, viewId, docId, tabId }),
-      newSelected
+      newSelected,
+      keyProperty
     );
 
     return newSelected;
@@ -167,22 +173,9 @@ class TableContainer extends PureComponent {
     }
   };
 
-  handleItemChange = (rowId, prop, value) => {
-    const { mainTable, keyProperty, onRowEdited, rows } = this.props;
-
-    if (mainTable) {
-      if (!rows.length) return;
-
-      rows
-        .filter((row) => row[keyProperty] === rowId)
-        .map((item) => {
-          let field = item.fieldsByName[prop];
-
-          if (field) {
-            field.value = value;
-          }
-        });
-    }
+  // TODO: This reallydoesn't do anything. Check if it's still a valid solution
+  handleItemChange = () => {
+    const { onRowEdited } = this.props;
 
     onRowEdited && onRowEdited(true);
   };

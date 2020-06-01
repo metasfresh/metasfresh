@@ -1,4 +1,4 @@
-import produce from 'immer';
+import { produce, original } from 'immer';
 import { get, difference } from 'lodash';
 import { createSelector } from 'reselect';
 
@@ -175,39 +175,35 @@ const reducer = produce((draftState, action) => {
     }
 
     case types.UPDATE_TABLE_SELECTION: {
-      const { id, selection } = action.payload;
+      const { id, selection, keyProperty } = action.payload;
+      const rows = original(draftState[id].rows);
 
       const selectionValid = doesSelectionExist({
-        data: draftState[id].rows,
+        data: rows,
         selected: selection,
-        // hasIncluded,
+        keyProperty,
       });
 
       if (selectionValid) {
-        draftState[id] = {
-          ...draftState[id],
-          selected: selection,
-        };
+        draftState[id].selected = selection;
       }
 
-      /**
-       * TODO: for Kuba to fix when refactoring the Table component => this
-       * TODO: has to be fixed to just be draftState[id].selected = selection . For that pls make sure that this action is done when
-       * TODO: data exists in the draftState[id] (table structure for the corresponding id already present)
-       */
       return;
     }
 
     case types.DESELECT_TABLE_ITEMS: {
       const { id, selection } = action.payload;
 
-      if (selection.length) {
-        draftState[id].selected = difference(
-          draftState[id].selected,
-          selection
-        );
-      } else {
-        draftState[id].selected = [];
+      // just for precaution
+      if (draftState[id]) {
+        if (selection.length) {
+          draftState[id].selected = difference(
+            draftState[id].selected,
+            selection
+          );
+        } else {
+          draftState[id].selected = [];
+        }
       }
 
       return;
