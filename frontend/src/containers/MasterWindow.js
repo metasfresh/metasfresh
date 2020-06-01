@@ -94,14 +94,14 @@ class MasterWindowContainer extends Component {
       else {
         const { staleRowIds } = activeTab;
 
-        await this.getTabRow(activeTab.tabId, staleRowIds).then((res) => {
+        await this.getTabRows(activeTab.tabId, staleRowIds).then((res) => {
           this.mergeDataIntoIncludedTab(res);
         });
       }
     }
   }
 
-  getTabRow(tabId, rows) {
+  getTabRows(tabId, rows) {
     const {
       params: { windowType, docId },
     } = this.props;

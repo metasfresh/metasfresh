@@ -6,6 +6,7 @@ import currentDevice from 'current-device';
 import { getItemsByProperty, nullToEmptyStrings } from './index';
 import { getSelectionInstant } from '../reducers/windowHandler';
 import { viewState, getView } from '../reducers/viewHandler';
+import { getTable, getTableId } from '../reducers/tables';
 import { TIME_REGEX_TEST } from '../constants/Constants';
 
 /**
@@ -30,11 +31,31 @@ const DLpropTypes = {
   selections: PropTypes.object.isRequired,
   childSelected: PropTypes.array.isRequired,
   parentSelected: PropTypes.array.isRequired,
-  selected: PropTypes.array.isRequired,
   isModal: PropTypes.bool,
   inModal: PropTypes.bool,
   modal: PropTypes.object,
   rawModalVisible: PropTypes.bool,
+
+  resetView: PropTypes.func.isRequired,
+  deleteView: PropTypes.func.isRequired,
+  fetchDocument: PropTypes.func.isRequired,
+  fetchLayout: PropTypes.func.isRequired,
+  createView: PropTypes.func.isRequired,
+  filterView: PropTypes.func.isRequired,
+  deleteTable: PropTypes.func.isRequired,
+  setListIncludedView: PropTypes.func.isRequired,
+  indicatorState: PropTypes.func.isRequired,
+  closeListIncludedView: PropTypes.func.isRequired,
+  setListPagination: PropTypes.func.isRequired,
+  setListSorting: PropTypes.func.isRequired,
+  setListId: PropTypes.func.isRequired,
+  push: PropTypes.func.isRequired,
+  updateRawModal: PropTypes.func.isRequired,
+  updateTableSelection: PropTypes.func.isRequired,
+  deselectTableItems: PropTypes.func.isRequired,
+  updateViewData: PropTypes.func.isRequired,
+  fetchLocationConfig: PropTypes.func.isRequired,
+  clearAllFilters: PropTypes.func.isRequired,
 };
 
 /**
@@ -48,12 +69,12 @@ const DLmapStateToProps = (state, props) => {
     viewId: queryViewId,
     isModal,
     defaultViewId,
-    windowType,
+    windowId,
     refType: queryRefType,
     refId: queryRefId,
     refTabId: queryRefTabId,
   } = props;
-  const identifier = isModal ? defaultViewId : windowType;
+  const identifier = isModal ? defaultViewId : windowId;
   let master = getView(state, identifier);
 
   if (!master) {
@@ -69,6 +90,10 @@ const DLmapStateToProps = (state, props) => {
     viewId = props.defaultViewId;
   }
 
+  const tableId = getTableId({ windowId, viewId });
+  const table = getTable(state, tableId);
+
+  // TODO: Check if this is still a valid solution
   if (location.hash === '#notification') {
     viewId = null;
   }
@@ -77,6 +102,7 @@ const DLmapStateToProps = (state, props) => {
     page,
     sort,
     viewId,
+    table,
     reduxData: master,
     layout: master.layout,
     layoutPending: master.layoutPending,
@@ -84,11 +110,6 @@ const DLmapStateToProps = (state, props) => {
     refId: queryRefId,
     refTabId: queryRefTabId,
     selections: state.windowHandler.selections,
-    selected: getSelectionInstant(
-      state,
-      { ...props, windowId: props.windowType, viewId },
-      state.windowHandler.selectionsHash
-    ),
     childSelected:
       props.includedView && props.includedView.windowType
         ? getSelectionInstant(
@@ -115,7 +136,6 @@ const DLmapStateToProps = (state, props) => {
     modal: state.windowHandler.modal,
     rawModalVisible: state.windowHandler.rawModal.visible,
     filters: state.filters,
-    table: state.table,
   };
 };
 
@@ -140,7 +160,12 @@ const filtersToMap = function(filtersArray) {
   return filtersMap;
 };
 
-// TODO: This can probably be removed
+/**
+ * Check if current selection still exists in the provided data (used when
+ * updates happen)
+ * @todo TODO: rewrite this to not modify `initialMap`. This will also require
+ * changes in TableActions
+ */
 const doesSelectionExist = function({
   data,
   selected,
@@ -148,6 +173,7 @@ const doesSelectionExist = function({
 } = {}) {
   // When the rows are changing we should ensure
   // that selection still exist
+  // TODO: I think this param can be removed altogether
   if (hasIncluded) {
     return true;
   }
@@ -406,7 +432,8 @@ export function mapIncluded(node, indent, isParentLastChild = false) {
 
 /**
  * Create a flat array of collapsed rows ids including parents and children
- * @todo rewrite this to not modify `initialMap`.
+ * @todo TODO: rewrite this to not modify `initialMap`. This will also require
+ * changes in TableActions
  */
 export function createCollapsedMap(node, isCollapsed, initialMap) {
   let collapsedMap = [];
