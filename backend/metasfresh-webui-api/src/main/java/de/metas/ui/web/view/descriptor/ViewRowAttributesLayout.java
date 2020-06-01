@@ -2,10 +2,11 @@ package de.metas.ui.web.view.descriptor;
 
 import java.util.List;
 
-import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementDescriptor;
+import lombok.NonNull;
+import lombok.Value;
 
 /*
  * #%L
@@ -20,42 +21,27 @@ import de.metas.ui.web.window.descriptor.DocumentLayoutElementDescriptor;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
+@Value
 public final class ViewRowAttributesLayout
 {
-	public static final ViewRowAttributesLayout of(final List<DocumentLayoutElementDescriptor> elements)
+	public static ViewRowAttributesLayout of(@NonNull final List<DocumentLayoutElementDescriptor> elements)
 	{
 		return new ViewRowAttributesLayout(elements);
 	}
 
-	private final List<DocumentLayoutElementDescriptor> elements;
+	private final ImmutableList<DocumentLayoutElementDescriptor> elements;
 
-	private ViewRowAttributesLayout(final List<DocumentLayoutElementDescriptor> elements)
+	private ViewRowAttributesLayout(@NonNull final List<DocumentLayoutElementDescriptor> elements)
 	{
-		super();
 		this.elements = ImmutableList.copyOf(elements);
 	}
-
-	@Override
-	public String toString()
-	{
-		return MoreObjects.toStringHelper(this)
-				.add("elements", elements)
-				.toString();
-	}
-
-
-	public List<DocumentLayoutElementDescriptor> getElements()
-	{
-		return elements;
-	}
-
 }
