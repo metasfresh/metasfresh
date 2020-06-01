@@ -25,9 +25,6 @@ const MOBILE_TABLE_SIZE_LIMIT = 30; // subjective number, based on empiric testi
 const isMobileOrTablet =
   currentDevice.type === 'mobile' || currentDevice.type === 'tablet';
 
-// TODO: Remove when cleaning up
-let RENDERS = 0;
-
 class Table extends PureComponent {
   constructor(props) {
     super(props);
@@ -130,37 +127,20 @@ class Table extends PureComponent {
   };
 
   handleShortcutIndent = (collapse) => {
-    const {
-      // keyProperty,
-      selected,
-      rows,
-      // collapsedParentsRows,
-      onRowCollapse,
-    } = this.props;
+    const { selected, rows, onRowCollapse } = this.props;
     let node = null;
-    // let isCollapsed = false;
-
-    console.log('handleShortcutIndent')
 
     selected.length === 1 &&
       rows.map((item) => {
         if (item.id === selected[0]) {
           if (item.includedDocuments) {
-            // const keyProp = item[keyProperty];
-
             node = item;
-            // isCollapsed = collapsedParentsRows.indexOf(keyProp) > -1;
           }
         }
       });
 
     if (node) {
-      // TODO: ? Why we're calling it with the same values, but in ifs ?
-      // if (isCollapsed && expand) {
-      //   onRowCollapse(node, expand);
-      // } else if (!isCollapsed && !expand) {
-        onRowCollapse(node, collapse);
-      // }
+      onRowCollapse(node, collapse);
     }
   };
 
@@ -247,8 +227,6 @@ class Table extends PureComponent {
         return;
       }
 
-      console.log('DESELECT ALL ?')
-
       onDeselectAll();
 
       if (showIncludedViewOnSelect) {
@@ -270,8 +248,9 @@ class Table extends PureComponent {
       selected,
       rows,
       onShowSelectedIncludedView,
+      collapsedArrayMap,
     } = this.props;
-    const { listenOnKeys, collapsedArrayMap } = this.state;
+    const { listenOnKeys } = this.state;
 
     if (!listenOnKeys) {
       return;
@@ -622,9 +601,6 @@ class Table extends PureComponent {
   };
 
   render() {
-    RENDERS += 1;
-    console.log('Render: ', RENDERS);
-
     const {
       columns,
       windowId,
@@ -654,7 +630,6 @@ class Table extends PureComponent {
       blurOnIncludedView,
       toggleState,
       spinnerVisible,
-
       rows,
       selected,
       onHandleZoomInto,
@@ -662,7 +637,6 @@ class Table extends PureComponent {
       onSelectAll,
       onDeselectAll,
       onGetAllLeaves,
-
       tableRefreshToggle,
     } = this.props;
 
@@ -802,8 +776,6 @@ class Table extends PureComponent {
               rowLength={rows.length}
               handleSelectAll={onSelectAll}
               handleSelectRange={onSelect}
-              TODO={1 /* SHOULD THIS BE onDeselect ? */}
-              deselect={onDeselectAll}
               onDeselectAll={onDeselectAll}
             />
           </div>
