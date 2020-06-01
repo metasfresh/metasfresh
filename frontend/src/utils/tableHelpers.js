@@ -3,16 +3,16 @@ import PropTypes from 'prop-types';
 
 export const containerPropTypes = {
   // from <DocumentList>
-  windowId: PropTypes.number,
+  // TODO: This needs to be fixed in all child components
+  // windowId: PropTypes.number,
+  // docId: PropTypes.number,
   viewId: PropTypes.string,
   tabId: PropTypes.string,
-  docId: PropTypes.number,
   autofocus: PropTypes.bool,
   rowEdited: PropTypes.bool,
   onSelectionChanged: PropTypes.func,
   onRowEdited: PropTypes.func,
   defaultSelected: PropTypes.array,
-  disableOnClickOutside: PropTypes.bool,
   limitOnClickOutside: PropTypes.bool,
   supportOpenRecord: PropTypes.bool,
 
@@ -62,6 +62,9 @@ export function constructorFn(props) {
     promptOpen: false,
     isBatchEntry: false,
     pendingInit: true,
+
+    // TODO: This is not read anywhere. Check if the solution works or needs
+    // adjustments
     rowEdited,
     tableRefreshToggle: false,
   };

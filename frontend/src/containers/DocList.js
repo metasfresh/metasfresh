@@ -5,10 +5,6 @@ import classnames from 'classnames';
 
 import { updateUri } from '../actions/AppActions';
 import { getWindowBreadcrumb } from '../actions/MenuActions';
-// import {
-//   setLatestNewDocument,
-// } from '../actions/WindowActions';
-// import { updateTableSelection } from '../actions/TableActions';
 import Container from '../components/Container';
 import DocumentList from './DocumentList';
 import Overlay from '../components/app/Overlay';
@@ -23,27 +19,9 @@ const EMPTY_OBJECT = {};
  */
 class DocList extends PureComponent {
   componentDidMount = () => {
-    const {
-      windowId,
-      // latestNewDocument,
-      // query,
-      getWindowBreadcrumb,
-      // setLatestNewDocument,
-      // updateTableSelection,
-      // selectTableItems,
-    } = this.props;
+    const { windowId, getWindowBreadcrumb } = this.props;
 
     getWindowBreadcrumb(windowId);
-
-    // TODO: Should we handle this in the reducer ?
-    // if (latestNewDocument) {
-    //   // selectTableItems({
-    //   //   windowType: windowId,
-    //   //   viewId: query.viewId,
-    //   //   ids: [latestNewDocument],
-    //   // });
-    //   setLatestNewDocument(null);
-    // }
   };
 
   componentDidUpdate = (prevProps) => {
@@ -175,10 +153,8 @@ class DocList extends PureComponent {
 /**
  * @typedef {object} Props Component props
  * @prop {array} breadcrumb
- * @prop {func} dispatch
  * @prop {object} includedView
  * @prop {string} indicator
- * @prop {*} latestNewDocument
  * @prop {object} modal
  * @prop {object} overlay
  * @prop {string} pathname
@@ -190,7 +166,6 @@ class DocList extends PureComponent {
  */
 DocList.propTypes = {
   includedView: PropTypes.object,
-  // latestNewDocument: PropTypes.any,
   modal: PropTypes.object.isRequired,
   overlay: PropTypes.object,
   processStatus: PropTypes.string.isRequired,
@@ -199,8 +174,6 @@ DocList.propTypes = {
   rawModal: PropTypes.object.isRequired,
   windowId: PropTypes.string,
   getWindowBreadcrumb: PropTypes.func.isRequired,
-  // selectTableItems: PropTypes.func.isRequired,
-  // setLatestNewDocument: PropTypes.func.isRequired,
   updateUri: PropTypes.func.isRequired,
 };
 
@@ -214,7 +187,6 @@ const mapStateToProps = (state) => {
     modal: state.windowHandler.modal,
     rawModal: state.windowHandler.rawModal,
     overlay: state.windowHandler.overlay,
-    // latestNewDocument: state.windowHandler.latestNewDocument,
     includedView: state.listHandler.includedView.windowType
       ? state.listHandler.includedView
       : null,
@@ -227,9 +199,6 @@ export default connect(
   mapStateToProps,
   {
     getWindowBreadcrumb,
-    // selectTableItems,
-    // updateTableSelection,
-    // setLatestNewDocument,
     updateUri,
   }
 )(DocList);

@@ -285,6 +285,8 @@ class TableItem extends Component {
 
   /*
    * This function is called when cell's value changes
+   *
+   * TODO: Do we still need to call `onItemChange` ?
    */
   handleCellValueChange = (rowId, property, value, ret) => {
     const { onItemChange } = this.props;

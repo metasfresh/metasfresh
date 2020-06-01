@@ -263,12 +263,6 @@ export const FILTER_VIEW_ERROR = 'FILTER_VIEW_ERROR';
 
 /**
  * @constant
- * @type {string} Update list data
- */
-export const UPDATE_VIEW_DATA = 'UPDATE_VIEW_DATA';
-
-/**
- * @constant
  * @type {string} Success when getting location config
  */
 export const FETCH_LOCATION_CONFIG_SUCCESS = 'FETCH_LOCATION_CONFIG_SUCCESS';

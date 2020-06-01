@@ -503,15 +503,6 @@ QuickActions.propTypes = {
   onInvalidViewId: PropTypes.func,
 };
 
-// const mapStateToProps = (state, ownProps) => {
-//   const { viewId, windowType } = ownProps;
-//   const key = `${windowType}${viewId ? `-${viewId}` : ''}`;
-
-//   return {
-//     actions: state.windowHandler.quickActions[key] || [],
-//   };
-// };
-
 const mapStateToProps = (state, { viewId, windowType }) => ({
   actions: getQuickactions(state, { viewId, windowType }),
 });

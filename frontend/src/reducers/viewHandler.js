@@ -1,4 +1,3 @@
-import { Map as iMap, List as iList } from 'immutable';
 import { get } from 'lodash';
 import { createSelector } from 'reselect';
 
@@ -16,7 +15,6 @@ import {
   FILTER_VIEW_PENDING,
   FILTER_VIEW_SUCCESS,
   FILTER_VIEW_ERROR,
-  UPDATE_VIEW_DATA,
   FETCH_LOCATION_CONFIG_SUCCESS,
   FETCH_LOCATION_CONFIG_ERROR,
   RESET_VIEW,
@@ -30,10 +28,6 @@ export const viewState = {
   layoutPending: false,
   layoutError: null,
   layoutNotFound: false,
-
-  // rowData is an immutable Map with tabId's as keys, and Lists as values.
-  // List's elements are plain objects for now
-  rowData: iMap(),
   locationData: null,
   docId: null,
   type: null,
@@ -44,7 +38,6 @@ export const viewState = {
   headerProperties: null,
   pageLength: 0,
   page: 1,
-  size: 0,
   description: null,
   sort: null,
   staticFilters: null,
@@ -163,7 +156,7 @@ export default function viewHandler(state = initialState, action) {
           firstRow,
           headerProperties,
           pageLength,
-          result,
+          // result,
           size,
           type,
           viewId,
@@ -184,7 +177,6 @@ export default function viewHandler(state = initialState, action) {
         firstRow,
         headerProperties,
         pageLength,
-        size,
         type,
         viewId,
         windowId,
@@ -193,7 +185,6 @@ export default function viewHandler(state = initialState, action) {
         staticFilters,
         queryLimit,
         queryLimitHit,
-        rowData: iMap({ [`${action.payload.tabId || 1}`]: iList(result) }),
         pending: false,
       };
 
@@ -327,23 +318,6 @@ export default function viewHandler(state = initialState, action) {
             pending: false,
             notFound: true,
             error,
-          },
-        },
-      };
-    }
-    case UPDATE_VIEW_DATA: {
-      const { id, rows } = action.payload;
-      const tabId = action.payload.tabId || '1';
-      const view = getLocalView(state, id);
-      const updatedRowsData = view.rowData.set(tabId, iList(rows));
-
-      return {
-        ...state,
-        views: {
-          ...state.views,
-          [`${id}`]: {
-            ...view,
-            rowData: updatedRowsData,
           },
         },
       };
