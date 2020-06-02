@@ -81,12 +81,12 @@ public class PaymentAndInvoiceRowsRepo
 	{
 		final ZonedDateTime evaluationDate = SystemTime.asZonedDateTime();
 
-		final List<InvoiceToAllocate> invoicesToAllocate = paymentAllocationRepo.retrieveInvoicesToAllocate(InvoiceToAllocateQuery.builder()
+		final List<PaymentToAllocate> paymentsToAllocate = paymentAllocationRepo.retrievePaymentsToAllocate(PaymentToAllocateQuery.builder()
 				.bpartnerId(bPartnerId)
 				.evaluationDate(evaluationDate)
 				.build());
 
-		final List<PaymentToAllocate> paymentsToAllocate = paymentAllocationRepo.retrievePaymentsToAllocate(PaymentToAllocateQuery.builder()
+		final List<InvoiceToAllocate> invoicesToAllocate = paymentAllocationRepo.retrieveInvoicesToAllocate(InvoiceToAllocateQuery.builder()
 				.bpartnerId(bPartnerId)
 				.evaluationDate(evaluationDate)
 				.build());
