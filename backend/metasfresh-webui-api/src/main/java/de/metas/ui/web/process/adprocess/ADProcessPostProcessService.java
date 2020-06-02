@@ -133,12 +133,12 @@ public class ADProcessPostProcessService
 		if (processExecutionResult.isRefreshAllAfterExecution())
 		{
 			if (viewSupplier.get() != null)
-			{
+			{ // multible rows selected
 				viewSupplier.get().invalidateAll();
 				viewInvalidateAllCalled = true;
 			}
 			else if (currentSingleSelectedDocumentRef != null)
-			{
+			{ // single row selected
 				documentsCollection.invalidateDocumentByRecordId(
 						currentSingleSelectedDocumentRef.getTableName(),
 						currentSingleSelectedDocumentRef.getRecord_ID());
