@@ -128,15 +128,28 @@ public class PaymentAndInvoiceRowsRepo
 			@NonNull final List<PaymentToAllocate> paymentsToAllocate,
 			@NonNull final ZonedDateTime evaluationDate)
 	{
-		final ImmutableList<PaymentRow> rows = paymentsToAllocate
+		final ImmutableList<PaymentRow> rowsMaybeEmpty = paymentsToAllocate
 				.stream()
 				.map(this::toPaymentRow)
 				.collect(ImmutableList.toImmutableList());
 
+		final ImmutableList<PaymentRow> rowsNotEmpty;
+		if (rowsMaybeEmpty.isEmpty())
+		{
+			// Problem: the right table is an includedView of the main table row (left table). If there are no payments, the invoices table is not shown even if we have invoices.
+			// Solution (workaround): this dummy row is needed because we want to display the right table (invoices) at all times
+			// see de.metas.ui.web.payment_allocation.PaymentRow.isSingleColumn and de.metas.ui.web.payment_allocation.PaymentRow.getSingleColumnCaption
+			rowsNotEmpty = ImmutableList.of(PaymentRow.DEFAULT_PAYMENT_ROW);
+		}
+		else
+		{
+			rowsNotEmpty = rowsMaybeEmpty;
+		}
+
 		return PaymentRows.builder()
 				.repository(this)
 				.evaluationDate(evaluationDate)
-				.initialRows(rows)
+				.initialRows(rowsNotEmpty)
 				.build();
 	}
 
