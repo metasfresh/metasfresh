@@ -1,5 +1,5 @@
-DROP VIEW IF EXISTS MD_Stock_From_HUs_V
-;
+
+DROP VIEW IF EXISTS MD_Stock_From_HUs_V;
 
 CREATE VIEW MD_Stock_From_HUs_V AS
 SELECT COALESCE(s.AD_Client_ID, hu_agg.AD_Client_ID) AS AD_Client_ID,
@@ -54,6 +54,6 @@ FROM MD_Stock s
 
 COMMENT ON VIEW MD_Stock_From_HUs_V IS
     'This view is used by the process MD_Stock_Reset_From_M_HUs to initialize or reset the MD_stock table.
-    Note that due to the outer join, existing MD_Stock records that currently don''t have any HU-storage are also represented (with qty=0)
+    Note that due to the outer join plus coalesce, existing MD_Stock records that currently don''t have any HU-storage are also represented (with qty=0)
     Belongs to issue "Show onhand quantity in new WebUI MRP Product Info Window" https://github.com/metasfresh/metasfresh-webui-api/issues/762'
 ;
