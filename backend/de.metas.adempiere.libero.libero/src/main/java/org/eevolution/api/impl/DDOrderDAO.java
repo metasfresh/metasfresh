@@ -249,7 +249,7 @@ public class DDOrderDAO implements IDDOrderDAO
 
 
 	@NonNull
-	public I_DD_OrderLine getLineById(final DDOrderLineId ddOrderLineID)
+	public I_DD_OrderLine getLineById(@NonNull final DDOrderLineId ddOrderLineID)
 	{
 		final I_DD_OrderLine record = InterfaceWrapperHelper.load(ddOrderLineID, I_DD_OrderLine.class);
 
