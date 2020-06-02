@@ -71,7 +71,7 @@ public class PaymentsViewFactory implements IViewFactory, IViewsIndexStorage
 	private final PaymentAndInvoiceRowsRepo rowsRepo;
 	private final DefaultViewsRepositoryStorage views = new DefaultViewsRepositoryStorage(TimeUnit.HOURS.toMinutes(1));
 
-	public static final String PARAMETER_TYPE_PAYMENT_IDS = "PAYMENT_IDS";
+	public static final String PARAMETER_TYPE_SET_OF_PAYMENT_IDS = "SET_OF_PAYMENT_IDS";
 	public static final String PARAMETER_TYPE_BPARTNER_ID = "BPARTNER_ID";
 
 	public PaymentsViewFactory(
@@ -109,7 +109,7 @@ public class PaymentsViewFactory implements IViewFactory, IViewsIndexStorage
 		viewId.assertWindowId(WINDOW_ID);
 
 		final BPartnerId bPartnerId = request.getParameterAs(PARAMETER_TYPE_BPARTNER_ID, BPartnerId.class);
-		final Set<PaymentId> paymentIds = request.getParameterAsSet(PARAMETER_TYPE_PAYMENT_IDS, PaymentId.class);
+		final Set<PaymentId> paymentIds = request.getParameterAsSet(PARAMETER_TYPE_SET_OF_PAYMENT_IDS, PaymentId.class);
 
 		final PaymentAndInvoiceRows paymentAndInvoiceRows;
 
