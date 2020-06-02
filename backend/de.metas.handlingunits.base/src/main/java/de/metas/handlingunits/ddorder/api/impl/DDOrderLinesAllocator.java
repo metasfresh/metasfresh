@@ -22,31 +22,7 @@ package de.metas.handlingunits.ddorder.api.impl;
  * #L%
  */
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_M_MovementLine;
-import org.eevolution.api.IDDOrderBL;
-import org.eevolution.api.IDDOrderDAO;
-import org.eevolution.api.IDDOrderMovementBuilder;
-import org.eevolution.model.I_DD_Order;
-import org.eevolution.model.I_DD_OrderLine;
-import org.eevolution.model.I_DD_OrderLine_Alternative;
-import org.eevolution.model.I_DD_OrderLine_Or_Alternative;
-import org.slf4j.Logger;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.ddorder.api.IHUDDOrderBL;
 import de.metas.handlingunits.exceptions.HUException;
@@ -61,6 +37,28 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
 import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_M_MovementLine;
+import org.eevolution.api.IDDOrderBL;
+import org.eevolution.api.IDDOrderDAO;
+import org.eevolution.api.IDDOrderMovementBuilder;
+import org.eevolution.model.I_DD_Order;
+import org.eevolution.model.I_DD_OrderLine;
+import org.eevolution.model.I_DD_OrderLine_Alternative;
+import org.eevolution.model.I_DD_OrderLine_Or_Alternative;
+import org.slf4j.Logger;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Allocate {@link IHUProductStorage}s to a set of given {@link I_DD_OrderLine_Alternative}s and generate material movements.

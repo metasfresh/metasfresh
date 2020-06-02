@@ -251,15 +251,15 @@ public class UOMConversionBL implements IUOMConversionBL
 	{
 		BigDecimal priceConv = convertQty(
 				ProductId.ofRepoIdOrNull(productId),
-				null /* rounding */,
+				Rounding.PRESERVE_SCALE, // *we* want to do the rounding if something has to be rounded
 				price,
 				uomFrom,
 				uomTo);
 		if (priceConv.scale() > pricePrecision)
 		{
+			// for prices, round half-up; when converting quantities, the rounding mode could be different
 			priceConv = priceConv.setScale(pricePrecision, RoundingMode.HALF_UP);
 		}
-
 		return priceConv;
 	}
 

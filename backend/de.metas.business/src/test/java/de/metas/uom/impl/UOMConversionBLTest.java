@@ -157,7 +157,7 @@ public class UOMConversionBLTest extends UOMTestBase
 		{
 			final BigDecimal qtyToConvert = new BigDecimal(1500000);
 			final BigDecimal convertedQty = conversionBL.convertQty(folieId, qtyToConvert, millimeter, rolle);
-			assertThat(convertedQty).isEqualTo(new BigDecimal("1.00"));
+			assertThat(convertedQty).isEqualTo(new BigDecimal("1.01"));
 		}
 
 	}
@@ -231,7 +231,7 @@ public class UOMConversionBLTest extends UOMTestBase
 		final BigDecimal qtyToConvert = new BigDecimal(3000000);
 		final BigDecimal convertedQty = conversionBL.convertQty(folieId, qtyToConvert, millimeter, rolle);
 
-		assertThat(convertedQty).isEqualTo("2.00");
+		assertThat(convertedQty).isEqualTo("2.01");
 	}
 
 	@Test
@@ -499,7 +499,7 @@ public class UOMConversionBLTest extends UOMTestBase
 		final BigDecimal qtyToConvert = new BigDecimal(3000000);
 		final BigDecimal convertedQty = Services.get(IUOMConversionBL.class).convertQty(folieId, qtyToConvert, millimeter, rolle);
 
-		assertThat(convertedQty).isEqualByComparingTo("2");
+		assertThat(convertedQty).isEqualByComparingTo("2.01");
 	}
 
 	@Test

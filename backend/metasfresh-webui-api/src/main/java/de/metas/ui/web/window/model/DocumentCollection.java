@@ -686,6 +686,20 @@ public class DocumentCollection
 		documentKeys.forEach(documentKey -> websocketPublisher.staleRootDocument(documentKey.getWindowId(), documentKey.getDocumentId()));
 	}
 
+	public void invalidateDocumentsByWindowId(@NonNull final WindowId windowId)
+
+	{
+		final ImmutableList<DocumentKey> documentKeys = rootDocuments.asMap().keySet()
+				.stream()
+				.filter(documentKey -> windowId.equals(documentKey.getWindowId()))
+				.collect(ImmutableList.toImmutableList());
+		if (documentKeys.isEmpty())
+		{
+			return;
+		}
+		rootDocuments.invalidateAll(documentKeys);
+	}
+	
 	public void invalidate(final DocumentToInvalidate documentToInvalidate)
 	{
 		final ImmutableList<DocumentEntityDescriptor> entityDescriptors = getCachedWindowIdsForTableName(documentToInvalidate.getTableName())

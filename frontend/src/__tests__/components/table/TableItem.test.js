@@ -1,12 +1,12 @@
 import React from 'react';
-import { shallow, render } from 'enzyme';
+import { shallow, mount } from 'enzyme';
 import renderer from 'react-test-renderer';
 
-import fixtures from '../../../../test_setup/fixtures/table_item_props.json'
+import fixtures from '../../../../test_setup/fixtures/table/table_item_props.json';
 
 import TableItem from '../../../components/table/TableItem';
 
-function createInitProps(propsSeed = fixtures.oldProps1, customProps){
+function createInitProps(propsSeed = fixtures.oldProps1, customProps) {
   return {
     ...propsSeed,
     onClick: jest.fn(),
@@ -24,7 +24,7 @@ function createInitProps(propsSeed = fixtures.oldProps1, customProps){
 
 describe('Table row (TableItem)', () => {
   it('renders without errors', () => {
-    const props = createInitProps();;
+    const props = createInitProps();
 
     shallow(<TableItem {...props} />);
   });
@@ -46,10 +46,14 @@ describe('Table row (TableItem)', () => {
 
     const wrapper = mount(<TableItem {...props} />, { attachTo: tbody });
 
-    expect(wrapper.find('.row-1 [data-cy="cell-QtyEntered"]').text()).toEqual('3');
+    expect(wrapper.find('.row-1 [data-cy="cell-QtyEntered"]').text()).toEqual(
+      '3'
+    );
 
     wrapper.setProps(updatedProps);
 
-    expect(wrapper.find('.row-1 [data-cy="cell-QtyEntered"]').text()).toEqual('4');
+    expect(wrapper.find('.row-1 [data-cy="cell-QtyEntered"]').text()).toEqual(
+      '4'
+    );
   });
 });
