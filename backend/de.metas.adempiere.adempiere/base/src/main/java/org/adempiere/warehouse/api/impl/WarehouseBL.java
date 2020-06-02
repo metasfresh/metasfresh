@@ -22,10 +22,12 @@
 
 package org.adempiere.warehouse.api.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
-
-import java.util.List;
-
+import de.metas.location.CountryId;
+import de.metas.logging.LogManager;
+import de.metas.organization.OrgId;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
@@ -36,14 +38,10 @@ import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Warehouse;
 import org.slf4j.Logger;
 
-import de.metas.location.CountryId;
-import de.metas.logging.LogManager;
-import de.metas.organization.OrgId;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import lombok.NonNull;
-
 import javax.annotation.Nullable;
+import java.util.List;
+
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 public class WarehouseBL implements IWarehouseBL
 {
@@ -69,6 +67,7 @@ public class WarehouseBL implements IWarehouseBL
 	}
 
 	@Override
+	@NonNull
 	public LocatorId getDefaultLocatorId(@NonNull final WarehouseId warehouseId)
 	{
 		final IWarehouseDAO warehousesRepo = Services.get(IWarehouseDAO.class);
