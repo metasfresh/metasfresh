@@ -42,10 +42,10 @@ export function deleteTable(id) {
 /**
  * Update table rows
  */
-function updateTableData(id, rows) {
+function updateTableData(id, rows, keyProperty) {
   return {
     type: types.UPDATE_TABLE_DATA,
-    payload: { id, rows },
+    payload: { id, rows, keyProperty },
   };
 }
 
@@ -111,30 +111,19 @@ function collapseRows({
  */
 export function createTableData(rawData) {
   const dataObject = {
-    windowType: rawData.windowType || rawData.windowId,
+    windowId: rawData.windowType || rawData.windowId,
     viewId: rawData.viewId,
     docId: rawData.id,
     tabId: rawData.tabId,
+    keyProperty: rawData.keyProperty,
     emptyText: rawData.emptyResultText,
     emptyHint: rawData.emptyResultHint,
-    page: rawData.page,
     size: rawData.size,
-    queryLimit: rawData.queryLimit,
-    pageLength: rawData.pageLength,
     firstRow: rawData.firstRow,
-    tabIndex: rawData.tabIndex,
-    internalName: rawData.internalName,
-    queryOnActivate: rawData.queryOnActivate,
-    supportQuickInput: rawData.supportQuickInput,
-    allowCreateNew: rawData.allowCreateNew,
-    allowCreateNewReason: rawData.allowCreateNewReason,
-    allowDelete: rawData.allowDelete,
-    stale: rawData.stale,
     headerProperties: rawData.headerProperties
       ? rawData.headerProperties
       : undefined,
     headerElements: rawData.headerElements ? rawData.headerElements : undefined,
-    orderBy: rawData.orderBy ? rawData.orderBy : undefined,
 
     // immer freezes objects to make them immutable, so we have to make a deep copy
     // of entries as otherwise we're just passing references to frozen objects
@@ -144,7 +133,6 @@ export function createTableData(rawData) {
       ? rawData.defaultOrderBys
       : undefined,
     expandedDepth: rawData.expandedDepth,
-    keyProperty: rawData.keyProperty,
 
     // TODO: We have both `supportTree` and `collapsible` in the layout response.
     collapsible: rawData.collapsible,
@@ -273,7 +261,7 @@ export function updateGridTableData(tableId, rows) {
         rows = flattenRows(rows);
       }
 
-      dispatch(updateTableData(tableId, rows));
+      dispatch(updateTableData(tableId, rows, keyProperty));
 
       if (collapsible) {
         dispatch(
@@ -328,6 +316,26 @@ export function updateTabTable(tableId, tableResponse) {
       } else {
         dispatch(createTable(tableId, tableData));
       }
+
+      return Promise.resolve(true);
+    }
+
+    return Promise.resolve(false);
+  };
+}
+
+/*
+ * Update `tableId` rows for tab table/details view
+ */
+export function updateTabTableData(tableId, rows) {
+  return (dispatch, getState) => {
+    const state = getState();
+
+    if (state.tables) {
+      const table = getTable(state, tableId);
+      const { keyProperty } = table;
+
+      dispatch(updateTableData(tableId, rows, keyProperty));
 
       return Promise.resolve(true);
     }

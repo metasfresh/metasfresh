@@ -6,7 +6,7 @@ import * as types from '../constants/ActionTypes';
 import { doesSelectionExist } from '../utils/documentListHelper';
 
 export const initialTableState = {
-  windowType: null,
+  windowId: null,
   viewId: null,
   docId: null,
   tabId: null,
@@ -20,35 +20,12 @@ export const initialTableState = {
   columns: [],
   activeSort: false,
   headerProperties: {},
+  size: 0,
 
   //header columns
   headerElements: {},
   emptyText: null,
   emptyHint: null,
-
-  //TODO: Ideally this should sit only in the DocumentList/Window layout
-  // as table should only render rows, and not pagination
-  page: 0,
-  firstRow: 0,
-  size: 0,
-  orderBy: [],
-  defaultOrderBys: [],
-  pageLength: 0,
-  queryLimit: 0,
-  queryLimitHit: false,
-  dataPending: false,
-  dataError: false,
-  tabIndex: 0,
-  internalName: null,
-  queryOnActivate: true,
-  supportQuickInput: true,
-
-  // includedTabsInfo
-  allowCreateNew: true,
-  allowCreateNewReason: null,
-  allowDelete: true,
-  stale: false,
-
   expandedDepth: 0,
   collapsible: false,
   indentSupported: false,
@@ -151,7 +128,7 @@ const reducer = produce((draftState, action) => {
     }
 
     case types.UPDATE_TABLE_DATA: {
-      const { id, rows } = action.payload;
+      const { id, rows, keyProperty } = action.payload;
       const currentSelected = draftState[id].selected;
       const selectionValid = doesSelectionExist({
         data: rows,
@@ -161,7 +138,7 @@ const reducer = produce((draftState, action) => {
 
       if (!selectionValid) {
         updatedSelected = {
-          selected: rows[0],
+          selected: [rows[0][keyProperty]],
         };
       }
 

@@ -25,6 +25,9 @@ const MOBILE_TABLE_SIZE_LIMIT = 30; // subjective number, based on empiric testi
 const isMobileOrTablet =
   currentDevice.type === 'mobile' || currentDevice.type === 'tablet';
 
+// TODO: Remove when cleaning up
+let RENDERS = 0;
+
 class Table extends PureComponent {
   constructor(props) {
     super(props);
@@ -71,14 +74,15 @@ class Table extends PureComponent {
     supportFieldEdit
   ) => {
     this.setState({
-      contextMenu: Object.assign({}, this.state.contextMenu, {
+      contextMenu: {
+        ...this.state.contextMenu,
         x: clientX,
         y: clientY,
         open: true,
         fieldName,
         supportZoomInto,
         supportFieldEdit,
-      }),
+      },
     });
   };
 
@@ -601,6 +605,9 @@ class Table extends PureComponent {
   };
 
   render() {
+    RENDERS += 1;
+    console.log('Render: ', RENDERS);
+
     const {
       columns,
       windowId,
@@ -638,6 +645,7 @@ class Table extends PureComponent {
       onDeselectAll,
       onGetAllLeaves,
       tableRefreshToggle,
+      onHandleAdvancedEdit,
     } = this.props;
 
     const { contextMenu, promptOpen, isBatchEntry } = this.state;
@@ -675,7 +683,7 @@ class Table extends PureComponent {
               tabId={tabId}
               deselect={onDeselectAll}
               handleFieldEdit={this.handleFieldEdit}
-              handleAdvancedEdit={this.handleAdvancedEdit}
+              handleAdvancedEdit={onHandleAdvancedEdit}
               onOpenNewTab={handleOpenNewTab}
               handleDelete={
                 !isModal && (tabInfo && tabInfo.allowDelete)
@@ -798,7 +806,7 @@ class Table extends PureComponent {
             selected={selected}
             onAdvancedEdit={
               selected && selected.length > 0 && selected[0]
-                ? this.handleAdvancedEdit
+                ? onHandleAdvancedEdit
                 : null
             }
             onOpenNewTab={
