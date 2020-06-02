@@ -1361,7 +1361,8 @@ export function handleProcessResponse(response, type, id) {
 
             break;
           case 'selectViewRows':
-            console.error('PROCESS selectViewRows handle selection')
+            // eslint-disable-next-line no-console
+            console.error('PROCESS selectViewRows handle selection');
             // TODO: Check if we have parameters to call `updateTableSelection` here
             // await dispatch(selectTableItems(action.rowIds, action.windowId));
 
