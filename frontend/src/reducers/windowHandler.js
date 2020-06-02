@@ -38,9 +38,6 @@ import {
   PATCH_REQUEST,
   PATCH_RESET,
   PATCH_SUCCESS,
-  // REMOVE_TABLE_ITEMS_SELECTION,
-  // SELECT_TABLE_ITEMS,
-  // SET_LATEST_NEW_DOCUMENT,
   SET_RAW_MODAL_DESCRIPTION,
   SET_RAW_MODAL_TITLE,
   SORT_TAB,
@@ -135,7 +132,6 @@ export const initialState = {
   indicator: 'saved',
   allowShortcut: true,
   allowOutsideClick: true,
-  // latestNewDocument: null,
   viewId: null,
   selections: {},
   selectionsHash: null,
@@ -647,72 +643,6 @@ export default function windowHandler(state = initialState, action) {
         }),
       });
     // END OF SCOPED ACTIONS
-
-    // case SELECT_TABLE_ITEMS: {
-    //   const { windowType, viewId, ids } = action.payload;
-
-    //   if (!ids) {
-    //     return state;
-    //   }
-
-    //   const checkedIds = ids.length && ids[0] === undefined ? null : ids;
-
-    //   return {
-    //     ...state,
-    //     selectionsHash: uuid(),
-    //     selections: {
-    //       ...state.selections,
-    //       [windowType]: {
-    //         ...state.selections[windowType],
-    //         [viewId]: checkedIds,
-    //       },
-    //     },
-    //   };
-    // }
-
-    // case DESELECT_TABLE_ITEMS: {
-    //   const { windowType, viewId, ids } = action.payload;
-
-    //   const windowTypeSelections = state.selections[windowType]
-    //     ? state.selections[windowType]
-    //     : {};
-
-    //   return {
-    //     ...state,
-    //     selectionsHash: uuid(),
-    //     selections: {
-    //       ...state.selections,
-    //       [windowType]: {
-    //         ...windowTypeSelections,
-    //         [viewId]: difference(windowTypeSelections[viewId], ids),
-    //       },
-    //     },
-    //   };
-    // }
-
-    // case REMOVE_TABLE_ITEMS_SELECTION: {
-    //   const { windowType, viewId } = action.payload;
-    //   const windowSelections = { ...state.selections[windowType] };
-
-    //   delete state.selections[windowType];
-    //   delete windowSelections[viewId];
-
-    //   return {
-    //     ...state,
-    //     selectionsHash: uuid(),
-    //     selections: {
-    //       ...state.selections,
-    //       [windowType]: { ...windowSelections },
-    //     },
-    //   };
-    // }
-
-    // LATEST NEW DOCUMENT CACHE
-    // case SET_LATEST_NEW_DOCUMENT:
-    //   return {
-    //     ...state,
-    //     latestNewDocument: action.id,
-    //   };
 
     case OPEN_FILTER_BOX:
       return {

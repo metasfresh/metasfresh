@@ -123,13 +123,6 @@ export function deleteTopActions() {
   };
 }
 
-// export function setLatestNewDocument(id) {
-//   return {
-//     type: SET_LATEST_NEW_DOCUMENT,
-//     id: id,
-//   };
-// }
-
 export function showSpinner(id) {
   return {
     type: SHOW_SPINNER,
@@ -634,8 +627,6 @@ export function createWindow(
       }
 
       if (documentId === 'NEW' && !isModal) {
-        // TODO: This is not read anywhere so looks safe to remove
-        // dispatch(setLatestNewDocument(docId));
         // redirect immedietely
         return dispatch(replace(`/window/${windowType}/${docId}`));
       }
