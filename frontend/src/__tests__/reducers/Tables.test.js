@@ -145,12 +145,12 @@ describe('Tables reducer', () => {
 
   it('Should update selection UPDATE_TABLE_SELECTION', () => {
     const id = '143_1000037_AD_Tab-187';
+    const row = { rowId: '100000' };
     const initialStateData = createState({
-      [id]: { ...initialTableState, ...basicData },
+      [id]: { ...initialTableState, ...basicData, rows: [row], keyProperty: 'rowId' },
       length: 1,
     });
-
-    const actions = [updateTableSelection(id, [100000])];
+    const actions = [updateTableSelection(id, ['100000'], 'rowId')];
     const state = actions.reduce(reducer, initialStateData);
 
     expect(state).toEqual(
@@ -161,6 +161,9 @@ describe('Tables reducer', () => {
           allowCreateNewReason: null,
           allowDelete: true,
           columns: [],
+          collapsedArrayMap: [],
+          collapsedParentRows: [],
+          collapsedRows: [],
           dataError: false,
           dataPending: false,
           defaultOrderBys: [],
@@ -177,8 +180,8 @@ describe('Tables reducer', () => {
           queryLimit: 0,
           queryLimitHit: false,
           queryOnActivate: true,
-          rows: [],
-          selected: [100000],
+          rows: expect.arrayContaining([row]),
+          selected: ['100000'],
           size: 0,
           stale: true,
           supportQuickInput: true,
@@ -186,6 +189,10 @@ describe('Tables reducer', () => {
           tabIndex: 0,
           viewId: null,
           windowType: '143',
+          keyProperty: 'rowId',
+          expandedDepth: 0,
+          collapsible: false,
+          indentSupported: false,
         }),
         length: 1,
       })
