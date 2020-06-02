@@ -493,7 +493,7 @@ public final class CreateViewRequest
 			return this;
 		}
 
-		public Builder setParameter(final String name, final Object value)
+		public Builder setParameter(@NonNull final String name, @Nullable final Object value)
 		{
 			if (value == null)
 			{
