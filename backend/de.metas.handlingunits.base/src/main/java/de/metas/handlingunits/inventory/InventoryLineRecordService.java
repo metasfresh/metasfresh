@@ -94,10 +94,6 @@ public class InventoryLineRecordService
 
 	private static final String MSG_EXISTING_LINES_WITH_DIFFERENT_HU_AGGREGATION_TYPE = "de.metas.handlingunits.inventory.ExistingLinesWithDifferentHUAggregationType";
 
-	private final IHUStorageDAO huStorageDAO = Services.get(IHandlingUnitsBL.class).getStorageFactory().getHUStorageDAO();
-	private final IUOMConversionBL uomConversionBL =  Services.get(IUOMConversionBL.class);
-	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
-
 	private InventoryRepository inventoryLineRepository;
 
 	private InventoryLineRecordService(@NonNull final InventoryRepository inventoryLineRepository)
@@ -107,9 +103,6 @@ public class InventoryLineRecordService
 
 	public void syncToHUs(@NonNull final I_M_Inventory inventoryRecord)
 	{
-		//make sure inventoryLine.qtyBooked is up to date before syncing to HU
-		recomputeQtyBookedFromStorageForInventory(InventoryId.ofRepoId(inventoryRecord.getM_Inventory_ID()));
-
 		final Inventory inventory = inventoryLineRepository.toInventory(inventoryRecord);
 		syncToHUs(inventory);
 	}
@@ -425,13 +418,28 @@ public class InventoryLineRecordService
 
 	public void setQtyBookedFromStorage(@NonNull final I_M_InventoryLine inventoryLine)
 	{
-		final Optional<Quantity> bookedQty = getBookedQtyFromStorage(inventoryLine);
+		inventoryLine.setQtyBook(BigDecimal.ZERO);
+
+		//mandatory ids might be missing as the I_M_InventoryLine might not be persisted yet
+		final ProductId productId = ProductId.ofRepoIdOrNull(inventoryLine.getM_Product_ID());
+		final HuId huId = HuId.ofRepoIdOrNull(inventoryLine.getM_HU_ID());
+		final UomId uomId = UomId.ofRepoIdOrNull(inventoryLine.getC_UOM_ID());
+
+		boolean idsAreMissing = Stream.of(productId, huId, uomId)
+				.anyMatch(Objects::isNull);
+
+		if (idsAreMissing)
+		{
+			return;
+		}
+
+		final Optional<Quantity> bookedQty = inventoryLineRepository.getFreshBookedQtyFromStorage(productId, uomId, huId);
 
 		if (bookedQty.isPresent())
 		{
 			if (bookedQty.get().getUomId().getRepoId() != inventoryLine.getC_UOM_ID())
 			{
-				//this should never happen as inventoryLineRecordService.getBookedQtyFromStorage() returns the qty in the inventory line's uom.
+				//this should never happen as InventoryRepository#getFreshBookedQtyFromStorage() returns the qty in the inventory line's uom.
 				throw new QuantitiesUOMNotMatchingExpection("Booked and counted quantities don't have the same UOM!")
 						.appendParametersToMessage()
 						.setParameter("InventoryLineUOMID", inventoryLine.getC_UOM_ID())
@@ -440,45 +448,6 @@ public class InventoryLineRecordService
 
 			inventoryLine.setQtyBook(bookedQty.get().toBigDecimal());
 		}
-		else
-		{
-			inventoryLine.setQtyBook(BigDecimal.ZERO);
-		}
-	}
-
-
-	@NonNull
-	private Optional<Quantity> getBookedQtyFromStorage(@NonNull final I_M_InventoryLine inventoryLineRecord)
-	{
-		Optional<Quantity> bookedQty = Optional.empty();
-
-		final ProductId productId = ProductId.ofRepoIdOrNull(inventoryLineRecord.getM_Product_ID());
-		final UomId inventoryLineUOMId = UomId.ofRepoIdOrNull(inventoryLineRecord.getC_UOM_ID());
-		final HuId huId = HuId.ofRepoIdOrNull(inventoryLineRecord.getM_HU_ID());
-
-		final boolean allIdsPresent = Stream.of(huId, productId, inventoryLineUOMId)
-				.allMatch(Objects::nonNull);
-
-		if (allIdsPresent)
-		{
-			final I_M_HU_Storage huStorage = huStorageDAO.retrieveStorage(inventoryLineRecord.getM_HU(), productId);
-
-			if (huStorage != null)
-			{
-				final UomId storageUOMId = UomId.ofRepoId(huStorage.getC_UOM_ID());
-
-				final BigDecimal qtyInInventoryUOM = uomConversionBL.convertQty(
-						UOMConversionContext.of(productId),
-						huStorage.getQty(),
-						storageUOMId,
-						inventoryLineUOMId);
-
-
-				bookedQty = Optional.of(Quantity.of(qtyInInventoryUOM, uomDAO.getById(inventoryLineUOMId)));
-			}
-		}
-
-		return bookedQty;
 	}
 
 	private static HUAggregationType computeHUAggregationType(
@@ -515,15 +484,5 @@ public class InventoryLineRecordService
 					.getTranslatableMsgText(MSG_EXISTING_LINES_WITH_DIFFERENT_HU_AGGREGATION_TYPE);
 			throw new AdempiereException(message).markAsUserValidationError();
 		}
-	}
-
-	private void recomputeQtyBookedFromStorageForInventory(@NonNull final InventoryId inventoryId)
-	{
-		List<I_M_InventoryLine> inventoryLines = inventoryLineRepository.retrieveLineRecords(inventoryId);
-
-		inventoryLines.stream()
-				.peek(this::setQtyBookedFromStorage)
-				.map(inventoryLineRepository::toInventoryLine)
-				.forEach( inventoryLine -> inventoryLineRepository.saveInventoryLine(inventoryLine, inventoryId));
 	}
 }
