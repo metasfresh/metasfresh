@@ -234,16 +234,7 @@ public class InventoryRepository
 			}
 		}
 
-		final InventoryLine inventoryLine = lineBuilder.build();
-
-		final Quantity recordQtyBooked = Quantity.of(inventoryLineRecord.getQtyBook(), uomsRepo.getById(inventoryLineRecord.getC_UOM_ID()));
-
-		if ( !recordQtyBooked.qtyAndUomCompareToEquals(inventoryLine.getQtyBook()) )
-		{
-			saveInventoryLine(inventoryLine, InventoryId.ofRepoId(inventoryLineRecord.getM_Inventory_ID()));
-		}
-
-		return inventoryLine;
+		return lineBuilder.build();
 	}
 
 	private InventoryLineHU toInventoryLineHU(@NonNull final I_M_InventoryLine inventoryLineRecord)
