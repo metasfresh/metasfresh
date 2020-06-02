@@ -96,9 +96,10 @@ public class ADProcessPostProcessService
 	public ProcessInstanceResult postProcess(@NonNull final ADProcessPostProcessRequest request)
 	{
 		final ProcessInfo processInfo = request.getProcessInfo();
+		final TableRecordReference currentSingleSelectedDocumentRef = processInfo.getRecordRefOrNull();
 		final ProcessExecutionResult processExecutionResult = request.getProcessExecutionResult();
 
-		invalidateDocumentsAndViews(request.getViewId(), processExecutionResult);
+		invalidateDocumentsAndViews(request.getViewId(), currentSingleSelectedDocumentRef, processExecutionResult);
 
 		return ProcessInstanceResult.builder(extractInstanceId(request))
 				.summary(extractSummary(processExecutionResult))
@@ -107,7 +108,10 @@ public class ADProcessPostProcessService
 				.build();
 	}
 
-	private void invalidateDocumentsAndViews(final ViewId viewId, final ProcessExecutionResult processExecutionResult)
+	private void invalidateDocumentsAndViews(
+			final ViewId viewId,
+			final TableRecordReference currentSingleSelectedDocumentRef,
+			final ProcessExecutionResult processExecutionResult)
 	{
 		final Supplier<IView> viewSupplier = Suppliers.memoize(() -> {
 			if (viewId == null)
@@ -126,10 +130,19 @@ public class ADProcessPostProcessService
 		//
 		// Refresh all
 		boolean viewInvalidateAllCalled = false;
-		if (processExecutionResult.isRefreshAllAfterExecution() && viewSupplier.get() != null)
+		if (processExecutionResult.isRefreshAllAfterExecution())
 		{
-			viewSupplier.get().invalidateAll();
-			viewInvalidateAllCalled = true;
+			if (viewSupplier.get() != null)
+			{ // multible rows selected
+				viewSupplier.get().invalidateAll();
+				viewInvalidateAllCalled = true;
+			}
+			else if (currentSingleSelectedDocumentRef != null)
+			{ // single row selected
+				documentsCollection.invalidateDocumentByRecordId(
+						currentSingleSelectedDocumentRef.getTableName(),
+						currentSingleSelectedDocumentRef.getRecord_ID());
+			}
 		}
 
 		//
