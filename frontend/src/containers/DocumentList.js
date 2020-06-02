@@ -261,7 +261,7 @@ class DocumentListContainer extends Component {
   loadSupportAttributeFlag = ({ selected }) => {
     const { table } = this.props;
 
-    if (!table.rows.length) {
+    if (!selected || !table.rows.length) {
       return;
     }
 
