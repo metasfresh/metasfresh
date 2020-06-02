@@ -22,40 +22,39 @@
 
 package de.metas.ui.web.payment_allocation.process;
 
+import de.metas.banking.payment.paymentallocation.PaymentAllocationRepository;
 import de.metas.bpartner.BPartnerId;
-import de.metas.process.IProcessPrecondition;
+import de.metas.invoice.InvoiceId;
+import de.metas.invoice.service.IInvoiceDAO;
+import de.metas.process.JavaProcess;
 import de.metas.process.ProcessExecutionResult.ViewOpenTarget;
 import de.metas.process.ProcessExecutionResult.WebuiViewToOpen;
-import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.payment_allocation.PaymentsViewFactory;
-import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
 import de.metas.ui.web.view.CreateViewRequest;
 import de.metas.ui.web.view.IViewsRepository;
 import de.metas.ui.web.view.ViewId;
-import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
+import de.metas.util.Services;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_Invoice;
 
-import java.util.Optional;
-
-public class PaymentView_Launcher_From_BPartnerView extends ViewBasedProcessTemplate implements IProcessPrecondition
+public class PaymentView_Launcher_From_C_Invoice_SingleDocument extends JavaProcess
 {
-	private final IViewsRepository viewsFactory = SpringContextHolder.instance.getBean(IViewsRepository.class);
+	private final IViewsRepository viewsFactory;
+	final IInvoiceDAO invoiceDAO;
+	final PaymentAllocationRepository allocationRepository;
 
-	@Override
-	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
+	public PaymentView_Launcher_From_C_Invoice_SingleDocument()
 	{
-		if (!getSingleSelectedBPartnerId().isPresent())
-		{
-			return ProcessPreconditionsResolution.rejectWithInternalReason("not a single selected BPartner");
-		}
-
-		return ProcessPreconditionsResolution.accept();
+		viewsFactory = SpringContextHolder.instance.getBean(IViewsRepository.class);
+		allocationRepository = SpringContextHolder.instance.getBean(PaymentAllocationRepository.class);
+		invoiceDAO = Services.get(IInvoiceDAO.class);
 	}
 
 	@Override
 	protected String doIt()
 	{
-		final BPartnerId bPartnerId = getSingleSelectedBPartnerId().orElse(null);
+		final I_C_Invoice invoice = invoiceDAO.getByIdInTrx(InvoiceId.ofRepoId(getRecord_ID()));
+		final BPartnerId bPartnerId = BPartnerId.ofRepoId(invoice.getC_BPartner_ID());
 
 		final ViewId viewId = viewsFactory.createView(CreateViewRequest.builder(PaymentsViewFactory.WINDOW_ID)
 				.setParameter(PaymentsViewFactory.PARAMETER_TYPE_BPARTNER_ID, bPartnerId)
@@ -68,13 +67,5 @@ public class PaymentView_Launcher_From_BPartnerView extends ViewBasedProcessTemp
 				.build());
 
 		return MSG_OK;
-	}
-
-	private Optional<BPartnerId> getSingleSelectedBPartnerId()
-	{
-		final DocumentIdsSelection selectedRowIds = getSelectedRowIds();
-		return selectedRowIds.isSingleDocumentId()
-				? Optional.of(selectedRowIds.getSingleDocumentId().toId(BPartnerId::ofRepoId))
-				: Optional.empty();
 	}
 }

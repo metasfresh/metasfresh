@@ -1,10 +1,6 @@
 package de.metas.ui.web.payment_allocation.process;
 
-import org.adempiere.exceptions.AdempiereException;
-import org.springframework.beans.factory.annotation.Autowired;
-
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.payment.PaymentId;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.ProcessExecutionResult.ViewOpenTarget;
@@ -15,6 +11,8 @@ import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
 import de.metas.ui.web.view.CreateViewRequest;
 import de.metas.ui.web.view.IViewsRepository;
 import de.metas.ui.web.view.ViewId;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.SpringContextHolder;
 
 /*
  * #%L
@@ -40,8 +38,7 @@ import de.metas.ui.web.view.ViewId;
 
 public class PaymentView_Launcher_FromPayment extends ViewBasedProcessTemplate implements IProcessPrecondition
 {
-	@Autowired
-	private IViewsRepository viewsFactory;
+	private final IViewsRepository viewsFactory = SpringContextHolder.instance.getBean(IViewsRepository.class);
 
 	@Override
 	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
@@ -65,7 +62,7 @@ public class PaymentView_Launcher_FromPayment extends ViewBasedProcessTemplate i
 		}
 
 		final ViewId viewId = viewsFactory.createView(CreateViewRequest.builder(PaymentsViewFactory.WINDOW_ID)
-				.setFilterOnlyIds(PaymentId.toIntSet(paymentIds))
+				.setParameter(PaymentsViewFactory.PARAMETER_TYPE_SET_OF_PAYMENT_IDS, paymentIds)
 				.build())
 				.getViewId();
 
