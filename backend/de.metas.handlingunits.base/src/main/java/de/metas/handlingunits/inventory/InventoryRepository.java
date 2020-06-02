@@ -14,10 +14,10 @@ import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.inventory.InventoryLine.InventoryLineBuilder;
 import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.model.I_M_HU_Storage;
 import de.metas.handlingunits.model.I_M_InventoryLine;
 import de.metas.handlingunits.model.I_M_InventoryLine_HU;
-import de.metas.handlingunits.storage.IHUStorageDAO;
+import de.metas.handlingunits.storage.IHUProductStorage;
+import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.inventory.HUAggregationType;
 import de.metas.inventory.IInventoryDAO;
 import de.metas.inventory.InventoryId;
@@ -87,7 +87,7 @@ public class InventoryRepository
 	private final IUOMConversionBL convBL = Services.get(IUOMConversionBL.class);
 	private final IWarehouseDAO warehousesRepo = Services.get(IWarehouseDAO.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	private final IHUStorageDAO huStorageDAO = Services.get(IHandlingUnitsBL.class).getStorageFactory().getHUStorageDAO();
+	private final IHUStorageFactory huStorageFactory = Services.get(IHandlingUnitsBL.class).getStorageFactory();
 	private final IHandlingUnitsDAO huDAO = Services.get(IHandlingUnitsDAO.class);
 
 	private I_M_InventoryLine getInventoryLineRecordById(@Nullable final InventoryLineId inventoryLineId)
@@ -498,25 +498,27 @@ public class InventoryRepository
 		}
 	}
 
-	public Optional<Quantity> getFreshBookedQtyFromStorage(@NonNull ProductId productId, @NonNull UomId inventoryLineUOMId, @NonNull HuId huId)
+	public Optional<Quantity> getFreshBookedQtyFromStorage(@NonNull final ProductId productId, @NonNull final UomId inventoryLineUOMId, @NonNull final HuId huId)
 	{
 		Optional<Quantity> bookedQty = Optional.empty();
 
-		I_M_HU hu = huDAO.getById(huId);
+		final I_M_HU hu = huDAO.getById(huId);
 
-		final I_M_HU_Storage huStorage = huStorageDAO.retrieveStorage(hu, productId);
+		final List<IHUProductStorage> huProductStorages = huStorageFactory.getHUProductStorages(ImmutableList.of(hu), productId);
 
-		if (huStorage != null)
+		if ( !huProductStorages.isEmpty() )
 		{
-			final UomId storageUOMId = UomId.ofRepoId(huStorage.getC_UOM_ID());
+			final IHUProductStorage huStorage = huProductStorages.get(0);
+
+			final I_C_UOM inventoryLineUOM = uomsRepo.getById(inventoryLineUOMId);
 
 			final BigDecimal qtyInInventoryUOM = convBL.convertQty(
 					UOMConversionContext.of(productId),
-					huStorage.getQty(),
-					storageUOMId,
-					inventoryLineUOMId);
+					huStorage.getQty().toBigDecimal(),
+					huStorage.getQty().getUOM(),
+					inventoryLineUOM);
 
-			bookedQty = Optional.of(Quantity.of(qtyInInventoryUOM, uomsRepo.getById(inventoryLineUOMId)));
+			bookedQty = Optional.of(Quantity.of(qtyInInventoryUOM, inventoryLineUOM));
 		}
 
 		return bookedQty;

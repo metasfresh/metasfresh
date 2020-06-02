@@ -425,7 +425,7 @@ public class InventoryLineRecordService
 		final HuId huId = HuId.ofRepoIdOrNull(inventoryLine.getM_HU_ID());
 		final UomId uomId = UomId.ofRepoIdOrNull(inventoryLine.getC_UOM_ID());
 
-		boolean idsAreMissing = Stream.of(productId, huId, uomId)
+		final boolean idsAreMissing = Stream.of(productId, huId, uomId)
 				.anyMatch(Objects::isNull);
 
 		if (idsAreMissing)

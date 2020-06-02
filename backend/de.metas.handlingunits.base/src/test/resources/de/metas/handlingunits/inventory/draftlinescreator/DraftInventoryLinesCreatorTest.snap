@@ -8,9 +8,9 @@ de.metas.handlingunits.inventory.draftlinescreator.DraftInventoryLinesCreatorTes
     "inventoryType": "PHYSICAL",
     "lines": [
       {
-        "id": 100013,
+        "id": 100016,
         "orgId": 5,
-        "asiId": 100010,
+        "asiId": 100013,
         "productId": 40,
         "storageAttributesKey": "10§&§11",
         "locatorId": "100002_100003",
@@ -18,7 +18,7 @@ de.metas.handlingunits.inventory.draftlinescreator.DraftInventoryLinesCreatorTes
         "inventoryType": "PHYSICAL",
         "inventoryLineHUs": [
           {
-            "id": 100014,
+            "id": 100017,
             "huId": 100,
             "inventoryType": "PHYSICAL",
             "qtyBook": {
@@ -31,7 +31,7 @@ de.metas.handlingunits.inventory.draftlinescreator.DraftInventoryLinesCreatorTes
             }
           },
           {
-            "id": 100015,
+            "id": 100018,
             "huId": 200,
             "inventoryType": "PHYSICAL",
             "qtyBook": {
@@ -46,9 +46,9 @@ de.metas.handlingunits.inventory.draftlinescreator.DraftInventoryLinesCreatorTes
         ]
       },
       {
-        "id": 100020,
+        "id": 100023,
         "orgId": 5,
-        "asiId": 100016,
+        "asiId": 100019,
         "productId": 40,
         "storageAttributesKey": "10§&§11§&§12",
         "locatorId": "100002_100003",
@@ -56,7 +56,7 @@ de.metas.handlingunits.inventory.draftlinescreator.DraftInventoryLinesCreatorTes
         "inventoryType": "PHYSICAL",
         "inventoryLineHUs": [
           {
-            "id": 100021,
+            "id": 100024,
             "huId": 300,
             "inventoryType": "PHYSICAL",
             "qtyBook": {
@@ -85,9 +85,9 @@ de.metas.handlingunits.inventory.draftlinescreator.DraftInventoryLinesCreatorTes
     "inventoryType": "PHYSICAL",
     "lines": [
       {
-        "id": 100013,
+        "id": 100016,
         "orgId": 5,
-        "asiId": 100010,
+        "asiId": 100013,
         "productId": 40,
         "storageAttributesKey": "10§&§11",
         "locatorId": "100002_100003",
@@ -109,9 +109,9 @@ de.metas.handlingunits.inventory.draftlinescreator.DraftInventoryLinesCreatorTes
         ]
       },
       {
-        "id": 100017,
+        "id": 100020,
         "orgId": 5,
-        "asiId": 100014,
+        "asiId": 100017,
         "productId": 40,
         "storageAttributesKey": "10§&§11",
         "locatorId": "100002_100003",
@@ -133,9 +133,9 @@ de.metas.handlingunits.inventory.draftlinescreator.DraftInventoryLinesCreatorTes
         ]
       },
       {
-        "id": 100022,
+        "id": 100025,
         "orgId": 5,
-        "asiId": 100018,
+        "asiId": 100021,
         "productId": 40,
         "storageAttributesKey": "10§&§11§&§12",
         "locatorId": "100002_100003",
