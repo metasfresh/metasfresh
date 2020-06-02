@@ -79,6 +79,7 @@
     "eslint-plugin-jsx-a11y": "6.2.3",
     "eslint-plugin-prettier": "3.1.2",
     "eslint-plugin-react": "7.17.0",
+    "eventsourcemock": "^2.0.0",
     "globby": "6.1.0",
     "html-loader": "0.5.5",
     "html-webpack-plugin": "3.0.7",
