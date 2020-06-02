@@ -22,6 +22,7 @@ import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.X_M_Attribute;
 
+import static de.metas.handlingunits.HuPackingInstructionsVersionId.VIRTUAL;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
@@ -125,6 +126,7 @@ public class InventoryTestHelper
 	{
 		final I_M_HU hu = newInstance(I_M_HU.class);
 		hu.setM_HU_ID(huId.getRepoId());
+		hu.setM_HU_PI_Version_ID(VIRTUAL.getRepoId());
 		hu.setHUStatus(X_M_HU.HUSTATUS_Active);
 		Services.get(IHandlingUnitsDAO.class).saveHU(hu);
 
