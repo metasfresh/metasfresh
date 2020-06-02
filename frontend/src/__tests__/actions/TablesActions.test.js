@@ -15,6 +15,7 @@ import {
   setActiveSort,
 } from '../../actions/TableActions';
 import * as ACTION_TYPES from '../../constants/ActionTypes';
+import { flattenRows } from '../../utils/documentListHelper';
 
 import masterWindowProps from '../../../test_setup/fixtures/master_window.json';
 import masterDataFixtures from '../../../test_setup/fixtures/master_window/data.json';
@@ -118,7 +119,9 @@ describe('TableActions grid', () => {
     const tableData_update = createTableData({
       ...rowResponse,
       headerElements: rowResponse.columnsByFieldName,
+      keyProperty: 'id',
     });
+    tableData_update.rows = flattenRows(tableData_update.rows);
     const initialState = createStore({
       viewHandler: {
         views: {
@@ -161,6 +164,7 @@ describe('TableActions grid', () => {
       ...rowResponse,
       ...layoutResponse,
       headerElements: rowResponse.columnsByFieldName,
+      keyProperty: 'id',
     });
     const initialState = createStore({
       viewHandler: {
@@ -264,7 +268,7 @@ describe('TableActions tab', () => {
         tableId,
         ...tab
       };
-      const tableData = createTableData(dataResponse);
+      const tableData = createTableData({ ...dataResponse, keyProperty: 'rowId' });
       const payload = {
         id: tableId,
         data: tableData,
@@ -322,7 +326,7 @@ describe('TableActions tab', () => {
     const store = mockStore(initialState);
     const tabId = rowDataResponse[0].tabId;
     const tableId = getTableId({ windowId: windowType, docId, tabId, });
-    const tableData = createTableData({ result: rowDataResponse });
+    const tableData = createTableData({ result: rowDataResponse, keyProperty: 'rowId' });
     const payload = {
       id: tableId,
       data: {...tableData},
