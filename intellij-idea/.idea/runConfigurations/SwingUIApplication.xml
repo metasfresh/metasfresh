@@ -2,7 +2,7 @@
   <configuration default="false" name="SwingUIApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" singleton="false">
     <module name="metasfresh-dist-swingui" />
     <option name="SPRING_BOOT_MAIN_CLASS" value="de.metas.SwingUIApplication" />
-    <option name="VM_PARAMETERS" value="-DTraceFile=true -Xms256M -Xmx3G -Dorg.compiere.db.DB_PostgreSQL.UseNativeConverter=true -Djava.util.Arrays.useLegacyMergeSort=true -DPropertyFile=$ProjectFileDir$\metasfresh.properties" />
+    <option name="VM_PARAMETERS" value="-DTraceFile=true -Xms256M -Xmx736M -Dorg.compiere.db.DB_PostgreSQL.UseNativeConverter=true -Djava.util.Arrays.useLegacyMergeSort=true -DPropertyFile=$ProjectFileDir$\metasfresh.properties" />
     <option name="PROGRAM_PARAMETERS" value="--debug" />
     <option name="WORKING_DIRECTORY" value="file://$MODULE_WORKING_DIR$" />
     <option name="ALTERNATIVE_JRE_PATH" />

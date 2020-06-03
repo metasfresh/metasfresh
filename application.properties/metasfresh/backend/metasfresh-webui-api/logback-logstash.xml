@@ -3,13 +3,6 @@
 	<!-- Spring boot defaults -->
 	<include resource="org/springframework/boot/logging/logback/defaults.xml"/>
 
-	<!-- Sync log levels from SLF4J/logback to JUL -->	
-	<!-- <contextListener class="ch.qos.logback.classic.jul.LevelChangePropagator">
-		<resetJUL>false</resetJUL>
-	</contextListener> -->
-
-	<property resource="git.properties" />
-
 	<!-- logstash logging configuration -->
 	<springProperty scope="context" name="LOGSTASH_HOST" source="logstash.host" defaultValue="localhost" />
 	<springProperty scope="context" name="LOGSTASH_PORT" source="logstash.port" defaultValue="5000" />
@@ -17,6 +10,10 @@
 
 	<appender name="STASH" class="net.logstash.logback.appender.LogstashTcpSocketAppender">
 		<destination>${LOGSTASH_HOST}:${LOGSTASH_PORT}</destination>
+
+		<!-- see https://github.com/logstash/logstash-logback-encoder#write-buffer-size -->
+		<writeBufferSize>0</writeBufferSize>
+		<ringBufferSize>32768</ringBufferSize>
 
 		<encoder class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
 			<providers>
@@ -32,9 +29,7 @@
 						<!-- or searching with Kibana -->
 						{
 						"application.name": "${LOGSTASH_APP_NAME}",
-						"instance.name": "${METASFRESH_INSTANCE_NAME}",
-						"git.build.version": "${git.build.version}",
-						"git.commit.id.abbrev": "${git.commit.id.abbrev}"
+						"instance.name": "localhost"
 						}
 					</pattern>
 				</pattern>

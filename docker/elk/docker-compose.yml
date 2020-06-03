@@ -10,7 +10,7 @@ services:
       - "127.0.0.1:9300:9300" #Elasticsearch transport interface - only set for docker-compose v1
       - "127.0.0.1:5000:5000" #Logstash appender - only set for docker-compose v1
     volumes:
-      - ./volumes/elk/elasticsearch:/var/lib/elasticsearch
+      - metasfresh_elk_elasticsearch:/var/lib/elasticsearch
     environment:
       - ELK_INDEX_ROLLOVER_SIZE=1G
       - ELK_INDEX_ROLLOVER_AGE=30d
@@ -64,3 +64,7 @@ services:
 networks:
   backend:
   connector:
+
+
+volumes:
+  metasfresh_elk_elasticsearch:

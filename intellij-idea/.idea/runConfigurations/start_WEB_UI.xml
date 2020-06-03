@@ -1,5 +1,5 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="start WEB-UI" type="js.build_tools.npm">
+  <configuration default="false" name="start WEB-UI" type="js.build_tools.npm" folderName="all local">
     <package-json value="$PROJECT_DIR$/metasfresh/frontend/package.json" />
     <command value="start" />
     <node-interpreter value="project" />

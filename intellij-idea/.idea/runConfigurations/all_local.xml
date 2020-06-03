@@ -1,8 +1,0 @@
-<component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="all local" type="CompoundRunConfigurationType">
-    <toRun name="WebRestApiApplication" type="SpringBootApplicationConfigurationType" />
-    <toRun name="start WEB-UI" type="js.build_tools.npm" />
-    <toRun name="ServerBoot" type="SpringBootApplicationConfigurationType" />
-    <method v="2" />
-  </configuration>
-</component>
