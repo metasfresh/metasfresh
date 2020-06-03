@@ -271,6 +271,7 @@ class TableContainer extends PureComponent {
         onDeselect={this.handleDeselect}
         onRowCollapse={this.handleRowCollapse}
         onGetAllLeaves={this.getAllLeaves}
+        onHandleAdvancedEdit={this.handleAdvancedEdit}
       />
     );
   }
