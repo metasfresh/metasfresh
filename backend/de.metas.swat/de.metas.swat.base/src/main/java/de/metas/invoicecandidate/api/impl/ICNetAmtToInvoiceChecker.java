@@ -96,9 +96,8 @@ import lombok.ToString;
 	/**
 	 * Asserts aggregated net amount to invoice equals with given expected value.
 	 *
-	 * If it's not equal, an error message will be logged to configured logger (see {@link #setLoggable(ILoggable)}).
+	 * If it's not equal, an error message will be logged to {@link ILoggable}.
 	 *
-	 * @param netAmtToInvoiceExpected
 	 * @throws AdempiereException if the checksums are not equal and {@link #isFailIfNetAmtToInvoiceChecksumNotMatch()}.
 	 */
 	public void assertExpectedNetAmtToInvoice(@NonNull final BigDecimal netAmtToInvoiceExpected)

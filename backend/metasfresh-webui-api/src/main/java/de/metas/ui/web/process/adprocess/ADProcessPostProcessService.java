@@ -43,6 +43,7 @@ import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.IViewsRepository;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.ViewProfileId;
+import de.metas.ui.web.view.event.ViewChangesCollector;
 import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
@@ -96,9 +97,11 @@ public class ADProcessPostProcessService
 	public ProcessInstanceResult postProcess(@NonNull final ADProcessPostProcessRequest request)
 	{
 		final ProcessInfo processInfo = request.getProcessInfo();
+		
+		final TableRecordReference currentSingleSelectedDocumentRef = processInfo.getRecordRefOrNull();
 		final ProcessExecutionResult processExecutionResult = request.getProcessExecutionResult();
 
-		invalidateDocumentsAndViews(request.getViewId(), processExecutionResult);
+		invalidateDocumentsAndViews(request.getViewId(), currentSingleSelectedDocumentRef, processExecutionResult);
 
 		return ProcessInstanceResult.builder(extractInstanceId(request))
 				.summary(extractSummary(processExecutionResult))
@@ -107,7 +110,10 @@ public class ADProcessPostProcessService
 				.build();
 	}
 
-	private void invalidateDocumentsAndViews(final ViewId viewId, final ProcessExecutionResult processExecutionResult)
+	private void invalidateDocumentsAndViews(
+			final ViewId viewId,
+			final TableRecordReference currentSingleSelectedDocumentRef,
+			final ProcessExecutionResult processExecutionResult)
 	{
 		final Supplier<IView> viewSupplier = Suppliers.memoize(() -> {
 			if (viewId == null)
@@ -126,10 +132,26 @@ public class ADProcessPostProcessService
 		//
 		// Refresh all
 		boolean viewInvalidateAllCalled = false;
-		if (processExecutionResult.isRefreshAllAfterExecution() && viewSupplier.get() != null)
+		
+		if (processExecutionResult.isRefreshAllAfterExecution())
 		{
-			viewSupplier.get().invalidateAll();
-			viewInvalidateAllCalled = true;
+			final IView view = viewSupplier.get();
+			
+			if (view != null)
+			{ // multiple rows selected
+				view.invalidateAll();
+				ViewChangesCollector.getCurrentOrAutoflush()
+						.collectFullyChanged(view);
+				viewInvalidateAllCalled = true;
+				
+				documentsCollection.invalidateDocumentsByWindowId(view.getViewId().getWindowId());
+			}
+			else if (currentSingleSelectedDocumentRef != null)
+			{ // single row selected
+				documentsCollection.invalidateDocumentByRecordId(
+						currentSingleSelectedDocumentRef.getTableName(),
+						currentSingleSelectedDocumentRef.getRecord_ID());
+			}
 		}
 
 		//
@@ -139,9 +161,10 @@ public class ADProcessPostProcessService
 		{
 			documentsCollection.invalidateDocumentByRecordId(recordToRefresh.getTableName(), recordToRefresh.getRecord_ID());
 
-			if (!viewInvalidateAllCalled && viewSupplier.get() != null)
+			final IView view = viewSupplier.get();
+			if (!viewInvalidateAllCalled && view != null)
 			{
-				viewSupplier.get().notifyRecordsChanged(TableRecordReferenceSet.of(recordToRefresh));
+				view.notifyRecordsChanged(TableRecordReferenceSet.of(recordToRefresh));
 			}
 		}
 	}

@@ -86,7 +86,6 @@ class TableContextMenu extends Component {
     elem
   ) => {
     this.setState({
-      ...this.state,
       contextMenu: {
         x: this.adjustElementPositionToFitInScreen('x', x, elem),
         y: this.adjustElementPositionToFitInScreen('y', y, elem),
@@ -101,7 +100,6 @@ class TableContextMenu extends Component {
     const { windowId, docId, tabId, selected } = this.props;
 
     this.setState({
-      ...this.state,
       loadingReferences: true,
     });
 
@@ -114,7 +112,6 @@ class TableContextMenu extends Component {
 
       onPartialResult: (partialGroup) => {
         this.setState({
-          ...this.state,
           loadingReferences: true,
           references: mergeReferencesToReferences(
             this.state.references,
@@ -125,7 +122,6 @@ class TableContextMenu extends Component {
 
       onComplete: () => {
         this.setState({
-          ...this.state,
           loadingReferences: false,
         });
       },

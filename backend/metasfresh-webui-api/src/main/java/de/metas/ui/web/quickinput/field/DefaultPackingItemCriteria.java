@@ -50,14 +50,14 @@ public class DefaultPackingItemCriteria
 	@NonNull
 	private BPartnerLocationId bPartnerLocationId;
 
+	@NonNull
+	private ZonedDateTime date;
+
 	@Nullable
 	private PricingSystemId pricingSystemId;
 
 	@Nullable
 	private PriceListId priceListId;
-
-	@NonNull
-	private ZonedDateTime date;
 
 	@Nullable
 	private SOTrx soTrx;
