@@ -1052,7 +1052,7 @@ public class MInvoiceLine extends X_C_InvoiceLine
 	 * Get Currency Precision
 	 *
 	 * @return precision
-	 * @deprecated Please use {@link IInvoiceBL#getPrecision(org.compiere.model.I_C_InvoiceLine)}.
+	 * @deprecated Please use {@link IInvoiceBL#getAmountPrecision(org.compiere.model.I_C_InvoiceLine)}.
 	 */
 	@Deprecated
 	private CurrencyPrecision getAmountPrecision()
@@ -1664,9 +1664,6 @@ public class MInvoiceLine extends X_C_InvoiceLine
 
 	// end MZ
 
-	/**
-	 * @param rmaline
-	 */
 	public void setRMALine(MRMALine rmaLine)
 	{
 		// Check if this invoice is CreditMemo - teo_sarca [ 2804142 ]
