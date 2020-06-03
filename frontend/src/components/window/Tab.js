@@ -2,11 +2,7 @@ import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 
-import {
-  addRowData,
-  updateMasterData,
-  fetchTab,
-} from '../../actions/WindowActions';
+import { fetchTab } from '../../actions/WindowActions';
 
 /*
  * @TODO: I think this can safely be rewritten to a functional component
@@ -18,8 +14,6 @@ class Tab extends Component {
 
     const {
       fetchTab,
-      updateMasterData,
-      addRowData,
       tabId,
       windowId,
       onChange,
@@ -37,14 +31,11 @@ class Tab extends Component {
       if (singleRowView) {
         fetchTab({ tabId, windowId, docId, query }).then((res) => {
           if (res.length) {
-            updateMasterData(res[0]);
-            addRowData({ [tabId]: res }, 'master');
             onChange && onChange();
           }
         });
       } else {
-        fetchTab({ tabId, windowId, docId, query }).then((res) => {
-          addRowData({ [tabId]: res }, 'master');
+        fetchTab({ tabId, windowId, docId, query }).then(() => {
           onChange && onChange();
         });
       }
@@ -68,8 +59,6 @@ Tab.propTypes = {
   queryOnActivate: PropTypes.bool,
   orderBy: PropTypes.array,
   fetchTab: PropTypes.func.isRequired,
-  addRowData: PropTypes.func.isRequired,
-  updateMasterData: PropTypes.func.isRequired,
 };
 
 export { Tab };
@@ -77,7 +66,5 @@ export default connect(
   null,
   {
     fetchTab,
-    updateMasterData,
-    addRowData,
   }
 )(Tab);
