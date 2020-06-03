@@ -12,9 +12,12 @@ import {
   clearMasterData,
   fireUpdateData,
   sortTab,
-  updateTabRowsData,
 } from '../actions/WindowActions';
-import { deleteTable } from '../actions/TableActions';
+import {
+  deleteTable,
+  updateTabTableData,
+  updateTabRowsData,
+} from '../actions/TableActions';
 import { connectWS, disconnectWS } from '../utils/websockets';
 import { getTabRequest, getRowsData } from '../api';
 
@@ -69,12 +72,13 @@ class MasterWindowContainer extends Component {
 
     const activeTab = includedTabsInfo
       ? Object.values(includedTabsInfo).find((tabInfo) =>
+          // TODO: Why sometimes we use `tabid` and other times `tabId` ??!!
           this.isActiveTab(tabInfo.tabId)
         )
       : null;
 
     // Document header got staled
-    if (stale) {
+    if (stale && !includedTabsInfo) {
       const { params, fireUpdateData } = this.props;
 
       fireUpdateData({
@@ -117,11 +121,15 @@ class MasterWindowContainer extends Component {
 
   isActiveTab(tabId) {
     const { master } = this.props;
+
     return tabId === master.layout.activeTab;
   }
 
   mergeDataIntoIncludedTab(response) {
-    const { updateTabRowsData } = this.props;
+    const {
+      updateTabRowsData,
+      params: { windowType, docId },
+    } = this.props;
     const { data } = response;
     const changedTabs = {};
     let rowsById = null;
@@ -159,17 +167,27 @@ class MasterWindowContainer extends Component {
     }
 
     forEach(changedTabs, (rowsChanged, tabId) => {
-      updateTabRowsData('master', tabId, rowsChanged);
+      const tableId = getTableId({ windowId: windowType, docId, tabId });
+      updateTabRowsData(tableId, rowsChanged);
     });
   }
 
   refreshActiveTab() {
-    const { master, params, addRowData } = this.props;
+    const {
+      master,
+      params: { windowType, docId },
+      updateTabTableData,
+    } = this.props;
 
     const activeTabId = master.layout.activeTab;
     if (!activeTabId) {
       return;
     }
+    const tableId = getTableId({
+      windowId: windowType,
+      docId,
+      tabId: activeTabId,
+    });
 
     const tabLayout =
       master.layout.tabs &&
@@ -182,12 +200,9 @@ class MasterWindowContainer extends Component {
       sortingOrder = (ordering.ascending ? '+' : '-') + ordering.fieldName;
     }
 
-    getTabRequest(
-      activeTabId,
-      params.windowType,
-      master.docId,
-      sortingOrder
-    ).then((tab) => addRowData({ [activeTabId]: tab }, 'master'));
+    getTabRequest(activeTabId, windowType, docId, sortingOrder).then((rows) => {
+      return updateTabTableData(tableId, rows);
+    });
   }
 
   deleteTabsTables = () => {
@@ -273,6 +288,7 @@ MasterWindowContainer.propTypes = {
   updateTabRowsData: PropTypes.func.isRequired,
   push: PropTypes.func.isRequired,
   deleteTable: PropTypes.func.isRequired,
+  updateTabTableData: PropTypes.func.isRequired,
 };
 
 /**
@@ -305,6 +321,7 @@ export default connect(
     fireUpdateData,
     sortTab,
     updateTabRowsData,
+    updateTabTableData,
     push,
     deleteTable,
   }

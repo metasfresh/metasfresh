@@ -102,6 +102,18 @@ function collapseRows({
   };
 }
 
+export function updateTabRowsData(id, rows) {
+  return {
+    type: types.UPDATE_TAB_ROWS_DATA,
+    payload: {
+      id,
+      // doing a deep copy because we're altering the changed/removed
+      // arrays while merging the updated data
+      rows: cloneDeep(rows),
+    },
+  };
+}
+
 // TODO: selections, other small updates
 
 /**

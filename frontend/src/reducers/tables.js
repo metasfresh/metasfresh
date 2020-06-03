@@ -1,5 +1,5 @@
 import { produce, original } from 'immer';
-import { get, difference } from 'lodash';
+import { get, difference, forEach } from 'lodash';
 import { createSelector } from 'reselect';
 
 import * as types from '../constants/ActionTypes';
@@ -147,6 +147,42 @@ const reducer = produce((draftState, action) => {
         rows,
         ...updatedSelected,
       };
+
+      return;
+    }
+
+    case types.UPDATE_TAB_ROWS_DATA: {
+      const {
+        rows: { changed, removed },
+        id,
+      } = action.payload;
+      let rows = original(draftState[id].rows);
+
+      if (rows.length) {
+        if (removed) {
+          rows = rows.filter((row) => !removed[row.rowId]);
+        }
+
+        // find&replace updated rows (unfortunately it's a table so we'll have to traverse it)
+        if (changed) {
+          rows = rows.map((row) => {
+            if (changed[row.rowId]) {
+              row = { ...changed[row.rowId] };
+
+              delete changed[row.rowId];
+
+              return row;
+            }
+            return row;
+          });
+        }
+      } else {
+        rows = [];
+      }
+      // added rows
+      forEach(changed, (value) => rows.push(value));
+
+      draftState[id].rows = rows;
 
       return;
     }

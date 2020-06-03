@@ -45,3 +45,9 @@ export const DESELECT_TABLE_ITEMS = 'DESELECT_TABLE_ITEMS';
  * @type {string} handle toggling table rows
  */
 export const COLLAPSE_TABLE_ROWS = 'COLLAPSE_TABLE_ROWS';
+
+/**
+ * @constant
+ * @type {string} removes tab's quick actions on unmount.
+ */
+export const UPDATE_TAB_ROWS_DATA = 'UPDATE_TAB_ROWS_DATA';
