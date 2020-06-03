@@ -31,14 +31,18 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ListMultimap;
-
 import de.metas.document.DocBaseAndSubType;
 import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeDAO;
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.inventory.InventoryLine.InventoryLineBuilder;
+import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_InventoryLine;
 import de.metas.handlingunits.model.I_M_InventoryLine_HU;
+import de.metas.handlingunits.storage.IHUProductStorage;
+import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.inventory.HUAggregationType;
 import de.metas.inventory.IInventoryDAO;
 import de.metas.inventory.InventoryId;
@@ -54,6 +58,30 @@ import de.metas.uom.UomId;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.mm.attributes.api.AttributesKeys;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.warehouse.LocatorId;
+import org.adempiere.warehouse.api.IWarehouseDAO;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_Inventory;
+import org.springframework.stereotype.Repository;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+
+import static de.metas.util.lang.CoalesceUtil.coalesceSuppliers;
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwares;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /*
  * #%L
@@ -84,6 +112,8 @@ public class InventoryRepository
 	private final IUOMConversionBL convBL = Services.get(IUOMConversionBL.class);
 	private final IWarehouseDAO warehousesRepo = Services.get(IWarehouseDAO.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IHUStorageFactory huStorageFactory = Services.get(IHandlingUnitsBL.class).getStorageFactory();
+	private final IHandlingUnitsDAO huDAO = Services.get(IHandlingUnitsDAO.class);
 
 	private I_M_InventoryLine getInventoryLineRecordById(@Nullable final InventoryLineId inventoryLineId)
 	{
@@ -250,7 +280,22 @@ public class InventoryRepository
 		else
 		{
 			qtyInternalUse = null;
-			qtyBook = Quantity.of(inventoryLineRecord.getQtyBook(), uom);
+
+			if (inventoryLineRecord.getM_HU_ID() > 0)
+			{
+				//refresh bookedQty from HU
+				final ProductId productId = ProductId.ofRepoId(inventoryLineRecord.getM_Product_ID());
+				final HuId huId = HuId.ofRepoId(inventoryLineRecord.getM_HU_ID());
+				final UomId uomId = UomId.ofRepoId(uom.getC_UOM_ID());
+
+				qtyBook = getFreshBookedQtyFromStorage(productId, uomId, huId).orElse(Quantity.zero(uom));
+			}
+			else
+			{
+
+				qtyBook = Quantity.of(inventoryLineRecord.getQtyBook(), uom);
+			}
+
 			qtyCount = Quantity.of(inventoryLineRecord.getQtyCount(), uom);
 		}
 
@@ -283,7 +328,20 @@ public class InventoryRepository
 		}
 		else
 		{
-			final Quantity qtyBook = Quantity.of(inventoryLineHURecord.getQtyBook(), uom);
+			final Quantity qtyBook;
+			if (inventoryLineHURecord.getM_HU_ID() > 0)
+			{
+				//refresh bookedQty from HU
+				final ProductId productId = uomConversionCtx.getProductId();
+				final HuId huId = HuId.ofRepoId(inventoryLineHURecord.getM_HU_ID());
+
+				qtyBook = getFreshBookedQtyFromStorage(productId, targetUomId, huId).orElse(Quantity.zero(uom));
+			}
+			else
+			{
+				qtyBook = Quantity.of(inventoryLineHURecord.getQtyBook(), uom);
+			}
+
 			final Quantity qtyCount = Quantity.of(inventoryLineHURecord.getQtyCount(), uom);
 
 			qtyInternalUseConv = null;
@@ -463,6 +521,32 @@ public class InventoryRepository
 			// the pre-existing records that we did not see until now are not needed anymore; delete them.
 			InterfaceWrapperHelper.deleteAll(existingInventoryLineHURecords.values());
 		}
+	}
+
+	public Optional<Quantity> getFreshBookedQtyFromStorage(@NonNull final ProductId productId, @NonNull final UomId inventoryLineUOMId, @NonNull final HuId huId)
+	{
+		Optional<Quantity> bookedQty = Optional.empty();
+
+		final I_M_HU hu = huDAO.getById(huId);
+
+		final List<IHUProductStorage> huProductStorages = huStorageFactory.getHUProductStorages(ImmutableList.of(hu), productId);
+
+		if ( !huProductStorages.isEmpty() )
+		{
+			final IHUProductStorage huStorage = huProductStorages.get(0);
+
+			final I_C_UOM inventoryLineUOM = uomsRepo.getById(inventoryLineUOMId);
+
+			final BigDecimal qtyInInventoryUOM = convBL.convertQty(
+					UOMConversionContext.of(productId),
+					huStorage.getQty().toBigDecimal(),
+					huStorage.getQty().getUOM(),
+					inventoryLineUOM);
+
+			bookedQty = Optional.of(Quantity.of(qtyInInventoryUOM, inventoryLineUOM));
+		}
+
+		return bookedQty;
 	}
 
 	private static void updateInventoryLineHURecord(

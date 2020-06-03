@@ -1,22 +1,19 @@
 package de.metas.handlingunits.inventory.interceptor;
 
-import de.metas.handlingunits.HuId;
-import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.inventory.InventoryLine;
+import de.metas.handlingunits.inventory.InventoryLineRecordService;
 import de.metas.handlingunits.inventory.InventoryRepository;
-import de.metas.handlingunits.model.I_M_HU_Storage;
 import de.metas.handlingunits.model.I_M_InventoryLine;
-import de.metas.handlingunits.storage.IHUStorageDAO;
 import de.metas.inventory.HUAggregationType;
 import de.metas.inventory.InventoryLineId;
-import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
-import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.IUOMDAO;
-import de.metas.uom.UOMConversionContext;
-import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.callout.annotations.Callout;
+import org.adempiere.ad.callout.annotations.CalloutMethod;
+import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
+import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.compiere.model.I_C_UOM;
@@ -24,9 +21,6 @@ import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nullable;
-import java.math.BigDecimal;
-import java.util.Objects;
-import java.util.stream.Stream;
 
 /*
  * #%L
@@ -51,16 +45,23 @@ import java.util.stream.Stream;
  */
 
 @Interceptor(I_M_InventoryLine.class)
+@Callout(I_M_InventoryLine.class)
 @Component
 public class M_InventoryLine
 {
 	private final InventoryRepository inventoryLineRepository;
-	private final IHUStorageDAO huStorageDAO = Services.get(IHandlingUnitsBL.class).getStorageFactory().getHUStorageDAO();
-	private final IUOMConversionBL uomConversionBL =  Services.get(IUOMConversionBL.class);
+	private final InventoryLineRecordService inventoryLineRecordService;
 
-	public M_InventoryLine(@NonNull final InventoryRepository inventoryLineRepository)
+	public M_InventoryLine(@NonNull final InventoryRepository inventoryLineRepository, final InventoryLineRecordService inventoryLineRecordService)
 	{
 		this.inventoryLineRepository = inventoryLineRepository;
+		this.inventoryLineRecordService = inventoryLineRecordService;
+	}
+
+	@Init
+	public void registerCallout()
+	{
+		Services.get(IProgramaticCalloutProvider.class).registerAnnotatedCallout(this);
 	}
 
 	@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE, ifColumnsChanged = I_M_InventoryLine.COLUMNNAME_QtyCount)
@@ -104,37 +105,9 @@ public class M_InventoryLine
 		inventoryLineRepository.deleteInventoryLineHUs(inventoryLineId);
 	}
 
-	@ModelChange(timings = {ModelValidator.TYPE_BEFORE_CHANGE, ModelValidator.TYPE_BEFORE_NEW},
-			ifColumnsChanged = {I_M_InventoryLine.COLUMNNAME_M_HU_ID, I_M_InventoryLine.COLUMNNAME_M_Product_ID, I_M_InventoryLine.COLUMNNAME_C_UOM_ID})
+	@CalloutMethod(columnNames = { I_M_InventoryLine.COLUMNNAME_M_HU_ID, I_M_InventoryLine.COLUMNNAME_M_Product_ID, I_M_InventoryLine.COLUMNNAME_C_UOM_ID })
 	public void setQtyBookedFromHU(@NonNull final I_M_InventoryLine inventoryLineRecord)
 	{
-		final ProductId productId = ProductId.ofRepoIdOrNull(inventoryLineRecord.getM_Product_ID());
-		final UomId inventoryLineUOMId = UomId.ofRepoIdOrNull(inventoryLineRecord.getC_UOM_ID());
-		final HuId huId = HuId.ofRepoIdOrNull(inventoryLineRecord.getM_HU_ID());
-
-		final boolean allIdsPresent = Stream.of(huId, productId, inventoryLineUOMId)
-				.allMatch(Objects::nonNull);
-
-		if (allIdsPresent)
-		{
-			final I_M_HU_Storage huStorage = huStorageDAO.retrieveStorage(inventoryLineRecord.getM_HU(), productId);
-
-			if (huStorage != null)
-			{
-				final UomId storageUOMId = UomId.ofRepoId(huStorage.getC_UOM_ID());
-
-				final BigDecimal qtyInInventoryUOM = uomConversionBL.convertQty(
-						UOMConversionContext.of(productId),
-						huStorage.getQty(),
-						storageUOMId,
-						inventoryLineUOMId);
-
-				inventoryLineRecord.setQtyBook(qtyInInventoryUOM);
-			}
-		}
-		else
-		{
-			inventoryLineRecord.setQtyBook(BigDecimal.ZERO);
-		}
+		inventoryLineRecordService.setQtyBookedFromStorage(inventoryLineRecord);
 	}
 }
