@@ -202,25 +202,26 @@ export function updateGridTable(tableId, tableResponse) {
           headerElements: tableResponse.columnsByFieldName,
           keyProperty: 'id',
         });
-        const { collapsible, expandedDepth } = tableExists;
+        const { collapsible, expandedDepth, keyProperty } = tableExists;
 
         // Parse `rows` to add `indent` property
         if (tableData.rows.length) {
           tableData.rows = flattenRows(tableData.rows);
         }
 
-        const { rows, keyProperty } = tableData;
-
         dispatch(updateTable(tableId, tableData));
-        dispatch(
-          createCollapsedRows({
-            tableId,
-            rows,
-            collapsible,
-            expandedDepth,
-            keyProperty,
-          })
-        );
+
+        if (collapsible) {
+          dispatch(
+            createCollapsedRows({
+              tableId,
+              rows: tableData.rows,
+              collapsible,
+              expandedDepth,
+              keyProperty,
+            })
+          );
+        }
 
         return Promise.resolve(true);
       } else {
@@ -232,23 +233,25 @@ export function updateGridTable(tableId, tableResponse) {
           headerElements: tableResponse.columnsByFieldName,
           keyProperty: 'id',
         });
+        const { collapsible, expandedDepth, keyProperty } = tableData;
 
         if (tableData.rows.length && collapsible) {
           tableData.rows = flattenRows(tableData.rows);
         }
 
-        const { rows, collapsible, expandedDepth, keyProperty } = tableData;
-
         dispatch(createTable(tableId, tableData));
-        dispatch(
-          createCollapsedRows({
-            tableId,
-            rows,
-            collapsible,
-            expandedDepth,
-            keyProperty,
-          })
-        );
+
+        if (collapsible) {
+          dispatch(
+            createCollapsedRows({
+              tableId,
+              rows: tableData.rows,
+              collapsible,
+              expandedDepth,
+              keyProperty,
+            })
+          );
+        }
       }
 
       return Promise.resolve(true);

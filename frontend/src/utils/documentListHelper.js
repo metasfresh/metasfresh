@@ -2,6 +2,7 @@ import PropTypes from 'prop-types';
 import { Map as iMap } from 'immutable';
 import Moment from 'moment-timezone';
 import currentDevice from 'current-device';
+import deepUnfreeze from 'deep-unfreeze';
 
 import { getItemsByProperty, nullToEmptyStrings } from './index';
 import { getSelectionInstant } from '../reducers/windowHandler';
@@ -399,6 +400,9 @@ export function flattenRows(rowData) {
 export function mapIncluded(node, indent, isParentLastChild = false) {
   let ind = indent ? indent : [];
   let result = [];
+
+  // because immer freezes objects
+  node = deepUnfreeze(node);
 
   const nodeCopy = {
     ...node,
