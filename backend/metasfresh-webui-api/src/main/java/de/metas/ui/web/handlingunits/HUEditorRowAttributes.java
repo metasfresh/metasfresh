@@ -347,6 +347,17 @@ public class HUEditorRowAttributes implements IViewRowAttributes
 		return Optional.ofNullable(bestBeforeDate);
 	}
 
+	public Optional<BigDecimal> getWeightGross()
+	{
+		return toWeightable().map(IWeightable::getWeightGross);
+	}
+
+	public Optional<IWeightable> toWeightable()
+	{
+		final IWeightable weightable = Weightables.wrap(attributesStorage);
+		return Optional.ofNullable(weightable);
+	}
+
 	public Object getValue(@NonNull final AttributeCode attributeCode)
 	{
 		return attributesStorage.getValue(attributeCode);

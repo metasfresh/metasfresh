@@ -1,7 +1,36 @@
 package de.metas.ui.web.handlingunits;
 
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+
+import java.math.BigDecimal;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.time.LocalDate;
+import java.util.Collection;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import javax.annotation.Nullable;
+
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.service.IADReferenceDAO;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.DBException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.model.PlainContextAware;
+import org.compiere.model.I_C_UOM;
+import org.compiere.util.DB;
+import org.compiere.util.Env;
+import org.slf4j.Logger;
+
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+
 import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUQueryBuilder;
@@ -53,31 +82,6 @@ import de.metas.util.Services;
 import de.metas.util.collections.PagedIterator.Page;
 import lombok.Builder;
 import lombok.NonNull;
-import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.service.IADReferenceDAO;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.exceptions.DBException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.model.PlainContextAware;
-import org.compiere.model.I_C_UOM;
-import org.compiere.util.DB;
-import org.compiere.util.Env;
-import org.slf4j.Logger;
-
-import javax.annotation.Nullable;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.time.LocalDate;
-import java.util.Collection;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 /*
  * #%L
@@ -114,6 +118,7 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 	private final HUReservationService huReservationService;
 
 	private final boolean showBestBeforeDate;
+	private final boolean showWeightGross;
 
 	private final SqlViewBinding sqlViewBinding;
 	private final ViewRowIdsOrderedSelectionFactory viewSelectionFactory;
@@ -126,13 +131,15 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 			@Nullable final HUEditorRowAttributesProvider attributesProvider,
 			@Nullable final HUEditorRowIsProcessedPredicate rowProcessedPredicate,
 			@NonNull final HUReservationService huReservationService,
-			final boolean showBestBeforeDate)
+			final boolean showBestBeforeDate,
+			final boolean showWeightGross)
 	{
 		this.windowId = windowId;
 
 		this.attributesProvider = attributesProvider;
 		this.rowProcessedPredicate = rowProcessedPredicate != null ? rowProcessedPredicate : HUEditorRowIsProcessedPredicates.NEVER;
 		this.showBestBeforeDate = showBestBeforeDate;
+		this.showWeightGross = showWeightGross;
 
 		this.sqlViewBinding = sqlViewBinding;
 		viewSelectionFactory = SqlViewRowIdsOrderedSelectionFactory.of(sqlViewBinding);
@@ -258,9 +265,13 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 			huEditorRow.setBestBeforeDate(extractBestBeforeDate(attributesProvider, rowId));
 		}
 
+		if (showWeightGross)
+		{
+			huEditorRow.setWeightGross(extractWeightGross(attributesProvider, rowId));
+		}
+
 		//
 		// Locator
-
 		huEditorRow.setLocator(createLocatorLookupValue(hu.getM_Locator_ID()));
 
 		//
@@ -468,7 +479,10 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 		return JSONLookupValue.of(huStatusKey, huStatusDisplayName);
 	}
 
-	private static LocalDate extractBestBeforeDate(final HUEditorRowAttributesProvider attributesProvider, final HUEditorRowId rowId)
+	@Nullable
+	private static LocalDate extractBestBeforeDate(
+			@Nullable final HUEditorRowAttributesProvider attributesProvider,
+			@NonNull final HUEditorRowId rowId)
 	{
 		if (attributesProvider == null)
 		{
@@ -478,6 +492,21 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 		final DocumentId attributesKey = attributesProvider.createAttributeKey(rowId.getHuId());
 		final HUEditorRowAttributes attributes = attributesProvider.getAttributes(rowId.toDocumentId(), attributesKey);
 		return attributes.getBestBeforeDate().orElse(null);
+	}
+
+	@Nullable
+	private static BigDecimal extractWeightGross(
+			@Nullable final HUEditorRowAttributesProvider attributesProvider,
+			@NonNull final HUEditorRowId rowId)
+	{
+		if (attributesProvider == null)
+		{
+			return null;
+		}
+
+		final DocumentId attributesKey = attributesProvider.createAttributeKey(rowId.getHuId());
+		final HUEditorRowAttributes attributes = attributesProvider.getAttributes(rowId.toDocumentId(), attributesKey);
+		return attributes.getWeightGross().orElse(null);
 	}
 
 	@Override
