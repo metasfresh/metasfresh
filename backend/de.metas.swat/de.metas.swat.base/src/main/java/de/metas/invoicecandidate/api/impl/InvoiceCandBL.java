@@ -1343,6 +1343,8 @@ public class InvoiceCandBL implements IInvoiceCandBL
 
 				final I_C_Invoice_Candidate invoiceCandidate = ilaToReverse.getC_Invoice_Candidate();
 				invoiceCandidate.setProcessed_Override(null); // reset processed_override, because now that the invoice was reversed, the users might want to do something new with the IC.
+				
+				invoiceCandidate.setApprovalForInvoicing(false);
 
 				// #870
 				// Make sure that, when an invoice is reversed, the QtyToInvoice_Override and PriceEntered_Override are set back in the invoice candidate based on the values in the allocations
@@ -1427,11 +1429,11 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	 */
 	private static void setQtyAndPriceOverride(final int invoiceCandidateId, final BigDecimal qtyToInvoiceOverride, final BigDecimal priceEnteredOverride)
 	{
-			final I_C_Invoice_Candidate invoiceCandidate = InterfaceWrapperHelper.load(invoiceCandidateId, I_C_Invoice_Candidate.class);
-			invoiceCandidate.setQtyToInvoice_Override(qtyToInvoiceOverride);
-			invoiceCandidate.setPriceEntered_Override(priceEnteredOverride);
-			invoiceCandidate.setQtyToInvoice_OverrideFulfilled(ZERO);
-			InterfaceWrapperHelper.save(invoiceCandidate);
+		final I_C_Invoice_Candidate invoiceCandidate = InterfaceWrapperHelper.load(invoiceCandidateId, I_C_Invoice_Candidate.class);
+		invoiceCandidate.setQtyToInvoice_Override(qtyToInvoiceOverride);
+		invoiceCandidate.setPriceEntered_Override(priceEnteredOverride);
+		invoiceCandidate.setQtyToInvoice_OverrideFulfilled(ZERO);
+		InterfaceWrapperHelper.save(invoiceCandidate);
 	}
 
 	@Override
@@ -1468,6 +1470,17 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			// here we will get ZERO candidates
 			{
 				final List<I_C_Invoice_Candidate> invoiceCands = invoiceCandDAO.retrieveIcForIl(il);
+
+				//
+				if (creditMemoReinvoicable)
+				{
+					for (I_C_Invoice_Candidate invoiceCandidate : invoiceCands)
+					{
+						invoiceCandidate.setApprovalForInvoicing(false);
+						Services.get(IInvoiceCandDAO.class).save(invoiceCandidate);
+					}
+				}
+
 				invoiceCandDAO.invalidateCands(invoiceCands);
 			}
 
@@ -2047,7 +2060,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 				if (processedOverride.isTrue())
 				{
 					candidate.setProcessed_Override(null);
-					InterfaceWrapperHelper.save(candidate);
+					invoiceCandDAO.save(candidate);
 				}
 			}
 		}
