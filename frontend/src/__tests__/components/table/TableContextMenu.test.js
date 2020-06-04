@@ -1,5 +1,5 @@
 import React from 'react';
-import { shallow, mount } from 'enzyme';
+import { mount } from 'enzyme';
 // import { ShortcutProvider } from '../../../components/keyshortcuts/ShortcutProvider';
 import { initialState as appHandlerState } from '../../../reducers/appHandler';
 import { initialState as windowHandlerState } from '../../../reducers/windowHandler';
@@ -46,7 +46,7 @@ describe('TableContextMenu', () => {
     const html = wrapperTableCMenu.html();
 
     expect(html).toContain(
-      `<div class="context-menu context-menu-open panel-bordered panel-primary" tabindex="0">`
+      `context-menu context-menu-open panel-bordered panel-primary`
     );
     expect(html).toContain(`<hr class="context-menu-separator">`);
     expect(html).toContain(`<i class="meta-icon-settings"></i>`);

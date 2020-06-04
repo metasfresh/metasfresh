@@ -881,10 +881,6 @@ input[type=checkbox]:disabled, input[type=radio]:disabled {
     margin-top:5px;
     width: 450px;
 }
-.attributes-dropup {
-  bottom: 35px;
-}
-
 
 /* Others */
 .number-field {
