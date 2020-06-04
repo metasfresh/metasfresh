@@ -6,6 +6,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.function.Predicate;
 
+import de.metas.organization.ClientAndOrgId;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IContextAware;
@@ -80,9 +81,10 @@ public interface IHandlingUnitsBL extends ISingletonService
 	 * Creates a mutable context with the given <code>ctx</code> (may not be <code>null</code>) and <code>trxName=ITrx.TRXNAME_None</code>.
 	 *
 	 * @param ctx
+	 * @param clientAndOrgId
 	 * @return
 	 */
-	IMutableHUContext createMutableHUContext(Properties ctx);
+	IMutableHUContext createMutableHUContext(Properties ctx, final @NonNull ClientAndOrgId clientAndOrgId);
 
 	/**
 	 * Creates a mutable context with the given <code>ctx</code> and <code>trxName</code>.

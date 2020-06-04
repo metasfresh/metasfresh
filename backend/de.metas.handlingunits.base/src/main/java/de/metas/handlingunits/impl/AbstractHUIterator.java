@@ -33,6 +33,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
+import de.metas.organization.ClientAndOrgId;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.IMutable;
 import org.adempiere.util.lang.Mutable;
@@ -135,7 +136,9 @@ public abstract class AbstractHUIterator implements IHUIterator
 		if (_huContext == null)
 		{
 			final Properties ctxToUse = Env.coalesce(ctx);
-			final IMutableHUContext huContextNew = handlingUnitsBL.createMutableHUContext(ctxToUse);
+			// I'm not sure if currentHU is null to take the data from it, so i'm not sure if clientAndOrgId is created correctly
+			final  ClientAndOrgId clientAndOrgId = ClientAndOrgId.ofClientAndOrg(Env.getAD_Client_ID(), Env.getAD_Org_ID(ctxToUse));
+			final IMutableHUContext huContextNew = handlingUnitsBL.createMutableHUContext(ctxToUse, clientAndOrgId);
 
 			Check.assumeNotNull(_date, "date not null");
 			huContextNew.setDate(_date);

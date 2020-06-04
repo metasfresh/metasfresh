@@ -6,7 +6,9 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
+import java.util.Properties;
 
+import de.metas.organization.ClientAndOrgId;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_C_UOM;
@@ -107,7 +109,8 @@ class HURepositoryTest
 	@Test
 	void getById()
 	{
-		final IMutableHUContext huContext = Services.get(IHUContextFactory.class).createMutableHUContext(Env.getCtx());
+		final Properties ctx = Env.getCtx();
+		final IMutableHUContext huContext = Services.get(IHUContextFactory.class).createMutableHUContext(ctx, ClientAndOrgId.ofClientAndOrg(Env.getAD_Client_ID(), Env.getAD_Org_ID(ctx)));
 
 		final I_M_Attribute attrRecord = newInstance(I_M_Attribute.class);
 		attrRecord.setAttributeValueType(X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40);

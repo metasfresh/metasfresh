@@ -14,6 +14,7 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 
+import de.metas.organization.ClientAndOrgId;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_InOut;
@@ -111,7 +112,9 @@ public class CustomerReturnsInOutProducer extends AbstractReturnsInOutProducer
 	@Override
 	protected void createLines()
 	{
-		final IHUContext huContext = handlingUnitsBL.createMutableHUContext(getCtx());
+		// I'm not sure if currentHU is null to take the data from it, so i'm not sure if clientAndOrgId is created correctly
+		final ClientAndOrgId clientAndOrgId = ClientAndOrgId.ofClientAndOrg(Env.getAD_Client_ID(), Env.getAD_Org_ID(getCtx()));
+		final IHUContext huContext = handlingUnitsBL.createMutableHUContext(getCtx(), clientAndOrgId);
 
 		for (final HUToReturn huToReturnInfo : getHUsToReturn())
 		{
