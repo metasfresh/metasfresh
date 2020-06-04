@@ -28,7 +28,7 @@ import java.util.List;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.adempiere.form.terminal.context.ITerminalContextService;
 import de.metas.handlingunits.IHUQueryBuilder;
-import de.metas.handlingunits.attribute.IWeightable;
+import de.metas.handlingunits.attribute.weightable.IWeightable;
 import de.metas.handlingunits.client.terminal.editor.model.impl.HUEditorModel;
 import de.metas.handlingunits.client.terminal.editor.model.impl.HUKey;
 import de.metas.handlingunits.client.terminal.editor.model.impl.HUKeyAttributeStorageFactory;

@@ -30,6 +30,7 @@ import java.util.Date;
 
 import javax.annotation.Nullable;
 
+import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeValueId;
 import org.adempiere.mm.attributes.exceptions.AttributeNotFoundException;
@@ -54,7 +55,12 @@ public interface IAttributeSet
 	/**
 	 * @return true if the given attribute is available for getting/setting
 	 */
-	boolean hasAttribute(String attribute);
+	boolean hasAttribute(AttributeCode attributeCode);
+
+	default boolean hasAttribute(String attributeKey)
+	{
+		return hasAttribute(AttributeCode.ofString(attributeKey));
+	}
 
 	boolean hasAttribute(AttributeId attributeId);
 
@@ -90,7 +96,12 @@ public interface IAttributeSet
 	 * @return value of given attribute
 	 * @throws AttributeNotFoundException if given attribute was not found or is not supported
 	 */
-	Object getValue(String attributeKey);
+	Object getValue(AttributeCode attributeCode);
+
+	default Object getValue(String attributeKey)
+	{
+		return getValue(AttributeCode.ofString(attributeKey));
+	}
 
 	default Object getValue(@NonNull final I_M_Attribute attribute)
 	{
@@ -101,7 +112,12 @@ public interface IAttributeSet
 	 * @return BigDecimal value of given attribute
 	 * @throws AttributeNotFoundException if given attribute was not found or is not supported
 	 */
-	BigDecimal getValueAsBigDecimal(String attributeKey);
+	BigDecimal getValueAsBigDecimal(AttributeCode attributeCode);
+
+	default BigDecimal getValueAsBigDecimal(String attributeKey)
+	{
+		return getValueAsBigDecimal(AttributeCode.ofString(attributeKey));
+	}
 
 	default BigDecimal getValueAsBigDecimal(final I_M_Attribute attribute)
 	{
@@ -112,23 +128,23 @@ public interface IAttributeSet
 	 * @return integer value of given attribute
 	 * @throws AttributeNotFoundException if given attribute was not found or is not supported
 	 */
-	int getValueAsInt(String attributeKey);
+	int getValueAsInt(AttributeCode attributeCode);
+
+	default int getValueAsInt(String attributeKey)
+	{
+		return getValueAsInt(AttributeCode.ofString(attributeKey));
+	}
 
 	default int getValueAsInt(final I_M_Attribute attribute)
 	{
 		return getValueAsInt(attribute.getValue());
 	}
 
-	Date getValueAsDate(String attributeKey);
+	Date getValueAsDate(AttributeCode attributeCode);
 
-	default LocalDateTime getValueAsLocalDateTime(final String attributeKey)
+	default Date getValueAsDate(String attributeKey)
 	{
-		return TimeUtil.asLocalDateTime(getValueAsDate(attributeKey));
-	}
-
-	default LocalDate getValueAsLocalDate(final String attributeKey)
-	{
-		return TimeUtil.asLocalDate(getValueAsDate(attributeKey));
+		return getValueAsDate(AttributeCode.ofString(attributeKey));
 	}
 
 	default Date getValueAsDate(final I_M_Attribute attribute)
@@ -136,15 +152,40 @@ public interface IAttributeSet
 		return getValueAsDate(attribute.getValue());
 	}
 
-	String getValueAsString(String attributeKey);
+	default LocalDateTime getValueAsLocalDateTime(final AttributeCode attributeCode)
+	{
+		return TimeUtil.asLocalDateTime(getValueAsDate(attributeCode));
+	}
+
+	default LocalDateTime getValueAsLocalDateTime(final String attributeKey)
+	{
+		return TimeUtil.asLocalDateTime(getValueAsDate(attributeKey));
+	}
+
+	default LocalDate getValueAsLocalDate(final AttributeCode attributeCode)
+	{
+		return TimeUtil.asLocalDate(getValueAsDate(attributeCode));
+	}
+
+	default LocalDate getValueAsLocalDate(final String attributeKey)
+	{
+		return TimeUtil.asLocalDate(getValueAsDate(attributeKey));
+	}
+
+	String getValueAsString(AttributeCode attributeCode);
+
+	default String getValueAsString(@NonNull final String attributeKey)
+	{
+		return getValueAsString(AttributeCode.ofString(attributeKey));
+	}
 
 	default String getValueAsString(@NonNull final I_M_Attribute attribute)
 	{
-		return getValueAsString(attribute.getValue());
+		return getValueAsString(AttributeCode.ofString(attribute.getValue()));
 	}
 
 	@Nullable
-	default AttributeValueId getAttributeValueIdOrNull(final String attributeKey)
+	default AttributeValueId getAttributeValueIdOrNull(final AttributeCode attributeCode)
 	{
 		return null;
 	}
@@ -154,7 +195,12 @@ public interface IAttributeSet
 	 *
 	 * @throws AttributeNotFoundException if given attribute was not found or is not supported
 	 */
-	void setValue(String attribute, Object value);
+	void setValue(AttributeCode attributeCode, Object value);
+
+	default void setValue(String attribute, Object value)
+	{
+		setValue(AttributeCode.ofString(attribute), value);
+	}
 
 	void setValue(AttributeId attributeId, Object value);
 

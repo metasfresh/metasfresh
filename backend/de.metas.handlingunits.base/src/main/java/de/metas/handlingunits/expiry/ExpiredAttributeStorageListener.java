@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.mm.attributes.spi.IAttributeValueContext;
 import org.compiere.model.I_M_Product;
@@ -75,8 +76,8 @@ public class ExpiredAttributeStorageListener implements IAttributeStorageListene
 			return;
 		}
 
-		final String attributeIdentifier = attributeValue.getM_Attribute().getValue();
-		final boolean relevantAttributeHasChanged = AttributeConstants.ATTR_BestBeforeDate.equals(attributeIdentifier);
+		final AttributeCode attributeCode = attributeValue.getAttributeCode();
+		final boolean relevantAttributeHasChanged = AttributeConstants.ATTR_BestBeforeDate.equals(attributeCode);
 		if (!relevantAttributeHasChanged)
 		{
 			return;

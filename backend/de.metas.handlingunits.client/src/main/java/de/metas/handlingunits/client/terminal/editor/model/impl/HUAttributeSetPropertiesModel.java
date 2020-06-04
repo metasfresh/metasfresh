@@ -13,15 +13,14 @@ package de.metas.handlingunits.client.terminal.editor.model.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.awt.im.spi.InputMethod;
 import java.math.BigDecimal;
@@ -67,10 +66,10 @@ import de.metas.device.api.IDeviceRequest;
 import de.metas.device.api.ISingleValueResponse;
 import de.metas.handlingunits.attribute.IAttributeValue;
 import de.metas.handlingunits.attribute.IHUAttributesDAO;
-import de.metas.handlingunits.attribute.IWeightableBL;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageListener;
 import de.metas.handlingunits.attribute.storage.impl.NullAttributeStorage;
+import de.metas.handlingunits.attribute.weightable.Weightables;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
@@ -478,7 +477,7 @@ public class HUAttributeSetPropertiesModel extends AbstractPropertiesPanelModel
 	{
 		final boolean weightableOnlyIfVHU = attributesEditableOnlyIfVHU;
 		final IAttributeValueContext calloutCtx = new DefaultAttributeValueContext();
-		calloutCtx.setParameter(IWeightableBL.PROPERTY_WeightableOnlyIfVHU, weightableOnlyIfVHU);
+		calloutCtx.setParameter(Weightables.PROPERTY_WeightableOnlyIfVHU, weightableOnlyIfVHU);
 		return calloutCtx;
 	}
 
@@ -566,7 +565,6 @@ public class HUAttributeSetPropertiesModel extends AbstractPropertiesPanelModel
 			final List<String> propertyNames = new ArrayList<>();
 			final Map<String, I_M_Attribute> propertyName2attribute = new HashMap<>();
 			final HashMap<String, List<IInputMethod<?>>> propertyName2AdditionalInputAction = new HashMap<>(); // task 04966
-
 
 			for (final IAttributeValue attributeValue : attributeStorage.getAttributeValues())
 			{
@@ -673,7 +671,6 @@ public class HUAttributeSetPropertiesModel extends AbstractPropertiesPanelModel
 			return virtualHU;
 		}
 	}
-
 
 	private static final class DeviceAccessorAsInputMethod implements IInputMethod<Object>
 	{

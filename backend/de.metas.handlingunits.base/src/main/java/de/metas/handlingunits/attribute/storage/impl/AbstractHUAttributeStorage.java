@@ -64,6 +64,7 @@ import de.metas.handlingunits.model.I_M_HU_PI_Version;
 import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.handlingunits.storage.IHUStorageDAO;
 import de.metas.handlingunits.storage.IHUStorageFactory;
+import de.metas.uom.UOMType;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -390,7 +391,7 @@ public abstract class AbstractHUAttributeStorage extends AbstractAttributeStorag
 	}
 
 	@Override
-	public final String getQtyUOMTypeOrNull()
+	public final UOMType getQtyUOMTypeOrNull()
 	{
 		final I_M_HU hu = getM_HU();
 		final IHUStorageDAO huStorageDAO = getHUStorageDAO();

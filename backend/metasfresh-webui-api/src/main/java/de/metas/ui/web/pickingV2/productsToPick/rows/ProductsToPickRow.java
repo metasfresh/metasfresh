@@ -99,20 +99,20 @@ public class ProductsToPickRow implements IViewRow
 
 	public static final String FIELD_LotNumber = "lotNumber";
 	@ViewColumn(fieldName = FIELD_LotNumber, widgetType = DocumentFieldWidgetType.Text, //
-			captionKey = ProductsToPickRowsDataFactory.ATTR_LotNumber, captionTranslationSource = TranslationSource.ATTRIBUTE_NAME, //
+			captionKey = ProductsToPickRowsDataFactory.ATTR_LotNumber_String, captionTranslationSource = TranslationSource.ATTRIBUTE_NAME, //
 			widgetSize = WidgetSize.Small)
 	private final String lotNumber;
 
 	public static final String FIELD_ExpiringDate = "expiringDate";
 	@ViewColumn(fieldName = FIELD_ExpiringDate, widgetType = DocumentFieldWidgetType.LocalDate, //
-			captionKey = ProductsToPickRowsDataFactory.ATTR_BestBeforeDate, captionTranslationSource = TranslationSource.ATTRIBUTE_NAME, //
+			captionKey = ProductsToPickRowsDataFactory.ATTR_BestBeforeDate_String, captionTranslationSource = TranslationSource.ATTRIBUTE_NAME, //
 			widgetSize = WidgetSize.Small)
 	@Getter
 	private final LocalDate expiringDate;
 
 	public static final String FIELD_RepackNumber = "repackNumber";
 	@ViewColumn(fieldName = FIELD_RepackNumber, widgetType = DocumentFieldWidgetType.Text, //
-			captionKey = ProductsToPickRowsDataFactory.ATTR_RepackNumber, captionTranslationSource = TranslationSource.ATTRIBUTE_NAME, //
+			captionKey = ProductsToPickRowsDataFactory.ATTR_RepackNumber_String, captionTranslationSource = TranslationSource.ATTRIBUTE_NAME, //
 			widgetSize = WidgetSize.Small)
 	private final String repackNumber;
 

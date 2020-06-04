@@ -1,4 +1,4 @@
-package de.metas.handlingunits.attribute;
+package de.metas.handlingunits.attribute.weightable;
 
 /*
  * #%L
@@ -13,25 +13,25 @@ package de.metas.handlingunits.attribute;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.math.BigDecimal;
 
+import org.adempiere.mm.attributes.AttributeCode;
 import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Attribute;
 
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 
 /**
- * Defines something which has weighting capabilities. Use {@link IWeightableFactory#createWeightableOrNull(org.adempiere.mm.attributes.api.IAttributeSet)} to get an instance.
+ * Defines something which has weighting capabilities.
+ * Use {@link Weightables} to get an instance.
  *
  * Mainly, it wraps an {@link IAttributeStorage} or (something else) and expose a lot of methods around the "Weightable HU" concern.
  */
@@ -75,11 +75,11 @@ public interface IWeightable
 	 */
 	boolean hasWeightGross();
 
-	I_M_Attribute getWeightTareAdjustAttribute();
+	AttributeCode getWeightTareAdjustAttribute();
 
 	BigDecimal getWeightTareAdjust();
 
-	I_M_Attribute getWeightTareAttribute();
+	AttributeCode getWeightTareAttribute();
 
 	/** @return Weight Tare's initial value (seed value) */
 	BigDecimal getWeightTareInitial();
@@ -89,7 +89,7 @@ public interface IWeightable
 	/** @return sum of all WeightTare values (i.e. {@link #getWeightTare()}, {@link #getWeightTareAdjust()}) */
 	BigDecimal getWeightTareTotal();
 
-	I_M_Attribute getWeightNetAttribute();
+	AttributeCode getWeightNetAttribute();
 
 	void setWeightNetNoPropagate(final BigDecimal weightNet);
 
@@ -103,7 +103,7 @@ public interface IWeightable
 
 	I_C_UOM getWeightNetUOM();
 
-	I_M_Attribute getWeightGrossAttribute();
+	AttributeCode getWeightGrossAttribute();
 
 	void setWeightGross(final BigDecimal weightGross);
 
@@ -113,23 +113,23 @@ public interface IWeightable
 	 * @param attribute
 	 * @return true if given attribute is the attribute used for the weight tare adjust
 	 */
-	boolean isWeightTareAdjustAttribute(final I_M_Attribute attribute);
+	boolean isWeightTareAdjustAttribute(final AttributeCode attribute);
 
 	/**
 	 * @param attribute
 	 * @return true if given attribute is the attribute used for the weight tare
 	 */
-	boolean isWeightTareAttribute(final I_M_Attribute attribute);
+	boolean isWeightTareAttribute(final AttributeCode attribute);
 
 	/**
 	 * @param attribute
 	 * @return true if given attribute is the attribute used for the weight net
 	 */
-	boolean isWeightNetAttribute(final I_M_Attribute attribute);
+	boolean isWeightNetAttribute(final AttributeCode attribute);
 
 	/**
 	 * @param attribute
 	 * @return true if given attribute is the attribute used for the weight gross
 	 */
-	boolean isWeightGrossAttribute(final I_M_Attribute attribute);
+	boolean isWeightGrossAttribute(final AttributeCode attribute);
 }

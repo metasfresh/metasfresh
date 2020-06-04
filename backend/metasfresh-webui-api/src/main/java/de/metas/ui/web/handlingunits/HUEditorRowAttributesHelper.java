@@ -5,6 +5,7 @@ import java.util.List;
 import javax.annotation.Nullable;
 
 import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.spi.IAttributeValuesProvider;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.WarehouseId;
@@ -87,13 +88,13 @@ import lombok.NonNull;
 		final ITranslatableString caption = attributeTrlMap.getColumnTrl(I_M_Attribute.COLUMNNAME_Name, attribute.getName());
 		final ITranslatableString description = attributeTrlMap.getColumnTrl(I_M_Attribute.COLUMNNAME_Description, attribute.getDescription());
 
-		final String attributeName = HUEditorRowAttributesHelper.extractAttributeName(attribute);
+		final AttributeCode attributeCode = HUEditorRowAttributesHelper.extractAttributeCode(attribute);
 
 		return DocumentLayoutElementDescriptor.builder()
 				.setCaption(caption)
 				.setDescription(description)
 				.setWidgetType(widgetType)
-				.addField(DocumentLayoutElementFieldDescriptor.builder(attributeName)
+				.addField(DocumentLayoutElementFieldDescriptor.builder(attributeCode.getCode())
 						.setPublicField(true)
 						.addDevices(createDevices(attribute.getValue(), warehouseId)))
 				.build();
@@ -123,14 +124,9 @@ import lombok.NonNull;
 				.build();
 	}
 
-	public static String extractAttributeName(final IAttributeValue attributeValue)
+	public static AttributeCode extractAttributeCode(final org.compiere.model.I_M_Attribute attribute)
 	{
-		return extractAttributeName(attributeValue.getM_Attribute());
-	}
-
-	public static String extractAttributeName(final org.compiere.model.I_M_Attribute attribute)
-	{
-		return attribute.getValue();
+		return AttributeCode.ofString(attribute.getValue());
 	}
 
 	public static Object extractJSONValue(

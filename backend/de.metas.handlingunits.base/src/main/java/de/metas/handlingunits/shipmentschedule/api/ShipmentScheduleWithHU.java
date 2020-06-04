@@ -37,6 +37,7 @@ import java.util.TreeSet;
 
 import javax.annotation.Nullable;
 
+import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.I_C_UOM;
@@ -269,15 +270,15 @@ public class ShipmentScheduleWithHU
 	{
 		logger.trace("Creating AttributesAggregationKey");
 
-		final ImmutableMap.Builder<String, Object> keyBuilder = ImmutableMap.builder();
+		final ImmutableMap.Builder<AttributeCode, Object> keyBuilder = ImmutableMap.builder();
 
 		for (final IAttributeValue attributeValue : getAttributeValues())
 		{
-			final String name = attributeValue.getM_Attribute().getValue();
+			final AttributeCode name = attributeValue.getAttributeCode();
 			final Object value = attributeValue.getValue();
 			keyBuilder.put(name, Null.box(value));
 		}
-		final ImmutableMap<String, Object> attributesAggregationKey = keyBuilder.build();
+		final ImmutableMap<AttributeCode, Object> attributesAggregationKey = keyBuilder.build();
 
 		logger.trace("AttributesAggregationKey created: {}", attributesAggregationKey);
 		return attributesAggregationKey;

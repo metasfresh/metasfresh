@@ -43,6 +43,7 @@ import org.compiere.util.Env;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UOMPrecision;
+import de.metas.uom.UOMType;
 import de.metas.uom.UOMUtil;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
@@ -179,5 +180,12 @@ public class UOMDAO implements IUOMDAO
 	{
 		final String x12de355 = getX12DE355ById(uomId);
 		return X12DE355_COLI.equals(x12de355) || X12DE355_TU.equals(x12de355);
+	}
+
+	@Override
+	public UOMType getUOMTypeById(@NonNull final UomId uomId)
+	{
+		final I_C_UOM uom = getById(uomId);
+		return UOMType.ofNullableCodeOrOther(uom.getUOMType());
 	}
 }

@@ -68,7 +68,7 @@ import de.metas.adempiere.form.terminal.TerminalKeyListenerAdapter;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
-import de.metas.handlingunits.attribute.IWeightable;
+import de.metas.handlingunits.attribute.weightable.IWeightable;
 import de.metas.handlingunits.client.terminal.editor.model.HUKeyVisitorAdapter;
 import de.metas.handlingunits.client.terminal.editor.model.IHUKey;
 import de.metas.handlingunits.client.terminal.editor.model.IHUKeyFactory;

@@ -4,13 +4,13 @@ import java.util.Optional;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.PlainContextAware;
+
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IMutableHUContext;
-import de.metas.handlingunits.attribute.IWeightable;
-import de.metas.handlingunits.attribute.IWeightableBL;
-import de.metas.handlingunits.attribute.IWeightableFactory;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
+import de.metas.handlingunits.attribute.weightable.IWeightable;
+import de.metas.handlingunits.attribute.weightable.Weightables;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
@@ -18,9 +18,12 @@ import de.metas.quantity.Quantity;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.quantity.StockQtyAndUOMQty.StockQtyAndUOMQtyBuilder;
 import de.metas.uom.IUOMConversionBL;
+import de.metas.uom.IUOMDAO;
 import de.metas.uom.UOMConversionContext;
+import de.metas.uom.UOMType;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
+import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 
 /*
@@ -98,13 +101,11 @@ public class CatchWeightHelper
 
 			assertUomWeightable(catchUomId);
 
-			final IWeightableFactory weightableFactory = Services.get(IWeightableFactory.class);
-
 			final IAttributeStorage attributeStorage = huContext
 					.getHUAttributeStorageFactory()
 					.getAttributeStorage(huRecord);
 
-			final IWeightable weightable = weightableFactory.createWeightableOrNull(attributeStorage);
+			final IWeightable weightable = Weightables.wrap(attributeStorage);
 
 			final Quantity weight = Quantity.of(weightable.getWeightNet(), weightable.getWeightNetUOM());
 			final Quantity catchQty = uomConversionBL.convertQuantityTo(weight, UOMConversionContext.of(productId), catchUomId);
@@ -114,10 +115,11 @@ public class CatchWeightHelper
 		return qtyPicked.build();
 	}
 
-	private void assertUomWeightable(final UomId catchUomId)
+	private void assertUomWeightable(@NonNull final UomId catchUomId)
 	{
-		final IWeightableBL weightableBL = Services.get(IWeightableBL.class);
-		if (!weightableBL.isWeightable(catchUomId))
+		final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
+		final UOMType catchUOMType = uomDAO.getUOMTypeById(catchUomId);
+		if (!catchUOMType.isWeight())
 		{
 			throw new AdempiereException("CatchUomId=" + catchUomId + " needs to be weightable");
 		}

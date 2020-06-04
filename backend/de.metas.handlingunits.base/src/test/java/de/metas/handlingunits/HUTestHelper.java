@@ -110,7 +110,6 @@ import de.metas.handlingunits.allocation.transfer.impl.TUMergeBuilder;
 import de.metas.handlingunits.attribute.HUAttributeConstants;
 import de.metas.handlingunits.attribute.IAttributeValue;
 import de.metas.handlingunits.attribute.impl.PlainAttributeValue;
-import de.metas.handlingunits.attribute.impl.WeightableFactory;
 import de.metas.handlingunits.attribute.propagation.impl.HUAttributePropagationContext;
 import de.metas.handlingunits.attribute.propagation.impl.NoPropagationHUAttributePropagator;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
@@ -124,6 +123,7 @@ import de.metas.handlingunits.attribute.strategy.impl.NullAggregationStrategy;
 import de.metas.handlingunits.attribute.strategy.impl.NullSplitterStrategy;
 import de.metas.handlingunits.attribute.strategy.impl.RedistributeQtyHUAttributeTransferStrategy;
 import de.metas.handlingunits.attribute.strategy.impl.SumAggregationStrategy;
+import de.metas.handlingunits.attribute.weightable.Weightables;
 import de.metas.handlingunits.hutransaction.IHUTrxBL;
 import de.metas.handlingunits.impl.CachedHUAndItemsDAO;
 import de.metas.handlingunits.model.I_DD_NetworkDistribution;
@@ -587,12 +587,12 @@ public class HUTestHelper
 		attr_Volume = attributesTestHelper.createM_Attribute(HUTestHelper.NAME_Volume_Attribute, X_M_Attribute.ATTRIBUTEVALUETYPE_Number, true);
 		attr_FragileSticker = attributesTestHelper.createM_Attribute(HUTestHelper.NAME_FragileSticker_Attribute, X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40, false);
 
-		attr_WeightGross = attributesTestHelper.createM_Attribute(WeightableFactory.ATTR_WeightGross_Value, X_M_Attribute.ATTRIBUTEVALUETYPE_Number, WeightGrossAttributeValueCallout.class, uomKg, true);
-		attr_WeightNet = attributesTestHelper.createM_Attribute(WeightableFactory.ATTR_WeightNet_Value, X_M_Attribute.ATTRIBUTEVALUETYPE_Number, WeightNetAttributeValueCallout.class, uomKg, true);
-		attr_WeightTare = attributesTestHelper.createM_Attribute(WeightableFactory.ATTR_WeightTare_Value, X_M_Attribute.ATTRIBUTEVALUETYPE_Number, WeightTareAttributeValueCallout.class, uomKg, true);
-		attr_WeightTareAdjust = attributesTestHelper.createM_Attribute(WeightableFactory.ATTR_WeightTareAdjust_Value, X_M_Attribute.ATTRIBUTEVALUETYPE_Number, WeightTareAdjustAttributeValueCallout.class, uomKg, true);
+		attr_WeightGross = attributesTestHelper.createM_Attribute(Weightables.ATTR_WeightGross.getCode(), X_M_Attribute.ATTRIBUTEVALUETYPE_Number, WeightGrossAttributeValueCallout.class, uomKg, true);
+		attr_WeightNet = attributesTestHelper.createM_Attribute(Weightables.ATTR_WeightNet.getCode(), X_M_Attribute.ATTRIBUTEVALUETYPE_Number, WeightNetAttributeValueCallout.class, uomKg, true);
+		attr_WeightTare = attributesTestHelper.createM_Attribute(Weightables.ATTR_WeightTare.getCode(), X_M_Attribute.ATTRIBUTEVALUETYPE_Number, WeightTareAttributeValueCallout.class, uomKg, true);
+		attr_WeightTareAdjust = attributesTestHelper.createM_Attribute(Weightables.ATTR_WeightTareAdjust.getCode(), X_M_Attribute.ATTRIBUTEVALUETYPE_Number, WeightTareAdjustAttributeValueCallout.class, uomKg, true);
 
-		attr_CostPrice = attributesTestHelper.createM_Attribute(HUAttributeConstants.ATTR_CostPrice, X_M_Attribute.ATTRIBUTEVALUETYPE_Number, null, null, true);
+		attr_CostPrice = attributesTestHelper.createM_Attribute(HUAttributeConstants.ATTR_CostPrice.getCode(), X_M_Attribute.ATTRIBUTEVALUETYPE_Number, null, null, true);
 
 		attr_QualityDiscountPercent = attributesTestHelper.createM_Attribute(HUAttributeConstants.ATTR_QualityDiscountPercent_Value, X_M_Attribute.ATTRIBUTEVALUETYPE_Number, true);
 		attr_QualityNotice = attributesTestHelper.createM_Attribute(HUAttributeConstants.ATTR_QualityNotice_Value, X_M_Attribute.ATTRIBUTEVALUETYPE_List, true);
@@ -603,16 +603,16 @@ public class HUTestHelper
 			createAttributeListValue(attr_QualityNotice, QUALITYNOTICE_Test2, QUALITYNOTICE_Test2);
 			createAttributeListValue(attr_QualityNotice, QUALITYNOTICE_Test3, QUALITYNOTICE_Test3);
 		}
-		attr_SubProducerBPartner = attributesTestHelper.createM_Attribute(AttributeConstants.ATTR_SubProducerBPartner_Value, X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40, true);
+		attr_SubProducerBPartner = attributesTestHelper.createM_Attribute(AttributeConstants.ATTR_SubProducerBPartner_Value.getCode(), X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40, true);
 
 		attr_M_Material_Tracking_ID = attributesTestHelper.createM_Attribute(NAME_M_Material_Tracking_ID_Attribute, X_M_Attribute.ATTRIBUTEVALUETYPE_Number, true);
 
-		attr_LotNumberDate = attributesTestHelper.createM_Attribute(HUAttributeConstants.ATTR_LotNumberDate, X_M_Attribute.ATTRIBUTEVALUETYPE_Date, true);
+		attr_LotNumberDate = attributesTestHelper.createM_Attribute(HUAttributeConstants.ATTR_LotNumberDate.getCode(), X_M_Attribute.ATTRIBUTEVALUETYPE_Date, true);
 
-		attr_LotNumber = attributesTestHelper.createM_Attribute(LotNumberDateAttributeDAO.ATTR_LotNumber, X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40, true);
+		attr_LotNumber = attributesTestHelper.createM_Attribute(LotNumberDateAttributeDAO.ATTR_LotNumber.getCode(), X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40, true);
 
-		attr_PurchaseOrderLine = attributesTestHelper.createM_Attribute(HUAttributeConstants.ATTR_PurchaseOrderLine_ID, X_M_Attribute.ATTRIBUTEVALUETYPE_Number, true);
-		attr_ReceiptInOutLine = attributesTestHelper.createM_Attribute(HUAttributeConstants.ATTR_ReceiptInOutLine_ID, X_M_Attribute.ATTRIBUTEVALUETYPE_Number, true);
+		attr_PurchaseOrderLine = attributesTestHelper.createM_Attribute(HUAttributeConstants.ATTR_PurchaseOrderLine_ID.getCode(), X_M_Attribute.ATTRIBUTEVALUETYPE_Number, true);
+		attr_ReceiptInOutLine = attributesTestHelper.createM_Attribute(HUAttributeConstants.ATTR_ReceiptInOutLine_ID.getCode(), X_M_Attribute.ATTRIBUTEVALUETYPE_Number, true);
 
 		// FIXME: this is a workaround because we are not handling the UOM conversions in our HU tests
 		createUOMConversion(

@@ -6,9 +6,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.spi.impl.WeightTareAttributeValueCallout;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_M_Attribute;
 
 import com.google.common.annotations.VisibleForTesting;
 
@@ -21,9 +21,9 @@ import de.metas.handlingunits.allocation.impl.AllocationUtils;
 import de.metas.handlingunits.allocation.impl.HUListAllocationSourceDestination;
 import de.metas.handlingunits.allocation.impl.HULoader;
 import de.metas.handlingunits.allocation.impl.HUProducerDestination;
-import de.metas.handlingunits.attribute.IWeightable;
-import de.metas.handlingunits.attribute.IWeightableFactory;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
+import de.metas.handlingunits.attribute.weightable.IWeightable;
+import de.metas.handlingunits.attribute.weightable.Weightables;
 import de.metas.handlingunits.hutransaction.IHUTransactionCandidate;
 import de.metas.handlingunits.hutransaction.IHUTrxListener;
 import de.metas.handlingunits.model.I_M_HU;
@@ -195,8 +195,8 @@ public class AggregateHUTrxListener implements IHUTrxListener
 			final I_M_HU aggregateVHU = handlingUnitsDAO.retrieveIncludedHUs(item).get(0);
 			final IAttributeStorage aggregateVHUAttributeStorage = huContext.getHUAttributeStorageFactory().getAttributeStorage(aggregateVHU);
 
-			final IWeightable aggregateVHUWeightable = Services.get(IWeightableFactory.class).createWeightableOrNull(aggregateVHUAttributeStorage);
-			final I_M_Attribute aggregateVHUWeightTareAttribute = aggregateVHUWeightable.getWeightTareAttribute();
+			final IWeightable aggregateVHUWeightable = Weightables.wrap(aggregateVHUAttributeStorage);
+			final AttributeCode aggregateVHUWeightTareAttribute = aggregateVHUWeightable.getWeightTareAttribute();
 			if (aggregateVHUAttributeStorage.hasAttribute(aggregateVHUWeightTareAttribute))
 			{
 				final BigDecimal tareOfAggregateVHU = WeightTareAttributeValueCallout.calculateWeightTare(aggregateVHU);
