@@ -18,42 +18,6 @@ import { mapIncluded } from '../utils/documentListHelper';
 import Table from '../components/table/Table';
 
 class TableContainer extends PureComponent {
-  constructor(props) {
-    super(props);
-
-    this.state = {};
-    this._isMounted = false;
-  }
-
-  componentDidMount() {
-    this._isMounted = true;
-  }
-
-  componentDidUpdate(prevProps) {
-    const { mainTable, open, rows } = this.props;
-
-    if (rows.length && prevProps.rows.length === 0) {
-      document.getElementsByClassName('js-table')[0].focus();
-
-      setTimeout(() => {
-        if (this._isMounted) {
-          // TODO: Figure a better way to do this https://github.com/metasfresh/metasfresh/issues/1679
-          this.setState({
-            tableRefreshToggle: !this.state.mounted,
-          });
-        }
-      }, 1);
-    }
-
-    if (!this._isMounted) {
-      return;
-    }
-
-    if (mainTable && open) {
-      this.table.focus();
-    }
-  }
-
   componentWillUnmount() {
     const {
       showIncludedViewOnSelect,
@@ -61,8 +25,6 @@ class TableContainer extends PureComponent {
       windowType,
       isIncluded,
     } = this.props;
-
-    this._isMounted = false;
 
     if (showIncludedViewOnSelect && !isIncluded) {
       showIncludedViewOnSelect({
@@ -260,7 +222,6 @@ class TableContainer extends PureComponent {
     return (
       <Table
         {...this.props}
-        {...this.state}
         onShowSelectedIncludedView={this.showSelectedIncludedView}
         onHandleZoomInto={this.handleZoomInto}
         onPromptSubmit={this.handlePromptSubmit}

@@ -25,9 +25,6 @@ const MOBILE_TABLE_SIZE_LIMIT = 30; // subjective number, based on empiric testi
 const isMobileOrTablet =
   currentDevice.type === 'mobile' || currentDevice.type === 'tablet';
 
-// TODO: Remove when cleaning up
-let RENDERS = 0;
-
 class Table extends PureComponent {
   constructor(props) {
     super(props);
@@ -37,9 +34,40 @@ class Table extends PureComponent {
   }
 
   componentDidMount() {
+    this._isMounted = true;
+
     if (this.props.autofocus) {
       this.table.focus();
     }
+  }
+
+  componentDidUpdate(prevProps) {
+    const { mainTable, open, rows } = this.props;
+
+    if (rows.length && prevProps.rows.length === 0) {
+      document.getElementsByClassName('js-table')[0].focus();
+
+      setTimeout(() => {
+        if (this._isMounted) {
+          // TODO: Figure a better way to do this https://github.com/metasfresh/metasfresh/issues/1679
+          this.setState({
+            tableRefreshToggle: !this.state.mounted,
+          });
+        }
+      }, 1);
+    }
+
+    if (!this._isMounted) {
+      return;
+    }
+
+    if (mainTable && open) {
+      this.table.focus();
+    }
+  }
+
+  componentWillUnmount() {
+    this._isMounted = false;
   }
 
   setListenTrue = () => {
@@ -605,9 +633,6 @@ class Table extends PureComponent {
   };
 
   render() {
-    RENDERS += 1;
-    console.log('Render: ', RENDERS);
-
     const {
       columns,
       windowId,
