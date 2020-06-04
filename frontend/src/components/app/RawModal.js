@@ -77,10 +77,6 @@ class RawModal extends Component {
     visibleTooltips: {},
   };
 
-  /**
-   * @method componentDidMount
-   * @summary ToDo: Describe the method.
-   */
   componentDidMount() {
     // Dirty solution, but use only if you need to
     // there is no way to affect body
@@ -92,10 +88,6 @@ class RawModal extends Component {
     this.initEventListeners();
   }
 
-  /**
-   * @method componentWillUnmount
-   * @summary ToDo: Describe the method.
-   */
   componentWillUnmount() {
     const { masterDocumentList } = this.props;
 
@@ -106,11 +98,6 @@ class RawModal extends Component {
     this.removeEventListeners();
   }
 
-  /**
-   * @method UNSAFE_componentWillUpdate
-   * @summary ToDo: Describe the method.
-   * @param {object} props
-   */
   UNSAFE_componentWillUpdate(props) {
     if (this.resolve) {
       if (!props.success || props.requests.length === 0) {

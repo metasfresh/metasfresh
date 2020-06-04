@@ -7,7 +7,6 @@ import { forEach, get } from 'lodash';
 import { getTableId } from '../reducers/tables';
 import { addNotification } from '../actions/AppActions';
 import {
-  addRowData,
   attachFileAction,
   clearMasterData,
   fireUpdateData,
@@ -34,7 +33,7 @@ class MasterWindowContainer extends Component {
   };
 
   componentDidUpdate(prevProps) {
-    const { master, modal, params, addRowData } = this.props;
+    const { master } = this.props;
 
     if (prevProps.master.websocket !== master.websocket && master.websocket) {
       // websockets are responsible for pushing info about any updates to the data
@@ -47,22 +46,6 @@ class MasterWindowContainer extends Component {
       // communication is set on the right master.websocket . disconnectWS clears the WS
       connectWS.call(this, master.websocket, async (msg) => {
         this.onWebsocketEvent(msg);
-      });
-    }
-
-    // When closing modal, we need to update the stale tab
-    // TODO: Check if we still need to do this since all the changes in tabs should be handled
-    // via websockets now.
-    if (
-      !modal.visible &&
-      modal.visible !== prevProps.modal.visible &&
-      master.includedTabsInfo &&
-      master.layout
-    ) {
-      const tabId = master.layout.activeTab;
-
-      getTabRequest(tabId, params.windowType, master.docId).then((tab) => {
-        addRowData({ [tabId]: tab }, 'master');
       });
     }
   }
@@ -78,7 +61,7 @@ class MasterWindowContainer extends Component {
       : null;
 
     // Document header got staled
-    if (stale && !includedTabsInfo) {
+    if (stale) {
       const { params, fireUpdateData } = this.props;
 
       fireUpdateData({
@@ -256,7 +239,6 @@ class MasterWindowContainer extends Component {
  * @prop {*} [enableTutorial]
  * @prop {*} [location]
  * @prop {func} addNotification
- * @prop {func} addRowData
  * @prop {func} attachFileAction
  * @prop {func} sortTab
  * @prop {func} push
@@ -281,7 +263,6 @@ MasterWindowContainer.propTypes = {
   location: PropTypes.any,
   clearMasterData: PropTypes.func.isRequired,
   addNotification: PropTypes.func.isRequired,
-  addRowData: PropTypes.func.isRequired,
   attachFileAction: PropTypes.func.isRequired,
   fireUpdateData: PropTypes.func.isRequired,
   sortTab: PropTypes.func.isRequired,
@@ -315,7 +296,6 @@ export default connect(
   mapStateToProps,
   {
     addNotification,
-    addRowData,
     attachFileAction,
     clearMasterData,
     fireUpdateData,

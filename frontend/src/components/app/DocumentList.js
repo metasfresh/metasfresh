@@ -262,8 +262,6 @@ export default class DocumentList extends Component {
 
               {staticFilters && (
                 <FiltersStatic
-                  {...{ viewId }}
-                  windowType={windowId}
                   data={staticFilters}
                   clearFilters={onClearStaticFilters}
                 />
