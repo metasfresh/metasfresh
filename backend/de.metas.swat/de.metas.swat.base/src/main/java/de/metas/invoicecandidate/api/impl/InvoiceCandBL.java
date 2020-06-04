@@ -112,6 +112,7 @@ import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.inout.IInOutBL;
@@ -192,15 +193,15 @@ import lombok.NonNull;
 
 public class InvoiceCandBL implements IInvoiceCandBL
 {
-	private static final String MSG_INVOICE_CAND_BL_INVOICING_SKIPPED_IS_TO_CLEAR = "InvoiceCandBL_Invoicing_Skipped_IsToClear";
-	private static final String MSG_INVOICE_CAND_BL_INVOICING_SKIPPED_IS_IN_DISPUTE = "InvoiceCandBL_Invoicing_Skipped_IsInDispute";
-	private static final String MSG_INVOICE_CAND_BL_INVOICING_SKIPPED_DATE_TO_INVOICE = "InvoiceCandBL_Invoicing_Skipped_DateToInvoice";
-	private static final String MSG_INVOICE_CAND_BL_INVOICING_SKIPPED_ERROR = "InvoiceCandBL_Invoicing_Skipped_Error";
-	private static final String MSG_INVOICE_CAND_BL_INVOICING_SKIPPED_PROCESSED = "InvoiceCandBL_Invoicing_Skipped_Processed";
-	private static final String MSG_FixProblemDeleteWaitForRegeneration = "FixProblemDeleteWaitForRegeneration";
-	private static final String MSG_INVOICE_CAND_BL_STATUS_INVOICE_SCHEDULE_MISSING_1P = "InvoiceCandBL_Status_InvoiceSchedule_Missing";
-	private static final String MSG_INVOICE_CAND_BL_BELOW_INVOICE_MIN_AMT_5P = "InvoiceCandBL_Below_Invoice_Min_Amt";
-	private static final String MSG_INVOICE_CAND_BL_STATUS_ORDER_NOT_CO_1P = "InvoiceCandBL_Status_Order_Not_CO";
+	private static final AdMessageKey MSG_INVOICE_CAND_BL_INVOICING_SKIPPED_IS_TO_CLEAR = AdMessageKey.of("InvoiceCandBL_Invoicing_Skipped_IsToClear");
+	private static final AdMessageKey MSG_INVOICE_CAND_BL_INVOICING_SKIPPED_IS_IN_DISPUTE = AdMessageKey.of("InvoiceCandBL_Invoicing_Skipped_IsInDispute");
+	private static final AdMessageKey MSG_INVOICE_CAND_BL_INVOICING_SKIPPED_DATE_TO_INVOICE = AdMessageKey.of("InvoiceCandBL_Invoicing_Skipped_DateToInvoice");
+	private static final AdMessageKey MSG_INVOICE_CAND_BL_INVOICING_SKIPPED_ERROR = AdMessageKey.of("InvoiceCandBL_Invoicing_Skipped_Error");
+	private static final AdMessageKey MSG_INVOICE_CAND_BL_INVOICING_SKIPPED_PROCESSED = AdMessageKey.of("InvoiceCandBL_Invoicing_Skipped_Processed");
+	private static final AdMessageKey MSG_FixProblemDeleteWaitForRegeneration = AdMessageKey.of("FixProblemDeleteWaitForRegeneration");
+	private static final AdMessageKey MSG_INVOICE_CAND_BL_STATUS_INVOICE_SCHEDULE_MISSING_1P = AdMessageKey.of("InvoiceCandBL_Status_InvoiceSchedule_Missing");
+	private static final AdMessageKey MSG_INVOICE_CAND_BL_BELOW_INVOICE_MIN_AMT_5P = AdMessageKey.of("InvoiceCandBL_Below_Invoice_Min_Amt");
+	private static final AdMessageKey MSG_INVOICE_CAND_BL_STATUS_ORDER_NOT_CO_1P = AdMessageKey.of("InvoiceCandBL_Status_Order_Not_CO");
 
 	private static final String SYS_Config_C_Invoice_Candidate_Close_IsToClear = "C_Invoice_Candidate_Close_IsToClear";
 	private static final String SYS_Config_C_Invoice_Candidate_Close_PartiallyInvoiced = "C_Invoice_Candidate_Close_PartiallyInvoiced";
@@ -593,7 +594,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			logger.info("BPartner has no Schedule");
 
 			final I_C_BPartner billBPartner = bpartnerDAO.getById(ic.getBill_BPartner_ID());
-			final String msg = Services.get(IMsgBL.class).getMsg(ctx, InvoiceCandBL.MSG_INVOICE_CAND_BL_STATUS_INVOICE_SCHEDULE_MISSING_1P, new Object[] { billBPartner.getName() });
+			final String msg = Services.get(IMsgBL.class).getMsg(ctx, MSG_INVOICE_CAND_BL_STATUS_INVOICE_SCHEDULE_MISSING_1P, new Object[] { billBPartner.getName() });
 			amendSchedulerResult(ic, msg);
 			ic.setInvoiceScheduleAmtStatus(msg);
 			return -1;
@@ -1747,7 +1748,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		else
 		{
 			final Properties ctx = InterfaceWrapperHelper.getCtx(ic);
-			final String msgAskForRegeneration = Services.get(IMsgBL.class).translate(ctx, MSG_FixProblemDeleteWaitForRegeneration);
+			final String msgAskForRegeneration = Services.get(IMsgBL.class).getMsg(ctx, MSG_FixProblemDeleteWaitForRegeneration);
 			errorMessageToUse = new StringBuilder(errorMsg)
 					.append("\n").append(msgAskForRegeneration)
 					.toString();
