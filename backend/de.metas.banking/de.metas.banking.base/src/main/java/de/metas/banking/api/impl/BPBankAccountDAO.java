@@ -60,7 +60,7 @@ public class BPBankAccountDAO implements IBPBankAccountDAO
 	}
 
 	@Override
-	public ImmutableListMultimap<BPartnerId, I_C_BP_BankAccount> getByBPartnerIds(@NonNull final Collection<BPartnerId> bpartnerIds)
+	public ImmutableListMultimap<BPartnerId, I_C_BP_BankAccount> getAllByBPartnerIds(@NonNull final Collection<BPartnerId> bpartnerIds)
 	{
 		if (bpartnerIds.isEmpty())
 		{
@@ -114,8 +114,10 @@ public class BPBankAccountDAO implements IBPBankAccountDAO
 		return Optional.ofNullable(bankAccountId);
 	}
 
+
+
 	@Override
-	public void deactivateByBPartnerExcept(
+	public void deactivateIBANAccountsByBPartnerExcept(
 			@NonNull final BPartnerId bpartnerId,
 			@NonNull final Collection<BPartnerBankAccountId> exceptIds)
 	{
@@ -125,6 +127,7 @@ public class BPBankAccountDAO implements IBPBankAccountDAO
 
 		queryBL.createQueryBuilder(I_C_BP_BankAccount.class)
 				.addOnlyActiveRecordsFilter()
+				.addNotNull(I_C_BP_BankAccount.COLUMNNAME_IBAN)
 				.addEqualsFilter(I_C_BP_BankAccount.COLUMN_C_BPartner_ID, bpartnerId)
 				.addNotInArrayFilter(I_C_BP_BankAccount.COLUMN_C_BP_BankAccount_ID, exceptIds)
 				.create()
