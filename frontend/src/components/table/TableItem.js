@@ -9,7 +9,7 @@ import {
   VIEW_EDITOR_RENDER_MODES_ON_DEMAND,
 } from '../../constants/Constants';
 import TableCell from './TableCell';
-import { shouldRenderColumn } from '../../utils/tableHelpers';
+import { shouldRenderColumn, getSizeClass } from '../../utils/tableHelpers';
 import WithMobileDoubleTap from '../WithMobileDoubleTap';
 import _ from 'lodash';
 
@@ -400,7 +400,6 @@ class TableItem extends Component {
       newRow,
       tabIndex,
       entity,
-      getSizeClass,
       handleRightClick,
       caption,
       colspan,
@@ -711,7 +710,6 @@ TableItem.propTypes = {
   newRow: PropTypes.bool,
   tabIndex: PropTypes.number,
   entity: PropTypes.string,
-  getSizeClass: PropTypes.func,
   colspan: PropTypes.oneOfType([PropTypes.bool, PropTypes.string]),
   // TODO: ^^ We cannot allow having a prop which is sometimes bool and sometimes string
   viewId: PropTypes.string,

@@ -1,10 +1,11 @@
 import React, { PureComponent } from 'react';
 import classnames from 'classnames';
-import { shouldRenderColumn } from '../../utils/tableHelpers';
 import PropTypes from 'prop-types';
+import { connect } from 'react-redux';
+
+import { shouldRenderColumn, getSizeClass } from '../../utils/tableHelpers';
 import { setActiveSort } from '../../actions/TableActions';
 import { getTableId } from '../../reducers/tables';
-import { connect } from 'react-redux';
 
 class TableHeader extends PureComponent {
   constructor(props) {
@@ -105,7 +106,7 @@ class TableHeader extends PureComponent {
   };
 
   renderCols = (cols) => {
-    const { getSizeClass, sort } = this.props;
+    const { sort } = this.props;
 
     return (
       cols &&
@@ -149,7 +150,6 @@ TableHeader.propTypes = {
   viewId: PropTypes.string,
   deselect: PropTypes.any,
   page: PropTypes.any,
-  getSizeClass: PropTypes.func,
   cols: PropTypes.any,
   indentSupported: PropTypes.any,
   setActiveSort: PropTypes.func,

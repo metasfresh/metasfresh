@@ -5,7 +5,6 @@ import currentDevice from 'current-device';
 import counterpart from 'counterpart';
 
 import {
-  getSizeClass,
   handleCopy,
   handleOpenNewTab,
   componentPropTypes,
@@ -222,7 +221,7 @@ class Table extends PureComponent {
     const {
       showIncludedViewOnSelect,
       viewId,
-      windowType,
+      windowId,
       inBackground,
       allowOutsideClick,
       limitOnClickOutside,
@@ -264,7 +263,7 @@ class Table extends PureComponent {
       if (showIncludedViewOnSelect) {
         showIncludedViewOnSelect({
           showIncludedView: false,
-          windowType,
+          windowType: windowId,
           viewId,
         });
       }
@@ -603,7 +602,6 @@ class Table extends PureComponent {
         caption={item.caption ? item.caption : ''}
         colspan={item.colspan}
         notSaved={item.saveStatus && !item.saveStatus.saved}
-        getSizeClass={getSizeClass}
         onRowCollapse={onRowCollapse}
         onItemChange={onItemChange}
         onCopy={handleCopy}
@@ -775,7 +773,6 @@ class Table extends PureComponent {
                   }}
                   cols={columns}
                   windowType={windowId}
-                  getSizeClass={getSizeClass}
                   deselect={onDeselectAll}
                 />
               </thead>
