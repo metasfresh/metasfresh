@@ -427,7 +427,7 @@ final class BPartnerCompositeSaver
 		}
 
 		final IBPBankAccountDAO bpBankAccountsDAO = Services.get(IBPBankAccountDAO.class);
-		bpBankAccountsDAO.deactivateByBPartnerExcept(bpartnerId, savedBPBankAccountIds);
+		bpBankAccountsDAO.deactivateIBANAccountsByBPartnerExcept(bpartnerId, savedBPBankAccountIds);
 	}
 
 	private void saveBPartnerBankAccount(
