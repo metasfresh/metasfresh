@@ -66,7 +66,7 @@ public class BPBankAccountDAO implements IBPBankAccountDAO
 	}
 
 	@Override
-	public ImmutableListMultimap<BPartnerId, I_C_BP_BankAccount> getByBPartnerIds(@NonNull final Collection<BPartnerId> bpartnerIds)
+	public ImmutableListMultimap<BPartnerId, I_C_BP_BankAccount> getAllByBPartnerIds(@NonNull final Collection<BPartnerId> bpartnerIds)
 	{
 		if (bpartnerIds.isEmpty())
 		{
@@ -103,20 +103,6 @@ public class BPBankAccountDAO implements IBPBankAccountDAO
 				.list();
 
 		return bpBankAccounts;
-		// return LegacyAdapters.convertToPOArray(bpBankAccounts, MBPBankAccount.class);
-	}    // getOfBPartner
-
-	@Override
-	public Optional<BankAccountId> retrieveFirstIdByBPartnerAndCurrency(@NonNull final BPartnerId bPartnerId, @NonNull final CurrencyId currencyId)
-	{
-		final BankAccountId bankAccountId = queryBL.createQueryBuilder(I_C_BP_BankAccount.class)
-				.addEqualsFilter(I_C_BP_BankAccount.COLUMNNAME_C_BPartner_ID, bPartnerId)
-				.addEqualsFilter(I_C_BP_BankAccount.COLUMNNAME_C_Currency_ID, currencyId)
-				.addOnlyActiveRecordsFilter()
-				.create()
-				.firstId(BankAccountId::ofRepoIdOrNull);
-
-		return Optional.ofNullable(bankAccountId);
 	}
 
 	@Override
@@ -134,7 +120,7 @@ public class BPBankAccountDAO implements IBPBankAccountDAO
 	}
 
 	@Override
-	public void deactivateByBPartnerExcept(
+	public void deactivateIBANAccountsByBPartnerExcept(
 			@NonNull final BPartnerId bpartnerId,
 			@NonNull final Collection<BPartnerBankAccountId> exceptIds)
 	{
@@ -144,6 +130,7 @@ public class BPBankAccountDAO implements IBPBankAccountDAO
 
 		queryBL.createQueryBuilder(I_C_BP_BankAccount.class)
 				.addOnlyActiveRecordsFilter()
+				.addNotNull(I_C_BP_BankAccount.COLUMNNAME_IBAN)
 				.addEqualsFilter(I_C_BP_BankAccount.COLUMNNAME_C_BPartner_ID, bpartnerId)
 				.addNotInArrayFilter(I_C_BP_BankAccount.COLUMN_C_BP_BankAccount_ID, exceptIds)
 				.create()
