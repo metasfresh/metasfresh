@@ -1,0 +1,2734 @@
+{
+  "caption": "Order Line",
+  "description": "Order Line",
+  "rowData": {
+    "AD_Tab-187": [
+      {
+        "windowId": "143",
+        "id": "1000192",
+        "tabId": "AD_Tab-187",
+        "tabid": "AD_Tab-187",
+        "rowId": "1000365",
+        "fieldsByName": {
+          "ID": {
+            "field": "ID",
+            "value": 1000365,
+            "widgetType": "Integer"
+          },
+          "C_UOM_ID": {
+            "field": "C_UOM_ID",
+            "value": {
+              "key": "100",
+              "caption": "Each"
+            },
+            "readonly": true,
+            "mandatory": true,
+            "displayed": true,
+            "lookupValuesStale": true,
+            "widgetType": "List",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "C_UOM_ID"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "PriceList": {
+            "field": "PriceList",
+            "value": "0.00",
+            "readonly": true,
+            "mandatory": true,
+            "displayed": true,
+            "widgetType": "CostPrice",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "PriceList"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "PriceEntered": {
+            "field": "PriceEntered",
+            "value": "1.96",
+            "readonly": true,
+            "mandatory": true,
+            "displayed": true,
+            "widgetType": "CostPrice",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "PriceEntered"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "Line": {
+            "field": "Line",
+            "value": 10,
+            "readonly": true,
+            "mandatory": true,
+            "displayed": true,
+            "widgetType": "Integer",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "Line"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "Description": {
+            "field": "Description",
+            "value": "",
+            "readonly": true,
+            "mandatory": false,
+            "displayed": true,
+            "widgetType": "LongText",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "Description"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "QtyEntered": {
+            "field": "QtyEntered",
+            "value": "20",
+            "readonly": true,
+            "mandatory": true,
+            "displayed": true,
+            "widgetType": "Quantity",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "QtyEntered"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "QtyEnteredTU": {
+            "field": "QtyEnteredTU",
+            "value": "2",
+            "readonly": true,
+            "mandatory": false,
+            "displayed": true,
+            "widgetType": "Quantity",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "QtyEnteredTU"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "M_Product_ID": {
+            "field": "M_Product_ID",
+            "value": {
+              "key": "2005577",
+              "caption": "P002737_Convenience Salat 250g"
+            },
+            "readonly": true,
+            "mandatory": true,
+            "displayed": true,
+            "lookupValuesStale": true,
+            "widgetType": "Lookup",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "M_Product_ID"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "PriceActual": {
+            "field": "PriceActual",
+            "value": "1.96",
+            "readonly": true,
+            "mandatory": true,
+            "displayed": true,
+            "widgetType": "CostPrice",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "PriceActual"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "Price_UOM_ID": {
+            "field": "Price_UOM_ID",
+            "value": {
+              "key": "100",
+              "caption": "Each"
+            },
+            "readonly": true,
+            "mandatory": false,
+            "displayed": true,
+            "lookupValuesStale": true,
+            "widgetType": "List",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "Price_UOM_ID"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "QtyEnteredInPriceUOM": {
+            "field": "QtyEnteredInPriceUOM",
+            "value": "20",
+            "readonly": true,
+            "mandatory": false,
+            "displayed": true,
+            "widgetType": "Quantity",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "QtyEnteredInPriceUOM"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "C_Flatrate_Conditions_ID": {
+            "field": "C_Flatrate_Conditions_ID",
+            "value": "",
+            "readonly": true,
+            "mandatory": false,
+            "displayed": true,
+            "lookupValuesStale": true,
+            "widgetType": "List",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "C_Flatrate_Conditions_ID"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "Discount": {
+            "field": "Discount",
+            "value": "0",
+            "readonly": true,
+            "mandatory": false,
+            "displayed": true,
+            "widgetType": "Number",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "Discount"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "C_Tax_ID": {
+            "field": "C_Tax_ID",
+            "value": {
+              "key": "1000023",
+              "caption": "Reduzierter Steuersatz 7% (Deutschland)"
+            },
+            "readonly": true,
+            "mandatory": true,
+            "displayed": true,
+            "lookupValuesStale": true,
+            "widgetType": "List",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "C_Tax_ID"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "LineNetAmt": {
+            "field": "LineNetAmt",
+            "value": "39.20",
+            "readonly": true,
+            "mandatory": true,
+            "displayed": true,
+            "widgetType": "Amount",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "LineNetAmt"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "C_BPartner_ID": {
+            "field": "C_BPartner_ID",
+            "value": {
+              "key": "2156425",
+              "caption": "G0001_Test Kunde 1"
+            },
+            "readonly": true,
+            "mandatory": true,
+            "displayed": true,
+            "lookupValuesStale": true,
+            "widgetType": "List",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "C_BPartner_ID"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "M_HU_PI_Item_Product_ID": {
+            "field": "M_HU_PI_Item_Product_ID",
+            "value": {
+              "key": "3010001",
+              "caption": "IFCO 6410 x 10 Stk",
+              "description": "IFCO 6410 x 10 Stk"
+            },
+            "readonly": true,
+            "mandatory": false,
+            "displayed": true,
+            "lookupValuesStale": true,
+            "widgetType": "List",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "M_HU_PI_Item_Product_ID"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "C_BPartner_Location_ID": {
+            "field": "C_BPartner_Location_ID",
+            "value": {
+              "key": "2205175",
+              "caption": "Testadresse 3"
+            },
+            "readonly": true,
+            "mandatory": true,
+            "displayed": true,
+            "lookupValuesStale": true,
+            "widgetType": "List",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "C_BPartner_Location_ID"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "M_AttributeSetInstance_ID": {
+            "field": "M_AttributeSetInstance_ID",
+            "value": {
+              "key": "0",
+              "caption": "---"
+            },
+            "readonly": true,
+            "mandatory": false,
+            "displayed": true,
+            "lookupValuesStale": true,
+            "widgetType": "ProductAttributes",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "M_AttributeSetInstance_ID"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "C_Activity_ID": {
+            "field": "C_Activity_ID",
+            "value": "",
+            "readonly": true,
+            "mandatory": false,
+            "displayed": true,
+            "lookupValuesStale": true,
+            "widgetType": "List",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "C_Activity_ID"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "C_PaymentTerm_Override_ID": {
+            "field": "C_PaymentTerm_Override_ID",
+            "value": "",
+            "readonly": true,
+            "mandatory": false,
+            "displayed": true,
+            "lookupValuesStale": true,
+            "widgetType": "List",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "C_PaymentTerm_Override_ID"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "PaymentDiscount": {
+            "field": "PaymentDiscount",
+            "value": "",
+            "readonly": true,
+            "mandatory": false,
+            "displayed": true,
+            "widgetType": "Amount",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "PaymentDiscount"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "M_DiscountSchemaBreak_ID": {
+            "field": "M_DiscountSchemaBreak_ID",
+            "value": "",
+            "readonly": true,
+            "mandatory": false,
+            "displayed": true,
+            "lookupValuesStale": true,
+            "widgetType": "Lookup",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "M_DiscountSchemaBreak_ID"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "Base_PricingSystem_ID": {
+            "field": "Base_PricingSystem_ID",
+            "value": "",
+            "readonly": true,
+            "mandatory": false,
+            "displayed": true,
+            "lookupValuesStale": true,
+            "widgetType": "Lookup",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "Base_PricingSystem_ID"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "Qty_AvailableToPromise": {
+            "field": "Qty_AvailableToPromise",
+            "value": "0",
+            "readonly": true,
+            "mandatory": false,
+            "displayed": true,
+            "widgetType": "Quantity",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "Qty_AvailableToPromise"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "ProfitPercent": {
+            "field": "ProfitPercent",
+            "value": "",
+            "readonly": true,
+            "mandatory": false,
+            "displayed": true,
+            "widgetType": "Amount",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "ProfitPercent"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "ProfitPriceActual": {
+            "field": "ProfitPriceActual",
+            "value": "1.96",
+            "readonly": true,
+            "mandatory": false,
+            "displayed": true,
+            "widgetType": "Amount",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "ProfitPriceActual"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "M_Product_DocumentNote": {
+            "field": "M_Product_DocumentNote",
+            "value": "lalalala\nlalalala\nlalalala\nlalalala\nlalalala",
+            "readonly": true,
+            "mandatory": false,
+            "displayed": true,
+            "widgetType": "LongText",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "M_Product_DocumentNote"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "InvoicableQtyBasedOn": {
+            "field": "InvoicableQtyBasedOn",
+            "value": {
+              "key": "Nominal",
+              "caption": "Nominal"
+            },
+            "readonly": true,
+            "mandatory": true,
+            "displayed": true,
+            "lookupValuesStale": true,
+            "widgetType": "List",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "InvoicableQtyBasedOn"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "AD_Client_ID": {
+            "field": "AD_Client_ID",
+            "value": {
+              "key": "1000000",
+              "caption": "testfirma WebUI AG"
+            },
+            "readonly": true,
+            "mandatory": true,
+            "displayed": true,
+            "lookupValuesStale": true,
+            "widgetType": "List",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "AD_Client_ID"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "DateOrdered": {
+            "field": "DateOrdered",
+            "value": "2020-05-14T22:00:00.000Z",
+            "readonly": true,
+            "mandatory": true,
+            "displayed": true,
+            "widgetType": "Date",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "DateOrdered"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "DatePromised": {
+            "field": "DatePromised",
+            "value": "2020-05-15T21:59:59.000Z",
+            "readonly": true,
+            "mandatory": false,
+            "displayed": true,
+            "widgetType": "ZonedDateTime",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "DatePromised"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "AD_Org_ID": {
+            "field": "AD_Org_ID",
+            "value": {
+              "key": "1000000",
+              "caption": "testfirma WebUI AG"
+            },
+            "readonly": true,
+            "mandatory": true,
+            "displayed": true,
+            "lookupValuesStale": true,
+            "widgetType": "Lookup",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "AD_Org_ID"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "IsDescription": {
+            "field": "IsDescription",
+            "value": false,
+            "readonly": true,
+            "mandatory": true,
+            "displayed": true,
+            "widgetType": "YesNo",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "IsDescription"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "ProductDescription": {
+            "field": "ProductDescription",
+            "value": "",
+            "readonly": true,
+            "mandatory": false,
+            "displayed": false,
+            "widgetType": "LongText",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "ProductDescription"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "QtyAvailableForSales": {
+            "field": "QtyAvailableForSales",
+            "value": "0",
+            "readonly": true,
+            "mandatory": false,
+            "displayed": true,
+            "widgetType": "Quantity",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "QtyAvailableForSales"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "InsufficientQtyAvailableForSalesColor_ID": {
+            "field": "InsufficientQtyAvailableForSalesColor_ID",
+            "value": "#ff3200",
+            "readonly": true,
+            "mandatory": false,
+            "displayed": true,
+            "widgetType": "Color",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "InsufficientQtyAvailableForSalesColor_ID"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "C_Order_CompensationGroup_ID": {
+            "field": "C_Order_CompensationGroup_ID",
+            "value": "",
+            "readonly": true,
+            "mandatory": false,
+            "displayed": true,
+            "lookupValuesStale": true,
+            "widgetType": "Lookup",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "C_Order_CompensationGroup_ID"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "GroupCompensationType": {
+            "field": "GroupCompensationType",
+            "value": "",
+            "readonly": true,
+            "mandatory": false,
+            "displayed": true,
+            "lookupValuesStale": true,
+            "widgetType": "List",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "GroupCompensationType"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "GroupCompensationAmtType": {
+            "field": "GroupCompensationAmtType",
+            "value": "",
+            "readonly": true,
+            "mandatory": false,
+            "displayed": true,
+            "lookupValuesStale": true,
+            "widgetType": "List",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "GroupCompensationAmtType"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "IsGroupCompensationLine": {
+            "field": "IsGroupCompensationLine",
+            "value": false,
+            "readonly": true,
+            "mandatory": true,
+            "displayed": true,
+            "widgetType": "YesNo",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "IsGroupCompensationLine"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "GroupCompensationPercentage": {
+            "field": "GroupCompensationPercentage",
+            "value": "",
+            "readonly": true,
+            "mandatory": false,
+            "displayed": true,
+            "widgetType": "Number",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "GroupCompensationPercentage"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "NoPriceConditionsColor_ID": {
+            "field": "NoPriceConditionsColor_ID",
+            "value": "",
+            "readonly": true,
+            "mandatory": false,
+            "displayed": true,
+            "widgetType": "Color",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "NoPriceConditionsColor_ID"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "PriceLimitNote": {
+            "field": "PriceLimitNote",
+            "value": "Nicht erzwungen: Preisliste: Testpreise Kunden (Deutschland)",
+            "readonly": true,
+            "mandatory": false,
+            "displayed": true,
+            "widgetType": "LongText",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "PriceLimitNote"
+            },
+            "viewEditorRenderMode": "never"
+          }
+        },
+        "validStatus": {
+          "valid": true
+        },
+        "saveStatus": {
+          "deleted": false,
+          "saved": true,
+          "hasChanges": false,
+          "error": false,
+          "reason": "just loaded"
+        },
+        "standardActions": [
+          "new",
+          "advancedEdit",
+          "email",
+          "letter",
+          "delete",
+          "comments"
+        ],
+        "websocketEndpoint": "/document/143/1000192"
+      },
+      {
+        "windowId": "143",
+        "id": "1000192",
+        "tabId": "AD_Tab-187",
+        "tabid": "AD_Tab-187",
+        "rowId": "1000366",
+        "fieldsByName": {
+          "ID": {
+            "field": "ID",
+            "value": 1000366,
+            "widgetType": "Integer"
+          },
+          "C_UOM_ID": {
+            "field": "C_UOM_ID",
+            "value": {
+              "key": "540017",
+              "caption": "Kilogram"
+            },
+            "readonly": true,
+            "mandatory": true,
+            "displayed": true,
+            "lookupValuesStale": true,
+            "widgetType": "List",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "C_UOM_ID"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "PriceList": {
+            "field": "PriceList",
+            "value": "0.00",
+            "readonly": true,
+            "mandatory": true,
+            "displayed": true,
+            "widgetType": "CostPrice",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "PriceList"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "PriceEntered": {
+            "field": "PriceEntered",
+            "value": "2.15",
+            "readonly": true,
+            "mandatory": true,
+            "displayed": true,
+            "widgetType": "CostPrice",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "PriceEntered"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "Line": {
+            "field": "Line",
+            "value": 20,
+            "readonly": true,
+            "mandatory": true,
+            "displayed": true,
+            "widgetType": "Integer",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "Line"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "Description": {
+            "field": "Description",
+            "value": "",
+            "readonly": true,
+            "mandatory": false,
+            "displayed": true,
+            "widgetType": "LongText",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "Description"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "QtyEntered": {
+            "field": "QtyEntered",
+            "value": "5",
+            "readonly": true,
+            "mandatory": true,
+            "displayed": true,
+            "widgetType": "Quantity",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "QtyEntered"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "QtyEnteredTU": {
+            "field": "QtyEnteredTU",
+            "value": "1",
+            "readonly": true,
+            "mandatory": false,
+            "displayed": true,
+            "widgetType": "Quantity",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "QtyEnteredTU"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "M_Product_ID": {
+            "field": "M_Product_ID",
+            "value": {
+              "key": "2005572",
+              "caption": "P002732_Frisée Industrie"
+            },
+            "readonly": true,
+            "mandatory": true,
+            "displayed": true,
+            "lookupValuesStale": true,
+            "widgetType": "Lookup",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "M_Product_ID"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "PriceActual": {
+            "field": "PriceActual",
+            "value": "2.15",
+            "readonly": true,
+            "mandatory": true,
+            "displayed": true,
+            "widgetType": "CostPrice",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "PriceActual"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "Price_UOM_ID": {
+            "field": "Price_UOM_ID",
+            "value": {
+              "key": "540017",
+              "caption": "Kilogram"
+            },
+            "readonly": true,
+            "mandatory": false,
+            "displayed": true,
+            "lookupValuesStale": true,
+            "widgetType": "List",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "Price_UOM_ID"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "QtyEnteredInPriceUOM": {
+            "field": "QtyEnteredInPriceUOM",
+            "value": "5",
+            "readonly": true,
+            "mandatory": false,
+            "displayed": true,
+            "widgetType": "Quantity",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "QtyEnteredInPriceUOM"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "C_Flatrate_Conditions_ID": {
+            "field": "C_Flatrate_Conditions_ID",
+            "value": "",
+            "readonly": true,
+            "mandatory": false,
+            "displayed": true,
+            "lookupValuesStale": true,
+            "widgetType": "List",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "C_Flatrate_Conditions_ID"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "Discount": {
+            "field": "Discount",
+            "value": "0",
+            "readonly": true,
+            "mandatory": false,
+            "displayed": true,
+            "widgetType": "Number",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "Discount"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "C_Tax_ID": {
+            "field": "C_Tax_ID",
+            "value": {
+              "key": "1000022",
+              "caption": "Normaler Steuersatz 19% (Deutschland)"
+            },
+            "readonly": true,
+            "mandatory": true,
+            "displayed": true,
+            "lookupValuesStale": true,
+            "widgetType": "List",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "C_Tax_ID"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "LineNetAmt": {
+            "field": "LineNetAmt",
+            "value": "10.75",
+            "readonly": true,
+            "mandatory": true,
+            "displayed": true,
+            "widgetType": "Amount",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "LineNetAmt"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "C_BPartner_ID": {
+            "field": "C_BPartner_ID",
+            "value": {
+              "key": "2156425",
+              "caption": "G0001_Test Kunde 1"
+            },
+            "readonly": true,
+            "mandatory": true,
+            "displayed": true,
+            "lookupValuesStale": true,
+            "widgetType": "List",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "C_BPartner_ID"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "M_HU_PI_Item_Product_ID": {
+            "field": "M_HU_PI_Item_Product_ID",
+            "value": {
+              "key": "101",
+              "caption": "No Packing Item",
+              "description": "No Packing Item"
+            },
+            "readonly": true,
+            "mandatory": false,
+            "displayed": true,
+            "lookupValuesStale": true,
+            "widgetType": "List",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "M_HU_PI_Item_Product_ID"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "C_BPartner_Location_ID": {
+            "field": "C_BPartner_Location_ID",
+            "value": {
+              "key": "2205175",
+              "caption": "Testadresse 3"
+            },
+            "readonly": true,
+            "mandatory": true,
+            "displayed": true,
+            "lookupValuesStale": true,
+            "widgetType": "List",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "C_BPartner_Location_ID"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "M_AttributeSetInstance_ID": {
+            "field": "M_AttributeSetInstance_ID",
+            "value": {
+              "key": "0",
+              "caption": "---"
+            },
+            "readonly": true,
+            "mandatory": false,
+            "displayed": true,
+            "lookupValuesStale": true,
+            "widgetType": "ProductAttributes",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "M_AttributeSetInstance_ID"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "C_Activity_ID": {
+            "field": "C_Activity_ID",
+            "value": "",
+            "readonly": true,
+            "mandatory": false,
+            "displayed": true,
+            "lookupValuesStale": true,
+            "widgetType": "List",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "C_Activity_ID"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "C_PaymentTerm_Override_ID": {
+            "field": "C_PaymentTerm_Override_ID",
+            "value": "",
+            "readonly": true,
+            "mandatory": false,
+            "displayed": true,
+            "lookupValuesStale": true,
+            "widgetType": "List",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "C_PaymentTerm_Override_ID"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "PaymentDiscount": {
+            "field": "PaymentDiscount",
+            "value": "",
+            "readonly": true,
+            "mandatory": false,
+            "displayed": true,
+            "widgetType": "Amount",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "PaymentDiscount"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "M_DiscountSchemaBreak_ID": {
+            "field": "M_DiscountSchemaBreak_ID",
+            "value": "",
+            "readonly": true,
+            "mandatory": false,
+            "displayed": true,
+            "lookupValuesStale": true,
+            "widgetType": "Lookup",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "M_DiscountSchemaBreak_ID"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "Base_PricingSystem_ID": {
+            "field": "Base_PricingSystem_ID",
+            "value": "",
+            "readonly": true,
+            "mandatory": false,
+            "displayed": true,
+            "lookupValuesStale": true,
+            "widgetType": "Lookup",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "Base_PricingSystem_ID"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "Qty_AvailableToPromise": {
+            "field": "Qty_AvailableToPromise",
+            "value": "0",
+            "readonly": true,
+            "mandatory": false,
+            "displayed": true,
+            "widgetType": "Quantity",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "Qty_AvailableToPromise"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "ProfitPercent": {
+            "field": "ProfitPercent",
+            "value": "",
+            "readonly": true,
+            "mandatory": false,
+            "displayed": true,
+            "widgetType": "Amount",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "ProfitPercent"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "ProfitPriceActual": {
+            "field": "ProfitPriceActual",
+            "value": "2.15",
+            "readonly": true,
+            "mandatory": false,
+            "displayed": true,
+            "widgetType": "Amount",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "ProfitPriceActual"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "M_Product_DocumentNote": {
+            "field": "M_Product_DocumentNote",
+            "value": "",
+            "readonly": true,
+            "mandatory": false,
+            "displayed": true,
+            "widgetType": "LongText",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "M_Product_DocumentNote"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "InvoicableQtyBasedOn": {
+            "field": "InvoicableQtyBasedOn",
+            "value": {
+              "key": "Nominal",
+              "caption": "Nominal"
+            },
+            "readonly": true,
+            "mandatory": true,
+            "displayed": true,
+            "lookupValuesStale": true,
+            "widgetType": "List",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "InvoicableQtyBasedOn"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "AD_Client_ID": {
+            "field": "AD_Client_ID",
+            "value": {
+              "key": "1000000",
+              "caption": "testfirma WebUI AG"
+            },
+            "readonly": true,
+            "mandatory": true,
+            "displayed": true,
+            "lookupValuesStale": true,
+            "widgetType": "List",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "AD_Client_ID"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "DateOrdered": {
+            "field": "DateOrdered",
+            "value": "2020-05-14T22:00:00.000Z",
+            "readonly": true,
+            "mandatory": true,
+            "displayed": true,
+            "widgetType": "Date",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "DateOrdered"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "DatePromised": {
+            "field": "DatePromised",
+            "value": "2020-05-15T21:59:59.000Z",
+            "readonly": true,
+            "mandatory": false,
+            "displayed": true,
+            "widgetType": "ZonedDateTime",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "DatePromised"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "AD_Org_ID": {
+            "field": "AD_Org_ID",
+            "value": {
+              "key": "1000000",
+              "caption": "testfirma WebUI AG"
+            },
+            "readonly": true,
+            "mandatory": true,
+            "displayed": true,
+            "lookupValuesStale": true,
+            "widgetType": "Lookup",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "AD_Org_ID"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "IsDescription": {
+            "field": "IsDescription",
+            "value": false,
+            "readonly": true,
+            "mandatory": true,
+            "displayed": true,
+            "widgetType": "YesNo",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "IsDescription"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "ProductDescription": {
+            "field": "ProductDescription",
+            "value": "",
+            "readonly": true,
+            "mandatory": false,
+            "displayed": false,
+            "widgetType": "LongText",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "ProductDescription"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "QtyAvailableForSales": {
+            "field": "QtyAvailableForSales",
+            "value": "0",
+            "readonly": true,
+            "mandatory": false,
+            "displayed": true,
+            "widgetType": "Quantity",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "QtyAvailableForSales"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "InsufficientQtyAvailableForSalesColor_ID": {
+            "field": "InsufficientQtyAvailableForSalesColor_ID",
+            "value": "#ff3200",
+            "readonly": true,
+            "mandatory": false,
+            "displayed": true,
+            "widgetType": "Color",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "InsufficientQtyAvailableForSalesColor_ID"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "C_Order_CompensationGroup_ID": {
+            "field": "C_Order_CompensationGroup_ID",
+            "value": "",
+            "readonly": true,
+            "mandatory": false,
+            "displayed": true,
+            "lookupValuesStale": true,
+            "widgetType": "Lookup",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "C_Order_CompensationGroup_ID"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "GroupCompensationType": {
+            "field": "GroupCompensationType",
+            "value": "",
+            "readonly": true,
+            "mandatory": false,
+            "displayed": true,
+            "lookupValuesStale": true,
+            "widgetType": "List",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "GroupCompensationType"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "GroupCompensationAmtType": {
+            "field": "GroupCompensationAmtType",
+            "value": "",
+            "readonly": true,
+            "mandatory": false,
+            "displayed": true,
+            "lookupValuesStale": true,
+            "widgetType": "List",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "GroupCompensationAmtType"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "IsGroupCompensationLine": {
+            "field": "IsGroupCompensationLine",
+            "value": false,
+            "readonly": true,
+            "mandatory": true,
+            "displayed": true,
+            "widgetType": "YesNo",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "IsGroupCompensationLine"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "GroupCompensationPercentage": {
+            "field": "GroupCompensationPercentage",
+            "value": "",
+            "readonly": true,
+            "mandatory": false,
+            "displayed": true,
+            "widgetType": "Number",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "GroupCompensationPercentage"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "NoPriceConditionsColor_ID": {
+            "field": "NoPriceConditionsColor_ID",
+            "value": "",
+            "readonly": true,
+            "mandatory": false,
+            "displayed": true,
+            "widgetType": "Color",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "NoPriceConditionsColor_ID"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "PriceLimitNote": {
+            "field": "PriceLimitNote",
+            "value": "Nicht erzwungen: Preisliste: Testpreise Kunden (Deutschland)",
+            "readonly": true,
+            "mandatory": false,
+            "displayed": true,
+            "widgetType": "LongText",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "PriceLimitNote"
+            },
+            "viewEditorRenderMode": "never"
+          }
+        },
+        "validStatus": {
+          "valid": true
+        },
+        "saveStatus": {
+          "deleted": false,
+          "saved": true,
+          "hasChanges": false,
+          "error": false,
+          "reason": "just loaded"
+        },
+        "standardActions": [
+          "new",
+          "advancedEdit",
+          "email",
+          "letter",
+          "delete",
+          "comments"
+        ],
+        "websocketEndpoint": "/document/143/1000192"
+      },
+      {
+        "windowId": "143",
+        "id": "1000192",
+        "tabId": "AD_Tab-187",
+        "tabid": "AD_Tab-187",
+        "rowId": "1000369",
+        "fieldsByName": {
+          "ID": {
+            "field": "ID",
+            "value": 1000369,
+            "widgetType": "Integer"
+          },
+          "C_UOM_ID": {
+            "field": "C_UOM_ID",
+            "value": {
+              "key": "100",
+              "caption": "Each"
+            },
+            "readonly": true,
+            "mandatory": true,
+            "displayed": true,
+            "lookupValuesStale": true,
+            "widgetType": "List",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "C_UOM_ID"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "PriceList": {
+            "field": "PriceList",
+            "value": "0.00",
+            "readonly": true,
+            "mandatory": true,
+            "displayed": true,
+            "widgetType": "CostPrice",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "PriceList"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "PriceEntered": {
+            "field": "PriceEntered",
+            "value": "0.98",
+            "readonly": true,
+            "mandatory": true,
+            "displayed": true,
+            "widgetType": "CostPrice",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "PriceEntered"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "Line": {
+            "field": "Line",
+            "value": 30,
+            "readonly": true,
+            "mandatory": true,
+            "displayed": true,
+            "widgetType": "Integer",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "Line"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "Description": {
+            "field": "Description",
+            "value": "",
+            "readonly": true,
+            "mandatory": false,
+            "displayed": true,
+            "widgetType": "LongText",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "Description"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "QtyEntered": {
+            "field": "QtyEntered",
+            "value": "2",
+            "readonly": true,
+            "mandatory": true,
+            "displayed": true,
+            "widgetType": "Quantity",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "QtyEntered"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "QtyEnteredTU": {
+            "field": "QtyEnteredTU",
+            "value": "1",
+            "readonly": true,
+            "mandatory": false,
+            "displayed": true,
+            "widgetType": "Quantity",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "QtyEnteredTU"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "M_Product_ID": {
+            "field": "M_Product_ID",
+            "value": {
+              "key": "2001343",
+              "caption": "P001512_IFCO 6410"
+            },
+            "readonly": true,
+            "mandatory": true,
+            "displayed": true,
+            "lookupValuesStale": true,
+            "widgetType": "Lookup",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "M_Product_ID"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "PriceActual": {
+            "field": "PriceActual",
+            "value": "0.98",
+            "readonly": true,
+            "mandatory": true,
+            "displayed": true,
+            "widgetType": "CostPrice",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "PriceActual"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "Price_UOM_ID": {
+            "field": "Price_UOM_ID",
+            "value": {
+              "key": "100",
+              "caption": "Each"
+            },
+            "readonly": true,
+            "mandatory": false,
+            "displayed": true,
+            "lookupValuesStale": true,
+            "widgetType": "List",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "Price_UOM_ID"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "QtyEnteredInPriceUOM": {
+            "field": "QtyEnteredInPriceUOM",
+            "value": "2",
+            "readonly": true,
+            "mandatory": false,
+            "displayed": true,
+            "widgetType": "Quantity",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "QtyEnteredInPriceUOM"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "C_Flatrate_Conditions_ID": {
+            "field": "C_Flatrate_Conditions_ID",
+            "value": "",
+            "readonly": true,
+            "mandatory": false,
+            "displayed": true,
+            "lookupValuesStale": true,
+            "widgetType": "List",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "C_Flatrate_Conditions_ID"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "Discount": {
+            "field": "Discount",
+            "value": "0",
+            "readonly": true,
+            "mandatory": false,
+            "displayed": true,
+            "widgetType": "Number",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "Discount"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "C_Tax_ID": {
+            "field": "C_Tax_ID",
+            "value": {
+              "key": "1000022",
+              "caption": "Normaler Steuersatz 19% (Deutschland)"
+            },
+            "readonly": true,
+            "mandatory": true,
+            "displayed": true,
+            "lookupValuesStale": true,
+            "widgetType": "List",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "C_Tax_ID"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "LineNetAmt": {
+            "field": "LineNetAmt",
+            "value": "1.96",
+            "readonly": true,
+            "mandatory": true,
+            "displayed": true,
+            "widgetType": "Amount",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "LineNetAmt"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "C_BPartner_ID": {
+            "field": "C_BPartner_ID",
+            "value": {
+              "key": "2156425",
+              "caption": "G0001_Test Kunde 1"
+            },
+            "readonly": true,
+            "mandatory": true,
+            "displayed": true,
+            "lookupValuesStale": true,
+            "widgetType": "List",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "C_BPartner_ID"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "M_HU_PI_Item_Product_ID": {
+            "field": "M_HU_PI_Item_Product_ID",
+            "value": {
+              "key": "101",
+              "caption": "No Packing Item",
+              "description": "No Packing Item"
+            },
+            "readonly": true,
+            "mandatory": false,
+            "displayed": true,
+            "lookupValuesStale": true,
+            "widgetType": "List",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "M_HU_PI_Item_Product_ID"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "C_BPartner_Location_ID": {
+            "field": "C_BPartner_Location_ID",
+            "value": {
+              "key": "2205175",
+              "caption": "Testadresse 3"
+            },
+            "readonly": true,
+            "mandatory": true,
+            "displayed": true,
+            "lookupValuesStale": true,
+            "widgetType": "List",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "C_BPartner_Location_ID"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "M_AttributeSetInstance_ID": {
+            "field": "M_AttributeSetInstance_ID",
+            "value": {
+              "key": "0",
+              "caption": "---"
+            },
+            "readonly": true,
+            "mandatory": false,
+            "displayed": true,
+            "lookupValuesStale": true,
+            "widgetType": "ProductAttributes",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "M_AttributeSetInstance_ID"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "C_Activity_ID": {
+            "field": "C_Activity_ID",
+            "value": "",
+            "readonly": true,
+            "mandatory": false,
+            "displayed": true,
+            "lookupValuesStale": true,
+            "widgetType": "List",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "C_Activity_ID"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "C_PaymentTerm_Override_ID": {
+            "field": "C_PaymentTerm_Override_ID",
+            "value": "",
+            "readonly": true,
+            "mandatory": false,
+            "displayed": true,
+            "lookupValuesStale": true,
+            "widgetType": "List",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "C_PaymentTerm_Override_ID"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "PaymentDiscount": {
+            "field": "PaymentDiscount",
+            "value": "",
+            "readonly": true,
+            "mandatory": false,
+            "displayed": true,
+            "widgetType": "Amount",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "PaymentDiscount"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "M_DiscountSchemaBreak_ID": {
+            "field": "M_DiscountSchemaBreak_ID",
+            "value": "",
+            "readonly": true,
+            "mandatory": false,
+            "displayed": true,
+            "lookupValuesStale": true,
+            "widgetType": "Lookup",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "M_DiscountSchemaBreak_ID"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "Base_PricingSystem_ID": {
+            "field": "Base_PricingSystem_ID",
+            "value": "",
+            "readonly": true,
+            "mandatory": false,
+            "displayed": true,
+            "lookupValuesStale": true,
+            "widgetType": "Lookup",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "Base_PricingSystem_ID"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "Qty_AvailableToPromise": {
+            "field": "Qty_AvailableToPromise",
+            "value": "0",
+            "readonly": true,
+            "mandatory": false,
+            "displayed": true,
+            "widgetType": "Quantity",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "Qty_AvailableToPromise"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "ProfitPercent": {
+            "field": "ProfitPercent",
+            "value": "",
+            "readonly": true,
+            "mandatory": false,
+            "displayed": true,
+            "widgetType": "Amount",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "ProfitPercent"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "ProfitPriceActual": {
+            "field": "ProfitPriceActual",
+            "value": "0.98",
+            "readonly": true,
+            "mandatory": false,
+            "displayed": true,
+            "widgetType": "Amount",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "ProfitPriceActual"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "M_Product_DocumentNote": {
+            "field": "M_Product_DocumentNote",
+            "value": "",
+            "readonly": true,
+            "mandatory": false,
+            "displayed": true,
+            "widgetType": "LongText",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "M_Product_DocumentNote"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "InvoicableQtyBasedOn": {
+            "field": "InvoicableQtyBasedOn",
+            "value": {
+              "key": "Nominal",
+              "caption": "Nominal"
+            },
+            "readonly": true,
+            "mandatory": true,
+            "displayed": true,
+            "lookupValuesStale": true,
+            "widgetType": "List",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "InvoicableQtyBasedOn"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "AD_Client_ID": {
+            "field": "AD_Client_ID",
+            "value": {
+              "key": "1000000",
+              "caption": "testfirma WebUI AG"
+            },
+            "readonly": true,
+            "mandatory": true,
+            "displayed": true,
+            "lookupValuesStale": true,
+            "widgetType": "List",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "AD_Client_ID"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "DateOrdered": {
+            "field": "DateOrdered",
+            "value": "2020-05-14T22:00:00.000Z",
+            "readonly": true,
+            "mandatory": true,
+            "displayed": true,
+            "widgetType": "Date",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "DateOrdered"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "DatePromised": {
+            "field": "DatePromised",
+            "value": "2020-05-15T21:59:59.000Z",
+            "readonly": true,
+            "mandatory": false,
+            "displayed": true,
+            "widgetType": "ZonedDateTime",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "DatePromised"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "AD_Org_ID": {
+            "field": "AD_Org_ID",
+            "value": {
+              "key": "1000000",
+              "caption": "testfirma WebUI AG"
+            },
+            "readonly": true,
+            "mandatory": true,
+            "displayed": true,
+            "lookupValuesStale": true,
+            "widgetType": "Lookup",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "AD_Org_ID"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "IsDescription": {
+            "field": "IsDescription",
+            "value": false,
+            "readonly": true,
+            "mandatory": true,
+            "displayed": true,
+            "widgetType": "YesNo",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "IsDescription"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "ProductDescription": {
+            "field": "ProductDescription",
+            "value": "",
+            "readonly": true,
+            "mandatory": false,
+            "displayed": false,
+            "widgetType": "LongText",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "ProductDescription"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "QtyAvailableForSales": {
+            "field": "QtyAvailableForSales",
+            "value": "0",
+            "readonly": true,
+            "mandatory": false,
+            "displayed": true,
+            "widgetType": "Quantity",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "QtyAvailableForSales"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "InsufficientQtyAvailableForSalesColor_ID": {
+            "field": "InsufficientQtyAvailableForSalesColor_ID",
+            "value": "#ff3200",
+            "readonly": true,
+            "mandatory": false,
+            "displayed": true,
+            "widgetType": "Color",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "InsufficientQtyAvailableForSalesColor_ID"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "C_Order_CompensationGroup_ID": {
+            "field": "C_Order_CompensationGroup_ID",
+            "value": "",
+            "readonly": true,
+            "mandatory": false,
+            "displayed": true,
+            "lookupValuesStale": true,
+            "widgetType": "Lookup",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "C_Order_CompensationGroup_ID"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "GroupCompensationType": {
+            "field": "GroupCompensationType",
+            "value": "",
+            "readonly": true,
+            "mandatory": false,
+            "displayed": true,
+            "lookupValuesStale": true,
+            "widgetType": "List",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "GroupCompensationType"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "GroupCompensationAmtType": {
+            "field": "GroupCompensationAmtType",
+            "value": "",
+            "readonly": true,
+            "mandatory": false,
+            "displayed": true,
+            "lookupValuesStale": true,
+            "widgetType": "List",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "GroupCompensationAmtType"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "IsGroupCompensationLine": {
+            "field": "IsGroupCompensationLine",
+            "value": false,
+            "readonly": true,
+            "mandatory": true,
+            "displayed": true,
+            "widgetType": "YesNo",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "IsGroupCompensationLine"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "GroupCompensationPercentage": {
+            "field": "GroupCompensationPercentage",
+            "value": "",
+            "readonly": true,
+            "mandatory": false,
+            "displayed": true,
+            "widgetType": "Number",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "GroupCompensationPercentage"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "NoPriceConditionsColor_ID": {
+            "field": "NoPriceConditionsColor_ID",
+            "value": "",
+            "readonly": true,
+            "mandatory": false,
+            "displayed": true,
+            "widgetType": "Color",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "NoPriceConditionsColor_ID"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "PriceLimitNote": {
+            "field": "PriceLimitNote",
+            "value": "Nicht erzwungen: Preisliste: Testpreise Kunden (Deutschland)",
+            "readonly": true,
+            "mandatory": false,
+            "displayed": true,
+            "widgetType": "LongText",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "PriceLimitNote"
+            },
+            "viewEditorRenderMode": "never"
+          }
+        },
+        "validStatus": {
+          "valid": true
+        },
+        "saveStatus": {
+          "deleted": false,
+          "saved": true,
+          "hasChanges": false,
+          "error": false,
+          "reason": "just loaded"
+        },
+        "standardActions": [
+          "new",
+          "advancedEdit",
+          "email",
+          "letter",
+          "delete",
+          "comments"
+        ],
+        "websocketEndpoint": "/document/143/1000192"
+      }
+    ]
+  },
+  "tabId": "AD_Tab-187",
+  "windowId": "143",
+  "newRow": false,
+  "internalName": "C_OrderLine",
+  "entity": "window",
+  "keyProperty": "rowId",
+  "cols": [
+    {
+      "caption": "Not avail. on short term",
+      "description": "Color to use when flagging sale order lines where the current stock minus foreseeable shipments is not sufficient to fulfill the ordered quantity.",
+      "widgetType": "Color",
+      "size": "S",
+      "gridAlign": "center",
+      "viewEditorRenderMode": "never",
+      "sortable": true,
+      "fields": [
+        {
+          "field": "InsufficientQtyAvailableForSalesColor_ID",
+          "caption": "Not avail. on short term",
+          "emptyText": "none",
+          "clearValueText": "none"
+        }
+      ]
+    },
+    {
+      "caption": "Line No",
+      "description": "Unique line for this document",
+      "widgetType": "Integer",
+      "size": "S",
+      "gridAlign": "right",
+      "viewEditorRenderMode": "never",
+      "sortable": true,
+      "fields": [
+        {
+          "field": "Line",
+          "caption": "Line No",
+          "emptyText": "none",
+          "clearValueText": "none"
+        }
+      ]
+    },
+    {
+      "caption": "Product",
+      "description": "Product, Service, Item",
+      "widgetType": "Lookup",
+      "size": "L",
+      "gridAlign": "left",
+      "viewEditorRenderMode": "never",
+      "sortable": true,
+      "fields": [
+        {
+          "field": "M_Product_ID",
+          "caption": "Product",
+          "emptyText": "none",
+          "clearValueText": "none",
+          "source": "lookup",
+          "lookupSearchStringMinLength": -1,
+          "lookupSearchStartDelayMillis": 500,
+          "supportZoomInto": true
+        },
+        {
+          "field": "M_Product_DocumentNote",
+          "caption": "Produktnotiz",
+          "type": "Tooltip",
+          "tooltipIconName": "text",
+          "emptyText": "none",
+          "clearValueText": "none"
+        }
+      ]
+    },
+    {
+      "caption": "Attributes",
+      "description": "Attribute Instances for Products",
+      "widgetType": "ProductAttributes",
+      "size": "L",
+      "gridAlign": "left",
+      "viewEditorRenderMode": "never",
+      "sortable": true,
+      "fields": [
+        {
+          "field": "M_AttributeSetInstance_ID",
+          "caption": "Attributes",
+          "emptyText": "none",
+          "clearValueText": "none",
+          "source": "lookup",
+          "lookupSearchStringMinLength": -1,
+          "lookupSearchStartDelayMillis": 500
+        }
+      ]
+    },
+    {
+      "caption": "Trading Unit Quantity",
+      "description": "",
+      "widgetType": "Quantity",
+      "size": "S",
+      "gridAlign": "right",
+      "viewEditorRenderMode": "on-demand",
+      "sortable": true,
+      "fields": [
+        {
+          "field": "QtyEnteredTU",
+          "caption": "Trading Unit Quantity",
+          "emptyText": "none",
+          "clearValueText": "none"
+        }
+      ]
+    },
+    {
+      "caption": "Zusagbar (ATP)",
+      "description": "",
+      "widgetType": "Quantity",
+      "size": "S",
+      "gridAlign": "right",
+      "viewEditorRenderMode": "never",
+      "sortable": true,
+      "fields": [
+        {
+          "field": "Qty_AvailableToPromise",
+          "caption": "Zusagbar (ATP)",
+          "emptyText": "none",
+          "clearValueText": "none"
+        }
+      ]
+    },
+    {
+      "caption": "Packing Item",
+      "description": "",
+      "widgetType": "List",
+      "gridAlign": "left",
+      "viewEditorRenderMode": "never",
+      "sortable": true,
+      "fields": [
+        {
+          "field": "M_HU_PI_Item_Product_ID",
+          "caption": "Packing Item",
+          "emptyText": "none",
+          "clearValueText": "none",
+          "source": "list",
+          "lookupSearchStringMinLength": -1,
+          "lookupSearchStartDelayMillis": 500,
+          "supportZoomInto": true
+        }
+      ]
+    },
+    {
+      "caption": "Quantity",
+      "description": "The Quantity Entered is based on the selected UoM",
+      "widgetType": "Quantity",
+      "size": "S",
+      "gridAlign": "right",
+      "viewEditorRenderMode": "on-demand",
+      "sortable": true,
+      "fields": [
+        {
+          "field": "QtyEntered",
+          "caption": "Quantity",
+          "emptyText": "none",
+          "clearValueText": "none"
+        }
+      ]
+    },
+    {
+      "caption": "Available at short notice",
+      "description": "Current stock minus foreseeable shipments in the respective product's stocking UOM.",
+      "widgetType": "Quantity",
+      "gridAlign": "right",
+      "viewEditorRenderMode": "never",
+      "sortable": true,
+      "fields": [
+        {
+          "field": "QtyAvailableForSales",
+          "caption": "Available at short notice",
+          "emptyText": "Available at short notice",
+          "clearValueText": "none"
+        },
+        {
+          "field": "InsufficientQtyAvailableForSalesColor_ID",
+          "caption": "Not avail. on short term",
+          "emptyText": "Not avail. on short term",
+          "clearValueText": "none"
+        }
+      ]
+    },
+    {
+      "caption": "UOM",
+      "description": "Unit of Measure",
+      "widgetType": "List",
+      "size": "S",
+      "gridAlign": "left",
+      "viewEditorRenderMode": "never",
+      "sortable": true,
+      "fields": [
+        {
+          "field": "C_UOM_ID",
+          "caption": "UOM",
+          "emptyText": "none",
+          "clearValueText": "none",
+          "source": "list",
+          "lookupSearchStringMinLength": -1,
+          "lookupSearchStartDelayMillis": 500,
+          "supportZoomInto": true
+        }
+      ]
+    },
+    {
+      "caption": "Price",
+      "description": "Price Entered - the price based on the selected/base UoM",
+      "widgetType": "CostPrice",
+      "gridAlign": "right",
+      "viewEditorRenderMode": "on-demand",
+      "sortable": true,
+      "fields": [
+        {
+          "field": "PriceEntered",
+          "caption": "Price",
+          "emptyText": "none",
+          "clearValueText": "none"
+        },
+        {
+          "field": "PriceLimitNote",
+          "caption": "Price Limit Note",
+          "type": "Tooltip",
+          "tooltipIconName": "text",
+          "emptyText": "none",
+          "clearValueText": "none"
+        }
+      ]
+    },
+    {
+      "caption": "Price Unit",
+      "description": "",
+      "widgetType": "List",
+      "size": "S",
+      "gridAlign": "left",
+      "viewEditorRenderMode": "never",
+      "sortable": true,
+      "fields": [
+        {
+          "field": "Price_UOM_ID",
+          "caption": "Price Unit",
+          "emptyText": "none",
+          "clearValueText": "none",
+          "source": "list",
+          "lookupSearchStringMinLength": -1,
+          "lookupSearchStartDelayMillis": 500,
+          "supportZoomInto": true
+        }
+      ]
+    },
+    {
+      "caption": "Invoicing based on",
+      "description": "Legt fest wie die abrechenbare Menge ermittelt wird, wenn die tatsächlich gelieferte Menge von der mominal gelieferten Menge abweicht.",
+      "widgetType": "List",
+      "gridAlign": "left",
+      "viewEditorRenderMode": "never",
+      "sortable": true,
+      "fields": [
+        {
+          "field": "InvoicableQtyBasedOn",
+          "caption": "Invoicing based on",
+          "emptyText": "none",
+          "clearValueText": "none",
+          "source": "list",
+          "lookupSearchStringMinLength": -1,
+          "lookupSearchStartDelayMillis": 500
+        }
+      ]
+    },
+    {
+      "caption": "Quantity in Price Unit",
+      "description": "Menge in Preiseinheit",
+      "widgetType": "Quantity",
+      "size": "S",
+      "gridAlign": "right",
+      "viewEditorRenderMode": "never",
+      "sortable": true,
+      "fields": [
+        {
+          "field": "QtyEnteredInPriceUOM",
+          "caption": "Quantity in Price Unit",
+          "emptyText": "none",
+          "clearValueText": "none"
+        }
+      ]
+    },
+    {
+      "caption": "Discount %",
+      "description": "Discount in percent",
+      "widgetType": "Number",
+      "gridAlign": "right",
+      "viewEditorRenderMode": "never",
+      "sortable": true,
+      "fields": [
+        {
+          "field": "Discount",
+          "caption": "Discount %",
+          "emptyText": "none",
+          "clearValueText": "none"
+        }
+      ]
+    },
+    {
+      "caption": "Net Price",
+      "description": "Actual Price ",
+      "widgetType": "CostPrice",
+      "gridAlign": "right",
+      "viewEditorRenderMode": "never",
+      "sortable": true,
+      "fields": [
+        {
+          "field": "PriceActual",
+          "caption": "Net Price",
+          "emptyText": "none",
+          "clearValueText": "none"
+        }
+      ]
+    },
+    {
+      "caption": "Line Amount",
+      "description": "Line Extended Amount (Quantity * Actual Price) without Freight and Charges",
+      "widgetType": "Amount",
+      "gridAlign": "right",
+      "viewEditorRenderMode": "never",
+      "sortable": true,
+      "fields": [
+        {
+          "field": "LineNetAmt",
+          "caption": "Line Amount",
+          "emptyText": "none",
+          "clearValueText": "none"
+        }
+      ]
+    },
+    {
+      "caption": "Ertrag netto",
+      "description": "Effektiver Preis pro Einheit, minus erwartetem Skonto und vertraglicher Rückerstattung.",
+      "widgetType": "Amount",
+      "size": "S",
+      "gridAlign": "right",
+      "viewEditorRenderMode": "on-demand",
+      "sortable": true,
+      "fields": [
+        {
+          "field": "ProfitPriceActual",
+          "caption": "Ertrag netto",
+          "emptyText": "none",
+          "clearValueText": "none"
+        }
+      ]
+    },
+    {
+      "caption": "Marge %",
+      "description": "Differenz zwischen VK Ertrag und EK Ertrag.",
+      "widgetType": "Amount",
+      "size": "S",
+      "gridAlign": "right",
+      "viewEditorRenderMode": "on-demand",
+      "sortable": true,
+      "fields": [
+        {
+          "field": "ProfitPercent",
+          "caption": "Marge %",
+          "emptyText": "none",
+          "clearValueText": "none"
+        }
+      ]
+    },
+    {
+      "caption": "List Price",
+      "description": "List Price",
+      "widgetType": "CostPrice",
+      "gridAlign": "right",
+      "viewEditorRenderMode": "on-demand",
+      "sortable": true,
+      "fields": [
+        {
+          "field": "PriceList",
+          "caption": "List Price",
+          "emptyText": "none",
+          "clearValueText": "none"
+        }
+      ]
+    },
+    {
+      "caption": "Tax",
+      "description": "Tax identifier",
+      "widgetType": "List",
+      "gridAlign": "left",
+      "viewEditorRenderMode": "never",
+      "sortable": true,
+      "fields": [
+        {
+          "field": "C_Tax_ID",
+          "caption": "Tax",
+          "emptyText": "none",
+          "clearValueText": "none",
+          "source": "list",
+          "lookupSearchStringMinLength": -1,
+          "lookupSearchStartDelayMillis": 500,
+          "supportZoomInto": true
+        }
+      ]
+    },
+    {
+      "caption": "Description",
+      "description": "",
+      "widgetType": "LongText",
+      "maxLength": 1024,
+      "gridAlign": "left",
+      "viewEditorRenderMode": "never",
+      "sortable": true,
+      "fields": [
+        {
+          "field": "Description",
+          "caption": "Description",
+          "emptyText": "none",
+          "clearValueText": "none"
+        }
+      ]
+    },
+    {
+      "caption": "Terms & Conditions",
+      "description": "",
+      "widgetType": "List",
+      "size": "S",
+      "gridAlign": "left",
+      "viewEditorRenderMode": "never",
+      "sortable": true,
+      "fields": [
+        {
+          "field": "C_Flatrate_Conditions_ID",
+          "caption": "Terms & Conditions",
+          "emptyText": "none",
+          "clearValueText": "none",
+          "source": "list",
+          "lookupSearchStringMinLength": -1,
+          "lookupSearchStartDelayMillis": 500,
+          "supportZoomInto": true
+        }
+      ]
+    },
+    {
+      "caption": "Group Compensation Line",
+      "description": "",
+      "widgetType": "YesNo",
+      "gridAlign": "center",
+      "viewEditorRenderMode": "never",
+      "sortable": true,
+      "fields": [
+        {
+          "field": "IsGroupCompensationLine",
+          "caption": "Group Compensation Line",
+          "emptyText": "none",
+          "clearValueText": "none"
+        }
+      ]
+    },
+    {
+      "caption": "Group",
+      "description": "",
+      "widgetType": "Lookup",
+      "gridAlign": "left",
+      "viewEditorRenderMode": "never",
+      "sortable": true,
+      "fields": [
+        {
+          "field": "C_Order_CompensationGroup_ID",
+          "caption": "Group",
+          "emptyText": "none",
+          "clearValueText": "none",
+          "source": "lookup",
+          "lookupSearchStringMinLength": -1,
+          "lookupSearchStartDelayMillis": 500,
+          "supportZoomInto": true
+        }
+      ]
+    },
+    {
+      "caption": "Compensation Type",
+      "description": "",
+      "widgetType": "List",
+      "gridAlign": "left",
+      "viewEditorRenderMode": "never",
+      "sortable": true,
+      "fields": [
+        {
+          "field": "GroupCompensationType",
+          "caption": "Compensation Type",
+          "emptyText": "none",
+          "clearValueText": "none",
+          "source": "list",
+          "lookupSearchStringMinLength": -1,
+          "lookupSearchStartDelayMillis": 500
+        }
+      ]
+    },
+    {
+      "caption": "Compensation Amount Type",
+      "description": "",
+      "widgetType": "List",
+      "gridAlign": "left",
+      "viewEditorRenderMode": "never",
+      "sortable": true,
+      "fields": [
+        {
+          "field": "GroupCompensationAmtType",
+          "caption": "Compensation Amount Type",
+          "emptyText": "none",
+          "clearValueText": "none",
+          "source": "list",
+          "lookupSearchStringMinLength": -1,
+          "lookupSearchStartDelayMillis": 500
+        }
+      ]
+    },
+    {
+      "caption": "Compensation percentage",
+      "description": "",
+      "widgetType": "Number",
+      "gridAlign": "right",
+      "viewEditorRenderMode": "never",
+      "sortable": true,
+      "fields": [
+        {
+          "field": "GroupCompensationPercentage",
+          "caption": "Compensation percentage",
+          "emptyText": "none",
+          "clearValueText": "none"
+        }
+      ]
+    },
+    {
+      "caption": "No Price Conditions Indicator",
+      "description": "Red means that mandatory pricing conditions are missing; yellow means that temporary pricing conditions were created just for the respective position.",
+      "widgetType": "Color",
+      "gridAlign": "center",
+      "viewEditorRenderMode": "never",
+      "sortable": true,
+      "fields": [
+        {
+          "field": "NoPriceConditionsColor_ID",
+          "caption": "No Price Conditions Indicator",
+          "emptyText": "none",
+          "clearValueText": "none"
+        }
+      ]
+    },
+    {
+      "caption": "Zahlungsbedingung",
+      "description": "Die Bedingungen für die Bezahlung dieses Vorgangs",
+      "widgetType": "List",
+      "gridAlign": "left",
+      "viewEditorRenderMode": "never",
+      "sortable": true,
+      "fields": [
+        {
+          "field": "C_PaymentTerm_Override_ID",
+          "caption": "Zahlungsbedingung",
+          "emptyText": "none",
+          "clearValueText": "none",
+          "source": "list",
+          "lookupSearchStringMinLength": -1,
+          "lookupSearchStartDelayMillis": 500,
+          "supportZoomInto": true
+        }
+      ]
+    },
+    {
+      "caption": "Payment Discount %",
+      "description": "",
+      "widgetType": "Amount",
+      "gridAlign": "right",
+      "viewEditorRenderMode": "on-demand",
+      "sortable": true,
+      "fields": [
+        {
+          "field": "PaymentDiscount",
+          "caption": "Payment Discount %",
+          "emptyText": "none",
+          "clearValueText": "none"
+        }
+      ]
+    }
+  ],
+  "orderBy": [
+    {
+      "fieldName": "Line",
+      "ascending": true
+    },
+    {
+      "fieldName": "C_OrderLine_ID",
+      "ascending": true
+    }
+  ],
+  "docId": "1000192",
+  "emptyText": "There are no detail rows",
+  "emptyHint": "You can create them in this window.",
+  "tabIndex": 3,
+  "queryOnActivate": true,
+  "supportQuickInput": true,
+  "tabInfo": {
+    "tabId": "AD_Tab-187",
+    "allowCreateNew": false,
+    "allowCreateNewReason": "ParentDocumentProcessed",
+    "allowDelete": false,
+    "allowDeleteReason": "ParentDocumentProcessed"
+  },
+  "disconnectFromState": true,
+  "allowShortcut": true,
+  "allowOutsideClick": true,
+  "modalVisible": false,
+  "isGerman": false,
+  "activeSort": false,
+  "eventTypes": [
+    "mousedown",
+    "touchstart"
+  ],
+  "outsideClickIgnoreClass": "ignore-react-onclickoutside",
+  "preventDefault": false,
+  "stopPropagation": false
+}

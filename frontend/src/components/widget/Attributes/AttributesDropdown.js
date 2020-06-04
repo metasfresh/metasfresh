@@ -2,7 +2,6 @@ import PropTypes from 'prop-types';
 import React, { PureComponent } from 'react';
 import onClickOutside from 'react-onclickoutside';
 import { Map } from 'immutable';
-import classnames from 'classnames';
 import RawWidget from '../RawWidget';
 
 /**
@@ -13,16 +12,10 @@ import RawWidget from '../RawWidget';
 class AttributesDropdown extends PureComponent {
   constructor(props) {
     super(props);
-    this.selector = React.createRef();
     this.state = {
       patchCallbacks: Map(),
     };
   }
-
-  componentDidMount = () => {
-    const componentCoords = this.selector.current.getBoundingClientRect();
-    this.setState({ isVisible: true, dropdownCoords: componentCoords });
-  };
 
   /**
    * @method handleClickOutside
@@ -130,20 +123,10 @@ class AttributesDropdown extends PureComponent {
    * @todo Write the documentation
    */
   render() {
-    const { isVisible, dropdownCoords } = this.state;
-    const BOTTOM_OFFSET = 230; // value from where we show the dropup
     return (
       <div
         ref={this.selector}
-        className={classnames(
-          'attributes-dropdown panel-shadowed panel-primary panel-bordered panel-spaced',
-          { 'hidden ': !isVisible },
-          {
-            'attributes-dropup':
-              dropdownCoords &&
-              window.innerHeight - dropdownCoords.y < BOTTOM_OFFSET,
-          }
-        )}
+        className="attributes-dropdown panel-shadowed panel-primary panel-bordered panel-spaced"
       >
         {this.renderFields()}
       </div>

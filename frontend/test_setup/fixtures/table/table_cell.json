@@ -1,0 +1,45 @@
+{
+  "entity": "documentView",
+  "windowId": "143",
+  "rowId": "1000159",
+  "tabId": "1",
+  "item": {
+    "caption": "Organisation",
+    "description": "Organisational entity within client",
+    "widgetType": "Lookup",
+    "type": "secondary",
+    "size": "M",
+    "gridAlign": "left",
+    "viewEditorRenderMode": "never",
+    "sortable": true,
+    "fields": [
+      {
+        "field": "AD_Org_ID",
+        "caption": "Organisation",
+        "emptyText": "none",
+        "clearValueText": "none",
+        "source": "lookup",
+        "lookupSearchStringMinLength": -1,
+        "lookupSearchStartDelayMillis": 500,
+        "supportZoomInto": true
+      }
+    ]
+  },
+  "tabIndex": 0,
+  "listenOnKeys": true,
+  "caption": "",
+  "mainTable": true,
+  "viewId": "143-D",
+  "extendLongText": 0,
+  "property": "AD_Org_ID",
+  "isEditable": false,
+  "supportZoomInto": true,
+  "supportFieldEdit": false,
+  "keyProperty": "1000159",
+  "modalVisible": false,
+  "isGerman": false,
+  "tdValue": "{\"key\":\"1000000\",\"caption\":\"testfirma WebUI AG\"}",
+  "cellExtended": false,
+  "isRowSelected": false,
+  "isEdited": false
+}

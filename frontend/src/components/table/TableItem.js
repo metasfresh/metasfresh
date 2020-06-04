@@ -411,6 +411,7 @@ class TableItem extends Component {
       isGerman,
       isSelected,
       focusOnFieldName,
+      activeLocale,
     } = this.props;
     const {
       edited,
@@ -455,6 +456,7 @@ class TableItem extends Component {
             return (
               <TableCell
                 {...{
+                  activeLocale,
                   getSizeClass,
                   entity,
                   windowId,
@@ -730,6 +732,7 @@ TableItem.propTypes = {
   selected: PropTypes.array,
   page: PropTypes.number,
   activeSort: PropTypes.bool,
+  activeLocale: PropTypes.object,
 };
 
 export default TableItem;
