@@ -29,6 +29,7 @@ import {
   updateTableSelection,
   updateGridTableData,
   deselectTableItems,
+  createGridTable,
 } from '../actions/TableActions';
 import { clearAllFilters } from '../actions/FiltersActions';
 import {
@@ -309,6 +310,7 @@ class DocumentListContainer extends Component {
       updateRawModal,
       setModalDescription,
       isModal,
+      createGridTable,
     } = this.props;
 
     fetchLayout(windowId, type, viewProfileId, isModal ? viewId : null)
@@ -316,8 +318,15 @@ class DocumentListContainer extends Component {
         if (this.mounted) {
           const { allowedCloseActions } = response;
 
-          if (allowedCloseActions && isModal) {
-            updateRawModal(windowId, { allowedCloseActions });
+          if (isModal) {
+            const tableId = getTableId({ windowId, viewId });
+            const tableData = { windowId, viewId, layout: response };
+
+            createGridTable(tableId, tableData);
+
+            if (allowedCloseActions) {
+              updateRawModal(windowId, { allowedCloseActions });
+            }
           }
 
           if (viewId) {
@@ -837,6 +846,7 @@ export default connect(
     fetchLocationConfig,
     clearAllFilters,
     updateGridTableData,
+    createGridTable,
   },
   null,
   { forwardRef: true }

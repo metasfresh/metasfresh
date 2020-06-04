@@ -64,7 +64,7 @@ export function setActiveSort(id, active) {
 /**
  * Update table selection - select items
  */
-export function updateTableSelection(id, selection, keyProperty) {
+export function updateTableSelection(id, selection, keyProperty = 'id') {
   return {
     type: types.UPDATE_TABLE_SELECTION,
     payload: { id, selection, keyProperty },
@@ -172,8 +172,16 @@ export function createTableData(rawData) {
  */
 export function createGridTable(tableId, tableResponse) {
   return (dispatch, getState) => {
-    const windowType = tableResponse.windowType || tableResponse.windowId;
-    const tableLayout = getView(getState(), windowType).layout;
+    let tableLayout = null;
+
+    // modals are created when fetching layout
+    if (tableResponse.layout) {
+      tableLayout = tableResponse.layout;
+    } else {
+      const windowId = tableResponse.windowType || tableResponse.windowId;
+      tableLayout = getView(getState(), windowId).layout;
+    }
+
     const tableData = createTableData({
       ...tableResponse,
       ...tableLayout,
@@ -235,7 +243,7 @@ export function updateGridTable(tableId, tableResponse) {
         });
         const { collapsible, expandedDepth, keyProperty } = tableData;
 
-        if (tableData.rows.length && collapsible) {
+        if (tableData.rows && tableData.rows.length && collapsible) {
           tableData.rows = flattenRows(tableData.rows);
         }
 
@@ -252,9 +260,9 @@ export function updateGridTable(tableId, tableResponse) {
             })
           );
         }
-      }
 
-      return Promise.resolve(true);
+        return Promise.resolve(true);
+      }
     }
 
     return Promise.resolve(false);
