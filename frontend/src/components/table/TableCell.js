@@ -30,7 +30,7 @@ class TableCell extends PureComponent {
     }
   }
 
-  widgetTooltipToggle = (field, value) => {
+  widgetTooltipToggle = (value) => {
     const curVal = this.state.tooltipToggled;
     const newVal = value != null ? value : !curVal;
 
