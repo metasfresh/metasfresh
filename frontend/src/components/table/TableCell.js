@@ -34,9 +34,7 @@ class TableCell extends PureComponent {
     const curVal = this.state.tooltipToggled;
     const newVal = value != null ? value : !curVal;
 
-    this.setState({
-      tooltipToggled: newVal,
-    });
+    this.setState({ tooltipToggled: newVal });
   };
 
   handleBackdropLock = (state) => {
