@@ -119,10 +119,13 @@ const reducer = produce((draftState, action) => {
 
     case types.DELETE_TABLE: {
       const { id } = action.payload;
-      const newLength = draftState.length - 1;
 
-      draftState.length = newLength;
-      delete draftState[id];
+      if (draftState[id]) {
+        const newLength = draftState.length - 1;
+
+        draftState.length = newLength;
+        delete draftState[id];
+      }
 
       return;
     }

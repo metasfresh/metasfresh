@@ -320,6 +320,8 @@ export function mergeRows({
   columnInfosByFieldName = {},
   changedIds,
 }) {
+  // unfreeze rows from the store
+  toRows = deepUnfreeze(toRows);
   if (!fromRows && !changedIds) {
     return {
       rows: toRows,
