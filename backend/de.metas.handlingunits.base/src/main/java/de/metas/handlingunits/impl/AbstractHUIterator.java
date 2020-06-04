@@ -199,14 +199,10 @@ public abstract class AbstractHUIterator implements IHUIterator
 	 * Checks if given node was already visited. If node was not already visited, add it to internal visited queue
 	 *
 	 * @param handler node handler
-	 * @param node
 	 * @return true if node was already visited
 	 */
-	private final <T> boolean checkSeen(final AbstractNodeIterator<T> handler, final T node)
+	private final <T> boolean checkSeen(@NonNull final AbstractNodeIterator<T> handler, @NonNull final T node)
 	{
-		Check.assumeNotNull(handler, "handler not null");
-		Check.assumeNotNull(node, "node not null");
-
 		final ArrayKey key = handler.getKey(node);
 		final boolean added = seenObjects.add(key);
 
@@ -255,9 +251,8 @@ public abstract class AbstractHUIterator implements IHUIterator
 	 *
 	 * @param statusNew
 	 */
-	protected final void setStatus(final HUIteratorStatus statusNew)
+	protected final void setStatus(@NonNull final HUIteratorStatus statusNew)
 	{
-		Check.assumeNotNull(statusNew, "statusNew not null");
 		if (_status == statusNew)
 		{
 			return;

@@ -112,22 +112,22 @@ public class CustomerReturnsInOutProducer extends AbstractReturnsInOutProducer
 	@Override
 	protected void createLines()
 	{
-		// I'm not sure if currentHU is null to take the data from it, so i'm not sure if clientAndOrgId is created correctly
-		final ClientAndOrgId clientAndOrgId = ClientAndOrgId.ofClientAndOrg(Env.getAD_Client_ID(), Env.getAD_Org_ID(getCtx()));
-		final IHUContext huContext = handlingUnitsBL.createMutableHUContext(getCtx(), clientAndOrgId);
+		final Map<ClientAndOrgId, IHUContext> clientOrg2huContext = new HashMap<>();
 
 		for (final HUToReturn huToReturnInfo : getHUsToReturn())
 		{
+			// we know for sure the huAssignments are for inoutlines
+			final I_M_InOutLine inOutLine = InterfaceWrapperHelper.create(getCtx(), huToReturnInfo.getOriginalReceiptInOutLineId(), I_M_InOutLine.class, ITrx.TRXNAME_None);
+
+			// make sure to have the right client and org IDs each time
+			final ClientAndOrgId clientAndOrgId = ClientAndOrgId.ofClientAndOrg(inOutLine.getAD_Client_ID(), inOutLine.getAD_Org_ID());
+			final IHUContext huContext = clientOrg2huContext.computeIfAbsent(clientAndOrgId, key -> handlingUnitsBL.createMutableHUContext(getCtx(), key));
 
 			collector = new HUPackingMaterialsCollector(huContext);
 			collector.setisCollectTUNumberPerOrigin(true);
 			collector.setisCollectAggregatedHUs(true);
 
 			final I_M_HU hu = huToReturnInfo.getHu();
-
-			// we know for sure the huAssignments are for inoutlines
-			final I_M_InOutLine inOutLine = InterfaceWrapperHelper.create(getCtx(), huToReturnInfo.getOriginalReceiptInOutLineId(), I_M_InOutLine.class, ITrx.TRXNAME_None);
-
 
 			final InOutLineHUPackingMaterialCollectorSource inOutLineSource = InOutLineHUPackingMaterialCollectorSource.builder()
 					.inoutLine(inOutLine)
