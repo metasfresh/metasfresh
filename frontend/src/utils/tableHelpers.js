@@ -207,7 +207,6 @@ export function createSpecialField(fieldType, fieldValue) {
  * @param {boolean} isGerman
  * @param {string} activeLocale
  * @summary This is a patch function to mangle the desired output used at table level within TableCell, Filters components
- * TODO: Clarify all the desired results as it seems we are returning six different types of values here
  */
 export function fieldValueToString({
   fieldValue,
@@ -221,6 +220,10 @@ export function fieldValueToString({
   }
 
   switch (typeof fieldValue) {
+    /**
+     * Case when fieldValue is passed as an array - this is used to show date intervals within filters
+     * as dd.mm.yyyy - dd.mm.yyyy for example
+     */
     case 'object': {
       if (Array.isArray(fieldValue)) {
         return fieldValue
@@ -257,8 +260,7 @@ export function fieldValueToString({
       return fieldValue;
     }
   }
-};
-
+}
 
 export function handleCopy(e) {
   e.preventDefault();
