@@ -1,4 +1,3 @@
-import Moment from 'moment-timezone';
 import PropTypes from 'prop-types';
 import numeral from 'numeral';
 import React, { PureComponent, createRef } from 'react';
@@ -7,6 +6,7 @@ import MasterWidget from '../widget/MasterWidget';
 import {
   getAmountFormatByPrecision,
   getDateFormat,
+  createDate,
 } from '../../utils/tableHelpers';
 import {
   AMOUNT_FIELD_TYPES,
@@ -14,27 +14,10 @@ import {
   DATE_FIELD_TYPES,
   TIME_FIELD_TYPES,
   DATE_FIELD_FORMATS,
-  TIME_REGEX_TEST,
-  TIME_FORMAT,
 } from '../../constants/Constants';
 import WidgetTooltip from '../widget/WidgetTooltip';
 
 class TableCell extends PureComponent {
-  static createDate = ({ fieldValue, fieldType, activeLocale }) => {
-    const languageKey = activeLocale ? activeLocale.key : null;
-    if (fieldValue) {
-      return !Moment.isMoment(fieldValue) && fieldValue.match(TIME_REGEX_TEST)
-        ? Moment.utc(Moment.duration(fieldValue).asMilliseconds())
-            .locale(languageKey)
-            .format(TIME_FORMAT)
-        : Moment(fieldValue)
-            .locale(languageKey)
-            .format(getDateFormat(fieldType));
-    }
-
-    return '';
-  };
-
   static createAmount = (fieldValue, precision, isGerman) => {
     if (fieldValue) {
       const fieldValueAsNum = numeral(parseFloat(fieldValue));
@@ -99,7 +82,7 @@ class TableCell extends PureComponent {
 
         return DATE_FIELD_TYPES.includes(fieldType) ||
           TIME_FIELD_TYPES.includes(fieldType)
-          ? TableCell.createDate({ fieldValue, fieldType, activeLocale })
+          ? createDate({ fieldValue, fieldType, activeLocale })
           : fieldValue.caption;
       }
       case 'boolean': {
@@ -114,7 +97,7 @@ class TableCell extends PureComponent {
           DATE_FIELD_TYPES.includes(fieldType) ||
           TIME_FIELD_TYPES.includes(fieldType)
         ) {
-          return TableCell.createDate({ fieldValue, fieldType, activeLocale });
+          return createDate({ fieldValue, fieldType, activeLocale });
         } else if (AMOUNT_FIELD_TYPES.includes(fieldType)) {
           return TableCell.createAmount(fieldValue, precision, isGerman);
         } else if (SPECIAL_FIELD_TYPES.includes(fieldType)) {

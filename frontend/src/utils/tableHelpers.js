@@ -1,9 +1,12 @@
 import currentDevice from 'current-device';
 import PropTypes from 'prop-types';
 import uuid from 'uuid/v4';
+import Moment from 'moment-timezone';
 import {
   AMOUNT_FIELD_FORMATS_BY_PRECISION,
   DATE_FIELD_FORMATS,
+  TIME_REGEX_TEST,
+  TIME_FORMAT,
 } from '../constants/Constants';
 
 const propTypes = {
@@ -52,6 +55,10 @@ export function constructorFn(props) {
   };
 }
 
+/**
+ * @method getAmountFormatByPrecisiont
+ * @param {string} precision
+ **/
 export function getAmountFormatByPrecision(precision) {
   return precision &&
     precision >= 0 &&
@@ -107,6 +114,26 @@ export function getSizeClass(col) {
       return 'td-sm';
     }
   }
+}
+
+/**
+ * @method createDate
+ * @param {object} containing the fieldValue, fieldType and the active locale
+ * @summary creates a Date using Moment lib formatting it with the locale passed as param
+ */
+export function createDate({ fieldValue, fieldType, activeLocale }) {
+  const languageKey = activeLocale ? activeLocale.key : null;
+  if (fieldValue) {
+    return !Moment.isMoment(fieldValue) && fieldValue.match(TIME_REGEX_TEST)
+      ? Moment.utc(Moment.duration(fieldValue).asMilliseconds())
+          .locale(languageKey)
+          .format(TIME_FORMAT)
+      : Moment(fieldValue)
+          .locale(languageKey)
+          .format(getDateFormat(fieldType));
+  }
+
+  return '';
 }
 
 export function handleCopy(e) {
