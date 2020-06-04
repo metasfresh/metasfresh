@@ -1,6 +1,7 @@
 import currentDevice from 'current-device';
 import PropTypes from 'prop-types';
 import uuid from 'uuid/v4';
+import numeral from 'numeral';
 import Moment from 'moment-timezone';
 import {
   AMOUNT_FIELD_FORMATS_BY_PRECISION,
@@ -131,6 +132,42 @@ export function createDate({ fieldValue, fieldType, activeLocale }) {
       : Moment(fieldValue)
           .locale(languageKey)
           .format(getDateFormat(fieldType));
+  }
+
+  return '';
+}
+
+/**
+ * @method createAmount
+ * @param {string} fieldValue
+ * @param {string} precision
+ * @param {boolean} isGerman
+ * @summary creates an amount for a given value with the desired precision and it provides special formatting
+ *          for the case when german language is set
+ */
+export function createAmount(fieldValue, precision, isGerman) {
+  if (fieldValue) {
+    const fieldValueAsNum = numeral(parseFloat(fieldValue));
+    const numberFormat = getAmountFormatByPrecision(precision);
+    const returnValue = numberFormat
+      ? fieldValueAsNum.format(numberFormat)
+      : fieldValueAsNum.format();
+
+    // For German natives we want to show numbers with comma as a value separator
+    // https://github.com/metasfresh/me03/issues/1822
+    if (isGerman && parseFloat(returnValue) != null) {
+      const commaRegexp = /,/g;
+      commaRegexp.test(returnValue);
+      const lastIdx = commaRegexp.lastIndex;
+
+      if (lastIdx) {
+        return returnValue;
+      }
+
+      return `${returnValue}`.replace('.', ',');
+    }
+
+    return returnValue;
   }
 
   return '';

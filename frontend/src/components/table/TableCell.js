@@ -1,12 +1,11 @@
 import PropTypes from 'prop-types';
-import numeral from 'numeral';
 import React, { PureComponent, createRef } from 'react';
 import classnames from 'classnames';
 import MasterWidget from '../widget/MasterWidget';
 import {
-  getAmountFormatByPrecision,
   getDateFormat,
   createDate,
+  createAmount,
 } from '../../utils/tableHelpers';
 import {
   AMOUNT_FIELD_TYPES,
@@ -18,34 +17,6 @@ import {
 import WidgetTooltip from '../widget/WidgetTooltip';
 
 class TableCell extends PureComponent {
-  static createAmount = (fieldValue, precision, isGerman) => {
-    if (fieldValue) {
-      const fieldValueAsNum = numeral(parseFloat(fieldValue));
-      const numberFormat = getAmountFormatByPrecision(precision);
-      const returnValue = numberFormat
-        ? fieldValueAsNum.format(numberFormat)
-        : fieldValueAsNum.format();
-
-      // For German natives we want to show numbers with comma as a value separator
-      // https://github.com/metasfresh/me03/issues/1822
-      if (isGerman && parseFloat(returnValue) != null) {
-        const commaRegexp = /,/g;
-        commaRegexp.test(returnValue);
-        const lastIdx = commaRegexp.lastIndex;
-
-        if (lastIdx) {
-          return returnValue;
-        }
-
-        return `${returnValue}`.replace('.', ',');
-      }
-
-      return returnValue;
-    }
-
-    return '';
-  };
-
   static createSpecialField = (fieldType, fieldValue) => {
     switch (fieldType) {
       case 'Color': {
@@ -99,7 +70,7 @@ class TableCell extends PureComponent {
         ) {
           return createDate({ fieldValue, fieldType, activeLocale });
         } else if (AMOUNT_FIELD_TYPES.includes(fieldType)) {
-          return TableCell.createAmount(fieldValue, precision, isGerman);
+          return createAmount(fieldValue, precision, isGerman);
         } else if (SPECIAL_FIELD_TYPES.includes(fieldType)) {
           return TableCell.createSpecialField(fieldType, fieldValue);
         }
