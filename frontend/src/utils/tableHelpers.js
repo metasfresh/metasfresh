@@ -1,6 +1,10 @@
 import currentDevice from 'current-device';
 import PropTypes from 'prop-types';
 import uuid from 'uuid/v4';
+import {
+  AMOUNT_FIELD_FORMATS_BY_PRECISION,
+  DATE_FIELD_FORMATS,
+} from '../constants/Constants';
 
 const propTypes = {
   // from @connect
@@ -48,6 +52,34 @@ export function constructorFn(props) {
   };
 }
 
+export function getAmountFormatByPrecision(precision) {
+  return precision &&
+    precision >= 0 &&
+    precision < AMOUNT_FIELD_FORMATS_BY_PRECISION.length
+    ? AMOUNT_FIELD_FORMATS_BY_PRECISION[precision]
+    : null;
+}
+
+/**
+ * @method getDateFormat
+ * @param {string} fieldType
+ * @summary get the date format according to the given fieldType provided parameter
+ *   <FieldType> =====> <stringFormat> correspondence:
+ *   Date: 'L',
+ *   ZonedDateTime: 'L LTS',
+ *   DateTime: 'L LTS',
+ *   Time: 'LT',
+ *   Timestamp: 'L HH:mm:ss',
+ */
+export function getDateFormat(fieldType) {
+  return DATE_FIELD_FORMATS[fieldType];
+}
+
+/**
+ * @method getSizeClass
+ * @param {object} col
+ * @summary get the class size dinamically (for Bootstrap ) for the col obj given as param
+ */
 export function getSizeClass(col) {
   const { widgetType, size } = col;
   const lg = ['List', 'Lookup', 'LongText', 'Date', 'DateTime', 'Time'];

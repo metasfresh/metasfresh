@@ -3,11 +3,13 @@ import PropTypes from 'prop-types';
 import numeral from 'numeral';
 import React, { PureComponent, createRef } from 'react';
 import classnames from 'classnames';
-
 import MasterWidget from '../widget/MasterWidget';
 import {
+  getAmountFormatByPrecision,
+  getDateFormat,
+} from '../../utils/tableHelpers';
+import {
   AMOUNT_FIELD_TYPES,
-  AMOUNT_FIELD_FORMATS_BY_PRECISION,
   SPECIAL_FIELD_TYPES,
   DATE_FIELD_TYPES,
   TIME_FIELD_TYPES,
@@ -18,15 +20,6 @@ import {
 import WidgetTooltip from '../widget/WidgetTooltip';
 
 class TableCell extends PureComponent {
-  static getAmountFormatByPrecision = (precision) =>
-    precision &&
-    precision >= 0 &&
-    precision < AMOUNT_FIELD_FORMATS_BY_PRECISION.length
-      ? AMOUNT_FIELD_FORMATS_BY_PRECISION[precision]
-      : null;
-
-  static getDateFormat = (fieldType) => DATE_FIELD_FORMATS[fieldType];
-
   static createDate = ({ fieldValue, fieldType, activeLocale }) => {
     const languageKey = activeLocale ? activeLocale.key : null;
     if (fieldValue) {
@@ -36,7 +29,7 @@ class TableCell extends PureComponent {
             .format(TIME_FORMAT)
         : Moment(fieldValue)
             .locale(languageKey)
-            .format(TableCell.getDateFormat(fieldType));
+            .format(getDateFormat(fieldType));
     }
 
     return '';
@@ -45,7 +38,7 @@ class TableCell extends PureComponent {
   static createAmount = (fieldValue, precision, isGerman) => {
     if (fieldValue) {
       const fieldValueAsNum = numeral(parseFloat(fieldValue));
-      const numberFormat = TableCell.getAmountFormatByPrecision(precision);
+      const numberFormat = getAmountFormatByPrecision(precision);
       const returnValue = numberFormat
         ? fieldValueAsNum.format(numberFormat)
         : fieldValueAsNum.format();
@@ -290,7 +283,7 @@ class TableCell extends PureComponent {
         : description;
     const isOpenDatePicker = isEdited && item.widgetType === 'Date';
     const isDateField = DATE_FIELD_FORMATS[item.widgetType]
-      ? TableCell.getDateFormat(item.widgetType)
+      ? getDateFormat(item.widgetType)
       : false;
     let style = {};
     let tooltipData = null;
