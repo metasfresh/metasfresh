@@ -1,3 +1,4 @@
+import React from 'react';
 import currentDevice from 'current-device';
 import PropTypes from 'prop-types';
 import uuid from 'uuid/v4';
@@ -5,7 +6,11 @@ import numeral from 'numeral';
 import Moment from 'moment-timezone';
 import {
   AMOUNT_FIELD_FORMATS_BY_PRECISION,
+  AMOUNT_FIELD_TYPES,
+  SPECIAL_FIELD_TYPES,
   DATE_FIELD_FORMATS,
+  DATE_FIELD_TYPES,
+  TIME_FIELD_TYPES,
   TIME_REGEX_TEST,
   TIME_FORMAT,
 } from '../constants/Constants';
@@ -172,6 +177,88 @@ export function createAmount(fieldValue, precision, isGerman) {
 
   return '';
 }
+
+/**
+ * @method createSpecialField
+ * @param {string}  fieldType
+ * @param {string}  fieldValue
+ * @summary For the special case of fieldType being of type 'Color' it will show a circle in the TableCell
+ *          with the hex value given - fieldValue
+ *          More details on : https://github.com/metasfresh/metasfresh-webui-frontend-legacy/issues/1603
+ */
+export function createSpecialField(fieldType, fieldValue) {
+  switch (fieldType) {
+    case 'Color': {
+      const style = {
+        backgroundColor: fieldValue,
+      };
+      return <span className="widget-color-display" style={style} />;
+    }
+    default:
+      return fieldValue;
+  }
+}
+
+/**
+ * @method fieldValueToString
+ * @param {string} fieldValue
+ * @param {string} fieldType
+ * @param {string} precision
+ * @param {boolean} isGerman
+ * @param {string} activeLocale
+ * @summary This is a patch function to mangle the desired output used at table level within TableCell, Filters components
+ * TODO: Clarify all the desired results as it seems we are returning six different types of values here
+ */
+export function fieldValueToString({
+  fieldValue,
+  fieldType = 'Text',
+  precision = null,
+  isGerman,
+  activeLocale,
+}) {
+  if (fieldValue === null) {
+    return '';
+  }
+
+  switch (typeof fieldValue) {
+    case 'object': {
+      if (Array.isArray(fieldValue)) {
+        return fieldValue
+          .map((value) => fieldValueToString(value, fieldType))
+          .join(' - ');
+      }
+
+      return DATE_FIELD_TYPES.includes(fieldType) ||
+        TIME_FIELD_TYPES.includes(fieldType)
+        ? createDate({ fieldValue, fieldType, activeLocale })
+        : fieldValue.caption;
+    }
+    case 'boolean': {
+      return fieldValue ? (
+        <i className="meta-icon-checkbox-1" />
+      ) : (
+        <i className="meta-icon-checkbox" />
+      );
+    }
+    case 'string': {
+      if (
+        DATE_FIELD_TYPES.includes(fieldType) ||
+        TIME_FIELD_TYPES.includes(fieldType)
+      ) {
+        return createDate({ fieldValue, fieldType, activeLocale });
+      } else if (AMOUNT_FIELD_TYPES.includes(fieldType)) {
+        return createAmount(fieldValue, precision, isGerman);
+      } else if (SPECIAL_FIELD_TYPES.includes(fieldType)) {
+        return createSpecialField(fieldType, fieldValue);
+      }
+      return fieldValue;
+    }
+    default: {
+      return fieldValue;
+    }
+  }
+};
+
 
 export function handleCopy(e) {
   e.preventDefault();

@@ -2,91 +2,14 @@ import PropTypes from 'prop-types';
 import React, { PureComponent, createRef } from 'react';
 import classnames from 'classnames';
 import MasterWidget from '../widget/MasterWidget';
-import {
-  getDateFormat,
-  createDate,
-  createAmount,
-} from '../../utils/tableHelpers';
-import {
-  AMOUNT_FIELD_TYPES,
-  SPECIAL_FIELD_TYPES,
-  DATE_FIELD_TYPES,
-  TIME_FIELD_TYPES,
-  DATE_FIELD_FORMATS,
-} from '../../constants/Constants';
+import { getDateFormat, fieldValueToString } from '../../utils/tableHelpers';
+import { DATE_FIELD_FORMATS } from '../../constants/Constants';
 import WidgetTooltip from '../widget/WidgetTooltip';
-
 class TableCell extends PureComponent {
-  static createSpecialField = (fieldType, fieldValue) => {
-    switch (fieldType) {
-      case 'Color': {
-        const style = {
-          backgroundColor: fieldValue,
-        };
-        return <span className="widget-color-display" style={style} />;
-      }
-      default:
-        return fieldValue;
-    }
-  };
-
-  // @TODO: THIS NEEDS URGENT REFACTORING, WHY THE HECK ARE WE RETURNING
-  // SIX DIFFERENT TYPES OF VALUES HERE ? UBER-BAD DESIGN !
-  static fieldValueToString = ({
-    fieldValue,
-    fieldType = 'Text',
-    precision = null,
-    isGerman,
-    activeLocale,
-  }) => {
-    if (fieldValue === null) {
-      return '';
-    }
-
-    switch (typeof fieldValue) {
-      case 'object': {
-        if (Array.isArray(fieldValue)) {
-          return fieldValue
-            .map((value) => TableCell.fieldValueToString(value, fieldType))
-            .join(' - ');
-        }
-
-        return DATE_FIELD_TYPES.includes(fieldType) ||
-          TIME_FIELD_TYPES.includes(fieldType)
-          ? createDate({ fieldValue, fieldType, activeLocale })
-          : fieldValue.caption;
-      }
-      case 'boolean': {
-        return fieldValue ? (
-          <i className="meta-icon-checkbox-1" />
-        ) : (
-          <i className="meta-icon-checkbox" />
-        );
-      }
-      case 'string': {
-        if (
-          DATE_FIELD_TYPES.includes(fieldType) ||
-          TIME_FIELD_TYPES.includes(fieldType)
-        ) {
-          return createDate({ fieldValue, fieldType, activeLocale });
-        } else if (AMOUNT_FIELD_TYPES.includes(fieldType)) {
-          return createAmount(fieldValue, precision, isGerman);
-        } else if (SPECIAL_FIELD_TYPES.includes(fieldType)) {
-          return TableCell.createSpecialField(fieldType, fieldValue);
-        }
-        return fieldValue;
-      }
-      default: {
-        return fieldValue;
-      }
-    }
-  };
-
   constructor(props) {
     super(props);
 
     this.widget = createRef();
-
     this.clearWidgetValue = false;
 
     this.state = {
@@ -217,7 +140,7 @@ class TableCell extends PureComponent {
     const docId = `${this.props.docId}`;
     const { tooltipToggled } = this.state;
     const tdValue = !isEdited
-      ? TableCell.fieldValueToString({
+      ? fieldValueToString({
           fieldValue: widgetData[0].value,
           fieldType: item.widgetType,
           precision: widgetData[0].precision,
