@@ -15,7 +15,7 @@ public class X_C_AllocationLine extends org.compiere.model.PO implements I_C_All
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -651687686L;
+	private static final long serialVersionUID = 824458214L;
 
     /** Standard Constructor */
     public X_C_AllocationLine (Properties ctx, int C_AllocationLine_ID, String trxName)
@@ -24,7 +24,6 @@ public class X_C_AllocationLine extends org.compiere.model.PO implements I_C_All
       /** if (C_AllocationLine_ID == 0)
         {
 			setAmount (BigDecimal.ZERO);
-			setBankFeeAmt (BigDecimal.ZERO); // 0
 			setC_AllocationHdr_ID (0);
 			setC_AllocationLine_ID (0);
 			setDiscountAmt (BigDecimal.ZERO);
@@ -65,25 +64,6 @@ public class X_C_AllocationLine extends org.compiere.model.PO implements I_C_All
 	public java.math.BigDecimal getAmount () 
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Amount);
-		if (bd == null)
-			 return BigDecimal.ZERO;
-		return bd;
-	}
-
-	/** Set Bankgebühren.
-		@param BankFeeAmt Bankgebühren	  */
-	@Override
-	public void setBankFeeAmt (java.math.BigDecimal BankFeeAmt)
-	{
-		set_Value (COLUMNNAME_BankFeeAmt, BankFeeAmt);
-	}
-
-	/** Get Bankgebühren.
-		@return Bankgebühren	  */
-	@Override
-	public java.math.BigDecimal getBankFeeAmt () 
-	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_BankFeeAmt);
 		if (bd == null)
 			 return BigDecimal.ZERO;
 		return bd;

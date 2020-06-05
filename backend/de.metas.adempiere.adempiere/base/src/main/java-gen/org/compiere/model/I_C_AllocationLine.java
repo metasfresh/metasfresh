@@ -84,29 +84,6 @@ public interface I_C_AllocationLine
     public static final String COLUMNNAME_Amount = "Amount";
 
 	/**
-	 * Set Bankgebühren.
-	 *
-	 * <br>Type: Amount
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setBankFeeAmt (java.math.BigDecimal BankFeeAmt);
-
-	/**
-	 * Get Bankgebühren.
-	 *
-	 * <br>Type: Amount
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public java.math.BigDecimal getBankFeeAmt();
-
-    /** Column definition for BankFeeAmt */
-    public static final org.adempiere.model.ModelColumn<I_C_AllocationLine, Object> COLUMN_BankFeeAmt = new org.adempiere.model.ModelColumn<I_C_AllocationLine, Object>(I_C_AllocationLine.class, "BankFeeAmt", null);
-    /** Column name BankFeeAmt */
-    public static final String COLUMNNAME_BankFeeAmt = "BankFeeAmt";
-
-	/**
 	 * Set Zuordnung.
 	 * Payment allocation
 	 *

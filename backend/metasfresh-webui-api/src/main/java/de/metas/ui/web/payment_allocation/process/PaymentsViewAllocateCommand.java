@@ -147,11 +147,7 @@ public class PaymentsViewAllocateCommand
 				? moneyService.toMoney(invoiceProcessingFeeCalculation.getFeeAmountIncludingTax())
 				: Money.zero(currencyId);
 
-		final Money bankFeeAmt = row.getBankFeeAmt() != null
-				? moneyService.toMoney(row.getBankFeeAmt())
-				: Money.zero(currencyId);
-
-		final Money payAmt = openAmt.subtract(discountAmt).subtract(invoiceProcessingFee).subtract(bankFeeAmt);
+		final Money payAmt = openAmt.subtract(discountAmt).subtract(invoiceProcessingFee);
 
 		return PayableDocument.builder()
 				.orgId(row.getOrgId())
@@ -165,7 +161,6 @@ public class PaymentsViewAllocateCommand
 						.payAmt(payAmt)
 						.discountAmt(discountAmt)
 						.invoiceProcessingFee(invoiceProcessingFee)
-						.bankFeeAmt(bankFeeAmt)
 						.build())
 				.invoiceProcessingFeeCalculation(invoiceProcessingFeeCalculation)
 				.build();

@@ -195,12 +195,10 @@ final class AllocationLineCandidateSaver
 	{
 		final Money discountAmt = candidate.getAmounts().getDiscountAmt();
 		final Money writeOffAmt = candidate.getAmounts().getWriteOffAmt();
-		final Money bankFeeAmt = candidate.getAmounts().getBankFeeAmt();
 
 		Check.assumeEquals(candidate.getAmounts(), AllocationAmounts.builder()
 				.discountAmt(discountAmt)
 				.writeOffAmt(writeOffAmt)
-				.bankFeeAmt(bankFeeAmt)
 				.build());
 
 		final C_AllocationHdr_Builder allocationBuilder = newC_AllocationHdr_Builder(candidate);
@@ -215,7 +213,6 @@ final class AllocationLineCandidateSaver
 				.amount(BigDecimal.ZERO)
 				.discountAmt(discountAmt.toBigDecimal())
 				.writeOffAmt(writeOffAmt.toBigDecimal())
-				.bankFeeAmt(bankFeeAmt.toBigDecimal())
 				.overUnderAmt(candidate.getPayableOverUnderAmt().toBigDecimal())
 				//
 				.invoiceId(extractInvoiceId(candidate.getPayableDocumentRef()));

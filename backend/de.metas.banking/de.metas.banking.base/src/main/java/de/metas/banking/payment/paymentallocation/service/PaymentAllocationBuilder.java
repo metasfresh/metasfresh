@@ -151,7 +151,6 @@ public class PaymentAllocationBuilder
 				.discountAmt(candidate.getAmounts().getDiscountAmt())
 				.writeOffAmt(candidate.getAmounts().getWriteOffAmt())
 				.invoiceProcessingFee(candidate.getAmounts().getInvoiceProcessingFee())
-				.bankFeeAmt(candidate.getAmounts().getBankFeeAmt())
 				.build();
 		Check.assumeEquals(amounts, candidate.getAmounts());
 
@@ -555,7 +554,6 @@ public class PaymentAllocationBuilder
 		final AllocationAmounts amountsToAllocate = AllocationAmounts.builder()
 				.discountAmt(payable.getAmountsToAllocate().getDiscountAmt())
 				.writeOffAmt(payable.getAmountsToAllocate().getWriteOffAmt())
-				.bankFeeAmt(payable.getAmountsToAllocate().getBankFeeAmt())
 				.build();
 		if (amountsToAllocate.isZero())
 		{
