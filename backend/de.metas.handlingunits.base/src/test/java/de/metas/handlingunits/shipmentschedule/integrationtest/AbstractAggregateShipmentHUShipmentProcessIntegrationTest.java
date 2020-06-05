@@ -26,6 +26,7 @@ import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.List;
 
+import de.metas.organization.ClientAndOrgId;
 import org.adempiere.util.lang.IMutable;
 import org.adempiere.util.lang.Mutable;
 
@@ -38,6 +39,7 @@ import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.model.X_M_HU_PI_Item;
 import de.metas.product.ProductId;
+import org.compiere.util.Env;
 
 /**
  * Test case:
@@ -280,7 +282,7 @@ import de.metas.product.ProductId;
 	 */
 	protected final List<I_M_HU> splitOnLU(final I_M_HU tuHU, final ProductId productId, final BigDecimal qty)
 	{
-		final List<I_M_HU> splitLUs = new HUSplitBuilder(helper.ctx)
+		final List<I_M_HU> splitLUs = new HUSplitBuilder(helper.ctx, ClientAndOrgId.ofClientAndOrg(Env.getAD_Client_ID(), Env.getAD_Org_ID(helper.ctx)))
 				.setHUToSplit(tuHU)
 				.setCUQty(qty)
 				// LU
