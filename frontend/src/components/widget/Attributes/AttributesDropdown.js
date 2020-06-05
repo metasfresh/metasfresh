@@ -3,6 +3,7 @@ import React, { PureComponent } from 'react';
 import onClickOutside from 'react-onclickoutside';
 import { Map } from 'immutable';
 import RawWidget from '../RawWidget';
+import classnames from 'classnames';
 
 /**
  * @file Class based component.
@@ -12,10 +13,16 @@ import RawWidget from '../RawWidget';
 class AttributesDropdown extends PureComponent {
   constructor(props) {
     super(props);
+    this.selector = React.createRef();
     this.state = {
       patchCallbacks: Map(),
     };
   }
+
+  componentDidMount = () => {
+    const componentCoords = this.selector.current.getBoundingClientRect();
+    this.setState({ isVisible: true, dropdownCoords: componentCoords });
+  };
 
   /**
    * @method handleClickOutside
@@ -123,10 +130,19 @@ class AttributesDropdown extends PureComponent {
    * @todo Write the documentation
    */
   render() {
+    const { isVisible } = this.state;
+    const { arrIndex } = this.props;
+
     return (
       <div
         ref={this.selector}
-        className="attributes-dropdown panel-shadowed panel-primary panel-bordered panel-spaced"
+        className={classnames(
+          'attributes-dropdown panel-shadowed panel-primary panel-bordered panel-spaced',
+          { 'hidden ': !isVisible },
+          {
+            'attributes-dropup': arrIndex > 13,
+          }
+        )}
       >
         {this.renderFields()}
       </div>
@@ -161,6 +177,7 @@ AttributesDropdown.propTypes = {
   handlePatch: PropTypes.func.isRequired,
   disableOnClickOutside: PropTypes.func.isRequired,
   enableOnClickOutside: PropTypes.func.isRequired,
+  arrIndex: PropTypes.number,
 };
 
 export default onClickOutside(AttributesDropdown);

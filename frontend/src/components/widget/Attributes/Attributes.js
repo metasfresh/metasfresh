@@ -118,8 +118,11 @@ export default class Attributes extends Component {
    * @todo Write the documentation
    */
   handleToggle = (option) => {
-    const { handleBackdropLock } = this.props;
-    const { loading } = this.state;
+    const { handleBackdropLock, updateHeight, arrIndex, isModal } = this.props;
+    const { loading, dropdown } = this.state;
+
+    !dropdown && !isModal && arrIndex < 13 && updateHeight(400);
+    dropdown && !isModal && arrIndex < 13 && updateHeight(150);
 
     if (!loading) {
       this.setState(
@@ -268,6 +271,7 @@ export default class Attributes extends Component {
       attributeType,
       tabIndex,
       readonly,
+      arrIndex,
     } = this.props;
     const { dropdown, data, layout } = this.state;
     const { value } = widgetData;
@@ -306,6 +310,7 @@ export default class Attributes extends Component {
             handlePatch={this.handlePatch}
             handleChange={this.handleChange}
             attrId={attrId}
+            arrIndex={arrIndex}
           />
         )}
       </div>
@@ -348,4 +353,6 @@ Attributes.propTypes = {
   viewId: PropTypes.any,
   fieldName: PropTypes.any,
   entity: PropTypes.any,
+  updateHeight: PropTypes.func,
+  arrIndex: PropTypes.number,
 };

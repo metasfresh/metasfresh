@@ -265,6 +265,8 @@ class TableCell extends PureComponent {
       onClickOutside,
       isGerman,
       activeLocale,
+      updateHeight,
+      arrIndex,
     } = this.props;
     const widgetData = getWidgetData(item, isEditable, supportFieldEdit);
     const docId = `${this.props.docId}`;
@@ -359,6 +361,7 @@ class TableCell extends PureComponent {
               listenOnKeysFalse,
               listenOnKeysTrue,
               onClickOutside,
+              arrIndex,
             }}
             clearValue={this.clearWidgetValue}
             entity={entityEffective}
@@ -372,6 +375,7 @@ class TableCell extends PureComponent {
             handleBackdropLock={this.handleBackdropLock}
             onChange={mainTable ? onCellChange : null}
             ref={this.widget}
+            updateHeight={updateHeight}
           />
         ) : (
           <div className={classnames({ 'with-widget': tooltipWidget })}>
@@ -437,6 +441,8 @@ TableCell.propTypes = {
   modalVisible: PropTypes.bool,
   docId: PropTypes.any,
   activeLocale: PropTypes.object,
+  updateHeight: PropTypes.func,
+  arrIndex: PropTypes.number,
 };
 
 export default TableCell;

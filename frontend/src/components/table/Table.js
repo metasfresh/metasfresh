@@ -60,6 +60,7 @@ class Table extends Component {
     const { rowData, tabId } = this.props;
     //selecting first table elem while getting indent data
     this._isMounted = true;
+    this.initialHeight = this.wrapper.clientHeight;
 
     if (rowData.get(`${tabId}`)) {
       this.getIndentData(true);
@@ -1170,6 +1171,7 @@ class Table extends Component {
           }
         }}
         keyProperty={item[keyProperty]}
+        arrIndex={i}
         rowId={item[keyProperty]}
         tabId={tabId}
         onDoubleClick={this.handleDoubleClick}
@@ -1184,6 +1186,7 @@ class Table extends Component {
               selected[0] === 'all')) ||
           (selected && !selected[0] && focusOnFieldName && i === 0)
         }
+        updateHeight={this.updateHeight}
         handleSelect={this.selectRangeProduct}
         contextType={item.type}
         caption={item.caption ? item.caption : ''}
@@ -1220,6 +1223,10 @@ class Table extends Component {
     }
 
     return false;
+  };
+
+  updateHeight = (heightNew) => {
+    this.wrapper.style.height = `${this.initialHeight + heightNew}px`;
   };
 
   render() {
@@ -1340,6 +1347,10 @@ class Table extends Component {
                   !rowData.get(`${tabId}`),
               }
             )}
+            style={{
+              height:
+                this.wrapper && !isModal && this.wrapper.offsetHeight - 45,
+            }}
           >
             <table
               className={classnames(

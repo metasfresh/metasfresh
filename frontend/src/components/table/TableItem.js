@@ -412,6 +412,8 @@ class TableItem extends Component {
       isSelected,
       focusOnFieldName,
       activeLocale,
+      updateHeight,
+      arrIndex,
     } = this.props;
     const {
       edited,
@@ -478,6 +480,7 @@ class TableItem extends Component {
                   keyProperty,
                   modalVisible,
                   isGerman,
+                  arrIndex,
                 }}
                 ref={(c) => {
                   if (c && isSelected) {
@@ -508,6 +511,7 @@ class TableItem extends Component {
                 listenOnKeysTrue={this.listenOnKeysTrue}
                 listenOnKeysFalse={this.listenOnKeysFalse}
                 closeTableField={this.closeTableField}
+                updateHeight={updateHeight}
               />
             );
           }
@@ -733,6 +737,8 @@ TableItem.propTypes = {
   page: PropTypes.number,
   activeSort: PropTypes.bool,
   activeLocale: PropTypes.object,
+  updateHeight: PropTypes.func,
+  arrIndex: PropTypes.number,
 };
 
 export default TableItem;

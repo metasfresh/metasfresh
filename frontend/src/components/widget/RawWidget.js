@@ -412,6 +412,8 @@ export class RawWidget extends Component {
       timeZone,
       fieldName,
       maxLength,
+      updateHeight,
+      arrIndex,
     } = this.props;
 
     let widgetValue = data != null ? data : widgetData[0].value;
@@ -1019,6 +1021,8 @@ export class RawWidget extends Component {
             tabIndex={tabIndex}
             autoFocus={autoFocus}
             readonly={readonly}
+            arrIndex={arrIndex}
+            updateHeight={updateHeight}
           />
         );
       case 'Address':
