@@ -120,6 +120,12 @@ public class C_AllocationLine_Builder
 		return this;
 	}
 
+	public final C_AllocationLine_Builder bankFeeAmt(final BigDecimal bankFeeAmt)
+	{
+		allocLine.setBankFeeAmt(bankFeeAmt);
+		return this;
+	}
+
 	public final C_AllocationLine_Builder overUnderAmt(BigDecimal overUnderAmt)
 	{
 		allocLine.setOverUnderAmt(overUnderAmt);

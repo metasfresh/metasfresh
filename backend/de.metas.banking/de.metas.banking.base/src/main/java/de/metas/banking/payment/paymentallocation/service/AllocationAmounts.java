@@ -47,6 +47,7 @@ public class AllocationAmounts
 				.payAmt(zero)
 				.discountAmt(zero)
 				.writeOffAmt(zero)
+				.bankFeeAmt(zero)
 				.build();
 	}
 

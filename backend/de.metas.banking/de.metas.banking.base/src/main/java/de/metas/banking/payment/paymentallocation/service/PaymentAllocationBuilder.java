@@ -555,6 +555,7 @@ public class PaymentAllocationBuilder
 		final AllocationAmounts amountsToAllocate = AllocationAmounts.builder()
 				.discountAmt(payable.getAmountsToAllocate().getDiscountAmt())
 				.writeOffAmt(payable.getAmountsToAllocate().getWriteOffAmt())
+				.bankFeeAmt(payable.getAmountsToAllocate().getBankFeeAmt())
 				.build();
 		if (amountsToAllocate.isZero())
 		{
