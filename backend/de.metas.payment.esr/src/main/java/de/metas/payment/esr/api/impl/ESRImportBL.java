@@ -623,7 +623,9 @@ public class ESRImportBL implements IESRImportBL
 			final I_C_Payment payment = createUnlinkedPaymentForLine(line, line.getAmount());
 			Check.assume(payment.getAD_Org_ID() == line.getAD_Org_ID(), "Payment has the same org as {}", line);
 
-			final I_C_BP_BankAccount bankAccount = bpBankAccountDAO.getById(line.getESR_Import().getC_BP_BankAccount_ID(), I_C_BP_BankAccount.class);
+			final I_C_BP_BankAccount bankAccount = bpBankAccountDAO.getById(
+					BankAccountId.ofRepoId(line.getESR_Import().getC_BP_BankAccount_ID()),
+					I_C_BP_BankAccount.class);
 
 			payment.setC_Currency_ID(bankAccount.getC_Currency_ID());
 

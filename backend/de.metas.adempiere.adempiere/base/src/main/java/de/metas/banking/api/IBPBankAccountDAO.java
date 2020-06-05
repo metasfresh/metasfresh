@@ -43,9 +43,9 @@ import lombok.NonNull;
  */
 public interface IBPBankAccountDAO extends ISingletonService
 {
-	I_C_BP_BankAccount getById(final int bpBankAccountId);
+	I_C_BP_BankAccount getById(final BankAccountId bpBankAccountId);
 
-	<T extends I_C_BP_BankAccount> T getById(final int bpBankAccountId, Class<T> modelType);
+	<T extends I_C_BP_BankAccount> T getById(final BankAccountId bpBankAccountId, Class<T> modelType);
 
 	/**
 	 * Retrieve all the bank accounts of the currency <code>currencyID</code> for the partner <code> partnerID</code>

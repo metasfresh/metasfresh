@@ -42,6 +42,7 @@ import org.adempiere.service.ClientId;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.logging.LoggingHelper;
 import org.adempiere.warehouse.WarehouseId;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BP_BankAccount;
 import org.compiere.model.MAccount;
 import org.compiere.model.MNote;
@@ -64,6 +65,9 @@ import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.doc.AcctDocContext;
 import de.metas.acct.doc.AcctDocRequiredServicesFacade;
 import de.metas.acct.doc.PostingException;
+import de.metas.banking.api.BPBankAccountAcct;
+import de.metas.banking.api.BPBankAccountAcctRepository;
+import de.metas.banking.api.BankAccountId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.CurrencyPrecision;
@@ -278,7 +282,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 	private Optional<BPartnerId> _bpartnerId; // lazy
 
 	/** Bank Account */
-	private int m_C_BP_BankAccount_ID = -1;
+	private Optional<BankAccountId> _bpBankAccountId = null; // lazy
 	private I_C_BP_BankAccount bpBankAccount = null;
 	/** Cach Book */
 	private int m_C_CashBook_ID = -1;
@@ -1135,18 +1139,15 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		/** Account Type - Payment */
 		else if (acctType == AccountType.UnallocatedCash)
 		{
-			sql = "SELECT B_UnallocatedCash_Acct FROM C_BP_BankAccount_Acct WHERE C_BP_BankAccount_ID=? AND C_AcctSchema_ID=?";
-			sqlParams = Arrays.asList(getC_BP_BankAccount_ID(), acctSchemaId);
+			return getBPBankAccountAcct(acctSchemaId).getUnallocatedCashAcct();
 		}
 		else if (acctType == AccountType.BankInTransit)
 		{
-			sql = "SELECT B_InTransit_Acct FROM C_BP_BankAccount_Acct WHERE C_BP_BankAccount_ID=? AND C_AcctSchema_ID=?";
-			sqlParams = Arrays.asList(getC_BP_BankAccount_ID(), acctSchemaId);
+			return getBPBankAccountAcct(acctSchemaId).getBankInTransitAcct();
 		}
 		else if (acctType == AccountType.PaymentSelect)
 		{
-			sql = "SELECT B_PaymentSelect_Acct FROM C_BP_BankAccount_Acct WHERE C_BP_BankAccount_ID=? AND C_AcctSchema_ID=?";
-			sqlParams = Arrays.asList(getC_BP_BankAccount_ID(), acctSchemaId);
+			return getBPBankAccountAcct(acctSchemaId).getPaymentSelectAcct();
 		}
 
 		/** Account Type - Allocation */
@@ -1168,22 +1169,24 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 					+ "WHERE a.C_BP_Group_ID=bp.C_BP_Group_ID AND bp.C_BPartner_ID=? AND a.C_AcctSchema_ID=?";
 			sqlParams = Arrays.asList(getBPartnerId(), acctSchemaId);
 		}
+		else if (acctType == AccountType.PayBankFee)
+		{
+			// TODO
+			throw new AdempiereException("To be implemented");
+		}
 
 		/** Account Type - Bank Statement */
 		else if (acctType == AccountType.BankAsset)
 		{
-			sql = "SELECT B_Asset_Acct FROM C_BP_BankAccount_Acct WHERE C_BP_BankAccount_ID=? AND C_AcctSchema_ID=?";
-			sqlParams = Arrays.asList(getC_BP_BankAccount_ID(), acctSchemaId);
+			return getBPBankAccountAcct(acctSchemaId).getBankAssetAcct();
 		}
 		else if (acctType == AccountType.InterestRev)
 		{
-			sql = "SELECT B_InterestRev_Acct FROM C_BP_BankAccount_Acct WHERE C_BP_BankAccount_ID=? AND C_AcctSchema_ID=?";
-			sqlParams = Arrays.asList(getC_BP_BankAccount_ID(), acctSchemaId);
+			return getBPBankAccountAcct(acctSchemaId).getInterestRevenueAcct();
 		}
 		else if (acctType == AccountType.InterestExp)
 		{
-			sql = "SELECT B_InterestExp_Acct FROM C_BP_BankAccount_Acct WHERE C_BP_BankAccount_ID=? AND C_AcctSchema_ID=?";
-			sqlParams = Arrays.asList(getC_BP_BankAccount_ID(), acctSchemaId);
+			return getBPBankAccountAcct(acctSchemaId).getInterestExpenseAcct();
 		}
 
 		/** Account Type - Cash */
@@ -1290,6 +1293,19 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 			pstmt = null;
 		}
 	}	// getAccount_ID
+
+	private BPBankAccountAcct getBPBankAccountAcct(@NonNull final AcctSchemaId acctSchemaId)
+	{
+		final BankAccountId bankAccountId = getBPBankAccountId();
+		if (bankAccountId == null)
+		{
+			throw newPostingException()
+					.addDetailMessage("Bank Account is not set");
+		}
+
+		final BPBankAccountAcctRepository bankAccountAcctRepo = SpringContextHolder.instance.getBean(BPBankAccountAcctRepository.class);
+		return bankAccountAcctRepo.getByBankAccountIdAndAcctSchemaId(bankAccountId, acctSchemaId);
+	}
 
 	/**
 	 * Get the account for Accounting Schema
@@ -1510,25 +1526,23 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 
 	/**
 	 * Get C_BP_BankAccount_ID if it was previously set using {@link #setC_BP_BankAccount_ID(int)}, or attempts to get it from our <code>p_po</code> (document record).
-	 *
-	 * @return BankAccount
 	 */
-	final int getC_BP_BankAccount_ID()
+	final BankAccountId getBPBankAccountId()
 	{
-		if (m_C_BP_BankAccount_ID == -1)
+		Optional<BankAccountId> bpBankAccountId = _bpBankAccountId;
+		if (bpBankAccountId == null)
 		{
-			m_C_BP_BankAccount_ID = getValueAsIntOrZero(I_C_BP_BankAccount.COLUMNNAME_C_BP_BankAccount_ID);
-			if (m_C_BP_BankAccount_ID <= 0)
-			{
-				m_C_BP_BankAccount_ID = 0;
-			}
+			bpBankAccountId = _bpBankAccountId = getValueAsOptionalId(
+					I_C_BP_BankAccount.COLUMNNAME_C_BP_BankAccount_ID,
+					BankAccountId::ofRepoIdOrNull);
 		}
-		return m_C_BP_BankAccount_ID;
+
+		return bpBankAccountId.orElse(null);
 	}
 
-	final void setC_BP_BankAccount_ID(final int C_BP_BankAccount_ID)
+	final void setBPBankAccountId(@Nullable final BankAccountId bankAccountId)
 	{
-		m_C_BP_BankAccount_ID = C_BP_BankAccount_ID;
+		_bpBankAccountId = Optional.ofNullable(bankAccountId);
 	}
 
 	/**
@@ -1536,12 +1550,12 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 	 */
 	protected final I_C_BP_BankAccount getC_BP_BankAccount()
 	{
-		final int bpBankAccountId = getC_BP_BankAccount_ID();
-		if (bpBankAccountId <= 0)
+		final BankAccountId bpBankAccountId = getBPBankAccountId();
+		if (bpBankAccountId == null)
 		{
 			return null;
 		}
-		if (bpBankAccount == null || bpBankAccount.getC_BP_BankAccount_ID() != bpBankAccountId)
+		if (bpBankAccount == null || bpBankAccount.getC_BP_BankAccount_ID() != bpBankAccountId.getRepoId())
 		{
 			bpBankAccount = services.getBPBankAccountById(bpBankAccountId);
 		}

@@ -22,7 +22,6 @@ import de.metas.banking.api.IBPBankAccountDAO;
 import de.metas.bpartner.BPartnerBankAccountId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.money.CurrencyId;
-import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -53,15 +52,14 @@ public class BPBankAccountDAO implements IBPBankAccountDAO
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	@Override
-	public I_C_BP_BankAccount getById(final int bpBankAccountId)
+	public I_C_BP_BankAccount getById(final BankAccountId bpBankAccountId)
 	{
 		return getById(bpBankAccountId, I_C_BP_BankAccount.class);
 	}
 
 	@Override
-	public <T extends I_C_BP_BankAccount> T getById(final int bpBankAccountId, @NonNull final Class<T> modelType)
+	public <T extends I_C_BP_BankAccount> T getById(@NonNull final BankAccountId bpBankAccountId, @NonNull final Class<T> modelType)
 	{
-		Check.assumeGreaterThanZero(bpBankAccountId, "bpBankAccountId");
 		return loadOutOfTrx(bpBankAccountId, modelType);
 	}
 

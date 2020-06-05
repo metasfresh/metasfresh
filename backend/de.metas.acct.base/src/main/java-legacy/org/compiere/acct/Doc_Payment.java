@@ -28,6 +28,7 @@ import org.compiere.model.MCharge;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.PostingType;
 import de.metas.acct.doc.AcctDocContext;
+import de.metas.banking.api.BankAccountId;
 import de.metas.payment.TenderType;
 import de.metas.util.Services;
 
@@ -62,7 +63,7 @@ public class Doc_Payment extends Doc<DocLine<Doc_Payment>>
 	{
 		final I_C_Payment pay = getModel(I_C_Payment.class);
 		setDateDoc(pay.getDateTrx());
-		setC_BP_BankAccount_ID(pay.getC_BP_BankAccount_ID());
+		setBPBankAccountId(BankAccountId.ofRepoIdOrNull(pay.getC_BP_BankAccount_ID()));
 		_tenderType = TenderType.ofCode(pay.getTenderType());
 		m_Prepayment = pay.isPrepayment();
 

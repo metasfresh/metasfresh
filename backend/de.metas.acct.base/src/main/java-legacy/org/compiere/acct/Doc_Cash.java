@@ -30,6 +30,7 @@ import org.compiere.util.Env;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.PostingType;
 import de.metas.acct.doc.AcctDocContext;
+import de.metas.banking.api.BankAccountId;
 import de.metas.money.CurrencyId;
 
 /**
@@ -209,12 +210,12 @@ public class Doc_Cash extends Doc<DocLine_Cash>
 			{   // amount is pos/neg
 				   // BankInTransit DR dr -- Transfer is in Bank Account Currency
 				   // CashAsset dr CR
-				int temp = getC_BP_BankAccount_ID();
-				setC_BP_BankAccount_ID(line.getC_BP_BankAccount_ID());
+				BankAccountId temp = getBPBankAccountId();
+				setBPBankAccountId(line.getC_BP_BankAccount_ID());
 				fact.createLine(line,
 						getAccount(AccountType.BankInTransit, as),
 						line.getCurrencyId(), line.getAmount().negate());
-				setC_BP_BankAccount_ID(temp);
+				setBPBankAccountId(temp);
 				if(CurrencyId.equals(line.getCurrencyId(), getCurrencyId()))
 				{
 					assetAmt = assetAmt.add(line.getAmount());

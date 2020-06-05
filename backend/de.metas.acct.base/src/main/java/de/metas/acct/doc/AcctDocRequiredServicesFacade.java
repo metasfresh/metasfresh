@@ -29,6 +29,7 @@ import de.metas.acct.api.IProductAcctDAO;
 import de.metas.acct.api.ProductAcctType;
 import de.metas.acct.tax.ITaxAcctBL;
 import de.metas.acct.tax.TaxAcctType;
+import de.metas.banking.api.BankAccountId;
 import de.metas.banking.api.IBPBankAccountDAO;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
 import de.metas.cache.model.IModelCacheInvalidationService;
@@ -185,7 +186,7 @@ public class AcctDocRequiredServicesFacade
 		return currencyConversionBL.getCurrencyRate(conversionCtx, currencyFromId, currencyToId);
 	}
 
-	public I_C_BP_BankAccount getBPBankAccountById(final int bpBankAccountId)
+	public I_C_BP_BankAccount getBPBankAccountById(final BankAccountId bpBankAccountId)
 	{
 		return bpBankAccountDAO.getById(bpBankAccountId);
 	}

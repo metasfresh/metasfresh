@@ -31,6 +31,7 @@ import de.metas.acct.api.PostingType;
 import de.metas.acct.doc.AcctDocContext;
 import de.metas.banking.BankStatementId;
 import de.metas.banking.BankStatementLineReference;
+import de.metas.banking.api.BankAccountId;
 import de.metas.banking.service.IBankStatementBL;
 import de.metas.bpartner.BPartnerId;
 import de.metas.currency.CurrencyConversionContext;
@@ -71,7 +72,7 @@ public class Doc_BankStatement extends Doc<DocLine_BankStatement>
 		final I_C_BankStatement bs = getModel(I_C_BankStatement.class);
 		setDateDoc(bs.getStatementDate());
 		setDateAcct(bs.getStatementDate());    // Overwritten on Line Level
-		setC_BP_BankAccount_ID(bs.getC_BP_BankAccount_ID());
+		setBPBankAccountId(BankAccountId.ofRepoId(bs.getC_BP_BankAccount_ID()));
 
 		// Amounts
 		setAmount(AMTTYPE_Gross, bs.getStatementDifference());

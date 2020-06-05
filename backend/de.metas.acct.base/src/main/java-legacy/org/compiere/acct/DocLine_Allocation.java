@@ -39,6 +39,7 @@ import org.compiere.util.TimeUtil;
 
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaId;
+import de.metas.banking.api.BankAccountId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.ICurrencyBL;
@@ -428,7 +429,7 @@ class DocLine_Allocation extends DocLine<Doc_AllocationHdr>
 	private MAccount getPaymentAcct(final AcctSchema as, final int C_Payment_ID)
 	{
 		final Doc_AllocationHdr doc = getDoc();
-		doc.setC_BP_BankAccount_ID(0);
+		doc.setBPBankAccountId(null);
 		// AccountType.UnallocatedCash (AR) or C_Prepayment
 		// or AccountType.PaymentSelect (AP) or V_Prepayment
 		AccountType accountType = AccountType.UnallocatedCash;
@@ -445,7 +446,7 @@ class DocLine_Allocation extends DocLine<Doc_AllocationHdr>
 			rs = pstmt.executeQuery();
 			if (rs.next())
 			{
-				doc.setC_BP_BankAccount_ID(rs.getInt(1));
+				doc.setBPBankAccountId(BankAccountId.ofRepoIdOrNull(rs.getInt(1)));
 				if (Doc.DOCTYPE_APPayment.equals(rs.getString(2)))
 				{
 					accountType = AccountType.PaymentSelect;
@@ -476,7 +477,7 @@ class DocLine_Allocation extends DocLine<Doc_AllocationHdr>
 		}
 
 		//
-		if (doc.getC_BP_BankAccount_ID() <= 0)
+		if (doc.getBPBankAccountId() == null)
 		{
 			// log.error("NONE for C_Payment_ID=" + C_Payment_ID);
 			throw doc.newPostingException()
