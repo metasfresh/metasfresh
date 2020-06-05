@@ -210,10 +210,11 @@ export function updateGridTable(tableId, tableResponse) {
           headerElements: tableResponse.columnsByFieldName,
           keyProperty: 'id',
         });
-        const { collapsible, expandedDepth, keyProperty } = tableExists;
+        const { collapsible, expandedDepth } = tableExists;
+        const { keyProperty } = tableData;
 
         // Parse `rows` to add `indent` property
-        if (tableData.rows.length) {
+        if (tableData.rows.length && tableData.rows.length && collapsible) {
           tableData.rows = flattenRows(tableData.rows);
         }
 
@@ -333,6 +334,10 @@ export function updateTabTable(tableId, tableResponse) {
         ...tableResponse,
         keyProperty: 'rowId',
       });
+
+      if (tableData.rows && tableData.rows.length) {
+        tableData.rows = flattenRows(tableData.rows);
+      }
 
       if (tableExists) {
         dispatch(updateTable(tableId, tableData));
