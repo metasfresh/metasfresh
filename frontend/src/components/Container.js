@@ -317,7 +317,7 @@ Container.propTypes = {
  * @param {object} state
  */
 const mapStateToProps = (state, { windowId }) => {
-  let master = getView(windowId);
+  let master = getView(state, windowId);
 
   if (!master || !windowId) {
     master = viewState;
