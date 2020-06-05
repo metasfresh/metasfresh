@@ -22,6 +22,8 @@ import java.sql.ResultSet;
 import java.util.HashSet;
 import java.util.Set;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -43,6 +45,8 @@ import de.metas.currency.ICurrencyBL;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.organization.OrgId;
+import de.metas.payment.PaymentId;
+import de.metas.payment.api.IPaymentBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
@@ -74,7 +78,7 @@ class DocLine_Allocation extends DocLine<Doc_AllocationHdr>
 			soTrxInvoice = null;
 		}
 
-        this.m_Counter_AllocationLine_ID = line.getCounter_AllocationLine_ID();
+		this.m_Counter_AllocationLine_ID = line.getCounter_AllocationLine_ID();
 
 		//
 		// Payment: via Cashbook (legacy)
@@ -83,8 +87,10 @@ class DocLine_Allocation extends DocLine<Doc_AllocationHdr>
 
 		//
 		// Payment
-		m_C_Payment_ID = line.getC_Payment_ID();
-		payment = m_C_Payment_ID > 0 ? line.getC_Payment() : null;
+		paymentId = PaymentId.ofRepoIdOrNull(line.getC_Payment_ID());
+		payment = paymentId != null
+				? Services.get(IPaymentBL.class).getById(paymentId)
+				: null;
 		if (payment != null)
 		{
 			final int C_ConversionType_ID = payment.getC_ConversionType_ID();
@@ -116,7 +122,7 @@ class DocLine_Allocation extends DocLine<Doc_AllocationHdr>
 	private DocLine_Allocation counterDocLine;
 	private final Set<AcctSchemaId> salesPurchaseInvoiceAlreadyCompensated_AcctSchemaIds = new HashSet<>();
 
-	private final int m_C_Payment_ID;
+	private final PaymentId paymentId;
 	private final I_C_Payment payment;
 	private CurrencyConversionContext paymentCurrencyConversionCtx;
 	private final Boolean paymentReceipt;
@@ -322,14 +328,13 @@ class DocLine_Allocation extends DocLine<Doc_AllocationHdr>
 		return getC_Invoice() != null;
 	}
 
-	/**
-	 * @return Returns the c_Payment_ID.
-	 */
-	public int getC_Payment_ID()
+	@Nullable
+	public PaymentId getPaymentId()
 	{
-		return m_C_Payment_ID;
+		return paymentId;
 	}
 
+	@Nullable
 	public I_C_Payment getC_Payment()
 	{
 		return payment;

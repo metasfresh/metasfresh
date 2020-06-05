@@ -22,9 +22,41 @@
 
 package de.metas.payment.api.impl;
 
+import static java.math.BigDecimal.ZERO;
+
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.bank.BankId;
+import org.adempiere.bank.BankRepository;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.service.ClientId;
+import org.adempiere.service.ISysConfigBL;
+import org.adempiere.util.lang.Mutable;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_AllocationHdr;
+import org.compiere.model.I_C_AllocationLine;
+import org.compiere.model.I_C_DocType;
+import org.compiere.model.I_C_Invoice;
+import org.compiere.model.I_C_Payment;
+import org.compiere.util.TimeUtil;
+import org.compiere.util.TrxRunnableAdapter;
+import org.slf4j.Logger;
+
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+
 import de.metas.allocation.api.IAllocationBL;
 import de.metas.banking.BankStatementId;
 import de.metas.banking.BankStatementLineId;
@@ -55,36 +87,6 @@ import de.metas.payment.api.PaymentReconcileRequest;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.bank.BankId;
-import org.adempiere.bank.BankRepository;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.service.ClientId;
-import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.lang.Mutable;
-import org.compiere.SpringContextHolder;
-import org.compiere.model.I_C_AllocationHdr;
-import org.compiere.model.I_C_AllocationLine;
-import org.compiere.model.I_C_DocType;
-import org.compiere.model.I_C_Invoice;
-import org.compiere.model.I_C_Payment;
-import org.compiere.util.TimeUtil;
-import org.compiere.util.TrxRunnableAdapter;
-import org.slf4j.Logger;
-
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
-
-import static java.math.BigDecimal.ZERO;
 
 public class PaymentBL implements IPaymentBL
 {
@@ -416,6 +418,17 @@ public class PaymentBL implements IPaymentBL
 		}
 
 		return false;
+	}
+
+	@Override
+	public void testAllocation(@NonNull final PaymentId paymentId)
+	{
+		final I_C_Payment payment = getById(paymentId);
+		final boolean updated = testAllocation(payment);
+		if (updated)
+		{
+			paymentDAO.save(payment);
+		}
 	}
 
 	@Override

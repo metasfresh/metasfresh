@@ -221,7 +221,7 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 			setBPartnerId(line.getBPartnerId());
 
 			// CashBankTransfer - all references null and Discount/WriteOff = 0
-			if (line.getC_Payment_ID() > 0
+			if (line.getPaymentId() != null
 					&& line.getC_Invoice_ID() <= 0
 					&& line.getC_CashLine_ID() <= 0 && line.getBPartnerId() == null
 					&& BigDecimal.ZERO.compareTo(line.getDiscountAmt()) == 0
