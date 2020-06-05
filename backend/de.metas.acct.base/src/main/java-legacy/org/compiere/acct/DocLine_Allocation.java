@@ -429,9 +429,9 @@ class DocLine_Allocation extends DocLine<Doc_AllocationHdr>
 	{
 		final Doc_AllocationHdr doc = getDoc();
 		doc.setC_BP_BankAccount_ID(0);
-		// Doc.ACCTTYPE_UnallocatedCash (AR) or C_Prepayment
-		// or Doc.ACCTTYPE_PaymentSelect (AP) or V_Prepayment
-		int accountType = Doc.ACCTTYPE_UnallocatedCash;
+		// AccountType.UnallocatedCash (AR) or C_Prepayment
+		// or AccountType.PaymentSelect (AP) or V_Prepayment
+		AccountType accountType = AccountType.UnallocatedCash;
 		//
 		final String sql = "SELECT p.C_BP_BankAccount_ID, d.DocBaseType, p.IsReceipt, p.IsPrepayment "
 				+ "FROM C_Payment p INNER JOIN C_DocType d ON (p.C_DocType_ID=d.C_DocType_ID) "
@@ -448,18 +448,18 @@ class DocLine_Allocation extends DocLine<Doc_AllocationHdr>
 				doc.setC_BP_BankAccount_ID(rs.getInt(1));
 				if (Doc.DOCTYPE_APPayment.equals(rs.getString(2)))
 				{
-					accountType = Doc.ACCTTYPE_PaymentSelect;
+					accountType = AccountType.PaymentSelect;
 				}
 				// Prepayment
 				if ("Y".equals(rs.getString(4)))		// Prepayment
 				{
 					if ("Y".equals(rs.getString(3)))
 					{
-						accountType = Doc.ACCTTYPE_C_Prepayment;
+						accountType = AccountType.C_Prepayment;
 					}
 					else
 					{
-						accountType = Doc.ACCTTYPE_V_Prepayment;
+						accountType = AccountType.V_Prepayment;
 					}
 				}
 			}
@@ -508,7 +508,7 @@ class DocLine_Allocation extends DocLine<Doc_AllocationHdr>
 					.setAcctSchema(as)
 					.setDetailMessage("No cashbook account found for C_CashLine_ID=" + C_CashLine_ID);
 		}
-		return doc.getAccount(Doc.ACCTTYPE_CashTransfer, as);
+		return doc.getAccount(AccountType.CashTransfer, as);
 	}	// getCashAcct
 
 	public final CurrencyConversionContext getInvoiceCurrencyConversionCtx()

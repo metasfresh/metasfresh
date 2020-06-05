@@ -453,7 +453,7 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 		// DiscountExpense CR
 		if (payment.isReceipt())
 		{
-			final MAccount discountAcct = getAccount(Doc.ACCTTYPE_DiscountExp, as);
+			final MAccount discountAcct = getAccount(AccountType.DiscountExp, as);
 			final BigDecimal paymentWriteOffAmt = line.getPaymentWriteOffAmt();
 
 			fl_Payment = fact.createLine(line, paymentAcct, getCurrencyId(), paymentWriteOffAmt, null);
@@ -466,7 +466,7 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 		// DiscountRevenue DR
 		else
 		{
-			final MAccount discountAcct = getAccount(Doc.ACCTTYPE_DiscountRev, as);
+			final MAccount discountAcct = getAccount(AccountType.DiscountRev, as);
 			final BigDecimal paymentWriteOffAmt = line.getPaymentWriteOffAmt().negate();
 
 			fl_Payment = fact.createLine(line, paymentAcct, getCurrencyId(), null, paymentWriteOffAmt);
@@ -583,12 +583,12 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 			final FactLine fl;
 			if (isDiscountExpense)
 			{
-				fl = fact.createLine(line, getAccount(Doc.ACCTTYPE_DiscountExp, as), getCurrencyId(), discountAmt_CMAdjusted, null);
+				fl = fact.createLine(line, getAccount(AccountType.DiscountExp, as), getCurrencyId(), discountAmt_CMAdjusted, null);
 				discountAmtSourceAndAcct.addAmtSource(fl.getAmtSourceDr()).addAmtAcct(fl.getAmtAcctDr());
 			}
 			else
 			{
-				fl = fact.createLine(line, getAccount(Doc.ACCTTYPE_DiscountRev, as), getCurrencyId(), null, discountAmt_CMAdjusted.negate());
+				fl = fact.createLine(line, getAccount(AccountType.DiscountRev, as), getCurrencyId(), null, discountAmt_CMAdjusted.negate());
 				discountAmtSourceAndAcct.addAmtSource(fl.getAmtSourceCr()).addAmtAcct(fl.getAmtAcctCr());
 			}
 			if (payment != null)
@@ -634,7 +634,7 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 				if (account == null)
 				{
 					// no taxDiscountAcct found, use standard account...
-					account = getAccount(isDiscountExpense ? Doc.ACCTTYPE_DiscountExp : Doc.ACCTTYPE_DiscountRev, as);
+					account = getAccount(isDiscountExpense ? AccountType.DiscountExp : AccountType.DiscountRev, as);
 				}
 
 				//
@@ -755,7 +755,7 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 		final AcctSchema as = fact.getAcctSchema();
 		final FactLineBuilder factLineBuilder = fact.createLine()
 				.setDocLine(line)
-				.setAccount(getAccount(Doc.ACCTTYPE_WriteOff, as))
+				.setAccount(getAccount(AccountType.WriteOff, as))
 				.setCurrencyId(getCurrencyId())
 				.orgId(line.getPaymentOrgId())
 				.bpartnerId(line.getPaymentBPartnerId());
@@ -831,12 +831,12 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 
 		if (line.isSOTrxInvoice())
 		{
-			factLineBuilder.setAccount(getAccount(Doc.ACCTTYPE_C_Receivable, as));
+			factLineBuilder.setAccount(getAccount(AccountType.C_Receivable, as));
 			factLineBuilder.setAmtSource(null, allocationSource);
 		}
 		else
 		{
-			factLineBuilder.setAccount(getAccount(Doc.ACCTTYPE_V_Liability, as));
+			factLineBuilder.setAccount(getAccount(AccountType.V_Liability, as));
 			factLineBuilder.setAmtSource(allocationSource, null);
 		}
 
@@ -929,12 +929,12 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 				.bpartnerId(counterLine.getInvoiceBPartnerId());
 		if (counterLine.isSOTrxInvoice())
 		{
-			factLineBuilder.setAccount(getAccount(Doc.ACCTTYPE_C_Receivable, as));
+			factLineBuilder.setAccount(getAccount(AccountType.C_Receivable, as));
 			factLineBuilder.setAmtSource(null, compensationAmtSource.negate());
 		}
 		else
 		{
-			factLineBuilder.setAccount(getAccount(Doc.ACCTTYPE_V_Liability, as));
+			factLineBuilder.setAccount(getAccount(AccountType.V_Liability, as));
 			factLineBuilder.setAmtSource(compensationAmtSource, null);
 		}
 		final FactLine factLine = factLineBuilder.buildAndAdd();
@@ -1088,8 +1088,8 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 			isDiscountExpense = !isDiscountExpense;
 		}
 
-		final MAccount discountAccount = getAccount(isDiscountExpense ? Doc.ACCTTYPE_DiscountExp : Doc.ACCTTYPE_DiscountRev, as);
-		final MAccount writeOffAccount = getAccount(Doc.ACCTTYPE_WriteOff, as);
+		final MAccount discountAccount = getAccount(isDiscountExpense ? AccountType.DiscountExp : AccountType.DiscountRev, as);
+		final MAccount writeOffAccount = getAccount(AccountType.WriteOff, as);
 		final Doc_AllocationTax taxCorrection = new Doc_AllocationTax(this, discountAccount, discountAmt, writeOffAccount, writeOffAmt, isDiscountExpense);
 
 		// FIXME: metas-tsa: fix how we retrieve the tax bookings of the invoice, i.e.

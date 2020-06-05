@@ -16,6 +16,16 @@
  *****************************************************************************/
 package org.compiere.acct;
 
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.compiere.acct.Fact.FactLineBuilder;
+import org.compiere.model.I_C_BP_BankAccount;
+import org.compiere.model.I_C_BankStatement;
+import org.compiere.model.I_C_BankStatementLine;
+import org.compiere.model.MAccount;
+
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.PostingType;
 import de.metas.acct.doc.AcctDocContext;
@@ -31,15 +41,6 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.lang.CoalesceUtil;
 import lombok.NonNull;
-import org.compiere.acct.Fact.FactLineBuilder;
-import org.compiere.model.I_C_BP_BankAccount;
-import org.compiere.model.I_C_BankStatement;
-import org.compiere.model.I_C_BankStatementLine;
-import org.compiere.model.MAccount;
-
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Post Bank Statement Documents.
@@ -152,7 +153,7 @@ public class Doc_BankStatement extends Doc<DocLine_BankStatement>
 			// BankAsset DR CR (Statement)
 			final FactLine factLine_BankAsset = fact.createLine()
 					.setDocLine(line)
-					.setAccount(getAccount(Doc.ACCTTYPE_BankAsset, as))
+					.setAccount(getAccount(AccountType.BankAsset, as))
 					.setAmtSourceDrOrCr(line.getStmtAmt())
 					.setCurrencyId(line.getCurrencyId())
 					.setCurrencyConversionCtx(currencyConversionCtx)
@@ -213,12 +214,12 @@ public class Doc_BankStatement extends Doc<DocLine_BankStatement>
 
 				if (interestAmt.signum() >= 0)
 				{
-					flBuilder.setAccount(getAccount(Doc.ACCTTYPE_InterestRev, as));
+					flBuilder.setAccount(getAccount(AccountType.InterestRev, as));
 					flBuilder.setAmtSource(null, interestAmt);
 				}
 				else
 				{
-					flBuilder.setAccount(getAccount(Doc.ACCTTYPE_InterestExp, as));
+					flBuilder.setAccount(getAccount(AccountType.InterestExp, as));
 					flBuilder.setAmtSource(interestAmt, null);
 				}
 
@@ -266,7 +267,7 @@ public class Doc_BankStatement extends Doc<DocLine_BankStatement>
 		final OrgId bankOrgId = getBankOrgId();    // Bank Account Org
 		final FactLineBuilder factLine_BankTransfer_Builder = fact.createLine()
 				.setDocLine(line)
-				.setAccount(getAccount(Doc.ACCTTYPE_BankInTransit, as))
+				.setAccount(getAccount(AccountType.BankInTransit, as))
 				.setCurrencyId(line.getCurrencyId())
 				.setCurrencyConversionCtx(line.getBankTransferCurrencyConversionCtx(as.getCurrencyId()))
 				.orgId(bankOrgId.isRegular() ? bankOrgId : line.getOrgId()) // bank org, line org
@@ -385,7 +386,7 @@ public class Doc_BankStatement extends Doc<DocLine_BankStatement>
 	private final void createFacts_Payments(final Fact fact, final DocLine_BankStatement line)
 	{
 		final AcctSchema as = fact.getAcctSchema();
-		final MAccount acct_BankInTransit = getAccount(Doc.ACCTTYPE_BankInTransit, as);
+		final MAccount acct_BankInTransit = getAccount(AccountType.BankInTransit, as);
 		final OrgId bankOrgId = getBankOrgId();    // Bank Account Org
 		final BPartnerId bpartnerId = line.getBPartnerId();
 

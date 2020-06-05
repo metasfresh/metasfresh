@@ -151,9 +151,9 @@ public class Doc_Cash extends Doc<DocLine_Cash>
 			{   // amount is negative
 				   // CashExpense DR
 				   // CashAsset CR
-				fact.createLine(line, getAccount(Doc.ACCTTYPE_CashExpense, as),
+				fact.createLine(line, getAccount(AccountType.CashExpense, as),
 						getCurrencyId(), line.getAmount().negate(), null);
-				// fact.createLine(line, getAccount(Doc.ACCTTYPE_CashAsset, as),
+				// fact.createLine(line, getAccount(AccountType.CashAsset, as),
 				// p_vo.C_Currency_ID, null, line.getAmount().negate());
 				assetAmt = assetAmt.subtract(line.getAmount().negate());
 			}
@@ -161,10 +161,10 @@ public class Doc_Cash extends Doc<DocLine_Cash>
 			{   // amount is positive
 				   // CashAsset DR
 				   // CashReceipt CR
-				// fact.createLine(line, getAccount(Doc.ACCTTYPE_CashAsset, as),
+				// fact.createLine(line, getAccount(AccountType.CashAsset, as),
 				// p_vo.C_Currency_ID, line.getAmount(), null);
 				assetAmt = assetAmt.add(line.getAmount());
-				fact.createLine(line, getAccount(Doc.ACCTTYPE_CashReceipt, as),
+				fact.createLine(line, getAccount(AccountType.CashReceipt, as),
 						getCurrencyId(), null, line.getAmount());
 			}
 			else if (CashType.equals(DocLine_Cash.CASHTYPE_CHARGE))
@@ -173,7 +173,7 @@ public class Doc_Cash extends Doc<DocLine_Cash>
 				   // CashAsset CR
 				fact.createLine(line, line.getChargeAccount(as, line.getAmount().negate()),
 						getCurrencyId(), line.getAmount().negate());
-				// fact.createLine(line, getAccount(Doc.ACCTTYPE_CashAsset, as),
+				// fact.createLine(line, getAccount(AccountType.CashAsset, as),
 				// p_vo.C_Currency_ID, null, line.getAmount().negate());
 				assetAmt = assetAmt.subtract(line.getAmount().negate());
 			}
@@ -181,9 +181,9 @@ public class Doc_Cash extends Doc<DocLine_Cash>
 			{   // amount is pos/neg
 				   // CashDifference DR
 				   // CashAsset CR
-				fact.createLine(line, getAccount(Doc.ACCTTYPE_CashDifference, as),
+				fact.createLine(line, getAccount(AccountType.CashDifference, as),
 						getCurrencyId(), line.getAmount().negate());
-				// fact.createLine(line, getAccount(Doc.ACCTTYPE_CashAsset, as),
+				// fact.createLine(line, getAccount(AccountType.CashAsset, as),
 				// p_vo.C_Currency_ID, line.getAmount());
 				assetAmt = assetAmt.add(line.getAmount());
 			}
@@ -192,13 +192,17 @@ public class Doc_Cash extends Doc<DocLine_Cash>
 				   // CashAsset DR dr -- Invoice is in Invoice Currency !
 				   // CashTransfer cr CR
 				if(CurrencyId.equals(line.getCurrencyId(), getCurrencyId()))
+				{
 					assetAmt = assetAmt.add(line.getAmount());
+				}
 				else
+				{
 					fact.createLine(line,
-							getAccount(Doc.ACCTTYPE_CashAsset, as),
+							getAccount(AccountType.CashAsset, as),
 							line.getCurrencyId(), line.getAmount());
+				}
 				fact.createLine(line,
-						getAccount(Doc.ACCTTYPE_CashTransfer, as),
+						getAccount(AccountType.CashTransfer, as),
 						line.getCurrencyId(), line.getAmount().negate());
 			}
 			else if (CashType.equals(DocLine_Cash.CASHTYPE_TRANSFER))
@@ -208,20 +212,24 @@ public class Doc_Cash extends Doc<DocLine_Cash>
 				int temp = getC_BP_BankAccount_ID();
 				setC_BP_BankAccount_ID(line.getC_BP_BankAccount_ID());
 				fact.createLine(line,
-						getAccount(Doc.ACCTTYPE_BankInTransit, as),
+						getAccount(AccountType.BankInTransit, as),
 						line.getCurrencyId(), line.getAmount().negate());
 				setC_BP_BankAccount_ID(temp);
 				if(CurrencyId.equals(line.getCurrencyId(), getCurrencyId()))
+				{
 					assetAmt = assetAmt.add(line.getAmount());
+				}
 				else
+				{
 					fact.createLine(line,
-							getAccount(Doc.ACCTTYPE_CashAsset, as),
+							getAccount(AccountType.CashAsset, as),
 							line.getCurrencyId(), line.getAmount());
+				}
 			}
 		}	// lines
 
 		// Cash Asset
-		fact.createLine(null, getAccount(Doc.ACCTTYPE_CashAsset, as),
+		fact.createLine(null, getAccount(AccountType.CashAsset, as),
 				getCurrencyId(), assetAmt);
 
 		//

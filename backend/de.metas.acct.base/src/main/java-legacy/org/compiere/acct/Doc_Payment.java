@@ -134,11 +134,11 @@ public class Doc_Payment extends Doc<DocLine<Doc_Payment>>
 			}
 			else if (isPrepayment())
 			{
-				acct = getAccount(Doc.ACCTTYPE_C_Prepayment, as);
+				acct = getAccount(AccountType.C_Prepayment, as);
 			}
 			else
 			{
-				acct = getAccount(Doc.ACCTTYPE_UnallocatedCash, as);
+				acct = getAccount(AccountType.UnallocatedCash, as);
 			}
 			fl = fact.createLine(null, acct,
 					getCurrencyId(), null, getAmount());
@@ -158,11 +158,11 @@ public class Doc_Payment extends Doc<DocLine<Doc_Payment>>
 			}
 			else if (isPrepayment())
 			{
-				acct = getAccount(Doc.ACCTTYPE_V_Prepayment, as);
+				acct = getAccount(AccountType.V_Prepayment, as);
 			}
 			else
 			{
-				acct = getAccount(Doc.ACCTTYPE_PaymentSelect, as);
+				acct = getAccount(AccountType.PaymentSelect, as);
 			}
 			FactLine fl = fact.createLine(null, acct,
 					getCurrencyId(), getAmount(), null);
@@ -235,6 +235,6 @@ public class Doc_Payment extends Doc<DocLine<Doc_Payment>>
 	 */
 	private MAccount getBankAccount(final AcctSchema as)
 	{
-		return getAccount(Doc.ACCTTYPE_BankInTransit, as);
+		return getAccount(AccountType.BankInTransit, as);
 	}
 }   // Doc_Payment
