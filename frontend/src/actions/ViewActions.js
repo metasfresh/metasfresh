@@ -6,6 +6,8 @@ import {
   locationConfigRequest,
 } from '../api';
 import { getTableId } from '../reducers/tables';
+import { getView } from '../reducers/viewHandler';
+
 import {
   ADD_VIEW_LOCATION_DATA,
   FETCH_DOCUMENT_PENDING,
@@ -24,8 +26,11 @@ import {
   FETCH_LOCATION_CONFIG_ERROR,
   RESET_VIEW,
   DELETE_VIEW,
+  TOGGLE_INCLUDED_VIEW,
 } from '../constants/ActionTypes';
+
 import { createGridTable, updateGridTable, deleteTable } from './TableActions';
+import { setListIncludedView, closeListIncludedView } from './ListActions';
 
 /**
  * @method resetView
@@ -194,7 +199,7 @@ function fetchLocationConfigSuccess(id, data) {
 
 /**
  * @method fetchLocationConfigError
- * @summary
+ * @summary error when fetching geolocation config
  */
 function fetchLocationConfigError(id, error) {
   return {
@@ -205,12 +210,23 @@ function fetchLocationConfigError(id, error) {
 
 /**
  * @method addLocationData
- * @summary
+ * @summary save geolocation data in the store
  */
 export function addLocationData(id, locationData) {
   return {
     type: ADD_VIEW_LOCATION_DATA,
     payload: { id, locationData },
+  };
+}
+
+/**
+ * @method toggleIncludedView
+ * @summary sets internal hasIncluded/isIncluded values
+ */
+export function toggleIncludedView(id, showIncludedView) {
+  return {
+    type: TOGGLE_INCLUDED_VIEW,
+    payload: { id, showIncludedView },
   };
 }
 
@@ -240,7 +256,7 @@ export function fetchDocument({
   //for filtering in modals
   modalId = null,
 }) {
-  return (dispatch) => {
+  return (dispatch, getState) => {
     let identifier = useViewId ? viewId : windowType;
 
     if (useViewId && modalId) {
@@ -263,6 +279,31 @@ export function fetchDocument({
         const tableData = { windowType, viewId, ...response.data };
 
         dispatch(updateGridTable(tableId, tableData));
+
+        const view = getView(getState(), identifier);
+        const openIncludedViewOnSelect =
+          view.layout &&
+          view.layout.includedView &&
+          view.layout.includedView.openOnSelect;
+
+        if (
+          openIncludedViewOnSelect &&
+          response.data.result &&
+          response.data.result.length
+        ) {
+          const row = response.data.result[0];
+
+          dispatch(
+            showIncludedView({
+              id: identifier,
+              showIncludedView: row.supportIncludedViews,
+              windowId: row.supportIncludedViews
+                ? row.includedView.windowType || row.includedView.windowId
+                : null,
+              viewId: row.supportIncludedViews ? row.includedView.viewId : '',
+            })
+          );
+        }
 
         return Promise.resolve(response.data);
       })
@@ -396,5 +437,33 @@ export function fetchLocationConfig(windowId, viewId = null) {
 
         return Promise.resolve(error);
       });
+  };
+}
+
+/**
+ * @method showIncludedView
+ * @summary ToDo: Describe the method.
+ */
+export function showIncludedView({
+  id,
+  showIncludedView,
+  windowId,
+  viewId,
+  forceClose,
+} = {}) {
+  return (dispatch) => {
+    if (id) {
+      dispatch(toggleIncludedView(id, showIncludedView));
+    }
+
+    if (showIncludedView) {
+      dispatch(setListIncludedView({ windowType: windowId, viewId }));
+    }
+
+    if (!showIncludedView) {
+      dispatch(
+        closeListIncludedView({ windowType: windowId, viewId, forceClose })
+      );
+    }
   };
 }
