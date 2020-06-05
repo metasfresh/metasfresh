@@ -1,13 +1,9 @@
 import update from 'immutability-helper';
-import { Map as iMap, List as iList, Set as iSet } from 'immutable';
-import { get, forEach } from 'lodash';
+import { Map as iMap, Set as iSet } from 'immutable';
 import { createSelector } from 'reselect';
-// import uuid from 'uuid/v4';
 
 import {
   ACTIVATE_TAB,
-  ADD_NEW_ROW,
-  ADD_ROW_DATA,
   ALLOW_SHORTCUT,
   ALLOW_OUTSIDE_CLICK,
   CHANGE_INDICATOR_STATE,
@@ -17,10 +13,8 @@ import {
   CLOSE_PROCESS_MODAL,
   CLOSE_RAW_MODAL,
   CLOSE_FILTER_BOX,
-  DELETE_ROW,
   DELETE_QUICK_ACTIONS,
   DELETE_TOP_ACTIONS,
-  // DESELECT_TABLE_ITEMS,
   DISABLE_SHORTCUT,
   DISABLE_OUTSIDE_CLICK,
   FETCHED_QUICK_ACTIONS,
@@ -51,10 +45,6 @@ import {
   UPDATE_MASTER_DATA,
   UPDATE_MODAL,
   UPDATE_RAW_MODAL,
-  UPDATE_ROW_FIELD_PROPERTY,
-  UPDATE_ROW_PROPERTY,
-  UPDATE_ROW_STATUS,
-  UPDATE_TAB_ROWS_DATA,
   SHOW_SPINNER,
   HIDE_SPINNER,
 } from '../constants/ActionTypes';
@@ -407,94 +397,7 @@ export default function windowHandler(state = initialState, action) {
           },
         },
       });
-    /* eslint-disable no-case-declarations */
-    case ADD_ROW_DATA:
-      let addRowData = iMap();
 
-      for (const [key, item] of Object.entries(action.data)) {
-        const arrayItem = item.length ? item : [];
-        addRowData = addRowData.set(key, iList(arrayItem));
-      }
-
-      return {
-        ...state,
-        [action.scope]: {
-          ...state[action.scope],
-          rowData: state[action.scope].rowData.merge(addRowData),
-        },
-      };
-    case ADD_NEW_ROW:
-      const newRowData = state[action.scope].rowData.update(
-        `${action.tabid}`,
-        (list) => list.push(action.item)
-      );
-
-      return {
-        ...state,
-        [`${action.scope}`]: {
-          ...state[`${action.scope}`],
-          rowData: newRowData,
-        },
-      };
-    case DELETE_ROW:
-      const deletedRowData = state[action.scope].rowData.update(
-        `${action.tabid}`,
-        (list) => list.filter((item) => item.rowId !== action.rowid)
-      );
-
-      return {
-        ...state,
-        [`${action.scope}`]: {
-          ...state[`${action.scope}`],
-          rowData: deletedRowData,
-        },
-      };
-
-    // websocket event
-    case UPDATE_TAB_ROWS_DATA: {
-      const {
-        data: { changed, removed },
-        tabId,
-        scope,
-      } = action.payload;
-      const rowData = state[scope].rowData.toJS();
-      let rows = get(rowData, `${tabId}`, []);
-
-      if (rows.length) {
-        if (removed) {
-          rows = rows.filter((row) => !removed[row.rowId]);
-        }
-
-        // find&replace updated rows (unfortunately it's a table so we'll have to traverse it)
-        if (changed) {
-          rows = rows.map((row) => {
-            if (changed[row.rowId]) {
-              row = { ...changed[row.rowId] };
-
-              delete changed[row.rowId];
-
-              return row;
-            }
-            return row;
-          });
-        }
-      } else {
-        rows = [];
-      }
-      // added rows
-      forEach(changed, (value, key) => rows.push(value));
-
-      let addRowData = iMap();
-      addRowData = addRowData.set(tabId, iList(rows));
-
-      return {
-        ...state,
-        [scope]: {
-          ...state[scope],
-          rowData: state[scope].rowData.merge(addRowData),
-        },
-      };
-    }
     case UPDATE_DATA_FIELD_PROPERTY:
       return update(state, {
         [action.scope]: {
@@ -534,84 +437,7 @@ export default function windowHandler(state = initialState, action) {
         },
       });
     }
-    case UPDATE_ROW_FIELD_PROPERTY: {
-      const { scope, tabid, rowid, property } = action;
-      const scState = state[scope];
-      const scRowData = scState.rowData.get(`${tabid}`);
 
-      if (scState && scState.rowData && scRowData) {
-        const updateRowFieldProperty = state[action.scope].rowData.update(
-          `${tabid}`,
-          (list) =>
-            list.map((item) =>
-              item.rowId === rowid
-                ? {
-                    ...item,
-                    fieldsByName: {
-                      ...item.fieldsByName,
-                      [property]: {
-                        ...item.fieldsByName[property],
-                        ...action.item,
-                      },
-                    },
-                  }
-                : item
-            )
-        );
-
-        return {
-          ...state,
-          [`${action.scope}`]: {
-            ...state[`${action.scope}`],
-            rowData: updateRowFieldProperty,
-          },
-        };
-      } else {
-        return state;
-      }
-    }
-    case UPDATE_ROW_PROPERTY:
-      const updateRowPropertyData = state[action.scope].rowData.update(
-        `${action.tabid}`,
-        (list) =>
-          list.map((item) =>
-            item.rowId === action.rowid
-              ? {
-                  ...item,
-                  [action.property]: action.item,
-                }
-              : item
-          )
-      );
-
-      return {
-        ...state,
-        [`${action.scope}`]: {
-          ...state[`${action.scope}`],
-          rowData: updateRowPropertyData,
-        },
-      };
-    case UPDATE_ROW_STATUS:
-      const updateRowStatusData = state[action.scope].rowData.update(
-        `${action.tabid}`,
-        (list) =>
-          list.map((item) =>
-            item.rowId !== action.rowid
-              ? {
-                  ...item,
-                  saveStatus: action.saveStatus,
-                }
-              : item
-          )
-      );
-
-      return {
-        ...state,
-        [`${action.scope}`]: {
-          ...state[`${action.scope}`],
-          rowData: updateRowStatusData,
-        },
-      };
     /* eslint-enable no-case-declarations */
     case UPDATE_DATA_VALID_STATUS:
       return Object.assign({}, state, {
