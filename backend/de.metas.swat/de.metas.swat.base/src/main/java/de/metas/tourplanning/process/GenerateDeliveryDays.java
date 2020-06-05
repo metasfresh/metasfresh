@@ -116,17 +116,15 @@ public class GenerateDeliveryDays extends JavaProcess implements IProcessPrecond
 
 		//
 		// Generate delivery days
-		int countGeneratedDeliveryDays = 0;
 		if (p_tourVersion == null)
 		{
 			generator.generate(getTrxName());
-			countGeneratedDeliveryDays = generator.getCountGeneratedDeliveryDays();
 		}
 		else
 		{
-			generator.generateDeliveryDaysForTourVersion(p_tourVersion);
-			countGeneratedDeliveryDays = generator.getCountGeneratedDeliveryDays();
+			generator.generateDeliveryDaysForTourVersion(getTrxName(), p_tourVersion);
 		}
+		final int countGeneratedDeliveryDays = generator.getCountGeneratedDeliveryDays();
 		//
 		// Return result
 		return "@Created@ #" + countGeneratedDeliveryDays;

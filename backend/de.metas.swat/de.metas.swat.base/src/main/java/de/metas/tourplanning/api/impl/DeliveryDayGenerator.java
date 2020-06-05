@@ -151,11 +151,12 @@ public class DeliveryDayGenerator implements IDeliveryDayGenerator
 	}
 
 	@Override
-	public void generateDeliveryDaysForTourVersion(final I_M_TourVersion tourVersion)
+	public void generateDeliveryDaysForTourVersion(final String trxName, final I_M_TourVersion tourVersion)
 	{
 
 		final ITourVersionRange tourVersionRange = tourDAO.generateTourVersionRange(tourVersion, getDateFromToUse(), getDateToToUse());
 		final List<I_M_TourVersionLine> tourVersionLines = tourDAO.retrieveTourVersionLines(tourVersion);
+		inactivateDeliveryDaysInRange(tourVersionRange, trxName);
 		if (tourVersionLines.isEmpty())
 		{
 			loggable.addLog("Skip {} because it has no lines", tourVersion);
