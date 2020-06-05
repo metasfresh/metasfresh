@@ -167,7 +167,7 @@ public class AllocationAmountsTest
 				.invoiceProcessingFee(euro(4))
 				.build();
 
-		assertThat(amounts.getTotalAmt()).isEqualTo(euro(1 + 2 + 3 + 4 + 5));
+		assertThat(amounts.getTotalAmt()).isEqualTo(euro(1 + 2 + 3 + 4));
 	}
 
 	@Test
