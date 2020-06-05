@@ -375,6 +375,7 @@ public class BankStatementDocumentHandler implements DocumentHandler
 				//
 				line.setStmtAmt(BigDecimal.ZERO);
 				line.setTrxAmt(BigDecimal.ZERO);
+				line.setBankFeeAmt(BigDecimal.ZERO);
 				line.setChargeAmt(BigDecimal.ZERO);
 				line.setInterestAmt(BigDecimal.ZERO);
 
@@ -405,11 +406,15 @@ public class BankStatementDocumentHandler implements DocumentHandler
 	private String buildVoidDescription(final I_C_BankStatementLine line)
 	{
 		final Properties ctx = Env.getCtx();
-		String description = msgBL.getMsg(ctx, "Voided") + " ("
+		String description = msgBL.translate(ctx, "Voided") + " ("
 				+ msgBL.translate(ctx, "StmtAmt") + "=" + line.getStmtAmt();
 		if (line.getTrxAmt().signum() != 0)
 		{
 			description += ", " + msgBL.translate(ctx, "TrxAmt") + "=" + line.getTrxAmt();
+		}
+		if (line.getBankFeeAmt().signum() != 0)
+		{
+			description += ", " + msgBL.translate(ctx, "BankFeeAmt") + "=" + line.getBankFeeAmt();
 		}
 		if (line.getChargeAmt().signum() != 0)
 		{

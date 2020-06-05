@@ -22,19 +22,20 @@
 
 package de.metas.banking.service;
 
+import java.util.List;
+import java.util.Set;
+
+import org.compiere.model.I_C_BankStatement;
+import org.compiere.model.I_C_BankStatementLine;
+
 import com.google.common.collect.ImmutableSet;
+
 import de.metas.banking.BankStatementId;
 import de.metas.banking.BankStatementLineId;
 import de.metas.invoice.InvoiceId;
 import de.metas.payment.PaymentId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
-import org.compiere.model.I_C_BankStatement;
-import org.compiere.model.I_C_BankStatementLine;
-
-import java.math.BigDecimal;
-import java.util.List;
-import java.util.Set;
 
 public interface IBankStatementBL extends ISingletonService
 {
@@ -56,8 +57,6 @@ public interface IBankStatementBL extends ISingletonService
 	void unpost(I_C_BankStatement bankStatement);
 
 	boolean isReconciled(I_C_BankStatementLine line);
-
-	BigDecimal computeStmtAmtExcludingChargeAmt(I_C_BankStatementLine line);
 
 	String getDocumentNo(BankStatementId bankStatementId);
 
