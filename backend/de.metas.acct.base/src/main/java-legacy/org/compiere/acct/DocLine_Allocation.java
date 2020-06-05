@@ -50,6 +50,8 @@ import de.metas.payment.PaymentId;
 import de.metas.payment.api.IPaymentBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
+import lombok.NonNull;
 
 /**
  * Allocation Line
@@ -88,15 +90,15 @@ class DocLine_Allocation extends DocLine<Doc_AllocationHdr>
 
 		//
 		// Payment
-		paymentId = PaymentId.ofRepoIdOrNull(line.getC_Payment_ID());
-		payment = paymentId != null
-				? Services.get(IPaymentBL.class).getById(paymentId)
+		this._paymentId = PaymentId.ofRepoIdOrNull(line.getC_Payment_ID());
+		this._payment = this._paymentId != null
+				? Services.get(IPaymentBL.class).getById(this._paymentId)
 				: null;
-		if (payment != null)
+		if (this._payment != null)
 		{
-			final int C_ConversionType_ID = payment.getC_ConversionType_ID();
+			final int C_ConversionType_ID = this._payment.getC_ConversionType_ID();
 			setC_ConversionType_ID(C_ConversionType_ID);
-			paymentReceipt = payment.isReceipt();
+			paymentReceipt = this._payment.isReceipt();
 		}
 		else
 		{
@@ -123,8 +125,8 @@ class DocLine_Allocation extends DocLine<Doc_AllocationHdr>
 	private DocLine_Allocation counterDocLine;
 	private final Set<AcctSchemaId> salesPurchaseInvoiceAlreadyCompensated_AcctSchemaIds = new HashSet<>();
 
-	private final PaymentId paymentId;
-	private final I_C_Payment payment;
+	private final PaymentId _paymentId;
+	private final I_C_Payment _payment;
 	private CurrencyConversionContext paymentCurrencyConversionCtx;
 	private final Boolean paymentReceipt;
 
@@ -151,7 +153,7 @@ class DocLine_Allocation extends DocLine<Doc_AllocationHdr>
 				.append(",Discount=").append(getDiscountAmt())
 				.append(",WriteOff=").append(getWriteOffAmt())
 				.append(",OverUnderAmt=").append(getOverUnderAmt())
-				.append(" - C_Payment_ID=").append(payment)
+				.append(" - C_Payment_ID=").append(_payment)
 				.append(",C_CashLine_ID=").append(cashLine)
 				.append(",C_Invoice_ID=").append(invoice)
 				.append("]");
@@ -332,13 +334,13 @@ class DocLine_Allocation extends DocLine<Doc_AllocationHdr>
 	@Nullable
 	public PaymentId getPaymentId()
 	{
-		return paymentId;
+		return _paymentId;
 	}
 
 	@Nullable
 	public I_C_Payment getC_Payment()
 	{
-		return payment;
+		return _payment;
 	}
 
 	public final boolean isSOTrxInvoice()
@@ -397,10 +399,10 @@ class DocLine_Allocation extends DocLine<Doc_AllocationHdr>
 
 	public MAccount getPaymentAcct(final AcctSchema as)
 	{
-		final I_C_Payment payment = getC_Payment();
-		if (payment != null)
+		final PaymentId paymentId = getPaymentId();
+		if (paymentId != null)
 		{
-			final MAccount paymentAcct = getPaymentAcct(as, payment.getC_Payment_ID());
+			final MAccount paymentAcct = getPaymentAcct(as, paymentId);
 			Check.assumeNotNull(paymentAcct, "paymentAcct not null");
 			return paymentAcct;
 		}
@@ -426,7 +428,7 @@ class DocLine_Allocation extends DocLine<Doc_AllocationHdr>
 	 * @param C_Payment_ID payment
 	 * @return acct
 	 */
-	private MAccount getPaymentAcct(final AcctSchema as, final int C_Payment_ID)
+	private MAccount getPaymentAcct(@NonNull final AcctSchema as, @NonNull final PaymentId paymentId)
 	{
 		final Doc_AllocationHdr doc = getDoc();
 		doc.setBPBankAccountId(null);
@@ -442,19 +444,24 @@ class DocLine_Allocation extends DocLine<Doc_AllocationHdr>
 		try
 		{
 			pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_ThreadInherited);
-			pstmt.setInt(1, C_Payment_ID);
+			pstmt.setInt(1, paymentId.getRepoId());
 			rs = pstmt.executeQuery();
 			if (rs.next())
 			{
 				doc.setBPBankAccountId(BankAccountId.ofRepoIdOrNull(rs.getInt(1)));
-				if (Doc.DOCTYPE_APPayment.equals(rs.getString(2)))
+				
+				final String docBaseType = rs.getString(2);
+				if (Doc.DOCTYPE_APPayment.equals(docBaseType))
 				{
 					accountType = AccountType.PaymentSelect;
 				}
+				
 				// Prepayment
-				if ("Y".equals(rs.getString(4)))		// Prepayment
+				final boolean isPrepayment = StringUtils.toBoolean(rs.getString(4));
+				if (isPrepayment)		// Prepayment
 				{
-					if ("Y".equals(rs.getString(3)))
+					final boolean isReceipt = StringUtils.toBoolean(rs.getString(3));
+					if (isReceipt)
 					{
 						accountType = AccountType.C_Prepayment;
 					}
@@ -483,7 +490,7 @@ class DocLine_Allocation extends DocLine<Doc_AllocationHdr>
 			throw doc.newPostingException()
 					.setDocLine(this)
 					.setAcctSchema(as)
-					.setDetailMessage("No payment account found for " + C_Payment_ID);
+					.setDetailMessage("No payment account found for " + paymentId);
 		}
 		return doc.getAccount(accountType, as);
 	}	// getPaymentAcct
