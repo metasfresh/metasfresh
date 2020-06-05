@@ -63,6 +63,8 @@ public enum AccountType
 	DiscountRev,
 	/** Allocation - Write Off */
 	WriteOff,
+	/** Allocation - Pay Bank Fee */
+	PayBankFee,
 
 	/** Bank Statement - Asset */
 	BankAsset,

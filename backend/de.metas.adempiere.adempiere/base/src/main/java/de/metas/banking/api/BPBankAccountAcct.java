@@ -50,4 +50,6 @@ public class BPBankAccountAcct
 	AccountId interestRevenueAcct;
 	@NonNull
 	AccountId interestExpenseAcct;
+	@NonNull
+	AccountId paymentBankFeeAcct;
 }

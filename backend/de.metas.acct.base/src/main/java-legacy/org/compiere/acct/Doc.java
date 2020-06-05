@@ -1149,6 +1149,10 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		{
 			return getBPBankAccountAcct(acctSchemaId).getPaymentSelectAcct();
 		}
+		else if (acctType == AccountType.PayBankFee)
+		{
+			return getBPBankAccountAcct(acctSchemaId).getPaymentBankFeeAcct();
+		}
 
 		/** Account Type - Allocation */
 		else if (acctType == AccountType.DiscountExp)
@@ -1168,11 +1172,6 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 			sql = "SELECT WriteOff_Acct FROM C_BP_Group_Acct a, C_BPartner bp "
 					+ "WHERE a.C_BP_Group_ID=bp.C_BP_Group_ID AND bp.C_BPartner_ID=? AND a.C_AcctSchema_ID=?";
 			sqlParams = Arrays.asList(getBPartnerId(), acctSchemaId);
-		}
-		else if (acctType == AccountType.PayBankFee)
-		{
-			// TODO
-			throw new AdempiereException("To be implemented");
 		}
 
 		/** Account Type - Bank Statement */

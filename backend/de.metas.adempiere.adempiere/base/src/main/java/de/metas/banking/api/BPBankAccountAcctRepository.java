@@ -82,6 +82,7 @@ public class BPBankAccountAcctRepository
 				.paymentSelectAcct(AccountId.ofRepoId(rs.getInt("B_PaymentSelect_Acct")))
 				.interestRevenueAcct(AccountId.ofRepoId(rs.getInt("B_InterestRev_Acct")))
 				.interestExpenseAcct(AccountId.ofRepoId(rs.getInt("B_InterestExp_Acct")))
+				.paymentBankFeeAcct(AccountId.ofRepoId(rs.getInt("PayBankFee_Acct")))
 				//
 				.build();
 	}
