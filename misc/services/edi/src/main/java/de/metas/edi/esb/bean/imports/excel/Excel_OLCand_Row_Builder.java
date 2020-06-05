@@ -1,4 +1,4 @@
-package de.metas.edi.esb.bean.imports.xls;
+package de.metas.edi.esb.bean.imports.excel;
 
 /*
  * #%L
@@ -40,12 +40,12 @@ import de.metas.edi.esb.commons.Util;
 import lombok.NonNull;
 
 /**
- * Builds {@link XLS_OLCand_Row}.
+ * Builds {@link Excel_OLCand_Row}.
  *
  * @author tsa
  * @task 08839
  */
-public class XLS_OLCand_Row_Builder
+public class Excel_OLCand_Row_Builder
 {
 	public static final String MAPKEY_LineNo = "LineNo";
 	Integer lineNo;
@@ -99,16 +99,16 @@ public class XLS_OLCand_Row_Builder
 			.add(NumberFormat.getInstance(Locale.ENGLISH))
 			.build();
 
-	XLS_OLCand_Row_Builder()
+	Excel_OLCand_Row_Builder()
 	{
 	}
 
-	public XLS_OLCand_Row build()
+	public Excel_OLCand_Row build()
 	{
-		return new XLS_OLCand_Row(this);
+		return new Excel_OLCand_Row(this);
 	}
 
-	public XLS_OLCand_Row_Builder setFromMap(@NonNull final Map<String, Object> map)
+	public Excel_OLCand_Row_Builder setFromMap(@NonNull final Map<String, Object> map)
 	{
 		// NOTE: we need to create a new map, because we want to use case insensitive keys.
 		final TreeMap<String, Object> map2 = new TreeMap<String, Object>(String.CASE_INSENSITIVE_ORDER);
@@ -141,7 +141,7 @@ public class XLS_OLCand_Row_Builder
 		}
 		catch (Exception e)
 		{
-			throw new RuntimeException("Failed building " + XLS_OLCand_Row.class + " from " + map2, e);
+			throw new RuntimeException("Failed building " + Excel_OLCand_Row.class + " from " + map2, e);
 		}
 	}
 

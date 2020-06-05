@@ -29,7 +29,7 @@ import java.util.Map;
 
 import org.junit.Assert;
 
-import de.metas.edi.esb.bean.imports.xls.XLS_OLCand_Row;
+import de.metas.edi.esb.bean.imports.excel.Excel_OLCand_Row;
 import de.metas.edi.esb.jaxb.metasfresh.XLSImpCOLCandType;
 
 public class XLS_OLCand_Row_Expectations
@@ -43,14 +43,14 @@ public class XLS_OLCand_Row_Expectations
 	}
 
 	public void assertExpected(
-			final Map<Integer, XLS_OLCand_Row> lineNo2row,
+			final Map<Integer, Excel_OLCand_Row> lineNo2row,
 			final Map<Integer, Map<String, Object>> lineNo2rowData)
 	{
 		//
 		// Apply common row expectations, if any
 		if (commonRowExpectation != null)
 		{
-			for (final XLS_OLCand_Row row : lineNo2row.values())
+			for (final Excel_OLCand_Row row : lineNo2row.values())
 			{
 				commonRowExpectation.assertExpected(row);
 			}
@@ -60,7 +60,7 @@ public class XLS_OLCand_Row_Expectations
 		for (XLS_OLCand_Row_Expectation expectation : rowExpectations)
 		{
 			final int lineNo = expectation.getLineNo();
-			final XLS_OLCand_Row row = lineNo2row.get(lineNo);
+			final Excel_OLCand_Row row = lineNo2row.get(lineNo);
 			System.out.println("row: " + row);
 			System.out.println("row (raw data): " + lineNo2rowData.get(lineNo));
 			expectation.assertExpected(row);

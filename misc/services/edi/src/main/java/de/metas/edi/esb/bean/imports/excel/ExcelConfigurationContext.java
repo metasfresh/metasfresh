@@ -1,4 +1,4 @@
-package de.metas.edi.esb.bean.imports.xls;
+package de.metas.edi.esb.bean.imports.excel;
 
 /*
  * #%L
@@ -39,28 +39,28 @@ import de.metas.edi.esb.commons.Util;
  * @task 08839
  */
 // @Immutable
-public final class XLSConfigurationContext
+public final class ExcelConfigurationContext
 {
 	/**
 	 * Creates the configuration by extracting the values from given {@link Exchange}'s properties
 	 *
 	 * NOTE: the properties were set Exchange by {@link #asSetPropertiesToExchangeProcessor()}.
 	 */
-	public static XLSConfigurationContext createFromExchange(final Exchange exchange)
+	public static ExcelConfigurationContext createFromExchange(final Exchange exchange)
 	{
-		return new XLSConfigurationContext(exchange);
+		return new ExcelConfigurationContext(exchange);
 	}
 
 	/**
 	 * Creates the configuration by extracting the values from given {@link CamelContext}'s properties
 	 */
-	public static XLSConfigurationContext createFromCamelContext(final CamelContext camelContext)
+	public static ExcelConfigurationContext createFromCamelContext(final CamelContext camelContext)
 	{
-		return new XLSConfigurationContext(camelContext);
+		return new ExcelConfigurationContext(camelContext);
 	}
 
 	/** Config properties context root */
-	private static final String CONTEXT_XLS_ROOT = "xls.order.";
+	private static final String CONTEXT_XLS_ROOT = "excel.order.";
 
 	private final String CamelFileName;
 	//
@@ -85,7 +85,7 @@ public final class XLSConfigurationContext
 	private final String currencyISOCode;
 
 	/** Constructs the configuration by fetching the values from given {@link Exchange} properties */
-	private XLSConfigurationContext(final Exchange exchange)
+	private ExcelConfigurationContext(final Exchange exchange)
 	{
 		this.CamelFileName = exchange.getProperty(Exchange.FILE_NAME, String.class);
 		// this.EDIMessageDatePattern = exchange.getProperty(CONTEXT_EDIMessageDatePattern, String.class);
@@ -100,7 +100,7 @@ public final class XLSConfigurationContext
 		this.currencyISOCode = exchange.getProperty(CONTEXT_CurrencyISOCode, String.class);
 	}
 
-	private XLSConfigurationContext(final CamelContext camelContext)
+	private ExcelConfigurationContext(final CamelContext camelContext)
 	{
 		this.CamelFileName = null; // NOT available
 		// this.EDIMessageDatePattern = Util.resolvePropertyPlaceholders(camelContext, CONTEXT_EDIMessageDatePattern);
