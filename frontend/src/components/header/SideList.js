@@ -79,6 +79,8 @@ class SideList extends Component {
     } = this.props;
     const { tab } = this.state;
 
+    console.log('render side list: ', windowId, docId, viewId)
+
     switch (tab) {
       case 0:
         return (

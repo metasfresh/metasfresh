@@ -149,8 +149,6 @@ export default class DocumentList extends Component {
       onChangePage,
       onRedirectToDocument,
       filtersActive,
-      isShowIncluded,
-      hasShowIncluded,
       mapConfig,
       initialValuesNulled,
       triggerSpinner,
@@ -163,10 +161,17 @@ export default class DocumentList extends Component {
       onShowIncludedViewOnSelect,
       onClearStaticFilters,
       onSortData,
-
+      onShowSelectedIncludedView,
       table,
     } = this.props;
-    const { staticFilters, orderBy, queryLimitHit } = reduxData;
+    const {
+      staticFilters,
+      orderBy,
+      queryLimitHit,
+      isShowIncluded,
+      hasShowIncluded,
+      locationData,
+    } = reduxData;
     const { rowEdited, clickOutsideLock, toggleWidth } = this.state;
 
     // TODO: This can probably be handled with redux state query
@@ -195,10 +200,7 @@ export default class DocumentList extends Component {
     const showModalResizeBtn =
       layout && isModal && hasIncluded && hasShowIncluded;
     const showGeoResizeBtn =
-      layout &&
-      layout.supportGeoLocations &&
-      reduxData &&
-      reduxData.locationData;
+      layout && layout.supportGeoLocations && locationData;
 
     return (
       <div
@@ -362,6 +364,7 @@ export default class DocumentList extends Component {
                 openIncludedViewOnSelect={
                   layout.includedView && layout.includedView.openOnSelect
                 }
+                showSelectedIncludedView={onShowSelectedIncludedView}
                 blurOnIncludedView={blurWhenOpen}
                 focusOnFieldName={layout.focusOnFieldName}
                 toggleState={panelsState}
@@ -404,7 +407,7 @@ export default class DocumentList extends Component {
               <GeoMap
                 toggleState={panelsState}
                 mapConfig={mapConfig}
-                data={reduxData.locationData}
+                data={locationData}
               />
             </div>
           </div>

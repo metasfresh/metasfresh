@@ -10,6 +10,7 @@ import {
   deselectTableItems,
   collapseTableRow,
 } from '../actions/TableActions';
+import { showIncludedView } from '../actions/ViewActions';
 import { deleteLocal, openModal } from '../actions/WindowActions';
 
 import { containerPropTypes } from '../utils/tableHelpers';
@@ -20,16 +21,22 @@ import Table from '../components/table/Table';
 class TableContainer extends PureComponent {
   componentWillUnmount() {
     const {
-      showIncludedViewOnSelect,
+      // showIncludedViewOnSelect,
+      showIncludedView,
       viewId,
-      windowType,
+      windowId,
       isIncluded,
+      isModal,
     } = this.props;
 
-    if (showIncludedViewOnSelect && !isIncluded) {
-      showIncludedViewOnSelect({
+    // if (showIncludedViewOnSelect && !isIncluded) {
+    if (!isIncluded) {
+      const identifier = isModal ? viewId : windowId;
+
+      showIncludedView({
+        id: identifier,
         showIncludedView: false,
-        windowType,
+        windowId,
         viewId,
       });
     }
@@ -113,28 +120,6 @@ class TableContainer extends PureComponent {
     deselectTableItems(getTableId({ windowId, viewId, docId, tabId }), []);
   };
 
-  showSelectedIncludedView = (selected) => {
-    const {
-      showIncludedViewOnSelect,
-      openIncludedViewOnSelect,
-      rows,
-    } = this.props;
-
-    if (openIncludedViewOnSelect && selected.length === 1) {
-      rows.forEach((item) => {
-        if (item.id === selected[0]) {
-          showIncludedViewOnSelect({
-            showIncludedView: item.supportIncludedViews,
-            windowType: item.supportIncludedViews
-              ? item.includedView.windowType || item.includedView.windowId
-              : null,
-            viewId: item.supportIncludedViews ? item.includedView.viewId : '',
-          });
-        }
-      });
-    }
-  };
-
   // TODO: This reallydoesn't do anything. Check if it's still a valid solution
   handleItemChange = () => {
     const { onRowEdited } = this.props;
@@ -142,10 +127,10 @@ class TableContainer extends PureComponent {
     onRowEdited && onRowEdited(true);
   };
 
-  openModal = (windowType, tabId, rowId) => {
+  openModal = (windowId, tabId, rowId) => {
     const { openModal } = this.props;
 
-    openModal('Add new', windowType, 'window', tabId, rowId);
+    openModal('Add new', windowId, 'window', tabId, rowId);
   };
 
   openTableModal = () => {
@@ -222,7 +207,6 @@ class TableContainer extends PureComponent {
     return (
       <Table
         {...this.props}
-        onShowSelectedIncludedView={this.showSelectedIncludedView}
         onHandleZoomInto={this.handleZoomInto}
         onPromptSubmit={this.handlePromptSubmit}
         onItemChange={this.handleItemChange}
@@ -280,6 +264,7 @@ export default connect(
     deselectTableItems,
     openModal,
     updateTableSelection,
+    showIncludedView,
   },
   false,
   { forwardRef: true }

@@ -23,6 +23,8 @@ import {
   filterView,
   resetView,
   deleteView,
+  showIncludedView,
+  toggleIncludedView,
 } from '../actions/ViewActions';
 import {
   deleteTable,
@@ -35,7 +37,6 @@ import { clearAllFilters } from '../actions/FiltersActions';
 import {
   closeListIncludedView,
   setListId,
-  setListIncludedView,
   setPagination as setListPagination,
   setSorting as setListSorting,
 } from '../actions/ListActions';
@@ -71,8 +72,6 @@ class DocumentListContainer extends Component {
       panelsState: GEO_PANEL_STATES[0],
       filtersActive: iMap(),
       initialValuesNulled: iMap(),
-      isShowIncluded: false,
-      hasShowIncluded: false,
       supportAttribute: false,
     };
 
@@ -117,6 +116,9 @@ class DocumentListContainer extends Component {
       resetView,
       clearAllFilters,
       deleteTable,
+
+      toggleIncludedView,
+      isModal,
     } = this.props;
     const { staticFilterCleared } = this.state;
 
@@ -166,6 +168,8 @@ class DocumentListContainer extends Component {
           panelsState: GEO_PANEL_STATES[0],
         },
         () => {
+          // TODO: Check if we can just call `showIncludedView` to hide
+          // it in the resetView Action Creator
           if (included) {
             closeListIncludedView(includedView);
           }
@@ -178,8 +182,8 @@ class DocumentListContainer extends Component {
     const stateChanges = {};
 
     if (included && !nextIncluded) {
-      stateChanges.isShowIncluded = false;
-      stateChanges.hasShowIncluded = false;
+      const identifier = isModal ? viewId : windowId;
+      toggleIncludedView(identifier, false);
     }
 
     if (Object.keys(stateChanges).length) {
@@ -723,29 +727,31 @@ class DocumentListContainer extends Component {
    * @method showIncludedView
    * @summary ToDo: Describe the method.
    */
-  showIncludedViewOnSelect = ({
-    showIncludedView,
-    windowType,
-    viewId,
-    forceClose,
-  } = {}) => {
-    const { setListIncludedView, closeListIncludedView } = this.props;
-    this.setState(
-      {
-        isShowIncluded: !!showIncludedView,
-        hasShowIncluded: !!showIncludedView,
-      },
-      () => {
-        if (showIncludedView) {
-          setListIncludedView({ windowType, viewId });
-        }
-      }
-    );
+  showSelectedIncludedView = (selected) => {
+    const {
+      table: { rows },
+      layout,
+      isModal,
+      viewId,
+      windowId,
+    } = this.props;
+    const openIncludedViewOnSelect =
+      layout.includedView && layout.includedView.openOnSelect;
+    const identifier = isModal ? viewId : windowId;
 
-    // can't use setState callback because component might be unmounted and
-    // callback is never called
-    if (!showIncludedView) {
-      closeListIncludedView({ windowType, viewId, forceClose });
+    if (openIncludedViewOnSelect && selected.length === 1) {
+      rows.forEach((item) => {
+        if (item.id === selected[0]) {
+          showIncludedView({
+            id: identifier,
+            showIncludedView: item.supportIncludedViews,
+            windowId: item.supportIncludedViews
+              ? item.includedView.windowType || item.includedView.windowId
+              : null,
+            viewId: item.supportIncludedViews ? item.includedView.viewId : '',
+          });
+        }
+      });
     }
   };
 
@@ -803,7 +809,7 @@ class DocumentListContainer extends Component {
         onToggleState={this.toggleState}
         pageLength={this.pageLength}
         onGetSelected={this.getSelected}
-        onShowIncludedViewOnSelect={this.showIncludedViewOnSelect}
+        onShowSelectedIncludedView={this.showSelectedIncludedView}
         onSortData={this.sortData}
         onFetchLayoutAndData={this.fetchLayoutAndData}
         onChangePage={this.handleChangePage}
@@ -833,12 +839,13 @@ export default connect(
     createView,
     filterView,
     deleteTable,
-    setListIncludedView,
     indicatorState,
     closeListIncludedView,
     setListPagination,
     setListSorting,
     setListId,
+    showIncludedView,
+    toggleIncludedView,
     push,
     updateRawModal,
     updateTableSelection,

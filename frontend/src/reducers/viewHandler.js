@@ -3,22 +3,23 @@ import { createSelector } from 'reselect';
 
 import {
   ADD_VIEW_LOCATION_DATA,
-  FETCH_DOCUMENT_PENDING,
-  FETCH_DOCUMENT_SUCCESS,
-  FETCH_DOCUMENT_ERROR,
-  FETCH_LAYOUT_PENDING,
-  FETCH_LAYOUT_SUCCESS,
-  FETCH_LAYOUT_ERROR,
   CREATE_VIEW,
   CREATE_VIEW_SUCCESS,
   CREATE_VIEW_ERROR,
+  DELETE_VIEW,
+  FETCH_DOCUMENT_ERROR,
+  FETCH_DOCUMENT_PENDING,
+  FETCH_DOCUMENT_SUCCESS,
+  FETCH_LAYOUT_ERROR,
+  FETCH_LAYOUT_PENDING,
+  FETCH_LAYOUT_SUCCESS,
+  FETCH_LOCATION_CONFIG_ERROR,
+  FETCH_LOCATION_CONFIG_SUCCESS,
   FILTER_VIEW_PENDING,
   FILTER_VIEW_SUCCESS,
   FILTER_VIEW_ERROR,
-  FETCH_LOCATION_CONFIG_SUCCESS,
-  FETCH_LOCATION_CONFIG_ERROR,
   RESET_VIEW,
-  DELETE_VIEW,
+  TOGGLE_INCLUDED_VIEW,
 } from '../constants/ActionTypes';
 
 export const viewState = {
@@ -48,6 +49,9 @@ export const viewState = {
   pending: false,
   error: null,
   isActive: false,
+
+  isShowIncluded: false,
+  hasShowIncluded: false,
 };
 
 export const initialState = { views: {} };
@@ -368,6 +372,23 @@ export default function viewHandler(state = initialState, action) {
           [`${id}`]: {
             ...view,
             error,
+          },
+        },
+      };
+    }
+
+    case TOGGLE_INCLUDED_VIEW: {
+      const { id, showIncludedView } = action.payload;
+      const view = getLocalView(state, id);
+
+      return {
+        ...state,
+        views: {
+          ...state.views,
+          [`${id}`]: {
+            ...view,
+            isShowIncluded: !!showIncludedView,
+            hasShowIncluded: !!showIncludedView,
           },
         },
       };

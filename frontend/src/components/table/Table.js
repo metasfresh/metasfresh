@@ -219,13 +219,15 @@ class Table extends PureComponent {
 
   handleClickOutside = (event) => {
     const {
-      showIncludedViewOnSelect,
+      // showIncludedViewOnSelect,
+      showIncludedView,
       viewId,
       windowId,
       inBackground,
       allowOutsideClick,
       limitOnClickOutside,
       onDeselectAll,
+      isModal,
     } = this.props;
     const parentNode = event.target.parentNode;
     const closeIncluded =
@@ -260,10 +262,14 @@ class Table extends PureComponent {
 
       onDeselectAll();
 
-      if (showIncludedViewOnSelect) {
-        showIncludedViewOnSelect({
+      // TODO: Check some property here
+      if (showIncludedView) {
+        const identifier = isModal ? viewId : windowId;
+
+        showIncludedView({
+          id: identifier,
           showIncludedView: false,
-          windowType: windowId,
+          windowId,
           viewId,
         });
       }
@@ -410,7 +416,10 @@ class Table extends PureComponent {
     const {
       onSelectionChanged,
       openIncludedViewOnSelect,
-      showIncludedViewOnSelect,
+      showIncludedView,
+      isModal,
+      viewId,
+      windowId,
       keyProperty,
       updateQuickActions,
       selected,
@@ -457,10 +466,13 @@ class Table extends PureComponent {
     selectionValue = true;
 
     if (openIncludedViewOnSelect) {
-      showIncludedViewOnSelect({
+      const identifier = isModal ? viewId : windowId;
+
+      showIncludedView({
+        id: identifier,
         showIncludedView: selectionValue && item.supportIncludedViews,
         forceClose: !selectionValue,
-        windowType: item.supportIncludedViews
+        windowId: item.supportIncludedViews
           ? item.includedView.windowType || item.includedView.windowId
           : null,
         viewId: item.supportIncludedViews ? item.includedView.viewId : '',
