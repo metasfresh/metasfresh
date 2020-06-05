@@ -801,13 +801,14 @@ class Header extends Component {
 
         {showSidelist && isSideListShow && (
           <SideList
-            windowType={windowId ? windowId : ''}
+            windowId={windowId ? windowId : ''}
             closeOverlays={this.closeOverlays}
             closeSideList={this.handleSidelistToggle}
             isSideListShow={isSideListShow}
             disableOnClickOutside={!showSidelist}
             docId={dataId}
             defaultTab={sideListTab}
+            viewId={viewId}
             open
           />
         )}
