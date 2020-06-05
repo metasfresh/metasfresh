@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package de.metas.tourplanning.process;
 
@@ -13,23 +13,17 @@ package de.metas.tourplanning.process;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
-import java.sql.Timestamp;
-
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.util.TimeUtil;
 
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
@@ -39,8 +33,14 @@ import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.tourplanning.api.IDeliveryDayGenerator;
 import de.metas.tourplanning.api.ITourBL;
 import de.metas.tourplanning.model.I_M_Tour;
+import de.metas.tourplanning.model.I_M_TourVersion;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.util.TimeUtil;
+
+import java.sql.Timestamp;
 
 /**
  * @author cg
@@ -58,18 +58,19 @@ public class GenerateDeliveryDays extends JavaProcess implements IProcessPrecond
 	private Timestamp p_DateFrom = null;
 	private Timestamp p_DateTo = null;
 	private I_M_Tour p_tour = null;
+	private I_M_TourVersion p_tourVersion = null;
 
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(final IProcessPreconditionsContext context)
 	{
-		if(!context.isSingleSelection())
+		if (!context.isSingleSelection())
 		{
 			return ProcessPreconditionsResolution.rejectBecauseNotSingleSelection();
 		}
 
 		return ProcessPreconditionsResolution.accept();
 	}
-	
+
 	@Override
 	protected void prepare()
 	{
@@ -92,6 +93,11 @@ public class GenerateDeliveryDays extends JavaProcess implements IProcessPrecond
 		{
 			p_tour = InterfaceWrapperHelper.create(getCtx(), getRecord_ID(), I_M_Tour.class, ITrx.TRXNAME_None);
 		}
+		if (I_M_TourVersion.Table_Name.equals(getTableName()) && getRecord_ID() > 0)
+		{
+			p_tourVersion = InterfaceWrapperHelper.create(getCtx(), getRecord_ID(), I_M_TourVersion.class, ITrx.TRXNAME_None);
+			p_tour = p_tourVersion.getM_Tour();
+		}
 	}
 
 	@Override
@@ -110,9 +116,17 @@ public class GenerateDeliveryDays extends JavaProcess implements IProcessPrecond
 
 		//
 		// Generate delivery days
-		generator.generate(getTrxName());
-		final int countGeneratedDeliveryDays = generator.getCountGeneratedDeliveryDays();
-
+		int countGeneratedDeliveryDays = 0;
+		if (p_tourVersion == null)
+		{
+			generator.generate(getTrxName());
+			countGeneratedDeliveryDays = generator.getCountGeneratedDeliveryDays();
+		}
+		else
+		{
+			generator.generateDeliveryDaysForTourVersion(p_tourVersion);
+			countGeneratedDeliveryDays = generator.getCountGeneratedDeliveryDays();
+		}
 		//
 		// Return result
 		return "@Created@ #" + countGeneratedDeliveryDays;
