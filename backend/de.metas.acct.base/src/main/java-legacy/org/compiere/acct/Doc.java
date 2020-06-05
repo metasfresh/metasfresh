@@ -1458,7 +1458,12 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 
 	protected final void setDateAcct(final Timestamp dateAcct)
 	{
-		_dateAcct = TimeUtil.asLocalDate(dateAcct);
+		setDateAcct(TimeUtil.asLocalDate(dateAcct));
+	}
+
+	protected final void setDateAcct(final LocalDate dateAcct)
+	{
+		_dateAcct = dateAcct;
 	}
 
 	protected final LocalDate getDateDoc()
