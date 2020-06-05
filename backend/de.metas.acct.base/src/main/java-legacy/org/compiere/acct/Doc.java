@@ -223,7 +223,6 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 	 */
 	protected Doc(@NonNull final AcctDocContext ctx, final String defaultDocBaseType)
 	{
-
 		services = ctx.getServices();
 		acctSchemas = ctx.getAcctSchemas();
 
