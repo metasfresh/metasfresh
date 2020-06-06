@@ -42,13 +42,14 @@ import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
+import java.util.TreeSet;
 
 import javax.annotation.Nullable;
 
@@ -1493,7 +1494,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 				invoiceCandDAO.invalidateCands(invoiceCands);
 			}
 
-			final Set<I_C_Invoice_Candidate> toLinkAgainstIl = new HashSet<>();
+			final Set<I_C_Invoice_Candidate> toLinkAgainstIl = new TreeSet<>(Comparator.comparing(I_C_Invoice_Candidate::getC_Invoice_Candidate_ID));
 
 			if (il.getC_OrderLine_ID() > 0)
 			{
