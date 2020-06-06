@@ -9,6 +9,7 @@ import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_BP_BankAccount;
 import org.compiere.model.I_C_BankStatement;
 import org.compiere.model.I_C_BankStatementLine;
 import org.compiere.model.MPeriod;
@@ -23,11 +24,14 @@ import de.metas.acct.api.IFactAcctDAO;
 import de.metas.banking.BankStatementId;
 import de.metas.banking.BankStatementLineId;
 import de.metas.banking.BankStatementLineReference;
+import de.metas.banking.api.BankAccountId;
+import de.metas.banking.api.IBPBankAccountDAO;
 import de.metas.banking.payment.IBankStatementPaymentBL;
 import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.DocumentHandler;
 import de.metas.document.engine.DocumentTableFields;
 import de.metas.document.engine.IDocument;
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStringBuilder;
@@ -65,9 +69,12 @@ import lombok.NonNull;
 
 public class BankStatementDocumentHandler implements DocumentHandler
 {
+	private static final AdMessageKey MSG_VOIDED = AdMessageKey.of("Voided");
+	
 	private final IBankStatementPaymentBL bankStatmentPaymentBL = Services.get(IBankStatementPaymentBL.class);
 	private final IBankStatementDAO bankStatementDAO = Services.get(IBankStatementDAO.class);
 	private final IBankStatementBL bankStatementBL = Services.get(IBankStatementBL.class);
+	private final IBPBankAccountDAO bpBankAccountDAO = Services.get(IBPBankAccountDAO.class);
 	private final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
 	private final IFactAcctDAO factAcctDAO = Services.get(IFactAcctDAO.class);
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
@@ -107,7 +114,9 @@ public class BankStatementDocumentHandler implements DocumentHandler
 
 		final StringBuilder documentInfo = new StringBuilder();
 
-		final String bankAccountName = bankStatement.getC_BP_BankAccount().getA_Name();
+		final BankAccountId bpBankAccountId = BankAccountId.ofRepoId(bankStatement.getC_BP_BankAccount_ID());
+		final I_C_BP_BankAccount bankAccount = bpBankAccountDAO.getById(bpBankAccountId);
+		final String bankAccountName = bankAccount.getA_Name();
 		if (Check.isNotBlank(bankAccountName))
 		{
 			documentInfo.append(bankAccountName.trim());
@@ -269,9 +278,9 @@ public class BankStatementDocumentHandler implements DocumentHandler
 
 		//
 		bankStatement.setProcessed(true);
-		
+
 		bankStatementDAO.updateBankStatementLinesProcessedFlag(bankStatementId, true);
-		
+
 		bankStatement.setDocAction(IDocument.ACTION_Close);
 		return IDocument.STATUS_Completed;
 	}
@@ -396,7 +405,7 @@ public class BankStatementDocumentHandler implements DocumentHandler
 			}
 		}
 
-		addDescription(bankStatement, msgBL.getMsg(Env.getCtx(), "Voided"));
+		addDescription(bankStatement, msgBL.getMsg(Env.getCtx(), MSG_VOIDED));
 		bankStatement.setStatementDifference(BigDecimal.ZERO);
 
 		bankStatement.setProcessed(true);
@@ -406,7 +415,7 @@ public class BankStatementDocumentHandler implements DocumentHandler
 	private String buildVoidDescription(final I_C_BankStatementLine line)
 	{
 		final Properties ctx = Env.getCtx();
-		String description = msgBL.translate(ctx, "Voided") + " ("
+		String description = msgBL.getMsg(ctx, MSG_VOIDED) + " ("
 				+ msgBL.translate(ctx, "StmtAmt") + "=" + line.getStmtAmt();
 		if (line.getTrxAmt().signum() != 0)
 		{
