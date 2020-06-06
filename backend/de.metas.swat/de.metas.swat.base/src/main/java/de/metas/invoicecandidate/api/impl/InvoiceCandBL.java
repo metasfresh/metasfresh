@@ -41,6 +41,7 @@ import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -1344,7 +1345,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 
 				final I_C_Invoice_Candidate invoiceCandidate = ilaToReverse.getC_Invoice_Candidate();
 				invoiceCandidate.setProcessed_Override(null); // reset processed_override, because now that the invoice was reversed, the users might want to do something new with the IC.
-				
+
 				invoiceCandidate.setApprovalForInvoicing(false);
 
 				// #870
@@ -1417,7 +1418,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 				}
 
 				invoiceCandDAO.save(invoiceCandidate);
-				
+
 				createUpdateIla(
 						invoiceCandidate,
 						reversalLine,
@@ -1437,6 +1438,22 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		invoiceCandidate.setPriceEntered_Override(priceEnteredOverride);
 		invoiceCandidate.setQtyToInvoice_OverrideFulfilled(ZERO);
 		InterfaceWrapperHelper.save(invoiceCandidate);
+	}
+
+	private void setApprovalForInvoicing(final Collection<I_C_Invoice_Candidate> invoiceCandidates, final boolean approved)
+	{
+		if (invoiceCandidates.isEmpty())
+		{
+			return;
+		}
+
+		final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
+
+		for (final I_C_Invoice_Candidate invoiceCandidate : invoiceCandidates)
+		{
+			invoiceCandidate.setApprovalForInvoicing(approved);
+			invoiceCandDAO.save(invoiceCandidate);
+		}
 	}
 
 	@Override
@@ -1473,17 +1490,6 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			// here we will get ZERO candidates
 			{
 				final List<I_C_Invoice_Candidate> invoiceCands = invoiceCandDAO.retrieveIcForIl(il);
-
-				//
-				if (creditMemoReinvoicable)
-				{
-					for (I_C_Invoice_Candidate invoiceCandidate : invoiceCands)
-					{
-						invoiceCandidate.setApprovalForInvoicing(false);
-						Services.get(IInvoiceCandDAO.class).save(invoiceCandidate);
-					}
-				}
-
 				invoiceCandDAO.invalidateCands(invoiceCands);
 			}
 
@@ -1498,17 +1504,6 @@ public class InvoiceCandBL implements IInvoiceCandBL
 				final List<I_C_Invoice_Candidate> existingICs = invoiceCandDAO.retrieveReferencing(olReference);
 				if (existingICs.isEmpty())
 				{
-					
-					if (creditMemoReinvoicable)
-					{
-						for (I_C_Invoice_Candidate invoiceCandidate : existingICs)
-						{
-
-							invoiceCandidate.setApprovalForInvoicing(false);
-							Services.get(IInvoiceCandDAO.class).save(invoiceCandidate);
-						}
-					}
-					
 					final I_C_OrderLine ol = InterfaceWrapperHelper.create(il.getC_OrderLine(), I_C_OrderLine.class);
 					// NOTE: in case 'invoice' was not created from invoice candidates, it's a big chance here to get zero existing ICs
 					// so we need to create them now
@@ -1581,7 +1576,13 @@ public class InvoiceCandBL implements IInvoiceCandBL
 				}
 				createUpdateIla(icToLink, il, qtysInvoiced, note);
 				// note: if an ILA is created, the icToLink is automatically invalidated via C_Invoice_Line_Alloc model validator
+			}
 
+			//
+			// Unset ApprovalForInvoicing flag in case we credit memoed + reinvoiceable our invoice
+			if (isCreditMemo && creditMemoReinvoicable)
+			{
+				setApprovalForInvoicing(toLinkAgainstIl, false);
 			}
 		}
 	}
