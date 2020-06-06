@@ -1180,6 +1180,17 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 	}
 
 	@Override
+	public final void updateApprovalForInvoicingToTrue(@NonNull final PInstanceId selectionId)
+	{
+		updateColumnForSelection(
+				I_C_Invoice_Candidate.COLUMNNAME_ApprovalForInvoicing,    // invoiceCandidateColumnName
+				true, // value
+				false, // updateOnlyIfNull
+				selectionId // selectionId
+		);
+	}
+
+	@Override
 	public void updateMissingPaymentTermIds(final PInstanceId selectionId)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
