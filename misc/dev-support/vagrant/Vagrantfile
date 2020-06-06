@@ -1,0 +1,90 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+# All Vagrant configuration is done below. The "2" in Vagrant.configure
+# configures the configuration version (we support older styles for
+# backwards compatibility). Please don't change it unless you know what
+# you're doing.
+Vagrant.configure("2") do |config|
+  # The most common configuration options are documented and commented below.
+  # For a complete reference, please see the online documentation at
+  # https://docs.vagrantup.com.
+
+  # Every Vagrant development environment requires a box. You can search for
+  # boxes at https://atlas.hashicorp.com/search.
+  # using this box with a fided version to avoid a moving target
+  config.vm.box = "ubuntu/xenial64"
+  #config.vm.box_version = "v20170509.0.0"
+  # Disable automatic box update checking. If you disable this, then
+  # boxes will only be checked for updates when the user runs
+  # `vagrant box outdated`. This is not recommended.
+  # config.vm.box_check_update = false
+
+  # Create a forwarded port mapping which allows access to a specific port
+  # within the machine from a port on the host machine. In the example below,
+  # accessing "localhost:8080" will access port 80 on the guest machine.
+  # NOTE: This will enable public access to the opened port
+  # config.vm.network "forwarded_port", guest: 80, host: 8080
+
+  # Create a forwarded port mapping which allows access to a specific port
+  # within the machine from a port on the host machine and only allow access
+  # via 127.0.0.1 to disable public access
+  # config.vm.network "forwarded_port", guest: 80, host: 8080, host_ip: "127.0.0.1
+
+  # Port forwardings for https://github.com/deviantony/docker-elk
+  config.vm.network "forwarded_port", id: "logstash-tcp-input", guest: 5000 , host: 5000 , host_ip: "127.0.0.1"
+  config.vm.network "forwarded_port", id: "elasticsearch-http", guest: 9200 , host: 9200 , host_ip: "127.0.0.1"
+  config.vm.network "forwarded_port", id: "kibana-http", guest: 5601 , host: 5601 , host_ip: "127.0.0.1"
+
+  # Port forwardings for metasfresh services that might run within this instance
+  # note about postgres the postgres port 5433: i also have postgres running locally, so 5432 is already taken..
+  config.vm.network "forwarded_port", id: "metasfresh-db", guest: 5432 , host: 5433 , host_ip: "127.0.0.1"
+  config.vm.network "forwarded_port", id: "metasfresh-admin", guest: 9090 , host: 9090 , host_ip: "127.0.0.1"
+  config.vm.network "forwarded_port", id: "metasfresh-webui-frontend", guest: 3000 , host: 3000 , host_ip: "127.0.0.1"
+
+  # you can run the search component within the virtual machine like this:
+  # git clone https://github.com/metasfresh/metasfresh-docker.git
+  # cd metasfresh-docker
+  # docker-compose up search
+  config.vm.network "forwarded_port", id: "metasfresh-search", guest: 9300 , host: 9300 , host_ip: "127.0.0.1"
+
+  config.vm.network "forwarded_port", id: "docker remote API", guest: 4243 , host: 4243 , host_ip: "127.0.0.1"
+
+  config.vm.provider "virtualbox" do | vb |
+
+    # trying to set this name sometimes lead to an error like the following
+	  # VBoxManage.exe: error: Could not rename the directory 'C:\Users\ts\VirtualBox VMs\vagrant_default_1494409793539_10420' to 'C:\Users\ts\VirtualBox VMs\metasfresh-dev'
+    # for me the solution was to destroy and delete the virtual machine, delete all .vagrant etc files and reboot.
+	  vb.name = "metasfresh-dev-vagrant"
+
+    # Display the VirtualBox GUI (i.e. the VM's "screen") when booting the machine
+    # vb.gui = true
+
+    # Customize the amount of memory on the VM:
+    vb.memory = "4096"
+
+    # add another disk so we have the disk space to actually do something on this box
+    additional_disk_filename = 'additional_disk_2.vdi'
+    # also tried 'SATA', 'SATAController' and 'SATA Controller'
+    # I then found the "SCSI" in the virtualbox settings (i have IDE and SCSI there)
+    controller_name = 'SCSI'
+
+    unless File.exist?(additional_disk_filename)
+      vb.customize ['createhd', '--filename', additional_disk_filename, '--size', 50 * 1024]
+    end
+	   # thx to https://gist.github.com/leifg/4713995#gistcomment-1984791 about --port. After looking at the running machine in the virtualbox gui (without this additional disk!) i saw that the next free port number is 2
+    vb.customize ['storageattach', :id, '--storagectl', controller_name, '--port', 2, '--device', 0, '--type', 'hdd', '--medium', additional_disk_filename]
+  end
+
+  # prepare the additional disk for docke and install docker and docker-compose 
+  # run only once, because it e.g. adds a line to /etc/fstab
+  config.vm.provision :shell, path: "provision/docker/provision_docker.sh"
+
+  # install an elk stack. To start the elk stack later, do
+  # cd ~ubuntu/docker-elk
+  # sudo docker-compose up -d
+  config.vm.provision :shell, path: "provision/elk/provision_docker_elk.sh"
+
+  # install and start metasfresh-admin and metasfresh-db
+  config.vm.provision :shell, path: "provision/provision_docker_metasfresh-services.sh", run: "always"
+end
