@@ -16,7 +16,7 @@ VALUES (540032, -- c_elementvalue_id
         'E', 'N', -- acct type, sign
         'Y', -- is doc controlled,
         1000000, -- c_element_id
-        'Y', -- isSummary
+        'N', -- isSummary
         'Y', -- post actual
         NULL, -- parent_id
         1 -- seqno
