@@ -43,6 +43,7 @@ public class BankStatementLineRefCreateRequest
 	BankStatementId bankStatementId;
 	@NonNull
 	BankStatementLineId bankStatementLineId;
+	boolean processed;
 
 	@NonNull
 	OrgId orgId;

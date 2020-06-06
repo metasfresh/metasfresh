@@ -254,6 +254,7 @@ final class BankStatementLineMultiPaymentLinkCommand
 		final BankStatementLineReference lineRef = bankStatementDAO.createBankStatementLineRef(BankStatementLineRefCreateRequest.builder()
 				.bankStatementId(BankStatementId.ofRepoId(bankStatementLine.getC_BankStatement_ID()))
 				.bankStatementLineId(BankStatementLineId.ofRepoId(bankStatementLine.getC_BankStatementLine_ID()))
+				.processed(bankStatementLine.isProcessed())
 				//
 				.orgId(OrgId.ofRepoId(bankStatementLine.getAD_Org_ID()))
 				//

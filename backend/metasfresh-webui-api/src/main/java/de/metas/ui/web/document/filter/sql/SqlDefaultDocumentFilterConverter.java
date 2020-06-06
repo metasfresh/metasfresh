@@ -337,17 +337,18 @@ import lombok.NonNull;
 			return null;
 		}
 
+		final List<Object> sqlValuesEffective = sqlParams.isCollecting()
+				? new ArrayList<>()
+				: null;
+
+		final String sql = DB.buildSqlList(sqlColumnExpr, sqlValues, sqlValuesEffective);
+
 		if (sqlParams.isCollecting())
 		{
-			final List<Object> sqlValuesEffective = new ArrayList<>();
-			final String sql = DB.buildSqlList(sqlColumnExpr, sqlValues, sqlValuesEffective);
 			sqlParams.collectAll(sqlValuesEffective); // safe
-			return sql;
 		}
-		else
-		{
-			return DB.buildSqlList(sqlParams.toList());
-		}
+
+		return sql;
 	}
 
 	private static String buildSqlWhereClause_Like(final String sqlColumnExpr, final boolean negate, final boolean ignoreCase, final Object sqlValue, final SqlParamsCollector sqlParams)

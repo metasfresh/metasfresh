@@ -1,9 +1,6 @@
 package de.metas.ui.web.payment_allocation.process;
 
-import java.util.List;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.ui.web.payment_allocation.InvoiceRow;
 import de.metas.ui.web.payment_allocation.InvoicesView;
 import de.metas.ui.web.payment_allocation.PaymentRow;
@@ -11,6 +8,8 @@ import de.metas.ui.web.payment_allocation.PaymentsView;
 import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
+
+import java.util.List;
 
 /*
  * #%L
@@ -22,12 +21,12 @@ import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -47,7 +46,7 @@ abstract class PaymentsViewBasedProcess extends ViewBasedProcessTemplate
 		return getView();
 	}
 
-	protected final DocumentIdsSelection getSelectedPaymentRowIds()
+	protected final DocumentIdsSelection getSelectedPaymentRowIdsIncludingDefaultRow()
 	{
 		return getSelectedRowIds();
 	}
@@ -66,16 +65,12 @@ abstract class PaymentsViewBasedProcess extends ViewBasedProcessTemplate
 	//
 	//
 
-	protected final PaymentRow getSingleSelectedPaymentRow()
-	{
-		final DocumentId rowId = getSelectedPaymentRowIds().getSingleDocumentId();
-		return getPaymentsView().getById(rowId);
-	}
-
 	protected final PaymentRow getSingleSelectedPaymentRowOrNull()
 	{
-		final DocumentIdsSelection selectedPaymentRowIds = getSelectedPaymentRowIds();
-		if (selectedPaymentRowIds.isSingleDocumentId())
+		final DocumentIdsSelection selectedPaymentRowIds = getSelectedPaymentRowIdsIncludingDefaultRow();
+		if (selectedPaymentRowIds.isSingleDocumentId()
+				&& selectedPaymentRowIds.getSingleDocumentId().toInt() != PaymentRow.DEFAULT_PAYMENT_ROW.getPaymentId().getRepoId()
+		)
 		{
 			final DocumentId rowId = selectedPaymentRowIds.getSingleDocumentId();
 			return getPaymentsView().getById(rowId);

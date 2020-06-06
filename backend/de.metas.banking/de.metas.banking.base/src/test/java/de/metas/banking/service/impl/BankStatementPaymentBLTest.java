@@ -41,6 +41,7 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BankStatement;
 import org.compiere.model.I_C_BankStatementLine;
 import org.compiere.model.I_C_Payment;
+import org.compiere.util.Trace;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Nested;
@@ -50,6 +51,10 @@ import de.metas.banking.BankStatementId;
 import de.metas.banking.BankStatementLineId;
 import de.metas.banking.BankStatementLineReferenceList;
 import de.metas.banking.api.BankAccountId;
+import de.metas.banking.model.I_C_BankStatementLine_Ref;
+import de.metas.banking.payment.BankStatementLineMultiPaymentLinkRequest;
+import de.metas.banking.payment.BankStatementLineMultiPaymentLinkRequest.PaymentToLink;
+import de.metas.banking.payment.BankStatementLineMultiPaymentLinkResult;
 import de.metas.banking.payment.PaymentLinkResult;
 import de.metas.banking.payment.impl.BankStatementPaymentBL;
 import de.metas.banking.service.BankStatementCreateRequest;
@@ -60,6 +65,7 @@ import de.metas.banking.service.IBankStatementListener;
 import de.metas.banking.service.IBankStatementListenerService;
 import de.metas.bpartner.BPartnerId;
 import de.metas.business.BusinessTestHelper;
+import de.metas.currency.Amount;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyRepository;
 import de.metas.currency.impl.PlainCurrencyDAO;
@@ -73,6 +79,7 @@ import de.metas.payment.TenderType;
 import de.metas.payment.api.IPaymentBL;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
+import lombok.Builder;
 import lombok.NonNull;
 
 class BankStatementPaymentBLTest
@@ -93,6 +100,17 @@ class BankStatementPaymentBLTest
 	void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
+
+		Services.registerService(IBankStatementBL.class, new BankStatementBL()
+		{
+			public void unpost(I_C_BankStatement bankStatement)
+			{
+				System.out.println("In JUnit test BankStatementBL.unpost() does nothing"
+						+ "\n\t bank statement: " + bankStatement
+						+ "\n\t called via " + Trace.toOneLineStackTraceString());
+			}
+		});
+
 		bankStatementListenerService = Services.get(IBankStatementListenerService.class);
 		bankStatementPaymentBL = new BankStatementPaymentBL(new MoneyService(new CurrencyRepository()));
 
@@ -137,10 +155,12 @@ class BankStatementPaymentBLTest
 		return bankStatementDAO.getById(bankStatementId);
 	}
 
+	@Builder(builderMethodName = "bankStatementLine", builderClassName = "BankStatementLineBuilder")
 	private I_C_BankStatementLine createBankStatementLine(
 			final BankStatementId bankStatementId,
 			final BPartnerId bpartnerId,
-			final Money stmtAmt)
+			final Money stmtAmt,
+			final boolean processed)
 	{
 		final BankStatementLineId bankStatementLineId = bankStatementDAO.createBankStatementLine(BankStatementLineCreateRequest.builder()
 				.bankStatementId(bankStatementId)
@@ -153,7 +173,15 @@ class BankStatementPaymentBLTest
 				.trxAmt(stmtAmt)
 				.build());
 
-		return bankStatementDAO.getLineById(bankStatementLineId);
+		final I_C_BankStatementLine bankStatementLine = bankStatementDAO.getLineById(bankStatementLineId);
+
+		if (processed)
+		{
+			bankStatementLine.setProcessed(true);
+			bankStatementDAO.save(bankStatementLine);
+		}
+
+		return bankStatementLine;
 	}
 
 	@Nested
@@ -165,10 +193,11 @@ class BankStatementPaymentBLTest
 			final BPartnerId customerId = createCustomer();
 
 			final I_C_BankStatement bankStatement = createBankStatement(euroOrgBankAccountId);
-			final I_C_BankStatementLine bankStatementLine = createBankStatementLine(
-					BankStatementId.ofRepoId(bankStatement.getC_BankStatement_ID()),
-					customerId,
-					Money.of(-123, euroCurrencyId));
+			final I_C_BankStatementLine bankStatementLine = bankStatementLine()
+					.bankStatementId(BankStatementId.ofRepoId(bankStatement.getC_BankStatement_ID()))
+					.bpartnerId(customerId)
+					.stmtAmt(Money.of(-123, euroCurrencyId))
+					.build();
 
 			final I_C_Payment payment = paymentBL.newOutboundPaymentBuilder()
 					.adOrgId(OrgId.ANY)
@@ -271,10 +300,11 @@ class BankStatementPaymentBLTest
 
 				final BPartnerId customerId = createCustomer();
 
-				final I_C_BankStatementLine bsl = createBankStatementLine(
-						BankStatementId.ofRepoId(bankStatement.getC_BankStatement_ID()),
-						customerId,
-						Money.of(-123, euroCurrencyId));
+				final I_C_BankStatementLine bsl = bankStatementLine()
+						.bankStatementId(BankStatementId.ofRepoId(bankStatement.getC_BankStatement_ID()))
+						.bpartnerId(customerId)
+						.stmtAmt(Money.of(-123, euroCurrencyId))
+						.build();
 
 				final I_C_Payment payment = paymentBL.newOutboundPaymentBuilder()
 						.adOrgId(OrgId.ANY)
@@ -312,10 +342,11 @@ class BankStatementPaymentBLTest
 
 				final BPartnerId customerId = createCustomer();
 
-				final I_C_BankStatementLine bsl = createBankStatementLine(
-						BankStatementId.ofRepoId(bankStatement.getC_BankStatement_ID()),
-						customerId,
-						Money.of(-123, euroCurrencyId));
+				final I_C_BankStatementLine bsl = bankStatementLine()
+						.bankStatementId(BankStatementId.ofRepoId(bankStatement.getC_BankStatement_ID()))
+						.bpartnerId(customerId)
+						.stmtAmt(Money.of(-123, euroCurrencyId))
+						.build();
 
 				//
 				// create 2 identical payments
@@ -375,10 +406,11 @@ class BankStatementPaymentBLTest
 
 				final BPartnerId customerId = createCustomer();
 
-				final I_C_BankStatementLine bsl = createBankStatementLine(
-						BankStatementId.ofRepoId(bankStatement.getC_BankStatement_ID()),
-						customerId,
-						Money.of(123, euroCurrencyId));
+				final I_C_BankStatementLine bsl = bankStatementLine()
+						.bankStatementId(BankStatementId.ofRepoId(bankStatement.getC_BankStatement_ID()))
+						.bpartnerId(customerId)
+						.stmtAmt(Money.of(123, euroCurrencyId))
+						.build();
 
 				//
 				// call tested method
@@ -403,10 +435,11 @@ class BankStatementPaymentBLTest
 
 				final BPartnerId customerId = createCustomer();
 
-				final I_C_BankStatementLine bsl = createBankStatementLine(
-						BankStatementId.ofRepoId(bankStatement.getC_BankStatement_ID()),
-						customerId,
-						Money.of(-123, euroCurrencyId));
+				final I_C_BankStatementLine bsl = bankStatementLine()
+						.bankStatementId(BankStatementId.ofRepoId(bankStatement.getC_BankStatement_ID()))
+						.bpartnerId(customerId)
+						.stmtAmt(Money.of(-123, euroCurrencyId))
+						.build();
 
 				//
 				// call tested method
@@ -421,6 +454,70 @@ class BankStatementPaymentBLTest
 				assertFalse(bsl.isMultiplePayment());
 				assertFalse(bsl.isMultiplePaymentOrInvoice());
 			}
+		}
+	}
+
+	@Nested
+	public class linkMultiPayments
+	{
+		@Nested
+		public class onePayment
+		{
+			@Test
+			public void bankStatementLine_NotProcessed()
+			{
+				final boolean bankStatementLineProcessed = false;
+				test(bankStatementLineProcessed);
+			}
+
+			@Test
+			public void bankStatementLine_Processed()
+			{
+				final boolean bankStatementLineProcessed = true;
+				test(bankStatementLineProcessed);
+			}
+
+			private void test(final boolean bankStatementLineProcessed)
+			{
+				final I_C_BankStatement bankStatement = createBankStatement(euroOrgBankAccountId);
+				final BPartnerId customerId = createCustomer();
+				final I_C_BankStatementLine bsl = bankStatementLine()
+						.bankStatementId(BankStatementId.ofRepoId(bankStatement.getC_BankStatement_ID()))
+						.bpartnerId(customerId)
+						.stmtAmt(Money.of(-123, euroCurrencyId))
+						.processed(bankStatementLineProcessed)
+						.build();
+
+				final I_C_Payment payment = paymentBL.newOutboundPaymentBuilder()
+						.adOrgId(OrgId.ANY)
+						.bpartnerId(customerId)
+						.orgBankAccountId(euroOrgBankAccountId)
+						.currencyId(euroCurrencyId)
+						.payAmt(new BigDecimal("123"))
+						.dateAcct(statementDate)
+						.dateTrx(statementDate)
+						.description("test")
+						.tenderType(TenderType.DirectDeposit)
+						.createAndProcess();
+				final PaymentId paymentId = PaymentId.ofRepoId(payment.getC_Payment_ID());
+
+				final BankStatementLineMultiPaymentLinkResult result = bankStatementPaymentBL.linkMultiPayments(BankStatementLineMultiPaymentLinkRequest.builder()
+						.bankStatementLineId(BankStatementLineId.ofRepoId(bsl.getC_BankStatementLine_ID()))
+						.paymentToLink(PaymentToLink.builder()
+								.paymentId(paymentId)
+								.statementLineAmt(Amount.of(-123, CurrencyCode.EUR))
+								.build())
+						.build());
+
+				assertThat(result.getPayments()).hasSize(1);
+				final PaymentLinkResult paymentLinkResult = result.getPayments().get(0);
+				assertThat(paymentLinkResult.getPaymentId()).isEqualTo(paymentId);
+				assertThat(paymentLinkResult.getStatementTrxAmt()).isEqualTo(Money.of(-123, euroCurrencyId));
+
+				final I_C_BankStatementLine_Ref lineRef = InterfaceWrapperHelper.load(paymentLinkResult.getBankStatementLineRefId(), I_C_BankStatementLine_Ref.class);
+				assertThat(lineRef.isProcessed()).isEqualTo(bankStatementLineProcessed);
+			}
+
 		}
 	}
 }

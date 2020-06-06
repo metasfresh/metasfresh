@@ -703,9 +703,11 @@ public class ADWindowDAO implements IADWindowDAO
 		final AdTabId targetTabId = getTabId(targetElementGroup);
 		targetElement.setAD_Tab_ID(targetTabId.getRepoId());
 
-		final AdFieldId targetFieldId = getTargetFieldId(sourceElement, targetTabId)
-				.orElseThrow(() -> new AdempiereException("No field found for " + sourceElement + " and " + targetTabId));
-		targetElement.setAD_Field_ID(targetFieldId.getRepoId());
+		final Optional<AdFieldId> targetFieldId = getTargetFieldId(sourceElement, targetTabId);
+		if (targetFieldId.isPresent())
+		{
+			targetElement.setAD_Field_ID(targetFieldId.get().getRepoId());
+		}
 
 		//
 		// Labels

@@ -16,12 +16,12 @@
 	<property name="com.jaspersoft.studio.unit.rightMargin" value="pixel"/>
 	<property name="com.jaspersoft.studio.unit.columnWidth" value="pixel"/>
 	<property name="com.jaspersoft.studio.unit.columnSpacing" value="pixel"/>
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="fresh\it.xml"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="de\metas\reports\DataAdapter.xml"/>
 	<property name="com.jaspersoft.studio.report.description" value=""/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
 	<import value="net.sf.jasperreports.engine.data.*"/>
-	<style name="StyleBOLD" mode="Opaque" fill="Solid" pattern="" fontName="Arial" fontSize="9" isBold="false">
+	<style name="StyleBOLD" mode="Opaque" forecolor="#F4834F" fill="Solid" pattern="" fontName="Arial" fontSize="9" isBold="false">
 		<conditionalStyle>
 			<conditionExpression><![CDATA[Boolean.valueOf($F{hasaltprice}.intValue() > 0 && $F{pricestd}.compareTo($F{altpricestd}) != 0)]]></conditionExpression>
 			<style fontName="Arial" fontSize="9" isBold="true"/>
@@ -158,9 +158,9 @@
 	<group name="BpHeader" isStartNewPage="true" isResetPageNumber="true" footerPosition="CollateAtBottom">
 		<groupExpression><![CDATA[$F{bp_value}]]></groupExpression>
 		<groupHeader>
-			<band height="266">
+			<band height="240">
 				<subreport isUsingCache="true">
-					<reportElement key="subreport-6" x="40" y="138" width="255" height="127" uuid="bea083b6-7b31-4a4f-b59f-b8ad03573da5">
+					<reportElement key="subreport-6" x="0" y="136" width="270" height="96" uuid="bea083b6-7b31-4a4f-b59f-b8ad03573da5">
 						<printWhenExpression><![CDATA[new Boolean ($F{c_bpartner_location_id} != null)]]></printWhenExpression>
 					</reportElement>
 					<subreportParameter name="bp_loc_id">
@@ -170,10 +170,10 @@
 						<subreportParameterExpression><![CDATA[$F{ad_org_id}]]></subreportParameterExpression>
 					</subreportParameter>
 					<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
-					<subreportExpression><![CDATA["de/metas/docs/generics/report_bpblock_short.jasper"]]></subreportExpression>
+					<subreportExpression><![CDATA["de/metas/docs/generics/report_bpblock_shorter_left_margin.jasper"]]></subreportExpression>
 				</subreport>
 				<subreport isUsingCache="true">
-					<reportElement key="subreport-8" x="340" y="124" width="220" height="127" uuid="38f52446-b0c0-4196-9f17-6910b23e03b1"/>
+					<reportElement key="subreport-8" x="395" y="136" width="200" height="100" uuid="38f52446-b0c0-4196-9f17-6910b23e03b1"/>
 					<subreportParameter name="org_id">
 						<subreportParameterExpression><![CDATA[$F{ad_org_id}]]></subreportParameterExpression>
 					</subreportParameter>
@@ -181,10 +181,10 @@
 						<subreportParameterExpression><![CDATA["Y"]]></subreportParameterExpression>
 					</subreportParameter>
 					<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
-					<subreportExpression><![CDATA["de/metas/docs/generics/report_orgblock_right.jasper"]]></subreportExpression>
+					<subreportExpression><![CDATA["de/metas/docs/generics/report_orgblock.jasper"]]></subreportExpression>
 				</subreport>
 				<subreport isUsingCache="true">
-					<reportElement key="subreport-4" x="0" y="7" width="595" height="85" uuid="6f9a7ef2-a0c3-4923-836d-a79c0f84ba2c"/>
+					<reportElement key="subreport-4" x="0" y="26" width="595" height="85" uuid="6f9a7ef2-a0c3-4923-836d-a79c0f84ba2c"/>
 					<subreportParameter name="org_id">
 						<subreportParameterExpression><![CDATA[$F{ad_org_id}]]></subreportParameterExpression>
 					</subreportParameter>
@@ -494,7 +494,7 @@
 				<textElement textAlignment="Right" markup="html">
 					<font fontName="Arial" size="9" isBold="false"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$V{PAGE_NUMBER} ]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$V{PAGE_NUMBER}]]></textFieldExpression>
 			</textField>
 		</band>
 	</pageFooter>

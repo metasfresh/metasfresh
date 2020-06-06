@@ -1,14 +1,8 @@
-package de.metas.ui.web.view;
-
-import java.util.stream.Stream;
-
-import de.metas.ui.web.window.datatypes.WindowId;
-
 /*
  * #%L
  * metasfresh-webui-api
  * %%
- * Copyright (C) 2017 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -26,29 +20,46 @@ import de.metas.ui.web.window.datatypes.WindowId;
  * #L%
  */
 
+package de.metas.ui.web.view;
+
+import de.metas.ui.web.window.datatypes.WindowId;
+
+import javax.annotation.Nullable;
+import java.util.stream.Stream;
+
 /**
  * Implementations of this interface are responsible of storing {@link IView} references for a particular window ID identified by {@link #getWindowId()}.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 public interface IViewsIndexStorage
 {
-	/** @return the window ID for whom this storage is storing the {@link IView} references. This method will be called by API on registration time. */
+	/**
+	 * @return the window ID for whom this storage is storing the {@link IView} references. This method will be called by API on registration time.
+	 */
 	WindowId getWindowId();
 
-	/** Don't call it directly. Will be called by API. */
+	/**
+	 * Don't call it directly. Will be called by API.
+	 */
 	default void setViewsRepository(final IViewsRepository viewsRepository)
 	{
 	}
 
-	/** Adds given view to the index. If the view already exists, it will be overridden. */
+	/**
+	 * Adds given view to the index. If the view already exists, it will be overridden.
+	 */
 	void put(IView view);
 
-	/** @return the {@link IView} identified by <code>viewId</code> or <code>null</code> if not found. */
+	/**
+	 * @return the {@link IView} identified by <code>viewId</code> or <code>null</code> if not found.
+	 */
+	@Nullable
 	IView getByIdOrNull(ViewId viewId);
 
-	/** Closes and removes the view identified by given <code>viewId</code>. If the view does not exist, the method will do nothing, i.e. not failing. */
+	/**
+	 * Closes and removes the view identified by given <code>viewId</code>. If the view does not exist, the method will do nothing, i.e. not failing.
+	 */
 	void closeById(ViewId viewId, ViewCloseAction closeAction);
 
 	Stream<IView> streamAllViews();
