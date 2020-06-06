@@ -66,7 +66,7 @@ public class C_BankStatementLine
 	{
 		final BigDecimal bankFeeAmt = BankStatementLineAmounts.of(bsl)
 				.addDifferenceToBankFeeAmt()
-				.getTrxAmt();
+				.getBankFeeAmt();
 		bsl.setBankFeeAmt(bankFeeAmt);
 	}
 

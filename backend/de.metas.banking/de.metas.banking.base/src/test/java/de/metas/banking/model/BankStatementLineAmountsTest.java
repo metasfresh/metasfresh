@@ -92,7 +92,7 @@ public class BankStatementLineAmountsTest
 		}
 
 		@Test
-		public void someDifference()
+		public void stmt100_trx90()
 		{
 			final BankStatementLineAmounts amounts = BankStatementLineAmounts.builder()
 					.stmtAmt(new BigDecimal("100"))
@@ -100,11 +100,24 @@ public class BankStatementLineAmountsTest
 					.build();
 
 			assertThat(amounts.addDifferenceToTrxAmt())
-					.isEqualTo(BankStatementLineAmounts.builder()
-							.stmtAmt(new BigDecimal("100"))
-							.trxAmt(new BigDecimal("100"))
-							.build());
+					.isEqualTo(amounts.withTrxAmt(new BigDecimal("100")));
 		}
+
+		@Test
+		public void stmt100_trx90_fee10_charge9_interest2()
+		{
+			final BankStatementLineAmounts amounts = BankStatementLineAmounts.builder()
+					.stmtAmt(new BigDecimal("100"))
+					.trxAmt(new BigDecimal("9999999999"))
+					.bankFeeAmt(new BigDecimal("10"))
+					.chargeAmt(new BigDecimal("9"))
+					.interestAmt(new BigDecimal("2"))
+					.build();
+
+			assertThat(amounts.addDifferenceToTrxAmt())
+					.isEqualTo(amounts.withTrxAmt(new BigDecimal("99")));
+		}
+
 	}
 
 	@Nested
@@ -122,7 +135,7 @@ public class BankStatementLineAmountsTest
 		}
 
 		@Test
-		public void someDifference()
+		public void stmt90_trx100()
 		{
 			final BankStatementLineAmounts amounts = BankStatementLineAmounts.builder()
 					.stmtAmt(new BigDecimal("90"))
@@ -130,11 +143,7 @@ public class BankStatementLineAmountsTest
 					.build();
 
 			assertThat(amounts.addDifferenceToBankFeeAmt())
-					.isEqualTo(BankStatementLineAmounts.builder()
-							.stmtAmt(new BigDecimal("90"))
-							.trxAmt(new BigDecimal("100"))
-							.bankFeeAmt(new BigDecimal("10"))
-							.build());
+					.isEqualTo(amounts.withBankFeeAmt(new BigDecimal("10")));
 		}
 	}
 }

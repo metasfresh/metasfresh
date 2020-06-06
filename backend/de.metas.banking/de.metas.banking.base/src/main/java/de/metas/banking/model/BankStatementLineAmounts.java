@@ -73,7 +73,6 @@ public class BankStatementLineAmounts
 		final BigDecimal stmtAmtComputed = this.trxAmt
 				.subtract(this.bankFeeAmt)
 				.add(this.chargeAmt)
-				.add(this.chargeAmt)
 				.add(this.interestAmt);
 		this.differenceAmt = this.stmtAmt.subtract(stmtAmtComputed);
 	}
@@ -105,6 +104,13 @@ public class BankStatementLineAmounts
 				.build();
 	}
 
+	public BankStatementLineAmounts withTrxAmt(@NonNull final BigDecimal trxAmt)
+	{
+		return !this.trxAmt.equals(trxAmt)
+				? toBuilder().trxAmt(trxAmt).build()
+				: this;
+	}
+
 	public BankStatementLineAmounts addDifferenceToBankFeeAmt()
 	{
 		if (differenceAmt.signum() == 0)
@@ -115,5 +121,12 @@ public class BankStatementLineAmounts
 		return toBuilder()
 				.bankFeeAmt(this.bankFeeAmt.subtract(differenceAmt))
 				.build();
+	}
+
+	public BankStatementLineAmounts withBankFeeAmt(@NonNull final BigDecimal bankFeeAmt)
+	{
+		return !this.bankFeeAmt.equals(bankFeeAmt)
+				? toBuilder().bankFeeAmt(bankFeeAmt).build()
+				: this;
 	}
 }
