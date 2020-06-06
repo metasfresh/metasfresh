@@ -29,6 +29,8 @@ import de.metas.acct.api.IProductAcctDAO;
 import de.metas.acct.api.ProductAcctType;
 import de.metas.acct.tax.ITaxAcctBL;
 import de.metas.acct.tax.TaxAcctType;
+import de.metas.banking.api.BPBankAccountAcct;
+import de.metas.banking.api.BPBankAccountAcctRepository;
 import de.metas.banking.api.BankAccountId;
 import de.metas.banking.api.IBPBankAccountDAO;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
@@ -101,6 +103,7 @@ public class AcctDocRequiredServicesFacade
 	private final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
 	private final ICurrencyBL currencyConversionBL = Services.get(ICurrencyBL.class);
 	private final IBPBankAccountDAO bpBankAccountDAO = Services.get(IBPBankAccountDAO.class);
+	private final BPBankAccountAcctRepository bankAccountAcctRepo;
 
 	//
 	// Needed for DocLine:
@@ -111,8 +114,11 @@ public class AcctDocRequiredServicesFacade
 
 	private final ICostingService costingService;
 
-	public AcctDocRequiredServicesFacade(@NonNull final ICostingService costingService)
+	public AcctDocRequiredServicesFacade(
+			@NonNull final BPBankAccountAcctRepository bankAccountAcctRepo,
+			@NonNull final ICostingService costingService)
 	{
+		this.bankAccountAcctRepo = bankAccountAcctRepo;
 		this.costingService = costingService;
 	}
 
@@ -189,6 +195,11 @@ public class AcctDocRequiredServicesFacade
 	public I_C_BP_BankAccount getBPBankAccountById(final BankAccountId bpBankAccountId)
 	{
 		return bpBankAccountDAO.getById(bpBankAccountId);
+	}
+
+	public BPBankAccountAcct getBPBankAccountAcct(final BankAccountId bankAccountId, final AcctSchemaId acctSchemaId)
+	{
+		return bankAccountAcctRepo.getByBankAccountIdAndAcctSchemaId(bankAccountId, acctSchemaId);
 	}
 
 	public void postImmediateNoFail(

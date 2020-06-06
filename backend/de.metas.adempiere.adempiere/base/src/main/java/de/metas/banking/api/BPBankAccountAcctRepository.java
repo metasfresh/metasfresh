@@ -9,6 +9,7 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_AcctSchema_Default;
 import org.compiere.util.DB;
+import org.springframework.stereotype.Repository;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
@@ -41,6 +42,7 @@ import lombok.ToString;
  * #L%
  */
 
+@Repository
 public class BPBankAccountAcctRepository
 {
 	private static final String TABLENAME_C_BP_BankAccount_Acct = "C_BP_BankAccount_Acct";

@@ -42,7 +42,6 @@ import org.adempiere.service.ClientId;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.logging.LoggingHelper;
 import org.adempiere.warehouse.WarehouseId;
-import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BP_BankAccount;
 import org.compiere.model.MAccount;
 import org.compiere.model.MNote;
@@ -66,7 +65,6 @@ import de.metas.acct.doc.AcctDocContext;
 import de.metas.acct.doc.AcctDocRequiredServicesFacade;
 import de.metas.acct.doc.PostingException;
 import de.metas.banking.api.BPBankAccountAcct;
-import de.metas.banking.api.BPBankAccountAcctRepository;
 import de.metas.banking.api.BankAccountId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.currency.CurrencyConversionContext;
@@ -1301,8 +1299,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 					.addDetailMessage("Bank Account is not set");
 		}
 
-		final BPBankAccountAcctRepository bankAccountAcctRepo = SpringContextHolder.instance.getBean(BPBankAccountAcctRepository.class);
-		return bankAccountAcctRepo.getByBankAccountIdAndAcctSchemaId(bankAccountId, acctSchemaId);
+		return services.getBPBankAccountAcct(bankAccountId, acctSchemaId);
 	}
 
 	/**
