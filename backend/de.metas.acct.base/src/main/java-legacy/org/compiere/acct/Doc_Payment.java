@@ -28,7 +28,7 @@ import org.compiere.model.MCharge;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.PostingType;
 import de.metas.acct.doc.AcctDocContext;
-import de.metas.banking.api.BankAccountId;
+import de.metas.banking.BankAccountId;
 import de.metas.payment.TenderType;
 import de.metas.util.Services;
 

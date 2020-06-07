@@ -2,6 +2,7 @@ package de.metas.banking.api;
 
 import de.metas.acct.api.AccountId;
 import de.metas.acct.api.AcctSchemaId;
+import de.metas.banking.BankAccountId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;

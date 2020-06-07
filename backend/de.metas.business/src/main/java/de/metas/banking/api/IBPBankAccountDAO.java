@@ -32,6 +32,7 @@ import org.compiere.model.I_C_BP_BankAccount;
 
 import com.google.common.collect.ImmutableListMultimap;
 
+import de.metas.banking.BankAccountId;
 import de.metas.bpartner.BPartnerBankAccountId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.money.CurrencyId;

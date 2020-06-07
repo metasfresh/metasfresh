@@ -16,6 +16,7 @@ import com.google.common.collect.Maps;
 
 import de.metas.acct.api.AccountId;
 import de.metas.acct.api.AcctSchemaId;
+import de.metas.banking.BankAccountId;
 import de.metas.cache.CCache;
 import lombok.NonNull;
 import lombok.ToString;

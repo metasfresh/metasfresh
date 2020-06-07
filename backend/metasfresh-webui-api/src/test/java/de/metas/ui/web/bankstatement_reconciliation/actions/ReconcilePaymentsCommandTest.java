@@ -32,11 +32,11 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.attachments.AttachmentEntryService;
+import de.metas.banking.BankAccountId;
 import de.metas.banking.BankStatementId;
 import de.metas.banking.BankStatementLineId;
 import de.metas.banking.BankStatementLineReference;
 import de.metas.banking.PaySelectionId;
-import de.metas.banking.api.BankAccountId;
 import de.metas.banking.model.validator.PaySelectionBankStatementListener;
 import de.metas.banking.payment.IBankStatementPaymentBL;
 import de.metas.banking.payment.IPaySelectionBL;

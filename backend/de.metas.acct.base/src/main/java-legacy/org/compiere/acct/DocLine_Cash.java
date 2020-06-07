@@ -22,7 +22,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_CashLine;
 import org.compiere.model.I_C_Invoice;
 
-import de.metas.banking.api.BankAccountId;
+import de.metas.banking.BankAccountId;
 import de.metas.bpartner.BPartnerId;
 
 /**

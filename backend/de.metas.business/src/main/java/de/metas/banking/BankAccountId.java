@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.banking.api;
+package de.metas.banking;
 
 import javax.annotation.Nullable;
 
