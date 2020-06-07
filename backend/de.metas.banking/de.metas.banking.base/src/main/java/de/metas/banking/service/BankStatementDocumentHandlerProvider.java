@@ -5,6 +5,7 @@ import org.springframework.stereotype.Component;
 
 import de.metas.document.engine.DocumentHandler;
 import de.metas.document.engine.DocumentHandlerProvider;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -34,8 +35,7 @@ public class BankStatementDocumentHandlerProvider implements DocumentHandlerProv
 	private final BankStatementDocumentHandlerRequiredServicesFacade services;
 
 	public BankStatementDocumentHandlerProvider(
-			final BankStatementDocumentHandlerRequiredServicesFacade services,
-			final IBankStatementBL bankStatementBL)
+			@NonNull final BankStatementDocumentHandlerRequiredServicesFacade services)
 	{
 		this.services = services;
 	}
