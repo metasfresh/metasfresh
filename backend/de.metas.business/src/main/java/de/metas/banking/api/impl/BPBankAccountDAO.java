@@ -18,6 +18,7 @@ import org.compiere.model.I_C_BP_BankAccount;
 import com.google.common.collect.ImmutableListMultimap;
 
 import de.metas.banking.BankAccountId;
+import de.metas.banking.BankId;
 import de.metas.banking.api.IBPBankAccountDAO;
 import de.metas.bpartner.BPartnerBankAccountId;
 import de.metas.bpartner.BPartnerId;
@@ -134,4 +135,12 @@ public class BPBankAccountDAO implements IBPBankAccountDAO
 				.create()
 				.update(columnUpdater);
 	}
+
+	@Override
+	public BankId getBankId(@NonNull final BankAccountId bankAccountId)
+	{
+		final I_C_BP_BankAccount bankAccount = getById(bankAccountId);
+		return BankId.ofRepoId(bankAccount.getC_Bank_ID());
+	}
+
 }

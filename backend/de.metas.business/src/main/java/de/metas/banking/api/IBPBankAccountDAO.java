@@ -33,6 +33,7 @@ import org.compiere.model.I_C_BP_BankAccount;
 import com.google.common.collect.ImmutableListMultimap;
 
 import de.metas.banking.BankAccountId;
+import de.metas.banking.BankId;
 import de.metas.bpartner.BPartnerBankAccountId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.money.CurrencyId;
@@ -60,11 +61,17 @@ public interface IBPBankAccountDAO extends ISingletonService
 	/**
 	 * Deactivate all {@link I_C_BP_BankAccount} records for the given bPartnerId, besides
 	 * <li>
-	 *     <ul>the ones whose id is in the given {@code exceptIds}</ul>
-	 *     <ul>the ones that have no IBAN; why: this is used for persisting {@code BPartnerComposite}s which never have no-iban-backaccounts; so we need to prevent them from being deactivated.</ul>
+	 * <ul>
+	 * the ones whose id is in the given {@code exceptIds}
+	 * </ul>
+	 * <ul>
+	 * the ones that have no IBAN; why: this is used for persisting {@code BPartnerComposite}s which never have no-iban-backaccounts; so we need to prevent them from being deactivated.
+	 * </ul>
 	 * </li>
 	 */
 	void deactivateIBANAccountsByBPartnerExcept(BPartnerId bpartnerId, Collection<BPartnerBankAccountId> exceptIds);
 
 	ImmutableListMultimap<BPartnerId, I_C_BP_BankAccount> getAllByBPartnerIds(Collection<BPartnerId> bpartnerIds);
+
+	BankId getBankId(@NonNull BankAccountId bankAccountId);
 }

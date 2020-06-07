@@ -22,35 +22,66 @@
 
 package de.metas.banking.api;
 
-import de.metas.banking.BankId;
-import de.metas.bpartner.BPartnerBankAccountId;
-import de.metas.cache.CCache;
-import de.metas.util.Services;
-import lombok.NonNull;
+import java.util.Optional;
+
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_BP_BankAccount;
 import org.compiere.model.I_C_Bank;
 import org.springframework.stereotype.Repository;
 
-import javax.annotation.Nullable;
-import java.util.Optional;
+import de.metas.banking.Bank;
+import de.metas.banking.BankId;
+import de.metas.cache.CCache;
+import de.metas.util.Services;
+import de.metas.util.StringUtils;
+import lombok.NonNull;
 
 @Repository
 public class BankRepository
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-	private final CCache<String, Optional<BankId>> bankIdsBySwiftCode = CCache.<String, Optional<BankId>>builder()
+	private final CCache<BankId, Bank> banksById = CCache.<BankId, Bank> builder()
 			.tableName(I_C_Bank.Table_Name)
 			.build();
 
-	public Optional<BankId> getBankIdBySwiftCode(final String swiftCode)
+	private final CCache<String, Optional<BankId>> bankIdsBySwiftCode = CCache.<String, Optional<BankId>> builder()
+			.tableName(I_C_Bank.Table_Name)
+			.build();
+
+	public Bank getById(final BankId bankId)
 	{
-		return bankIdsBySwiftCode.getOrLoad(swiftCode, this::findBankIdBySwiftCode);
+		return banksById.getOrLoad(bankId, this::retrieveBankById);
 	}
 
-	public Optional<BankId> findBankIdBySwiftCode(final String swiftCode)
+	private Bank retrieveBankById(@NonNull final BankId bankId)
+	{
+		final I_C_Bank record = InterfaceWrapperHelper.load(bankId, I_C_Bank.class);
+		final Bank bank = toBank(record);
+
+		if (bank.getSwiftCode() != null)
+		{
+			bankIdsBySwiftCode.put(bank.getSwiftCode(), Optional.of(bank.getBankId()));
+		}
+
+		return bank;
+	}
+
+	private static Bank toBank(final I_C_Bank record)
+	{
+		return Bank.builder()
+				.bankId(BankId.ofRepoId(record.getC_Bank_ID()))
+				.swiftCode(StringUtils.trimBlankToNull(record.getSwiftCode()))
+				.cashBank(record.isCashBank())
+				.build();
+	}
+
+	public Optional<BankId> getBankIdBySwiftCode(final String swiftCode)
+	{
+		return bankIdsBySwiftCode.getOrLoad(swiftCode, this::retrieveBankIdBySwiftCode);
+	}
+
+	private Optional<BankId> retrieveBankIdBySwiftCode(final String swiftCode)
 	{
 		final int bankRepoId = queryBL.createQueryBuilderOutOfTrx(I_C_Bank.class)
 				.addEqualsFilter(I_C_Bank.COLUMNNAME_SwiftCode, swiftCode)
@@ -62,21 +93,8 @@ public class BankRepository
 		return BankId.optionalOfRepoId(bankRepoId);
 	}
 
-	@Nullable
-	public BankId getBankId(final @NonNull BPartnerBankAccountId bPartnerBankAccountId)
-	{
-		return queryBL.createQueryBuilder(I_C_BP_BankAccount.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_BP_BankAccount.COLUMNNAME_C_BP_BankAccount_ID, bPartnerBankAccountId.getRepoId())
-				.andCollect(I_C_BP_BankAccount.COLUMNNAME_C_Bank_ID, I_C_Bank.class)
-				.orderBy(I_C_Bank.COLUMNNAME_C_Bank_ID)
-				.create()
-				.firstId(BankId::ofRepoIdOrNull);
-	}
-
 	public boolean isCashBank(@NonNull final BankId bankId)
 	{
-		final I_C_Bank bank = InterfaceWrapperHelper.load(bankId, I_C_Bank.class);
-		return bank.isCashBank();
+		return getById(bankId).isCashBank();
 	}
 }

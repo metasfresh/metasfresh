@@ -35,7 +35,7 @@ import org.compiere.model.I_C_AllocationHdr;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Payment;
 
-import de.metas.bpartner.BPartnerBankAccountId;
+import de.metas.banking.BankAccountId;
 import de.metas.payment.PaymentId;
 import de.metas.payment.TenderType;
 import de.metas.util.ISingletonService;
@@ -135,5 +135,5 @@ public interface IPaymentBL extends ISingletonService
 	void markNotReconciled(@NonNull Collection<PaymentId> paymentIds);
 
 	@NonNull
-	TenderType getTenderType(@NonNull BPartnerBankAccountId bPartnerBankAccountId);
+	TenderType getTenderType(@NonNull BankAccountId bankAccountId);
 }

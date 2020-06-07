@@ -33,9 +33,7 @@ import lombok.NonNull;
 import lombok.Value;
 
 /**
- * Note for the user: This class has a misleading name. We still haven't decided if/how to use it.
- *
- * My recommendation is to use instead {@link de.metas.bpartner.BPartnerBankAccountId} and it clearly states its purpose.
+ * Our own (organization) bank account
  */
 @Value
 public class BankAccountId implements RepoIdAware
@@ -66,5 +64,4 @@ public class BankAccountId implements RepoIdAware
 	{
 		return repoId > 0 ? new BankAccountId(repoId) : null;
 	}
-
 }

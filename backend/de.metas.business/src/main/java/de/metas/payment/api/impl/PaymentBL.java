@@ -56,12 +56,11 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.allocation.api.IAllocationBL;
-import de.metas.banking.BankId;
+import de.metas.banking.BankAccountId;
 import de.metas.banking.BankStatementId;
 import de.metas.banking.BankStatementLineId;
 import de.metas.banking.BankStatementLineRefId;
-import de.metas.banking.api.BankRepository;
-import de.metas.bpartner.BPartnerBankAccountId;
+import de.metas.banking.api.BankAccountService;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.ICurrencyBL;
@@ -685,20 +684,16 @@ public class PaymentBL implements IPaymentBL
 	}
 
 	@Override
-	public @NonNull TenderType getTenderType(final @NonNull BPartnerBankAccountId bPartnerBankAccountId)
+	public @NonNull TenderType getTenderType(final @NonNull BankAccountId bankAccountId)
 	{
-		final BankRepository bankRepository = SpringContextHolder.instance.getBean(BankRepository.class);
-		final BankId bankId = bankRepository.getBankId(bPartnerBankAccountId);
-		if (bankId == null)
-		{
-			return TenderType.Check;
-		}
-
-		if (bankRepository.isCashBank(bankId))
+		final BankAccountService bankAccountService = SpringContextHolder.instance.getBean(BankAccountService.class);
+		if (bankAccountService.isCashBank(bankAccountId))
 		{
 			return TenderType.Cash;
 		}
-
-		return TenderType.Check;
+		else
+		{
+			return TenderType.Check;
+		}
 	}
 }
