@@ -134,7 +134,7 @@ public class ReconcilePaymentsCommandTest
 		bankStatementListenerService.addListener(new PaySelectionBankStatementListener(paySelectionBL));
 
 		final BankAccountService bankAccountService = BankAccountService.newInstanceForUnitTesting();
-		Services.registerService(IBankStatementBL.class, new BankStatementBL(bankAccountService)
+		final BankStatementBL bankStatementBL = new BankStatementBL(bankAccountService)
 		{
 			public void unpost(I_C_BankStatement bankStatement)
 			{
@@ -142,12 +142,13 @@ public class ReconcilePaymentsCommandTest
 						+ "\n\t bank statement: " + bankStatement
 						+ "\n\t called via " + Trace.toOneLineStackTraceString());
 			}
-		});
+		};
+		Services.registerService(IBankStatementBL.class, bankStatementBL);
 
 		bankStatmentPaymentBL = new BankStatementPaymentBL(moneyService);
 		SpringContextHolder.registerJUnitBean(IBankStatementPaymentBL.class, bankStatmentPaymentBL);
 
-		this.rowsRepo = new BankStatementLineAndPaymentsToReconcileRepository(currencyRepository);
+		this.rowsRepo = new BankStatementLineAndPaymentsToReconcileRepository(bankStatementBL, currencyRepository);
 		rowsRepo.setBpartnerLookup(new MockedBPartnerLookupDataSource());
 
 		createMasterdata();
