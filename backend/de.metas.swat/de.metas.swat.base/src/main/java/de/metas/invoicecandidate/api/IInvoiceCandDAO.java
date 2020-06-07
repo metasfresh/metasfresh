@@ -211,6 +211,8 @@ public interface IInvoiceCandDAO extends ISingletonService
 	 */
 	void updatePOReference(String poReference, PInstanceId selectionId);
 
+	void updateApprovalForInvoicingToTrue(@NonNull PInstanceId selectionId);
+
 	/**
 	 * Updates the {@link I_C_Invoice_Candidate#COLUMN_C_PaymentTerm_ID} of those candidates that don't have a payment term ID.
 	 * The ID those ICs are updated with is taken from the selected IC with the smallest {@code C_Invoice_Candidate_ID} that has a {@code C_PaymentTerm_ID}.
