@@ -51,7 +51,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IPair;
 import org.compiere.Adempiere;
-import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BP_BankAccount;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Location;
@@ -184,7 +183,8 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 
 	private static final String FORBIDDEN_CHARS = "([^a-zA-Z0-9\\.,;:'\\+\\-/\\(\\)?\\*\\[\\]\\{\\}\\\\`´~ !\"#%&<>÷=@_$£àáâäçèéêëìíîïñòóôöùúûüýßÀÁÂÄÇÈÉÊËÌÍÎÏÒÓÔÖÙÚÛÜÑ])";
 
-	public SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02()
+	public SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02(
+			@NonNull final BankRepository bankRepo)
 	{
 		objectFactory = new ObjectFactory();
 		try
@@ -196,7 +196,7 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 			throw AdempiereException.wrapIfNeeded(e);
 		}
 
-		bankRepo = SpringContextHolder.instance.getBean(BankRepository.class);
+		this.bankRepo = bankRepo;
 	}
 
 	private void marshal(
