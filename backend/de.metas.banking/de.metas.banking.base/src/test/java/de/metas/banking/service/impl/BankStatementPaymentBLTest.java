@@ -64,7 +64,6 @@ import de.metas.banking.payment.PaymentLinkResult;
 import de.metas.banking.payment.impl.BankStatementPaymentBL;
 import de.metas.banking.service.BankStatementCreateRequest;
 import de.metas.banking.service.BankStatementLineCreateRequest;
-import de.metas.banking.service.IBankStatementBL;
 import de.metas.banking.service.IBankStatementDAO;
 import de.metas.banking.service.IBankStatementListener;
 import de.metas.banking.service.IBankStatementListenerService;
@@ -108,7 +107,7 @@ class BankStatementPaymentBLTest
 		AdempiereTestHelper.get().init();
 
 		final BankAccountService bankAccountService = BankAccountService.newInstanceForUnitTesting();
-		Services.registerService(IBankStatementBL.class, new BankStatementBL(bankAccountService)
+		final BankStatementBL bankStatementBL = new BankStatementBL(bankAccountService)
 		{
 			public void unpost(I_C_BankStatement bankStatement)
 			{
@@ -116,12 +115,12 @@ class BankStatementPaymentBLTest
 						+ "\n\t bank statement: " + bankStatement
 						+ "\n\t called via " + Trace.toOneLineStackTraceString());
 			}
-		});
+		};
 
 		bankStatementListenerService = Services.get(IBankStatementListenerService.class);
-		bankStatementPaymentBL = new BankStatementPaymentBL(new MoneyService(new CurrencyRepository()));
-
-		final IBankStatementBL bankStatementBL = Services.get(IBankStatementBL.class);
+		bankStatementPaymentBL = new BankStatementPaymentBL(
+				bankStatementBL,
+				new MoneyService(new CurrencyRepository()));
 
 		final IModelInterceptorRegistry modelInterceptorRegistry = Services.get(IModelInterceptorRegistry.class);
 		modelInterceptorRegistry.addModelInterceptor(new C_BankStatementLine_MockedInterceptor(bankStatementBL));

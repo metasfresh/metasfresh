@@ -64,14 +64,17 @@ import lombok.NonNull;
 @Component
 public class BankStatementPaymentBL implements IBankStatementPaymentBL
 {
-	private final IBankStatementBL bankStatementBL = Services.get(IBankStatementBL.class);
 	private final IBankStatementDAO bankStatementDAO = Services.get(IBankStatementDAO.class);
 	private final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
 	private final IBankStatementListenerService bankStatementListenersService = Services.get(IBankStatementListenerService.class);
+	private final IBankStatementBL bankStatementBL;
 	private final MoneyService moneyService;
 
-	public BankStatementPaymentBL(@NonNull final MoneyService moneyService)
+	public BankStatementPaymentBL(
+			@NonNull final IBankStatementBL bankStatementBL,
+			@NonNull final MoneyService moneyService)
 	{
+		this.bankStatementBL = bankStatementBL;
 		this.moneyService = moneyService;
 	}
 

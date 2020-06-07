@@ -45,7 +45,6 @@ import de.metas.banking.payment.IPaySelectionDAO;
 import de.metas.banking.payment.impl.BankStatementPaymentBL;
 import de.metas.banking.service.BankStatementCreateRequest;
 import de.metas.banking.service.BankStatementLineCreateRequest;
-import de.metas.banking.service.IBankStatementBL;
 import de.metas.banking.service.IBankStatementDAO;
 import de.metas.banking.service.IBankStatementListenerService;
 import de.metas.banking.service.impl.BankStatementBL;
@@ -143,9 +142,8 @@ public class ReconcilePaymentsCommandTest
 						+ "\n\t called via " + Trace.toOneLineStackTraceString());
 			}
 		};
-		Services.registerService(IBankStatementBL.class, bankStatementBL);
 
-		bankStatmentPaymentBL = new BankStatementPaymentBL(moneyService);
+		bankStatmentPaymentBL = new BankStatementPaymentBL(bankStatementBL, moneyService);
 		SpringContextHolder.registerJUnitBean(IBankStatementPaymentBL.class, bankStatmentPaymentBL);
 
 		this.rowsRepo = new BankStatementLineAndPaymentsToReconcileRepository(bankStatementBL, currencyRepository);

@@ -102,7 +102,7 @@ public class Banking extends AbstractModuleInterceptor
 		final IBankStatementBL bankStatementBL = Services.get(IBankStatementBL.class);
 		final ICurrencyBL currencyConversionBL = Services.get(ICurrencyBL.class);
 
-		calloutsRegistry.registerAnnotatedCallout(de.metas.banking.callout.C_BankStatement.instance);
+		calloutsRegistry.registerAnnotatedCallout(new de.metas.banking.callout.C_BankStatement(bankStatementBL));
 		calloutsRegistry.registerAnnotatedCallout(de.metas.banking.payment.callout.C_PaySelectionLine.instance);
 		calloutsRegistry.registerAnnotatedCallout(new de.metas.banking.callout.C_BankStatementLine(bankStatementBL, currencyConversionBL));
 	}
