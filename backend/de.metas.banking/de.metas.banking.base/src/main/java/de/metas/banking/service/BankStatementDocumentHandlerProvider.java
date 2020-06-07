@@ -31,6 +31,14 @@ import de.metas.document.engine.DocumentHandlerProvider;
 @Component
 public class BankStatementDocumentHandlerProvider implements DocumentHandlerProvider
 {
+	private final BankStatementDocumentHandlerRequiredServicesFacade services;
+
+	public BankStatementDocumentHandlerProvider(
+			final BankStatementDocumentHandlerRequiredServicesFacade services,
+			final IBankStatementBL bankStatementBL)
+	{
+		this.services = services;
+	}
 
 	@Override
 	public String getHandledTableName()
@@ -41,6 +49,6 @@ public class BankStatementDocumentHandlerProvider implements DocumentHandlerProv
 	@Override
 	public DocumentHandler provideForDocument(final Object model_NOTUSED)
 	{
-		return new BankStatementDocumentHandler();
+		return new BankStatementDocumentHandler(services);
 	}
 }
