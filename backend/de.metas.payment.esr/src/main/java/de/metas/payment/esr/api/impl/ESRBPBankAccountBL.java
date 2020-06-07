@@ -1,13 +1,13 @@
 package de.metas.payment.esr.api.impl;
 
-import de.metas.payment.esr.api.IBPBankAccountBL;
+import de.metas.payment.esr.api.IESRBPBankAccountBL;
 import de.metas.payment.esr.model.I_C_BP_BankAccount;
 import de.metas.payment.esr.model.I_C_Bank;
 import de.metas.util.Check;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
 
-public class BPBankAccountBL implements IBPBankAccountBL
+public class ESRBPBankAccountBL implements IESRBPBankAccountBL
 {
 	@Override
 	public String retrieveBankAccountNo(@NonNull final I_C_BP_BankAccount bankAccount)
