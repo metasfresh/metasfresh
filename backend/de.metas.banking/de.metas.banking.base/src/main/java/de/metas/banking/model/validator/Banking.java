@@ -40,6 +40,7 @@ import de.metas.banking.service.IBankStatementDAO;
 import de.metas.banking.service.IBankStatementListenerService;
 import de.metas.banking.service.ICashStatementBL;
 import de.metas.banking.spi.impl.BankStatementDocumentRepostingSupplier;
+import de.metas.currency.ICurrencyBL;
 import de.metas.impexp.processing.IImportProcessFactory;
 import de.metas.payment.api.IPaymentBL;
 import de.metas.util.Services;
@@ -60,7 +61,7 @@ public class Banking extends AbstractModuleInterceptor
 		// Register the Document Reposting Handler
 		final IDocumentRepostingSupplierService documentBL = Services.get(IDocumentRepostingSupplierService.class);
 		documentBL.registerSupplier(new BankStatementDocumentRepostingSupplier(bankStatementDAO));
-		
+
 		final IPaySelectionBL paySelectionBL = Services.get(IPaySelectionBL.class);
 		final IBankStatementListenerService bankStatementListenerService = Services.get(IBankStatementListenerService.class);
 		final IImportProcessFactory importProcessFactory = Services.get(IImportProcessFactory.class);
@@ -98,8 +99,11 @@ public class Banking extends AbstractModuleInterceptor
 	@Override
 	protected void registerCallouts(final IProgramaticCalloutProvider calloutsRegistry)
 	{
+		final IBankStatementBL bankStatementBL = Services.get(IBankStatementBL.class);
+		final ICurrencyBL currencyConversionBL = Services.get(ICurrencyBL.class);
+
 		calloutsRegistry.registerAnnotatedCallout(de.metas.banking.callout.C_BankStatement.instance);
 		calloutsRegistry.registerAnnotatedCallout(de.metas.banking.payment.callout.C_PaySelectionLine.instance);
-		calloutsRegistry.registerAnnotatedCallout(de.metas.banking.callout.C_BankStatementLine.instance);
+		calloutsRegistry.registerAnnotatedCallout(new de.metas.banking.callout.C_BankStatementLine(bankStatementBL, currencyConversionBL));
 	}
 }

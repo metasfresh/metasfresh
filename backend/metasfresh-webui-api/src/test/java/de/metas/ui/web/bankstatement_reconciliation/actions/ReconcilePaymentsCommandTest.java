@@ -37,6 +37,7 @@ import de.metas.banking.BankStatementId;
 import de.metas.banking.BankStatementLineId;
 import de.metas.banking.BankStatementLineReference;
 import de.metas.banking.PaySelectionId;
+import de.metas.banking.api.BankAccountService;
 import de.metas.banking.model.validator.PaySelectionBankStatementListener;
 import de.metas.banking.payment.IBankStatementPaymentBL;
 import de.metas.banking.payment.IPaySelectionBL;
@@ -132,7 +133,8 @@ public class ReconcilePaymentsCommandTest
 		final IPaySelectionBL paySelectionBL = Services.get(IPaySelectionBL.class);
 		bankStatementListenerService.addListener(new PaySelectionBankStatementListener(paySelectionBL));
 
-		Services.registerService(IBankStatementBL.class, new BankStatementBL()
+		final BankAccountService bankAccountService = BankAccountService.newInstanceForUnitTesting();
+		Services.registerService(IBankStatementBL.class, new BankStatementBL(bankAccountService)
 		{
 			public void unpost(I_C_BankStatement bankStatement)
 			{

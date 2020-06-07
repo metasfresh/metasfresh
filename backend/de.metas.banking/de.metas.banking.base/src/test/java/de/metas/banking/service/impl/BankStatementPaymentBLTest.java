@@ -107,7 +107,8 @@ class BankStatementPaymentBLTest
 	{
 		AdempiereTestHelper.get().init();
 
-		Services.registerService(IBankStatementBL.class, new BankStatementBL()
+		final BankAccountService bankAccountService = BankAccountService.newInstanceForUnitTesting();
+		Services.registerService(IBankStatementBL.class, new BankStatementBL(bankAccountService)
 		{
 			public void unpost(I_C_BankStatement bankStatement)
 			{

@@ -53,6 +53,14 @@ public class BankAccountService
 		this.currencyRepo = currencyRepo;
 	}
 
+	public static BankAccountService newInstanceForUnitTesting()
+	{
+		return new BankAccountService(
+				new BankRepository(),
+				new BankAccountAcctRepository(),
+				new CurrencyRepository());
+	}
+
 	public boolean isCashBank(@NonNull final BankAccountId bankAccountId)
 	{
 		final BankId bankId = bankAccountDAO.getBankId(bankAccountId);

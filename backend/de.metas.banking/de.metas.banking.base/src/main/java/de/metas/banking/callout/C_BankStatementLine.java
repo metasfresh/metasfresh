@@ -40,16 +40,20 @@ import de.metas.currency.ICurrencyBL;
 import de.metas.invoice.InvoiceId;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
-import de.metas.util.Services;
 import lombok.NonNull;
 
 @Callout(I_C_BankStatementLine.class)
 public class C_BankStatementLine
 {
-	public static final C_BankStatementLine instance = new C_BankStatementLine();
+	private final IBankStatementBL bankStatementBL;
+	private final ICurrencyBL currencyConversionBL;
 
-	private C_BankStatementLine()
+	public C_BankStatementLine(
+			@NonNull final IBankStatementBL bankStatementBL,
+			@NonNull final ICurrencyBL currencyConversionBL)
 	{
+		this.bankStatementBL = bankStatementBL;
+		this.currencyConversionBL = currencyConversionBL;
 	}
 
 	@CalloutMethod(columnNames = I_C_BankStatementLine.COLUMNNAME_StmtAmt)
@@ -64,10 +68,18 @@ public class C_BankStatementLine
 	@CalloutMethod(columnNames = I_C_BankStatementLine.COLUMNNAME_TrxAmt)
 	public void onTrxAmtChanged(final @NonNull I_C_BankStatementLine bsl)
 	{
-		final BigDecimal bankFeeAmt = BankStatementLineAmounts.of(bsl)
-				.addDifferenceToBankFeeAmt()
-				.getBankFeeAmt();
-		bsl.setBankFeeAmt(bankFeeAmt);
+		if (bankStatementBL.isCashJournal(bsl))
+		{
+			// Cash journals does not support BankFees Amt,
+			// so better do nothing
+		}
+		else
+		{
+			final BigDecimal bankFeeAmt = BankStatementLineAmounts.of(bsl)
+					.addDifferenceToBankFeeAmt()
+					.getBankFeeAmt();
+			bsl.setBankFeeAmt(bankFeeAmt);
+		}
 	}
 
 	@CalloutMethod(columnNames = I_C_BankStatementLine.COLUMNNAME_BankFeeAmt)
@@ -106,9 +118,6 @@ public class C_BankStatementLine
 			bsl.setCurrencyRate(null);
 			return;
 		}
-
-		final IBankStatementBL bankStatementBL = Services.get(IBankStatementBL.class);
-		final ICurrencyBL currencyConversionBL = Services.get(ICurrencyBL.class);
 
 		final I_C_BankStatementLine bslFrom = bankStatementBL.getLineById(linkedBankStatementLineId);
 
@@ -152,7 +161,6 @@ public class C_BankStatementLine
 			return;
 		}
 
-		final IBankStatementBL bankStatementBL = Services.get(IBankStatementBL.class);
 		bankStatementBL.updateLineFromInvoice(bsl, invoiceId);
 	}
 }

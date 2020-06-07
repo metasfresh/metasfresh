@@ -1,16 +1,30 @@
 package de.metas.banking.callout;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
 
 import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.test.AdempiereTestWatcher;
+import org.compiere.model.I_C_BP_BankAccount;
+import org.compiere.model.I_C_BankStatement;
 import org.compiere.model.I_C_BankStatementLine;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
+import de.metas.banking.Bank;
+import de.metas.banking.BankCreateRequest;
+import de.metas.banking.api.BankAccountAcctRepository;
+import de.metas.banking.api.BankAccountService;
+import de.metas.banking.api.BankRepository;
 import de.metas.banking.model.BankStatementLineAmounts;
+import de.metas.banking.service.impl.BankStatementBL;
+import de.metas.currency.CurrencyRepository;
+import de.metas.currency.ICurrencyBL;
+import de.metas.util.Services;
 import lombok.Builder;
 
 /*
@@ -35,27 +49,53 @@ import lombok.Builder;
  * #L%
  */
 
+@ExtendWith(AdempiereTestWatcher.class)
 public class C_BankStatementLine_Test
 {
 	private C_BankStatementLine callout;
+
+	private BankRepository bankRepo;
 
 	@BeforeEach
 	public void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
-		callout = C_BankStatementLine.instance;
+
+		final BankStatementBL bankStatementBL = new BankStatementBL(
+				new BankAccountService(
+						bankRepo = new BankRepository(),
+						new BankAccountAcctRepository(),
+						new CurrencyRepository()));
+		final ICurrencyBL currencyConversionBL = Services.get(ICurrencyBL.class);
+		callout = new C_BankStatementLine(bankStatementBL, currencyConversionBL);
 	}
 
 	@Builder(builderMethodName = "bankStatementLine", builderClassName = "$BankStatementLineBuilder")
 	private I_C_BankStatementLine createBankStatementLine(
+			final boolean cashBank,
 			final String stmtAmt,
 			final String trxAmt,
 			final String bankFeeAmt,
 			final String chargeAmt,
 			final String interestAmt)
 	{
-		final I_C_BankStatementLine bsl = newInstance(I_C_BankStatementLine.class);
+		final Bank bank = bankRepo.createBank(BankCreateRequest.builder()
+				.bankName("MyBank")
+				.routingNo("R")
+				.cashBank(cashBank)
+				.build());
 
+		final I_C_BP_BankAccount bankAccount = newInstance(I_C_BP_BankAccount.class);
+		bankAccount.setC_Bank_ID(bank.getBankId().getRepoId());
+		bankAccount.setC_Currency_ID(111);
+		saveRecord(bankAccount);
+
+		final I_C_BankStatement bankStatement = newInstance(I_C_BankStatement.class);
+		bankStatement.setC_BP_BankAccount_ID(bankAccount.getC_BP_BankAccount_ID());
+		saveRecord(bankStatement);
+
+		final I_C_BankStatementLine bsl = newInstance(I_C_BankStatementLine.class);
+		bsl.setC_BankStatement_ID(bankStatement.getC_BankStatement_ID());
 		bsl.setStmtAmt(toBigDecimal(stmtAmt));
 		bsl.setTrxAmt(toBigDecimal(trxAmt));
 		bsl.setBankFeeAmt(toBigDecimal(bankFeeAmt));
@@ -88,22 +128,43 @@ public class C_BankStatementLine_Test
 						.build());
 	}
 
-	@Test
-	public void onTrxAmtChanged()
+	public class onTrxAmtChanged
 	{
-		final I_C_BankStatementLine bsl = bankStatementLine()
-				.stmtAmt("100")
-				.trxAmt("90")
-				.build();
+		@Test
+		public void bankStatement()
+		{
+			final I_C_BankStatementLine bsl = bankStatementLine()
+					.stmtAmt("100")
+					.trxAmt("90")
+					.build();
 
-		callout.onTrxAmtChanged(bsl);
+			callout.onTrxAmtChanged(bsl);
 
-		assertThat(BankStatementLineAmounts.of(bsl))
-				.isEqualTo(BankStatementLineAmounts.builder()
-						.stmtAmt(new BigDecimal("100"))
-						.trxAmt(new BigDecimal("90"))
-						.bankFeeAmt(new BigDecimal("-10"))
-						.build());
+			assertThat(BankStatementLineAmounts.of(bsl))
+					.isEqualTo(BankStatementLineAmounts.builder()
+							.stmtAmt(new BigDecimal("100"))
+							.trxAmt(new BigDecimal("90"))
+							.bankFeeAmt(new BigDecimal("-10"))
+							.build());
+		}
+
+		@Test
+		public void cashJournal()
+		{
+			final I_C_BankStatementLine bsl = bankStatementLine()
+					.cashBank(true)
+					.stmtAmt("100")
+					.trxAmt("90")
+					.build();
+
+			callout.onTrxAmtChanged(bsl);
+
+			assertThat(BankStatementLineAmounts.of(bsl))
+					.isEqualTo(BankStatementLineAmounts.builder()
+							.stmtAmt(new BigDecimal("100"))
+							.trxAmt(new BigDecimal("90"))
+							.build());
+		}
 	}
 
 	@Test

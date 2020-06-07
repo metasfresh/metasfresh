@@ -70,4 +70,6 @@ public interface IBankStatementBL extends ISingletonService
 	ImmutableSet<PaymentId> getLinesPaymentIds(@NonNull final BankStatementId bankStatementId);
 
 	void updateLineFromInvoice(final @NonNull I_C_BankStatementLine bsl, @NonNull InvoiceId invoiceId);
+
+	boolean isCashJournal(final I_C_BankStatementLine bankStatementLine);
 }
