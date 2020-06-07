@@ -20,8 +20,9 @@
  * #L%
  */
 
-package org.adempiere.bank;
+package de.metas.banking.api;
 
+import de.metas.banking.BankId;
 import de.metas.bpartner.BPartnerBankAccountId;
 import de.metas.cache.CCache;
 import de.metas.util.Services;
