@@ -64,6 +64,7 @@ import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.doc.AcctDocContext;
 import de.metas.acct.doc.AcctDocRequiredServicesFacade;
 import de.metas.acct.doc.PostingException;
+import de.metas.banking.BankAccount;
 import de.metas.banking.BankAccountAcct;
 import de.metas.banking.BankAccountId;
 import de.metas.bpartner.BPartnerId;
@@ -279,8 +280,8 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 	private Optional<BPartnerId> _bpartnerId; // lazy
 
 	/** Bank Account */
-	private Optional<BankAccountId> _bpBankAccountId = null; // lazy
-	private I_C_BP_BankAccount bpBankAccount = null;
+	private Optional<BankAccountId> _bankAccountId = null; // lazy
+	private BankAccount bankAccount = null;
 	/** Cach Book */
 	private int m_C_CashBook_ID = -1;
 
@@ -1299,7 +1300,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 					.addDetailMessage("Bank Account is not set");
 		}
 
-		return services.getBPBankAccountAcct(bankAccountId, acctSchemaId);
+		return services.getBankAccountAcct(bankAccountId, acctSchemaId);
 	}
 
 	/**
@@ -1529,37 +1530,35 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 	 */
 	final BankAccountId getBPBankAccountId()
 	{
-		Optional<BankAccountId> bpBankAccountId = _bpBankAccountId;
-		if (bpBankAccountId == null)
+		Optional<BankAccountId> bankAccountId = _bankAccountId;
+		if (bankAccountId == null)
 		{
-			bpBankAccountId = _bpBankAccountId = getValueAsOptionalId(
+			bankAccountId = _bankAccountId = getValueAsOptionalId(
 					I_C_BP_BankAccount.COLUMNNAME_C_BP_BankAccount_ID,
 					BankAccountId::ofRepoIdOrNull);
 		}
 
-		return bpBankAccountId.orElse(null);
+		return bankAccountId.orElse(null);
 	}
 
 	final void setBPBankAccountId(@Nullable final BankAccountId bankAccountId)
 	{
-		_bpBankAccountId = Optional.ofNullable(bankAccountId);
+		_bankAccountId = Optional.ofNullable(bankAccountId);
 	}
 
-	/**
-	 * @return bank account or <code>null</code>
-	 */
-	protected final I_C_BP_BankAccount getC_BP_BankAccount()
+	@Nullable
+	protected final BankAccount getBankAccount()
 	{
-		final BankAccountId bpBankAccountId = getBPBankAccountId();
-		if (bpBankAccountId == null)
+		final BankAccountId bankAccountId = getBPBankAccountId();
+		if (bankAccountId == null)
 		{
 			return null;
 		}
-		if (bpBankAccount == null || bpBankAccount.getC_BP_BankAccount_ID() != bpBankAccountId.getRepoId())
+		if (bankAccount == null || !BankAccountId.equals(bankAccount.getId(), bankAccountId))
 		{
-			bpBankAccount = services.getBPBankAccountById(bpBankAccountId);
+			bankAccount = services.getBankAccountById(bankAccountId);
 		}
-		return bpBankAccount;
+		return bankAccount;
 	}
 
 	protected final int getC_CashBook_ID()

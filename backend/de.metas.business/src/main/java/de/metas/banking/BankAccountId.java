@@ -22,6 +22,8 @@
 
 package de.metas.banking;
 
+import java.util.Objects;
+
 import javax.annotation.Nullable;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -63,5 +65,10 @@ public class BankAccountId implements RepoIdAware
 	public static BankAccountId ofRepoIdOrNull(final int repoId)
 	{
 		return repoId > 0 ? new BankAccountId(repoId) : null;
+	}
+
+	public static boolean equals(@Nullable final BankAccountId id1, @Nullable final BankAccountId id2)
+	{
+		return Objects.equals(id1, id2);
 	}
 }

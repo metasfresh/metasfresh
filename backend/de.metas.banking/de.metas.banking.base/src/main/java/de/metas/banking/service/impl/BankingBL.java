@@ -33,12 +33,16 @@ import org.adempiere.banking.model.I_C_Invoice;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Constants;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.MInvoice;
 import org.compiere.model.MInvoiceLine;
 import org.compiere.model.MRecurrentPaymentHistory;
 import org.compiere.model.MRecurrentPaymentLine;
 import org.slf4j.Logger;
 
+import de.metas.banking.Bank;
+import de.metas.banking.BankId;
+import de.metas.banking.api.BankRepository;
 import de.metas.banking.model.I_C_RecurrentPayment;
 import de.metas.banking.model.X_C_RecurrentPaymentLine;
 import de.metas.banking.service.IBankingBL;
@@ -56,6 +60,7 @@ import de.metas.util.time.SystemTime;
 public class BankingBL implements IBankingBL
 {
 	private static final Logger logger = LogManager.getLogger(BankingBL.class);
+	private final BankRepository bankRepository = SpringContextHolder.instance.getBean(BankRepository.class);
 
 	/**
 	 * Create missing due invoices for active recurrent payments.
@@ -197,9 +202,11 @@ public class BankingBL implements IBankingBL
 	{
 		final StringBuilder name = new StringBuilder();
 
-		if (bankAccount.getC_Bank_ID() > 0)
+		final BankId bankId = BankId.ofRepoIdOrNull(bankAccount.getC_Bank_ID());
+		if (bankId != null)
 		{
-			name.append(bankAccount.getC_Bank().getName());
+			final Bank bank = bankRepository.getById(bankId);
+			name.append(bank.getBankName());
 		}
 		else if (Check.isNotBlank(bankAccount.getA_Name()))
 		{

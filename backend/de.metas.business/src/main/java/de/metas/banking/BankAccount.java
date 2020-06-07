@@ -2,7 +2,8 @@ package de.metas.banking;
 
 import javax.annotation.Nullable;
 
-import de.metas.location.LocationId;
+import de.metas.money.CurrencyId;
+import de.metas.organization.OrgId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -29,27 +30,25 @@ import lombok.Value;
  * #L%
  */
 
+/**
+ * Own (organization) bank account.
+ */
 @Value
 @Builder
-public class Bank
+public class BankAccount
 {
+	@NonNull
+	BankAccountId id;
+
 	@NonNull
 	BankId bankId;
 
-	@NonNull
-	String bankName;
-
 	@Nullable
-	String swiftCode;
+	String accountName;
+
 	@NonNull
-	String routingNo;
+	CurrencyId currencyId;
 
-	boolean cashBank;
-
-	@Nullable
-	LocationId locationId;
-
-	//
-	// ESR specific settings:
-	boolean esrPostBank;
+	@NonNull
+	OrgId orgId;
 }

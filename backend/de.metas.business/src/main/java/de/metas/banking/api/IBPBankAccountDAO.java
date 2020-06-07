@@ -32,6 +32,7 @@ import org.compiere.model.I_C_BP_BankAccount;
 
 import com.google.common.collect.ImmutableListMultimap;
 
+import de.metas.banking.BankAccount;
 import de.metas.banking.BankAccountId;
 import de.metas.banking.BankId;
 import de.metas.bpartner.BPartnerBankAccountId;
@@ -42,7 +43,7 @@ import lombok.NonNull;
 
 public interface IBPBankAccountDAO extends ISingletonService
 {
-	I_C_BP_BankAccount getById(final BankAccountId bankAccountId);
+	BankAccount getById(final BankAccountId bankAccountId);
 
 	<T extends I_C_BP_BankAccount> T getById(final BankAccountId bankAccountId, Class<T> modelType);
 

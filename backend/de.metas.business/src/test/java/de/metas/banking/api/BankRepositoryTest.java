@@ -1,17 +1,18 @@
 package de.metas.banking.api;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.UUID;
+
 import org.adempiere.test.AdempiereTestHelper;
-import org.compiere.model.I_C_Bank;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import de.metas.banking.Bank;
+import de.metas.banking.BankCreateRequest;
 import de.metas.banking.BankId;
+import de.metas.location.LocationId;
 import lombok.Builder;
 
 /*
@@ -49,32 +50,52 @@ public class BankRepositoryTest
 
 	@Builder(builderMethodName = "bankRecord", builderClassName = "$BankRecordBuilder")
 	private BankId createBankRecord(
+			final String name,
 			final String swiftCode,
-			final boolean cashBank)
+			final String routingNo,
+			final boolean cashBank,
+			final LocationId locationId,
+			final boolean esrPostBank)
 	{
-		final I_C_Bank record = newInstance(I_C_Bank.class);
-		record.setSwiftCode(swiftCode);
-		record.setIsCashBank(cashBank);
-		saveRecord(record);
-		return BankId.ofRepoId(record.getC_Bank_ID());
+		final Bank bank = bankRepository.createBank(BankCreateRequest.builder()
+				.bankName(name != null ? name : "Bank-" + UUID.randomUUID())
+				.swiftCode(swiftCode)
+				.routingNo(routingNo != null ? routingNo : "routing-" + UUID.randomUUID())
+				.cashBank(cashBank)
+				.locationId(locationId)
+				.esrPostBank(esrPostBank)
+				.build());
+
+		return bank.getBankId();
 	}
 
 	@Nested
 	public class getById
 	{
+		/**
+		 * NOTE: this test, indirectly is also testing the toBank(I_C_Bank record) method
+		 */
 		@Test
 		public void test()
 		{
 			final BankId bankId = bankRecord()
+					.name("MyBank1")
 					.swiftCode("BIC1")
+					.routingNo("routingNo1")
 					.cashBank(true)
+					.locationId(LocationId.ofRepoId(123))
+					.esrPostBank(true)
 					.build();
 
 			assertThat(bankRepository.getById(bankId))
-					.isEqualTo(Bank.builder()
+					.isEqualToComparingFieldByField(Bank.builder()
 							.bankId(bankId)
+							.bankName("MyBank1")
 							.swiftCode("BIC1")
+							.routingNo("routingNo1")
 							.cashBank(true)
+							.locationId(LocationId.ofRepoId(123))
+							.esrPostBank(true)
 							.build());
 		}
 	}

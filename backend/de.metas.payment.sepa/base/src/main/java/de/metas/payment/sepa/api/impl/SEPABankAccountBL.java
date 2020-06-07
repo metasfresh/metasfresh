@@ -25,14 +25,19 @@ package de.metas.payment.sepa.api.impl;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_Bank;
+import org.compiere.SpringContextHolder;
 
+import de.metas.banking.Bank;
+import de.metas.banking.BankId;
+import de.metas.banking.api.BankRepository;
 import de.metas.payment.sepa.api.ISEPABankAccountBL;
 import de.metas.payment.sepa.interfaces.I_C_BP_BankAccount;
 import de.metas.util.Check;
 
 public class SEPABankAccountBL implements ISEPABankAccountBL
 {
+	private final BankRepository bankRepository = SpringContextHolder.instance.getBean(BankRepository.class);
+	
 	@Override
 	public String getSwiftCode(final org.compiere.model.I_C_BP_BankAccount bankAccount)
 	{
@@ -62,8 +67,9 @@ public class SEPABankAccountBL implements ISEPABankAccountBL
 
 		//
 		// Check if we have SwiftCode/BIC on Bank level
-		final I_C_Bank bank = sepaBankAccount.getC_Bank();
-		if (bank != null && bank.getC_Bank_ID() > 0)
+		final BankId bankId = BankId.ofRepoIdOrNull(sepaBankAccount.getC_Bank_ID());
+		final Bank bank = bankId != null ? bankRepository.getById(bankId) : null;
+		if (bank != null)
 		{
 			final String bankSwiftCode = bank.getSwiftCode();
 			return bankSwiftCode;

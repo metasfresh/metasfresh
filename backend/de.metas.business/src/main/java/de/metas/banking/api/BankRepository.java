@@ -22,6 +22,9 @@
 
 package de.metas.banking.api;
 
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+
 import java.util.Optional;
 
 import org.adempiere.ad.dao.IQueryBL;
@@ -30,8 +33,10 @@ import org.compiere.model.I_C_Bank;
 import org.springframework.stereotype.Repository;
 
 import de.metas.banking.Bank;
+import de.metas.banking.BankCreateRequest;
 import de.metas.banking.BankId;
 import de.metas.cache.CCache;
+import de.metas.location.LocationId;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
@@ -71,8 +76,15 @@ public class BankRepository
 	{
 		return Bank.builder()
 				.bankId(BankId.ofRepoId(record.getC_Bank_ID()))
+				.bankName(StringUtils.trimBlankToNull(record.getName()))
 				.swiftCode(StringUtils.trimBlankToNull(record.getSwiftCode()))
+				.routingNo(StringUtils.trimBlankToNull(record.getRoutingNo()))
 				.cashBank(record.isCashBank())
+				.locationId(LocationId.ofRepoIdOrNull(record.getC_Location_ID()))
+				//
+				// ESR:
+				.esrPostBank(record.isESR_PostBank())
+				//
 				.build();
 	}
 
@@ -96,5 +108,22 @@ public class BankRepository
 	public boolean isCashBank(@NonNull final BankId bankId)
 	{
 		return getById(bankId).isCashBank();
+	}
+
+	public Bank createBank(@NonNull final BankCreateRequest request)
+	{
+		final I_C_Bank record = newInstance(I_C_Bank.class);
+		record.setName(request.getBankName());
+		record.setSwiftCode(request.getSwiftCode());
+		record.setRoutingNo(request.getRoutingNo());
+		record.setIsCashBank(request.isCashBank());
+		record.setC_Location_ID(LocationId.toRepoId(request.getLocationId()));
+
+		// ESR:
+		record.setESR_PostBank(request.isEsrPostBank());
+
+		saveRecord(record);
+
+		return toBank(record);
 	}
 }

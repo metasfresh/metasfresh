@@ -157,6 +157,31 @@ public interface I_C_Bank
     public static final String COLUMNNAME_Description = "Description";
 
 	/**
+	 * Set Bank ist die Postfinance-Bank.
+	 * Markiert die Postfinanz-Bank. Hinweis: auch andere Banken können am ESR-Verfahren teilnehmen, ohne selbst die Postfinance-Bank zu sein.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setESR_PostBank (boolean ESR_PostBank);
+
+	/**
+	 * Get Bank ist die Postfinance-Bank.
+	 * Markiert die Postfinanz-Bank. Hinweis: auch andere Banken können am ESR-Verfahren teilnehmen, ohne selbst die Postfinance-Bank zu sein.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public boolean isESR_PostBank();
+
+    /** Column definition for ESR_PostBank */
+    public static final org.adempiere.model.ModelColumn<I_C_Bank, Object> COLUMN_ESR_PostBank = new org.adempiere.model.ModelColumn<I_C_Bank, Object>(I_C_Bank.class, "ESR_PostBank", null);
+    /** Column name ESR_PostBank */
+    public static final String COLUMNNAME_ESR_PostBank = "ESR_PostBank";
+
+	/**
 	 * Set Active.
 	 * The record is active in the system
 	 *

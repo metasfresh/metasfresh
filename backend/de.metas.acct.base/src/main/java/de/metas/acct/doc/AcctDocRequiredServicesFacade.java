@@ -9,7 +9,6 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.model.I_C_BP_BankAccount;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.MAccount;
@@ -29,6 +28,7 @@ import de.metas.acct.api.IProductAcctDAO;
 import de.metas.acct.api.ProductAcctType;
 import de.metas.acct.tax.ITaxAcctBL;
 import de.metas.acct.tax.TaxAcctType;
+import de.metas.banking.BankAccount;
 import de.metas.banking.BankAccountAcct;
 import de.metas.banking.BankAccountId;
 import de.metas.banking.api.BankAccountService;
@@ -190,12 +190,12 @@ public class AcctDocRequiredServicesFacade
 		return currencyConversionBL.getCurrencyRate(conversionCtx, currencyFromId, currencyToId);
 	}
 
-	public I_C_BP_BankAccount getBPBankAccountById(final BankAccountId bpBankAccountId)
+	public BankAccount getBankAccountById(final BankAccountId bpBankAccountId)
 	{
 		return bankAccountService.getById(bpBankAccountId);
 	}
 
-	public BankAccountAcct getBPBankAccountAcct(final BankAccountId bankAccountId, final AcctSchemaId acctSchemaId)
+	public BankAccountAcct getBankAccountAcct(final BankAccountId bankAccountId, final AcctSchemaId acctSchemaId)
 	{
 		return bankAccountService.getBankAccountAcct(bankAccountId, acctSchemaId);
 	}

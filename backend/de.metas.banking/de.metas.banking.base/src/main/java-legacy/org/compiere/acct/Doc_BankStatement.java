@@ -20,7 +20,6 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.compiere.model.I_C_BP_BankAccount;
 import org.compiere.model.I_C_BankStatement;
 import org.compiere.model.I_C_BankStatementLine;
 import org.compiere.model.MAccount;
@@ -30,6 +29,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.PostingType;
 import de.metas.acct.doc.AcctDocContext;
+import de.metas.banking.BankAccount;
 import de.metas.banking.BankAccountId;
 import de.metas.banking.BankStatementId;
 import de.metas.banking.BankStatementLineReference;
@@ -82,8 +82,8 @@ public class Doc_BankStatement extends Doc<DocLine_BankStatement>
 		setAmount(AMTTYPE_Gross, bs.getStatementDifference());
 
 		// Set Bank Account Info (Currency)
-		final I_C_BP_BankAccount ba = getC_BP_BankAccount(); // shall not be null
-		setC_Currency_ID(CurrencyId.ofRepoId(ba.getC_Currency_ID()));
+		final BankAccount bankAccount = getBankAccount(); // shall not be null
+		setC_Currency_ID(bankAccount.getCurrencyId());
 
 		final List<DocLine_BankStatement> lines = loadLines(bs);
 		setDocLines(lines);
@@ -131,12 +131,8 @@ public class Doc_BankStatement extends Doc<DocLine_BankStatement>
 	 */
 	private final OrgId getBankOrgId()
 	{
-		final I_C_BP_BankAccount bpBankAccount = getC_BP_BankAccount();
-		if (bpBankAccount == null)
-		{
-			return OrgId.ANY;
-		}
-		return OrgId.ofRepoIdOrAny(bpBankAccount.getAD_Org_ID());
+		final BankAccount bankAccount = getBankAccount();
+		return bankAccount != null ? bankAccount.getOrgId() : OrgId.ANY;
 	}
 
 	private CurrencyConversionContext createCurrencyConversionContext(

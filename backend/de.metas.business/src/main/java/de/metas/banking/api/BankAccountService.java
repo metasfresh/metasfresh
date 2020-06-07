@@ -1,9 +1,9 @@
 package de.metas.banking.api;
 
-import org.compiere.model.I_C_BP_BankAccount;
 import org.springframework.stereotype.Service;
 
 import de.metas.acct.api.AcctSchemaId;
+import de.metas.banking.BankAccount;
 import de.metas.banking.BankAccountAcct;
 import de.metas.banking.BankAccountId;
 import de.metas.banking.BankId;
@@ -53,7 +53,7 @@ public class BankAccountService
 		return bankRepo.isCashBank(bankId);
 	}
 
-	public I_C_BP_BankAccount getById(@NonNull final BankAccountId bankAccountId)
+	public BankAccount getById(@NonNull final BankAccountId bankAccountId)
 	{
 		return bankAccountDAO.getById(bankAccountId);
 	}

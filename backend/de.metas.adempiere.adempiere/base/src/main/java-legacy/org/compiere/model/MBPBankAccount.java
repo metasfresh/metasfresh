@@ -39,18 +39,6 @@ public class MBPBankAccount extends X_C_BP_BankAccount
 	}
 
 	@Override
-	public String getRoutingNo()
-	{
-		I_C_Bank bank = getC_Bank();
-		String rt = super.getRoutingNo();
-		if (bank != null && bank.getC_Bank_ID() > 0)
-		{
-			rt = bank.getRoutingNo();
-		}
-		return rt;
-	}
-
-	@Override
 	protected boolean beforeSave(boolean newRecord)
 	{
 		// maintain routing on bank level

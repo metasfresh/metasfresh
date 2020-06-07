@@ -20,7 +20,6 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 
 import org.adempiere.service.ISysConfigBL;
-import org.compiere.model.I_C_BP_BankAccount;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.MAccount;
 import org.compiere.model.MCharge;
@@ -28,7 +27,9 @@ import org.compiere.model.MCharge;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.PostingType;
 import de.metas.acct.doc.AcctDocContext;
+import de.metas.banking.BankAccount;
 import de.metas.banking.BankAccountId;
+import de.metas.organization.OrgId;
 import de.metas.payment.TenderType;
 import de.metas.util.Services;
 
@@ -107,7 +108,7 @@ public class Doc_Payment extends Doc<DocLine<Doc_Payment>>
 	{
 		// create Fact Header
 		final Fact fact = new Fact(this, as, PostingType.Actual);
-		final int AD_Org_ID = getBank_Org_ID();		// Bank Account Org
+		final OrgId AD_Org_ID = getBankOrgId();		// Bank Account Org
 
 		// Cash Transfer
 		if (getTenderType().isCash() && !isCashAsPayment())
@@ -123,7 +124,7 @@ public class Doc_Payment extends Doc<DocLine<Doc_Payment>>
 			// Asset (DR)
 			FactLine fl = fact.createLine(null, getBankAccount(as),
 					getCurrencyId(), getAmount(), null);
-			if (fl != null && AD_Org_ID != 0)
+			if (fl != null && AD_Org_ID.isRegular())
 			{
 				fl.setAD_Org_ID(AD_Org_ID);
 			}
@@ -143,7 +144,7 @@ public class Doc_Payment extends Doc<DocLine<Doc_Payment>>
 			}
 			fl = fact.createLine(null, acct,
 					getCurrencyId(), null, getAmount());
-			if (fl != null && AD_Org_ID != 0
+			if (fl != null && AD_Org_ID.isRegular()
 					&& getC_Charge_ID() == 0)
 			{
 				fl.setAD_Org_ID(AD_Org_ID);
@@ -167,7 +168,7 @@ public class Doc_Payment extends Doc<DocLine<Doc_Payment>>
 			}
 			FactLine fl = fact.createLine(null, acct,
 					getCurrencyId(), getAmount(), null);
-			if (fl != null && AD_Org_ID != 0
+			if (fl != null && AD_Org_ID.isRegular()
 					&& getC_Charge_ID() == 0)
 			{
 				fl.setAD_Org_ID(AD_Org_ID);
@@ -176,7 +177,7 @@ public class Doc_Payment extends Doc<DocLine<Doc_Payment>>
 			// Asset (CR)
 			fl = fact.createLine(null, getBankAccount(as),
 					getCurrencyId(), null, getAmount());
-			if (fl != null && AD_Org_ID != 0)
+			if (fl != null && AD_Org_ID.isRegular())
 			{
 				fl.setAD_Org_ID(AD_Org_ID);
 			}
@@ -198,18 +199,12 @@ public class Doc_Payment extends Doc<DocLine<Doc_Payment>>
 	}   // createFact
 
 	/**
-	 * Get AD_Org_ID from Bank Account
-	 * 
-	 * @return AD_Org_ID or 0
+	 * @return bank account's Org or {@link OrgId#ANY}
 	 */
-	private final int getBank_Org_ID()
+	private final OrgId getBankOrgId()
 	{
-		final I_C_BP_BankAccount bpBankAccount = getC_BP_BankAccount();
-		if (bpBankAccount == null)
-		{
-			return 0;
-		}
-		return bpBankAccount.getAD_Org_ID();
+		final BankAccount bankAccount = getBankAccount();
+		return bankAccount != null ? bankAccount.getOrgId() : OrgId.ANY;
 	}
 
 	private final boolean isCashAsPayment()

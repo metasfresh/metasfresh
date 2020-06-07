@@ -11,7 +11,7 @@ import java.util.Properties;
 public class X_C_Bank extends org.compiere.model.PO implements I_C_Bank, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1597902679L;
+	private static final long serialVersionUID = -69481044L;
 
     /** Standard Constructor */
     public X_C_Bank (Properties ctx, int C_Bank_ID, String trxName)
@@ -85,6 +85,18 @@ public class X_C_Bank extends org.compiere.model.PO implements I_C_Bank, org.com
 	public java.lang.String getDescription() 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_Description);
+	}
+
+	@Override
+	public void setESR_PostBank (boolean ESR_PostBank)
+	{
+		set_Value (COLUMNNAME_ESR_PostBank, Boolean.valueOf(ESR_PostBank));
+	}
+
+	@Override
+	public boolean isESR_PostBank() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_ESR_PostBank);
 	}
 
 	@Override

@@ -6,6 +6,10 @@ import org.compiere.model.I_C_BP_BankAccount;
 import org.compiere.model.MBPartner;
 import org.springframework.stereotype.Service;
 
+import de.metas.banking.Bank;
+import de.metas.banking.BankId;
+import de.metas.banking.api.BankRepository;
+
 /*
  * #%L
  *  de.metas.vertical.creditscore.creditpass.service
@@ -47,18 +51,20 @@ import lombok.NonNull;
 public class CreditPassTransactionDataFactory
 {
 	private final UserRepository userRepo;
-
 	private final BPartnerLocationInfoRepository bPartnerLocationInfoRepository;
-
 	private final LocationRepository locationRepository;
+	private final BankRepository bankRepository;
 
-	public CreditPassTransactionDataFactory(@NonNull final UserRepository userRepo,
+	public CreditPassTransactionDataFactory(
+			@NonNull final UserRepository userRepo,
 			@NonNull final BPartnerLocationInfoRepository bPartnerLocationRepository,
-			@NonNull final LocationRepository locatinoRepository)
+			@NonNull final LocationRepository locatinoRepository,
+			@NonNull final BankRepository bankRepository)
 	{
 		this.userRepo = userRepo;
 		this.bPartnerLocationInfoRepository = bPartnerLocationRepository;
 		this.locationRepository = locatinoRepository;
+		this.bankRepository = bankRepository;
 	}
 
 	public CreditPassTransactionData collectTransactionData(@NonNull final BPartnerId bPartnerId)
@@ -100,13 +106,25 @@ public class CreditPassTransactionDataFactory
 				.zip(optionalLocation.map(Location::getPostal).orElse(null))
 				.city(optionalLocation.map(Location::getCity).orElse(null))
 				.country(optionalLocation.map(Location::getCountryCode).orElse(null))
-				.bankRoutingCode(optionalBankAccount.map(I_C_BP_BankAccount::getRoutingNo).orElse(null))
+				.bankRoutingCode(optionalBankAccount.map(this::getRoutingNo).orElse(null))
 				.accountNr(optionalBankAccount.map(I_C_BP_BankAccount::getAccountNo).orElse(null))
 				.iban(optionalBankAccount.map(I_C_BP_BankAccount::getIBAN).orElse(null))
 				.creditCardNr(optionalBankAccount.map(I_C_BP_BankAccount::getCreditCardNumber).orElse(null))
 				.creditCardType(optionalBankAccount.map(I_C_BP_BankAccount::getCreditCardType).orElse(null))
 				.companyName(optionalBankAccount.map(I_C_BP_BankAccount::getA_Name).orElse(null))
 				.build();
+	}
+
+	private String getRoutingNo(final I_C_BP_BankAccount bpartnerBankAccount)
+	{
+		final BankId bankId = BankId.ofRepoIdOrNull(bpartnerBankAccount.getC_Bank_ID());
+		if(bankId != null)
+		{
+			final Bank bank = bankRepository.getById(bankId);
+			return bank.getRoutingNo();
+		}
+		
+		return bpartnerBankAccount.getRoutingNo();
 	}
 
 }

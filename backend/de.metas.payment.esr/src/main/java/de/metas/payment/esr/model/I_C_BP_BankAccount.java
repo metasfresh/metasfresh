@@ -38,9 +38,6 @@ public interface I_C_BP_BankAccount extends org.compiere.model.I_C_BP_BankAccoun
 //	void setESR_RenderedReceiver(String esrRenderedReceiver);
 	// @formatter:on
 
-	@Override
-	de.metas.payment.esr.model.I_C_Bank getC_Bank();
-
 	// @formatter:off
 	String COLUMNNAME_IsEsrAccount = "IsEsrAccount";
 	boolean isEsrAccount();

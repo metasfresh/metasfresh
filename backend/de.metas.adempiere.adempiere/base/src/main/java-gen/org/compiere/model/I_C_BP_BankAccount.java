@@ -2,7 +2,7 @@ package org.compiere.model;
 
 
 /** Generated Interface for C_BP_BankAccount
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
 @SuppressWarnings("javadoc")
 public interface I_C_BP_BankAccount 
@@ -14,38 +14,6 @@ public interface I_C_BP_BankAccount
     /** AD_Table_ID=298 */
 //    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
-//    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
-
-    /** AccessLevel = 3 - Client - Org
-     */
-//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(3);
-
-    /** Load Meta Data */
-
-	/**
-	 * Set Konto-Nr..
-	 * Account Number
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setAccountNo (java.lang.String AccountNo);
-
-	/**
-	 * Get Konto-Nr..
-	 * Account Number
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.lang.String getAccountNo();
-
-    /** Column definition for AccountNo */
-    public static final org.adempiere.model.ModelColumn<I_C_BP_BankAccount, Object> COLUMN_AccountNo = new org.adempiere.model.ModelColumn<I_C_BP_BankAccount, Object>(I_C_BP_BankAccount.class, "AccountNo", null);
-    /** Column name AccountNo */
-    public static final String COLUMNNAME_AccountNo = "AccountNo";
 
 	/**
 	 * Set Ort.
@@ -96,65 +64,6 @@ public interface I_C_BP_BankAccount
     public static final org.adempiere.model.ModelColumn<I_C_BP_BankAccount, Object> COLUMN_A_Country = new org.adempiere.model.ModelColumn<I_C_BP_BankAccount, Object>(I_C_BP_BankAccount.class, "A_Country", null);
     /** Column name A_Country */
     public static final String COLUMNNAME_A_Country = "A_Country";
-
-	/**
-	 * Get Mandant.
-	 * Client/Tenant for this installation.
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public int getAD_Client_ID();
-
-    /** Column name AD_Client_ID */
-    public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
-
-	/**
-	 * Set Sektion.
-	 * Organisatorische Einheit des Mandanten
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setAD_Org_ID (int AD_Org_ID);
-
-	/**
-	 * Get Sektion.
-	 * Organisatorische Einheit des Mandanten
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public int getAD_Org_ID();
-
-    /** Column name AD_Org_ID */
-    public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
-
-	/**
-	 * Set Ansprechpartner.
-	 * User within the system - Internal or Business Partner Contact
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setAD_User_ID (int AD_User_ID);
-
-	/**
-	 * Get Ansprechpartner.
-	 * User within the system - Internal or Business Partner Contact
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public int getAD_User_ID();
-
-    /** Column name AD_User_ID */
-    public static final String COLUMNNAME_AD_User_ID = "AD_User_ID";
 
 	/**
 	 * Set EMail.
@@ -232,7 +141,7 @@ public interface I_C_BP_BankAccount
     public static final String COLUMNNAME_A_Ident_SSN = "A_Ident_SSN";
 
 	/**
-	 * Set Name auf Kreditkarte.
+	 * Set Name.
 	 * Name auf Kreditkarte oder des Kontoeigners
 	 *
 	 * <br>Type: String
@@ -242,7 +151,7 @@ public interface I_C_BP_BankAccount
 	public void setA_Name (java.lang.String A_Name);
 
 	/**
-	 * Get Name auf Kreditkarte.
+	 * Get Name.
 	 * Name auf Kreditkarte oder des Kontoeigners
 	 *
 	 * <br>Type: String
@@ -332,6 +241,90 @@ public interface I_C_BP_BankAccount
     public static final String COLUMNNAME_A_Zip = "A_Zip";
 
 	/**
+	 * Set Konto-Nr..
+	 * Account Number
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setAccountNo (java.lang.String AccountNo);
+
+	/**
+	 * Get Konto-Nr..
+	 * Account Number
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getAccountNo();
+
+    /** Column definition for AccountNo */
+    public static final org.adempiere.model.ModelColumn<I_C_BP_BankAccount, Object> COLUMN_AccountNo = new org.adempiere.model.ModelColumn<I_C_BP_BankAccount, Object>(I_C_BP_BankAccount.class, "AccountNo", null);
+    /** Column name AccountNo */
+    public static final String COLUMNNAME_AccountNo = "AccountNo";
+
+	/**
+	 * Get Client.
+	 * Client/Tenant for this installation.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getAD_Client_ID();
+
+    /** Column name AD_Client_ID */
+    public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
+
+	/**
+	 * Set Organisation.
+	 * Organisational entity within client
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setAD_Org_ID (int AD_Org_ID);
+
+	/**
+	 * Get Organisation.
+	 * Organisational entity within client
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getAD_Org_ID();
+
+    /** Column name AD_Org_ID */
+    public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+
+	/**
+	 * Set Contact.
+	 * User within the system - Internal or Business Partner Contact
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setAD_User_ID (int AD_User_ID);
+
+	/**
+	 * Get Contact.
+	 * User within the system - Internal or Business Partner Contact
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getAD_User_ID();
+
+    /** Column name AD_User_ID */
+    public static final String COLUMNNAME_AD_User_ID = "AD_User_ID";
+
+	/**
 	 * Set Kontenart.
 	 * Bank Account Type
 	 *
@@ -401,40 +394,11 @@ public interface I_C_BP_BankAccount
 	 */
 	public int getC_Bank_ID();
 
-	public org.compiere.model.I_C_Bank getC_Bank();
-
-	public void setC_Bank(org.compiere.model.I_C_Bank C_Bank);
-
-    /** Column definition for C_Bank_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_BP_BankAccount, org.compiere.model.I_C_Bank> COLUMN_C_Bank_ID = new org.adempiere.model.ModelColumn<I_C_BP_BankAccount, org.compiere.model.I_C_Bank>(I_C_BP_BankAccount.class, "C_Bank_ID", org.compiere.model.I_C_Bank.class);
     /** Column name C_Bank_ID */
     public static final String COLUMNNAME_C_Bank_ID = "C_Bank_ID";
 
 	/**
-	 * Set Geschäftspartner.
-	 * Identifies a Business Partner
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setC_BPartner_ID (int C_BPartner_ID);
-
-	/**
-	 * Get Geschäftspartner.
-	 * Identifies a Business Partner
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public int getC_BPartner_ID();
-
-    /** Column name C_BPartner_ID */
-    public static final String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
-
-	/**
-	 * Set Bankverbindung.
+	 * Set Partner Bank Account.
 	 * Bank Account of the Business Partner
 	 *
 	 * <br>Type: ID
@@ -444,7 +408,7 @@ public interface I_C_BP_BankAccount
 	public void setC_BP_BankAccount_ID (int C_BP_BankAccount_ID);
 
 	/**
-	 * Get Bankverbindung.
+	 * Get Partner Bank Account.
 	 * Bank Account of the Business Partner
 	 *
 	 * <br>Type: ID
@@ -459,8 +423,29 @@ public interface I_C_BP_BankAccount
     public static final String COLUMNNAME_C_BP_BankAccount_ID = "C_BP_BankAccount_ID";
 
 	/**
-	 * Set Währung.
-	 * Die Währung für diesen Eintrag
+	 * Set Business Partner.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setC_BPartner_ID (int C_BPartner_ID);
+
+	/**
+	 * Get Business Partner.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getC_BPartner_ID();
+
+    /** Column name C_BPartner_ID */
+    public static final String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
+
+	/**
+	 * Set Currency.
+	 * The Currency for this record
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
@@ -469,8 +454,8 @@ public interface I_C_BP_BankAccount
 	public void setC_Currency_ID (int C_Currency_ID);
 
 	/**
-	 * Get Währung.
-	 * Die Währung für diesen Eintrag
+	 * Get Currency.
+	 * The Currency for this record
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
@@ -482,7 +467,7 @@ public interface I_C_BP_BankAccount
     public static final String COLUMNNAME_C_Currency_ID = "C_Currency_ID";
 
 	/**
-	 * Get Erstellt.
+	 * Get Created.
 	 * Date this record was created
 	 *
 	 * <br>Type: DateTime
@@ -497,7 +482,7 @@ public interface I_C_BP_BankAccount
     public static final String COLUMNNAME_Created = "Created";
 
 	/**
-	 * Get Erstellt durch.
+	 * Get Created By.
 	 * User who created this records
 	 *
 	 * <br>Type: Table
@@ -635,7 +620,7 @@ public interface I_C_BP_BankAccount
     public static final String COLUMNNAME_CreditCardVV = "CreditCardVV";
 
 	/**
-	 * Set Beschreibung.
+	 * Set Description.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -644,7 +629,7 @@ public interface I_C_BP_BankAccount
 	public void setDescription (java.lang.String Description);
 
 	/**
-	 * Get Beschreibung.
+	 * Get Description.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -708,7 +693,7 @@ public interface I_C_BP_BankAccount
     public static final String COLUMNNAME_IsACH = "IsACH";
 
 	/**
-	 * Set Aktiv.
+	 * Set Active.
 	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
@@ -718,7 +703,7 @@ public interface I_C_BP_BankAccount
 	public void setIsActive (boolean IsActive);
 
 	/**
-	 * Get Aktiv.
+	 * Get Active.
 	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
@@ -856,7 +841,7 @@ public interface I_C_BP_BankAccount
     public static final String COLUMNNAME_RoutingNo = "RoutingNo";
 
 	/**
-	 * Get Aktualisiert.
+	 * Get Updated.
 	 * Date this record was updated
 	 *
 	 * <br>Type: DateTime
@@ -871,7 +856,7 @@ public interface I_C_BP_BankAccount
     public static final String COLUMNNAME_Updated = "Updated";
 
 	/**
-	 * Get Aktualisiert durch.
+	 * Get Updated By.
 	 * User who updated this records
 	 *
 	 * <br>Type: Table

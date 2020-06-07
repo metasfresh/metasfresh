@@ -9,7 +9,6 @@ import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_BP_BankAccount;
 import org.compiere.model.I_C_BankStatement;
 import org.compiere.model.I_C_BankStatementLine;
 import org.compiere.model.MPeriod;
@@ -21,6 +20,7 @@ import org.compiere.util.TimeUtil;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.acct.api.IFactAcctDAO;
+import de.metas.banking.BankAccount;
 import de.metas.banking.BankAccountId;
 import de.metas.banking.BankStatementId;
 import de.metas.banking.BankStatementLineId;
@@ -115,8 +115,8 @@ public class BankStatementDocumentHandler implements DocumentHandler
 		final StringBuilder documentInfo = new StringBuilder();
 
 		final BankAccountId bpBankAccountId = BankAccountId.ofRepoId(bankStatement.getC_BP_BankAccount_ID());
-		final I_C_BP_BankAccount bankAccount = bpBankAccountDAO.getById(bpBankAccountId);
-		final String bankAccountName = bankAccount.getA_Name();
+		final BankAccount bankAccount = bpBankAccountDAO.getById(bpBankAccountId);
+		final String bankAccountName = bankAccount.getAccountName();
 		if (Check.isNotBlank(bankAccountName))
 		{
 			documentInfo.append(bankAccountName.trim());

@@ -1,19 +1,24 @@
 package de.metas.payment.esr.api.impl;
 
+import org.compiere.SpringContextHolder;
+
+import de.metas.banking.Bank;
+import de.metas.banking.BankId;
+import de.metas.banking.api.BankRepository;
 import de.metas.payment.esr.api.IESRBPBankAccountBL;
 import de.metas.payment.esr.model.I_C_BP_BankAccount;
-import de.metas.payment.esr.model.I_C_Bank;
 import de.metas.util.Check;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
 
 public class ESRBPBankAccountBL implements IESRBPBankAccountBL
 {
+	private final BankRepository bankRepo = SpringContextHolder.instance.getBean(BankRepository.class);
+	
 	@Override
 	public String retrieveBankAccountNo(@NonNull final I_C_BP_BankAccount bankAccount)
 	{
-		final I_C_Bank bank = bankAccount.getC_Bank();
-		if (bank != null && bank.isESR_PostBank())
+		if (isPostBank(bankAccount))
 		{
 			return "000000";
 		}
@@ -21,6 +26,18 @@ public class ESRBPBankAccountBL implements IESRBPBankAccountBL
 		{
 			return bankAccount.getAccountNo();
 		}
+	}
+
+	private boolean isPostBank(@NonNull final I_C_BP_BankAccount bankAccount)
+	{
+		final BankId bankId = BankId.ofRepoIdOrNull(bankAccount.getC_Bank_ID());
+		if (bankId == null)
+		{
+			return false;
+		}
+
+		final Bank bank = bankRepo.getById(bankId);
+		return bank.isEsrPostBank();
 	}
 
 	@Override

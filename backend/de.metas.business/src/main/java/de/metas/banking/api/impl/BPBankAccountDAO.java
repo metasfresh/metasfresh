@@ -17,13 +17,16 @@ import org.compiere.model.I_C_BP_BankAccount;
 
 import com.google.common.collect.ImmutableListMultimap;
 
+import de.metas.banking.BankAccount;
 import de.metas.banking.BankAccountId;
 import de.metas.banking.BankId;
 import de.metas.banking.api.IBPBankAccountDAO;
 import de.metas.bpartner.BPartnerBankAccountId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.money.CurrencyId;
+import de.metas.organization.OrgId;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import lombok.NonNull;
 
 /*
@@ -53,15 +56,27 @@ public class BPBankAccountDAO implements IBPBankAccountDAO
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	@Override
-	public I_C_BP_BankAccount getById(final BankAccountId bankAccountId)
+	public BankAccount getById(final BankAccountId bankAccountId)
 	{
-		return getById(bankAccountId, I_C_BP_BankAccount.class);
+		final I_C_BP_BankAccount record = getById(bankAccountId, I_C_BP_BankAccount.class);
+		return toBankAccount(record);
 	}
 
 	@Override
 	public <T extends I_C_BP_BankAccount> T getById(@NonNull final BankAccountId bankAccountId, @NonNull final Class<T> modelType)
 	{
 		return loadOutOfTrx(bankAccountId, modelType);
+	}
+
+	private static BankAccount toBankAccount(final I_C_BP_BankAccount record)
+	{
+		return BankAccount.builder()
+				.id(BankAccountId.ofRepoId(record.getC_BP_BankAccount_ID()))
+				.bankId(BankId.ofRepoId(record.getC_Bank_ID()))
+				.accountName(StringUtils.trimBlankToNull(record.getA_Name()))
+				.currencyId(CurrencyId.ofRepoId(record.getC_Currency_ID()))
+				.orgId(OrgId.ofRepoId(record.getAD_Org_ID()))
+				.build();
 	}
 
 	@Override
@@ -139,8 +154,6 @@ public class BPBankAccountDAO implements IBPBankAccountDAO
 	@Override
 	public BankId getBankId(@NonNull final BankAccountId bankAccountId)
 	{
-		final I_C_BP_BankAccount bankAccount = getById(bankAccountId);
-		return BankId.ofRepoId(bankAccount.getC_Bank_ID());
+		return getById(bankAccountId).getBankId();
 	}
-
 }
