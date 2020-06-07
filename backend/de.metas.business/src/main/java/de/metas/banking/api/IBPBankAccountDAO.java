@@ -57,6 +57,8 @@ public interface IBPBankAccountDAO extends ISingletonService
 			@NonNull CurrencyId currencyId,
 			@NonNull String iban);
 
+	Optional<I_C_BP_BankAccount> retrieveDefaultBankAccountInTrx(@NonNull BPartnerId bpartnerId);
+
 	/**
 	 * Deactivate all {@link I_C_BP_BankAccount} records for the given bPartnerId, besides
 	 * <li>

@@ -9,30 +9,7 @@ import org.springframework.stereotype.Service;
 import de.metas.banking.Bank;
 import de.metas.banking.BankId;
 import de.metas.banking.api.BankRepository;
-
-/*
- * #%L
- *  de.metas.vertical.creditscore.creditpass.service
- * %%
- * Copyright (C) 2018 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import de.metas.banking.service.IBankingBPBankAccountDAO;
+import de.metas.banking.api.IBPBankAccountDAO;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.BPartnerLocationInfo;
@@ -70,7 +47,7 @@ public class CreditPassTransactionDataFactory
 	public CreditPassTransactionData collectTransactionData(@NonNull final BPartnerId bPartnerId)
 	{
 		final IBPartnerDAO bpartnersRepo = Services.get(IBPartnerDAO.class);
-		final IBankingBPBankAccountDAO bpBankAccountRepo = Services.get(IBankingBPBankAccountDAO.class);
+		final IBPBankAccountDAO bankAccountRepo = Services.get(IBPBankAccountDAO.class);
 
 		int userId = MBPartner.getDefaultContactId(bPartnerId.getRepoId());
 		User user = null;
@@ -93,8 +70,7 @@ public class CreditPassTransactionDataFactory
 		}
 		Optional<Location> optionalLocation = Optional.ofNullable(location);
 		//TODO avoid using db models
-		I_C_BP_BankAccount bankAccount = bpBankAccountRepo.retrieveDefaultBankAccount(bpartnersRepo.getByIdInTrx(bPartnerId));
-		Optional<I_C_BP_BankAccount> optionalBankAccount = Optional.ofNullable(bankAccount);
+		Optional<I_C_BP_BankAccount> optionalBankAccount = bankAccountRepo.retrieveDefaultBankAccountInTrx(bPartnerId);
 
 		return CreditPassTransactionData.builder()
 				.firstName(optionalUser.map(User::getFirstName).orElse(null))
