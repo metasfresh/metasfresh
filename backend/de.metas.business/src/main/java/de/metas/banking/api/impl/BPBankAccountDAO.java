@@ -23,6 +23,8 @@ import de.metas.banking.BankId;
 import de.metas.banking.api.IBPBankAccountDAO;
 import de.metas.bpartner.BPartnerBankAccountId;
 import de.metas.bpartner.BPartnerId;
+import de.metas.cache.CCache;
+import de.metas.cache.CCache.CacheMapType;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.util.Services;
@@ -55,20 +57,26 @@ public class BPBankAccountDAO implements IBPBankAccountDAO
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
+	private final CCache<BankAccountId, BankAccount> bankAccountsById = CCache.<BankAccountId, BankAccount> builder()
+			.tableName(I_C_BP_BankAccount.Table_Name)
+			.cacheMapType(CacheMapType.LRU)
+			.initialCapacity(100)
+			.expireMinutes(CCache.EXPIREMINUTES_Never)
+			.build();
+
 	@Override
-	public BankAccount getById(final BankAccountId bankAccountId)
+	public BankAccount getById(@NonNull final BankAccountId bankAccountId)
 	{
-		final I_C_BP_BankAccount record = getById(bankAccountId, I_C_BP_BankAccount.class);
+		return bankAccountsById.getOrLoad(bankAccountId, this::retrieveBankAccount);
+	}
+
+	private BankAccount retrieveBankAccount(@NonNull final BankAccountId bankAccountId)
+	{
+		final I_C_BP_BankAccount record = loadOutOfTrx(bankAccountId, I_C_BP_BankAccount.class);
 		return toBankAccount(record);
 	}
 
-	@Override
-	public <T extends I_C_BP_BankAccount> T getById(@NonNull final BankAccountId bankAccountId, @NonNull final Class<T> modelType)
-	{
-		return loadOutOfTrx(bankAccountId, modelType);
-	}
-
-	private static BankAccount toBankAccount(final I_C_BP_BankAccount record)
+	private static BankAccount toBankAccount(@NonNull final I_C_BP_BankAccount record)
 	{
 		return BankAccount.builder()
 				.id(BankAccountId.ofRepoId(record.getC_BP_BankAccount_ID()))

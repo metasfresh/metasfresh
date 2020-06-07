@@ -643,6 +643,52 @@ public interface I_C_BP_BankAccount
     public static final String COLUMNNAME_Description = "Description";
 
 	/**
+	 * Set ESR Participant.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setESR_RenderedAccountNo (java.lang.String ESR_RenderedAccountNo);
+
+	/**
+	 * Get ESR Participant.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getESR_RenderedAccountNo();
+
+    /** Column definition for ESR_RenderedAccountNo */
+    public static final org.adempiere.model.ModelColumn<I_C_BP_BankAccount, Object> COLUMN_ESR_RenderedAccountNo = new org.adempiere.model.ModelColumn<I_C_BP_BankAccount, Object>(I_C_BP_BankAccount.class, "ESR_RenderedAccountNo", null);
+    /** Column name ESR_RenderedAccountNo */
+    public static final String COLUMNNAME_ESR_RenderedAccountNo = "ESR_RenderedAccountNo";
+
+	/**
+	 * Set ESR Receiver.
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setESR_RenderedReceiver (java.lang.String ESR_RenderedReceiver);
+
+	/**
+	 * Get ESR Receiver.
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getESR_RenderedReceiver();
+
+    /** Column definition for ESR_RenderedReceiver */
+    public static final org.adempiere.model.ModelColumn<I_C_BP_BankAccount, Object> COLUMN_ESR_RenderedReceiver = new org.adempiere.model.ModelColumn<I_C_BP_BankAccount, Object>(I_C_BP_BankAccount.class, "ESR_RenderedReceiver", null);
+    /** Column name ESR_RenderedReceiver */
+    public static final String COLUMNNAME_ESR_RenderedReceiver = "ESR_RenderedReceiver";
+
+	/**
 	 * Set IBAN.
 	 * International Bank Account Number
 	 *
@@ -743,6 +789,52 @@ public interface I_C_BP_BankAccount
     public static final String COLUMNNAME_IsDefault = "IsDefault";
 
 	/**
+	 * Set Standard ESR Konto.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setIsDefaultESR (boolean IsDefaultESR);
+
+	/**
+	 * Get Standard ESR Konto.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public boolean isDefaultESR();
+
+    /** Column definition for IsDefaultESR */
+    public static final org.adempiere.model.ModelColumn<I_C_BP_BankAccount, Object> COLUMN_IsDefaultESR = new org.adempiere.model.ModelColumn<I_C_BP_BankAccount, Object>(I_C_BP_BankAccount.class, "IsDefaultESR", null);
+    /** Column name IsDefaultESR */
+    public static final String COLUMNNAME_IsDefaultESR = "IsDefaultESR";
+
+	/**
+	 * Set ESR Account.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setIsEsrAccount (boolean IsEsrAccount);
+
+	/**
+	 * Get ESR Account.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public boolean isEsrAccount();
+
+    /** Column definition for IsEsrAccount */
+    public static final org.adempiere.model.ModelColumn<I_C_BP_BankAccount, Object> COLUMN_IsEsrAccount = new org.adempiere.model.ModelColumn<I_C_BP_BankAccount, Object>(I_C_BP_BankAccount.class, "IsEsrAccount", null);
+    /** Column name IsEsrAccount */
+    public static final String COLUMNNAME_IsEsrAccount = "IsEsrAccount";
+
+	/**
 	 * Set Name.
 	 *
 	 * <br>Type: String
@@ -839,6 +931,29 @@ public interface I_C_BP_BankAccount
     public static final org.adempiere.model.ModelColumn<I_C_BP_BankAccount, Object> COLUMN_RoutingNo = new org.adempiere.model.ModelColumn<I_C_BP_BankAccount, Object>(I_C_BP_BankAccount.class, "RoutingNo", null);
     /** Column name RoutingNo */
     public static final String COLUMNNAME_RoutingNo = "RoutingNo";
+
+	/**
+	 * Set SEPA Creditor Identifier.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setSEPA_CreditorIdentifier (java.lang.String SEPA_CreditorIdentifier);
+
+	/**
+	 * Get SEPA Creditor Identifier.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getSEPA_CreditorIdentifier();
+
+    /** Column definition for SEPA_CreditorIdentifier */
+    public static final org.adempiere.model.ModelColumn<I_C_BP_BankAccount, Object> COLUMN_SEPA_CreditorIdentifier = new org.adempiere.model.ModelColumn<I_C_BP_BankAccount, Object>(I_C_BP_BankAccount.class, "SEPA_CreditorIdentifier", null);
+    /** Column name SEPA_CreditorIdentifier */
+    public static final String COLUMNNAME_SEPA_CreditorIdentifier = "SEPA_CreditorIdentifier";
 
 	/**
 	 * Get Updated.

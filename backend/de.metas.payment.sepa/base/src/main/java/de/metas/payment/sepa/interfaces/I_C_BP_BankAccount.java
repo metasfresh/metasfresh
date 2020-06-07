@@ -27,8 +27,8 @@ public interface I_C_BP_BankAccount extends org.compiere.model.I_C_BP_BankAccoun
 {
 	// @formatter:off
 	String COLUMNNAME_SEPA_CREDITORIDENTIFIER = "SEPA_CreditorIdentifier";
-	String getSEPA_CreditorIdentifier();
-	void setSEPA_CreditorIdentifier(String SEPA_CreditorIdentifier);
+	@Override String getSEPA_CreditorIdentifier();
+	@Override void setSEPA_CreditorIdentifier(String SEPA_CreditorIdentifier);
 	// @formatter:on
 
 	// @formatter:off

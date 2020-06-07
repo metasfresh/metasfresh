@@ -53,6 +53,7 @@ import de.metas.allocation.api.IAllocationDAO;
 import de.metas.attachments.AttachmentEntry;
 import de.metas.attachments.AttachmentEntryId;
 import de.metas.attachments.AttachmentEntryService;
+import de.metas.banking.BankAccount;
 import de.metas.banking.BankAccountId;
 import de.metas.banking.BankStatementAndLineAndRefId;
 import de.metas.banking.BankStatementLineId;
@@ -88,7 +89,6 @@ import de.metas.payment.esr.dataimporter.ESRTransaction;
 import de.metas.payment.esr.dataimporter.IESRDataImporter;
 import de.metas.payment.esr.dataimporter.impl.v11.ESRTransactionLineMatcherUtil;
 import de.metas.payment.esr.exception.ESRImportLockedException;
-import de.metas.payment.esr.model.I_C_BP_BankAccount;
 import de.metas.payment.esr.model.I_ESR_Import;
 import de.metas.payment.esr.model.I_ESR_ImportLine;
 import de.metas.payment.esr.model.X_ESR_ImportLine;
@@ -623,11 +623,10 @@ public class ESRImportBL implements IESRImportBL
 			final I_C_Payment payment = createUnlinkedPaymentForLine(line, line.getAmount());
 			Check.assume(payment.getAD_Org_ID() == line.getAD_Org_ID(), "Payment has the same org as {}", line);
 
-			final I_C_BP_BankAccount bankAccount = bpBankAccountDAO.getById(
-					BankAccountId.ofRepoId(line.getESR_Import().getC_BP_BankAccount_ID()),
-					I_C_BP_BankAccount.class);
+			final BankAccountId bankAccountId = BankAccountId.ofRepoId(line.getESR_Import().getC_BP_BankAccount_ID());
+			final BankAccount bankAccount = bpBankAccountDAO.getById(bankAccountId);
 
-			payment.setC_Currency_ID(bankAccount.getC_Currency_ID());
+			payment.setC_Currency_ID(bankAccount.getCurrencyId().getRepoId());
 
 			if (sysConfigBL.getBooleanValue(ESRConstants.SYSCONFIG_EAGER_PAYMENT_ALLOCATION, true)) // task 09167: calling with true to preserve the old behavior
 			{

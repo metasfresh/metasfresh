@@ -11,7 +11,7 @@ import java.util.Properties;
 public class X_C_BP_BankAccount extends org.compiere.model.PO implements I_C_BP_BankAccount, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -440918877L;
+	private static final long serialVersionUID = -649509635L;
 
     /** Standard Constructor */
     public X_C_BP_BankAccount (Properties ctx, int C_BP_BankAccount_ID, String trxName)
@@ -371,6 +371,30 @@ public class X_C_BP_BankAccount extends org.compiere.model.PO implements I_C_BP_
 	}
 
 	@Override
+	public void setESR_RenderedAccountNo (java.lang.String ESR_RenderedAccountNo)
+	{
+		set_Value (COLUMNNAME_ESR_RenderedAccountNo, ESR_RenderedAccountNo);
+	}
+
+	@Override
+	public java.lang.String getESR_RenderedAccountNo() 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_ESR_RenderedAccountNo);
+	}
+
+	@Override
+	public void setESR_RenderedReceiver (java.lang.String ESR_RenderedReceiver)
+	{
+		set_Value (COLUMNNAME_ESR_RenderedReceiver, ESR_RenderedReceiver);
+	}
+
+	@Override
+	public java.lang.String getESR_RenderedReceiver() 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_ESR_RenderedReceiver);
+	}
+
+	@Override
 	public void setIBAN (java.lang.String IBAN)
 	{
 		set_Value (COLUMNNAME_IBAN, IBAN);
@@ -404,6 +428,30 @@ public class X_C_BP_BankAccount extends org.compiere.model.PO implements I_C_BP_
 	public boolean isDefault() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsDefault);
+	}
+
+	@Override
+	public void setIsDefaultESR (boolean IsDefaultESR)
+	{
+		set_Value (COLUMNNAME_IsDefaultESR, Boolean.valueOf(IsDefaultESR));
+	}
+
+	@Override
+	public boolean isDefaultESR() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsDefaultESR);
+	}
+
+	@Override
+	public void setIsEsrAccount (boolean IsEsrAccount)
+	{
+		set_Value (COLUMNNAME_IsEsrAccount, Boolean.valueOf(IsEsrAccount));
+	}
+
+	@Override
+	public boolean isEsrAccount() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsEsrAccount);
 	}
 
 	@Override
@@ -476,5 +524,17 @@ public class X_C_BP_BankAccount extends org.compiere.model.PO implements I_C_BP_
 	public java.lang.String getRoutingNo() 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_RoutingNo);
+	}
+
+	@Override
+	public void setSEPA_CreditorIdentifier (java.lang.String SEPA_CreditorIdentifier)
+	{
+		set_Value (COLUMNNAME_SEPA_CreditorIdentifier, SEPA_CreditorIdentifier);
+	}
+
+	@Override
+	public java.lang.String getSEPA_CreditorIdentifier() 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_SEPA_CreditorIdentifier);
 	}
 }
