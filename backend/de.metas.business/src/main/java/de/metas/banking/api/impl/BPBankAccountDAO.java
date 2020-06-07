@@ -53,15 +53,15 @@ public class BPBankAccountDAO implements IBPBankAccountDAO
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	@Override
-	public I_C_BP_BankAccount getById(final BankAccountId bpBankAccountId)
+	public I_C_BP_BankAccount getById(final BankAccountId bankAccountId)
 	{
-		return getById(bpBankAccountId, I_C_BP_BankAccount.class);
+		return getById(bankAccountId, I_C_BP_BankAccount.class);
 	}
 
 	@Override
-	public <T extends I_C_BP_BankAccount> T getById(@NonNull final BankAccountId bpBankAccountId, @NonNull final Class<T> modelType)
+	public <T extends I_C_BP_BankAccount> T getById(@NonNull final BankAccountId bankAccountId, @NonNull final Class<T> modelType)
 	{
-		return loadOutOfTrx(bpBankAccountId, modelType);
+		return loadOutOfTrx(bankAccountId, modelType);
 	}
 
 	@Override

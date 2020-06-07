@@ -29,10 +29,9 @@ import de.metas.acct.api.IProductAcctDAO;
 import de.metas.acct.api.ProductAcctType;
 import de.metas.acct.tax.ITaxAcctBL;
 import de.metas.acct.tax.TaxAcctType;
+import de.metas.banking.BankAccountAcct;
 import de.metas.banking.BankAccountId;
-import de.metas.banking.api.BPBankAccountAcct;
-import de.metas.banking.api.BPBankAccountAcctRepository;
-import de.metas.banking.api.IBPBankAccountDAO;
+import de.metas.banking.api.BankAccountService;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
 import de.metas.cache.model.IModelCacheInvalidationService;
 import de.metas.cache.model.ModelCacheInvalidationTiming;
@@ -102,8 +101,7 @@ public class AcctDocRequiredServicesFacade
 
 	private final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
 	private final ICurrencyBL currencyConversionBL = Services.get(ICurrencyBL.class);
-	private final IBPBankAccountDAO bpBankAccountDAO = Services.get(IBPBankAccountDAO.class);
-	private final BPBankAccountAcctRepository bankAccountAcctRepo;
+	private final BankAccountService bankAccountService;
 
 	//
 	// Needed for DocLine:
@@ -115,10 +113,10 @@ public class AcctDocRequiredServicesFacade
 	private final ICostingService costingService;
 
 	public AcctDocRequiredServicesFacade(
-			@NonNull final BPBankAccountAcctRepository bankAccountAcctRepo,
+			@NonNull final BankAccountService bankAccountService,
 			@NonNull final ICostingService costingService)
 	{
-		this.bankAccountAcctRepo = bankAccountAcctRepo;
+		this.bankAccountService = bankAccountService;
 		this.costingService = costingService;
 	}
 
@@ -194,12 +192,12 @@ public class AcctDocRequiredServicesFacade
 
 	public I_C_BP_BankAccount getBPBankAccountById(final BankAccountId bpBankAccountId)
 	{
-		return bpBankAccountDAO.getById(bpBankAccountId);
+		return bankAccountService.getById(bpBankAccountId);
 	}
 
-	public BPBankAccountAcct getBPBankAccountAcct(final BankAccountId bankAccountId, final AcctSchemaId acctSchemaId)
+	public BankAccountAcct getBPBankAccountAcct(final BankAccountId bankAccountId, final AcctSchemaId acctSchemaId)
 	{
-		return bankAccountAcctRepo.getByBankAccountIdAndAcctSchemaId(bankAccountId, acctSchemaId);
+		return bankAccountService.getBankAccountAcct(bankAccountId, acctSchemaId);
 	}
 
 	public void postImmediateNoFail(

@@ -26,7 +26,7 @@ import org.compiere.util.DB;
 
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.IAcctSchemaDAO;
-import de.metas.banking.api.BPBankAccountAcctRepository;
+import de.metas.banking.api.BankAccountAcctRepository;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
 import de.metas.util.Services;
@@ -39,7 +39,7 @@ import de.metas.util.Services;
  */
 public class AcctSchemaDefaultCopy extends JavaProcess
 {
-	private final BPBankAccountAcctRepository bankAccountAcctRepo = SpringContextHolder.instance.getBean(BPBankAccountAcctRepository.class);
+	private final BankAccountAcctRepository bankAccountAcctRepo = SpringContextHolder.instance.getBean(BankAccountAcctRepository.class);
 
 	/** Acct Schema */
 	private AcctSchemaId p_C_AcctSchema_ID;

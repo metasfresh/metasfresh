@@ -16,6 +16,7 @@ import com.google.common.collect.Maps;
 
 import de.metas.acct.api.AccountId;
 import de.metas.acct.api.AcctSchemaId;
+import de.metas.banking.BankAccountAcct;
 import de.metas.banking.BankAccountId;
 import de.metas.cache.CCache;
 import lombok.NonNull;
@@ -44,14 +45,14 @@ import lombok.ToString;
  */
 
 @Repository
-public class BPBankAccountAcctRepository
+public class BankAccountAcctRepository
 {
 	private static final String TABLENAME_C_BP_BankAccount_Acct = "C_BP_BankAccount_Acct";
 	private CCache<BankAccountId, BPBankAccountAcctBySchemasMap> cache = CCache.<BankAccountId, BPBankAccountAcctBySchemasMap> builder()
 			.tableName(TABLENAME_C_BP_BankAccount_Acct)
 			.build();
 
-	public BPBankAccountAcct getByBankAccountIdAndAcctSchemaId(
+	public BankAccountAcct getByBankAccountIdAndAcctSchemaId(
 			final BankAccountId bankAccountId,
 			final AcctSchemaId acctSchemaId)
 	{
@@ -65,7 +66,7 @@ public class BPBankAccountAcctRepository
 
 	private BPBankAccountAcctBySchemasMap retrieveBPBankAccountAcctBySchemasMap(final BankAccountId bankAccountId)
 	{
-		final List<BPBankAccountAcct> accts = DB.retrieveRows(
+		final List<BankAccountAcct> accts = DB.retrieveRows(
 				"SELECT * FROM " + TABLENAME_C_BP_BankAccount_Acct + " WHERE C_BP_BankAccount_ID=? AND IsActive=?",
 				Arrays.asList(bankAccountId, true),
 				this::retrieveBPBankAccountAcct);
@@ -73,9 +74,9 @@ public class BPBankAccountAcctRepository
 		return new BPBankAccountAcctBySchemasMap(accts);
 	}
 
-	private BPBankAccountAcct retrieveBPBankAccountAcct(final ResultSet rs) throws SQLException
+	private BankAccountAcct retrieveBPBankAccountAcct(final ResultSet rs) throws SQLException
 	{
-		return BPBankAccountAcct.builder()
+		return BankAccountAcct.builder()
 				.bankAccountId(BankAccountId.ofRepoId(rs.getInt("C_BP_BankAccount_ID")))
 				.acctSchemaId(AcctSchemaId.ofRepoId(rs.getInt("C_AcctSchema_ID")))
 				//
@@ -158,16 +159,16 @@ public class BPBankAccountAcctRepository
 	@ToString
 	private static class BPBankAccountAcctBySchemasMap
 	{
-		private final ImmutableMap<@NonNull AcctSchemaId, BPBankAccountAcct> byAcctSchemaId;
+		private final ImmutableMap<@NonNull AcctSchemaId, BankAccountAcct> byAcctSchemaId;
 
-		private BPBankAccountAcctBySchemasMap(@NonNull final List<BPBankAccountAcct> accts)
+		private BPBankAccountAcctBySchemasMap(@NonNull final List<BankAccountAcct> accts)
 		{
-			this.byAcctSchemaId = Maps.uniqueIndex(accts, BPBankAccountAcct::getAcctSchemaId);
+			this.byAcctSchemaId = Maps.uniqueIndex(accts, BankAccountAcct::getAcctSchemaId);
 		}
 
-		public BPBankAccountAcct getByAcctSchemaId(final AcctSchemaId acctSchemaId)
+		public BankAccountAcct getByAcctSchemaId(final AcctSchemaId acctSchemaId)
 		{
-			final BPBankAccountAcct acct = byAcctSchemaId.get(acctSchemaId);
+			final BankAccountAcct acct = byAcctSchemaId.get(acctSchemaId);
 			if (acct == null)
 			{
 				throw new AdempiereException("No BP Bank Account Accounting settings found for " + acctSchemaId);

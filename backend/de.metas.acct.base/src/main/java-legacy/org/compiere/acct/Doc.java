@@ -64,8 +64,8 @@ import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.doc.AcctDocContext;
 import de.metas.acct.doc.AcctDocRequiredServicesFacade;
 import de.metas.acct.doc.PostingException;
+import de.metas.banking.BankAccountAcct;
 import de.metas.banking.BankAccountId;
-import de.metas.banking.api.BPBankAccountAcct;
 import de.metas.bpartner.BPartnerId;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.CurrencyPrecision;
@@ -1136,19 +1136,19 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		/** Account Type - Payment */
 		else if (acctType == AccountType.UnallocatedCash)
 		{
-			return getBPBankAccountAcct(acctSchemaId).getUnallocatedCashAcct();
+			return getBankAccountAcct(acctSchemaId).getUnallocatedCashAcct();
 		}
 		else if (acctType == AccountType.BankInTransit)
 		{
-			return getBPBankAccountAcct(acctSchemaId).getBankInTransitAcct();
+			return getBankAccountAcct(acctSchemaId).getBankInTransitAcct();
 		}
 		else if (acctType == AccountType.PaymentSelect)
 		{
-			return getBPBankAccountAcct(acctSchemaId).getPaymentSelectAcct();
+			return getBankAccountAcct(acctSchemaId).getPaymentSelectAcct();
 		}
 		else if (acctType == AccountType.PayBankFee)
 		{
-			return getBPBankAccountAcct(acctSchemaId).getPaymentBankFeeAcct();
+			return getBankAccountAcct(acctSchemaId).getPaymentBankFeeAcct();
 		}
 
 		/** Account Type - Allocation */
@@ -1174,15 +1174,15 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		/** Account Type - Bank Statement */
 		else if (acctType == AccountType.BankAsset)
 		{
-			return getBPBankAccountAcct(acctSchemaId).getBankAssetAcct();
+			return getBankAccountAcct(acctSchemaId).getBankAssetAcct();
 		}
 		else if (acctType == AccountType.InterestRev)
 		{
-			return getBPBankAccountAcct(acctSchemaId).getInterestRevenueAcct();
+			return getBankAccountAcct(acctSchemaId).getInterestRevenueAcct();
 		}
 		else if (acctType == AccountType.InterestExp)
 		{
-			return getBPBankAccountAcct(acctSchemaId).getInterestExpenseAcct();
+			return getBankAccountAcct(acctSchemaId).getInterestExpenseAcct();
 		}
 
 		/** Account Type - Cash */
@@ -1290,7 +1290,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		}
 	}	// getAccount_ID
 
-	private BPBankAccountAcct getBPBankAccountAcct(@NonNull final AcctSchemaId acctSchemaId)
+	private BankAccountAcct getBankAccountAcct(@NonNull final AcctSchemaId acctSchemaId)
 	{
 		final BankAccountId bankAccountId = getBPBankAccountId();
 		if (bankAccountId == null)

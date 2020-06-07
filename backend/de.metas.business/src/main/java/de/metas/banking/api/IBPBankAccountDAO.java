@@ -40,14 +40,11 @@ import de.metas.money.CurrencyId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
 
-/**
- * TODO This interface must be moved in de.metas.banking but there still are some dependencies which need be fixed
- */
 public interface IBPBankAccountDAO extends ISingletonService
 {
-	I_C_BP_BankAccount getById(final BankAccountId bpBankAccountId);
+	I_C_BP_BankAccount getById(final BankAccountId bankAccountId);
 
-	<T extends I_C_BP_BankAccount> T getById(final BankAccountId bpBankAccountId, Class<T> modelType);
+	<T extends I_C_BP_BankAccount> T getById(final BankAccountId bankAccountId, Class<T> modelType);
 
 	/**
 	 * Retrieve all the bank accounts of the currency <code>currencyID</code> for the partner <code> partnerID</code>
@@ -56,7 +53,10 @@ public interface IBPBankAccountDAO extends ISingletonService
 	 */
 	List<I_C_BP_BankAccount> retrieveBankAccountsForPartnerAndCurrency(Properties ctx, int partnerID, int currencyID);
 
-	Optional<BankAccountId> retrieveByBPartnerAndCurrencyAndIBAN(@NonNull BPartnerId bPartnerId, @NonNull CurrencyId currencyId, @NonNull String iban);
+	Optional<BankAccountId> retrieveByBPartnerAndCurrencyAndIBAN(
+			@NonNull BPartnerId bpartnerId,
+			@NonNull CurrencyId currencyId,
+			@NonNull String iban);
 
 	/**
 	 * Deactivate all {@link I_C_BP_BankAccount} records for the given bPartnerId, besides

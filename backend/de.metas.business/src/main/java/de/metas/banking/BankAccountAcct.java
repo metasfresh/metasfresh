@@ -1,8 +1,7 @@
-package de.metas.banking.api;
+package de.metas.banking;
 
 import de.metas.acct.api.AccountId;
 import de.metas.acct.api.AcctSchemaId;
-import de.metas.banking.BankAccountId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -29,9 +28,12 @@ import lombok.Value;
  * #L%
  */
 
+/**
+ * Own (organization) bank account - accounting settings
+ */
 @Value
 @Builder
-public class BPBankAccountAcct
+public class BankAccountAcct
 {
 	@NonNull
 	BankAccountId bankAccountId;
