@@ -3,10 +3,13 @@ package de.metas.banking.api;
 import org.springframework.stereotype.Service;
 
 import de.metas.acct.api.AcctSchemaId;
+import de.metas.banking.Bank;
 import de.metas.banking.BankAccount;
 import de.metas.banking.BankAccountAcct;
 import de.metas.banking.BankAccountId;
 import de.metas.banking.BankId;
+import de.metas.currency.CurrencyCode;
+import de.metas.currency.CurrencyRepository;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -38,13 +41,16 @@ public class BankAccountService
 	private final IBPBankAccountDAO bankAccountDAO = Services.get(IBPBankAccountDAO.class);
 	private final BankRepository bankRepo;
 	private final BankAccountAcctRepository bankAccountAcctRepo;
+	private final CurrencyRepository currencyRepo;
 
 	public BankAccountService(
 			@NonNull final BankRepository bankRepo,
-			@NonNull final BankAccountAcctRepository bankAccountAcctRepo)
+			@NonNull final BankAccountAcctRepository bankAccountAcctRepo,
+			@NonNull final CurrencyRepository currencyRepo)
 	{
 		this.bankRepo = bankRepo;
 		this.bankAccountAcctRepo = bankAccountAcctRepo;
+		this.currencyRepo = currencyRepo;
 	}
 
 	public boolean isCashBank(@NonNull final BankAccountId bankAccountId)
@@ -63,5 +69,15 @@ public class BankAccountService
 			@NonNull final AcctSchemaId acctSchemaId)
 	{
 		return bankAccountAcctRepo.getByBankAccountIdAndAcctSchemaId(bankAccountId, acctSchemaId);
+	}
+
+	public String createBankAccountName(@NonNull final BankAccountId bankAccountId)
+	{
+		final BankAccount bankAccount = getById(bankAccountId);
+
+		final Bank bank = bankRepo.getById(bankAccount.getBankId());
+		final CurrencyCode currencyCode = currencyRepo.getCurrencyCodeById(bankAccount.getCurrencyId());
+
+		return bank.getBankName() + "_" + currencyCode.toThreeLetterCode();
 	}
 }

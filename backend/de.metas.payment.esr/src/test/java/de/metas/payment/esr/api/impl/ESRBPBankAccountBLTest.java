@@ -2,8 +2,12 @@ package de.metas.payment.esr.api.impl;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.SpringContextHolder;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import de.metas.banking.api.BankRepository;
 import de.metas.payment.esr.api.IESRBPBankAccountBL;
 import de.metas.util.Services;
 
@@ -31,12 +35,19 @@ import de.metas.util.Services;
 
 public class ESRBPBankAccountBLTest
 {
+	@BeforeEach
+	public void beforeEach()
+	{
+		AdempiereTestHelper.get().init();
+	}
+
 	@Test
 	public void getService()
 	{
+		final ESRBPBankAccountBL esrBankAccountBL = new ESRBPBankAccountBL(new BankRepository());
+		SpringContextHolder.registerJUnitBean(IESRBPBankAccountBL.class, esrBankAccountBL);
+
 		final IESRBPBankAccountBL service = Services.get(IESRBPBankAccountBL.class);
-		assertThat(service)
-				.isNotNull()
-				.isInstanceOf(ESRBPBankAccountBL.class);
+		assertThat(service).isSameAs(esrBankAccountBL);
 	}
 }

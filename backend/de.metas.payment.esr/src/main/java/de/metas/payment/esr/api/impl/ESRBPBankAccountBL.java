@@ -1,6 +1,6 @@
 package de.metas.payment.esr.api.impl;
 
-import org.compiere.SpringContextHolder;
+import org.springframework.stereotype.Service;
 
 import de.metas.banking.Bank;
 import de.metas.banking.BankId;
@@ -11,10 +11,17 @@ import de.metas.util.Check;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
 
+@Service
 public class ESRBPBankAccountBL implements IESRBPBankAccountBL
 {
-	private final BankRepository bankRepo = SpringContextHolder.instance.getBean(BankRepository.class);
-	
+	private final BankRepository bankRepo;
+
+	public ESRBPBankAccountBL(
+			@NonNull final BankRepository bankRepo)
+	{
+		this.bankRepo = bankRepo;
+	}
+
 	@Override
 	public String retrieveBankAccountNo(@NonNull final I_C_BP_BankAccount bankAccount)
 	{

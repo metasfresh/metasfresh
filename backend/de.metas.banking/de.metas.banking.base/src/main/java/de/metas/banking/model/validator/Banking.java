@@ -26,9 +26,11 @@ import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
 import org.adempiere.service.ISysConfigBL;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_I_BankStatement;
 
 import de.metas.acct.posting.IDocumentRepostingSupplierService;
+import de.metas.banking.api.BankAccountService;
 import de.metas.banking.impexp.BankStatementImportProcess;
 import de.metas.banking.model.I_I_Datev_Payment;
 import de.metas.banking.payment.IPaySelectionBL;
@@ -76,6 +78,7 @@ public class Banking extends AbstractModuleInterceptor
 		final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
 		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 		final ICashStatementBL cashStatementBL = Services.get(ICashStatementBL.class);
+		final BankAccountService bankAccountService = SpringContextHolder.instance.getBean(BankAccountService.class);
 
 		// Bank statement:
 		{
@@ -85,7 +88,7 @@ public class Banking extends AbstractModuleInterceptor
 		// de.metas.banking.payment sub-module (code moved from swat main validator)
 		{
 			engine.addModelValidator(new de.metas.banking.payment.modelvalidator.C_Payment(bankStatementBL, paymentBL, sysConfigBL, cashStatementBL)); // 04203
-			engine.addModelValidator(de.metas.banking.payment.modelvalidator.C_PaySelection.instance); // 04203
+			engine.addModelValidator(new de.metas.banking.payment.modelvalidator.C_PaySelection(bankAccountService)); // 04203
 			engine.addModelValidator(de.metas.banking.payment.modelvalidator.C_PaySelectionLine.instance); // 04203
 			engine.addModelValidator(de.metas.banking.payment.modelvalidator.C_Payment_Request.instance); // 08596
 			engine.addModelValidator(de.metas.banking.payment.modelvalidator.C_AllocationHdr.instance); // 08972

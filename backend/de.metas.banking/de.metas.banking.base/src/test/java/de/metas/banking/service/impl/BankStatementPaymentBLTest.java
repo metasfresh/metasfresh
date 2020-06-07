@@ -129,7 +129,8 @@ class BankStatementPaymentBLTest
 		SpringContextHolder.registerJUnitBean(bankRepo);
 
 		final BankAccountAcctRepository bankAccountAcctRepo = new BankAccountAcctRepository();
-		SpringContextHolder.registerJUnitBean(new BankAccountService(bankRepo, bankAccountAcctRepo));
+		final CurrencyRepository currencyRepo = new CurrencyRepository();
+		SpringContextHolder.registerJUnitBean(new BankAccountService(bankRepo, bankAccountAcctRepo, currencyRepo));
 
 		createMasterData();
 	}
