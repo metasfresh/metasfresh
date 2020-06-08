@@ -61,6 +61,14 @@ public class InvoiceRowReducers
 				final InvoiceProcessingFeeCalculation serviceFee = row.getServiceFeeCalculation().withFeeAmountIncludingTax(serviceFeeAmtBD);
 				rowBuilder.serviceFeeCalculation(serviceFee);
 			}
+			else if (InvoiceRow.FIELD_BankFeeAmt.contentEquals(fieldName))
+			{
+				final BigDecimal bankFeeAmtBD = fieldChangeRequest.getValueAsBigDecimal(BigDecimal.ZERO);
+
+				final CurrencyCode currencyCode = row.getCurrencyCode();
+				final Amount bankFeeAmt = Amount.of(bankFeeAmtBD, currencyCode);
+				rowBuilder.bankFeeAmt(bankFeeAmt);
+			}
 			else
 			{
 				throw new AdempiereException("Changing " + fieldName + " is not allowed");

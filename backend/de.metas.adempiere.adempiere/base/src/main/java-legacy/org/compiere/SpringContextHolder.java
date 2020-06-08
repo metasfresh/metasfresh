@@ -126,6 +126,40 @@ public final class SpringContextHolder
 		return springApplicationContext.getBean(requiredType);
 	}
 
+	/** can be used if a service might be retrieved before the spring application context is up */
+	public <T> T getBeanOr(@NonNull final Class<T> requiredType, @Nullable final T defaultImplementation)
+	{
+		if (Adempiere.isUnitTestMode())
+		{
+			@SuppressWarnings("unchecked")
+			final T beanImpl = (T)junitRegisteredBeans.get(ClassReference.of(requiredType));
+			if (beanImpl != null)
+			{
+				logger.info("JUnit testing Returning manually registered bean: {}", beanImpl);
+				return beanImpl;
+			}
+		}
+
+		final ApplicationContext springApplicationContext = getApplicationContext();
+		if (springApplicationContext == null)
+		{
+			return defaultImplementation;
+		}
+
+		try
+		{
+			return springApplicationContext.getBean(requiredType);
+		}
+		catch (final NoSuchBeanDefinitionException e)
+		{
+			if (Adempiere.isUnitTestMode())
+			{
+				return defaultImplementation; // otherwise we would need to register NoopPerformanceMonitoringService for >800 unit tests
+			}
+			throw e;
+		}
+	}
+
 	/**
 	 * When running this method from within a junit test, we need to fire up spring
 	 */

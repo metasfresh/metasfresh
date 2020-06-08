@@ -22,9 +22,19 @@
 
 package de.metas.banking.payment.impl;
 
+import java.time.LocalDate;
+import java.util.Set;
+
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.I_C_BankStatement;
+import org.compiere.model.I_C_BankStatementLine;
+import org.compiere.model.I_C_Payment;
+import org.compiere.util.TimeUtil;
+import org.springframework.stereotype.Component;
+
+import de.metas.banking.BankAccountId;
 import de.metas.banking.BankStatementId;
 import de.metas.banking.BankStatementLineId;
-import de.metas.banking.api.BankAccountId;
 import de.metas.banking.payment.BankStatementLineMultiPaymentLinkRequest;
 import de.metas.banking.payment.BankStatementLineMultiPaymentLinkResult;
 import de.metas.banking.payment.IBankStatementPaymentBL;
@@ -32,7 +42,6 @@ import de.metas.banking.payment.PaymentLinkResult;
 import de.metas.banking.service.IBankStatementBL;
 import de.metas.banking.service.IBankStatementDAO;
 import de.metas.banking.service.IBankStatementListenerService;
-import de.metas.bpartner.BPartnerBankAccountId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
@@ -51,27 +60,21 @@ import de.metas.payment.api.PaymentQuery;
 import de.metas.payment.api.PaymentReconcileReference;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.I_C_BankStatement;
-import org.compiere.model.I_C_BankStatementLine;
-import org.compiere.model.I_C_Payment;
-import org.compiere.util.TimeUtil;
-import org.springframework.stereotype.Component;
-
-import java.time.LocalDate;
-import java.util.Set;
 
 @Component
 public class BankStatementPaymentBL implements IBankStatementPaymentBL
 {
-	private final IBankStatementBL bankStatementBL = Services.get(IBankStatementBL.class);
 	private final IBankStatementDAO bankStatementDAO = Services.get(IBankStatementDAO.class);
 	private final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
 	private final IBankStatementListenerService bankStatementListenersService = Services.get(IBankStatementListenerService.class);
+	private final IBankStatementBL bankStatementBL;
 	private final MoneyService moneyService;
 
-	public BankStatementPaymentBL(@NonNull final MoneyService moneyService)
+	public BankStatementPaymentBL(
+			@NonNull final IBankStatementBL bankStatementBL,
+			@NonNull final MoneyService moneyService)
 	{
+		this.bankStatementBL = bankStatementBL;
 		this.moneyService = moneyService;
 	}
 
@@ -165,7 +168,7 @@ public class BankStatementPaymentBL implements IBankStatementPaymentBL
 
 		final InvoiceId invoiceId = InvoiceId.ofRepoIdOrNull(bankStatementLine.getC_Invoice_ID());
 
-		final TenderType tenderType = paymentBL.getTenderType(BPartnerBankAccountId.ofRepoId(bpartnerId, orgBankAccountId.getRepoId()));
+		final TenderType tenderType = paymentBL.getTenderType(orgBankAccountId);
 
 		final DefaultPaymentBuilder paymentBuilder = inboundPayment
 				? paymentBL.newInboundReceiptBuilder()

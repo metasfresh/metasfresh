@@ -1,10 +1,17 @@
-package de.metas.payment.esr.model;
+package de.metas.banking;
+
+import javax.annotation.Nullable;
+
+import de.metas.location.LocationId;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
 
 /*
  * #%L
- * de.metas.payment.esr
+ * de.metas.business
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -13,22 +20,33 @@ package de.metas.payment.esr.model;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
-public interface I_C_Bank extends org.compiere.model.I_C_Bank
+@Value
+@Builder
+public class BankCreateRequest
 {
-	public static String COLUMNNAME_ESR_PostBank = "ESR_PostBank";
+	@NonNull
+	String bankName;
 
-	public boolean isESR_PostBank();
+	@Nullable
+	String swiftCode;
+	@NonNull
+	String routingNo;
 
-	public void setESR_PostBank(boolean ESR_PostBank);
+	boolean cashBank;
 
+	@Nullable
+	LocationId locationId;
+
+	//
+	// ESR specific settings:
+	boolean esrPostBank;
 }

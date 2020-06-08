@@ -32,20 +32,18 @@ import org.compiere.model.I_C_BP_BankAccount;
 
 import com.google.common.collect.ImmutableListMultimap;
 
+import de.metas.banking.BankAccount;
+import de.metas.banking.BankAccountId;
+import de.metas.banking.BankId;
 import de.metas.bpartner.BPartnerBankAccountId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.money.CurrencyId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
 
-/**
- * TODO This interface must be moved in de.metas.banking but there still are some dependencies which need be fixed
- */
 public interface IBPBankAccountDAO extends ISingletonService
 {
-	I_C_BP_BankAccount getById(final int bpBankAccountId);
-
-	<T extends I_C_BP_BankAccount> T getById(final int bpBankAccountId, Class<T> modelType);
+	BankAccount getById(final BankAccountId bankAccountId);
 
 	/**
 	 * Retrieve all the bank accounts of the currency <code>currencyID</code> for the partner <code> partnerID</code>
@@ -56,9 +54,23 @@ public interface IBPBankAccountDAO extends ISingletonService
 
 	Optional<BankAccountId> retrieveFirstIdByBPartnerAndCurrency(@NonNull BPartnerId bPartnerId, @NonNull CurrencyId currencyId);
 
-	Optional<BankAccountId> retrieveByBPartnerAndCurrencyAndIBAN(@NonNull BPartnerId bPartnerId, @NonNull CurrencyId currencyId, @NonNull String iban);
+	Optional<BankAccountId> retrieveByBPartnerAndCurrencyAndIBAN(
+			@NonNull BPartnerId bpartnerId,
+			@NonNull CurrencyId currencyId,
+			@NonNull String iban);
 
-	void deactivateByBPartnerExcept(BPartnerId bpartnerId, Collection<BPartnerBankAccountId> exceptIds);
+	Optional<I_C_BP_BankAccount> retrieveDefaultBankAccountInTrx(@NonNull BPartnerId bpartnerId);
+
+	/**
+	 * Deactivate all {@link I_C_BP_BankAccount} records for the given bPartnerId, besides
+	 * <ul>
+	 *     <li>the ones whose id is in the given {@code exceptIds}</li>
+	 *     <li>the ones that have no IBAN; why: this is used for persisting {@code BPartnerComposite}s which never have no-iban-backaccounts; so we need to prevent them from being deactivated.</li>
+	 * </ul>
+	 */
+	void deactivateIBANAccountsByBPartnerExcept(BPartnerId bpartnerId, Collection<BPartnerBankAccountId> exceptIds);
 
 	ImmutableListMultimap<BPartnerId, I_C_BP_BankAccount> getByBPartnerIds(Collection<BPartnerId> bpartnerIds);
+
+	BankId getBankId(@NonNull BankAccountId bankAccountId);
 }
