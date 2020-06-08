@@ -33,6 +33,7 @@ import java.util.Map;
 import javax.xml.bind.JAXBElement;
 
 import de.metas.edi.esb.commons.Util;
+import org.apache.camel.CamelContext;
 import org.apache.camel.Exchange;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.Processor;
@@ -73,7 +74,9 @@ public class ExcelOLCandRoute extends AbstractEDIRoute
 	public static final String LOCAL_ROUTE_ID = "Excel-Orders-To-MF-OLCand";
 	private static final transient Logger logger = LoggerFactory.getLogger(LOCAL_ROUTE_ID);
 
-	public static final String INPUT_EXCEL_REMOTE = "{{excel.file.orders.remote}}";
+	/** This place holder is evaluated via {@link Util#resolveProperty(CamelContext, String)}, that's why we don't put it in {@code {{...}}} */
+	public static final String INPUT_EXCEL_REMOTE = "excel.file.orders.remote";
+
 	public static final String INPUT_EXCEL_LOCAL = "{{excel.file.orders}}";
 
 	@Override
