@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types';
-import React, { Component } from 'react';
+import React, { PureComponent } from 'react';
 import ReactDOM from 'react-dom';
 import classnames from 'classnames';
 import { merge } from 'lodash';
@@ -11,9 +11,8 @@ import {
 import TableCell from './TableCell';
 import { shouldRenderColumn, getSizeClass } from '../../utils/tableHelpers';
 import WithMobileDoubleTap from '../WithMobileDoubleTap';
-import _ from 'lodash';
 
-class TableItem extends Component {
+class TableItem extends PureComponent {
   constructor(props) {
     super(props);
 
@@ -47,43 +46,44 @@ class TableItem extends Component {
     };
   }
 
-  // TODO: This needs refactoring. The cases should be better described
-  shouldComponentUpdate(nextProps, nextState) {
-    // re-render if we triggered a sortAction
-    if (nextProps.activeSort) {
-      return true;
-    }
+  // TODO: This will most probably go away completely when refactoring TableItem.
+  // Double check if all cases are covered.
+  // shouldComponentUpdate(nextProps, nextState) {
+  //   // re-render if we triggered a sortAction
+  //   if (nextProps.activeSort) {
+  //     return true;
+  //   }
 
-    // check on saving logic
-    if (this.props.notSaved === true && nextProps.notSaved === false) {
-      return true;
-    }
+  //   // check on saving logic
+  //   if (this.props.notSaved === true && nextProps.notSaved === false) {
+  //     return true;
+  //   }
 
-    // page check logic
-    if (nextProps.page !== nextState.currentPage) {
-      nextState.currentPage = nextState.page;
-      return true;
-    }
+  //   // page check logic
+  //   if (nextProps.page !== nextState.currentPage) {
+  //     nextState.currentPage = nextState.page;
+  //     return true;
+  //   }
 
-    // item selection logic
-    if (nextProps.selected[0] === this.props.rowId) {
-      nextState.lastSelected = this.props.rowId;
-    }
+  //   // item selection logic
+  //   if (nextProps.selected[0] === this.props.rowId) {
+  //     nextState.lastSelected = this.props.rowId;
+  //   }
 
-    // TODO: This is a super heavy check and should be removed ASAP
-    if (!_.isEqual(nextProps, this.state[nextProps.rowId])) {
-      return true;
-    } else {
-      if (
-        nextState.lastSelected &&
-        nextProps.selected[0] &&
-        nextState.lastSelected !== nextProps.selected[0]
-      ) {
-        return true;
-      }
-      return false;
-    }
-  }
+  //   // TODO: This is a super heavy check and should be removed ASAP
+  //   if (!_.isEqual(nextProps, this.state[nextProps.rowId])) {
+  //     return true;
+  //   } else {
+  //     if (
+  //       nextState.lastSelected &&
+  //       nextProps.selected[0] &&
+  //       nextState.lastSelected !== nextProps.selected[0]
+  //     ) {
+  //       return true;
+  //     }
+  //     return false;
+  //   }
+  // }
 
   componentDidUpdate(prevProps) {
     const { multilineText, activeCell } = this.state;
@@ -643,9 +643,7 @@ class TableItem extends Component {
       odd,
       indentSupported,
       indent,
-      // TODO: I think this can be removed
       contextType,
-
       lastChild,
       processed,
       includedDocuments,
