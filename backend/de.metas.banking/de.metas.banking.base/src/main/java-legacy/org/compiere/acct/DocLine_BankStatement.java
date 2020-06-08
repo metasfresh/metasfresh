@@ -131,7 +131,7 @@ class DocLine_BankStatement extends DocLine<Doc_BankStatement>
 	}    // getAD_Org_ID
 
 	/**
-	 * @return C_Payment.AD_Org_ID (if any); fallback to {@link #getAD_Org_ID()}
+	 * @return C_Payment.AD_Org_ID (if any); fallback to {@link #getOrgId()}
 	 */
 	private final OrgId getPaymentOrgId(@Nullable final I_C_Payment payment)
 	{

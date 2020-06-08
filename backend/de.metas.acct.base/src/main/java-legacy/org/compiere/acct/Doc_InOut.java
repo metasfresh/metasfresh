@@ -426,8 +426,6 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 	 * Creating a not null cost value whose precision matches the given <code>C_Currency_ID</code>'s.
 	 * Goal of this method is to avoid the warnings in FactLine.setAmtSource().
 	 *
-	 * @param currencyId
-	 * @param costs
 	 * @return costs rounded to currency precision
 	 */
 	private BigDecimal mkCostsValueToUse(final CostAmount costs)

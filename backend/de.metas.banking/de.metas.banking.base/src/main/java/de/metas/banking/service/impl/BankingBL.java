@@ -126,9 +126,6 @@ public class BankingBL implements IBankingBL
 
 	/**
 	 * Create an recurrent payment invoice for the given recurrent payment line.
-	 *
-	 * @param line
-	 * @param dateInvoiced
 	 */
 	public I_C_Invoice createInvoiceForRecurrentPaymentLine(final MRecurrentPaymentLine line)
 	{

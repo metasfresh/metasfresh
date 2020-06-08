@@ -188,10 +188,7 @@ public class ModelInterfaceGenerator
 	/**
 	 * Add Header info to buffer
 	 * 
-	 * @param AD_Table_ID table
-	 * @param sb buffer
 	 * @param mandatory init call for mandatory columns
-	 * @param packageName package name
 	 * @return class name
 	 */
 	private String createHeader(final TableInfo tableInfo, final StringBuilder sb, final StringBuilder mandatory)
@@ -232,7 +229,6 @@ public class ModelInterfaceGenerator
 	/**
 	 * Create Column access methods
 	 * 
-	 * @param AD_Table_ID table
 	 * @param mandatory init call for mandatory columns
 	 * @return set/get method
 	 */
@@ -596,8 +592,6 @@ public class ModelInterfaceGenerator
 	/**
 	 * Get class for given display type and reference
 	 * 
-	 * @param displayType
-	 * @param AD_Reference_ID
 	 * @return class
 	 */
 	public static Class<?> getClass(final ColumnInfo columnInfo)

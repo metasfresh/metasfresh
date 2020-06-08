@@ -320,8 +320,8 @@ public abstract class PO
 
 	/**
 	 * Flag to indicate if this object is stale and needs to be reloaded before any get/set operation
-	 *
-	 * @see http://dewiki908/mediawiki/index.php/01537:_Speed_optimizations_for_new_record_saving_%282011052610000028%29
+	 * <p/>
+	 * Also see http://dewiki908/mediawiki/index.php/01537:_Speed_optimizations_for_new_record_saving_%282011052610000028%29
 	 */
 	private boolean m_stale = false;
 
@@ -2617,10 +2617,6 @@ public abstract class PO
 
 	/**
 	 * Get Translation of column
-	 *
-	 * @param ctx context
-	 * @param columnName
-	 * @return translation
 	 */
 	public final String get_Translation(final String columnName)
 	{
