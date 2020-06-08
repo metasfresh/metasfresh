@@ -8,7 +8,7 @@ import de.metas.util.ISingletonService;
  * Contains ESR-specific logic around the C_BP_BankAccount.
  *
  */
-public interface IBPBankAccountBL extends ISingletonService
+public interface IESRBPBankAccountBL extends ISingletonService
 {
 	/**
 	 * @param bankAccount

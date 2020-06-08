@@ -1,4 +1,4 @@
-package org.adempiere.bank;
+package de.metas.banking;
 
 import java.util.Optional;
 

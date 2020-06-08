@@ -226,7 +226,7 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 		// NotInvoicedReceipt DR
 		// From Receipt
 		final FactLine dr_NotInvoicedReceipts = fact.createLine()
-				.setAccount(getAccount(Doc.ACCTTYPE_NotInvoicedReceipts, as))
+				.setAccount(getAccount(AccountType.NotInvoicedReceipts, as))
 				.setCurrencyId(costs.getCurrencyId())
 				.setAmtSource(costs.getValue(), null)
 				.setQty(getQty())

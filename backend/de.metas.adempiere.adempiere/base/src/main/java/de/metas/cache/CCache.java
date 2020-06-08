@@ -32,6 +32,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
@@ -478,15 +479,32 @@ public class CCache<K, V> implements CacheInterface
 	@Override
 	public String toString()
 	{
+		final long size = cache.size();
 		final StringBuilder sb = new StringBuilder("CCache[")
 				.append(cacheName)
-				.append(", size=").append(cache.size())
+				.append(", size=").append(size)
 				.append(", id=").append(cacheId);
 
 		if (DEBUG)
 		{
 			sb.append("\ncacheId=").append(debugId);
 			sb.append("\n").append(this.debugAquireStacktrace);
+		}
+
+		//
+		// Show a first 10 items
+		// usually that's enough to figure out what's in the cache.
+		final int sampleSize = 10;
+		final String firstEntries = cache.asMap().entrySet()
+				.stream()
+				.limit(sampleSize)
+				.map(entry -> String.valueOf(entry.getKey()) + "=" + entry.getValue())
+				.collect(Collectors.joining("\n\t"));
+		if (!firstEntries.isEmpty())
+		{
+			sb.append("\nfirst ").append(sampleSize).append(" entries={")
+					.append("\n\t").append(firstEntries)
+					.append("\n}");
 		}
 
 		sb.append("]");

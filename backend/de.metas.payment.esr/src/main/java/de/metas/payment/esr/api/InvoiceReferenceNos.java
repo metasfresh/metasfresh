@@ -58,10 +58,10 @@ public class InvoiceReferenceNos
 			@NonNull final I_C_Invoice invoiceRecord,
 			@NonNull final I_C_BP_BankAccount bankAccountRecord)
 	{
-		final IBPBankAccountBL bpBankAccountBL = Services.get(IBPBankAccountBL.class);
+		final IESRBPBankAccountBL esrBankAccountBL = Services.get(IESRBPBankAccountBL.class);
 		final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
-		final String bankAccount = StringUtils.rpadZero(bpBankAccountBL.retrieveBankAccountNo(bankAccountRecord), 7, "BankAccountNo");
+		final String bankAccount = StringUtils.rpadZero(esrBankAccountBL.retrieveBankAccountNo(bankAccountRecord), 7, "BankAccountNo");
 
 		final String orgValue = orgDAO.retrieveOrgValue(invoiceRecord.getAD_Org_ID());
 		final String org = StringUtils.lpadZero(StringUtils.trunc(orgValue, 3, TruncateAt.STRING_START), 3, "organization");

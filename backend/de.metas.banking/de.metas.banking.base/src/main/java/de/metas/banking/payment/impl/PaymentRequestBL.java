@@ -13,18 +13,18 @@ package de.metas.banking.payment.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.math.BigDecimal;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BP_BankAccount;
 import org.compiere.model.I_C_BPartner;
@@ -32,10 +32,11 @@ import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_PaySelectionLine;
 
 import de.metas.allocation.api.IAllocationDAO;
+import de.metas.banking.api.IBPBankAccountDAO;
 import de.metas.banking.model.I_C_Payment_Request;
 import de.metas.banking.payment.IPaymentRequestBL;
 import de.metas.banking.payment.IPaymentRequestDAO;
-import de.metas.banking.service.IBankingBPBankAccountDAO;
+import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -88,13 +89,13 @@ public class PaymentRequestBL implements IPaymentRequestBL
 		}
 
 		final org.compiere.model.I_C_BP_BankAccount payRequestBPBankAcct = paymentRequest.getC_BP_BankAccount();
-		final org.compiere.model.I_C_BP_BankAccount paySelBPBankAcct =  paySelectionLine.getC_PaySelection().getC_BP_BankAccount();
+		final org.compiere.model.I_C_BP_BankAccount paySelBPBankAcct = paySelectionLine.getC_PaySelection().getC_BP_BankAccount();
 
 		// 09500: In case we area dealing with 2 bank accounts we have to make sure they are of the same currency
-		if(payRequestBPBankAcct != null && paySelBPBankAcct != null)
+		if (payRequestBPBankAcct != null && paySelBPBankAcct != null)
 		{
 			// do not update the line from the request if they don't match
-			if(payRequestBPBankAcct.getC_Currency_ID() != paySelBPBankAcct.getC_Currency_ID())
+			if (payRequestBPBankAcct.getC_Currency_ID() != paySelBPBankAcct.getC_Currency_ID())
 			{
 				return false;
 			}
@@ -138,12 +139,14 @@ public class PaymentRequestBL implements IPaymentRequestBL
 			requestForInvoice = InterfaceWrapperHelper.newInstance(I_C_Payment_Request.class, invoice);
 
 			final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
-			final I_C_BPartner bpartner = bpartnerDAO.getById(invoice.getC_BPartner_ID());
+			final BPartnerId bpartnerId = BPartnerId.ofRepoId(invoice.getC_BPartner_ID());
+			final I_C_BPartner bpartner = bpartnerDAO.getById(bpartnerId);
 
 			//
 			// Find a default partner account
-			final IBankingBPBankAccountDAO bpBankAccountDAO = Services.get(IBankingBPBankAccountDAO.class);
-			final I_C_BP_BankAccount bpBankAccount = bpBankAccountDAO.retrieveDefaultBankAccount(bpartner);
+			final IBPBankAccountDAO bankAccountDAO = Services.get(IBPBankAccountDAO.class);
+			final I_C_BP_BankAccount bpBankAccount = bankAccountDAO.retrieveDefaultBankAccountInTrx(bpartnerId)
+					.orElseThrow(() -> new AdempiereException("No default bank account found for " + bpartner.getName()));
 			requestForInvoice.setC_BP_BankAccount_ID(bpBankAccount.getC_BP_BankAccount_ID());
 
 			//
