@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types';
-import React, { Component } from 'react';
+import React, { PureComponent } from 'react';
 import { connect } from 'react-redux';
 
 import { fetchTab } from '../../actions/WindowActions';
@@ -8,7 +8,7 @@ import { fetchTab } from '../../actions/WindowActions';
  * @TODO: I think this can safely be rewritten to a functional component
  *
  */
-class Tab extends Component {
+class Tab extends PureComponent {
   constructor(props) {
     super(props);
 

@@ -28,10 +28,6 @@ import MasterWindow from '../components/app/MasterWindow';
  * @extends Component
  */
 class MasterWindowContainer extends Component {
-  static contextTypes = {
-    router: PropTypes.object.isRequired,
-  };
-
   componentDidUpdate(prevProps) {
     const { master } = this.props;
 

@@ -39,7 +39,6 @@ class TableItem extends PureComponent {
       editedCells: {},
       multilineText,
       multilineTextLines,
-      [this.props.rowId]: this.props,
       lastSelected: null,
       currentPage: null,
       cellsExtended: false,
@@ -720,7 +719,6 @@ TableItem.propTypes = {
   modalVisible: PropTypes.bool,
   isGerman: PropTypes.bool,
   keyProperty: PropTypes.string,
-  selected: PropTypes.array,
   page: PropTypes.number,
   activeSort: PropTypes.bool,
 };
