@@ -119,6 +119,8 @@ public class BPBankAccountDAO implements IBPBankAccountDAO
 		return Optional.ofNullable(bankAccountId);
 	}
 
+
+
 	@Override
 	public void deactivateIBANAccountsByBPartnerExcept(
 			@NonNull final BPartnerId bpartnerId,
