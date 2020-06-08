@@ -280,7 +280,7 @@ class Table extends PureComponent {
       closeOverlays,
       selected,
       rows,
-      onShowSelectedIncludedView,
+      showSelectedIncludedView,
       collapsedArrayMap,
     } = this.props;
     const { listenOnKeys } = this.state;
@@ -321,7 +321,7 @@ class Table extends PureComponent {
             array[currentId + 1],
             false,
             idFocused,
-            onShowSelectedIncludedView([array[currentId + 1]])
+            showSelectedIncludedView([array[currentId + 1]])
           );
         } else {
           this.handleSelect(array[currentId + 1], false, idFocused);
@@ -348,7 +348,7 @@ class Table extends PureComponent {
             array[currentId - 1],
             idFocused,
             false,
-            onShowSelectedIncludedView([array[currentId - 1]])
+            showSelectedIncludedView([array[currentId - 1]])
           );
         } else {
           this.handleSelect(array[currentId - 1], idFocused, false);
@@ -423,7 +423,6 @@ class Table extends PureComponent {
       onDeselect,
     } = this.props;
     const id = item[keyProperty];
-    let selectionValue = false;
 
     if (e.button === 0) {
       const selectMore = e.metaKey || e.ctrlKey;
@@ -448,26 +447,25 @@ class Table extends PureComponent {
           onSelect(id);
         }
       } else {
-        updateQuickActions && updateQuickActions(id);
-        newSelection = [id];
-        onSelect(id);
+        if (!isSelected) {
+          updateQuickActions && updateQuickActions(id);
+          newSelection = [id];
+          onSelect(id);
+        }
       }
 
-      if (onSelectionChanged) {
+      if (onSelectionChanged && newSelection) {
         onSelectionChanged(newSelection);
       }
-
-      selectionValue = newSelection.length > 0;
     }
-    selectionValue = true;
 
     if (openIncludedViewOnSelect) {
       const identifier = isModal ? viewId : windowId;
 
       showIncludedView({
         id: identifier,
-        showIncludedView: selectionValue && item.supportIncludedViews,
-        forceClose: !selectionValue,
+        showIncludedView: item.supportIncludedViews,
+        forceClose: false,
         windowId: item.supportIncludedViews
           ? item.includedView.windowType || item.includedView.windowId
           : null,
@@ -559,7 +557,6 @@ class Table extends PureComponent {
           windowId,
           mainTable,
           indentSupported,
-          selected,
           docId,
           tabIndex,
           readonly,
@@ -675,6 +672,7 @@ class Table extends PureComponent {
       onGetAllLeaves,
       tableRefreshToggle,
       onHandleAdvancedEdit,
+      onOpenTableModal,
     } = this.props;
 
     const { contextMenu, promptOpen, isBatchEntry } = this.state;
@@ -724,7 +722,7 @@ class Table extends PureComponent {
           )}
           {!readonly && (
             <TableFilter
-              openTableModal={this.openTableModal}
+              openTableModal={onOpenTableModal}
               {...{
                 toggleFullScreen,
                 fullScreen,
@@ -732,7 +730,6 @@ class Table extends PureComponent {
                 tabIndex,
                 isBatchEntry,
                 supportQuickInput,
-                selected,
               }}
               docType={windowId}
               tabId={tabId}
