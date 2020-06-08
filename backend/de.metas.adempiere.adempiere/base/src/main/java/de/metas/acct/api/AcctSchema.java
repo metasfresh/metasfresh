@@ -9,6 +9,7 @@ import de.metas.currency.CurrencyPrecision;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import lombok.Builder;
+import lombok.Builder.Default;
 import lombok.NonNull;
 import lombok.ToString;
 import lombok.Value;
@@ -62,7 +63,8 @@ public class AcctSchema
 	@NonNull
 	TaxCorrectionType taxCorrectionType;
 	@NonNull
-	ImmutableSet<OrgId> postOnlyForOrgIds;
+	@Default
+	ImmutableSet<OrgId> postOnlyForOrgIds = ImmutableSet.of();
 	boolean accrual;
 	boolean allowNegativePosting;
 	boolean postTradeDiscount;

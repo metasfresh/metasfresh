@@ -17,13 +17,18 @@ import org.compiere.model.I_C_BP_BankAccount;
 
 import com.google.common.collect.ImmutableListMultimap;
 
-import de.metas.banking.api.BankAccountId;
+import de.metas.banking.BankAccount;
+import de.metas.banking.BankAccountId;
+import de.metas.banking.BankId;
 import de.metas.banking.api.IBPBankAccountDAO;
 import de.metas.bpartner.BPartnerBankAccountId;
 import de.metas.bpartner.BPartnerId;
+import de.metas.cache.CCache;
+import de.metas.cache.CCache.CacheMapType;
 import de.metas.money.CurrencyId;
-import de.metas.util.Check;
+import de.metas.organization.OrgId;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import lombok.NonNull;
 
 /*
@@ -52,17 +57,34 @@ public class BPBankAccountDAO implements IBPBankAccountDAO
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-	@Override
-	public I_C_BP_BankAccount getById(final int bpBankAccountId)
-	{
-		return getById(bpBankAccountId, I_C_BP_BankAccount.class);
-	}
+	private final CCache<BankAccountId, BankAccount> bankAccountsById = CCache.<BankAccountId, BankAccount> builder()
+			.tableName(I_C_BP_BankAccount.Table_Name)
+			.cacheMapType(CacheMapType.LRU)
+			.initialCapacity(100)
+			.expireMinutes(CCache.EXPIREMINUTES_Never)
+			.build();
 
 	@Override
-	public <T extends I_C_BP_BankAccount> T getById(final int bpBankAccountId, @NonNull final Class<T> modelType)
+	public BankAccount getById(@NonNull final BankAccountId bankAccountId)
 	{
-		Check.assumeGreaterThanZero(bpBankAccountId, "bpBankAccountId");
-		return loadOutOfTrx(bpBankAccountId, modelType);
+		return bankAccountsById.getOrLoad(bankAccountId, this::retrieveBankAccount);
+	}
+
+	private BankAccount retrieveBankAccount(@NonNull final BankAccountId bankAccountId)
+	{
+		final I_C_BP_BankAccount record = loadOutOfTrx(bankAccountId, I_C_BP_BankAccount.class);
+		return toBankAccount(record);
+	}
+
+	private static BankAccount toBankAccount(@NonNull final I_C_BP_BankAccount record)
+	{
+		return BankAccount.builder()
+				.id(BankAccountId.ofRepoId(record.getC_BP_BankAccount_ID()))
+				.bankId(BankId.ofRepoId(record.getC_Bank_ID()))
+				.accountName(StringUtils.trimBlankToNull(record.getA_Name()))
+				.currencyId(CurrencyId.ofRepoId(record.getC_Currency_ID()))
+				.orgId(OrgId.ofRepoId(record.getAD_Org_ID()))
+				.build();
 	}
 
 	@Override
@@ -133,8 +155,23 @@ public class BPBankAccountDAO implements IBPBankAccountDAO
 		return Optional.ofNullable(bankAccountId);
 	}
 
+
+
 	@Override
-	public void deactivateByBPartnerExcept(
+	public Optional<I_C_BP_BankAccount> retrieveDefaultBankAccountInTrx(@NonNull final BPartnerId bpartnerId)
+	{
+		final I_C_BP_BankAccount bankAccount = queryBL.createQueryBuilder(I_C_BP_BankAccount.class)
+				.addEqualsFilter(org.compiere.model.I_C_BP_BankAccount.COLUMNNAME_C_BPartner_ID, bpartnerId)
+				.addOnlyActiveRecordsFilter()
+				.orderByDescending(I_C_BP_BankAccount.COLUMNNAME_IsDefault) // DESC (Y, then N)
+				.create()
+				.first();
+
+		return Optional.ofNullable(bankAccount);
+	}
+
+	@Override
+	public void deactivateIBANAccountsByBPartnerExcept(
 			@NonNull final BPartnerId bpartnerId,
 			@NonNull final Collection<BPartnerBankAccountId> exceptIds)
 	{
@@ -144,9 +181,16 @@ public class BPBankAccountDAO implements IBPBankAccountDAO
 
 		queryBL.createQueryBuilder(I_C_BP_BankAccount.class)
 				.addOnlyActiveRecordsFilter()
+				.addNotNull(I_C_BP_BankAccount.COLUMNNAME_IBAN)
 				.addEqualsFilter(I_C_BP_BankAccount.COLUMNNAME_C_BPartner_ID, bpartnerId)
 				.addNotInArrayFilter(I_C_BP_BankAccount.COLUMN_C_BP_BankAccount_ID, exceptIds)
 				.create()
 				.update(columnUpdater);
+	}
+
+	@Override
+	public BankId getBankId(@NonNull final BankAccountId bankAccountId)
+	{
+		return getById(bankAccountId).getBankId();
 	}
 }

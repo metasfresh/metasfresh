@@ -1,10 +1,11 @@
 package de.metas.ui.web.payment_allocation;
 
-import java.time.LocalDate;
-import java.util.Set;
-
 import de.metas.bpartner.BPartnerId;
 import de.metas.currency.Amount;
+import de.metas.currency.CurrencyCode;
+import de.metas.i18n.AdMessageKey;
+import de.metas.i18n.IMsgBL;
+import de.metas.i18n.ITranslatableString;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentDirection;
@@ -18,9 +19,14 @@ import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.WidgetSize;
+import de.metas.util.Services;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
+
+import java.time.LocalDate;
+import java.time.Month;
+import java.util.Set;
 
 /*
  * #%L
@@ -78,6 +84,21 @@ public class PaymentRow implements IViewRow
 	private final PaymentDirection paymentDirection;
 
 	private final ViewRowFieldNameAndJsonValuesHolder<PaymentRow> values;
+
+	private static final AdMessageKey MSG_NO_PAYMENTS_AVAILABLE = AdMessageKey.of("de.metas.ui.web.payment_allocation.PaymentRow.NoPaymentsAvailable");
+
+	private final IMsgBL msgBL = Services.get(IMsgBL.class);
+
+	public static final PaymentRow DEFAULT_PAYMENT_ROW = PaymentRow.builder()
+			.paymentId(PaymentId.ofRepoId(1))
+			.clientAndOrgId(ClientAndOrgId.ofClientAndOrg(1, 1))
+			.documentNo("NO PAYMENTS")
+			.bpartner(LookupValue.StringLookupValue.of("NO PAYMENTS", "NO PAYMENTS"))
+			.dateTrx(LocalDate.of(2020, Month.JUNE, 2))
+			.payAmt(Amount.zero(CurrencyCode.EUR))
+			.openAmt(Amount.zero(CurrencyCode.EUR))
+			.paymentDirection(PaymentDirection.INBOUND)
+			.build();
 
 	@Builder
 	private PaymentRow(
@@ -154,5 +175,17 @@ public class PaymentRow implements IViewRow
 	public BPartnerId getBPartnerId()
 	{
 		return bpartner.getIdAs(BPartnerId::ofRepoId);
+	}
+
+	@Override
+	public boolean isSingleColumn()
+	{
+		return DEFAULT_PAYMENT_ROW.equals(this);
+	}
+
+	@Override
+	public ITranslatableString getSingleColumnCaption()
+	{
+		return msgBL.getTranslatableMsgText(MSG_NO_PAYMENTS_AVAILABLE);
 	}
 }

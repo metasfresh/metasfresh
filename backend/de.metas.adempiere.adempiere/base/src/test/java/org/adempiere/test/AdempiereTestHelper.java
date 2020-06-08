@@ -41,6 +41,7 @@ import org.adempiere.util.proxy.Cached;
 import org.adempiere.util.proxy.impl.JavaAssistInterceptor;
 import org.adempiere.util.reflect.TestingClassInstanceProvider;
 import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_AD_ClientInfo;
 import org.compiere.model.I_AD_Org;
@@ -63,8 +64,10 @@ import de.metas.cache.interceptor.CacheInterceptor;
 import de.metas.i18n.Language;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
+import de.metas.util.IService;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
+import de.metas.util.Services.IServiceImplProvider;
 import de.metas.util.UnitTestServiceNamePolicy;
 import de.metas.util.lang.UIDStringUtil;
 import de.metas.util.time.SystemTime;
@@ -127,6 +130,14 @@ public class AdempiereTestHelper
 		// Configure services; note the this is not the place to register individual services, see init() for that.
 		Services.setAutodetectServices(true);
 		Services.setServiceNameAutoDetectPolicy(new UnitTestServiceNamePolicy()); // 04113
+		Services.setExternalServiceImplProvider(new IServiceImplProvider()
+		{
+			@Override
+			public <T extends IService> T provideServiceImpl(final Class<T> serviceClazz)
+			{
+				return SpringContextHolder.instance.getBeanOr(serviceClazz, null);
+			}
+		});
 
 		//
 		// Make sure cache is empty

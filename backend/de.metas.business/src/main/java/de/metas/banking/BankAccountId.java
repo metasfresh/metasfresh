@@ -20,21 +20,22 @@
  * #L%
  */
 
-package de.metas.banking.api;
+package de.metas.banking;
+
+import java.util.Objects;
+
+import javax.annotation.Nullable;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
+
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
 import lombok.NonNull;
 import lombok.Value;
 
-import javax.annotation.Nullable;
-
 /**
- * Note for the user: This class has a misleading name. We still haven't decided if/how to use it.
- *
- * My recommendation is to use instead {@link de.metas.bpartner.BPartnerBankAccountId} and it clearly states its purpose.
+ * Our own (organization) bank account
  */
 @Value
 public class BankAccountId implements RepoIdAware
@@ -43,7 +44,7 @@ public class BankAccountId implements RepoIdAware
 
 	private BankAccountId(final int repoId)
 	{
-		this.repoId = Check.assumeGreaterThanZero(repoId, "BankAccountId");
+		this.repoId = Check.assumeGreaterThanZero(repoId, "C_BP_BankAccount_ID");
 	}
 
 	@JsonValue
@@ -66,4 +67,8 @@ public class BankAccountId implements RepoIdAware
 		return repoId > 0 ? new BankAccountId(repoId) : null;
 	}
 
+	public static boolean equals(@Nullable final BankAccountId id1, @Nullable final BankAccountId id2)
+	{
+		return Objects.equals(id1, id2);
+	}
 }

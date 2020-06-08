@@ -53,12 +53,14 @@ import org.adempiere.util.lang.IPair;
 import org.compiere.Adempiere;
 import org.compiere.model.I_C_BP_BankAccount;
 import org.compiere.model.I_C_BPartner_Location;
-import org.compiere.model.I_C_Bank;
 import org.compiere.model.I_C_Location;
 import org.compiere.util.Util.ArrayKey;
 
 import com.google.common.annotations.VisibleForTesting;
 
+import de.metas.banking.Bank;
+import de.metas.banking.BankId;
+import de.metas.banking.api.BankRepository;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
@@ -66,6 +68,7 @@ import de.metas.currency.Currency;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.i18n.IMsgBL;
+import de.metas.location.ILocationDAO;
 import de.metas.money.CurrencyId;
 import de.metas.payment.sepa.api.ISEPADocumentBL;
 import de.metas.payment.sepa.api.ISEPADocumentDAO;
@@ -170,6 +173,9 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 
 	private final ObjectFactory objectFactory;
 	private final DatatypeFactory datatypeFactory;
+	private final BankRepository bankRepo;
+	private final ILocationDAO locationDAO = Services.get(ILocationDAO.class);
+
 	private final String encoding = "UTF-8";
 
 	private int endToEndIdCounter = 0;
@@ -177,7 +183,8 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 
 	private static final String FORBIDDEN_CHARS = "([^a-zA-Z0-9\\.,;:'\\+\\-/\\(\\)?\\*\\[\\]\\{\\}\\\\`´~ !\"#%&<>÷=@_$£àáâäçèéêëìíîïñòóôöùúûüýßÀÁÂÄÇÈÉÊËÌÍÎÏÒÓÔÖÙÚÛÜÑ])";
 
-	public SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02()
+	public SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02(
+			@NonNull final BankRepository bankRepo)
 	{
 		objectFactory = new ObjectFactory();
 		try
@@ -188,6 +195,8 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 		{
 			throw AdempiereException.wrapIfNeeded(e);
 		}
+
+		this.bankRepo = bankRepo;
 	}
 
 	private void marshal(
@@ -515,7 +524,8 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 		// Creditor Agent (i.e. Bank)
 		// not allowed for 1, 2.1 and 8, must for the rest
 		final I_C_BP_BankAccount bankAccount = line.getC_BP_BankAccount();
-		final I_C_Bank bank = bankAccount.getC_Bank();
+		final BankId bankId = BankId.ofRepoId(bankAccount.getC_Bank_ID());
+		final Bank bank = bankRepo.getById(bankId);
 
 		if (paymentType != PAYMENT_TYPE_1
 				&& paymentType != PAYMENT_TYPE_2_1
@@ -579,9 +589,9 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 				// see if we can also export the bank's address
 				if (line.getC_BP_BankAccount_ID() > 0
 						&& bankAccount.getC_Bank_ID() > 0
-						&& bank.getC_Location_ID() > 0)
+						&& bank.getLocationId() != null)
 				{
-					final I_C_Location bankLocation = bank.getC_Location();
+					final I_C_Location bankLocation = locationDAO.getById(bank.getLocationId());
 					final PostalAddress6CH pstlAdr = createStructuredPstlAdr(bankLocation);
 
 					finInstnId.setPstlAdr(pstlAdr);
@@ -857,8 +867,10 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 
 	protected String getBankNameIfAny(final I_SEPA_Export_Line line)
 	{
-		final org.compiere.model.I_C_Bank bank = line.getC_BP_BankAccount().getC_Bank();
-		final String bankName = bank == null ? "" : bank.getName();
+		final I_C_BP_BankAccount bpartnerBankAccount = line.getC_BP_BankAccount();
+		final BankId bankId = BankId.ofRepoIdOrNull(bpartnerBankAccount.getC_Bank_ID());
+		final Bank bank = bankId != null ? bankRepo.getById(bankId) : null;
+		final String bankName = bank == null ? "" : bank.getBankName();
 		return bankName;
 	}
 

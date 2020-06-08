@@ -60,7 +60,6 @@ import com.google.common.collect.ImmutableSet;
 
 import de.metas.adempiere.service.IColumnBL;
 import de.metas.logging.LogManager;
-import de.metas.security.TableAccessLevel;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -157,13 +156,13 @@ public class ModelInterfaceGenerator
 			.add("org.compiere.model.I_C_BankStatement")
 			.add("org.compiere.model.I_C_BankStatementLine")
 			.add("de.metas.banking.model.I_C_BankStatementLine_Ref")
+			.add("org.compiere.model.I_C_BP_BankAccount")
+			.add("org.compiere.model.I_C_Bank")
 			//
 			.build();
 
 	public ModelInterfaceGenerator(final TableInfo tableInfo, String directory, String packageName)
 	{
-		super();
-
 		// this.repository = repository;
 		this.packageName = packageName;
 
@@ -189,16 +188,12 @@ public class ModelInterfaceGenerator
 	/**
 	 * Add Header info to buffer
 	 * 
-	 * @param AD_Table_ID table
-	 * @param sb buffer
 	 * @param mandatory init call for mandatory columns
-	 * @param packageName package name
 	 * @return class name
 	 */
 	private String createHeader(final TableInfo tableInfo, final StringBuilder sb, final StringBuilder mandatory)
 	{
 		final String tableName = tableInfo.getTableName();
-		final TableAccessLevel accessLevel = tableInfo.getAccessLevel();
 
 		//
 		String className = "I_" + tableName;
@@ -207,17 +202,10 @@ public class ModelInterfaceGenerator
 				.append(COPY)
 				.append("package ").append(packageName).append(";").append(NL);
 
-		// if (!packageName.equals("org.compiere.model")) {
-		// addImportClass("org.compiere.model.*");
-		// }
-		// addImportClass(java.math.BigDecimal.class);
-		// addImportClass(org.compiere.util.KeyNamePair.class);
-
 		createImports(start);
 		// Interface
 		start.append("/** Generated Interface for ").append(tableName).append("\n")
-				.append(" *  @author Adempiere (generated) \n")
-				// .append(" * @version ").append(Adempiere.MAIN_VERSION).append(NL) //.append(" - ").append(s_run).append("\n") // metas: don't generate it because it is changing on each rollout
+				.append(" *  @author metasfresh (generated) \n")
 				.append(" */\n")
 				.append("@SuppressWarnings(\"javadoc\")\n") // metas
 				.append("public interface ").append(className).append(" {").append("\n")
@@ -228,20 +216,6 @@ public class ModelInterfaceGenerator
 				.append("    /** AD_Table_ID=").append(tableInfo.getAD_Table_ID()).append(" */\n")
 				.append(isGenerateLegacy() ? "" : "//") // metas
 				.append("    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);\n")
-
-				// .append(" protected KeyNamePair Model = new KeyNamePair(Table_ID, Table_Name);\n")
-				.append(isGenerateLegacy() ? "" : "//") // metas
-				.append("    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);\n") // INFO - Should this be here???
-
-				.append("    /** AccessLevel = ").append(accessLevel.getDescription()).append("\n")
-				.append("     */\n")
-				// .append(" protected BigDecimal AccessLevel = new BigDecimal(").append(accessLevel).append(");\n")
-				.append(isGenerateLegacy() ? "" : "//") // metas
-				.append("    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(").append(accessLevel.getAccessLevelInt()).append(");\n") // INFO - Should this be here???
-
-				.append("    /** Load Meta Data */\n")
-		// .append(" protected POInfo initPO (Properties ctx);")
-		// .append(" POInfo initPO (Properties ctx);") // INFO - Should this be here???
 		;
 
 		StringBuilder end = new StringBuilder("}");
@@ -255,7 +229,6 @@ public class ModelInterfaceGenerator
 	/**
 	 * Create Column access methods
 	 * 
-	 * @param AD_Table_ID table
 	 * @param mandatory init call for mandatory columns
 	 * @return set/get method
 	 */
@@ -619,14 +592,12 @@ public class ModelInterfaceGenerator
 	/**
 	 * Get class for given display type and reference
 	 * 
-	 * @param displayType
-	 * @param AD_Reference_ID
 	 * @return class
 	 */
 	public static Class<?> getClass(final ColumnInfo columnInfo)
 	{
 		final int displayType = columnInfo.getDisplayType();
-		final int AD_Reference_ID = columnInfo.getAD_Reference_ID();
+		final int AD_Reference_ID = columnInfo.getAdReferenceId();
 		return getClass(columnInfo, displayType, AD_Reference_ID);
 	}
 
@@ -824,10 +795,10 @@ public class ModelInterfaceGenerator
 
 	static String getReferenceClassName(final ColumnInfo columnInfo)
 	{
-		final int columnTableId = columnInfo.getAD_Table_ID();
+		final int columnTableId = columnInfo.getAdTableId();
 		final String columnName = columnInfo.getColumnName();
 		final int displayType = columnInfo.getDisplayType();
-		final int AD_Reference_ID = columnInfo.getAD_Reference_ID();
+		final int AD_Reference_ID = columnInfo.getAdReferenceId();
 
 		String referenceClassName = null;
 		//

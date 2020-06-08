@@ -1,18 +1,7 @@
 package de.metas.ui.web.payment_allocation;
 
-import java.time.ZonedDateTime;
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.I_C_BPartner;
-import org.springframework.stereotype.Repository;
-
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.banking.payment.paymentallocation.InvoiceToAllocate;
 import de.metas.banking.payment.paymentallocation.InvoiceToAllocateQuery;
 import de.metas.banking.payment.paymentallocation.InvoiceToAllocateQuery.InvoiceToAllocateQueryBuilder;
@@ -32,9 +21,19 @@ import de.metas.payment.PaymentId;
 import de.metas.ui.web.window.model.lookup.LookupDataSource;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
 import de.metas.util.Check;
+import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.I_C_BPartner;
+import org.springframework.stereotype.Repository;
+
+import java.time.ZonedDateTime;
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 
 /*
  * #%L
@@ -46,12 +45,12 @@ import lombok.NonNull;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -76,6 +75,29 @@ public class PaymentAndInvoiceRowsRepo
 		this.paymentAllocationRepo = paymentAllocationRepo;
 		this.invoiceProcessorServiceCompanyService = invoiceProcessorServiceCompanyService;
 		bpartnersLookup = LookupDataSourceFactory.instance.searchInTableLookup(I_C_BPartner.Table_Name);
+	}
+
+	public PaymentAndInvoiceRows getByBPartnerId(@NonNull final BPartnerId bPartnerId)
+	{
+		final ZonedDateTime evaluationDate = SystemTime.asZonedDateTime();
+
+		final List<PaymentToAllocate> paymentsToAllocate = paymentAllocationRepo.retrievePaymentsToAllocate(PaymentToAllocateQuery.builder()
+				.bpartnerId(bPartnerId)
+				.evaluationDate(evaluationDate)
+				.build());
+
+		final List<InvoiceToAllocate> invoicesToAllocate = paymentAllocationRepo.retrieveInvoicesToAllocate(InvoiceToAllocateQuery.builder()
+				.bpartnerId(bPartnerId)
+				.evaluationDate(evaluationDate)
+				.build());
+
+		final PaymentRows paymentRows = toPaymentRows(paymentsToAllocate, evaluationDate);
+		final InvoiceRows invoiceRows = toInvoiceRows(invoicesToAllocate, evaluationDate);
+
+		return PaymentAndInvoiceRows.builder()
+				.paymentRows(paymentRows)
+				.invoiceRows(invoiceRows)
+				.build();
 	}
 
 	public PaymentAndInvoiceRows getByPaymentIds(@NonNull final Set<PaymentId> paymentIds)
@@ -103,15 +125,43 @@ public class PaymentAndInvoiceRowsRepo
 	}
 
 	private PaymentRows toPaymentRows(
-			final List<PaymentToAllocate> paymentsToAllocate,
-			final ZonedDateTime evaluationDate)
+			@NonNull final List<PaymentToAllocate> paymentsToAllocate,
+			@NonNull final ZonedDateTime evaluationDate)
 	{
-		final ImmutableList<PaymentRow> rows = paymentsToAllocate
+		final ImmutableList<PaymentRow> rowsMaybeEmpty = paymentsToAllocate
 				.stream()
 				.map(this::toPaymentRow)
 				.collect(ImmutableList.toImmutableList());
 
+		final ImmutableList<PaymentRow> rowsNotEmpty;
+		if (rowsMaybeEmpty.isEmpty())
+		{
+			// Problem: the right table is an includedView of the main table row (left table). If there are no payments, the invoices table is not shown even if we have invoices.
+			// Solution (workaround): this dummy row is needed because we want to display the right table (invoices) at all times
+			// see de.metas.ui.web.payment_allocation.PaymentRow.isSingleColumn and de.metas.ui.web.payment_allocation.PaymentRow.getSingleColumnCaption
+			rowsNotEmpty = ImmutableList.of(PaymentRow.DEFAULT_PAYMENT_ROW);
+		}
+		else
+		{
+			rowsNotEmpty = rowsMaybeEmpty;
+		}
+
 		return PaymentRows.builder()
+				.repository(this)
+				.evaluationDate(evaluationDate)
+				.initialRows(rowsNotEmpty)
+				.build();
+	}
+
+	private InvoiceRows toInvoiceRows(
+			@NonNull final List<InvoiceToAllocate> invoicesToAllocate,
+			@NonNull final ZonedDateTime evaluationDate)
+	{
+		final ImmutableList<InvoiceRow> rows = invoicesToAllocate.stream()
+				.map(it -> toInvoiceRow(it, evaluationDate))
+				.collect(GuavaCollectors.toImmutableList());
+
+		return InvoiceRows.builder()
 				.repository(this)
 				.evaluationDate(evaluationDate)
 				.initialRows(rows)

@@ -22,6 +22,8 @@ import java.sql.ResultSet;
 import java.util.HashSet;
 import java.util.Set;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -37,14 +39,19 @@ import org.compiere.util.TimeUtil;
 
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaId;
+import de.metas.banking.BankAccountId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.ICurrencyBL;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.organization.OrgId;
+import de.metas.payment.PaymentId;
+import de.metas.payment.api.IPaymentBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
+import lombok.NonNull;
 
 /**
  * Allocation Line
@@ -74,7 +81,7 @@ class DocLine_Allocation extends DocLine<Doc_AllocationHdr>
 			soTrxInvoice = null;
 		}
 
-        this.m_Counter_AllocationLine_ID = line.getCounter_AllocationLine_ID();
+		this.m_Counter_AllocationLine_ID = line.getCounter_AllocationLine_ID();
 
 		//
 		// Payment: via Cashbook (legacy)
@@ -83,13 +90,15 @@ class DocLine_Allocation extends DocLine<Doc_AllocationHdr>
 
 		//
 		// Payment
-		m_C_Payment_ID = line.getC_Payment_ID();
-		payment = m_C_Payment_ID > 0 ? line.getC_Payment() : null;
-		if (payment != null)
+		this._paymentId = PaymentId.ofRepoIdOrNull(line.getC_Payment_ID());
+		this._payment = this._paymentId != null
+				? Services.get(IPaymentBL.class).getById(this._paymentId)
+				: null;
+		if (this._payment != null)
 		{
-			final int C_ConversionType_ID = payment.getC_ConversionType_ID();
+			final int C_ConversionType_ID = this._payment.getC_ConversionType_ID();
 			setC_ConversionType_ID(C_ConversionType_ID);
-			paymentReceipt = payment.isReceipt();
+			paymentReceipt = this._payment.isReceipt();
 		}
 		else
 		{
@@ -116,8 +125,8 @@ class DocLine_Allocation extends DocLine<Doc_AllocationHdr>
 	private DocLine_Allocation counterDocLine;
 	private final Set<AcctSchemaId> salesPurchaseInvoiceAlreadyCompensated_AcctSchemaIds = new HashSet<>();
 
-	private final int m_C_Payment_ID;
-	private final I_C_Payment payment;
+	private final PaymentId _paymentId;
+	private final I_C_Payment _payment;
 	private CurrencyConversionContext paymentCurrencyConversionCtx;
 	private final Boolean paymentReceipt;
 
@@ -144,7 +153,7 @@ class DocLine_Allocation extends DocLine<Doc_AllocationHdr>
 				.append(",Discount=").append(getDiscountAmt())
 				.append(",WriteOff=").append(getWriteOffAmt())
 				.append(",OverUnderAmt=").append(getOverUnderAmt())
-				.append(" - C_Payment_ID=").append(payment)
+				.append(" - C_Payment_ID=").append(_payment)
 				.append(",C_CashLine_ID=").append(cashLine)
 				.append(",C_Invoice_ID=").append(invoice)
 				.append("]");
@@ -322,17 +331,16 @@ class DocLine_Allocation extends DocLine<Doc_AllocationHdr>
 		return getC_Invoice() != null;
 	}
 
-	/**
-	 * @return Returns the c_Payment_ID.
-	 */
-	public int getC_Payment_ID()
+	@Nullable
+	public PaymentId getPaymentId()
 	{
-		return m_C_Payment_ID;
+		return _paymentId;
 	}
 
+	@Nullable
 	public I_C_Payment getC_Payment()
 	{
-		return payment;
+		return _payment;
 	}
 
 	public final boolean isSOTrxInvoice()
@@ -391,10 +399,10 @@ class DocLine_Allocation extends DocLine<Doc_AllocationHdr>
 
 	public MAccount getPaymentAcct(final AcctSchema as)
 	{
-		final I_C_Payment payment = getC_Payment();
-		if (payment != null)
+		final PaymentId paymentId = getPaymentId();
+		if (paymentId != null)
 		{
-			final MAccount paymentAcct = getPaymentAcct(as, payment.getC_Payment_ID());
+			final MAccount paymentAcct = getPaymentAcct(as, paymentId);
 			Check.assumeNotNull(paymentAcct, "paymentAcct not null");
 			return paymentAcct;
 		}
@@ -415,18 +423,14 @@ class DocLine_Allocation extends DocLine<Doc_AllocationHdr>
 
 	/**
 	 * Get Payment (Unallocated Payment or Payment Selection) Acct of Bank Account
-	 *
-	 * @param as accounting schema
-	 * @param C_Payment_ID payment
-	 * @return acct
 	 */
-	private MAccount getPaymentAcct(final AcctSchema as, final int C_Payment_ID)
+	private MAccount getPaymentAcct(@NonNull final AcctSchema as, @NonNull final PaymentId paymentId)
 	{
 		final Doc_AllocationHdr doc = getDoc();
-		doc.setC_BP_BankAccount_ID(0);
-		// Doc.ACCTTYPE_UnallocatedCash (AR) or C_Prepayment
-		// or Doc.ACCTTYPE_PaymentSelect (AP) or V_Prepayment
-		int accountType = Doc.ACCTTYPE_UnallocatedCash;
+		doc.setBPBankAccountId(null);
+		// AccountType.UnallocatedCash (AR) or C_Prepayment
+		// or AccountType.PaymentSelect (AP) or V_Prepayment
+		AccountType accountType = AccountType.UnallocatedCash;
 		//
 		final String sql = "SELECT p.C_BP_BankAccount_ID, d.DocBaseType, p.IsReceipt, p.IsPrepayment "
 				+ "FROM C_Payment p INNER JOIN C_DocType d ON (p.C_DocType_ID=d.C_DocType_ID) "
@@ -436,25 +440,30 @@ class DocLine_Allocation extends DocLine<Doc_AllocationHdr>
 		try
 		{
 			pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_ThreadInherited);
-			pstmt.setInt(1, C_Payment_ID);
+			pstmt.setInt(1, paymentId.getRepoId());
 			rs = pstmt.executeQuery();
 			if (rs.next())
 			{
-				doc.setC_BP_BankAccount_ID(rs.getInt(1));
-				if (Doc.DOCTYPE_APPayment.equals(rs.getString(2)))
+				doc.setBPBankAccountId(BankAccountId.ofRepoIdOrNull(rs.getInt(1)));
+				
+				final String docBaseType = rs.getString(2);
+				if (Doc.DOCTYPE_APPayment.equals(docBaseType))
 				{
-					accountType = Doc.ACCTTYPE_PaymentSelect;
+					accountType = AccountType.PaymentSelect;
 				}
+				
 				// Prepayment
-				if ("Y".equals(rs.getString(4)))		// Prepayment
+				final boolean isPrepayment = StringUtils.toBoolean(rs.getString(4));
+				if (isPrepayment)		// Prepayment
 				{
-					if ("Y".equals(rs.getString(3)))
+					final boolean isReceipt = StringUtils.toBoolean(rs.getString(3));
+					if (isReceipt)
 					{
-						accountType = Doc.ACCTTYPE_C_Prepayment;
+						accountType = AccountType.C_Prepayment;
 					}
 					else
 					{
-						accountType = Doc.ACCTTYPE_V_Prepayment;
+						accountType = AccountType.V_Prepayment;
 					}
 				}
 			}
@@ -471,13 +480,13 @@ class DocLine_Allocation extends DocLine<Doc_AllocationHdr>
 		}
 
 		//
-		if (doc.getC_BP_BankAccount_ID() <= 0)
+		if (doc.getBPBankAccountId() == null)
 		{
 			// log.error("NONE for C_Payment_ID=" + C_Payment_ID);
 			throw doc.newPostingException()
 					.setDocLine(this)
 					.setAcctSchema(as)
-					.setDetailMessage("No payment account found for " + C_Payment_ID);
+					.setDetailMessage("No payment account found for " + paymentId);
 		}
 		return doc.getAccount(accountType, as);
 	}	// getPaymentAcct
@@ -503,7 +512,7 @@ class DocLine_Allocation extends DocLine<Doc_AllocationHdr>
 					.setAcctSchema(as)
 					.setDetailMessage("No cashbook account found for C_CashLine_ID=" + C_CashLine_ID);
 		}
-		return doc.getAccount(Doc.ACCTTYPE_CashTransfer, as);
+		return doc.getAccount(AccountType.CashTransfer, as);
 	}	// getCashAcct
 
 	public final CurrencyConversionContext getInvoiceCurrencyConversionCtx()
