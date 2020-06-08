@@ -12,6 +12,7 @@ import org.compiere.model.I_C_BP_BankAccount;
 import org.compiere.model.I_C_BankStatement;
 import org.compiere.model.I_C_BankStatementLine;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
@@ -110,28 +111,29 @@ public class C_BankStatementLine_Test
 		return value != null ? new BigDecimal(value) : null;
 	}
 
-	@Test
-	public void onStmtAmtChanged()
-	{
-		final I_C_BankStatementLine bsl = bankStatementLine()
-				.stmtAmt("100")
-				.bankFeeAmt("10")
-				.build();
-
-		callout.onStmtAmtChanged(bsl);
-
-		assertThat(BankStatementLineAmounts.of(bsl))
-				.isEqualTo(BankStatementLineAmounts.builder()
-						.stmtAmt(new BigDecimal("100"))
-						.trxAmt(new BigDecimal("110"))
-						.bankFeeAmt(new BigDecimal("10"))
-						.build());
-	}
-
-	public class onTrxAmtChanged
+	@Nested
+	public class bankStatementLine
 	{
 		@Test
-		public void bankStatement()
+		public void onStmtAmtChanged()
+		{
+			final I_C_BankStatementLine bsl = bankStatementLine()
+					.stmtAmt("100")
+					.bankFeeAmt("10")
+					.build();
+
+			callout.onStmtAmtChanged(bsl);
+
+			assertThat(BankStatementLineAmounts.of(bsl))
+					.isEqualTo(BankStatementLineAmounts.builder()
+							.stmtAmt(new BigDecimal("100"))
+							.trxAmt(new BigDecimal("110"))
+							.bankFeeAmt(new BigDecimal("10"))
+							.build());
+		}
+
+		@Test
+		public void onTrxAmtChanged()
 		{
 			final I_C_BankStatementLine bsl = bankStatementLine()
 					.stmtAmt("100")
@@ -149,7 +151,90 @@ public class C_BankStatementLine_Test
 		}
 
 		@Test
-		public void cashJournal()
+		public void onBankFeeAmtChanged()
+		{
+			final I_C_BankStatementLine bsl = bankStatementLine()
+					.stmtAmt("100")
+					.trxAmt("100")
+					.bankFeeAmt("10")
+					.build();
+
+			callout.onBankFeeAmtChanged(bsl);
+
+			assertThat(BankStatementLineAmounts.of(bsl))
+					.isEqualTo(BankStatementLineAmounts.builder()
+							.stmtAmt(new BigDecimal("100"))
+							.trxAmt(new BigDecimal("110"))
+							.bankFeeAmt(new BigDecimal("10"))
+							.build());
+		}
+
+		@Test
+		public void onChargeAmtChanged()
+		{
+			final I_C_BankStatementLine bsl = bankStatementLine()
+					.stmtAmt("100")
+					.trxAmt("100")
+					.bankFeeAmt("10")
+					.chargeAmt("9")
+					.build();
+
+			callout.onChargeAmtChanged(bsl);
+
+			assertThat(BankStatementLineAmounts.of(bsl))
+					.isEqualTo(BankStatementLineAmounts.builder()
+							.stmtAmt(new BigDecimal("100"))
+							.trxAmt(new BigDecimal("101"))
+							.bankFeeAmt(new BigDecimal("10"))
+							.chargeAmt(new BigDecimal("9"))
+							.build());
+		}
+
+		@Test
+		public void onInterestAmtChanged()
+		{
+			final I_C_BankStatementLine bsl = bankStatementLine()
+					.stmtAmt("100")
+					.trxAmt("100")
+					.bankFeeAmt("10")
+					.chargeAmt("9")
+					.interestAmt("2")
+					.build();
+
+			callout.onInterestAmtChanged(bsl);
+
+			assertThat(BankStatementLineAmounts.of(bsl))
+					.isEqualTo(BankStatementLineAmounts.builder()
+							.stmtAmt(new BigDecimal("100"))
+							.trxAmt(new BigDecimal("99"))
+							.bankFeeAmt(new BigDecimal("10"))
+							.chargeAmt(new BigDecimal("9"))
+							.interestAmt(new BigDecimal("2"))
+							.build());
+		}
+	}
+
+	@Nested
+	public class cashJournalLine
+	{
+		@Test
+		public void onStmtAmtChanged()
+		{
+			final I_C_BankStatementLine bsl = bankStatementLine()
+					.stmtAmt("100")
+					.build();
+
+			callout.onStmtAmtChanged(bsl);
+
+			assertThat(BankStatementLineAmounts.of(bsl))
+					.isEqualTo(BankStatementLineAmounts.builder()
+							.stmtAmt(new BigDecimal("100"))
+							.trxAmt(new BigDecimal("100"))
+							.build());
+		}
+
+		@Test
+		public void onTrxAmtChanged()
 		{
 			final I_C_BankStatementLine bsl = bankStatementLine()
 					.cashBank(true)
@@ -162,71 +247,28 @@ public class C_BankStatementLine_Test
 			assertThat(BankStatementLineAmounts.of(bsl))
 					.isEqualTo(BankStatementLineAmounts.builder()
 							.stmtAmt(new BigDecimal("100"))
-							.trxAmt(new BigDecimal("90"))
+							.trxAmt(new BigDecimal("100"))
 							.build());
 		}
-	}
 
-	@Test
-	public void onBankFeeAmtChanged()
-	{
-		final I_C_BankStatementLine bsl = bankStatementLine()
-				.stmtAmt("100")
-				.trxAmt("100")
-				.bankFeeAmt("10")
-				.build();
+		@Test
+		public void onBankFeeAmtChanged()
+		{
+			final I_C_BankStatementLine bsl = bankStatementLine()
+					.cashBank(true)
+					.stmtAmt("100")
+					.bankFeeAmt("10")
+					.build();
 
-		callout.onBankFeeAmtChanged(bsl);
+			callout.onBankFeeAmtChanged(bsl);
 
-		assertThat(BankStatementLineAmounts.of(bsl))
-				.isEqualTo(BankStatementLineAmounts.builder()
-						.stmtAmt(new BigDecimal("100"))
-						.trxAmt(new BigDecimal("110"))
-						.bankFeeAmt(new BigDecimal("10"))
-						.build());
-	}
+			assertThat(BankStatementLineAmounts.of(bsl))
+					.isEqualTo(BankStatementLineAmounts.builder()
+							.stmtAmt(new BigDecimal("100"))
+							.trxAmt(new BigDecimal("100"))
+							.bankFeeAmt(new BigDecimal("0"))
+							.build());
+		}
 
-	@Test
-	public void onChargeAmtChanged()
-	{
-		final I_C_BankStatementLine bsl = bankStatementLine()
-				.stmtAmt("100")
-				.trxAmt("100")
-				.bankFeeAmt("10")
-				.chargeAmt("9")
-				.build();
-
-		callout.onChargeAmtChanged(bsl);
-
-		assertThat(BankStatementLineAmounts.of(bsl))
-				.isEqualTo(BankStatementLineAmounts.builder()
-						.stmtAmt(new BigDecimal("100"))
-						.trxAmt(new BigDecimal("101"))
-						.bankFeeAmt(new BigDecimal("10"))
-						.chargeAmt(new BigDecimal("9"))
-						.build());
-	}
-
-	@Test
-	public void onInterestAmtChanged()
-	{
-		final I_C_BankStatementLine bsl = bankStatementLine()
-				.stmtAmt("100")
-				.trxAmt("100")
-				.bankFeeAmt("10")
-				.chargeAmt("9")
-				.interestAmt("2")
-				.build();
-
-		callout.onInterestAmtChanged(bsl);
-
-		assertThat(BankStatementLineAmounts.of(bsl))
-				.isEqualTo(BankStatementLineAmounts.builder()
-						.stmtAmt(new BigDecimal("100"))
-						.trxAmt(new BigDecimal("99"))
-						.bankFeeAmt(new BigDecimal("10"))
-						.chargeAmt(new BigDecimal("9"))
-						.interestAmt(new BigDecimal("2"))
-						.build());
 	}
 }

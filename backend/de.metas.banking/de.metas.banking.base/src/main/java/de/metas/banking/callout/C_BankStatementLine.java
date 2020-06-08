@@ -48,6 +48,9 @@ public class C_BankStatementLine
 	private final IBankStatementBL bankStatementBL;
 	private final ICurrencyBL currencyConversionBL;
 
+	private final BankStatementLineAmountsCallout bankStatementLineAmountsCallout = new BankStatementLineAmountsCallout();
+	private final CashJournalLineAmountsCallout cashJournalLineAmountsCallout = new CashJournalLineAmountsCallout();
+
 	public C_BankStatementLine(
 			@NonNull final IBankStatementBL bankStatementBL,
 			@NonNull final ICurrencyBL currencyConversionBL)
@@ -56,57 +59,41 @@ public class C_BankStatementLine
 		this.currencyConversionBL = currencyConversionBL;
 	}
 
+	private AmountsCallout getAmountsCallout(@NonNull final I_C_BankStatementLine bsl)
+	{
+		return bankStatementBL.isCashJournal(bsl)
+				? cashJournalLineAmountsCallout
+				: bankStatementLineAmountsCallout;
+	}
+
 	@CalloutMethod(columnNames = I_C_BankStatementLine.COLUMNNAME_StmtAmt)
 	public void onStmtAmtChanged(final @NonNull I_C_BankStatementLine bsl)
 	{
-		final BigDecimal trxAmt = BankStatementLineAmounts.of(bsl)
-				.addDifferenceToTrxAmt()
-				.getTrxAmt();
-		bsl.setTrxAmt(trxAmt);
+		getAmountsCallout(bsl).onStmtAmtChanged(bsl);
 	}
 
 	@CalloutMethod(columnNames = I_C_BankStatementLine.COLUMNNAME_TrxAmt)
 	public void onTrxAmtChanged(final @NonNull I_C_BankStatementLine bsl)
 	{
-		if (bankStatementBL.isCashJournal(bsl))
-		{
-			// Cash journals does not support BankFees Amt,
-			// so better do nothing
-		}
-		else
-		{
-			final BigDecimal bankFeeAmt = BankStatementLineAmounts.of(bsl)
-					.addDifferenceToBankFeeAmt()
-					.getBankFeeAmt();
-			bsl.setBankFeeAmt(bankFeeAmt);
-		}
+		getAmountsCallout(bsl).onTrxAmtChanged(bsl);
 	}
 
 	@CalloutMethod(columnNames = I_C_BankStatementLine.COLUMNNAME_BankFeeAmt)
 	public void onBankFeeAmtChanged(final @NonNull I_C_BankStatementLine bsl)
 	{
-		final BigDecimal trxAmt = BankStatementLineAmounts.of(bsl)
-				.addDifferenceToTrxAmt()
-				.getTrxAmt();
-		bsl.setTrxAmt(trxAmt);
+		getAmountsCallout(bsl).onBankFeeAmtChanged(bsl);
 	}
 
 	@CalloutMethod(columnNames = I_C_BankStatementLine.COLUMNNAME_ChargeAmt)
 	public void onChargeAmtChanged(final @NonNull I_C_BankStatementLine bsl)
 	{
-		final BigDecimal trxAmt = BankStatementLineAmounts.of(bsl)
-				.addDifferenceToTrxAmt()
-				.getTrxAmt();
-		bsl.setTrxAmt(trxAmt);
+		getAmountsCallout(bsl).onChargeAmtChanged(bsl);
 	}
 
 	@CalloutMethod(columnNames = I_C_BankStatementLine.COLUMNNAME_InterestAmt)
 	public void onInterestAmtChanged(final @NonNull I_C_BankStatementLine bsl)
 	{
-		final BigDecimal trxAmt = BankStatementLineAmounts.of(bsl)
-				.addDifferenceToTrxAmt()
-				.getTrxAmt();
-		bsl.setTrxAmt(trxAmt);
+		getAmountsCallout(bsl).onInterestAmtChanged(bsl);
 	}
 
 	@CalloutMethod(columnNames = I_C_BankStatementLine.COLUMNNAME_Link_BankStatementLine_ID)
@@ -162,5 +149,101 @@ public class C_BankStatementLine
 		}
 
 		bankStatementBL.updateLineFromInvoice(bsl, invoiceId);
+	}
+
+	private static void updateTrxAmt(final I_C_BankStatementLine bsl)
+	{
+		bsl.setTrxAmt(BankStatementLineAmounts.of(bsl)
+				.addDifferenceToTrxAmt()
+				.getTrxAmt());
+	}
+
+	private interface AmountsCallout
+	{
+		void onStmtAmtChanged(final I_C_BankStatementLine bsl);
+
+		void onTrxAmtChanged(final I_C_BankStatementLine bsl);
+
+		void onBankFeeAmtChanged(final I_C_BankStatementLine bsl);
+
+		void onChargeAmtChanged(final I_C_BankStatementLine bsl);
+
+		void onInterestAmtChanged(final I_C_BankStatementLine bsl);
+	}
+
+	public static class BankStatementLineAmountsCallout implements AmountsCallout
+	{
+		@Override
+		public void onStmtAmtChanged(final I_C_BankStatementLine bsl)
+		{
+			updateTrxAmt(bsl);
+		}
+
+		@Override
+		public void onTrxAmtChanged(final I_C_BankStatementLine bsl)
+		{
+			bsl.setBankFeeAmt(BankStatementLineAmounts.of(bsl)
+					.addDifferenceToBankFeeAmt()
+					.getBankFeeAmt());
+		}
+
+		@Override
+		public void onBankFeeAmtChanged(final I_C_BankStatementLine bsl)
+		{
+			updateTrxAmt(bsl);
+		}
+
+		@Override
+		public void onChargeAmtChanged(final I_C_BankStatementLine bsl)
+		{
+			updateTrxAmt(bsl);
+		}
+
+		@Override
+		public void onInterestAmtChanged(final I_C_BankStatementLine bsl)
+		{
+			updateTrxAmt(bsl);
+		}
+	}
+
+	public static class CashJournalLineAmountsCallout implements AmountsCallout
+	{
+
+		@Override
+		public void onStmtAmtChanged(final I_C_BankStatementLine bsl)
+		{
+			updateTrxAmt(bsl);
+		}
+
+		@Override
+		public void onTrxAmtChanged(final I_C_BankStatementLine bsl)
+		{
+			// i.e. set the TrxAmt back.
+			// user shall not be allowed to change it
+			// instead, StmtAmt can be changed
+			updateTrxAmt(bsl);
+		}
+
+		@Override
+		public void onBankFeeAmtChanged(final I_C_BankStatementLine bsl)
+		{
+			bsl.setBankFeeAmt(BigDecimal.ZERO);
+			updateTrxAmt(bsl);
+		}
+
+		@Override
+		public void onChargeAmtChanged(final I_C_BankStatementLine bsl)
+		{
+			bsl.setChargeAmt(BigDecimal.ZERO);
+			updateTrxAmt(bsl);
+		}
+
+		@Override
+		public void onInterestAmtChanged(final I_C_BankStatementLine bsl)
+		{
+			bsl.setInterestAmt(BigDecimal.ZERO);
+			updateTrxAmt(bsl);
+		}
+
 	}
 }
