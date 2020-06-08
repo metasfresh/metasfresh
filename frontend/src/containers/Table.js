@@ -125,12 +125,6 @@ class TableContainer extends PureComponent {
     onRowEdited && onRowEdited(true);
   };
 
-  openModal = (windowId, tabId, rowId) => {
-    const { openModal } = this.props;
-
-    openModal('Add new', windowId, 'window', tabId, rowId);
-  };
-
   openTableModal = () => {
     const { openModal, windowId, tabId } = this.props;
 
@@ -215,6 +209,7 @@ class TableContainer extends PureComponent {
         onRowCollapse={this.handleRowCollapse}
         onGetAllLeaves={this.getAllLeaves}
         onHandleAdvancedEdit={this.handleAdvancedEdit}
+        onOpenTableModal={this.openTableModal}
       />
     );
   }
