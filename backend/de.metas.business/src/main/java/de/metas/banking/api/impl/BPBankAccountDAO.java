@@ -141,6 +141,8 @@ public class BPBankAccountDAO implements IBPBankAccountDAO
 		return Optional.ofNullable(bankAccountId);
 	}
 
+
+
 	@Override
 	public Optional<I_C_BP_BankAccount> retrieveDefaultBankAccountInTrx(@NonNull final BPartnerId bpartnerId)
 	{
