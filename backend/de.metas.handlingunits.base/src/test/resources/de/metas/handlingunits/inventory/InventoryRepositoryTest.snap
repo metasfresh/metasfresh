@@ -18,7 +18,7 @@ de.metas.handlingunits.inventory.InventoryRepositoryTest.saveInventoryLine=[
         "inventoryType": "PHYSICAL",
         "inventoryLineHUs": [
           {
-            "id": 100015,
+            "id": 100017,
             "huId": 100,
             "inventoryType": "PHYSICAL",
             "qtyBook": {
@@ -31,7 +31,7 @@ de.metas.handlingunits.inventory.InventoryRepositoryTest.saveInventoryLine=[
             }
           },
           {
-            "id": 100016,
+            "id": 100018,
             "huId": 200,
             "inventoryType": "PHYSICAL",
             "qtyBook": {

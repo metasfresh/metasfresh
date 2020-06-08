@@ -24,11 +24,11 @@ package de.metas.invoicecandidate.modelvalidator;
 
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.ModelValidator;
 import org.slf4j.MDC.MDCCloseable;
 
 import de.metas.adempiere.model.I_C_Invoice;
+import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.logging.TableRecordMDC;
 import de.metas.util.Services;
@@ -42,7 +42,7 @@ public class C_Invoice
 		try (final MDCCloseable invoiceRecordMDC = TableRecordMDC.putTableRecordReference(invoice))
 		{
 			// FIXME 06162: Save invoice before processing (e.g DocStatus needs to be accurate)
-			InterfaceWrapperHelper.save(invoice);
+			Services.get(IInvoiceDAO.class).save(invoice);
 
 			Services.get(IInvoiceCandBL.class).handleCompleteForInvoice(invoice);
 		}

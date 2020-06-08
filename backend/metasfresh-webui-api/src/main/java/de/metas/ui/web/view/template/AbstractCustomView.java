@@ -255,7 +255,7 @@ public abstract class AbstractCustomView<T extends IViewRow> implements IView
 		final List<IViewRow> pageRows = getRows()
 				.stream()
 				.sorted(orderBysEffective.toComparator())
-				.skip(firstRow >= 0 ? firstRow : 0)
+				.skip(Math.max(firstRow, 0))
 				.limit(pageLength > 0 ? pageLength : 30)
 				.collect(ImmutableList.toImmutableList());
 
