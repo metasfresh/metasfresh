@@ -1,15 +1,8 @@
-package de.metas.ui.web.view;
-
-import de.metas.ui.web.window.datatypes.WindowId;
-
-import javax.annotation.Nullable;
-import java.util.stream.Stream;
-
 /*
  * #%L
  * metasfresh-webui-api
  * %%
- * Copyright (C) 2017 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -26,6 +19,13 @@ import java.util.stream.Stream;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+package de.metas.ui.web.view;
+
+import de.metas.ui.web.window.datatypes.WindowId;
+
+import javax.annotation.Nullable;
+import java.util.stream.Stream;
 
 /**
  * Implementations of this interface are responsible of storing {@link IView} references for a particular window ID identified by {@link #getWindowId()}.

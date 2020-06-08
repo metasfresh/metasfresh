@@ -1,21 +1,8 @@
-package de.metas.ui.web.view;
-
-import java.util.List;
-import java.util.function.Supplier;
-
-import com.google.common.collect.ImmutableList;
-
-import de.metas.ui.web.view.descriptor.ViewLayout;
-import de.metas.ui.web.view.json.JSONFilterViewRequest;
-import de.metas.ui.web.view.json.JSONViewDataType;
-import de.metas.ui.web.window.datatypes.WindowId;
-import lombok.NonNull;
-
 /*
  * #%L
  * metasfresh-webui-api
  * %%
- * Copyright (C) 2017 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -33,14 +20,28 @@ import lombok.NonNull;
  * #L%
  */
 
+package de.metas.ui.web.view;
+
+import com.google.common.collect.ImmutableList;
+import de.metas.ui.web.view.descriptor.ViewLayout;
+import de.metas.ui.web.view.json.JSONFilterViewRequest;
+import de.metas.ui.web.view.json.JSONViewDataType;
+import de.metas.ui.web.window.datatypes.WindowId;
+import lombok.NonNull;
+
+import java.util.List;
+import java.util.function.Supplier;
+
 public interface IViewFactory
 {
-	/** Don't call it directly. Will be called by API. */
+	/**
+	 * Don't call it directly. Will be called by API.
+	 */
 	default void setViewsRepository(final IViewsRepository viewsRepository)
 	{
 	}
 
-	IView createView(CreateViewRequest request);
+	IView createView(@NonNull CreateViewRequest request);
 
 	ViewLayout getViewLayout(WindowId windowId, JSONViewDataType viewDataType, ViewProfileId profileId);
 

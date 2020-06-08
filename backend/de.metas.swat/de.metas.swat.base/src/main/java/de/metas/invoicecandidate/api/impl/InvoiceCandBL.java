@@ -381,7 +381,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		final BigDecimal newQtyToInvoiceOverrideFulfilled = ic.getQtyToInvoice_OverrideFulfilled().multiply(factor).add(qtyInvoicedDiff);
 
 		final BigDecimal qtyToInvoiceOverride = getQtyToInvoice_OverrideOrNull(ic);
-		if (qtyToInvoiceOverride == null)
+		if (qtyToInvoiceOverride == null || qtyToInvoiceOverride.signum() == 0)
 		{
 			// basically this is just for good measure. The model interceptor C_Invoice_Candidate.resetQtyToInvoiceFulFilled() actually does the job.
 			ic.setQtyToInvoice_OverrideFulfilled(null);
