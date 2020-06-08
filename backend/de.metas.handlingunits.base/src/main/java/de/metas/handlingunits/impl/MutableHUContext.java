@@ -30,11 +30,13 @@ import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 
+import javax.annotation.Nullable;
+
 /* package */class MutableHUContext implements IMutableHUContext
 {
 	private final Properties ctx;
 
-	private String trxName;
+	@Nullable private String trxName;
 
 	private Map<String, Object> _contextProperties = new HashMap<>();
 
@@ -62,7 +64,7 @@ import lombok.NonNull;
 		this(ctx, ITrx.TRXNAME_None);
 	}
 
-	public MutableHUContext(@NonNull final Properties ctx, final String trxName)
+	public MutableHUContext(@NonNull final Properties ctx, @Nullable final String trxName)
 	{
 		this.ctx = ctx;
 
