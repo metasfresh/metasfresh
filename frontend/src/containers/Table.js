@@ -21,7 +21,6 @@ import Table from '../components/table/Table';
 class TableContainer extends PureComponent {
   componentWillUnmount() {
     const {
-      // showIncludedViewOnSelect,
       showIncludedView,
       viewId,
       windowId,
@@ -29,7 +28,6 @@ class TableContainer extends PureComponent {
       isModal,
     } = this.props;
 
-    // if (showIncludedViewOnSelect && !isIncluded) {
     if (!isIncluded) {
       const identifier = isModal ? viewId : windowId;
 

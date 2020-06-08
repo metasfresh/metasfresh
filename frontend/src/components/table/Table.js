@@ -219,7 +219,6 @@ class Table extends PureComponent {
 
   handleClickOutside = (event) => {
     const {
-      // showIncludedViewOnSelect,
       showIncludedView,
       viewId,
       windowId,
@@ -262,17 +261,14 @@ class Table extends PureComponent {
 
       onDeselectAll();
 
-      // TODO: Check some property here
-      if (showIncludedView) {
-        const identifier = isModal ? viewId : windowId;
+      const identifier = isModal ? viewId : windowId;
 
-        showIncludedView({
-          id: identifier,
-          showIncludedView: false,
-          windowId,
-          viewId,
-        });
-      }
+      showIncludedView({
+        id: identifier,
+        showIncludedView: false,
+        windowId,
+        viewId,
+      });
     }
   };
 
@@ -527,7 +523,6 @@ class Table extends PureComponent {
       isGerman,
       activeSort,
       page,
-
       columns,
       rows,
       selected,
@@ -604,10 +599,9 @@ class Table extends PureComponent {
         changeListenOnFalse={this.setListenFalse}
         newRow={i === rows.length - 1 ? newRow : false}
         isSelected={
-          (selected &&
-            (selected.indexOf(item[keyProperty]) > -1 ||
-              selected[0] === 'all')) ||
-          (selected && !selected[0] && focusOnFieldName && i === 0)
+          selected.indexOf(item[keyProperty]) > -1 ||
+          selected[0] === 'all' ||
+          (!selected[0] && focusOnFieldName && i === 0)
         }
         handleSelect={onSelect}
         contextType={item.type}
