@@ -155,6 +155,11 @@ public class DeliveryDayGenerator implements IDeliveryDayGenerator
 	{
 
 		final ITourVersionRange tourVersionRange = tourDAO.generateTourVersionRange(tourVersion, getDateFromToUse(), getDateToToUse());
+		if (tourVersionRange == null)
+		{
+			loggable.addLog("Skip {} because validFrom > validTo");
+			return;
+		}
 		final List<I_M_TourVersionLine> tourVersionLines = tourDAO.retrieveTourVersionLines(tourVersion);
 		inactivateDeliveryDaysInRange(tourVersionRange, trxName);
 		if (tourVersionLines.isEmpty())
@@ -229,7 +234,7 @@ public class DeliveryDayGenerator implements IDeliveryDayGenerator
 	 * create delivery day
 	 *
 	 * @param tourVersionLine
-	 * @param deliveryDatge
+	 * @param deliveryDate
 	 * @return created delivery day or null
 	 */
 	private I_M_DeliveryDay createDeliveryDay(final I_M_TourVersionLine tourVersionLine, final LocalDate deliveryDate)
