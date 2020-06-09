@@ -15,7 +15,7 @@ import { INITIALLY_CLOSED } from '../constants/Constants';
 /**
  * @file Class based component.
  * @module Window
- * @extends Component
+ * @extends PureComponent
  */
 class Window extends PureComponent {
   constructor(props) {
@@ -41,7 +41,7 @@ class Window extends PureComponent {
     this.requestElementGroupFocus = this.requestElementGroupFocus.bind(this);
   }
 
-  componentMountUpdate() {
+  componentDidMount() {
     this._setInitialSectionsState();
   }
 
