@@ -1,7 +1,5 @@
 package de.metas.banking.model.validator;
 
-import java.math.BigDecimal;
-
 /*
  * #%L
  * de.metas.banking.base
@@ -39,6 +37,7 @@ import com.google.common.annotations.VisibleForTesting;
 
 import de.metas.banking.BankStatementId;
 import de.metas.banking.BankStatementLineId;
+import de.metas.banking.model.BankStatementLineAmounts;
 import de.metas.banking.service.IBankStatementBL;
 import de.metas.cache.CacheMgt;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
@@ -82,9 +81,7 @@ public class C_BankStatementLine
 			bankStatementLine.setLine(nextLineNo);
 		}
 
-		final BigDecimal chargeAmt = bankStatementLine.getStmtAmt()
-				.subtract(bankStatementBL.computeStmtAmtExcludingChargeAmt(bankStatementLine));
-		bankStatementLine.setChargeAmt(chargeAmt);
+		BankStatementLineAmounts.of(bankStatementLine).assertNoDifferences();
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE })
