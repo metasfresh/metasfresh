@@ -33,6 +33,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.util.TimeUtil;
 
+import javax.annotation.Nullable;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -287,11 +288,17 @@ public class TourDAO implements ITourDAO
 		return tourVersionLines;
 	}
 
+	@Nullable
 	@Override
 	public TourVersionRange generateTourVersionRange(final I_M_TourVersion tourVersion, final LocalDate validFrom, final LocalDate validTo)
 	{
 		final LocalDate actualValidFrom = calculateTourVersionRangeActualValidFrom(tourVersion, validFrom);
 		final LocalDate actualValidTo = calculateTourVersionRangeActualValidTo(tourVersion, validTo);
+
+		if (actualValidFrom.compareTo(actualValidTo) > 0)
+		{
+			return null;
+		}
 
 		return createTourVersionRange(tourVersion, actualValidFrom, actualValidTo);
 	}
