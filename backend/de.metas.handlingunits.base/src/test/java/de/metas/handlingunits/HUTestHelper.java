@@ -46,6 +46,8 @@ import java.util.Objects;
 import java.util.Properties;
 import java.util.stream.Collectors;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
@@ -951,6 +953,11 @@ public class HUTestHelper
 		return huContext;
 	}
 
+	public IMutableHUContext createMutableHUContextForProcessingOutOfTrx()
+	{
+		return createMutableHUContextForProcessing(ITrx.TRXNAME_None);
+	}
+
 	public IMutableHUContext createMutableHUContextForProcessing(final String trxName)
 	{
 		final IContextAware contextProvider = PlainContextAware.newWithTrxName(ctx, trxName);
@@ -1148,23 +1155,48 @@ public class HUTestHelper
 		return assignProduct(itemPI, productId, capacity, uom);
 	}
 
-	public I_M_HU_PI_Item_Product assignProduct(final I_M_HU_PI_Item itemPI, final ProductId productId, final BigDecimal capacity, final I_C_UOM uom)
+	public I_M_HU_PI_Item_Product assignProduct(
+			final I_M_HU_PI_Item itemPI,
+			final ProductId productId,
+			final BigDecimal capacity,
+			final I_C_UOM uom)
 	{
-		final I_C_BPartner bpartner = null;
-		return assignProduct(itemPI, productId, capacity, uom, bpartner);
+		final BPartnerId bpartnerId = null;
+		return assignProduct(
+				itemPI,
+				productId,
+				Quantity.of(capacity, uom),
+				bpartnerId);
 	}
 
-	public I_M_HU_PI_Item_Product assignProduct(final I_M_HU_PI_Item itemPI, final ProductId productId, final BigDecimal capacity, final I_C_UOM uom, final I_C_BPartner bpartner)
+	public I_M_HU_PI_Item_Product assignProduct(
+			final I_M_HU_PI_Item itemPI,
+			final ProductId productId,
+			final Quantity capacity)
+	{
+		final BPartnerId bpartnerId = null;
+		return assignProduct(
+				itemPI,
+				productId,
+				capacity,
+				bpartnerId);
+	}
+
+	public I_M_HU_PI_Item_Product assignProduct(
+			@NonNull final I_M_HU_PI_Item itemPI,
+			@NonNull final ProductId productId,
+			@NonNull final Quantity capacity,
+			@Nullable final BPartnerId bpartnerId)
 	{
 		Check.errorUnless(Objects.equals(itemPI.getItemType(), X_M_HU_PI_Item.ITEMTYPE_Material), "Param 'itemPI' needs to have ItemType={}, not={}; itemPI={} material item", X_M_HU_PI_Item.ITEMTYPE_Material, itemPI.getItemType(), itemPI);
 
 		final I_M_HU_PI_Item_Product itemDefProduct = InterfaceWrapperHelper.newInstance(I_M_HU_PI_Item_Product.class, itemPI);
 		itemDefProduct.setM_HU_PI_Item(itemPI);
 		itemDefProduct.setM_Product_ID(productId.getRepoId());
-		itemDefProduct.setQty(capacity);
-		itemDefProduct.setC_UOM_ID(uom.getC_UOM_ID());
+		itemDefProduct.setQty(capacity.toBigDecimal());
+		itemDefProduct.setC_UOM_ID(capacity.getUomId().getRepoId());
 		itemDefProduct.setValidFrom(TimeUtil.getDay(1970, 1, 1));
-		itemDefProduct.setC_BPartner_ID(bpartner != null ? bpartner.getC_BPartner_ID() : -1);
+		itemDefProduct.setC_BPartner_ID(BPartnerId.toRepoId(bpartnerId));
 		InterfaceWrapperHelper.save(itemDefProduct);
 
 		return itemDefProduct;
@@ -1270,16 +1302,21 @@ public class HUTestHelper
 
 	public Object createDummyReferenceModel(final I_C_BPartner bpartner)
 	{
+		final BPartnerId bpartnerId = bpartner != null ? BPartnerId.ofRepoId(bpartner.getC_BPartner_ID()) : null;
+		return createDummyReferenceModel(bpartnerId);
+	}
+
+	public Object createDummyReferenceModel(final BPartnerId bpartnerId)
+	{
 		final I_Test referencedModel = InterfaceWrapperHelper.newInstance(I_Test.class, contextProvider);
 
-		if (bpartner != null)
+		if (bpartnerId != null)
 		{
-			referencedModel.setC_BPartner_ID(bpartner.getC_BPartner_ID());
+			referencedModel.setC_BPartner_ID(bpartnerId.getRepoId());
 		}
 
 		InterfaceWrapperHelper.save(referencedModel);
 		return referencedModel;
-
 	}
 
 	public AbstractAllocationSourceDestination createDummySourceDestination(
@@ -1321,6 +1358,16 @@ public class HUTestHelper
 		return createHUs(huContext, huPI, productIdToLoad, qtyToLoad, qtyToLoadUOM);
 	}
 
+	public List<I_M_HU> createHUs(
+			final IHUContext huContext,
+			final I_M_HU_PI huPI,
+			final ProductId productIdToLoad,
+			final BigDecimal qtyToLoad,
+			final I_C_UOM qtyToLoadUOM)
+	{
+		return createHUs(huContext, huPI, productIdToLoad, Quantity.of(qtyToLoad, qtyToLoadUOM));
+	}
+
 	/**
 	 * Create HUs using {@link HUProducerDestination}.<br>
 	 * <b>Important:</b> If you expect e.g. an LU with multiple included TUs, then don't use this method; see the javadoc of {@link HUProducerDestination}.
@@ -1335,12 +1382,11 @@ public class HUTestHelper
 			final IHUContext huContext,
 			final I_M_HU_PI huPI,
 			final ProductId productIdToLoad,
-			final BigDecimal qtyToLoad,
-			final I_C_UOM qtyToLoadUOM)
+			final Quantity qtyToLoad)
 	{
 		final IAllocationSource source = createDummySourceDestination(productIdToLoad,
 				new BigDecimal("100000000"),  // qtyCapacity
-				qtyToLoadUOM,  // UOM
+				qtyToLoad.getUOM(),  // UOM
 				true // fullyLoaded => empty
 		);
 
@@ -1352,10 +1398,11 @@ public class HUTestHelper
 		final IAllocationRequest request = AllocationUtils.createQtyRequest(
 				huContext,
 				productIdToLoad,
-				Quantity.of(qtyToLoad, qtyToLoadUOM),
+				qtyToLoad,
 				getTodayZonedDateTime(),  // date
 				referenceModel,
-				false);
+				false // forceQtyAllocation
+		);
 
 		loader.load(request);
 
