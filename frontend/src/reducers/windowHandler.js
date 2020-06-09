@@ -1,5 +1,5 @@
 import update from 'immutability-helper';
-import { Map as iMap, Set as iSet } from 'immutable';
+import { Set as iSet } from 'immutable';
 import { createSelector } from 'reselect';
 
 import {
