@@ -121,7 +121,6 @@ describe('TableActions grid', () => {
       headerElements: rowResponse.columnsByFieldName,
       keyProperty: 'id',
     });
-    tableData_update.rows = flattenRows(tableData_update.rows);
     const initialState = createStore({
       viewHandler: {
         views: {
@@ -152,6 +151,8 @@ describe('TableActions grid', () => {
       expect(store.getActions()).toEqual(expect.arrayContaining(expectedActions));
     });
   });
+
+  it.todo(`dispatches 'UPDATE_TABLE' action after loading collapsible data to the view`);
 
   it(`dispatches 'CREATE_TABLE' action when browsing an existing view but table is not yet created`, () => {
     const { windowType, viewId } = gridProps.props1;
@@ -327,6 +328,7 @@ describe('TableActions tab', () => {
     const tabId = rowDataResponse[0].tabId;
     const tableId = getTableId({ windowId: windowType, docId, tabId, });
     const tableData = createTableData({ result: rowDataResponse, keyProperty: 'rowId' });
+    tableData.rows = flattenRows(tableData.rows);
     const payload = {
       id: tableId,
       data: {...tableData},

@@ -21,9 +21,6 @@ const basicData = {
   windowType: '143',
   docId: '1000037',
   tabId: 'AD_Tab-187',
-  allowCreateNew: true,
-  allowDelete: true,
-  stale: true,
 };
 
 describe('Tables reducer', () => {
@@ -44,7 +41,7 @@ describe('Tables reducer', () => {
       })
     ).toEqual(
       expect.objectContaining({
-        [id]: expect.objectContaining({ ...basicData, queryLimit: 0 }),
+        [id]: expect.objectContaining({ ...basicData }),
         length: 1,
       })
     );
@@ -83,8 +80,6 @@ describe('Tables reducer', () => {
     expect(state).toEqual(
       expect.objectContaining({
         [id]: expect.objectContaining({
-          allowCreateNew: true,
-          allowDelete: true,
           docId: '1000037',
           elements: [
             {
@@ -92,8 +87,6 @@ describe('Tables reducer', () => {
               fields: [{ field: 'InsufficientQtyAvailableForSalesColor_ID' }],
             },
           ],
-          internalName: 'C_OrderLine',
-          stale: true,
           tabId: 'AD_Tab-187',
           windowType: '143',
         }),
@@ -157,36 +150,19 @@ describe('Tables reducer', () => {
       expect.objectContaining({
         [id]: expect.objectContaining({
           activeSort: false,
-          allowCreateNew: true,
-          allowCreateNewReason: null,
-          allowDelete: true,
           columns: [],
           collapsedArrayMap: [],
           collapsedParentRows: [],
           collapsedRows: [],
-          dataError: false,
-          dataPending: false,
-          defaultOrderBys: [],
           docId: '1000037',
           emptyHint: null,
           emptyText: null,
-          firstRow: 0,
           headerElements: {},
           headerProperties: {},
-          internalName: null,
-          orderBy: [],
-          page: 0,
-          pageLength: 0,
-          queryLimit: 0,
-          queryLimitHit: false,
-          queryOnActivate: true,
           rows: expect.arrayContaining([row]),
           selected: ['100000'],
           size: 0,
-          stale: true,
-          supportQuickInput: true,
           tabId: 'AD_Tab-187',
-          tabIndex: 0,
           viewId: null,
           windowType: '143',
           keyProperty: 'rowId',
