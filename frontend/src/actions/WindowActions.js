@@ -1248,7 +1248,9 @@ export function handleProcessResponse(response, type, id) {
             break;
           case 'selectViewRows': {
             // eslint-disable-next-line no-console
-            console.info('@TODO: `selectViewRows` - check if selection worked ok');
+            console.info(
+              '@TODO: `selectViewRows` - check if selection worked ok'
+            );
             const { windowId, viewId, rowIds } = action;
             const tableId = getTableId({ windowId, viewId });
 
