@@ -75,6 +75,8 @@ class MasterWindowContainer extends Component {
       }
       // Some included rows got staled
       else {
+        // if `staleRowIds` is empty, we'll just query for all rows and update what changed
+        // This can happen when adding a new product via the `Add new` modal.
         const { staleRowIds } = activeTab;
 
         await this.getTabRows(activeTab.tabId, staleRowIds).then((res) => {

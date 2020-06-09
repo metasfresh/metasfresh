@@ -31,7 +31,6 @@ export const containerPropTypes = {
 
   // action creators
   collapseTableRow: PropTypes.func.isRequired,
-  deleteLocal: PropTypes.func.isRequired,
   deselectTableItems: PropTypes.func.isRequired,
   openModal: PropTypes.func.isRequired,
   updateTableSelection: PropTypes.func.isRequired,
