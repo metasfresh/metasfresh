@@ -11,7 +11,7 @@ import {
   collapseTableRow,
 } from '../actions/TableActions';
 import { showIncludedView } from '../actions/ViewActions';
-import { deleteLocal, openModal } from '../actions/WindowActions';
+import { openModal } from '../actions/WindowActions';
 
 import { containerPropTypes } from '../utils/tableHelpers';
 import { mapIncluded } from '../utils/documentListHelper';
@@ -145,7 +145,7 @@ class TableContainer extends PureComponent {
   };
 
   handlePromptSubmit = (selected) => {
-    const { deleteLocal, windowId, docId, updateDocList, tabId } = this.props;
+    const { windowId, docId, updateDocList, tabId } = this.props;
 
     this.handleSelect();
 
@@ -156,11 +156,8 @@ class TableContainer extends PureComponent {
       docId ? docId : null,
       docId ? tabId : null,
       selected
-    ).then((response) => {
-      if (docId) {
-        // TODO: Check what this is doing
-        deleteLocal(tabId, selected, 'master', response);
-      } else {
+    ).then(() => {
+      if (!docId) {
         updateDocList();
       }
     });
@@ -253,7 +250,6 @@ export default connect(
   mapStateToProps,
   {
     collapseTableRow,
-    deleteLocal,
     deselectTableItems,
     openModal,
     updateTableSelection,

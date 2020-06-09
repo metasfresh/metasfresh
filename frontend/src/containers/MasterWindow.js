@@ -95,7 +95,12 @@ class MasterWindowContainer extends Component {
       docId,
       tabId: tabId,
       rows,
-    }).catch(() => ({ rows, tabId }));
+    }).catch(() => {
+      // since we're querying multiple rows, but can only catch one
+      // error, we'll focus on the case when row was deleted and the
+      // endpoint returns 404
+      return { rowId: rows[0], tabId };
+    });
   }
 
   isActiveTab(tabId) {
@@ -119,11 +124,11 @@ class MasterWindowContainer extends Component {
     if (!data) {
       removedRows = removedRows || {};
       removedRows[response.rowId] = true;
-      tabId = !tabId && response.tabId;
+      tabId = response.tabId;
     } else {
       rowsById = rowsById || {};
       const rowZero = data[0];
-      tabId = !tabId && rowZero.tabId;
+      tabId = rowZero.tabId;
 
       data.forEach((row) => {
         rowsById[row.rowId] = { ...row };
@@ -179,9 +184,9 @@ class MasterWindowContainer extends Component {
       sortingOrder = (ordering.ascending ? '+' : '-') + ordering.fieldName;
     }
 
-    getTabRequest(activeTabId, windowType, docId, sortingOrder).then((rows) => {
-      return updateTabTableData(tableId, rows);
-    });
+    getTabRequest(activeTabId, windowType, docId, sortingOrder).then((rows) =>
+      updateTabTableData(tableId, rows)
+    );
   }
 
   deleteTabsTables = () => {
