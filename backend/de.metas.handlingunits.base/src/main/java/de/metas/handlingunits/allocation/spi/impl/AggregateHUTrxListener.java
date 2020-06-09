@@ -1,17 +1,28 @@
+/*
+ * #%L
+ * de.metas.handlingunits.base
+ * %%
+ * Copyright (C) 2020 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.handlingunits.allocation.spi.impl;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import org.adempiere.mm.attributes.spi.impl.WeightTareAttributeValueCallout;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_M_Attribute;
-
 import com.google.common.annotations.VisibleForTesting;
-
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
@@ -31,29 +42,20 @@ import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.storage.IHUItemStorage;
 import de.metas.quantity.Quantity;
+import de.metas.uom.IUOMDAO;
+import de.metas.uom.UOMPrecision;
+import de.metas.util.NumberUtils;
 import de.metas.util.Services;
+import lombok.NonNull;
+import org.adempiere.mm.attributes.spi.impl.WeightTareAttributeValueCallout;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_M_Attribute;
 
-/*
- * #%L
- * de.metas.handlingunits.base
- * %%
- * Copyright (C) 2017 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * This listener plays an important role for aggregate HUs.
@@ -63,7 +65,7 @@ import de.metas.util.Services;
  * <li>Preserve the original CU-per-TU qty by splitting off partial quantities from the aggregate HU into a "real" HU.
  *
  * @author metas-dev <dev@metasfresh.com>
- * @task https://github.com/metasfresh/metasfresh/issues/460
+ * task: https://github.com/metasfresh/metasfresh/issues/460
  */
 public class AggregateHUTrxListener implements IHUTrxListener
 {
@@ -76,9 +78,6 @@ public class AggregateHUTrxListener implements IHUTrxListener
 
 	/**
 	 * Creates a key used to put and get the CU quantity per HA item.
-	 *
-	 * @param haItem
-	 * @return
 	 */
 	public static String mkItemCuQtyPropertyKey(final I_M_HU_Item haItem)
 	{
@@ -160,7 +159,9 @@ public class AggregateHUTrxListener implements IHUTrxListener
 		InterfaceWrapperHelper.save(item);
 
 		// find out if we need to perform a split in order to preserve the former CU-per-TU quantity
-		final BigDecimal splitQty = computeSplitQty(storageQty, cuQtyBeforeLoad);
+		final IUOMDAO uomDao = Services.get(IUOMDAO.class);
+		final UOMPrecision precision = uomDao.getStandardPrecision(trx.getQuantity().getUomId());
+		final BigDecimal splitQty = computeSplitQty(storageQty, cuQtyBeforeLoad, precision);
 
 		if (splitQty.signum() != 0)
 		{
@@ -182,9 +183,9 @@ public class AggregateHUTrxListener implements IHUTrxListener
 
 			// Create allocation request
 			final IAllocationRequest request = AllocationUtils.createQtyRequest(
-					huContext, 
-					trx.getProductId(), 
-					Quantity.of(splitQty, trx.getQuantity().getUOM()), 
+					huContext,
+					trx.getProductId(),
+					Quantity.of(splitQty, trx.getQuantity().getUOM()),
 					huContext.getDate());
 			loader.load(request);
 		}
@@ -209,15 +210,20 @@ public class AggregateHUTrxListener implements IHUTrxListener
 	/**
 	 * Returns the quantity that needs to be split off the current storage quantity in order to achieve the same CU-per-TU quantity which the aggregate HU in question used to have before the loading operation which lead to this listener being called.
 	 *
-	 * @param storageQty the current qty re have in the storage
+	 * @param storageQty      the current qty re have in the storage
 	 * @param cuQtyBeforeLoad the former CU-per-TU qty, before the loading took place
-	 * @return
-	 *
-	 * @task https://github.com/metasfresh/metasfresh/issues/1203
+	 * @param precision       the UOM precision
 	 */
 	@VisibleForTesting
-	/* package */ BigDecimal computeSplitQty(final BigDecimal storageQty, final BigDecimal cuQtyBeforeLoad)
+	/* package */ BigDecimal computeSplitQty(@NonNull final BigDecimal storageQty, @NonNull final BigDecimal cuQtyBeforeLoad, @NonNull final UOMPrecision precision)
 	{
-		return storageQty.remainder(cuQtyBeforeLoad);
+		final BigDecimal remainder = storageQty.remainder(cuQtyBeforeLoad);
+		final BigDecimal errorMargin = NumberUtils.getErrorMarginForScale(precision.toInt());
+		if (errorMargin.compareTo(remainder.abs()) > 0)
+		{
+			return BigDecimal.ZERO;
+		}
+
+		return precision.roundIfNeeded(remainder);
 	}
 }
