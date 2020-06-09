@@ -162,7 +162,7 @@ class MasterWidget extends Component {
    * @param {*} property
    * @param {*} val
    */
-  handleChange = (property, val) => {
+  handleChange = async (property, val) => {
     const {
       updatePropertyValue,
       tabId,
@@ -173,10 +173,12 @@ class MasterWidget extends Component {
       entity,
     } = this.props;
     let currRowId = rowId;
+
     // Add special case of formating for the case when people input 04.7.2020 to be transformed to 04.07.2020
     if (widgetType === 'Date') {
-      val = formatDateWithZeros(val);
+      val = await formatDateWithZeros(val);
     }
+
     this.setState(
       {
         edited: true,
