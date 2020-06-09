@@ -162,12 +162,12 @@ const reducer = produce((draftState, action) => {
       let rows = original(draftState[id].rows);
 
       if (rows.length) {
-        if (removed) {
+        if (removed && Object.values(removed).length) {
           rows = rows.filter((row) => !removed[row.rowId]);
         }
 
         // find&replace updated rows (unfortunately it's a table so we'll have to traverse it)
-        if (changed) {
+        if (changed && Object.values(changed).length) {
           rows = rows.map((row) => {
             if (changed[row.rowId]) {
               row = { ...changed[row.rowId] };

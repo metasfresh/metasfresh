@@ -62,7 +62,6 @@ export const initialState = {
     viewId: null,
     layout: {},
     data: {},
-    rowData: iMap(),
     modalTitle: '',
     modalType: '',
     isAdvanced: false,
@@ -102,10 +101,6 @@ export const initialState = {
       activeTab: null,
     },
     data: [],
-
-    // rowData is an immutable Map with tabId's as keys, and Lists as values.
-    // List's elements are plain objects for now
-    rowData: iMap(),
     saveStatus: {},
     validStatus: {},
     includedTabsInfo: {},
@@ -333,7 +328,6 @@ export default function windowHandler(state = initialState, action) {
           data: action.data,
           docId: action.docId,
           layout: {},
-          rowData: iMap(),
           saveStatus: action.saveStatus,
           standardActions: iSet(action.standardActions),
           validStatus: action.validStatus,
@@ -358,7 +352,6 @@ export default function windowHandler(state = initialState, action) {
         master: {
           ...state.master,
           data: {},
-          rowData: iMap(),
           docId: undefined,
         },
       };

@@ -218,6 +218,13 @@ const mapStateToProps = (state, props) => {
   const { windowId, docId, tabId, viewId } = props;
   const tableId = getTableId({ windowId, viewId, docId, tabId });
   const table = getTable(state, tableId);
+  const modalVisible = state.windowHandler.modal.visible;
+  let handleShortcuts = state.windowHandler.allowShortcut;
+
+  // we don't have to worry about shortcuts if table is behind a modal
+  if (modalVisible && !props.isModal) {
+    handleShortcuts = false;
+  }
 
   return {
     rows: table.rows,
@@ -234,10 +241,9 @@ const mapStateToProps = (state, props) => {
     collapsible: table.collapsible,
     keyProperty: table.keyProperty,
     size: table.size,
-
-    allowShortcut: state.windowHandler.allowShortcut,
+    allowShortcut: handleShortcuts,
     allowOutsideClick: state.windowHandler.allowOutsideClick,
-    modalVisible: state.windowHandler.modal.visible,
+    modalVisible,
     isGerman:
       state.appHandler.me.language && state.appHandler.me.language.key
         ? state.appHandler.me.language.key.includes('de')
