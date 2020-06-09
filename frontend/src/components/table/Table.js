@@ -321,7 +321,8 @@ class Table extends PureComponent {
             array[currentId + 1],
             false,
             idFocused,
-            showSelectedIncludedView([array[currentId + 1]])
+            showSelectedIncludedView &&
+              showSelectedIncludedView([array[currentId + 1]])
           );
         } else {
           this.handleSelect(array[currentId + 1], false, idFocused);
@@ -348,7 +349,8 @@ class Table extends PureComponent {
             array[currentId - 1],
             idFocused,
             false,
-            showSelectedIncludedView([array[currentId - 1]])
+            showSelectedIncludedView &&
+              showSelectedIncludedView([array[currentId - 1]])
           );
         } else {
           this.handleSelect(array[currentId - 1], idFocused, false);
