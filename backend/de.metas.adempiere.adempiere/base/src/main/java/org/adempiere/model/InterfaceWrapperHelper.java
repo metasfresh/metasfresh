@@ -533,7 +533,7 @@ public class InterfaceWrapperHelper
 		helpers.refresh(model, trxName);
 	}
 
-	public static void setTrxName(final Object model, final String trxName)
+	public static void setTrxName(final Object model, @Nullable final String trxName)
 	{
 		final boolean ignoreIfNotHandled = false;
 		setTrxName(model, trxName, ignoreIfNotHandled);
