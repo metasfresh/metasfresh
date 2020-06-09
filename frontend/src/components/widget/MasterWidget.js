@@ -6,7 +6,7 @@ import Moment from 'moment-timezone';
 import * as windowActions from '../../actions/WindowActions';
 import { getZoomIntoWindow } from '../../api';
 import { convertTimeStringToMoment } from '../../utils/documentListHelper';
-
+import { formatDateWithZeros } from '../../utils/documentListHelper';
 import RawWidget from './RawWidget';
 
 function isNumberField(widgetType) {
@@ -173,7 +173,10 @@ class MasterWidget extends Component {
       entity,
     } = this.props;
     let currRowId = rowId;
-
+    // Add special case of formating for the case when people input 04.7.2020 to be transformed to 04.07.2020
+    if (widgetType === 'Date') {
+      val = formatDateWithZeros(val);
+    }
     this.setState(
       {
         edited: true,

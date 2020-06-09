@@ -347,6 +347,37 @@ export function getRowsData(rowData) {
   return data;
 }
 
+/**
+ * @method formatStringWithZeroSplitBy
+ * @summary For a given string with a specified separator it formats the number within with zeros in front if they are below 10
+ * @param {string} date
+ * @param {string} notation
+ */
+export function formatStringWithZeroSplitBy(date, notation) {
+  const dateArr = date.split(notation);
+  dateArr.map((itemDate) => {
+    return itemDate < 10 ? '0' + itemDate : itemDate;
+  });
+  return dateArr.join(notation);
+}
+
+/**
+ * @method formatDateWithZeros
+ * @summary Format date with zeros if it's like dd.m.yyyy to dd.mm.yyyyy and similar for the case when / is the sepafrator
+ * @param {string} date
+ */
+export function formatDateWithZeros(date) {
+  if (typeof date === 'string' && date.includes('.')) {
+    return formatStringWithZeroSplitBy(date, '.');
+  }
+
+  if (typeof date === 'string' && date.includes('/')) {
+    return formatStringWithZeroSplitBy(date, '/');
+  }
+
+  return date;
+}
+
 export function mapIncluded(node, indent, isParentLastChild = false) {
   let ind = indent ? indent : [];
   let result = [];
