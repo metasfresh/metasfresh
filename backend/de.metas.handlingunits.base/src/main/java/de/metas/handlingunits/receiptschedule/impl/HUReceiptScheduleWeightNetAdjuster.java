@@ -36,6 +36,8 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.util.TrxRunnable;
 import org.slf4j.Logger;
 
+import com.google.common.annotations.VisibleForTesting;
+
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUContextFactory;
@@ -95,17 +97,12 @@ public class HUReceiptScheduleWeightNetAdjuster
 
 	public HUReceiptScheduleWeightNetAdjuster(final Properties ctx, final String trxName)
 	{
-		super();
-
 		_huContextInitial = Services.get(IHUContextFactory.class).createMutableHUContext(ctx, trxName);
 	}
 
-	// package level only for testing
-	/* package */ HUReceiptScheduleWeightNetAdjuster(final IHUContext huContext)
+	@VisibleForTesting
+	/* package */ HUReceiptScheduleWeightNetAdjuster(@NonNull final IHUContext huContext)
 	{
-		super();
-
-		Check.assumeNotNull(huContext, "huContext not null");
 		_huContextInitial = huContext.copyAsMutable();
 	}
 

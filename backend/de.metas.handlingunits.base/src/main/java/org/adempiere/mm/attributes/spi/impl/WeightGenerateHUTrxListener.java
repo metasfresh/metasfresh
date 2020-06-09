@@ -169,11 +169,6 @@ public class WeightGenerateHUTrxListener implements IHUTrxListener
 		final I_M_HU vhu = vhuItem.getM_HU();
 		final IAttributeStorage attributeStoarge = huContext.getHUAttributeStorageFactory().getAttributeStorage(vhu);
 		final IWeightable weightable = Weightables.wrap(attributeStoarge);
-		if (weightable == null)
-		{
-			// shall not happen
-			return null;
-		}
 
 		//
 		// If there is no WeightNet attribute, there is no point to update it
