@@ -2,7 +2,7 @@ import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import Moment from 'moment-timezone';
-
+import _ from 'lodash';
 import * as windowActions from '../../actions/WindowActions';
 import { getZoomIntoWindow } from '../../api';
 import { convertTimeStringToMoment } from '../../utils/documentListHelper';
@@ -88,7 +88,7 @@ class MasterWidget extends Component {
    * @param {*} property
    * @param {*} value
    */
-  handlePatch = async (property, value) => {
+  handlePatch = (property, value) => {
     const {
       isModal,
       widgetType,
@@ -129,9 +129,6 @@ class MasterWidget extends Component {
       isEdit = true;
     }
 
-    // Add special case of formating for the case when people input 04.7.2020 to be transformed to 04.07.2020
-    value = widgetType === 'Date' ? await formatDateWithZeros(value) : value;
-
     ret = patch(
       entity,
       windowType,
@@ -165,7 +162,7 @@ class MasterWidget extends Component {
    * @param {*} property
    * @param {*} val
    */
-  handleChange = (property, val) => {
+  handleChange = async (property, val) => {
     const {
       updatePropertyValue,
       tabId,
@@ -176,7 +173,8 @@ class MasterWidget extends Component {
       entity,
     } = this.props;
     let currRowId = rowId;
-
+    // Add special case of formating for the case when people input 04.7.2020 to be transformed to 04.07.2020
+    val = widgetType === 'Date' ? await formatDateWithZeros(val) : val;
     this.setState(
       {
         edited: true,
@@ -279,7 +277,7 @@ class MasterWidget extends Component {
         handleBlur={() => handleFocusFn(false)}
         onClickOutside={onClickOutside}
         handlePatch={this.handlePatch}
-        handleChange={this.handleChange}
+        handleChange={_.debounce(this.handleChange, 1500)}
         handleProcess={this.handleProcess}
         handleZoomInto={this.handleZoomInto}
         onBlurWidget={this.handleBlurWidget}
