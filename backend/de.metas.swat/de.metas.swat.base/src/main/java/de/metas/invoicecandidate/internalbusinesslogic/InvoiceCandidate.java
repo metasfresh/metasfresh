@@ -229,10 +229,9 @@ public class InvoiceCandidate
 				StockQtyAndUOMQty qtysToInvoice = StockQtyAndUOMQtys.createZero(product.getId(), uomId);
 				BigDecimal remainingQtyOverride = qtyToInvoiceOverrideInStockUom.setScale(12);
 
-				// if qtyToInvoiceOverride <= qtyDelivered and catchWeight, then get the appropriate fraction
 				if (deliveredData.getShipmentData() != null)
 				{
-
+					// if something was already shipped and qtyToInvoiceOverride <= qtyDelivered and catchWeight, then get the appropriate fraction
 					final List<DeliveredQtyItem> deliveredQtyItems = deliveredData.getShipmentData().getDeliveredQtyItems();
 
 					for (final DeliveredQtyItem deliveredQtyItem : deliveredQtyItems)
