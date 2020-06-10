@@ -255,6 +255,7 @@ class Window extends PureComponent {
               newRow,
               internalName,
             }}
+            toggleFullScreen={this.toggleTableFullScreen}
             entity="window"
             key={tabId}
             orderBy={defaultOrderBys}
@@ -297,7 +298,6 @@ class Window extends PureComponent {
     return (
       <Tabs
         tabIndex={this.tabIndex.tabs}
-        toggleTableFullScreen={this.toggleTableFullScreen}
         fullScreen={fullScreen}
         windowId={windowId}
         onChange={this._setInitialSectionsState}

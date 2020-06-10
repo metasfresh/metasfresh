@@ -4,10 +4,6 @@ import { connect } from 'react-redux';
 
 import { fetchTab } from '../../actions/WindowActions';
 
-/*
- * @TODO: I think this can safely be rewritten to a functional component
- *
- */
 class Tab extends PureComponent {
   constructor(props) {
     super(props);

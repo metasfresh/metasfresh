@@ -144,7 +144,7 @@ class TableFilter extends PureComponent {
     const { openModal, tabIndex, docId, tabId, docType } = this.props;
     const { isTooltipShow } = this.state;
 
-    if (!actions.length) {
+    if (actions && !actions.length) {
       this.actionButtons = null;
     }
 
