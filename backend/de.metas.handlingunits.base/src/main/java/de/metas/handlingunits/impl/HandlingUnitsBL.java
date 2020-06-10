@@ -33,6 +33,7 @@ import java.util.Properties;
 import java.util.Set;
 
 import de.metas.util.GuavaCollectors;
+import de.metas.organization.ClientAndOrgId;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -128,10 +129,10 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	}
 
 	@Override
-	public IMutableHUContext createMutableHUContext(final Properties ctx)
+	public IMutableHUContext createMutableHUContext(final Properties ctx, final @NonNull ClientAndOrgId clientAndOrgId)
 	{
 		final IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
-		return huContextFactory.createMutableHUContext(ctx);
+		return huContextFactory.createMutableHUContext(ctx, clientAndOrgId);
 	}
 
 	@Override
