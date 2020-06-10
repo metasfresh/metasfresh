@@ -18,7 +18,7 @@ const createState = function(state = {}) {
 };
 
 const basicData = {
-  windowType: '143',
+  windowId: '143',
   docId: '1000037',
   tabId: 'AD_Tab-187',
 };
@@ -88,7 +88,7 @@ describe('Tables reducer', () => {
             },
           ],
           tabId: 'AD_Tab-187',
-          windowType: '143',
+          windowId: '143',
         }),
         length: 1,
       })
@@ -140,7 +140,7 @@ describe('Tables reducer', () => {
     const id = '143_1000037_AD_Tab-187';
     const row = { rowId: '100000' };
     const initialStateData = createState({
-      [id]: { ...initialTableState, ...basicData, rows: [row], keyProperty: 'rowId' },
+      [id]: { ...initialTableState, ...basicData, rows: [row], selected: ['100000'], keyProperty: 'rowId' },
       length: 1,
     });
     const actions = [updateTableSelection(id, ['100000'], 'rowId')];
@@ -164,7 +164,7 @@ describe('Tables reducer', () => {
           size: 0,
           tabId: 'AD_Tab-187',
           viewId: null,
-          windowType: '143',
+          windowId: '143',
           keyProperty: 'rowId',
           expandedDepth: 0,
           collapsible: false,
