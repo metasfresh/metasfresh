@@ -1,3 +1,25 @@
+/*
+ * #%L
+ * de.metas.contracts
+ * %%
+ * Copyright (C) 2020 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.contracts.commission.model;
 
 
@@ -43,7 +65,7 @@ public interface I_C_Commission_Share
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setAD_Org_ID (int AD_Org_ID);
+	public void setAD_Org_ID(int AD_Org_ID);
 
 	/**
 	 * Get Sektion.
@@ -65,7 +87,7 @@ public interface I_C_Commission_Share
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setC_BPartner_SalesRep_ID (int C_BPartner_SalesRep_ID);
+	public void setC_BPartner_SalesRep_ID(int C_BPartner_SalesRep_ID);
 
 	/**
 	 * Get Zugeordneter Vertriebspartner.
@@ -86,7 +108,7 @@ public interface I_C_Commission_Share
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setC_Commission_Instance_ID (int C_Commission_Instance_ID);
+	public void setC_Commission_Instance_ID(int C_Commission_Instance_ID);
 
 	/**
 	 * Get Provisionsvorgang.
@@ -97,41 +119,14 @@ public interface I_C_Commission_Share
 	 */
 	public int getC_Commission_Instance_ID();
 
-	public de.metas.contracts.commission.model.I_C_Commission_Instance getC_Commission_Instance();
+	public I_C_Commission_Instance getC_Commission_Instance();
 
-	public void setC_Commission_Instance(de.metas.contracts.commission.model.I_C_Commission_Instance C_Commission_Instance);
+	public void setC_Commission_Instance(I_C_Commission_Instance C_Commission_Instance);
 
     /** Column definition for C_Commission_Instance_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_Commission_Share, de.metas.contracts.commission.model.I_C_Commission_Instance> COLUMN_C_Commission_Instance_ID = new org.adempiere.model.ModelColumn<I_C_Commission_Share, de.metas.contracts.commission.model.I_C_Commission_Instance>(I_C_Commission_Share.class, "C_Commission_Instance_ID", de.metas.contracts.commission.model.I_C_Commission_Instance.class);
+    public static final org.adempiere.model.ModelColumn<I_C_Commission_Share, I_C_Commission_Instance> COLUMN_C_Commission_Instance_ID = new org.adempiere.model.ModelColumn<I_C_Commission_Share, I_C_Commission_Instance>(I_C_Commission_Share.class, "C_Commission_Instance_ID", I_C_Commission_Instance.class);
     /** Column name C_Commission_Instance_ID */
     public static final String COLUMNNAME_C_Commission_Instance_ID = "C_Commission_Instance_ID";
-
-	/**
-	 * Set Einstellungsdetail.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setC_CommissionSettingsLine_ID (int C_CommissionSettingsLine_ID);
-
-	/**
-	 * Get Einstellungsdetail.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public int getC_CommissionSettingsLine_ID();
-
-	public de.metas.contracts.commission.model.I_C_CommissionSettingsLine getC_CommissionSettingsLine();
-
-	public void setC_CommissionSettingsLine(de.metas.contracts.commission.model.I_C_CommissionSettingsLine C_CommissionSettingsLine);
-
-    /** Column definition for C_CommissionSettingsLine_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_Commission_Share, de.metas.contracts.commission.model.I_C_CommissionSettingsLine> COLUMN_C_CommissionSettingsLine_ID = new org.adempiere.model.ModelColumn<I_C_Commission_Share, de.metas.contracts.commission.model.I_C_CommissionSettingsLine>(I_C_Commission_Share.class, "C_CommissionSettingsLine_ID", de.metas.contracts.commission.model.I_C_CommissionSettingsLine.class);
-    /** Column name C_CommissionSettingsLine_ID */
-    public static final String COLUMNNAME_C_CommissionSettingsLine_ID = "C_CommissionSettingsLine_ID";
 
 	/**
 	 * Set Buchauszug.
@@ -140,7 +135,7 @@ public interface I_C_Commission_Share
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setC_Commission_Share_ID (int C_Commission_Share_ID);
+	public void setC_Commission_Share_ID(int C_Commission_Share_ID);
 
 	/**
 	 * Get Buchauszug.
@@ -157,13 +152,40 @@ public interface I_C_Commission_Share
     public static final String COLUMNNAME_C_Commission_Share_ID = "C_Commission_Share_ID";
 
 	/**
+	 * Set Einstellungsdetail.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setC_CommissionSettingsLine_ID(int C_CommissionSettingsLine_ID);
+
+	/**
+	 * Get Einstellungsdetail.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getC_CommissionSettingsLine_ID();
+
+	public I_C_CommissionSettingsLine getC_CommissionSettingsLine();
+
+	public void setC_CommissionSettingsLine(I_C_CommissionSettingsLine C_CommissionSettingsLine);
+
+    /** Column definition for C_CommissionSettingsLine_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_Commission_Share, I_C_CommissionSettingsLine> COLUMN_C_CommissionSettingsLine_ID = new org.adempiere.model.ModelColumn<I_C_Commission_Share, I_C_CommissionSettingsLine>(I_C_Commission_Share.class, "C_CommissionSettingsLine_ID", I_C_CommissionSettingsLine.class);
+    /** Column name C_CommissionSettingsLine_ID */
+    public static final String COLUMNNAME_C_CommissionSettingsLine_ID = "C_CommissionSettingsLine_ID";
+
+	/**
 	 * Set Pauschale - Vertragsperiode.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setC_Flatrate_Term_ID (int C_Flatrate_Term_ID);
+	public void setC_Flatrate_Term_ID(int C_Flatrate_Term_ID);
 
 	/**
 	 * Get Pauschale - Vertragsperiode.
@@ -187,7 +209,7 @@ public interface I_C_Commission_Share
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setCommission_Product_ID (int Commission_Product_ID);
+	public void setCommission_Product_ID(int Commission_Product_ID);
 
 	/**
 	 * Get Provisionsprodukt.
@@ -238,7 +260,7 @@ public interface I_C_Commission_Share
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsActive (boolean IsActive);
+	public void setIsActive(boolean IsActive);
 
 	/**
 	 * Get Aktiv.
@@ -256,13 +278,36 @@ public interface I_C_Commission_Share
     public static final String COLUMNNAME_IsActive = "IsActive";
 
 	/**
+	 * Set Planspiel.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setIsSimulation(boolean IsSimulation);
+
+	/**
+	 * Get Planspiel.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public boolean isSimulation();
+
+    /** Column definition for IsSimulation */
+    public static final org.adempiere.model.ModelColumn<I_C_Commission_Share, Object> COLUMN_IsSimulation = new org.adempiere.model.ModelColumn<I_C_Commission_Share, Object>(I_C_Commission_Share.class, "IsSimulation", null);
+    /** Column name IsSimulation */
+    public static final String COLUMNNAME_IsSimulation = "IsSimulation";
+
+	/**
 	 * Set Hierarchie-Ebene.
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setLevelHierarchy (int LevelHierarchy);
+	public void setLevelHierarchy(int LevelHierarchy);
 
 	/**
 	 * Get Hierarchie-Ebene.
@@ -285,7 +330,7 @@ public interface I_C_Commission_Share
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setPointsSum_Forecasted (java.math.BigDecimal PointsSum_Forecasted);
+	public void setPointsSum_Forecasted(java.math.BigDecimal PointsSum_Forecasted);
 
 	/**
 	 * Get Beauftragte Punktzahl.
@@ -308,7 +353,7 @@ public interface I_C_Commission_Share
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setPointsSum_Invoiceable (java.math.BigDecimal PointsSum_Invoiceable);
+	public void setPointsSum_Invoiceable(java.math.BigDecimal PointsSum_Invoiceable);
 
 	/**
 	 * Get Fakturierbare Punktzahl.
@@ -331,7 +376,7 @@ public interface I_C_Commission_Share
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setPointsSum_Invoiced (java.math.BigDecimal PointsSum_Invoiced);
+	public void setPointsSum_Invoiced(java.math.BigDecimal PointsSum_Invoiced);
 
 	/**
 	 * Get Fakturierte Punktzahl.
@@ -354,7 +399,7 @@ public interface I_C_Commission_Share
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setPointsSum_Settled (java.math.BigDecimal PointsSum_Settled);
+	public void setPointsSum_Settled(java.math.BigDecimal PointsSum_Settled);
 
 	/**
 	 * Get Abgerechnete Punktzahl.
@@ -377,7 +422,7 @@ public interface I_C_Commission_Share
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setPointsSum_ToSettle (java.math.BigDecimal PointsSum_ToSettle);
+	public void setPointsSum_ToSettle(java.math.BigDecimal PointsSum_ToSettle);
 
 	/**
 	 * Get Abzurechnende Punktzahl.
