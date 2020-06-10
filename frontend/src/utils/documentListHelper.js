@@ -353,7 +353,7 @@ export function getRowsData(rowData) {
  * @param {string} date
  * @param {string} notation
  */
-export function formatStringWithZeroSplitBy(date, notation) {
+function formatStringWithZeroSplitBy(date, notation) {
   const dateArr = date.split(notation);
   const frmArr = dateArr.map((itemDate, index) => {
     return dateArr.length > 2 &&
@@ -370,7 +370,7 @@ export function formatStringWithZeroSplitBy(date, notation) {
 
 /**
  * @method formatDateWithZeros
- * @summary Format date with zeros if it's like dd.m.yyyy to dd.mm.yyyyy and similar for the case when / is the sepafrator
+ * @summary Format date with zeros if it's like dd.m.yyyy to dd.mm.yyyyy and similar for the case when / is the separator
  * @param {string} date
  */
 export async function formatDateWithZeros(date) {
