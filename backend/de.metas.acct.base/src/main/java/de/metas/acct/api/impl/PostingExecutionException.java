@@ -1,4 +1,4 @@
-package org.compiere.acct;
+package de.metas.acct.api.impl;
 
 import org.adempiere.exceptions.AdempiereException;
 
@@ -8,7 +8,7 @@ import de.metas.util.Check;
  * Exception thrown when a document posting request orchestration fails.
  */
 @SuppressWarnings("serial")
-public class PostingExecutionException extends AdempiereException
+class PostingExecutionException extends AdempiereException
 {
 	/**
 	 * Wraps given <code>throwable</code> as {@link PostingExecutionException}, if it's not already an {@link PostingExecutionException}.
@@ -16,7 +16,7 @@ public class PostingExecutionException extends AdempiereException
 	 * @param throwable
 	 * @return {@link PostingExecutionException} or <code>null</code> if the throwable was null.
 	 */
-	public static final PostingExecutionException wrapIfNeeded(final Throwable throwable)
+	public static final AdempiereException wrapIfNeeded(final Throwable throwable)
 	{
 		if (throwable == null)
 		{
