@@ -22,16 +22,6 @@
 
 package de.metas.contracts.pricing.trade_margin;
 
-import java.math.BigDecimal;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Optional;
-
-import de.metas.util.ILoggable;
-import org.compiere.SpringContextHolder;
-import org.slf4j.Logger;
-import org.slf4j.MDC.MDCCloseable;
-
 import ch.qos.logback.classic.Level;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerBL;
@@ -55,11 +45,20 @@ import de.metas.pricing.rules.IPricingRule;
 import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
+import de.metas.util.ILoggable;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import de.metas.util.lang.Percent;
 import de.metas.util.time.SystemTime;
 import lombok.NonNull;
+import org.compiere.SpringContextHolder;
+import org.slf4j.Logger;
+import org.slf4j.MDC.MDCCloseable;
+
+import java.math.BigDecimal;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Optional;
 
 public class CustomerTradeMarginPricingRule implements IPricingRule
 {
@@ -144,6 +143,12 @@ public class CustomerTradeMarginPricingRule implements IPricingRule
 		if (!forecastCommissionInstance.isPresent())
 		{
 			loggable.addLog("calculate - Not applying! Forecast commission instance couldn't be created!");
+			return;
+		}
+
+		if (forecastCommissionInstance.get().hasSimulationContracts())
+		{
+			loggable.addLog("calculate - Not applying! Forecast commission instance contains simulation contracts!");
 			return;
 		}
 
