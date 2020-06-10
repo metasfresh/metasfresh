@@ -2,7 +2,6 @@ import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import Moment from 'moment-timezone';
-import _ from 'lodash';
 import * as windowActions from '../../actions/WindowActions';
 import { getZoomIntoWindow } from '../../api';
 import { convertTimeStringToMoment } from '../../utils/documentListHelper';
@@ -277,7 +276,7 @@ class MasterWidget extends Component {
         handleBlur={() => handleFocusFn(false)}
         onClickOutside={onClickOutside}
         handlePatch={this.handlePatch}
-        handleChange={_.debounce(this.handleChange, 500)}
+        handleChange={this.handleChange}
         handleProcess={this.handleProcess}
         handleZoomInto={this.handleZoomInto}
         onBlurWidget={this.handleBlurWidget}
