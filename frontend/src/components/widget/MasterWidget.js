@@ -277,7 +277,7 @@ class MasterWidget extends Component {
         handleBlur={() => handleFocusFn(false)}
         onClickOutside={onClickOutside}
         handlePatch={this.handlePatch}
-        handleChange={_.debounce(this.handleChange, 1500)}
+        handleChange={_.debounce(this.handleChange, 500)}
         handleProcess={this.handleProcess}
         handleZoomInto={this.handleZoomInto}
         onBlurWidget={this.handleBlurWidget}
