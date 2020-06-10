@@ -10,34 +10,32 @@ package de.metas.handlingunits.attributes.impl.split;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
-import java.math.BigDecimal;
-import java.util.List;
-
-import org.junit.Assert;
-import org.junit.Test;
-
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attributes.impl.AbstractWeightAttributeTest;
 import de.metas.handlingunits.expectations.HUWeightsExpectation;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.X_M_HU;
+import org.junit.Assert;
+import org.junit.Test;
+
+import java.math.BigDecimal;
+import java.util.List;
 
 /**
  * NOTE: Tests propagation WITH TareAdjust CONSTANT ZERO.
- *
+ * <p>
  * Test <i>propagation</i> of the <code>Weight</code> attributes (Gross, Net, Tare, Tare Adjust) and their behavior together.<br>
  * Test <i>HU operations</i> (i.e split, join, merge) and how these attributes are handled/re-propagated together.
  *
@@ -225,12 +223,12 @@ public class SplitWeightAttributePropagationTest extends AbstractWeightAttribute
 	{
 		final I_M_HU paletToSplit = createIncomingLoadingUnit(huItemIFCO_10, materialItemProductTomato_10, CU_QTY_85, INPUT_GROSS_100); // 85 x Tomato with a certain weight.
 		//helper.commitAndDumpHU(paletToSplit);
-		
+
 		assertLoadingUnitStorageWeights(paletToSplit, huItemIFCO_10, 9,
 				newHUWeightsExpectation("100.000", "66.000", "34", "0"),
 				newHUWeightsExpectation("4.882", "3.882", "1", "0"), // "real" TU with 5
 				newHUWeightsExpectation("70.118", "62.118", "8", "0") // aggregate TU with 80
-				);
+		);
 
 		final List<I_M_HU> splitLUs = splitLU(paletToSplit,
 				huItemIFCO_10, // split on NoPI (TUs which are split will not be on an LU)
@@ -260,23 +258,81 @@ public class SplitWeightAttributePropagationTest extends AbstractWeightAttribute
 				newHUWeightsExpectation("6.436", "5.436", "1", "0"));
 	}
 
+	@Test
+	public void testSplit7TuFromLu()
+	{
+		final I_M_HU palletToSplit = createIncomingLoadingUnit(huItemIFCO_10, materialItemProductTomato_10, BigDecimal.valueOf(200), BigDecimal.valueOf(545.217)); // 20 x Tomato TUs with a certain weight. + the weight of the LU+TU
+		// dev note: weight per TU is 25.01085 ~= 25.011
+
+		// final Node luXml = HUXmlConverter.toXml( paletToSplit);
+		// System.out.println("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
+		// System.out.println(HUXmlConverter.toString(luXml));
+
+		// Assert initial data is as expected
+		assertLoadingUnitStorageWeights(palletToSplit, huItemIFCO_10, 20,
+				newHUWeightsExpectation("545.217", "500.217", "45", "0"),
+				newHUWeightsExpectation("520.217", "500.217", "20", "0") // aggregate TU with the whole qty
+		);
+
+		// TODO tbp: i don't understand what all these params are and what do they do?
+		// 		i need to move 1 TU. i don't care about the CUs, but the TU.
+		final List<I_M_HU> splitLUs = splitLU(palletToSplit,
+				helper.huDefItemNone, // luPIItem
+				materialItemTomato_10, // TU item x 10
+				BigDecimal.valueOf(200), // cuQty  // TODO tbp: how to say "i want to split 7 TUs?"
+				BigDecimal.valueOf(1), // cuPerTu
+				BigDecimal.valueOf(1), // tuPerLu
+				BigDecimal.ZERO); // maxLuToAllocate
+
+		// this is how materialentnahme process calls the split, but it fails for me with `java.lang.IllegalStateException: The list of productStorages below the given 'tuHU' may not be empty; tuHU=POJOWrapper[...]
+		// final HUTransformService huTransformService = HUTransformService.newInstance(helper.getHUContext());
+		//
+		// final HUsToNewTUsRequest request = HUsToNewTUsRequest.forSourceHuAndQty(palletToSplit, 1);
+		// 	final List<I_M_HU> splitLUs = huTransformService.husToNewTUs(request);
+
+		Assert.assertEquals("Invalid amount of LUs were split", 7, splitLUs.size());
+
+		// // Assert data integrity on SOURCE LU
+		assertLoadingUnitStorageWeights(palletToSplit, huItemIFCO_10, 13,
+				newHUWeightsExpectation("363.140", "325.140", "38", "0")
+				// ,
+				//  // TODO tbp:
+				//   - 13 TU with net weight 25.011 (total net 300.132)
+				//	 -  1 TU with net weight 25.008 (total net 25.008)
+
+				// newHUWeightsExpectation("494.20615", "325.140", "19", "0") // 19 TUs left (aggregated)
+		);
+
+		// Assert data integrity on TARGET LU
+		//
+		for (final I_M_HU splitLU : splitLUs)
+		{
+			Assert.assertTrue("The target LU we just split to shall be a top-level handling unit", splitLU.getM_HU_Item_Parent_ID() <= 0);
+			// // TODO tbp: how to assert it's a TU?
+
+			assertLoadingUnitStorageWeights(splitLU, huItemIFCO_10, 1,
+					newHUWeightsExpectation("26.011", "25.011", "1", "0")
+			);
+		}
+	}
+
 	/**
 	 * Like {@link #testSplitWeightTransfer_LU_On_Another_SameType_LU_1TU_7CU()}, but with a non-integer weight-gross
-	 * 
+	 *
 	 * @task https://github.com/metasfresh/metasfresh/issues/1237
 	 */
 	@Test
 	public void testSplitWeightTransfer_LU_On_Another_SameType_LU_1TU_7CU_non_int()
 	{
-		final I_M_HU paletToSplit = createIncomingLoadingUnit(huItemIFCO_10, materialItemProductTomato_10, 
-				CU_QTY_85, 
+		final I_M_HU paletToSplit = createIncomingLoadingUnit(huItemIFCO_10, materialItemProductTomato_10,
+				CU_QTY_85,
 				INPUT_GROSS_100.add(new BigDecimal("0.123"))); // 85 x Tomato with an "odd" weight.
-		
+
 		assertLoadingUnitStorageWeights(paletToSplit, huItemIFCO_10, 9,
 				newHUWeightsExpectation("100.123", "66.123", "34", "0"),
 				newHUWeightsExpectation("4.890", "3.890", "1", "0"), // "real" TU with 5
 				newHUWeightsExpectation("70.233", "62.233", "8", "0") // aggregate TU with 80
-				);
+		);
 
 		final List<I_M_HU> splitLUs = splitLU(paletToSplit,
 				huItemIFCO_10, // split on NoPI (TUs which are split will not be on an LU)
@@ -305,7 +361,7 @@ public class SplitWeightAttributePropagationTest extends AbstractWeightAttribute
 				newHUWeightsExpectation("31.445", "5.445", "26", "0"),
 				newHUWeightsExpectation("6.445", "5.445", "1", "0"));
 	}
-	
+
 	/**
 	 * S050: Split 1 x TU from source LU on the SAME source LU
 	 */
@@ -485,7 +541,7 @@ public class SplitWeightAttributePropagationTest extends AbstractWeightAttribute
 				BigDecimal.ZERO, // maxLUToAllocate
 				materialItemTomato_430, // TU item x 430
 				helper.huDefItemNone // split on NoPI (TUs which are split will not be on an LU)
-				);
+		);
 
 		Assert.assertEquals("Invalid amount of TUs were split", 1, tradingUnitsTarget.size());
 		final I_M_HU paloxeTarget = tradingUnitsTarget.get(0);
@@ -531,7 +587,7 @@ public class SplitWeightAttributePropagationTest extends AbstractWeightAttribute
 				BigDecimal.ZERO, // maxLUToAllocate
 				materialItemTomato_430, // TU item x 430
 				helper.huDefItemNone // split on NoPI (TUs which are split will not be on an LU)
-				);
+		);
 
 		Assert.assertEquals("Invalid amount of TUs were split", 1, tradingUnitsTarget.size());
 		final I_M_HU paloxeTarget = tradingUnitsTarget.get(0);
@@ -576,7 +632,7 @@ public class SplitWeightAttributePropagationTest extends AbstractWeightAttribute
 				BigDecimal.ZERO, // maxLUToAllocate
 				materialItemTomato_10, // TU item x 430
 				helper.huDefItemNone // split on NoPI (TUs which are split will not be on an LU)
-				);
+		);
 
 		Assert.assertEquals("Invalid amount of TUs were split", 3, tradingUnitsTarget.size());
 
@@ -621,7 +677,7 @@ public class SplitWeightAttributePropagationTest extends AbstractWeightAttribute
 				BigDecimal.ZERO, // maxLUToAllocate
 				materialItemTomato_10, // TU item x 430
 				helper.huDefItemNone // split on NoPI (TUs which are split will not be on an LU)
-				);
+		);
 
 		Assert.assertEquals("Invalid amount of TUs were split", 3, tradingUnitsTarget.size());
 
@@ -666,7 +722,7 @@ public class SplitWeightAttributePropagationTest extends AbstractWeightAttribute
 				BigDecimal.ZERO, // maxLUToAllocate
 				materialItemTomato_430, // TU item x 430
 				helper.huDefItemNone // split on NoPI (TUs which are split will not be on an LU)
-				);
+		);
 
 		Assert.assertEquals("Invalid amount of TUs were split", 1, tradingUnitsTarget.size());
 		final I_M_HU paloxeTarget = tradingUnitsTarget.get(0);
@@ -714,7 +770,7 @@ public class SplitWeightAttributePropagationTest extends AbstractWeightAttribute
 				BigDecimal.ZERO, // maxLUToAllocate
 				materialItemTomato_430, // TU item x 430
 				helper.huDefItemNone // split on NoPI (TUs which are split will not be on an LU)
-				);
+		);
 
 		Assert.assertEquals("Invalid amount of TUs were split", 1, tradingUnitsTarget.size());
 		final I_M_HU paloxeTarget = tradingUnitsTarget.get(0);
@@ -761,7 +817,7 @@ public class SplitWeightAttributePropagationTest extends AbstractWeightAttribute
 				BigDecimal.ZERO, // maxLUToAllocate
 				materialItemTomato_10, // TU item x 430
 				helper.huDefItemNone // split on NoPI (TUs which are split will not be on an LU)
-				);
+		);
 
 		Assert.assertEquals("Invalid amount of TUs were split", 43, tradingUnitsTarget.size());
 
@@ -811,7 +867,7 @@ public class SplitWeightAttributePropagationTest extends AbstractWeightAttribute
 				BigDecimal.ZERO, // maxLUToAllocate
 				materialItemTomato_10, // TU item x 430
 				helper.huDefItemNone // split on NoPI (TUs which are split will not be on an LU)
-				);
+		);
 
 		Assert.assertEquals("Invalid amount of TUs were split", 43, tradingUnitsTarget.size());
 
@@ -862,7 +918,7 @@ public class SplitWeightAttributePropagationTest extends AbstractWeightAttribute
 				BigDecimal.ZERO, // maxLUToAllocate
 				materialItemTomato_430, // TU item x 430
 				helper.huDefItemNone // split on NoPI (TUs which are split will not be on an LU)
-				);
+		);
 
 		Assert.assertEquals("Invalid amount of TUs were split", 3, tradingUnitsTarget.size());
 
@@ -911,7 +967,7 @@ public class SplitWeightAttributePropagationTest extends AbstractWeightAttribute
 				BigDecimal.ZERO, // maxLUToAllocate
 				materialItemTomato_430, // TU item x 430
 				helper.huDefItemNone // split on NoPI (TUs which are split will not be on an LU)
-				);
+		);
 
 		Assert.assertEquals("Invalid amount of TUs were split", 3, tradingUnitsTarget.size());
 
@@ -960,7 +1016,7 @@ public class SplitWeightAttributePropagationTest extends AbstractWeightAttribute
 				BigDecimal.ZERO, // maxLUToAllocate
 				materialItemTomato_430, // TU item x 430
 				helper.huDefItemNone // split on NoPI (TUs which are split will not be on an LU)
-				);
+		);
 
 		Assert.assertEquals("Invalid amount of TUs were split", 18, tradingUnitsTarget.size());
 
@@ -1027,7 +1083,7 @@ public class SplitWeightAttributePropagationTest extends AbstractWeightAttribute
 				BigDecimal.ZERO, // maxLUToAllocate
 				materialItemTomato_430, // TU item x 430
 				helper.huDefItemNone // split on NoPI (TUs which are split will not be on an LU)
-				);
+		);
 
 		Assert.assertEquals("Invalid amount of TUs were split", 18, tradingUnitsTarget.size());
 
