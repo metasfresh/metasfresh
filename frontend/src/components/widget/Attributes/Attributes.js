@@ -4,7 +4,10 @@ import classnames from 'classnames';
 
 import { getAttributesInstance, getLayout, patchRequest } from '../../../api';
 import { completeRequest } from '../../../actions/GenericActions';
-import { parseToDisplay } from '../../../utils/documentListHelper';
+import {
+  parseToDisplay,
+  formatDateWithZeros,
+} from '../../../utils/documentListHelper';
 import AttributesDropdown from './AttributesDropdown';
 
 /**
@@ -161,7 +164,14 @@ export default class Attributes extends Component {
    * @param {*} value
    * @todo Write the documentation
    */
-  handleChange = (field, value) => {
+  handleChange = async (field, value) => {
+    const { dropdown, data } = this.state;
+    // Add special case of formating for the case when people input 04.7.2020 to be transformed to 04.07.2020
+    value =
+      dropdown && data[field].widgetType === 'Date'
+        ? await formatDateWithZeros(value)
+        : value;
+
     this.setState((prevState) => ({
       data: Object.assign({}, prevState.data, {
         [field]: Object.assign({}, prevState.data[field], { value }),
@@ -269,6 +279,7 @@ export default class Attributes extends Component {
       tabIndex,
       readonly,
     } = this.props;
+
     const { dropdown, data, layout } = this.state;
     const { value } = widgetData;
     const label = value.caption;
@@ -348,4 +359,5 @@ Attributes.propTypes = {
   viewId: PropTypes.any,
   fieldName: PropTypes.any,
   entity: PropTypes.any,
+  widgetType: PropTypes.string,
 };
