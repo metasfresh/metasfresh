@@ -62,16 +62,6 @@ export function setActiveSort(id, active) {
 }
 
 /**
- * Update table selection - select items
- */
-export function updateTableSelection(id, selection, keyProperty = 'id') {
-  return {
-    type: types.UPDATE_TABLE_SELECTION,
-    payload: { id, selection, keyProperty },
-  };
-}
-
-/**
  * Update table selection - deselect items or deselect all if an empty `ids`
  * array is provided
  */
@@ -471,5 +461,19 @@ export function collapseTableRow({ tableId, collapse, node }) {
     dispatch(collapseRows(returnData));
 
     return Promise.resolve(returnData);
+  };
+}
+
+/**
+ * Update table selection - select items
+ */
+export function updateTableSelection(id, selection, keyProperty = 'id') {
+  return (dispatch) => {
+    dispatch({
+      type: types.UPDATE_TABLE_SELECTION,
+      payload: { id, selection, keyProperty },
+    });
+
+    return Promise.resolve(selection);
   };
 }

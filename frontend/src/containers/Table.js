@@ -58,7 +58,7 @@ class TableContainer extends PureComponent {
     this.handleSelect(leafsIds);
   };
 
-  handleSelect = (ids) => {
+  handleSelect = (ids, cb) => {
     const {
       updateTableSelection,
       windowId,
@@ -81,7 +81,9 @@ class TableContainer extends PureComponent {
       getTableId({ windowId, viewId, docId, tabId }),
       newSelected,
       keyProperty
-    );
+    ).then(() => {
+      cb && cb();
+    });
 
     return newSelected;
   };

@@ -29,7 +29,7 @@ class Table extends PureComponent {
     super(props);
 
     const constr = constructorFn.bind(this);
-    constr(props);
+    constr();
   }
 
   componentDidMount() {
@@ -85,9 +85,11 @@ class Table extends PureComponent {
   handleSelect = (id, idFocused, idFocusedDown, cb) => {
     const { onSelect } = this.props;
 
-    onSelect(id, idFocused, idFocusedDown, cb);
+    onSelect(id, () => {
+      cb && cb();
 
-    this.triggerFocus(idFocused, idFocusedDown);
+      this.triggerFocus(idFocused, idFocusedDown);
+    });
   };
 
   setContextMenu = (
@@ -200,15 +202,17 @@ class Table extends PureComponent {
   };
 
   triggerFocus = (idFocused, idFocusedDown) => {
-    if (this.table) {
-      const rowSelected = this.table.getElementsByClassName('row-selected');
+    const { selected } = this.props;
 
-      if (rowSelected.length > 0) {
-        if (typeof idFocused == 'number') {
-          rowSelected[0].children[idFocused].focus();
+    if (this.table) {
+      const rowsSelected = this.table.getElementsByClassName('row-selected');
+
+      if (rowsSelected.length > 0) {
+        if (typeof idFocused === 'number') {
+          rowsSelected[0].children[idFocused].focus();
         }
-        if (typeof idFocusedDown == 'number') {
-          rowSelected[rowSelected.length - 1].children[idFocusedDown].focus();
+        if (typeof idFocusedDown === 'number') {
+          rowsSelected[rowsSelected.length - 1].children[idFocusedDown].focus();
         }
       }
     }

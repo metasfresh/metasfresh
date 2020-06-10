@@ -44,7 +44,6 @@ const DLpropTypes = {
   createView: PropTypes.func.isRequired,
   filterView: PropTypes.func.isRequired,
   deleteTable: PropTypes.func.isRequired,
-  setListIncludedView: PropTypes.func.isRequired,
   indicatorState: PropTypes.func.isRequired,
   closeListIncludedView: PropTypes.func.isRequired,
   setListPagination: PropTypes.func.isRequired,

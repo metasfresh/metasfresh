@@ -45,9 +45,7 @@ export const componentPropTypes = {
   onDeselect: PropTypes.func.isRequired,
 };
 
-export function constructorFn(props) {
-  const { rowEdited } = props;
-
+export function constructorFn() {
   this.state = {
     listenOnKeys: true,
     contextMenu: {
@@ -60,11 +58,6 @@ export function constructorFn(props) {
     },
     promptOpen: false,
     isBatchEntry: false,
-    pendingInit: true,
-
-    // TODO: This is not read anywhere. Check if the solution works or needs
-    // adjustments
-    rowEdited,
     tableRefreshToggle: false,
   };
 }
