@@ -1,5 +1,7 @@
 package de.metas.edi.model.validator;
 
+
+
 /*
  * #%L
  * de.metas.edi
@@ -22,6 +24,7 @@ package de.metas.edi.model.validator;
  * #L%
  */
 
+import de.metas.impex.model.I_AD_InputDataSource;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
@@ -61,13 +64,6 @@ public class C_Order
 		}
 	}
 
-	/**
-	 * If the given <code>inOut</code> is OK to be send as EDI, then we add it to a {@link de.metas.esb.edi.model.I_EDI_Desadv}.
-	 * <p>
-	 * Note that if the EDI-status changes to something else later on, the inOut shall remain assigned. Its not this MV's problem.
-	 *
-	 * @param inOut
-	 */
 	@DocValidate(timings = ModelValidator.TIMING_BEFORE_COMPLETE)
 	public void addToDesadv(final I_C_Order order)
 	{
@@ -106,18 +102,45 @@ public class C_Order
 		}
 	}
 
+	@ModelChange(timings = ModelValidator.TYPE_BEFORE_NEW)
+	public void setEdiEnabledForNewOrder(final I_C_Order order)
+	{
+		final boolean ediEnabledByInputDataSource;
+
+		if (order.getAD_InputDataSource_ID()<=0)
+		{
+			ediEnabledByInputDataSource = false;
+		}
+		else
+		{
+			ediEnabledByInputDataSource = Services.get(IEDIInputDataSourceBL.class).isEDIInputDataSource(order.getAD_InputDataSource_ID());
+		}
+
+		final boolean ediEnabledByBPartner;
+		final I_C_BPartner partner = InterfaceWrapperHelper.create(order.getC_BPartner(), de.metas.edi.model.I_C_BPartner.class);
+		if (partner == null)
+		{
+			ediEnabledByBPartner = false;
+		}
+		else
+		{
+			ediEnabledByBPartner = partner.isEdiDesadvRecipient() || partner.isEdiInvoicRecipient();
+		}
+		order.setIsEdiEnabled(ediEnabledByInputDataSource || ediEnabledByBPartner);
+	}
+
 	/**
 	 * @param order
 	 * @task http://dewiki908/mediawiki/index.php/08926_EDI-Ausschalten_f%C3%BCr_bestimmte_Belege_%28109751792947%29
 	 */
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = { I_C_Order.COLUMNNAME_AD_InputDataSource_ID })
+	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE, ifColumnsChanged = I_C_Order.COLUMNNAME_AD_InputDataSource_ID)
 	public void updateEdiEnabled(final I_C_Order order)
 	{
 		final int orderInputDataSourceId = order.getAD_InputDataSource_ID();
 
 		if (orderInputDataSourceId <= 0)
 		{
-			// nothing to ro
+			// nothing to do
 			return;
 		}
 
@@ -128,7 +151,7 @@ public class C_Order
 		}
 	}
 
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = { I_C_Order.COLUMNNAME_C_BPartner_ID })
+	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE, ifColumnsChanged = I_C_Order.COLUMNNAME_C_BPartner_ID)
 	public void onPartnerChange(final I_C_Order order)
 	{
 

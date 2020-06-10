@@ -35,4 +35,6 @@ public class ForumDatenaustauschChConstants
 	public static final String INVOICE_EXPORT_PROVIDER_ID = "forum-datenaustausch.ch-invoice";
 
 	public static final String DUNNING_EXPORT_PROVIDER_ID = "forum-datenaustausch.ch-dunning";
+
+	public static final String XSD_NAME  = "forum-datenaustausch.ch-xsd-name";
 }

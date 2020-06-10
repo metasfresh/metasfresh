@@ -32,7 +32,7 @@ import static de.metas.attachments.listener.AttachmentListenerConstants.Listener
  */
 public class DumbAttachmentListener implements AttachmentListener
 {
-	@Override public AttachmentListenerConstants.ListenerWorkStatus afterPersist(AttachmentEntry attachmentEntry, TableRecordReference tableRecordReference)
+	@Override public AttachmentListenerConstants.ListenerWorkStatus afterRecordLinked(AttachmentEntry attachmentEntry, TableRecordReference tableRecordReference)
 	{
 		return SUCCESS;
 	}

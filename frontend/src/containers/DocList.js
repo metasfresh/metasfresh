@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types';
-import React, { Component } from 'react';
+import React, { PureComponent } from 'react';
 import { connect } from 'react-redux';
 import classnames from 'classnames';
 
@@ -13,45 +13,53 @@ import Container from '../components/Container';
 import DocumentList from '../components/app/DocumentList';
 import Overlay from '../components/app/Overlay';
 
+const EMPTY_ARRAY = [];
+const EMPTY_OBJECT = {};
+
 /**
  * @file Class based component.
  * @module DocList
  * @extends Component
  */
-class DocList extends Component {
+class DocList extends PureComponent {
   componentDidMount = () => {
-    const { dispatch, windowType, latestNewDocument, query } = this.props;
+    const {
+      windowId,
+      latestNewDocument,
+      query,
+      getWindowBreadcrumb,
+      setLatestNewDocument,
+      selectTableItems,
+    } = this.props;
 
-    dispatch(getWindowBreadcrumb(windowType));
+    getWindowBreadcrumb(windowId);
 
     if (latestNewDocument) {
-      dispatch(
-        selectTableItems({
-          windowType,
-          viewId: query.viewId,
-          ids: [latestNewDocument],
-        })
-      );
-      dispatch(setLatestNewDocument(null));
+      selectTableItems({
+        windowType: windowId,
+        viewId: query.viewId,
+        ids: [latestNewDocument],
+      });
+      setLatestNewDocument(null);
     }
   };
 
   componentDidUpdate = (prevProps) => {
-    const { dispatch, windowType } = this.props;
+    const { windowId, getWindowBreadcrumb } = this.props;
 
-    if (prevProps.windowType !== windowType) {
-      dispatch(getWindowBreadcrumb(windowType));
+    if (prevProps.windowId !== windowId) {
+      getWindowBreadcrumb(windowId);
     }
   };
 
   /**
    * @method updateUriCallback
-   * @summary ToDo: Describe the method.
+   * @summary Update the url with query params if needed (ie add viewId, page etc)
    */
   updateUriCallback = (prop, value) => {
-    const { dispatch, query, pathname } = this.props;
+    const { updateUri, query, pathname } = this.props;
 
-    dispatch(updateUri(pathname, query, prop, value));
+    updateUri(pathname, query, prop, value);
   };
 
   /**
@@ -62,39 +70,43 @@ class DocList extends Component {
     this.masterDocumentList.updateQuickActions(childSelection);
   };
 
+  /**
+   * @method handleDocListRef
+   * @summary Store ref to the main DocumentList
+   */
+  handleDocListRef = (ref) => {
+    this.masterDocumentList = ref;
+  };
+
   render() {
     const {
-      windowType,
-      breadcrumb,
+      windowId,
       query,
       modal,
       rawModal,
-      pluginModal,
       overlay,
-      indicator,
       processStatus,
       includedView,
     } = this.props;
-    let refRowIds = [];
+    let refRowIds = EMPTY_ARRAY;
+    const queryCopy = query ? query : EMPTY_OBJECT;
 
-    if (query && query.refRowIds) {
+    if (queryCopy.refRowIds) {
       try {
-        refRowIds = JSON.parse(query.refRowIds);
+        refRowIds = JSON.parse(queryCopy.refRowIds);
       } catch (e) {
-        refRowIds = [];
+        refRowIds = null;
       }
     }
+    const viewId = queryCopy.viewId ? queryCopy.viewId : null;
 
     return (
       <Container
         entity="documentView"
         modal={modal}
         rawModal={rawModal}
-        pluginModal={pluginModal}
-        breadcrumb={breadcrumb}
-        windowType={windowType}
-        query={query}
-        indicator={indicator}
+        windowId={windowId}
+        viewId={viewId}
         processStatus={processStatus}
         includedView={includedView}
         showIndicator={!modal.visible && !rawModal.visible}
@@ -108,12 +120,10 @@ class DocList extends Component {
           })}
         >
           <DocumentList
-            ref={(element) => {
-              this.masterDocumentList = element ? element : null;
-            }}
+            ref={this.handleDocListRef}
             type="grid"
             updateUri={this.updateUriCallback}
-            windowType={windowType}
+            windowType={windowId}
             refRowIds={refRowIds}
             includedView={includedView}
             inBackground={rawModal.visible}
@@ -121,10 +131,15 @@ class DocList extends Component {
             fetchQuickActionsOnInit
             processStatus={processStatus}
             disablePaginationShortcuts={modal.visible || rawModal.visible}
+            sort={queryCopy.sort}
+            page={queryCopy.page}
+            viewId={queryCopy.viewId}
+            refType={queryCopy.refType}
+            refId={queryCopy.refId}
+            refTabId={queryCopy.refTabId}
           />
 
           {includedView &&
-            includedView.windowType &&
             includedView.viewId &&
             !rawModal.visible &&
             !modal.visible && (
@@ -132,8 +147,8 @@ class DocList extends Component {
                 type="includedView"
                 windowType={includedView.windowType}
                 defaultViewId={includedView.viewId}
-                parentWindowType={windowType}
-                parentDefaultViewId={query.viewId}
+                parentWindowType={windowId}
+                parentDefaultViewId={viewId}
                 updateParentSelectedIds={this.handleUpdateParentSelectedIds}
                 viewProfileId={includedView.viewProfileId}
                 fetchQuickActionsOnInit
@@ -141,6 +156,12 @@ class DocList extends Component {
                 isIncluded
                 inBackground={false}
                 inModal={false}
+                sort={queryCopy.sort}
+                page={queryCopy.page}
+                viewId={queryCopy.viewId}
+                refType={queryCopy.refType}
+                refId={queryCopy.refId}
+                refTabId={queryCopy.refTabId}
               />
             )}
         </div>
@@ -163,22 +184,22 @@ class DocList extends Component {
  * @prop {string} processStatus
  * @prop {object} query - routing query
  * @prop {object} rawModal
- * @prop {object} windowType
+ * @prop {string} windowId
  */
 DocList.propTypes = {
-  breadcrumb: PropTypes.array.isRequired,
-  dispatch: PropTypes.func.isRequired,
-  includedView: PropTypes.object.isRequired,
-  indicator: PropTypes.string.isRequired,
+  includedView: PropTypes.object,
   latestNewDocument: PropTypes.any,
   modal: PropTypes.object.isRequired,
   overlay: PropTypes.object,
-  pathname: PropTypes.string.isRequired,
-  pluginModal: PropTypes.object,
   processStatus: PropTypes.string.isRequired,
   query: PropTypes.object.isRequired,
+  pathname: PropTypes.string.isRequired,
   rawModal: PropTypes.object.isRequired,
-  windowType: PropTypes.any,
+  windowId: PropTypes.string,
+  getWindowBreadcrumb: PropTypes.func.isRequired,
+  selectTableItems: PropTypes.func.isRequired,
+  setLatestNewDocument: PropTypes.func.isRequired,
+  updateUri: PropTypes.func.isRequired,
 };
 
 /**
@@ -186,17 +207,26 @@ DocList.propTypes = {
  * @summary ToDo: Describe the method.
  * @param {object} state
  */
-const mapStateToProps = (state) => ({
-  modal: state.windowHandler.modal,
-  rawModal: state.windowHandler.rawModal,
-  pluginModal: state.windowHandler.pluginModal,
-  overlay: state.windowHandler.overlay,
-  latestNewDocument: state.windowHandler.latestNewDocument,
-  indicator: state.windowHandler.indicator,
-  includedView: state.listHandler.includedView,
-  processStatus: state.appHandler.processStatus,
-  breadcrumb: state.menuHandler.breadcrumb,
-  pathname: state.routing.locationBeforeTransitions.pathname,
-});
+const mapStateToProps = (state) => {
+  return {
+    modal: state.windowHandler.modal,
+    rawModal: state.windowHandler.rawModal,
+    overlay: state.windowHandler.overlay,
+    latestNewDocument: state.windowHandler.latestNewDocument,
+    includedView: state.listHandler.includedView.windowType
+      ? state.listHandler.includedView
+      : null,
+    processStatus: state.appHandler.processStatus,
+    pathname: state.routing.locationBeforeTransitions.pathname,
+  };
+};
 
-export default connect(mapStateToProps)(DocList);
+export default connect(
+  mapStateToProps,
+  {
+    getWindowBreadcrumb,
+    selectTableItems,
+    setLatestNewDocument,
+    updateUri,
+  }
+)(DocList);

@@ -482,4 +482,52 @@ describe('RawWidget component', () => {
       expect(preventDefaultSpy).not.toHaveBeenCalled();
     });
   });
+
+  it('Shows a normal border when input does not exceeds the char limit', () => {
+    const props = createDummyProps(
+      {
+        ...fixtures.text.layout1,
+        widgetData: [{ ...fixtures.text.data1 }],
+        maxLength: 40,
+      },
+    );
+
+    const wrapper = shallow(<RawWidget {...props} />);
+
+    wrapper.find('input').simulate(
+      'keyDown',
+      {
+        key: 'Alt',
+        target: { value: 'This is a test' },
+      },
+    );
+
+    const html = wrapper.html();
+    expect(html).not.toContain('border-danger');
+  });
+
+
+
+  it('Shows a red border when input exceeds the char limit', () => {
+    const props = createDummyProps(
+      {
+        ...fixtures.text.layout1,
+        widgetData: [{ ...fixtures.text.data1 }],
+        maxLength: 40,
+      },
+    );
+
+    const wrapper = shallow(<RawWidget {...props} />);
+
+    wrapper.find('input').simulate(
+      'keyDown',
+      {
+        key: 'Alt',
+        target: { value: 'This is a test for checking the limit on inputs' },
+      },
+    );
+
+    const html = wrapper.html();
+    expect(html).toContain('border-danger');
+  });
 });

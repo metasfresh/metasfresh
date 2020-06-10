@@ -31,7 +31,7 @@ import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableSet;
 
-import de.metas.event.EventBusConstants;
+import de.metas.event.EventBusConfig;
 import de.metas.logging.LogManager;
 
 /**
@@ -79,7 +79,7 @@ public final class SwingEventNotifierService
 	 */
 	public synchronized void start()
 	{
-		if (!EventBusConstants.isEnabled())
+		if (!EventBusConfig.isEnabled())
 		{
 			logger.info("Not starting because it's not enabled");
 			return;

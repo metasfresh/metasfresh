@@ -2,7 +2,7 @@ import { Hints, Steps } from 'intro.js-react';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 
-import { discardNewRow, discardNewDocument, getTab } from '../../api';
+import { discardNewRow, discardNewDocument, getTabRequest } from '../../api';
 
 import BlankPage from '../BlankPage';
 import Container from '../Container';
@@ -97,6 +97,7 @@ export default class MasterWindow extends Component {
     }
   }
 
+  // TODO: Everything apart of removing event listeners should be woved to the container
   componentWillUnmount() {
     const {
       master,
@@ -242,6 +243,7 @@ export default class MasterWindow extends Component {
   };
 
   /**
+   * TODO: Move this to the container
    * @method sort
    * @summary ToDo: Describe the method.
    */
@@ -256,7 +258,7 @@ export default class MasterWindow extends Component {
     const dataId = master.docId;
 
     sortTab('master', tabId, field, asc);
-    getTab(tabId, windowType, dataId, orderBy).then((res) => {
+    getTabRequest(tabId, windowType, dataId, orderBy).then((res) => {
       addRowData({ [tabId]: res }, 'master');
     });
   };
@@ -342,7 +344,7 @@ export default class MasterWindow extends Component {
         closeModalCallback={this.closeModalCallback}
         setModalTitle={this.setModalTitle}
         docActionElem={docActionElement}
-        windowType={params.windowType}
+        windowId={params.windowType}
         docId={params.docId}
         showSidelist
         showIndicator={!modal.visible}

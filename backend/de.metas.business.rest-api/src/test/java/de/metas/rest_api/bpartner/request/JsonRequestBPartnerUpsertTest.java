@@ -49,6 +49,13 @@ public class JsonRequestBPartnerUpsertTest
 	public void deserialize_1() throws IOException
 	{
 		final JsonRequestBPartnerUpsert result = deserialize("/de/metas/rest_api/bpartner/JsonBPartnerUpsertRequest_1.json");
+
+		final JsonRequestContact contact = result.getRequestItems().get(0).getBpartnerComposite().getContactsNotNull().getRequestItems().get(0).getContact();
+
+		// test one particular case were we explicitly have "fax" : null in the JSON
+		assertThat(contact.getFax()).isNull();
+		assertThat(contact.isFaxSet()).isTrue();
+
 		expect(result).toMatchSnapshot();
 	}
 

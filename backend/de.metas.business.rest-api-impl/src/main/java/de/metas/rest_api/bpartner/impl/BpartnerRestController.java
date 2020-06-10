@@ -11,6 +11,8 @@ import java.util.Optional;
 import javax.annotation.Nullable;
 
 import org.compiere.util.Env;
+import org.slf4j.MDC;
+import org.slf4j.MDC.MDCCloseable;
 import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -85,7 +87,6 @@ public class BpartnerRestController implements BPartnerRestEndpoint
 	private final JsonServiceFactory jsonServiceFactory;
 
 	private final JsonRequestConsolidateService jsonRequestConsolidateService;
-
 
 	public BpartnerRestController(
 			@NonNull final BPartnerEndpointService bpartnerEndpointService,
@@ -218,13 +219,15 @@ public class BpartnerRestController implements BPartnerRestEndpoint
 
 		for (final JsonRequestBPartnerUpsertItem requestItem : bpartnerUpsertRequest.getRequestItems())
 		{
-			final JsonRequestBPartnerUpsertItem consolidatedRequestItem = jsonRequestConsolidateService.consolidateWithIdentifier(requestItem);
+			try (final MDCCloseable mdc = MDC.putCloseable("bpartnerIdentifier", requestItem.getBpartnerIdentifier()))
+			{
+				jsonRequestConsolidateService.consolidateWithIdentifier(requestItem);
 
-			final JsonResponseBPartnerCompositeUpsertItem persist = persister.persist(
-					IdentifierString.of(consolidatedRequestItem.getBpartnerIdentifier()),
-					consolidatedRequestItem.getBpartnerComposite(),
-					defaultSyncAdvise);
-			response.responseItem(persist);
+				final JsonResponseBPartnerCompositeUpsertItem persist = persister.persist(
+						requestItem,
+						defaultSyncAdvise);
+				response.responseItem(persist);
+			}
 		}
 		return new ResponseEntity<>(response.build(), HttpStatus.CREATED);
 	}
@@ -250,10 +253,10 @@ public class BpartnerRestController implements BPartnerRestEndpoint
 
 		final JsonPersisterService persister = jsonServiceFactory.createPersister();
 
-		final JsonRequestLocationUpsert consolicatedLocation = jsonRequestConsolidateService.consolidateWithIdentifier(jsonLocation);
+		jsonRequestConsolidateService.consolidateWithIdentifier(jsonLocation);
 		final Optional<JsonResponseUpsert> jsonLocationId = persister.persistForBPartner(
 				bpartnerIdentifier,
-				consolicatedLocation,
+				jsonLocation,
 				SyncAdvise.builder().ifExists(IfExists.UPDATE_MERGE).ifNotExists(IfNotExists.CREATE).build());
 
 		return createdOrNotFound(jsonLocationId);
@@ -280,11 +283,11 @@ public class BpartnerRestController implements BPartnerRestEndpoint
 
 		final JsonPersisterService persister = jsonServiceFactory.createPersister();
 
-		final JsonRequestContactUpsert consolicatedContact = jsonRequestConsolidateService.consolidateWithIdentifier(jsonContactUpsert);
+		jsonRequestConsolidateService.consolidateWithIdentifier(jsonContactUpsert);
 
 		final Optional<JsonResponseUpsert> response = persister.persistForBPartner(
 				bpartnerIdentifier,
-				consolicatedContact,
+				jsonContactUpsert,
 				SyncAdvise.CREATE_OR_MERGE);
 
 		return createdOrNotFound(response);

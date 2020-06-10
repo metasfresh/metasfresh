@@ -34,16 +34,20 @@ import org.compiere.model.I_C_BankStatementLine;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.MPeriod;
 import org.compiere.model.X_C_DocType;
+import org.springframework.stereotype.Service;
 
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.acct.api.IFactAcctDAO;
+import de.metas.banking.BankAccountId;
 import de.metas.banking.BankStatementId;
 import de.metas.banking.BankStatementLineId;
 import de.metas.banking.BankStatementLineReferenceList;
+import de.metas.banking.api.BankAccountService;
 import de.metas.banking.service.IBankStatementBL;
 import de.metas.banking.service.IBankStatementDAO;
 import de.metas.banking.service.IBankStatementListenerService;
+import de.metas.currency.Amount;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.payment.PaymentId;
@@ -51,12 +55,20 @@ import de.metas.payment.api.IPaymentBL;
 import de.metas.util.Services;
 import lombok.NonNull;
 
+@Service
 public class BankStatementBL implements IBankStatementBL
 {
 	private final IBankStatementDAO bankStatementDAO = Services.get(IBankStatementDAO.class);
 	private final IBankStatementListenerService bankStatementListenersService = Services.get(IBankStatementListenerService.class);
 	private final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
 	private final IFactAcctDAO factAcctDAO = Services.get(IFactAcctDAO.class);
+	private final BankAccountService bankAccountService;
+
+	public BankStatementBL(
+			@NonNull final BankAccountService bankAccountService)
+	{
+		this.bankAccountService = bankAccountService;
+	}
 
 	@Override
 	public I_C_BankStatement getById(@NonNull final BankStatementId bankStatementId)
@@ -133,15 +145,6 @@ public class BankStatementBL implements IBankStatementBL
 			final PaymentId paymentId = PaymentId.ofRepoIdOrNull(line.getC_Payment_ID());
 			return paymentId != null;
 		}
-	}
-
-	@Override
-	public BigDecimal computeStmtAmtExcludingChargeAmt(final I_C_BankStatementLine line)
-	{
-		return line.getTrxAmt()
-				.add(line.getInterestAmt())
-				// .add(line.getChargeAmt())
-				;
 	}
 
 	@Override
@@ -229,12 +232,24 @@ public class BankStatementBL implements IBankStatementBL
 	public void updateLineFromInvoice(final @NonNull I_C_BankStatementLine bankStatementLine, @NonNull final InvoiceId invoiceId)
 	{
 		final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
+		final Amount openAmt = Services.get(IInvoiceDAO.class).retrieveOpenAmt(invoiceId);
+
 		final I_C_Invoice invoice = invoiceDAO.getByIdInTrx(invoiceId);
 
 		bankStatementLine.setC_BPartner_ID(invoice.getC_BPartner_ID());
-		bankStatementLine.setStmtAmt(invoice.getGrandTotal());
-		bankStatementLine.setTrxAmt(invoice.getGrandTotal());
+		bankStatementLine.setStmtAmt(openAmt.getAsBigDecimal());
+		bankStatementLine.setTrxAmt(openAmt.getAsBigDecimal());
 		bankStatementLine.setC_Currency_ID(invoice.getC_Currency_ID());
+	}
+
+	@Override
+	public boolean isCashJournal(@NonNull final I_C_BankStatementLine bankStatementLine)
+	{
+		final BankStatementId bankStatementId = BankStatementId.ofRepoId(bankStatementLine.getC_BankStatement_ID());
+		final I_C_BankStatement bankStatement = getById(bankStatementId);
+		final BankAccountId bankAccountId = BankAccountId.ofRepoId(bankStatement.getC_BP_BankAccount_ID());
+
+		return bankAccountService.isCashBank(bankAccountId);
 	}
 
 }

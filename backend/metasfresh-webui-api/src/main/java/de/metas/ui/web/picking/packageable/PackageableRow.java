@@ -1,14 +1,7 @@
 package de.metas.ui.web.picking.packageable;
 
-import java.time.ZonedDateTime;
-import java.util.List;
-import java.util.Optional;
-
-import org.adempiere.util.lang.impl.TableRecordReference;
-
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_Packageable_V;
 import de.metas.order.OrderLineId;
@@ -31,9 +24,15 @@ import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
+import de.metas.ui.web.window.descriptor.WidgetSize;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.ToString;
+import org.adempiere.util.lang.impl.TableRecordReference;
+
+import java.time.ZonedDateTime;
+import java.util.List;
+import java.util.Optional;
 
 /*
  * #%L
@@ -70,7 +69,8 @@ public final class PackageableRow implements IViewRow
 	private final DocumentId id;
 	private final DocumentPath documentPath;
 
-	@ViewColumn(widgetType = DocumentFieldWidgetType.Lookup, captionKey = I_M_Packageable_V.COLUMNNAME_C_OrderSO_ID, layouts = {
+	@ViewColumn(widgetType = DocumentFieldWidgetType.Lookup, widgetSize = WidgetSize.Small,
+			captionKey = I_M_Packageable_V.COLUMNNAME_C_OrderSO_ID, layouts = {
 			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 10)
 	})
 	private final LookupValue order;
@@ -79,6 +79,11 @@ public final class PackageableRow implements IViewRow
 			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 20)
 	})
 	private final LookupValue product;
+
+	@ViewColumn(widgetType = DocumentFieldWidgetType.YesNo, captionKey = "Picked", layouts = {
+			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 25)
+	})
+	private final boolean picked;
 
 	@ViewColumn(widgetType = DocumentFieldWidgetType.Quantity, captionKey = I_M_Packageable_V.COLUMNNAME_QtyOrdered, layouts = {
 			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 30)
@@ -143,6 +148,7 @@ public final class PackageableRow implements IViewRow
 		this.product = product;
 		this.qtyOrdered = qtyOrdered;
 		this.qtyPicked = qtyPicked;
+		this.picked = qtyPicked != null && qtyPicked.compareTo(qtyOrdered) >= 0;
 		this.bpartner = bpartner;
 		this.preparationDate = preparationDate;
 		this.shipmentScheduleId = shipmentScheduleId;

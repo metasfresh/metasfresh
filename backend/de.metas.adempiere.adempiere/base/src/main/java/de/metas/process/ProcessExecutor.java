@@ -266,7 +266,8 @@ public final class ProcessExecutor
 		final AdProcessId previousProcessId = s_currentProcess_ID.get();
 		final OrgId previousOrgId = s_currentOrg_ID.get();
 		Stopwatch duration = null;
-		try (final IAutoCloseable contextRestorer = switchContextIfNeeded())
+		try (final IAutoCloseable contextRestorer = switchContextIfNeeded();
+				final IAutoCloseable mdcCloseable = ProcessMDC.putProcessAndInstanceId(pi.getAdProcessId(), pi.getPinstanceId()))
 		{
 			s_currentProcess_ID.set(pi.getAdProcessId());
 			s_currentOrg_ID.set(pi.getOrgId());
@@ -585,8 +586,8 @@ public final class ProcessExecutor
 						.targetAction(TargetRecordAction.of(TableRecordReference.of(I_AD_PInstance.Table_Name, pi.getPinstanceId())))
 						.build();
 				notificationBL.send(userNotificationRequest);
+			}
 		}
-	}
 	}
 
 	/**

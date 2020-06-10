@@ -882,7 +882,7 @@ public class ADWindowDAO implements IADWindowDAO
 		final I_AD_Tab existingTargetTab = null;
 		final I_AD_Tab targetTab = copyTab_SkipUISections(copyCtx, targetWindow, existingTargetTab, sourceTab);
 		copyUISections(copyCtx, targetTab, sourceTab);
-		
+
 		return AdTabId.ofRepoId(targetTab.getAD_Tab_ID());
 	}
 

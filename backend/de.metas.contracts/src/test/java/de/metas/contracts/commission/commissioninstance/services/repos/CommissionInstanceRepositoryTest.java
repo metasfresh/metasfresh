@@ -16,6 +16,7 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.test.AdempiereTestHelper;
@@ -25,8 +26,6 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import com.google.common.collect.ImmutableList;
 
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.bpartner.BPartnerId;
@@ -46,13 +45,13 @@ import de.metas.contracts.commission.commissioninstance.businesslogic.sales.comm
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.salesinvoiceline.SalesInvoiceLineDocumentId;
 import de.metas.contracts.commission.commissioninstance.services.CommissionConfigFactory;
 import de.metas.contracts.commission.commissioninstance.services.CommissionConfigStagingDataService;
-import de.metas.contracts.commission.commissioninstance.testhelpers.CommissionFactTestRecord;
-import de.metas.contracts.commission.commissioninstance.testhelpers.CommissionInstanceTestRecord;
-import de.metas.contracts.commission.commissioninstance.testhelpers.CommissionShareTestRecord;
-import de.metas.contracts.commission.commissioninstance.testhelpers.ConfigLineTestRecord;
-import de.metas.contracts.commission.commissioninstance.testhelpers.ConfigTestRecord;
-import de.metas.contracts.commission.commissioninstance.testhelpers.ConfigTestRecord.ConfigData;
-import de.metas.contracts.commission.commissioninstance.testhelpers.ContractTestRecord;
+import de.metas.contracts.commission.commissioninstance.testhelpers.TestCommissionFact;
+import de.metas.contracts.commission.commissioninstance.testhelpers.TestCommissionInstance;
+import de.metas.contracts.commission.commissioninstance.testhelpers.TestCommissionShare;
+import de.metas.contracts.commission.commissioninstance.testhelpers.TestCommissionConfigLine;
+import de.metas.contracts.commission.commissioninstance.testhelpers.TestCommissionConfig;
+import de.metas.contracts.commission.commissioninstance.testhelpers.TestCommissionConfig.ConfigData;
+import de.metas.contracts.commission.commissioninstance.testhelpers.TestCommissionContract;
 import de.metas.contracts.commission.model.I_C_Commission_Fact;
 import de.metas.contracts.commission.model.I_C_Commission_Instance;
 import de.metas.contracts.commission.model.I_C_Commission_Share;
@@ -137,21 +136,21 @@ class CommissionInstanceRepositoryTest
 		createCommissionData_InvoiceCandidateId();
 
 		// invoke the method under test
-		final ImmutableList<CommissionInstance> result = commissionInstanceRepository.getByDocumentId(new SalesInvoiceCandidateDocumentId(C_INVOICE_CANDIDATE_ID));
+		final Optional<CommissionInstance> result = commissionInstanceRepository.getByDocumentId(new SalesInvoiceCandidateDocumentId(C_INVOICE_CANDIDATE_ID));
 
-		assertThat(result).hasSize(1);
-		SnapshotMatcher.expect(result.get(0)).toMatchSnapshot();
+		assertThat(result).isPresent();
+		SnapshotMatcher.expect(result.get()).toMatchSnapshot();
 	}
 
 	private void createCommissionData_InvoiceCandidateId()
 	{
-		final ConfigData configData = ConfigTestRecord.builder()
+		final ConfigData configData = TestCommissionConfig.builder()
 				.subtractLowerLevelCommissionFromBase(true)
 				.pointsPrecision(2)
 				.commissionProductId(commissionProductId)
-				.configLineTestRecord(ConfigLineTestRecord.builder().name("singleConfigLine").seqNo(10).percentOfBasePoints("10").build())
-				.contractTestRecord(ContractTestRecord.builder().name("C_BPartner_SalesRep_1_ID").build())
-				.contractTestRecord(ContractTestRecord.builder().name("C_BPartner_SalesRep_2_ID").build())
+				.configLineTestRecord(TestCommissionConfigLine.builder().name("singleConfigLine").seqNo(10).percentOfBasePoints("10").build())
+				.contractTestRecord(TestCommissionContract.builder().salesRepName("C_BPartner_SalesRep_1_ID").build())
+				.contractTestRecord(TestCommissionContract.builder().salesRepName("C_BPartner_SalesRep_2_ID").build())
 				.build()
 				.createConfigData();
 
@@ -159,7 +158,7 @@ class CommissionInstanceRepositoryTest
 		final BPartnerId C_BPartner_SalesRep_1_ID = configData.getName2BPartnerId().get("C_BPartner_SalesRep_1_ID");
 		final BPartnerId C_BPartner_SalesRep_2_ID = configData.getName2BPartnerId().get("C_BPartner_SalesRep_2_ID");
 
-		CommissionInstanceTestRecord.builder()
+		TestCommissionInstance.builder()
 				.orgId(AD_ORG_ID)
 				.invoiceCandidateId(C_INVOICE_CANDIDATE_ID)
 				.triggerType(CommissionTriggerType.InvoiceCandidate)
@@ -167,7 +166,7 @@ class CommissionInstanceRepositoryTest
 				.pointsBase_Forecasted("10")
 				.pointsBase_Invoiceable("11")
 				.pointsBase_Invoiced("12")
-				.commissionShareTestRecord(CommissionShareTestRecord.builder()
+				.commissionShareTestRecord(TestCommissionShare.builder()
 						.commissionProductId(commissionProductId)
 						.salesRepBPartnerId(C_BPartner_SalesRep_1_ID)
 						.flatrateTermId(configData.getBpartnerId2FlatrateTermId().get(C_BPartner_SalesRep_1_ID))
@@ -175,33 +174,33 @@ class CommissionInstanceRepositoryTest
 						.pointsSum_Forecasted("1")
 						.pointsSum_Invoiceable("1.1")
 						.pointsSum_Invoiced("1.2")
-						.commissionFactTestRecord(CommissionFactTestRecord.builder()
+						.commissionFactTestRecord(TestCommissionFact.builder()
 								.state(COMMISSION_FACT_STATE_FORECASTED)
 								.commissionPoints("10")
 								.timestamp(incAndGetTimestamp()).build())
-						.commissionFactTestRecord(CommissionFactTestRecord.builder()
+						.commissionFactTestRecord(TestCommissionFact.builder()
 								.state(COMMISSION_FACT_STATE_FORECASTED)
 								.commissionPoints("-9")
 								.timestamp(incAndGetTimestamp()).build())
-						.commissionFactTestRecord(CommissionFactTestRecord.builder()
+						.commissionFactTestRecord(TestCommissionFact.builder()
 								.state(COMMISSION_FACT_STATE_INVOICEABLE)
 								.commissionPoints("1.1")
 								.timestamp(incAndGetTimestamp()).build())
-						.commissionFactTestRecord(CommissionFactTestRecord.builder()
+						.commissionFactTestRecord(TestCommissionFact.builder()
 								.state(COMMISSION_FACT_STATE_INVOICED)
 								.commissionPoints("1.2")
 								.timestamp(incAndGetTimestamp()).build())
 						// the last two are irrelevant for sales-commission-share
-						.commissionFactTestRecord(CommissionFactTestRecord.builder()
+						.commissionFactTestRecord(TestCommissionFact.builder()
 								.state(COMMISSION_FACT_STATE_TO_SETTLE)
 								.commissionPoints("4.2")
 								.timestamp(incAndGetTimestamp()).build())
-						.commissionFactTestRecord(CommissionFactTestRecord.builder()
+						.commissionFactTestRecord(TestCommissionFact.builder()
 								.state(COMMISSION_FACT_STATE_SETTLED)
 								.commissionPoints("3.1")
 								.timestamp(incAndGetTimestamp()).build())
 						.build())
-				.commissionShareTestRecord(CommissionShareTestRecord.builder()
+				.commissionShareTestRecord(TestCommissionShare.builder()
 						.commissionProductId(commissionProductId)
 						.salesRepBPartnerId(C_BPartner_SalesRep_2_ID)
 						.flatrateTermId(configData.getBpartnerId2FlatrateTermId().get(C_BPartner_SalesRep_2_ID))
@@ -209,19 +208,19 @@ class CommissionInstanceRepositoryTest
 						.pointsSum_Forecasted("2")
 						.pointsSum_Invoiceable("2.1")
 						.pointsSum_Invoiced("2.2")
-						.commissionFactTestRecord(CommissionFactTestRecord.builder()
+						.commissionFactTestRecord(TestCommissionFact.builder()
 								.state(COMMISSION_FACT_STATE_FORECASTED)
 								.commissionPoints("2")
 								.timestamp(incAndGetTimestamp()).build())
-						.commissionFactTestRecord(CommissionFactTestRecord.builder()
+						.commissionFactTestRecord(TestCommissionFact.builder()
 								.state(COMMISSION_FACT_STATE_INVOICEABLE)
 								.commissionPoints("2.1")
 								.timestamp(incAndGetTimestamp()).build())
-						.commissionFactTestRecord(CommissionFactTestRecord.builder()
+						.commissionFactTestRecord(TestCommissionFact.builder()
 								.state(COMMISSION_FACT_STATE_INVOICED)
 								.commissionPoints("10")
 								.timestamp(incAndGetTimestamp()).build())
-						.commissionFactTestRecord(CommissionFactTestRecord.builder()
+						.commissionFactTestRecord(TestCommissionFact.builder()
 								.state(COMMISSION_FACT_STATE_INVOICED)
 								.commissionPoints("-7.8")
 								.timestamp(incAndGetTimestamp()).build())
@@ -239,19 +238,19 @@ class CommissionInstanceRepositoryTest
 	{
 		final InvoiceLineId invoiceLineId = InvoiceLineId.ofRepoId(10, 15);
 
-		final ConfigData configData = ConfigTestRecord.builder()
+		final ConfigData configData = TestCommissionConfig.builder()
 				.subtractLowerLevelCommissionFromBase(true)
 				.pointsPrecision(2)
 				.commissionProductId(commissionProductId)
-				.configLineTestRecord(ConfigLineTestRecord.builder().name("singleConfigLine").seqNo(10).percentOfBasePoints("10").build())
-				.contractTestRecord(ContractTestRecord.builder().name("C_BPartner_SalesRep_1_ID").build())
+				.configLineTestRecord(TestCommissionConfigLine.builder().name("singleConfigLine").seqNo(10).percentOfBasePoints("10").build())
+				.contractTestRecord(TestCommissionContract.builder().salesRepName("C_BPartner_SalesRep_1_ID").build())
 				.build()
 				.createConfigData();
 
 		assertThat(configData.getName2BPartnerId()).hasSize(1); // guard
 		final BPartnerId C_BPartner_SalesRep_1_ID = configData.getName2BPartnerId().get("C_BPartner_SalesRep_1_ID");
 
-		CommissionInstanceTestRecord.builder()
+		TestCommissionInstance.builder()
 				.orgId(AD_ORG_ID)
 				.invoiceLineId(invoiceLineId)
 				.pointsBase_Forecasted("0")
@@ -260,7 +259,7 @@ class CommissionInstanceRepositoryTest
 				.mostRecentTriggerTimestamp(123L)
 				.triggerDocumentDate(TimeUtil.parseTimestamp("2020-03-21"))
 				.triggerType(CommissionTriggerType.SalesInvoice)
-				.commissionShareTestRecord(CommissionShareTestRecord.builder()
+				.commissionShareTestRecord(TestCommissionShare.builder()
 						.levelHierarchy(10)
 						.flatrateTermId(configData.getBpartnerId2FlatrateTermId().get(C_BPartner_SalesRep_1_ID))
 						.commissionProductId(commissionProductId)
@@ -270,10 +269,10 @@ class CommissionInstanceRepositoryTest
 				.createCommissionData();
 
 		// invoke the method under test
-		final ImmutableList<CommissionInstance> result = commissionInstanceRepository.getByDocumentId(new SalesInvoiceLineDocumentId(invoiceLineId));
+		final Optional<CommissionInstance> result = commissionInstanceRepository.getByDocumentId(new SalesInvoiceLineDocumentId(invoiceLineId));
 
-		assertThat(result).hasSize(1);
-		SnapshotMatcher.expect(result.get(0)).toMatchSnapshot();
+		assertThat(result).isPresent();
+		SnapshotMatcher.expect(result.get()).toMatchSnapshot();
 	}
 
 	private long incAndGetTimestamp()
@@ -286,13 +285,13 @@ class CommissionInstanceRepositoryTest
 	void save()
 	{
 		// the actual contract data is not saved
-		final ConfigData configData = ConfigTestRecord.builder()
+		final ConfigData configData = TestCommissionConfig.builder()
 				.subtractLowerLevelCommissionFromBase(true)
 				.commissionProductId(commissionProductId)
 				.pointsPrecision(2)
-				.configLineTestRecord(ConfigLineTestRecord.builder().name("singleLine").seqNo(10).percentOfBasePoints("10").build())
-				.contractTestRecord(ContractTestRecord.builder().name("C_BPartner_SalesRep_1_ID").build())
-				.contractTestRecord(ContractTestRecord.builder().name("C_BPartner_SalesRep_2_ID").build())
+				.configLineTestRecord(TestCommissionConfigLine.builder().name("singleLine").seqNo(10).percentOfBasePoints("10").build())
+				.contractTestRecord(TestCommissionContract.builder().salesRepName("C_BPartner_SalesRep_1_ID").build())
+				.contractTestRecord(TestCommissionContract.builder().salesRepName("C_BPartner_SalesRep_2_ID").build())
 				.build()
 				.createConfigData();
 
@@ -430,6 +429,6 @@ class CommissionInstanceRepositoryTest
 
 		// final check; load the CommissionInstance from the records we just created and verify that it's equal to the one we got from json
 		final CommissionInstance reloadedInstance = commissionInstanceRepository.getById(result);
-		assertThat(reloadedInstance).isEqualTo(commissionInstance.toBuilder().id(result).build());
+		SnapshotMatcher.expect(reloadedInstance).toMatchSnapshot();
 	}
 }

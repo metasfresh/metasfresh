@@ -19,6 +19,7 @@ import org.springframework.stereotype.Component;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
 import de.metas.ordercandidate.api.IOLCandBL;
 import de.metas.ordercandidate.api.IOLCandEffectiveValuesBL;
@@ -113,7 +114,7 @@ public class DefaultOLCandValidator implements IOLCandValidator
 		if (firstGreaterThanZero(olCand.getM_Product_Override_ID(), olCand.getM_Product_ID()) <= 0)
 		{
 			final String msg = "@FillMandatory@ @M_Product_ID@";
-			throw new AdempiereException(msgBL.parseTranslatableString(msg));
+			throw new AdempiereException(TranslatableStrings.parse(msg));
 		}
 
 		handleUOMForTUIfRequired(olCand); // get QtyItemCapacity from de.metas.handlingunit if required
@@ -183,7 +184,7 @@ public class DefaultOLCandValidator implements IOLCandValidator
 
 		if (!isValid)
 		{
-			throw new AdempiereException(msgBL.parseTranslatableString(msg.toString()));
+			throw new AdempiereException(TranslatableStrings.parse(msg.toString()));
 		}
 	}
 
@@ -198,21 +199,21 @@ public class DefaultOLCandValidator implements IOLCandValidator
 			if (olCand.getC_Currency_ID() <= 0)
 			{
 				final String msg = "@NotFound@ @C_Currency@";
-				throw new AdempiereException(msgBL.parseTranslatableString(msg));
+				throw new AdempiereException(TranslatableStrings.parse(msg));
 			}
 
 			final IPricingResult pricingResult = getPricingResult(olCand);
 			if (pricingResult == null || pricingResult.getPricingSystemId() == null || pricingResult.getPricingSystemId().isNone())
 			{
 				final String msg = "@NotFound@ @M_PricingSystem_ID@";
-				throw new AdempiereException(msgBL.parseTranslatableString(msg));
+				throw new AdempiereException(TranslatableStrings.parse(msg));
 			}
 			olCand.setM_PricingSystem_ID(pricingResult.getPricingSystemId().getRepoId());
 
 			if (pricingResult == null || pricingResult.getTaxCategoryId() == null)
 			{
 				final String msg = "@NotFound@ @C_TaxCategory_ID@";
-				throw new AdempiereException(msgBL.parseTranslatableString(msg));
+				throw new AdempiereException(TranslatableStrings.parse(msg));
 			}
 			else
 			{

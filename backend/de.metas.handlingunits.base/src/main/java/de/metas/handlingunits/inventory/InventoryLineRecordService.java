@@ -1,24 +1,9 @@
 package de.metas.handlingunits.inventory;
 
-import static org.adempiere.model.InterfaceWrapperHelper.isNew;
-
-import java.util.List;
-import java.util.Optional;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.exceptions.FillMandatoryException;
-import org.adempiere.mm.attributes.api.PlainAttributeSetInstanceAware;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.warehouse.LocatorId;
-import org.adempiere.warehouse.api.IWarehouseDAO;
-import org.compiere.model.I_M_Inventory;
-import org.springframework.stereotype.Service;
-
 import de.metas.document.DocBaseAndSubType;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUContextFactory;
+import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.allocation.IAllocationDestination;
 import de.metas.handlingunits.allocation.IAllocationRequest;
@@ -40,9 +25,11 @@ import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.hutransaction.IHUTrxBL;
 import de.metas.handlingunits.inventory.InventoryLine.InventoryLineBuilder;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.I_M_HU_Storage;
 import de.metas.handlingunits.model.I_M_InventoryLine;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.storage.IHUStorage;
+import de.metas.handlingunits.storage.IHUStorageDAO;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.handlingunits.storage.impl.PlainProductStorage;
 import de.metas.i18n.AdMessageKey;
@@ -53,10 +40,32 @@ import de.metas.inventory.HUAggregationType;
 import de.metas.inventory.IInventoryBL;
 import de.metas.inventory.InventoryId;
 import de.metas.product.ProductId;
+import de.metas.quantity.QuantitiesUOMNotMatchingExpection;
 import de.metas.quantity.Quantity;
+import de.metas.uom.IUOMConversionBL;
+import de.metas.uom.IUOMDAO;
+import de.metas.uom.UOMConversionContext;
+import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.exceptions.FillMandatoryException;
+import org.adempiere.mm.attributes.api.PlainAttributeSetInstanceAware;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.warehouse.LocatorId;
+import org.adempiere.warehouse.api.IWarehouseDAO;
+import org.compiere.model.I_M_Inventory;
+import org.springframework.stereotype.Service;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.stream.Stream;
+
+import static org.adempiere.model.InterfaceWrapperHelper.isNew;
 
 /*
  * #%L
@@ -215,6 +224,10 @@ public class InventoryLineRecordService
 						.build();
 				result.inventoryLineHU(resultInventoryLineHU);
 				needToSaveInventoryLine = true;
+			}
+			else
+			{
+				result.inventoryLineHU(inventoryLine.getSingleLineHU());
 			}
 		}
 		else
@@ -402,6 +415,40 @@ public class InventoryLineRecordService
 			inventoryLine = inventoryLineRepository.toInventoryLine(inventoryLineRecord);
 		}
 		return computeHUAggregationType(inventoryLine, docBaseAndSubType);
+	}
+
+	public void setQtyBookedFromStorage(@NonNull final I_M_InventoryLine inventoryLine)
+	{
+		inventoryLine.setQtyBook(BigDecimal.ZERO);
+
+		//mandatory ids might be missing as the I_M_InventoryLine might not be persisted yet
+		final ProductId productId = ProductId.ofRepoIdOrNull(inventoryLine.getM_Product_ID());
+		final HuId huId = HuId.ofRepoIdOrNull(inventoryLine.getM_HU_ID());
+		final UomId uomId = UomId.ofRepoIdOrNull(inventoryLine.getC_UOM_ID());
+
+		final boolean idsAreMissing = Stream.of(productId, huId, uomId)
+				.anyMatch(Objects::isNull);
+
+		if (idsAreMissing)
+		{
+			return;
+		}
+
+		final Optional<Quantity> bookedQty = inventoryLineRepository.getFreshBookedQtyFromStorage(productId, uomId, huId);
+
+		if (bookedQty.isPresent())
+		{
+			if (bookedQty.get().getUomId().getRepoId() != inventoryLine.getC_UOM_ID())
+			{
+				//this should never happen as InventoryRepository#getFreshBookedQtyFromStorage() returns the qty in the inventory line's uom.
+				throw new QuantitiesUOMNotMatchingExpection("Booked and counted quantities don't have the same UOM!")
+						.appendParametersToMessage()
+						.setParameter("InventoryLineUOMID", inventoryLine.getC_UOM_ID())
+						.setParameter("BookedQtyUOMID", bookedQty.get().getUomId());
+			}
+
+			inventoryLine.setQtyBook(bookedQty.get().toBigDecimal());
+		}
 	}
 
 	private static HUAggregationType computeHUAggregationType(

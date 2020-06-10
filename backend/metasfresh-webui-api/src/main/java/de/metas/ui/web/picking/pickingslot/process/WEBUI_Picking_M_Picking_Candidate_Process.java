@@ -1,24 +1,8 @@
-package de.metas.ui.web.picking.pickingslot.process;
-
-import static de.metas.ui.web.picking.PickingConstants.MSG_WEBUI_PICKING_NO_UNPROCESSED_RECORDS;
-import static de.metas.ui.web.picking.PickingConstants.MSG_WEBUI_PICKING_PICK_SOMETHING;
-import static de.metas.ui.web.picking.PickingConstants.MSG_WEBUI_PICKING_SELECT_PICKED_HU;
-
-import org.springframework.beans.factory.annotation.Autowired;
-
-import com.google.common.collect.ImmutableSet;
-
-import de.metas.handlingunits.picking.PickingCandidateService;
-import de.metas.inoutcandidate.api.ShipmentScheduleId;
-import de.metas.process.ProcessPreconditionsResolution;
-import de.metas.ui.web.picking.pickingslot.PickingSlotRow;
-import de.metas.ui.web.picking.pickingslot.PickingSlotViewFactory;
-
 /*
  * #%L
  * metasfresh-webui-api
  * %%
- * Copyright (C) 2017 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -36,6 +20,20 @@ import de.metas.ui.web.picking.pickingslot.PickingSlotViewFactory;
  * #L%
  */
 
+package de.metas.ui.web.picking.pickingslot.process;
+
+import com.google.common.collect.ImmutableSet;
+import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.picking.PickingCandidateService;
+import de.metas.inoutcandidate.api.ShipmentScheduleId;
+import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.ui.web.picking.pickingslot.PickingSlotRow;
+import de.metas.ui.web.picking.pickingslot.PickingSlotViewFactory;
+import lombok.NonNull;
+import org.compiere.SpringContextHolder;
+
+import static de.metas.ui.web.picking.PickingConstants.MSG_WEBUI_PICKING_NO_UNPROCESSED_RECORDS;
+
 /**
  * Processes the unprocessed picking candidate of the currently selected TU.<br>
  * Processing means that
@@ -43,18 +41,16 @@ import de.metas.ui.web.picking.pickingslot.PickingSlotViewFactory;
  * <li>the HU is associated with its shipment schedule (changes QtyPicked and QtyToDeliver)</li>
  * <li>The HU is added to its picking slot's picking-slot-queue</li>
  * </ul>
- *
+ * <p>
  * Note: this process is declared in the {@code AD_Process} table, but <b>not</b> added to it's respective window or table via application dictionary.<br>
  * Instead it is assigned to it's place by {@link PickingSlotViewFactory}.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 public class WEBUI_Picking_M_Picking_Candidate_Process extends PickingSlotViewBasedProcess
 {
 
-	@Autowired
-	private PickingCandidateService pickingCandidateService;
+	private final PickingCandidateService pickingCandidateService = SpringContextHolder.instance.getBean(PickingCandidateService.class);
 
 	@Override
 	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
@@ -63,36 +59,80 @@ public class WEBUI_Picking_M_Picking_Candidate_Process extends PickingSlotViewBa
 		{
 			return ProcessPreconditionsResolution.rejectBecauseNotSingleSelection();
 		}
-
 		final PickingSlotRow pickingSlotRow = getSingleSelectedRow();
-		if (!pickingSlotRow.isPickedHURow())
-		{
-			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(MSG_WEBUI_PICKING_SELECT_PICKED_HU));
-		}
-		if (!pickingSlotRow.isTopLevelHU())
-		{
-			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(MSG_WEBUI_PICKING_SELECT_PICKED_HU));
-		}
 
-		if (pickingSlotRow.getHuQtyCU().signum() <= 0)
-		{
-			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(MSG_WEBUI_PICKING_PICK_SOMETHING));
-		}
+		final ImmutableSet<HuId> hus = filterOutInvalidHUs(pickingSlotRow);
 
-		if (pickingSlotRow.isProcessed())
+		if (hus.isEmpty())
 		{
 			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(MSG_WEBUI_PICKING_NO_UNPROCESSED_RECORDS));
 		}
 
+		 // TODO: it would be nice when selecting the PickingSlot to automatically select (highlight) the valid HUs. This way the user sees exactly which HUs will be Processed.
 		return ProcessPreconditionsResolution.accept();
+	}
+
+	private ImmutableSet<HuId> filterOutInvalidHUs(@NonNull final PickingSlotRow pickingSlotRowOrHU)
+	{
+		final ImmutableSet.Builder<HuId> hus = ImmutableSet.builder();
+		if (pickingSlotRowOrHU.isPickingSlotRow())
+		{
+			for (final PickingSlotRow pickingSlotRow : pickingSlotRowOrHU.getIncludedRows())
+			{
+				if (isValidHu(pickingSlotRow))
+				{
+					hus.add(pickingSlotRow.getHuId());
+				}
+			}
+		}
+		else
+		{
+			if (isValidHu(pickingSlotRowOrHU))
+			{
+				hus.add(pickingSlotRowOrHU.getHuId());
+			}
+		}
+
+		return hus.build();
+	}
+
+	private boolean isValidHu(@NonNull final PickingSlotRow pickingSlotRowOrHU)
+	{
+		if (!pickingSlotRowOrHU.isPickedHURow())
+		{
+			return false;
+			// return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(MSG_WEBUI_PICKING_SELECT_PICKED_HU));
+		}
+		if (!pickingSlotRowOrHU.isTopLevelHU())
+		{
+			return false;
+			// return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(MSG_WEBUI_PICKING_SELECT_PICKED_HU));
+		}
+
+		if (pickingSlotRowOrHU.getHuQtyCU().signum() <= 0)
+		{
+			return false;
+			// return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(MSG_WEBUI_PICKING_PICK_SOMETHING));
+		}
+
+		//noinspection RedundantIfStatement
+		if (pickingSlotRowOrHU.isProcessed())
+		{
+			return false;
+			// return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(MSG_WEBUI_PICKING_NO_UNPROCESSED_RECORDS));
+		}
+		return true;
 	}
 
 	@Override
 	protected String doIt() throws Exception
 	{
 		final PickingSlotRow rowToProcess = getSingleSelectedRow();
+		final ImmutableSet<HuId> hUs = filterOutInvalidHUs(rowToProcess);
+
 		final ShipmentScheduleId shipmentScheduleId = null;
-		pickingCandidateService.processForHUIds(ImmutableSet.of(rowToProcess.getHuId()), shipmentScheduleId);
+		//noinspection ConstantConditions
+		pickingCandidateService.processForHUIds(hUs, shipmentScheduleId);
 
 		return MSG_OK;
 	}
@@ -104,7 +144,7 @@ public class WEBUI_Picking_M_Picking_Candidate_Process extends PickingSlotViewBa
 		{
 			return;
 		}
-		
+
 		invalidatePickingSlotsView();
 		invalidatePackablesView();
 	}

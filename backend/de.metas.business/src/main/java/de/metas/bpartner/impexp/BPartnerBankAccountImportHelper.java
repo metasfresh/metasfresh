@@ -1,12 +1,12 @@
 package de.metas.bpartner.impexp;
 
-import org.adempiere.bank.BankId;
-import org.adempiere.bank.BankRepository;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BP_BankAccount;
 import org.compiere.model.I_I_BPartner;
 import org.compiere.model.ModelValidationEngine;
 
+import de.metas.banking.BankId;
+import de.metas.banking.api.BankRepository;
 import de.metas.currency.ICurrencyBL;
 import de.metas.impexp.processing.IImportInterceptor;
 import de.metas.invoice_gateway.spi.model.BPartnerId;

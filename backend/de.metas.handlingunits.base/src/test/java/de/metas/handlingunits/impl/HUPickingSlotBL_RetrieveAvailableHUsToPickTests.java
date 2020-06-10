@@ -6,27 +6,27 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.lang.IContextAware;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_UOM;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.compiere.model.I_M_Locator;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.Matchers;
+import org.mockito.Mockito;
 
 import com.google.common.collect.ImmutableSet;
 
-import de.metas.ShutdownListener;
-import de.metas.StartupListener;
+import de.metas.adempiere.model.I_M_Product;
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.attribute.storage.impl.NullAttributeStorage;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
+import de.metas.handlingunits.model.I_M_HU_Storage;
 import de.metas.handlingunits.model.I_M_Source_HU;
 import de.metas.handlingunits.model.I_M_Warehouse;
 import de.metas.handlingunits.model.X_M_HU;
@@ -42,15 +42,13 @@ import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.impl.ShipmentScheduleUpdater;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.quantity.Quantity;
-import de.metas.storage.IStorageEngine;
 import de.metas.storage.IStorageEngineService;
 import de.metas.storage.IStorageQuery;
+import de.metas.storage.spi.hu.impl.HUStorageEngine;
 import de.metas.storage.spi.hu.impl.HUStorageRecord;
+import de.metas.storage.spi.hu.impl.HUStorageRecord_HUPart;
 import de.metas.util.Services;
 import lombok.Value;
-import mockit.Expectations;
-import mockit.Injectable;
-import mockit.Mocked;
 
 /*
  * #%L
@@ -73,32 +71,40 @@ import mockit.Mocked;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-@RunWith(SpringRunner.class)
-@SpringBootTest(classes = { StartupListener.class, ShutdownListener.class, PickingCandidateRepository.class })
 public class HUPickingSlotBL_RetrieveAvailableHUsToPickTests
 {
-	@Injectable
-	private IStorageEngine storageEngine;
-
-	@Mocked
-	private HUStorageRecord storageRecord;
-
-	@Autowired
+	private HUStorageEngine storageEngine;
 	private PickingCandidateRepository pickingCandidatesRepo;
 
 	private I_C_UOM uom;
+	private I_M_Product product;
 
-	@Before
+	private final int LOCATOR_ID = 10;
+	private I_M_Locator locator;
+
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
 
+		storageEngine = Mockito.spy(new HUStorageEngine());
 		Services.get(IStorageEngineService.class).registerStorageEngine(storageEngine);
 
 		Services.registerService(IShipmentScheduleUpdater.class, ShipmentScheduleUpdater.newInstanceForUnitTesting());
 
+		pickingCandidatesRepo = new PickingCandidateRepository();
+		SpringContextHolder.registerJUnitBean(pickingCandidatesRepo);
+
 		uom = newInstance(I_C_UOM.class);
 		saveRecord(uom);
+
+		product = newInstance(I_M_Product.class);
+		product.setC_UOM_ID(uom.getC_UOM_ID());
+		saveRecord(product);
+
+		locator = newInstance(I_M_Locator.class);
+		locator.setM_Locator_ID(LOCATOR_ID);
+		saveRecord(locator);
 	}
 
 	@Test
@@ -429,8 +435,6 @@ public class HUPickingSlotBL_RetrieveAvailableHUsToPickTests
 		I_M_HU vhu;
 	}
 
-	private final int LOCATOR_ID = 10;
-
 	/**
 	 * Set up the storage engine to return the given {@code vhu} and call the method under test.
 	 *
@@ -438,7 +442,6 @@ public class HUPickingSlotBL_RetrieveAvailableHUsToPickTests
 	 * @param onlyTopLevelHUs TODO
 	 * @return
 	 */
-	@SuppressWarnings("unchecked")
 	private List<I_M_HU> common(
 			final I_M_HU vhu,
 			final boolean onlyTopLevelHUs)
@@ -452,20 +455,23 @@ public class HUPickingSlotBL_RetrieveAvailableHUsToPickTests
 		final I_M_ShipmentSchedule shipmentSchedule = newInstance(I_M_ShipmentSchedule.class);
 		shipmentSchedule.setM_Warehouse_ID(warehouse.getM_Warehouse_ID());
 		shipmentSchedule.setC_BPartner_ID(bpartner.getC_BPartner_ID());
-		shipmentSchedule.setM_Product_ID(20); // since we are mocking the result, the actual ID doesn't really matter right now
+		shipmentSchedule.setM_Product_ID(product.getM_Product_ID());
 
 		saveRecord(shipmentSchedule);
 
-		// @formatter:off
-		new Expectations()
-		{{
-				storageEngine.retrieveStorageRecords((IContextAware)any, (Set<IStorageQuery>)any);
-				result = ImmutableSet.of(storageRecord);
+		final I_M_HU_Storage huStorage = newInstance(I_M_HU_Storage.class);
+		huStorage.setM_Product_ID(product.getM_Product_ID());
+		huStorage.setC_UOM_ID(uom.getC_UOM_ID());
+		saveRecord(huStorage);
 
-				storageRecord.getVHU();	result = vhu;
-				storageRecord.getLocator().getM_Locator_ID(); result = LOCATOR_ID;
-		}};
-		// @formatter:on
+		{
+			final HUStorageRecord_HUPart huPart = new HUStorageRecord_HUPart(vhu, NullAttributeStorage.instance);
+			final HUStorageRecord storageRecord = new HUStorageRecord(huPart, huStorage);
+
+			Mockito.doReturn(ImmutableSet.of(storageRecord))
+					.when(storageEngine)
+					.retrieveStorageRecords(Matchers.any(IContextAware.class), Matchers.anySetOf(IStorageQuery.class));
+		}
 
 		final List<I_M_HU> result = new HUPickingSlotBL()
 				.retrieveAvailableHUsToPick(PickingHUsQuery.builder()

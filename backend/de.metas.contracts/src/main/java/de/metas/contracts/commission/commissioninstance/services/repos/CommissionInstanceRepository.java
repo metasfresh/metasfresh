@@ -7,6 +7,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 
 import javax.annotation.Nullable;
 
@@ -15,6 +16,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.util.TimeUtil;
 import org.compiere.util.Util.ArrayKey;
+import org.slf4j.Logger;
 import org.springframework.stereotype.Repository;
 
 import com.google.common.collect.ImmutableList;
@@ -27,13 +29,14 @@ import de.metas.contracts.commission.Beneficiary;
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionConfig;
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionInstance;
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionInstance.CommissionInstanceBuilder;
-import de.metas.contracts.commission.commissioninstance.businesslogic.algorithms.HierarchyContract;
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionInstanceId;
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionPoints;
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionSettingsLineId;
+import de.metas.contracts.commission.commissioninstance.businesslogic.algorithms.HierarchyContract;
 import de.metas.contracts.commission.commissioninstance.businesslogic.hierarchy.HierarchyLevel;
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.SalesCommissionFact;
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.SalesCommissionShare;
+import de.metas.contracts.commission.commissioninstance.businesslogic.sales.SalesCommissionShareId;
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.SalesCommissionShare.SalesCommissionShareBuilder;
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.SalesCommissionState;
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.CommissionTriggerData;
@@ -48,6 +51,7 @@ import de.metas.contracts.commission.model.I_C_Commission_Share;
 import de.metas.invoice.InvoiceLineId;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.util.lang.Percent;
@@ -78,6 +82,8 @@ import lombok.NonNull;
 @Repository
 public class CommissionInstanceRepository
 {
+	private static final Logger logger = LogManager.getLogger(CommissionInstanceRepository.class);
+
 	private final CommissionRecordStagingService commissionRecordStagingService;
 	private final CommissionConfigFactory commissionConfigFactory;
 
@@ -98,23 +104,19 @@ public class CommissionInstanceRepository
 		return instance;
 	}
 
-	public ImmutableList<CommissionInstance> getByDocumentId(@NonNull final CommissionTriggerDocumentId commissionTriggerDocumentId)
+	public Optional<CommissionInstance> getByDocumentId(@NonNull final CommissionTriggerDocumentId commissionTriggerDocumentId)
 	{
 		final CommissionStagingRecords records = commissionRecordStagingService.retrieveRecordsForInvoiceCandidateId(ImmutableList.of(commissionTriggerDocumentId));
 
-		final List<I_C_Commission_Instance> instanceRecords = records.getDocumentIdToInstanceRecords().get(commissionTriggerDocumentId);
-		if (instanceRecords.isEmpty())
+		final I_C_Commission_Instance instanceRecord = records.getDocumentIdToInstanceRecords().get(commissionTriggerDocumentId);
+		if (instanceRecord == null)
 		{
-			return ImmutableList.of();
+			logger.debug("Found no C_Commission_Instance record for commissionTriggerDocumentId={}", commissionTriggerDocumentId);
+			return Optional.empty();
 		}
 
-		final ImmutableList.Builder<CommissionInstance> result = ImmutableList.builder();
-		for (final I_C_Commission_Instance instanceRecord : instanceRecords)
-		{
-			final CommissionInstance instance = loadCommissionInstance(instanceRecord, records);
-			result.add(instance);
-		}
-		return result.build();
+		final CommissionInstance instance = loadCommissionInstance(instanceRecord, records);
+		return Optional.of(instance);
 	}
 
 	private CommissionInstance loadCommissionInstance(
@@ -186,6 +188,7 @@ public class CommissionInstanceRepository
 	private SalesCommissionShareBuilder createShareBuilder(@NonNull final I_C_Commission_Share shareRecord)
 	{
 		final SalesCommissionShareBuilder share = SalesCommissionShare.builder()
+				.id(SalesCommissionShareId.ofRepoId(shareRecord.getC_Commission_Share_ID()))
 				.beneficiary(Beneficiary.of(BPartnerId.ofRepoId(shareRecord.getC_BPartner_SalesRep_ID())))
 				.level(HierarchyLevel.of(shareRecord.getLevelHierarchy()));
 

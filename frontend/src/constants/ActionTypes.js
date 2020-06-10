@@ -1,3 +1,5 @@
+export * from './actions/TableTypes';
+
 /**
  * @constant
  * @type {string} ToDo: Description for the constant.
@@ -614,3 +616,9 @@ export const UPDATE_TAB_ROWS_DATA = 'UPDATE_TAB_ROWS_DATA';
  * @type {string} set languages in the app handler
  */
 export const SET_LANGUAGES = 'SET_LANGUAGES';
+
+/**
+ * @constant
+ * @type {string} update table selection
+ */
+export const UPDATE_TABLE_SELECTION = 'UPDATE_TABLE_SELECTION';

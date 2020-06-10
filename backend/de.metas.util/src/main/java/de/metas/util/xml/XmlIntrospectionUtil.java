@@ -2,6 +2,7 @@ package de.metas.util.xml;
 
 import lombok.NonNull;
 
+import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 
 import javax.xml.XMLConstants;
@@ -34,6 +35,11 @@ import javax.xml.stream.XMLStreamReader;
 public class XmlIntrospectionUtil
 {
 	private static final String SCHEMA_LOCATION = "schemaLocation";
+
+	public static String extractXsdValueOrNull(@NonNull final byte[] xmlInput)
+	{
+		return extractXsdValueOrNull(new ByteArrayInputStream(xmlInput));
+	}
 
 	/**
 	 * Extracts the XSD schema name; For the sake of performance, only check the first element.

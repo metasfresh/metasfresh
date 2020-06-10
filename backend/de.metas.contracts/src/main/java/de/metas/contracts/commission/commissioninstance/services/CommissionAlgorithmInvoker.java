@@ -9,10 +9,8 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionAlgorithm;
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionConfig;
-import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionInstance;
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionType;
 import de.metas.contracts.commission.commissioninstance.businesslogic.CreateCommissionSharesRequest;
-import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionInstance.CommissionInstanceBuilder;
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.SalesCommissionShare;
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.CommissionTriggerChange;
 import de.metas.util.collections.CollectionUtils;
@@ -43,7 +41,7 @@ import lombok.NonNull;
 @Service
 public class CommissionAlgorithmInvoker
 {
-	public CommissionInstance applyCreateRequest(@NonNull final CreateCommissionSharesRequest request)
+	public ImmutableList<SalesCommissionShare> createCommissionShares(@NonNull final CreateCommissionSharesRequest request)
 	{
 		try
 		{
@@ -51,10 +49,7 @@ public class CommissionAlgorithmInvoker
 					request.getConfigs(),
 					CommissionConfig::getCommissionType);
 
-			final CommissionInstanceBuilder result = CommissionInstance
-					.builder()
-					.currentTriggerData(request.getTrigger().getCommissionTriggerData());
-
+			final ImmutableList.Builder<SalesCommissionShare> result = ImmutableList.builder();
 			for (final CommissionType commissionType : commissionTypes)
 			{
 				try (final MDCCloseable commissionTypeMDC = MDC.putCloseable("commissionType", commissionType.name()))
@@ -63,19 +58,19 @@ public class CommissionAlgorithmInvoker
 					algorithm = createAlgorithmInstance(commissionType);
 
 					// invoke the algorithm
-					final ImmutableList<SalesCommissionShare> shares = algorithm.createCommissionShares(request);
-					result.shares(shares);
+					final ImmutableList<SalesCommissionShare> sharesFromAlgorithm = algorithm.createCommissionShares(request);
+					result.addAll(sharesFromAlgorithm);
 				}
 			}
 			return result.build();
 		}
-		catch (final Exception e)
+		catch (final RuntimeException e)
 		{
 			throw AdempiereException.wrapIfNeeded(e).setParameter("request", request); // augment&rethrow
 		}
 	}
 
-	public void applyTriggerChangeToSharesOfInstance(@NonNull final CommissionTriggerChange change)
+	public void updateCommissionShares(@NonNull final CommissionTriggerChange change)
 	{
 		try
 		{
@@ -94,7 +89,7 @@ public class CommissionAlgorithmInvoker
 				}
 			}
 		}
-		catch (Exception e)
+		catch (final RuntimeException e)
 		{
 			throw AdempiereException.wrapIfNeeded(e).setParameter("change", change);
 		}

@@ -1,10 +1,8 @@
-package org.adempiere.model;
-
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -21,6 +19,8 @@ package org.adempiere.model;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+package org.adempiere.model;
 
 import java.util.Collection;
 import java.util.List;
@@ -308,15 +308,9 @@ public class InterfaceWrapperHelper
 	 * Also see {@link #create(Object, Class)} for more informations.
 	 * <p>
 	 * Note: if you want to load a record from <code>(AD_Table_ID, Reference_ID)</code>,<br>
-	 * then it's probably better to use e.g. {@link org.adempiere.util.lang.impl.TableRecordReference#TableRecordReference(int, int)}.
-	 *
-	 * @param ctx
-	 * @param id
-	 * @param cl
-	 * @param trxName
-	 * @return
+	 * then it's probably better to use e.g. {@link org.adempiere.util.lang.impl.TableRecordReference#of(int, int)}.
 	 */
-	public static <T> T create(final Properties ctx, final int id, final Class<T> cl, final String trxName)
+	public static <T> T create(final Properties ctx, final int id, final Class<T> cl, @Nullable final String trxName)
 	{
 		if (getInMemoryDatabaseForModel(cl) != null)
 		{
@@ -333,7 +327,7 @@ public class InterfaceWrapperHelper
 	 * Notes:
 	 * <li>this method might or might not benefit from caching, depending on how {@link IModelCacheService} was configured.
 	 * <li>if you want to load a record from <code>(AD_Table_ID, Reference_ID)</code>,<br>
-	 * then it's probably better to use {@link org.adempiere.util.lang.impl.TableRecordReference#TableRecordReference(int, int)}.
+	 * then it's probably better to use {@link org.adempiere.util.lang.impl.TableRecordReference#of(int, int)}.
 	 *
 	 * @param ctx
 	 * @param tableName
@@ -533,9 +527,6 @@ public class InterfaceWrapperHelper
 
 	/**
 	 * Refreshes the given model, and if the model is handled by {@link POWrapper} or {@link POJOWrapper}, then uses the given <code>trxName</code>.
-	 *
-	 * @param model
-	 * @param trxName
 	 */
 	public static void refresh(final Object model, final String trxName)
 	{
@@ -722,6 +713,10 @@ public class InterfaceWrapperHelper
 		}
 	}
 
+	/**
+	 * IMPORTANT: only call with <b>model interfaces</b> such as {@code I_AD_Table}, {@code C_Order} (legacy classes like `MProduct` and {@link IContextAware}s will also work) and the like.
+	 * Despite the parameter type being "Object" it does not work with all objects.
+	 */
 	public static String getTrxName(final Object model)
 	{
 		final boolean ignoreIfNotHandled = false;
@@ -729,11 +724,10 @@ public class InterfaceWrapperHelper
 	}
 
 	/**
+	 * IMPORTANT: only call with <b>model interfaces</b> such as {@code I_AD_Table}, {@code C_Order} (legacy classes like `MProduct` and {@link IContextAware}s will also work) and the like.
+	 * Despite the parameter type being "Object" it does not work with all objects.
 	 *
-	 * @param model
-	 * @param ignoreIfNotHandled if <code>true</code> and the given model can not be handeled (no PO, GridTab etc), then just return {@link ITrx#TRXNAME_None} without loggin a warning.
-	 *
-	 * @return
+	 * @param ignoreIfNotHandled if <code>true</code> and the given model can not be handeled (no PO, GridTab etc), then just return {@link ITrx#TRXNAME_None} without throwing an exception.
 	 */
 	public static String getTrxName(final Object model, final boolean ignoreIfNotHandled)
 	{
@@ -781,7 +775,7 @@ public class InterfaceWrapperHelper
 		final boolean failIfProcessed = true;
 		delete(model, failIfProcessed);
 	}
-	
+
 	public static void delete(@NonNull final Object model, final boolean failIfProcessed)
 	{
 		if (POWrapper.isHandled(model))

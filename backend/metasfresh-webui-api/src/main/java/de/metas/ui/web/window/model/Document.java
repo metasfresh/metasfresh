@@ -856,7 +856,18 @@ public final class Document
 
 	public Properties getCtx()
 	{
-		return Env.getCtx(); // FIXME use document level context
+		// make sure that InterfaceWrapperHelper.newInstance(Class<T>, Object, boolean useClientOrgFromProvider) works
+		// (still, not sure if this is sufficient for *all* cases)
+		final Properties result = Env.copyCtx(Env.getCtx());
+		if (getClientId() != null)
+		{
+			Env.setClientId(result, getClientId());
+		}
+		if (getOrgId() != null)
+		{
+			Env.setOrgId(result, getOrgId());
+		}
+		return result;
 	}
 
 	public int getWindowNo()
@@ -904,7 +915,7 @@ public final class Document
 	/**
 	 * Sets a {@link DocumentEvaluatee} which will be used as a parent evaluatee for {@link #asEvaluatee()}.
 	 *
-	 * NOTE: this shadow evaluatee is not persisted and is discarded on {@link #copy(CopyMode)}.
+	 * NOTE: this shadow evaluatee is not persisted and is discarded on {@link #copy(Document, CopyMode)}.
 	 *
 	 * @param shadowParentDocumentEvaluatee
 	 */
@@ -1404,12 +1415,7 @@ public final class Document
 	/**
 	 * Updates document or fields characteristics (e.g. readonly, mandatory, displayed, lookupValuesStaled etc).
 	 *
-	 * @param propertyName
-	 * @param documentField
 	 * @param triggeringFieldName optional field name which triggered this update
-	 * @param triggeringDependencyType
-	 * @param documentChangesCollector events collector (where to collect the change events)
-	 * @param collectEventsEventIfNoChange true if we shall collect the change event even if there was no change
 	 */
 	private void updateOnDependencyChanged(
 			final String propertyName,

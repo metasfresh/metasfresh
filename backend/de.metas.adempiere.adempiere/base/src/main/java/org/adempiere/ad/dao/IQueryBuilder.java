@@ -22,19 +22,17 @@ package org.adempiere.ad.dao;
  * #L%
  */
 
-import java.util.Collection;
-import java.util.Date;
-import java.util.Properties;
-
-import javax.annotation.Nullable;
-
+import de.metas.process.PInstanceId;
+import de.metas.util.lang.RepoIdAware;
+import lombok.NonNull;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.model.ModelColumn;
 import org.compiere.model.IQuery;
 
-import de.metas.process.PInstanceId;
-import de.metas.util.lang.RepoIdAware;
-import lombok.NonNull;
+import javax.annotation.Nullable;
+import java.util.Collection;
+import java.util.Date;
+import java.util.Properties;
 
 /**
  * @param <T> model type
@@ -44,15 +42,15 @@ public interface IQueryBuilder<T>
 {
 	/**
 	 * Advice the SQL query builder, in case our filters are joined by OR, to explode them in several UNIONs.
-	 *
+	 * <p>
 	 * This is a huge optimization for databases like PostgreSQL which have way better performances on UNIONs instead of WHERE expressions joined by OR.
-	 *
+	 * <p>
 	 * Example: A query like
 	 *
 	 * <pre>
 	 * SELECT ... FROM ... WHERE (Expression1 OR Expression2 OR Expression3)
 	 * </pre>
-	 *
+	 * <p>
 	 * will be exploded to:
 	 *
 	 * <pre>
@@ -93,11 +91,9 @@ public interface IQueryBuilder<T>
 
 	/**
 	 * Sets a query option which will be used while building the query or while executing the query.
-	 *
+	 * <p>
 	 * NOTE: all options will be also passed to {@link IQuery} instance when it will be created.
 	 *
-	 * @param name
-	 * @param value
 	 * @see IQuery#setOptions(java.util.Map).
 	 */
 	IQueryBuilder<T> setOption(String name, Object value);
@@ -109,7 +105,9 @@ public interface IQueryBuilder<T>
 
 	int getLimit();
 
-	/** Make sure this instance now has an order-by-builder and return it. */
+	/**
+	 * Make sure this instance now has an order-by-builder and return it.
+	 */
 	IQueryBuilderOrderByClause<T> orderBy();
 
 	//@formatter:off
@@ -122,7 +120,7 @@ public interface IQueryBuilder<T>
 
 	IQuery<T> create();
 
-	IQueryBuilder<T> addNotEqualsFilter(String columnName, Object value);
+	IQueryBuilder<T> addNotEqualsFilter(String columnName, @Nullable Object value);
 
 	IQueryBuilder<T> addNotEqualsFilter(ModelColumn<T, ?> column, Object value);
 
@@ -144,15 +142,10 @@ public interface IQueryBuilder<T>
 	 * Filters using the given string as a <b>substring</b>.
 	 * If this "substring" behavior is too opinionated for your case, consider using e.g. {@link #addCompareFilter(String, Operator, Object)}.
 	 *
-	 * @param substring will be complemented with {@code %} at both the string's start and end, if the given string doesn't have them yet.
+	 * @param substring  will be complemented with {@code %} at both the string's start and end, if the given string doesn't have them yet.
 	 * @param ignoreCase if {@code true}, then {@code ILIKE} is used as operator instead of {@code LIKE}
 	 */
 	IQueryBuilder<T> addStringLikeFilter(String columnname, String substring, boolean ignoreCase);
-
-	/**
-	 * See {@link #addStringLikeFilter(String, String, boolean)}.
-	 */
-	IQueryBuilder<T> addStringLikeFilter(ModelColumn<T, ?> column, String substring, boolean ignoreCase);
 
 	IQueryBuilder<T> addCompareFilter(String columnName, Operator operator, Object value);
 
@@ -195,7 +188,6 @@ public interface IQueryBuilder<T>
 	 * Filters those rows for whom the columnName's value is in given array.
 	 * If no values were provided the record is rejected.
 	 *
-	 * @param column
 	 * @param values the values to check again also supports {@code null} value among them.
 	 */
 	@SuppressWarnings("unchecked")
@@ -238,10 +230,6 @@ public interface IQueryBuilder<T>
 
 	/**
 	 * NOTE: in case <code>values</code> collection is empty this filter will return <code>true</code> (as intuitively expected).
-	 *
-	 * @param columnName
-	 * @param values
-	 * @return this
 	 */
 	<V> IQueryBuilder<T> addNotInArrayFilter(String columnName, Collection<V> values);
 
@@ -250,9 +238,9 @@ public interface IQueryBuilder<T>
 	<ST> IQueryBuilder<T> addInSubQueryFilter(String columnName, IQueryFilterModifier modifier, String subQueryColumnName, IQuery<ST> subQuery);
 
 	/**
-	 * @param columnName the key column from the "main" query
+	 * @param columnName         the key column from the "main" query
 	 * @param subQueryColumnName the key column from the "sub" query
-	 * @param subQuery the actual sub query
+	 * @param subQuery           the actual sub query
 	 * @return this
 	 */
 	<ST> IQueryBuilder<T> addInSubQueryFilter(String columnName, String subQueryColumnName, IQuery<ST> subQuery);
@@ -260,9 +248,9 @@ public interface IQueryBuilder<T>
 	<ST> IQueryBuilder<T> addNotInSubQueryFilter(String columnName, String subQueryColumnName, IQuery<ST> subQuery);
 
 	/**
-	 * @param column the key column from the "main" query
+	 * @param column         the key column from the "main" query
 	 * @param subQueryColumn the key column from the "sub" query
-	 * @param subQuery the actual sub query
+	 * @param subQuery       the actual sub query
 	 * @return this
 	 */
 	<ST> IQueryBuilder<T> addInSubQueryFilter(ModelColumn<T, ?> column, ModelColumn<ST, ?> subQueryColumn, IQuery<ST> subQuery);
@@ -290,10 +278,6 @@ public interface IQueryBuilder<T>
 
 	/**
 	 * Same as {@link #andCollect(ModelColumn)} but you can specify what interface to use for returning values.
-	 *
-	 * @param column
-	 * @param collectedType
-	 * @return
 	 */
 	<CollectedBaseType, CollectedType extends CollectedBaseType, ParentModelType> IQueryBuilder<CollectedType> andCollect(
 			ModelColumn<ParentModelType, CollectedBaseType> column,
@@ -315,7 +299,7 @@ public interface IQueryBuilder<T>
 	 * </pre>
 	 *
 	 * @param linkColumnNameInChildTable the column in child model which will be used to join the child records to current record's primary key
-	 * @param childType child model to be used
+	 * @param childType                  child model to be used
 	 * @return query build for <code>ChildType</code>
 	 */
 	<ChildType> IQueryBuilder<ChildType> andCollectChildren(String linkColumnNameInChildTable, Class<ChildType> childType);
@@ -368,7 +352,6 @@ public interface IQueryBuilder<T>
 	/**
 	 * Start an aggregation of different columns, everything grouped by given <code>column</code>
 	 *
-	 * @param column
 	 * @return aggregation builder
 	 */
 	<TargetModelType> IQueryAggregateBuilder<T, TargetModelType> aggregateOnColumn(ModelColumn<T, TargetModelType> column);

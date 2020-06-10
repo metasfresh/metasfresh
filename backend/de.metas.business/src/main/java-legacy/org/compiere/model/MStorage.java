@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
@@ -422,7 +423,7 @@ public class MStorage extends X_M_Storage
 	 * @param trxName transaction
 	 * @return true if updated
 	 */
-	public static boolean add(final Properties ctx,
+	public static void add(final Properties ctx,
 			final int M_Warehouse_ID,
 			final int M_Locator_ID,
 			final int M_Product_ID,
@@ -452,9 +453,8 @@ public class MStorage extends X_M_Storage
 		{
 			final String msg = "No Storage found - M_Locator_ID=" + M_Locator_ID
 					+ ",M_Product_ID=" + M_Product_ID + ",ASI=" + M_AttributeSetInstance_ID;
-			s_log.error(msg);
 			loggable.addLog(msg);
-			return false;
+			throw new AdempiereException(msg);
 		}
 
 		// CarlosRuiz - globalqss - Fix [ 1725383 ] QtyOrdered wrongly updated
@@ -529,8 +529,6 @@ public class MStorage extends X_M_Storage
 		{
 			loggable.addLog("No storage changes were done");
 		}
-
-		return true;
 	}	// add
 
 	/**************************************************************************

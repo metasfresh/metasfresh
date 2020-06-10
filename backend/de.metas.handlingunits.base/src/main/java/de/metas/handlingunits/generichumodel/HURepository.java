@@ -83,8 +83,7 @@ public class HURepository
 				.setListener(listener)
 				.iterate(huRecord);
 
-		final HU result = listener.getResult();
-		return result;
+		return listener.getResult();
 	}
 
 	private static class HUIteratorListener extends HUIteratorListenerAdapter
@@ -109,8 +108,7 @@ public class HURepository
 		{
 			final HuId huId = extractHuId(rootHuRecord);
 			final HUBuilder rootHu = createHUBuilder(rootHuRecord);
-			final ImmutablePair<HuId, HUBuilder> pair = ImmutablePair.of(huId, rootHu);
-			return pair;
+			return ImmutablePair.of(huId, rootHu);
 		}
 
 		private HuId extractHuId(@NonNull final I_M_HU rootHuRecord)
@@ -264,8 +262,8 @@ public class HURepository
 	@ToString
 	private static class HUStack
 	{
-		private final ArrayList<HuId> huIds = new ArrayList<HuId>();
-		private final HashMap<HuId, HUBuilder> hus = new HashMap<HuId, HU.HUBuilder>();
+		private final ArrayList<HuId> huIds = new ArrayList<>();
+		private final HashMap<HuId, HUBuilder> hus = new HashMap<>();
 
 		void push(@NonNull final IPair<HuId, HUBuilder> idWithHuBuilder)
 		{

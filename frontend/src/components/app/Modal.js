@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import classnames from 'classnames';
+import { updateCommentsPanelOpenFlag } from '../../actions/CommentsPanelActions';
 
 import { processNewRecord } from '../../actions/GenericActions';
 import {
@@ -11,6 +12,7 @@ import {
   createWindow,
   handleProcessResponse,
   fetchChangeLog,
+  callAPI,
   patch,
 } from '../../actions/WindowActions';
 import { startProcess } from '../../api';
@@ -24,6 +26,7 @@ import ModalContextShortcuts from '../keyshortcuts/ModalContextShortcuts';
 import Tooltips from '../tooltips/Tooltips.js';
 import Indicator from './Indicator';
 import OverlayField from './OverlayField';
+import CommentsPanel from '../comments/CommentsPanel';
 
 /**
  * @file Modal is an overlay view that can be opened over the main view.
@@ -88,15 +91,15 @@ class Modal extends Component {
    * @method componentDidUpdate
    * @summary ToDo: Describe the method.
    * @param {object} prevProps
-   * @prop {*} windowType
-   * @prop {*} viewId
+   * @prop {string} windowId
+   * @prop {string} viewId
    * @prop {*} indicator
    */
   async componentDidUpdate(prevProps) {
-    const { windowType, viewId, indicator } = this.props;
+    const { windowId, viewId, indicator } = this.props;
     const { waitingFetch } = this.state;
 
-    if (prevProps.windowType !== windowType || prevProps.viewId !== viewId) {
+    if (prevProps.windowId !== windowId || prevProps.viewId !== viewId) {
       await this.init();
     }
 
@@ -155,7 +158,7 @@ class Modal extends Component {
   init = async () => {
     const {
       dispatch,
-      windowType,
+      windowId,
       dataId,
       tabId,
       rowId,
@@ -172,14 +175,24 @@ class Modal extends Component {
       parentViewId,
       parentViewSelectedIds,
     } = this.props;
+    let request = null;
 
     switch (modalType) {
       case 'static':
         {
-          let request = null;
           if (staticModalType === 'about') {
+            request = dispatch(fetchChangeLog(windowId, dataId, tabId, rowId));
+          }
+          if (staticModalType === 'comments') {
             request = dispatch(
-              fetchChangeLog(windowType, dataId, tabId, rowId)
+              callAPI({
+                windowId: windowId,
+                docId: dataId,
+                tabId,
+                rowId,
+                target: staticModalType,
+                verb: 'GET',
+              })
             );
           }
 
@@ -196,7 +209,7 @@ class Modal extends Component {
       case 'window':
         try {
           await dispatch(
-            createWindow(windowType, dataId, tabId, rowId, true, isAdvanced)
+            createWindow(windowId, dataId, tabId, rowId, true, isAdvanced)
           );
         } catch (error) {
           this.handleClose();
@@ -213,7 +226,7 @@ class Modal extends Component {
 
         try {
           const options = {
-            processType: windowType,
+            processType: windowId,
             viewId: modalViewId,
             type: parentType,
             ids: modalViewId
@@ -265,7 +278,7 @@ class Modal extends Component {
       dispatch,
       closeCallback,
       dataId,
-      windowType,
+      windowId,
       parentType,
       parentDataId,
       triggerField,
@@ -275,7 +288,7 @@ class Modal extends Component {
     const { isNew, isNewDoc } = this.state;
 
     if (isNewDoc) {
-      processNewRecord('window', windowType, dataId).then((response) => {
+      processNewRecord('window', windowId, dataId).then((response) => {
         dispatch(
           patch(
             'window',
@@ -294,7 +307,7 @@ class Modal extends Component {
       if (closeCallback) {
         closeCallback({
           isNew,
-          windowType,
+          windowType: windowId,
           documentId: dataId,
           tabId,
           rowId,
@@ -313,7 +326,9 @@ class Modal extends Component {
     const { dispatch, rawModalVisible } = this.props;
 
     dispatch(closeModal());
-
+    // make sure that on closing the modal for comments `isOpen `flag is closed
+    // if you don't do this you will have COLLAPSE_INDENT issue  (see: keymap.js)
+    dispatch(updateCommentsPanelOpenFlag(false));
     if (!rawModalVisible) {
       document.body.style.overflow = 'auto';
     }
@@ -356,7 +371,7 @@ class Modal extends Component {
    * @summary ToDo: Describe the method
    */
   handleStart = () => {
-    const { dispatch, layout, windowType, indicator } = this.props;
+    const { dispatch, layout, windowId, indicator } = this.props;
 
     if (indicator === 'pending') {
       this.setState({ waitingFetch: true, pending: true });
@@ -371,11 +386,11 @@ class Modal extends Component {
         let response;
 
         try {
-          response = await startProcess(windowType, layout.pinstanceId);
+          response = await startProcess(windowId, layout.pinstanceId);
 
           const action = handleProcessResponse(
             response,
-            windowType,
+            windowId,
             layout.pinstanceId
           );
 
@@ -408,7 +423,7 @@ class Modal extends Component {
       rowId,
       dataId,
       modalType,
-      windowType,
+      windowId,
       isAdvanced,
       staticModalType,
     } = this.props;
@@ -419,6 +434,9 @@ class Modal extends Component {
         let content = null;
         if (staticModalType === 'about') {
           content = <ChangeLogModal data={data} />;
+        }
+        if (staticModalType === 'comments') {
+          content = <CommentsPanel windowId={windowId} docId={dataId} />;
         }
         return (
           <div className="window-wrapper">
@@ -449,7 +467,7 @@ class Modal extends Component {
           <Process
             data={data}
             layout={layout}
-            type={windowType}
+            type={windowId}
             disabled={pending}
           />
         );
@@ -596,7 +614,7 @@ class Modal extends Component {
    * @summary ToDo: Describe the method
    */
   renderOverlay = () => {
-    const { data, layout, windowType, modalType, isNewDoc } = this.props;
+    const { data, layout, windowId, modalType, isNewDoc } = this.props;
     const { pending } = this.state;
 
     const applyHandler =
@@ -638,7 +656,7 @@ class Modal extends Component {
 
     return (
       <OverlayField
-        type={windowType}
+        type={windowId}
         disabled={pending}
         data={data}
         layout={layout}
@@ -710,8 +728,8 @@ class Modal extends Component {
  * @prop {*} [rawModalVisible]
  * @prop {string} [rowId]
  * @prop {*} [triggerField]
- * @prop {*} [viewId]
- * @prop {*} [windowType]
+ * @prop {string} [viewId]
+ * @prop {string} [windowId]
  */
 Modal.propTypes = {
   dispatch: PropTypes.func.isRequired,
@@ -741,8 +759,8 @@ Modal.propTypes = {
   rawModalVisible: PropTypes.any,
   rowId: PropTypes.string,
   triggerField: PropTypes.any,
-  viewId: PropTypes.any,
-  windowType: PropTypes.any,
+  viewId: PropTypes.string,
+  windowId: PropTypes.string,
 };
 
 /**

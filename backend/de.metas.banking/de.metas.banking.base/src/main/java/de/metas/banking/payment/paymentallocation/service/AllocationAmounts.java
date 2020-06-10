@@ -1,6 +1,8 @@
 package de.metas.banking.payment.paymentallocation.service;
 
+import java.math.BigDecimal;
 import java.util.Objects;
+import java.util.function.Function;
 
 import javax.annotation.Nullable;
 
@@ -90,13 +92,17 @@ public class AllocationAmounts
 	@Override
 	public String toString()
 	{
+		final Function<Money, BigDecimal> toBD = money -> money != null && money.signum() != 0
+				? money.toBigDecimal()
+				: null;
+
 		return MoreObjects.toStringHelper(this)
 				.omitNullValues()
 				.add("currencyId", currencyId.getRepoId())
-				.add("payAmt", payAmt != null ? payAmt.toBigDecimal() : null)
-				.add("discountAmt", discountAmt != null ? discountAmt.toBigDecimal() : null)
-				.add("writeOffAmt", writeOffAmt != null ? writeOffAmt.toBigDecimal() : null)
-				.add("invoiceProcessingFee", invoiceProcessingFee != null ? invoiceProcessingFee.toBigDecimal() : null)
+				.add("payAmt", toBD.apply(payAmt))
+				.add("discountAmt", toBD.apply(discountAmt))
+				.add("writeOffAmt", toBD.apply(writeOffAmt))
+				.add("invoiceProcessingFee", toBD.apply(invoiceProcessingFee))
 				.toString();
 	}
 

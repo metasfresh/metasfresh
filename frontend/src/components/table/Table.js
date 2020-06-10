@@ -9,7 +9,9 @@ import currentDevice from 'current-device';
 import counterpart from 'counterpart';
 import uuid from 'uuid/v4';
 
+import { updateTableSelection } from '../../actions/TableActions';
 import { deleteRequest } from '../../actions/GenericActions';
+import { getTableId } from '../../reducers/tables';
 import {
   deleteLocal,
   openModal,
@@ -42,6 +44,7 @@ import TablePagination from './TablePagination';
 const MOBILE_TABLE_SIZE_LIMIT = 30; // subjective number, based on empiric testing
 const isMobileOrTablet =
   currentDevice.type === 'mobile' || currentDevice.type === 'tablet';
+const DEFAULT_SELECTED = [undefined];
 
 class Table extends Component {
   _isMounted = false;
@@ -57,6 +60,7 @@ class Table extends Component {
     const { rowData, tabId } = this.props;
     //selecting first table elem while getting indent data
     this._isMounted = true;
+
     if (rowData.get(`${tabId}`)) {
       this.getIndentData(true);
     }
@@ -89,6 +93,31 @@ class Table extends Component {
       page,
     } = this.props;
     const { selected, rows } = this.state;
+
+    /**
+     * Selection by default of first row if nothing selected
+     */
+    if (
+      (_.isEmpty(defaultSelected) || _.isEmpty(selected)) &&
+      selected[0] === undefined &&
+      !_.isEmpty(rows)
+    ) {
+      this.setState({ selected: [rows[0].id] });
+      dispatch(
+        updateTableSelection({
+          tableId: getTableId({ windowType: windowId, viewId }),
+          ids: [rows[0].id],
+        })
+      );
+      dispatch(
+        selectTableItems({
+          windowType: windowId,
+          viewId,
+          ids: selected,
+        })
+      );
+    } // end of selection for the first row if nothing selected
+
     const selectedEqual = _.isEqual(prevState.selected, selected);
     const defaultSelectedEqual = _.isEqual(
       prevProps.defaultSelected,
@@ -138,6 +167,12 @@ class Table extends Component {
           defaultSelected && defaultSelected !== null ? defaultSelected : [],
       });
     } else if (!disconnectFromState && !selectedEqual && selected.length) {
+      dispatch(
+        updateTableSelection({
+          tableId: getTableId({ windowType: windowId, viewId }),
+          ids: selected,
+        })
+      );
       dispatch(
         selectTableItems({
           windowType: windowId,
@@ -375,6 +410,12 @@ class Table extends Component {
 
       if (tabInfo) {
         dispatch(
+          updateTableSelection({
+            tableId: getTableId({ windowType: windowId, viewId }),
+            ids: selected,
+          })
+        );
+        dispatch(
           selectTableItems({
             windowType: windowId,
             viewId,
@@ -384,6 +425,12 @@ class Table extends Component {
       }
 
       if (!disconnectFromState) {
+        dispatch(
+          updateTableSelection({
+            tableId: getTableId({ windowType: windowId, viewId }),
+            ids: selected,
+          })
+        );
         dispatch(
           selectTableItems({
             windowType: windowId,
@@ -405,6 +452,12 @@ class Table extends Component {
     this.setState({ selected: [...ids] });
 
     if (tabInfo) {
+      dispatch(
+        updateTableSelection({
+          tableId: getTableId({ windowType: windowId, viewId }),
+          ids,
+        })
+      );
       dispatch(
         selectTableItems({
           windowType: windowId,
@@ -437,6 +490,12 @@ class Table extends Component {
       },
       () => {
         if (tabInfo) {
+          dispatch(
+            updateTableSelection({
+              tableId: getTableId({ windowType: windowId, viewId }),
+              ids: [id],
+            })
+          );
           dispatch(
             selectTableItems({
               windowType: windowId,
@@ -478,6 +537,12 @@ class Table extends Component {
     );
 
     if (tabInfo) {
+      dispatch(
+        updateTableSelection({
+          tableId: getTableId({ windowType: windowId, viewId }),
+          ids: [],
+        })
+      );
       dispatch(
         selectTableItems({
           windowType: windowId,
@@ -1036,6 +1101,7 @@ class Table extends Component {
       focusOnFieldName,
       modalVisible,
       isGerman,
+      activeSort,
       activeLocale,
     } = this.props;
 
@@ -1086,6 +1152,7 @@ class Table extends Component {
           focusOnFieldName,
           modalVisible,
           isGerman,
+          activeSort,
         }}
         dataHash={dataHash}
         key={`row-${i}${viewId ? `-${viewId}` : ''}`}
@@ -1162,6 +1229,7 @@ class Table extends Component {
       docId,
       rowData,
       tabId,
+      viewId,
       readonly,
       size,
       handleChangePage,
@@ -1224,7 +1292,7 @@ class Table extends Component {
                 mainTable,
                 updateDocList,
               }}
-              selected={selected || [undefined]}
+              selected={selected || DEFAULT_SELECTED}
               blur={this.closeContextMenu}
               tabId={tabId}
               deselect={this.deselectAllProducts}
@@ -1296,7 +1364,10 @@ class Table extends Component {
                     page,
                     indentSupported,
                     tabId,
+                    docId,
+                    viewId,
                   }}
+                  windowType={windowId}
                   getSizeClass={getSizeClass}
                   deselect={this.deselectAllProducts}
                 />
@@ -1328,7 +1399,7 @@ class Table extends Component {
                 disablePaginationShortcuts,
               }}
               onChangePage={handleChangePage}
-              selected={selected || [undefined]}
+              selected={selected || DEFAULT_SELECTED}
               pageLength={pageLength}
               rowLength={rows ? rows.length : 0}
               handleSelectAll={this.selectAll}
@@ -1344,7 +1415,8 @@ class Table extends Component {
             text="Are you sure?"
             buttons={{ submit: 'Delete', cancel: 'Cancel' }}
             onCancelClick={this.handlePromptCancelClick}
-            onSubmitClick={() => this.handlePromptSubmitClick(selected)}
+            selected={selected}
+            onSubmitClick={this.handlePromptSubmitClick}
           />
         )}
 
@@ -1400,6 +1472,7 @@ const mapStateToProps = (state) => ({
     state.appHandler.me.language && state.appHandler.me.language.key
       ? state.appHandler.me.language.key.includes('de')
       : false,
+  activeSort: state.table ? state.table.activeSort : false,
 });
 
 const clickOutsideConfig = {

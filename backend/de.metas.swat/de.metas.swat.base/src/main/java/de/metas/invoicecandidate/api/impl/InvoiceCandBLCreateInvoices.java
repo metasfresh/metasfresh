@@ -941,7 +941,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 		{
 			DB.getConstraints().addAllowedTrxNamePrefix("POSave");
 
-			Loggables.addLog("Caught exception " + error + " with meesage: " + error.getLocalizedMessage());
+			Loggables.addLog("Caught exception " + error + " with message: " + error.getLocalizedMessage(), error);
 
 			final List<I_AD_Note> result = new ArrayList<>();
 

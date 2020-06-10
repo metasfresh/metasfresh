@@ -7,9 +7,7 @@ import java.util.Optional;
 
 import org.adempiere.test.AdempiereTestHelper;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
-
+import org.junit.jupiter.api.Test;
 import de.metas.organization.OrgId;
 import de.metas.organization.OrgIdNotFoundException;
 import de.metas.organization.OrgQuery;
@@ -49,31 +47,25 @@ class OrgDAOTest
 		orgDAO = new OrgDAO();
 	}
 
-	@ParameterizedTest
-	@ValueSource(strings = { "true", "false" })
-	void retrieveOrgIdBy_non_existing_fail(final String outOfTrx)
+	@Test
+	void retrieveOrgIdBy_non_existing_fail()
 	{
-		final boolean valueOf = Boolean.valueOf(outOfTrx);
 		final OrgQuery query = OrgQuery
 				.builder()
 				.failIfNotExists(true)
 				.orgValue("orgValue")
-				.outOfTrx(valueOf)
 				.build();
 
 		assertThrows(OrgIdNotFoundException.class, () -> orgDAO.retrieveOrgIdBy(query));
 	}
 
-	@ParameterizedTest
-	@ValueSource(strings = { "true", "false" })
-	void retrieveOrgIdBy_non_existing_dont_fail(final String outOfTrx)
+	@Test
+	void retrieveOrgIdBy_non_existing_dont_fail()
 	{
-		final boolean valueOf = Boolean.valueOf(outOfTrx);
 		final OrgQuery query = OrgQuery
 				.builder()
 				.failIfNotExists(false)
 				.orgValue("orgValue")
-				.outOfTrx(valueOf)
 				.build();
 
 		final Optional<OrgId> result = orgDAO.retrieveOrgIdBy(query);

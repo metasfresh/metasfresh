@@ -125,6 +125,7 @@ export default class DocumentList extends Component {
       parentWindowType,
       reduxData,
       layout,
+      layoutNotFound,
       page,
       pageLength,
       panelsState,
@@ -171,7 +172,7 @@ export default class DocumentList extends Component {
     const blurWhenOpen =
       layout && layout.includedView && layout.includedView.blurWhenOpen;
 
-    if (layout.notfound || reduxData.notfound) {
+    if (layoutNotFound || reduxData.notFound) {
       return (
         <BlankPage what={counterpart.translate('view.error.windowName')} />
       );
@@ -337,7 +338,7 @@ export default class DocumentList extends Component {
                 cols={layout.elements}
                 collapsible={layout.collapsible}
                 expandedDepth={layout.expandedDepth}
-                tabId={1}
+                tabId={'1'}
                 windowId={windowType}
                 emptyText={layout.emptyResultText}
                 emptyHint={layout.emptyResultHint}

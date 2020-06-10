@@ -11,7 +11,6 @@ import javax.annotation.Nullable;
 
 import org.adempiere.ad.table.RecordChangeLog;
 import org.adempiere.ad.table.RecordChangeLogEntry;
-import org.adempiere.ad.table.RecordChangeLogRepository;
 import org.adempiere.exceptions.AdempiereException;
 import org.slf4j.MDC;
 import org.slf4j.MDC.MDCCloseable;
@@ -177,8 +176,7 @@ public class JsonRetrieverService
 
 	private final transient GreetingRepository greetingRepository;
 
-	private final transient BPartnerCompositeCache cache;
-	private final transient RecordChangeLogRepository recordChangeLogRepository;
+	private final transient BPartnerCompositeCacheByLookupKey cache;
 
 	@Getter
 	private final String identifier;
@@ -188,17 +186,15 @@ public class JsonRetrieverService
 			@NonNull final BPartnerCompositeRepository bpartnerCompositeRepository,
 			@NonNull final BPGroupRepository bpGroupRepository,
 			@NonNull final GreetingRepository greetingRepository,
-			@NonNull final RecordChangeLogRepository recordChangeLogRepository,
 			@NonNull final String identifier)
 	{
 		this.bPartnerQueryService = bPartnerQueryService;
 		this.bpartnerCompositeRepository = bpartnerCompositeRepository;
 		this.bpGroupRepository = bpGroupRepository;
 		this.greetingRepository = greetingRepository;
-		this.recordChangeLogRepository = recordChangeLogRepository;
 		this.identifier = identifier;
 
-		this.cache = new BPartnerCompositeCache(identifier);
+		this.cache = new BPartnerCompositeCacheByLookupKey(identifier);
 	}
 
 	public Optional<JsonResponseComposite> getJsonBPartnerComposite(@NonNull final IdentifierString bpartnerIdentifier)
@@ -265,6 +261,7 @@ public class JsonRetrieverService
 		return JsonResponseBPartner.builder()
 				.active(bpartner.isActive())
 				.code(bpartner.getValue())
+				.globalId(bpartner.getGlobalId())
 				.companyName(bpartner.getCompanyName())
 				.externalId(JsonConverters.toJsonOrNull(bpartner.getExternalId()))
 				.group(convertIdToGroupName(bpartner.getGroupId()))
@@ -434,15 +431,7 @@ public class JsonRetrieverService
 		return extractResult(bpartnerComposites);
 	}
 
-	private static Optional<BPartnerComposite> extractResult(@NonNull final Collection<BPartnerComposite> bpartnerComposites)
-	{
-		final ImmutableList<BPartnerComposite> distinctComposites = CollectionUtils.extractDistinctElements(bpartnerComposites, Function.identity());
-
-		final BPartnerComposite result = CollectionUtils.singleElementOrNull(distinctComposites); // we made sure there's not more than one in lookupBPartnerByKeys0
-		return result == null ? Optional.empty() : Optional.of(result.deepCopy());
-	}
-
-	/** Used to verify that changing actually works the way we expect it to (=> performance) */
+	/** Visible to verify that caching actually works the way we expect it to (=> performance) */
 	@VisibleForTesting
 	Optional<BPartnerComposite> getBPartnerCompositeAssertCacheHit(@NonNull final ImmutableList<BPartnerCompositeLookupKey> bpartnerLookupKeys)
 	{
@@ -450,26 +439,38 @@ public class JsonRetrieverService
 		return extractResult(bpartnerComposites);
 	}
 
-	private ImmutableMap<BPartnerCompositeLookupKey, BPartnerComposite> retrieveBPartnerComposites(@NonNull final Collection<BPartnerCompositeLookupKey> queryLookupKeys)
+	private static Optional<BPartnerComposite> extractResult(@NonNull final Collection<BPartnerComposite> bpartnerComposites)
+	{
+		final ImmutableList<BPartnerComposite> distinctComposites = CollectionUtils.extractDistinctElements(bpartnerComposites, Function.identity());
+
+		// There might be no bpartner yet. in that case we get not error but null.
+		// We made sure there's not more than by calling bpartnerCompositeRepository.getSingleByQuery.
+		final BPartnerComposite result = CollectionUtils.singleElementOrNull(distinctComposites);
+
+		return result == null ? Optional.empty() : Optional.of(result.deepCopy());
+	}
+
+	private ImmutableMap<BPartnerCompositeLookupKey, BPartnerComposite> retrieveBPartnerComposites(
+			@NonNull final Collection<BPartnerCompositeLookupKey> queryLookupKeys)
 	{
 		final BPartnerQuery query = bPartnerQueryService.createQuery(queryLookupKeys);
-		final Optional<BPartnerComposite> byQuery;
+		final Optional<BPartnerComposite> bpartnerComposite;
 		try
 		{
-			byQuery = bpartnerCompositeRepository.getSingleByQuery(query);
+			bpartnerComposite = bpartnerCompositeRepository.getSingleByQuery(query);
 		}
 		catch (final AdempiereException e)
 		{
 			throw new InvalidEntityException(TranslatableStrings.constant("Unable to retrieve single BPartnerComposite"), e)
 					.appendParametersToMessage()
-					.setParameter("BPartnerIdLookupKeys", queryLookupKeys);
+					.setParameter("BPartnerCompositeLookupKeys", queryLookupKeys);
 		}
-		if (!byQuery.isPresent())
+		if (!bpartnerComposite.isPresent())
 		{
 			return ImmutableMap.of();
 		}
 
-		final BPartnerComposite singleElement = byQuery.get();
+		final BPartnerComposite singleElement = bpartnerComposite.get();
 
 		final HashSet<BPartnerCompositeLookupKey> allLookupKeys = new HashSet<>(queryLookupKeys);
 		allLookupKeys.addAll(extractBPartnerLookupKeys(singleElement));

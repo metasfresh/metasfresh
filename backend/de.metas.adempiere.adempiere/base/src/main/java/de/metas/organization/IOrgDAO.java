@@ -94,7 +94,8 @@ public interface IOrgDAO extends ISingletonService
 		}
 		else if (adOrgId.isAny())
 		{
-			return "*";
+			//return "*";
+			return "0"; // "*" is the name of the "any" org, but it's org-value is 0
 		}
 		else
 		{

@@ -347,6 +347,15 @@ declare namespace Cypress {
 
 
     /**
+     * Erase the contents of this field.
+     *
+     * @param fieldName - name of the field is question
+     * @param modal - optional, default = false - use true if the field is in a modal overlay
+     */
+    clearField(fieldName: string, modal?: boolean): Chainable<any>
+
+
+    /**
      * Expect specific document status
      * @param expectedDocumentStatus - the status the document should have
      *
@@ -374,15 +383,6 @@ declare namespace Cypress {
 
 
     /**
-     * Erase the contents of this field.
-     *
-     * @param fieldName - name of the field is question
-     * @param modal - optional, default = false - use true if the field is in a modal overlay
-     */
-    clearField(fieldName: string, modal?: boolean): Chainable<any>
-
-
-    /**
      * Basic command for clicking an element with certain selector.
      *
      * @param selector - string used to query for the element
@@ -391,7 +391,7 @@ declare namespace Cypress {
     clickElementWithClass(selector, force): Chainable<any>
 
 
-    /*
+    /**
      * This command allows waiting for the breadcrumb in the header to be visible, which
      * helps make the tests less flaky as even though the page fires load event, some
      * requests may still be pending/running.
@@ -627,6 +627,32 @@ declare namespace Cypress {
      */
     selectLeftTable(): Chainable<any>
 
+    /**
+     * Searches and selects a HU using the Barcode Filter.
+     * Select a single table row by using column's `data-cy` attribute and the expected value of that column (the HU Barcode).
+     *
+     * @param columnAndValue - object or array of objects having 2 fields: `{ column: 'Value', value: 'P002753' }`
+     * @param modal - optional, default = false - use true if the table is in a modal overlay
+     * @param force - optional, default = false - use true when no checks should be done if the selection was successful
+     *
+     * @example
+     * // usage in Handling Unit Editor window
+     * cy.visitWindow(540189);
+     * clearNotFrequentFilters();
+     * const columnAndValue =  { column: 'Value', value: 1000014 }; // using a simple object
+     * cy.selectItemUsingBarcodeFilter(columnAndValue);
+     *
+     * @example
+     * // usage when inside a left/right table (eg. during Picking)
+     * // note that we're using `.within()`
+     * // also note that we're setting `modal=false`, and `force=true` because of within
+     * const columnAndValue =  { column: 'Value', value: 1000014 }; // using a simple object
+     *
+     * cy.selectRightTable().within(() => {
+     *   cy.selectItemUsingBarcodeFilter(columnAndValue, false, true).click();
+     * });
+     */
+    selectItemUsingBarcodeFilter(columnAndValue: ColumnAndValue, modal ?: boolean, force ?: boolean): Chainable<any>
 
     /**
      * Select the right table from a modal dialog with 2 tables side by side.
@@ -671,11 +697,12 @@ declare namespace Cypress {
      */
     selectRowByColumnAndValue(columnAndValue: ColumnAndValue | ColumnAndValue[], modal ?: boolean, force ?: boolean, single ?: boolean): Chainable<any>
 
-  /**
+    /**
      * Select all rows on the current page
      */
     selectAllRowsOnCurrentPage(): Chainable<any>
-      /**
+
+    /**
      * Count all rows from all pages
      */
     countAllRows(): Chainable<any>

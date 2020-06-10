@@ -65,6 +65,7 @@ final class ChangeLogUtil
 			.put(I_C_BPartner.COLUMNNAME_Value, BPartner.VALUE)
 			.put(I_C_BPartner.COLUMNNAME_CompanyName, BPartner.COMPANY_NAME)
 			.put(I_C_BPartner.COLUMNNAME_ExternalId, BPartner.EXTERNAL_ID)
+			.put(I_C_BPartner.COLUMNNAME_GlobalId, BPartner.GLOBAL_ID)
 			.put(I_C_BPartner.COLUMNNAME_C_BP_Group_ID, BPartner.GROUP_ID)
 			.put(I_C_BPartner.COLUMNNAME_AD_Language, BPartner.LANGUAGE)
 			.put(I_C_BPartner.COLUMNNAME_C_BPartner_ID, BPartner.ID)

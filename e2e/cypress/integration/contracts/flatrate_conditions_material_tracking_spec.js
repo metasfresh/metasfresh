@@ -89,7 +89,6 @@ it('Read the fixture', function() {
   cy.fixture('contracts/flatrate_conditions_material_tracking_spec.json').then(f => {
     priceSystemName = appendHumanReadableNow(f['priceSystemName']);
     priceListName = appendHumanReadableNow(f['priceListName']);
-    priceListVersionName = appendHumanReadableNow(f['priceListVersionName']);
     productCategoryName = appendHumanReadableNow(f['productCategoryName']);
     scrapProductName = appendHumanReadableNow(f['scrapProductName']);
     processingFeeProductName = appendHumanReadableNow(f['processingFeeProductName']);
@@ -185,7 +184,7 @@ it('Create PriceList and Product Price', function() {
   });
 
   cy.fixture('price/pricelistversion.json').then(priceListVersionJson => {
-    priceListVersion = Object.assign(new PriceListVersion(), priceListVersionJson).setName(priceListVersionName);
+    priceListVersion = Object.assign(new PriceListVersion(), priceListVersionJson);
   });
 
   cy.fixture('product/product_price.json').then(productPriceJson => {

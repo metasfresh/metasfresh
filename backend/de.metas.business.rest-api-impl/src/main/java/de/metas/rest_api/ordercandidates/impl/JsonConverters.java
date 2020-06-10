@@ -27,6 +27,7 @@ import de.metas.ordercandidate.api.OLCandCreateRequest;
 import de.metas.ordercandidate.api.OLCandCreateRequest.OLCandCreateRequestBuilder;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentRule;
+import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.rest_api.common.MetasfreshId;
 import de.metas.rest_api.exception.MissingPropertyException;
@@ -69,7 +70,7 @@ import lombok.NonNull;
  */
 
 @Service
-class JsonConverters
+public class JsonConverters
 {
 	private final CurrencyService currencyService;
 	private final DocTypeService docTypeService;
@@ -96,7 +97,7 @@ class JsonConverters
 			throw new AdempiereException("@FillMandatory@ @POReference@: " + request);
 		}
 
-		final OrgId orgId = masterdataProvider.getCreateOrgId(request.getOrg());
+		final OrgId orgId = masterdataProvider.getCreateOrgIdInTrx(request.getOrg());
 
 		final ProductInfo productInfo = masterdataProvider.getCreateProductInfo(request.getProduct(), orgId);
 
@@ -125,6 +126,8 @@ class JsonConverters
 		final BPartnerId salesRepId = masterdataProvider.getSalesRepId(request, orgId);
 
 		final PaymentRule paymentRule = masterdataProvider.getPaymentRule(request);
+
+		final PaymentTermId paymentTermId = masterdataProvider.getPaymentTermId(request, orgId);
 
 		final UomId uomId;
 		if (!isEmpty(request.getUomCode(), true))
@@ -181,6 +184,8 @@ class JsonConverters
 				.paymentRule(paymentRule)
 
 				.salesRepId(salesRepId)
+
+				.paymentTermId(paymentTermId)
 		//
 		;
 	}

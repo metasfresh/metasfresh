@@ -2,6 +2,9 @@ import React, { PureComponent } from 'react';
 import classnames from 'classnames';
 import { shouldRenderColumn } from '../../utils/tableHelpers';
 import PropTypes from 'prop-types';
+import { setActiveSort, setActiveSortNEW } from '../../actions/TableActions';
+import { getTableId } from '../../reducers/tables';
+import { connect } from 'react-redux';
 
 class TableHeader extends PureComponent {
   constructor(props) {
@@ -32,8 +35,19 @@ class TableHeader extends PureComponent {
     if (!sortable) {
       return;
     }
-    const { sort, deselect, page, tabId } = this.props;
+    const {
+      sort,
+      deselect,
+      page,
+      tabId,
+      windowType,
+      docId,
+      viewId,
+      setActiveSort,
+      setActiveSortNEW,
+    } = this.props;
     const stateFields = this.state.fields;
+    const tableId = getTableId({ windowType, viewId, docId, tabId });
     let fields = {};
     let sortingValue = null;
 
@@ -54,6 +68,13 @@ class TableHeader extends PureComponent {
     });
 
     sort(sortingValue, field, true, page, tabId);
+    setActiveSort(true);
+    setActiveSortNEW(tableId, true);
+
+    setTimeout(() => {
+      setActiveSort(false);
+      setActiveSortNEW(tableId, false);
+    }, 1000);
     deselect();
   };
 
@@ -124,11 +145,22 @@ TableHeader.propTypes = {
   orderBy: PropTypes.array,
   sort: PropTypes.any,
   tabId: PropTypes.any,
+  windowType: PropTypes.string,
+  docId: PropTypes.string,
+  viewId: PropTypes.string,
   deselect: PropTypes.any,
   page: PropTypes.any,
   getSizeClass: PropTypes.func,
   cols: PropTypes.any,
   indentSupported: PropTypes.any,
+  setActiveSort: PropTypes.func,
+  setActiveSortNEW: PropTypes.func,
 };
 
-export default TableHeader;
+export default connect(
+  null,
+  {
+    setActiveSort,
+    setActiveSortNEW,
+  }
+)(TableHeader);

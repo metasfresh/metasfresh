@@ -53,7 +53,7 @@ public class C_InvoiceFacadeService
 		this.commissionTriggerDocumentService = commissionTriggerDocumentService;
 	}
 
-	public void syncIinvoiceToCommissionInstance(@NonNull final I_C_Invoice invoiceRecord)
+	public void syncInvoiceToCommissionInstance(@NonNull final I_C_Invoice invoiceRecord)
 	{
 		final Optional<SalesInvoice> salesInvoice = salesInvoiceFactory.forRecord(invoiceRecord);
 		if (!salesInvoice.isPresent())

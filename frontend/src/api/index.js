@@ -4,12 +4,14 @@ import {
   getZoomIntoWindow,
   discardNewRow,
   discardNewDocument,
-  getTab,
+  getTabRequest,
   startProcess,
   getProcessData,
+  formatParentUrl,
 } from './window';
 import {
   getData,
+  getRowsData,
   getLayout,
   patchRequest,
   getViewLayout,
@@ -17,7 +19,7 @@ import {
   browseViewRequest,
   locationSearchRequest,
   locationConfigRequest,
-  deleteView,
+  deleteViewRequest,
   createViewRequest,
   filterViewRequest,
   deleteStaticFilter,
@@ -41,6 +43,7 @@ import {
 
 export {
   getData,
+  getRowsData,
   getLayout,
   patchRequest,
   getAttributesInstance,
@@ -48,7 +51,7 @@ export {
   getZoomIntoWindow,
   discardNewRow,
   discardNewDocument,
-  getTab,
+  getTabRequest,
   startProcess,
   getProcessData,
   getViewLayout,
@@ -56,7 +59,7 @@ export {
   browseViewRequest,
   locationSearchRequest,
   locationConfigRequest,
-  deleteView,
+  deleteViewRequest,
   createViewRequest,
   filterViewRequest,
   deleteStaticFilter,
@@ -74,4 +77,5 @@ export {
   getUserLang,
   setUserLang,
   getAvailableLang,
+  formatParentUrl,
 };

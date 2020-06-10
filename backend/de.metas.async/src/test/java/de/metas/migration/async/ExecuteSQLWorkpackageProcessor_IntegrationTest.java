@@ -48,7 +48,6 @@ public class ExecuteSQLWorkpackageProcessor_IntegrationTest extends QueueProcess
 
 		final I_C_Queue_Processor processorDef = helper.createQueueProcessor("test",
 				5, // poolSize
-				10, // maxPoolSize
 				1000 // keepAliveTimeMillis
 				);
 		helper.assignPackageProcessor(processorDef, MockedExecuteSQLWorkpackageProcessor.class);

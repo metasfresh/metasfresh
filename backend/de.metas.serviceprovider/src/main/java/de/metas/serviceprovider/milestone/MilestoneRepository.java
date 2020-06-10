@@ -30,7 +30,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.springframework.stereotype.Repository;
 
 import java.sql.Timestamp;
-import java.util.Optional;
 
 @Repository
 public class MilestoneRepository
@@ -52,7 +51,6 @@ public class MilestoneRepository
 		record.setDescription(milestone.getDescription());
 		record.setProcessed(milestone.isProcessed());
 
-		record.setExternalId(milestone.getExternalId());
 		record.setExternalUrl(milestone.getExternalURL());
 
 		InterfaceWrapperHelper.saveRecord(record);
@@ -60,16 +58,13 @@ public class MilestoneRepository
 		milestone.setMilestoneId(MilestoneId.ofRepoId(record.getS_Milestone_ID()));
 	}
 
-	public Optional<MilestoneId> getRepoIdByExternalId(@NonNull final String externalId)
+	public boolean exists(@NonNull final MilestoneId milestoneId)
 	{
-
-		final int milestoneId = queryBL
+		return queryBL
 				.createQueryBuilder(I_S_Milestone.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_S_Milestone.COLUMNNAME_ExternalId, externalId)
+				.addEqualsFilter(I_S_Milestone.COLUMNNAME_S_Milestone_ID, milestoneId.getRepoId())
 				.create()
-				.firstId();
-
-		return Optional.ofNullable(MilestoneId.ofRepoIdOrNull(milestoneId));
+				.anyMatch();
 	}
 }

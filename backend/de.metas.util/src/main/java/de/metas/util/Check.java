@@ -22,6 +22,10 @@
 
 package de.metas.util;
 
+import lombok.NonNull;
+import org.slf4j.Logger;
+
+import javax.annotation.Nullable;
 import java.lang.reflect.Constructor;
 import java.math.BigDecimal;
 import java.text.MessageFormat;
@@ -30,12 +34,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Supplier;
-
-import javax.annotation.Nullable;
-
-import org.slf4j.Logger;
-
-import lombok.NonNull;
 
 /**
  *
@@ -317,7 +315,7 @@ public final class Check
 	 * @see #assume(boolean, String, Object...)
 	 * @see #isEmpty(String, boolean)
 	 */
-	public static String assumeNotEmpty(final String str, final String assumptionMessage, final Object... params)
+	public static String assumeNotEmpty(@Nullable final String str, final String assumptionMessage, final Object... params)
 	{
 		return assumeNotEmpty(str, defaultExClazz, assumptionMessage, params);
 	}
@@ -329,7 +327,7 @@ public final class Check
 	 * <p>
 	 * Also see {@link ExceptionWithOwnHeaderMessage}
 	 */
-	public static String assumeNotEmpty(final String str, final Class<? extends RuntimeException> exceptionClass, final String assumptionMessage, final Object... params)
+	public static String assumeNotEmpty(@Nullable final String str, final Class<? extends RuntimeException> exceptionClass, final String assumptionMessage, final Object... params)
 	{
 		final boolean trimWhitespaces = true;
 		final boolean cond = !isEmpty(str, trimWhitespaces);
@@ -648,7 +646,7 @@ public final class Check
 	}
 
 	/**
-	 * @return return true if the string is null, las length 0, or contains only whitespace.
+	 * @return return true if the string is null, has length 0, or contains only whitespace.
 	 */
 	public static boolean isBlank(@Nullable final String str)
 	{

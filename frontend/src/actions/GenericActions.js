@@ -210,21 +210,6 @@ export function rowActionsRequest({ windowId, documentId, tabId, rowId }) {
   );
 }
 
-export function referencesRequest(entity, type, docId, tabId, rowId) {
-  return axios.get(
-    config.API_URL +
-      '/' +
-      entity +
-      '/' +
-      type +
-      '/' +
-      docId +
-      (tabId ? '/' + tabId : '') +
-      (rowId ? '/' + rowId : '') +
-      '/references'
-  );
-}
-
 export function attachmentsRequest(entity, docType, docId) {
   return axios.get(
     `${config.API_URL}/${entity}/${docType}/${docId}/attachments`

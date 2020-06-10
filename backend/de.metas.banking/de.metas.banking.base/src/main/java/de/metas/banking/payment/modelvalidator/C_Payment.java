@@ -1,4 +1,3 @@
-
 /*
  * #%L
  * de.metas.banking.base
@@ -28,6 +27,8 @@ import de.metas.banking.service.IBankStatementBL;
 import de.metas.banking.service.ICashStatementBL;
 import de.metas.payment.PaymentId;
 import de.metas.payment.api.IPaymentBL;
+import de.metas.payment.api.PaymentReconcileReference;
+import de.metas.payment.api.PaymentReconcileRequest;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
@@ -40,15 +41,10 @@ import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.ModelValidator;
 
-import de.metas.payment.api.PaymentReconcileReference;
-import de.metas.payment.api.PaymentReconcileRequest;
-
 import java.util.Collection;
-
 
 /**
  * @author cg
- *
  */
 @Interceptor(I_C_Payment.class)
 public class C_Payment

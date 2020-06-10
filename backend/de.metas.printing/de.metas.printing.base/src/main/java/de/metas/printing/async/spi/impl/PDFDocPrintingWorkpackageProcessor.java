@@ -217,7 +217,7 @@ public class PDFDocPrintingWorkpackageProcessor implements IWorkpackageProcessor
 		final Properties ctx = InterfaceWrapperHelper.getCtx(asyncBatch);
 
 		final org.adempiere.archive.api.IArchiveBL archiveService = Services.get(org.adempiere.archive.api.IArchiveBL.class);
-		PrintInfo printInfo = new PrintInfo(printPackage.getTransactionID() + "_" + printPackage.getBinaryFormat(), adTableId, recordId);
+		final PrintInfo printInfo = new PrintInfo(printPackage.getTransactionID() + "_" + printPackage.getBinaryFormat(), adTableId, recordId);
 		final I_AD_Archive archive = archiveService.archive(data, printInfo, true, trxName);
 		final de.metas.printing.model.I_AD_Archive directArchive = InterfaceWrapperHelper.create(archive, de.metas.printing.model.I_AD_Archive.class);
 		directArchive.setIsDirectEnqueue(true);

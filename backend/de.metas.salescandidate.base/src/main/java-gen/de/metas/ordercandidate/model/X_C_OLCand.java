@@ -578,6 +578,35 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 			 return 0;
 		return ii.intValue();
 	}
+	
+	/**
+	 * Set Zahlungsbedingung.
+	 * 
+	 * @param C_PaymentTerm_ID
+	 *            Die Bedingungen für die Bezahlung dieses Vorgangs
+	 */
+	@Override
+	public void setC_PaymentTerm_ID(int C_PaymentTerm_ID)
+	{
+		if (C_PaymentTerm_ID < 1)
+			set_Value(COLUMNNAME_C_PaymentTerm_ID, null);
+		else
+			set_Value(COLUMNNAME_C_PaymentTerm_ID, Integer.valueOf(C_PaymentTerm_ID));
+	}
+
+	/**
+	 * Get Zahlungsbedingung.
+	 * 
+	 * @return Die Bedingungen für die Bezahlung dieses Vorgangs
+	 */
+	@Override
+	public int getC_PaymentTerm_ID()
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_PaymentTerm_ID);
+		if (ii == null)
+			return 0;
+		return ii.intValue();
+	}
 
 	/** Set Steuerkategorie.
 		@param C_TaxCategory_ID 

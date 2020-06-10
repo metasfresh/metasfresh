@@ -54,6 +54,8 @@ import javax.annotation.Nullable;
  */
 
 /**
+ * Imports XML into an {@link ImportedInvoiceResponse}.
+ *
  * Note that we don't yet have a factory for {@link InvoiceImportClient}s because we don't need it yet.
  * The importing process that we currently have is in the same module and knows to use this implementation.
  *

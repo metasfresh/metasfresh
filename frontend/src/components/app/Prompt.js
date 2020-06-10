@@ -10,10 +10,6 @@ import ModalContextShortcuts from '../keyshortcuts/ModalContextShortcuts';
  * @extends Component
  */
 class Prompt extends Component {
-  constructor(props) {
-    super(props);
-  }
-
   /**
    * @method renderCancelButton
    * @summary ToDo: Describe the method
@@ -24,7 +20,7 @@ class Prompt extends Component {
     return (
       <span
         className="btn btn-meta-outline-secondary btn-distance-3 btn-sm"
-        onClick={(e) => this.props.onCancelClick(e)}
+        onClick={this.props.onCancelClick}
       >
         {buttons.cancel}
       </span>
@@ -41,11 +37,15 @@ class Prompt extends Component {
     return (
       <span
         className="btn btn-meta-primary btn-sm btn-submit"
-        onClick={(e) => this.props.onSubmitClick(e)}
+        onClick={this.submitClick}
       >
         {buttons.submit}
       </span>
     );
+  };
+
+  submitClick = () => {
+    this.props.onSubmitClick(this.props.selected);
   };
 
   /**
@@ -63,10 +63,7 @@ class Prompt extends Component {
             <span className="panel-prompt-header-title panel-modal-header-title">
               {title}
             </span>
-            <i
-              className="meta-icon-close-1"
-              onClick={(e) => onCancelClick(e)}
-            />
+            <i className="meta-icon-close-1" onClick={onCancelClick} />
           </div>
           <div className="panel-modal-content panel-prompt-content">
             <p>{this.props.text}</p>
@@ -79,7 +76,7 @@ class Prompt extends Component {
           </div>
         </div>
         <ModalContextShortcuts
-          done={this.props.onSubmitClick}
+          done={this.submitClick}
           cancel={this.props.onCancelClick}
         />
       </div>
@@ -104,6 +101,7 @@ Prompt.propTypes = {
   onSubmitClick: PropTypes.func,
   title: PropTypes.any,
   buttons: PropTypes.any,
+  selected: PropTypes.any,
 };
 
 export default connect()(Prompt);

@@ -77,7 +77,6 @@ public final class BusinessTestHelper
 	 */
 	private static final int UOM_Precision_3 = 3;
 
-
 	public static CountryId createCountry(@NonNull final String countryCode)
 	{
 		final I_C_Country record = newInstance(I_C_Country.class);

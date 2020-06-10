@@ -5,7 +5,7 @@ import {
   getViewLayout,
   locationConfigRequest,
 } from '../api';
-
+import { getTableId } from '../reducers/tables';
 import {
   ADD_VIEW_LOCATION_DATA,
   FETCH_DOCUMENT_PENDING,
@@ -26,7 +26,12 @@ import {
   RESET_VIEW,
   DELETE_VIEW,
 } from '../constants/ActionTypes';
+import { createGridTable, updateGridTable } from './TableActions';
 
+/**
+ * @method resetView
+ * @summary
+ */
 export function resetView(id) {
   return {
     type: RESET_VIEW,
@@ -34,6 +39,10 @@ export function resetView(id) {
   };
 }
 
+/**
+ * @method deleteView
+ * @summary
+ */
 export function deleteView(id) {
   return {
     type: DELETE_VIEW,
@@ -41,6 +50,10 @@ export function deleteView(id) {
   };
 }
 
+/**
+ * @method fetchDocumentPending
+ * @summary
+ */
 function fetchDocumentPending(id) {
   return {
     type: FETCH_DOCUMENT_PENDING,
@@ -48,6 +61,10 @@ function fetchDocumentPending(id) {
   };
 }
 
+/**
+ * @method fetchDocumentSuccess
+ * @summary
+ */
 function fetchDocumentSuccess(id, data) {
   return {
     type: FETCH_DOCUMENT_SUCCESS,
@@ -55,6 +72,10 @@ function fetchDocumentSuccess(id, data) {
   };
 }
 
+/**
+ * @method fetchDocumentError
+ * @summary
+ */
 function fetchDocumentError(id, error) {
   return {
     type: FETCH_DOCUMENT_ERROR,
@@ -62,6 +83,10 @@ function fetchDocumentError(id, error) {
   };
 }
 
+/**
+ * @method fetchLayoutPending
+ * @summary
+ */
 function fetchLayoutPending(id) {
   return {
     type: FETCH_LAYOUT_PENDING,
@@ -69,6 +94,10 @@ function fetchLayoutPending(id) {
   };
 }
 
+/**
+ * @method fetchLayoutSuccess
+ * @summary
+ */
 function fetchLayoutSuccess(id, layout) {
   return {
     type: FETCH_LAYOUT_SUCCESS,
@@ -76,6 +105,10 @@ function fetchLayoutSuccess(id, layout) {
   };
 }
 
+/**
+ * @method fetchLayoutError
+ * @summary
+ */
 function fetchLayoutError(id, error) {
   return {
     type: FETCH_LAYOUT_ERROR,
@@ -83,6 +116,10 @@ function fetchLayoutError(id, error) {
   };
 }
 
+/**
+ * @method createViewPending
+ * @summary
+ */
 function createViewPending(id) {
   return {
     type: CREATE_VIEW,
@@ -90,6 +127,10 @@ function createViewPending(id) {
   };
 }
 
+/**
+ * @method createViewSuccess
+ * @summary
+ */
 function createViewSuccess(id, data) {
   return {
     type: CREATE_VIEW_SUCCESS,
@@ -97,6 +138,10 @@ function createViewSuccess(id, data) {
   };
 }
 
+/**
+ * @method createViewError
+ * @summary
+ */
 function createViewError(id, error) {
   return {
     type: CREATE_VIEW_ERROR,
@@ -104,6 +149,10 @@ function createViewError(id, error) {
   };
 }
 
+/**
+ * @method filterViewPending
+ * @summary
+ */
 function filterViewPending(id) {
   return {
     type: FILTER_VIEW_PENDING,
@@ -111,6 +160,10 @@ function filterViewPending(id) {
   };
 }
 
+/**
+ * @method filterViewSuccess
+ * @summary
+ */
 function filterViewSuccess(id, data) {
   return {
     type: FILTER_VIEW_SUCCESS,
@@ -118,6 +171,10 @@ function filterViewSuccess(id, data) {
   };
 }
 
+/**
+ * @method filterViewError
+ * @summary
+ */
 function filterViewError(id, error) {
   return {
     type: FILTER_VIEW_ERROR,
@@ -125,6 +182,10 @@ function filterViewError(id, error) {
   };
 }
 
+/**
+ * @method updateViewData
+ * @summary
+ */
 export function updateViewData(id, rows, tabId) {
   return {
     type: UPDATE_VIEW_DATA,
@@ -136,6 +197,10 @@ export function updateViewData(id, rows, tabId) {
   };
 }
 
+/**
+ * @method fetchLocationConfigSuccess
+ * @summary
+ */
 function fetchLocationConfigSuccess(id, data) {
   return {
     type: FETCH_LOCATION_CONFIG_SUCCESS,
@@ -143,6 +208,10 @@ function fetchLocationConfigSuccess(id, data) {
   };
 }
 
+/**
+ * @method fetchLocationConfigError
+ * @summary
+ */
 function fetchLocationConfigError(id, error) {
   return {
     type: FETCH_LOCATION_CONFIG_ERROR,
@@ -150,6 +219,10 @@ function fetchLocationConfigError(id, error) {
   };
 }
 
+/**
+ * @method addLocationData
+ * @summary
+ */
 export function addLocationData(id, locationData) {
   return {
     type: ADD_VIEW_LOCATION_DATA,
@@ -159,18 +232,58 @@ export function addLocationData(id, locationData) {
 
 // THUNK ACTIONS
 
-export function fetchDocument(windowId, viewId, page, pageLength, orderBy) {
+/**
+ * @method fetchDocument
+ * @summary Get grid rows
+ *
+ * @param {*} windowType
+ * @param {*} viewId
+ * @param {number} page
+ * @param {number} pageLength
+ * @param {*} orderBy
+ * @param {bool} useViewId - flag defining if we should be using the viewId, or not.
+ * set to `true` for modals.
+ * @param {*} modalId - used together with `useViewId`
+ */
+export function fetchDocument({
+  windowType,
+  viewId,
+  page,
+  pageLength,
+  orderBy,
+  // for modals
+  useViewId = false,
+  //for filtering in modals
+  modalId = null,
+}) {
   return (dispatch) => {
-    dispatch(fetchDocumentPending(windowId));
+    let identifier = useViewId ? viewId : windowType;
 
-    return browseViewRequest({ windowId, viewId, page, pageLength, orderBy })
+    if (useViewId && modalId) {
+      identifier = modalId;
+    }
+
+    dispatch(fetchDocumentPending(identifier));
+
+    return browseViewRequest({
+      windowId: windowType,
+      viewId,
+      page,
+      pageLength,
+      orderBy,
+    })
       .then((response) => {
-        dispatch(fetchDocumentSuccess(windowId, response.data));
+        dispatch(fetchDocumentSuccess(identifier, response.data));
+
+        const tableId = getTableId({ windowType, viewId });
+        const tableData = { windowType, viewId, ...response.data };
+
+        dispatch(updateGridTable(tableId, tableData));
 
         return Promise.resolve(response.data);
       })
       .catch((error) => {
-        dispatch(fetchDocumentError(windowId, error));
+        dispatch(fetchDocumentError(identifier, error));
 
         //show error message ?
         return Promise.resolve(error);
@@ -178,20 +291,27 @@ export function fetchDocument(windowId, viewId, page, pageLength, orderBy) {
   };
 }
 
-export function createView(
-  windowId,
+/**
+ * @method createView
+ * @summary create a new grid view
+ */
+export function createView({
+  windowType,
   viewType,
   filters,
   refDocType,
   refDocId,
   refTabId,
-  refRowIds
-) {
+  refRowIds,
+  inModalId,
+}) {
   return (dispatch) => {
-    dispatch(createViewPending(windowId));
+    const identifier = inModalId ? inModalId : windowType;
+
+    dispatch(createViewPending(identifier));
 
     return createViewRequest({
-      windowId,
+      windowId: windowType,
       viewType,
       filters,
       refDocType,
@@ -200,12 +320,18 @@ export function createView(
       refRowIds,
     })
       .then((response) => {
-        dispatch(createViewSuccess(windowId, response.data));
+        dispatch(createViewSuccess(identifier, response.data));
+
+        const { viewId } = response.data;
+        const tableId = getTableId({ windowType, viewId });
+        const tableData = { windowType, viewId };
+
+        dispatch(createGridTable(tableId, tableData));
 
         return Promise.resolve(response.data);
       })
       .catch((error) => {
-        dispatch(createViewError(error));
+        dispatch(createViewError(identifier, error));
 
         //show error message ?
         return Promise.resolve(error);
@@ -213,50 +339,74 @@ export function createView(
   };
 }
 
-export function fetchLayout(windowId, viewType, viewProfileId = null) {
+/**
+ * @method fetchLayout
+ * @summary fetch layout data for the grid view
+ */
+export function fetchLayout(
+  windowType,
+  viewType,
+  viewProfileId = null,
+  viewId = null
+) {
   return (dispatch) => {
-    dispatch(fetchLayoutPending(windowId));
+    const identifier = viewId ? viewId : windowType;
 
-    return getViewLayout(windowId, viewType, viewProfileId)
+    dispatch(fetchLayoutPending(identifier));
+
+    return getViewLayout(windowType, viewType, viewProfileId)
       .then((response) => {
-        dispatch(fetchLayoutSuccess(windowId, response.data));
+        dispatch(fetchLayoutSuccess(identifier, response.data));
 
         return Promise.resolve(response.data);
       })
       .catch((error) => {
-        dispatch(fetchLayoutError(windowId, error));
+        dispatch(fetchLayoutError(identifier, error));
 
         return Promise.resolve(error);
       });
   };
 }
 
-export function filterView(windowId, viewId, filters) {
+// TODO: Update table on filtering
+/**
+ * @method filterView
+ * @summary filter grid view
+ */
+export function filterView(windowId, viewId, filters, useViewId = false) {
   return (dispatch) => {
-    dispatch(filterViewPending(windowId));
+    const identifier = useViewId ? viewId : windowId;
+
+    dispatch(filterViewPending(identifier));
 
     return filterViewRequest(windowId, viewId, filters)
       .then((response) => {
-        dispatch(filterViewSuccess(windowId, response.data));
+        dispatch(filterViewSuccess(identifier, response.data));
 
         return Promise.resolve(response.data);
       })
       .catch((error) => {
-        dispatch(filterViewError(windowId, error));
+        dispatch(filterViewError(identifier, error));
 
         return Promise.resolve(error);
       });
   };
 }
 
-export function fetchLocationConfig(windowId) {
+/**
+ * @method fetchLocationConfig
+ * @summary Get the location search configuration from the API
+ */
+export function fetchLocationConfig(windowId, viewId = null) {
   return (dispatch) => {
+    const identifier = viewId ? viewId : windowId;
+
     return locationConfigRequest()
       .then((response) => {
-        dispatch(fetchLocationConfigSuccess(windowId, response.data));
+        dispatch(fetchLocationConfigSuccess(identifier, response.data));
       })
       .catch((error) => {
-        dispatch(fetchLocationConfigError(windowId, error));
+        dispatch(fetchLocationConfigError(identifier, error));
 
         return Promise.resolve(error);
       });

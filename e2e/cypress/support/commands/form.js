@@ -2,6 +2,11 @@ import { confirmCalendarDay } from '../functions';
 import { RewriteURL } from '../utils/constants';
 
 // thx to https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/replace
+/**
+ * TODO tbp: I don't know what's the point of this function.
+ *    And since idk what it does, I want to remove it as it looks useless to me.
+ *    Check what this does and remove it if it's useless
+ */
 function removeSubstringsWithCurlyBrackets(stringValue) {
   const regex = /{.*}/gi;
 
@@ -24,7 +29,7 @@ Cypress.Commands.add('clearField', (fieldName, modal) => {
 Cypress.Commands.add('getStringFieldValue', (fieldName, modal) => {
   cy.log(`getStringFieldValue - fieldName=${fieldName}; modal=${modal}`);
 
-  cy.waitForSaveIndicator(); 
+  cy.waitForSaveIndicator();
 
   const path = createFieldPath(fieldName, modal);
   return cy
@@ -103,11 +108,14 @@ Cypress.Commands.add('resetListValue', (fieldName, modal, rewriteUrl = null) => 
   cy.route('PATCH', new RegExp(patchUrlPattern)).as(patchListValueAliasName);
 
   const path = createFieldPath(fieldName, modal);
-  
+
   cy.get(path)
     .find('.meta-icon-close-alt')
     .click();
 
+  // todo rename resetListValue to something with Clear, so that all "clearing" methods have the same name (ie clear Field value)
+  // todo make this work for lists as well, and rename properly
+  // todo check if there are any other clearing/resetting methods
   cy.get(path).waitForFieldValue(`@${patchListValueAliasName}`, fieldName);
 });
 
@@ -195,24 +203,35 @@ Cypress.Commands.add('selectOffsetDateViaPicker', (fieldName, dayOffset, modal) 
  */
 Cypress.Commands.add('writeIntoStringField', (fieldName, stringValue, modal, rewriteUrl, noRequest) => {
   const aliasName = `writeIntoStringField-${fieldName}-${new Date().getTime()}`;
-  const expectedPatchValue = stringValue ? removeSubstringsWithCurlyBrackets(stringValue) : stringValue;
+  const expectedPatchValue = removeSubstringsWithCurlyBrackets(`${stringValue}`);
   const patchUrlPattern = rewriteUrl || RewriteURL.Generic; // todo @TheBestPessimist: get rid of rewriteUrl parameter everywhere and just use "generic". it's useless in the way we're using it now.
   cy.log(`writeIntoStringField - fieldName=${fieldName}; stringValue=${stringValue}; modal=${modal}; patchUrlPattern=${patchUrlPattern}`);
+
+  const path = createFieldPath(fieldName, modal);
+  cy.get(path)
+    .find('input')
+    .type('{selectall}')
+    .wait(500)
+    .type(stringValue, { delay: 20 });
+  // if a typed string has missing characters, maybe the delay of type is not good and we should try another workaround.
+  // for more details see: https://github.com/cypress-io/cypress/issues/3817
+  // If you are wondering why we are using the wait(500) above ^^
+  // Notes: 
+  //  - we tried to used `delay` but that did not worked and made the tests to fail with chopped text
+  //  - we picked the easiest solution, there are more complex solutions also but imply much allocated time to fix
+  //    there is such solution documented in the link above (there are two links within to a blog) with event listeners on elements
+  //  https://www.cypress.io/blog/2019/01/22/when-can-the-test-click/
+  //  https://www.cypress.io/blog/2018/02/05/when-can-the-test-start/
 
   if (!noRequest) {
     cy.server();
     cy.route('PATCH', new RegExp(patchUrlPattern)).as(aliasName);
   }
 
-  if (stringValue) {
-    const path = createFieldPath(fieldName, modal);
-    cy.get(path)
-      .find('input')
-      .type('{selectall}')
-      .wait(500)
-      .type(stringValue)
-      .type('{enter}');
-  }
+  cy.get(path)
+    .find('input')
+    .type('{enter}');
+
   if (!noRequest) {
     cy.waitForFieldValue(`@${aliasName}`, fieldName, expectedPatchValue);
   }
@@ -232,7 +251,7 @@ Cypress.Commands.add('writeIntoTextField', (fieldName, stringValue, modal = fals
   cy.log(`writeIntoTextField - fieldName=${fieldName}; stringValue=${stringValue}; modal=${modal}`);
 
   const aliasName = `writeIntoTextField-${fieldName}-${new Date().getTime()}`;
-  const expectedPatchValue = stringValue ? removeSubstringsWithCurlyBrackets(stringValue) : stringValue;
+  const expectedPatchValue = removeSubstringsWithCurlyBrackets(`${stringValue}`);
   // in the default pattern we want to match URLs that do *not* end with "/NEW"
   const patchUrlPattern = rewriteUrl || '/rest/api/window/.*[^/][^N][^E][^W]$';
 
@@ -260,6 +279,9 @@ Cypress.Commands.add('writeIntoTextField', (fieldName, stringValue, modal = fals
  * @param {boolean} skipRequest - if set to true, the PATCH request will be skipped
  */
 Cypress.Commands.add('writeIntoLookupListField', (fieldName, partialValue, expectedListValue, typeList = false, modal = false, rewriteUrl = null, skipRequest = false) => {
+  // TODO: i believe we can get rid of param typeList. It should be calculated depending on skipRequest.
+  //    Or even better: we could clear the LookupList value before setting it, hence always expecting a value, and no longer skipping request checks.
+  // TODO: rename this function to "selectInSearchField"
   let path = `#lookup_${fieldName}`;
   if (modal) {
     path = `.panel-modal ${path}`;
@@ -267,41 +289,37 @@ Cypress.Commands.add('writeIntoLookupListField', (fieldName, partialValue, expec
 
   const aliasName = `writeIntoLookupListField-${fieldName}-${new Date().getTime()}`;
   //the value to wait for would not be e.g. "Letter", but {key: "540408", caption: "Letter"}
-  const expectedPatchValue = partialValue ? removeSubstringsWithCurlyBrackets(partialValue) : partialValue;
+  const expectedPatchValue = removeSubstringsWithCurlyBrackets(`${partialValue}`);
   // in the default pattern we want to match URLs that do *not* end with "/NEW"
   const patchUrlPattern = rewriteUrl || '/rest/api/window';
   if (!skipRequest) {
     cy.server();
     cy.route('PATCH', new RegExp(patchUrlPattern)).as(aliasName);
   }
-  if (partialValue) {
-    cy.get(path).within(el => {
-      if (el.find('.lookup-widget-wrapper input').length) {
-        return (
-          cy
-            .get('input')
-            // we can't use `clear` here as sometimes it triggers request to the server
-            // and then the whole flow becomes flaky
-            .wait(500)
-            .type('{selectall}')
-            .wait(500)
-            .type(partialValue)
-        );
-      }
-
-      // this is extremely fiddly when selecting from a combo field such as bpartner address.
-      // it will work locally, but most of the times will fail in jenkins.
-      // Please create the tests such that adding an address in a combo field is not mandatory!
-      return cy.get('.lookup-dropdown').click();
-    });
-
-    cy.get('.input-dropdown-list').should('exist');
-    cy.contains('.input-dropdown-list-option', expectedListValue).click(/*{ force: true }*/);
-    if (!skipRequest) {
-      cy.waitForFieldValue(`@${aliasName}`, fieldName, expectedPatchValue, typeList /*expectEmptyRequest*/);
+  cy.get(path).within(el => {
+    if (el.find('.lookup-widget-wrapper input').length) {
+      return (
+        cy
+          .get('input')
+          // we can't use `clear` here as sometimes it triggers request to the server
+          // and then the whole flow becomes flaky
+          .type('{selectall}')
+          .type(partialValue)
+      );
     }
-    cy.get('.input-dropdown-list .input-dropdown-list-header').should('not.exist');
+
+    // this is extremely fiddly when selecting from a combo field such as bpartner address.
+    // it will work locally, but most of the times will fail in jenkins.
+    // Please create the tests such that adding an address in a combo field is not mandatory!
+    return cy.get('.lookup-dropdown').click();
+  });
+
+  cy.get('.input-dropdown-list').should('exist');
+  cy.contains('.input-dropdown-list-option', expectedListValue).click();
+  if (!skipRequest) {
+    cy.waitForFieldValue(`@${aliasName}`, fieldName, expectedPatchValue, typeList /*expectEmptyRequest*/);
   }
+  cy.get('.input-dropdown-list .input-dropdown-list-header').should('not.exist');
 });
 
 /**
@@ -323,58 +341,11 @@ Cypress.Commands.add('selectInListField', (fieldName, listValue, modal, rewriteU
   }
   const path = createFieldPath(fieldName, modal);
 
-  // clear the field before testing input
-  const fieldsWhereCloseNeedsToBeClicked = ['C_Currency_ID'];
-
-  if (fieldsWhereCloseNeedsToBeClicked.includes(fieldName)) {
-  cy.get(path)
-    .find('.meta-icon-close-alt')
-    .click();
-  }
-
   cy.get(path)
     .find('.input-dropdown')
-    .find('.js-input-field')
-    .clear({ force: true })
-    .type(listValue.substring(0.2), { force: true })
-    // .click();  // -- removed click as dropdown shows up when you clear and type
-  
+    .click();  // -- removed click as dropdown shows up when you clear and type
+
   // no f*cki'n clue why it started going ape shit when there was the correct '.input-dropdown-list-option' here
-  cy.get('.input-dropdown-list')
-    .contains(listValue)
-    .click();
-
-  if (!skipRequest) {
-    cy.waitForFieldValue(`@${patchListFieldAliasName}`, fieldName, listValue);
-  }
-});
-
-/**
- * Select the given list value in a static list - non editable (you just click on it and select)
- *
- * @param {boolean} modal - use true, if the field is in a modal overlay; requered if the underlying window has a field with the same name
- * @param {boolean} skipRequest - if set to true, cypress won't expect a request to the server and won't wait for it
- */
-Cypress.Commands.add('selectInListFieldNonEditable', (fieldName, listValue, modal, rewriteUrl = null, skipRequest) => {
-  cy.log(`selectInListFieldNonEditable - fieldName=${fieldName}; listValue=${listValue}; modal=${modal}`);
-
-  const patchListFieldAliasName = `patchListField-${fieldName}-${new Date().getTime()}`;
-  const patchUrlPattern = rewriteUrl || RewriteURL.Generic;
-
-  // here we want to match URLs that don *not* end with "/NEW"
-  if (!skipRequest) {
-    cy.server();
-    cy.route('PATCH', new RegExp(patchUrlPattern)).as(patchListFieldAliasName);
-  }
-  const path = createFieldPath(fieldName, modal);
-
-  cy.get(path)
-    .find('.input-dropdown')
-    .find('.js-input-field')
-    .wait(500)
-    .click()
-    .wait(500);
-
   cy.get('.input-dropdown-list')
     .contains(listValue)
     .click();

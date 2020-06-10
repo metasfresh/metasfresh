@@ -28,6 +28,7 @@ import java.util.Properties;
 
 import javax.annotation.Nullable;
 
+import lombok.ToString;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.ad.trx.api.ITrx;
@@ -45,6 +46,7 @@ import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.IMutable;
 import org.adempiere.util.lang.Mutable;
 import org.adempiere.util.logging.LoggingHelper;
+import org.compiere.SpringContextHolder;
 import org.compiere.util.Env;
 import org.compiere.util.TrxRunnable;
 import org.slf4j.Logger;
@@ -76,6 +78,10 @@ import de.metas.lock.api.ILockManager;
 import de.metas.lock.exceptions.LockFailedException;
 import de.metas.logging.LogManager;
 import de.metas.logging.TableRecordMDC;
+import de.metas.monitoring.adapter.NoopPerformanceMonitoringService;
+import de.metas.monitoring.adapter.PerformanceMonitoringService;
+import de.metas.monitoring.adapter.PerformanceMonitoringService.TransactionMetadata;
+import de.metas.monitoring.adapter.PerformanceMonitoringService.Type;
 import de.metas.notification.INotificationBL;
 import de.metas.notification.UserNotificationRequest;
 import de.metas.notification.UserNotificationRequest.TargetRecordAction;
@@ -88,7 +94,8 @@ import de.metas.util.lang.CoalesceUtil;
 import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 
-/* package */class WorkpackageProcessorTask implements Runnable
+@ToString(exclude = { "queueDAO", "workpackageParamDAO", "contextFactory", "iAsyncBatchBL", "logsRepository", "workPackageProcessorOriginal" })
+class WorkpackageProcessorTask implements Runnable
 {
 	private static final String MSG_PROCESSING_ERROR_NOTIFICATION_TEXT = "de.metas.async.WorkpackageProcessorTask.ProcessingErrorNotificationText";
 	private static final String MSG_PROCESSING_ERROR_NOTIFICATION_TITLE = "de.metas.async.WorkpackageProcessorTask.ProcessingErrorNotificationTitle";
@@ -141,6 +148,22 @@ import lombok.NonNull;
 
 	@Override
 	public void run()
+	{
+		final PerformanceMonitoringService service = SpringContextHolder.instance.getBeanOr(
+				PerformanceMonitoringService.class,
+				NoopPerformanceMonitoringService.INSTANCE);
+
+		service.monitorTransaction(
+				() -> run0(),
+				TransactionMetadata.builder()
+						.type(Type.ASYNC_WORKPACKAGE)
+						.name("Workpackage-Processor - " + queueProcessor.getName())
+						.label("de.metas.async.queueProcessor.name", queueProcessor.getName())
+						.label("de.metas.async.C_Queue_WorkPackage_ID", Integer.toString(workPackage.getC_Queue_WorkPackage_ID()))
+						.build());
+	}
+
+	private void run0()
 	{
 		final Properties processingCtx = createProcessingCtx();
 		final WorkpackageLoggable loggable = createLoggable(workPackage);
@@ -359,7 +382,7 @@ import lombok.NonNull;
 
 	/**
 	 * Method invoked after workpackage is processed. The method is invoked in any case (success, skip, error).
-	 *
+	 * <p>
 	 * NOTE: this method is protected to be easily to unit test (i.e. decouple queueProcessor)
 	 *
 	 * @param releaseElementLockIfAny if <code>true</code> (which is usually the case) and there is a lock on the work package elements, that lock is released in this method.

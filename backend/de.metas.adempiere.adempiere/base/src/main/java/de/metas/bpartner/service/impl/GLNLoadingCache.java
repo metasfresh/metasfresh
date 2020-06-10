@@ -6,6 +6,8 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.exceptions.AdempiereException;
@@ -38,12 +40,12 @@ import lombok.Value;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -146,7 +148,10 @@ final class GLNLoadingCache
 		@Singular
 		ImmutableList<GLNLocation> locations;
 
-		Stream<BPartnerId> streamBPartnerIds(final Set<OrgId> onlyOrgIds)
+		/**
+		 * @param onlyOrgIds {@code null} or empty means "no restriction".
+		 */
+		Stream<BPartnerId> streamBPartnerIds(@Nullable final Set<OrgId> onlyOrgIds)
 		{
 			return locations.stream()
 					.filter(location -> location.isMatching(onlyOrgIds))
@@ -167,11 +172,13 @@ final class GLNLoadingCache
 		@NonNull
 		BPartnerLocationId bpLocationId;
 
-		boolean isMatching(final Set<OrgId> onlyOrgIds)
+		boolean isMatching(@Nullable final Set<OrgId> onlyOrgIds)
 		{
-			return onlyOrgIds != null && !onlyOrgIds.isEmpty()
-					? onlyOrgIds.contains(orgId)
-					: null;
+			if(onlyOrgIds == null || onlyOrgIds.isEmpty())
+			{
+				return true;
+			}
+			return onlyOrgIds.contains(orgId);
 		}
 
 		BPartnerId getBPartnerId()

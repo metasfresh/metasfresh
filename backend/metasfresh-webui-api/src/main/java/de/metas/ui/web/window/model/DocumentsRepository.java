@@ -4,6 +4,8 @@ import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import lombok.NonNull;
 
+import javax.annotation.Nullable;
+
 /*
  * #%L
  * metasfresh-webui-api
@@ -57,7 +59,7 @@ public interface DocumentsRepository
 	/**
 	 * @return newly created document (not saved); never returns null
 	 */
-	Document createNewDocument(DocumentEntityDescriptor entityDescriptor, final Document parentDocument, final IDocumentChangesCollector changesCollector);
+	Document createNewDocument(DocumentEntityDescriptor entityDescriptor, @Nullable final Document parentDocument, final IDocumentChangesCollector changesCollector);
 
 	void refresh(Document document);
 

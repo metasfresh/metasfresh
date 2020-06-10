@@ -4,6 +4,7 @@ import { connect } from 'react-redux';
 import { push } from 'react-router-redux';
 import { forEach, get } from 'lodash';
 
+import { getTableId } from '../reducers/tables';
 import { addNotification } from '../actions/AppActions';
 import {
   addRowData,
@@ -13,8 +14,9 @@ import {
   sortTab,
   updateTabRowsData,
 } from '../actions/WindowActions';
+import { deleteTable } from '../actions/TableActions';
 import { connectWS, disconnectWS } from '../utils/websockets';
-import { getTab, getData } from '../api';
+import { getTabRequest, getRowsData } from '../api';
 
 import MasterWindow from '../components/app/MasterWindow';
 
@@ -46,6 +48,8 @@ class MasterWindowContainer extends Component {
     }
 
     // When closing modal, we need to update the stale tab
+    // TODO: Check if we still need to do this since all the changes in tabs should be handled
+    // via websockets now.
     if (
       !modal.visible &&
       modal.visible !== prevProps.modal.visible &&
@@ -54,7 +58,7 @@ class MasterWindowContainer extends Component {
     ) {
       const tabId = master.layout.activeTab;
 
-      getTab(tabId, params.windowType, master.docId).then((tab) => {
+      getTabRequest(tabId, params.windowType, master.docId).then((tab) => {
         addRowData({ [tabId]: tab }, 'master');
       });
     }
@@ -89,24 +93,26 @@ class MasterWindowContainer extends Component {
       // Some included rows got staled
       else {
         const { staleRowIds } = activeTab;
-        staleRowIds.forEach((rowId) => {
-          this.getTabRow(activeTab.tabId, rowId).then((res) => {
-            this.mergeDataIntoIncludedTab(res);
-          });
+
+        await this.getTabRow(activeTab.tabId, staleRowIds).then((res) => {
+          this.mergeDataIntoIncludedTab(res);
         });
       }
     }
   }
 
-  getTabRow(tabId, rowId) {
-    const { params } = this.props;
-    return getData({
+  getTabRow(tabId, rows) {
+    const {
+      params: { windowType, docId },
+    } = this.props;
+
+    return getRowsData({
       entity: 'window',
-      docType: params.windowType,
-      docId: params.docId,
+      docType: windowType,
+      docId,
       tabId: tabId,
-      rowId: rowId,
-    }).catch(() => ({ rowId, tabId }));
+      rows,
+    }).catch(() => ({ rows, tabId }));
   }
 
   isActiveTab(tabId) {
@@ -116,9 +122,8 @@ class MasterWindowContainer extends Component {
 
   mergeDataIntoIncludedTab(response) {
     const { updateTabRowsData } = this.props;
-    const changedTabs = {};
-
     const { data } = response;
+    const changedTabs = {};
     let rowsById = null;
     let removedRows = null;
     let tabId;
@@ -177,17 +182,39 @@ class MasterWindowContainer extends Component {
       sortingOrder = (ordering.ascending ? '+' : '-') + ordering.fieldName;
     }
 
-    getTab(activeTabId, params.windowType, master.docId, sortingOrder).then(
-      (tab) => {
-        addRowData({ [activeTabId]: tab }, 'master');
-      }
-    );
+    getTabRequest(
+      activeTabId,
+      params.windowType,
+      master.docId,
+      sortingOrder
+    ).then((tab) => addRowData({ [activeTabId]: tab }, 'master'));
   }
+
+  deleteTabsTables = () => {
+    const {
+      master: { includedTabsInfo },
+      params: { windowType, docId },
+      deleteTable,
+    } = this.props;
+
+    // if this is falsy, it was a details view without tabs
+    if (includedTabsInfo) {
+      const tabs = Object.keys(includedTabsInfo);
+
+      if (tabs) {
+        tabs.forEach((tabId) => {
+          const tableId = getTableId({ windowType, docId, tabId });
+          deleteTable(tableId);
+        });
+      }
+    }
+  };
 
   componentWillUnmount() {
     const { clearMasterData } = this.props;
 
     clearMasterData();
+    this.deleteTabsTables();
     disconnectWS.call(this);
   }
 
@@ -237,14 +264,15 @@ MasterWindowContainer.propTypes = {
   processStatus: PropTypes.any,
   enableTutorial: PropTypes.any,
   location: PropTypes.any,
-  clearMasterData: PropTypes.func,
-  addNotification: PropTypes.func,
-  addRowData: PropTypes.func,
-  attachFileAction: PropTypes.func,
-  fireUpdateData: PropTypes.func,
-  sortTab: PropTypes.func,
-  updateTabRowsData: PropTypes.func,
-  push: PropTypes.func,
+  clearMasterData: PropTypes.func.isRequired,
+  addNotification: PropTypes.func.isRequired,
+  addRowData: PropTypes.func.isRequired,
+  attachFileAction: PropTypes.func.isRequired,
+  fireUpdateData: PropTypes.func.isRequired,
+  sortTab: PropTypes.func.isRequired,
+  updateTabRowsData: PropTypes.func.isRequired,
+  push: PropTypes.func.isRequired,
+  deleteTable: PropTypes.func.isRequired,
 };
 
 /**
@@ -278,5 +306,6 @@ export default connect(
     sortTab,
     updateTabRowsData,
     push,
+    deleteTable,
   }
 )(MasterWindowContainer);

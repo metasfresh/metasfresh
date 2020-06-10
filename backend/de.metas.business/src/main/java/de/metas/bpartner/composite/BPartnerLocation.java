@@ -3,7 +3,9 @@ package de.metas.bpartner.composite;
 import static de.metas.util.Check.isEmpty;
 import static de.metas.util.lang.CoalesceUtil.coalesce;
 
+import java.util.HashSet;
 import java.util.Objects;
+import java.util.Set;
 
 import javax.annotation.Nullable;
 
@@ -16,7 +18,6 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.GLN;
-import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.util.lang.ExternalId;
@@ -25,6 +26,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.NonNull;
+import lombok.Setter;
 
 /*
  * #%L
@@ -108,6 +111,12 @@ public class BPartnerLocation
 	private final RecordChangeLog changeLog;
 
 	/**
+	 * Can be set in order to identify this label independently of its "real" properties. Won't be saved by the repo.
+	 */
+	@Setter(AccessLevel.NONE)
+	private final Set<String> handles = new HashSet<>();
+
+	/**
 	 * Used to track changes that were made since the instance's instantiation.
 	 * Goal: allow {@link BPartnerCompositeRepository} to avoid creating a new {@code C_Location} if nothing changed in there.
 	 */
@@ -168,7 +177,17 @@ public class BPartnerLocation
 
 	public BPartnerLocation deepCopy()
 	{
-		return toBuilder().build();
+		final BPartnerLocationBuilder builder = toBuilder();
+
+		if (locationType != null)
+		{
+			builder.locationType(locationType.deepCopy());
+		}
+		if (original != null)
+		{
+			builder.original(original.deepCopy());
+		}
+		return builder.build();
 	}
 
 	/** Only active instances are actually validated. Empty list means "valid" */
@@ -405,5 +424,10 @@ public class BPartnerLocation
 			return;
 		}
 		original = deepCopy();
+	}
+
+	public void addHandle(@NonNull final String handle)
+	{
+		handles.add(handle);
 	}
 }

@@ -1,19 +1,7 @@
 package de.metas.ui.web.handlingunits.process;
 
-import java.math.BigDecimal;
-import java.util.List;
-import java.util.function.Predicate;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.exceptions.FillMandatoryException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.impl.TableRecordReference;
-
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.allocation.transfer.HUTransformService;
@@ -28,6 +16,15 @@ import de.metas.ui.web.handlingunits.process.WebuiHUTransformCommandResult.Webui
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.exceptions.FillMandatoryException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.impl.TableRecordReference;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.util.List;
+import java.util.function.Predicate;
 
 /*
  * #%L
@@ -53,16 +50,14 @@ import lombok.NonNull;
 
 /**
  * HU Transformation command.
- *
+ * <p>
  * Takes {@link WebuiHUTransformParameters} as input and transform given HU by calling the proper {@link HUTransformService} methods.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 public class WebuiHUTransformCommand
 {
 	/**
-	 *
 	 * Enumerates the actions supported by this process. There is an analog {@code AD_Ref_List} in the application dictionary. <b>Please keep it in sync</b>.
 	 * <p>
 	 * <h1>Important notes</h1>
@@ -73,7 +68,6 @@ public class WebuiHUTransformCommand
 	 * <li>the process only ever performs a split (see {@link IHUSplitBuilder}) if the parameter value is decreased. If the user instead goes with the suggested maximum value, then the source HU is "moved" as it is.</li>
 	 * <li>For the {@link #CU_To_NewCU} and {@link #TU_To_NewTUs} actions, if the user goes with the suggested maximum value, then nothing is done. But there is a (return) message which gives a brief explanation to the user.
 	 * </ul>
-	 *
 	 */
 	public static enum ActionType
 	{
@@ -232,7 +226,6 @@ public class WebuiHUTransformCommand
 	}
 
 	/**
-	 *
 	 * @param row
 	 * @param huPlanningReceiptOwnerPM
 	 * @return
@@ -292,7 +285,7 @@ public class WebuiHUTransformCommand
 		final List<I_M_HU> createdHUs = newHUTransformation().cuToNewCU(cuRow.getM_HU(), qtyCU);
 
 		final Predicate<? super I_M_HU> //
-		newCUisDifferentFromInputHU = createdHU -> createdHU.getM_HU_ID() != cuRow.getHuId().getRepoId();
+				newCUisDifferentFromInputHU = createdHU -> createdHU.getM_HU_ID() != cuRow.getHuId().getRepoId();
 
 		final ImmutableSet<HuId> createdHUIds = createdHUs
 				.stream()
@@ -311,10 +304,10 @@ public class WebuiHUTransformCommand
 	/**
 	 * Split selected CU to new top level TUs
 	 *
-	 * @param cuRow cu row to split
-	 * @param qtyCU quantity CU to split
+	 * @param cuRow                 cu row to split
+	 * @param qtyCU                 quantity CU to split
 	 * @param isOwnPackingMaterials
-	 * @param tuPIItemProductId to TU
+	 * @param tuPIItemProductId     to TU
 	 * @return
 	 */
 	private WebuiHUTransformCommandResult action_SplitCU_To_NewTUs(
@@ -350,8 +343,8 @@ public class WebuiHUTransformCommand
 	/**
 	 * Split TU to new LU (only one LU!).
 	 *
-	 * @param tuRow represents the TU (or TUs in the aggregate-HU-case) that is our split source
-	 * @param qtyTU the number of TUs we want to split from the given {@code tuRow}
+	 * @param tuRow                 represents the TU (or TUs in the aggregate-HU-case) that is our split source
+	 * @param qtyTU                 the number of TUs we want to split from the given {@code tuRow}
 	 * @param isOwnPackingMaterials
 	 * @param tuPIItemProductId
 	 * @param luPI

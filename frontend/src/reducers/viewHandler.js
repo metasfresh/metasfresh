@@ -1,5 +1,6 @@
 import { Map as iMap, List as iList } from 'immutable';
 import { get } from 'lodash';
+import { createSelector } from 'reselect';
 
 import {
   ADD_VIEW_LOCATION_DATA,
@@ -25,10 +26,11 @@ import {
 export const viewState = {
   layout: {
     activeTab: null,
-    pending: false,
-    error: null,
-    notfound: false,
   },
+  layoutPending: false,
+  layoutError: null,
+  layoutNotFound: false,
+
   // rowData is an immutable Map with tabId's as keys, and Lists as values.
   // List's elements are plain objects for now
   rowData: iMap(),
@@ -49,7 +51,7 @@ export const viewState = {
   orderBy: null,
   queryLimitHit: null,
   mapConfig: null,
-  notfound: false,
+  notFound: false,
   pending: false,
   error: null,
   isActive: false,
@@ -57,9 +59,23 @@ export const viewState = {
 
 export const initialState = { views: {} };
 
-const getView = (id, state) => {
+const selectView = (state, id) => {
+  return get(state, ['viewHandler', 'views', id], viewState);
+};
+
+const selectLocalView = (state, id) => {
   return get(state, ['views', id], viewState);
 };
+
+export const getView = createSelector(
+  [selectView],
+  (view) => view
+);
+
+const getLocalView = createSelector(
+  [selectLocalView],
+  (view) => view
+);
 
 export default function viewHandler(state = initialState, action) {
   if ((!action.payload || !action.payload.id) && action.type !== DELETE_VIEW) {
@@ -70,7 +86,7 @@ export default function viewHandler(state = initialState, action) {
     // LAYOUT
     case FETCH_LAYOUT_PENDING: {
       const { id } = action.payload;
-      const view = getView(id, state);
+      const view = getLocalView(state, id);
 
       return {
         ...state,
@@ -78,18 +94,15 @@ export default function viewHandler(state = initialState, action) {
           ...state.views,
           [`${id}`]: {
             ...view,
-            layout: {
-              ...view.layout,
-              notfound: false,
-              pending: true,
-            },
+            layoutPending: true,
+            layoutNotFound: false,
           },
         },
       };
     }
     case FETCH_LAYOUT_SUCCESS: {
       const { id, layout } = action.payload;
-      const view = getView(id, state);
+      const view = getLocalView(state, id);
 
       return {
         ...state,
@@ -97,11 +110,11 @@ export default function viewHandler(state = initialState, action) {
           ...state.views,
           [`${id}`]: {
             ...view,
+            layoutPending: false,
+            layoutError: false,
             layout: {
               ...view.layout,
               ...layout,
-              error: null,
-              pending: false,
             },
           },
         },
@@ -109,7 +122,7 @@ export default function viewHandler(state = initialState, action) {
     }
     case FETCH_LAYOUT_ERROR: {
       const { id, error } = action.payload;
-      const view = getView(id, state);
+      const view = getLocalView(state, id);
 
       return {
         ...state,
@@ -117,12 +130,9 @@ export default function viewHandler(state = initialState, action) {
           ...state.views,
           [`${id}`]: {
             ...view,
-            layout: {
-              ...view.layout,
-              notfound: true,
-              error,
-              pending: false,
-            },
+            layoutPending: false,
+            layoutError: error,
+            layoutNotFound: true,
           },
         },
       };
@@ -130,7 +140,7 @@ export default function viewHandler(state = initialState, action) {
 
     case FETCH_DOCUMENT_PENDING: {
       const { id } = action.payload;
-      const view = getView(id, state);
+      const view = getLocalView(state, id);
 
       return {
         ...state,
@@ -138,7 +148,7 @@ export default function viewHandler(state = initialState, action) {
           ...state.views,
           [`${id}`]: {
             ...view,
-            notfound: false,
+            notFound: false,
             pending: true,
             error: null,
           },
@@ -168,7 +178,7 @@ export default function viewHandler(state = initialState, action) {
       //WTF prettier?
       //eslint-disable-next-line
       const page = size > 1 ? (firstRow / pageLength) + 1 : 1;
-      const view = getView(id, state);
+      const view = getLocalView(state, id);
       const viewState = {
         ...view,
         firstRow,
@@ -197,7 +207,7 @@ export default function viewHandler(state = initialState, action) {
     }
     case FETCH_DOCUMENT_ERROR: {
       const { id, error } = action.payload;
-      const view = getView(id, state);
+      const view = getLocalView(state, id);
 
       return {
         ...state,
@@ -206,7 +216,7 @@ export default function viewHandler(state = initialState, action) {
           [`${id}`]: {
             ...view,
             pending: false,
-            notfound: true,
+            notFound: true,
             error,
           },
         },
@@ -216,7 +226,7 @@ export default function viewHandler(state = initialState, action) {
     // VIEW OPERATIONS
     case CREATE_VIEW: {
       const { id } = action.payload;
-      const view = getView(id, state);
+      const view = getLocalView(state, id);
 
       return {
         ...state,
@@ -232,7 +242,7 @@ export default function viewHandler(state = initialState, action) {
     }
     case CREATE_VIEW_SUCCESS: {
       const { id, viewId } = action.payload;
-      const view = getView(id, state);
+      const view = getLocalView(state, id);
 
       return {
         ...state,
@@ -242,14 +252,14 @@ export default function viewHandler(state = initialState, action) {
             ...view,
             viewId,
             pending: false,
-            notfound: false,
+            notFound: false,
           },
         },
       };
     }
     case CREATE_VIEW_ERROR: {
       const { id, error } = action.payload;
-      const view = getView(id, state);
+      const view = getLocalView(state, id);
 
       return {
         ...state,
@@ -258,7 +268,7 @@ export default function viewHandler(state = initialState, action) {
           [`${id}`]: {
             ...view,
             pending: false,
-            notfound: true,
+            notFound: true,
             error,
           },
         },
@@ -266,7 +276,7 @@ export default function viewHandler(state = initialState, action) {
     }
     case FILTER_VIEW_PENDING: {
       const { id } = action.payload;
-      const view = getView(id, state);
+      const view = getLocalView(state, id);
 
       return {
         ...state,
@@ -274,7 +284,7 @@ export default function viewHandler(state = initialState, action) {
           ...state.views,
           [`${id}`]: {
             ...view,
-            notfound: false,
+            notFound: false,
             pending: true,
             error: null,
           },
@@ -286,7 +296,7 @@ export default function viewHandler(state = initialState, action) {
         id,
         data: { filters, viewId, size },
       } = action.payload;
-      const view = getView(id, state);
+      const view = getLocalView(state, id);
 
       return {
         ...state,
@@ -306,7 +316,7 @@ export default function viewHandler(state = initialState, action) {
     }
     case FILTER_VIEW_ERROR: {
       const { id, error } = action.payload;
-      const view = getView(id, state);
+      const view = getLocalView(state, id);
 
       return {
         ...state,
@@ -315,7 +325,7 @@ export default function viewHandler(state = initialState, action) {
           [`${id}`]: {
             ...view,
             pending: false,
-            notfound: true,
+            notFound: true,
             error,
           },
         },
@@ -324,7 +334,7 @@ export default function viewHandler(state = initialState, action) {
     case UPDATE_VIEW_DATA: {
       const { id, rows } = action.payload;
       const tabId = action.payload.tabId || '1';
-      const view = getView(id, state);
+      const view = getLocalView(state, id);
       const updatedRowsData = view.rowData.set(tabId, iList(rows));
 
       return {
@@ -340,7 +350,7 @@ export default function viewHandler(state = initialState, action) {
     }
     case ADD_VIEW_LOCATION_DATA: {
       const { id, locationData } = action.payload;
-      const view = getView(id, state);
+      const view = getLocalView(state, id);
 
       return {
         ...state,
@@ -356,7 +366,7 @@ export default function viewHandler(state = initialState, action) {
 
     case FETCH_LOCATION_CONFIG_SUCCESS: {
       const { id, data } = action.payload;
-      const view = getView(id, state);
+      const view = getLocalView(state, id);
 
       if (data.provider) {
         return {
@@ -375,7 +385,7 @@ export default function viewHandler(state = initialState, action) {
     }
     case FETCH_LOCATION_CONFIG_ERROR: {
       const { id, error } = action.payload;
-      const view = getView(id, state);
+      const view = getLocalView(state, id);
 
       return {
         ...state,
@@ -405,7 +415,7 @@ export default function viewHandler(state = initialState, action) {
     }
     case RESET_VIEW: {
       const id = action.payload.id;
-      const view = getView(id, state);
+      const view = getLocalView(state, id);
 
       if (view) {
         return {

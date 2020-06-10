@@ -105,7 +105,9 @@ class MasterWidget extends Component {
     } = this.props;
     const numberField = isNumberField(widgetType);
 
-    if (numberField && !value) {
+    if (widgetType === 'Quantity' && value === '') {
+      value = null;
+    } else if (numberField && !value) {
       value = '0';
     }
 

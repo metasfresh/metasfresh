@@ -68,9 +68,11 @@ import {
   getLayout,
   topActionsRequest,
   getProcessData,
-  getTab,
+  getTabRequest,
   startProcess,
+  formatParentUrl,
 } from '../api';
+import { getTableId } from '../reducers/tables';
 import {
   addNotification,
   setNotificationProgress,
@@ -81,9 +83,18 @@ import {
 import { openFile } from './GenericActions';
 import { setListIncludedView } from './ListActions';
 import { getWindowBreadcrumb } from './MenuActions';
-import { toggleFullScreen } from '../utils';
+import {
+  updateCommentsPanel,
+  updateCommentsPanelTextInput,
+  updateCommentsPanelOpenFlag,
+} from './CommentsPanelActions';
+import { createTabTable, updateTabTable } from './TableActions';
+import { toggleFullScreen, preFormatPostDATA } from '../utils';
 import { getScope, parseToDisplay } from '../utils/documentListHelper';
 
+/*
+ * Action creator called when quick actions are successfully fetched
+ */
 export function fetchedQuickActions(windowId, id, data) {
   return {
     type: FETCHED_QUICK_ACTIONS,
@@ -95,6 +106,9 @@ export function fetchedQuickActions(windowId, id, data) {
   };
 }
 
+/*
+ * Action creator to delete quick actions from the store
+ */
 export function deleteQuickActions(windowId, id) {
   return {
     type: DELETE_QUICK_ACTIONS,
@@ -515,37 +529,63 @@ export function deselectTableItems(ids, windowType, viewId) {
 
 // THUNK ACTIONS
 
-export function initTabs(layout, windowType, docId, isModal) {
-  return async (dispatch) => {
-    const requests = [];
-    const tabTmp = {};
+// TODO: Just a quick thunk action creator to test Tables reducer
+// but looks like this can actually replace the `initTabs`.
+/*
+ * @method fetchTab
+ * @summary Action creator for fetching single tab's rows
+ */
+export function fetchTab({ tabId, windowType, docId, query }) {
+  return (dispatch) => {
+    return getTabRequest(tabId, windowType, docId, query)
+      .then((response) => {
+        const tableId = getTableId({ windowType, docId, tabId });
+        const tableData = { result: response };
 
-    if (layout) {
-      layout.map((tab, index) => {
-        tabTmp[tab.tabId] = {};
+        dispatch(updateTabTable(tableId, tableData));
 
-        if ((tab.tabId && index === 0) || !tab.queryOnActivate) {
-          requests.push(getTab(tab.tabId, windowType, docId));
-        }
+        return Promise.resolve(response);
+      })
+      .catch((error) => {
+        //show error message ?
+        return Promise.resolve(error);
       });
-
-      return await Promise.all(requests).then((responses) => {
-        responses.forEach((res) => {
-          // needed for finding tabId
-          const rowZero = res && res[0];
-          if (rowZero) {
-            const tabId = rowZero.tabId;
-            tabTmp[tabId] = res;
-          }
-        });
-
-        dispatch(addRowData(tabTmp, getScope(isModal)));
-      });
-    }
-
-    return Promise.resolve(null);
   };
 }
+
+// TODO: Figure out if we still need this as it looks like we can just fetch
+// tabs when they're created (in the Tab component's constructor)
+// export function initTabs(layout, windowType, docId, isModal) {
+//   return async (dispatch) => {
+//     const requests = [];
+//     const tabTmp = {};
+
+//     if (layout) {
+//       layout.map((tab, index) => {
+//         tabTmp[tab.tabId] = {};
+
+//         if ((tab.tabId && index === 0) || !tab.queryOnActivate) {
+//           requests.push(getTabRequest(tab.tabId, windowType, docId));
+//         }
+//       });
+
+//       return await Promise.all(requests).then((responses) => {
+//         responses.forEach((res) => {
+//           // needed for finding tabId
+//           const rowZero = res && res[0];
+//           if (rowZero) {
+//             const tabId = rowZero.tabId;
+//             tabTmp[tabId] = res;
+//           }
+//         });
+
+//         dispatch(addRowData(tabTmp, getScope(isModal)));
+//       });
+//     }
+
+//     return Promise.resolve(null);
+//   };
+// }
 
 export function initWindow(windowType, docId, tabId, rowId = null, isAdvanced) {
   return (dispatch) => {
@@ -614,87 +654,123 @@ export function initWindow(windowType, docId, tabId, rowId = null, isAdvanced) {
  * Main method to generate window
  */
 export function createWindow(
-  windowId,
-  docId = 'NEW',
+  windowType,
+  documentId = 'NEW',
   tabId,
   rowId,
   isModal = false,
   isAdvanced
 ) {
   return (dispatch) => {
-    if (docId == 'new') {
-      docId = 'NEW';
+    if (documentId.toLowerCase() === 'new') {
+      documentId = 'NEW';
     }
 
     // this chain is really important,
     // to do not re-render widgets on init
-    return dispatch(initWindow(windowId, docId, tabId, rowId, isAdvanced)).then(
-      (response) => {
-        if (!response || !response.data) {
-          return Promise.resolve(null);
-        }
-
-        if (docId == 'NEW' && !isModal) {
-          dispatch(setLatestNewDocument(response.data[0].id));
-          // redirect immedietely
-          return dispatch(
-            replace(`/window/${windowId}/${response.data[0].id}`)
-          );
-        }
-
-        let elem = 0;
-
-        response.data.forEach((value, index) => {
-          if (value.rowId === rowId) {
-            elem = index;
-          }
-        });
-
-        if (docId === 'NEW') {
-          dispatch(updateModal(null, response.data[0].id));
-        }
-
-        docId = response.data[elem].id;
-        dispatch(
-          initDataSuccess({
-            data: parseToDisplay(response.data[elem].fieldsByName),
-            docId,
-            saveStatus: response.data[0].saveStatus,
-            scope: getScope(isModal),
-            standardActions: response.data[0].standardActions,
-            validStatus: response.data[0].validStatus,
-            includedTabsInfo: response.data[0].includedTabsInfo,
-            websocket: response.data[0].websocketEndpoint,
-          })
-        );
-
-        if (isModal) {
-          if (rowId === 'NEW') {
-            dispatch(
-              mapDataToState(response.data, false, 'NEW', docId, windowId)
-            );
-            dispatch(updateStatus(response.data));
-            dispatch(updateModal(response.data[0].rowId));
-          }
-        } else {
-          dispatch(getWindowBreadcrumb(windowId));
-        }
-
-        return getLayout('window', windowId, tabId, null, null, isAdvanced)
-          .then((response) =>
-            dispatch(initLayoutSuccess(response.data, getScope(isModal)))
-          )
-          .then((response) => {
-            if (!isModal) {
-              return dispatch(
-                initTabs(response.layout.tabs, windowId, docId, isModal)
-              );
-            }
-            return Promise.resolve(null);
-          })
-          .catch((e) => Promise.reject(e));
+    return dispatch(
+      initWindow(windowType, documentId, tabId, rowId, isAdvanced)
+    ).then((response) => {
+      if (!response || !response.data) {
+        return Promise.resolve(null);
       }
-    );
+
+      const data = response.data[0];
+      const tabs = data.includedTabsInfo;
+      let docId = data.id;
+
+      if (tabs) {
+        Object.values(tabs).forEach((tab) => {
+          const { tabId } = tab;
+          const tableId = getTableId({ windowType, docId, tabId });
+          const tableData = {
+            windowType,
+            docId,
+            tabId,
+            ...tab,
+          };
+          dispatch(createTabTable(tableId, tableData));
+        });
+      }
+
+      if (documentId === 'NEW' && !isModal) {
+        dispatch(setLatestNewDocument(docId));
+        // redirect immedietely
+        return dispatch(replace(`/window/${windowType}/${docId}`));
+      }
+
+      let elem = 0;
+
+      response.data.forEach((value, index) => {
+        if (value.rowId === rowId) {
+          elem = index;
+        }
+      });
+
+      if (documentId === 'NEW') {
+        dispatch(updateModal(null, docId));
+      }
+
+      // TODO: Is `elem` ever different than 0 ?
+      docId = response.data[elem].id;
+      dispatch(
+        initDataSuccess({
+          data: parseToDisplay(response.data[elem].fieldsByName),
+          docId,
+          saveStatus: data.saveStatus,
+          scope: getScope(isModal),
+          standardActions: data.standardActions,
+          validStatus: data.validStatus,
+          includedTabsInfo: data.includedTabsInfo,
+          websocket: data.websocketEndpoint,
+        })
+      );
+
+      if (isModal) {
+        if (rowId === 'NEW') {
+          dispatch(
+            mapDataToState(response.data, false, 'NEW', docId, windowType)
+          );
+          dispatch(updateStatus(response.data));
+          dispatch(updateModal(data.rowId));
+        }
+      } else {
+        dispatch(getWindowBreadcrumb(windowType));
+      }
+
+      return (
+        getLayout('window', windowType, tabId, null, null, isAdvanced)
+          .then(({ data }) => {
+            const layoutTabs = data.tabs;
+
+            if (layoutTabs) {
+              Object.values(layoutTabs).forEach((tab) => {
+                const { tabId } = tab;
+                const tableId = getTableId({ windowType, docId, tabId });
+                const tableData = {
+                  windowType,
+                  docId,
+                  tabId,
+                  ...tab,
+                };
+                dispatch(updateTabTable(tableId, tableData));
+              });
+            }
+
+            dispatch(initLayoutSuccess(data, getScope(isModal)));
+          })
+          // TODO: looks like this can be removed ?
+          // .then((response) => {
+          //   if (!isModal) {
+          //     return dispatch(
+          //       initTabs(response.layout.tabs, windowType, docId, isModal)
+          //     );
+          //   }
+          //   return Promise.resolve(null);
+          // })
+          .catch((e) => Promise.reject(e))
+      );
+    });
   };
 }
 
@@ -758,6 +834,79 @@ export function fetchTopActions(windowType, docId, tabId) {
           type: FETCH_TOP_ACTIONS_FAILURE,
         });
       });
+  };
+}
+
+/**
+ * this is 'generic' window action that allows calling APIs that do follow a specific pattern
+ * in their path like /rest/api/documentView/{windowId}/{viewId}/{target}
+ * Where target can be for example 'geoLocations' or 'comments'. This can be further
+ * adapted to other REST paths by shaping the formatParentUrl function accordingly
+ * windowId - windowId for which we want to apply/get changes
+ * docId    - docId for which we want to apply/get changes
+ * tabId    - tabId for which we want to apply/get changes
+ * rowId    - rowId for which we want to apply/get changes
+ * verb     - GET/POST for now
+ * data     - data you want to be passed for a POST request
+ * @param {object} param
+ */
+export function callAPI({ windowId, docId, tabId, rowId, target, verb, data }) {
+  return (dispatch) => {
+    const parentUrl = formatParentUrl({ windowId, docId, rowId, target });
+    if (!parentUrl) return;
+    dispatch(updateCommentsPanelOpenFlag(true));
+    // -- GET call - adapt shape as needed
+    if (verb === 'GET') {
+      return axios.get(parentUrl).then(async (response) => {
+        const data = response.data;
+        let rowData = null;
+
+        if (docId && rowId) {
+          if (rowId.length === 1) {
+            const childUrl = getChangelogUrl(windowId, docId, tabId, rowId);
+            rowData = await axios.get(childUrl).then((resp) => resp.data);
+          }
+        }
+
+        if (rowData) {
+          data.rowsData = rowData;
+        }
+        // update corresponding target in the store - might be adapted for more separated entities
+        if (target === 'comments') {
+          dispatch(updateCommentsPanel(data));
+        }
+        // -- end updating corresponding target
+        dispatch(
+          initDataSuccess({
+            data,
+            docId,
+            scope: 'modal',
+          })
+        );
+      });
+    }
+
+    // -- actions dispatched on POST below
+    if (verb === 'POST') {
+      const dataToSend = preFormatPostDATA({ target, postData: { txt: data } });
+      return axios.post(parentUrl, dataToSend).then(async (response) => {
+        const data = response.data;
+        if (target === 'comments') {
+          dispatch(
+            callAPI({
+              windowId,
+              docId,
+              tabId,
+              rowId,
+              target,
+              verb: 'GET',
+            })
+          );
+          dispatch(updateCommentsPanelTextInput('')); // clear the input in the form
+        }
+        return data;
+      });
+    }
   };
 }
 

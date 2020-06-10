@@ -28,7 +28,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BPartner;
@@ -43,6 +42,7 @@ import de.metas.adempiere.form.terminal.IPropertiesPanelModel;
 import de.metas.adempiere.form.terminal.ITerminalLookup;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.adempiere.form.terminal.lookup.SimpleTableLookup;
+import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.exceptions.HUException;
@@ -232,10 +232,7 @@ public class HUPropertiesModel extends AbstractPropertiesPanelModel
 				}
 
 				final int bpartnerId = getPropertyValueAsInt(I_M_HU.COLUMNNAME_C_BPartner_ID);
-				final List<I_C_BPartner_Location> bpLocations = bpartnerDAO.retrieveBPartnerLocations(
-						terminalContext.getCtx(),
-						bpartnerId,
-						ITrx.TRXNAME_None);
+				final List<I_C_BPartner_Location> bpLocations = bpartnerDAO.retrieveBPartnerLocations(BPartnerId.ofRepoId(bpartnerId));
 				final List<KeyNamePair> result = new ArrayList<>(bpLocations.size());
 				result.add(KeyNamePair.EMPTY);
 				for (final I_C_BPartner_Location bpLocation : bpLocations)

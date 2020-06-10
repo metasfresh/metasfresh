@@ -25,8 +25,8 @@ package de.metas.serviceprovider.external.project;
 import com.google.common.collect.ImmutableList;
 import de.metas.organization.OrgId;
 import de.metas.project.ProjectId;
+import de.metas.serviceprovider.external.ExternalSystem;
 import de.metas.serviceprovider.model.I_S_ExternalProjectReference;
-import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
@@ -38,7 +38,12 @@ import java.util.Optional;
 @Repository
 public class ExternalProjectRepository
 {
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IQueryBL queryBL;
+
+	public ExternalProjectRepository(final IQueryBL queryBL)
+	{
+		this.queryBL = queryBL;
+	}
 
 	@NonNull
 	public ImmutableList<ExternalProjectReference> getByExternalSystem(@NonNull final ExternalSystem externalSystem)
@@ -46,11 +51,27 @@ public class ExternalProjectRepository
 		return queryBL.createQueryBuilder(I_S_ExternalProjectReference.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_S_ExternalProjectReference.COLUMN_ExternalSystem, externalSystem.getValue())
+				.orderBy(I_S_ExternalProjectReference.COLUMNNAME_SeqNo)
 				.create()
 				.list()
 				.stream()
 				.map(this::buildExternalProjectReference)
 				.collect(ImmutableList.toImmutableList());
+	}
+
+	@NonNull
+	public Optional<ExternalProjectReference> getByRequestOptional(@NonNull final GetExternalProjectRequest getExternalProjectRequest)
+	{
+		return queryBL.createQueryBuilder(I_S_ExternalProjectReference.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_S_ExternalProjectReference.COLUMN_ExternalSystem, getExternalProjectRequest.getExternalSystem().getValue())
+
+				.addEqualsFilter(I_S_ExternalProjectReference.COLUMNNAME_ExternalReference, getExternalProjectRequest.getExternalReference())
+
+				.addEqualsFilter(I_S_ExternalProjectReference.COLUMNNAME_ExternalProjectOwner, getExternalProjectRequest.getExternalProjectOwner())
+				.create()
+				.firstOnlyOptional(I_S_ExternalProjectReference.class)
+				.map(this::buildExternalProjectReference);
 	}
 
 	@NonNull
@@ -74,6 +95,7 @@ public class ExternalProjectRepository
 		}
 
 		return ExternalProjectReference.builder()
+				.externalProjectReferenceId(ExternalProjectReferenceId.ofRepoId(record.getS_ExternalProjectReference_ID()))
 				.externalProjectReference(record.getExternalReference())
 				.projectOwner(record.getExternalProjectOwner())
 				.externalProjectType(externalProjectType.get())

@@ -33,6 +33,7 @@ import lombok.NonNull;
 import org.springframework.stereotype.Component;
 import org.springframework.util.LinkedMultiValueMap;
 
+import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.List;
 
@@ -41,6 +42,7 @@ import static de.metas.issue.tracking.github.api.v3.GitHubApiConstants.Endpoint.
 import static de.metas.issue.tracking.github.api.v3.GitHubApiConstants.GITHUB_BASE_URI;
 import static de.metas.issue.tracking.github.api.v3.GitHubApiConstants.QueryParam.PAGE;
 import static de.metas.issue.tracking.github.api.v3.GitHubApiConstants.QueryParam.PER_PAGE;
+import static de.metas.issue.tracking.github.api.v3.GitHubApiConstants.QueryParam.SINCE;
 import static de.metas.issue.tracking.github.api.v3.GitHubApiConstants.QueryParam.STATE;
 
 @Component
@@ -68,6 +70,13 @@ public class GithubClient
 		queryParams.add(PAGE.getValue(), String.valueOf(retrieveIssuesRequest.getPageIndex()));
 		queryParams.add(PER_PAGE.getValue(), String.valueOf(retrieveIssuesRequest.getPageSize()));
 
+		if (retrieveIssuesRequest.getDateFrom() != null)
+		{
+			final String since = DateTimeFormatter.ISO_LOCAL_DATE.format(retrieveIssuesRequest.getDateFrom());
+
+			queryParams.add(SINCE.getValue(), since);
+		}
+
 		final GetRequest getRequest = GetRequest.builder()
 				.baseURL(GITHUB_BASE_URI)
 				.pathVariables(pathVariables)
@@ -77,7 +86,9 @@ public class GithubClient
 
 		issueList = ImmutableList.copyOf(restService.performGet(getRequest, Issue[].class).getBody());
 
-		return issueList;
+		return issueList.stream()
+				.filter(issue -> !issue.isPullRequest())
+				.collect(ImmutableList.toImmutableList());
 	}
 
 	public Issue fetchIssueById(@NonNull final FetchIssueByIdRequest fetchIssueByIdRequest)

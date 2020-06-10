@@ -10,7 +10,7 @@ import java.util.List;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.Mutable;
 import org.apache.commons.io.filefilter.WildcardFileFilter;
-import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 import org.compiere.util.MimeType;
 import org.springframework.context.annotation.Profile;
 
@@ -72,10 +72,10 @@ public class C_Invoice_ImportInvoiceResponse extends JavaProcess
 	private static final String ATTACHMENT_TAGNAME_TIME_MILLIS = "ImportTimeMillis";
 	private static final String ATTACHMENT_TAGNAME_FILE_ABSOLUTE_PATH = "ImportFileAbsolutePath";
 
-	private final CrossVersionServiceRegistry crossVersionServiceRegistry = Adempiere.getBean(CrossVersionServiceRegistry.class);
-	private final InvoiceResponseRepo importedInvoiceResponseRepo = Adempiere.getBean(InvoiceResponseRepo.class);
-	private final InvoiceRejectionDetailRepo invoiceRejectionDetailRepo = Adempiere.getBean(InvoiceRejectionDetailRepo.class);
-	private final ImportInvoiceResponseService importInvoiceResponseService = Adempiere.getBean(ImportInvoiceResponseService.class);
+	private final CrossVersionServiceRegistry crossVersionServiceRegistry = SpringContextHolder.instance.getBean(CrossVersionServiceRegistry.class);
+	private final InvoiceResponseRepo importedInvoiceResponseRepo = SpringContextHolder.instance.getBean(InvoiceResponseRepo.class);
+	private final InvoiceRejectionDetailRepo invoiceRejectionDetailRepo = SpringContextHolder.instance.getBean(InvoiceRejectionDetailRepo.class);
+	private final ImportInvoiceResponseService importInvoiceResponseService = SpringContextHolder.instance.getBean(ImportInvoiceResponseService.class);
 
 	@Param(mandatory = true, parameterName = "InputDirectory")
 	private String inputFilePath;

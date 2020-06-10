@@ -45,6 +45,9 @@ public class ShortTermContactIndex
 	Map<ExternalId, BPartnerContact> externalId2Contact;
 	Map<String, BPartnerContact> value2Contact;
 
+	/** locations that were not (yet) retrieved via {@link #extract(IdentifierString)}. */
+	Map<BPartnerContactId, BPartnerContact> id2UnusedContact;
+
 	BPartnerId bpartnerId;
 	BPartnerComposite bpartnerComposite;
 
@@ -54,18 +57,30 @@ public class ShortTermContactIndex
 		this.bpartnerId = bpartnerComposite.getBpartner().getId();  // might be null; we synched to BPartner, but didn't yet save it
 
 		this.id2Contact = new HashMap<>();
+		this.id2UnusedContact = new HashMap<>();
 		this.externalId2Contact = new HashMap<>();
 		this.value2Contact = new HashMap<>();
 
 		for (final BPartnerContact bpartnerContact : bpartnerComposite.getContacts())
 		{
 			this.id2Contact.put(bpartnerContact.getId(), bpartnerContact);
+			this.id2UnusedContact.put(bpartnerContact.getId(), bpartnerContact);
 			this.externalId2Contact.put(bpartnerContact.getExternalId(), bpartnerContact);
 			this.value2Contact.put(bpartnerContact.getValue(), bpartnerContact);
 		}
 	}
 
 	public BPartnerContact extract(@NonNull final IdentifierString contactIdentifier)
+	{
+		final BPartnerContact result = extract0(contactIdentifier);
+		if (result != null)
+		{
+			id2UnusedContact.remove(result.getId());
+		}
+		return result;
+	}
+
+	private BPartnerContact extract0(@NonNull final IdentifierString contactIdentifier)
 	{
 		switch (contactIdentifier.getType())
 		{
@@ -80,9 +95,11 @@ public class ShortTermContactIndex
 					return null;
 				}
 			case EXTERNAL_ID:
-				return externalId2Contact.get(contactIdentifier.asExternalId());
+				final BPartnerContact resultByExternalId = externalId2Contact.get(contactIdentifier.asExternalId());
+				return resultByExternalId;
 			case VALUE:
-				return value2Contact.get(contactIdentifier.asValue());
+				final BPartnerContact resultByValue = value2Contact.get(contactIdentifier.asValue());
+				return resultByValue;
 			default:
 				throw new InvalidIdentifierException(contactIdentifier);
 		}
@@ -126,9 +143,9 @@ public class ShortTermContactIndex
 		return contact;
 	}
 
-	public Collection<BPartnerContact> getRemainingContacts()
+	public Collection<BPartnerContact> getUnusedContacts()
 	{
-		return id2Contact.values();
+		return id2UnusedContact.values();
 	}
 
 	public void resetDefaultContactFlags()
@@ -145,7 +162,6 @@ public class ShortTermContactIndex
 		{
 			bpartnerContact.getContactType().setShipToDefault(false);
 		}
-
 	}
 
 	public void resetPurchaseDefaultFlags()

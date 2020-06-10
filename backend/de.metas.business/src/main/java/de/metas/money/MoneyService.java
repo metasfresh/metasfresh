@@ -60,6 +60,11 @@ public class MoneyService
 		this.currencyRepository = currencyRepository;
 	}
 
+	public CurrencyId getCurrencyIdByCurrencyCode(@NonNull final CurrencyCode currencyCode)
+	{
+		return currencyRepository.getCurrencyIdByCurrencyCode(currencyCode);
+	}
+
 	public CurrencyCode getCurrencyCodeByCurrencyId(@NonNull final CurrencyId currencyId)
 	{
 		return currencyRepository.getCurrencyCodeById(currencyId);
@@ -68,11 +73,6 @@ public class MoneyService
 	public CurrencyPrecision getStdPrecision(@NonNull final CurrencyCode currencyCode)
 	{
 		return currencyRepository.getStdPrecision(currencyCode);
-	}
-
-	public CurrencyId getCurrencyIdByCurrencyCode(@NonNull final CurrencyCode currencyCode)
-	{
-		return currencyRepository.getCurrencyIdByCurrencyCode(currencyCode);
 	}
 
 	public Money convertMoneyToCurrency(

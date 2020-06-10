@@ -44,7 +44,35 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateBPartne
   {
     "bankAccounts": [ ],
     "bpartner": {
+      "id": 100012,
+      "externalId": "fghij_2",
       "active": true,
+      "value": "code",
+      "name": "bPartner.name",
+      "companyName": "bPartner.companyName",
+      "parentId": 1,
+      "phone": "bPartner.phone",
+      "language": {
+        "m_name": "Deutsch",
+        "m_AD_Language": "de_DE",
+        "m_locale": "de_DE",
+        "_decimalPoint": false,
+        "_dateFormatPattern": "dd.MM.yyyy",
+        "_mediaSize": {
+          "x": 210000,
+          "y": 297000,
+          "mediaName": {
+            "value": 4
+          }
+        },
+        "leftToRight": true,
+        "decimalPoint": false,
+        "baseLanguage": true
+      },
+      "url": "bPartner.url",
+      "groupId": 15,
+      "vendor": false,
+      "customer": false,
       "changeLog": {
         "tableName": "C_BPartner",
         "recordId": {
@@ -66,35 +94,7 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateBPartne
           "nanos": 560000000
         },
         "entries": [ ]
-      },
-      "companyName": "bPartner.companyName",
-      "customer": false,
-      "externalId": "fghij_2",
-      "groupId": 15,
-      "id": 100012,
-      "language": {
-        "m_name": "Deutsch",
-        "m_AD_Language": "de_DE",
-        "m_locale": "de_DE",
-        "_decimalPoint": false,
-        "_dateFormatPattern": "dd.MM.yyyy",
-        "_mediaSize": {
-          "x": 210000,
-          "y": 297000,
-          "mediaName": {
-            "value": 4
-          }
-        },
-        "baseLanguage": true,
-        "leftToRight": true,
-        "decimalPoint": false
-      },
-      "name": "bPartner.name",
-      "parentId": 1,
-      "phone": "bPartner.phone",
-      "url": "bPartner.url",
-      "value": "code",
-      "vendor": false
+      }
     },
     "contacts": [
       {
@@ -157,6 +157,7 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateBPartne
         },
         "email": "c1_email@email.net",
         "externalId": "c1_externalId",
+        "handles": [ ],
         "id": {
           "bpartnerId": 100012,
           "userId": 100017
@@ -225,6 +226,7 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateBPartne
         },
         "email": "c2_email@email.net",
         "externalId": "c2_externalId",
+        "handles": [ ],
         "id": {
           "bpartnerId": 100012,
           "userId": 100018
@@ -265,6 +267,7 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateBPartne
         "countryCode": "CH",
         "externalId": "l1_externalId",
         "gln": "l1_gln",
+        "handles": [ ],
         "id": {
           "repoId": 100014,
           "bpartnerId": 100012
@@ -321,6 +324,7 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateBPartne
         "countryCode": "DE",
         "externalId": "l2_externalId",
         "gln": "l2_gln",
+        "handles": [ ],
         "id": {
           "repoId": 100016,
           "bpartnerId": 100012
@@ -389,7 +393,14 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateContact
       }
     ],
     "bpartner": {
+      "id": 20,
+      "externalId": "fghij",
       "active": true,
+      "value": "bpartnerRecord.value",
+      "name": "bpartnerRecord.name",
+      "groupId": 15,
+      "vendor": true,
+      "customer": true,
       "changeLog": {
         "tableName": "C_BPartner",
         "recordId": {
@@ -411,14 +422,7 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateContact
           "nanos": 560000000
         },
         "entries": [ ]
-      },
-      "customer": true,
-      "externalId": "fghij",
-      "groupId": 15,
-      "id": 20,
-      "name": "bpartnerRecord.name",
-      "value": "bpartnerRecord.value",
-      "vendor": true
+      }
     },
     "contacts": [
       {
@@ -482,6 +486,7 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateContact
         "email": "contactRecord.email",
         "externalId": "contactRecord.externalId",
         "firstName": "contactRecord.firstName",
+        "handles": [ ],
         "id": {
           "bpartnerId": 20,
           "userId": 30
@@ -552,6 +557,7 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateContact
         },
         "email": "newContact-_email@email.net",
         "externalId": "newContact-_externalId",
+        "handles": [ ],
         "id": {
           "bpartnerId": 20,
           "userId": 100010
@@ -593,6 +599,7 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateContact
         "district": "postalRecord.district",
         "externalId": "bpartnerLocation.externalId",
         "gln": "bpartnerLocationRecord.gln",
+        "handles": [ ],
         "id": {
           "repoId": 40,
           "bpartnerId": 20
@@ -661,7 +668,14 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateContact
       }
     ],
     "bpartner": {
+      "id": 20,
+      "externalId": "fghij",
       "active": true,
+      "value": "bpartnerRecord.value",
+      "name": "bpartnerRecord.name",
+      "groupId": 15,
+      "vendor": true,
+      "customer": true,
       "changeLog": {
         "tableName": "C_BPartner",
         "recordId": {
@@ -683,14 +697,7 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateContact
           "nanos": 560000000
         },
         "entries": [ ]
-      },
-      "customer": true,
-      "externalId": "fghij",
-      "groupId": 15,
-      "id": 20,
-      "name": "bpartnerRecord.name",
-      "value": "bpartnerRecord.value",
-      "vendor": true
+      }
     },
     "contacts": [
       {
@@ -754,6 +761,7 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateContact
         "email": "contactRecord.email",
         "externalId": "contactRecord.externalId",
         "firstName": "contactRecord.firstName",
+        "handles": [ ],
         "id": {
           "bpartnerId": 20,
           "userId": 30
@@ -797,6 +805,7 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateContact
         "district": "postalRecord.district",
         "externalId": "bpartnerLocation.externalId",
         "gln": "bpartnerLocationRecord.gln",
+        "handles": [ ],
         "id": {
           "repoId": 40,
           "bpartnerId": 20
@@ -865,7 +874,14 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateContact
       }
     ],
     "bpartner": {
+      "id": 20,
+      "externalId": "fghij",
       "active": true,
+      "value": "bpartnerRecord.value",
+      "name": "bpartnerRecord.name",
+      "groupId": 15,
+      "vendor": true,
+      "customer": true,
       "changeLog": {
         "tableName": "C_BPartner",
         "recordId": {
@@ -887,14 +903,7 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateContact
           "nanos": 560000000
         },
         "entries": [ ]
-      },
-      "customer": true,
-      "externalId": "fghij",
-      "groupId": 15,
-      "id": 20,
-      "name": "bpartnerRecord.name",
-      "value": "bpartnerRecord.value",
-      "vendor": true
+      }
     },
     "contacts": [
       {
@@ -958,6 +967,7 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateContact
         "email": "contactRecord.email",
         "externalId": "contactRecord.externalId",
         "firstName": "contactRecord.firstName",
+        "handles": [ ],
         "id": {
           "bpartnerId": 20,
           "userId": 30
@@ -1001,6 +1011,7 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateContact
         "district": "postalRecord.district",
         "externalId": "bpartnerLocation.externalId",
         "gln": "bpartnerLocationRecord.gln",
+        "handles": [ ],
         "id": {
           "repoId": 40,
           "bpartnerId": 20
@@ -1069,7 +1080,14 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateLocatio
       }
     ],
     "bpartner": {
+      "id": 20,
+      "externalId": "fghij",
       "active": true,
+      "value": "bpartnerRecord.value",
+      "name": "bpartnerRecord.name",
+      "groupId": 15,
+      "vendor": true,
+      "customer": true,
       "changeLog": {
         "tableName": "C_BPartner",
         "recordId": {
@@ -1091,14 +1109,7 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateLocatio
           "nanos": 560000000
         },
         "entries": [ ]
-      },
-      "customer": true,
-      "externalId": "fghij",
-      "groupId": 15,
-      "id": 20,
-      "name": "bpartnerRecord.name",
-      "value": "bpartnerRecord.value",
-      "vendor": true
+      }
     },
     "contacts": [
       {
@@ -1162,6 +1173,7 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateLocatio
         "email": "contactRecord.email",
         "externalId": "contactRecord.externalId",
         "firstName": "contactRecord.firstName",
+        "handles": [ ],
         "id": {
           "bpartnerId": 20,
           "userId": 30
@@ -1205,6 +1217,7 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateLocatio
         "district": "postalRecord.district",
         "externalId": "bpartnerLocation.externalId",
         "gln": "bpartnerLocationRecord.gln",
+        "handles": [ ],
         "id": {
           "repoId": 40,
           "bpartnerId": 20
@@ -1261,6 +1274,7 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateLocatio
         "countryCode": "DE",
         "externalId": "newLocation-_externalId",
         "gln": "newLocation-_gln",
+        "handles": [ ],
         "id": {
           "repoId": 100012,
           "bpartnerId": 20

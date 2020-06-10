@@ -70,7 +70,12 @@ public interface IEventBus
 	void postObject(Object obj);
 
 	/**
-	 * @return true if the bus was destroyed and it no longer accepts events.
+	 * @return {@code true} if the bus was destroyed and it no longer accepts events.
 	 */
 	boolean isDestroyed();
+
+	/**
+	 * @return {@code true} if events are submitted to a dedicated worker thread such that the invoker of {@link #postEvent(Event)} doesn't have to wait for the listeners to be invoked.
+	 */
+	boolean isAsync();
 }

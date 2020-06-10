@@ -26,14 +26,14 @@ package de.metas.vertical.pharma.securpharm.client.schema;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonCreator;
+
 import lombok.Builder;
 import lombok.Value;
 
-@Builder
 @Value
 public class JsonProductInfo
 {
-
 	private String reference;
 
 	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")

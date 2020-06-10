@@ -29,17 +29,17 @@ public interface I_C_Doc_Outbound_Config extends de.metas.document.archive.model
 {
 	//@formatter:off
 	// task 09417
-	public void setIsDirectEnqueue (boolean IsDirectEnqueue);
-	public boolean isDirectEnqueue();
-    public static final org.adempiere.model.ModelColumn<I_C_Doc_Outbound_Config, Object> COLUMN_IsDirectEnqueue = new org.adempiere.model.ModelColumn<I_C_Doc_Outbound_Config, Object>(I_C_Doc_Outbound_Config.class, "IsDirectEnqueue", null);
-    public static final String COLUMNNAME_IsDirectEnqueue = "IsDirectEnqueue";
+	 void setIsDirectEnqueue (boolean IsDirectEnqueue);
+	 boolean isDirectEnqueue();
+     org.adempiere.model.ModelColumn<I_C_Doc_Outbound_Config, Object> COLUMN_IsDirectEnqueue = new org.adempiere.model.ModelColumn<I_C_Doc_Outbound_Config, Object>(I_C_Doc_Outbound_Config.class, "IsDirectEnqueue", null);
+     String COLUMNNAME_IsDirectEnqueue = "IsDirectEnqueue";
 	//@formatter:on
 
 	//@formatter:off
 	// task 09417
-	public void setIsCreatePrintJob (boolean IsDirectEnqueue);
-	public boolean isCreatePrintJob();
-    public static final org.adempiere.model.ModelColumn<I_C_Doc_Outbound_Config, Object> COLUMN_IsCreatePrintJob = new org.adempiere.model.ModelColumn<I_C_Doc_Outbound_Config, Object>(I_C_Doc_Outbound_Config.class, "IsCreatePrintJob", null);
-    public static final String COLUMNNAME_IsCreatePrintJob = "IsCreatePrintJob";
+	void setIsCreatePrintJob (boolean IsDirectEnqueue);
+	boolean isCreatePrintJob();
+    org.adempiere.model.ModelColumn<I_C_Doc_Outbound_Config, Object> COLUMN_IsCreatePrintJob = new org.adempiere.model.ModelColumn<I_C_Doc_Outbound_Config, Object>(I_C_Doc_Outbound_Config.class, "IsCreatePrintJob", null);
+    String COLUMNNAME_IsCreatePrintJob = "IsCreatePrintJob";
    	//@formatter:on
 }

@@ -36,10 +36,7 @@ public interface IPrintPackageBL extends ISingletonService
 	String getHostKeyOrNull(Properties ctx);
 
 	/**
-	 * 
-	 * @param printPackage
-	 * @param jobInstructions contains the information which print job with which line(s) shall be added to the package 
-	 * @param printPackageCtx
+	 * @param jobInstructions contains the information which print job with which line(s) shall be added to the package
 	 * @return true if print package was created /updated
 	 */
 	boolean addPrintingDataToPrintPackage(I_C_Print_Package printPackage, 

@@ -109,7 +109,6 @@ public class SalesInvoicePaymentStatusRepository
 				.builder()
 				.orgValue(orgCode)
 				.failIfNotExists(false)
-				.outOfTrx(true)
 				.build();
 
 		final OrgId orgId = Services.get(IOrgDAO.class)

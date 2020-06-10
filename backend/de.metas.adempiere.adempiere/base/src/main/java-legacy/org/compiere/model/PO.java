@@ -108,6 +108,7 @@ import de.metas.process.PInstanceId;
 import de.metas.security.TableAccessLevel;
 import de.metas.user.UserId;
 import de.metas.util.Check;
+import de.metas.util.NumberUtils;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
@@ -287,6 +288,7 @@ public abstract class PO
 
 	/** Logger */
 	protected transient final Logger log = LogManager.getLogger(getClass());
+
 	/** Static Logger */
 	private static final Logger s_log = LogManager.getLogger(PO.class);
 
@@ -320,7 +322,7 @@ public abstract class PO
 	/**
 	 * Flag to indicate if this object is stale and needs to be reloaded before any get/set operation
 	 *
-	 * @see http://dewiki908/mediawiki/index.php/01537:_Speed_optimizations_for_new_record_saving_%282011052610000028%29
+	 * Also see http://dewiki908/mediawiki/index.php/01537:_Speed_optimizations_for_new_record_saving_%282011052610000028%29
 	 */
 	private boolean m_stale = false;
 
@@ -612,10 +614,9 @@ public abstract class PO
 	}
 
 	/**
-	 * Get Logger
-	 *
-	 * @return logger
+	 * @return logger that is still used in some legacy classes
 	 */
+	@Deprecated
 	public final Logger get_Logger()
 	{
 		return log;
@@ -663,7 +664,7 @@ public abstract class PO
 		final int defaultValue = 0;
 		return get_ValueAsInt(index, defaultValue);
 	}
-	
+
 	public final Integer get_ValueAsInt(final int index, final Integer defaultValue)
 	{
 		final Object value = get_Value(index);
@@ -1013,7 +1014,7 @@ public abstract class PO
 			final Class<?> clazz = p_info.getColumnClass(p_info.getColumnIndex(ColumnName));
 			if (Integer.class == clazz)
 			{
-				log.error("Invalid Data Type for " + ColumnName + "=" + value);
+				log.warn("Invalid Data Type for " + ColumnName + "=" + value); // avoid creating an AD_Issue; warn message suffices
 				value = Integer.parseInt((String)value);
 			}
 		}
@@ -1164,7 +1165,7 @@ public abstract class PO
 				}
 				catch (final NumberFormatException e)
 				{
-					log.error(ColumnName
+					log.warn(ColumnName
 							+ " - Class invalid(1): " + valueToUse.getClass().toString()
 							+ ", Should be " + p_info.getColumnClass(index).toString() + ": " + valueToUse, new Exception("stacktrace"));
 					return false;
@@ -1172,7 +1173,7 @@ public abstract class PO
 			}
 			else
 			{
-				log.error(ColumnName
+				log.warn(ColumnName
 						+ " - Class invalid(2): " + valueToUse.getClass().toString()
 						+ ", Should be " + p_info.getColumnClass(index).toString() + ": " + valueToUse, new Exception("stacktrace"));
 				return false;
@@ -1814,7 +1815,7 @@ public abstract class PO
 						return load0(trxName, true); // this is the retry, so isRetry=true this time
 					}
 				}
-				log.error("NO Data found for " + get_WhereClause(true) + ", trxName=" + m_trxName, new Exception("trace"));
+				log.warn("NO Data found for " + get_WhereClause(true) + ", trxName=" + m_trxName, new Exception("trace"));
 				m_IDs = new Object[] { I_ZERO };
 				success = false;
 				// throw new DBException("NO Data found for " + get_WhereClause(true));
@@ -1854,7 +1855,7 @@ public abstract class PO
 					+ ", SQL=" + sql.toString();
 			success = false;
 			m_IDs = new Object[] { I_ZERO };
-			log.error(msg, e);
+			log.warn(msg, e);
 			throw DBException.wrapIfNeeded(e);
 		}
 		// Finish
@@ -1961,7 +1962,7 @@ public abstract class PO
 			}
 			else
 			{
-				log.error("(rs) - " + String.valueOf(index)
+				log.warn("(rs) - " + String.valueOf(index)
 						+ ": " + p_info.getTableName() + "." + p_info.getColumnName(index)
 						+ " (" + p_info.getColumnClass(index) + ") - " + e);
 				success = false;
@@ -2072,7 +2073,7 @@ public abstract class PO
 				}
 				else
 				{
-					log.error("(ht) - " + String.valueOf(index)
+					log.warn("(ht) - " + String.valueOf(index)
 							+ ": " + p_info.getTableName() + "." + p_info.getColumnName(index)
 							+ " (" + p_info.getColumnClass(index) + ") - " + e);
 					success = false;
@@ -2366,7 +2367,7 @@ public abstract class PO
 				}
 				catch (final Exception e)
 				{
-					log.error("Failed to cast ID column to Integer: " + keyColumnName + ", value=" + valueObj, e);
+					log.warn("Failed to cast ID column to Integer: " + keyColumnName + ", value=" + valueObj, e);
 					valueInt = null;
 				}
 
@@ -2616,21 +2617,12 @@ public abstract class PO
 
 	/**
 	 * Get Translation of column
-	 *
-	 * @param ctx context
-	 * @param columnName
-	 * @return translation
 	 */
 	public final String get_Translation(final String columnName)
 	{
 		return get_Translation(columnName, Env.getAD_Language(getCtx()));
 	}
 
-	/**
-	 * Is new record
-	 *
-	 * @return true if new
-	 */
 	public final boolean is_new()
 	{
 		return m_createNew;
@@ -2868,7 +2860,7 @@ public abstract class PO
 		catch (final Exception e)
 		{
 			success = false;
-			log.error("Error while saving {}", this, e);
+			log.warn("Error while saving {}", this, e);
 
 			// task 08596: w need to save the error in case po.save() was called from the gridtab.
 			// It will want to show the result of CLogger.retrieveError() to the user.
@@ -3154,13 +3146,6 @@ public abstract class PO
 			}
 		}
 
-		//
-		// Deferred processing of this po (metas-ts 1076)
-		if (success)
-		{
-			fireModelChange(ModelChangeType.SUBSEQUENT);
-		}
-
 		// Return "success"
 		return success;
 	}	// saveFinish
@@ -3431,7 +3416,7 @@ public abstract class PO
 		{
 			if (log.isDebugEnabled())
 			{
-				log.debug("[" + m_trxName + "] - " + p_info.getTableName() + "." + where);
+				log.trace("PO has changes; tableNAme={}; whereClause={}", p_info.getTableName(), where);
 			}
 
 			if (!updated) 	// Updated not explicitly set
@@ -3551,7 +3536,7 @@ public abstract class PO
 			if (idNew <= 0)
 			{
 				final AdempiereException ex = new AdempiereException("No NextID (" + idNew + ") for " + p_info.getTableName());
-				// log.error(ex.getLocalizedMessage(), ex);
+				// log.warn(ex.getLocalizedMessage(), ex);
 				// return false;
 				throw ex;
 			}
@@ -3806,7 +3791,7 @@ public abstract class PO
 				msg += p_info.toString(i)
 						+ " - Value=" + value
 						+ "(" + (value == null ? "null" : value.getClass().getName()) + ")";
-				log.error(msg, e);
+				log.warn(msg, e);
 				throw new DBException(e);	// fini
 			}
 		}
@@ -3891,7 +3876,7 @@ public abstract class PO
 			// Re-load this object right now
 			else if (!load(m_trxName))
 			{
-				log.error("[" + m_trxName + "] - reloading");
+				log.warn("[" + m_trxName + "] - reloading");
 				ok = false;
 			}
 		}
@@ -3985,7 +3970,7 @@ public abstract class PO
 		final String colValue = value == null ? "null" : value.getClass().toString();
 		// int dt = p_info.getColumnDisplayType(index);
 
-		log.error("Unknown class for column " + colName
+		log.warn("Unknown class for column " + colName
 				+ " (" + colClass + ") - Value=" + colValue);
 
 		if (value == null)
@@ -4059,7 +4044,7 @@ public abstract class PO
 		catch (final Exception e)
 		{
 			success = false;
-			log.error("Error while deleting " + this, e);
+			log.warn("Error while deleting " + this, e);
 		}
 
 		return success;
@@ -4295,7 +4280,7 @@ public abstract class PO
 	 */
 	protected boolean beforeDelete()
 	{
-		// log.error("Error", Msg.getMsg(getCtx(), "CannotDelete"));
+		// log.warn("Error", Msg.getMsg(getCtx(), "CannotDelete"));
 		return true;
 	} 	// beforeDelete
 
@@ -4672,7 +4657,7 @@ public abstract class PO
 		}
 		catch (final SQLException e)
 		{
-			s_log.error(sql.toString(), e);
+			s_log.warn(sql.toString(), e);
 			return null;
 		}
 		finally
@@ -4735,12 +4720,12 @@ public abstract class PO
 			}
 			else
 			{
-				log.error("Unknown: " + value);
+				log.warn("Unknown: " + value);
 			}
 		}
 		catch (final Exception e)
 		{
-			log.error("Length=" + length, e);
+			log.warn("Length=" + length, e);
 		}
 		return retValue;
 	}	// getLOB
@@ -4849,7 +4834,7 @@ public abstract class PO
 		}
 		catch (final Exception e)
 		{
-			log.error("", e);
+			log.warn("get_xmlString - caught exception", e);
 		}
 		return xml;
 	}	// get_xmlString
@@ -5004,7 +4989,7 @@ public abstract class PO
 		final int defaultValue = 0;
 		return get_ValueAsInt(columnName, defaultValue);
 	}
-	
+
 	@Override
 	public final Integer get_ValueAsInt(final String columnName, final Integer defaultValue)
 	{
@@ -5036,6 +5021,14 @@ public abstract class PO
 	{
 		final Object oo = get_Value(index);
 		return StringUtils.toBoolean(oo);
+	}
+	
+	public final BigDecimal get_ValueAsBigDecimal(final String columnName)
+	{
+		final Object valueObj = get_Value(columnName);
+		return valueObj != null
+				? NumberUtils.asBigDecimal(valueObj)
+				: null;
 	}
 
 	// metas: begin

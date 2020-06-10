@@ -1,14 +1,7 @@
 package de.metas.handlingunits.inventory.interceptor;
 
-import javax.annotation.Nullable;
-
-import org.adempiere.ad.modelvalidator.annotations.Interceptor;
-import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.compiere.model.I_C_UOM;
-import org.compiere.model.ModelValidator;
-import org.springframework.stereotype.Component;
-
 import de.metas.handlingunits.inventory.InventoryLine;
+import de.metas.handlingunits.inventory.InventoryLineRecordService;
 import de.metas.handlingunits.inventory.InventoryRepository;
 import de.metas.handlingunits.model.I_M_InventoryLine;
 import de.metas.inventory.HUAggregationType;
@@ -17,6 +10,17 @@ import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMDAO;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.callout.annotations.Callout;
+import org.adempiere.ad.callout.annotations.CalloutMethod;
+import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
+import org.adempiere.ad.modelvalidator.annotations.Init;
+import org.adempiere.ad.modelvalidator.annotations.Interceptor;
+import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.ModelValidator;
+import org.springframework.stereotype.Component;
+
+import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -41,14 +45,23 @@ import lombok.NonNull;
  */
 
 @Interceptor(I_M_InventoryLine.class)
+@Callout(I_M_InventoryLine.class)
 @Component
 public class M_InventoryLine
 {
 	private final InventoryRepository inventoryLineRepository;
+	private final InventoryLineRecordService inventoryLineRecordService;
 
-	public M_InventoryLine(@NonNull final InventoryRepository inventoryLineRepository)
+	public M_InventoryLine(@NonNull final InventoryRepository inventoryLineRepository, final InventoryLineRecordService inventoryLineRecordService)
 	{
 		this.inventoryLineRepository = inventoryLineRepository;
+		this.inventoryLineRecordService = inventoryLineRecordService;
+	}
+
+	@Init
+	public void registerCallout()
+	{
+		Services.get(IProgramaticCalloutProvider.class).registerAnnotatedCallout(this);
 	}
 
 	@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE, ifColumnsChanged = I_M_InventoryLine.COLUMNNAME_QtyCount)
@@ -90,5 +103,11 @@ public class M_InventoryLine
 	{
 		final InventoryLineId inventoryLineId = InventoryLineId.ofRepoId(inventoryLineRecord.getM_InventoryLine_ID());
 		inventoryLineRepository.deleteInventoryLineHUs(inventoryLineId);
+	}
+
+	@CalloutMethod(columnNames = { I_M_InventoryLine.COLUMNNAME_M_HU_ID, I_M_InventoryLine.COLUMNNAME_M_Product_ID, I_M_InventoryLine.COLUMNNAME_C_UOM_ID })
+	public void setQtyBookedFromHU(@NonNull final I_M_InventoryLine inventoryLineRecord)
+	{
+		inventoryLineRecordService.setQtyBookedFromStorage(inventoryLineRecord);
 	}
 }

@@ -26,6 +26,7 @@ import de.metas.attachments.AttachmentEntry;
  * #L%
  */
 
+/** Listener to be fired when an attachment was exported outside of metasfresh. */
 public interface AttachmentStoredListener
 {
 	void attachmentWasStored(AttachmentEntry attachmentEntry, URI storageIdentifier);

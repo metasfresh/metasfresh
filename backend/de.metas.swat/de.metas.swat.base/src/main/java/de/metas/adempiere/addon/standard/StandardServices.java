@@ -4,9 +4,6 @@ import org.adempiere.inout.replenish.service.IReplenishForFutureQty;
 import org.adempiere.inout.replenish.service.ReplenishForFutureQty;
 import org.adempiere.misc.service.IPOService;
 import org.adempiere.misc.service.impl.POService;
-import org.adempiere.processing.service.IProcessingService;
-import org.adempiere.processing.service.impl.ProcessingService;
-
 import de.metas.adempiere.addon.IAddOn;
 import de.metas.adempiere.service.AppDictionaryBL;
 import de.metas.adempiere.service.IAppDictionaryBL;
@@ -56,7 +53,6 @@ public class StandardServices implements IAddOn
 		Services.registerService(ICalendarDAO.class, new CalendarDAO());
 		Services.registerService(IPOService.class, new POService());
 		Services.registerService(IPriceListDAO.class, new PriceListDAO());
-		Services.registerService(IProcessingService.class, ProcessingService.get());
 
 		Services.registerService(ISweepTableBL.class, new SweepTableBL());
 

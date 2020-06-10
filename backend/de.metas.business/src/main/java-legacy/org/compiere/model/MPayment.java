@@ -21,8 +21,30 @@
  */
 package org.compiere.model;
 
+import static de.metas.util.lang.CoalesceUtil.firstGreaterThanZero;
+
+import java.io.File;
+import java.math.BigDecimal;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Properties;
+
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.exceptions.FillMandatoryException;
+import org.adempiere.service.ClientId;
+import org.adempiere.service.ISysConfigBL;
+import org.compiere.SpringContextHolder;
+import org.compiere.util.DB;
+import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
+import org.slf4j.Logger;
+
 import de.metas.allocation.api.IAllocationDAO;
-import de.metas.bpartner.BPartnerBankAccountId;
+import de.metas.banking.BankAccountId;
+import de.metas.banking.api.BankAccountService;
 import de.metas.bpartner.service.BPartnerCreditLimitRepository;
 import de.metas.bpartner.service.BPartnerStats;
 import de.metas.bpartner.service.IBPartnerDAO;
@@ -53,28 +75,6 @@ import de.metas.payment.api.impl.PaymentBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
-import org.adempiere.bank.BankId;
-import org.adempiere.bank.BankRepository;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.exceptions.FillMandatoryException;
-import org.adempiere.service.ClientId;
-import org.adempiere.service.ISysConfigBL;
-import org.compiere.SpringContextHolder;
-import org.compiere.util.DB;
-import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
-import org.slf4j.Logger;
-
-import java.io.File;
-import java.math.BigDecimal;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.Timestamp;
-import java.time.LocalDate;
-import java.util.List;
-import java.util.Properties;
-
-import static de.metas.util.lang.CoalesceUtil.firstGreaterThanZero;
 
 /**
  * Payment Model. - retrieve and create payments for invoice
@@ -182,7 +182,7 @@ public final class MPayment extends X_C_Payment
 			setDateTrx(new Timestamp(System.currentTimeMillis()));
 			setDateAcct(getDateTrx());
 			setTenderType(TenderType.Check.getCode());
-			
+
 			PaymentBL.markNotReconciledNoSave(this);
 		}
 	}   // MPayment
@@ -225,16 +225,16 @@ public final class MPayment extends X_C_Payment
 	protected boolean beforeSave(final boolean newRecord)
 	{
 		// metas: tsa: us025b: begin: If is a cash bank, set TenderType=Cash
-		if (getC_BP_BankAccount_ID() > 0 && getC_BPartner_ID() > 0)
+		final BankAccountId orgBankAccountId = BankAccountId.ofRepoIdOrNull(getC_BP_BankAccount_ID());
+		if (orgBankAccountId != null)
 		{
-			final BankRepository bankRepository = SpringContextHolder.instance.getBean(BankRepository.class);
-			final BankId bankId = bankRepository.getBankId(BPartnerBankAccountId.ofRepoId(getC_BPartner_ID(), getC_BP_BankAccount_ID()));
-
-			if (bankId != null && bankRepository.isCashBank(bankId))
+			final BankAccountService bankAccountService = SpringContextHolder.instance.getBean(BankAccountService.class);
+			if (bankAccountService.isCashBank(orgBankAccountId))
 			{
 				setTenderType(TenderType.Cash.getCode());
 			}
 		}
+		
 		// metas: tsa: us025b: end
 		// @Trifon - CashPayments
 		// if ( getTenderType().equals("X") ) {
@@ -700,7 +700,7 @@ public final class MPayment extends X_C_Payment
 	/**
 	 * Set Payment Amount
 	 *
-	 * @param C_Currency_ID currency (optional)
+	 * @param currencyId currency (optional)
 	 * @param payAmt        amount
 	 * @deprecated Will be deleted because it's used only by legacy API
 	 */

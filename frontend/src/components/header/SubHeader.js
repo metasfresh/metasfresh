@@ -263,6 +263,7 @@ class SubHeader extends Component {
       handleLetter,
       handlePrint,
       openModal,
+      handleComments,
       standardActions,
       windowId,
     } = this.props;
@@ -326,6 +327,13 @@ class SubHeader extends Component {
         caption: counterpart.translate('window.Delete.caption'),
         hotkey: keymap.DELETE_DOCUMENT,
       },
+      {
+        action: 'comments',
+        handler: handleComments,
+        icon: 'meta-icon-message',
+        caption: counterpart.translate('window.comments.caption'),
+        hotkey: keymap.OPEN_COMMENTS,
+      },
     ]
       .filter((docLink) => standardActions.has(docLink.action))
       .map((docLink) => {
@@ -345,7 +353,7 @@ class SubHeader extends Component {
       dataId,
       editmode,
       handleEditModeToggle,
-      query,
+      viewId,
       redirect,
       selected,
       siteName,
@@ -424,12 +432,14 @@ class SubHeader extends Component {
           </div>
         ) : null}
 
-        {windowId && query && query.viewId && (
+        {windowId && viewId && (
           <a
             className="subheader-item js-subheader-item"
-            href={`${config.API_URL}/documentView/${windowId}/${
-              query.viewId
-            }/export/excel?selectedIds=${selected.join(',')}`}
+            href={`${
+              config.API_URL
+            }/documentView/${windowId}/${viewId}/export/excel?selectedIds=${selected.join(
+              ','
+            )}`}
             download
             onClick={this.handleDownloadSelected}
             style={{
@@ -475,7 +485,6 @@ class SubHeader extends Component {
       dataId,
       selected,
       entity,
-      query,
       openModal,
       openModalRow,
       closeSubheader,
@@ -493,7 +502,7 @@ class SubHeader extends Component {
         openModalRow={openModalRow}
         closeSubheader={closeSubheader}
         notfound={notfound}
-        docId={dataId ? dataId : query && query.viewId}
+        docId={dataId ? dataId : viewId}
         rowId={selected}
         activeTab={activeTab}
         activeTabSelected={activeTab && selected ? selected : []}
@@ -544,7 +553,7 @@ class SubHeader extends Component {
  * @prop {*} notfound
  * @prop {func} openModal
  * @prop {func} openModalRow
- * @prop {*} query
+ * @prop {*} viewId
  * @prop {*} redirect
  * @prop {*} selected
  * @prop {*} siteName
@@ -563,18 +572,18 @@ SubHeader.propTypes = {
   handleClone: PropTypes.any,
   handleDelete: PropTypes.any,
   handleEmail: PropTypes.any,
+  handleComments: PropTypes.func,
   handleLetter: PropTypes.any,
   handleEditModeToggle: PropTypes.any,
   handlePrint: PropTypes.any,
   notfound: PropTypes.any,
   openModal: PropTypes.func,
   openModalRow: PropTypes.func,
-  query: PropTypes.any,
+  viewId: PropTypes.string,
   redirect: PropTypes.any,
   selected: PropTypes.any,
   siteName: PropTypes.any,
   standardActions: PropTypes.any,
-  viewId: PropTypes.string,
   windowId: PropTypes.string,
 };
 

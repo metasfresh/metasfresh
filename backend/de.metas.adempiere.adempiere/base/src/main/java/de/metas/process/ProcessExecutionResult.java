@@ -45,6 +45,7 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
 import lombok.Singular;
+import lombok.Value;
 
 /*
  * #%L
@@ -177,15 +178,15 @@ public class ProcessExecutionResult
 			@JsonProperty("pinstanceId") final PInstanceId pinstanceId,
 			@JsonProperty("summary") final String summary,
 			@JsonProperty("error") final boolean error,
-			//@JsonProperty("errorWasReportedToUser") final boolean errorWasReportedToUser, // transient
+			// @JsonProperty("errorWasReportedToUser") final boolean errorWasReportedToUser, // transient
 			@JsonProperty("timeout") final boolean timeout,
-			//@JsonProperty("logs") final List<ProcessInfoLog> logs, // transient
+			// @JsonProperty("logs") final List<ProcessInfoLog> logs, // transient
 			@JsonProperty("showProcessLogsPolicy") final ShowProcessLogs showProcessLogsPolicy,
-			//@JsonProperty("printFormat") final MPrintFormat printFormat, // transient
+			// @JsonProperty("printFormat") final MPrintFormat printFormat, // transient
 			@JsonProperty("reportData") final byte[] reportData,
 			@JsonProperty("reportFilename") final String reportFilename,
 			@JsonProperty("reportContentType") final String reportContentType,
-			//@JsonProperty("throwable") final Throwable throwable, // transient
+			// @JsonProperty("throwable") final Throwable throwable, // transient
 			@JsonProperty("refreshAllAfterExecution") final boolean refreshAllAfterExecution,
 			@JsonProperty("recordToRefreshAfterExecution") final TableRecordReference recordToRefreshAfterExecution,
 			@JsonProperty("recordToSelectAfterExecution") final TableRecordReference recordToSelectAfterExecution,
@@ -854,6 +855,7 @@ public class ProcessExecutionResult
 					.add("target", target)
 					.add("automaticallySetReferencingDocumentPaths", automaticallySetReferencingDocumentPaths)
 					.add("records", records)
+					.add("automaticallySetReferencingDocumentPaths", automaticallySetReferencingDocumentPaths)
 					.toString();
 		}
 

@@ -60,7 +60,7 @@ public class BPartnerCompositeRepository
 {
 	private final IBPartnerDAO bpartnersRepo = Services.get(IBPartnerDAO.class);
 	private final LogEntriesRepository recordChangeLogRepository;
-	private final BPartnerCompositeCache bpartnerCompositeCache = new BPartnerCompositeCache();
+	private final BPartnerCompositeCacheById bpartnerCompositeCache = new BPartnerCompositeCacheById();
 
 	public BPartnerCompositeRepository(@NonNull final LogEntriesRepository recordChangeLogRepository)
 	{
@@ -222,7 +222,7 @@ public class BPartnerCompositeRepository
 		{
 			throw new AdempiereException("The given query needs to yield max one BPartnerComposite; items yielded instead: " + byQuery.size())
 					.appendParametersToMessage()
-					.setParameter("BPartnerQuery", query);
+					.setParameter("query", query);
 		}
 		return Optional.ofNullable(CollectionUtils.singleElementOrNull(byQuery));
 	}
@@ -234,12 +234,15 @@ public class BPartnerCompositeRepository
 
 	public ImmutableList<BPartnerComposite> getByIds(@NonNull final Collection<BPartnerId> bpartnerIds)
 	{
-		final Collection<BPartnerComposite> result = bpartnerCompositeCache.getAllOrLoad(bpartnerIds, this::retrieveByIds);
+		final Collection<BPartnerComposite> bpartnerComposites = bpartnerCompositeCache.getAllOrLoad(bpartnerIds, this::retrieveByIds);
 
-		return result
-				.stream()
-				.map(BPartnerComposite::deepCopy) // important because the instance is mutable!
-				.collect(ImmutableList.toImmutableList());
+		final ImmutableList.Builder<BPartnerComposite> result = ImmutableList.builder();
+		for (final BPartnerComposite bpartnerComposite : bpartnerComposites)
+		{
+			result.add(bpartnerComposite.deepCopy()); // important because the instance is mutable!
+		}
+
+		return result.build();
 	}
 
 	private ImmutableMap<BPartnerId, BPartnerComposite> retrieveByIds(@NonNull final Collection<BPartnerId> bpartnerIds)

@@ -49,6 +49,11 @@ class TableItem extends Component {
 
   // TODO: This needs refactoring. The cases should be better described
   shouldComponentUpdate(nextProps, nextState) {
+    // re-render if we triggered a sortAction
+    if (nextProps.activeSort) {
+      return true;
+    }
+
     // check on saving logic
     if (this.props.notSaved === true && nextProps.notSaved === false) {
       return true;
@@ -712,7 +717,8 @@ TableItem.propTypes = {
   tabIndex: PropTypes.number,
   entity: PropTypes.string,
   getSizeClass: PropTypes.func,
-  colspan: PropTypes.string,
+  colspan: PropTypes.oneOfType([PropTypes.bool, PropTypes.string]),
+  // TODO: ^^ We cannot allow having a prop which is sometimes bool and sometimes string
   viewId: PropTypes.string,
   docId: PropTypes.string,
   windowId: PropTypes.string,
@@ -725,6 +731,7 @@ TableItem.propTypes = {
   keyProperty: PropTypes.string,
   selected: PropTypes.array,
   page: PropTypes.number,
+  activeSort: PropTypes.bool,
   activeLocale: PropTypes.object,
 };
 

@@ -1,26 +1,9 @@
 package de.metas.ui.web.handlingunits;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.function.Function;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Product;
-import org.compiere.util.Env;
-
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsDAO;
@@ -54,6 +37,20 @@ import de.metas.util.StringUtils;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_Product;
+import org.compiere.util.Env;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.function.Function;
 
 /*
  * #%L
@@ -81,7 +78,6 @@ import lombok.NonNull;
  * HU Editor's row
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 @EqualsAndHashCode
 public final class HUEditorRow implements IViewRow
@@ -116,7 +112,7 @@ public final class HUEditorRow implements IViewRow
 			layouts = {
 					@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 10),
 					@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 10)
-	})
+			})
 	private final String code;
 
 	public static final String FIELDNAME_Locator = I_M_HU.COLUMNNAME_M_Locator_ID;
@@ -124,8 +120,8 @@ public final class HUEditorRow implements IViewRow
 			captionKey = FIELDNAME_Locator, //
 			widgetType = DocumentFieldWidgetType.Text, //
 			layouts = { @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 15, //
-			displayed = Displayed.SYSCONFIG, displayedSysConfigPrefix = SYSCFG_PREFIX, defaultDisplaySysConfig = false)
-	})
+					displayed = Displayed.SYSCONFIG, displayedSysConfigPrefix = SYSCFG_PREFIX, defaultDisplaySysConfig = false)
+			})
 	private final JSONLookupValue locator;
 
 	public static final String FIELDNAME_Product = I_M_HU.COLUMNNAME_M_Product_ID;
@@ -135,6 +131,12 @@ public final class HUEditorRow implements IViewRow
 	})
 	private final JSONLookupValue product;
 
+	public static final String FIELDNAME_IsOwnPalette = I_M_HU.COLUMNNAME_HUPlanningReceiptOwnerPM;
+	@ViewColumn(fieldName = FIELDNAME_IsOwnPalette, widgetType = DocumentFieldWidgetType.YesNo, sorting = false, layouts = {
+			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 25)
+	})
+	private final Boolean isOwnPalette;
+
 	public static final String FIELDNAME_HU_UnitType = "HU_UnitType";
 	@ViewColumn(fieldName = FIELDNAME_HU_UnitType, //
 			widgetType = DocumentFieldWidgetType.Text, //
@@ -143,7 +145,7 @@ public final class HUEditorRow implements IViewRow
 			restrictToMediaTypes = { MediaType.SCREEN }, //
 			layouts = {
 					@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 30)
-	})
+			})
 	private final JSONLookupValue huUnitType;
 
 	public static final String FIELDNAME_PackingInfo = I_M_HU.COLUMNNAME_M_HU_PI_Item_Product_ID;
@@ -151,16 +153,16 @@ public final class HUEditorRow implements IViewRow
 			captionKey = FIELDNAME_PackingInfo, //
 			widgetType = DocumentFieldWidgetType.Text, //
 			layouts = { @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 40, //
-			displayed = Displayed.SYSCONFIG, displayedSysConfigPrefix = SYSCFG_PREFIX)
-	})
+					displayed = Displayed.SYSCONFIG, displayedSysConfigPrefix = SYSCFG_PREFIX)
+			})
 	private final String packingInfo;
 
 	public static final String FIELDNAME_QtyCU = "QtyCU";
 	@ViewColumn(fieldName = FIELDNAME_QtyCU, //
 			widgetType = DocumentFieldWidgetType.Quantity,//
 			widgetSize = WidgetSize.Small, sorting = false, layouts = {
-					@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 50),
-					@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 50)
+			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 50),
+			@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 50)
 	})
 	private final BigDecimal qtyCU;
 
@@ -169,8 +171,8 @@ public final class HUEditorRow implements IViewRow
 			captionKey = FIELDNAME_UOM, //
 			widgetType = DocumentFieldWidgetType.Text, //
 			layouts = { @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 60, //
-			displayed = Displayed.SYSCONFIG, displayedSysConfigPrefix = SYSCFG_PREFIX)
-	})
+					displayed = Displayed.SYSCONFIG, displayedSysConfigPrefix = SYSCFG_PREFIX)
+			})
 	private final JSONLookupValue uom;
 
 	public static final String FIELDNAME_HUStatus = I_M_HU.COLUMNNAME_HUStatus;
@@ -178,7 +180,7 @@ public final class HUEditorRow implements IViewRow
 			widgetType = DocumentFieldWidgetType.Lookup, //
 			widgetSize = WidgetSize.Small,//
 			sorting = false, layouts = {
-					@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 70),
+			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 70),
 	})
 	private final JSONLookupValue huStatusDisplay;
 
@@ -224,6 +226,7 @@ public final class HUEditorRow implements IViewRow
 
 		packingInfo = builder.packingInfo;
 		product = builder.product;
+		isOwnPalette = builder.isOwnPalette;
 		uom = builder.uom;
 		qtyCU = builder.qtyCU;
 		bestBeforeDate = builder.getBestBeforeDate();
@@ -362,7 +365,6 @@ public final class HUEditorRow implements IViewRow
 	}
 
 	/**
-	 *
 	 * @return the wrapped HU or {@code null} if there is none.
 	 */
 	public I_M_HU getM_HU()
@@ -522,7 +524,6 @@ public final class HUEditorRow implements IViewRow
 	}
 
 	/**
-	 *
 	 * @return the ID of the wrapped UOM or {@code -1} if there is none.
 	 */
 	public int getC_UOM_ID()
@@ -532,7 +533,6 @@ public final class HUEditorRow implements IViewRow
 	}
 
 	/**
-	 *
 	 * @return the wrapped UOM or {@code null} if there is none.
 	 */
 	public I_C_UOM getC_UOM()
@@ -560,7 +560,7 @@ public final class HUEditorRow implements IViewRow
 
 	/**
 	 * @param stringFilter
-	 * @param adLanguage AD_Language (used to get the right row's string representation)
+	 * @param adLanguage   AD_Language (used to get the right row's string representation)
 	 * @return true if the row is matching the string filter
 	 */
 	public boolean matchesStringFilter(final String stringFilter)
@@ -601,6 +601,7 @@ public final class HUEditorRow implements IViewRow
 
 		private String packingInfo;
 		private JSONLookupValue product;
+		private Boolean isOwnPalette;
 		private JSONLookupValue uom;
 		private BigDecimal qtyCU;
 		private LocalDate bestBeforeDate;
@@ -634,7 +635,9 @@ public final class HUEditorRow implements IViewRow
 			return this;
 		}
 
-		/** @return row ID */
+		/**
+		 * @return row ID
+		 */
 		private HUEditorRowId getRowId()
 		{
 			return Check.assumeNotNull(_rowId, "Parameter rowId is not null");
@@ -715,6 +718,12 @@ public final class HUEditorRow implements IViewRow
 		public Builder setProduct(final JSONLookupValue product)
 		{
 			this.product = product;
+			return this;
+		}
+
+		public Builder setIsOwnPalette(final Boolean isOwnPalette)
+		{
+			this.isOwnPalette = isOwnPalette;
 			return this;
 		}
 

@@ -156,6 +156,7 @@ public class LookupDAO implements ILookupDAO
 		private final String displayColumnSQL;
 		private final AdWindowId zoomAD_Window_ID_Override;
 		private final boolean autoComplete;
+		private final boolean showInactiveValues;
 		@NonNull
 		TooltipType tooltipType;
 
@@ -216,6 +217,7 @@ public class LookupDAO implements ILookupDAO
 
 			autoComplete = builder.autoComplete;
 
+			showInactiveValues = builder.showInactiveValues;
 			tooltipType = builder.tooltipType;
 		}
 
@@ -247,6 +249,7 @@ public class LookupDAO implements ILookupDAO
 		private AdWindowId zoomPO_Window_ID;
 		private AdWindowId zoomAD_Window_ID_Override;
 		private boolean autoComplete = true;
+		private boolean showInactiveValues = false;
 
 		private TableRefInfoBuilder()
 		{
@@ -332,6 +335,12 @@ public class LookupDAO implements ILookupDAO
 		public TableRefInfoBuilder setAutoComplete(final boolean autoComplete)
 		{
 			this.autoComplete = autoComplete;
+			return this;
+		}
+
+		public TableRefInfoBuilder setShowInactiveValues(final boolean showInactiveValues)
+		{
+			this.showInactiveValues = showInactiveValues;
 			return this;
 		}
 
@@ -489,6 +498,7 @@ public class LookupDAO implements ILookupDAO
 				+ "t.AD_Table_ID, cd.ColumnSQL as DisplayColumnSQL, "                    // 10..11
 				+ "rt.AD_Window_ID as RT_AD_Window_ID, " // 12
 				+ "t." + I_AD_Table.COLUMNNAME_IsAutocomplete // 13
+				+ ", rt." + I_AD_Ref_Table.COLUMNNAME_ShowInactiveValues // 14
 				+ ", r.Name as ReferenceName"
 				+ ", t.TooltipType as TooltipType "
 				// #2340 Also collect information about the ref table being a reference target
@@ -524,6 +534,7 @@ public class LookupDAO implements ILookupDAO
 				final String displayColumnSQL = rs.getString(11);
 				final AdWindowId zoomAD_Window_ID_Override = AdWindowId.ofRepoIdOrNull(rs.getInt(12));
 				final boolean autoComplete = StringUtils.toBoolean(rs.getString(13));
+				final boolean showInactiveValues = StringUtils.toBoolean(rs.getString(14));
 				final String referenceName = rs.getString("ReferenceName");
 				final TooltipType tooltipType = TooltipType.ofCode(rs.getString("TooltipType"));
 
@@ -541,6 +552,7 @@ public class LookupDAO implements ILookupDAO
 						.setZoomPO_Window_ID(zoomPO_Window_ID)
 						.setZoomAD_Window_ID_Override(zoomAD_Window_ID_Override)
 						.setAutoComplete(autoComplete)
+						.setShowInactiveValues(showInactiveValues)
 						.setTooltipType(tooltipType)
 						.build();
 			}

@@ -439,6 +439,8 @@ public class BPartnerBL implements IBPartnerBL
 	{
 		Check.assumeNotNull(template, "Parameter template is not null");
 		Check.assume(!template.isProcessed(), "{} not already processed", template);
+		Check.assume(template.getC_Location_ID() > 0, "{} > 0", template); // just to make sure&explicit
+
 		Services.get(ITrxManager.class).assertThreadInheritedTrxExists();
 
 		//

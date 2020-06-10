@@ -18,9 +18,9 @@ import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionInstanceId;
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.CommissionTriggerType;
 import de.metas.contracts.commission.commissioninstance.services.repos.CommissionRecordStagingService.CommissionStagingRecords;
-import de.metas.contracts.commission.commissioninstance.testhelpers.CommissionInstanceTestRecord;
-import de.metas.contracts.commission.commissioninstance.testhelpers.CommissionShareTestRecord;
-import de.metas.contracts.commission.commissioninstance.testhelpers.CommissionInstanceTestRecord.CreateCommissionInstanceResult;
+import de.metas.contracts.commission.commissioninstance.testhelpers.TestCommissionInstance;
+import de.metas.contracts.commission.commissioninstance.testhelpers.TestCommissionShare;
+import de.metas.contracts.commission.commissioninstance.testhelpers.TestCommissionInstance.CreateCommissionInstanceResult;
 import de.metas.contracts.commission.model.I_C_Commission_Share;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.organization.OrgId;
@@ -73,7 +73,7 @@ class CommissionRecordStagingServiceTest
 	@Test
 	void retrieveRecordsForInstanceId_commission_share_ordering()
 	{
-		final CreateCommissionInstanceResult commissionData1 = CommissionInstanceTestRecord.builder()
+		final CreateCommissionInstanceResult commissionData1 = TestCommissionInstance.builder()
 				.orgId(OrgId.ofRepoId(10))
 				.triggerType(CommissionTriggerType.InvoiceCandidate)
 				.invoiceCandidateId(InvoiceCandidateId.ofRepoId(20))
@@ -82,12 +82,12 @@ class CommissionRecordStagingServiceTest
 				.pointsBase_Forecasted("10")
 				.pointsBase_Invoiceable("5")
 				.pointsBase_Invoiced("1")
-				.commissionShareTestRecord(CommissionShareTestRecord.builder().levelHierarchy(1).flatrateTermId(FlatrateTermId.ofRepoId(20)).salesRepBPartnerId(BPartnerId.ofRepoId(20)).commissionProductId(commissionProduct2Id).build())
-				.commissionShareTestRecord(CommissionShareTestRecord.builder().levelHierarchy(0).flatrateTermId(FlatrateTermId.ofRepoId(10)).salesRepBPartnerId(BPartnerId.ofRepoId(10)).commissionProductId(commissionProduct1Id).build())
+				.commissionShareTestRecord(TestCommissionShare.builder().levelHierarchy(1).flatrateTermId(FlatrateTermId.ofRepoId(20)).salesRepBPartnerId(BPartnerId.ofRepoId(20)).commissionProductId(commissionProduct2Id).build())
+				.commissionShareTestRecord(TestCommissionShare.builder().levelHierarchy(0).flatrateTermId(FlatrateTermId.ofRepoId(10)).salesRepBPartnerId(BPartnerId.ofRepoId(10)).commissionProductId(commissionProduct1Id).build())
 				.build().createCommissionData();
 		final CommissionInstanceId commissionInstance1Id = commissionData1.getCommissionInstanceId();
 
-		final CreateCommissionInstanceResult commissionData2 = CommissionInstanceTestRecord.builder()
+		final CreateCommissionInstanceResult commissionData2 = TestCommissionInstance.builder()
 				.orgId(OrgId.ofRepoId(5))
 				.triggerType(CommissionTriggerType.InvoiceCandidate)
 				.triggerDocumentDate(TimeUtil.parseTimestamp("2020-03-21"))
@@ -96,8 +96,8 @@ class CommissionRecordStagingServiceTest
 				.pointsBase_Forecasted("10")
 				.pointsBase_Invoiceable("5")
 				.pointsBase_Invoiced("1")
-				.commissionShareTestRecord(CommissionShareTestRecord.builder().levelHierarchy(1).flatrateTermId(FlatrateTermId.ofRepoId(20)).salesRepBPartnerId(BPartnerId.ofRepoId(40)).commissionProductId(commissionProduct2Id).build())
-				.commissionShareTestRecord(CommissionShareTestRecord.builder().levelHierarchy(0).flatrateTermId(FlatrateTermId.ofRepoId(10)).salesRepBPartnerId(BPartnerId.ofRepoId(30)).commissionProductId(commissionProduct1Id).build())
+				.commissionShareTestRecord(TestCommissionShare.builder().levelHierarchy(1).flatrateTermId(FlatrateTermId.ofRepoId(20)).salesRepBPartnerId(BPartnerId.ofRepoId(40)).commissionProductId(commissionProduct2Id).build())
+				.commissionShareTestRecord(TestCommissionShare.builder().levelHierarchy(0).flatrateTermId(FlatrateTermId.ofRepoId(10)).salesRepBPartnerId(BPartnerId.ofRepoId(30)).commissionProductId(commissionProduct1Id).build())
 				.build().createCommissionData();
 		final CommissionInstanceId commissionInstance2Id = commissionData2.getCommissionInstanceId();
 

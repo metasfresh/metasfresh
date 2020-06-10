@@ -1,17 +1,18 @@
 package de.metas.handlingunits.inventory;
 
-import static io.github.jsonSnapshot.SnapshotMatcher.expect;
-import static io.github.jsonSnapshot.SnapshotMatcher.start;
-import static io.github.jsonSnapshot.SnapshotMatcher.validateSnapshots;
-import static java.math.BigDecimal.ONE;
-import static java.math.BigDecimal.TEN;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.tuple;
-
-import java.math.BigDecimal;
-
+import de.metas.document.DocBaseAndSubType;
+import de.metas.document.DocTypeId;
+import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.model.I_M_InventoryLine;
+import de.metas.handlingunits.model.I_M_InventoryLine_HU;
+import de.metas.inventory.AggregationType;
+import de.metas.inventory.HUAggregationType;
+import de.metas.inventory.InventoryId;
+import de.metas.inventory.InventoryLineId;
+import de.metas.material.event.commons.AttributesKey;
+import de.metas.organization.OrgId;
+import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.AttributesKeys;
 import org.adempiere.test.AdempiereTestHelper;
@@ -28,19 +29,17 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
-import de.metas.document.DocBaseAndSubType;
-import de.metas.document.DocTypeId;
-import de.metas.handlingunits.HuId;
-import de.metas.handlingunits.model.I_M_InventoryLine;
-import de.metas.handlingunits.model.I_M_InventoryLine_HU;
-import de.metas.inventory.AggregationType;
-import de.metas.inventory.HUAggregationType;
-import de.metas.inventory.InventoryId;
-import de.metas.inventory.InventoryLineId;
-import de.metas.material.event.commons.AttributesKey;
-import de.metas.organization.OrgId;
-import de.metas.product.ProductId;
-import de.metas.quantity.Quantity;
+import java.math.BigDecimal;
+
+import static io.github.jsonSnapshot.SnapshotMatcher.expect;
+import static io.github.jsonSnapshot.SnapshotMatcher.start;
+import static io.github.jsonSnapshot.SnapshotMatcher.validateSnapshots;
+import static java.math.BigDecimal.ONE;
+import static java.math.BigDecimal.TEN;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.tuple;
 
 /*
  * #%L
@@ -155,6 +154,9 @@ class InventoryRepositoryTest
 						.qtyBook(Quantity.of(TWENTY, uomRecord))
 						.build())
 				.build();
+
+		inventoryLine.getInventoryLineHUs()
+				.forEach(lineHU -> InventoryTestHelper.createStorageFor(inventoryLine.getProductId(), lineHU.getQtyBook(), lineHU.getHuId()));
 
 		// invoke the method under test
 		inventoryLineRepository.saveInventoryLine(inventoryLine, inventoryId);

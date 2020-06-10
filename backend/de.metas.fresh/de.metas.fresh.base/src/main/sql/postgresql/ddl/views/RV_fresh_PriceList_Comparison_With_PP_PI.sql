@@ -66,6 +66,11 @@ FROM M_ProductPrice pp
         /* WHERE isInfiniteCapacity = 'N' task 09045/09788: we can also export PiiPs with infinite capacity */
     WHERE p.M_Product_ID = vip.M_Product_ID
 
+      AND CASE
+              WHEN
+                  EXISTS(select 0 from Report.Valid_PI_Item_Product_V v where p.M_Product_ID = v.M_Product_ID AND v.hasPartner is true and bp.C_BPartner_ID = v.C_BPartner_ID)
+                  THEN vip.C_BPartner_ID = bp.C_BPartner_ID
+              else vip.C_BPartner_ID IS NULL END
     ) bp_ip ON TRUE
 
          LEFT OUTER JOIN LATERAL

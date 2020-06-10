@@ -4,7 +4,7 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import Queue from 'simple-promise-queue';
 import cx from 'classnames';
-
+import _ from 'lodash';
 import { quickActionsRequest } from '../../api';
 import {
   openModal,
@@ -249,7 +249,11 @@ export class QuickActions extends Component {
             const relatedActions =
               resp && resp.data ? respRel.data.actions : null;
 
-            if ((parentView.viewId || childView.viewId) && relatedActions) {
+            if (
+              (parentView.viewId || childView.viewId) &&
+              relatedActions &&
+              !_.isEmpty(parentView)
+            ) {
               const windowType = parentView.windowType
                 ? parentView.windowType
                 : childView.windowType;

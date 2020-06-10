@@ -26,6 +26,7 @@ import java.util.concurrent.Callable;
 
 public class NoopPerformanceMonitoringService implements PerformanceMonitoringService
 {
+	public static final NoopPerformanceMonitoringService INSTANCE = new NoopPerformanceMonitoringService();
 
 	@Override
 	public <V> V monitorSpan(Callable<V> callable, SpanMetadata request)
