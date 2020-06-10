@@ -123,7 +123,7 @@ public class InvoiceCandidate
 	}
 
 	/**
-	 * This is more of a guard; InvoiceCandidateRepository should have dome it this way.
+	 * This is more of a guard; InvoiceCandidateRepository should have done it this way.
 	 */
 	private void validate()
 	{
@@ -229,10 +229,9 @@ public class InvoiceCandidate
 				StockQtyAndUOMQty qtysToInvoice = StockQtyAndUOMQtys.createZero(product.getId(), uomId);
 				BigDecimal remainingQtyOverride = qtyToInvoiceOverrideInStockUom.setScale(12);
 
-				// if qtyToInvoiceOverride <= qtyDelivered and catchWeight, then get the appropriate fraction
 				if (deliveredData.getShipmentData() != null)
 				{
-
+					// there is shipment-data and qtyToInvoiceOverride <= qtyDelivered and catchWeight; -> get the appropriate fraction
 					final List<DeliveredQtyItem> deliveredQtyItems = deliveredData.getShipmentData().getDeliveredQtyItems();
 
 					for (final DeliveredQtyItem deliveredQtyItem : deliveredQtyItems)
