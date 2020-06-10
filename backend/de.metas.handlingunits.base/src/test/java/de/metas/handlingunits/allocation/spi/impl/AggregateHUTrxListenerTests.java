@@ -55,5 +55,6 @@ public class AggregateHUTrxListenerTests
 	{
 		assertThat(AggregateHUTrxListener.INSTANCE.computeSplitQty(new BigDecimal("39.379"), new BigDecimal("2.461176471"), UOMPrecision.ofInt(3)), comparesEqualTo(BigDecimal.ZERO));
 		assertThat(AggregateHUTrxListener.INSTANCE.computeSplitQty(new BigDecimal("39.379"), new BigDecimal("2.461176471"), UOMPrecision.ofInt(4)), comparesEqualTo(new BigDecimal("0.0002")));
+		assertThat(AggregateHUTrxListener.INSTANCE.computeSplitQty(new BigDecimal("190.434"), new BigDecimal("10.0228500000"), UOMPrecision.ofInt(3)), comparesEqualTo(BigDecimal.ZERO));
 	}
 }

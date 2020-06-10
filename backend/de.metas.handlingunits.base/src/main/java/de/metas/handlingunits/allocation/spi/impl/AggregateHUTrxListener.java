@@ -153,7 +153,7 @@ public class AggregateHUTrxListener implements IHUTrxListener
 		// get the new TU quantity, which as TUs go needs to be an integer
 		final BigDecimal newTuQty = storageQty.divide(cuQtyBeforeLoad,
 				0,
-				RoundingMode.FLOOR);
+				RoundingMode.HALF_UP);
 
 		item.setQty(newTuQty);
 		InterfaceWrapperHelper.save(item);
@@ -220,6 +220,13 @@ public class AggregateHUTrxListener implements IHUTrxListener
 		final BigDecimal remainder = storageQty.remainder(cuQtyBeforeLoad);
 		final BigDecimal errorMargin = NumberUtils.getErrorMarginForScale(precision.toInt());
 		if (errorMargin.compareTo(remainder.abs()) > 0)
+		{
+			return BigDecimal.ZERO;
+		}
+
+		// handle the case where cuQtyBeforeLoad = 10.0228500000 and remainder is 10.023. In this case we should not create an HU with weight 0.001
+		final BigDecimal remainderError = remainder.abs().subtract(cuQtyBeforeLoad.abs());
+		if ((errorMargin.compareTo(remainderError.abs()) > 0))
 		{
 			return BigDecimal.ZERO;
 		}
