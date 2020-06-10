@@ -3,17 +3,22 @@ package de.metas.error.impl;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
+import java.util.Optional;
 import java.util.function.IntFunction;
 
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.IssueReportableExceptions;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_Issue;
 import org.compiere.util.Util;
+import org.slf4j.Logger;
 
 import de.metas.error.AdIssueId;
 import de.metas.error.IErrorManager;
 import de.metas.error.IssueCreateRequest;
+import de.metas.logging.LogManager;
 import de.metas.process.AdProcessId;
 import de.metas.process.PInstanceId;
 import de.metas.process.ProcessMDC;
@@ -25,6 +30,13 @@ import lombok.NonNull;
 
 public class ErrorManager implements IErrorManager
 {
+	private static final Logger logger = LogManager.getLogger(ErrorManager.class);
+	static
+	{
+		LogManager.skipIssueReportingForLoggerName(logger);
+	}
+
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
 	@Override
@@ -103,10 +115,15 @@ public class ErrorManager implements IErrorManager
 
 			//
 			// Table/Record
-			issue.setRecord_ID(1); // just to have something there because it's mandatory
+			final TableRecordReference recordRef = extractRecordRef(throwable);
+			if (recordRef != null)
+			{
+				issue.setAD_Table_ID(recordRef.getAD_Table_ID());
+				issue.setRecord_ID(recordRef.getRecord_ID());
+			}
 
 			//
-			// References
+			// Process/Instance
 			if (throwable != null)
 			{
 				final AdProcessId adProcessId = extractAdProcessIdOrNull(throwable);
@@ -152,6 +169,13 @@ public class ErrorManager implements IErrorManager
 		return summary;
 	}
 
+	private static TableRecordReference extractRecordRef(final Throwable t)
+	{
+		return t instanceof AdempiereException
+				? ((AdempiereException)t).getRecord()
+				: null;
+	}
+
 	private static AdProcessId extractAdProcessIdOrNull(final Throwable t)
 	{
 		return extractIdOrNull(t, ProcessMDC.NAME_AD_Process_ID, AdProcessId::ofRepoIdOrNull);
@@ -192,5 +216,34 @@ public class ErrorManager implements IErrorManager
 
 		// Fallback
 		return null;
+	}
+
+	@Override
+	public void markIssueDeprecated(@NonNull AdIssueId adIssueId)
+	{
+		try
+		{
+			final I_AD_Issue adIssueRecord = getById(adIssueId).orElse(null);
+			if (adIssueRecord == null)
+			{
+				return;
+			}
+
+			adIssueRecord.setProcessed(true);
+			saveRecord(adIssueRecord);
+		}
+		catch (Exception ex)
+		{
+			logger.warn("Failed marking {} as deprecated. Ignored.", adIssueId, ex);
+		}
+	}
+
+	private Optional<I_AD_Issue> getById(@NonNull final AdIssueId adIssueId)
+	{
+		return queryBL
+				.createQueryBuilderOutOfTrx(I_AD_Issue.class)
+				.addEqualsFilter(I_AD_Issue.COLUMNNAME_AD_Issue_ID, adIssueId)
+				.create()
+				.firstOnlyOptional(I_AD_Issue.class);
 	}
 }

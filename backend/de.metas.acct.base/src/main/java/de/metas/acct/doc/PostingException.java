@@ -1,6 +1,7 @@
 package de.metas.acct.doc;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.acct.Doc;
 import org.compiere.acct.DocLine;
 import org.compiere.acct.Fact;
@@ -14,6 +15,7 @@ import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStringBuilder;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.util.Check;
+import lombok.NonNull;
 
 /**
  * Exception thrown by accounting engine on any document posting error.
@@ -126,6 +128,12 @@ public final class PostingException extends AdempiereException
 	public PostingException setDocument(final Doc<?> document)
 	{
 		this._document = document;
+
+		if (document != null)
+		{
+			setRecord(TableRecordReference.of(document.get_TableName(), document.get_ID()));
+		}
+
 		return this;
 	}
 
@@ -211,7 +219,7 @@ public final class PostingException extends AdempiereException
 	public PostingException addDetailMessage(final String detailMessageToAppend)
 	{
 		// If there is nothing to append, do nothing
-		if (Check.isEmpty(detailMessageToAppend, true))
+		if (Check.isBlank(detailMessageToAppend))
 		{
 			return this;
 		}
@@ -285,9 +293,8 @@ public final class PostingException extends AdempiereException
 		return _docLine;
 	}
 
-	public PostingException setLogLevel(final Level logLevel)
+	public PostingException setLogLevel(@NonNull final Level logLevel)
 	{
-		Check.assumeNotNull(logLevel, "logLevel not null");
 		this._logLevel = logLevel;
 		return this;
 	}

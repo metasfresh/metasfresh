@@ -14,7 +14,7 @@ public class X_AD_Issue extends org.compiere.model.PO implements I_AD_Issue, org
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -311114464L;
+	private static final long serialVersionUID = -1266244080L;
 
     /** Standard Constructor */
     public X_AD_Issue (Properties ctx, int AD_Issue_ID, String trxName)
@@ -216,6 +216,31 @@ public class X_AD_Issue extends org.compiere.model.PO implements I_AD_Issue, org
 	public int getAD_Process_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_AD_Process_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set DB-Tabelle.
+		@param AD_Table_ID 
+		Database Table information
+	  */
+	@Override
+	public void setAD_Table_ID (int AD_Table_ID)
+	{
+		if (AD_Table_ID < 1) 
+			set_Value (COLUMNNAME_AD_Table_ID, null);
+		else 
+			set_Value (COLUMNNAME_AD_Table_ID, Integer.valueOf(AD_Table_ID));
+	}
+
+	/** Get DB-Tabelle.
+		@return Database Table information
+	  */
+	@Override
+	public int getAD_Table_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_AD_Table_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();

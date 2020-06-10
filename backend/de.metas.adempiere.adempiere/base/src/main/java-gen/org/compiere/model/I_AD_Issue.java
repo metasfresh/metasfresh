@@ -200,6 +200,29 @@ public interface I_AD_Issue
     public static final String COLUMNNAME_AD_Process_ID = "AD_Process_ID";
 
 	/**
+	 * Set DB-Tabelle.
+	 * Database Table information
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setAD_Table_ID (int AD_Table_ID);
+
+	/**
+	 * Get DB-Tabelle.
+	 * Database Table information
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getAD_Table_ID();
+
+    /** Column name AD_Table_ID */
+    public static final String COLUMNNAME_AD_Table_ID = "AD_Table_ID";
+
+	/**
 	 * Set Fenster.
 	 * Data entry or display window
 	 *
@@ -851,7 +874,7 @@ public interface I_AD_Issue
 	 * Set Datensatz-ID.
 	 * Direct internal record ID
 	 *
-	 * <br>Type: Integer
+	 * <br>Type: Button
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -861,7 +884,7 @@ public interface I_AD_Issue
 	 * Get Datensatz-ID.
 	 * Direct internal record ID
 	 *
-	 * <br>Type: Integer
+	 * <br>Type: Button
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */

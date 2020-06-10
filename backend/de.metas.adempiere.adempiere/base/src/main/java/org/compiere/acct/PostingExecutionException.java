@@ -57,7 +57,7 @@ public class PostingExecutionException extends AdempiereException
 		this(message, /* serverStackTrace */(String)null);
 	}
 
-	public PostingExecutionException(final String message, final String serverStackTrace)
+	private PostingExecutionException(final String message, final String serverStackTrace)
 	{
 		super(buildMessage(message, serverStackTrace));
 	}

@@ -27,6 +27,7 @@ import org.slf4j.Logger;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 
+import de.metas.error.AdIssueZoomProvider;
 import de.metas.logging.LogManager;
 import de.metas.security.IUserRolePermissions;
 import de.metas.util.lang.Priority;
@@ -174,6 +175,7 @@ public class ZoomInfoFactory
 		{
 			zoomProviders.add(FactAcctZoomProvider.instance);
 		}
+		zoomProviders.add(new AdIssueZoomProvider());
 
 		return zoomProviders;
 	}
