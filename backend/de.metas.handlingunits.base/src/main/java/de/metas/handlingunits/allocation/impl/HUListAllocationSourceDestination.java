@@ -259,7 +259,7 @@ public class HUListAllocationSourceDestination implements IAllocationSource, IAl
 
 				final int scale = storageUOM.getStdPrecision();
 				cuQty = storageQty.divide(aggregateHUQty,
-						scale * 3, // dividing with a bigger scale to try and avoid rounding issues which tbh i can't really name.
+						scale,
 						RoundingMode.HALF_UP);
 			}
 			request.getHUContext().setProperty(AggregateHUTrxListener.mkItemCuQtyPropertyKey(haItem), cuQty);

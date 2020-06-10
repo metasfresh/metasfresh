@@ -22,7 +22,6 @@
 
 package de.metas.handlingunits.allocation.spi.impl;
 
-import com.google.common.annotations.VisibleForTesting;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
@@ -46,7 +45,6 @@ import de.metas.uom.IUOMDAO;
 import de.metas.uom.UOMPrecision;
 import de.metas.util.NumberUtils;
 import de.metas.util.Services;
-import lombok.NonNull;
 import org.adempiere.mm.attributes.spi.impl.WeightTareAttributeValueCallout;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_Attribute;
@@ -153,7 +151,7 @@ public class AggregateHUTrxListener implements IHUTrxListener
 		// get the new TU quantity, which as TUs go needs to be an integer
 		final BigDecimal newTuQty = storageQty.divide(cuQtyBeforeLoad,
 				0,
-				RoundingMode.HALF_UP);
+				RoundingMode.FLOOR);
 
 		item.setQty(newTuQty);
 		InterfaceWrapperHelper.save(item);
@@ -161,9 +159,12 @@ public class AggregateHUTrxListener implements IHUTrxListener
 		// find out if we need to perform a split in order to preserve the former CU-per-TU quantity
 		final IUOMDAO uomDao = Services.get(IUOMDAO.class);
 		final UOMPrecision precision = uomDao.getStandardPrecision(trx.getQuantity().getUomId());
-		final BigDecimal splitQty = computeSplitQty(storageQty, cuQtyBeforeLoad, precision);
 
-		if (splitQty.signum() != 0)
+		final BigDecimal qtyOfCompleteTUs = newTuQty.multiply(cuQtyBeforeLoad);
+		final BigDecimal splitQty = storageQty.subtract(qtyOfCompleteTUs);
+
+		final BigDecimal errorMargin = NumberUtils.getErrorMarginForScale(precision.toInt());
+		if (splitQty.compareTo(errorMargin) > 0)
 		{
 			// the *actual* newTuQty would not be a natural number, so we need to initiate another split now
 			final I_M_HU_PI_Item splitHUPIItem = Services.get(IHandlingUnitsBL.class).getPIItem(item);
@@ -205,32 +206,5 @@ public class AggregateHUTrxListener implements IHUTrxListener
 				aggregateVHUAttributeStorage.pushUp();
 			}
 		}
-	}
-
-	/**
-	 * Returns the quantity that needs to be split off the current storage quantity in order to achieve the same CU-per-TU quantity which the aggregate HU in question used to have before the loading operation which lead to this listener being called.
-	 *
-	 * @param storageQty      the current qty re have in the storage
-	 * @param cuQtyBeforeLoad the former CU-per-TU qty, before the loading took place
-	 * @param precision       the UOM precision
-	 */
-	@VisibleForTesting
-	/* package */ BigDecimal computeSplitQty(@NonNull final BigDecimal storageQty, @NonNull final BigDecimal cuQtyBeforeLoad, @NonNull final UOMPrecision precision)
-	{
-		final BigDecimal remainder = storageQty.remainder(cuQtyBeforeLoad);
-		final BigDecimal errorMargin = NumberUtils.getErrorMarginForScale(precision.toInt());
-		if (errorMargin.compareTo(remainder.abs()) > 0)
-		{
-			return BigDecimal.ZERO;
-		}
-
-		// handle the case where cuQtyBeforeLoad = 10.0228500000 and remainder is 10.023. In this case we should not create an HU with weight 0.001
-		final BigDecimal remainderError = remainder.abs().subtract(cuQtyBeforeLoad.abs());
-		if ((errorMargin.compareTo(remainderError.abs()) > 0))
-		{
-			return BigDecimal.ZERO;
-		}
-
-		return precision.roundIfNeeded(remainder);
 	}
 }
