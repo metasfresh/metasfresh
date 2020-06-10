@@ -130,7 +130,7 @@ describe("MasterWindowContainer", () => {
       nock(config.API_URL)
         .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
         .get(`/window/${windowType}/${docId}/${tabId}/topActions`)
-        .reply(200, topActionsFixtures.topActions1);
+        .reply(200, topActionsFixtures.top_actions1);
 
       nock(config.API_URL)
         .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
@@ -239,7 +239,7 @@ describe("MasterWindowContainer", () => {
       nock(config.API_URL)
         .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
         .get(`/window/${windowType}/${docId}/${tabId}/topActions`)
-        .reply(200, topActionsFixtures.topActions1);
+        .reply(200, topActionsFixtures.top_actions1);
 
       nock(config.API_URL)
         .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
