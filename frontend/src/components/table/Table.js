@@ -43,25 +43,22 @@ class Table extends PureComponent {
   componentDidUpdate(prevProps) {
     const { mainTable, open, rows } = this.props;
 
-    if (rows.length && prevProps.rows.length === 0) {
-      document.getElementsByClassName('js-table')[0].focus();
-
-      setTimeout(() => {
-        if (this._isMounted) {
-          // TODO: Figure a better way to do this https://github.com/metasfresh/metasfresh/issues/1679
-          this.setState({
-            tableRefreshToggle: !this.state.mounted,
-          });
-        }
-      }, 1);
-    }
-
     if (!this._isMounted) {
       return;
     }
 
-    if (mainTable && open) {
+    if (
+      ((rows.length && prevProps.rows.length === 0) || (mainTable && open)) &&
+      this.table
+    ) {
       this.table.focus();
+
+      setTimeout(() => {
+        // TODO: Figure a better way to do this https://github.com/metasfresh/metasfresh/issues/1679
+        this.setState({
+          tableRefreshToggle: !this.state.mounted,
+        });
+      }, 1);
     }
   }
 
