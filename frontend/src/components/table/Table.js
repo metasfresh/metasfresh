@@ -202,8 +202,6 @@ class Table extends PureComponent {
   };
 
   triggerFocus = (idFocused, idFocusedDown) => {
-    const { selected } = this.props;
-
     if (this.table) {
       const rowsSelected = this.table.getElementsByClassName('row-selected');
 
