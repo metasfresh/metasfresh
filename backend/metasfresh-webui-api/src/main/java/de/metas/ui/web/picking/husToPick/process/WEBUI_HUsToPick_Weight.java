@@ -154,6 +154,11 @@ public class WEBUI_HUsToPick_Weight extends HUsToPickViewBasedProcess implements
 		// * set weight tara adjust
 		// * compute and set weight net
 		// * create an internal use inventory to adjust QtyCUs !
+		
+//		weightGross;
+//		weightTareAdjust;
+//		weightNet;
+
 
 		throw new UnsupportedOperationException();
 	}

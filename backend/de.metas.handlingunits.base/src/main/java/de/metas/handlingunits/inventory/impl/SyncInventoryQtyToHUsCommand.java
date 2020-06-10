@@ -1,12 +1,7 @@
-package de.metas.handlingunits.inventory;
+package de.metas.handlingunits.inventory.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.isNew;
-
-import java.math.BigDecimal;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
-import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
 
@@ -15,8 +10,6 @@ import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.mm.attributes.api.PlainAttributeSetInstanceAware;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
-import org.compiere.model.I_M_Inventory;
-import org.springframework.stereotype.Service;
 
 import de.metas.document.DocBaseAndSubType;
 import de.metas.handlingunits.HuId;
@@ -40,7 +33,11 @@ import de.metas.handlingunits.attribute.strategy.IHUAttributeTransferRequest;
 import de.metas.handlingunits.attribute.strategy.impl.HUAttributeTransferRequestBuilder;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.hutransaction.IHUTrxBL;
+import de.metas.handlingunits.inventory.Inventory;
+import de.metas.handlingunits.inventory.InventoryLine;
 import de.metas.handlingunits.inventory.InventoryLine.InventoryLineBuilder;
+import de.metas.handlingunits.inventory.InventoryLineHU;
+import de.metas.handlingunits.inventory.InventoryRepository;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_InventoryLine;
 import de.metas.handlingunits.model.X_M_HU;
@@ -48,65 +45,63 @@ import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.handlingunits.storage.impl.PlainProductStorage;
 import de.metas.i18n.AdMessageKey;
-import de.metas.i18n.IMsgBL;
-import de.metas.i18n.ITranslatableString;
 import de.metas.inventory.AggregationType;
 import de.metas.inventory.HUAggregationType;
 import de.metas.inventory.IInventoryBL;
 import de.metas.inventory.InventoryId;
 import de.metas.product.ProductId;
-import de.metas.quantity.QuantitiesUOMNotMatchingExpection;
 import de.metas.quantity.Quantity;
-import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.Builder;
 import lombok.NonNull;
 
 /*
  * #%L
  * de.metas.handlingunits.base
  * %%
- * Copyright (C) 2019 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-@Service
-public class InventoryLineRecordService
+public class SyncInventoryQtyToHUsCommand
 {
-
 	private static final AdMessageKey MSG_EXISTING_LINES_WITH_DIFFERENT_HU_AGGREGATION_TYPE = AdMessageKey.of("de.metas.handlingunits.inventory.ExistingLinesWithDifferentHUAggregationType");
 
-	private InventoryRepository inventoryLineRepository;
+	private final IHandlingUnitsDAO handlingUnitsRepo = Services.get(IHandlingUnitsDAO.class);
+	private final IHUTrxBL huTrxBL = Services.get(IHUTrxBL.class);
+	private final IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
+	private final IInventoryBL inventoryBL = Services.get(IInventoryBL.class);
+	private final IWarehouseDAO warehousesRepo = Services.get(IWarehouseDAO.class);
+	private final InventoryRepository inventoryRepository;
 
-	private InventoryLineRecordService(@NonNull final InventoryRepository inventoryLineRepository)
+	private final Inventory inventory;
+
+	@Builder
+	private SyncInventoryQtyToHUsCommand(
+			@NonNull final InventoryRepository inventoryRepository,
+			@NonNull final Inventory inventory)
 	{
-		this.inventoryLineRepository = inventoryLineRepository;
+		this.inventoryRepository = inventoryRepository;
+		this.inventory = inventory;
 	}
 
-	public void syncToHUs(@NonNull final I_M_Inventory inventoryRecord)
+	public void execute()
 	{
-		final Inventory inventory = inventoryLineRepository.toInventory(inventoryRecord);
-		syncToHUs(inventory);
-	}
-
-	public void syncToHUs(@NonNull final Inventory inventory)
-	{
-		final IHandlingUnitsDAO handlingUnitsRepo = Services.get(IHandlingUnitsDAO.class);
-
 		for (final InventoryLine inventoryLine : inventory.getLines())
 		{
 			// 'inventoryLine' might or might not have HUs..but inventoryLineWithHUs will have
@@ -148,7 +143,6 @@ public class InventoryLineRecordService
 			@NonNull final InventoryLine inventoryLine,
 			@NonNull final I_M_HU hu)
 	{
-		final IHUTrxBL huTrxBL = Services.get(IHUTrxBL.class);
 		final IHUContextProcessorExecutor executor = huTrxBL.createHUContextProcessorExecutor();
 
 		executor.run((IHUContextProcessor)huContext -> {
@@ -191,7 +185,7 @@ public class InventoryLineRecordService
 
 		if (inventoryLine.isSingleHUAggregation())
 		{
-			final I_M_InventoryLine inventoryLineRecord = inventoryLineRepository.getInventoryLineRecordFor(inventoryLine);
+			final I_M_InventoryLine inventoryLineRecord = inventoryRepository.getInventoryLineRecordFor(inventoryLine);
 
 			final Quantity qtyDiff = inventoryLine.getMovementQty();
 
@@ -199,7 +193,7 @@ public class InventoryLineRecordService
 			final IAllocationDestination huDestination = createHUAllocationDestination(inventoryLineRecord);
 
 			final IAllocationRequest request = AllocationUtils.createAllocationRequestBuilder()
-					.setHUContext(Services.get(IHUContextFactory.class).createMutableHUContext())
+					.setHUContext(huContextFactory.createMutableHUContext())
 					.setDateAsToday()
 					.setProduct(inventoryLine.getProductId())
 					.setQuantity(qtyDiff)
@@ -251,7 +245,7 @@ public class InventoryLineRecordService
 		final InventoryLine resultInventoryLine = result.build();
 		if (needToSaveInventoryLine)
 		{
-			inventoryLineRepository.saveInventoryLine(resultInventoryLine, inventoryId);
+			inventoryRepository.saveInventoryLine(resultInventoryLine, inventoryId);
 		}
 		return resultInventoryLine;
 	}
@@ -264,7 +258,7 @@ public class InventoryLineRecordService
 		final ProductId productId = inventoryLine.getProductId();
 		final PlainProductStorage productStorage = new PlainProductStorage(productId, qtyDiff.getUOM(), qtyDiff.toBigDecimal());
 
-		final I_M_InventoryLine inventoryLineRecord = inventoryLineRepository.getInventoryLineRecordFor(inventoryLine);
+		final I_M_InventoryLine inventoryLineRecord = inventoryRepository.getInventoryLineRecordFor(inventoryLine);
 		final IAllocationSource source = new GenericAllocationSourceDestination(productStorage, inventoryLineRecord);
 
 		final IAllocationDestination huDestination;
@@ -280,7 +274,7 @@ public class InventoryLineRecordService
 		}
 
 		final IAllocationRequest request = AllocationUtils.createAllocationRequestBuilder()
-				.setHUContext(Services.get(IHUContextFactory.class).createMutableHUContext())
+				.setHUContext(huContextFactory.createMutableHUContext())
 				.setDateAsToday()
 				.setProduct(inventoryLine.getProductId())
 				.setQuantity(qtyDiff)
@@ -297,7 +291,7 @@ public class InventoryLineRecordService
 	{
 		if (inventoryLine.isSingleHUAggregation())
 		{
-			final I_M_InventoryLine inventoryLineRecord = inventoryLineRepository.getInventoryLineRecordFor(inventoryLine);
+			final I_M_InventoryLine inventoryLineRecord = inventoryRepository.getInventoryLineRecordFor(inventoryLine);
 
 			final HuId singleHuId = inventoryLine.getSingleLineHU().getHuId();
 			if (singleHuId == null)
@@ -313,7 +307,7 @@ public class InventoryLineRecordService
 			final IAllocationDestination destination = createInventoryLineAllocationSourceOrDestination(inventoryLineRecord);
 
 			final IAllocationRequest request = AllocationUtils.createAllocationRequestBuilder()
-					.setHUContext(Services.get(IHUContextFactory.class).createMutableHUContext())
+					.setHUContext(huContextFactory.createMutableHUContext())
 					.setDateAsToday()
 					.setProduct(inventoryLine.getProductId())
 					.setQuantity(qtyDiff)
@@ -333,15 +327,15 @@ public class InventoryLineRecordService
 		}
 	}
 
-	private static GenericAllocationSourceDestination createInventoryLineAllocationSourceOrDestination(final I_M_InventoryLine inventoryLine)
+	private GenericAllocationSourceDestination createInventoryLineAllocationSourceOrDestination(final I_M_InventoryLine inventoryLine)
 	{
 		final ProductId productId = ProductId.ofRepoId(inventoryLine.getM_Product_ID());
-		final Quantity qtyDiff = Services.get(IInventoryBL.class).getMovementQty(inventoryLine);
+		final Quantity qtyDiff = inventoryBL.getMovementQty(inventoryLine);
 		final PlainProductStorage productStorage = new PlainProductStorage(productId, qtyDiff.getUOM(), qtyDiff.toBigDecimal());
 		return new GenericAllocationSourceDestination(productStorage, inventoryLine);
 	}
 
-	private static IAllocationDestination createHUAllocationDestination(final I_M_InventoryLine inventoryLine)
+	private IAllocationDestination createHUAllocationDestination(final I_M_InventoryLine inventoryLine)
 	{
 		if (inventoryLine.getM_HU_ID() > 0)
 		{
@@ -350,7 +344,6 @@ public class InventoryLineRecordService
 		// TODO handle: else if(inventoryLine.getM_HU_PI_Item_Product_ID() > 0)
 		else
 		{
-			final IWarehouseDAO warehousesRepo = Services.get(IWarehouseDAO.class);
 			final LocatorId locatorId = warehousesRepo.getLocatorIdByRepoIdOrNull(inventoryLine.getM_Locator_ID());
 
 			return HUProducerDestination.ofVirtualPI()
@@ -383,70 +376,7 @@ public class InventoryLineRecordService
 		}
 	}
 
-	public void updateHUAggregationTypeIfAllowed(@NonNull final I_M_Inventory inventoryRecord)
-	{
-		final Inventory inventory = inventoryLineRepository.toInventory(inventoryRecord);
-		for (final InventoryLine inventoryLine : inventory.getLines())
-		{
-			final HUAggregationType huAggregationType = computeHUAggregationType(inventoryLine, inventory.getDocBaseAndSubType());
-			inventoryLine.setHuAggregationType(huAggregationType);
-		}
-
-		inventoryLineRepository.saveInventoryLines(inventory);
-	}
-
-	public HUAggregationType computeHUAggregationType(
-			@NonNull final I_M_InventoryLine inventoryLineRecord,
-			@NonNull final DocBaseAndSubType docBaseAndSubType)
-	{
-		final InventoryLine inventoryLine;
-		if (isNew(inventoryLineRecord))
-		{
-			// We might not even be able to create and inventoryLine since the record might not yet have e.g. a M_Product_ID.
-			inventoryLine = null;
-		}
-		else
-		{
-			inventoryLine = inventoryLineRepository.toInventoryLine(inventoryLineRecord);
-		}
-		return computeHUAggregationType(inventoryLine, docBaseAndSubType);
-	}
-
-	public void setQtyBookedFromStorage(@NonNull final I_M_InventoryLine inventoryLine)
-	{
-		inventoryLine.setQtyBook(BigDecimal.ZERO);
-
-		//mandatory ids might be missing as the I_M_InventoryLine might not be persisted yet
-		final ProductId productId = ProductId.ofRepoIdOrNull(inventoryLine.getM_Product_ID());
-		final HuId huId = HuId.ofRepoIdOrNull(inventoryLine.getM_HU_ID());
-		final UomId uomId = UomId.ofRepoIdOrNull(inventoryLine.getC_UOM_ID());
-
-		final boolean idsAreMissing = Stream.of(productId, huId, uomId)
-				.anyMatch(Objects::isNull);
-
-		if (idsAreMissing)
-		{
-			return;
-		}
-
-		final Optional<Quantity> bookedQty = inventoryLineRepository.getFreshBookedQtyFromStorage(productId, uomId, huId);
-
-		if (bookedQty.isPresent())
-		{
-			if (bookedQty.get().getUomId().getRepoId() != inventoryLine.getC_UOM_ID())
-			{
-				//this should never happen as InventoryRepository#getFreshBookedQtyFromStorage() returns the qty in the inventory line's uom.
-				throw new QuantitiesUOMNotMatchingExpection("Booked and counted quantities don't have the same UOM!")
-						.appendParametersToMessage()
-						.setParameter("InventoryLineUOMID", inventoryLine.getC_UOM_ID())
-						.setParameter("BookedQtyUOMID", bookedQty.get().getUomId());
-			}
-
-			inventoryLine.setQtyBook(bookedQty.get().toBigDecimal());
-		}
-	}
-
-	private static HUAggregationType computeHUAggregationType(
+	public static HUAggregationType computeHUAggregationType(
 			@Nullable final InventoryLine inventoryLine,
 			@NonNull final DocBaseAndSubType baseAndSubType)
 	{
@@ -476,9 +406,8 @@ public class InventoryLineRecordService
 		else
 		{
 			// this line already has a different aggregation type
-			final ITranslatableString message = Services.get(IMsgBL.class)
-					.getTranslatableMsgText(MSG_EXISTING_LINES_WITH_DIFFERENT_HU_AGGREGATION_TYPE);
-			throw new AdempiereException(message).markAsUserValidationError();
+			throw new AdempiereException(MSG_EXISTING_LINES_WITH_DIFFERENT_HU_AGGREGATION_TYPE)
+					.markAsUserValidationError();
 		}
 	}
 }
