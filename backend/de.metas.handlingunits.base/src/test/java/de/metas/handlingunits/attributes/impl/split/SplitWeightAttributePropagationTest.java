@@ -1,10 +1,8 @@
-package de.metas.handlingunits.attributes.impl.split;
-
 /*
  * #%L
  * de.metas.handlingunits.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -13,25 +11,33 @@ package de.metas.handlingunits.attributes.impl.split;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
+package de.metas.handlingunits.attributes.impl.split;
+
+import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.IMutableHUContext;
+import de.metas.handlingunits.allocation.transfer.HUTransformService;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attributes.impl.AbstractWeightAttributeTest;
 import de.metas.handlingunits.expectations.HUWeightsExpectation;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.X_M_HU;
+import de.metas.util.Services;
 import org.junit.Assert;
 import org.junit.Test;
 
 import java.math.BigDecimal;
 import java.util.List;
+
+import static de.metas.handlingunits.allocation.transfer.HUTransformService.HUsToNewTUsRequest;
 
 /**
  * NOTE: Tests propagation WITH TareAdjust CONSTANT ZERO.
@@ -259,7 +265,7 @@ public class SplitWeightAttributePropagationTest extends AbstractWeightAttribute
 	}
 
 	@Test
-	public void testSplit7TuFromLu()
+	public void testSplit7TuFromLuWithRealData()
 	{
 		final I_M_HU palletToSplit = createIncomingLoadingUnit(huItemIFCO_10, materialItemProductTomato_10, BigDecimal.valueOf(200), BigDecimal.valueOf(545.217)); // 20 x Tomato TUs with a certain weight. + the weight of the LU+TU
 		// dev note: weight per TU is 25.01085 ~= 25.011
@@ -274,25 +280,31 @@ public class SplitWeightAttributePropagationTest extends AbstractWeightAttribute
 				newHUWeightsExpectation("520.217", "500.217", "20", "0") // aggregate TU with the whole qty
 		);
 
-		// TODO tbp: i don't understand what all these params are and what do they do?
-		// 		i need to move 1 TU. i don't care about the CUs, but the TU.
-		final List<I_M_HU> splitLUs = splitLU(palletToSplit,
-				helper.huDefItemNone, // luPIItem
-				materialItemTomato_10, // TU item x 10
-				BigDecimal.valueOf(200), // cuQty  // TODO tbp: how to say "i want to split 7 TUs?"
-				BigDecimal.valueOf(1), // cuPerTu
-				BigDecimal.valueOf(1), // tuPerLu
-				BigDecimal.ZERO); // maxLuToAllocate
+		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+		Assert.assertTrue(handlingUnitsBL.isAggregateHU(palletToSplit));
 
-		// this is how materialentnahme process calls the split, but it fails for me with `java.lang.IllegalStateException: The list of productStorages below the given 'tuHU' may not be empty; tuHU=POJOWrapper[...]
-		// final HUTransformService huTransformService = HUTransformService.newInstance(helper.getHUContext());
-		//
-		// final HUsToNewTUsRequest request = HUsToNewTUsRequest.forSourceHuAndQty(palletToSplit, 1);
-		// 	final List<I_M_HU> splitLUs = huTransformService.husToNewTUs(request);
+
+		// // TODO tbp: i don't understand what all these params are and what do they do?
+		// // 		i need to move 1 TU. i don't care about the CUs, but the TU.
+		// final List<I_M_HU> splitLUs = splitLU(palletToSplit,
+		// 		helper.huDefItemNone, // luPIItem
+		// 		materialItemTomato_10, // TU item x 10
+		// 		BigDecimal.valueOf(200), // cuQty  // TODO tbp: how to say "i want to split 7 TUs?"
+		// 		BigDecimal.valueOf(1), // cuPerTu
+		// 		BigDecimal.valueOf(1), // tuPerLu
+		// 		BigDecimal.ZERO); // maxLuToAllocate
+
+
+		// do the splits
+		final IMutableHUContext huContext = helper.getHUContext().copyAsMutable();
+		final HUsToNewTUsRequest request = HUsToNewTUsRequest.forSourceHuAndQty(palletToSplit, 1);
+		final List<I_M_HU> splitLUs = HUTransformService.newInstance(huContext)
+				.husToNewTUs(request);
 
 		Assert.assertEquals("Invalid amount of LUs were split", 7, splitLUs.size());
 
-		// // Assert data integrity on SOURCE LU
+		//
+		// Assert data integrity on SOURCE LU
 		assertLoadingUnitStorageWeights(palletToSplit, huItemIFCO_10, 13,
 				newHUWeightsExpectation("363.140", "325.140", "38", "0")
 				// ,
@@ -303,12 +315,12 @@ public class SplitWeightAttributePropagationTest extends AbstractWeightAttribute
 				// newHUWeightsExpectation("494.20615", "325.140", "19", "0") // 19 TUs left (aggregated)
 		);
 
-		// Assert data integrity on TARGET LU
 		//
+		// Assert data integrity on TARGET LU
 		for (final I_M_HU splitLU : splitLUs)
 		{
 			Assert.assertTrue("The target LU we just split to shall be a top-level handling unit", splitLU.getM_HU_Item_Parent_ID() <= 0);
-			// // TODO tbp: how to assert it's a TU?
+			Assert.assertTrue(handlingUnitsBL.isTransportUnit(splitLU));
 
 			assertLoadingUnitStorageWeights(splitLU, huItemIFCO_10, 1,
 					newHUWeightsExpectation("26.011", "25.011", "1", "0")
