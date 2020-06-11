@@ -185,7 +185,6 @@ class DatePicker extends Component {
    * @todo Write the documentation
    */
   render() {
-    console.log('P=>', this.props); // eslint-disable-line 
     return (
       <div tabIndex="-1" onKeyDown={this.handleKeydown} className="datepicker">
         <TetheredDateTime

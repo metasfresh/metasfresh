@@ -2,7 +2,7 @@ import PropTypes from 'prop-types';
 import { Map as iMap } from 'immutable';
 import Moment from 'moment-timezone';
 import currentDevice from 'current-device';
-
+import { store } from '../containers/App';
 import { getItemsByProperty, nullToEmptyStrings } from './index';
 import { getSelectionInstant } from '../reducers/windowHandler';
 import { viewState } from '../reducers/viewHandler';
@@ -295,7 +295,17 @@ export function parseToDisplay(fieldsByName) {
   return parseDateToReadable(nullToEmptyStrings(fieldsByName));
 }
 
+/**
+ * @method getCurrentActiveLocale
+ * @summary Retrieves the active locale from the redux store
+ */
+export function getCurrentActiveLocale() {
+  return store.getState().appHandler.me.language.key;
+}
+
 export function convertTimeStringToMoment(value) {
+  getCurrentActiveLocale();
+  Moment.locale(getCurrentActiveLocale());
   if (value.match(TIME_REGEX_TEST)) {
     return Moment(value, 'hh:mm');
   }
@@ -304,6 +314,7 @@ export function convertTimeStringToMoment(value) {
 
 // This doesn't set the TZ anymore, as we're handling this globally/in datepicker
 export function parseDateWithCurrentTimezone(value) {
+  Moment.locale(getCurrentActiveLocale());
   if (value) {
     if (Moment.isMoment(value)) {
       return value;
