@@ -195,7 +195,7 @@ public class AbstractHUTestWithSampling extends AbstractHUTest
 		return pTomatoId;
 	}
 
-	protected final I_C_UOM getCUUOM()
+	protected I_C_UOM getCUUOM()
 	{
 		return uomEach;
 	}
@@ -204,7 +204,6 @@ public class AbstractHUTestWithSampling extends AbstractHUTest
 	 * Note: Sets GROSS weight on the LoadingUnit to given <code>grossWeight</code>
 	 *
 	 * @param loadingUnitPIItem the PI item of the LU to allocate on
-	 * @param tuPIItemProduct
 	 * @param cuQty the full amount of customer units (i.e Tomatoes) which you'll have on your LU-TU structure
 	 * @param grossWeight weight which was supposedly input by the user
 	 *
