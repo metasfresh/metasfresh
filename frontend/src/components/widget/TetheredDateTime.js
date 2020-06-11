@@ -42,10 +42,6 @@ class TetheredDateTime extends DateTime {
   };
 
   render() {
-    // eslint-disable-next-line
-    console.log('PROPS:', this.props)
-    // eslint-disable-next-line
-    console.log('STATE:', this.state)
     const { open, className, input, inputProps, renderInput } = this.props;
     const { inputValue, selectedDate, currentView } = this.state;
 
