@@ -87,8 +87,8 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=614845
 
 -- 2020-06-10T19:08:46.642Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_Element_ID,AD_UI_ElementGroup_ID,Created,CreatedBy,Description,IsActive,IsAdvancedField,IsDisplayed,IsDisplayed_SideList,IsDisplayedGrid,Name,SeqNo,SeqNo_SideList,SeqNoGrid,Updated,UpdatedBy) VALUES (0,614845,0,777,570033,541419,TO_TIMESTAMP('2020-06-10 22:08:46','YYYY-MM-DD HH24:MI:SS'),100,'Instanz eines Prozesses','Y','N','Y','N','N','Prozess-Instanz',460,0,0,TO_TIMESTAMP('2020-06-10 22:08:46','YYYY-MM-DD HH24:MI:SS'),100)
-;
+-- INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_Element_ID,AD_UI_ElementGroup_ID,Created,CreatedBy,Description,IsActive,IsAdvancedField,IsDisplayed,IsDisplayed_SideList,IsDisplayedGrid,Name,SeqNo,SeqNo_SideList,SeqNoGrid,Updated,UpdatedBy) VALUES (0,614845,0,777,570033,541419,TO_TIMESTAMP('2020-06-10 22:08:46','YYYY-MM-DD HH24:MI:SS'),100,'Instanz eines Prozesses','Y','N','Y','N','N','Prozess-Instanz',460,0,0,TO_TIMESTAMP('2020-06-10 22:08:46','YYYY-MM-DD HH24:MI:SS'),100)
+-- ;
 
 -- 2020-06-10T19:09:00.683Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
