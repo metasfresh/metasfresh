@@ -29,12 +29,12 @@ import java.util.function.Supplier;
 import javax.annotation.Nullable;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.util.Env;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.document.references.ZoomInfoPermissionsFactory;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.DocumentFilter.Builder;
@@ -205,8 +205,7 @@ public class SqlViewFactory implements IViewFactory
 					referencedDocumentPath,
 					targetWindowId,
 					documentReferenceId,
-					Env.getUserRolePermissions() // FIXME: avoid using Env here
-			);
+					ZoomInfoPermissionsFactory.allowAll());
 		}
 	}
 

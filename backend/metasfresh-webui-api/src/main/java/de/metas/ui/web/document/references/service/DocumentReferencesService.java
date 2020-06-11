@@ -20,11 +20,11 @@ import com.google.common.collect.ImmutableList;
 import de.metas.document.references.IZoomSource;
 import de.metas.document.references.ZoomInfo;
 import de.metas.document.references.ZoomInfoFactory;
+import de.metas.document.references.ZoomInfoPermissions;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStringBuilder;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
-import de.metas.security.IUserRolePermissions;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.references.DocumentReference;
 import de.metas.ui.web.document.references.DocumentReferenceCandidate;
@@ -76,7 +76,7 @@ public class DocumentReferencesService
 
 	public ImmutableList<DocumentReferenceCandidate> getDocumentReferenceCandidates(
 			@NonNull final DocumentPath documentPath,
-			@NonNull final IUserRolePermissions rolePermissions)
+			@NonNull final ZoomInfoPermissions permissions)
 	{
 		// Document with composed keys does not support references
 		if (documentPath.isComposedKey())
@@ -99,7 +99,7 @@ public class DocumentReferencesService
 
 					final DocumentAsZoomSource zoomSource = new DocumentAsZoomSource(document);
 					return zoomInfoFactory
-							.getZoomInfoCandidates(zoomSource, rolePermissions)
+							.getZoomInfoCandidates(zoomSource, permissions)
 							.stream()
 							.map(zoomInfoCandidate -> new DocumentReferenceCandidate(zoomInfoCandidate, filterCaption))
 							.collect(ImmutableList.toImmutableList());
@@ -115,9 +115,9 @@ public class DocumentReferencesService
 			@NonNull final DocumentPath sourceDocumentPath,
 			@NonNull final WindowId targetWindowId,
 			@Nullable final DocumentReferenceId documentReferenceId,
-			@NonNull final IUserRolePermissions rolePermissions)
+			@NonNull final ZoomInfoPermissions permissions)
 	{
-		final DocumentReference documentReference = getDocumentReference(sourceDocumentPath, targetWindowId, documentReferenceId, rolePermissions);
+		final DocumentReference documentReference = getDocumentReference(sourceDocumentPath, targetWindowId, documentReferenceId, permissions);
 		return documentReference.getFilter();
 	}
 
@@ -125,7 +125,7 @@ public class DocumentReferencesService
 			@NonNull final DocumentPath sourceDocumentPath,
 			@NonNull final WindowId targetWindowId,
 			@Nullable final DocumentReferenceId documentReferenceId,
-			@NonNull final IUserRolePermissions rolePermissions)
+			@NonNull final ZoomInfoPermissions permissions)
 	{
 		final ZoomInfoFactory zoomInfoFactory = ZoomInfoFactory.get();
 
@@ -140,7 +140,7 @@ public class DocumentReferencesService
 					zoomSource,
 					targetWindowId.toAdWindowId(),
 					documentReferenceId != null ? documentReferenceId.toZoomInfoId() : null,
-					rolePermissions);
+					permissions);
 
 			final ITranslatableString filterCaption = extractFilterCaption(sourceDocument, zoomInfo);
 

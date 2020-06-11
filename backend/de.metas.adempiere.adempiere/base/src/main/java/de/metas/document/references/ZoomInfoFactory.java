@@ -28,7 +28,6 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.error.AdIssueZoomProvider;
 import de.metas.logging.LogManager;
-import de.metas.security.IUserRolePermissions;
 import lombok.NonNull;
 
 /**
@@ -58,12 +57,12 @@ public class ZoomInfoFactory
 	 */
 	public List<ZoomInfo> retrieveZoomInfos(
 			@NonNull final IZoomSource zoomOrigin,
-			@NonNull final IUserRolePermissions rolePermissions)
+			@NonNull final ZoomInfoPermissions permissions)
 	{
 		final AdWindowId onlyTargetWindowId = null;
 		final ZoomTargetWindowEvaluationContext alreadySeenWindowIds = new ZoomTargetWindowEvaluationContext();
 
-		return getZoomInfoCandidates(zoomOrigin, onlyTargetWindowId, rolePermissions)
+		return getZoomInfoCandidates(zoomOrigin, onlyTargetWindowId, permissions)
 				.stream()
 				.sequential()
 				.map(candidate -> candidate.evaluate(alreadySeenWindowIds).orElse(null))
@@ -73,16 +72,16 @@ public class ZoomInfoFactory
 
 	public ImmutableList<ZoomInfoCandidate> getZoomInfoCandidates(
 			@NonNull final IZoomSource zoomOrigin,
-			@NonNull final IUserRolePermissions rolePermissions)
+			@NonNull final ZoomInfoPermissions permissions)
 	{
 		final AdWindowId onlyTargetWindowId = null;
-		return getZoomInfoCandidates(zoomOrigin, onlyTargetWindowId, rolePermissions);
+		return getZoomInfoCandidates(zoomOrigin, onlyTargetWindowId, permissions);
 	}
 
 	private ImmutableList<ZoomInfoCandidate> getZoomInfoCandidates(
 			@NonNull final IZoomSource zoomSource,
 			@Nullable final AdWindowId onlyTargetWindowId,
-			@NonNull final IUserRolePermissions rolePermissions)
+			@NonNull final ZoomInfoPermissions permissions)
 	{
 		final Stopwatch stopwatch = Stopwatch.createStarted();
 
@@ -113,7 +112,7 @@ public class ZoomInfoFactory
 
 					//
 					// Filter out those windows on given user does not have permissions
-					if (!rolePermissions.checkWindowPermission(targetWindowId).hasReadAccess())
+					if (!permissions.hasReadAccess(targetWindowId))
 					{
 						continue;
 					}
@@ -148,14 +147,14 @@ public class ZoomInfoFactory
 			@NonNull final IZoomSource zoomSource,
 			@NonNull final AdWindowId targetWindowId,
 			@Nullable final ZoomInfoId zoomInfoId,
-			@NonNull final IUserRolePermissions rolePermissions)
+			@NonNull final ZoomInfoPermissions permissions)
 	{
 		// NOTE: we need to check the records count because in case there are multiple ZoomInfos for the same targetWindowId,
 		// we shall pick the one which actually has some data. Usually there would be only one (see #1808)
 
 		final ZoomTargetWindowEvaluationContext alreadySeenWindowIds = new ZoomTargetWindowEvaluationContext();
 
-		return getZoomInfoCandidates(zoomSource, targetWindowId, rolePermissions)
+		return getZoomInfoCandidates(zoomSource, targetWindowId, permissions)
 				.stream()
 				.filter(candidate -> zoomInfoId == null || ZoomInfoId.equals(zoomInfoId, candidate.getId()))
 				.map(candidate -> candidate.evaluate(alreadySeenWindowIds).orElse(null))
