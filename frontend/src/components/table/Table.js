@@ -8,7 +8,6 @@ import classnames from 'classnames';
 import currentDevice from 'current-device';
 import counterpart from 'counterpart';
 import uuid from 'uuid/v4';
-
 import { deleteRequest } from '../../actions/GenericActions';
 import {
   deleteLocal,
@@ -28,6 +27,7 @@ import {
   getRowsData,
   mapIncluded,
   collapsedMap,
+  getCurrentActiveLocale,
 } from '../../utils/documentListHelper';
 
 import Prompt from '../app/Prompt';
@@ -1036,9 +1036,9 @@ class Table extends Component {
       focusOnFieldName,
       modalVisible,
       isGerman,
-      activeLocale,
     } = this.props;
 
+    const activeLocale = { key: getCurrentActiveLocale() };
     const {
       selected,
       rows,
@@ -1395,7 +1395,6 @@ const mapStateToProps = (state) => ({
   allowShortcut: state.windowHandler.allowShortcut,
   allowOutsideClick: state.windowHandler.allowOutsideClick,
   modalVisible: state.windowHandler.modal.visible,
-  activeLocale: state.appHandler.me.language,
   isGerman:
     state.appHandler.me.language && state.appHandler.me.language.key
       ? state.appHandler.me.language.key.includes('de')
