@@ -180,7 +180,11 @@ public class AggregateHUTrxListener implements IHUTrxListener
 			final HUProducerDestination destination = HUProducerDestination.of(splitHUPIItem.getIncluded_HU_PI());
 
 			destination.setParent_HU_Item(splitHUParentItem);
-			final HULoader loader = HULoader.of(source, destination);
+			final HULoader loader = HULoader.of(source, destination)
+					.setForceLoad(true)
+					// note for dev: forceLoad is needed here, because if qty is greater than PI qty, we will split the expected 1 TU into 2, and that is wrong logically.
+					// see details in https://github.com/metasfresh/metasfresh/issues/6808#issuecomment-642414037
+					;
 
 			// Create allocation request
 			final IAllocationRequest request = AllocationUtils.createQtyRequest(
