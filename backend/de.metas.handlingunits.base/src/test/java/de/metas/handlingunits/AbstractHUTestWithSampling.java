@@ -238,15 +238,8 @@ public class AbstractHUTestWithSampling extends AbstractHUTest
 		//
 		// Create and destroy instances only with an I_M_Transaction
 		final List<I_M_HU> loadingUnits = new ArrayList<>();
-		// Services.get(ITrxManager.class).run(new TrxRunnable()
-		// {
-		// @Override
-		// public void run(String localTrxName) throws Exception
-		// {
-		// final IMutableHUContext huContext0 = helper.createMutableHUContextForProcessing(ITrx.TRXNAME_ThreadInherited);
+
 		loadingUnits.addAll(helper.createHUs(huContext, luProducerDestination, cuQty));
-		// }
-		// });
 
 		Assert.assertEquals("Invalid amount of initial LoadingUnits", 1, loadingUnits.size());
 		final I_M_HU loadingUnit = loadingUnits.get(0);
@@ -335,8 +328,6 @@ public class AbstractHUTestWithSampling extends AbstractHUTest
 	}
 
 	/**
-	 * @param loadingUnit
-	 * @param qty
 	 * @return first found tradingUnit inside the loadingUnit with given customerUnit qty
 	 */
 	protected final I_M_HU findTUInLUWithQty(final I_M_HU loadingUnit, final int customerUnitQty)

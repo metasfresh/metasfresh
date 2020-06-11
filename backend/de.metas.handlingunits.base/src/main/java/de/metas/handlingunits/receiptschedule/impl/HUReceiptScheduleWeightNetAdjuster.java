@@ -104,11 +104,8 @@ public class HUReceiptScheduleWeightNetAdjuster
 	}
 
 	// package level only for testing
-	/* package */HUReceiptScheduleWeightNetAdjuster(final IHUContext huContext)
+	/* package */HUReceiptScheduleWeightNetAdjuster(@NonNull final IHUContext huContext)
 	{
-		super();
-
-		Check.assumeNotNull(huContext, "huContext not null");
 		_huContextInitial = huContext.copyAsMutable();
 	}
 

@@ -1324,12 +1324,6 @@ public class HUTestHelper
 	/**
 	 * Create HUs using {@link HUProducerDestination}.<br>
 	 * <b>Important:</b> If you expect e.g. an LU with multiple included TUs, then don't use this method; see the javadoc of {@link HUProducerDestination}.
-	 *
-	 * @param huPI
-	 * @param productIdToLoad
-	 * @param qtyToLoad
-	 * @param qtyToLoadUOM
-	 * @return created HUs
 	 */
 	public List<I_M_HU> createHUs(
 			final IHUContext huContext,
@@ -1364,11 +1358,6 @@ public class HUTestHelper
 
 	/**
 	 * Generate HUs for given Customer Unit qty
-	 *
-	 * @param huContext
-	 * @param allocationDestination
-	 * @param cuQty
-	 * @return created HUs
 	 */
 	public List<I_M_HU> createHUs(
 			final IHUContext huContext,

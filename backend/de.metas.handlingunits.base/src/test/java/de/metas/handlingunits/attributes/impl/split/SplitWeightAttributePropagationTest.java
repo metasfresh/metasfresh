@@ -22,6 +22,7 @@
 
 package de.metas.handlingunits.attributes.impl.split;
 
+import de.metas.handlingunits.HUXmlConverter;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IMutableHUContext;
 import de.metas.handlingunits.allocation.transfer.HUTransformService;
@@ -31,8 +32,10 @@ import de.metas.handlingunits.expectations.HUWeightsExpectation;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.util.Services;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.junit.Assert;
 import org.junit.Test;
+import org.w3c.dom.Node;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -267,13 +270,18 @@ public class SplitWeightAttributePropagationTest extends AbstractWeightAttribute
 	@Test
 	public void testSplit7TuFromLuWithRealData()
 	{
-		final I_M_HU palletToSplit = createIncomingLoadingUnit(huItemIFCO_10, materialItemProductTomato_10, BigDecimal.valueOf(200), BigDecimal.valueOf(545.217)); // 20 x Tomato TUs with a certain weight. + the weight of the LU+TU
+		//final List<I_M_HU> palletsToSplit = helper.createHUs(huContext, huDefPalet, helper.pTomatoProductId, BigDecimal.valueOf(545.217), helper.uomKg);
+		//final I_M_HU palletToSplit=palletsToSplit.get(0);
+
+		final I_M_HU palletToSplit = Services.get(ITrxManager.class).callInNewTrx(() ->
+				createIncomingLoadingUnit(huItemIFCO_10, materialItemProductTomato_10, BigDecimal.valueOf(200), BigDecimal.valueOf(545.217)) // 20 x Tomato TUs with a certain weight. + the weight of the LU+TU
+		);
+
 		// dev note: weight per TU is 25.01085 ~= 25.011
 
-		// final Node luXml = HUXmlConverter.toXml( paletToSplit);
 		// System.out.println("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
-		// System.out.println(HUXmlConverter.toString(luXml));
-
+		//helper.commitAndDumpHU(palletToSplit);
+		System.out.println(HUXmlConverter.toString(HUXmlConverter.toXml(palletToSplit)));
 		// Assert initial data is as expected
 		assertLoadingUnitStorageWeights(palletToSplit, huItemIFCO_10, 20,
 				newHUWeightsExpectation("545.217", "500.217", "45", "0"),
@@ -281,8 +289,7 @@ public class SplitWeightAttributePropagationTest extends AbstractWeightAttribute
 		);
 
 		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-		Assert.assertTrue(handlingUnitsBL.isAggregateHU(palletToSplit));
-
+		//Assert.assertTrue(handlingUnitsBL.isAggregateHU(palletToSplit)); // the pallet isn'T an aggregated HU, but the oneside
 
 		// // TODO tbp: i don't understand what all these params are and what do they do?
 		// // 		i need to move 1 TU. i don't care about the CUs, but the TU.
@@ -293,7 +300,6 @@ public class SplitWeightAttributePropagationTest extends AbstractWeightAttribute
 		// 		BigDecimal.valueOf(1), // cuPerTu
 		// 		BigDecimal.valueOf(1), // tuPerLu
 		// 		BigDecimal.ZERO); // maxLuToAllocate
-
 
 		// do the splits
 		final IMutableHUContext huContext = helper.getHUContext().copyAsMutable();
