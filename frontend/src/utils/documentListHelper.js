@@ -300,11 +300,12 @@ export function parseToDisplay(fieldsByName) {
  * @summary Retrieves the active locale from the redux store
  */
 export function getCurrentActiveLocale() {
-  return store.getState().appHandler.me.language.key;
+  return store.getState().appHandler.me.language
+    ? store.getState().appHandler.me.language.key
+    : 'en';
 }
 
 export function convertTimeStringToMoment(value) {
-  getCurrentActiveLocale();
   Moment.locale(getCurrentActiveLocale());
   if (value.match(TIME_REGEX_TEST)) {
     return Moment(value, 'hh:mm');
