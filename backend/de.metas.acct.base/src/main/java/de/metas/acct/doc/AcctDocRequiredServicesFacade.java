@@ -293,7 +293,7 @@ public class AcctDocRequiredServicesFacade
 
 	public void markIssueDeprecated(@NonNull final AdIssueId adIssueId)
 	{
-		errorManager.markIssueDeprecated(adIssueId);
+		errorManager.markIssueAcknowledged(adIssueId);
 	}
 
 }

@@ -22,5 +22,5 @@ public interface IErrorManager extends ISingletonService
 
 	AdIssueId createIssue(IssueCreateRequest request);
 
-	void markIssueDeprecated(AdIssueId adIssueId);
+	void markIssueAcknowledged(AdIssueId adIssueId);
 }

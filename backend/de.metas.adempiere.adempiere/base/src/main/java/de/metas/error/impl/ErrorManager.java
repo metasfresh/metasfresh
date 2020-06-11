@@ -219,7 +219,7 @@ public class ErrorManager implements IErrorManager
 	}
 
 	@Override
-	public void markIssueDeprecated(@NonNull AdIssueId adIssueId)
+	public void markIssueAcknowledged(@NonNull AdIssueId adIssueId)
 	{
 		try
 		{
