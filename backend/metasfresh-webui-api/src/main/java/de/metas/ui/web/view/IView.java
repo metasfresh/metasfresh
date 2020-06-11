@@ -16,6 +16,7 @@ import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.process.RelatedProcessDescriptor;
 import de.metas.ui.web.document.filter.DocumentFilterList;
+import de.metas.ui.web.document.references.DocumentReferenceId;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.process.view.ViewActionDescriptorsList;
 import de.metas.ui.web.view.json.JSONViewDataType;
@@ -71,6 +72,11 @@ public interface IView
 	}
 
 	Set<DocumentPath> getReferencingDocumentPaths();
+	
+	default DocumentReferenceId getDocumentReferenceId()
+	{
+		return null;
+	}
 
 	/**
 	 * @param documentId can be used by multi-table implementations to return the correct table name for a given row.

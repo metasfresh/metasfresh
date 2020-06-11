@@ -21,9 +21,10 @@ const DLpropTypes = {
   sort: PropTypes.string,
   defaultViewId: PropTypes.string,
 
+  referenceId: PropTypes.string,
   // TODO: Eventually this should be renamed to `refWindowId`
   refType: PropTypes.string,
-  refId: PropTypes.string,
+  refDocumentId: PropTypes.string,
   refTabId: PropTypes.string,
 
   // from @connect
@@ -49,8 +50,9 @@ const DLmapStateToProps = (state, props) => {
     isModal,
     defaultViewId,
     windowType,
+    referenceId: queryReferenceId,
     refType: queryRefType,
-    refId: queryRefId,
+    refDocumentId: queryRefDocumentId,
     refTabId: queryRefTabId,
   } = props;
   const identifier = isModal ? defaultViewId : windowType;
@@ -80,8 +82,9 @@ const DLmapStateToProps = (state, props) => {
     reduxData: master,
     layout: master.layout,
     layoutPending: master.layoutPending,
+    referenceId: queryReferenceId,
     refType: queryRefType,
-    refId: queryRefId,
+    refDocumentId: queryRefDocumentId,
     refTabId: queryRefTabId,
     selections: state.windowHandler.selections,
     selected: getSelectionInstant(

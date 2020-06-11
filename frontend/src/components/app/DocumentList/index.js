@@ -105,13 +105,15 @@ class DocumentListContainer extends Component {
       viewId: nextViewId,
       includedView: nextIncludedView,
       isIncluded: nextIsIncluded,
-      refId: nextRefId,
+      refDocumentId: nextRefDocumentId,
+      referenceId: nextReferenceId,
       windowType: nextWindowType,
     } = nextProps;
     const {
       includedView,
       isIncluded,
-      refId,
+      refDocumentId,
+      referenceId,
       windowType,
       closeListIncludedView,
       viewId,
@@ -151,7 +153,8 @@ class DocumentListContainer extends Component {
       (nextWindowType === windowType &&
         ((nextViewId !== viewId && isIncluded && nextIsIncluded) ||
           location.hash === '#notification')) ||
-      nextRefId !== refId
+      nextRefDocumentId !== refDocumentId ||
+      nextReferenceId !== referenceId
     ) {
       resetView(windowType);
       deleteTable(getTableId({ windowType, viewId }));
@@ -380,8 +383,9 @@ class DocumentListContainer extends Component {
     const {
       windowType,
       type,
+      referenceId,
       refType,
-      refId,
+      refDocumentId,
       refTabId,
       refRowIds,
       page,
@@ -397,8 +401,9 @@ class DocumentListContainer extends Component {
       windowType,
       viewType: type,
       filters: filtersActive.toIndexedSeq().toArray(),
+      referenceId: referenceId,
       refDocType: refType,
-      refDocId: refId,
+      refDocumentId: refDocumentId,
       refTabId,
       refRowIds,
       inModalId: isModal ? viewId : null,

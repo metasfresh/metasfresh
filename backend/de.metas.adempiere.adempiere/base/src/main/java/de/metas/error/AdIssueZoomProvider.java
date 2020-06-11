@@ -20,6 +20,8 @@ import de.metas.document.references.IZoomProvider;
 import de.metas.document.references.IZoomSource;
 import de.metas.document.references.RecordZoomWindowFinder;
 import de.metas.document.references.ZoomInfoCandidate;
+import de.metas.document.references.ZoomInfoId;
+import de.metas.document.references.ZoomTargetWindow;
 import de.metas.i18n.ITranslatableString;
 import de.metas.util.Services;
 import de.metas.util.lang.Priority;
@@ -81,16 +83,17 @@ public class AdIssueZoomProvider implements IZoomProvider
 		final ImmutableList.Builder<ZoomInfoCandidate> result = ImmutableList.builder();
 		for (final IssueCategory issueCategory : IssueCategory.values())
 		{
-			final ITranslatableString destinationDisplay = adReferenceDAO.retrieveListNameTranslatableString(IssueCategory.AD_REFERENCE_ID, issueCategory.getCode());
+			final ZoomInfoId id = ZoomInfoId.ofString("issues-" + issueCategory.getCode());
+			final ITranslatableString issueCategoryDisplayName = adReferenceDAO.retrieveListNameTranslatableString(IssueCategory.AD_REFERENCE_ID, issueCategory.getCode());
 			final IntSupplier recordsCountSupplier = () -> issueCountersSupplier.get().getCountOrZero(issueCategory);
 
 			result.add(ZoomInfoCandidate.builder()
-					.id(I_AD_Issue.Table_Name)
-					.internalName(I_AD_Issue.Table_Name)
-					.adWindowId(issuesWindowId)
+					.id(id)
+					.internalName(id.toJson())
+					.targetWindow(ZoomTargetWindow.ofAdWindowIdAndCategory(issuesWindowId, issueCategory, issueCategoryDisplayName))
 					.priority(zoomInfoPriority)
-					.query(createMQuery(recordRef))
-					.destinationDisplay(destinationDisplay)
+					.query(createMQuery(recordRef, issueCategory))
+					.destinationDisplay(issueCategoryDisplayName)
 					.recordsCountSupplier(recordsCountSupplier)
 					.build());
 		}
@@ -103,11 +106,12 @@ public class AdIssueZoomProvider implements IZoomProvider
 		return Suppliers.memoize(() -> errorManager.getIssueCountersByCategory(recordRef, onlyNotAcknowledged));
 	}
 
-	private MQuery createMQuery(final TableRecordReference recordRef)
+	private MQuery createMQuery(@NonNull final TableRecordReference recordRef, @NonNull final IssueCategory issueCategory)
 	{
 		final MQuery query = new MQuery(I_AD_Issue.Table_Name);
 		query.addRestriction(I_AD_Issue.COLUMNNAME_AD_Table_ID, Operator.EQUAL, recordRef.getAD_Table_ID());
 		query.addRestriction(I_AD_Issue.COLUMNNAME_Record_ID, Operator.EQUAL, recordRef.getRecord_ID());
+		query.addRestriction(I_AD_Issue.COLUMNNAME_IssueCategory, Operator.EQUAL, issueCategory.getCode());
 		if (onlyNotAcknowledged)
 		{
 			query.addRestriction(I_AD_Issue.COLUMNNAME_Processed, Operator.EQUAL, false);

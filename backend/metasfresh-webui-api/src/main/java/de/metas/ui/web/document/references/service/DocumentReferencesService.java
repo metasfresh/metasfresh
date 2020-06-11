@@ -21,12 +21,14 @@ import de.metas.document.references.IZoomSource;
 import de.metas.document.references.ZoomInfo;
 import de.metas.document.references.ZoomInfoFactory;
 import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.TranslatableStringBuilder;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
 import de.metas.security.IUserRolePermissions;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.references.DocumentReference;
 import de.metas.ui.web.document.references.DocumentReferenceCandidate;
+import de.metas.ui.web.document.references.DocumentReferenceId;
 import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.WindowId;
@@ -93,7 +95,7 @@ public class DocumentReferencesService
 						return ImmutableList.of();
 					}
 
-					final ITranslatableString filterCaption = extractFilterCaption(document);
+					final ITranslatableString filterCaption = extractFilterCaption(document, (ZoomInfo)null);
 
 					final DocumentAsZoomSource zoomSource = new DocumentAsZoomSource(document);
 					return zoomInfoFactory
@@ -110,17 +112,19 @@ public class DocumentReferencesService
 	}
 
 	public DocumentFilter getDocumentReferenceFilter(
-			final DocumentPath sourceDocumentPath,
-			final WindowId targetWindowId,
+			@NonNull final DocumentPath sourceDocumentPath,
+			@NonNull final WindowId targetWindowId,
+			@Nullable final DocumentReferenceId documentReferenceId,
 			@NonNull final IUserRolePermissions rolePermissions)
 	{
-		final DocumentReference documentReference = getDocumentReference(sourceDocumentPath, targetWindowId, rolePermissions);
+		final DocumentReference documentReference = getDocumentReference(sourceDocumentPath, targetWindowId, documentReferenceId, rolePermissions);
 		return documentReference.getFilter();
 	}
 
-	public DocumentReference getDocumentReference(
-			final DocumentPath sourceDocumentPath,
-			final WindowId targetWindowId,
+	private DocumentReference getDocumentReference(
+			@NonNull final DocumentPath sourceDocumentPath,
+			@NonNull final WindowId targetWindowId,
+			@Nullable final DocumentReferenceId documentReferenceId,
 			@NonNull final IUserRolePermissions rolePermissions)
 	{
 		final ZoomInfoFactory zoomInfoFactory = ZoomInfoFactory.get();
@@ -135,46 +139,61 @@ public class DocumentReferencesService
 			final ZoomInfo zoomInfo = zoomInfoFactory.retrieveZoomInfo(
 					zoomSource,
 					targetWindowId.toAdWindowId(),
+					documentReferenceId != null ? documentReferenceId.toZoomInfoId() : null,
 					rolePermissions);
 
-			final ITranslatableString filterCaption = extractFilterCaption(sourceDocument);
+			final ITranslatableString filterCaption = extractFilterCaption(sourceDocument, zoomInfo);
 
 			return DocumentReferenceCandidate.toDocumentReference(zoomInfo, filterCaption);
 		});
 	}
 
-	private final ITranslatableString extractFilterCaption(final Document sourceDocument)
+	private final ITranslatableString extractFilterCaption(
+			@NonNull final Document sourceDocument,
+			@Nullable final ZoomInfo zoomInfo)
 	{
+		final TranslatableStringBuilder result = TranslatableStrings.builder();
+
 		//
 		// Window caption
-		final ITranslatableString windowCaption = sourceDocument.getEntityDescriptor().getCaption();
+		result.append(sourceDocument.getEntityDescriptor().getCaption());
 
 		//
 		// Document info
 		// TODO: i think we shall use lookup to fetch the document description
-		final ITranslatableString documentSummary;
+		// final ITranslatableString documentSummary;
 		if (sourceDocument.hasField(WindowConstants.FIELDNAME_DocumentSummary))
 		{
 			final String documentSummaryStr = sourceDocument.getFieldView(WindowConstants.FIELDNAME_DocumentSummary).getValueAs(String.class);
-			documentSummary = TranslatableStrings.constant(documentSummaryStr);
+			result.append(" ").append(documentSummaryStr);
 		}
 		else if (sourceDocument.hasField(WindowConstants.FIELDNAME_DocumentNo))
 		{
 			final String documentNoStr = sourceDocument.getFieldView(WindowConstants.FIELDNAME_DocumentNo).getValueAs(String.class);
-			documentSummary = TranslatableStrings.constant(documentNoStr);
+			result.append(" ").append(documentNoStr);
 		}
 		else if (sourceDocument.hasField(WindowConstants.FIELDNAME_Name))
 		{
 			final String nameStr = sourceDocument.getFieldView(WindowConstants.FIELDNAME_Name).getValueAs(String.class);
-			documentSummary = TranslatableStrings.constant(nameStr);
+			result.append(" ").append(nameStr);
 		}
 		else
 		{
-			documentSummary = TranslatableStrings.constant(sourceDocument.getDocumentId().toString());
+			result.append(" ").append(sourceDocument.getDocumentId().toString());
 		}
 
-		// Window caption + document info
-		return TranslatableStrings.join(" ", windowCaption, documentSummary);
+		//
+		// Category
+		if (zoomInfo != null)
+		{
+			final ITranslatableString categoryDisplayName = zoomInfo.getTargetWindow().getCategoryDisplayName();
+			if (!TranslatableStrings.isBlank(categoryDisplayName))
+			{
+				result.append(" / ").append(categoryDisplayName);
+			}
+		}
+
+		return result.build();
 	}
 
 	private static final class DocumentAsZoomSource implements IZoomSource

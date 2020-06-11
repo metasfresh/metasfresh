@@ -46,6 +46,7 @@ import de.metas.ui.web.document.filter.DocumentFilterParamDescriptor;
 import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProvider;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverterDecorator;
 import de.metas.ui.web.document.geo_location.GeoLocationDocumentService;
+import de.metas.ui.web.document.references.DocumentReferenceId;
 import de.metas.ui.web.document.references.service.DocumentReferencesService;
 import de.metas.ui.web.view.descriptor.SqlViewBinding;
 import de.metas.ui.web.view.descriptor.SqlViewBindingFactory;
@@ -154,10 +155,14 @@ public class SqlViewFactory implements IViewFactory
 				.setViewType(viewType)
 				.setProfileId(profileId)
 				.setReferencingDocumentPaths(request.getReferencingDocumentPaths())
+				.setDocumentReferenceId(request.getDocumentReferenceId())
 				.setParentViewId(request.getParentViewId())
 				.setParentRowId(request.getParentRowId())
 				.addStickyFilters(request.getStickyFilters())
-				.addStickyFilter(extractReferencedDocumentFilter(windowId, request.getSingleReferencingDocumentPathOrNull()))
+				.addStickyFilter(extractReferencedDocumentFilter(
+						windowId,
+						request.getSingleReferencingDocumentPathOrNull(),
+						request.getDocumentReferenceId()))
 				.applySecurityRestrictions(request.isApplySecurityRestrictions())
 				.viewInvalidationAdvisor(sqlViewBinding.getViewInvalidationAdvisor())
 				.refreshViewOnChangeEvents(sqlViewBinding.isRefreshViewOnChangeEvents());
@@ -180,7 +185,10 @@ public class SqlViewFactory implements IViewFactory
 		return viewBuilder.build();
 	}
 
-	private DocumentFilter extractReferencedDocumentFilter(final WindowId targetWindowId, final DocumentPath referencedDocumentPath)
+	private DocumentFilter extractReferencedDocumentFilter(
+			@NonNull final WindowId targetWindowId,
+			@Nullable final DocumentPath referencedDocumentPath,
+			@Nullable final DocumentReferenceId documentReferenceId)
 	{
 		if (referencedDocumentPath == null)
 		{
@@ -196,6 +204,7 @@ public class SqlViewFactory implements IViewFactory
 			return documentReferencesService.getDocumentReferenceFilter(
 					referencedDocumentPath,
 					targetWindowId,
+					documentReferenceId,
 					Env.getUserRolePermissions() // FIXME: avoid using Env here
 			);
 		}
