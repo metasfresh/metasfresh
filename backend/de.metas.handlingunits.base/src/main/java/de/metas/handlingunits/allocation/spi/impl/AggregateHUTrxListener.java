@@ -160,11 +160,11 @@ public class AggregateHUTrxListener implements IHUTrxListener
 		final IUOMDAO uomDao = Services.get(IUOMDAO.class);
 		final UOMPrecision precision = uomDao.getStandardPrecision(trx.getQuantity().getUomId());
 
-		final BigDecimal qtyOfCompleteTUs = newTuQty.multiply(cuQtyBeforeLoad);
-		final BigDecimal splitQty = storageQty.subtract(qtyOfCompleteTUs);
+		final BigDecimal storageQtyOfCompleteTUs = newTuQty.multiply(cuQtyBeforeLoad);
+		final BigDecimal qtyToSplit = storageQty.subtract(storageQtyOfCompleteTUs);
 
 		final BigDecimal errorMargin = NumberUtils.getErrorMarginForScale(precision.toInt());
-		if (splitQty.compareTo(errorMargin) > 0)
+		if (qtyToSplit.compareTo(errorMargin) > 0)
 		{
 			// the *actual* newTuQty would not be a natural number, so we need to initiate another split now
 			final I_M_HU_PI_Item splitHUPIItem = Services.get(IHandlingUnitsBL.class).getPIItem(item);
@@ -190,7 +190,7 @@ public class AggregateHUTrxListener implements IHUTrxListener
 			final IAllocationRequest request = AllocationUtils.createQtyRequest(
 					huContext,
 					trx.getProductId(),
-					Quantity.of(splitQty, trx.getQuantity().getUOM()),
+					Quantity.of(qtyToSplit, trx.getQuantity().getUOM()),
 					huContext.getDate());
 			loader.load(request);
 		}
