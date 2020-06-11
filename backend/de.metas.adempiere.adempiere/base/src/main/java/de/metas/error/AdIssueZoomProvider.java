@@ -8,6 +8,7 @@ import javax.annotation.Nullable;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.window.api.IADWindowDAO;
+import org.compiere.model.IQuery;
 import org.compiere.model.I_AD_Issue;
 import org.compiere.model.MQuery;
 import org.compiere.model.MQuery.Operator;
@@ -47,6 +48,9 @@ import lombok.NonNull;
 
 public class AdIssueZoomProvider implements IZoomProvider
 {
+	private final IADWindowDAO adWindowDAO = Services.get(IADWindowDAO.class);
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
 	private final Priority zoomInfoPriority = Priority.HIGHEST;
 
 	@Override
@@ -74,7 +78,6 @@ public class AdIssueZoomProvider implements IZoomProvider
 		query.addRestriction(I_AD_Issue.COLUMNNAME_AD_Table_ID, Operator.EQUAL, source.getAD_Table_ID());
 		query.addRestriction(I_AD_Issue.COLUMNNAME_Record_ID, Operator.EQUAL, source.getRecord_ID());
 
-		final IADWindowDAO adWindowDAO = Services.get(IADWindowDAO.class);
 		final ITranslatableString destinationDisplay = adWindowDAO.retrieveWindowName(issuesWindowId);
 
 		final IntSupplier recordsCountSupplier = createRecordsCountSupplier(source);
@@ -91,15 +94,13 @@ public class AdIssueZoomProvider implements IZoomProvider
 						.build());
 	}
 
-	private static IntSupplier createRecordsCountSupplier(@NonNull final IZoomSource source)
+	private IntSupplier createRecordsCountSupplier(@NonNull final IZoomSource source)
 	{
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
-		final int adTableId = source.getAD_Table_ID();
-		final int recordId = source.getRecord_ID();
-		return () -> queryBL.createQueryBuilder(I_AD_Issue.class)
-				.addEqualsFilter(I_AD_Issue.COLUMNNAME_AD_Table_ID, adTableId)
-				.addEqualsFilter(I_AD_Issue.COLUMNNAME_Record_ID, recordId)
-				.create()
-				.count();
+		final IQuery<I_AD_Issue> query = queryBL.createQueryBuilder(I_AD_Issue.class)
+				.addEqualsFilter(I_AD_Issue.COLUMNNAME_AD_Table_ID, source.getAD_Table_ID())
+				.addEqualsFilter(I_AD_Issue.COLUMNNAME_Record_ID, source.getRecord_ID())
+				.create();
+
+		return () -> query.count();
 	}
 }
