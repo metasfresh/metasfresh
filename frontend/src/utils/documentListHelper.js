@@ -2,7 +2,7 @@ import PropTypes from 'prop-types';
 import { Map as iMap } from 'immutable';
 import Moment from 'moment-timezone';
 import currentDevice from 'current-device';
-import { store } from '../containers/App';
+import { LOCAL_LANG } from '../constants/Constants';
 import { getItemsByProperty, nullToEmptyStrings } from './index';
 import { getSelectionInstant } from '../reducers/windowHandler';
 import { viewState } from '../reducers/viewHandler';
@@ -297,16 +297,13 @@ export function parseToDisplay(fieldsByName) {
 
 /**
  * @method getCurrentActiveLocale
- * @summary Retrieves the active locale from the redux store
+ * @summary Retrieves the active locale from the local store
  */
 export function getCurrentActiveLocale() {
-  return store.getState().appHandler.me.language
-    ? store.getState().appHandler.me.language.key
-    : 'en';
+  return localStorage.getItem(LOCAL_LANG);
 }
 
 export function convertTimeStringToMoment(value) {
-  Moment.locale(getCurrentActiveLocale());
   if (value.match(TIME_REGEX_TEST)) {
     return Moment(value, 'hh:mm');
   }
