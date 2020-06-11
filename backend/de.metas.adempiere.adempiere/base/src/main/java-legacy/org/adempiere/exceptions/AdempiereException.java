@@ -38,6 +38,7 @@ import com.google.common.collect.ImmutableMap;
 
 import ch.qos.logback.classic.Level;
 import de.metas.error.AdIssueId;
+import de.metas.error.IssueCategory;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
@@ -225,6 +226,8 @@ public class AdempiereException extends RuntimeException
 
 	@VisibleForTesting
 	static final String PARAMETER_RecordRef = "recordRef";
+	@VisibleForTesting
+	static final String PARAMETER_IssueCategory = "issueCategory";
 
 	private static boolean captureLanguageOnConstructionTime = false;
 
@@ -521,6 +524,20 @@ public class AdempiereException extends RuntimeException
 		return recordRefObj instanceof TableRecordReference
 				? (TableRecordReference)recordRefObj
 				: null;
+	}
+
+	public AdempiereException setIssueCategory(@NonNull final IssueCategory issueCategory)
+	{
+		return setParameter(PARAMETER_IssueCategory, issueCategory);
+	}
+
+	@NonNull
+	public IssueCategory getIssueCategory()
+	{
+		final Object issueCategoryObj = getParameter(PARAMETER_IssueCategory);
+		return issueCategoryObj instanceof IssueCategory
+				? (IssueCategory)issueCategoryObj
+				: IssueCategory.OTHER;
 	}
 
 	/**

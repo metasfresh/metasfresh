@@ -10,6 +10,7 @@ import org.compiere.model.I_Fact_Acct;
 
 import ch.qos.logback.classic.Level;
 import de.metas.acct.api.AcctSchema;
+import de.metas.error.IssueCategory;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStringBuilder;
@@ -50,6 +51,7 @@ public final class PostingException extends AdempiereException
 	{
 		super(cause);
 
+		setIssueCategory(IssueCategory.ACCOUNTING);
 		setDocument(document);
 		setDetailMessage(cause == null ? null : extractMessageTrl(cause));
 	}
@@ -57,6 +59,7 @@ public final class PostingException extends AdempiereException
 	public PostingException(final String message)
 	{
 		super(TranslatableStrings.empty());
+		setIssueCategory(IssueCategory.ACCOUNTING);
 		setDetailMessage(message);
 	}
 

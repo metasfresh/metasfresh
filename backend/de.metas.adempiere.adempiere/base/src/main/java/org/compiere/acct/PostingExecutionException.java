@@ -2,6 +2,7 @@ package org.compiere.acct;
 
 import org.adempiere.exceptions.AdempiereException;
 
+import de.metas.error.IssueCategory;
 import de.metas.util.Check;
 
 /**
@@ -49,11 +50,13 @@ public class PostingExecutionException extends AdempiereException
 	private PostingExecutionException(final String message, final String serverStackTrace)
 	{
 		super(buildMessage(message, serverStackTrace));
+		setIssueCategory(IssueCategory.ACCOUNTING);
 	}
 
 	private PostingExecutionException(final String message, final Throwable cause)
 	{
 		super(message, cause);
+		setIssueCategory(IssueCategory.ACCOUNTING);
 	}
 
 	private static final String buildMessage(final String message, final String serverStackTrace)

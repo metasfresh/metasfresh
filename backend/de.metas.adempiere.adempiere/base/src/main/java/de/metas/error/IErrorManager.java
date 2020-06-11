@@ -1,6 +1,7 @@
 package de.metas.error;
 
 import org.adempiere.ad.element.api.AdWindowId;
+import org.adempiere.util.lang.impl.TableRecordReference;
 
 import de.metas.util.ISingletonService;
 
@@ -23,4 +24,8 @@ public interface IErrorManager extends ISingletonService
 	AdIssueId createIssue(IssueCreateRequest request);
 
 	void markIssueAcknowledged(AdIssueId adIssueId);
+
+	IssueCountersByCategory getIssueCountersByCategory(
+			TableRecordReference recordRef,
+			final boolean onlyNotAcknowledged);
 }
