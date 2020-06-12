@@ -1,27 +1,8 @@
 package de.metas.rest_api.invoicecandidates.impl;
 
-import static de.metas.util.Check.isEmpty;
-import static de.metas.util.lang.CoalesceUtil.coalesce;
-import static java.math.BigDecimal.ZERO;
-
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.util.List;
-import java.util.Map.Entry;
-import java.util.stream.Collectors;
-
-import javax.annotation.Nullable;
-
-import de.metas.invoicecandidate.externallyreferenced.*;
-import org.adempiere.exceptions.AdempiereException;
-import org.apache.commons.collections4.CollectionUtils;
-import org.compiere.util.Env;
-import org.springframework.stereotype.Service;
-
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
-
 import de.metas.bpartner.composite.BPartnerComposite;
 import de.metas.bpartner.composite.BPartnerContact;
 import de.metas.bpartner.composite.BPartnerLocation;
@@ -31,6 +12,12 @@ import de.metas.bpartner.service.BPartnerInfo.BPartnerInfoBuilder;
 import de.metas.bpartner.service.BPartnerQuery;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.invoicecandidate.InvoiceCandidateId;
+import de.metas.invoicecandidate.externallyreferenced.ExternallyReferencedCandidate;
+import de.metas.invoicecandidate.externallyreferenced.ExternallyReferencedCandidateRepository;
+import de.metas.invoicecandidate.externallyreferenced.InvoiceCandidateLookupKey;
+import de.metas.invoicecandidate.externallyreferenced.InvoiceDetailItem;
+import de.metas.invoicecandidate.externallyreferenced.ManualCandidateService;
+import de.metas.invoicecandidate.externallyreferenced.NewManualInvoiceCandidate;
 import de.metas.invoicecandidate.externallyreferenced.NewManualInvoiceCandidate.NewManualInvoiceCandidateBuilder;
 import de.metas.lang.SOTrx;
 import de.metas.money.CurrencyId;
@@ -62,7 +49,7 @@ import de.metas.rest_api.invoicecandidates.request.JsonCreateInvoiceCandidatesRe
 import de.metas.rest_api.invoicecandidates.request.JsonCreateInvoiceCandidatesRequestItem;
 import de.metas.rest_api.invoicecandidates.response.JsonCreateInvoiceCandidatesResponse;
 import de.metas.rest_api.invoicecandidates.response.JsonCreateInvoiceCandidatesResponse.JsonCreateInvoiceCandidatesResponseBuilder;
-import de.metas.rest_api.invoicecandidates.response.JsonCreateInvoiceCandidatesResponseItem;
+import de.metas.rest_api.invoicecandidates.response.JsonInvoiceCandidatesResponseItem;
 import de.metas.rest_api.utils.BPartnerCompositeLookupKey;
 import de.metas.rest_api.utils.BPartnerQueryService;
 import de.metas.rest_api.utils.CurrencyService;
@@ -75,6 +62,21 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.lang.Percent;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.apache.commons.collections4.CollectionUtils;
+import org.compiere.util.Env;
+import org.springframework.stereotype.Service;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Map.Entry;
+import java.util.stream.Collectors;
+
+import static de.metas.util.Check.isEmpty;
+import static de.metas.util.lang.CoalesceUtil.coalesce;
+import static java.math.BigDecimal.ZERO;
 
 /*
  * #%L
@@ -156,7 +158,7 @@ public class CreateInvoiceCandidatesService
 
 			final InvoiceCandidateId candidateId = externallyReferencedCandidateRepository.save(manualCandidateService.createInvoiceCandidate(candidateToSave));
 
-			final JsonCreateInvoiceCandidatesResponseItem responseItem = JsonCreateInvoiceCandidatesResponseItem.builder()
+			final JsonInvoiceCandidatesResponseItem responseItem = JsonInvoiceCandidatesResponseItem.builder()
 					.externalHeaderId(headerId)
 					.externalLineId(lineId)
 					.metasfreshId(MetasfreshId.of(candidateId))

@@ -1,17 +1,8 @@
-package de.metas.rest_api.invoicecandidates.response;
-
-import de.metas.rest_api.common.JsonExternalId;
-import de.metas.rest_api.common.MetasfreshId;
-import io.swagger.annotations.ApiModelProperty;
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Value;
-
 /*
  * #%L
  * de.metas.business.rest-api
  * %%
- * Copyright (C) 2019 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -29,17 +20,20 @@ import lombok.Value;
  * #L%
  */
 
+package de.metas.rest_api.invoicecandidates.response;
+
+import io.swagger.annotations.ApiModelProperty;
+import lombok.Builder;
+import lombok.Singular;
+import lombok.Value;
+
+import java.util.List;
+
 @Value
 @Builder
-public class JsonCreateInvoiceCandidatesResponseItem
+public class JsonReverseInvoiceResponse
 {
-	@ApiModelProperty(position = 10, dataType = "java.lang.String")
-	JsonExternalId externalHeaderId;
-
-	@ApiModelProperty(position = 20, dataType = "java.lang.String")
-	JsonExternalId externalLineId;
-
-	@ApiModelProperty(position = 30, dataType = "java.lang.Long", value = "The metasfresh-ID of the upserted record")
-	@NonNull
-	MetasfreshId metasfreshId;
+	@ApiModelProperty(position = 10)
+	@Singular
+	List<JsonInvoiceCandidatesResponseItem> affectedInvoiceCandidates;
 }
