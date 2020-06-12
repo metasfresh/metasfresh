@@ -1,5 +1,39 @@
 package de.metas.contracts.process;
 
+import de.metas.contracts.ConditionsId;
+import de.metas.contracts.IFlatrateDAO;
+import de.metas.contracts.commission.CommissionConstants;
+import de.metas.contracts.commission.commissioninstance.services.CommissionProductService;
+import de.metas.contracts.model.I_C_Flatrate_Conditions;
+import de.metas.contracts.model.I_C_Flatrate_Matching;
+import de.metas.contracts.model.I_C_Flatrate_Term;
+import de.metas.contracts.model.X_C_Flatrate_Conditions;
+import de.metas.contracts.refund.RefundConfig;
+import de.metas.contracts.refund.RefundConfigQuery;
+import de.metas.contracts.refund.RefundConfigRepository;
+import de.metas.process.IProcessParametersCallout;
+import de.metas.process.Param;
+import de.metas.product.ProductId;
+import de.metas.util.Services;
+import de.metas.util.StringUtils;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.util.api.IParams;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.IQuery;
+import org.compiere.model.I_AD_User;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_M_Product;
+
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import static de.metas.contracts.model.X_C_Flatrate_Conditions.TYPE_CONDITIONS_Commission;
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 /*
@@ -24,48 +58,27 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
  * #L%
  */
 
-import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.stream.Collectors;
-
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.dao.IQueryFilter;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.util.api.IParams;
-import org.compiere.SpringContextHolder;
-import org.compiere.model.IQuery;
-import org.compiere.model.I_AD_User;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_M_Product;
-
-import de.metas.contracts.ConditionsId;
-import de.metas.contracts.IFlatrateDAO;
-import de.metas.contracts.commission.CommissionConstants;
-import de.metas.contracts.commission.commissioninstance.services.CommissionProductService;
-import de.metas.contracts.model.I_C_Flatrate_Conditions;
-import de.metas.contracts.model.I_C_Flatrate_Matching;
-import de.metas.contracts.model.I_C_Flatrate_Term;
-import de.metas.contracts.model.X_C_Flatrate_Conditions;
-import de.metas.contracts.refund.RefundConfig;
-import de.metas.contracts.refund.RefundConfigQuery;
-import de.metas.contracts.refund.RefundConfigRepository;
-import de.metas.product.ProductId;
-import de.metas.util.Services;
-
-public class C_Flatrate_Term_Create_For_BPartners extends C_Flatrate_Term_Create
+public class C_Flatrate_Term_Create_For_BPartners extends C_Flatrate_Term_Create implements IProcessParametersCallout
 {
 	private final RefundConfigRepository refundConfigRepository = SpringContextHolder.instance.getBean(RefundConfigRepository.class);
 	private final CommissionProductService commissionProductService = SpringContextHolder.instance.getBean(CommissionProductService.class);
 	private final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
 
+	private static final String PARAM_C_FLATRATE_CONDITIONS_ID = I_C_Flatrate_Term.COLUMNNAME_C_Flatrate_Conditions_ID;
+	@Param(parameterName = PARAM_C_FLATRATE_CONDITIONS_ID, mandatory = true)
 	private int p_flatrateconditionsID;
 
 	private Timestamp p_startDate;
 
 	private int p_adUserInChargeId;
+
+	private static final String PARAM_IS_SIMULATION = I_C_Flatrate_Term.COLUMNNAME_IsSimulation;
+	@Param(parameterName = PARAM_IS_SIMULATION, mandatory = true)
+	private String isSimulation;
+
+	private static final String PARAM_SHOW_SIMULATION_FLAG = "showSimulationFlag";
+	@Param(parameterName = PARAM_SHOW_SIMULATION_FLAG)
+	private boolean showSimulationFlag;
 
 	@Override
 	protected void prepare()
@@ -76,7 +89,7 @@ public class C_Flatrate_Term_Create_For_BPartners extends C_Flatrate_Term_Create
 		p_adUserInChargeId = para.getParameterAsInt(I_C_Flatrate_Term.COLUMNNAME_AD_User_InCharge_ID, -1);
 		p_startDate = para.getParameterAsTimestamp(I_C_Flatrate_Term.COLUMNNAME_StartDate);
 
-		final I_C_Flatrate_Conditions conditions = loadOutOfTrx(p_flatrateconditionsID, I_C_Flatrate_Conditions.class);
+		final I_C_Flatrate_Conditions conditions = flatrateDAO.getConditionsById(p_flatrateconditionsID);
 		setConditions(conditions);
 
 		final ConditionsId conditionsId = ConditionsId.ofRepoId(conditions.getC_Flatrate_Conditions_ID());
@@ -132,6 +145,12 @@ public class C_Flatrate_Term_Create_For_BPartners extends C_Flatrate_Term_Create
 			setUserInCharge(userInCharge);
 		}
 		setStartDate(p_startDate);
+
+		//so far via this process, only commission type contracts can be created as a `Simulation`.
+		if( TYPE_CONDITIONS_Commission.equals(conditions.getType_Conditions()) )
+		{
+			setIsSimulation(StringUtils.toBoolean(isSimulation));
+		}
 	}
 
 	@Override
@@ -152,5 +171,15 @@ public class C_Flatrate_Term_Create_For_BPartners extends C_Flatrate_Term_Create
 				.iterate(I_C_BPartner.class);
 
 		return () -> it;
+	}
+
+	@Override
+	public void onParameterChanged(final String parameterName)
+	{
+		if (PARAM_C_FLATRATE_CONDITIONS_ID.equals(parameterName))
+		{
+			showSimulationFlag = p_flatrateconditionsID > 0
+					&& TYPE_CONDITIONS_Commission.equals(flatrateDAO.getConditionsById(p_flatrateconditionsID).getType_Conditions());
+		}
 	}
 }

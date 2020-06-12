@@ -13,7 +13,9 @@ import static org.assertj.core.api.Assertions.tuple;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Properties;
 
+import de.metas.organization.ClientAndOrgId;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.mm.attributes.api.AttributeConstants;
@@ -303,7 +305,8 @@ class DesadvBLTest_addInOutLine
 	/** sets up a handling unit with 49 items and assigns it to {@link #inOutLineRecord}. */
 	private void setupHandlingUnit()
 	{
-		final IMutableHUContext huContext = Services.get(IHUContextFactory.class).createMutableHUContext(Env.getCtx());
+		final Properties ctx = Env.getCtx();
+		final IMutableHUContext huContext = Services.get(IHUContextFactory.class).createMutableHUContext(ctx, ClientAndOrgId.ofClientAndOrg(Env.getAD_Client_ID(), Env.getAD_Org_ID(ctx)));
 
 		final I_M_Attribute sscc18AttrRecord = newInstance(I_M_Attribute.class);
 		sscc18AttrRecord.setAttributeValueType(X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40);
@@ -343,7 +346,7 @@ class DesadvBLTest_addInOutLine
 		}
 
 		huAssignmentBL.createHUAssignmentBuilder()
-				.initializeAssignment(Env.getCtx(), ITrx.TRXNAME_None)
+				.initializeAssignment(ctx, ITrx.TRXNAME_None)
 				.setModel(inOutLineRecord)
 				.setTopLevelHU(lu)
 				.setM_LU_HU(lu)
