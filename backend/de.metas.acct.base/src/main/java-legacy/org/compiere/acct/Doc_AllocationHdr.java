@@ -546,10 +546,6 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 
 	/**
 	 * Create accounting facts for early payment discounts. Separate for each tax.
-	 *
-	 * @param fact
-	 * @param line
-	 * @param discount amount booked
 	 */
 	private AmountSourceAndAcct createInvoiceDiscountFacts(final Fact fact, final DocLine_Allocation line)
 	{
@@ -1132,13 +1128,6 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 {
 	/**
 	 * Allocation Tax Adjustment
-	 *
-	 * @param doc_AllocationHdr
-	 *
-	 * @param DiscountAccount discount acct
-	 * @param DiscountAmt discount amt
-	 * @param WriteOffAccount write off acct
-	 * @param WriteOffAmt write off amt
 	 */
 	public Doc_AllocationTax(final Doc_AllocationHdr doc,
 			final MAccount DiscountAccount, final BigDecimal DiscountAmt,

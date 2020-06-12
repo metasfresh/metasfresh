@@ -94,11 +94,7 @@ public class ModelClassGenerator
 
 	/**
 	 * Add Header info to buffer
-	 * 
-	 * @param AD_Table_ID table
-	 * @param sb buffer
-	 * @param mandatory init call for mandatory columns
-	 * @param packageName package name
+	 *
 	 * @return class name
 	 */
 	private String createHeader(final TableInfo tableInfo, StringBuilder sb, String packageName)
@@ -207,8 +203,6 @@ public class ModelClassGenerator
 	/**
 	 * Create Column access methods
 	 * 
-	 * @param AD_Table_ID table
-	 * @param mandatory init call for mandatory columns
 	 * @return set/get method
 	 */
 	private StringBuilder createColumns(final TableInfo tableInfo)
@@ -248,8 +242,6 @@ public class ModelClassGenerator
 	/**
 	 * Create set/get methods for column
 	 * 
-	 * @param mandatory init call for mandatory columns
-	 * @param columnInfo
 	 * @return set/get methods (java code)
 	 */
 	private String createColumnMethods(final ColumnInfo columnInfo)

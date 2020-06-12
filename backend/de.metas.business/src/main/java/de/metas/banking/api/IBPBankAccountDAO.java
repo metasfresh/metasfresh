@@ -61,18 +61,14 @@ public interface IBPBankAccountDAO extends ISingletonService
 
 	/**
 	 * Deactivate all {@link I_C_BP_BankAccount} records for the given bPartnerId, besides
-	 * <li>
 	 * <ul>
-	 * the ones whose id is in the given {@code exceptIds}
+	 *     <li>the ones whose id is in the given {@code exceptIds}</li>
+	 *     <li>the ones that have no IBAN; why: this is used for persisting {@code BPartnerComposite}s which never have no-iban-backaccounts; so we need to prevent them from being deactivated.</li>
 	 * </ul>
-	 * <ul>
-	 * the ones that have no IBAN; why: this is used for persisting {@code BPartnerComposite}s which never have no-iban-backaccounts; so we need to prevent them from being deactivated.
-	 * </ul>
-	 * </li>
 	 */
 	void deactivateIBANAccountsByBPartnerExcept(BPartnerId bpartnerId, Collection<BPartnerBankAccountId> exceptIds);
 
-	ImmutableListMultimap<BPartnerId, I_C_BP_BankAccount> getAllByBPartnerIds(Collection<BPartnerId> bpartnerIds);
+	ImmutableListMultimap<BPartnerId, I_C_BP_BankAccount> getByBPartnerIds(Collection<BPartnerId> bpartnerIds);
 
 	BankId getBankId(@NonNull BankAccountId bankAccountId);
 }

@@ -715,10 +715,6 @@ public class ESRImportBL implements IESRImportBL
 
 	/**
 	 * Creates a payment for the given lines. Assumes that all lines reference the same invoice. Method is default visible to make it testable.
-	 *
-	 * @param importLines
-	 * @param trxName
-	 * @param trxRunConfig
 	 */
 	/* package */void processLinesWithInvoice(final List<I_ESR_ImportLine> importLines)
 	{

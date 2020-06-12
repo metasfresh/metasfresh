@@ -767,12 +767,6 @@ public final class Fact
 		return temp;
 	}    // getLines
 
-	/**
-	 * Save Fact
-	 *
-	 * @param trxName transaction
-	 * @return true if all lines were saved
-	 */
 	public void save()
 	{
 		factTrxLinesStrategy

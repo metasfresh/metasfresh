@@ -107,9 +107,9 @@ import de.metas.util.StringUtils;
  * @version $Id: MPayment.java,v 1.4 2006/10/02 05:18:39 jjanke Exp $
  * @sse http://sourceforge.net/tracker/index.php?func=detail&aid=1866214&group_id=176962&atid=879335
  * <li>FR [ 2520591 ] Support multiples calendar for Org
- * @see http://sourceforge.net/tracker/?func=detail&atid=879335&aid=1948157&group_id=176962
+ * Also see http://sourceforge.net/tracker/?func=detail&atid=879335&aid=1948157&group_id=176962
  * <li>FR [ 1866214 ]
- * @see http://sourceforge.net/tracker2/?func=detail&atid=879335&aid=2520591&group_id=176962
+ * Also see http://sourceforge.net/tracker2/?func=detail&atid=879335&aid=2520591&group_id=176962
  */
 public final class MPayment extends X_C_Payment
 		implements IDocument
@@ -700,7 +700,7 @@ public final class MPayment extends X_C_Payment
 	/**
 	 * Set Payment Amount
 	 *
-	 * @param currencyId currency (optional)
+	 * @param currencyId currency (optional, may be <= 0)
 	 * @param payAmt        amount
 	 * @deprecated Will be deleted because it's used only by legacy API
 	 */
