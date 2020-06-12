@@ -21,31 +21,11 @@ package de.metas.invoicecandidate.api;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.lang.IContextAware;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.model.IQuery;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_InvoiceLine;
-import org.compiere.model.I_C_InvoiceSchedule;
-import org.compiere.model.I_M_InOut;
-import org.compiere.model.I_M_InOutLine;
 
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.aggregation.model.I_C_Aggregation;
 import de.metas.bpartner.BPartnerId;
+import de.metas.invoice.InvoiceId;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
@@ -59,6 +39,26 @@ import de.metas.process.PInstanceId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.lang.IContextAware;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.IQuery;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_InvoiceLine;
+import org.compiere.model.I_C_InvoiceSchedule;
+import org.compiere.model.I_M_InOut;
+import org.compiere.model.I_M_InOutLine;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
 
 public interface IInvoiceCandDAO extends ISingletonService
 {
@@ -84,6 +84,8 @@ public interface IInvoiceCandDAO extends ISingletonService
 	int createSelectionByQuery(InvoiceCandidateMultiQuery multiQuery, PInstanceId pInstanceId);
 
 	List<I_C_Invoice_Candidate> retrieveIcForIl(I_C_InvoiceLine invoiceLine);
+
+	List<I_C_Invoice_Candidate> retrieveInvoiceCandidates(InvoiceId invoiceId);
 
 	/**
 	 * Returns those invoice candidates that have been tagged to be recomputed/updated by the given <code>recomputeTag</code>.
@@ -210,6 +212,8 @@ public interface IInvoiceCandDAO extends ISingletonService
 	 * Similar to {@link #updateDateInvoiced(LocalDate, PInstanceId, String)}, but updates the <code>POReference</code> column.
 	 */
 	void updatePOReference(String poReference, PInstanceId selectionId);
+
+	void updateApprovalForInvoicingToTrue(@NonNull PInstanceId selectionId);
 
 	/**
 	 * Updates the {@link I_C_Invoice_Candidate#COLUMN_C_PaymentTerm_ID} of those candidates that don't have a payment term ID.

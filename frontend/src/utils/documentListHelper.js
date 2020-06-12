@@ -2,7 +2,7 @@ import PropTypes from 'prop-types';
 import { Map as iMap } from 'immutable';
 import Moment from 'moment-timezone';
 import currentDevice from 'current-device';
-
+import { LOCAL_LANG } from '../constants/Constants';
 import { getItemsByProperty, nullToEmptyStrings } from './index';
 import { getSelectionInstant } from '../reducers/windowHandler';
 import { viewState, getView } from '../reducers/viewHandler';
@@ -21,9 +21,10 @@ const DLpropTypes = {
   sort: PropTypes.string,
   defaultViewId: PropTypes.string,
 
+  referenceId: PropTypes.string,
   // TODO: Eventually this should be renamed to `refWindowId`
   refType: PropTypes.string,
-  refId: PropTypes.string,
+  refDocumentId: PropTypes.string,
   refTabId: PropTypes.string,
 
   // from @connect
@@ -49,8 +50,9 @@ const DLmapStateToProps = (state, props) => {
     isModal,
     defaultViewId,
     windowType,
+    referenceId: queryReferenceId,
     refType: queryRefType,
-    refId: queryRefId,
+    refDocumentId: queryRefDocumentId,
     refTabId: queryRefTabId,
   } = props;
   const identifier = isModal ? defaultViewId : windowType;
@@ -80,8 +82,9 @@ const DLmapStateToProps = (state, props) => {
     reduxData: master,
     layout: master.layout,
     layoutPending: master.layoutPending,
+    referenceId: queryReferenceId,
     refType: queryRefType,
-    refId: queryRefId,
+    refDocumentId: queryRefDocumentId,
     refTabId: queryRefTabId,
     selections: state.windowHandler.selections,
     selected: getSelectionInstant(
@@ -317,6 +320,14 @@ export function parseToDisplay(fieldsByName) {
   return parseDateToReadable(nullToEmptyStrings(fieldsByName));
 }
 
+/**
+ * @method getCurrentActiveLocale
+ * @summary Retrieves the active locale from the local store
+ */
+export function getCurrentActiveLocale() {
+  return localStorage.getItem(LOCAL_LANG);
+}
+
 export function convertTimeStringToMoment(value) {
   if (value.match(TIME_REGEX_TEST)) {
     return Moment(value, 'hh:mm');
@@ -326,6 +337,7 @@ export function convertTimeStringToMoment(value) {
 
 // This doesn't set the TZ anymore, as we're handling this globally/in datepicker
 export function parseDateWithCurrentTimezone(value) {
+  Moment.locale(getCurrentActiveLocale());
   if (value) {
     if (Moment.isMoment(value)) {
       return value;
@@ -367,6 +379,44 @@ export function getRowsData(rowData) {
     });
 
   return data;
+}
+
+/**
+ * @method formatStringWithZeroSplitBy
+ * @summary For a given string with a specified separator it formats the number within with zeros in front if they are below 10
+ * @param {string} date
+ * @param {string} notation
+ */
+function formatStringWithZeroSplitBy(date, notation) {
+  const dateArr = date.split(notation);
+  const frmArr = dateArr.map((itemDate, index) => {
+    return dateArr.length > 2 &&
+      itemDate &&
+      index < 2 &&
+      itemDate.length < 2 &&
+      itemDate > 0 &&
+      itemDate < 10
+      ? '0' + itemDate
+      : itemDate;
+  });
+  return frmArr.join(notation);
+}
+
+/**
+ * @method formatDateWithZeros
+ * @summary Format date with zeros if it's like dd.m.yyyy to dd.mm.yyyyy and similar for the case when / is the separator
+ * @param {string} date
+ */
+export async function formatDateWithZeros(date) {
+  if (typeof date === 'string' && date.includes('.')) {
+    return formatStringWithZeroSplitBy(date, '.');
+  }
+
+  if (typeof date === 'string' && date.includes('/')) {
+    return formatStringWithZeroSplitBy(date, '/');
+  }
+
+  return date;
 }
 
 export function mapIncluded(node, indent, isParentLastChild = false) {

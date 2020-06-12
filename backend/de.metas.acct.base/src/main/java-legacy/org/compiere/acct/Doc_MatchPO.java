@@ -162,7 +162,7 @@ public class Doc_MatchPO extends Doc<DocLine_MatchPO>
 		//
 		// PPV Offset
 		final FactLine dr = fact.createLine(null,
-				getAccount(Doc.ACCTTYPE_PPVOffset, as),
+				getAccount(AccountType.PPVOffset, as),
 				difference.getCurrencyId(),
 				difference.negateIfNot(isReturnTrx).getValue());
 		if (dr != null)

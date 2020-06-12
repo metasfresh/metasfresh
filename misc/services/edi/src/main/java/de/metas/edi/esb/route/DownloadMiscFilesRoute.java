@@ -53,7 +53,7 @@ public class DownloadMiscFilesRoute extends RouteBuilder
 		}
 		from(INPUT_FILE_REMOTE)
 				.routeId(ROUTE_ID)
-				.log(LoggingLevel.INFO, "Getting remote file: " + header(Exchange.FILE_NAME))
+				.log(LoggingLevel.DEBUG, "Getting remote file: " + header(Exchange.FILE_NAME))
 				.to(OUTPUT_FILE_LOCAL);
 	}
 }

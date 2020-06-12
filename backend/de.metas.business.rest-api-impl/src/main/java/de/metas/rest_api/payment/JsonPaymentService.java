@@ -22,7 +22,7 @@
 
 package de.metas.rest_api.payment;
 
-import de.metas.banking.api.BankAccountId;
+import de.metas.banking.BankAccountId;
 import de.metas.banking.api.IBPBankAccountDAO;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerOrgBL;

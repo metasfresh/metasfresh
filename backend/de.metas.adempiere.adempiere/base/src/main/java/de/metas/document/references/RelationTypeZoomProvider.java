@@ -71,7 +71,7 @@ public class RelationTypeZoomProvider implements IZoomProvider
 	private static final Logger logger = LogManager.getLogger(RelationTypeZoomProvider.class);
 
 	private final boolean directed;
-	private final String zoomInfoId;
+	private final ZoomInfoId zoomInfoId;
 	private final String internalName;
 	private final boolean isTableRecordIdTarget;
 
@@ -171,7 +171,7 @@ public class RelationTypeZoomProvider implements IZoomProvider
 				ZoomInfoCandidate.builder()
 						.id(getZoomInfoId())
 						.internalName(getInternalName())
-						.adWindowId(adWindowId)
+						.targetWindow(ZoomTargetWindow.ofAdWindowId(adWindowId))
 						.priority(zoomInfoPriority)
 						.query(query)
 						.destinationDisplay(display)
@@ -189,7 +189,7 @@ public class RelationTypeZoomProvider implements IZoomProvider
 		return isTableRecordIdTarget;
 	}
 
-	private String getZoomInfoId()
+	private ZoomInfoId getZoomInfoId()
 	{
 		return zoomInfoId;
 	}
@@ -585,9 +585,9 @@ public class RelationTypeZoomProvider implements IZoomProvider
 			return Check.assumeGreaterThanZero(adRelationTypeId, "adRelationTypeId");
 		}
 
-		private String getZoomInfoId()
+		private ZoomInfoId getZoomInfoId()
 		{
-			return "AD_RelationType_ID-" + getAD_RelationType_ID();
+			return ZoomInfoId.ofString("AD_RelationType_ID-" + getAD_RelationType_ID());
 		}
 
 		public Builder setInternalName(final String internalName)
@@ -600,7 +600,7 @@ public class RelationTypeZoomProvider implements IZoomProvider
 		{
 			if (Check.isEmpty(internalName, true))
 			{
-				return getZoomInfoId();
+				return getZoomInfoId().toJson();
 			}
 			return internalName;
 		}

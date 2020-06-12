@@ -1,14 +1,29 @@
+/*
+ * #%L
+ * metasfresh-webui-api
+ * %%
+ * Copyright (C) 2020 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.ui.web.payment_allocation;
 
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Stream;
-
-import org.adempiere.exceptions.AdempiereException;
-
 import com.google.common.collect.ImmutableList;
-
+import de.metas.bpartner.BPartnerId;
 import de.metas.i18n.IMsgBL;
 import de.metas.payment.PaymentId;
 import de.metas.process.AdProcessId;
@@ -35,29 +50,16 @@ import de.metas.ui.web.view.descriptor.ViewLayout;
 import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.util.Services;
+import de.metas.util.time.SystemTime;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 
-/*
- * #%L
- * metasfresh-webui-api
- * %%
- * Copyright (C) 2019 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
+import javax.annotation.Nullable;
+import java.time.ZonedDateTime;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Stream;
 
 @ViewFactory(windowId = PaymentsViewFactory.WINDOW_ID_String)
 public class PaymentsViewFactory implements IViewFactory, IViewsIndexStorage
@@ -68,6 +70,9 @@ public class PaymentsViewFactory implements IViewFactory, IViewsIndexStorage
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final PaymentAndInvoiceRowsRepo rowsRepo;
 	private final DefaultViewsRepositoryStorage views = new DefaultViewsRepositoryStorage(TimeUnit.HOURS.toMinutes(1));
+
+	public static final String PARAMETER_TYPE_SET_OF_PAYMENT_IDS = "SET_OF_PAYMENT_IDS";
+	public static final String PARAMETER_TYPE_BPARTNER_ID = "BPARTNER_ID";
 
 	public PaymentsViewFactory(
 			@NonNull final PaymentAndInvoiceRowsRepo rowsRepo)
@@ -98,18 +103,45 @@ public class PaymentsViewFactory implements IViewFactory, IViewsIndexStorage
 	}
 
 	@Override
-	public PaymentsView createView(final CreateViewRequest request)
+	public PaymentsView createView(final @NonNull CreateViewRequest request)
 	{
 		final ViewId viewId = request.getViewId();
 		viewId.assertWindowId(WINDOW_ID);
 
-		final Set<PaymentId> paymentIds = PaymentId.fromIntSet(request.getFilterOnlyIds());
-		if (paymentIds.isEmpty())
-		{
-			throw new AdempiereException("@NoSelection@");
-		}
+		final BPartnerId bPartnerId = request.getParameterAs(PARAMETER_TYPE_BPARTNER_ID, BPartnerId.class);
+		final Set<PaymentId> paymentIds = request.getParameterAsSet(PARAMETER_TYPE_SET_OF_PAYMENT_IDS, PaymentId.class);
 
-		final PaymentAndInvoiceRows paymentAndInvoiceRows = rowsRepo.getByPaymentIds(paymentIds);
+		final PaymentAndInvoiceRows paymentAndInvoiceRows;
+
+		if (bPartnerId != null)
+		{
+			paymentAndInvoiceRows = rowsRepo.getByBPartnerId(bPartnerId);
+		}
+		else if (paymentIds != null && !paymentIds.isEmpty())
+		{
+			paymentAndInvoiceRows = rowsRepo.getByPaymentIds(paymentIds);
+		}
+		else
+		{
+			// if no payments exist, we allow the window to open with no records.
+			// The user can manually add Payments and Invoices, then reconcile them.
+			final ZonedDateTime evaluationDate = SystemTime.asZonedDateTime();
+
+			paymentAndInvoiceRows = PaymentAndInvoiceRows.builder()
+					.invoiceRows(
+							InvoiceRows.builder()
+									.repository(rowsRepo)
+									.evaluationDate(evaluationDate)
+									.initialRows(ImmutableList.of())
+									.build())
+					.paymentRows(
+							PaymentRows.builder()
+									.repository(rowsRepo)
+									.evaluationDate(evaluationDate)
+									.initialRows(ImmutableList.of())
+									.build())
+					.build();
+		}
 
 		return PaymentsView.builder()
 				.paymentViewId(viewId)
@@ -163,6 +195,7 @@ public class PaymentsViewFactory implements IViewFactory, IViewsIndexStorage
 		views.put(view);
 	}
 
+	@Nullable
 	@Override
 	public PaymentsView getByIdOrNull(final ViewId viewId)
 	{

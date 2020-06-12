@@ -22,6 +22,7 @@
 
 package de.metas.banking.service.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -32,7 +33,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
-import org.adempiere.bank.BankRepository;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.SpringContextHolder;
@@ -47,10 +47,15 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
+import de.metas.banking.BankAccountId;
+import de.metas.banking.BankCreateRequest;
+import de.metas.banking.BankId;
 import de.metas.banking.BankStatementId;
 import de.metas.banking.BankStatementLineId;
 import de.metas.banking.BankStatementLineReferenceList;
-import de.metas.banking.api.BankAccountId;
+import de.metas.banking.api.BankAccountAcctRepository;
+import de.metas.banking.api.BankAccountService;
+import de.metas.banking.api.BankRepository;
 import de.metas.banking.model.I_C_BankStatementLine_Ref;
 import de.metas.banking.payment.BankStatementLineMultiPaymentLinkRequest;
 import de.metas.banking.payment.BankStatementLineMultiPaymentLinkRequest.PaymentToLink;
@@ -59,7 +64,6 @@ import de.metas.banking.payment.PaymentLinkResult;
 import de.metas.banking.payment.impl.BankStatementPaymentBL;
 import de.metas.banking.service.BankStatementCreateRequest;
 import de.metas.banking.service.BankStatementLineCreateRequest;
-import de.metas.banking.service.IBankStatementBL;
 import de.metas.banking.service.IBankStatementDAO;
 import de.metas.banking.service.IBankStatementListener;
 import de.metas.banking.service.IBankStatementListenerService;
@@ -88,6 +92,7 @@ class BankStatementPaymentBLTest
 	private final IBankStatementDAO bankStatementDAO = Services.get(IBankStatementDAO.class);
 	private IBankStatementListenerService bankStatementListenerService;
 	private BankStatementPaymentBL bankStatementPaymentBL;
+	private BankRepository bankRepo;
 
 	private final String metasfreshIban = "123456";
 	private final LocalDate statementDate = SystemTime.asLocalDate();
@@ -101,7 +106,8 @@ class BankStatementPaymentBLTest
 	{
 		AdempiereTestHelper.get().init();
 
-		Services.registerService(IBankStatementBL.class, new BankStatementBL()
+		final BankAccountService bankAccountService = BankAccountService.newInstanceForUnitTesting();
+		final BankStatementBL bankStatementBL = new BankStatementBL(bankAccountService)
 		{
 			public void unpost(I_C_BankStatement bankStatement)
 			{
@@ -109,17 +115,22 @@ class BankStatementPaymentBLTest
 						+ "\n\t bank statement: " + bankStatement
 						+ "\n\t called via " + Trace.toOneLineStackTraceString());
 			}
-		});
+		};
 
 		bankStatementListenerService = Services.get(IBankStatementListenerService.class);
-		bankStatementPaymentBL = new BankStatementPaymentBL(new MoneyService(new CurrencyRepository()));
-
-		final IBankStatementBL bankStatementBL = Services.get(IBankStatementBL.class);
+		bankStatementPaymentBL = new BankStatementPaymentBL(
+				bankStatementBL,
+				new MoneyService(new CurrencyRepository()));
 
 		final IModelInterceptorRegistry modelInterceptorRegistry = Services.get(IModelInterceptorRegistry.class);
 		modelInterceptorRegistry.addModelInterceptor(new C_BankStatementLine_MockedInterceptor(bankStatementBL));
 
-		SpringContextHolder.registerJUnitBean(new BankRepository());
+		bankRepo = new BankRepository();
+		SpringContextHolder.registerJUnitBean(bankRepo);
+
+		final BankAccountAcctRepository bankAccountAcctRepo = new BankAccountAcctRepository();
+		final CurrencyRepository currencyRepo = new CurrencyRepository();
+		SpringContextHolder.registerJUnitBean(new BankAccountService(bankRepo, bankAccountAcctRepo, currencyRepo));
 
 		createMasterData();
 	}
@@ -138,9 +149,26 @@ class BankStatementPaymentBLTest
 
 	private BankAccountId createOrgBankAccount(final CurrencyId euroCurrencyId)
 	{
-		final I_C_BPartner metasfreshBPartner = BusinessTestHelper.createBPartner("metasfresh");
-		final I_C_BP_BankAccount metasfreshBankAccount = BusinessTestHelper.createBpBankAccount(BPartnerId.ofRepoId(metasfreshBPartner.getC_BPartner_ID()), euroCurrencyId, metasfreshIban);
-		return BankAccountId.ofRepoId(metasfreshBankAccount.getC_BP_BankAccount_ID());
+		final I_C_BPartner orgBPartner = BusinessTestHelper.createBPartner("metasfresh");
+		final BankId bankId = createBank();
+
+		final I_C_BP_BankAccount orgBankAccount = BusinessTestHelper.createBpBankAccount(
+				BPartnerId.ofRepoId(orgBPartner.getC_BPartner_ID()),
+				euroCurrencyId,
+				metasfreshIban);
+		orgBankAccount.setC_Bank_ID(bankId.getRepoId());
+		saveRecord(orgBankAccount);
+
+		return BankAccountId.ofRepoId(orgBankAccount.getC_BP_BankAccount_ID());
+	}
+
+	private BankId createBank()
+	{
+		return bankRepo.createBank(BankCreateRequest.builder()
+				.bankName("MyBank")
+				.routingNo("routingNo")
+				.build())
+				.getBankId();
 	}
 
 	private I_C_BankStatement createBankStatement(final BankAccountId orgBankAccountId)

@@ -5,6 +5,7 @@ import org.springframework.stereotype.Component;
 
 import de.metas.document.engine.DocumentHandler;
 import de.metas.document.engine.DocumentHandlerProvider;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -31,6 +32,13 @@ import de.metas.document.engine.DocumentHandlerProvider;
 @Component
 public class BankStatementDocumentHandlerProvider implements DocumentHandlerProvider
 {
+	private final BankStatementDocumentHandlerRequiredServicesFacade services;
+
+	public BankStatementDocumentHandlerProvider(
+			@NonNull final BankStatementDocumentHandlerRequiredServicesFacade services)
+	{
+		this.services = services;
+	}
 
 	@Override
 	public String getHandledTableName()
@@ -41,6 +49,6 @@ public class BankStatementDocumentHandlerProvider implements DocumentHandlerProv
 	@Override
 	public DocumentHandler provideForDocument(final Object model_NOTUSED)
 	{
-		return new BankStatementDocumentHandler();
+		return new BankStatementDocumentHandler(services);
 	}
 }

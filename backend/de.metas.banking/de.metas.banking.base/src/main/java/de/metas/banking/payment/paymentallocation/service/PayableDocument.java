@@ -7,6 +7,8 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Order;
 
+import com.google.common.annotations.VisibleForTesting;
+
 import de.metas.bpartner.BPartnerId;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingFeeCalculation;
@@ -58,6 +60,8 @@ public class PayableDocument
 	@Getter
 	private final boolean creditMemo;
 	//
+	@Getter
+	@VisibleForTesting
 	private final Money openAmtInitial;
 
 	@Getter

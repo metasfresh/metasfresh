@@ -94,9 +94,9 @@ class FactAcctZoomProvider implements IZoomProvider
 
 		return ImmutableList.of(
 				ZoomInfoCandidate.builder()
-						.id(I_Fact_Acct.Table_Name)
+						.id(ZoomInfoId.ofString(I_Fact_Acct.Table_Name))
 						.internalName(I_Fact_Acct.Table_Name)
-						.adWindowId(factAcctWindowId)
+						.targetWindow(ZoomTargetWindow.ofAdWindowId(factAcctWindowId))
 						.priority(zoomInfoPriority)
 						.query(query)
 						.destinationDisplay(destinationDisplay)

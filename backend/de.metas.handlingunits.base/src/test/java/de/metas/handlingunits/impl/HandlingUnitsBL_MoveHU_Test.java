@@ -33,6 +33,7 @@ import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Properties;
 
+import de.metas.organization.ClientAndOrgId;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
 import org.adempiere.ad.trx.api.ITrx;
@@ -105,7 +106,7 @@ public class HandlingUnitsBL_MoveHU_Test extends AbstractHUTest
 		// Create the VHU
 		final I_M_HU vhu;
 		{
-			final IMutableHUContext huContext = Services.get(IHUContextFactory.class).createMutableHUContext(ctx);
+			final IMutableHUContext huContext = Services.get(IHUContextFactory.class).createMutableHUContext(ctx, ClientAndOrgId.ofClientAndOrg(Env.getAD_Client_ID(), Env.getAD_Org_ID(ctx)));
 
 			final List<I_M_HU> vhus = helper.createHUs(
 					huContext,

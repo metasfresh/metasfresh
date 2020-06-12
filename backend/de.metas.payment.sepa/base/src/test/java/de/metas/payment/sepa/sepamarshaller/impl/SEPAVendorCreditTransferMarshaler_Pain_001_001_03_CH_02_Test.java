@@ -10,6 +10,9 @@ import org.adempiere.test.AdempiereTestHelper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import de.metas.banking.Bank;
+import de.metas.banking.BankCreateRequest;
+import de.metas.banking.api.BankRepository;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.impl.PlainCurrencyDAO;
 import de.metas.money.CurrencyId;
@@ -21,6 +24,7 @@ import de.metas.payment.sepa.model.I_SEPA_Export_Line;
 
 public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02_Test
 {
+	private BankRepository bankRepository;
 	private SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 xmlGenerator;
 	private Document xmlDocument;
 
@@ -32,7 +36,8 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02_Test
 	{
 		AdempiereTestHelper.get().init();
 
-		this.xmlGenerator = new SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02();
+		this.bankRepository = new BankRepository();
+		this.xmlGenerator = new SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02(bankRepository);
 		this.xmlDocument = null;
 
 		eur = PlainCurrencyDAO.createCurrencyId(CurrencyCode.EUR);
@@ -105,8 +110,13 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02_Test
 			final BigDecimal amt,
 			final CurrencyId currencyId)
 	{
+		final Bank bank = bankRepository.createBank(BankCreateRequest.builder()
+				.bankName("myBank")
+				.routingNo("routingNo")
+				.build());
 
 		final I_C_BP_BankAccount bankAccount = newInstance(I_C_BP_BankAccount.class);
+		bankAccount.setC_Bank_ID(bank.getBankId().getRepoId());
 		bankAccount.setC_Currency_ID(currencyId.getRepoId());
 		bankAccount.setIBAN(iban);
 		bankAccount.setIsEsrAccount(true);

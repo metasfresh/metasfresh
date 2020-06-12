@@ -105,9 +105,9 @@ import lombok.NonNull;
 			final IntSupplier recordsCountSupplier = createRecordsCountSupplier(query, zoomInfoDescriptor, source.getTableName());
 
 			result.add(ZoomInfoCandidate.builder()
-					.id("generic-" + windowId.getRepoId())
+					.id(ZoomInfoId.ofString("generic-" + windowId.getRepoId()))
 					.internalName(zoomInfoDescriptor.getInternalName())
-					.adWindowId(windowId)
+					.targetWindow(ZoomTargetWindow.ofAdWindowId(windowId))
 					.priority(zoomInfoPriority)
 					.query(query)
 					.destinationDisplay(name)

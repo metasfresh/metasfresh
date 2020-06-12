@@ -1,27 +1,11 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 package org.compiere.model;
 
 
 /** Generated Interface for C_AllocationLine
- *  @author Adempiere (generated)
+ *  @author Adempiere (generated) 
  */
 @SuppressWarnings("javadoc")
-public interface I_C_AllocationLine
+public interface I_C_AllocationLine 
 {
 
     /** TableName=C_AllocationLine */
@@ -48,39 +32,29 @@ public interface I_C_AllocationLine
 	 */
 	public int getAD_Client_ID();
 
-	public org.compiere.model.I_AD_Client getAD_Client();
-
-    /** Column definition for AD_Client_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_AllocationLine, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<>(I_C_AllocationLine.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
     /** Column name AD_Client_ID */
     public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
-	 * Set Sektion.
+	 * Set Organisation.
 	 * Organisatorische Einheit des Mandanten
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	public void setAD_Org_ID (int AD_Org_ID);
 
 	/**
-	 * Get Sektion.
+	 * Get Organisation.
 	 * Organisatorische Einheit des Mandanten
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	public int getAD_Org_ID();
 
-	public org.compiere.model.I_AD_Org getAD_Org();
-
-	public void setAD_Org(org.compiere.model.I_AD_Org AD_Org);
-
-    /** Column definition for AD_Org_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_AllocationLine, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<>(I_C_AllocationLine.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
     /** Column name AD_Org_ID */
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
@@ -105,7 +79,7 @@ public interface I_C_AllocationLine
 	public java.math.BigDecimal getAmount();
 
     /** Column definition for Amount */
-    public static final org.adempiere.model.ModelColumn<I_C_AllocationLine, Object> COLUMN_Amount = new org.adempiere.model.ModelColumn<>(I_C_AllocationLine.class, "Amount", null);
+    public static final org.adempiere.model.ModelColumn<I_C_AllocationLine, Object> COLUMN_Amount = new org.adempiere.model.ModelColumn<I_C_AllocationLine, Object>(I_C_AllocationLine.class, "Amount", null);
     /** Column name Amount */
     public static final String COLUMNNAME_Amount = "Amount";
 
@@ -113,7 +87,7 @@ public interface I_C_AllocationLine
 	 * Set Zuordnung.
 	 * Payment allocation
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -123,7 +97,7 @@ public interface I_C_AllocationLine
 	 * Get Zuordnung.
 	 * Payment allocation
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -134,7 +108,7 @@ public interface I_C_AllocationLine
 	public void setC_AllocationHdr(org.compiere.model.I_C_AllocationHdr C_AllocationHdr);
 
     /** Column definition for C_AllocationHdr_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_AllocationLine, org.compiere.model.I_C_AllocationHdr> COLUMN_C_AllocationHdr_ID = new org.adempiere.model.ModelColumn<>(I_C_AllocationLine.class, "C_AllocationHdr_ID", org.compiere.model.I_C_AllocationHdr.class);
+    public static final org.adempiere.model.ModelColumn<I_C_AllocationLine, org.compiere.model.I_C_AllocationHdr> COLUMN_C_AllocationHdr_ID = new org.adempiere.model.ModelColumn<I_C_AllocationLine, org.compiere.model.I_C_AllocationHdr>(I_C_AllocationLine.class, "C_AllocationHdr_ID", org.compiere.model.I_C_AllocationHdr.class);
     /** Column name C_AllocationHdr_ID */
     public static final String COLUMNNAME_C_AllocationHdr_ID = "C_AllocationHdr_ID";
 
@@ -159,7 +133,7 @@ public interface I_C_AllocationLine
 	public int getC_AllocationLine_ID();
 
     /** Column definition for C_AllocationLine_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_AllocationLine, Object> COLUMN_C_AllocationLine_ID = new org.adempiere.model.ModelColumn<>(I_C_AllocationLine.class, "C_AllocationLine_ID", null);
+    public static final org.adempiere.model.ModelColumn<I_C_AllocationLine, Object> COLUMN_C_AllocationLine_ID = new org.adempiere.model.ModelColumn<I_C_AllocationLine, Object>(I_C_AllocationLine.class, "C_AllocationLine_ID", null);
     /** Column name C_AllocationLine_ID */
     public static final String COLUMNNAME_C_AllocationLine_ID = "C_AllocationLine_ID";
 
@@ -183,12 +157,6 @@ public interface I_C_AllocationLine
 	 */
 	public int getC_BPartner_ID();
 
-	public org.compiere.model.I_C_BPartner getC_BPartner();
-
-	public void setC_BPartner(org.compiere.model.I_C_BPartner C_BPartner);
-
-    /** Column definition for C_BPartner_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_AllocationLine, org.compiere.model.I_C_BPartner> COLUMN_C_BPartner_ID = new org.adempiere.model.ModelColumn<>(I_C_AllocationLine.class, "C_BPartner_ID", org.compiere.model.I_C_BPartner.class);
     /** Column name C_BPartner_ID */
     public static final String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
 
@@ -217,7 +185,7 @@ public interface I_C_AllocationLine
 	public void setC_CashLine(org.compiere.model.I_C_CashLine C_CashLine);
 
     /** Column definition for C_CashLine_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_AllocationLine, org.compiere.model.I_C_CashLine> COLUMN_C_CashLine_ID = new org.adempiere.model.ModelColumn<>(I_C_AllocationLine.class, "C_CashLine_ID", org.compiere.model.I_C_CashLine.class);
+    public static final org.adempiere.model.ModelColumn<I_C_AllocationLine, org.compiere.model.I_C_CashLine> COLUMN_C_CashLine_ID = new org.adempiere.model.ModelColumn<I_C_AllocationLine, org.compiere.model.I_C_CashLine>(I_C_AllocationLine.class, "C_CashLine_ID", org.compiere.model.I_C_CashLine.class);
     /** Column name C_CashLine_ID */
     public static final String COLUMNNAME_C_CashLine_ID = "C_CashLine_ID";
 
@@ -246,32 +214,9 @@ public interface I_C_AllocationLine
 	public void setC_Invoice(org.compiere.model.I_C_Invoice C_Invoice);
 
     /** Column definition for C_Invoice_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_AllocationLine, org.compiere.model.I_C_Invoice> COLUMN_C_Invoice_ID = new org.adempiere.model.ModelColumn<>(I_C_AllocationLine.class, "C_Invoice_ID", org.compiere.model.I_C_Invoice.class);
+    public static final org.adempiere.model.ModelColumn<I_C_AllocationLine, org.compiere.model.I_C_Invoice> COLUMN_C_Invoice_ID = new org.adempiere.model.ModelColumn<I_C_AllocationLine, org.compiere.model.I_C_Invoice>(I_C_AllocationLine.class, "C_Invoice_ID", org.compiere.model.I_C_Invoice.class);
     /** Column name C_Invoice_ID */
     public static final String COLUMNNAME_C_Invoice_ID = "C_Invoice_ID";
-
-	/**
-	 * Set Counter_AllocationLine_ID.
-	 *
-	 * <br>Type: ID
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setCounter_AllocationLine_ID (int Counter_AllocationLine_ID);
-
-	/**
-	 * Get Counter_AllocationLine_ID.
-	 *
-	 * <br>Type: ID
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public int getCounter_AllocationLine_ID();
-
-    /** Column definition for Counter_AllocationLine_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_AllocationLine, Object> COLUMN_Counter_AllocationLine_ID = new org.adempiere.model.ModelColumn<>(I_C_AllocationLine.class, "Counter_AllocationLine_ID", null);
-    /** Column name Counter_AllocationLine_ID */
-    public static final String COLUMNNAME_Counter_AllocationLine_ID = "Counter_AllocationLine_ID";
 
 	/**
 	 * Set Zahlung.
@@ -293,14 +238,37 @@ public interface I_C_AllocationLine
 	 */
 	public int getC_Payment_ID();
 
-	public org.compiere.model.I_C_Payment getC_Payment();
-
-	public void setC_Payment(org.compiere.model.I_C_Payment C_Payment);
-
-    /** Column definition for C_Payment_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_AllocationLine, org.compiere.model.I_C_Payment> COLUMN_C_Payment_ID = new org.adempiere.model.ModelColumn<>(I_C_AllocationLine.class, "C_Payment_ID", org.compiere.model.I_C_Payment.class);
     /** Column name C_Payment_ID */
     public static final String COLUMNNAME_C_Payment_ID = "C_Payment_ID";
+
+	/**
+	 * Set Partner-Zeile.
+	 * Das Feld wird verwendet, wenn Rechnung gegen Rechnung oder Zahlung gegen Zahlung alloziert wird und referenziert die Zuordnungszeile des jeweiligen Pendants.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setCounter_AllocationLine_ID (int Counter_AllocationLine_ID);
+
+	/**
+	 * Get Partner-Zeile.
+	 * Das Feld wird verwendet, wenn Rechnung gegen Rechnung oder Zahlung gegen Zahlung alloziert wird und referenziert die Zuordnungszeile des jeweiligen Pendants.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getCounter_AllocationLine_ID();
+
+	public org.compiere.model.I_C_AllocationLine getCounter_AllocationLine();
+
+	public void setCounter_AllocationLine(org.compiere.model.I_C_AllocationLine Counter_AllocationLine);
+
+    /** Column definition for Counter_AllocationLine_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_AllocationLine, org.compiere.model.I_C_AllocationLine> COLUMN_Counter_AllocationLine_ID = new org.adempiere.model.ModelColumn<I_C_AllocationLine, org.compiere.model.I_C_AllocationLine>(I_C_AllocationLine.class, "Counter_AllocationLine_ID", org.compiere.model.I_C_AllocationLine.class);
+    /** Column name Counter_AllocationLine_ID */
+    public static final String COLUMNNAME_Counter_AllocationLine_ID = "Counter_AllocationLine_ID";
 
 	/**
 	 * Get Erstellt.
@@ -313,7 +281,7 @@ public interface I_C_AllocationLine
 	public java.sql.Timestamp getCreated();
 
     /** Column definition for Created */
-    public static final org.adempiere.model.ModelColumn<I_C_AllocationLine, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<>(I_C_AllocationLine.class, "Created", null);
+    public static final org.adempiere.model.ModelColumn<I_C_AllocationLine, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_C_AllocationLine, Object>(I_C_AllocationLine.class, "Created", null);
     /** Column name Created */
     public static final String COLUMNNAME_Created = "Created";
 
@@ -327,14 +295,12 @@ public interface I_C_AllocationLine
 	 */
 	public int getCreatedBy();
 
-    /** Column definition for CreatedBy */
-    public static final org.adempiere.model.ModelColumn<I_C_AllocationLine, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<>(I_C_AllocationLine.class, "CreatedBy", org.compiere.model.I_AD_User.class);
     /** Column name CreatedBy */
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
-	 * Set Vorgangsdatum.
-	 * Transaction Date
+	 * Set Datum.
+	 * Vorgangsdatum
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false
@@ -343,8 +309,8 @@ public interface I_C_AllocationLine
 	public void setDateTrx (java.sql.Timestamp DateTrx);
 
 	/**
-	 * Get Vorgangsdatum.
-	 * Transaction Date
+	 * Get Datum.
+	 * Vorgangsdatum
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false
@@ -353,12 +319,12 @@ public interface I_C_AllocationLine
 	public java.sql.Timestamp getDateTrx();
 
     /** Column definition for DateTrx */
-    public static final org.adempiere.model.ModelColumn<I_C_AllocationLine, Object> COLUMN_DateTrx = new org.adempiere.model.ModelColumn<>(I_C_AllocationLine.class, "DateTrx", null);
+    public static final org.adempiere.model.ModelColumn<I_C_AllocationLine, Object> COLUMN_DateTrx = new org.adempiere.model.ModelColumn<I_C_AllocationLine, Object>(I_C_AllocationLine.class, "DateTrx", null);
     /** Column name DateTrx */
     public static final String COLUMNNAME_DateTrx = "DateTrx";
 
 	/**
-	 * Set Discount Amount.
+	 * Set Skonto.
 	 * Calculated amount of discount
 	 *
 	 * <br>Type: Amount
@@ -368,7 +334,7 @@ public interface I_C_AllocationLine
 	public void setDiscountAmt (java.math.BigDecimal DiscountAmt);
 
 	/**
-	 * Get Discount Amount.
+	 * Get Skonto.
 	 * Calculated amount of discount
 	 *
 	 * <br>Type: Amount
@@ -378,7 +344,7 @@ public interface I_C_AllocationLine
 	public java.math.BigDecimal getDiscountAmt();
 
     /** Column definition for DiscountAmt */
-    public static final org.adempiere.model.ModelColumn<I_C_AllocationLine, Object> COLUMN_DiscountAmt = new org.adempiere.model.ModelColumn<>(I_C_AllocationLine.class, "DiscountAmt", null);
+    public static final org.adempiere.model.ModelColumn<I_C_AllocationLine, Object> COLUMN_DiscountAmt = new org.adempiere.model.ModelColumn<I_C_AllocationLine, Object>(I_C_AllocationLine.class, "DiscountAmt", null);
     /** Column name DiscountAmt */
     public static final String COLUMNNAME_DiscountAmt = "DiscountAmt";
 
@@ -403,7 +369,7 @@ public interface I_C_AllocationLine
 	public boolean isActive();
 
     /** Column definition for IsActive */
-    public static final org.adempiere.model.ModelColumn<I_C_AllocationLine, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<>(I_C_AllocationLine.class, "IsActive", null);
+    public static final org.adempiere.model.ModelColumn<I_C_AllocationLine, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_C_AllocationLine, Object>(I_C_AllocationLine.class, "IsActive", null);
     /** Column name IsActive */
     public static final String COLUMNNAME_IsActive = "IsActive";
 
@@ -428,7 +394,7 @@ public interface I_C_AllocationLine
 	public boolean isManual();
 
     /** Column definition for IsManual */
-    public static final org.adempiere.model.ModelColumn<I_C_AllocationLine, Object> COLUMN_IsManual = new org.adempiere.model.ModelColumn<>(I_C_AllocationLine.class, "IsManual", null);
+    public static final org.adempiere.model.ModelColumn<I_C_AllocationLine, Object> COLUMN_IsManual = new org.adempiere.model.ModelColumn<I_C_AllocationLine, Object>(I_C_AllocationLine.class, "IsManual", null);
     /** Column name IsManual */
     public static final String COLUMNNAME_IsManual = "IsManual";
 
@@ -453,13 +419,13 @@ public interface I_C_AllocationLine
 	public java.math.BigDecimal getOverUnderAmt();
 
     /** Column definition for OverUnderAmt */
-    public static final org.adempiere.model.ModelColumn<I_C_AllocationLine, Object> COLUMN_OverUnderAmt = new org.adempiere.model.ModelColumn<>(I_C_AllocationLine.class, "OverUnderAmt", null);
+    public static final org.adempiere.model.ModelColumn<I_C_AllocationLine, Object> COLUMN_OverUnderAmt = new org.adempiere.model.ModelColumn<I_C_AllocationLine, Object>(I_C_AllocationLine.class, "OverUnderAmt", null);
     /** Column name OverUnderAmt */
     public static final String COLUMNNAME_OverUnderAmt = "OverUnderAmt";
 
 	/**
-	 * Set Payment Write-off Amount.
-	 * Amount to write-off
+	 * Set Abschreibung Betrag.
+	 * Abschreibung Betrag
 	 *
 	 * <br>Type: Amount
 	 * <br>Mandatory: true
@@ -468,8 +434,8 @@ public interface I_C_AllocationLine
 	public void setPaymentWriteOffAmt (java.math.BigDecimal PaymentWriteOffAmt);
 
 	/**
-	 * Get Payment Write-off Amount.
-	 * Amount to write-off
+	 * Get Abschreibung Betrag.
+	 * Abschreibung Betrag
 	 *
 	 * <br>Type: Amount
 	 * <br>Mandatory: true
@@ -478,7 +444,7 @@ public interface I_C_AllocationLine
 	public java.math.BigDecimal getPaymentWriteOffAmt();
 
     /** Column definition for PaymentWriteOffAmt */
-    public static final org.adempiere.model.ModelColumn<I_C_AllocationLine, Object> COLUMN_PaymentWriteOffAmt = new org.adempiere.model.ModelColumn<>(I_C_AllocationLine.class, "PaymentWriteOffAmt", null);
+    public static final org.adempiere.model.ModelColumn<I_C_AllocationLine, Object> COLUMN_PaymentWriteOffAmt = new org.adempiere.model.ModelColumn<I_C_AllocationLine, Object>(I_C_AllocationLine.class, "PaymentWriteOffAmt", null);
     /** Column name PaymentWriteOffAmt */
     public static final String COLUMNNAME_PaymentWriteOffAmt = "PaymentWriteOffAmt";
 
@@ -505,7 +471,7 @@ public interface I_C_AllocationLine
 	public void setReversalLine(org.compiere.model.I_C_AllocationLine ReversalLine);
 
     /** Column definition for ReversalLine_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_AllocationLine, org.compiere.model.I_C_AllocationLine> COLUMN_ReversalLine_ID = new org.adempiere.model.ModelColumn<>(I_C_AllocationLine.class, "ReversalLine_ID", org.compiere.model.I_C_AllocationLine.class);
+    public static final org.adempiere.model.ModelColumn<I_C_AllocationLine, org.compiere.model.I_C_AllocationLine> COLUMN_ReversalLine_ID = new org.adempiere.model.ModelColumn<I_C_AllocationLine, org.compiere.model.I_C_AllocationLine>(I_C_AllocationLine.class, "ReversalLine_ID", org.compiere.model.I_C_AllocationLine.class);
     /** Column name ReversalLine_ID */
     public static final String COLUMNNAME_ReversalLine_ID = "ReversalLine_ID";
 
@@ -520,7 +486,7 @@ public interface I_C_AllocationLine
 	public java.sql.Timestamp getUpdated();
 
     /** Column definition for Updated */
-    public static final org.adempiere.model.ModelColumn<I_C_AllocationLine, Object> COLUMN_Updated = new org.adempiere.model.ModelColumn<>(I_C_AllocationLine.class, "Updated", null);
+    public static final org.adempiere.model.ModelColumn<I_C_AllocationLine, Object> COLUMN_Updated = new org.adempiere.model.ModelColumn<I_C_AllocationLine, Object>(I_C_AllocationLine.class, "Updated", null);
     /** Column name Updated */
     public static final String COLUMNNAME_Updated = "Updated";
 
@@ -534,13 +500,11 @@ public interface I_C_AllocationLine
 	 */
 	public int getUpdatedBy();
 
-    /** Column definition for UpdatedBy */
-    public static final org.adempiere.model.ModelColumn<I_C_AllocationLine, org.compiere.model.I_AD_User> COLUMN_UpdatedBy = new org.adempiere.model.ModelColumn<>(I_C_AllocationLine.class, "UpdatedBy", org.compiere.model.I_AD_User.class);
     /** Column name UpdatedBy */
     public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
 
 	/**
-	 * Set Write-off Amount.
+	 * Set Abschreiben.
 	 * Amount to write-off
 	 *
 	 * <br>Type: Amount
@@ -550,7 +514,7 @@ public interface I_C_AllocationLine
 	public void setWriteOffAmt (java.math.BigDecimal WriteOffAmt);
 
 	/**
-	 * Get Write-off Amount.
+	 * Get Abschreiben.
 	 * Amount to write-off
 	 *
 	 * <br>Type: Amount
@@ -560,7 +524,7 @@ public interface I_C_AllocationLine
 	public java.math.BigDecimal getWriteOffAmt();
 
     /** Column definition for WriteOffAmt */
-    public static final org.adempiere.model.ModelColumn<I_C_AllocationLine, Object> COLUMN_WriteOffAmt = new org.adempiere.model.ModelColumn<>(I_C_AllocationLine.class, "WriteOffAmt", null);
+    public static final org.adempiere.model.ModelColumn<I_C_AllocationLine, Object> COLUMN_WriteOffAmt = new org.adempiere.model.ModelColumn<I_C_AllocationLine, Object>(I_C_AllocationLine.class, "WriteOffAmt", null);
     /** Column name WriteOffAmt */
     public static final String COLUMNNAME_WriteOffAmt = "WriteOffAmt";
 }

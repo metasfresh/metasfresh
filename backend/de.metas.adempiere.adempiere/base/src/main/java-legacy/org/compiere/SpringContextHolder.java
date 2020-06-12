@@ -128,8 +128,19 @@ public final class SpringContextHolder
 	}
 
 	/** can be used if a service might be retrieved before the spring application context is up */
-	public <T> T getBeanOr(@NonNull final Class<T> requiredType, @NonNull final T defaultImplementation)
+	public <T> T getBeanOr(@NonNull final Class<T> requiredType, @Nullable final T defaultImplementation)
 	{
+		if (Adempiere.isUnitTestMode())
+		{
+			@SuppressWarnings("unchecked")
+			final T beanImpl = (T)junitRegisteredBeans.get(ClassReference.of(requiredType));
+			if (beanImpl != null)
+			{
+				logger.info("JUnit testing Returning manually registered bean: {}", beanImpl);
+				return beanImpl;
+			}
+		}
+
 		final ApplicationContext springApplicationContext = getApplicationContext();
 		if (springApplicationContext == null)
 		{

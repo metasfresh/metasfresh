@@ -1,25 +1,7 @@
 package de.metas.contracts.process;
 
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-
-import java.sql.Timestamp;
-import java.util.List;
-import java.util.Properties;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.model.PlainContextAware;
-import org.adempiere.util.lang.IContextAware;
-import org.compiere.model.I_AD_User;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_M_Product;
-import org.compiere.util.TrxRunnableAdapter;
-import org.slf4j.Logger;
-import org.slf4j.MDC.MDCCloseable;
-
 import com.google.common.collect.ImmutableList;
-
+import de.metas.contracts.CreateFlatrateTermRequest;
 import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
@@ -32,6 +14,22 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.model.PlainContextAware;
+import org.adempiere.util.lang.IContextAware;
+import org.compiere.model.I_AD_User;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_M_Product;
+import org.compiere.util.TrxRunnableAdapter;
+import org.slf4j.Logger;
+import org.slf4j.MDC.MDCCloseable;
+
+import javax.annotation.Nullable;
+import java.sql.Timestamp;
+import java.util.List;
+import java.util.Properties;
+
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /*
  * #%L
@@ -73,6 +71,8 @@ public class FlatrateTermCreator
 	List<I_M_Product> products;
 
 	Iterable<I_C_BPartner> bPartners;
+
+	boolean isSimulation;
 
 	/**
 	 * create terms for all the BPartners iterated from the subclass, each of them in its own transaction
@@ -118,15 +118,19 @@ public class FlatrateTermCreator
 
 		for (final I_M_Product product : products)
 		{
-			final I_C_Flatrate_Term newTerm = flatrateBL.createTerm(
-					context,
-					partner,
-					conditions,
-					startDate,
-					userInCharge,
-					createProductAndCategoryId(product),
-					false /* completeIt=false */
-			);
+			final CreateFlatrateTermRequest createFlatrateTermRequest = CreateFlatrateTermRequest.builder()
+					.context(context)
+					.bPartner(partner)
+					.conditions(conditions)
+					.startDate(startDate)
+					.userInCharge(userInCharge)
+					.productAndCategoryId(createProductAndCategoryId(product))
+					.isSimulation(isSimulation)
+					.completeIt(false)
+					.build();
+
+
+			final I_C_Flatrate_Term newTerm = flatrateBL.createTerm(createFlatrateTermRequest);
 
 			if (newTerm == null)
 			{
