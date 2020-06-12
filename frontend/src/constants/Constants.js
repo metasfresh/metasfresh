@@ -113,3 +113,9 @@ export const TIME_REGEX_TEST = /^\d\d:\d\d$/;
 export const PROCESS_NAME = 'process';
 
 export const LOCATION_SEARCH_NAME = 'location-area-search';
+
+/**
+ * @constant
+ * @type {integer} Used to indicate the row position from where the dropup should be shown.
+ */
+export const DROPUP_START = 13;

@@ -1225,7 +1225,8 @@ class Table extends Component {
   };
 
   updateHeight = (heightNew) => {
-    this.tableContainer.style.paddingBottom = `${this.tableContainer.style.height + heightNew}px`;
+    this.tableContainer.style.paddingBottom = `${this.tableContainer.style
+      .padding + heightNew}px`;
   };
 
   render() {
