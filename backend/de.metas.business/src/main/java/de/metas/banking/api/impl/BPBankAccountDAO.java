@@ -141,23 +141,6 @@ public class BPBankAccountDAO implements IBPBankAccountDAO
 		return Optional.ofNullable(bankAccountId);
 	}
 
-
-
-	@Override
-	public Optional<I_C_BP_BankAccount> retrieveDefaultBankAccountInTrx(@NonNull final BPartnerId bpartnerId)
-	{
-		final I_C_BP_BankAccount bankAccount = queryBL.createQueryBuilder(I_C_BP_BankAccount.class)
-				.addEqualsFilter(org.compiere.model.I_C_BP_BankAccount.COLUMNNAME_C_BPartner_ID, bpartnerId)
-				.addOnlyActiveRecordsFilter()
-				.orderByDescending(I_C_BP_BankAccount.COLUMNNAME_IsDefault) // DESC (Y, then N)
-				.create()
-				.first();
-
-		return Optional.ofNullable(bankAccount);
-	}
-
-
-
 	@Override
 	public Optional<I_C_BP_BankAccount> retrieveDefaultBankAccountInTrx(@NonNull final BPartnerId bpartnerId)
 	{
