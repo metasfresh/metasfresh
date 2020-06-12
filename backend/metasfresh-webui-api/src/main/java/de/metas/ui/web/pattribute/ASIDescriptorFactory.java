@@ -1,6 +1,7 @@
 package de.metas.ui.web.pattribute;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.BiConsumer;
@@ -165,10 +166,10 @@ public class ASIDescriptorFactory
 
 		if (X_M_Attribute.ATTRIBUTEVALUETYPE_Date.equals(attributeValueType))
 		{
-			valueClass = java.util.Date.class;
+			valueClass = LocalDate.class;
 			widgetType = DocumentFieldWidgetType.LocalDate;
-			readMethod = I_M_AttributeInstance::getValueDate;
-			writeMethod = (aiRecord, field) -> aiRecord.setValueDate(TimeUtil.asTimestamp(field.getValueAs(java.util.Date.class)));
+			readMethod = ai -> TimeUtil.asLocalDate(ai.getValueDate());
+			writeMethod = (aiRecord, field) -> aiRecord.setValueDate(TimeUtil.asTimestamp(field.getValueAs(LocalDate.class)));
 		}
 		else if (X_M_Attribute.ATTRIBUTEVALUETYPE_List.equals(attributeValueType))
 		{
