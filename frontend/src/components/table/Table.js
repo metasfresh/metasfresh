@@ -60,7 +60,6 @@ class Table extends Component {
     const { rowData, tabId } = this.props;
     //selecting first table elem while getting indent data
     this._isMounted = true;
-    this.initialHeight = this.wrapper.clientHeight;
 
     if (rowData.get(`${tabId}`)) {
       this.getIndentData(true);
@@ -1226,7 +1225,7 @@ class Table extends Component {
   };
 
   updateHeight = (heightNew) => {
-    this.wrapper.style.height = `${this.initialHeight + heightNew}px`;
+    this.tableContainer.style.paddingBottom = `${this.tableContainer.style.height + heightNew}px`;
   };
 
   render() {
@@ -1335,6 +1334,7 @@ class Table extends Component {
           )}
 
           <div
+            ref={(ref) => (this.tableContainer = ref)}
             className={classnames(
               'panel panel-primary panel-bordered',
               'panel-bordered-force table-flex-wrapper',
@@ -1347,10 +1347,6 @@ class Table extends Component {
                   !rowData.get(`${tabId}`),
               }
             )}
-            style={{
-              height:
-                this.wrapper && !isModal && this.wrapper.offsetHeight - 45,
-            }}
           >
             <table
               className={classnames(

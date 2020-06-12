@@ -13,16 +13,10 @@ import classnames from 'classnames';
 class AttributesDropdown extends PureComponent {
   constructor(props) {
     super(props);
-    this.selector = React.createRef();
     this.state = {
       patchCallbacks: Map(),
     };
   }
-
-  componentDidMount = () => {
-    const componentCoords = this.selector.current.getBoundingClientRect();
-    this.setState({ isVisible: true, dropdownCoords: componentCoords });
-  };
 
   /**
    * @method handleClickOutside
@@ -135,7 +129,6 @@ class AttributesDropdown extends PureComponent {
 
     return (
       <div
-        ref={this.selector}
         className={classnames(
           'attributes-dropdown panel-shadowed panel-primary panel-bordered panel-spaced',
           { 'hidden ': !isVisible },
