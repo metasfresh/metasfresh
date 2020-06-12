@@ -83,7 +83,16 @@ class Table extends PureComponent {
     });
   };
 
-
+  /**
+   * @method handleSelect
+   * @summary select row and focus on cell
+   *
+   * @param {number} id
+   * @param {*} idFocused - index of row's cell to select
+   * @param {*} idFocusedDown - index of row's cell to select in case of
+   * range selection
+   * @param {func} cb - callback function
+   */
   handleSelect = (id, idFocused, idFocusedDown, cb) => {
     const { onSelect } = this.props;
 

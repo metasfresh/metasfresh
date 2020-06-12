@@ -40,6 +40,10 @@ class TableContainer extends PureComponent {
     }
   }
 
+  /**
+   * @method getAllLeaves
+   * @summary select parent and all it's leaves
+   */
   getAllLeaves = () => {
     const { rows, selected } = this.props;
     let leafs = [];
@@ -127,6 +131,10 @@ class TableContainer extends PureComponent {
     onRowEdited && onRowEdited(true);
   };
 
+  /**
+   * @method openTableModal
+   * @summary Open `Add new` modal
+   */
   openTableModal = () => {
     const { openModal, windowId, tabId } = this.props;
 
@@ -146,6 +154,10 @@ class TableContainer extends PureComponent {
     }
   };
 
+  /**
+   * @method handlePromptSubmit
+   * @summary delete selected items
+   */
   handlePromptSubmit = (selected) => {
     const { windowId, docId, updateDocList, tabId } = this.props;
 
@@ -165,6 +177,10 @@ class TableContainer extends PureComponent {
     });
   };
 
+  /**
+   * @method handleZoomInto
+   * @summary open new window with details view of the selected row
+   */
   handleZoomInto = (fieldName) => {
     const { entity, windowId, docId, tabId, viewId, selected } = this.props;
 
@@ -187,6 +203,10 @@ class TableContainer extends PureComponent {
     });
   };
 
+  /**
+   * @method handleRowCollapse
+   * @summary toggle table rows
+   */
   handleRowCollapse = (node, collapse) => {
     const { collapseTableRow, windowId, viewId, tabId, docId } = this.props;
     const tableId = getTableId({ windowId, viewId, docId, tabId });
