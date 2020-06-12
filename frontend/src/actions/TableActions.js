@@ -40,7 +40,12 @@ export function deleteTable(id) {
 }
 
 /**
- * Update table rows
+ * @method updateTableData
+ * @summary Update table rows
+ *
+ * @param {string} id - table id
+ * @param {array} rows - array of new/updated/removed rows
+ * @param {string} keyProperty - `id` or `rowId` depending on the table type
  */
 function updateTableData(id, rows, keyProperty) {
   return {
@@ -52,7 +57,6 @@ function updateTableData(id, rows, keyProperty) {
 /**
  * @method setActiveSort
  * @summary Change the value of the `activeSort` setting for specified table
- * @todo rename to `setActiveSort` once we switch to tables driven by redux
  */
 export function setActiveSort(id, active) {
   return {
@@ -62,8 +66,8 @@ export function setActiveSort(id, active) {
 }
 
 /**
- * Update table selection - deselect items or deselect all if an empty `ids`
- * array is provided
+ * @method deselectTableItems
+ * @summary deselect items or deselect all if an empty `ids` array is provided
  */
 export function deselectTableItems(id, selection) {
   return {
@@ -73,7 +77,13 @@ export function deselectTableItems(id, selection) {
 }
 
 /**
- * Toggle table rows
+ * @method collapseRows
+ * @summary Toggle table rows
+ *
+ * @param {string} tableId
+ * @param {array} collapsedParentRows - main collapsed rows
+ * @param {array} collapsedRows - descendants of collapsed rows
+ * @param {array} collapsedArrayMap - all collapsed rows
  */
 function collapseRows({
   tableId,
@@ -92,6 +102,13 @@ function collapseRows({
   };
 }
 
+/**
+ * @method updateTabRowsData
+ * @summary Update rows in tab table
+ *
+ * @param {string} id - tableId
+ * @param {array} rows
+ */
 export function updateTabRowsData(id, rows) {
   return {
     type: types.UPDATE_TAB_ROWS_DATA,
@@ -103,8 +120,6 @@ export function updateTabRowsData(id, rows) {
     },
   };
 }
-
-// TODO: selections, other small updates
 
 /**
  * @method createTableData
@@ -158,7 +173,9 @@ export function createTableData(rawData) {
 // THUNK ACTION CREATORS
 
 /*
- * Create a new table entry for grids using data from the window layout (so not populated with data yet)
+ * @method createGridTable
+ * @summary Create a new table entry for grids using data from the window
+ * layout (so not populated with data yet)
  */
 export function createGridTable(tableId, tableResponse) {
   return (dispatch, getState) => {
@@ -184,7 +201,8 @@ export function createGridTable(tableId, tableResponse) {
 }
 
 /*
- * Populate grid table with data and initial settings
+ * @method updateGridTable
+ * @summary Populate grid table with data and initial settings
  */
 export function updateGridTable(tableId, tableResponse) {
   return (dispatch, getState) => {
@@ -261,7 +279,8 @@ export function updateGridTable(tableId, tableResponse) {
 }
 
 /*
- * Update `tableId` rows and rebuild collapsed rows if necessary
+ * @method updateGridTableData
+ * @summary Update grid table's rows and rebuild collapsed rows if necessary
  */
 export function updateGridTableData(tableId, rows) {
   return (dispatch, getState) => {
@@ -297,7 +316,9 @@ export function updateGridTableData(tableId, rows) {
 }
 
 /*
- * Create a new table entry for the details view when it's created, setting only the ids
+ * @method createTabTable
+ * @summary Create a new table entry for the details view when it's created,
+ * setting only the ids
  */
 export function createTabTable(tableId, tableResponse) {
   return (dispatch) => {
@@ -312,7 +333,8 @@ export function createTabTable(tableId, tableResponse) {
 }
 
 /*
- * Update table entry for the details view with layout and data rows
+ * @method updateTabTable
+ * @summary Update table entry for the details view with layout and data rows
  */
 export function updateTabTable(tableId, tableResponse) {
   return (dispatch, getState) => {
@@ -343,7 +365,8 @@ export function updateTabTable(tableId, tableResponse) {
 }
 
 /*
- * Update `tableId` rows for tab table/details view
+ * @method updateTabTableData
+ * @summary Update tab table's rows for tab table/details view
  */
 export function updateTabTableData(tableId, rows) {
   return (dispatch, getState) => {
@@ -362,6 +385,17 @@ export function updateTabTableData(tableId, rows) {
   };
 }
 
+/**
+ * @method createCollapsedRows
+ * @summary Create a new table entry for grids using data from the window layout
+ * (so not populated with data yet)
+ *
+ * @param {string} tableId
+ * @param {array} rows
+ * @param {bool} collapsible
+ * @param {number} expandedDepth
+ * @param {string} keyProperty - `id` or `rowId` depending on the table type
+ */
 function createCollapsedRows({
   tableId,
   rows,
@@ -399,7 +433,8 @@ function createCollapsedRows({
 }
 
 /*
- * Create a new table entry for grids using data from the window layout (so not populated with data yet)
+ * @method collapseTableRow
+ * @summary Toggle collapse state of a single row and it's descendants
  */
 export function collapseTableRow({ tableId, collapse, node }) {
   return (dispatch, getState) => {
@@ -465,7 +500,13 @@ export function collapseTableRow({ tableId, collapse, node }) {
 }
 
 /**
- * Update table selection - select items
+ * @method updateTableSelection
+ * @summary Update table selection - select items
+ *
+ * @param {string} id - table id
+ * @param {array} selection - array of selected items. This will be validated
+ * for existence in the rows data by the reducer, but not for duplication
+ * @param {string} keyProperty=id - `id` or `rowId` depending on the table type
  */
 export function updateTableSelection(id, selection, keyProperty = 'id') {
   return (dispatch) => {
