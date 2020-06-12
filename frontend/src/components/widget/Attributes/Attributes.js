@@ -6,7 +6,11 @@ import { getAttributesInstance, getLayout, patchRequest } from '../../../api';
 import { completeRequest } from '../../../actions/GenericActions';
 import { parseToDisplay } from '../../../utils/documentListHelper';
 import AttributesDropdown from './AttributesDropdown';
-import { DROPUP_START } from '../../../constants/Constants';
+import {
+  DROPUP_START,
+  DROPDOWN_OFFSET_BIG,
+  DROPDOWN_OFFSET_SMALL,
+} from '../../../constants/Constants';
 
 /**
  * @file Class based component.
@@ -122,8 +126,14 @@ export default class Attributes extends Component {
     const { handleBackdropLock, updateHeight, arrIndex, isModal } = this.props;
     const { loading, dropdown } = this.state;
 
-    !dropdown && !isModal && arrIndex < DROPUP_START && updateHeight(400);
-    dropdown && !isModal && arrIndex < DROPUP_START && updateHeight(150);
+    !dropdown &&
+      !isModal &&
+      arrIndex < DROPUP_START &&
+      updateHeight(DROPDOWN_OFFSET_BIG);
+    dropdown &&
+      !isModal &&
+      arrIndex < DROPUP_START &&
+      updateHeight(DROPDOWN_OFFSET_SMALL);
 
     if (!loading) {
       this.setState(

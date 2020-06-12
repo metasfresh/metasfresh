@@ -119,3 +119,15 @@ export const LOCATION_SEARCH_NAME = 'location-area-search';
  * @type {integer} Used to indicate the row position from where the dropup should be shown.
  */
 export const DROPUP_START = 13;
+
+/**
+ * @constant
+ * @type {integer} Used to indicate the offset position for resizing the table container
+ */
+export const DROPDOWN_OFFSET_BIG = 400;
+
+/**
+ * @constant
+ * @type {integer} Used to indicate the offset position for resizing the table container
+ */
+export const DROPUP_OFFSET_SMALL = 150;
