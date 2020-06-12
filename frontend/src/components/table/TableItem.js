@@ -39,50 +39,9 @@ class TableItem extends PureComponent {
       editedCells: {},
       multilineText,
       multilineTextLines,
-      lastSelected: null,
-      currentPage: null,
       cellsExtended: false,
     };
   }
-
-  // TODO: This will most probably go away completely when refactoring TableItem.
-  // Double check if all cases are covered.
-  // shouldComponentUpdate(nextProps, nextState) {
-  //   // re-render if we triggered a sortAction
-  //   if (nextProps.activeSort) {
-  //     return true;
-  //   }
-
-  //   // check on saving logic
-  //   if (this.props.notSaved === true && nextProps.notSaved === false) {
-  //     return true;
-  //   }
-
-  //   // page check logic
-  //   if (nextProps.page !== nextState.currentPage) {
-  //     nextState.currentPage = nextState.page;
-  //     return true;
-  //   }
-
-  //   // item selection logic
-  //   if (nextProps.selected[0] === this.props.rowId) {
-  //     nextState.lastSelected = this.props.rowId;
-  //   }
-
-  //   // TODO: This is a super heavy check and should be removed ASAP
-  //   if (!_.isEqual(nextProps, this.state[nextProps.rowId])) {
-  //     return true;
-  //   } else {
-  //     if (
-  //       nextState.lastSelected &&
-  //       nextProps.selected[0] &&
-  //       nextState.lastSelected !== nextProps.selected[0]
-  //     ) {
-  //       return true;
-  //     }
-  //     return false;
-  //   }
-  // }
 
   componentDidUpdate(prevProps) {
     const { multilineText, activeCell } = this.state;
@@ -91,13 +50,6 @@ class TableItem extends PureComponent {
     if (multilineText && this.props.isSelected !== prevProps.isSelected) {
       this.handleCellExtend(this.props.isSelected);
     }
-
-    // TODO: `dataHash` was removed completely from the `Table`
-    // if (this.props.dataHash !== prevProps.dataHash) {
-    //   this.setState({
-    //     editedCells: {},
-    //   });
-    // }
 
     if (focusOnFieldName && isSelected && this.autofocusCell && !activeCell) {
       // eslint-disable-next-line react/no-find-dom-node
@@ -657,7 +609,7 @@ class TableItem extends PureComponent {
         <tr
           onClick={this.handleClick}
           onDoubleClick={this.handleDoubleClick}
-          className={classnames(dataKey, keyProperty, {
+          className={classnames(dataKey, `row-${keyProperty}`, {
             'row-selected': isSelected,
             'tr-odd': odd,
             'tr-even': !odd,
