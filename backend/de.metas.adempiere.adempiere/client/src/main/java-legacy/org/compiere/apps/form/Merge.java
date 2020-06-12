@@ -127,7 +127,7 @@ public class Merge
 
 			m_trx = Trx.get(Trx.createTrxName("merge"), true);
 			//
-			pstmt = DB.prepareStatement(sql, Trx.createTrxName());
+			pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_ThreadInherited);
 			pstmt.setString(1, ColumnName);
 			pstmt.setString(2, ColumnName);
 			final ResultSet rs = pstmt.executeQuery();

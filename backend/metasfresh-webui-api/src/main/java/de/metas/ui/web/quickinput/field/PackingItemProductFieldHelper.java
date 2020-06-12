@@ -34,6 +34,7 @@ import lombok.NonNull;
 import org.compiere.model.I_M_PriceList_Version;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.Nullable;
 import java.util.Optional;
 
 @Component
@@ -87,7 +88,8 @@ public class PackingItemProductFieldHelper
 				.map(huPIItemProductsRepo::getById);
 	}
 
-	private PriceListId getPriceListIdFor( final DefaultPackingItemCriteria defaultPackingItemCriteria )
+	@Nullable
+	private PriceListId getPriceListIdFor(@NonNull final DefaultPackingItemCriteria defaultPackingItemCriteria)
 	{
 		return priceListsRepo.retrievePriceListIdByPricingSyst(
 				defaultPackingItemCriteria.getPricingSystemId(),

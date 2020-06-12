@@ -6,6 +6,7 @@ export default class DocumentReferenceItem extends Component {
     const {
       caption,
       targetWindowId,
+      referenceId,
       filter,
       onClick,
       internalName,
@@ -17,6 +18,7 @@ export default class DocumentReferenceItem extends Component {
         onClick={(e) =>
           onClick({
             targetWindowId,
+            referenceId,
             filter,
             ctrlKeyPressed: e.ctrlKey,
           })
@@ -33,6 +35,7 @@ export default class DocumentReferenceItem extends Component {
 DocumentReferenceItem.propTypes = {
   caption: PropTypes.string.isRequired,
   targetWindowId: PropTypes.string.isRequired,
+  referenceId: PropTypes.string.isRequired,
   filter: PropTypes.object.isRequired,
   onClick: PropTypes.func.isRequired,
   internalName: PropTypes.string.isRequired,

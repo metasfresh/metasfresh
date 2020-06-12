@@ -34,15 +34,17 @@ import de.metas.document.IDocTypeDAO;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.document.sequence.impl.IDocumentNoInfo;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 @Callout(I_C_BankStatement.class)
 public class C_BankStatement
 {
-	public static final C_BankStatement instance = new C_BankStatement();
+	private final IBankStatementBL bankStatementBL;
 
-	private C_BankStatement()
+	public C_BankStatement(
+			@NonNull final IBankStatementBL bankStatementBL)
 	{
-		super();
+		this.bankStatementBL = bankStatementBL;
 	}
 
 	@CalloutMethod(columnNames = {
@@ -50,7 +52,7 @@ public class C_BankStatement
 			I_C_BankStatement.COLUMNNAME_StatementDifference })
 	public void updateEndingBalance(final I_C_BankStatement bankStatement, final ICalloutField unused)
 	{
-		Services.get(IBankStatementBL.class).updateEndingBalance(bankStatement);
+		bankStatementBL.updateEndingBalance(bankStatement);
 	}
 
 	@CalloutMethod(columnNames = I_C_BankStatement.COLUMNNAME_C_DocType_ID)
@@ -62,7 +64,8 @@ public class C_BankStatement
 			return;
 		}
 
-		final I_C_DocType docType = Services.get(IDocTypeDAO.class).getById(docTypeId);
+		final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
+		final I_C_DocType docType = docTypeDAO.getById(docTypeId);
 		final IDocumentNoInfo documentNoInfo = Services.get(IDocumentNoBuilderFactory.class)
 				.createPreliminaryDocumentNoBuilder()
 				.setNewDocType(docType)

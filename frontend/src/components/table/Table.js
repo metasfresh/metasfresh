@@ -10,6 +10,7 @@ import {
   componentPropTypes,
   constructorFn,
 } from '../../utils/tableHelpers';
+import { getCurrentActiveLocale } from '../../utils/documentListHelper';
 
 import Prompt from '../app/Prompt';
 import DocumentListContextShortcuts from '../keyshortcuts/DocumentListContextShortcuts';
@@ -534,14 +535,15 @@ class Table extends PureComponent {
       activeSort,
       page,
       columns,
-      rows,
       selected,
+      rows,
       onItemChange,
       onSelect,
       onRowCollapse,
       collapsedRows,
       collapsedParentRows,
     } = this.props;
+    const activeLocale = { key: getCurrentActiveLocale() };
 
     if (!rows.length || !columns.length) {
       return null;
@@ -566,6 +568,7 @@ class Table extends PureComponent {
         {...{
           page,
           entity,
+          activeLocale,
           windowId,
           mainTable,
           indentSupported,

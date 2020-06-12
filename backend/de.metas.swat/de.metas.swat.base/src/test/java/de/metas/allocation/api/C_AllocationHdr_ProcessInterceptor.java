@@ -33,11 +33,11 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_AllocationHdr;
 import org.compiere.model.I_C_AllocationLine;
 import org.compiere.model.I_C_Invoice;
-import org.compiere.model.I_C_Payment;
 
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.impl.PlainDocumentBL.IProcessInterceptor;
 import de.metas.invoice.service.IInvoiceBL;
+import de.metas.payment.PaymentId;
 import de.metas.payment.api.IPaymentBL;
 import de.metas.util.Services;
 
@@ -71,29 +71,24 @@ public class C_AllocationHdr_ProcessInterceptor implements IProcessInterceptor
 			{
 				line.setC_BPartner_ID(invoice.getC_BPartner_ID());
 			}
+			
 			//
-			int C_Payment_ID = line.getC_Payment_ID();
-
 			// Update Payment
-			if (C_Payment_ID > 0)
+			final PaymentId paymentId = PaymentId.ofRepoIdOrNull(line.getC_Payment_ID());
+			if (paymentId != null)
 			{
-				I_C_Payment payment = line.getC_Payment();
-				if (Services.get(IPaymentBL.class).testAllocation(payment))
-				{
-					InterfaceWrapperHelper.save(payment);
-					InterfaceWrapperHelper.refresh(payment, true);
-				}
+				final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
+				paymentBL.testAllocation(paymentId);
 			}
 
 			// Payment - Invoice
-			if (C_Payment_ID != 0 && invoice != null)
+			if (paymentId != null && invoice != null)
 			{
 				// Link to Invoice
 				if (invoice.isPaid())
 				{
-					invoice.setC_Payment_ID(C_Payment_ID);
+					invoice.setC_Payment_ID(paymentId.getRepoId());
 				}
-
 			}
 
 			// Update Balance / Credit used - Counterpart of MInvoice.completeIt

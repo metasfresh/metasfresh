@@ -91,6 +91,8 @@ public final class JSONDocumentReference
 
 	@JsonProperty("targetWindowId")
 	private final WindowId targetWindowId;
+	@JsonProperty("targetCategory")
+	private final String targetCategory;
 
 	@JsonProperty("documentsCount")
 	private final int documentsCount;
@@ -108,12 +110,13 @@ public final class JSONDocumentReference
 	{
 		final String adLanguage = jsonOpts.getAdLanguage();
 
-		id = documentReference.getId();
+		id = documentReference.getId().toJson();
 		priority = documentReference.getPriority().toInt();
 
 		internalName = documentReference.getInternalName();
 		caption = documentReference.getCaption(adLanguage);
-		targetWindowId = documentReference.getWindowId();
+		targetWindowId = documentReference.getTargetWindow().getWindowId();
+		targetCategory = documentReference.getTargetWindow().getCategory();
 		documentsCount = documentReference.getDocumentsCount();
 
 		final DocumentFilter filter = documentReference.getFilter();

@@ -51,7 +51,6 @@ import de.metas.location.ICountryDAO;
 import de.metas.location.impl.PostalQueryFilter;
 import de.metas.logging.TableRecordMDC;
 import de.metas.organization.OrgId;
-import de.metas.logging.TableRecordMDC;
 import de.metas.security.PermissionServiceFactories;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -428,7 +427,7 @@ final class BPartnerCompositeSaver
 		}
 
 		final IBPBankAccountDAO bpBankAccountsDAO = Services.get(IBPBankAccountDAO.class);
-		bpBankAccountsDAO.deactivateByBPartnerExcept(bpartnerId, savedBPBankAccountIds);
+		bpBankAccountsDAO.deactivateIBANAccountsByBPartnerExcept(bpartnerId, savedBPBankAccountIds);
 	}
 
 	private void saveBPartnerBankAccount(

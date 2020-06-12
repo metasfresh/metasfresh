@@ -4,6 +4,12 @@ import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.service.IInvoiceDAO;
+import de.metas.invoicecandidate.api.IInvoiceCandDAO;
+import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.rest_api.common.JsonExternalId;
+import de.metas.rest_api.common.MetasfreshId;
+import de.metas.rest_api.invoicecandidates.response.JsonInvoiceCandidatesResponseItem;
+import de.metas.rest_api.invoicecandidates.response.JsonReverseInvoiceResponse;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -13,7 +19,6 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_Archive;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.util.Env;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -44,9 +49,11 @@ import java.util.Optional;
 @Service
 public class InvoiceService
 {
-	final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
-	final IArchiveDAO archiveDAO = Services.get(IArchiveDAO.class);
-	final IArchiveBL archiveBL = Services.get(IArchiveBL.class);
+	private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
+	private final IArchiveDAO archiveDAO = Services.get(IArchiveDAO.class);
+	private final IArchiveBL archiveBL = Services.get(IArchiveBL.class);
+	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
+	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 
 	public Optional<byte[]> getInvoicePDF(@NonNull final InvoiceId invoiceId)
 	{
@@ -76,24 +83,36 @@ public class InvoiceService
 		return Optional.of(lastArchive.get(0));
 	}
 
-	public ResponseEntity<Object> reverseInvoice(@NonNull final InvoiceId invoiceId)
+	@NonNull
+	public Optional<JsonReverseInvoiceResponse> reverseInvoice(@NonNull final InvoiceId invoiceId)
 	{
 		final I_C_Invoice documentRecord = Services.get(IInvoiceDAO.class).getByIdInTrx(invoiceId);
 		if (documentRecord == null)
 		{
-			return ResponseEntity.notFound().build();
+			return Optional.empty();
 		}
 
-		try
-		{
-			Services.get(IDocumentBL.class).processEx(documentRecord, IDocument.ACTION_Reverse_Correct, IDocument.STATUS_Reversed);
-		}
-		catch (final Exception e)
-		{
-			return ResponseEntity.unprocessableEntity().body(e.getLocalizedMessage());
-		}
+		documentBL.processEx(documentRecord, IDocument.ACTION_Reverse_Correct, IDocument.STATUS_Reversed);
 
-		return ResponseEntity.ok().build();
+		final JsonReverseInvoiceResponse.JsonReverseInvoiceResponseBuilder responseBuilder = JsonReverseInvoiceResponse.builder();
+
+		invoiceCandDAO
+				.retrieveInvoiceCandidates(invoiceId)
+				.stream()
+				.map(this::buildJSONItem)
+				.forEach(responseBuilder::affectedInvoiceCandidate);
+
+		return Optional.of(responseBuilder.build());
+	}
+
+	private JsonInvoiceCandidatesResponseItem buildJSONItem(@NonNull final I_C_Invoice_Candidate invoiceCandidate)
+	{
+		return JsonInvoiceCandidatesResponseItem
+				.builder()
+				.externalHeaderId(JsonExternalId.ofOrNull(invoiceCandidate.getExternalHeaderId()))
+				.externalLineId(JsonExternalId.ofOrNull(invoiceCandidate.getExternalLineId()))
+				.metasfreshId(MetasfreshId.of(invoiceCandidate.getC_Invoice_Candidate_ID()))
+				.build();
 	}
 
 }

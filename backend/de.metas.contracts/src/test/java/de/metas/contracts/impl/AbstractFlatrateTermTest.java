@@ -1,36 +1,8 @@
 package de.metas.contracts.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.time.LocalDate;
-import java.time.Month;
-import java.time.ZoneId;
-import java.util.List;
-
-import org.adempiere.ad.wrapper.POJOWrapper;
-import org.adempiere.test.AdempiereTestHelper;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_BPartner_Location;
-import org.compiere.model.I_C_Calendar;
-import org.compiere.model.I_C_Country;
-import org.compiere.model.I_C_CountryArea;
-import org.compiere.model.I_C_Period;
-import org.compiere.model.I_C_Tax;
-import org.compiere.model.I_C_TaxCategory;
-import org.compiere.model.I_C_Year;
-import org.compiere.model.I_M_Product;
-import org.compiere.model.I_M_Warehouse;
-import org.compiere.model.X_C_Tax;
-import org.compiere.util.TimeUtil;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.adempiere.model.I_AD_User;
+import de.metas.contracts.CreateFlatrateTermRequest;
 import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.flatrate.interfaces.I_C_DocType;
 import de.metas.contracts.impl.FlatrateTermDataFactory.ProductAndPricingSystem;
@@ -55,6 +27,34 @@ import de.metas.tax.api.TaxCategoryId;
 import de.metas.util.Services;
 import lombok.Getter;
 import lombok.NonNull;
+import org.adempiere.ad.wrapper.POJOWrapper;
+import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_Calendar;
+import org.compiere.model.I_C_Country;
+import org.compiere.model.I_C_CountryArea;
+import org.compiere.model.I_C_Period;
+import org.compiere.model.I_C_Tax;
+import org.compiere.model.I_C_TaxCategory;
+import org.compiere.model.I_C_Year;
+import org.compiere.model.I_M_Product;
+import org.compiere.model.I_M_Warehouse;
+import org.compiere.model.X_C_Tax;
+import org.compiere.util.TimeUtil;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.time.Month;
+import java.time.ZoneId;
+import java.util.List;
+
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /*
  * #%L
@@ -346,14 +346,17 @@ public abstract class AbstractFlatrateTermTest
 		final I_C_OrderLine orderLine = createOrderAndOrderLine(conditions, productAndCategoryId.getProductId());
 
 		final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
-		final I_C_Flatrate_Term contract = flatrateBL.createTerm(
-				helper.getContextProvider(),
-				getBpartner(),
-				conditions,
-				startDate,
-				null,
-				productAndCategoryId,
-				false);
+
+		final CreateFlatrateTermRequest createFlatrateTermRequest = CreateFlatrateTermRequest.builder()
+				.context(helper.getContextProvider())
+				.bPartner(getBpartner())
+				.conditions(conditions)
+				.startDate(startDate)
+				.productAndCategoryId(productAndCategoryId)
+				.completeIt(false)
+				.build();
+
+		final I_C_Flatrate_Term contract = flatrateBL.createTerm(createFlatrateTermRequest);
 
 		final I_C_BPartner_Location bpLocation = getBpLocation();
 		final I_AD_User user = getUser();

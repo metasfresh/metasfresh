@@ -8,6 +8,7 @@ import javax.annotation.Nullable;
 
 import org.adempiere.exceptions.AdempiereException;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.banking.payment.paymentallocation.service.AllocationAmounts;
@@ -18,6 +19,7 @@ import de.metas.banking.payment.paymentallocation.service.PaymentAllocationResul
 import de.metas.banking.payment.paymentallocation.service.PaymentDocument;
 import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingFeeCalculation;
 import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingServiceCompanyService;
+import de.metas.lang.SOTrx;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.money.MoneyService;
@@ -109,6 +111,7 @@ public class PaymentsViewAllocateCommand
 		return builder.build();
 	}
 
+	@Nullable
 	private PaymentAllocationBuilder preparePaymentAllocationBuilder()
 	{
 		if (paymentRow == null && invoiceRows.isEmpty())
@@ -136,8 +139,20 @@ public class PaymentsViewAllocateCommand
 				.allowPurchaseSalesInvoiceCompensation(allowPurchaseSalesInvoiceCompensation);
 	}
 
-	private PayableDocument toPayableDocument(final InvoiceRow row)
+	private PayableDocument toPayableDocument(@NonNull final InvoiceRow row)
 	{
+		return toPayableDocument(row, moneyService);
+	}
+
+	@VisibleForTesting
+	static PayableDocument toPayableDocument(
+			@NonNull final InvoiceRow row,
+			@NonNull final MoneyService moneyService)
+	{
+		// NOTE: assuming InvoiceRow amounts are already CreditMemo adjusted,
+		// BUT they are not Sales/Purchase sign adjusted.
+		// So we will have to do this bellow.
+
 		final Money openAmt = moneyService.toMoney(row.getOpenAmt());
 		final Money discountAmt = moneyService.toMoney(row.getDiscountAmt());
 		final CurrencyId currencyId = openAmt.getCurrencyId();
@@ -149,24 +164,35 @@ public class PaymentsViewAllocateCommand
 
 		final Money payAmt = openAmt.subtract(discountAmt).subtract(invoiceProcessingFee);
 
+		final SOTrx soTrx = row.getDocBaseType().getSoTrx();
+
 		return PayableDocument.builder()
 				.orgId(row.getOrgId())
 				.invoiceId(row.getInvoiceId())
 				.bpartnerId(row.getBPartnerId())
 				.documentNo(row.getDocumentNo())
-				.soTrx(row.getDocBaseType().getSoTrx())
+				.soTrx(soTrx)
 				.creditMemo(row.getDocBaseType().isCreditMemo())
-				.openAmt(openAmt)
+				.openAmt(openAmt.negateIf(soTrx.isPurchase()))
 				.amountsToAllocate(AllocationAmounts.builder()
 						.payAmt(payAmt)
 						.discountAmt(discountAmt)
 						.invoiceProcessingFee(invoiceProcessingFee)
-						.build())
+						.build()
+						.negateIf(soTrx.isPurchase()))
 				.invoiceProcessingFeeCalculation(invoiceProcessingFeeCalculation)
 				.build();
 	}
 
-	private PaymentDocument toPaymentDocument(final PaymentRow row)
+	private PaymentDocument toPaymentDocument(@NonNull final PaymentRow row)
+	{
+		return toPaymentDocument(row, moneyService);
+	}
+
+	@VisibleForTesting
+	static PaymentDocument toPaymentDocument(
+			@NonNull final PaymentRow row,
+			@NonNull final MoneyService moneyService)
 	{
 		final Money openAmt = moneyService.toMoney(row.getOpenAmt());
 

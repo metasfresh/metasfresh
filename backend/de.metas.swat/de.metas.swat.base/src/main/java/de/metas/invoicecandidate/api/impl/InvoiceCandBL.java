@@ -41,13 +41,15 @@ import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.Collection;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
+import java.util.TreeSet;
 
 import javax.annotation.Nullable;
 
@@ -112,6 +114,7 @@ import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.inout.IInOutBL;
@@ -189,18 +192,100 @@ import de.metas.util.lang.ExternalHeaderIdWithExternalLineIds;
 import de.metas.util.lang.Percent;
 import de.metas.util.time.SystemTime;
 import lombok.NonNull;
+import org.adempiere.ad.dao.ICompositeQueryUpdater;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
+import org.adempiere.ad.service.IADReferenceDAO;
+import org.adempiere.ad.service.IDeveloperModeBL;
+import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
+import org.adempiere.service.ISysConfigBL;
+import org.adempiere.util.concurrent.AutoClosableThreadLocalBoolean;
+import org.adempiere.util.lang.IAutoCloseable;
+import org.adempiere.util.lang.IPair;
+import org.adempiere.util.lang.ImmutablePair;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_AD_Note;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_InvoiceSchedule;
+import org.compiere.model.I_C_Payment;
+import org.compiere.model.I_C_Tax;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_PriceList;
+import org.compiere.model.MInvoice;
+import org.compiere.model.MInvoiceLine;
+import org.compiere.model.MNote;
+import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
+import org.slf4j.Logger;
+import org.slf4j.MDC.MDCCloseable;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Properties;
+import java.util.Set;
+
+import static de.metas.util.Check.assume;
+import static de.metas.util.Check.assumeGreaterThanZero;
+import static de.metas.util.lang.CoalesceUtil.firstGreaterThanZero;
+import static java.math.BigDecimal.ONE;
+import static java.math.BigDecimal.ZERO;
+import static org.adempiere.model.InterfaceWrapperHelper.getValueOrNull;
+import static org.adempiere.model.InterfaceWrapperHelper.isNull;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+
+/*
+ * #%L
+ * de.metas.swat.base
+ * %%
+ * Copyright (C) 2015 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
 
 public class InvoiceCandBL implements IInvoiceCandBL
 {
-	private static final String MSG_INVOICE_CAND_BL_INVOICING_SKIPPED_IS_TO_CLEAR = "InvoiceCandBL_Invoicing_Skipped_IsToClear";
-	private static final String MSG_INVOICE_CAND_BL_INVOICING_SKIPPED_IS_IN_DISPUTE = "InvoiceCandBL_Invoicing_Skipped_IsInDispute";
-	private static final String MSG_INVOICE_CAND_BL_INVOICING_SKIPPED_DATE_TO_INVOICE = "InvoiceCandBL_Invoicing_Skipped_DateToInvoice";
-	private static final String MSG_INVOICE_CAND_BL_INVOICING_SKIPPED_ERROR = "InvoiceCandBL_Invoicing_Skipped_Error";
-	private static final String MSG_INVOICE_CAND_BL_INVOICING_SKIPPED_PROCESSED = "InvoiceCandBL_Invoicing_Skipped_Processed";
-	private static final String MSG_FixProblemDeleteWaitForRegeneration = "FixProblemDeleteWaitForRegeneration";
-	private static final String MSG_INVOICE_CAND_BL_STATUS_INVOICE_SCHEDULE_MISSING_1P = "InvoiceCandBL_Status_InvoiceSchedule_Missing";
-	private static final String MSG_INVOICE_CAND_BL_BELOW_INVOICE_MIN_AMT_5P = "InvoiceCandBL_Below_Invoice_Min_Amt";
-	private static final String MSG_INVOICE_CAND_BL_STATUS_ORDER_NOT_CO_1P = "InvoiceCandBL_Status_Order_Not_CO";
+	private static final AdMessageKey MSG_INVOICE_CAND_BL_INVOICING_SKIPPED_IS_TO_CLEAR = AdMessageKey.of("InvoiceCandBL_Invoicing_Skipped_IsToClear");
+	private static final AdMessageKey MSG_INVOICE_CAND_BL_INVOICING_SKIPPED_IS_IN_DISPUTE = AdMessageKey.of("InvoiceCandBL_Invoicing_Skipped_IsInDispute");
+	private static final AdMessageKey MSG_INVOICE_CAND_BL_INVOICING_SKIPPED_DATE_TO_INVOICE = AdMessageKey.of("InvoiceCandBL_Invoicing_Skipped_DateToInvoice");
+	private static final AdMessageKey MSG_INVOICE_CAND_BL_INVOICING_SKIPPED_ERROR = AdMessageKey.of("InvoiceCandBL_Invoicing_Skipped_Error");
+	private static final AdMessageKey MSG_INVOICE_CAND_BL_INVOICING_SKIPPED_PROCESSED = AdMessageKey.of("InvoiceCandBL_Invoicing_Skipped_Processed");
+	private static final AdMessageKey MSG_FixProblemDeleteWaitForRegeneration = AdMessageKey.of("FixProblemDeleteWaitForRegeneration");
+	private static final AdMessageKey MSG_INVOICE_CAND_BL_STATUS_INVOICE_SCHEDULE_MISSING_1P = AdMessageKey.of("InvoiceCandBL_Status_InvoiceSchedule_Missing");
+	private static final AdMessageKey MSG_INVOICE_CAND_BL_BELOW_INVOICE_MIN_AMT_5P = AdMessageKey.of("InvoiceCandBL_Below_Invoice_Min_Amt");
+	private static final AdMessageKey MSG_INVOICE_CAND_BL_STATUS_ORDER_NOT_CO_1P = AdMessageKey.of("InvoiceCandBL_Status_Order_Not_CO");
 
 	private static final String SYS_Config_C_Invoice_Candidate_Close_IsToClear = "C_Invoice_Candidate_Close_IsToClear";
 	private static final String SYS_Config_C_Invoice_Candidate_Close_PartiallyInvoiced = "C_Invoice_Candidate_Close_PartiallyInvoiced";
@@ -378,7 +463,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		final BigDecimal newQtyToInvoiceOverrideFulfilled = ic.getQtyToInvoice_OverrideFulfilled().multiply(factor).add(qtyInvoicedDiff);
 
 		final BigDecimal qtyToInvoiceOverride = getQtyToInvoice_OverrideOrNull(ic);
-		if (qtyToInvoiceOverride == null)
+		if (qtyToInvoiceOverride == null || qtyToInvoiceOverride.signum() == 0)
 		{
 			// basically this is just for good measure. The model interceptor C_Invoice_Candidate.resetQtyToInvoiceFulFilled() actually does the job.
 			ic.setQtyToInvoice_OverrideFulfilled(null);
@@ -593,7 +678,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			logger.info("BPartner has no Schedule");
 
 			final I_C_BPartner billBPartner = bpartnerDAO.getById(ic.getBill_BPartner_ID());
-			final String msg = Services.get(IMsgBL.class).getMsg(ctx, InvoiceCandBL.MSG_INVOICE_CAND_BL_STATUS_INVOICE_SCHEDULE_MISSING_1P, new Object[] { billBPartner.getName() });
+			final String msg = Services.get(IMsgBL.class).getMsg(ctx, MSG_INVOICE_CAND_BL_STATUS_INVOICE_SCHEDULE_MISSING_1P, new Object[] { billBPartner.getName() });
 			amendSchedulerResult(ic, msg);
 			ic.setInvoiceScheduleAmtStatus(msg);
 			return -1;
@@ -868,6 +953,13 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			final String msg = msgBL.getMsg(ctx, MSG_INVOICE_CAND_BL_INVOICING_SKIPPED_IS_IN_DISPUTE,
 					new Object[] { ic.getC_Invoice_Candidate_ID() });
 			Loggables.withLogger(logger, Level.DEBUG).addLog(msg);
+			return true;
+		}
+
+		if (ic.isSimulation())
+		{
+			Loggables.withLogger(logger, Level.DEBUG).addLog(" #isSkipCandidateFromInvoicing: Skipping IC: {},"
+							+ " as it's a simulation and it shouldn't be invoiced!", ic.getC_Invoice_Candidate_ID());
 			return true;
 		}
 
@@ -1344,6 +1436,8 @@ public class InvoiceCandBL implements IInvoiceCandBL
 				final I_C_Invoice_Candidate invoiceCandidate = ilaToReverse.getC_Invoice_Candidate();
 				invoiceCandidate.setProcessed_Override(null); // reset processed_override, because now that the invoice was reversed, the users might want to do something new with the IC.
 
+				invoiceCandidate.setApprovalForInvoicing(false);
+
 				// #870
 				// Make sure that, when an invoice is reversed, the QtyToInvoice_Override and PriceEntered_Override are set back in the invoice candidate based on the values in the allocations
 				{
@@ -1413,6 +1507,8 @@ public class InvoiceCandBL implements IInvoiceCandBL
 							+ ", (=>overlap=" + overlap + ")";
 				}
 
+				invoiceCandDAO.save(invoiceCandidate);
+
 				createUpdateIla(
 						invoiceCandidate,
 						reversalLine,
@@ -1427,11 +1523,27 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	 */
 	private static void setQtyAndPriceOverride(final int invoiceCandidateId, final BigDecimal qtyToInvoiceOverride, final BigDecimal priceEnteredOverride)
 	{
-			final I_C_Invoice_Candidate invoiceCandidate = InterfaceWrapperHelper.load(invoiceCandidateId, I_C_Invoice_Candidate.class);
-			invoiceCandidate.setQtyToInvoice_Override(qtyToInvoiceOverride);
-			invoiceCandidate.setPriceEntered_Override(priceEnteredOverride);
-			invoiceCandidate.setQtyToInvoice_OverrideFulfilled(ZERO);
-			InterfaceWrapperHelper.save(invoiceCandidate);
+		final I_C_Invoice_Candidate invoiceCandidate = InterfaceWrapperHelper.load(invoiceCandidateId, I_C_Invoice_Candidate.class);
+		invoiceCandidate.setQtyToInvoice_Override(qtyToInvoiceOverride);
+		invoiceCandidate.setPriceEntered_Override(priceEnteredOverride);
+		invoiceCandidate.setQtyToInvoice_OverrideFulfilled(ZERO);
+		InterfaceWrapperHelper.save(invoiceCandidate);
+	}
+
+	private void setApprovalForInvoicing(final Collection<I_C_Invoice_Candidate> invoiceCandidates, final boolean approved)
+	{
+		if (invoiceCandidates.isEmpty())
+		{
+			return;
+		}
+
+		final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
+
+		for (final I_C_Invoice_Candidate invoiceCandidate : invoiceCandidates)
+		{
+			invoiceCandidate.setApprovalForInvoicing(approved);
+			invoiceCandDAO.save(invoiceCandidate);
+		}
 	}
 
 	@Override
@@ -1471,7 +1583,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 				invoiceCandDAO.invalidateCands(invoiceCands);
 			}
 
-			final Set<I_C_Invoice_Candidate> toLinkAgainstIl = new HashSet<>();
+			final Set<I_C_Invoice_Candidate> toLinkAgainstIl = new TreeSet<>(Comparator.comparing(I_C_Invoice_Candidate::getC_Invoice_Candidate_ID));
 
 			if (il.getC_OrderLine_ID() > 0)
 			{
@@ -1554,7 +1666,13 @@ public class InvoiceCandBL implements IInvoiceCandBL
 				}
 				createUpdateIla(icToLink, il, qtysInvoiced, note);
 				// note: if an ILA is created, the icToLink is automatically invalidated via C_Invoice_Line_Alloc model validator
+			}
 
+			//
+			// Unset ApprovalForInvoicing flag in case we credit memoed + reinvoiceable our invoice
+			if (isCreditMemo && creditMemoReinvoicable)
+			{
+				setApprovalForInvoicing(toLinkAgainstIl, false);
 			}
 		}
 	}
@@ -1734,7 +1852,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		else
 		{
 			final Properties ctx = InterfaceWrapperHelper.getCtx(ic);
-			final String msgAskForRegeneration = Services.get(IMsgBL.class).translate(ctx, MSG_FixProblemDeleteWaitForRegeneration);
+			final String msgAskForRegeneration = Services.get(IMsgBL.class).getMsg(ctx, MSG_FixProblemDeleteWaitForRegeneration);
 			errorMessageToUse = new StringBuilder(errorMsg)
 					.append("\n").append(msgAskForRegeneration)
 					.toString();
@@ -2047,7 +2165,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 				if (processedOverride.isTrue())
 				{
 					candidate.setProcessed_Override(null);
-					InterfaceWrapperHelper.save(candidate);
+					invoiceCandDAO.save(candidate);
 				}
 			}
 		}

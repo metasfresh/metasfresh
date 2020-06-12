@@ -33,14 +33,14 @@ import java.util.Date;
 import org.hamcrest.Matchers;
 import org.junit.Assert;
 
-import de.metas.edi.esb.bean.imports.xls.XLS_OLCand_Row;
+import de.metas.edi.esb.bean.imports.excel.Excel_OLCand_Row;
 import de.metas.edi.esb.commons.Util;
 import de.metas.edi.esb.jaxb.metasfresh.EDIImpCCurrencyLookupISOCodeType;
 import de.metas.edi.esb.jaxb.metasfresh.EDIImpCUOMLookupUOMSymbolType;
 import de.metas.edi.esb.jaxb.metasfresh.XLSImpCOLCandType;
 
 /**
- * Defines and asserts expectations on an {@link XLS_OLCand_Row} or {@link XLSImpCOLCandType}.
+ * Defines and asserts expectations on an {@link Excel_OLCand_Row} or {@link XLSImpCOLCandType}.
  *
  * @author tsa
  *
@@ -75,7 +75,7 @@ public class XLS_OLCand_Row_Expectation
 
 	private static final DateFormat dateFormat = new SimpleDateFormat("dd.MM.yyyy");
 
-	public void assertExpected(final XLS_OLCand_Row row)
+	public void assertExpected(final Excel_OLCand_Row row)
 	{
 		final String messageSuffix = "\nRow: " + row
 				+ "\n";

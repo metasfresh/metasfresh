@@ -114,8 +114,9 @@ class DocList extends PureComponent {
             sort={queryCopy.sort}
             page={queryCopy.page}
             viewId={queryCopy.viewId}
+            referenceId={queryCopy.referenceId}
             refType={queryCopy.refType}
-            refId={queryCopy.refId}
+            refDocumentId={queryCopy.refDocumentId}
             refTabId={queryCopy.refTabId}
           />
 
@@ -139,8 +140,9 @@ class DocList extends PureComponent {
                 sort={queryCopy.sort}
                 page={queryCopy.page}
                 viewId={queryCopy.viewId}
+                referenceId={queryCopy.referenceId}
                 refType={queryCopy.refType}
-                refId={queryCopy.refId}
+                refDocumentId={queryCopy.refDocumentId}
                 refTabId={queryCopy.refTabId}
               />
             )}

@@ -7,9 +7,10 @@ import org.compiere.util.Env;
 
 import de.metas.document.references.POZoomSource;
 import de.metas.document.references.ZoomInfoFactory;
+import de.metas.document.references.ZoomInfoPermissions;
+import de.metas.document.references.ZoomInfoPermissionsFactory;
 import de.metas.process.JavaProcess;
 import de.metas.process.Param;
-import de.metas.security.IUserRolePermissions;
 import de.metas.util.ILoggable;
 import de.metas.util.Services;
 
@@ -61,8 +62,8 @@ public class ZoomInfoFactoryExecute extends JavaProcess
 		final GenericPO po = new GenericPO(tableName, getCtx(), recordId);
 
 		final POZoomSource zoomSource = POZoomSource.of(po, windowId);
-		final IUserRolePermissions rolePermissions = Env.getUserRolePermissions();
-		ZoomInfoFactory.get().retrieveZoomInfos(zoomSource, rolePermissions);
+		final ZoomInfoPermissions permissions = ZoomInfoPermissionsFactory.ofRolePermissions(Env.getUserRolePermissions());
+		ZoomInfoFactory.get().retrieveZoomInfos(zoomSource, permissions);
 
 		return MSG_OK;
 	}

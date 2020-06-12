@@ -35,6 +35,9 @@ import java.sql.Timestamp;
 import java.util.Iterator;
 import java.util.List;
 
+import de.metas.handlingunits.IHUContextFactory;
+import de.metas.handlingunits.IMutableHUContext;
+import de.metas.organization.ClientAndOrgId;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -249,8 +252,10 @@ public class M_ReceiptSchedule_Generate_M_InOuts extends JavaProcess
 		{
 			addLog("M_ReceiptSchedule_ID={} - creating HUs and allocating HUs on the fly", receiptSchedule.getM_ReceiptSchedule_ID());
 
+			final IMutableHUContext huContextInitial = Services.get(IHUContextFactory.class).createMutableHUContextForProcessing(getCtx(), ClientAndOrgId.ofClientAndOrg(receiptSchedule.getAD_Client_ID(), receiptSchedule.getAD_Org_ID()));
+
 			final ReceiptScheduleHUGenerator huGenerator =//
-					ReceiptScheduleHUGenerator.newInstance(getContextAware(receiptSchedule));
+					ReceiptScheduleHUGenerator.newInstance(huContextInitial);
 
 			huGenerator.addM_ReceiptSchedule(receiptSchedule);
 

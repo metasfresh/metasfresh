@@ -1,12 +1,12 @@
 package org.adempiere.ad.trx.api.impl;
 
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
 
 import javax.annotation.Nullable;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxListenerManager;
-import org.adempiere.ad.trx.exceptions.TrxException;
 import org.adempiere.exceptions.AdempiereException;
 
 /*
@@ -32,8 +32,6 @@ import org.adempiere.exceptions.AdempiereException;
  */
 
 import org.slf4j.Logger;
-
-import java.util.Objects;
 
 import de.metas.logging.LogManager;
 import de.metas.util.StringUtils;
@@ -217,8 +215,9 @@ public class TrxListenerManager implements ITrxListenerManager
 		}
 		else // if (onError == OnError.ThrowException)
 		{
-			throw new TrxException("Error on " + timingInfo, ex)
+			throw AdempiereException.wrapIfNeeded(ex)
 					.setParameter("listener", listener)
+					.setParameter(timingInfo)
 					.appendParametersToMessage();
 		}
 	}

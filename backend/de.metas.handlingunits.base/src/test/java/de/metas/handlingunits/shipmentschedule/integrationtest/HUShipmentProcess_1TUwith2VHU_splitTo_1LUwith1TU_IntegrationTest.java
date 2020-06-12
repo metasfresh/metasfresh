@@ -30,13 +30,16 @@ import static org.junit.Assert.assertThat;
 import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Properties;
 
+import de.metas.organization.ClientAndOrgId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IMutable;
 import org.adempiere.util.lang.Mutable;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_Package;
+import org.compiere.util.Env;
 import org.junit.Assert;
 import org.w3c.dom.Node;
 
@@ -193,7 +196,8 @@ public class HUShipmentProcess_1TUwith2VHU_splitTo_1LUwith1TU_IntegrationTest ex
 		final IMutable<I_M_HU> splitHU_vhu1 = new Mutable<>();
 		final IMutable<I_M_HU> splitHU_vhu2 = new Mutable<>();
 
-		final List<I_M_HU> splitHUs = new HUSplitBuilder(helper.ctx)
+		final Properties ctx = Env.getCtx();
+		final List<I_M_HU> splitHUs = new HUSplitBuilder(helper.ctx, ClientAndOrgId.ofClientAndOrg(Env.getAD_Client_ID(), Env.getAD_Org_ID(ctx)))
 				.setHUToSplit(tu)
 				.setCUQty(new BigDecimal("15"))
 				// LU
