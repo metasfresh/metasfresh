@@ -153,14 +153,12 @@ export default function viewHandler(state = initialState, action) {
       };
     }
     case FETCH_DOCUMENT_SUCCESS: {
-      // TODO: Maybe just use `_.omit` to remove `result` ?
       const {
         id,
         data: {
           firstRow,
           headerProperties,
           pageLength,
-          // result,
           size,
           type,
           viewId,

@@ -76,11 +76,13 @@ class Table extends PureComponent {
 
   closeContextMenu = () => {
     this.setState({
-      contextMenu: Object.assign({}, this.state.contextMenu, {
+      contextMenu: {
+        ...this.state.contextMenu,
         open: false,
-      }),
+      },
     });
   };
+
 
   handleSelect = (id, idFocused, idFocusedDown, cb) => {
     const { onSelect } = this.props;

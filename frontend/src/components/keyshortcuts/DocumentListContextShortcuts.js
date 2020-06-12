@@ -5,24 +5,30 @@ import { Shortcut } from '../keyshortcuts';
 export default class DocumentListContextShortcuts extends PureComponent {
   handlers = {
     OPEN_SELECTED: (event) => {
+      const { onOpenNewTab } = this.props;
+
       event.preventDefault();
 
-      if (this.props.onOpenNewTab) {
+      if (onOpenNewTab) {
         this.handleOpenNewTab();
       }
     },
     REMOVE_SELECTED: (event) => {
+      const { onDelete } = this.props;
+
       event.preventDefault();
 
-      if (this.props.onDelete) {
-        this.props.onDelete();
+      if (onDelete) {
+        onDelete();
       }
     },
     ADVANCED_EDIT: (event) => {
+      const { onAdvancedEdit } = this.props;
+
       event.preventDefault();
 
-      if (this.props.onAdvancedEdit) {
-        this.onAdvancedEdit();
+      if (onAdvancedEdit) {
+        onAdvancedEdit();
 
         return true;
       }
@@ -30,25 +36,31 @@ export default class DocumentListContextShortcuts extends PureComponent {
       return false;
     },
     SELECT_ALL_LEAVES: (event) => {
+      const { onGetAllLeaves } = this.props;
+
       event.preventDefault();
 
-      if (this.props.onGetAllLeaves) {
-        this.props.onGetAllLeaves();
+      if (onGetAllLeaves) {
+        onGetAllLeaves();
       }
     },
     EXPAND_INDENT: (event) => {
+      const { onIndent } = this.props;
+
       event.preventDefault();
 
-      if (this.props.onIndent) {
-        this.props.onIndent(true);
+      if (onIndent) {
+        onIndent(true);
       }
     },
     COLLAPSE_INDENT: (event) => {
-      if (this.props.commentsOpened) return false;
+      const { onIndent, commentsOpened } = this.props;
+
+      if (commentsOpened) return false;
       event.preventDefault();
 
-      if (this.props.onIndent) {
-        this.props.onIndent(false);
+      if (onIndent) {
+        onIndent(false);
       }
     },
   };
