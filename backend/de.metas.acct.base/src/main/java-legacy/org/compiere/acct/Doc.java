@@ -47,6 +47,7 @@ import org.compiere.model.MAccount;
 import org.compiere.model.MNote;
 import org.compiere.model.MPeriod;
 import org.compiere.model.PO;
+import org.compiere.model.POInfo;
 import org.compiere.model.X_C_DocType;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
@@ -73,6 +74,7 @@ import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.currency.exceptions.NoCurrencyRateFoundException;
 import de.metas.document.engine.IDocument;
+import de.metas.error.AdIssueId;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.BooleanWithReason;
 import de.metas.lang.SOTrx;
@@ -291,7 +293,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 	/** Contained Doc Lines */
 	private List<DocLineType> docLines;
 
-	protected final String get_TableName()
+	public final String get_TableName()
 	{
 		return getPO().get_TableName();
 	}
@@ -304,7 +306,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 	/**
 	 * @return record id
 	 */
-	protected final int get_ID()
+	public final int get_ID()
 	{
 		return getPO().get_ID();
 	}
@@ -705,15 +707,19 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 	private final void unlock(final PostingException exception)
 	{
 		final String tableName = get_TableName();
-		final String keyColumnName = tableName + "_ID";
+		final POInfo poInfo = POInfo.getPOInfo(tableName);
+		final String keyColumnName = poInfo.getKeyColumnName();
 		final int recordId = get_ID();
 
 		final StringBuilder sql = new StringBuilder("UPDATE ")
 				.append(tableName).append(" SET ");
 
-		// Unlock it
+		//
+		// Processing (i.e. unlock it)
 		sql.append("Processing='N'");
 
+		//
+		// Posted
 		final boolean updatePostedStatus = exception != null && !exception.isPreserveDocumentPostedStatus();
 		if (exception == null)
 		{
@@ -725,7 +731,28 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 			sql.append(", Posted=").append(DB.TO_STRING(postingStatus.getStatusCode()));
 		}
 
-		sql.append(" WHERE ").append(keyColumnName).append("=").append(recordId);
+		//
+		// PostingError_Issue_ID
+		final String COLUMNNAME_PostingError_Issue_ID = "PostingError_Issue_ID";
+		boolean hasPostingIssueColumn = poInfo.hasColumnName(COLUMNNAME_PostingError_Issue_ID);
+		if (hasPostingIssueColumn)
+		{
+			final AdIssueId postingErrorIssueId = exception != null
+					? services.createIssue(exception)
+					: null;
+
+			final AdIssueId previousPostingErrorIssueId = AdIssueId.ofRepoIdOrNull(getPO().get_ValueAsInt(COLUMNNAME_PostingError_Issue_ID));
+			if (previousPostingErrorIssueId != null
+					&& !previousPostingErrorIssueId.equals(postingErrorIssueId))
+			{
+				services.markIssueDeprecated(previousPostingErrorIssueId);
+			}
+
+			sql.append(", ").append(COLUMNNAME_PostingError_Issue_ID).append("=").append(postingErrorIssueId.getRepoId());
+		}
+
+		sql.append("\n WHERE ").append(keyColumnName).append("=").append(recordId);
+
 		final int updateCount = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 
 		fireDocumentChanged();

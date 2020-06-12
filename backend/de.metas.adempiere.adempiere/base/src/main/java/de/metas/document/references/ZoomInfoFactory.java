@@ -14,7 +14,6 @@
 package de.metas.document.references;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
 
@@ -27,9 +26,8 @@ import org.slf4j.Logger;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 
+import de.metas.error.AdIssueZoomProvider;
 import de.metas.logging.LogManager;
-import de.metas.security.IUserRolePermissions;
-import de.metas.util.lang.Priority;
 import lombok.NonNull;
 
 /**
@@ -59,12 +57,12 @@ public class ZoomInfoFactory
 	 */
 	public List<ZoomInfo> retrieveZoomInfos(
 			@NonNull final IZoomSource zoomOrigin,
-			@NonNull final IUserRolePermissions rolePermissions)
+			@NonNull final ZoomInfoPermissions permissions)
 	{
 		final AdWindowId onlyTargetWindowId = null;
-		final HashMap<AdWindowId, Priority> alreadySeenWindowIds = new HashMap<>();
+		final ZoomTargetWindowEvaluationContext alreadySeenWindowIds = new ZoomTargetWindowEvaluationContext();
 
-		return getZoomInfoCandidates(zoomOrigin, onlyTargetWindowId, rolePermissions)
+		return getZoomInfoCandidates(zoomOrigin, onlyTargetWindowId, permissions)
 				.stream()
 				.sequential()
 				.map(candidate -> candidate.evaluate(alreadySeenWindowIds).orElse(null))
@@ -74,16 +72,16 @@ public class ZoomInfoFactory
 
 	public ImmutableList<ZoomInfoCandidate> getZoomInfoCandidates(
 			@NonNull final IZoomSource zoomOrigin,
-			@NonNull final IUserRolePermissions rolePermissions)
+			@NonNull final ZoomInfoPermissions permissions)
 	{
 		final AdWindowId onlyTargetWindowId = null;
-		return getZoomInfoCandidates(zoomOrigin, onlyTargetWindowId, rolePermissions);
+		return getZoomInfoCandidates(zoomOrigin, onlyTargetWindowId, permissions);
 	}
 
 	private ImmutableList<ZoomInfoCandidate> getZoomInfoCandidates(
 			@NonNull final IZoomSource zoomSource,
 			@Nullable final AdWindowId onlyTargetWindowId,
-			@NonNull final IUserRolePermissions rolePermissions)
+			@NonNull final ZoomInfoPermissions permissions)
 	{
 		final Stopwatch stopwatch = Stopwatch.createStarted();
 
@@ -100,8 +98,8 @@ public class ZoomInfoFactory
 					// If not our target window ID, skip it
 					// This shall not happen because we asked the zoomProvider to return only those for our target window,
 					// but if is happening (because of a bug zoom provider) we shall not be so fragile.
-					if (onlyTargetWindowId != null
-							&& !AdWindowId.equals(onlyTargetWindowId, zoomInfoCandidate.getAdWindowId()))
+					final AdWindowId targetWindowId = zoomInfoCandidate.getTargetWindow().getAdWindowId();
+					if (onlyTargetWindowId != null && !AdWindowId.equals(onlyTargetWindowId, targetWindowId))
 					{
 						new AdempiereException("Got a ZoomInfo which is not for our target window. Skipping it."
 								+ "\n zoomInfo: " + zoomInfoCandidate
@@ -114,7 +112,7 @@ public class ZoomInfoFactory
 
 					//
 					// Filter out those windows on given user does not have permissions
-					if (!rolePermissions.checkWindowPermission(zoomInfoCandidate.getAdWindowId()).hasReadAccess())
+					if (!permissions.hasReadAccess(targetWindowId))
 					{
 						continue;
 					}
@@ -148,15 +146,17 @@ public class ZoomInfoFactory
 	public ZoomInfo retrieveZoomInfo(
 			@NonNull final IZoomSource zoomSource,
 			@NonNull final AdWindowId targetWindowId,
-			@NonNull final IUserRolePermissions rolePermissions)
+			@Nullable final ZoomInfoId zoomInfoId,
+			@NonNull final ZoomInfoPermissions permissions)
 	{
 		// NOTE: we need to check the records count because in case there are multiple ZoomInfos for the same targetWindowId,
 		// we shall pick the one which actually has some data. Usually there would be only one (see #1808)
 
-		final HashMap<AdWindowId, Priority> alreadySeenWindowIds = new HashMap<>();
+		final ZoomTargetWindowEvaluationContext alreadySeenWindowIds = new ZoomTargetWindowEvaluationContext();
 
-		return getZoomInfoCandidates(zoomSource, targetWindowId, rolePermissions)
+		return getZoomInfoCandidates(zoomSource, targetWindowId, permissions)
 				.stream()
+				.filter(candidate -> zoomInfoId == null || ZoomInfoId.equals(zoomInfoId, candidate.getId()))
 				.map(candidate -> candidate.evaluate(alreadySeenWindowIds).orElse(null))
 				.filter(Objects::nonNull)
 				.findFirst()
@@ -174,6 +174,7 @@ public class ZoomInfoFactory
 		{
 			zoomProviders.add(FactAcctZoomProvider.instance);
 		}
+		zoomProviders.add(new AdIssueZoomProvider());
 
 		return zoomProviders;
 	}

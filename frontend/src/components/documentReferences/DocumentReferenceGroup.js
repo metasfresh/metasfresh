@@ -17,6 +17,7 @@ export default class DocumentReferenceGroup extends Component {
         {references.map((reference) => (
           <DocumentReferenceItem
             key={reference.id}
+            referenceId={reference.id}
             caption={reference.caption}
             targetWindowId={reference.targetWindowId}
             filter={reference.filter}

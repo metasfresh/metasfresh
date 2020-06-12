@@ -37,6 +37,8 @@ import de.metas.document.references.IZoomSource;
 import de.metas.document.references.POZoomSource;
 import de.metas.document.references.ZoomInfo;
 import de.metas.document.references.ZoomInfoFactory;
+import de.metas.document.references.ZoomInfoPermissions;
+import de.metas.document.references.ZoomInfoPermissionsFactory;
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import de.metas.util.Services;
@@ -114,7 +116,8 @@ public class AZoomAcross
 		final List<ZoomInfo> zoomInfos = new ArrayList<>();
 		final ZoomInfoFactory zoomProvider = ZoomInfoFactory.get();
 		zoomProvider.disableFactAcctZoomProvider(); // in Swing this is not needed because we have the Posted button
-		for (final ZoomInfo zoomInfo : zoomProvider.retrieveZoomInfos(source, Env.getUserRolePermissions()))
+		final ZoomInfoPermissions permissions = ZoomInfoPermissionsFactory.ofRolePermissions(Env.getUserRolePermissions());
+		for (final ZoomInfo zoomInfo : zoomProvider.retrieveZoomInfos(source, permissions))
 		{
 			zoomInfos.add(zoomInfo);
 		}
