@@ -22,6 +22,7 @@
 
 package de.metas.banking.payment.impl;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Set;
 
@@ -35,6 +36,7 @@ import org.springframework.stereotype.Component;
 import de.metas.banking.BankAccountId;
 import de.metas.banking.BankStatementId;
 import de.metas.banking.BankStatementLineId;
+import de.metas.banking.model.BankStatementLineAmounts;
 import de.metas.banking.payment.BankStatementLineMultiPaymentLinkRequest;
 import de.metas.banking.payment.BankStatementLineMultiPaymentLinkResult;
 import de.metas.banking.payment.IBankStatementPaymentBL;
@@ -97,7 +99,7 @@ public class BankStatementPaymentBL implements IBankStatementPaymentBL
 		}
 
 		final Set<PaymentId> eligiblePaymentIds = findEligiblePaymentIds(bankStatementLine, bpartnerId, 2);
-		//noinspection StatementWithEmptyBody
+		// noinspection StatementWithEmptyBody
 		if (eligiblePaymentIds.size() > 1)
 		{
 			// Don't create a new Payment and don't link any of the existing payments if there are multiple payments found.
@@ -229,6 +231,11 @@ public class BankStatementPaymentBL implements IBankStatementPaymentBL
 		// NOTE: don't touch the StmtAmt!
 		bankStatementLine.setC_Currency_ID(trxAmt.getCurrencyId().getRepoId());
 		bankStatementLine.setTrxAmt(trxAmt.toBigDecimal());
+
+		final BigDecimal bankFeeAmt = BankStatementLineAmounts.of(bankStatementLine)
+				.addDifferenceToBankFeeAmt()
+				.getBankFeeAmt();
+		bankStatementLine.setBankFeeAmt(bankFeeAmt);
 
 		bankStatementDAO.save(bankStatementLine);
 
