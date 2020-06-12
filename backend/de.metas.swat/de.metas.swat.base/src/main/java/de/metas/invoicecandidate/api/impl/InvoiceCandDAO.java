@@ -3,7 +3,6 @@ package de.metas.invoicecandidate.api.impl;
 import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.aggregation.model.I_C_Aggregation;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
@@ -102,7 +101,6 @@ import java.util.Properties;
 import java.util.Set;
 
 import static org.adempiere.model.InterfaceWrapperHelper.delete;
-import static org.adempiere.model.InterfaceWrapperHelper.load;
 
 /*
  * #%L
@@ -579,25 +577,16 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 	@NonNull
 	public List<I_C_Invoice_Candidate> retrieveInvoiceCandidates(@NonNull final InvoiceId invoiceId)
 	{
-		final I_C_Invoice invoice = load(invoiceId, I_C_Invoice.class);
-
-		final IQuery<I_C_Invoice_Line_Alloc> invoiceLineAllocQuery =
-				queryBL.createQueryBuilder(I_C_InvoiceLine.class, invoice)
-						.addEqualsFilter(I_C_InvoiceLine.COLUMNNAME_C_Invoice_ID, invoice.getC_Invoice_ID())
-						//collect invoice line alloc
+		return queryBL.createQueryBuilder(I_C_InvoiceLine.class)
+						.addEqualsFilter(I_C_InvoiceLine.COLUMNNAME_C_Invoice_ID, invoiceId)
+						//collect related invoice line alloc
 						.andCollectChildren(I_C_Invoice_Line_Alloc.COLUMN_C_InvoiceLine_ID)
 						.addOnlyActiveRecordsFilter()
-						.create();
-
-		return queryBL
-				.createQueryBuilder(I_C_Invoice_Candidate.class, invoice)
-				.addOnlyActiveRecordsFilter()
-				.addInSubQueryFilter()
-				.subQuery(invoiceLineAllocQuery)
-				.matchingColumnNames(I_C_Invoice_Candidate.COLUMNNAME_C_Invoice_Candidate_ID, I_C_Invoice_Line_Alloc.COLUMNNAME_C_Invoice_Candidate_ID)
-				.end()
-				.create()
-				.list();
+						//collect related invoice candidates
+				        .andCollect(I_C_Invoice_Line_Alloc.COLUMN_C_Invoice_Candidate_ID)
+						.addOnlyActiveRecordsFilter()
+						.create()
+				        .list();
 	}
 
 	@Override

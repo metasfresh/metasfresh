@@ -85,7 +85,7 @@ public interface IInvoiceCandDAO extends ISingletonService
 
 	List<I_C_Invoice_Candidate> retrieveIcForIl(I_C_InvoiceLine invoiceLine);
 
-	List<I_C_Invoice_Candidate> retrieveInvoiceCandidates(@NonNull final InvoiceId invoiceId);
+	List<I_C_Invoice_Candidate> retrieveInvoiceCandidates(InvoiceId invoiceId);
 
 	/**
 	 * Returns those invoice candidates that have been tagged to be recomputed/updated by the given <code>recomputeTag</code>.
