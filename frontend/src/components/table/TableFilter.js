@@ -1,6 +1,6 @@
 import counterpart from 'counterpart';
 import PropTypes from 'prop-types';
-import React, { Component } from 'react';
+import React, { PureComponent } from 'react';
 import { connect } from 'react-redux';
 
 import keymap from '../../shortcuts/keymap';
@@ -13,7 +13,7 @@ import Tooltips from '../tooltips/Tooltips';
 import TableQuickInput from './TableQuickInput';
 import { TableFilterContextShortcuts } from '../keyshortcuts';
 
-class ActionButton extends Component {
+class ActionButton extends PureComponent {
   static propTypes = {
     action: PropTypes.object.isRequired,
     openModal: PropTypes.func.isRequired,
@@ -66,9 +66,8 @@ class ActionButton extends Component {
   }
 }
 
-class TableFilter extends Component {
+class TableFilter extends PureComponent {
   static propTypes = {
-    actions: PropTypes.array.isRequired,
     tabIndex: PropTypes.number.isRequired,
     modalVisible: PropTypes.bool.isRequired,
     fetchTopActions: PropTypes.func.isRequired,
@@ -81,13 +80,15 @@ class TableFilter extends Component {
     toggleFullScreen: PropTypes.func,
     fullScreen: PropTypes.any,
     wrapperHeight: PropTypes.number,
-    selected: PropTypes.array,
     isBatchEntry: PropTypes.bool,
     handleBatchEntryToggle: PropTypes.func,
     supportQuickInput: PropTypes.bool,
     allowCreateNew: PropTypes.bool,
     openTableModal: PropTypes.func,
   };
+
+  actionButtons = null;
+  shortcutElements = null;
 
   constructor(props) {
     super(props);
@@ -109,7 +110,10 @@ class TableFilter extends Component {
     const { tabId, docType, docId, fetchTopActions } = this.props;
 
     if (tabId && docType && docId) {
-      fetchTopActions(docType, docId, tabId);
+      fetchTopActions(docType, docId, tabId).then((actions) => {
+        this.generateActionButtons(actions);
+        this.generateShortcuts(actions);
+      });
     }
   };
 
@@ -136,12 +140,45 @@ class TableFilter extends Component {
     );
   };
 
-  generateShortcuts = () => {
-    let { actions } = this.props;
+  generateActionButtons = (actions) => {
+    const { openModal, tabIndex, docId, tabId, docType } = this.props;
+    const { isTooltipShow } = this.state;
+
+    if (actions && !actions.length) {
+      this.actionButtons = null;
+    }
+
+    this.actionButtons = actions.map((action) => (
+      <ActionButton
+        {...{
+          openModal,
+          tabIndex,
+          action,
+          docId,
+          tabId,
+          docType,
+        }}
+        showTooltip={() => this.showTooltip(action.processId)}
+        hideTooltip={this.hideTooltip}
+        key={`top-action-${action.processId}`}
+      >
+        {isTooltipShow === action.processId && (
+          <Tooltips
+            name={action.shortcut ? action.shortcut.replace('-', '+') : ''}
+            action={action.caption}
+            type={''}
+          />
+        )}
+      </ActionButton>
+    ));
+  };
+
+  // TODO: Rewrite this to not create shortcut actions on each render
+  generateShortcuts = (actions) => {
     const shortcutActions = [];
 
     if (!actions) {
-      actions = [];
+      this.shortcutElements = null;
     }
 
     for (let i = 0; i < actions.length; i += 1) {
@@ -154,7 +191,9 @@ class TableFilter extends Component {
       });
     }
 
-    return <TableFilterContextShortcuts shortcutActions={shortcutActions} />;
+    this.shortcutElements = (
+      <TableFilterContextShortcuts shortcutActions={shortcutActions} />
+    );
   };
 
   showTooltip = (name) => {
@@ -172,14 +211,11 @@ class TableFilter extends Component {
   render() {
     const {
       openTableModal,
-      openModal,
-      actions,
       toggleFullScreen,
       fullScreen,
       docType,
       docId,
       tabId,
-      selected,
       isBatchEntry,
       handleBatchEntryToggle,
       supportQuickInput,
@@ -229,37 +265,8 @@ class TableFilter extends Component {
                 )}
               </button>
             )}
-            {!isBatchEntry && actions.length
-              ? actions.map((action) => (
-                  <ActionButton
-                    {...{
-                      openModal,
-                      tabIndex,
-                      action,
-                      docId,
-                      tabId,
-                      docType,
-                      selected,
-                    }}
-                    showTooltip={() => this.showTooltip(action.processId)}
-                    hideTooltip={this.hideTooltip}
-                    key={`top-action-${action.processId}`}
-                  >
-                    {isTooltipShow === action.processId && (
-                      <Tooltips
-                        name={
-                          action.shortcut
-                            ? action.shortcut.replace('-', '+')
-                            : ''
-                        }
-                        action={action.caption}
-                        type={''}
-                      />
-                    )}
-                  </ActionButton>
-                ))
-              : null}
-            {!isBatchEntry && actions.length ? this.generateShortcuts() : null}
+            {!isBatchEntry && this.actionButtons}
+            {!isBatchEntry && this.shortcutElements}
           </div>
           {supportQuickInput &&
             (isBatchEntry || fullScreen) &&
@@ -308,7 +315,6 @@ class TableFilter extends Component {
 
 const mapStateToProps = ({ windowHandler }) => ({
   modalVisible: windowHandler.modal.visible,
-  actions: windowHandler.master.topActions.actions,
 });
 
 export default connect(

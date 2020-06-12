@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types';
-import React, { Component } from 'react';
+import React, { PureComponent } from 'react';
 import ReactDOM from 'react-dom';
 import classnames from 'classnames';
 import { merge } from 'lodash';
@@ -9,11 +9,10 @@ import {
   VIEW_EDITOR_RENDER_MODES_ON_DEMAND,
 } from '../../constants/Constants';
 import TableCell from './TableCell';
-import { shouldRenderColumn } from '../../utils/tableHelpers';
+import { shouldRenderColumn, getSizeClass } from '../../utils/tableHelpers';
 import WithMobileDoubleTap from '../WithMobileDoubleTap';
-import _ from 'lodash';
 
-class TableItem extends Component {
+class TableItem extends PureComponent {
   constructor(props) {
     super(props);
 
@@ -40,53 +39,8 @@ class TableItem extends Component {
       editedCells: {},
       multilineText,
       multilineTextLines,
-      [this.props.rowId]: this.props,
-      lastSelected: null,
-      currentPage: null,
       cellsExtended: false,
     };
-  }
-
-  // TODO: This needs refactoring. The cases should be better described
-  shouldComponentUpdate(nextProps, nextState) {
-    // re-render if we triggered a sortAction
-    if (nextProps.activeSort) {
-      return true;
-    }
-
-    // check on saving logic
-    if (this.props.notSaved === true && nextProps.notSaved === false) {
-      return true;
-    }
-
-    // page check logic
-    if (nextProps.page !== nextState.currentPage) {
-      nextState.currentPage = nextState.page;
-      return true;
-    }
-
-    // item selection logic
-    if (nextProps.selected[0] === this.props.rowId) {
-      nextState.lastSelected = this.props.rowId;
-    }
-
-    if (
-      !_.isEqual(
-        _.omit(nextProps, 'dataHash'),
-        _.omit(this.state[nextProps.rowId], 'dataHash')
-      )
-    ) {
-      return true;
-    } else {
-      if (
-        nextState.lastSelected &&
-        nextProps.selected[0] &&
-        nextState.lastSelected !== nextProps.selected[0]
-      ) {
-        return true;
-      }
-      return false;
-    }
   }
 
   componentDidUpdate(prevProps) {
@@ -95,12 +49,6 @@ class TableItem extends Component {
 
     if (multilineText && this.props.isSelected !== prevProps.isSelected) {
       this.handleCellExtend(this.props.isSelected);
-    }
-
-    if (this.props.dataHash !== prevProps.dataHash) {
-      this.setState({
-        editedCells: {},
-      });
     }
 
     if (focusOnFieldName && isSelected && this.autofocusCell && !activeCell) {
@@ -288,6 +236,8 @@ class TableItem extends Component {
 
   /*
    * This function is called when cell's value changes
+   *
+   * TODO: Do we still need to call `onItemChange` ?
    */
   handleCellValueChange = (rowId, property, value, ret) => {
     const { onItemChange } = this.props;
@@ -401,7 +351,6 @@ class TableItem extends Component {
       newRow,
       tabIndex,
       entity,
-      getSizeClass,
       handleRightClick,
       caption,
       colspan,
@@ -546,16 +495,17 @@ class TableItem extends Component {
     return res;
   };
 
-  handleIndentSelect = (e, id, elem) => {
-    const { handleSelect } = this.props;
+  handleIndentSelect = (e) => {
+    const { handleSelect, rowId, includedDocuments } = this.props;
+
     e.stopPropagation();
-    handleSelect(this.nestedSelect(elem).concat([id]));
+    handleSelect(this.nestedSelect(includedDocuments).concat([rowId]));
   };
 
-  onRowCollapse = () => {
-    const { item, collapsed, handleRowCollapse } = this.props;
+  handleRowCollapse = () => {
+    const { item, collapsed, onRowCollapse } = this.props;
 
-    handleRowCollapse(item, collapsed);
+    onRowCollapse(item, collapsed);
   };
 
   getIconClassName = (huType) => {
@@ -581,9 +531,7 @@ class TableItem extends Component {
       indent,
       lastChild,
       includedDocuments,
-      rowId,
       collapsed,
-      // onRowCollapse,
       collapsible,
     } = this.props;
 
@@ -621,22 +569,19 @@ class TableItem extends Component {
         {includedDocuments && collapsible ? (
           collapsed ? (
             <i
-              onClick={this.onRowCollapse}
+              onClick={this.handleRowCollapse}
               className="meta-icon-plus indent-collapse-icon"
             />
           ) : (
             <i
-              onClick={this.onRowCollapse}
+              onClick={this.handleRowCollapse}
               className="meta-icon-minus indent-collapse-icon"
             />
           )
         ) : (
           ''
         )}
-        <div
-          className="indent-icon"
-          onClick={(e) => this.handleIndentSelect(e, rowId, includedDocuments)}
-        >
+        <div className="indent-icon" onClick={this.handleIndentSelect}>
           <i className={this.getIconClassName(huType)} />
         </div>
       </div>
@@ -664,7 +609,7 @@ class TableItem extends Component {
         <tr
           onClick={this.handleClick}
           onDoubleClick={this.handleDoubleClick}
-          className={classnames(dataKey, keyProperty, {
+          className={classnames(dataKey, `row-${keyProperty}`, {
             'row-selected': isSelected,
             'tr-odd': odd,
             'tr-even': !odd,
@@ -699,9 +644,9 @@ TableItem.propTypes = {
   isSelected: PropTypes.bool,
   odd: PropTypes.number,
   caption: PropTypes.string,
-  dataHash: PropTypes.string.isRequired,
+  // dataHash: PropTypes.string.isRequired,
   changeListenOnTrue: PropTypes.func,
-  handleRowCollapse: PropTypes.func,
+  onRowCollapse: PropTypes.func,
   handleRightClick: PropTypes.func,
   fieldsByName: PropTypes.object,
   indent: PropTypes.array,
@@ -714,7 +659,6 @@ TableItem.propTypes = {
   newRow: PropTypes.bool,
   tabIndex: PropTypes.number,
   entity: PropTypes.string,
-  getSizeClass: PropTypes.func,
   colspan: PropTypes.oneOfType([PropTypes.bool, PropTypes.string]),
   // TODO: ^^ We cannot allow having a prop which is sometimes bool and sometimes string
   viewId: PropTypes.string,
@@ -727,7 +671,6 @@ TableItem.propTypes = {
   modalVisible: PropTypes.bool,
   isGerman: PropTypes.bool,
   keyProperty: PropTypes.string,
-  selected: PropTypes.array,
   page: PropTypes.number,
   activeSort: PropTypes.bool,
 };

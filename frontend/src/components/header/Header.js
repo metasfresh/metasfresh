@@ -5,11 +5,8 @@ import { connect } from 'react-redux';
 import { push } from 'react-router-redux';
 import classnames from 'classnames';
 
-import {
-  deleteRequest,
-  duplicateRequest,
-  openFile,
-} from '../../actions/GenericActions';
+import { deleteRequest } from '../../api';
+import { duplicateRequest, openFile } from '../../actions/GenericActions';
 import { openModal } from '../../actions/WindowActions';
 import logo from '../../assets/images/metasfresh_logo_green_thumb.png';
 import keymap from '../../shortcuts/keymap';
@@ -804,13 +801,14 @@ class Header extends Component {
 
         {showSidelist && isSideListShow && (
           <SideList
-            windowType={windowId ? windowId : ''}
+            windowId={windowId ? windowId : ''}
             closeOverlays={this.closeOverlays}
             closeSideList={this.handleSidelistToggle}
             isSideListShow={isSideListShow}
             disableOnClickOutside={!showSidelist}
             docId={dataId}
             defaultTab={sideListTab}
+            viewId={viewId}
             open
           />
         )}

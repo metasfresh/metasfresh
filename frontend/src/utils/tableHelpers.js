@@ -1,31 +1,52 @@
 import currentDevice from 'current-device';
 import PropTypes from 'prop-types';
-import uuid from 'uuid/v4';
 
-const propTypes = {
-  // from @connect
-  dispatch: PropTypes.func.isRequired,
-
+export const containerPropTypes = {
   // from <DocumentList>
+  // TODO: This needs to be fixed in all child components
+  // windowId: PropTypes.number,
+  // docId: PropTypes.number,
+  viewId: PropTypes.string,
+  tabId: PropTypes.string,
   autofocus: PropTypes.bool,
   rowEdited: PropTypes.bool,
   onSelectionChanged: PropTypes.func,
   onRowEdited: PropTypes.func,
   defaultSelected: PropTypes.array,
-  disableOnClickOutside: PropTypes.func,
   limitOnClickOutside: PropTypes.bool,
   supportOpenRecord: PropTypes.bool,
+
+  // from redux
+  rows: PropTypes.array.isRequired,
+  columns: PropTypes.array.isRequired,
+  selected: PropTypes.array.isRequired,
+  collapsedParentRows: PropTypes.array.isRequired,
+  collapsedRows: PropTypes.array.isRequired,
+  collapsedArrayMap: PropTypes.array.isRequired,
+  allowShortcut: PropTypes.bool,
+  allowOutsideClick: PropTypes.bool,
+  modalVisible: PropTypes.bool,
+  isGerman: PropTypes.bool,
+  activeSort: PropTypes.bool,
+
+  // action creators
+  collapseTableRow: PropTypes.func.isRequired,
+  deselectTableItems: PropTypes.func.isRequired,
+  openModal: PropTypes.func.isRequired,
+  updateTableSelection: PropTypes.func.isRequired,
 };
 
-export function constructorFn(props) {
-  const { defaultSelected, rowEdited } = props;
+export const componentPropTypes = {
+  ...containerPropTypes,
+  onSelect: PropTypes.func.isRequired,
+  onGetAllLeaves: PropTypes.func.isRequired,
+  onSelectAll: PropTypes.func.isRequired,
+  onDeselectAll: PropTypes.func.isRequired,
+  onDeselect: PropTypes.func.isRequired,
+};
 
+export function constructorFn() {
   this.state = {
-    // TODO: Maybe we sholud move this to redux ?
-    selected:
-      defaultSelected && defaultSelected !== null
-        ? defaultSelected
-        : [undefined],
     listenOnKeys: true,
     contextMenu: {
       open: false,
@@ -35,15 +56,8 @@ export function constructorFn(props) {
       supportZoomInto: false,
       supportFieldEdit: false,
     },
-    dataHash: uuid(),
     promptOpen: false,
     isBatchEntry: false,
-    rows: [],
-    collapsedRows: [],
-    collapsedParentsRows: [],
-    pendingInit: true,
-    collapsedArrayMap: [],
-    rowEdited: rowEdited,
     tableRefreshToggle: false,
   };
 }
@@ -115,5 +129,3 @@ export function shouldRenderColumn(column) {
 
   return column.restrictToMediaTypes.indexOf(mediaType) !== -1;
 }
-
-export { propTypes };

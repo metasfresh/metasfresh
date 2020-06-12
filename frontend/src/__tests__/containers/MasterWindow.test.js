@@ -34,6 +34,7 @@ import dataFixtures from '../../../test_setup/fixtures/master_window/data.json';
 import layoutFixtures from '../../../test_setup/fixtures/master_window/layout.json';
 import rowFixtures from '../../../test_setup/fixtures/master_window/row_data.json';
 import docActionFixtures from '../../../test_setup/fixtures/master_window/doc_action.json';
+import topActionsFixtures from '../../../test_setup/fixtures/master_window/top_actions.json';
 import userSessionData from '../../../test_setup/fixtures/user_session.json';
 import notificationsData from '../../../test_setup/fixtures/notifications.json';
 
@@ -125,6 +126,11 @@ describe("MasterWindowContainer", () => {
         .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
         .get(`/window/${windowType}/${docId}/${tabId}/?orderBy=%2BLine`)
         .reply(200, rowFixtures.row_data1);
+
+      nock(config.API_URL)
+        .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
+        .get(`/window/${windowType}/${docId}/${tabId}/topActions`)
+        .reply(200, topActionsFixtures.top_actions1);
 
       nock(config.API_URL)
         .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
@@ -229,6 +235,11 @@ describe("MasterWindowContainer", () => {
         .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
         .get(`/window/${windowType}/${docId}/${tabId}/?orderBy=%2BLine`)
         .reply(200, rowFixtures.row_data1);
+
+      nock(config.API_URL)
+        .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
+        .get(`/window/${windowType}/${docId}/${tabId}/topActions`)
+        .reply(200, topActionsFixtures.top_actions1);
 
       nock(config.API_URL)
         .defaultReplyHeaders({ 'access-control-allow-origin': '*' })

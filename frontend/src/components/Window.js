@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom';
 import counterpart from 'counterpart';
 import PropTypes from 'prop-types';
 
-import Table from './table/Table';
+import Table from '../containers/Table';
 import TableContextShortcuts from './keyshortcuts/TableContextShortcuts';
 import keymap from '../shortcuts/keymap';
 import Tabs, { TabSingleEntry } from './window/Tabs';
@@ -15,7 +15,7 @@ import { INITIALLY_CLOSED } from '../constants/Constants';
 /**
  * @file Class based component.
  * @module Window
- * @extends Component
+ * @extends PureComponent
  */
 class Window extends PureComponent {
   constructor(props) {
@@ -34,12 +34,14 @@ class Window extends PureComponent {
       this.tabIndex = { tabs: 3 };
     }
 
+    this.widgets = [];
+
     this.toggleTableFullScreen = this.toggleTableFullScreen.bind(this);
     this.handleBlurWidget = this.handleBlurWidget.bind(this);
     this.requestElementGroupFocus = this.requestElementGroupFocus.bind(this);
   }
 
-  componentMountUpdate() {
+  componentDidMount() {
     this._setInitialSectionsState();
   }
 
@@ -166,7 +168,7 @@ class Window extends PureComponent {
    */
   getTabs = (tabs, dataId, tabsArray, tabsByIds, parentTab) => {
     const { windowId } = this.props.layout;
-    const { rowData, newRow, tabsInfo, sort, allowShortcut } = this.props;
+    const { newRow, tabsInfo, sort, allowShortcut } = this.props;
     const { fullScreen, isSectionExpandTooltipShow } = this.state;
 
     tabs.forEach((elem) => {
@@ -174,11 +176,8 @@ class Window extends PureComponent {
         tabId,
         caption,
         description,
-        elements,
         sections,
         internalName,
-        emptyResultText,
-        emptyResultHint,
         queryOnActivate,
         supportQuickInput,
         defaultOrderBys,
@@ -204,7 +203,6 @@ class Window extends PureComponent {
             {...{
               caption,
               description,
-              rowData,
               tabId,
               windowId,
               sort,
@@ -251,26 +249,21 @@ class Window extends PureComponent {
             {...{
               caption,
               description,
-              rowData,
               tabId,
               windowId,
               sort,
               newRow,
               internalName,
             }}
+            toggleFullScreen={this.toggleTableFullScreen}
             entity="window"
-            keyProperty="rowId"
             key={tabId}
-            cols={elements}
             orderBy={defaultOrderBys}
             docId={dataId}
-            emptyText={emptyResultText}
-            emptyHint={emptyResultHint}
             tabIndex={this.tabIndex.tabs}
             queryOnActivate={queryOnActivate}
             supportQuickInput={supportQuickInput}
             tabInfo={tabsInfo && tabsInfo[tabId]}
-            disconnectFromState={true}
           />
         );
       }
@@ -305,7 +298,6 @@ class Window extends PureComponent {
     return (
       <Tabs
         tabIndex={this.tabIndex.tabs}
-        toggleTableFullScreen={this.toggleTableFullScreen}
         fullScreen={fullScreen}
         windowId={windowId}
         onChange={this._setInitialSectionsState}
@@ -439,7 +431,6 @@ class Window extends PureComponent {
       isModal,
     } = this.props;
 
-    this.widgets = [];
     this.elementGroupFocused = false;
 
     return (

@@ -4,15 +4,19 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import classnames from 'classnames';
 
+import { deleteViewRequest } from '../../api';
+import { getTableId } from '../../reducers/tables';
+
 import { PATCH_RESET } from '../../constants/ActionTypes';
 import { closeListIncludedView } from '../../actions/ListActions';
-import { deleteViewRequest } from '../../api';
 import { addNotification } from '../../actions/AppActions';
 import {
   closeModal,
   closeRawModal,
   openRawModal,
 } from '../../actions/WindowActions';
+import { deleteTable } from '../../actions/TableActions';
+
 import keymap from '../../shortcuts/keymap';
 import ModalContextShortcuts from '../keyshortcuts/ModalContextShortcuts';
 import Tooltips from '../tooltips/Tooltips.js';
@@ -77,10 +81,6 @@ class RawModal extends Component {
     visibleTooltips: {},
   };
 
-  /**
-   * @method componentDidMount
-   * @summary ToDo: Describe the method.
-   */
   componentDidMount() {
     // Dirty solution, but use only if you need to
     // there is no way to affect body
@@ -92,10 +92,6 @@ class RawModal extends Component {
     this.initEventListeners();
   }
 
-  /**
-   * @method componentWillUnmount
-   * @summary ToDo: Describe the method.
-   */
   componentWillUnmount() {
     const { masterDocumentList } = this.props;
 
@@ -106,11 +102,6 @@ class RawModal extends Component {
     this.removeEventListeners();
   }
 
-  /**
-   * @method UNSAFE_componentWillUpdate
-   * @summary ToDo: Describe the method.
-   * @param {object} props
-   */
   UNSAFE_componentWillUpdate(props) {
     if (this.resolve) {
       if (!props.success || props.requests.length === 0) {
@@ -243,10 +234,12 @@ class RawModal extends Component {
    */
   removeModal = async () => {
     const { dispatch, modalVisible, windowId, viewId } = this.props;
+    const tableId = getTableId({ windowId, viewId });
 
     await Promise.all(
       [
         closeRawModal(),
+        deleteTable(tableId),
         closeModal(),
         closeListIncludedView({
           windowType: windowId,
