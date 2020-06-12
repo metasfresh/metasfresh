@@ -19,7 +19,7 @@ SET m_warehouse_from_id = (
             (
                 SELECT w.m_warehouse_id
                 FROM m_warehouse w
-                WHERE w.ad_org_id = dd_order.dd_order_id
+                WHERE w.ad_org_id = dd_order.ad_org_id
                 LIMIT 1
             )
         )
