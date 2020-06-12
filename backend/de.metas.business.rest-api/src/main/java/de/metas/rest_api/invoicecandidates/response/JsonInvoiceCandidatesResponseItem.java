@@ -1,11 +1,11 @@
 package de.metas.rest_api.invoicecandidates.response;
 
+import de.metas.rest_api.common.JsonExternalId;
+import de.metas.rest_api.common.MetasfreshId;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
-import lombok.Singular;
+import lombok.NonNull;
 import lombok.Value;
-
-import java.util.List;
 
 /*
  * #%L
@@ -31,9 +31,15 @@ import java.util.List;
 
 @Value
 @Builder
-public class JsonCreateInvoiceCandidatesResponse
+public class JsonInvoiceCandidatesResponseItem
 {
-	@ApiModelProperty(position = 10)
-	@Singular
-	List<JsonInvoiceCandidatesResponseItem> responseItems;
+	@ApiModelProperty(position = 10, dataType = "java.lang.String")
+	JsonExternalId externalHeaderId;
+
+	@ApiModelProperty(position = 20, dataType = "java.lang.String")
+	JsonExternalId externalLineId;
+
+	@ApiModelProperty(position = 30, dataType = "java.lang.Long", value = "The metasfresh-ID of the upserted record")
+	@NonNull
+	MetasfreshId metasfreshId;
 }
