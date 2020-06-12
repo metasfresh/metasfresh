@@ -151,7 +151,7 @@ public class DeliveryDayGenerator implements IDeliveryDayGenerator
 	}
 
 	@Override
-	public void generateDeliveryDaysForTourVersion(final String trxName, final I_M_TourVersion tourVersion)
+	public void generateForTourVersion(final String trxName, final I_M_TourVersion tourVersion)
 	{
 
 		final ITourVersionRange tourVersionRange = tourDAO.generateTourVersionRange(tourVersion, getDateFromToUse(), getDateToToUse());
@@ -160,19 +160,8 @@ public class DeliveryDayGenerator implements IDeliveryDayGenerator
 			loggable.addLog("Skip {} because validFrom > validTo");
 			return;
 		}
-		final List<I_M_TourVersionLine> tourVersionLines = tourDAO.retrieveTourVersionLines(tourVersion);
-		inactivateDeliveryDaysInRange(tourVersionRange, trxName);
-		if (tourVersionLines.isEmpty())
-		{
-			loggable.addLog("Skip {} because it has no lines", tourVersion);
-		}
-		else
-		{
-			for (final I_M_TourVersionLine tourVersionLine : tourVersionLines)
-			{
-				createDeliveryDaysForLine(tourVersionRange, tourVersionLine);
-			}
-		}
+		generateForTourVersionRange(trxName, tourVersionRange);
+
 	}
 
 	private void generateForTour(final I_M_Tour tour, String trxName)
@@ -181,23 +170,25 @@ public class DeliveryDayGenerator implements IDeliveryDayGenerator
 
 		for (final ITourVersionRange tourVersionRange : tourVersionRanges)
 		{
-			//
-			// Deactivate/Delete all delivery days in our range
-			inactivateDeliveryDaysInRange(tourVersionRange, trxName);
+			generateForTourVersionRange(trxName, tourVersionRange);
+		}
+	}
 
-			//
-			// Iterate tour version lines and create delivery days
-			final I_M_TourVersion tourVersion = tourVersionRange.getM_TourVersion();
-			final List<I_M_TourVersionLine> tourVersionLines = tourDAO.retrieveTourVersionLines(tourVersion);
-			if (tourVersionLines.isEmpty())
-			{
-				loggable.addLog("Skip {} because it has no lines", tourVersion);
-				continue;
-			}
-			for (final I_M_TourVersionLine tourVersionLine : tourVersionLines)
-			{
-				createDeliveryDaysForLine(tourVersionRange, tourVersionLine);
-			}
+	private void generateForTourVersionRange(String trxName, final ITourVersionRange tourVersionRange)
+	{
+		inactivateDeliveryDaysInRange(tourVersionRange, trxName);
+
+		final I_M_TourVersion tourVersion = tourVersionRange.getM_TourVersion();
+		final List<I_M_TourVersionLine> tourVersionLines = tourDAO.retrieveTourVersionLines(tourVersion);
+
+		if (tourVersionLines.isEmpty())
+		{
+			loggable.addLog("Skip {} because it has no lines", tourVersion);
+			return;
+		}
+		for (final I_M_TourVersionLine tourVersionLine : tourVersionLines)
+		{
+			createDeliveryDaysForLine(tourVersionRange, tourVersionLine);
 		}
 	}
 

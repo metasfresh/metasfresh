@@ -23,5 +23,5 @@ public interface IDeliveryDayGenerator
 
 	void generate(String trxName);
 
-	void generateDeliveryDaysForTourVersion(String trxName, I_M_TourVersion tourVersion);
+	void generateForTourVersion(String trxName, I_M_TourVersion tourVersion);
 }

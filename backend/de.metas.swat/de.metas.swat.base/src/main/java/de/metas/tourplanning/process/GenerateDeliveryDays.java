@@ -28,7 +28,7 @@ package de.metas.tourplanning.process;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
-import de.metas.process.ProcessInfoParameter;
+import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.tourplanning.api.IDeliveryDayGenerator;
 import de.metas.tourplanning.api.ITourBL;
@@ -51,12 +51,11 @@ public class GenerateDeliveryDays extends JavaProcess implements IProcessPrecond
 	// Services
 	private final ITourBL tourBL = Services.get(ITourBL.class);
 
-	//
-	// Parameters
-	private static final String PARAM_DateFrom = "DateFrom";
-	private static final String PARAM_DateTo = "DateTo";
-	private Timestamp p_DateFrom = null;
-	private Timestamp p_DateTo = null;
+	@Param(parameterName = "DateFrom")
+	private Timestamp p_DateFrom;
+	@Param(parameterName = "DateTo")
+	private Timestamp p_DateTo;
+
 	private I_M_Tour p_tour = null;
 	private I_M_TourVersion p_tourVersion = null;
 
@@ -74,21 +73,6 @@ public class GenerateDeliveryDays extends JavaProcess implements IProcessPrecond
 	@Override
 	protected void prepare()
 	{
-		for (final ProcessInfoParameter para : getParametersAsArray())
-		{
-			final String name = para.getParameterName();
-			if (para.getParameter() == null)
-				;
-			else if (PARAM_DateFrom.equals(name))
-			{
-				p_DateFrom = (Timestamp)para.getParameter();
-			}
-			else if (PARAM_DateTo.equals(name))
-			{
-				p_DateTo = (Timestamp)para.getParameter();
-			}
-		}
-
 		if (I_M_Tour.Table_Name.equals(getTableName()) && getRecord_ID() > 0)
 		{
 			p_tour = InterfaceWrapperHelper.create(getCtx(), getRecord_ID(), I_M_Tour.class, ITrx.TRXNAME_None);
@@ -122,7 +106,7 @@ public class GenerateDeliveryDays extends JavaProcess implements IProcessPrecond
 		}
 		else
 		{
-			generator.generateDeliveryDaysForTourVersion(getTrxName(), p_tourVersion);
+			generator.generateForTourVersion(getTrxName(), p_tourVersion);
 		}
 		final int countGeneratedDeliveryDays = generator.getCountGeneratedDeliveryDays();
 		//

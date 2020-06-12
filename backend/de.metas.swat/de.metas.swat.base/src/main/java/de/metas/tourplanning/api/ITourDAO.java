@@ -39,5 +39,5 @@ public interface ITourDAO extends ISingletonService
 	 */
 	List<ITourVersionRange> retrieveTourVersionRanges(I_M_Tour tour, LocalDate dateFrom, LocalDate dateTo);
 
-	ITourVersionRange generateTourVersionRange(final I_M_TourVersion tourVersion, final LocalDate validFrom, final LocalDate validTo);
+	ITourVersionRange generateTourVersionRange(I_M_TourVersion tourVersion, LocalDate validFrom, LocalDate validTo);
 }
