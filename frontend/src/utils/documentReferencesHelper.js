@@ -6,10 +6,12 @@ export function buildRelatedDocumentsViewUrl({
   documentId,
   tabId,
   rowIds,
+  referenceId,
 }) {
   const urlParams = getQueryString({
+    referenceId: referenceId,
     refType: windowId,
-    refId: documentId,
+    refDocumentId: documentId,
     refTabId: tabId,
     refRowIds: tabId && rowIds ? JSON.stringify(rowIds) : null,
   });

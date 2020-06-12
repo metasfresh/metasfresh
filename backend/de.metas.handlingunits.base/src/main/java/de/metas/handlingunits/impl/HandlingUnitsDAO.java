@@ -42,6 +42,7 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
+import de.metas.organization.ClientAndOrgId;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -128,6 +129,13 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	public I_M_HU getById(@NonNull final HuId huId)
 	{
 		return load(huId, I_M_HU.class);
+	}
+
+	@Override
+	public ClientAndOrgId getClientAndOrgId(@NonNull final HuId huId)
+	{
+		final I_M_HU hu = load(huId, I_M_HU.class);
+		return ClientAndOrgId.ofClientAndOrg(hu.getAD_Client_ID(), hu.getAD_Org_ID());
 	}
 
 	@Override

@@ -14,6 +14,7 @@ import com.google.common.collect.ImmutableMap;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.currency.Amount;
+import de.metas.currency.CurrencyCode;
 import de.metas.i18n.ITranslatableString;
 import de.metas.invoice.InvoiceDocBaseType;
 import de.metas.invoice.InvoiceId;
@@ -88,8 +89,15 @@ public class InvoiceRow implements IViewRow
 	@Getter
 	private final Amount serviceFeeAmt;
 
-	@ViewColumn(seqNo = 90, widgetType = DocumentFieldWidgetType.Text, widgetSize = WidgetSize.Small, captionKey = "C_Currency_ID")
-	private final String currencyCode;
+	public static final String FIELD_BankFeeAmt = "bankFeeAmt";
+	@ViewColumn(seqNo = 90, widgetType = DocumentFieldWidgetType.Amount, widgetSize = WidgetSize.Small, captionKey = "BankFeeAmt", fieldName = FIELD_BankFeeAmt)
+	@Getter
+	private final Amount bankFeeAmt;
+
+	@ViewColumn(seqNo = 100, widgetType = DocumentFieldWidgetType.Text, widgetSize = WidgetSize.Small, captionKey = "C_Currency_ID")
+	private final String currencyCodeString;
+	@Getter
+	private final CurrencyCode currencyCode;
 
 	//
 	//
@@ -118,7 +126,8 @@ public class InvoiceRow implements IViewRow
 			@NonNull final Amount grandTotal,
 			@NonNull final Amount openAmt,
 			@NonNull final Amount discountAmt,
-			@Nullable final InvoiceProcessingFeeCalculation serviceFeeCalculation)
+			@Nullable final InvoiceProcessingFeeCalculation serviceFeeCalculation,
+			@Nullable final Amount bankFeeAmt)
 	{
 		this.docTypeName = docTypeName;
 		this.documentNo = documentNo;
@@ -130,8 +139,9 @@ public class InvoiceRow implements IViewRow
 		this.openAmt = openAmt;
 		this.discountAmt = discountAmt;
 		this.serviceFeeAmt = serviceFeeCalculation != null ? serviceFeeCalculation.getFeeAmountIncludingTax() : null;
-		this.currencyCode = Amount.getCommonCurrencyCodeOfAll(grandTotal, openAmt, discountAmt, this.serviceFeeAmt)
-				.toThreeLetterCode();
+		this.bankFeeAmt = bankFeeAmt;
+		this.currencyCode = Amount.getCommonCurrencyCodeOfAll(grandTotal, openAmt, discountAmt, this.serviceFeeAmt, this.bankFeeAmt);
+		this.currencyCodeString = currencyCode.toThreeLetterCode();
 
 		rowId = convertInvoiceIdToDocumentId(invoiceId);
 		this.invoiceId = invoiceId;
@@ -145,7 +155,8 @@ public class InvoiceRow implements IViewRow
 			@Nullable final InvoiceProcessingFeeCalculation serviceFeeCalculation)
 	{
 		final ImmutableMap.Builder<String, ViewEditorRenderMode> viewEditorRenderModes = ImmutableMap.<String, ViewEditorRenderMode> builder()
-				.put(FIELD_DiscountAmt, ViewEditorRenderMode.ALWAYS);
+				.put(FIELD_DiscountAmt, ViewEditorRenderMode.ALWAYS)
+				.put(FIELD_BankFeeAmt, ViewEditorRenderMode.ALWAYS);
 
 		if (serviceFeeCalculation != null)
 		{

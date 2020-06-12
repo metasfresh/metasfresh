@@ -16,6 +16,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
+import de.metas.document.references.ZoomInfoPermissions;
+import de.metas.document.references.ZoomInfoPermissionsFactory;
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.document.references.DocumentReference;
@@ -143,9 +145,8 @@ public class DocumentReferencesRestController
 		{
 			userSession.assertLoggedIn();
 
-			final List<DocumentReferenceCandidate> documentReferenceCandidates = documentReferencesService.getDocumentReferenceCandidates(
-					documentPath,
-					userSession.getUserRolePermissions());
+			final ZoomInfoPermissions permissions = ZoomInfoPermissionsFactory.ofRolePermissions(userSession.getUserRolePermissions());
+			final List<DocumentReferenceCandidate> documentReferenceCandidates = documentReferencesService.getDocumentReferenceCandidates(documentPath, permissions);
 			if (documentReferenceCandidates.isEmpty())
 			{
 				publisher.publishCompleted();

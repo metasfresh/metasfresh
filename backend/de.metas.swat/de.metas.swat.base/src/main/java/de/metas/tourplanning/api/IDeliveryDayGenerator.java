@@ -1,15 +1,15 @@
 package de.metas.tourplanning.api;
 
-import java.time.LocalDate;
-
 import de.metas.tourplanning.model.I_M_DeliveryDay;
 import de.metas.tourplanning.model.I_M_Tour;
+import de.metas.tourplanning.model.I_M_TourVersion;
+
+import java.time.LocalDate;
 
 /**
  * {@link I_M_DeliveryDay} generator
- * 
- * @author tsa
  *
+ * @author tsa
  */
 public interface IDeliveryDayGenerator
 {
@@ -22,4 +22,6 @@ public interface IDeliveryDayGenerator
 	void setDateFrom(final LocalDate dateFrom);
 
 	void generate(String trxName);
+
+	void generateForTourVersion(String trxName, I_M_TourVersion tourVersion);
 }

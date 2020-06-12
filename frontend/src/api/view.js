@@ -133,17 +133,19 @@ export function createViewRequest({
   windowId,
   viewType,
   filters,
+  referenceId = null,
   refDocType = null,
-  refDocId = null,
+  refDocumentId = null,
   refTabId = null,
   refRowIds = null,
 }) {
   let referencing = null;
 
-  if (refDocType && refDocId) {
+  if (refDocType && refDocumentId) {
     referencing = {
       documentType: refDocType,
-      documentId: refDocId,
+      documentId: refDocumentId,
+      referenceId: referenceId,
     };
 
     if (refTabId && refRowIds) {

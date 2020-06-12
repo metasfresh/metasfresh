@@ -34,7 +34,7 @@ import org.compiere.model.I_C_Payment;
 import org.compiere.util.TrxRunnable;
 
 import de.metas.allocation.api.IAllocationBL;
-import de.metas.banking.api.BankAccountId;
+import de.metas.banking.BankAccountId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;

@@ -29,8 +29,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.banking.BankAccountId;
 import de.metas.banking.BankStatementId;
-import de.metas.banking.api.BankAccountId;
 import de.metas.banking.service.BankStatementCreateRequest;
 import de.metas.banking.service.IBankStatementDAO;
 import de.metas.bpartner.BPartnerId;

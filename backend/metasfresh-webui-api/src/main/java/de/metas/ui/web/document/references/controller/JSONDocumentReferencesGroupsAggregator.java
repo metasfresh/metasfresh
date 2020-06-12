@@ -12,8 +12,8 @@ import de.metas.i18n.IMsgBL;
 import de.metas.ui.web.document.references.DocumentReference;
 import de.metas.ui.web.document.references.json.JSONDocumentReference;
 import de.metas.ui.web.document.references.json.JSONDocumentReferencesGroup;
-import de.metas.ui.web.document.references.json.JSONDocumentReferencesGroupList;
 import de.metas.ui.web.document.references.json.JSONDocumentReferencesGroup.JSONDocumentReferencesGroupBuilder;
+import de.metas.ui.web.document.references.json.JSONDocumentReferencesGroupList;
 import de.metas.ui.web.menu.MenuNode;
 import de.metas.ui.web.menu.MenuTree;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
@@ -91,7 +91,7 @@ final class JSONDocumentReferencesGroupsAggregator
 			return this;
 		}
 
-		final MenuNode topLevelMenuGroup = menuTree.getTopLevelMenuGroupOrNull(documentReference.getWindowId());
+		final MenuNode topLevelMenuGroup = menuTree.getTopLevelMenuGroupOrNull(documentReference.getTargetWindow().getWindowId());
 		final String topLevelMenuGroupId = topLevelMenuGroup != null ? topLevelMenuGroup.getId() : othersGroupId;
 
 		final JSONDocumentReferencesGroupBuilder groupBuilder = groupsBuilders.computeIfAbsent(topLevelMenuGroupId, k -> {

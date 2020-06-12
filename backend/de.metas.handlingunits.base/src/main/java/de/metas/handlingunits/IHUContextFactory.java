@@ -10,33 +10,33 @@ package de.metas.handlingunits;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
-import java.util.Properties;
-
+import de.metas.organization.ClientAndOrgId;
+import de.metas.util.ISingletonService;
+import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.lang.IContextAware;
 
-import de.metas.util.ISingletonService;
+import java.util.Properties;
 
 public interface IHUContextFactory extends ISingletonService
 {
 
 	/**
 	 * Create HU Context.
-	 *
+	 * <p>
 	 * Compared with {@link #createMutableHUContext(IContextAware)} this method optimizes the HU Context for HU generation/processing (i.e. enable caching etc etc).
 	 *
 	 * @param contextProvider
@@ -45,12 +45,10 @@ public interface IHUContextFactory extends ISingletonService
 	IMutableHUContext createMutableHUContextForProcessing(IContextAware contextProvider);
 
 	/**
-	 *
-	 * @param ctx
 	 * @return mutable HU context (out of transaction)
 	 * @see #createMutableHUContextForProcessing(IContextAware)
 	 */
-	IMutableHUContext createMutableHUContextForProcessing(Properties ctx);
+	IMutableHUContext createMutableHUContextForProcessing(Properties ctx, @NonNull final ClientAndOrgId clientAndOrgId);
 
 	default IMutableHUContext createMutableHUContextForProcessing()
 	{
@@ -60,16 +58,15 @@ public interface IHUContextFactory extends ISingletonService
 	/**
 	 * Creates a mutable context with the given <code>ctx</code> (may not be <code>null</code>) and <code>trxName</code> = {@link ITrx#TRXNAME_None}.
 	 *
-	 * @param ctx
 	 * @return mutable HU context
 	 */
-	IMutableHUContext createMutableHUContext(Properties ctx);
+	IMutableHUContext createMutableHUContext(
+			@NonNull Properties ctx,
+			@NonNull ClientAndOrgId clientAndOrgId);
 
 	/**
 	 * Creates a mutable context with the given <code>ctx</code> and <code>trxName</code>.
 	 *
-	 * @param ctx
-	 * @param trxName
 	 * @return mutable HU context
 	 */
 	IMutableHUContext createMutableHUContext(Properties ctx, String trxName);
