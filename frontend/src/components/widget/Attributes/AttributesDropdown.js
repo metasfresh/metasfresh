@@ -4,6 +4,7 @@ import onClickOutside from 'react-onclickoutside';
 import { Map } from 'immutable';
 import RawWidget from '../RawWidget';
 import classnames from 'classnames';
+import { DROPUP_START } from '../../../constants/Constants';
 
 /**
  * @file Class based component.
@@ -133,7 +134,7 @@ class AttributesDropdown extends PureComponent {
           'attributes-dropdown panel-shadowed panel-primary panel-bordered panel-spaced',
           { 'hidden ': !isVisible },
           {
-            'attributes-dropup': arrIndex > 13,
+            'attributes-dropup': arrIndex > DROPUP_START,
           }
         )}
       >
@@ -170,7 +171,7 @@ AttributesDropdown.propTypes = {
   handlePatch: PropTypes.func.isRequired,
   disableOnClickOutside: PropTypes.func.isRequired,
   enableOnClickOutside: PropTypes.func.isRequired,
-  arrIndex: PropTypes.number,
+  arrIndex: PropTypes.number, // used for knowing the row index within the Table (used on AttributesDropdown component)
 };
 
 export default onClickOutside(AttributesDropdown);

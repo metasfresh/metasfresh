@@ -364,6 +364,6 @@ Attributes.propTypes = {
   viewId: PropTypes.any,
   fieldName: PropTypes.any,
   entity: PropTypes.any,
-  updateHeight: PropTypes.func,
-  arrIndex: PropTypes.number,
+  updateHeight: PropTypes.func, // adjusts the table container with a given height from a child component when child exceeds visible area
+  arrIndex: PropTypes.number, // used for knowing the row index within the Table (used on AttributesDropdown component)
 };
