@@ -125,14 +125,12 @@ class AttributesDropdown extends PureComponent {
    * @todo Write the documentation
    */
   render() {
-    const { isVisible } = this.state;
     const { arrIndex } = this.props;
 
     return (
       <div
         className={classnames(
           'attributes-dropdown panel-shadowed panel-primary panel-bordered panel-spaced',
-          { 'hidden ': !isVisible },
           {
             'attributes-dropup': arrIndex > DROPUP_START,
           }

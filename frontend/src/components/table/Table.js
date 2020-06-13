@@ -61,6 +61,7 @@ class Table extends Component {
     const { rowData, tabId } = this.props;
     //selecting first table elem while getting indent data
     this._isMounted = true;
+    this.initialPaddingBottom = 100;
 
     if (rowData.get(`${tabId}`)) {
       this.getIndentData(true);
@@ -1226,8 +1227,9 @@ class Table extends Component {
   };
 
   updateHeight = (heightNew) => {
-    this.tableContainer.style.paddingBottom = `${this.tableContainer.style
-      .padding + heightNew}px`;
+    heightNew = heightNew ? heightNew : 0;
+    this.tableContainer.style.paddingBottom = `${this.initialPaddingBottom +
+      heightNew}px`;
   };
 
   render() {
