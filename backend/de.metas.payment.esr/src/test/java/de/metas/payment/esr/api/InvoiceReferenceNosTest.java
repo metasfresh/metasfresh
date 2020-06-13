@@ -18,6 +18,7 @@ import de.metas.attachments.AttachmentEntryService;
 import de.metas.banking.Bank;
 import de.metas.banking.BankCreateRequest;
 import de.metas.banking.api.BankRepository;
+import de.metas.payment.esr.api.impl.ESRBPBankAccountBL;
 import de.metas.payment.esr.api.impl.ESRImportBL;
 import de.metas.payment.esr.model.I_C_BP_BankAccount;
 import de.metas.util.Services;
@@ -56,7 +57,8 @@ public class InvoiceReferenceNosTest
 		AdempiereTestHelper.get().init();
 
 		bankRepo = new BankRepository();
-		SpringContextHolder.registerJUnitBean(bankRepo);
+		final ESRBPBankAccountBL esrBankAccountBL = new ESRBPBankAccountBL(bankRepo);
+		SpringContextHolder.registerJUnitBean(IESRBPBankAccountBL.class, esrBankAccountBL);
 
 		final AttachmentEntryService attachmentEntryService = AttachmentEntryService.createInstanceForUnitTesting();
 		esrImportBL = new ESRImportBL(attachmentEntryService);
