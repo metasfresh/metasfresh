@@ -215,7 +215,7 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 
 			final Marshaller marshaller = jaxbContext.createMarshaller();
 			marshaller.setProperty("jaxb.formatted.output", Boolean.TRUE);
-			marshaller.setProperty("jaxb.schemaLocation", PAIN_001_001_03_CH_02_SCHEMALOCATION + PAIN_001_001_03_CH_02 + " " + PAIN_001_001_03_CH_02 + ".xsd");
+			marshaller.setProperty("jaxb.schemaLocation", PAIN_001_001_03_CH_02_SCHEMALOCATION + PAIN_001_001_03_CH_02 + ".xsd " + PAIN_001_001_03_CH_02 + ".xsd");
 			marshaller.marshal(jaxbDocument, xmlWriter);
 		}
 		catch (final JAXBException e)
