@@ -30,8 +30,8 @@ import {
   getRowsData,
   mapIncluded,
   collapsedMap,
-  getCurrentActiveLocale,
 } from '../../utils/documentListHelper';
+import { getCurrentActiveLocale } from '../../utils/locale';
 
 import Prompt from '../app/Prompt';
 import DocumentListContextShortcuts from '../keyshortcuts/DocumentListContextShortcuts';

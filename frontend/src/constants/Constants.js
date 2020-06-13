@@ -2,12 +2,6 @@
  * @constant
  * @type {string} ToDo: Description for the constant.
  */
-export const LOCAL_LANG = 'metasfreshLanguage';
-
-/**
- * @constant
- * @type {string} ToDo: Description for the constant.
- */
 export const VIEW_EDITOR_RENDER_MODES_NEVER = 'never';
 
 /**
