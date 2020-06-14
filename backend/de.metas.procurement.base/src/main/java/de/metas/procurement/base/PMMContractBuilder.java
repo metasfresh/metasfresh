@@ -1,7 +1,36 @@
 package de.metas.procurement.base;
 
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Properties;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
+
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.model.PlainContextAware;
+import org.adempiere.util.lang.IContextAware;
+import org.compiere.model.I_AD_User;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_Calendar;
+import org.compiere.model.I_C_Period;
+import org.compiere.model.I_C_UOM;
+import org.compiere.util.TimeUtil;
+import org.compiere.util.TrxRunnableAdapter;
+import org.slf4j.Logger;
+
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Optional;
+
 import de.metas.calendar.ICalendarDAO;
 import de.metas.calendar.IPeriodBL;
 import de.metas.contracts.CreateFlatrateTermRequest;
@@ -19,32 +48,6 @@ import de.metas.product.ProductId;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.model.PlainContextAware;
-import org.adempiere.util.lang.IContextAware;
-import org.compiere.model.I_AD_User;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_Calendar;
-import org.compiere.model.I_C_Period;
-import org.compiere.model.I_C_UOM;
-import org.compiere.util.TimeUtil;
-import org.compiere.util.TrxRunnableAdapter;
-import org.slf4j.Logger;
-
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Properties;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicReference;
 
 /*
  * #%L
@@ -141,7 +144,8 @@ public class PMMContractBuilder
 
 	private final AtomicReference<I_C_Flatrate_Term> _flatrateTermRef = new AtomicReference<>(null);
 
-	private PMMContractBuilder(final I_C_Flatrate_Term term)
+	@VisibleForTesting
+	public PMMContractBuilder(final I_C_Flatrate_Term term)
 	{
 		_flatrateTermRef.set(term);
 	}
