@@ -10,7 +10,8 @@ import {
   allowOutsideClick,
   disableOutsideClick,
 } from '../../actions/WindowActions';
-import { getCurrentActiveLocale } from '../../utils/documentListHelper';
+import { getCurrentActiveLocale } from '../../utils/locale';
+
 import Moment from 'moment-timezone';
 import { DATE_FIELD_FORMATS } from '../../constants/Constants';
 
