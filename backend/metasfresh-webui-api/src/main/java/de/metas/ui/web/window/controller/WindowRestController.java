@@ -27,6 +27,7 @@ import org.springframework.web.context.request.WebRequest;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Sets;
 
 import de.metas.process.RelatedProcessDescriptor.DisplayPlace;
 import de.metas.ui.web.cache.ETagResponseEntityBuilder;
@@ -48,6 +49,7 @@ import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentLayout;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentLayoutOptions;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentLayoutOptions.JSONDocumentLayoutOptionsBuilder;
+import de.metas.ui.web.window.datatypes.json.JSONDocumentList;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentOptions;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentOptions.JSONDocumentOptionsBuilder;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentPath;
@@ -125,7 +127,6 @@ public class WindowRestController
 
 	@Autowired
 	private ProcessRestController processRestController;
-
 
 	@Autowired
 	private DocumentWebsocketPublisher websocketPublisher;
@@ -211,7 +212,7 @@ public class WindowRestController
 	}
 
 	@GetMapping("/{windowId}/{documentId}/{tabId}")
-	public List<JSONDocument> getIncludedTabRows(
+	public JSONDocumentList getIncludedTabRows(
 			@PathVariable("windowId") final String windowIdStr,
 			@PathVariable("documentId") final String documentIdStr,
 			@PathVariable("tabId") final String tabIdStr,
@@ -242,7 +243,27 @@ public class WindowRestController
 				.showAdvancedFields(advanced)
 				.build();
 
-		return getData(documentPath, orderBys, jsonOpts);
+		final List<JSONDocument> rows = getData(documentPath, orderBys, jsonOpts);
+
+		final Set<DocumentId> missingRowIds;
+		if (!onlyRowIds.isEmpty() && !onlyRowIds.isAll())
+		{
+			final ImmutableSet<DocumentId> foundRowIds = rows.stream()
+					.map(JSONDocument::getId)
+					.collect(ImmutableSet.toImmutableSet());
+
+			missingRowIds = Sets.difference(onlyRowIds.toSet(), foundRowIds);
+		}
+		else
+		{
+			missingRowIds = null;
+		}
+
+		return JSONDocumentList.builder()
+				.result(rows)
+				.missingIds(missingRowIds)
+				.build();
+
 	}
 
 	@GetMapping("/{windowId}/{documentId}/{tabId}/{rowId}")
@@ -273,7 +294,7 @@ public class WindowRestController
 		userSession.assertLoggedIn();
 
 		return documentCollection.forRootDocumentReadonly(documentPath, rootDocument -> {
-			List<Document> documents;
+			final List<Document> documents;
 			if (documentPath.isRootDocument())
 			{
 				documents = ImmutableList.of(rootDocument);
@@ -284,7 +305,11 @@ public class WindowRestController
 			}
 			else if (documentPath.isSingleIncludedDocument())
 			{
-				documents = ImmutableList.of(rootDocument.getIncludedDocument(documentPath.getDetailId(), documentPath.getSingleRowId()));
+				// IMPORTANT: in case the document was not found, don't fail but return empty.
+				final Document document = rootDocument.getIncludedDocument(documentPath.getDetailId(), documentPath.getSingleRowId()).orElse(null);
+				documents = document != null
+						? ImmutableList.of(document)
+						: ImmutableList.of();
 			}
 			else
 			{
@@ -752,7 +777,6 @@ public class WindowRestController
 					.collect(JSONDocumentActionsList.collect(newJSONOptions().build()));
 		});
 	}
-
 
 	@GetMapping("/{windowId}/{documentId}/print/{filename:.*}")
 	public ResponseEntity<byte[]> getDocumentPrint(
