@@ -17,7 +17,7 @@ import java.time.ZoneId;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.AttributesKeys;
 import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.test.DumpPOJOLookupMapOnTestFail;
+import org.adempiere.test.AdempiereTestWatcher;
 import org.adempiere.warehouse.LocatorId;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_AD_OrgInfo;
@@ -71,7 +71,7 @@ import de.metas.quantity.Quantity;
  * #L%
  */
 
-@ExtendWith(DumpPOJOLookupMapOnTestFail.class)
+@ExtendWith(AdempiereTestWatcher.class)
 class InventoryRepositoryTest
 {
 	private static final BigDecimal TWO = new BigDecimal("2");

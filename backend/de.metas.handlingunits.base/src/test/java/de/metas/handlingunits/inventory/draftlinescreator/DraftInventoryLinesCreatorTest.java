@@ -15,7 +15,7 @@ import java.time.ZoneId;
 import java.util.stream.Stream;
 
 import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.test.DumpPOJOLookupMapOnTestFail;
+import org.adempiere.test.AdempiereTestWatcher;
 import org.adempiere.warehouse.LocatorId;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_AD_OrgInfo;
@@ -73,7 +73,7 @@ import lombok.NonNull;
  * #L%
  */
 
-@ExtendWith(DumpPOJOLookupMapOnTestFail.class)
+@ExtendWith(AdempiereTestWatcher.class)
 class DraftInventoryLinesCreatorTest
 {
 	private OrgId orgId;
