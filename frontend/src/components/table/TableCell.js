@@ -16,6 +16,11 @@ class TableCell extends PureComponent {
     };
   }
 
+  /**
+   * @method widgetTooltipToggle
+   * @summary Alternative method to open dropdown, in case of disabled opening on focus.
+   * @param {string|null} value
+   */
   widgetTooltipToggle = (value) => {
     const curVal = this.state.tooltipToggled;
     const newVal = value != null ? value : !curVal;
@@ -23,6 +28,11 @@ class TableCell extends PureComponent {
     this.setState({ tooltipToggled: newVal });
   };
 
+  /**
+   * @method handleBackdropLock
+   * @summary checks widget against widget list and calls parent onClickOutside fnct
+   * @param {object} state
+   */
   handleBackdropLock = (state) => {
     const { item } = this.props;
     const widgetsList = ['ProductAttributes', 'Attributes', 'List', 'Lookup'];
@@ -31,6 +41,11 @@ class TableCell extends PureComponent {
     }
   };
 
+  /**
+   * @method handleKeyDown
+   * @summary Key down function handler
+   * @param {object} e
+   */
   handleKeyDown = (e) => {
     const {
       handleKeyDown,
@@ -50,6 +65,11 @@ class TableCell extends PureComponent {
     !readonly && updateRow(); // toggle flag in parrent component highlighting the row giving the user the idea that something is happening with it
   };
 
+  /**
+   * @method handleRightClick
+   * @summary Function called on right click that further calls the parent handler function to handleRightClick
+   * @param {object} e
+   */
   handleRightClick = (e) => {
     const {
       handleRightClick,
@@ -68,6 +88,11 @@ class TableCell extends PureComponent {
     );
   };
 
+  /**
+   * @method onDoubleClick
+   * @summary Function called on double click that retrieves widget data and further calls the parent handler function to handleDounbleClick
+   * @param {object} e
+   */
   onDoubleClick = (e) => {
     const {
       property,
@@ -82,10 +107,19 @@ class TableCell extends PureComponent {
     isEditable && handleDoubleClick(e, property, true, widgetData[0]);
   };
 
+  /**
+   * @method clearValue
+   * @summary Set `clearWidgetValue` value based on a given `reset` param
+   * {string|null} reset
+   */
   clearValue = (reset) => {
     this.clearWidgetValue = reset === null ? true : false;
   };
 
+  /**
+   * @method render
+   * @summary Main render function
+   */
   render() {
     const {
       isEdited,
