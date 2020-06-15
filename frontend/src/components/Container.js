@@ -8,7 +8,7 @@ import {
   setRawModalDescription,
 } from '../actions/WindowActions';
 
-import DocumentList from './app/DocumentList';
+import DocumentList from '../containers/DocumentList';
 import ErrorScreen from './app/ErrorScreen';
 import Modal from './app/Modal';
 import RawModal from './app/RawModal';
@@ -161,7 +161,7 @@ class Container extends PureComponent {
               <div className="document-lists-wrapper">
                 <DocumentList
                   type="grid"
-                  windowType={rawModal.windowId}
+                  windowId={rawModal.windowId}
                   defaultViewId={rawModal.viewId}
                   viewProfileId={rawModal.profileId}
                   setModalTitle={setRawModalTitle}
@@ -190,7 +190,7 @@ class Container extends PureComponent {
                   includedView.viewId && (
                     <DocumentList
                       type="includedView"
-                      windowType={includedView.windowType}
+                      windowId={includedView.windowType}
                       viewProfileId={includedView.viewProfileId}
                       defaultViewId={includedView.viewId}
                       parentDefaultViewId={rawModal.viewId}
@@ -317,7 +317,7 @@ Container.propTypes = {
  * @param {object} state
  */
 const mapStateToProps = (state, { windowId }) => {
-  let master = getView(windowId);
+  let master = getView(state, windowId);
 
   if (!master || !windowId) {
     master = viewState;
