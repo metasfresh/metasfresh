@@ -6,6 +6,7 @@ import org.compiere.Adempiere;
 import org.compiere.model.I_M_Inventory;
 
 import de.metas.adempiere.model.I_M_Product;
+import de.metas.handlingunits.inventory.draftlinescreator.HUsForInventoryStrategies;
 import de.metas.handlingunits.inventory.draftlinescreator.HuForInventoryLineFactory;
 import de.metas.handlingunits.inventory.draftlinescreator.LocatorAndProductStrategy;
 import de.metas.handlingunits.model.I_M_Locator;
@@ -50,13 +51,11 @@ public class M_Inventory_CreateLines_ForLocatorAndProduct extends DraftInventory
 	{
 		final WarehouseId warehouseId = WarehouseId.ofRepoIdOrNull(inventoryRecord.getM_Warehouse_ID());
 
-		final LocatorAndProductStrategy strategy = LocatorAndProductStrategy
-				.builder()
+		return HUsForInventoryStrategies.locatorAndProduct()
 				.warehouseId(warehouseId)
 				.locatorId(LocatorId.ofRepoIdOrNull(warehouseId, locatorId))
 				.productId(ProductId.ofRepoIdOrNull(productId))
 				.huForInventoryLineFactory(huForInventoryLineFactory)
 				.build();
-		return strategy;
 	}
 }

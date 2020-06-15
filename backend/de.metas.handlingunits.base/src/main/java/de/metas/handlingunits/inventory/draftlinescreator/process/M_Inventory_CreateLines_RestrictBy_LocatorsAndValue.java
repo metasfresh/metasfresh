@@ -6,6 +6,7 @@ import org.compiere.Adempiere;
 import org.compiere.model.I_M_Inventory;
 import org.compiere.util.TimeUtil;
 
+import de.metas.handlingunits.inventory.draftlinescreator.HUsForInventoryStrategies;
 import de.metas.handlingunits.inventory.draftlinescreator.HuForInventoryLineFactory;
 import de.metas.handlingunits.inventory.draftlinescreator.LeastRecentTransactionStrategy;
 import de.metas.process.Param;
@@ -46,8 +47,7 @@ public class M_Inventory_CreateLines_RestrictBy_LocatorsAndValue extends DraftIn
 	@Override
 	protected LeastRecentTransactionStrategy createStrategy(@NonNull final I_M_Inventory inventoryRecord)
 	{
-		return LeastRecentTransactionStrategy
-				.builder()
+		return HUsForInventoryStrategies.leastRecentTransaction()
 				.maxLocators(maxLocators)
 				.minimumPrice(minimumPrice)
 				.movementDate(TimeUtil.asLocalDate(inventoryRecord.getMovementDate()))
