@@ -8,6 +8,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 import java.math.BigDecimal;
+import java.time.ZoneId;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -52,6 +53,7 @@ import de.metas.inventory.IInventoryDAO;
 import de.metas.inventory.InventoryId;
 import de.metas.inventory.InventoryLineId;
 import de.metas.material.event.commons.AttributesKey;
+import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
@@ -90,7 +92,7 @@ import lombok.NonNull;
 public class InventoryRepository
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	
+
 	private final IUOMDAO uomsRepo = Services.get(IUOMDAO.class);
 	private final IUOMConversionBL convBL = Services.get(IUOMConversionBL.class);
 	private final IWarehouseDAO warehousesRepo = Services.get(IWarehouseDAO.class);
@@ -98,6 +100,7 @@ public class InventoryRepository
 	private final IHandlingUnitsDAO huDAO = Services.get(IHandlingUnitsDAO.class);
 	private final IInventoryDAO inventoryDAO = Services.get(IInventoryDAO.class);
 	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
 	private I_M_InventoryLine getInventoryLineRecordById(@Nullable final InventoryLineId inventoryLineId)
 	{
@@ -133,7 +136,7 @@ public class InventoryRepository
 		return toInventory(inventoryRecord);
 	}
 
-	public Inventory toInventory(@NonNull final I_M_Inventory inventoryRecord)
+	Inventory toInventory(@NonNull final I_M_Inventory inventoryRecord)
 	{
 		final InventoryId inventoryId = InventoryId.ofRepoId(inventoryRecord.getM_Inventory_ID());
 		final DocBaseAndSubType docBaseAndSubType = extractDocBaseAndSubTypeOrNull(inventoryRecord); // shall not be null at this point
@@ -141,6 +144,9 @@ public class InventoryRepository
 		{
 			throw new AdempiereException("Failed extracting DocBaseType and DocSubType from " + inventoryRecord);
 		}
+
+		final OrgId orgId = OrgId.ofRepoId(inventoryRecord.getAD_Org_ID());
+		final ZoneId timeZone = orgDAO.getTimeZone(orgId);
 
 		final Collection<I_M_InventoryLine> inventoryLineRecords = retrieveLineRecords(inventoryId);
 		final ImmutableSet<InventoryLineId> inventoryLineIds = inventoryLineRecords.stream().map(r -> extractInventoryLineId(r)).collect(ImmutableSet.toImmutableSet());
@@ -155,7 +161,7 @@ public class InventoryRepository
 		return Inventory.builder()
 				.id(inventoryId)
 				.docBaseAndSubType(docBaseAndSubType)
-				.movementDate(TimeUtil.asZonedDateTime(inventoryRecord.getMovementDate()))
+				.movementDate(TimeUtil.asZonedDateTime(inventoryRecord.getMovementDate(), timeZone))
 				.description(inventoryRecord.getDescription())
 				.activityId(ActivityId.ofRepoIdOrNull(inventoryRecord.getC_Activity_ID()))
 				.docStatus(DocStatus.ofCode(inventoryRecord.getDocStatus()))
