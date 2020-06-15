@@ -15,6 +15,8 @@
 	<property name="com.jaspersoft.studio.unit.rightMargin" value="pixel"/>
 	<property name="com.jaspersoft.studio.unit.columnWidth" value="pixel"/>
 	<property name="com.jaspersoft.studio.unit.columnSpacing" value="pixel"/>
+	<property name="com.jaspersoft.studio.data.sql.SQLQueryDesigner.sash.w1" value="470"/>
+	<property name="com.jaspersoft.studio.data.sql.SQLQueryDesigner.sash.w2" value="523"/>
 	<parameter name="DateFrom" class="java.util.Date">
 		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
 	</parameter>
@@ -31,13 +33,13 @@
 		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
 	</parameter>
 	<queryString>
-		<![CDATA[SELECT sum(balance) as balance, sum(balanceyear) as balanceyear, vatcode, taxname
-FROM de_metas_acct.taxaccounts_details($P{AD_Org_ID},
+		<![CDATA[select sum(balance) as balance, sum(balanceyear) as balanceyear, vatcode, taxname
+from de_metas_acct.taxaccounts_details($P{AD_Org_ID},
 	                                                                                       $P{account_id}, 
 	                                                                                       $P{C_VAT_Code_ID}, 
 	                                                                                        $P{DateFrom},
 	                                                                                         $P{DateTo})
-WHERE vatcode is not null
+where vatcode is not null
   and taxname is not null
 group by vatcode, taxname;]]>
 	</queryString>

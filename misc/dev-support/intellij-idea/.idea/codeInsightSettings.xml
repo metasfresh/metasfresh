@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="JavaProjectCodeInsightSettings">
+    <excluded-names>
+      <name>com.sun.istack.internal.NotNull</name>
+      <name>groovy.transform.builder.Builder</name>
+      <name>javax.annotation.Nonnull</name>
+      <name>javax.validation.constraints.NotNull</name>
+    </excluded-names>
+  </component>
+</project>

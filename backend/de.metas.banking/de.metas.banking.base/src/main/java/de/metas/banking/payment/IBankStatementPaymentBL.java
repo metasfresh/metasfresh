@@ -22,21 +22,29 @@
 
 package de.metas.banking.payment;
 
-import de.metas.bpartner.BPartnerId;
-import de.metas.payment.PaymentId;
-import de.metas.util.ISingletonService;
-import lombok.NonNull;
+import java.util.Set;
+
 import org.compiere.model.I_C_BankStatement;
 import org.compiere.model.I_C_BankStatementLine;
 import org.compiere.model.I_C_Payment;
 
-import java.util.Set;
+import de.metas.bpartner.BPartnerId;
+import de.metas.payment.PaymentId;
+import de.metas.util.ISingletonService;
+import lombok.NonNull;
 
 public interface IBankStatementPaymentBL extends ISingletonService
 {
-	Set<PaymentId> findEligiblePaymentIds(@NonNull I_C_BankStatementLine bankStatementLine, @NonNull BPartnerId bpartnerId, int limit);
+	Set<PaymentId> findEligiblePaymentIds(
+			@NonNull I_C_BankStatementLine bankStatementLine,
+			@NonNull BPartnerId bpartnerId,
+			@NonNull final Set<PaymentId> excludePaymentIds,
+			int limit);
 
-	void findOrCreateSinglePaymentAndLinkIfPossible(I_C_BankStatement bankStatement, I_C_BankStatementLine line);
+	void findOrCreateSinglePaymentAndLinkIfPossible(
+			@NonNull I_C_BankStatement bankStatement,
+			@NonNull I_C_BankStatementLine line,
+			@NonNull final Set<PaymentId> excludePaymentIds);
 
 	void createSinglePaymentAndLink(I_C_BankStatement bankStatement, I_C_BankStatementLine bankStatementLine);
 

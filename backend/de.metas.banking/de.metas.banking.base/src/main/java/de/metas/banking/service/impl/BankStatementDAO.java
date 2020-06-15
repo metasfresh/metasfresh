@@ -333,6 +333,7 @@ public class BankStatementDAO implements IBankStatementDAO
 		record.setC_Currency_ID(request.getStatementAmt().getCurrencyId().getRepoId());
 		record.setStmtAmt(request.getStatementAmt().toBigDecimal());
 		record.setTrxAmt(request.getTrxAmt().toBigDecimal());
+		record.setBankFeeAmt(request.getBankFeeAmt().toBigDecimal());
 		record.setChargeAmt(request.getChargeAmt().toBigDecimal());
 		record.setInterestAmt(request.getInterestAmt().toBigDecimal());
 		record.setC_Charge_ID(ChargeId.toRepoId(request.getChargeId()));
