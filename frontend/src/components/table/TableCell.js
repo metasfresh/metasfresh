@@ -31,7 +31,7 @@ class TableCell extends PureComponent {
   /**
    * @method handleBackdropLock
    * @summary checks widget against widget list and calls parent onClickOutside fnct
-   * @param {object} state
+   * @param {bool} state  - boolean indicator given from child components like the DatePicker, Attributes used for the backdrop state
    */
   handleBackdropLock = (state) => {
     const { item } = this.props;
