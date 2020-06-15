@@ -33,6 +33,12 @@ INSERT INTO t_alter_column values('dd_order','M_Warehouse_To_ID','NUMERIC(10)',n
 INSERT INTO t_alter_column values('dd_order','M_Warehouse_To_ID',null,'NULL',null)
 ;
 
+alter table dd_order alter column m_warehouse_from_id drop default
+;
+
+alter table dd_order alter column m_warehouse_to_id drop default
+;
+
 -- 2020-06-15T06:46:47.748Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 UPDATE AD_Field SET IsMandatory='Y',Updated=TO_TIMESTAMP('2020-06-15 09:46:47','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=613898
