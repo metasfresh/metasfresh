@@ -141,6 +141,8 @@ export function getSizeClass(col) {
  * @param {object} containing the fieldValue, fieldType and the active locale
  * @summary creates a Date using Moment lib formatting it with the locale passed as param
  */
+// TODO !!!! use the utils/locale.js after it is present in the DEV branch !!!!
+// TODO: (activeLocale={key, caption}, just sending the language name would be enough)
 export function createDate({ fieldValue, fieldType, activeLocale }) {
   const languageKey = activeLocale ? activeLocale.key : null;
   if (fieldValue) {
