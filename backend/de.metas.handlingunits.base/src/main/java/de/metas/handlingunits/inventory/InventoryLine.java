@@ -83,7 +83,10 @@ public class InventoryLine
 	@Setter
 	HUAggregationType huAggregationType;
 
+	@NonNull
 	private InventoryType inventoryType;
+
+	@NonNull
 	ImmutableList<InventoryLineHU> inventoryLineHUs;
 
 	@Builder(toBuilder = true)
