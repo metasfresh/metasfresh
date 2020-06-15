@@ -1,8 +1,40 @@
 package de.metas.handlingunits.inventory.draftlinescreator;
 
+import static de.metas.handlingunits.inventory.InventoryTestHelper.AV1_ID;
+import static de.metas.handlingunits.inventory.InventoryTestHelper.AV2_ID;
+import static de.metas.handlingunits.inventory.InventoryTestHelper.AV3_ID;
+import static de.metas.handlingunits.inventory.InventoryTestHelper.createStorageFor;
+import static io.github.jsonSnapshot.SnapshotMatcher.expect;
+import static io.github.jsonSnapshot.SnapshotMatcher.start;
+import static io.github.jsonSnapshot.SnapshotMatcher.validateSnapshots;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.util.stream.Stream;
+
+import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.test.DumpPOJOLookupMapOnTestFail;
+import org.adempiere.warehouse.LocatorId;
+import org.compiere.model.I_AD_Org;
+import org.compiere.model.I_AD_OrgInfo;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_Inventory;
+import org.compiere.model.I_M_Locator;
+import org.compiere.model.I_M_Warehouse;
+import org.compiere.util.TimeUtil;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+
 import com.google.common.collect.ImmutableList;
+
 import de.metas.document.DocBaseAndSubType;
 import de.metas.document.DocTypeId;
+import de.metas.document.engine.DocStatus;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.inventory.Inventory;
 import de.metas.handlingunits.inventory.InventoryRepository;
@@ -14,36 +46,10 @@ import de.metas.inventory.AggregationType;
 import de.metas.inventory.InventoryId;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.organization.OrgId;
+import de.metas.organization.StoreCreditCardNumberMode;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import lombok.NonNull;
-import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.test.DumpPOJOLookupMapOnTestFail;
-import org.adempiere.warehouse.LocatorId;
-import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Inventory;
-import org.compiere.model.I_M_Locator;
-import org.compiere.model.I_M_Warehouse;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-
-import java.math.BigDecimal;
-import java.util.stream.Stream;
-
-import static de.metas.handlingunits.inventory.InventoryTestHelper.AV1_ID;
-import static de.metas.handlingunits.inventory.InventoryTestHelper.AV2_ID;
-import static de.metas.handlingunits.inventory.InventoryTestHelper.AV3_ID;
-import static de.metas.handlingunits.inventory.InventoryTestHelper.createStorageFor;
-import static io.github.jsonSnapshot.SnapshotMatcher.expect;
-import static io.github.jsonSnapshot.SnapshotMatcher.start;
-import static io.github.jsonSnapshot.SnapshotMatcher.validateSnapshots;
-import static java.math.BigDecimal.ONE;
-import static java.math.BigDecimal.TEN;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /*
  * #%L
@@ -70,7 +76,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 @ExtendWith(DumpPOJOLookupMapOnTestFail.class)
 class DraftInventoryLinesCreatorTest
 {
-	private static final BigDecimal TWO = new BigDecimal("2");
+	private OrgId orgId;
 
 	private Quantity qtyOne;
 	private Quantity qtyTwo;
@@ -79,6 +85,7 @@ class DraftInventoryLinesCreatorTest
 	private LocatorId locatorId;
 
 	private InventoryRepository inventoryRepo;
+
 	// private InventoryId inventoryId;
 
 	@BeforeAll
@@ -98,6 +105,8 @@ class DraftInventoryLinesCreatorTest
 	{
 		AdempiereTestHelper.get().init();
 
+		orgId = createOrg(ZoneId.of("UTC-8"));
+
 		inventoryRepo = new InventoryRepository();
 
 		final I_C_UOM uomRecord = newInstance(I_C_UOM.class);
@@ -113,9 +122,24 @@ class DraftInventoryLinesCreatorTest
 
 		InventoryTestHelper.createAttributeValues();
 
-		qtyOne = Quantity.of(ONE, uomRecord);
-		qtyTwo = Quantity.of(TWO, uomRecord);
-		qtyTen = Quantity.of(TEN, uomRecord);
+		qtyOne = Quantity.of("1", uomRecord);
+		qtyTwo = Quantity.of("2", uomRecord);
+		qtyTen = Quantity.of("10", uomRecord);
+	}
+
+	private OrgId createOrg(final ZoneId timeZone)
+	{
+		final I_AD_Org org = newInstance(I_AD_Org.class);
+		saveRecord(org);
+		final OrgId orgId = OrgId.ofRepoId(org.getAD_Org_ID());
+
+		final I_AD_OrgInfo orgInfo = newInstance(I_AD_OrgInfo.class);
+		orgInfo.setAD_Org_ID(orgId.getRepoId());
+		orgInfo.setTimeZone(timeZone.getId());
+		orgInfo.setStoreCreditCardData(StoreCreditCardNumberMode.DONT_STORE.getCode());
+		saveRecord(orgInfo);
+
+		return orgId;
 	}
 
 	private InventoryId createInventoryRecord(final DocBaseAndSubType docBaseAndSubType)
@@ -123,7 +147,10 @@ class DraftInventoryLinesCreatorTest
 		final DocTypeId docTypeId = InventoryTestHelper.createDocType(docBaseAndSubType);
 
 		final I_M_Inventory inventoryRecord = newInstance(I_M_Inventory.class);
+		inventoryRecord.setAD_Org_ID(orgId.getRepoId());
 		inventoryRecord.setC_DocType_ID(docTypeId.getRepoId());
+		inventoryRecord.setDocStatus(DocStatus.Drafted.getCode());
+		inventoryRecord.setMovementDate(TimeUtil.asTimestamp(LocalDate.parse("2020-06-15")));
 		saveRecord(inventoryRecord);
 		return InventoryId.ofRepoId(inventoryRecord.getM_Inventory_ID());
 	}
@@ -172,7 +199,7 @@ class DraftInventoryLinesCreatorTest
 		final HuForInventoryLine hu3 = builder.huId(HuId.ofRepoId(300)).quantity(qtyTwo).storageAttributesKey(AttributesKey.ofAttributeValueIds(AV1_ID, AV2_ID, AV3_ID)).build();
 
 		final ImmutableList<HuForInventoryLine> inventoryLines = ImmutableList.of(hu1, hu2, hu3);
-		inventoryLines.forEach(huInvLine -> createStorageFor(huInvLine.getProductId(),  huInvLine.getQuantity(), huInvLine.getHuId()));
+		inventoryLines.forEach(huInvLine -> createStorageFor(huInvLine.getProductId(), huInvLine.getQuantity(), huInvLine.getHuId()));
 
 		return inventoryLines.stream();
 	}
