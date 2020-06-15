@@ -83,7 +83,8 @@ public class BankStatementPaymentBL implements IBankStatementPaymentBL
 	@Override
 	public void findOrCreateSinglePaymentAndLinkIfPossible(
 			@NonNull final I_C_BankStatement bankStatement,
-			@NonNull final I_C_BankStatementLine bankStatementLine)
+			@NonNull final I_C_BankStatementLine bankStatementLine,
+			@NonNull final Set<PaymentId> excludePaymentIds)
 	{
 		// Bank Statement Line is already reconciled => do nothing
 		if (bankStatementLine.isReconciled())
@@ -98,7 +99,12 @@ public class BankStatementPaymentBL implements IBankStatementPaymentBL
 			return;
 		}
 
-		final Set<PaymentId> eligiblePaymentIds = findEligiblePaymentIds(bankStatementLine, bpartnerId, 2);
+		final Set<PaymentId> eligiblePaymentIds = findEligiblePaymentIds(
+				bankStatementLine,
+				bpartnerId,
+				excludePaymentIds,
+				2 // limit
+		);
 		// noinspection StatementWithEmptyBody
 		if (eligiblePaymentIds.size() > 1)
 		{
@@ -120,11 +126,12 @@ public class BankStatementPaymentBL implements IBankStatementPaymentBL
 	public Set<PaymentId> findEligiblePaymentIds(
 			@NonNull final I_C_BankStatementLine bankStatementLine,
 			@NonNull final BPartnerId bpartnerId,
+			@NonNull final Set<PaymentId> excludePaymentIds,
 			final int limit)
 	{
-		final Money statementAmt = extractStatementAmt(bankStatementLine);
-		final PaymentDirection expectedPaymentDirection = PaymentDirection.ofBankStatementAmount(statementAmt);
-		final Money expectedPaymentAmount = expectedPaymentDirection.convertStatementAmtToPayAmt(statementAmt);
+		final Money trxAmt = extractTrxAmt(bankStatementLine);
+		final PaymentDirection expectedPaymentDirection = PaymentDirection.ofBankStatementAmount(trxAmt);
+		final Money expectedPaymentAmount = expectedPaymentDirection.convertStatementAmtToPayAmt(trxAmt);
 
 		return paymentBL.getPaymentIds(PaymentQuery.builder()
 				.limit(limit)
@@ -133,12 +140,13 @@ public class BankStatementPaymentBL implements IBankStatementPaymentBL
 				.direction(expectedPaymentDirection)
 				.bpartnerId(bpartnerId)
 				.payAmt(expectedPaymentAmount)
+				.excludePaymentIds(excludePaymentIds)
 				.build());
 	}
 
-	private static Money extractStatementAmt(final I_C_BankStatementLine line)
+	private static Money extractTrxAmt(final I_C_BankStatementLine line)
 	{
-		return Money.of(line.getStmtAmt(), CurrencyId.ofRepoId(line.getC_Currency_ID()));
+		return Money.of(line.getTrxAmt(), CurrencyId.ofRepoId(line.getC_Currency_ID()));
 	}
 
 	@Override
@@ -164,9 +172,9 @@ public class BankStatementPaymentBL implements IBankStatementPaymentBL
 		final LocalDate acctLineDate = TimeUtil.asLocalDate(bankStatementLine.getDateAcct());
 		final BankAccountId orgBankAccountId = BankAccountId.ofRepoId(bankStatement.getC_BP_BankAccount_ID());
 
-		final Money statementAmt = extractStatementAmt(bankStatementLine);
-		final boolean inboundPayment = statementAmt.signum() >= 0;
-		final Money payAmount = statementAmt.negateIf(!inboundPayment);
+		final Money trxAmt = extractTrxAmt(bankStatementLine);
+		final boolean inboundPayment = trxAmt.signum() >= 0;
+		final Money payAmount = trxAmt.negateIf(!inboundPayment);
 
 		final InvoiceId invoiceId = InvoiceId.ofRepoIdOrNull(bankStatementLine.getC_Invoice_ID());
 
