@@ -49,6 +49,8 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
+import com.google.common.collect.ImmutableSet;
+
 import de.metas.banking.BankAccountId;
 import de.metas.banking.BankCreateRequest;
 import de.metas.banking.BankId;
@@ -58,6 +60,7 @@ import de.metas.banking.BankStatementLineReferenceList;
 import de.metas.banking.api.BankAccountAcctRepository;
 import de.metas.banking.api.BankAccountService;
 import de.metas.banking.api.BankRepository;
+import de.metas.banking.model.BankStatementLineAmounts;
 import de.metas.banking.model.I_C_BankStatementLine_Ref;
 import de.metas.banking.payment.BankStatementLineMultiPaymentLinkRequest;
 import de.metas.banking.payment.BankStatementLineMultiPaymentLinkRequest.PaymentToLink;
@@ -191,6 +194,7 @@ class BankStatementPaymentBLTest
 			final BPartnerId bpartnerId,
 			final Money stmtAmt,
 			final Money trxAmt,
+			final Money bankFeeAmt,
 			final boolean processed)
 	{
 		final BankStatementLineId bankStatementLineId = bankStatementDAO.createBankStatementLine(BankStatementLineCreateRequest.builder()
@@ -202,6 +206,7 @@ class BankStatementPaymentBLTest
 				.valutaDate(valutaDate)
 				.statementAmt(stmtAmt)
 				.trxAmt(trxAmt != null ? trxAmt : stmtAmt)
+				.bankFeeAmt(bankFeeAmt)
 				.build());
 
 		final I_C_BankStatementLine bankStatementLine = bankStatementDAO.getLineById(bankStatementLineId);
@@ -312,6 +317,46 @@ class BankStatementPaymentBLTest
 			assertThat(bankStatementLine.getTrxAmt()).isEqualByComparingTo("120");
 			assertThat(bankStatementLine.getBankFeeAmt()).isEqualByComparingTo("20");
 		}
+
+		@Test
+		public void inboundPayment_presetBankFeeAmt()
+		{
+			final BPartnerId customerId = createCustomer();
+
+			final I_C_BankStatement bankStatement = createBankStatement(euroOrgBankAccountId);
+			final I_C_BankStatementLine bankStatementLine = bankStatementLine()
+					.bankStatementId(BankStatementId.ofRepoId(bankStatement.getC_BankStatement_ID()))
+					.bpartnerId(customerId)
+					.stmtAmt(Money.of(100, euroCurrencyId))
+					.trxAmt(Money.of(120, euroCurrencyId))
+					.bankFeeAmt(Money.of(20, euroCurrencyId))
+					.build();
+			assertThat(bankStatementLine.getStmtAmt()).isEqualByComparingTo("100");
+			assertThat(bankStatementLine.getTrxAmt()).isEqualByComparingTo("120");
+			assertThat(bankStatementLine.getBankFeeAmt()).isEqualByComparingTo("20");
+
+			final I_C_Payment payment = paymentBL.newInboundReceiptBuilder()
+					.adOrgId(OrgId.ANY)
+					.bpartnerId(customerId)
+					.orgBankAccountId(euroOrgBankAccountId)
+					.currencyId(euroCurrencyId)
+					.payAmt(new BigDecimal("120"))
+					.dateAcct(statementDate)
+					.dateTrx(statementDate)
+					.description("test")
+					.tenderType(TenderType.DirectDeposit)
+					.createAndProcess();
+
+			//
+			// call tested method
+			//
+			bankStatement.setDocStatus(DocStatus.Completed.getCode());
+			bankStatementPaymentBL.linkSinglePayment(bankStatement, bankStatementLine, payment);
+
+			assertThat(bankStatementLine.getStmtAmt()).isEqualByComparingTo("100");
+			assertThat(bankStatementLine.getTrxAmt()).isEqualByComparingTo("120");
+			assertThat(bankStatementLine.getBankFeeAmt()).isEqualByComparingTo("20");
+		}
 	}
 
 	@Nested
@@ -361,7 +406,7 @@ class BankStatementPaymentBLTest
 			}
 
 			@Test
-			void OneMatchingPaymentExists_SoItIsLinked()
+			void OneMatchingOutboundPaymentExists_SoItIsLinked()
 			{
 				//
 				// create test data
@@ -391,7 +436,11 @@ class BankStatementPaymentBLTest
 				// call tested method
 				//
 				bankStatement.setDocStatus(DocStatus.Completed.getCode());
-				bankStatementPaymentBL.findOrCreateSinglePaymentAndLinkIfPossible(bankStatement, bsl);
+				bankStatementPaymentBL.findOrCreateSinglePaymentAndLinkIfPossible(
+						bankStatement,
+						bsl,
+						ImmutableSet.of() // excludePaymentIds
+				);
 
 				//
 				// Checks
@@ -400,6 +449,63 @@ class BankStatementPaymentBLTest
 				paymentChecks("123", bsl.getC_Payment_ID(), isReceipt, euroOrgBankAccountId);
 				assertFalse(bsl.isMultiplePayment());
 				assertFalse(bsl.isMultiplePaymentOrInvoice());
+			}
+
+			@Test
+			void OneMatchingInboundPaymentExists_SoItIsLinked()
+			{
+				//
+				// create test data
+				final I_C_BankStatement bankStatement = createBankStatement(euroOrgBankAccountId);
+
+				final BPartnerId customerId = createCustomer();
+
+				final I_C_BankStatementLine bsl = bankStatementLine()
+						.bankStatementId(BankStatementId.ofRepoId(bankStatement.getC_BankStatement_ID()))
+						.bpartnerId(customerId)
+						.stmtAmt(Money.of(100, euroCurrencyId))
+						.trxAmt(Money.of(123, euroCurrencyId))
+						.bankFeeAmt(Money.of(23, euroCurrencyId))
+						.build();
+
+				final I_C_Payment payment = paymentBL.newInboundReceiptBuilder()
+						.adOrgId(OrgId.ANY)
+						.bpartnerId(customerId)
+						.orgBankAccountId(euroOrgBankAccountId)
+						.currencyId(euroCurrencyId)
+						.payAmt(new BigDecimal("123"))
+						.dateAcct(statementDate)
+						.dateTrx(statementDate)
+						.description("test")
+						.tenderType(TenderType.DirectDeposit)
+						.createAndProcess();
+
+				//
+				// call tested method
+				//
+				bankStatement.setDocStatus(DocStatus.Completed.getCode());
+				bankStatementPaymentBL.findOrCreateSinglePaymentAndLinkIfPossible(
+						bankStatement,
+						bsl,
+						ImmutableSet.of() // excludePaymentIds
+				);
+
+				//
+				// Checks
+				final boolean isReceipt = true;
+				assertEquals(payment.getC_Payment_ID(), bsl.getC_Payment_ID());
+				paymentChecks("123", bsl.getC_Payment_ID(), isReceipt, euroOrgBankAccountId);
+				assertFalse(bsl.isMultiplePayment());
+				assertFalse(bsl.isMultiplePaymentOrInvoice());
+
+				//
+				InterfaceWrapperHelper.refresh(bsl);
+				assertThat(BankStatementLineAmounts.of(bsl))
+						.isEqualToComparingFieldByField(BankStatementLineAmounts.builder()
+								.stmtAmt(new BigDecimal("100"))
+								.trxAmt(new BigDecimal("123"))
+								.bankFeeAmt(new BigDecimal("23"))
+								.build());
 			}
 
 			@Test
@@ -447,7 +553,11 @@ class BankStatementPaymentBLTest
 				// call tested method
 				//
 				bankStatement.setDocStatus(DocStatus.Completed.getCode());
-				bankStatementPaymentBL.findOrCreateSinglePaymentAndLinkIfPossible(bankStatement, bsl);
+				bankStatementPaymentBL.findOrCreateSinglePaymentAndLinkIfPossible(
+						bankStatement,
+						bsl,
+						ImmutableSet.of() // excludePaymentIds
+				);
 
 				//
 				// Checks
@@ -478,14 +588,20 @@ class BankStatementPaymentBLTest
 				final I_C_BankStatementLine bsl = bankStatementLine()
 						.bankStatementId(BankStatementId.ofRepoId(bankStatement.getC_BankStatement_ID()))
 						.bpartnerId(customerId)
-						.stmtAmt(Money.of(123, euroCurrencyId))
+						.stmtAmt(Money.of(100, euroCurrencyId))
+						.trxAmt(Money.of(123, euroCurrencyId))
+						.bankFeeAmt(Money.of(23, euroCurrencyId))
 						.build();
 
 				//
 				// call tested method
 				//
 				bankStatement.setDocStatus(DocStatus.Completed.getCode());
-				bankStatementPaymentBL.findOrCreateSinglePaymentAndLinkIfPossible(bankStatement, bsl);
+				bankStatementPaymentBL.findOrCreateSinglePaymentAndLinkIfPossible(
+						bankStatement,
+						bsl,
+						ImmutableSet.of() // excludePaymentIds
+				);
 
 				//
 				// Checks
@@ -493,6 +609,15 @@ class BankStatementPaymentBLTest
 				paymentChecks("123", bsl.getC_Payment_ID(), isReceipt, euroOrgBankAccountId);
 				assertFalse(bsl.isMultiplePayment());
 				assertFalse(bsl.isMultiplePaymentOrInvoice());
+
+				//
+				InterfaceWrapperHelper.refresh(bsl);
+				assertThat(BankStatementLineAmounts.of(bsl))
+						.isEqualToComparingFieldByField(BankStatementLineAmounts.builder()
+								.stmtAmt(new BigDecimal("100"))
+								.trxAmt(new BigDecimal("123"))
+								.bankFeeAmt(new BigDecimal("23"))
+								.build());
 			}
 
 			@Test
@@ -514,7 +639,11 @@ class BankStatementPaymentBLTest
 				// call tested method
 				//
 				bankStatement.setDocStatus(DocStatus.Completed.getCode());
-				bankStatementPaymentBL.findOrCreateSinglePaymentAndLinkIfPossible(bankStatement, bsl);
+				bankStatementPaymentBL.findOrCreateSinglePaymentAndLinkIfPossible(
+						bankStatement,
+						bsl,
+						ImmutableSet.of() // excludePaymentIds
+				);
 
 				//
 				// Checks
