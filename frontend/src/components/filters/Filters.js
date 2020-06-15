@@ -12,8 +12,6 @@ import {
   getFormatForDateField,
 } from '../widget/RawWidgetHelpers';
 import { parseDateWithCurrentTimezone } from '../../utils/documentListHelper';
-
-import TableCell from '../table/TableCell';
 import { fieldValueToString } from '../../utils/tableHelpers';
 import FiltersFrequent from './FiltersFrequent';
 import FiltersNotFrequent from './FiltersNotFrequent';
