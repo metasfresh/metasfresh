@@ -11,11 +11,11 @@ de.metas.handlingunits.inventory.draftlinescreator.DraftInventoryLinesCreatorTes
         "date": {
           "year": 2020,
           "month": 6,
-          "day": 14,
+          "day": 15,
           "leapYear": true
         },
         "time": {
-          "hour": 13,
+          "hour": 0,
           "minute": 0,
           "second": 0,
           "nano": 0
@@ -111,11 +111,11 @@ de.metas.handlingunits.inventory.draftlinescreator.DraftInventoryLinesCreatorTes
         "date": {
           "year": 2020,
           "month": 6,
-          "day": 14,
+          "day": 15,
           "leapYear": true
         },
         "time": {
-          "hour": 13,
+          "hour": 0,
           "minute": 0,
           "second": 0,
           "nano": 0

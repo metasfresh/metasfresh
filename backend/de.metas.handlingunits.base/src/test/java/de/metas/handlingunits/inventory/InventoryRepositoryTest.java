@@ -48,6 +48,8 @@ import de.metas.organization.OrgId;
 import de.metas.organization.StoreCreditCardNumberMode;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import lombok.Builder;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -74,9 +76,7 @@ import de.metas.quantity.Quantity;
 @ExtendWith(AdempiereTestWatcher.class)
 class InventoryRepositoryTest
 {
-	private static final BigDecimal TWO = new BigDecimal("2");
-	private static final BigDecimal TWENTY = new BigDecimal("20");
-
+	private static final ZoneId orgTimeZone = ZoneId.of("UTC-8");
 	private OrgId orgId;
 
 	private InventoryRepository inventoryLineRepository;
@@ -102,7 +102,7 @@ class InventoryRepositoryTest
 	{
 		AdempiereTestHelper.get().init();
 
-		orgId = createOrg(ZoneId.of("UTC-8"));
+		orgId = createOrg(orgTimeZone);
 
 		uomRecord = newInstance(I_C_UOM.class);
 		saveRecord(uomRecord);
@@ -134,7 +134,10 @@ class InventoryRepositoryTest
 		return orgId;
 	}
 
-	private InventoryId createInventoryRecord(final DocBaseAndSubType docBaseAndSubType)
+	@Builder(builderMethodName = "inventoryRecord", builderClassName = "$InventoryRecordBuilder")
+	private InventoryId createInventoryRecord(
+			@NonNull final DocBaseAndSubType docBaseAndSubType,
+			@NonNull final String movementDate)
 	{
 		final DocTypeId docTypeId = InventoryTestHelper.createDocType(docBaseAndSubType);
 
@@ -142,15 +145,33 @@ class InventoryRepositoryTest
 		inventoryRecord.setAD_Org_ID(orgId.getRepoId());
 		inventoryRecord.setC_DocType_ID(docTypeId.getRepoId());
 		inventoryRecord.setDocStatus(DocStatus.Drafted.getCode());
-		inventoryRecord.setMovementDate(TimeUtil.asTimestamp(LocalDate.parse("2020-06-15")));
+		inventoryRecord.setMovementDate(TimeUtil.asTimestamp(LocalDate.parse("2020-06-15"), orgTimeZone));
 		saveRecord(inventoryRecord);
 		return InventoryId.ofRepoId(inventoryRecord.getM_Inventory_ID());
 	}
 
 	@Test
+	void toInventory()
+	{
+		final InventoryId inventoryId = inventoryRecord()
+				.docBaseAndSubType(AggregationType.SINGLE_HU.getDocBaseAndSubType())
+				.movementDate("2020-06-15")
+				.build();
+
+		final Inventory inventory = inventoryLineRepository.getById(inventoryId);
+		assertThat(inventory.getMovementDate())
+				.isEqualTo(LocalDate.parse("2020-06-15").atStartOfDay(orgTimeZone));
+		assertThat(inventory.getDocStatus()).isEqualTo(DocStatus.Drafted);
+	}
+
+	@Test
 	void saveInventoryLine()
 	{
-		final InventoryId inventoryId = createInventoryRecord(AggregationType.SINGLE_HU.getDocBaseAndSubType());
+		final InventoryId inventoryId = inventoryRecord()
+				.docBaseAndSubType(AggregationType.SINGLE_HU.getDocBaseAndSubType())
+				.movementDate("2020-06-15")
+				.build();
+
 		final InventoryLineId inventoryLineId;
 		{
 			final I_M_InventoryLine inventoryLineRecord = newInstance(I_M_InventoryLine.class);
@@ -178,8 +199,8 @@ class InventoryRepositoryTest
 				.inventoryLineHU(InventoryLineHU
 						.builder()
 						.huId(HuId.ofRepoId(200))
-						.qtyCount(Quantity.of(TWO, uomRecord))
-						.qtyBook(Quantity.of(TWENTY, uomRecord))
+						.qtyCount(Quantity.of("2", uomRecord))
+						.qtyBook(Quantity.of("20", uomRecord))
 						.build())
 				.build();
 
@@ -198,7 +219,10 @@ class InventoryRepositoryTest
 	@Test
 	void getById_multiHU_empty()
 	{
-		final InventoryId inventoryId = createInventoryRecord(AggregationType.MULTIPLE_HUS.getDocBaseAndSubType());
+		final InventoryId inventoryId = inventoryRecord()
+				.docBaseAndSubType(AggregationType.MULTIPLE_HUS.getDocBaseAndSubType())
+				.movementDate("2020-06-15")
+				.build();
 		final InventoryLineId inventoryLineId;
 		{
 			final I_M_InventoryLine inventoryLineRecord = newInstance(I_M_InventoryLine.class);
@@ -224,7 +248,11 @@ class InventoryRepositoryTest
 	@Test
 	void getById_multiHU_nullHuId()
 	{
-		final InventoryId inventoryId = createInventoryRecord(AggregationType.MULTIPLE_HUS.getDocBaseAndSubType());
+		final InventoryId inventoryId = inventoryRecord()
+				.docBaseAndSubType(AggregationType.MULTIPLE_HUS.getDocBaseAndSubType())
+				.movementDate("2020-06-15")
+				.build();
+
 		final InventoryLineId inventoryLineId;
 		{
 			final I_M_InventoryLine inventoryLineRecord = newInstance(I_M_InventoryLine.class);
@@ -238,8 +266,8 @@ class InventoryRepositoryTest
 
 			final I_M_InventoryLine_HU inventoryLineHURecord = newInstance(I_M_InventoryLine_HU.class);
 			inventoryLineHURecord.setM_InventoryLine(inventoryLineRecord);
-			inventoryLineHURecord.setQtyBook(TWO);
-			inventoryLineHURecord.setQtyCount(TEN);
+			inventoryLineHURecord.setQtyBook(new BigDecimal("2"));
+			inventoryLineHURecord.setQtyCount(new BigDecimal("10"));
 			inventoryLineHURecord.setC_UOM_ID(uomRecord.getC_UOM_ID());
 			saveRecord(inventoryLineHURecord);
 		}
@@ -249,7 +277,7 @@ class InventoryRepositoryTest
 				.getLineById(inventoryLineId);
 		assertThat(result.getInventoryLineHUs())
 				.extracting("huId", "qtyBook", "qtyCount")
-				.containsOnly(tuple(null, Quantity.of(TWO, uomRecord), Quantity.of(TEN, uomRecord)));
+				.containsOnly(tuple(null, Quantity.of("2", uomRecord), Quantity.of("10", uomRecord)));
 	}
 
 }

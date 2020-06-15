@@ -76,6 +76,7 @@ import lombok.NonNull;
 @ExtendWith(AdempiereTestWatcher.class)
 class DraftInventoryLinesCreatorTest
 {
+	private static final ZoneId orgTimeZone = ZoneId.of("UTC-8");
 	private OrgId orgId;
 
 	private Quantity qtyOne;
@@ -105,7 +106,7 @@ class DraftInventoryLinesCreatorTest
 	{
 		AdempiereTestHelper.get().init();
 
-		orgId = createOrg(ZoneId.of("UTC-8"));
+		orgId = createOrg(orgTimeZone);
 
 		inventoryRepo = new InventoryRepository();
 
@@ -150,7 +151,7 @@ class DraftInventoryLinesCreatorTest
 		inventoryRecord.setAD_Org_ID(orgId.getRepoId());
 		inventoryRecord.setC_DocType_ID(docTypeId.getRepoId());
 		inventoryRecord.setDocStatus(DocStatus.Drafted.getCode());
-		inventoryRecord.setMovementDate(TimeUtil.asTimestamp(LocalDate.parse("2020-06-15")));
+		inventoryRecord.setMovementDate(TimeUtil.asTimestamp(LocalDate.parse("2020-06-15"), orgTimeZone));
 		saveRecord(inventoryRecord);
 		return InventoryId.ofRepoId(inventoryRecord.getM_Inventory_ID());
 	}
