@@ -5,28 +5,18 @@ import java.sql.ResultSet;
 import java.util.Properties;
 
 /** Generated Model for C_Print_Job_Line
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
 @SuppressWarnings("javadoc")
 public class X_C_Print_Job_Line extends org.compiere.model.PO implements I_C_Print_Job_Line, org.compiere.model.I_Persistent 
 {
 
-	/**
-	 *
-	 */
-	private static final long serialVersionUID = 1048204004L;
+	private static final long serialVersionUID = 1635186209L;
 
     /** Standard Constructor */
     public X_C_Print_Job_Line (Properties ctx, int C_Print_Job_Line_ID, String trxName)
     {
       super (ctx, C_Print_Job_Line_ID, trxName);
-      /** if (C_Print_Job_Line_ID == 0)
-        {
-			setC_Printing_Queue_ID (0);
-			setC_Print_Job_ID (0);
-			setC_Print_Job_Line_ID (0);
-			setSeqNo (0);
-        } */
     }
 
     /** Load Constructor */
@@ -36,13 +26,12 @@ public class X_C_Print_Job_Line extends org.compiere.model.PO implements I_C_Pri
     }
 
 
-    /** Load Meta Data */
-    @Override
-    protected org.compiere.model.POInfo initPO (Properties ctx)
-    {
-      org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
-      return poi;
-    }
+	/** Load Meta Data */
+	@Override
+	protected org.compiere.model.POInfo initPO(Properties ctx)
+	{
+		return org.compiere.model.POInfo.getPOInfo(Table_Name);
+	}
 
 	@Override
 	public de.metas.printing.model.I_C_Printing_Queue getC_Printing_Queue()
@@ -56,8 +45,6 @@ public class X_C_Print_Job_Line extends org.compiere.model.PO implements I_C_Pri
 		set_ValueFromPO(COLUMNNAME_C_Printing_Queue_ID, de.metas.printing.model.I_C_Printing_Queue.class, C_Printing_Queue);
 	}
 
-	/** Set Druck-Warteschlangendatensatz.
-		@param C_Printing_Queue_ID Druck-Warteschlangendatensatz	  */
 	@Override
 	public void setC_Printing_Queue_ID (int C_Printing_Queue_ID)
 	{
@@ -67,15 +54,10 @@ public class X_C_Print_Job_Line extends org.compiere.model.PO implements I_C_Pri
 			set_ValueNoCheck (COLUMNNAME_C_Printing_Queue_ID, Integer.valueOf(C_Printing_Queue_ID));
 	}
 
-	/** Get Druck-Warteschlangendatensatz.
-		@return Druck-Warteschlangendatensatz	  */
 	@Override
-	public int getC_Printing_Queue_ID () 
+	public int getC_Printing_Queue_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_Printing_Queue_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_C_Printing_Queue_ID);
 	}
 
 	@Override
@@ -90,8 +72,6 @@ public class X_C_Print_Job_Line extends org.compiere.model.PO implements I_C_Pri
 		set_ValueFromPO(COLUMNNAME_C_Print_Job_ID, de.metas.printing.model.I_C_Print_Job.class, C_Print_Job);
 	}
 
-	/** Set Druck-Job.
-		@param C_Print_Job_ID Druck-Job	  */
 	@Override
 	public void setC_Print_Job_ID (int C_Print_Job_ID)
 	{
@@ -101,19 +81,12 @@ public class X_C_Print_Job_Line extends org.compiere.model.PO implements I_C_Pri
 			set_Value (COLUMNNAME_C_Print_Job_ID, Integer.valueOf(C_Print_Job_ID));
 	}
 
-	/** Get Druck-Job.
-		@return Druck-Job	  */
 	@Override
-	public int getC_Print_Job_ID () 
+	public int getC_Print_Job_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_Print_Job_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_C_Print_Job_ID);
 	}
 
-	/** Set Druck-Job Position.
-		@param C_Print_Job_Line_ID Druck-Job Position	  */
 	@Override
 	public void setC_Print_Job_Line_ID (int C_Print_Job_Line_ID)
 	{
@@ -123,15 +96,10 @@ public class X_C_Print_Job_Line extends org.compiere.model.PO implements I_C_Pri
 			set_ValueNoCheck (COLUMNNAME_C_Print_Job_Line_ID, Integer.valueOf(C_Print_Job_Line_ID));
 	}
 
-	/** Get Druck-Job Position.
-		@return Druck-Job Position	  */
 	@Override
-	public int getC_Print_Job_Line_ID () 
+	public int getC_Print_Job_Line_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_Print_Job_Line_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_C_Print_Job_Line_ID);
 	}
 
 	@Override
@@ -146,8 +114,6 @@ public class X_C_Print_Job_Line extends org.compiere.model.PO implements I_C_Pri
 		set_ValueFromPO(COLUMNNAME_C_Print_Package_ID, de.metas.printing.model.I_C_Print_Package.class, C_Print_Package);
 	}
 
-	/** Set Druckpaket.
-		@param C_Print_Package_ID Druckpaket	  */
 	@Override
 	public void setC_Print_Package_ID (int C_Print_Package_ID)
 	{
@@ -157,36 +123,21 @@ public class X_C_Print_Job_Line extends org.compiere.model.PO implements I_C_Pri
 			set_Value (COLUMNNAME_C_Print_Package_ID, Integer.valueOf(C_Print_Package_ID));
 	}
 
-	/** Get Druckpaket.
-		@return Druckpaket	  */
 	@Override
-	public int getC_Print_Package_ID () 
+	public int getC_Print_Package_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_Print_Package_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_C_Print_Package_ID);
 	}
 
-	/** Set Reihenfolge.
-		@param SeqNo 
-		Zur Bestimmung der Reihenfolge der Einträge; die kleinste Zahl kommt zuerst
-	  */
 	@Override
 	public void setSeqNo (int SeqNo)
 	{
 		set_Value (COLUMNNAME_SeqNo, Integer.valueOf(SeqNo));
 	}
 
-	/** Get Reihenfolge.
-		@return Zur Bestimmung der Reihenfolge der Einträge; die kleinste Zahl kommt zuerst
-	  */
 	@Override
-	public int getSeqNo () 
+	public int getSeqNo() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_SeqNo);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_SeqNo);
 	}
 }

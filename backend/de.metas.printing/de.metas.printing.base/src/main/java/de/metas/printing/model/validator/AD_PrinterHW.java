@@ -23,8 +23,10 @@ package de.metas.printing.model.validator;
  */
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Properties;
 
+import de.metas.printing.OutputType;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -51,10 +53,14 @@ public class AD_PrinterHW
 	public void setHostKey(final I_AD_PrinterHW printerHW)
 	{
 		final String hostKeyOld = printerHW.getHostKey();
-		if (!Check.isEmpty(hostKeyOld, true))
+		if (Check.isNotBlank(hostKeyOld))
 		{
-			// HostKey was already set, nothing to do
-			return;
+			return; // HostKey was already set, nothing to do
+		}
+
+		if (!Objects.equals(OutputType.Queue, OutputType.ofNullableCode(printerHW.getOutputType())))
+		{
+			return; // no hostkey needed
 		}
 
 		final Properties ctx = InterfaceWrapperHelper.getCtx(printerHW);
