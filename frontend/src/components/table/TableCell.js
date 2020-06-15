@@ -17,19 +17,6 @@ class TableCell extends PureComponent {
     };
   }
 
-  UNSAFE_componentWillReceiveProps(nextProps) {
-    const { updateRow, readonly, rowId, tdValue } = this.props;
-    const { tdValue: nextTdValue } = nextProps;
-    // We should avoid highlighting when whole row is exchanged (sorting)
-    if (rowId !== nextProps.rowId) {
-      return;
-    }
-
-    if (!readonly && tdValue !== nextTdValue) {
-      updateRow();
-    }
-  }
-
   widgetTooltipToggle = (value) => {
     const curVal = this.state.tooltipToggled;
     const newVal = value != null ? value : !curVal;
@@ -59,12 +46,15 @@ class TableCell extends PureComponent {
       getWidgetData,
       isEditable,
       supportFieldEdit,
+      readonly,
+      updateRow,
     } = this.props;
     const widgetData = getWidgetData(item, isEditable, supportFieldEdit);
     if (e.keyCode === 67 && (e.ctrlKey || e.metaKey)) {
       return false; // CMD + C on Mac has to just copy
     }
     handleKeyDown(e, property, widgetData[0]);
+    !readonly && updateRow();
   };
 
   handleRightClick = (e) => {
