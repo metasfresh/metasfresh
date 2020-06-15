@@ -117,6 +117,60 @@ class TableCell extends PureComponent {
   };
 
   /**
+   * @method getTdValue
+   * @summary Get the content of the table divider based on the widgetData provided
+   * {array} widgetData
+   */
+  getTdValue = (widgetData) => {
+    const { isEdited, item, activeLocale, isGerman } = this.props;
+    return !isEdited
+      ? fieldValueToString({
+          fieldValue: widgetData[0].value,
+          fieldType: item.widgetType,
+          precision: widgetData[0].precision,
+          isGerman,
+          activeLocale,
+        })
+      : null;
+  };
+
+  /**
+   * @method getDescription
+   * @summary Get the description based on the widgetData and table divider value provided
+   * {array} widgetData
+   * {string|null} tdValue
+   */
+  getDescription = ({ widgetData, tdValue }) => {
+    return widgetData[0].value && widgetData[0].value.description
+      ? widgetData[0].value.description
+      : tdValue;
+  };
+
+  /**
+   * @method getTdTitle
+   * @summary Get the table divider title based on item content and provided description
+   * {object} item
+   * {string} desciption
+   */
+  getTdTitle = ({ item, description }) => {
+    return item.widgetType === 'YesNo' ||
+      item.widgetType === 'Switch' ||
+      item.widgetType === 'Color'
+      ? ''
+      : description;
+  };
+
+  /**
+   * @method checkIfDateField
+   * @summary check if it's a date field or not
+   * {object} item
+   */
+  checkIfDateField = ({ item }) =>
+    DATE_FIELD_FORMATS[item.widgetType]
+      ? getDateFormat(item.widgetType)
+      : false;
+
+  /**
    * @method render
    * @summary Main render function
    */
@@ -146,36 +200,16 @@ class TableCell extends PureComponent {
       viewId,
       modalVisible,
       onClickOutside,
-      isGerman,
-      activeLocale,
     } = this.props;
     const widgetData = getWidgetData(item, isEditable, supportFieldEdit);
     const docId = `${this.props.docId}`;
     const { tooltipToggled } = this.state;
-    const tdValue = !isEdited
-      ? fieldValueToString({
-          fieldValue: widgetData[0].value,
-          fieldType: item.widgetType,
-          precision: widgetData[0].precision,
-          isGerman,
-          activeLocale,
-        })
-      : null;
-    const description =
-      widgetData[0].value && widgetData[0].value.description
-        ? widgetData[0].value.description
-        : tdValue;
-    let tdTitle =
-      item.widgetType === 'YesNo' ||
-      item.widgetType === 'Switch' ||
-      item.widgetType === 'Color'
-        ? ''
-        : description;
+    const tdValue = this.getTdValue(widgetData);
+    const description = this.getDescription({ widgetData, tdValue });
+    let tdTitle = this.getTdTitle({ item, description });
     const isOpenDatePicker = isEdited && item.widgetType === 'Date';
-    const isDateField = DATE_FIELD_FORMATS[item.widgetType]
-      ? getDateFormat(item.widgetType)
-      : false;
-    let style = {};
+    const isDateField = this.checkIfDateField({ item });
+    let style = cellExtended ? { height: extendLongText * 20 } : {};
     let tooltipData = null;
     let tooltipWidget =
       item.fields && item.widgetType === 'Lookup'
@@ -190,12 +224,6 @@ class TableCell extends PureComponent {
             return false;
           })
         : null;
-
-    if (cellExtended) {
-      style = {
-        height: extendLongText * 20,
-      };
-    }
 
     let entityEffective;
     if (viewId) {
