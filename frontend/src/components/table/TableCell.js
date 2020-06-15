@@ -266,7 +266,7 @@ class TableCell extends PureComponent {
       isGerman,
       activeLocale,
       updateHeight,
-      arrIndex,
+      rowIndex,
     } = this.props;
     const widgetData = getWidgetData(item, isEditable, supportFieldEdit);
     const docId = `${this.props.docId}`;
@@ -361,7 +361,7 @@ class TableCell extends PureComponent {
               listenOnKeysFalse,
               listenOnKeysTrue,
               onClickOutside,
-              arrIndex,
+              rowIndex,
             }}
             clearValue={this.clearWidgetValue}
             entity={entityEffective}
@@ -442,7 +442,7 @@ TableCell.propTypes = {
   docId: PropTypes.any,
   activeLocale: PropTypes.object,
   updateHeight: PropTypes.func, // adjusts the table container with a given height from a child component when child exceeds visible area
-  arrIndex: PropTypes.number, // used for knowing the row index within the Table (used on AttributesDropdown component)
+  rowIndex: PropTypes.number, // used for knowing the row index within the Table (used on AttributesDropdown component)
 };
 
 export default TableCell;

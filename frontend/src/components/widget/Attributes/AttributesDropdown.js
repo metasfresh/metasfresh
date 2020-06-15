@@ -125,14 +125,14 @@ class AttributesDropdown extends PureComponent {
    * @todo Write the documentation
    */
   render() {
-    const { arrIndex } = this.props;
+    const { rowIndex } = this.props;
 
     return (
       <div
         className={classnames(
           'attributes-dropdown panel-shadowed panel-primary panel-bordered panel-spaced',
           {
-            'attributes-dropup': arrIndex > DROPUP_START,
+            'attributes-dropup': rowIndex > DROPUP_START,
           }
         )}
       >
@@ -169,7 +169,7 @@ AttributesDropdown.propTypes = {
   handlePatch: PropTypes.func.isRequired,
   disableOnClickOutside: PropTypes.func.isRequired,
   enableOnClickOutside: PropTypes.func.isRequired,
-  arrIndex: PropTypes.number, // used for knowing the row index within the Table (used on AttributesDropdown component)
+  rowIndex: PropTypes.number, // used for knowing the row index within the Table (used on AttributesDropdown component)
 };
 
 export default onClickOutside(AttributesDropdown);

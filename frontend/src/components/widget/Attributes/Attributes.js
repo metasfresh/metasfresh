@@ -126,16 +126,16 @@ export default class Attributes extends Component {
    * @todo Write the documentation
    */
   handleToggle = (option) => {
-    const { handleBackdropLock, updateHeight, arrIndex, isModal } = this.props;
+    const { handleBackdropLock, updateHeight, rowIndex, isModal } = this.props;
     const { loading, dropdown } = this.state;
 
     !dropdown &&
       !isModal &&
-      arrIndex < DROPUP_START &&
+      rowIndex < DROPUP_START &&
       updateHeight(DROPDOWN_OFFSET_BIG);
     dropdown &&
       !isModal &&
-      arrIndex < DROPUP_START &&
+      rowIndex < DROPUP_START &&
       updateHeight(DROPDOWN_OFFSET_SMALL);
 
     if (!loading) {
@@ -292,7 +292,7 @@ export default class Attributes extends Component {
       attributeType,
       tabIndex,
       readonly,
-      arrIndex,
+      rowIndex,
     } = this.props;
 
     const { dropdown, data, layout } = this.state;
@@ -332,7 +332,7 @@ export default class Attributes extends Component {
             handlePatch={this.handlePatch}
             handleChange={this.handleChange}
             attrId={attrId}
-            arrIndex={arrIndex}
+            rowIndex={rowIndex}
           />
         )}
       </div>
@@ -376,6 +376,6 @@ Attributes.propTypes = {
   fieldName: PropTypes.any,
   entity: PropTypes.any,
   updateHeight: PropTypes.func, // adjusts the table container with a given height from a child component when child exceeds visible area
-  arrIndex: PropTypes.number, // used for knowing the row index within the Table (used on AttributesDropdown component)
+  rowIndex: PropTypes.number, // used for knowing the row index within the Table (used on AttributesDropdown component)
   widgetType: PropTypes.string,
 };

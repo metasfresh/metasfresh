@@ -413,7 +413,7 @@ class TableItem extends Component {
       focusOnFieldName,
       activeLocale,
       updateHeight,
-      arrIndex,
+      rowIndex,
     } = this.props;
     const {
       edited,
@@ -480,7 +480,7 @@ class TableItem extends Component {
                   keyProperty,
                   modalVisible,
                   isGerman,
-                  arrIndex,
+                  rowIndex,
                 }}
                 ref={(c) => {
                   if (c && isSelected) {
@@ -737,8 +737,8 @@ TableItem.propTypes = {
   page: PropTypes.number,
   activeSort: PropTypes.bool,
   activeLocale: PropTypes.object,
-  updateHeight: PropTypes.func,
-  arrIndex: PropTypes.number,
+  updateHeight: PropTypes.func, // adjusts the table container with a given height from a child component when child exceeds visible area
+  rowIndex: PropTypes.number, // used for knowing the row index within the Table
 };
 
 export default TableItem;

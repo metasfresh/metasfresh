@@ -1172,7 +1172,7 @@ class Table extends Component {
           }
         }}
         keyProperty={item[keyProperty]}
-        arrIndex={i}
+        rowIndex={i}
         rowId={item[keyProperty]}
         tabId={tabId}
         onDoubleClick={this.handleDoubleClick}

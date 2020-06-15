@@ -413,7 +413,7 @@ export class RawWidget extends Component {
       fieldName,
       maxLength,
       updateHeight,
-      arrIndex,
+      rowIndex,
     } = this.props;
 
     let widgetValue = data != null ? data : widgetData[0].value;
@@ -1021,7 +1021,7 @@ export class RawWidget extends Component {
             tabIndex={tabIndex}
             autoFocus={autoFocus}
             readonly={readonly}
-            arrIndex={arrIndex}
+            rowIndex={rowIndex}
             updateHeight={updateHeight}
           />
         );
