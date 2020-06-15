@@ -352,11 +352,6 @@ public class InventoryRepository
 				.build();
 	}
 
-	public void save(@NonNull final Inventory inventory)
-	{
-		saveInventoryLines(inventory);
-	}
-
 	public void saveInventoryLines(@NonNull final Inventory inventory)
 	{
 		final InventoryId inventoryId = inventory.getId();
