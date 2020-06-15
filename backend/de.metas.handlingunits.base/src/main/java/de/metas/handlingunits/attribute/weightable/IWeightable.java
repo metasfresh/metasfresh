@@ -87,7 +87,26 @@ public interface IWeightable
 	BigDecimal getWeightTare();
 
 	/** @return sum of all WeightTare values (i.e. {@link #getWeightTare()}, {@link #getWeightTareAdjust()}) */
-	BigDecimal getWeightTareTotal();
+	default BigDecimal getWeightTareTotal()
+	{
+		BigDecimal weightTareTotal = BigDecimal.ZERO;
+
+		if (hasWeightTare())
+		{
+			final BigDecimal weightTare = getWeightTare();
+			weightTareTotal = weightTareTotal.add(weightTare);
+		}
+
+		// 07023_Tara_changeable_in_LU
+		// We have to also check if there is any tare adjust
+		if (hasWeightTareAdjust())
+		{
+			final BigDecimal weightTareAdjust = getWeightTareAdjust();
+			weightTareTotal = weightTareTotal.add(weightTareAdjust);
+		}
+
+		return weightTareTotal;
+	}
 
 	AttributeCode getWeightNetAttribute();
 

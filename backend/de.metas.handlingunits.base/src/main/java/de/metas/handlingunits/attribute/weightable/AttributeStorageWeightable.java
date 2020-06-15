@@ -216,28 +216,6 @@ final class AttributeStorageWeightable implements IWeightable
 	}
 
 	@Override
-	public BigDecimal getWeightTareTotal()
-	{
-		BigDecimal weightTareTotal = BigDecimal.ZERO;
-
-		if (hasWeightTare())
-		{
-			final BigDecimal weightTare = getWeightTare();
-			weightTareTotal = weightTareTotal.add(weightTare);
-		}
-
-		// 07023_Tara_changeable_in_LU
-		// We have to also check if there is any tare adjust
-		if (hasWeightTareAdjust())
-		{
-			final BigDecimal weightTareAdjust = getWeightTareAdjust();
-			weightTareTotal = weightTareTotal.add(weightTareAdjust);
-		}
-
-		return weightTareTotal;
-	}
-
-	@Override
 	public AttributeCode getWeightTareAttribute()
 	{
 		return Weightables.ATTR_WeightTare;

@@ -218,30 +218,7 @@ import de.metas.util.Services;
 	protected final void recalculateWeightNet(final IAttributeSet attributeSet)
 	{
 		final IWeightable weightable = getWeightableOrNull(attributeSet);
-
-		// NOTE: we calculate WeightGross, no matter if our HU is allowed to be weighted by user
-		// final boolean weightUOMFriendly = weightable.isWeightable();
-
-		final BigDecimal weightTare = weightable.getWeightTareTotal();
-		final BigDecimal weightGross = weightable.getWeightGross();
-		final BigDecimal weightNet = weightGross.subtract(weightTare);
-		final BigDecimal weightNetActual;
-
-		//
-		// If Gross < Tare, we need to propagate the net value with the initial container's Tare value re-added (+) to preserve the real mathematical values
-		if (weightNet.signum() >= 0)
-		{
-			weightNetActual = weightNet; // propagate net value below normally
-
-			weightable.setWeightNet(weightNetActual);
-		}
-		else
-		{
-			weightNetActual = weightNet.add(weightable.getWeightTareInitial()); // only subtract seed value (the container's weight)
-
-			weightable.setWeightNet(weightNetActual);
-			weightable.setWeightNetNoPropagate(weightNet); // directly set the correct value we're expecting
-		}
+		Weightables.updateWeightNet(weightable);
 	}
 
 	protected boolean isLUorTUorTopLevelVHU(IAttributeSet attributeSet)

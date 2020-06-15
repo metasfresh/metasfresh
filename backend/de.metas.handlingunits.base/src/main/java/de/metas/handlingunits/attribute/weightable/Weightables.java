@@ -1,10 +1,13 @@
 package de.metas.handlingunits.attribute.weightable;
 
+import java.math.BigDecimal;
+
 import javax.annotation.Nullable;
 
 import org.adempiere.mm.attributes.AttributeCode;
 
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
+import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 
 /*
@@ -49,4 +52,30 @@ public class Weightables
 		return new AttributeStorageWeightable(attributeStorage);
 	}
 
+	public static final void updateWeightNet(@NonNull final IWeightable weightable)
+	{
+		// NOTE: we calculate WeightGross, no matter if our HU is allowed to be weighted by user
+		// final boolean weightUOMFriendly = weightable.isWeightable();
+
+		final BigDecimal weightTare = weightable.getWeightTareTotal();
+		final BigDecimal weightGross = weightable.getWeightGross();
+		final BigDecimal weightNet = weightGross.subtract(weightTare);
+		final BigDecimal weightNetActual;
+
+		//
+		// If Gross < Tare, we need to propagate the net value with the initial container's Tare value re-added (+) to preserve the real mathematical values
+		if (weightNet.signum() >= 0)
+		{
+			weightNetActual = weightNet; // propagate net value below normally
+
+			weightable.setWeightNet(weightNetActual);
+		}
+		else
+		{
+			weightNetActual = weightNet.add(weightable.getWeightTareInitial()); // only subtract seed value (the container's weight)
+
+			weightable.setWeightNet(weightNetActual);
+			weightable.setWeightNetNoPropagate(weightNet); // directly set the correct value we're expecting
+		}
+	}
 }
