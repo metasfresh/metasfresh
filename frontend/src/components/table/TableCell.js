@@ -8,12 +8,11 @@ import WidgetTooltip from '../widget/WidgetTooltip';
 class TableCell extends PureComponent {
   constructor(props) {
     super(props);
-
     this.widget = createRef();
     this.clearWidgetValue = false;
 
     this.state = {
-      tooltipToggled: false,
+      tooltipToggled: false, // keeping in the local state the flag for the tooltip
     };
   }
 
@@ -26,15 +25,9 @@ class TableCell extends PureComponent {
 
   handleBackdropLock = (state) => {
     const { item } = this.props;
-
-    if (
-      !['ProductAttributes', 'Attributes', 'List', 'Lookup'].includes(
-        item.widgetType
-      )
-    ) {
-      if (!state) {
-        this.props.onClickOutside();
-      }
+    const widgetsList = ['ProductAttributes', 'Attributes', 'List', 'Lookup'];
+    if (!widgetsList.includes(item.widgetType)) {
+      !state && this.props.onClickOutside();
     }
   };
 
@@ -54,7 +47,7 @@ class TableCell extends PureComponent {
       return false; // CMD + C on Mac has to just copy
     }
     handleKeyDown(e, property, widgetData[0]);
-    !readonly && updateRow();
+    !readonly && updateRow(); // toggle flag in parrent component highlighting the row giving the user the idea that something is happening with it
   };
 
   handleRightClick = (e) => {
@@ -86,13 +79,11 @@ class TableCell extends PureComponent {
     } = this.props;
     const widgetData = getWidgetData(item, isEditable, supportFieldEdit);
 
-    if (isEditable) {
-      handleDoubleClick(e, property, true, widgetData[0]);
-    }
+    isEditable && handleDoubleClick(e, property, true, widgetData[0]);
   };
 
   clearValue = (reset) => {
-    this.clearWidgetValue = reset == null ? true : false;
+    this.clearWidgetValue = reset === null ? true : false;
   };
 
   render() {
