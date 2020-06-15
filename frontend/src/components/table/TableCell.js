@@ -113,7 +113,7 @@ class TableCell extends PureComponent {
    * {string|null} reset
    */
   clearValue = (reset) => {
-    this.clearWidgetValue = reset === null ? true : false;
+    this.clearWidgetValue = reset == null ? true : false;
   };
 
   /**
