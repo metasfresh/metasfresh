@@ -37,6 +37,7 @@ import lombok.Value;
 @Value
 public class HuForInventoryLine
 {
+	@NonNull
 	OrgId orgId;
 
 	@NonNull
