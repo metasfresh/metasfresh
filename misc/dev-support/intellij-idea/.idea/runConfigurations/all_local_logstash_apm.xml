@@ -1,0 +1,8 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="all local logstash_apm" type="CompoundRunConfigurationType">
+    <toRun name="logstash_apm - WebRestApiApplication" type="SpringBootApplicationConfigurationType" />
+    <toRun name="logstash_apm ServerBoot" type="SpringBootApplicationConfigurationType" />
+    <toRun name="start WEB-UI" type="js.build_tools.npm" />
+    <method v="2" />
+  </configuration>
+</component>
