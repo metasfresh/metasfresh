@@ -71,7 +71,7 @@ public abstract class DraftInventoryBase extends JavaProcess implements IProcess
 
 		final HUsForInventoryStrategy strategy = createStrategy(inventory);
 
-		final InventoryLineAggregator inventoryLineAggregator = inventoryLineAggregatorFactory.createFor(docBaseAndSubType);
+		final InventoryLineAggregator inventoryLineAggregator = inventoryLineAggregatorFactory.createForDocBaseAndSubType(docBaseAndSubType);
 
 		Check.errorUnless(
 				inventory.getDocStatus().isDraftedOrInProgress(),
