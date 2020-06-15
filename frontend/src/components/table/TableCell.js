@@ -19,7 +19,7 @@ class TableCell extends PureComponent {
   /**
    * @method widgetTooltipToggle
    * @summary Alternative method to open dropdown, in case of disabled opening on focus.
-   * @param {string|null} value
+   * @param {bool|null} value - boolean value used to toggle the tooltipToggled value
    */
   widgetTooltipToggle = (value) => {
     const curVal = this.state.tooltipToggled;
