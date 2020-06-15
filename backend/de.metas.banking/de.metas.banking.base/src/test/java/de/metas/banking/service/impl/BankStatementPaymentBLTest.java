@@ -49,6 +49,8 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
+import com.google.common.collect.ImmutableSet;
+
 import de.metas.banking.BankAccountId;
 import de.metas.banking.BankCreateRequest;
 import de.metas.banking.BankId;
@@ -434,7 +436,11 @@ class BankStatementPaymentBLTest
 				// call tested method
 				//
 				bankStatement.setDocStatus(DocStatus.Completed.getCode());
-				bankStatementPaymentBL.findOrCreateSinglePaymentAndLinkIfPossible(bankStatement, bsl);
+				bankStatementPaymentBL.findOrCreateSinglePaymentAndLinkIfPossible(
+						bankStatement,
+						bsl,
+						ImmutableSet.of() // excludePaymentIds
+				);
 
 				//
 				// Checks
@@ -478,7 +484,11 @@ class BankStatementPaymentBLTest
 				// call tested method
 				//
 				bankStatement.setDocStatus(DocStatus.Completed.getCode());
-				bankStatementPaymentBL.findOrCreateSinglePaymentAndLinkIfPossible(bankStatement, bsl);
+				bankStatementPaymentBL.findOrCreateSinglePaymentAndLinkIfPossible(
+						bankStatement,
+						bsl,
+						ImmutableSet.of() // excludePaymentIds
+				);
 
 				//
 				// Checks
@@ -543,7 +553,11 @@ class BankStatementPaymentBLTest
 				// call tested method
 				//
 				bankStatement.setDocStatus(DocStatus.Completed.getCode());
-				bankStatementPaymentBL.findOrCreateSinglePaymentAndLinkIfPossible(bankStatement, bsl);
+				bankStatementPaymentBL.findOrCreateSinglePaymentAndLinkIfPossible(
+						bankStatement,
+						bsl,
+						ImmutableSet.of() // excludePaymentIds
+				);
 
 				//
 				// Checks
@@ -583,7 +597,11 @@ class BankStatementPaymentBLTest
 				// call tested method
 				//
 				bankStatement.setDocStatus(DocStatus.Completed.getCode());
-				bankStatementPaymentBL.findOrCreateSinglePaymentAndLinkIfPossible(bankStatement, bsl);
+				bankStatementPaymentBL.findOrCreateSinglePaymentAndLinkIfPossible(
+						bankStatement,
+						bsl,
+						ImmutableSet.of() // excludePaymentIds
+				);
 
 				//
 				// Checks
@@ -621,7 +639,11 @@ class BankStatementPaymentBLTest
 				// call tested method
 				//
 				bankStatement.setDocStatus(DocStatus.Completed.getCode());
-				bankStatementPaymentBL.findOrCreateSinglePaymentAndLinkIfPossible(bankStatement, bsl);
+				bankStatementPaymentBL.findOrCreateSinglePaymentAndLinkIfPossible(
+						bankStatement,
+						bsl,
+						ImmutableSet.of() // excludePaymentIds
+				);
 
 				//
 				// Checks

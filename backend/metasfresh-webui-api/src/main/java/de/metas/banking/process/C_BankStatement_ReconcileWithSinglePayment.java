@@ -29,6 +29,8 @@ import org.compiere.model.I_C_BankStatement;
 import org.compiere.model.I_C_BankStatementLine;
 import org.compiere.model.I_C_Payment;
 
+import com.google.common.collect.ImmutableSet;
+
 import de.metas.bpartner.BPartnerId;
 import de.metas.payment.PaymentId;
 import de.metas.process.IProcessDefaultParameter;
@@ -85,7 +87,11 @@ public class C_BankStatement_ReconcileWithSinglePayment extends BankStatementBas
 
 		final I_C_BankStatementLine bankStatementLine = getSingleSelectedBankStatementLine();
 		final int limit = 20;
-		final Set<PaymentId> paymentIds = bankStatementPaymentBL.findEligiblePaymentIds(bankStatementLine, bpartnerId, limit);
+		final Set<PaymentId> paymentIds = bankStatementPaymentBL.findEligiblePaymentIds(
+				bankStatementLine,
+				bpartnerId,
+				ImmutableSet.of(), // excludePaymentIds
+				limit);
 		return LookupDataSourceFactory.instance.searchInTableLookup(I_C_Payment.Table_Name).findByIdsOrdered(paymentIds);
 	}
 
@@ -103,7 +109,13 @@ public class C_BankStatement_ReconcileWithSinglePayment extends BankStatementBas
 		}
 		else
 		{
-			final Set<PaymentId> eligiblePaymentIds = bankStatementPaymentBL.findEligiblePaymentIds(bankStatementLine, bpartnerId, 2);
+			final Set<PaymentId> eligiblePaymentIds = bankStatementPaymentBL.findEligiblePaymentIds(
+					bankStatementLine,
+					bpartnerId,
+					ImmutableSet.of(), // excludePaymentIds
+					2 // limit
+			);
+
 			if (eligiblePaymentIds.isEmpty())
 			{
 				bankStatementPaymentBL.createSinglePaymentAndLink(bankStatement, bankStatementLine);

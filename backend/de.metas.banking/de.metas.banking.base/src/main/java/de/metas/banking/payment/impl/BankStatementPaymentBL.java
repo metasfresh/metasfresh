@@ -83,7 +83,8 @@ public class BankStatementPaymentBL implements IBankStatementPaymentBL
 	@Override
 	public void findOrCreateSinglePaymentAndLinkIfPossible(
 			@NonNull final I_C_BankStatement bankStatement,
-			@NonNull final I_C_BankStatementLine bankStatementLine)
+			@NonNull final I_C_BankStatementLine bankStatementLine,
+			@NonNull final Set<PaymentId> excludePaymentIds)
 	{
 		// Bank Statement Line is already reconciled => do nothing
 		if (bankStatementLine.isReconciled())
@@ -98,7 +99,12 @@ public class BankStatementPaymentBL implements IBankStatementPaymentBL
 			return;
 		}
 
-		final Set<PaymentId> eligiblePaymentIds = findEligiblePaymentIds(bankStatementLine, bpartnerId, 2);
+		final Set<PaymentId> eligiblePaymentIds = findEligiblePaymentIds(
+				bankStatementLine,
+				bpartnerId,
+				excludePaymentIds,
+				2 // limit
+		);
 		// noinspection StatementWithEmptyBody
 		if (eligiblePaymentIds.size() > 1)
 		{
@@ -120,6 +126,7 @@ public class BankStatementPaymentBL implements IBankStatementPaymentBL
 	public Set<PaymentId> findEligiblePaymentIds(
 			@NonNull final I_C_BankStatementLine bankStatementLine,
 			@NonNull final BPartnerId bpartnerId,
+			@NonNull final Set<PaymentId> excludePaymentIds,
 			final int limit)
 	{
 		final Money trxAmt = extractTrxAmt(bankStatementLine);
@@ -133,6 +140,7 @@ public class BankStatementPaymentBL implements IBankStatementPaymentBL
 				.direction(expectedPaymentDirection)
 				.bpartnerId(bpartnerId)
 				.payAmt(expectedPaymentAmount)
+				.excludePaymentIds(excludePaymentIds)
 				.build());
 	}
 
