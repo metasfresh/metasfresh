@@ -16,6 +16,8 @@ import de.metas.document.DocBaseAndSubType;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.inventory.impl.HUInternalUseInventoryProducer;
 import de.metas.handlingunits.inventory.impl.SyncInventoryQtyToHUsCommand;
@@ -57,6 +59,7 @@ import lombok.NonNull;
 public class InventoryService
 {
 	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
+	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 	private InventoryRepository inventoryRepository;
 
 	public InventoryService(@NonNull final InventoryRepository inventoryRepository)
@@ -173,5 +176,11 @@ public class InventoryService
 				.setIsCompleteInventory(isCompleteInventory)
 				.setIsCreateMovement(isCreateMovement)
 				.createInventories();
+	}
+
+	public void completeDocument(@NonNull final InventoryId inventoryId)
+	{
+		final I_M_Inventory inventory = inventoryRepository.getRecordById(inventoryId);
+		documentBL.processEx(inventory, IDocument.ACTION_Complete);
 	}
 }
