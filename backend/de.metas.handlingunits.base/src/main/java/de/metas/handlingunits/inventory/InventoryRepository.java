@@ -24,6 +24,7 @@ import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.AttributesKeys;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.LocatorId;
+import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Inventory;
@@ -64,6 +65,7 @@ import de.metas.uom.UOMConversionContext;
 import de.metas.uom.UomId;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import lombok.NonNull;
 
 /*
@@ -132,8 +134,14 @@ public class InventoryRepository
 
 	public Inventory getById(@NonNull final InventoryId inventoryId)
 	{
-		final I_M_Inventory inventoryRecord = inventoryDAO.getById(inventoryId);
+		final I_M_Inventory inventoryRecord = getRecordById(inventoryId);
 		return toInventory(inventoryRecord);
+	}
+
+	I_M_Inventory getRecordById(@NonNull final InventoryId inventoryId)
+	{
+		final I_M_Inventory inventoryRecord = inventoryDAO.getById(inventoryId);
+		return inventoryRecord;
 	}
 
 	Inventory toInventory(@NonNull final I_M_Inventory inventoryRecord)
@@ -160,8 +168,10 @@ public class InventoryRepository
 
 		return Inventory.builder()
 				.id(inventoryId)
+				.orgId(OrgId.ofRepoId(inventoryRecord.getAD_Org_ID()))
 				.docBaseAndSubType(docBaseAndSubType)
 				.movementDate(TimeUtil.asZonedDateTime(inventoryRecord.getMovementDate(), timeZone))
+				.warehouseId(WarehouseId.ofRepoIdOrNull(inventoryRecord.getM_Warehouse_ID()))
 				.description(inventoryRecord.getDescription())
 				.activityId(ActivityId.ofRepoIdOrNull(inventoryRecord.getC_Activity_ID()))
 				.docStatus(DocStatus.ofCode(inventoryRecord.getDocStatus()))
