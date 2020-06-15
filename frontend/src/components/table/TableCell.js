@@ -1,184 +1,51 @@
-import Moment from 'moment-timezone';
 import PropTypes from 'prop-types';
-import numeral from 'numeral';
 import React, { PureComponent, createRef } from 'react';
 import classnames from 'classnames';
-
 import MasterWidget from '../widget/MasterWidget';
-import {
-  AMOUNT_FIELD_TYPES,
-  AMOUNT_FIELD_FORMATS_BY_PRECISION,
-  SPECIAL_FIELD_TYPES,
-  DATE_FIELD_TYPES,
-  TIME_FIELD_TYPES,
-  DATE_FIELD_FORMATS,
-  TIME_REGEX_TEST,
-  TIME_FORMAT,
-} from '../../constants/Constants';
+import { getDateFormat, fieldValueToString } from '../../utils/tableHelpers';
+import { DATE_FIELD_FORMATS } from '../../constants/Constants';
 import WidgetTooltip from '../widget/WidgetTooltip';
-
 class TableCell extends PureComponent {
-  static getAmountFormatByPrecision = (precision) =>
-    precision &&
-    precision >= 0 &&
-    precision < AMOUNT_FIELD_FORMATS_BY_PRECISION.length
-      ? AMOUNT_FIELD_FORMATS_BY_PRECISION[precision]
-      : null;
-
-  static getDateFormat = (fieldType) => DATE_FIELD_FORMATS[fieldType];
-
-  static createDate = (fieldValue, fieldType) => {
-    if (fieldValue) {
-      return !Moment.isMoment(fieldValue) && fieldValue.match(TIME_REGEX_TEST)
-        ? Moment.utc(Moment.duration(fieldValue).asMilliseconds()).format(
-            TIME_FORMAT
-          )
-        : Moment(fieldValue).format(TableCell.getDateFormat(fieldType));
-    }
-
-    return '';
-  };
-
-  static createAmount = (fieldValue, precision, isGerman) => {
-    if (fieldValue) {
-      const fieldValueAsNum = numeral(parseFloat(fieldValue));
-      const numberFormat = TableCell.getAmountFormatByPrecision(precision);
-      const returnValue = numberFormat
-        ? fieldValueAsNum.format(numberFormat)
-        : fieldValueAsNum.format();
-
-      // For German natives we want to show numbers with comma as a value separator
-      // https://github.com/metasfresh/me03/issues/1822
-      if (isGerman && parseFloat(returnValue) != null) {
-        const commaRegexp = /,/g;
-        commaRegexp.test(returnValue);
-        const lastIdx = commaRegexp.lastIndex;
-
-        if (lastIdx) {
-          return returnValue;
-        }
-
-        return `${returnValue}`.replace('.', ',');
-      }
-
-      return returnValue;
-    }
-
-    return '';
-  };
-
-  static createSpecialField = (fieldType, fieldValue) => {
-    switch (fieldType) {
-      case 'Color': {
-        const style = {
-          backgroundColor: fieldValue,
-        };
-        return <span className="widget-color-display" style={style} />;
-      }
-      default:
-        return fieldValue;
-    }
-  };
-
-  // @TODO: THIS NEEDS URGENT REFACTORING, WHY THE HECK ARE WE RETURNING
-  // SIX DIFFERENT TYPES OF VALUES HERE ? UBER-BAD DESIGN !
-  static fieldValueToString = (
-    fieldValue,
-    fieldType = 'Text',
-    precision = null,
-    isGerman
-  ) => {
-    if (fieldValue === null) {
-      return '';
-    }
-
-    switch (typeof fieldValue) {
-      case 'object': {
-        if (Array.isArray(fieldValue)) {
-          return fieldValue
-            .map((value) => TableCell.fieldValueToString(value, fieldType))
-            .join(' - ');
-        }
-
-        return DATE_FIELD_TYPES.includes(fieldType) ||
-          TIME_FIELD_TYPES.includes(fieldType)
-          ? TableCell.createDate(fieldValue, fieldType)
-          : fieldValue.caption;
-      }
-      case 'boolean': {
-        return fieldValue ? (
-          <i className="meta-icon-checkbox-1" />
-        ) : (
-          <i className="meta-icon-checkbox" />
-        );
-      }
-      case 'string': {
-        if (
-          DATE_FIELD_TYPES.includes(fieldType) ||
-          TIME_FIELD_TYPES.includes(fieldType)
-        ) {
-          return TableCell.createDate(fieldValue, fieldType);
-        } else if (AMOUNT_FIELD_TYPES.includes(fieldType)) {
-          return TableCell.createAmount(fieldValue, precision, isGerman);
-        } else if (SPECIAL_FIELD_TYPES.includes(fieldType)) {
-          return TableCell.createSpecialField(fieldType, fieldValue);
-        }
-        return fieldValue;
-      }
-      default: {
-        return fieldValue;
-      }
-    }
-  };
-
   constructor(props) {
     super(props);
-
     this.widget = createRef();
-
     this.clearWidgetValue = false;
 
     this.state = {
-      tooltipToggled: false,
+      tooltipToggled: false, // keeping in the local state the flag for the tooltip
     };
   }
 
-  UNSAFE_componentWillReceiveProps(nextProps) {
-    const { updateRow, readonly, rowId, tdValue } = this.props;
-    const { tdValue: nextTdValue } = nextProps;
-    // We should avoid highlighting when whole row is exchanged (sorting)
-    if (rowId !== nextProps.rowId) {
-      return;
-    }
-
-    if (!readonly && tdValue !== nextTdValue) {
-      updateRow();
-    }
-  }
-
-  widgetTooltipToggle = (field, value) => {
+  /**
+   * @method widgetTooltipToggle
+   * @summary Alternative method to open dropdown, in case of disabled opening on focus.
+   * @param {string|null} value
+   */
+  widgetTooltipToggle = (value) => {
     const curVal = this.state.tooltipToggled;
     const newVal = value != null ? value : !curVal;
 
-    this.setState({
-      tooltipToggled: newVal,
-    });
+    this.setState({ tooltipToggled: newVal });
   };
 
+  /**
+   * @method handleBackdropLock
+   * @summary checks widget against widget list and calls parent onClickOutside fnct
+   * @param {object} state
+   */
   handleBackdropLock = (state) => {
     const { item } = this.props;
-
-    if (
-      !['ProductAttributes', 'Attributes', 'List', 'Lookup'].includes(
-        item.widgetType
-      )
-    ) {
-      if (!state) {
-        this.props.onClickOutside();
-      }
+    const widgetsList = ['ProductAttributes', 'Attributes', 'List', 'Lookup'];
+    if (!widgetsList.includes(item.widgetType)) {
+      !state && this.props.onClickOutside();
     }
   };
 
+  /**
+   * @method handleKeyDown
+   * @summary Key down function handler
+   * @param {object} e
+   */
   handleKeyDown = (e) => {
     const {
       handleKeyDown,
@@ -187,14 +54,22 @@ class TableCell extends PureComponent {
       getWidgetData,
       isEditable,
       supportFieldEdit,
+      readonly,
+      updateRow,
     } = this.props;
     const widgetData = getWidgetData(item, isEditable, supportFieldEdit);
     if (e.keyCode === 67 && (e.ctrlKey || e.metaKey)) {
       return false; // CMD + C on Mac has to just copy
     }
     handleKeyDown(e, property, widgetData[0]);
+    !readonly && updateRow(); // toggle flag in parrent component highlighting the row giving the user the idea that something is happening with it
   };
 
+  /**
+   * @method handleRightClick
+   * @summary Function called on right click that further calls the parent handler function to handleRightClick
+   * @param {object} e
+   */
   handleRightClick = (e) => {
     const {
       handleRightClick,
@@ -213,6 +88,11 @@ class TableCell extends PureComponent {
     );
   };
 
+  /**
+   * @method onDoubleClick
+   * @summary Function called on double click that retrieves widget data and further calls the parent handler function to handleDounbleClick
+   * @param {object} e
+   */
   onDoubleClick = (e) => {
     const {
       property,
@@ -224,15 +104,95 @@ class TableCell extends PureComponent {
     } = this.props;
     const widgetData = getWidgetData(item, isEditable, supportFieldEdit);
 
-    if (isEditable) {
-      handleDoubleClick(e, property, true, widgetData[0]);
-    }
+    isEditable && handleDoubleClick(e, property, true, widgetData[0]);
   };
 
+  /**
+   * @method clearValue
+   * @summary Set `clearWidgetValue` value based on a given `reset` param
+   * {string|null} reset
+   */
   clearValue = (reset) => {
-    this.clearWidgetValue = reset == null ? true : false;
+    this.clearWidgetValue = reset === null ? true : false;
   };
 
+  /**
+   * @method getTdValue
+   * @summary Get the content of the table divider based on the widgetData provided
+   * {array} widgetData
+   */
+  getTdValue = (widgetData) => {
+    const { isEdited, item, activeLocale, isGerman } = this.props;
+    return !isEdited
+      ? fieldValueToString({
+          fieldValue: widgetData[0].value,
+          fieldType: item.widgetType,
+          precision: widgetData[0].precision,
+          isGerman,
+          activeLocale,
+        })
+      : null;
+  };
+
+  /**
+   * @method getDescription
+   * @summary Get the description based on the widgetData and table divider value provided
+   * {array} widgetData
+   * {string|null} tdValue
+   */
+  getDescription = ({ widgetData, tdValue }) => {
+    return widgetData[0].value && widgetData[0].value.description
+      ? widgetData[0].value.description
+      : tdValue;
+  };
+
+  /**
+   * @method getTdTitle
+   * @summary Get the table divider title based on item content and provided description
+   * {object} item
+   * {string} desciption
+   */
+  getTdTitle = ({ item, description }) => {
+    return item.widgetType === 'YesNo' ||
+      item.widgetType === 'Switch' ||
+      item.widgetType === 'Color'
+      ? ''
+      : description;
+  };
+
+  /**
+   * @method checkIfDateField
+   * @summary check if it's a date field or not
+   * {object} item
+   */
+  checkIfDateField = ({ item }) =>
+    DATE_FIELD_FORMATS[item.widgetType]
+      ? getDateFormat(item.widgetType)
+      : false;
+
+  /**
+   * @method getEntity
+   * @summary Get the effective entity
+   * {string} viewId
+   * {bool} mainTable
+   * {string} entity
+   */
+  getEntity = ({ viewId, mainTable, entity }) => {
+    let entityEffective;
+    if (viewId) {
+      entityEffective = 'documentView';
+    } else if (mainTable) {
+      entityEffective = 'window';
+    } else {
+      entityEffective = entity;
+    }
+    return entityEffective;
+  };
+
+  /**
+   * @method render
+   * @summary Main render function
+   */
   render() {
     const {
       isEdited,
@@ -259,35 +219,16 @@ class TableCell extends PureComponent {
       viewId,
       modalVisible,
       onClickOutside,
-      isGerman,
     } = this.props;
     const widgetData = getWidgetData(item, isEditable, supportFieldEdit);
-
     const docId = `${this.props.docId}`;
     const { tooltipToggled } = this.state;
-    const tdValue = !isEdited
-      ? TableCell.fieldValueToString(
-          widgetData[0].value,
-          item.widgetType,
-          widgetData[0].precision,
-          isGerman
-        )
-      : null;
-    const description =
-      widgetData[0].value && widgetData[0].value.description
-        ? widgetData[0].value.description
-        : tdValue;
-    let tdTitle =
-      item.widgetType === 'YesNo' ||
-      item.widgetType === 'Switch' ||
-      item.widgetType === 'Color'
-        ? ''
-        : description;
+    const tdValue = this.getTdValue(widgetData);
+    const description = this.getDescription({ widgetData, tdValue });
+    let tdTitle = this.getTdTitle({ item, description });
     const isOpenDatePicker = isEdited && item.widgetType === 'Date';
-    const isDateField = DATE_FIELD_FORMATS[item.widgetType]
-      ? TableCell.getDateFormat(item.widgetType)
-      : false;
-    let style = {};
+    const isDateField = this.checkIfDateField({ item });
+    let style = cellExtended ? { height: extendLongText * 20 } : {};
     let tooltipData = null;
     let tooltipWidget =
       item.fields && item.widgetType === 'Lookup'
@@ -303,20 +244,7 @@ class TableCell extends PureComponent {
           })
         : null;
 
-    if (cellExtended) {
-      style = {
-        height: extendLongText * 20,
-      };
-    }
-
-    let entityEffective;
-    if (viewId) {
-      entityEffective = 'documentView';
-    } else if (mainTable) {
-      entityEffective = 'window';
-    } else {
-      entityEffective = entity;
-    }
+    let entityEffective = this.getEntity({ viewId, mainTable, entity });
 
     return (
       <td
@@ -431,6 +359,7 @@ TableCell.propTypes = {
   viewId: PropTypes.string,
   modalVisible: PropTypes.bool,
   docId: PropTypes.any,
+  activeLocale: PropTypes.object,
 };
 
 export default TableCell;
