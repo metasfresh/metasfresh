@@ -267,8 +267,8 @@ public class PrinterBL implements IPrinterBL
 	}
 
 	@Override
-	public boolean isPDFPrinter(@NonNull final I_AD_PrinterHW printerHW)
+	public boolean isAttachToPrintPackagePrinter(@NonNull final I_AD_PrinterHW printerHW)
 	{
-		return X_AD_PrinterHW.OUTPUTTYPE_PDF.equals(printerHW.getOutputType());
+		return X_AD_PrinterHW.OUTPUTTYPE_Attach.equals(printerHW.getOutputType());
 	}
 }

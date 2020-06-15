@@ -224,7 +224,9 @@ public abstract class AbstractPrintingDAO implements IPrintingDAO
 
 	@Nullable
 	@Override
-	public final I_AD_Printer_Matching retrievePrinterMatchingOrNull(final String hostKey, final I_AD_Printer printer)
+	public final I_AD_Printer_Matching retrievePrinterMatchingOrNull(
+			@Nullable final String hostKey,
+			@NonNull final de.metas.adempiere.model.I_AD_Printer printer)
 	{
 		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_AD_Printer_Config.class)
@@ -412,7 +414,7 @@ public abstract class AbstractPrintingDAO implements IPrintingDAO
 
 	@Nullable
 	@Override
-	public final I_AD_PrinterHW retrieveVirtualPrinterOrNull(final Properties ctx, final String hostkey, final String trxName)
+	public final I_AD_PrinterHW retrieveAttachToPrintPackagePrinter(final Properties ctx, final String hostkey, final String trxName)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
@@ -426,7 +428,7 @@ public abstract class AbstractPrintingDAO implements IPrintingDAO
 
 		return queryBL.createQueryBuilder(I_AD_PrinterHW.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_AD_PrinterHW.COLUMNNAME_OutputType, X_AD_PrinterHW.OUTPUTTYPE_PDF)
+				.addEqualsFilter(I_AD_PrinterHW.COLUMNNAME_OutputType, X_AD_PrinterHW.OUTPUTTYPE_Attach)
 				.addInArrayFilter(I_AD_PrinterHW.COLUMN_HostKey, hostkey, null)
 				.addInSubQueryFilter(I_AD_Printer_Matching.COLUMNNAME_AD_PrinterHW_ID, I_AD_PrinterHW.COLUMNNAME_AD_PrinterHW_ID, queryMatchings)
 				.orderBy()

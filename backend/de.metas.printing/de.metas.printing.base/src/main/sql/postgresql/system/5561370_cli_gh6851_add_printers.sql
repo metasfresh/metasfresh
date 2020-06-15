@@ -1,0 +1,3 @@
+
+INSERT INTO public.ad_printerhw (ad_client_id, ad_org_id, ad_printerhw_id, created, createdby, isactive, updated, updatedby, description, name, hostkey, outputtype) VALUES (1000000, 0, 1000006, '2020-06-15 07:06:12+00', 100, 'Y', '2020-06-15 07:06:12+00', 100, NULL, 'PDF auf Server speichern', '', 'Store');
+INSERT INTO public.ad_printerhw (ad_client_id, ad_org_id, ad_printerhw_id, created, createdby, isactive, updated, updatedby, description, name, hostkey, outputtype) VALUES (1000000, 0, 1000009, '2020-06-15 09:10:10+00', 100, 'Y', '2020-06-15 09:10:10+00', 100, 'Speichert das PDF als Druckpaket-Anhang', 'PDF an Druckpaket anhängen', '', 'Attach');

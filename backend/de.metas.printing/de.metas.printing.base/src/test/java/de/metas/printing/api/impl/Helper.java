@@ -62,7 +62,6 @@ import org.junit.rules.TestName;
 
 import de.metas.adempiere.form.IClientUI;
 import de.metas.adempiere.service.IPrinterRoutingDAO;
-import de.metas.adempiere.service.impl.PlainPrinterRoutingDAO;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.document.engine.impl.PlainDocumentBL;
 import de.metas.i18n.Language;
@@ -154,7 +153,6 @@ public class Helper
 
 		// de.metas.printing (this module):
 		Services.registerService(IPrintingDAO.class, printingDAO);
-		Services.registerService(IPrinterRoutingDAO.class, new PlainPrinterRoutingDAO());
 		Services.registerService(IDocumentBL.class, new PlainDocumentBL());
 
 		staticInitialized = true;
@@ -796,24 +794,20 @@ public class Helper
 		createArchiveAndEnqueue(record, pdfSuffix);
 	}
 
-	/**
-	 *
-	 * @return printJobs Count
-	 */
-	public int createAllPrintJobs()
+	public void createAllPrintJobs()
 	{
 		final IPrintingQueueBL printingQueueBL = Services.get(IPrintingQueueBL.class);
 		final IPrintingQueueQuery query = printingQueueBL.createPrintingQueueQuery();
+		final IPrintJobBL printJobBL = Services.get(IPrintJobBL.class);
+
 		query.setFilterByProcessedQueueItems(false);
 
 		final List<IPrintingQueueSource> sources = printingQueueBL.createPrintingQueueSources(getCtx(), query);
 
-		int printJobsCount = 0;
 		for (final IPrintingQueueSource source : sources)
 		{
-			printJobsCount += Services.get(IPrintJobBL.class).createPrintJobs(source);
+			printJobBL.createPrintJobs(source);
 		}
-		return printJobsCount;
 	}
 
 	public void assumeNothingLocked()

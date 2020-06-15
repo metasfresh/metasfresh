@@ -425,7 +425,7 @@ public class PrintingDAO extends AbstractPrintingDAO
 	}
 
 	@Override
-	public List<I_AD_Printer_Tray> retrieveTrays(final I_AD_Printer printer)
+	public List<I_AD_Printer_Tray> retrieveTrays(final de.metas.adempiere.model.I_AD_Printer printer)
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(printer);
 		final String trxName = InterfaceWrapperHelper.getTrxName(printer);

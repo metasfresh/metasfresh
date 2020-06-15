@@ -68,9 +68,15 @@ public interface IQueryBuilderOrderByClause<ModelType> extends IQueryOrderByBuil
 		return asc ? addColumnAscending(columnName) : addColumnDescending(columnName);
 	}
 
+	/**
+	 * Note: ascending will by default have {@code NULLS LAST}
+	 */
 	@Override
 	IQueryBuilderOrderByClause<ModelType> addColumnAscending(String columnName);
 
+	/**
+	 * Note: descending will by default have {@code NULLS FIRST}
+	 */
 	@Override
 	IQueryBuilderOrderByClause<ModelType> addColumnDescending(String columnName);
 

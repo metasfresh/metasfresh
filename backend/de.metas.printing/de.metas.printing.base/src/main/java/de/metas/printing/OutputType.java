@@ -38,7 +38,7 @@ import java.util.Arrays;
 public enum OutputType implements ReferenceListAwareEnum
 {
 	Attach(X_AD_PrinterHW.OUTPUTTYPE_Attach), //
-	Queue(X_AD_PrinterHW.OUTPUTTYPE_Queue),
+	Queue(X_AD_PrinterHW.OUTPUTTYPE_Queue), //
 	Store(X_AD_PrinterHW.OUTPUTTYPE_Store);
 
 	@Getter
@@ -67,6 +67,11 @@ public enum OutputType implements ReferenceListAwareEnum
 	public static String toCodeOrNull(final OutputType type)
 	{
 		return type != null ? type.getCode() : null;
+	}
+
+	public boolean isStore()
+	{
+		return this == Store;
 	}
 
 	private static final ImmutableMap<String, OutputType> typesByCode = Maps.uniqueIndex(Arrays.asList(values()), OutputType::getCode);

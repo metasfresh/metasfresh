@@ -197,9 +197,9 @@ public interface IPrintingDAO extends ISingletonService
 
 	List<I_AD_Printer_Matching> retrievePrinterMatchings(I_AD_PrinterHW printerHW);
 
-	List<I_AD_Printer_Tray> retrieveTrays(I_AD_Printer printer);
+	List<I_AD_Printer_Tray> retrieveTrays(de.metas.adempiere.model.I_AD_Printer printer);
 
-	I_AD_Printer_Matching retrievePrinterMatchingOrNull(String hostKey, I_AD_Printer printer);
+	I_AD_Printer_Matching retrievePrinterMatchingOrNull(String hostKey, de.metas.adempiere.model.I_AD_Printer printer);
 
 	I_AD_Print_Clients retrievePrintClientsEntry(Properties ctx, String hostKey);
 
@@ -222,6 +222,6 @@ public interface IPrintingDAO extends ISingletonService
 	 * retrieves a printer which has the output type PDF
 	 * <ul> virtual printer because is not a real hardware printer
 	 */
-	I_AD_PrinterHW retrieveVirtualPrinterOrNull(final Properties ctx, String hostkey, final String trxName);
+	I_AD_PrinterHW retrieveAttachToPrintPackagePrinter(final Properties ctx, String hostkey, final String trxName);
 
 }

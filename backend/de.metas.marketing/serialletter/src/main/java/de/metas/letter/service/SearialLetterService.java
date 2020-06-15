@@ -77,8 +77,6 @@ public class SearialLetterService
 	 * Create Printing queue source<bR>
 	 * <ul>
 	 * Contains printing queues for the letters that belong to a specific <code>C_Async_Batch_ID</code>
-	 *
-	 * @return
 	 */
 	private List<IPrintingQueueSource> createPrintingQueueSource(@NonNull final I_C_Async_Batch asyncBatch)
 	{

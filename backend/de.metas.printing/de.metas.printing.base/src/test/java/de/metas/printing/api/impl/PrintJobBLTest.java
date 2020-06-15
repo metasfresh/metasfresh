@@ -30,6 +30,7 @@ import java.util.List;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.apache.commons.collections4.IteratorUtils;
+import org.assertj.core.api.Assertions;
 import org.compiere.model.I_AD_SysConfig;
 import org.junit.Before;
 import org.junit.Test;
@@ -86,8 +87,8 @@ public class PrintJobBLTest extends AbstractPrintingTest
 
 		helper.addToPrintQueue("01", 1, c_DocType_ID); // AD_Org_ID=1, C_DocType_ID=12
 
-		final int printJobsCountActual = helper.createAllPrintJobs();
-		assertThat(printJobsCountActual, is(1));
+		helper.createAllPrintJobs();
+		assertThat(helper.getDB().getRecords(I_C_Print_Job.class).size(), is(1));
 
 		final I_C_Print_Job printJob = helper.getDB().getRecords(I_C_Print_Job.class).get(0);
 
@@ -135,8 +136,12 @@ public class PrintJobBLTest extends AbstractPrintingTest
 		helper.addToPrintQueue("04", 1, c_DocType_ID); // AD_Org_ID=1, C_DocType_ID=12
 		helper.addToPrintQueue("05", 1, c_DocType_ID); // AD_Org_ID=1, C_DocType_ID=12
 
-		final int printJobsCountActual = helper.createAllPrintJobs();
-		assertThat(printJobsCountActual, is(3));
+		// when
+		helper.createAllPrintJobs();
+
+		// then
+		final List<I_C_Print_Job> printJobs = helper.getDB().getRecords(I_C_Print_Job.class);
+		Assertions.assertThat(printJobs).as("Invalid Print Jobs count").hasSize(3);
 	}
 
 }

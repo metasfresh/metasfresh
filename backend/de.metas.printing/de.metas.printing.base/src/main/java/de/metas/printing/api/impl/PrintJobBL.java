@@ -32,9 +32,19 @@ import java.util.List;
 import java.util.Properties;
 import java.util.stream.Collectors;
 
+import de.metas.adempiere.service.PrinterRoutingsQuery;
+import de.metas.document.DocTypeId;
+import de.metas.organization.OrgId;
+import de.metas.printing.api.IPrintingQueueBL;
+import de.metas.process.AdProcessId;
+import de.metas.security.RoleId;
+import de.metas.user.UserId;
+import org.adempiere.ad.table.api.AdTableId;
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
+import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.Mutable;
 import org.compiere.util.TrxRunnable;
@@ -89,9 +99,11 @@ public class PrintJobBL implements IPrintJobBL
 
 	private final static transient Logger logger = LogManager.getLogger(PrintJobBL.class);
 
+	private final IPrinterRoutingDAO printerRoutingDAO  = Services.get(IPrinterRoutingDAO.class);
 	private final IPrintingDAO printingDAO = Services.get(IPrintingDAO.class);
 	private final IAsyncBatchBL asyncBatchBL = Services.get(IAsyncBatchBL.class);
 	private final IPrinterBL printerBL = Services.get(IPrinterBL.class);
+	private final IPrintingQueueBL printingQueueBL = Services.get(IPrintingQueueBL.class);
 
 	private int maxLinesPerJob = -1;
 
@@ -109,7 +121,7 @@ public class PrintJobBL implements IPrintJobBL
 	}
 
 	@Override
-	public int createPrintJobs(@NonNull final IPrintingQueueSource source, @NonNull final ContextForAsyncProcessing printJobContext)
+	public void createPrintJobs(@NonNull final IPrintingQueueSource source, @NonNull final ContextForAsyncProcessing printJobContext)
 	{
 		final String trxName = source.getTrxName();
 		final PrintingQueueProcessingInfo printingQueueProcessingInfo = source.getProcessingInfo();
@@ -135,7 +147,6 @@ public class PrintJobBL implements IPrintJobBL
 					final Iterator<I_C_Printing_Queue> relatedItems = source.createRelatedItemsIterator(item);
 
 					// task: 08958: note that that all items' related items have the same copies value as item
-					@SuppressWarnings("resource")
 					final PeekIterator<I_C_Printing_Queue> currentItems = IteratorUtils.asPeekIterator(
 							new IteratorChain<I_C_Printing_Queue>()
 									.addIterator(new SingletonIterator<>(item))
@@ -144,26 +155,7 @@ public class PrintJobBL implements IPrintJobBL
 					{
 						skipPrinted(source, currentItems);
 
-						while (currentItems.hasNext())
-						{
-							final List<I_C_Print_Job_Instructions> printJobInstructions = createPrintJobInstructionsAndPrintJobs(source,
-									currentItems,
-									printingQueueProcessingInfo,
-									trxName);
-							Loggables.withLogger(logger, Level.DEBUG).addLog("Created {} C_Print_Job_Instructions for related C_Printing_Queues", printJobInstructions.size());
-							if (printJobInstructions.isEmpty())
-							{
-								break;
-							}
-							else
-							{
-								pdfPrintingJobInstructions.addAll(collectPDFPrintJobInstructions(printJobInstructions));
-							}
-
-							printJobCount++;
-
-							skipPrinted(source, currentItems);
-						}
+						pdfPrintingJobInstructions.addAll(processItemGroup(source, printingQueueProcessingInfo, currentItems));
 					}
 					finally
 					{
@@ -171,7 +163,6 @@ public class PrintJobBL implements IPrintJobBL
 					}
 				}
 			}
-			return printJobCount;
 		}
 		finally
 		{
@@ -184,12 +175,36 @@ public class PrintJobBL implements IPrintJobBL
 		}
 	}
 
+	private List<I_C_Print_Job_Instructions> processItemGroup(
+			@NonNull final IPrintingQueueSource source,
+			@NonNull final PrintingQueueProcessingInfo printingQueueProcessingInfo,
+			@NonNull final PeekIterator<I_C_Printing_Queue> currentItems)
+	{
+		final ImmutableList.Builder<I_C_Print_Job_Instructions> pdfPrintingJobInstructions = ImmutableList.builder();
+		while (currentItems.hasNext())
+		{
+			final List<I_C_Print_Job_Instructions> printJobInstructions = createPrintJobInstructionsAndPrintJobs(source,
+					currentItems,
+					printingQueueProcessingInfo,
+					ITrx.TRXNAME_ThreadInherited);
+			Loggables.withLogger(logger, Level.DEBUG).addLog("Created {} C_Print_Job_Instructions for related C_Printing_Queues", printJobInstructions.size());
+			if (printJobInstructions.isEmpty())
+			{
+				break;
+			}
+			else
+			{
+				pdfPrintingJobInstructions.addAll(collectPrintJobInstructionsToAttach(printJobInstructions));
+			}
+
+			skipPrinted(source, currentItems);
+		}
+		return pdfPrintingJobInstructions.build();
+	}
+
 	/**
 	 * Navigates items iterator and skips all printed items.
 	 *
-	 * @param source
-	 *
-	 * @param items
 	 * @return number of items that were skipped
 	 */
 	private int skipPrinted(final IPrintingQueueSource source, final PeekIterator<I_C_Printing_Queue> items)
@@ -221,30 +236,27 @@ public class PrintJobBL implements IPrintJobBL
 	{
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
 
-		final Mutable<List<I_C_Print_Job_Instructions>> instrutionsMutable = new Mutable<>();
+		final Mutable<List<I_C_Print_Job_Instructions>> instructionsMutable = new Mutable<>();
 
-		trxManager.run(trxName, (TrxRunnable)localTrxName -> instrutionsMutable.setValue(createPrintJobInstructionsAndPrintJobs0(source, items, printingQueueProcessingInfo, localTrxName)));
+		trxManager.run(trxName, (TrxRunnable)localTrxName -> instructionsMutable.setValue(createPrintJobInstructionsAndPrintJobs0(source, items, printingQueueProcessingInfo, localTrxName)));
 
-		if (instrutionsMutable.getValue() == null)
+		if (instructionsMutable.getValue() == null)
 		{
 			return null;
 		}
 
 		//
 		// Reload instructions (in base transaction), to be used by monitor or other processors
-		InterfaceWrapperHelper.refreshAll(instrutionsMutable.getValue(), trxName);
-		return instrutionsMutable.getValue();
+		InterfaceWrapperHelper.refreshAll(instructionsMutable.getValue(), trxName);
+		return instructionsMutable.getValue();
 	}
 
-	/**
-	 * Builds a list from all C_Print_Job_Instructions that have a PDF printer set
-	 */
-	private List<I_C_Print_Job_Instructions> collectPDFPrintJobInstructions(final List<I_C_Print_Job_Instructions> printJobInstructions)
+	private List<I_C_Print_Job_Instructions> collectPrintJobInstructionsToAttach(final List<I_C_Print_Job_Instructions> printJobInstructions)
 	{
 		return printJobInstructions.stream()
 				.filter(pji -> X_C_Print_Job_Instructions.STATUS_Pending.equals(pji.getStatus())
 						&& pji.getAD_PrinterHW_ID() > 0
-						&& printerBL.isPDFPrinter(pji.getAD_PrinterHW()))
+						&& printerBL.isAttachToPrintPackagePrinter(pji.getAD_PrinterHW()))
 				.collect(Collectors.toList());
 	}
 
@@ -520,7 +532,7 @@ public class PrintJobBL implements IPrintJobBL
 
 		final String trxName = InterfaceWrapperHelper.getTrxName(instructions);
 		// set printer for pdf printing
-		instructions.setAD_PrinterHW(printingDAO.retrieveVirtualPrinterOrNull(ctx, hostKey, trxName));
+		instructions.setAD_PrinterHW(printingDAO.retrieveAttachToPrintPackagePrinter(ctx, hostKey, trxName));
 
 		InterfaceWrapperHelper.save(instructions);
 		return instructions;
@@ -587,28 +599,10 @@ public class PrintJobBL implements IPrintJobBL
 
 	private List<I_AD_PrinterRouting> findPrinterRoutings(final I_C_Printing_Queue item)
 	{
-		final Properties ctx = InterfaceWrapperHelper.getCtx(item);
+		final PrinterRoutingsQuery query = printingQueueBL.createPrinterRoutingsQueryForItem(item);
 
-		final int AD_Process_ID = item.getAD_Process_ID();
-		final int C_DocType_ID = item.getC_DocType_ID();
-
-		final int AD_Client_ID = item.getAD_Client_ID();
-		final int AD_Org_ID = item.getAD_Org_ID();
-		final int AD_Role_ID = item.getAD_Role_ID();
-		final int AD_User_ID = item.getAD_User_ID();
-
-		final int AD_Table_ID = item.getAD_Table_ID();
-
-		final List<I_AD_PrinterRouting> rs = Services.get(IPrinterRoutingDAO.class).fetchPrinterRoutings(ctx,
-				AD_Client_ID, AD_Org_ID,
-				AD_Role_ID, AD_User_ID,
-				C_DocType_ID,
-				AD_Process_ID,
-				AD_Table_ID,
-				null, // printerType
-				I_AD_PrinterRouting.class);
-
-		return rs;
+		final List<de.metas.adempiere.model.I_AD_PrinterRouting> rs = printerRoutingDAO.fetchPrinterRoutings(query);
+		return InterfaceWrapperHelper.createList(rs,I_AD_PrinterRouting.class);
 	}
 
 	@Override
