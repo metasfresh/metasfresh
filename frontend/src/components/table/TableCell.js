@@ -171,6 +171,25 @@ class TableCell extends PureComponent {
       : false;
 
   /**
+   * @method getEntity
+   * @summary Get the effective entity
+   * {string} viewId
+   * {bool} mainTable
+   * {string} entity
+   */
+  getEntity = ({ viewId, mainTable, entity }) => {
+    let entityEffective;
+    if (viewId) {
+      entityEffective = 'documentView';
+    } else if (mainTable) {
+      entityEffective = 'window';
+    } else {
+      entityEffective = entity;
+    }
+    return entityEffective;
+  };
+
+  /**
    * @method render
    * @summary Main render function
    */
@@ -225,14 +244,7 @@ class TableCell extends PureComponent {
           })
         : null;
 
-    let entityEffective;
-    if (viewId) {
-      entityEffective = 'documentView';
-    } else if (mainTable) {
-      entityEffective = 'window';
-    } else {
-      entityEffective = entity;
-    }
+    let entityEffective = this.getEntity({ viewId, mainTable, entity });
 
     return (
       <td
