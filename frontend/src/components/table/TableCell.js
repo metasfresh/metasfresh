@@ -190,6 +190,40 @@ class TableCell extends PureComponent {
   };
 
   /**
+   * @method formatTdClassNames
+   * @summary Formatting of the classes for the table divider
+   * {array} widgetData
+   */
+  formatTdClassNames = ({ widgetData }) => {
+    const { item, updatedRow, getSizeClass } = this.props;
+    return classnames(
+      {
+        [`text-${item.gridAlign}`]: item.gridAlign,
+        'cell-disabled': widgetData[0].readonly,
+        'cell-mandatory': widgetData[0].mandatory,
+      },
+      getSizeClass(item),
+      item.widgetType,
+      {
+        'pulse-on': updatedRow,
+        'pulse-off': !updatedRow,
+      }
+    );
+  };
+
+  /**
+   * @method formatTableCellWrapperClassNames
+   * @summary Formatting of the classes for the table cell wrapper
+   */
+  formatTableCellWrapperClassNames = () => {
+    const { item, cellExtended } = this.props;
+    classnames('cell-text-wrapper', {
+      [`${item.widgetType.toLowerCase()}-cell`]: item.widgetType,
+      extended: cellExtended,
+    });
+  };
+
+  /**
    * @method render
    * @summary Main render function
    */
@@ -206,14 +240,12 @@ class TableCell extends PureComponent {
       rowId,
       tabId,
       property,
-      updatedRow,
       tabIndex,
       entity,
       listenOnKeys,
       listenOnKeysFalse,
       listenOnKeysTrue,
       closeTableField,
-      getSizeClass,
       mainTable,
       onCellChange,
       viewId,
@@ -253,19 +285,7 @@ class TableCell extends PureComponent {
         onDoubleClick={this.onDoubleClick}
         onKeyDown={this.handleKeyDown}
         onContextMenu={this.handleRightClick}
-        className={classnames(
-          {
-            [`text-${item.gridAlign}`]: item.gridAlign,
-            'cell-disabled': widgetData[0].readonly,
-            'cell-mandatory': widgetData[0].mandatory,
-          },
-          getSizeClass(item),
-          item.widgetType,
-          {
-            'pulse-on': updatedRow,
-            'pulse-off': !updatedRow,
-          }
-        )}
+        className={this.formatTdClassNames({ widgetData })}
         data-cy={`cell-${property}`}
       >
         {isEdited ? (
@@ -299,10 +319,7 @@ class TableCell extends PureComponent {
         ) : (
           <div className={classnames({ 'with-widget': tooltipWidget })}>
             <div
-              className={classnames('cell-text-wrapper', {
-                [`${item.widgetType.toLowerCase()}-cell`]: item.widgetType,
-                extended: cellExtended,
-              })}
+              className={this.formatTableCellWrapperClassNames()}
               style={style}
               title={tdTitle}
             >
