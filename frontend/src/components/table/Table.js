@@ -1,36 +1,26 @@
 import React, { PureComponent } from 'react';
-import onClickOutside from 'react-onclickoutside';
+import PropTypes from 'prop-types';
 import classnames from 'classnames';
 import currentDevice from 'current-device';
-import counterpart from 'counterpart';
 
-import {
-  handleCopy,
-  handleOpenNewTab,
-  componentPropTypes,
-  constructorFn,
-} from '../../utils/tableHelpers';
+import { handleCopy, componentPropTypes } from '../../utils/tableHelpers';
 import { getCurrentActiveLocale } from '../../utils/documentListHelper';
 
-import Prompt from '../app/Prompt';
-import DocumentListContextShortcuts from '../keyshortcuts/DocumentListContextShortcuts';
-import TableContextShortcuts from '../keyshortcuts/TableContextShortcuts';
-import TableContextMenu from './TableContextMenu';
-import TableFilter from './TableFilter';
 import TableHeader from './TableHeader';
 import TableItem from './TableItem';
-import TablePagination from './TablePagination';
 
 const MOBILE_TABLE_SIZE_LIMIT = 30; // subjective number, based on empiric testing
 const isMobileOrTablet =
   currentDevice.type === 'mobile' || currentDevice.type === 'tablet';
 
-class Table extends PureComponent {
+export default class Table extends PureComponent {
   constructor(props) {
     super(props);
 
-    const constr = constructorFn.bind(this);
-    constr();
+    this.state = {
+      listenOnKeys: true,
+      tableRefreshToggle: false,
+    };
   }
 
   componentDidMount() {
@@ -75,53 +65,12 @@ class Table extends PureComponent {
     this.setState({ listenOnKeys: false });
   };
 
-  closeContextMenu = () => {
-    this.setState({
-      contextMenu: {
-        ...this.state.contextMenu,
-        open: false,
-      },
-    });
+  setTableRef = (ref) => {
+    this.table = ref;
   };
 
-  /**
-   * @method handleSelect
-   * @summary select row and focus on cell
-   *
-   * @param {number} id
-   * @param {*} idFocused - index of row's cell to select
-   * @param {*} idFocusedDown - index of row's cell to select in case of
-   * range selection
-   * @param {func} cb - callback function
-   */
-  handleSelect = (id, idFocused, idFocusedDown, cb) => {
-    const { onSelect } = this.props;
-
-    onSelect(id, () => {
-      cb && cb();
-
-      this.triggerFocus(idFocused, idFocusedDown);
-    });
-  };
-
-  setContextMenu = (
-    clientX,
-    clientY,
-    fieldName,
-    supportZoomInto,
-    supportFieldEdit
-  ) => {
-    this.setState({
-      contextMenu: {
-        ...this.state.contextMenu,
-        x: clientX,
-        y: clientY,
-        open: true,
-        fieldName,
-        supportZoomInto,
-        supportFieldEdit,
-      },
-    });
+  setTfootRef = (ref) => {
+    this.tfoot = ref;
   };
 
   getProductRange = (id) => {
@@ -138,287 +87,6 @@ class Table extends PureComponent {
 
     selectedArr.sort((a, b) => a - b);
     return arrayIndex.slice(selectedArr[0], selectedArr[1] + 1);
-  };
-
-  handleBatchEntryToggle = () => {
-    const { isBatchEntry } = this.state;
-
-    this.setState({
-      isBatchEntry: !isBatchEntry,
-    });
-  };
-
-  handleDelete = () => {
-    this.setState({
-      promptOpen: true,
-    });
-  };
-
-  handlePromptCancelClick = () => {
-    this.setState({
-      promptOpen: false,
-    });
-  };
-
-  handlePromptSubmitClick = (selected) => {
-    const { onPromptSubmit } = this.props;
-
-    onPromptSubmit && onPromptSubmit(selected);
-
-    this.setState({ promptOpen: false });
-  };
-
-  handleShortcutIndent = (collapse) => {
-    const { selected, rows, onRowCollapse } = this.props;
-    let node = null;
-
-    selected.length === 1 &&
-      rows.map((item) => {
-        if (item.id === selected[0]) {
-          if (item.includedDocuments) {
-            node = item;
-          }
-        }
-      });
-
-    if (node) {
-      onRowCollapse(node, collapse);
-    }
-  };
-
-  handleFieldEdit = () => {
-    const { selected } = this.props;
-    const { contextMenu } = this.state;
-
-    if (contextMenu.supportFieldEdit && selected.length === 1) {
-      const selectedId = selected[0];
-
-      this.closeContextMenu();
-
-      if (this.rowRefs && this.rowRefs[selectedId]) {
-        this.rowRefs[selectedId].initPropertyEditor(contextMenu.fieldName);
-      }
-    }
-  };
-
-  setWrapperRef = (ref) => {
-    this.wrapper = ref;
-  };
-
-  setTableRef = (ref) => {
-    this.table = ref;
-  };
-
-  setTfootRef = (ref) => {
-    this.tfoot = ref;
-  };
-
-  triggerFocus = (idFocused, idFocusedDown) => {
-    if (this.table) {
-      const rowsSelected = this.table.getElementsByClassName('row-selected');
-
-      if (rowsSelected.length > 0) {
-        if (typeof idFocused === 'number') {
-          rowsSelected[0].children[idFocused].focus();
-        }
-        if (typeof idFocusedDown === 'number') {
-          rowsSelected[rowsSelected.length - 1].children[idFocusedDown].focus();
-        }
-      }
-    }
-  };
-
-  handleClickOutside = (event) => {
-    const {
-      showIncludedView,
-      viewId,
-      windowId,
-      inBackground,
-      allowOutsideClick,
-      limitOnClickOutside,
-      onDeselectAll,
-      isModal,
-    } = this.props;
-    const parentNode = event.target.parentNode;
-    const closeIncluded =
-      limitOnClickOutside &&
-      (parentNode.className.includes('document-list-wrapper') ||
-        event.target.className.includes('document-list-wrapper'))
-        ? parentNode.className.includes('document-list-has-included')
-        : true;
-
-    if (
-      allowOutsideClick &&
-      parentNode &&
-      parentNode !== document &&
-      !parentNode.className.includes('notification') &&
-      !inBackground &&
-      closeIncluded
-    ) {
-      const item = event.path || (event.composedPath && event.composedPath());
-
-      if (item) {
-        for (let i = 0; i < item.length; i++) {
-          if (
-            item[i].classList &&
-            item[i].classList.contains('js-not-unselect')
-          ) {
-            return;
-          }
-        }
-      } else if (parentNode.className.includes('js-not-unselect')) {
-        return;
-      }
-
-      onDeselectAll();
-
-      const identifier = isModal ? viewId : windowId;
-
-      showIncludedView({
-        id: identifier,
-        showIncludedView: false,
-        windowId,
-        viewId,
-      });
-    }
-  };
-
-  handleKeyDown = (e) => {
-    const {
-      keyProperty,
-      mainTable,
-      readonly,
-      closeOverlays,
-      selected,
-      rows,
-      showSelectedIncludedView,
-      collapsedArrayMap,
-    } = this.props;
-    const { listenOnKeys } = this.state;
-
-    if (!listenOnKeys) {
-      return;
-    }
-
-    const selectRange = e.shiftKey;
-    const nodeList = Array.prototype.slice.call(
-      document.activeElement.parentElement.children
-    );
-    const idActive = nodeList.indexOf(document.activeElement);
-    let idFocused = null;
-
-    if (idActive > -1) {
-      idFocused = idActive;
-    }
-
-    switch (e.key) {
-      case 'ArrowDown': {
-        e.preventDefault();
-
-        const array =
-          collapsedArrayMap.length > 0
-            ? collapsedArrayMap.map((item) => item[keyProperty])
-            : rows.map((item) => item[keyProperty]);
-        const currentId = array.findIndex(
-          (x) => x === selected[selected.length - 1]
-        );
-
-        if (currentId >= array.length - 1) {
-          return;
-        }
-
-        if (!selectRange) {
-          this.handleSelect(
-            array[currentId + 1],
-            false,
-            idFocused,
-            showSelectedIncludedView &&
-              showSelectedIncludedView([array[currentId + 1]])
-          );
-        } else {
-          this.handleSelect(array[currentId + 1], false, idFocused);
-        }
-        break;
-      }
-      case 'ArrowUp': {
-        e.preventDefault();
-
-        const array =
-          collapsedArrayMap.length > 0
-            ? collapsedArrayMap.map((item) => item[keyProperty])
-            : rows.map((item) => item[keyProperty]);
-        const currentId = array.findIndex(
-          (x) => x === selected[selected.length - 1]
-        );
-
-        if (currentId <= 0) {
-          return;
-        }
-
-        if (!selectRange) {
-          this.handleSelect(
-            array[currentId - 1],
-            idFocused,
-            false,
-            showSelectedIncludedView &&
-              showSelectedIncludedView([array[currentId - 1]])
-          );
-        } else {
-          this.handleSelect(array[currentId - 1], idFocused, false);
-        }
-        break;
-      }
-      case 'ArrowLeft':
-        e.preventDefault();
-        if (document.activeElement.previousSibling) {
-          document.activeElement.previousSibling.focus();
-        }
-        break;
-      case 'ArrowRight':
-        e.preventDefault();
-        if (document.activeElement.nextSibling) {
-          document.activeElement.nextSibling.focus();
-        }
-        break;
-      case 'Tab':
-        if (mainTable) {
-          e.preventDefault();
-          const focusedElem = document.getElementsByClassName(
-            'js-attributes'
-          )[0];
-          if (focusedElem) {
-            focusedElem.getElementsByTagName('input')[0].focus();
-          }
-          break;
-        } else {
-          if (e.shiftKey) {
-            //passing focus over table cells backwards
-            this.table.focus();
-          } else {
-            //passing focus over table cells
-            this.tfoot.focus();
-          }
-        }
-        break;
-      case 'Enter':
-        if (selected.length <= 1 && readonly) {
-          e.preventDefault();
-
-          this.handleDoubleClick(selected[selected.length - 1]);
-        }
-        break;
-      case 'Escape':
-        closeOverlays && closeOverlays();
-        break;
-    }
-  };
-
-  handleDoubleClick = (id) => {
-    const { isIncluded, onDoubleClick } = this.props;
-
-    if (!isIncluded) {
-      onDoubleClick && onDoubleClick(id);
-    }
   };
 
   handleClick = (e, item) => {
@@ -487,30 +155,142 @@ class Table extends PureComponent {
     }
   };
 
-  handleRightClick = (e, id, fieldName, supportZoomInto, supportFieldEdit) => {
-    e.preventDefault();
+  handleDoubleClick = (id) => {
+    const { isIncluded, onDoubleClick } = this.props;
 
-    const { selected } = this.props;
-    const { clientX, clientY } = e;
+    if (!isIncluded) {
+      onDoubleClick && onDoubleClick(id);
+    }
+  };
 
-    if (selected.indexOf(id) > -1) {
-      this.setContextMenu(
-        clientX,
-        clientY,
-        fieldName,
-        supportZoomInto,
-        supportFieldEdit
-      );
-    } else {
-      this.handleSelect(id, null, null, () => {
-        this.setContextMenu(
-          clientX,
-          clientY,
-          fieldName,
-          supportZoomInto,
-          supportFieldEdit
+  handleKeyDown = (e) => {
+    const {
+      keyProperty,
+      mainTable,
+      readonly,
+      closeOverlays,
+      selected,
+      rows,
+      showSelectedIncludedView,
+      collapsedArrayMap,
+      handleSelect,
+    } = this.props;
+    const { listenOnKeys } = this.state;
+
+    if (!listenOnKeys) {
+      return;
+    }
+
+    const selectRange = e.shiftKey;
+    const nodeList = Array.prototype.slice.call(
+      document.activeElement.parentElement.children
+    );
+    const idActive = nodeList.indexOf(document.activeElement);
+    let idFocused = null;
+
+    if (idActive > -1) {
+      idFocused = idActive;
+    }
+
+    switch (e.key) {
+      case 'ArrowDown': {
+        e.preventDefault();
+
+        const array =
+          collapsedArrayMap.length > 0
+            ? collapsedArrayMap.map((item) => item[keyProperty])
+            : rows.map((item) => item[keyProperty]);
+        const currentId = array.findIndex(
+          (x) => x === selected[selected.length - 1]
         );
-      });
+
+        if (currentId >= array.length - 1) {
+          return;
+        }
+
+        if (!selectRange) {
+          handleSelect(
+            array[currentId + 1],
+            false,
+            idFocused,
+            showSelectedIncludedView &&
+              showSelectedIncludedView([array[currentId + 1]])
+          );
+        } else {
+          handleSelect(array[currentId + 1], false, idFocused);
+        }
+        break;
+      }
+      case 'ArrowUp': {
+        e.preventDefault();
+
+        const array =
+          collapsedArrayMap.length > 0
+            ? collapsedArrayMap.map((item) => item[keyProperty])
+            : rows.map((item) => item[keyProperty]);
+        const currentId = array.findIndex(
+          (x) => x === selected[selected.length - 1]
+        );
+
+        if (currentId <= 0) {
+          return;
+        }
+
+        if (!selectRange) {
+          handleSelect(
+            array[currentId - 1],
+            idFocused,
+            false,
+            showSelectedIncludedView &&
+              showSelectedIncludedView([array[currentId - 1]])
+          );
+        } else {
+          handleSelect(array[currentId - 1], idFocused, false);
+        }
+        break;
+      }
+      case 'ArrowLeft':
+        e.preventDefault();
+        if (document.activeElement.previousSibling) {
+          document.activeElement.previousSibling.focus();
+        }
+        break;
+      case 'ArrowRight':
+        e.preventDefault();
+        if (document.activeElement.nextSibling) {
+          document.activeElement.nextSibling.focus();
+        }
+        break;
+      case 'Tab':
+        if (mainTable) {
+          e.preventDefault();
+          const focusedElem = document.getElementsByClassName(
+            'js-attributes'
+          )[0];
+          if (focusedElem) {
+            focusedElem.getElementsByTagName('input')[0].focus();
+          }
+          break;
+        } else {
+          if (e.shiftKey) {
+            //passing focus over table cells backwards
+            this.table.focus();
+          } else {
+            //passing focus over table cells
+            this.tfoot.focus();
+          }
+        }
+        break;
+      case 'Enter':
+        if (selected.length <= 1 && readonly) {
+          e.preventDefault();
+
+          this.handleDoubleClick(selected[selected.length - 1]);
+        }
+        break;
+      case 'Escape':
+        closeOverlays && closeOverlays();
+        break;
     }
   };
 
@@ -542,14 +322,14 @@ class Table extends PureComponent {
       onRowCollapse,
       collapsedRows,
       collapsedParentRows,
+      onRightClick,
+      rowRefs,
     } = this.props;
     const activeLocale = { key: getCurrentActiveLocale() };
 
     if (!rows.length || !columns.length) {
       return null;
     }
-
-    this.rowRefs = {};
 
     let renderRows = rows.filter((row) => {
       if (collapsedRows) {
@@ -598,7 +378,7 @@ class Table extends PureComponent {
           if (c) {
             const keyProp = item[keyProperty];
 
-            this.rowRefs[keyProp] = c;
+            rowRefs[keyProp] = c;
           }
         }}
         keyProperty={item[keyProperty]}
@@ -606,7 +386,7 @@ class Table extends PureComponent {
         tabId={tabId}
         onDoubleClick={this.handleDoubleClick}
         onClick={this.handleClick}
-        handleRightClick={this.handleRightClick}
+        handleRightClick={onRightClick}
         changeListenOnTrue={this.setListenTrue}
         changeListenOnFalse={this.setListenFalse}
         newRow={i === rows.length - 1 ? newRow : false}
@@ -656,237 +436,72 @@ class Table extends PureComponent {
       tabId,
       viewId,
       readonly,
-      size,
-      handleChangePage,
-      pageLength,
       page,
-      mainTable,
-      updateDocList,
       sort,
       orderBy,
-      toggleFullScreen,
-      fullScreen,
-      tabIndex,
       indentSupported,
-      isModal,
-      queryLimitHit,
-      supportQuickInput,
-      tabInfo,
-      allowShortcut,
-      disablePaginationShortcuts,
       hasIncluded,
       blurOnIncludedView,
-      toggleState,
       spinnerVisible,
       rows,
-      selected,
-      onHandleZoomInto,
-      onSelect,
-      onSelectAll,
       onDeselectAll,
-      onGetAllLeaves,
       tableRefreshToggle,
-      onHandleAdvancedEdit,
-      onOpenTableModal,
     } = this.props;
-
-    const { contextMenu, promptOpen, isBatchEntry } = this.state;
-
-    let showPagination = page && pageLength;
-    if (currentDevice.type === 'mobile' || currentDevice.type === 'tablet') {
-      showPagination = false;
-    }
 
     return (
       <div
-        ref={this.setWrapperRef}
-        className={classnames('table-flex-wrapper', {
-          'col-12': toggleState === 'grid' || toggleState == null,
-          'col-6': toggleState === 'all',
-          'd-none': toggleState === 'map',
-        })}
-      >
-        <div
-          className={classnames({
-            'table-flex-wrapper-row': mainTable,
-          })}
-        >
-          {contextMenu.open && (
-            <TableContextMenu
-              {...contextMenu}
-              {...{
-                docId,
-                windowId,
-                mainTable,
-                updateDocList,
-              }}
-              selected={selected}
-              blur={this.closeContextMenu}
-              tabId={tabId}
-              deselect={onDeselectAll}
-              handleFieldEdit={this.handleFieldEdit}
-              handleAdvancedEdit={onHandleAdvancedEdit}
-              onOpenNewTab={handleOpenNewTab}
-              handleDelete={
-                !isModal && (tabInfo && tabInfo.allowDelete)
-                  ? this.handleDelete
-                  : null
-              }
-              handleZoomInto={onHandleZoomInto}
-            />
-          )}
-          {!readonly && (
-            <TableFilter
-              openTableModal={onOpenTableModal}
-              {...{
-                toggleFullScreen,
-                fullScreen,
-                docId,
-                tabIndex,
-                isBatchEntry,
-                supportQuickInput,
-              }}
-              docType={windowId}
-              tabId={tabId}
-              handleBatchEntryToggle={this.handleBatchEntryToggle}
-              allowCreateNew={tabInfo && tabInfo.allowCreateNew}
-              wrapperHeight={this.wrapper && this.wrapper.offsetHeight}
-            />
-          )}
-
-          <div
-            className={classnames(
-              'panel panel-primary panel-bordered',
-              'panel-bordered-force table-flex-wrapper',
-              'document-list-table js-not-unselect',
-              {
-                'table-content-empty': !rows.length,
-              }
-            )}
-          >
-            <table
-              className={classnames(
-                'table table-bordered-vertically',
-                'table-striped js-table',
-                {
-                  'table-read-only': readonly,
-                  'table-fade-out': hasIncluded && blurOnIncludedView,
-                  'layout-fix': tableRefreshToggle,
-                }
-              )}
-              onKeyDown={this.handleKeyDown}
-              ref={this.setTableRef}
-              onCopy={handleCopy}
-            >
-              <thead>
-                <TableHeader
-                  {...{
-                    sort,
-                    orderBy,
-                    page,
-                    indentSupported,
-                    tabId,
-                    docId,
-                    viewId,
-                  }}
-                  cols={columns}
-                  windowType={windowId}
-                  deselect={onDeselectAll}
-                />
-              </thead>
-              <tbody>{this.renderTableBody()}</tbody>
-              <tfoot ref={this.setTfootRef} />
-            </table>
-
-            {!spinnerVisible && this.renderEmptyInfo(rows)}
-          </div>
-
+        className={classnames(
+          'panel panel-primary panel-bordered',
+          'panel-bordered-force table-flex-wrapper',
+          'document-list-table js-not-unselect',
           {
-            // Other 'table-flex-wrapped' components
-            // like selection attributes
-            this.props.children
+            'table-content-empty': !rows.length,
           }
-        </div>
-        {showPagination && (
-          <div onClick={this.handleClickOutside}>
-            <TablePagination
+        )}
+      >
+        <table
+          className={classnames(
+            'table table-bordered-vertically',
+            'table-striped js-table',
+            {
+              'table-read-only': readonly,
+              'table-fade-out': hasIncluded && blurOnIncludedView,
+              'layout-fix': tableRefreshToggle,
+            }
+          )}
+          onKeyDown={this.handleKeyDown}
+          ref={this.setTableRef}
+          onCopy={handleCopy}
+        >
+          <thead>
+            <TableHeader
               {...{
-                handleChangePage,
-                size,
-                page,
+                sort,
                 orderBy,
-                queryLimitHit,
-                disablePaginationShortcuts,
+                page,
+                indentSupported,
+                tabId,
+                docId,
+                viewId,
               }}
-              onChangePage={handleChangePage}
-              selected={selected}
-              pageLength={pageLength}
-              rowLength={rows.length}
-              handleSelectAll={onSelectAll}
-              handleSelectRange={onSelect}
-              onDeselectAll={onDeselectAll}
+              cols={columns}
+              windowType={windowId}
+              deselect={onDeselectAll}
             />
-          </div>
-        )}
-        {promptOpen && (
-          <Prompt
-            title="Delete"
-            text="Are you sure?"
-            buttons={{ submit: 'Delete', cancel: 'Cancel' }}
-            onCancelClick={this.handlePromptCancelClick}
-            selected={selected}
-            onSubmitClick={this.handlePromptSubmitClick}
-          />
-        )}
+          </thead>
+          <tbody>{this.renderTableBody()}</tbody>
+          <tfoot ref={this.setTfootRef} />
+        </table>
 
-        {allowShortcut && (
-          <DocumentListContextShortcuts
-            windowId={windowId}
-            tabId={tabId}
-            selected={selected}
-            onAdvancedEdit={
-              selected && selected.length > 0 && selected[0]
-                ? onHandleAdvancedEdit
-                : null
-            }
-            onOpenNewTab={
-              selected && selected.length > 0 && selected[0] && mainTable
-                ? handleOpenNewTab
-                : null
-            }
-            onDelete={
-              selected && selected.length > 0 && selected[0]
-                ? this.handleDelete
-                : null
-            }
-            onGetAllLeaves={onGetAllLeaves}
-            onIndent={this.handleShortcutIndent}
-          />
-        )}
-
-        {allowShortcut && !readonly && (
-          <TableContextShortcuts
-            handleToggleQuickInput={this.handleBatchEntryToggle}
-            handleToggleExpand={toggleFullScreen}
-          />
-        )}
-        {isMobileOrTablet && rows.length > MOBILE_TABLE_SIZE_LIMIT && (
-          <span className="text-danger">
-            {counterpart.translate('view.limitTo', {
-              limit: MOBILE_TABLE_SIZE_LIMIT,
-              total: rows.length,
-            })}
-          </span>
-        )}
+        {!spinnerVisible && this.renderEmptyInfo(rows)}
       </div>
     );
   }
 }
 
-Table.propTypes = componentPropTypes;
-
-const clickOutsideConfig = {
-  excludeScrollbar: true,
+Table.propTypes = {
+  ...componentPropTypes,
+  onRightClick: PropTypes.func.isRequired,
+  handleSelect: PropTypes.func.isRequired,
+  rowRefs: PropTypes.object.isRequired,
 };
-
-export default onClickOutside(Table, clickOutsideConfig);
