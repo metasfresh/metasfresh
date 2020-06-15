@@ -532,16 +532,8 @@ class Table extends PureComponent {
       modalVisible,
       isGerman,
       activeSort,
-<<<<<<< HEAD
-      activeLocale,
-    } = this.props;
-
-    const {
-      selected,
-=======
       page,
       columns,
->>>>>>> DEV_BIGBANG
       rows,
       selected,
       onItemChange,
@@ -574,11 +566,6 @@ class Table extends PureComponent {
         {...{
           page,
           entity,
-<<<<<<< HEAD
-          activeLocale,
-          cols,
-=======
->>>>>>> DEV_BIGBANG
           windowId,
           mainTable,
           indentSupported,
