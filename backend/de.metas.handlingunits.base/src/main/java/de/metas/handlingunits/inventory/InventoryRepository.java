@@ -612,8 +612,7 @@ public class InventoryRepository
 			return ImmutableListMultimap.of();
 		}
 
-		return Services
-				.get(IQueryBL.class)
+		return queryBL
 				.createQueryBuilder(I_M_InventoryLine_HU.class)
 				.addOnlyActiveRecordsFilter()
 				.addInArrayFilter(I_M_InventoryLine_HU.COLUMNNAME_M_InventoryLine_ID, inventoryLineIds)
