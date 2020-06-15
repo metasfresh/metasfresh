@@ -29,6 +29,7 @@ import java.util.Set;
 import java.util.function.Predicate;
 
 import com.google.common.collect.ImmutableSet;
+import de.metas.organization.ClientAndOrgId;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IContextAware;
@@ -103,18 +104,11 @@ public interface IHandlingUnitsBL extends ISingletonService
 
 	/**
 	 * Creates a mutable context with the given <code>ctx</code> (may not be <code>null</code>) and <code>trxName=ITrx.TRXNAME_None</code>.
-	 *
-	 * @param ctx
-	 * @return
 	 */
-	IMutableHUContext createMutableHUContext(Properties ctx);
+	IMutableHUContext createMutableHUContext(Properties ctx, final @NonNull ClientAndOrgId clientAndOrgId);
 
 	/**
 	 * Creates a mutable context with the given <code>ctx</code> and <code>trxName</code>.
-	 *
-	 * @param ctx
-	 * @param trxName
-	 * @return
 	 */
 	IMutableHUContext createMutableHUContext(Properties ctx, String trxName);
 
@@ -124,14 +118,10 @@ public interface IHandlingUnitsBL extends ISingletonService
 
 	/**
 	 * Method iterated the given version and checks if one of them has {@link I_M_HU_PI_Version#isCurrent()} set to <code>true</code>.
-	 *
-	 * @param versions
-	 * @return
 	 */
 	boolean isListContainsCurrentVersion(List<I_M_HU_PI_Version> versions);
 
 	/**
-	 * @param hu
 	 * @return true if HU was destroyed
 	 */
 	boolean isDestroyed(I_M_HU hu);
@@ -139,7 +129,6 @@ public interface IHandlingUnitsBL extends ISingletonService
 	/**
 	 * Refresh HU first before checking if it's destroyed
 	 *
-	 * @param hu
 	 * @return true if HU was destroyed
 	 * @throws AdempiereException if hu has local changes
 	 */
@@ -164,7 +153,7 @@ public interface IHandlingUnitsBL extends ISingletonService
 	boolean isVirtual(I_M_HU hu);
 
 	/**
-	 * @return {@code true} if the given {@code huItems}'s {@code M_HU_PI_Item_ID} is the "virtual" one, see {@link IHandlingUnitsDAO#getVirtual_HU_PI_Item_ID()}.
+	 * @return {@code true} if the given {@code huItems}'s {@code M_HU_PI_Item_ID} is the "virtual" one, see {@link IHandlingUnitsDAO#retrieveVirtualPIItem(Properties)}.
 	 */
 	boolean isVirtual(I_M_HU_Item huItem);
 

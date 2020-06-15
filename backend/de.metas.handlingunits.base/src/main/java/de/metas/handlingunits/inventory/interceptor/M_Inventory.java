@@ -52,7 +52,7 @@ import lombok.NonNull;
 @Component
 public class M_Inventory
 {
-	private InventoryService inventoryLineRecordService;
+	private final InventoryService inventoryLineRecordService;
 
 	public M_Inventory(@NonNull final InventoryService inventoryRecordHUService)
 	{

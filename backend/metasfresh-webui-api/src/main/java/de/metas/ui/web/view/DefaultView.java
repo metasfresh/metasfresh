@@ -1,8 +1,28 @@
 package de.metas.ui.web.view;
 
+import java.math.BigDecimal;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Consumer;
+import java.util.stream.Stream;
+
+import javax.annotation.Nullable;
+
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.lang.impl.TableRecordReferenceSet;
+import org.compiere.util.Evaluatee;
+import org.slf4j.Logger;
+
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+
 import de.metas.cache.CCache;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
@@ -11,6 +31,7 @@ import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.DocumentFilterList;
 import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProvider;
 import de.metas.ui.web.document.filter.provider.standard.FacetFilterViewCacheMap;
+import de.metas.ui.web.document.references.DocumentReferenceId;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.view.event.ViewChangesCollector;
 import de.metas.ui.web.view.json.JSONViewDataType;
@@ -34,23 +55,6 @@ import de.metas.util.collections.IteratorUtils;
 import de.metas.util.collections.PagedIterator.Page;
 import lombok.Getter;
 import lombok.NonNull;
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.lang.impl.TableRecordReferenceSet;
-import org.compiere.util.Evaluatee;
-import org.slf4j.Logger;
-
-import javax.annotation.Nullable;
-import java.math.BigDecimal;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.Consumer;
-import java.util.stream.Stream;
 
 /*
  * #%L
@@ -108,6 +112,7 @@ public final class DefaultView implements IEditableView
 	private final ViewProfileId profileId;
 	@Getter
 	private final ImmutableSet<DocumentPath> referencingDocumentPaths;
+	private final DocumentReferenceId documentReferenceId;
 
 	@Getter
 	private final ViewEvaluationCtx viewEvaluationCtx;
@@ -150,6 +155,7 @@ public final class DefaultView implements IEditableView
 		viewType = builder.getViewType();
 		profileId = builder.getProfileId();
 		referencingDocumentPaths = builder.getReferencingDocumentPaths();
+		documentReferenceId = builder.getDocumentReferenceId();
 		viewInvalidationAdvisor = builder.getViewInvalidationAdvisor();
 
 		//
@@ -649,6 +655,7 @@ public final class DefaultView implements IEditableView
 		private JSONViewDataType viewType;
 		private ViewProfileId profileId;
 		private Set<DocumentPath> referencingDocumentPaths;
+		private DocumentReferenceId documentReferenceId;
 		private ViewId parentViewId;
 		private DocumentId parentRowId;
 		private final IViewDataRepository viewDataRepository;
@@ -731,6 +738,17 @@ public final class DefaultView implements IEditableView
 		private ImmutableSet<DocumentPath> getReferencingDocumentPaths()
 		{
 			return referencingDocumentPaths == null ? ImmutableSet.of() : ImmutableSet.copyOf(referencingDocumentPaths);
+		}
+		
+		public Builder setDocumentReferenceId(DocumentReferenceId documentReferenceId)
+		{
+			this.documentReferenceId = documentReferenceId;
+			return this;
+		}
+		
+		private DocumentReferenceId getDocumentReferenceId()
+		{
+			return documentReferenceId;
 		}
 
 		private ViewId getParentViewId()

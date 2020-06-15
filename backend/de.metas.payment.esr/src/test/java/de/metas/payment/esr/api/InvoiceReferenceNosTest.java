@@ -5,9 +5,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_Bank;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.X_C_DocType;
 import org.junit.jupiter.api.BeforeEach;
@@ -15,6 +15,10 @@ import org.junit.jupiter.api.Test;
 
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.attachments.AttachmentEntryService;
+import de.metas.banking.Bank;
+import de.metas.banking.BankCreateRequest;
+import de.metas.banking.api.BankRepository;
+import de.metas.payment.esr.api.impl.ESRBPBankAccountBL;
 import de.metas.payment.esr.api.impl.ESRImportBL;
 import de.metas.payment.esr.model.I_C_BP_BankAccount;
 import de.metas.util.Services;
@@ -44,6 +48,7 @@ import lombok.NonNull;
 
 public class InvoiceReferenceNosTest
 {
+	private BankRepository bankRepo;
 	private ESRImportBL esrImportBL;
 
 	@BeforeEach
@@ -51,9 +56,12 @@ public class InvoiceReferenceNosTest
 	{
 		AdempiereTestHelper.get().init();
 
+		bankRepo = new BankRepository();
+		final ESRBPBankAccountBL esrBankAccountBL = new ESRBPBankAccountBL(bankRepo);
+		SpringContextHolder.registerJUnitBean(IESRBPBankAccountBL.class, esrBankAccountBL);
+
 		final AttachmentEntryService attachmentEntryService = AttachmentEntryService.createInstanceForUnitTesting();
 		esrImportBL = new ESRImportBL(attachmentEntryService);
-
 		Services.registerService(IESRImportBL.class, esrImportBL);
 	}
 
@@ -68,7 +76,7 @@ public class InvoiceReferenceNosTest
 		final I_C_BPartner invoicePartner = createPartner("InvoicePartner", "1234");
 
 		final I_C_DocType invoiceDocType = createInvoiceDocType(X_C_DocType.DOCBASETYPE_APInvoice);
-		final I_C_Invoice invoice = createInvoice(org, invoicePartner, "1234"/*documentNo*/, invoiceDocType);
+		final I_C_Invoice invoice = createInvoice(org, invoicePartner, "1234"/* documentNo */, invoiceDocType);
 
 		final String referenceNo = "1234560" // first 7 digits are the accountNo, rpad 0
 				+ "001" // next 3 digits are org value, lpad0
@@ -172,13 +180,14 @@ public class InvoiceReferenceNosTest
 
 	private I_C_BP_BankAccount createESRBankAccountForPartner(@NonNull final I_C_BPartner partner, @NonNull final String accountNo)
 	{
-
-		final I_C_Bank bank = InterfaceWrapperHelper.newInstance(I_C_Bank.class);
-		InterfaceWrapperHelper.save(bank);
+		final Bank bank = bankRepo.createBank(BankCreateRequest.builder()
+				.bankName("bankName")
+				.routingNo("routingNo")
+				.build());
 
 		final I_C_BP_BankAccount bpBankAccount = InterfaceWrapperHelper.newInstance(I_C_BP_BankAccount.class);
 
-		bpBankAccount.setC_Bank(bank);
+		bpBankAccount.setC_Bank_ID(bank.getBankId().getRepoId());
 		bpBankAccount.setAD_Org_ID(partner.getAD_Org_ID());
 		bpBankAccount.setIsEsrAccount(true);
 

@@ -26,6 +26,7 @@ package de.metas.edi.esb.route.imports;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 
+import org.apache.camel.CamelContext;
 import org.apache.camel.Exchange;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.builder.RouteBuilder;
@@ -45,6 +46,7 @@ import de.metas.edi.esb.route.AbstractEDIRoute;
 public class StepComXMLOrdersRoute
 		extends RouteBuilder
 {
+	/** This place holder is evaluated via {@link Util#resolveProperty(CamelContext, String)}, that's why we don't put it in {@code {{...}}} */
 	private static final String INPUT_ORDERS_REMOTE = "edi.file.orders.stepcom-xml.remote";
 
 	private static final String INPUT_ORDERS_LOCAL = "{{edi.file.orders.stepcom-xml}}";

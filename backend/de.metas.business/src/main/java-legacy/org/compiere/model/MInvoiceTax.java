@@ -130,10 +130,6 @@ public class MInvoiceTax extends X_C_InvoiceTax
 
 	/**************************************************************************
 	 * Persistency Constructor
-	 *
-	 * @param ctx context
-	 * @param ignored ignored
-	 * @param trxName transaction
 	 */
 	public MInvoiceTax(Properties ctx, int id, String trxName)
 	{

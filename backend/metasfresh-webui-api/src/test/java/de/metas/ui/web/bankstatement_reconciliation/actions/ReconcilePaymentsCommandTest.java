@@ -32,11 +32,12 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.attachments.AttachmentEntryService;
+import de.metas.banking.BankAccountId;
 import de.metas.banking.BankStatementId;
 import de.metas.banking.BankStatementLineId;
 import de.metas.banking.BankStatementLineReference;
 import de.metas.banking.PaySelectionId;
-import de.metas.banking.api.BankAccountId;
+import de.metas.banking.api.BankAccountService;
 import de.metas.banking.model.validator.PaySelectionBankStatementListener;
 import de.metas.banking.payment.IBankStatementPaymentBL;
 import de.metas.banking.payment.IPaySelectionBL;
@@ -44,7 +45,6 @@ import de.metas.banking.payment.IPaySelectionDAO;
 import de.metas.banking.payment.impl.BankStatementPaymentBL;
 import de.metas.banking.service.BankStatementCreateRequest;
 import de.metas.banking.service.BankStatementLineCreateRequest;
-import de.metas.banking.service.IBankStatementBL;
 import de.metas.banking.service.IBankStatementDAO;
 import de.metas.banking.service.IBankStatementListenerService;
 import de.metas.banking.service.impl.BankStatementBL;
@@ -132,7 +132,8 @@ public class ReconcilePaymentsCommandTest
 		final IPaySelectionBL paySelectionBL = Services.get(IPaySelectionBL.class);
 		bankStatementListenerService.addListener(new PaySelectionBankStatementListener(paySelectionBL));
 
-		Services.registerService(IBankStatementBL.class, new BankStatementBL()
+		final BankAccountService bankAccountService = BankAccountService.newInstanceForUnitTesting();
+		final BankStatementBL bankStatementBL = new BankStatementBL(bankAccountService)
 		{
 			public void unpost(I_C_BankStatement bankStatement)
 			{
@@ -140,12 +141,12 @@ public class ReconcilePaymentsCommandTest
 						+ "\n\t bank statement: " + bankStatement
 						+ "\n\t called via " + Trace.toOneLineStackTraceString());
 			}
-		});
+		};
 
-		bankStatmentPaymentBL = new BankStatementPaymentBL(moneyService);
+		bankStatmentPaymentBL = new BankStatementPaymentBL(bankStatementBL, moneyService);
 		SpringContextHolder.registerJUnitBean(IBankStatementPaymentBL.class, bankStatmentPaymentBL);
 
-		this.rowsRepo = new BankStatementLineAndPaymentsToReconcileRepository(currencyRepository);
+		this.rowsRepo = new BankStatementLineAndPaymentsToReconcileRepository(bankStatementBL, currencyRepository);
 		rowsRepo.setBpartnerLookup(new MockedBPartnerLookupDataSource());
 
 		createMasterdata();

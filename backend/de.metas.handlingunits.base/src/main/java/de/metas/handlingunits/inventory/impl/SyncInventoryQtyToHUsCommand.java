@@ -10,6 +10,7 @@ import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.mm.attributes.api.PlainAttributeSetInstanceAware;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
+import org.compiere.util.Env;
 
 import de.metas.document.DocBaseAndSubType;
 import de.metas.handlingunits.HuId;
@@ -49,6 +50,7 @@ import de.metas.inventory.AggregationType;
 import de.metas.inventory.HUAggregationType;
 import de.metas.inventory.IInventoryBL;
 import de.metas.inventory.InventoryId;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
@@ -193,7 +195,7 @@ public class SyncInventoryQtyToHUsCommand
 			final IAllocationDestination huDestination = createHUAllocationDestination(inventoryLineRecord);
 
 			final IAllocationRequest request = AllocationUtils.createAllocationRequestBuilder()
-					.setHUContext(huContextFactory.createMutableHUContext())
+					.setHUContext(Services.get(IHUContextFactory.class).createMutableHUContext(Env.getCtx(), ClientAndOrgId.ofClientAndOrg(inventoryLineRecord.getAD_Client_ID(), inventoryLineRecord.getAD_Org_ID())))
 					.setDateAsToday()
 					.setProduct(inventoryLine.getProductId())
 					.setQuantity(qtyDiff)

@@ -63,7 +63,7 @@ import lombok.NonNull;
 import lombok.ToString;
 
 @ToString(of = { "_force", "_clientId", "_documentRef", "_postImmediate", "_postWithoutServer", "_failOnError" })
-		/* package */class PostingRequestBuilder implements IPostingRequestBuilder
+/* package */class PostingRequestBuilder implements IPostingRequestBuilder
 {
 	public static final Topic NOTIFICATIONS_TOPIC = Topic.remote("de.metas.acct.UserNotifications");
 
@@ -86,7 +86,7 @@ import lombok.ToString;
 
 	// Status
 	private boolean _executed = false;
-	private PostingExecutionException _postedException = null;
+	private AdempiereException _postedException = null;
 
 	@Override
 	public IClientUIInvoker postItOnUI()
@@ -340,7 +340,7 @@ import lombok.ToString;
 		}
 		else
 		{
-			_postedException = PostingExecutionException.wrapIfNeeded(postedException);
+			_postedException = AdempiereException.wrapIfNeeded(postedException);
 		}
 	}
 
@@ -353,7 +353,7 @@ import lombok.ToString;
 	 */
 	private final void postingComplete()
 	{
-		final PostingExecutionException postedException = _postedException;
+		final AdempiereException postedException = _postedException;
 
 		//
 		// Notify user

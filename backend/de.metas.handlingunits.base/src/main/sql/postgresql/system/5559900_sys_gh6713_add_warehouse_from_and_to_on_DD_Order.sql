@@ -35,7 +35,7 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 
 -- 2020-05-25T08:11:58.930Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */ SELECT public.db_alter_table('DD_Order','ALTER TABLE public.DD_Order ADD COLUMN M_Warehouse_From_ID NUMERIC(10) DEFAULT 540008 NOT NULL')
+/* DDL */ SELECT public.db_alter_table('DD_Order',  'ALTER TABLE public.DD_Order ADD COLUMN M_Warehouse_From_ID NUMERIC(10)')
 ;
 
 -- 2020-05-25T08:11:59.850Z

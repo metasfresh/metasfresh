@@ -26,16 +26,19 @@ import javax.annotation.Nullable;
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 
 import org.adempiere.ad.service.IDeveloperModeBL;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.logging.LoggingHelper;
 import org.compiere.model.Null;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 import org.slf4j.MDC;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 
 import ch.qos.logback.classic.Level;
 import de.metas.error.AdIssueId;
+import de.metas.error.IssueCategory;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
@@ -50,11 +53,10 @@ import lombok.NonNull;
  *
  * @author Teo Sarca, SC ARHIPAC SERVICE SRL
  */
+@SuppressWarnings("serial")
 public class AdempiereException extends RuntimeException
 		implements IIssueReportableAware
 {
-	private static final long serialVersionUID = -1813037338765245293L;
-
 	/**
 	 * Wraps given <code>throwable</code> as {@link AdempiereException}, if it's not already an {@link AdempiereException}.<br>
 	 * Note that this method also tries to pick the most specific adempiere exception (work in progress).
@@ -221,6 +223,11 @@ public class AdempiereException extends RuntimeException
 	{
 		AdempiereException.captureLanguageOnConstructionTime = true;
 	}
+
+	@VisibleForTesting
+	static final String PARAMETER_RecordRef = "recordRef";
+	@VisibleForTesting
+	static final String PARAMETER_IssueCategory = "issueCategory";
 
 	private static boolean captureLanguageOnConstructionTime = false;
 
@@ -502,6 +509,35 @@ public class AdempiereException extends RuntimeException
 	{
 		userNotified = true;
 		return this;
+	}
+
+	@OverridingMethodsMustInvokeSuper
+	public AdempiereException setRecord(@NonNull final TableRecordReference recordRef)
+	{
+		return setParameter(PARAMETER_RecordRef, recordRef);
+	}
+
+	@Nullable
+	public final TableRecordReference getRecord()
+	{
+		final Object recordRefObj = getParameter(PARAMETER_RecordRef);
+		return recordRefObj instanceof TableRecordReference
+				? (TableRecordReference)recordRefObj
+				: null;
+	}
+
+	public AdempiereException setIssueCategory(@NonNull final IssueCategory issueCategory)
+	{
+		return setParameter(PARAMETER_IssueCategory, issueCategory);
+	}
+
+	@NonNull
+	public IssueCategory getIssueCategory()
+	{
+		final Object issueCategoryObj = getParameter(PARAMETER_IssueCategory);
+		return issueCategoryObj instanceof IssueCategory
+				? (IssueCategory)issueCategoryObj
+				: IssueCategory.OTHER;
 	}
 
 	/**

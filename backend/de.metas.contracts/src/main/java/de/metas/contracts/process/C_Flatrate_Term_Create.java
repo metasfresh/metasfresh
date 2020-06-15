@@ -1,16 +1,14 @@
 package de.metas.contracts.process;
 
-import java.sql.Timestamp;
-
-import javax.annotation.Nullable;
-
+import de.metas.contracts.model.I_C_Flatrate_Conditions;
+import de.metas.contracts.process.FlatrateTermCreator.FlatrateTermCreatorBuilder;
+import de.metas.process.JavaProcess;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_Product;
 
-import de.metas.contracts.model.I_C_Flatrate_Conditions;
-import de.metas.contracts.process.FlatrateTermCreator.FlatrateTermCreatorBuilder;
-import de.metas.process.JavaProcess;
+import javax.annotation.Nullable;
+import java.sql.Timestamp;
 
 /*
  * #%L
@@ -61,6 +59,11 @@ public abstract class C_Flatrate_Term_Create extends JavaProcess
 	public void setConditions(I_C_Flatrate_Conditions conditions)
 	{
 		builder.conditions(conditions);
+	}
+
+	public void setIsSimulation(final boolean isSimulation)
+	{
+		builder.isSimulation(isSimulation);
 	}
 
 	@Override

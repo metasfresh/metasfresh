@@ -1,15 +1,8 @@
 package de.metas.contracts.commission.commissioninstance.businesslogic.algorithms;
 
-import static de.metas.util.Check.assumeGreaterOrEqualToZero;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.exceptions.AdempiereException;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionContract;
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionSettingsLineId;
@@ -19,6 +12,11 @@ import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.ToString;
 import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
+
+import javax.annotation.Nullable;
+
+import static de.metas.util.Check.assumeGreaterOrEqualToZero;
 
 /*
  * #%L
@@ -54,6 +52,8 @@ public class HierarchyContract implements CommissionContract
 	Percent commissionPercent;
 
 	int pointsPrecision;
+
+	boolean isSimulation;
 
 	/** Technically not needed, but useful to help users retain a minimum level of sanity when analyzing why a particular commission was granted */
 	CommissionSettingsLineId commissionSettingsLineId;
@@ -102,13 +102,15 @@ public class HierarchyContract implements CommissionContract
 			@JsonProperty("config") @NonNull final HierarchyConfig config,
 			@JsonProperty("percent") @NonNull final Percent commissionPercent,
 			@JsonProperty("pointsPrecision") final int pointsPrecision,
-			@JsonProperty("commissionSettingsLineId") @Nullable final CommissionSettingsLineId commissionSettingsLineId)
+			@JsonProperty("commissionSettingsLineId") @Nullable final CommissionSettingsLineId commissionSettingsLineId,
+			@JsonProperty("isSimulation") final boolean isSimulation)
 	{
 		this.id = id;
 		this.config = config;
 		this.commissionPercent = commissionPercent;
 		this.pointsPrecision = assumeGreaterOrEqualToZero(pointsPrecision, "pointsPrecision");
 		this.commissionSettingsLineId = commissionSettingsLineId;
+		this.isSimulation = isSimulation;
 	}
 
 	/** Note: add "Hierarchy" as method parameters if and when we have a commission type where it makes a difference. */

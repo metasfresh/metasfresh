@@ -22,11 +22,28 @@
 
 package de.metas.banking.service.impl;
 
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Properties;
+import java.util.Set;
+
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_BankStatement;
+import org.compiere.model.I_C_BankStatementLine;
+import org.compiere.model.I_C_Invoice;
+import org.compiere.model.MPeriod;
+import org.compiere.model.X_C_DocType;
+import org.springframework.stereotype.Service;
+
 import com.google.common.collect.ImmutableSet;
+
 import de.metas.acct.api.IFactAcctDAO;
+import de.metas.banking.BankAccountId;
 import de.metas.banking.BankStatementId;
 import de.metas.banking.BankStatementLineId;
 import de.metas.banking.BankStatementLineReferenceList;
+import de.metas.banking.api.BankAccountService;
 import de.metas.banking.service.IBankStatementBL;
 import de.metas.banking.service.IBankStatementDAO;
 import de.metas.banking.service.IBankStatementListenerService;
@@ -37,25 +54,21 @@ import de.metas.payment.PaymentId;
 import de.metas.payment.api.IPaymentBL;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_BankStatement;
-import org.compiere.model.I_C_BankStatementLine;
-import org.compiere.model.I_C_Invoice;
-import org.compiere.model.MPeriod;
-import org.compiere.model.X_C_DocType;
 
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
-import java.util.Set;
-
+@Service
 public class BankStatementBL implements IBankStatementBL
 {
 	private final IBankStatementDAO bankStatementDAO = Services.get(IBankStatementDAO.class);
 	private final IBankStatementListenerService bankStatementListenersService = Services.get(IBankStatementListenerService.class);
 	private final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
 	private final IFactAcctDAO factAcctDAO = Services.get(IFactAcctDAO.class);
+	private final BankAccountService bankAccountService;
+
+	public BankStatementBL(
+			@NonNull final BankAccountService bankAccountService)
+	{
+		this.bankAccountService = bankAccountService;
+	}
 
 	@Override
 	public I_C_BankStatement getById(@NonNull final BankStatementId bankStatementId)
@@ -132,15 +145,6 @@ public class BankStatementBL implements IBankStatementBL
 			final PaymentId paymentId = PaymentId.ofRepoIdOrNull(line.getC_Payment_ID());
 			return paymentId != null;
 		}
-	}
-
-	@Override
-	public BigDecimal computeStmtAmtExcludingChargeAmt(final I_C_BankStatementLine line)
-	{
-		return line.getTrxAmt()
-				.add(line.getInterestAmt())
-				// .add(line.getChargeAmt())
-				;
 	}
 
 	@Override
@@ -236,6 +240,16 @@ public class BankStatementBL implements IBankStatementBL
 		bankStatementLine.setStmtAmt(openAmt.getAsBigDecimal());
 		bankStatementLine.setTrxAmt(openAmt.getAsBigDecimal());
 		bankStatementLine.setC_Currency_ID(invoice.getC_Currency_ID());
+	}
+
+	@Override
+	public boolean isCashJournal(@NonNull final I_C_BankStatementLine bankStatementLine)
+	{
+		final BankStatementId bankStatementId = BankStatementId.ofRepoId(bankStatementLine.getC_BankStatement_ID());
+		final I_C_BankStatement bankStatement = getById(bankStatementId);
+		final BankAccountId bankAccountId = BankAccountId.ofRepoId(bankStatement.getC_BP_BankAccount_ID());
+
+		return bankAccountService.isCashBank(bankAccountId);
 	}
 
 }
