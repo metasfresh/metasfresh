@@ -1708,3 +1708,147 @@ UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=30,Updated=TO_TIMESTAMP(
 UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=40,Updated=TO_TIMESTAMP('2020-06-16 15:06:43','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=570132
 ;
 
+-- 2020-06-16T14:38:27.337Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET Name='Referenzen', PrintName='Referenzen',Updated=TO_TIMESTAMP('2020-06-16 17:38:27','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=573611 AND AD_Language='de_CH'
+;
+
+-- 2020-06-16T14:38:27.374Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(573611,'de_CH')
+;
+
+-- 2020-06-16T14:38:31.652Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2020-06-16 17:38:31','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=573611 AND AD_Language='en_US'
+;
+
+-- 2020-06-16T14:38:31.653Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(573611,'en_US')
+;
+
+-- 2020-06-16T14:38:34.741Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET Name='Referenzen', PrintName='Referenzen',Updated=TO_TIMESTAMP('2020-06-16 17:38:34','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=573611 AND AD_Language='nl_NL'
+;
+
+-- 2020-06-16T14:38:34.742Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(573611,'nl_NL')
+;
+
+-- 2020-06-16T14:38:37.935Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET Name='Referenzen', PrintName='Referenzen',Updated=TO_TIMESTAMP('2020-06-16 17:38:37','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=573611 AND AD_Language='de_DE'
+;
+
+-- 2020-06-16T14:38:37.936Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(573611,'de_DE')
+;
+
+-- 2020-06-16T14:38:37.956Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_ad_element_on_ad_element_trl_update(573611,'de_DE')
+;
+
+-- 2020-06-16T14:38:37.963Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET ColumnName=NULL, Name='Referenzen', Description=NULL, Help=NULL WHERE AD_Element_ID=573611
+;
+
+-- 2020-06-16T14:38:37.964Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName=NULL, Name='Referenzen', Description=NULL, Help=NULL WHERE AD_Element_ID=573611 AND IsCentrallyMaintained='Y'
+;
+
+-- 2020-06-16T14:38:37.964Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Referenzen', Description=NULL, Help=NULL WHERE (AD_Column_ID IN (SELECT AD_Column_ID FROM AD_Column WHERE AD_Element_ID=573611) AND AD_Name_ID IS NULL ) OR (AD_Name_ID = 573611)
+;
+
+-- 2020-06-16T14:38:37.971Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_PrintFormatItem pi SET PrintName='Referenzen', Name='Referenzen' WHERE IsCentrallyMaintained='Y' AND EXISTS (SELECT * FROM AD_Column c  WHERE c.AD_Column_ID=pi.AD_Column_ID AND c.AD_Element_ID=573611)
+;
+
+-- 2020-06-16T14:38:37.973Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab SET Name='Referenzen', Description=NULL, Help=NULL, CommitWarning = NULL WHERE AD_Element_ID = 573611
+;
+
+-- 2020-06-16T14:38:37.975Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_WINDOW SET Name='Referenzen', Description=NULL, Help=NULL WHERE AD_Element_ID = 573611
+;
+
+-- 2020-06-16T14:38:37.976Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Menu SET   Name = 'Referenzen', Description = NULL, WEBUI_NameBrowse = NULL, WEBUI_NameNew = NULL, WEBUI_NameNewBreadcrumb = NULL WHERE AD_Element_ID = 573611
+;
+
+-- 2020-06-16T14:41:27.589Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET Name='Jasper Prozess', PrintName='Jasper Prozess',Updated=TO_TIMESTAMP('2020-06-16 17:41:27','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=50064 AND AD_Language='de_CH'
+;
+
+-- 2020-06-16T14:41:27.590Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(50064,'de_CH')
+;
+
+-- 2020-06-16T14:41:35.614Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET Name='Jasper Prozess', PrintName='Jasper Prozess',Updated=TO_TIMESTAMP('2020-06-16 17:41:35','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=50064 AND AD_Language='de_DE'
+;
+
+-- 2020-06-16T14:41:35.616Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(50064,'de_DE')
+;
+
+-- 2020-06-16T14:41:35.625Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_ad_element_on_ad_element_trl_update(50064,'de_DE')
+;
+
+-- 2020-06-16T14:41:35.631Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET ColumnName='JasperProcess_ID', Name='Jasper Prozess', Description='The Jasper Process used by the printengine if any process defined', Help=NULL WHERE AD_Element_ID=50064
+;
+
+-- 2020-06-16T14:41:35.634Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName='JasperProcess_ID', Name='Jasper Prozess', Description='The Jasper Process used by the printengine if any process defined', Help=NULL, AD_Element_ID=50064 WHERE UPPER(ColumnName)='JASPERPROCESS_ID' AND IsCentrallyMaintained='Y' AND AD_Element_ID IS NULL
+;
+
+-- 2020-06-16T14:41:35.635Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName='JasperProcess_ID', Name='Jasper Prozess', Description='The Jasper Process used by the printengine if any process defined', Help=NULL WHERE AD_Element_ID=50064 AND IsCentrallyMaintained='Y'
+;
+
+-- 2020-06-16T14:41:35.636Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Jasper Prozess', Description='The Jasper Process used by the printengine if any process defined', Help=NULL WHERE (AD_Column_ID IN (SELECT AD_Column_ID FROM AD_Column WHERE AD_Element_ID=50064) AND AD_Name_ID IS NULL ) OR (AD_Name_ID = 50064)
+;
+
+-- 2020-06-16T14:41:35.653Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_PrintFormatItem pi SET PrintName='Jasper Prozess', Name='Jasper Prozess' WHERE IsCentrallyMaintained='Y' AND EXISTS (SELECT * FROM AD_Column c  WHERE c.AD_Column_ID=pi.AD_Column_ID AND c.AD_Element_ID=50064)
+;
+
+-- 2020-06-16T14:41:35.657Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab SET Name='Jasper Prozess', Description='The Jasper Process used by the printengine if any process defined', Help=NULL, CommitWarning = NULL WHERE AD_Element_ID = 50064
+;
+
+-- 2020-06-16T14:41:35.659Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_WINDOW SET Name='Jasper Prozess', Description='The Jasper Process used by the printengine if any process defined', Help=NULL WHERE AD_Element_ID = 50064
+;
+
+-- 2020-06-16T14:41:35.659Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Menu SET   Name = 'Jasper Prozess', Description = 'The Jasper Process used by the printengine if any process defined', WEBUI_NameBrowse = NULL, WEBUI_NameNew = NULL, WEBUI_NameNewBreadcrumb = NULL WHERE AD_Element_ID = 50064
+;
