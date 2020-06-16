@@ -26,7 +26,7 @@ export default class Table extends PureComponent {
   componentDidMount() {
     this._isMounted = true;
 
-    if (this.props.autofocus) {
+    if (this.props.autofocus && this.table) {
       this.table.focus();
     }
   }

@@ -646,7 +646,6 @@ TableItem.propTypes = {
   isSelected: PropTypes.bool,
   odd: PropTypes.number,
   caption: PropTypes.string,
-  // dataHash: PropTypes.string.isRequired,
   changeListenOnTrue: PropTypes.func,
   onRowCollapse: PropTypes.func,
   handleRightClick: PropTypes.func,
