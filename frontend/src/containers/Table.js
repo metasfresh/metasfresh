@@ -9,6 +9,7 @@ import {
   updateTableSelection,
   deselectTableItems,
   collapseTableRow,
+  setActiveSort,
 } from '../actions/TableActions';
 import { showIncludedView } from '../actions/ViewActions';
 import { openModal } from '../actions/WindowActions';
@@ -281,6 +282,7 @@ export default connect(
     openModal,
     updateTableSelection,
     showIncludedView,
+    setActiveSort,
   },
   false,
   { forwardRef: true }
