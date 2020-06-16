@@ -76,12 +76,10 @@ describe('Table component', () => {
     const wrapper = mount(<Table {...tableProps} />);
     const wrapperProps = wrapper.props();
 
-    expect(wrapperProps.entity).toEqual('documentView');
-    expect(wrapperProps.windowId).toEqual('143');
-    expect(wrapperProps.emptyText).toEqual('There are no detail rows');
-    expect(wrapperProps.emptyHint).toEqual(
-      'You can create them in this window.'
-    );
+    expect(wrapperProps.entity).toEqual(tableProps.entity);
+    expect(wrapperProps.windowId).toEqual(tableProps.windowId);
+    expect(wrapperProps.emptyText).toEqual(tableData.emptyResultText);
+    expect(wrapperProps.emptyHint).toEqual(tableData.emptyResultHint);
     expect(wrapperProps.readonly).toEqual(true);
     expect(wrapperProps.mainTable).toEqual(true);
     expect(wrapperProps.tabIndex).toEqual(0);
@@ -89,7 +87,17 @@ describe('Table component', () => {
     expect(wrapperProps.pageLength).toEqual(20);
     expect(wrapperProps.page).toEqual(1);
     expect(wrapperProps.hasIncluded).toEqual(null);
-    expect(wrapperProps.viewId).toEqual('143-B');
+    expect(wrapperProps.viewId).toEqual(tableProps.viewId);
+  });
+
+  it('renders empty table when there are no rows', () => {
+    const localProps = {
+      ...tableProps,
+      rows: [],
+    };
+    const wrapper = shallow(<Table {...localProps} />);
+
+    expect(wrapper.html()).toContain(tableData.emptyResultText);
   });
 
   it.todo('Lookup widget is focused on selecting row');

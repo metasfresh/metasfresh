@@ -48,6 +48,25 @@ describe('Tables reducer', () => {
     );
   });
 
+  it('Should handle CREATE_TABLE with no rows', () => {
+    const id = '143_1000037_AD_Tab-187';
+
+    expect(
+      reducer(undefined, {
+        type: ACTION_TYPES.CREATE_TABLE,
+        payload: {
+          id,
+          data: { ...basicData, rows: [] },
+        },
+      })
+    ).toEqual(
+      expect.objectContaining({
+        [id]: expect.objectContaining({ ...basicData }),
+        length: 1,
+      })
+    );
+  });
+
   it('Should handle UPDATE_TABLE', () => {
     const id = '143_1000037_AD_Tab-187';
     const initialStateData = createState({
