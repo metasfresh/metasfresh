@@ -1,17 +1,24 @@
 package de.metas.procurement.base;
 
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Properties;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicReference;
-
+import com.google.common.base.MoreObjects;
+import com.google.common.base.Optional;
+import de.metas.calendar.ICalendarDAO;
+import de.metas.calendar.IPeriodBL;
+import de.metas.contracts.CreateFlatrateTermRequest;
+import de.metas.contracts.IFlatrateBL;
+import de.metas.contracts.model.I_C_Flatrate_Conditions;
+import de.metas.contracts.model.X_C_Flatrate_Term;
+import de.metas.logging.LogManager;
+import de.metas.money.CurrencyId;
+import de.metas.procurement.base.model.I_C_Flatrate_DataEntry;
+import de.metas.procurement.base.model.I_C_Flatrate_Term;
+import de.metas.procurement.base.model.I_PMM_Product;
+import de.metas.product.IProductDAO;
+import de.metas.product.ProductAndCategoryId;
+import de.metas.product.ProductId;
+import de.metas.uom.UomId;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
@@ -27,25 +34,17 @@ import org.compiere.util.TimeUtil;
 import org.compiere.util.TrxRunnableAdapter;
 import org.slf4j.Logger;
 
-import com.google.common.base.MoreObjects;
-import com.google.common.base.Optional;
-
-import de.metas.calendar.ICalendarDAO;
-import de.metas.calendar.IPeriodBL;
-import de.metas.contracts.IFlatrateBL;
-import de.metas.contracts.model.I_C_Flatrate_Conditions;
-import de.metas.contracts.model.X_C_Flatrate_Term;
-import de.metas.logging.LogManager;
-import de.metas.money.CurrencyId;
-import de.metas.procurement.base.model.I_C_Flatrate_DataEntry;
-import de.metas.procurement.base.model.I_C_Flatrate_Term;
-import de.metas.procurement.base.model.I_PMM_Product;
-import de.metas.product.IProductDAO;
-import de.metas.product.ProductAndCategoryId;
-import de.metas.product.ProductId;
-import de.metas.uom.UomId;
-import de.metas.util.Check;
-import de.metas.util.Services;
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Properties;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 
 /*
  * #%L
@@ -227,8 +226,18 @@ public class PMMContractBuilder
 
 		try
 		{
+			final CreateFlatrateTermRequest createFlatrateTermRequest = CreateFlatrateTermRequest.builder()
+					.context(context)
+					.bPartner(bpartner)
+					.conditions(flatrateConditions)
+					.startDate(startDate)
+					.userInCharge(userInCharge)
+					.productAndCategoryId(productAndCategoryId)
+					.completeIt(completeItOnCreate)
+					.build();
+
 			contract = InterfaceWrapperHelper.create(
-					flatrateBL.createTerm(context, bpartner, flatrateConditions, startDate, userInCharge, productAndCategoryId, completeItOnCreate),
+					flatrateBL.createTerm(createFlatrateTermRequest),
 					I_C_Flatrate_Term.class);
 			Check.assumeNotNull(contract, "contract not null"); // shall not happen
 		}

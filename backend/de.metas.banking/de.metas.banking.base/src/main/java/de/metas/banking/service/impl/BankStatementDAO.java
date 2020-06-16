@@ -49,13 +49,13 @@ import org.compiere.util.TimeUtil;
 
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.banking.BankAccountId;
 import de.metas.banking.BankStatementAndLineAndRefId;
 import de.metas.banking.BankStatementId;
 import de.metas.banking.BankStatementLineId;
 import de.metas.banking.BankStatementLineRefId;
 import de.metas.banking.BankStatementLineReference;
 import de.metas.banking.BankStatementLineReferenceList;
-import de.metas.banking.api.BankAccountId;
 import de.metas.banking.model.I_C_BankStatementLine_Ref;
 import de.metas.banking.service.BankStatementCreateRequest;
 import de.metas.banking.service.BankStatementLineCreateRequest;

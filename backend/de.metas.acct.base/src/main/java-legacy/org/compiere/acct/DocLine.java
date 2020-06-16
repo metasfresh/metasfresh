@@ -16,7 +16,29 @@
  *****************************************************************************/
 package org.compiere.acct;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.Optional;
+import java.util.function.IntFunction;
+
+import javax.annotation.Nullable;
+import javax.annotation.OverridingMethodsMustInvokeSuper;
+
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_Product;
+import org.compiere.model.MAccount;
+import org.compiere.model.MCharge;
+import org.compiere.model.PO;
+import org.compiere.util.DB;
+import org.compiere.util.TimeUtil;
+import org.slf4j.Logger;
+
 import com.google.common.base.MoreObjects;
+
 import de.metas.acct.api.AccountId;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaId;
@@ -43,25 +65,6 @@ import de.metas.util.Optionals;
 import de.metas.util.lang.CoalesceUtil;
 import de.metas.util.lang.RepoIdAware;
 import lombok.NonNull;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.ClientId;
-import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Product;
-import org.compiere.model.MAccount;
-import org.compiere.model.MCharge;
-import org.compiere.model.PO;
-import org.compiere.util.DB;
-import org.compiere.util.TimeUtil;
-import org.slf4j.Logger;
-
-import javax.annotation.Nullable;
-import javax.annotation.OverridingMethodsMustInvokeSuper;
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.util.Optional;
-import java.util.function.IntFunction;
 
 /**
  * Standard Document Line
@@ -302,11 +305,6 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 		return m_AmtAcctCr;
 	}   // getAmtAccrCr
 
-	public final BigDecimal getChargeAmt()
-	{
-		return getValueAsBD("ChargeAmt", BigDecimal.ZERO);
-	}
-
 	/**
 	 * Set Product Amounts
 	 *
@@ -453,8 +451,6 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 
 	/**
 	 * Account from Default Product Category
-	 *
-	 * @param AcctType see ACCTTYPE_* (1..8)
 	 * @param as       accounting schema
 	 * @return Requested Product Account
 	 */

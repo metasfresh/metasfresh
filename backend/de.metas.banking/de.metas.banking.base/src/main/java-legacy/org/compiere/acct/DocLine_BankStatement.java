@@ -16,9 +16,23 @@
  *****************************************************************************/
 package org.compiere.acct;
 
+import java.math.BigDecimal;
+import java.util.List;
+
+import javax.annotation.Nullable;
+
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_BankStatementLine;
+import org.compiere.model.I_C_Payment;
+import org.compiere.model.MPeriod;
+import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
+
 import com.google.common.collect.ImmutableList;
+
 import de.metas.banking.BankStatementLineId;
 import de.metas.banking.BankStatementLineReference;
+import de.metas.banking.model.BankStatementLineAmounts;
 import de.metas.banking.service.IBankStatementDAO;
 import de.metas.bpartner.BPartnerId;
 import de.metas.currency.ConversionTypeMethod;
@@ -33,24 +47,7 @@ import de.metas.payment.api.IPaymentBL;
 import de.metas.util.Services;
 import lombok.Getter;
 import lombok.NonNull;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_BankStatementLine;
-import org.compiere.model.I_C_Payment;
-import org.compiere.model.MPeriod;
-import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
 
-import javax.annotation.Nullable;
-import java.math.BigDecimal;
-import java.util.List;
-
-/**
- * Bank Statement Line
- *
- * @author Jorg Janke
- * @version $Id: DocLine_Bank.java,v 1.2 2006/07/30 00:53:33 jjanke Exp $
- */
 class DocLine_BankStatement extends DocLine<Doc_BankStatement>
 {
 	// services
@@ -58,12 +55,25 @@ class DocLine_BankStatement extends DocLine<Doc_BankStatement>
 	private final transient ICurrencyBL currencyConversionBL = Services.get(ICurrencyBL.class);
 	private final transient ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
 
-	/**
-	 * Constructor
-	 *
-	 * @param line statement line
-	 * @param doc  header
-	 */
+	private final List<BankStatementLineReference> _bankStatementLineReferences;
+	@Getter
+	private final boolean reversal;
+	private final I_C_Payment _payment;
+
+	@Getter
+	private final BigDecimal stmtAmt;
+	@Getter
+	private final BigDecimal trxAmt;
+	@Getter
+	private final BigDecimal bankFeeAmt;
+	@Getter
+	private final BigDecimal chargeAmt;
+	@Getter
+	private final BigDecimal interestAmt;
+
+	@Getter
+	private final BigDecimal fixedCurrencyRate;
+
 	public DocLine_BankStatement(final I_C_BankStatementLine line, final Doc_BankStatement doc)
 	{
 		super(InterfaceWrapperHelper.getPO(line), doc);
@@ -72,11 +82,17 @@ class DocLine_BankStatement extends DocLine<Doc_BankStatement>
 		this._payment = paymentId != null
 				? Services.get(IPaymentBL.class).getById(paymentId)
 				: null;
-		m_IsReversal = line.isReversal();
+		this.reversal = line.isReversal();
+
 		//
-		m_StmtAmt = line.getStmtAmt();
-		m_InterestAmt = line.getInterestAmt();
-		m_TrxAmt = line.getTrxAmt();
+		final BankStatementLineAmounts amounts = BankStatementLineAmounts.of(line);
+		amounts.assertNoDifferences();
+		this.stmtAmt = amounts.getStmtAmt();
+		this.trxAmt = amounts.getTrxAmt();
+		this.bankFeeAmt = amounts.getBankFeeAmt();
+		this.chargeAmt = amounts.getChargeAmt();
+		this.interestAmt = amounts.getInterestAmt();
+
 		fixedCurrencyRate = line.getCurrencyRate();
 		//
 		setDateDoc(TimeUtil.asLocalDate(line.getValutaDate()));
@@ -95,37 +111,13 @@ class DocLine_BankStatement extends DocLine<Doc_BankStatement>
 
 	}   // DocLine_Bank
 
-	private final List<BankStatementLineReference> _bankStatementLineReferences;
-	/**
-	 * Reversal Flag
-	 */
-	private final boolean m_IsReversal;
-	private final I_C_Payment _payment;
-
-	private final BigDecimal m_TrxAmt;
-	private final BigDecimal m_StmtAmt;
-	private final BigDecimal m_InterestAmt;
-
-	@Getter
-	private final BigDecimal fixedCurrencyRate;
-
 	public final List<BankStatementLineReference> getReferences()
 	{
 		return _bankStatementLineReferences;
 	}
 
-	/**
-	 * Get Payment
-	 *
-	 * @return {@link I_C_Payment} or <code>null</code>
-	 */
 	private final I_C_Payment getC_Payment()
 	{
-		if (_payment == null)
-		{
-			return null;
-		}
-		InterfaceWrapperHelper.setTrxName(_payment, ITrx.TRXNAME_ThreadInherited);
 		return _payment;
 	}
 
@@ -139,18 +131,13 @@ class DocLine_BankStatement extends DocLine<Doc_BankStatement>
 	}    // getAD_Org_ID
 
 	/**
-	 * @return C_Payment.AD_Org_ID (if any); fallback to {@link #getAD_Org_ID()}
+	 * @return C_Payment.AD_Org_ID (if any); fallback to {@link #getOrgId()}
 	 */
-	public final OrgId getPaymentOrgId(@Nullable final I_C_Payment payment)
+	private final OrgId getPaymentOrgId(@Nullable final I_C_Payment payment)
 	{
-		if (payment != null)
-		{
-			return OrgId.ofRepoId(payment.getAD_Org_ID());
-		}
-		else
-		{
-			return super.getOrgId();
-		}
+		return payment != null
+				? OrgId.ofRepoId(payment.getAD_Org_ID())
+				: super.getOrgId();
 	}
 
 	public final OrgId getPaymentOrgId(@Nullable final PaymentId paymentId)
@@ -163,50 +150,11 @@ class DocLine_BankStatement extends DocLine<Doc_BankStatement>
 	}
 
 	/**
-	 * Is Reversal
-	 *
-	 * @return true if reversal
-	 */
-	public boolean isReversal()
-	{
-		return m_IsReversal;
-	}   // isReversal
-
-	/**
-	 * Get Interest
-	 *
-	 * @return InterestAmount
-	 */
-	public BigDecimal getInterestAmt()
-	{
-		return m_InterestAmt;
-	}   // getInterestAmt
-
-	/**
-	 * Get Statement
-	 *
-	 * @return Starement Amount
-	 */
-	public BigDecimal getStmtAmt()
-	{
-		return m_StmtAmt;
-	}   // getStrmtAmt
-
-	/**
-	 * Get Transaction
-	 *
-	 * @return transaction amount
-	 */
-	public BigDecimal getTrxAmt()
-	{
-		return m_TrxAmt;
-	}   // getTrxAmt
-
-	/**
-	 * @return <ul>
-	 * <li>true if this line is an inbound transaction (i.e. we received money in our bank account)
-	 * <li>false if this line is an outbound transaction (i.e. we paid money from our bank account)
-	 * </ul>
+	 * @return
+	 *         <ul>
+	 *         <li>true if this line is an inbound transaction (i.e. we received money in our bank account)
+	 *         <li>false if this line is an outbound transaction (i.e. we paid money from our bank account)
+	 *         </ul>
 	 */
 	public boolean isInboundTrx()
 	{

@@ -100,7 +100,6 @@ import de.metas.util.Services;
  */
 public class ESRImportTest extends ESRTestBase
 {
-
 	/**
 	 * This test emulates a real-world case of a perfect match
 	 * <ul>
@@ -813,6 +812,7 @@ public class ESRImportTest extends ESRTestBase
 
 		// bank account
 		final I_C_BP_BankAccount account = InterfaceWrapperHelper.newInstance(I_C_BP_BankAccount.class, contextProvider);
+		account.setC_Bank_ID(999);
 		account.setIsEsrAccount(true);
 		account.setAD_Org_ID(Env.getAD_Org_ID(getCtx()));
 		account.setAD_User_ID(Env.getAD_User_ID(getCtx()));
@@ -945,6 +945,7 @@ public class ESRImportTest extends ESRTestBase
 
 		// bank account
 		final I_C_BP_BankAccount account = InterfaceWrapperHelper.newInstance(I_C_BP_BankAccount.class, contextProvider);
+		account.setC_Bank_ID(999);
 		account.setIsEsrAccount(true);
 		account.setAD_Org_ID(Env.getAD_Org_ID(getCtx()));
 		account.setAD_User_ID(Env.getAD_User_ID(getCtx()));
@@ -1359,10 +1360,12 @@ public class ESRImportTest extends ESRTestBase
 
 		// bank account
 		final I_C_BP_BankAccount account = InterfaceWrapperHelper.newInstance(I_C_BP_BankAccount.class, contextProvider);
+		account.setC_Bank_ID(999);
 		account.setIsEsrAccount(true);
 		account.setAD_Org_ID(Env.getAD_Org_ID(getCtx()));
 		account.setAD_User_ID(Env.getAD_User_ID(getCtx()));
 		account.setESR_RenderedAccountNo(ESR_Rendered_AccountNo);
+		account.setC_Currency_ID(999);
 		InterfaceWrapperHelper.save(account);
 
 		// currency
@@ -1462,10 +1465,12 @@ public class ESRImportTest extends ESRTestBase
 
 		// bank account
 		final I_C_BP_BankAccount account = InterfaceWrapperHelper.newInstance(I_C_BP_BankAccount.class, contextProvider);
+		account.setC_Bank_ID(999);
 		account.setIsEsrAccount(true);
 		account.setAD_Org_ID(Env.getAD_Org_ID(getCtx()));
 		account.setAD_User_ID(Env.getAD_User_ID(getCtx()));
 		account.setESR_RenderedAccountNo("01-067789-3");
+		account.setC_Currency_ID(999);
 		InterfaceWrapperHelper.save(account);
 
 		// currency

@@ -21,6 +21,7 @@ const basicData = {
   windowId: '143',
   docId: '1000037',
   tabId: 'AD_Tab-187',
+  keyProperty: 'id',
 };
 
 describe('Tables reducer', () => {

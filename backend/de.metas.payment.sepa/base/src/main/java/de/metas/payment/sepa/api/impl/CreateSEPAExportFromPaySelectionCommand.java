@@ -8,10 +8,14 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_PaySelectionLine;
 
+import de.metas.banking.Bank;
+import de.metas.banking.BankId;
+import de.metas.banking.api.BankRepository;
 import de.metas.banking.payment.PaySelectionTrxType;
 import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.i18n.AdMessageKey;
@@ -55,6 +59,7 @@ class CreateSEPAExportFromPaySelectionCommand
 
 	private final IPaymentDAO paymentsRepo = Services.get(IPaymentDAO.class);
 	private final IBPartnerOrgBL partnerOrgBL = Services.get(IBPartnerOrgBL.class);
+	private final BankRepository bankRepo = SpringContextHolder.instance.getBean(BankRepository.class);
 
 	private final I_C_PaySelection source;
 
@@ -105,9 +110,11 @@ class CreateSEPAExportFromPaySelectionCommand
 		// task 07789: note that for the CASE of ESR accounts, there is a model validator in de.metas.payment.esr which will
 		// set this field
 		// exportLine.setOtherAccountIdentification(OtherAccountIdentification);
-		if (bpBankAccount.getC_Bank_ID() > 0)
+		final BankId bankId = BankId.ofRepoIdOrNull(bpBankAccount.getC_Bank_ID());
+		if (bankId != null)
 		{
-			exportLine.setSwiftCode(toNullOrRemoveSpaces(bpBankAccount.getC_Bank().getSwiftCode()));
+			final Bank bank = bankRepo.getById(bankId); 
+			exportLine.setSwiftCode(toNullOrRemoveSpaces(bank.getSwiftCode()));
 		}
 
 		exportLine.setStructuredRemittanceInfo(line.getReference()); // task 07789
@@ -136,7 +143,8 @@ class CreateSEPAExportFromPaySelectionCommand
 		final I_C_BP_BankAccount bpBankAccount = create(bankAccountSource, I_C_BP_BankAccount.class);
 
 		// task 09923: In case the bp bank account does not have a bank set, it cannot be used in a SEPA Export
-		if (bpBankAccount.getC_Bank() == null)
+		final BankId bankId = BankId.ofRepoIdOrNull(bpBankAccount.getC_Bank_ID());
+		if (bankId == null)
 		{
 			throw new AdempiereException(ERR_C_BP_BankAccount_BankNotSet, new Object[] { bpBankAccount.toString() });
 		}
@@ -160,11 +168,12 @@ class CreateSEPAExportFromPaySelectionCommand
 		}
 		header.setSEPA_CreditorIdentifier(bpBankAccount.getSEPA_CreditorIdentifier());
 
-		if (Check.isBlank(bpBankAccount.getC_Bank().getSwiftCode()))
+		final Bank bank = bankRepo.getById(bankId); 
+		if (Check.isBlank(bank.getSwiftCode()))
 		{
-			throw new AdempiereException(ERR_C_Bank_SwiftCodeNotSet, new Object[] { bpBankAccount.getC_Bank().getName() });
+			throw new AdempiereException(ERR_C_Bank_SwiftCodeNotSet, new Object[] { bank.getBankName() });
 		}
-		header.setSwiftCode(bpBankAccount.getC_Bank().getSwiftCode());
+		header.setSwiftCode(bank.getSwiftCode());
 
 		final int paySelectionTableID = getTableId(I_C_PaySelection.class);
 		header.setAD_Table_ID(paySelectionTableID);

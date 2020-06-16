@@ -1,34 +1,6 @@
 package de.metas.handlingunits.inventory.draftlinescreator;
 
-import static de.metas.handlingunits.inventory.InventoryTestHelper.AV1_ID;
-import static de.metas.handlingunits.inventory.InventoryTestHelper.AV2_ID;
-import static de.metas.handlingunits.inventory.InventoryTestHelper.AV3_ID;
-import static io.github.jsonSnapshot.SnapshotMatcher.expect;
-import static io.github.jsonSnapshot.SnapshotMatcher.start;
-import static io.github.jsonSnapshot.SnapshotMatcher.validateSnapshots;
-import static java.math.BigDecimal.ONE;
-import static java.math.BigDecimal.TEN;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-
-import java.math.BigDecimal;
-import java.util.stream.Stream;
-
-import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.test.DumpPOJOLookupMapOnTestFail;
-import org.adempiere.warehouse.LocatorId;
-import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Inventory;
-import org.compiere.model.I_M_Locator;
-import org.compiere.model.I_M_Warehouse;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.document.DocBaseAndSubType;
 import de.metas.document.DocTypeId;
 import de.metas.handlingunits.HuId;
@@ -45,6 +17,33 @@ import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import lombok.NonNull;
+import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.test.DumpPOJOLookupMapOnTestFail;
+import org.adempiere.warehouse.LocatorId;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_Inventory;
+import org.compiere.model.I_M_Locator;
+import org.compiere.model.I_M_Warehouse;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+
+import java.math.BigDecimal;
+import java.util.stream.Stream;
+
+import static de.metas.handlingunits.inventory.InventoryTestHelper.AV1_ID;
+import static de.metas.handlingunits.inventory.InventoryTestHelper.AV2_ID;
+import static de.metas.handlingunits.inventory.InventoryTestHelper.AV3_ID;
+import static de.metas.handlingunits.inventory.InventoryTestHelper.createStorageFor;
+import static io.github.jsonSnapshot.SnapshotMatcher.expect;
+import static io.github.jsonSnapshot.SnapshotMatcher.start;
+import static io.github.jsonSnapshot.SnapshotMatcher.validateSnapshots;
+import static java.math.BigDecimal.ONE;
+import static java.math.BigDecimal.TEN;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /*
  * #%L
@@ -172,7 +171,10 @@ class DraftInventoryLinesCreatorTest
 		final HuForInventoryLine hu2 = builder.huId(HuId.ofRepoId(200)).quantity(qtyOne).storageAttributesKey(AttributesKey.ofAttributeValueIds(AV1_ID, AV2_ID)).build();
 		final HuForInventoryLine hu3 = builder.huId(HuId.ofRepoId(300)).quantity(qtyTwo).storageAttributesKey(AttributesKey.ofAttributeValueIds(AV1_ID, AV2_ID, AV3_ID)).build();
 
-		return ImmutableList.of(hu1, hu2, hu3).stream();
+		final ImmutableList<HuForInventoryLine> inventoryLines = ImmutableList.of(hu1, hu2, hu3);
+		inventoryLines.forEach(huInvLine -> createStorageFor(huInvLine.getProductId(),  huInvLine.getQuantity(), huInvLine.getHuId()));
+
+		return inventoryLines.stream();
 	}
 
 	private InventoryLinesCreationCtx createContext(

@@ -2,25 +2,15 @@ package org.compiere.acct;
 
 import org.adempiere.exceptions.AdempiereException;
 
+import de.metas.error.IssueCategory;
 import de.metas.util.Check;
 
 /**
- * Exception thrown when
- * <ul>
- * <li>an accountable document could not be loaded
- * <li>a document posting request fails
- * </ul>
- *
- * @author tsa
- *
+ * Exception thrown when a document posting request orchestration fails.
  */
+@SuppressWarnings("serial")
 public class PostingExecutionException extends AdempiereException
 {
-	/**
-	 *
-	 */
-	private static final long serialVersionUID = 8775226397946060131L;
-
 	/**
 	 * Wraps given <code>throwable</code> as {@link PostingExecutionException}, if it's not already an {@link PostingExecutionException}.
 	 *
@@ -57,14 +47,16 @@ public class PostingExecutionException extends AdempiereException
 		this(message, /* serverStackTrace */(String)null);
 	}
 
-	public PostingExecutionException(final String message, final String serverStackTrace)
+	private PostingExecutionException(final String message, final String serverStackTrace)
 	{
 		super(buildMessage(message, serverStackTrace));
+		setIssueCategory(IssueCategory.ACCOUNTING);
 	}
 
 	private PostingExecutionException(final String message, final Throwable cause)
 	{
 		super(message, cause);
+		setIssueCategory(IssueCategory.ACCOUNTING);
 	}
 
 	private static final String buildMessage(final String message, final String serverStackTrace)

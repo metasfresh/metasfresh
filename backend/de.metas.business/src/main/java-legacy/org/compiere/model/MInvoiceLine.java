@@ -16,6 +16,8 @@
  *****************************************************************************/
 package org.compiere.model;
 
+import static java.math.BigDecimal.ZERO;
+
 import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -26,7 +28,6 @@ import java.util.Properties;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.util.DB;
-import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import de.metas.adempiere.model.I_C_InvoiceLine;
@@ -139,16 +140,16 @@ public class MInvoiceLine extends X_C_InvoiceLine
 		{
 			setIsDescription(false);
 			setIsPrinted(true);
-			setLineNetAmt(Env.ZERO);
-			setPriceEntered(Env.ZERO);
-			setPriceActual(Env.ZERO);
-			setPriceLimit(Env.ZERO);
-			setPriceList(Env.ZERO);
+			setLineNetAmt(ZERO);
+			setPriceEntered(ZERO);
+			setPriceActual(ZERO);
+			setPriceLimit(ZERO);
+			setPriceList(ZERO);
 			setM_AttributeSetInstance_ID(0);
-			setTaxAmt(Env.ZERO);
+			setTaxAmt(ZERO);
 			//
-			setQtyEntered(Env.ZERO);
-			setQtyInvoiced(Env.ZERO);
+			setQtyEntered(ZERO);
+			setQtyInvoiced(ZERO);
 		}
 	}	// MInvoiceLine
 
@@ -624,7 +625,6 @@ public class MInvoiceLine extends X_C_InvoiceLine
 		}
 
 		setC_TaxCategory_ID(taxCategoryId.getRepoId());
-
 		//
 		// Infos from invoice header
 		final I_C_Invoice invoice = getC_Invoice();
@@ -677,7 +677,7 @@ public class MInvoiceLine extends X_C_InvoiceLine
 	 */
 	public void setTaxAmt()
 	{
-		BigDecimal TaxAmt = Env.ZERO;
+		BigDecimal TaxAmt = ZERO;
 		if (getC_Tax_ID() == 0)
 		{
 			return;
@@ -1052,7 +1052,7 @@ public class MInvoiceLine extends X_C_InvoiceLine
 	 * Get Currency Precision
 	 *
 	 * @return precision
-	 * @deprecated Please use {@link IInvoiceBL#getPrecision(org.compiere.model.I_C_InvoiceLine)}.
+	 * @deprecated Please use {@link IInvoiceBL#getAmountPrecision(org.compiere.model.I_C_InvoiceLine)}.
 	 */
 	@Deprecated
 	private CurrencyPrecision getAmountPrecision()
@@ -1103,9 +1103,9 @@ public class MInvoiceLine extends X_C_InvoiceLine
 		{
 
 			if (!m_priceSet
-					&& Env.ZERO.compareTo(getPriceActual()) == 0
-					&& Env.ZERO.compareTo(getPriceList()) == 0
-					&& Env.ZERO.compareTo(getQtyInvoiced()) == 0) // 04836: In case of full discount, don't recalculate.
+					&& ZERO.compareTo(getPriceActual()) == 0
+					&& ZERO.compareTo(getPriceList()) == 0
+					&& ZERO.compareTo(getQtyInvoiced()) == 0) // 04836: In case of full discount, don't recalculate.
 			{
 				setPrice();
 			}
@@ -1375,7 +1375,7 @@ public class MInvoiceLine extends X_C_InvoiceLine
 					return "No Matching Lines (with Product) in Shipment";
 				}
 				// Calculate total & base
-				BigDecimal total = Env.ZERO;
+				BigDecimal total = ZERO;
 				for (MInOutLine iol : list)
 				{
 					total = total.add(iol.getBase(lc.getLandedCostDistribution()));
@@ -1507,7 +1507,7 @@ public class MInvoiceLine extends X_C_InvoiceLine
 			return "No Matching Lines (with Product)";
 		}
 		// Calculate total & base
-		BigDecimal total = Env.ZERO;
+		BigDecimal total = ZERO;
 		for (MInOutLine iol : list)
 		{
 			total = total.add(iol.getBase(LandedCostDistribution));
@@ -1554,7 +1554,7 @@ public class MInvoiceLine extends X_C_InvoiceLine
 		MLandedCostAllocation[] allocations = MLandedCostAllocation.getOfInvoiceLine(
 				getCtx(), getC_InvoiceLine_ID(), get_TrxName());
 		MLandedCostAllocation largestAmtAllocation = null;
-		BigDecimal allocationAmt = Env.ZERO;
+		BigDecimal allocationAmt = ZERO;
 		for (MLandedCostAllocation allocation : allocations)
 		{
 			if (largestAmtAllocation == null
@@ -1664,9 +1664,6 @@ public class MInvoiceLine extends X_C_InvoiceLine
 
 	// end MZ
 
-	/**
-	 * @param rmaline
-	 */
 	public void setRMALine(MRMALine rmaLine)
 	{
 		// Check if this invoice is CreditMemo - teo_sarca [ 2804142 ]
