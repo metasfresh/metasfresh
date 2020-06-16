@@ -3,9 +3,14 @@ import {
   createSpecialField,
   fieldValueToString,
 } from '../../utils/tableHelpers';
+import LOCAL_LANG from '../../constants/Constants';
 
 describe('Table helpers', () => {
   describe('TableCell functions', () => {
+    afterEach(() => {
+      localStorage.removeItem(LOCAL_LANG);
+    });
+
     it('createAmmount works correctly', () => {
       const amountToCheckOne = createAmount('23.3339955', 2, true);
       expect(amountToCheckOne).toBe('23,334');
@@ -33,11 +38,13 @@ describe('Table helpers', () => {
     });
 
     it('fieldValueToString works correctly when null value given', () => {
+      localStorage.setItem(LOCAL_LANG, 'de_DE');
+
       let fieldValue = null;
       let fieldType = null;
       let precision = null;
       let isGerman = true;
-      let activeLocale = { key: 'de_DE' };
+
       const fieldToCheck = fieldValueToString({
         fieldValue,
         fieldType,
@@ -49,11 +56,13 @@ describe('Table helpers', () => {
     });
 
     it('fieldValueToString works correctly when array value given', () => {
+      localStorage.setItem(LOCAL_LANG, 'de_DE');
+
       let fieldValue = ['1', '2', '3'];
       let fieldType = 'Text';
       let precision = null;
       let isGerman = true;
-      let activeLocale = { key: 'de_DE' };
+
       const fieldToCheck = fieldValueToString({
         fieldValue,
         fieldType,
@@ -66,11 +75,13 @@ describe('Table helpers', () => {
     });
 
     it('fieldValueToString works correctly when boolean true value given', () => {
+      localStorage.setItem(LOCAL_LANG, 'de_DE');
+
       let fieldValue = true;
       let fieldType = 'Text';
       let precision = null;
       let isGerman = true;
-      let activeLocale = { key: 'de_DE' };
+
       const fieldToCheck = fieldValueToString({
         fieldValue,
         fieldType,
@@ -82,11 +93,13 @@ describe('Table helpers', () => {
     });
 
     it('fieldValueToString works correctly when boolean false value given', () => {
+      localStorage.setItem(LOCAL_LANG, 'de_DE');
+
       let fieldValue = false;
       let fieldType = 'Text';
       let precision = null;
       let isGerman = true;
-      let activeLocale = { key: 'de_DE' };
+
       const fieldToCheck = fieldValueToString({
         fieldValue,
         fieldType,
@@ -98,11 +111,13 @@ describe('Table helpers', () => {
     });
 
     it('fieldValueToString works correctly when Date type given', () => {
+      localStorage.setItem(LOCAL_LANG, 'de_DE');
+
       let fieldValue = '2020-01-02';
       let fieldType = 'Date';
       let precision = null;
       let isGerman = true;
-      let activeLocale = { key: 'de_DE' };
+
       let fieldToCheck = fieldValueToString({
         fieldValue,
         fieldType,
@@ -112,12 +127,14 @@ describe('Table helpers', () => {
 
       expect(fieldToCheck).toBe('02.01.2020');
 
+      localStorage.setItem(LOCAL_LANG, 'en_EN');
+
       // we check also en locale
       fieldValue = '2020-01-02';
       fieldType = 'Date';
       precision = null;
       isGerman = false;
-      activeLocale = { key: 'en_EN' };
+
       fieldToCheck = fieldValueToString({
         fieldValue,
         fieldType,
@@ -130,11 +147,13 @@ describe('Table helpers', () => {
   });
 
   it('fieldValueToString works correctly when Date type given', () => {
+    localStorage.setItem(LOCAL_LANG, 'de_DE');
+
     let fieldValue = '2020-01-02';
     let fieldType = 'Date';
     let precision = null;
     let isGerman = true;
-    let activeLocale = { key: 'de_DE' };
+
     let fieldToCheck = fieldValueToString({
       fieldValue,
       fieldType,
@@ -144,12 +163,13 @@ describe('Table helpers', () => {
 
     expect(fieldToCheck).toBe('02.01.2020');
 
+    localStorage.setItem(LOCAL_LANG, 'en_EN');
+
     // we check also en locale
     fieldValue = '2020-01-02';
     fieldType = 'Date';
     precision = null;
     isGerman = false;
-    activeLocale = { key: 'en_EN' };
     fieldToCheck = fieldValueToString({
       fieldValue,
       fieldType,
@@ -161,11 +181,13 @@ describe('Table helpers', () => {
   });
 
   it('fieldValueToString works correctly when DateTime type given', () => {
+    localStorage.setItem(LOCAL_LANG, 'de_DE');
+
     let fieldValue = '2020-01-02';
     let fieldType = 'DateTime';
     let precision = null;
     let isGerman = true;
-    let activeLocale = { key: 'de_DE' };
+
     let fieldToCheck = fieldValueToString({
       fieldValue,
       fieldType,
@@ -175,12 +197,12 @@ describe('Table helpers', () => {
 
     expect(fieldToCheck).toBe('02.01.2020 00:00:00');
 
+    localStorage.setItem(LOCAL_LANG, 'en_EN');
     // we check also en locale
     fieldValue = '2020-01-02';
     fieldType = 'DateTime';
     precision = null;
     isGerman = false;
-    activeLocale = { key: 'en_EN' };
     fieldToCheck = fieldValueToString({
       fieldValue,
       fieldType,
@@ -192,11 +214,13 @@ describe('Table helpers', () => {
   });
 
   it('fieldValueToString works correctly when ZoneDateTime type given', () => {
+    localStorage.setItem(LOCAL_LANG, 'de_DE');
+
     let fieldValue = '2020-01-02';
     let fieldType = 'ZoneDateTime';
     let precision = null;
     let isGerman = true;
-    let activeLocale = { key: 'de_DE' };
+
     let fieldToCheck = fieldValueToString({
       fieldValue,
       fieldType,
@@ -206,12 +230,13 @@ describe('Table helpers', () => {
 
     expect(fieldToCheck).toBe('2020-01-02');
 
+    localStorage.setItem(LOCAL_LANG, 'en_EN');
+
     // we check also en locale
     fieldValue = '2020-01-02';
     fieldType = 'ZoneDateTime';
     precision = null;
     isGerman = false;
-    activeLocale = { key: 'en_EN' };
     fieldToCheck = fieldValueToString({
       fieldValue,
       fieldType,
@@ -223,6 +248,8 @@ describe('Table helpers', () => {
   });
 
   it('fieldValueToString works correctly when Timestamp type given', () => {
+    localStorage.setItem(LOCAL_LANG, 'de_DE');
+
     let fieldValue = '2020-01-02';
     let fieldType = 'Timestamp';
     let precision = null;
@@ -237,12 +264,14 @@ describe('Table helpers', () => {
 
     expect(fieldToCheck).toBe('02.01.2020 00:00:00');
 
+    localStorage.setItem(LOCAL_LANG, 'en_EN');
+
     // we check also en locale
     fieldValue = '2020-01-02';
     fieldType = 'Timestamp';
     precision = null;
     isGerman = false;
-    activeLocale = { key: 'en_EN' };
+
     fieldToCheck = fieldValueToString({
       fieldValue,
       fieldType,
@@ -254,6 +283,8 @@ describe('Table helpers', () => {
   });
 
   it('fieldValueToString works correctly when Amount fieldType type given', () => {
+    localStorage.setItem(LOCAL_LANG, 'de_DE');
+
     let fieldValue = '22,38342';
     let fieldType = 'Amount';
     let precision = null;
@@ -280,11 +311,13 @@ describe('Table helpers', () => {
   });
 
   it('fieldValueToString works correctly when special type Color fieldType type given', () => {
+    localStorage.setItem(LOCAL_LANG, 'de_DE');
+
     let fieldValue = 'DDDDDD';
     let fieldType = 'Color';
     let precision = null;
     let isGerman = true;
-    let activeLocale = { key: 'de_DE' };
+
     let fieldToCheck = fieldValueToString({
       fieldValue,
       fieldType,

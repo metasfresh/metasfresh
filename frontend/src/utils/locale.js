@@ -1,7 +1,7 @@
 import axios from 'axios';
 import Moment from 'moment';
 
-const LOCAL_LANG = 'metasfreshLanguage';
+import LOCAL_LANG from '../constants/Constants';
 
 export function initCurrentActiveLocale() {
   const lang = getCurrentActiveLocale();

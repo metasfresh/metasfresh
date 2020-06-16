@@ -128,7 +128,7 @@ export function getSizeClass(col) {
  */
 export function createDate({ fieldValue, fieldType }) {
   const activeLocale = getCurrentActiveLocale();
-  const languageKey = activeLocale ? activeLocale.key : null;
+  const languageKey = activeLocale ? activeLocale : null;
 
   if (fieldValue) {
     return !Moment.isMoment(fieldValue) && fieldValue.match(TIME_REGEX_TEST)
