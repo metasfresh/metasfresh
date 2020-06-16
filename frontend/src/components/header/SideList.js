@@ -96,7 +96,6 @@ class SideList extends Component {
                 ? pagination.page
                 : null
             }
-            disconnectFromState={true}
             autofocus={true}
             {...{
               windowId,

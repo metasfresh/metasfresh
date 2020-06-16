@@ -11,7 +11,7 @@
     "queryLimitHit": false,
     "openIncludedViewOnSelect": null,
     "blurOnIncludedView": null,
-    "focusOnFieldName": false,
+    "focusOnFieldName": null,
     "toggleState": "grid",
     "spinnerVisible": false,
     "orderBy": [
@@ -36,6 +36,7 @@
     "isModal": false,
     "hasIncluded": null,
     "windowId": "143",
-    "viewId": "143-B"
+    "viewId": "143-B",
+    "rowRefs": {}
   }
 }

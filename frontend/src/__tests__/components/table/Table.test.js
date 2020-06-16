@@ -53,18 +53,43 @@ const store = mockStore(initialState);
 const tableProps = {
   ...propsData.props1,
   ...initialTableState,
-  ...createTableData(tableData)
+  ...createTableData(tableData),
+  collapseTableRow: jest.fn(),
+  deselectTableItems: jest.fn(),
+  openModal: jest.fn(),
+  updateTableSelection: jest.fn(),
+  onSelect: jest.fn(),
+  onGetAllLeaves: jest.fn(),
+  onSelectAll: jest.fn(),
+  onDeselectAll: jest.fn(),
+  onDeselect: jest.fn(),
+  onRightClick: jest.fn(),
+  handleSelect: jest.fn(),
 }
 
 describe('Table component', () => {
   it('renders without errors with bare props', () => {
-    const tableWrapper = mount(
-      <ShortcutProvider hotkeys={{}} keymap={{}}>
-        <Provider store={store}>
-          <Table {...tableProps} />
-        </Provider>
-      </ShortcutProvider>
+    shallow(<Table {...tableProps} />);
+  });
+
+  it('props passed are correctly set within the wrapper', () => {
+    const wrapper = mount(<Table {...tableProps} />);
+    const wrapperProps = wrapper.props();
+
+    expect(wrapperProps.entity).toEqual('documentView');
+    expect(wrapperProps.windowId).toEqual('143');
+    expect(wrapperProps.emptyText).toEqual('There are no detail rows');
+    expect(wrapperProps.emptyHint).toEqual(
+      'You can create them in this window.'
     );
+    expect(wrapperProps.readonly).toEqual(true);
+    expect(wrapperProps.mainTable).toEqual(true);
+    expect(wrapperProps.tabIndex).toEqual(0);
+    expect(wrapperProps.size).toEqual(143);
+    expect(wrapperProps.pageLength).toEqual(20);
+    expect(wrapperProps.page).toEqual(1);
+    expect(wrapperProps.hasIncluded).toEqual(null);
+    expect(wrapperProps.viewId).toEqual('143-B');
   });
 
   it.todo('Lookup widget is focused on selecting row');

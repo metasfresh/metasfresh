@@ -9,6 +9,7 @@ import {
   updateTableSelection,
   deselectTableItems,
   collapseTableRow,
+  setActiveSort,
 } from '../actions/TableActions';
 import { showIncludedView } from '../actions/ViewActions';
 import { openModal } from '../actions/WindowActions';
@@ -16,7 +17,7 @@ import { openModal } from '../actions/WindowActions';
 import { containerPropTypes } from '../utils/tableHelpers';
 import { mapIncluded } from '../utils/documentListHelper';
 
-import Table from '../components/table/Table';
+import Table from '../components/table/TableWrapper';
 
 class TableContainer extends PureComponent {
   componentWillUnmount() {
@@ -252,7 +253,6 @@ const mapStateToProps = (state, props) => {
     rows: table.rows,
     columns: table.columns,
     selected: table.selected,
-    pending: table.dataPending,
     collapsedParentRows: table.collapsedParentRows,
     collapsedRows: table.collapsedRows,
     collapsedArrayMap: table.collapsedArrayMap,
@@ -282,6 +282,7 @@ export default connect(
     openModal,
     updateTableSelection,
     showIncludedView,
+    setActiveSort,
   },
   false,
   { forwardRef: true }

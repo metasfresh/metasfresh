@@ -1,13 +1,11 @@
 import React, { PureComponent } from 'react';
 import classnames from 'classnames';
 import PropTypes from 'prop-types';
-import { connect } from 'react-redux';
 
 import { shouldRenderColumn, getSizeClass } from '../../utils/tableHelpers';
-import { setActiveSort } from '../../actions/TableActions';
 import { getTableId } from '../../reducers/tables';
 
-class TableHeader extends PureComponent {
+export default class TableHeader extends PureComponent {
   constructor(props) {
     super(props);
 
@@ -154,10 +152,3 @@ TableHeader.propTypes = {
   indentSupported: PropTypes.any,
   setActiveSort: PropTypes.func,
 };
-
-export default connect(
-  null,
-  {
-    setActiveSort,
-  }
-)(TableHeader);

@@ -133,7 +133,6 @@ export default class DocumentList extends Component {
       includedView,
       isIncluded,
       disablePaginationShortcuts,
-      disconnectFromState,
       autofocus,
       updateParentSelectedIds,
       modal,
@@ -171,6 +170,8 @@ export default class DocumentList extends Component {
       isShowIncluded,
       hasShowIncluded,
       locationData,
+      pending,
+      layoutPending,
     } = reduxData;
     const { rowEdited, clickOutsideLock, toggleWidth } = this.state;
 
@@ -336,7 +337,7 @@ export default class DocumentList extends Component {
           parent={this}
           delay={300}
           iconSize={50}
-          displayCondition={!!(layout && triggerSpinner)}
+          displayCondition={triggerSpinner}
           hideCondition={!triggerSpinner}
         />
 
@@ -374,7 +375,6 @@ export default class DocumentList extends Component {
                   rowEdited,
                   pageLength,
                   isIncluded,
-                  disconnectFromState,
                   autofocus,
                   open,
                   page,
@@ -385,6 +385,8 @@ export default class DocumentList extends Component {
                   hasIncluded,
                   viewId,
                   windowId,
+                  pending,
+                  layoutPending,
                 }}
               >
                 {layout.supportAttributes && !isIncluded && !hasIncluded && (

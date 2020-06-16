@@ -1,8 +1,8 @@
 {
   "windowId": "143",
   "viewId": "143-B",
-  "emptyText": "There are no detail rows",
-  "emptyHint": "You can create them in this window.",
+  "emptyResultText": "There are no detail rows",
+  "emptyResultHint": "You can create them in this window.",
   "keyProperty": "id",
   "size": 143,
   "result": [

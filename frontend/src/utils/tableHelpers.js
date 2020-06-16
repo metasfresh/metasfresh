@@ -58,23 +58,6 @@ export const componentPropTypes = {
   onDeselect: PropTypes.func.isRequired,
 };
 
-export function constructorFn() {
-  this.state = {
-    listenOnKeys: true,
-    contextMenu: {
-      open: false,
-      x: 0,
-      y: 0,
-      fieldName: null,
-      supportZoomInto: false,
-      supportFieldEdit: false,
-    },
-    promptOpen: false,
-    isBatchEntry: false,
-    tableRefreshToggle: false,
-  };
-}
-
 /**
  * @method getAmountFormatByPrecisiont
  * @param {string} precision
