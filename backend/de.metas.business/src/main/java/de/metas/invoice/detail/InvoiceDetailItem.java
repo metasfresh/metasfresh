@@ -1,8 +1,8 @@
 /*
  * #%L
- * de.metas.adempiere.adempiere.base
+ * de.metas.business
  * %%
- * Copyright (C) 2019 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,21 +20,43 @@
  * #L%
  */
 
-package de.metas.attachments.listener;
+package de.metas.invoice.detail;
 
-import lombok.NonNull;
+import lombok.Builder;
 import lombok.Value;
-import org.adempiere.util.lang.impl.TableRecordReference;
+import org.apache.commons.lang3.StringUtils;
+
+import java.time.LocalDate;
 
 @Value
-public class AttachmentListenerActionResult
+public class InvoiceDetailItem
 {
-	@NonNull
-	AttachmentListener listener;
+	Integer seqNo;
 
-	@NonNull
-	AttachmentListenerConstants.ListenerWorkStatus status;
+	String label;
 
-	@NonNull
-	TableRecordReference appliedToRecord;
+	String description;
+
+	LocalDate date;
+
+	@Builder
+	public InvoiceDetailItem(
+			final Integer seqNo,
+			final String label,
+			final String description,
+			final LocalDate date)
+	{
+		this.seqNo = seqNo;
+		this.label = label;
+		this.description = description;
+		this.date = date;
+	}
+
+	/**
+	 * @return true if both label and description are blank, false otherwise.
+	 */
+	public boolean isEmpty()
+	{
+		return StringUtils.isBlank(label) && StringUtils.isBlank(description);
+	}
 }

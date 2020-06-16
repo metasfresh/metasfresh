@@ -1,8 +1,8 @@
 /*
  * #%L
- * de.metas.adempiere.adempiere.base
+ * de.metas.business
  * %%
- * Copyright (C) 2019 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,21 +20,16 @@
  * #L%
  */
 
-package de.metas.attachments.listener;
+package de.metas.invoice.detail;
 
-import lombok.NonNull;
-import lombok.Value;
-import org.adempiere.util.lang.impl.TableRecordReference;
+import org.springframework.stereotype.Repository;
 
-@Value
-public class AttachmentListenerActionResult
+@Repository
+public class InvoiceWithDetailsRepository
 {
-	@NonNull
-	AttachmentListener listener;
-
-	@NonNull
-	AttachmentListenerConstants.ListenerWorkStatus status;
-
-	@NonNull
-	TableRecordReference appliedToRecord;
+	/** Assumes that the given invoice and its lines exist. only saves the respective {@link org.compiere.model.I_C_Invoice_Detail} records are persisted */
+	public void save(InvoiceWithDetails invoiceWithDetails)
+	{
+	// TODO
+	}
 }

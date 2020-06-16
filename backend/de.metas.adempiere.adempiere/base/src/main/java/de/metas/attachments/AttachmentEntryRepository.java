@@ -13,6 +13,9 @@ import java.util.Set;
 
 import javax.annotation.Nullable;
 
+import de.metas.attachments.listener.AttachmentListenerActionResult;
+import de.metas.attachments.listener.AttachmentListenerConstants;
+import de.metas.util.time.SystemTime;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -190,10 +193,12 @@ public class AttachmentEntryRepository
 		}
 
 		attachmentEntryFactory.syncToRecord(attachmentEntry, attachmentEntryRecord);
+		saveRecord(attachmentEntryRecord); // needed in case the record was new, because we need an ID for it
 
+		final ImmutableList<AttachmentListenerActionResult> attachmentListenerActionResults = syncLinkedRecords(attachmentEntry, attachmentEntryRecord);
+
+		createAndSyncAttachmentListenerLabels(attachmentEntry, attachmentEntryRecord, attachmentListenerActionResults);
 		saveRecord(attachmentEntryRecord);
-
-		syncLinkedRecords(attachmentEntry, attachmentEntryRecord);
 
 		return attachmentEntry
 				.toBuilder()
@@ -201,7 +206,22 @@ public class AttachmentEntryRepository
 				.build();
 	}
 
-	private void syncLinkedRecords(
+	private void createAndSyncAttachmentListenerLabels(final @NonNull AttachmentEntry attachmentEntry, final I_AD_AttachmentEntry attachmentEntryRecord, final ImmutableList<AttachmentListenerActionResult> attachmentListenerActionResults)
+	{
+		AttachmentEntry attachmentEntryWithTags = attachmentEntry;
+		for (AttachmentListenerActionResult result:attachmentListenerActionResults)
+		{
+			if (AttachmentListenerConstants.ListenerWorkStatus.SUCCESS.equals(result.getStatus()))
+			{
+				attachmentEntryWithTags = attachmentEntryWithTags.withAdditionalTag(
+						"AttachmentListener_" + result.getListener().getClass().getSimpleName() + "-timestamp_millis_" + SystemTime.millis() + "-TableName_" + result.getAppliedToRecord().getTableName() + "-Record_ID_" + result.getAppliedToRecord().getRecord_ID(),
+						result.getStatus().getValue());
+			}
+		}
+		attachmentEntryFactory.syncToRecord(attachmentEntryWithTags, attachmentEntryRecord);
+	}
+
+	private ImmutableList<AttachmentListenerActionResult> syncLinkedRecords(
 			@NonNull final AttachmentEntry attachmentEntry,
 			@NonNull final I_AD_AttachmentEntry attachmententryRecord)
 	{
@@ -224,6 +244,8 @@ public class AttachmentEntryRepository
 			}
 		}
 
+		final ImmutableList.Builder<AttachmentListenerActionResult> attachmentListenerActionResults = ImmutableList.builder();
+
 		// create missing
 		// i.e. iterate the references that did not yet have an I_AD_Attachment_MultiRef record
 		for (final TableRecordReference attachmentReference : attachmentReferences)
@@ -234,8 +256,10 @@ public class AttachmentEntryRepository
 			attachmentMultiRefRecord.setRecord_ID(attachmentReference.getRecord_ID());
 			saveRecord(attachmentMultiRefRecord);
 
-			tableAttachmentListenerService.fireAfterRecordLinked(attachmentEntry, attachmentReference);
+			attachmentListenerActionResults.addAll(tableAttachmentListenerService.fireAfterRecordLinked(attachmentEntry, attachmentReference));
 		}
+
+		return attachmentListenerActionResults.build();
 	}
 
 	private ImmutableList<I_AD_Attachment_MultiRef> retrieveAttachmentMultiRefs(

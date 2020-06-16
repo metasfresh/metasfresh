@@ -224,7 +224,7 @@ public class InvoiceToExportFactory
 		final AttachmentEntryQuery query = AttachmentEntryQuery
 				.builder()
 				.referencedRecord(invoiceRecord)
-				.tagSetToAnyValue(InvoiceExportClientFactory.ATTATCHMENT_TAGNAME_EXPORT_PROVIDER)
+				.tagSetToAnyValue(InvoiceExportClientFactory.ATTACHMENT_TAGNAME_EXPORT_PROVIDER)
 				.build();
 		final List<AttachmentEntry> attachments = attachmentEntryService.getByQuery(query);
 

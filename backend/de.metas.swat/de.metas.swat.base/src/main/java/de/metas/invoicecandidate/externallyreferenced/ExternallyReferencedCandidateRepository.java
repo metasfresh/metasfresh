@@ -9,6 +9,7 @@ import java.time.ZoneId;
 import java.util.Collection;
 import java.util.List;
 
+import de.metas.invoice.detail.InvoiceDetailItem;
 import de.metas.invoicecandidate.model.I_C_Invoice_Detail;
 import de.metas.util.NumberUtils;
 import org.adempiere.model.InterfaceWrapperHelper;

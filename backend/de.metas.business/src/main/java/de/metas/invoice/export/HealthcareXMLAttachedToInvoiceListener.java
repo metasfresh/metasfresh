@@ -4,6 +4,34 @@ import static de.metas.util.lang.CoalesceUtil.coalesceSuppliers;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 import java.io.ByteArrayInputStream;
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Optional;
+
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
+import de.metas.adempiere.model.I_C_InvoiceLine;
+import de.metas.invoice.InvoiceId;
+import de.metas.invoice.detail.InvoiceDetailItem;
+import de.metas.invoice.detail.InvoiceLineWithDetails;
+import de.metas.invoice.detail.InvoiceWithDetails;
+import de.metas.invoice.detail.InvoiceWithDetailsRepository;
+import de.metas.invoice.service.IInvoiceDAO;
+import de.metas.invoice.service.InvoiceUtil;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.commontypes.XmlCompany;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.commontypes.XmlOnline;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.commontypes.XmlPerson;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.commontypes.XmlPostal;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.commontypes.XmlTelecom;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.payload.XmlBody;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.payload.body.XmlService;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.payload.body.XmlTiers;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.payload.body.law.XmlKvg;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.payload.body.tiers.XmlGuarantor;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.payload.body.tiers.XmlInsurance;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.payload.body.tiers.XmlReferrer;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Invoice;
@@ -36,6 +64,9 @@ import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.payload.body.tiers.XmlBiller;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.payload.body.tiers.XmlPatient;
 import lombok.NonNull;
+
+import javax.annotation.Nullable;
+import javax.xml.datatype.XMLGregorianCalendar;
 
 /*
  * #%L
@@ -72,6 +103,8 @@ public class HealthcareXMLAttachedToInvoiceListener implements AttachmentListene
 
 	private final BPartnerCompositeRepository bpartnerCompositeRepository = SpringContextHolder.instance.getBean(BPartnerCompositeRepository.class);
 
+	private final InvoiceWithDetailsRepository invoiceWithDetailsRepository = SpringContextHolder.instance.getBean(InvoiceWithDetailsRepository.class);
+
 	private static final Logger logger = LogManager.getLogger(HealthcareXMLAttachedToInvoiceListener.class);
 
 	@Override
@@ -79,20 +112,12 @@ public class HealthcareXMLAttachedToInvoiceListener implements AttachmentListene
 			@NonNull final AttachmentEntry attachmentEntry,
 			@NonNull final TableRecordReference tableRecordReference)
 	{
-		try (final MDCCloseable mdc = TableRecordMDC.putTableRecordReference(tableRecordReference))
+		try (final MDCCloseable ignored = TableRecordMDC.putTableRecordReference(tableRecordReference))
 		{
 			if (!I_C_Invoice.Table_Name.equals(tableRecordReference.getTableName()))
 			{
 				logger.debug("tableRecord reference has tableName={}; -> doing nothing", tableRecordReference.getTableName());
-				return ListenerWorkStatus.SUCCESS;
-			}
-
-			final I_C_Invoice invoiceRecord = tableRecordReference.getModel(I_C_Invoice.class);
-			if (invoiceRecord.getBeneficiary_BPartner_ID() > 0)
-			{
-				logger.debug("C_Invoice with ID={} already has a Beneficiary_BPartner_ID > 0; -> doing nothing",
-						invoiceRecord.getC_Invoice_ID());
-				return ListenerWorkStatus.SUCCESS;
+				return ListenerWorkStatus.NOT_APPLIED;
 			}
 
 			final AttachmentTags tags = attachmentEntry.getTags();
@@ -100,16 +125,18 @@ public class HealthcareXMLAttachedToInvoiceListener implements AttachmentListene
 			{
 				logger.debug("given attachmentEntry with id={} (filename={}) is tagged as document (exported from original-xml + invoice). We need the orgiginal XML; -> doing nothing",
 						attachmentEntry.getId(), attachmentEntry.getFilename());
-				return ListenerWorkStatus.SUCCESS;
+				return ListenerWorkStatus.NOT_APPLIED;
 			}
 			if (!tags.hasTagSetToString(
-					InvoiceExportClientFactory.ATTATCHMENT_TAGNAME_EXPORT_PROVIDER,
+					InvoiceExportClientFactory.ATTACHMENT_TAGNAME_EXPORT_PROVIDER,
 					ForumDatenaustauschChConstants.INVOICE_EXPORT_PROVIDER_ID))
 			{
 				logger.debug("given attachmentEntry with id={} (filename={}) is not tagged as {}={}; -> doing nothing",
-						attachmentEntry.getId(), attachmentEntry.getFilename(), InvoiceExportClientFactory.ATTATCHMENT_TAGNAME_EXPORT_PROVIDER, ForumDatenaustauschChConstants.INVOICE_EXPORT_PROVIDER_ID);
-				return ListenerWorkStatus.SUCCESS;
+						attachmentEntry.getId(), attachmentEntry.getFilename(), InvoiceExportClientFactory.ATTACHMENT_TAGNAME_EXPORT_PROVIDER, ForumDatenaustauschChConstants.INVOICE_EXPORT_PROVIDER_ID);
+				return ListenerWorkStatus.NOT_APPLIED;
 			}
+
+			final I_C_Invoice invoiceRecord = tableRecordReference.getModel(I_C_Invoice.class);
 
 			final byte[] attachmentData = attachmentEntryService.retrieveData(attachmentEntry.getId());
 			final String xsdName = coalesceSuppliers(
@@ -118,42 +145,294 @@ public class HealthcareXMLAttachedToInvoiceListener implements AttachmentListene
 
 			final CrossVersionRequestConverter requestConverter = crossVersionServiceRegistry.getRequestConverterForXsdName(xsdName);
 			final XmlRequest xRequest = requestConverter.toCrossVersionRequest(new ByteArrayInputStream(attachmentData));
-			final XmlPatient patient = xRequest.getPayload().getBody().getTiers().getPatient();
-			final XmlBiller biller = xRequest.getPayload().getBody().getTiers().getBiller();
-			final ExternalId externalId = HealthcareCHHelper.createBPartnerExternalIdForPatient(biller.getEanParty(), patient.getSsn());
-			if (externalId == null)
-			{
-				logger.debug("patient-XML data extracted from attachmentEntry with id={} (filename={}) has no patient-SSN or biller-EAN; -> doing nothing",
-						attachmentEntry.getId(), attachmentEntry.getFilename());
-				return ListenerWorkStatus.SUCCESS;
-			}
 
-			final ImmutableList<BPartnerComposite> bpartners = bpartnerCompositeRepository.getByQuery(BPartnerQuery.builder().externalId(externalId).build());
-			if (bpartners.isEmpty())
-			{
-				logger.debug("externalId={} of the patient-XML data extracted from attachmentEntry with id={} (filename={}) has no matching C_BPartner; -> doing nothing",
-						externalId.getValue(), attachmentEntry.getId(), attachmentEntry.getFilename());
-				return ListenerWorkStatus.SUCCESS;
-			}
-			final BPartnerComposite bPartner = CollectionUtils.singleElement(bpartners);
+			extractBeneficiaryToInvoice(xRequest, invoiceRecord, attachmentEntry);
 
-			final int beneficiaryRepoId = bPartner.getBpartner().getId().getRepoId();
-			invoiceRecord.setBeneficiary_BPartner_ID(beneficiaryRepoId);
-			logger.debug("set Beneficiary_BPartner_ID={} from the patient-XML data's SSN={} extracted from attachmentEntry with id={} (filename={})",
-					beneficiaryRepoId, patient.getSsn(), attachmentEntry.getId(), attachmentEntry.getFilename());
+			extractInvoiceDetails(xRequest, invoiceRecord);
 
-			final BPartnerLocation location = bPartner
-					.extractShipToLocation()
-					.orElseGet(() -> bPartner.extractBillToLocation().orElse(null));
-			if (location != null)
-			{
-				invoiceRecord.setBeneficiary_Location_ID(location.getId().getRepoId());
-				logger.debug("set setBeneficiary_Location_ID={} from the patient-XML data's SSN={} extracted from attachmentEntry with id={} (filename={})",
-						location.getId().getRepoId(), patient.getSsn(), attachmentEntry.getId(), attachmentEntry.getFilename());
-			}
-
-			saveRecord(invoiceRecord);
 			return ListenerWorkStatus.SUCCESS;
 		}
+	}
+
+	private void extractBeneficiaryToInvoice(
+			@NonNull final XmlRequest xRequest,
+			@NonNull final I_C_Invoice invoiceRecord,
+			@NonNull final AttachmentEntry attachmentEntry /*needed for logging*/)
+	{
+		final XmlPatient patient = xRequest.getPayload().getBody().getTiers().getPatient();
+		final XmlBiller biller = xRequest.getPayload().getBody().getTiers().getBiller();
+		final ExternalId externalId = HealthcareCHHelper.createBPartnerExternalIdForPatient(biller.getEanParty(), patient.getSsn());
+		if (externalId == null)
+		{
+			logger.debug("patient-XML data extracted from attachmentEntry with id={} (filename={}) has no patient-SSN or biller-EAN; -> doing nothing",
+					attachmentEntry.getId(), attachmentEntry.getFilename());
+		}
+
+		final ImmutableList<BPartnerComposite> bpartners = bpartnerCompositeRepository.getByQuery(BPartnerQuery.builder().externalId(externalId).build());
+		if (bpartners.isEmpty())
+		{
+			logger.debug("externalId={} of the patient-XML data extracted from attachmentEntry with id={} (filename={}) has no matching C_BPartner; -> doing nothing",
+					externalId.getValue(), attachmentEntry.getId(), attachmentEntry.getFilename());
+		}
+		final BPartnerComposite bPartner = CollectionUtils.singleElement(bpartners);
+
+		if (invoiceRecord.getBeneficiary_BPartner_ID() > 0)
+		{
+			logger.debug("C_Invoice with ID={} already has a Beneficiary_BPartner_ID > 0; -> doing nothing",
+					invoiceRecord.getC_Invoice_ID());
+		}
+
+		final int beneficiaryRepoId = bPartner.getBpartner().getId().getRepoId();
+		invoiceRecord.setBeneficiary_BPartner_ID(beneficiaryRepoId);
+		logger.debug("set Beneficiary_BPartner_ID={} from the patient-XML data's SSN={} extracted from attachmentEntry with id={} (filename={})",
+				beneficiaryRepoId, patient.getSsn(), attachmentEntry.getId(), attachmentEntry.getFilename());
+
+		final BPartnerLocation location = bPartner
+				.extractShipToLocation()
+				.orElseGet(() -> bPartner.extractBillToLocation().orElse(null));
+		if (location != null)
+		{
+			invoiceRecord.setBeneficiary_Location_ID(location.getId().getRepoId());
+			logger.debug("set setBeneficiary_Location_ID={} from the patient-XML data's SSN={} extracted from attachmentEntry with id={} (filename={})",
+					location.getId().getRepoId(), patient.getSsn(), attachmentEntry.getId(), attachmentEntry.getFilename());
+		}
+
+		saveRecord(invoiceRecord);
+	}
+
+	private void extractInvoiceDetails(
+			@NonNull final XmlRequest xRequest,
+			@NonNull final I_C_Invoice invoiceRecord)
+	{
+		final XmlBody body = xRequest.getPayload().getBody();
+		final XmlTiers tiers = body.getTiers();
+		final XmlBiller biller = tiers.getBiller();
+
+		final InvoiceWithDetails.InvoiceWithDetailsBuilder invoiceWithDetails = InvoiceWithDetails
+				.builder()
+				.id(InvoiceId.ofRepoId(invoiceRecord.getC_Invoice_ID()));
+		invoiceWithDetails
+				.detailItem(InvoiceDetailItem.builder().label("Biller_ZSR").description(biller.getZsr()).build())
+				.detailItem(InvoiceDetailItem.builder().label("Biller_GLN").description(biller.getEanParty()).build());
+
+		setBillerDetails(biller, invoiceWithDetails, "Biller_");
+		setGuarantorDetails(tiers.getGuarantor(), invoiceWithDetails, "Guarantor_");
+
+		final XmlPatient patient = tiers.getPatient();
+		setPatientDetails(patient, invoiceWithDetails, "Patient_");
+		setIfNotBlank(invoiceWithDetails, patient.getSsn(), "Patient_SSN");
+		setDateIfNotNull(invoiceWithDetails, patient.getBirthdate(), "Patient_BirthDate");
+
+		final XmlKvg kvg = body.getLaw().getKvg();
+		if (kvg != null)
+		{
+			setIfNotBlank(invoiceWithDetails, kvg.getInsuredId(), "KVG");
+		}
+
+		// referrer
+		setReferrerDetails(tiers.getReferrer(), invoiceWithDetails, "Referrer_");
+		setIfNotBlank(invoiceWithDetails, tiers.getReferrer().getZsr(), "Referrer_ZSR");
+		setIfNotBlank(invoiceWithDetails, tiers.getReferrer().getEanParty(), "Referrer_GLN");
+
+		setInsuranceIfNotBlank(invoiceWithDetails, tiers.getInsurance());
+
+		setDateIfNotNull(invoiceWithDetails, body.getTreatment().getDateBegin(), "Treatment_Date_Begin");
+		setDateIfNotNull(invoiceWithDetails, body.getTreatment().getDateEnd(), "Treatment_Date_End");
+
+		final ImmutableMap<Integer, XmlService> //
+				recordId2xService = Maps.uniqueIndex(body.getServices(), XmlService::getRecordId);
+
+		final List<I_C_InvoiceLine> lineRecords = Services.get(IInvoiceDAO.class).retrieveLines(InvoiceId.ofRepoId(invoiceRecord.getC_Invoice_ID()));
+		for (final I_C_InvoiceLine lineRecord : lineRecords)
+		{
+			final List<String> externalIds = InvoiceUtil.splitExternalIds(lineRecord.getExternalIds());
+			if (externalIds.size() != 1)
+			{
+				continue;
+			}
+			final int recordId = InvoiceUtil.extractRecordId(externalIds);
+			final XmlService serviceForRecordId = recordId2xService.get(recordId);
+			if (serviceForRecordId == null)
+			{
+				continue;
+			}
+
+			final InvoiceLineWithDetails.InvoiceLineWithDetailsBuilder line = InvoiceLineWithDetails.builder();
+
+			createItemIfNotBlank(serviceForRecordId.getName(), "Service_Name").ifPresent(line::detailItem);
+			extractLocalDate(serviceForRecordId.getDateBegin(), "Service_Date").ifPresent(line::detailItem);
+			invoiceWithDetails.line(line.build());
+		}
+
+		invoiceWithDetailsRepository.save(invoiceWithDetails.build());
+	}
+
+	private void setInsuranceIfNotBlank(
+			@NonNull final InvoiceWithDetails.InvoiceWithDetailsBuilder invoiceWithDetails,
+			final XmlInsurance insurance)
+	{
+		if (insurance == null)
+		{
+			return;
+		}
+		final XmlCompany company = insurance.getCompany();
+		if (company == null)
+		{
+			return;
+		}
+		setIfNotBlank(invoiceWithDetails, company.getCompanyname(), "Insurance_CompanyName");
+	}
+
+	private void setDateIfNotNull(
+			@NonNull final InvoiceWithDetails.InvoiceWithDetailsBuilder invoiceWithDetails,
+			@Nullable final XMLGregorianCalendar date,
+			@NonNull final String label)
+	{
+		extractLocalDate(date, label).ifPresent(invoiceWithDetails::detailItem);
+	}
+
+	private Optional<InvoiceDetailItem> extractLocalDate(
+			@Nullable final XMLGregorianCalendar date,
+			@NonNull final String label)
+	{
+		if (date == null)
+		{
+			return Optional.empty();
+		}
+
+		final LocalDate localDate = date.toGregorianCalendar().toZonedDateTime().toLocalDate();
+		return Optional.of(InvoiceDetailItem.builder()
+				.label(label)
+				.date(localDate).build());
+	}
+
+	private void setBillerDetails(
+			@NonNull final XmlBiller biller,
+			@NonNull final InvoiceWithDetails.InvoiceWithDetailsBuilder invoiceWithDetails,
+			@NonNull final String labelPrefix)
+	{
+		setPersonDetailsIfNotNull(invoiceWithDetails, labelPrefix, biller.getPerson());
+		setCompanyDetailsIfNotNull(invoiceWithDetails, labelPrefix, biller.getCompany());
+	}
+
+	private void setGuarantorDetails(
+			@NonNull final XmlGuarantor guarantor,
+			@NonNull final InvoiceWithDetails.InvoiceWithDetailsBuilder invoiceWithDetails,
+			@NonNull final String labelPrefix)
+	{
+		setPersonDetailsIfNotNull(invoiceWithDetails, labelPrefix, guarantor.getPerson());
+		setCompanyDetailsIfNotNull(invoiceWithDetails, labelPrefix, guarantor.getCompany());
+	}
+
+	private void setPatientDetails(
+			@NonNull final XmlPatient patient,
+			@NonNull final InvoiceWithDetails.InvoiceWithDetailsBuilder invoiceWithDetails,
+			@NonNull final String labelPrefix)
+	{
+		setPersonDetailsIfNotNull(invoiceWithDetails, labelPrefix, patient.getPerson());
+	}
+
+	private void setReferrerDetails(
+			@NonNull final XmlReferrer referrer,
+			@NonNull final InvoiceWithDetails.InvoiceWithDetailsBuilder invoiceWithDetails,
+			@NonNull final String labelPrefix)
+	{
+		setPersonDetailsIfNotNull(invoiceWithDetails, labelPrefix, referrer.getPerson());
+		setCompanyDetailsIfNotNull(invoiceWithDetails, labelPrefix, referrer.getCompany());
+	}
+
+	private void setPersonDetailsIfNotNull(
+			@NonNull final InvoiceWithDetails.InvoiceWithDetailsBuilder invoiceWithDetails,
+			@NonNull final String labelPrefix,
+			@Nullable final XmlPerson person)
+	{
+		if (person != null)
+		{
+			setPhoneIfNotNull(invoiceWithDetails, person.getOnline(), labelPrefix + "_Email");
+			setEmailIfNotNull(invoiceWithDetails, person.getTelecom(), labelPrefix + "_Phone");
+
+			setPostalIfNotNull(invoiceWithDetails, person.getPostal(), labelPrefix);
+
+			setIfNotBlank(invoiceWithDetails, person.getSalutation(), labelPrefix + "_Salutation");
+			setIfNotBlank(invoiceWithDetails, person.getTitle(), labelPrefix + "_Title");
+			setIfNotBlank(invoiceWithDetails, person.getGivenname(), labelPrefix + "_GivenName");
+			setIfNotBlank(invoiceWithDetails, person.getFamilyname(), labelPrefix + "_FamilyName");
+		}
+	}
+
+	private void setCompanyDetailsIfNotNull(
+			@NonNull final InvoiceWithDetails.InvoiceWithDetailsBuilder invoiceWithDetails,
+			@NonNull final String labelPrefix,
+			@Nullable final XmlCompany billerCompany)
+	{
+		if (billerCompany != null)
+		{
+			setPhoneIfNotNull(invoiceWithDetails, billerCompany.getOnline(), labelPrefix + "_Email");
+			setEmailIfNotNull(invoiceWithDetails, billerCompany.getTelecom(), labelPrefix + "_Phone");
+
+			setPostalIfNotNull(invoiceWithDetails, billerCompany.getPostal(), labelPrefix);
+
+			setIfNotBlank(invoiceWithDetails, billerCompany.getCompanyname(), labelPrefix + "_GivenName");
+			setIfNotBlank(invoiceWithDetails, billerCompany.getDepartment(), labelPrefix + "_FamilyName");
+		}
+	}
+
+	private void setPostalIfNotNull(
+			@NonNull final InvoiceWithDetails.InvoiceWithDetailsBuilder invoiceWithDetails,
+			@NonNull final XmlPostal postal,
+			@NonNull final String labelPrefix)
+	{
+		setIfNotBlank(invoiceWithDetails, postal.getZip(), labelPrefix + "_ZIP");
+		setIfNotBlank(invoiceWithDetails, postal.getCity(), labelPrefix + "_City");
+		setIfNotBlank(invoiceWithDetails, postal.getStreet(), labelPrefix + "_Street");
+	}
+
+	private void setEmailIfNotNull(
+			@NonNull final InvoiceWithDetails.InvoiceWithDetailsBuilder invoiceWithDetails,
+			@NonNull final XmlTelecom telecom,
+			@NonNull final String detailItemLabel)
+	{
+		if (telecom != null)
+		{
+			final List<String> phones = telecom.getPhones();
+			if (phones != null && !phones.isEmpty())
+			{
+				setIfNotBlank(invoiceWithDetails, phones.get(0), detailItemLabel);
+			}
+		}
+	}
+
+	private void setPhoneIfNotNull(
+			@NonNull final InvoiceWithDetails.InvoiceWithDetailsBuilder invoiceWithDetails,
+			@NonNull final XmlOnline online,
+			@NonNull final String detailItemLabel)
+	{
+		if (online != null)
+		{
+			final List<String> emails = online.getEmails();
+			if (emails != null && !emails.isEmpty())
+			{
+				setIfNotBlank(invoiceWithDetails, emails.get(0), detailItemLabel);
+			}
+		}
+	}
+
+	private void setIfNotBlank(
+			@NonNull final InvoiceWithDetails.InvoiceWithDetailsBuilder invoiceWithDetails,
+			@Nullable final String description,
+			@NonNull final String detailItemLabel)
+	{
+		createItemIfNotBlank(description, detailItemLabel).ifPresent(invoiceWithDetails::detailItem);
+	}
+
+	private Optional<InvoiceDetailItem> createItemIfNotBlank(
+			@Nullable final String description,
+			@NonNull final String detailItemLabel)
+	{
+		if (Check.isBlank(description))
+		{
+			return Optional.empty();
+		}
+		return Optional.of(InvoiceDetailItem.builder().label(detailItemLabel).description(description).build());
 	}
 }

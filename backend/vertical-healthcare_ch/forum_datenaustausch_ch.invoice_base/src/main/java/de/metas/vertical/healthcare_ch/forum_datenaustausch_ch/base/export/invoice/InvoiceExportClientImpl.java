@@ -470,7 +470,8 @@ public class InvoiceExportClientImpl implements InvoiceExportClient
 
 		for (final InvoiceLine invoiceLine : invoice.getInvoiceLines())
 		{
-			final String externalId = CollectionUtils.singleElement(invoiceLine.getExternalIds());
+			final List<String> externalIds = invoiceLine.getExternalIds();
+			final String externalId = CollectionUtils.singleElement(externalIds);
 			final List<String> externalIdSegments = Splitter
 					.on("_")
 					.splitToList(externalId);
@@ -510,7 +511,7 @@ public class InvoiceExportClientImpl implements InvoiceExportClient
 
 		for (final InvoiceAttachment invoiceAttachment : invoiceAttachments)
 		{
-			final boolean primaryAttachment = invoiceAttachment.getTags().get(InvoiceExportClientFactory.ATTATCHMENT_TAGNAME_BELONGS_TO_EXTERNAL_REFERENCE) == null;
+			final boolean primaryAttachment = invoiceAttachment.getTags().get(InvoiceExportClientFactory.ATTACHMENT_TAGNAME_BELONGS_TO_EXTERNAL_REFERENCE) == null;
 			if (primaryAttachment)
 			{
 				logger.debug("invoiceAttachment with filename={} is noth the 2ndary (i.e. exported) attachment; -> not exporting it", invoiceAttachment.getFileName());

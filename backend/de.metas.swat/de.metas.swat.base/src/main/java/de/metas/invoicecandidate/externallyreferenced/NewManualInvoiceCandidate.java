@@ -5,6 +5,7 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
+import de.metas.invoice.detail.InvoiceDetailItem;
 import org.adempiere.exceptions.AdempiereException;
 
 import de.metas.bpartner.service.BPartnerInfo;

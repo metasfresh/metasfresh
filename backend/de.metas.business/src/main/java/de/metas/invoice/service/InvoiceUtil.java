@@ -1,5 +1,6 @@
 package de.metas.invoice.service;
 
+import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
 
 import javax.annotation.Nullable;
@@ -50,12 +51,31 @@ public class InvoiceUtil
 	 */
 	public static List<String> splitExternalIds(@Nullable final String externalIds)
 	{
-		if (Check.isEmpty(externalIds, true))
+		if (Check.isBlank(externalIds))
 		{
 			return ImmutableList.of();
 		}
 		return Splitter
 				.on(EXTERNAL_ID_DELIMITER)
 				.splitToList(externalIds);
+	}
+
+	public static int extractRecordId(@NonNull final List<String> externalIds)
+	{
+		if (externalIds.size() != 1)
+		{
+			return -1;
+		}
+		final String externalId = CollectionUtils.singleElement(externalIds);
+		final List<String> externalIdSegments = Splitter
+				.on("_")
+				.splitToList(externalId);
+		if(externalIdSegments.isEmpty())
+		{
+			return -1;
+		}
+
+		final String recordIdStr = externalIdSegments.get(externalIdSegments.size() - 1);
+		return Integer.parseInt(recordIdStr);
 	}
 }
