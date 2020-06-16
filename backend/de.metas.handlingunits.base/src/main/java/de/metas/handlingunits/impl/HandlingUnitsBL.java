@@ -32,15 +32,18 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
-import de.metas.util.GuavaCollectors;
-import de.metas.organization.ClientAndOrgId;
+import javax.annotation.Nullable;
+
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.api.AttributesKeys;
+import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.IMutable;
 import org.adempiere.util.lang.Mutable;
 import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Transaction;
 import org.slf4j.Logger;
@@ -64,6 +67,9 @@ import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.IMutableHUContext;
 import de.metas.handlingunits.LUTUCUPair;
 import de.metas.handlingunits.allocation.IHUContextProcessor;
+import de.metas.handlingunits.attribute.storage.IAttributeStorage;
+import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
+import de.metas.handlingunits.attribute.storage.IAttributeStorageFactoryService;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.hutransaction.IHUTrxBL;
 import de.metas.handlingunits.model.I_M_HU;
@@ -81,12 +87,13 @@ import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.handlingunits.storage.impl.DefaultHUStorageFactory;
 import de.metas.logging.LogManager;
+import de.metas.material.event.commons.AttributesKey;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.uom.IUOMDAO;
 import de.metas.util.Check;
+import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import lombok.NonNull;
-
-import javax.annotation.Nullable;
 
 public class HandlingUnitsBL implements IHandlingUnitsBL
 {
@@ -880,5 +887,20 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 				}).iterate(hu);
 
 		return vhus;
+	}
+
+	@Override
+	public AttributesKey getStorageRelevantAttributesKey(@NonNull final I_M_HU hu)
+	{
+		final IAttributeStorageFactoryService attributeStorageFactoryService = Services.get(IAttributeStorageFactoryService.class);
+		
+		final IAttributeStorageFactory attributeStorageFactory = attributeStorageFactoryService.createHUAttributeStorageFactory();
+		final IAttributeStorage attributeStorage = attributeStorageFactory.getAttributeStorage(hu);
+
+		final ImmutableAttributeSet storageRelevantSubSet = ImmutableAttributeSet.createSubSet(attributeStorage, I_M_Attribute::isStorageRelevant);
+
+		return AttributesKeys
+				.createAttributesKeyFromAttributeSet(storageRelevantSubSet)
+				.orElse(AttributesKey.NONE);
 	}
 }
