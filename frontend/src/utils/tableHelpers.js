@@ -58,7 +58,6 @@ export const componentPropTypes = {
   onDeselect: PropTypes.func.isRequired,
 };
 
-
 /**
  * @method getAmountFormatByPrecisiont
  * @param {string} precision
