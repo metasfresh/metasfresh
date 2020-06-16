@@ -342,7 +342,7 @@ public class HUTestHelper
 	public I_M_Warehouse defaultWarehouse;
 	public I_M_Warehouse issueWarehouse;
 	// Empties:
-	public I_M_Warehouse warehouse_Empties;
+	private I_M_Warehouse warehouse_Empties;
 	private DDNetworkBuilder emptiesDDNetworkBuilder;
 
 	public Properties ctx;
