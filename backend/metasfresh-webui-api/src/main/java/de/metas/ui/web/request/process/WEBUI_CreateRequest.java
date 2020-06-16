@@ -123,6 +123,7 @@ public class WEBUI_CreateRequest extends JavaProcess implements IProcessPrecondi
 
 		request.setSalesRep_ID(getAD_User_ID());
 		request.setC_BPartner_ID(bpartner.getC_BPartner_ID());
+		request.setR_RequestType_ID(REQUEST_TYPE_CUSTOMER_COMPLAINT_ID);
 
 		if (defaultContact != null)
 		{
@@ -158,6 +159,7 @@ public class WEBUI_CreateRequest extends JavaProcess implements IProcessPrecondi
 
 		request.setAD_User_ID(user.getAD_User_ID());
 		request.setC_BPartner_ID(user.getC_BPartner_ID());
+		request.setR_RequestType_ID(REQUEST_TYPE_CUSTOMER_COMPLAINT_ID);
 
 		return request;
 	}
