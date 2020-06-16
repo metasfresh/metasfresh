@@ -3,6 +3,7 @@ package de.metas.material.event;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
+import de.metas.material.event.attributes.AttributesChangedEvent;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.ddorder.DDOrderAdvisedEvent;
 import de.metas.material.event.ddorder.DDOrderCreatedEvent;
@@ -68,6 +69,8 @@ import de.metas.material.event.transactions.TransactionDeletedEvent;
  */
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "type")
 @JsonSubTypes({
+		@JsonSubTypes.Type(name = AttributesChangedEvent.TYPE, value = AttributesChangedEvent.class),
+
 		@JsonSubTypes.Type(name = SupplyRequiredEvent.TYPE, value = SupplyRequiredEvent.class),
 
 		@JsonSubTypes.Type(name = DDOrderAdvisedEvent.TYPE, value = DDOrderAdvisedEvent.class),

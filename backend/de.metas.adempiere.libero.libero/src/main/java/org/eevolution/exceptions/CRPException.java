@@ -30,10 +30,9 @@ import org.eevolution.api.PPOrderRoutingActivity;
 import org.eevolution.model.I_PP_Order;
 
 import de.metas.document.engine.IDocument;
-import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.material.planning.pporder.LiberoException;
-import de.metas.util.Services;
 import lombok.NonNull;
 
 /**
@@ -119,7 +118,7 @@ public class CRPException extends LiberoException
 			sb.append(" @S_Resource_ID@:").append(resource.getValue()).append("_").append(resource.getName());
 		}
 		//
-		return Services.get(IMsgBL.class).parseTranslatableString(sb.toString());
+		return TranslatableStrings.parse(sb.toString());
 	}
 
 }

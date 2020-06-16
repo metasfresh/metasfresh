@@ -391,7 +391,6 @@ public class XmlToOLCandsService
 			@NonNull final BodyType body,
 			@NonNull final HighLevelContext context)
 	{
-
 		final JsonOrganization billerOrgInfo = createBillerOrg(
 				getBiller(body),
 				context);
@@ -544,6 +543,7 @@ public class XmlToOLCandsService
 
 			guarantorLocation.setSyncAdvise(SyncAdvise.CREATE_OR_MERGE);
 			guarantorLocation.setName(guarantorName);
+			guarantorLocation.setBpartnerName(guarantorName);
 			guarantorLocation.setExternalId(JsonExternalId.of(guarantorLocation.getExternalId().getValue() + "_GUARANTOR"));
 			guarantorLocation.setShipTo(false);
 			guarantorLocation.setShipToDefault(false);

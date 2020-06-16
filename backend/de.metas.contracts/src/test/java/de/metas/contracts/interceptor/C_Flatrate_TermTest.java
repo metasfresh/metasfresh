@@ -73,7 +73,7 @@ public class C_Flatrate_TermTest
 		}
 		catch (AdempiereException ae)
 		{
-			assertThat(ae.getMessage()).isEqualTo("@" + MainValidator.MSG_FLATRATE_REACTIVATE_DOC_ACTION_NOT_SUPPORTED_0P + "@");
+			assertThat(ae.getMessage()).isEqualTo(MainValidator.MSG_FLATRATE_REACTIVATE_DOC_ACTION_NOT_SUPPORTED_0P.toAD_Message());
 		}
 	}
 

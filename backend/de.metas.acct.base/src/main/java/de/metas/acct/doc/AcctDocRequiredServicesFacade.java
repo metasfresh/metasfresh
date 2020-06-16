@@ -9,7 +9,6 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.model.I_C_BP_BankAccount;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.MAccount;
@@ -29,7 +28,10 @@ import de.metas.acct.api.IProductAcctDAO;
 import de.metas.acct.api.ProductAcctType;
 import de.metas.acct.tax.ITaxAcctBL;
 import de.metas.acct.tax.TaxAcctType;
-import de.metas.banking.api.IBPBankAccountDAO;
+import de.metas.banking.BankAccount;
+import de.metas.banking.BankAccountAcct;
+import de.metas.banking.BankAccountId;
+import de.metas.banking.api.BankAccountService;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
 import de.metas.cache.model.IModelCacheInvalidationService;
 import de.metas.cache.model.ModelCacheInvalidationTiming;
@@ -47,6 +49,8 @@ import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.CurrencyRate;
 import de.metas.currency.ICurrencyBL;
 import de.metas.currency.ICurrencyDAO;
+import de.metas.error.AdIssueId;
+import de.metas.error.IErrorManager;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
@@ -89,6 +93,7 @@ public class AcctDocRequiredServicesFacade
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
+	private final IErrorManager errorManager = Services.get(IErrorManager.class);
 
 	private final IFactAcctListenersService factAcctListenersService = Services.get(IFactAcctListenersService.class);
 	private final IPostingService postingService = Services.get(IPostingService.class);
@@ -99,7 +104,7 @@ public class AcctDocRequiredServicesFacade
 
 	private final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
 	private final ICurrencyBL currencyConversionBL = Services.get(ICurrencyBL.class);
-	private final IBPBankAccountDAO bpBankAccountDAO = Services.get(IBPBankAccountDAO.class);
+	private final BankAccountService bankAccountService;
 
 	//
 	// Needed for DocLine:
@@ -110,8 +115,11 @@ public class AcctDocRequiredServicesFacade
 
 	private final ICostingService costingService;
 
-	public AcctDocRequiredServicesFacade(@NonNull final ICostingService costingService)
+	public AcctDocRequiredServicesFacade(
+			@NonNull final BankAccountService bankAccountService,
+			@NonNull final ICostingService costingService)
 	{
+		this.bankAccountService = bankAccountService;
 		this.costingService = costingService;
 	}
 
@@ -185,9 +193,14 @@ public class AcctDocRequiredServicesFacade
 		return currencyConversionBL.getCurrencyRate(conversionCtx, currencyFromId, currencyToId);
 	}
 
-	public I_C_BP_BankAccount getBPBankAccountById(final int bpBankAccountId)
+	public BankAccount getBankAccountById(final BankAccountId bpBankAccountId)
 	{
-		return bpBankAccountDAO.getById(bpBankAccountId);
+		return bankAccountService.getById(bpBankAccountId);
+	}
+
+	public BankAccountAcct getBankAccountAcct(final BankAccountId bankAccountId, final AcctSchemaId acctSchemaId)
+	{
+		return bankAccountService.getBankAccountAcct(bankAccountId, acctSchemaId);
 	}
 
 	public void postImmediateNoFail(
@@ -272,4 +285,15 @@ public class AcctDocRequiredServicesFacade
 	{
 		return costingService.getCurrentCostPrice(costSegment, costingMethod);
 	}
+
+	public AdIssueId createIssue(@NonNull final PostingException exception)
+	{
+		return errorManager.createIssue(exception);
+	}
+
+	public void markIssueDeprecated(@NonNull final AdIssueId adIssueId)
+	{
+		errorManager.markIssueAcknowledged(adIssueId);
+	}
+
 }

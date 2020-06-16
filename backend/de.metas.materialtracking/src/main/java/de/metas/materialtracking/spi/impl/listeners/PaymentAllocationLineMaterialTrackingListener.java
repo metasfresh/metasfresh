@@ -31,6 +31,8 @@ import de.metas.materialtracking.MTLinkRequest;
 import de.metas.materialtracking.MaterialTrackingListenerAdapter;
 import de.metas.materialtracking.model.I_M_Material_Tracking;
 import de.metas.materialtracking.model.validator.MaterialTrackableDocumentByASIInterceptor;
+import de.metas.payment.PaymentId;
+import de.metas.payment.api.IPaymentBL;
 import de.metas.util.Services;
 
 /**
@@ -58,9 +60,15 @@ public final class PaymentAllocationLineMaterialTrackingListener extends Materia
 	public void afterModelLinked(final MTLinkRequest request)
 	{
 		final I_C_AllocationLine allocationLine = InterfaceWrapperHelper.create(request.getModel(), I_C_AllocationLine.class);
-		final I_C_Payment payment = allocationLine.getC_Payment();
-
-		if (payment == null || payment.getC_Payment_ID() <= 0)
+		final PaymentId paymentId = PaymentId.ofRepoIdOrNull(allocationLine.getC_Payment_ID());
+		if(paymentId == null)
+		{
+			return;
+		}
+		
+		final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
+		final I_C_Payment payment = paymentBL.getById(paymentId);
+		if (payment == null)
 		{
 			return;
 		}
@@ -80,8 +88,16 @@ public final class PaymentAllocationLineMaterialTrackingListener extends Materia
 	public void afterModelUnlinked(final Object model, final I_M_Material_Tracking materialTrackingOld)
 	{
 		final I_C_AllocationLine allocationLine = InterfaceWrapperHelper.create(model, I_C_AllocationLine.class);
-		final I_C_Payment payment = allocationLine.getC_Payment();
-		if (payment == null || payment.getC_Payment_ID() <= 0)
+		
+		final PaymentId paymentId = PaymentId.ofRepoIdOrNull(allocationLine.getC_Payment_ID());
+		if(paymentId == null)
+		{
+			return;
+		}
+		
+		final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
+		final I_C_Payment payment = paymentBL.getById(paymentId);
+		if (payment == null)
 		{
 			return;
 		}

@@ -44,6 +44,7 @@ import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 
 import de.metas.security.TableAccessLevel;
+import de.metas.util.StringUtils;
 
 /**
  * Repository of {@link TableInfo}s, {@link ListInfo}s, {@link TableReferenceInfo}s.
@@ -127,13 +128,16 @@ public class TableAndColumnInfoRepository
 		final String sql = "SELECT c.ColumnName, c.IsUpdateable, c.IsMandatory," // 1..3
 				+ " c.AD_Reference_ID, c.AD_Reference_Value_ID, DefaultValue, SeqNo, " // 4..7
 				+ " c.FieldLength, c.ValueMin, c.ValueMax, c.VFormat, c.Callout, " // 8..12
-				+ " c.Name, c.Description, c.ColumnSQL, c.IsEncrypted, c.IsKey "   // 13..17
+				+ " COALESCE(ctrl.Name, c.Name) AS Name, " // 13
+				+ " COALESCE(ctrl.Description, c.Description) AS Description, " // 14
+				+ " c.ColumnSQL, c.IsEncrypted, c.IsKey "   // 15..17
 				+ ", t.TableName" // 18
 				+ ", c.SeqNo" // 19
 				+ ", c.IsIdentifier" // 20
 				+ ", t.AccessLevel" // 21
 				+ ", c.IsLazyLoading" // 22
 				+ " FROM AD_Column c "
+				+ " LEFT OUTER JOIN AD_Column_Trl ctrl on (ctrl.AD_Column_ID=c.AD_Column_ID AND ctrl.AD_Language='en_US')"
 				+ " INNER JOIN AD_Table t ON (t.AD_Table_ID=c.AD_Table_ID)"
 				+ " WHERE c.AD_Table_ID=?"
 				// + " AND c.ColumnName <> 'AD_Client_ID'"
@@ -171,12 +175,11 @@ public class TableAndColumnInfoRepository
 				String Name = rs.getString(13);
 				String Description = rs.getString(14);
 				String ColumnSQL = rs.getString(15);
-				boolean virtualColumn = ColumnSQL != null
-						&& ColumnSQL.length() > 0;
-				boolean IsEncrypted = "Y".equals(rs.getString(16));
-				boolean IsKey = "Y".equals(rs.getString(17));
+				boolean virtualColumn = ColumnSQL != null && ColumnSQL.length() > 0;
+				boolean IsEncrypted = StringUtils.toBoolean(rs.getString(16));
+				boolean IsKey = StringUtils.toBoolean(rs.getString(17));
 				final int seqNo = rs.getInt("SeqNo"); // i.e. 19
-				final boolean isIdentifier = "Y".equals(rs.getString("IsIdentifier")); // i.e. 20
+				final boolean isIdentifier = StringUtils.toBoolean(rs.getString("IsIdentifier")); // i.e. 20
 
 				if (tableInfoBuilder == null)
 				{

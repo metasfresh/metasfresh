@@ -3,7 +3,6 @@ package de.metas.bpartner.composite.repository;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Objects;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.table.LogEntriesRepository;
@@ -113,7 +112,7 @@ final class BPartnerCompositesLoader
 
 		final CompositeRelatedRecords relatedRecords = retrieveRelatedRecords(bPartnerIds);
 
-		final ImmutableMap.Builder<BPartnerId, BPartnerComposite> result = ImmutableMap.<BPartnerId, BPartnerComposite> builder();
+		final ImmutableMap.Builder<BPartnerId, BPartnerComposite> result = ImmutableMap.<BPartnerId, BPartnerComposite>builder();
 
 		for (final I_C_BPartner bPartnerRecord : bPartnerRecords)
 		{
@@ -198,7 +197,7 @@ final class BPartnerCompositesLoader
 				.followLocationIdChanges(true)
 				.build();
 		final ImmutableListMultimap<TableRecordReference, RecordChangeLogEntry> //
-		recordRef2LogEntries = recordChangeLogRepository.getLogEntriesForRecordReferences(logEntriesQuery);
+				recordRef2LogEntries = recordChangeLogRepository.getLogEntriesForRecordReferences(logEntriesQuery);
 
 		return new CompositeRelatedRecords(
 				bpartnerId2Users,
@@ -362,7 +361,6 @@ final class BPartnerCompositesLoader
 		final ImmutableList<I_C_BP_BankAccount> bpBankAccountrecords = relatedRecords
 				.getBpartnerId2BankAccounts()
 				.get(bpartnerId);
-
 		final ImmutableList.Builder<BPartnerBankAccount> result = ImmutableList.builder();
 		for (final I_C_BP_BankAccount bpBankAccountRecord : bpBankAccountrecords)
 		{ // this used to be a stream..more compact, but much harder to debug

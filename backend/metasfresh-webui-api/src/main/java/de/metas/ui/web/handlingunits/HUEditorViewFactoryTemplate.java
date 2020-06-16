@@ -282,7 +282,7 @@ public abstract class HUEditorViewFactoryTemplate implements IViewFactory
 	}
 
 	@Override
-	public final HUEditorView createView(final CreateViewRequest request)
+	public final HUEditorView createView(final @NonNull CreateViewRequest request)
 	{
 		final ViewId viewId = request.getViewId();
 

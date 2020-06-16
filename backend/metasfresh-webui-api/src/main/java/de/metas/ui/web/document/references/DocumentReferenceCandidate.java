@@ -1,21 +1,18 @@
 package de.metas.ui.web.document.references;
 
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-
-import org.adempiere.ad.element.api.AdWindowId;
 
 import com.google.common.collect.ImmutableList;
 
 import de.metas.document.references.ZoomInfo;
 import de.metas.document.references.ZoomInfoCandidate;
+import de.metas.document.references.ZoomTargetWindow;
+import de.metas.document.references.ZoomTargetWindowEvaluationContext;
 import de.metas.i18n.ITranslatableString;
 import de.metas.ui.web.document.filter.provider.userQuery.MQueryDocumentFilterHelper;
 import de.metas.ui.web.window.datatypes.WindowId;
-import de.metas.util.lang.Priority;
 import lombok.NonNull;
 
 /*
@@ -49,7 +46,7 @@ public class DocumentReferenceCandidate
 			return ImmutableList.of();
 		}
 
-		final HashMap<AdWindowId, Priority> alreadySeenWindowIds = new HashMap<>();
+		final ZoomTargetWindowEvaluationContext alreadySeenWindowIds = new ZoomTargetWindowEvaluationContext();
 
 		return candidates.stream()
 				.map(candidate -> candidate.evaluate(alreadySeenWindowIds).orElse(null))
@@ -74,7 +71,7 @@ public class DocumentReferenceCandidate
 				.map(zoomInfo -> toDocumentReference(zoomInfo, filterCaption));
 	}
 
-	private Optional<DocumentReference> evaluate(@NonNull final Map<AdWindowId, Priority> alreadySeenWindowIds)
+	private Optional<DocumentReference> evaluate(@NonNull final ZoomTargetWindowEvaluationContext alreadySeenWindowIds)
 	{
 		return zoomInfoCandidate.evaluate(alreadySeenWindowIds)
 				.map(zoomInfo -> toDocumentReference(zoomInfo, filterCaption));
@@ -84,22 +81,25 @@ public class DocumentReferenceCandidate
 			@NonNull final ZoomInfo zoomInfo,
 			@NonNull final ITranslatableString filterCaption)
 	{
-		final WindowId windowId = WindowId.of(zoomInfo.getAdWindowId());
-
-		// NOTE: we use the windowId as the ID because we want to have only one document reference per window.
-		// In case of multiple references, the one with highest priority shall be picked.\\
-		final String id = windowId.toJson();
-
 		return DocumentReference.builder()
-				.id(id)
+				.id(DocumentReferenceId.ofZoomInfoId(zoomInfo.getId()))
 				.internalName(zoomInfo.getInternalName())
 				.caption(zoomInfo.getCaption())
-				.windowId(windowId)
+				.targetWindow(toDocumentReferenceTargetWindow(zoomInfo.getTargetWindow()))
 				.priority(zoomInfo.getPriority())
 				.documentsCount(zoomInfo.getRecordCount())
 				.filter(MQueryDocumentFilterHelper.createDocumentFilterFromMQuery(zoomInfo.getQuery(), filterCaption))
 				.loadDuration(zoomInfo.getRecordCountDuration())
 				.build();
+	}
+
+	private static DocumentReferenceTargetWindow toDocumentReferenceTargetWindow(@NonNull final ZoomTargetWindow zoomTargetWindow)
+	{
+		final WindowId windowId = WindowId.of(zoomTargetWindow.getAdWindowId());
+		final String category = zoomTargetWindow.getCategory();
+		return category != null
+				? DocumentReferenceTargetWindow.ofWindowIdAndCategory(windowId, category)
+				: DocumentReferenceTargetWindow.ofWindowId(windowId);
 	}
 
 }

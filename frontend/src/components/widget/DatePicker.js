@@ -10,6 +10,10 @@ import {
   allowOutsideClick,
   disableOutsideClick,
 } from '../../actions/WindowActions';
+import { getCurrentActiveLocale } from '../../utils/locale';
+
+import Moment from 'moment-timezone';
+import { DATE_FIELD_FORMATS } from '../../constants/Constants';
 
 /**
  * @file Class based component.
@@ -113,6 +117,7 @@ class DatePicker extends Component {
    */
   handleClose = () => {
     const { dispatch } = this.props;
+
     this.setState({
       open: false,
     });
@@ -167,17 +172,26 @@ class DatePicker extends Component {
     this.inputElement && this.inputElement.focus();
   };
 
-  renderInput = ({ className, ...props }) => (
-    <div className={className}>
-      <input
-        {...props}
-        className="form-control"
-        ref={(input) => {
-          this.inputElement = input;
-        }}
-      />
-    </div>
-  );
+  renderInput = ({ className, ...props }) => {
+    let { value } = props;
+    // patch pre-formatated date that comes like this from BE
+    if (value && value.includes('-')) {
+      Moment.locale(getCurrentActiveLocale());
+      value = Moment(value).format(DATE_FIELD_FORMATS.Date);
+    }
+    return (
+      <div className={className}>
+        <input
+          {...props}
+          value={value}
+          className="form-control"
+          ref={(input) => {
+            this.inputElement = input;
+          }}
+        />
+      </div>
+    );
+  };
 
   /**
    * @method render

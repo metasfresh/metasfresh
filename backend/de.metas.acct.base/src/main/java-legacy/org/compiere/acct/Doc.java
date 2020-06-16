@@ -32,6 +32,8 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.function.IntFunction;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
@@ -45,6 +47,7 @@ import org.compiere.model.MAccount;
 import org.compiere.model.MNote;
 import org.compiere.model.MPeriod;
 import org.compiere.model.PO;
+import org.compiere.model.POInfo;
 import org.compiere.model.X_C_DocType;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
@@ -62,12 +65,16 @@ import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.doc.AcctDocContext;
 import de.metas.acct.doc.AcctDocRequiredServicesFacade;
 import de.metas.acct.doc.PostingException;
+import de.metas.banking.BankAccount;
+import de.metas.banking.BankAccountAcct;
+import de.metas.banking.BankAccountId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.currency.exceptions.NoCurrencyRateFoundException;
 import de.metas.document.engine.IDocument;
+import de.metas.error.AdIssueId;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.BooleanWithReason;
 import de.metas.lang.SOTrx;
@@ -141,10 +148,11 @@ import lombok.NonNull;
  *
  * </pre>
  *
+ * Also see http://sourceforge.net/tracker2/?func=detail&atid=879335&aid=2520591&group_id=176962
+ *
  * @author Jorg Janke
  * @author victor.perez@e-evolution.com, e-Evolution http://www.e-evolution.com
  *         <li>FR [ 2520591 ] Support multiples calendar for Org
- * @see http://sourceforge.net/tracker2/?func=detail&atid=879335&aid=2520591&group_id=176962
  * @version $Id: Doc.java,v 1.6 2006/07/30 00:53:33 jjanke Exp $
  */
 public abstract class Doc<DocLineType extends DocLine<?>>
@@ -217,7 +225,6 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 	 */
 	protected Doc(@NonNull final AcctDocContext ctx, final String defaultDocBaseType)
 	{
-
 		services = ctx.getServices();
 		acctSchemas = ctx.getAcctSchemas();
 
@@ -276,8 +283,8 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 	private Optional<BPartnerId> _bpartnerId; // lazy
 
 	/** Bank Account */
-	private int m_C_BP_BankAccount_ID = -1;
-	private I_C_BP_BankAccount bpBankAccount = null;
+	private Optional<BankAccountId> _bankAccountId = null; // lazy
+	private BankAccount bankAccount = null;
 	/** Cach Book */
 	private int m_C_CashBook_ID = -1;
 
@@ -287,7 +294,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 	/** Contained Doc Lines */
 	private List<DocLineType> docLines;
 
-	protected final String get_TableName()
+	public final String get_TableName()
 	{
 		return getPO().get_TableName();
 	}
@@ -300,7 +307,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 	/**
 	 * @return record id
 	 */
-	protected final int get_ID()
+	public final int get_ID()
 	{
 		return getPO().get_ID();
 	}
@@ -701,15 +708,19 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 	private final void unlock(final PostingException exception)
 	{
 		final String tableName = get_TableName();
-		final String keyColumnName = tableName + "_ID";
+		final POInfo poInfo = POInfo.getPOInfo(tableName);
+		final String keyColumnName = poInfo.getKeyColumnName();
 		final int recordId = get_ID();
 
 		final StringBuilder sql = new StringBuilder("UPDATE ")
 				.append(tableName).append(" SET ");
 
-		// Unlock it
+		//
+		// Processing (i.e. unlock it)
 		sql.append("Processing='N'");
 
+		//
+		// Posted
 		final boolean updatePostedStatus = exception != null && !exception.isPreserveDocumentPostedStatus();
 		if (exception == null)
 		{
@@ -721,7 +732,28 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 			sql.append(", Posted=").append(DB.TO_STRING(postingStatus.getStatusCode()));
 		}
 
-		sql.append(" WHERE ").append(keyColumnName).append("=").append(recordId);
+		//
+		// PostingError_Issue_ID
+		final String COLUMNNAME_PostingError_Issue_ID = "PostingError_Issue_ID";
+		boolean hasPostingIssueColumn = poInfo.hasColumnName(COLUMNNAME_PostingError_Issue_ID);
+		if (hasPostingIssueColumn)
+		{
+			final AdIssueId postingErrorIssueId = exception != null
+					? services.createIssue(exception)
+					: null;
+
+			final AdIssueId previousPostingErrorIssueId = AdIssueId.ofRepoIdOrNull(getPO().get_ValueAsInt(COLUMNNAME_PostingError_Issue_ID));
+			if (previousPostingErrorIssueId != null
+					&& !previousPostingErrorIssueId.equals(postingErrorIssueId))
+			{
+				services.markIssueDeprecated(previousPostingErrorIssueId);
+			}
+
+			sql.append(", ").append(COLUMNNAME_PostingError_Issue_ID).append("=").append(postingErrorIssueId.getRepoId());
+		}
+
+		sql.append("\n WHERE ").append(keyColumnName).append("=").append(recordId);
+
 		final int updateCount = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 
 		fireDocumentChanged();
@@ -1067,78 +1099,10 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		return m_Amounts[0];
 	}   // getAmount
 
-	/** Account Type - Invoice - Charge */
-	public static final int ACCTTYPE_Charge = 0;
-	/** Account Type - Invoice - AR */
-	public static final int ACCTTYPE_C_Receivable = 1;
-	/** Account Type - Invoice - AP */
-	public static final int ACCTTYPE_V_Liability = 2;
-	/** Account Type - Invoice - AP Service */
-	public static final int ACCTTYPE_V_Liability_Services = 3;
-	/** Account Type - Invoice - AR Service */
-	public static final int ACCTTYPE_C_Receivable_Services = 4;
-
-	/** Account Type - Payment - Unallocated */
-	public static final int ACCTTYPE_UnallocatedCash = 10;
-	/** Account Type - Payment - Transfer */
-	public static final int ACCTTYPE_BankInTransit = 11;
-	/** Account Type - Payment - Selection */
-	public static final int ACCTTYPE_PaymentSelect = 12;
-	/** Account Type - Payment - Prepayment */
-	public static final int ACCTTYPE_C_Prepayment = 13;
-	/** Account Type - Payment - Prepayment */
-	public static final int ACCTTYPE_V_Prepayment = 14;
-
-	/** Account Type - Cash - Asset */
-	public static final int ACCTTYPE_CashAsset = 20;
-	/** Account Type - Cash - Transfer */
-	public static final int ACCTTYPE_CashTransfer = 21;
-	/** Account Type - Cash - Expense */
-	public static final int ACCTTYPE_CashExpense = 22;
-	/** Account Type - Cash - Receipt */
-	public static final int ACCTTYPE_CashReceipt = 23;
-	/** Account Type - Cash - Difference */
-	public static final int ACCTTYPE_CashDifference = 24;
-
-	/** Account Type - Allocation - Discount Expense (AR) */
-	public static final int ACCTTYPE_DiscountExp = 30;
-	/** Account Type - Allocation - Discount Revenue (AP) */
-	public static final int ACCTTYPE_DiscountRev = 31;
-	/** Account Type - Allocation - Write Off */
-	public static final int ACCTTYPE_WriteOff = 32;
-
-	/** Account Type - Bank Statement - Asset */
-	public static final int ACCTTYPE_BankAsset = 40;
-	/** Account Type - Bank Statement - Interest Revenue */
-	public static final int ACCTTYPE_InterestRev = 41;
-	/** Account Type - Bank Statement - Interest Exp */
-	public static final int ACCTTYPE_InterestExp = 42;
-
-	/** Inventory Accounts - Differences */
-	public static final int ACCTTYPE_InvDifferences = 50;
-	/** Inventory Accounts - NIR */
-	public static final int ACCTTYPE_NotInvoicedReceipts = 51;
-
-	/** Project Accounts - Assets */
-	public static final int ACCTTYPE_ProjectAsset = 61;
-	/** Project Accounts - WIP */
-	public static final int ACCTTYPE_ProjectWIP = 62;
-
-	/** GL Accounts - PPV Offset */
-	public static final int ACCTTYPE_PPVOffset = 101;
-	// /** GL Accounts - Commitment Offset */
-	// public static final int ACCTTYPE_CommitmentOffset = 111;
-	// /** GL Accounts - Commitment Offset Sales */
-	// public static final int ACCTTYPE_CommitmentOffsetSales = 112;
-
-	/**
-	 * Get the Valid Combination id for Accounting Schema
-	 *
-	 * @param acctType see ACCTTYPE_*
-	 * @param acctSchema accounting schema
-	 * @return account ID or null
-	 */
-	protected final AccountId getValidCombinationId(final int acctType, final AcctSchema acctSchema)
+	@Nullable
+	protected final AccountId getValidCombinationId(
+			@NonNull final AccountType acctType,
+			@NonNull final AcctSchema acctSchema)
 	{
 		final AcctSchemaId acctSchemaId = acctSchema.getId();
 
@@ -1146,7 +1110,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		final List<Object> sqlParams;
 
 		/** Account Type - Invoice */
-		if (acctType == ACCTTYPE_Charge)	// see getChargeAccount in DocLine
+		if (acctType == AccountType.Charge)	// see getChargeAccount in DocLine
 		{
 			final int cmp = getAmount(AMTTYPE_Charge).compareTo(BigDecimal.ZERO);
 			if (cmp == 0)
@@ -1163,34 +1127,34 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 			}
 			sqlParams = Arrays.asList(getC_Charge_ID(), acctSchemaId);
 		}
-		else if (acctType == ACCTTYPE_V_Liability)
+		else if (acctType == AccountType.V_Liability)
 		{
 			sql = "SELECT V_Liability_Acct FROM C_BP_Vendor_Acct WHERE C_BPartner_ID=? AND C_AcctSchema_ID=?";
 			sqlParams = Arrays.asList(getBPartnerId(), acctSchemaId);
 		}
-		else if (acctType == ACCTTYPE_V_Liability_Services)
+		else if (acctType == AccountType.V_Liability_Services)
 		{
 			sql = "SELECT V_Liability_Services_Acct FROM C_BP_Vendor_Acct WHERE C_BPartner_ID=? AND C_AcctSchema_ID=?";
 			sqlParams = Arrays.asList(getBPartnerId(), acctSchemaId);
 		}
-		else if (acctType == ACCTTYPE_C_Receivable)
+		else if (acctType == AccountType.C_Receivable)
 		{
 			sql = "SELECT C_Receivable_Acct FROM C_BP_Customer_Acct WHERE C_BPartner_ID=? AND C_AcctSchema_ID=?";
 			sqlParams = Arrays.asList(getBPartnerId(), acctSchemaId);
 		}
-		else if (acctType == ACCTTYPE_C_Receivable_Services)
+		else if (acctType == AccountType.C_Receivable_Services)
 		{
 			sql = "SELECT C_Receivable_Services_Acct FROM C_BP_Customer_Acct WHERE C_BPartner_ID=? AND C_AcctSchema_ID=?";
 			sqlParams = Arrays.asList(getBPartnerId(), acctSchemaId);
 		}
-		else if (acctType == ACCTTYPE_V_Prepayment)
+		else if (acctType == AccountType.V_Prepayment)
 		{
 			// metas: changed per Mark request: don't use prepayment account:
 			log.warn("V_Prepayment account shall not be used", new Exception());
 			sql = "SELECT V_Prepayment_Acct FROM C_BP_Vendor_Acct WHERE C_BPartner_ID=? AND C_AcctSchema_ID=?";
 			sqlParams = Arrays.asList(getBPartnerId(), acctSchemaId);
 		}
-		else if (acctType == ACCTTYPE_C_Prepayment)
+		else if (acctType == AccountType.C_Prepayment)
 		{
 			// metas: changed per Mark request: don't use prepayment account:
 			log.warn("C_Prepayment account shall not be used", new Exception());
@@ -1199,36 +1163,37 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		}
 
 		/** Account Type - Payment */
-		else if (acctType == ACCTTYPE_UnallocatedCash)
+		else if (acctType == AccountType.UnallocatedCash)
 		{
-			sql = "SELECT B_UnallocatedCash_Acct FROM C_BP_BankAccount_Acct WHERE C_BP_BankAccount_ID=? AND C_AcctSchema_ID=?";
-			sqlParams = Arrays.asList(getC_BP_BankAccount_ID(), acctSchemaId);
+			return getBankAccountAcct(acctSchemaId).getUnallocatedCashAcct();
 		}
-		else if (acctType == ACCTTYPE_BankInTransit)
+		else if (acctType == AccountType.BankInTransit)
 		{
-			sql = "SELECT B_InTransit_Acct FROM C_BP_BankAccount_Acct WHERE C_BP_BankAccount_ID=? AND C_AcctSchema_ID=?";
-			sqlParams = Arrays.asList(getC_BP_BankAccount_ID(), acctSchemaId);
+			return getBankAccountAcct(acctSchemaId).getBankInTransitAcct();
 		}
-		else if (acctType == ACCTTYPE_PaymentSelect)
+		else if (acctType == AccountType.PaymentSelect)
 		{
-			sql = "SELECT B_PaymentSelect_Acct FROM C_BP_BankAccount_Acct WHERE C_BP_BankAccount_ID=? AND C_AcctSchema_ID=?";
-			sqlParams = Arrays.asList(getC_BP_BankAccount_ID(), acctSchemaId);
+			return getBankAccountAcct(acctSchemaId).getPaymentSelectAcct();
+		}
+		else if (acctType == AccountType.PayBankFee)
+		{
+			return getBankAccountAcct(acctSchemaId).getPaymentBankFeeAcct();
 		}
 
 		/** Account Type - Allocation */
-		else if (acctType == ACCTTYPE_DiscountExp)
+		else if (acctType == AccountType.DiscountExp)
 		{
 			sql = "SELECT a.PayDiscount_Exp_Acct FROM C_BP_Group_Acct a, C_BPartner bp "
 					+ "WHERE a.C_BP_Group_ID=bp.C_BP_Group_ID AND bp.C_BPartner_ID=? AND a.C_AcctSchema_ID=?";
 			sqlParams = Arrays.asList(getBPartnerId(), acctSchemaId);
 		}
-		else if (acctType == ACCTTYPE_DiscountRev)
+		else if (acctType == AccountType.DiscountRev)
 		{
 			sql = "SELECT PayDiscount_Rev_Acct FROM C_BP_Group_Acct a, C_BPartner bp "
 					+ "WHERE a.C_BP_Group_ID=bp.C_BP_Group_ID AND bp.C_BPartner_ID=? AND a.C_AcctSchema_ID=?";
 			sqlParams = Arrays.asList(getBPartnerId(), acctSchemaId);
 		}
-		else if (acctType == ACCTTYPE_WriteOff)
+		else if (acctType == AccountType.WriteOff)
 		{
 			sql = "SELECT WriteOff_Acct FROM C_BP_Group_Acct a, C_BPartner bp "
 					+ "WHERE a.C_BP_Group_ID=bp.C_BP_Group_ID AND bp.C_BPartner_ID=? AND a.C_AcctSchema_ID=?";
@@ -1236,57 +1201,54 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		}
 
 		/** Account Type - Bank Statement */
-		else if (acctType == ACCTTYPE_BankAsset)
+		else if (acctType == AccountType.BankAsset)
 		{
-			sql = "SELECT B_Asset_Acct FROM C_BP_BankAccount_Acct WHERE C_BP_BankAccount_ID=? AND C_AcctSchema_ID=?";
-			sqlParams = Arrays.asList(getC_BP_BankAccount_ID(), acctSchemaId);
+			return getBankAccountAcct(acctSchemaId).getBankAssetAcct();
 		}
-		else if (acctType == ACCTTYPE_InterestRev)
+		else if (acctType == AccountType.InterestRev)
 		{
-			sql = "SELECT B_InterestRev_Acct FROM C_BP_BankAccount_Acct WHERE C_BP_BankAccount_ID=? AND C_AcctSchema_ID=?";
-			sqlParams = Arrays.asList(getC_BP_BankAccount_ID(), acctSchemaId);
+			return getBankAccountAcct(acctSchemaId).getInterestRevenueAcct();
 		}
-		else if (acctType == ACCTTYPE_InterestExp)
+		else if (acctType == AccountType.InterestExp)
 		{
-			sql = "SELECT B_InterestExp_Acct FROM C_BP_BankAccount_Acct WHERE C_BP_BankAccount_ID=? AND C_AcctSchema_ID=?";
-			sqlParams = Arrays.asList(getC_BP_BankAccount_ID(), acctSchemaId);
+			return getBankAccountAcct(acctSchemaId).getInterestExpenseAcct();
 		}
 
 		/** Account Type - Cash */
-		else if (acctType == ACCTTYPE_CashAsset)
+		else if (acctType == AccountType.CashAsset)
 		{
 			sql = "SELECT CB_Asset_Acct FROM C_CashBook_Acct WHERE C_CashBook_ID=? AND C_AcctSchema_ID=?";
 			sqlParams = Arrays.asList(getC_CashBook_ID(), acctSchemaId);
 		}
-		else if (acctType == ACCTTYPE_CashTransfer)
+		else if (acctType == AccountType.CashTransfer)
 		{
 			sql = "SELECT CB_CashTransfer_Acct FROM C_CashBook_Acct WHERE C_CashBook_ID=? AND C_AcctSchema_ID=?";
 			sqlParams = Arrays.asList(getC_CashBook_ID(), acctSchemaId);
 		}
-		else if (acctType == ACCTTYPE_CashExpense)
+		else if (acctType == AccountType.CashExpense)
 		{
 			sql = "SELECT CB_Expense_Acct FROM C_CashBook_Acct WHERE C_CashBook_ID=? AND C_AcctSchema_ID=?";
 			sqlParams = Arrays.asList(getC_CashBook_ID(), acctSchemaId);
 		}
-		else if (acctType == ACCTTYPE_CashReceipt)
+		else if (acctType == AccountType.CashReceipt)
 		{
 			sql = "SELECT CB_Receipt_Acct FROM C_CashBook_Acct WHERE C_CashBook_ID=? AND C_AcctSchema_ID=?";
 			sqlParams = Arrays.asList(getC_CashBook_ID(), acctSchemaId);
 		}
-		else if (acctType == ACCTTYPE_CashDifference)
+		else if (acctType == AccountType.CashDifference)
 		{
 			sql = "SELECT CB_Differences_Acct FROM C_CashBook_Acct WHERE C_CashBook_ID=? AND C_AcctSchema_ID=?";
 			sqlParams = Arrays.asList(getC_CashBook_ID(), acctSchemaId);
 		}
 
 		/** Inventory Accounts */
-		else if (acctType == ACCTTYPE_InvDifferences)
+		else if (acctType == AccountType.InvDifferences)
 		{
 			sql = "SELECT W_Differences_Acct FROM M_Warehouse_Acct WHERE M_Warehouse_ID=? AND C_AcctSchema_ID=?";
 			// "SELECT W_Inventory_Acct, W_Revaluation_Acct, W_InvActualAdjust_Acct FROM M_Warehouse_Acct WHERE M_Warehouse_ID=? AND C_AcctSchema_ID=?";
 			sqlParams = Arrays.asList(getWarehouseId(), acctSchemaId);
 		}
-		else if (acctType == ACCTTYPE_NotInvoicedReceipts)
+		else if (acctType == AccountType.NotInvoicedReceipts)
 		{
 			sql = "SELECT NotInvoicedReceipts_Acct FROM C_BP_Group_Acct a, C_BPartner bp "
 					+ "WHERE a.C_BP_Group_ID=bp.C_BP_Group_ID AND bp.C_BPartner_ID=? AND a.C_AcctSchema_ID=?";
@@ -1294,19 +1256,19 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		}
 
 		/** Project Accounts */
-		else if (acctType == ACCTTYPE_ProjectAsset)
+		else if (acctType == AccountType.ProjectAsset)
 		{
 			sql = "SELECT PJ_Asset_Acct FROM C_Project_Acct WHERE C_Project_ID=? AND C_AcctSchema_ID=?";
 			sqlParams = Arrays.asList(getC_Project_ID(), acctSchemaId);
 		}
-		else if (acctType == ACCTTYPE_ProjectWIP)
+		else if (acctType == AccountType.ProjectWIP)
 		{
 			sql = "SELECT PJ_WIP_Acct FROM C_Project_Acct WHERE C_Project_ID=? AND C_AcctSchema_ID=?";
 			sqlParams = Arrays.asList(getC_Project_ID(), acctSchemaId);
 		}
 
 		/** GL Accounts */
-		else if (acctType == ACCTTYPE_PPVOffset)
+		else if (acctType == AccountType.PPVOffset)
 		{
 			return acctSchema.getGeneralLedger().getPurchasePriceVarianceOffsetAcctId();
 		}
@@ -1357,14 +1319,26 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		}
 	}	// getAccount_ID
 
+	private BankAccountAcct getBankAccountAcct(@NonNull final AcctSchemaId acctSchemaId)
+	{
+		final BankAccountId bankAccountId = getBPBankAccountId();
+		if (bankAccountId == null)
+		{
+			throw newPostingException()
+					.addDetailMessage("Bank Account is not set");
+		}
+
+		return services.getBankAccountAcct(bankAccountId, acctSchemaId);
+	}
+
 	/**
 	 * Get the account for Accounting Schema
 	 *
-	 * @param acctType see ACCTTYPE_*
+	 * @param acctType see AccountType.*
 	 * @param acctSchema accounting schema
 	 * @return Account or <code>null</code>
 	 */
-	protected final MAccount getAccount(final int acctType, final AcctSchema acctSchema)
+	protected final MAccount getAccount(final AccountType acctType, final AcctSchema acctSchema)
 	{
 		final AccountId accountId = getValidCombinationId(acctType, acctSchema);
 		if (accountId == null)
@@ -1509,7 +1483,12 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 
 	protected final void setDateAcct(final Timestamp dateAcct)
 	{
-		_dateAcct = TimeUtil.asLocalDate(dateAcct);
+		setDateAcct(TimeUtil.asLocalDate(dateAcct));
+	}
+
+	protected final void setDateAcct(final LocalDate dateAcct)
+	{
+		_dateAcct = dateAcct;
 	}
 
 	protected final LocalDate getDateDoc()
@@ -1575,43 +1554,39 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 	}
 
 	/**
-	 * Get C_BP_BankAccount_ID if it was previously set using {@link #setC_BP_BankAccount_ID(int)}, or attempts to get it from our <code>p_po</code> (document record).
-	 *
-	 * @return BankAccount
+	 * Get C_BP_BankAccount_ID if it was previously set using {@link #setBPBankAccountId(BankAccountId)}, or attempts to get it from our <code>p_po</code> (document record).
 	 */
-	final int getC_BP_BankAccount_ID()
+	final BankAccountId getBPBankAccountId()
 	{
-		if (m_C_BP_BankAccount_ID == -1)
+		Optional<BankAccountId> bankAccountId = _bankAccountId;
+		if (bankAccountId == null)
 		{
-			m_C_BP_BankAccount_ID = getValueAsIntOrZero(I_C_BP_BankAccount.COLUMNNAME_C_BP_BankAccount_ID);
-			if (m_C_BP_BankAccount_ID <= 0)
-			{
-				m_C_BP_BankAccount_ID = 0;
-			}
+			bankAccountId = _bankAccountId = getValueAsOptionalId(
+					I_C_BP_BankAccount.COLUMNNAME_C_BP_BankAccount_ID,
+					BankAccountId::ofRepoIdOrNull);
 		}
-		return m_C_BP_BankAccount_ID;
+
+		return bankAccountId.orElse(null);
 	}
 
-	final void setC_BP_BankAccount_ID(final int C_BP_BankAccount_ID)
+	final void setBPBankAccountId(@Nullable final BankAccountId bankAccountId)
 	{
-		m_C_BP_BankAccount_ID = C_BP_BankAccount_ID;
+		_bankAccountId = Optional.ofNullable(bankAccountId);
 	}
 
-	/**
-	 * @return bank account or <code>null</code>
-	 */
-	protected final I_C_BP_BankAccount getC_BP_BankAccount()
+	@Nullable
+	protected final BankAccount getBankAccount()
 	{
-		final int bpBankAccountId = getC_BP_BankAccount_ID();
-		if (bpBankAccountId <= 0)
+		final BankAccountId bankAccountId = getBPBankAccountId();
+		if (bankAccountId == null)
 		{
 			return null;
 		}
-		if (bpBankAccount == null || bpBankAccount.getC_BP_BankAccount_ID() != bpBankAccountId)
+		if (bankAccount == null || !BankAccountId.equals(bankAccount.getId(), bankAccountId))
 		{
-			bpBankAccount = services.getBPBankAccountById(bpBankAccountId);
+			bankAccount = services.getBankAccountById(bankAccountId);
 		}
-		return bpBankAccount;
+		return bankAccount;
 	}
 
 	protected final int getC_CashBook_ID()

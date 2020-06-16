@@ -6,7 +6,6 @@ import javax.annotation.Nullable;
 
 import de.metas.i18n.ITranslatableString;
 import de.metas.ui.web.document.filter.DocumentFilter;
-import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.util.lang.Priority;
 import lombok.Builder;
 import lombok.NonNull;
@@ -37,10 +36,10 @@ import lombok.Value;
 @Value
 public final class DocumentReference
 {
-	private final String id;
+	private final DocumentReferenceId id;
 	private final String internalName;
 	private final ITranslatableString caption;
-	private final WindowId windowId;
+	private final DocumentReferenceTargetWindow targetWindow;
 	private final Priority priority;
 	private final int documentsCount;
 	private final DocumentFilter filter;
@@ -48,10 +47,10 @@ public final class DocumentReference
 
 	@Builder
 	private DocumentReference(
-			@NonNull final String id,
+			@NonNull final DocumentReferenceId id,
 			@Nullable final String internalName,
 			@NonNull final ITranslatableString caption,
-			@NonNull final WindowId windowId,
+			@NonNull final DocumentReferenceTargetWindow targetWindow,
 			@NonNull final Priority priority,
 			final int documentsCount,
 			@NonNull final DocumentFilter filter,
@@ -60,7 +59,7 @@ public final class DocumentReference
 		this.id = id;
 		this.internalName = internalName;
 		this.caption = caption;
-		this.windowId = windowId;
+		this.targetWindow = targetWindow;
 		this.priority = priority;
 		this.documentsCount = documentsCount;
 		this.filter = filter;

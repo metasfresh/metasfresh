@@ -1,14 +1,12 @@
 package de.metas.document.references;
 
 import java.time.Duration;
-import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.function.IntSupplier;
 
 import javax.annotation.Nullable;
 
-import org.adempiere.ad.element.api.AdWindowId;
 import org.compiere.model.MQuery;
 import org.slf4j.Logger;
 
@@ -50,29 +48,30 @@ public final class ZoomInfoCandidate
 {
 	private static final Logger logger = LogManager.getLogger(ZoomInfoCandidate.class);
 
-	private final String id;
+	@Getter
+	private final ZoomInfoId id;
 	private final String internalName;
 	private final ITranslatableString destinationDisplay;
 	private final MQuery query;
 	@Getter
-	private final AdWindowId adWindowId;
+	private final ZoomTargetWindow targetWindow;
 	private final Priority priority;
 	private final IntSupplier recordsCountSupplier;
 
 	@Builder
 	private ZoomInfoCandidate(
-			@NonNull final String id,
+			@NonNull final ZoomInfoId id,
 			@NonNull final String internalName,
-			@NonNull final AdWindowId adWindowId,
+			@NonNull final ZoomTargetWindow targetWindow,
 			@NonNull final Priority priority,
 			@NonNull final MQuery query,
 			@NonNull final ITranslatableString destinationDisplay,
 			@NonNull final IntSupplier recordsCountSupplier)
 	{
-		this.id = Check.assumeNotEmpty(id, "id is not empty");
+		this.id = id;
 		this.internalName = Check.assumeNotEmpty(internalName, "internalName is not empty");
 
-		this.adWindowId = adWindowId;
+		this.targetWindow = targetWindow;
 		this.priority = priority;
 
 		this.query = query;
@@ -88,7 +87,7 @@ public final class ZoomInfoCandidate
 				.add("id", id)
 				.add("internalName", internalName)
 				.add("display", destinationDisplay.getDefaultValue())
-				.add("adWindowId", adWindowId)
+				.add("adWindowId", targetWindow)
 				.toString();
 	}
 
@@ -103,21 +102,21 @@ public final class ZoomInfoCandidate
 
 	public Optional<ZoomInfo> evaluate()
 	{
-		final Map<AdWindowId, Priority> alreadySeenWindowIds = null;
+		final ZoomTargetWindowEvaluationContext alreadySeenWindowIds = null;
 		return evaluate(alreadySeenWindowIds);
 	}
 
-	public Optional<ZoomInfo> evaluate(@Nullable final Map<AdWindowId, Priority> alreadySeenWindowIds)
+	public Optional<ZoomInfo> evaluate(@Nullable final ZoomTargetWindowEvaluationContext alreadySeenWindowIds)
 	{
 		//
 		// Only consider a window already seen if it actually has record count > 0 (task #1062)
 		final Priority alreadySeenZoomInfoPriority = alreadySeenWindowIds != null
-				? alreadySeenWindowIds.get(adWindowId)
+				? alreadySeenWindowIds.getPriorityOrNull(targetWindow)
 				: null;
 		if (alreadySeenZoomInfoPriority != null
 				&& alreadySeenZoomInfoPriority.isHigherThan(priority))
 		{
-			logger.debug("Skipping zoomInfo {} because there is already one for destination '{}'", this, adWindowId);
+			logger.debug("Skipping zoomInfo {} because there is already one for destination '{}'", this, targetWindow);
 			return Optional.empty();
 		}
 
@@ -139,7 +138,7 @@ public final class ZoomInfoCandidate
 		// => accept it
 		if (alreadySeenWindowIds != null)
 		{
-			alreadySeenWindowIds.put(adWindowId, priority);
+			alreadySeenWindowIds.putWindow(targetWindow, priority);
 		}
 
 		final ITranslatableString caption = TranslatableStrings.builder()
@@ -154,7 +153,7 @@ public final class ZoomInfoCandidate
 		return Optional.of(ZoomInfo.builder()
 				.id(id)
 				.internalName(internalName)
-				.adWindowId(adWindowId)
+				.targetWindow(targetWindow)
 				.priority(priority)
 				.caption(caption)
 				.query(queryCopy)

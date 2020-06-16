@@ -31,6 +31,7 @@ import {
   mapIncluded,
   collapsedMap,
 } from '../../utils/documentListHelper';
+import { getCurrentActiveLocale } from '../../utils/locale';
 
 import Prompt from '../app/Prompt';
 import DocumentListContextShortcuts from '../keyshortcuts/DocumentListContextShortcuts';
@@ -1104,6 +1105,7 @@ class Table extends Component {
       activeSort,
     } = this.props;
 
+    const activeLocale = { key: getCurrentActiveLocale() };
     const {
       selected,
       rows,
@@ -1135,6 +1137,7 @@ class Table extends Component {
         {...{
           page: this.props.page,
           entity,
+          activeLocale,
           cols,
           windowId,
           mainTable,

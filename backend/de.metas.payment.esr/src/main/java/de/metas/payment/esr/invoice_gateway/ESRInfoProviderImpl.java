@@ -12,17 +12,20 @@ import org.slf4j.Logger;
 import org.slf4j.MDC.MDCCloseable;
 import org.springframework.stereotype.Component;
 
+import de.metas.banking.Bank;
+import de.metas.banking.BankId;
+import de.metas.banking.api.BankRepository;
 import de.metas.banking.model.I_C_Payment_Request;
 import de.metas.invoice_gateway.spi.esr.ESRPaymentInfoProvider;
 import de.metas.invoice_gateway.spi.esr.model.ESRPaymentInfo;
 import de.metas.invoice_gateway.spi.model.AddressInfo;
 import de.metas.invoice_gateway.spi.model.InvoiceId;
 import de.metas.invoice_gateway.spi.model.export.InvoiceToExport;
+import de.metas.location.ILocationDAO;
 import de.metas.logging.LogManager;
 import de.metas.logging.TableRecordMDC;
 import de.metas.payment.esr.ESRStringUtil;
 import de.metas.payment.esr.model.I_C_BP_BankAccount;
-import de.metas.payment.esr.model.I_C_Bank;
 import de.metas.util.Services;
 import de.metas.util.lang.CoalesceUtil;
 import lombok.NonNull;
@@ -52,8 +55,15 @@ import lombok.NonNull;
 @Component
 public class ESRInfoProviderImpl implements ESRPaymentInfoProvider
 {
-
 	private static final Logger logger = LogManager.getLogger(ESRInfoProviderImpl.class);
+	private final ILocationDAO locationDAO = Services.get(ILocationDAO.class);
+	private final BankRepository bankRepo;
+
+	public ESRInfoProviderImpl(
+			@NonNull final BankRepository bankRepo)
+	{
+		this.bankRepo = bankRepo;
+	}
 
 	@Override
 	public ESRPaymentInfo provideCustomPayload(@NonNull final InvoiceToExport invoiceWithoutEsrInfo)
@@ -91,13 +101,13 @@ public class ESRInfoProviderImpl implements ESRPaymentInfoProvider
 				return null;
 			}
 
-			final I_C_Bank esrBank = create(esrBankAccount.getC_Bank(), I_C_Bank.class);
+			final BankId esrBankId = BankId.ofRepoIdOrNull(esrBankAccount.getC_Bank_ID());
 
 			final ESRPaymentInfo esrPaymentInfo = ESRPaymentInfo.builder()
 					.referenceNumber(ESRStringUtil.formatReferenceNumber(paymentRequestRecord.getReference()))
 					.codingLine(paymentRequestRecord.getFullPaymentString())
 					.companyName(companyName)
-					.addressInfo(createAddressInfo(esrBank))
+					.addressInfo(createAddressInfo(esrBankId))
 					.participantNumber(esrBankAccount.getESR_RenderedAccountNo())
 					.build();
 
@@ -105,15 +115,27 @@ public class ESRInfoProviderImpl implements ESRPaymentInfoProvider
 		}
 	}
 
-	private AddressInfo createAddressInfo(@Nullable final I_C_Bank esrBank)
+	private AddressInfo createAddressInfo(@Nullable final BankId esrBankId)
 	{
-		if (esrBank == null || esrBank.getC_Location_ID() <= 0)
+		if(esrBankId == null)
 		{
 			return null;
 		}
-		final I_C_Location bankLocation = esrBank.getC_Location();
+		
+		final Bank esrBank = bankRepo.getById(esrBankId);
+		
+		if(esrBank.getLocationId() == null)
+		{
+			return null;
+		}
+		
+		final I_C_Location bankLocation = locationDAO.getById(esrBank.getLocationId());
+		if(bankLocation == null)
+		{
+			return null;
+		}
 
-		final AddressInfo bankAddressInfo = AddressInfo
+		return AddressInfo
 				.builder()
 				.street(bankLocation.getAddress1())
 				.pobox(bankLocation.getPOBox())
@@ -122,7 +144,5 @@ public class ESRInfoProviderImpl implements ESRPaymentInfoProvider
 				.state(bankLocation.getRegionName())
 				.isoCountryCode(bankLocation.getC_Country().getCountryCode()) // C_Location.C_Country_ID is mandatory
 				.build();
-
-		return bankAddressInfo;
 	}
 }

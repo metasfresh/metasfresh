@@ -19,7 +19,7 @@ import lombok.NonNull;
  *
  */
 @AllArgsConstructor
-final class RolloutMigrate
+class RolloutMigrate
 {
 	/**
 	 * May contain only characters. No underscores, dots etc.
@@ -49,7 +49,7 @@ final class RolloutMigrate
 	@NonNull
 	private final MigrationScriptApplier migrationScriptApplier;
 
-	public final void run(@NonNull final Config config)
+	public void run(@NonNull final Config config)
 	{
 		final Stopwatch stopwatch = Stopwatch.createStarted();
 		try
@@ -132,7 +132,7 @@ final class RolloutMigrate
 		}
 	}
 
-	private void updateDbVersion(
+	protected void updateDbVersion(
 			@NonNull final IDatabase db,
 			@NonNull final String versionStr,
 			final String additionalMetaDataSuffix)

@@ -15,41 +15,41 @@ SELECT COALESCE(s.AD_Client_ID, hu_agg.AD_Client_ID) AS AD_Client_ID,
 FROM MD_Stock s
          LEFT JOIN M_Product p ON p.M_Product_ID = s.M_Product_ID /*needed for its C_UOM_ID in case there are no M_HU_Storages */
          FULL OUTER JOIN -- the full outer join and the COALESCEs in the SELECT part are needed for the case that there is no MD_Stock yet
-     (
-         SELECT hu.AD_Client_ID,
-                hu.AD_Org_ID,
-                l.M_Warehouse_ID,
-                hus.M_Product_ID,
-                p.C_UOM_ID,
-                GenerateHUAttributesKey(hu.m_hu_id) AS AttributesKey,
-                SUM(COALESCE(
-                        uomconvert(
-                                hus.M_Product_ID,
-                                hus.C_UOM_ID,
-                                p.C_UOM_ID,
-                                hus.Qty),
-                        0))                         AS QtyOnHand
-         FROM m_hu hu
-                  JOIN M_HU_Storage hus ON hus.M_HU_ID = hu.M_HU_ID
-                  JOIN M_Locator l ON l.M_Locator_ID = hu.M_Locator_ID
-                  LEFT JOIN M_Product p ON p.M_Product_ID = hus.M_Product_ID /*needed for its C_UOM_ID*/
-         WHERE hu.isactive = 'Y'
-           AND M_HU_Item_Parent_ID IS NULL
+    (
+        SELECT hu.AD_Client_ID,
+               hu.AD_Org_ID,
+               l.M_Warehouse_ID,
+               hus.M_Product_ID,
+               p.C_UOM_ID,
+               GenerateHUAttributesKey(hu.m_hu_id) AS AttributesKey,
+               SUM(COALESCE(
+                       uomconvert(
+                               hus.M_Product_ID,
+                               hus.C_UOM_ID,
+                               p.C_UOM_ID,
+                               hus.Qty),
+                       0))                         AS QtyOnHand
+        FROM m_hu hu
+                 JOIN M_HU_Storage hus ON hus.M_HU_ID = hu.M_HU_ID
+                 JOIN M_Locator l ON l.M_Locator_ID = hu.M_Locator_ID
+                 LEFT JOIN M_Product p ON p.M_Product_ID = hus.M_Product_ID /*needed for its C_UOM_ID*/
+        WHERE hu.isactive = 'Y'
+          AND M_HU_Item_Parent_ID IS NULL
 
-             /*please keep in sync with de.metas.handlingunits.IHUStatusBL.isPhysicalHU(I_M_HU)*/
-           AND hu.HuStatus NOT IN ('P'/*Planning*/, 'D'/*Destroyed*/, 'E'/*Shipped*/)
-         GROUP BY hu.AD_Client_ID,
-                  hu.AD_Org_ID,
-                  l.M_Warehouse_ID,
-                  hus.M_Product_ID,
-                  p.C_UOM_ID,
-                  GenerateHUAttributesKey(hu.m_hu_id)
-     ) hu_agg ON TRUE
-         AND hu_agg.AD_Client_ID = s.AD_Client_ID
-         AND hu_agg.AD_Org_ID = s.AD_Org_ID
-         AND hu_agg.M_Warehouse_ID = s.M_Warehouse_ID
-         AND hu_agg.M_Product_ID = s.M_Product_ID
-         AND hu_agg.AttributesKey = s.AttributesKey
+            /*please keep in sync with de.metas.handlingunits.IHUStatusBL.isPhysicalHU(I_M_HU)*/
+          AND hu.HuStatus NOT IN ('P'/*Planning*/, 'D'/*Destroyed*/, 'E'/*Shipped*/)
+        GROUP BY hu.AD_Client_ID,
+                 hu.AD_Org_ID,
+                 l.M_Warehouse_ID,
+                 hus.M_Product_ID,
+                 p.C_UOM_ID,
+                 GenerateHUAttributesKey(hu.m_hu_id)
+    ) hu_agg ON TRUE
+    AND hu_agg.AD_Client_ID = s.AD_Client_ID
+    AND hu_agg.AD_Org_ID = s.AD_Org_ID
+    AND hu_agg.M_Warehouse_ID = s.M_Warehouse_ID
+    AND hu_agg.M_Product_ID = s.M_Product_ID
+    AND hu_agg.AttributesKey = s.AttributesKey
 ;
 
 COMMENT ON VIEW MD_Stock_From_HUs_V IS

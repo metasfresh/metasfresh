@@ -249,6 +249,10 @@ public class AllocationAmountsTest
 
 			amounts = amounts.withInvoiceProcessingFee(euro(0));
 			assertThat(amounts.isZero()).isTrue();
+
+			//
+			// All amounts are set to zero:
+			assertThat(amounts.isZero()).isTrue();
 			assertThat(amounts.getTotalAmt()).isEqualTo(Money.zero(euroCurrencyId));
 		}
 	}

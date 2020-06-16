@@ -41,7 +41,7 @@ import lombok.NonNull;
 public final class ZoomInfo
 {
 	@Getter
-	private final String id;
+	private final ZoomInfoId id;
 	@Getter
 	private final String internalName;
 	@Getter
@@ -49,23 +49,23 @@ public final class ZoomInfo
 	@Getter
 	private final MQuery query;
 	@Getter
-	private final AdWindowId adWindowId;
+	private final ZoomTargetWindow targetWindow;
 	@Getter
 	private final Priority priority;
 
 	@Builder
 	private ZoomInfo(
-			@NonNull final String id,
+			@NonNull final ZoomInfoId id,
 			@NonNull final String internalName,
-			@NonNull final AdWindowId adWindowId,
+			@NonNull final ZoomTargetWindow targetWindow,
 			@NonNull final Priority priority,
 			@NonNull final ITranslatableString caption,
 			@NonNull final MQuery query)
 	{
-		this.id = Check.assumeNotEmpty(id, "id is not empty");
+		this.id = id;
 		this.internalName = Check.assumeNotEmpty(internalName, "internalName is not empty");
 
-		this.adWindowId = adWindowId;
+		this.targetWindow = targetWindow;
 		this.priority = priority;
 
 		this.caption = caption;
@@ -80,9 +80,14 @@ public final class ZoomInfo
 				.add("id", id)
 				.add("internalName", internalName)
 				.add("caption", caption.getDefaultValue())
-				.add("AD_Window_ID", adWindowId)
+				.add("targetWindow", targetWindow)
 				.add("RecordCount", query.getRecordCount())
 				.toString();
+	}
+
+	public AdWindowId getAdWindowId()
+	{
+		return getTargetWindow().getAdWindowId();
 	}
 
 	public int getRecordCount()

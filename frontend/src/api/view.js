@@ -36,6 +36,7 @@ export function getData({
 }
 
 export function getRowsData({ entity, docType, docId, tabId, rows }) {
+  rows = rows || [];
   const ids = rows.join(',');
 
   return get(
@@ -132,17 +133,19 @@ export function createViewRequest({
   windowId,
   viewType,
   filters,
+  referenceId = null,
   refDocType = null,
-  refDocId = null,
+  refDocumentId = null,
   refTabId = null,
   refRowIds = null,
 }) {
   let referencing = null;
 
-  if (refDocType && refDocId) {
+  if (refDocType && refDocumentId) {
     referencing = {
       documentType: refDocType,
-      documentId: refDocId,
+      documentId: refDocumentId,
+      referenceId: referenceId,
     };
 
     if (refTabId && refRowIds) {
