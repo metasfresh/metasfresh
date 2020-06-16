@@ -15,6 +15,8 @@ import de.metas.handlingunits.inventory.InventoryLineHU;
 import de.metas.handlingunits.inventory.InventoryRepository;
 import de.metas.inventory.HUAggregationType;
 import de.metas.inventory.InventoryId;
+import de.metas.quantity.Quantity;
+import de.metas.util.lang.CoalesceUtil;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.experimental.NonFinal;
@@ -142,10 +144,13 @@ public class DraftInventoryLinesCreator
 
 	private static InventoryLineHU toInventoryLineHU(final HuForInventoryLine huForInventoryLine)
 	{
+		final Quantity quantityBooked = huForInventoryLine.getQuantityBooked();
+		final Quantity quantityCount = CoalesceUtil.coalesce(huForInventoryLine.getQuantityCount(), quantityBooked);
+
 		return InventoryLineHU.builder()
 				.huId(huForInventoryLine.getHuId())
-				.qtyBook(huForInventoryLine.getQuantity())
-				.qtyCount(huForInventoryLine.getQuantity())
+				.qtyBook(quantityBooked)
+				.qtyCount(quantityCount)
 				.build();
 	}
 

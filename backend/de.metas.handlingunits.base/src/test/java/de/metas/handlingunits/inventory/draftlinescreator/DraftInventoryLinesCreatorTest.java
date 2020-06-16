@@ -195,12 +195,15 @@ class DraftInventoryLinesCreatorTest
 				.locatorId(locatorId)
 				.productId(ProductId.ofRepoId(40));
 
-		final HuForInventoryLine hu1 = builder.huId(HuId.ofRepoId(100)).quantity(qtyTen).storageAttributesKey(AttributesKey.ofAttributeValueIds(AV1_ID, AV2_ID)).build();
-		final HuForInventoryLine hu2 = builder.huId(HuId.ofRepoId(200)).quantity(qtyOne).storageAttributesKey(AttributesKey.ofAttributeValueIds(AV1_ID, AV2_ID)).build();
-		final HuForInventoryLine hu3 = builder.huId(HuId.ofRepoId(300)).quantity(qtyTwo).storageAttributesKey(AttributesKey.ofAttributeValueIds(AV1_ID, AV2_ID, AV3_ID)).build();
+		final HuForInventoryLine hu1 = builder.huId(HuId.ofRepoId(100)).quantityBooked(qtyTen).storageAttributesKey(AttributesKey.ofAttributeValueIds(AV1_ID, AV2_ID)).build();
+		final HuForInventoryLine hu2 = builder.huId(HuId.ofRepoId(200)).quantityBooked(qtyOne).storageAttributesKey(AttributesKey.ofAttributeValueIds(AV1_ID, AV2_ID)).build();
+		final HuForInventoryLine hu3 = builder.huId(HuId.ofRepoId(300)).quantityBooked(qtyTwo).storageAttributesKey(AttributesKey.ofAttributeValueIds(AV1_ID, AV2_ID, AV3_ID)).build();
 
 		final ImmutableList<HuForInventoryLine> inventoryLines = ImmutableList.of(hu1, hu2, hu3);
-		inventoryLines.forEach(huInvLine -> createStorageFor(huInvLine.getProductId(), huInvLine.getQuantity(), huInvLine.getHuId()));
+		inventoryLines.forEach(huInvLine -> createStorageFor(
+				huInvLine.getProductId(),
+				huInvLine.getQuantityBooked(),
+				huInvLine.getHuId()));
 
 		return inventoryLines.stream();
 	}
