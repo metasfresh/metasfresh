@@ -1,6 +1,7 @@
 de.metas.handlingunits.inventory.draftlinescreator.DraftInventoryLinesCreatorTest.execute_MultipleHUInventoryLineAggregator=[
   {
     "id": 100011,
+    "orgId": 100001,
     "docBaseAndSubType": {
       "docBaseType": "MMI",
       "docSubType": "ISH"
@@ -101,6 +102,7 @@ de.metas.handlingunits.inventory.draftlinescreator.DraftInventoryLinesCreatorTes
 de.metas.handlingunits.inventory.draftlinescreator.DraftInventoryLinesCreatorTest.execute_SingleHUInventoryLineAggregator=[
   {
     "id": 100011,
+    "orgId": 100001,
     "docBaseAndSubType": {
       "docBaseType": "MMI",
       "docSubType": "ISH"
