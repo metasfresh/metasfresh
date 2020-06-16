@@ -18,7 +18,7 @@ const MOBILE_TABLE_SIZE_LIMIT = 30; // subjective number, based on empiric testi
 const isMobileOrTablet =
   currentDevice.type === 'mobile' || currentDevice.type === 'tablet';
 
-class Wrapper extends PureComponent {
+class TableWrapper extends PureComponent {
   constructor(props) {
     super(props);
 
@@ -443,10 +443,10 @@ class Wrapper extends PureComponent {
   }
 }
 
-Wrapper.propTypes = componentPropTypes;
+TableWrapper.propTypes = componentPropTypes;
 
 const clickOutsideConfig = {
   excludeScrollbar: true,
 };
 
-export default onClickOutside(Wrapper, clickOutsideConfig);
+export default onClickOutside(TableWrapper, clickOutsideConfig);
