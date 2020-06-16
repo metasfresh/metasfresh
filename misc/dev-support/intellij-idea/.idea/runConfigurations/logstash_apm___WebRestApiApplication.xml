@@ -1,0 +1,14 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="logstash_apm - WebRestApiApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" folderName="elk">
+    <module name="metasfresh-webui-api" />
+    <option name="SPRING_BOOT_MAIN_CLASS" value="de.metas.ui.web.WebRestApiApplication" />
+    <option name="VM_PARAMETERS" value="-Xmx736M -DPropertyFile=$ProjectFileDir$\metasfresh.properties -Dspring.profiles.active=logstash -javaagent:$ProjectFileDir$/elastic-apm-agent.jar -Delastic.apm.service_name=webapi -Delastic.apm.server_url=http://localhost:8200 -Delastic.apm.application_packages=de.metas.*,org.adempiere.*,org.compiere.* -Delastic.apm.enable_log_correlation=true" />
+    <option name="PROGRAM_PARAMETERS" value="--debug" />
+    <option name="WORKING_DIRECTORY" value="file://$MODULE_WORKING_DIR$" />
+    <option name="ALTERNATIVE_JRE_PATH" />
+    <option name="SHORTEN_COMMAND_LINE" value="MANIFEST" />
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
+</component>

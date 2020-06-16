@@ -1,0 +1,52 @@
+db:
+  build: db
+  restart: always
+  volumes:
+    # Use a named volume for storing Postgres data.
+    #
+    # Even though a relative path (a host path) is nicer because we survive docker updates (when moby-vm is deleted along with all our docker data),
+    #   If we try to use a relative path, like `./volumes/db/data:/var/lib/postgresql/data`, we will not be able to start postgres.
+    # See: https://github.com/docker-library/postgres/issues/435
+    # Also google "FATAL:  data directory "/var/lib/postgresql/data" has wrong ownership HINT:  The server must be started by the user that owns the data directory."
+    - metasfresh_postgres:/var/lib/postgresql/data
+  environment:
+    - METASFRESH_USERNAME=metasfresh
+    - METASFRESH_PASSWORD=metasfresh
+    - METASFRESH_DBNAME=metasfresh
+    - DB_SYSPASS=System
+    - POSTGRES_PASSWORD=ip2LmNzXX8p8iXg9lZTWEJ9524kQDbXFudB7LR03T-xK9fLweX3TLMkA2AYcEiaS
+  ports:
+    - "5432:5432"
+rabbitmq:
+  build: rabbitmq
+  expose:
+    - "5672"
+  restart: always
+  environment:
+    RABBITMQ_DEFAULT_USER: "guest"
+    RABBITMQ_DEFAULT_PASS: "guest"
+    RABBITMQ_DEFAULT_VHOST: "/"
+  ports:
+    - "5672:5672"
+search:
+  build: search
+  ulimits:
+    memlock:
+      soft: -1
+      hard: -1
+    nofile:
+      soft: 65536
+      hard: 65536
+  cap_add:
+    - IPC_LOCK
+# to access the search api directly
+# (e.g. if you did docker-compose up search to have the dashboard with your locally running metasfresh services)
+# uncomment following ports:
+  ports:
+   - "9201:9200"
+   - "9301:9300"
+  volumes:
+    - metasfresh_elasticsearch:/usr/share/elasticsearch/data
+  environment:
+    - "ES_JAVA_OPTS=-Xms128M -Xmx256m"
+  restart: always

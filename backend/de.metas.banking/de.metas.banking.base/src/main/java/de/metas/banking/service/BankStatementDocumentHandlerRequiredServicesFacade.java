@@ -3,6 +3,7 @@ package de.metas.banking.service;
 import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 
 import org.compiere.model.I_C_BankStatement;
 import org.compiere.model.I_C_BankStatementLine;
@@ -19,6 +20,7 @@ import de.metas.banking.api.IBPBankAccountDAO;
 import de.metas.banking.payment.IBankStatementPaymentBL;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
+import de.metas.payment.PaymentId;
 import de.metas.payment.api.IPaymentBL;
 import de.metas.payment.api.PaymentReconcileRequest;
 import de.metas.util.Services;
@@ -96,9 +98,12 @@ class BankStatementDocumentHandlerRequiredServicesFacade
 		bankStatementDAO.save(line);
 	}
 
-	public void findOrCreateSinglePaymentAndLinkIfPossible(final I_C_BankStatement bankStatement, final I_C_BankStatementLine line)
+	public void findOrCreateSinglePaymentAndLinkIfPossible(
+			final I_C_BankStatement bankStatement,
+			final I_C_BankStatementLine line,
+			final Set<PaymentId> excludePaymentIds)
 	{
-		bankStatmentPaymentBL.findOrCreateSinglePaymentAndLinkIfPossible(bankStatement, line);
+		bankStatmentPaymentBL.findOrCreateSinglePaymentAndLinkIfPossible(bankStatement, line, excludePaymentIds);
 	}
 
 	public void markReconciled(final List<PaymentReconcileRequest> requests)

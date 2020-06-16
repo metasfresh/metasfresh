@@ -43,7 +43,6 @@ describe('Table helpers', () => {
         fieldType,
         precision,
         isGerman,
-        activeLocale,
       });
 
       expect(fieldToCheck).toBe(''); // when null value given for the fieldValue we expect to get nothing
@@ -60,7 +59,6 @@ describe('Table helpers', () => {
         fieldType,
         precision,
         isGerman,
-        activeLocale,
       });
 
       let test = fieldToCheck.includes('-');
@@ -78,7 +76,6 @@ describe('Table helpers', () => {
         fieldType,
         precision,
         isGerman,
-        activeLocale,
       });
 
       expect(fieldToCheck.props.className).toBe('meta-icon-checkbox-1');
@@ -95,7 +92,6 @@ describe('Table helpers', () => {
         fieldType,
         precision,
         isGerman,
-        activeLocale,
       });
 
       expect(fieldToCheck.props.className).toBe('meta-icon-checkbox');
@@ -112,7 +108,6 @@ describe('Table helpers', () => {
         fieldType,
         precision,
         isGerman,
-        activeLocale,
       });
 
       expect(fieldToCheck).toBe('02.01.2020');
@@ -128,7 +123,6 @@ describe('Table helpers', () => {
         fieldType,
         precision,
         isGerman,
-        activeLocale,
       });
 
       expect(fieldToCheck).toBe('01/02/2020');
@@ -146,7 +140,6 @@ describe('Table helpers', () => {
       fieldType,
       precision,
       isGerman,
-      activeLocale,
     });
 
     expect(fieldToCheck).toBe('02.01.2020');
@@ -162,7 +155,6 @@ describe('Table helpers', () => {
       fieldType,
       precision,
       isGerman,
-      activeLocale,
     });
 
     expect(fieldToCheck).toBe('01/02/2020');
@@ -179,7 +171,6 @@ describe('Table helpers', () => {
       fieldType,
       precision,
       isGerman,
-      activeLocale,
     });
 
     expect(fieldToCheck).toBe('02.01.2020 00:00:00');
@@ -195,7 +186,6 @@ describe('Table helpers', () => {
       fieldType,
       precision,
       isGerman,
-      activeLocale,
     });
 
     expect(fieldToCheck).toBe('01/02/2020 12:00:00 AM');
@@ -212,7 +202,6 @@ describe('Table helpers', () => {
       fieldType,
       precision,
       isGerman,
-      activeLocale,
     });
 
     expect(fieldToCheck).toBe('2020-01-02');
@@ -228,7 +217,6 @@ describe('Table helpers', () => {
       fieldType,
       precision,
       isGerman,
-      activeLocale,
     });
 
     expect(fieldToCheck).toBe('2020-01-02');
@@ -245,7 +233,6 @@ describe('Table helpers', () => {
       fieldType,
       precision,
       isGerman,
-      activeLocale,
     });
 
     expect(fieldToCheck).toBe('02.01.2020 00:00:00');
@@ -261,7 +248,6 @@ describe('Table helpers', () => {
       fieldType,
       precision,
       isGerman,
-      activeLocale,
     });
 
     expect(fieldToCheck).toBe('01/02/2020 00:00:00');
@@ -278,7 +264,6 @@ describe('Table helpers', () => {
       fieldType,
       precision,
       isGerman,
-      activeLocale,
     });
 
     expect(fieldToCheck).toBe('22');
@@ -289,7 +274,6 @@ describe('Table helpers', () => {
       fieldType,
       precision,
       isGerman,
-      activeLocale,
     });
 
     expect(fieldToCheck).toBe('22,00');
@@ -306,7 +290,6 @@ describe('Table helpers', () => {
       fieldType,
       precision,
       isGerman,
-      activeLocale,
     });
     expect(fieldToCheck.props.style.backgroundColor).toBe('DDDDDD');
   });

@@ -4,7 +4,7 @@ import classnames from 'classnames';
 import currentDevice from 'current-device';
 
 import { handleCopy, componentPropTypes } from '../../utils/tableHelpers';
-import { getCurrentActiveLocale } from '../../utils/documentListHelper';
+import { getCurrentActiveLocale } from '../../utils/locale';
 
 import TableHeader from './TableHeader';
 import TableItem from './TableItem';
