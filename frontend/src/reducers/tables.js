@@ -82,7 +82,7 @@ const reducer = produce((draftState, action) => {
       const newLength = draftState.length + 1;
       let updatedSelected = {};
 
-      if (data.rows) {
+      if (data.rows && data.rows.length) {
         updatedSelected = {
           selected: [data.rows[0][data.keyProperty]],
         };
@@ -106,7 +106,7 @@ const reducer = produce((draftState, action) => {
         : initialTableState;
       let updatedSelected = {};
 
-      if (data.rows) {
+      if (data.rows && data.rows.length) {
         updatedSelected = {
           selected: [data.rows[0][data.keyProperty]],
         };
