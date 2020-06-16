@@ -3,7 +3,6 @@ import React, { PureComponent, createRef } from 'react';
 import classnames from 'classnames';
 
 import { getDateFormat, fieldValueToString } from '../../utils/tableHelpers';
-import { getCurrentActiveLocale } from '../../utils/locale';
 import { DATE_FIELD_FORMATS } from '../../constants/Constants';
 
 import MasterWidget from '../widget/MasterWidget';
