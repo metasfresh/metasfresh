@@ -44,7 +44,7 @@ class TableCell extends PureComponent {
   /**
    * @method handleKeyDown
    * @summary Key down function handler
-   * @param {object} e
+   * @param {object} e - this is the corresponding event from a text input for example when you change a value within a table cell by typing something in that specific cell.
    */
   handleKeyDown = (e) => {
     const {
@@ -109,8 +109,8 @@ class TableCell extends PureComponent {
 
   /**
    * @method clearValue
-   * @summary Set `clearWidgetValue` value based on a given `reset` param
-   * {string|null} reset
+   * @summary Set `clearWidgetValue` value based on a given `reset` param. It is called from TableItem to toggle the clearWidgetValue
+   * {string|null} reset - might be also `undefined` case in which because below we don't have a strict comparison it will be true
    */
   clearValue = (reset) => {
     this.clearWidgetValue = reset == null ? true : false;
