@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
 
@@ -234,6 +235,7 @@ public class BankStatementDocumentHandler implements DocumentHandler
 		//
 		final BankStatementId bankStatementId = BankStatementId.ofRepoId(bankStatement.getC_BankStatement_ID());
 		final List<I_C_BankStatementLine> lines = services.getBankStatementLinesByBankStatementId(bankStatementId);
+		final HashSet<PaymentId> consideredPaymentIds = new HashSet<>();
 		for (final I_C_BankStatementLine line : lines)
 		{
 			//
@@ -262,7 +264,13 @@ public class BankStatementDocumentHandler implements DocumentHandler
 				}
 			}
 
-			services.findOrCreateSinglePaymentAndLinkIfPossible(bankStatement, line);
+			services.findOrCreateSinglePaymentAndLinkIfPossible(bankStatement, line, consideredPaymentIds);
+
+			final PaymentId paymentId = PaymentId.ofRepoIdOrNull(line.getC_Payment_ID());
+			if (paymentId != null)
+			{
+				consideredPaymentIds.add(paymentId);
+			}
 		}
 
 		//

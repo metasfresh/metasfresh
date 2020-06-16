@@ -1,0 +1,13 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="vpn - SwingUIApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" folderName="vpn" singleton="false">
+    <module name="metasfresh-dist-swingui" />
+    <option name="SPRING_BOOT_MAIN_CLASS" value="de.metas.SwingUIApplication" />
+    <option name="VM_PARAMETERS" value="-DTraceFile=true -Xms256M -Xmx736M -Dorg.compiere.db.DB_PostgreSQL.UseNativeConverter=true -Djava.util.Arrays.useLegacyMergeSort=true -DPropertyFile=$ProjectFileDir$\metasfresh-vpn.properties" />
+    <option name="PROGRAM_PARAMETERS" value="--debug" />
+    <option name="WORKING_DIRECTORY" value="file://$MODULE_WORKING_DIR$" />
+    <option name="ALTERNATIVE_JRE_PATH" />
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
+</component>
