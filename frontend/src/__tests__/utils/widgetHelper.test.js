@@ -1,4 +1,7 @@
-import { isNumberField } from '../../utils/widgetHelper';
+import {
+  isNumberField,
+  formatValueByWidgetType,
+} from '../../utils/widgetHelper';
 
 describe('Widget helpers', () => {
   describe('is NumberField function', () => {
@@ -17,6 +20,22 @@ describe('Widget helpers', () => {
 
       const resultToCheckFive = isNumberField('Color');
       expect(resultToCheckFive).toBe(false);
+    });
+  });
+
+  describe('formatValueByWidgetType function', () => {
+    it('works correctly', () => {
+      const resultToCheckOne = formatValueByWidgetType({
+        widgetType: 'Quantity',
+        value: '',
+      });
+      expect(resultToCheckOne).toBe(null);
+
+      const resultToCheckTwo = formatValueByWidgetType({
+        widgetType: 'Amount',
+        value: null,
+      });
+      expect(resultToCheckTwo).toBe('0');
     });
   });
 });
