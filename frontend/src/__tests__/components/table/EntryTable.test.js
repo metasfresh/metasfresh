@@ -1,12 +1,16 @@
 import React from 'react';
 import { shallow, mount } from 'enzyme';
-// import { ShortcutProvider } from '../../../components/keyshortcuts/ShortcutProvider';
-import { initialState as appHandlerState } from '../../../reducers/appHandler';
-import { initialState as windowHandlerState } from '../../../reducers/windowHandler';
 import { Provider } from 'react-redux';
 import configureStore from 'redux-mock-store';
 import merge from 'merge';
-import entryTableProps from '../../../../test_setup/fixtures/table/entry_table.json';
+
+import { initialState as appHandlerState } from '../../../reducers/appHandler';
+import { initialState as windowHandlerState } from '../../../reducers/windowHandler';
+import tablesHandler, { getTableId } from '../../../reducers/tables';
+
+import entryTableProps from '../../../../test_setup/fixtures/table/entry_table_props.json';
+import entryTableData from '../../../../test_setup/fixtures/table/entry_table_data.json';
+
 import EntryTable from '../../../components/table/EntryTable';
 
 const mockStore = configureStore([]);
@@ -19,31 +23,43 @@ const createStore = function(state = {}) {
         me: { timeZone: 'America/Los_Angeles' },
       },
       windowHandler: { ...windowHandlerState },
+      tables: { ...tablesHandler(undefined, {}) }
     },
     state
   );
 
   return res;
 };
-const initialState = createStore({
-  windowHandler: {
-    allowShortcut: true,
-    modal: {
-      visible: false,
-    },
-  },
-});
-const store = mockStore(initialState);
-entryTableProps.onBlurWidget = jest.fn();
-entryTableProps.addRefToWidgets = jest.fn();
-const rData = new Map();
-rData.set(0, entryTableProps.rowData[0])
-entryTableProps.rowData = rData;
+
+const props = {
+  ...entryTableProps,
+  onBlurWidget: jest.fn(),
+  addRefToWidgets: jest.fn(),
+};
+
 describe('EntryTable', () => {
   it('renders without errors with the given props', () => {
+    const { windowId, documentId, tabId } = props;
+    const tableId = getTableId({ windowId, docId: documentId, tabId });
+    const initialStateTables = {
+      [`${tableId}`]: {
+        windowId,
+        docId: documentId,
+        tabId,
+        rows: entryTableData.result,
+      },
+    };
+    const initialState = createStore({
+      tables: {
+        length: 1,
+        ...initialStateTables,
+      }
+    });
+    const store = mockStore(initialState);
+
     const wrapperEntryTable = mount(
       <Provider store={store}>
-        <EntryTable {...entryTableProps} />
+        <EntryTable {...props} />
       </Provider>
     );
     const html = wrapperEntryTable.html();
