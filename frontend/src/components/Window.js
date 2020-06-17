@@ -168,8 +168,13 @@ class Window extends PureComponent {
    * @param {*} parentTab
    */
   getTabs = (tabs, dataId, tabsArray, tabsByIds, parentTab) => {
-    const { windowId } = this.props.layout;
-    const { newRow, tabsInfo, sort, allowShortcut } = this.props;
+    const {
+      layout: { windowId },
+      newRow,
+      tabsInfo,
+      sort,
+      allowShortcut,
+    } = this.props;
     const { fullScreen, isSectionExpandTooltipShow } = this.state;
 
     tabs.forEach((elem) => {
@@ -328,23 +333,6 @@ class Window extends PureComponent {
     } = this.props;
     const { fullScreen } = this.state;
 
-    // const rowData = isDataEntry
-    //   ? this.props.rowData.get(extendedData.tabId)
-    //   : undefined;
-    // // console.log('extendedData: ', this.props)
-    // // const rowData = {};
-
-    const rowData = isDataEntry
-      ? get(this.props.rowData, [extendedData.tabId], {})
-      // ? getTable({ windowId, })
-      // ? {}
-      : undefined;
-
-    // if (isDataEntry) {
-    //   console.log('renderSections: ', this.props)
-    // }
-
-
     return sections.map((sectionLayout, sectionIndex) => {
       const isSectionCollapsed =
         isDataEntry &&
@@ -358,14 +346,13 @@ class Window extends PureComponent {
           sectionIndex={sectionIndex}
           //
           windowId={windowId}
-          tabId={tabId}
+          tabId={tabId || extendedData.tabId}
           rowId={rowId}
           dataId={dataId}
           //
           data={data}
           isDataEntry={isDataEntry}
           extendedData={extendedData}
-          rowData={rowData}
           //
           isModal={isModal}
           isAdvanced={isAdvanced}

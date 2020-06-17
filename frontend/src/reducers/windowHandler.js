@@ -1,7 +1,6 @@
 import update from 'immutability-helper';
 import { Set as iSet } from 'immutable';
 import { createSelector } from 'reselect';
-import { get } from 'lodash';
 
 import {
   ACTIVATE_TAB,
@@ -312,33 +311,15 @@ export default function windowHandler(state = initialState, action) {
 
     // SCOPED ACTIONS
 
-    case INIT_LAYOUT_SUCCESS: {
-      const { scope, layout } = action;
-      const tabSections = {};
-
-      // store nested tabs ids to be able to easily get their data
-      // in MasterWindow
-      if (layout.tabs) {
-        layout.tabs.forEach((tab) => {
-          if (tab.tabs) {
-            if (!tabSections.sectionTables) {
-              tabSections.sectionTables = [];
-            }
-            tab.tabs.forEach((sectionTab) => {
-              tabSections.sectionTables.push(sectionTab.tabId);
-            });
-          }
-        });
-      }
-
+    case INIT_LAYOUT_SUCCESS:
       return {
         ...state,
         [action.scope]: {
           ...state[action.scope],
-          layout: { ...action.layout, ...tabSections },
+          layout: action.layout,
         },
       };
-    }
+
     case INIT_DATA_SUCCESS:
       return {
         ...state,

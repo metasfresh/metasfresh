@@ -4,7 +4,7 @@ import { connect } from 'react-redux';
 import { push } from 'react-router-redux';
 import { forEach, get } from 'lodash';
 
-import { getTableId, getTable } from '../reducers/tables';
+import { getTableId } from '../reducers/tables';
 import { addNotification } from '../actions/AppActions';
 import {
   attachFileAction,
@@ -275,44 +275,20 @@ MasterWindowContainer.propTypes = {
   updateTabTableData: PropTypes.func.isRequired,
 };
 
-/**
- * @method mapStateToProps
- * @summary ToDo: Describe the method.
- * @param {object} state
- */
-const mapStateToProps = (state) => {
-  const entryData = {};
-  const master = state.windowHandler.master;
-
-  if (master.layout.sectionTables) {
-    entryData.dataEntries = {};
-    const windowId = master.layout.windowId;
-    const docId = master.docId;
-
-    master.layout.sectionTables.forEach((tabId) => {
-      const tableId = getTableId({ windowId, docId, tabId });
-      entryData.dataEntries[tableId] = getTable(state, tableId).rows;
-
-      // console.log('tabId, ', getTable(tableId, state));
-    });
-  }
-
-  return {
-    master,
-    modal: state.windowHandler.modal,
-    rawModal: state.windowHandler.rawModal,
-    pluginModal: state.windowHandler.pluginModal,
-    overlay: state.windowHandler.overlay,
-    indicator: state.windowHandler.indicator,
-    includedView: state.listHandler.includedView,
-    allowShortcut: state.windowHandler.allowShortcut,
-    enableTutorial: state.appHandler.enableTutorial,
-    processStatus: state.appHandler.processStatus,
-    me: state.appHandler.me,
-    breadcrumb: state.menuHandler.breadcrumb,
-    ...entryData,
-  };
-};
+const mapStateToProps = (state) => ({
+  master: state.windowHandler.master,
+  modal: state.windowHandler.modal,
+  rawModal: state.windowHandler.rawModal,
+  pluginModal: state.windowHandler.pluginModal,
+  overlay: state.windowHandler.overlay,
+  indicator: state.windowHandler.indicator,
+  includedView: state.listHandler.includedView,
+  allowShortcut: state.windowHandler.allowShortcut,
+  enableTutorial: state.appHandler.enableTutorial,
+  processStatus: state.appHandler.processStatus,
+  me: state.appHandler.me,
+  breadcrumb: state.menuHandler.breadcrumb,
+});
 
 export default connect(
   mapStateToProps,

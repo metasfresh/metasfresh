@@ -284,7 +284,6 @@ export default class MasterWindow extends Component {
       includedView,
       processStatus,
       enableTutorial,
-      dataEntries,
     } = this.props;
     const {
       dropzoneFocused,
@@ -360,7 +359,6 @@ export default class MasterWindow extends Component {
             key="window"
             data={master.data}
             layout={master.layout}
-            rowData={dataEntries}
             tabsInfo={master.includedTabsInfo}
             sort={this.sort}
             dataId={dataId}

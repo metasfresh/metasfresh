@@ -51,7 +51,6 @@ class Section extends PureComponent {
       data,
       isDataEntry,
       extendedData,
-      rowData,
       isModal,
       isAdvanced,
       isFullScreen,
@@ -62,8 +61,6 @@ class Section extends PureComponent {
     const maxRows = 12;
     const colWidth = Math.floor(maxRows / columns.length);
     const isFirstSection = sectionIndex === 0;
-
-    console.log('columns: ', columns)
 
     return columns.map((columnLayout, columnIndex) => {
       const isFirstColumn = isFirstSection && columnIndex === 0;
@@ -82,7 +79,6 @@ class Section extends PureComponent {
           data={data}
           isDataEntry={isDataEntry}
           extendedData={extendedData}
-          rowData={rowData}
           //
           isFirst={isFirstColumn}
           isModal={isModal}
@@ -110,7 +106,6 @@ Section.propTypes = {
   data: PropTypes.oneOfType([PropTypes.shape(), PropTypes.array]), // TODO: type here should point to a hidden issue?
   isDataEntry: PropTypes.bool,
   extendedData: PropTypes.object,
-  rowData: PropTypes.object,
   //
   isModal: PropTypes.bool,
   isAdvanced: PropTypes.bool,
