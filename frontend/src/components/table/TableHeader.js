@@ -6,13 +6,6 @@ import { shouldRenderColumn, getSizeClass } from '../../utils/tableHelpers';
 import { getTableId } from '../../reducers/tables';
 
 export default class TableHeader extends PureComponent {
-  constructor(props) {
-    super(props);
-
-    // TODO: Do we have to define this, if it's an empty object ?
-    this.state = {};
-  }
-
   UNSAFE_componentWillMount() {
     this.setInitialState();
   }
