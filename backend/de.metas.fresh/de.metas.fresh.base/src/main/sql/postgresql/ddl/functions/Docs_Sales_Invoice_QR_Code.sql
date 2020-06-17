@@ -1,3 +1,4 @@
+
 DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Sales_Invoice_QR_Code (IN p_C_invoice_id numeric);
 CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Sales_Invoice_QR_Code(IN p_C_invoice_id numeric)
     RETURNS TABLE
@@ -13,14 +14,15 @@ CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Sales_Invoice
                 currency                char,
                 additional_informations text,
                 SCOR                    varchar,
-                codeline                varchar
+                codeline                varchar,
+                documentno              varchar
             )
 AS
 $$
 select ('SPC' || E'\n' || --QRType
         '0200' || E'\n' || --Version
         '1' || E'\n' || --Coding
-        replace(COALESCE(qr_iban,iban, ''), ' ', '') || E'\n' || -- Account
+        replace(COALESCE(qr_iban, iban, ''), ' ', '') || E'\n' || -- Account
         'K' || E'\n' || -- CR - AdressTyp = Combined address
         orgbp.name || --CR – Name
         orgl.address1 || E'\n' || --CR –Street and building number of P.O. Box
@@ -45,38 +47,51 @@ select ('SPC' || E'\n' || --QRType
         E'\n' || --Do not fill in
         E'\n' || --Do not fill in
         c.countrycode || E'\n' || -- UD Country
-		(case when replace(qr_iban,' ','') is not null and rn.referenceNo is not null then 'QRR'
-		      when replace(iban,' ','') is not null and replace(orgbpb.sepa_creditoridentifier,' ','') is not null then 'SCOR'
-			  else 'NON'
-		end) || E'\n' || --ReferenceType
-		(case when replace(qr_iban,' ','') is not null and rn.referenceNo is not null then rn.ReferenceNo
-		      when replace(iban,' ','') is not null and replace(orgbpb.sepa_creditoridentifier,' ','') is not null then 'RF'||orgbpb.sepa_creditoridentifier
-			  else ''
-		end) || E'\n' || --Reference
+        (case
+             when replace(qr_iban, ' ', '') is not null and rn.referenceNo is not null then 'QRR'
+             when replace(iban, ' ', '') is not null and replace(orgbpb.sepa_creditoridentifier, ' ', '') is not null
+                 then 'SCOR'
+             else 'NON'
+            end) || E'\n' || --ReferenceType
+        (case
+             when replace(qr_iban, ' ', '') is not null and rn.referenceNo is not null then rn.ReferenceNo
+             when replace(iban, ' ', '') is not null and replace(orgbpb.sepa_creditoridentifier, ' ', '') is not null
+                 then 'RF' || orgbpb.sepa_creditoridentifier
+             else ''
+            end) || E'\n' || --Reference
         i.description || E'\n' ||--Unstructured message
         'EPD' || E'\n' || --Trailer
 
         '' || E'\n' --Billing information
-           )                                                   as QR_Code,
+           )                                   as QR_Code,
 
        COALESCE(replace(iban, ' ', ''), '')    as CR_IBAN,
        COALESCE(replace(qr_iban, ' ', ''), '') as CR_QR_IBAN,
-       orgbp.name                                              As CR_Name,
+       orgbp.name                              As CR_Name,
        (orgl.address1 || E'\n' ||
         coalesce(orgl.postal, '') || ' ' || coalesce(orgl.city, '') || E'\n' ||
-        orgc.countrycode)                                      as CR_Addres,
-       substring(rn.referenceNo, 1, 2) || ' ' ||
-       substring(rn.referenceNo, 3, 5) || ' ' ||
-       substring(rn.referenceNo, 8, 5) || ' ' ||
-       substring(rn.referenceNo, 13, 5) || ' ' ||
-       substring(rn.referenceNo, 18, 5) || ' ' ||
-       substring(rn.referenceNo, 23, 7)                        AS referenceno,
-       i.bpartneraddress                                       as DR_Address,
-       i.grandtotal                                            as Amount,
-       cur.iso_code                                            as currency,
-       i.description                                           as additional_informations,
-       orgbpb.sepa_creditoridentifier                          as SCOR,
-       cl.referenceno                                          as codeline
+        orgc.countrycode)                      as CR_Addres,
+
+       (case
+            when replace(qr_iban, ' ', '') is not null and rn.referenceNo is not null then
+                                                    substring(rn.referenceNo, 1, 2) || ' ' ||
+                                                    substring(rn.referenceNo, 3, 5) || ' ' ||
+                                                    substring(rn.referenceNo, 8, 5) || ' ' ||
+                                                    substring(rn.referenceNo, 13, 5) || ' ' ||
+                                                    substring(rn.referenceNo, 18, 5) || ' ' ||
+                                                    substring(rn.referenceNo, 23, 7)
+            when replace(iban, ' ', '') is not null and replace(orgbpb.sepa_creditoridentifier, ' ', '') is not null
+                then 'RF' || orgbpb.sepa_creditoridentifier
+            else ''
+           end)
+                                               AS referenceno,
+       i.bpartneraddress                       as DR_Address,
+       i.grandtotal                            as Amount,
+       cur.iso_code                            as currency,
+       i.description                           as additional_informations,
+       orgbpb.sepa_creditoridentifier          as SCOR,
+       cl.referenceno                          as codeline,
+       i.DocumentNo
 
 from C_Invoice i
          join c_bpartner_location bpl on i.c_bpartner_location_id = bpl.c_bpartner_location_id

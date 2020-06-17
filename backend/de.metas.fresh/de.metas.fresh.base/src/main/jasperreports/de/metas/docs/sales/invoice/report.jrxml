@@ -274,10 +274,13 @@
 		</band>
 	</pageFooter>
 	<summary>
-		<band height="842">
+		<band height="154">
+			<property name="com.jaspersoft.studio.unit.height" value="px"/>
 			<printWhenExpression><![CDATA[new Boolean(("CH").equals($F{countrycode}))]]></printWhenExpression>
 			<subreport isUsingCache="true">
-				<reportElement key="subreport-3" mode="Transparent" x="1" y="545" width="595" height="297" uuid="134a28b0-5b42-49bf-a126-ddd31e35c2c0">
+				<reportElement key="subreport-3" mode="Transparent" x="1" y="3" width="595" height="150" uuid="134a28b0-5b42-49bf-a126-ddd31e35c2c0">
+					<property name="com.jaspersoft.studio.unit.y" value="px"/>
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 					<printWhenExpression><![CDATA[new Boolean(("CH").equals($F{countrycode}))]]></printWhenExpression>
 				</reportElement>
 				<subreportParameter name="REPORT_MAX_COUNT">
@@ -287,7 +290,7 @@
 					<subreportParameterExpression><![CDATA[$P{RECORD_ID}]]></subreportParameterExpression>
 				</subreportParameter>
 				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
-				<subreportExpression><![CDATA["de/metas/docs/sales/invoice/report_esr.jasper"]]></subreportExpression>
+				<subreportExpression><![CDATA["de/metas/docs/sales/invoice/report_qr.jasper"]]></subreportExpression>
 			</subreport>
 		</band>
 	</summary>
