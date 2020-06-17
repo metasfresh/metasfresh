@@ -1,3 +1,25 @@
+/*
+ * #%L
+ * de.metas.handlingunits.base
+ * %%
+ * Copyright (C) 2020 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.handlingunits;
 
 import java.time.ZonedDateTime;
@@ -5,7 +27,11 @@ import java.time.ZonedDateTime;
 import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
+import de.metas.pricing.PriceListVersionId;
 import de.metas.product.ProductId;
+import org.compiere.model.I_M_ProductPrice;
+
+import javax.annotation.Nullable;
 
 /**
  * Query VO to be used when filtering on {@link I_M_HU_PI_Item_Product}.
@@ -41,6 +67,13 @@ public interface IHUPIItemProductQuery
 	{
 		setC_BPartner_ID(BPartnerId.toRepoId(bpartnerId));
 	}
+
+	/**
+	 * Match only those {@link I_M_HU_PI_Item_Product}s which belong to a {@link I_M_ProductPrice} of this PLV.
+	 */
+	void setPriceListVersionId(@Nullable final PriceListVersionId priceListVersionId);
+
+	@Nullable PriceListVersionId getPriceListVersionId();
 
 	void setDate(ZonedDateTime date);
 

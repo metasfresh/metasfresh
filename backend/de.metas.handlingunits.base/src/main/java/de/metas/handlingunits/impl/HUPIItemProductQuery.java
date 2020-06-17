@@ -3,6 +3,7 @@ package de.metas.handlingunits.impl;
 import java.time.ZonedDateTime;
 
 import de.metas.handlingunits.IHUPIItemProductQuery;
+import de.metas.pricing.PriceListVersionId;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
@@ -21,6 +22,8 @@ import lombok.ToString;
 {
 	private int huPIItemId = -1;
 	private int productId = -1;
+	@Nullable
+	private PriceListVersionId priceListVersionId = null;
 	private int bpartnerId = -1;
 	private ZonedDateTime date = null;
 	private boolean allowAnyProduct = true;
@@ -74,6 +77,19 @@ import lombok.ToString;
 	public void setC_BPartner_ID(final int bpartnerId)
 	{
 		this.bpartnerId = bpartnerId <= 0 ? -1 : bpartnerId;
+	}
+
+	@Override
+	public void setPriceListVersionId(final @Nullable PriceListVersionId priceListVersionId)
+	{
+		this.priceListVersionId = priceListVersionId;
+	}
+
+	@Nullable
+	@Override
+	public PriceListVersionId getPriceListVersionId()
+	{
+		return priceListVersionId;
 	}
 
 	@Override
