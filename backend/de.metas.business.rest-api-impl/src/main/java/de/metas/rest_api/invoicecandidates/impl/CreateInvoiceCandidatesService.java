@@ -266,7 +266,11 @@ public class CreateInvoiceCandidatesService
 		{
 			final List<InvoiceDetailItem> invoiceDetailItems = item.getInvoiceDetailItems()
 					.stream()
-					.map(jsonDetail -> new InvoiceDetailItem(jsonDetail.getSeqNo(), jsonDetail.getLabel(), jsonDetail.getDescription()))
+					.map(jsonDetail -> new InvoiceDetailItem(
+							jsonDetail.getSeqNo(),
+							jsonDetail.getLabel(),
+							jsonDetail.getDescription(),
+							jsonDetail.getDate()))
 					.collect(Collectors.toList());
 
 			candidate.invoiceDetailItems(invoiceDetailItems);

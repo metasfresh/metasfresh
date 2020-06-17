@@ -1,7 +1,7 @@
 
 -- 2018-10-16T11:22:49.382
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Process (AD_Client_ID,IsActive,Created,CreatedBy,Updated,IsReport,IsDirectPrint,AccessLevel,ShowHelp,IsBetaFunctionality,IsServerProcess,CopyFromProcess,UpdatedBy,AD_Process_ID,Value,AllowProcessReRun,IsUseBPartnerLanguage,IsApplySecuritySettings,Description,RefreshAllAfterExecution,IsOneInstanceOnly,LockWaitTimeout,AD_Org_ID,Name,EntityType,Classname,Type) VALUES (0,'Y',TO_TIMESTAMP('2018-10-16 11:22:49','YYYY-MM-DD HH24:MI:SS'),100,TO_TIMESTAMP('2018-10-16 11:22:49','YYYY-MM-DD HH24:MI:SS'),'N','N','3','Y','N','N','N',100,541023,'C_Invoice_CreateExportData','Y','Y','N','','N','N',0,0,'Exportdaten erstellen','de.metas.invoice','de.metas.invoice.export.process.C_Invoice_CreateExportData','Java')
+INSERT INTO AD_Process (AD_Client_ID,IsActive,Created,CreatedBy,Updated,IsReport,IsDirectPrint,AccessLevel,ShowHelp,IsBetaFunctionality,IsServerProcess,CopyFromProcess,UpdatedBy,AD_Process_ID,Value,AllowProcessReRun,IsUseBPartnerLanguage,IsApplySecuritySettings,Description,RefreshAllAfterExecution,IsOneInstanceOnly,LockWaitTimeout,AD_Org_ID,Name,EntityType,Classname,Type) VALUES (0,'Y',TO_TIMESTAMP('2018-10-16 11:22:49','YYYY-MM-DD HH24:MI:SS'),100,TO_TIMESTAMP('2018-10-16 11:22:49','YYYY-MM-DD HH24:MI:SS'),'N','N','3','Y','N','N','N',100,541023,'C_Invoice_CreateExportData','Y','Y','N','','N','N',0,0,'Exportdaten erstellen','de.metas.invoice','C_Invoice_CreateExportData','Java')
 ;
 
 -- 2018-10-16T11:22:49.385

@@ -271,7 +271,7 @@ public class QualityInvoiceLineExpectation extends AbstractExpectation
 		}
 		if (productSet)
 		{
-			assertModelEquals(prefix + "Product", this.product, detail.getM_Product());
+			assertModelEquals(prefix + "Product", this.product, detail.getM_Product_ID());
 		}
 		if (productNameSet)
 		{
@@ -287,7 +287,7 @@ public class QualityInvoiceLineExpectation extends AbstractExpectation
 		}
 		if (uomSet)
 		{
-			assertModelEquals(prefix + "UOM", this.uom, detail.getC_UOM());
+			assertModelEquals(prefix + "UOM", this.uom, detail.getC_UOM_ID());
 		}
 		if (descriptionSet)
 		{

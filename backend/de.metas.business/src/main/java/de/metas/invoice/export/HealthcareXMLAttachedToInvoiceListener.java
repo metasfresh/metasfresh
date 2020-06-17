@@ -8,6 +8,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import de.metas.adempiere.model.I_C_InvoiceLine;
@@ -27,6 +28,7 @@ import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.commontypes.XmlTelecom;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.payload.XmlBody;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.payload.body.XmlService;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.payload.body.XmlServiceWithNameAndBeginDate;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.payload.body.XmlTiers;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.payload.body.law.XmlKvg;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.payload.body.tiers.XmlGuarantor;
@@ -97,13 +99,15 @@ import javax.xml.datatype.XMLGregorianCalendar;
  */
 public class HealthcareXMLAttachedToInvoiceListener implements AttachmentListener
 {
+
+
 	private final CrossVersionServiceRegistry crossVersionServiceRegistry = SpringContextHolder.instance.getBean(CrossVersionServiceRegistry.class);
 
 	private final AttachmentEntryService attachmentEntryService = SpringContextHolder.instance.getBean(AttachmentEntryService.class);
 
 	private final BPartnerCompositeRepository bpartnerCompositeRepository = SpringContextHolder.instance.getBean(BPartnerCompositeRepository.class);
 
-	private final InvoiceWithDetailsRepository invoiceWithDetailsRepository = SpringContextHolder.instance.getBean(InvoiceWithDetailsRepository.class);
+	private final HealthcareXMLToInvoiceDetailPersister healthcareXMLToInvoiceDetailPersister = SpringContextHolder.instance.getBean(HealthcareXMLToInvoiceDetailPersister.class);
 
 	private static final Logger logger = LogManager.getLogger(HealthcareXMLAttachedToInvoiceListener.class);
 
@@ -148,7 +152,7 @@ public class HealthcareXMLAttachedToInvoiceListener implements AttachmentListene
 
 			extractBeneficiaryToInvoice(xRequest, invoiceRecord, attachmentEntry);
 
-			extractInvoiceDetails(xRequest, invoiceRecord);
+			healthcareXMLToInvoiceDetailPersister.extractInvoiceDetails(xRequest, invoiceRecord);
 
 			return ListenerWorkStatus.SUCCESS;
 		}
@@ -200,239 +204,5 @@ public class HealthcareXMLAttachedToInvoiceListener implements AttachmentListene
 		saveRecord(invoiceRecord);
 	}
 
-	private void extractInvoiceDetails(
-			@NonNull final XmlRequest xRequest,
-			@NonNull final I_C_Invoice invoiceRecord)
-	{
-		final XmlBody body = xRequest.getPayload().getBody();
-		final XmlTiers tiers = body.getTiers();
-		final XmlBiller biller = tiers.getBiller();
 
-		final InvoiceWithDetails.InvoiceWithDetailsBuilder invoiceWithDetails = InvoiceWithDetails
-				.builder()
-				.id(InvoiceId.ofRepoId(invoiceRecord.getC_Invoice_ID()));
-		invoiceWithDetails
-				.detailItem(InvoiceDetailItem.builder().label("Biller_ZSR").description(biller.getZsr()).build())
-				.detailItem(InvoiceDetailItem.builder().label("Biller_GLN").description(biller.getEanParty()).build());
-
-		setBillerDetails(biller, invoiceWithDetails, "Biller_");
-		setGuarantorDetails(tiers.getGuarantor(), invoiceWithDetails, "Guarantor_");
-
-		final XmlPatient patient = tiers.getPatient();
-		setPatientDetails(patient, invoiceWithDetails, "Patient_");
-		setIfNotBlank(invoiceWithDetails, patient.getSsn(), "Patient_SSN");
-		setDateIfNotNull(invoiceWithDetails, patient.getBirthdate(), "Patient_BirthDate");
-
-		final XmlKvg kvg = body.getLaw().getKvg();
-		if (kvg != null)
-		{
-			setIfNotBlank(invoiceWithDetails, kvg.getInsuredId(), "KVG");
-		}
-
-		// referrer
-		setReferrerDetails(tiers.getReferrer(), invoiceWithDetails, "Referrer_");
-		setIfNotBlank(invoiceWithDetails, tiers.getReferrer().getZsr(), "Referrer_ZSR");
-		setIfNotBlank(invoiceWithDetails, tiers.getReferrer().getEanParty(), "Referrer_GLN");
-
-		setInsuranceIfNotBlank(invoiceWithDetails, tiers.getInsurance());
-
-		setDateIfNotNull(invoiceWithDetails, body.getTreatment().getDateBegin(), "Treatment_Date_Begin");
-		setDateIfNotNull(invoiceWithDetails, body.getTreatment().getDateEnd(), "Treatment_Date_End");
-
-		final ImmutableMap<Integer, XmlService> //
-				recordId2xService = Maps.uniqueIndex(body.getServices(), XmlService::getRecordId);
-
-		final List<I_C_InvoiceLine> lineRecords = Services.get(IInvoiceDAO.class).retrieveLines(InvoiceId.ofRepoId(invoiceRecord.getC_Invoice_ID()));
-		for (final I_C_InvoiceLine lineRecord : lineRecords)
-		{
-			final List<String> externalIds = InvoiceUtil.splitExternalIds(lineRecord.getExternalIds());
-			if (externalIds.size() != 1)
-			{
-				continue;
-			}
-			final int recordId = InvoiceUtil.extractRecordId(externalIds);
-			final XmlService serviceForRecordId = recordId2xService.get(recordId);
-			if (serviceForRecordId == null)
-			{
-				continue;
-			}
-
-			final InvoiceLineWithDetails.InvoiceLineWithDetailsBuilder line = InvoiceLineWithDetails.builder();
-
-			createItemIfNotBlank(serviceForRecordId.getName(), "Service_Name").ifPresent(line::detailItem);
-			extractLocalDate(serviceForRecordId.getDateBegin(), "Service_Date").ifPresent(line::detailItem);
-			invoiceWithDetails.line(line.build());
-		}
-
-		invoiceWithDetailsRepository.save(invoiceWithDetails.build());
-	}
-
-	private void setInsuranceIfNotBlank(
-			@NonNull final InvoiceWithDetails.InvoiceWithDetailsBuilder invoiceWithDetails,
-			final XmlInsurance insurance)
-	{
-		if (insurance == null)
-		{
-			return;
-		}
-		final XmlCompany company = insurance.getCompany();
-		if (company == null)
-		{
-			return;
-		}
-		setIfNotBlank(invoiceWithDetails, company.getCompanyname(), "Insurance_CompanyName");
-	}
-
-	private void setDateIfNotNull(
-			@NonNull final InvoiceWithDetails.InvoiceWithDetailsBuilder invoiceWithDetails,
-			@Nullable final XMLGregorianCalendar date,
-			@NonNull final String label)
-	{
-		extractLocalDate(date, label).ifPresent(invoiceWithDetails::detailItem);
-	}
-
-	private Optional<InvoiceDetailItem> extractLocalDate(
-			@Nullable final XMLGregorianCalendar date,
-			@NonNull final String label)
-	{
-		if (date == null)
-		{
-			return Optional.empty();
-		}
-
-		final LocalDate localDate = date.toGregorianCalendar().toZonedDateTime().toLocalDate();
-		return Optional.of(InvoiceDetailItem.builder()
-				.label(label)
-				.date(localDate).build());
-	}
-
-	private void setBillerDetails(
-			@NonNull final XmlBiller biller,
-			@NonNull final InvoiceWithDetails.InvoiceWithDetailsBuilder invoiceWithDetails,
-			@NonNull final String labelPrefix)
-	{
-		setPersonDetailsIfNotNull(invoiceWithDetails, labelPrefix, biller.getPerson());
-		setCompanyDetailsIfNotNull(invoiceWithDetails, labelPrefix, biller.getCompany());
-	}
-
-	private void setGuarantorDetails(
-			@NonNull final XmlGuarantor guarantor,
-			@NonNull final InvoiceWithDetails.InvoiceWithDetailsBuilder invoiceWithDetails,
-			@NonNull final String labelPrefix)
-	{
-		setPersonDetailsIfNotNull(invoiceWithDetails, labelPrefix, guarantor.getPerson());
-		setCompanyDetailsIfNotNull(invoiceWithDetails, labelPrefix, guarantor.getCompany());
-	}
-
-	private void setPatientDetails(
-			@NonNull final XmlPatient patient,
-			@NonNull final InvoiceWithDetails.InvoiceWithDetailsBuilder invoiceWithDetails,
-			@NonNull final String labelPrefix)
-	{
-		setPersonDetailsIfNotNull(invoiceWithDetails, labelPrefix, patient.getPerson());
-	}
-
-	private void setReferrerDetails(
-			@NonNull final XmlReferrer referrer,
-			@NonNull final InvoiceWithDetails.InvoiceWithDetailsBuilder invoiceWithDetails,
-			@NonNull final String labelPrefix)
-	{
-		setPersonDetailsIfNotNull(invoiceWithDetails, labelPrefix, referrer.getPerson());
-		setCompanyDetailsIfNotNull(invoiceWithDetails, labelPrefix, referrer.getCompany());
-	}
-
-	private void setPersonDetailsIfNotNull(
-			@NonNull final InvoiceWithDetails.InvoiceWithDetailsBuilder invoiceWithDetails,
-			@NonNull final String labelPrefix,
-			@Nullable final XmlPerson person)
-	{
-		if (person != null)
-		{
-			setPhoneIfNotNull(invoiceWithDetails, person.getOnline(), labelPrefix + "_Email");
-			setEmailIfNotNull(invoiceWithDetails, person.getTelecom(), labelPrefix + "_Phone");
-
-			setPostalIfNotNull(invoiceWithDetails, person.getPostal(), labelPrefix);
-
-			setIfNotBlank(invoiceWithDetails, person.getSalutation(), labelPrefix + "_Salutation");
-			setIfNotBlank(invoiceWithDetails, person.getTitle(), labelPrefix + "_Title");
-			setIfNotBlank(invoiceWithDetails, person.getGivenname(), labelPrefix + "_GivenName");
-			setIfNotBlank(invoiceWithDetails, person.getFamilyname(), labelPrefix + "_FamilyName");
-		}
-	}
-
-	private void setCompanyDetailsIfNotNull(
-			@NonNull final InvoiceWithDetails.InvoiceWithDetailsBuilder invoiceWithDetails,
-			@NonNull final String labelPrefix,
-			@Nullable final XmlCompany billerCompany)
-	{
-		if (billerCompany != null)
-		{
-			setPhoneIfNotNull(invoiceWithDetails, billerCompany.getOnline(), labelPrefix + "_Email");
-			setEmailIfNotNull(invoiceWithDetails, billerCompany.getTelecom(), labelPrefix + "_Phone");
-
-			setPostalIfNotNull(invoiceWithDetails, billerCompany.getPostal(), labelPrefix);
-
-			setIfNotBlank(invoiceWithDetails, billerCompany.getCompanyname(), labelPrefix + "_GivenName");
-			setIfNotBlank(invoiceWithDetails, billerCompany.getDepartment(), labelPrefix + "_FamilyName");
-		}
-	}
-
-	private void setPostalIfNotNull(
-			@NonNull final InvoiceWithDetails.InvoiceWithDetailsBuilder invoiceWithDetails,
-			@NonNull final XmlPostal postal,
-			@NonNull final String labelPrefix)
-	{
-		setIfNotBlank(invoiceWithDetails, postal.getZip(), labelPrefix + "_ZIP");
-		setIfNotBlank(invoiceWithDetails, postal.getCity(), labelPrefix + "_City");
-		setIfNotBlank(invoiceWithDetails, postal.getStreet(), labelPrefix + "_Street");
-	}
-
-	private void setEmailIfNotNull(
-			@NonNull final InvoiceWithDetails.InvoiceWithDetailsBuilder invoiceWithDetails,
-			@NonNull final XmlTelecom telecom,
-			@NonNull final String detailItemLabel)
-	{
-		if (telecom != null)
-		{
-			final List<String> phones = telecom.getPhones();
-			if (phones != null && !phones.isEmpty())
-			{
-				setIfNotBlank(invoiceWithDetails, phones.get(0), detailItemLabel);
-			}
-		}
-	}
-
-	private void setPhoneIfNotNull(
-			@NonNull final InvoiceWithDetails.InvoiceWithDetailsBuilder invoiceWithDetails,
-			@NonNull final XmlOnline online,
-			@NonNull final String detailItemLabel)
-	{
-		if (online != null)
-		{
-			final List<String> emails = online.getEmails();
-			if (emails != null && !emails.isEmpty())
-			{
-				setIfNotBlank(invoiceWithDetails, emails.get(0), detailItemLabel);
-			}
-		}
-	}
-
-	private void setIfNotBlank(
-			@NonNull final InvoiceWithDetails.InvoiceWithDetailsBuilder invoiceWithDetails,
-			@Nullable final String description,
-			@NonNull final String detailItemLabel)
-	{
-		createItemIfNotBlank(description, detailItemLabel).ifPresent(invoiceWithDetails::detailItem);
-	}
-
-	private Optional<InvoiceDetailItem> createItemIfNotBlank(
-			@Nullable final String description,
-			@NonNull final String detailItemLabel)
-	{
-		if (Check.isBlank(description))
-		{
-			return Optional.empty();
-		}
-		return Optional.of(InvoiceDetailItem.builder().label(detailItemLabel).description(description).build());
-	}
 }
