@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types';
-import React, { Component } from 'react';
+import React, { PureComponent } from 'react';
 import { connect } from 'react-redux';
 import Moment from 'moment-timezone';
 import * as windowActions from '../../actions/WindowActions';
@@ -7,7 +7,10 @@ import { getZoomIntoWindow } from '../../api';
 import { convertTimeStringToMoment } from '../../utils/documentListHelper';
 import { formatDateWithZeros } from '../../utils/documentListHelper';
 import RawWidget from './RawWidget';
-import { isNumberField } from '../../utils/widgetHelper';
+import {
+  validatePrecision,
+  formatValueByWidgetType,
+} from '../../utils/widgetHelper';
 import { DATE_FIELD_TYPES, TIME_FIELD_TYPES } from '../../constants/Constants';
 import _ from 'lodash';
 
@@ -18,7 +21,7 @@ const dateParse = [...DATE_FIELD_TYPES, ...TIME_FIELD_TYPES];
  * @module MasterWidget
  * @extends Component
  */
-class MasterWidget extends Component {
+class MasterWidget extends PureComponent {
   constructor(props) {
     super(props);
     const { data, widgetData, clearValue } = this.props;
@@ -76,21 +79,6 @@ class MasterWidget extends Component {
   /**
    * @method handlePatch
    * @summary Performs patching at MasterWidget level, shaping in the same time the `value` for various cases
-   * @param {string} widgetType
-   * @param {string|undefined} value
-   */
-  formatValueByWidgetType = ({ widgetType, value }) => {
-    const numberField = isNumberField(widgetType);
-    if (widgetType === 'Quantity' && value === '') {
-      return null;
-    } else if (numberField && !value) {
-      return '0';
-    }
-  }
-
-  /**
-   * @method handlePatch
-   * @summary Performs patching at MasterWidget level, shaping in the same time the `value` for various cases
    * @param {*} property
    * @param {*} value
    */
@@ -111,7 +99,7 @@ class MasterWidget extends Component {
     } = this.props;
 
     let entity = viewId ? 'documentView' : this.props.entity;
-    value = this.formatValueByWidgetType({ widgetType, value });
+    value = formatValueByWidgetType({ widgetType, value });
     let currRowId = rowId === 'NEW' ? relativeDocId : rowId;
     let ret = null;
     let isEdit = viewId ? true : false;
@@ -138,14 +126,10 @@ class MasterWidget extends Component {
     return ret;
   };
 
-  //
-  // This method may look like a redundant for this one above,
-  // but is need to handle controlled components if
-  // they patch on other event than onchange
-  //
   /**
-   * @method handleKeyDown
-   * @summary ToDo: Describe the method.
+   * @method handleChange
+   * @summary This method may look like a redundant for this one above, but is needed to handle controlled
+   *          components if they patch on other event than onchange
    * @param {*} property
    * @param {*} val
    */
@@ -157,51 +141,27 @@ class MasterWidget extends Component {
       isModal,
       relativeDocId,
       widgetType,
+      precision,
       entity,
     } = this.props;
-    let currRowId = rowId;
     // Add special case of formating for the case when people input 04.7.2020 to be transformed to 04.07.2020
     val = widgetType === 'Date' ? await formatDateWithZeros(val) : val;
-    this.setState(
-      {
-        edited: true,
-        data: val,
-      },
-      () => {
-        if (!dateParse.includes(widgetType) && !this.validatePrecision(val)) {
-          return;
-        }
-        if (rowId === 'NEW') {
-          currRowId = relativeDocId;
-        }
-        updatePropertyValue(property, val, tabId, currRowId, isModal, entity);
+
+    this.setState({ edited: true, data: val }, () => {
+      if (
+        !dateParse.includes(widgetType) &&
+        !validatePrecision({ widgetValue: val, widgetType, precision })
+      ) {
+        return;
       }
-    );
-  };
-
-  /**
-   * @method validatePrecision
-   * @summary ToDo: Describe the method.
-   * @param {*} value
-   */
-  validatePrecision = (value) => {
-    const { widgetType, precision } = this.props;
-    let precisionProcessed = precision;
-
-    if (widgetType === 'Integer' || widgetType === 'Quantity') {
-      precisionProcessed = 0;
-    }
-
-    if (precisionProcessed < (value.split('.')[1] || []).length) {
-      return false;
-    } else {
-      return true;
-    }
+      let currRowId = rowId === 'NEW' ? relativeDocId : rowId;
+      updatePropertyValue(property, val, tabId, currRowId, isModal, entity);
+    });
   };
 
   /**
    * @method handleProcess
-   * @summary ToDo: Describe the method.
+   * @summary handle process function, opens the corresponding modal
    * @param {*} caption
    * @param {*} buttonProcessId
    * @param {*} tabId
@@ -214,8 +174,8 @@ class MasterWidget extends Component {
   };
 
   /**
-   * @method handleKeyDown
-   * @summary ToDo: Describe the method.
+   * @method handleZoomInto
+   * @summary Opens a new window in a new tab for a given field
    * @param {*} field
    */
   handleZoomInto = (field) => {
@@ -227,18 +187,14 @@ class MasterWidget extends Component {
           res.data.documentPath.documentId
         }`;
 
-        res &&
-          res.data &&
-          /*eslint-disable */
-          window.open(url, '_blank');
-          /*eslint-enable */
+        res && res.data && window.open(url, '_blank');
       }
     );
   };
 
   /**
    * @method handleBlurWidget
-   * @summary ToDo: Describe the method.
+   * @summary This is just a forwarder for onBlurWidget from the props
    */
   handleBlurWidget = () => {
     const { onBlurWidget, fieldName } = this.props;
@@ -248,7 +204,7 @@ class MasterWidget extends Component {
 
   /**
    * @method render
-   * @summary ToDo: Describe the method.
+   * @summary Main render function
    */
   render() {
     const { handleBackdropLock, onClickOutside } = this.props;
