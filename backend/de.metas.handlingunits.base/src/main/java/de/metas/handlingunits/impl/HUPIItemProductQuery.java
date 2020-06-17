@@ -48,7 +48,7 @@ import java.time.ZonedDateTime;
 	private int bpartnerId = -1;
 	private ZonedDateTime date = null;
 	private boolean allowAnyProduct = true;
-	private boolean allowInifiniteCapacity = true;
+	private boolean allowInfiniteCapacity = true;
 	private String huUnitType = null;
 	private boolean allowVirtualPI = true;
 
@@ -189,13 +189,13 @@ import java.time.ZonedDateTime;
 	@Override
 	public boolean isAllowInfiniteCapacity()
 	{
-		return allowInifiniteCapacity;
+		return allowInfiniteCapacity;
 	}
 
 	@Override
 	public void setAllowInfiniteCapacity(final boolean allowInfiniteCapacity)
 	{
-		allowInifiniteCapacity = allowInfiniteCapacity;
+		this.allowInfiniteCapacity = allowInfiniteCapacity;
 	}
 
 	@Override
