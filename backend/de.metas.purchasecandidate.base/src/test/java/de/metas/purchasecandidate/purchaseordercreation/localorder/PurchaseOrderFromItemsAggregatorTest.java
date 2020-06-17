@@ -17,8 +17,8 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_UOM;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.bpartner.BPartnerId;
@@ -62,14 +62,12 @@ import mockit.Expectations;
  * #L%
  */
 
-//@RunWith(SpringRunner.class)
-//@SpringBootTest(classes = { StartupListener.class, ShutdownListener.class, ProfitPriceActualFactory.class })
 public class PurchaseOrderFromItemsAggregatorTest
 {
 	private I_C_UOM EACH;
 	private Quantity TEN;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
