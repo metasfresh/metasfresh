@@ -3,6 +3,7 @@ import currentDevice from 'current-device';
 import PropTypes from 'prop-types';
 import numeral from 'numeral';
 import Moment from 'moment-timezone';
+
 import {
   AMOUNT_FIELD_FORMATS_BY_PRECISION,
   AMOUNT_FIELD_TYPES,
@@ -13,6 +14,7 @@ import {
   TIME_REGEX_TEST,
   TIME_FORMAT,
 } from '../constants/Constants';
+import { getCurrentActiveLocale } from './locale';
 
 export const containerPropTypes = {
   // from <DocumentList>
@@ -121,13 +123,13 @@ export function getSizeClass(col) {
 
 /**
  * @method createDate
- * @param {object} containing the fieldValue, fieldType and the active locale
+ * @param {object} containing the fieldValue and fieldType
  * @summary creates a Date using Moment lib formatting it with the locale passed as param
  */
-// TODO !!!! use the utils/locale.js after it is present in the DEV branch !!!!
-// TODO: (activeLocale={key, caption}, just sending the language name would be enough)
-export function createDate({ fieldValue, fieldType, activeLocale }) {
-  const languageKey = activeLocale ? activeLocale.key : null;
+export function createDate({ fieldValue, fieldType }) {
+  const activeLocale = getCurrentActiveLocale();
+  const languageKey = activeLocale ? activeLocale : null;
+
   if (fieldValue) {
     return !Moment.isMoment(fieldValue) && fieldValue.match(TIME_REGEX_TEST)
       ? Moment.utc(Moment.duration(fieldValue).asMilliseconds())
@@ -204,7 +206,6 @@ export function createSpecialField(fieldType, fieldValue) {
  * @param {string} fieldType
  * @param {string} precision
  * @param {boolean} isGerman
- * @param {string} activeLocale
  * @summary This is a patch function to mangle the desired output used at table level within TableCell, Filters components
  */
 export function fieldValueToString({
@@ -212,7 +213,6 @@ export function fieldValueToString({
   fieldType = 'Text',
   precision = null,
   isGerman,
-  activeLocale,
 }) {
   if (fieldValue === null) {
     return '';
@@ -232,7 +232,7 @@ export function fieldValueToString({
 
       return DATE_FIELD_TYPES.includes(fieldType) ||
         TIME_FIELD_TYPES.includes(fieldType)
-        ? createDate({ fieldValue, fieldType, activeLocale })
+        ? createDate({ fieldValue, fieldType })
         : fieldValue.caption;
     }
     case 'boolean': {
@@ -247,7 +247,7 @@ export function fieldValueToString({
         DATE_FIELD_TYPES.includes(fieldType) ||
         TIME_FIELD_TYPES.includes(fieldType)
       ) {
-        return createDate({ fieldValue, fieldType, activeLocale });
+        return createDate({ fieldValue, fieldType });
       } else if (AMOUNT_FIELD_TYPES.includes(fieldType)) {
         return createAmount(fieldValue, precision, isGerman);
       } else if (SPECIAL_FIELD_TYPES.includes(fieldType)) {

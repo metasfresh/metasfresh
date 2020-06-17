@@ -1,0 +1,68 @@
+<configuration scan="true">
+
+	<!-- Spring boot defaults -->
+	<include resource="org/springframework/boot/logging/logback/defaults.xml"/>
+
+	<!-- logstash logging configuration -->
+	<springProperty scope="context" name="LOGSTASH_HOST" source="logstash.host" defaultValue="localhost" />
+	<springProperty scope="context" name="LOGSTASH_PORT" source="logstash.port" defaultValue="5000" />
+	<springProperty scope="context" name="LOGSTASH_APP_NAME" source="spring.application.name" defaultValue="!!missing-value-for-spring.application.name!!" />
+
+	<appender name="STASH" class="net.logstash.logback.appender.LogstashTcpSocketAppender">
+		<destination>${LOGSTASH_HOST}:${LOGSTASH_PORT}</destination>
+
+		<!-- see https://github.com/logstash/logstash-logback-encoder#write-buffer-size -->
+		<writeBufferSize>0</writeBufferSize>
+		<ringBufferSize>32768</ringBufferSize>
+
+		<encoder class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
+			<providers>
+				<mdc /> <!-- MDC variables on the Thread will be written as JSON fields-->
+				<!-- context / --> <!--Outputs entries from logback's context -->
+				<version /> <!-- Logstash json format version, the @version field in the output-->
+				<logLevel />
+				<loggerName />
+
+				<pattern>
+					<pattern> <!-- we can add some custom fields to be sent with all the log entries.-->
+						<!-- to make filtering easier in Logstash -->
+						<!-- or searching with Kibana -->
+						{
+						"application.name": "${LOGSTASH_APP_NAME}",
+						"instance.name": "localhost"
+						}
+					</pattern>
+				</pattern>
+
+				<threadName />
+				<message />
+
+				<logstashMarkers /> <!-- Useful so we can add extra information for specific log lines as Markers-->
+				<arguments /> <!--or through StructuredArguments-->
+
+				<stackTrace />
+			</providers>
+		</encoder>
+	</appender>
+
+	<!-- Console logging configuration -->
+	<appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+		<filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+			<level>ERROR</level>
+		</filter>
+		<encoder>
+			<pattern>${CONSOLE_LOG_PATTERN}</pattern>
+		</encoder>
+	</appender>
+
+	<!-- Configure root logger -->
+	<root level="INFO">
+		<appender-ref ref="STASH" />
+		<appender-ref ref="CONSOLE" />
+	</root>
+	
+	<!-- see http://codecentric.github.io/spring-boot-admin/1.3.0/#loglevel-management -->
+	<!-- include resource="org/springframework/boot/logging/logback/base.xml"/ -->
+	<jmxConfigurator/>
+
+</configuration>

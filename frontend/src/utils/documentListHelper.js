@@ -3,12 +3,13 @@ import { Map as iMap } from 'immutable';
 import Moment from 'moment-timezone';
 import currentDevice from 'current-device';
 import deepUnfreeze from 'deep-unfreeze';
-import { LOCAL_LANG } from '../constants/Constants';
+
 import { getItemsByProperty, nullToEmptyStrings } from './index';
 import { getSelectionInstant } from '../reducers/windowHandler';
 import { viewState, getView } from '../reducers/viewHandler';
 import { getTable, getTableId } from '../reducers/tables';
 import { TIME_REGEX_TEST } from '../constants/Constants';
+import { getCurrentActiveLocale } from './locale';
 
 /**
  * @typedef {object} Props Component props
@@ -339,14 +340,6 @@ export function getScope(isModal) {
 
 export function parseToDisplay(fieldsByName) {
   return parseDateToReadable(nullToEmptyStrings(fieldsByName));
-}
-
-/**
- * @method getCurrentActiveLocale
- * @summary Retrieves the active locale from the local store
- */
-export function getCurrentActiveLocale() {
-  return localStorage.getItem(LOCAL_LANG);
 }
 
 export function convertTimeStringToMoment(value) {

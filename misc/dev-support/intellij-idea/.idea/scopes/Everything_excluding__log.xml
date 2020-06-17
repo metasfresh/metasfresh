@@ -1,0 +1,3 @@
+<component name="DependencyValidationManager">
+  <scope name="Everything excluding .log" pattern="!file:*.log" />
+</component>

@@ -1,19 +1,22 @@
 package de.metas.procurement.base.contracts;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.util.Date;
+import java.util.HashMap;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_Period;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import de.metas.contracts.model.I_C_Flatrate_DataEntry;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.procurement.base.PMMContractBuilder;
-import mockit.Mocked;
-import mockit.Tested;
+import lombok.Getter;
 import mockit.Verifications;
 
 /*
@@ -26,12 +29,12 @@ import mockit.Verifications;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -40,16 +43,22 @@ import mockit.Verifications;
 
 public class ProcurementFlatrateHandlerTests
 {
-	@Tested
 	ProcurementFlatrateHandler procurementFlatrateHandler;
+	MockedPMMContractBuilder pmmContractBuilder;
 
-	@Mocked
-	PMMContractBuilder pmmContractBuilder;
-
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
+
+		procurementFlatrateHandler = new ProcurementFlatrateHandler()
+		{
+			@Override
+			PMMContractBuilder newPMMContractBuilder(final de.metas.procurement.base.model.I_C_Flatrate_Term term)
+			{
+				return pmmContractBuilder = new MockedPMMContractBuilder(term);
+			}
+		};
 	}
 
 	/**
@@ -102,15 +111,41 @@ public class ProcurementFlatrateHandlerTests
 
 		procurementFlatrateHandler.afterSaveOfNextTermForPredecessor(newTerm, oldTerm);
 
-		// @formatter:off
-		new Verifications()
-		{{
-			// verify that the builder is called if the period start dates plus one year and with the flatrate amounts-per-uom
-			pmmContractBuilder.setFlatrateAmtPerUOM(Timestamp.valueOf("2017-01-01 00:00:00"), null);
-			pmmContractBuilder.setFlatrateAmtPerUOM(Timestamp.valueOf("2017-02-01 00:00:00"), new BigDecimal("0.00"));
-			pmmContractBuilder.setFlatrateAmtPerUOM(Timestamp.valueOf("2017-03-01 00:00:00"), new BigDecimal("1.23"));
-			pmmContractBuilder.build();
-		}};
-		// @formatter:on
+		final HashMap<Date, BigDecimal> flatrateAmtPerUOMByDayExpected = new HashMap<>();
+		flatrateAmtPerUOMByDayExpected.put(Timestamp.valueOf("2017-01-01 00:00:00"), null);
+		flatrateAmtPerUOMByDayExpected.put(Timestamp.valueOf("2017-02-01 00:00:00"), new BigDecimal("0.00"));
+		flatrateAmtPerUOMByDayExpected.put(Timestamp.valueOf("2017-03-01 00:00:00"), new BigDecimal("1.23"));
+		assertThat(pmmContractBuilder.getFlatrateAmtPerUOMByDay())
+				.isEqualTo(flatrateAmtPerUOMByDayExpected);
+	}
+
+	//
+	//
+	//
+	//
+	//
+
+	private static class MockedPMMContractBuilder extends PMMContractBuilder
+	{
+		@Getter
+		private final HashMap<Date, BigDecimal> flatrateAmtPerUOMByDay = new HashMap<>();
+
+		public MockedPMMContractBuilder(final de.metas.procurement.base.model.I_C_Flatrate_Term term)
+		{
+			super(term);
+		}
+
+		@Override
+		public PMMContractBuilder setFlatrateAmtPerUOM(final Date date, final BigDecimal flatrateAmtPerUOM)
+		{
+			flatrateAmtPerUOMByDay.put(date, flatrateAmtPerUOM);
+			return super.setFlatrateAmtPerUOM(date, flatrateAmtPerUOM);
+		}
+
+		@Override
+		public de.metas.procurement.base.model.I_C_Flatrate_Term build()
+		{
+			return null;
+		}
 	}
 }

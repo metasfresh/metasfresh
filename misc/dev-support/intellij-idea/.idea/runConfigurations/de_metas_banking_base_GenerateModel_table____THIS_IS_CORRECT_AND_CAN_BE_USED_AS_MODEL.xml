@@ -1,0 +1,13 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="de.metas.banking.base-GenerateModel-table -- THIS IS CORRECT AND CAN BE USED AS MODEL" type="Application" factoryName="Application">
+    <option name="INCLUDE_PROVIDED_SCOPE" value="true" />
+    <option name="MAIN_CLASS_NAME" value="org.adempiere.util.GenerateModel" />
+    <module name="de.metas.banking.base" />
+    <option name="PROGRAM_PARAMETERS" value="src/main/java-gen       -     '%'       'C_BankStatementLine'" />
+    <option name="VM_PARAMETERS" value="-DPropertyFile=$ProjectFileDir$\metasfresh.properties -Dorg.adempiere.util.GenerateModel.OnlySystemColumns=true&#13; -Dgenerate.legacy=false" />
+    <option name="WORKING_DIRECTORY" value="$MODULE_WORKING_DIR$" />
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
+</component>

@@ -1,10 +1,13 @@
 import PropTypes from 'prop-types';
 import React, { PureComponent, createRef } from 'react';
 import classnames from 'classnames';
-import MasterWidget from '../widget/MasterWidget';
+
 import { getDateFormat, fieldValueToString } from '../../utils/tableHelpers';
 import { DATE_FIELD_FORMATS } from '../../constants/Constants';
+
+import MasterWidget from '../widget/MasterWidget';
 import WidgetTooltip from '../widget/WidgetTooltip';
+
 class TableCell extends PureComponent {
   constructor(props) {
     super(props);
@@ -122,14 +125,14 @@ class TableCell extends PureComponent {
    * {array} widgetData
    */
   getTdValue = (widgetData) => {
-    const { isEdited, item, activeLocale, isGerman } = this.props;
+    const { isEdited, item, isGerman } = this.props;
+
     return !isEdited
       ? fieldValueToString({
           fieldValue: widgetData[0].value,
           fieldType: item.widgetType,
           precision: widgetData[0].precision,
           isGerman,
-          activeLocale,
         })
       : null;
   };
