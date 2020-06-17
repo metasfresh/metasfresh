@@ -25,6 +25,7 @@ select ('SPC' || E'\n' || --QRType
         coalesce(orgl.postal, '') || ' ' || coalesce(orgl.city, '') || E'\n' || -- CR Postal code and town
         E'\n' || --Do not fill in
         E'\n' || --Do not fill in
+		E'\n' || --Do not fill in
         orgc.countrycode || E'\n' || -- CR Country
         E'\n' || -- E'\n' || --UCR – AdressTyp
         E'\n' || -- E'\n' || --UCR – Name
@@ -37,7 +38,7 @@ select ('SPC' || E'\n' || --QRType
         cur.iso_code || E'\n' ||
         'K' || E'\n' || -- UD– AdressTyp = Combined address
         substring(bpartneraddress from 1 for position(E'\n' in bpartneraddress)) || --UD – Name
-        l.address1 || E'\n' || --UD –Street and building number of P.O. Box
+        coalesce(l.address1,'') || E'\n' || --UD –Street and building number of P.O. Box
         coalesce(l.postal, '') || ' ' || coalesce(l.city, '') || E'\n' || -- UD Postal code and town
         E'\n' || --Do not fill in
         E'\n' || --Do not fill in
@@ -53,6 +54,7 @@ select ('SPC' || E'\n' || --QRType
            )                                                as QR_Code,
 
        COALESCE(replace(iban, ' ', ''), 'No acc.no. found') as CR_IBAN,
+	   COALESCE(replace(qr_iban, ' ', ''), 'No acc.no. found') as CR_QR_IBAN,
        orgbp.name                                           As CR_Name,
        (orgl.address1 || E'\n' ||
         coalesce(orgl.postal, '') || ' ' || coalesce(orgl.city, '') || E'\n' ||
@@ -67,6 +69,7 @@ select ('SPC' || E'\n' || --QRType
        i.grandtotal                                         as Amount,
        cur.iso_code                                         as currency,
        i.description                                        as additional_informations,
+	   orgbpb.sepa_creditoridentifier						as SCOR,
        cl.referenceno                                       as codeline
 
 from C_Invoice i
