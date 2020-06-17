@@ -1,6 +1,7 @@
 import {
   isNumberField,
   formatValueByWidgetType,
+  validatePrecision,
 } from '../../utils/widgetHelper';
 
 describe('Widget helpers', () => {
@@ -36,6 +37,33 @@ describe('Widget helpers', () => {
         value: null,
       });
       expect(resultToCheckTwo).toBe('0');
+    });
+  });
+
+  describe('validatePrecision function', () => {
+    it('works correctly', () => {
+      const resultToCheckOne = validatePrecision({
+        widgetValue: '223,544334',
+        widgetType: 'Quantity',
+        precision: 2,
+      });
+      expect(resultToCheckOne).toBe(true);
+
+
+      const resultToCheckTwo = validatePrecision({
+        widgetValue: '223,544334',
+        widgetType: 'Quantity',
+        precision: 0,
+      });
+      expect(resultToCheckTwo).toBe(true);
+
+
+      const resultToCheckThree = validatePrecision({
+        widgetValue: '223.544334',
+        widgetType: 'Amount',
+        precision: 0,
+      });
+      expect(resultToCheckThree).toBe(false);
     });
   });
 });
