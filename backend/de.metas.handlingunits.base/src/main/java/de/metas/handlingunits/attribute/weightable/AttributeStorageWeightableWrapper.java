@@ -34,6 +34,7 @@ import de.metas.handlingunits.conversion.ConversionHelper;
 import de.metas.logging.LogManager;
 import de.metas.uom.UOMType;
 import lombok.NonNull;
+import lombok.ToString;
 
 /**
  * Wraps and {@link IAttributeStorage} and expose all weightable methods.
@@ -41,15 +42,16 @@ import lombok.NonNull;
  * @author tsa
  *
  */
-final class AttributeStorageWeightable implements IWeightable
+@ToString
+final class AttributeStorageWeightableWrapper implements IWeightable
 {
-	private final static Logger logger = LogManager.getLogger(AttributeStorageWeightable.class);
+	private static final Logger logger = LogManager.getLogger(AttributeStorageWeightableWrapper.class);
 
-	private final IAttributeStorage _attributeStorage;
+	private final IAttributeStorage attributeStorage;
 
-	AttributeStorageWeightable(@NonNull final IAttributeStorage attributeStorage)
+	AttributeStorageWeightableWrapper(@NonNull final IAttributeStorage attributeStorage)
 	{
-		_attributeStorage = attributeStorage;
+		this.attributeStorage = attributeStorage;
 	}
 
 	/**
@@ -57,7 +59,7 @@ final class AttributeStorageWeightable implements IWeightable
 	 */
 	private IAttributeStorage getAttributeStorage()
 	{
-		return _attributeStorage;
+		return attributeStorage;
 	}
 
 	@Override
@@ -226,6 +228,12 @@ final class AttributeStorageWeightable implements IWeightable
 	{
 		final AttributeCode attr_WeightTareAdjust = getWeightTareAdjustAttribute();
 		return getWeight(attr_WeightTareAdjust);
+	}
+
+	@Override
+	public void setWeightTareAdjust(BigDecimal weightTareAdjust)
+	{
+		setWeight(getWeightGrossAttribute(), weightTareAdjust);
 	}
 
 	@Override

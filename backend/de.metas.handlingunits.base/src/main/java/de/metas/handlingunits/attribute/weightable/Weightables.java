@@ -2,8 +2,6 @@ package de.metas.handlingunits.attribute.weightable;
 
 import java.math.BigDecimal;
 
-import javax.annotation.Nullable;
-
 import org.adempiere.mm.attributes.AttributeCode;
 
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
@@ -47,9 +45,9 @@ public class Weightables
 	 */
 	public static final String PROPERTY_WeightableOnlyIfVHU = IWeightable.class.getName() + ".WeightableOnlyIfVHU";
 
-	public IWeightable wrap(@Nullable final IAttributeStorage attributeStorage)
+	public IWeightable wrap(@NonNull final IAttributeStorage attributeStorage)
 	{
-		return new AttributeStorageWeightable(attributeStorage);
+		return new AttributeStorageWeightableWrapper(attributeStorage);
 	}
 
 	public static final void updateWeightNet(@NonNull final IWeightable weightable)

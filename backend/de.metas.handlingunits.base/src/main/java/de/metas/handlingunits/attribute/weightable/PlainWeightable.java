@@ -41,7 +41,7 @@ public class PlainWeightable implements IWeightable
 	private BigDecimal weightGross;
 	private BigDecimal weightNet;
 	private final BigDecimal weightTareInitial;
-	private BigDecimal weightTare;
+	private final BigDecimal weightTare;
 	private BigDecimal weightTareAdjust;
 
 	@Builder
@@ -106,6 +106,12 @@ public class PlainWeightable implements IWeightable
 	public BigDecimal getWeightTareAdjust()
 	{
 		return weightTareAdjust;
+	}
+
+	@Override
+	public void setWeightTareAdjust(BigDecimal weightTareAdjust)
+	{
+		this.weightTareAdjust = weightTareAdjust;
 	}
 
 	@Override

@@ -10,8 +10,11 @@ import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attribute.weightable.IWeightable;
+import de.metas.handlingunits.attribute.weightable.Weightables;
 import de.metas.handlingunits.inventory.Inventory;
 import de.metas.handlingunits.inventory.InventoryHeaderCreateRequest;
 import de.metas.handlingunits.inventory.InventoryService;
@@ -81,21 +84,20 @@ class WeightHUCommand
 
 	public InventoryId execute()
 	{
-		// TODO:
-		// * set weight tara adjust
-		// * compute and set weight net
-		// * create an internal use inventory to adjust QtyCUs !
+		final Inventory inventoryHeader = createAndCompleteInventory();
+		updateHUWeights();
 
-		// weightGross;
-		// weightTareAdjust;
-		// weightNet;
+		return inventoryHeader.getId();
+	}
 
-		final Quantity weightNet = Quantity.of(targetWeight.getWeightNet(), targetWeight.getWeightNetUOM());
+	private Inventory createAndCompleteInventory()
+	{
+		final Quantity targetWeightNet = Quantity.of(targetWeight.getWeightNet(), targetWeight.getWeightNetUOM());
 
 		final I_M_HU hu = handlingUnitsBL.getById(huId);
 		final ClientId clientId = ClientId.ofRepoId(hu.getAD_Client_ID());
 		final IHUProductStorage huProductStorage = getSingleStorage(hu);
-		final HuForInventoryLine inventoryLineCandidate = toHuForInventoryLine(hu, huProductStorage, weightNet);
+		final HuForInventoryLine inventoryLineCandidate = toHuForInventoryLine(hu, huProductStorage, targetWeightNet);
 
 		final Inventory inventoryHeader = inventoryService.createInventoryHeader(InventoryHeaderCreateRequest.builder()
 				.orgId(inventoryLineCandidate.getOrgId())
@@ -114,8 +116,7 @@ class WeightHUCommand
 		new DraftInventoryLinesCreator(inventoryLinesCreationCtx).execute();
 
 		inventoryService.completeDocument(inventoryHeader.getId());
-
-		return inventoryHeader.getId();
+		return inventoryHeader;
 	}
 
 	private DocTypeId getInventoryDocTypeId(
@@ -167,6 +168,29 @@ class WeightHUCommand
 				.storageAttributesKey(handlingUnitsBL.getStorageRelevantAttributesKey(hu))
 				.locatorId(IHandlingUnitsBL.extractLocatorId(hu))
 				.build();
+	}
+
+	private void updateHUWeights()
+	{
+		final I_M_HU hu = handlingUnitsBL.getById(huId);
+		final IWeightable huAttributes = getHUAttributes(hu);
+
+		huAttributes.setWeightTareAdjust(targetWeight.getWeightTareAdjust());
+		huAttributes.setWeightGross(targetWeight.getWeightGross());
+		huAttributes.setWeightNet(targetWeight.getWeightNet());
+		huAttributes.setWeightNetNoPropagate(targetWeight.getWeightNet());
+	}
+
+	private IWeightable getHUAttributes(final I_M_HU hu)
+	{
+		final IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
+		final IAttributeStorage huAttributes = huContextFactory
+				.createMutableHUContext()
+				.getHUAttributeStorageFactory()
+				.getAttributeStorage(hu);
+		huAttributes.setSaveOnChange(true);
+
+		return Weightables.wrap(huAttributes);
 	}
 
 }

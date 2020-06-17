@@ -349,7 +349,19 @@ public class HUEditorRowAttributes implements IViewRowAttributes
 
 	public Optional<BigDecimal> getWeightGross()
 	{
-		return toWeightable().map(IWeightable::getWeightGross);
+		final IWeightable weightable = toWeightable().orElse(null);
+		if (weightable == null)
+		{
+			return Optional.empty();
+		}
+
+		if (!weightable.hasWeightGross())
+		{
+			return Optional.empty();
+		}
+
+		final BigDecimal weightGross = weightable.getWeightGross();
+		return Optional.ofNullable(weightGross);
 	}
 
 	public Optional<IWeightable> toWeightable()

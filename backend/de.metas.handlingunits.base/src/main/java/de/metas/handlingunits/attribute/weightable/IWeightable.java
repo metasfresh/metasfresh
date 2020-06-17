@@ -78,6 +78,8 @@ public interface IWeightable
 	AttributeCode getWeightTareAdjustAttribute();
 
 	BigDecimal getWeightTareAdjust();
+	
+	void setWeightTareAdjust(BigDecimal weightTareAdjust);
 
 	AttributeCode getWeightTareAttribute();
 
