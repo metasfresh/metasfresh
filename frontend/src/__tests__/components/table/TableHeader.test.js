@@ -4,19 +4,19 @@ import merge from 'merge';
 
 import tableHeaderProps from '../../../../test_setup/fixtures/table/table_header.json';
 
-import { getSizeClass } from '../../../utils/tableHelpers'; // imported as it is passed as a prop..
 import TableHeader from '../../../components/table/TableHeader';
 
-
-tableHeaderProps.getSizeClass = getSizeClass;
-tableHeaderProps.selected = [];
+const props = {
+  ...tableHeaderProps,
+  selected: [],
+};
 
 describe('TableHeader', () => {
   it('renders without errors with the given props', () => {
     const wrapperTableCMenu = shallow(
       <table>
         <thead>
-          <TableHeader {...tableHeaderProps} />
+          <TableHeader {...props} />
         </thead>
       </table>
     );
@@ -32,11 +32,15 @@ describe('TableHeader', () => {
   });
 
   it('should have indent present', () => {
-    tableHeaderProps.indentSupported = true;
+    const localProps = {
+      ...props,
+      indentSupported: true,
+    };
+
     const wrapperTableCMenu = shallow(
       <table>
         <thead>
-          <TableHeader {...tableHeaderProps} />
+          <TableHeader {...localProps} />
         </thead>
       </table>
     );
