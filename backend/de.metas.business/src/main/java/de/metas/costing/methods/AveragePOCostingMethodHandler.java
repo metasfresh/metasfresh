@@ -152,7 +152,15 @@ public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 		else
 		{
 			final CostPrice price = currentCosts.getCostPrice();
-			final CostAmount amt = price.multiply(qty).roundToPrecisionIfNeeded(currentCosts.getPrecision());
+			final CostAmount amt;
+			if (!qty.isZero())
+			{
+				amt = price.multiply(qty).roundToPrecisionIfNeeded(currentCosts.getPrecision());
+			}
+			else
+			{
+				amt = price.toCostAmount();
+			}
 			final CostDetailCreateRequest requestEffective = request.withAmount(amt);
 			result = utils.createCostDetailRecordWithChangedCosts(requestEffective, currentCosts);
 
