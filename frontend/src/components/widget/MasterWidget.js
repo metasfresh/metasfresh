@@ -75,7 +75,22 @@ class MasterWidget extends Component {
 
   /**
    * @method handlePatch
-   * @summary ToDo: Describe the method.
+   * @summary Performs patching at MasterWidget level, shaping in the same time the `value` for various cases
+   * @param {string} widgetType
+   * @param {string|undefined} value
+   */
+  formatValueByWidgetType = ({ widgetType, value }) => {
+    const numberField = isNumberField(widgetType);
+    if (widgetType === 'Quantity' && value === '') {
+      return null;
+    } else if (numberField && !value) {
+      return '0';
+    }
+  }
+
+  /**
+   * @method handlePatch
+   * @summary Performs patching at MasterWidget level, shaping in the same time the `value` for various cases
    * @param {*} property
    * @param {*} value
    */
@@ -94,31 +109,15 @@ class MasterWidget extends Component {
       isAdvanced = false,
       viewId,
     } = this.props;
-    const numberField = isNumberField(widgetType);
 
-    if (widgetType === 'Quantity' && value === '') {
-      value = null;
-    } else if (numberField && !value) {
-      value = '0';
-    }
-
-    let { entity } = this.props;
-    let currRowId = rowId;
+    let entity = viewId ? 'documentView' : this.props.entity;
+    value = this.formatValueByWidgetType({ widgetType, value });
+    let currRowId = rowId === 'NEW' ? relativeDocId : rowId;
     let ret = null;
-    let isEdit = false;
+    let isEdit = viewId ? true : false;
 
-    if (rowId === 'NEW') {
-      currRowId = relativeDocId;
-    }
-
-    if (widgetType !== 'Button') {
+    widgetType !== 'Button' &&
       updatePropertyValue(property, value, tabId, currRowId, isModal, entity);
-    }
-
-    if (viewId) {
-      entity = 'documentView';
-      isEdit = true;
-    }
 
     ret = patch(
       entity,
@@ -134,10 +133,7 @@ class MasterWidget extends Component {
       isEdit
     );
 
-    //callback
-    if (onChange) {
-      onChange(rowId, property, value, ret);
-    }
+    onChange && onChange(rowId, property, value, ret); //callback
 
     return ret;
   };
