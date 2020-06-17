@@ -76,14 +76,8 @@ public class StandardCostingMethodHandler extends CostingMethodHandlerTemplate
 		final CurrentCost currentCosts = utils.getCurrentCost(request);
 		final Quantity qty = request.getQty();
 		final CostAmount amt;
-		if (!qty.isZero())
-		{
-			amt = currentCosts.getCostPrice().multiply(qty);
-		}
-		else
-		{		
-			amt = request.getAmt();
-		}
+
+		amt = currentCosts.getCostPrice().multiply(qty);
 
 		final CostDetailCreateResult result = utils.createCostDetailRecordWithChangedCosts(request.withAmount(amt), currentCosts);
 
