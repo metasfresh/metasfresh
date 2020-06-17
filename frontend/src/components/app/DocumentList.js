@@ -154,7 +154,6 @@ export default class DocumentList extends Component {
       viewId,
       onFilterChange,
       onResetInitialFilters,
-      supportAttribute,
       hasIncluded,
       onRedirectToNewDocument,
       onShowIncludedViewOnSelect,
@@ -173,7 +172,7 @@ export default class DocumentList extends Component {
       pending,
       layoutPending,
     } = reduxData;
-    const { rowEdited, clickOutsideLock, toggleWidth } = this.state;
+    const { clickOutsideLock, toggleWidth } = this.state;
 
     // TODO: This can probably be handled with redux state query
     let { childSelected, parentSelected } = onGetSelected();
@@ -333,13 +332,7 @@ export default class DocumentList extends Component {
           </div>
         )}
 
-        <Spinner
-          parent={this}
-          delay={300}
-          iconSize={50}
-          displayCondition={triggerSpinner}
-          hideCondition={!triggerSpinner}
-        />
+        {triggerSpinner && !inBackground && <Spinner iconSize={50} />}
 
         {layout && (
           <div className="document-list-body">
@@ -372,7 +365,6 @@ export default class DocumentList extends Component {
                 spinnerVisible={triggerSpinner}
                 {...{
                   orderBy,
-                  rowEdited,
                   pageLength,
                   isIncluded,
                   autofocus,
@@ -398,7 +390,7 @@ export default class DocumentList extends Component {
                     onRowEdited={this.setTableRowEdited}
                   >
                     <SelectionAttributes
-                      supportAttribute={supportAttribute}
+                      supportAttribute={table.supportAttribute}
                       setClickOutsideLock={this.setClickOutsideLock}
                       selected={selected}
                       shouldNotUpdate={inBackground}

@@ -72,7 +72,6 @@ class DocumentListContainer extends Component {
       panelsState: GEO_PANEL_STATES[0],
       filtersActive: iMap(),
       initialValuesNulled: iMap(),
-      supportAttribute: false,
     };
 
     this.fetchLayoutAndData();
@@ -130,8 +129,6 @@ class DocumentListContainer extends Component {
       nextIncludedView.windowType &&
       nextIncludedView.viewId;
     const location = document.location;
-
-    this.loadSupportAttributeFlag(nextProps);
 
     if (nextProps.filters.clearAll) {
       this.setState({ filtersActive: iMap() }, () => {
@@ -261,32 +258,6 @@ class DocumentListContainer extends Component {
   };
 
   /**
-   * @method loadSupportAttributeFlag
-   * @summary Load supportAttribute of the selected row from the table.
-   */
-  // TODO: This could be handled in redux
-  loadSupportAttributeFlag = ({ selected }) => {
-    const { table } = this.props;
-
-    if (!selected || !table.rows.length) {
-      return;
-    }
-
-    if (selected.length === 1) {
-      const selectedRow = table.rows.find((row) => row.id === selected[0]);
-
-      this.setState({
-        supportAttribute: selectedRow && selectedRow.supportAttributes,
-      });
-    } else {
-      this.setState({
-        supportAttribute: false,
-      });
-    }
-  };
-
-  // TODO: I think this should be stored in redux too
-  /**
    * @method clearStaticFilters
    * @summary ToDo: Describe the method.
    */
@@ -294,6 +265,7 @@ class DocumentListContainer extends Component {
     const { push, windowId, viewId } = this.props;
 
     deleteStaticFilter(windowId, viewId, filterId).then((response) => {
+      // TODO: I think this should be stored in redux too
       this.setState({ staticFilterCleared: true }, () =>
         push(`/window/${windowId}?viewId=${response.data.viewId}`)
       );
