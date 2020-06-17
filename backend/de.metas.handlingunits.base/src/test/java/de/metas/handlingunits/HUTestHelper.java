@@ -1346,18 +1346,6 @@ public class HUTestHelper
 		return new GenericAllocationSourceDestination(storage, referencedModel);
 	}
 
-	@Deprecated
-	public List<I_M_HU> createHUs(
-			final IHUContext huContext,
-			final I_M_HU_PI huPI,
-			final I_M_Product productToLoad,
-			final BigDecimal qtyToLoad,
-			final I_C_UOM qtyToLoadUOM)
-	{
-		final ProductId productIdToLoad = ProductId.ofRepoId(productToLoad.getM_Product_ID());
-		return createHUs(huContext, huPI, productIdToLoad, qtyToLoad, qtyToLoadUOM);
-	}
-
 	public List<I_M_HU> createHUs(
 			final IHUContext huContext,
 			final I_M_HU_PI huPI,
