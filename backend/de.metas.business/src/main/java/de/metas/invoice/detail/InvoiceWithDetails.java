@@ -24,6 +24,7 @@ package de.metas.invoice.detail;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.invoice.InvoiceId;
+import de.metas.organization.OrgId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
@@ -35,6 +36,9 @@ public class InvoiceWithDetails
 {
 	@NonNull
 	InvoiceId id;
+
+	@NonNull
+	OrgId orgId;
 
 	@Singular
 	ImmutableList<InvoiceLineWithDetails> lines;
