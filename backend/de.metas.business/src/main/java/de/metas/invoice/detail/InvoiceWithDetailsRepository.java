@@ -126,7 +126,7 @@ public class InvoiceWithDetailsRepository
 	private I_C_Invoice_Detail syncToRecord(
 			@NonNull final OrgId orgId,
 			@NonNull final InvoiceDetailItem invoiceDetailItem,
-			@NonNull final I_C_Invoice_Detail existingInvoiceDetailRecord)
+			@Nullable final I_C_Invoice_Detail existingInvoiceDetailRecord)
 	{
 		final I_C_Invoice_Detail recordToUpdate;
 		if (existingInvoiceDetailRecord == null)
