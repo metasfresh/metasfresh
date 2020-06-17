@@ -7,17 +7,7 @@ import { getZoomIntoWindow } from '../../api';
 import { convertTimeStringToMoment } from '../../utils/documentListHelper';
 import { formatDateWithZeros } from '../../utils/documentListHelper';
 import RawWidget from './RawWidget';
-
-function isNumberField(widgetType) {
-  switch (widgetType) {
-    case 'Integer':
-    case 'Amount':
-    case 'Quantity':
-      return true;
-    default:
-      return false;
-  }
-}
+import { isNumberField } from '../../utils/widgetHelper';
 
 const dateParse = ['Date', 'DateTime', 'ZonedDateTime', 'Timestamp', 'Time'];
 
