@@ -36,7 +36,7 @@ import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeDAO;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice.service.IInvoiceDAO;
-import de.metas.invoice.service.InvoiceUtil;
+import de.metas.lang.ExternalIdsUtil;
 import de.metas.invoice_gateway.spi.InvoiceExportClientFactory;
 import de.metas.invoice_gateway.spi.esr.ESRPaymentInfoProvider;
 import de.metas.invoice_gateway.spi.esr.model.ESRPaymentInfo;
@@ -187,7 +187,7 @@ public class InvoiceToExportFactory
 					.builder()
 					.lineAmount(Money.of(lineRecord.getLineNetAmt(), currentyCode.toThreeLetterCode()))
 					.productId(ProductId.ofId(lineRecord.getM_Product_ID()))
-					.externalIds(InvoiceUtil.splitExternalIds(lineRecord.getExternalIds()))
+					.externalIds(ExternalIdsUtil.splitExternalIds(lineRecord.getExternalIds()))
 					.build();
 			invoiceLines.add(invoiceLine);
 		}

@@ -1,23 +1,8 @@
-package de.metas.invoice.service;
-
-import de.metas.util.collections.CollectionUtils;
-import lombok.NonNull;
-
-import javax.annotation.Nullable;
-
-import java.util.List;
-import java.util.stream.Collectors;
-
-import com.google.common.base.Splitter;
-import com.google.common.collect.ImmutableList;
-
-import de.metas.util.Check;
-
 /*
  * #%L
- * de.metas.business
+ * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2018 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -35,7 +20,26 @@ import de.metas.util.Check;
  * #L%
  */
 
-public class InvoiceUtil
+package de.metas.lang;
+
+import de.metas.util.collections.CollectionUtils;
+import lombok.NonNull;
+
+import javax.annotation.Nullable;
+
+import java.util.List;
+import java.util.stream.Collectors;
+
+import com.google.common.base.Splitter;
+import com.google.common.collect.ImmutableList;
+
+import de.metas.util.Check;
+
+/**
+ * Helps with columns that pack >=1 external ID string(s).
+ * We currently have this case in  invoice lines, if multiple invoice candidates with different external IDs end up in the same invoice line.
+ */
+public class ExternalIdsUtil
 {
 	private static final String EXTERNAL_ID_DELIMITER = ";,;";
 
@@ -70,12 +74,19 @@ public class InvoiceUtil
 		final List<String> externalIdSegments = Splitter
 				.on("_")
 				.splitToList(externalId);
-		if(externalIdSegments.isEmpty())
+		if (externalIdSegments.isEmpty())
 		{
 			return -1;
 		}
 
 		final String recordIdStr = externalIdSegments.get(externalIdSegments.size() - 1);
-		return Integer.parseInt(recordIdStr);
+		try
+		{
+			return Integer.parseInt(recordIdStr);
+		}
+		catch (NumberFormatException nfe)
+		{
+			return -1;
+		}
 	}
 }

@@ -18,6 +18,7 @@ import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
 
+import de.metas.lang.ExternalIdsUtil;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.MimeType;
 import org.slf4j.Logger;
@@ -470,15 +471,7 @@ public class InvoiceExportClientImpl implements InvoiceExportClient
 
 		for (final InvoiceLine invoiceLine : invoice.getInvoiceLines())
 		{
-			final List<String> externalIds = invoiceLine.getExternalIds();
-			final String externalId = CollectionUtils.singleElement(externalIds);
-			final List<String> externalIdSegments = Splitter
-					.on("_")
-					.splitToList(externalId);
-			Check.assume(!externalIdSegments.isEmpty(), "Every invoiceLine of an exportable invoice needs to have an externalId; invoiceLine={}, invoice={}", invoiceLine, invoice);
-
-			final String recordIdStr = externalIdSegments.get(externalIdSegments.size() - 1);
-			final int recordId = Integer.parseInt(recordIdStr);
+			final int recordId = ExternalIdsUtil.extractRecordId(invoiceLine.getExternalIds());
 
 			final XmlService xServiceForInvoiceLine = recordId2xService.get(recordId);
 			final BigDecimal xServiceAmount = xServiceForInvoiceLine.getAmount();

@@ -1,14 +1,5 @@
 package de.metas.invoicecandidate.externallyreferenced;
 
-import static de.metas.util.lang.CoalesceUtil.coalesce;
-
-import java.math.BigDecimal;
-import java.time.ZoneId;
-
-import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
-import org.springframework.stereotype.Service;
-
 import de.metas.bpartner.composite.BPartnerComposite;
 import de.metas.bpartner.composite.BPartnerLocation;
 import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
@@ -26,6 +17,14 @@ import de.metas.tax.api.ITaxBL;
 import de.metas.tax.api.TaxId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
+import org.springframework.stereotype.Service;
+
+import java.math.BigDecimal;
+import java.time.ZoneId;
+
+import static de.metas.util.lang.CoalesceUtil.coalesce;
 
 /*
  * #%L

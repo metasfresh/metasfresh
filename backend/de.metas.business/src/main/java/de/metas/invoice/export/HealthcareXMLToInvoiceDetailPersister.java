@@ -32,7 +32,7 @@ import de.metas.invoice.detail.InvoiceLineWithDetails;
 import de.metas.invoice.detail.InvoiceWithDetails;
 import de.metas.invoice.detail.InvoiceWithDetailsRepository;
 import de.metas.invoice.service.IInvoiceDAO;
-import de.metas.invoice.service.InvoiceUtil;
+import de.metas.lang.ExternalIdsUtil;
 import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -144,12 +144,12 @@ public class HealthcareXMLToInvoiceDetailPersister
 		final List<I_C_InvoiceLine> lineRecords = Services.get(IInvoiceDAO.class).retrieveLines(invoiceId);
 		for (final I_C_InvoiceLine lineRecord : lineRecords)
 		{
-			final List<String> externalIds = InvoiceUtil.splitExternalIds(lineRecord.getExternalIds());
+			final List<String> externalIds = ExternalIdsUtil.splitExternalIds(lineRecord.getExternalIds());
 			if (externalIds.size() != 1)
 			{
 				continue;
 			}
-			final int recordId = InvoiceUtil.extractRecordId(externalIds);
+			final int recordId = ExternalIdsUtil.extractRecordId(externalIds);
 			final XmlService serviceForRecordId = recordId2xService.get(recordId);
 			if (serviceForRecordId == null)
 			{

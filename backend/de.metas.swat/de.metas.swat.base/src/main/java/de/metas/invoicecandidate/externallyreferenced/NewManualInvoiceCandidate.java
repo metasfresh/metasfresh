@@ -1,15 +1,8 @@
 package de.metas.invoicecandidate.externallyreferenced;
 
-import java.time.LocalDate;
-import java.util.List;
-
-import javax.annotation.Nullable;
-
-import de.metas.invoice.detail.InvoiceDetailItem;
-import org.adempiere.exceptions.AdempiereException;
-
 import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.document.DocTypeId;
+import de.metas.invoice.detail.InvoiceDetailItem;
 import de.metas.lang.SOTrx;
 import de.metas.order.InvoiceRule;
 import de.metas.organization.OrgId;
@@ -22,6 +15,11 @@ import de.metas.util.lang.Percent;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
+
+import javax.annotation.Nullable;
+import java.time.LocalDate;
+import java.util.List;
 
 /*
  * #%L
