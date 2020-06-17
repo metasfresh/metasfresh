@@ -671,11 +671,8 @@ public class InterfaceWrapperHelper
 
 	/**
 	 * Get context from model.
-	 *
-	 * @param model
-	 * @return
 	 */
-	public static Properties getCtx(final Object model)
+	public static Properties getCtx(@Nullable final Object model)
 	{
 		return getCtx(model, false);
 	}
@@ -717,7 +714,7 @@ public class InterfaceWrapperHelper
 	 * IMPORTANT: only call with <b>model interfaces</b> such as {@code I_AD_Table}, {@code C_Order} (legacy classes like `MProduct` and {@link IContextAware}s will also work) and the like.
 	 * Despite the parameter type being "Object" it does not work with all objects.
 	 */
-	public static String getTrxName(final Object model)
+	public static String getTrxName(@Nullable final Object model)
 	{
 		final boolean ignoreIfNotHandled = false;
 		return getTrxName(model, ignoreIfNotHandled);

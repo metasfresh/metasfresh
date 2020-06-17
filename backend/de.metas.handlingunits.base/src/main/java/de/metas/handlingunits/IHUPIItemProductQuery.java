@@ -22,8 +22,6 @@
 
 package de.metas.handlingunits;
 
-import java.time.ZonedDateTime;
-
 import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
@@ -32,12 +30,12 @@ import de.metas.product.ProductId;
 import org.compiere.model.I_M_ProductPrice;
 
 import javax.annotation.Nullable;
+import java.time.ZonedDateTime;
 
 /**
  * Query VO to be used when filtering on {@link I_M_HU_PI_Item_Product}.
  *
  * @author tsa
- *
  */
 public interface IHUPIItemProductQuery
 {
@@ -58,12 +56,10 @@ public interface IHUPIItemProductQuery
 
 	/**
 	 * Match only those {@link I_M_HU_PI_Item_Product}s which are about this partner or any bpartner.
-	 *
-	 * @param bpartnerId
 	 */
 	void setC_BPartner_ID(final int bpartnerId);
 
-	default void setBPartnerId(final BPartnerId bpartnerId)
+	default void setBPartnerId(@Nullable final BPartnerId bpartnerId)
 	{
 		setC_BPartner_ID(BPartnerId.toRepoId(bpartnerId));
 	}
@@ -73,9 +69,10 @@ public interface IHUPIItemProductQuery
 	 */
 	void setPriceListVersionId(@Nullable final PriceListVersionId priceListVersionId);
 
-	@Nullable PriceListVersionId getPriceListVersionId();
+	@Nullable
+	PriceListVersionId getPriceListVersionId();
 
-	void setDate(ZonedDateTime date);
+	void setDate(@Nullable ZonedDateTime date);
 
 	ZonedDateTime getDate();
 
@@ -99,8 +96,6 @@ public interface IHUPIItemProductQuery
 
 	/**
 	 * If true, it will retain only one configuration (i.e. {@link I_M_HU_PI_Item_Product}) for each distinct {@link I_M_HU_PI} found.
-	 *
-	 * @param oneConfigurationPerPI
 	 */
 	void setOneConfigurationPerPI(final boolean oneConfigurationPerPI);
 
@@ -110,8 +105,6 @@ public interface IHUPIItemProductQuery
 	 * In case {@link #isOneConfigurationPerPI()}, if <code>allowDifferentCapacities</code> is true, it will retain one configuration for each distinct {@link I_M_HU_PI} <b>AND</b>
 	 * {@link I_M_HU_PI_Item_Product#getQty()}.
 	 * </ul>
-	 *
-	 * @param allowDifferentCapacities
 	 */
 	void setAllowDifferentCapacities(boolean allowDifferentCapacities);
 
@@ -123,8 +116,7 @@ public interface IHUPIItemProductQuery
 	void setAllowAnyPartner(final boolean allowAnyPartner);
 
 	/**
-	 * @param packagingProductId
-	 * @task https://metasfresh.atlassian.net/browse/FRESH-386
+	 * task: https://metasfresh.atlassian.net/browse/FRESH-386
 	 */
 	// @formatter:off
 	void setM_Product_Packaging_ID(int packagingProductId);

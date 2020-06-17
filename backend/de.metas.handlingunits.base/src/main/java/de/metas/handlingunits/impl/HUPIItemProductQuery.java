@@ -1,6 +1,26 @@
-package de.metas.handlingunits.impl;
+/*
+ * #%L
+ * de.metas.handlingunits.base
+ * %%
+ * Copyright (C) 2020 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
 
-import java.time.ZonedDateTime;
+package de.metas.handlingunits.impl;
 
 import de.metas.handlingunits.IHUPIItemProductQuery;
 import de.metas.pricing.PriceListVersionId;
@@ -9,16 +29,17 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
+import javax.annotation.Nullable;
+import java.time.ZonedDateTime;
+
 /**
- *
  * NOTE: when extending this class with more values, please don't set valid default values (like huUnitType=TU) because it's confusing for API user.
  *
  * @author tsa
- *
  */
 @EqualsAndHashCode
 @ToString
-/* package */final class HUPIItemProductQuery implements IHUPIItemProductQuery
+/* package */ final class HUPIItemProductQuery implements IHUPIItemProductQuery
 {
 	private int huPIItemId = -1;
 	private int productId = -1;
@@ -197,7 +218,7 @@ import lombok.ToString;
 	}
 
 	@Override
-	public void setM_Product_Packaging_ID(int packagingProductId)
+	public void setM_Product_Packaging_ID(final int packagingProductId)
 	{
 		this.packagingProductId = packagingProductId > 0 ? packagingProductId : -1;
 	}

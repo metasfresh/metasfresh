@@ -91,7 +91,7 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 	public List<I_M_HU_PI_Item_Product> retrievePIMaterialItemProducts(final I_M_HU_PI_Item itemDef)
 	{
 		return Services.get(IQueryBL.class).createQueryBuilder(I_M_HU_PI_Item_Product.class, itemDef)
-				.filter(new EqualsQueryFilter<I_M_HU_PI_Item_Product>(I_M_HU_PI_Item_Product.COLUMNNAME_M_HU_PI_Item_ID, itemDef.getM_HU_PI_Item_ID()))
+				.filter(new EqualsQueryFilter<>(I_M_HU_PI_Item_Product.COLUMNNAME_M_HU_PI_Item_ID, itemDef.getM_HU_PI_Item_ID()))
 				.create()
 				.setOnlyActiveRecords(true)
 				.list(I_M_HU_PI_Item_Product.class);
@@ -119,6 +119,7 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 		return retrievePIMaterialItemProduct(itemDef, partner, productId, date);
 	}
 
+	@Nullable
 	@Override
 	public I_M_HU_PI_Item_Product retrievePIMaterialItemProduct(
 			@NonNull final I_M_HU_PI_Item itemDef,
@@ -186,7 +187,7 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 			final ZonedDateTime date,
 			final String huUnitType,
 			final boolean allowInfiniteCapacity,
-			final ProductId packagingProductId)
+			@Nullable final ProductId packagingProductId)
 	{
 		final IHUPIItemProductQuery queryVO = createHUPIItemProductQuery();
 
@@ -207,19 +208,15 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 
 	/**
 	 * WARNING: when using this method make sure queryVO is practically immutable (i.e. you created the instance locally)
-	 *
-	 * @param ctx
-	 * @param queryVO
-	 * @param trxName
-	 * @return
 	 */
+	@Nullable
 	@Cached(cacheName = I_M_HU_PI_Item_Product.Table_Name
 			+ "#By"
 			+ "#IHUPIItemProductQuery")
 	/* package */I_M_HU_PI_Item_Product retrieveFirst(
 			@CacheCtx final Properties ctx,
 			@CacheAllowMutable final IHUPIItemProductQuery queryVO,
-			@CacheTrx final String trxName)
+			@Nullable @CacheTrx final String trxName)
 	{
 		final IQueryBuilder<I_M_HU_PI_Item_Product> queryBuilder = createHU_PI_Item_Product_QueryBuilder(ctx, queryVO, trxName);
 		return queryBuilder
@@ -231,7 +228,7 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 	public List<I_M_HU_PI_Item_Product> retrieveHUItemProducts(
 			final Properties ctx,
 			final IHUPIItemProductQuery queryVO,
-			final String trxName)
+			@Nullable final String trxName)
 	{
 		final IQueryBuilder<I_M_HU_PI_Item_Product> queryBuilder = createHU_PI_Item_Product_QueryBuilder(ctx, queryVO, trxName);
 		return queryBuilder
@@ -255,7 +252,7 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 
 		//
 		// Only for current AD_Client_ID
-		final ICompositeQueryFilter<I_M_HU_PI_Item_Product> adClientFilter = queryBL.<I_M_HU_PI_Item_Product> createCompositeQueryFilter(I_M_HU_PI_Item_Product.class)
+		final ICompositeQueryFilter<I_M_HU_PI_Item_Product> adClientFilter = queryBL.createCompositeQueryFilter(I_M_HU_PI_Item_Product.class)
 				.setJoinOr()
 				.addOnlyContextClient(ctx);
 		filters.addFilter(adClientFilter);
@@ -263,7 +260,7 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 		//
 		// Product Filtering
 		{
-			final ICompositeQueryFilter<I_M_HU_PI_Item_Product> productFilter = queryBL.<I_M_HU_PI_Item_Product> createCompositeQueryFilter(I_M_HU_PI_Item_Product.class)
+			final ICompositeQueryFilter<I_M_HU_PI_Item_Product> productFilter = queryBL.createCompositeQueryFilter(I_M_HU_PI_Item_Product.class)
 					.setJoinOr();
 
 			if (queryVO.getM_Product_ID() > 0)
@@ -273,7 +270,7 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 
 			if (queryVO.isAllowAnyProduct())
 			{
-				final IQueryFilter<I_M_HU_PI_Item_Product> anyProductFilter = queryBL.<I_M_HU_PI_Item_Product> createCompositeQueryFilter(I_M_HU_PI_Item_Product.class)
+				final IQueryFilter<I_M_HU_PI_Item_Product> anyProductFilter = queryBL.createCompositeQueryFilter(I_M_HU_PI_Item_Product.class)
 						.setJoinAnd()
 						.addEqualsFilter(I_M_HU_PI_Item_Product.COLUMNNAME_M_Product_ID, null)
 						.addEqualsFilter(I_M_HU_PI_Item_Product.COLUMNNAME_IsAllowAnyProduct, true);
@@ -281,7 +278,7 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 
 				//
 				// If we allow Any Product, then we can include to accept AD_Client_ID=0
-				final IQueryFilter<I_M_HU_PI_Item_Product> clientSystemFilter = queryBL.<I_M_HU_PI_Item_Product> createCompositeQueryFilter(I_M_HU_PI_Item_Product.class)
+				final IQueryFilter<I_M_HU_PI_Item_Product> clientSystemFilter = queryBL.createCompositeQueryFilter(I_M_HU_PI_Item_Product.class)
 						.setJoinAnd()
 						.addEqualsFilter(I_M_HU_PI_Item_Product.COLUMNNAME_AD_Client_ID, IClientDAO.SYSTEM_CLIENT_ID)
 						.addEqualsFilter(I_M_HU_PI_Item_Product.COLUMNNAME_IsAllowAnyProduct, true);
@@ -336,11 +333,11 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 		final ZonedDateTime date = queryVO.getDate();
 		if (date != null)
 		{
-			final IQueryFilter<I_M_HU_PI_Item_Product> validDateFromFilter = queryBL.<I_M_HU_PI_Item_Product> createCompositeQueryFilter(I_M_HU_PI_Item_Product.class)
+			final IQueryFilter<I_M_HU_PI_Item_Product> validDateFromFilter = queryBL.createCompositeQueryFilter(I_M_HU_PI_Item_Product.class)
 					.addCompareFilter(I_M_HU_PI_Item_Product.COLUMNNAME_ValidFrom, Operator.LESS_OR_EQUAL, date);
 			filters.addFilter(validDateFromFilter);
 
-			final IQueryFilter<I_M_HU_PI_Item_Product> validDateToFilter = queryBL.<I_M_HU_PI_Item_Product> createCompositeQueryFilter(I_M_HU_PI_Item_Product.class)
+			final IQueryFilter<I_M_HU_PI_Item_Product> validDateToFilter = queryBL.createCompositeQueryFilter(I_M_HU_PI_Item_Product.class)
 					.setJoinOr()
 					.addCompareFilter(I_M_HU_PI_Item_Product.COLUMNNAME_ValidTo, Operator.GREATER_OR_EQUAL, date)
 					// a PLV must have a ValidFrom, but has no ValidTo.
@@ -353,7 +350,7 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 		// M_HU_PI_Item Filtering
 		if (queryVO.getM_HU_PI_Item_ID() > 0)
 		{
-			filters.addFilter(new EqualsQueryFilter<I_M_HU_PI_Item_Product>(I_M_HU_PI_Item_Product.COLUMNNAME_M_HU_PI_Item_ID, queryVO.getM_HU_PI_Item_ID()));
+			filters.addFilter(new EqualsQueryFilter<>(I_M_HU_PI_Item_Product.COLUMNNAME_M_HU_PI_Item_ID, queryVO.getM_HU_PI_Item_ID()));
 		}
 
 		//
@@ -362,7 +359,7 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 		{
 			if (queryVO.getC_BPartner_ID() > 0)
 			{
-				final ICompositeQueryFilter<I_M_HU_PI_Item_Product> bpartnerFilter = queryBL.<I_M_HU_PI_Item_Product> createCompositeQueryFilter(I_M_HU_PI_Item_Product.class)
+				final ICompositeQueryFilter<I_M_HU_PI_Item_Product> bpartnerFilter = queryBL.createCompositeQueryFilter(I_M_HU_PI_Item_Product.class)
 						// see javadoc for setJoinOr
 						.setJoinOr()
 						.addEqualsFilter(I_M_HU_PI_Item_Product.COLUMNNAME_C_BPartner_ID, queryVO.getC_BPartner_ID())
@@ -373,7 +370,7 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 			else
 			{
 				// BPartner is not set: in this case we shall get only those which does not have a BP
-				filters.addFilter(new EqualsQueryFilter<I_M_HU_PI_Item_Product>(I_M_HU_PI_Item_Product.COLUMNNAME_C_BPartner_ID, null));
+				filters.addFilter(new EqualsQueryFilter<>(I_M_HU_PI_Item_Product.COLUMNNAME_C_BPartner_ID, null));
 			}
 		}
 
@@ -494,7 +491,7 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 		return orderByBuilderToUse;
 	}
 
-	private final IQueryBuilder<I_M_HU_PI_Item_Product> createHU_PI_Item_Product_QueryBuilder(
+	private IQueryBuilder<I_M_HU_PI_Item_Product> createHU_PI_Item_Product_QueryBuilder(
 			@NonNull final Properties ctx,
 			@NonNull final IHUPIItemProductQuery queryVO,
 			@Nullable final String trxName)
@@ -640,9 +637,6 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 
 	/**
 	 * Clear entries if the PI is on the same product, uom, qty & infinite capacity flag
-	 *
-	 * @param originalHUPIItemProduct
-	 * @param availableHUPIItemProducts
 	 */
 	private void removeDuplicatePIResultsWithoutPartner(final I_M_HU_PI_Item_Product originalHUPIItemProduct, final List<I_M_HU_PI_Item_Product> availableHUPIItemProducts)
 	{
@@ -664,8 +658,6 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 	}
 
 	/**
-	 * @param piip1
-	 * @param piip2
 	 * @return true if both {@link I_M_HU_PI_Item_Product}s have infinite capacity or if they have matching quantities
 	 */
 	private boolean isSameQty(final I_M_HU_PI_Item_Product piip1, final I_M_HU_PI_Item_Product piip2)
