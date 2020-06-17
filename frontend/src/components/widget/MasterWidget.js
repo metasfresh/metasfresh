@@ -9,6 +9,7 @@ import { formatDateWithZeros } from '../../utils/documentListHelper';
 import RawWidget from './RawWidget';
 import { isNumberField } from '../../utils/widgetHelper';
 import { DATE_FIELD_TYPES, TIME_FIELD_TYPES } from '../../constants/Constants';
+import _ from 'lodash';
 
 const dateParse = [...DATE_FIELD_TYPES, ...TIME_FIELD_TYPES];
 
@@ -26,43 +27,48 @@ class MasterWidget extends Component {
       updated: false,
       edited: false,
       data: data || (clearValue ? '' : widgetData[0].value),
+      widgetData: props.widgetData, // this is used for comparison in the getDerivedStateFromProps lifecycle
     };
   }
 
-  UNSAFE_componentWillReceiveProps(nextProps) {
-    const { widgetData, widgetType } = this.props;
-    const { edited, data } = this.state;
+  /**
+   * @method getDerivedStateFromProps
+   * @summary is invoked right before calling the render method, both on the initial mount and on subsequent updates
+   *          updates the data and the widgetData from the MasterWidget state, also the updated flag
+   *          Used this in order to ditch the deprecated UNSAFE_componentWillReceiveProps
+   */
+  static getDerivedStateFromProps(nextProps, prevState) {
+    const { widgetType } = nextProps;
+    const { edited, widgetData } = prevState;
     let next = nextProps.widgetData[0].value;
+    let bringsModifs = widgetData[0] && !_.isEqual(widgetData[0].value, next);
 
-    if (
-      !edited &&
-      JSON.stringify(next) !== data &&
-      JSON.stringify(widgetData[0].value) !== JSON.stringify(next)
-    ) {
-      if (next && dateParse.includes(widgetType) && !Moment.isMoment(next)) {
-        next = convertTimeStringToMoment(next);
-        next = Moment(next);
-      }
-      this.setState(
-        {
-          updated: true,
-          data: next,
-        },
-        () => {
-          this.timeout = setTimeout(() => {
-            this.setState({
-              updated: false,
-            });
-          }, 1000);
-        }
-      );
+    let isUnconvertedDate =
+      next && dateParse.includes(widgetType) && !Moment.isMoment(next);
+
+    if (!edited && bringsModifs) {
+      next = isUnconvertedDate ? Moment(convertTimeStringToMoment(next)) : next;
+
+      return { updated: true, data: next, widgetData: nextProps.widgetData };
     } else if (edited) {
-      this.setState({
-        edited: false,
-      });
+      return { edited: false };
+    }
+    return null;
+  }
+
+  /**
+   *  Unset the updated flag in the state of the component such that we won't have the widget highlighted after update
+   */
+  componentDidUpdate() {
+    const { updated } = this.state;
+    if (updated) {
+      this.timeout = setTimeout(() => this.setState({ updated: false }), 1000);
     }
   }
 
+  /**
+   * Clear the timeout used on previous lifecycle method
+   */
   componentWillUnmount() {
     clearTimeout(this.timeout);
   }
