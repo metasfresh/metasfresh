@@ -18,7 +18,6 @@ import {
   DELETE_TOP_ACTIONS,
   DISABLE_SHORTCUT,
   DISABLE_OUTSIDE_CLICK,
-  HIDE_SPINNER,
   INIT_WINDOW,
   INIT_DATA_SUCCESS,
   INIT_LAYOUT_SUCCESS,
@@ -35,7 +34,6 @@ import {
   PATCH_SUCCESS,
   SET_RAW_MODAL_DESCRIPTION,
   SET_RAW_MODAL_TITLE,
-  SHOW_SPINNER,
   SORT_TAB,
   TOGGLE_OVERLAY,
   UNSELECT_TAB,
@@ -114,20 +112,6 @@ export function deleteQuickActions(windowId, id) {
 export function deleteTopActions() {
   return {
     type: DELETE_TOP_ACTIONS,
-  };
-}
-
-export function showSpinner(id) {
-  return {
-    type: SHOW_SPINNER,
-    spinnerId: id,
-  };
-}
-
-export function hideSpinner(id) {
-  return {
-    type: HIDE_SPINNER,
-    spinnerId: id,
   };
 }
 

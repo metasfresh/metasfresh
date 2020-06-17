@@ -45,8 +45,6 @@ import {
   UPDATE_MASTER_DATA,
   UPDATE_MODAL,
   UPDATE_RAW_MODAL,
-  SHOW_SPINNER,
-  HIDE_SPINNER,
 } from '../constants/ActionTypes';
 
 export const initialState = {
@@ -127,7 +125,6 @@ export const initialState = {
     success: true,
   },
   filter: {},
-  spinner: null,
 };
 
 export const NO_SELECTION = [];
@@ -568,22 +565,6 @@ export default function windowHandler(state = initialState, action) {
         indicator: action.state,
       };
 
-    case SHOW_SPINNER: {
-      const newState = {
-        ...state,
-      };
-
-      if (!newState.spinner) {
-        newState.spinner = action.spinnerId;
-      }
-
-      return newState;
-    }
-    case HIDE_SPINNER:
-      return {
-        ...state,
-        spinner: null,
-      };
     // QUICK ACTIONS
     case FETCHED_QUICK_ACTIONS:
       return {
