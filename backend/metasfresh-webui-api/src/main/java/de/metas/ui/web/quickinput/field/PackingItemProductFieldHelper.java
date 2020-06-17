@@ -88,38 +88,8 @@ public class PackingItemProductFieldHelper
 		queryVO.setAllowAnyProduct(false);
 		queryVO.setAllowAnyPartner(false);
 		queryVO.setPriceListVersionId(PriceListVersionId.ofRepoId(priceListVersion.getM_PriceList_Version_ID()));
-		// piItemProductDAO.createHU_PI_Item_Product_QueryBuilder(Env.getCtx(), queryVO, ITrx.TRXNAME_ThreadInherited).create();
 		final List<I_M_HU_PI_Item_Product> itemProducts = piItemProductDAO.retrieveHUItemProducts(Env.getCtx(), queryVO, ITrx.TRXNAME_ThreadInherited);
 		return itemProducts.stream().findFirst();
-
-		// final IQueryBL queryBL = Services.get(IQueryBL.class);
-		//
-		// final List<BPartnerId> allowedBpartnerIds = Arrays.asList(defaultPackingItemCriteria.getBPartnerLocationId().getBpartnerId(), null);
-		//
-		// final IQuery<I_M_HU_PI_Item_Product> queryPI = queryBL.createQueryBuilder(I_M_HU_PI_Item_Product.class)
-		// 		.addOnlyActiveRecordsFilter()
-		// 		.addInArrayFilter(I_M_HU_PI_Item_Product.COLUMNNAME_C_BPartner_ID, allowedBpartnerIds)
-		// 		.create();
-		//
-		// final ICompositeQueryFilter<org.compiere.model.I_M_ProductPrice> queryProductPrice = queryBL.createCompositeQueryFilter(org.compiere.model.I_M_ProductPrice.class)
-		// 		.addInSubQueryFilter()
-		// 		.matchingColumnNames(I_M_ProductPrice.COLUMNNAME_M_HU_PI_Item_Product_ID, I_M_HU_PI_Item_Product.COLUMNNAME_M_HU_PI_Item_Product_ID)
-		// 		.subQuery(queryPI)
-		// 		.end();
-		//
-		//
-		// final ProductPriceQueryMatcher bpartnerMatcher = ProductPriceQueryMatcher.of(I_M_HU_PI_Item_Product.Table_Name + "." + I_M_HU_PI_Item_Product.COLUMNNAME_C_BPartner_ID, queryProductPrice);
-		//
-		// return ProductPrices
-		// 		.newQuery(priceListVersion)
-		// 		.setProductId(defaultPackingItemCriteria.getProductId())
-		// 		.matching(bpartnerMatcher)
-		// 		.list(I_M_ProductPrice.class)
-		// 		.stream()
-		// 		.map(productPrice -> HUPIItemProductId.ofRepoIdOrNone(productPrice.getM_HU_PI_Item_Product_ID()))
-		// 		.filter(id -> HUPIItemProductId.isRegular(id))
-		// 		.findFirst()
-		// 		.map(huPIItemProductsRepo::getById);
 	}
 
 	@Nullable
