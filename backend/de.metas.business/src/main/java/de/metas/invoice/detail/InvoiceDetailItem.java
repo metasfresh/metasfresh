@@ -1,8 +1,8 @@
 /*
  * #%L
- * de.metas.business.rest-api
+ * de.metas.business
  * %%
- * Copyright (C) 2019 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,19 +20,16 @@
  * #L%
  */
 
-package de.metas.rest_api.invoicecandidates.request;
+package de.metas.invoice.detail;
 
-import javax.annotation.Nullable;
-
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
 import lombok.Value;
+import org.apache.commons.lang3.StringUtils;
 
 import java.time.LocalDate;
 
 @Value
-public class JSONInvoiceDetailItem
+public class InvoiceDetailItem
 {
 	Integer seqNo;
 
@@ -42,17 +39,24 @@ public class JSONInvoiceDetailItem
 
 	LocalDate date;
 
-	@JsonCreator
 	@Builder
-	public JSONInvoiceDetailItem(
-			@JsonProperty("seqNo") @Nullable final Integer seqNo,
-			@JsonProperty("label") @Nullable final String label,
-			@JsonProperty("description") @Nullable final String description,
-			@JsonProperty("date") @Nullable final LocalDate date)
+	public InvoiceDetailItem(
+			final Integer seqNo,
+			final String label,
+			final String description,
+			final LocalDate date)
 	{
 		this.seqNo = seqNo;
 		this.label = label;
 		this.description = description;
 		this.date = date;
+	}
+
+	/**
+	 * @return true if both label and description are blank, false otherwise.
+	 */
+	public boolean isEmpty()
+	{
+		return StringUtils.isBlank(label) && StringUtils.isBlank(description);
 	}
 }

@@ -1,8 +1,8 @@
 /*
  * #%L
- * de.metas.adempiere.adempiere.base
+ * de.metas.business
  * %%
- * Copyright (C) 2019 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,21 +20,29 @@
  * #L%
  */
 
-package de.metas.attachments.listener;
+package de.metas.invoice.detail;
 
+import com.google.common.collect.ImmutableList;
+import de.metas.invoice.InvoiceId;
+import de.metas.organization.OrgId;
+import lombok.Builder;
 import lombok.NonNull;
+import lombok.Singular;
 import lombok.Value;
-import org.adempiere.util.lang.impl.TableRecordReference;
 
 @Value
-public class AttachmentListenerActionResult
+@Builder
+public class InvoiceWithDetails
 {
 	@NonNull
-	AttachmentListener listener;
+	InvoiceId id;
 
 	@NonNull
-	AttachmentListenerConstants.ListenerWorkStatus status;
+	OrgId orgId;
 
-	@NonNull
-	TableRecordReference appliedToRecord;
+	@Singular
+	ImmutableList<InvoiceLineWithDetails> lines;
+
+	@Singular
+	ImmutableList<InvoiceDetailItem> detailItems;
 }

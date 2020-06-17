@@ -15,7 +15,7 @@ import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.externallyreferenced.ExternallyReferencedCandidate;
 import de.metas.invoicecandidate.externallyreferenced.ExternallyReferencedCandidateRepository;
 import de.metas.invoicecandidate.externallyreferenced.InvoiceCandidateLookupKey;
-import de.metas.invoicecandidate.externallyreferenced.InvoiceDetailItem;
+import de.metas.invoice.detail.InvoiceDetailItem;
 import de.metas.invoicecandidate.externallyreferenced.ManualCandidateService;
 import de.metas.invoicecandidate.externallyreferenced.NewManualInvoiceCandidate;
 import de.metas.invoicecandidate.externallyreferenced.NewManualInvoiceCandidate.NewManualInvoiceCandidateBuilder;
@@ -266,7 +266,11 @@ public class CreateInvoiceCandidatesService
 		{
 			final List<InvoiceDetailItem> invoiceDetailItems = item.getInvoiceDetailItems()
 					.stream()
-					.map(jsonDetail -> new InvoiceDetailItem(jsonDetail.getSeqNo(), jsonDetail.getLabel(), jsonDetail.getDescription()))
+					.map(jsonDetail -> new InvoiceDetailItem(
+							jsonDetail.getSeqNo(),
+							jsonDetail.getLabel(),
+							jsonDetail.getDescription(),
+							jsonDetail.getDate()))
 					.collect(Collectors.toList());
 
 			candidate.invoiceDetailItems(invoiceDetailItems);
