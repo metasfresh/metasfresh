@@ -8,8 +8,9 @@ import { convertTimeStringToMoment } from '../../utils/documentListHelper';
 import { formatDateWithZeros } from '../../utils/documentListHelper';
 import RawWidget from './RawWidget';
 import { isNumberField } from '../../utils/widgetHelper';
+import { DATE_FIELD_TYPES, TIME_FIELD_TYPES } from '../../constants/Constants';
 
-const dateParse = ['Date', 'DateTime', 'ZonedDateTime', 'Timestamp', 'Time'];
+const dateParse = [...DATE_FIELD_TYPES, ...TIME_FIELD_TYPES];
 
 /**
  * @file Class based component.
