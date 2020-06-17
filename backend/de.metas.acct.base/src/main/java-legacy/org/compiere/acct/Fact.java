@@ -29,33 +29,23 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.acct.FactTrxLines.FactTrxLinesType;
 import org.compiere.model.I_C_ElementValue;
 import org.compiere.model.MAccount;
-import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableList;
 
-import de.metas.acct.api.AccountId;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaElement;
 import de.metas.acct.api.AcctSchemaElementType;
 import de.metas.acct.api.AcctSchemaElementsMap;
 import de.metas.acct.api.AcctSchemaGeneralLedger;
 import de.metas.acct.api.AcctSchemaId;
-import de.metas.acct.api.IAccountDAO;
 import de.metas.acct.api.PostingType;
-import de.metas.bpartner.BPartnerId;
-import de.metas.currency.CurrencyConversionContext;
 import de.metas.i18n.BooleanWithReason;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
-import de.metas.organization.OrgId;
-import de.metas.product.acct.api.ActivityId;
-import de.metas.quantity.Quantity;
 import de.metas.util.Check;
-import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
-import lombok.ToString;
 
 /**
  * Accounting Fact
@@ -85,12 +75,12 @@ public final class Fact
 	}
 
 	// services
-	private static final transient Logger log = LogManager.getLogger(Fact.class);
+	static final transient Logger log = LogManager.getLogger(Fact.class);
 
 	/**
 	 * Document
 	 */
-	private final Doc<?> m_doc;
+	final Doc<?> m_doc;
 	/**
 	 * Accounting Schema
 	 */
@@ -204,7 +194,7 @@ public final class Fact
 	 *
 	 * @param line fact line
 	 */
-	private void add(final FactLine line)
+	void add(final FactLine line)
 	{
 		Check.assumeNotNull(line, "line not null");
 		m_lines.add(line);
@@ -777,12 +767,6 @@ public final class Fact
 		return temp;
 	}    // getLines
 
-	/**
-	 * Save Fact
-	 *
-	 * @param trxName transaction
-	 * @return true if all lines were saved
-	 */
 	public void save()
 	{
 		factTrxLinesStrategy
@@ -941,473 +925,4 @@ public final class Fact
 			return sb.toString();
 		} // toString
 	}    // Balance
-
-	@ToString(exclude = "fact")
-	public static final class FactLineBuilder
-	{
-		private boolean built = false;
-
-		private final Fact fact;
-		private DocLine<?> docLine = null;
-		private Integer subLineId = null;
-
-		private MAccount account = null;
-
-		private CurrencyId currencyId;
-		private CurrencyConversionContext currencyConversionCtx;
-		private BigDecimal amtSourceDr;
-		private BigDecimal amtSourceCr;
-
-		private BigDecimal qty = null;
-		private int uomId;
-
-		private boolean alsoAddZeroLine = false;
-
-		// Other dimensions
-		private OrgId orgId;
-		private BPartnerId bpartnerId;
-		private Integer C_Tax_ID;
-		private Integer locatorId;
-		private ActivityId activityId;
-
-		private FactLineBuilder(final Fact fact)
-		{
-			this.fact = fact;
-		}
-
-		/**
-		 * Creates the {@link FactLine} and adds it to {@link Fact}.
-		 *
-		 * @return created {@link FactLine}
-		 */
-		public FactLine buildAndAdd()
-		{
-			final FactLine fl = build();
-
-			if (fl != null)
-			{
-				fact.add(fl);
-			}
-
-			return fl;
-		}
-
-		private FactLine build()
-		{
-			markAsBuilt();
-
-			// Data Check
-			final MAccount account = getAccount();
-			if (account == null)
-			{
-				throw new AdempiereException("No account for " + this);
-			}
-
-			//
-			final Doc<?> doc = getDoc();
-			final DocLine<?> docLine = getDocLine();
-			final FactLine line = new FactLine(
-					doc.get_Table_ID(), // AD_Table_ID
-					doc.get_ID(), // Record_ID
-					docLine == null ? 0 : docLine.get_ID()); // Line_ID
-
-			// Set Document, Line, Sub Line
-			line.setDocumentInfo(doc, docLine);
-			final Integer subLine_ID = getSubLine_ID();
-			if (subLine_ID != null)
-			{
-				line.setSubLine_ID(subLine_ID);
-			}
-
-			// Account
-			line.setPostingType(getPostingType());
-			line.setAccount(getAcctSchema(), account);
-
-			//
-			// Qty
-			final BigDecimal qty = getQty();
-			if (qty != null)
-			{
-				line.setQty(qty);
-			}
-			final int uomId = getUomId();
-			if (uomId > 0)
-			{
-				line.setC_UOM_ID(uomId);
-			}
-
-			//
-			// Amounts - one needs to not zero
-			final CurrencyId currencyId = getCurrencyId();
-			final BigDecimal amtSourceDr = getAmtSourceDr();
-			final BigDecimal amtSourceCr = getAmtSourceCr();
-			line.setAmtSource(currencyId, amtSourceDr, amtSourceCr);
-			if (line.isZeroAmtSource())
-			{
-				if (line.getQty().signum() == 0)
-				{
-					log.debug("Both amounts & qty = 0/Null - {}", this);
-					// https://github.com/metasfresh/metasfresh/issues/4147 we might need the zero-line later
-					if (!alsoAddZeroLine)
-					{
-						return null;
-					}
-				}
-
-				if (log.isDebugEnabled())
-				{
-					log.debug("Both amounts = 0/Null, Qty=" + (docLine == null ? "<NULL>" : docLine.getQty()) + " - docLine=" + (docLine == null ? "<NULL>" : docLine) + " - " + toString());
-				}
-			}
-
-			//
-			// Currency convert
-			final CurrencyConversionContext currencyConversionCtx = getCurrencyConversionCtx();
-			if (currencyConversionCtx != null)
-			{
-				line.setCurrencyConversionCtx(currencyConversionCtx);
-				line.addDescription(currencyConversionCtx.getSummary());
-			}
-
-			//
-			// Optionally overwrite Acct Amount
-			if (docLine != null && (docLine.getAmtAcctDr() != null || docLine.getAmtAcctCr() != null))
-			{
-				line.setAmtAcct(docLine.getAmtAcctDr(), docLine.getAmtAcctCr());
-			}
-			else
-			{
-				line.convert();
-			}
-
-			//
-			// Set the other dimensions
-			final Integer locatorId = getLocatorId();
-			if (locatorId != null)
-			{
-				// NOTE: set locator before org because when locator is set, the org is reset.
-				line.setM_Locator_ID(locatorId);
-			}
-			//
-			final OrgId orgId = getOrgId();
-			if (orgId != null)
-			{
-				line.setAD_Org_ID(orgId.getRepoId());
-			}
-			//
-			final BPartnerId bpartnerId = getBpartnerId();
-			if (bpartnerId != null)
-			{
-				line.setC_BPartner_ID(bpartnerId.getRepoId());
-			}
-			//
-			final Integer taxId = getC_Tax_ID();
-			if (taxId != null)
-			{
-				line.setC_Tax_ID(taxId);
-			}
-			//
-			final ActivityId activityId = getActivityId();
-			if (activityId != null)
-			{
-				line.setC_Activity_ID(activityId.getRepoId());
-			}
-
-			//
-			log.debug("Built: {}", line);
-			return line;
-		}
-
-		private void assertNotBuild()
-		{
-			Check.assume(!built, "not already built");
-		}
-
-		private void markAsBuilt()
-		{
-			assertNotBuild();
-			built = true;
-		}
-
-		public FactLineBuilder setAccount(@NonNull final AccountId accountId)
-		{
-			final IAccountDAO accountsRepo = Services.get(IAccountDAO.class);
-			return setAccount(accountsRepo.getById(Env.getCtx(), accountId));
-		}
-
-		public FactLineBuilder setAccount(final MAccount account)
-		{
-			assertNotBuild();
-			this.account = account;
-			return this;
-		}
-
-		private MAccount getAccount()
-		{
-			// TODO: check if we can enforce it all the time
-			// Check.assumeNotNull(account, "account not null for {}", this);
-			return account;
-		}
-
-		private Doc<?> getDoc()
-		{
-			return fact.m_doc;
-		}
-
-		public FactLineBuilder setDocLine(DocLine<?> docLine)
-		{
-			assertNotBuild();
-			this.docLine = docLine;
-			return this;
-		}
-
-		private DocLine<?> getDocLine()
-		{
-			return docLine;
-		}
-
-		public FactLineBuilder setSubLine_ID(final int subLineId)
-		{
-			this.subLineId = subLineId;
-			return this;
-		}
-
-		private Integer getSubLine_ID()
-		{
-			return subLineId;
-		}
-
-		private AcctSchema getAcctSchema()
-		{
-			return fact.getAcctSchema();
-		}
-
-		private PostingType getPostingType()
-		{
-			return fact.getPostingType();
-		}
-
-		public FactLineBuilder setQty(BigDecimal qty)
-		{
-			assertNotBuild();
-			this.qty = qty;
-			return this;
-		}
-
-		public FactLineBuilder setQty(final Quantity qty)
-		{
-			assertNotBuild();
-			this.qty = qty.toBigDecimal();
-			this.uomId = qty.getUOMId();
-			return this;
-		}
-
-		private BigDecimal getQty()
-		{
-			return qty;
-		}
-
-		private int getUomId()
-		{
-			return uomId;
-		}
-
-		public FactLineBuilder setAmtSource(final CurrencyId currencyId, final BigDecimal amtSourceDr, final BigDecimal amtSourceCr)
-		{
-			setCurrencyId(currencyId);
-			setAmtSource(amtSourceDr, amtSourceCr);
-			return this;
-		}
-
-		public FactLineBuilder setAmtSource(final BigDecimal amtSourceDr, final BigDecimal amtSourceCr)
-		{
-			assertNotBuild();
-			this.amtSourceDr = amtSourceDr;
-			this.amtSourceCr = amtSourceCr;
-			return this;
-		}
-
-		/**
-		 * Usually the {@link #buildAndAdd()} method ignores fact lines that have zero/null source amount and zero/null qty.
-		 * Invoke this builder method still have the builder add them.
-		 */
-		public FactLineBuilder alsoAddZeroLine()
-		{
-			alsoAddZeroLine = true;
-			return this;
-		}
-
-		public FactLineBuilder setCurrencyId(final CurrencyId currencyId)
-		{
-			assertNotBuild();
-			this.currencyId = currencyId;
-			return this;
-		}
-
-		private CurrencyId getCurrencyId()
-		{
-			return currencyId;
-		}
-
-		public FactLineBuilder setCurrencyConversionCtx(CurrencyConversionContext currencyConversionCtx)
-		{
-			assertNotBuild();
-			this.currencyConversionCtx = currencyConversionCtx;
-			return this;
-		}
-
-		private CurrencyConversionContext getCurrencyConversionCtx()
-		{
-			return currencyConversionCtx;
-		}
-
-		private BigDecimal getAmtSourceDr()
-		{
-			return amtSourceDr;
-		}
-
-		private BigDecimal getAmtSourceCr()
-		{
-			return amtSourceCr;
-		}
-
-		public FactLineBuilder setAccountDrOrCrAndAmount(final MAccount accountDr, final MAccount accountCr, final BigDecimal amt)
-		{
-			if (amt.signum() < 0)
-			{
-				setAccount(accountCr);
-				setAmtSource(null, amt.abs());
-			}
-			else
-			{
-				setAccount(accountDr);
-				setAmtSource(amt, null);
-			}
-			return this;
-		}   // createLine
-
-		/**
-		 * Sets the AmtSourceDr (if amtSource is positive) or AmtSourceCr (if amtSource is negative).
-		 *
-		 * @param amtSource
-		 */
-		public FactLineBuilder setAmtSourceDrOrCr(final BigDecimal amtSource)
-		{
-			if (amtSource.signum() < 0)
-			{
-				setAmtSource(null, amtSource.abs());
-			}
-			else
-			{
-				setAmtSource(amtSource, null);
-			}
-			return this;
-		}
-
-		@Deprecated
-		public FactLineBuilder setAD_Org_ID(Integer adOrgId)
-		{
-			final OrgId orgId = adOrgId != null ? OrgId.ofRepoIdOrNull(adOrgId) : null;
-			return orgId(orgId);
-		}
-
-		public FactLineBuilder orgId(final OrgId orgId)
-		{
-			assertNotBuild();
-			this.orgId = orgId;
-			return this;
-		}
-
-		@Deprecated
-		public FactLineBuilder setAD_Org_ID_IfValid(final int adOrgId)
-		{
-			return orgIdIfValid(OrgId.ofRepoIdOrNull(adOrgId));
-		}
-
-		public FactLineBuilder orgIdIfValid(final OrgId orgId)
-		{
-			if (orgId != null && orgId.isRegular())
-			{
-				orgId(orgId);
-			}
-			return this;
-		}
-
-		private OrgId getOrgId()
-		{
-			return orgId;
-		}
-
-		@Deprecated
-		public FactLineBuilder setC_BPartner_ID(Integer bpartnerRepoId)
-		{
-			final BPartnerId bpartnerId = bpartnerRepoId != null ? BPartnerId.ofRepoIdOrNull(bpartnerRepoId) : null;
-			return bpartnerId(bpartnerId);
-		}
-
-		public FactLineBuilder bpartnerId(final BPartnerId bpartnerId)
-		{
-			assertNotBuild();
-			this.bpartnerId = bpartnerId;
-			return this;
-		}
-
-		public FactLineBuilder bpartnerIdIfNotNull(final BPartnerId bpartnerId)
-		{
-			if (bpartnerId != null)
-			{
-				return bpartnerId(bpartnerId);
-			}
-			else
-			{
-				return this;
-			}
-		}
-
-		public FactLineBuilder setC_BPartner_ID_IfValid(final int bpartnerRepoId)
-		{
-			return bpartnerIdIfNotNull(BPartnerId.ofRepoIdOrNull(bpartnerRepoId));
-		}
-
-		private BPartnerId getBpartnerId()
-		{
-			return bpartnerId;
-		}
-
-		public FactLineBuilder setC_Tax_ID(Integer taxId)
-		{
-			assertNotBuild();
-			this.C_Tax_ID = taxId;
-			return this;
-		}
-
-		private Integer getC_Tax_ID()
-		{
-			return C_Tax_ID;
-		}
-
-		public FactLineBuilder locatorId(final int locatorId)
-		{
-			assertNotBuild();
-			this.locatorId = locatorId;
-			return this;
-		}
-
-		private Integer getLocatorId()
-		{
-			return locatorId;
-		}
-
-		public FactLineBuilder activityId(final ActivityId activityId)
-		{
-			assertNotBuild();
-			this.activityId = activityId;
-			return this;
-		}
-
-		private ActivityId getActivityId()
-		{
-			return activityId;
-		}
-	}
 }   // Fact

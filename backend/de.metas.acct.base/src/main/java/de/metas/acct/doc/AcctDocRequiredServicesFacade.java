@@ -9,7 +9,6 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.model.I_C_BP_BankAccount;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.MAccount;
@@ -29,7 +28,10 @@ import de.metas.acct.api.IProductAcctDAO;
 import de.metas.acct.api.ProductAcctType;
 import de.metas.acct.tax.ITaxAcctBL;
 import de.metas.acct.tax.TaxAcctType;
-import de.metas.banking.api.IBPBankAccountDAO;
+import de.metas.banking.BankAccount;
+import de.metas.banking.BankAccountAcct;
+import de.metas.banking.BankAccountId;
+import de.metas.banking.api.BankAccountService;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
 import de.metas.cache.model.IModelCacheInvalidationService;
 import de.metas.cache.model.ModelCacheInvalidationTiming;
@@ -99,7 +101,7 @@ public class AcctDocRequiredServicesFacade
 
 	private final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
 	private final ICurrencyBL currencyConversionBL = Services.get(ICurrencyBL.class);
-	private final IBPBankAccountDAO bpBankAccountDAO = Services.get(IBPBankAccountDAO.class);
+	private final BankAccountService bankAccountService;
 
 	//
 	// Needed for DocLine:
@@ -110,8 +112,11 @@ public class AcctDocRequiredServicesFacade
 
 	private final ICostingService costingService;
 
-	public AcctDocRequiredServicesFacade(@NonNull final ICostingService costingService)
+	public AcctDocRequiredServicesFacade(
+			@NonNull final BankAccountService bankAccountService,
+			@NonNull final ICostingService costingService)
 	{
+		this.bankAccountService = bankAccountService;
 		this.costingService = costingService;
 	}
 
@@ -185,9 +190,14 @@ public class AcctDocRequiredServicesFacade
 		return currencyConversionBL.getCurrencyRate(conversionCtx, currencyFromId, currencyToId);
 	}
 
-	public I_C_BP_BankAccount getBPBankAccountById(final int bpBankAccountId)
+	public BankAccount getBankAccountById(final BankAccountId bpBankAccountId)
 	{
-		return bpBankAccountDAO.getById(bpBankAccountId);
+		return bankAccountService.getById(bpBankAccountId);
+	}
+
+	public BankAccountAcct getBankAccountAcct(final BankAccountId bankAccountId, final AcctSchemaId acctSchemaId)
+	{
+		return bankAccountService.getBankAccountAcct(bankAccountId, acctSchemaId);
 	}
 
 	public void postImmediateNoFail(

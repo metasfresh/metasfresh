@@ -33,7 +33,7 @@ import org.compiere.model.I_C_Payment;
 import org.compiere.model.X_C_DocType;
 import org.compiere.util.TimeUtil;
 
-import de.metas.banking.api.BankAccountId;
+import de.metas.banking.BankAccountId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;

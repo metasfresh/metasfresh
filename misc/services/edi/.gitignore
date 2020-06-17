@@ -35,4 +35,6 @@ de.metas.endcustomer.mf15/metasfresh.properties
 #Ignore IDEA files
 *.iml
 **/.idea
+
+#ignore scrects that we might need for local dev and testing
 secrect_dont_commit

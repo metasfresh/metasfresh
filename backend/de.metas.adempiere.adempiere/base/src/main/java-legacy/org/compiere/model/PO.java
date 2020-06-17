@@ -108,6 +108,7 @@ import de.metas.process.PInstanceId;
 import de.metas.security.TableAccessLevel;
 import de.metas.user.UserId;
 import de.metas.util.Check;
+import de.metas.util.NumberUtils;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
@@ -319,8 +320,8 @@ public abstract class PO
 
 	/**
 	 * Flag to indicate if this object is stale and needs to be reloaded before any get/set operation
-	 *
-	 * @see http://dewiki908/mediawiki/index.php/01537:_Speed_optimizations_for_new_record_saving_%282011052610000028%29
+	 * <p/>
+	 * Also see http://dewiki908/mediawiki/index.php/01537:_Speed_optimizations_for_new_record_saving_%282011052610000028%29
 	 */
 	private boolean m_stale = false;
 
@@ -2616,10 +2617,6 @@ public abstract class PO
 
 	/**
 	 * Get Translation of column
-	 *
-	 * @param ctx context
-	 * @param columnName
-	 * @return translation
 	 */
 	public final String get_Translation(final String columnName)
 	{
@@ -5036,6 +5033,14 @@ public abstract class PO
 	{
 		final Object oo = get_Value(index);
 		return StringUtils.toBoolean(oo);
+	}
+	
+	public final BigDecimal get_ValueAsBigDecimal(final String columnName)
+	{
+		final Object valueObj = get_Value(columnName);
+		return valueObj != null
+				? NumberUtils.asBigDecimal(valueObj)
+				: null;
 	}
 
 	// metas: begin
