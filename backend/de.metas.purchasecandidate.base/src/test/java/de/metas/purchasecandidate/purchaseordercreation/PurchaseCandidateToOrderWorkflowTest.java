@@ -16,8 +16,9 @@ import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_UOM;
 import org.compiere.util.Env;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 import com.google.common.collect.ImmutableList;
 
@@ -31,7 +32,7 @@ import de.metas.purchasecandidate.PurchaseCandidate.PurchaseCandidateBuilder;
 import de.metas.purchasecandidate.PurchaseCandidateId;
 import de.metas.purchasecandidate.PurchaseCandidateRepository;
 import de.metas.purchasecandidate.PurchaseCandidateTestTool;
-import de.metas.purchasecandidate.purchaseordercreation.localorder.PurchaseOrderFromItemsAggregator;
+import de.metas.purchasecandidate.purchaseordercreation.localorder.MockedPurchaseOrderFromItemsAggregator;
 import de.metas.purchasecandidate.purchaseordercreation.remoteorder.NullVendorGatewayInvoker;
 import de.metas.purchasecandidate.purchaseordercreation.remoteorder.VendorGatewayInvoker;
 import de.metas.purchasecandidate.purchaseordercreation.remoteorder.VendorGatewayInvokerFactory;
@@ -39,10 +40,6 @@ import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.Purch
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseOrderItem;
 import de.metas.quantity.Quantity;
 import de.metas.util.time.SystemTime;
-import mockit.Expectations;
-import mockit.Injectable;
-import mockit.Mocked;
-import mockit.Verifications;
 
 /*
  * #%L
@@ -69,22 +66,16 @@ public class PurchaseCandidateToOrderWorkflowTest
 {
 	private static final String SOMETHING_WENT_WRONG = "something went wrong";
 
-	@Injectable
-	VendorGatewayInvokerFactory vendorGatewayInvokerFactory;
+	private VendorGatewayInvokerFactory vendorGatewayInvokerFactory;
+	private MockedPurchaseOrderFromItemsAggregator purchaseOrderFromItemsAggregator;
+	private PurchaseCandidateToOrderWorkflow workflowUnderTest;
 
 	private int nextPurchaseCandidateId = 1000000;
-	@Mocked
-	PurchaseCandidateRepository purchaseCandidateRepo;
-
-	@Mocked
-	PurchaseOrderFromItemsAggregator purchaseOrderFromItemsAggregator;
 
 	private I_C_UOM EACH;
 	private Quantity ONE;
 
-	private PurchaseCandidateToOrderWorkflow workflowUnderTest;
-
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
@@ -93,6 +84,9 @@ public class PurchaseCandidateToOrderWorkflowTest
 		EACH = createUOM("Ea");
 		ONE = Quantity.of(BigDecimal.ONE, EACH);
 
+		final PurchaseCandidateRepository purchaseCandidateRepo = Mockito.mock(PurchaseCandidateRepository.class);
+		vendorGatewayInvokerFactory = Mockito.mock(VendorGatewayInvokerFactory.class);
+		purchaseOrderFromItemsAggregator = new MockedPurchaseOrderFromItemsAggregator();
 		workflowUnderTest = PurchaseCandidateToOrderWorkflow.builder()
 				.purchaseCandidateRepo(purchaseCandidateRepo)
 				.vendorGatewayInvokerFactory(vendorGatewayInvokerFactory)
@@ -146,16 +140,12 @@ public class PurchaseCandidateToOrderWorkflowTest
 
 	private void assertThatBothCandidatesWereAddedToOrderAggregator()
 	{
-		// @formatter:off
-		new Verifications()
-		{{
-			Iterator<PurchaseOrderItem> iterator;
-			purchaseOrderFromItemsAggregator.addAll(iterator=withCapture());
+		assertThat(purchaseOrderFromItemsAggregator.getAddAllCalls()).hasSize(1);
 
-			assertThat(iterator).isNotNull();
-			assertThat(iterator).as("iterator is not consumed").hasNext();
-			assertThat(iterator).toIterable().hasSize(2);
-		}};	// @formatter:on
+		final Iterator<PurchaseOrderItem> iterator = purchaseOrderFromItemsAggregator.getAddAllCalls().get(0).getItems();
+		assertThat(iterator).isNotNull();
+		assertThat(iterator).as("iterator is not consumed").hasNext();
+		assertThat(iterator).toIterable().hasSize(2);
 	}
 
 	@Test
@@ -228,14 +218,9 @@ public class PurchaseCandidateToOrderWorkflowTest
 		workflowUnderTest.executeForPurchaseCandidates(purchaseCandidates);
 	}
 
-	@SuppressWarnings("unchecked")
 	private void assertThatNoCandidateWasAddedToOrderAggregator()
 	{
-		// @formatter:off
-		new Verifications()
-		{{
-			purchaseOrderFromItemsAggregator.addAll((Iterator<PurchaseOrderItem>)any); times = 0;
-		}};	// @formatter:on
+		assertThat(purchaseOrderFromItemsAggregator.getAddAllCalls()).hasSize(0);
 	}
 
 	private PurchaseCandidateBuilder preparePurchaseCandidate()
@@ -259,10 +244,8 @@ public class PurchaseCandidateToOrderWorkflowTest
 
 	private void useVendorGatewayInvoker(final BPartnerId vendorId, final VendorGatewayInvoker vendorGatewayInvoker)
 	{
-		// @formatter:off
-		new Expectations()
-		{{
-			vendorGatewayInvokerFactory.createForVendorId(vendorId); result = vendorGatewayInvoker;
-		}};	// @formatter:on
+		Mockito.doReturn(vendorGatewayInvoker)
+				.when(vendorGatewayInvokerFactory)
+				.createForVendorId(vendorId);
 	}
 }
