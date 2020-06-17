@@ -2,7 +2,6 @@ import React, { PureComponent } from 'react';
 import ReactDOM from 'react-dom';
 import counterpart from 'counterpart';
 import PropTypes from 'prop-types';
-import { get } from 'lodash';
 
 import Table from '../containers/Table';
 import TableContextShortcuts from './keyshortcuts/TableContextShortcuts';
