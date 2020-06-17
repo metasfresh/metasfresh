@@ -18,20 +18,15 @@ const dateParse = [...DATE_FIELD_TYPES, ...TIME_FIELD_TYPES];
  * @extends Component
  */
 class MasterWidget extends Component {
-  state = {
-    updated: false,
-    edited: false,
-    data: '',
-  };
-
-  componentDidMount() {
+  constructor(props) {
+    super(props);
     const { data, widgetData, clearValue } = this.props;
 
-    // `clearValue` removes current field value for the widget. This is used when
-    // user focuses on table cell and starts typing
-    this.setState({
+    this.state = {
+      updated: false,
+      edited: false,
       data: data || (clearValue ? '' : widgetData[0].value),
-    });
+    };
   }
 
   UNSAFE_componentWillReceiveProps(nextProps) {
