@@ -40,6 +40,7 @@ import de.metas.document.DocBaseAndSubType;
 import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.DocStatus;
+import de.metas.document.engine.IDocument;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
@@ -642,5 +643,28 @@ public class InventoryRepository
 				.orderBy(I_M_InventoryLine.COLUMNNAME_M_InventoryLine_ID)
 				.create()
 				.list();
+	}
+
+	public Inventory createInventoryHeader(@NonNull final InventoryHeaderCreateRequest request)
+	{
+		final I_M_Inventory inventoryRecord = newInstance(I_M_Inventory.class);
+		inventoryRecord.setAD_Org_ID(request.getOrgId().getRepoId());
+		inventoryRecord.setDocStatus(DocStatus.Drafted.getCode());
+		inventoryRecord.setDocAction(IDocument.ACTION_Complete);
+		inventoryRecord.setMovementDate(TimeUtil.asTimestamp(request.getMovementDate()));
+		inventoryRecord.setM_Warehouse_ID(request.getWarehouseId().getRepoId());
+
+		inventoryRecord.setC_Activity_ID(ActivityId.toRepoId(request.getActivityId()));
+		inventoryRecord.setDescription(StringUtils.trimBlankToNull(request.getDescription()));
+
+		if (request.getDocTypeId() != null)
+		{
+			inventoryRecord.setC_DocType_ID(request.getDocTypeId().getRepoId());
+		}
+
+		inventoryRecord.setPOReference(request.getPoReference());
+		saveRecord(inventoryRecord);
+
+		return toInventory(inventoryRecord);
 	}
 }

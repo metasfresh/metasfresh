@@ -31,6 +31,7 @@ import de.metas.quantity.QuantitiesUOMNotMatchingExpection;
 import de.metas.quantity.Quantity;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
+import lombok.Getter;
 import lombok.NonNull;
 
 /*
@@ -60,6 +61,7 @@ public class InventoryService
 {
 	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
+	@Getter
 	private InventoryRepository inventoryRepository;
 
 	public InventoryService(@NonNull final InventoryRepository inventoryRepository)
@@ -182,5 +184,10 @@ public class InventoryService
 	{
 		final I_M_Inventory inventory = inventoryRepository.getRecordById(inventoryId);
 		documentBL.processEx(inventory, IDocument.ACTION_Complete);
+	}
+
+	public Inventory createInventoryHeader(@NonNull final InventoryHeaderCreateRequest request)
+	{
+		return inventoryRepository.createInventoryHeader(request);
 	}
 }

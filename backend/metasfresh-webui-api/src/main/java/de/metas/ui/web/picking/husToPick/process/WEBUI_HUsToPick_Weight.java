@@ -3,7 +3,16 @@ package de.metas.ui.web.picking.husToPick.process;
 import java.math.BigDecimal;
 import java.util.Optional;
 
+import org.compiere.SpringContextHolder;
+
+import com.google.common.annotations.VisibleForTesting;
+
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.attribute.weightable.IWeightable;
+import de.metas.handlingunits.attribute.weightable.PlainWeightable;
+import de.metas.handlingunits.attribute.weightable.Weightables;
+import de.metas.handlingunits.inventory.InventoryService;
+import de.metas.handlingunits.inventory.draftlinescreator.InventoryLineAggregatorFactory;
 import de.metas.process.IProcessDefaultParameter;
 import de.metas.process.IProcessDefaultParametersProvider;
 import de.metas.process.IProcessParametersCallout;
@@ -23,12 +32,12 @@ import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -37,6 +46,9 @@ import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 
 public class WEBUI_HUsToPick_Weight extends HUsToPickViewBasedProcess implements IProcessPrecondition, IProcessParametersCallout, IProcessDefaultParametersProvider
 {
+	private final InventoryService inventoryService = SpringContextHolder.instance.getBean(InventoryService.class);
+	private final InventoryLineAggregatorFactory inventoryLineAggregatorFactory = SpringContextHolder.instance.getBean(InventoryLineAggregatorFactory.class);
+
 	private static final String PARAM_WeightGross_Initial = "WeightGross_Initial";
 	@Param(parameterName = PARAM_WeightGross_Initial)
 	private BigDecimal weightGrossInitial;
@@ -80,7 +92,7 @@ public class WEBUI_HUsToPick_Weight extends HUsToPickViewBasedProcess implements
 			return ProcessPreconditionsResolution.rejectWithInternalReason("not an active HU");
 		}
 
-		final IWeightable weightable = getWeightable().orElse(null);
+		final IWeightable weightable = getHUAttributesAsWeightable().orElse(null);
 		if (weightable == null
 				|| !weightable.isWeightable())
 		{
@@ -90,7 +102,7 @@ public class WEBUI_HUsToPick_Weight extends HUsToPickViewBasedProcess implements
 		return ProcessPreconditionsResolution.accept();
 	}
 
-	private Optional<IWeightable> getWeightable()
+	private Optional<IWeightable> getHUAttributesAsWeightable()
 	{
 		return getSingleSelectedRow()
 				.getAttributes()
@@ -100,7 +112,7 @@ public class WEBUI_HUsToPick_Weight extends HUsToPickViewBasedProcess implements
 	@Override
 	public Object getParameterDefaultValue(final IProcessDefaultParameter parameter)
 	{
-		final IWeightable weightable = getWeightable().get();
+		final IWeightable weightable = getHUAttributesAsWeightable().get();
 		final String parameterName = parameter.getColumnName();
 
 		if (PARAM_WeightGross_Initial.equals(parameterName)
@@ -139,27 +151,55 @@ public class WEBUI_HUsToPick_Weight extends HUsToPickViewBasedProcess implements
 	{
 		if (PARAM_WeightGross.equals(parameterName))
 		{
-			throw new UnsupportedOperationException("calculate weight net on gross changed");
+			updateWeightNetParameter();
+		}
+		else if (PARAM_WeightTare.equals(parameterName))
+		{
+			updateWeightNetParameter();
 		}
 		else if (PARAM_WeightTareAdjust.equals(parameterName))
 		{
-			throw new UnsupportedOperationException("calculate weight net on tare adjust changed");
+			updateWeightNetParameter();
 		}
+	}
+
+	private void updateWeightNetParameter()
+	{
+		final PlainWeightable weightable = getParametersAsWeightable();
+		Weightables.updateWeightNet(weightable);
+		weightNet = weightable.getWeightNet();
+	}
+
+	@VisibleForTesting
+	PlainWeightable getParametersAsWeightable()
+	{
+		final IWeightable huAttributes = getHUAttributesAsWeightable().get();
+
+		return PlainWeightable.builder()
+				.uom(huAttributes.getWeightNetUOM())
+				.weightGross(weightGross)
+				.weightNet(weightNet)
+				.weightTare(weightTare)
+				.weightTareAdjust(weightTareAdjust)
+				.build();
 	}
 
 	@Override
 	protected String doIt()
 	{
-		// TODO:
-		// * set weight tara adjust
-		// * compute and set weight net
-		// * create an internal use inventory to adjust QtyCUs !
-		
-//		weightGross;
-//		weightTareAdjust;
-//		weightNet;
+		final HuId huId = HuId.ofRepoId(getRecord_ID());
+		final PlainWeightable targetWeight = getParametersAsWeightable();
 
+		WeightHUCommand.builder()
+				.inventoryService(inventoryService)
+				.inventoryLineAggregatorFactory(inventoryLineAggregatorFactory)
+				//
+				.huId(huId)
+				.targetWeight(targetWeight)
+				.build()
+				//
+				.execute();
 
-		throw new UnsupportedOperationException();
+		return MSG_OK;
 	}
 }
