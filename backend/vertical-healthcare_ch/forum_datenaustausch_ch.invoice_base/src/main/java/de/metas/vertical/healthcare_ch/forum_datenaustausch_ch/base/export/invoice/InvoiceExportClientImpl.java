@@ -1,35 +1,10 @@
 package de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.export.invoice;
 
-import static de.metas.util.Check.assumeNotNull;
-import static de.metas.util.lang.CoalesceUtil.coalesceSuppliers;
-import static java.math.BigDecimal.ZERO;
-
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.math.BigDecimal;
-import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.Base64;
-import java.util.GregorianCalendar;
-import java.util.List;
-
-import javax.annotation.Nullable;
-import javax.xml.datatype.DatatypeConfigurationException;
-import javax.xml.datatype.DatatypeFactory;
-import javax.xml.datatype.XMLGregorianCalendar;
-
-import de.metas.lang.ExternalIdsUtil;
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.util.MimeType;
-import org.slf4j.Logger;
-
-import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableMultimap.Builder;
 import com.google.common.collect.Maps;
-
 import de.metas.invoice_gateway.spi.CustomInvoicePayload;
 import de.metas.invoice_gateway.spi.InvoiceExportClient;
 import de.metas.invoice_gateway.spi.InvoiceExportClientFactory;
@@ -43,9 +18,9 @@ import de.metas.invoice_gateway.spi.model.MetasfreshVersion;
 import de.metas.invoice_gateway.spi.model.Money;
 import de.metas.invoice_gateway.spi.model.PersonInfo;
 import de.metas.invoice_gateway.spi.model.export.InvoiceToExport;
+import de.metas.lang.ExternalIdsUtil;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
-import de.metas.util.collections.CollectionUtils;
 import de.metas.util.xml.XmlIntrospectionUtil;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.CrossVersionServiceRegistry;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.HealthCareInvoiceDocSubType;
@@ -80,6 +55,26 @@ import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.payload.body.vat.XmlVatRate;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.processing.XmlTransport.TransportMod;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.util.MimeType;
+import org.slf4j.Logger;
+
+import javax.annotation.Nullable;
+import javax.xml.datatype.DatatypeConfigurationException;
+import javax.xml.datatype.DatatypeFactory;
+import javax.xml.datatype.XMLGregorianCalendar;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.util.ArrayList;
+import java.util.Base64;
+import java.util.GregorianCalendar;
+import java.util.List;
+
+import static de.metas.util.Check.assumeNotNull;
+import static de.metas.util.lang.CoalesceUtil.coalesceSuppliers;
+import static java.math.BigDecimal.ZERO;
 
 /*
  * #%L
@@ -471,7 +466,7 @@ public class InvoiceExportClientImpl implements InvoiceExportClient
 
 		for (final InvoiceLine invoiceLine : invoice.getInvoiceLines())
 		{
-			final int recordId = ExternalIdsUtil.extractRecordId(invoiceLine.getExternalIds());
+			final int recordId = ExternalIdsUtil.extractSingleRecordId(invoiceLine.getExternalIds());
 
 			final XmlService xServiceForInvoiceLine = recordId2xService.get(recordId);
 			final BigDecimal xServiceAmount = xServiceForInvoiceLine.getAmount();

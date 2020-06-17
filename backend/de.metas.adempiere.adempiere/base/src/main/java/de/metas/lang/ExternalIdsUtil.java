@@ -64,7 +64,7 @@ public class ExternalIdsUtil
 				.splitToList(externalIds);
 	}
 
-	public static int extractRecordId(@NonNull final List<String> externalIds)
+	public static int extractSingleRecordId(@NonNull final List<String> externalIds)
 	{
 		if (externalIds.size() != 1)
 		{

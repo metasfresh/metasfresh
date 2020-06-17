@@ -149,7 +149,7 @@ public class HealthcareXMLToInvoiceDetailPersister
 			{
 				continue;
 			}
-			final int recordId = ExternalIdsUtil.extractRecordId(externalIds);
+			final int recordId = ExternalIdsUtil.extractSingleRecordId(externalIds);
 			final XmlService serviceForRecordId = recordId2xService.get(recordId);
 			if (serviceForRecordId == null)
 			{
