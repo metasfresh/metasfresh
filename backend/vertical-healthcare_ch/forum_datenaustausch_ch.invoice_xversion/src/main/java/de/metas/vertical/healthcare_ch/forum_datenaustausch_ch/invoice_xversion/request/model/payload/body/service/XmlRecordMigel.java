@@ -1,6 +1,5 @@
 package de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.payload.body.service;
 
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.payload.body.XmlServiceWithNameAndBeginDate;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -36,7 +35,7 @@ import javax.xml.datatype.XMLGregorianCalendar;
 
 @Value
 @Builder(toBuilder = true)
-public class XmlRecordMigel implements XmlServiceWithNameAndBeginDate
+public class XmlRecordMigel implements XmlService
 {
 	@NonNull
 	XmlRecordService recordService;

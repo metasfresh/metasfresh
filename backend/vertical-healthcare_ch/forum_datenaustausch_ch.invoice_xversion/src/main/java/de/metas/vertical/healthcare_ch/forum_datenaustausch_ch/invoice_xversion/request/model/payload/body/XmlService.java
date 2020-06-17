@@ -47,6 +47,10 @@ public interface XmlService
 		return withModNonNull(serviceMod);
 	}
 
+	String getName();
+
+	XMLGregorianCalendar getDateBegin();
+
 	XmlService withModNonNull(ServiceMod serviceMod);
 
 	BigDecimal getAmount();

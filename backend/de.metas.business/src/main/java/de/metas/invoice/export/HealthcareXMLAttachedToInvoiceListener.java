@@ -4,36 +4,7 @@ import static de.metas.util.lang.CoalesceUtil.coalesceSuppliers;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 import java.io.ByteArrayInputStream;
-import java.time.LocalDate;
-import java.util.List;
-import java.util.Optional;
 
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Maps;
-import de.metas.adempiere.model.I_C_InvoiceLine;
-import de.metas.invoice.InvoiceId;
-import de.metas.invoice.detail.InvoiceDetailItem;
-import de.metas.invoice.detail.InvoiceLineWithDetails;
-import de.metas.invoice.detail.InvoiceWithDetails;
-import de.metas.invoice.detail.InvoiceWithDetailsRepository;
-import de.metas.invoice.service.IInvoiceDAO;
-import de.metas.invoice.service.InvoiceUtil;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.commontypes.XmlCompany;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.commontypes.XmlOnline;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.commontypes.XmlPerson;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.commontypes.XmlPostal;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.commontypes.XmlTelecom;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.payload.XmlBody;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.payload.body.XmlService;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.payload.body.XmlServiceWithNameAndBeginDate;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.payload.body.XmlTiers;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.payload.body.law.XmlKvg;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.payload.body.tiers.XmlGuarantor;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.payload.body.tiers.XmlInsurance;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.payload.body.tiers.XmlReferrer;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Invoice;
@@ -67,9 +38,6 @@ import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.payload.body.tiers.XmlPatient;
 import lombok.NonNull;
 
-import javax.annotation.Nullable;
-import javax.xml.datatype.XMLGregorianCalendar;
-
 /*
  * #%L
  * vertical-healthcare_ch.forum_datenaustausch_ch.invoice_base
@@ -99,7 +67,6 @@ import javax.xml.datatype.XMLGregorianCalendar;
  */
 public class HealthcareXMLAttachedToInvoiceListener implements AttachmentListener
 {
-
 
 	private final CrossVersionServiceRegistry crossVersionServiceRegistry = SpringContextHolder.instance.getBean(CrossVersionServiceRegistry.class);
 
@@ -200,9 +167,7 @@ public class HealthcareXMLAttachedToInvoiceListener implements AttachmentListene
 			logger.debug("set setBeneficiary_Location_ID={} from the patient-XML data's SSN={} extracted from attachmentEntry with id={} (filename={})",
 					location.getId().getRepoId(), patient.getSsn(), attachmentEntry.getId(), attachmentEntry.getFilename());
 		}
-
 		saveRecord(invoiceRecord);
 	}
-
 
 }

@@ -1,6 +1,5 @@
 package de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.payload.body.service;
 
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.payload.body.XmlServiceWithNameAndBeginDate;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -37,7 +36,7 @@ import java.math.BigDecimal;
 
 @Value
 @Builder(toBuilder = true)
-public class XmlRecordDrug implements XmlServiceWithNameAndBeginDate
+public class XmlRecordDrug implements XmlService
 {
 	@NonNull
 	XmlRecordService recordService;

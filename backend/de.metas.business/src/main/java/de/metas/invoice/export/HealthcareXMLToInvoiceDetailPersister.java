@@ -26,6 +26,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.invoice.InvoiceId;
+import de.metas.invoice.InvoiceLineId;
 import de.metas.invoice.detail.InvoiceDetailItem;
 import de.metas.invoice.detail.InvoiceLineWithDetails;
 import de.metas.invoice.detail.InvoiceWithDetails;
@@ -43,7 +44,6 @@ import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.XmlRequest;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.payload.XmlBody;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.payload.body.XmlService;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.payload.body.XmlServiceWithNameAndBeginDate;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.payload.body.XmlTiers;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.payload.body.law.XmlKvg;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.payload.body.tiers.XmlBiller;
@@ -64,17 +64,17 @@ import java.util.Optional;
 @Service
 public class HealthcareXMLToInvoiceDetailPersister
 {
-	public static final String LABEL_PREFIX_REFERRER = "Referrer_";
+	public static final String LABEL_PREFIX_REFERRER = "Referrer";
 	public static final String LABEL_REFERRER_ZSR = "Referrer_ZSR";
 	public static final String LABEL_REFERRER_GLN = "Referrer_GLN";
 	public static final String LABEL_TREATMENT_DATE_BEGIN = "Treatment_Date_Begin";
 	public static final String LABEL_TREATMENT_DATE_END = "Treatment_Date_End";
-	public static final String LABEL_KVG = "KVG";
+	public static final String LABEL_KVG_INSURED_ID = "KVG_InsuredId";
 	public static final String LABEL_PATIENT_BIRTH_DATE = "Patient_BirthDate";
 	public static final String LABEL_PATIENT_SSN = "Patient_SSN";
-	public static final String LABEL_PREFIX_PATIENT = "Patient_";
-	public static final String LABEL_PREFIX_GUARANTOR = "Guarantor_";
-	public static final String LABEL_PREFIX_BILLER = "Biller_";
+	public static final String LABEL_PREFIX_PATIENT = "Patient";
+	public static final String LABEL_PREFIX_GUARANTOR = "Guarantor";
+	public static final String LABEL_PREFIX_BILLER = "Biller";
 	public static final String LABEL_BILLER_ZSR = "Biller_ZSR";
 	public static final String LABEL_BILLER_GLN = "Biller_GLN";
 	public static final String LABEL_SERVICE_NAME = "Service_Name";
@@ -95,6 +95,9 @@ public class HealthcareXMLToInvoiceDetailPersister
 		this.invoiceWithDetailsRepository = invoiceWithDetailsRepository;
 	}
 
+	/**
+	 * Create or update {@link org.compiere.model.I_C_Invoice_Detail} records according to the given {@code xRequest}.
+	 */
 	public void extractInvoiceDetails(
 			@NonNull final XmlRequest xRequest,
 			@NonNull final I_C_Invoice invoiceRecord)
@@ -103,13 +106,13 @@ public class HealthcareXMLToInvoiceDetailPersister
 		final XmlTiers tiers = body.getTiers();
 		final XmlBiller biller = tiers.getBiller();
 
+		final InvoiceId invoiceId = InvoiceId.ofRepoId(invoiceRecord.getC_Invoice_ID());
 		final InvoiceWithDetails.InvoiceWithDetailsBuilder invoiceWithDetails = InvoiceWithDetails
 				.builder()
-				.id(InvoiceId.ofRepoId(invoiceRecord.getC_Invoice_ID()))
+				.id(invoiceId)
 				.orgId(OrgId.ofRepoId(invoiceRecord.getAD_Org_ID()));
-		setIfNotBlank(invoiceWithDetails,)
-				.detailItem(InvoiceDetailItem.builder().label(LABEL_BILLER_ZSR).description(biller.getZsr()).build())
-				.detailItem(InvoiceDetailItem.builder().label(LABEL_BILLER_GLN).description(biller.getEanParty()).build());
+		setIfNotBlank(invoiceWithDetails, biller.getZsr(), LABEL_BILLER_ZSR);
+		setIfNotBlank(invoiceWithDetails, biller.getEanParty(), LABEL_BILLER_GLN);
 
 		setBillerDetails(biller, invoiceWithDetails, LABEL_PREFIX_BILLER);
 		setGuarantorDetails(tiers.getGuarantor(), invoiceWithDetails, LABEL_PREFIX_GUARANTOR);
@@ -122,7 +125,7 @@ public class HealthcareXMLToInvoiceDetailPersister
 		final XmlKvg kvg = body.getLaw().getKvg();
 		if (kvg != null)
 		{
-			setIfNotBlank(invoiceWithDetails, kvg.getInsuredId(), LABEL_KVG);
+			setIfNotBlank(invoiceWithDetails, kvg.getInsuredId(), LABEL_KVG_INSURED_ID);
 		}
 
 		// referrer
@@ -138,7 +141,7 @@ public class HealthcareXMLToInvoiceDetailPersister
 		final ImmutableMap<Integer, XmlService> //
 				recordId2xService = Maps.uniqueIndex(body.getServices(), XmlService::getRecordId);
 
-		final List<I_C_InvoiceLine> lineRecords = Services.get(IInvoiceDAO.class).retrieveLines(InvoiceId.ofRepoId(invoiceRecord.getC_Invoice_ID()));
+		final List<I_C_InvoiceLine> lineRecords = Services.get(IInvoiceDAO.class).retrieveLines(invoiceId);
 		for (final I_C_InvoiceLine lineRecord : lineRecords)
 		{
 			final List<String> externalIds = InvoiceUtil.splitExternalIds(lineRecord.getExternalIds());
@@ -148,15 +151,18 @@ public class HealthcareXMLToInvoiceDetailPersister
 			}
 			final int recordId = InvoiceUtil.extractRecordId(externalIds);
 			final XmlService serviceForRecordId = recordId2xService.get(recordId);
-			if (serviceForRecordId == null || !(serviceForRecordId instanceof XmlServiceWithNameAndBeginDate))
+			if (serviceForRecordId == null)
 			{
 				continue;
 			}
 
-			final InvoiceLineWithDetails.InvoiceLineWithDetailsBuilder line = InvoiceLineWithDetails.builder();
+			final InvoiceLineWithDetails.InvoiceLineWithDetailsBuilder line = InvoiceLineWithDetails
+					.builder()
+					.id(InvoiceLineId.ofRepoId(invoiceId, lineRecord.getC_InvoiceLine_ID()));
 
-			createItemIfNotBlank(((XmlServiceWithNameAndBeginDate)serviceForRecordId).getName(), LABEL_SERVICE_NAME).ifPresent(line::detailItem);
-			extractLocalDate(((XmlServiceWithNameAndBeginDate)serviceForRecordId).getDateBegin(), LABEL_SERVICE_DATE).ifPresent(line::detailItem);
+			createItemIfNotBlank(serviceForRecordId.getName(), LABEL_SERVICE_NAME).ifPresent(line::detailItem);
+			extractLocalDate(serviceForRecordId.getDateBegin(), LABEL_SERVICE_DATE).ifPresent(line::detailItem);
+
 			invoiceWithDetails.line(line.build());
 		}
 
@@ -244,8 +250,8 @@ public class HealthcareXMLToInvoiceDetailPersister
 	{
 		if (person != null)
 		{
-			setPhoneIfNotNull(invoiceWithDetails, person.getTelecom(), labelPrefix + LABEL_SUFFIX_EMAIL);
-			setEmailIfNotNull(invoiceWithDetails, person.getOnline(), labelPrefix + LABEL_SUFFIX_PHONE);
+			setPhoneIfNotNull(invoiceWithDetails, person.getTelecom(), labelPrefix + LABEL_SUFFIX_PHONE);
+			setEmailIfNotNull(invoiceWithDetails, person.getOnline(), labelPrefix + LABEL_SUFFIX_EMAIL);
 
 			setPostalIfNotNull(invoiceWithDetails, person.getPostal(), labelPrefix);
 
@@ -263,8 +269,8 @@ public class HealthcareXMLToInvoiceDetailPersister
 	{
 		if (billerCompany != null)
 		{
-			setPhoneIfNotNull(invoiceWithDetails, billerCompany.getTelecom(), labelPrefix + LABEL_SUFFIX_EMAIL);
-			setEmailIfNotNull(invoiceWithDetails, billerCompany.getOnline(), labelPrefix + LABEL_SUFFIX_PHONE);
+			setPhoneIfNotNull(invoiceWithDetails, billerCompany.getTelecom(), labelPrefix + LABEL_SUFFIX_PHONE);
+			setEmailIfNotNull(invoiceWithDetails, billerCompany.getOnline(), labelPrefix + LABEL_SUFFIX_EMAIL);
 
 			setPostalIfNotNull(invoiceWithDetails, billerCompany.getPostal(), labelPrefix);
 
