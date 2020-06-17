@@ -207,12 +207,6 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 	}
 
 	@Override
-	public boolean isChangedByUpdateProcess(final I_M_ShipmentSchedule sched)
-	{
-		return Services.get(IShipmentScheduleUpdater.class).isChangedByUpdateProcess(sched);
-	}
-
-	@Override
 	public I_C_UOM getUomOfProduct(@NonNull final I_M_ShipmentSchedule sched)
 	{
 		final IProductBL productBL = Services.get(IProductBL.class);
