@@ -2,6 +2,7 @@ import React, { PureComponent } from 'react';
 import ReactDOM from 'react-dom';
 import counterpart from 'counterpart';
 import PropTypes from 'prop-types';
+import { get } from 'lodash';
 
 import Table from '../containers/Table';
 import TableContextShortcuts from './keyshortcuts/TableContextShortcuts';
@@ -316,15 +317,33 @@ class Window extends PureComponent {
    * @param {*} extendedData
    */
   renderSections = (sections, isDataEntry, extendedData = {}) => {
-    const { windowId } = this.props.layout;
-    const { tabId, rowId, dataId } = this.props;
-    const { data } = this.props;
-    const { isModal, isAdvanced } = this.props;
+    const {
+      layout: { windowId },
+      tabId,
+      rowId,
+      dataId,
+      data,
+      isModal,
+      isAdvanced,
+    } = this.props;
     const { fullScreen } = this.state;
 
+    // const rowData = isDataEntry
+    //   ? this.props.rowData.get(extendedData.tabId)
+    //   : undefined;
+    // // console.log('extendedData: ', this.props)
+    // // const rowData = {};
+
     const rowData = isDataEntry
-      ? this.props.rowData.get(extendedData.tabId)
+      ? get(this.props.rowData, [extendedData.tabId], {})
+      // ? getTable({ windowId, })
+      // ? {}
       : undefined;
+
+    // if (isDataEntry) {
+    //   console.log('renderSections: ', this.props)
+    // }
+
 
     return sections.map((sectionLayout, sectionIndex) => {
       const isSectionCollapsed =

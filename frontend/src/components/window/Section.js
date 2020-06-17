@@ -7,11 +7,13 @@ import { INITIALLY_OPEN, INITIALLY_CLOSED } from '../../constants/Constants';
 
 class Section extends PureComponent {
   render() {
-    const { sectionLayout, sectionIndex } = this.props;
-    const { extendedData } = this.props;
-    const { isSectionCollapsed, toggleSectionCollapsed } = this.props;
-
-    const { title, columns, closableMode } = sectionLayout;
+    const {
+      sectionLayout: { title, columns, closableMode },
+      sectionIndex,
+      extendedData,
+      isSectionCollapsed,
+      toggleSectionCollapsed,
+    } = this.props;
     const collapsible =
       closableMode === INITIALLY_OPEN || closableMode === INITIALLY_CLOSED;
 
@@ -40,20 +42,28 @@ class Section extends PureComponent {
   }
 
   renderColumns = (columns) => {
-    const { sectionIndex } = this.props;
-    const { windowId, tabId, rowId, dataId } = this.props;
-    const { data, isDataEntry, extendedData, rowData } = this.props;
-    const { isModal, isAdvanced, isFullScreen } = this.props;
     const {
+      sectionIndex,
+      windowId,
+      tabId,
+      rowId,
+      dataId,
+      data,
+      isDataEntry,
+      extendedData,
+      rowData,
+      isModal,
+      isAdvanced,
+      isFullScreen,
       addRefToWidgets,
       onBlurWidget,
       requestElementGroupFocus,
     } = this.props;
-
     const maxRows = 12;
     const colWidth = Math.floor(maxRows / columns.length);
-
     const isFirstSection = sectionIndex === 0;
+
+    console.log('columns: ', columns)
 
     return columns.map((columnLayout, columnIndex) => {
       const isFirstColumn = isFirstSection && columnIndex === 0;
