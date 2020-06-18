@@ -48,12 +48,12 @@ class MasterWidget extends PureComponent {
     const { widgetType } = nextProps;
     const { edited, widgetData } = prevState;
     let next = nextProps.widgetData[0].value;
-    let bringsModifs = widgetData[0] && !_.isEqual(widgetData[0].value, next);
+    let hasNewData = widgetData[0] && !_.isEqual(widgetData[0].value, next);
 
     let isUnconvertedDate =
       next && dateParse.includes(widgetType) && !Moment.isMoment(next);
 
-    if (!edited && bringsModifs) {
+    if (!edited && hasNewData) {
       next = isUnconvertedDate ? Moment(convertTimeStringToMoment(next)) : next;
 
       return { updated: true, data: next, widgetData: nextProps.widgetData };
