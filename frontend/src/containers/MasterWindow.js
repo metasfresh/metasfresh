@@ -275,11 +275,6 @@ MasterWindowContainer.propTypes = {
   updateTabTableData: PropTypes.func.isRequired,
 };
 
-/**
- * @method mapStateToProps
- * @summary ToDo: Describe the method.
- * @param {object} state
- */
 const mapStateToProps = (state) => ({
   master: state.windowHandler.master,
   modal: state.windowHandler.modal,

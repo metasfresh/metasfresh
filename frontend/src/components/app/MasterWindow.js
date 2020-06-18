@@ -359,7 +359,6 @@ export default class MasterWindow extends Component {
             key="window"
             data={master.data}
             layout={master.layout}
-            rowData={master.rowData}
             tabsInfo={master.includedTabsInfo}
             sort={this.sort}
             dataId={dataId}
