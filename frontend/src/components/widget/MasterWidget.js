@@ -206,10 +206,6 @@ class MasterWidget extends PureComponent {
     onBlurWidget && onBlurWidget(fieldName);
   };
 
-  /**
-   * @method render
-   * @summary Main render function
-   */
   render() {
     const { handleBackdropLock, onClickOutside } = this.props;
     const { updated, data } = this.state;
