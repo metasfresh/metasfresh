@@ -6,7 +6,7 @@ describe('mergePartialGroupToGroupsArray', () => {
         const partialGroupToAdd = {
             caption: 'group 1',
             miscGroup: false,
-            references: [ { id: '1', caption: 'item 1', priority: 555 } ],
+            references: [ { targetWindowId: '1', caption: 'item 1', priority: 555 } ],
         };
         const result = mergePartialGroupToGroupsArray(existingGroups, partialGroupToAdd);
 
@@ -20,13 +20,13 @@ describe('mergePartialGroupToGroupsArray', () => {
             {
                 caption: 'group B',
                 miscGroup: false,
-                references: [ { id: '1', caption: 'item 1', priority: 555 } ],
+                references: [ { targetWindowId: '1', caption: 'item 1', priority: 555 } ],
             },
         ];
         const partialGroupToAdd = {
             caption: 'group A',
             miscGroup: false,
-            references: [ { id: '1', caption: 'item 1', priority: 555 } ],
+            references: [ { targetWindowId: '1', caption: 'item 1', priority: 555 } ],
         };
         const result = mergePartialGroupToGroupsArray(existingGroups, partialGroupToAdd);
 
@@ -34,12 +34,12 @@ describe('mergePartialGroupToGroupsArray', () => {
             {
                 caption: 'group A',
                 miscGroup: false,
-                references: [ { id: '1', caption: 'item 1', priority: 555 } ],
+                references: [ { targetWindowId: '1', caption: 'item 1', priority: 555 } ],
             },
             {
                 caption: 'group B',
                 miscGroup: false,
-                references: [ { id: '1', caption: 'item 1', priority: 555 } ],
+                references: [ { targetWindowId: '1', caption: 'item 1', priority: 555 } ],
             },
         ]);
     });
@@ -51,13 +51,13 @@ describe('mergePartialGroupToGroupsArray', () => {
             {
                 caption: 'group Z',
                 miscGroup: false,
-                references: [ { id: '1', caption: 'item 1', priority: 555 } ],
+                references: [ { targetWindowId: '1', caption: 'item 1', priority: 555 } ],
             },
         ];
         const partialGroupToAdd = {
             caption: 'group A',
             miscGroup: true,
-            references: [ { id: '1', caption: 'item 1', priority: 555 } ],
+            references: [ { targetWindowId: '1', caption: 'item 1', priority: 555 } ],
         };
         const result = mergePartialGroupToGroupsArray(existingGroups, partialGroupToAdd);
 
@@ -65,12 +65,12 @@ describe('mergePartialGroupToGroupsArray', () => {
             {
                 caption: 'group Z',
                 miscGroup: false,
-                references: [ { id: '1', caption: 'item 1', priority: 555 } ],
+                references: [ { targetWindowId: '1', caption: 'item 1', priority: 555 } ],
             },
             {
                 caption: 'group A',
                 miscGroup: true,
-                references: [ { id: '1', caption: 'item 1', priority: 555 } ],
+                references: [ { targetWindowId: '1', caption: 'item 1', priority: 555 } ],
             },
         ]);
     });
@@ -82,13 +82,13 @@ describe('mergePartialGroupToGroupsArray', () => {
             {
                 caption: 'group A',
                 miscGroup: false,
-                references: [ { id: '1', caption: 'item 1', priority: 555 } ],
+                references: [ { targetWindowId: '1', caption: 'item 1', priority: 555 } ],
             },
         ];
         const partialGroupToAdd = {
             caption: 'group A',
             miscGroup: false,
-            references: [ { id: '2', caption: 'item 2', priority: 555 } ],
+            references: [ { targetWindowId: '2', caption: 'item 2', priority: 555 } ],
         };
         const result = mergePartialGroupToGroupsArray(existingGroups, partialGroupToAdd);
 
@@ -97,8 +97,8 @@ describe('mergePartialGroupToGroupsArray', () => {
                 caption: 'group A',
                 miscGroup: false,
                 references: [ 
-                    { id: '1', caption: 'item 1', priority: 555 },
-                    { id: '2', caption: 'item 2', priority: 555 },
+                    { targetWindowId: '1', caption: 'item 1', priority: 555 },
+                    { targetWindowId: '2', caption: 'item 2', priority: 555 },
                 ],
             },
         ]);
