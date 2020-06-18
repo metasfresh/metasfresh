@@ -46,11 +46,14 @@ public class TestInvoiceLine
 
 	private InvoiceLineId invoiceLineId;
 
+	private String externalIds;
+
 	public void createInvoiceLineRecord(@NonNull final InvoiceId invoiceId)
 	{
 		invoiceLineRecord = newInstance(I_C_InvoiceLine.class);
 		invoiceLineRecord.setC_Invoice_ID(invoiceId.getRepoId());
 		invoiceLineRecord.setM_Product_ID(productId.getRepoId());
+		invoiceLineRecord.setExternalIds(externalIds);
 		saveRecord(invoiceLineRecord);
 
 		invoiceLineId = InvoiceLineId.ofRepoId(invoiceId, invoiceLineRecord.getC_InvoiceLine_ID());

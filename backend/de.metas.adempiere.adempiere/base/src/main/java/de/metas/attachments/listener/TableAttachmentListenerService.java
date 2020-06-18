@@ -22,6 +22,7 @@
 
 package de.metas.attachments.listener;
 
+import de.metas.util.time.SystemTime;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_Table_AttachmentListener;
 import org.compiere.util.Env;
@@ -64,14 +65,19 @@ public class TableAttachmentListenerService
 			@NonNull final AttachmentEntry attachmentEntry,
 			@NonNull final TableRecordReference tableRecordReference)
 	{
-		try (final MDCCloseable linkedRecordMDC = TableRecordMDC.putTableRecordReference(tableRecordReference))
+		try (final MDCCloseable ignored = TableRecordMDC.putTableRecordReference(tableRecordReference))
 		{
 			final ImmutableList<AttachmentListenerSettings> settings = tableAttachmentListenerRepository.getById(tableRecordReference.getAdTableId());
 			logger.debug("There are {} AttachmentListenerSettings for AD_Table_ID={}", settings.size(), tableRecordReference.getAD_Table_ID());
-			return settings
-					.stream()
-					.map(listenerSettings -> invokeListener(listenerSettings, tableRecordReference, attachmentEntry))
-					.collect(ImmutableList.toImmutableList());
+
+			ImmutableList.Builder<AttachmentListenerActionResult> results=ImmutableList.builder();
+			for(final AttachmentListenerSettings setting : settings)
+			{
+				final AttachmentListenerActionResult result = invokeListener(setting, tableRecordReference, attachmentEntry);
+				results.add(result);
+			}
+
+			return results.build();
 		}
 	}
 
@@ -90,7 +96,7 @@ public class TableAttachmentListenerService
 			{
 				notifyUser(listenerSettings, tableRecordReference, status);
 			}
-			return new AttachmentListenerActionResult(attachmentListener, status);
+			return new AttachmentListenerActionResult(attachmentListener, status, tableRecordReference);
 		}
 	}
 

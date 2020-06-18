@@ -227,7 +227,7 @@ public class Doc_Payment extends Doc<DocLine<Doc_Payment>>
 	 * Gets the Bank Account to be used.
 	 * 
 	 * @param as accounting schema
-	 * @return bank in transit account ({@link Doc#ACCTTYPE_BankInTransit})
+	 * @return bank in transit account ({@link AccountType#BankInTransit})
 	 */
 	private MAccount getBankAccount(final AcctSchema as)
 	{

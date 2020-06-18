@@ -1,77 +1,11 @@
 package de.metas.contracts.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-
-/*
- * #%L
- * de.metas.contracts
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.sql.Timestamp;
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.ad.service.IADReferenceDAO;
-import org.adempiere.ad.table.api.IADTableDAO;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.exceptions.DocTypeNotFoundException;
-import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.ClientId;
-import org.adempiere.util.lang.IContextAware;
-import org.adempiere.warehouse.WarehouseId;
-import org.adempiere.warehouse.api.IWarehouseDAO;
-import org.compiere.model.I_AD_Org;
-import org.compiere.model.I_AD_User;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_BPartner_Location;
-import org.compiere.model.I_C_Calendar;
-import org.compiere.model.I_C_DocType;
-import org.compiere.model.I_C_Period;
-import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_C_Year;
-import org.compiere.model.I_M_Product;
-import org.compiere.model.I_M_Warehouse;
-import org.compiere.model.Lookup;
-import org.compiere.model.POInfo;
-import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
-import org.slf4j.Logger;
-
 import ch.qos.logback.classic.Level;
 import de.metas.acct.api.IProductAcctDAO;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.calendar.ICalendarBL;
 import de.metas.calendar.ICalendarDAO;
+import de.metas.contracts.CreateFlatrateTermRequest;
 import de.metas.contracts.FlatrateTermPricing;
 import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.IFlatrateDAO;
@@ -122,6 +56,69 @@ import de.metas.util.lang.CoalesceUtil;
 import de.metas.util.time.SystemTime;
 import de.metas.workflow.api.IWFExecutionFactory;
 import lombok.NonNull;
+import org.adempiere.ad.service.IADReferenceDAO;
+import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.exceptions.DocTypeNotFoundException;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseDAO;
+import org.compiere.model.I_AD_Org;
+import org.compiere.model.I_AD_User;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_Calendar;
+import org.compiere.model.I_C_DocType;
+import org.compiere.model.I_C_Period;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_C_Year;
+import org.compiere.model.I_M_Product;
+import org.compiere.model.I_M_Warehouse;
+import org.compiere.model.Lookup;
+import org.compiere.model.POInfo;
+import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
+import org.slf4j.Logger;
+
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+
+/*
+ * #%L
+ * de.metas.contracts
+ * %%
+ * Copyright (C) 2015 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
 
 public class FlatrateBL implements IFlatrateBL
 {
@@ -1578,17 +1575,16 @@ public class FlatrateBL implements IFlatrateBL
 	}
 
 	@Override
-	public I_C_Flatrate_Term createTerm(
-			final IContextAware context,
-			final I_C_BPartner bPartner,
-			final I_C_Flatrate_Conditions conditions,
-			final Timestamp startDate,
-			final I_AD_User userInCharge,
-			@Nullable final ProductAndCategoryId productAndCategoryId,
-			final boolean completeIt)
+	public I_C_Flatrate_Term createTerm(@NonNull final CreateFlatrateTermRequest request)
 	{
-		final Properties ctx = context.getCtx();
-		final String trxName = context.getTrxName();
+		final Properties ctx = request.getContext().getCtx();
+		final String trxName = request.getContext().getTrxName();
+
+		final I_C_BPartner bPartner = request.getBPartner();
+		final I_C_Flatrate_Conditions conditions = request.getConditions();
+		final Timestamp startDate = request.getStartDate();
+		final I_AD_User userInCharge = request.getUserInCharge();
+		final ProductAndCategoryId productAndCategoryId = request.getProductAndCategoryId();
 
 		boolean dontCreateTerm = false;
 		final StringBuilder notCreatedReason = new StringBuilder();
@@ -1662,10 +1658,11 @@ public class FlatrateBL implements IFlatrateBL
 
 		newTerm.setDocAction(X_C_Flatrate_Term.DOCACTION_Prepare);
 		newTerm.setDocStatus(X_C_Flatrate_Term.DOCSTATUS_Drafted);
+		newTerm.setIsSimulation(request.isSimulation());
 
 		InterfaceWrapperHelper.save(newTerm);
 
-		if (completeIt)
+		if (request.isCompleteIt())
 		{
 			complete(newTerm);
 		}

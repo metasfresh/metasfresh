@@ -58,7 +58,7 @@ import lombok.NonNull;
  * @version $Id: Doc_Bank.java,v 1.3 2006/07/30 00:53:33 jjanke Exp $
  *          <p>
  *          FR [ 1840016 ] Avoid usage of clearing accounts - subject to C_AcctSchema.IsPostIfClearingEqual Avoid posting if both accounts BankAsset and BankInTransit are equal
- * @see http://sourceforge.net/tracker2/?func=detail&atid=879335&aid=2520591&group_id=176962
+ * Also see http://sourceforge.net/tracker2/?func=detail&atid=879335&aid=2520591&group_id=176962
  */
 public class Doc_BankStatement extends Doc<DocLine_BankStatement>
 {

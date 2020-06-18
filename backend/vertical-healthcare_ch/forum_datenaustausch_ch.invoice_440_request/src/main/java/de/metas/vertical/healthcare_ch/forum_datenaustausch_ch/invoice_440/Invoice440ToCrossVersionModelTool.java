@@ -1147,6 +1147,8 @@ public class Invoice440ToCrossVersionModelTool
 		final XmlRecordTarmedBuilder xRecordTarmed = XmlRecordTarmed.builder();
 
 		xRecordTarmed.recordId(recordTarmedType.getRecordId());
+		xRecordTarmed.name(recordTarmedType.getName());
+		xRecordTarmed.dateBegin(recordTarmedType.getDateBegin());
 		xRecordTarmed.tariffType(recordTarmedType.getTariffType());
 		xRecordTarmed.code(recordTarmedType.getCode());
 		xRecordTarmed.refCode(recordTarmedType.getRefCode());
@@ -1272,6 +1274,8 @@ public class Invoice440ToCrossVersionModelTool
 		final XmlRecordServiceBuilder xRecordService = XmlRecordService.builder();
 
 		xRecordService.recordId(recordServiceType.getRecordId());
+		xRecordService.name(recordServiceType.getName());
+		xRecordService.dateBegin(recordServiceType.getDateBegin());
 		xRecordService.code(recordServiceType.getCode());
 		xRecordService.refCode(recordServiceType.getRefCode());
 		xRecordService.name(recordServiceType.getName());

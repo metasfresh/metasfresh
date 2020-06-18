@@ -202,12 +202,6 @@ public class VSortTab extends CPanel implements APanelTab
 	private final JScrollPane noPane = new JScrollPane(noList);
 	private final JScrollPane yesPane = new JScrollPane(yesList);
 
-	/**
-	 * 	Dyanamic Init
-	 *  @param AD_Table_ID Table No
-	 *  @param AD_ColumnSortOrder_ID Sort Column
-	 *  @param AD_ColumnSortYesNo_ID YesNo Column
-	 */
 	private void dynInit()
 	{
 		final int AD_ColumnSortOrder_ID = gridTabVO.getAD_ColumnSortOrder_ID();

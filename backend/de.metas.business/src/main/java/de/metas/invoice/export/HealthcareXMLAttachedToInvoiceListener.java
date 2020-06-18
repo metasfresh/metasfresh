@@ -4,6 +4,7 @@ import static de.metas.util.lang.CoalesceUtil.coalesceSuppliers;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 import java.io.ByteArrayInputStream;
+
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Invoice;
@@ -66,11 +67,14 @@ import lombok.NonNull;
  */
 public class HealthcareXMLAttachedToInvoiceListener implements AttachmentListener
 {
+
 	private final CrossVersionServiceRegistry crossVersionServiceRegistry = SpringContextHolder.instance.getBean(CrossVersionServiceRegistry.class);
 
 	private final AttachmentEntryService attachmentEntryService = SpringContextHolder.instance.getBean(AttachmentEntryService.class);
 
 	private final BPartnerCompositeRepository bpartnerCompositeRepository = SpringContextHolder.instance.getBean(BPartnerCompositeRepository.class);
+
+	private final HealthcareXMLToInvoiceDetailPersister healthcareXMLToInvoiceDetailPersister = SpringContextHolder.instance.getBean(HealthcareXMLToInvoiceDetailPersister.class);
 
 	private static final Logger logger = LogManager.getLogger(HealthcareXMLAttachedToInvoiceListener.class);
 
@@ -79,20 +83,12 @@ public class HealthcareXMLAttachedToInvoiceListener implements AttachmentListene
 			@NonNull final AttachmentEntry attachmentEntry,
 			@NonNull final TableRecordReference tableRecordReference)
 	{
-		try (final MDCCloseable mdc = TableRecordMDC.putTableRecordReference(tableRecordReference))
+		try (final MDCCloseable ignored = TableRecordMDC.putTableRecordReference(tableRecordReference))
 		{
 			if (!I_C_Invoice.Table_Name.equals(tableRecordReference.getTableName()))
 			{
 				logger.debug("tableRecord reference has tableName={}; -> doing nothing", tableRecordReference.getTableName());
-				return ListenerWorkStatus.SUCCESS;
-			}
-
-			final I_C_Invoice invoiceRecord = tableRecordReference.getModel(I_C_Invoice.class);
-			if (invoiceRecord.getBeneficiary_BPartner_ID() > 0)
-			{
-				logger.debug("C_Invoice with ID={} already has a Beneficiary_BPartner_ID > 0; -> doing nothing",
-						invoiceRecord.getC_Invoice_ID());
-				return ListenerWorkStatus.SUCCESS;
+				return ListenerWorkStatus.NOT_APPLIED;
 			}
 
 			final AttachmentTags tags = attachmentEntry.getTags();
@@ -100,16 +96,18 @@ public class HealthcareXMLAttachedToInvoiceListener implements AttachmentListene
 			{
 				logger.debug("given attachmentEntry with id={} (filename={}) is tagged as document (exported from original-xml + invoice). We need the orgiginal XML; -> doing nothing",
 						attachmentEntry.getId(), attachmentEntry.getFilename());
-				return ListenerWorkStatus.SUCCESS;
+				return ListenerWorkStatus.NOT_APPLIED;
 			}
 			if (!tags.hasTagSetToString(
-					InvoiceExportClientFactory.ATTATCHMENT_TAGNAME_EXPORT_PROVIDER,
+					InvoiceExportClientFactory.ATTACHMENT_TAGNAME_EXPORT_PROVIDER,
 					ForumDatenaustauschChConstants.INVOICE_EXPORT_PROVIDER_ID))
 			{
 				logger.debug("given attachmentEntry with id={} (filename={}) is not tagged as {}={}; -> doing nothing",
-						attachmentEntry.getId(), attachmentEntry.getFilename(), InvoiceExportClientFactory.ATTATCHMENT_TAGNAME_EXPORT_PROVIDER, ForumDatenaustauschChConstants.INVOICE_EXPORT_PROVIDER_ID);
-				return ListenerWorkStatus.SUCCESS;
+						attachmentEntry.getId(), attachmentEntry.getFilename(), InvoiceExportClientFactory.ATTACHMENT_TAGNAME_EXPORT_PROVIDER, ForumDatenaustauschChConstants.INVOICE_EXPORT_PROVIDER_ID);
+				return ListenerWorkStatus.NOT_APPLIED;
 			}
+
+			final I_C_Invoice invoiceRecord = tableRecordReference.getModel(I_C_Invoice.class);
 
 			final byte[] attachmentData = attachmentEntryService.retrieveData(attachmentEntry.getId());
 			final String xsdName = coalesceSuppliers(
@@ -118,42 +116,58 @@ public class HealthcareXMLAttachedToInvoiceListener implements AttachmentListene
 
 			final CrossVersionRequestConverter requestConverter = crossVersionServiceRegistry.getRequestConverterForXsdName(xsdName);
 			final XmlRequest xRequest = requestConverter.toCrossVersionRequest(new ByteArrayInputStream(attachmentData));
-			final XmlPatient patient = xRequest.getPayload().getBody().getTiers().getPatient();
-			final XmlBiller biller = xRequest.getPayload().getBody().getTiers().getBiller();
-			final ExternalId externalId = HealthcareCHHelper.createBPartnerExternalIdForPatient(biller.getEanParty(), patient.getSsn());
-			if (externalId == null)
-			{
-				logger.debug("patient-XML data extracted from attachmentEntry with id={} (filename={}) has no patient-SSN or biller-EAN; -> doing nothing",
-						attachmentEntry.getId(), attachmentEntry.getFilename());
-				return ListenerWorkStatus.SUCCESS;
-			}
 
-			final ImmutableList<BPartnerComposite> bpartners = bpartnerCompositeRepository.getByQuery(BPartnerQuery.builder().externalId(externalId).build());
-			if (bpartners.isEmpty())
-			{
-				logger.debug("externalId={} of the patient-XML data extracted from attachmentEntry with id={} (filename={}) has no matching C_BPartner; -> doing nothing",
-						externalId.getValue(), attachmentEntry.getId(), attachmentEntry.getFilename());
-				return ListenerWorkStatus.SUCCESS;
-			}
-			final BPartnerComposite bPartner = CollectionUtils.singleElement(bpartners);
+			extractBeneficiaryToInvoice(xRequest, invoiceRecord, attachmentEntry);
 
-			final int beneficiaryRepoId = bPartner.getBpartner().getId().getRepoId();
-			invoiceRecord.setBeneficiary_BPartner_ID(beneficiaryRepoId);
-			logger.debug("set Beneficiary_BPartner_ID={} from the patient-XML data's SSN={} extracted from attachmentEntry with id={} (filename={})",
-					beneficiaryRepoId, patient.getSsn(), attachmentEntry.getId(), attachmentEntry.getFilename());
+			healthcareXMLToInvoiceDetailPersister.extractInvoiceDetails(xRequest, invoiceRecord);
 
-			final BPartnerLocation location = bPartner
-					.extractShipToLocation()
-					.orElseGet(() -> bPartner.extractBillToLocation().orElse(null));
-			if (location != null)
-			{
-				invoiceRecord.setBeneficiary_Location_ID(location.getId().getRepoId());
-				logger.debug("set setBeneficiary_Location_ID={} from the patient-XML data's SSN={} extracted from attachmentEntry with id={} (filename={})",
-						location.getId().getRepoId(), patient.getSsn(), attachmentEntry.getId(), attachmentEntry.getFilename());
-			}
-
-			saveRecord(invoiceRecord);
 			return ListenerWorkStatus.SUCCESS;
 		}
 	}
+
+	private void extractBeneficiaryToInvoice(
+			@NonNull final XmlRequest xRequest,
+			@NonNull final I_C_Invoice invoiceRecord,
+			@NonNull final AttachmentEntry attachmentEntry /*needed for logging*/)
+	{
+		final XmlPatient patient = xRequest.getPayload().getBody().getTiers().getPatient();
+		final XmlBiller biller = xRequest.getPayload().getBody().getTiers().getBiller();
+		final ExternalId externalId = HealthcareCHHelper.createBPartnerExternalIdForPatient(biller.getEanParty(), patient.getSsn());
+		if (externalId == null)
+		{
+			logger.debug("patient-XML data extracted from attachmentEntry with id={} (filename={}) has no patient-SSN or biller-EAN; -> doing nothing",
+					attachmentEntry.getId(), attachmentEntry.getFilename());
+		}
+
+		final ImmutableList<BPartnerComposite> bpartners = bpartnerCompositeRepository.getByQuery(BPartnerQuery.builder().externalId(externalId).build());
+		if (bpartners.isEmpty())
+		{
+			logger.debug("externalId={} of the patient-XML data extracted from attachmentEntry with id={} (filename={}) has no matching C_BPartner; -> doing nothing",
+					externalId.getValue(), attachmentEntry.getId(), attachmentEntry.getFilename());
+		}
+		final BPartnerComposite bPartner = CollectionUtils.singleElement(bpartners);
+
+		if (invoiceRecord.getBeneficiary_BPartner_ID() > 0)
+		{
+			logger.debug("C_Invoice with ID={} already has a Beneficiary_BPartner_ID > 0; -> doing nothing",
+					invoiceRecord.getC_Invoice_ID());
+		}
+
+		final int beneficiaryRepoId = bPartner.getBpartner().getId().getRepoId();
+		invoiceRecord.setBeneficiary_BPartner_ID(beneficiaryRepoId);
+		logger.debug("set Beneficiary_BPartner_ID={} from the patient-XML data's SSN={} extracted from attachmentEntry with id={} (filename={})",
+				beneficiaryRepoId, patient.getSsn(), attachmentEntry.getId(), attachmentEntry.getFilename());
+
+		final BPartnerLocation location = bPartner
+				.extractShipToLocation()
+				.orElseGet(() -> bPartner.extractBillToLocation().orElse(null));
+		if (location != null)
+		{
+			invoiceRecord.setBeneficiary_Location_ID(location.getId().getRepoId());
+			logger.debug("set setBeneficiary_Location_ID={} from the patient-XML data's SSN={} extracted from attachmentEntry with id={} (filename={})",
+					location.getId().getRepoId(), patient.getSsn(), attachmentEntry.getId(), attachmentEntry.getFilename());
+		}
+		saveRecord(invoiceRecord);
+	}
+
 }

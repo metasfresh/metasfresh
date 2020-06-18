@@ -2,7 +2,7 @@
  * #%L
  * metasfresh-webui-api
  * %%
- * Copyright (C) 2019 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,19 +22,22 @@
 
 package de.metas.ui.web.quickinput.field;
 
-import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.IHUPIItemProductDAO;
+import de.metas.handlingunits.IHUPIItemProductQuery;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
-import de.metas.handlingunits.model.I_M_ProductPrice;
+import de.metas.lang.SOTrx;
 import de.metas.pricing.PriceListId;
+import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.service.IPriceListDAO;
-import de.metas.pricing.service.ProductPrices;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrx;
 import org.compiere.model.I_M_PriceList_Version;
+import org.compiere.util.Env;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nullable;
+import java.util.List;
 import java.util.Optional;
 
 @Component
@@ -52,16 +55,25 @@ public class PackingItemProductFieldHelper
 			return defaultPIProduct;
 		}
 
-		//if not found, check the default packing item for product
-		return huPIItemProductsRepo.retrieveDefaultForProduct( defaultPackingItemCriteria.getProductId(),
-				defaultPackingItemCriteria.getBPartnerLocationId().getBpartnerId(), defaultPackingItemCriteria.getDate() );
+		if (SOTrx.SALES.equals(defaultPackingItemCriteria.getSoTrx()))
+		{
+			// Sales Orders: if no Packing Instruction is set on Product Price, check the default Packing Item for Product (set in CU-TU Allocations)
+			return huPIItemProductsRepo.retrieveDefaultForProduct(defaultPackingItemCriteria.getProductId(),
+					defaultPackingItemCriteria.getBPartnerLocationId().getBpartnerId(), defaultPackingItemCriteria.getDate());
+		}
+		else
+		{
+			// Purchase Orders: only the Packing Instructions which are set on Purchase Product Prices are used.
+			// Therefore at this step we return nothing.
+			return Optional.empty();
+		}
 	}
 
 	private Optional<I_M_HU_PI_Item_Product> getDefaultPackingMaterialFromPriceList(@NonNull final DefaultPackingItemCriteria defaultPackingItemCriteria)
 	{
 
-		final PriceListId priceListId = Optional.ofNullable( defaultPackingItemCriteria.getPriceListId() )
-												.orElseGet( () -> getPriceListIdFor(defaultPackingItemCriteria) );
+		final PriceListId priceListId = Optional.ofNullable(defaultPackingItemCriteria.getPriceListId())
+				.orElseGet(() -> getPriceListIdFor(defaultPackingItemCriteria));
 
 		if (priceListId == null)
 		{
@@ -76,16 +88,18 @@ public class PackingItemProductFieldHelper
 			return Optional.empty();
 		}
 
-		return ProductPrices
-				.newQuery(priceListVersion)
-				.setProductId(defaultPackingItemCriteria.getProductId())
-				// TODO: check ASI too
-				.list(I_M_ProductPrice.class)
-				.stream()
-				.map(productPrice -> HUPIItemProductId.ofRepoIdOrNone(productPrice.getM_HU_PI_Item_Product_ID()))
-				.filter(id -> HUPIItemProductId.isRegular(id))
-				.findFirst()
-				.map(huPIItemProductsRepo::getById);
+		// TODO: check ASI too
+		final IHUPIItemProductDAO piItemProductDAO = Services.get(IHUPIItemProductDAO.class);
+		final IHUPIItemProductQuery queryVO = piItemProductDAO.createHUPIItemProductQuery();
+		queryVO.setM_Product_ID(defaultPackingItemCriteria.getProductId().getRepoId());
+		queryVO.setBPartnerId(defaultPackingItemCriteria.getBPartnerLocationId().getBpartnerId());
+		queryVO.setAllowVirtualPI(false);
+		queryVO.setDate(defaultPackingItemCriteria.getDate());
+		queryVO.setAllowAnyProduct(false);
+		queryVO.setAllowAnyPartner(false);
+		queryVO.setPriceListVersionId(PriceListVersionId.ofRepoId(priceListVersion.getM_PriceList_Version_ID()));
+		final List<I_M_HU_PI_Item_Product> itemProducts = piItemProductDAO.retrieveHUItemProducts(Env.getCtx(), queryVO, ITrx.TRXNAME_ThreadInherited);
+		return itemProducts.stream().findFirst();
 	}
 
 	@Nullable
@@ -94,6 +108,6 @@ public class PackingItemProductFieldHelper
 		return priceListsRepo.retrievePriceListIdByPricingSyst(
 				defaultPackingItemCriteria.getPricingSystemId(),
 				defaultPackingItemCriteria.getBPartnerLocationId(),
-				defaultPackingItemCriteria.getSoTrx() );
+				defaultPackingItemCriteria.getSoTrx());
 	}
 }

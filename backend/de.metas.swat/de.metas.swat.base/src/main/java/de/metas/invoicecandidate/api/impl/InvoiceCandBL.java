@@ -193,6 +193,33 @@ import de.metas.util.lang.Percent;
 import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 
+import static de.metas.util.Check.assume;
+import static de.metas.util.Check.assumeGreaterThanZero;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+
+/*
+ * #%L
+ * de.metas.swat.base
+ * %%
+ * Copyright (C) 2015 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 public class InvoiceCandBL implements IInvoiceCandBL
 {
 	private static final AdMessageKey MSG_INVOICE_CAND_BL_INVOICING_SKIPPED_IS_TO_CLEAR = AdMessageKey.of("InvoiceCandBL_Invoicing_Skipped_IsToClear");
@@ -874,6 +901,13 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			return true;
 		}
 
+		if (ic.isSimulation())
+		{
+			Loggables.withLogger(logger, Level.DEBUG).addLog(" #isSkipCandidateFromInvoicing: Skipping IC: {},"
+							+ " as it's a simulation and it shouldn't be invoiced!", ic.getC_Invoice_Candidate_ID());
+			return true;
+		}
+
 		// flagged via field color
 		// ignore candidates that can't be invoiced yet
 		final LocalDate dateToInvoice = getDateToInvoice(ic);
@@ -1207,8 +1241,8 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		final I_C_Invoice_Candidate invoiceCand = ila.getC_Invoice_Candidate();
 
 		final ICompositeQueryUpdater<I_C_Invoice_Detail> queryUpdater = queryBL.createCompositeQueryUpdater(I_C_Invoice_Detail.class)
-				.addSetColumnValue(org.adempiere.model.I_C_Invoice_Detail.COLUMNNAME_C_InvoiceLine_ID, invoiceLine.getC_InvoiceLine_ID())
-				.addSetColumnValue(org.adempiere.model.I_C_Invoice_Detail.COLUMNNAME_C_Invoice_ID, invoiceLine.getC_Invoice_ID());
+				.addSetColumnValue(org.compiere.model.I_C_Invoice_Detail.COLUMNNAME_C_InvoiceLine_ID, invoiceLine.getC_InvoiceLine_ID())
+				.addSetColumnValue(org.compiere.model.I_C_Invoice_Detail.COLUMNNAME_C_Invoice_ID, invoiceLine.getC_Invoice_ID());
 		queryBL
 				.createQueryBuilder(I_C_Invoice_Detail.class, ila)
 				.addEqualsFilter(I_C_Invoice_Detail.COLUMNNAME_C_Invoice_Candidate_ID, invoiceCand.getC_Invoice_Candidate_ID())

@@ -451,8 +451,6 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 
 	/**
 	 * Account from Default Product Category
-	 *
-	 * @param AcctType see ACCTTYPE_* (1..8)
 	 * @param as       accounting schema
 	 * @return Requested Product Account
 	 */

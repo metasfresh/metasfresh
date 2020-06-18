@@ -142,6 +142,7 @@ public class ViewRestController
 		final CreateViewRequest request = CreateViewRequest.builder(windowId, jsonRequest.getViewType())
 				.setProfileId(jsonRequest.getProfileId())
 				.setReferencingDocumentPaths(jsonRequest.getReferencingDocumentPaths())
+				.setDocumentReferenceId(jsonRequest.getDocumentReferenceId().orElse(null))
 				// .setStickyFilters(stickyFilters) // none
 				.setFiltersFromJSON(jsonRequest.getFilters())
 				.setFilterOnlyIds(jsonRequest.getFilterOnlyIds())

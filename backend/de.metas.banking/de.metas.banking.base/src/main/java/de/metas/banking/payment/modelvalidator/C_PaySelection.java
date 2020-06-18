@@ -61,8 +61,6 @@ public class C_PaySelection
 
 	/**
 	 * Remove line if currency does not match.
-	 *
-	 * @param paySelectionLine
 	 */
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = { I_C_PaySelection.COLUMNNAME_C_BP_BankAccount_ID })
 	public void validateBankAccountCurrency(final I_C_PaySelection paySelection)

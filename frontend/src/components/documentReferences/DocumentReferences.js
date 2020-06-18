@@ -69,13 +69,19 @@ class DocumentReferences extends Component {
     }
   };
 
-  handleReferenceClick = ({ targetWindowId, filter, ctrlKeyPressed }) => {
+  handleReferenceClick = ({
+    targetWindowId,
+    referenceId,
+    filter,
+    ctrlKeyPressed,
+  }) => {
     const { dispatch, windowId, documentId } = this.props;
 
     const url = buildRelatedDocumentsViewUrl({
       targetWindowId,
       windowId,
       documentId,
+      referenceId,
     });
 
     dispatch(setFilter(filter, targetWindowId));

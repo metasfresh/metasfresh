@@ -423,10 +423,6 @@ class DocLine_Allocation extends DocLine<Doc_AllocationHdr>
 
 	/**
 	 * Get Payment (Unallocated Payment or Payment Selection) Acct of Bank Account
-	 *
-	 * @param as accounting schema
-	 * @param C_Payment_ID payment
-	 * @return acct
 	 */
 	private MAccount getPaymentAcct(@NonNull final AcctSchema as, @NonNull final PaymentId paymentId)
 	{
