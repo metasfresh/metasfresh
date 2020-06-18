@@ -63,7 +63,26 @@ describe('Widget helpers', () => {
         widgetType: 'Amount',
         precision: 0,
       });
+
       expect(resultToCheckThree).toBe(false);
+    });
+
+    it('test null and empty object as value', () => {
+      const resultToCheckNull = validatePrecision({
+        widgetValue: null,
+        widgetType: 'Quantity',
+        precision: 0,
+      });
+      expect(resultToCheckNull).toBe(false);
+
+
+      const resultToCheckEmptyObj = validatePrecision({
+        widgetValue: {},
+        widgetType: 'Amount',
+        precision: 0,
+      });
+
+      expect(resultToCheckEmptyObj).toBe(false);
     });
   });
 });

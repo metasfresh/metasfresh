@@ -39,6 +39,13 @@ export function formatValueByWidgetType({ widgetType, value }) {
 export function validatePrecision({ widgetValue, widgetType, precision }) {
   let precisionProcessed = precision;
 
+  if (!widgetValue) {
+    return false;
+  }
+  if (widgetValue && typeof widgetValue !== 'string') {
+    return false;
+  }
+
   if (widgetType === 'Integer' || widgetType === 'Quantity') {
     precisionProcessed = 0;
   }
