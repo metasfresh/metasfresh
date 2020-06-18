@@ -6,37 +6,18 @@ import java.sql.ResultSet;
 import java.util.Properties;
 
 /** Generated Model for C_BankStatement
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
 @SuppressWarnings("javadoc")
 public class X_C_BankStatement extends org.compiere.model.PO implements I_C_BankStatement, org.compiere.model.I_Persistent 
 {
 
-	/**
-	 *
-	 */
-	private static final long serialVersionUID = -353914175L;
+	private static final long serialVersionUID = -139072276L;
 
     /** Standard Constructor */
     public X_C_BankStatement (Properties ctx, int C_BankStatement_ID, String trxName)
     {
       super (ctx, C_BankStatement_ID, trxName);
-      /** if (C_BankStatement_ID == 0)
-        {
-			setC_BankStatement_ID (0);
-			setC_BP_BankAccount_ID (0);
-			setDocAction (null); // CO
-			setDocStatus (null); // DR
-			setDocumentNo (null);
-			setEndingBalance (BigDecimal.ZERO);
-			setIsApproved (false); // N
-			setIsManual (true); // Y
-			setIsReconciled (false); // N
-			setName (null); // @#Date@
-			setPosted (false); // N
-			setProcessed (false);
-			setStatementDate (new Timestamp( System.currentTimeMillis() )); // @Date@
-        } */
     }
 
     /** Load Constructor */
@@ -46,40 +27,26 @@ public class X_C_BankStatement extends org.compiere.model.PO implements I_C_Bank
     }
 
 
-    /** Load Meta Data */
-    @Override
-    protected org.compiere.model.POInfo initPO (Properties ctx)
-    {
-      org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
-      return poi;
-    }
+	/** Load Meta Data */
+	@Override
+	protected org.compiere.model.POInfo initPO(Properties ctx)
+	{
+		return org.compiere.model.POInfo.getPOInfo(Table_Name);
+	}
 
-	/** Set Anfangssaldo.
-		@param BeginningBalance 
-		Balance prior to any transactions
-	  */
 	@Override
 	public void setBeginningBalance (java.math.BigDecimal BeginningBalance)
 	{
 		set_Value (COLUMNNAME_BeginningBalance, BeginningBalance);
 	}
 
-	/** Get Anfangssaldo.
-		@return Balance prior to any transactions
-	  */
 	@Override
-	public java.math.BigDecimal getBeginningBalance () 
+	public java.math.BigDecimal getBeginningBalance() 
 	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_BeginningBalance);
-		if (bd == null)
-			 return BigDecimal.ZERO;
-		return bd;
+		BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_BeginningBalance);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
-	/** Set Bankauszug.
-		@param C_BankStatement_ID 
-		Bank Statement of account
-	  */
 	@Override
 	public void setC_BankStatement_ID (int C_BankStatement_ID)
 	{
@@ -89,34 +56,12 @@ public class X_C_BankStatement extends org.compiere.model.PO implements I_C_Bank
 			set_ValueNoCheck (COLUMNNAME_C_BankStatement_ID, Integer.valueOf(C_BankStatement_ID));
 	}
 
-	/** Get Bankauszug.
-		@return Bank Statement of account
-	  */
 	@Override
-	public int getC_BankStatement_ID () 
+	public int getC_BankStatement_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_BankStatement_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_C_BankStatement_ID);
 	}
 
-	@Override
-	public org.compiere.model.I_C_BP_BankAccount getC_BP_BankAccount()
-	{
-		return get_ValueAsPO(COLUMNNAME_C_BP_BankAccount_ID, org.compiere.model.I_C_BP_BankAccount.class);
-	}
-
-	@Override
-	public void setC_BP_BankAccount(org.compiere.model.I_C_BP_BankAccount C_BP_BankAccount)
-	{
-		set_ValueFromPO(COLUMNNAME_C_BP_BankAccount_ID, org.compiere.model.I_C_BP_BankAccount.class, C_BP_BankAccount);
-	}
-
-	/** Set Bankverbindung.
-		@param C_BP_BankAccount_ID 
-		Bankverbindung des Geschäftspartners
-	  */
 	@Override
 	public void setC_BP_BankAccount_ID (int C_BP_BankAccount_ID)
 	{
@@ -126,22 +71,12 @@ public class X_C_BankStatement extends org.compiere.model.PO implements I_C_Bank
 			set_Value (COLUMNNAME_C_BP_BankAccount_ID, Integer.valueOf(C_BP_BankAccount_ID));
 	}
 
-	/** Get Bankverbindung.
-		@return Bankverbindung des Geschäftspartners
-	  */
 	@Override
-	public int getC_BP_BankAccount_ID () 
+	public int getC_BP_BankAccount_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_BP_BankAccount_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_C_BP_BankAccount_ID);
 	}
 
-	/** Set Belegart.
-		@param C_DocType_ID 
-		Belegart oder Verarbeitungsvorgaben
-	  */
 	@Override
 	public void setC_DocType_ID (int C_DocType_ID)
 	{
@@ -151,49 +86,32 @@ public class X_C_BankStatement extends org.compiere.model.PO implements I_C_Bank
 			set_Value (COLUMNNAME_C_DocType_ID, Integer.valueOf(C_DocType_ID));
 	}
 
-	/** Get Belegart.
-		@return Belegart oder Verarbeitungsvorgaben
-	  */
 	@Override
-	public int getC_DocType_ID () 
+	public int getC_DocType_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_DocType_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_C_DocType_ID);
 	}
 
-	/** Set Position(en) kopieren von.
-		@param CreateFrom 
-		Process which will generate a new document lines based on an existing document
-	  */
 	@Override
 	public void setCreateFrom (java.lang.String CreateFrom)
 	{
 		set_Value (COLUMNNAME_CreateFrom, CreateFrom);
 	}
 
-	/** Get Position(en) kopieren von.
-		@return Process which will generate a new document lines based on an existing document
-	  */
 	@Override
-	public java.lang.String getCreateFrom () 
+	public java.lang.String getCreateFrom() 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_CreateFrom);
 	}
 
-	/** Set Beschreibung.
-		@param Description Beschreibung	  */
 	@Override
 	public void setDescription (java.lang.String Description)
 	{
 		set_Value (COLUMNNAME_Description, Description);
 	}
 
-	/** Get Beschreibung.
-		@return Beschreibung	  */
 	@Override
-	public java.lang.String getDescription () 
+	public java.lang.String getDescription() 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_Description);
 	}
@@ -233,10 +151,6 @@ public class X_C_BankStatement extends org.compiere.model.PO implements I_C_Bank
 	public static final String DOCACTION_WaitComplete = "WC";
 	/** UnClose = UC */
 	public static final String DOCACTION_UnClose = "UC";
-	/** Set Belegverarbeitung.
-		@param DocAction 
-		The targeted status of the document
-	  */
 	@Override
 	public void setDocAction (java.lang.String DocAction)
 	{
@@ -244,11 +158,8 @@ public class X_C_BankStatement extends org.compiere.model.PO implements I_C_Bank
 		set_Value (COLUMNNAME_DocAction, DocAction);
 	}
 
-	/** Get Belegverarbeitung.
-		@return The targeted status of the document
-	  */
 	@Override
-	public java.lang.String getDocAction () 
+	public java.lang.String getDocAction() 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_DocAction);
 	}
@@ -282,10 +193,6 @@ public class X_C_BankStatement extends org.compiere.model.PO implements I_C_Bank
 	public static final String DOCSTATUS_WaitingPayment = "WP";
 	/** WaitingConfirmation = WC */
 	public static final String DOCSTATUS_WaitingConfirmation = "WC";
-	/** Set Belegstatus.
-		@param DocStatus 
-		The current status of the document
-	  */
 	@Override
 	public void setDocStatus (java.lang.String DocStatus)
 	{
@@ -293,317 +200,179 @@ public class X_C_BankStatement extends org.compiere.model.PO implements I_C_Bank
 		set_Value (COLUMNNAME_DocStatus, DocStatus);
 	}
 
-	/** Get Belegstatus.
-		@return The current status of the document
-	  */
 	@Override
-	public java.lang.String getDocStatus () 
+	public java.lang.String getDocStatus() 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_DocStatus);
 	}
 
-	/** Set Nr..
-		@param DocumentNo 
-		Document sequence number of the document
-	  */
 	@Override
 	public void setDocumentNo (java.lang.String DocumentNo)
 	{
 		set_Value (COLUMNNAME_DocumentNo, DocumentNo);
 	}
 
-	/** Get Nr..
-		@return Document sequence number of the document
-	  */
 	@Override
-	public java.lang.String getDocumentNo () 
+	public java.lang.String getDocumentNo() 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_DocumentNo);
 	}
 
-	/** Set Auszugsdatum ELV.
-		@param EftStatementDate 
-		Electronic Funds Transfer Statement Date
-	  */
 	@Override
 	public void setEftStatementDate (java.sql.Timestamp EftStatementDate)
 	{
 		set_Value (COLUMNNAME_EftStatementDate, EftStatementDate);
 	}
 
-	/** Get Auszugsdatum ELV.
-		@return Electronic Funds Transfer Statement Date
-	  */
 	@Override
-	public java.sql.Timestamp getEftStatementDate () 
+	public java.sql.Timestamp getEftStatementDate() 
 	{
-		return (java.sql.Timestamp)get_Value(COLUMNNAME_EftStatementDate);
+		return get_ValueAsTimestamp(COLUMNNAME_EftStatementDate);
 	}
 
-	/** Set ELV Auszugs-Referenz.
-		@param EftStatementReference 
-		Electronic Funds Transfer Statement Reference
-	  */
 	@Override
 	public void setEftStatementReference (java.lang.String EftStatementReference)
 	{
 		set_Value (COLUMNNAME_EftStatementReference, EftStatementReference);
 	}
 
-	/** Get ELV Auszugs-Referenz.
-		@return Electronic Funds Transfer Statement Reference
-	  */
 	@Override
-	public java.lang.String getEftStatementReference () 
+	public java.lang.String getEftStatementReference() 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_EftStatementReference);
 	}
 
-	/** Set Endsaldo.
-		@param EndingBalance 
-		Ending  or closing balance
-	  */
 	@Override
 	public void setEndingBalance (java.math.BigDecimal EndingBalance)
 	{
 		set_Value (COLUMNNAME_EndingBalance, EndingBalance);
 	}
 
-	/** Get Endsaldo.
-		@return Ending  or closing balance
-	  */
 	@Override
-	public java.math.BigDecimal getEndingBalance () 
+	public java.math.BigDecimal getEndingBalance() 
 	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_EndingBalance);
-		if (bd == null)
-			 return BigDecimal.ZERO;
-		return bd;
+		BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_EndingBalance);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
-	/** Set Freigegeben.
-		@param IsApproved 
-		Indicates if this document requires approval
-	  */
 	@Override
 	public void setIsApproved (boolean IsApproved)
 	{
 		set_Value (COLUMNNAME_IsApproved, Boolean.valueOf(IsApproved));
 	}
 
-	/** Get Freigegeben.
-		@return Indicates if this document requires approval
-	  */
 	@Override
-	public boolean isApproved () 
+	public boolean isApproved() 
 	{
-		Object oo = get_Value(COLUMNNAME_IsApproved);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_IsApproved);
 	}
 
-	/** Set Manuell.
-		@param IsManual 
-		This is a manual process
-	  */
 	@Override
 	public void setIsManual (boolean IsManual)
 	{
 		set_Value (COLUMNNAME_IsManual, Boolean.valueOf(IsManual));
 	}
 
-	/** Get Manuell.
-		@return This is a manual process
-	  */
 	@Override
-	public boolean isManual () 
+	public boolean isManual() 
 	{
-		Object oo = get_Value(COLUMNNAME_IsManual);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_IsManual);
 	}
 
-	/** Set Abgeglichen.
-		@param IsReconciled 
-		Zeigt an ob eine Zahlung bereits mit einem Kontoauszug abgeglichen wurde
-	  */
 	@Override
 	public void setIsReconciled (boolean IsReconciled)
 	{
 		set_Value (COLUMNNAME_IsReconciled, Boolean.valueOf(IsReconciled));
 	}
 
-	/** Get Abgeglichen.
-		@return Zeigt an ob eine Zahlung bereits mit einem Kontoauszug abgeglichen wurde
-	  */
 	@Override
-	public boolean isReconciled () 
+	public boolean isReconciled() 
 	{
-		Object oo = get_Value(COLUMNNAME_IsReconciled);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_IsReconciled);
 	}
 
-	/** Set Match Statement.
-		@param MatchStatement Match Statement	  */
 	@Override
 	public void setMatchStatement (java.lang.String MatchStatement)
 	{
 		set_Value (COLUMNNAME_MatchStatement, MatchStatement);
 	}
 
-	/** Get Match Statement.
-		@return Match Statement	  */
 	@Override
-	public java.lang.String getMatchStatement () 
+	public java.lang.String getMatchStatement() 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_MatchStatement);
 	}
 
-	/** Set Name.
-		@param Name Name	  */
 	@Override
 	public void setName (java.lang.String Name)
 	{
 		set_Value (COLUMNNAME_Name, Name);
 	}
 
-	/** Get Name.
-		@return Name	  */
 	@Override
-	public java.lang.String getName () 
+	public java.lang.String getName() 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_Name);
 	}
 
-	/** Set Buchungsstatus.
-		@param Posted 
-		Buchungsstatus
-	  */
 	@Override
 	public void setPosted (boolean Posted)
 	{
 		set_Value (COLUMNNAME_Posted, Boolean.valueOf(Posted));
 	}
 
-	/** Get Buchungsstatus.
-		@return Buchungsstatus
-	  */
 	@Override
-	public boolean isPosted () 
+	public boolean isPosted() 
 	{
-		Object oo = get_Value(COLUMNNAME_Posted);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_Posted);
 	}
 
-	/** Set Verarbeitet.
-		@param Processed 
-		Checkbox sagt aus, ob der Datensatz verarbeitet wurde. 
-	  */
 	@Override
 	public void setProcessed (boolean Processed)
 	{
 		set_Value (COLUMNNAME_Processed, Boolean.valueOf(Processed));
 	}
 
-	/** Get Verarbeitet.
-		@return Checkbox sagt aus, ob der Datensatz verarbeitet wurde. 
-	  */
 	@Override
-	public boolean isProcessed () 
+	public boolean isProcessed() 
 	{
-		Object oo = get_Value(COLUMNNAME_Processed);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_Processed);
 	}
 
-	/** Set Verarbeiten.
-		@param Processing Verarbeiten	  */
 	@Override
 	public void setProcessing (boolean Processing)
 	{
 		set_Value (COLUMNNAME_Processing, Boolean.valueOf(Processing));
 	}
 
-	/** Get Verarbeiten.
-		@return Verarbeiten	  */
 	@Override
-	public boolean isProcessing () 
+	public boolean isProcessing() 
 	{
-		Object oo = get_Value(COLUMNNAME_Processing);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_Processing);
 	}
 
-	/** Set Auszugsdatum.
-		@param StatementDate 
-		Date of the statement
-	  */
 	@Override
 	public void setStatementDate (java.sql.Timestamp StatementDate)
 	{
 		set_Value (COLUMNNAME_StatementDate, StatementDate);
 	}
 
-	/** Get Auszugsdatum.
-		@return Date of the statement
-	  */
 	@Override
-	public java.sql.Timestamp getStatementDate () 
+	public java.sql.Timestamp getStatementDate() 
 	{
-		return (java.sql.Timestamp)get_Value(COLUMNNAME_StatementDate);
+		return get_ValueAsTimestamp(COLUMNNAME_StatementDate);
 	}
 
-	/** Set Auszugsdifferenz.
-		@param StatementDifference 
-		Difference between statement ending balance and actual ending balance
-	  */
 	@Override
 	public void setStatementDifference (java.math.BigDecimal StatementDifference)
 	{
 		set_Value (COLUMNNAME_StatementDifference, StatementDifference);
 	}
 
-	/** Get Auszugsdifferenz.
-		@return Difference between statement ending balance and actual ending balance
-	  */
 	@Override
-	public java.math.BigDecimal getStatementDifference () 
+	public java.math.BigDecimal getStatementDifference() 
 	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_StatementDifference);
-		if (bd == null)
-			 return BigDecimal.ZERO;
-		return bd;
+		BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_StatementDifference);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 }

@@ -276,6 +276,7 @@ public class ESRTestBase
 
 		// bank account
 		final I_C_BP_BankAccount account = newInstance(I_C_BP_BankAccount.class, contextProvider);
+		account.setC_Bank_ID(999);
 		account.setIsEsrAccount(true);
 		account.setAD_Org_ID(Env.getAD_Org_ID(getCtx()));
 		account.setAD_User_ID(Env.getAD_User_ID(getCtx()));

@@ -1,5 +1,7 @@
 package de.metas.invoicecandidate.api.impl;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 /*
  * #%L
  * de.metas.swat.base
@@ -23,23 +25,28 @@ package de.metas.invoicecandidate.api.impl;
  */
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IMutable;
 import org.adempiere.util.lang.Mutable;
+import org.compiere.SpringContextHolder;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.compiere.util.TrxRunnable;
-import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.currency.CurrencyRepository;
 import de.metas.invoicecandidate.AbstractICTestSupport;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.api.IInvoiceCandidateEnqueueResult;
+import de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateRecordService;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.money.MoneyService;
 import de.metas.process.PInstanceId;
 import de.metas.util.Services;
 import de.metas.util.time.FixedTimeSource;
@@ -47,6 +54,13 @@ import de.metas.util.time.SystemTime;
 
 public class InvoiceCandidateEnqueuerTest extends AbstractICTestSupport
 {
+	@Before
+	public void beforeEach()
+	{
+		SpringContextHolder.registerJUnitBean(new InvoiceCandidateRecordService());
+		SpringContextHolder.registerJUnitBean(new MoneyService(new CurrencyRepository()));
+	}
+
 	/**
 	 * Test case:
 	 * <ul>
@@ -85,9 +99,9 @@ public class InvoiceCandidateEnqueuerTest extends AbstractICTestSupport
 
 		ic1.setQtyToInvoice_Override(BigDecimal.valueOf(qty)); // to make sure it's invoiced
 		ic1.setDateInvoiced(TimeUtil.getDay(2015, 1, 1));
+		ic1.setApprovalForInvoicing(false);
 		InterfaceWrapperHelper.save(ic1);
 		invoiceCandDAO.invalidateCand(ic1);
-
 
 		final I_C_Invoice_Candidate ic2 = createInvoiceCandidate()
 				.setBillBPartnerAndLocationId(billBPartnerAndLocationId)
@@ -98,6 +112,7 @@ public class InvoiceCandidateEnqueuerTest extends AbstractICTestSupport
 				.build();
 		ic2.setQtyToInvoice_Override(BigDecimal.valueOf(qty)); // to make sure it's invoiced
 		// ic2.setDateInvoiced(TimeUtil.getDay(2015, 1, 1)); // DON'T set it
+		ic2.setApprovalForInvoicing(false);
 		InterfaceWrapperHelper.save(ic2);
 		invoiceCandDAO.invalidateCand(ic2);
 
@@ -106,24 +121,52 @@ public class InvoiceCandidateEnqueuerTest extends AbstractICTestSupport
 		final PInstanceId selectionId = POJOLookupMap.get().createSelectionFromModels(ic1, ic2);
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
 		final IMutable<IInvoiceCandidateEnqueueResult> enqueueResultRef = new Mutable<>();
-		trxManager.runInNewTrx(new TrxRunnable()
-		{
-			@Override
-			public void run(final String localTrxName)
-			{
-				final IInvoiceCandidateEnqueueResult result = new InvoiceCandidateEnqueuer()
-						.setContext(Env.getCtx())
-						.setInvoicingParams(createDefaultInvoicingParams())
-						.setFailOnChanges(false) // ... because we have some invalid candidates which we know that it will be updated here
-						.enqueueSelection(selectionId);
-				enqueueResultRef.setValue(result);
-			}
+		trxManager.runInNewTrx((TrxRunnable)localTrxName -> {
+			final IInvoiceCandidateEnqueueResult result = new InvoiceCandidateEnqueuer()
+					.setContext(Env.getCtx())
+					.setInvoicingParams(createDefaultInvoicingParams())
+					.setFailOnChanges(false) // ... because we have some invalid candidates which we know that it will be updated here
+					.enqueueSelection(selectionId);
+			enqueueResultRef.setValue(result);
 		});
 
 		//
 		// Validate the invoice enqueuing result
 		final IInvoiceCandidateEnqueueResult enqueueResult = enqueueResultRef.getValue();
-		Assert.assertEquals("Invalid EnqueuedWorkpackageCount", 1, enqueueResult.getWorkpackageEnqueuedCount());
-		Assert.assertEquals("Invalid InvoiceCandidateSelectionCount", 2, enqueueResult.getInvoiceCandidateEnqueuedCount());
+		assertThat(enqueueResult.getWorkpackageEnqueuedCount()).as("EnqueuedWorkpackageCount").isEqualTo(1);
+		assertThat(enqueueResult.getInvoiceCandidateEnqueuedCount()).as("InvoiceCandidateSelectionCount").isEqualTo(2);
+
+		InterfaceWrapperHelper.refresh(ic1);
+		assertThat(ic1.isApprovalForInvoicing()).isTrue();
+
+		InterfaceWrapperHelper.refresh(ic2);
+		assertThat(ic2.isApprovalForInvoicing()).isTrue();
+	}
+
+	@Test
+	public void checkApprovalForInvoicingIsSet()
+	{
+		//
+		// Create invoice candidates
+		final I_C_Invoice_Candidate ic1 = createInvoiceCandidate()
+				.setBillBPartnerAndLocationId(BPartnerLocationId.ofRepoId(1, 2))
+				.setPriceEntered(1)
+				.setQtyOrdered(1)
+				.setSOTrx(true)
+				.setManual(false)
+				.setDateInvoiced(LocalDate.parse("2020-06-01"))
+				.build();
+		//
+		// Enqueue them to be invoiced
+		final PInstanceId selectionId = POJOLookupMap.get().createSelectionFromModels(ic1);
+		final ITrxManager trxManager = Services.get(ITrxManager.class);
+		trxManager.callInNewTrx(() -> new InvoiceCandidateEnqueuer()
+				.setContext(Env.getCtx())
+				.setInvoicingParams(createDefaultInvoicingParams())
+				.setFailOnChanges(false) // ... because we have some invalid candidates which we know that it will be updated here
+				.enqueueSelection(selectionId));
+
+		InterfaceWrapperHelper.refresh(ic1);
+		assertThat(ic1.isApprovalForInvoicing()).isTrue();
 	}
 }

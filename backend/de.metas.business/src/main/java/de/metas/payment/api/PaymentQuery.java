@@ -2,13 +2,17 @@ package de.metas.payment.api;
 
 import javax.annotation.Nullable;
 
+import com.google.common.collect.ImmutableSet;
+
 import de.metas.bpartner.BPartnerId;
 import de.metas.document.engine.DocStatus;
 import de.metas.money.Money;
 import de.metas.payment.PaymentDirection;
+import de.metas.payment.PaymentId;
 import lombok.Builder;
 import lombok.Builder.Default;
 import lombok.NonNull;
+import lombok.Singular;
 import lombok.Value;
 
 /*
@@ -54,4 +58,8 @@ public class PaymentQuery
 
 	@Nullable
 	Money payAmt;
+
+	@Singular
+	@NonNull
+	ImmutableSet<PaymentId> excludePaymentIds;
 }

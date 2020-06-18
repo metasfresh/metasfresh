@@ -157,7 +157,7 @@ public class Doc_Inventory extends Doc<DocLine_Inventory>
 			return chargeAcct;
 		}
 
-		return getAccount(Doc.ACCTTYPE_InvDifferences, as);
+		return getAccount(AccountType.InvDifferences, as);
 	}
 
 }   // Doc_Inventory

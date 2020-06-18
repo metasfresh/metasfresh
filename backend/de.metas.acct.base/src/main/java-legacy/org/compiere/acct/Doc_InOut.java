@@ -318,7 +318,7 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 		//
 		// NotInvoicedReceipt CR
 		final FactLine cr = fact.createLine(line,
-				getAccount(Doc.ACCTTYPE_NotInvoicedReceipts, as),
+				getAccount(AccountType.NotInvoicedReceipts, as),
 				costs.getCurrencyId(),
 				null, mkCostsValueToUse(costs));
 		//
@@ -353,7 +353,7 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 
 		//
 		// NotInvoicedReceipt DR
-		final FactLine dr = fact.createLine(line, getAccount(Doc.ACCTTYPE_NotInvoicedReceipts, as),
+		final FactLine dr = fact.createLine(line, getAccount(AccountType.NotInvoicedReceipts, as),
 				costs.getCurrencyId(),
 				mkCostsValueToUse(costs), null);
 		if (dr == null)
@@ -426,8 +426,6 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 	 * Creating a not null cost value whose precision matches the given <code>C_Currency_ID</code>'s.
 	 * Goal of this method is to avoid the warnings in FactLine.setAmtSource().
 	 *
-	 * @param currencyId
-	 * @param costs
 	 * @return costs rounded to currency precision
 	 */
 	private BigDecimal mkCostsValueToUse(final CostAmount costs)
