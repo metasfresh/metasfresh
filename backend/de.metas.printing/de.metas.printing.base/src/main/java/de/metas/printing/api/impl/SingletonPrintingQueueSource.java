@@ -122,15 +122,6 @@ public class SingletonPrintingQueueSource extends AbstractPrintingQueueSource
 		this.persistPrintedFlag = persistPrintedFlag;
 	}
 
-	/**
-	 *
-	 * @return true if item's printed status will be persisted in database
-	 */
-	public boolean isPersistPrintedFlag()
-	{
-		return this.persistPrintedFlag;
-	}
-
 	@Override
 	public String getTrxName()
 	{
@@ -162,11 +153,4 @@ public class SingletonPrintingQueueSource extends AbstractPrintingQueueSource
 			temporaryPrinted = true;
 		}
 	}
-
-	@Override
-	public int countItems()
-	{
-		return 1;
-	}
-
 }

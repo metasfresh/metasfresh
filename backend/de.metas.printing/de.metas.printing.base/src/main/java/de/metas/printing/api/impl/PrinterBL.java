@@ -35,6 +35,7 @@ import java.util.Properties;
 
 import javax.print.attribute.standard.MediaSize;
 
+import de.metas.printing.LogicalPrinterId;
 import org.adempiere.model.PlainContextAware;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -147,8 +148,8 @@ public class PrinterBL implements IPrinterBL
 		boolean anythingCreated = false;
 		for (final I_AD_Printer_Matching printerMatching : printerMatchings)
 		{
-			final I_AD_Printer printer = load(printerMatching.getAD_Printer_ID(), I_AD_Printer.class);
-			final List<I_AD_Printer_Tray> trays = Services.get(IPrintingDAO.class).retrieveTrays(printer);
+			final LogicalPrinterId printerId = LogicalPrinterId.ofRepoId(printerMatching.getAD_Printer_ID());
+			final List<I_AD_Printer_Tray> trays = Services.get(IPrintingDAO.class).retrieveTrays(printerId);
 
 			for (final I_AD_Printer_Tray tray : trays)
 			{
@@ -241,8 +242,8 @@ public class PrinterBL implements IPrinterBL
 		{
 			// the old HW printer didn't have a tray, but the new one does
 			// create a new matching for every logical tray
-			final I_AD_Printer printer = load(printerMatching.getAD_Printer_ID(), I_AD_Printer.class);
-			for (final I_AD_Printer_Tray logicalTray : dao.retrieveTrays(printer))
+			final LogicalPrinterId printerId = LogicalPrinterId.ofRepoId(printerMatching.getAD_Printer_ID());
+			for (final I_AD_Printer_Tray logicalTray : dao.retrieveTrays(printerId))
 			{
 				final I_AD_PrinterTray_Matching trayMatching = newInstance(I_AD_PrinterTray_Matching.class, printerMatching);
 				trayMatching.setAD_Printer_Matching(printerMatching);

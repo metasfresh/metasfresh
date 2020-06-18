@@ -345,23 +345,4 @@ public class PlainPrintingDAO extends AbstractPrintingDAO
 
 		return result;
 	}
-
-
-	@Override
-	public List<I_AD_Printer_Tray> retrieveTrays(final I_AD_Printer printer)
-	{
-		return lookupMap.getRecords(I_AD_Printer_Tray.class, pojo -> {
-
-			if (!pojo.isActive())
-			{
-				return false;
-			}
-
-			if (pojo.getAD_Printer_ID() != printer.getAD_Printer_ID())
-			{
-				return false;
-			}
-			return true;
-		});
-	}
 }

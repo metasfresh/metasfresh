@@ -28,6 +28,7 @@ import java.util.Properties;
 
 import javax.print.attribute.standard.MediaSize;
 
+import de.metas.printing.LogicalPrinterId;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.IQuery;
@@ -197,7 +198,7 @@ public interface IPrintingDAO extends ISingletonService
 
 	List<I_AD_Printer_Matching> retrievePrinterMatchings(I_AD_PrinterHW printerHW);
 
-	List<I_AD_Printer_Tray> retrieveTrays(de.metas.adempiere.model.I_AD_Printer printer);
+	List<I_AD_Printer_Tray> retrieveTrays(LogicalPrinterId logicalPrinterId);
 
 	I_AD_Printer_Matching retrievePrinterMatchingOrNull(String hostKey, de.metas.adempiere.model.I_AD_Printer printer);
 

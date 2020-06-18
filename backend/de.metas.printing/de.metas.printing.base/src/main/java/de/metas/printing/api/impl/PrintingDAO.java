@@ -423,18 +423,4 @@ public class PrintingDAO extends AbstractPrintingDAO
 								+ ", " + I_AD_Printer.COLUMNNAME_PrinterName)
 				.list(I_AD_Printer.class);
 	}
-
-	@Override
-	public List<I_AD_Printer_Tray> retrieveTrays(final de.metas.adempiere.model.I_AD_Printer printer)
-	{
-		final Properties ctx = InterfaceWrapperHelper.getCtx(printer);
-		final String trxName = InterfaceWrapperHelper.getTrxName(printer);
-
-		final String whereClause = I_AD_Printer_Tray.COLUMNNAME_AD_Printer_ID + "=?";
-		return new Query(ctx, I_AD_Printer_Tray.Table_Name, whereClause, trxName)
-				.setParameters(printer.getAD_Printer_ID())
-				.setOnlyActiveRecords(true)
-				.setClient_ID()
-				.list(I_AD_Printer_Tray.class);
-	}
 }
