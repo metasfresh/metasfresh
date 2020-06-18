@@ -126,7 +126,7 @@ public class AbstractRSAllocationWithWeightAttributeTest extends AbstractWeightA
 		receiptSchedule = createReceiptSchedule(qty);
 
 		//
-		// Create WeightNet Adjuster instace for testing
+		// Create WeightNet Adjuster instance for testing
 		rsNetWeightAdjuster = new HUReceiptScheduleWeightNetAdjuster(huContext);
 
 		//

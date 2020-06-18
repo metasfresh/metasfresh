@@ -98,8 +98,6 @@ public class HUReceiptScheduleWeightNetAdjuster
 
 	public HUReceiptScheduleWeightNetAdjuster(final Properties ctx, final String trxName)
 	{
-		super();
-
 		_huContextInitial = Services.get(IHUContextFactory.class).createMutableHUContext(ctx, trxName);
 	}
 
@@ -183,7 +181,7 @@ public class HUReceiptScheduleWeightNetAdjuster
 			}
 
 			final I_M_HU vhu = rsa.getVHU();
-			Check.assumeNotNull(vhu, "vhu not null"); // shall not be null at this point
+			Check.assumeNotNull(vhu, "vhu may not be not null for rsa={}",rsa); // shall not be null at this point
 
 			final int vhuId = vhu.getM_HU_ID();
 			final BigDecimal rsaQtyAllocated = rsa.getHU_QtyAllocated();
