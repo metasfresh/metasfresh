@@ -13,14 +13,12 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.logging.LogManager;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.json.JSONDocumentFilter;
 import de.metas.ui.web.document.references.DocumentReference;
-import de.metas.ui.web.document.references.DocumentReferenceTargetWindow;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import lombok.NonNull;
@@ -112,7 +110,7 @@ public final class JSONDocumentReference
 	{
 		final String adLanguage = jsonOpts.getAdLanguage();
 
-		id = buildId(documentReference.getTargetWindow());
+		id = documentReference.getId().toJson();
 		priority = documentReference.getPriority().toInt();
 
 		internalName = documentReference.getInternalName();
@@ -126,18 +124,5 @@ public final class JSONDocumentReference
 
 		final Duration loadDuration = documentReference.getLoadDuration();
 		this.loadDuration = loadDuration != null ? TimeUtil.formatElapsed(loadDuration) : null;
-	}
-
-	@VisibleForTesting
-	static String buildId(@NonNull final DocumentReferenceTargetWindow targetWindow)
-	{
-		final StringBuilder id = new StringBuilder();
-		id.append(targetWindow.getWindowId().toJson());
-		if (targetWindow.getCategory() != null)
-		{
-			id.append("_").append(targetWindow.getCategory());
-		}
-
-		return id.toString();
 	}
 }
