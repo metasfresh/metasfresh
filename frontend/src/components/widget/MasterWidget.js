@@ -2,7 +2,11 @@ import PropTypes from 'prop-types';
 import React, { PureComponent } from 'react';
 import { connect } from 'react-redux';
 import Moment from 'moment-timezone';
-import * as windowActions from '../../actions/WindowActions';
+import {
+  openModal,
+  patch,
+  updatePropertyValue,
+} from '../../actions/WindowActions';
 import { getZoomIntoWindow } from '../../api';
 import { convertTimeStringToMoment } from '../../utils/documentListHelper';
 import { formatDateWithZeros } from '../../utils/documentListHelper';
@@ -265,9 +269,9 @@ MasterWidget.propTypes = {
 export default connect(
   null,
   {
-    openModal: windowActions.openModal,
-    patch: windowActions.patch,
-    updatePropertyValue: windowActions.updatePropertyValue,
+    openModal,
+    patch,
+    updatePropertyValue,
   },
   null,
   { forwardRef: true }
