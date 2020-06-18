@@ -1,89 +1,88 @@
 import PropTypes from 'prop-types';
-import React, { Component } from 'react';
+import React, { PureComponent } from 'react';
 import { connect } from 'react-redux';
 import Moment from 'moment-timezone';
-import * as windowActions from '../../actions/WindowActions';
+import {
+  openModal,
+  patch,
+  updatePropertyValue,
+} from '../../actions/WindowActions';
 import { getZoomIntoWindow } from '../../api';
 import { convertTimeStringToMoment } from '../../utils/documentListHelper';
 import { formatDateWithZeros } from '../../utils/documentListHelper';
 import RawWidget from './RawWidget';
+import {
+  validatePrecision,
+  formatValueByWidgetType,
+} from '../../utils/widgetHelper';
+import { DATE_FIELD_TYPES, TIME_FIELD_TYPES } from '../../constants/Constants';
+import _ from 'lodash';
 
-function isNumberField(widgetType) {
-  switch (widgetType) {
-    case 'Integer':
-    case 'Amount':
-    case 'Quantity':
-      return true;
-    default:
-      return false;
-  }
-}
-
-const dateParse = ['Date', 'DateTime', 'ZonedDateTime', 'Timestamp', 'Time'];
+const dateParse = [...DATE_FIELD_TYPES, ...TIME_FIELD_TYPES];
 
 /**
  * @file Class based component.
  * @module MasterWidget
  * @extends Component
  */
-class MasterWidget extends Component {
-  state = {
-    updated: false,
-    edited: false,
-    data: '',
-  };
-
-  componentDidMount() {
+class MasterWidget extends PureComponent {
+  constructor(props) {
+    super(props);
     const { data, widgetData, clearValue } = this.props;
-
-    // `clearValue` removes current field value for the widget. This is used when
-    // user focuses on table cell and starts typing
-    this.setState({
+    // `clearValue` removes current field value for the widget. This is used when user focuses on table cell and starts typing
+    this.state = {
+      updated: false,
+      edited: false,
       data: data || (clearValue ? '' : widgetData[0].value),
-    });
+      widgetData: props.widgetData, // this is used for comparison in the getDerivedStateFromProps lifecycle
+    };
   }
 
-  UNSAFE_componentWillReceiveProps(nextProps) {
-    const { widgetData, widgetType } = this.props;
-    const { edited, data } = this.state;
+  /**
+   * @method getDerivedStateFromProps
+   * @summary is invoked right before calling the render method, both on the initial mount and on subsequent updates
+   *          updates the data and the widgetData from the MasterWidget state, also the updated flag
+   *          Used this in order to ditch the deprecated UNSAFE_componentWillReceiveProps
+   */
+  static getDerivedStateFromProps(nextProps, prevState) {
+    const { widgetType } = nextProps;
+    const { edited, widgetData } = prevState;
     let next = nextProps.widgetData[0].value;
+    let hasNewData = widgetData[0] && !_.isEqual(widgetData[0].value, next);
 
-    if (
-      !edited &&
-      JSON.stringify(next) !== data &&
-      JSON.stringify(widgetData[0].value) !== JSON.stringify(next)
-    ) {
-      if (next && dateParse.includes(widgetType) && !Moment.isMoment(next)) {
-        next = convertTimeStringToMoment(next);
-        next = Moment(next);
-      }
-      this.setState(
-        {
-          updated: true,
-          data: next,
-        },
-        () => {
-          this.timeout = setTimeout(() => {
-            this.setState({
-              updated: false,
-            });
-          }, 1000);
-        }
-      );
+    let isUnconvertedDate =
+      next && dateParse.includes(widgetType) && !Moment.isMoment(next);
+
+    if (!edited && hasNewData) {
+      next = isUnconvertedDate ? Moment(convertTimeStringToMoment(next)) : next;
+
+      return { updated: true, data: next, widgetData: nextProps.widgetData };
     } else if (edited) {
-      this.setState({
-        edited: false,
-      });
+      return { edited: false };
+    }
+    return null;
+  }
+
+  /**
+   *  Unset the updated flag in the state of the component such that we won't have the widget highlighted after update
+   */
+  componentDidUpdate() {
+    const { updated } = this.state;
+    if (updated) {
+      this.timeout = setTimeout(() => this.setState({ updated: false }), 1000);
     }
   }
 
+  /**
+   * Clear the timeout used on previous lifecycle method
+   */
   componentWillUnmount() {
     clearTimeout(this.timeout);
   }
 
   /**
    * @method handlePatch
-   * @summary ToDo: Describe the method.
+   * @summary Performs patching at MasterWidget level, shaping in the same time the `value` for various cases
    * @param {*} property
    * @param {*} value
    */
@@ -102,31 +101,15 @@ class MasterWidget extends Component {
       isAdvanced = false,
       viewId,
     } = this.props;
-    const numberField = isNumberField(widgetType);
 
-    if (widgetType === 'Quantity' && value === '') {
-      value = null;
-    } else if (numberField && !value) {
-      value = '0';
-    }
-
-    let { entity } = this.props;
-    let currRowId = rowId;
+    let entity = viewId ? 'documentView' : this.props.entity;
+    value = formatValueByWidgetType({ widgetType, value });
+    let currRowId = rowId === 'NEW' ? relativeDocId : rowId;
     let ret = null;
-    let isEdit = false;
+    let isEdit = viewId ? true : false;
 
-    if (rowId === 'NEW') {
-      currRowId = relativeDocId;
-    }
-
-    if (widgetType !== 'Button') {
+    widgetType !== 'Button' &&
       updatePropertyValue(property, value, tabId, currRowId, isModal, entity);
-    }
-
-    if (viewId) {
-      entity = 'documentView';
-      isEdit = true;
-    }
 
     ret = patch(
       entity,
@@ -142,22 +125,15 @@ class MasterWidget extends Component {
       isEdit
     );
 
-    //callback
-    if (onChange) {
-      onChange(rowId, property, value, ret);
-    }
+    onChange && onChange(rowId, property, value, ret); //callback
 
     return ret;
   };
 
-  //
-  // This method may look like a redundant for this one above,
-  // but is need to handle controlled components if
-  // they patch on other event than onchange
-  //
   /**
-   * @method handleKeyDown
-   * @summary ToDo: Describe the method.
+   * @method handleChange
+   * @summary This method may look like a redundant for this one above, but is needed to handle controlled
+   *          components if they patch on other event than onchange
    * @param {*} property
    * @param {*} val
    */
@@ -169,51 +145,27 @@ class MasterWidget extends Component {
       isModal,
       relativeDocId,
       widgetType,
+      precision,
       entity,
     } = this.props;
-    let currRowId = rowId;
     // Add special case of formating for the case when people input 04.7.2020 to be transformed to 04.07.2020
     val = widgetType === 'Date' ? await formatDateWithZeros(val) : val;
-    this.setState(
-      {
-        edited: true,
-        data: val,
-      },
-      () => {
-        if (!dateParse.includes(widgetType) && !this.validatePrecision(val)) {
-          return;
-        }
-        if (rowId === 'NEW') {
-          currRowId = relativeDocId;
-        }
-        updatePropertyValue(property, val, tabId, currRowId, isModal, entity);
+
+    this.setState({ edited: true, data: val }, () => {
+      if (
+        !dateParse.includes(widgetType) &&
+        !validatePrecision({ widgetValue: val, widgetType, precision })
+      ) {
+        return;
       }
-    );
-  };
-
-  /**
-   * @method validatePrecision
-   * @summary ToDo: Describe the method.
-   * @param {*} value
-   */
-  validatePrecision = (value) => {
-    const { widgetType, precision } = this.props;
-    let precisionProcessed = precision;
-
-    if (widgetType === 'Integer' || widgetType === 'Quantity') {
-      precisionProcessed = 0;
-    }
-
-    if (precisionProcessed < (value.split('.')[1] || []).length) {
-      return false;
-    } else {
-      return true;
-    }
+      let currRowId = rowId === 'NEW' ? relativeDocId : rowId;
+      updatePropertyValue(property, val, tabId, currRowId, isModal, entity);
+    });
   };
 
   /**
    * @method handleProcess
-   * @summary ToDo: Describe the method.
+   * @summary handle process function, opens the corresponding modal
    * @param {*} caption
    * @param {*} buttonProcessId
    * @param {*} tabId
@@ -226,8 +178,8 @@ class MasterWidget extends Component {
   };
 
   /**
-   * @method handleKeyDown
-   * @summary ToDo: Describe the method.
+   * @method handleZoomInto
+   * @summary Opens a new window in a new tab for a given field
    * @param {*} field
    */
   handleZoomInto = (field) => {
@@ -239,18 +191,14 @@ class MasterWidget extends Component {
           res.data.documentPath.documentId
         }`;
 
-        res &&
-          res.data &&
-          /*eslint-disable */
-          window.open(url, '_blank');
-          /*eslint-enable */
+        res && res.data && window.open(url, '_blank');
       }
     );
   };
 
   /**
    * @method handleBlurWidget
-   * @summary ToDo: Describe the method.
+   * @summary This is just a forwarder for onBlurWidget from the props
    */
   handleBlurWidget = () => {
     const { onBlurWidget, fieldName } = this.props;
@@ -258,10 +206,6 @@ class MasterWidget extends Component {
     onBlurWidget && onBlurWidget(fieldName);
   };
 
-  /**
-   * @method render
-   * @summary ToDo: Describe the method.
-   */
   render() {
     const { handleBackdropLock, onClickOutside } = this.props;
     const { updated, data } = this.state;
@@ -321,9 +265,9 @@ MasterWidget.propTypes = {
 export default connect(
   null,
   {
-    openModal: windowActions.openModal,
-    patch: windowActions.patch,
-    updatePropertyValue: windowActions.updatePropertyValue,
+    openModal,
+    patch,
+    updatePropertyValue,
   },
   null,
   { forwardRef: true }
