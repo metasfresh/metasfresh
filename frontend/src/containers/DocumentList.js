@@ -579,14 +579,12 @@ class DocumentListContainer extends Component {
    * @summary ToDo: Describe the method.
    */
   handleChangePage = (index) => {
-    const { reduxData } = this.props;
+    const { table, reduxData } = this.props;
     let currentPage = reduxData.page;
 
     switch (index) {
       case 'up':
-        currentPage * reduxData.pageLength < reduxData.size
-          ? currentPage++
-          : null;
+        currentPage * reduxData.pageLength < table.size ? currentPage++ : null;
         break;
       case 'down':
         currentPage !== 1 ? currentPage-- : null;
