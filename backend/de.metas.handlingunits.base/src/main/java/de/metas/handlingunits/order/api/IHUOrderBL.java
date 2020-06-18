@@ -110,16 +110,5 @@ public interface IHUOrderBL extends ISingletonService
 	 */
 	boolean hasTUs(Properties ctx, int bpartnerId, int productId, Date date);
 
-	/**
-	 * Find best matching {@link I_M_HU_PI_Item_Product} for given <code>product</code> and <code>order</code>.
-	 *
-	 * If an {@link I_M_HU_PI_Item_Product} was found, the consumer fill be called.
-	 *
-	 * @param order
-	 * @param productId
-	 * @param pipConsumer {@link I_M_HU_PI_Item_Product} consumer
-	 */
-	void findM_HU_PI_Item_Product(org.compiere.model.I_C_Order order, ProductId productId, Consumer<I_M_HU_PI_Item_Product> pipConsumer);
-
 	void findM_HU_PI_Item_ProductForForecast(I_M_Forecast forecast, ProductId productId, Consumer<I_M_HU_PI_Item_Product> pipConsumer);
 }
