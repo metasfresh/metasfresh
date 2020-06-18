@@ -8,7 +8,6 @@ import java.math.BigDecimal;
 
 import org.adempiere.ad.modelvalidator.ModelChangeType;
 import org.adempiere.mm.attributes.api.impl.ModelProductDescriptorExtractorUsingAttributeSetInstanceFactory;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.WarehouseId;
@@ -29,7 +28,6 @@ import de.metas.material.event.shipmentschedule.ShipmentScheduleDeletedEvent;
 import de.metas.material.event.shipmentschedule.ShipmentScheduleUpdatedEvent;
 import de.metas.shipping.ShipperId;
 import lombok.NonNull;
-import mockit.Expectations;
 
 /*
  * #%L
@@ -56,7 +54,6 @@ import mockit.Expectations;
 public class M_ShipmentScheduleTest
 {
 	private ShipmentScheduleReferencedLineFactory shipmentScheduleReferencedLineFactory;
-	// private PostMaterialEventService postMaterialEventService;
 
 	private static final BPartnerId BPARTNER_ID1 = BPartnerId.ofRepoId(40);
 	private static final BPartnerId BPARTNER_ID2 = BPartnerId.ofRepoId(45);
@@ -86,7 +83,14 @@ public class M_ShipmentScheduleTest
 		shipmentScheduleInterceptor = new M_ShipmentSchedule(
 				Mockito.mock(PostMaterialEventService.class),
 				shipmentScheduleReferencedLineFactory,
-				new ModelProductDescriptorExtractorUsingAttributeSetInstanceFactory());
+				new ModelProductDescriptorExtractorUsingAttributeSetInstanceFactory())
+		{
+			@Override
+			I_M_ShipmentSchedule toOldValues(I_M_ShipmentSchedule shipmentSchedule)
+			{
+				return oldShipmentSchedule;
+			}
+		};
 
 		oldShipmentSchedule = newInstance(I_M_ShipmentSchedule.class);
 		oldShipmentSchedule.setQtyOrdered_Calculated(TWENTY); // note that setQtyOrdered is just for display!, QtyOrdered_Calculated one or QtyOrdered_Override is where the qty is!
@@ -157,13 +161,6 @@ public class M_ShipmentScheduleTest
 	@Test
 	public void createShipmentscheduleEvent_after_change()
 	{
-		// @formatter:off
-		new Expectations(InterfaceWrapperHelper.class) {{
-
-			InterfaceWrapperHelper.createOld(shipmentSchedule, I_M_ShipmentSchedule.class);
-			times = 1; result = oldShipmentSchedule;
-		}}; // @formatter:on
-
 		final AbstractShipmentScheduleEvent result = shipmentScheduleInterceptor
 				.createShipmentScheduleEvent(shipmentSchedule, ModelChangeType.AFTER_CHANGE);
 
