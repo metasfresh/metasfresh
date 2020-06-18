@@ -41,7 +41,7 @@ class Container extends PureComponent {
       children,
       viewId,
       attachments,
-      modalVisible,
+      modalHidden,
       // TODO: We should be using indicator from the state instead of another variable
       isDocumentNotSaved,
       hideHeader,
@@ -88,6 +88,7 @@ class Container extends PureComponent {
           <Header
             docStatus={docActionElem}
             windowId={windowId}
+            showIndicator={modalHidden}
             {...{
               entity,
               docStatusData,
@@ -95,7 +96,6 @@ class Container extends PureComponent {
               docSummaryData,
               handleDeletedStatus,
               isDocumentNotSaved,
-              modalVisible,
               viewId,
               siteName,
               showSidelist,
@@ -122,7 +122,7 @@ class Container extends PureComponent {
             (noMargin ? 'dashboard' : 'container-fluid')
           }
         >
-          {modalVisible && (
+          {!modalHidden && (
             <Modal
               {...modal}
               windowId={modal.type}
@@ -261,7 +261,7 @@ class Container extends PureComponent {
  * @prop {string} viewId
  * @prop {object} rawModal
  * @prop {*} references
- * @prop {*} modalVisible
+ * @prop {*} modalHidden
  * @prop {*} showSidelist
  * @prop {*} setModalDescription
  * @prop {*} setModalTitle
@@ -303,7 +303,7 @@ Container.propTypes = {
   viewId: PropTypes.string,
   rawModal: PropTypes.any,
   references: PropTypes.any,
-  modalVisible: PropTypes.any,
+  modalHidden: PropTypes.any,
   showSidelist: PropTypes.any,
   siteName: PropTypes.any,
   setRawModalDescription: PropTypes.any,

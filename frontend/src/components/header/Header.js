@@ -547,7 +547,7 @@ class Header extends PureComponent {
       inbox,
       entity,
       viewId,
-      modalVisible,
+      showIndicator,
       windowId,
       // TODO: We should be using indicator from the state instead of another variable
       isDocumentNotSaved,
@@ -768,7 +768,7 @@ class Header extends PureComponent {
             </div>
           </div>
 
-          {modalVisible && <Indicator {...{ isDocumentNotSaved, indicator }} />}
+          {showIndicator && <Indicator {...{ isDocumentNotSaved, indicator }} />}
         </nav>
 
         {isSubheaderShow && (
@@ -894,7 +894,7 @@ class Header extends PureComponent {
  * @prop {*} plugins
  * @prop {*} viewId
  * @prop {*} showSidelist
- * @prop {*} modalVisible
+ * @prop {*} showIndicator
  * @prop {*} siteName
  * @prop {*} windowId
  */
@@ -920,7 +920,7 @@ Header.propTypes = {
   plugins: PropTypes.any,
   viewId: PropTypes.string,
   showSidelist: PropTypes.any,
-  modalVisible: PropTypes.bool,
+  showIndicator: PropTypes.bool,
   siteName: PropTypes.any,
   windowId: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
   indicator: PropTypes.string,

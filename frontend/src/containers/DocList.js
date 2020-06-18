@@ -89,7 +89,7 @@ class DocList extends PureComponent {
         viewId={viewId}
         processStatus={processStatus}
         includedView={includedView}
-        modalVisible={!modal.visible && !rawModal.visible}
+        modalHidden={!modal.visible && !rawModal.visible}
         masterDocumentList={this.masterDocumentList}
       >
         <Overlay data={overlay.data} showOverlay={overlay.visible} />
