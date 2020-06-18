@@ -29,6 +29,7 @@ export const initialTableState = {
   expandedDepth: 0,
   collapsible: false,
   indentSupported: false,
+  supportAttribute: false,
 };
 
 // we store the length of the tables structure for the sake of testing and debugging
@@ -74,6 +75,19 @@ export const getSelection = createSelector(
   (items) => items
 );
 
+const setSupportAttribute = (selected, rows) => {
+  if (!selected.length || !rows.length) {
+    return;
+  }
+
+  if (selected.length === 1) {
+    const selectedRow = rows.find((row) => row.id === selected[0]);
+
+    return selectedRow && selectedRow.supportAttributes;
+  }
+  return false;
+};
+
 const reducer = produce((draftState, action) => {
   switch (action.type) {
     // CRUD
@@ -107,8 +121,10 @@ const reducer = produce((draftState, action) => {
       let updatedSelected = {};
 
       if (data.rows && data.rows.length) {
+        const newSelected = [data.rows[0][data.keyProperty]];
         updatedSelected = {
-          selected: [data.rows[0][data.keyProperty]],
+          selected: newSelected,
+          supportAttribute: setSupportAttribute(newSelected, data.rows),
         };
       }
 
@@ -144,8 +160,10 @@ const reducer = produce((draftState, action) => {
       let updatedSelected = {};
 
       if (!selectionValid) {
+        const newSelected = [rows[0][keyProperty]];
         updatedSelected = {
-          selected: [rows[0][keyProperty]],
+          selected: newSelected,
+          supportAttribute: setSupportAttribute(newSelected, rows),
         };
       }
 
@@ -206,6 +224,7 @@ const reducer = produce((draftState, action) => {
 
       if (selectionValid) {
         draftState[id].selected = selection;
+        draftState[id].supportAttribute = setSupportAttribute(selection, rows);
       }
 
       return;
@@ -213,6 +232,7 @@ const reducer = produce((draftState, action) => {
 
     case types.DESELECT_TABLE_ITEMS: {
       const { id, selection } = action.payload;
+      const rows = original(draftState[id].rows);
 
       // just for precaution
       if (draftState[id]) {
@@ -221,8 +241,13 @@ const reducer = produce((draftState, action) => {
             draftState[id].selected,
             selection
           );
+          draftState[id].supportAttribute = setSupportAttribute(
+            draftState[id].selected,
+            rows
+          );
         } else {
           draftState[id].selected = [];
+          draftState[id].supportAttribute = false;
         }
       }
 

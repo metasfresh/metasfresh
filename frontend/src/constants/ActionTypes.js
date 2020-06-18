@@ -376,18 +376,6 @@ export const DISABLE_OUTSIDE_CLICK = 'DISABLE_OUTSIDE_CLICK';
  * @constant
  * @type {string} ToDo: Description for the constant.
  */
-export const SHOW_SPINNER = 'SHOW_SPINNER';
-
-/**
- * @constant
- * @type {string} ToDo: Description for the constant.
- */
-export const HIDE_SPINNER = 'HIDE_SPINNER';
-
-/**
- * @constant
- * @type {string} ToDo: Description for the constant.
- */
 export const INIT_KEYMAP = 'INIT_KEYMAP';
 
 /**
