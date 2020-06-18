@@ -34,18 +34,18 @@ public final class AttachmentEntry
 		Data, URL
 	}
 
-	private final AttachmentEntryId id;
-	private final String name;
-	private final Type type;
-	private final String filename;
-	private final String mimeType;
-	private final URI url;
+	AttachmentEntryId id;
+	String name;
+	Type type;
+	String filename;
+	String mimeType;
+	URI url;
 
 	@Getter
-	private final AttachmentTags tags;
+	AttachmentTags tags;
 
 	/** The records to which this instance is attached. */
-	private final Set<TableRecordReference> linkedRecords;
+	Set<TableRecordReference> linkedRecords;
 
 	@Builder(toBuilder = true)
 	private AttachmentEntry(
@@ -109,6 +109,13 @@ public final class AttachmentEntry
 			return this;
 		}
 		return toBuilder().linkedRecord(modelRef).build();
+	}
+
+	public AttachmentEntry withAdditionalTag(@NonNull final String tagName, @NonNull final String tagValue)
+	{
+		return toBuilder()
+				.tags(getTags().withTag(tagName, tagValue))
+				.build();
 	}
 
 	public AttachmentEntry withRemovedLinkedRecord(@NonNull final TableRecordReference modelRef)

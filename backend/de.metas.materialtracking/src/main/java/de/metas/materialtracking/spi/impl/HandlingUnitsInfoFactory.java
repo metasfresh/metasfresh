@@ -24,7 +24,7 @@ import java.util.Objects;
  * #L%
  */
 
-import org.adempiere.model.I_C_Invoice_Detail;
+import org.compiere.model.I_C_Invoice_Detail;
 import org.adempiere.util.lang.ObjectUtils;
 
 import de.metas.materialtracking.IHandlingUnitsInfo;
