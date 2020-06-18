@@ -36,7 +36,6 @@ import org.compiere.model.I_C_InvoiceTax;
 import org.compiere.model.I_C_LandedCost;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.MInvoice;
-import org.compiere.model.MInvoiceLine;
 
 import com.google.common.collect.ImmutableMap;
 
@@ -80,8 +79,7 @@ public interface IInvoiceDAO extends ISingletonService
 
 	I_C_InvoiceLine createInvoiceLine(String trxName);
 
-	Collection<MInvoiceLine> retrieveReferringLines(Properties ctx, int invoiceLineId,
-			String trxName);
+	List<I_C_InvoiceLine> retrieveReferringLines(@NonNull InvoiceLineId invoiceLineId);
 
 	/**
 	 * Search by the invoice when the document number and the bpartner id are known.
