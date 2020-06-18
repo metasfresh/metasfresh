@@ -14,6 +14,7 @@ import de.metas.i18n.ITranslatableString;
 import de.metas.ui.web.document.filter.provider.userQuery.MQueryDocumentFilterHelper;
 import de.metas.ui.web.window.datatypes.WindowId;
 import lombok.NonNull;
+import lombok.ToString;
 
 /*
  * #%L
@@ -37,6 +38,7 @@ import lombok.NonNull;
  * #L%
  */
 
+@ToString
 public class DocumentReferenceCandidate
 {
 	public static ImmutableList<DocumentReference> evaluateAll(final Collection<DocumentReferenceCandidate> candidates)

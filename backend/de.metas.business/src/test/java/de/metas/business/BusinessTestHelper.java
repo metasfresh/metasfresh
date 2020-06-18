@@ -8,9 +8,13 @@ import java.math.BigDecimal;
 
 import javax.annotation.Nullable;
 
+import de.metas.organization.OrgId;
+import de.metas.organization.StoreCreditCardNumberMode;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
+import org.compiere.model.I_AD_Org;
+import org.compiere.model.I_AD_OrgInfo;
 import org.compiere.model.I_C_BP_BankAccount;
 import org.compiere.model.I_C_BP_Group;
 import org.compiere.model.I_C_BPartner;
@@ -342,5 +346,19 @@ public final class BusinessTestHelper
 
 		saveRecord(currencyRecord);
 		return currencyRecord;
+	}
+
+	public static OrgId createOrgWithTimeZone()
+	{
+		final I_AD_Org orgRecord = newInstanceOutOfTrx(I_AD_Org.class);
+		saveRecord(orgRecord);
+
+		final I_AD_OrgInfo orgInfoRecord = newInstanceOutOfTrx(I_AD_OrgInfo.class);
+		orgInfoRecord.setAD_Org_ID(orgRecord.getAD_Org_ID());
+		orgInfoRecord.setStoreCreditCardData(StoreCreditCardNumberMode.DONT_STORE.getCode());
+		orgInfoRecord.setTimeZone("Europe/Berlin");
+		saveRecord(orgInfoRecord);
+
+		return OrgId.ofRepoId(orgRecord.getAD_Org_ID());
 	}
 }

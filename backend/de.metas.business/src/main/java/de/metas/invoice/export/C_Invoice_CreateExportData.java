@@ -1,23 +1,8 @@
-package de.metas.invoice.export.process;
-
-import org.adempiere.ad.dao.ConstantQueryFilter;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryFilter;
-import org.compiere.Adempiere;
-
-import com.google.common.collect.ImmutableList;
-
-import de.metas.adempiere.model.I_C_Invoice;
-import de.metas.invoice.export.InvoiceExportService;
-import de.metas.invoice_gateway.spi.model.InvoiceId;
-import de.metas.process.JavaProcess;
-import de.metas.util.Services;
-
 /*
  * #%L
  * de.metas.business
  * %%
- * Copyright (C) 2018 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -34,6 +19,21 @@ import de.metas.util.Services;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+package de.metas.invoice.export;
+
+import org.adempiere.ad.dao.ConstantQueryFilter;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryFilter;
+import org.compiere.Adempiere;
+
+import com.google.common.collect.ImmutableList;
+
+import de.metas.adempiere.model.I_C_Invoice;
+import de.metas.invoice.export.InvoiceExportService;
+import de.metas.invoice_gateway.spi.model.InvoiceId;
+import de.metas.process.JavaProcess;
+import de.metas.util.Services;
 
 public class C_Invoice_CreateExportData extends JavaProcess
 {

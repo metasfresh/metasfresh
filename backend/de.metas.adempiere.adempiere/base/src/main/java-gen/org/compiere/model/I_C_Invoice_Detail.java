@@ -1,24 +1,8 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
-package org.adempiere.model;
+package org.compiere.model;
 
 
 /** Generated Interface for C_Invoice_Detail
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
 @SuppressWarnings("javadoc")
 public interface I_C_Invoice_Detail 
@@ -30,17 +14,10 @@ public interface I_C_Invoice_Detail
     /** AD_Table_ID=540614 */
 //    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
-//    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
-
-    /** AccessLevel = 3 - Client - Org
-     */
-//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(3);
-
-    /** Load Meta Data */
 
 	/**
-	 * Get Mandant.
-	 * Mandant für diese Installation.
+	 * Get Client.
+	 * Client/Tenant for this installation.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
@@ -48,16 +25,12 @@ public interface I_C_Invoice_Detail
 	 */
 	public int getAD_Client_ID();
 
-	public org.compiere.model.I_AD_Client getAD_Client() throws RuntimeException;
-
-    /** Column definition for AD_Client_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_Invoice_Detail, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_C_Invoice_Detail, org.compiere.model.I_AD_Client>(I_C_Invoice_Detail.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
     /** Column name AD_Client_ID */
     public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
-	 * Set Sektion.
-	 * Organisatorische Einheit des Mandanten
+	 * Set Organisation.
+	 * Organisational entity within client
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
@@ -66,8 +39,8 @@ public interface I_C_Invoice_Detail
 	public void setAD_Org_ID (int AD_Org_ID);
 
 	/**
-	 * Get Sektion.
-	 * Organisatorische Einheit des Mandanten
+	 * Get Organisation.
+	 * Organisational entity within client
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
@@ -75,14 +48,31 @@ public interface I_C_Invoice_Detail
 	 */
 	public int getAD_Org_ID();
 
-	public org.compiere.model.I_AD_Org getAD_Org() throws RuntimeException;
-
-	public void setAD_Org(org.compiere.model.I_AD_Org AD_Org);
-
-    /** Column definition for AD_Org_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_Invoice_Detail, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<I_C_Invoice_Detail, org.compiere.model.I_AD_Org>(I_C_Invoice_Detail.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
     /** Column name AD_Org_ID */
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+
+	/**
+	 * Set Invoice candidate.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setC_Invoice_Candidate_ID (int C_Invoice_Candidate_ID);
+
+	/**
+	 * Get Invoice candidate.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getC_Invoice_Candidate_ID();
+
+    /** Column definition for C_Invoice_Candidate_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_Invoice_Detail, Object> COLUMN_C_Invoice_Candidate_ID = new org.adempiere.model.ModelColumn<I_C_Invoice_Detail, Object>(I_C_Invoice_Detail.class, "C_Invoice_Candidate_ID", null);
+    /** Column name C_Invoice_Candidate_ID */
+    public static final String COLUMNNAME_C_Invoice_Candidate_ID = "C_Invoice_Candidate_ID";
 
 	/**
 	 * Set Invoice detailed informations.
@@ -108,7 +98,7 @@ public interface I_C_Invoice_Detail
     public static final String COLUMNNAME_C_Invoice_Detail_ID = "C_Invoice_Detail_ID";
 
 	/**
-	 * Set Rechnung.
+	 * Set Invoice.
 	 * Invoice Identifier
 	 *
 	 * <br>Type: Search
@@ -118,7 +108,7 @@ public interface I_C_Invoice_Detail
 	public void setC_Invoice_ID (int C_Invoice_ID);
 
 	/**
-	 * Get Rechnung.
+	 * Get Invoice.
 	 * Invoice Identifier
 	 *
 	 * <br>Type: Search
@@ -137,7 +127,7 @@ public interface I_C_Invoice_Detail
     public static final String COLUMNNAME_C_Invoice_ID = "C_Invoice_ID";
 
 	/**
-	 * Set Rechnungsposition.
+	 * Set Invoice Line.
 	 * Rechnungszeile
 	 *
 	 * <br>Type: Search
@@ -147,7 +137,7 @@ public interface I_C_Invoice_Detail
 	public void setC_InvoiceLine_ID (int C_InvoiceLine_ID);
 
 	/**
-	 * Get Rechnungsposition.
+	 * Get Invoice Line.
 	 * Rechnungszeile
 	 *
 	 * <br>Type: Search
@@ -166,8 +156,8 @@ public interface I_C_Invoice_Detail
     public static final String COLUMNNAME_C_InvoiceLine_ID = "C_InvoiceLine_ID";
 
 	/**
-	 * Get Erstellt.
-	 * Datum, an dem dieser Eintrag erstellt wurde
+	 * Get Created.
+	 * Date this record was created
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
@@ -181,8 +171,8 @@ public interface I_C_Invoice_Detail
     public static final String COLUMNNAME_Created = "Created";
 
 	/**
-	 * Get Erstellt durch.
-	 * Nutzer, der diesen Eintrag erstellt hat
+	 * Get Created By.
+	 * User who created this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
@@ -190,14 +180,12 @@ public interface I_C_Invoice_Detail
 	 */
 	public int getCreatedBy();
 
-    /** Column definition for CreatedBy */
-    public static final org.adempiere.model.ModelColumn<I_C_Invoice_Detail, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<I_C_Invoice_Detail, org.compiere.model.I_AD_User>(I_C_Invoice_Detail.class, "CreatedBy", org.compiere.model.I_AD_User.class);
     /** Column name CreatedBy */
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
-	 * Set Maßeinheit.
-	 * Maßeinheit
+	 * Set UOM.
+	 * Unit of Measure
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -206,8 +194,8 @@ public interface I_C_Invoice_Detail
 	public void setC_UOM_ID (int C_UOM_ID);
 
 	/**
-	 * Get Maßeinheit.
-	 * Maßeinheit
+	 * Get UOM.
+	 * Unit of Measure
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -215,17 +203,34 @@ public interface I_C_Invoice_Detail
 	 */
 	public int getC_UOM_ID();
 
-	public org.compiere.model.I_C_UOM getC_UOM() throws RuntimeException;
-
-	public void setC_UOM(org.compiere.model.I_C_UOM C_UOM);
-
-    /** Column definition for C_UOM_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_Invoice_Detail, org.compiere.model.I_C_UOM> COLUMN_C_UOM_ID = new org.adempiere.model.ModelColumn<I_C_Invoice_Detail, org.compiere.model.I_C_UOM>(I_C_Invoice_Detail.class, "C_UOM_ID", org.compiere.model.I_C_UOM.class);
     /** Column name C_UOM_ID */
     public static final String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
 
 	/**
-	 * Set Beschreibung.
+	 * Set Date.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setDate (java.sql.Timestamp Date);
+
+	/**
+	 * Get Date.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.sql.Timestamp getDate();
+
+    /** Column definition for Date */
+    public static final org.adempiere.model.ModelColumn<I_C_Invoice_Detail, Object> COLUMN_Date = new org.adempiere.model.ModelColumn<I_C_Invoice_Detail, Object>(I_C_Invoice_Detail.class, "Date", null);
+    /** Column name Date */
+    public static final String COLUMNNAME_Date = "Date";
+
+	/**
+	 * Set Description.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -234,7 +239,7 @@ public interface I_C_Invoice_Detail
 	public void setDescription (java.lang.String Description);
 
 	/**
-	 * Get Beschreibung.
+	 * Get Description.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -273,8 +278,8 @@ public interface I_C_Invoice_Detail
     public static final String COLUMNNAME_Discount = "Discount";
 
 	/**
-	 * Set Aktiv.
-	 * Der Eintrag ist im System aktiv
+	 * Set Active.
+	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -283,8 +288,8 @@ public interface I_C_Invoice_Detail
 	public void setIsActive (boolean IsActive);
 
 	/**
-	 * Get Aktiv.
-	 * Der Eintrag ist im System aktiv
+	 * Get Active.
+	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -392,7 +397,7 @@ public interface I_C_Invoice_Detail
     public static final String COLUMNNAME_Label = "Label";
 
 	/**
-	 * Set Merkmale.
+	 * Set Ausprägung Merkmals-Satz.
 	 * Merkmals Ausprägungen zum Produkt
 	 *
 	 * <br>Type: PAttribute
@@ -402,7 +407,7 @@ public interface I_C_Invoice_Detail
 	public void setM_AttributeSetInstance_ID (int M_AttributeSetInstance_ID);
 
 	/**
-	 * Get Merkmale.
+	 * Get Ausprägung Merkmals-Satz.
 	 * Merkmals Ausprägungen zum Produkt
 	 *
 	 * <br>Type: PAttribute
@@ -421,8 +426,8 @@ public interface I_C_Invoice_Detail
     public static final String COLUMNNAME_M_AttributeSetInstance_ID = "M_AttributeSetInstance_ID";
 
 	/**
-	 * Set Produkt.
-	 * Produkt, Leistung, Artikel
+	 * Set Product.
+	 * Product, Service, Item
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -431,8 +436,8 @@ public interface I_C_Invoice_Detail
 	public void setM_Product_ID (int M_Product_ID);
 
 	/**
-	 * Get Produkt.
-	 * Produkt, Leistung, Artikel
+	 * Get Product.
+	 * Product, Service, Item
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -440,18 +445,12 @@ public interface I_C_Invoice_Detail
 	 */
 	public int getM_Product_ID();
 
-	public org.compiere.model.I_M_Product getM_Product() throws RuntimeException;
-
-	public void setM_Product(org.compiere.model.I_M_Product M_Product);
-
-    /** Column definition for M_Product_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_Invoice_Detail, org.compiere.model.I_M_Product> COLUMN_M_Product_ID = new org.adempiere.model.ModelColumn<I_C_Invoice_Detail, org.compiere.model.I_M_Product>(I_C_Invoice_Detail.class, "M_Product_ID", org.compiere.model.I_M_Product.class);
     /** Column name M_Product_ID */
     public static final String COLUMNNAME_M_Product_ID = "M_Product_ID";
 
 	/**
-	 * Set Notiz.
-	 * Optional weitere Information
+	 * Set Note.
+	 * Optional additional user defined information
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
@@ -460,8 +459,8 @@ public interface I_C_Invoice_Detail
 	public void setNote (java.lang.String Note);
 
 	/**
-	 * Get Notiz.
-	 * Optional weitere Information
+	 * Get Note.
+	 * Optional additional user defined information
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
@@ -475,7 +474,7 @@ public interface I_C_Invoice_Detail
     public static final String COLUMNNAME_Note = "Note";
 
 	/**
-	 * Set Anteil.
+	 * Set Percentage.
 	 *
 	 * <br>Type: Number
 	 * <br>Mandatory: false
@@ -484,7 +483,7 @@ public interface I_C_Invoice_Detail
 	public void setPercentage (java.math.BigDecimal Percentage);
 
 	/**
-	 * Get Anteil.
+	 * Get Percentage.
 	 *
 	 * <br>Type: Number
 	 * <br>Mandatory: false
@@ -498,8 +497,7 @@ public interface I_C_Invoice_Detail
     public static final String COLUMNNAME_Percentage = "Percentage";
 
 	/**
-	 * Set Einzelpreis.
-	 * Effektiver Preis
+	 * Set Price Actual.
 	 *
 	 * <br>Type: CostPrice
 	 * <br>Mandatory: false
@@ -508,8 +506,7 @@ public interface I_C_Invoice_Detail
 	public void setPriceActual (java.math.BigDecimal PriceActual);
 
 	/**
-	 * Get Einzelpreis.
-	 * Effektiver Preis
+	 * Get Price Actual.
 	 *
 	 * <br>Type: CostPrice
 	 * <br>Mandatory: false
@@ -548,7 +545,7 @@ public interface I_C_Invoice_Detail
     public static final String COLUMNNAME_PriceEntered = "PriceEntered";
 
 	/**
-	 * Set Preiseinheit.
+	 * Set Price Unit.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -557,7 +554,7 @@ public interface I_C_Invoice_Detail
 	public void setPrice_UOM_ID (int Price_UOM_ID);
 
 	/**
-	 * Get Preiseinheit.
+	 * Get Price Unit.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -565,18 +562,12 @@ public interface I_C_Invoice_Detail
 	 */
 	public int getPrice_UOM_ID();
 
-	public org.compiere.model.I_C_UOM getPrice_UOM() throws RuntimeException;
-
-	public void setPrice_UOM(org.compiere.model.I_C_UOM Price_UOM);
-
-    /** Column definition for Price_UOM_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_Invoice_Detail, org.compiere.model.I_C_UOM> COLUMN_Price_UOM_ID = new org.adempiere.model.ModelColumn<I_C_Invoice_Detail, org.compiere.model.I_C_UOM>(I_C_Invoice_Detail.class, "Price_UOM_ID", org.compiere.model.I_C_UOM.class);
     /** Column name Price_UOM_ID */
     public static final String COLUMNNAME_Price_UOM_ID = "Price_UOM_ID";
 
 	/**
-	 * Set Menge.
-	 * Menge
+	 * Set Quantity.
+	 * Quantity
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -585,8 +576,8 @@ public interface I_C_Invoice_Detail
 	public void setQty (java.math.BigDecimal Qty);
 
 	/**
-	 * Get Menge.
-	 * Menge
+	 * Get Quantity.
+	 * Quantity
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -625,9 +616,9 @@ public interface I_C_Invoice_Detail
     public static final String COLUMNNAME_QtyEnteredInPriceUOM = "QtyEnteredInPriceUOM";
 
 	/**
-	 * Set Reihenfolge.
-	 * Zur Bestimmung der Reihenfolge der Einträge;
- die kleinste Zahl kommt zuerst
+	 * Set SeqNo.
+	 * Method of ordering records;
+ lowest number comes first
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: true
@@ -636,9 +627,9 @@ public interface I_C_Invoice_Detail
 	public void setSeqNo (int SeqNo);
 
 	/**
-	 * Get Reihenfolge.
-	 * Zur Bestimmung der Reihenfolge der Einträge;
- die kleinste Zahl kommt zuerst
+	 * Get SeqNo.
+	 * Method of ordering records;
+ lowest number comes first
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: true
@@ -652,8 +643,8 @@ public interface I_C_Invoice_Detail
     public static final String COLUMNNAME_SeqNo = "SeqNo";
 
 	/**
-	 * Get Aktualisiert.
-	 * Datum, an dem dieser Eintrag aktualisiert wurde
+	 * Get Updated.
+	 * Date this record was updated
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
@@ -667,8 +658,8 @@ public interface I_C_Invoice_Detail
     public static final String COLUMNNAME_Updated = "Updated";
 
 	/**
-	 * Get Aktualisiert durch.
-	 * Nutzer, der diesen Eintrag aktualisiert hat
+	 * Get Updated By.
+	 * User who updated this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
@@ -676,8 +667,6 @@ public interface I_C_Invoice_Detail
 	 */
 	public int getUpdatedBy();
 
-    /** Column definition for UpdatedBy */
-    public static final org.adempiere.model.ModelColumn<I_C_Invoice_Detail, org.compiere.model.I_AD_User> COLUMN_UpdatedBy = new org.adempiere.model.ModelColumn<I_C_Invoice_Detail, org.compiere.model.I_AD_User>(I_C_Invoice_Detail.class, "UpdatedBy", org.compiere.model.I_AD_User.class);
     /** Column name UpdatedBy */
     public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
 }

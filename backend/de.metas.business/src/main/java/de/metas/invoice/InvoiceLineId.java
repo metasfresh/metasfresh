@@ -55,11 +55,11 @@ public class InvoiceLineId implements RepoIdAware
 	}
 
 	public static InvoiceLineId ofRepoIdOrNull(
-			@Nullable final Integer bpartnerId,
-			@Nullable final Integer bpartnerLocationId)
+			@Nullable final Integer invoiceId,
+			@Nullable final Integer invoiceLineId)
 	{
-		return bpartnerId != null && bpartnerId > 0 && bpartnerLocationId != null && bpartnerLocationId > 0
-				? ofRepoId(bpartnerId, bpartnerLocationId)
+		return invoiceId != null && invoiceId > 0 && invoiceLineId != null && invoiceLineId > 0
+				? ofRepoId(invoiceId, invoiceLineId)
 				: null;
 	}
 
@@ -76,9 +76,9 @@ public class InvoiceLineId implements RepoIdAware
 		this.invoiceId = invoiceId;
 	}
 
-	public static int toRepoId(final InvoiceLineId bpLocationId)
+	public static int toRepoId(final InvoiceLineId invoiceLineId)
 	{
-		return toRepoIdOr(bpLocationId, -1);
+		return toRepoIdOr(invoiceLineId, -1);
 	}
 
 	public static int toRepoIdOr(final InvoiceLineId bpLocationId, final int defaultValue)

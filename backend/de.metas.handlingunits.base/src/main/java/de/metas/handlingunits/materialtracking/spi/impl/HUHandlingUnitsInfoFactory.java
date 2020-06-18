@@ -98,11 +98,6 @@ public class HUHandlingUnitsInfoFactory implements IHandlingUnitsInfoFactory
 		return createFromOrderOrBomLine(ppOrder, null);
 	}
 
-	/**
-	 *
-	 * @param ppOrderBOMLine
-	 * @return the {@link UnavailableHandlingUnitsInfo}
-	 */
 	private IHandlingUnitsInfo createFromPPOrderBOMLine(final I_PP_Order_BOMLine ppOrderBOMLine)
 	{
 		return createFromOrderOrBomLine(null, ppOrderBOMLine);
@@ -160,7 +155,7 @@ public class HUHandlingUnitsInfoFactory implements IHandlingUnitsInfoFactory
 	 * NOTE: we assume handlingUnitsInfo was created by this factory
 	 */
 	@Override
-	public void updateInvoiceDetail(final org.adempiere.model.I_C_Invoice_Detail invoiceDetail, final IHandlingUnitsInfo handlingUnitsInfo)
+	public void updateInvoiceDetail(final org.compiere.model.I_C_Invoice_Detail invoiceDetail, final IHandlingUnitsInfo handlingUnitsInfo)
 	{
 		// nothing to update
 		if (handlingUnitsInfo == null)
