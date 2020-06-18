@@ -97,7 +97,6 @@ public interface IPrintingDAO extends ISingletonService
 	List<I_C_Print_Job_Detail> retrievePrintJobDetailsIfAny(I_C_Print_Job_Line jobLine);
 
 	/**
-	 *
 	 * @param matching The "parent record" of the tray matching that we are looking for
 	 * @param routing the printer routing record that contains the logical printer and tray for which we search the hardware tray.
 	 * @param throwExIfNull if <code>true</code> and there is no tray matching, the method will throw an {@link AdempiereException}

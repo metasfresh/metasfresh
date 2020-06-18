@@ -37,13 +37,18 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Properties;
 
+import javax.annotation.Nullable;
 import javax.print.attribute.standard.MediaSize;
 
+import com.google.common.collect.ImmutableList;
+import lombok.Getter;
 import lombok.NonNull;
-import lombok.Value;
 import org.adempiere.ad.service.IDeveloperModeBL;
+import org.adempiere.archive.api.IArchiveBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.IPair;
+import org.adempiere.util.lang.ImmutablePair;
 import org.adempiere.util.lang.Mutable;
 import org.adempiere.util.lang.ObjectUtils;
 import org.compiere.model.I_AD_Archive;
@@ -98,7 +103,7 @@ public class PrintJobLinesAggregator implements IPrintJobLinesAggregator
 
 	private final List<Map<ArrayKey, I_C_Print_PackageInfo>> printPackageInfos = new ArrayList<>();
 
-	// NOTE: we use IdentityHashMap instead of HashMap because key content (I_C_Print_PackageInfo) is changing
+	// NOTE: we shall use IdentityHashMap instead of HashMap because key content (I_C_Print_PackageInfo) is changing
 	private final Map<I_C_Print_PackageInfo, List<ArchivePart>> mapArchiveParts = new IdentityHashMap<>();
 
 	/**
@@ -114,6 +119,7 @@ public class PrintJobLinesAggregator implements IPrintJobLinesAggregator
 			@NonNull final I_C_Print_Job_Instructions printJobInstructions)
 	{
 		this.printCtx = printCtx;
+
 		this.printJobInstructions = printJobInstructions;
 		printJob = printJobInstructions.getC_Print_Job();
 
@@ -140,7 +146,9 @@ public class PrintJobLinesAggregator implements IPrintJobLinesAggregator
 					printPackageTrxName, trxName);
 		}
 		printPackageToUse = printPackage;
-	};
+	}
+
+	;
 
 	@Override
 	public void add(final I_C_Print_Job_Line jobLine, final Mutable<ArrayKey> preceedingKey)
@@ -158,211 +166,24 @@ public class PrintJobLinesAggregator implements IPrintJobLinesAggregator
 		}
 	}
 
-	private void add0(final I_C_Print_Job_Line jobLine,
-			final Mutable<ArrayKey> precedingKey)
+	private void add0(
+			@NonNull final I_C_Print_Job_Line jobLine,
+			@NonNull final Mutable<ArrayKey> precedingKey)
 	{
-		//
-		// Retrieve Print Job Line's Details
-		final List<I_C_Print_Job_Detail> printJobDetails = printJobBL.getCreatePrintJobDetails(jobLine);
-		if (printJobDetails.isEmpty())
-		{
-			logger.info("Print Job Line has no details: {}. Skipping it", jobLine);
-			return;
-		}
-
-		//
-		// Create ArchiveData from Print Job Line
-		final I_AD_Archive archive = jobLine.getC_Printing_Queue().getAD_Archive();
-		final PrintJobArchiveData archiveData = new PrintJobArchiveData(jobLine, new PrintingArchiveData(archive));
-		if (!archiveData.getPrintingArchiveData().hasData())
-		{
-			logger.info("Print Job Line's Archive has no data: {}. Skipping it", archiveData);
-			return;
-		}
-
-		//
-		// Iterate Print Job Line's details and create Archive Parts; further down we will decide which archive part shall be used with this page range
-		final List<ArchivePart> archiveParts = new ArrayList<>(printJobDetails.size());
-		for (final I_C_Print_Job_Detail detail : printJobDetails)
-		{
-			final I_AD_PrinterRouting routing = loadOutOfTrx(detail.getAD_PrinterRouting_ID(), I_AD_PrinterRouting.class);
-			final ArchivePart archivePart = new ArchivePart(archiveData, routing);
-			archiveParts.add(archivePart);
-		}
-
-		// the number of pages to "divide" among our archive parts
-		final int numberOfPagesAvailable = archiveData.getPrintingArchiveData().getNumberOfPages();
-		// task 08958: maintain a bitmap of pages that we already assigned to archive parts, to avoid printing them more than once
-		final boolean[] pagesCovered = new boolean[numberOfPagesAvailable];
-
-		//
-		// set PageFrom/PageTo for "LastPages" routings
-		int lastPagesMax = 0;
-		for (final Iterator<ArchivePart> it = archiveParts.iterator(); it.hasNext();)
-		{
-			final ArchivePart archivePart = it.next();
-			if (!archivePart.isLastPages())
-			{
-				continue;
-			}
-
-			int lastPages = archivePart.getLastPages();
-
-			// Make sure lastPages is not negative
-			if (lastPages <= 0)
-			{
-				// negative last pages, wtf?
-				final AdempiereException ex = new AdempiereException("Got negative last pages."
-						+ "\n Print package: " + printPackageToUse
-						+ "\n ArchivePart: " + archivePart
-						+ "\n LastPages: " + lastPages);
-				if (Services.get(IDeveloperModeBL.class).isEnabled())
-				{
-					throw ex;
-				}
-				else
-				{
-					logger.warn("Ignoring: archive part because LastPages <= 0", ex);
-				}
-				it.remove();
-				continue;
-			}
-
-			// Make sure lastPages is not bigger than document's number of pages
-			if (lastPages > numberOfPagesAvailable)
-			{
-				lastPages = numberOfPagesAvailable;
-			}
-
-			if (lastPages > lastPagesMax)
-			{
-				lastPagesMax = lastPages;
-			}
-
-			// Calculate PageFrom/PageTo
-			final int pageTo = numberOfPagesAvailable;
-			final int pageFrom = numberOfPagesAvailable - lastPages + 1;
-			if (pageFrom > pageTo)
-			{
-				// invalid page range => skip this archive part
-				it.remove();
-				continue;
-			}
-
-			// 08958: compute the final range by by skipping forward (pageFrom) and backwards (pageTo) to avoid page range overlap
-			final int pageFromFinal = skipForward(pagesCovered, pageFrom, pageTo);
-			final int pageToFinal = skipBackward(pagesCovered, pageTo, pageFrom);
-			if (pageFromFinal > pageToFinal)
-			{
-				it.remove();
-				continue;
-			}
-			archivePart.setPageFrom(pageFromFinal);
-			archivePart.setPageTo(pageToFinal);
-			markCovered(pagesCovered, pageFromFinal, pageToFinal);
-		}
-
-		//
-		// Adjust PageFrom/PageTo for "PageRange" routings
-		for (final Iterator<ArchivePart> it = archiveParts.iterator(); it.hasNext();)
-		{
-			final ArchivePart archivePart = it.next();
-			if (!archivePart.isPageRange())
-			{
-				continue;
-			}
-
-			int pageFrom = archivePart.getPageFrom();
-			if (pageFrom <= 0)
-			{
-				// First page is 1 - See com.lowagie.text.pdf.PdfWriter.getImportedPage
-				pageFrom = 1;
-			}
-			int pageTo = archivePart.getPageTo();
-			if (pageTo <= 0)
-			{
-				pageTo = numberOfPagesAvailable;
-			}
-			if (pageTo > numberOfPagesAvailable)
-			{
-				logger.debug("Page to ({}) is greather then number of pages available. Considering number of pages: {}", new Object[] { pageTo, numberOfPagesAvailable });
-				pageTo = numberOfPagesAvailable;
-			}
-			if (pageFrom > pageTo)
-			{
-				// invalid page range => skip this archive part
-				it.remove();
-				continue;
-			}
-			final int pageFromFinal = skipForward(pagesCovered, pageFrom, pageTo);
-			final int pageToFinal = skipBackward(pagesCovered, pageTo, pageFrom);
-			if (pageFromFinal > pageToFinal)
-			{
-				it.remove();
-				continue;
-			}
-
-			archivePart.setPageFrom(pageFromFinal);
-			archivePart.setPageTo(pageToFinal);
-			markCovered(pagesCovered, pageFromFinal, pageToFinal);
-		}
+		final PrintingData printingData = new PrintingDataFactory().createPrintingDataForPrintJobLine(jobLine, printCtx.getHostKey());
 
 		//
 		// Add ArchiveParts to internal map
-		for (final ArchivePart archivePart : archiveParts)
+		final ArchiveData archiveData = new ArchiveData(jobLine, printingData.getData());
+		for (final PrintingSegment printingSegment : printingData.getPrintingSegments())
 		{
-			final Pair<ArrayKey, I_C_Print_PackageInfo> keyAndPackageInfo = getCreatePrintPackageInfo(
-					archivePart,
-					precedingKey.getValue()
-					);
-			addArchivePartToMap(keyAndPackageInfo.getSecond(), archivePart);
-			precedingKey.setValue(keyAndPackageInfo.getFirst());
-		}
-	}
+			final ArchivePart archivePart = new ArchivePart(archiveData, printingSegment.getPageFrom(), printingSegment.getPageTo());
 
-	private int skipBackward(final boolean[] pagesCovered,
-			final int pageTo,
-			final int limit)
-	{
-		final int limitToUse = limit;
-
-		int pageToFinal = pageTo;
-		for (int i = pageTo; i >= limitToUse; i--)
-		{
-			if (!pagesCovered[i - 1])
-			{
-				break;
-			}
-			pageToFinal = i - 1;
-		}
-		return pageToFinal;
-	}
-
-	private int skipForward(final boolean[] pagesCovered,
-			final int pageFrom,
-			final int limit)
-	{
-		final int limitToUse = Math.min(limit, pagesCovered.length);
-
-		int pageFromFinal = pageFrom;
-		for (int i = pageFrom; i <= limitToUse; i++)
-		{
-			if (!pagesCovered[i - 1])
-			{
-				break;
-			}
-			pageFromFinal = i + 1;
-		}
-		return pageFromFinal;
-	}
-
-	private void markCovered(final boolean[] pagesCovered,
-			final int pageFrom,
-			final int pageTo)
-	{
-		for (int i = pageFrom; i <= pageTo; i++)
-		{
-			pagesCovered[i - 1] = true;
+			final IPair<ArrayKey, I_C_Print_PackageInfo> keyAndPackageInfo = getCreatePrintPackageInfo(
+					printingSegment,
+					precedingKey.getValue());
+			addArchivePartToMap(keyAndPackageInfo.getRight(), archivePart);
+			precedingKey.setValue(keyAndPackageInfo.getLeft());
 		}
 	}
 
@@ -370,7 +191,7 @@ public class PrintJobLinesAggregator implements IPrintJobLinesAggregator
 	public I_C_Print_Package createPrintPackage()
 	{
 		final ByteArrayOutputStream pdfBuf = new ByteArrayOutputStream();
-		final int pages = createPDFData(pdfBuf); // create the PDS data, and update the print package infos' pageFrom and pageto values
+		final int pages = createPDFData(pdfBuf);
 		if (pages <= 0)
 		{
 			throw new AdempiereException("No PDF pages found. No package created."); // TRL
@@ -452,29 +273,20 @@ public class PrintJobLinesAggregator implements IPrintJobLinesAggregator
 	/**
 	 * @param precedingGroupKey used to prevent multiple job lines from from being split, i.e 50-times the first part of each job line, then 50-time the 2nd part.
 	 */
-	private Pair<ArrayKey, I_C_Print_PackageInfo> getCreatePrintPackageInfo(final ArchivePart archivePart,
+	private IPair<ArrayKey, I_C_Print_PackageInfo> getCreatePrintPackageInfo(final PrintingSegment archivePart,
 			final ArrayKey precedingGroupKey)
 	{
-		final I_AD_PrinterRouting routing = archivePart.getAD_PrinterRouting();
 
-		final I_AD_Printer_Matching printerMatching = dao.retrievePrinterMatching(printCtx.getHostKey(), routing);
+		final I_AD_PrinterHW hwPrinter = InterfaceWrapperHelper.loadOutOfTrx(archivePart.getPrinterId(), I_AD_PrinterHW.class);
 
-		final I_AD_PrinterHW hwPrinter = printerMatching.getAD_PrinterHW();
-
-		// task 04005, R810: don't make a fuss if there is no printer *tray* matching
-		final I_AD_PrinterTray_Matching trayMatching = dao.retrievePrinterTrayMatching(
-				printerMatching,
-				routing,
-				false); // throwExIfMissing=false
-
-		// the following 3 variables will be set from the printer tray matching, if there is any
+		// the following 3 variables will be set from the printer tray, if there is any
 		final int hwMediaTrayID;
 		final int calX;
 		final int calY;
 
-		if (trayMatching != null)
+		if (archivePart.getTrayId() != null)
 		{
-			final I_AD_PrinterHW_MediaTray hwTray = trayMatching.getAD_PrinterHW_MediaTray();
+			final I_AD_PrinterHW_MediaTray hwTray = InterfaceWrapperHelper.loadOutOfTrx(archivePart.getTrayId(), I_AD_PrinterHW_MediaTray.class);
 
 			final I_AD_PrinterHW_MediaSize hwMediaSize = dao.retrieveMediaSize(hwPrinter, MediaSize.ISO.A4, true);
 			final I_AD_PrinterHW_Calibration printerCalibration = dao.retrieveCalibration(hwMediaSize, hwTray);
@@ -490,7 +302,7 @@ public class PrintJobLinesAggregator implements IPrintJobLinesAggregator
 			hwMediaTrayID = 0;
 		}
 
-		final Pair<ArrayKey, I_C_Print_PackageInfo> printPackageInfo = getCreatePrintPackageInfo(
+		final IPair<ArrayKey, I_C_Print_PackageInfo> printPackageInfo = getCreatePrintPackageInfo(
 				hwPrinter.getAD_PrinterHW_ID(),
 				hwMediaTrayID,
 				calX,
@@ -500,25 +312,18 @@ public class PrintJobLinesAggregator implements IPrintJobLinesAggregator
 	}
 
 	/**
-	 *
-	 * @param hwPrinterId
-	 * @param hwTrayId
-	 * @param calX
-	 * @param calY
-	 * @param preceedingGroupKey used to check if the current parameters (the other 4 params of this method) match the key of the preceeding invocation. If yes, then the last element of
-	 *            {@link #printPackageInfos} is used to check if and existing print package info can be reused. Otherwise, a new map is created.
-	 *
-	 * @return
+	 * @param precedingGroupKey used to check if the current parameters (the other 4 params of this method) match the key of the preceeding invocation. If yes, then the last element of
+	 *                          {@link #printPackageInfos} is used to check if and existing print package info can be reused. Otherwise, a new map is created.
 	 */
-	private Pair<ArrayKey, I_C_Print_PackageInfo> getCreatePrintPackageInfo(final int hwPrinterId,
+	private IPair<ArrayKey, I_C_Print_PackageInfo> getCreatePrintPackageInfo(final int hwPrinterId,
 			final int hwTrayId,
 			final int calX,
 			final int calY,
-			final ArrayKey preceedingGroupKey)
+			final ArrayKey precedingGroupKey)
 	{
 		final ArrayKey groupKey = new ArrayKey(hwPrinterId, hwTrayId, calX, calY);
 
-		if (!Objects.equals(groupKey, preceedingGroupKey) || printPackageInfos.isEmpty())
+		if (!Objects.equals(groupKey, precedingGroupKey) || printPackageInfos.isEmpty())
 		{
 			// create a new map and add it to the end of the list.
 			printPackageInfos.add(new LinkedHashMap<ArrayKey, I_C_Print_PackageInfo>());
@@ -544,7 +349,7 @@ public class PrintJobLinesAggregator implements IPrintJobLinesAggregator
 			currentPrintPackageInfos.put(groupKey, printPackageInfo);
 		}
 
-		final Pair<ArrayKey, I_C_Print_PackageInfo> result = new Pair<>(groupKey, printPackageInfo);
+		final IPair<ArrayKey, I_C_Print_PackageInfo> result = ImmutablePair.of(groupKey, printPackageInfo);
 		return result;
 	}
 
@@ -647,7 +452,7 @@ public class PrintJobLinesAggregator implements IPrintJobLinesAggregator
 	{
 		logger.debug("Adding {}", archivePart);
 
-		final PrintingArchiveData archiveData = archivePart.getArchiveData().getPrintingArchiveData();
+		final ArchiveData archiveData = archivePart.getArchiveData();
 		if (!archiveData.hasData())
 		{
 			logger.info("Archive {} does not contain any data. Skip", archivePart);
@@ -668,13 +473,13 @@ public class PrintJobLinesAggregator implements IPrintJobLinesAggregator
 		if (pageTo > archivePageNums)
 		{
 			// shall not happen at this point
-			logger.debug("Page to ({}) is greather then number of pages. Considering number of pages: {}", new Object[] { pageTo, archivePageNums });
+			logger.debug("Page to ({}) is greater then number of pages. Considering number of pages: {}", new Object[] { pageTo, archivePageNums });
 			pageTo = archivePageNums;
 		}
 		if (pageFrom > pageTo)
 		{
 			// shall not happen at this point
-			logger.warn("Page from ({}) is greather then Page to ({}). Skipping: {}", new Object[] { pageFrom, pageTo, archivePart });
+			logger.warn("Page from ({}) is greater then Page to ({}). Skipping: {}", new Object[] { pageFrom, pageTo, archivePart });
 			return 0;
 		}
 
@@ -701,32 +506,18 @@ public class PrintJobLinesAggregator implements IPrintJobLinesAggregator
 		return pagesAdded;
 	}
 
-	@Value
-	private static class PrintJobArchiveData
+	private static class ArchiveData
 	{
-		I_C_Print_Job_Line printJobLine;
-		PrintingArchiveData printingArchiveData;
-	}
+		// Parameters
+		private final I_C_Print_Job_Line printJobLine;
 
-	/**
-	 * Helper class that holds a reference to an {@link I_AD_Archive}, a print job line and a page range.
-	 */
-	private static class ArchivePart
-	{
-		private final PrintJobArchiveData archiveData;
-		private final I_AD_PrinterRouting routing;
-		private Integer pageFrom;
-		private Integer pageTo;
+		// Archive's Data
+		private final transient byte[] data;
 
-		public ArchivePart(@NonNull final PrintJobArchiveData archiveData, @NonNull final I_AD_PrinterRouting routing)
+		public ArchiveData(@NonNull final I_C_Print_Job_Line printJobLine, @Nullable final byte[] data)
 		{
-			this.archiveData = archiveData;
-
-			final int pageFrom = routing.getPageFrom();
-			final int pageTo = routing.getPageTo();
-			Check.assume(pageFrom <= pageTo, "pageFrom={} is less or equal to pageTo={} for {}", pageFrom, pageTo, archiveData);
-
-			this.routing = routing;
+			this.printJobLine = printJobLine;
+			this.data = data;
 		}
 
 		@Override
@@ -735,64 +526,58 @@ public class PrintJobLinesAggregator implements IPrintJobLinesAggregator
 			return ObjectUtils.toString(this);
 		}
 
-		public PrintJobArchiveData getArchiveData()
+		public I_C_Print_Job_Line getPrintJobLine()
 		{
-			return archiveData;
+			return printJobLine;
+		}
+
+		public PdfReader createPdfReader() throws IOException
+		{
+			final PdfReader reader = new PdfReader(data);
+			return reader;
+		}
+
+		public boolean hasData()
+		{
+			return data != null;
+		}
+	}
+
+	/**
+	 * Helper class that holds a reference to an {@link I_AD_Archive}, a print job line and a page range.
+	 */
+	private static class ArchivePart
+	{
+		@Getter
+		private final ArchiveData archiveData;
+
+		@Getter
+		private final int pageFrom;
+
+		@Getter
+		private final int pageTo;
+
+		public ArchivePart(
+				@NonNull final ArchiveData archiveData,
+				final int pageFrom,
+				final int pageTo)
+		{
+			this.archiveData = archiveData;
+
+			this.pageFrom = pageFrom;
+			this.pageTo = pageTo;
+			Check.assume(pageFrom <= pageTo, "pageFrom={} is less or equal to pageTo={} for {}", pageFrom, pageTo, archiveData);
+		}
+
+		@Override
+		public String toString()
+		{
+			return ObjectUtils.toString(this);
 		}
 
 		public I_C_Print_Job_Line getPrintJobLine()
 		{
 			return archiveData.getPrintJobLine();
-		}
-
-		public I_AD_PrinterRouting getAD_PrinterRouting()
-		{
-			return routing;
-		}
-
-		public void setPageFrom(final int pageFrom)
-		{
-			this.pageFrom = pageFrom;
-		}
-
-		public int getPageFrom()
-		{
-			if (pageFrom != null)
-			{
-				return pageFrom;
-			}
-
-			return routing.getPageFrom();
-		}
-
-		private int getLastPages()
-		{
-			return routing.getLastPages();
-		}
-
-		public void setPageTo(final int pageTo)
-		{
-			this.pageTo = pageTo;
-		}
-
-		public int getPageTo()
-		{
-			if (pageTo != null)
-			{
-				return pageTo;
-			}
-
-			return routing.getPageTo();
-		}
-
-		private boolean isPageRange()
-		{
-			return I_AD_PrinterRouting.ROUTINGTYPE_PageRange.equals(routing.getRoutingType());
-		}
-
-		private boolean isLastPages()
-		{
-			return I_AD_PrinterRouting.ROUTINGTYPE_LastPages.equals(routing.getRoutingType());
 		}
 	}
 }

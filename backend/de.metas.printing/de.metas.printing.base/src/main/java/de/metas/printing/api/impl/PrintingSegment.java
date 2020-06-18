@@ -1,0 +1,119 @@
+/*
+ * #%L
+ * de.metas.printing.base
+ * %%
+ * Copyright (C) 2020 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
+package de.metas.printing.api.impl;
+
+import de.metas.printing.HardwarePrinterId;
+import de.metas.printing.HardwarePrinterTrayId;
+import de.metas.printing.model.I_AD_PrinterRouting;
+import de.metas.util.Check;
+import lombok.Builder;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NonNull;
+import org.adempiere.util.lang.ObjectUtils;
+import org.compiere.model.I_AD_Archive;
+
+import javax.annotation.Nullable;
+
+@EqualsAndHashCode(exclude = { "pageFrom", "pageTo" })
+class PrintingSegment
+{
+	private Integer pageFrom;
+	private Integer pageTo;
+
+	private final int initialPageFrom;
+	private final int initialPageTo;
+	private final int lastPages;
+	private final String routingType;
+	@Getter private final HardwarePrinterId printerId;
+	@Getter private final HardwarePrinterTrayId trayId;
+
+	@Builder
+	private PrintingSegment(
+			final int initialPageFrom,
+			final int initialPageTo,
+			final int lastPages,
+			@NonNull final String routingType,
+			@NonNull final HardwarePrinterId printerId,
+			@Nullable final HardwarePrinterTrayId trayId)
+	{
+		this.initialPageFrom = initialPageFrom;
+		this.initialPageTo = initialPageTo;
+		this.lastPages = lastPages;
+		this.routingType = routingType;
+		this.printerId = printerId;
+		this.trayId=trayId;
+
+		Check.assume(initialPageFrom <= initialPageTo, "initialPageFrom={} is less or equal to initialPageTo={}", initialPageFrom, initialPageTo);
+	}
+
+	@Override
+	public String toString()
+	{
+		return ObjectUtils.toString(this);
+	}
+
+	public void setPageFrom(final int pageFrom)
+	{
+		this.pageFrom = pageFrom;
+	}
+
+	public int getPageFrom()
+	{
+		if (pageFrom != null)
+		{
+			return pageFrom;
+		}
+		return initialPageFrom;
+	}
+
+	public int getLastPages()
+	{
+		return lastPages;
+	}
+
+	public void setPageTo(final int pageTo)
+	{
+		this.pageTo = pageTo;
+	}
+
+	public int getPageTo()
+	{
+		if (pageTo != null)
+		{
+			return pageTo;
+		}
+
+		return initialPageTo;
+	}
+
+	public boolean isPageRange()
+	{
+		return I_AD_PrinterRouting.ROUTINGTYPE_PageRange.equals(routingType);
+	}
+
+	public boolean isLastPages()
+	{
+		return I_AD_PrinterRouting.ROUTINGTYPE_LastPages.equals(routingType);
+	}
+}
