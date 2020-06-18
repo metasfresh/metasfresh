@@ -39,8 +39,9 @@ import java.util.Properties;
 
 import javax.print.attribute.standard.MediaSize;
 
+import lombok.NonNull;
+import lombok.Value;
 import org.adempiere.ad.service.IDeveloperModeBL;
-import org.adempiere.archive.api.IArchiveBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.Mutable;
@@ -97,7 +98,7 @@ public class PrintJobLinesAggregator implements IPrintJobLinesAggregator
 
 	private final List<Map<ArrayKey, I_C_Print_PackageInfo>> printPackageInfos = new ArrayList<>();
 
-	// NOTE: we shall use IdentityHashMap instead of HashMap because key content (I_C_Print_PackageInfo) is changing
+	// NOTE: we use IdentityHashMap instead of HashMap because key content (I_C_Print_PackageInfo) is changing
 	private final Map<I_C_Print_PackageInfo, List<ArchivePart>> mapArchiveParts = new IdentityHashMap<>();
 
 	/**
@@ -108,13 +109,11 @@ public class PrintJobLinesAggregator implements IPrintJobLinesAggregator
 	/**
 	 * NOTE: trxName from printJob will be used
 	 */
-	public PrintJobLinesAggregator(final IPrintPackageCtx printCtx,
-			final I_C_Print_Job_Instructions printJobInstructions)
+	public PrintJobLinesAggregator(
+			@NonNull final IPrintPackageCtx printCtx,
+			@NonNull final I_C_Print_Job_Instructions printJobInstructions)
 	{
-		Check.assume(printCtx != null, "printCtx not null");
 		this.printCtx = printCtx;
-
-		Check.assume(printJobInstructions != null, "printJobInstructions not null");
 		this.printJobInstructions = printJobInstructions;
 		printJob = printJobInstructions.getC_Print_Job();
 
@@ -174,8 +173,8 @@ public class PrintJobLinesAggregator implements IPrintJobLinesAggregator
 		//
 		// Create ArchiveData from Print Job Line
 		final I_AD_Archive archive = jobLine.getC_Printing_Queue().getAD_Archive();
-		final ArchiveData archiveData = new ArchiveData(jobLine, archive);
-		if (!archiveData.hasData())
+		final PrintJobArchiveData archiveData = new PrintJobArchiveData(jobLine, new PrintingArchiveData(archive));
+		if (!archiveData.getPrintingArchiveData().hasData())
 		{
 			logger.info("Print Job Line's Archive has no data: {}. Skipping it", archiveData);
 			return;
@@ -192,7 +191,7 @@ public class PrintJobLinesAggregator implements IPrintJobLinesAggregator
 		}
 
 		// the number of pages to "divide" among our archive parts
-		final int numberOfPagesAvailable = archiveData.getNumberOfPages();
+		final int numberOfPagesAvailable = archiveData.getPrintingArchiveData().getNumberOfPages();
 		// task 08958: maintain a bitmap of pages that we already assigned to archive parts, to avoid printing them more than once
 		final boolean[] pagesCovered = new boolean[numberOfPagesAvailable];
 
@@ -648,7 +647,7 @@ public class PrintJobLinesAggregator implements IPrintJobLinesAggregator
 	{
 		logger.debug("Adding {}", archivePart);
 
-		final ArchiveData archiveData = archivePart.getArchiveData();
+		final PrintingArchiveData archiveData = archivePart.getArchiveData().getPrintingArchiveData();
 		if (!archiveData.hasData())
 		{
 			logger.info("Archive {} does not contain any data. Skip", archivePart);
@@ -702,127 +701,27 @@ public class PrintJobLinesAggregator implements IPrintJobLinesAggregator
 		return pagesAdded;
 	}
 
-	private static class ArchiveData
+	@Value
+	private static class PrintJobArchiveData
 	{
-		// Services
-		private final transient IArchiveBL archiveBL = Services.get(IArchiveBL.class);
-
-		// Parameters
-		private final I_C_Print_Job_Line printJobLine;
-		private final I_AD_Archive archive;
-
-		// Arhive's Data
-		private boolean dataLoaded;
-		private transient byte[] data;
-		private Integer numberOfPages = null;
-
-		public ArchiveData(final I_C_Print_Job_Line printJobLine, final I_AD_Archive archive)
-		{
-			super();
-			this.printJobLine = printJobLine;
-			this.archive = archive;
-		}
-
-		@Override
-		public String toString()
-		{
-			return ObjectUtils.toString(this);
-		}
-
-		public I_C_Print_Job_Line getPrintJobLine()
-		{
-			return printJobLine;
-		}
-
-		private final byte[] getData()
-		{
-			if (dataLoaded)
-			{
-				return data;
-			}
-
-			data = archiveBL.getBinaryData(archive);
-			dataLoaded = true;
-			if (data == null || data.length == 0)
-			{
-				logger.info("Archive {} does not contain any data. Skip", archive);
-				data = null;
-			}
-
-			return data;
-		}
-
-		public boolean hasData()
-		{
-			return getData() != null;
-		}
-
-		public PdfReader createPdfReader() throws IOException
-		{
-			final PdfReader reader = new PdfReader(getData());
-			return reader;
-		}
-
-		public int getNumberOfPages()
-		{
-			if (numberOfPages != null)
-			{
-				return numberOfPages;
-			}
-
-			if (!hasData())
-			{
-				return 0;
-			}
-
-			PdfReader reader = null;
-			try
-			{
-				reader = createPdfReader();
-				numberOfPages = reader.getNumberOfPages();
-				return numberOfPages;
-			}
-			catch (final IOException e)
-			{
-				throw new AdempiereException("Cannot get number of pages for archive " + archive, e);
-			}
-			finally
-			{
-				if (reader != null)
-				{
-					try
-					{
-						reader.close();
-					}
-					catch (final Exception e)
-					{
-					}
-					reader = null;
-				}
-			}
-		}
+		I_C_Print_Job_Line printJobLine;
+		PrintingArchiveData printingArchiveData;
 	}
 
 	/**
 	 * Helper class that holds a reference to an {@link I_AD_Archive}, a print job line and a page range.
-	 *
-	 *
 	 */
 	private static class ArchivePart
 	{
-		private final ArchiveData archiveData;
+		private final PrintJobArchiveData archiveData;
 		private final I_AD_PrinterRouting routing;
 		private Integer pageFrom;
 		private Integer pageTo;
 
-		public ArchivePart(final ArchiveData archiveData, final I_AD_PrinterRouting routing)
+		public ArchivePart(@NonNull final PrintJobArchiveData archiveData, @NonNull final I_AD_PrinterRouting routing)
 		{
-			super();
-
-			Check.assumeNotNull(archiveData, "archiveData not null");
 			this.archiveData = archiveData;
 
-			Check.assumeNotNull(routing, "routing not null");
 			final int pageFrom = routing.getPageFrom();
 			final int pageTo = routing.getPageTo();
 			Check.assume(pageFrom <= pageTo, "pageFrom={} is less or equal to pageTo={} for {}", pageFrom, pageTo, archiveData);
@@ -836,7 +735,7 @@ public class PrintJobLinesAggregator implements IPrintJobLinesAggregator
 			return ObjectUtils.toString(this);
 		}
 
-		public ArchiveData getArchiveData()
+		public PrintJobArchiveData getArchiveData()
 		{
 			return archiveData;
 		}
