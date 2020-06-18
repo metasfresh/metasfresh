@@ -25,6 +25,7 @@ package de.metas.ui.web.quickinput.field;
 import de.metas.handlingunits.IHUPIItemProductDAO;
 import de.metas.handlingunits.IHUPIItemProductQuery;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
+import de.metas.lang.SOTrx;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.service.IPriceListDAO;
@@ -54,9 +55,18 @@ public class PackingItemProductFieldHelper
 			return defaultPIProduct;
 		}
 
-		//if not found, check the default packing item for product
-		return huPIItemProductsRepo.retrieveDefaultForProduct(defaultPackingItemCriteria.getProductId(),
-				defaultPackingItemCriteria.getBPartnerLocationId().getBpartnerId(), defaultPackingItemCriteria.getDate());
+		if (SOTrx.SALES.equals(defaultPackingItemCriteria.getSoTrx()))
+		{
+			// Sales Orders: if no Packing Instruction is set on Product Price, check the default Packing Item for Product (set in CU-TU Allocations)
+			return huPIItemProductsRepo.retrieveDefaultForProduct(defaultPackingItemCriteria.getProductId(),
+					defaultPackingItemCriteria.getBPartnerLocationId().getBpartnerId(), defaultPackingItemCriteria.getDate());
+		}
+		else
+		{
+			// Purchase Orders: only the Packing Instructions which are set on Purchase Product Prices are used.
+			// Therefore at this step we return nothing.
+			return Optional.empty();
+		}
 	}
 
 	private Optional<I_M_HU_PI_Item_Product> getDefaultPackingMaterialFromPriceList(@NonNull final DefaultPackingItemCriteria defaultPackingItemCriteria)
