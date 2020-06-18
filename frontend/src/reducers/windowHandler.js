@@ -408,9 +408,12 @@ export default function windowHandler(state = initialState, action) {
       if (typeof action.value === 'string') {
         value = action.value;
       } else if (action.property === 'standardActions') {
-        // TODO: Evaluate if standardActions of type iSet
-        // is worth this extra check
+        // TODO: Use normal array
         value = iSet(action.value);
+        // TODO: we can probably overwrite all of them instead of merging but this has
+        // to be checked.
+      } else if (['saveStatus', 'validStatus'].includes(action.property)) {
+        value = action.value;
       } else {
         value = Object.assign(
           {},

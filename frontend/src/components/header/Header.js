@@ -1,6 +1,6 @@
 import counterpart from 'counterpart';
 import PropTypes from 'prop-types';
-import React, { Component } from 'react';
+import React, { PureComponent } from 'react';
 import { connect } from 'react-redux';
 import { push } from 'react-router-redux';
 import classnames from 'classnames';
@@ -28,9 +28,9 @@ import UserDropdown from './UserDropdown';
  * the top bar with different menus and icons in metasfresh WebUI. It hosts the action menu,
  * breadcrumb, logo, notification menu, avatar and sidelist menu.
  * @module Header
- * @extends Component
+ * @extends PureComponent
  */
-class Header extends Component {
+class Header extends PureComponent {
   state = {
     isSubheaderShow: false,
     isSideListShow: false,
@@ -547,7 +547,7 @@ class Header extends Component {
       inbox,
       entity,
       viewId,
-      showIndicator,
+      modalVisible,
       windowId,
       // TODO: We should be using indicator from the state instead of another variable
       isDocumentNotSaved,
@@ -558,6 +558,7 @@ class Header extends Component {
       handleEditModeToggle,
       activeTab,
       plugins,
+      indicator,
     } = this.props;
 
     const {
@@ -767,9 +768,7 @@ class Header extends Component {
             </div>
           </div>
 
-          {showIndicator && (
-            <Indicator isDocumentNotSaved={isDocumentNotSaved} />
-          )}
+          {modalVisible && <Indicator {...{ isDocumentNotSaved, indicator }} />}
         </nav>
 
         {isSubheaderShow && (
@@ -895,16 +894,16 @@ class Header extends Component {
  * @prop {*} plugins
  * @prop {*} viewId
  * @prop {*} showSidelist
- * @prop {*} showIndicator
+ * @prop {*} modalVisible
  * @prop {*} siteName
  * @prop {*} windowId
  */
 Header.propTypes = {
   activeTab: PropTypes.any,
   breadcrumb: PropTypes.any,
-  dataId: PropTypes.string,
+  dataId: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
   dispatch: PropTypes.func.isRequired,
-  docId: PropTypes.string,
+  docId: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
   docSummaryData: PropTypes.any,
   docNoData: PropTypes.any,
   docStatus: PropTypes.any,
@@ -921,9 +920,10 @@ Header.propTypes = {
   plugins: PropTypes.any,
   viewId: PropTypes.string,
   showSidelist: PropTypes.any,
-  showIndicator: PropTypes.any,
+  modalVisible: PropTypes.bool,
   siteName: PropTypes.any,
-  windowId: PropTypes.string,
+  windowId: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
+  indicator: PropTypes.string,
 };
 
 /**
@@ -936,6 +936,7 @@ const mapStateToProps = (state) => ({
   me: state.appHandler.me,
   pathname: state.routing.locationBeforeTransitions.pathname,
   plugins: state.pluginsHandler.files,
+  indicator: state.windowHandler.indicator,
 });
 
 export default connect(mapStateToProps)(Header);
