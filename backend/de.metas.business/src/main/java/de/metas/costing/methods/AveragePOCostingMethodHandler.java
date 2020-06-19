@@ -160,7 +160,10 @@ public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 			else
 			{
 				amt = request.getAmt();
+				
+				currentCosts.addToOwnCostPrice(amt);
 			}
+			
 			final CostDetailCreateRequest requestEffective = request.withAmount(amt);
 			result = utils.createCostDetailRecordWithChangedCosts(requestEffective, currentCosts);
 
