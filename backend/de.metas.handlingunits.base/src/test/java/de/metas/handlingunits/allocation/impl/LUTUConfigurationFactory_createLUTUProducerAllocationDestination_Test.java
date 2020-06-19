@@ -44,7 +44,6 @@ import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
-import org.assertj.core.api.Assertions;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.junit.Assert;
@@ -54,6 +53,7 @@ import java.math.BigDecimal;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -169,18 +169,20 @@ public class LUTUConfigurationFactory_createLUTUProducerAllocationDestination_Te
 		StaticHUAssert.assertStorageLevel(huContext, hu, cuProductId, expectedQty);
 	}
 
-	@Test(expected = NullPointerException.class)
+	@Test
 	public void test_NULL_PIItemProduct()
 	{
 		//noinspection ConstantConditions
-		Assertions.assertThatNullPointerException().isThrownBy(() ->
+		assertThatThrownBy(() ->
 				lutuFactory.createLUTUConfiguration(
 						null, // tuPIItemProduct
 						cuProductId,
 						UomId.ofRepoId(cuUOM.getC_UOM_ID()),
 						bpartnerId,
 						false) // noLUForVirtualTU == false => allow placing the CU (e.g. a packing material product) directly on the LU);
-		);
+		)
+				.isInstanceOf(RuntimeException.class)
+				.hasMessageContaining("must not be null");
 	}
 
 	/**
