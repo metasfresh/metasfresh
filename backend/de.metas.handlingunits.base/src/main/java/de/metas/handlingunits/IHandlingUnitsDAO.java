@@ -176,7 +176,7 @@ public interface IHandlingUnitsDAO extends ISingletonService
 
 	List<I_M_HU> retrieveIncludedHUs(final I_M_HU_Item item);
 
-	List<I_M_HU> retrieveIncludedHUs(I_M_HU hu);
+	List<I_M_HU> retrieveIncludedHUs(@NonNull I_M_HU hu);
 
 	// Handling Unit PI Retrieval
 

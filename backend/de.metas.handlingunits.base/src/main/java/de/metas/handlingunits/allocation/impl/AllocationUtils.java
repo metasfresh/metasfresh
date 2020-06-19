@@ -48,6 +48,8 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 
+import javax.annotation.Nullable;
+
 public final class AllocationUtils
 {
 	private AllocationUtils()
@@ -179,7 +181,7 @@ public final class AllocationUtils
 			final ProductId productId,
 			final Quantity qty,
 			final ZonedDateTime date,
-			final Object referenceModel,
+			@Nullable final Object referenceModel,
 			final boolean forceQtyAllocation)
 	{
 		return createAllocationRequestBuilder()

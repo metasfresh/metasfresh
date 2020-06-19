@@ -45,6 +45,7 @@ import de.metas.uom.IUOMDAO;
 import de.metas.uom.UOMPrecision;
 import de.metas.util.NumberUtils;
 import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.mm.attributes.spi.impl.WeightTareAttributeValueCallout;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_Attribute;
@@ -170,43 +171,45 @@ public class AggregateHUTrxListener implements IHUTrxListener
 			final IHUTransactionCandidate trx = itemId2Trx.get(item.getM_HU_Item_ID());
 			final BigDecimal storageQty = storage.getQty(trx.getProductId(), trx.getQuantity().getUOM());
 
-		// get the new TU quantity, which as TUs go needs to be an integer
-		final BigDecimal newTuQty = storageQty.divide(cuQtyBeforeLoad,
-				0,
-				RoundingMode.FLOOR);
+			// get the new TU quantity, which as TUs go needs to be an integer
+			final BigDecimal newTuQty = storageQty.divide(cuQtyBeforeLoad,
+					0,
+					RoundingMode.FLOOR);
 
-		item.setQty(newTuQty);
-		InterfaceWrapperHelper.save(item);
+			item.setQty(newTuQty);
+			InterfaceWrapperHelper.save(item);
 
-		// find out if we need to perform a split in order to preserve the former CU-per-TU quantity
-		final IUOMDAO uomDao = Services.get(IUOMDAO.class);
-		final UOMPrecision precision = uomDao.getStandardPrecision(trx.getQuantity().getUomId());
+			// find out if we need to perform a split in order to preserve the former CU-per-TU quantity
+			final IUOMDAO uomDao = Services.get(IUOMDAO.class);
+			final UOMPrecision precision = uomDao.getStandardPrecision(trx.getQuantity().getUomId());
 
-		final BigDecimal storageQtyOfCompleteTUs = newTuQty.multiply(cuQtyBeforeLoad);
-		final BigDecimal qtyToSplit = storageQty.subtract(storageQtyOfCompleteTUs);
+			final BigDecimal storageQtyOfCompleteTUs = newTuQty.multiply(cuQtyBeforeLoad);
+			final BigDecimal qtyToSplit = storageQty.subtract(storageQtyOfCompleteTUs);
 
-		final BigDecimal errorMargin = NumberUtils.getErrorMarginForScale(precision.toInt());
-		if (qtyToSplit.compareTo(errorMargin) > 0)
-		{
-			// the *actual* newTuQty would not be a natural number, so we need to initiate another split now
-			final I_M_HU_PI_Item splitHUPIItem = Services.get(IHandlingUnitsBL.class).getPIItem(item);
+			final BigDecimal errorMargin = NumberUtils.getErrorMarginForScale(precision.toInt());
+			if (qtyToSplit.compareTo(errorMargin) > 0)
+			{
+				// the *actual* newTuQty would not be a natural number, so we need to initiate another split now
+				final I_M_HU_PI_Item splitHUPIItem = Services.get(IHandlingUnitsBL.class).getPIItem(item);
 
-			// create a handling unit item
-			final I_M_HU_Item splitHUParentItem = handlingUnitsDAO.createHUItemIfNotExists(item.getM_HU(), splitHUPIItem).getLeft();
+				// create a handling unit item
+				@SuppressWarnings("ConstantConditions")
+				final I_M_HU_Item splitHUParentItem = handlingUnitsDAO.createHUItemIfNotExists(item.getM_HU(), splitHUPIItem).getLeft();
 
-			// the source is the aggregate item's aggregate VHU
-			final HUListAllocationSourceDestination source = HUListAllocationSourceDestination.of(handlingUnitsDAO.retrieveIncludedHUs(item));
-			source.setStoreCUQtyBeforeProcessing(false); // don't try it, it will probably fail
+				// the source is the aggregate item's aggregate VHU
+				final HUListAllocationSourceDestination source = HUListAllocationSourceDestination.of(handlingUnitsDAO.retrieveIncludedHUs(item));
+				source.setStoreCUQtyBeforeProcessing(false); // don't try it, it will probably fail
 
-			// the destination is a new HU that shall be attached as a sibling of the aggregate VHU
-			final HUProducerDestination destination = HUProducerDestination.of(splitHUPIItem.getIncluded_HU_PI());
+				// the destination is a new HU that shall be attached as a sibling of the aggregate VHU
+				@SuppressWarnings("ConstantConditions")
+				final HUProducerDestination destination = HUProducerDestination.of(splitHUPIItem.getIncluded_HU_PI());
 
-			destination.setParent_HU_Item(splitHUParentItem);
-			final HULoader loader = HULoader.of(source, destination)
-					.setForceLoad(true)
-					// note for dev: forceLoad is needed here, because if qty is greater than PI qty, we will split the expected 1 TU into 2, and that is wrong logically.
-					// see details in https://github.com/metasfresh/metasfresh/issues/6808#issuecomment-642414037
-					;
+				destination.setParent_HU_Item(splitHUParentItem);
+				final HULoader loader = HULoader.of(source, destination)
+						.setForceLoad(true)
+						// note for dev: forceLoad is needed here, because if qty is greater than PI qty, we will split the expected 1 TU into 2, and that is wrong logically.
+						// see details in https://github.com/metasfresh/metasfresh/issues/6808#issuecomment-642414037
+						;
 
 				// Create allocation request
 				final IAllocationRequest request = AllocationUtils.createQtyRequest(
