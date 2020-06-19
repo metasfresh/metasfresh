@@ -43,16 +43,27 @@ import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Warehouse;
 import org.junit.Test;
+import org.junit.jupiter.api.DisplayName;
 import org.w3c.dom.Node;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Objects;
 
 import static de.metas.handlingunits.allocation.transfer.HUTransformService.HUsToNewTUsRequest;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.xmlunit.assertj.XmlAssert.assertThat;
 
+// TODO tbp: can we move all of these tests to JUnit 5?
+// 		note: cannot move only this test, since its parents have @before and @beforeall and maybe other stuff
+
+/**
+ * Misc:
+ * LU net weight = 25Kg
+ * huItemIFCO_10 weight = 1Kg
+ * => Gross weight of 20 TU = 25 + 20 + net LU weight
+ */
 public class SplitLUsWithOddQuantitiesTest extends AbstractWeightAttributeTest
 {
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
@@ -63,24 +74,44 @@ public class SplitLUsWithOddQuantitiesTest extends AbstractWeightAttributeTest
 		return uomKg;
 	}
 
-	/** Generate an aggregate-LU with 500.217 KG tomatoes */
+	/**
+	 * <pre>
+	 * LU net weight = 125.457
+	 * TUs = 20
+	 * => kg/tu = 6.272
+	 *
+	 * run action with 1 TU param
+	 *
+	 * results:
+	 * 1 TU x 6.272 Kg
+	 *
+	 * left on pallet: 125.357-6.272 = 119.185 Kg
+	 * 19 TU x 119.185 Kg
+	 *
+	 * We don't care about Kg/TU, we only care that after splitting 1 TU, we're left with the correct amount of Kg and of TUs on the LU.
+	 * </pre>
+	 */
 	@Test
-	public void testSplit7TuFromLuWithRealData()
+	@DisplayName("1 LU x 20 TU; 125.457 Kg Net Weight; Split 1 TU")
+	public void split1TuFromLUx20TUNet125_457()
 	{
+		final BigDecimal initialNetWeight = BigDecimal.valueOf(125.457);
+
 		// given
-		// the LU contains one homogenous/aggregate HU with 50 TUs each of which has 10kg => 500
+		// the LU contains one homogenous/aggregate HU with 20 TUs each of which has 10 kg => 200 CUs
 		final I_M_HU palletToSplit = Services.get(ITrxManager.class).callInNewTrx(() -> {
 			final I_M_HU lu = helper.createLU(
 					huContext,
 					huItemIFCO_10,
 					materialItemProductTomato_10,
-					BigDecimal.valueOf(500));
+					BigDecimal.valueOf(200));
 
 			/*set weight attributes; does not yet affect storage, but is required for the weight-adjuster to work later*/
 			final IAttributeStorage attributeStorageLoadingUnit = attributeStorageFactory.getAttributeStorage(lu);
-			attributeStorageLoadingUnit.setValue(attr_WeightNet, new BigDecimal("500.217"));
-			assertLoadingUnitStorageWeights(lu, huItemIFCO_10, 50,
-					newHUWeightsExpectation("575.217", "500.217", "75", "0")
+			attributeStorageLoadingUnit.setValue(attr_WeightNet, initialNetWeight);
+			assertLoadingUnitStorageWeights(lu, huItemIFCO_10, 20,
+					newHUWeightsExpectation("170.457", initialNetWeight.toString(), "45", "0"), // LU weight
+					newHUWeightsExpectation("145.457", initialNetWeight.toString(), "20", "0") // aggregate TU with the whole qty
 			);
 
 			return lu;
@@ -88,27 +119,25 @@ public class SplitLUsWithOddQuantitiesTest extends AbstractWeightAttributeTest
 
 		// note that we use HUReceiptScheduleWeightNetAdjuster because currently this is the only code that AFAIK does weight adjusting
 		// this will change very soon, but until then i'm trying not to touch any of the code that is currently worked on, to avoid change conflicts
-		final I_M_ReceiptSchedule receiptScheduleRecord = prepareReceiptSchedule(palletToSplit);
+		final I_M_ReceiptSchedule receiptScheduleRecord = prepareReceiptSchedule(palletToSplit, initialNetWeight);
 		final HUReceiptScheduleWeightNetAdjuster rsNetWeightAdjuster = new HUReceiptScheduleWeightNetAdjuster(helper.getCtx(), helper.trxName);
 		rsNetWeightAdjuster.addReceiptSchedule(receiptScheduleRecord);
 
-		// Assert initial data is as expected: 1 LU with 50 TUs and 500.217 CUs
+		// Assert initial data is as expected: 1 LU with 20 TUs and 125.457 CUs
 		final Node xmlPalletBeforeSplit = HUXmlConverter.toXml(palletToSplit);
 		assertThat(xmlPalletBeforeSplit).valueByXPath("count(HU-Palet/Item[@ItemType='HA'])").as("LU has 1 aggregate item").isEqualTo("1");
-		assertThat(xmlPalletBeforeSplit).valueByXPath("string(HU-Palet/Item[@ItemType='HA']/@Qty)").as("LU has 1 aggregate item").isEqualTo("50");
+		assertThat(xmlPalletBeforeSplit).valueByXPath("string(HU-Palet/Item[@ItemType='HA']/@Qty)").as("LU has 1 aggregate item").isEqualTo(20);
 		assertThat(xmlPalletBeforeSplit).valueByXPath("count(HU-Palet/Item[@ItemType='PM'])").as("LU has 1 packing item").isEqualTo("1");
+		assertThat(xmlPalletBeforeSplit).valueByXPath("string(HU-Palet/Storage[@M_Product_Value='Tomato' and @C_UOM_Name='Kg']/@Qty)").isEqualTo(initialNetWeight.toString());
 		assertThat(xmlPalletBeforeSplit).valueByXPath("count(HU-Palet/Item)").as("LU has 2 items").isEqualTo("2");
-		assertThat(xmlPalletBeforeSplit).valueByXPath("string(HU-Palet/Storage[@M_Product_Value='Tomato' and @C_UOM_Name='Kg']/@Qty)").isEqualTo("500.217");
 
 		//
 		// when
 		final HUsToNewTUsRequest request = HUsToNewTUsRequest.forSourceHuAndQty(palletToSplit, 1);
-		final List<I_M_HU> splitTUs = HUTransformService.newInstance(helper.getHUContext())
-				.husToNewTUs(request);
+		final List<I_M_HU> splitTUs = HUTransformService.newInstance(helper.getHUContext()).husToNewTUs(request);
 
 		//
 		// then
-		//helper.commitAndDumpHU(splitTUs.get(0));
 		Assertions.assertThat(splitTUs).hasSize(1); // in this test, we static imported XMLAssert
 
 		final Node xmlSplitTU = HUXmlConverter.toXml(splitTUs.get(0));
@@ -116,24 +145,269 @@ public class SplitLUsWithOddQuantitiesTest extends AbstractWeightAttributeTest
 		assertThat(xmlSplitTU).valueByXPath("count(HU-IFCO/Item[@ItemType='MI'])").as("TU has 1 material item").isEqualTo("1");
 		assertThat(xmlSplitTU).valueByXPath("count(HU-IFCO/Item[@ItemType='PM'])").as("TU has 1 packing item").isEqualTo("1");
 		assertThat(xmlSplitTU).valueByXPath("count(HU-IFCO/Item)").as("TU has 2 items").isEqualTo("2");
-		assertThat(xmlSplitTU).valueByXPath("string(HU-IFCO/Storage[@M_Product_Value='Tomato' and @C_UOM_Name='Kg']/@Qty)").isEqualTo("10.004");
+		assertThat(xmlSplitTU).valueByXPath("string(HU-IFCO/Storage[@M_Product_Value='Tomato' and @C_UOM_Name='Kg']/@Qty)").isEqualTo("6.272");
 
-		//helper.commitAndDumpHU(palletToSplit);
 		final Node xmlPalletAfterSplit = HUXmlConverter.toXml(palletToSplit);
 		assertThat(xmlPalletAfterSplit).valueByXPath("count(HU-Palet/Item[@ItemType='HA'])").as("LU still has 1 aggregate item").isEqualTo("1");
+		assertThat(xmlPalletAfterSplit).valueByXPath("string(HU-Palet/Item[@ItemType='HA']/@Qty)").as("LU has less TUs").isEqualTo(19);
 		assertThat(xmlPalletAfterSplit).valueByXPath("count(HU-Palet/Item[@ItemType='PM'])").as("LU still has 1 packing item").isEqualTo("1");
+		assertThat(xmlPalletAfterSplit).valueByXPath("string(HU-Palet/Storage[@M_Product_Value='Tomato' and @C_UOM_Name='Kg']/@Qty)").isEqualTo("119.185");
+		assertThat(xmlPalletAfterSplit).valueByXPath("count(HU-Palet/Item)").as("LU still has 2 items").isEqualTo("2");
+	}
+
+	/**
+	 * <pre>
+	 * LU net weight = 500.217 Kg
+	 * TUs = 20
+	 *  => Kg/TU = 25.010
+	 *
+	 * run action with 7 TU param
+	 *
+	 * results
+	 * 7 TU x 25.010 Kg = 175.070
+	 *
+	 * left on pallet = 500.217 - 175.070 = 325.147 Kg
+	 * 13 TU x 25.010 Kg
+	 *
+	 * We don't care about Kg/TU, we only care that after splitting 1 TU, we're left with the correct amount of Kg and of TUs on the LU.
+	 * </pre>
+	 */
+	@Test
+	@DisplayName("1 LU x 20 TU; 500.217 Kg Net Weight; Split 7 TU")
+	public void split7TuFromLUx20TUNet500_217()
+	{
+		final BigDecimal initialNetWeight = BigDecimal.valueOf(500.217);
+
+		// given
+		// the LU contains one homogenous/aggregate HU with 20 TUs each of which has 10 kg => 200 CUs
+		final I_M_HU palletToSplit = Services.get(ITrxManager.class).callInNewTrx(() -> {
+			final I_M_HU lu = helper.createLU(
+					huContext,
+					huItemIFCO_10,
+					materialItemProductTomato_10,
+					BigDecimal.valueOf(200));
+
+			/*set weight attributes; does not yet affect storage, but is required for the weight-adjuster to work later*/
+			final IAttributeStorage attributeStorageLoadingUnit = attributeStorageFactory.getAttributeStorage(lu);
+			attributeStorageLoadingUnit.setValue(attr_WeightNet, initialNetWeight);
+			assertLoadingUnitStorageWeights(lu, huItemIFCO_10, 20,
+					newHUWeightsExpectation("545.217", initialNetWeight.toString(), "45", "0"), // LU weight
+					newHUWeightsExpectation("520.217", initialNetWeight.toString(), "20", "0") // aggregate TU with the whole qty
+			);
+
+			return lu;
+		});
+
+		// note that we use HUReceiptScheduleWeightNetAdjuster because currently this is the only code that AFAIK does weight adjusting
+		// this will change very soon, but until then i'm trying not to touch any of the code that is currently worked on, to avoid change conflicts
+		final I_M_ReceiptSchedule receiptScheduleRecord = prepareReceiptSchedule(palletToSplit, initialNetWeight);
+		final HUReceiptScheduleWeightNetAdjuster rsNetWeightAdjuster = new HUReceiptScheduleWeightNetAdjuster(helper.getCtx(), helper.trxName);
+		rsNetWeightAdjuster.addReceiptSchedule(receiptScheduleRecord);
+
+		// Assert initial data is as expected: 1 LU with 20 TUs and 500.217 CUs
+		final Node xmlPalletBeforeSplit = HUXmlConverter.toXml(palletToSplit);
+		assertThat(xmlPalletBeforeSplit).valueByXPath("count(HU-Palet/Item[@ItemType='HA'])").as("LU has 1 aggregate item").isEqualTo("1");
+		assertThat(xmlPalletBeforeSplit).valueByXPath("string(HU-Palet/Item[@ItemType='HA']/@Qty)").as("LU has 1 aggregate item").isEqualTo(20);
+		assertThat(xmlPalletBeforeSplit).valueByXPath("count(HU-Palet/Item[@ItemType='PM'])").as("LU has 1 packing item").isEqualTo("1");
+		assertThat(xmlPalletBeforeSplit).valueByXPath("string(HU-Palet/Storage[@M_Product_Value='Tomato' and @C_UOM_Name='Kg']/@Qty)").isEqualTo(initialNetWeight.toString());
+		assertThat(xmlPalletBeforeSplit).valueByXPath("count(HU-Palet/Item)").as("LU has 2 items").isEqualTo("2");
+
+		//
+		// when
+		final HUsToNewTUsRequest request = HUsToNewTUsRequest.forSourceHuAndQty(palletToSplit, 7);
+		final List<I_M_HU> splitTUs = HUTransformService.newInstance(helper.getHUContext()).husToNewTUs(request);
+
+		//
+		// then
+		Assertions.assertThat(splitTUs).hasSize(7); // in this test, we static imported XMLAssert
+		splitTUs.forEach(tu -> {
+			final Node xmlSplitTU = HUXmlConverter.toXml(tu);
+			assertThat(xmlSplitTU).valueByXPath("count(HU-IFCO)").asInt().isEqualTo(1);
+			assertThat(xmlSplitTU).valueByXPath("count(HU-IFCO/Item[@ItemType='MI'])").as("TU has 1 material item").isEqualTo("1");
+			assertThat(xmlSplitTU).valueByXPath("count(HU-IFCO/Item[@ItemType='PM'])").as("TU has 1 packing item").isEqualTo("1");
+			assertThat(xmlSplitTU).valueByXPath("count(HU-IFCO/Item)").as("TU has 2 items").isEqualTo("2");
+			assertThat(xmlSplitTU).valueByXPath("string(HU-IFCO/Storage[@M_Product_Value='Tomato' and @C_UOM_Name='Kg']/@Qty)").isEqualTo("25.010");
+		});
+
+		final Node xmlPalletAfterSplit = HUXmlConverter.toXml(palletToSplit);
+		assertThat(xmlPalletAfterSplit).valueByXPath("count(HU-Palet/Item[@ItemType='HA'])").as("LU still has 1 aggregate item").isEqualTo("1");
+		assertThat(xmlPalletAfterSplit).valueByXPath("string(HU-Palet/Item[@ItemType='HA']/@Qty)").as("LU has less TUs").isEqualTo(13);
+		assertThat(xmlPalletAfterSplit).valueByXPath("count(HU-Palet/Item[@ItemType='PM'])").as("LU still has 1 packing item").isEqualTo("1");
+		assertThat(xmlPalletAfterSplit).valueByXPath("string(HU-Palet/Storage[@M_Product_Value='Tomato' and @C_UOM_Name='Kg']/@Qty)").isEqualTo("325.147");
+		assertThat(xmlPalletAfterSplit).valueByXPath("count(HU-Palet/Item)").as("LU still has 2 items").isEqualTo("2");
+	}
+
+	/**
+	 * <pre>
+	 * LU net weight = 98.456
+	 * TUs = 40
+	 * => Kg/TU = 2.461
+	 *
+	 * run action with 1 TU param
+	 *
+	 * results
+	 * 1 TU x 2.461 Kg
+	 *
+	 * left on pallet = 98.456-2.461 = 95.995 Kg
+	 * 39 TU x 95.995 Kg
+	 *
+	 * We don't care about Kg/TU, we only care that after splitting 1 TU, we're left with the correct amount of Kg and of TUs on the LU.
+	 * </pre>
+	 */
+	@Test
+	@DisplayName("1 LU x 40 TU; 98.456 Kg Net Weight; Split 1 TU")
+	public void split1TuFromLUx40TUNet98_456()
+	{
+		final BigDecimal initialNetWeight = BigDecimal.valueOf(98.456);
+
+		// given
+		// the LU contains one homogenous/aggregate HU with 40 TUs each of which has 10 kg => 400 CUs
+		final I_M_HU palletToSplit = Services.get(ITrxManager.class).callInNewTrx(() -> {
+			final I_M_HU lu = helper.createLU(
+					huContext,
+					huItemIFCO_10,
+					materialItemProductTomato_10,
+					BigDecimal.valueOf(400));
+
+			/*set weight attributes; does not yet affect storage, but is required for the weight-adjuster to work later*/
+			final IAttributeStorage attributeStorageLoadingUnit = attributeStorageFactory.getAttributeStorage(lu);
+			attributeStorageLoadingUnit.setValue(attr_WeightNet, initialNetWeight);
+			assertLoadingUnitStorageWeights(lu, huItemIFCO_10, 40,
+					newHUWeightsExpectation("163.456", initialNetWeight.toString(), "65", "0"), // LU weight
+					newHUWeightsExpectation("138.456", initialNetWeight.toString(), "40", "0") // aggregate TU with the whole qty
+			);
+
+			return lu;
+		});
+
+		// note that we use HUReceiptScheduleWeightNetAdjuster because currently this is the only code that AFAIK does weight adjusting
+		// this will change very soon, but until then i'm trying not to touch any of the code that is currently worked on, to avoid change conflicts
+		final I_M_ReceiptSchedule receiptScheduleRecord = prepareReceiptSchedule(palletToSplit, initialNetWeight);
+		final HUReceiptScheduleWeightNetAdjuster rsNetWeightAdjuster = new HUReceiptScheduleWeightNetAdjuster(helper.getCtx(), helper.trxName);
+		rsNetWeightAdjuster.addReceiptSchedule(receiptScheduleRecord);
+
+		// Assert initial data is as expected: 1 LU with 40 TUs and 98.456 CUs
+		final Node xmlPalletBeforeSplit = HUXmlConverter.toXml(palletToSplit);
+		assertThat(xmlPalletBeforeSplit).valueByXPath("count(HU-Palet/Item[@ItemType='HA'])").as("LU has 1 aggregate item").isEqualTo("1");
+		assertThat(xmlPalletBeforeSplit).valueByXPath("string(HU-Palet/Item[@ItemType='HA']/@Qty)").as("LU has 1 aggregate item").isEqualTo(40);
+		assertThat(xmlPalletBeforeSplit).valueByXPath("count(HU-Palet/Item[@ItemType='PM'])").as("LU has 1 packing item").isEqualTo("1");
+		assertThat(xmlPalletBeforeSplit).valueByXPath("string(HU-Palet/Storage[@M_Product_Value='Tomato' and @C_UOM_Name='Kg']/@Qty)").isEqualTo(initialNetWeight.toString());
+		assertThat(xmlPalletBeforeSplit).valueByXPath("count(HU-Palet/Item)").as("LU has 2 items").isEqualTo("2");
+
+		//
+		// when
+		final HUsToNewTUsRequest request = HUsToNewTUsRequest.forSourceHuAndQty(palletToSplit, 1);
+		final List<I_M_HU> splitTUs = HUTransformService.newInstance(helper.getHUContext()).husToNewTUs(request);
+
+		//
+		// then
+		Assertions.assertThat(splitTUs).hasSize(1); // in this test, we static imported XMLAssert
+
+		final Node xmlSplitTU = HUXmlConverter.toXml(splitTUs.get(0));
+		assertThat(xmlSplitTU).valueByXPath("count(HU-IFCO)").asInt().isEqualTo(1);
+		assertThat(xmlSplitTU).valueByXPath("count(HU-IFCO/Item[@ItemType='MI'])").as("TU has 1 material item").isEqualTo("1");
+		assertThat(xmlSplitTU).valueByXPath("count(HU-IFCO/Item[@ItemType='PM'])").as("TU has 1 packing item").isEqualTo("1");
+		assertThat(xmlSplitTU).valueByXPath("count(HU-IFCO/Item)").as("TU has 2 items").isEqualTo("2");
+		assertThat(xmlSplitTU).valueByXPath("string(HU-IFCO/Storage[@M_Product_Value='Tomato' and @C_UOM_Name='Kg']/@Qty)").isEqualTo("2.461");
+
+		final Node xmlPalletAfterSplit = HUXmlConverter.toXml(palletToSplit);
+		assertThat(xmlPalletAfterSplit).valueByXPath("count(HU-Palet/Item[@ItemType='HA'])").as("LU still has 1 aggregate item").isEqualTo("1");
+		assertThat(xmlPalletAfterSplit).valueByXPath("string(HU-Palet/Item[@ItemType='HA']/@Qty)").as("LU has less TUs").isEqualTo(39);
+		assertThat(xmlPalletAfterSplit).valueByXPath("count(HU-Palet/Item[@ItemType='PM'])").as("LU still has 1 packing item").isEqualTo("1");
+		assertThat(xmlPalletAfterSplit).valueByXPath("string(HU-Palet/Storage[@M_Product_Value='Tomato' and @C_UOM_Name='Kg']/@Qty)").isEqualTo("95.995");
+		assertThat(xmlPalletAfterSplit).valueByXPath("count(HU-Palet/Item)").as("LU still has 2 items").isEqualTo("2");
+	}
+
+	/**
+	 * <pre>
+	 * LU net weight = 200.119
+	 * TUs = 20
+	 * => kg/TU = 10.005
+	 *
+	 * run action with 1 TU param
+	 *
+	 * results:
+	 * 1 TU x 10.005
+	 *
+	 * left on pallet: 200.119 - 10.005 = 190.114 Kg
+	 * => 19 TU 190.114 Kg
+	 *
+	 * We don't care about Kg/TU, we only care that after splitting 1 TU, we're left with the correct amount of Kg and of TUs on the LU.
+	 * </pre>
+	 */
+	@Test
+	@DisplayName("1 LU x 20 TU; 200.119 Kg Net Weight; Split 1 TU")
+	public void split1TuFromLUx20TUNet200_119()
+	{
+		final BigDecimal initialNetWeight = BigDecimal.valueOf(200.119);
+
+		// given
+		// the LU contains one homogenous/aggregate HU with 20 TUs each of which has 10 kg => 200 CUs
+		final I_M_HU palletToSplit = Services.get(ITrxManager.class).callInNewTrx(() -> {
+			final I_M_HU lu = helper.createLU(
+					huContext,
+					huItemIFCO_10,
+					materialItemProductTomato_10,
+					BigDecimal.valueOf(200));
+
+			/*set weight attributes; does not yet affect storage, but is required for the weight-adjuster to work later*/
+			final IAttributeStorage attributeStorageLoadingUnit = attributeStorageFactory.getAttributeStorage(lu);
+			attributeStorageLoadingUnit.setValue(attr_WeightNet, initialNetWeight);
+			assertLoadingUnitStorageWeights(lu, huItemIFCO_10, 20,
+					newHUWeightsExpectation("245.119", initialNetWeight.toString(), "45", "0"), // LU weight
+					newHUWeightsExpectation("220.119", initialNetWeight.toString(), "20", "0") // aggregate TU with the whole qty
+			);
+
+			return lu;
+		});
+
+		// note that we use HUReceiptScheduleWeightNetAdjuster because currently this is the only code that AFAIK does weight adjusting
+		// this will change very soon, but until then i'm trying not to touch any of the code that is currently worked on, to avoid change conflicts
+		final I_M_ReceiptSchedule receiptScheduleRecord = prepareReceiptSchedule(palletToSplit, initialNetWeight);
+		final HUReceiptScheduleWeightNetAdjuster rsNetWeightAdjuster = new HUReceiptScheduleWeightNetAdjuster(helper.getCtx(), helper.trxName);
+		rsNetWeightAdjuster.addReceiptSchedule(receiptScheduleRecord);
+
+		// Assert initial data is as expected: 1 LU with 20 TUs and 200.119 CUs
+		final Node xmlPalletBeforeSplit = HUXmlConverter.toXml(palletToSplit);
+		assertThat(xmlPalletBeforeSplit).valueByXPath("count(HU-Palet/Item[@ItemType='HA'])").as("LU has 1 aggregate item").isEqualTo("1");
+		assertThat(xmlPalletBeforeSplit).valueByXPath("string(HU-Palet/Item[@ItemType='HA']/@Qty)").as("LU has 1 aggregate item").isEqualTo(20);
+		assertThat(xmlPalletBeforeSplit).valueByXPath("count(HU-Palet/Item[@ItemType='PM'])").as("LU has 1 packing item").isEqualTo("1");
+		assertThat(xmlPalletBeforeSplit).valueByXPath("string(HU-Palet/Storage[@M_Product_Value='Tomato' and @C_UOM_Name='Kg']/@Qty)").isEqualTo(initialNetWeight.toString());
+		assertThat(xmlPalletBeforeSplit).valueByXPath("count(HU-Palet/Item)").as("LU has 2 items").isEqualTo("2");
+
+		//
+		// when
+		final HUsToNewTUsRequest request = HUsToNewTUsRequest.forSourceHuAndQty(palletToSplit, 1);
+		final List<I_M_HU> splitTUs = HUTransformService.newInstance(helper.getHUContext()).husToNewTUs(request);
+
+		//
+		// then
+		Assertions.assertThat(splitTUs).hasSize(1); // in this test, we static imported XMLAssert
+
+		final Node xmlSplitTU = HUXmlConverter.toXml(splitTUs.get(0));
+		assertThat(xmlSplitTU).valueByXPath("count(HU-IFCO)").asInt().isEqualTo(1);
+		assertThat(xmlSplitTU).valueByXPath("count(HU-IFCO/Item[@ItemType='MI'])").as("TU has 1 material item").isEqualTo("1");
+		assertThat(xmlSplitTU).valueByXPath("count(HU-IFCO/Item[@ItemType='PM'])").as("TU has 1 packing item").isEqualTo("1");
+		assertThat(xmlSplitTU).valueByXPath("count(HU-IFCO/Item)").as("TU has 2 items").isEqualTo("2");
+		assertThat(xmlSplitTU).valueByXPath("string(HU-IFCO/Storage[@M_Product_Value='Tomato' and @C_UOM_Name='Kg']/@Qty)").isEqualTo("10.005");
+
+		final Node xmlPalletAfterSplit = HUXmlConverter.toXml(palletToSplit);
+		assertThat(xmlPalletAfterSplit).valueByXPath("count(HU-Palet/Item[@ItemType='HA'])").as("LU still has 1 aggregate item").isEqualTo("1");
+		assertThat(xmlPalletAfterSplit).valueByXPath("string(HU-Palet/Item[@ItemType='HA']/@Qty)").as("LU has less TUs").isEqualTo(19);
+		assertThat(xmlPalletAfterSplit).valueByXPath("count(HU-Palet/Item[@ItemType='PM'])").as("LU still has 1 packing item").isEqualTo("1");
+		assertThat(xmlPalletAfterSplit).valueByXPath("string(HU-Palet/Storage[@M_Product_Value='Tomato' and @C_UOM_Name='Kg']/@Qty)").isEqualTo("190.114");
 		assertThat(xmlPalletAfterSplit).valueByXPath("count(HU-Palet/Item)").as("LU still has 2 items").isEqualTo("2");
 	}
 
 	@NonNull
-	private I_M_ReceiptSchedule prepareReceiptSchedule(final I_M_HU palletToSplit)
+	private I_M_ReceiptSchedule prepareReceiptSchedule(@NonNull final I_M_HU palletToSplit, @NonNull final BigDecimal qtyOrdered)
 	{
-		final List<I_M_HU> vhuRecords = POJOLookupMap.get().getRecords(I_M_HU.class, handlingUnitsBL::isVirtual);
+		final List<I_M_HU> vhuRecords = Objects.requireNonNull(POJOLookupMap.get()).getRecords(I_M_HU.class, handlingUnitsBL::isVirtual);
 		final I_M_HU vhuRecord = CollectionUtils.singleElement(vhuRecords);
 
 		final I_C_OrderLine orderLineRecord = newInstance(I_C_OrderLine.class);
 		orderLineRecord.setM_Product_ID(materialItemProductTomato_10.getM_Product_ID());
-		orderLineRecord.setQtyOrdered(new BigDecimal("500.217"));
+		orderLineRecord.setQtyOrdered(qtyOrdered);
 		orderLineRecord.setPriceActual(BigDecimal.ONE);
 		saveRecord(orderLineRecord);
 
@@ -152,7 +426,7 @@ public class SplitLUsWithOddQuantitiesTest extends AbstractWeightAttributeTest
 		rsaRecord.setM_ReceiptSchedule_ID(receiptScheduleRecord.getM_ReceiptSchedule_ID());
 		rsaRecord.setM_LU_HU(palletToSplit);
 		rsaRecord.setM_TU_HU(vhuRecord);
-		rsaRecord.setHU_QtyAllocated(new BigDecimal("500.217"));
+		rsaRecord.setHU_QtyAllocated(qtyOrdered);
 		rsaRecord.setVHU(vhuRecord);
 		saveRecord(rsaRecord);
 		return receiptScheduleRecord;
