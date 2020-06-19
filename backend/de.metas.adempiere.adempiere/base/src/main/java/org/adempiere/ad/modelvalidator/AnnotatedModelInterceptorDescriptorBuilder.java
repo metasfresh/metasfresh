@@ -106,7 +106,7 @@ final class AnnotatedModelInterceptorDescriptorBuilder
 			final Validator annValidator = annotatedClass.getAnnotation(Validator.class);
 			if (annValidator == null)
 			{
-				throw new AdempiereException("Each model interceptor class shall be marked with " + Interceptor.class + " annotation");
+				throw new AdempiereException("Each model interceptor class shall be marked with " + Interceptor.class + " annotation: " + annotatedClass);
 			}
 			else
 			{
@@ -281,7 +281,7 @@ final class AnnotatedModelInterceptorDescriptorBuilder
 		logger.debug("Loaded {}", pointcut);
 	}
 
-	private final PointcutKey mkKey(@NonNull final Pointcut pointcut)
+	private PointcutKey mkKey(@NonNull final Pointcut pointcut)
 	{
 		return PointcutKey.of(pointcut.getTableName(), pointcut.getType());
 	}
