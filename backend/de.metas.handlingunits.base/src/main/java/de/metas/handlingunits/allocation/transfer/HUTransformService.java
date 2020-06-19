@@ -958,7 +958,8 @@ public class HUTransformService
 				Preconditions.checkState(representedTUsCount.signum() > 0, "Param 'tuHU' is an aggregate HU whose M_HU_Item_Parent has a qty of %s; tuHU=%s; tuHU's M_HU_Item_Parent=%s", representedTUsCount, sourceTuHU, tuHUsParentItem);
 
 				final int uomPrecision = firstProductStorage.getC_UOM().getStdPrecision();
-				sourceQtyCUperTU = qtyOfStorage.divide(representedTUsCount, uomPrecision, RoundingMode.HALF_UP);
+				// always round floor for a more stable split calculation
+				sourceQtyCUperTU = qtyOfStorage.divide(representedTUsCount, uomPrecision, RoundingMode.FLOOR);
 			}
 			else
 			{
