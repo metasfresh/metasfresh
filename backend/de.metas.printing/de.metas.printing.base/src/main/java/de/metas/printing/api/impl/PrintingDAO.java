@@ -27,6 +27,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 
+import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.ISqlQueryFilter;
 import org.adempiere.ad.dao.impl.TypedSqlQuery;
 import org.adempiere.ad.trx.api.ITrx;
@@ -389,23 +391,6 @@ public class PrintingDAO extends AbstractPrintingDAO
 
 		return result;
 	}
-
-	@Override
-	public List<I_AD_PrinterHW_MediaTray> retrieveMediaTrays(final I_AD_PrinterHW printerHW)
-	{
-		final Properties ctx = InterfaceWrapperHelper.getCtx(printerHW);
-		final String trxName = InterfaceWrapperHelper.getTrxName(printerHW);
-
-		final String whereClause = I_AD_PrinterHW_MediaTray.COLUMNNAME_AD_PrinterHW_ID + " =?";
-
-		final List<I_AD_PrinterHW_MediaTray> result = new Query(ctx, I_AD_PrinterHW_MediaTray.Table_Name, whereClause, trxName)
-				.setOnlyActiveRecords(true)
-				.setParameters(printerHW.getAD_PrinterHW_ID())
-				.list(I_AD_PrinterHW_MediaTray.class);
-
-		return result;
-	}
-
 
 	@Override
 	public List<I_AD_Printer> retrievePrinters(final Properties ctx, final int adOrgId)

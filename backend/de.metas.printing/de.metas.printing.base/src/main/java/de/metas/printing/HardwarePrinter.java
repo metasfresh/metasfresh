@@ -22,42 +22,40 @@
 
 package de.metas.printing;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonValue;
-import de.metas.util.Check;
-import de.metas.util.lang.RepoIdAware;
-import lombok.ToString;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Singular;
 import lombok.Value;
 
 @Value
-public class LogicalPrinterId implements RepoIdAware
+public class HardwarePrinter
 {
-	@JsonCreator
-	public static LogicalPrinterId ofRepoId(final int repoId)
+	HardwarePrinterId id;
+
+	String name;
+
+	OutputType outputType;
+
+	ImmutableMap<HardwareTrayId, HardwareTray> trays;
+
+	@Builder
+	private HardwarePrinter(
+			@NonNull final HardwarePrinterId id,
+			@NonNull final String name,
+			@NonNull final OutputType outputType,
+			@Singular final ImmutableList<HardwareTray> trays)
 	{
-		return new LogicalPrinterId(repoId);
+		this.id = id;
+		this.name = name;
+		this.outputType = outputType;
+		this.trays = Maps.uniqueIndex(trays, HardwareTray::getId);
 	}
 
-	public static LogicalPrinterId ofRepoIdOrNull(final int repoId)
+	public HardwareTray getTray(final HardwareTrayId trayId)
 	{
-		return repoId > 0 ? new LogicalPrinterId(repoId) : null;
-	}
-
-	public static int toRepoId(final LogicalPrinterId logicalPrinterId)
-	{
-		return logicalPrinterId != null ? logicalPrinterId.getRepoId() : -1;
-	}
-	int repoId;
-
-	private LogicalPrinterId(final int repoId)
-	{
-		this.repoId = Check.assumeGreaterThanZero(repoId, "repoId");
-	}
-
-	@Override
-	@JsonValue
-	public int getRepoId()
-	{
-		return repoId;
+		return trays.get(trayId);
 	}
 }

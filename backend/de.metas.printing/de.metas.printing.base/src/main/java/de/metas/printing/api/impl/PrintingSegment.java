@@ -23,19 +23,20 @@
 package de.metas.printing.api.impl;
 
 import de.metas.printing.HardwarePrinterId;
-import de.metas.printing.HardwarePrinterTrayId;
+import de.metas.printing.HardwareTrayId;
+import de.metas.printing.PrinterRoutingId;
 import de.metas.printing.model.I_AD_PrinterRouting;
 import de.metas.util.Check;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
-import org.adempiere.util.lang.ObjectUtils;
-import org.compiere.model.I_AD_Archive;
+import lombok.ToString;
 
 import javax.annotation.Nullable;
 
 @EqualsAndHashCode(exclude = { "pageFrom", "pageTo" })
+@ToString
 class PrintingSegment
 {
 	private Integer pageFrom;
@@ -45,8 +46,9 @@ class PrintingSegment
 	private final int initialPageTo;
 	private final int lastPages;
 	private final String routingType;
+	@Getter private final PrinterRoutingId printerRoutingId;
 	@Getter private final HardwarePrinterId printerId;
-	@Getter private final HardwarePrinterTrayId trayId;
+	@Getter private final HardwareTrayId trayId;
 
 	@Builder
 	private PrintingSegment(
@@ -54,23 +56,19 @@ class PrintingSegment
 			final int initialPageTo,
 			final int lastPages,
 			@NonNull final String routingType,
+			@NonNull final PrinterRoutingId printerRoutingId,
 			@NonNull final HardwarePrinterId printerId,
-			@Nullable final HardwarePrinterTrayId trayId)
+			@Nullable final HardwareTrayId trayId)
 	{
 		this.initialPageFrom = initialPageFrom;
 		this.initialPageTo = initialPageTo;
 		this.lastPages = lastPages;
 		this.routingType = routingType;
+		this.printerRoutingId = printerRoutingId;
 		this.printerId = printerId;
 		this.trayId=trayId;
 
 		Check.assume(initialPageFrom <= initialPageTo, "initialPageFrom={} is less or equal to initialPageTo={}", initialPageFrom, initialPageTo);
-	}
-
-	@Override
-	public String toString()
-	{
-		return ObjectUtils.toString(this);
 	}
 
 	public void setPageFrom(final int pageFrom)
@@ -103,7 +101,6 @@ class PrintingSegment
 		{
 			return pageTo;
 		}
-
 		return initialPageTo;
 	}
 

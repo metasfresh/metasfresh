@@ -1,6 +1,8 @@
 package de.metas.printing.api.impl;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static org.adempiere.model.InterfaceWrapperHelper.refresh;
+import static org.assertj.core.api.Assertions.*;
 
 /*
  * #%L
@@ -35,8 +37,11 @@ import java.util.Objects;
 import java.util.Properties;
 import java.util.UUID;
 
+import javax.annotation.Nullable;
 import javax.print.attribute.standard.MediaSize;
 
+import de.metas.util.time.SystemTime;
+import lombok.NonNull;
 import org.adempiere.ad.session.ISessionBL;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
@@ -58,10 +63,10 @@ import org.compiere.util.Env;
 import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
 import org.junit.Assert;
+import org.junit.jupiter.api.TestInfo;
 import org.junit.rules.TestName;
 
 import de.metas.adempiere.form.IClientUI;
-import de.metas.adempiere.service.IPrinterRoutingDAO;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.document.engine.impl.PlainDocumentBL;
 import de.metas.i18n.Language;
@@ -103,6 +108,7 @@ public class Helper
 {
 	public static final POJOLookupMap db;
 	public static final PlainPrintingDAO printingDAO;
+
 	static
 	{
 		// NOTE: we need to enable UnitTestMode before getting the database, else we will get NULL
@@ -130,16 +136,19 @@ public class Helper
 
 	protected boolean autoCreateHWPrinters = true;
 
-	private final TestName testName;
+	private final String testDisplayName;
 
 	private TestClientUI clientUI = null;
 
-	public Helper(final TestName testName)
+	public Helper(@NonNull final TestName testName)
 	{
-		super();
-		this.testName = testName;
+		this.testDisplayName = testName.getMethodName();
 	}
 
+	public Helper(@NonNull final TestInfo testInfo)
+	{
+		this.testDisplayName = testInfo.getDisplayName();
+	}
 	private static boolean staticInitialized = false;
 
 	public static void staticInit()
@@ -250,6 +259,7 @@ public class Helper
 
 		final IArchiveStorage storage = Services.get(IArchiveStorageFactory.class).getArchiveStorage(ctx);
 		final org.compiere.model.I_AD_Archive archive = storage.newArchive(ctx, trxName);
+		archive.setName(Long.toString(SystemTime.millis()));
 		storage.setBinaryData(archive, pdfBinaryData);
 		printingDAO.save(archive);
 
@@ -579,7 +589,7 @@ public class Helper
 
 	public void assertEqualsPDF(final byte[] pdfExpected, final byte[] pdfActual)
 	{
-		assertEqualsPDF(testName.getMethodName(), pdfExpected, pdfActual);
+		assertEqualsPDF(testDisplayName, pdfExpected, pdfActual);
 	}
 
 	private void assertEqualsPDF(final String testName, final byte[] pdfExpected, final byte[] pdfActual)
@@ -601,9 +611,6 @@ public class Helper
 	/**
 	 * Compare if to PDFs are equal
 	 *
-	 * @param data1
-	 * @param data2
-	 * @param matchingPercent
 	 * @return true if equal
 	 */
 	public static boolean equalPDFs(final byte[] data1, final byte[] data2, final double matchingPercent)
@@ -686,7 +693,9 @@ public class Helper
 		return archive;
 	}
 
-	public I_C_Print_Package createNextPrintPackageAndTest(final I_C_Print_Job printJobExpected, final byte[] dataExpected)
+	public I_C_Print_Package createNextPrintPackageAndTest(
+			@Nullable final I_C_Print_Job printJobExpected,
+			@Nullable final byte[] dataExpected)
 	{
 		//
 		// Validation: Print Job Instructions before processing (if available)
@@ -697,8 +706,8 @@ public class Helper
 
 			// task 09028: don't check for the host key..the user shall be able to print this wherever they are logged in
 			// Assert.assertEquals("Invalid HostKey for print job instructions " + printJobInstructions, getSessionHostKey(), printJobInstructions.getHostKey());
-			Assert.assertEquals("After package created, " + printJobInstructions + " shall be marked as Pending",
-					X_C_Print_Job_Instructions.STATUS_Pending, printJobInstructions.getStatus());
+			assertThat(printJobInstructions.getStatus()).as("After package created, %s shall be marked as Send", printJobInstructions)
+					.isEqualTo(X_C_Print_Job_Instructions.STATUS_Pending);
 		}
 
 		//
@@ -707,42 +716,41 @@ public class Helper
 
 		// Trigger print package response producer
 		final I_C_Print_Package printPackageResponse = createPrintPackageResponse(printPackageRequest);
-		Assert.assertNotNull("A print package response shall be created for request: " + printPackageRequest, printPackageResponse);
-
+		assertThat(printPackageResponse).as("A print package response shall be created for request: %s", printPackageRequest)
+				.isNotNull();
 		//
 		// Validation: PrintPackage - PrintJob link
 		// 04072: C_Print_Job_ID is taken frlom C-Print_Job_Instructions of the C_Print_Package
 		final I_C_Print_Job_Instructions printInstructions = printPackageResponse.getC_Print_Job_Instructions();
 		final I_C_Print_Job printJobActual = printInstructions.getC_Print_Job();
-		Assert.assertNotNull("No print job set for: " + printPackageResponse, printJobActual);
+		assertThat(printJobActual).as("No print job set for: %s", printPackageResponse).isNotNull();
 		if (printJobExpected != null)
 		{
-			InterfaceWrapperHelper.refresh(printJobExpected);
-			Assert.assertEquals("Invalid print job for: " + printPackageResponse, printJobExpected, printJobActual);
+			refresh(printJobExpected);
+			assertThat(printJobActual).as("Invalid print job for: %s", printPackageResponse).isEqualTo(printJobExpected);
 		}
-		Assert.assertTrue("Print job not marked as processed: " + printJobActual, printJobActual.isProcessed());
+		assertThat(printJobActual.isProcessed()).as("Print job not marked as processed: %s", printJobActual).isTrue();
 
 		for (final I_C_Print_Job_Line jobLine : IteratorUtils.asIterable(printingDAO.retrievePrintJobLines(printJobActual)))
 		{
 			final I_C_Print_Package printPackageActual = jobLine.getC_Print_Package();
-			Assert.assertEquals("Invalid print package set for: " + jobLine, printPackageResponse, printPackageActual);
+			assertThat(printPackageActual).as("Invalid print package set for: %s", jobLine).isEqualTo(printPackageActual);
 		}
 
 		//
 		// Validate Print Job Instructions (after processing)
 		final I_C_Print_Job_Instructions printJobInstructions = printingDAO.retrievePrintJobInstructionsForPrintJob(printJobActual);
-		Assert.assertNotNull("No print job instructions for " + printJobActual, printJobInstructions);
-		Assert.assertEquals("After package created, " + printJobInstructions + " shall be marked as Send",
-				X_C_Print_Job_Instructions.STATUS_Send, printJobInstructions.getStatus());
-
+		assertThat(printJobInstructions).as("No print job instructions for %s", printJobActual).isNotNull();
+		assertThat(printJobInstructions.getStatus()).as("After package created, %s shall be marked as Send", printJobInstructions)
+				.isEqualTo(X_C_Print_Job_Instructions.STATUS_Send);
 		//
 		// Validation: Print Package Data
 		final I_C_PrintPackageData printData = printingDAO.getPrintPackageData(printPackageResponse);
-		Assert.assertNotNull("No print data created for: " + printPackageResponse, printData);
+		assertThat(printData).as("No print data created for: %s", printPackageResponse).isNotNull();
 
 		// Validation: Generated PDF (if available)
 		final byte[] dataActual = printData.getPrintData();
-		Assert.assertNotNull("No print package data for " + printPackageResponse, dataActual);
+		assertThat(dataActual).as("No print package data for %s", printPackageResponse).isNotNull();
 		if (dataExpected != null)
 		{
 			assertEqualsPDF(dataExpected, dataActual);

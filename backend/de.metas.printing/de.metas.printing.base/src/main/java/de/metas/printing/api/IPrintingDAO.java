@@ -28,7 +28,9 @@ import java.util.Properties;
 
 import javax.print.attribute.standard.MediaSize;
 
+import de.metas.printing.HardwarePrinterId;
 import de.metas.printing.LogicalPrinterId;
+import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.IQuery;
@@ -177,7 +179,9 @@ public interface IPrintingDAO extends ISingletonService
 
 	void removeCalibrations(List<I_AD_PrinterHW_Calibration> calibrations);
 
-	List<I_AD_PrinterHW_MediaTray> retrieveMediaTrays(final I_AD_PrinterHW printerHW);
+	I_AD_PrinterHW retrieveHardwarePrinter(@NonNull HardwarePrinterId hardwarePrinterId);
+
+	List<I_AD_PrinterHW_MediaTray> retrieveMediaTrays(@NonNull HardwarePrinterId hardwarePrinterId);
 
 	void removeMediaTrays(List<I_AD_PrinterHW_MediaTray> trays);
 

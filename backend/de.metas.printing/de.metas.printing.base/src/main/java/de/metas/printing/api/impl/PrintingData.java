@@ -25,6 +25,9 @@ package de.metas.printing.api.impl;
 import com.google.common.collect.ImmutableList;
 import com.lowagie.text.pdf.PdfReader;
 import de.metas.logging.LogManager;
+import de.metas.organization.OrgId;
+import de.metas.printing.PrintingQueueItemId;
+import de.metas.printing.model.I_C_Printing_Queue;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.Getter;
@@ -36,7 +39,9 @@ import org.adempiere.util.lang.ObjectUtils;
 import org.compiere.model.I_AD_Archive;
 import org.slf4j.Logger;
 
+import javax.annotation.Nullable;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 
@@ -45,54 +50,64 @@ public class PrintingData
 	// Services
 	private static final transient Logger logger = LogManager.getLogger(PrintingData.class);
 
-	private final transient IArchiveBL archiveBL = Services.get(IArchiveBL.class);
-
-	// Parameters
 	@Getter
-	private final I_AD_Archive archiveRecord;
+	private final ImmutableList<PrintingSegment> segments;
 
 	@Getter
-	private final ImmutableList<PrintingSegment> printingSegments;
+	private final PrintingQueueItemId printingQueueItemId;
+
+	@Getter
+	private final String documentName;
 
 	// Archive's Data
-	private boolean dataLoaded;
-	private transient byte[] data;
+	@Getter
+	private transient final byte[] data;
+	@Getter
+	private final OrgId orgId;
+
 	private Integer numberOfPages = null;
-	private final HashSet<Integer> processedPrintingArchiveParts = new HashSet<>();
 
 	@Builder
 	private PrintingData(
-			@NonNull final I_AD_Archive archiveRecord,
-			@Singular @NonNull final List<PrintingSegment> printingSegments)
+			@Singular @NonNull final List<PrintingSegment> segments,
+			@NonNull final PrintingQueueItemId printingQueueItemId,
+			@NonNull final OrgId orgId,
+			@Nullable final byte[] data,
+			@NonNull final String documentName)
 	{
-		this.archiveRecord = archiveRecord;
-		this.printingSegments = ImmutableList.copyOf(printingSegments);
-
-		adjustSegmentPageRanges(this);
+		this.printingQueueItemId = printingQueueItemId;
+		this.data = data;
+		this.orgId = orgId;
+		this.documentName = documentName;
+		this.segments = adjustSegmentPageRanges(this, segments);
 	}
 
-	private static void adjustSegmentPageRanges(@NonNull final PrintingData archiveData)
+	private static ImmutableList<PrintingSegment> adjustSegmentPageRanges(
+			@NonNull final PrintingData printingData,
+			@NonNull final List<PrintingSegment> segments)
 	{
-		if (!archiveData.hasData())
+		if (!printingData.hasData())
 		{
-			logger.info("Print Job Line's Archive has no data: {}. Skipping it", archiveData);
-			return;
+			logger.info("Print Job Line's Archive has no data: {}; -> empty segment list", printingData);
+			return ImmutableList.of();
 		}
 
+
 		// the number of pages to "divide" among our archive parts
-		final int numberOfPagesAvailable = archiveData.getNumberOfPages();
+		final int numberOfPagesAvailable = printingData.getNumberOfPages();
 		// task 08958: maintain a bitmap of pages that we already assigned to archive parts, to avoid printing them more than once
 		final boolean[] pagesCovered = new boolean[numberOfPagesAvailable];
 
 		//
 		// set PageFrom/PageTo for "LastPages" routings
 		int lastPagesMax = 0;
-		HashSet<PrintingSegment> alreadyProcessed = new HashSet<>();
-		for (final PrintingSegment printingSegment : archiveData.getPrintingSegments())
+		final ArrayList<PrintingSegment> lastPageSegments = new ArrayList<>();
+		final HashSet<PrintingSegment> alreadyProcessed = new HashSet<>();
+		for (final PrintingSegment printingSegment : segments)
 		{
 			if (!printingSegment.isLastPages())
 			{
-				continue;
+				continue; // we will look at last-pages-segments further down
 			}
 
 			int lastPages = printingSegment.getLastPages();
@@ -113,7 +128,7 @@ public class PrintingData
 			final int pageFrom = numberOfPagesAvailable - lastPages + 1;
 			if (pageFrom > pageTo)
 			{
-				// invalid page range => skip this archive part
+				// invalid page range => skip this segment
 				alreadyProcessed.add(printingSegment);
 				continue;
 			}
@@ -129,11 +144,13 @@ public class PrintingData
 			printingSegment.setPageFrom(pageFromFinal);
 			printingSegment.setPageTo(pageToFinal);
 			markCovered(pagesCovered, pageFromFinal, pageToFinal);
+			lastPageSegments.add(printingSegment);
 		}
 
 		//
 		// Adjust PageFrom/PageTo for "PageRange" routings
-		for (final PrintingSegment printingSegment : archiveData.getPrintingSegments())
+		final ArrayList<PrintingSegment> pageRangeSegments = new ArrayList<>();
+		for (final PrintingSegment printingSegment : segments)
 		{
 			if (alreadyProcessed.contains(printingSegment))
 			{
@@ -177,7 +194,13 @@ public class PrintingData
 			printingSegment.setPageFrom(pageFromFinal);
 			printingSegment.setPageTo(pageToFinal);
 			markCovered(pagesCovered, pageFromFinal, pageToFinal);
+			pageRangeSegments.add(printingSegment);
 		}
+
+		return ImmutableList.<PrintingSegment>builder()
+				.addAll(pageRangeSegments)
+				.addAll(lastPageSegments)
+				.build();
 	}
 
 	private static int skipBackward(final boolean[] pagesCovered,
@@ -230,32 +253,9 @@ public class PrintingData
 		return ObjectUtils.toString(this);
 	}
 
-	public byte[] getData()
-	{
-		if (dataLoaded)
-		{
-			return data;
-		}
-
-		data = archiveBL.getBinaryData(archiveRecord);
-		dataLoaded = true;
-		if (data == null || data.length == 0)
-		{
-			logger.info("Archive {} does not contain any data. Skip", archiveRecord);
-			data = null;
-		}
-		return data;
-	}
-
 	public boolean hasData()
 	{
-		return getData() != null;
-	}
-
-	public PdfReader createPdfReader() throws IOException
-	{
-		final PdfReader reader = new PdfReader(getData());
-		return reader;
+		return data != null;
 	}
 
 	public int getNumberOfPages()
@@ -273,13 +273,13 @@ public class PrintingData
 		PdfReader reader = null;
 		try
 		{
-			reader = createPdfReader();
+			reader = new PdfReader(getData());
 			numberOfPages = reader.getNumberOfPages();
 			return numberOfPages;
 		}
 		catch (final IOException e)
 		{
-			throw new AdempiereException("Cannot get number of pages for archive " + archiveRecord, e);
+			throw new AdempiereException("Cannot get number of pages for C_Printing_Queue_ID=" + printingQueueItemId.getRepoId(), e);
 		}
 		finally
 		{
@@ -295,19 +295,4 @@ public class PrintingData
 			}
 		}
 	}
-
-	// private void markProcessed(@NonNull final PrintingSegment printingArchivePart)
-	// {
-	// 	processedPrintingArchiveParts.add(printingArchivePart.getAD_PrinterRouting().getAD_PrinterRouting_ID());
-	// }
-	//
-	// private ImmutableList<PrintingSegment> getUnprocessedArchiveParts()
-	// {
-	// 	return printingSegments
-	// 			.stream()
-	// 			.filter(part ->
-	// 					!processedPrintingArchiveParts.contains(part.getAD_PrinterRouting().getAD_PrinterRouting_ID()))
-	// 			.collect(ImmutableList.toImmutableList());
-	//
-	// }
 }

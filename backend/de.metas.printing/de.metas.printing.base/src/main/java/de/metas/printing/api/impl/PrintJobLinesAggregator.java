@@ -1,6 +1,43 @@
 package de.metas.printing.api.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+import de.metas.logging.LogManager;
+import de.metas.printing.api.IPrintJobLinesAggregator;
+import de.metas.printing.api.IPrintPackageCtx;
+import de.metas.printing.api.IPrintingDAO;
+import de.metas.printing.exception.PrintingQueueAggregationException;
+import de.metas.printing.model.I_AD_PrinterHW;
+import de.metas.printing.model.I_AD_PrinterHW_Calibration;
+import de.metas.printing.model.I_AD_PrinterHW_MediaSize;
+import de.metas.printing.model.I_AD_PrinterHW_MediaTray;
+import de.metas.printing.model.I_C_PrintPackageData;
+import de.metas.printing.model.I_C_Print_Job;
+import de.metas.printing.model.I_C_Print_Job_Instructions;
+import de.metas.printing.model.I_C_Print_Job_Line;
+import de.metas.printing.model.I_C_Print_Package;
+import de.metas.printing.model.I_C_Print_PackageInfo;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.NonNull;
+import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.IPair;
+import org.adempiere.util.lang.ImmutablePair;
+import org.adempiere.util.lang.Mutable;
+import org.compiere.util.Util.ArrayKey;
+import org.slf4j.Logger;
+
+import javax.annotation.Nullable;
+import javax.print.attribute.standard.MediaSize;
+import java.io.ByteArrayOutputStream;
+import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.IdentityHashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Properties;
 
 /*
  * #%L
@@ -24,67 +61,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
  * #L%
  */
 
-
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.IdentityHashMap;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Properties;
-
-import javax.annotation.Nullable;
-import javax.print.attribute.standard.MediaSize;
-
-import com.google.common.collect.ImmutableList;
-import lombok.Getter;
-import lombok.NonNull;
-import org.adempiere.ad.service.IDeveloperModeBL;
-import org.adempiere.archive.api.IArchiveBL;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.IPair;
-import org.adempiere.util.lang.ImmutablePair;
-import org.adempiere.util.lang.Mutable;
-import org.adempiere.util.lang.ObjectUtils;
-import org.compiere.model.I_AD_Archive;
-import org.compiere.util.Util.ArrayKey;
-import org.slf4j.Logger;
-
-import com.lowagie.text.Document;
-import com.lowagie.text.DocumentException;
-import com.lowagie.text.pdf.BadPdfFormatException;
-import com.lowagie.text.pdf.PdfCopy;
-import com.lowagie.text.pdf.PdfReader;
-
-import de.metas.logging.LogManager;
-import de.metas.printing.api.IPrintJobBL;
-import de.metas.printing.api.IPrintJobLinesAggregator;
-import de.metas.printing.api.IPrintPackageCtx;
-import de.metas.printing.api.IPrintingDAO;
-import de.metas.printing.exception.PrintingQueueAggregationException;
-import de.metas.printing.model.I_AD_PrinterHW;
-import de.metas.printing.model.I_AD_PrinterHW_Calibration;
-import de.metas.printing.model.I_AD_PrinterHW_MediaSize;
-import de.metas.printing.model.I_AD_PrinterHW_MediaTray;
-import de.metas.printing.model.I_AD_PrinterRouting;
-import de.metas.printing.model.I_AD_PrinterTray_Matching;
-import de.metas.printing.model.I_AD_Printer_Matching;
-import de.metas.printing.model.I_C_PrintPackageData;
-import de.metas.printing.model.I_C_Print_Job;
-import de.metas.printing.model.I_C_Print_Job_Detail;
-import de.metas.printing.model.I_C_Print_Job_Instructions;
-import de.metas.printing.model.I_C_Print_Job_Line;
-import de.metas.printing.model.I_C_Print_Package;
-import de.metas.printing.model.I_C_Print_PackageInfo;
-import de.metas.util.Check;
-import de.metas.util.Pair;
-import de.metas.util.Services;
-
 public class PrintJobLinesAggregator implements IPrintJobLinesAggregator
 {
 	public static final String DEFAULT_BinaryFormat = "application/pdf";
@@ -92,19 +68,21 @@ public class PrintJobLinesAggregator implements IPrintJobLinesAggregator
 	// Services
 	private static final transient Logger logger = LogManager.getLogger(PrintJobLinesAggregator.class);
 	private final transient IPrintingDAO dao = Services.get(IPrintingDAO.class);
-	private final transient IPrintJobBL printJobBL = Services.get(IPrintJobBL.class);
+	private final transient PrintingDataFactory printingDataFactory = new PrintingDataFactory();
 
 	private final IPrintPackageCtx printCtx;
 	private final I_C_Print_Job_Instructions printJobInstructions;
 	private final I_C_Print_Job printJob;
 	private final Properties ctx;
 	private final String trxName;
+
+	@Nullable
 	private I_C_Print_Package printPackageToUse;
 
 	private final List<Map<ArrayKey, I_C_Print_PackageInfo>> printPackageInfos = new ArrayList<>();
 
 	// NOTE: we shall use IdentityHashMap instead of HashMap because key content (I_C_Print_PackageInfo) is changing
-	private final Map<I_C_Print_PackageInfo, List<ArchivePart>> mapArchiveParts = new IdentityHashMap<>();
+	private final Map<I_C_Print_PackageInfo, List<PrintItemPart>> mapArchiveParts = new IdentityHashMap<>();
 
 	/**
 	 * True if aggregator was already executed
@@ -121,10 +99,10 @@ public class PrintJobLinesAggregator implements IPrintJobLinesAggregator
 		this.printCtx = printCtx;
 
 		this.printJobInstructions = printJobInstructions;
-		printJob = printJobInstructions.getC_Print_Job();
+		this.printJob = printJobInstructions.getC_Print_Job();
 
-		ctx = InterfaceWrapperHelper.getCtx(printJobInstructions);
-		trxName = InterfaceWrapperHelper.getTrxName(printJobInstructions);
+		this.ctx = InterfaceWrapperHelper.getCtx(printJobInstructions);
+		this.trxName = InterfaceWrapperHelper.getTrxName(printJobInstructions);
 	}
 
 	public String getTrxName()
@@ -133,7 +111,7 @@ public class PrintJobLinesAggregator implements IPrintJobLinesAggregator
 	}
 
 	@Override
-	public void setPrintPackageToUse(final I_C_Print_Package printPackage)
+	public void setPrintPackageToUse(@Nullable final I_C_Print_Package printPackage)
 	{
 		if (printPackage != null)
 		{
@@ -148,17 +126,15 @@ public class PrintJobLinesAggregator implements IPrintJobLinesAggregator
 		printPackageToUse = printPackage;
 	}
 
-	;
-
 	@Override
-	public void add(final I_C_Print_Job_Line jobLine, final Mutable<ArrayKey> preceedingKey)
+	public void add(final I_C_Print_Job_Line jobLine, final Mutable<ArrayKey> precedingKey)
 	{
 		Check.assume(!processed, "Aggregator not already processed");
 		Check.assume(jobLine.getC_Print_Job_ID() == printJob.getC_Print_Job_ID(), "jobLine shall be from save print job");
 
 		try
 		{
-			add0(jobLine, preceedingKey);
+			add0(jobLine, precedingKey);
 		}
 		catch (final Exception e)
 		{
@@ -170,14 +146,13 @@ public class PrintJobLinesAggregator implements IPrintJobLinesAggregator
 			@NonNull final I_C_Print_Job_Line jobLine,
 			@NonNull final Mutable<ArrayKey> precedingKey)
 	{
-		final PrintingData printingData = new PrintingDataFactory().createPrintingDataForPrintJobLine(jobLine, printCtx.getHostKey());
+		final PrintingData printingData = printingDataFactory.createPrintingDataForPrintJobLine(jobLine, printCtx.getHostKey());
 
 		//
 		// Add ArchiveParts to internal map
-		final ArchiveData archiveData = new ArchiveData(jobLine, printingData.getData());
-		for (final PrintingSegment printingSegment : printingData.getPrintingSegments())
+		for (final PrintingSegment printingSegment : printingData.getSegments())
 		{
-			final ArchivePart archivePart = new ArchivePart(archiveData, printingSegment.getPageFrom(), printingSegment.getPageTo());
+			final PrintItemPart archivePart = new PrintItemPart(printingData, printingSegment, jobLine);
 
 			final IPair<ArrayKey, I_C_Print_PackageInfo> keyAndPackageInfo = getCreatePrintPackageInfo(
 					printingSegment,
@@ -198,7 +173,7 @@ public class PrintJobLinesAggregator implements IPrintJobLinesAggregator
 		}
 
 		final byte[] data = pdfBuf.toByteArray();
-		if (data == null || data.length == 0)
+		if (data.length == 0)
 		{
 			throw new AdempiereException("No PDF data found. No package created."); // TRL
 		}
@@ -244,16 +219,15 @@ public class PrintJobLinesAggregator implements IPrintJobLinesAggregator
 
 	private void updatePrintJobLines(final I_C_Print_PackageInfo printPackageInfo, final I_C_Print_Package printPackage)
 	{
-		// for (I_C_Print_PackageInfo i : mapArchiveParts.keySet()) System.out.println("-> "+i.hashCode());
-		final List<ArchivePart> archiveParts = mapArchiveParts.get(printPackageInfo);
+		final List<PrintItemPart> archiveParts = mapArchiveParts.get(printPackageInfo);
 		if (archiveParts == null || archiveParts.isEmpty())
 		{
 			return;
 		}
 
-		for (final ArchivePart archivePart : archiveParts)
+		for (final PrintItemPart archivePart : archiveParts)
 		{
-			final I_C_Print_Job_Line printJobLine = archivePart.getPrintJobLine();
+			final I_C_Print_Job_Line printJobLine = archivePart.getPrintJobLineRecord();
 			printJobLine.setC_Print_Package_ID(printPackage.getC_Print_Package_ID());
 			InterfaceWrapperHelper.save(printJobLine);
 		}
@@ -263,9 +237,6 @@ public class PrintJobLinesAggregator implements IPrintJobLinesAggregator
 	{
 		// NOTE: print job instructions' Status will be set to send de.metas.printing.api.impl.PrintPackageBL.createPrintPackage(I_C_Print_Package, I_C_Print_Job_Instructions, IPrintPackageCtx)
 		// when the package will be actually sent to client
-		// printJobInstructions.setStatus(X_C_Print_Job_Instructions.STATUS_Send);
-		// InterfaceWrapperHelper.save(printJobInstructions);
-
 		printJob.setProcessed(true);
 		InterfaceWrapperHelper.save(printJob);
 	}
@@ -273,8 +244,9 @@ public class PrintJobLinesAggregator implements IPrintJobLinesAggregator
 	/**
 	 * @param precedingGroupKey used to prevent multiple job lines from from being split, i.e 50-times the first part of each job line, then 50-time the 2nd part.
 	 */
-	private IPair<ArrayKey, I_C_Print_PackageInfo> getCreatePrintPackageInfo(final PrintingSegment archivePart,
-			final ArrayKey precedingGroupKey)
+	private IPair<ArrayKey, I_C_Print_PackageInfo> getCreatePrintPackageInfo(
+			@NonNull final PrintingSegment archivePart,
+			@Nullable final ArrayKey precedingGroupKey)
 	{
 
 		final I_AD_PrinterHW hwPrinter = InterfaceWrapperHelper.loadOutOfTrx(archivePart.getPrinterId(), I_AD_PrinterHW.class);
@@ -302,31 +274,30 @@ public class PrintJobLinesAggregator implements IPrintJobLinesAggregator
 			hwMediaTrayID = 0;
 		}
 
-		final IPair<ArrayKey, I_C_Print_PackageInfo> printPackageInfo = getCreatePrintPackageInfo(
+		return getCreatePrintPackageInfo(
 				hwPrinter.getAD_PrinterHW_ID(),
 				hwMediaTrayID,
 				calX,
 				calY,
 				precedingGroupKey);
-		return printPackageInfo;
 	}
 
 	/**
-	 * @param precedingGroupKey used to check if the current parameters (the other 4 params of this method) match the key of the preceeding invocation. If yes, then the last element of
+	 * @param precedingGroupKey used to check if the current parameters (the other 4 params of this method) match the key of the preceding invocation. If yes, then the last element of
 	 *                          {@link #printPackageInfos} is used to check if and existing print package info can be reused. Otherwise, a new map is created.
 	 */
 	private IPair<ArrayKey, I_C_Print_PackageInfo> getCreatePrintPackageInfo(final int hwPrinterId,
 			final int hwTrayId,
 			final int calX,
 			final int calY,
-			final ArrayKey precedingGroupKey)
+			@Nullable final ArrayKey precedingGroupKey)
 	{
 		final ArrayKey groupKey = new ArrayKey(hwPrinterId, hwTrayId, calX, calY);
 
 		if (!Objects.equals(groupKey, precedingGroupKey) || printPackageInfos.isEmpty())
 		{
 			// create a new map and add it to the end of the list.
-			printPackageInfos.add(new LinkedHashMap<ArrayKey, I_C_Print_PackageInfo>());
+			printPackageInfos.add(new LinkedHashMap<>());
 		}
 
 		// get the last item and check if there is an existing print package info to reuse.
@@ -349,24 +320,15 @@ public class PrintJobLinesAggregator implements IPrintJobLinesAggregator
 			currentPrintPackageInfos.put(groupKey, printPackageInfo);
 		}
 
-		final IPair<ArrayKey, I_C_Print_PackageInfo> result = ImmutablePair.of(groupKey, printPackageInfo);
-		return result;
+		return ImmutablePair.of(groupKey, printPackageInfo);
 	}
 
-	/**
-	 * Add {@link ArchivePart} to internal map.
-	 */
-	private void addArchivePartToMap(final I_C_Print_PackageInfo printPackageInfo, final ArchivePart archivePart)
+	private void addArchivePartToMap(@NonNull final I_C_Print_PackageInfo printPackageInfo, @NonNull final PrintItemPart printItemPart)
 	{
-		List<ArchivePart> archiveParts = mapArchiveParts.get(printPackageInfo);
-		if (archiveParts == null)
-		{
-			archiveParts = new ArrayList<>();
-			mapArchiveParts.put(printPackageInfo, archiveParts);
-		}
+		logger.debug("Adding archive to map: {}", printItemPart);
 
-		logger.debug("Adding archive to map: {}", archivePart);
-		archiveParts.add(archivePart);
+		final List<PrintItemPart> printItemParts = mapArchiveParts.computeIfAbsent(printPackageInfo, k -> new ArrayList<>());
+		printItemParts.add(printItemPart);
 	}
 
 	/**
@@ -375,209 +337,58 @@ public class PrintJobLinesAggregator implements IPrintJobLinesAggregator
 	 *
 	 * @return number of pages created in out stream
 	 */
-	private int createPDFData(final OutputStream out)
+	private int createPDFData(@NonNull final OutputStream out)
 	{
-		final Document document = new Document();
-
-		final PdfCopy copy;
-		try
+		try (final PrintingDataToPDFWriter printingDataToPDFWriter = new PrintingDataToPDFWriter(out))
 		{
-			copy = new PdfCopy(document, out);
-		}
-		catch (final DocumentException e)
-		{
-			throw new AdempiereException(e);
-		}
-
-		document.open();
-
-		int documentCurrentPage = 0;
-		for (final Map<ArrayKey, I_C_Print_PackageInfo> curentMap : printPackageInfos)
-		{
-			for (final I_C_Print_PackageInfo printPackageInfo : curentMap.values())
+			int documentCurrentPage = 0;
+			for (final Map<ArrayKey, I_C_Print_PackageInfo> currentMap : printPackageInfos)
 			{
-				logger.debug("Adding {}", printPackageInfo);
-
-				final List<ArchivePart> archiveParts = mapArchiveParts.get(printPackageInfo);
-				if (archiveParts == null || archiveParts.isEmpty())
+				for (final I_C_Print_PackageInfo printPackageInfo : currentMap.values())
 				{
-					logger.info("Skipping {} because there are not archive parts", printPackageInfo);
-					continue;
+					logger.debug("Adding {}", printPackageInfo);
+
+					final List<PrintItemPart> printItemParts = mapArchiveParts.get(printPackageInfo);
+					if (printItemParts == null || printItemParts.isEmpty())
+					{
+						logger.info("Skipping {} because there are not archive parts", printPackageInfo);
+						continue;
+					}
+
+					int pagesAdded = 0;
+					for (final PrintItemPart printItemPart : printItemParts)
+					{
+						pagesAdded += printingDataToPDFWriter.addArchivePartToPDF(printItemPart.getPrintingData(), printItemPart.getPrintingSegment());
+					}
+					if (pagesAdded == 0)
+					{
+						logger.info("Skipping {} because no pages were added", printPackageInfo);
+					}
+
+					final int pageFrom = documentCurrentPage + 1;
+					final int pageTo = pageFrom + pagesAdded - 1;
+					logger.debug("Added {}: PageFrom={}, PageTo={}", printPackageInfo, pageFrom, pageTo);
+
+					printPackageInfo.setPageFrom(pageFrom);
+					printPackageInfo.setPageTo(pageTo);
+
+					documentCurrentPage = pageTo;
 				}
-
-				int pagesAdded = 0;
-				for (final ArchivePart archivePart : archiveParts)
-				{
-					pagesAdded += addArchivePartToPDF(copy, archivePart);
-				}
-				if (pagesAdded == 0)
-				{
-					logger.info("Skipping {} because no pages were added", printPackageInfo);
-				}
-
-				final int pageFrom = documentCurrentPage + 1;
-				final int pageTo = pageFrom + pagesAdded - 1;
-				logger.debug("Added {}: PageFrom={}, PageTo={}", new Object[] { printPackageInfo, pageFrom, pageTo });
-
-				printPackageInfo.setPageFrom(pageFrom);
-				printPackageInfo.setPageTo(pageTo);
-
-				documentCurrentPage = pageTo;
 			}
-		}
-		if (documentCurrentPage == 0)
-		{
-			logger.info("No pages were added");
-			return 0;
-		}
-
-		document.close();
-
-		return documentCurrentPage;
-	}
-
-	private int addArchivePartToPDF(final PdfCopy copy, final ArchivePart archivePart)
-	{
-		try
-		{
-			return addArchivePartToPDF0(copy, archivePart);
-		}
-		catch (final Exception e)
-		{
-			throw new PrintingQueueAggregationException(archivePart.getPrintJobLine().getC_Printing_Queue_ID(), e);
-		}
-	}
-
-	private int addArchivePartToPDF0(final PdfCopy copy, final ArchivePart archivePart) throws IOException
-	{
-		logger.debug("Adding {}", archivePart);
-
-		final ArchiveData archiveData = archivePart.getArchiveData();
-		if (!archiveData.hasData())
-		{
-			logger.info("Archive {} does not contain any data. Skip", archivePart);
-			return 0;
-		}
-
-		final PdfReader reader = archiveData.createPdfReader();
-
-		final int archivePageNums = reader.getNumberOfPages();
-
-		int pageFrom = archivePart.getPageFrom();
-		if (pageFrom <= 0)
-		{
-			// First page is 1 - See com.lowagie.text.pdf.PdfWriter.getImportedPage
-			pageFrom = 1;
-		}
-		int pageTo = archivePart.getPageTo();
-		if (pageTo > archivePageNums)
-		{
-			// shall not happen at this point
-			logger.debug("Page to ({}) is greater then number of pages. Considering number of pages: {}", new Object[] { pageTo, archivePageNums });
-			pageTo = archivePageNums;
-		}
-		if (pageFrom > pageTo)
-		{
-			// shall not happen at this point
-			logger.warn("Page from ({}) is greater then Page to ({}). Skipping: {}", new Object[] { pageFrom, pageTo, archivePart });
-			return 0;
-		}
-
-		logger.debug("PageFrom={}, PageTo={}, NumberOfPages={}", new Object[] { pageFrom, pageTo, archivePageNums });
-
-		int pagesAdded = 0;
-		for (int page = pageFrom; page <= pageTo; page++)
-		{
-			try
+			if (documentCurrentPage == 0)
 			{
-				copy.addPage(copy.getImportedPage(reader, page));
+				logger.info("No pages were added");
 			}
-			catch (final BadPdfFormatException e)
-			{
-				throw new AdempiereException("@Invalid@ " + archivePart + " (Page: " + page + ")", e);
-			}
-			pagesAdded++;
-		}
 
-		copy.freeReader(reader);
-		reader.close();
-
-		logger.debug("Added {} pages", pagesAdded);
-		return pagesAdded;
-	}
-
-	private static class ArchiveData
-	{
-		// Parameters
-		private final I_C_Print_Job_Line printJobLine;
-
-		// Archive's Data
-		private final transient byte[] data;
-
-		public ArchiveData(@NonNull final I_C_Print_Job_Line printJobLine, @Nullable final byte[] data)
-		{
-			this.printJobLine = printJobLine;
-			this.data = data;
-		}
-
-		@Override
-		public String toString()
-		{
-			return ObjectUtils.toString(this);
-		}
-
-		public I_C_Print_Job_Line getPrintJobLine()
-		{
-			return printJobLine;
-		}
-
-		public PdfReader createPdfReader() throws IOException
-		{
-			final PdfReader reader = new PdfReader(data);
-			return reader;
-		}
-
-		public boolean hasData()
-		{
-			return data != null;
+			return documentCurrentPage;
 		}
 	}
 
-	/**
-	 * Helper class that holds a reference to an {@link I_AD_Archive}, a print job line and a page range.
-	 */
-	private static class ArchivePart
+	@Value
+	private static class PrintItemPart
 	{
-		@Getter
-		private final ArchiveData archiveData;
-
-		@Getter
-		private final int pageFrom;
-
-		@Getter
-		private final int pageTo;
-
-		public ArchivePart(
-				@NonNull final ArchiveData archiveData,
-				final int pageFrom,
-				final int pageTo)
-		{
-			this.archiveData = archiveData;
-
-			this.pageFrom = pageFrom;
-			this.pageTo = pageTo;
-			Check.assume(pageFrom <= pageTo, "pageFrom={} is less or equal to pageTo={} for {}", pageFrom, pageTo, archiveData);
-		}
-
-		@Override
-		public String toString()
-		{
-			return ObjectUtils.toString(this);
-		}
-
-		public I_C_Print_Job_Line getPrintJobLine()
-		{
-			return archiveData.getPrintJobLine();
-		}
+		@NonNull PrintingData printingData;
+		@NonNull PrintingSegment printingSegment;
+		@NonNull I_C_Print_Job_Line printJobLineRecord;
 	}
 }

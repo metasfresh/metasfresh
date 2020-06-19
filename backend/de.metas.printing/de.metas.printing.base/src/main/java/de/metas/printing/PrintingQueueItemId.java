@@ -26,30 +26,27 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
-import lombok.ToString;
-import lombok.Value;
 
-@Value
-public class LogicalPrinterId implements RepoIdAware
+public class PrintingQueueItemId implements RepoIdAware
 {
 	@JsonCreator
-	public static LogicalPrinterId ofRepoId(final int repoId)
+	public static PrintingQueueItemId ofRepoId(final int repoId)
 	{
-		return new LogicalPrinterId(repoId);
+		return new PrintingQueueItemId(repoId);
 	}
 
-	public static LogicalPrinterId ofRepoIdOrNull(final int repoId)
+	public static PrintingQueueItemId ofRepoIdOrNull(final int repoId)
 	{
-		return repoId > 0 ? new LogicalPrinterId(repoId) : null;
+		return repoId > 0 ? new PrintingQueueItemId(repoId) : null;
 	}
 
-	public static int toRepoId(final LogicalPrinterId logicalPrinterId)
+	public static int toRepoId(final PrintingQueueItemId printingQueueItemId)
 	{
-		return logicalPrinterId != null ? logicalPrinterId.getRepoId() : -1;
+		return printingQueueItemId != null ? printingQueueItemId.getRepoId() : -1;
 	}
 	int repoId;
 
-	private LogicalPrinterId(final int repoId)
+	private PrintingQueueItemId(final int repoId)
 	{
 		this.repoId = Check.assumeGreaterThanZero(repoId, "repoId");
 	}

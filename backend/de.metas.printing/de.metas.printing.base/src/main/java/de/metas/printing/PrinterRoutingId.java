@@ -26,30 +26,29 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
-import lombok.ToString;
 import lombok.Value;
 
 @Value
-public class LogicalPrinterId implements RepoIdAware
+public class PrinterRoutingId implements RepoIdAware
 {
 	@JsonCreator
-	public static LogicalPrinterId ofRepoId(final int repoId)
+	public static PrinterRoutingId ofRepoId(final int repoId)
 	{
-		return new LogicalPrinterId(repoId);
+		return new PrinterRoutingId(repoId);
 	}
 
-	public static LogicalPrinterId ofRepoIdOrNull(final int repoId)
+	public static PrinterRoutingId ofRepoIdOrNull(final int repoId)
 	{
-		return repoId > 0 ? new LogicalPrinterId(repoId) : null;
+		return repoId > 0 ? new PrinterRoutingId(repoId) : null;
 	}
 
-	public static int toRepoId(final LogicalPrinterId logicalPrinterId)
+	public static int toRepoId(final PrinterRoutingId printerRoutingId)
 	{
-		return logicalPrinterId != null ? logicalPrinterId.getRepoId() : -1;
+		return printerRoutingId != null ? printerRoutingId.getRepoId() : -1;
 	}
 	int repoId;
 
-	private LogicalPrinterId(final int repoId)
+	private PrinterRoutingId(final int repoId)
 	{
 		this.repoId = Check.assumeGreaterThanZero(repoId, "repoId");
 	}

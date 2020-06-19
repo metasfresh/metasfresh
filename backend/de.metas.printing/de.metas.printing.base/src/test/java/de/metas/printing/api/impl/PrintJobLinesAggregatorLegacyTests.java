@@ -56,9 +56,6 @@ import de.metas.util.Services;
 
 /**
  * Note: all tests are still valid, it's just the architecture that is legacy.
- * 
- * @author ts
- *
  */
 public class PrintJobLinesAggregatorLegacyTests extends AbstractPrintingTest
 {

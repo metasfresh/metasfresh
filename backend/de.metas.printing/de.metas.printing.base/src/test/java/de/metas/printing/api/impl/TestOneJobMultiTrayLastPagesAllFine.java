@@ -31,7 +31,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.junit.Assert;
+import org.assertj.core.api.Assertions;
 import org.junit.Test;
 
 import de.metas.printing.api.util.PdfCollator;
@@ -276,7 +276,6 @@ public class TestOneJobMultiTrayLastPagesAllFine extends AbstractPrintingTest
 				// .addPages(helper.getPdf("01"), 1, 1) // First 3 pages => i.e nothing because we print last 2 pages and those get priority
 				.addPages(helper.getPdf("01"), 1, 1) // Last 2 pages => we got only one
 				.toByteArray();
-
 		//
 		// Create print job
 		final I_C_Print_Job printJob = createPrintJob(
@@ -349,42 +348,7 @@ public class TestOneJobMultiTrayLastPagesAllFine extends AbstractPrintingTest
 		assertThat(printPackageInfo2.getAD_PrinterHW_MediaTray(), is(tray2HW));
 	}
 
-	/**
-	 * Test when {@link I_AD_PrinterRouting#COLUMNNAME_LastPages} is not set.
-	 * 
-	 * @task http://dewiki908/mediawiki/index.php/08503_Printing_is_silently_ignoring_the_routing_for_LastPages_if_LastPages_is_not_set_%28109477534973%29
-	 */
-	@Test
-	public void test_LastPages_NotSet()
-	{
-		// create a routing but don't set the LastPages
-		final int docTypeId = -1; // N/A
-		final int lastPages = 0;
-		final I_AD_PrinterRouting routing1 = helper.createPrinterRouting(printerName, tray1Name, docTypeId, 1, 100); // routing shall match pages from 1 to 100
-		final I_AD_PrinterRouting routing2 = helper.createPrinterRoutingForLastPages(printerName, tray2Name, docTypeId, lastPages);
-
-		// PDF to print (2 pages)
-		final byte[] binaryPdfData = new PdfCollator()
-				.addPages(helper.getPdf("01"), 1, 2)
-				.toByteArray();
-		//
-		// Create print job
-		createPrintJob(
-				binaryPdfData,
-				Arrays.asList(routing1, routing2), 3);
-
-		//
-		// Creating the Print Package template (request):
-		final I_C_Print_Package printPackageRequest = helper.createPrintPackageRequest();
-
-		// Trigger print package response producer
-		final I_C_Print_Package printPackageResponse = helper.createPrintPackageResponse(printPackageRequest);
-
-		// NOTE: atm in case of an error, the error is logged in console but no nice error message is sent back, but NULL
-		Assert.assertNull("No print package shall be created and an error shall be logged in console", printPackageResponse);
-	}
-
-	protected I_C_Print_Job createPrintJob(final byte[] binaryPdfData, final List<I_AD_PrinterRouting> routings, 
+	protected I_C_Print_Job createPrintJob(final byte[] binaryPdfData, final List<I_AD_PrinterRouting> routings,
 			final int copies)
 	{
 		final I_C_Print_Job printJob = helper.createPrintJob();

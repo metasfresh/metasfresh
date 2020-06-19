@@ -1,13 +1,11 @@
 package de.metas.printing;
 
-import de.metas.invoice.InvoiceId;
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
 import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
-import java.util.Objects;
 
 /*
  * #%L
@@ -32,29 +30,29 @@ import java.util.Objects;
  */
 
 @Value
-public class HardwarePrinterTrayId implements RepoIdAware
+public class HardwareTrayId implements RepoIdAware
 {
 	int repoId;
 
 	@NonNull
 	HardwarePrinterId printerId;
 
-	public static HardwarePrinterTrayId cast(@Nullable final RepoIdAware repoIdAware)
+	public static HardwareTrayId cast(@Nullable final RepoIdAware repoIdAware)
 	{
-		return (HardwarePrinterTrayId)repoIdAware;
+		return (HardwareTrayId)repoIdAware;
 	}
 
-	public static HardwarePrinterTrayId ofRepoId(@NonNull final HardwarePrinterId printerId, final int trayId)
+	public static HardwareTrayId ofRepoId(@NonNull final HardwarePrinterId printerId, final int trayId)
 	{
-		return new HardwarePrinterTrayId(printerId, trayId);
+		return new HardwareTrayId(printerId, trayId);
 	}
 
-	public static HardwarePrinterTrayId ofRepoId(final int printerId, final int trayId)
+	public static HardwareTrayId ofRepoId(final int printerId, final int trayId)
 	{
-		return new HardwarePrinterTrayId(HardwarePrinterId.ofRepoId(printerId), trayId);
+		return new HardwareTrayId(HardwarePrinterId.ofRepoId(printerId), trayId);
 	}
 
-	public static HardwarePrinterTrayId ofRepoIdOrNull(
+	public static HardwareTrayId ofRepoIdOrNull(
 			@Nullable final Integer printerId,
 			@Nullable final Integer trayId)
 	{
@@ -63,20 +61,20 @@ public class HardwarePrinterTrayId implements RepoIdAware
 				: null;
 	}
 
-	public static HardwarePrinterTrayId ofRepoIdOrNull(
+	public static HardwareTrayId ofRepoIdOrNull(
 			@Nullable final HardwarePrinterId printerId,
 			final int trayId)
 	{
 		return printerId != null && trayId > 0 ? ofRepoId(printerId, trayId) : null;
 	}
 
-	private HardwarePrinterTrayId(@NonNull final HardwarePrinterId printerId, final int trayId)
+	private HardwareTrayId(@NonNull final HardwarePrinterId printerId, final int trayId)
 	{
 		this.repoId = Check.assumeGreaterThanZero(trayId, "trayId");
 		this.printerId = printerId;
 	}
 
-	public static int toRepoId(@Nullable final HardwarePrinterTrayId trayId)
+	public static int toRepoId(@Nullable final HardwareTrayId trayId)
 	{
 		return trayId != null ? trayId.getRepoId() : -1;
 	}

@@ -35,6 +35,7 @@ import java.util.Properties;
 
 import javax.print.attribute.standard.MediaSize;
 
+import de.metas.printing.HardwarePrinterId;
 import de.metas.printing.LogicalPrinterId;
 import org.adempiere.model.PlainContextAware;
 
@@ -219,11 +220,12 @@ public class PrinterBL implements IPrinterBL
 	}
 
 	@Override
-	public void updatePrinterTrayMatching(final I_AD_Printer_Matching printerMatching)
+	public void updatePrinterTrayMatching(@NonNull final I_AD_Printer_Matching printerMatching)
 	{
 		final IPrintingDAO dao = Services.get(IPrintingDAO.class);
 
-		final List<I_AD_PrinterHW_MediaTray> hwTrays = dao.retrieveMediaTrays(printerMatching.getAD_PrinterHW());
+		final HardwarePrinterId printerID = HardwarePrinterId.ofRepoId(printerMatching.getAD_PrinterHW_ID());
+		final List<I_AD_PrinterHW_MediaTray> hwTrays = dao.retrieveMediaTrays(printerID);
 
 		final List<I_AD_PrinterTray_Matching> existingPrinterTrayMatchings = dao.retrievePrinterTrayMatchings(printerMatching);
 

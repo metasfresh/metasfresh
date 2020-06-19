@@ -33,6 +33,7 @@ import java.util.Properties;
 import javax.annotation.Nullable;
 import javax.print.attribute.standard.MediaSize;
 
+import de.metas.printing.HardwarePrinterId;
 import de.metas.printing.LogicalPrinterId;
 import de.metas.printing.model.I_AD_Printer_Tray;
 import org.adempiere.ad.dao.IQueryBL;
@@ -74,7 +75,9 @@ import org.compiere.model.Query;
 
 public abstract class AbstractPrintingDAO implements IPrintingDAO
 {
-	/** Flag used to indicate if a change on {@link I_C_Printing_Queue_Recipient} shall NOT automatically trigger an update to {@link I_C_Printing_Queue#setPrintingQueueAggregationKey(String)} */
+	/**
+	 * Flag used to indicate if a change on {@link I_C_Printing_Queue_Recipient} shall NOT automatically trigger an update to {@link I_C_Printing_Queue#setPrintingQueueAggregationKey(String)}
+	 */
 	private static final ModelDynAttributeAccessor<I_C_Printing_Queue_Recipient, Boolean> DYNATTR_DisableAggregationKeyUpdate = new ModelDynAttributeAccessor<>("DisableAggregationKeyUpdate", Boolean.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
@@ -445,6 +448,22 @@ public abstract class AbstractPrintingDAO implements IPrintingDAO
 		return queryBL.createQueryBuilder(I_AD_Printer_Tray.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_AD_Printer_Tray.COLUMNNAME_AD_Printer_ID, printerId)
+				.create()
+				.list();
+	}
+
+	@Override
+	public I_AD_PrinterHW retrieveHardwarePrinter(@NonNull final HardwarePrinterId hardwarePrinterId)
+	{
+		return InterfaceWrapperHelper.loadOutOfTrx(hardwarePrinterId, I_AD_PrinterHW.class);
+	}
+
+	@Override
+	public List<I_AD_PrinterHW_MediaTray> retrieveMediaTrays(@NonNull final HardwarePrinterId hardwarePrinterId)
+	{
+		return Services.get(IQueryBL.class).createQueryBuilder(I_AD_PrinterHW_MediaTray.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_AD_PrinterHW_MediaTray.COLUMNNAME_AD_PrinterHW_ID, hardwarePrinterId)
 				.create()
 				.list();
 	}
