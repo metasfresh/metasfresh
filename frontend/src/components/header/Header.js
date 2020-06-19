@@ -768,7 +768,9 @@ class Header extends PureComponent {
             </div>
           </div>
 
-          {showIndicator && <Indicator {...{ isDocumentNotSaved, indicator }} />}
+          {showIndicator && (
+            <Indicator {...{ isDocumentNotSaved, indicator }} />
+          )}
         </nav>
 
         {isSubheaderShow && (
