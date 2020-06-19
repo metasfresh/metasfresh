@@ -1,5 +1,7 @@
 package org.adempiere.ad.modelvalidator;
 
+import java.util.stream.Stream;
+
 /*
  * #%L
  * de.metas.fresh.base
@@ -23,11 +25,16 @@ package org.adempiere.ad.modelvalidator;
  */
 
 import org.adempiere.test.AdempiereTestHelper;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.extension.ExtensionContext;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.ArgumentsProvider;
+import org.junit.jupiter.params.provider.ArgumentsSource;
 
 import ch.qos.logback.classic.Level;
 import de.metas.logging.LogManager;
+import lombok.NonNull;
 
 /**
  * Makes sure all annotated model interceptors found in classpath are correctly defined.
@@ -35,20 +42,37 @@ import de.metas.logging.LogManager;
  * @author tsa
  *
  */
-public class Fresh_AllAnnotatedModelInterceptorTest
+public class AllAnnotatedModelInterceptorTest
 {
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
 		LogManager.setLevel(Level.INFO); // avoid the log being flooded with DEBUG messages when the classpath is scanned
 	}
 
-	@Test
-	public void test()
+	@ParameterizedTest
+	@ArgumentsSource(ModelInterceptorArgumentsProvider.class)
+	public void instantiateAndValidateModelInterceptor(@NonNull final Class<?> modelInterceptorClass) throws Exception
 	{
 		new ClasspathAnnotatedModelInterceptorTester()
-				.test();
+				.failOnFirstError(true)
+				.testClass(modelInterceptorClass);
+	}
+
+	public static class ModelInterceptorArgumentsProvider implements ArgumentsProvider
+	{
+		@Override
+		public Stream<? extends Arguments> provideArguments(final ExtensionContext context)
+		{
+			return provideClasses().map(Arguments::of);
+		}
+
+		public Stream<Class<?>> provideClasses()
+		{
+			final ClasspathAnnotatedModelInterceptorTester provider = new ClasspathAnnotatedModelInterceptorTester();
+			return provider.getAllClasses().stream();
+		}
 	}
 
 }
