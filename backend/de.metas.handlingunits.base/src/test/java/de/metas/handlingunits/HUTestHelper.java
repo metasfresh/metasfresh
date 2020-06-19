@@ -969,7 +969,7 @@ public class HUTestHelper
 
 	public IMutableHUContext createMutableHUContextOutOfTransaction()
 	{
-		return Services.get(IHandlingUnitsBL.class).createMutableHUContext(ctx, ITrx.TRXNAME_None);
+		return Services.get(IHandlingUnitsBL.class).createMutableHUContext(ctx, ITrx.TRXNAME_ThreadInherited);
 	}
 
 	public IMutableHUContext createMutableHUContextInNewTransaction()
