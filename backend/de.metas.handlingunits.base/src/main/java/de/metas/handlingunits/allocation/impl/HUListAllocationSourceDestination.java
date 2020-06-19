@@ -74,11 +74,6 @@ public class HUListAllocationSourceDestination implements IAllocationSource, IAl
 		return new HUListAllocationSourceDestination(ImmutableList.of(hu));
 	}
 
-	public static HUListAllocationSourceDestination ofHUId(final int huRepoId)
-	{
-		return ofHUId(HuId.ofRepoId(huRepoId));
-	}
-
 	public static HUListAllocationSourceDestination ofHUId(@NonNull final HuId huId)
 	{
 		final IHandlingUnitsDAO handlingUnitsRepo = Services.get(IHandlingUnitsDAO.class);

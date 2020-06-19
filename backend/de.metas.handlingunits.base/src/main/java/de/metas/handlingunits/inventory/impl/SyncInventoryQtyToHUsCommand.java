@@ -272,7 +272,8 @@ public class SyncInventoryQtyToHUsCommand
 		}
 		else
 		{
-			huDestination = HUListAllocationSourceDestination.ofHUId(inventoryLineHU.getHuId());
+			final I_M_HU hu = handlingUnitsRepo.getById(inventoryLineHU.getHuId());
+			huDestination = HUListAllocationSourceDestination.of(hu);
 		}
 
 		final IAllocationRequest request = AllocationUtils.createAllocationRequestBuilder()
@@ -305,7 +306,8 @@ public class SyncInventoryQtyToHUsCommand
 
 			final Quantity qtyDiff = inventoryLine.getMovementQty().negate();
 
-			final IAllocationSource source = HUListAllocationSourceDestination.ofHUId(singleHuId);
+			final I_M_HU singleHU = handlingUnitsRepo.getById(singleHuId);
+			final IAllocationSource source = HUListAllocationSourceDestination.of(singleHU);
 			final IAllocationDestination destination = createInventoryLineAllocationSourceOrDestination(inventoryLineRecord);
 
 			final IAllocationRequest request = AllocationUtils.createAllocationRequestBuilder()
@@ -339,9 +341,11 @@ public class SyncInventoryQtyToHUsCommand
 
 	private IAllocationDestination createHUAllocationDestination(final I_M_InventoryLine inventoryLine)
 	{
-		if (inventoryLine.getM_HU_ID() > 0)
+		final HuId huId = HuId.ofRepoIdOrNull(inventoryLine.getM_HU_ID());
+		if (huId != null)
 		{
-			return HUListAllocationSourceDestination.ofHUId(inventoryLine.getM_HU_ID());
+			final I_M_HU hu = handlingUnitsRepo.getById(huId);
+			return HUListAllocationSourceDestination.of(hu);
 		}
 		// TODO handle: else if(inventoryLine.getM_HU_PI_Item_Product_ID() > 0)
 		else
