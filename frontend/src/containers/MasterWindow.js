@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types';
-import React, { Component } from 'react';
+import React, { PureComponent } from 'react';
 import { connect } from 'react-redux';
 import { push } from 'react-router-redux';
 import { forEach, get } from 'lodash';
@@ -25,9 +25,9 @@ import MasterWindow from '../components/app/MasterWindow';
 /**
  * @file Class based component.
  * @module MasterWindow
- * @extends Component
+ * @extends PureComponent
  */
-class MasterWindowContainer extends Component {
+class MasterWindowContainer extends PureComponent {
   componentDidUpdate(prevProps) {
     const { master } = this.props;
 

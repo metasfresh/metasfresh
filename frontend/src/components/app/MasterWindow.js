@@ -1,6 +1,6 @@
 import { Hints, Steps } from 'intro.js-react';
 import PropTypes from 'prop-types';
-import React, { Component } from 'react';
+import React, { PureComponent } from 'react';
 
 import { discardNewRow, discardNewDocument, getTabRequest } from '../../api';
 
@@ -13,9 +13,9 @@ import { introHints, introSteps } from '../intro/intro';
 /**
  * @file Class based component.
  * @module MasterWindow
- * @extends Component
+ * @extends PureComponent
  */
-export default class MasterWindow extends Component {
+export default class MasterWindow extends PureComponent {
   state = {
     newRow: false,
     modalTitle: null,
@@ -303,6 +303,7 @@ export default class MasterWindow extends Component {
       activeTab = master.layout.activeTab;
     }
 
+    // TODO: it'd be better to have flags instead of using fields for status
     const docStatusData = {
       status: master.data.DocStatus || -1,
       action: master.data.DocAction || -1,
@@ -347,7 +348,7 @@ export default class MasterWindow extends Component {
         windowId={params.windowType}
         docId={params.docId}
         showSidelist
-        showIndicator={!modal.visible}
+        modalHidden={!modal.visible}
         handleDeletedStatus={this.handleDeletedStatus}
       >
         <Overlay data={overlay.data} showOverlay={overlay.visible} />
