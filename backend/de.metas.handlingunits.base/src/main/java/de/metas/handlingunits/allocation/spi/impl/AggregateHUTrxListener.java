@@ -77,9 +77,19 @@ public class AggregateHUTrxListener implements IHUTrxListener
 	/**
 	 * Creates a key used to put and get the CU quantity per HA item.
 	 */
-	public static String mkItemCuQtyPropertyKey(final I_M_HU_Item haItem)
+	@NonNull
+	public static String mkItemCuQtyPropertyKey(@NonNull final I_M_HU_Item haItem)
 	{
 		return AggregateHUTrxListener.class.getSimpleName() + "_" + I_M_HU_Item.Table_Name + "_ID_" + haItem.getM_HU_Item_ID() + "_CU_QTY";
+	}
+
+	/**
+	 * Creates a key used to put and get the qty of TUs to split off this HA item.
+	 */
+	@NonNull
+	public static String mkQtyTUsToSplitPropertyKey(@NonNull final I_M_HU_Item haItem)
+	{
+		return AggregateHUTrxListener.class.getSimpleName() + "_" + I_M_HU_Item.Table_Name + "_ID_" + haItem.getM_HU_Item_ID() + "_QTY_TUS_TO_SPLIT";
 	}
 
 	private AggregateHUTrxListener()
@@ -145,8 +155,20 @@ public class AggregateHUTrxListener implements IHUTrxListener
 			return; // nothing to do
 		}
 
-		final IHUTransactionCandidate trx = itemId2Trx.get(item.getM_HU_Item_ID());
-		final BigDecimal storageQty = storage.getQty(trx.getProductId(), trx.getQuantity().getUOM());
+		// If we split exactly N TUs (integer), there's no need for all the dance to figure out the new correct # of TUs for the qty, and splitting the extra qty.
+		// We shall just update the new qty of TUs in this aggregate TU.
+		final BigDecimal qtyTUsToSplit = huContext.getProperty(AggregateHUTrxListener.mkQtyTUsToSplitPropertyKey(item));
+		if (qtyTUsToSplit != null && BigDecimal.ZERO.compareTo(qtyTUsToSplit) != 0)
+		{
+			final BigDecimal newTuQty = item.getQty().subtract(qtyTUsToSplit);
+			item.setQty(newTuQty);
+			InterfaceWrapperHelper.save(item);
+			return;
+		}
+		else
+		{
+			final IHUTransactionCandidate trx = itemId2Trx.get(item.getM_HU_Item_ID());
+			final BigDecimal storageQty = storage.getQty(trx.getProductId(), trx.getQuantity().getUOM());
 
 		// get the new TU quantity, which as TUs go needs to be an integer
 		final BigDecimal newTuQty = storageQty.divide(cuQtyBeforeLoad,
@@ -186,13 +208,14 @@ public class AggregateHUTrxListener implements IHUTrxListener
 					// see details in https://github.com/metasfresh/metasfresh/issues/6808#issuecomment-642414037
 					;
 
-			// Create allocation request
-			final IAllocationRequest request = AllocationUtils.createQtyRequest(
-					huContext,
-					trx.getProductId(),
-					Quantity.of(qtyToSplit, trx.getQuantity().getUOM()),
-					huContext.getDate());
-			loader.load(request);
+				// Create allocation request
+				final IAllocationRequest request = AllocationUtils.createQtyRequest(
+						huContext,
+						trx.getProductId(),
+						Quantity.of(qtyToSplit, trx.getQuantity().getUOM()),
+						huContext.getDate());
+				loader.load(request);
+			}
 		}
 
 		// TODO: i think we can move this shit or something better into a model interceptor that is fired when item.qty is changed

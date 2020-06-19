@@ -960,6 +960,9 @@ public class HUTransformService
 				final int uomPrecision = firstProductStorage.getC_UOM().getStdPrecision();
 				// always round floor for a more stable split calculation
 				sourceQtyCUperTU = qtyOfStorage.divide(representedTUsCount, uomPrecision, RoundingMode.FLOOR);
+				// since we do full TU split: store how many TUs we split off, so that we update the storage qty by subtracting this number.
+				final I_M_HU_Item item = sourceTuHU.getM_HU_Item_Parent();
+				huContext.setProperty(AggregateHUTrxListener.mkQtyTUsToSplitPropertyKey(item), qtyTU);
 			}
 			else
 			{
