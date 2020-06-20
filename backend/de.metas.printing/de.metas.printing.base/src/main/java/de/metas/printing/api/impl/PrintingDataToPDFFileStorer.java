@@ -22,24 +22,31 @@
 
 package de.metas.printing.api.impl;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMultimap;
 import de.metas.logging.LogManager;
+import de.metas.logging.TableRecordMDC;
 import de.metas.printing.HardwarePrinter;
 import de.metas.printing.HardwarePrinterId;
 import de.metas.printing.HardwarePrinterRepository;
 import de.metas.printing.HardwareTray;
 import de.metas.printing.OutputType;
+import de.metas.printing.model.I_C_Printing_Queue;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.slf4j.Logger;
+import org.slf4j.MDC;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
@@ -47,8 +54,11 @@ import java.nio.file.Paths;
 public class PrintingDataToPDFFileStorer
 {
 	private final static transient Logger logger = LogManager.getLogger(PrintingDataToPDFFileStorer.class);
+	@VisibleForTesting
+	static final String SYSCONFIG_STORE_PDF_BASE_DIRECTORY = "de.metas.printing.StorePDFBaseDirectory";
 
 	private final HardwarePrinterRepository hardwarePrinterRepository;
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
 	public PrintingDataToPDFFileStorer(@NonNull final HardwarePrinterRepository hardwarePrinterRepository)
 	{
@@ -57,13 +67,29 @@ public class PrintingDataToPDFFileStorer
 
 	public void storeInFileSystem(@NonNull final PrintingData printingData)
 	{
-		final String baseDirectory = Services.get(ISysConfigBL.class).getValue("de.metas.printing.StorePDFBaseDirectory", ClientId.METASFRESH.getRepoId(), printingData.getOrgId().getRepoId());
+		try (final MDC.MDCCloseable ignore = TableRecordMDC.putTableRecordReference(I_C_Printing_Queue.Table_Name, printingData.getPrintingQueueItemId()))
+		{
+			storeInFileSystem0(printingData);
+		}
+		catch (final RuntimeException rte)
+		{
+			throw AdempiereException.wrapIfNeeded(rte)
+					.appendParametersToMessage()
+					.setParameter("C_Queue_PrintingQueue", printingData.getPrintingQueueItemId());
+
+		}
+	}
+
+	public void storeInFileSystem0(@NonNull final PrintingData printingData)
+	{
+		final String baseDirectory = getBaseDirectory(printingData);
 		final ImmutableMultimap<Path, PrintingSegment> path2Segments = extractAndAssignPaths(baseDirectory, printingData);
 
 		for (final Path path : path2Segments.keySet())
 		{
 			final File file = new File(path.toFile(), printingData.getDocumentName() + ".pdf");
 
+			createDirectories(path);
 			try (final PrintingDataToPDFWriter printingDataToPDFWriter = new PrintingDataToPDFWriter(new FileOutputStream(file)))
 			{
 				for (final PrintingSegment segment : path2Segments.get(path))
@@ -74,12 +100,38 @@ public class PrintingDataToPDFFileStorer
 			catch (final FileNotFoundException fnfe)
 			{
 				throw new AdempiereException("FileNotFoundException trying to write printing data to file", fnfe)
-						.appendParametersToMessage()
-						.setParameter("file", file)
-						.setParameter("C_Queue_PrintingQueue", printingData.getPrintingQueueItemId());
+						.setParameter("file", file);
+
 			}
 		}
 
+	}
+
+	@NonNull
+	private String getBaseDirectory(final @NonNull PrintingData printingData)
+	{
+		final String sysconfigDirectory = sysConfigBL.getValue(SYSCONFIG_STORE_PDF_BASE_DIRECTORY, ClientId.METASFRESH.getRepoId(), printingData.getOrgId().getRepoId());
+		if (Check.isNotBlank(sysconfigDirectory))
+		{
+			return sysconfigDirectory;
+		}
+
+		final String tempDir = System.getProperty("java.io.tmpdir");
+		logger.debug("AD_SysConfig {} is not set; -> use temp-dir {} as base directory", SYSCONFIG_STORE_PDF_BASE_DIRECTORY, tempDir);
+		return tempDir;
+	}
+
+	private void createDirectories(@NonNull final Path path)
+	{
+		try
+		{
+			Files.createDirectories(path);
+		}
+		catch (final IOException e)
+		{
+			throw new AdempiereException("IOException trying to create output directory", e)
+					.setParameter("path", path);
+		}
 	}
 
 	private ImmutableMultimap<Path, PrintingSegment> extractAndAssignPaths(

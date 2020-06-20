@@ -40,6 +40,7 @@ import java.util.UUID;
 import javax.annotation.Nullable;
 import javax.print.attribute.standard.MediaSize;
 
+import de.metas.printing.OutputType;
 import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 import org.adempiere.ad.session.ISessionBL;
@@ -326,13 +327,20 @@ public class Helper
 		return printer;
 	}
 
-	public I_AD_PrinterHW getCreatePrinterHW(final String printerName)
+
+	public I_AD_PrinterHW getCreatePrinterHW(@NonNull final String printerName)
+	{
+		return getCreatePrinterHW(printerName,OutputType.Queue);
+	}
+
+	public I_AD_PrinterHW getCreatePrinterHW(@NonNull final String printerName, @NonNull final OutputType outputType)
 	{
 		I_AD_PrinterHW printer = printingDAO.getLookupMap().getFirstOnly(I_AD_PrinterHW.class, pojo -> Objects.equals(pojo.getName(), printerName));
 		if (printer == null)
 		{
 			printer = printingDAO.newInstance(ctx, I_AD_PrinterHW.class, ITrx.TRXNAME_None);
 			printer.setName(printerName);
+			printer.setOutputType(outputType.getCode());
 			printingDAO.save(printer);
 		}
 		return printer;
@@ -374,7 +382,6 @@ public class Helper
 	/**
 	 * Creates default HW name for a given printer or tray name
 	 *
-	 * @param name
 	 * @return name + "-HW"
 	 */
 	public String createHWName(final String name)
