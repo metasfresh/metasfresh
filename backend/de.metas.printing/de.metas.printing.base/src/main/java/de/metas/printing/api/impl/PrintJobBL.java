@@ -33,18 +33,11 @@ import java.util.Properties;
 import java.util.stream.Collectors;
 
 import de.metas.adempiere.service.PrinterRoutingsQuery;
-import de.metas.document.DocTypeId;
-import de.metas.organization.OrgId;
 import de.metas.printing.api.IPrintingQueueBL;
-import de.metas.process.AdProcessId;
-import de.metas.security.RoleId;
-import de.metas.user.UserId;
-import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
-import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.Mutable;
 import org.compiere.util.TrxRunnable;
@@ -99,7 +92,7 @@ public class PrintJobBL implements IPrintJobBL
 
 	private final static transient Logger logger = LogManager.getLogger(PrintJobBL.class);
 
-	private final IPrinterRoutingDAO printerRoutingDAO  = Services.get(IPrinterRoutingDAO.class);
+	private final IPrinterRoutingDAO printerRoutingDAO = Services.get(IPrinterRoutingDAO.class);
 	private final IPrintingDAO printingDAO = Services.get(IPrintingDAO.class);
 	private final IAsyncBatchBL asyncBatchBL = Services.get(IAsyncBatchBL.class);
 	private final IPrinterBL printerBL = Services.get(IPrinterBL.class);
@@ -123,7 +116,6 @@ public class PrintJobBL implements IPrintJobBL
 	@Override
 	public void createPrintJobs(@NonNull final IPrintingQueueSource source, @NonNull final ContextForAsyncProcessing printJobContext)
 	{
-		final String trxName = source.getTrxName();
 		final PrintingQueueProcessingInfo printingQueueProcessingInfo = source.getProcessingInfo();
 
 		int printJobCount = 0;
@@ -136,31 +128,9 @@ public class PrintJobBL implements IPrintJobBL
 			while (it.hasNext())
 			{
 				final I_C_Printing_Queue item = it.next();
-				try (final MDCCloseable itemMDC = TableRecordMDC.putTableRecordReference(item))
+				try (final MDCCloseable ignored = TableRecordMDC.putTableRecordReference(item))
 				{
-					if (source.isPrinted(item))
-					{
-						logger.debug("According to IPrintingQueueSource, C_Printing_Queue is already printed, maybe in meantime; -> skipping");// (i.e. it was processed as a related item)
-						continue;
-					}
-
-					final Iterator<I_C_Printing_Queue> relatedItems = source.createRelatedItemsIterator(item);
-
-					// task: 08958: note that that all items' related items have the same copies value as item
-					final PeekIterator<I_C_Printing_Queue> currentItems = IteratorUtils.asPeekIterator(
-							new IteratorChain<I_C_Printing_Queue>()
-									.addIterator(new SingletonIterator<>(item))
-									.addIterator(relatedItems));
-					try
-					{
-						skipPrinted(source, currentItems);
-
-						pdfPrintingJobInstructions.addAll(processItemGroup(source, printingQueueProcessingInfo, currentItems));
-					}
-					finally
-					{
-						IteratorUtils.close(currentItems);
-					}
+					pdfPrintingJobInstructions.addAll(createPrintJob(source, printingQueueProcessingInfo, item));
 				}
 			}
 		}
@@ -173,6 +143,39 @@ public class PrintJobBL implements IPrintJobBL
 					.build();
 			enqueuePrintJobInstructionsForPDFPrintingIfNeeded(pdfPrintingJobInstructions, printingAsyncBatch);
 		}
+	}
+
+	private List<I_C_Print_Job_Instructions> createPrintJob(
+			final @NonNull IPrintingQueueSource source,
+			final @NonNull PrintingQueueProcessingInfo printingQueueProcessingInfo,
+			final @NonNull I_C_Printing_Queue item)
+	{
+		if (source.isPrinted(item))
+		{
+			logger.debug("According to IPrintingQueueSource, C_Printing_Queue is already printed, maybe in meantime; -> skipping");// (i.e. it was processed as a related item)
+			return ImmutableList.of();
+		}
+
+		final List<I_C_Print_Job_Instructions> pdfPrintingJobInstructions = new ArrayList<>();
+
+		final Iterator<I_C_Printing_Queue> relatedItems = source.createRelatedItemsIterator(item);
+
+		// task: 08958: note that that all items' related items have the same copies value as item
+		final PeekIterator<I_C_Printing_Queue> currentItems = IteratorUtils.asPeekIterator(
+				new IteratorChain<I_C_Printing_Queue>()
+						.addIterator(new SingletonIterator<>(item))
+						.addIterator(relatedItems));
+		try
+		{
+			skipPrinted(source, currentItems);
+
+			pdfPrintingJobInstructions.addAll(processItemGroup(source, printingQueueProcessingInfo, currentItems));
+		}
+		finally
+		{
+			IteratorUtils.close(currentItems);
+		}
+		return pdfPrintingJobInstructions;
 	}
 
 	private List<I_C_Print_Job_Instructions> processItemGroup(
@@ -358,7 +361,7 @@ public class PrintJobBL implements IPrintJobBL
 				if (lastItemCopies >= 0 && item.getCopies() != lastItemCopies)
 				{
 					logger.info("The last item had copies = {}, the current one has copies = {}; not adding further items to printJob = {}",
-							 lastItemCopies, item.getCopies(), printJob);
+							lastItemCopies, item.getCopies(), printJob);
 					break;
 				}
 
@@ -602,7 +605,7 @@ public class PrintJobBL implements IPrintJobBL
 		final PrinterRoutingsQuery query = printingQueueBL.createPrinterRoutingsQueryForItem(item);
 
 		final List<de.metas.adempiere.model.I_AD_PrinterRouting> rs = printerRoutingDAO.fetchPrinterRoutings(query);
-		return InterfaceWrapperHelper.createList(rs,I_AD_PrinterRouting.class);
+		return InterfaceWrapperHelper.createList(rs, I_AD_PrinterRouting.class);
 	}
 
 	@Override

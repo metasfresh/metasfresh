@@ -31,8 +31,6 @@ import org.adempiere.ad.wrapper.POJOLookupMapRestorePoint;
 import org.adempiere.test.MemoryInfoSnapshot;
 import org.adempiere.test.MemoryTestHelper;
 import org.compiere.model.I_C_BPartner;
-import org.junit.Ignore;
-import org.junit.Test;
 
 import de.metas.handlingunits.AbstractHUTest;
 import de.metas.handlingunits.HUTestHelper;
@@ -40,8 +38,10 @@ import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
-@Ignore // skip it because this test is kind of not reliable atm
+@Disabled // skip it because this test is kind of not reliable atm
 public class HandlingUnits_MemoryLeaks_Test extends AbstractHUTest
 {
 	// NOTE: in most of the cases i got an increase <=0.05 but to be sure this test is not failing randomly

@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Properties;
 
+import de.metas.printing.HardwarePrinterId;
 import de.metas.printing.OutputType;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
@@ -83,14 +84,14 @@ public class AD_PrinterHW
 		final Properties ctx = InterfaceWrapperHelper.getCtx(printerHW);
 		final String trxName = InterfaceWrapperHelper.getTrxName(printerHW);
 
-		final int printerID = printerHW.getAD_PrinterHW_ID();
+		final HardwarePrinterId printerID = HardwarePrinterId.ofRepoId(printerHW.getAD_PrinterHW_ID());
 
 		// Delete attached calibrations first
-		final List<I_AD_PrinterHW_Calibration> calibrations = dao.retrieveCalibrations(ctx, printerID, trxName);
+		final List<I_AD_PrinterHW_Calibration> calibrations = dao.retrieveCalibrations(ctx, printerID.getRepoId(), trxName);
 		dao.removeCalibrations(calibrations);
 
 		// Delete media trays and sizes
-		final List<I_AD_PrinterHW_MediaTray> trays = dao.retrieveMediaTrays(printerHW);
+		final List<I_AD_PrinterHW_MediaTray> trays = dao.retrieveMediaTrays(printerID);
 		dao.removeMediaTrays(trays);
 
 		final List<I_AD_PrinterHW_MediaSize> sizes = dao.retrieveMediaSizes(printerHW);

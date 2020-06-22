@@ -58,6 +58,8 @@ public class WEBUI_CreateRequest extends JavaProcess implements IProcessPrecondi
 {
 	private static Logger logger = LogManager.getLogger(WEBUI_CreateRequest.class);
 
+	private static final int REQUEST_TYPE_CUSTOMER_COMPLAINT_ID = 540005;
+
 	private final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
 	private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
 	private final IUserDAO userDAO = Services.get(IUserDAO.class);
@@ -121,6 +123,7 @@ public class WEBUI_CreateRequest extends JavaProcess implements IProcessPrecondi
 
 		request.setSalesRep_ID(getAD_User_ID());
 		request.setC_BPartner_ID(bpartner.getC_BPartner_ID());
+		request.setR_RequestType_ID(REQUEST_TYPE_CUSTOMER_COMPLAINT_ID);
 
 		if (defaultContact != null)
 		{
@@ -141,7 +144,7 @@ public class WEBUI_CreateRequest extends JavaProcess implements IProcessPrecondi
 		request.setC_BPartner_ID(shipment.getC_BPartner_ID());
 		request.setM_InOut_ID(shipment.getM_InOut_ID());
 		request.setDateDelivered(shipment.getMovementDate());
-
+		request.setR_RequestType_ID(REQUEST_TYPE_CUSTOMER_COMPLAINT_ID);
 		if (defaultContact != null)
 		{
 			request.setAD_User_ID(defaultContact.getAD_User_ID());
@@ -156,6 +159,7 @@ public class WEBUI_CreateRequest extends JavaProcess implements IProcessPrecondi
 
 		request.setAD_User_ID(user.getAD_User_ID());
 		request.setC_BPartner_ID(user.getC_BPartner_ID());
+		request.setR_RequestType_ID(REQUEST_TYPE_CUSTOMER_COMPLAINT_ID);
 
 		return request;
 	}

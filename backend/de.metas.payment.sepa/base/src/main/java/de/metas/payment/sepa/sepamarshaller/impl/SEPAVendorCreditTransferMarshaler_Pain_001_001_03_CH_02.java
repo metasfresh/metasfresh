@@ -524,8 +524,8 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 		// Creditor Agent (i.e. Bank)
 		// not allowed for 1, 2.1 and 8, must for the rest
 		final I_C_BP_BankAccount bankAccount = line.getC_BP_BankAccount();
-		final BankId bankId = BankId.ofRepoId(bankAccount.getC_Bank_ID());
-		final Bank bank = bankRepo.getById(bankId);
+		final BankId bankId = BankId.ofRepoIdOrNull(bankAccount.getC_Bank_ID());
+		final Bank bankOrNull = bankId == null ? null : bankRepo.getById(bankId);
 
 		if (paymentType != PAYMENT_TYPE_1
 				&& paymentType != PAYMENT_TYPE_2_1
@@ -589,9 +589,9 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 				// see if we can also export the bank's address
 				if (line.getC_BP_BankAccount_ID() > 0
 						&& bankAccount.getC_Bank_ID() > 0
-						&& bank.getLocationId() != null)
+						&& bankOrNull!= null && bankOrNull.getLocationId() != null)
 				{
-					final I_C_Location bankLocation = locationDAO.getById(bank.getLocationId());
+					final I_C_Location bankLocation = locationDAO.getById(bankOrNull.getLocationId());
 					final PostalAddress6CH pstlAdr = createStructuredPstlAdr(bankLocation);
 
 					finInstnId.setPstlAdr(pstlAdr);

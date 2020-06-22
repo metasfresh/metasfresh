@@ -1,8 +1,8 @@
 /*
  * #%L
- * de.metas.swat.base
+ * de.metas.business
  * %%
- * Copyright (C) 2019 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,34 +20,21 @@
  * #L%
  */
 
-package de.metas.invoicecandidate.externallyreferenced;
+package de.metas.invoice.detail;
 
+import com.google.common.collect.ImmutableList;
+import de.metas.invoice.InvoiceLineId;
 import lombok.Builder;
+import lombok.NonNull;
+import lombok.Singular;
 import lombok.Value;
-import org.apache.commons.lang3.StringUtils;
 
 @Value
-public class InvoiceDetailItem
+@Builder
+public class InvoiceLineWithDetails
 {
-	Integer seqNo;
+	@NonNull InvoiceLineId id;
 
-	String label;
-
-	String description;
-
-	@Builder
-	public InvoiceDetailItem(final Integer seqNo, final String label, final String description)
-	{
-		this.seqNo = seqNo;
-		this.label = label;
-		this.description = description;
-	}
-
-	/**
-	 * @return true if both label and description are blank, false otherwise.
-	 */
-	public boolean isEmpty()
-	{
-		return StringUtils.isBlank(label) && StringUtils.isBlank(description);
-	}
+	@Singular
+	ImmutableList<InvoiceDetailItem> detailItems;
 }

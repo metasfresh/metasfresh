@@ -969,7 +969,7 @@ public class HUTestHelper
 
 	public IMutableHUContext createMutableHUContextOutOfTransaction()
 	{
-		return Services.get(IHandlingUnitsBL.class).createMutableHUContext(ctx, ITrx.TRXNAME_None);
+		return Services.get(IHandlingUnitsBL.class).createMutableHUContext(ctx, ITrx.TRXNAME_ThreadInherited);
 	}
 
 	public IMutableHUContext createMutableHUContextInNewTransaction()
@@ -1324,12 +1324,6 @@ public class HUTestHelper
 	/**
 	 * Create HUs using {@link HUProducerDestination}.<br>
 	 * <b>Important:</b> If you expect e.g. an LU with multiple included TUs, then don't use this method; see the javadoc of {@link HUProducerDestination}.
-	 *
-	 * @param huPI
-	 * @param productIdToLoad
-	 * @param qtyToLoad
-	 * @param qtyToLoadUOM
-	 * @return created HUs
 	 */
 	public List<I_M_HU> createHUs(
 			final IHUContext huContext,
@@ -1364,11 +1358,6 @@ public class HUTestHelper
 
 	/**
 	 * Generate HUs for given Customer Unit qty
-	 *
-	 * @param huContext
-	 * @param allocationDestination
-	 * @param cuQty
-	 * @return created HUs
 	 */
 	public List<I_M_HU> createHUs(
 			final IHUContext huContext,

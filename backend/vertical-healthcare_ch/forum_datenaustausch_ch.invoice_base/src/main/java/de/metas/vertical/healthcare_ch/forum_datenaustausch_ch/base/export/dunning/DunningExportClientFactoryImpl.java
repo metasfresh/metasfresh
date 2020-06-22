@@ -65,7 +65,7 @@ public class DunningExportClientFactoryImpl implements DunningExportClientFactor
 	@Override
 	public Optional<DunningExportClient> newClientForDunning(@NonNull final DunningToExport dunning)
 	{
-		final String requiredAttachmentTagName = InvoiceExportClientFactory.ATTATCHMENT_TAGNAME_EXPORT_PROVIDER;
+		final String requiredAttachmentTagName = InvoiceExportClientFactory.ATTACHMENT_TAGNAME_EXPORT_PROVIDER;
 		final String requiredAttachmentTagValue = ForumDatenaustauschChConstants.INVOICE_EXPORT_PROVIDER_ID;
 
 		boolean atLeastOneattachmentWasCreatedByForumDatenaustausch = false;

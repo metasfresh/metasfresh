@@ -31,7 +31,6 @@ import java.util.stream.Collectors;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.junit.Assert;
-import org.junit.Test;
 
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
@@ -40,6 +39,7 @@ import de.metas.handlingunits.attributes.impl.AbstractWeightAttributeTest;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.util.Services;
+import org.junit.jupiter.api.Test;
 
 /**
  * NOTE: Tests propagation WITH TareAdjust CONSTANT ZERO.

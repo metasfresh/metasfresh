@@ -22,20 +22,112 @@
 
 package de.metas.printing;
 
+import com.google.common.collect.ImmutableList;
+import de.metas.logging.LogManager;
+import de.metas.logging.TableRecordMDC;
+import de.metas.printing.api.IPrintJobBL;
 import de.metas.printing.api.IPrintingQueueSource;
+import de.metas.printing.api.impl.PlainPrintingQueueSource;
+import de.metas.printing.model.I_C_Printing_Queue;
+import de.metas.printing.printingdata.PrintingData;
+import de.metas.printing.printingdata.PrintingDataFactory;
+import de.metas.printing.printingdata.PrintingDataToPDFFileStorer;
+import de.metas.user.UserId;
+import de.metas.util.Services;
+import de.metas.util.collections.CollectionUtils;
+import de.metas.util.collections.IteratorChain;
+import de.metas.util.collections.IteratorUtils;
+import de.metas.util.collections.PeekIterator;
+import de.metas.util.collections.SingletonIterator;
 import lombok.NonNull;
+import org.adempiere.archive.api.IArchiveEventManager;
+import org.slf4j.Logger;
+import org.slf4j.MDC;
+import org.springframework.stereotype.Service;
 
-import java.util.Optional;
+import java.util.Iterator;
 
+@Service
 public class PrintOutputFacade
 {
-	public void print (@NonNull final IPrintingQueueSource source)
+	private final static transient Logger logger = LogManager.getLogger(PrintOutputFacade.class);
+
+	private final PrintingDataFactory printingDataFactory;
+	private final PrintingDataToPDFFileStorer printingDataToPDFFileStorer;
+	private final IPrintJobBL printJobBL = Services.get(IPrintJobBL.class);
+	private final IArchiveEventManager archiveEventManager = Services.get(IArchiveEventManager.class);
+
+	public PrintOutputFacade(
+			@NonNull final PrintingDataFactory printingDataFactory,
+			@NonNull final PrintingDataToPDFFileStorer printingDataToPDFFileStorer)
 	{
-		// TODO iterate like PrintJobsBL does;
-		// TODO Get the respective item-types and depending on type, either delegate to something PrintJobsBL'ish
-		// TODO or store on disk (but don't forget to split it needed)
+		this.printingDataFactory = printingDataFactory;
+		this.printingDataToPDFFileStorer = printingDataToPDFFileStorer;
 	}
 
+	public void print(@NonNull final IPrintingQueueSource source)
+	{
+		print(source, IPrintJobBL.ContextForAsyncProcessing.builder().build());
+	}
 
+	public void print(@NonNull final IPrintingQueueSource source, @NonNull final IPrintJobBL.ContextForAsyncProcessing printJobContext)
+	{
+		final Iterator<I_C_Printing_Queue> it = source.createItemsIterator();
+		while (it.hasNext())
+		{
+			final I_C_Printing_Queue item = it.next();
+			try (final MDC.MDCCloseable ignored = TableRecordMDC.putTableRecordReference(item))
+			{
+				if (source.isPrinted(item))
+				{
+					logger.debug("According to IPrintingQueueSource, C_Printing_Queue is already printed, maybe in meantime; -> skipping");// (i.e. it was processed as a related item)
+					continue;
+				}
+				final PrintingData printingData = printingDataFactory.createPrintingDataForQueueItem(item);
 
+				final PrintingData printingDataToStore = printingData.onlyWithType(OutputType.Store);
+				final boolean hasSegmentsToStoreOnDisk = !printingDataToStore.getSegments().isEmpty();
+				if (hasSegmentsToStoreOnDisk)
+				{
+					logger.debug("At least a part of C_Printing_Queue shall be stored directly to disk; -> invoke printingDataToPDFFileStorer; printingData={}; ", printingData);
+					storePDFAndFireEvent(source, item, printingDataToStore);
+				}
+
+				final boolean hasSegmentsToCreatePrintJobs = printingDataToStore.getSegments().size() < printingData.getSegments().size();
+				if (hasSegmentsToCreatePrintJobs)
+				{
+					logger.debug("At least a part of C_Printing_Queue shall be turned into a C_PrintJob; -> invoke printJobBL; printingData={};", printingData);
+
+					// task: 08958: note that that all items' related items have the same copies value as item
+					final PlainPrintingQueueSource plainSource = new PlainPrintingQueueSource(
+							item,
+							source.createRelatedItemsIterator(item),
+							source.getProcessingInfo());
+					printJobBL.createPrintJobs(plainSource, printJobContext);
+				}
+			}
+		}
+	}
+
+	private void storePDFAndFireEvent(
+			@NonNull final IPrintingQueueSource source,
+			@NonNull final I_C_Printing_Queue item,
+			@NonNull final PrintingData printingDataToStore)
+	{
+		printingDataToPDFFileStorer.storeInFileSystem(printingDataToStore);
+
+		final ImmutableList<String> printerNames = CollectionUtils.extractDistinctElements(
+				printingDataToStore.getSegments(),
+				s -> s.getPrinter().getName());
+
+		for (final String printerName : printerNames)
+		{
+			archiveEventManager.firePrintOut(
+					item.getAD_Archive(),
+					UserId.ofRepoId(source.getProcessingInfo().getAD_User_PrintJob_ID()),
+					printerName,
+					IArchiveEventManager.COPIES_ONE,
+					IArchiveEventManager.STATUS_Success);
+		}
+	}
 }

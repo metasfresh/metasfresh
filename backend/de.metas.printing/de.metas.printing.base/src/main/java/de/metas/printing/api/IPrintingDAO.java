@@ -28,6 +28,9 @@ import java.util.Properties;
 
 import javax.print.attribute.standard.MediaSize;
 
+import de.metas.printing.HardwarePrinterId;
+import de.metas.printing.LogicalPrinterId;
+import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.IQuery;
@@ -96,7 +99,6 @@ public interface IPrintingDAO extends ISingletonService
 	List<I_C_Print_Job_Detail> retrievePrintJobDetailsIfAny(I_C_Print_Job_Line jobLine);
 
 	/**
-	 *
 	 * @param matching The "parent record" of the tray matching that we are looking for
 	 * @param routing the printer routing record that contains the logical printer and tray for which we search the hardware tray.
 	 * @param throwExIfNull if <code>true</code> and there is no tray matching, the method will throw an {@link AdempiereException}
@@ -177,7 +179,9 @@ public interface IPrintingDAO extends ISingletonService
 
 	void removeCalibrations(List<I_AD_PrinterHW_Calibration> calibrations);
 
-	List<I_AD_PrinterHW_MediaTray> retrieveMediaTrays(final I_AD_PrinterHW printerHW);
+	I_AD_PrinterHW retrieveHardwarePrinter(@NonNull HardwarePrinterId hardwarePrinterId);
+
+	List<I_AD_PrinterHW_MediaTray> retrieveMediaTrays(@NonNull HardwarePrinterId hardwarePrinterId);
 
 	void removeMediaTrays(List<I_AD_PrinterHW_MediaTray> trays);
 
@@ -197,7 +201,7 @@ public interface IPrintingDAO extends ISingletonService
 
 	List<I_AD_Printer_Matching> retrievePrinterMatchings(I_AD_PrinterHW printerHW);
 
-	List<I_AD_Printer_Tray> retrieveTrays(de.metas.adempiere.model.I_AD_Printer printer);
+	List<I_AD_Printer_Tray> retrieveTrays(LogicalPrinterId logicalPrinterId);
 
 	I_AD_Printer_Matching retrievePrinterMatchingOrNull(String hostKey, de.metas.adempiere.model.I_AD_Printer printer);
 

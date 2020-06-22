@@ -44,12 +44,11 @@ public class DefaultPrintingQueueSource extends AbstractPrintingQueueSource
 	private final IPrintingQueueQuery printingQueueQuery;
 	private final PrintingQueueProcessingInfo printingQueueProcessingInfo;
 
-	public DefaultPrintingQueueSource(final Properties ctx,
-			final IPrintingQueueQuery printingQueueQuery,
+	public DefaultPrintingQueueSource(
+			@NonNull final Properties ctx,
+			@NonNull final IPrintingQueueQuery printingQueueQuery,
 			final PrintingQueueProcessingInfo printingQueueProcessingInfo)
 	{
-		Check.assumeNotNull(ctx, "ctx is not null");
-		Check.assumeNotNull(printingQueueQuery, "query is not null");
 		this.ctx = ctx;
 		this.printingQueueQuery = printingQueueQuery.copy();
 		this.printingQueueProcessingInfo = printingQueueProcessingInfo;
@@ -65,7 +64,6 @@ public class DefaultPrintingQueueSource extends AbstractPrintingQueueSource
 	 * Iterate {@link I_C_Printing_Queue}s which are not processed yet.
 	 *
 	 * IMPORTANT: items are returned in FIFO order (ordered by {@link I_C_Printing_Queue#COLUMNNAME_C_Printing_Queue_ID})
-	 *
 	 */
 	@Override
 	public Iterator<I_C_Printing_Queue> createItemsIterator()

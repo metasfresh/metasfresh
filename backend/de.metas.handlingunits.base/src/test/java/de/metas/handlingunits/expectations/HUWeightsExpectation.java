@@ -36,6 +36,9 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule;
 import de.metas.util.Services;
 
+/**
+ * Note that this is about the weight M_HU_Attributes. Not the storage per-se.
+ */
 public class HUWeightsExpectation<ParentExpectationType> extends AbstractHUExpectation<ParentExpectationType>
 {
 	// services
@@ -68,11 +71,6 @@ public class HUWeightsExpectation<ParentExpectationType> extends AbstractHUExpec
 
 	/**
 	 * Convenient constructor.
-	 *
-	 * @param weightGross
-	 * @param weightNet
-	 * @param weightTare
-	 * @param weightTareAdjust
 	 */
 	public HUWeightsExpectation(final String weightGross,
 			final String weightNet,
@@ -88,9 +86,6 @@ public class HUWeightsExpectation<ParentExpectationType> extends AbstractHUExpec
 
 	/**
 	 * Set expectation values by copying them from given expectation.
-	 *
-	 * @param from
-	 * @return
 	 */
 	public HUWeightsExpectation<ParentExpectationType> copyFrom(final HUWeightsExpectation<?> from)
 	{

@@ -24,14 +24,7 @@ package de.metas.printing.model.validator;
 
 import de.metas.logging.LogManager;
 import de.metas.logging.TableRecordMDC;
-import de.metas.printing.OutputType;
-import lombok.NonNull;
-import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.ad.modelvalidator.annotations.Validator;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.ModelValidator;
-
-import de.metas.printing.api.IPrintJobBL;
+import de.metas.printing.PrintOutputFacade;
 import de.metas.printing.api.IPrintingQueueBL;
 import de.metas.printing.api.IPrintingQueueSource;
 import de.metas.printing.api.impl.SingletonPrintingQueueSource;
@@ -39,18 +32,27 @@ import de.metas.printing.model.I_AD_Archive;
 import de.metas.printing.model.I_C_Doc_Outbound_Config;
 import de.metas.printing.model.I_C_Printing_Queue;
 import de.metas.util.Services;
+import lombok.NonNull;
+import org.adempiere.ad.modelvalidator.annotations.Interceptor;
+import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.ModelValidator;
 import org.slf4j.Logger;
 import org.slf4j.MDC;
+import org.springframework.stereotype.Component;
 
-import java.util.Optional;
-
-@Validator(I_AD_Archive.class)
+@Interceptor(I_AD_Archive.class)
+@Component
 public class AD_Archive
 {
 	private final transient Logger logger = LogManager.getLogger(AD_Archive.class);
 
-	private final IPrintingQueueBL printingQueueBL = Services.get(IPrintingQueueBL.class);
-	private final IPrintJobBL printJobBL = Services.get(IPrintJobBL.class);
+	private final PrintOutputFacade printOutputFacade;
+
+	public AD_Archive(@NonNull final PrintOutputFacade printOutputFacade)
+	{
+		this.printOutputFacade = printOutputFacade;
+	}
 
 	/**
 	 * Check if the archive references a docOutBoundConfig, and if yes, copy its settings (possibly overriding previous settings).
@@ -110,13 +112,13 @@ public class AD_Archive
 	/**
 	 * Directly create the print job. That means it will be printed now.
 	 */
-	private void forwardToJob(final I_C_Printing_Queue printingQueue)
+	private void forwardToJob(@NonNull final I_C_Printing_Queue printingQueue)
 	{
 		final IPrintingQueueSource source = new SingletonPrintingQueueSource(printingQueue, printingQueue.getCreatedBy());
-		printJobBL.createPrintJobs(source);
+		printOutputFacade.print(source);
 	}
 
-	private final boolean isEnqueueToPrintingQueue(final I_AD_Archive archive)
+	private boolean isEnqueueToPrintingQueue(final I_AD_Archive archive)
 	{
 		try (final MDC.MDCCloseable ignore = TableRecordMDC.putTableRecordReference(archive))
 		{
@@ -145,7 +147,7 @@ public class AD_Archive
 		}
 	}
 
-	private final boolean isCreatePrintJob(@NonNull final I_AD_Archive archive)
+	private boolean isCreatePrintJob(@NonNull final I_AD_Archive archive)
 	{
 		// If we are explicitly asked to create a print job, then do it
 		if (archive.isCreatePrintJob())
@@ -177,9 +179,8 @@ public class AD_Archive
 		return false;
 	}
 
-	private final boolean isGenericArchive(final I_AD_Archive archive)
+	private boolean isGenericArchive(final I_AD_Archive archive)
 	{
-		final boolean genericArchive = (archive.getAD_Table_ID() <= 0 && archive.getRecord_ID() <= 0);
-		return genericArchive;
+		return (archive.getAD_Table_ID() <= 0 && archive.getRecord_ID() <= 0);
 	}
 }

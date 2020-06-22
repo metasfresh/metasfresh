@@ -63,8 +63,6 @@ public interface IArchiveEventManager extends ISingletonService
 
 	/**
 	 * To be invoked if the archive document is voided, reversed etc.
-	 *
-	 * @param archive
 	 */
 	void fireVoidDocument(I_AD_Archive archive);
 }

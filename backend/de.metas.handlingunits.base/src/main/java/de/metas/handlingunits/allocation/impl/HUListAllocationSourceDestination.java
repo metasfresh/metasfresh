@@ -1,10 +1,8 @@
-package de.metas.handlingunits.allocation.impl;
-
 /*
  * #%L
  * de.metas.handlingunits.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -21,6 +19,8 @@ package de.metas.handlingunits.allocation.impl;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+package de.metas.handlingunits.allocation.impl;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -259,8 +259,8 @@ public class HUListAllocationSourceDestination implements IAllocationSource, IAl
 
 				final int scale = storageUOM.getStdPrecision();
 				cuQty = storageQty.divide(aggregateHUQty,
-						scale * 3, // dividing with a bigger scale to try and avoid rounding issues which tbh i can't really name.
-						RoundingMode.HALF_UP);
+						scale,
+						RoundingMode.FLOOR);
 			}
 			request.getHUContext().setProperty(AggregateHUTrxListener.mkItemCuQtyPropertyKey(haItem), cuQty);
 		}
