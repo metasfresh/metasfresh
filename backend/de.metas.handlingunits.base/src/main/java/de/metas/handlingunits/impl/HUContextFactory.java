@@ -22,15 +22,6 @@ package de.metas.handlingunits.impl;
  * #L%
  */
 
-import java.util.Properties;
-
-import de.metas.organization.ClientAndOrgId;
-import lombok.NonNull;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.model.PlainContextAware;
-import org.adempiere.util.lang.IContextAware;
-
 import de.metas.handlingunits.HUConstants;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUContextFactory;
@@ -41,8 +32,16 @@ import de.metas.handlingunits.attribute.storage.IAttributeStorageFactoryService;
 import de.metas.handlingunits.storage.IHUStorageDAO;
 import de.metas.handlingunits.storage.impl.DefaultHUStorageFactory;
 import de.metas.handlingunits.storage.impl.SaveOnCommitHUStorageDAO;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.util.Services;
+import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.model.PlainContextAware;
+import org.adempiere.util.lang.IContextAware;
 import org.compiere.util.Env;
+
+import java.util.Properties;
 
 public class HUContextFactory implements IHUContextFactory
 {
@@ -107,7 +106,7 @@ public class HUContextFactory implements IHUContextFactory
 
 	// TODO: probably will have to add ClientAndOrgId here as well. I don't have time for this now
 	@Override
-	public IMutableHUContext createMutableHUContext(final Properties ctx, final String trxName)
+	public IMutableHUContext createMutableHUContext(final Properties ctx, @NonNull final String trxName)
 	{
 		final PlainContextAware contextProvider = PlainContextAware.newWithTrxName(ctx, trxName);
 		return new MutableHUContext(contextProvider);
