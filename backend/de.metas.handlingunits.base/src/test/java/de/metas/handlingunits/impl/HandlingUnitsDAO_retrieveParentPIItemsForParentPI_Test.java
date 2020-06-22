@@ -29,7 +29,6 @@ import java.math.BigDecimal;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BPartner;
 import org.junit.Assert;
-import org.junit.Test;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.AbstractHUTest;
@@ -38,6 +37,7 @@ import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.util.Services;
+import org.junit.jupiter.api.Test;
 
 /**
  * Unit test for {@link HandlingUnitsDAO#retrieveParentPIItemsForParentPI(I_M_HU_PI, String, I_C_BPartner)} method.

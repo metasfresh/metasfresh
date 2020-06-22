@@ -45,7 +45,6 @@ import org.compiere.model.I_M_Warehouse;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.compiere.util.TrxRunnable;
-import org.junit.Test;
 
 import de.metas.handlingunits.AbstractHUTest;
 import de.metas.handlingunits.HUContextDateTrxProvider.ITemporaryDateTrx;
@@ -58,6 +57,7 @@ import de.metas.handlingunits.model.I_M_HU_Trx_Line;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import de.metas.util.time.SystemTime;
+import org.junit.jupiter.api.Test;
 
 public class HandlingUnitsBL_MoveHU_Test extends AbstractHUTest
 {

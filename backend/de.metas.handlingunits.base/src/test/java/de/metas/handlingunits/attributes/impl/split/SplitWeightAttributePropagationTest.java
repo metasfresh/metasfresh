@@ -34,7 +34,7 @@ import de.metas.handlingunits.model.X_M_HU;
 import de.metas.util.Services;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.w3c.dom.Node;
 
 import java.math.BigDecimal;

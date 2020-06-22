@@ -40,7 +40,6 @@ import org.compiere.util.Env;
 import org.compiere.util.TrxRunnableAdapter;
 import org.hamcrest.Matchers;
 import org.junit.Assert;
-import org.junit.Test;
 
 import de.metas.handlingunits.AbstractHUTest;
 import de.metas.handlingunits.HUTestHelper;
@@ -58,6 +57,7 @@ import de.metas.handlingunits.util.TraceUtils;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
+import org.junit.jupiter.api.Test;
 
 public class HUSnapshotDAOTest extends AbstractHUTest
 {

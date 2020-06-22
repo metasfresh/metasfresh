@@ -42,8 +42,8 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Warehouse;
-import org.junit.Test;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.w3c.dom.Node;
 
 import java.math.BigDecimal;
@@ -54,9 +54,6 @@ import static de.metas.handlingunits.allocation.transfer.HUTransformService.HUsT
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.xmlunit.assertj.XmlAssert.assertThat;
-
-// TODO tbp: can we move all of these tests to JUnit 5?
-// 		note: cannot move only this test, since its parents have @before and @beforeall and maybe other stuff
 
 /**
  * Misc:

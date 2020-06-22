@@ -26,7 +26,7 @@ import java.math.BigDecimal;
 import java.util.List;
 
 import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.business.BusinessTestHelper;

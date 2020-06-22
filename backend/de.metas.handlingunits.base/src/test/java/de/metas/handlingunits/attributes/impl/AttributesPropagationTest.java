@@ -22,20 +22,6 @@ package de.metas.handlingunits.attributes.impl;
  * #L%
  */
 
-
-import static org.hamcrest.Matchers.comparesEqualTo;
-
-import java.math.BigDecimal;
-import java.util.List;
-
-import org.adempiere.mm.attributes.api.impl.AttributesTestHelper;
-import org.compiere.model.I_M_Attribute;
-import org.compiere.model.I_M_Transaction;
-import org.compiere.model.X_M_Attribute;
-import org.compiere.model.X_M_Transaction;
-import org.junit.Assert;
-import org.junit.Test;
-
 import de.metas.handlingunits.AbstractHUTest;
 import de.metas.handlingunits.HUTestHelper;
 import de.metas.handlingunits.IHandlingUnitsBL;
@@ -59,6 +45,19 @@ import de.metas.handlingunits.model.X_M_HU_PI_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.test.misc.builders.HUPIAttributeBuilder;
 import de.metas.util.Services;
+import org.adempiere.mm.attributes.api.impl.AttributesTestHelper;
+import org.compiere.model.I_M_Attribute;
+import org.compiere.model.I_M_Transaction;
+import org.compiere.model.X_M_Attribute;
+import org.compiere.model.X_M_Transaction;
+import org.junit.Assert;
+import org.junit.jupiter.api.Test;
+
+import java.math.BigDecimal;
+import java.util.List;
+
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.hamcrest.Matchers.comparesEqualTo;
 
 public class AttributesPropagationTest extends AbstractHUTest
 {
@@ -100,7 +99,7 @@ public class AttributesPropagationTest extends AbstractHUTest
 		huDefIFCO = helper.createHUDefinition(HUTestHelper.NAME_IFCO_Product, X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit);
 		{
 			//helper.createHU_PI_Item_IncludedHU(huDefIFCO, huDefIFCO, BigDecimal.ONE);
-			final I_M_HU_PI_Item   piTU_Item_IFCO = helper.createHU_PI_Item_Material(huDefIFCO);
+			final I_M_HU_PI_Item piTU_Item_IFCO = helper.createHU_PI_Item_Material(huDefIFCO);
 			helper.assignProduct(piTU_Item_IFCO, pTomatoId, BigDecimal.TEN, uomEach);
 
 			// value will not be propagated
@@ -260,29 +259,32 @@ public class AttributesPropagationTest extends AbstractHUTest
 		}
 	}
 
-	@Test(expected = IllegalStateException.class)
+	@Test
 	public void testInvalidPropagation()
 	{
-		//
-		// Create and assign an attribute with "invalid propagation"
-		final I_M_Attribute attr_InvalidPropagation = attributesTestHelper.createM_Attribute("InvalidPropagation_Attribute",
-				X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40,
-				true // isInstanceAttribute
-				);
-		helper.createM_HU_PI_Attribute(HUPIAttributeBuilder.newInstance(attr_InvalidPropagation)
-				.setM_HU_PI(huDefPalet)
-				.setPropagationType("Invalid propagation type"));
+		assertThatThrownBy(() -> {
+			//
+			// Create and assign an attribute with "invalid propagation"
+			final I_M_Attribute attr_InvalidPropagation = attributesTestHelper.createM_Attribute("InvalidPropagation_Attribute",
+					X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40,
+					true // isInstanceAttribute
+			);
+			helper.createM_HU_PI_Attribute(HUPIAttributeBuilder.newInstance(attr_InvalidPropagation)
+					.setM_HU_PI(huDefPalet)
+					.setPropagationType("Invalid propagation type"));
 
-		final List<I_M_HU> huPalets = createIncomingPalets();
-		final I_M_HU palletOne = huPalets.get(0);
+			final List<I_M_HU> huPalets = createIncomingPalets();
+			final I_M_HU palletOne = huPalets.get(0);
 
-		final IAttributeStorageFactory attributeStorageFactory = helper.getHUContext().getHUAttributeStorageFactory();
+			final IAttributeStorageFactory attributeStorageFactory = helper.getHUContext().getHUAttributeStorageFactory();
 
-		final IAttributeStorage attributeSet = attributeStorageFactory.getAttributeStorage(palletOne);
+			final IAttributeStorage attributeSet = attributeStorageFactory.getAttributeStorage(palletOne);
 
-		Services.get(IHUAttributePropagatorFactory.class).getPropagator(attributeSet, attr_InvalidPropagation);
+			Services.get(IHUAttributePropagatorFactory.class).getPropagator(attributeSet, attr_InvalidPropagation);
 
-		StaticHUAssert.assertMock("mock");
+			StaticHUAssert.assertMock("mock");
+		})
+				.isInstanceOf(IllegalStateException.class);
 	}
 
 	@Test
@@ -291,7 +293,7 @@ public class AttributesPropagationTest extends AbstractHUTest
 		final I_M_Attribute attr_CopyValueNoParent = attributesTestHelper.createM_Attribute("InheritValueNoParent_Attribute",
 				X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40,
 				true // instance attribute
-				);
+		);
 		helper.createM_HU_PI_Attribute(HUPIAttributeBuilder.newInstance(attr_CopyValueNoParent)
 				.setM_HU_PI(huDefPalet)
 				.setPropagationType(X_M_HU_PI_Attribute.PROPAGATIONTYPE_TopDown)
