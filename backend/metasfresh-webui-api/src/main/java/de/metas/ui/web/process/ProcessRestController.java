@@ -198,6 +198,7 @@ public class ProcessRestController
 	{
 		final ProcessId processId = ProcessId.fromJson(processIdStr);
 
+		final DocumentId pinstanceId;
 		try (final MDCCloseable processMDC = putMDC(processId))
 		{
 			userSession.assertLoggedIn();
@@ -229,12 +230,13 @@ public class ProcessRestController
 			request.assertProcessIdEquals(jsonRequest.getProcessId());
 
 			final IProcessInstancesRepository instancesRepository = getRepository(request.getProcessId());
-
-			return Execution.callInNewExecution("pinstance.create", () -> {
+			pinstanceId = Execution.callInNewExecution("pinstance.create", () -> {
 				final IProcessInstanceController processInstance = instancesRepository.createNewProcessInstance(request);
-				return JSONProcessInstance.of(processInstance, newJsonOptions());
+				return processInstance.getInstanceId();
 			});
 		}
+
+		return getInstance(processId, pinstanceId);
 	}
 
 	@GetMapping("/{processId}/{pinstanceId}")
@@ -245,6 +247,11 @@ public class ProcessRestController
 		final ProcessId processId = ProcessId.fromJson(processIdStr);
 		final DocumentId pinstanceId = DocumentId.of(pinstanceIdStr);
 
+		return getInstance(processId, pinstanceId);
+	}
+
+	private JSONProcessInstance getInstance(final ProcessId processId, final DocumentId pinstanceId)
+	{
 		try (final IAutoCloseable mdcCloseable = putMDC(processId, pinstanceId))
 		{
 			userSession.assertLoggedIn();
