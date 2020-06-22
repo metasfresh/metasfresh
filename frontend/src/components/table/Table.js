@@ -128,7 +128,8 @@ export default class Table extends PureComponent {
           onSelect(id);
         }
       } else {
-        if (!isSelected) {
+        // if row is not selected or multiple rows are selected
+        if (!isSelected || (isSelected && selected.length > 1)) {
           updateQuickActions && updateQuickActions(id);
           newSelection = [id];
           onSelect(id);

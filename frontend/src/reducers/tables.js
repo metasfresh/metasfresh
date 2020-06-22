@@ -62,12 +62,10 @@ export const getTable = createSelector(
   (table) => table
 );
 
-const getSelectionData = (state, tableId) => {
-  return getTable(state, tableId).selected;
-};
+const getSelectionData = (state, tableId) => getTable(state, tableId).selected;
 
 /**
- * @method getTable
+ * @method getSelection
  * @summary Memoized selector for getting selections in a table
  */
 export const getSelection = createSelector(

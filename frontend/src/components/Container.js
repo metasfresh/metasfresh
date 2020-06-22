@@ -125,11 +125,12 @@ class Container extends PureComponent {
           {!modalHidden && (
             <Modal
               {...modal}
+              tabId={modal.tabId || activeTab}
               windowId={modal.type}
               dataId={modal.dataId ? modal.dataId : dataId}
               modalTitle={modal.title}
               modalViewId={modal.viewId}
-              parentType={windowId}
+              parentWindowId={windowId}
               parentDataId={dataId}
               viewId={viewId}
               rawModalVisible={rawModal.visible}

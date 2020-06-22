@@ -791,6 +791,7 @@ class Header extends PureComponent {
             notfound={notFound}
             entity={entity}
             dataId={dataId}
+            documentId={docId}
             windowId={windowId}
             viewId={viewId}
             siteName={siteName}
