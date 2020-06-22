@@ -42,6 +42,7 @@ import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.storage.IHUProductStorage;
+import de.metas.inventory.InventoryDocSubType;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
@@ -121,7 +122,7 @@ public class WeightHUCommandTest
 		docTypeDAO.createDocType(DocTypeCreateRequest.builder()
 				.ctx(Env.getCtx())
 				.docBaseType(X_C_DocType.DOCBASETYPE_MaterialPhysicalInventory)
-				.docSubType(null)
+				.docSubType(InventoryDocSubType.SingleHUInventory.getCode())
 				.name("inventory")
 				.build());
 	}
