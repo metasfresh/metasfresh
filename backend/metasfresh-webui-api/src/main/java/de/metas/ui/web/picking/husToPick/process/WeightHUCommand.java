@@ -168,6 +168,7 @@ class WeightHUCommand
 				.productId(huProductStorage.getProductId())
 				.storageAttributesKey(handlingUnitsBL.getStorageRelevantAttributesKey(hu))
 				.locatorId(IHandlingUnitsBL.extractLocatorId(hu))
+				.markAsCounted(true)
 				.build();
 	}
 
