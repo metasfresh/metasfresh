@@ -2,7 +2,11 @@ import PropTypes from 'prop-types';
 import React, { PureComponent, createRef } from 'react';
 import classnames from 'classnames';
 
-import { getDateFormat, fieldValueToString } from '../../utils/tableHelpers';
+import {
+  getDateFormat,
+  fieldValueToString,
+  getSizeClass,
+} from '../../utils/tableHelpers';
 import { DATE_FIELD_FORMATS } from '../../constants/Constants';
 
 import MasterWidget from '../widget/MasterWidget';
@@ -197,7 +201,6 @@ class TableCell extends PureComponent {
       listenOnKeysFalse,
       listenOnKeysTrue,
       closeTableField,
-      getSizeClass,
       mainTable,
       onCellChange,
       viewId,
@@ -336,12 +339,10 @@ TableCell.propTypes = {
   isEdited: PropTypes.bool,
   isGerman: PropTypes.bool,
   entity: PropTypes.any,
-  getSizeClass: PropTypes.func,
   mainTable: PropTypes.bool,
   viewId: PropTypes.string,
   modalVisible: PropTypes.bool,
   docId: PropTypes.any,
-  activeLocale: PropTypes.object,
 };
 
 export default TableCell;

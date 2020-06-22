@@ -327,8 +327,6 @@ export default class Table extends PureComponent {
       rowRefs,
     } = this.props;
 
-    const activeLocale = { key: getCurrentActiveLocale() };
-
     if (!rows.length || !columns.length) {
       return null;
     }
@@ -351,7 +349,6 @@ export default class Table extends PureComponent {
           page,
           lastPage,
           entity,
-          activeLocale,
           windowId,
           mainTable,
           indentSupported,
