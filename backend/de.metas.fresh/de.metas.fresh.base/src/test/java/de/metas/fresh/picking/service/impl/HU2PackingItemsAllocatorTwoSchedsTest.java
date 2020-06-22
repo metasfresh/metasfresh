@@ -17,8 +17,6 @@ import java.util.Set;
 
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.util.comparator.FixedOrderByKeyComparator;
-import org.junit.Ignore;
-import org.junit.Test;
 
 import com.google.common.collect.ImmutableList;
 
@@ -40,6 +38,8 @@ import de.metas.picking.service.PackingItemsMap;
 import de.metas.picking.service.impl.HU2PackingItemsAllocator;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 /*
  * #%L
@@ -170,7 +170,7 @@ public class HU2PackingItemsAllocatorTwoSchedsTest extends AbstractHUTest
 	 * @task https://github.com/metasfresh/metasfresh/issues/1712
 	 */
 	@Test
-	@Ignore // this test constantly fails on jenkins :-( and i already tried too long to fix it.
+	@Disabled // this test constantly fails on jenkins :-( and i already tried too long to fix it.
 	public void testTwoHUsTwoShipmentSchedules_TopLevelTUs()
 	{
 		// the two defs need to have different qty, otherwise the test is not significant
