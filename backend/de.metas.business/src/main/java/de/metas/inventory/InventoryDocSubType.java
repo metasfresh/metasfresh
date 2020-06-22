@@ -1,18 +1,16 @@
 package de.metas.inventory;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.util.stream.Stream;
-
-import org.junit.jupiter.api.Test;
-
-import de.metas.document.DocBaseAndSubType;
+import de.metas.util.lang.ReferenceListAwareEnum;
+import de.metas.util.lang.ReferenceListAwareEnums;
+import de.metas.util.lang.ReferenceListAwareEnums.ValuesIndex;
+import lombok.Getter;
+import lombok.NonNull;
 
 /*
  * #%L
  * de.metas.business
  * %%
- * Copyright (C) 2019 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -30,20 +28,25 @@ import de.metas.document.DocBaseAndSubType;
  * #L%
  */
 
-public class AggregationTypeTest
+public enum InventoryDocSubType implements ReferenceListAwareEnum
 {
-	@Test
-	public void test_getByDocType()
+	InternalUseInventory("IUI"), //
+	AggregatedHUInventory("IAH"), //
+	SingleHUInventory("ISH") //
+	;
+
+	@Getter
+	private final String code;
+
+	private static final ValuesIndex<InventoryDocSubType> index = ReferenceListAwareEnums.index(values());
+
+	InventoryDocSubType(@NonNull final String code)
 	{
-		Stream.of(AggregationType.values())
-				.forEach(this::test_getByDocType);
+		this.code = code;
 	}
 
-	private void test_getByDocType(final AggregationType type)
+	public static InventoryDocSubType ofCode(@NonNull final String code)
 	{
-		final DocBaseAndSubType docBaseAndSubType = type.getDocBaseAndSubType();
-		assertThat(AggregationType.getByDocTypeOrNull(docBaseAndSubType)).isSameAs(type);
-
-		InventoryDocSubType.ofCode(docBaseAndSubType.getDocSubType());
+		return index.ofCode(code);
 	}
 }
