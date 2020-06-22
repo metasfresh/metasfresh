@@ -3,6 +3,7 @@ package de.metas.device.adempiere;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.util.net.IHostIdentifier;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -16,6 +17,7 @@ import de.metas.device.adempiere.IDeviceConfigPool.IDeviceConfigPoolListener;
 import de.metas.device.api.IDevice;
 import de.metas.device.api.IDeviceRequest;
 import de.metas.device.api.ISingleValueResponse;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -58,7 +60,7 @@ public class AttributesDevicesHub
 
 	private final IDeviceConfigPool deviceConfigPool;
 
-	private final transient ConcurrentHashMap<String, AttributeDeviceAccessorsList> attributeCode2deviceAccessors = new ConcurrentHashMap<>();
+	private final ConcurrentHashMap<AttributeCode, AttributeDeviceAccessorsList> attributeCode2deviceAccessors = new ConcurrentHashMap<>();
 
 	private final IDeviceConfigPoolListener deviceConfigPoolListener = new IDeviceConfigPoolListener()
 	{
@@ -101,13 +103,13 @@ public class AttributesDevicesHub
 				.orElse(null);
 	}
 
-	public AttributeDeviceAccessorsList getAttributeDeviceAccessors(final String attributeCode)
+	public AttributeDeviceAccessorsList getAttributeDeviceAccessors(final AttributeCode attributeCode)
 	{
 		return attributeCode2deviceAccessors.computeIfAbsent(attributeCode, this::createAttributeDeviceAccessor);
 	}
 
 	@SuppressWarnings("rawtypes")
-	private final AttributeDeviceAccessorsList createAttributeDeviceAccessor(final String attributeCode)
+	private final AttributeDeviceAccessorsList createAttributeDeviceAccessor(final AttributeCode attributeCode)
 	{
 		final List<DeviceConfig> deviceConfigsForThisAttribute = deviceConfigPool.getDeviceConfigsForAttributeCode(attributeCode);
 		logger.info("Devices configs for attributte {}: {}", attributeCode, deviceConfigsForThisAttribute);
@@ -150,9 +152,9 @@ public class AttributesDevicesHub
 			for (final IDeviceRequest<ISingleValueResponse> request : allRequestsFor)
 			{
 				final String deviceName = deviceConfig.getDeviceName();
-				
+
 				final AttributeDeviceAccessor deviceAccessor = AttributeDeviceAccessor.builder()
-						.displayName(createDeviceDisplayName(deviceDisplayNameCommonPrefix, deviceName))
+						.displayName(TranslatableStrings.anyLanguage(createDeviceDisplayName(deviceDisplayNameCommonPrefix, deviceName)))
 						.device(device)
 						.deviceName(deviceName)
 						.attributeCode(attributeCode)
@@ -204,7 +206,9 @@ public class AttributesDevicesHub
 		{
 			return String.valueOf(deviceName.charAt(0));
 		}
-
-		return deviceDisplayNameCommonPrefix + deviceName.charAt(deviceDisplayNameCommonPrefix.length());
+		else
+		{
+			return deviceDisplayNameCommonPrefix + deviceName.charAt(deviceDisplayNameCommonPrefix.length());
+		}
 	}
 }

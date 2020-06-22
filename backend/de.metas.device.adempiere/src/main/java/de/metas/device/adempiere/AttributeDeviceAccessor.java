@@ -2,6 +2,7 @@ package de.metas.device.adempiere;
 
 import java.util.Set;
 
+import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.warehouse.WarehouseId;
 import org.slf4j.Logger;
 
@@ -10,6 +11,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.device.api.IDevice;
 import de.metas.device.api.IDeviceRequest;
 import de.metas.device.api.ISingleValueResponse;
+import de.metas.i18n.ITranslatableString;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import lombok.Builder;
@@ -52,7 +54,7 @@ public final class AttributeDeviceAccessor
 	private static final Logger logger = LogManager.getLogger(AttributeDeviceAccessor.class);
 
 	@Getter
-	private final String displayName;
+	private final ITranslatableString displayName;
 	private final IDevice device;
 	private final ImmutableSet<WarehouseId> assignedWarehouseIds;
 	private final IDeviceRequest<ISingleValueResponse> request;
@@ -62,22 +64,21 @@ public final class AttributeDeviceAccessor
 
 	@Builder
 	private AttributeDeviceAccessor(
-			@NonNull final String displayName,
+			@NonNull final ITranslatableString displayName,
 			@NonNull final IDevice device,
 			@NonNull final String deviceName,
-			@NonNull final String attributeCode,
+			@NonNull final AttributeCode attributeCode,
 			@NonNull final Set<WarehouseId> assignedWarehouseIds,
 			@NonNull final IDeviceRequest<ISingleValueResponse> request)
 	{
 		Check.assumeNotEmpty(deviceName, "deviceName is not empty");
-		Check.assumeNotEmpty(attributeCode, "attributeCode is not empty");
 
 		this.displayName = displayName;
 		this.device = device;
 		this.assignedWarehouseIds = ImmutableSet.copyOf(assignedWarehouseIds);
 		this.request = request;
 
-		publicId = deviceName + "-" + attributeCode + "-" + request.getClass().getSimpleName();
+		publicId = deviceName + "-" + attributeCode.getCode() + "-" + request.getClass().getSimpleName();
 	}
 
 	public boolean isAvailableForWarehouse(final WarehouseId warehouseId)

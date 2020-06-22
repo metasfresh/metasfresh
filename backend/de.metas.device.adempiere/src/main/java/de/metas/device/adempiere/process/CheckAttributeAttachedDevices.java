@@ -8,6 +8,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.util.net.IHostIdentifier;
 import org.adempiere.util.net.NetUtils;
 import org.compiere.model.I_M_Attribute;
@@ -119,16 +120,13 @@ public class CheckAttributeAttachedDevices extends JavaProcess
 		}
 	}
 
-	private final Stream<String> streamAllAttributeCodes()
+	private final Stream<AttributeCode> streamAllAttributeCodes()
 	{
 		final IQueryBuilder<I_M_Attribute> queryBuilder = queryBL
 				.createQueryBuilder(I_M_Attribute.class, getCtx(), ITrx.TRXNAME_ThreadInherited)
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClientOrSystem()
-				//
-				.orderBy()
-				.addColumn(I_M_Attribute.COLUMN_M_Attribute_ID)
-				.endOrderBy();
+				.orderBy(I_M_Attribute.COLUMN_M_Attribute_ID);
 
 		if (p_M_Attribute_ID > 0)
 		{
@@ -138,7 +136,7 @@ public class CheckAttributeAttachedDevices extends JavaProcess
 		return queryBuilder
 				.create()
 				.stream(I_M_Attribute.class)
-				.map(attribute -> attribute.getValue());
+				.map(attribute -> AttributeCode.ofString(attribute.getValue()));
 	}
 
 	private void accessDeviceNTimes(final AttributeDeviceAccessor deviceAccessor, final int times)

@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
+import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.ExtendedMemorizingSupplier;
 import org.adempiere.util.net.IHostIdentifier;
@@ -76,7 +77,7 @@ import lombok.NonNull;
 	private final int adClientId;
 	private final int adOrgId;
 
-	private final ExtendedMemorizingSupplier<ImmutableListMultimap<String, DeviceConfig>> //
+	private final ExtendedMemorizingSupplier<ImmutableListMultimap<AttributeCode, DeviceConfig>> //
 	deviceConfigsIndexedByAttributeCodeSupplier = ExtendedMemorizingSupplier.of(() -> loadDeviceConfigsIndexedByAttributeCode());
 
 	private final ICacheResetListener cacheResetListener = request -> resetDeviceConfigs();
@@ -112,14 +113,14 @@ import lombok.NonNull;
 	}
 
 	@Override
-	public List<DeviceConfig> getDeviceConfigsForAttributeCode(final String attributeCode)
+	public List<DeviceConfig> getDeviceConfigsForAttributeCode(final AttributeCode attributeCode)
 	{
 		return deviceConfigsIndexedByAttributeCodeSupplier.get()
 				.get(attributeCode);
 	}
 
 	@Override
-	public Set<String> getAllAttributeCodes()
+	public Set<AttributeCode> getAllAttributeCodes()
 	{
 		return deviceConfigsIndexedByAttributeCodeSupplier.get().keySet();
 	}
@@ -144,7 +145,7 @@ import lombok.NonNull;
 		return 1;
 	}
 
-	private ImmutableListMultimap<String, DeviceConfig> loadDeviceConfigsIndexedByAttributeCode()
+	private ImmutableListMultimap<AttributeCode, DeviceConfig> loadDeviceConfigsIndexedByAttributeCode()
 	{
 		return getAllDeviceNames()
 				.stream()
@@ -163,7 +164,7 @@ import lombok.NonNull;
 			return null;
 		}
 
-		final Set<String> assignedAttributeCodes = getDeviceAssignedAttributeCodes(deviceName);
+		final Set<AttributeCode> assignedAttributeCodes = getDeviceAssignedAttributeCodes(deviceName);
 		if (assignedAttributeCodes.isEmpty())
 		{
 			// NOTE: a warning was already logged
@@ -225,17 +226,25 @@ import lombok.NonNull;
 		return paramValue;
 	}
 
-	private Set<String> getDeviceAssignedAttributeCodes(final String deviceName)
+	private ImmutableSet<AttributeCode> getDeviceAssignedAttributeCodes(final String deviceName)
 	{
 		final String attribSysConfigPrefix = CFG_DEVICE_PREFIX + "." + deviceName + "." + DEVICE_PARAM_AttributeInternalName;
-		final Collection<String> assignedAttributeCodes = sysConfigBL.getValuesForPrefix(attribSysConfigPrefix, adClientId, adOrgId).values();
+		final ImmutableSet<AttributeCode> assignedAttributeCodes = sysConfigBL
+				.getValuesForPrefix(attribSysConfigPrefix, adClientId, adOrgId)
+				.values()
+				.stream()
+				.map(AttributeCode::ofString)
+				.collect(ImmutableSet.toImmutableSet());
+
 		if (assignedAttributeCodes.isEmpty())
 		{
 			logger.info("Found no SysConfig assigned attribute to device {}; SysConfig-prefix={}", deviceName, attribSysConfigPrefix);
 			return ImmutableSet.of();
 		}
-
-		return ImmutableSet.copyOf(assignedAttributeCodes);
+		else
+		{
+			return assignedAttributeCodes;
+		}
 	}
 
 	/**
@@ -275,9 +284,9 @@ import lombok.NonNull;
 		return deviceClassname;
 	}
 
-	private Set<String> getDeviceRequestClassnames(final String deviceName, final String attributeCode)
+	private Set<String> getDeviceRequestClassnames(final String deviceName, final AttributeCode attributeCode)
 	{
-		final Map<String, String> requestClassNames = sysConfigBL.getValuesForPrefix(CFG_DEVICE_PREFIX + "." + deviceName + "." + attributeCode, adClientId, adOrgId);
+		final Map<String, String> requestClassNames = sysConfigBL.getValuesForPrefix(CFG_DEVICE_PREFIX + "." + deviceName + "." + attributeCode.getCode(), adClientId, adOrgId);
 		return ImmutableSet.copyOf(requestClassNames.values());
 	}
 

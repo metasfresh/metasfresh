@@ -1,10 +1,13 @@
 package de.metas.ui.web.devices;
 
+import java.util.List;
+
 import javax.annotation.Nullable;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.collect.ImmutableList;
 
 import de.metas.util.Check;
 import lombok.Builder;
@@ -45,6 +48,31 @@ import lombok.Value;
 @Value
 public class JSONDeviceDescriptor
 {
+	public static List<JSONDeviceDescriptor> ofList(
+			@NonNull final DeviceDescriptorsList list,
+			@NonNull final String adLanguage)
+	{
+		if (list.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
+		return list.stream()
+				.map(descriptor -> of(descriptor, adLanguage))
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	public static JSONDeviceDescriptor of(
+			@NonNull final DeviceDescriptor descriptor,
+			@NonNull final String adLanguage)
+	{
+		return JSONDeviceDescriptor.builder()
+				.deviceId(descriptor.getDeviceId())
+				.caption(descriptor.getCaption().translate(adLanguage))
+				.websocketEndpoint(descriptor.getWebsocketEndpoint())
+				.build();
+	}
+
 	@JsonProperty("deviceId")
 	private final String deviceId;
 	@JsonProperty("caption")

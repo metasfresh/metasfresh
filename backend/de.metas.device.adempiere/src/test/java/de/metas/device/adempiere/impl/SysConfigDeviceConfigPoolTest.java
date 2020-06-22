@@ -1,15 +1,17 @@
 package de.metas.device.adempiere.impl;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import java.util.List;
 import java.util.Set;
 
+import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.adempiere.warehouse.WarehouseId;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -40,15 +42,14 @@ import de.metas.util.collections.CollectionUtils;
  * #L%
  */
 
+@ExtendWith(AdempiereTestWatcher.class)
 public class SysConfigDeviceConfigPoolTest
 {
-
-	@Rule
-	public final AdempiereTestWatcher testWatcher = new AdempiereTestWatcher();
+	private static final AttributeCode weightGrossAttribute = AttributeCode.ofString("WeightGross");
 
 	private SysConfigDeviceConfigPoolTestHelper helper;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
@@ -58,13 +59,13 @@ public class SysConfigDeviceConfigPoolTest
 	@Test
 	public void testDeviceConfig_NoWarehouse()
 	{
-		helper.createDeviceConfigAndAssertValid("device1", "WeightGross", ImmutableSet.of());
+		helper.createDeviceConfigAndAssertValid("device1", weightGrossAttribute, ImmutableSet.of());
 
 		//
 		// Test device accessor
 		{
 			final AttributesDevicesHub devicesHub = helper.createDevicesHub();
-			final List<AttributeDeviceAccessor> deviceAccessors = devicesHub.getAttributeDeviceAccessors("WeightGross")
+			final List<AttributeDeviceAccessor> deviceAccessors = devicesHub.getAttributeDeviceAccessors(weightGrossAttribute)
 					.stream((WarehouseId)null) // any
 					.collect(ImmutableList.toImmutableList());
 
@@ -81,7 +82,7 @@ public class SysConfigDeviceConfigPoolTest
 	public void testDeviceConfig_WithWarehouse()
 	{
 		final Set<WarehouseId> warehouseIds = ImmutableSet.of(WarehouseId.ofRepoId(1000001), WarehouseId.ofRepoId(1000002));
-		helper.createDeviceConfigAndAssertValid("device1", "WeightGross", warehouseIds);
+		helper.createDeviceConfigAndAssertValid("device1", weightGrossAttribute, warehouseIds);
 		// POJOLookupMap.get().dumpStatus(); // dump configuration
 
 		//
@@ -89,7 +90,7 @@ public class SysConfigDeviceConfigPoolTest
 		final AttributesDevicesHub devicesHub = helper.createDevicesHub();
 		for (final WarehouseId warehouseId : warehouseIds)
 		{
-			final List<AttributeDeviceAccessor> deviceAccessors = devicesHub.getAttributeDeviceAccessors("WeightGross")
+			final List<AttributeDeviceAccessor> deviceAccessors = devicesHub.getAttributeDeviceAccessors(weightGrossAttribute)
 					.stream(warehouseId)
 					.collect(ImmutableList.toImmutableList());
 
@@ -104,11 +105,13 @@ public class SysConfigDeviceConfigPoolTest
 
 	}
 
-	private static final void assertAvailableForWarehouse(final AttributeDeviceAccessor deviceAccessor, final WarehouseId warehouseId, final boolean expectedAvailable)
+	private static final void assertAvailableForWarehouse(
+			final AttributeDeviceAccessor deviceAccessor,
+			final WarehouseId warehouseId,
+			final boolean expectedAvailable)
 	{
-		final String msg = "Expect available for warehouse"
-				+ "\n accessor: " + deviceAccessor
-				+ "\n warehoust: " + warehouseId;
-		Assert.assertEquals(msg, expectedAvailable, deviceAccessor.isAvailableForWarehouse(warehouseId));
+		assertThat(deviceAccessor.isAvailableForWarehouse(warehouseId))
+				.as("accessor: " + deviceAccessor + ", warehoust: " + warehouseId)
+				.isEqualTo(expectedAvailable);
 	}
 }

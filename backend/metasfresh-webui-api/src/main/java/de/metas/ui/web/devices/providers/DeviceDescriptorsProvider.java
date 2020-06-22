@@ -1,17 +1,12 @@
-package de.metas.ui.web.process;
-
-import org.adempiere.ad.expression.api.LogicExpressionResult;
+package de.metas.ui.web.devices.providers;
 
 import de.metas.ui.web.devices.DeviceDescriptorsList;
-import de.metas.ui.web.window.datatypes.json.JSONOptions;
-import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
-import de.metas.ui.web.window.model.DocumentValidStatus;
 
 /*
  * #%L
  * metasfresh-webui-api
  * %%
- * Copyright (C) 2018 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -29,21 +24,11 @@ import de.metas.ui.web.window.model.DocumentValidStatus;
  * #L%
  */
 
-public interface IProcessInstanceParameter
+/**
+ * Use {@link DeviceDescriptorsProviders} to create various instances.
+ */
+@FunctionalInterface
+public interface DeviceDescriptorsProvider
 {
-	String getParameterName();
-
-	DocumentFieldWidgetType getWidgetType();
-
-	Object getValueAsJsonObject(JSONOptions jsonOpts);
-
-	LogicExpressionResult getReadonly();
-
-	LogicExpressionResult getMandatory();
-
-	LogicExpressionResult getDisplayed();
-
-	DocumentValidStatus getValidStatus();
-
-	DeviceDescriptorsList getDevices();
+	DeviceDescriptorsList getDeviceDescriptors();
 }

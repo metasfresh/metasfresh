@@ -13,6 +13,8 @@ import org.compiere.model.I_M_Attribute;
 import org.compiere.util.Evaluatee;
 import org.compiere.util.NamePair;
 
+import com.google.common.collect.ImmutableList;
+
 import de.metas.adempiere.service.impl.TooltipType;
 import de.metas.device.adempiere.AttributeDeviceAccessor;
 import de.metas.device.adempiere.IDevicesHubFactory;
@@ -20,8 +22,9 @@ import de.metas.handlingunits.attribute.IAttributeValue;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.i18n.IModelTranslationMap;
 import de.metas.i18n.ITranslatableString;
+import de.metas.ui.web.devices.DeviceDescriptor;
+import de.metas.ui.web.devices.DeviceDescriptorsList;
 import de.metas.ui.web.devices.DeviceWebSocketProducerFactory;
-import de.metas.ui.web.devices.JSONDeviceDescriptor;
 import de.metas.ui.web.view.descriptor.ViewRowAttributesLayout;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.Values;
@@ -32,6 +35,7 @@ import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.experimental.UtilityClass;
 
 /*
  * #%L
@@ -60,12 +64,9 @@ import lombok.NonNull;
  *
  * @author metas-dev <dev@metasfresh.com>
  */
-/* package */final class HUEditorRowAttributesHelper
+@UtilityClass
+public final class HUEditorRowAttributesHelper
 {
-	private HUEditorRowAttributesHelper()
-	{
-	}
-
 	public static ViewRowAttributesLayout createLayout(final IAttributeStorage attributeStorage)
 	{
 		final WarehouseId warehouseId = attributeStorage.getWarehouseId().orElse(null);
@@ -83,7 +84,7 @@ import lombok.NonNull;
 	{
 		final I_M_Attribute attribute = attributeValue.getM_Attribute();
 		final DocumentFieldWidgetType widgetType = HUEditorRowAttributesHelper.extractWidgetType(attributeValue);
-		
+
 		final IModelTranslationMap attributeTrlMap = InterfaceWrapperHelper.getModelTranslationMap(attribute);
 		final ITranslatableString caption = attributeTrlMap.getColumnTrl(I_M_Attribute.COLUMNNAME_Name, attribute.getName());
 		final ITranslatableString description = attributeTrlMap.getColumnTrl(I_M_Attribute.COLUMNNAME_Description, attribute.getDescription());
@@ -96,28 +97,29 @@ import lombok.NonNull;
 				.setWidgetType(widgetType)
 				.addField(DocumentLayoutElementFieldDescriptor.builder(attributeCode.getCode())
 						.setPublicField(true)
-						.addDevices(createDevices(attribute.getValue(), warehouseId)))
+						.setDevices(getDeviceDescriptors(attributeCode, warehouseId)))
 				.build();
 	}
 
-	private static List<JSONDeviceDescriptor> createDevices(
-			@NonNull final String attributeCode,
+	public static DeviceDescriptorsList getDeviceDescriptors(
+			@NonNull final AttributeCode attributeCode,
 			@Nullable final WarehouseId warehouseId)
 	{
-		return Services.get(IDevicesHubFactory.class)
+		final ImmutableList<DeviceDescriptor> deviceDescriptors = Services.get(IDevicesHubFactory.class)
 				.getDefaultAttributesDevicesHub()
 				.getAttributeDeviceAccessors(attributeCode)
 				.stream(warehouseId)
-				.map(attributeDeviceAccessor -> createDevice(attributeDeviceAccessor))
+				.map(attributeDeviceAccessor -> toDeviceDescriptor(attributeDeviceAccessor))
 				.collect(GuavaCollectors.toImmutableList());
 
+		return DeviceDescriptorsList.ofList(deviceDescriptors);
 	}
 
-	private static JSONDeviceDescriptor createDevice(final AttributeDeviceAccessor attributeDeviceAccessor)
+	private static DeviceDescriptor toDeviceDescriptor(final AttributeDeviceAccessor attributeDeviceAccessor)
 	{
 		final String deviceId = attributeDeviceAccessor.getPublicId();
-		
-		return JSONDeviceDescriptor.builder()
+
+		return DeviceDescriptor.builder()
 				.deviceId(deviceId)
 				.caption(attributeDeviceAccessor.getDisplayName())
 				.websocketEndpoint(DeviceWebSocketProducerFactory.buildDeviceTopicName(deviceId))

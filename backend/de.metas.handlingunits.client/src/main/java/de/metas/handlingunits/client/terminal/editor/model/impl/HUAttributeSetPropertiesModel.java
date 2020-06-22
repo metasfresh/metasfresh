@@ -33,6 +33,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import javax.annotation.Nullable;
 
+import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.spi.IAttributeValueContext;
 import org.adempiere.mm.attributes.spi.impl.DefaultAttributeValueContext;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -235,9 +236,11 @@ public class HUAttributeSetPropertiesModel extends AbstractPropertiesPanelModel
 			@NonNull final I_M_Attribute attribute,
 			@Nullable final WarehouseId warehouseId)
 	{
+		final AttributeCode attributeCode = AttributeCode.ofString(attribute.getValue());
+
 		return Services.get(IDevicesHubFactory.class)
 				.getDefaultAttributesDevicesHub()
-				.getAttributeDeviceAccessors(attribute.getValue())
+				.getAttributeDeviceAccessors(attributeCode)
 				.consumeWarningMessageIfAny(warningMessage -> Services.get(IClientUI.class).warn(Env.WINDOW_MAIN, warningMessage))
 				.stream(warehouseId)
 				.map(DeviceAccessorAsInputMethod::new)
@@ -692,7 +695,7 @@ public class HUAttributeSetPropertiesModel extends AbstractPropertiesPanelModel
 		public AppsAction getAppsAction()
 		{
 			// TODO 04966: polish..e.g. see to it that there is a nice icon etc (but consider that maybe this is not the right place).
-			final String buttonText = deviceAccessor.getDisplayName();
+			final String buttonText = deviceAccessor.getDisplayName().translate(Env.getADLanguageOrBaseLanguage());
 			return AppsAction.builder()
 					.setAction(buttonText)
 					.setRetrieveAppsActionMsg(false) // there is no AD_Message, just use the action's name as it is.

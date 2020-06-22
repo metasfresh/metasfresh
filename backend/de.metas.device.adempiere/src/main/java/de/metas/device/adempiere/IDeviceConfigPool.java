@@ -3,6 +3,8 @@ package de.metas.device.adempiere;
 import java.util.List;
 import java.util.Set;
 
+import org.adempiere.mm.attributes.AttributeCode;
+
 /*
  * #%L
  * de.metas.device.adempiere
@@ -35,9 +37,9 @@ import java.util.Set;
  */
 public interface IDeviceConfigPool
 {
-	Set<String> getAllAttributeCodes();
+	Set<AttributeCode> getAllAttributeCodes();
 
-	List<DeviceConfig> getDeviceConfigsForAttributeCode(String attributeCode);
+	List<DeviceConfig> getDeviceConfigsForAttributeCode(AttributeCode attributeCode);
 
 	void addListener(IDeviceConfigPoolListener listener);
 

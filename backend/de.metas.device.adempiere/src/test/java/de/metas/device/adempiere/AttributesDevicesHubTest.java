@@ -1,7 +1,9 @@
 package de.metas.device.adempiere;
 
-import org.junit.Assert;
-import org.junit.Test;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import com.google.common.collect.ImmutableList;
 
@@ -18,11 +20,11 @@ import com.google.common.collect.ImmutableList;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -32,25 +34,26 @@ public class AttributesDevicesHubTest
 	@Test
 	public void test_extractDeviceDisplayNameCommonPrefix()
 	{
-		Assert.assertEquals("", AttributesDevicesHub.extractDeviceDisplayNameCommonPrefix(ImmutableList.of("mettler1")));
-		Assert.assertEquals("mettler", AttributesDevicesHub.extractDeviceDisplayNameCommonPrefix(ImmutableList.of("mettler1", "mettler2")));
-		Assert.assertEquals("mettler", AttributesDevicesHub.extractDeviceDisplayNameCommonPrefix(ImmutableList.of("mettler1", "mettler2", "mettler3")));
-		Assert.assertEquals("", AttributesDevicesHub.extractDeviceDisplayNameCommonPrefix(ImmutableList.of("1mettler", "2mettler", "3mettler")));
+		Assertions.assertEquals("", AttributesDevicesHub.extractDeviceDisplayNameCommonPrefix(ImmutableList.of("mettler1")));
+		Assertions.assertEquals("mettler", AttributesDevicesHub.extractDeviceDisplayNameCommonPrefix(ImmutableList.of("mettler1", "mettler2")));
+		Assertions.assertEquals("mettler", AttributesDevicesHub.extractDeviceDisplayNameCommonPrefix(ImmutableList.of("mettler1", "mettler2", "mettler3")));
+		Assertions.assertEquals("", AttributesDevicesHub.extractDeviceDisplayNameCommonPrefix(ImmutableList.of("1mettler", "2mettler", "3mettler")));
 	}
 
 	@Test
 	public void test_createDeviceDisplayName()
 	{
-		Assert.assertEquals("m", AttributesDevicesHub.createDeviceDisplayName("", "mettler1"));
-		Assert.assertEquals("m", AttributesDevicesHub.createDeviceDisplayName(null, "mettler1"));
-		Assert.assertEquals("mettler1", AttributesDevicesHub.createDeviceDisplayName("mettler", "mettler1"));
-		Assert.assertEquals("mettler1", AttributesDevicesHub.createDeviceDisplayName("mettler", "mettler11111"));
+		Assertions.assertEquals("m", AttributesDevicesHub.createDeviceDisplayName("", "mettler1"));
+		Assertions.assertEquals("m", AttributesDevicesHub.createDeviceDisplayName(null, "mettler1"));
+		Assertions.assertEquals("mettler1", AttributesDevicesHub.createDeviceDisplayName("mettler", "mettler1"));
+		Assertions.assertEquals("mettler1", AttributesDevicesHub.createDeviceDisplayName("mettler", "mettler11111"));
 	}
 
-	@Test(expected = Exception.class)
+	@Test
 	public void test_createDeviceDisplayName_NullDeviceName()
 	{
-		AttributesDevicesHub.createDeviceDisplayName("", null);
+		assertThatThrownBy(() -> AttributesDevicesHub.createDeviceDisplayName("", null))
+				.hasMessageContaining("deviceName is not empty");
 	}
 
 }

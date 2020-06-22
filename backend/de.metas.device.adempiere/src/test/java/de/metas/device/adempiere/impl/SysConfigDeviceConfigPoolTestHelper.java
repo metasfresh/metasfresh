@@ -3,6 +3,7 @@ package de.metas.device.adempiere.impl;
 import java.util.List;
 import java.util.Set;
 
+import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.net.IHostIdentifier;
@@ -19,6 +20,7 @@ import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -49,7 +51,10 @@ public class SysConfigDeviceConfigPoolTestHelper
 
 	private final IHostIdentifier clientHost = NetUtils.getLocalHost();
 
-	public final DeviceConfig createDeviceConfigAndAssertValid(final String deviceName, final String attributeCode, final Set<WarehouseId> warehouseIds)
+	public final DeviceConfig createDeviceConfigAndAssertValid(
+			final String deviceName,
+			final AttributeCode attributeCode,
+			final Set<WarehouseId> warehouseIds)
 	{
 		createMockedDeviceSysconfigs(deviceName, attributeCode, warehouseIds);
 
@@ -67,10 +72,12 @@ public class SysConfigDeviceConfigPoolTestHelper
 		return deviceConfig;
 	}
 
-	private final void createMockedDeviceSysconfigs(final String deviceName, final String attributeCode, final Set<WarehouseId> warehouseIds)
+	private final void createMockedDeviceSysconfigs(
+			@NonNull final String deviceName, 
+			@NonNull final AttributeCode attributeCode, 
+			@NonNull final Set<WarehouseId> warehouseIds)
 	{
 		Check.assumeNotEmpty(deviceName, "deviceName is not empty");
-		Check.assumeNotEmpty(attributeCode, "attributeCode is not empty");
 
 		final String host = SysConfigDeviceConfigPool.IPADDRESS_ANY;
 
@@ -80,7 +87,7 @@ public class SysConfigDeviceConfigPoolTestHelper
 		putSysConfig("de.metas.device." + deviceName + "." + host + ".Endpoint.IP", "DOES NOT MATTER");
 		putSysConfig("de.metas.device." + deviceName + "." + host + ".Endpoint.Port", "0");
 		putSysConfig("de.metas.device." + deviceName + "." + host + ".RoundToPrecision", "1");
-		putSysConfig("de.metas.device." + deviceName + ".AttributeInternalName", attributeCode);
+		putSysConfig("de.metas.device." + deviceName + ".AttributeInternalName", attributeCode.getCode());
 		putSysConfig("de.metas.device." + deviceName + ".AvailableOn1", host);
 		putSysConfig("de.metas.device." + deviceName + "." + attributeCode, MOCKED_DEVICE_RequestClass);
 
