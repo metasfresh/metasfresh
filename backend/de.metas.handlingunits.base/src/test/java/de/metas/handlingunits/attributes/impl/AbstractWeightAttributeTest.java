@@ -116,10 +116,7 @@ public abstract class AbstractWeightAttributeTest extends AbstractHUTestWithSamp
 	 * <li>given loading unit's first N (according to amount of weight expectations) trading units weight attributes meet the <code>tuExpectations</code></li>
 	 * </ul>
 	 *
-	 * @param loadingUnit
 	 * @param tuAmountOnLU set to 0 if you are verifying a top-level TU
-	 * @param luExpectation
-	 * @param tuExpectations
 	 */
 	protected final void assertLoadingUnitStorageWeights(final I_M_HU loadingUnit,
 			final I_M_HU_PI_Item loadingUnitPIItem,

@@ -126,7 +126,7 @@ public class AbstractRSAllocationWithWeightAttributeTest extends AbstractWeightA
 		receiptSchedule = createReceiptSchedule(qty);
 
 		//
-		// Create WeightNet Adjuster instace for testing
+		// Create WeightNet Adjuster instance for testing
 		rsNetWeightAdjuster = new HUReceiptScheduleWeightNetAdjuster(huContext);
 
 		//
@@ -197,8 +197,6 @@ public class AbstractRSAllocationWithWeightAttributeTest extends AbstractWeightA
 
 	/**
 	 * Initialize Receipt Schedule HU Allocations for given HUs
-	 *
-	 * @param tusToAllocate TUs to Allocate
 	 */
 	protected final void initReceiptScheduleAllocations(final List<I_M_HU> tusToAllocate)
 	{

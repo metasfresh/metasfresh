@@ -33,7 +33,7 @@ import org.adempiere.mm.attributes.spi.IAttributeValueGenerator;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.X_M_Attribute;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.reflections.Reflections;
 import org.reflections.scanners.SubTypesScanner;
 import org.reflections.util.ClasspathHelper;

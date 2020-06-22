@@ -1,7 +1,7 @@
 package de.metas.handlingunits.attribute.impl;
 
 import org.compiere.model.I_M_Attribute;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import com.google.common.collect.ImmutableList;
