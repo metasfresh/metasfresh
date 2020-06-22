@@ -3,9 +3,10 @@ import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import classnames from 'classnames';
-import { updateCommentsPanelOpenFlag } from '../../actions/CommentsPanelActions';
 
+import { startProcess } from '../../api';
 import { processNewRecord } from '../../actions/GenericActions';
+import { updateCommentsPanelOpenFlag } from '../../actions/CommentsPanelActions';
 import {
   closeModal,
   createProcess,
@@ -15,10 +16,9 @@ import {
   callAPI,
   patch,
 } from '../../actions/WindowActions';
-import { startProcess } from '../../api';
-import { getSelectionInstant } from '../../reducers/windowHandler';
-import keymap from '../../shortcuts/keymap';
+import { getTableId, getSelection } from '../../reducers/tables';
 
+import keymap from '../../shortcuts/keymap';
 import ChangeLogModal from '../ChangeLogModal';
 import Process from '../Process';
 import Window from '../Window';
@@ -52,11 +52,6 @@ class Modal extends Component {
     };
   }
 
-  /**
-   * @async
-   * @method componentDidMount
-   * @summary ToDo: Describe the method.
-   */
   async componentDidMount() {
     this.mounted = true;
 
@@ -76,25 +71,12 @@ class Modal extends Component {
     this.initEventListeners();
   }
 
-  /**
-   * @method componentWillUnmount
-   * @summary ToDo: Describe the method.
-   */
   componentWillUnmount() {
     this.mounted = false;
 
     this.removeEventListeners();
   }
 
-  /**
-   * @async
-   * @method componentDidUpdate
-   * @summary ToDo: Describe the method.
-   * @param {object} prevProps
-   * @prop {string} windowId
-   * @prop {string} viewId
-   * @prop {*} indicator
-   */
   async componentDidUpdate(prevProps) {
     const { windowId, viewId, indicator } = this.props;
     const { waitingFetch } = this.state;
@@ -165,7 +147,7 @@ class Modal extends Component {
       modalType,
       staticModalType,
       parentSelection,
-      parentType,
+      parentWindowId,
       isAdvanced,
       modalViewId,
       modalViewDocumentIds,
@@ -228,14 +210,14 @@ class Modal extends Component {
           const options = {
             processType: windowId,
             viewId: modalViewId,
-            type: parentType,
+            type: parentWindowId,
             ids: modalViewId
               ? modalViewDocumentIds
               : dataId
               ? [dataId]
               : parentSelection,
             tabId,
-            rowId,
+            rowId: rowId || parentSelection[0],
           };
 
           if (activeTabId && parentSelection) {
@@ -250,6 +232,7 @@ class Modal extends Component {
             options.childViewSelectedIds = childViewSelectedIds;
           }
 
+          // TODO: I think this is never provided - Kuba
           if (parentViewId) {
             options.parentViewId = parentViewId;
             options.parentViewSelectedIds = parentViewSelectedIds;
@@ -279,7 +262,7 @@ class Modal extends Component {
       closeCallback,
       dataId,
       windowId,
-      parentType,
+      parentWindowId,
       parentDataId,
       triggerField,
       rowId,
@@ -292,7 +275,7 @@ class Modal extends Component {
         dispatch(
           patch(
             'window',
-            parentType,
+            parentWindowId,
             parentDataId,
             null,
             null,
@@ -673,10 +656,6 @@ class Modal extends Component {
     );
   };
 
-  /**
-   * @method render
-   * @summary ToDo: Describe the method
-   */
   render() {
     const { layout, modalType } = this.props;
     let renderedContent = null;
@@ -728,7 +707,7 @@ class Modal extends Component {
  * @prop {string} [staticModalType]
  * @prop {string} [tabId]
  * @prop {*} [parentSelection]
- * @prop {*} [parentType]
+ * @prop {*} [parentWindowId]
  * @prop {*} [parentViewId]
  * @prop {*} [parentViewSelectedIds]
  * @prop {*} [rawModalVisible]
@@ -759,7 +738,7 @@ Modal.propTypes = {
   tabId: PropTypes.any,
   parentDataId: PropTypes.any,
   parentSelection: PropTypes.any,
-  parentType: PropTypes.any,
+  parentWindowId: PropTypes.any,
   parentViewId: PropTypes.any,
   parentViewSelectedIds: PropTypes.any,
   rawModalVisible: PropTypes.any,
@@ -769,19 +748,19 @@ Modal.propTypes = {
   windowId: PropTypes.string,
 };
 
-/**
- * @method mapStateToProps
- * @summary ToDo: Describe the method
- * @param {object} state
- * @param {object} props
- */
-const mapStateToProps = (state, props) => ({
-  parentSelection: getSelectionInstant(
-    state,
-    { ...props, windowType: props.parentType },
-    state.windowHandler.selectionsHash
-  ),
-  activeTabId: state.windowHandler.master.layout.activeTab,
-});
+const mapStateToProps = (state, props) => {
+  const { tabId, dataId, parentWindowId, parentViewId } = props;
+  const parentViewTableId = getTableId({
+    windowId: parentWindowId,
+    viewId: parentViewId,
+    tabId,
+    docId: dataId,
+  });
+
+  return {
+    parentSelection: getSelection(state, parentViewTableId),
+    activeTabId: state.windowHandler.master.layout.activeTab,
+  };
+};
 
 export default connect(mapStateToProps)(Modal);
