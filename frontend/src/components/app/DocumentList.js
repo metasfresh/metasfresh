@@ -144,7 +144,6 @@ export default class DocumentList extends Component {
       lastPage,
       pageLength,
       panelsState,
-      onGetSelected,
       onFetchLayoutAndData,
       onChangePage,
       onRedirectToDocument,
@@ -162,6 +161,8 @@ export default class DocumentList extends Component {
       onSortData,
       onShowSelectedIncludedView,
       table,
+      childSelected,
+      parentSelected,
     } = this.props;
     const {
       staticFilters,
@@ -175,8 +176,6 @@ export default class DocumentList extends Component {
     } = reduxData;
     const { clickOutsideLock, toggleWidth } = this.state;
 
-    // TODO: This can probably be handled with redux state query
-    let { childSelected, parentSelected } = onGetSelected();
     const selected = table.selected;
     const modalType = modal ? modal.modalType : null;
     const stopShortcutPropagation =

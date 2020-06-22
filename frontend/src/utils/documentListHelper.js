@@ -5,7 +5,6 @@ import currentDevice from 'current-device';
 import deepUnfreeze from 'deep-unfreeze';
 
 import { getItemsByProperty, nullToEmptyStrings } from './index';
-import { getSelectionInstant } from '../reducers/windowHandler';
 import { viewState, getView } from '../reducers/viewHandler';
 import { getTable, getTableId } from '../reducers/tables';
 import { TIME_REGEX_TEST } from '../constants/Constants';
@@ -31,7 +30,6 @@ const DLpropTypes = {
   refTabId: PropTypes.string,
 
   // from @connect
-  selections: PropTypes.object.isRequired,
   childSelected: PropTypes.array.isRequired,
   parentSelected: PropTypes.array.isRequired,
   isModal: PropTypes.bool,
@@ -100,6 +98,15 @@ const DLmapStateToProps = (state, props) => {
     viewId = null;
   }
 
+  const childTableId = getTableId({
+    windowId: props.includedView.windowType,
+    viewId: props.includedView.viewId,
+  });
+  const parentTableId = getTableId({
+    windowId: props.parentWindowType,
+    viewId: props.parentDefaultViewId,
+  });
+
   return {
     page,
     sort,
@@ -112,29 +119,12 @@ const DLmapStateToProps = (state, props) => {
     refType: queryRefType,
     refDocumentId: queryRefDocumentId,
     refTabId: queryRefTabId,
-    selections: state.windowHandler.selections,
     childSelected:
       props.includedView && props.includedView.windowType
-        ? getSelectionInstant(
-            state,
-            {
-              ...props,
-              windowId: props.includedView.windowType,
-              viewId: props.includedView.viewId,
-            },
-            state.windowHandler.selectionsHash
-          )
+        ? getSelection(state, childTableId)
         : NO_SELECTION,
     parentSelected: props.parentWindowType
-      ? getSelectionInstant(
-          state,
-          {
-            ...props,
-            windowId: props.parentWindowType,
-            viewId: props.parentDefaultViewId,
-          },
-          state.windowHandler.selectionsHash
-        )
+      ? getSelection(state, parentTableId)
       : NO_SELECTION,
     modal: state.windowHandler.modal,
     rawModalVisible: state.windowHandler.rawModal.visible,
