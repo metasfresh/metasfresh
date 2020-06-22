@@ -364,12 +364,6 @@ Actions.propTypes = {
   plugins: PropTypes.any,
 };
 
-/**
- * @method mapStateToProps
- * @summary ToDo: Describe the method.
- * @param {object} state
- * @param {object} props
- */
 const mapStateToProps = (state) => {
   const includedView = state.listHandler.includedView;
   const result = {
