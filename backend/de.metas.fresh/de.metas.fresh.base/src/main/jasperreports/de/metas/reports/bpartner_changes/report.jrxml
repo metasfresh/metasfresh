@@ -325,7 +325,7 @@ order By bpc.bpValue, bpc.tablename;]]>
 	</columnHeader>
 	<detail>
 		<band height="15" splitType="Stretch">
-			<textField>
+			<textField isStretchWithOverflow="true">
 				<reportElement x="1" y="2" width="90" height="12" uuid="48c86bcd-7058-44ae-b395-f0c7739b4e43"/>
 				<textElement markup="none">
 					<font size="8"/>
