@@ -36,12 +36,7 @@ import org.eevolution.model.I_PP_MRP;
 import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.jupiter.api.Disabled;
-import org.junit.runner.RunWith;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit4.SpringRunner;
 
-import de.metas.handlingunits.HandlingUnitsConfiguration;
 import de.metas.handlingunits.client.terminal.ddorder.model.DDOrderTableRow;
 import de.metas.handlingunits.client.terminal.editor.model.IHUKey;
 import de.metas.handlingunits.client.terminal.editor.model.impl.HUEditorModel;
@@ -50,9 +45,6 @@ import de.metas.handlingunits.expectations.PackingMaterialsExpectation;
 import de.metas.handlingunits.model.I_M_MovementLine;
 import de.metas.util.collections.CollectionUtils;
 
-@RunWith(SpringRunner.class)
-@SpringBootTest(classes = HandlingUnitsConfiguration.class)
-@ActiveProfiles("test")
 @Disabled
 public class DD_Order_StandardCase_IntegrationTest extends AbstractHUDDOrderProcessIntegrationTest
 {
