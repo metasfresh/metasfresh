@@ -164,7 +164,6 @@ public class AggregateHUTrxListener implements IHUTrxListener
 			final BigDecimal newTuQty = item.getQty().subtract(qtyTUsToSplit);
 			item.setQty(newTuQty);
 			InterfaceWrapperHelper.save(item);
-			return;
 		}
 		else
 		{
