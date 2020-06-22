@@ -40,6 +40,7 @@ de.metas.handlingunits.inventory.InventoryRepositoryTest.saveInventoryLine=[
         "locatorId": "100004_100005",
         "huAggregationType": "MULTI_HU",
         "inventoryType": "PHYSICAL",
+        "counted": true,
         "inventoryLineHUs": [
           {
             "id": 100019,

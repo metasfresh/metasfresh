@@ -126,7 +126,8 @@ public class DraftInventoryLinesCreator
 			{
 				// create line
 				inventoryLineBuilder = InventoryLine.builder()
-						.orgId(huForInventoryLine.getOrgId());
+						.orgId(huForInventoryLine.getOrgId())
+						.counted(huForInventoryLine.isMarkAsCounted());
 			}
 		}
 

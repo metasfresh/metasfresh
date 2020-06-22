@@ -190,6 +190,7 @@ class InventoryRepositoryTest
 				.asiId(asiId)
 				.storageAttributesKey(storageAttributesKey)
 				.huAggregationType(HUAggregationType.MULTI_HU)
+				.counted(true)
 				.inventoryLineHU(InventoryLineHU
 						.builder()
 						.huId(HuId.ofRepoId(100))

@@ -238,6 +238,8 @@ public class InventoryRepository
 		final HUAggregationType huAggregationType = HUAggregationType.ofNullableCode(inventoryLineRecord.getHUAggregationType());
 		lineBuilder.huAggregationType(huAggregationType);
 
+		lineBuilder.counted(inventoryLineRecord.isCounted());
+
 		if (HUAggregationType.SINGLE_HU.equals(huAggregationType))
 		{
 			final InventoryLineHU inventoryLineHU = toInventoryLineHU(inventoryLineRecord);
@@ -483,6 +485,7 @@ public class InventoryRepository
 		lineRecord.setQtyBook(qtyBookBD);
 		lineRecord.setQtyCount(qtyCountBD);
 		lineRecord.setC_UOM_ID(uomId.getRepoId());
+		lineRecord.setIsCounted(from.isCounted());
 	}
 
 	public void saveInventoryLineHURecords(@NonNull final InventoryLine inventoryLine)

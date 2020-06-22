@@ -60,6 +60,8 @@ public class HuForInventoryLine
 	@NonNull
 	LocatorId locatorId;
 
+	boolean markAsCounted;
+
 	@Builder
 	private HuForInventoryLine(
 			@NonNull final OrgId orgId,
@@ -68,7 +70,8 @@ public class HuForInventoryLine
 			@Nullable final Quantity quantityCount,
 			@NonNull final ProductId productId,
 			@NonNull final AttributesKey storageAttributesKey,
-			@NonNull final LocatorId locatorId)
+			@NonNull final LocatorId locatorId,
+			boolean markAsCounted)
 	{
 		Quantity.getCommonUomIdOfAll(quantityBooked, quantityCount); // make sure we use the same UOM
 
@@ -80,5 +83,7 @@ public class HuForInventoryLine
 		this.productId = productId;
 		this.storageAttributesKey = storageAttributesKey;
 		this.locatorId = locatorId;
+
+		this.markAsCounted = markAsCounted;
 	}
 }
