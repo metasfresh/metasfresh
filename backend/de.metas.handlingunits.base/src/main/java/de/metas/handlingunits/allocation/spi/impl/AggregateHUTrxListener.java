@@ -159,7 +159,7 @@ public class AggregateHUTrxListener implements IHUTrxListener
 		// If we split exactly N TUs (integer), there's no need for all the dance to figure out the new correct # of TUs for the qty, and splitting the extra qty.
 		// We shall just update the new qty of TUs in this aggregate TU.
 		final BigDecimal qtyTUsToSplit = huContext.getProperty(AggregateHUTrxListener.mkQtyTUsToSplitPropertyKey(item));
-		if (qtyTUsToSplit != null && BigDecimal.ZERO.compareTo(qtyTUsToSplit) != 0)
+		if (qtyTUsToSplit != null && qtyTUsToSplit.signum() != 0)
 		{
 			final BigDecimal newTuQty = item.getQty().subtract(qtyTUsToSplit);
 			item.setQty(newTuQty);
