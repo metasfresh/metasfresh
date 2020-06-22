@@ -20,13 +20,15 @@
  * #L%
  */
 
-package de.metas.printing.api.impl;
+package de.metas.printing.printingdata;
 
 import de.metas.adempiere.service.IPrinterRoutingDAO;
 import de.metas.adempiere.service.PrinterRoutingsQuery;
 import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
+import de.metas.printing.HardwarePrinter;
 import de.metas.printing.HardwarePrinterId;
+import de.metas.printing.HardwarePrinterRepository;
 import de.metas.printing.HardwareTrayId;
 import de.metas.printing.PrinterRoutingId;
 import de.metas.printing.PrintingQueueItemId;
@@ -45,12 +47,14 @@ import org.adempiere.archive.api.IArchiveBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_AD_Archive;
 import org.slf4j.Logger;
+import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
 import java.util.List;
 
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
+@Service
 public class PrintingDataFactory
 {
 	private final static transient Logger logger = LogManager.getLogger(PrintingDataFactory.class);
@@ -60,6 +64,12 @@ public class PrintingDataFactory
 	private final IPrintJobBL printJobBL = Services.get(IPrintJobBL.class);
 	private final IPrintingDAO printingDAO = Services.get(IPrintingDAO.class);
 	private final transient IArchiveBL archiveBL = Services.get(IArchiveBL.class);
+	private final HardwarePrinterRepository hardwarePrinterRepository;
+
+	public PrintingDataFactory(@NonNull final HardwarePrinterRepository hardwarePrinterRepository)
+	{
+		this.hardwarePrinterRepository = hardwarePrinterRepository;
+	}
 
 	public PrintingData createPrintingDataForQueueItem(@NonNull final I_C_Printing_Queue queueItem)
 	{
@@ -86,7 +96,6 @@ public class PrintingDataFactory
 			@NonNull final I_C_Print_Job_Line jobLine,
 			@Nullable final String hostKey)
 	{
-
 		final I_AD_Archive archiveRecord = jobLine.getC_Printing_Queue().getAD_Archive();
 
 		final PrintingData.PrintingDataBuilder printingData = PrintingData
@@ -127,13 +136,15 @@ public class PrintingDataFactory
 
 		final HardwarePrinterId printerId = HardwarePrinterId.ofRepoId(printerMatchingRecord.getAD_PrinterHW_ID());
 
+		final HardwarePrinter hardwarePrinter = hardwarePrinterRepository.getById(printerId);
+
 		return PrintingSegment.builder()
 				.printerRoutingId(PrinterRoutingId.ofRepoId(printerRouting.getAD_PrinterRouting_ID()))
 				.initialPageFrom(printerRouting.getPageFrom())
 				.initialPageTo(printerRouting.getPageTo())
 				.lastPages(printerRouting.getLastPages())
 				.routingType(printerRouting.getRoutingType())
-				.printerId(printerId)
+				.printer(hardwarePrinter)
 				.trayId(HardwareTrayId.ofRepoIdOrNull(printerId, trayMatchingRecord.getAD_PrinterHW_MediaTray_ID()))
 				.build();
 	}

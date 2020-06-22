@@ -15,6 +15,10 @@ import de.metas.printing.model.I_C_Print_Job_Instructions;
 import de.metas.printing.model.I_C_Print_Job_Line;
 import de.metas.printing.model.I_C_Print_Package;
 import de.metas.printing.model.I_C_Print_PackageInfo;
+import de.metas.printing.printingdata.PrintingData;
+import de.metas.printing.printingdata.PrintingDataFactory;
+import de.metas.printing.printingdata.PrintingDataToPDFWriter;
+import de.metas.printing.printingdata.PrintingSegment;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -24,6 +28,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IPair;
 import org.adempiere.util.lang.ImmutablePair;
 import org.adempiere.util.lang.Mutable;
+import org.compiere.SpringContextHolder;
 import org.compiere.util.Util.ArrayKey;
 import org.slf4j.Logger;
 
@@ -68,7 +73,7 @@ public class PrintJobLinesAggregator implements IPrintJobLinesAggregator
 	// Services
 	private static final transient Logger logger = LogManager.getLogger(PrintJobLinesAggregator.class);
 	private final transient IPrintingDAO dao = Services.get(IPrintingDAO.class);
-	private final transient PrintingDataFactory printingDataFactory = new PrintingDataFactory();
+	private final transient PrintingDataFactory printingDataFactory;
 
 	private final IPrintPackageCtx printCtx;
 	private final I_C_Print_Job_Instructions printJobInstructions;
@@ -93,9 +98,11 @@ public class PrintJobLinesAggregator implements IPrintJobLinesAggregator
 	 * NOTE: trxName from printJob will be used
 	 */
 	public PrintJobLinesAggregator(
+			@NonNull final PrintingDataFactory printingDataFactory,
 			@NonNull final IPrintPackageCtx printCtx,
 			@NonNull final I_C_Print_Job_Instructions printJobInstructions)
 	{
+		this.printingDataFactory = printingDataFactory;
 		this.printCtx = printCtx;
 
 		this.printJobInstructions = printJobInstructions;
@@ -245,20 +252,20 @@ public class PrintJobLinesAggregator implements IPrintJobLinesAggregator
 	 * @param precedingGroupKey used to prevent multiple job lines from from being split, i.e 50-times the first part of each job line, then 50-time the 2nd part.
 	 */
 	private IPair<ArrayKey, I_C_Print_PackageInfo> getCreatePrintPackageInfo(
-			@NonNull final PrintingSegment archivePart,
+			@NonNull final PrintingSegment printingSegment,
 			@Nullable final ArrayKey precedingGroupKey)
 	{
 
-		final I_AD_PrinterHW hwPrinter = InterfaceWrapperHelper.loadOutOfTrx(archivePart.getPrinterId(), I_AD_PrinterHW.class);
+		final I_AD_PrinterHW hwPrinter = InterfaceWrapperHelper.loadOutOfTrx(printingSegment.getPrinter().getId(), I_AD_PrinterHW.class);
 
 		// the following 3 variables will be set from the printer tray, if there is any
 		final int hwMediaTrayID;
 		final int calX;
 		final int calY;
 
-		if (archivePart.getTrayId() != null)
+		if (printingSegment.getTrayId() != null)
 		{
-			final I_AD_PrinterHW_MediaTray hwTray = InterfaceWrapperHelper.loadOutOfTrx(archivePart.getTrayId(), I_AD_PrinterHW_MediaTray.class);
+			final I_AD_PrinterHW_MediaTray hwTray = InterfaceWrapperHelper.loadOutOfTrx(printingSegment.getTrayId(), I_AD_PrinterHW_MediaTray.class);
 
 			final I_AD_PrinterHW_MediaSize hwMediaSize = dao.retrieveMediaSize(hwPrinter, MediaSize.ISO.A4, true);
 			final I_AD_PrinterHW_Calibration printerCalibration = dao.retrieveCalibration(hwMediaSize, hwTray);

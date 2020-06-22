@@ -10,37 +10,19 @@ package de.metas.printing.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
-import static org.junit.Assert.assertEquals;
-
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import org.adempiere.ad.wrapper.POJOWrapper;
-import org.adempiere.archive.api.IArchiveStorageFactory;
-import org.adempiere.archive.api.impl.ArchiveStorageFactory;
-import org.adempiere.archive.spi.impl.DBArchiveStorage;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.Mutable;
-import org.compiere.model.I_AD_Archive;
-import org.compiere.util.Util;
-import org.compiere.util.Util.ArrayKey;
-import org.junit.Assert;
-import org.junit.Test;
-
+import de.metas.printing.HardwarePrinterRepository;
 import de.metas.printing.api.IPrintPackageBL;
 import de.metas.printing.api.IPrintPackageCtx;
 import de.metas.printing.api.util.PdfCollator;
@@ -51,8 +33,28 @@ import de.metas.printing.model.I_C_Print_Job_Instructions;
 import de.metas.printing.model.I_C_Print_Job_Line;
 import de.metas.printing.model.I_C_Print_Package;
 import de.metas.printing.model.I_C_Print_PackageInfo;
+import de.metas.printing.printingdata.PrintingDataFactory;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
+import org.adempiere.ad.wrapper.POJOWrapper;
+import org.adempiere.archive.api.IArchiveStorageFactory;
+import org.adempiere.archive.api.impl.ArchiveStorageFactory;
+import org.adempiere.archive.spi.impl.DBArchiveStorage;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.Mutable;
+import org.compiere.model.I_AD_Archive;
+import org.compiere.util.Util;
+import org.compiere.util.Util.ArrayKey;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import static org.junit.Assert.assertEquals;
 
 /**
  * Note: all tests are still valid, it's just the architecture that is legacy.
@@ -62,6 +64,7 @@ public class PrintJobLinesAggregatorLegacyTests extends AbstractPrintingTest
 	// Services
 	private ArchiveStorageFactory archiveStorageFactory;
 	private IPrintPackageBL printPackageBL;
+	private PrintingDataFactory printingDataFactory;
 
 	@Override
 	protected void afterSetup()
@@ -72,6 +75,12 @@ public class PrintJobLinesAggregatorLegacyTests extends AbstractPrintingTest
 
 		archiveStorageFactory = (ArchiveStorageFactory)Services.get(IArchiveStorageFactory.class);
 		printPackageBL = Services.get(IPrintPackageBL.class);
+	}
+
+	@Before
+	public void setUp() throws Exception
+	{
+		printingDataFactory = new PrintingDataFactory(new HardwarePrinterRepository());
 	}
 
 	@Test
@@ -257,7 +266,7 @@ public class PrintJobLinesAggregatorLegacyTests extends AbstractPrintingTest
 			return super.getBinaryData(archive);
 		}
 
-		public static void setFailGetBinaryData(final I_AD_Archive archive, boolean fail)
+		public static void setFailGetBinaryData(@NonNull final I_AD_Archive archive)
 		{
 			Check.assumeNotNull(archive, "archive not null");
 			final int archiveId = archive.getAD_Archive_ID();
@@ -268,7 +277,7 @@ public class PrintJobLinesAggregatorLegacyTests extends AbstractPrintingTest
 
 	/**
 	 * Case: in case retrieving binary data for one archive fails then {@link PrintingQueueAggregationException} shall be thrown
-	 * 
+	 *
 	 * @task http://dewiki908/mediawiki/index.php/05034_Fehler_bei_Massendruck_%28103300146225%29
 	 */
 	@Test(expected = PrintingQueueAggregationException.class)
@@ -296,10 +305,10 @@ public class PrintJobLinesAggregatorLegacyTests extends AbstractPrintingTest
 		final I_C_Print_Job_Instructions printJobInstructions = helper.createPrintJobInstructions(printJob);
 
 		// Fail getting binary data for line2
-		MockedDBArchiveStorage.setFailGetBinaryData(line2.getC_Printing_Queue().getAD_Archive(), true);
+		MockedDBArchiveStorage.setFailGetBinaryData(line2.getC_Printing_Queue().getAD_Archive());
 
 		final IPrintPackageCtx printCtx = printPackageBL.createInitialCtx(helper.getCtx());
-		final PrintJobLinesAggregator aggregator = new PrintJobLinesAggregator(printCtx, printJobInstructions);
+		final PrintJobLinesAggregator aggregator = new PrintJobLinesAggregator(printingDataFactory, printCtx, printJobInstructions);
 
 		final Mutable<ArrayKey> preceedingKey = new Mutable<Util.ArrayKey>(null);
 		aggregator.add(line1, preceedingKey);

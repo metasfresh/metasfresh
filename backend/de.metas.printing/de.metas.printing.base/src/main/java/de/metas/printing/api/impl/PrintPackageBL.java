@@ -25,6 +25,7 @@ package de.metas.printing.api.impl;
 import java.util.Iterator;
 import java.util.Properties;
 
+import de.metas.printing.printingdata.PrintingDataFactory;
 import org.adempiere.ad.session.ISessionBL;
 import org.adempiere.ad.session.MFSession;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -32,6 +33,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.Mutable;
 import org.apache.commons.collections4.IteratorUtils;
+import org.compiere.SpringContextHolder;
 import org.compiere.util.TrxRunnable2;
 import org.compiere.util.Util.ArrayKey;
 import org.slf4j.Logger;
@@ -52,6 +54,8 @@ import lombok.NonNull;
 public class PrintPackageBL implements IPrintPackageBL
 {
 	private final Logger logger = LogManager.getLogger(getClass());
+
+	private final PrintingDataFactory printingDataFactory = SpringContextHolder.instance.getBean(PrintingDataFactory.class);
 
 	@Override
 	public boolean addPrintingDataToPrintPackage(
@@ -155,10 +159,11 @@ public class PrintPackageBL implements IPrintPackageBL
 		InterfaceWrapperHelper.save(printPackage);
 	}
 
-	protected IPrintJobLinesAggregator createPrintJobLinesAggregator(final IPrintPackageCtx printPackageCtx,
-			final I_C_Print_Job_Instructions jobInstructions)
+	protected IPrintJobLinesAggregator createPrintJobLinesAggregator(
+			@NonNull final IPrintPackageCtx printPackageCtx,
+			@NonNull final I_C_Print_Job_Instructions jobInstructions)
 	{
-		return new PrintJobLinesAggregator(printPackageCtx, jobInstructions);
+		return new PrintJobLinesAggregator(printingDataFactory, printPackageCtx, jobInstructions);
 	}
 
 	@Override

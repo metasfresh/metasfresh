@@ -129,7 +129,7 @@ public class SingletonPrintingQueueSource extends AbstractPrintingQueueSource
 	}
 
 	@Override
-	public boolean isPrinted(I_C_Printing_Queue item)
+	public boolean isPrinted(@NonNull final I_C_Printing_Queue item)
 	{
 		if (persistPrintedFlag)
 		{
@@ -142,7 +142,7 @@ public class SingletonPrintingQueueSource extends AbstractPrintingQueueSource
 	}
 
 	@Override
-	public void markPrinted(I_C_Printing_Queue item)
+	public void markPrinted(@NonNull final I_C_Printing_Queue item)
 	{
 		if (persistPrintedFlag)
 		{

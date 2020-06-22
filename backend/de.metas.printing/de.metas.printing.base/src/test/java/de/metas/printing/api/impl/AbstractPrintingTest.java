@@ -1,6 +1,9 @@
 package de.metas.printing.api.impl;
 
+import de.metas.printing.HardwarePrinterRepository;
+import de.metas.printing.printingdata.PrintingDataFactory;
 import org.adempiere.test.AdempiereTestWatcher;
+import org.compiere.SpringContextHolder;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Rule;
@@ -18,7 +21,9 @@ public abstract class AbstractPrintingTest
 {
 	@Rule
 	public TestName testName = new TestName();
-	/** Watches current test and dumps the database to console in case of failure */
+	/**
+	 * Watches current test and dumps the database to console in case of failure
+	 */
 	@Rule
 	public final TestWatcher testWatcher = new AdempiereTestWatcher();
 
@@ -46,12 +51,14 @@ public abstract class AbstractPrintingTest
 
 		Services.registerService(IInvoiceDAO.class, new PlainInvoiceDAO());
 
+		SpringContextHolder.registerJUnitBean(new PrintingDataFactory(new HardwarePrinterRepository()));
+
 		afterSetup();
 	}
 
 	/**
 	 * Called after {@link #setup()}.
-	 * 
+	 * <p>
 	 * To be implemented by extending classes.
 	 */
 	protected void afterSetup()

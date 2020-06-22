@@ -23,25 +23,23 @@
 package de.metas.printing.api.impl;
 
 import de.metas.organization.OrgId;
+import de.metas.printing.HardwarePrinter;
 import de.metas.printing.HardwarePrinterId;
+import de.metas.printing.HardwareTray;
 import de.metas.printing.HardwareTrayId;
+import de.metas.printing.OutputType;
 import de.metas.printing.PrinterRoutingId;
 import de.metas.printing.PrintingQueueItemId;
 import de.metas.printing.api.util.PdfCollator;
 import de.metas.printing.model.I_AD_PrinterRouting;
-import de.metas.printing.model.I_C_Print_Job;
-import org.assertj.core.api.Assertions;
-import org.assertj.core.groups.Tuple;
+import de.metas.printing.printingdata.PrintingData;
+import de.metas.printing.printingdata.PrintingSegment;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
-import org.junit.rules.TestName;
-
-import java.util.Arrays;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.groups.Tuple.tuple;
-import static org.junit.jupiter.api.Assertions.*;
 
 class PrintingDataTest
 {
@@ -68,6 +66,10 @@ class PrintingDataTest
 				.toByteArray();
 
 		final HardwarePrinterId printerId = HardwarePrinterId.ofRepoId(30);
+		final HardwarePrinter printer = HardwarePrinter.builder()
+				.id(printerId)
+				.name("printer")
+				.outputType(OutputType.Store).build();
 
 		// when
 		final PrintingData printingData = PrintingData.builder()
@@ -80,12 +82,12 @@ class PrintingDataTest
 						.routingType(I_AD_PrinterRouting.ROUTINGTYPE_PageRange)
 						.initialPageFrom(1)
 						.initialPageTo(100)
-						.printerId(printerId).build())
+						.printer(printer).build())
 				.segment(PrintingSegment.builder()
 						.printerRoutingId(PrinterRoutingId.ofRepoId(402))
 						.routingType(I_AD_PrinterRouting.ROUTINGTYPE_LastPages)
 						.lastPages(1)
-						.printerId(printerId).build())
+						.printer(printer).build())
 				.build();
 
 		// then
@@ -112,8 +114,16 @@ class PrintingDataTest
 				.toByteArray();
 
 		final HardwarePrinterId printerId = HardwarePrinterId.ofRepoId(30);
-		HardwareTrayId tray1Id = HardwareTrayId.ofRepoId(printerId, 301);
-		HardwareTrayId tray2Id = HardwareTrayId.ofRepoId(printerId, 302);
+		final HardwareTrayId tray1Id = HardwareTrayId.ofRepoId(printerId, 301);
+		final HardwareTrayId tray2Id = HardwareTrayId.ofRepoId(printerId, 302);
+
+		final HardwarePrinter printer = HardwarePrinter.builder()
+				.id(printerId)
+				.name("printer")
+				.outputType(OutputType.Store)
+				.tray(new HardwareTray(tray1Id, "tray1"))
+				.tray(new HardwareTray(tray2Id, "tray2"))
+				.build();
 
 		// when
 		final PrintingData printingData = PrintingData.builder()
@@ -126,13 +136,13 @@ class PrintingDataTest
 						.routingType(I_AD_PrinterRouting.ROUTINGTYPE_PageRange)
 						.initialPageFrom(1)
 						.initialPageTo(3)
-						.printerId(printerId)
+						.printer(printer)
 						.trayId(tray1Id).build())
 				.segment(PrintingSegment.builder()
 						.printerRoutingId(PrinterRoutingId.ofRepoId(402))
 						.routingType(I_AD_PrinterRouting.ROUTINGTYPE_LastPages)
 						.lastPages(2)
-						.printerId(printerId)
+						.printer(printer)
 						.trayId(tray2Id).build())
 				.build();
 

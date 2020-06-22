@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.printing.api.impl;
+package de.metas.printing.printingdata;
 
 import com.lowagie.text.Document;
 import com.lowagie.text.DocumentException;

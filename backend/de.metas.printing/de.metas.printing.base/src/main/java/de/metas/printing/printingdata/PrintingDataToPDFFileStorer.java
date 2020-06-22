@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.printing.api.impl;
+package de.metas.printing.printingdata;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMultimap;
@@ -34,7 +34,10 @@ import de.metas.printing.OutputType;
 import de.metas.printing.model.I_C_Printing_Queue;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.time.SystemTime;
 import lombok.NonNull;
+import org.adempiere.archive.ArchiveId;
+import org.adempiere.archive.api.IArchiveEventManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
@@ -54,16 +57,12 @@ import java.nio.file.Paths;
 public class PrintingDataToPDFFileStorer
 {
 	private final static transient Logger logger = LogManager.getLogger(PrintingDataToPDFFileStorer.class);
+
 	@VisibleForTesting
-	static final String SYSCONFIG_STORE_PDF_BASE_DIRECTORY = "de.metas.printing.StorePDFBaseDirectory";
+	final static String SYSCONFIG_STORE_PDF_BASE_DIRECTORY = "de.metas.printing.StorePDFBaseDirectory";
+	final static String SYSCONFIG_STORE_PDF_INCLUDE_SYSTEMTIME_MS_IN_FILENAME = "de.metas.printing.IncludeSystemTimeMSInFileName";
 
-	private final HardwarePrinterRepository hardwarePrinterRepository;
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
-
-	public PrintingDataToPDFFileStorer(@NonNull final HardwarePrinterRepository hardwarePrinterRepository)
-	{
-		this.hardwarePrinterRepository = hardwarePrinterRepository;
-	}
 
 	public void storeInFileSystem(@NonNull final PrintingData printingData)
 	{
@@ -76,35 +75,58 @@ public class PrintingDataToPDFFileStorer
 			throw AdempiereException.wrapIfNeeded(rte)
 					.appendParametersToMessage()
 					.setParameter("C_Queue_PrintingQueue", printingData.getPrintingQueueItemId());
-
 		}
 	}
 
 	public void storeInFileSystem0(@NonNull final PrintingData printingData)
 	{
 		final String baseDirectory = getBaseDirectory(printingData);
+
 		final ImmutableMultimap<Path, PrintingSegment> path2Segments = extractAndAssignPaths(baseDirectory, printingData);
+		logger.debug("Segments of given printingData are divided into {} different files; printingData={}", path2Segments.size(), printingData);
 
 		for (final Path path : path2Segments.keySet())
 		{
-			final File file = new File(path.toFile(), printingData.getDocumentName() + ".pdf");
+			final File file = new File(path.toFile(), extractFileName(printingData));
 
 			createDirectories(path);
 			try (final PrintingDataToPDFWriter printingDataToPDFWriter = new PrintingDataToPDFWriter(new FileOutputStream(file)))
 			{
 				for (final PrintingSegment segment : path2Segments.get(path))
 				{
+					logger.debug("Going to store PrintingSegment to file={}; segment={}", file, segment);
 					printingDataToPDFWriter.addArchivePartToPDF(printingData, segment);
 				}
 			}
-			catch (final FileNotFoundException fnfe)
+			catch (final FileNotFoundException e)
 			{
-				throw new AdempiereException("FileNotFoundException trying to write printing data to file", fnfe)
+				throw new AdempiereException("FileNotFoundException trying to write printing data to file", e)
 						.setParameter("file", file);
-
 			}
 		}
+	}
 
+	@NonNull
+	private String extractFileName(final @NonNull PrintingData printingData)
+	{
+		final boolean includeSystemTimeMS = sysConfigBL.getBooleanValue(
+				SYSCONFIG_STORE_PDF_INCLUDE_SYSTEMTIME_MS_IN_FILENAME,
+				true /*defaultValue*/,
+				ClientId.METASFRESH.getRepoId(),
+				printingData.getOrgId().getRepoId());
+
+		final StringBuilder fileName = new StringBuilder();
+		if (includeSystemTimeMS)
+		{
+			fileName
+					.append(SystemTime.millis())
+					.append("_");
+		}
+
+		return fileName
+				.append(printingData.getDocumentName())
+				.append(".pdf")
+				.toString();
 	}
 
 	@NonNull
@@ -142,11 +164,10 @@ public class PrintingDataToPDFFileStorer
 
 		for (final PrintingSegment segment : printingData.getSegments())
 		{
-			final HardwarePrinterId printerId = segment.getPrinterId();
-			final HardwarePrinter printer = hardwarePrinterRepository.getById(printerId);
+			final HardwarePrinter printer = segment.getPrinter();
 			if (!OutputType.Store.equals(printer.getOutputType()))
 			{
-				logger.debug("Printer with id={} has outputType={}; -> skipping it", printerId.getRepoId(), printer.getOutputType());
+				logger.debug("Printer with id={} has outputType={}; -> skipping it", printer.getId().getRepoId(), printer.getOutputType());
 				continue;
 			}
 			final Path path;

@@ -20,10 +20,12 @@
  * #L%
  */
 
-package de.metas.printing.api.impl;
+package de.metas.printing.printingdata;
 
+import de.metas.printing.HardwarePrinter;
 import de.metas.printing.HardwarePrinterId;
 import de.metas.printing.HardwareTrayId;
+import de.metas.printing.OutputType;
 import de.metas.printing.PrinterRoutingId;
 import de.metas.printing.model.I_AD_PrinterRouting;
 import de.metas.util.Check;
@@ -35,9 +37,13 @@ import lombok.ToString;
 
 import javax.annotation.Nullable;
 
+/**
+ * Belongs to one {@link PrintingData} instance.
+ * Specifies a range of pages from the respective printing-data and an output-printer and tray.
+ */
 @EqualsAndHashCode(exclude = { "pageFrom", "pageTo" })
 @ToString
-class PrintingSegment
+public class PrintingSegment
 {
 	private Integer pageFrom;
 	private Integer pageTo;
@@ -46,9 +52,15 @@ class PrintingSegment
 	private final int initialPageTo;
 	private final int lastPages;
 	private final String routingType;
-	@Getter private final PrinterRoutingId printerRoutingId;
-	@Getter private final HardwarePrinterId printerId;
-	@Getter private final HardwareTrayId trayId;
+
+	@Getter
+	private final PrinterRoutingId printerRoutingId;
+
+	@Getter
+	private final HardwarePrinter printer;
+
+	@Getter
+	private final HardwareTrayId trayId;
 
 	@Builder
 	private PrintingSegment(
@@ -57,7 +69,7 @@ class PrintingSegment
 			final int lastPages,
 			@NonNull final String routingType,
 			@NonNull final PrinterRoutingId printerRoutingId,
-			@NonNull final HardwarePrinterId printerId,
+			@NonNull final HardwarePrinter printer,
 			@Nullable final HardwareTrayId trayId)
 	{
 		this.initialPageFrom = initialPageFrom;
@@ -65,8 +77,8 @@ class PrintingSegment
 		this.lastPages = lastPages;
 		this.routingType = routingType;
 		this.printerRoutingId = printerRoutingId;
-		this.printerId = printerId;
-		this.trayId=trayId;
+		this.printer = printer;
+		this.trayId = trayId;
 
 		Check.assume(initialPageFrom <= initialPageTo, "initialPageFrom={} is less or equal to initialPageTo={}", initialPageFrom, initialPageTo);
 	}

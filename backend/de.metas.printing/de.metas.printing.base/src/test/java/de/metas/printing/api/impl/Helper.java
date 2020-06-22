@@ -3,6 +3,7 @@ package de.metas.printing.api.impl;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.refresh;
 import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -40,7 +41,11 @@ import java.util.UUID;
 import javax.annotation.Nullable;
 import javax.print.attribute.standard.MediaSize;
 
+import de.metas.printing.HardwarePrinterRepository;
 import de.metas.printing.OutputType;
+import de.metas.printing.PrintOutputFacade;
+import de.metas.printing.printingdata.PrintingDataFactory;
+import de.metas.printing.printingdata.PrintingDataToPDFFileStorer;
 import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 import org.adempiere.ad.session.ISessionBL;
@@ -140,6 +145,7 @@ public class Helper
 	private final String testDisplayName;
 
 	private TestClientUI clientUI = null;
+	private PrintOutputFacade printOutputFacade;
 
 	public Helper(@NonNull final TestName testName)
 	{
@@ -150,6 +156,7 @@ public class Helper
 	{
 		this.testDisplayName = testInfo.getDisplayName();
 	}
+
 	private static boolean staticInitialized = false;
 
 	public static void staticInit()
@@ -206,6 +213,10 @@ public class Helper
 		//
 		// Base Language
 		Language.setBaseLanguage(() -> "de_DE");
+
+		printOutputFacade = new PrintOutputFacade(
+				new PrintingDataFactory(new HardwarePrinterRepository()),
+				new PrintingDataToPDFFileStorer());
 	}
 
 	public Properties getCtx()
@@ -327,10 +338,9 @@ public class Helper
 		return printer;
 	}
 
-
 	public I_AD_PrinterHW getCreatePrinterHW(@NonNull final String printerName)
 	{
-		return getCreatePrinterHW(printerName,OutputType.Queue);
+		return getCreatePrinterHW(printerName, OutputType.Queue);
 	}
 
 	public I_AD_PrinterHW getCreatePrinterHW(@NonNull final String printerName, @NonNull final OutputType outputType)
@@ -564,12 +574,11 @@ public class Helper
 	/**
 	 * Gets the PDF from src/test/resources (document[suffix].pdf)
 	 *
-	 * @param sufix
 	 * @return PDF as bytes array
 	 */
-	public byte[] getPdf(final String sufix)
+	public byte[] getPdf(final String suffix)
 	{
-		final String resourceName = "/document" + sufix + ".pdf";
+		final String resourceName = "/document" + suffix + ".pdf";
 		final InputStream in = getClass().getResourceAsStream(resourceName);
 		Assert.assertNotNull("Resource not found: " + resourceName, in);
 
@@ -671,7 +680,7 @@ public class Helper
 		final byte[] data = getPdf(pdfSuffix);
 
 		final POJOWrapper wrapper = POJOWrapper.getWrapper(record);
-		Assert.assertNotNull("POJOWrapper not found for record: " + record);
+		assertThat(wrapper).as("POJOWrapper not found for record: %s", record).isNotNull();
 
 		Integer AD_Org_ID = (Integer)wrapper.getValue("AD_Org_ID", Integer.class);
 		if (AD_Org_ID == null)
@@ -694,8 +703,7 @@ public class Helper
 
 		//
 		// Enqueue archive to printing queue
-		// Services.get(IPrintingQueueBL.class).enqueue(archive);
-		new AD_Archive().printArchive(archive);
+		new AD_Archive(printOutputFacade).printArchive(archive);
 
 		return archive;
 	}
@@ -709,7 +717,7 @@ public class Helper
 		if (printJobExpected != null)
 		{
 			final I_C_Print_Job_Instructions printJobInstructions = printingDAO.retrievePrintJobInstructionsForPrintJob(printJobExpected);
-			Assert.assertNotNull("No print job instructions for " + printJobExpected, printJobInstructions);
+			assertThat(printJobInstructions).as("No print job instructions for %s", printJobExpected).isNotNull();
 
 			// task 09028: don't check for the host key..the user shall be able to print this wherever they are logged in
 			// Assert.assertEquals("Invalid HostKey for print job instructions " + printJobInstructions, getSessionHostKey(), printJobInstructions.getHostKey());
@@ -727,7 +735,7 @@ public class Helper
 				.isNotNull();
 		//
 		// Validation: PrintPackage - PrintJob link
-		// 04072: C_Print_Job_ID is taken frlom C-Print_Job_Instructions of the C_Print_Package
+		// 04072: C_Print_Job_ID is taken from C-Print_Job_Instructions of the C_Print_Package
 		final I_C_Print_Job_Instructions printInstructions = printPackageResponse.getC_Print_Job_Instructions();
 		final I_C_Print_Job printJobActual = printInstructions.getC_Print_Job();
 		assertThat(printJobActual).as("No print job set for: %s", printPackageResponse).isNotNull();
@@ -830,6 +838,7 @@ public class Helper
 		final PlainLockManager lockManager = (PlainLockManager)Services.get(ILockManager.class);
 		final PlainLockDatabase lockDatabase = lockManager.getLockDatabase();
 		final List<LockKey> locks = lockDatabase.getLocks();
-		Assert.assertEquals("No locks expecteded", new ArrayList<ArrayKey>(), locks);
+
+		assertThat(locks).as("No locks expecteded").isEmpty();;
 	}
 }

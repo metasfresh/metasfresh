@@ -20,23 +20,22 @@
  * #L%
  */
 
-package de.metas.printing.api.impl;
+package de.metas.printing.printingdata;
 
 import com.google.common.collect.ImmutableList;
 import com.lowagie.text.pdf.PdfReader;
 import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
+import de.metas.printing.OutputType;
 import de.metas.printing.PrintingQueueItemId;
-import de.metas.printing.model.I_C_Printing_Queue;
-import de.metas.util.Services;
+import de.metas.util.lang.CoalesceUtil;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Singular;
-import org.adempiere.archive.api.IArchiveBL;
+import lombok.ToString;
+import org.adempiere.archive.ArchiveId;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.lang.ObjectUtils;
-import org.compiere.model.I_AD_Archive;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
@@ -44,7 +43,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 
+@ToString(exclude = { "data" })
 public class PrintingData
 {
 	// Services
@@ -62,6 +63,7 @@ public class PrintingData
 	// Archive's Data
 	@Getter
 	private transient final byte[] data;
+
 	@Getter
 	private final OrgId orgId;
 
@@ -73,13 +75,21 @@ public class PrintingData
 			@NonNull final PrintingQueueItemId printingQueueItemId,
 			@NonNull final OrgId orgId,
 			@Nullable final byte[] data,
-			@NonNull final String documentName)
+			@NonNull final String documentName,
+			@Nullable final Boolean adjustSegmentPageRanges)
 	{
 		this.printingQueueItemId = printingQueueItemId;
 		this.data = data;
 		this.orgId = orgId;
 		this.documentName = documentName;
-		this.segments = adjustSegmentPageRanges(this, segments);
+		if (CoalesceUtil.coalesce(adjustSegmentPageRanges, true))
+		{
+			this.segments = adjustSegmentPageRanges(this, segments);
+		}
+		else
+		{
+			this.segments = ImmutableList.copyOf(segments);
+		}
 	}
 
 	private static ImmutableList<PrintingSegment> adjustSegmentPageRanges(
@@ -91,7 +101,6 @@ public class PrintingData
 			logger.info("Print Job Line's Archive has no data: {}; -> empty segment list", printingData);
 			return ImmutableList.of();
 		}
-
 
 		// the number of pages to "divide" among our archive parts
 		final int numberOfPagesAvailable = printingData.getNumberOfPages();
@@ -247,12 +256,6 @@ public class PrintingData
 		}
 	}
 
-	@Override
-	public String toString()
-	{
-		return ObjectUtils.toString(this);
-	}
-
 	public boolean hasData()
 	{
 		return data != null;
@@ -294,5 +297,21 @@ public class PrintingData
 				}
 			}
 		}
+	}
+
+	public PrintingData onlyWithType(@NonNull final OutputType outputType)
+	{
+		final ImmutableList<PrintingSegment> filteredSegments = segments.stream()
+				.filter(s -> Objects.equals(s.getPrinter().getOutputType(), outputType))
+				.collect(ImmutableList.toImmutableList());
+
+		return PrintingData.builder()
+				.adjustSegmentPageRanges(false)
+				.data(this.data)
+				.documentName(this.documentName)
+				.orgId(this.orgId)
+				.printingQueueItemId(this.printingQueueItemId)
+				.segments(filteredSegments)
+				.build();
 	}
 }
