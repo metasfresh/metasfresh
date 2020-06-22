@@ -12,6 +12,7 @@ import javax.annotation.Nullable;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.warehouse.LocatorId;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
@@ -104,6 +105,8 @@ public final class HUEditorRow implements IViewRow
 	private final boolean processed;
 	@Getter
 	private final BPartnerId bpartnerId;
+	@Getter
+	private final LocatorId locatorId;
 
 	public static final String FIELDNAME_M_HU_ID = I_M_HU.COLUMNNAME_M_HU_ID;
 	@ViewColumn(fieldName = FIELDNAME_M_HU_ID, widgetType = DocumentFieldWidgetType.Integer)
@@ -239,7 +242,11 @@ public final class HUEditorRow implements IViewRow
 		qtyCU = builder.qtyCU;
 		weightGross = builder.getWeightGross();
 		bestBeforeDate = builder.getBestBeforeDate();
-		locator = builder.getLocator();
+
+		this.locatorId = builder.locatorId;
+		this.locator = locatorId != null
+				? JSONLookupValue.of(locatorId, builder.locatorCaption)
+				: null;
 
 		includedRows = builder.buildIncludedRows();
 		includedOrderLineReservations = builder.prepareIncludedOrderLineReservations(this);
@@ -610,7 +617,8 @@ public final class HUEditorRow implements IViewRow
 		private BigDecimal qtyCU;
 		private BigDecimal weightGross;
 		private LocalDate bestBeforeDate;
-		private JSONLookupValue locator;
+		private LocatorId locatorId;
+		private String locatorCaption;
 		private BPartnerId bpartnerId;
 
 		private List<HUEditorRow> includedRows = null;
@@ -766,15 +774,11 @@ public final class HUEditorRow implements IViewRow
 			return bestBeforeDate;
 		}
 
-		public Builder setLocator(final JSONLookupValue locator)
+		public Builder setLocator(final LocatorId locatorId, final String locatorCaption)
 		{
-			this.locator = locator;
+			this.locatorId = locatorId;
+			this.locatorCaption = locatorCaption;
 			return this;
-		}
-
-		private JSONLookupValue getLocator()
-		{
-			return locator;
 		}
 
 		public Builder setBPartnerId(final BPartnerId bpartnerId)

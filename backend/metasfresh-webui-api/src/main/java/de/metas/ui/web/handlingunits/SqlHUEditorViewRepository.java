@@ -1,7 +1,5 @@
 package de.metas.ui.web.handlingunits;
 
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
-
 import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -10,6 +8,7 @@ import java.time.LocalDate;
 import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -23,7 +22,12 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
+import org.adempiere.warehouse.LocatorId;
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_Locator;
+import org.compiere.model.I_M_Warehouse;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
@@ -39,14 +43,13 @@ import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.model.I_M_Locator;
-import de.metas.handlingunits.model.I_M_Warehouse;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.handlingunits.storage.IHUStorageFactory;
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import de.metas.order.OrderLineId;
@@ -76,9 +79,9 @@ import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
 import de.metas.ui.web.window.model.DocumentQueryOrderByList;
 import de.metas.ui.web.window.model.sql.SqlOptions;
-import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import de.metas.util.collections.PagedIterator.Page;
 import lombok.Builder;
 import lombok.NonNull;
@@ -107,9 +110,16 @@ import lombok.NonNull;
 
 public class SqlHUEditorViewRepository implements HUEditorViewRepository
 {
-	private static final String MSG_HU_RESERVED = "de.metas.handlingunit.HU_Reserved";
+	private static final AdMessageKey MSG_HU_RESERVED = AdMessageKey.of("de.metas.handlingunit.HU_Reserved");
 
-	private static final transient Logger logger = LogManager.getLogger(SqlHUEditorViewRepository.class);
+	private static final Logger logger = LogManager.getLogger(SqlHUEditorViewRepository.class);
+	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+	private final IProductBL productBL = Services.get(IProductBL.class);
+	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
+	private final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
+	private final IMsgBL msgBL = Services.get(IMsgBL.class);
+	private final IADReferenceDAO adReferenceDAO = Services.get(IADReferenceDAO.class);
 
 	private final WindowId windowId;
 
@@ -185,7 +195,7 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 
 		// TODO: check if the huId is part of our collection
 
-		final I_M_HU hu = Services.get(IHandlingUnitsDAO.class).getByIdOutOfTrx(huId);
+		final I_M_HU hu = handlingUnitsDAO.getByIdOutOfTrx(huId);
 		final HuId topLevelHUId = null; // assume given huId is a top level HU
 		return createHUEditorRow(hu, topLevelHUId);
 	}
@@ -219,7 +229,6 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 	{
 		// final Stopwatch stopwatch = Stopwatch.createStarted();
 
-		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 		final boolean aggregatedTU = handlingUnitsBL.isAggregateHU(hu);
 		final String huUnitTypeCode = handlingUnitsBL.getHU_UnitType(hu);
 		final HUEditorRowType huRecordType;
@@ -272,7 +281,9 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 
 		//
 		// Locator
-		huEditorRow.setLocator(createLocatorLookupValue(hu.getM_Locator_ID()));
+		final LocatorId locatorId = IHandlingUnitsBL.extractLocatorIdOrNull(hu);
+		final String locatorCaption = createLocatorCaption(locatorId);
+		huEditorRow.setLocator(locatorId, locatorCaption);
 
 		//
 		// Product/UOM/Qty if there is only one product stored
@@ -301,7 +312,6 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 		}
 		else if (X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit.equals(huUnitTypeCode))
 		{
-			final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 			handlingUnitsDAO.retrieveIncludedHUs(hu)
 					.stream()
 					.map(includedHU -> createHUEditorRow(includedHU, topLevelHUIdEffective))
@@ -309,7 +319,6 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 		}
 		else if (X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit.equals(huUnitTypeCode))
 		{
-			final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 			final IHUStorageFactory storageFactory = handlingUnitsBL.getStorageFactory();
 			handlingUnitsDAO.retrieveIncludedHUs(hu)
 					.stream()
@@ -361,7 +370,7 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 
 	private IHUProductStorage getSingleProductStorage(final I_M_HU hu)
 	{
-		final IHUStorage huStorage = Services.get(IHandlingUnitsBL.class).getStorageFactory()
+		final IHUStorage huStorage = handlingUnitsBL.getStorageFactory()
 				.getStorage(hu);
 
 		final ProductId productId = huStorage.getSingleProductIdOrNull();
@@ -420,7 +429,7 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 			return null;
 		}
 
-		final String displayName = Services.get(IProductBL.class).getProductValueAndName(productId);
+		final String displayName = productBL.getProductValueAndName(productId);
 		return JSONLookupValue.of(productId.getRepoId(), displayName);
 	}
 
@@ -434,44 +443,40 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 		return JSONLookupValue.of(uom.getC_UOM_ID(), uom.getUOMSymbol());
 	}
 
-	private static JSONLookupValue createLocatorLookupValue(final int locatorId)
+	private String createLocatorCaption(@Nullable final LocatorId locatorId)
 	{
-		if (locatorId <= 0)
+		if (locatorId == null)
 		{
 			return null;
 		}
 
-		final I_M_Locator locator = loadOutOfTrx(locatorId, I_M_Locator.class);
+		final I_M_Locator locator = warehouseDAO.getLocatorById(locatorId);
 		if (locator == null)
 		{
-			return JSONLookupValue.unknown(locatorId);
+			return null;
 		}
 
-		final I_M_Warehouse warehouse = loadOutOfTrx(locator.getM_Warehouse_ID(), I_M_Warehouse.class);
+		final WarehouseId warehouseId = WarehouseId.ofRepoId(locator.getM_Warehouse_ID());
+		final I_M_Warehouse warehouse = warehouseDAO.getById(warehouseId);
 
-		final String caption = Stream.of(warehouse.getName(), locator.getValue(), locator.getX(), locator.getX1(), locator.getY(), locator.getZ())
-				.filter(part -> !Check.isEmpty(part, true))
-				.map(String::trim)
+		return Stream.of(warehouse.getName(), locator.getValue(), locator.getX(), locator.getX1(), locator.getY(), locator.getZ())
+				.map(part -> StringUtils.trimBlankToNull(part))
+				.filter(Objects::nonNull)
 				.collect(Collectors.joining("_"));
-
-		return JSONLookupValue.of(locatorId, caption);
 	}
 
-	private static JSONLookupValue createHUStatusDisplayLookupValue(@NonNull final I_M_HU hu)
+	private JSONLookupValue createHUStatusDisplayLookupValue(@NonNull final I_M_HU hu)
 	{
-		final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
-
 		final String huStatusKey;
 		final String huStatusDisplayName;
 
 		if (hu.isReserved() && huStatusBL.isPhysicalHU(hu)) // if e.g. a reserved HU was shipped, it shall be shown as "shipped" not "reserved"
 		{
-			huStatusKey = MSG_HU_RESERVED;
-			huStatusDisplayName = Services.get(IMsgBL.class).getMsg(Env.getCtx(), huStatusKey);
+			huStatusKey = MSG_HU_RESERVED.toAD_Message();
+			huStatusDisplayName = msgBL.getMsg(Env.getCtx(), MSG_HU_RESERVED);
 		}
 		else
 		{
-			final IADReferenceDAO adReferenceDAO = Services.get(IADReferenceDAO.class);
 			huStatusKey = hu.getHUStatus();
 			huStatusDisplayName = adReferenceDAO.retrieveListNameTrl(X_M_HU.HUSTATUS_AD_Reference_ID, huStatusKey);
 		}
@@ -527,7 +532,7 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 		IHUQueryBuilder huQuery = huIdsFilter.getInitialHUQueryOrNull();
 		if (huQuery == null)
 		{
-			huQuery = Services.get(IHandlingUnitsDAO.class).createHUQueryBuilder();
+			huQuery = handlingUnitsDAO.createHUQueryBuilder();
 		}
 		huQuery.setContext(PlainContextAware.newOutOfTrx());
 
