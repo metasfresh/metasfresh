@@ -121,6 +121,24 @@ export function getSizeClass(col) {
   }
 }
 
+export function getIconClassName(huType) {
+  switch (huType) {
+    case 'LU':
+      return 'meta-icon-pallete';
+    case 'TU':
+      return 'meta-icon-package';
+    case 'CU':
+      return 'meta-icon-product';
+    case 'PP_Order_Receive':
+      return 'meta-icon-receipt';
+    case 'PP_Order_Issue':
+      return 'meta-icon-issue';
+    case 'M_Picking_Slot':
+      // https://github.com/metasfresh/metasfresh/issues/2298
+      return 'meta-icon-beschaffung';
+  }
+}
+
 /**
  * @method createDate
  * @param {object} containing the fieldValue and fieldType
