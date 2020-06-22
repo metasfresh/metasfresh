@@ -3,6 +3,9 @@ package de.metas.ui.web.picking.husToPick.process;
 import java.math.BigDecimal;
 import java.util.Optional;
 
+import org.adempiere.mm.attributes.AttributeCode;
+import org.adempiere.warehouse.LocatorId;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.SpringContextHolder;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -19,7 +22,10 @@ import de.metas.process.IProcessParametersCallout;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.ui.web.devices.DeviceDescriptorsList;
 import de.metas.ui.web.handlingunits.HUEditorRow;
+import de.metas.ui.web.handlingunits.HUEditorRowAttributesHelper;
+import de.metas.ui.web.process.descriptor.ProcessParamDevicesProvider;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 
 /*
@@ -100,6 +106,17 @@ public class WEBUI_HUsToPick_Weight extends HUsToPickViewBasedProcess implements
 		}
 
 		return ProcessPreconditionsResolution.accept();
+	}
+
+	private HuId getSelectedHUId()
+	{
+		return HuId.ofRepoId(getRecord_ID());
+	}
+
+	private WarehouseId getHUWarehouseId()
+	{
+		final LocatorId locatorId = getSingleSelectedRow().getLocatorId();
+		return locatorId != null ? locatorId.getWarehouseId() : null;
 	}
 
 	private Optional<IWeightable> getHUAttributesAsWeightable()
@@ -184,10 +201,21 @@ public class WEBUI_HUsToPick_Weight extends HUsToPickViewBasedProcess implements
 				.build();
 	}
 
+	@ProcessParamDevicesProvider(parameterName = PARAM_WeightGross)
+	public DeviceDescriptorsList getWeightGrossDevices()
+	{
+		final IWeightable weightable = getHUAttributesAsWeightable().get();
+		final AttributeCode weightGrossAttribute = weightable.getWeightGrossAttribute();
+
+		final WarehouseId huWarehouseId = getHUWarehouseId();
+
+		return HUEditorRowAttributesHelper.getDeviceDescriptors(weightGrossAttribute, huWarehouseId);
+	}
+
 	@Override
 	protected String doIt()
 	{
-		final HuId huId = HuId.ofRepoId(getRecord_ID());
+		final HuId huId = getSelectedHUId();
 		final PlainWeightable targetWeight = getParametersAsWeightable();
 
 		WeightHUCommand.builder()
