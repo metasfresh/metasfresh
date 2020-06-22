@@ -1,10 +1,8 @@
-package de.metas.handlingunits.ddorder.intergrationtest;
-
 /*
  * #%L
  * de.metas.handlingunits.client
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,6 +20,8 @@ package de.metas.handlingunits.ddorder.intergrationtest;
  * #L%
  */
 
+package de.metas.handlingunits.ddorder.intergrationtest;
+
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.List;
@@ -35,7 +35,7 @@ import org.eevolution.model.I_DD_OrderLine;
 import org.eevolution.model.I_PP_MRP;
 import org.hamcrest.Matchers;
 import org.junit.Assert;
-import org.junit.Ignore;
+import org.junit.jupiter.api.Disabled;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
@@ -53,7 +53,7 @@ import de.metas.util.collections.CollectionUtils;
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = HandlingUnitsConfiguration.class)
 @ActiveProfiles("test")
-@Ignore
+@Disabled
 public class DD_Order_StandardCase_IntegrationTest extends AbstractHUDDOrderProcessIntegrationTest
 {
 	@Override

@@ -1,27 +1,8 @@
-package org.compiere;
-
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.reflect.ClassReference;
-import org.slf4j.Logger;
-import org.springframework.beans.factory.NoSuchBeanDefinitionException;
-import org.springframework.context.ApplicationContext;
-
-import de.metas.logging.LogManager;
-import de.metas.util.Services;
-import lombok.NonNull;
-
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2019 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -39,20 +20,41 @@ import lombok.NonNull;
  * #L%
  */
 
+package org.compiere;
+
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+
+import javax.annotation.Nullable;
+
+import org.adempiere.exceptions.AdempiereException;
+import org.slf4j.Logger;
+import org.springframework.beans.factory.NoSuchBeanDefinitionException;
+import org.springframework.context.ApplicationContext;
+
+import com.google.common.collect.ImmutableList;
+
+import de.metas.logging.LogManager;
+import de.metas.util.Services;
+import lombok.NonNull;
+
 public final class SpringContextHolder
 {
 	public static final transient SpringContextHolder instance = new SpringContextHolder();
 
 	private static final transient Logger logger = LogManager.getLogger(SpringContextHolder.class);
 
+	@Nullable
 	private ApplicationContext applicationContext;
 
-	private final ConcurrentMap<ClassReference<?>, Object> junitRegisteredBeans = new ConcurrentHashMap<>();
+	private final JUnitBeansMap junitRegisteredBeans = new JUnitBeansMap();
 
 	private SpringContextHolder()
 	{
 	}
 
+	@Nullable
 	public ApplicationContext getApplicationContext()
 	{
 		return applicationContext;
@@ -105,11 +107,9 @@ public final class SpringContextHolder
 	{
 		if (Adempiere.isUnitTestMode())
 		{
-			@SuppressWarnings("unchecked")
-			final T beanImpl = (T)junitRegisteredBeans.get(ClassReference.of(requiredType));
+			final T beanImpl = junitRegisteredBeans.getBeanOrNull(requiredType);
 			if (beanImpl != null)
 			{
-				logger.info("JUnit testing Returning manually registered bean: {}", beanImpl);
 				return beanImpl;
 			}
 		}
@@ -124,19 +124,19 @@ public final class SpringContextHolder
 			throw e.appendParametersToMessage()
 					.setParameter("requiredType", requiredType);
 		}
+		//noinspection ConstantConditions
 		return springApplicationContext.getBean(requiredType);
 	}
 
 	/** can be used if a service might be retrieved before the spring application context is up */
+	@Nullable
 	public <T> T getBeanOr(@NonNull final Class<T> requiredType, @Nullable final T defaultImplementation)
 	{
 		if (Adempiere.isUnitTestMode())
 		{
-			@SuppressWarnings("unchecked")
-			final T beanImpl = (T)junitRegisteredBeans.get(ClassReference.of(requiredType));
+			final T beanImpl = junitRegisteredBeans.getBeanOrNull(requiredType);
 			if (beanImpl != null)
 			{
-				logger.info("JUnit testing Returning manually registered bean: {}", beanImpl);
 				return beanImpl;
 			}
 		}
@@ -166,6 +166,16 @@ public final class SpringContextHolder
 	 */
 	public <T> Collection<T> getBeansOfType(@NonNull final Class<T> requiredType)
 	{
+		if (Adempiere.isUnitTestMode())
+		{
+			final ImmutableList<T> beans = junitRegisteredBeans.getBeansOfTypeOrNull(requiredType);
+			if (beans != null)
+			{
+				logger.info("JUnit testing Returning manually registered bean: {}", beans);
+				return beans;
+			}
+		}
+
 		final ApplicationContext springApplicationContext = getApplicationContext();
 		try
 		{
@@ -176,6 +186,7 @@ public final class SpringContextHolder
 			throw e.appendParametersToMessage()
 					.setParameter("requiredType", requiredType);
 		}
+		//noinspection ConstantConditions
 		return springApplicationContext.getBeansOfType(requiredType).values();
 	}
 
@@ -192,7 +203,7 @@ public final class SpringContextHolder
 					+ "\n"
 					+ "Use org.compiere.SpringContextHolder.registerJUnitBean(T) to register your bean\n"
 					+ "E.g.\n"
-					+ "SpringContextHolder.registerJUnitBean(new GreetingRepository());\n"					;
+					+ "SpringContextHolder.registerJUnitBean(new GreetingRepository());\n";
 		}
 		else
 		{
@@ -206,28 +217,24 @@ public final class SpringContextHolder
 		final ApplicationContext springApplicationContext = throwExceptionIfNull(getApplicationContext());
 
 		final String[] activeProfiles = springApplicationContext.getEnvironment().getActiveProfiles();
-		final boolean profileIsActive = Arrays
+		return Arrays
 				.stream(activeProfiles)
 				.anyMatch(env -> env.equalsIgnoreCase(profileName));
-		return profileIsActive;
 	}
 
 	public static <T> void registerJUnitBean(@NonNull final T beanImpl)
 	{
-		@SuppressWarnings("unchecked")
-		final Class<T> beanType = (Class<T>)beanImpl.getClass();
-
-		registerJUnitBean(beanType, beanImpl);
+		instance.junitRegisteredBeans.registerJUnitBean(beanImpl);
 	}
 
 	public static <BT, T extends BT> void registerJUnitBean(@NonNull final Class<BT> beanType, @NonNull final T beanImpl)
 	{
-		if (!Adempiere.isUnitTestMode())
-		{
-			throw new AdempiereException("JUnit mode is not active!");
-		}
-
-		instance.junitRegisteredBeans.put(ClassReference.of(beanType), beanImpl);
-		logger.info("JUnit testing: Registered bean {}={}", beanType, beanImpl);
+		instance.junitRegisteredBeans.registerJUnitBean(beanType, beanImpl);
 	}
+
+	public static <BT, T extends BT> void registerJUnitBeans(@NonNull final Class<BT> beanType, @NonNull final List<T> beansToAdd)
+	{
+		instance.junitRegisteredBeans.registerJUnitBeans(beanType, beansToAdd);
+	}
+
 }
