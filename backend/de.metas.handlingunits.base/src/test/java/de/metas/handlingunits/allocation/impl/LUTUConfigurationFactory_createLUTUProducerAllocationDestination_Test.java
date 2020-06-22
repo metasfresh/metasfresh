@@ -169,22 +169,6 @@ public class LUTUConfigurationFactory_createLUTUProducerAllocationDestination_Te
 		StaticHUAssert.assertStorageLevel(huContext, hu, cuProductId, expectedQty);
 	}
 
-	@Test
-	public void test_NULL_PIItemProduct()
-	{
-		//noinspection ConstantConditions
-		assertThatThrownBy(() ->
-				lutuFactory.createLUTUConfiguration(
-						null, // tuPIItemProduct
-						cuProductId,
-						UomId.ofRepoId(cuUOM.getC_UOM_ID()),
-						bpartnerId,
-						false) // noLUForVirtualTU == false => allow placing the CU (e.g. a packing material product) directly on the LU);
-		)
-				.isInstanceOf(RuntimeException.class)
-				.hasMessageContaining("must not be null");
-	}
-
 	/**
 	 * Test it with LU and TU configured
 	 */
