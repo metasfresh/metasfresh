@@ -23,10 +23,10 @@ package de.metas.handlingunits.attribute.storage.impl;
  */
 
 import org.adempiere.mm.attributes.spi.IAttributeValueGenerator;
-import org.junit.Test;
 
 import de.metas.vertical.pharma.securpharm.attribute.HUScannedAttributeHandler;
 import de.metas.vertical.pharma.securpharm.attribute.SecurPharmAttributesStatus;
+import org.junit.jupiter.api.Test;
 
 /**
  * Runs {@link HUAttributeStorage_generateInitialAttributes_Integration_Test} using endcustomer project's classpath,

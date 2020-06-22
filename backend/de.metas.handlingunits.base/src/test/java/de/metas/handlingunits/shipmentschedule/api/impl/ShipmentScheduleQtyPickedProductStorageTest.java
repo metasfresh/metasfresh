@@ -26,13 +26,13 @@ package de.metas.handlingunits.shipmentschedule.api.impl;
 import java.math.BigDecimal;
 
 import org.junit.Assume;
-import org.junit.Test;
 
 import de.metas.handlingunits.StaticHUAssert;
 import de.metas.handlingunits.shipmentschedule.util.ShipmentScheduleHelper;
 import de.metas.handlingunits.storage.IProductStorage;
 import de.metas.handlingunits.storage.impl.AbstractProductStorageTest;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import org.junit.jupiter.api.Test;
 
 public class ShipmentScheduleQtyPickedProductStorageTest extends AbstractProductStorageTest
 {

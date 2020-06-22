@@ -51,7 +51,6 @@ import org.compiere.model.X_AD_User;
 import org.compiere.model.X_C_DocType;
 import org.compiere.util.Env;
 import org.junit.Assert;
-import org.junit.Test;
 
 import ch.qos.logback.classic.Level;
 import de.metas.adempiere.model.I_AD_User;
@@ -91,6 +90,7 @@ import de.metas.shipping.model.ShipperTransportationId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.junit.jupiter.api.Test;
 
 /**
  * HU Shipment Process:

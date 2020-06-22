@@ -29,7 +29,6 @@ import java.util.List;
 
 import org.compiere.model.I_C_BPartner;
 import org.junit.Assert;
-import org.junit.Test;
 
 import de.metas.handlingunits.AbstractHUTest;
 import de.metas.handlingunits.HUTestHelper;
@@ -43,6 +42,7 @@ import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
+import org.junit.jupiter.api.Test;
 
 /**
  * Test how HUs are created and which {@link I_M_HU_PI_Item_Product}s are used when we have a BPartner set in our referenced model.
