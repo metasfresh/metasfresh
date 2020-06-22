@@ -123,7 +123,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 public class FlatrateBL implements IFlatrateBL
 {
 
-
 	private static final Logger logger = LogManager.getLogger(FlatrateBL.class);
 
 	private static final AdMessageKey MSG_FLATRATEBL_INVOICING_ENTRY_NOT_CO_3P = AdMessageKey.of("FlatrateBL_InvoicingEntry_Not_CO");
@@ -139,7 +138,7 @@ public class FlatrateBL implements IFlatrateBL
 	private static final AdMessageKey MSG_TERM_NEW_UNCOMPLETED_0P = AdMessageKey.of("FlatrateTerm_New_Uncompleted_Term");
 	private static final AdMessageKey MSG_TERM_NEW_COMPLETED_0P = AdMessageKey.of("FlatrateTerm_New_Completed_Term");
 	private static final AdMessageKey MSG_TERM_NO_NEW_0P = AdMessageKey.of("FlatrateTerm_No_New_Term");
-	
+
 	private static final AdMessageKey MSG_ORG_WAREHOUSE_MISSING = AdMessageKey.of("de.metas.flatrate.Org.Warehouse_Missing");
 
 	/**
@@ -605,7 +604,6 @@ public class FlatrateBL implements IFlatrateBL
 
 	/**
 	 * Returns the price for one unit, given a flatrate term, qty (to consider discounts) and data entry.
-	 *
 	 */
 	BigDecimal getFlatFeePricePerUnit(
 			final I_C_Flatrate_Term flatrateTerm,
@@ -1444,7 +1442,6 @@ public class FlatrateBL implements IFlatrateBL
 
 	/**
 	 * Update NoticeDate of the given term. Uses the given transition and the term's EndDate.
-	 *
 	 */
 	private void updateNoticeDate(final I_C_Flatrate_Transition transition, final I_C_Flatrate_Term term)
 	{
@@ -1583,6 +1580,7 @@ public class FlatrateBL implements IFlatrateBL
 		final I_C_BPartner bPartner = request.getBPartner();
 		final I_C_Flatrate_Conditions conditions = request.getConditions();
 		final Timestamp startDate = request.getStartDate();
+		final Timestamp endDate = request.getEndDate();
 		final I_AD_User userInCharge = request.getUserInCharge();
 		final ProductAndCategoryId productAndCategoryId = request.getProductAndCategoryId();
 
@@ -1638,7 +1636,7 @@ public class FlatrateBL implements IFlatrateBL
 		newTerm.setAD_Org_ID(bPartner.getAD_Org_ID());
 
 		newTerm.setStartDate(startDate);
-		newTerm.setEndDate(startDate); // will be updated by BL
+		newTerm.setEndDate(startDate); // will be updated later
 		newTerm.setDropShip_BPartner(bPartner);
 
 		newTerm.setBill_BPartner_ID(billPartnerLocation.getC_BPartner_ID()); // note that in case of bPartner relations, this might be a different partner than 'bPartner'.
@@ -1666,6 +1664,19 @@ public class FlatrateBL implements IFlatrateBL
 		{
 			complete(newTerm);
 		}
+
+		// dev note: these steps must be done after completion
+		if (productAndCategoryId != null)
+		{
+			newTerm.setM_Product_ID(productAndCategoryId.getProductId().getRepoId());
+		}
+
+		if (endDate != null)
+		{
+			newTerm.setEndDate(endDate);
+		}
+
+		InterfaceWrapperHelper.save(newTerm);
 
 		return newTerm;
 	}
@@ -1750,7 +1761,6 @@ public class FlatrateBL implements IFlatrateBL
 
 	/**
 	 * Check if 2 flatrate terms overlap in product or product category
-	 *
 	 */
 	private boolean productsOverlap(final I_C_Flatrate_Term newTerm, final I_C_Flatrate_Term term)
 	{
@@ -1872,7 +1882,6 @@ public class FlatrateBL implements IFlatrateBL
 
 	/**
 	 * Check if the startDate and endDate of 2 terms overlap.
-	 *
 	 */
 	private boolean periodsOverlap(@NonNull final I_C_Flatrate_Term term1, @NonNull final I_C_Flatrate_Term term2)
 	{
