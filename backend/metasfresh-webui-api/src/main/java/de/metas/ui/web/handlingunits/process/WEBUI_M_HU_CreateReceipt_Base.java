@@ -144,7 +144,7 @@ public abstract class WEBUI_M_HU_CreateReceipt_Base
 
 		//
 		// NOK if not scanned and vendor != manufacturer
-		final BPartnerId vendorId = document.getBPartnerId();
+		final BPartnerId vendorId = document.getBpartnerId();
 		final BPartnerId manufacturerId = productRepository
 				.getById(document.getProductId())
 				.getManufacturerId();

@@ -102,6 +102,7 @@ public final class HUEditorRow implements IViewRow
 	private final HUEditorRowType type;
 	private final boolean topLevel;
 	private final boolean processed;
+	@Getter
 	private final BPartnerId bpartnerId;
 
 	public static final String FIELDNAME_M_HU_ID = I_M_HU.COLUMNNAME_M_HU_ID;
@@ -297,11 +298,6 @@ public final class HUEditorRow implements IViewRow
 	public boolean isProcessed()
 	{
 		return processed;
-	}
-
-	public BPartnerId getBPartnerId()
-	{
-		return bpartnerId;
 	}
 
 	@Override
