@@ -27,6 +27,7 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.inventory.AggregationType;
+import de.metas.inventory.InventoryDocSubType;
 import de.metas.inventory.InventoryId;
 import de.metas.organization.OrgId;
 import de.metas.quantity.Quantity;
@@ -125,7 +126,7 @@ class WeightHUCommand
 	{
 		return docTypeDAO.getDocTypeId(DocTypeQuery.builder()
 				.docBaseType(X_C_DocType.DOCBASETYPE_MaterialPhysicalInventory)
-				.docSubType(DocTypeQuery.DOCSUBTYPE_NONE)
+				.docSubType(InventoryDocSubType.SingleHUInventory.getCode())
 				.adClientId(clientId.getRepoId())
 				.adOrgId(orgId.getRepoId())
 				.build());
