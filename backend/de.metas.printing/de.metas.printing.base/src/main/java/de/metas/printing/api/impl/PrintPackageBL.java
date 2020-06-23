@@ -33,7 +33,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.Mutable;
 import org.apache.commons.collections4.IteratorUtils;
-import org.compiere.SpringContextHolder;
 import org.compiere.util.TrxRunnable2;
 import org.compiere.util.Util.ArrayKey;
 import org.slf4j.Logger;
@@ -50,12 +49,21 @@ import de.metas.printing.model.X_C_Print_Job_Instructions;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.springframework.stereotype.Service;
 
+import javax.annotation.Nullable;
+
+@Service
 public class PrintPackageBL implements IPrintPackageBL
 {
 	private final Logger logger = LogManager.getLogger(getClass());
 
-	private final PrintingDataFactory printingDataFactory = SpringContextHolder.instance.getBean(PrintingDataFactory.class);
+	private final PrintingDataFactory printingDataFactory;
+
+	public PrintPackageBL(@NonNull final PrintingDataFactory printingDataFactory)
+	{
+		this.printingDataFactory = printingDataFactory;
+	}
 
 	@Override
 	public boolean addPrintingDataToPrintPackage(
@@ -79,7 +87,7 @@ public class PrintPackageBL implements IPrintPackageBL
 			}
 
 			@Override
-			public boolean doCatch(final Throwable e) throws Throwable
+			public boolean doCatch(final Throwable e)
 			{
 				ex = e;
 				return true; // rollback
@@ -169,8 +177,7 @@ public class PrintPackageBL implements IPrintPackageBL
 	@Override
 	public IPrintPackageCtx createEmptyInitialCtx()
 	{
-		final PrintPackageCtx printCtx = new PrintPackageCtx();
-		return printCtx;
+		return new PrintPackageCtx();
 	}
 
 	@Override
@@ -197,6 +204,7 @@ public class PrintPackageBL implements IPrintPackageBL
 	}
 
 	@Override
+	@Nullable
 	public String getHostKeyOrNull(@NonNull final Properties ctx)
 	{
 		// Check session

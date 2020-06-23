@@ -1,6 +1,7 @@
 package de.metas.printing.api.impl;
 
 import de.metas.printing.HardwarePrinterRepository;
+import de.metas.printing.api.IPrintPackageBL;
 import de.metas.printing.printingdata.PrintingDataFactory;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.compiere.SpringContextHolder;
@@ -50,6 +51,7 @@ public abstract class AbstractPrintingTest
 		Services.get(IPrintingQueueBL.class).registerHandler(DocumentPrintingQueueHandler.instance);
 
 		Services.registerService(IInvoiceDAO.class, new PlainInvoiceDAO());
+		Services.registerService(IPrintPackageBL.class, new PrintPackageBL(new PrintingDataFactory(new HardwarePrinterRepository())));
 
 		SpringContextHolder.registerJUnitBean(new PrintingDataFactory(new HardwarePrinterRepository()));
 
