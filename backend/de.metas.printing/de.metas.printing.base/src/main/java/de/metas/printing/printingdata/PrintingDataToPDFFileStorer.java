@@ -132,7 +132,7 @@ public class PrintingDataToPDFFileStorer
 		final String sysconfigDirectory = sysConfigBL.getValue(SYSCONFIG_STORE_PDF_BASE_DIRECTORY, ClientId.METASFRESH.getRepoId(), printingData.getOrgId().getRepoId());
 		if (Check.isNotBlank(sysconfigDirectory))
 		{
-			return FileUtil.stripIllegalCharacters(sysconfigDirectory);
+			return sysconfigDirectory;
 		}
 
 		final String tempDir = System.getProperty("java.io.tmpdir");

@@ -37,6 +37,7 @@ import de.metas.printing.model.I_AD_PrinterHW_MediaTray;
 import de.metas.printing.model.I_AD_PrinterRouting;
 import de.metas.util.FileUtil;
 import de.metas.util.time.SystemTime;
+import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.compiere.model.I_AD_SysConfig;
@@ -60,7 +61,7 @@ class PrintingDataToPDFFileStorerTest
 	private HardwarePrinterRepository hardwarePrinterRepository;
 
 	@BeforeEach
-	void beforeEach(TestInfo testInfo)
+	void beforeEach(@NonNull final TestInfo testInfo)
 	{
 		helper = new Helper(testInfo);
 		helper.setup();
@@ -127,11 +128,11 @@ class PrintingDataToPDFFileStorerTest
 		// then
 
 		// expected files
-		final File tray1File1 = new File(baseDir + "/hwPrinter/hwTray1/100_test.pdf");
-		final File tray2File1 = new File(baseDir + "/hwPrinter/hwTray2Record/100_test.pdf");
+		final File tray1File1 = new File(baseDir.getAbsolutePath() + "/hwPrinter/hwTray1/100_test.pdf");
+		final File tray2File1 = new File(baseDir.getAbsolutePath() + "/hwPrinter/hwTray2Record/100_test.pdf");
 
-		final File tray1File2 = new File(baseDir + "/hwPrinter/hwTray1/200_test.pdf");
-		final File tray2File2 = new File(baseDir + "/hwPrinter/hwTray2Record/200_test.pdf");
+		final File tray1File2 = new File(baseDir.getAbsolutePath() + "/hwPrinter/hwTray1/200_test.pdf");
+		final File tray2File2 = new File(baseDir.getAbsolutePath() + "/hwPrinter/hwTray2Record/200_test.pdf");
 
 		// expected binary content result
 		final byte[] dataExpectedTray1 = new PdfCollator()
