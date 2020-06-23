@@ -121,6 +121,11 @@ export function getSizeClass(col) {
   }
 }
 
+/**
+ * @method getIconClassName
+ * @param {object} huType
+ * @summary returns the icon type for the indent row depending on the given parameter
+ */
 export function getIconClassName(huType) {
   switch (huType) {
     case 'LU':
