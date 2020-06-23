@@ -48,6 +48,7 @@ public class AD_Archive
 	private final transient Logger logger = LogManager.getLogger(AD_Archive.class);
 
 	private final PrintOutputFacade printOutputFacade;
+	private final IPrintingQueueBL printingQueueBL = Services.get(IPrintingQueueBL.class);
 
 	public AD_Archive(@NonNull final PrintOutputFacade printOutputFacade)
 	{
@@ -75,7 +76,7 @@ public class AD_Archive
 		final I_C_Doc_Outbound_Config config = InterfaceWrapperHelper.create(archive.getC_Doc_Outbound_Config(),
 				I_C_Doc_Outbound_Config.class);
 		archive.setIsDirectEnqueue(config.isDirectEnqueue());
-		archive.setIsCreatePrintJob(config.isCreatePrintJob());
+		archive.setIsDirectProcessQueueItem(config.isDirectProcessQueueItem());
 	}
 
 	/**
@@ -83,7 +84,7 @@ public class AD_Archive
 	 */
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE },
 			ifColumnsChanged = {
-					I_AD_Archive.COLUMNNAME_IsCreatePrintJob,
+					I_AD_Archive.COLUMNNAME_IsDirectProcessQueueItem,
 					I_AD_Archive.COLUMNNAME_IsDirectEnqueue,
 					I_AD_Archive.COLUMNNAME_C_Doc_Outbound_Config_ID,
 					I_AD_Archive.COLUMNNAME_IsActive })
@@ -96,13 +97,13 @@ public class AD_Archive
 
 		I_C_Printing_Queue item = null;
 
-		final boolean enqueueToPrintQueue = isEnqueueToPrintingQueue(archive);
+		final boolean enqueueToPrintQueue = isIsCreatePrintingQueueItem(archive);
 		if (enqueueToPrintQueue)
 		{
-			item = Services.get(IPrintingQueueBL.class).enqueue(archive);
+			item = printingQueueBL.enqueue(archive);
 		}
 
-		final boolean createPrintJob = isCreatePrintJob(archive);
+		final boolean createPrintJob = isProcessQueueItem(archive);
 		if (item != null && createPrintJob)
 		{
 			forwardToJob(item);
@@ -118,18 +119,20 @@ public class AD_Archive
 		printOutputFacade.print(source);
 	}
 
-	private boolean isEnqueueToPrintingQueue(final I_AD_Archive archive)
+	private boolean isIsCreatePrintingQueueItem(@NonNull final I_AD_Archive archive)
 	{
 		try (final MDC.MDCCloseable ignore = TableRecordMDC.putTableRecordReference(archive))
 		{
 			// If we need to create a print job, then we shall enqueue to printing queue first
-			if (isCreatePrintJob(archive))
+			if (isProcessQueueItem(archive))
 			{
+				logger.debug("IsCreatePrintingQueueItem - IsProcessQueueItem returned true; -> return true");
 				return true;
 			}
 
 			if (archive.isDirectEnqueue())
 			{
+				logger.debug("IsCreatePrintingQueueItem - AD_Archive.IsDirectEnqueue=true; -> return true");
 				return true;
 			}
 
@@ -138,8 +141,11 @@ public class AD_Archive
 			{
 				final I_C_Doc_Outbound_Config config = InterfaceWrapperHelper.create(archive.getC_Doc_Outbound_Config(),
 						I_C_Doc_Outbound_Config.class);
-				if (config.isDirectEnqueue() || config.isCreatePrintJob())
+				if (config.isDirectEnqueue() || config.isDirectProcessQueueItem())
 				{
+					logger.debug("IsCreatePrintingQueueItem - AD_Archive has C_Doc_Outbound_Config_ID={} "
+									+ "which has IsDirectEnqueue={} and DirectProcessQueueItem={}; -> return true",
+							archive.getC_Doc_Outbound_Config_ID(), config.isDirectEnqueue(), config.isDirectProcessQueueItem());
 					return true;
 				}
 			}
@@ -147,12 +153,12 @@ public class AD_Archive
 		}
 	}
 
-	private boolean isCreatePrintJob(@NonNull final I_AD_Archive archive)
+	private boolean isProcessQueueItem(@NonNull final I_AD_Archive archive)
 	{
 		// If we are explicitly asked to create a print job, then do it
-		if (archive.isCreatePrintJob())
+		if (archive.isDirectProcessQueueItem())
 		{
-			logger.debug("IsCreatePrintJob - AD_Archive.isCreatePrintJob=true; -> return true");
+			logger.debug("IsProcessQueueItem - AD_Archive.IsDirectProcessQueueItem=true; -> return true");
 			return true;
 		}
 
@@ -160,9 +166,9 @@ public class AD_Archive
 		{
 			final I_C_Doc_Outbound_Config config = InterfaceWrapperHelper.create(archive.getC_Doc_Outbound_Config(),
 					I_C_Doc_Outbound_Config.class);
-			if (config.isCreatePrintJob())
+			if (config.isDirectProcessQueueItem())
 			{
-				logger.debug("IsCreatePrintJob - AD_Archive has C_Doc_Outbound_Config_ID={} which has isCreatePrintJob=true; -> return true", archive.getC_Doc_Outbound_Config_ID());
+				logger.debug("IsProcessQueueItem - AD_Archive has C_Doc_Outbound_Config_ID={} which has IsDirectProcessQueueItem=true; -> return true", archive.getC_Doc_Outbound_Config_ID());
 				return true;
 			}
 		}
@@ -171,11 +177,11 @@ public class AD_Archive
 		// This is because old code rely on this logic (at that time there was no IsCreatePrintJob flag).
 		if (isGenericArchive(archive))
 		{
-			logger.debug("IsCreatePrintJob - AD_Archive is a generic archive without record reference; -> return true");
+			logger.debug("IsProcessQueueItem - AD_Archive is a generic archive without record reference; -> return true");
 			return true;
 		}
 
-		logger.debug("IsCreatePrintJob - none of the conditions applied -> return false");
+		logger.debug("IsProcessQueueItem - none of the conditions applied -> return false");
 		return false;
 	}
 

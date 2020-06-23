@@ -27,17 +27,14 @@ import com.google.common.collect.ImmutableMultimap;
 import de.metas.logging.LogManager;
 import de.metas.logging.TableRecordMDC;
 import de.metas.printing.HardwarePrinter;
-import de.metas.printing.HardwarePrinterId;
-import de.metas.printing.HardwarePrinterRepository;
 import de.metas.printing.HardwareTray;
 import de.metas.printing.OutputType;
 import de.metas.printing.model.I_C_Printing_Queue;
 import de.metas.util.Check;
+import de.metas.util.FileUtil;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
 import lombok.NonNull;
-import org.adempiere.archive.ArchiveId;
-import org.adempiere.archive.api.IArchiveEventManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
@@ -123,10 +120,10 @@ public class PrintingDataToPDFFileStorer
 					.append("_");
 		}
 
-		return fileName
+		return FileUtil.stripIllegalCharacters(fileName
 				.append(printingData.getDocumentName())
 				.append(".pdf")
-				.toString();
+				.toString());
 	}
 
 	@NonNull
@@ -135,7 +132,7 @@ public class PrintingDataToPDFFileStorer
 		final String sysconfigDirectory = sysConfigBL.getValue(SYSCONFIG_STORE_PDF_BASE_DIRECTORY, ClientId.METASFRESH.getRepoId(), printingData.getOrgId().getRepoId());
 		if (Check.isNotBlank(sysconfigDirectory))
 		{
-			return sysconfigDirectory;
+			return FileUtil.stripIllegalCharacters(sysconfigDirectory);
 		}
 
 		final String tempDir = System.getProperty("java.io.tmpdir");
@@ -174,11 +171,14 @@ public class PrintingDataToPDFFileStorer
 			if (segment.getTrayId() != null)
 			{
 				final HardwareTray tray = printer.getTray(segment.getTrayId());
-				path = Paths.get(baseDirectory, printer.getName(), tray.getName());
+				path = Paths.get(baseDirectory,
+						FileUtil.stripIllegalCharacters(printer.getName()),
+						FileUtil.stripIllegalCharacters(tray.getName()));
 			}
 			else
 			{
-				path = Paths.get(baseDirectory, printer.getName());
+				path = Paths.get(baseDirectory,
+						FileUtil.stripIllegalCharacters(printer.getName()));
 			}
 
 			path2Segments.put(path, segment);

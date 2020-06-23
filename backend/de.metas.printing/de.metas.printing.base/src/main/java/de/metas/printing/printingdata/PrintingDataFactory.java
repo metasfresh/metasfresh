@@ -77,7 +77,7 @@ public class PrintingDataFactory
 		final PrintingData.PrintingDataBuilder printingData = PrintingData
 				.builder()
 				.printingQueueItemId(PrintingQueueItemId.ofRepoId(queueItem.getC_Printing_Queue_ID()))
-				.orgId(OrgId.ofRepoId(archiveRecord.getAD_Org_ID()))
+				.orgId(OrgId.ofRepoId(queueItem.getAD_Org_ID()))
 				.documentName(archiveRecord.getName())
 				.data(loadArchiveData(archiveRecord));
 
@@ -87,7 +87,10 @@ public class PrintingDataFactory
 		{
 			final String hostKey = null;
 			final PrintingSegment printingSegment = createPrintingSegment(printerRouting, hostKey);
-			printingData.segment(printingSegment);
+			if(printingSegment != null)
+			{
+				printingData.segment(printingSegment);
+			}
 		}
 		return printingData.build();
 	}
@@ -102,15 +105,24 @@ public class PrintingDataFactory
 				.builder()
 				.printingQueueItemId(PrintingQueueItemId.ofRepoId(jobLine.getC_Printing_Queue_ID()))
 				.orgId(OrgId.ofRepoId(archiveRecord.getAD_Org_ID()))
-				.documentName(archiveRecord.getName())
-				.data(loadArchiveData(archiveRecord));
+				.documentName(archiveRecord.getName());
 
 		final List<I_C_Print_Job_Detail> printJobDetails = printJobBL.getCreatePrintJobDetails(jobLine);
+		boolean atLeastOneSegmentCreated = false;
 		for (final I_C_Print_Job_Detail detail : printJobDetails)
 		{
 			final I_AD_PrinterRouting routing = loadOutOfTrx(detail.getAD_PrinterRouting_ID(), I_AD_PrinterRouting.class);
 			final PrintingSegment printingSegment = createPrintingSegment(routing, hostKey);
-			printingData.segment(printingSegment);
+			if (printingSegment != null)
+			{
+				printingData.segment(printingSegment);
+				atLeastOneSegmentCreated = true;
+			}
+		}
+
+		if (atLeastOneSegmentCreated)
+		{
+			printingData.data(loadArchiveData(archiveRecord)); // if no segment was created we don't need to bother loading the data
 		}
 		return printingData.build();
 	}
@@ -132,9 +144,17 @@ public class PrintingDataFactory
 			@Nullable final String hostKey)
 	{
 		final I_AD_Printer_Matching printerMatchingRecord = printingDAO.retrievePrinterMatchingOrNull(hostKey/*hostKey*/, printerRouting.getAD_Printer());
+		if (printerMatchingRecord == null)
+		{
+			logger.debug("Found no AD_Printer_Matching record for AD_PrinterRouting_ID={} and hostKey={}; -> creating no PrintingSegment for routing", printerRouting, hostKey);
+			return null;
+		}
+
 		final I_AD_PrinterTray_Matching trayMatchingRecord = printingDAO.retrievePrinterTrayMatching(printerMatchingRecord, printerRouting, false);
+		final int trayRepoId = trayMatchingRecord == null ? -1 : trayMatchingRecord.getAD_PrinterHW_MediaTray_ID();
 
 		final HardwarePrinterId printerId = HardwarePrinterId.ofRepoId(printerMatchingRecord.getAD_PrinterHW_ID());
+		final HardwareTrayId trayId = HardwareTrayId.ofRepoIdOrNull(printerId, trayRepoId);
 
 		final HardwarePrinter hardwarePrinter = hardwarePrinterRepository.getById(printerId);
 
@@ -145,7 +165,7 @@ public class PrintingDataFactory
 				.lastPages(printerRouting.getLastPages())
 				.routingType(printerRouting.getRoutingType())
 				.printer(hardwarePrinter)
-				.trayId(HardwareTrayId.ofRepoIdOrNull(printerId, trayMatchingRecord.getAD_PrinterHW_MediaTray_ID()))
+				.trayId(trayId)
 				.build();
 	}
 }

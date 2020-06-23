@@ -356,8 +356,18 @@ public class Helper
 		return printer;
 	}
 
-	public I_AD_Printer_Tray getCreatePrinterTray(final String printerName, final String trayName)
+	/**
+	 * @param trayName optional; if {@code null}, then {@code null} is returned.
+	 */
+	public I_AD_Printer_Tray getCreatePrinterTray(
+			@NonNull final String printerName,
+			@Nullable final String trayName)
 	{
+		if(Check.isBlank(trayName))
+		{
+			return null;
+		}
+
 		final I_AD_Printer printer = getCreatePrinter(printerName);
 		I_AD_Printer_Tray tray = printingDAO
 				.getLookupMap()
@@ -394,14 +404,23 @@ public class Helper
 	 *
 	 * @return name + "-HW"
 	 */
-	public String createHWName(final String name)
+	public String createHWName(@NonNull final String name)
 	{
 		Check.assume(!Check.isEmpty(name, true), "Name not empty: {}", name);
 		return name + "-HW";
 	}
 
-	public I_AD_PrinterHW_MediaTray getCreatePrinterTrayHW(final String printerName, final String trayName)
+	/**
+	 * @param trayName optional; if {@code null}, then {@code null} is returned.
+	 */
+	public I_AD_PrinterHW_MediaTray getCreatePrinterTrayHW(
+			@NonNull final String printerName,
+			@Nullable final String trayName)
 	{
+		if(Check.isBlank(trayName))
+		{
+			return null;
+		}
 		final I_AD_PrinterHW printer = getCreatePrinterHW(printerName);
 		I_AD_PrinterHW_MediaTray tray = printingDAO.getLookupMap().getFirstOnly(I_AD_PrinterHW_MediaTray.class, pojo -> Objects.equals(pojo.getAD_PrinterHW(), printer)
 				&& Objects.equals(pojo.getName(), trayName));
@@ -419,16 +438,11 @@ public class Helper
 	/**
 	 * Create printer routing for {@link I_AD_PrinterRouting#ROUTINGTYPE_PageRange}.
 	 *
-	 * @param printerName
-	 * @param trayName
 	 * @param C_DocType_ID if > 0, then this is set to be the new routing's matching-doctype ID.
-	 * @param pageFrom
-	 * @param pageTo
-	 * @return
 	 */
 	public I_AD_PrinterRouting createPrinterRouting(
-			final String printerName,
-			final String trayName,
+			@NonNull final String printerName,
+			@Nullable final String trayName,
 			final int C_DocType_ID,
 			final int pageFrom,
 			final int pageTo)
@@ -436,8 +450,10 @@ public class Helper
 		final I_AD_PrinterRouting routing = printingDAO.newInstance(ctx, I_AD_PrinterRouting.class, ITrx.TRXNAME_None);
 		routing.setAD_Org_ID(0); // All Orgs by default
 		routing.setAD_Printer_ID(getCreatePrinter(printerName).getAD_Printer_ID());
-		routing.setAD_Printer_Tray(getCreatePrinterTray(printerName, trayName));
-
+		if (Check.isNotBlank(trayName))
+		{
+			routing.setAD_Printer_Tray(getCreatePrinterTray(printerName, trayName));
+		}
 		if (C_DocType_ID > 0)
 		{
 			routing.setC_DocType_ID(C_DocType_ID);
@@ -462,10 +478,6 @@ public class Helper
 	/**
 	 * Create printer routing for {@link I_AD_PrinterRouting#ROUTINGTYPE_LastPages}.
 	 *
-	 * @param printerName
-	 * @param trayName
-	 * @param C_DocType_ID
-	 * @param lastPages
 	 * @return printer routing
 	 */
 	public I_AD_PrinterRouting createPrinterRoutingForLastPages(
@@ -497,11 +509,11 @@ public class Helper
 	}
 
 	public void createPrinterConfigAndMatching(
-			final String hostKey,
-			final String hwPrinterName,
-			final String hwTrayName,
-			final String printerName,
-			final String trayName)
+			@Nullable final String hostKey,
+			@NonNull final String hwPrinterName,
+			@Nullable final String hwTrayName,
+			@NonNull final String printerName,
+			@Nullable final String trayName)
 	{
 		final I_AD_Printer_Config printerConfig = printingDAO
 				.getLookupMap()
@@ -839,6 +851,7 @@ public class Helper
 		final PlainLockDatabase lockDatabase = lockManager.getLockDatabase();
 		final List<LockKey> locks = lockDatabase.getLocks();
 
-		assertThat(locks).as("No locks expecteded").isEmpty();;
+		assertThat(locks).as("No locks expecteded").isEmpty();
+		;
 	}
 }

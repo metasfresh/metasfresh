@@ -5,7 +5,7 @@ package de.metas.printing.model;
  *  @author metasfresh (generated) 
  */
 @SuppressWarnings("javadoc")
-public interface I_AD_Printer_Config 
+public interface I_AD_Printer_Config
 {
 
     /** TableName=AD_Printer_Config */
@@ -128,7 +128,7 @@ public interface I_AD_Printer_Config
 	 * Set Host key.
 	 *
 	 * <br>Type: String
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	public void setConfigHostKey (java.lang.String ConfigHostKey);
@@ -137,7 +137,7 @@ public interface I_AD_Printer_Config
 	 * Get Host key.
 	 *
 	 * <br>Type: String
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	public java.lang.String getConfigHostKey();

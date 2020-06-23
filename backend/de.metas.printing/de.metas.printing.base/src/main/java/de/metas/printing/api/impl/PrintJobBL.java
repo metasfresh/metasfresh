@@ -523,7 +523,7 @@ public class PrintJobBL implements IPrintJobBL
 				hostKeyToUse = hostKey;
 				userToPrintIdToUse = userToPrintId;
 			}
-			instructions.setHostKey(hostKeyToUse);
+			instructions.setHostKey(hostKeyToUse); // note that hostkey is not mandatory here
 			instructions.setAD_User_ToPrint_ID(userToPrintIdToUse);
 			// task 09028: workaround: don't set the hostkey.
 			// therefore the next print client of the given user will be able to print this
@@ -534,7 +534,6 @@ public class PrintJobBL implements IPrintJobBL
 		}
 
 		final String trxName = InterfaceWrapperHelper.getTrxName(instructions);
-		// set printer for pdf printing
 		instructions.setAD_PrinterHW(printingDAO.retrieveAttachToPrintPackagePrinter(ctx, hostKey, trxName));
 
 		InterfaceWrapperHelper.save(instructions);

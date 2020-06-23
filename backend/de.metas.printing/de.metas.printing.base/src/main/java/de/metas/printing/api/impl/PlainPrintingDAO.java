@@ -146,13 +146,6 @@ public class PlainPrintingDAO extends AbstractPrintingDAO
 	}
 
 	@Override
-	public I_AD_PrinterTray_Matching retrievePrinterTrayMatchingOrNull(final I_AD_Printer_Matching matching, final int AD_Printer_Tray_ID)
-	{
-		return lookupMap.getFirstOnly(I_AD_PrinterTray_Matching.class, pojo -> pojo.getAD_Printer_Matching_ID() == matching.getAD_Printer_Matching_ID()
-				&& pojo.getAD_Printer_Tray_ID() == AD_Printer_Tray_ID);
-	}
-
-	@Override
 	public List<I_AD_PrinterTray_Matching> retrievePrinterTrayMatchings(final I_AD_Printer_Matching matching)
 	{
 		return lookupMap.getRecords(I_AD_PrinterTray_Matching.class, pojo -> {

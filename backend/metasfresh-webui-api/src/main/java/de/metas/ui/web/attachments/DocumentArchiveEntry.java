@@ -8,7 +8,7 @@ import org.compiere.util.MimeType;
 
 import de.metas.attachments.AttachmentEntry;
 import de.metas.ui.web.window.datatypes.DocumentId;
-import de.metas.util.FileUtils;
+import de.metas.util.FileUtil;
 import de.metas.util.Services;
 
 /*
@@ -67,7 +67,7 @@ class DocumentArchiveEntry implements IDocumentAttachmentEntry
 		final String contentType = getContentType();
 		final String fileExtension = MimeType.getExtensionByType(contentType);
 		final String name = archive.getName();
-		return FileUtils.changeFileExtension(name, fileExtension);
+		return FileUtil.changeFileExtension(name, fileExtension);
 	}
 
 	@Override

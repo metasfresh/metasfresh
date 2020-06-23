@@ -26,8 +26,12 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Properties;
 
+import de.metas.logging.TableRecordMDC;
 import de.metas.printing.HardwarePrinterId;
 import de.metas.printing.OutputType;
+import de.metas.printing.model.I_AD_Printer_Config;
+import de.metas.util.StringUtils;
+import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -44,6 +48,7 @@ import de.metas.printing.model.I_AD_PrinterHW_MediaSize;
 import de.metas.printing.model.I_AD_PrinterHW_MediaTray;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import org.slf4j.MDC;
 
 @Interceptor(I_AD_PrinterHW.class)
 public class AD_PrinterHW
@@ -96,6 +101,21 @@ public class AD_PrinterHW
 
 		final List<I_AD_PrinterHW_MediaSize> sizes = dao.retrieveMediaSizes(printerHW);
 		dao.removeMediaSizes(sizes);
+	}
+
+	/**
+	 * Needed because we want to order by ConfigHostKey and "unspecified" shall always be last.
+	 */
+	@ModelChange(
+			timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
+			ifColumnsChanged = I_AD_Printer_Config.COLUMNNAME_ConfigHostKey)
+	public void trimBlankHostKeyToNull(@NonNull final I_AD_PrinterHW printerHW)
+	{
+		try (final MDC.MDCCloseable ignored = TableRecordMDC.putTableRecordReference(printerHW))
+		{
+			final String normalizedString = StringUtils.trimBlankToNull(printerHW.getHostKey());
+			printerHW.setHostKey(normalizedString);
+		}
 	}
 
 	/**

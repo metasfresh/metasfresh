@@ -35,11 +35,10 @@ import de.metas.printing.api.util.PdfCollator;
 import de.metas.printing.model.I_AD_PrinterHW;
 import de.metas.printing.model.I_AD_PrinterHW_MediaTray;
 import de.metas.printing.model.I_AD_PrinterRouting;
-import de.metas.printing.printingdata.PrintingData;
-import de.metas.printing.printingdata.PrintingDataToPDFFileStorer;
-import de.metas.printing.printingdata.PrintingSegment;
+import de.metas.util.FileUtil;
 import de.metas.util.time.SystemTime;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
 import org.compiere.model.I_AD_SysConfig;
 import org.compiere.model.X_AD_SysConfig;
 import org.junit.jupiter.api.BeforeEach;
@@ -50,6 +49,8 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.adempiere.model.InterfaceWrapperHelper.setValue;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class PrintingDataToPDFFileStorerTest
@@ -78,12 +79,14 @@ class PrintingDataToPDFFileStorerTest
 		final byte[] binaryPdfData = new PdfCollator()
 				.addPages(helper.getPdf("01"), 1, 3) // First 3 pages
 				.toByteArray();
+		final File baseDir = FileUtil.createTempDirectory("PrintingDataToPDFFileStorerTest");
 
 		final I_AD_SysConfig sysConfigRecord = InterfaceWrapperHelper.newInstance(I_AD_SysConfig.class);
+		setValue(sysConfigRecord, I_AD_SysConfig.COLUMNNAME_AD_Client_ID, ClientId.METASFRESH.getRepoId());
 		sysConfigRecord.setName(PrintingDataToPDFFileStorer.SYSCONFIG_STORE_PDF_BASE_DIRECTORY);
-		sysConfigRecord.setValue("/tmp/");
+		sysConfigRecord.setValue(baseDir.getAbsolutePath());
 		sysConfigRecord.setConfigurationLevel(X_AD_SysConfig.CONFIGURATIONLEVEL_Organization);
-		InterfaceWrapperHelper.saveRecord(sysConfigRecord);
+		saveRecord(sysConfigRecord);
 
 		final I_AD_PrinterHW hwPrinterRecord = helper.getCreatePrinterHW("hwPrinter", OutputType.Store);
 		final HardwarePrinterId printerId = HardwarePrinterId.ofRepoId(hwPrinterRecord.getAD_PrinterHW_ID());
@@ -124,11 +127,11 @@ class PrintingDataToPDFFileStorerTest
 		// then
 
 		// expected files
-		final File tray1File1 = new File("/tmp/hwPrinter/hwTray1/100_test.pdf");
-		final File tray2File1 = new File("/tmp/hwPrinter/hwTray2Record/100_test.pdf");
+		final File tray1File1 = new File(baseDir + "/hwPrinter/hwTray1/100_test.pdf");
+		final File tray2File1 = new File(baseDir + "/hwPrinter/hwTray2Record/100_test.pdf");
 
-		final File tray1File2 = new File("/tmp/hwPrinter/hwTray1/200_test.pdf");
-		final File tray2File2 = new File("/tmp/hwPrinter/hwTray2Record/200_test.pdf");
+		final File tray1File2 = new File(baseDir + "/hwPrinter/hwTray1/200_test.pdf");
+		final File tray2File2 = new File(baseDir + "/hwPrinter/hwTray2Record/200_test.pdf");
 
 		// expected binary content result
 		final byte[] dataExpectedTray1 = new PdfCollator()

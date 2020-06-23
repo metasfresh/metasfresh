@@ -235,12 +235,17 @@ public abstract class AbstractPrintingDAO implements IPrintingDAO
 			@Nullable final String hostKey,
 			@NonNull final de.metas.adempiere.model.I_AD_Printer printer)
 	{
-		return Services.get(IQueryBL.class)
+		final int printerConfigId = queryBL
 				.createQueryBuilder(I_AD_Printer_Config.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_AD_Printer_Config.COLUMN_ConfigHostKey, hostKey)
-				.andCollectChildren(I_AD_Printer_Matching.COLUMN_AD_Printer_Config_ID)
+				.addInArrayFilter(I_AD_Printer_Config.COLUMN_ConfigHostKey, hostKey, null)
+				.orderBy(I_AD_Printer_Config.COLUMNNAME_ConfigHostKey)
+				.create()
+				.firstId();
+
+		return queryBL.createQueryBuilder(I_AD_Printer_Matching.class)
 				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_AD_Printer_Matching.COLUMNNAME_AD_Printer_Config_ID, printerConfigId)
 				.addEqualsFilter(I_AD_Printer_Matching.COLUMN_AD_Printer_ID, printer.getAD_Printer_ID())
 				.create()
 				.firstOnly(I_AD_Printer_Matching.class);
@@ -264,15 +269,30 @@ public abstract class AbstractPrintingDAO implements IPrintingDAO
 
 	@Nullable
 	@Override
-	public final I_AD_PrinterTray_Matching retrievePrinterTrayMatching(final I_AD_Printer_Matching matching, final I_AD_PrinterRouting routing, final boolean throwExIfMissing)
+	public final I_AD_PrinterTray_Matching retrievePrinterTrayMatching(
+			final I_AD_Printer_Matching printerMatchingRecord, final I_AD_PrinterRouting routing,
+			final boolean throwExIfMissing)
 	{
-		final I_AD_PrinterTray_Matching trayMatching = retrievePrinterTrayMatchingOrNull(matching, routing.getAD_Printer_Tray_ID());
+		final I_AD_PrinterTray_Matching trayMatching = retrievePrinterTrayMatchingOrNull(printerMatchingRecord, routing.getAD_Printer_Tray_ID());
 		if (trayMatching == null && throwExIfMissing)
 		{
 			throw new AdempiereException("Couldn't retrieve printer tray matching for printer " + routing.getAD_Printer_ID());
 		}
 
 		return trayMatching;
+	}
+
+	@Override
+	public final I_AD_PrinterTray_Matching retrievePrinterTrayMatchingOrNull(
+			@NonNull final I_AD_Printer_Matching matching,
+			final int AD_Printer_Tray_ID)
+	{
+		return queryBL.createQueryBuilder(I_AD_PrinterTray_Matching.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_AD_PrinterTray_Matching.COLUMNNAME_AD_Printer_Matching_ID, matching.getAD_Printer_Matching_ID())
+				.addEqualsFilter(I_AD_PrinterTray_Matching.COLUMNNAME_AD_Printer_Tray_ID, AD_Printer_Tray_ID)
+				.create()
+				.firstOnly(I_AD_PrinterTray_Matching.class);
 	}
 
 	@Override

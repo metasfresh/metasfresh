@@ -130,21 +130,6 @@ public class PrintingDAO extends AbstractPrintingDAO
 	}
 
 	@Override
-	public I_AD_PrinterTray_Matching retrievePrinterTrayMatchingOrNull(final I_AD_Printer_Matching matching, final int AD_Printer_Tray_ID)
-	{
-		final Properties ctx = InterfaceWrapperHelper.getCtx(matching);
-		final String trxName = InterfaceWrapperHelper.getTrxName(matching);
-
-		final String whereClause = I_AD_PrinterTray_Matching.COLUMNNAME_AD_Printer_Matching_ID + " = ?"
-				+ " AND " + I_AD_PrinterTray_Matching.COLUMNNAME_AD_Printer_Tray_ID + " = ?";
-
-		return new Query(ctx, I_AD_PrinterTray_Matching.Table_Name, whereClause, trxName)
-				.setOnlyActiveRecords(true)
-				.setParameters(matching.getAD_Printer_Matching_ID(), AD_Printer_Tray_ID)
-				.firstOnly(I_AD_PrinterTray_Matching.class);
-	}
-
-	@Override
 	public List<I_AD_PrinterTray_Matching> retrievePrinterTrayMatchings(final I_AD_Printer_Matching matching)
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(matching);

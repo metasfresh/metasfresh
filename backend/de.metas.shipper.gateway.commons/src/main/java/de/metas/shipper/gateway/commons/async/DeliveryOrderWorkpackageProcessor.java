@@ -161,7 +161,7 @@ public class DeliveryOrderWorkpackageProcessor extends WorkpackageProcessorAdapt
 		archiveStorage.setBinaryData(archive, labelData);
 		archive.setIsReport(false);
 		archive.setIsDirectEnqueue(true);
-		archive.setIsCreatePrintJob(true);
+		archive.setIsDirectProcessQueueItem(true);
 		InterfaceWrapperHelper.save(archive);
 	}
 }
