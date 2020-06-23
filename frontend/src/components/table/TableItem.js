@@ -37,7 +37,6 @@ class TableItem extends PureComponent {
       activeCellName: null,
       updatedRow: false,
       listenOnKeys: true,
-      editedCells: {},
       multilineText,
       multilineTextLines,
       cellsExtended: false,
@@ -73,17 +72,30 @@ class TableItem extends PureComponent {
 
   isEditableOnDemand = (item) => {
     const { fieldsByName } = this.props;
-    const { editedCells } = this.state;
-    const cells = merge({}, fieldsByName, editedCells);
     const property = item.fields ? item.fields[0].field : item.field;
 
     return (
-      (cells &&
-        cells[property] &&
-        cells[property].viewEditorRenderMode ===
+      (fieldsByName &&
+        fieldsByName[property] &&
+        fieldsByName[property].viewEditorRenderMode ===
           VIEW_EDITOR_RENDER_MODES_ON_DEMAND) ||
       item.viewEditorRenderMode === VIEW_EDITOR_RENDER_MODES_ON_DEMAND
     );
+  };
+
+  isCellEditable = (item) => {
+    const { fieldsByName: cells } = this.props;
+    const property = item.fields[0].field;
+    let isEditable =
+      (cells &&
+        cells[property] &&
+        cells[property].viewEditorRenderMode ===
+          VIEW_EDITOR_RENDER_MODES_ALWAYS) ||
+      item.viewEditorRenderMode === VIEW_EDITOR_RENDER_MODES_ALWAYS;
+
+    isEditable = item.widgetType === 'Color' ? false : isEditable;
+
+    return isEditable;
   };
 
   prepareWidgetData = (item) => {
@@ -235,40 +247,6 @@ class TableItem extends PureComponent {
     changeListenOnFalse();
   };
 
-  /*
-   * This function is called when cell's value changes
-   *
-   * TODO: Do we still need to call `onItemChange` ?
-   */
-  handleCellValueChange = (rowId, property, value, ret) => {
-    const { onItemChange } = this.props;
-    const editedCells = { ...this.state.editedCells };
-
-    // this is something we're not doing usually as all field
-    // layouts come from the server. But in cases of modals
-    // sometimes we need to modify the state of fields that are displayed
-    // for instance to show/hide them
-    if (ret) {
-      ret.then((resp) => {
-        if (resp[0] && resp[0].fieldsByName) {
-          const fields = resp[0].fieldsByName;
-
-          for (let [k, v] of Object.entries(fields)) {
-            editedCells[k] = v;
-          }
-          this.setState(
-            {
-              editedCells,
-            },
-            () => onItemChange(rowId, property, value)
-          );
-        }
-      });
-    } else {
-      onItemChange(rowId, property, value);
-    }
-  };
-
   handleClick = (e) => {
     const { onClick, item } = this.props;
 
@@ -300,13 +278,7 @@ class TableItem extends PureComponent {
   };
 
   getWidgetData = (item, isEditable, supportFieldEdit) => {
-    const { fieldsByName, page, lastPage } = this.props;
-    const { editedCells } = this.state;
-
-    const cells =
-      lastPage && page !== lastPage
-        ? merge({}, fieldsByName)
-        : merge({}, fieldsByName, editedCells);
+    const { fieldsByName: cells } = this.props;
 
     const widgetData = item.fields.reduce((result, prop) => {
       if (cells) {
@@ -391,7 +363,6 @@ class TableItem extends PureComponent {
   renderCells = () => {
     const {
       cols,
-      fieldsByName,
       windowId,
       docId,
       rowId,
@@ -414,13 +385,11 @@ class TableItem extends PureComponent {
       edited,
       updatedRow,
       listenOnKeys,
-      editedCells,
       cellsExtended,
       multilineText,
       multilineTextLines,
       activeCellName,
     } = this.state;
-    const cells = merge({}, fieldsByName, editedCells);
 
     // Iterate over layout settings
     if (colspan) {
@@ -433,17 +402,9 @@ class TableItem extends PureComponent {
             const { supportZoomInto } = item.fields[0];
             const supportFieldEdit = mainTable && this.isAllowedFieldEdit(item);
             const property = item.fields[0].field;
-            let isEditable =
-              (cells &&
-                cells[property] &&
-                cells[property].viewEditorRenderMode ===
-                  VIEW_EDITOR_RENDER_MODES_ALWAYS) ||
-              item.viewEditorRenderMode === VIEW_EDITOR_RENDER_MODES_ALWAYS;
+            const isEditable = this.isCellEditable(item);
             const isEdited = edited === property;
             const extendLongText = multilineText ? multilineTextLines : 0;
-
-            isEditable = item.widgetType === 'Color' ? false : isEditable;
-
             const widgetData = this.getWidgetData(
               item,
               isEditable,
