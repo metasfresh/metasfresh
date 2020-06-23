@@ -9,6 +9,7 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeCode;
+import org.adempiere.service.ClientId;
 import org.adempiere.util.net.IHostIdentifier;
 import org.adempiere.util.net.NetUtils;
 import org.compiere.model.I_M_Attribute;
@@ -21,6 +22,7 @@ import de.metas.device.adempiere.AttributeDeviceAccessor;
 import de.metas.device.adempiere.AttributesDevicesHub;
 import de.metas.device.adempiere.IDevicesHubFactory;
 import de.metas.logging.LogManager;
+import de.metas.organization.OrgId;
 import de.metas.process.JavaProcess;
 import de.metas.process.Param;
 import de.metas.process.RunOutOfTrx;
@@ -83,8 +85,8 @@ public class CheckAttributeAttachedDevices extends JavaProcess
 		final IHostIdentifier host = getHost();
 		addLog("Using host: " + host);
 
-		final int adClientId = Env.getAD_Client_ID(getCtx());
-		final int adOrgId = Env.getAD_Org_ID(getCtx());
+		final ClientId adClientId = Env.getClientId(getCtx());
+		final OrgId adOrgId = Env.getOrgId(getCtx());
 		addLog("Using AD_Client_ID: " + adClientId);
 		addLog("Using AD_Org_ID: " + adOrgId);
 

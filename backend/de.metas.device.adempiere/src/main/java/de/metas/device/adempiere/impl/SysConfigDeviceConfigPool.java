@@ -7,6 +7,7 @@ import java.util.Set;
 import java.util.TreeMap;
 
 import org.adempiere.mm.attributes.AttributeCode;
+import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.ExtendedMemorizingSupplier;
 import org.adempiere.util.net.IHostIdentifier;
@@ -25,6 +26,7 @@ import de.metas.device.adempiere.DeviceConfig;
 import de.metas.device.adempiere.DeviceConfigException;
 import de.metas.device.adempiere.IDeviceConfigPool;
 import de.metas.logging.LogManager;
+import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
@@ -74,8 +76,8 @@ import lombok.NonNull;
 	/* package */static final String IPADDRESS_ANY = "0.0.0.0";
 
 	private final IHostIdentifier clientHost;
-	private final int adClientId;
-	private final int adOrgId;
+	private final ClientId adClientId;
+	private final OrgId adOrgId;
 
 	private final ExtendedMemorizingSupplier<ImmutableListMultimap<AttributeCode, DeviceConfig>> //
 	deviceConfigsIndexedByAttributeCodeSupplier = ExtendedMemorizingSupplier.of(() -> loadDeviceConfigsIndexedByAttributeCode());
@@ -84,13 +86,14 @@ import lombok.NonNull;
 
 	private final WeakList<IDeviceConfigPoolListener> listeners = new WeakList<>(true); // weakDefault=true
 
-	public SysConfigDeviceConfigPool(@NonNull final IHostIdentifier clientHost, final int adClientId, final int adOrgId)
+	public SysConfigDeviceConfigPool(
+			@NonNull final IHostIdentifier clientHost,
+			@NonNull final ClientId adClientId,
+			@NonNull final OrgId adOrgId)
 	{
-		Check.assumeNotNull(clientHost, "Parameter clientHost is not null");
-
 		this.clientHost = clientHost;
-		this.adClientId = adClientId <= 0 ? 0 : adClientId;
-		this.adOrgId = adOrgId <= 0 ? 0 : adOrgId;
+		this.adClientId = adClientId;
+		this.adOrgId = adOrgId;
 
 		CacheMgt.get().addCacheResetListener(I_AD_SysConfig.Table_Name, cacheResetListener);
 	}

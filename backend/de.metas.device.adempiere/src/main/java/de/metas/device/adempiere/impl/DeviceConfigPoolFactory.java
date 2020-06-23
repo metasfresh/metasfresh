@@ -2,11 +2,14 @@ package de.metas.device.adempiere.impl;
 
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.adempiere.service.ClientId;
 import org.adempiere.util.net.IHostIdentifier;
-import org.compiere.util.Util.ArrayKey;
 
 import de.metas.device.adempiere.IDeviceConfigPool;
 import de.metas.device.adempiere.IDeviceConfigPoolFactory;
+import de.metas.organization.OrgId;
+import lombok.NonNull;
+import lombok.Value;
 
 /*
  * #%L
@@ -21,23 +24,43 @@ import de.metas.device.adempiere.IDeviceConfigPoolFactory;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
 public class DeviceConfigPoolFactory implements IDeviceConfigPoolFactory
 {
-	private final ConcurrentHashMap<ArrayKey, IDeviceConfigPool> deviceConfigPools = new ConcurrentHashMap<>();
+	private final ConcurrentHashMap<DeviceConfigPoolKey, IDeviceConfigPool> deviceConfigPools = new ConcurrentHashMap<>();
 
 	@Override
-	public IDeviceConfigPool getDeviceConfigPool(final IHostIdentifier clientHost, final int adClientId, final int adOrgId)
+	public IDeviceConfigPool getDeviceConfigPool(final IHostIdentifier clientHost, final ClientId adClientId, final OrgId adOrgId)
 	{
-		final ArrayKey key = ArrayKey.of(clientHost, adClientId, adOrgId);
-		return deviceConfigPools.computeIfAbsent(key, k -> new SysConfigDeviceConfigPool(clientHost, adClientId, adOrgId));
+		return deviceConfigPools.computeIfAbsent(
+				DeviceConfigPoolKey.of(clientHost, adClientId, adOrgId),
+				this::createDeviceConfigPool);
+	}
+
+	private IDeviceConfigPool createDeviceConfigPool(final DeviceConfigPoolKey key)
+	{
+		return new SysConfigDeviceConfigPool(
+				key.getClientHost(),
+				key.getAdClientId(),
+				key.getAdOrgId());
+	}
+
+	@Value(staticConstructor = "of")
+	private static class DeviceConfigPoolKey
+	{
+		@NonNull
+		IHostIdentifier clientHost;
+		@NonNull
+		ClientId adClientId;
+		@NonNull
+		OrgId adOrgId;
 	}
 }

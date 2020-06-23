@@ -101,8 +101,8 @@ public class SysConfigDeviceConfigPoolTestHelper
 
 	private final SysConfigDeviceConfigPool createSysConfigDeviceConfigPool()
 	{
-		final int adClientId = Env.getAD_Client_ID(Env.getCtx());
-		final int adOrgId = 0;
+		final ClientId adClientId = Env.getClientId(Env.getCtx());
+		final OrgId adOrgId = OrgId.ANY;
 		final SysConfigDeviceConfigPool configPool = new SysConfigDeviceConfigPool(clientHost, adClientId, adOrgId);
 		return configPool;
 	}

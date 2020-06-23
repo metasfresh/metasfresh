@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.adempiere.mm.attributes.AttributeCode;
-import org.adempiere.util.net.IHostIdentifier;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 
@@ -72,12 +71,6 @@ public class AttributesDevicesHub
 		}
 	};
 
-	public AttributesDevicesHub(final IHostIdentifier clientHost, final int adClientId, final int adOrgId)
-	{
-		this(Services.get(IDeviceConfigPoolFactory.class).getDeviceConfigPool(clientHost, adClientId, adOrgId));
-	}
-
-	@VisibleForTesting
 	public AttributesDevicesHub(@NonNull final IDeviceConfigPool deviceConfigPool)
 	{
 		this.deviceConfigPool = deviceConfigPool;

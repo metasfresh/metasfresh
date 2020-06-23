@@ -1,7 +1,9 @@
 package de.metas.device.adempiere;
 
+import org.adempiere.service.ClientId;
 import org.adempiere.util.net.IHostIdentifier;
 
+import de.metas.organization.OrgId;
 import de.metas.util.ISingletonService;
 
 /*
@@ -28,5 +30,5 @@ import de.metas.util.ISingletonService;
 
 public interface IDeviceConfigPoolFactory extends ISingletonService
 {
-	IDeviceConfigPool getDeviceConfigPool(IHostIdentifier clientHost, int adClientId, int adOrgId);
+	IDeviceConfigPool getDeviceConfigPool(IHostIdentifier clientHost, ClientId adClientId, OrgId adOrgId);
 }

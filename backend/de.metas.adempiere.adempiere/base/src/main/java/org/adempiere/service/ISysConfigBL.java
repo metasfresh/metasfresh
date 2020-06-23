@@ -7,6 +7,7 @@ import de.metas.util.Check;
 import de.metas.util.ISingletonService;
 import de.metas.util.lang.ReferenceListAwareEnum;
 import de.metas.util.lang.ReferenceListAwareEnums;
+import lombok.NonNull;
 
 public interface ISysConfigBL extends ISingletonService
 {
@@ -147,6 +148,14 @@ public interface ISysConfigBL extends ISingletonService
 	 */
 	String getValue(String Name, int AD_Client_ID, int AD_Org_ID);
 
+	default String getValue(
+			@NonNull final String name,
+			@NonNull final ClientId adClientId,
+			@NonNull final OrgId adOrgId)
+	{
+		return getValue(name, adClientId.getRepoId(), adOrgId.getRepoId());
+	}
+
 	/**
 	 * Get system configuration property of type int
 	 *
@@ -197,6 +206,14 @@ public interface ISysConfigBL extends ISingletonService
 	 * @return
 	 */
 	Map<String, String> getValuesForPrefix(String prefix, int adClientId, int adOrgId);
+
+	default Map<String, String> getValuesForPrefix(
+			@NonNull final String prefix,
+			@NonNull final ClientId adClientId,
+			@NonNull final OrgId adOrgId)
+	{
+		return getValuesForPrefix(prefix, adClientId.getRepoId(), adOrgId.getRepoId());
+	}
 
 	/**
 	 * This method is similar {@link #getValuesForPrefix(String, int, int)}, but has the additional <code>removePrefix</code> parameter.
