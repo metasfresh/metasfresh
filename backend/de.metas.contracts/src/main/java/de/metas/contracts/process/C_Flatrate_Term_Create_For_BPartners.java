@@ -80,7 +80,7 @@ public class C_Flatrate_Term_Create_For_BPartners extends C_Flatrate_Term_Create
 	@Param(parameterName = PARAM_SHOW_SIMULATION_FLAG)
 	private boolean showSimulationFlag;
 
-	private static final String PARAM_IS_COMPLETE_DOCUMENT = "IsCompleteDocument";
+	private static final String PARAM_IS_COMPLETE_DOCUMENT = "IsComplete";
 	@Param(parameterName = PARAM_IS_COMPLETE_DOCUMENT, mandatory = true)
 	private boolean p_completeDocument;
 
