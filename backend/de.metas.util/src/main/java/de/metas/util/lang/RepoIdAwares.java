@@ -7,11 +7,15 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 import java.util.function.IntFunction;
 
+import javax.annotation.Nullable;
+
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.util.Check;
+import de.metas.util.NumberUtils;
+import de.metas.util.collections.CollectionUtils;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -78,6 +82,17 @@ public class RepoIdAwares
 		return id;
 	}
 
+	public static <T extends RepoIdAware> T ofRepoId(final String repoIdStr, Class<T> repoIdClass)
+	{
+		final Integer repoId = NumberUtils.asIntegerOrNull(repoIdStr);
+		if (repoId == null)
+		{
+			throw Check.mkEx("Invalid repoId value: " + repoId);
+		}
+
+		return ofRepoId(repoId, repoIdClass);
+	}
+
 	public static <T extends RepoIdAware> T ofRepoIdOrNull(final int repoId, Class<T> repoIdClass)
 	{
 		final RepoIdAwareDescriptor repoIdAwareDescriptor = getRepoIdAwareDescriptor(repoIdClass);
@@ -86,6 +101,15 @@ public class RepoIdAwares
 		final T id = (T)repoIdAwareDescriptor.getOfRepoIdOrNullFunction().apply(repoId);
 
 		return id;
+	}
+
+	public static <T extends RepoIdAware> ImmutableList<T> ofCommaSeparatedList(
+			@Nullable final String commaSeparatedStr,
+			@NonNull final Class<T> repoIdClass)
+	{
+		return CollectionUtils.ofCommaSeparatedList(
+				commaSeparatedStr,
+				repoIdStr -> ofRepoId(repoIdStr, repoIdClass));
 	}
 
 	@VisibleForTesting
