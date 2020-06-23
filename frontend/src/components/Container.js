@@ -51,7 +51,6 @@ class Container extends PureComponent {
       rawModal,
       modal,
       pluginModal,
-      indicator,
       includedView,
       closeModalCallback,
       editmode,
@@ -129,12 +128,11 @@ class Container extends PureComponent {
               windowId={modal.type}
               dataId={modal.dataId ? modal.dataId : dataId}
               modalTitle={modal.title}
-              modalViewId={modal.viewId}
+              viewId={modal.viewId}
               parentWindowId={windowId}
               parentDataId={dataId}
-              viewId={viewId}
+              parentViewId={viewId}
               rawModalVisible={rawModal.visible}
-              indicator={indicator}
               modalViewDocumentIds={modal.viewDocumentIds}
               closeCallback={closeModalCallback}
               modalSaveStatus={
@@ -247,7 +245,6 @@ class Container extends PureComponent {
  * @prop {*} handleEditModeToggle
  * @prop {*} hideHeader
  * @prop {*} includedView
- * @prop {string} indicator
  * @prop {bool} isDocumentNotSaved
  * @prop {*} masterDocumentList
  * @prop {*} modal
@@ -289,7 +286,6 @@ Container.propTypes = {
   hideHeader: PropTypes.any,
   handleDeletedStatus: PropTypes.any,
   handleEditModeToggle: PropTypes.any,
-  indicator: PropTypes.any,
   includedView: PropTypes.any,
   isDocumentNotSaved: PropTypes.any,
   masterDocumentList: PropTypes.any,
@@ -329,7 +325,6 @@ const mapStateToProps = (state, { windowId }) => {
     connectionError: state.windowHandler.connectionError || false,
     pluginComponents: state.pluginsHandler.components,
     pluginModal: state.windowHandler.pluginModal,
-    indicator: state.windowHandler.indicator,
     breadcrumb: state.menuHandler.breadcrumb,
   };
 };

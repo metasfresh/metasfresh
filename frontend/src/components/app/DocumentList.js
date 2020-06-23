@@ -175,7 +175,6 @@ export default class DocumentList extends Component {
       layoutPending,
     } = reduxData;
     const { clickOutsideLock, toggleWidth } = this.state;
-
     const selected = table.selected;
     const modalType = modal ? modal.modalType : null;
     const stopShortcutPropagation =
