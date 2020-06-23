@@ -25,6 +25,7 @@ import de.metas.cache.ICacheResetListener;
 import de.metas.device.adempiere.DeviceConfig;
 import de.metas.device.adempiere.DeviceConfigException;
 import de.metas.device.adempiere.IDeviceConfigPool;
+import de.metas.device.adempiere.IDeviceConfigPoolListener;
 import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
 import de.metas.util.Check;

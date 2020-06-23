@@ -38,7 +38,10 @@ public class DeviceConfigPoolFactory implements IDeviceConfigPoolFactory
 	private final ConcurrentHashMap<DeviceConfigPoolKey, IDeviceConfigPool> deviceConfigPools = new ConcurrentHashMap<>();
 
 	@Override
-	public IDeviceConfigPool getDeviceConfigPool(final IHostIdentifier clientHost, final ClientId adClientId, final OrgId adOrgId)
+	public IDeviceConfigPool getDeviceConfigPool(
+			@NonNull final IHostIdentifier clientHost,
+			@NonNull final ClientId adClientId,
+			@NonNull final OrgId adOrgId)
 	{
 		return deviceConfigPools.computeIfAbsent(
 				DeviceConfigPoolKey.of(clientHost, adClientId, adOrgId),
