@@ -6,7 +6,7 @@ import deepUnfreeze from 'deep-unfreeze';
 
 import { getItemsByProperty, nullToEmptyStrings } from './index';
 import { viewState, getView } from '../reducers/viewHandler';
-import { getTable, getTableId } from '../reducers/tables';
+import { getTable, getTableId, getSelection } from '../reducers/tables';
 import { TIME_REGEX_TEST } from '../constants/Constants';
 import { getCurrentActiveLocale } from './locale';
 
@@ -98,14 +98,23 @@ const DLmapStateToProps = (state, props) => {
     viewId = null;
   }
 
-  const childTableId = getTableId({
-    windowId: props.includedView.windowType,
-    viewId: props.includedView.viewId,
-  });
-  const parentTableId = getTableId({
-    windowId: props.parentWindowType,
-    viewId: props.parentDefaultViewId,
-  });
+  let childTableId = null;
+  const childSelector = getSelection();
+  if (props.includedView && props.includedView.windowType) {
+    childTableId = getTableId({
+      windowId: props.includedView.windowType,
+      viewId: props.includedView.viewId,
+    });
+  }
+
+  let parentTableId = null;
+  const parentSelector = getSelection();
+  if (props.parentWindowType) {
+    parentTableId = getTableId({
+      windowId: props.parentWindowType,
+      viewId: props.parentDefaultViewId,
+    });
+  }
 
   return {
     page,
@@ -119,13 +128,8 @@ const DLmapStateToProps = (state, props) => {
     refType: queryRefType,
     refDocumentId: queryRefDocumentId,
     refTabId: queryRefTabId,
-    childSelected:
-      props.includedView && props.includedView.windowType
-        ? getSelection(state, childTableId)
-        : NO_SELECTION,
-    parentSelected: props.parentWindowType
-      ? getSelection(state, parentTableId)
-      : NO_SELECTION,
+    childSelected: childSelector(state, childTableId),
+    parentSelected: parentSelector(state, parentTableId),
     modal: state.windowHandler.modal,
     rawModalVisible: state.windowHandler.rawModal.visible,
     filters: state.filters,

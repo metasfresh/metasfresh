@@ -375,9 +375,10 @@ const mapStateToProps = (state) => {
       windowId: includedView.windowType,
       viewId: includedView.viewId,
     });
+    const childSelector = getSelection();
 
     result.childViewId = includedView.viewId;
-    result.childViewSelectedIds = getSelection(state, childViewTableId);
+    result.childViewSelectedIds = childSelector(state, childViewTableId);
   }
 
   return result;
