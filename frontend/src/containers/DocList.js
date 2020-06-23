@@ -18,6 +18,19 @@ const EMPTY_OBJECT = {};
  * @extends Component
  */
 class DocList extends PureComponent {
+  state = {};
+
+  /**
+   * getDerivedStateFromProps lifecycle - hold in the state of the component the last page
+   * @param {obj} props
+   * @param {obj} state
+   */
+  static getDerivedStateFromProps(props, state) {
+    return props.query && props.query.page !== state.lastPage
+      ? { lastPage: props.query.page }
+      : null;
+  }
+
   componentDidMount = () => {
     const { windowId, getWindowBreadcrumb } = this.props;
 
@@ -113,6 +126,7 @@ class DocList extends PureComponent {
             disablePaginationShortcuts={modal.visible || rawModal.visible}
             sort={queryCopy.sort}
             page={queryCopy.page}
+            lastPage={this.state.lastPage}
             viewId={queryCopy.viewId}
             referenceId={queryCopy.referenceId}
             refType={queryCopy.refType}
@@ -139,6 +153,7 @@ class DocList extends PureComponent {
                 inModal={false}
                 sort={queryCopy.sort}
                 page={queryCopy.page}
+                lastPage={this.state.lastPage}
                 viewId={queryCopy.viewId}
                 referenceId={queryCopy.referenceId}
                 refType={queryCopy.refType}

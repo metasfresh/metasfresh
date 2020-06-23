@@ -314,6 +314,7 @@ export default class Table extends PureComponent {
       isGerman,
       activeSort,
       page,
+      lastPage,
       columns,
       selected,
       rows,
@@ -325,6 +326,7 @@ export default class Table extends PureComponent {
       onRightClick,
       rowRefs,
     } = this.props;
+
     const activeLocale = { key: getCurrentActiveLocale() };
 
     if (!rows.length || !columns.length) {
@@ -347,6 +349,7 @@ export default class Table extends PureComponent {
         {...item}
         {...{
           page,
+          lastPage,
           entity,
           activeLocale,
           windowId,
