@@ -202,17 +202,4 @@ public class PrintPackageBL implements IPrintPackageBL
 		logger.debug("Print package context: {}", printCtx);
 		return printCtx;
 	}
-
-	@Override
-	@Nullable
-	public String getHostKeyOrNull(@NonNull final Properties ctx)
-	{
-		// Check session
-		final MFSession session = Services.get(ISessionBL.class).getCurrentSession(ctx);
-		if (session != null)
-		{
-			return session.getOrCreateHostKey(ctx);
-		}
-		return null;
-	}
 }

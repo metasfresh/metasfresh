@@ -33,6 +33,7 @@ import java.util.Properties;
 import java.util.stream.Collectors;
 
 import de.metas.adempiere.service.PrinterRoutingsQuery;
+import de.metas.printing.api.IPrintClientsBL;
 import de.metas.printing.api.IPrintingQueueBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -97,6 +98,7 @@ public class PrintJobBL implements IPrintJobBL
 	private final IAsyncBatchBL asyncBatchBL = Services.get(IAsyncBatchBL.class);
 	private final IPrinterBL printerBL = Services.get(IPrinterBL.class);
 	private final IPrintingQueueBL printingQueueBL = Services.get(IPrintingQueueBL.class);
+	private final IPrintClientsBL printClientsBL = Services.get(IPrintClientsBL.class);
 
 	private int maxLinesPerJob = -1;
 
@@ -501,7 +503,7 @@ public class PrintJobBL implements IPrintJobBL
 		instructions.setCopies(copies);
 
 		final Properties ctx = InterfaceWrapperHelper.getCtx(instructions);
-		final String hostKey = Services.get(IPrintPackageBL.class).getHostKeyOrNull(ctx);
+		final String hostKey = printClientsBL.getHostKeyOrNull(ctx);
 
 		if (createWithSpecificHostKey)
 		{

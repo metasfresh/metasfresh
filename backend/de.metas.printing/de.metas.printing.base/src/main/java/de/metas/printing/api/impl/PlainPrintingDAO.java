@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Properties;
 
+import de.metas.printing.api.IPrintClientsBL;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.IQueryOrderBy;
@@ -68,6 +69,7 @@ import de.metas.util.Services;
 public class PlainPrintingDAO extends AbstractPrintingDAO
 {
 	private final POJOLookupMap lookupMap = POJOLookupMap.get();
+	private final IPrintClientsBL printClientsBL = Services.get(IPrintClientsBL.class);
 
 	public POJOLookupMap getLookupMap()
 	{
@@ -171,7 +173,7 @@ public class PlainPrintingDAO extends AbstractPrintingDAO
 	@Override
 	public I_C_Print_Job_Instructions retrieveAndLockNextPrintJobInstructions(final Properties ctx, final String trxName)
 	{
-		final String hostKey = Services.get(IPrintPackageBL.class).getHostKeyOrNull(ctx);
+		final String hostKey = printClientsBL.getHostKeyOrNull(ctx);
 
 		final List<I_C_Print_Job_Instructions> result = lookupMap.getRecords(I_C_Print_Job_Instructions.class, pojo -> {
 			if (!X_C_Print_Job_Instructions.STATUS_Pending.equals(pojo.getStatus()))

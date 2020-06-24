@@ -1,6 +1,7 @@
 package de.metas.printing.model.validator;
 
 import de.metas.logging.TableRecordMDC;
+import de.metas.printing.api.IPrintClientsBL;
 import de.metas.printing.api.IPrintPackageBL;
 import de.metas.printing.client.IPrintingClientDelegate;
 import de.metas.printing.model.I_AD_Printer_Config;
@@ -45,6 +46,9 @@ import java.util.Properties;
 @Component
 public class AD_Printer_Config
 {
+
+	private final IPrintClientsBL printClientsBL = Services.get(IPrintClientsBL.class);
+
 	/**
 	 * If our own hostkey's printer config uses a shared config () i.e. another/external printing client, then we stop our embedded printing client. Otherwise we start it.
 	 */
@@ -55,7 +59,7 @@ public class AD_Printer_Config
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(printerConfig);
 
-		final String hostKey = Services.get(IPrintPackageBL.class).getHostKeyOrNull(ctx);
+		final String hostKey = printClientsBL.getHostKeyOrNull(ctx);
 
 		if (Check.isBlank(hostKey) || !Objects.equals(hostKey, printerConfig.getConfigHostKey()))
 		{

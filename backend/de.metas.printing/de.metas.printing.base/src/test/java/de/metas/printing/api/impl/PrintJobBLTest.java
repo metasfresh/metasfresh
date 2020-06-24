@@ -140,6 +140,7 @@ public class PrintJobBLTest extends AbstractPrintingTest
 		helper.createAllPrintJobs();
 
 		// then
+		// remembers that we have SYSCONFIG_MAX_LINES_PER_JOB = 2
 		final List<I_C_Print_Job> printJobs = helper.getDB().getRecords(I_C_Print_Job.class);
 		Assertions.assertThat(printJobs).as("Invalid Print Jobs count").hasSize(3);
 	}

@@ -22,18 +22,24 @@
 
 package de.metas.printing.api.impl;
 
+import de.metas.document.archive.api.ArchiveFileNameService;
 import de.metas.organization.OrgId;
 import de.metas.printing.HardwarePrinter;
 import de.metas.printing.HardwarePrinterId;
+import de.metas.printing.HardwarePrinterRepository;
 import de.metas.printing.HardwareTray;
 import de.metas.printing.HardwareTrayId;
 import de.metas.printing.OutputType;
 import de.metas.printing.PrinterRoutingId;
 import de.metas.printing.PrintingQueueItemId;
+import de.metas.printing.api.IPrintPackageBL;
 import de.metas.printing.api.util.PdfCollator;
 import de.metas.printing.model.I_AD_PrinterRouting;
 import de.metas.printing.printingdata.PrintingData;
+import de.metas.printing.printingdata.PrintingDataFactory;
 import de.metas.printing.printingdata.PrintingSegment;
+import de.metas.util.Services;
+import org.compiere.SpringContextHolder;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
@@ -48,6 +54,12 @@ class PrintingDataTest
 	@BeforeEach
 	void beforeEach(TestInfo testInfo)
 	{
+		final PrintPackageBL printPackageBL = new PrintPackageBL(
+				new PrintingDataFactory(
+						new HardwarePrinterRepository(),
+		 				new ArchiveFileNameService()));
+		Services.registerService(IPrintPackageBL.class, printPackageBL);
+
 		helper = new Helper(testInfo);
 		helper.setup();
 	}

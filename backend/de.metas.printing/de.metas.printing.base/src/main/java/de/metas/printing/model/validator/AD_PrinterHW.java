@@ -29,6 +29,7 @@ import java.util.Properties;
 import de.metas.logging.TableRecordMDC;
 import de.metas.printing.HardwarePrinterId;
 import de.metas.printing.OutputType;
+import de.metas.printing.api.IPrintClientsBL;
 import de.metas.printing.model.I_AD_Printer_Config;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
@@ -54,6 +55,7 @@ import org.slf4j.MDC;
 public class AD_PrinterHW
 {
 	private final Logger logger = LogManager.getLogger(getClass());
+	private final IPrintClientsBL printClientsBL = Services.get(IPrintClientsBL.class);
 
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_NEW)
 	public void setHostKey(final I_AD_PrinterHW printerHW)
@@ -70,7 +72,7 @@ public class AD_PrinterHW
 		}
 
 		final Properties ctx = InterfaceWrapperHelper.getCtx(printerHW);
-		final String hostKey = Services.get(IPrintPackageBL.class).getHostKeyOrNull(ctx);
+		final String hostKey = printClientsBL.getHostKeyOrNull(ctx);
 		if (Check.isEmpty(hostKey, true))
 		{
 			logger.debug("HostKey not found in context");

@@ -35,8 +35,8 @@ import de.metas.printing.HardwarePrinterRepository;
 import de.metas.printing.HardwareTrayId;
 import de.metas.printing.PrinterRoutingId;
 import de.metas.printing.PrintingQueueItemId;
+import de.metas.printing.api.IPrintClientsBL;
 import de.metas.printing.api.IPrintJobBL;
-import de.metas.printing.api.IPrintPackageBL;
 import de.metas.printing.api.IPrintingDAO;
 import de.metas.printing.api.IPrintingQueueBL;
 import de.metas.printing.model.I_AD_PrinterRouting;
@@ -71,7 +71,7 @@ public class PrintingDataFactory
 	private final IPrintingDAO printingDAO = Services.get(IPrintingDAO.class);
 	private final IArchiveBL archiveBL = Services.get(IArchiveBL.class);
 	private final IDocOutboundDAO outboundDAO = Services.get(IDocOutboundDAO.class);
-	private final IPrintPackageBL printPackageBL = Services.get(IPrintPackageBL.class);
+	private final IPrintClientsBL printClientsBL = Services.get(IPrintClientsBL.class);
 
 	private final HardwarePrinterRepository hardwarePrinterRepository;
 	private final ArchiveFileNameService archiveFileNameService;
@@ -111,7 +111,7 @@ public class PrintingDataFactory
 		final List<I_AD_PrinterRouting> printerRoutings = InterfaceWrapperHelper.createList(printerRoutingDAO.fetchPrinterRoutings(query), I_AD_PrinterRouting.class);
 		for (final I_AD_PrinterRouting printerRouting : printerRoutings)
 		{
-			final String hostKey = printPackageBL.getHostKeyOrNull(Env.getCtx());
+			final String hostKey = printClientsBL.getHostKeyOrNull(Env.getCtx());
 			final PrintingSegment printingSegment = createPrintingSegment(printerRouting, hostKey);
 			if (printingSegment != null)
 			{

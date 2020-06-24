@@ -27,6 +27,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 
+import de.metas.printing.api.IPrintClientsBL;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.ISqlQueryFilter;
@@ -64,6 +65,9 @@ import de.metas.util.Services;
 
 public class PrintingDAO extends AbstractPrintingDAO
 {
+
+	private final IPrintClientsBL printClientsBL = Services.get(IPrintClientsBL.class);
+
 	// NOTE: before changing the SeqNo ORDER BY clause, please check were it is used
 	@Override
 	protected Iterator<I_C_Print_Job_Line> retrievePrintJobLines0(final I_C_Print_Job job, final int fromSeqNo, final int toSeqNo)
@@ -158,7 +162,7 @@ public class PrintingDAO extends AbstractPrintingDAO
 
 		//
 		// Only for current HostKey, if one is specified
-		final String hostKey = Services.get(IPrintPackageBL.class).getHostKeyOrNull(ctx);
+		final String hostKey = printClientsBL.getHostKeyOrNull(ctx);
 		if (!Check.isEmpty(hostKey, true))
 		{
 			whereClause.append(" AND (").append(I_C_Print_Job_Instructions.COLUMNNAME_HostKey).append("=?")
