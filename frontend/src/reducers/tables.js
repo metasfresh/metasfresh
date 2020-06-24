@@ -160,7 +160,7 @@ const reducer = produce((draftState, action) => {
       });
       let updatedSelected = {};
 
-      if (!selectionValid) {
+      if (!selectionValid && rows.length) {
         const newSelected = [rows[0][keyProperty]];
         updatedSelected = {
           selected: newSelected,
