@@ -91,6 +91,7 @@ public class PrintOutputFacade
 				{
 					logger.debug("At least a part of C_Printing_Queue shall be stored directly to disk; -> invoke printingDataToPDFFileStorer; printingData={}; ", printingData);
 					storePDFAndFireEvent(source, item, printingDataToStore);
+					source.markPrinted(item);
 				}
 
 				final boolean hasSegmentsToCreatePrintJobs = printingDataToStore.getSegments().size() < printingData.getSegments().size();
