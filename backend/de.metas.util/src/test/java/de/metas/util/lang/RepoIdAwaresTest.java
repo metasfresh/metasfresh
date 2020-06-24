@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.util.Check;
@@ -56,6 +57,13 @@ public class RepoIdAwaresTest
 		{
 			Check.assumeGreaterThanZero(repoId, "repoId");
 			this.repoId = repoId;
+		}
+
+		@JsonValue
+		@Override
+		public int getRepoId()
+		{
+			return repoId;
 		}
 	}
 

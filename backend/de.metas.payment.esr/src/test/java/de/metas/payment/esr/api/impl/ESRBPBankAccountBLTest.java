@@ -46,6 +46,7 @@ public class ESRBPBankAccountBLTest
 	{
 		final ESRBPBankAccountBL esrBankAccountBL = new ESRBPBankAccountBL(new BankRepository());
 		SpringContextHolder.registerJUnitBean(IESRBPBankAccountBL.class, esrBankAccountBL);
+		Services.clear();
 
 		final IESRBPBankAccountBL service = Services.get(IESRBPBankAccountBL.class);
 		assertThat(service).isSameAs(esrBankAccountBL);
