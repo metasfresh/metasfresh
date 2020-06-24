@@ -104,7 +104,7 @@ export default class Table extends PureComponent {
     } = this.props;
     const id = item[keyProperty];
 
-    if (e.button === 0) {
+    if (e && e.button === 0) {
       const selectMore = e.metaKey || e.ctrlKey;
       const selectRange = e.shiftKey;
       const isSelected = selected.indexOf(id) > -1;

@@ -109,6 +109,33 @@ describe('Table component', () => {
     expect(html).toContain('testfirma WebUI AG');
   });
 
+  it('No row is selected if selection is empty', async () => {
+    const tableWrapper = mount(
+      <ShortcutProvider hotkeys={{}} keymap={{}}>
+        <Provider store={store}>
+          <Table {...tableProps} selected={[]} />
+        </Provider>
+      </ShortcutProvider>
+    );
+
+    const html = tableWrapper.html();
+    expect(html).not.toContain('row-selected');
+  });
+
+  it('Cell is selected and row focused', async () => {
+    const tableWrapper = mount(
+      <ShortcutProvider hotkeys={{}} keymap={{}}>
+        <Provider store={store}>
+          <Table {...tableProps} selected={['1000194']} />
+        </Provider>
+      </ShortcutProvider>
+    );
+
+    const html = tableWrapper.html();
+    expect(html).toContain('row-selected');
+    expect(html).toContain('row-0-143-B row-1000194 row-selected tr-even');
+  });
+
   it.todo('Lookup widget is focused on selecting row');
 
   it.todo('Lookup widget is blurred on patch and re-focused on key');
