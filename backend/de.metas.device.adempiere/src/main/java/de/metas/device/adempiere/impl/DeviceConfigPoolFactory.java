@@ -1,15 +1,14 @@
 package de.metas.device.adempiere.impl;
 
-import java.util.concurrent.ConcurrentHashMap;
-
 import org.adempiere.service.ClientId;
 import org.adempiere.util.net.IHostIdentifier;
 
+import de.metas.device.adempiere.CompositeDeviceConfigPool;
 import de.metas.device.adempiere.IDeviceConfigPool;
 import de.metas.device.adempiere.IDeviceConfigPoolFactory;
+import de.metas.device.pool.dummy.DummyDeviceConfigPool;
 import de.metas.organization.OrgId;
 import lombok.NonNull;
-import lombok.Value;
 
 /*
  * #%L
@@ -35,35 +34,25 @@ import lombok.Value;
 
 public class DeviceConfigPoolFactory implements IDeviceConfigPoolFactory
 {
-	private final ConcurrentHashMap<DeviceConfigPoolKey, IDeviceConfigPool> deviceConfigPools = new ConcurrentHashMap<>();
-
 	@Override
-	public IDeviceConfigPool getDeviceConfigPool(
+	public IDeviceConfigPool createDeviceConfigPool(
 			@NonNull final IHostIdentifier clientHost,
 			@NonNull final ClientId adClientId,
 			@NonNull final OrgId adOrgId)
 	{
-		return deviceConfigPools.computeIfAbsent(
-				DeviceConfigPoolKey.of(clientHost, adClientId, adOrgId),
-				this::createDeviceConfigPool);
-	}
+		final SysConfigDeviceConfigPool sysConfigDeviceConfigPool = new SysConfigDeviceConfigPool(
+				clientHost,
+				adClientId,
+				adOrgId);
 
-	private IDeviceConfigPool createDeviceConfigPool(final DeviceConfigPoolKey key)
-	{
-		return new SysConfigDeviceConfigPool(
-				key.getClientHost(),
-				key.getAdClientId(),
-				key.getAdOrgId());
-	}
-
-	@Value(staticConstructor = "of")
-	private static class DeviceConfigPoolKey
-	{
-		@NonNull
-		IHostIdentifier clientHost;
-		@NonNull
-		ClientId adClientId;
-		@NonNull
-		OrgId adOrgId;
+		if (DummyDeviceConfigPool.isEnabled())
+		{
+			final DummyDeviceConfigPool inMemoryMockedDeviceConfigPool = new DummyDeviceConfigPool();
+			return CompositeDeviceConfigPool.compose(sysConfigDeviceConfigPool, inMemoryMockedDeviceConfigPool);
+		}
+		else
+		{
+			return sysConfigDeviceConfigPool;
+		}
 	}
 }

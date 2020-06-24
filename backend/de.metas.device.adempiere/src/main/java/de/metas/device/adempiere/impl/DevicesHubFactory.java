@@ -68,12 +68,18 @@ public class DevicesHubFactory implements IDevicesHubFactory
 
 	private AttributesDevicesHub createAttributesDevicesHub(final AttributesDevicesHubKey key)
 	{
-		final IDeviceConfigPool deviceConfigPool = deviceConfigPoolFactory.getDeviceConfigPool(
+		final IDeviceConfigPool deviceConfigPool = deviceConfigPoolFactory.createDeviceConfigPool(
 				key.getClientHost(),
 				key.getAdClientId(),
 				key.getAdOrgId());
 
 		return new AttributesDevicesHub(deviceConfigPool);
+	}
+
+	@Override
+	public void cacheReset()
+	{
+		devicesHubsByKey.clear();
 	}
 
 	@Value(staticConstructor = "of")
