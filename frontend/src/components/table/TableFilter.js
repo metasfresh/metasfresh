@@ -95,6 +95,7 @@ class TableFilter extends PureComponent {
 
     this.state = {
       isTooltipShow: false,
+      shortcutActions: [],
     };
   }
 
@@ -106,6 +107,10 @@ class TableFilter extends PureComponent {
     this.props.deleteTopActions();
   }
 
+  /**
+   * @method getActions
+   * @summary fetch quickactions for the table
+   */
   getActions = () => {
     const { tabId, docType, docId, fetchTopActions } = this.props;
 
@@ -140,6 +145,11 @@ class TableFilter extends PureComponent {
     );
   };
 
+  /**
+   * @method generateActionButtons
+   * @summary create and store buttons for actions once, so that we won't redo
+   * this on each render
+   */
   generateActionButtons = (actions) => {
     const { openModal, tabIndex, docId, tabId, docType } = this.props;
     const { isTooltipShow } = this.state;
@@ -173,13 +183,13 @@ class TableFilter extends PureComponent {
     ));
   };
 
-  // TODO: Rewrite this to not create shortcut actions on each render
+  /**
+   * @method generateShortcuts
+   * @summary generate table filters shortcuts and store them in state. We're doing
+   * this to force a re-render once we have the actions data available.
+   */
   generateShortcuts = (actions) => {
     const shortcutActions = [];
-
-    if (!actions) {
-      this.shortcutElements = null;
-    }
 
     for (let i = 0; i < actions.length; i += 1) {
       const action = actions[i];
@@ -191,9 +201,9 @@ class TableFilter extends PureComponent {
       });
     }
 
-    this.shortcutElements = (
-      <TableFilterContextShortcuts shortcutActions={shortcutActions} />
-    );
+    this.setState({
+      shortcutActions,
+    });
   };
 
   showTooltip = (name) => {
@@ -223,7 +233,7 @@ class TableFilter extends PureComponent {
       modalVisible,
       wrapperHeight,
     } = this.props;
-    const { isTooltipShow } = this.state;
+    const { isTooltipShow, shortcutActions } = this.state;
     const tabIndex = fullScreen || modalVisible ? -1 : this.props.tabIndex;
 
     return (
@@ -266,7 +276,9 @@ class TableFilter extends PureComponent {
               </button>
             )}
             {!isBatchEntry && this.actionButtons}
-            {!isBatchEntry && this.shortcutElements}
+            {!isBatchEntry && (
+              <TableFilterContextShortcuts shortcutActions={shortcutActions} />
+            )}
           </div>
           {supportQuickInput &&
             (isBatchEntry || fullScreen) &&
