@@ -66,7 +66,9 @@ public class All_RepoIdAware_Classes_Test
 			.skip(de.metas.shipment.ShipmentDeclarationLineId.class)
 			//
 			.skip(org.eevolution.api.PPOrderRoutingActivityId.class)
-			.skip(de.metas.material.planning.pporder.PPRoutingActivityId.class);
+			.skip(de.metas.material.planning.pporder.PPRoutingActivityId.class)
+			//
+			.skip(de.metas.printing.HardwareTrayId.class);
 
 	private static ObjectMapper jsonMapper;
 
