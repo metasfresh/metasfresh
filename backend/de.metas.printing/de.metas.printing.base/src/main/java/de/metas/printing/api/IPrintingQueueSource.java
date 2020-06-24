@@ -72,10 +72,4 @@ public interface IPrintingQueueSource
 	String getName();
 
 	void setName(String name);
-
-	default Optional<OutputType> extractOutputTypeForItem(@NonNull final I_C_Printing_Queue item)
-	{
-		final IPrintingQueueBL printingQueueBL = Services.get(IPrintingQueueBL.class);
-		return printingQueueBL.retrieveOutputTypeFor(item);
-	}
 }
