@@ -125,18 +125,19 @@ public class DocOutboundArchiveEventListener implements IArchiveEventListener
 			return;
 		}
 
-		final I_C_Doc_Outbound_Log_Line docExchangeLine = createLogLine(archive);
+		final I_C_Doc_Outbound_Log_Line docOutboundLogLineRecord = createLogLine(archive);
 
-		docExchangeLine.setAction(X_C_Doc_Outbound_Log_Line.ACTION_Print);
+		docOutboundLogLineRecord.setAction(X_C_Doc_Outbound_Log_Line.ACTION_Print);
+		docOutboundLogLineRecord.setPrinterName(printerName);
 
 		// create stuff
 		if (userId != null)
 		{
-			docExchangeLine.setAD_User_ID(userId.getRepoId());
+			docOutboundLogLineRecord.setAD_User_ID(userId.getRepoId());
 		}
-		docExchangeLine.setStatus(status);
+		docOutboundLogLineRecord.setStatus(status);
 
-		save(docExchangeLine);
+		save(docOutboundLogLineRecord);
 	}
 
 	/**
