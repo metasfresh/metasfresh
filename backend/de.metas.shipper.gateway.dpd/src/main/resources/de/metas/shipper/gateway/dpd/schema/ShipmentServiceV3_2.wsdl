@@ -25,7 +25,7 @@
     <types>
         <xsd:schema targetNamespace="http://dpd.com/common/service/ShipmentService/3.2" xmlns="http://schemas.xmlsoap.org/wsdl/" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:tns="http://dpd.com/common/service/ShipmentService/3.2" xmlns:types="http://dpd.com/common/service/types/ShipmentService/3.2" xmlns:types_authentication="http://dpd.com/common/service/types/Authentication/2.0"
                     xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
-            <xsd:import namespace="http://dpd.com/common/service/types/ShipmentService/3.2" schemaLocation="https://public-ws-stage.dpd.com/services/ShipmentService/V3_2/?xsd=ShipmentService-Public_3_2.xsd">
+            <xsd:import namespace="http://dpd.com/common/service/types/ShipmentService/3.2" schemaLocation="./ShipmentService-Public_3_2.xsd">
             </xsd:import>
 <!--            <xsd:import namespace="http://dpd.com/common/service/types/Authentication/2.0" schemaLocation="https://public-ws-stage.dpd.com/services/ShipmentService/V3_2/?xsd=Authentication_2_0.xsd">-->
 <!--            </xsd:import>-->
