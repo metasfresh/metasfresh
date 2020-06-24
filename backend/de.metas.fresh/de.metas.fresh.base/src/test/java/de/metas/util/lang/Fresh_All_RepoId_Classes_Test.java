@@ -1,5 +1,16 @@
 package de.metas.util.lang;
 
+import de.metas.bpartner.BPartnerBankAccountId;
+import de.metas.bpartner.BPartnerContactId;
+import de.metas.bpartner.BPartnerLocationId;
+import de.metas.customs.CustomsInvoiceLineId;
+import de.metas.invoice.InvoiceLineId;
+import de.metas.material.planning.pporder.PPRoutingActivityId;
+import de.metas.phonecall.PhonecallSchemaVersionId;
+import de.metas.phonecall.PhonecallSchemaVersionLineId;
+import de.metas.shipment.ShipmentDeclarationLineId;
+import org.adempiere.warehouse.LocatorId;
+import org.eevolution.api.PPOrderRoutingActivityId;
 import org.junit.Test;
 
 /*
@@ -46,6 +57,8 @@ public class Fresh_All_RepoId_Classes_Test
 				//
 				.skip(org.eevolution.api.PPOrderRoutingActivityId.class)
 				.skip(de.metas.material.planning.pporder.PPRoutingActivityId.class)
+				//
+				.skip(de.metas.printing.HardwareTrayId.class)
 				//
 				.test();
 	}
