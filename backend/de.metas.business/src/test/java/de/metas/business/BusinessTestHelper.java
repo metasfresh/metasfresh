@@ -77,7 +77,6 @@ public final class BusinessTestHelper
 	 */
 	private static final int UOM_Precision_3 = 3;
 
-
 	public static CountryId createCountry(@NonNull final String countryCode)
 	{
 		final I_C_Country record = newInstance(I_C_Country.class);
@@ -142,35 +141,10 @@ public final class BusinessTestHelper
 		return uom;
 	}
 
-	public static void createUOMConversion(
-			@Nullable final I_M_Product product,
-			@NonNull final I_C_UOM uomFrom,
-			@NonNull final I_C_UOM uomTo,
-			@NonNull final BigDecimal fromToMultiplier,
-			@NonNull final BigDecimal toFromMultiplier)
+	public static void createUOMConversion(@NonNull final CreateUOMConversionRequest request)
 	{
-		createUOMConversion(
-				product != null ? ProductId.ofRepoId(product.getM_Product_ID()) : null,
-				UomId.ofRepoId(uomFrom.getC_UOM_ID()),
-				UomId.ofRepoId(uomTo.getC_UOM_ID()),
-				fromToMultiplier,
-				toFromMultiplier);
-	}
-
-	public static void createUOMConversion(
-			@Nullable final ProductId productId,
-			@NonNull final UomId uomFromId,
-			@NonNull final UomId uomToId,
-			@NonNull final BigDecimal fromToMultiplier,
-			@NonNull final BigDecimal toFromMultiplier)
-	{
-		Services.get(IUOMConversionDAO.class).createUOMConversion(CreateUOMConversionRequest.builder()
-				.productId(productId)
-				.fromUomId(uomFromId)
-				.toUomId(uomToId)
-				.fromToMultiplier(fromToMultiplier)
-				.toFromMultiplier(toFromMultiplier)
-				.build());
+		final IUOMConversionDAO uomConversionDAO = Services.get(IUOMConversionDAO.class);
+		uomConversionDAO.createUOMConversion(request);
 	}
 
 	public static CurrencyId getEURCurrencyId()
