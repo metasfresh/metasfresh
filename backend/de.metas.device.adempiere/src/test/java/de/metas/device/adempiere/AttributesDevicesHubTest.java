@@ -3,6 +3,7 @@ package de.metas.device.adempiere;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import com.google.common.collect.ImmutableList;
@@ -31,29 +32,57 @@ import com.google.common.collect.ImmutableList;
 
 public class AttributesDevicesHubTest
 {
-	@Test
-	public void test_extractDeviceDisplayNameCommonPrefix()
+	@Nested
+	public class extractDeviceDisplayNameCommonPrefix
 	{
-		Assertions.assertEquals("", AttributesDevicesHub.extractDeviceDisplayNameCommonPrefix(ImmutableList.of("mettler1")));
-		Assertions.assertEquals("mettler", AttributesDevicesHub.extractDeviceDisplayNameCommonPrefix(ImmutableList.of("mettler1", "mettler2")));
-		Assertions.assertEquals("mettler", AttributesDevicesHub.extractDeviceDisplayNameCommonPrefix(ImmutableList.of("mettler1", "mettler2", "mettler3")));
-		Assertions.assertEquals("", AttributesDevicesHub.extractDeviceDisplayNameCommonPrefix(ImmutableList.of("1mettler", "2mettler", "3mettler")));
+		@Test
+		public void standardCases()
+		{
+			Assertions.assertEquals("", AttributesDevicesHub.extractDeviceDisplayNameCommonPrefix(ImmutableList.of("mettler1")));
+			Assertions.assertEquals("mettler", AttributesDevicesHub.extractDeviceDisplayNameCommonPrefix(ImmutableList.of("mettler1", "mettler2")));
+			Assertions.assertEquals("mettler", AttributesDevicesHub.extractDeviceDisplayNameCommonPrefix(ImmutableList.of("mettler1", "mettler2", "mettler3")));
+			Assertions.assertEquals("", AttributesDevicesHub.extractDeviceDisplayNameCommonPrefix(ImmutableList.of("1mettler", "2mettler", "3mettler")));
+		}
 	}
 
-	@Test
-	public void test_createDeviceDisplayName()
+	@Nested
+	public class createDeviceDisplayName
 	{
-		Assertions.assertEquals("m", AttributesDevicesHub.createDeviceDisplayName("", "mettler1"));
-		Assertions.assertEquals("m", AttributesDevicesHub.createDeviceDisplayName(null, "mettler1"));
-		Assertions.assertEquals("mettler1", AttributesDevicesHub.createDeviceDisplayName("mettler", "mettler1"));
-		Assertions.assertEquals("mettler1", AttributesDevicesHub.createDeviceDisplayName("mettler", "mettler11111"));
-	}
+		@Nested
+		public class null_DeviceName
+		{
+			@Test
+			public void emptyDeviceDisplayNameCommonPrefix()
+			{
+				assertThatThrownBy(() -> AttributesDevicesHub.createDeviceDisplayName("", null))
+						.hasMessageContaining("deviceName");
+			}
+		}
 
-	@Test
-	public void test_createDeviceDisplayName_NullDeviceName()
-	{
-		assertThatThrownBy(() -> AttributesDevicesHub.createDeviceDisplayName("", null))
-				.hasMessageContaining("deviceName is not empty");
-	}
+		@Nested
+		public class empty_DeviceName
+		{
+			@Test
+			public void empty_deviceDisplayNameCommonPrefix()
+			{
+				assertThatThrownBy(() -> AttributesDevicesHub.createDeviceDisplayName("", ""))
+						.hasMessageContaining("deviceName is not empty");
+			}
+		}
 
+		@Test
+		public void deviceName_sameAs_deviceDisplayNameCommonPrefix()
+		{
+			Assertions.assertEquals("mettler", AttributesDevicesHub.createDeviceDisplayName("mettler", "mettler"));
+		}
+
+		@Test
+		public void standardCases()
+		{
+			Assertions.assertEquals("m", AttributesDevicesHub.createDeviceDisplayName("", "mettler1"));
+			Assertions.assertEquals("m", AttributesDevicesHub.createDeviceDisplayName(null, "mettler1"));
+			Assertions.assertEquals("mettler1", AttributesDevicesHub.createDeviceDisplayName("mettler", "mettler1"));
+			Assertions.assertEquals("mettler1", AttributesDevicesHub.createDeviceDisplayName("mettler", "mettler11111"));
+		}
+	}
 }

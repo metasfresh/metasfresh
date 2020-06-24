@@ -3,6 +3,8 @@ package de.metas.device.adempiere;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.mm.attributes.AttributeCode;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -190,13 +192,19 @@ public class AttributesDevicesHub
 	}
 
 	@VisibleForTesting
-	/* package */static final String createDeviceDisplayName(final String deviceDisplayNameCommonPrefix, final String deviceName)
+	/* package */static final String createDeviceDisplayName(
+			@Nullable final String deviceDisplayNameCommonPrefix,
+			@NonNull final String deviceName)
 	{
 		Check.assumeNotEmpty(deviceName, "deviceName is not empty");
 
 		if (deviceDisplayNameCommonPrefix == null || deviceDisplayNameCommonPrefix.isEmpty())
 		{
 			return String.valueOf(deviceName.charAt(0));
+		}
+		else if (deviceDisplayNameCommonPrefix.equals(deviceName))
+		{
+			return deviceDisplayNameCommonPrefix;
 		}
 		else
 		{
