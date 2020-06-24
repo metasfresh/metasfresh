@@ -180,5 +180,4 @@ public class AllAvailableSingletonServicesTest
 					.sorted(Comparator.comparing(Class::getName));
 		}
 	}
-
 }
