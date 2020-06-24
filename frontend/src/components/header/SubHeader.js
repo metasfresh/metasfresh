@@ -506,9 +506,7 @@ class SubHeader extends Component {
     );
   };
 
-  setRef = (ref) => {
-    this.subHeader = ref;
-  };
+  setRef = (ref) => (this.subHeader = ref);
 
   render() {
     return (

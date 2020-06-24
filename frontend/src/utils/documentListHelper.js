@@ -100,19 +100,21 @@ const DLmapStateToProps = (state, props) => {
 
   let childTableId = null;
   const childSelector = getSelection();
-  if (props.includedView && props.includedView.windowType) {
+  const { includedView } = props;
+  if (includedView && includedView.windowType) {
     childTableId = getTableId({
-      windowId: props.includedView.windowType,
-      viewId: props.includedView.viewId,
+      windowId: includedView.windowType,
+      viewId: includedView.viewId,
     });
   }
 
   let parentTableId = null;
   const parentSelector = getSelection();
-  if (props.parentWindowType) {
+  const { parentWindowType, parentDefaultViewId } = props;
+  if (parentWindowType) {
     parentTableId = getTableId({
-      windowId: props.parentWindowType,
-      viewId: props.parentDefaultViewId,
+      windowId: parentWindowType,
+      viewId: parentDefaultViewId,
     });
   }
 

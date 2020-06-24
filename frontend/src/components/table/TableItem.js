@@ -5,14 +5,22 @@ import classnames from 'classnames';
 import { merge } from 'lodash';
 
 import {
-  VIEW_EDITOR_RENDER_MODES_ALWAYS,
-  VIEW_EDITOR_RENDER_MODES_ON_DEMAND,
-} from '../../constants/Constants';
-import { shouldRenderColumn, getIconClassName } from '../../utils/tableHelpers';
+  shouldRenderColumn,
+  getIconClassName,
+  prepareWidgetData,
+  isEditableOnDemand,
+  isCellEditable,
+  getCellWidgetData,
+} from '../../utils/tableHelpers';
 
 import TableCell from './TableCell';
 import WithMobileDoubleTap from '../WithMobileDoubleTap';
 
+/**
+ * @file Class based component.
+ * @module TableItem
+ * @extends PureComponent
+ */
 class TableItem extends PureComponent {
   constructor(props) {
     super(props);
@@ -54,7 +62,7 @@ class TableItem extends PureComponent {
     if (focusOnFieldName && isSelected && this.autofocusCell && !activeCell) {
       // eslint-disable-next-line react/no-find-dom-node
       ReactDOM.findDOMNode(this.autofocusCell).focus();
-      this.focusCell();
+      this._focusCell();
     }
   }
 
@@ -67,44 +75,6 @@ class TableItem extends PureComponent {
     }
   }
 
-  isAllowedFieldEdit = (item) =>
-    item.viewEditorRenderMode === VIEW_EDITOR_RENDER_MODES_ON_DEMAND;
-
-  isEditableOnDemand = (item) => {
-    const { fieldsByName } = this.props;
-    const property = item.fields ? item.fields[0].field : item.field;
-
-    return (
-      (fieldsByName &&
-        fieldsByName[property] &&
-        fieldsByName[property].viewEditorRenderMode ===
-          VIEW_EDITOR_RENDER_MODES_ON_DEMAND) ||
-      item.viewEditorRenderMode === VIEW_EDITOR_RENDER_MODES_ON_DEMAND
-    );
-  };
-
-  isCellEditable = (item) => {
-    const { fieldsByName: cells } = this.props;
-    const property = item.fields[0].field;
-    let isEditable =
-      (cells &&
-        cells[property] &&
-        cells[property].viewEditorRenderMode ===
-          VIEW_EDITOR_RENDER_MODES_ALWAYS) ||
-      item.viewEditorRenderMode === VIEW_EDITOR_RENDER_MODES_ALWAYS;
-
-    isEditable = item.widgetType === 'Color' ? false : isEditable;
-
-    return isEditable;
-  };
-
-  prepareWidgetData = (item) => {
-    const { fieldsByName } = this.props;
-    const widgetData = item.fields.map((prop) => fieldsByName[prop.field]);
-
-    return widgetData;
-  };
-
   initPropertyEditor = (fieldName) => {
     const { cols, fieldsByName } = this.props;
 
@@ -112,7 +82,7 @@ class TableItem extends PureComponent {
       cols.map((item) => {
         const property = item.fields[0].field;
         if (property === fieldName) {
-          const widgetData = this.prepareWidgetData(item);
+          const widgetData = prepareWidgetData(item, fieldsByName);
 
           if (widgetData) {
             this.handleEditProperty(null, property, true, widgetData[0]);
@@ -120,6 +90,39 @@ class TableItem extends PureComponent {
         }
       });
     }
+  };
+
+  listenOnKeysTrue = () => {
+    const { changeListenOnTrue } = this.props;
+
+    this.setState({
+      listenOnKeys: true,
+    });
+    changeListenOnTrue();
+  };
+
+  listenOnKeysFalse = () => {
+    const { changeListenOnFalse } = this.props;
+
+    this.setState({
+      listenOnKeys: false,
+    });
+    changeListenOnFalse();
+  };
+
+  handleClick = (e) => {
+    const { onClick, item } = this.props;
+
+    onClick(e, item);
+  };
+
+  handleClickOutside = (e) => {
+    const { changeListenOnTrue } = this.props;
+
+    this.selectedCell && this.selectedCell.clearValue(true);
+    this.handleEditProperty(e);
+
+    changeListenOnTrue();
   };
 
   handleDoubleClick = () => {
@@ -160,38 +163,39 @@ class TableItem extends PureComponent {
     }
   };
 
-  focusCell = (property, cb) => {
-    const { activeCell } = this.state;
-    const elem = document.activeElement;
-
-    if (
-      (activeCell !== elem && !elem.className.includes('js-input-field')) ||
-      cb
-    ) {
-      this.setState(
-        {
-          activeCell: elem,
-          activeCellName: property,
-        },
-        () => {
-          cb && cb();
-        }
-      );
-    } else {
-      cb && cb();
-    }
-  };
-
+  /**
+   * @method handleEditProperty
+   * @summary focuses and sets the cell as edited or clears the edited cell
+   * if optional params are not provided
+   *
+   * @param {object} e - event
+   * @param {object} [property] - field name
+   * @param {boolean} [focus] - flag if cell should be focused
+   * @param {object} [item] - widget data object
+   * @param {boolean} [select] - flag if selected cell should be cleared
+   */
   handleEditProperty = (e, property, focus, item, select) => {
-    this.focusCell(property, () => {
-      this.editProperty(e, property, focus, item, select);
+    this._focusCell(property, () => {
+      this._editProperty(e, property, focus, item, select);
     });
   };
 
-  editProperty = (e, property, focus, item, select) => {
+  /**
+   * @method _editProperty
+   * @summary Depending on the params provided, sets or resets edited cell
+   * and focuses the cell dom element enabling/disabling key listeners
+   *
+   * @param {object} e - event
+   * @param {object} [property] - field name
+   * @param {boolean} [focus] - flag if cell's widget should be focused
+   * @param {object} [item] - widget data object
+   * @param {boolean} [select] - flag if selected cell should be cleared
+   */
+  _editProperty = (e, property, focus, item, select) => {
     if (item ? !item.readonly : true) {
       if (this.state.edited === property && e) e.stopPropagation();
 
+      // cell's widget will have the value cleared on creation
       if (select && this.selectedCell) {
         this.selectedCell.clearValue();
       }
@@ -229,39 +233,47 @@ class TableItem extends PureComponent {
     }
   };
 
-  listenOnKeysTrue = () => {
-    const { changeListenOnTrue } = this.props;
-
+  /**
+   * @method handleCellExtend
+   * @summary set flag to render cells as extended if needed
+   *
+   * @param {boolean} selected - is row selected
+   */
+  handleCellExtend = (selected) => {
     this.setState({
-      listenOnKeys: true,
+      cellsExtended: selected,
     });
-    changeListenOnTrue();
   };
 
-  listenOnKeysFalse = () => {
-    const { changeListenOnFalse } = this.props;
+  /**
+   * @method nestedSelect
+   * @summary selects row and it's descendants
+   *
+   * @param {object} e - event
+   */
+  handleIndentSelect = (e) => {
+    e.stopPropagation();
+    const { handleSelect, rowId, includedDocuments } = this.props;
 
-    this.setState({
-      listenOnKeys: false,
-    });
-    changeListenOnFalse();
+    handleSelect(this.nestedSelect(includedDocuments).concat([rowId]));
   };
 
-  handleClick = (e) => {
-    const { onClick, item } = this.props;
+  /**
+   * @method handleRowCollapse
+   * @summary toggle collapsible row
+   */
+  handleRowCollapse = () => {
+    const { item, collapsed, onRowCollapse } = this.props;
 
-    onClick(e, item);
+    onRowCollapse(item, collapsed);
   };
 
-  handleClickOutside = (e) => {
-    const { changeListenOnTrue } = this.props;
-
-    this.selectedCell && this.selectedCell.clearValue(true);
-    this.handleEditProperty(e);
-
-    changeListenOnTrue();
-  };
-
+  /**
+   * @method closeTableField
+   * @summary finish editing cell/hide widget
+   *
+   * @param {object} e - event
+   */
   closeTableField = (e) => {
     const { activeCell } = this.state;
 
@@ -271,50 +283,24 @@ class TableItem extends PureComponent {
     activeCell && activeCell.focus();
   };
 
-  handleCellExtend = (selected) => {
-    this.setState({
-      cellsExtended: selected,
-    });
-  };
-
+  /**
+   * @method getWidgetData
+   * @summary Call the helper `getCellWidgetData` and provide cells data.
+   *
+   * @param {object} item - widget data object
+   * @param {boolean} isEditable - flag if cell is editable
+   * @param {boolean} supportfieldEdit - flag if selected cell can be editable
+   */
   getWidgetData = (item, isEditable, supportFieldEdit) => {
     const { fieldsByName: cells } = this.props;
 
-    const widgetData = item.fields.reduce((result, prop) => {
-      if (cells) {
-        let cellWidget = cells[prop.field] || null;
-
-        if (
-          isEditable ||
-          (supportFieldEdit && typeof cellWidget === 'object')
-        ) {
-          cellWidget = {
-            ...cellWidget,
-            widgetType: item.widgetType,
-            displayed: true,
-            readonly: false,
-          };
-        } else {
-          cellWidget = {
-            ...cellWidget,
-            readonly: true,
-          };
-        }
-
-        if (cellWidget) {
-          result.push(cellWidget);
-        }
-      }
-      return result;
-    }, []);
-
-    if (widgetData.length) {
-      return widgetData;
-    }
-
-    return [{}];
+    return getCellWidgetData(cells, item, isEditable, supportFieldEdit);
   };
 
+  /**
+   * @method updateRow
+   * @summary sets a flag to render row as edited to visualize an edit
+   */
   updateRow = () => {
     this.setState(
       {
@@ -330,7 +316,13 @@ class TableItem extends PureComponent {
     );
   };
 
-  nestedSelect = (elem, cb) => {
+  /**
+   * @method nestedSelect
+   * @summary Recursive fn to get row and it's descendants
+   *
+   * @param {array} elem - row element
+   */
+  nestedSelect = (elem) => {
     let res = [];
 
     elem &&
@@ -339,25 +331,40 @@ class TableItem extends PureComponent {
 
         if (item.includedDocuments) {
           res = res.concat(this.nestedSelect(item.includedDocuments));
-        } else {
-          cb && cb();
         }
       });
 
     return res;
   };
 
-  handleIndentSelect = (e) => {
-    const { handleSelect, rowId, includedDocuments } = this.props;
+  /**
+   * @method _focusCell
+   * @summary focuses and saves the cell as active element, or clears the activeCell(Name)
+   * if optional params are not provided
+   *
+   * @param {string} [property] - cell element's name
+   * @param {function} [cb] - callback function
+   */
+  _focusCell = (property, cb) => {
+    const { activeCell } = this.state;
+    const elem = document.activeElement;
 
-    e.stopPropagation();
-    handleSelect(this.nestedSelect(includedDocuments).concat([rowId]));
-  };
-
-  handleRowCollapse = () => {
-    const { item, collapsed, onRowCollapse } = this.props;
-
-    onRowCollapse(item, collapsed);
+    if (
+      (activeCell !== elem && !elem.className.includes('js-input-field')) ||
+      cb
+    ) {
+      this.setState(
+        {
+          activeCell: elem,
+          activeCellName: property,
+        },
+        () => {
+          cb && cb();
+        }
+      );
+    } else {
+      cb && cb();
+    }
   };
 
   renderCells = () => {
@@ -380,9 +387,9 @@ class TableItem extends PureComponent {
       isGerman,
       isSelected,
       focusOnFieldName,
+      fieldsByName: cells,
       /*
        * This function is called when cell's value changes
-       *
        * TODO: Do we still need to call `onItemChange` ?
        */
       onItemChange,
@@ -406,9 +413,10 @@ class TableItem extends PureComponent {
         cols.map((item) => {
           if (shouldRenderColumn(item)) {
             const { supportZoomInto } = item.fields[0];
-            const supportFieldEdit = mainTable && this.isAllowedFieldEdit(item);
+            const supportFieldEdit =
+              mainTable && isEditableOnDemand(item, cells);
             const property = item.fields[0].field;
-            const isEditable = this.isCellEditable(item);
+            const isEditable = isCellEditable(item, cells);
             const isEdited = edited === property;
             const extendLongText = multilineText ? multilineTextLines : 0;
             const widgetData = this.getWidgetData(
@@ -478,6 +486,12 @@ class TableItem extends PureComponent {
     }
   };
 
+  /**
+   * @method renderTree
+   * @summary Renders the indented column
+   *
+   * @param {string} huType - type of the row (CU/TU etc) no generate proper icon
+   */
   renderTree = (huType) => {
     const {
       indent,

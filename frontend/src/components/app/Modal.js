@@ -167,7 +167,7 @@ class Modal extends Component {
           if (staticModalType === 'comments') {
             request = dispatch(
               callAPI({
-                windowId: windowId,
+                windowId,
                 docId: dataId,
                 tabId,
                 rowId,
@@ -208,7 +208,7 @@ class Modal extends Component {
         try {
           const options = {
             processType: windowId,
-            viewId: viewId,
+            viewId,
             type: parentWindowId,
             ids: viewId
               ? modalViewDocumentIds
@@ -220,7 +220,7 @@ class Modal extends Component {
               rowId || (parentSelection.length ? parentSelection[0] : null),
           };
 
-          if (activeTabId && parentSelection.length) {
+          if (activeTabId) {
             options.selectedTab = {
               tabId: activeTabId,
               rowIds: parentSelection,

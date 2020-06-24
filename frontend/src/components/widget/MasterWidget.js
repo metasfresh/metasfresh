@@ -29,7 +29,8 @@ class MasterWidget extends PureComponent {
   constructor(props) {
     super(props);
     const { data, widgetData, clearValue } = this.props;
-    // `clearValue` removes current field value for the widget. This is used when user focuses on table cell and starts typing
+    // `clearValue` removes current field value for the widget. This is used when user
+    // focuses on table cell and starts typing without pressing {enter} first
     this.state = {
       updated: false,
       edited: false,

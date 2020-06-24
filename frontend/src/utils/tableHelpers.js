@@ -13,6 +13,8 @@ import {
   TIME_FIELD_TYPES,
   TIME_REGEX_TEST,
   TIME_FORMAT,
+  VIEW_EDITOR_RENDER_MODES_ALWAYS,
+  VIEW_EDITOR_RENDER_MODES_ON_DEMAND,
 } from '../constants/Constants';
 import { getCurrentActiveLocale } from './locale';
 
@@ -321,4 +323,97 @@ export function shouldRenderColumn(column) {
   }
 
   return column.restrictToMediaTypes.indexOf(mediaType) !== -1;
+}
+
+/**
+ * @method isEditableOnDemand
+ * @summary Check if field is editable on demand
+ *
+ * @param {object} item - single widget data
+ * @param {object} cells - map of data's fields by name
+ */
+export function isEditableOnDemand(item, cells) {
+  const property = item.fields ? item.fields[0].field : item.field;
+
+  return (
+    (cells &&
+      cells[property] &&
+      cells[property].viewEditorRenderMode ===
+        VIEW_EDITOR_RENDER_MODES_ON_DEMAND) ||
+    item.viewEditorRenderMode === VIEW_EDITOR_RENDER_MODES_ON_DEMAND
+  );
+}
+
+/**
+ * @method isCellEditable
+ * @summary Checks if field is always editable
+ *
+ * @param {object} item - single widget data
+ * @param {object} cells - map of data's fields by name
+ */
+export function isCellEditable(item, cells) {
+  const property = item.fields[0].field;
+  let isEditable =
+    (cells &&
+      cells[property] &&
+      cells[property].viewEditorRenderMode ===
+        VIEW_EDITOR_RENDER_MODES_ALWAYS) ||
+    item.viewEditorRenderMode === VIEW_EDITOR_RENDER_MODES_ALWAYS;
+
+  isEditable = item.widgetType === 'Color' ? false : isEditable;
+
+  return isEditable;
+}
+
+/**
+ * @method prepareWidgetData
+ * @summary Create data for the widget
+ *
+ * @param {object} item - single widget data
+ * @param {object} cells - map of data's fields by name
+ */
+export function prepareWidgetData(item, cells) {
+  return item.fields.map((prop) => cells[prop.field]);
+}
+
+/**
+ * @method getWidgetData
+ * @summary prepare data for the widget
+ *
+ * @param {object} cells
+ * @param {object} item - widget data object
+ * @param {boolean} isEditable - flag if cell is editable
+ * @param {boolean} supportfieldEdit - flag if selected cell can be editable
+ */
+export function getCellWidgetData(cells, item, isEditable, supportFieldEdit) {
+  const widgetData = item.fields.reduce((result, prop) => {
+    if (cells) {
+      let cellWidget = cells[prop.field] || null;
+
+      if (isEditable || (supportFieldEdit && typeof cellWidget === 'object')) {
+        cellWidget = {
+          ...cellWidget,
+          widgetType: item.widgetType,
+          displayed: true,
+          readonly: false,
+        };
+      } else {
+        cellWidget = {
+          ...cellWidget,
+          readonly: true,
+        };
+      }
+
+      if (cellWidget) {
+        result.push(cellWidget);
+      }
+    }
+    return result;
+  }, []);
+
+  if (widgetData.length) {
+    return widgetData;
+  }
+
+  return [{}];
 }
