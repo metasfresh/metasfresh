@@ -357,9 +357,10 @@ public class Helper
 	 */
 	public I_AD_Printer_Tray getCreatePrinterTray(
 			@NonNull final String printerName,
-			@Nullable final String trayName)
+			@Nullable final String trayName,
+			@Nullable final Integer hwTrayNumber)
 	{
-		if(Check.isBlank(trayName))
+		if (Check.isBlank(trayName))
 		{
 			return null;
 		}
@@ -383,7 +384,12 @@ public class Helper
 				try
 				{
 					autoCreateHWPrinters = false; // avoid recursive loops
-					createPrinterConfigAndMatching(HOSTKEY_Host01, createHWName(printerName), createHWName(trayName), printerName, trayName);
+					createPrinterConfigAndMatching(HOSTKEY_Host01,
+							createHWName(printerName),
+							createHWName(trayName),
+							hwTrayNumber,
+							printerName,
+							trayName							);
 				}
 				finally
 				{
@@ -411,9 +417,10 @@ public class Helper
 	 */
 	public I_AD_PrinterHW_MediaTray getCreatePrinterTrayHW(
 			@NonNull final String printerName,
-			@Nullable final String trayName)
+			@Nullable final String trayName,
+			@Nullable final Integer hwTrayNumber)
 	{
-		if(Check.isBlank(trayName))
+		if (Check.isBlank(trayName))
 		{
 			return null;
 		}
@@ -425,6 +432,7 @@ public class Helper
 			tray = printingDAO.newInstance(ctx, I_AD_PrinterHW_MediaTray.class, ITrx.TRXNAME_None);
 			tray.setAD_PrinterHW(printer);
 			tray.setName(trayName);
+			tray.setTrayNumber(hwTrayNumber);
 			printingDAO.save(tray);
 		}
 
@@ -439,6 +447,7 @@ public class Helper
 	public I_AD_PrinterRouting createPrinterRouting(
 			@NonNull final String printerName,
 			@Nullable final String trayName,
+			@Nullable final Integer hwTrayNumber,
 			final int C_DocType_ID,
 			final int pageFrom,
 			final int pageTo)
@@ -448,7 +457,7 @@ public class Helper
 		routing.setAD_Printer_ID(getCreatePrinter(printerName).getAD_Printer_ID());
 		if (Check.isNotBlank(trayName))
 		{
-			routing.setAD_Printer_Tray(getCreatePrinterTray(printerName, trayName));
+			routing.setAD_Printer_Tray(getCreatePrinterTray(printerName, trayName, hwTrayNumber));
 		}
 		if (C_DocType_ID > 0)
 		{
@@ -479,13 +488,14 @@ public class Helper
 	public I_AD_PrinterRouting createPrinterRoutingForLastPages(
 			final String printerName,
 			final String trayName,
+			@Nullable final Integer hwTrayNumber,
 			final int C_DocType_ID,
 			final int lastPages)
 	{
 		final I_AD_PrinterRouting routing = printingDAO.newInstance(ctx, I_AD_PrinterRouting.class, ITrx.TRXNAME_None);
 		routing.setAD_Org_ID(0); // All Orgs by default
 		routing.setAD_Printer_ID(getCreatePrinter(printerName).getAD_Printer_ID());
-		routing.setAD_Printer_Tray(getCreatePrinterTray(printerName, trayName));
+		routing.setAD_Printer_Tray(getCreatePrinterTray(printerName, trayName, hwTrayNumber));
 
 		if (C_DocType_ID > 0)
 		{
@@ -508,8 +518,10 @@ public class Helper
 			@Nullable final String hostKey,
 			@NonNull final String hwPrinterName,
 			@Nullable final String hwTrayName,
+			@Nullable final Integer hwTrayNumber,
 			@NonNull final String printerName,
-			@Nullable final String trayName)
+			@Nullable final String trayName
+			)
 	{
 		final I_AD_Printer_Config printerConfig = printingDAO
 				.getLookupMap()
@@ -550,13 +562,19 @@ public class Helper
 		{
 			trayMatching = printingDAO.newInstance(ctx, I_AD_PrinterTray_Matching.class, ITrx.TRXNAME_None);
 			trayMatching.setAD_Printer_Matching(printerMatching);
-			trayMatching.setAD_Printer_Tray(getCreatePrinterTray(printerName, trayName));
-			trayMatching.setAD_PrinterHW_MediaTray(getCreatePrinterTrayHW(hwPrinterName, hwTrayName));
+			trayMatching.setAD_Printer_Tray(getCreatePrinterTray(printerName, trayName, hwTrayNumber));
+			trayMatching.setAD_PrinterHW_MediaTray(getCreatePrinterTrayHW(hwPrinterName, hwTrayName, hwTrayNumber));
 			printingDAO.save(trayMatching);
 		}
 	}
 
-	public void createPrinterHWCalibration(final String printerName, final String mediaSizeName, final String trayName, final int calX, final int calY)
+	public void createPrinterHWCalibration(
+			final String printerName,
+			final String mediaSizeName,
+			final String trayName,
+			@Nullable final Integer hwTrayNumber,
+			final int calX,
+			final int calY)
 	{
 		final I_AD_PrinterHW printer = getCreatePrinterHW(printerName);
 
@@ -565,7 +583,7 @@ public class Helper
 		mediaSize.setAD_PrinterHW(printer);
 		printingDAO.save(mediaSize);
 
-		final I_AD_PrinterHW_MediaTray mediaTray = getCreatePrinterTrayHW(printerName, trayName);
+		final I_AD_PrinterHW_MediaTray mediaTray = getCreatePrinterTrayHW(printerName, trayName, hwTrayNumber);
 		// created by 'getCreatePrinterHW(printerName)'
 		final I_AD_PrinterHW_MediaSize hwMediaSize = printingDAO.retrieveMediaSize(printer, MediaSize.ISO.A4, true);
 

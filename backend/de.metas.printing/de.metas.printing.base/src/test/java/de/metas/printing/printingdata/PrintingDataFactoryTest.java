@@ -76,7 +76,7 @@ class PrintingDataFactoryTest
 				.toByteArray();
 
 		final I_AD_PrinterHW hwPrinterRecord = helper.getCreatePrinterHW("hwPrinter", OutputType.Store);
-		final I_AD_PrinterRouting printerRouting = helper.createPrinterRouting("logicalPrinter", null, -1, 1, 100);
+		final I_AD_PrinterRouting printerRouting = helper.createPrinterRouting("logicalPrinter", null, 10,-1, 1, 100);
 
 		final I_C_Order referencedDocument = newInstance(I_C_Order.class);
 		saveRecord(referencedDocument);
@@ -93,7 +93,7 @@ class PrintingDataFactoryTest
 		docOutboundLogRecord.setRecord_ID(referencedDocument.getC_Order_ID());
 		saveRecord(docOutboundLogRecord);
 
-		helper.createPrinterConfigAndMatching(null, "hwPrinter", null, "logicalPrinter", null);
+		helper.createPrinterConfigAndMatching(null, "hwPrinter", null,10, "logicalPrinter", null);
 
 		final I_C_Printing_Queue printingQueueRecord = newInstance(I_C_Printing_Queue.class);
 		printingQueueRecord.setAD_Archive_ID(archiveRecord.getAD_Archive_ID());

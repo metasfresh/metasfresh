@@ -121,8 +121,8 @@ class PrintingDataTest
 				.id(printerId)
 				.name("printer")
 				.outputType(OutputType.Store)
-				.tray(new HardwareTray(tray1Id, "tray1"))
-				.tray(new HardwareTray(tray2Id, "tray2"))
+				.tray(new HardwareTray(tray1Id, "tray1", 10))
+				.tray(new HardwareTray(tray2Id, "tray2", 20))
 				.build();
 
 		// when

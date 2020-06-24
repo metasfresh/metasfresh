@@ -31,6 +31,10 @@ public class HardwareTray
 	@NonNull
 	HardwareTrayId id;
 
+	/* Note that in the DB have no unique constraint on a tray's name */
 	@NonNull
 	String name;
+
+	@NonNull
+	Integer trayNumber;
 }

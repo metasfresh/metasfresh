@@ -174,7 +174,7 @@ public class PrintingDataToPDFFileStorer
 				final HardwareTray tray = printer.getTray(segment.getTrayId());
 				path = Paths.get(baseDirectory,
 						FileUtil.stripIllegalCharacters(printer.getName()),
-						FileUtil.stripIllegalCharacters(tray.getName()));
+						FileUtil.stripIllegalCharacters(tray.getTrayNumber() + "-" + tray.getName()));
 			}
 			else
 			{
