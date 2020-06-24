@@ -58,7 +58,7 @@ public class HardwarePrinterRepository
 		for (final I_AD_PrinterHW_MediaTray printerHWMediaTray : printingDAO.retrieveMediaTrays(id))
 		{
 			final HardwareTrayId trayId = HardwareTrayId.ofRepoId(id, printerHWMediaTray.getAD_PrinterHW_MediaTray_ID());
-			printer.tray(new HardwareTray(trayId, printerHWMediaTray.getName()));
+			printer.tray(new HardwareTray(trayId, printerHWMediaTray.getName(), printerHWMediaTray.getTrayNumber()));
 		}
 		return printer.build();
 	}

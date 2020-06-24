@@ -52,7 +52,7 @@ public class FromQueueToPackagesTest extends AbstractPrintingTest
 	{
 		//
 		// Setup routings
-		helper.createPrinterRouting("printer01", "tray01", -1, -1, -1);
+		helper.createPrinterRouting("printer01", "tray01", 10,-1, -1, -1);
 
 		//
 		// Create printing queue
@@ -80,13 +80,13 @@ public class FromQueueToPackagesTest extends AbstractPrintingTest
 	{
 		//
 		// Setup routings:
-		final I_AD_PrinterRouting printerRouting01 = helper.createPrinterRouting("printer01", "tray01", -1, -1, -1);
+		final I_AD_PrinterRouting printerRouting01 = helper.createPrinterRouting("printer01", "tray01", 10,-1, -1, -1);
 		printerRouting01.setAD_Org_ID(1);
 		// printerRouting01.setAD_User_ID(1);
 		printerRouting01.setC_DocType_ID(1);
 		helper.getDB().save(printerRouting01);
 
-		final I_AD_PrinterRouting printerRouting02 = helper.createPrinterRouting("printer01", "tray01", -1, 10, 15);
+		final I_AD_PrinterRouting printerRouting02 = helper.createPrinterRouting("printer01", "tray01", 10, -1, 10, 15);
 		printerRouting02.setAD_Org_ID(1);
 		// printerRouting02.setAD_User_ID(1);
 		printerRouting02.setC_DocType_ID(2);
@@ -119,15 +119,15 @@ public class FromQueueToPackagesTest extends AbstractPrintingTest
 	{
 		//
 		// Setup routings:
-		final I_AD_PrinterRouting printerRouting01 = helper.createPrinterRouting("test03-printer01", "tray01", -1, 1, 2);
+		final I_AD_PrinterRouting printerRouting01 = helper.createPrinterRouting("test03-printer01", "tray01", 10,-1, 1, 2);
 		printerRouting01.setC_DocType_ID(1);
 		helper.getDB().save(printerRouting01);
 
-		final I_AD_PrinterRouting printerRouting02 = helper.createPrinterRouting("test03-printer02", "tray01", -1, 3, 4);
+		final I_AD_PrinterRouting printerRouting02 = helper.createPrinterRouting("test03-printer02", "tray01", 10,-1, 3, 4);
 		printerRouting02.setC_DocType_ID(2);
 		helper.getDB().save(printerRouting02);
 
-		final I_AD_PrinterRouting printerRouting03 = helper.createPrinterRouting("test03-printer01", "tray01", -1, 5, 6);
+		final I_AD_PrinterRouting printerRouting03 = helper.createPrinterRouting("test03-printer01", "tray01", 10,-1, 5, 6);
 		printerRouting03.setC_DocType_ID(3);
 		helper.getDB().save(printerRouting03);
 
@@ -176,7 +176,7 @@ public class FromQueueToPackagesTest extends AbstractPrintingTest
 	{
 		//
 		// Setup routings
-		helper.createPrinterRouting("printer01", "tray01", -1, -1, -1);
+		helper.createPrinterRouting("printer01", "tray01", 10,-1, -1, -1);
 
 		//
 		// Create printing queue
@@ -213,10 +213,10 @@ public class FromQueueToPackagesTest extends AbstractPrintingTest
 	{
 		//
 		// Setup routings
-		final I_AD_PrinterRouting routing1 = helper.createPrinterRouting("printer01", "tray01", -1, -1, -1);
+		final I_AD_PrinterRouting routing1 = helper.createPrinterRouting("printer01", "tray01", 10,-1, -1, -1);
 		routing1.setAD_Org_ID(1);
 		helper.getDB().save(routing1);
-		final I_AD_PrinterRouting routing2 = helper.createPrinterRouting("printer02", "tray01", -1, -1, -1);
+		final I_AD_PrinterRouting routing2 = helper.createPrinterRouting("printer02", "tray01",10, -1, -1, -1);
 		routing2.setAD_Org_ID(2);
 		helper.getDB().save(routing2);
 
@@ -292,7 +292,7 @@ public class FromQueueToPackagesTest extends AbstractPrintingTest
 
 		//
 		// Recreate back the HW matching for printer01
-		helper.createPrinterConfigAndMatching(helper.getSessionHostKey(), "printer01-hw-again", "tray01-hw-again", "printer01", "tray01");
+		helper.createPrinterConfigAndMatching(helper.getSessionHostKey(), "printer01-hw-again", "tray01-hw-again",10, "printer01", "tray01");
 
 		//
 		// Job1 instructions, prepare it again

@@ -67,19 +67,19 @@ public class PrintJobBLTest extends AbstractPrintingTest
 
 		//
 		// Setup routings
-		final I_AD_PrinterRouting routing11 = helper.createPrinterRouting("printer01", "tray01",
+		final I_AD_PrinterRouting routing11 = helper.createPrinterRouting("printer01", "tray01",10,
 				c_DocType_ID, // routing has the same C_DocType_ID as the queue-item => should match
 				-1, -1);
 		routing11.setAD_Org_ID(1);
 		InterfaceWrapperHelper.save(routing11);
 
-		final I_AD_PrinterRouting routing12 = helper.createPrinterRouting("printer01", "tray02",
+		final I_AD_PrinterRouting routing12 = helper.createPrinterRouting("printer01", "tray02",20,
 				-1, // routing has no C_DocType_ID => should also match
 				-1, -1);
 		routing11.setAD_Org_ID(1);
 		InterfaceWrapperHelper.save(routing12);
 
-		final I_AD_PrinterRouting otherRouting = helper.createPrinterRouting("printer23", "tray02",
+		final I_AD_PrinterRouting otherRouting = helper.createPrinterRouting("printer23", "tray02",20,
 				(c_DocType_ID + 10), // routing has not-matching C_DocType_ID => should be ignored
 				-1, -1);
 		otherRouting.setAD_Org_ID(1);
@@ -124,7 +124,7 @@ public class PrintJobBLTest extends AbstractPrintingTest
 
 		//
 		// Setup routings
-		final I_AD_PrinterRouting routing11 = helper.createPrinterRouting("printer01", "tray01",
+		final I_AD_PrinterRouting routing11 = helper.createPrinterRouting("printer01", "tray01",10,
 				c_DocType_ID, // routing has the same C_DocType_ID as the queue-item => should match
 				-1, -1);
 		routing11.setAD_Org_ID(1);

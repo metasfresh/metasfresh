@@ -88,11 +88,11 @@ public class PrintJobLinesAggregatorLegacyTests extends AbstractPrintingTest
 	@Test
 	public void test01_cal()
 	{
-		final I_AD_PrinterRouting printerRouting = helper.createPrinterRouting("printer01", "tray01", -1, -1, -1);
+		final I_AD_PrinterRouting printerRouting = helper.createPrinterRouting("printer01", "tray01",10, -1, -1, -1);
 
 		helper.createPrinterHWCalibration("printer01-HW",
 				"iso-a7", // task 08458: printer doesn't have A4, but the system shall create it on the fly
-				"tray01-HW", 10, 20); // 03733
+				"tray01-HW",10, 10, 20); // 03733
 
 		//
 		// Setup PrintJob
@@ -131,7 +131,7 @@ public class PrintJobLinesAggregatorLegacyTests extends AbstractPrintingTest
 	{
 		//
 		// Setup PrintJob
-		final I_AD_PrinterRouting printerRouting = helper.createPrinterRouting("printer01", "tray01", -1, -1, -1);
+		final I_AD_PrinterRouting printerRouting = helper.createPrinterRouting("printer01", "tray01",10, -1, -1, -1);
 
 		final I_C_Print_Job printJob = helper.createPrintJob();
 		helper.createPrintJobLine(printJob, printerRouting, "01");
@@ -171,13 +171,13 @@ public class PrintJobLinesAggregatorLegacyTests extends AbstractPrintingTest
 	{
 		//
 		// Setup PrintJob
-		final I_AD_PrinterRouting printerRouting = helper.createPrinterRouting("printer01", "tray01", -1, -1, -1);
+		final I_AD_PrinterRouting printerRouting = helper.createPrinterRouting("printer01", "tray01",10, -1, -1, -1);
 		final I_C_Print_Job printJob = helper.createPrintJob();
 		helper.createPrintJobLine(printJob,
 				printerRouting,
 				"01");
 		helper.createPrintJobLine(printJob,
-				helper.createPrinterRouting("printer01", "tray01", -1, 10, 15),
+				helper.createPrinterRouting("printer01", "tray01",10, -1, 10, 15),
 				"02");
 		helper.createPrintJobLine(printJob,
 				printerRouting,
@@ -211,13 +211,13 @@ public class PrintJobLinesAggregatorLegacyTests extends AbstractPrintingTest
 		// Setup PrintJob
 		final I_C_Print_Job printJob = helper.createPrintJob();
 		helper.createPrintJobLine(printJob,
-				helper.createPrinterRouting("test03-printer01", "tray01", -1, 1, 2),
+				helper.createPrinterRouting("test03-printer01", "tray01",10, -1, 1, 2),
 				"01");
 		helper.createPrintJobLine(printJob,
-				helper.createPrinterRouting("test03-printer02", "tray01", -1, 3, 4),
+				helper.createPrinterRouting("test03-printer02", "tray01",10, -1, 3, 4),
 				"02");
 		helper.createPrintJobLine(printJob,
-				helper.createPrinterRouting("test03-printer01", "tray01", -1, 5, 6),
+				helper.createPrinterRouting("test03-printer01", "tray01",10, -1, 5, 6),
 				"03");
 		helper.createPrintJobInstructions(printJob);
 		InterfaceWrapperHelper.save(printJob);
@@ -295,8 +295,8 @@ public class PrintJobLinesAggregatorLegacyTests extends AbstractPrintingTest
 
 		//
 		// Setup Routing
-		final I_AD_PrinterRouting printerRouting = helper.createPrinterRouting("printer01", "tray01", -1, -1, -1);
-		helper.createPrinterHWCalibration("printer01-HW", "iso-a4", "tray01-HW", 10, 20); // 03733
+		final I_AD_PrinterRouting printerRouting = helper.createPrinterRouting("printer01", "tray01",10, -1, -1, -1);
+		helper.createPrinterHWCalibration("printer01-HW", "iso-a4", "tray01-HW",10, 10, 20); // 03733
 
 		//
 		// Setup PrintJob

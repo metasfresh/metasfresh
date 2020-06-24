@@ -94,8 +94,8 @@ class PrintingDataToPDFFileStorerTest
 
 		final I_AD_PrinterHW hwPrinterRecord = helper.getCreatePrinterHW("hwPrinter", OutputType.Store);
 		final HardwarePrinterId printerId = HardwarePrinterId.ofRepoId(hwPrinterRecord.getAD_PrinterHW_ID());
-		final I_AD_PrinterHW_MediaTray hwTray1Record = helper.getCreatePrinterTrayHW("hwPrinter", "hwTray1");
-		final I_AD_PrinterHW_MediaTray hwTray2Record = helper.getCreatePrinterTrayHW("hwPrinter", "hwTray2Record");
+		final I_AD_PrinterHW_MediaTray hwTray1Record = helper.getCreatePrinterTrayHW("hwPrinter", "hwTray1",10);
+		final I_AD_PrinterHW_MediaTray hwTray2Record = helper.getCreatePrinterTrayHW("hwPrinter", "hwTray2",20);
 		final HardwareTrayId tray1Id = HardwareTrayId.ofRepoId(printerId, hwTray1Record.getAD_PrinterHW_MediaTray_ID());
 		final HardwareTrayId tray2Id = HardwareTrayId.ofRepoId(printerId, hwTray2Record.getAD_PrinterHW_MediaTray_ID());
 
@@ -131,11 +131,11 @@ class PrintingDataToPDFFileStorerTest
 		// then
 
 		// expected files
-		final File tray1File1 = new File(baseDir.getAbsolutePath() + "/hwPrinter/hwTray1/100_test.pdf");
-		final File tray2File1 = new File(baseDir.getAbsolutePath() + "/hwPrinter/hwTray2Record/100_test.pdf");
+		final File tray1File1 = new File(baseDir.getAbsolutePath() + "/hwPrinter/10-hwTray1/100_test.pdf");
+		final File tray2File1 = new File(baseDir.getAbsolutePath() + "/hwPrinter/20-hwTray2/100_test.pdf");
 
-		final File tray1File2 = new File(baseDir.getAbsolutePath() + "/hwPrinter/hwTray1/200_test.pdf");
-		final File tray2File2 = new File(baseDir.getAbsolutePath() + "/hwPrinter/hwTray2Record/200_test.pdf");
+		final File tray1File2 = new File(baseDir.getAbsolutePath() + "/hwPrinter/10-hwTray1/200_test.pdf");
+		final File tray2File2 = new File(baseDir.getAbsolutePath() + "/hwPrinter/20-hwTray2/200_test.pdf");
 
 		// expected binary content result
 		final byte[] dataExpectedTray1 = new PdfCollator()
