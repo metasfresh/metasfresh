@@ -72,7 +72,7 @@ public interface IUOMConversionBL extends ISingletonService, QuantityUOMConverte
 
 	BigDecimal convertQty(UOMConversionContext conversionCtx, BigDecimal qty, UomId uomFrom, UomId uomTo);
 
-	default BigDecimal convertQty(final ProductId productId, final BigDecimal qty, final UomId uomFrom, final UomId uomTo)
+	default BigDecimal convertQty(ProductId productId, BigDecimal qty, UomId uomFrom, UomId uomTo)
 	{
 		final UOMConversionContext conversionCtx = UOMConversionContext.of(productId);
 		return convertQty(conversionCtx, qty, uomFrom, uomTo);
