@@ -71,5 +71,4 @@ public enum InvoiceRule implements ReferenceListAwareEnum
 	}
 
 	private static final ImmutableMap<String, InvoiceRule> typesByCode = Maps.uniqueIndex(Arrays.asList(values()), InvoiceRule::getCode);
-
 }

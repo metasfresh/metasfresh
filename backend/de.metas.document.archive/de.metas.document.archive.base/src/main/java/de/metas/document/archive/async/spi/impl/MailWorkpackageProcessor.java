@@ -4,12 +4,10 @@ import static de.metas.util.Check.isEmpty;
 
 import java.util.List;
 import java.util.Properties;
-import java.util.StringJoiner;
 
 import javax.annotation.Nullable;
 
-import org.adempiere.ad.table.api.AdTableId;
-import org.adempiere.ad.table.api.IADTableDAO;
+import de.metas.document.archive.api.ArchiveFileNameService;
 import org.adempiere.archive.api.IArchiveBL;
 import org.adempiere.archive.api.IArchiveEventManager;
 import org.adempiere.exceptions.AdempiereException;
@@ -18,9 +16,7 @@ import org.adempiere.service.ClientId;
 import org.adempiere.service.IClientDAO;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Archive;
-import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_AD_PInstance;
-import org.compiere.model.I_AD_Table;
 import org.compiere.model.I_C_DocType;
 import org.compiere.util.Env;
 
@@ -51,7 +47,6 @@ import de.metas.i18n.Language;
 import de.metas.letter.BoilerPlate;
 import de.metas.letter.BoilerPlateId;
 import de.metas.letter.BoilerPlateRepository;
-import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.process.AdProcessId;
 import de.metas.process.ProcessExecutor;
@@ -76,13 +71,12 @@ public class MailWorkpackageProcessor implements IWorkpackageProcessor
 	// Services
 	private final transient IQueueDAO queueDAO = Services.get(IQueueDAO.class);
 	private final transient IClientDAO clientsDAO = Services.get(IClientDAO.class);
-	private final transient IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final transient IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final transient IArchiveEventManager archiveEventManager = Services.get(IArchiveEventManager.class);
 	private final transient IArchiveBL archiveBL = Services.get(IArchiveBL.class);
 	private final transient IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
-	private final transient IADTableDAO tableDAO = Services.get(IADTableDAO.class);
 
+	private final transient ArchiveFileNameService archiveFileNameService = SpringContextHolder.instance.getBean(ArchiveFileNameService.class);
 	private final transient MailService mailService = SpringContextHolder.instance.getBean(MailService.class);
 	private final transient BoilerPlateRepository boilerPlateRepository = SpringContextHolder.instance.getBean(BoilerPlateRepository.class);
 	private final transient DocOutBoundRecipientRepository docOutBoundRecipientRepository = SpringContextHolder.instance.getBean(DocOutBoundRecipientRepository.class);
@@ -110,7 +104,7 @@ public class MailWorkpackageProcessor implements IWorkpackageProcessor
 								logLine.getC_Doc_Outbound_Log_Line_ID(), docOutboundLogRecord);
 			}
 
-			sendEMail(docOutboundLogRecord, archive, workpackage.getAD_PInstance(), localTrxName);
+			sendEMail(docOutboundLogRecord, archive, workpackage.getAD_PInstance());
 		}
 
 		return Result.SUCCESS;
@@ -119,12 +113,11 @@ public class MailWorkpackageProcessor implements IWorkpackageProcessor
 	private void sendEMail(
 			@NonNull final I_C_Doc_Outbound_Log docOutboundLogRecord,
 			@NonNull final I_AD_Archive archive,
-			@Nullable final I_AD_PInstance pInstance,
-			@Nullable final String trxName)
+			@Nullable final I_AD_PInstance pInstance)
 	{
 		try
 		{
-			sendEMail0(docOutboundLogRecord, archive, pInstance, trxName);
+			sendEMail0(docOutboundLogRecord, archive, pInstance);
 		}
 		catch (final Exception e)
 		{
@@ -139,8 +132,7 @@ public class MailWorkpackageProcessor implements IWorkpackageProcessor
 	private void sendEMail0(
 			@NonNull final I_C_Doc_Outbound_Log docOutboundLogRecord,
 			@NonNull final I_AD_Archive archive,
-			@Nullable final I_AD_PInstance pInstance,
-			@Nullable final String trxName) throws Exception
+			@Nullable final I_AD_PInstance pInstance) throws Exception
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(archive);
 
@@ -191,7 +183,7 @@ public class MailWorkpackageProcessor implements IWorkpackageProcessor
 			}
 			else
 			{
-				final String pdfFileName = computePdfFileName(docOutboundLogRecord);
+				final String pdfFileName = archiveFileNameService.computePdfFileName(docOutboundLogRecord);
 				email.addAttachment(pdfFileName, attachment);
 
 				mailService.send(email);
@@ -232,41 +224,7 @@ public class MailWorkpackageProcessor implements IWorkpackageProcessor
 		return DocBaseAndSubType.of(docType.getDocBaseType(), docType.getDocSubType());
 	}
 
-	private String computePdfFileName(@NonNull final I_C_Doc_Outbound_Log docOutboundLogRecord)
-	{
-		final StringJoiner fileNameParts = new StringJoiner("-");
 
-		if (docOutboundLogRecord.getAD_Org_ID() > 0)
-		{
-			final I_AD_Org orgRecord = orgDAO.getById(docOutboundLogRecord.getAD_Org_ID());
-			fileNameParts.add(orgRecord.getName());
-		}
-
-		if (docOutboundLogRecord.getC_DocType_ID() > 0)
-		{
-			final I_C_DocType docTypeRecord = docTypeDAO.getById(docOutboundLogRecord.getC_DocType_ID());
-			final I_C_DocType docTypeRecordTrl = InterfaceWrapperHelper.translate(docTypeRecord, I_C_DocType.class);
-			fileNameParts.add(docTypeRecordTrl.getName());
-		}
-		else
-		{
-			final I_AD_Table tableRecord = tableDAO.retrieveTable(AdTableId.ofRepoId(docOutboundLogRecord.getAD_Table_ID()));
-			final I_AD_Table tableRecordTrl = InterfaceWrapperHelper.translate(tableRecord, I_AD_Table.class);
-			fileNameParts.add(tableRecordTrl.getName());
-		}
-
-		if (!isEmpty(docOutboundLogRecord.getDocumentNo(), true))
-		{
-			fileNameParts.add(docOutboundLogRecord.getDocumentNo());
-		}
-		else
-		{
-			fileNameParts.add(Integer.toString(docOutboundLogRecord.getRecord_ID()));
-		}
-
-		final String pdfFileName = fileNameParts.toString();
-		return pdfFileName + ".pdf";
-	}
 
 	private boolean isHTMLMessage(final String message)
 	{

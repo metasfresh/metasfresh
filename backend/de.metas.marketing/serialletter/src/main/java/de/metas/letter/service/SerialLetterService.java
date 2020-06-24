@@ -7,6 +7,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 
+import de.metas.printing.PrintOutputFacade;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.session.ISessionBL;
 import org.adempiere.ad.trx.api.ITrx;
@@ -50,14 +51,19 @@ import lombok.NonNull;
  * #L%
  */
 
-/**
- * @author metas-dev <dev@metasfresh.com>
- *
- */
 @Service
-public class SearialLetterService
+public class SerialLetterService
 {
-	private final transient Logger log = LogManager.getLogger(getClass());
+	private final static transient Logger logger = LogManager.getLogger(SerialLetterService.class);
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IPrintingQueueBL printingQueueBL = Services.get(IPrintingQueueBL.class);
+	private final ISessionBL sessionBL = Services.get(ISessionBL.class);
+	private final PrintOutputFacade printOutputFacade;
+
+	public SerialLetterService(@NonNull final PrintOutputFacade printOutputFacade)
+	{
+		this.printOutputFacade = printOutputFacade;
+	}
 
 	public void printAutomaticallyLetters(@NonNull final I_C_Async_Batch asyncBatch)
 	{
@@ -74,15 +80,13 @@ public class SearialLetterService
 	}
 
 	/**
-	 * Create Printing queue source<bR>
-	 * <ul>
-	 * Contains printing queues for the letters that belong to a specific <code>C_Async_Batch_ID</code>
+	 * Create Printing queue source.
 	 *
-	 * @return
+	 * Contains printing queues for the letters that belong to a specific <code>C_Async_Batch_ID</code>
 	 */
 	private List<IPrintingQueueSource> createPrintingQueueSource(@NonNull final I_C_Async_Batch asyncBatch)
 	{
-		final IQuery<I_C_Printing_Queue> query = Services.get(IQueryBL.class).createQueryBuilder(I_C_Printing_Queue.class, Env.getCtx(), ITrx.TRXNAME_None)
+		final IQuery<I_C_Printing_Queue> query = queryBL.createQueryBuilder(I_C_Printing_Queue.class, Env.getCtx(), ITrx.TRXNAME_None)
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClient()
 				.addEqualsFilter(I_C_Printing_Queue.COLUMN_C_Async_Batch_ID, asyncBatch.getC_Async_Batch_ID())
@@ -94,11 +98,10 @@ public class SearialLetterService
 
 		if (selectionLength <= 0)
 		{
-			log.info("Nothing to print!");
+			logger.info("Nothing to print!");
 			return Collections.emptyList();
 		}
 
-		final IPrintingQueueBL printingQueueBL = Services.get(IPrintingQueueBL.class);
 		final IPrintingQueueQuery printingQuery = printingQueueBL.createPrintingQueueQuery();
 		printingQuery.setFilterByProcessedQueueItems(false);
 		printingQuery.setOnlyAD_PInstance_ID(pinstanceId);
@@ -106,19 +109,17 @@ public class SearialLetterService
 		final Properties ctx = Env.getCtx();
 
 		// we need to make sure exists AD_Session_ID in context; if not, a new session will be created
-		Services.get(ISessionBL.class).getCurrentOrCreateNewSession(ctx);
+		sessionBL.getCurrentOrCreateNewSession(ctx);
 
 		return printingQueueBL.createPrintingQueueSources(ctx, printingQuery);
 	}
 
 	private void print(@NonNull final IPrintingQueueSource source, @NonNull final I_C_Async_Batch asyncBatch)
 	{
-
 		final ContextForAsyncProcessing printJobContext = ContextForAsyncProcessing.builder()
 				.adPInstanceId(PInstanceId.ofRepoIdOrNull(asyncBatch.getAD_PInstance_ID()))
 				.parentAsyncBatchId(asyncBatch.getC_Async_Batch_ID())
 				.build();
-
-		Services.get(IPrintJobBL.class).createPrintJobs(source, printJobContext);
+		printOutputFacade.print(source, printJobContext);
 	}
 }

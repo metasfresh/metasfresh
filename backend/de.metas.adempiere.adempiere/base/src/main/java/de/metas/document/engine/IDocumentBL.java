@@ -94,11 +94,6 @@ public interface IDocumentBL extends ISingletonService
 	 * Retrieve C_DocType_ID for given record. C_DocType_ID and C_DocTypeTarget_ID columns will be checked.
 	 *
 	 * Please note, is not necessary that the given table to be a true document.
-	 *
-	 * @param ctx
-	 * @param AD_Table_ID
-	 * @param Record_ID
-	 * @return
 	 */
 	int getC_DocType_ID(Properties ctx, int AD_Table_ID, int Record_ID);
 
@@ -113,8 +108,6 @@ public interface IDocumentBL extends ISingletonService
 	 * Retrieve DocumentNo for given record. If no value was found, the model will be loaded and {@link #getDocumentNo(Object)} will be used.
 	 *
 	 * @param ctx
-	 * @param AD_Table_ID
-	 * @param Record_ID
 	 * @return document no
 	 */
 	String getDocumentNo(Properties ctx, final int adTableId, final int recordId);

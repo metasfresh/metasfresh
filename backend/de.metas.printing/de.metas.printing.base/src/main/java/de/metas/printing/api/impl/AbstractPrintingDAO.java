@@ -33,6 +33,9 @@ import java.util.Properties;
 import javax.annotation.Nullable;
 import javax.print.attribute.standard.MediaSize;
 
+import de.metas.printing.HardwarePrinterId;
+import de.metas.printing.LogicalPrinterId;
+import de.metas.printing.model.I_AD_Printer_Tray;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
@@ -68,11 +71,15 @@ import de.metas.printing.model.X_AD_PrinterHW;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.compiere.model.Query;
 
 public abstract class AbstractPrintingDAO implements IPrintingDAO
 {
-	/** Flag used to indicate if a change on {@link I_C_Printing_Queue_Recipient} shall NOT automatically trigger an update to {@link I_C_Printing_Queue#setPrintingQueueAggregationKey(String)} */
+	/**
+	 * Flag used to indicate if a change on {@link I_C_Printing_Queue_Recipient} shall NOT automatically trigger an update to {@link I_C_Printing_Queue#setPrintingQueueAggregationKey(String)}
+	 */
 	private static final ModelDynAttributeAccessor<I_C_Printing_Queue_Recipient, Boolean> DYNATTR_DisableAggregationKeyUpdate = new ModelDynAttributeAccessor<>("DisableAggregationKeyUpdate", Boolean.class);
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	@Override
 	public final Iterator<I_C_Print_Job_Line> retrievePrintJobLines(final I_C_Print_Job job)
@@ -224,14 +231,21 @@ public abstract class AbstractPrintingDAO implements IPrintingDAO
 
 	@Nullable
 	@Override
-	public final I_AD_Printer_Matching retrievePrinterMatchingOrNull(final String hostKey, final I_AD_Printer printer)
+	public final I_AD_Printer_Matching retrievePrinterMatchingOrNull(
+			@Nullable final String hostKey,
+			@NonNull final de.metas.adempiere.model.I_AD_Printer printer)
 	{
-		return Services.get(IQueryBL.class)
+		final int printerConfigId = queryBL
 				.createQueryBuilder(I_AD_Printer_Config.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_AD_Printer_Config.COLUMN_ConfigHostKey, hostKey)
-				.andCollectChildren(I_AD_Printer_Matching.COLUMN_AD_Printer_Config_ID)
+				.addInArrayFilter(I_AD_Printer_Config.COLUMN_ConfigHostKey, hostKey, null)
+				.orderBy(I_AD_Printer_Config.COLUMNNAME_ConfigHostKey)
+				.create()
+				.firstId();
+
+		return queryBL.createQueryBuilder(I_AD_Printer_Matching.class)
 				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_AD_Printer_Matching.COLUMNNAME_AD_Printer_Config_ID, printerConfigId)
 				.addEqualsFilter(I_AD_Printer_Matching.COLUMN_AD_Printer_ID, printer.getAD_Printer_ID())
 				.create()
 				.firstOnly(I_AD_Printer_Matching.class);
@@ -255,15 +269,30 @@ public abstract class AbstractPrintingDAO implements IPrintingDAO
 
 	@Nullable
 	@Override
-	public final I_AD_PrinterTray_Matching retrievePrinterTrayMatching(final I_AD_Printer_Matching matching, final I_AD_PrinterRouting routing, final boolean throwExIfMissing)
+	public final I_AD_PrinterTray_Matching retrievePrinterTrayMatching(
+			final I_AD_Printer_Matching printerMatchingRecord, final I_AD_PrinterRouting routing,
+			final boolean throwExIfMissing)
 	{
-		final I_AD_PrinterTray_Matching trayMatching = retrievePrinterTrayMatchingOrNull(matching, routing.getAD_Printer_Tray_ID());
+		final I_AD_PrinterTray_Matching trayMatching = retrievePrinterTrayMatchingOrNull(printerMatchingRecord, routing.getAD_Printer_Tray_ID());
 		if (trayMatching == null && throwExIfMissing)
 		{
 			throw new AdempiereException("Couldn't retrieve printer tray matching for printer " + routing.getAD_Printer_ID());
 		}
 
 		return trayMatching;
+	}
+
+	@Override
+	public final I_AD_PrinterTray_Matching retrievePrinterTrayMatchingOrNull(
+			@NonNull final I_AD_Printer_Matching matching,
+			final int AD_Printer_Tray_ID)
+	{
+		return queryBL.createQueryBuilder(I_AD_PrinterTray_Matching.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_AD_PrinterTray_Matching.COLUMNNAME_AD_Printer_Matching_ID, matching.getAD_Printer_Matching_ID())
+				.addEqualsFilter(I_AD_PrinterTray_Matching.COLUMNNAME_AD_Printer_Tray_ID, AD_Printer_Tray_ID)
+				.create()
+				.firstOnly(I_AD_PrinterTray_Matching.class);
 	}
 
 	@Override
@@ -412,10 +441,8 @@ public abstract class AbstractPrintingDAO implements IPrintingDAO
 
 	@Nullable
 	@Override
-	public final I_AD_PrinterHW retrieveVirtualPrinterOrNull(final Properties ctx, final String hostkey, final String trxName)
+	public final I_AD_PrinterHW retrieveAttachToPrintPackagePrinter(final Properties ctx, final String hostkey, final String trxName)
 	{
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
-
 		final IQuery<I_AD_Printer_Config> queryConfig = queryBL.createQueryBuilder(I_AD_Printer_Config.class)
 				.addEqualsFilter(I_AD_Printer_Config.COLUMN_ConfigHostKey, hostkey)
 				.create();
@@ -426,12 +453,38 @@ public abstract class AbstractPrintingDAO implements IPrintingDAO
 
 		return queryBL.createQueryBuilder(I_AD_PrinterHW.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_AD_PrinterHW.COLUMNNAME_OutputType, X_AD_PrinterHW.OUTPUTTYPE_PDF)
+				.addEqualsFilter(I_AD_PrinterHW.COLUMNNAME_OutputType, X_AD_PrinterHW.OUTPUTTYPE_Attach)
 				.addInArrayFilter(I_AD_PrinterHW.COLUMN_HostKey, hostkey, null)
 				.addInSubQueryFilter(I_AD_Printer_Matching.COLUMNNAME_AD_PrinterHW_ID, I_AD_PrinterHW.COLUMNNAME_AD_PrinterHW_ID, queryMatchings)
 				.orderBy()
 				.addColumnDescending(I_AD_PrinterHW.COLUMNNAME_HostKey).endOrderBy()
 				.create()
 				.first(I_AD_PrinterHW.class);
+	}
+
+	@Override
+	public List<I_AD_Printer_Tray> retrieveTrays(final LogicalPrinterId printerId)
+	{
+		return queryBL.createQueryBuilder(I_AD_Printer_Tray.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_AD_Printer_Tray.COLUMNNAME_AD_Printer_ID, printerId)
+				.create()
+				.list();
+	}
+
+	@Override
+	public I_AD_PrinterHW retrieveHardwarePrinter(@NonNull final HardwarePrinterId hardwarePrinterId)
+	{
+		return InterfaceWrapperHelper.loadOutOfTrx(hardwarePrinterId, I_AD_PrinterHW.class);
+	}
+
+	@Override
+	public List<I_AD_PrinterHW_MediaTray> retrieveMediaTrays(@NonNull final HardwarePrinterId hardwarePrinterId)
+	{
+		return Services.get(IQueryBL.class).createQueryBuilder(I_AD_PrinterHW_MediaTray.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_AD_PrinterHW_MediaTray.COLUMNNAME_AD_PrinterHW_ID, hardwarePrinterId)
+				.create()
+				.list();
 	}
 }

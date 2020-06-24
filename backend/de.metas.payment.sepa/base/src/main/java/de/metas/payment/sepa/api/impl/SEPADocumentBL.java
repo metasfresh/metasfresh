@@ -18,7 +18,7 @@ import de.metas.payment.sepa.model.I_SEPA_Export_Line;
 import de.metas.payment.sepa.sepamarshaller.impl.SEPACustomerDirectDebitMarshaler_Pain_008_003_02;
 import de.metas.payment.sepa.sepamarshaller.impl.SEPAMarshaler;
 import de.metas.payment.sepa.sepamarshaller.impl.SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02;
-import de.metas.util.FileUtils;
+import de.metas.util.FileUtil;
 import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 
@@ -55,7 +55,7 @@ public class SEPADocumentBL implements ISEPADocumentBL
 		marshaler.marshal(sepaExport, out);
 
 		return SEPACreditTransferXML.builder()
-				.filename(FileUtils.stripIllegalCharacters(sepaExport.getDocumentNo()) + ".xml")
+				.filename(FileUtil.stripIllegalCharacters(sepaExport.getDocumentNo()) + ".xml")
 				.contentType(MimeType.TYPE_XML)
 				.content(out.toByteArray())
 				.build();

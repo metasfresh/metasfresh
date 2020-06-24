@@ -46,7 +46,6 @@ public class TestOneJobMultiTrayPageRangeAllFine extends AbstractPrintJobLinesAg
 	@Override
 	protected I_C_Print_Job step20_createPrintJob(final byte[] binaryPdfData, final List<I_AD_PrinterRouting> routings)
 	{
-
 		final I_C_Print_Job printJob = helper.createPrintJob();
 
 		helper.createPrintJobLine(printJob,
