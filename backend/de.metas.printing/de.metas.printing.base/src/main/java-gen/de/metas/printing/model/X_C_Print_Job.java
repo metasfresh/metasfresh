@@ -5,26 +5,18 @@ import java.sql.ResultSet;
 import java.util.Properties;
 
 /** Generated Model for C_Print_Job
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
 @SuppressWarnings("javadoc")
 public class X_C_Print_Job extends org.compiere.model.PO implements I_C_Print_Job, org.compiere.model.I_Persistent 
 {
 
-	/**
-	 *
-	 */
-	private static final long serialVersionUID = 712790834L;
+	private static final long serialVersionUID = 1440503648L;
 
     /** Standard Constructor */
     public X_C_Print_Job (Properties ctx, int C_Print_Job_ID, String trxName)
     {
       super (ctx, C_Print_Job_ID, trxName);
-      /** if (C_Print_Job_ID == 0)
-        {
-			setC_Print_Job_ID (0);
-			setProcessed (false); // N
-        } */
     }
 
     /** Load Constructor */
@@ -34,18 +26,13 @@ public class X_C_Print_Job extends org.compiere.model.PO implements I_C_Print_Jo
     }
 
 
-    /** Load Meta Data */
-    @Override
-    protected org.compiere.model.POInfo initPO (Properties ctx)
-    {
-      org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
-      return poi;
-    }
+	/** Load Meta Data */
+	@Override
+	protected org.compiere.model.POInfo initPO(Properties ctx)
+	{
+		return org.compiere.model.POInfo.getPOInfo(Table_Name);
+	}
 
-	/** Set Ansprechpartner.
-		@param AD_User_ID 
-		User within the system - Internal or Business Partner Contact
-	  */
 	@Override
 	public void setAD_User_ID (int AD_User_ID)
 	{
@@ -55,20 +42,12 @@ public class X_C_Print_Job extends org.compiere.model.PO implements I_C_Print_Jo
 			set_ValueNoCheck (COLUMNNAME_AD_User_ID, Integer.valueOf(AD_User_ID));
 	}
 
-	/** Get Ansprechpartner.
-		@return User within the system - Internal or Business Partner Contact
-	  */
 	@Override
-	public int getAD_User_ID () 
+	public int getAD_User_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_AD_User_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_AD_User_ID);
 	}
 
-	/** Set Druck-Job.
-		@param C_Print_Job_ID Druck-Job	  */
 	@Override
 	public void setC_Print_Job_ID (int C_Print_Job_ID)
 	{
@@ -78,40 +57,21 @@ public class X_C_Print_Job extends org.compiere.model.PO implements I_C_Print_Jo
 			set_ValueNoCheck (COLUMNNAME_C_Print_Job_ID, Integer.valueOf(C_Print_Job_ID));
 	}
 
-	/** Get Druck-Job.
-		@return Druck-Job	  */
 	@Override
-	public int getC_Print_Job_ID () 
+	public int getC_Print_Job_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_Print_Job_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_C_Print_Job_ID);
 	}
 
-	/** Set Verarbeitet.
-		@param Processed 
-		Checkbox sagt aus, ob der Datensatz verarbeitet wurde. 
-	  */
 	@Override
 	public void setProcessed (boolean Processed)
 	{
 		set_Value (COLUMNNAME_Processed, Boolean.valueOf(Processed));
 	}
 
-	/** Get Verarbeitet.
-		@return Checkbox sagt aus, ob der Datensatz verarbeitet wurde. 
-	  */
 	@Override
-	public boolean isProcessed () 
+	public boolean isProcessed() 
 	{
-		Object oo = get_Value(COLUMNNAME_Processed);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_Processed);
 	}
 }

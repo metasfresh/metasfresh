@@ -149,7 +149,7 @@ public class LoopbackPrintConnectionEndpoint implements IPrintConnectionEndpoint
 			// check if we deal with a pdf printing
 			final I_C_Print_Job_Instructions pji = InterfaceWrapperHelper.create(Env.getCtx(), xmlResponse.getCPrintJobInstructionsID().intValue(), I_C_Print_Job_Instructions.class, ITrx.TRXNAME_None);
 			// the HW printer is set in instruction only when the printer is PDF type
-			if (pji!= null && pji.getAD_PrinterHW_ID() > 0 && Services.get(IPrinterBL.class).isPDFPrinter(pji.getAD_PrinterHW()))
+			if (pji!= null && pji.getAD_PrinterHW_ID() > 0 && Services.get(IPrinterBL.class).isAttachToPrintPackagePrinter(pji.getAD_PrinterHW()))
 			{
 				return null;
 			}

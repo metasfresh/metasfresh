@@ -160,7 +160,6 @@ public class DefaultModelArchiver
 
 			final boolean forceArchive = true; // always force archive (i.e. don't check again if document needs to be archived)
 			archive = InterfaceWrapperHelper.create(archiveBL.archive(pdfData, printInfo, forceArchive, ITrx.TRXNAME_ThreadInherited), I_AD_Archive.class);
-			// archive.setIsDirectPrint(true);
 			archive.setC_Doc_Outbound_Config(getC_Doc_Outbound_Config_OrNull()); // 09417: reference the config and it's settings will decide if a printing queue item shall be created
 
 			// https://github.com/metasfresh/metasfresh/issues/1240
@@ -454,9 +453,6 @@ public class DefaultModelArchiver
 
 	/**
 	 * Helper method which creates an {@link MQuery} (KeyColumnName=Record_ID) for given object
-	 *
-	 * @param po
-	 * @return
 	 */
 	private static MQuery createMQuery(final Object record)
 	{

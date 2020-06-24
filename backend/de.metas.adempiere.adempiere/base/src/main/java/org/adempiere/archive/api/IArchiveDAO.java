@@ -26,6 +26,8 @@ package org.adempiere.archive.api;
 import java.util.List;
 import java.util.Properties;
 
+import lombok.NonNull;
+import org.adempiere.archive.ArchiveId;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.compiere.model.I_AD_Archive;
 
@@ -72,4 +74,6 @@ public interface IArchiveDAO extends ISingletonService
 	 * @return PDF archive for model or null
 	 */
 	<T extends I_AD_Archive> T retrievePDFArchiveForModel(Object model, Class<T> archiveClass);
+
+	I_AD_Archive retrieveArchive(ArchiveId archiveId);
 }

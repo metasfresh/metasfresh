@@ -25,6 +25,7 @@ package de.metas.printing.api.impl;
 import java.util.Iterator;
 import java.util.Properties;
 
+import de.metas.printing.printingdata.PrintingDataFactory;
 import org.adempiere.ad.session.ISessionBL;
 import org.adempiere.ad.session.MFSession;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -48,10 +49,21 @@ import de.metas.printing.model.X_C_Print_Job_Instructions;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.springframework.stereotype.Service;
 
+import javax.annotation.Nullable;
+
+@Service
 public class PrintPackageBL implements IPrintPackageBL
 {
 	private final Logger logger = LogManager.getLogger(getClass());
+
+	private final PrintingDataFactory printingDataFactory;
+
+	public PrintPackageBL(@NonNull final PrintingDataFactory printingDataFactory)
+	{
+		this.printingDataFactory = printingDataFactory;
+	}
 
 	@Override
 	public boolean addPrintingDataToPrintPackage(
@@ -75,7 +87,7 @@ public class PrintPackageBL implements IPrintPackageBL
 			}
 
 			@Override
-			public boolean doCatch(final Throwable e) throws Throwable
+			public boolean doCatch(final Throwable e)
 			{
 				ex = e;
 				return true; // rollback
@@ -155,17 +167,17 @@ public class PrintPackageBL implements IPrintPackageBL
 		InterfaceWrapperHelper.save(printPackage);
 	}
 
-	protected IPrintJobLinesAggregator createPrintJobLinesAggregator(final IPrintPackageCtx printPackageCtx,
-			final I_C_Print_Job_Instructions jobInstructions)
+	protected IPrintJobLinesAggregator createPrintJobLinesAggregator(
+			@NonNull final IPrintPackageCtx printPackageCtx,
+			@NonNull final I_C_Print_Job_Instructions jobInstructions)
 	{
-		return new PrintJobLinesAggregator(printPackageCtx, jobInstructions);
+		return new PrintJobLinesAggregator(printingDataFactory, printPackageCtx, jobInstructions);
 	}
 
 	@Override
 	public IPrintPackageCtx createEmptyInitialCtx()
 	{
-		final PrintPackageCtx printCtx = new PrintPackageCtx();
-		return printCtx;
+		return new PrintPackageCtx();
 	}
 
 	@Override
@@ -189,17 +201,5 @@ public class PrintPackageBL implements IPrintPackageBL
 
 		logger.debug("Print package context: {}", printCtx);
 		return printCtx;
-	}
-
-	@Override
-	public String getHostKeyOrNull(@NonNull final Properties ctx)
-	{
-		// Check session
-		final MFSession session = Services.get(ISessionBL.class).getCurrentSession(ctx);
-		if (session != null)
-		{
-			return session.getOrCreateHostKey(ctx);
-		}
-		return null;
 	}
 }

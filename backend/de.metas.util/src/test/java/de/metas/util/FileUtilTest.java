@@ -26,19 +26,19 @@ package de.metas.util;
 import org.junit.Assert;
 import org.junit.Test;
 
-import de.metas.util.FileUtils;
+import de.metas.util.FileUtil;
 
-public class FileUtilsTest
+public class FileUtilTest
 {
 	@Test
 	public void test_changeFileExtension_Common() throws Exception
 	{
-		Assert.assertEquals("test.pdf", FileUtils.changeFileExtension("test.json", "pdf"));
-		Assert.assertEquals("test-no-extension.pdf", FileUtils.changeFileExtension("test-no-extension", "pdf"));
-		Assert.assertEquals("test", FileUtils.changeFileExtension("test.json", null));
-		Assert.assertEquals("test", FileUtils.changeFileExtension("test.json", ""));
-		Assert.assertEquals("test", FileUtils.changeFileExtension("test.json", "    "));
-		Assert.assertEquals(".test.pdf", FileUtils.changeFileExtension(".test", "pdf"));
+		Assert.assertEquals("test.pdf", FileUtil.changeFileExtension("test.json", "pdf"));
+		Assert.assertEquals("test-no-extension.pdf", FileUtil.changeFileExtension("test-no-extension", "pdf"));
+		Assert.assertEquals("test", FileUtil.changeFileExtension("test.json", null));
+		Assert.assertEquals("test", FileUtil.changeFileExtension("test.json", ""));
+		Assert.assertEquals("test", FileUtil.changeFileExtension("test.json", "    "));
+		Assert.assertEquals(".test.pdf", FileUtil.changeFileExtension(".test", "pdf"));
 	}
 
 	@Test
@@ -46,15 +46,15 @@ public class FileUtilsTest
 	{
 		Assert.assertEquals(
 				"@PREFIX@de/metas/reports/pricelist/report_TabularView.jrxml",
-				FileUtils.changeFileExtension("@PREFIX@de/metas/reports/pricelist/report_TabularView.jasper", ".jrxml"));
+				FileUtil.changeFileExtension("@PREFIX@de/metas/reports/pricelist/report_TabularView.jasper", ".jrxml"));
 	}
 
 	@Test
 	public void test_getFileExtension() throws Exception
 	{
-		Assert.assertEquals("pdf", FileUtils.getFileExtension("test.pdf"));
-		Assert.assertEquals("pdf", FileUtils.getFileExtension("test.json.pdf"));
-		Assert.assertEquals(null, FileUtils.getFileExtension("test"));
+		Assert.assertEquals("pdf", FileUtil.getFileExtension("test.pdf"));
+		Assert.assertEquals("pdf", FileUtil.getFileExtension("test.json.pdf"));
+		Assert.assertEquals(null, FileUtil.getFileExtension("test"));
 	}
 
 }

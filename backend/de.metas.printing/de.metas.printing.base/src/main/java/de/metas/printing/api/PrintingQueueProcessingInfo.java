@@ -54,7 +54,6 @@ public class PrintingQueueProcessingInfo
 			final List<Integer> aD_User_ToPrint_IDs,
 			final boolean createWithSpecificHostKey)
 	{
-		super();
 		this.AD_User_PrintJob_ID = aD_User_PrintJob_ID;
 		this.AD_User_ToPrint_IDs = ImmutableList.<Integer> copyOf(aD_User_ToPrint_IDs);
 		this.createWithSpecificHostKey = createWithSpecificHostKey;
@@ -75,8 +74,6 @@ public class PrintingQueueProcessingInfo
 
 	/**
 	 * The user who shall be the printjob's AD_User_ID/contact
-	 * 
-	 * @return
 	 */
 	public int getAD_User_PrintJob_ID()
 	{

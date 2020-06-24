@@ -15,7 +15,7 @@ import de.metas.process.ProcessInfo;
 import de.metas.report.ExecuteReportStrategy.ExecuteReportResult;
 import de.metas.report.server.OutputType;
 import de.metas.util.Check;
-import de.metas.util.FileUtils;
+import de.metas.util.FileUtil;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import de.metas.util.lang.CoalesceUtil;
@@ -218,7 +218,7 @@ public abstract class ReportStarter extends JavaProcess
 		final String fileExtension = outputType.getFileExtension();
 
 		final String filename = fileBasename.trim() + "." + fileExtension;
-		return FileUtils.stripIllegalCharacters(filename);
+		return FileUtil.stripIllegalCharacters(filename);
 	}
 
 	private static String extractReportBasename_IfDocument(final ProcessInfo pi)
