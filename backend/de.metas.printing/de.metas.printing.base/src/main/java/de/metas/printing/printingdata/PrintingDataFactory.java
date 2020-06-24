@@ -24,7 +24,7 @@ package de.metas.printing.printingdata;
 
 import de.metas.adempiere.service.IPrinterRoutingDAO;
 import de.metas.adempiere.service.PrinterRoutingsQuery;
-import de.metas.document.archive.api.DocOutboundService;
+import de.metas.document.archive.api.ArchiveFileNameService;
 import de.metas.document.archive.api.IDocOutboundDAO;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
 import de.metas.logging.LogManager;
@@ -72,23 +72,32 @@ public class PrintingDataFactory
 
 	private final HardwarePrinterRepository hardwarePrinterRepository;
 
-	private final DocOutboundService docOutboundService;
+	private final ArchiveFileNameService archiveFileNameService;
 
 	public PrintingDataFactory(
 			@NonNull final HardwarePrinterRepository hardwarePrinterRepository,
-			@NonNull final DocOutboundService docOutboundService)
+			@NonNull final ArchiveFileNameService archiveFileNameService)
 	{
 		this.hardwarePrinterRepository = hardwarePrinterRepository;
-		this.docOutboundService = docOutboundService;
+		this.archiveFileNameService = archiveFileNameService;
 	}
 
 	public PrintingData createPrintingDataForQueueItem(@NonNull final I_C_Printing_Queue queueItem)
 	{
 		final ArchiveId archiveId = ArchiveId.ofRepoId(queueItem.getAD_Archive_ID());
 		final I_C_Doc_Outbound_Log outboundLogRecord = outboundDAO.retrieveLog(archiveId);
-		final String pdfFileName = docOutboundService.computePdfFileName(outboundLogRecord);
-
 		final I_AD_Archive archiveRecord = queueItem.getAD_Archive();
+
+		final String pdfFileName;
+		if (outboundLogRecord != null)
+		{
+			pdfFileName = archiveFileNameService.computePdfFileName(outboundLogRecord);
+		}
+		else
+		{
+			pdfFileName = archiveFileNameService.computePdfFileName(archiveRecord);
+		}
+
 		final PrintingData.PrintingDataBuilder printingData = PrintingData
 				.builder()
 				.printingQueueItemId(PrintingQueueItemId.ofRepoId(queueItem.getC_Printing_Queue_ID()))

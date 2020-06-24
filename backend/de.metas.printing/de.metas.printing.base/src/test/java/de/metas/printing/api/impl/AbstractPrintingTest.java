@@ -1,6 +1,6 @@
 package de.metas.printing.api.impl;
 
-import de.metas.document.archive.api.DocOutboundService;
+import de.metas.document.archive.api.ArchiveFileNameService;
 import de.metas.printing.HardwarePrinterRepository;
 import de.metas.printing.api.IPrintPackageBL;
 import de.metas.printing.printingdata.PrintingDataFactory;
@@ -53,11 +53,11 @@ public abstract class AbstractPrintingTest
 
 		Services.registerService(IInvoiceDAO.class, new PlainInvoiceDAO());
 
-		final DocOutboundService docOutboundService = new DocOutboundService();
-		SpringContextHolder.registerJUnitBean(docOutboundService);
+		final ArchiveFileNameService archiveFileNameService = new ArchiveFileNameService();
+		SpringContextHolder.registerJUnitBean(archiveFileNameService);
 
-		Services.registerService(IPrintPackageBL.class, new PrintPackageBL(new PrintingDataFactory(new HardwarePrinterRepository(), docOutboundService)));
-		SpringContextHolder.registerJUnitBean(new PrintingDataFactory(new HardwarePrinterRepository(), docOutboundService));
+		Services.registerService(IPrintPackageBL.class, new PrintPackageBL(new PrintingDataFactory(new HardwarePrinterRepository(), archiveFileNameService)));
+		SpringContextHolder.registerJUnitBean(new PrintingDataFactory(new HardwarePrinterRepository(), archiveFileNameService));
 
 		afterSetup();
 	}

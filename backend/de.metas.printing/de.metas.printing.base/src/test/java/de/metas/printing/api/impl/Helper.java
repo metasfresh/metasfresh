@@ -1,7 +1,7 @@
 package de.metas.printing.api.impl;
 
 import de.metas.adempiere.form.IClientUI;
-import de.metas.document.archive.api.DocOutboundService;
+import de.metas.document.archive.api.ArchiveFileNameService;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.document.engine.impl.PlainDocumentBL;
 import de.metas.i18n.Language;
@@ -211,7 +211,7 @@ public class Helper
 		Language.setBaseLanguage(() -> "de_DE");
 
 		printOutputFacade = new PrintOutputFacade(
-				new PrintingDataFactory(new HardwarePrinterRepository(), new DocOutboundService()),
+				new PrintingDataFactory(new HardwarePrinterRepository(), new ArchiveFileNameService()),
 				new PrintingDataToPDFFileStorer());
 	}
 

@@ -22,7 +22,7 @@
 
 package de.metas.printing.printingdata;
 
-import de.metas.document.archive.api.DocOutboundService;
+import de.metas.document.archive.api.ArchiveFileNameService;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
 import de.metas.organization.OrgId;
 import de.metas.printing.HardwarePrinterRepository;
@@ -34,7 +34,7 @@ import de.metas.printing.model.I_AD_PrinterHW;
 import de.metas.printing.model.I_AD_PrinterRouting;
 import de.metas.printing.model.I_C_Printing_Queue;
 import de.metas.util.Services;
-import org.adempiere.ad.table.api.IADTableDAO;
+import lombok.NonNull;
 import org.adempiere.archive.api.IArchiveStorageFactory;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
@@ -43,6 +43,9 @@ import org.compiere.model.I_C_Order;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
@@ -63,12 +66,19 @@ class PrintingDataFactoryTest
 
 		helper = new Helper(testInfo);
 		helper.setup();
-		printingDataFactory = new PrintingDataFactory(new HardwarePrinterRepository(), new DocOutboundService());
+		printingDataFactory = new PrintingDataFactory(new HardwarePrinterRepository(), new ArchiveFileNameService());
 		archiveStorageFactory = Services.get(IArchiveStorageFactory.class);
 	}
 
-	@Test
-	void createPrintingDataForQueueItem()
+	private enum Mode
+	{
+		with_C_Doc_Outbound_Log,
+		without_C_Doc_Outbound_Log;
+	}
+
+	@ParameterizedTest
+	@EnumSource(Mode.class)
+	void createPrintingDataForQueueItem(@NonNull final Mode mode)
 	{
 		// given
 		final byte[] binaryPdfData = new PdfCollator()
@@ -76,7 +86,7 @@ class PrintingDataFactoryTest
 				.toByteArray();
 
 		final I_AD_PrinterHW hwPrinterRecord = helper.getCreatePrinterHW("hwPrinter", OutputType.Store);
-		final I_AD_PrinterRouting printerRouting = helper.createPrinterRouting("logicalPrinter", null, 10,-1, 1, 100);
+		final I_AD_PrinterRouting printerRouting = helper.createPrinterRouting("logicalPrinter", null, 10, -1, 1, 100);
 
 		final I_C_Order referencedDocument = newInstance(I_C_Order.class);
 		saveRecord(referencedDocument);
@@ -87,13 +97,14 @@ class PrintingDataFactoryTest
 		archiveRecord.setRecord_ID(referencedDocument.getC_Order_ID());
 		archiveStorageFactory.getArchiveStorage(archiveRecord).setBinaryData(archiveRecord, binaryPdfData);
 		saveRecord(archiveRecord);
-
-		final I_C_Doc_Outbound_Log docOutboundLogRecord = newInstance(I_C_Doc_Outbound_Log.class);
-		docOutboundLogRecord.setAD_Table_ID(InterfaceWrapperHelper.getTableId(I_C_Order.class));
-		docOutboundLogRecord.setRecord_ID(referencedDocument.getC_Order_ID());
-		saveRecord(docOutboundLogRecord);
-
-		helper.createPrinterConfigAndMatching(null, "hwPrinter", null,10, "logicalPrinter", null);
+		if (mode.equals(Mode.with_C_Doc_Outbound_Log))
+		{
+			final I_C_Doc_Outbound_Log docOutboundLogRecord = newInstance(I_C_Doc_Outbound_Log.class);
+			docOutboundLogRecord.setAD_Table_ID(InterfaceWrapperHelper.getTableId(I_C_Order.class));
+			docOutboundLogRecord.setRecord_ID(referencedDocument.getC_Order_ID());
+			saveRecord(docOutboundLogRecord);
+		}
+		helper.createPrinterConfigAndMatching(null, "hwPrinter", null, 10, "logicalPrinter", null);
 
 		final I_C_Printing_Queue printingQueueRecord = newInstance(I_C_Printing_Queue.class);
 		printingQueueRecord.setAD_Archive_ID(archiveRecord.getAD_Archive_ID());

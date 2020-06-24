@@ -24,9 +24,6 @@ package de.metas.printing.printingdata;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMultimap;
-import de.metas.document.archive.api.DocOutboundService;
-import de.metas.document.archive.api.IDocOutboundDAO;
-import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
 import de.metas.logging.LogManager;
 import de.metas.logging.TableRecordMDC;
 import de.metas.printing.HardwarePrinter;

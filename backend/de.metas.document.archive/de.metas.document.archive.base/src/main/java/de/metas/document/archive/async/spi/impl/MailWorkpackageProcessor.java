@@ -4,13 +4,10 @@ import static de.metas.util.Check.isEmpty;
 
 import java.util.List;
 import java.util.Properties;
-import java.util.StringJoiner;
 
 import javax.annotation.Nullable;
 
-import de.metas.document.archive.api.DocOutboundService;
-import org.adempiere.ad.table.api.AdTableId;
-import org.adempiere.ad.table.api.IADTableDAO;
+import de.metas.document.archive.api.ArchiveFileNameService;
 import org.adempiere.archive.api.IArchiveBL;
 import org.adempiere.archive.api.IArchiveEventManager;
 import org.adempiere.exceptions.AdempiereException;
@@ -19,9 +16,7 @@ import org.adempiere.service.ClientId;
 import org.adempiere.service.IClientDAO;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Archive;
-import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_AD_PInstance;
-import org.compiere.model.I_AD_Table;
 import org.compiere.model.I_C_DocType;
 import org.compiere.util.Env;
 
@@ -52,7 +47,6 @@ import de.metas.i18n.Language;
 import de.metas.letter.BoilerPlate;
 import de.metas.letter.BoilerPlateId;
 import de.metas.letter.BoilerPlateRepository;
-import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.process.AdProcessId;
 import de.metas.process.ProcessExecutor;
@@ -82,7 +76,7 @@ public class MailWorkpackageProcessor implements IWorkpackageProcessor
 	private final transient IArchiveBL archiveBL = Services.get(IArchiveBL.class);
 	private final transient IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 
-	private final transient DocOutboundService docOutboundService = SpringContextHolder.instance.getBean(DocOutboundService.class);
+	private final transient ArchiveFileNameService archiveFileNameService = SpringContextHolder.instance.getBean(ArchiveFileNameService.class);
 	private final transient MailService mailService = SpringContextHolder.instance.getBean(MailService.class);
 	private final transient BoilerPlateRepository boilerPlateRepository = SpringContextHolder.instance.getBean(BoilerPlateRepository.class);
 	private final transient DocOutBoundRecipientRepository docOutBoundRecipientRepository = SpringContextHolder.instance.getBean(DocOutBoundRecipientRepository.class);
@@ -189,7 +183,7 @@ public class MailWorkpackageProcessor implements IWorkpackageProcessor
 			}
 			else
 			{
-				final String pdfFileName = docOutboundService.computePdfFileName(docOutboundLogRecord);
+				final String pdfFileName = archiveFileNameService.computePdfFileName(docOutboundLogRecord);
 				email.addAttachment(pdfFileName, attachment);
 
 				mailService.send(email);
