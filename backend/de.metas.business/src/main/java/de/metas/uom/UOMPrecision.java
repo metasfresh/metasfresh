@@ -52,6 +52,7 @@ public class UOMPrecision
 
 	public static final UOMPrecision ZERO = new UOMPrecision(0);
 	public static final UOMPrecision TWO = new UOMPrecision(2);
+	public static final UOMPrecision TWELVE = new UOMPrecision(12);
 
 	private static final UOMPrecision[] cachedValues = new UOMPrecision[] {
 			ZERO,
@@ -66,7 +67,7 @@ public class UOMPrecision
 			new UOMPrecision(9),
 			new UOMPrecision(10),
 			new UOMPrecision(11),
-			new UOMPrecision(12),
+			TWELVE,
 	};
 
 	private final int precision;
