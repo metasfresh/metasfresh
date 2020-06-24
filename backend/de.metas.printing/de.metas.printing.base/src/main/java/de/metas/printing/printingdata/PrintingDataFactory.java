@@ -24,6 +24,9 @@ package de.metas.printing.printingdata;
 
 import de.metas.adempiere.service.IPrinterRoutingDAO;
 import de.metas.adempiere.service.PrinterRoutingsQuery;
+import de.metas.document.archive.api.DocOutboundService;
+import de.metas.document.archive.api.IDocOutboundDAO;
+import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
 import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
 import de.metas.printing.HardwarePrinter;
@@ -43,6 +46,7 @@ import de.metas.printing.model.I_C_Print_Job_Line;
 import de.metas.printing.model.I_C_Printing_Queue;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.archive.ArchiveId;
 import org.adempiere.archive.api.IArchiveBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_AD_Archive;
@@ -63,22 +67,33 @@ public class PrintingDataFactory
 	private final IPrinterRoutingDAO printerRoutingDAO = Services.get(IPrinterRoutingDAO.class);
 	private final IPrintJobBL printJobBL = Services.get(IPrintJobBL.class);
 	private final IPrintingDAO printingDAO = Services.get(IPrintingDAO.class);
-	private final transient IArchiveBL archiveBL = Services.get(IArchiveBL.class);
+	private final IArchiveBL archiveBL = Services.get(IArchiveBL.class);
+	private final IDocOutboundDAO outboundDAO = Services.get(IDocOutboundDAO.class);
+
 	private final HardwarePrinterRepository hardwarePrinterRepository;
 
-	public PrintingDataFactory(@NonNull final HardwarePrinterRepository hardwarePrinterRepository)
+	private final DocOutboundService docOutboundService;
+
+	public PrintingDataFactory(
+			@NonNull final HardwarePrinterRepository hardwarePrinterRepository,
+			@NonNull final DocOutboundService docOutboundService)
 	{
 		this.hardwarePrinterRepository = hardwarePrinterRepository;
+		this.docOutboundService = docOutboundService;
 	}
 
 	public PrintingData createPrintingDataForQueueItem(@NonNull final I_C_Printing_Queue queueItem)
 	{
+		final ArchiveId archiveId = ArchiveId.ofRepoId(queueItem.getAD_Archive_ID());
+		final I_C_Doc_Outbound_Log outboundLogRecord = outboundDAO.retrieveLog(archiveId);
+		final String pdfFileName = docOutboundService.computePdfFileName(outboundLogRecord);
+
 		final I_AD_Archive archiveRecord = queueItem.getAD_Archive();
 		final PrintingData.PrintingDataBuilder printingData = PrintingData
 				.builder()
 				.printingQueueItemId(PrintingQueueItemId.ofRepoId(queueItem.getC_Printing_Queue_ID()))
 				.orgId(OrgId.ofRepoId(queueItem.getAD_Org_ID()))
-				.documentName(archiveRecord.getName())
+				.documentFileName(pdfFileName)
 				.data(loadArchiveData(archiveRecord));
 
 		final PrinterRoutingsQuery query = printingQueueBL.createPrinterRoutingsQueryForItem(queueItem);
@@ -87,7 +102,7 @@ public class PrintingDataFactory
 		{
 			final String hostKey = null;
 			final PrintingSegment printingSegment = createPrintingSegment(printerRouting, hostKey);
-			if(printingSegment != null)
+			if (printingSegment != null)
 			{
 				printingData.segment(printingSegment);
 			}
@@ -105,7 +120,7 @@ public class PrintingDataFactory
 				.builder()
 				.printingQueueItemId(PrintingQueueItemId.ofRepoId(jobLine.getC_Printing_Queue_ID()))
 				.orgId(OrgId.ofRepoId(archiveRecord.getAD_Org_ID()))
-				.documentName(archiveRecord.getName());
+				.documentFileName(archiveRecord.getName() + ".pdf");
 
 		final List<I_C_Print_Job_Detail> printJobDetails = printJobBL.getCreatePrintJobDetails(jobLine);
 		boolean atLeastOneSegmentCreated = false;

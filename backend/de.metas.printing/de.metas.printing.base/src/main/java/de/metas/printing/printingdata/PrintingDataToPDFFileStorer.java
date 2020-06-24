@@ -24,6 +24,9 @@ package de.metas.printing.printingdata;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMultimap;
+import de.metas.document.archive.api.DocOutboundService;
+import de.metas.document.archive.api.IDocOutboundDAO;
+import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
 import de.metas.logging.LogManager;
 import de.metas.logging.TableRecordMDC;
 import de.metas.printing.HardwarePrinter;
@@ -112,17 +115,15 @@ public class PrintingDataToPDFFileStorer
 				ClientId.METASFRESH.getRepoId(),
 				printingData.getOrgId().getRepoId());
 
-		final StringBuilder fileName = new StringBuilder();
+		final StringBuilder result = new StringBuilder();
 		if (includeSystemTimeMS)
 		{
-			fileName
+			result
 					.append(SystemTime.millis())
 					.append("_");
 		}
-
-		return FileUtil.stripIllegalCharacters(fileName
-				.append(printingData.getDocumentName())
-				.append(".pdf")
+		return FileUtil.stripIllegalCharacters(result
+				.append(printingData.getDocumentFileName())
 				.toString());
 	}
 

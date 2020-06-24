@@ -58,7 +58,7 @@ public class PrintingData
 	private final PrintingQueueItemId printingQueueItemId;
 
 	@Getter
-	private final String documentName;
+	private final String documentFileName;
 
 	// Archive's Data
 	@Getter
@@ -75,13 +75,13 @@ public class PrintingData
 			@NonNull final PrintingQueueItemId printingQueueItemId,
 			@NonNull final OrgId orgId,
 			@Nullable final byte[] data,
-			@NonNull final String documentName,
+			@NonNull final String documentFileName,
 			@Nullable final Boolean adjustSegmentPageRanges)
 	{
 		this.printingQueueItemId = printingQueueItemId;
 		this.data = data;
 		this.orgId = orgId;
-		this.documentName = documentName;
+		this.documentFileName = documentFileName;
 		if (CoalesceUtil.coalesce(adjustSegmentPageRanges, true))
 		{
 			this.segments = adjustSegmentPageRanges(this, segments);
@@ -308,7 +308,7 @@ public class PrintingData
 		return PrintingData.builder()
 				.adjustSegmentPageRanges(false)
 				.data(this.data)
-				.documentName(this.documentName)
+				.documentFileName(this.documentFileName)
 				.orgId(this.orgId)
 				.printingQueueItemId(this.printingQueueItemId)
 				.segments(filteredSegments)

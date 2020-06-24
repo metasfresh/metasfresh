@@ -22,6 +22,8 @@
 
 package de.metas.printing.printingdata;
 
+import de.metas.document.archive.api.DocOutboundService;
+import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
 import de.metas.organization.OrgId;
 import de.metas.printing.HardwarePrinterRepository;
 import de.metas.printing.OutputType;
@@ -32,9 +34,12 @@ import de.metas.printing.model.I_AD_PrinterHW;
 import de.metas.printing.model.I_AD_PrinterRouting;
 import de.metas.printing.model.I_C_Printing_Queue;
 import de.metas.util.Services;
+import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.archive.api.IArchiveStorageFactory;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_AD_Archive;
+import org.compiere.model.I_C_Order;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
@@ -58,7 +63,7 @@ class PrintingDataFactoryTest
 
 		helper = new Helper(testInfo);
 		helper.setup();
-		printingDataFactory = new PrintingDataFactory(new HardwarePrinterRepository());
+		printingDataFactory = new PrintingDataFactory(new HardwarePrinterRepository(), new DocOutboundService());
 		archiveStorageFactory = Services.get(IArchiveStorageFactory.class);
 	}
 
@@ -73,10 +78,20 @@ class PrintingDataFactoryTest
 		final I_AD_PrinterHW hwPrinterRecord = helper.getCreatePrinterHW("hwPrinter", OutputType.Store);
 		final I_AD_PrinterRouting printerRouting = helper.createPrinterRouting("logicalPrinter", null, -1, 1, 100);
 
+		final I_C_Order referencedDocument = newInstance(I_C_Order.class);
+		saveRecord(referencedDocument);
+
 		final I_AD_Archive archiveRecord = newInstance(I_AD_Archive.class);
 		archiveRecord.setName("archiveName");
+		archiveRecord.setAD_Table_ID(InterfaceWrapperHelper.getTableId(I_C_Order.class));
+		archiveRecord.setRecord_ID(referencedDocument.getC_Order_ID());
 		archiveStorageFactory.getArchiveStorage(archiveRecord).setBinaryData(archiveRecord, binaryPdfData);
 		saveRecord(archiveRecord);
+
+		final I_C_Doc_Outbound_Log docOutboundLogRecord = newInstance(I_C_Doc_Outbound_Log.class);
+		docOutboundLogRecord.setAD_Table_ID(InterfaceWrapperHelper.getTableId(I_C_Order.class));
+		docOutboundLogRecord.setRecord_ID(referencedDocument.getC_Order_ID());
+		saveRecord(docOutboundLogRecord);
 
 		helper.createPrinterConfigAndMatching(null, "hwPrinter", null, "logicalPrinter", null);
 
@@ -91,7 +106,7 @@ class PrintingDataFactoryTest
 		// then
 		assertThat(printingData.hasData()).isTrue();
 		assertThat(printingData.getPrintingQueueItemId()).isEqualTo(PrintingQueueItemId.ofRepoId(printingQueueRecord.getC_Printing_Queue_ID()));
-		assertThat(printingData.getDocumentName()).isEqualTo("archiveName");
+		assertThat(printingData.getDocumentFileName()).isEqualTo("C_Order-100007.pdf"); // the file name is not so nice, because there is not documentName, docType etc set up
 		assertThat(printingData.getNumberOfPages()).isEqualTo(3);
 		assertThat(printingData.getOrgId()).isEqualTo(OrgId.ofRepoId(23));
 		assertThat(printingData.getSegments()).isNotEmpty()

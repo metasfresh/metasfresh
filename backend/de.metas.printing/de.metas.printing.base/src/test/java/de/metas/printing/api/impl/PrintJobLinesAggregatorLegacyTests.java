@@ -22,6 +22,7 @@ package de.metas.printing.api.impl;
  * #L%
  */
 
+import de.metas.document.archive.api.DocOutboundService;
 import de.metas.printing.HardwarePrinterRepository;
 import de.metas.printing.api.IPrintPackageBL;
 import de.metas.printing.api.IPrintPackageCtx;
@@ -43,6 +44,7 @@ import org.adempiere.archive.api.impl.ArchiveStorageFactory;
 import org.adempiere.archive.spi.impl.DBArchiveStorage;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.Mutable;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Archive;
 import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
@@ -80,7 +82,7 @@ public class PrintJobLinesAggregatorLegacyTests extends AbstractPrintingTest
 	@Before
 	public void setUp() throws Exception
 	{
-		printingDataFactory = new PrintingDataFactory(new HardwarePrinterRepository());
+		printingDataFactory = new PrintingDataFactory(new HardwarePrinterRepository(), new DocOutboundService());
 	}
 
 	@Test

@@ -22,6 +22,7 @@
 
 package de.metas.printing.printingdata;
 
+import de.metas.document.archive.api.DocOutboundService;
 import de.metas.organization.OrgId;
 import de.metas.printing.HardwarePrinter;
 import de.metas.printing.HardwarePrinterId;
@@ -38,6 +39,7 @@ import de.metas.printing.model.I_AD_PrinterRouting;
 import de.metas.util.FileUtil;
 import de.metas.util.time.SystemTime;
 import lombok.NonNull;
+import org.adempiere.archive.ArchiveId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.compiere.model.I_AD_SysConfig;
@@ -65,6 +67,7 @@ class PrintingDataToPDFFileStorerTest
 	{
 		helper = new Helper(testInfo);
 		helper.setup();
+
 		printingDataToPDFFileStorer = new PrintingDataToPDFFileStorer();
 		hardwarePrinterRepository = new HardwarePrinterRepository();
 	}
@@ -99,7 +102,7 @@ class PrintingDataToPDFFileStorerTest
 		final HardwarePrinter printer = hardwarePrinterRepository.getById(printerId);
 
 		final PrintingData printingData = PrintingData.builder()
-				.documentName("test")
+				.documentFileName("test.pdf")
 				.orgId(OrgId.ofRepoId(10))
 				.printingQueueItemId(PrintingQueueItemId.ofRepoId(20))
 				.data(binaryPdfData)
@@ -123,7 +126,7 @@ class PrintingDataToPDFFileStorerTest
 		printingDataToPDFFileStorer.storeInFileSystem(printingData);
 
 		SystemTime.setTimeSource(() -> 200);
-		new PrintingDataToPDFFileStorer().storeInFileSystem(printingData);
+		printingDataToPDFFileStorer.storeInFileSystem(printingData);
 
 		// then
 

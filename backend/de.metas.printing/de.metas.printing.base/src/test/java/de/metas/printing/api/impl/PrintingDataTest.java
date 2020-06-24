@@ -73,7 +73,7 @@ class PrintingDataTest
 
 		// when
 		final PrintingData printingData = PrintingData.builder()
-				.documentName("test")
+				.documentFileName("test.pdf")
 				.orgId(OrgId.ofRepoId(10))
 				.printingQueueItemId(PrintingQueueItemId.ofRepoId(20))
 				.data(binaryPdfData)
@@ -127,7 +127,7 @@ class PrintingDataTest
 
 		// when
 		final PrintingData printingData = PrintingData.builder()
-				.documentName("test")
+				.documentFileName("test.pdf")
 				.orgId(OrgId.ofRepoId(10))
 				.printingQueueItemId(PrintingQueueItemId.ofRepoId(20))
 				.data(binaryPdfData)

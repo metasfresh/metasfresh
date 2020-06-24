@@ -10,6 +10,7 @@ import java.util.Properties;
 
 import javax.annotation.Nullable;
 
+import org.adempiere.archive.ArchiveId;
 import org.adempiere.archive.api.IArchiveEventManager;
 import org.adempiere.archive.spi.IArchiveEventListener;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -163,7 +164,8 @@ public class DocOutboundArchiveEventListener implements IArchiveEventListener
 	@VisibleForTesting
 	I_C_Doc_Outbound_Log_Line createLogLine(@NonNull final I_AD_Archive archive)
 	{
-		I_C_Doc_Outbound_Log docOutboundLogRecord = Services.get(IDocOutboundDAO.class).retrieveLog(archive);
+		final ArchiveId archiveId = ArchiveId.ofRepoId(archive.getAD_Archive_ID());
+		I_C_Doc_Outbound_Log docOutboundLogRecord = Services.get(IDocOutboundDAO.class).retrieveLog(archiveId);
 
 		if (docOutboundLogRecord == null)
 		{
@@ -191,7 +193,6 @@ public class DocOutboundArchiveEventListener implements IArchiveEventListener
 	/**
 	 * Creates and saves {@link I_C_Doc_Outbound_Log}
 	 *
-	 * @param archiveRecord
 	 * @return {@link I_C_Doc_Outbound_Log}
 	 */
 	private I_C_Doc_Outbound_Log createLog(@NonNull final I_AD_Archive archiveRecord)

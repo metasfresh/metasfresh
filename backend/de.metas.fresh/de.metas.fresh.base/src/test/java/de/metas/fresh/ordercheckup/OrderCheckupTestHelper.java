@@ -33,6 +33,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import de.metas.document.archive.api.DocOutboundService;
 import de.metas.printing.HardwarePrinterRepository;
 import de.metas.printing.PrintOutputFacade;
 import de.metas.printing.printingdata.PrintingDataFactory;
@@ -81,7 +82,7 @@ public class OrderCheckupTestHelper
 		Services.get(IPrintingQueueBL.class).registerHandler(OrderCheckupPrintingQueueHandler.instance);
 
 		printOutputFacade = new PrintOutputFacade(
-				new PrintingDataFactory(new HardwarePrinterRepository()),
+				new PrintingDataFactory(new HardwarePrinterRepository(), new DocOutboundService()),
 				new PrintingDataToPDFFileStorer());
 	}
 
