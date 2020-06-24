@@ -150,7 +150,7 @@ public class WEBUI_Picking_ForcePickToNewHU extends WEBUI_Picking_PickQtyToNewHU
 
 		qtyToPack = qtyToPack.subtract(qtyPickedFromSuppliedHU);
 
-		Loggables.withLogger(log, Level.INFO).addLog( " *** forcePick(): packToHuId: {}, qtyLeftToBePicked: {}.", packToHuId, qtyToPack);
+		Loggables.withLogger(log, Level.DEBUG).addLog( " *** forcePick(): packToHuId: {}, qtyLeftToBePicked: {}.", packToHuId, qtyToPack);
 
 		return packToHuId;
 	}
