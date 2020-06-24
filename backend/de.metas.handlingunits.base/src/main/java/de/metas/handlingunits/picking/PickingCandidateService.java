@@ -1,17 +1,7 @@
 package de.metas.handlingunits.picking;
 
-import java.math.BigDecimal;
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
-
-import javax.annotation.Nullable;
-
-import org.springframework.stereotype.Service;
-
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.picking.candidate.commands.AddQtyToHUCommand;
@@ -39,6 +29,13 @@ import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.picking.api.PickingConfigRepository;
 import de.metas.quantity.Quantity;
 import lombok.NonNull;
+import org.springframework.stereotype.Service;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
 
 /*
  * #%L
@@ -124,6 +121,7 @@ public class PickingCandidateService
 	/**
 	 * @return the quantity which was effectively added
 	 */
+	@NonNull
 	public Quantity addQtyToHU(@NonNull final AddQtyToHURequest request)
 	{
 		return AddQtyToHUCommand.builder()

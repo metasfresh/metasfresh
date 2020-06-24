@@ -22,20 +22,6 @@ package de.metas.handlingunits.impl;
  * #L%
  */
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.mm.attributes.AttributeId;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.IPair;
-import org.adempiere.warehouse.LocatorId;
-
 import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.IHUBuilder;
 import de.metas.handlingunits.IHUContext;
@@ -65,6 +51,18 @@ import de.metas.handlingunits.storage.IHUStorageDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.IPair;
+import org.adempiere.warehouse.LocatorId;
+
+import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * Important class to build new HUs. Use {@link IHandlingUnitsDAO#createHUBuilder(IHUContext)} to get an isntance.
