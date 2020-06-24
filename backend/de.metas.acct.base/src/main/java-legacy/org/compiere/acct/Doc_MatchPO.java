@@ -97,6 +97,10 @@ public class Doc_MatchPO extends Doc<DocLine_MatchPO>
 	@Override
 	public List<Fact> createFacts(final AcctSchema as)
 	{
+		//
+		// Mark sure inbound costs are created
+		docLine.createCostDetails(as);
+
 		// If configured to not create accounting facts for Match PO documents then don't do it (08555)
 		// IMPORTANT: we shall do absolutelly nothing if the sysconfig is enabled (gh6287)
 		if (noFactRecords)
@@ -104,6 +108,21 @@ public class Doc_MatchPO extends Doc<DocLine_MatchPO>
 			return ImmutableList.of();
 		}
 
+		final CostingMethod costingMethod = docLine.getProductCostingMethod(as);
+		if (!CostingMethod.StandardCosting.equals(costingMethod))
+		{
+			return createFactsForStandardCosting(as);
+		}
+
+		else
+		{
+			return ImmutableList.of();
+		}
+
+	}
+
+	private List<Fact> createFactsForStandardCosting(final AcctSchema as)
+	{
 		//
 		if (docLine.getReceipt_InOutLine_ID() <= 0)
 		{
@@ -112,18 +131,7 @@ public class Doc_MatchPO extends Doc<DocLine_MatchPO>
 					.setDetailMessage("Shall be posted again when receipt line is set");
 		}
 
-		//
-		// Mark sure inbound costs are created
-		docLine.createCostDetails(as);
-
 		if (docLine.getQty().signum() == 0)
-		{
-			return ImmutableList.of();
-		}
-
-		//
-		final CostingMethod costingMethod = docLine.getProductCostingMethod(as);
-		if (!CostingMethod.StandardCosting.equals(costingMethod))
 		{
 			return ImmutableList.of();
 		}
