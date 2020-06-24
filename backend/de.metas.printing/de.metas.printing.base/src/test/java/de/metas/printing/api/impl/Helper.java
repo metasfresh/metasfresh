@@ -1,77 +1,5 @@
 package de.metas.printing.api.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-import static org.adempiere.model.InterfaceWrapperHelper.refresh;
-import static org.assertj.core.api.Assertions.*;
-import static org.assertj.core.api.Assertions.assertThat;
-
-/*
- * #%L
- * de.metas.printing.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
-import java.util.Properties;
-import java.util.UUID;
-
-import javax.annotation.Nullable;
-import javax.print.attribute.standard.MediaSize;
-
-import de.metas.printing.HardwarePrinterRepository;
-import de.metas.printing.OutputType;
-import de.metas.printing.PrintOutputFacade;
-import de.metas.printing.printingdata.PrintingDataFactory;
-import de.metas.printing.printingdata.PrintingDataToPDFFileStorer;
-import de.metas.util.time.SystemTime;
-import lombok.NonNull;
-import org.adempiere.ad.session.ISessionBL;
-import org.adempiere.ad.table.api.IADTableDAO;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.ad.wrapper.POJOLookupMap;
-import org.adempiere.ad.wrapper.POJOWrapper;
-import org.adempiere.archive.api.IArchiveStorageFactory;
-import org.adempiere.archive.spi.IArchiveStorage;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.model.PlainContextAware;
-import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.test.TestClientUI;
-import org.apache.commons.collections4.IteratorUtils;
-import org.compiere.model.I_AD_Client;
-import org.compiere.model.I_AD_Session;
-import org.compiere.model.I_AD_User;
-import org.compiere.model.I_Test;
-import org.compiere.util.Env;
-import org.compiere.util.Util;
-import org.compiere.util.Util.ArrayKey;
-import org.junit.Assert;
-import org.junit.jupiter.api.TestInfo;
-import org.junit.rules.TestName;
-
 import de.metas.adempiere.form.IClientUI;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.document.engine.impl.PlainDocumentBL;
@@ -80,6 +8,9 @@ import de.metas.lock.api.ILockManager;
 import de.metas.lock.api.impl.PlainLockManager;
 import de.metas.lock.spi.impl.PlainLockDatabase;
 import de.metas.lock.spi.impl.PlainLockDatabase.LockKey;
+import de.metas.printing.HardwarePrinterRepository;
+import de.metas.printing.OutputType;
+import de.metas.printing.PrintOutputFacade;
 import de.metas.printing.api.IPrintJobBL;
 import de.metas.printing.api.IPrintingDAO;
 import de.metas.printing.api.IPrintingQueueBL;
@@ -105,9 +36,73 @@ import de.metas.printing.model.I_C_Print_Package;
 import de.metas.printing.model.I_C_Printing_Queue;
 import de.metas.printing.model.X_C_Print_Job_Instructions;
 import de.metas.printing.model.validator.AD_Archive;
+import de.metas.printing.printingdata.PrintingDataFactory;
+import de.metas.printing.printingdata.PrintingDataToPDFFileStorer;
 import de.metas.printing.rpl.requesthandler.CreatePrintPackageRequestHandler;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.time.SystemTime;
+import lombok.NonNull;
+import org.adempiere.ad.session.ISessionBL;
+import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.ad.wrapper.POJOLookupMap;
+import org.adempiere.ad.wrapper.POJOWrapper;
+import org.adempiere.archive.api.IArchiveStorageFactory;
+import org.adempiere.archive.spi.IArchiveStorage;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.model.PlainContextAware;
+import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.test.TestClientUI;
+import org.apache.commons.collections4.IteratorUtils;
+import org.compiere.model.I_AD_Client;
+import org.compiere.model.I_AD_Session;
+import org.compiere.model.I_AD_User;
+import org.compiere.model.I_Test;
+import org.compiere.util.Env;
+import org.compiere.util.Util;
+import org.junit.Assert;
+import org.junit.jupiter.api.TestInfo;
+import org.junit.rules.TestName;
+
+import javax.annotation.Nullable;
+import javax.print.attribute.standard.MediaSize;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
+import java.util.Properties;
+import java.util.UUID;
+
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static org.adempiere.model.InterfaceWrapperHelper.refresh;
+import static org.assertj.core.api.Assertions.assertThat;
+
+/*
+ * #%L
+ * de.metas.printing.base
+ * %%
+ * Copyright (C) 2015 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
 
 // there is high amount of methods because it's a helper...
 public class Helper
@@ -552,7 +547,6 @@ public class Helper
 				&& Objects.equals(pojo.getAD_Printer_Matching_ID(), printerMatchingID));
 		if (trayMatching == null)
 		{
-
 			trayMatching = printingDAO.newInstance(ctx, I_AD_PrinterTray_Matching.class, ITrx.TRXNAME_None);
 			trayMatching.setAD_Printer_Matching(printerMatching);
 			trayMatching.setAD_Printer_Tray(getCreatePrinterTray(printerName, trayName));
