@@ -94,10 +94,10 @@ public class PrintOutputFacade
 					source.markPrinted(item);
 				}
 
-				final boolean hasSegmentsToCreatePrintJobs = printingDataToStore.getSegments().size() < printingData.getSegments().size();
-				if (hasSegmentsToCreatePrintJobs)
+				// with there is a config with a specific hostKey, then printingData.getSegments() might be empty, but still we might need print-jobs
+				if (printingData.getSegments().isEmpty() || printingData.getSegments().size() != printingDataToStore.getSegments().size())
 				{
-					logger.debug("At least a part of C_Printing_Queue shall be turned into a C_PrintJob; -> invoke printJobBL; printingData={};", printingData);
+					logger.debug("Also invoke printJobBL, in case there are also items to be printed");
 
 					// task: 08958: note that that all items' related items have the same copies value as item
 					final PlainPrintingQueueSource plainSource = new PlainPrintingQueueSource(

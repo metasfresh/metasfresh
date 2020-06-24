@@ -36,6 +36,7 @@ import de.metas.printing.HardwareTrayId;
 import de.metas.printing.PrinterRoutingId;
 import de.metas.printing.PrintingQueueItemId;
 import de.metas.printing.api.IPrintJobBL;
+import de.metas.printing.api.IPrintPackageBL;
 import de.metas.printing.api.IPrintingDAO;
 import de.metas.printing.api.IPrintingQueueBL;
 import de.metas.printing.model.I_AD_PrinterRouting;
@@ -50,6 +51,7 @@ import org.adempiere.archive.ArchiveId;
 import org.adempiere.archive.api.IArchiveBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_AD_Archive;
+import org.compiere.util.Env;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
@@ -69,9 +71,9 @@ public class PrintingDataFactory
 	private final IPrintingDAO printingDAO = Services.get(IPrintingDAO.class);
 	private final IArchiveBL archiveBL = Services.get(IArchiveBL.class);
 	private final IDocOutboundDAO outboundDAO = Services.get(IDocOutboundDAO.class);
+	private final IPrintPackageBL printPackageBL = Services.get(IPrintPackageBL.class);
 
 	private final HardwarePrinterRepository hardwarePrinterRepository;
-
 	private final ArchiveFileNameService archiveFileNameService;
 
 	public PrintingDataFactory(
@@ -109,7 +111,7 @@ public class PrintingDataFactory
 		final List<I_AD_PrinterRouting> printerRoutings = InterfaceWrapperHelper.createList(printerRoutingDAO.fetchPrinterRoutings(query), I_AD_PrinterRouting.class);
 		for (final I_AD_PrinterRouting printerRouting : printerRoutings)
 		{
-			final String hostKey = null;
+			final String hostKey = printPackageBL.getHostKeyOrNull(Env.getCtx());
 			final PrintingSegment printingSegment = createPrintingSegment(printerRouting, hostKey);
 			if (printingSegment != null)
 			{
