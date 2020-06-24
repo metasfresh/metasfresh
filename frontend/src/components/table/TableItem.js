@@ -255,14 +255,13 @@ class TableItem extends PureComponent {
           for (let [k, v] of Object.entries(fields)) {
             editedCells[k] = v;
           }
+          this.setState(
+            {
+              editedCells,
+            },
+            () => onItemChange(rowId, property, value)
+          );
         }
-
-        this.setState(
-          {
-            editedCells,
-          },
-          () => onItemChange(rowId, property, value)
-        );
       });
     } else {
       onItemChange(rowId, property, value);
@@ -300,9 +299,13 @@ class TableItem extends PureComponent {
   };
 
   getWidgetData = (item, isEditable, supportFieldEdit) => {
-    const { fieldsByName } = this.props;
+    const { fieldsByName, page, lastPage } = this.props;
     const { editedCells } = this.state;
-    const cells = merge({}, fieldsByName, editedCells);
+
+    const cells =
+      lastPage && page !== lastPage
+        ? merge({}, fieldsByName)
+        : merge({}, fieldsByName, editedCells);
 
     const widgetData = item.fields.reduce((result, prop) => {
       if (cells) {
@@ -632,6 +635,7 @@ class TableItem extends PureComponent {
 }
 
 TableItem.propTypes = {
+  lastPage: PropTypes.string,
   cols: PropTypes.array.isRequired,
   onClick: PropTypes.func.isRequired,
   item: PropTypes.object.isRequired,
