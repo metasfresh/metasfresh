@@ -156,30 +156,31 @@ public final class CurrentCost
 		assertCostCurrency(amt);
 		Check.assume(qty.signum() != 0, "qty not zero");
 
-		final CostAmount currentAmt;
-
-		/*
-		 * in case a new inbound request (from M_InventoryLine or M_Match_PO) is added,
-		 * the currentCost calculation must take into account the already existing price even if the existing qty is 0
-		 */
-		if (currentQty.isZero())
-		{
-			currentAmt = costPrice.getOwnCostPrice();
-		}
-		else
-		{
-			currentAmt = costPrice.getOwnCostPrice().multiply(currentQty);
-		}
-
-		final CostAmount newAmt = currentAmt.add(amt);
-
 		final Quantity qtyConv = uomConverter.convertQuantityTo(qty, costSegment.getProductId(), uomId);
 		final Quantity newQty = currentQty.add(qtyConv);
-		if (newQty.signum() != 0)
+		final CostAmount currentAmt = costPrice.getOwnCostPrice().multiply(currentQty);
+
+		if (!currentQty.isZero())
 		{
-			final CostAmount ownCostPrice = newAmt.divide(newQty, getPrecision());
-			this.costPrice = costPrice.withOwnCostPrice(ownCostPrice);
+			final CostAmount newAmt = currentAmt.add(amt);
+
+			if (newQty.signum() != 0)
+			{
+				final CostAmount ownCostPrice = newAmt.divide(newQty, getPrecision());
+				this.costPrice = costPrice.withOwnCostPrice(ownCostPrice);
+			}
 		}
+
+		else
+		{
+			final CostAmount newCost = amt.divide(qty, getPrecision());
+			final CostAmount existingCost = costPrice.getOwnCostPrice();
+
+			final CostAmount averageCostPrice = (newCost.add(existingCost)).divide(Quantity.of(2, qty.getUOM()), getPrecision());
+
+			this.costPrice = costPrice.withOwnCostPrice(averageCostPrice);
+		}
+
 		currentQty = newQty;
 
 		addCumulatedAmtAndQty(amt, qtyConv);
