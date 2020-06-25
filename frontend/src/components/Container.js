@@ -124,7 +124,6 @@ class Container extends PureComponent {
           {!modalHidden && (
             <Modal
               {...modal}
-              tabId={modal.tabId || activeTab}
               windowId={modal.type}
               dataId={modal.dataId ? modal.dataId : dataId}
               modalTitle={modal.title}
