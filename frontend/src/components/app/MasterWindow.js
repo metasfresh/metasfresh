@@ -295,6 +295,8 @@ export default class MasterWindow extends PureComponent {
       introHints,
     } = this.state;
     const { docActionElement, documentSummaryElement } = master.layout;
+
+    // TODO: Do we need to have docId and dataId ?
     const dataId = master.docId;
     const docNoData = master.data.DocumentNo;
     let activeTab;

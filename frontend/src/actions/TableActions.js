@@ -122,6 +122,25 @@ export function updateTabRowsData(id, rows) {
 }
 
 /**
+ * @method updateTableRowProperty
+ * @summary Update table selection - select items
+ *
+ * @param {string} id - table id
+ * @param {number} rowId - rowId
+ * @param {object} change - updated part of the object
+ */
+export function updateTableRowProperty({ tableId, rowId, change }) {
+  return {
+    type: types.UPDATE_TABLE_ROW_PROPERTY,
+    payload: {
+      id: tableId,
+      rowId,
+      change,
+    },
+  };
+}
+
+/**
  * @method createTableData
  * @summary Helper function to grab raw data and format/name it accordingly to
  * the values in the store.

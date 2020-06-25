@@ -8,8 +8,9 @@ import {
   elementPathRequest,
   updateBreadcrumb,
 } from '../../actions/MenuActions';
-import { getSelectionInstant } from '../../reducers/windowHandler';
+import { getTableId, getSelection } from '../../reducers/tables';
 import keymap from '../../shortcuts/keymap';
+
 import Actions from './Actions';
 import BookmarkButton from './BookmarkButton';
 
@@ -26,10 +27,6 @@ class SubHeader extends Component {
     elementPath: '',
   };
 
-  /**
-   * @method componentDidMount
-   * @summary ToDo: Describe the method.
-   */
   componentDidMount() {
     document.getElementsByClassName('js-subheader-column')[0].focus();
 
@@ -503,26 +500,21 @@ class SubHeader extends Component {
         closeSubheader={closeSubheader}
         notfound={notfound}
         docId={dataId ? dataId : viewId}
-        rowId={selected}
+        selected={selected}
         activeTab={activeTab}
-        activeTabSelected={activeTab && selected ? selected : []}
       />
     );
   };
 
-  /**
-   * @method render
-   * @summary ToDo: Describe the method.
-   */
+  setRef = (ref) => (this.subHeader = ref);
+
   render() {
     return (
       <div
         className="subheader-container overlay-shadow subheader-open js-not-unselect"
         tabIndex={0}
         onKeyDown={this.handleKeyDown}
-        ref={(c) => {
-          this.subHeader = c;
-        }}
+        ref={this.setRef}
       >
         <div className="container-fluid-subheader container-fluid">
           <div className="subheader-row">
@@ -587,18 +579,17 @@ SubHeader.propTypes = {
   windowId: PropTypes.string,
 };
 
-/**
- * @method mapStateToProps
- * @summary ToDo: Describe the method.
- * @param {object} state
- */
-const mapStateToProps = (state, props) => ({
-  standardActions: state.windowHandler.master.standardActions,
-  selected: getSelectionInstant(
-    state,
-    props,
-    state.windowHandler.selectionsHash
-  ),
-});
+const mapStateToProps = (state, props) => {
+  const { windowId, documentId, viewId } = props;
+  const activeTab = state.windowHandler.master.layout.activeTab;
+  const tabId = activeTab ? activeTab : null;
+  const tableId = getTableId({ windowId, viewId, tabId, docId: documentId });
+  const selector = getSelection();
+
+  return {
+    standardActions: state.windowHandler.master.standardActions,
+    selected: selector(state, tableId),
+  };
+};
 
 export default connect(mapStateToProps)(onClickOutside(SubHeader));

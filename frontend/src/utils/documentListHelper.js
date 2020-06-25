@@ -5,9 +5,8 @@ import currentDevice from 'current-device';
 import deepUnfreeze from 'deep-unfreeze';
 
 import { getItemsByProperty, nullToEmptyStrings } from './index';
-import { getSelectionInstant } from '../reducers/windowHandler';
 import { viewState, getView } from '../reducers/viewHandler';
-import { getTable, getTableId } from '../reducers/tables';
+import { getTable, getTableId, getSelection } from '../reducers/tables';
 import { TIME_REGEX_TEST } from '../constants/Constants';
 import { getCurrentActiveLocale } from './locale';
 
@@ -31,7 +30,6 @@ const DLpropTypes = {
   refTabId: PropTypes.string,
 
   // from @connect
-  selections: PropTypes.object.isRequired,
   childSelected: PropTypes.array.isRequired,
   parentSelected: PropTypes.array.isRequired,
   isModal: PropTypes.bool,
@@ -100,6 +98,26 @@ const DLmapStateToProps = (state, props) => {
     viewId = null;
   }
 
+  let childTableId = null;
+  const childSelector = getSelection();
+  const { includedView } = props;
+  if (includedView && includedView.windowType) {
+    childTableId = getTableId({
+      windowId: includedView.windowType,
+      viewId: includedView.viewId,
+    });
+  }
+
+  let parentTableId = null;
+  const parentSelector = getSelection();
+  const { parentWindowType, parentDefaultViewId } = props;
+  if (parentWindowType) {
+    parentTableId = getTableId({
+      windowId: parentWindowType,
+      viewId: parentDefaultViewId,
+    });
+  }
+
   return {
     page,
     sort,
@@ -112,30 +130,8 @@ const DLmapStateToProps = (state, props) => {
     refType: queryRefType,
     refDocumentId: queryRefDocumentId,
     refTabId: queryRefTabId,
-    selections: state.windowHandler.selections,
-    childSelected:
-      props.includedView && props.includedView.windowType
-        ? getSelectionInstant(
-            state,
-            {
-              ...props,
-              windowId: props.includedView.windowType,
-              viewId: props.includedView.viewId,
-            },
-            state.windowHandler.selectionsHash
-          )
-        : NO_SELECTION,
-    parentSelected: props.parentWindowType
-      ? getSelectionInstant(
-          state,
-          {
-            ...props,
-            windowId: props.parentWindowType,
-            viewId: props.parentDefaultViewId,
-          },
-          state.windowHandler.selectionsHash
-        )
-      : NO_SELECTION,
+    childSelected: childSelector(state, childTableId),
+    parentSelected: parentSelector(state, parentTableId),
     modal: state.windowHandler.modal,
     rawModalVisible: state.windowHandler.rawModal.visible,
     filters: state.filters,
@@ -438,7 +434,11 @@ export function mapIncluded(node, indent, isParentLastChild = false) {
   let result = [];
 
   // because immer freezes objects
-  node = deepUnfreeze(node);
+  try {
+    node = deepUnfreeze(node);
+  } catch (e) {
+    // deepUnfreze can't cope with Moment in some cases;
+  }
 
   const nodeCopy = {
     ...node,

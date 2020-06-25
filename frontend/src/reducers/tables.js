@@ -1,6 +1,7 @@
 import { produce, original } from 'immer';
 import { get, difference, forEach } from 'lodash';
 import { createSelector } from 'reselect';
+import merge from 'merge';
 
 import * as types from '../constants/ActionTypes';
 import { doesSelectionExist } from '../utils/documentListHelper';
@@ -58,22 +59,23 @@ const selectTableHelper = (state, id) => {
  * @summary Memoized selector for getting table object by id from the state
  */
 export const getTable = createSelector(
-  [selectTableHelper],
+  selectTableHelper,
   (table) => table
 );
 
-const getSelectionData = (state, tableId) => {
-  return getTable(state, tableId).selected;
-};
+const getSelectionData = (state, tableId) =>
+  selectTableHelper(state, tableId).selected;
 
 /**
- * @method getTable
+ * @method getSelection
  * @summary Memoized selector for getting selections in a table
  */
-export const getSelection = createSelector(
-  [getSelectionData],
-  (items) => items
-);
+export const getSelection = () => {
+  return createSelector(
+    getSelectionData,
+    (table) => table
+  );
+};
 
 const setSupportAttribute = (selected, rows) => {
   if (!selected.length || !rows.length) {
@@ -159,7 +161,7 @@ const reducer = produce((draftState, action) => {
       });
       let updatedSelected = {};
 
-      if (!selectionValid) {
+      if (!selectionValid && rows.length) {
         const newSelected = [rows[0][keyProperty]];
         updatedSelected = {
           selected: newSelected,
@@ -172,6 +174,23 @@ const reducer = produce((draftState, action) => {
         rows,
         ...updatedSelected,
       };
+
+      return;
+    }
+
+    case types.UPDATE_TABLE_ROW_PROPERTY: {
+      const { id, rowId, change } = action.payload;
+      const keyProperty = draftState[id].keyProperty;
+      let rows = original(draftState[id].rows);
+
+      const newRows = rows.map((row) => {
+        if (row[keyProperty] === rowId) {
+          return merge.recursive(true, row, change);
+        }
+        return row;
+      });
+
+      draftState[id].rows = newRows;
 
       return;
     }

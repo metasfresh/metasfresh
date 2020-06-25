@@ -43,6 +43,7 @@ export const viewState = {
   sort: null,
   staticFilters: null,
   orderBy: null,
+  queryLimit: null,
   queryLimitHit: null,
   mapConfig: null,
   notFound: false,

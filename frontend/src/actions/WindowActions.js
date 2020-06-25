@@ -78,6 +78,7 @@ import {
   createTabTable,
   updateTabTable,
   updateTableSelection,
+  updateTableRowProperty,
 } from './TableActions';
 import { toggleFullScreen, preFormatPostDATA } from '../utils';
 import { getScope, parseToDisplay } from '../utils/documentListHelper';
@@ -953,16 +954,27 @@ function updateStatus(responseData) {
  * @todo TODO: from my observations, this is triggered multiple times even
  * when just one field was changed - Kuba
  */
-export function updatePropertyValue(
+export function updatePropertyValue({
   property,
   value,
-  tabid,
-  rowid,
+  tabId,
+  rowId,
   isModal,
-  entity
-) {
+  entity,
+  tableId,
+}) {
   return (dispatch) => {
-    if (!tabid || !rowid) {
+    if (rowId) {
+      const change = {
+        fieldsByName: {
+          [`${property}`]: {
+            value,
+          },
+        },
+      };
+
+      dispatch(updateTableRowProperty({ tableId, rowId, change }));
+    } else if (!tabId || !rowId) {
       // modal's data is in `tables`
       if (!isModal) {
         dispatch(

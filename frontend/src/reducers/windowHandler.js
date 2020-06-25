@@ -63,11 +63,10 @@ export const initialState = {
     modalTitle: '',
     modalType: '',
     isAdvanced: false,
-    viewDocumentIds: null,
+    viewDocumentIds: [],
     childViewId: null,
-    childViewSelectedIds: null,
+    childViewSelectedIds: [],
     parentViewId: null,
-    parentViewSelectedIds: null,
     triggerField: null,
     saveStatus: {},
     validStatus: {},
@@ -116,8 +115,6 @@ export const initialState = {
   allowShortcut: true,
   allowOutsideClick: true,
   viewId: null,
-  selections: {},
-  selectionsHash: null,
   patches: {
     requests: {
       length: 0,
@@ -139,34 +136,6 @@ export const getQuickactions = createSelector(
   [getQuickactionsData],
   (actions) => actions
 );
-
-/* This is an improved function for getting selected rows, as it immediately reacts
- * to any changes to the selectionsHash variable in the state. This variable is set
- * with a random uuid hash whenever table row is selected/deleted.
- */
-/* eslint-disable no-unused-vars */
-export const getSelectionData = (
-  state,
-  { windowId, windowType, viewId },
-  hash
-) => {
-  const winId = windowId || windowType;
-  const windowTypeSelections = state.windowHandler.selections[winId];
-  const id = viewId || winId;
-
-  return (windowTypeSelections && windowTypeSelections[id]) || NO_SELECTION;
-};
-
-export const getSelectionInstant = createSelector(
-  [getSelectionData],
-  (items) => items
-);
-
-export const getSelectionDirect = (selections, windowId, viewId) => {
-  const windowTypeSelections = selections[windowId];
-
-  return (windowTypeSelections && windowTypeSelections[viewId]) || NO_SELECTION;
-};
 
 export default function windowHandler(state = initialState, action) {
   switch (action.type) {
@@ -193,7 +162,6 @@ export default function windowHandler(state = initialState, action) {
           viewDocumentIds: action.viewDocumentIds,
           triggerField: action.triggerField,
           parentViewId: action.parentViewId,
-          parentViewSelectedIds: action.parentViewSelectedIds,
           childViewId: action.childViewId,
           childViewSelectedIds: action.childViewSelectedIds,
         },

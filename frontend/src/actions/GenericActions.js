@@ -18,20 +18,6 @@ export function createInstance(entity, docType, docId, tabId, subentity) {
   );
 }
 
-// TODO: I think this is not used anymore. Kuba
-// export function getDataByIds(entity, docType, viewId, docIds) {
-//   return axios.get(
-//     config.API_URL +
-//       '/' +
-//       entity +
-//       (docType ? '/' + docType : '') +
-//       (viewId ? '/' + viewId : '') +
-//       '/byIds' +
-//       '?ids=' +
-//       docIds
-//   );
-// }
-
 // TODO: This should be moved to the api
 export function completeRequest(
   entity,

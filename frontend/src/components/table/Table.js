@@ -4,7 +4,6 @@ import classnames from 'classnames';
 import currentDevice from 'current-device';
 
 import { handleCopy, componentPropTypes } from '../../utils/tableHelpers';
-import { getCurrentActiveLocale } from '../../utils/locale';
 
 import TableHeader from './TableHeader';
 import TableItem from './TableItem';
@@ -105,7 +104,7 @@ export default class Table extends PureComponent {
     } = this.props;
     const id = item[keyProperty];
 
-    if (e.button === 0) {
+    if (e && e.button === 0) {
       const selectMore = e.metaKey || e.ctrlKey;
       const selectRange = e.shiftKey;
       const isSelected = selected.indexOf(id) > -1;
@@ -128,7 +127,8 @@ export default class Table extends PureComponent {
           onSelect(id);
         }
       } else {
-        if (!isSelected) {
+        // if row is not selected or multiple rows are selected
+        if (!isSelected || (isSelected && selected.length > 1)) {
           updateQuickActions && updateQuickActions(id);
           newSelection = [id];
           onSelect(id);
@@ -327,8 +327,6 @@ export default class Table extends PureComponent {
       rowRefs,
     } = this.props;
 
-    const activeLocale = { key: getCurrentActiveLocale() };
-
     if (!rows.length || !columns.length) {
       return null;
     }
@@ -351,7 +349,6 @@ export default class Table extends PureComponent {
           page,
           lastPage,
           entity,
-          activeLocale,
           windowId,
           mainTable,
           indentSupported,
@@ -449,6 +446,7 @@ export default class Table extends PureComponent {
       rows,
       onDeselectAll,
       tableRefreshToggle,
+      setActiveSort,
     } = this.props;
 
     return (
@@ -486,6 +484,7 @@ export default class Table extends PureComponent {
                 tabId,
                 docId,
                 viewId,
+                setActiveSort,
               }}
               cols={columns}
               windowType={windowId}

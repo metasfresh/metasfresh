@@ -7,12 +7,7 @@ import merge from 'merge';
 import { initialState as appHandlerState } from '../../../reducers/appHandler';
 import { initialState as windowHandlerState } from '../../../reducers/windowHandler';
 import viewHandler from '../../../reducers/viewHandler';
-import
-  tablesHandler,
-  {
-    initialTableState,
-  }
-from '../../../reducers/tables';
+import tablesHandler, { initialTableState } from '../../../reducers/tables';
 import { createTableData } from '../../../actions/TableActions';
 import propsData from '../../../../test_setup/fixtures/table/props.json';
 import tableData from '../../../../test_setup/fixtures/table/data.json';
@@ -40,7 +35,6 @@ const createStore = function(state = {}) {
   return res;
 };
 
-
 const initialState = createStore({
   windowHandler: {
     allowShortcut: true,
@@ -65,7 +59,7 @@ const tableProps = {
   onDeselect: jest.fn(),
   onRightClick: jest.fn(),
   handleSelect: jest.fn(),
-}
+};
 
 describe('Table component', () => {
   it('renders without errors with bare props', () => {
@@ -98,6 +92,48 @@ describe('Table component', () => {
     const wrapper = shallow(<Table {...localProps} />);
 
     expect(wrapper.html()).toContain(tableData.emptyResultText);
+  });
+
+  it('renders without errors with store data', () => {
+    const tableWrapper = mount(
+      <ShortcutProvider hotkeys={{}} keymap={{}}>
+        <Provider store={store}>
+          <Table {...tableProps} />
+        </Provider>
+      </ShortcutProvider>
+    );
+    const html = tableWrapper.html();
+    expect(html).toContain(
+      'table table-bordered-vertically table-striped js-table table-read-only'
+    );
+    expect(html).toContain('testfirma WebUI AG');
+  });
+
+  it('No row is selected if selection is empty', async () => {
+    const tableWrapper = mount(
+      <ShortcutProvider hotkeys={{}} keymap={{}}>
+        <Provider store={store}>
+          <Table {...tableProps} selected={[]} />
+        </Provider>
+      </ShortcutProvider>
+    );
+
+    const html = tableWrapper.html();
+    expect(html).not.toContain('row-selected');
+  });
+
+  it('Cell is selected and row focused', async () => {
+    const tableWrapper = mount(
+      <ShortcutProvider hotkeys={{}} keymap={{}}>
+        <Provider store={store}>
+          <Table {...tableProps} selected={['1000194']} />
+        </Provider>
+      </ShortcutProvider>
+    );
+
+    const html = tableWrapper.html();
+    expect(html).toContain('row-selected');
+    expect(html).toContain('row-0-143-B row-1000194 row-selected tr-even');
   });
 
   it.todo('Lookup widget is focused on selecting row');

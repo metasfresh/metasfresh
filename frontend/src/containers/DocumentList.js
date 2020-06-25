@@ -12,7 +12,6 @@ import {
   getViewRowsByIds,
 } from '../api';
 import { getTableId } from '../reducers/tables';
-import { getSelectionDirect } from '../reducers/windowHandler';
 
 import {
   addViewLocationData,
@@ -46,7 +45,6 @@ import { connectWS, disconnectWS } from '../utils/websockets';
 import {
   DLpropTypes,
   DLmapStateToProps,
-  NO_SELECTION,
   GEO_PANEL_STATES,
   getSortingQuery,
   filtersToMap,
@@ -727,36 +725,6 @@ class DocumentListContainer extends Component {
         }
       });
     }
-  };
-
-  /**
-   * @method getSelected
-   * @summary TODO: We should get rid of that I think and move to redux only.
-   */
-  getSelected = () => {
-    const {
-      selections,
-      windowId,
-      includedView,
-      parentWindowType,
-      parentDefaultViewId,
-      reduxData: { viewId },
-    } = this.props;
-
-    return {
-      selected: getSelectionDirect(selections, windowId, viewId),
-      childSelected:
-        includedView && includedView.windowType
-          ? getSelectionDirect(
-              selections,
-              includedView.windowType,
-              includedView.viewId
-            )
-          : NO_SELECTION,
-      parentSelected: parentWindowType
-        ? getSelectionDirect(selections, parentWindowType, parentDefaultViewId)
-        : NO_SELECTION,
-    };
   };
 
   render() {

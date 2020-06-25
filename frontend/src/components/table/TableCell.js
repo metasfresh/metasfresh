@@ -2,16 +2,26 @@ import PropTypes from 'prop-types';
 import React, { PureComponent, createRef } from 'react';
 import classnames from 'classnames';
 
-import { getDateFormat, fieldValueToString } from '../../utils/tableHelpers';
+import {
+  getDateFormat,
+  fieldValueToString,
+  getSizeClass,
+} from '../../utils/tableHelpers';
 import { DATE_FIELD_FORMATS } from '../../constants/Constants';
 
 import MasterWidget from '../widget/MasterWidget';
 import WidgetTooltip from '../widget/WidgetTooltip';
 
+/**
+ * @file Class based component.
+ * @module TableCell
+ * @extends PureComponent
+ */
 class TableCell extends PureComponent {
   constructor(props) {
     super(props);
     this.widget = createRef();
+    this.cellRef = createRef();
     this.clearWidgetValue = false;
 
     this.state = {
@@ -22,6 +32,7 @@ class TableCell extends PureComponent {
   /**
    * @method widgetTooltipToggle
    * @summary Alternative method to open dropdown, in case of disabled opening on focus.
+   *
    * @param {bool|null} value - boolean value used to toggle the tooltipToggled value
    */
   widgetTooltipToggle = (value) => {
@@ -34,7 +45,9 @@ class TableCell extends PureComponent {
   /**
    * @method handleBackdropLock
    * @summary checks widget against widget list and calls parent onClickOutside fnct
-   * @param {bool} state  - boolean indicator given from child components like the DatePicker, Attributes used for the backdrop state
+   *
+   * @param {bool} state  - boolean indicator given from child components like the DatePicker,
+   * Attributes used for the backdrop state
    */
   handleBackdropLock = (state) => {
     const { item } = this.props;
@@ -47,7 +60,9 @@ class TableCell extends PureComponent {
   /**
    * @method handleKeyDown
    * @summary Key down function handler
-   * @param {object} e - this is the corresponding event from a text input for example when you change a value within a table cell by typing something in that specific cell.
+   *
+   * @param {object} e - this is the corresponding event from a text input for example
+   * when you change a value within a table cell by typing something in that specific cell.
    */
   handleKeyDown = (e) => {
     const {
@@ -65,12 +80,15 @@ class TableCell extends PureComponent {
       return false; // CMD + C on Mac has to just copy
     }
     handleKeyDown(e, property, widgetData[0]);
-    !readonly && updateRow(); // toggle flag in parrent component highlighting the row giving the user the idea that something is happening with it
+    !readonly && updateRow(); // toggle the flag in parrent component highlighting
+    // the row giving the user feedback that an action is running
   };
 
   /**
    * @method handleRightClick
-   * @summary Function called on right click that further calls the parent handler function to handleRightClick
+   * @summary Function called on right click that further calls the parent handler
+   * function to handleRightClick
+   *
    * @param {object} e
    */
   handleRightClick = (e) => {
@@ -93,7 +111,9 @@ class TableCell extends PureComponent {
 
   /**
    * @method onDoubleClick
-   * @summary Function called on double click that retrieves widget data and further calls the parent handler function to handleDounbleClick
+   * @summary Function called on double click that retrieves widget data and
+   * further calls the parent handler function to handleDounbleClick
+   *
    * @param {object} e
    */
   onDoubleClick = (e) => {
@@ -112,8 +132,12 @@ class TableCell extends PureComponent {
 
   /**
    * @method clearValue
-   * @summary Set `clearWidgetValue` value based on a given `reset` param. It is called from TableItem to toggle the clearWidgetValue
-   * {string|null} reset - might be also `undefined` case in which because below we don't have a strict comparison it will be true
+   * @summary Set local `clearWidgetValue` value based on a given `reset` param. It controls
+   * if the widget should be constructed with current value cleared or not. It is called
+   * be the TableItem
+   *
+   * @param {string|null} reset - might be also `undefined` case in which because below
+   * we don't have a strict comparison it will be true
    */
   clearValue = (reset) => {
     this.clearWidgetValue = reset == null ? true : false;
@@ -122,7 +146,8 @@ class TableCell extends PureComponent {
   /**
    * @method getTdValue
    * @summary Get the content of the table divider based on the widgetData provided
-   * {array} widgetData
+   *
+   * @param {array} widgetData
    */
   getTdValue = (widgetData) => {
     const { isEdited, item, isGerman } = this.props;
@@ -140,8 +165,9 @@ class TableCell extends PureComponent {
   /**
    * @method getDescription
    * @summary Get the description based on the widgetData and table divider value provided
-   * {array} widgetData
-   * {string|null} tdValue
+   *
+   * @param {array} widgetData
+   * @param {string|null} tdValue
    */
   getDescription = ({ widgetData, tdValue }) => {
     return widgetData[0].value && widgetData[0].value.description
@@ -152,8 +178,9 @@ class TableCell extends PureComponent {
   /**
    * @method getTdTitle
    * @summary Get the table divider title based on item content and provided description
-   * {object} item
-   * {string} desciption
+   *
+   * @param {object} item
+   * @param {string} desciption
    */
   getTdTitle = ({ item, description }) => {
     return item.widgetType === 'YesNo' ||
@@ -166,17 +193,14 @@ class TableCell extends PureComponent {
   /**
    * @method checkIfDateField
    * @summary check if it's a date field or not
-   * {object} item
+   *
+   * @param {object} item
    */
   checkIfDateField = ({ item }) =>
     DATE_FIELD_FORMATS[item.widgetType]
       ? getDateFormat(item.widgetType)
       : false;
 
-  /**
-   * @method render
-   * @summary Main render function
-   */
   render() {
     const {
       isEdited,
@@ -197,7 +221,6 @@ class TableCell extends PureComponent {
       listenOnKeysFalse,
       listenOnKeysTrue,
       closeTableField,
-      getSizeClass,
       mainTable,
       onCellChange,
       viewId,
@@ -231,7 +254,7 @@ class TableCell extends PureComponent {
     return (
       <td
         tabIndex={modalVisible ? -1 : tabIndex}
-        ref={(c) => (this.cell = c)}
+        ref={this.cellRef}
         onDoubleClick={this.onDoubleClick}
         onKeyDown={this.handleKeyDown}
         onContextMenu={this.handleRightClick}
@@ -336,12 +359,10 @@ TableCell.propTypes = {
   isEdited: PropTypes.bool,
   isGerman: PropTypes.bool,
   entity: PropTypes.any,
-  getSizeClass: PropTypes.func,
   mainTable: PropTypes.bool,
   viewId: PropTypes.string,
   modalVisible: PropTypes.bool,
   docId: PropTypes.any,
-  activeLocale: PropTypes.object,
 };
 
 export default TableCell;
