@@ -446,6 +446,7 @@ export default class Table extends PureComponent {
       rows,
       onDeselectAll,
       tableRefreshToggle,
+      setActiveSort,
     } = this.props;
 
     return (
@@ -483,6 +484,7 @@ export default class Table extends PureComponent {
                 tabId,
                 docId,
                 viewId,
+                setActiveSort,
               }}
               cols={columns}
               windowType={windowId}
