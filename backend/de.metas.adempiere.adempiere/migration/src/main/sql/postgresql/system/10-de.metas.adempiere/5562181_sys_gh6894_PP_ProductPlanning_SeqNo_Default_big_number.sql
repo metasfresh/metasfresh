@@ -5,7 +5,7 @@ UPDATE AD_Column SET DefaultValue='1000',Updated=TO_TIMESTAMP('2020-06-23 13:51:
 
 -- 2020-06-24T10:51:54.273Z
 -- description fields
-INSERT INTO t_alter_column values('pp_product_planning','SeqNo','NUMERIC(1000)',null,'10')
+INSERT INTO t_alter_column values('pp_product_planning','SeqNo','NUMERIC(10)',null,'1000')
 ;
 
 -- 2020-06-24T10:51:54.319Z
