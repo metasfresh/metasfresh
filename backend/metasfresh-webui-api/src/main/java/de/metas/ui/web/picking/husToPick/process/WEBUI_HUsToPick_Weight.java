@@ -55,8 +55,8 @@ public class WEBUI_HUsToPick_Weight extends HUsToPickViewBasedProcess implements
 	private final InventoryService inventoryService = SpringContextHolder.instance.getBean(InventoryService.class);
 	private final InventoryLineAggregatorFactory inventoryLineAggregatorFactory = SpringContextHolder.instance.getBean(InventoryLineAggregatorFactory.class);
 
-	private static final String PARAM_WeightGross_Initial = "WeightGross_Initial";
-	@Param(parameterName = PARAM_WeightGross_Initial)
+	private static final String PARAM_WeightGrossInitial = "WeightGrossInitial";
+	@Param(parameterName = PARAM_WeightGrossInitial)
 	private BigDecimal weightGrossInitial;
 
 	private static final String PARAM_WeightGross = "WeightGross";
@@ -132,7 +132,7 @@ public class WEBUI_HUsToPick_Weight extends HUsToPickViewBasedProcess implements
 		final IWeightable weightable = getHUAttributesAsWeightable().get();
 		final String parameterName = parameter.getColumnName();
 
-		if (PARAM_WeightGross_Initial.equals(parameterName)
+		if (PARAM_WeightGrossInitial.equals(parameterName)
 				|| PARAM_WeightGross.equals(parameterName))
 		{
 			return weightable.hasWeightGross()
