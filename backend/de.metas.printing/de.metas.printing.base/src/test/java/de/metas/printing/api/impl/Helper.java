@@ -865,6 +865,5 @@ public class Helper
 		final List<LockKey> locks = lockDatabase.getLocks();
 
 		assertThat(locks).as("No locks expecteded").isEmpty();
-		;
 	}
 }

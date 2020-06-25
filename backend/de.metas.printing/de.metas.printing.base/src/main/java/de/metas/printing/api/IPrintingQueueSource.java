@@ -22,14 +22,10 @@ package de.metas.printing.api;
  * #L%
  */
 
-import java.util.Iterator;
-import java.util.Optional;
-
-import de.metas.printing.OutputType;
 import de.metas.printing.model.I_C_Print_Job;
 import de.metas.printing.model.I_C_Printing_Queue;
-import de.metas.util.Services;
-import lombok.NonNull;
+
+import java.util.Iterator;
 
 /**
  * Source of {@link I_C_Printing_Queue} items to be used when generating {@link I_C_Print_Job}s.

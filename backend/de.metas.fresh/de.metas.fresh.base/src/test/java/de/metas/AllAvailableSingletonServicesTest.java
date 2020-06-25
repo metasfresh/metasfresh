@@ -1,15 +1,10 @@
 package de.metas;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.function.Predicate;
-import java.util.stream.Stream;
-
-import javax.annotation.Nullable;
-
+import com.google.common.base.Stopwatch;
+import de.metas.util.ISingletonService;
+import de.metas.util.Services;
+import lombok.NonNull;
+import lombok.Value;
 import org.adempiere.test.AdempiereTestHelper;
 import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.BeforeEach;
@@ -23,12 +18,14 @@ import org.reflections.scanners.SubTypesScanner;
 import org.reflections.util.ClasspathHelper;
 import org.reflections.util.ConfigurationBuilder;
 
-import com.google.common.base.Stopwatch;
+import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.function.Predicate;
+import java.util.stream.Stream;
 
-import de.metas.util.ISingletonService;
-import de.metas.util.Services;
-import lombok.NonNull;
-import lombok.Value;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L

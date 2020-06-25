@@ -22,10 +22,19 @@ package de.metas.printing.api.impl;
  * #L%
  */
 
-import java.util.Iterator;
-import java.util.Properties;
-
+import de.metas.logging.LogManager;
+import de.metas.printing.api.IPrintJobLinesAggregator;
+import de.metas.printing.api.IPrintPackageBL;
+import de.metas.printing.api.IPrintPackageCtx;
+import de.metas.printing.api.IPrintingDAO;
+import de.metas.printing.model.I_C_Print_Job_Instructions;
+import de.metas.printing.model.I_C_Print_Job_Line;
+import de.metas.printing.model.I_C_Print_Package;
+import de.metas.printing.model.X_C_Print_Job_Instructions;
 import de.metas.printing.printingdata.PrintingDataFactory;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.session.ISessionBL;
 import org.adempiere.ad.session.MFSession;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -36,22 +45,10 @@ import org.apache.commons.collections4.IteratorUtils;
 import org.compiere.util.TrxRunnable2;
 import org.compiere.util.Util.ArrayKey;
 import org.slf4j.Logger;
-
-import de.metas.logging.LogManager;
-import de.metas.printing.api.IPrintJobLinesAggregator;
-import de.metas.printing.api.IPrintPackageBL;
-import de.metas.printing.api.IPrintPackageCtx;
-import de.metas.printing.api.IPrintingDAO;
-import de.metas.printing.model.I_C_Print_Job_Instructions;
-import de.metas.printing.model.I_C_Print_Job_Line;
-import de.metas.printing.model.I_C_Print_Package;
-import de.metas.printing.model.X_C_Print_Job_Instructions;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import lombok.NonNull;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.Nullable;
+import java.util.Iterator;
+import java.util.Properties;
 
 @Service
 public class PrintPackageBL implements IPrintPackageBL

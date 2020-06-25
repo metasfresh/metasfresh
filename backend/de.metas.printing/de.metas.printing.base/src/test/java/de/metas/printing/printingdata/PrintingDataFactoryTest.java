@@ -41,11 +41,9 @@ import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_AD_Archive;
 import org.compiere.model.I_C_Order;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
-import org.junit.jupiter.params.provider.ValueSource;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
@@ -60,7 +58,7 @@ class PrintingDataFactoryTest
 	private IArchiveStorageFactory archiveStorageFactory;
 
 	@BeforeEach
-	void setup(TestInfo testInfo)
+	void setup(@NonNull final TestInfo testInfo)
 	{
 		AdempiereTestHelper.get().init();
 
@@ -85,7 +83,7 @@ class PrintingDataFactoryTest
 				.addPages(helper.getPdf("01"), 1, 3) // First 3 pages
 				.toByteArray();
 
-		final I_AD_PrinterHW hwPrinterRecord = helper.getCreatePrinterHW("hwPrinter", OutputType.Store);
+		helper.getCreatePrinterHW("hwPrinter", OutputType.Store);
 		final I_AD_PrinterRouting printerRouting = helper.createPrinterRouting("logicalPrinter", null, 10, -1, 1, 100);
 
 		final I_C_Order referencedDocument = newInstance(I_C_Order.class);

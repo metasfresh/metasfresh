@@ -2,7 +2,6 @@ package de.metas.printing.model.validator;
 
 import de.metas.logging.TableRecordMDC;
 import de.metas.printing.api.IPrintClientsBL;
-import de.metas.printing.api.IPrintPackageBL;
 import de.metas.printing.client.IPrintingClientDelegate;
 import de.metas.printing.model.I_AD_Printer_Config;
 import de.metas.util.Check;

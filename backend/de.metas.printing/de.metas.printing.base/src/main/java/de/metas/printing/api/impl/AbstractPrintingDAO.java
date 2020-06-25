@@ -1,6 +1,50 @@
 package de.metas.printing.api.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.load;
+import de.metas.printing.HardwarePrinterId;
+import de.metas.printing.LogicalPrinterId;
+import de.metas.printing.api.IPrintingDAO;
+import de.metas.printing.api.IPrintingQueueQuery;
+import de.metas.printing.model.I_AD_Print_Clients;
+import de.metas.printing.model.I_AD_Printer;
+import de.metas.printing.model.I_AD_PrinterHW;
+import de.metas.printing.model.I_AD_PrinterHW_Calibration;
+import de.metas.printing.model.I_AD_PrinterHW_MediaSize;
+import de.metas.printing.model.I_AD_PrinterHW_MediaTray;
+import de.metas.printing.model.I_AD_PrinterRouting;
+import de.metas.printing.model.I_AD_PrinterTray_Matching;
+import de.metas.printing.model.I_AD_Printer_Config;
+import de.metas.printing.model.I_AD_Printer_Matching;
+import de.metas.printing.model.I_AD_Printer_Tray;
+import de.metas.printing.model.I_C_PrintPackageData;
+import de.metas.printing.model.I_C_Print_Job;
+import de.metas.printing.model.I_C_Print_Job_Detail;
+import de.metas.printing.model.I_C_Print_Job_Instructions;
+import de.metas.printing.model.I_C_Print_Job_Line;
+import de.metas.printing.model.I_C_Print_Package;
+import de.metas.printing.model.I_C_Print_PackageInfo;
+import de.metas.printing.model.I_C_Printing_Queue;
+import de.metas.printing.model.I_C_Printing_Queue_Recipient;
+import de.metas.printing.model.X_AD_PrinterHW;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.IContextAware;
+import org.compiere.model.IQuery;
+import org.compiere.model.I_AD_Archive;
+
+import javax.annotation.Nullable;
+import javax.print.attribute.standard.MediaSize;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 
 /*
  * #%L
@@ -23,55 +67,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.load;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-
-import javax.annotation.Nullable;
-import javax.print.attribute.standard.MediaSize;
-
-import de.metas.printing.HardwarePrinterId;
-import de.metas.printing.LogicalPrinterId;
-import de.metas.printing.model.I_AD_Printer_Tray;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.IContextAware;
-import org.compiere.model.IQuery;
-import org.compiere.model.I_AD_Archive;
-
-import de.metas.printing.api.IPrintingDAO;
-import de.metas.printing.api.IPrintingQueueQuery;
-import de.metas.printing.model.I_AD_Print_Clients;
-import de.metas.printing.model.I_AD_Printer;
-import de.metas.printing.model.I_AD_PrinterHW;
-import de.metas.printing.model.I_AD_PrinterHW_Calibration;
-import de.metas.printing.model.I_AD_PrinterHW_MediaSize;
-import de.metas.printing.model.I_AD_PrinterHW_MediaTray;
-import de.metas.printing.model.I_AD_PrinterRouting;
-import de.metas.printing.model.I_AD_PrinterTray_Matching;
-import de.metas.printing.model.I_AD_Printer_Config;
-import de.metas.printing.model.I_AD_Printer_Matching;
-import de.metas.printing.model.I_C_PrintPackageData;
-import de.metas.printing.model.I_C_Print_Job;
-import de.metas.printing.model.I_C_Print_Job_Detail;
-import de.metas.printing.model.I_C_Print_Job_Instructions;
-import de.metas.printing.model.I_C_Print_Job_Line;
-import de.metas.printing.model.I_C_Print_Package;
-import de.metas.printing.model.I_C_Print_PackageInfo;
-import de.metas.printing.model.I_C_Printing_Queue;
-import de.metas.printing.model.I_C_Printing_Queue_Recipient;
-import de.metas.printing.model.X_AD_PrinterHW;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import lombok.NonNull;
-import org.compiere.model.Query;
 
 public abstract class AbstractPrintingDAO implements IPrintingDAO
 {

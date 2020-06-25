@@ -23,9 +23,7 @@
 package de.metas.printing.printingdata;
 
 import de.metas.printing.HardwarePrinter;
-import de.metas.printing.HardwarePrinterId;
 import de.metas.printing.HardwareTrayId;
-import de.metas.printing.OutputType;
 import de.metas.printing.PrinterRoutingId;
 import de.metas.printing.model.I_AD_PrinterRouting;
 import de.metas.util.Check;

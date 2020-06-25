@@ -24,14 +24,11 @@ package de.metas.printing;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
-import de.metas.order.InvoiceRule;
 import de.metas.printing.model.X_AD_PrinterHW;
 import de.metas.util.lang.ReferenceListAwareEnum;
-import de.metas.util.lang.ReferenceListAwareEnums;
 import lombok.Getter;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.X_C_Order;
 
 import java.util.Arrays;
 

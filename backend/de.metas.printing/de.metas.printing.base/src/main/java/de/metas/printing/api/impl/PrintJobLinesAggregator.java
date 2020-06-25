@@ -28,7 +28,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IPair;
 import org.adempiere.util.lang.ImmutablePair;
 import org.adempiere.util.lang.Mutable;
-import org.compiere.SpringContextHolder;
 import org.compiere.util.Util.ArrayKey;
 import org.slf4j.Logger;
 

@@ -22,17 +22,6 @@ package de.metas.printing.test.integration;
  * #L%
  */
 
-
-import java.util.ArrayList;
-import java.util.List;
-
-import org.adempiere.ad.wrapper.POJOLookupMap;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.apache.commons.collections4.IteratorUtils;
-import org.junit.Assert;
-import org.junit.Test;
-import static org.assertj.core.api.Assertions.*;
-
 import de.metas.printing.api.impl.AbstractPrintingTest;
 import de.metas.printing.api.util.PdfCollator;
 import de.metas.printing.model.I_AD_PrinterRouting;
@@ -43,6 +32,16 @@ import de.metas.printing.model.I_C_Print_Job_Instructions;
 import de.metas.printing.model.I_C_Print_Job_Line;
 import de.metas.printing.model.I_C_Printing_Queue;
 import de.metas.printing.model.X_C_Print_Job_Instructions;
+import org.adempiere.ad.wrapper.POJOLookupMap;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.apache.commons.collections4.IteratorUtils;
+import org.junit.Assert;
+import org.junit.Test;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class FromQueueToPackagesTest extends AbstractPrintingTest
 {
