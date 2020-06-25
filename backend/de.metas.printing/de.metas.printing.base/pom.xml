@@ -13,7 +13,7 @@
 	<description>Print Processing (Mass &amp; Single)</description>
 
 	<properties>
-		<migration-sql-basedir>80-de.metas.printing</migration-sql-basedir>
+		<migration-sql-basedir></migration-sql-basedir>
 	</properties>
 
 	<dependencies>
