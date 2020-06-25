@@ -1,11 +1,13 @@
 package de.metas.document;
 
-import static de.metas.util.Check.assumeNotEmpty;
+import lombok.NonNull;
+import lombok.Value;
 
 import javax.annotation.Nullable;
 
-import lombok.NonNull;
-import lombok.Value;
+import static de.metas.util.Check.assumeNotEmpty;
+import static org.compiere.model.X_C_DocType.DOCBASETYPE_MaterialPhysicalInventory;
+import static org.compiere.model.X_C_DocType.DOCSUBTYPE_VirtualInventory;
 
 /*
  * #%L
@@ -32,6 +34,8 @@ import lombok.Value;
 @Value
 public class DocBaseAndSubType
 {
+	public final static DocBaseAndSubType VIRTUAL_INVENTORY = of(DOCBASETYPE_MaterialPhysicalInventory, DOCSUBTYPE_VirtualInventory);
+
 	public static DocBaseAndSubType of(@NonNull final String docBaseType)
 	{
 		final String docSubType = null;

@@ -1,7 +1,6 @@
 package de.metas.handlingunits.picking.requests;
 
-import org.adempiere.exceptions.AdempiereException;
-
+import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.HuId;
 import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.picking.api.PickingSlotId;
@@ -9,6 +8,7 @@ import de.metas.quantity.Quantity;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
 
 /*
  * #%L
@@ -43,6 +43,8 @@ public class AddQtyToHURequest
 	PickingSlotId pickingSlotId;
 	@NonNull
 	ShipmentScheduleId shipmentScheduleId;
+	@NonNull
+	ImmutableList<HuId> sourceHUIds;
 
 	boolean allowOverDelivery;
 
@@ -52,6 +54,7 @@ public class AddQtyToHURequest
 			@NonNull final HuId packToHuId,
 			@NonNull final PickingSlotId pickingSlotId,
 			@NonNull final ShipmentScheduleId shipmentScheduleId,
+			@NonNull final ImmutableList<HuId> sourceHUIds,
 			final boolean allowOverDelivery)
 	{
 		if (qtyToPack.signum() <= 0)
@@ -64,6 +67,7 @@ public class AddQtyToHURequest
 		this.pickingSlotId = pickingSlotId;
 		this.shipmentScheduleId = shipmentScheduleId;
 		this.allowOverDelivery = allowOverDelivery;
+		this.sourceHUIds = sourceHUIds;
 	}
 
 }
