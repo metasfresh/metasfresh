@@ -22,25 +22,19 @@ package de.metas.printing.api;
  * #L%
  */
 
+import de.metas.adempiere.service.PrinterRoutingsQuery;
+import de.metas.printing.OutputType;
+import de.metas.printing.model.I_C_Print_Job_Line;
+import de.metas.printing.model.I_C_Printing_Queue;
+import de.metas.printing.spi.IPrintingQueueHandler;
+import de.metas.util.ISingletonService;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.I_AD_Archive;
+
 import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
-
-import de.metas.adempiere.service.IPrintingService;
-import de.metas.adempiere.service.PrinterRoutingsQuery;
-import de.metas.async.model.I_C_Async_Batch;
-import de.metas.print.IPrintService;
-import de.metas.printing.OutputType;
-import de.metas.printing.model.I_AD_PrinterRouting;
-import de.metas.printing.model.I_C_Print_Job_Instructions;
-import de.metas.printing.model.I_C_Print_Job_Line;
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.I_AD_Archive;
-
-import de.metas.printing.model.I_C_Printing_Queue;
-import de.metas.printing.spi.IPrintingQueueHandler;
-import de.metas.util.ISingletonService;
 
 public interface IPrintingQueueBL extends ISingletonService
 {

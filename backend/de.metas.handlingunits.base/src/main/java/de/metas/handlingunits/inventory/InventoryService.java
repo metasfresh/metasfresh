@@ -62,7 +62,7 @@ public class InventoryService
 	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 	@Getter
-	private InventoryRepository inventoryRepository;
+	private final InventoryRepository inventoryRepository;
 
 	public InventoryService(@NonNull final InventoryRepository inventoryRepository)
 	{
@@ -189,5 +189,10 @@ public class InventoryService
 	public Inventory createInventoryHeader(@NonNull final InventoryHeaderCreateRequest request)
 	{
 		return inventoryRepository.createInventoryHeader(request);
+	}
+
+	public Inventory createInventoryLine(@NonNull final InventoryLineCreateRequest request)
+	{
+		return inventoryRepository.createInventoryLine(request);
 	}
 }

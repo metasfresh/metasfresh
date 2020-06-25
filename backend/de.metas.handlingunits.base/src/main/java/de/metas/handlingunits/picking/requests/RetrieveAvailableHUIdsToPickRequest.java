@@ -20,43 +20,21 @@
  * #L%
  */
 
-package de.metas.handlingunits.inventory;
+package de.metas.handlingunits.picking.requests;
 
-import java.time.ZonedDateTime;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.warehouse.WarehouseId;
-
-import de.metas.document.DocTypeId;
-import de.metas.organization.OrgId;
-import de.metas.product.acct.api.ActivityId;
+import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
 @Value
 @Builder
-public class InventoryHeaderCreateRequest
+public class RetrieveAvailableHUIdsToPickRequest
 {
 	@NonNull
-	OrgId orgId;
+	ShipmentScheduleId scheduleId;
 
-	@Nullable
-	DocTypeId docTypeId;
+	boolean considerAttributes;
 
-	@NonNull
-	ZonedDateTime movementDate;
-
-	@NonNull
-	WarehouseId warehouseId;
-
-	@Nullable
-	ActivityId activityId;
-
-	@Nullable
-	String description;
-
-	@Nullable
-	String poReference;
+	boolean onlyTopLevel;
 }

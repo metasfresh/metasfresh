@@ -24,7 +24,6 @@ package de.metas.printing.api.impl;
 
 import de.metas.printing.api.PrintingQueueProcessingInfo;
 import de.metas.printing.model.I_C_Printing_Queue;
-import de.metas.util.collections.IteratorUtils;
 import de.metas.util.collections.SingletonIterator;
 import lombok.Getter;
 import lombok.NonNull;

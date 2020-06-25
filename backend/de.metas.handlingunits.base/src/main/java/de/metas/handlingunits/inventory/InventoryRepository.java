@@ -145,7 +145,7 @@ public class InventoryRepository
 		return inventoryRecord;
 	}
 
-	Inventory toInventory(@NonNull final I_M_Inventory inventoryRecord)
+	public Inventory toInventory(@NonNull final I_M_Inventory inventoryRecord)
 	{
 		final InventoryId inventoryId = InventoryId.ofRepoId(inventoryRecord.getM_Inventory_ID());
 		final DocBaseAndSubType docBaseAndSubType = extractDocBaseAndSubTypeOrNull(inventoryRecord); // shall not be null at this point
@@ -669,5 +669,34 @@ public class InventoryRepository
 		saveRecord(inventoryRecord);
 
 		return toInventory(inventoryRecord);
+	}
+
+	public Inventory createInventoryLine(@NonNull final InventoryLineCreateRequest request)
+	{
+		final I_M_Inventory inventory = getRecordById(request.getInventoryId());
+
+		final I_M_InventoryLine inventoryLine = newInstance(I_M_InventoryLine.class);
+
+		inventoryLine.setAD_Org_ID(inventory.getAD_Org_ID());
+		inventoryLine.setM_Inventory_ID(inventory.getM_Inventory_ID());
+
+		inventoryLine.setM_Product_ID(request.getProductId().getRepoId());
+		if (request.getAttributeSetId() != null)
+		{
+			inventoryLine.setM_AttributeSetInstance_ID(request.getAttributeSetId().getRepoId());
+		}
+
+		final UomId uomId = Quantity.getCommonUomIdOfAll(request.getQtyBooked(), request.getQtyCount());
+
+		inventoryLine.setQtyBook(request.getQtyBooked().toBigDecimal());
+		inventoryLine.setQtyCount(request.getQtyCount().toBigDecimal());
+		inventoryLine.setC_UOM_ID(uomId.getRepoId());
+		inventoryLine.setIsCounted(true);
+
+		inventoryLine.setM_Locator_ID(request.getLocatorId().getRepoId());
+
+		saveRecord(inventoryLine);
+
+		return toInventory(inventory);
 	}
 }

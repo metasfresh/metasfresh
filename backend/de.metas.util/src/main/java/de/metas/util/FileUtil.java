@@ -170,7 +170,7 @@ public final class FileUtil
 	 * @param extension file extension to be used (with or without dot); in case the extension is null then it won't be appended so only the basename will be returned
 	 * @return filename with new file extension or same filename if the filename does not have an extension
 	 */
-	public static String changeFileExtension(final String filename, String extension)
+	public static String changeFileExtension(final String filename, final String extension)
 	{
 		final StringBuilder sb = new StringBuilder();
 
@@ -193,20 +193,21 @@ public final class FileUtil
 		}
 
 		// If no extension, return only the basename
-		extension = extension.trim();
-		if (extension.length() == 0)
+		if (Check.isBlank(extension))
 		{
 			return sb.toString();
 		}
 
+		final String trimmedExtension = extension.trim();
+
 		// Append the dot between basename and extension only if the extension does not already contain a dot
-		if (!extension.startsWith("."))
+		if (!trimmedExtension.startsWith("."))
 		{
 			sb.append(".");
 		}
 
 		// Append the extension
-		sb.append(extension);
+		sb.append(trimmedExtension);
 
 		return sb.toString();
 	}

@@ -22,14 +22,24 @@ package de.metas.printing.api.impl;
  * #L%
  */
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Properties;
-
+import de.metas.lock.api.ILockManager;
 import de.metas.printing.api.IPrintClientsBL;
-import lombok.NonNull;
-import org.adempiere.ad.dao.IQueryBL;
+import de.metas.printing.api.IPrintingQueueQuery;
+import de.metas.printing.model.I_AD_Printer;
+import de.metas.printing.model.I_AD_PrinterHW;
+import de.metas.printing.model.I_AD_PrinterHW_Calibration;
+import de.metas.printing.model.I_AD_PrinterHW_MediaSize;
+import de.metas.printing.model.I_AD_PrinterHW_MediaTray;
+import de.metas.printing.model.I_AD_PrinterTray_Matching;
+import de.metas.printing.model.I_AD_Printer_Matching;
+import de.metas.printing.model.I_C_Print_Job;
+import de.metas.printing.model.I_C_Print_Job_Instructions;
+import de.metas.printing.model.I_C_Print_Job_Line;
+import de.metas.printing.model.I_C_Printing_Queue;
+import de.metas.printing.model.X_C_Print_Job_Instructions;
+import de.metas.security.permissions.Access;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import org.adempiere.ad.dao.ISqlQueryFilter;
 import org.adempiere.ad.dao.impl.TypedSqlQuery;
 import org.adempiere.ad.trx.api.ITrx;
@@ -39,29 +49,12 @@ import org.compiere.model.IQuery.Aggregate;
 import org.compiere.model.I_AD_Archive;
 import org.compiere.model.POInfo;
 import org.compiere.model.Query;
-import org.compiere.util.DB;
 import org.compiere.util.Env;
-import org.compiere.util.Util;
 
-import de.metas.lock.api.ILockManager;
-import de.metas.printing.api.IPrintPackageBL;
-import de.metas.printing.api.IPrintingQueueQuery;
-import de.metas.printing.model.I_AD_Printer;
-import de.metas.printing.model.I_AD_PrinterHW;
-import de.metas.printing.model.I_AD_PrinterHW_Calibration;
-import de.metas.printing.model.I_AD_PrinterHW_MediaSize;
-import de.metas.printing.model.I_AD_PrinterHW_MediaTray;
-import de.metas.printing.model.I_AD_PrinterTray_Matching;
-import de.metas.printing.model.I_AD_Printer_Matching;
-import de.metas.printing.model.I_AD_Printer_Tray;
-import de.metas.printing.model.I_C_Print_Job;
-import de.metas.printing.model.I_C_Print_Job_Instructions;
-import de.metas.printing.model.I_C_Print_Job_Line;
-import de.metas.printing.model.I_C_Printing_Queue;
-import de.metas.printing.model.X_C_Print_Job_Instructions;
-import de.metas.security.permissions.Access;
-import de.metas.util.Check;
-import de.metas.util.Services;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Properties;
 
 public class PrintingDAO extends AbstractPrintingDAO
 {

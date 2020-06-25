@@ -34,7 +34,6 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.ToString;
-import org.adempiere.archive.ArchiveId;
 import org.adempiere.exceptions.AdempiereException;
 import org.slf4j.Logger;
 

@@ -22,41 +22,36 @@
 
 package de.metas.handlingunits.inventory;
 
-import java.time.ZonedDateTime;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.warehouse.WarehouseId;
-
-import de.metas.document.DocTypeId;
-import de.metas.organization.OrgId;
-import de.metas.product.acct.api.ActivityId;
+import de.metas.inventory.InventoryId;
+import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.warehouse.LocatorId;
+
+import javax.annotation.Nullable;
 
 @Value
 @Builder
-public class InventoryHeaderCreateRequest
+public class InventoryLineCreateRequest
 {
 	@NonNull
-	OrgId orgId;
-
-	@Nullable
-	DocTypeId docTypeId;
+	InventoryId inventoryId;
 
 	@NonNull
-	ZonedDateTime movementDate;
+	ProductId productId;
 
 	@NonNull
-	WarehouseId warehouseId;
+	Quantity qtyCount;
+
+	@NonNull
+	Quantity qtyBooked;
+
+	@NonNull
+	LocatorId locatorId;
 
 	@Nullable
-	ActivityId activityId;
-
-	@Nullable
-	String description;
-
-	@Nullable
-	String poReference;
+	AttributeSetInstanceId attributeSetId;
 }

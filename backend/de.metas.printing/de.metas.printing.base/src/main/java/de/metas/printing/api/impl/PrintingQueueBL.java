@@ -25,26 +25,40 @@ package de.metas.printing.api.impl;
  * #L%
  */
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Properties;
-import java.util.Set;
-
+import ch.qos.logback.classic.Level;
+import com.google.common.collect.ImmutableList;
 import de.metas.adempiere.model.I_AD_PrinterRouting;
 import de.metas.adempiere.service.IPrinterRoutingDAO;
 import de.metas.adempiere.service.PrinterRoutingsQuery;
+import de.metas.async.Async_Constants;
+import de.metas.async.model.I_C_Async_Batch;
 import de.metas.cache.CCache;
 import de.metas.document.DocTypeId;
+import de.metas.document.archive.api.IDocOutboundProducerService;
+import de.metas.document.archive.model.I_AD_Archive;
+import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
 import de.metas.printing.OutputType;
+import de.metas.printing.api.IPrintingDAO;
+import de.metas.printing.api.IPrintingQueueBL;
+import de.metas.printing.api.IPrintingQueueQuery;
+import de.metas.printing.api.IPrintingQueueSource;
+import de.metas.printing.api.PrintingQueueProcessingInfo;
 import de.metas.printing.model.I_AD_PrinterHW;
 import de.metas.printing.model.I_AD_Printer_Matching;
+import de.metas.printing.model.I_C_Printing_Queue;
+import de.metas.printing.model.I_C_Printing_Queue_Recipient;
+import de.metas.printing.spi.IPrintingQueueHandler;
+import de.metas.printing.spi.impl.C_Printing_Queue_RecipientHandler;
+import de.metas.printing.spi.impl.CompositePrintingQueueHandler;
 import de.metas.process.AdProcessId;
+import de.metas.process.IADPInstanceDAO;
 import de.metas.security.RoleId;
 import de.metas.user.UserId;
+import de.metas.util.Check;
+import de.metas.util.Loggables;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.archive.api.IArchiveBL;
@@ -58,32 +72,13 @@ import org.compiere.util.Env;
 import org.compiere.util.Util;
 import org.slf4j.Logger;
 
-import com.google.common.collect.ImmutableList;
-
-import ch.qos.logback.classic.Level;
-import de.metas.async.Async_Constants;
-import de.metas.async.model.I_C_Async_Batch;
-import de.metas.document.archive.api.IDocOutboundProducerService;
-import de.metas.document.archive.model.I_AD_Archive;
-import de.metas.logging.LogManager;
-import de.metas.printing.api.IPrintingDAO;
-import de.metas.printing.api.IPrintingQueueBL;
-import de.metas.printing.api.IPrintingQueueQuery;
-import de.metas.printing.api.IPrintingQueueSource;
-import de.metas.printing.api.PrintingQueueProcessingInfo;
-import de.metas.printing.model.I_C_Printing_Queue;
-import de.metas.printing.model.I_C_Printing_Queue_Recipient;
-import de.metas.printing.spi.IPrintingQueueHandler;
-import de.metas.printing.spi.impl.C_Printing_Queue_RecipientHandler;
-import de.metas.printing.spi.impl.CompositePrintingQueueHandler;
-import de.metas.process.IADPInstanceDAO;
-import de.metas.util.Check;
-import de.metas.util.Loggables;
-import de.metas.util.Services;
-import lombok.NonNull;
-
-import javax.swing.text.html.Option;
-import javax.xml.ws.Service;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Properties;
+import java.util.Set;
 
 public class PrintingQueueBL implements IPrintingQueueBL
 {

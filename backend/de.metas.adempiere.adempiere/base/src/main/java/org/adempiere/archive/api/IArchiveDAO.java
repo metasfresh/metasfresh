@@ -22,16 +22,13 @@ package org.adempiere.archive.api;
  * #L%
  */
 
-
-import java.util.List;
-import java.util.Properties;
-
-import lombok.NonNull;
+import de.metas.util.ISingletonService;
 import org.adempiere.archive.ArchiveId;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.compiere.model.I_AD_Archive;
 
-import de.metas.util.ISingletonService;
+import java.util.List;
+import java.util.Properties;
 
 /**
  * Archive related DAO

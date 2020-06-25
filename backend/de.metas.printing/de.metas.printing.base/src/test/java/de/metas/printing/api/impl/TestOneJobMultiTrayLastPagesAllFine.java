@@ -22,18 +22,6 @@ package de.metas.printing.api.impl;
  * #L%
  */
 
-
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
-
-import java.util.Arrays;
-import java.util.List;
-
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.assertj.core.api.Assertions;
-import org.junit.Test;
-
 import de.metas.printing.api.util.PdfCollator;
 import de.metas.printing.model.I_AD_PrinterHW;
 import de.metas.printing.model.I_AD_PrinterHW_MediaTray;
@@ -41,6 +29,15 @@ import de.metas.printing.model.I_AD_PrinterRouting;
 import de.metas.printing.model.I_C_Print_Job;
 import de.metas.printing.model.I_C_Print_Package;
 import de.metas.printing.model.I_C_Print_PackageInfo;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.junit.Test;
+
+import java.util.Arrays;
+import java.util.List;
+
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
 
 /**
  * Tests around {@link I_AD_PrinterRouting#ROUTINGTYPE_LastPages} functionality

@@ -1,16 +1,20 @@
 package de.metas.ui.web.picking.pickingslot.process;
 
-import java.util.List;
-
+import com.google.common.collect.ImmutableList;
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.picking.IHUPickingSlotBL;
 import de.metas.handlingunits.picking.IHUPickingSlotBL.PickingHUsQuery;
+import de.metas.handlingunits.picking.requests.RetrieveAvailableHUIdsToPickRequest;
 import de.metas.inoutcandidate.api.IPackagingDAO;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
+import lombok.NonNull;
+
+import java.util.List;
 
 /*
  * #%L
@@ -44,24 +48,30 @@ import de.metas.util.Services;
 {
 	private final transient IHUPickingSlotBL huPickingSlotBL = Services.get(IHUPickingSlotBL.class);
 
-	protected final boolean checkSourceHuPrecondition()
+	protected final boolean noSourceHUAvailable()
 	{
-		final List<I_M_HU> sourceHUs = retrieveAvailableSourceHUs();
-		return !sourceHUs.isEmpty();
+		final List<HuId> sourceHUs = getSourceHUIds();
+		return sourceHUs.isEmpty();
 	}
 
-	private List<I_M_HU> retrieveAvailableSourceHUs()
+	@NonNull
+	protected ImmutableList<HuId> getSourceHUIds()
 	{
 		final I_M_ShipmentSchedule shipmentSchedule = getCurrentShipmentSchedule();
 
 		final PickingHUsQuery query = PickingHUsQuery.builder()
-				.onlyIfAttributesMatchWithShipmentSchedules(true)
 				.shipmentSchedule(shipmentSchedule)
 				.onlyTopLevelHUs(true)
+				.onlyIfAttributesMatchWithShipmentSchedules(true)
 				.build();
 
-		final List<I_M_HU> sourceHUs = huPickingSlotBL.retrieveAvailableSourceHUs(query);
-		return sourceHUs;
+		final ImmutableList<HuId> sourceHUIds = huPickingSlotBL.retrieveAvailableSourceHUs(query)
+				.stream()
+				.map(I_M_HU::getM_HU_ID)
+				.map(HuId::ofRepoId)
+				.collect(ImmutableList.toImmutableList());
+
+		return sourceHUIds;
 	}
 
 	protected final Quantity retrieveQtyToPick()
@@ -78,5 +88,18 @@ import de.metas.util.Services;
 		}
 
 		return qtyToDeliverTarget.subtract(qtyPickedPlanned).toZeroIfNegative();
+	}
+
+	@NonNull
+	protected ImmutableList<HuId> retrieveTopLevelHUIdsAvailableForPicking()
+	{
+		final RetrieveAvailableHUIdsToPickRequest request = RetrieveAvailableHUIdsToPickRequest
+				.builder()
+				.scheduleId(getCurrentShipmentScheduleId())
+				.onlyTopLevel(true)
+				.considerAttributes(true)
+				.build();
+
+		return huPickingSlotBL.retrieveAvailableHUIdsToPickForShipmentSchedule(request);
 	}
 }
