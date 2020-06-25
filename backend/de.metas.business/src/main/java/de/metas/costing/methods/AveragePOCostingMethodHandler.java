@@ -142,30 +142,33 @@ public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 		final boolean isInboundTrx = qty.signum() > 0;
 
 		final CurrentCost currentCosts = utils.getCurrentCost(request);
-		final CostDetailCreateResult result;
+
+		final CostDetailCreateRequest requestEffective;
+
+		final CostAmount requestAmt = request.getAmt();
+
 		if (isInboundTrx || request.isReversal())
 		{
-			result = utils.createCostDetailRecordWithChangedCosts(request, currentCosts);
+			requestEffective = request;
 
-			currentCosts.addWeightedAverage(request.getAmt(), qty, utils.getQuantityUOMConverter());
+			currentCosts.addWeightedAverage(requestAmt, qty, utils.getQuantityUOMConverter());
+		}
+		else if (qty.isZero())
+		{
+			currentCosts.addToOwnCostPrice(requestAmt);
+
+			requestEffective = request.withAmount(requestAmt);
 		}
 		else
 		{
 			final CostPrice price = currentCosts.getCostPrice();
 			final CostAmount amt = price.multiply(qty).roundToPrecisionIfNeeded(currentCosts.getPrecision());
-			
-			if (qty.isZero())
-			{
-				currentCosts.addToOwnCostPrice(request.getAmt());
-			}
-
-			
-			final CostDetailCreateRequest requestEffective = request.withAmount(amt);
-			result = utils.createCostDetailRecordWithChangedCosts(requestEffective, currentCosts);
+			requestEffective = request.withAmount(amt);
 
 			currentCosts.addToCurrentQtyAndCumulate(qty, amt, utils.getQuantityUOMConverter());
 		}
 
+		final CostDetailCreateResult result = utils.createCostDetailRecordWithChangedCosts(requestEffective, currentCosts);
 		utils.saveCurrentCost(currentCosts);
 
 		return result;

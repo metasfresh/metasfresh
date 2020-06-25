@@ -157,15 +157,8 @@ public final class CurrentCost
 		Check.assume(qty.signum() != 0, "qty not zero");
 
 		final CostAmount currentAmt;
-
-		if (currentQty.isZero())
-		{
-			currentAmt = costPrice.getOwnCostPrice();
-		}
-		else
-		{
-			currentAmt = costPrice.getOwnCostPrice().multiply(currentQty);
-		}
+		
+		currentAmt = costPrice.getOwnCostPrice().multiply(currentQty);
 
 		final CostAmount newAmt = currentAmt.add(amt);
 
