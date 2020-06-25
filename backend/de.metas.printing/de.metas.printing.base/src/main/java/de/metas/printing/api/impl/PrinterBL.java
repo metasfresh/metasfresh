@@ -37,6 +37,7 @@ import javax.print.attribute.standard.MediaSize;
 
 import de.metas.printing.HardwarePrinterId;
 import de.metas.printing.LogicalPrinterId;
+import de.metas.user.UserId;
 import org.adempiere.model.PlainContextAware;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -91,9 +92,9 @@ public class PrinterBL implements IPrinterBL
 	private I_AD_Printer_Config createPrinterConfigIfNoneExists(final I_AD_PrinterHW printerHW)
 	{
 		final IPrintingDAO printingDAO = Services.get(IPrintingDAO.class);
-		final I_AD_Printer_Config existientPrinterConfig = printingDAO.retrievePrinterConfig(PlainContextAware.newOutOfTrx(getCtx(printerHW)),
+		final I_AD_Printer_Config existientPrinterConfig = printingDAO.retrievePrinterConfig(
 				printerHW.getHostKey(),
-				printerHW.getUpdatedBy());
+				UserId.ofRepoIdOrNull(printerHW.getUpdatedBy()));
 		if (existientPrinterConfig != null)
 		{
 			return existientPrinterConfig;
@@ -115,11 +116,14 @@ public class PrinterBL implements IPrinterBL
 			final I_AD_Printer printer,
 			final I_AD_PrinterHW printerHW)
 	{
-		// first search ; if exists return null
+		// first search ; if one exists *for any hostkey*, then return null
 		final IPrintingDAO printingDAO = Services.get(IPrintingDAO.class);
 
-		final I_AD_Printer_Matching exitentMatching = printingDAO.retrievePrinterMatchingOrNull(printerHW.getHostKey(), printer);
-		if (exitentMatching != null)
+		final I_AD_Printer_Matching existentMatching = printingDAO.retrievePrinterMatchingOrNull(
+				null,
+				UserId.ofRepoIdOrNull(printerHW.getUpdatedBy()),
+				printer);
+		if (existentMatching != null)
 		{
 			return null;
 		}

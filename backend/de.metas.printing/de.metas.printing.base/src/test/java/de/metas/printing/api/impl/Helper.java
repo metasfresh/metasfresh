@@ -40,6 +40,7 @@ import de.metas.printing.model.validator.AD_Archive;
 import de.metas.printing.printingdata.PrintingDataFactory;
 import de.metas.printing.printingdata.PrintingDataToPDFFileStorer;
 import de.metas.printing.rpl.requesthandler.CreatePrintPackageRequestHandler;
+import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
@@ -294,21 +295,16 @@ public class Helper
 
 	/**
 	 * Calls {@link #createPrintJobInstructions(I_C_Print_Job, int)} with copies == 1.
-	 *
-	 * @param printJob
-	 * @return
 	 */
 	public I_C_Print_Job_Instructions createPrintJobInstructions(final I_C_Print_Job printJob)
 	{
 		return createPrintJobInstructions(printJob, 1);
 	}
 
-	public I_C_Print_Job_Instructions createPrintJobInstructions(final I_C_Print_Job printJob, final int copies)
+	public I_C_Print_Job_Instructions createPrintJobInstructions(@NonNull final I_C_Print_Job printJob, final int copies)
 	{
-		Assert.assertNotNull("printJob shall not be null", printJob);
-
 		final Properties ctx = InterfaceWrapperHelper.getCtx(printJob);
-		final int userToPrintId = Env.getAD_User_ID(ctx);
+		final UserId userToPrintId = Env.getLoggedUserId(ctx);
 		final I_C_Print_Job_Line firstLine = printingDAO.retrievePrintJobLine(printJob, IPrintingDAO.SEQNO_First);
 		final I_C_Print_Job_Line lastLine = printingDAO.retrievePrintJobLine(printJob, IPrintingDAO.SEQNO_Last);
 
@@ -532,6 +528,7 @@ public class Helper
 		{
 			printerConfigToUse = printingDAO.newInstance(ctx, I_AD_Printer_Config.class, ITrx.TRXNAME_None);
 			printerConfigToUse.setConfigHostKey(hostKey);
+			printerConfigToUse.setAD_User_PrinterMatchingConfig_ID(Env.getAD_User_ID());
 			printingDAO.save(printerConfigToUse);
 		}
 		else

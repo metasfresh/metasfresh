@@ -31,7 +31,9 @@ import de.metas.printing.api.impl.SingletonPrintingQueueSource;
 import de.metas.printing.model.I_AD_Archive;
 import de.metas.printing.model.I_C_Doc_Outbound_Config;
 import de.metas.printing.model.I_C_Printing_Queue;
+import de.metas.user.UserId;
 import de.metas.util.Services;
+import de.metas.util.lang.CoalesceUtil;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
@@ -115,7 +117,9 @@ public class AD_Archive
 	 */
 	private void forwardToJob(@NonNull final I_C_Printing_Queue printingQueue)
 	{
-		final IPrintingQueueSource source = new SingletonPrintingQueueSource(printingQueue, printingQueue.getCreatedBy());
+		final UserId adUserPrintJobId = UserId.ofRepoId(CoalesceUtil.firstGreaterThanZero(printingQueue.getAD_User_ID(), printingQueue.getCreatedBy()));
+		final IPrintingQueueSource source = new SingletonPrintingQueueSource(printingQueue, adUserPrintJobId);
+
 		printOutputFacade.print(source);
 	}
 

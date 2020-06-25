@@ -26,6 +26,7 @@ package de.metas.printing.process;
 import java.util.List;
 import java.util.Properties;
 
+import de.metas.user.UserId;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -76,7 +77,7 @@ public class C_Print_Job_TestPrintQueueItem extends AbstractPrintJobCreate
 		final I_C_Printing_Queue item = InterfaceWrapperHelper.create(ctxToUse, p_C_Printing_Queue_ID, I_C_Printing_Queue.class, trxName);
 		Check.assumeNotNull(item, "C_Printing_Queue for {} exists", p_C_Printing_Queue_ID);
 
-		final int adUserToPrintId = Env.getAD_User_ID(ctxToUse); // logged in user
+		final UserId adUserToPrintId = Env.getLoggedUserId(ctxToUse); // logged in user
 
 		final SingletonPrintingQueueSource queue = new SingletonPrintingQueueSource(item, adUserToPrintId);
 

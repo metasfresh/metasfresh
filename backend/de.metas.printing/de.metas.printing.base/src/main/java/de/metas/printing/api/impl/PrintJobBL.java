@@ -32,9 +32,11 @@ import java.util.List;
 import java.util.Properties;
 import java.util.stream.Collectors;
 
+import com.google.common.base.Predicates;
 import de.metas.adempiere.service.PrinterRoutingsQuery;
 import de.metas.printing.api.IPrintClientsBL;
 import de.metas.printing.api.IPrintingQueueBL;
+import de.metas.user.UserId;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -84,6 +86,8 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import lombok.experimental.Delegate;
+
+import javax.annotation.Nullable;
 
 public class PrintJobBL implements IPrintJobBL
 {
@@ -399,12 +403,15 @@ public class PrintJobBL implements IPrintJobBL
 		return createPrintJobInstructionsForUsersToPrint(printingQueueProcessingInfo, firstLine, lastLine);
 	}
 
-	private I_C_Print_Job createPrintJob(@NonNull final I_C_Printing_Queue item, @NonNull final String trxName, final int adUserId)
+	private I_C_Print_Job createPrintJob(
+			@NonNull final I_C_Printing_Queue item,
+			@NonNull final String trxName,
+			final UserId adUserId)
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(item);
 		final I_C_Print_Job printJob = InterfaceWrapperHelper.create(ctx, I_C_Print_Job.class, trxName);
 		printJob.setAD_Org_ID(item.getAD_Org_ID());
-		printJob.setAD_User_ID(adUserId);
+		printJob.setAD_User_ID(UserId.toRepoId(adUserId));
 		printJob.setIsActive(true);
 		printJob.setProcessed(false);
 		InterfaceWrapperHelper.save(printJob);
@@ -463,11 +470,12 @@ public class PrintJobBL implements IPrintJobBL
 		return printJobLine;
 	}
 
-	private List<I_C_Print_Job_Instructions> createPrintJobInstructionsForUsersToPrint(@NonNull final PrintingQueueProcessingInfo printingQueueProcessingInfo,
+	private List<I_C_Print_Job_Instructions> createPrintJobInstructionsForUsersToPrint(
+			@NonNull final PrintingQueueProcessingInfo printingQueueProcessingInfo,
 			@NonNull final I_C_Print_Job_Line firstLine, @NonNull final I_C_Print_Job_Line lastLine)
 	{
 		final int lastItemCopies = getItemCopies(lastLine);
-		final List<Integer> userIDsToPrint = printingQueueProcessingInfo.getAD_User_ToPrint_IDs();
+		final List<UserId> userIDsToPrint = printingQueueProcessingInfo.getAD_User_ToPrint_IDs();
 		return userIDsToPrint.stream()
 				.map(adUserToPrintId -> createPrintJobInstructions(adUserToPrintId,
 						printingQueueProcessingInfo.isCreateWithSpecificHostKey(),
@@ -484,7 +492,8 @@ public class PrintJobBL implements IPrintJobBL
 	}
 
 	@Override
-	public I_C_Print_Job_Instructions createPrintJobInstructions(final int userToPrintId,
+	public I_C_Print_Job_Instructions createPrintJobInstructions(
+			@Nullable final UserId userToPrintId,
 			final boolean createWithSpecificHostKey,
 			@NonNull final I_C_Print_Job_Line firstLine,
 			@NonNull final I_C_Print_Job_Line lastLine,
@@ -508,17 +517,17 @@ public class PrintJobBL implements IPrintJobBL
 		if (createWithSpecificHostKey)
 		{
 			final String hostKeyToUse;
-			final int userToPrintIdToUse;
-			final I_AD_Printer_Config printerConfig = printingDAO.retrievePrinterConfig(PlainContextAware.newOutOfTrx(ctx), hostKey, userToPrintId);
+			final UserId userToPrintIdToUse;
+			final I_AD_Printer_Config printerConfig = printingDAO.retrievePrinterConfig(hostKey, userToPrintId);
 			Check.errorIf(printerConfig == null,
-					"Missing AD_Printer_Config record for hostKey={}, userToPrintId={}, ctx={}",
-					hostKey, userToPrintId, ctx);
+					"Missing AD_Printer_Config record for hostKey={}, userToPrintId={}",
+					hostKey, UserId.toRepoId(userToPrintId));
 
 			if (printerConfig.getAD_Printer_Config_Shared_ID() > 0)
 			{
 				final I_AD_Printer_Config ad_Printer_Config_Shared = printerConfig.getAD_Printer_Config_Shared();
 				hostKeyToUse = ad_Printer_Config_Shared.getConfigHostKey();
-				userToPrintIdToUse = ad_Printer_Config_Shared.getAD_User_PrinterMatchingConfig_ID();
+				userToPrintIdToUse = UserId.ofRepoId(ad_Printer_Config_Shared.getAD_User_PrinterMatchingConfig_ID());
 			}
 			else
 			{
@@ -526,13 +535,13 @@ public class PrintJobBL implements IPrintJobBL
 				userToPrintIdToUse = userToPrintId;
 			}
 			instructions.setHostKey(hostKeyToUse); // note that hostkey is not mandatory here
-			instructions.setAD_User_ToPrint_ID(userToPrintIdToUse);
+			instructions.setAD_User_ToPrint_ID(UserId.toRepoId(userToPrintIdToUse));
 			// task 09028: workaround: don't set the hostkey.
 			// therefore the next print client of the given user will be able to print this
 		}
 		else
 		{
-			instructions.setAD_User_ToPrint_ID(userToPrintId);
+			instructions.setAD_User_ToPrint_ID(UserId.toRepoId(userToPrintId));
 		}
 
 		final String trxName = InterfaceWrapperHelper.getTrxName(instructions);
