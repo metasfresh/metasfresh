@@ -287,24 +287,6 @@ function mapRows(rows, map, columnInfosByFieldName) {
   });
 }
 
-export function removeRows(rowsList, changedRows) {
-  const removedRows = [];
-
-  changedRows.forEach((id) => {
-    const idx = rowsList.findIndex((row) => row.id === id);
-
-    if (idx !== -1) {
-      rowsList = rowsList.delete(idx);
-      removedRows.push(id);
-    }
-  });
-
-  return {
-    rows: rowsList,
-    removedRows,
-  };
-}
-
 export function mergeRows({
   toRows,
   fromRows,

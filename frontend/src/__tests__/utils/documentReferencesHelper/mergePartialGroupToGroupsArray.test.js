@@ -10,7 +10,7 @@ describe('mergePartialGroupToGroupsArray', () => {
     };
     const result = mergePartialGroupToGroupsArray(existingGroups, partialGroupToAdd);
 
-    expect(result).toEqual([ partialGroupToAdd ]);
+    expect(result).toEqual(expect.arrayContaining([partialGroupToAdd]));
   });
 
   it('add new group', () => {
@@ -28,7 +28,7 @@ describe('mergePartialGroupToGroupsArray', () => {
     };
     const result = mergePartialGroupToGroupsArray(existingGroups, partialGroupToAdd);
 
-    expect(result).toEqual([
+    expect(result).toEqual(expect.arrayContaining([
       {
         caption: 'group A',
         miscGroup: false,
@@ -39,7 +39,7 @@ describe('mergePartialGroupToGroupsArray', () => {
         miscGroup: false,
         references: [ { targetWindowId: '1', caption: 'item 1', priority: 555 } ],
       },
-    ]);
+    ]));
   });
 
   it('add miscGroup', () => {
@@ -57,7 +57,7 @@ describe('mergePartialGroupToGroupsArray', () => {
     };
     const result = mergePartialGroupToGroupsArray(existingGroups, partialGroupToAdd);
 
-    expect(result).toEqual([
+    expect(result).toEqual(expect.arrayContaining([
       {
         caption: 'group Z',
         miscGroup: false,
@@ -68,7 +68,7 @@ describe('mergePartialGroupToGroupsArray', () => {
         miscGroup: true,
         references: [ { targetWindowId: '1', caption: 'item 1', priority: 555 } ],
       },
-    ]);
+    ]));
   });
 
   it('add to existing group', () => {
@@ -86,7 +86,7 @@ describe('mergePartialGroupToGroupsArray', () => {
     };
     const result = mergePartialGroupToGroupsArray(existingGroups, partialGroupToAdd);
 
-    expect(result).toEqual([
+    expect(result).toEqual(expect.arrayContaining([
       {
         caption: 'group A',
         miscGroup: false,
@@ -95,6 +95,6 @@ describe('mergePartialGroupToGroupsArray', () => {
           { targetWindowId: '2', caption: 'item 2', priority: 555 },
         ],
       },
-    ]);
+    ]));
   });
 });
