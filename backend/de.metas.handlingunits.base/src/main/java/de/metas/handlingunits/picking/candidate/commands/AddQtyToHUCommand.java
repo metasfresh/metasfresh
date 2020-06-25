@@ -30,6 +30,7 @@ import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UOMConversionContext;
+import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
@@ -213,7 +214,7 @@ public class AddQtyToHUCommand
 		{
 			final UOMConversionContext conversionCtx = UOMConversionContext.of(productId);
 			final Quantity qty = candidate.getQtyPicked();
-			final Quantity qtyToAddConv = uomConversionBL.convertQuantityTo(qty, conversionCtx, qty.getUOM());
+			final Quantity qtyToAddConv = uomConversionBL.convertQuantityTo(qtyToAdd, conversionCtx, UomId.ofRepoId(qty.getUOM().getC_UOM_ID()));
 			qtyNew = qty.add(qtyToAddConv);
 		}
 
@@ -234,6 +235,7 @@ public class AddQtyToHUCommand
 		if (qtyToPack.compareTo(qtyToDeliver) > 0)
 		{
 			throw new AdempiereException("@" + PickingConfigRepository.MSG_WEBUI_Picking_OverdeliveryNotAllowed + "@")
+					.appendParametersToMessage()
 					.setParameter("qtyToDeliverTarget", qtyToDeliverTarget)
 					.setParameter("qtyPickedPlanned", qtyPickedPlanned)
 					.setParameter("qtyToPack", qtyToPack);
