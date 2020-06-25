@@ -183,7 +183,12 @@ public class ADProcessInstancesRepository implements IProcessInstancesRepository
 			// Set parameters's default values
 			ProcessDefaultParametersUpdater.newInstance()
 					.addDefaultParametersProvider(processClassInstance instanceof IProcessDefaultParametersProvider ? (IProcessDefaultParametersProvider)processClassInstance : null)
-					.onDefaultValue((parameter, value) -> parametersDoc.processValueChange(parameter.getColumnName(), value, () -> "default parameter value"))
+					.onDefaultValue((parameter, value) -> parametersDoc.processValueChange(
+							parameter.getColumnName(),
+							value,
+							() -> "default parameter value",
+							true // ignoreReadonlyFlag
+					))
 					.updateDefaultValue(parametersDoc.getFieldViews(), field -> DocumentFieldAsProcessDefaultParameter.of(windowNo, field));
 
 			//
@@ -314,7 +319,7 @@ public class ADProcessInstancesRepository implements IProcessInstancesRepository
 		//
 		// View related internal parameters
 		addViewInternalParameters(request, processInfoBuilder);
-		
+
 		return processInfoBuilder.build();
 	}
 
@@ -348,7 +353,7 @@ public class ADProcessInstancesRepository implements IProcessInstancesRepository
 					.addParameter(ViewBasedProcessTemplate.PARAM_ChildViewSelectedIds, childViewRowIdsSelection.getRowIds().toCommaSeparatedString());
 		}
 	}
-	
+
 	private ADProcessInstanceController retrieveProcessInstance(final DocumentId adPInstanceDocumentId)
 	{
 		Check.assumeNotNull(adPInstanceDocumentId, "Parameter adPInstanceDocumentId is not null");

@@ -241,35 +241,43 @@ import lombok.NonNull;
 		}
 
 		final IRangeAwareParams parameterFieldValues = currentProcessInstance.getParametersFromAnnotatedFields();
-		final List<JSONDocumentChangedEvent> events = parameterFieldValues.getParameterNames()
-				.stream()
-				.filter(parameters::hasField)
-				.map(parameterName -> createJSONDocumentChangedEventFromFieldValue(parameterFieldValues, parameterName))
-				.collect(ImmutableList.toImmutableList());
-		if (events.isEmpty())
+		for (final String parameterName : parameterFieldValues.getParameterNames())
 		{
-			return;
-		}
+			if (!parameters.hasField(parameterName))
+			{
+				continue;
+			}
 
-		parameters.processValueChanges(events, () -> "update from java process annotated fields");
+			final Object value = parameterFieldValues.getParameterAsObject(parameterName);
+			updateParametersDocumentFromJavaProcessAnnotatedFields(parameterName, value);
+		}
 	}
 
-	private static JSONDocumentChangedEvent createJSONDocumentChangedEventFromFieldValue(final IRangeAwareParams parameterFieldValues, final String parameterName)
+	private void updateParametersDocumentFromJavaProcessAnnotatedFields(
+			@NonNull final String parameterName,
+			@Nullable final Object value)
 	{
-		final Object fieldValue = parameterFieldValues.getParameterAsObject(parameterName);
-		if (fieldValue == null)
+		Object valueNorm;
+		if (value == null)
 		{
-			return JSONDocumentChangedEvent.replace(parameterName, null);
+			valueNorm = null;
 		}
-		else if (InterfaceWrapperHelper.isModelInterface(fieldValue.getClass()))
+		else if (InterfaceWrapperHelper.isModelInterface(value.getClass()))
 		{
-			int id = InterfaceWrapperHelper.getId(fieldValue);
-			return JSONDocumentChangedEvent.replace(parameterName, id);
+			int id = InterfaceWrapperHelper.getId(value);
+			valueNorm = id;
 		}
 		else
 		{
-			return JSONDocumentChangedEvent.replace(parameterName, fieldValue);
+			valueNorm = value;
 		}
+
+		final boolean ignoreReadonlyFlag = true;
+		parameters.processValueChange(
+				parameterName,
+				valueNorm,
+				() -> "update from java process annotated fields",
+				ignoreReadonlyFlag);
 	}
 
 	@Override
