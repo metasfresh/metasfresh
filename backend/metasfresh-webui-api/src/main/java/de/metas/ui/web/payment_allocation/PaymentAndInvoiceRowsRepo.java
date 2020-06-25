@@ -79,7 +79,7 @@ public class PaymentAndInvoiceRowsRepo
 
 	public PaymentAndInvoiceRows getByBPartnerId(@NonNull final BPartnerId bPartnerId)
 	{
-		final ZonedDateTime evaluationDate = SystemTime.asZonedDateTime();
+		final ZonedDateTime evaluationDate = SystemTime.asZonedDateTime(); // todo. somehow we should pass Payment date here. I don't think that's possible. Have to talk to mark.
 
 		final List<PaymentToAllocate> paymentsToAllocate = paymentAllocationRepo.retrievePaymentsToAllocate(PaymentToAllocateQuery.builder()
 				.bpartnerId(bPartnerId)
