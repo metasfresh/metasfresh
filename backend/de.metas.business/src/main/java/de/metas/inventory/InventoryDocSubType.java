@@ -1,5 +1,7 @@
 package de.metas.inventory;
 
+import org.compiere.model.X_C_DocType;
+
 import de.metas.util.lang.ReferenceListAwareEnum;
 import de.metas.util.lang.ReferenceListAwareEnums;
 import de.metas.util.lang.ReferenceListAwareEnums.ValuesIndex;
@@ -30,9 +32,10 @@ import lombok.NonNull;
 
 public enum InventoryDocSubType implements ReferenceListAwareEnum
 {
-	InternalUseInventory("IUI"), //
+	InternalUseInventory(X_C_DocType.DOCSUBTYPE_InternalUseInventory), //
 	AggregatedHUInventory("IAH"), //
-	SingleHUInventory("ISH") //
+	SingleHUInventory("ISH"), //
+	VirtualInventory(X_C_DocType.DOCSUBTYPE_VirtualInventory), //
 	;
 
 	@Getter
@@ -48,5 +51,10 @@ public enum InventoryDocSubType implements ReferenceListAwareEnum
 	public static InventoryDocSubType ofCode(@NonNull final String code)
 	{
 		return index.ofCode(code);
+	}
+
+	public String getDocBaseType()
+	{
+		return X_C_DocType.DOCBASETYPE_MaterialPhysicalInventory;
 	}
 }

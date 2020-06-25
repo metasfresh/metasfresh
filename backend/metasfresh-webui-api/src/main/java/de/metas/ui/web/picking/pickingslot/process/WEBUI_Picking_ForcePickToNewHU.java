@@ -22,8 +22,20 @@
 
 package de.metas.ui.web.picking.pickingslot.process;
 
-import ch.qos.logback.classic.Level;
+import java.util.Optional;
+
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.service.ClientId;
+import org.adempiere.warehouse.LocatorId;
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseBL;
+import org.compiere.SpringContextHolder;
+import org.slf4j.Logger;
+
 import com.google.common.collect.ImmutableList;
+
+import ch.qos.logback.classic.Level;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
@@ -33,6 +45,7 @@ import de.metas.handlingunits.inventory.InventoryHeaderCreateRequest;
 import de.metas.handlingunits.inventory.InventoryLineCreateRequest;
 import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
+import de.metas.inventory.InventoryDocSubType;
 import de.metas.inventory.InventoryId;
 import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
@@ -45,21 +58,9 @@ import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import de.metas.util.time.SystemTime;
 import lombok.NonNull;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.service.ClientId;
-import org.adempiere.warehouse.LocatorId;
-import org.adempiere.warehouse.WarehouseId;
-import org.adempiere.warehouse.api.IWarehouseBL;
-import org.compiere.SpringContextHolder;
-import org.slf4j.Logger;
-
-import java.util.Optional;
-
-import static de.metas.document.DocBaseAndSubType.VIRTUAL_INVENTORY;
 
 public class WEBUI_Picking_ForcePickToNewHU extends WEBUI_Picking_PickQtyToNewHU
-	implements IProcessPrecondition
+		implements IProcessPrecondition
 {
 	private static final Logger log = LogManager.getLogger(WEBUI_Picking_ForcePickToNewHU.class);
 
@@ -106,7 +107,7 @@ public class WEBUI_Picking_ForcePickToNewHU extends WEBUI_Picking_PickQtyToNewHU
 			throw new AdempiereException("@QtyCU@ > 0");
 		}
 
-		//1. try to pick from source HUs if any are available
+		// 1. try to pick from source HUs if any are available
 		final ImmutableList<HuId> sourceHUIds = getSourceHUIds();
 
 		Loggables.withLogger(log, Level.DEBUG).addLog(" *** forcePick(): qtyLeftToBePicked: {} sourceHUIds: {}", qtyToPack, sourceHUIds);
@@ -123,7 +124,7 @@ public class WEBUI_Picking_ForcePickToNewHU extends WEBUI_Picking_PickQtyToNewHU
 			}
 		}
 
-		//2. if the qtyToPack couldn't be fulfilled from the available source HUs, try to allocate from the existing HUs
+		// 2. if the qtyToPack couldn't be fulfilled from the available source HUs, try to allocate from the existing HUs
 		final ImmutableList<HuId> availableHUIds = retrieveTopLevelHUIdsAvailableForPicking();
 
 		Loggables.withLogger(log, Level.DEBUG).addLog(" *** forcePick(): qtyLeftToBePicked: {} availableHUsForPicking: {}", qtyToPack, availableHUIds);
@@ -141,7 +142,7 @@ public class WEBUI_Picking_ForcePickToNewHU extends WEBUI_Picking_PickQtyToNewHU
 			}
 		}
 
-		//3. if the qtyToPack is still not met, supply the missing qty via a virtual inventory
+		// 3. if the qtyToPack is still not met, supply the missing qty via a virtual inventory
 		Loggables.withLogger(log, Level.DEBUG).addLog(" *** forcePick(): supplementing qty: {} via inventory! ", qtyToPack);
 
 		final HuId suppliedHUId = createInventoryForMissingQty(qtyToPack);
@@ -150,7 +151,7 @@ public class WEBUI_Picking_ForcePickToNewHU extends WEBUI_Picking_PickQtyToNewHU
 
 		qtyToPack = qtyToPack.subtract(qtyPickedFromSuppliedHU);
 
-		Loggables.withLogger(log, Level.DEBUG).addLog( " *** forcePick(): packToHuId: {}, qtyLeftToBePicked: {}.", packToHuId, qtyToPack);
+		Loggables.withLogger(log, Level.DEBUG).addLog(" *** forcePick(): packToHuId: {}, qtyLeftToBePicked: {}.", packToHuId, qtyToPack);
 
 		return packToHuId;
 	}
@@ -197,8 +198,8 @@ public class WEBUI_Picking_ForcePickToNewHU extends WEBUI_Picking_PickQtyToNewHU
 	private DocTypeId getVirtualInventoryDocTypeId(@NonNull final ClientId clientId, @NonNull final OrgId orgId)
 	{
 		return docTypeDAO.getDocTypeId(DocTypeQuery.builder()
-				.docBaseType(VIRTUAL_INVENTORY.getDocBaseType())
-				.docSubType(VIRTUAL_INVENTORY.getDocSubType())
+				.docBaseType(InventoryDocSubType.VirtualInventory.getDocBaseType())
+				.docSubType(InventoryDocSubType.VirtualInventory.getCode())
 				.adClientId(clientId.getRepoId())
 				.adOrgId(orgId.getRepoId())
 				.build());
