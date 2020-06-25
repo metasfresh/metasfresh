@@ -788,7 +788,37 @@ public class DocumentCollection
 	{
 		// NOTE: assume it's already running in transaction
 
+
 		final TableRecordReference fromRecordRef = getTableRecordReference(fromDocumentPath);
+
+		return duplicateDocumentInTrxGeneric(fromRecordRef, fromDocumentPath.getDocumentId(), fromDocumentPath.getWindowId());
+		//
+		// final Object fromModel = fromRecordRef.getModel(PlainContextAware.newWithThreadInheritedTrx());
+		// final String tableName = InterfaceWrapperHelper.getModelTableName(fromModel);
+		// final PO fromPO = InterfaceWrapperHelper.getPO(fromModel);
+		//
+		// if (!CopyRecordFactory.isEnabledForTableName(tableName))
+		// {
+		// 	throw new AdempiereException(MSG_CLONING_NOT_ALLOWED_FOR_CURRENT_WINDOW);
+		// }
+		//
+		// final PO toPO = TableModelLoader.instance.newPO(Env.getCtx(), tableName, ITrx.TRXNAME_ThreadInherited);
+		// toPO.setDynAttribute(PO.DYNATTR_CopyRecordSupport, CopyRecordFactory.getCopyRecordSupport(tableName)); // set "getValueToCopy" advisor
+		// PO.copyValues(fromPO, toPO, true);
+		// InterfaceWrapperHelper.save(toPO);
+		//
+		// final CopyRecordSupport childCRS = CopyRecordFactory.getCopyRecordSupport(tableName);
+		// childCRS.setAdWindowId(fromDocumentPath.getAdWindowIdOrNull());
+		// childCRS.setParentPO(toPO);
+		// childCRS.setBase(true);
+		// childCRS.copyRecord(fromPO, ITrx.TRXNAME_ThreadInherited);
+		//
+		// return DocumentPath.rootDocumentPath(fromDocumentPath.getWindowId(), DocumentId.of(toPO.get_ID()));
+	}
+
+	public DocumentPath duplicateDocumentInTrxGeneric(final TableRecordReference fromRecordRef, final DocumentId documentId, final WindowId windowId)
+	{
+		// final TableRecordReference fromRecordRef = getTableRecordReference(fromDocumentPath);
 
 		final Object fromModel = fromRecordRef.getModel(PlainContextAware.newWithThreadInheritedTrx());
 		final String tableName = InterfaceWrapperHelper.getModelTableName(fromModel);
@@ -805,12 +835,12 @@ public class DocumentCollection
 		InterfaceWrapperHelper.save(toPO);
 
 		final CopyRecordSupport childCRS = CopyRecordFactory.getCopyRecordSupport(tableName);
-		childCRS.setAdWindowId(fromDocumentPath.getAdWindowIdOrNull());
+		childCRS.setAdWindowId(windowId.toAdWindowId());
 		childCRS.setParentPO(toPO);
 		childCRS.setBase(true);
 		childCRS.copyRecord(fromPO, ITrx.TRXNAME_ThreadInherited);
 
-		return DocumentPath.rootDocumentPath(fromDocumentPath.getWindowId(), DocumentId.of(toPO.get_ID()));
+		return DocumentPath.rootDocumentPath(windowId, DocumentId.of(toPO.get_ID()));
 	}
 
 	public BoilerPlateContext createBoilerPlateContext(final DocumentPath documentPath)
