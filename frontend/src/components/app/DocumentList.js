@@ -77,7 +77,8 @@ export default class DocumentList extends Component {
   /**
    * @method setTableRowEdited
    * @summary ToDo: Describe the method.
-   * @todo TODO: Figure out if we still need this
+   * @todo TODO: This triggers re-fetching of quickactions. We should handle that via redux
+   * or in the quickactions component somehow
    */
   setTableRowEdited = (val) => {
     this.setState(

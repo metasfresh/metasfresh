@@ -389,8 +389,8 @@ class TableItem extends PureComponent {
       focusOnFieldName,
       fieldsByName: cells,
       /*
-       * This function is called when cell's value changes
-       * TODO: Do we still need to call `onItemChange` ?
+       * This function is called when cell's value changes and triggers re-fetching
+       * quickactions in grids.
        */
       onItemChange,
     } = this.props;
