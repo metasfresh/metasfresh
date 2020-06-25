@@ -142,6 +142,7 @@ public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 		final boolean isInboundTrx = qty.signum() > 0;
 
 		final CurrentCost currentCosts = utils.getCurrentCost(request);
+		final CostPrice currentCostPrice = currentCosts.getCostPrice();
 
 		final CostDetailCreateRequest requestEffective;
 
@@ -153,7 +154,7 @@ public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 
 			currentCosts.addWeightedAverage(requestAmt, qty, utils.getQuantityUOMConverter());
 		}
-		else if (qty.isZero())
+		else if (qty.isZero() && request.isInitialCostPrice() && currentCostPrice.getOwnCostPrice().isZero())
 		{
 			currentCosts.addToOwnCostPrice(requestAmt);
 
@@ -161,8 +162,7 @@ public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 		}
 		else
 		{
-			final CostPrice price = currentCosts.getCostPrice();
-			final CostAmount amt = price.multiply(qty).roundToPrecisionIfNeeded(currentCosts.getPrecision());
+			final CostAmount amt = currentCostPrice.multiply(qty).roundToPrecisionIfNeeded(currentCosts.getPrecision());
 			requestEffective = request.withAmount(amt);
 
 			currentCosts.addToCurrentQtyAndCumulate(qty, amt, utils.getQuantityUOMConverter());

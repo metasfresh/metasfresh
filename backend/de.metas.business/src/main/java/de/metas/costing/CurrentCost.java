@@ -156,31 +156,19 @@ public final class CurrentCost
 		assertCostCurrency(amt);
 		Check.assume(qty.signum() != 0, "qty not zero");
 
+		final CostAmount currentAmt;
+
+		currentAmt = costPrice.getOwnCostPrice().multiply(currentQty);
+
+		final CostAmount newAmt = currentAmt.add(amt);
+
 		final Quantity qtyConv = uomConverter.convertQuantityTo(qty, costSegment.getProductId(), uomId);
 		final Quantity newQty = currentQty.add(qtyConv);
-		final CostAmount currentAmt = costPrice.getOwnCostPrice().multiply(currentQty);
-
-		if (!currentQty.isZero())
+		if (newQty.signum() != 0)
 		{
-			final CostAmount newAmt = currentAmt.add(amt);
-
-			if (newQty.signum() != 0)
-			{
-				final CostAmount ownCostPrice = newAmt.divide(newQty, getPrecision());
-				this.costPrice = costPrice.withOwnCostPrice(ownCostPrice);
-			}
+			final CostAmount ownCostPrice = newAmt.divide(newQty, getPrecision());
+			this.costPrice = costPrice.withOwnCostPrice(ownCostPrice);
 		}
-
-		else
-		{
-			final CostAmount newCost = amt.divide(qty, getPrecision());
-			final CostAmount existingCost = costPrice.getOwnCostPrice();
-
-			final CostAmount averageCostPrice = (newCost.add(existingCost)).divide(Quantity.of(2, qty.getUOM()), getPrecision());
-
-			this.costPrice = costPrice.withOwnCostPrice(averageCostPrice);
-		}
-
 		currentQty = newQty;
 
 		addCumulatedAmtAndQty(amt, qtyConv);
@@ -206,7 +194,9 @@ public final class CurrentCost
 
 	private void addToCurrentQty(@NonNull final Quantity qtyToAdd)
 	{
-		currentQty = currentQty.add(qtyToAdd);
+		final Quantity quantityToAdd = currentQty.add(qtyToAdd);
+
+		currentQty = quantityToAdd.signum() > 0 ? quantityToAdd : Quantity.of(BigDecimal.ZERO, qtyToAdd.getUOM());
 	}
 
 	public void setCostPrice(@NonNull final CostPrice costPrice)
