@@ -287,6 +287,28 @@ function mapRows(rows, map, columnInfosByFieldName) {
   });
 }
 
+export function removeRows(rowsList, changedRows) {
+  const removedRows = [];
+  const changedRowsById = changedRows.reduce((acc, id) => {
+    acc[id] = true;
+    return acc;
+  }, {});
+
+  rowsList = rowsList.filter((row) => {
+    if (!changedRowsById[row.id]) {
+      removedRows.push(row.id);
+      return false;
+    }
+
+    return true;
+  });
+
+  return {
+    rows: rowsList,
+    removedRows,
+  };
+}
+
 export function mergeRows({
   toRows,
   fromRows,

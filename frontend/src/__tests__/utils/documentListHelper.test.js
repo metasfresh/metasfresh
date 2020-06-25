@@ -1,9 +1,19 @@
 import React from 'react';
-import { List } from 'immutable';
-import { mergeRows, formatDateWithZeros } from '../../utils/documentListHelper';
+import { removeRows, mergeRows, formatDateWithZeros } from '../../utils/documentListHelper';
 
 describe('DocumentList helpers', () => {
   it.todo('Row helpers - mergeRows');
+
+  describe('Row helpers', () => {
+    it('removes rows correctly', () => {
+      const l = [{ id: '1' }, { id: '2' }];
+      const remove = ['1'];
+      const { rows, removedRows } = removeRows(l, remove);
+
+      expect(removedRows.length).toBe(1);
+      expect(rows.length).toBe(1);
+    }); 
+  })
 
   describe('Date manipulation function formatDateWithZeros', () => {
     it('should format corectly the date when only one char is inputed for month or day', async () => {
