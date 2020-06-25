@@ -157,8 +157,19 @@ public final class CurrentCost
 		Check.assume(qty.signum() != 0, "qty not zero");
 
 		final CostAmount currentAmt;
-		
-		currentAmt = costPrice.getOwnCostPrice().multiply(currentQty);
+
+		/*
+		 * in case a new inbound request (from M_InventoryLine or M_Match_PO) is added,
+		 * the currentCost calculation must take into account the already existing price even if the existing qty is 0
+		 */
+		if (currentQty.isZero())
+		{
+			currentAmt = costPrice.getOwnCostPrice();
+		}
+		else
+		{
+			currentAmt = costPrice.getOwnCostPrice().multiply(currentQty);
+		}
 
 		final CostAmount newAmt = currentAmt.add(amt);
 
