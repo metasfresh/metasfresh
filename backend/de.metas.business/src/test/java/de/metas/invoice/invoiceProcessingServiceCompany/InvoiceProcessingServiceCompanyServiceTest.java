@@ -1,45 +1,5 @@
 package de.metas.invoice.invoiceProcessingServiceCompany;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.ZoneId;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.ad.wrapper.POJOLookupMap;
-import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.test.AdempiereTestWatcher;
-import org.compiere.SpringContextHolder;
-import org.compiere.model.I_AD_Org;
-import org.compiere.model.I_AD_OrgInfo;
-import org.compiere.model.I_C_BPartner_Location;
-import org.compiere.model.I_C_Location;
-import org.compiere.model.I_C_Tax;
-import org.compiere.model.I_C_TaxCategory;
-import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_InvoiceProcessingServiceCompany;
-import org.compiere.model.I_InvoiceProcessingServiceCompany_BPartnerAssignment;
-import org.compiere.model.I_M_PriceList;
-import org.compiere.model.I_M_PriceList_Version;
-import org.compiere.model.I_M_PricingSystem;
-import org.compiere.model.I_M_Product;
-import org.compiere.model.I_M_ProductPrice;
-import org.compiere.model.X_C_Tax;
-import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.bpartner.BPartnerId;
@@ -76,6 +36,45 @@ import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.ad.wrapper.POJOLookupMap;
+import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.test.AdempiereTestWatcher;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_AD_Org;
+import org.compiere.model.I_AD_OrgInfo;
+import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_Location;
+import org.compiere.model.I_C_Tax;
+import org.compiere.model.I_C_TaxCategory;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_InvoiceProcessingServiceCompany;
+import org.compiere.model.I_InvoiceProcessingServiceCompany_BPartnerAssignment;
+import org.compiere.model.I_M_PriceList;
+import org.compiere.model.I_M_PriceList_Version;
+import org.compiere.model.I_M_PricingSystem;
+import org.compiere.model.I_M_Product;
+import org.compiere.model.I_M_ProductPrice;
+import org.compiere.model.X_C_Tax;
+import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -87,12 +86,12 @@ import lombok.Singular;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -133,7 +132,8 @@ public class InvoiceProcessingServiceCompanyServiceTest
 		@Builder(builderMethodName = "config", builderClassName = "ConfigBuilder")
 		private void createConfig(
 				@NonNull final String feePercentageOfGrandTotal,
-				@NonNull @Singular final Set<BPartnerId> customerIds)
+				@NonNull @Singular final Set<BPartnerId> customerIds,
+				@NonNull final ZonedDateTime validFrom)
 		{
 			Check.assumeNotEmpty(customerIds, "customerIds is not empty");
 
@@ -142,7 +142,7 @@ public class InvoiceProcessingServiceCompanyServiceTest
 			configRecord.setServiceCompany_BPartner_ID(serviceCompanyBPartnerId.getRepoId());
 			configRecord.setServiceInvoice_DocType_ID(serviceInvoiceDocTypeId.getRepoId());
 			configRecord.setServiceFee_Product_ID(serviceFeeProductId.getRepoId());
-			configRecord.setFeePercentageOfGrandTotal(new BigDecimal(feePercentageOfGrandTotal));
+			configRecord.setValidFrom(TimeUtil.asTimestamp(validFrom));
 			saveRecord(configRecord);
 
 			for (final BPartnerId customerId : customerIds)
@@ -151,6 +151,7 @@ public class InvoiceProcessingServiceCompanyServiceTest
 				assignmentRecord.setIsActive(true);
 				assignmentRecord.setInvoiceProcessingServiceCompany_ID(configRecord.getInvoiceProcessingServiceCompany_ID());
 				assignmentRecord.setC_BPartner_ID(customerId.getRepoId());
+				assignmentRecord.setFeePercentageOfGrandTotal(new BigDecimal(feePercentageOfGrandTotal));
 				saveRecord(assignmentRecord);
 
 			}
@@ -162,6 +163,7 @@ public class InvoiceProcessingServiceCompanyServiceTest
 			config()
 					.feePercentageOfGrandTotal("2")
 					.customerId(BPartnerId.ofRepoId(2))
+					.validFrom(LocalDate.parse("2020-04-30").atStartOfDay(ZoneId.of("UTC+5")))
 					.build();
 
 			final Optional<InvoiceProcessingFeeCalculation> result = invoiceProcessingServiceCompanyService.computeFee(InvoiceProcessingFeeComputeRequest.builder()
@@ -219,6 +221,27 @@ public class InvoiceProcessingServiceCompanyServiceTest
 			config()
 					.feePercentageOfGrandTotal("2")
 					.customerId(BPartnerId.ofRepoId(99999999))
+					.validFrom(LocalDate.parse("2020-04-30").atStartOfDay(ZoneId.of("UTC+5")))
+					.build();
+
+			final Optional<InvoiceProcessingFeeCalculation> result = invoiceProcessingServiceCompanyService.computeFee(InvoiceProcessingFeeComputeRequest.builder()
+					.orgId(OrgId.ofRepoId(1))
+					.evaluationDate(LocalDate.parse("2020-04-30").atStartOfDay(ZoneId.of("UTC+5")))
+					.customerId(BPartnerId.ofRepoId(2))
+					.invoiceId(InvoiceId.ofRepoId(3))
+					.invoiceGrandTotal(Amount.of(100, CurrencyCode.EUR))
+					.build());
+
+			assertThat(result).isEmpty();
+		}
+
+		@Test
+		public void customerAssignedButNotYetValidFrom()
+		{
+			config()
+					.feePercentageOfGrandTotal("2")
+					.customerId(BPartnerId.ofRepoId(2))
+					.validFrom(LocalDate.parse("3020-04-30").atStartOfDay(ZoneId.of("UTC+5")))
 					.build();
 
 			final Optional<InvoiceProcessingFeeCalculation> result = invoiceProcessingServiceCompanyService.computeFee(InvoiceProcessingFeeComputeRequest.builder()
