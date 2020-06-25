@@ -19,6 +19,7 @@ import de.metas.printing.printingdata.PrintingData;
 import de.metas.printing.printingdata.PrintingDataFactory;
 import de.metas.printing.printingdata.PrintingDataToPDFWriter;
 import de.metas.printing.printingdata.PrintingSegment;
+import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -152,7 +153,11 @@ public class PrintJobLinesAggregator implements IPrintJobLinesAggregator
 			@NonNull final I_C_Print_Job_Line jobLine,
 			@NonNull final Mutable<ArrayKey> precedingKey)
 	{
-		final PrintingData printingData = printingDataFactory.createPrintingDataForPrintJobLine(jobLine, printCtx.getHostKey());
+
+		final PrintingData printingData = printingDataFactory.createPrintingDataForPrintJobLine(
+				jobLine,
+				UserId.ofRepoIdOrNull(printJobInstructions.getAD_User_ToPrint_ID()),
+				printCtx.getHostKey());
 
 		//
 		// Add ArchiveParts to internal map

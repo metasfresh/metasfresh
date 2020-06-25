@@ -22,6 +22,7 @@
 
 package de.metas.printing.printingdata;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.document.archive.api.ArchiveFileNameService;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
 import de.metas.organization.OrgId;
@@ -110,15 +111,16 @@ class PrintingDataFactoryTest
 		saveRecord(printingQueueRecord);
 
 		// when
-		final PrintingData printingData = printingDataFactory.createPrintingDataForQueueItem(printingQueueRecord);
+		final ImmutableList<PrintingData> printingData = printingDataFactory.createPrintingDataForQueueItem(printingQueueRecord);
 
 		// then
-		assertThat(printingData.hasData()).isTrue();
-		assertThat(printingData.getPrintingQueueItemId()).isEqualTo(PrintingQueueItemId.ofRepoId(printingQueueRecord.getC_Printing_Queue_ID()));
-		assertThat(printingData.getDocumentFileName()).isEqualTo("C_Order-100007.pdf"); // the file name is not so nice, because there is not documentName, docType etc set up
-		assertThat(printingData.getNumberOfPages()).isEqualTo(3);
-		assertThat(printingData.getOrgId()).isEqualTo(OrgId.ofRepoId(23));
-		assertThat(printingData.getSegments()).isNotEmpty()
+		assertThat(printingData).hasSize(1);
+		assertThat(printingData.get(0).hasData()).isTrue();
+		assertThat(printingData.get(0).getPrintingQueueItemId()).isEqualTo(PrintingQueueItemId.ofRepoId(printingQueueRecord.getC_Printing_Queue_ID()));
+		assertThat(printingData.get(0).getDocumentFileName()).isEqualTo("C_Order-100007.pdf"); // the file name is not so nice, because there is not documentName, docType etc set up
+		assertThat(printingData.get(0).getNumberOfPages()).isEqualTo(3);
+		assertThat(printingData.get(0).getOrgId()).isEqualTo(OrgId.ofRepoId(23));
+		assertThat(printingData.get(0).getSegments()).isNotEmpty()
 				.extracting("pageFrom", "pageTo", "printerRoutingId.repoId")
 				.containsExactly(tuple(1, 3, printerRouting.getAD_PrinterRouting_ID()));
 	}

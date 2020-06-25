@@ -23,16 +23,15 @@ package de.metas.printing.api;
  */
 
 import de.metas.adempiere.service.PrinterRoutingsQuery;
-import de.metas.printing.OutputType;
 import de.metas.printing.model.I_C_Print_Job_Line;
 import de.metas.printing.model.I_C_Printing_Queue;
 import de.metas.printing.spi.IPrintingQueueHandler;
 import de.metas.util.ISingletonService;
+import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_AD_Archive;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 
@@ -75,6 +74,8 @@ public interface IPrintingQueueBL extends ISingletonService
 	 */
 	PrintingQueueProcessingInfo createPrintingQueueProcessingInfo(Properties ctx, IPrintingQueueQuery printingQueueQuery);
 
+	PrintingQueueProcessingInfo createPrintingQueueProcessingInfo(@NonNull I_C_Printing_Queue printingQueueRecord);
+
 	/**
 	 * Compute and set the aggregation key for the given item. Items with different aggregation keys can't be aggregated into the same print job.
 	 * <p>
@@ -100,13 +101,11 @@ public interface IPrintingQueueBL extends ISingletonService
 	 * another user, and that's a big difference to creating one for ourselves, as we do not know the other user's <code>HostKey</code>.
 	 * <p>
 	 * Also see
-	 * {@link IPrintJobBL#createPrintJobInstructions(int, boolean, I_C_Print_Job_Line, I_C_Print_Job_Line, int)}
+	 * {@link IPrintJobBL#createPrintJobInstructions(de.metas.user.UserId, boolean, I_C_Print_Job_Line, I_C_Print_Job_Line, int)}
 	 * <p>
 	 * Note 2: this method does <b>not</b> save the given {@code item}.
 	 */
 	void setPrintoutForOtherUsers(I_C_Printing_Queue item, Set<Integer> userToPrintIds);
 
 	PrinterRoutingsQuery createPrinterRoutingsQueryForItem(I_C_Printing_Queue item);
-
-	Optional<OutputType> retrieveOutputTypeFor(I_C_Printing_Queue item);
 }

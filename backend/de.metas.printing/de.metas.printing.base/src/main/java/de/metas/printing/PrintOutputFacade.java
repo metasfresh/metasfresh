@@ -79,28 +79,30 @@ public class PrintOutputFacade
 					logger.debug("According to IPrintingQueueSource, C_Printing_Queue is already printed, maybe in meantime; -> skipping");// (i.e. it was processed as a related item)
 					continue;
 				}
-				final PrintingData printingData = printingDataFactory.createPrintingDataForQueueItem(item);
-
-				final PrintingData printingDataToStore = printingData.onlyWithType(OutputType.Store);
-				final boolean hasSegmentsToStoreOnDisk = !printingDataToStore.getSegments().isEmpty();
-				if (hasSegmentsToStoreOnDisk)
+				final ImmutableList<PrintingData> printingData = printingDataFactory.createPrintingDataForQueueItem(item);
+				for (PrintingData printingDataItem : printingData)
 				{
-					logger.debug("At least a part of C_Printing_Queue shall be stored directly to disk; -> invoke printingDataToPDFFileStorer; printingData={}; ", printingData);
-					storePDFAndFireEvent(source, item, printingDataToStore);
-					source.markPrinted(item);
-				}
+					final PrintingData printingDataToStore = printingDataItem.onlyWithType(OutputType.Store);
+					final boolean hasSegmentsToStoreOnDisk = !printingDataToStore.getSegments().isEmpty();
+					if (hasSegmentsToStoreOnDisk)
+					{
+						logger.debug("At least a part of C_Printing_Queue shall be stored directly to disk; -> invoke printingDataToPDFFileStorer; printingData={}; ", printingData);
+						storePDFAndFireEvent(source, item, printingDataToStore);
+						source.markPrinted(item);
+					}
 
-				// with there is a config with a specific hostKey, then printingData.getSegments() might be empty, but still we might need print-jobs
-				if (printingData.getSegments().isEmpty() || printingData.getSegments().size() != printingDataToStore.getSegments().size())
-				{
-					logger.debug("Also invoke printJobBL, in case there are also items to be printed");
+					// with there is a config with a specific hostKey, then printingData.getSegments() might be empty, but still we might need print-jobs
+					if (printingDataItem.getSegments().isEmpty() || printingDataItem.getSegments().size() != printingDataToStore.getSegments().size())
+					{
+						logger.debug("Also invoke printJobBL, in case there are also items to be printed");
 
-					// task: 08958: note that that all items' related items have the same copies value as item
-					final PlainPrintingQueueSource plainSource = new PlainPrintingQueueSource(
-							item,
-							source.createRelatedItemsIterator(item),
-							source.getProcessingInfo());
-					printJobBL.createPrintJobs(plainSource, printJobContext);
+						// task: 08958: note that that all items' related items have the same copies value as item
+						final PlainPrintingQueueSource plainSource = new PlainPrintingQueueSource(
+								item,
+								source.createRelatedItemsIterator(item),
+								source.getProcessingInfo());
+						printJobBL.createPrintJobs(plainSource, printJobContext);
+					}
 				}
 			}
 		}
@@ -121,7 +123,7 @@ public class PrintOutputFacade
 		{
 			archiveEventManager.firePrintOut(
 					item.getAD_Archive(),
-					UserId.ofRepoId(source.getProcessingInfo().getAD_User_PrintJob_ID()),
+					source.getProcessingInfo().getAD_User_PrintJob_ID(),
 					printerName,
 					IArchiveEventManager.COPIES_ONE,
 					IArchiveEventManager.STATUS_Success);

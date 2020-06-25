@@ -22,11 +22,11 @@ package de.metas.printing.api.impl;
  * #L%
  */
 
-
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
+import de.metas.user.UserId;
 import org.adempiere.model.InterfaceWrapperHelper;
 
 import com.google.common.collect.ImmutableList;
@@ -42,12 +42,11 @@ import lombok.NonNull;
  * Used for creating a print job for a single printing queue item.
  *
  * @author ad
- *
  */
 public class SingletonPrintingQueueSource extends AbstractPrintingQueueSource
 {
 	private final I_C_Printing_Queue item;
-	private final int adUserPrintJobId;
+	private final UserId adUserPrintJobId;
 	private final String trxName;
 
 	/**
@@ -60,18 +59,18 @@ public class SingletonPrintingQueueSource extends AbstractPrintingQueueSource
 	 */
 	private boolean temporaryPrinted = false;
 
-	private final List<Integer> AD_User_ToPrint_IDs;
+	private final ImmutableList<UserId> AD_User_ToPrint_IDs;
 
 	/**
 	 * Create a new instance
 	 *
-	 * @param item the item to create the printjob for
+	 * @param item             the item to create the printjob for
 	 * @param adUserPrintJobId the <b>printjob</b>-user. If the queue has {@link I_C_Printing_Queue#isPrintoutForOtherUser()} <code>= true</code>, then the print job's print-job-instruction(s) will
-	 *            not have this user-ID, but the items' reciepents' user-IDs.
+	 *                         not have this user-ID, but the items' reciepents' user-IDs.
 	 */
 	public SingletonPrintingQueueSource(
 			@NonNull final I_C_Printing_Queue item,
-			final int adUserPrintJobId)
+			final UserId adUserPrintJobId)
 	{
 		this.item = item;
 		this.adUserPrintJobId = adUserPrintJobId;
@@ -80,11 +79,11 @@ public class SingletonPrintingQueueSource extends AbstractPrintingQueueSource
 		if (item.isPrintoutForOtherUser())
 		{
 			final IPrintingDAO printingDAO = Services.get(IPrintingDAO.class);
-			AD_User_ToPrint_IDs = ImmutableList.<Integer> copyOf(printingDAO.retrievePrintingQueueRecipientIDs(item));
+			AD_User_ToPrint_IDs = ImmutableList.copyOf(printingDAO.retrievePrintingQueueRecipientIDs(item));
 		}
 		else
 		{
-			AD_User_ToPrint_IDs = ImmutableList.<Integer> of(adUserPrintJobId);
+			AD_User_ToPrint_IDs = ImmutableList.of(adUserPrintJobId);
 		}
 	}
 

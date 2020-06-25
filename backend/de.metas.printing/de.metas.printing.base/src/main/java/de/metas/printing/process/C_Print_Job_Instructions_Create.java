@@ -23,6 +23,7 @@ package de.metas.printing.process;
  */
 
 
+import de.metas.user.UserId;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -100,7 +101,7 @@ public class C_Print_Job_Instructions_Create extends JavaProcess
 			p_SeqNo_To = IPrintingDAO.SEQNO_Last;
 		}
 
-		final int adUserToPrintId = getAD_User_ID();
+		final UserId adUserToPrintId = UserId.ofRepoIdOrNull(getAD_User_ID());
 
 		// create those instructions just for us and don't let some other printing client running with the same user-id snatch it from us.
 		final boolean createWithSpecificHostKey = true;
