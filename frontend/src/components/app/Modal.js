@@ -479,7 +479,13 @@ class Modal extends Component {
    * @summary ToDo: Describe the method
    */
   renderPanel = () => {
-    const { modalTitle, modalType, isDocumentNotSaved, layout } = this.props;
+    const {
+      modalTitle,
+      modalType,
+      isDocumentNotSaved,
+      layout,
+      indicator,
+    } = this.props;
     const { scrolled, pending, isNewDoc, isTooltipShow } = this.state;
 
     const applyHandler =
@@ -585,7 +591,7 @@ class Modal extends Component {
             </div>
           </div>
 
-          <Indicator isDocumentNotSaved={isDocumentNotSaved} />
+          <Indicator {...{ isDocumentNotSaved, indicator }} />
 
           <div
             className="panel-modal-content js-panel-modal-content
