@@ -1,6 +1,7 @@
 import { produce, original } from 'immer';
 import { get, difference, forEach } from 'lodash';
 import { createSelector } from 'reselect';
+import merge from 'merge';
 
 import * as types from '../constants/ActionTypes';
 import { doesSelectionExist } from '../utils/documentListHelper';
@@ -173,6 +174,23 @@ const reducer = produce((draftState, action) => {
         rows,
         ...updatedSelected,
       };
+
+      return;
+    }
+
+    case types.UPDATE_TABLE_ROW_PROPERTY: {
+      const { id, rowId, change } = action.payload;
+      const keyProperty = draftState[id].keyProperty;
+      let rows = original(draftState[id].rows);
+
+      const newRows = rows.map((row) => {
+        if (row[keyProperty] === rowId) {
+          return merge.recursive(true, row, change);
+        }
+        return row;
+      });
+
+      draftState[id].rows = newRows;
 
       return;
     }

@@ -434,7 +434,11 @@ export function mapIncluded(node, indent, isParentLastChild = false) {
   let result = [];
 
   // because immer freezes objects
-  node = deepUnfreeze(node);
+  try {
+    node = deepUnfreeze(node);
+  } catch (e) {
+    // deepUnfreze can't cope with Moment in some cases;
+  }
 
   const nodeCopy = {
     ...node,

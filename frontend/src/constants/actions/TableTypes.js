@@ -36,7 +36,7 @@ export const UPDATE_TABLE_SELECTION = 'UPDATE_TABLE_SELECTION';
 
 /**
  * @constant
- * @type {string} ToDo: Description for the constant.
+ * @type {string} deselect rows
  */
 export const DESELECT_TABLE_ITEMS = 'DESELECT_TABLE_ITEMS';
 
@@ -48,6 +48,12 @@ export const COLLAPSE_TABLE_ROWS = 'COLLAPSE_TABLE_ROWS';
 
 /**
  * @constant
- * @type {string} removes tab's quick actions on unmount.
+ * @type {string} update table data of a tab table
  */
 export const UPDATE_TAB_ROWS_DATA = 'UPDATE_TAB_ROWS_DATA';
+
+/**
+ * @constant
+ * @type {string} update single property of a table row
+ */
+export const UPDATE_TABLE_ROW_PROPERTY = 'UPDATE_TABLE_ROW_PROPERTY';

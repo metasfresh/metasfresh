@@ -2,21 +2,26 @@ import PropTypes from 'prop-types';
 import React, { PureComponent } from 'react';
 import { connect } from 'react-redux';
 import Moment from 'moment-timezone';
-import {
-  openModal,
-  patch,
-  updatePropertyValue,
-} from '../../actions/WindowActions';
+import _ from 'lodash';
+
 import { getZoomIntoWindow } from '../../api';
-import { convertTimeStringToMoment } from '../../utils/documentListHelper';
-import { formatDateWithZeros } from '../../utils/documentListHelper';
-import RawWidget from './RawWidget';
+import {
+  convertTimeStringToMoment,
+  formatDateWithZeros,
+} from '../../utils/documentListHelper';
 import {
   validatePrecision,
   formatValueByWidgetType,
 } from '../../utils/widgetHelper';
 import { DATE_FIELD_TYPES, TIME_FIELD_TYPES } from '../../constants/Constants';
-import _ from 'lodash';
+import { getTableId } from '../../reducers/tables';
+import {
+  openModal,
+  patch,
+  updatePropertyValue,
+} from '../../actions/WindowActions';
+
+import RawWidget from './RawWidget';
 
 const dateParse = [...DATE_FIELD_TYPES, ...TIME_FIELD_TYPES];
 
@@ -86,7 +91,6 @@ class MasterWidget extends PureComponent {
       widgetType,
       dataId,
       windowType,
-      updatePropertyValue,
       patch,
       rowId,
       tabId,
@@ -101,8 +105,10 @@ class MasterWidget extends PureComponent {
     let ret = null;
     let isEdit = viewId ? true : false;
 
-    widgetType !== 'Button' &&
-      updatePropertyValue(property, value, tabId, currRowId, isModal, entity);
+    // TODO: Leaving this for now in case this is used in some edga cases
+    // but seems like a duplication of what we have in `handleChange`.
+    // widgetType !== 'Button' &&
+    //   updatePropertyValue(property, value, tabId, currRowId, isModal, entity);
 
     ret = patch(
       entity,
@@ -140,6 +146,9 @@ class MasterWidget extends PureComponent {
       widgetType,
       precision,
       entity,
+      viewId,
+      dataId,
+      windowType,
     } = this.props;
     // Add special case of formating for the case when people input 04.7.2020 to be transformed to 04.07.2020
     val = widgetType === 'Date' ? await formatDateWithZeros(val) : val;
@@ -151,8 +160,23 @@ class MasterWidget extends PureComponent {
       ) {
         return;
       }
-      let currRowId = rowId === 'NEW' ? relativeDocId : rowId;
-      updatePropertyValue(property, val, tabId, currRowId, isModal, entity);
+      const currRowId = rowId === 'NEW' ? relativeDocId : rowId;
+      const tableId = getTableId({
+        windowId: windowType,
+        docId: dataId,
+        tabId,
+        viewId,
+      });
+
+      updatePropertyValue({
+        property,
+        value: val,
+        tabId,
+        rowId: currRowId,
+        isModal,
+        entity,
+        tableId,
+      });
     });
   };
 
