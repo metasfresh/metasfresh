@@ -1,16 +1,26 @@
+/*
+ * #%L
+ * de.metas.handlingunits.base
+ * %%
+ * Copyright (C) 2020 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.handlingunits.allocation.spi.impl;
-
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import org.adempiere.mm.attributes.spi.impl.WeightTareAttributeValueCallout;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_M_Attribute;
-
-import com.google.common.annotations.VisibleForTesting;
 
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHandlingUnitsBL;
@@ -31,29 +41,20 @@ import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.storage.IHUItemStorage;
 import de.metas.quantity.Quantity;
+import de.metas.uom.IUOMDAO;
+import de.metas.uom.UOMPrecision;
+import de.metas.util.NumberUtils;
 import de.metas.util.Services;
+import lombok.NonNull;
+import org.adempiere.mm.attributes.spi.impl.WeightTareAttributeValueCallout;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_M_Attribute;
 
-/*
- * #%L
- * de.metas.handlingunits.base
- * %%
- * Copyright (C) 2017 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * This listener plays an important role for aggregate HUs.
@@ -63,7 +64,7 @@ import de.metas.util.Services;
  * <li>Preserve the original CU-per-TU qty by splitting off partial quantities from the aggregate HU into a "real" HU.
  *
  * @author metas-dev <dev@metasfresh.com>
- * @task https://github.com/metasfresh/metasfresh/issues/460
+ * task: https://github.com/metasfresh/metasfresh/issues/460
  */
 public class AggregateHUTrxListener implements IHUTrxListener
 {
@@ -76,13 +77,20 @@ public class AggregateHUTrxListener implements IHUTrxListener
 
 	/**
 	 * Creates a key used to put and get the CU quantity per HA item.
-	 *
-	 * @param haItem
-	 * @return
 	 */
-	public static String mkItemCuQtyPropertyKey(final I_M_HU_Item haItem)
+	@NonNull
+	public static String mkItemCuQtyPropertyKey(@NonNull final I_M_HU_Item haItem)
 	{
 		return AggregateHUTrxListener.class.getSimpleName() + "_" + I_M_HU_Item.Table_Name + "_ID_" + haItem.getM_HU_Item_ID() + "_CU_QTY";
+	}
+
+	/**
+	 * Creates a key used to put and get the qty of TUs to split off this HA item.
+	 */
+	@NonNull
+	public static String mkQtyTUsToSplitPropertyKey(@NonNull final I_M_HU_Item haItem)
+	{
+		return AggregateHUTrxListener.class.getSimpleName() + "_" + I_M_HU_Item.Table_Name + "_ID_" + haItem.getM_HU_Item_ID() + "_QTY_TUS_TO_SPLIT";
 	}
 
 	private AggregateHUTrxListener()
@@ -148,45 +156,68 @@ public class AggregateHUTrxListener implements IHUTrxListener
 			return; // nothing to do
 		}
 
-		final IHUTransactionCandidate trx = itemId2Trx.get(item.getM_HU_Item_ID());
-		final BigDecimal storageQty = storage.getQty(trx.getProductId(), trx.getQuantity().getUOM());
-
-		// get the new TU quantity, which as TUs go needs to be an integer
-		final BigDecimal newTuQty = storageQty.divide(cuQtyBeforeLoad,
-				0,
-				RoundingMode.FLOOR);
-
-		item.setQty(newTuQty);
-		InterfaceWrapperHelper.save(item);
-
-		// find out if we need to perform a split in order to preserve the former CU-per-TU quantity
-		final BigDecimal splitQty = computeSplitQty(storageQty, cuQtyBeforeLoad);
-
-		if (splitQty.signum() != 0)
+		// If we split exactly N TUs (integer), there's no need for all the dance to figure out the new correct # of TUs for the qty, and splitting the extra qty.
+		// We shall just update the new qty of TUs in this aggregate TU.
+		final BigDecimal qtyTUsToSplit = huContext.getProperty(AggregateHUTrxListener.mkQtyTUsToSplitPropertyKey(item));
+		if (qtyTUsToSplit != null && qtyTUsToSplit.signum() != 0)
 		{
-			// the *actual* newTuQty would not be a natural number, so we need to initiate another split now
-			final I_M_HU_PI_Item splitHUPIItem = Services.get(IHandlingUnitsBL.class).getPIItem(item);
+			final BigDecimal newTuQty = item.getQty().subtract(qtyTUsToSplit);
+			item.setQty(newTuQty);
+			InterfaceWrapperHelper.save(item);
+		}
+		else
+		{
+			final IHUTransactionCandidate trx = itemId2Trx.get(item.getM_HU_Item_ID());
+			final BigDecimal storageQty = storage.getQty(trx.getProductId(), trx.getQuantity().getUOM());
 
-			// create a handling unit item
-			final I_M_HU_Item splitHUParentItem = handlingUnitsDAO.createHUItemIfNotExists(item.getM_HU(), splitHUPIItem).getLeft();
+			// get the new TU quantity, which as TUs go needs to be an integer
+			final BigDecimal newTuQty = storageQty.divide(cuQtyBeforeLoad,
+					0,
+					RoundingMode.FLOOR);
 
-			// the source is the aggregate item's aggregate VHU
-			final HUListAllocationSourceDestination source = HUListAllocationSourceDestination.of(handlingUnitsDAO.retrieveIncludedHUs(item));
-			source.setStoreCUQtyBeforeProcessing(false); // don't try it, it will probably fail
+			item.setQty(newTuQty);
+			InterfaceWrapperHelper.save(item);
 
-			// the destination is a new HU that shall be attached as a sibling of the aggregate VHU
-			final HUProducerDestination destination = HUProducerDestination.of(splitHUPIItem.getIncluded_HU_PI());
+			// find out if we need to perform a split in order to preserve the former CU-per-TU quantity
+			final IUOMDAO uomDao = Services.get(IUOMDAO.class);
+			final UOMPrecision precision = uomDao.getStandardPrecision(trx.getQuantity().getUomId());
 
-			destination.setParent_HU_Item(splitHUParentItem);
-			final HULoader loader = HULoader.of(source, destination);
+			final BigDecimal storageQtyOfCompleteTUs = newTuQty.multiply(cuQtyBeforeLoad);
+			final BigDecimal qtyToSplit = storageQty.subtract(storageQtyOfCompleteTUs);
 
-			// Create allocation request
-			final IAllocationRequest request = AllocationUtils.createQtyRequest(
-					huContext, 
-					trx.getProductId(), 
-					Quantity.of(splitQty, trx.getQuantity().getUOM()), 
-					huContext.getDate());
-			loader.load(request);
+			final BigDecimal errorMargin = NumberUtils.getErrorMarginForScale(precision.toInt());
+			if (qtyToSplit.compareTo(errorMargin) > 0)
+			{
+				// the *actual* newTuQty would not be a natural number, so we need to initiate another split now
+				final I_M_HU_PI_Item splitHUPIItem = Services.get(IHandlingUnitsBL.class).getPIItem(item);
+
+				// create a handling unit item
+				@SuppressWarnings("ConstantConditions")
+				final I_M_HU_Item splitHUParentItem = handlingUnitsDAO.createHUItemIfNotExists(item.getM_HU(), splitHUPIItem).getLeft();
+
+				// the source is the aggregate item's aggregate VHU
+				final HUListAllocationSourceDestination source = HUListAllocationSourceDestination.of(handlingUnitsDAO.retrieveIncludedHUs(item));
+				source.setStoreCUQtyBeforeProcessing(false); // don't try it, it will probably fail
+
+				// the destination is a new HU that shall be attached as a sibling of the aggregate VHU
+				@SuppressWarnings("ConstantConditions")
+				final HUProducerDestination destination = HUProducerDestination.of(splitHUPIItem.getIncluded_HU_PI());
+
+				destination.setParent_HU_Item(splitHUParentItem);
+				final HULoader loader = HULoader.of(source, destination)
+						.setForceLoad(true)
+						// note for dev: forceLoad is needed here, because if qty is greater than PI qty, we will split the expected 1 TU into 2, and that is wrong logically.
+						// see details in https://github.com/metasfresh/metasfresh/issues/6808#issuecomment-642414037
+						;
+
+				// Create allocation request
+				final IAllocationRequest request = AllocationUtils.createQtyRequest(
+						huContext,
+						trx.getProductId(),
+						Quantity.of(qtyToSplit, trx.getQuantity().getUOM()),
+						huContext.getDate());
+				loader.load(request);
+			}
 		}
 
 		// TODO: i think we can move this shit or something better into a model interceptor that is fired when item.qty is changed
@@ -204,20 +235,5 @@ public class AggregateHUTrxListener implements IHUTrxListener
 				aggregateVHUAttributeStorage.pushUp();
 			}
 		}
-	}
-
-	/**
-	 * Returns the quantity that needs to be split off the current storage quantity in order to achieve the same CU-per-TU quantity which the aggregate HU in question used to have before the loading operation which lead to this listener being called.
-	 *
-	 * @param storageQty the current qty re have in the storage
-	 * @param cuQtyBeforeLoad the former CU-per-TU qty, before the loading took place
-	 * @return
-	 *
-	 * @task https://github.com/metasfresh/metasfresh/issues/1203
-	 */
-	@VisibleForTesting
-	/* package */ BigDecimal computeSplitQty(final BigDecimal storageQty, final BigDecimal cuQtyBeforeLoad)
-	{
-		return storageQty.remainder(cuQtyBeforeLoad);
 	}
 }

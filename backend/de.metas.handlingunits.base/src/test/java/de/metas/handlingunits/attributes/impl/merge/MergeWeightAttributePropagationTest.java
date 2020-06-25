@@ -32,7 +32,6 @@ import java.util.List;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.junit.Assert;
-import org.junit.Test;
 
 import com.google.common.collect.ImmutableList;
 
@@ -42,6 +41,7 @@ import de.metas.handlingunits.attributes.impl.split.SplitWeightAttributePropagat
 import de.metas.handlingunits.attributes.impl.split.SplitWeightTareAdjustPropagationTest;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.X_M_HU;
+import org.junit.jupiter.api.Test;
 
 /**
  * 

@@ -418,7 +418,8 @@ public final class StringUtils
 	 * @param s original string
 	 * @return string without diacritics
 	 */
-	// note: we just moved the method here, and left it unchanges. as of now idk why all this code is commented out
+	@Deprecated
+	// note: we just moved the method here, and left it unchanged. as of now idk why all this code is commented out
 	public static String stripDiacritics(String s)
 	{
 		/* JAVA5 behaviour */
@@ -439,10 +440,6 @@ public final class StringUtils
 	 * </pre>
 	 * <p>
 	 * Note: if any parameter is <code>null</code>, then <code>""</code> is assumed isntead.
-	 *
-	 * @param string
-	 * @param overlay
-	 * @return
 	 */
 	public static String overlayAtEnd(final String string, final String overlay)
 	{
@@ -460,7 +457,7 @@ public final class StringUtils
 	 * Check if given string contains digits only.
 	 *
 	 * @param stringToVerify
-	 * @return {@link code true} if the given string consists only of digits (i.e. contains no letter, whitespace decimal point etc).
+	 * @return {@code true} if the given string consists only of digits (i.e. contains no letter, whitespace decimal point etc).
 	 */
 	public static boolean isNumber(final String stringToVerify)
 	{
@@ -657,9 +654,6 @@ public final class StringUtils
 
 	/**
 	 * remove white space from the begin
-	 *
-	 * @param in
-	 * @return
 	 */
 	public static String cleanBeginWhitespace(String in)
 	{
@@ -677,9 +671,6 @@ public final class StringUtils
 
 	/**
 	 * @param value       note: <code>null</code> is threaded like ""
-	 * @param size
-	 * @param description
-	 * @return
 	 */
 	public static String lpadZero(final String value, final int size, final String description)
 	{
@@ -691,11 +682,6 @@ public final class StringUtils
 
 	/**
 	 * Add 0 digits at the end of a String until it gets to the size given as paraameter.
-	 *
-	 * @param value
-	 * @param size
-	 * @param description
-	 * @return
 	 */
 	public static String rpadZero(final String value, final int size, final String description)
 	{

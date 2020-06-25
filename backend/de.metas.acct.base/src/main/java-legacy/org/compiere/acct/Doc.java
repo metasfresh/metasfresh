@@ -749,7 +749,15 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 				services.markIssueDeprecated(previousPostingErrorIssueId);
 			}
 
-			sql.append(", ").append(COLUMNNAME_PostingError_Issue_ID).append("=").append(postingErrorIssueId.getRepoId());
+			if (postingErrorIssueId != null)
+			{
+
+				sql.append(", ").append(COLUMNNAME_PostingError_Issue_ID).append("=").append(postingErrorIssueId.getRepoId());
+			}
+			else
+			{
+				sql.append(", ").append(COLUMNNAME_PostingError_Issue_ID).append(" = NULL ");
+			}
 		}
 
 		sql.append("\n WHERE ").append(keyColumnName).append("=").append(recordId);

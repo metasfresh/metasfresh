@@ -22,38 +22,30 @@ package de.metas.printing.api;
  * #L%
  */
 
-
-import java.util.Iterator;
-
 import de.metas.printing.model.I_C_Print_Job;
 import de.metas.printing.model.I_C_Printing_Queue;
+
+import java.util.Iterator;
 
 /**
  * Source of {@link I_C_Printing_Queue} items to be used when generating {@link I_C_Print_Job}s.
  *
  * @author tsa
- *
  */
 public interface IPrintingQueueSource
 {
 	/**
-	 *
 	 * @return the per-source info used to process the queue.
 	 */
 	PrintingQueueProcessingInfo getProcessingInfo();
 
 	/**
 	 * Gets iterator of {@link I_C_Printing_Queue} items which needs to be processed
-	 *
-	 * @return
 	 */
 	Iterator<I_C_Printing_Queue> createItemsIterator();
 
 	/**
 	 * Get iterator of related items of given <code>item</code>. When processing, those related items can be used to group them together into same {@link I_C_Print_Job}.
-	 *
-	 * @param item
-	 * @return
 	 */
 	Iterator<I_C_Printing_Queue> createRelatedItemsIterator(I_C_Printing_Queue item);
 
@@ -62,25 +54,16 @@ public interface IPrintingQueueSource
 	/**
 	 * Check if item was already processed/printed (i.e. included in a printjob)
 	 *
-	 * @param item
 	 * @return true if item already processed/printed
 	 */
 	boolean isPrinted(I_C_Printing_Queue item);
 
 	/**
 	 * Mark given item as processed/printed.
-	 *
+	 * <p>
 	 * NOTE: this method it is also saves the <code>item</code> if necessary.
-	 *
-	 * @param item
 	 */
 	void markPrinted(I_C_Printing_Queue item);
-
-	/**
-	 * count items which needs to be processed
-	 * @return
-	 */
-	int countItems();
 
 	String getName();
 

@@ -1,13 +1,5 @@
 package de.metas.handlingunits.attribute.impl;
 
-
-import org.adempiere.mm.attributes.api.impl.AttributesTestHelper;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_M_Attribute;
-import org.compiere.model.X_M_Attribute;
-import org.junit.Assert;
-import org.junit.Test;
-
 import de.metas.handlingunits.AbstractHUTest;
 import de.metas.handlingunits.attribute.IHUPIAttributesDAO;
 import de.metas.handlingunits.model.I_M_HU_PI;
@@ -15,6 +7,14 @@ import de.metas.handlingunits.model.I_M_HU_PI_Attribute;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.test.misc.builders.HUPIAttributeBuilder;
 import de.metas.util.Services;
+import org.adempiere.mm.attributes.api.impl.AttributesTestHelper;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_M_Attribute;
+import org.compiere.model.X_M_Attribute;
+import org.junit.Assert;
+import org.junit.jupiter.api.Test;
+
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /*
  * #%L
@@ -42,7 +42,6 @@ import de.metas.util.Services;
  * Tests for {@link HUPIAttributesDAO#isTemplateAttribute(I_M_HU_PI_Attribute)}.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 public class HUPIAttributesDAO_isTemplateAttribute_Test extends AbstractHUTest
 {
@@ -82,10 +81,13 @@ public class HUPIAttributesDAO_isTemplateAttribute_Test extends AbstractHUTest
 		Assert.assertEquals("IsTemplateAttribute", isTemplateAttributeExpected, piAttributesDAO.isTemplateAttribute(piAttribute));
 	}
 
-	@Test(expected = NullPointerException.class)
+	@Test
 	public void test_NULL()
 	{
-		piAttributesDAO.isTemplateAttribute(null);
+		assertThatThrownBy(() -> {
+			piAttributesDAO.isTemplateAttribute(null);
+		})
+				.isInstanceOf(NullPointerException.class);
 	}
 
 	@Test

@@ -47,6 +47,8 @@ public class Fresh_All_RepoId_Classes_Test
 				.skip(org.eevolution.api.PPOrderRoutingActivityId.class)
 				.skip(de.metas.material.planning.pporder.PPRoutingActivityId.class)
 				//
+				.skip(de.metas.printing.HardwareTrayId.class)
+				//
 				.test();
 	}
 }

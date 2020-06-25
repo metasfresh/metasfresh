@@ -5,26 +5,18 @@ import java.sql.ResultSet;
 import java.util.Properties;
 
 /** Generated Model for C_PrintPackageData
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
 @SuppressWarnings("javadoc")
 public class X_C_PrintPackageData extends org.compiere.model.PO implements I_C_PrintPackageData, org.compiere.model.I_Persistent 
 {
 
-	/**
-	 *
-	 */
-	private static final long serialVersionUID = -767523702L;
+	private static final long serialVersionUID = 273970225L;
 
     /** Standard Constructor */
     public X_C_PrintPackageData (Properties ctx, int C_PrintPackageData_ID, String trxName)
     {
       super (ctx, C_PrintPackageData_ID, trxName);
-      /** if (C_PrintPackageData_ID == 0)
-        {
-			setC_PrintPackageData_ID (0);
-			setC_Print_Package_ID (0);
-        } */
     }
 
     /** Load Constructor */
@@ -34,16 +26,13 @@ public class X_C_PrintPackageData extends org.compiere.model.PO implements I_C_P
     }
 
 
-    /** Load Meta Data */
-    @Override
-    protected org.compiere.model.POInfo initPO (Properties ctx)
-    {
-      org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
-      return poi;
-    }
+	/** Load Meta Data */
+	@Override
+	protected org.compiere.model.POInfo initPO(Properties ctx)
+	{
+		return org.compiere.model.POInfo.getPOInfo(Table_Name);
+	}
 
-	/** Set Print package data.
-		@param C_PrintPackageData_ID Print package data	  */
 	@Override
 	public void setC_PrintPackageData_ID (int C_PrintPackageData_ID)
 	{
@@ -53,15 +42,10 @@ public class X_C_PrintPackageData extends org.compiere.model.PO implements I_C_P
 			set_ValueNoCheck (COLUMNNAME_C_PrintPackageData_ID, Integer.valueOf(C_PrintPackageData_ID));
 	}
 
-	/** Get Print package data.
-		@return Print package data	  */
 	@Override
-	public int getC_PrintPackageData_ID () 
+	public int getC_PrintPackageData_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_PrintPackageData_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_C_PrintPackageData_ID);
 	}
 
 	@Override
@@ -76,8 +60,6 @@ public class X_C_PrintPackageData extends org.compiere.model.PO implements I_C_P
 		set_ValueFromPO(COLUMNNAME_C_Print_Package_ID, de.metas.printing.model.I_C_Print_Package.class, C_Print_Package);
 	}
 
-	/** Set Druckpaket.
-		@param C_Print_Package_ID Druckpaket	  */
 	@Override
 	public void setC_Print_Package_ID (int C_Print_Package_ID)
 	{
@@ -87,29 +69,20 @@ public class X_C_PrintPackageData extends org.compiere.model.PO implements I_C_P
 			set_Value (COLUMNNAME_C_Print_Package_ID, Integer.valueOf(C_Print_Package_ID));
 	}
 
-	/** Get Druckpaket.
-		@return Druckpaket	  */
 	@Override
-	public int getC_Print_Package_ID () 
+	public int getC_Print_Package_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_Print_Package_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_C_Print_Package_ID);
 	}
 
-	/** Set Print data.
-		@param PrintData Print data	  */
 	@Override
 	public void setPrintData (byte[] PrintData)
 	{
 		set_Value (COLUMNNAME_PrintData, PrintData);
 	}
 
-	/** Get Print data.
-		@return Print data	  */
 	@Override
-	public byte[] getPrintData () 
+	public byte[] getPrintData() 
 	{
 		return (byte[])get_Value(COLUMNNAME_PrintData);
 	}

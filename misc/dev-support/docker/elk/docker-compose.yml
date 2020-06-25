@@ -36,7 +36,7 @@ services:
         max-file: "10"
 
   apm-server:
-    image: docker.elastic.co/apm/apm-server:7.6.2
+    image: docker.elastic.co/apm/apm-server:7.7.1
     restart: always
     depends_on:
       elk:

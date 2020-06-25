@@ -25,6 +25,53 @@ package de.metas.printing.api.impl;
  * #L%
  */
 
+import ch.qos.logback.classic.Level;
+import com.google.common.collect.ImmutableList;
+import de.metas.adempiere.model.I_AD_PrinterRouting;
+import de.metas.adempiere.service.IPrinterRoutingDAO;
+import de.metas.adempiere.service.PrinterRoutingsQuery;
+import de.metas.async.Async_Constants;
+import de.metas.async.model.I_C_Async_Batch;
+import de.metas.cache.CCache;
+import de.metas.document.DocTypeId;
+import de.metas.document.archive.api.IDocOutboundProducerService;
+import de.metas.document.archive.model.I_AD_Archive;
+import de.metas.logging.LogManager;
+import de.metas.organization.OrgId;
+import de.metas.printing.OutputType;
+import de.metas.printing.api.IPrintingDAO;
+import de.metas.printing.api.IPrintingQueueBL;
+import de.metas.printing.api.IPrintingQueueQuery;
+import de.metas.printing.api.IPrintingQueueSource;
+import de.metas.printing.api.PrintingQueueProcessingInfo;
+import de.metas.printing.model.I_AD_PrinterHW;
+import de.metas.printing.model.I_AD_Printer_Matching;
+import de.metas.printing.model.I_C_Printing_Queue;
+import de.metas.printing.model.I_C_Printing_Queue_Recipient;
+import de.metas.printing.spi.IPrintingQueueHandler;
+import de.metas.printing.spi.impl.C_Printing_Queue_RecipientHandler;
+import de.metas.printing.spi.impl.CompositePrintingQueueHandler;
+import de.metas.process.AdProcessId;
+import de.metas.process.IADPInstanceDAO;
+import de.metas.security.RoleId;
+import de.metas.user.UserId;
+import de.metas.util.Check;
+import de.metas.util.Loggables;
+import de.metas.util.Services;
+import lombok.NonNull;
+import org.adempiere.ad.table.api.AdTableId;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.archive.api.IArchiveBL;
+import org.adempiere.archive.api.IArchiveDAO;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
+import org.compiere.model.IQuery;
+import org.compiere.model.I_AD_PInstance;
+import org.compiere.util.Env;
+import org.compiere.util.Util;
+import org.slf4j.Logger;
+
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -33,44 +80,12 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.archive.api.IArchiveBL;
-import org.adempiere.archive.api.IArchiveDAO;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.IQuery;
-import org.compiere.model.I_AD_PInstance;
-import org.compiere.util.Env;
-import org.compiere.util.Util;
-import org.slf4j.Logger;
-
-import com.google.common.collect.ImmutableList;
-
-import ch.qos.logback.classic.Level;
-import de.metas.async.Async_Constants;
-import de.metas.async.model.I_C_Async_Batch;
-import de.metas.document.archive.api.IDocOutboundProducerService;
-import de.metas.document.archive.model.I_AD_Archive;
-import de.metas.logging.LogManager;
-import de.metas.printing.api.IPrintingDAO;
-import de.metas.printing.api.IPrintingQueueBL;
-import de.metas.printing.api.IPrintingQueueQuery;
-import de.metas.printing.api.IPrintingQueueSource;
-import de.metas.printing.api.PrintingQueueProcessingInfo;
-import de.metas.printing.model.I_C_Printing_Queue;
-import de.metas.printing.model.I_C_Printing_Queue_Recipient;
-import de.metas.printing.spi.IPrintingQueueHandler;
-import de.metas.printing.spi.impl.C_Printing_Queue_RecipientHandler;
-import de.metas.printing.spi.impl.CompositePrintingQueueHandler;
-import de.metas.process.IADPInstanceDAO;
-import de.metas.util.Check;
-import de.metas.util.Loggables;
-import de.metas.util.Services;
-import lombok.NonNull;
-
 public class PrintingQueueBL implements IPrintingQueueBL
 {
 	private final static transient Logger logger = LogManager.getLogger(PrintingQueueBL.class);
+
+	private final IPrinterRoutingDAO printerRoutingDAO = Services.get(IPrinterRoutingDAO.class);
+	private final IPrintingDAO printingDAO = Services.get(IPrintingDAO.class);
 
 	/**
 	 * gh #1081: set up our composite handler to always apply {@link C_Printing_Queue_RecipientHandler} after the other handlers
@@ -222,14 +237,14 @@ public class PrintingQueueBL implements IPrintingQueueBL
 		final boolean createWithSpecificHostKey;
 		if (firstItem.isPrintoutForOtherUser())
 		{
-			printToUserIDs = ImmutableList.<Integer> copyOf(printingDAO.retrievePrintingQueueRecipientIDs(firstItem));
+			printToUserIDs = ImmutableList.<Integer>copyOf(printingDAO.retrievePrintingQueueRecipientIDs(firstItem));
 
 			// we don't know which hostKeys the users will be using next time they poll for print jobs
 			createWithSpecificHostKey = false;
 		}
 		else
 		{
-			printToUserIDs = ImmutableList.<Integer> of(printJobAD_User_ID);
+			printToUserIDs = ImmutableList.<Integer>of(printJobAD_User_ID);
 
 			// If the item is for ourselves, then also our hostKey shall be added to the printing instructions.
 			// Otherwise, the job might be printed by someone else who is logged in with our user-id (e.g SuperUser).
@@ -360,5 +375,53 @@ public class PrintingQueueBL implements IPrintingQueueBL
 
 		// Make sure the aggregation key is up2date.
 		setItemAggregationKey(item);
+	}
+
+	@Override
+	public PrinterRoutingsQuery createPrinterRoutingsQueryForItem(@NonNull final I_C_Printing_Queue item)
+	{
+		return PrinterRoutingsQuery.builder()
+				.clientId(ClientId.ofRepoIdOrSystem(item.getAD_Client_ID()))
+				.orgId(OrgId.ofRepoIdOrAny(item.getAD_Org_ID()))
+				.roleId(RoleId.ofRepoIdOrNull(item.getAD_Role_ID()))
+				.userId(UserId.ofRepoIdOrNullIfSystem(item.getAD_User_ID()))
+				.tableId(AdTableId.ofRepoIdOrNull(item.getAD_Table_ID()))
+				.processId(AdProcessId.ofRepoIdOrNull(item.getAD_Process_ID()))
+				.docTypeId(DocTypeId.ofRepoIdOrNull(item.getC_DocType_ID()))
+				.build();
+	}
+
+	private final CCache<PrinterRoutingsQuery, Optional<OutputType>> printerRoutingsQueryToOutputType = CCache
+			.<PrinterRoutingsQuery, Optional<OutputType>>builder()
+			.cacheName("printerRoutingsQueryToOutputType")
+			.tableName(I_AD_PrinterRouting.Table_Name)
+			.additionalTableNameToResetFor(I_AD_Printer_Matching.Table_Name)
+			.additionalTableNameToResetFor(I_AD_PrinterHW.Table_Name)
+			.build();
+
+	@Override
+	public Optional<OutputType> retrieveOutputTypeFor(@NonNull final I_C_Printing_Queue item)
+	{
+		final PrinterRoutingsQuery printerRoutingsQuery = createPrinterRoutingsQueryForItem(item);
+		return printerRoutingsQueryToOutputType.getOrLoad(printerRoutingsQuery, q -> retrieveOutputTypeFor0(q));
+	}
+
+	@NonNull
+	private Optional<OutputType> retrieveOutputTypeFor0(@NonNull final PrinterRoutingsQuery printerRoutingsQuery)
+	{
+		final List<I_AD_PrinterRouting> printerRoutingRecords = printerRoutingDAO.fetchPrinterRoutings(printerRoutingsQuery);
+		if (printerRoutingRecords.isEmpty())
+		{
+			return Optional.empty();
+		}
+		final I_AD_PrinterRouting firstRouting = printerRoutingRecords.get(0);
+		final I_AD_Printer_Matching printerMatchingRecord = printingDAO.retrievePrinterMatchingOrNull(null/*hostKey*/, firstRouting.getAD_Printer());
+		if (printerMatchingRecord == null)
+		{
+			return Optional.empty();
+		}
+
+		final String outputType = printerMatchingRecord.getAD_PrinterHW().getOutputType();
+		return Optional.of(OutputType.ofCode(outputType));
 	}
 }

@@ -52,14 +52,12 @@ public interface IPrintJobBL extends ISingletonService
 	 * Note that this method can deal with large numbers of unprocessed printing queue records.
 	 * <p>
 	 * This method is skipping items which were already printed (see {@link I_C_Printing_Queue#isProcessed()})
-	 *
-	 * @return number of created print jobs
 	 */
-	int createPrintJobs(IPrintingQueueSource source, ContextForAsyncProcessing printJobContext);
+	void createPrintJobs(IPrintingQueueSource source, ContextForAsyncProcessing printJobContext);
 
-	default int createPrintJobs(@NonNull final IPrintingQueueSource source)
+	default void createPrintJobs(@NonNull final IPrintingQueueSource source)
 	{
-		return createPrintJobs(source, ContextForAsyncProcessing.builder().build());
+		createPrintJobs(source, ContextForAsyncProcessing.builder().build());
 	}
 
 	@Builder
