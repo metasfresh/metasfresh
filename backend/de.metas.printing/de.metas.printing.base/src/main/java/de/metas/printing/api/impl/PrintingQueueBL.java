@@ -228,9 +228,7 @@ public class PrintingQueueBL implements IPrintingQueueBL
 	@Override
 	public PrintingQueueProcessingInfo createPrintingQueueProcessingInfo(final I_C_Printing_Queue printingQueueRecord)
 	{
-		final UserId printJobADUserId = UserId.ofRepoId(CoalesceUtil.firstGreaterThanZero(
-				printingQueueRecord.getAD_User_ID(),
-				printingQueueRecord.getCreatedBy()));
+		final UserId printJobADUserId = getPrintToUser(printingQueueRecord);
 		return createPrintingQueueProcessingInfo(printingQueueRecord, printJobADUserId);
 	}
 
@@ -405,10 +403,15 @@ public class PrintingQueueBL implements IPrintingQueueBL
 				.clientId(ClientId.ofRepoIdOrSystem(item.getAD_Client_ID()))
 				.orgId(OrgId.ofRepoIdOrAny(item.getAD_Org_ID()))
 				.roleId(RoleId.ofRepoIdOrNull(item.getAD_Role_ID()))
-				.userId(UserId.ofRepoIdOrNullIfSystem(item.getAD_User_ID()))
+				.userId(getPrintToUser(item))
 				.tableId(AdTableId.ofRepoIdOrNull(item.getAD_Table_ID()))
 				.processId(AdProcessId.ofRepoIdOrNull(item.getAD_Process_ID()))
 				.docTypeId(DocTypeId.ofRepoIdOrNull(item.getC_DocType_ID()))
 				.build();
+	}
+
+	private UserId getPrintToUser(@NonNull final I_C_Printing_Queue printingQueueRecord)
+	{
+		return UserId.ofRepoId(printingQueueRecord.getCreatedBy());
 	}
 }
