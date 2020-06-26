@@ -23,6 +23,7 @@
 package de.metas.invoice.invoiceProcessingServiceCompany;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import de.metas.bpartner.BPartnerId;
 import de.metas.document.DocTypeId;
 import de.metas.product.ProductId;
@@ -52,21 +53,21 @@ public class InvoiceProcessingServiceCompanyConfig
 	@NonNull ZonedDateTime validFrom;
 
 	@Getter(AccessLevel.NONE)
-	@NonNull ImmutableList<InvoiceProcessingServiceCompanyConfigBPartnerDetails> bpartnerDetails;
+	@NonNull ImmutableMap<BPartnerId, InvoiceProcessingServiceCompanyConfigBPartnerDetails> bpartnerDetails;
 
 	public ImmutableList<BPartnerId> getBPartnerIds()
 	{
-		return bpartnerDetails.stream()
-				.map(InvoiceProcessingServiceCompanyConfigBPartnerDetails::getBpartnerId)
-				.collect(ImmutableList.toImmutableList());
+		return bpartnerDetails.keySet().asList();
 	}
 
 	public Optional<Percent> getFeePercentageOfGrandTotalByBpartner(@NonNull final BPartnerId bpartnerId)
 	{
-		return bpartnerDetails.stream()
-				.filter(it -> it.getBpartnerId().equals(bpartnerId))
-				.map(InvoiceProcessingServiceCompanyConfigBPartnerDetails::getPercent)
-				.findFirst();
+		final InvoiceProcessingServiceCompanyConfigBPartnerDetails details = bpartnerDetails.get(bpartnerId);
+		if (details == null)
+		{
+			return Optional.empty();
+		}
+		return Optional.of(details.getPercent());
 	}
 }
 

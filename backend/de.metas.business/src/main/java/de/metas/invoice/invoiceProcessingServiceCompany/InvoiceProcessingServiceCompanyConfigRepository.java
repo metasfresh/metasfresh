@@ -23,6 +23,7 @@
 package de.metas.invoice.invoiceProcessingServiceCompany;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import de.metas.bpartner.BPartnerId;
 import de.metas.cache.CCache;
 import de.metas.document.DocTypeId;
@@ -71,7 +72,7 @@ public class InvoiceProcessingServiceCompanyConfigRepository
 
 	private InvoiceProcessingServiceCompanyConfig fromPO(@NonNull final I_InvoiceProcessingServiceCompany record)
 	{
-		final ImmutableList<InvoiceProcessingServiceCompanyConfigBPartnerDetails> partnerDetails = retrieveAllBPartnerDetails(record);
+		final  ImmutableMap<BPartnerId, InvoiceProcessingServiceCompanyConfigBPartnerDetails> partnerDetails = retrieveAllBPartnerDetails(record);
 
 		return InvoiceProcessingServiceCompanyConfig.builder()
 				.serviceCompanyBPartnerId(BPartnerId.ofRepoId(record.getServiceCompany_BPartner_ID()))
@@ -82,7 +83,7 @@ public class InvoiceProcessingServiceCompanyConfigRepository
 				.build();
 	}
 
-	private ImmutableList<InvoiceProcessingServiceCompanyConfigBPartnerDetails> retrieveAllBPartnerDetails(@NonNull final I_InvoiceProcessingServiceCompany company)
+	private ImmutableMap<BPartnerId, InvoiceProcessingServiceCompanyConfigBPartnerDetails> retrieveAllBPartnerDetails(@NonNull final I_InvoiceProcessingServiceCompany company)
 	{
 		return queryBL
 				.createQueryBuilder(I_InvoiceProcessingServiceCompany_BPartnerAssignment.class)
@@ -95,6 +96,6 @@ public class InvoiceProcessingServiceCompanyConfigRepository
 						.percent(Percent.of(recordBP.getFeePercentageOfGrandTotal()))
 						.build()
 				)
-				.collect(GuavaCollectors.toImmutableList());
+				.collect(GuavaCollectors.toImmutableMapByKey(detail -> detail.getBpartnerId()));
 	}
 }
