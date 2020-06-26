@@ -269,6 +269,15 @@ public class InvoiceProcessingServiceCompanyServiceTest
 			assertCorrectConfigReturned(bpartnerId, "2020-01-01", 1);
 		}
 
+		@Test
+		void noConfigsExist()
+		{
+			final BPartnerId bpartnerId = BPartnerId.ofRepoId(2);
+
+			assertThat(configRepository.getByCustomerId(bpartnerId, LocalDate.parse("2020-04-01").atStartOfDay(ZoneId.of("UTC+5")))).isEmpty();
+		}
+
+
 		private void assertCorrectConfigReturned(final BPartnerId bpartnerId, final String localDate, final int percentValue)
 		{
 			assertThat(configRepository.getByCustomerId(bpartnerId, LocalDate.parse(localDate).atStartOfDay(ZoneId.of("UTC+5"))))
