@@ -27,6 +27,7 @@ import java.time.LocalDate;
 import java.util.Collection;
 import java.util.Date;
 
+import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -54,7 +55,7 @@ public class HUAttributeExpectation<ParentExpectationType> extends AbstractHUExp
 
 	private I_M_Attribute attribute;
 	/** i.e. M_Attribute.Value */
-	private String attributeKey;
+	private AttributeCode attributeCode;
 	private I_M_HU_PI_Attribute piAttribute;
 	private String valueString;
 	private boolean valueStringSet;
@@ -96,11 +97,11 @@ public class HUAttributeExpectation<ParentExpectationType> extends AbstractHUExp
 		{
 			assertEquals(messageActual.expect("M_Attribute_ID"), attribute.getM_Attribute_ID(), huAttribute.getM_Attribute_ID());
 		}
-		if (attributeKey != null)
+		if (attributeCode != null)
 		{
 			final I_M_Attribute attributeActual = Services.get(IAttributeDAO.class).getAttributeById(huAttribute.getM_Attribute_ID());
 			assertNotNull(messageActual.expect("M_Attribute_ID is null"), attributeActual);
-			assertEquals(messageActual.expect("M_Attribute.Value"), attributeKey, attributeActual.getValue());
+			assertEquals(messageActual.expect("M_Attribute.Value"), attributeCode.getCode(), attributeActual.getValue());
 		}
 		if (piAttribute != null)
 		{
@@ -240,9 +241,9 @@ public class HUAttributeExpectation<ParentExpectationType> extends AbstractHUExp
 		return this;
 	}
 
-	public HUAttributeExpectation<ParentExpectationType> attribute(final String attributeValueKey)
+	public HUAttributeExpectation<ParentExpectationType> attribute(final AttributeCode attributeCode)
 	{
-		this.attributeKey = attributeValueKey;
+		this.attributeCode = attributeCode;
 		return this;
 	}
 
@@ -308,9 +309,9 @@ public class HUAttributeExpectation<ParentExpectationType> extends AbstractHUExp
 			return attribute;
 		}
 
-		if (attributeKey != null)
+		if (attributeCode != null)
 		{
-			return Services.get(IAttributeDAO.class).retrieveAttributeByValue(attributeKey);
+			return Services.get(IAttributeDAO.class).retrieveAttributeByValue(attributeCode);
 		}
 
 		// Fail

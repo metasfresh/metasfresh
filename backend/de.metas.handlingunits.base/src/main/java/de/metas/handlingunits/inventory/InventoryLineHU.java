@@ -1,6 +1,7 @@
 package de.metas.handlingunits.inventory;
 
 import java.util.Collection;
+import java.util.Objects;
 import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
@@ -10,7 +11,6 @@ import org.compiere.model.I_C_UOM;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
-import java.util.Objects;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.handlingunits.HuId;

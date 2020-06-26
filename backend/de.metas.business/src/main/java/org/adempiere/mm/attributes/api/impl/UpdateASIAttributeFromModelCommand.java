@@ -1,5 +1,6 @@
 package org.adempiere.mm.attributes.api.impl;
 
+import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
@@ -9,6 +10,7 @@ import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.mm.attributes.api.IAttributesBL;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeInstance;
+
 import de.metas.product.ProductId;
 import de.metas.util.Services;
 import lombok.Builder;
@@ -43,14 +45,14 @@ final class UpdateASIAttributeFromModelCommand
 	private final transient IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
 	private final transient IAttributeSetInstanceBL attributeSetInstanceBL;
 
-	private final String attributeCode;
+	private final AttributeCode attributeCode;
 	private final Object sourceModel;
 
 	@Builder
 	private UpdateASIAttributeFromModelCommand(
 			@NonNull final IAttributeSetInstanceBL attributeSetInstanceBL,
 			//
-			@NonNull final String attributeCode,
+			@NonNull final AttributeCode attributeCode,
 			@NonNull final Object sourceModel)
 	{
 		this.attributeSetInstanceBL = attributeSetInstanceBL;

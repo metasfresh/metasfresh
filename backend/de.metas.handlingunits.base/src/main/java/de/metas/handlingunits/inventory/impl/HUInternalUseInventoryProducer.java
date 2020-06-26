@@ -1,6 +1,5 @@
 package de.metas.handlingunits.inventory.impl;
 
-import java.sql.Timestamp;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -16,7 +15,6 @@ import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.X_C_DocType;
 import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
 
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
@@ -184,9 +182,9 @@ public class HUInternalUseInventoryProducer
 		return inventories;
 	}
 
-	public HUInternalUseInventoryProducer setMovementDate(@NonNull final Timestamp movementDate)
+	public HUInternalUseInventoryProducer setMovementDate(@NonNull final ZonedDateTime movementDate)
 	{
-		_movementDate = TimeUtil.asZonedDateTime(movementDate);
+		_movementDate = movementDate;
 		return this;
 	}
 

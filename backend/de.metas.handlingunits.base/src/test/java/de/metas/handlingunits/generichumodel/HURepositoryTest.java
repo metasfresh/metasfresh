@@ -114,7 +114,7 @@ class HURepositoryTest
 
 		final I_M_Attribute attrRecord = newInstance(I_M_Attribute.class);
 		attrRecord.setAttributeValueType(X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40);
-		attrRecord.setValue(HUAttributeConstants.ATTR_SSCC18_Value);
+		attrRecord.setValue(HUAttributeConstants.ATTR_SSCC18_Value.getCode());
 		saveRecord(attrRecord);
 
 		final I_M_HU_PI_Attribute huPIAttributerecord = huTestHelper.createM_HU_PI_Attribute(HUPIAttributeBuilder.newInstance(attrRecord)

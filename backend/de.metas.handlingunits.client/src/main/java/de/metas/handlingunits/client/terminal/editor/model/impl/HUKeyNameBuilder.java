@@ -42,8 +42,8 @@ import de.metas.handlingunits.IHUIteratorListener;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.attribute.IAttributeValue;
-import de.metas.handlingunits.attribute.IWeightable;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
+import de.metas.handlingunits.attribute.weightable.IWeightable;
 import de.metas.handlingunits.client.terminal.editor.model.IHUKey;
 import de.metas.handlingunits.client.terminal.editor.model.IHUKeyVisitor;
 import de.metas.handlingunits.client.terminal.editor.model.IHUPOSLayoutConstants;
@@ -141,7 +141,7 @@ import de.metas.util.StringUtils;
 
 		//
 		// Check if weight attribute was changed and we have this attribute in our attribute set
-		if (getWeightOrNull().isWeightNetAttribute(attributeValue.getM_Attribute()))
+		if (getWeightOrNull().isWeightNetAttribute(attributeValue.getAttributeCode()))
 		{
 			// reset Weight HTML chunk
 			htmlPartWeight = null;

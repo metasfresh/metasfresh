@@ -46,6 +46,8 @@ import java.util.Objects;
 import java.util.Properties;
 import java.util.stream.Collectors;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
@@ -110,7 +112,6 @@ import de.metas.handlingunits.allocation.transfer.impl.TUMergeBuilder;
 import de.metas.handlingunits.attribute.HUAttributeConstants;
 import de.metas.handlingunits.attribute.IAttributeValue;
 import de.metas.handlingunits.attribute.impl.PlainAttributeValue;
-import de.metas.handlingunits.attribute.impl.WeightableFactory;
 import de.metas.handlingunits.attribute.propagation.impl.HUAttributePropagationContext;
 import de.metas.handlingunits.attribute.propagation.impl.NoPropagationHUAttributePropagator;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
@@ -124,6 +125,7 @@ import de.metas.handlingunits.attribute.strategy.impl.NullAggregationStrategy;
 import de.metas.handlingunits.attribute.strategy.impl.NullSplitterStrategy;
 import de.metas.handlingunits.attribute.strategy.impl.RedistributeQtyHUAttributeTransferStrategy;
 import de.metas.handlingunits.attribute.strategy.impl.SumAggregationStrategy;
+import de.metas.handlingunits.attribute.weightable.Weightables;
 import de.metas.handlingunits.hutransaction.IHUTrxBL;
 import de.metas.handlingunits.impl.CachedHUAndItemsDAO;
 import de.metas.handlingunits.model.I_DD_NetworkDistribution;
@@ -340,7 +342,7 @@ public class HUTestHelper
 	public I_M_Warehouse defaultWarehouse;
 	public I_M_Warehouse issueWarehouse;
 	// Empties:
-	public I_M_Warehouse warehouse_Empties;
+	private I_M_Warehouse warehouse_Empties;
 	private DDNetworkBuilder emptiesDDNetworkBuilder;
 
 	public Properties ctx;
@@ -587,12 +589,12 @@ public class HUTestHelper
 		attr_Volume = attributesTestHelper.createM_Attribute(HUTestHelper.NAME_Volume_Attribute, X_M_Attribute.ATTRIBUTEVALUETYPE_Number, true);
 		attr_FragileSticker = attributesTestHelper.createM_Attribute(HUTestHelper.NAME_FragileSticker_Attribute, X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40, false);
 
-		attr_WeightGross = attributesTestHelper.createM_Attribute(WeightableFactory.ATTR_WeightGross_Value, X_M_Attribute.ATTRIBUTEVALUETYPE_Number, WeightGrossAttributeValueCallout.class, uomKg, true);
-		attr_WeightNet = attributesTestHelper.createM_Attribute(WeightableFactory.ATTR_WeightNet_Value, X_M_Attribute.ATTRIBUTEVALUETYPE_Number, WeightNetAttributeValueCallout.class, uomKg, true);
-		attr_WeightTare = attributesTestHelper.createM_Attribute(WeightableFactory.ATTR_WeightTare_Value, X_M_Attribute.ATTRIBUTEVALUETYPE_Number, WeightTareAttributeValueCallout.class, uomKg, true);
-		attr_WeightTareAdjust = attributesTestHelper.createM_Attribute(WeightableFactory.ATTR_WeightTareAdjust_Value, X_M_Attribute.ATTRIBUTEVALUETYPE_Number, WeightTareAdjustAttributeValueCallout.class, uomKg, true);
+		attr_WeightGross = attributesTestHelper.createM_Attribute(Weightables.ATTR_WeightGross.getCode(), X_M_Attribute.ATTRIBUTEVALUETYPE_Number, WeightGrossAttributeValueCallout.class, uomKg, true);
+		attr_WeightNet = attributesTestHelper.createM_Attribute(Weightables.ATTR_WeightNet.getCode(), X_M_Attribute.ATTRIBUTEVALUETYPE_Number, WeightNetAttributeValueCallout.class, uomKg, true);
+		attr_WeightTare = attributesTestHelper.createM_Attribute(Weightables.ATTR_WeightTare.getCode(), X_M_Attribute.ATTRIBUTEVALUETYPE_Number, WeightTareAttributeValueCallout.class, uomKg, true);
+		attr_WeightTareAdjust = attributesTestHelper.createM_Attribute(Weightables.ATTR_WeightTareAdjust.getCode(), X_M_Attribute.ATTRIBUTEVALUETYPE_Number, WeightTareAdjustAttributeValueCallout.class, uomKg, true);
 
-		attr_CostPrice = attributesTestHelper.createM_Attribute(HUAttributeConstants.ATTR_CostPrice, X_M_Attribute.ATTRIBUTEVALUETYPE_Number, null, null, true);
+		attr_CostPrice = attributesTestHelper.createM_Attribute(HUAttributeConstants.ATTR_CostPrice.getCode(), X_M_Attribute.ATTRIBUTEVALUETYPE_Number, null, null, true);
 
 		attr_QualityDiscountPercent = attributesTestHelper.createM_Attribute(HUAttributeConstants.ATTR_QualityDiscountPercent_Value, X_M_Attribute.ATTRIBUTEVALUETYPE_Number, true);
 		attr_QualityNotice = attributesTestHelper.createM_Attribute(HUAttributeConstants.ATTR_QualityNotice_Value, X_M_Attribute.ATTRIBUTEVALUETYPE_List, true);
@@ -603,16 +605,16 @@ public class HUTestHelper
 			createAttributeListValue(attr_QualityNotice, QUALITYNOTICE_Test2, QUALITYNOTICE_Test2);
 			createAttributeListValue(attr_QualityNotice, QUALITYNOTICE_Test3, QUALITYNOTICE_Test3);
 		}
-		attr_SubProducerBPartner = attributesTestHelper.createM_Attribute(AttributeConstants.ATTR_SubProducerBPartner_Value, X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40, true);
+		attr_SubProducerBPartner = attributesTestHelper.createM_Attribute(AttributeConstants.ATTR_SubProducerBPartner_Value.getCode(), X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40, true);
 
 		attr_M_Material_Tracking_ID = attributesTestHelper.createM_Attribute(NAME_M_Material_Tracking_ID_Attribute, X_M_Attribute.ATTRIBUTEVALUETYPE_Number, true);
 
-		attr_LotNumberDate = attributesTestHelper.createM_Attribute(HUAttributeConstants.ATTR_LotNumberDate, X_M_Attribute.ATTRIBUTEVALUETYPE_Date, true);
+		attr_LotNumberDate = attributesTestHelper.createM_Attribute(HUAttributeConstants.ATTR_LotNumberDate.getCode(), X_M_Attribute.ATTRIBUTEVALUETYPE_Date, true);
 
-		attr_LotNumber = attributesTestHelper.createM_Attribute(LotNumberDateAttributeDAO.ATTR_LotNumber, X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40, true);
+		attr_LotNumber = attributesTestHelper.createM_Attribute(LotNumberDateAttributeDAO.ATTR_LotNumber.getCode(), X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40, true);
 
-		attr_PurchaseOrderLine = attributesTestHelper.createM_Attribute(HUAttributeConstants.ATTR_PurchaseOrderLine_ID, X_M_Attribute.ATTRIBUTEVALUETYPE_Number, true);
-		attr_ReceiptInOutLine = attributesTestHelper.createM_Attribute(HUAttributeConstants.ATTR_ReceiptInOutLine_ID, X_M_Attribute.ATTRIBUTEVALUETYPE_Number, true);
+		attr_PurchaseOrderLine = attributesTestHelper.createM_Attribute(HUAttributeConstants.ATTR_PurchaseOrderLine_ID.getCode(), X_M_Attribute.ATTRIBUTEVALUETYPE_Number, true);
+		attr_ReceiptInOutLine = attributesTestHelper.createM_Attribute(HUAttributeConstants.ATTR_ReceiptInOutLine_ID.getCode(), X_M_Attribute.ATTRIBUTEVALUETYPE_Number, true);
 
 		// FIXME: this is a workaround because we are not handling the UOM conversions in our HU tests
 		createUOMConversion(
@@ -951,6 +953,11 @@ public class HUTestHelper
 		return huContext;
 	}
 
+	public IMutableHUContext createMutableHUContextForProcessingOutOfTrx()
+	{
+		return createMutableHUContextForProcessing(ITrx.TRXNAME_None);
+	}
+
 	public IMutableHUContext createMutableHUContextForProcessing(final String trxName)
 	{
 		final IContextAware contextProvider = PlainContextAware.newWithTrxName(ctx, trxName);
@@ -1148,23 +1155,48 @@ public class HUTestHelper
 		return assignProduct(itemPI, productId, capacity, uom);
 	}
 
-	public I_M_HU_PI_Item_Product assignProduct(final I_M_HU_PI_Item itemPI, final ProductId productId, final BigDecimal capacity, final I_C_UOM uom)
+	public I_M_HU_PI_Item_Product assignProduct(
+			final I_M_HU_PI_Item itemPI,
+			final ProductId productId,
+			final BigDecimal capacity,
+			final I_C_UOM uom)
 	{
-		final I_C_BPartner bpartner = null;
-		return assignProduct(itemPI, productId, capacity, uom, bpartner);
+		final BPartnerId bpartnerId = null;
+		return assignProduct(
+				itemPI,
+				productId,
+				Quantity.of(capacity, uom),
+				bpartnerId);
 	}
 
-	public I_M_HU_PI_Item_Product assignProduct(final I_M_HU_PI_Item itemPI, final ProductId productId, final BigDecimal capacity, final I_C_UOM uom, final I_C_BPartner bpartner)
+	public I_M_HU_PI_Item_Product assignProduct(
+			final I_M_HU_PI_Item itemPI,
+			final ProductId productId,
+			final Quantity capacity)
+	{
+		final BPartnerId bpartnerId = null;
+		return assignProduct(
+				itemPI,
+				productId,
+				capacity,
+				bpartnerId);
+	}
+
+	public I_M_HU_PI_Item_Product assignProduct(
+			@NonNull final I_M_HU_PI_Item itemPI,
+			@NonNull final ProductId productId,
+			@NonNull final Quantity capacity,
+			@Nullable final BPartnerId bpartnerId)
 	{
 		Check.errorUnless(Objects.equals(itemPI.getItemType(), X_M_HU_PI_Item.ITEMTYPE_Material), "Param 'itemPI' needs to have ItemType={}, not={}; itemPI={} material item", X_M_HU_PI_Item.ITEMTYPE_Material, itemPI.getItemType(), itemPI);
 
 		final I_M_HU_PI_Item_Product itemDefProduct = InterfaceWrapperHelper.newInstance(I_M_HU_PI_Item_Product.class, itemPI);
 		itemDefProduct.setM_HU_PI_Item(itemPI);
 		itemDefProduct.setM_Product_ID(productId.getRepoId());
-		itemDefProduct.setQty(capacity);
-		itemDefProduct.setC_UOM_ID(uom.getC_UOM_ID());
+		itemDefProduct.setQty(capacity.toBigDecimal());
+		itemDefProduct.setC_UOM_ID(capacity.getUomId().getRepoId());
 		itemDefProduct.setValidFrom(TimeUtil.getDay(1970, 1, 1));
-		itemDefProduct.setC_BPartner_ID(bpartner != null ? bpartner.getC_BPartner_ID() : -1);
+		itemDefProduct.setC_BPartner_ID(BPartnerId.toRepoId(bpartnerId));
 		InterfaceWrapperHelper.save(itemDefProduct);
 
 		return itemDefProduct;
@@ -1270,16 +1302,21 @@ public class HUTestHelper
 
 	public Object createDummyReferenceModel(final I_C_BPartner bpartner)
 	{
+		final BPartnerId bpartnerId = bpartner != null ? BPartnerId.ofRepoId(bpartner.getC_BPartner_ID()) : null;
+		return createDummyReferenceModel(bpartnerId);
+	}
+
+	public Object createDummyReferenceModel(final BPartnerId bpartnerId)
+	{
 		final I_Test referencedModel = InterfaceWrapperHelper.newInstance(I_Test.class, contextProvider);
 
-		if (bpartner != null)
+		if (bpartnerId != null)
 		{
-			referencedModel.setC_BPartner_ID(bpartner.getC_BPartner_ID());
+			referencedModel.setC_BPartner_ID(bpartnerId.getRepoId());
 		}
 
 		InterfaceWrapperHelper.save(referencedModel);
 		return referencedModel;
-
 	}
 
 	public AbstractAllocationSourceDestination createDummySourceDestination(
@@ -1309,16 +1346,14 @@ public class HUTestHelper
 		return new GenericAllocationSourceDestination(storage, referencedModel);
 	}
 
-	@Deprecated
 	public List<I_M_HU> createHUs(
 			final IHUContext huContext,
 			final I_M_HU_PI huPI,
-			final I_M_Product productToLoad,
+			final ProductId productIdToLoad,
 			final BigDecimal qtyToLoad,
 			final I_C_UOM qtyToLoadUOM)
 	{
-		final ProductId productIdToLoad = ProductId.ofRepoId(productToLoad.getM_Product_ID());
-		return createHUs(huContext, huPI, productIdToLoad, qtyToLoad, qtyToLoadUOM);
+		return createHUs(huContext, huPI, productIdToLoad, Quantity.of(qtyToLoad, qtyToLoadUOM));
 	}
 
 	/**
@@ -1329,12 +1364,11 @@ public class HUTestHelper
 			final IHUContext huContext,
 			final I_M_HU_PI huPI,
 			final ProductId productIdToLoad,
-			final BigDecimal qtyToLoad,
-			final I_C_UOM qtyToLoadUOM)
+			final Quantity qtyToLoad)
 	{
 		final IAllocationSource source = createDummySourceDestination(productIdToLoad,
 				new BigDecimal("100000000"),  // qtyCapacity
-				qtyToLoadUOM,  // UOM
+				qtyToLoad.getUOM(),  // UOM
 				true // fullyLoaded => empty
 		);
 
@@ -1346,10 +1380,11 @@ public class HUTestHelper
 		final IAllocationRequest request = AllocationUtils.createQtyRequest(
 				huContext,
 				productIdToLoad,
-				Quantity.of(qtyToLoad, qtyToLoadUOM),
+				qtyToLoad,
 				getTodayZonedDateTime(),  // date
 				referenceModel,
-				false);
+				false // forceQtyAllocation
+		);
 
 		loader.load(request);
 

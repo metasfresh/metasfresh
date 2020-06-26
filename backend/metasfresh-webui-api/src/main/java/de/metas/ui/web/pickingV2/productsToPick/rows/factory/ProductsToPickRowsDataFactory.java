@@ -6,6 +6,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
@@ -14,12 +15,12 @@ import javax.annotation.Nullable;
 
 import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.mm.attributes.api.impl.LotNumberDateAttributeDAO;
 import org.eevolution.api.IPPOrderBL;
 
-import java.util.Objects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
@@ -105,10 +106,16 @@ public final class ProductsToPickRowsDataFactory
 
 	private final boolean considerAttributes;
 
-	public static final String ATTR_LotNumber = LotNumberDateAttributeDAO.ATTR_LotNumber;
-	public static final String ATTR_BestBeforeDate = AttributeConstants.ATTR_BestBeforeDate;
-	public static final String ATTR_RepackNumber = "RepackNumber"; // TODO use it as constant, see RepackNumberUtils
-	private static final ImmutableSet<String> ATTRIBUTES = ImmutableSet.of(
+	public static final String ATTR_LotNumber_String = LotNumberDateAttributeDAO.ATTR_LotNumber_String;
+	public static final AttributeCode ATTR_LotNumber = LotNumberDateAttributeDAO.ATTR_LotNumber;
+
+	public static final String ATTR_BestBeforeDate_String = AttributeConstants.ATTR_BestBeforeDate_String;
+	public static final AttributeCode ATTR_BestBeforeDate = AttributeConstants.ATTR_BestBeforeDate;
+
+	public static final String ATTR_RepackNumber_String = "RepackNumber"; // TODO use it as constant, see RepackNumberUtils
+	public static final AttributeCode ATTR_RepackNumber = AttributeCode.ofString(ATTR_RepackNumber_String);
+
+	private static final ImmutableSet<AttributeCode> ATTRIBUTES = ImmutableSet.of(
 			ATTR_LotNumber,
 			ATTR_BestBeforeDate,
 			ATTR_RepackNumber);
@@ -531,7 +538,7 @@ public final class ProductsToPickRowsDataFactory
 	{
 		final I_M_HU hu = storages.getHU(huId);
 		final IAttributeStorage attributes = attributesFactory.getAttributeStorage(hu);
-		return ImmutableAttributeSet.createSubSet(attributes, a -> ATTRIBUTES.contains(a.getValue()));
+		return ImmutableAttributeSet.createSubSet(attributes, a -> ATTRIBUTES.contains(AttributeCode.ofString(a.getValue())));
 	}
 
 	private ProductsToPickRow createRowsFromPickingOrder(

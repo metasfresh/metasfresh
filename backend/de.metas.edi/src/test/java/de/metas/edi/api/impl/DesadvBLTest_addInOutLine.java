@@ -1,7 +1,8 @@
 package de.metas.edi.api.impl;
 
 import static de.metas.esb.edi.model.I_EDI_DesadvLine_Pack.COLUMNNAME_BestBeforeDate;
-import static de.metas.esb.edi.model.I_EDI_DesadvLine_Pack.*;
+import static de.metas.esb.edi.model.I_EDI_DesadvLine_Pack.COLUMNNAME_C_UOM_ID;
+import static de.metas.esb.edi.model.I_EDI_DesadvLine_Pack.COLUMNNAME_IPA_SSCC18;
 import static de.metas.esb.edi.model.I_EDI_DesadvLine_Pack.COLUMNNAME_QtyCU;
 import static de.metas.esb.edi.model.I_EDI_DesadvLine_Pack.COLUMNNAME_QtyCUsPerLU;
 import static de.metas.esb.edi.model.I_EDI_DesadvLine_Pack.COLUMNNAME_QtyTU;
@@ -30,6 +31,7 @@ import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
 import de.metas.business.BusinessTestHelper;
 import de.metas.edi.model.I_C_OrderLine;
 import de.metas.edi.model.I_M_InOutLine;
@@ -310,7 +312,7 @@ class DesadvBLTest_addInOutLine
 
 		final I_M_Attribute sscc18AttrRecord = newInstance(I_M_Attribute.class);
 		sscc18AttrRecord.setAttributeValueType(X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40);
-		sscc18AttrRecord.setValue(HUAttributeConstants.ATTR_SSCC18_Value);
+		sscc18AttrRecord.setValue(HUAttributeConstants.ATTR_SSCC18_Value.getCode());
 		saveRecord(sscc18AttrRecord);
 
 		final I_M_HU_PI_Attribute sscc18HUPIAttributeRecord = huTestHelper
@@ -330,7 +332,7 @@ class DesadvBLTest_addInOutLine
 
 		final I_M_Attribute bestBeforeAttrRecord = newInstance(I_M_Attribute.class);
 		bestBeforeAttrRecord.setAttributeValueType(X_M_Attribute.ATTRIBUTEVALUETYPE_Date);
-		bestBeforeAttrRecord.setValue(AttributeConstants.ATTR_BestBeforeDate);
+		bestBeforeAttrRecord.setValue(AttributeConstants.ATTR_BestBeforeDate.getCode());
 		saveRecord(bestBeforeAttrRecord);
 
 		final I_M_HU_PI_Attribute bestBeforeHUPIAttributeRecord = huTestHelper.createM_HU_PI_Attribute(HUPIAttributeBuilder.newInstance(bestBeforeAttrRecord)

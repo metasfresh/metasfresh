@@ -2,7 +2,10 @@ package de.metas.ui.web.window.datatypes.json;
 
 import java.io.Serializable;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
+
+import javax.annotation.Nullable;
 
 import org.adempiere.ad.expression.api.LogicExpressionResult;
 
@@ -14,6 +17,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.google.common.base.MoreObjects;
 
+import de.metas.ui.web.devices.JSONDeviceDescriptor;
 import de.metas.ui.web.process.IProcessInstanceParameter;
 import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.datatypes.Password;
@@ -97,7 +101,8 @@ public final class JSONDocumentField implements Serializable
 				.setReadonly(parameter.getReadonly())
 				.setMandatory(parameter.getMandatory())
 				.setDisplayed(parameter.getDisplayed())
-				.setValidStatus(parameter.getValidStatus());
+				.setValidStatus(parameter.getValidStatus())
+				.setDevices(JSONDeviceDescriptor.ofList(parameter.getDevices(), jsonOpts.getAdLanguage()));
 		if (WindowConstants.isProtocolDebugging())
 		{
 			jsonField.putDebugProperty(DocumentFieldChange.DEBUGPROPERTY_FieldInfo, parameter.toString());
@@ -229,13 +234,18 @@ public final class JSONDocumentField implements Serializable
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private JSONDocumentFieldWarning fieldWarning;
 
+	@JsonProperty("devices")
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	private List<JSONDeviceDescriptor> devices;
+
 	/** Other properties */
 	private final Map<String, Object> otherProperties = new LinkedHashMap<>();
 
 	@JsonCreator
-	/* package */ JSONDocumentField(@JsonProperty("field") final String field, @JsonProperty("widgetType") final JSONLayoutWidgetType widgetType)
+	/* package */ JSONDocumentField(
+			@JsonProperty("field") final String field,
+			@JsonProperty("widgetType") final JSONLayoutWidgetType widgetType)
 	{
-		super();
 		this.field = field;
 		this.widgetType = widgetType;
 	}
@@ -457,6 +467,12 @@ public final class JSONDocumentField implements Serializable
 	public JSONDocumentField setFieldWarning(final JSONDocumentFieldWarning fieldWarning)
 	{
 		this.fieldWarning = fieldWarning;
+		return this;
+	}
+
+	public JSONDocumentField setDevices(@Nullable final List<JSONDeviceDescriptor> devices)
+	{
+		this.devices = devices;
 		return this;
 	}
 }
