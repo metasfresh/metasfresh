@@ -14,4 +14,4 @@ DELETE FROM AD_Index_Table WHERE AD_Index_Table_ID=540534
 ;
 
 
-drop index  if EXISTS  InvoiceProcessingServiceCompany_BPartnerAssignment;
+drop index  if EXISTS  InvoiceProcessingServiceCompany_BPartnerAssignment_UQ;
