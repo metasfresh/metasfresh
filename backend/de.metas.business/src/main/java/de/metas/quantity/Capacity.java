@@ -67,11 +67,6 @@ public final class Capacity
 		return new Capacity(qty, productId, uom, allowNegativeCapacity);
 	}
 
-	/**
-	 * Signals the logic to use the default capacity.
-	 */
-	public static BigDecimal DEFAULT = new BigDecimal(Long.MAX_VALUE);
-
 	private final ProductId productId;
 	private final I_C_UOM uom;
 	private final BigDecimal capacity;
