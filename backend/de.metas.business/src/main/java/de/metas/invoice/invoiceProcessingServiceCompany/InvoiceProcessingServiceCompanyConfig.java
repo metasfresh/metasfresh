@@ -50,7 +50,8 @@ public class InvoiceProcessingServiceCompanyConfig
 	@NonNull
 	ProductId serviceFeeProductId;
 
-	@NonNull ZonedDateTime validFrom;
+	@NonNull
+	ZonedDateTime validFrom;
 
 	@Getter(AccessLevel.NONE)
 	@NonNull ImmutableMap<BPartnerId, InvoiceProcessingServiceCompanyConfigBPartnerDetails> bpartnerDetails;
