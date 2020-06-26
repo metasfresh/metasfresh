@@ -1,33 +1,8 @@
 package de.metas.handlingunits.allocation.impl;
 
-/*
- * #%L
- * de.metas.handlingunits.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.math.BigDecimal;
-
 import javax.annotation.Nullable;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.util.Util;
 
 import de.metas.handlingunits.allocation.IAllocationRequest;
 import de.metas.handlingunits.allocation.IAllocationResult;
@@ -37,7 +12,6 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.X_M_HU_PI_Item;
 import de.metas.handlingunits.storage.IHUItemStorage;
 import de.metas.quantity.Capacity;
-import de.metas.quantity.Quantity;
 import lombok.NonNull;
 import lombok.ToString;
 
@@ -51,10 +25,10 @@ import lombok.ToString;
 @ToString
 public class UpperBoundAllocationStrategy extends AbstractFIFOStrategy
 {
-	private final Capacity _capacityOverride;
+	@Nullable
+	private final Capacity capacityOverride;
 
 	/**
-	 *
 	 * @param capacityOverride optional capacity that can override the one from the packing instructions.
 	 */
 	public UpperBoundAllocationStrategy(
@@ -66,34 +40,9 @@ public class UpperBoundAllocationStrategy extends AbstractFIFOStrategy
 				services,
 				allocationStrategyFactory);
 
-		_capacityOverride = isUseDefaultCapacity(capacityOverride) ? null : capacityOverride;
+		this.capacityOverride = capacityOverride;
 	}
 
-	private static final boolean isUseDefaultCapacity(final Capacity capacity)
-	{
-		if (capacity == null)
-		{
-			return true;
-		}
-
-		final BigDecimal qty;
-		if (capacity.isInfiniteCapacity())
-		{
-			qty = Quantity.QTY_INFINITE;
-		}
-		else
-		{
-			qty = capacity.toBigDecimal();
-		}
-
-		return Util.same(Capacity.DEFAULT, qty);
-	}
-
-	/**
-	 * Invokes the {@link AbstractAllocationStrategy#getHUItemStorage(I_M_HU_Item, IAllocationRequest)},<br>
-	 * but if an upper bound is set in <code>this</code> instance,<br>
-	 * then it invokes {@link IHUItemStorage#setCustomCapacity(Capacity)} accordingly.
-	 */
 	@Override
 	protected IHUItemStorage getHUItemStorage(final I_M_HU_Item item, final IAllocationRequest request)
 	{
@@ -101,18 +50,12 @@ public class UpperBoundAllocationStrategy extends AbstractFIFOStrategy
 
 		// make sure that the capacity is forced by the user, not the system
 		// If capacityOverride is null it means that we were asked to take the defaults
-		final Capacity capacityOverride = getCapacityOverride();
 		if (capacityOverride != null && !storage.isPureVirtual())
 		{
 			storage.setCustomCapacity(capacityOverride);
 		}
 
 		return storage;
-	}
-
-	private final Capacity getCapacityOverride()
-	{
-		return _capacityOverride;
 	}
 
 	@Override

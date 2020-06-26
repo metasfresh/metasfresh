@@ -59,7 +59,7 @@ public interface ILUTUProducerAllocationDestination extends IHUProducerAllocatio
 
 	/**
 	 *
-	 * @param qtyCUPerTU quantity, {@link Capacity#DEFAULT}
+	 * @param qtyCUPerTU quantity
 	 */
 	void addCUPerTU(ProductId cuProductId, BigDecimal qtyCUPerTU, I_C_UOM cuUOM);
 
