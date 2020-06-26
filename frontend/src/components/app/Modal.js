@@ -155,6 +155,7 @@ class Modal extends Component {
       childViewId,
       childViewSelectedIds,
       parentViewId,
+      viewDocumentIds,
     } = this.props;
     let request = null;
 
@@ -223,7 +224,7 @@ class Modal extends Component {
           if (activeTabId) {
             options.selectedTab = {
               tabId: activeTabId,
-              rowIds: parentSelection,
+              rowIds: viewDocumentIds,
             };
           }
 
@@ -742,6 +743,7 @@ Modal.propTypes = {
   triggerField: PropTypes.any,
   viewId: PropTypes.string,
   windowId: PropTypes.string,
+  viewDocumentIds: PropTypes.array,
 };
 
 const mapStateToProps = (state, props) => {
