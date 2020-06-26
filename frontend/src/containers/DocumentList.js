@@ -458,7 +458,7 @@ class DocumentListContainer extends Component {
       isModal,
       rawModalVisible,
     } = this.props;
-
+console.log('sortingQuery:', sortingQuery)
     indicatorState('pending');
 
     if (updateUri) {
@@ -577,7 +577,7 @@ class DocumentListContainer extends Component {
    * @summary ToDo: Describe the method.
    */
   handleChangePage = (index) => {
-    const { table, reduxData } = this.props;
+    const { table, reduxData, sort } = this.props;
     let currentPage = reduxData.page;
 
     switch (index) {
@@ -591,7 +591,7 @@ class DocumentListContainer extends Component {
         currentPage = index;
     }
 
-    this.getData(reduxData.viewId, currentPage, reduxData.sort);
+    this.getData(reduxData.viewId, currentPage, sort);
   };
 
   /**
