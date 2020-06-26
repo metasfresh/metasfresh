@@ -1,19 +1,3 @@
-package de.metas.invoice.invoiceProcessingServiceCompany;
-
-import com.google.common.collect.ImmutableList;
-import de.metas.bpartner.BPartnerId;
-import de.metas.document.DocTypeId;
-import de.metas.product.ProductId;
-import de.metas.util.lang.Percent;
-import lombok.AccessLevel;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.Value;
-
-import java.time.ZonedDateTime;
-import java.util.Optional;
-
 /*
  * #%L
  * de.metas.business
@@ -35,6 +19,22 @@ import java.util.Optional;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+package de.metas.invoice.invoiceProcessingServiceCompany;
+
+import com.google.common.collect.ImmutableList;
+import de.metas.bpartner.BPartnerId;
+import de.metas.document.DocTypeId;
+import de.metas.product.ProductId;
+import de.metas.util.lang.Percent;
+import lombok.AccessLevel;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NonNull;
+import lombok.Value;
+
+import java.time.ZonedDateTime;
+import java.util.Optional;
 
 @Value
 @Builder

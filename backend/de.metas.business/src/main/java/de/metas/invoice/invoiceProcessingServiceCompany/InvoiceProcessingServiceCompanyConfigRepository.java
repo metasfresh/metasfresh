@@ -1,23 +1,3 @@
-package de.metas.invoice.invoiceProcessingServiceCompany;
-
-import com.google.common.collect.ImmutableList;
-import de.metas.bpartner.BPartnerId;
-import de.metas.cache.CCache;
-import de.metas.document.DocTypeId;
-import de.metas.product.ProductId;
-import de.metas.util.GuavaCollectors;
-import de.metas.util.Services;
-import de.metas.util.lang.Percent;
-import lombok.NonNull;
-import org.adempiere.ad.dao.IQueryBL;
-import org.compiere.model.I_InvoiceProcessingServiceCompany;
-import org.compiere.model.I_InvoiceProcessingServiceCompany_BPartnerAssignment;
-import org.compiere.util.TimeUtil;
-import org.springframework.stereotype.Repository;
-
-import java.time.ZonedDateTime;
-import java.util.Optional;
-
 /*
  * #%L
  * de.metas.business
@@ -39,6 +19,26 @@ import java.util.Optional;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+package de.metas.invoice.invoiceProcessingServiceCompany;
+
+import com.google.common.collect.ImmutableList;
+import de.metas.bpartner.BPartnerId;
+import de.metas.cache.CCache;
+import de.metas.document.DocTypeId;
+import de.metas.product.ProductId;
+import de.metas.util.GuavaCollectors;
+import de.metas.util.Services;
+import de.metas.util.lang.Percent;
+import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.compiere.model.I_InvoiceProcessingServiceCompany;
+import org.compiere.model.I_InvoiceProcessingServiceCompany_BPartnerAssignment;
+import org.compiere.util.TimeUtil;
+import org.springframework.stereotype.Repository;
+
+import java.time.ZonedDateTime;
+import java.util.Optional;
 
 @Repository
 public class InvoiceProcessingServiceCompanyConfigRepository
@@ -64,22 +64,25 @@ public class InvoiceProcessingServiceCompanyConfigRepository
 				.addOnlyActiveRecordsFilter()
 				.create()
 				.iterateAndStream()
-				.map(record -> {
-					final ImmutableList<InvoiceProcessingServiceCompanyConfigBPartnerDetails> partnerDetails = readAllBPartnerDetails(record);
-
-					return InvoiceProcessingServiceCompanyConfig.builder()
-							.serviceCompanyBPartnerId(BPartnerId.ofRepoId(record.getServiceCompany_BPartner_ID()))
-							.serviceInvoiceDocTypeId(DocTypeId.ofRepoId(record.getServiceInvoice_DocType_ID()))
-							.serviceFeeProductId(ProductId.ofRepoId(record.getServiceFee_Product_ID()))
-							.validFrom(TimeUtil.asZonedDateTime(record.getValidFrom()))
-							.bpartnerDetails(partnerDetails)
-							.build();
-				})
+				.map(this::fromPO)
 				.collect(GuavaCollectors.toImmutableList());
 		return new InvoiceProcessingServiceCompanyConfigMap(collect);
 	}
 
-	private ImmutableList<InvoiceProcessingServiceCompanyConfigBPartnerDetails> readAllBPartnerDetails(@NonNull final I_InvoiceProcessingServiceCompany company)
+	private InvoiceProcessingServiceCompanyConfig fromPO(@NonNull final I_InvoiceProcessingServiceCompany record)
+	{
+		final ImmutableList<InvoiceProcessingServiceCompanyConfigBPartnerDetails> partnerDetails = retrieveAllBPartnerDetails(record);
+
+		return InvoiceProcessingServiceCompanyConfig.builder()
+				.serviceCompanyBPartnerId(BPartnerId.ofRepoId(record.getServiceCompany_BPartner_ID()))
+				.serviceInvoiceDocTypeId(DocTypeId.ofRepoId(record.getServiceInvoice_DocType_ID()))
+				.serviceFeeProductId(ProductId.ofRepoId(record.getServiceFee_Product_ID()))
+				.validFrom(TimeUtil.asZonedDateTime(record.getValidFrom()))
+				.bpartnerDetails(partnerDetails)
+				.build();
+	}
+
+	private ImmutableList<InvoiceProcessingServiceCompanyConfigBPartnerDetails> retrieveAllBPartnerDetails(@NonNull final I_InvoiceProcessingServiceCompany company)
 	{
 		return queryBL
 				.createQueryBuilder(I_InvoiceProcessingServiceCompany_BPartnerAssignment.class)
