@@ -187,7 +187,7 @@ public class InvoiceProcessingServiceCompanyServiceTest
 							.serviceFeeProductId(serviceFeeProductId)
 							//
 							.feeAmountIncludingTax(Amount.of(2, CurrencyCode.EUR))
-							//
+							// 
 							.build());
 		}
 
@@ -197,6 +197,7 @@ public class InvoiceProcessingServiceCompanyServiceTest
 			config()
 					.feePercentageOfGrandTotal("2")
 					.customerId(BPartnerId.ofRepoId(2))
+					.validFrom(LocalDate.parse("2020-04-30").atStartOfDay(ZoneId.of("UTC+5")))
 					.build();
 
 			final I_C_Invoice serviceFeeInvoice = newInstance(I_C_Invoice.class);

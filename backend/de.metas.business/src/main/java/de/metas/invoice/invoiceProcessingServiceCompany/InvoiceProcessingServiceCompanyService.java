@@ -81,11 +81,10 @@ public class InvoiceProcessingServiceCompanyService
 		final InvoiceId invoiceId = request.getInvoiceId();
 		final Amount invoiceGrandTotal = request.getInvoiceGrandTotal();
 
-		 // TODO tbp: i think this needs cherry picking
-		// if (invoiceDAO.hasCompletedInvoicesReferencing(invoiceId))
-		// {
-		// 	return Optional.empty();
-		// }
+		if (invoiceDAO.hasCompletedInvoicesReferencing(invoiceId))
+		{
+			return Optional.empty();
+		}
 
 		final InvoiceProcessingServiceCompanyConfig config = configRepository.getByCustomerId(customerId, request.getEvaluationDate()).orElse(null);
 		if (config == null)
