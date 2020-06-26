@@ -21,6 +21,16 @@ import PaypalReservationConfirm from './containers/PaypalReservationConfirm.js';
 
 let hasTutorial = false;
 
+const DocListRoute = (nextState) => (
+  <DocList
+    query={nextState.location.query}
+    windowId={nextState.params.windowId}
+  />
+);
+const BoardRoute = (nextState) => (
+  <Board query={nextState.location.query} boardId={nextState.params.boardId} />
+);
+
 export const getRoutes = (store, auth, plugins) => {
   const authRequired = (nextState, replace, callback) => {
     hasTutorial =
@@ -122,18 +132,6 @@ export const getRoutes = (store, auth, plugins) => {
   };
 
   const pluginRoutes = getPluginsRoutes(plugins);
-  const DocListRoute = (nextState) => (
-    <DocList
-      query={nextState.location.query}
-      windowId={nextState.params.windowId}
-    />
-  );
-  const BoardRoute = (nextState) => (
-    <Board
-      query={nextState.location.query}
-      boardId={nextState.params.boardId}
-    />
-  );
 
   const childRoutes = [
     {

@@ -8,7 +8,7 @@ import {
   setRawModalDescription,
 } from '../actions/WindowActions';
 
-import DocumentList from './app/DocumentList';
+import DocumentList from '../containers/DocumentList';
 import ErrorScreen from './app/ErrorScreen';
 import Modal from './app/Modal';
 import RawModal from './app/RawModal';
@@ -41,7 +41,7 @@ class Container extends PureComponent {
       children,
       viewId,
       attachments,
-      showIndicator,
+      modalHidden,
       // TODO: We should be using indicator from the state instead of another variable
       isDocumentNotSaved,
       hideHeader,
@@ -51,7 +51,6 @@ class Container extends PureComponent {
       rawModal,
       modal,
       pluginModal,
-      indicator,
       includedView,
       closeModalCallback,
       editmode,
@@ -88,6 +87,7 @@ class Container extends PureComponent {
           <Header
             docStatus={docActionElem}
             windowId={windowId}
+            showIndicator={modalHidden}
             {...{
               entity,
               docStatusData,
@@ -95,7 +95,6 @@ class Container extends PureComponent {
               docSummaryData,
               handleDeletedStatus,
               isDocumentNotSaved,
-              showIndicator,
               viewId,
               siteName,
               showSidelist,
@@ -122,18 +121,17 @@ class Container extends PureComponent {
             (noMargin ? 'dashboard' : 'container-fluid')
           }
         >
-          {modal.visible && (
+          {!modalHidden && (
             <Modal
               {...modal}
               windowId={modal.type}
               dataId={modal.dataId ? modal.dataId : dataId}
               modalTitle={modal.title}
-              modalViewId={modal.viewId}
-              parentType={windowId}
+              viewId={modal.viewId}
+              parentWindowId={windowId}
               parentDataId={dataId}
-              viewId={viewId}
+              parentViewId={viewId}
               rawModalVisible={rawModal.visible}
-              indicator={indicator}
               modalViewDocumentIds={modal.viewDocumentIds}
               closeCallback={closeModalCallback}
               modalSaveStatus={
@@ -161,7 +159,7 @@ class Container extends PureComponent {
               <div className="document-lists-wrapper">
                 <DocumentList
                   type="grid"
-                  windowType={rawModal.windowId}
+                  windowId={rawModal.windowId}
                   defaultViewId={rawModal.viewId}
                   viewProfileId={rawModal.profileId}
                   setModalTitle={setRawModalTitle}
@@ -190,7 +188,7 @@ class Container extends PureComponent {
                   includedView.viewId && (
                     <DocumentList
                       type="includedView"
-                      windowType={includedView.windowType}
+                      windowId={includedView.windowType}
                       viewProfileId={includedView.viewProfileId}
                       defaultViewId={includedView.viewId}
                       parentDefaultViewId={rawModal.viewId}
@@ -246,7 +244,6 @@ class Container extends PureComponent {
  * @prop {*} handleEditModeToggle
  * @prop {*} hideHeader
  * @prop {*} includedView
- * @prop {string} indicator
  * @prop {bool} isDocumentNotSaved
  * @prop {*} masterDocumentList
  * @prop {*} modal
@@ -261,7 +258,7 @@ class Container extends PureComponent {
  * @prop {string} viewId
  * @prop {object} rawModal
  * @prop {*} references
- * @prop {*} showIndicator
+ * @prop {*} modalHidden
  * @prop {*} showSidelist
  * @prop {*} setModalDescription
  * @prop {*} setModalTitle
@@ -288,7 +285,6 @@ Container.propTypes = {
   hideHeader: PropTypes.any,
   handleDeletedStatus: PropTypes.any,
   handleEditModeToggle: PropTypes.any,
-  indicator: PropTypes.any,
   includedView: PropTypes.any,
   isDocumentNotSaved: PropTypes.any,
   masterDocumentList: PropTypes.any,
@@ -303,7 +299,7 @@ Container.propTypes = {
   viewId: PropTypes.string,
   rawModal: PropTypes.any,
   references: PropTypes.any,
-  showIndicator: PropTypes.any,
+  modalHidden: PropTypes.any,
   showSidelist: PropTypes.any,
   siteName: PropTypes.any,
   setRawModalDescription: PropTypes.any,
@@ -317,7 +313,7 @@ Container.propTypes = {
  * @param {object} state
  */
 const mapStateToProps = (state, { windowId }) => {
-  let master = getView(windowId);
+  let master = getView(state, windowId);
 
   if (!master || !windowId) {
     master = viewState;
@@ -328,7 +324,6 @@ const mapStateToProps = (state, { windowId }) => {
     connectionError: state.windowHandler.connectionError || false,
     pluginComponents: state.pluginsHandler.components,
     pluginModal: state.windowHandler.pluginModal,
-    indicator: state.windowHandler.indicator,
     breadcrumb: state.menuHandler.breadcrumb,
   };
 };

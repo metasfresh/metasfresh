@@ -1,13 +1,9 @@
 import update from 'immutability-helper';
-import { Map as iMap, List as iList, Set as iSet } from 'immutable';
-import { get, forEach, difference } from 'lodash';
+import { Set as iSet } from 'immutable';
 import { createSelector } from 'reselect';
-import uuid from 'uuid/v4';
 
 import {
   ACTIVATE_TAB,
-  ADD_NEW_ROW,
-  ADD_ROW_DATA,
   ALLOW_SHORTCUT,
   ALLOW_OUTSIDE_CLICK,
   CHANGE_INDICATOR_STATE,
@@ -17,10 +13,8 @@ import {
   CLOSE_PROCESS_MODAL,
   CLOSE_RAW_MODAL,
   CLOSE_FILTER_BOX,
-  DELETE_ROW,
   DELETE_QUICK_ACTIONS,
   DELETE_TOP_ACTIONS,
-  DESELECT_TABLE_ITEMS,
   DISABLE_SHORTCUT,
   DISABLE_OUTSIDE_CLICK,
   FETCHED_QUICK_ACTIONS,
@@ -38,9 +32,6 @@ import {
   PATCH_REQUEST,
   PATCH_RESET,
   PATCH_SUCCESS,
-  REMOVE_TABLE_ITEMS_SELECTION,
-  SELECT_TABLE_ITEMS,
-  SET_LATEST_NEW_DOCUMENT,
   SET_RAW_MODAL_DESCRIPTION,
   SET_RAW_MODAL_TITLE,
   SORT_TAB,
@@ -54,12 +45,6 @@ import {
   UPDATE_MASTER_DATA,
   UPDATE_MODAL,
   UPDATE_RAW_MODAL,
-  UPDATE_ROW_FIELD_PROPERTY,
-  UPDATE_ROW_PROPERTY,
-  UPDATE_ROW_STATUS,
-  UPDATE_TAB_ROWS_DATA,
-  SHOW_SPINNER,
-  HIDE_SPINNER,
 } from '../constants/ActionTypes';
 
 export const initialState = {
@@ -75,15 +60,13 @@ export const initialState = {
     viewId: null,
     layout: {},
     data: {},
-    rowData: iMap(),
     modalTitle: '',
     modalType: '',
     isAdvanced: false,
-    viewDocumentIds: null,
+    viewDocumentIds: [],
     childViewId: null,
-    childViewSelectedIds: null,
+    childViewSelectedIds: [],
     parentViewId: null,
-    parentViewSelectedIds: null,
     triggerField: null,
     saveStatus: {},
     validStatus: {},
@@ -115,10 +98,6 @@ export const initialState = {
       activeTab: null,
     },
     data: [],
-
-    // rowData is an immutable Map with tabId's as keys, and Lists as values.
-    // List's elements are plain objects for now
-    rowData: iMap(),
     saveStatus: {},
     validStatus: {},
     includedTabsInfo: {},
@@ -135,10 +114,7 @@ export const initialState = {
   indicator: 'saved',
   allowShortcut: true,
   allowOutsideClick: true,
-  latestNewDocument: null,
   viewId: null,
-  selections: {},
-  selectionsHash: null,
   patches: {
     requests: {
       length: 0,
@@ -146,38 +122,20 @@ export const initialState = {
     success: true,
   },
   filter: {},
-  spinner: null,
 };
 
 export const NO_SELECTION = [];
 
-/* This is an improved function for getting selected rows, as it immediately reacts
- * to any changes to the selectionsHash variable in the state. This variable is set
- * with a random uuid hash whenever table row is selected/deleted.
- */
-/* eslint-disable no-unused-vars */
-export const getSelectionData = (
-  state,
-  { windowId, windowType, viewId },
-  hash
-) => {
-  const winId = windowId || windowType;
-  const windowTypeSelections = state.windowHandler.selections[winId];
-  const id = viewId || winId;
+const getQuickactionsData = (state, { windowType, viewId }) => {
+  const key = `${windowType}${viewId ? `-${viewId}` : ''}`;
 
-  return (windowTypeSelections && windowTypeSelections[id]) || NO_SELECTION;
+  return state.windowHandler.quickActions[key] || NO_SELECTION;
 };
 
-export const getSelectionInstant = createSelector(
-  [getSelectionData],
-  (items) => items
+export const getQuickactions = createSelector(
+  [getQuickactionsData],
+  (actions) => actions
 );
-
-export const getSelectionDirect = (selections, windowId, viewId) => {
-  const windowTypeSelections = selections[windowId];
-
-  return (windowTypeSelections && windowTypeSelections[viewId]) || NO_SELECTION;
-};
 
 export default function windowHandler(state = initialState, action) {
   switch (action.type) {
@@ -204,7 +162,6 @@ export default function windowHandler(state = initialState, action) {
           viewDocumentIds: action.viewDocumentIds,
           triggerField: action.triggerField,
           parentViewId: action.parentViewId,
-          parentViewSelectedIds: action.parentViewSelectedIds,
           childViewId: action.childViewId,
           childViewSelectedIds: action.childViewSelectedIds,
         },
@@ -336,7 +293,6 @@ export default function windowHandler(state = initialState, action) {
           data: action.data,
           docId: action.docId,
           layout: {},
-          rowData: iMap(),
           saveStatus: action.saveStatus,
           standardActions: iSet(action.standardActions),
           validStatus: action.validStatus,
@@ -361,7 +317,6 @@ export default function windowHandler(state = initialState, action) {
         master: {
           ...state.master,
           data: {},
-          rowData: iMap(),
           docId: undefined,
         },
       };
@@ -400,94 +355,7 @@ export default function windowHandler(state = initialState, action) {
           },
         },
       });
-    /* eslint-disable no-case-declarations */
-    case ADD_ROW_DATA:
-      let addRowData = iMap();
 
-      for (const [key, item] of Object.entries(action.data)) {
-        const arrayItem = item.length ? item : [];
-        addRowData = addRowData.set(key, iList(arrayItem));
-      }
-
-      return {
-        ...state,
-        [action.scope]: {
-          ...state[action.scope],
-          rowData: state[action.scope].rowData.merge(addRowData),
-        },
-      };
-    case ADD_NEW_ROW:
-      const newRowData = state[action.scope].rowData.update(
-        `${action.tabid}`,
-        (list) => list.push(action.item)
-      );
-
-      return {
-        ...state,
-        [`${action.scope}`]: {
-          ...state[`${action.scope}`],
-          rowData: newRowData,
-        },
-      };
-    case DELETE_ROW:
-      const deletedRowData = state[action.scope].rowData.update(
-        `${action.tabid}`,
-        (list) => list.filter((item) => item.rowId !== action.rowid)
-      );
-
-      return {
-        ...state,
-        [`${action.scope}`]: {
-          ...state[`${action.scope}`],
-          rowData: deletedRowData,
-        },
-      };
-
-    // websocket event
-    case UPDATE_TAB_ROWS_DATA: {
-      const {
-        data: { changed, removed },
-        tabId,
-        scope,
-      } = action.payload;
-      const rowData = state[scope].rowData.toJS();
-      let rows = get(rowData, `${tabId}`, []);
-
-      if (rows.length) {
-        if (removed) {
-          rows = rows.filter((row) => !removed[row.rowId]);
-        }
-
-        // find&replace updated rows (unfortunately it's a table so we'll have to traverse it)
-        if (changed) {
-          rows = rows.map((row) => {
-            if (changed[row.rowId]) {
-              row = { ...changed[row.rowId] };
-
-              delete changed[row.rowId];
-
-              return row;
-            }
-            return row;
-          });
-        }
-      } else {
-        rows = [];
-      }
-      // added rows
-      forEach(changed, (value, key) => rows.push(value));
-
-      let addRowData = iMap();
-      addRowData = addRowData.set(tabId, iList(rows));
-
-      return {
-        ...state,
-        [scope]: {
-          ...state[scope],
-          rowData: state[scope].rowData.merge(addRowData),
-        },
-      };
-    }
     case UPDATE_DATA_FIELD_PROPERTY:
       return update(state, {
         [action.scope]: {
@@ -508,9 +376,12 @@ export default function windowHandler(state = initialState, action) {
       if (typeof action.value === 'string') {
         value = action.value;
       } else if (action.property === 'standardActions') {
-        // TODO: Evaluate if standardActions of type iSet
-        // is worth this extra check
+        // TODO: Use normal array
         value = iSet(action.value);
+        // TODO: we can probably overwrite all of them instead of merging but this has
+        // to be checked.
+      } else if (['saveStatus', 'validStatus'].includes(action.property)) {
+        value = action.value;
       } else {
         value = Object.assign(
           {},
@@ -527,84 +398,7 @@ export default function windowHandler(state = initialState, action) {
         },
       });
     }
-    case UPDATE_ROW_FIELD_PROPERTY: {
-      const { scope, tabid, rowid, property } = action;
-      const scState = state[scope];
-      const scRowData = scState.rowData.get(`${tabid}`);
 
-      if (scState && scState.rowData && scRowData) {
-        const updateRowFieldProperty = state[action.scope].rowData.update(
-          `${tabid}`,
-          (list) =>
-            list.map((item) =>
-              item.rowId === rowid
-                ? {
-                    ...item,
-                    fieldsByName: {
-                      ...item.fieldsByName,
-                      [property]: {
-                        ...item.fieldsByName[property],
-                        ...action.item,
-                      },
-                    },
-                  }
-                : item
-            )
-        );
-
-        return {
-          ...state,
-          [`${action.scope}`]: {
-            ...state[`${action.scope}`],
-            rowData: updateRowFieldProperty,
-          },
-        };
-      } else {
-        return state;
-      }
-    }
-    case UPDATE_ROW_PROPERTY:
-      const updateRowPropertyData = state[action.scope].rowData.update(
-        `${action.tabid}`,
-        (list) =>
-          list.map((item) =>
-            item.rowId === action.rowid
-              ? {
-                  ...item,
-                  [action.property]: action.item,
-                }
-              : item
-          )
-      );
-
-      return {
-        ...state,
-        [`${action.scope}`]: {
-          ...state[`${action.scope}`],
-          rowData: updateRowPropertyData,
-        },
-      };
-    case UPDATE_ROW_STATUS:
-      const updateRowStatusData = state[action.scope].rowData.update(
-        `${action.tabid}`,
-        (list) =>
-          list.map((item) =>
-            item.rowId !== action.rowid
-              ? {
-                  ...item,
-                  saveStatus: action.saveStatus,
-                }
-              : item
-          )
-      );
-
-      return {
-        ...state,
-        [`${action.scope}`]: {
-          ...state[`${action.scope}`],
-          rowData: updateRowStatusData,
-        },
-      };
     /* eslint-enable no-case-declarations */
     case UPDATE_DATA_VALID_STATUS:
       return Object.assign({}, state, {
@@ -636,72 +430,6 @@ export default function windowHandler(state = initialState, action) {
         }),
       });
     // END OF SCOPED ACTIONS
-
-    case SELECT_TABLE_ITEMS: {
-      const { windowType, viewId, ids } = action.payload;
-
-      if (!ids) {
-        return state;
-      }
-
-      const checkedIds = ids.length && ids[0] === undefined ? null : ids;
-
-      return {
-        ...state,
-        selectionsHash: uuid(),
-        selections: {
-          ...state.selections,
-          [windowType]: {
-            ...state.selections[windowType],
-            [viewId]: checkedIds,
-          },
-        },
-      };
-    }
-
-    case DESELECT_TABLE_ITEMS: {
-      const { windowType, viewId, ids } = action.payload;
-
-      const windowTypeSelections = state.selections[windowType]
-        ? state.selections[windowType]
-        : {};
-
-      return {
-        ...state,
-        selectionsHash: uuid(),
-        selections: {
-          ...state.selections,
-          [windowType]: {
-            ...windowTypeSelections,
-            [viewId]: difference(windowTypeSelections[viewId], ids),
-          },
-        },
-      };
-    }
-
-    case REMOVE_TABLE_ITEMS_SELECTION: {
-      const { windowType, viewId } = action.payload;
-      const windowSelections = { ...state.selections[windowType] };
-
-      delete state.selections[windowType];
-      delete windowSelections[viewId];
-
-      return {
-        ...state,
-        selectionsHash: uuid(),
-        selections: {
-          ...state.selections,
-          [windowType]: { ...windowSelections },
-        },
-      };
-    }
-
-    // LATEST NEW DOCUMENT CACHE
-    case SET_LATEST_NEW_DOCUMENT:
-      return {
-        ...state,
-        latestNewDocument: action.id,
-      };
 
     case OPEN_FILTER_BOX:
       return {
@@ -808,22 +536,6 @@ export default function windowHandler(state = initialState, action) {
         indicator: action.state,
       };
 
-    case SHOW_SPINNER: {
-      const newState = {
-        ...state,
-      };
-
-      if (!newState.spinner) {
-        newState.spinner = action.spinnerId;
-      }
-
-      return newState;
-    }
-    case HIDE_SPINNER:
-      return {
-        ...state,
-        spinner: null,
-      };
     // QUICK ACTIONS
     case FETCHED_QUICK_ACTIONS:
       return {
