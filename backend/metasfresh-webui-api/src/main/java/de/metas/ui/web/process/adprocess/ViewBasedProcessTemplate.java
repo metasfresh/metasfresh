@@ -2,10 +2,8 @@ package de.metas.ui.web.process.adprocess;
 
 import java.util.stream.Stream;
 
-import javax.annotation.Nullable;
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 
-import org.adempiere.ad.element.api.AdTabId;
 import org.compiere.SpringContextHolder;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -90,19 +88,12 @@ public abstract class ViewBasedProcessTemplate extends JavaProcess
 	public static final String PARAM_ChildViewSelectedIds = "$WEBUI_ChildViewSelectedIds";
 	@Param(parameterName = PARAM_ChildViewSelectedIds, mandatory = false)
 	private String p_WebuiChildViewSelectedIdsStr;
-	//
-	public static final String PARAM_AdTabID= "$WEBUI_AdTabId";
-	@Param(parameterName = PARAM_AdTabID, mandatory = false)
-	private String p_AdTabID;
 
 	private IView _view;
 	private ViewProfileId _viewProfileId;
 	private ViewRowIdsSelection _viewRowIdsSelection;
 	private ViewRowIdsSelection _parentViewRowIdsSelection;
 	private ViewRowIdsSelection _childViewRowIdsSelection;
-
-	@Nullable
-	private AdTabId _adTabID;
 	
 	private transient JSONOptions _jsonOptions; // lazy
 
@@ -123,7 +114,7 @@ public abstract class ViewBasedProcessTemplate extends JavaProcess
 	 *
 	 * @param context
 	 */
-	public ProcessPreconditionsResolution checkPreconditionsApplicable(final IProcessPreconditionsContext context)
+	public final ProcessPreconditionsResolution checkPreconditionsApplicable(final IProcessPreconditionsContext context)
 	{
 		return checkPreconditionsApplicable();
 	}
@@ -156,11 +147,9 @@ public abstract class ViewBasedProcessTemplate extends JavaProcess
 		final ViewRowIdsSelection viewRowIdsSelection = ViewRowIdsSelection.of(view.getViewId(), DocumentIdsSelection.ofCommaSeparatedString(p_WebuiViewSelectedIdsStr));
 		final ViewRowIdsSelection parentViewRowIdsSelection = ViewRowIdsSelection.ofNullableStrings(p_WebuiParentViewId, p_WebuiParentViewSelectedIdsStr);
 		final ViewRowIdsSelection childViewRowIdsSelection = ViewRowIdsSelection.ofNullableStrings(p_WebuiChildViewId, p_WebuiChildViewSelectedIdsStr);
-		final AdTabId adTabId = AdTabId.ofRepoId(getTable_ID());
 
 		setViewInfos(ViewAsPreconditionsContext.builder()
 				.view(view)
-				.tabId(adTabId)
 				.viewRowIdsSelection(viewRowIdsSelection)
 				.parentViewRowIdsSelection(parentViewRowIdsSelection)
 				.childViewRowIdsSelection(childViewRowIdsSelection)
@@ -184,7 +173,6 @@ public abstract class ViewBasedProcessTemplate extends JavaProcess
 		_viewRowIdsSelection = viewContext.getViewRowIdsSelection();
 		_parentViewRowIdsSelection = viewContext.getParentViewRowIdsSelection();
 		_childViewRowIdsSelection = viewContext.getChildViewRowIdsSelection();
-		_adTabID = viewContext.getAdTabId();
 
 		// Update result from view
 		// Do this only when view is not null to avoid reseting previous set info (shall not happen)
@@ -278,8 +266,6 @@ public abstract class ViewBasedProcessTemplate extends JavaProcess
 		return _childViewRowIdsSelection;
 	}
 
-	protected final AdTabId getAdTabId() {return _adTabID;}
-
 	protected final <T extends IView> T getChildView(@NonNull final Class<T> viewType)
 	{
 		final ViewRowIdsSelection childViewRowIdsSelection = getChildViewRowIdsSelection();
@@ -294,8 +280,6 @@ public abstract class ViewBasedProcessTemplate extends JavaProcess
 		final ViewRowIdsSelection childViewRowIdsSelection = getChildViewRowIdsSelection();
 		return childViewRowIdsSelection != null ? childViewRowIdsSelection.getRowIds() : DocumentIdsSelection.EMPTY;
 	}
-
-	//get ad tab id method
 
 	protected IViewRow getChildViewSingleSelectedRow()
 	{

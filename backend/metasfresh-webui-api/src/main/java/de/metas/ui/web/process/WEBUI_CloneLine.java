@@ -22,11 +22,10 @@
 
 package de.metas.ui.web.process;
 
-
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
+import de.metas.process.JavaProcess;
 import de.metas.process.ProcessPreconditionsResolution;
-import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
 import de.metas.ui.web.window.model.DocumentCollection;
 import lombok.NonNull;
 import org.adempiere.model.CopyRecordFactory;
@@ -35,31 +34,18 @@ import org.compiere.SpringContextHolder;
 
 import javax.annotation.Nullable;
 
-public class WEBUI_CloneLine extends ViewBasedProcessTemplate implements IProcessPrecondition
+public class WEBUI_CloneLine extends JavaProcess implements IProcessPrecondition
 {
-
-	@Override
-	public ProcessPreconditionsResolution checkPreconditionsApplicable(@NonNull final IProcessPreconditionsContext context)
-	{
-		if (getAdTabId() == null)
-		{
-			return ProcessPreconditionsResolution.reject();
-		}
-		if (!CopyRecordFactory.isEnabledForTableName(getTableName()))
-		{
-			return ProcessPreconditionsResolution.reject();
-		}
-
-		return ProcessPreconditionsResolution.accept();
-	}
+	DocumentCollection documentCollectionService = SpringContextHolder.instance.getBean(DocumentCollection.class);
 
 	@Nullable
 	@Override
 	protected String doIt() throws Exception
 	{
-		final TableRecordReference tableRecordReference = getView().getTableRecordReferenceOrNull(getSelectedRowIds().getSingleDocumentId());
-		SpringContextHolder.instance.getBean(DocumentCollection.class).duplicateDocumentInTrxGeneric(tableRecordReference,
-				getSelectedRowIds().getSingleDocumentId(), getWindowId());
+		// To be replaced with table id of the selected row's table and row id
+		// Also, if we are gonna support multiple rows cloning we could put the following 2 lines in a foreach (rowId : rowIds) statement
+		final TableRecordReference tableRecordReference = TableRecordReference.of(getTable_ID(), getRecord_ID());
+		documentCollectionService.duplicateDocumentInTrxGeneric(tableRecordReference, getProcessInfo().getAdWindowId());
 		return null;
 	}
 
@@ -75,5 +61,17 @@ public class WEBUI_CloneLine extends ViewBasedProcessTemplate implements IProces
 		return false;
 	}
 
-
+	@Override
+	public ProcessPreconditionsResolution checkPreconditionsApplicable(final @NonNull IProcessPreconditionsContext context)
+	{
+		if (context.getAdTabId() == null)
+		{
+			return ProcessPreconditionsResolution.reject();
+		}
+		if (!CopyRecordFactory.isEnabledForTableName(getTableName())) // To be replaced with the table name of the sub tab selected row's table
+		{
+			return ProcessPreconditionsResolution.reject();
+		}
+		return ProcessPreconditionsResolution.accept();
+	}
 }

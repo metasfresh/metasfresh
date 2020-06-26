@@ -24,7 +24,6 @@ package de.metas.ui.web.process.config;
 
 import de.metas.process.IADProcessDAO;
 import de.metas.process.RelatedProcessDescriptor;
-import de.metas.process.impl.ADProcessDAO;
 import de.metas.ui.web.process.WEBUI_CloneLine;
 import de.metas.util.Services;
 import org.springframework.stereotype.Component;
@@ -34,15 +33,16 @@ import javax.annotation.PostConstruct;
 @Component
 public class StandardProcessConfig
 {
+	private final IADProcessDAO adProcessesRepo = Services.get(IADProcessDAO.class);
 
 	@PostConstruct
 	public void registerProcess()
 	{
-		Services.get(IADProcessDAO.class).registerTableProcess(RelatedProcessDescriptor.builder()
-				.processId(Services.get(ADProcessDAO.class).retrieveProcessIdByClass(WEBUI_CloneLine.class))
+		adProcessesRepo.registerTableProcess(RelatedProcessDescriptor.builder()
+				.processId(adProcessesRepo.retrieveProcessIdByClass(WEBUI_CloneLine.class))
 				.anyTable()
 				.anyWindow()
-				.displayPlace(RelatedProcessDescriptor.DisplayPlace.ViewActionsMenu)
+				.displayPlace(RelatedProcessDescriptor.DisplayPlace.IncludedTabTopActionsMenu)
 				.build());
 	}
 }

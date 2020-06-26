@@ -88,7 +88,6 @@ public class ViewAsPreconditionsContext implements WebuiPreconditionsContext
 	private final ViewRowIdsSelection viewRowIdsSelection;
 	private final ViewRowIdsSelection parentViewRowIdsSelection;
 	private final ViewRowIdsSelection childViewRowIdsSelection;
-	@Nullable private final AdTabId adTabId;
 
 	private final DisplayPlace displayPlace;
 
@@ -102,7 +101,6 @@ public class ViewAsPreconditionsContext implements WebuiPreconditionsContext
 			@NonNull final ViewRowIdsSelection viewRowIdsSelection,
 			final ViewRowIdsSelection parentViewRowIdsSelection,
 			final ViewRowIdsSelection childViewRowIdsSelection,
-			final AdTabId tabId,
 			final DisplayPlace displayPlace)
 	{
 		this.view = view;
@@ -112,7 +110,6 @@ public class ViewAsPreconditionsContext implements WebuiPreconditionsContext
 		this.viewRowIdsSelection = viewRowIdsSelection;
 		this.parentViewRowIdsSelection = parentViewRowIdsSelection;
 		this.childViewRowIdsSelection = childViewRowIdsSelection;
-		this.adTabId = tabId;
 
 		final DocumentIdsSelection selectedRowIds = viewRowIdsSelection.getRowIds();
 		if (selectedRowIds.isSingleDocumentId())
@@ -148,7 +145,7 @@ public class ViewAsPreconditionsContext implements WebuiPreconditionsContext
 	@Override
 	public AdTabId getAdTabId()
 	{
-		return this.adTabId;
+		return null;
 	}
 
 	@Override
