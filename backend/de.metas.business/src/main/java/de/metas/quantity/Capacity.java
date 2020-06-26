@@ -24,6 +24,7 @@ package de.metas.quantity;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.Optional;
 
 import org.compiere.model.I_C_UOM;
 
@@ -208,7 +209,7 @@ public final class Capacity
 	 * @param capacityDef
 	 * @return how many capacities are required or NULL if capacity is not available
 	 */
-	public Integer calculateQtyTU(
+	public Optional<QuantityTU> calculateQtyTU(
 			@NonNull final BigDecimal qty,
 			@NonNull final I_C_UOM targetUom,
 			@NonNull final QuantityUOMConverter uomConverter)
@@ -216,26 +217,26 @@ public final class Capacity
 		// Infinite capacity => one pack would be sufficient
 		if (infiniteCapacity)
 		{
-			return 1;
+			return Optional.of(QuantityTU.ONE);
 		}
 
 		// Qty is zero => zero packs
 		if (qty.signum() == 0)
 		{
-			return 0;
+			return Optional.of(QuantityTU.ZERO);
 		}
 
 		// Capacity is ZERO => N/A
 		if (capacity.signum() <= 0)
 		{
-			return null;
+			return Optional.empty();
 		}
 
 		// Convert Qty to Capacity's UOM
 		final BigDecimal qtyConv = uomConverter.convertQty(productId, qty, uom, targetUom);
 
-		final BigDecimal qtyPacks = qtyConv.divide(capacity, 0, RoundingMode.UP);
-		return qtyPacks.intValueExact();
+		final int qtyTUs = qtyConv.divide(capacity, 0, RoundingMode.UP).intValueExact();
+		return Optional.of(QuantityTU.ofInt(qtyTUs));
 	}
 
 	public Capacity multiply(final int multiplier)

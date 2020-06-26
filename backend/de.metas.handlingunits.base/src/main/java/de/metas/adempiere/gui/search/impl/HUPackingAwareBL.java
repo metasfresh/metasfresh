@@ -24,9 +24,13 @@ package de.metas.adempiere.gui.search.impl;
 
 import java.math.BigDecimal;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.apps.search.IInfoSimple;
 import org.compiere.model.I_C_UOM;
+
+import com.google.common.annotations.VisibleForTesting;
 
 import de.metas.adempiere.gui.search.IHUPackingAware;
 import de.metas.adempiere.gui.search.IHUPackingAwareBL;
@@ -37,6 +41,7 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.product.ProductId;
 import de.metas.quantity.Capacity;
 import de.metas.quantity.Quantity;
+import de.metas.quantity.QuantityTU;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
@@ -134,17 +139,18 @@ public class HUPackingAwareBL implements IHUPackingAwareBL
 		}
 		else
 		{
-			final BigDecimal qtyPacks = calculateQtyTU(record);
-			record.setQtyTU(qtyPacks);
+			final QuantityTU qtyTUs = calculateQtyTU(record);
+			record.setQtyTU(qtyTUs != null ? qtyTUs.toBigDecimal() : null);
 		}
 	}
 
-	@Override
-	public BigDecimal calculateQtyTU(@NonNull final IHUPackingAware record)
+	@VisibleForTesting
+	@Nullable
+	QuantityTU calculateQtyTU(@NonNull final IHUPackingAware record)
 	{
 		if (uomDAO.isUOMForTUs(UomId.ofRepoId(record.getC_UOM_ID())))
 		{
-			return record.getQty(); // the quantity *is* already the number of TUs
+			return QuantityTU.ofBigDecimal(record.getQty()); // the quantity *is* already the number of TUs
 		}
 
 		final Capacity capacity = calculateCapacity(record);
@@ -158,13 +164,13 @@ public class HUPackingAwareBL implements IHUPackingAwareBL
 			return null;
 		}
 
-		final Integer qtyTU = capacity.calculateQtyTU(record.getQty(), extractUOMOrNull(record), uomConversionBL);
+		final QuantityTU qtyTU = capacity.calculateQtyTU(record.getQty(), extractUOMOrNull(record), uomConversionBL).orElse(null);
 		if (qtyTU == null)
 		{
 			return null;
 		}
 
-		return BigDecimal.valueOf(qtyTU);
+		return qtyTU;
 	}
 
 	@Override
