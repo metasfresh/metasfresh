@@ -24,6 +24,8 @@ package de.metas.handlingunits.allocation.impl;
 
 import java.util.List;
 
+import javax.annotation.Nullable;
+
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.allocation.IAllocationRequest;
 import de.metas.handlingunits.allocation.IAllocationResult;
@@ -43,9 +45,14 @@ import lombok.NonNull;
  */
 public abstract class AbstractFIFOStrategy extends AbstractAllocationStrategy
 {
-	public AbstractFIFOStrategy(final boolean outTrx)
+	public AbstractFIFOStrategy(
+			@NonNull final AllocationDirection direction,
+			@NonNull final AllocationStrategySupportingServicesFacade services,
+			@Nullable final IAllocationStrategyFactory allocationStrategyFactory)
 	{
-		super(outTrx);
+		super(direction,
+				services,
+				allocationStrategyFactory);
 	}
 
 	/**
@@ -69,7 +76,7 @@ public abstract class AbstractFIFOStrategy extends AbstractAllocationStrategy
 
 		//
 		// Iterate HU Items and try to allocate on them
-		final List<I_M_HU_Item> huItems = getHandlingUnitsDAO().retrieveItems(hu);
+		final List<I_M_HU_Item> huItems = services.retrieveItems(hu);
 		for (final I_M_HU_Item item : huItems)
 		{
 			// Check: is allocation is completed, stop it here.
@@ -80,7 +87,7 @@ public abstract class AbstractFIFOStrategy extends AbstractAllocationStrategy
 
 			//
 			// Gets ItemType
-			final String itemType = handlingUnitsBL.getItemType(item);
+			final String itemType = services.getItemType(item);
 
 			//
 			// Allocate to/from material item
@@ -136,7 +143,7 @@ public abstract class AbstractFIFOStrategy extends AbstractAllocationStrategy
 		//
 		// Try to allocate on existing included HUs
 		// TODO: consider retrieving an iterator of included HUs, load only what you need and after each included HU allocation check if you need to go forward
-		final List<I_M_HU> includedHUs = getHandlingUnitsDAO().retrieveIncludedHUs(item);
+		final List<I_M_HU> includedHUs = services.retrieveIncludedHUs(item);
 		for (final I_M_HU includedHU : includedHUs)
 		{
 			final IAllocationRequest includedRequest = AllocationUtils.createQtyRequestForRemaining(request, result);
@@ -175,7 +182,7 @@ public abstract class AbstractFIFOStrategy extends AbstractAllocationStrategy
 
 		//
 		// If our item is from a Virtual HU, we shall allocate to or from it directly
-		if (handlingUnitsBL.isVirtual(item))
+		if (services.isVirtual(item))
 		{
 			final I_M_HU_Item vhuItem = item;
 			return allocateOnVirtualMaterialItem(vhuItem, request);
@@ -183,7 +190,7 @@ public abstract class AbstractFIFOStrategy extends AbstractAllocationStrategy
 
 		//
 		// Deallocation
-		if (isOutTrx())
+		if (getDirection().isOutboundDeallocation())
 		{
 			// iterate all VHU linked to this item and try to deallocate from them
 			return allocateOnIncludedHUItem(item, request);
@@ -232,7 +239,9 @@ public abstract class AbstractFIFOStrategy extends AbstractAllocationStrategy
 		return allocationResult;
 	}
 
-	protected final IAllocationStrategy getIncludedHUAllocationStrategy(final I_M_HU hu, final IAllocationRequest request)
+	protected final IAllocationStrategy getIncludedHUAllocationStrategy(
+			final I_M_HU hu,
+			final IAllocationRequest request)
 	{
 		final IAllocationStrategyFactory factory = getAllocationStrategyFactory();
 
@@ -242,16 +251,6 @@ public abstract class AbstractFIFOStrategy extends AbstractAllocationStrategy
 			return this;
 		}
 
-		if (isOutTrx())
-		{
-			final IAllocationStrategy allocationStrategy = factory.getDeallocationStrategy(hu);
-			return allocationStrategy;
-		}
-		else
-		{
-			final IAllocationStrategy allocationStrategy = factory.getAllocationStrategy(hu);
-			return allocationStrategy;
-
-		}
+		return factory.createAllocationStrategy(getDirection());
 	}
 }

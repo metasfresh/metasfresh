@@ -27,11 +27,7 @@ import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
-
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.ObjectUtils;
 
 import com.jgoodies.common.base.Objects;
 
@@ -42,6 +38,7 @@ import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.allocation.IAllocationRequest;
 import de.metas.handlingunits.allocation.IAllocationResult;
 import de.metas.handlingunits.allocation.IAllocationStrategy;
+import de.metas.handlingunits.allocation.IAllocationStrategyFactory;
 import de.metas.handlingunits.allocation.impl.AbstractProducerDestination;
 import de.metas.handlingunits.allocation.impl.AllocationUtils;
 import de.metas.handlingunits.allocation.impl.UpperBoundAllocationStrategy;
@@ -53,9 +50,10 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.X_M_HU_PI_Item;
 import de.metas.product.ProductId;
 import de.metas.quantity.Capacity;
-import de.metas.quantity.CapacityInterface;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
+import lombok.ToString;
 
 /**
  * Creates TUs.
@@ -66,34 +64,29 @@ import de.metas.util.Services;
  * @author tsa
  *
  */
+@ToString
 /* package */final class TUProducerDestination extends AbstractProducerDestination
 {
+	private final IAllocationStrategyFactory allocationStrategyFactory = Services.get(IAllocationStrategyFactory.class);
+	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+	private final IHUPIItemProductDAO hupiItemProductDAO = Services.get(IHUPIItemProductDAO.class);
+	private final IHUCapacityBL capacityBL = Services.get(IHUCapacityBL.class);
+
 	private final I_M_HU_PI tuPI;
 
-	//
-	// Constrained capacity to use
-	private final Map<ProductId, Capacity> productId2capacity = new HashMap<>();
+	/** Constrained capacity to use */
+	private final HashMap<ProductId, Capacity> productId2capacity = new HashMap<>();
 
 	/** How many TUs to produce (maximum) */
 	private int maxTUs = Integer.MAX_VALUE;
 
 	private I_M_HU_Item parentItem = null;
-
 	private I_M_HU_Item parentItemOverride = null;
-
 	private I_M_HU_PI_Item parentPIItem;
 
-	public TUProducerDestination(final I_M_HU_PI tuPI)
+	public TUProducerDestination(@NonNull final I_M_HU_PI tuPI)
 	{
-		super();
-		Check.assumeNotNull(tuPI, "tuPI not null");
 		this.tuPI = tuPI;
-	}
-
-	@Override
-	public String toString()
-	{
-		return ObjectUtils.toString(this);
 	}
 
 	public void addCapacityConstraint(final Capacity capacity)
@@ -196,14 +189,12 @@ import de.metas.util.Services;
 	@Override
 	protected IAllocationResult loadHU(final I_M_HU tuHU, final IAllocationRequest request)
 	{
-		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-
 		final Capacity capacityPerTU = getCapacity(request, tuHU);
 
 		if (handlingUnitsBL.isAggregateHU(tuHU))
 		{
 			// check if the TU's capacity exceeds the current request
-			final CapacityInterface exceedingCapacityOfTU = capacityPerTU.subtractQuantity(request.getQuantity());
+			final Capacity exceedingCapacityOfTU = capacityPerTU.subtractQuantity(request.getQuantity());
 
 			if (HuPackingInstructionsId.isVirtualRepoId(parentPIItem.getIncluded_HU_PI_ID())
 					|| exceedingCapacityOfTU.toBigDecimal().signum() > 0)
@@ -234,19 +225,11 @@ import de.metas.util.Services;
 			// here we also set the qty for new items
 			haItem.setQty(haItem.getQty().add(BigDecimal.ONE));
 
-			InterfaceWrapperHelper.save(haItem);
+			handlingUnitsDAO.saveHUItem(haItem);
 		}
 
-		final IAllocationStrategy allocationStrategy = getAllocationStrategy(request, capacityPerTU);
-		final IAllocationResult result = allocationStrategy.execute(tuHU, request);
-
-		return result;
-	}
-
-	private IAllocationStrategy getAllocationStrategy(final IAllocationRequest request, final Capacity capacityToUse)
-	{
-		final IAllocationStrategy allocationStrategy = new UpperBoundAllocationStrategy(capacityToUse);
-		return allocationStrategy;
+		final IAllocationStrategy allocationStrategy = allocationStrategyFactory.createUpperBoundAllocationStrategy(capacityPerTU);
+		return allocationStrategy.execute(tuHU, request);
 	}
 
 	/**
@@ -277,10 +260,8 @@ import de.metas.util.Services;
 					+ "M_HU_PI_Item(s) found={}\n "
 					+ "this={}", tuPI, getBPartnerId(), materialPIItems, this);
 
-			final IHUPIItemProductDAO hupiItemProductDAO = Services.get(IHUPIItemProductDAO.class);
 			final I_M_HU_PI_Item_Product itemProduct = hupiItemProductDAO.retrievePIMaterialItemProduct(materialPIItems.get(0), getBPartnerId(), request.getProductId(), request.getDate());
 
-			final IHUCapacityBL capacityBL = Services.get(IHUCapacityBL.class);
 			final Capacity capacity = capacityBL.getCapacity(itemProduct, request.getProductId(), request.getC_UOM());
 
 			capacityToUse = capacity;

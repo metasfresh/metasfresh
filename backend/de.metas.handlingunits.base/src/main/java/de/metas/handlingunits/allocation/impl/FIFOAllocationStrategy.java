@@ -1,5 +1,7 @@
 package de.metas.handlingunits.allocation.impl;
 
+import javax.annotation.Nullable;
+
 /*
  * #%L
  * de.metas.handlingunits.base
@@ -26,6 +28,7 @@ import de.metas.handlingunits.IHUBuilder;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.allocation.IAllocationRequest;
 import de.metas.handlingunits.allocation.IAllocationResult;
+import de.metas.handlingunits.allocation.IAllocationStrategyFactory;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_PI;
@@ -33,12 +36,17 @@ import de.metas.handlingunits.model.X_M_HU_Item;
 import de.metas.handlingunits.storage.IHUItemStorage;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 public class FIFOAllocationStrategy extends AbstractFIFOStrategy
 {
-	public FIFOAllocationStrategy()
+	public FIFOAllocationStrategy(
+			@NonNull final AllocationStrategySupportingServicesFacade services,
+			@Nullable final IAllocationStrategyFactory allocationStrategyFactory)
 	{
-		super(false); // outTrx=false
+		super(AllocationDirection.INBOUND_ALLOCATION,
+				services,
+				allocationStrategyFactory);
 	}
 
 	@Override
@@ -98,7 +106,7 @@ public class FIFOAllocationStrategy extends AbstractFIFOStrategy
 		}
 		else
 		{
-			includedHUDef = handlingUnitsBL.getPIItem(item).getIncluded_HU_PI();
+			includedHUDef = services.getIncluded_HU_PI(item);
 		}
 
 		// we cannot create an instance which has no included handling unit definition
@@ -113,6 +121,6 @@ public class FIFOAllocationStrategy extends AbstractFIFOStrategy
 
 	private final void destroyIncludedHU(final I_M_HU hu)
 	{
-		getHandlingUnitsDAO().delete(hu);
+		services.deleteHU(hu);
 	}
 }

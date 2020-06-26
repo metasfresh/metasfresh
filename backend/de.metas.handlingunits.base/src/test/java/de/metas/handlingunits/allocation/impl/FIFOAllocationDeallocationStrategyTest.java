@@ -13,15 +13,14 @@ package de.metas.handlingunits.allocation.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.time.ZonedDateTime;
@@ -30,8 +29,8 @@ import org.adempiere.util.lang.IMutable;
 import org.adempiere.util.lang.Mutable;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_UOM;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import de.metas.handlingunits.HUTestHelper;
 import de.metas.handlingunits.IHUContext;
@@ -39,6 +38,7 @@ import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.allocation.IAllocationRequest;
 import de.metas.handlingunits.allocation.IAllocationRequestBuilder;
 import de.metas.handlingunits.allocation.IAllocationResult;
+import de.metas.handlingunits.allocation.IAllocationStrategy;
 import de.metas.handlingunits.expectations.AllocationResultExpectation;
 import de.metas.handlingunits.expectations.HUExpectation;
 import de.metas.handlingunits.hutransaction.impl.HUTransactionCandidate;
@@ -90,7 +90,7 @@ public class FIFOAllocationDeallocationStrategyTest
 	//
 	private AllocationStrategyFactory strategyFactory;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		huTestHelper = new HUTestHelper();
@@ -104,8 +104,7 @@ public class FIFOAllocationDeallocationStrategyTest
 	@Test
 	public void test_allocate_NoLU_EmptyTU()
 	{
-		final FIFOAllocationStrategy strategy = new FIFOAllocationStrategy();
-		strategy.setAllocationStrategyFactory(strategyFactory);
+		final IAllocationStrategy strategy = strategyFactory.createAllocationStrategy(AllocationDirection.INBOUND_ALLOCATION);
 
 		//
 		// Create an empty HU
@@ -194,8 +193,7 @@ public class FIFOAllocationDeallocationStrategyTest
 	@Test
 	public void test_deallocate_NoLU_TU_3VHUs()
 	{
-		final FIFODeallocationStrategy strategy = new FIFODeallocationStrategy();
-		strategy.setAllocationStrategyFactory(strategyFactory);
+		final IAllocationStrategy strategy = strategyFactory.createAllocationStrategy(AllocationDirection.OUTBOUND_DEALLOCATION);
 
 		//
 		// Create an empty HU

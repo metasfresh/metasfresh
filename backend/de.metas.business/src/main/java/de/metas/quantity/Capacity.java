@@ -50,7 +50,7 @@ public class Capacity implements CapacityInterface
 		return new Capacity(productId, uom);
 	}
 
-	public static CapacityInterface createZeroCapacity(
+	public static Capacity createZeroCapacity(
 			@NonNull final ProductId productId,
 			@NonNull final I_C_UOM uom,
 			final boolean allowNegativeCapacity)
@@ -145,7 +145,7 @@ public class Capacity implements CapacityInterface
 	}
 
 	@Override
-	public CapacityInterface convertToUOM(@NonNull final I_C_UOM uomTo)
+	public Capacity convertToUOM(@NonNull final I_C_UOM uomTo)
 	{
 		if (uom.getC_UOM_ID() == uomTo.getC_UOM_ID())
 		{
@@ -166,7 +166,7 @@ public class Capacity implements CapacityInterface
 	}
 
 	@Override
-	public CapacityInterface subtractQuantity(@NonNull final Quantity quantity)
+	public Capacity subtractQuantity(@NonNull final Quantity quantity)
 	{
 		// If it's infinite capacity, there is nothing to adjust
 		if (infiniteCapacity)
@@ -248,7 +248,7 @@ public class Capacity implements CapacityInterface
 		return qtyPacks.intValueExact();
 	}
 
-	public CapacityInterface multiply(final int multiplier)
+	public Capacity multiply(final int multiplier)
 	{
 		Check.assume(multiplier >= 0, "multiplier = {} needs to be 0", multiplier);
 

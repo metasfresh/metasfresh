@@ -26,6 +26,8 @@ import java.math.BigDecimal;
 import java.time.ZonedDateTime;
 import java.util.List;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.ITableRecordReference;
@@ -47,8 +49,6 @@ import de.metas.quantity.Quantity;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
-
-import javax.annotation.Nullable;
 
 public final class AllocationUtils
 {
@@ -297,26 +297,15 @@ public final class AllocationUtils
 	}
 
 	/**
-	 * Gets relative request qty.
-	 *
-	 * Relative qty is calculated as follows
-	 * <ul>
-	 * <li>if <code>outTrx</code> is true then qty negated
-	 * <li>if <code>outTrx</code> is false then qty
-	 * </ul>
-	 *
-	 * @param request
-	 * @param outTrx true if is an outbound transaction
-	 * @return relative qty
+	 * Gets relative request qty (negated if deallocation).
 	 */
-	public static Quantity getQuantity(final IAllocationRequest request, final boolean outTrx)
+	public static Quantity getQuantity(
+			@NonNull final IAllocationRequest request,
+			@NonNull final AllocationDirection direction)
 	{
-		Check.assumeNotNull(request, "request not null");
-
 		return request
 				.getQuantity() // => Quantity (absolute)
-				.negateIf(outTrx) // => Quantity (relative)
-		;
+				.negateIf(direction.isOutboundDeallocation()); // => Quantity (relative)
 	}
 
 	/**

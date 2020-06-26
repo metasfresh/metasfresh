@@ -171,19 +171,18 @@ public class HUListAllocationSourceDestination implements IAllocationSource, IAl
 	@Override
 	public IAllocationResult load(final IAllocationRequest request)
 	{
-		// do not need date for this moment
-		final boolean allocation = true;
-		return processRequest(request, allocation);
+		return processRequest(request, AllocationDirection.INBOUND_ALLOCATION);
 	}
 
 	@Override
 	public IAllocationResult unload(final IAllocationRequest request)
 	{
-		final boolean allocation = false; // allocation=false means "deallocation"
-		return processRequest(request, allocation);
+		return processRequest(request, AllocationDirection.OUTBOUND_DEALLOCATION);
 	}
 
-	private IAllocationResult processRequest(final IAllocationRequest request, final boolean allocation)
+	private IAllocationResult processRequest(
+			@NonNull final IAllocationRequest request,
+			@NonNull final AllocationDirection direction)
 	{
 		if (storeCUQtyBeforeProcessing)
 		{
@@ -210,7 +209,7 @@ public class HUListAllocationSourceDestination implements IAllocationSource, IAl
 			}
 
 			final IAllocationRequest currentRequest = AllocationUtils.createQtyRequestForRemaining(request, result);
-			final IAllocationStrategy allocationStrategy = getAllocationStrategy(currentHU, allocation);
+			final IAllocationStrategy allocationStrategy = allocationStrategyFactory.createAllocationStrategy(direction);
 			final IAllocationResult currentResult = allocationStrategy.execute(currentHU, currentRequest);
 
 			AllocationUtils.mergeAllocationResult(result, currentResult);
@@ -263,24 +262,6 @@ public class HUListAllocationSourceDestination implements IAllocationSource, IAl
 		{
 			final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 			handlingUnitsDAO.retrieveIncludedHUs(hu).forEach(includedHU -> storeAggregateItemCuQty(request, includedHU));
-		}
-	}
-
-	/**
-	 *
-	 * @param hu
-	 * @param allocation allocation(true) / deallocation(false) flag
-	 * @return strategy
-	 */
-	protected IAllocationStrategy getAllocationStrategy(final I_M_HU hu, final boolean allocation)
-	{
-		if (allocation)
-		{
-			return allocationStrategyFactory.getAllocationStrategy(hu);
-		}
-		else
-		{
-			return allocationStrategyFactory.getDeallocationStrategy(hu);
 		}
 	}
 

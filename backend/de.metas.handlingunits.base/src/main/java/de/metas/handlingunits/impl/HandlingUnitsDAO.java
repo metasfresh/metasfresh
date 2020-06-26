@@ -22,9 +22,53 @@
 
 package de.metas.handlingunits.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwares;
+import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwaresOutOfTrx;
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Objects;
+import java.util.Properties;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import javax.annotation.Nullable;
+
+import org.adempiere.ad.dao.ICompositeQueryFilter;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.IQueryOrderBy.Direction;
+import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
+import org.adempiere.ad.dao.impl.EqualsQueryFilter;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.IContextAware;
+import org.adempiere.util.lang.IPair;
+import org.adempiere.util.lang.ImmutablePair;
+import org.adempiere.util.proxy.Cached;
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseDAO;
+import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_M_Locator;
+import org.compiere.model.I_M_Product;
+import org.compiere.util.Env;
+import org.compiere.util.Util;
+import org.compiere.util.Util.ArrayKey;
+import org.slf4j.Logger;
+
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+
 import de.metas.bpartner.BPartnerId;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.cache.annotation.CacheTrx;
@@ -57,47 +101,6 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.collections.IteratorUtils;
 import lombok.NonNull;
-import org.adempiere.ad.dao.ICompositeQueryFilter;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.dao.IQueryOrderBy.Direction;
-import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
-import org.adempiere.ad.dao.impl.EqualsQueryFilter;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.IContextAware;
-import org.adempiere.util.lang.IPair;
-import org.adempiere.util.lang.ImmutablePair;
-import org.adempiere.util.proxy.Cached;
-import org.adempiere.warehouse.WarehouseId;
-import org.adempiere.warehouse.api.IWarehouseDAO;
-import org.compiere.Adempiere;
-import org.compiere.SpringContextHolder;
-import org.compiere.model.I_M_Locator;
-import org.compiere.model.I_M_Product;
-import org.compiere.util.Env;
-import org.compiere.util.Util;
-import org.compiere.util.Util.ArrayKey;
-import org.slf4j.Logger;
-
-import javax.annotation.Nullable;
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Objects;
-import java.util.Properties;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwares;
-import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwaresOutOfTrx;
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 public class HandlingUnitsDAO implements IHandlingUnitsDAO
 {
@@ -185,8 +188,8 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	}
 
 	@Cached(cacheName = I_M_HU_PI.Table_Name + "#by#" + I_M_HU_PI.COLUMNNAME_M_HU_PI_ID)
-		// NOTE: for caching to work, don't make it final
-		/* package */I_M_HU_PI retrievePI(final @CacheCtx Properties ctx, @NonNull final HuPackingInstructionsId piId)
+	// NOTE: for caching to work, don't make it final
+	/* package */I_M_HU_PI retrievePI(final @CacheCtx Properties ctx, @NonNull final HuPackingInstructionsId piId)
 	{
 		final I_M_HU_PI pi = Services.get(IQueryBL.class).createQueryBuilder(I_M_HU_PI.class, ctx, ITrx.TRXNAME_None)
 				.addEqualsFilter(I_M_HU_PI.COLUMNNAME_M_HU_PI_ID, piId)
@@ -211,6 +214,12 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	public void saveHU(final I_M_HU hu)
 	{
 		getHUAndItemsDAO().saveHU(hu);
+	}
+
+	@Override
+	public void saveHUItem(@NonNull final I_M_HU_Item huItem)
+	{
+		InterfaceWrapperHelper.save(huItem);
 	}
 
 	@Override
@@ -546,7 +555,7 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 			+ "#by"
 			+ "#" + I_M_HU_PI_Version.COLUMNNAME_M_HU_PI_ID
 			+ "#" + I_M_HU_PI_Version.COLUMNNAME_IsCurrent)
-		/* package */I_M_HU_PI_Version retrievePICurrentVersionOrNull(
+	/* package */I_M_HU_PI_Version retrievePICurrentVersionOrNull(
 			final @CacheCtx Properties ctx,
 			final HuPackingInstructionsId piId,
 			final @CacheTrx String trxName)
@@ -909,11 +918,11 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 			}
 
 			logger.warn("More then one parent PI Item found. Returing the first one."
-							+ "\n huPI={}"
-							+ "\n huUnitType={}"
-							+ "\n bpartner={}"
-							+ "\n HU PI Items with DefaultLU={}"
-							+ "\n => parent HU PI Items={}",
+					+ "\n huPI={}"
+					+ "\n huUnitType={}"
+					+ "\n bpartner={}"
+					+ "\n HU PI Items with DefaultLU={}"
+					+ "\n => parent HU PI Items={}",
 					new Object[] { huPI, huUnitType, bpartnerId, defaultLUPIItems, parentPIItems });
 
 			return parentPIItems.get(0);

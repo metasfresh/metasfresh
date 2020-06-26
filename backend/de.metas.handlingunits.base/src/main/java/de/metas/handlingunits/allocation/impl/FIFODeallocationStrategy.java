@@ -1,5 +1,7 @@
 package de.metas.handlingunits.allocation.impl;
 
+import javax.annotation.Nullable;
+
 /*
  * #%L
  * de.metas.handlingunits.base
@@ -24,13 +26,19 @@ package de.metas.handlingunits.allocation.impl;
 
 import de.metas.handlingunits.allocation.IAllocationRequest;
 import de.metas.handlingunits.allocation.IAllocationResult;
+import de.metas.handlingunits.allocation.IAllocationStrategyFactory;
 import de.metas.handlingunits.model.I_M_HU_Item;
+import lombok.NonNull;
 
 public class FIFODeallocationStrategy extends AbstractFIFOStrategy
 {
-	public FIFODeallocationStrategy()
+	public FIFODeallocationStrategy(
+			@NonNull final AllocationStrategySupportingServicesFacade services,
+			@Nullable final IAllocationStrategyFactory allocationStrategyFactory)
 	{
-		super(true); // outTrx=true
+		super(AllocationDirection.OUTBOUND_DEALLOCATION,
+				services,
+				allocationStrategyFactory);
 	}
 
 	/**

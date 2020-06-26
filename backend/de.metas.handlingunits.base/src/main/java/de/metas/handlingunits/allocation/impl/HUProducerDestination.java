@@ -73,9 +73,8 @@ public class HUProducerDestination extends AbstractProducerDestination
 	@Override
 	protected IAllocationResult loadHU(final I_M_HU hu, final IAllocationRequest request)
 	{
-		final IAllocationStrategy allocationStrategy = allocationStrategyFactory.getAllocationStrategy(hu);
-		final IAllocationResult result = allocationStrategy.execute(hu, request);
-		return result;
+		final IAllocationStrategy allocationStrategy = allocationStrategyFactory.createAllocationStrategy(AllocationDirection.INBOUND_ALLOCATION);
+		return allocationStrategy.execute(hu, request);
 	}
 
 	@Override

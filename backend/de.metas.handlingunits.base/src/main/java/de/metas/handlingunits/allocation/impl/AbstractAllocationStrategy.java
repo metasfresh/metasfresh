@@ -27,12 +27,10 @@ import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.Collections;
 
-import org.slf4j.Logger;
+import javax.annotation.Nullable;
 
 import de.metas.handlingunits.IHUBuilder;
 import de.metas.handlingunits.IHUContext;
-import de.metas.handlingunits.IHandlingUnitsBL;
-import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.allocation.IAllocationRequest;
 import de.metas.handlingunits.allocation.IAllocationResult;
 import de.metas.handlingunits.allocation.IAllocationStrategy;
@@ -45,61 +43,36 @@ import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.storage.IHUItemStorage;
 import de.metas.handlingunits.storage.IHUStorageFactory;
-import de.metas.logging.LogManager;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
-import de.metas.util.Services;
+import lombok.AccessLevel;
+import lombok.Getter;
 import lombok.NonNull;
 
 public abstract class AbstractAllocationStrategy implements IAllocationStrategy
 {
 	// Services
-	protected final transient Logger logger = LogManager.getLogger(getClass());
-	protected final transient IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+	protected final AllocationStrategySupportingServicesFacade services;
+	@Getter(AccessLevel.PROTECTED)
+	private final IAllocationStrategyFactory allocationStrategyFactory;
 
-	/** NOTE: keep it private and use {@link #getHandlingUnitsDAO()} to get it */
-	private IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+	@Getter(AccessLevel.PROTECTED)
+	private final AllocationDirection direction;
 
-	/** true if outbound transaction (i.e. deallocation); false if inbound transaction (i.e. allocation) */
-	private final boolean outTrx;
-	private IAllocationStrategyFactory factory;
-
-	/**
-	 *
-	 * @param outTrx <code>true</code> if outbound transaction (i.e. deallocation); false if inbound transaction (i.e. allocation)
-	 */
-	public AbstractAllocationStrategy(final boolean outTrx)
+	public AbstractAllocationStrategy(
+			@NonNull final AllocationDirection direction,
+			@NonNull final AllocationStrategySupportingServicesFacade services,
+			@Nullable final IAllocationStrategyFactory allocationStrategyFactory)
 	{
-		this.outTrx = outTrx;
-	}
-
-	/**
-	 * Set the factory that shall be used when a new {@link IAllocationStrategy} instance needs to be created from this instance.
-	 *
-	 * NOTE: don't call it directly.
-	 *
-	 * @param factory
-	 */
-	/* package */ final void setAllocationStrategyFactory(final IAllocationStrategyFactory factory)
-	{
-		this.factory = factory;
-		handlingUnitsDAO = factory.getHandlingUnitsDAO();
+		this.direction = direction;
+		this.services = services;
+		this.allocationStrategyFactory = allocationStrategyFactory;
 	}
 
 	protected final IHUStorageFactory getHUStorageFactory(final IAllocationRequest request)
 	{
 		final IHUContext huContext = request.getHUContext();
 		return huContext.getHUStorageFactory();
-	}
-
-	protected final IAllocationStrategyFactory getAllocationStrategyFactory()
-	{
-		return factory;
-	}
-
-	protected final IHandlingUnitsDAO getHandlingUnitsDAO()
-	{
-		return handlingUnitsDAO;
 	}
 
 	/**
@@ -132,7 +105,7 @@ public abstract class AbstractAllocationStrategy implements IAllocationStrategy
 		final IAllocationRequest requestActual;
 
 		// Create Actual De-Allocation Request
-		if (outTrx)
+		if (direction.isOutboundDeallocation())
 		{
 			requestActual = storage.requestQtyToDeallocate(request);
 		}
@@ -183,7 +156,7 @@ public abstract class AbstractAllocationStrategy implements IAllocationStrategy
 	 */
 	protected final I_M_HU createVHU(final IHUContext huContext, final IAllocationRequest request, final I_M_HU_Item parentItem)
 	{
-		final I_M_HU_PI vhuPI = handlingUnitsDAO.retrieveVirtualPI(huContext.getCtx());
+		final I_M_HU_PI vhuPI = services.getVirtualPI(huContext.getCtx());
 
 		final IHUBuilder vhuBuilder = AllocationUtils.createHUBuilder(request);
 
@@ -200,21 +173,22 @@ public abstract class AbstractAllocationStrategy implements IAllocationStrategy
 	 * @param vhuItem Virtual HU item on which we actually allocated/deallocated
 	 * @return transaction candidate
 	 */
-	private final IHUTransactionCandidate createHUTransaction(final IAllocationRequest requestActual,
+	private final IHUTransactionCandidate createHUTransaction(
+			@NonNull final IAllocationRequest requestActual,
 			final I_M_HU_Item vhuItem)
 	{
 		//
 		// Find out first HU Item which is not pure virtual
 		I_M_HU_Item itemFirstNotPureVirtual = vhuItem;
-		while (itemFirstNotPureVirtual != null && handlingUnitsBL.isPureVirtual(itemFirstNotPureVirtual))
+		while (itemFirstNotPureVirtual != null && services.isPureVirtual(itemFirstNotPureVirtual))
 		{
 			final I_M_HU parentHU = itemFirstNotPureVirtual.getM_HU();
-			itemFirstNotPureVirtual = getHandlingUnitsDAO().retrieveParentItem(parentHU);
+			itemFirstNotPureVirtual = services.retrieveParentItem(parentHU);
 		}
 		Check.assumeNotNull(itemFirstNotPureVirtual, "itemFirstNotPureVirtual not null"); // shall not happen
 
 		final Object referencedModel = AllocationUtils.getReferencedModel(requestActual);
-		final Quantity qtyTrx = AllocationUtils.getQuantity(requestActual, outTrx);
+		final Quantity qtyTrx = AllocationUtils.getQuantity(requestActual, direction);
 
 		final IHUTransactionCandidate trx = new HUTransactionCandidate(
 				referencedModel,
@@ -226,14 +200,5 @@ public abstract class AbstractAllocationStrategy implements IAllocationStrategy
 		);
 
 		return trx;
-	}
-
-	/**
-	 *
-	 * @return true if outbound transaction (i.e. deallocation); false if inbound transaction (i.e. allocation)
-	 */
-	protected final boolean isOutTrx()
-	{
-		return outTrx;
 	}
 }

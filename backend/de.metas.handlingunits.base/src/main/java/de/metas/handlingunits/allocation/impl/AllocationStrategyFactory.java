@@ -1,48 +1,32 @@
 package de.metas.handlingunits.allocation.impl;
 
-import de.metas.handlingunits.IHandlingUnitsDAO;
+import javax.annotation.Nullable;
+
 import de.metas.handlingunits.allocation.IAllocationStrategy;
 import de.metas.handlingunits.allocation.IAllocationStrategyFactory;
-import de.metas.handlingunits.model.I_M_HU;
-import de.metas.util.Check;
-import de.metas.util.Services;
+import de.metas.quantity.Capacity;
+import lombok.NonNull;
 
 public class AllocationStrategyFactory implements IAllocationStrategyFactory
 {
-	private final IHandlingUnitsDAO handlingUnitsDAO;
+	private final AllocationStrategySupportingServicesFacade services;
 
 	public AllocationStrategyFactory()
 	{
-		this(Services.get(IHandlingUnitsDAO.class));
-	}
-
-	public AllocationStrategyFactory(final IHandlingUnitsDAO handlingUnitsDAO)
-	{
-		super();
-		Check.assumeNotNull(handlingUnitsDAO, "handlingUnitsDAO not null");
-		this.handlingUnitsDAO = handlingUnitsDAO;
+		services = AllocationStrategySupportingServicesFacade.newInstance();
 	}
 
 	@Override
-	public IHandlingUnitsDAO getHandlingUnitsDAO()
+	public IAllocationStrategy createAllocationStrategy(@NonNull final AllocationDirection direction)
 	{
-		return handlingUnitsDAO;
-	}
-
-	// TODO: check if there is any implementation that does not ignore the hu parameter.
-	@Override
-	public IAllocationStrategy getAllocationStrategy(final I_M_HU IGNORED)
-	{
-		final FIFOAllocationStrategy strategy = new FIFOAllocationStrategy();
-		strategy.setAllocationStrategyFactory(this);
-		return strategy;
+		return direction.isOutboundDeallocation()
+				? new FIFODeallocationStrategy(services, this)
+				: new FIFOAllocationStrategy(services, this);
 	}
 
 	@Override
-	public IAllocationStrategy getDeallocationStrategy(final I_M_HU hu)
+	public IAllocationStrategy createUpperBoundAllocationStrategy(@Nullable final Capacity capacityOverride)
 	{
-		final FIFODeallocationStrategy strategy = new FIFODeallocationStrategy();
-		strategy.setAllocationStrategyFactory(this);
-		return strategy;
+		return new UpperBoundAllocationStrategy(capacityOverride, services, this);
 	}
 }

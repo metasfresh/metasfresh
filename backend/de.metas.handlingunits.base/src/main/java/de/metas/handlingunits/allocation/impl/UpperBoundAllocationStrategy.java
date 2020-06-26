@@ -24,22 +24,22 @@ package de.metas.handlingunits.allocation.impl;
 
 import java.math.BigDecimal;
 
-import org.adempiere.ad.service.IDeveloperModeBL;
+import javax.annotation.Nullable;
+
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.lang.ObjectUtils;
 import org.compiere.util.Util;
 
 import de.metas.handlingunits.allocation.IAllocationRequest;
 import de.metas.handlingunits.allocation.IAllocationResult;
+import de.metas.handlingunits.allocation.IAllocationStrategyFactory;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.X_M_HU_PI_Item;
 import de.metas.handlingunits.storage.IHUItemStorage;
 import de.metas.quantity.Capacity;
-import de.metas.quantity.CapacityInterface;
 import de.metas.quantity.Quantity;
-import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.ToString;
 
 /**
  * This classe's {@link #getHUItemStorage(I_M_HU_Item, IAllocationRequest)} can return a storage with an
@@ -48,25 +48,28 @@ import lombok.NonNull;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
+@ToString
 public class UpperBoundAllocationStrategy extends AbstractFIFOStrategy
 {
-	// services
-	private final transient IDeveloperModeBL developerModeBL = Services.get(IDeveloperModeBL.class);
-
 	private final Capacity _capacityOverride;
 
 	/**
 	 *
 	 * @param capacityOverride optional capacity that can override the one from the packing instructions.
 	 */
-	public UpperBoundAllocationStrategy(final Capacity capacityOverride)
+	public UpperBoundAllocationStrategy(
+			@Nullable final Capacity capacityOverride,
+			@NonNull final AllocationStrategySupportingServicesFacade services,
+			@Nullable final IAllocationStrategyFactory allocationStrategyFactory)
 	{
-		super(false); // outTrx=false
+		super(AllocationDirection.INBOUND_ALLOCATION,
+				services,
+				allocationStrategyFactory);
 
 		_capacityOverride = isUseDefaultCapacity(capacityOverride) ? null : capacityOverride;
 	}
 
-	private static final boolean isUseDefaultCapacity(final CapacityInterface capacity)
+	private static final boolean isUseDefaultCapacity(final Capacity capacity)
 	{
 		if (capacity == null)
 		{
@@ -84,12 +87,6 @@ public class UpperBoundAllocationStrategy extends AbstractFIFOStrategy
 		}
 
 		return Util.same(Capacity.DEFAULT, qty);
-	}
-
-	@Override
-	public String toString()
-	{
-		return ObjectUtils.toString(this);
 	}
 
 	/**
@@ -124,14 +121,14 @@ public class UpperBoundAllocationStrategy extends AbstractFIFOStrategy
 			@NonNull final IAllocationRequest request)
 	{
 		// Prevent allocating on a included HU item
-		final String itemType = handlingUnitsBL.getItemType(item);
+		final String itemType = services.getItemType(item);
 		if (X_M_HU_PI_Item.ITEMTYPE_HandlingUnit.equals(itemType))
 		{
-			if (developerModeBL.isEnabled())
+			if (services.isDeveloperMode())
 			{
 				throw new AdempiereException("HUs which are used in " + this + " shall not have included HUs. They shall be pure TUs."
 						+ "\n Item: " + item
-						+ "\n PI: " + handlingUnitsBL.getPI(item.getM_HU()).getName()
+						// + "\n PI: " + handlingUnitsBL.getPI(item.getM_HU()).getName()
 						+ "\n Request: " + request);
 			}
 			return AllocationUtils.nullResult();
