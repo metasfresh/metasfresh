@@ -371,29 +371,29 @@ export default function windowHandler(state = initialState, action) {
         },
       });
     case UPDATE_DATA_PROPERTY: {
-      let value;
+      const { scope, property, value } = action;
+      let newValue = null;
 
-      if (typeof action.value === 'string') {
-        value = action.value;
-      } else if (action.property === 'standardActions') {
+      if (typeof value === 'string') {
+        newValue = value;
+      } else if (property === 'standardActions') {
         // TODO: Use normal array
-        value = iSet(action.value);
-        // TODO: we can probably overwrite all of them instead of merging but this has
-        // to be checked.
-      } else if (['saveStatus', 'validStatus'].includes(action.property)) {
-        value = action.value;
+        newValue = iSet(value);
+      } else if (['saveStatus', 'validStatus'].includes(property)) {
+        newValue = value;
       } else {
-        value = Object.assign(
-          {},
-          state[action.scope] ? state[action.scope][action.property] : {},
-          action.value
-        );
+        const currentVal = state[scope] ? state[scope][property] : {};
+
+        newValue = {
+          ...currentVal,
+          ...value,
+        };
       }
 
       return update(state, {
-        [action.scope]: {
-          [action.property]: {
-            $set: value,
+        [scope]: {
+          [property]: {
+            $set: newValue,
           },
         },
       });
