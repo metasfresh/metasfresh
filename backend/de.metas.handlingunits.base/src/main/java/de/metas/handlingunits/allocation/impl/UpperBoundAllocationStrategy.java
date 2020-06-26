@@ -92,7 +92,7 @@ public class UpperBoundAllocationStrategy extends AbstractFIFOStrategy
 	/**
 	 * Invokes the {@link AbstractAllocationStrategy#getHUItemStorage(I_M_HU_Item, IAllocationRequest)},<br>
 	 * but if an upper bound is set in <code>this</code> instance,<br>
-	 * then it invokes {@link IHUItemStorage#setCustomCapacity(IHUCapacityDefinition)} accordingly.
+	 * then it invokes {@link IHUItemStorage#setCustomCapacity(Capacity)} accordingly.
 	 */
 	@Override
 	protected IHUItemStorage getHUItemStorage(final I_M_HU_Item item, final IAllocationRequest request)

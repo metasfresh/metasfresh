@@ -36,7 +36,6 @@ import de.metas.handlingunits.IHUPIItemProductBL;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.product.ProductId;
 import de.metas.quantity.Capacity;
-import de.metas.quantity.CapacityInterface;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
@@ -119,7 +118,7 @@ public class HUPackingAwareBL implements IHUPackingAwareBL
 			return null;
 		}
 
-		final CapacityInterface capacityMult = capacity.multiply(qtyPacks);
+		final Capacity capacityMult = capacity.multiply(qtyPacks);
 		return capacityMult.toQuantity();
 	}
 

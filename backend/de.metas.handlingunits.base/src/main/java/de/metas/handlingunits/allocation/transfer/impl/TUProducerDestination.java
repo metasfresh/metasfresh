@@ -58,7 +58,8 @@ import lombok.ToString;
 /**
  * Creates TUs.
  *
- * But, instead of using standard capacity definition of given TU PI, we will use a constrained capacity which is provided via {@link #addCapacityConstraint(IHUCapacityDefinition)}
+ * But, instead of using standard capacity definition of given TU PI,
+ * we will use a constrained capacity which is provided via {@link #addCapacityConstraint(Capacity)}.
  * Its allocation strategy is the {@link UpperBoundAllocationStrategy}.
  *
  * @author tsa

@@ -40,7 +40,7 @@ import lombok.NonNull;
  * @author metas-dev <dev@metasfresh.com>
  */
 @EqualsAndHashCode
-public class Capacity implements CapacityInterface
+public final class Capacity
 {
 
 	public static Capacity createInfiniteCapacity(
@@ -91,7 +91,6 @@ public class Capacity implements CapacityInterface
 		this.productId = productId;
 		this.uom = uom;
 
-		Check.assumeNotNull(capacity, "capacity not null");
 		this.capacity = capacity;
 
 		infiniteCapacity = false;
@@ -112,13 +111,11 @@ public class Capacity implements CapacityInterface
 		allowNegativeCapacity = true;
 	}
 
-	@Override
 	public boolean isInfiniteCapacity()
 	{
 		return infiniteCapacity;
 	}
 
-	@Override
 	public boolean isAllowNegativeCapacity()
 	{
 		Check.assume(!isInfiniteCapacity(), "Cannot retrieve if it's infinite for {}", this);
@@ -130,21 +127,18 @@ public class Capacity implements CapacityInterface
 	 *
 	 * @return capacity
 	 */
-	@Override
 	public BigDecimal toBigDecimal()
 	{
 		Check.assume(!isInfiniteCapacity(), "Cannot retrieve capacity as BigDecimal if it's infinite; this={}", this);
 		return capacity;
 	}
 
-	@Override
 	public Quantity toQuantity()
 	{
 		Check.assume(!isInfiniteCapacity(), "Cannot retrieve capacity Quantity if it's infinite; this={}", this);
 		return Quantity.of(capacity, uom);
 	}
 
-	@Override
 	public Capacity convertToUOM(@NonNull final I_C_UOM uomTo)
 	{
 		if (uom.getC_UOM_ID() == uomTo.getC_UOM_ID())
@@ -165,7 +159,6 @@ public class Capacity implements CapacityInterface
 		return createCapacity(qtyCapacityTo, productId, uomTo, allowNegativeCapacity);
 	}
 
-	@Override
 	public Capacity subtractQuantity(@NonNull final Quantity quantity)
 	{
 		// If it's infinite capacity, there is nothing to adjust
@@ -272,7 +265,6 @@ public class Capacity implements CapacityInterface
 		return productId;
 	}
 
-	@Override
 	public I_C_UOM getC_UOM()
 	{
 		return uom;

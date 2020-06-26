@@ -36,7 +36,6 @@ import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_Item_Storage;
 import de.metas.product.ProductId;
 import de.metas.quantity.Capacity;
-import de.metas.quantity.CapacityInterface;
 
 /**
  * HU Item Storage
@@ -77,14 +76,14 @@ public interface IHUItemStorage extends IGenericHUStorage
 	/**
 	 * Gets total capacity.
 	 *
-	 * If a custom capacity is set (see {@link #setCustomCapacity(IHUCapacityDefinition)}), that one will be considered first.
+	 * If a custom capacity is set (see {@link #setCustomCapacity(Capacity)}), that one will be considered first.
 	 *
 	 * @param productId
 	 * @param uom
 	 * @param date
 	 * @return total capacity
 	 */
-	CapacityInterface getCapacity(ProductId productId, I_C_UOM uom, ZonedDateTime date);
+	Capacity getCapacity(ProductId productId, I_C_UOM uom, ZonedDateTime date);
 
 	/**
 	 * Override current total capacity settings
@@ -103,7 +102,7 @@ public interface IHUItemStorage extends IGenericHUStorage
 	 * 
 	 * @return available capacity
 	 */
-	CapacityInterface getAvailableCapacity(ProductId productId, I_C_UOM uom, ZonedDateTime date);
+	Capacity getAvailableCapacity(ProductId productId, I_C_UOM uom, ZonedDateTime date);
 
 	/**
 	 * 
