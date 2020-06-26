@@ -458,7 +458,7 @@ class DocumentListContainer extends Component {
       isModal,
       rawModalVisible,
     } = this.props;
-console.log('sortingQuery:', sortingQuery)
+
     indicatorState('pending');
 
     if (updateUri) {
