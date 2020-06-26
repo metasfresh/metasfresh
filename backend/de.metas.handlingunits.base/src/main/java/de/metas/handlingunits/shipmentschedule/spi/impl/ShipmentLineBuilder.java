@@ -54,6 +54,7 @@ import org.slf4j.Logger;
 import org.slf4j.MDC.MDCCloseable;
 
 import com.google.common.collect.ImmutableList;
+
 import ch.qos.logback.classic.Level;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuId;
@@ -565,7 +566,7 @@ import lombok.NonNull;
 	{
 		final I_C_UOM productUOM = productBL.getStockUOM(productId);
 		final Capacity capacity = Services.get(IHUCapacityBL.class).getCapacity(piipForShipmentLine, productId, productUOM);
-		final Integer qtyTUFromCapacity = capacity.calculateQtyTU(movementQty.toBigDecimal(), productUOM);
+		final Integer qtyTUFromCapacity = capacity.calculateQtyTU(movementQty.toBigDecimal(), productUOM, uomConversionBL);
 		if (qtyTUFromCapacity == null)
 		{
 			throw new AdempiereException("Invalid capacity: " + capacity);

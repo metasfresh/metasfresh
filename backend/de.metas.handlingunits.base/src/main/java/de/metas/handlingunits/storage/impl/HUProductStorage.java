@@ -94,7 +94,8 @@ import lombok.NonNull;
 	@Override
 	public BigDecimal getQtyFree()
 	{
-		final Capacity capacityAvailable = capacityTotal.subtractQuantity(getQty());
+		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
+		final Capacity capacityAvailable = capacityTotal.subtractQuantity(getQty(), uomConversionBL);
 		if (capacityAvailable.isInfiniteCapacity())
 		{
 			return Quantity.QTY_INFINITE;

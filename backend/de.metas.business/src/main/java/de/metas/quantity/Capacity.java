@@ -28,9 +28,7 @@ import java.math.RoundingMode;
 import org.compiere.model.I_C_UOM;
 
 import de.metas.product.ProductId;
-import de.metas.uom.IUOMConversionBL;
 import de.metas.util.Check;
-import de.metas.util.Services;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 
@@ -134,27 +132,28 @@ public final class Capacity
 		return Quantity.of(capacity, uom);
 	}
 
-	public Capacity convertToUOM(@NonNull final I_C_UOM uomTo)
+	public Capacity convertToUOM(
+			@NonNull final I_C_UOM uomTo,
+			@NonNull final QuantityUOMConverter uomConverter)
 	{
 		if (uom.getC_UOM_ID() == uomTo.getC_UOM_ID())
 		{
 			return this;
 		}
-		if (isInfiniteCapacity())
+		else if (isInfiniteCapacity())
 		{
 			return createInfiniteCapacity(productId, uomTo);
 		}
-
-		final BigDecimal qtyCapacityTo = Services.get(IUOMConversionBL.class).convertQty(
-				productId,
-				capacity,
-				uom,
-				uomTo);
-
-		return createCapacity(qtyCapacityTo, productId, uomTo, allowNegativeCapacity);
+		else
+		{
+			final BigDecimal capacityConv = uomConverter.convertQty(productId, capacity, uom, uomTo);
+			return createCapacity(capacityConv, productId, uomTo, allowNegativeCapacity);
+		}
 	}
 
-	public Capacity subtractQuantity(@NonNull final Quantity quantity)
+	public Capacity subtractQuantity(
+			@NonNull final Quantity quantity,
+			@NonNull final QuantityUOMConverter uomConverter)
 	{
 		// If it's infinite capacity, there is nothing to adjust
 		if (infiniteCapacity)
@@ -168,7 +167,7 @@ public final class Capacity
 			return this;
 		}
 
-		final BigDecimal qtyUsedConv = Services.get(IUOMConversionBL.class)
+		final BigDecimal qtyUsedConv = uomConverter
 				.convertQty(getProductId(),
 						quantity.toBigDecimal(),
 						quantity.getUOM(),
@@ -209,7 +208,10 @@ public final class Capacity
 	 * @param capacityDef
 	 * @return how many capacities are required or NULL if capacity is not available
 	 */
-	public Integer calculateQtyTU(@NonNull final BigDecimal qty, @NonNull final I_C_UOM targetUom)
+	public Integer calculateQtyTU(
+			@NonNull final BigDecimal qty,
+			@NonNull final I_C_UOM targetUom,
+			@NonNull final QuantityUOMConverter uomConverter)
 	{
 		// Infinite capacity => one pack would be sufficient
 		if (infiniteCapacity)
@@ -230,7 +232,7 @@ public final class Capacity
 		}
 
 		// Convert Qty to Capacity's UOM
-		final BigDecimal qtyConv = Services.get(IUOMConversionBL.class).convertQty(productId, qty, uom, targetUom);
+		final BigDecimal qtyConv = uomConverter.convertQty(productId, qty, uom, targetUom);
 
 		final BigDecimal qtyPacks = qtyConv.divide(capacity, 0, RoundingMode.UP);
 		return qtyPacks.intValueExact();

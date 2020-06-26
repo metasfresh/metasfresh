@@ -238,8 +238,7 @@ public class HUItemStorage implements IHUItemStorage
 			return null;
 		}
 
-		final Capacity customCapacityConv = customCapacity.convertToUOM(uom);
-		return customCapacityConv;
+		return customCapacity.convertToUOM(uom, uomConversionBL);
 	}
 
 	private final boolean hasCustomCapacityDefined(final ProductId productId)
@@ -278,7 +277,7 @@ public class HUItemStorage implements IHUItemStorage
 		}
 		final BigDecimal qty = getQty(productId, uom);
 
-		final Capacity capacityAvailable = capacity.subtractQuantity(Quantity.of(qty, uom));
+		final Capacity capacityAvailable = capacity.subtractQuantity(Quantity.of(qty, uom), uomConversionBL);
 		return capacityAvailable;
 	}
 

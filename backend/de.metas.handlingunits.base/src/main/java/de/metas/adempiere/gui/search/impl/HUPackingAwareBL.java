@@ -37,6 +37,7 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.product.ProductId;
 import de.metas.quantity.Capacity;
 import de.metas.quantity.Quantity;
+import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
@@ -47,6 +48,7 @@ public class HUPackingAwareBL implements IHUPackingAwareBL
 	private final transient IHUPIItemProductBL piPIItemProductBL = Services.get(IHUPIItemProductBL.class);
 	private final transient IHUCapacityBL capacityBL = Services.get(IHUCapacityBL.class);
 	private final transient IUOMDAO uomDAO = Services.get(IUOMDAO.class);
+	private final transient IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 
 	@Override
 	public IHUPackingAware create(final IInfoSimple infoWindow, final int rowIndexModel)
@@ -156,7 +158,7 @@ public class HUPackingAwareBL implements IHUPackingAwareBL
 			return null;
 		}
 
-		final Integer qtyTU = capacity.calculateQtyTU(record.getQty(), extractUOMOrNull(record));
+		final Integer qtyTU = capacity.calculateQtyTU(record.getQty(), extractUOMOrNull(record), uomConversionBL);
 		if (qtyTU == null)
 		{
 			return null;

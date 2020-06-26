@@ -50,6 +50,7 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.X_M_HU_PI_Item;
 import de.metas.product.ProductId;
 import de.metas.quantity.Capacity;
+import de.metas.uom.IUOMConversionBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -72,6 +73,7 @@ import lombok.ToString;
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final IHUPIItemProductDAO hupiItemProductDAO = Services.get(IHUPIItemProductDAO.class);
 	private final IHUCapacityBL capacityBL = Services.get(IHUCapacityBL.class);
+	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 
 	private final I_M_HU_PI tuPI;
 
@@ -195,7 +197,7 @@ import lombok.ToString;
 		if (handlingUnitsBL.isAggregateHU(tuHU))
 		{
 			// check if the TU's capacity exceeds the current request
-			final Capacity exceedingCapacityOfTU = capacityPerTU.subtractQuantity(request.getQuantity());
+			final Capacity exceedingCapacityOfTU = capacityPerTU.subtractQuantity(request.getQuantity(), uomConversionBL);
 
 			if (HuPackingInstructionsId.isVirtualRepoId(parentPIItem.getIncluded_HU_PI_ID())
 					|| exceedingCapacityOfTU.toBigDecimal().signum() > 0)
