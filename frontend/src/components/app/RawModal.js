@@ -4,15 +4,19 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import classnames from 'classnames';
 
+import { deleteViewRequest } from '../../api';
+import { getTableId } from '../../reducers/tables';
+
 import { PATCH_RESET } from '../../constants/ActionTypes';
 import { closeListIncludedView } from '../../actions/ListActions';
-import { deleteViewRequest } from '../../api';
 import { addNotification } from '../../actions/AppActions';
 import {
   closeModal,
   closeRawModal,
   openRawModal,
 } from '../../actions/WindowActions';
+import { deleteTable } from '../../actions/TableActions';
+
 import keymap from '../../shortcuts/keymap';
 import ModalContextShortcuts from '../keyshortcuts/ModalContextShortcuts';
 import Tooltips from '../tooltips/Tooltips.js';
@@ -77,10 +81,6 @@ class RawModal extends Component {
     visibleTooltips: {},
   };
 
-  /**
-   * @method componentDidMount
-   * @summary ToDo: Describe the method.
-   */
   componentDidMount() {
     // Dirty solution, but use only if you need to
     // there is no way to affect body
@@ -92,10 +92,6 @@ class RawModal extends Component {
     this.initEventListeners();
   }
 
-  /**
-   * @method componentWillUnmount
-   * @summary ToDo: Describe the method.
-   */
   componentWillUnmount() {
     const { masterDocumentList } = this.props;
 
@@ -106,11 +102,6 @@ class RawModal extends Component {
     this.removeEventListeners();
   }
 
-  /**
-   * @method UNSAFE_componentWillUpdate
-   * @summary ToDo: Describe the method.
-   * @param {object} props
-   */
   UNSAFE_componentWillUpdate(props) {
     if (this.resolve) {
       if (!props.success || props.requests.length === 0) {
@@ -193,6 +184,7 @@ class RawModal extends Component {
   handleClose = async (type) => {
     const {
       dispatch,
+      // TODO: Looks like we're never passing this
       closeCallback,
       viewId,
       windowId,
@@ -243,10 +235,12 @@ class RawModal extends Component {
    */
   removeModal = async () => {
     const { dispatch, modalVisible, windowId, viewId } = this.props;
+    const tableId = getTableId({ windowId, viewId });
 
     await Promise.all(
       [
         closeRawModal(),
+        deleteTable(tableId),
         closeModal(),
         closeListIncludedView({
           windowType: windowId,
@@ -332,8 +326,15 @@ class RawModal extends Component {
    * @summary ToDo: Describe the method.
    */
   render() {
-    const { modalTitle, children, modalDescription, rawModal } = this.props;
+    const {
+      modalTitle,
+      children,
+      modalDescription,
+      rawModal,
+      indicator,
+    } = this.props;
     const { scrolled } = this.state;
+
     if (!children) {
       return null;
     }
@@ -366,7 +367,7 @@ class RawModal extends Component {
               )}
               <div className="items-row-2">{this.renderButtons()}</div>
             </div>
-            <Indicator />
+            <Indicator indicator={indicator} />
             <div
               className="panel-modal-content js-panel-modal-content"
               ref={(c) => {
@@ -382,18 +383,6 @@ class RawModal extends Component {
     );
   }
 }
-
-/**
- * @method mapStateToProps
- * @summary ToDo: Describe the method.
- * @param {object} windowHandler
- */
-const mapStateToProps = ({ windowHandler }) => ({
-  modalVisible: windowHandler.modal.visible || false,
-  rawModal: windowHandler.rawModal,
-  requests: windowHandler.patches.requests,
-  success: windowHandler.patches.success,
-});
 
 /**
  * @typedef {object} Props Component props
@@ -416,38 +405,46 @@ ModalButton.propTypes = {
 /**
  * @typedef {object} Props Component props
  * @prop {func} dispatch
- * @prop {func} [closeCallback]
- * @prop {node} [children]
- * @prop {array} [allowedCloseActions]
- * @prop {string} [windowId]
- * @prop {string} [viewId]
- * @prop {string|node} [masterDocumentList]
- * @prop {string|node} [modalTitle]
- * @prop {string|node} [modalDescription]
  * @prop {bool} [modalVisible]
  * @prop {object} rawModal
  * @prop {object} requests
  * @prop {bool} success
- * @prop {*} [name]
- * @prop {func} [onShowTooltip]
- * @prop {func} [onHideTooltip]
- * @prop {func} [onClick]
- * @prop {*} [tabIndex]
+ * @prop {string} [indicator]
+ * @prop {string|node} [modalTitle]
+ * @prop {string|node} [modalDescription]
+ * @prop {array} [allowedCloseActions]
+ * @prop {string} [windowId]
+ * @prop {string} [viewId]
+ * @prop {string|node} [masterDocumentList]
+ * @prop {node} [children]
  */
 RawModal.propTypes = {
   dispatch: PropTypes.func.isRequired,
-  closeCallback: PropTypes.func,
-  children: PropTypes.node,
-  allowedCloseActions: PropTypes.array,
-  windowId: PropTypes.string,
-  viewId: PropTypes.string,
-  masterDocumentList: PropTypes.any,
-  modalTitle: PropTypes.oneOfType([PropTypes.string, PropTypes.node]),
-  modalDescription: PropTypes.oneOfType([PropTypes.string, PropTypes.node]),
   modalVisible: PropTypes.bool,
   rawModal: PropTypes.object.isRequired,
   requests: PropTypes.object.isRequired,
   success: PropTypes.bool.isRequired,
+  indicator: PropTypes.string.isRequired,
+  modalTitle: PropTypes.oneOfType([PropTypes.string, PropTypes.node]),
+  modalDescription: PropTypes.oneOfType([PropTypes.string, PropTypes.node]),
+  allowedCloseActions: PropTypes.array,
+  windowId: PropTypes.string,
+  viewId: PropTypes.string,
+  masterDocumentList: PropTypes.any,
+  children: PropTypes.node,
 };
+
+/**
+ * @method mapStateToProps
+ * @summary ToDo: Describe the method.
+ * @param {object} windowHandler
+ */
+const mapStateToProps = ({ windowHandler }) => ({
+  modalVisible: windowHandler.modal.visible || false,
+  rawModal: windowHandler.rawModal,
+  requests: windowHandler.patches.requests,
+  success: windowHandler.patches.success,
+  indicator: windowHandler.indicator,
+});
 
 export default connect(mapStateToProps)(RawModal);

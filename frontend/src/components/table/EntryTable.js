@@ -1,6 +1,9 @@
-import React, { Component } from 'react';
+import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 import classnames from 'classnames';
+import { connect } from 'react-redux';
+
+import { getTableId, getTable } from '../../reducers/tables';
 
 import WidgetTooltip from '../widget/WidgetTooltip';
 import MasterWidget from '../widget/MasterWidget';
@@ -10,7 +13,7 @@ import MasterWidget from '../widget/MasterWidget';
  * @module EntryTable
  * @extends Component
  */
-export default class EntryTable extends Component {
+class EntryTable extends PureComponent {
   constructor(props) {
     super(props);
 
@@ -49,12 +52,12 @@ export default class EntryTable extends Component {
   renderElements = (elements, columnsCount) => {
     const {
       data,
-      rowData,
+      rows,
       extendedData,
       addRefToWidgets,
       onBlurWidget,
       windowId,
-      dataId,
+      documentId,
       tabIndex,
       isFullScreen,
     } = this.props;
@@ -62,19 +65,19 @@ export default class EntryTable extends Component {
     const renderedArray = [];
     const colWidth = Math.floor(12 / columnsCount);
 
-    if (rowData && rowData.size) {
+    if (rows.length) {
       for (let i = 0; i < columnsCount; i += 1) {
         const elem = elements.cols[i];
 
         if (elem && elem.fields && elem.fields.length) {
           const fieldName = elem.fields ? elem.fields[0].field : '';
-          const widgetData = [rowData.get(0).fieldsByName[fieldName]];
+          const widgetData = [rows[0].fieldsByName[fieldName]];
           const relativeDocId = data.ID && data.ID.value;
           let tooltipData = null;
           let tooltipWidget = elem.fields
             ? elem.fields.find((field) => {
                 if (field.type === 'Tooltip') {
-                  tooltipData = rowData.get(0).fieldsByName[field.field];
+                  tooltipData = rows[0].fieldsByName[field.field];
 
                   if (tooltipData && tooltipData.value) {
                     return field;
@@ -101,13 +104,13 @@ export default class EntryTable extends Component {
                 ref={addRefToWidgets}
                 entity="window"
                 windowType={windowId}
-                dataId={dataId}
+                dataId={documentId}
                 dataEntry={true}
                 fieldName={fieldName}
                 widgetData={widgetData}
                 isModal={false}
                 tabId={extendedData.tabId}
-                rowId={dataId}
+                rowId={documentId}
                 relativeDocId={relativeDocId}
                 isAdvanced={false}
                 tabIndex={tabIndex}
@@ -137,12 +140,12 @@ export default class EntryTable extends Component {
   };
 
   render() {
-    const { rows } = this.props;
+    const { columns } = this.props;
 
     return (
       <table className="table js-table layout-fix">
         <tbody>
-          {rows.map((cols, idx) => {
+          {columns.map((cols, idx) => {
             return (
               <tr className="table-row" key={`entry-row-${idx}`}>
                 {this.renderElements(cols, cols.colsCount)}
@@ -156,13 +159,14 @@ export default class EntryTable extends Component {
 }
 
 EntryTable.propTypes = {
+  columns: PropTypes.array.isRequired,
   rows: PropTypes.array.isRequired,
   //
   windowId: PropTypes.string.isRequired,
-  dataId: PropTypes.string,
+  documentId: PropTypes.string,
+  tabId: PropTypes.string,
   //
   data: PropTypes.oneOfType([PropTypes.shape(), PropTypes.array]), // TODO: type here should point to a hidden issue?
-  rowData: PropTypes.any,
   extendedData: PropTypes.any,
   //
   tabIndex: PropTypes.any,
@@ -171,3 +175,13 @@ EntryTable.propTypes = {
   addRefToWidgets: PropTypes.func.isRequired,
   onBlurWidget: PropTypes.func.isRequired,
 };
+
+const mapStateToProps = (state, props) => {
+  const { windowId, documentId, tabId } = props;
+  const tableId = getTableId({ windowId, tabId, docId: documentId });
+  const table = getTable(state, tableId);
+
+  return { rows: table.rows };
+};
+
+export default connect(mapStateToProps)(EntryTable);

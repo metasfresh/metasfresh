@@ -37,6 +37,7 @@ import de.metas.document.DocTypeId;
 import de.metas.document.archive.api.IDocOutboundProducerService;
 import de.metas.document.archive.model.I_AD_Archive;
 import de.metas.logging.LogManager;
+import de.metas.logging.TableRecordMDC;
 import de.metas.organization.OrgId;
 import de.metas.printing.OutputType;
 import de.metas.printing.api.IPrintingDAO;
@@ -58,6 +59,7 @@ import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
+import de.metas.util.lang.CoalesceUtil;
 import lombok.NonNull;
 import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.ad.trx.api.ITrx;
@@ -71,6 +73,7 @@ import org.compiere.model.I_AD_PInstance;
 import org.compiere.util.Env;
 import org.compiere.util.Util;
 import org.slf4j.Logger;
+import org.slf4j.MDC;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -84,81 +87,82 @@ public class PrintingQueueBL implements IPrintingQueueBL
 {
 	private final static transient Logger logger = LogManager.getLogger(PrintingQueueBL.class);
 
-	private final IPrinterRoutingDAO printerRoutingDAO = Services.get(IPrinterRoutingDAO.class);
-	private final IPrintingDAO printingDAO = Services.get(IPrintingDAO.class);
-
 	/**
 	 * gh #1081: set up our composite handler to always apply {@link C_Printing_Queue_RecipientHandler} after the other handlers
 	 */
 	private final CompositePrintingQueueHandler printingQueueHandler = new CompositePrintingQueueHandler(C_Printing_Queue_RecipientHandler.INSTANCE);
+	private final IPrintingDAO printingDAO = Services.get(IPrintingDAO.class);
 
 	@Override
-	public I_C_Printing_Queue enqueue(final org.compiere.model.I_AD_Archive printOut)
+	public I_C_Printing_Queue enqueue(final org.compiere.model.I_AD_Archive archiveRecord)
 	{
-		final Properties localCtx = Env.deriveCtx(InterfaceWrapperHelper.getCtx(printOut));
-		Env.setContext(localCtx, Env.CTXNAME_AD_Client_ID, printOut.getAD_Client_ID());
-		Env.setContext(localCtx, Env.CTXNAME_AD_Org_ID, printOut.getAD_Org_ID());
-
-		final String trxName = InterfaceWrapperHelper.getTrxName(printOut);
-
-		final I_C_Printing_Queue item = InterfaceWrapperHelper.create(localCtx, I_C_Printing_Queue.class, trxName);
-		item.setAD_Archive(printOut);
-		item.setIsActive(true);
-		item.setProcessed(false);
-
-		// 03870
-		item.setAD_Org_ID(printOut.getAD_Org_ID());
-
-		// set async batch
-		final I_C_Async_Batch asyncBatch = InterfaceWrapperHelper.getDynAttribute(printOut, Async_Constants.C_Async_Batch);
-		if (asyncBatch != null)
+		try (final MDC.MDCCloseable ignore = TableRecordMDC.putTableRecordReference(archiveRecord))
 		{
-			item.setC_Async_Batch_ID(asyncBatch.getC_Async_Batch_ID());
-		}
+			final Properties localCtx = Env.deriveCtx(InterfaceWrapperHelper.getCtx(archiveRecord));
+			Env.setContext(localCtx, Env.CTXNAME_AD_Client_ID, archiveRecord.getAD_Client_ID());
+			Env.setContext(localCtx, Env.CTXNAME_AD_Org_ID, archiveRecord.getAD_Org_ID());
 
-		// 03829: set the values for new columns
-		item.setAD_User_ID(Env.getAD_User_ID(localCtx));
-		item.setAD_Role_ID(Env.getAD_Role_ID(localCtx));
-		item.setAD_Process_ID(printOut.getAD_Process_ID());
+			final String trxName = InterfaceWrapperHelper.getTrxName(archiveRecord);
 
-		item.setIsPrintoutForOtherUser(false); // task 09028: this the default, but the printingQueueHandler can override it.
+			final I_C_Printing_Queue item = InterfaceWrapperHelper.create(localCtx, I_C_Printing_Queue.class, trxName);
+			item.setAD_Archive(archiveRecord);
+			item.setIsActive(true);
+			item.setProcessed(false);
 
-		item.setCopies(1); // can be changed by printingQueueHandlers and a value stored in "COPIES_PER_ARCHIVE"
+			// 03870
+			item.setAD_Org_ID(archiveRecord.getAD_Org_ID());
 
-		printingQueueHandler.afterEnqueueBeforeSave(item, InterfaceWrapperHelper.create(printOut, I_AD_Archive.class));
-		// If queue item was deactivated by listeners, there is no point to save it or go forward
-		if (!item.isActive())
-		{
-			return null;
-		}
-
-		InterfaceWrapperHelper.save(item);
-
-		printingQueueHandler.afterEnqueueAfterSave(item, InterfaceWrapperHelper.create(printOut, I_AD_Archive.class));
-
-		// https://github.com/metasfresh/metasfresh/issues/1240
-		// see if a copies-per-archive value was specified. If yes, then use it as a multiplier.
-		// Some printing queue handlers might also have set a value. We don't want to override it in a "hard" way.
-		// Instead we assume that if a printingQueueHandler wants "two" in general, and now some user wants "three" in particular, then that user wants the "general" behavior times three, i.e. six.
-		// Also note that right now I don't know any case where a user can set copies-per-archive in a case that is also handled by a printingQueueHandler.
-		final Optional<Integer> copiesIfExists = IArchiveBL.COPIES_PER_ARCHIVE.getValueIfExists(printOut);
-		if (copiesIfExists.isPresent())
-		{
-			final int oldItemCopies = Math.max(item.getCopies(), 1); // note about Math.max(): it should not happen that a printingQueueHandler sets copies:=0, but if it happens and COPIES_PER_ARCHIVE contained a value, then go with COPIES_PER_ARCHIVE
-			final Integer copiesMultipliers = copiesIfExists.get();
-			final int newItemCopies = oldItemCopies * copiesMultipliers;
-
-			if (oldItemCopies != newItemCopies)
+			// set async batch
+			final I_C_Async_Batch asyncBatch = InterfaceWrapperHelper.getDynAttribute(archiveRecord, Async_Constants.C_Async_Batch);
+			if (asyncBatch != null)
 			{
-				Loggables.withLogger(logger, Level.DEBUG).addLog(
-						"An explicit number of copies={} was specified for the given achive. Overwriting previous value={} with new value {}x{}={}; item={}",
-						copiesMultipliers, item.getCopies(), oldItemCopies, copiesMultipliers, newItemCopies, item);
-				item.setCopies(newItemCopies);
+				item.setC_Async_Batch_ID(asyncBatch.getC_Async_Batch_ID());
 			}
-		}
 
-		InterfaceWrapperHelper.save(item); // make sure the changes made in after enqueue, are also saved
-		return item;
+			// 03829: set the values for new columns
+			item.setAD_User_ID(Env.getAD_User_ID(localCtx)); // printingQueueHandler might/should override this
+			item.setAD_Role_ID(Env.getAD_Role_ID(localCtx));
+			item.setAD_Process_ID(archiveRecord.getAD_Process_ID());
+
+			item.setIsPrintoutForOtherUser(false); // task 09028: this the default, but the printingQueueHandler can override it.
+
+			item.setCopies(1); // can be changed by printingQueueHandlers and a value stored in "COPIES_PER_ARCHIVE"
+
+			printingQueueHandler.afterEnqueueBeforeSave(item, InterfaceWrapperHelper.create(archiveRecord, I_AD_Archive.class));
+			// If queue item was deactivated by listeners, there is no point to save it or go forward
+			if (!item.isActive())
+			{
+				return null;
+			}
+
+			InterfaceWrapperHelper.save(item);
+
+			printingQueueHandler.afterEnqueueAfterSave(item, InterfaceWrapperHelper.create(archiveRecord, I_AD_Archive.class));
+
+			// https://github.com/metasfresh/metasfresh/issues/1240
+			// see if a copies-per-archiveRecord value was specified. If yes, then use it as a multiplier.
+			// Some printing queue handlers might also have set a value. We don't want to override it in a "hard" way.
+			// Instead we assume that if a printingQueueHandler wants "two" in general, and now some user wants "three" in particular, then that user wants the "general" behavior times three, i.e. six.
+			// Also note that right now I don't know any case where a user can set copies-per-archiveRecord in a case that is also handled by a printingQueueHandler.
+			final Optional<Integer> copiesIfExists = IArchiveBL.COPIES_PER_ARCHIVE.getValueIfExists(archiveRecord);
+			if (copiesIfExists.isPresent())
+			{
+				final int oldItemCopies = Math.max(item.getCopies(), 1); // note about Math.max(): it should not happen that a printingQueueHandler sets copies:=0, but if it happens and COPIES_PER_ARCHIVE contained a value, then go with COPIES_PER_ARCHIVE
+				final Integer copiesMultipliers = copiesIfExists.get();
+				final int newItemCopies = oldItemCopies * copiesMultipliers;
+
+				if (oldItemCopies != newItemCopies)
+				{
+					Loggables.withLogger(logger, Level.DEBUG).addLog(
+							"An explicit number of copies={} was specified for the given achive. Overwriting previous value={} with new value {}x{}={}; item={}",
+							copiesMultipliers, item.getCopies(), oldItemCopies, copiesMultipliers, newItemCopies, item);
+					item.setCopies(newItemCopies);
+				}
+			}
+
+			InterfaceWrapperHelper.save(item); // make sure the changes made in after enqueue, are also saved
+			return item;
+		}
 	}
 
 	@Override
@@ -222,29 +226,43 @@ public class PrintingQueueBL implements IPrintingQueueBL
 	}
 
 	@Override
+	public PrintingQueueProcessingInfo createPrintingQueueProcessingInfo(final I_C_Printing_Queue printingQueueRecord)
+	{
+		final UserId printJobADUserId = getPrintToUser(printingQueueRecord);
+		return createPrintingQueueProcessingInfo(printingQueueRecord, printJobADUserId);
+	}
+
+	@Override
 	public PrintingQueueProcessingInfo createPrintingQueueProcessingInfo(final Properties ctx, @NonNull final IPrintingQueueQuery query)
 	{
 		Check.assumeNotNull(query.getAggregationKey(), "IPrintingQueueQuery {} shall have an aggregation key", query);
 
-		final IPrintingDAO printingDAO = Services.get(IPrintingDAO.class);
 		final I_C_Printing_Queue firstItem = printingDAO
 				.createQuery(ctx, query, ITrx.TRXNAME_ThreadInherited)
 				.first();
 
-		final int printJobAD_User_ID = getPrintJobAD_User_ID(ctx, query);
+		final UserId printJobAD_User_ID = getPrintJobAD_User_ID(ctx, query);
 
-		final List<Integer> printToUserIDs;
+		return createPrintingQueueProcessingInfo(firstItem, printJobAD_User_ID);
+	}
+
+	@NonNull
+	private PrintingQueueProcessingInfo createPrintingQueueProcessingInfo(
+			@NonNull final I_C_Printing_Queue printingQueueRecord,
+			final UserId printJobAD_User_ID)
+	{
+		final ImmutableList<UserId> printToUserIDs;
 		final boolean createWithSpecificHostKey;
-		if (firstItem.isPrintoutForOtherUser())
+		if (printingQueueRecord.isPrintoutForOtherUser())
 		{
-			printToUserIDs = ImmutableList.<Integer>copyOf(printingDAO.retrievePrintingQueueRecipientIDs(firstItem));
+			printToUserIDs = ImmutableList.copyOf(printingDAO.retrievePrintingQueueRecipientIDs(printingQueueRecord));
 
 			// we don't know which hostKeys the users will be using next time they poll for print jobs
 			createWithSpecificHostKey = false;
 		}
 		else
 		{
-			printToUserIDs = ImmutableList.<Integer>of(printJobAD_User_ID);
+			printToUserIDs = ImmutableList.of(printJobAD_User_ID);
 
 			// If the item is for ourselves, then also our hostKey shall be added to the printing instructions.
 			// Otherwise, the job might be printed by someone else who is logged in with our user-id (e.g SuperUser).
@@ -253,13 +271,12 @@ public class PrintingQueueBL implements IPrintingQueueBL
 		return new PrintingQueueProcessingInfo(printJobAD_User_ID, printToUserIDs, createWithSpecificHostKey);
 	}
 
-	private int getPrintJobAD_User_ID(final Properties ctx, final IPrintingQueueQuery printingQueueQuery)
+	private UserId getPrintJobAD_User_ID(final Properties ctx, final IPrintingQueueQuery printingQueueQuery)
 	{
-
 		if (printingQueueQuery.getAD_User_ID() >= 0)
 		{
 			logger.debug("Using AD_User_ToPrint from from query");
-			return printingQueueQuery.getAD_User_ID();
+			return UserId.ofRepoId(printingQueueQuery.getAD_User_ID());
 		}
 
 		// 03870 R2
@@ -271,7 +288,7 @@ public class PrintingQueueBL implements IPrintingQueueBL
 			if (printJobUserId > 0)
 			{
 				logger.debug("Using AD_User_ToPrint from AD_PInstance");
-				return printJobUserId;
+				return UserId.ofRepoId(printJobUserId);
 			}
 		}
 
@@ -279,11 +296,13 @@ public class PrintingQueueBL implements IPrintingQueueBL
 		{
 			final int printJobUserId = Env.getAD_User_ID(ctx);
 			logger.debug("Using AD_User_ToPrint from context (logged user)");
-			return printJobUserId;
+			return UserId.ofRepoId(printJobUserId);
 		}
 
-		logger.debug("Will use the AD_User_ID of first item to be added to the job");
-		return -1;
+		throw new AdempiereException("Unable to find a printJobUserId")
+				.appendParametersToMessage()
+				.setParameter("printingQueueQuery", printingQueueQuery)
+				.setParameter("ctx", ctx);
 	}
 
 	@Override
@@ -384,44 +403,15 @@ public class PrintingQueueBL implements IPrintingQueueBL
 				.clientId(ClientId.ofRepoIdOrSystem(item.getAD_Client_ID()))
 				.orgId(OrgId.ofRepoIdOrAny(item.getAD_Org_ID()))
 				.roleId(RoleId.ofRepoIdOrNull(item.getAD_Role_ID()))
-				.userId(UserId.ofRepoIdOrNullIfSystem(item.getAD_User_ID()))
+				.userId(getPrintToUser(item))
 				.tableId(AdTableId.ofRepoIdOrNull(item.getAD_Table_ID()))
 				.processId(AdProcessId.ofRepoIdOrNull(item.getAD_Process_ID()))
 				.docTypeId(DocTypeId.ofRepoIdOrNull(item.getC_DocType_ID()))
 				.build();
 	}
 
-	private final CCache<PrinterRoutingsQuery, Optional<OutputType>> printerRoutingsQueryToOutputType = CCache
-			.<PrinterRoutingsQuery, Optional<OutputType>>builder()
-			.cacheName("printerRoutingsQueryToOutputType")
-			.tableName(I_AD_PrinterRouting.Table_Name)
-			.additionalTableNameToResetFor(I_AD_Printer_Matching.Table_Name)
-			.additionalTableNameToResetFor(I_AD_PrinterHW.Table_Name)
-			.build();
-
-	@Override
-	public Optional<OutputType> retrieveOutputTypeFor(@NonNull final I_C_Printing_Queue item)
+	private UserId getPrintToUser(@NonNull final I_C_Printing_Queue printingQueueRecord)
 	{
-		final PrinterRoutingsQuery printerRoutingsQuery = createPrinterRoutingsQueryForItem(item);
-		return printerRoutingsQueryToOutputType.getOrLoad(printerRoutingsQuery, q -> retrieveOutputTypeFor0(q));
-	}
-
-	@NonNull
-	private Optional<OutputType> retrieveOutputTypeFor0(@NonNull final PrinterRoutingsQuery printerRoutingsQuery)
-	{
-		final List<I_AD_PrinterRouting> printerRoutingRecords = printerRoutingDAO.fetchPrinterRoutings(printerRoutingsQuery);
-		if (printerRoutingRecords.isEmpty())
-		{
-			return Optional.empty();
-		}
-		final I_AD_PrinterRouting firstRouting = printerRoutingRecords.get(0);
-		final I_AD_Printer_Matching printerMatchingRecord = printingDAO.retrievePrinterMatchingOrNull(null/*hostKey*/, firstRouting.getAD_Printer());
-		if (printerMatchingRecord == null)
-		{
-			return Optional.empty();
-		}
-
-		final String outputType = printerMatchingRecord.getAD_PrinterHW().getOutputType();
-		return Optional.of(OutputType.ofCode(outputType));
+		return UserId.ofRepoId(printingQueueRecord.getCreatedBy());
 	}
 }

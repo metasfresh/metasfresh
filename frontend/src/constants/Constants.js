@@ -107,3 +107,5 @@ export const TIME_REGEX_TEST = /^\d\d:\d\d$/;
 export const PROCESS_NAME = 'process';
 
 export const LOCATION_SEARCH_NAME = 'location-area-search';
+
+export const LOCAL_LANG = 'metasfreshLanguage';

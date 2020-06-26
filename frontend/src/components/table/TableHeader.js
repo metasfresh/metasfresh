@@ -1,18 +1,11 @@
 import React, { PureComponent } from 'react';
 import classnames from 'classnames';
-import { shouldRenderColumn } from '../../utils/tableHelpers';
 import PropTypes from 'prop-types';
-import { setActiveSort, setActiveSortNEW } from '../../actions/TableActions';
+
+import { shouldRenderColumn, getSizeClass } from '../../utils/tableHelpers';
 import { getTableId } from '../../reducers/tables';
-import { connect } from 'react-redux';
 
-class TableHeader extends PureComponent {
-  constructor(props) {
-    super(props);
-
-    this.state = {};
-  }
-
+export default class TableHeader extends PureComponent {
   UNSAFE_componentWillMount() {
     this.setInitialState();
   }
@@ -44,10 +37,9 @@ class TableHeader extends PureComponent {
       docId,
       viewId,
       setActiveSort,
-      setActiveSortNEW,
     } = this.props;
     const stateFields = this.state.fields;
-    const tableId = getTableId({ windowType, viewId, docId, tabId });
+    const tableId = getTableId({ windowId: windowType, viewId, docId, tabId });
     let fields = {};
     let sortingValue = null;
 
@@ -63,17 +55,16 @@ class TableHeader extends PureComponent {
       fields[field] = sortingValue;
     }
 
+    // TODO: We don't have to spread `fields` as it's a new object anyway
     this.setState({
       fields: { ...fields },
     });
 
     sort(sortingValue, field, true, page, tabId);
-    setActiveSort(true);
-    setActiveSortNEW(tableId, true);
+    setActiveSort(tableId, true);
 
     setTimeout(() => {
-      setActiveSort(false);
-      setActiveSortNEW(tableId, false);
+      setActiveSort(tableId, false);
     }, 1000);
     deselect();
   };
@@ -106,7 +97,7 @@ class TableHeader extends PureComponent {
   };
 
   renderCols = (cols) => {
-    const { getSizeClass, sort } = this.props;
+    const { sort } = this.props;
 
     return (
       cols &&
@@ -150,17 +141,7 @@ TableHeader.propTypes = {
   viewId: PropTypes.string,
   deselect: PropTypes.any,
   page: PropTypes.any,
-  getSizeClass: PropTypes.func,
   cols: PropTypes.any,
   indentSupported: PropTypes.any,
   setActiveSort: PropTypes.func,
-  setActiveSortNEW: PropTypes.func,
 };
-
-export default connect(
-  null,
-  {
-    setActiveSort,
-    setActiveSortNEW,
-  }
-)(TableHeader);

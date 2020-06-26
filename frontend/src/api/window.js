@@ -1,4 +1,4 @@
-import { post, get } from 'axios';
+import { post, get, delete as del } from 'axios';
 
 import { getData } from './view';
 import { parseToDisplay } from '../utils/documentListHelper';
@@ -17,6 +17,24 @@ export function topActionsRequest(windowId, documentId, tabId) {
   return get(`
     ${config.API_URL}/window/${windowId}/${documentId}/${tabId}/topActions
   `);
+}
+
+export function deleteRequest(
+  entity,
+  docType,
+  docId,
+  tabId,
+  ids,
+  subentity,
+  subentityId
+) {
+  return del(
+    `${config.API_URL}/${entity}${docType ? `/${docType}` : ''}${
+      docId ? `/${docId}` : ''
+    }${tabId ? `/${tabId}` : ''}${subentity ? `/${subentity}` : ''}${
+      subentityId ? `/${subentityId}` : ''
+    }${ids ? `?ids=${ids}` : ''}`
+  );
 }
 
 export function getZoomIntoWindow(

@@ -3,12 +3,9 @@ import counterpart from 'counterpart';
 import { push, replace } from 'react-router-redux';
 import currentDevice from 'current-device';
 import { Set } from 'immutable';
-import { cloneDeep } from 'lodash';
 
 import {
   ACTIVATE_TAB,
-  ADD_NEW_ROW,
-  ADD_ROW_DATA,
   ALLOW_SHORTCUT,
   ALLOW_OUTSIDE_CLICK,
   CHANGE_INDICATOR_STATE,
@@ -18,12 +15,9 @@ import {
   CLOSE_RAW_MODAL,
   CLOSE_FILTER_BOX,
   DELETE_QUICK_ACTIONS,
-  DELETE_ROW,
   DELETE_TOP_ACTIONS,
-  DESELECT_TABLE_ITEMS,
   DISABLE_SHORTCUT,
   DISABLE_OUTSIDE_CLICK,
-  HIDE_SPINNER,
   INIT_WINDOW,
   INIT_DATA_SUCCESS,
   INIT_LAYOUT_SUCCESS,
@@ -38,12 +32,8 @@ import {
   PATCH_FAILURE,
   PATCH_REQUEST,
   PATCH_SUCCESS,
-  REMOVE_TABLE_ITEMS_SELECTION,
-  SELECT_TABLE_ITEMS,
-  SET_LATEST_NEW_DOCUMENT,
   SET_RAW_MODAL_DESCRIPTION,
   SET_RAW_MODAL_TITLE,
-  SHOW_SPINNER,
   SORT_TAB,
   TOGGLE_OVERLAY,
   UNSELECT_TAB,
@@ -55,10 +45,6 @@ import {
   UPDATE_MASTER_DATA,
   UPDATE_MODAL,
   UPDATE_RAW_MODAL,
-  UPDATE_ROW_FIELD_PROPERTY,
-  UPDATE_ROW_PROPERTY,
-  UPDATE_ROW_STATUS,
-  UPDATE_TAB_ROWS_DATA,
 } from '../constants/ActionTypes';
 import { PROCESS_NAME } from '../constants/Constants';
 
@@ -88,7 +74,12 @@ import {
   updateCommentsPanelTextInput,
   updateCommentsPanelOpenFlag,
 } from './CommentsPanelActions';
-import { createTabTable, updateTabTable } from './TableActions';
+import {
+  createTabTable,
+  updateTabTable,
+  updateTableSelection,
+  updateTableRowProperty,
+} from './TableActions';
 import { toggleFullScreen, preFormatPostDATA } from '../utils';
 import { getScope, parseToDisplay } from '../utils/documentListHelper';
 
@@ -122,27 +113,6 @@ export function deleteQuickActions(windowId, id) {
 export function deleteTopActions() {
   return {
     type: DELETE_TOP_ACTIONS,
-  };
-}
-
-export function setLatestNewDocument(id) {
-  return {
-    type: SET_LATEST_NEW_DOCUMENT,
-    id: id,
-  };
-}
-
-export function showSpinner(id) {
-  return {
-    type: SHOW_SPINNER,
-    spinnerId: id,
-  };
-}
-
-export function hideSpinner(id) {
-  return {
-    type: HIDE_SPINNER,
-    spinnerId: id,
   };
 }
 
@@ -302,25 +272,6 @@ export function clearMasterData() {
   };
 }
 
-export function addRowData(data, scope) {
-  return {
-    type: ADD_ROW_DATA,
-    data,
-    scope,
-  };
-}
-
-export function updateTabRowsData(scope, tabId, data) {
-  return {
-    type: UPDATE_TAB_ROWS_DATA,
-    payload: {
-      data: cloneDeep(data),
-      tabId,
-      scope,
-    },
-  };
-}
-
 export function sortTab(scope, tabId, field, asc) {
   return {
     type: SORT_TAB,
@@ -328,16 +279,6 @@ export function sortTab(scope, tabId, field, asc) {
     tabId,
     field,
     asc,
-  };
-}
-
-export function updateRowStatus(scope, tabid, rowid, saveStatus) {
-  return {
-    type: UPDATE_ROW_STATUS,
-    scope,
-    tabid,
-    rowid,
-    saveStatus,
   };
 }
 
@@ -366,17 +307,6 @@ export function updateDataValidStatus(scope, validStatus) {
   };
 }
 
-export function updateRowProperty(property, item, tabid, rowid, scope) {
-  return {
-    type: UPDATE_ROW_PROPERTY,
-    property,
-    item,
-    tabid,
-    rowid,
-    scope,
-  };
-}
-
 export function updateDataIncludedTabsInfo(scope, includedTabsInfo) {
   return {
     type: UPDATE_DATA_INCLUDED_TABS_INFO,
@@ -385,41 +315,11 @@ export function updateDataIncludedTabsInfo(scope, includedTabsInfo) {
   };
 }
 
-export function addNewRow(item, tabid, rowid, scope) {
-  return {
-    type: ADD_NEW_ROW,
-    item: item,
-    tabid: tabid,
-    rowid: rowid,
-    scope: scope,
-  };
-}
-
-export function deleteRow(tabid, rowid, scope) {
-  return {
-    type: DELETE_ROW,
-    tabid: tabid,
-    rowid: rowid,
-    scope: scope,
-  };
-}
-
 export function updateDataFieldProperty(property, item, scope) {
   return {
     type: UPDATE_DATA_FIELD_PROPERTY,
     property: property,
     item: item,
-    scope: scope,
-  };
-}
-
-export function updateRowFieldProperty(property, item, tabid, rowid, scope) {
-  return {
-    type: UPDATE_ROW_FIELD_PROPERTY,
-    property: property,
-    item: item,
-    tabid: tabid,
-    rowid: rowid,
     scope: scope,
   };
 }
@@ -504,42 +404,17 @@ export function indicatorState(state) {
   };
 }
 
-//SELECT ON TABLE
-
-export function removeSelectedTableItems({ windowType, viewId }) {
-  return {
-    type: REMOVE_TABLE_ITEMS_SELECTION,
-    payload: { windowType, viewId },
-  };
-}
-
-export function selectTableItems({ ids, windowType, viewId }) {
-  return {
-    type: SELECT_TABLE_ITEMS,
-    payload: { ids, windowType, viewId: viewId || windowType },
-  };
-}
-
-export function deselectTableItems(ids, windowType, viewId) {
-  return {
-    type: DESELECT_TABLE_ITEMS,
-    payload: { ids, windowType, viewId },
-  };
-}
-
 // THUNK ACTIONS
 
-// TODO: Just a quick thunk action creator to test Tables reducer
-// but looks like this can actually replace the `initTabs`.
 /*
  * @method fetchTab
  * @summary Action creator for fetching single tab's rows
  */
-export function fetchTab({ tabId, windowType, docId, query }) {
+export function fetchTab({ tabId, windowId, docId, query }) {
   return (dispatch) => {
-    return getTabRequest(tabId, windowType, docId, query)
+    return getTabRequest(tabId, windowId, docId, query)
       .then((response) => {
-        const tableId = getTableId({ windowType, docId, tabId });
+        const tableId = getTableId({ windowId, docId, tabId });
         const tableData = { result: response };
 
         dispatch(updateTabTable(tableId, tableData));
@@ -552,40 +427,6 @@ export function fetchTab({ tabId, windowType, docId, query }) {
       });
   };
 }
-
-// TODO: Figure out if we still need this as it looks like we can just fetch
-// tabs when they're created (in the Tab component's constructor)
-// export function initTabs(layout, windowType, docId, isModal) {
-//   return async (dispatch) => {
-//     const requests = [];
-//     const tabTmp = {};
-
-//     if (layout) {
-//       layout.map((tab, index) => {
-//         tabTmp[tab.tabId] = {};
-
-//         if ((tab.tabId && index === 0) || !tab.queryOnActivate) {
-//           requests.push(getTabRequest(tab.tabId, windowType, docId));
-//         }
-//       });
-
-//       return await Promise.all(requests).then((responses) => {
-//         responses.forEach((res) => {
-//           // needed for finding tabId
-//           const rowZero = res && res[0];
-//           if (rowZero) {
-//             const tabId = rowZero.tabId;
-//             tabTmp[tabId] = res;
-//           }
-//         });
-
-//         dispatch(addRowData(tabTmp, getScope(isModal)));
-//       });
-//     }
-
-//     return Promise.resolve(null);
-//   };
-// }
 
 export function initWindow(windowType, docId, tabId, rowId = null, isAdvanced) {
   return (dispatch) => {
@@ -681,20 +522,20 @@ export function createWindow(
 
       if (tabs) {
         Object.values(tabs).forEach((tab) => {
-          const { tabId } = tab;
-          const tableId = getTableId({ windowType, docId, tabId });
+          const tabId = tab.tabId || tab.tabid;
+          const tableId = getTableId({ windowId: windowType, docId, tabId });
           const tableData = {
             windowType,
             docId,
             tabId,
             ...tab,
           };
+
           dispatch(createTabTable(tableId, tableData));
         });
       }
 
       if (documentId === 'NEW' && !isModal) {
-        dispatch(setLatestNewDocument(docId));
         // redirect immedietely
         return dispatch(replace(`/window/${windowType}/${docId}`));
       }
@@ -738,38 +579,31 @@ export function createWindow(
         dispatch(getWindowBreadcrumb(windowType));
       }
 
-      return (
-        getLayout('window', windowType, tabId, null, null, isAdvanced)
-          .then(({ data }) => {
-            const layoutTabs = data.tabs;
+      return getLayout('window', windowType, tabId, null, null, isAdvanced)
+        .then(({ data }) => {
+          const layoutTabs = data.tabs;
 
-            if (layoutTabs) {
-              Object.values(layoutTabs).forEach((tab) => {
-                const { tabId } = tab;
-                const tableId = getTableId({ windowType, docId, tabId });
-                const tableData = {
-                  windowType,
-                  docId,
-                  tabId,
-                  ...tab,
-                };
-                dispatch(updateTabTable(tableId, tableData));
+          if (layoutTabs) {
+            Object.values(layoutTabs).forEach((tab) => {
+              const { tabId } = tab;
+              const tableId = getTableId({
+                windowId: windowType,
+                docId,
+                tabId,
               });
-            }
+              const tableData = {
+                windowType,
+                docId,
+                tabId,
+                ...tab,
+              };
+              dispatch(updateTabTable(tableId, tableData));
+            });
+          }
 
-            dispatch(initLayoutSuccess(data, getScope(isModal)));
-          })
-          // TODO: looks like this can be removed ?
-          // .then((response) => {
-          //   if (!isModal) {
-          //     return dispatch(
-          //       initTabs(response.layout.tabs, windowType, docId, isModal)
-          //     );
-          //   }
-          //   return Promise.resolve(null);
-          // })
-          .catch((e) => Promise.reject(e))
-      );
+          dispatch(initLayoutSuccess(data, getScope(isModal)));
+        })
+        .catch((e) => Promise.reject(e));
     });
   };
 }
@@ -822,17 +656,21 @@ export function fetchTopActions(windowType, docId, tabId) {
       type: FETCH_TOP_ACTIONS,
     });
 
-    topActionsRequest(windowType, docId, tabId)
+    return topActionsRequest(windowType, docId, tabId)
       .then((response) => {
         dispatch({
           type: FETCH_TOP_ACTIONS_SUCCESS,
           payload: response.data.actions,
         });
+
+        return Promise.resolve(response.data.actions);
       })
-      .catch(() => {
+      .catch((e) => {
         dispatch({
           type: FETCH_TOP_ACTIONS_FAILURE,
         });
+
+        return Promise.reject(e);
       });
   };
 }
@@ -1043,6 +881,8 @@ export function fireUpdateData({
   };
 }
 
+// TODO: Check if all cases are valid. Especially if `scope` is `master`, or
+// `key` is `includedTabsInfo`.
 function updateData(doc, scope) {
   return (dispatch) => {
     Object.keys(doc).map((key) => {
@@ -1065,28 +905,6 @@ function updateData(doc, scope) {
   };
 }
 
-function updateRow(row, scope) {
-  return (dispatch) => {
-    Object.keys(row).map((key) => {
-      if (key === 'fieldsByName') {
-        Object.keys(row.fieldsByName).map((fieldName) => {
-          dispatch(
-            updateRowFieldProperty(
-              fieldName,
-              row.fieldsByName[fieldName],
-              row.tabid,
-              row.rowId,
-              scope
-            )
-          );
-        });
-      } else {
-        dispatch(updateRowProperty(key, row[key], row.tabId, row.rowId, scope));
-      }
-    });
-  };
-}
-
 function mapDataToState(data, isModal, rowId) {
   return (dispatch) => {
     const dataArray = typeof data.splice === 'function' ? data : [data];
@@ -1099,18 +917,8 @@ function mapDataToState(data, isModal, rowId) {
           }
         : item;
 
-      // First item in response is direct one for action that called it.
-      if (index === 0 && rowId === 'NEW') {
-        dispatch(
-          addNewRow(parsedItem, parsedItem.tabid, parsedItem.rowId, 'master')
-        );
-      } else {
-        if (item.rowId && !isModal) {
-          // Update directly to a row by the widget in cell
-          dispatch(updateRow(parsedItem, 'master'));
-        } else {
-          dispatch(updateData(parsedItem, getScope(isModal && index === 0)));
-        }
+      if (!(index === 0 && rowId === 'NEW') && !item.rowId) {
+        dispatch(updateData(parsedItem, getScope(isModal && index === 0)));
       }
     });
   };
@@ -1119,15 +927,12 @@ function mapDataToState(data, isModal, rowId) {
 function updateStatus(responseData) {
   return (dispatch) => {
     const updateDispatch = (item) => {
-      if (item.rowId) {
-        dispatch(
-          updateRowStatus('master', item.tabid, item.rowId, item.saveStatus)
-        );
-      } else {
+      if (!item.rowId) {
         item.validStatus &&
           dispatch(updateDataValidStatus('master', item.validStatus));
         item.saveStatus &&
           dispatch(updateDataSaveStatus('master', item.saveStatus));
+        // TODO: We probably don't need this anymore
         item.includedTabsInfo &&
           dispatch(updateDataIncludedTabsInfo('master', item.includedTabsInfo));
       }
@@ -1146,25 +951,36 @@ function updateStatus(responseData) {
 /*
  * It updates store for single field value modification, like handleChange
  * in MasterWidget
+ * @todo TODO: from my observations, this is triggered multiple times even
+ * when just one field was changed - Kuba
  */
-export function updatePropertyValue(
+export function updatePropertyValue({
   property,
   value,
-  tabid,
-  rowid,
+  tabId,
+  rowId,
   isModal,
-  entity
-) {
+  entity,
+  tableId,
+}) {
   return (dispatch) => {
-    if (tabid && rowid) {
-      dispatch(
-        updateRowFieldProperty(property, { value }, tabid, rowid, 'master')
-      );
-      if (isModal && entity !== PROCESS_NAME) {
-        dispatch(updateDataFieldProperty(property, { value }, 'modal'));
+    if (rowId) {
+      const change = {
+        fieldsByName: {
+          [`${property}`]: {
+            value,
+          },
+        },
+      };
+
+      dispatch(updateTableRowProperty({ tableId, rowId, change }));
+    } else if (!tabId || !rowId) {
+      // modal's data is in `tables`
+      if (!isModal) {
+        dispatch(
+          updateDataFieldProperty(property, { value }, getScope(isModal))
+        );
       }
-    } else {
-      dispatch(updateDataFieldProperty(property, { value }, getScope(isModal)));
       if (isModal && entity !== PROCESS_NAME) {
         //update the master field too if exist
         dispatch(updateDataFieldProperty(property, { value }, 'master'));
@@ -1361,21 +1177,21 @@ export function handleProcessResponse(response, type, id) {
           case 'displayQRCode':
             dispatch(toggleOverlay({ type: 'qr', data: action.code }));
             break;
-          case 'openView':
+          case 'openView': {
+            const { windowId, viewId } = action;
+
             await dispatch(closeModal());
 
             if (!action.modalOverlay) {
-              window.open(
-                `/window/${action.windowId}/?viewId=${action.viewId}`
-              );
+              window.open(`/window/${windowId}/?viewId=${viewId}`);
+
               return;
             }
 
-            await dispatch(
-              openRawModal(action.windowId, action.viewId, action.profileId)
-            );
+            await dispatch(openRawModal(windowId, viewId, action.profileId));
 
             break;
+          }
           case 'openReport':
             openFile(PROCESS_NAME, type, id, 'print', action.filename);
 
@@ -1403,7 +1219,7 @@ export function handleProcessResponse(response, type, id) {
               );
             } else {
               await dispatch(
-                push('/window/' + action.windowId + '/' + action.documentId)
+                push(`/window/${action.windowId}/${action.documentId}`)
               );
             }
             break;
@@ -1426,10 +1242,18 @@ export function handleProcessResponse(response, type, id) {
             );
 
             break;
-          case 'selectViewRows':
-            await dispatch(selectTableItems(action.rowIds, action.windowId));
+          case 'selectViewRows': {
+            // eslint-disable-next-line no-console
+            console.info(
+              '@TODO: `selectViewRows` - check if selection worked ok'
+            );
+            const { windowId, viewId, rowIds } = action;
+            const tableId = getTableId({ windowId, viewId });
+
+            dispatch(updateTableSelection(tableId, rowIds));
 
             break;
+          }
         }
       }
 
@@ -1443,14 +1267,5 @@ export function handleProcessResponse(response, type, id) {
         await dispatch(closeProcessModal());
       }
     }
-  };
-}
-
-export function deleteLocal(tabid, rowsid, scope, response) {
-  return (dispatch) => {
-    for (let rowid of rowsid) {
-      dispatch(deleteRow(tabid, rowid, scope));
-    }
-    dispatch(updateStatus(response.data));
   };
 }

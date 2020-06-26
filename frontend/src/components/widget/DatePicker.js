@@ -4,16 +4,15 @@ import { connect } from 'react-redux';
 import MomentTZ from 'moment-timezone';
 import onClickOutside from 'react-onclickoutside';
 
-import TetheredDateTime from './TetheredDateTime';
+import { getCurrentActiveLocale } from '../../utils/locale';
+import { DATE_FIELD_FORMATS } from '../../constants/Constants';
 import { addNotification } from '../../actions/AppActions';
 import {
   allowOutsideClick,
   disableOutsideClick,
 } from '../../actions/WindowActions';
-import { getCurrentActiveLocale } from '../../utils/locale';
 
-import Moment from 'moment-timezone';
-import { DATE_FIELD_FORMATS } from '../../constants/Constants';
+import TetheredDateTime from './TetheredDateTime';
 
 /**
  * @file Class based component.
@@ -176,8 +175,8 @@ class DatePicker extends Component {
     let { value } = props;
     // patch pre-formatated date that comes like this from BE
     if (value && value.includes('-')) {
-      Moment.locale(getCurrentActiveLocale());
-      value = Moment(value).format(DATE_FIELD_FORMATS.Date);
+      MomentTZ.locale(getCurrentActiveLocale());
+      value = MomentTZ(value).format(DATE_FIELD_FORMATS.Date);
     }
     return (
       <div className={className}>
