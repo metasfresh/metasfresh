@@ -96,6 +96,6 @@ public class InvoiceProcessingServiceCompanyConfigRepository
 						.percent(Percent.of(recordBP.getFeePercentageOfGrandTotal()))
 						.build()
 				)
-				.collect(GuavaCollectors.toImmutableMapByKey(detail -> detail.getBpartnerId()));
+				.collect(GuavaCollectors.toImmutableMapByKey(InvoiceProcessingServiceCompanyConfigBPartnerDetails::getBpartnerId));
 	}
 }
