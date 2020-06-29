@@ -615,7 +615,7 @@ class DocumentListContainer extends Component {
    * @summary ToDo: Describe the method.
    */
   handleChangePage = (index) => {
-    const { reduxData } = this.props;
+    const { reduxData, sort } = this.props;
     let currentPage = reduxData.page;
 
     switch (index) {
@@ -631,7 +631,7 @@ class DocumentListContainer extends Component {
         currentPage = index;
     }
 
-    this.getData(reduxData.viewId, currentPage, reduxData.sort);
+    this.getData(reduxData.viewId, currentPage, sort);
   };
 
   /**
