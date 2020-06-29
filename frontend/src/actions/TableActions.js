@@ -110,7 +110,6 @@ function collapseRows({
  * @param {array} rows
  */
 export function updateTabRowsData(id, rows) {
-  console.log('updateTabRowsData: ', id, rows)
   return {
     type: types.UPDATE_TAB_ROWS_DATA,
     payload: {
@@ -379,8 +378,6 @@ export function createTabTable(tableId, tableResponse) {
 export function updateTabTable(tableId, tableResponse) {
   return (dispatch, getState) => {
     const state = getState();
-
-    console.log('tableResponse: ', tableResponse)
 
     if (state.tables) {
       const tableExists = state.tables[tableId];
