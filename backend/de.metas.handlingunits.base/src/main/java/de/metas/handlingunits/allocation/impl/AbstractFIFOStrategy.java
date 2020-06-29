@@ -56,7 +56,10 @@ public abstract class AbstractFIFOStrategy extends AbstractAllocationStrategy
 	}
 
 	/**
-	 * Retrieves the given <code>hu</code>'s {@link I_M_HU_Item} and processes if their type is either {@link X_M_HU_PI_Item#ITEMTYPE_Material} or {@link X_M_HU_PI_Item#ITEMTYPE_HandlingUnit}, it allocates the request's (remaining) qty to them or to their child-elements.
+	 * Retrieves the given <code>hu</code>'s {@link I_M_HU_Item} and processes
+	 * if their type is either {@link X_M_HU_PI_Item#ITEMTYPE_Material} or {@link X_M_HU_PI_Item#ITEMTYPE_HandlingUnit},
+	 * it allocates the request's (remaining) qty to them or to their child-elements.
+	 * 
 	 * Items with type {@link X_M_HU_PI_Item#ITEMTYPE_PackingMaterial} are ignored.
 	 */
 	@Override
@@ -133,7 +136,7 @@ public abstract class AbstractFIFOStrategy extends AbstractAllocationStrategy
 	 * to this material HU item.
 	 */
 	protected IAllocationResult allocateOnIncludedHUItem(
-			final I_M_HU_Item item,
+			@NonNull final I_M_HU_Item item,
 			@NonNull final IAllocationRequest request)
 	{
 		//
@@ -155,23 +158,18 @@ public abstract class AbstractFIFOStrategy extends AbstractAllocationStrategy
 	}
 
 	/**
-	 * If after {@link #allocateOnIncludedHUItem(I_M_HU_Item, IAllocationRequest)} there is more to allocate then this method will be called to allocate remaining qty.<br>
-	 *
-	 * @param item
-	 * @param request
-	 * @return allocation result
+	 * If after {@link #allocateOnIncludedHUItem(I_M_HU_Item, IAllocationRequest)} there is more to allocate
+	 * then this method will be called to allocate remaining qty.<br>
 	 */
-	protected abstract IAllocationResult allocateRemainingOnIncludedHUItem(final I_M_HU_Item item, final IAllocationRequest request);
+	protected abstract IAllocationResult allocateRemainingOnIncludedHUItem(
+			final I_M_HU_Item item,
+			final IAllocationRequest request);
 
 	/**
 	 * Allocate/Deallocate given request to given item of ItemType=Material.
-	 *
-	 * @param item
-	 * @param request
-	 * @return allocation result
 	 */
 	private IAllocationResult allocateOnMaterialItem(
-			final I_M_HU_Item item,
+			@NonNull final I_M_HU_Item item,
 			@NonNull final IAllocationRequest request)
 	{
 		// If there nothing requested to allocate, it's pointless to do something
@@ -205,12 +203,10 @@ public abstract class AbstractFIFOStrategy extends AbstractAllocationStrategy
 
 	/**
 	 * Creates an new Virtual HU (linked to given parent item) and allocate the request on it.
-	 *
-	 * @param request
-	 * @param parentItem
-	 * @return allocation result
 	 */
-	private IAllocationResult allocateOnNewVHU(final IAllocationRequest request, final I_M_HU_Item parentItem)
+	private IAllocationResult allocateOnNewVHU(
+			@NonNull final IAllocationRequest request,
+			@NonNull final I_M_HU_Item parentItem)
 	{
 		final IAllocationRequest requestActual = createActualRequest(parentItem, request);
 		if (requestActual.isZeroQty())
@@ -226,31 +222,16 @@ public abstract class AbstractFIFOStrategy extends AbstractAllocationStrategy
 	/**
 	 * Allocate/Deallocate <code>request</code> on included <code>hu</code>.
 	 *
-	 * The {@link IAllocationStrategy} that will be used is provided by {@link #getIncludedHUAllocationStrategy(I_M_HU, IAllocationRequest)}.
-	 *
 	 * @param includedHU handling unit to allocate on; this handling unit is included in HU on which we were allocating until this call
-	 * @param request
-	 * @return allocation result
 	 */
-	protected final IAllocationResult allocateOnIncludedHU(final I_M_HU includedHU, final IAllocationRequest request)
+	protected final IAllocationResult allocateOnIncludedHU(
+			@NonNull final I_M_HU includedHU,
+			@NonNull final IAllocationRequest request)
 	{
-		final IAllocationStrategy allocationStrategy = getIncludedHUAllocationStrategy(includedHU, request);
-		final IAllocationResult allocationResult = allocationStrategy.execute(includedHU, request);
-		return allocationResult;
-	}
+		final IAllocationStrategy allocationStrategy = getAllocationStrategyFactory()
+				.map(factory -> factory.createAllocationStrategy(getDirection()))
+				.orElse(this);
 
-	protected final IAllocationStrategy getIncludedHUAllocationStrategy(
-			final I_M_HU hu,
-			final IAllocationRequest request)
-	{
-		final IAllocationStrategyFactory factory = getAllocationStrategyFactory();
-
-		// If there is no factory, reuse the same strategy
-		if (factory == null)
-		{
-			return this;
-		}
-
-		return factory.createAllocationStrategy(getDirection());
+		return allocationStrategy.execute(includedHU, request);
 	}
 }

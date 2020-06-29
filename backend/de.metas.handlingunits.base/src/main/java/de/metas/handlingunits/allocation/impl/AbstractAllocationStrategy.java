@@ -26,6 +26,7 @@ import java.math.BigDecimal;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Optional;
 
 import javax.annotation.Nullable;
 
@@ -54,7 +55,7 @@ public abstract class AbstractAllocationStrategy implements IAllocationStrategy
 	// Services
 	protected final AllocationStrategySupportingServicesFacade services;
 	@Getter(AccessLevel.PROTECTED)
-	private final IAllocationStrategyFactory allocationStrategyFactory;
+	private final Optional<IAllocationStrategyFactory> allocationStrategyFactory;
 
 	@Getter(AccessLevel.PROTECTED)
 	private final AllocationDirection direction;
@@ -66,7 +67,7 @@ public abstract class AbstractAllocationStrategy implements IAllocationStrategy
 	{
 		this.direction = direction;
 		this.services = services;
-		this.allocationStrategyFactory = allocationStrategyFactory;
+		this.allocationStrategyFactory = Optional.ofNullable(allocationStrategyFactory);
 	}
 
 	protected final IHUStorageFactory getHUStorageFactory(final IAllocationRequest request)
@@ -148,13 +149,13 @@ public abstract class AbstractAllocationStrategy implements IAllocationStrategy
 
 	/**
 	 * Create a new virtual HU and link it to <code>parentItem</code>.
-	 *
-	 * @param huContext
-	 * @param request
-	 * @param parentItem
+	 * 
 	 * @return newly created Virtual Handling Unit (VHU)
 	 */
-	protected final I_M_HU createVHU(final IHUContext huContext, final IAllocationRequest request, final I_M_HU_Item parentItem)
+	protected final I_M_HU createVHU(
+			@NonNull final IHUContext huContext,
+			@NonNull final IAllocationRequest request,
+			@NonNull final I_M_HU_Item parentItem)
 	{
 		final I_M_HU_PI vhuPI = services.getVirtualPI(huContext.getCtx());
 
