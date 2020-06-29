@@ -132,7 +132,6 @@ public class ExcelImpCOLCandTypeBuilder
 		olcand.setIsExplicitProductPriceAttribute("Y");
 		olcand.setMProductPriceAttributeID(toBigIntegerID(row.getM_ProductPrice_Attribute_ID()));
 
-
 		//
 		// UOM
 		{
@@ -145,9 +144,21 @@ public class ExcelImpCOLCandTypeBuilder
 		//
 		// Quantities
 		{
-			// following block decides the value of QtyItemCapacity
-			olcand.setQtyItemCapacity(row.getQtyCUsPerTU());
-			olcand.setQty(row.getQtyCUs());
+			final BigDecimal qtyCUsPerTU = row.getQtyCUsPerTU();
+			olcand.setQtyItemCapacity(qtyCUsPerTU);
+
+			if (row.getM_HU_PI_Item_Product_ID() > 0)
+			{
+				if (qtyCUsPerTU == null || qtyCUsPerTU.signum() <= 0)
+				{
+					throw new RuntimeException("LineNo=" + row.getLineNo() + ": if M_HU_PI_Item_Product_ID>0, then QtyCUsPerTU=" + qtyCUsPerTU + " has to be >0: ");
+				}
+				olcand.setQty(qtyCUsPerTU.multiply(row.getQtyCUs()));
+			}
+			else
+			{
+				olcand.setQty(row.getQtyCUs());
+			}
 		}
 
 		//
