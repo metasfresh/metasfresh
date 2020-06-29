@@ -910,7 +910,10 @@ function mapDataToState(data, isModal, rowId) {
           }
         : item;
 
-      if (!(index === 0 && rowId === 'NEW') && !item.rowId) {
+      if (
+        !(index === 0 && rowId === 'NEW') &&
+        (!item.rowId || (isModal && item.rowId))
+      ) {
         dispatch(updateData(parsedItem, getScope(isModal && index === 0)));
       }
     });
