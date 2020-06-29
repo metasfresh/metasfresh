@@ -66,11 +66,7 @@ public class DocLine_Inventory extends DocLine<Doc_Inventory>
 		{
 			this.costPrice = inventoryLine.getCostPrice().multiply(qty);
 		}
-		else if (qty.signum() == 0)
-		{
-			this.costPrice = inventoryLine.getCostPrice();
-		}
-
+		
 		setQty(getQuantityInStockingUOM(qty, inventoryLine.getC_UOM_ID()), false);
 
 		setReversalLine_ID(inventoryLine.getReversalLine_ID());
@@ -78,8 +74,6 @@ public class DocLine_Inventory extends DocLine<Doc_Inventory>
 
 	public CostAmount getCreateCosts(final AcctSchema as)
 	{
-		final boolean isInitialCostPrice = this.costPrice.signum() > 0 && getQty().signum() == 0;
-		
 		if (isReversalLine())
 		{
 			return services.createReversalCostDetails(CostDetailReverseRequest.builder()
@@ -103,7 +97,6 @@ public class DocLine_Inventory extends DocLine<Doc_Inventory>
 							.qty(getQty())
 							.amt(CostAmount.of(this.costPrice, as.getCurrencyId()))
 							.date(getDateAcct())
-							.initialCostPrice(isInitialCostPrice)
 							.build())
 					.getTotalAmountToPost(as);
 		}

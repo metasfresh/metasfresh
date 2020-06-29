@@ -156,9 +156,7 @@ public final class CurrentCost
 		assertCostCurrency(amt);
 		Check.assume(qty.signum() != 0, "qty not zero");
 
-		final CostAmount currentAmt;
-
-		currentAmt = costPrice.getOwnCostPrice().multiply(currentQty);
+		final CostAmount currentAmt = costPrice.getOwnCostPrice().multiply(currentQty);
 
 		final CostAmount newAmt = currentAmt.add(amt);
 
@@ -194,9 +192,7 @@ public final class CurrentCost
 
 	private void addToCurrentQty(@NonNull final Quantity qtyToAdd)
 	{
-		final Quantity quantityToAdd = currentQty.add(qtyToAdd);
-
-		currentQty = quantityToAdd.signum() > 0 ? quantityToAdd : Quantity.of(BigDecimal.ZERO, qtyToAdd.getUOM());
+		currentQty = currentQty.add(qtyToAdd);
 	}
 
 	public void setCostPrice(@NonNull final CostPrice costPrice)
