@@ -507,7 +507,6 @@ public class UOMConversionBL implements IUOMConversionBL
 				.fromUomId(fromTimeUomId)
 				.toUomId(toTimeUomId)
 				.fromToMultiplier(fromToMultiplier)
-				.toFromMultiplier(BigDecimal.ONE.divide(fromToMultiplier, 12, RoundingMode.HALF_UP))
 				.build());
 
 	}
@@ -802,7 +801,7 @@ public class UOMConversionBL implements IUOMConversionBL
 		}
 
 		final UOMConversionRate rate = getRate(price.getProductId(), toUomId, price.getUomId());
-		final BigDecimal priceConv = pricePrecision.round(rate.convert(price.toBigDecimal()));
+		final BigDecimal priceConv = pricePrecision.round(rate.convert(price.toBigDecimal(), UOMPrecision.TWELVE));
 
 		return price.withValueAndUomId(priceConv, toUomId);
 	}

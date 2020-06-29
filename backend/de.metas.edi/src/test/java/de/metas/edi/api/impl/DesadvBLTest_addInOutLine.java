@@ -22,6 +22,7 @@ import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
+import org.adempiere.test.AdempiereTestWatcher;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Attribute;
@@ -31,6 +32,7 @@ import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import de.metas.business.BusinessTestHelper;
 import de.metas.edi.model.I_C_OrderLine;
@@ -58,6 +60,7 @@ import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.test.misc.builders.HUPIAttributeBuilder;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
+import de.metas.uom.CreateUOMConversionRequest;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
@@ -84,6 +87,7 @@ import de.metas.util.Services;
  * #L%
  */
 
+@ExtendWith(AdempiereTestWatcher.class)
 class DesadvBLTest_addInOutLine
 {
 	private int sscc18SerialNo = 0;
@@ -119,26 +123,30 @@ class DesadvBLTest_addInOutLine
 
 		final I_M_Product productRecord = BusinessTestHelper.createProduct("product", stockUOMRecord);
 
-		BusinessTestHelper.createUOMConversion(
-				ProductId.ofRepoId(productRecord.getM_Product_ID()),
-				UomId.ofRepoId(orderUOMRecord.getC_UOM_ID()),
-				UomId.ofRepoId(stockUOMRecord.getC_UOM_ID()),
-				new BigDecimal("2"), new BigDecimal("0.5"));
+		BusinessTestHelper.createUOMConversion(CreateUOMConversionRequest.builder()
+				.productId(ProductId.ofRepoId(productRecord.getM_Product_ID()))
+				.fromUomId(UomId.ofRepoId(orderUOMRecord.getC_UOM_ID()))
+				.toUomId(UomId.ofRepoId(stockUOMRecord.getC_UOM_ID()))
+				.fromToMultiplier(new BigDecimal("2"))
+				.build());
 
 		// we do need a UOM conversion between catchUomRecord and orderUOMRecord,
 		// because we need to convert the catch qtys (might e.g. be in tons) to the ordered UOM (might be in kilos)
-		BusinessTestHelper.createUOMConversion(
-				ProductId.ofRepoId(productRecord.getM_Product_ID()),
-				UomId.ofRepoId(orderUOMRecord.getC_UOM_ID()),
-				UomId.ofRepoId(catchUomRecord.getC_UOM_ID()),
-				new BigDecimal("3"), new BigDecimal("0.333333333333")/* if you enter multiplier=3 in the webui, you get this divisor */);
+		BusinessTestHelper.createUOMConversion(CreateUOMConversionRequest.builder()
+				.productId(ProductId.ofRepoId(productRecord.getM_Product_ID()))
+				.fromUomId(UomId.ofRepoId(orderUOMRecord.getC_UOM_ID()))
+				.toUomId(UomId.ofRepoId(catchUomRecord.getC_UOM_ID()))
+				.fromToMultiplier(new BigDecimal("3"))
+				.build());
 
 		// we do need a UOM conversion between catchUomRecord and stockUOM,
 		// because we need to convert the catch qtys (might e.g. be in tons) when computing the LUTUconfig's capacity
-		BusinessTestHelper.createUOMConversion(
-				ProductId.ofRepoId(productRecord.getM_Product_ID()),
-				UomId.ofRepoId(stockUOMRecord.getC_UOM_ID()),
-				UomId.ofRepoId(catchUomRecord.getC_UOM_ID()), new BigDecimal("1.5"), new BigDecimal("0.666666666667")/* if you enter multiplier=1.5 in the webui, you get this divisor */);
+		BusinessTestHelper.createUOMConversion(CreateUOMConversionRequest.builder()
+				.productId(ProductId.ofRepoId(productRecord.getM_Product_ID()))
+				.fromUomId(UomId.ofRepoId(stockUOMRecord.getC_UOM_ID()))
+				.toUomId(UomId.ofRepoId(catchUomRecord.getC_UOM_ID()))
+				.fromToMultiplier(new BigDecimal("1.5"))
+				.build());
 
 		// setup HU packing instructions
 		final I_M_HU_PI huDefPalet = huTestHelper.createHUDefinition(HUTestHelper.NAME_Palet_Product, X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit);

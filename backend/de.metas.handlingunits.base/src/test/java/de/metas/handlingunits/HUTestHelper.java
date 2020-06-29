@@ -154,6 +154,7 @@ import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Capacity;
 import de.metas.quantity.Quantity;
+import de.metas.uom.CreateUOMConversionRequest;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -617,20 +618,18 @@ public class HUTestHelper
 		attr_ReceiptInOutLine = attributesTestHelper.createM_Attribute(HUAttributeConstants.ATTR_ReceiptInOutLine_ID.getCode(), X_M_Attribute.ATTRIBUTEVALUETYPE_Number, true);
 
 		// FIXME: this is a workaround because we are not handling the UOM conversions in our HU tests
-		createUOMConversion(
-				null,  // product,
-				uomEach,  // uomFrom,
-				uomKg, // uomTo,
-				BigDecimal.ONE,
-				BigDecimal.ONE);
+		createUOMConversion(CreateUOMConversionRequest.builder()
+				.fromUomId(UomId.ofRepoId(uomEach.getC_UOM_ID()))
+				.toUomId(UomId.ofRepoId(uomKg.getC_UOM_ID()))
+				.fromToMultiplier(BigDecimal.ONE)
+				.build());
 
 		// Create 1-to-1 conversion between "Each" and PCE / Stk
-		createUOMConversion(
-				null,  // product,
-				uomEach,  // uomFrom,
-				uomPCE, // uomTo,
-				BigDecimal.ONE,
-				BigDecimal.ONE);
+		createUOMConversion(CreateUOMConversionRequest.builder()
+				.fromUomId(UomId.ofRepoId(uomEach.getC_UOM_ID()))
+				.toUomId(UomId.ofRepoId(uomPCE.getC_UOM_ID()))
+				.fromToMultiplier(BigDecimal.ONE)
+				.build());
 
 		//
 		// Create and configure Pallete
