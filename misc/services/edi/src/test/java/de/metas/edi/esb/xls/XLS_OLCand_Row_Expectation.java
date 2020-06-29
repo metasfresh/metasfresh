@@ -71,7 +71,9 @@ public class XLS_OLCand_Row_Expectation
 	//
 	private BigDecimal qtyTUs;
 	private BigDecimal qtyCUsPerTU;
-	private BigDecimal qtyCUs;
+
+	/** This qty is the CU-qty only if M_HU_PI_Item_Product_ID is not set. */
+	private BigDecimal qtyUOM;
 
 	private static final DateFormat dateFormat = new SimpleDateFormat("dd.MM.yyyy");
 
@@ -136,9 +138,9 @@ public class XLS_OLCand_Row_Expectation
 		{
 			Assert.assertThat("QtyCUsPerTU" + messageSuffix, row.getQtyCUsPerTU(), Matchers.comparesEqualTo(qtyCUsPerTU));
 		}
-		if (qtyCUs != null)
+		if (qtyUOM != null)
 		{
-			Assert.assertThat("QtyCUs" + messageSuffix, row.getQtyCUs(), Matchers.comparesEqualTo(qtyCUs));
+			Assert.assertThat("QtyUOM" + messageSuffix, row.getQtyUOM(), Matchers.comparesEqualTo(qtyUOM));
 		}
 
 		if (datePromised != null)
@@ -219,9 +221,9 @@ public class XLS_OLCand_Row_Expectation
 		{
 			Assert.assertThat("QtyCUsPerTU" + messageSuffix, xml.getQtyItemCapacity(), Matchers.comparesEqualTo(qtyCUsPerTU));
 		}
-		if (qtyCUs != null)
+		if (qtyUOM != null)
 		{
-			Assert.assertThat("QtyCUs" + messageSuffix, xml.getQty(), Matchers.comparesEqualTo(qtyCUs));
+			Assert.assertThat("QtyUOM" + messageSuffix, xml.getQty(), Matchers.comparesEqualTo(qtyUOM));
 		}
 
 		if (datePromised != null)
@@ -323,21 +325,15 @@ public class XLS_OLCand_Row_Expectation
 		return this;
 	}
 
-	public XLS_OLCand_Row_Expectation setQtyCUs(final String qtyCUs)
+	public XLS_OLCand_Row_Expectation setQtyUOM(final String qtyUOM)
 	{
-		this.qtyCUs = new BigDecimal(qtyCUs);
+		this.qtyUOM = new BigDecimal(qtyUOM);
 		return this;
 	}
 
-	public XLS_OLCand_Row_Expectation setQtyCUs(final int qtyCUs)
+	public XLS_OLCand_Row_Expectation setQtyUOM(final int qtyUOM)
 	{
-		this.qtyCUs = BigDecimal.valueOf(qtyCUs);
-		return this;
-	}
-
-	public XLS_OLCand_Row_Expectation setQtyCUs(final double qtyCUs)
-	{
-		this.qtyCUs = BigDecimal.valueOf(qtyCUs);
+		this.qtyUOM = BigDecimal.valueOf(qtyUOM);
 		return this;
 	}
 

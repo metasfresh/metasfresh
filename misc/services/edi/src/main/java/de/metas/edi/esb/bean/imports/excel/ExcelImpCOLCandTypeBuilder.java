@@ -56,8 +56,6 @@ public class ExcelImpCOLCandTypeBuilder
 
 	private ExcelImpCOLCandTypeBuilder()
 	{
-		super();
-
 		olcand = Constants.JAXB_ObjectFactory.createXLSImpCOLCandType();
 
 		// Predefined
@@ -153,11 +151,11 @@ public class ExcelImpCOLCandTypeBuilder
 				{
 					throw new RuntimeException("LineNo=" + row.getLineNo() + ": if M_HU_PI_Item_Product_ID>0, then QtyCUsPerTU=" + qtyCUsPerTU + " has to be >0: ");
 				}
-				olcand.setQty(qtyCUsPerTU.multiply(row.getQtyCUs()));
+				olcand.setQty(qtyCUsPerTU.multiply(row.getQtyUOM()));
 			}
 			else
 			{
-				olcand.setQty(row.getQtyCUs());
+				olcand.setQty(row.getQtyUOM());
 			}
 		}
 

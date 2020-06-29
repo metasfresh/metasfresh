@@ -130,7 +130,7 @@ public class Excel_OLCand_Row
 		{
 			this.qtyCUsPerTU = (builder.qtyCUsPerTU == null || builder.qtyCUsPerTU.signum() <= 0)
 					// there is no PIIP or the PIIP has unlimited capacity. As we can't deduct the QtyCU from QtyTU, we assume that QtyTU actually means QtyCU.
-					// Andempiere shall sort it out by supplying a default PIIP etc
+					// metasfresh shall sort it out by supplying a default PIIP etc
 					? BigDecimal.ONE
 					// default: use the supplied qtyCUsPerTU value
 					: builder.qtyCUsPerTU;
@@ -155,6 +155,7 @@ public class Excel_OLCand_Row
 				+ ", productDescription=" + productDescription
 				+ ", productAttributes=" + productAttributes
 				//
+				+ ", qtyUOM=" + qtyUOM
 				+ ", qtyCUsPerTU=" + qtyCUsPerTU
 				+ ", qtyTUs=" + qtyTUs
 				+ ", UOM_x12de355=" + UOM_x12de355
@@ -189,7 +190,7 @@ public class Excel_OLCand_Row
 		return qtyTUs;
 	}
 
-	public BigDecimal getQtyCUs()
+	public BigDecimal getQtyUOM()
 	{
 		return qtyUOM;
 	}
