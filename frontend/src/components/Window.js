@@ -173,6 +173,7 @@ class Window extends PureComponent {
       tabsInfo,
       sort,
       allowShortcut,
+      onRefreshTab,
     } = this.props;
     const { fullScreen, isSectionExpandTooltipShow } = this.state;
 
@@ -269,6 +270,7 @@ class Window extends PureComponent {
             queryOnActivate={queryOnActivate}
             supportQuickInput={supportQuickInput}
             tabInfo={tabsInfo && tabsInfo[tabId]}
+            updateDocList={onRefreshTab}
           />
         );
       }
@@ -495,6 +497,7 @@ Window.propTypes = {
   tabId: PropTypes.string,
   rowId: PropTypes.string,
   isAdvanced: PropTypes.bool,
+  onRefreshTab: PropTypes.func,
 };
 
 Window.defaultProps = {

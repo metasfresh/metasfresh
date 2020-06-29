@@ -284,6 +284,7 @@ export default class MasterWindow extends PureComponent {
       includedView,
       processStatus,
       enableTutorial,
+      onRefreshTab,
     } = this.props;
     const {
       dropzoneFocused,
@@ -371,6 +372,7 @@ export default class MasterWindow extends PureComponent {
             handleDragStart={this.handleDragStart}
             handleDropFile={this.handleDropFile}
             handleRejectDropped={this.handleRejectDropped}
+            onRefreshTab={onRefreshTab}
           />
         )}
 
@@ -408,6 +410,7 @@ MasterWindow.propTypes = {
   includedView: PropTypes.any,
   processStatus: PropTypes.any,
   enableTutorial: PropTypes.any,
+  onRefreshTab: PropTypes.func,
   location: PropTypes.any,
   addNotification: PropTypes.func,
   addRowData: PropTypes.func,
