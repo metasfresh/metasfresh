@@ -249,7 +249,7 @@ public class WindowRestController
 		if (!onlyRowIds.isEmpty() && !onlyRowIds.isAll())
 		{
 			final ImmutableSet<DocumentId> foundRowIds = rows.stream()
-					.map(JSONDocument::getId)
+					.map(JSONDocument::getRowId)
 					.collect(ImmutableSet.toImmutableSet());
 
 			missingRowIds = Sets.difference(onlyRowIds.toSet(), foundRowIds);
