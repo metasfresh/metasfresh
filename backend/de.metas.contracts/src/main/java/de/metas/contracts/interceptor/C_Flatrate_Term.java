@@ -1,12 +1,8 @@
-package de.metas.contracts.interceptor;
-
-import java.sql.Timestamp;
-
 /*
  * #%L
  * de.metas.contracts
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -24,31 +20,7 @@ import java.sql.Timestamp;
  * #L%
  */
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.Properties;
-import java.util.Set;
-
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.modelvalidator.IModelValidationEngine;
-import org.adempiere.ad.modelvalidator.annotations.DocValidate;
-import org.adempiere.ad.modelvalidator.annotations.Init;
-import org.adempiere.ad.modelvalidator.annotations.Interceptor;
-import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.ad.service.IADReferenceDAO;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.exceptions.FillMandatoryException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.ISysConfigBL;
-import org.compiere.model.I_AD_Org;
-import org.compiere.model.I_C_Calendar;
-import org.compiere.model.I_C_Period;
-import org.compiere.model.ModelValidator;
-import org.compiere.model.POInfo;
-import org.compiere.util.Env;
-import org.compiere.util.Ini;
-import org.compiere.util.TimeUtil;
+package de.metas.contracts.interceptor;
 
 import de.metas.calendar.ICalendarDAO;
 import de.metas.contracts.Contracts_Constants;
@@ -81,6 +53,32 @@ import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.modelvalidator.IModelValidationEngine;
+import org.adempiere.ad.modelvalidator.annotations.DocValidate;
+import org.adempiere.ad.modelvalidator.annotations.Init;
+import org.adempiere.ad.modelvalidator.annotations.Interceptor;
+import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.ad.service.IADReferenceDAO;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.exceptions.FillMandatoryException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ISysConfigBL;
+import org.compiere.model.I_AD_Org;
+import org.compiere.model.I_C_Calendar;
+import org.compiere.model.I_C_Period;
+import org.compiere.model.ModelValidator;
+import org.compiere.model.POInfo;
+import org.compiere.util.Env;
+import org.compiere.util.Ini;
+import org.compiere.util.TimeUtil;
+
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.Properties;
+import java.util.Set;
 
 @Interceptor(I_C_Flatrate_Term.class)
 public class C_Flatrate_Term
@@ -467,9 +465,7 @@ public class C_Flatrate_Term
 	/**
 	 * Updates the <code>EndDate</code> and <code>NoticeDate</code> of the given term's predecessor(s).
 	 *
-	 * @param term
-	 *
-	 * @task https://github.com/metasfresh/metasfresh/issues/549
+	 * task https://github.com/metasfresh/metasfresh/issues/549
 	 */
 	@DocValidate(timings = { ModelValidator.TIMING_AFTER_COMPLETE })
 	public void updatePredecessorDates(final I_C_Flatrate_Term term)
@@ -529,7 +525,8 @@ public class C_Flatrate_Term
 		final boolean hasOverlappingTerms = flatrateBL.hasOverlappingTerms(term);
 		if (hasOverlappingTerms)
 		{
-			throw new AdempiereException(FlatrateBL.MSG_HasOverlapping_Term, new Object[] { term.getC_Flatrate_Term_ID(), term.getBill_BPartner().getValue() });
+			throw new AdempiereException(FlatrateBL.MSG_HasOverlapping_Term, term.getC_Flatrate_Term_ID(), term.getBill_BPartner().getValue())
+					.markAsUserValidationError();
 		}
 	}
 

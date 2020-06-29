@@ -173,6 +173,8 @@ public class HUDDOrderBL implements IHUDDOrderBL
 			ddOrderLine.setQtyEntered(qtyEntered);
 		}
 
+		ddOrderLine.setQtyOrdered(ddOrderLine.getQtyEntered());
+
 		InterfaceWrapperHelper.saveRecord(ddOrderLine);
 
 		return DDOrderLineId.ofRepoId(ddOrderLine.getDD_OrderLine_ID());

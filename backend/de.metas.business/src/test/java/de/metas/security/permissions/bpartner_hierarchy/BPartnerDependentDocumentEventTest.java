@@ -4,8 +4,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.security.permissions.bpartner_hierarchy.handlers.BPartnerDependentDocument;
@@ -38,7 +39,7 @@ public class BPartnerDependentDocumentEventTest
 {
 	private JSONObjectMapper<BPartnerDependentDocumentEvent> jsonObjectMapper;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
@@ -46,29 +47,36 @@ public class BPartnerDependentDocumentEventTest
 		this.jsonObjectMapper = JSONObjectMapper.forClass(BPartnerDependentDocumentEvent.class);
 	}
 
-	@Test
-	public void testSerializeDeserialize()
+	@Nested
+	public class serializeDeserialize
 	{
-		testSerializeDeserialize(BPartnerDependentDocumentEvent.newRecord(BPartnerDependentDocument.builder()
-				.documentRef(TableRecordReference.of("DummyTable", 1))
-				.newBPartnerId(BPartnerId.ofRepoId(1))
-				.oldBPartnerId(null)
-				.updatedBy(UserId.ofRepoId(666))
-				.build()));
+		private void testSerializeDeserialize(final BPartnerDependentDocumentEvent event)
+		{
+			final String json = jsonObjectMapper.writeValueAsString(event);
+			final BPartnerDependentDocumentEvent eventDeserialized = jsonObjectMapper.readValue(json);
+			assertThat(eventDeserialized).isEqualTo(event);
+		}
 
-		testSerializeDeserialize(BPartnerDependentDocumentEvent.bpartnerChanged(BPartnerDependentDocument.builder()
-				.documentRef(TableRecordReference.of("DummyTable", 1))
-				.newBPartnerId(BPartnerId.ofRepoId(2))
-				.oldBPartnerId(BPartnerId.ofRepoId(1))
-				.updatedBy(UserId.ofRepoId(666))
-				.build()));
+		@Test
+		public void newRecord()
+		{
+			testSerializeDeserialize(BPartnerDependentDocumentEvent.newRecord(BPartnerDependentDocument.builder()
+					.documentRef(TableRecordReference.of("DummyTable", 1))
+					.newBPartnerId(BPartnerId.ofRepoId(1))
+					.oldBPartnerId(null)
+					.updatedBy(UserId.ofRepoId(666))
+					.build()));
+		}
 
-	}
-
-	public void testSerializeDeserialize(final BPartnerDependentDocumentEvent event)
-	{
-		final String json = jsonObjectMapper.writeValueAsString(event);
-		final BPartnerDependentDocumentEvent eventDeserialized = jsonObjectMapper.readValue(json);
-		assertThat(eventDeserialized).isEqualTo(event);
+		@Test
+		public void bpartnerChanged()
+		{
+			testSerializeDeserialize(BPartnerDependentDocumentEvent.bpartnerChanged(BPartnerDependentDocument.builder()
+					.documentRef(TableRecordReference.of("DummyTable", 1))
+					.newBPartnerId(BPartnerId.ofRepoId(2))
+					.oldBPartnerId(BPartnerId.ofRepoId(1))
+					.updatedBy(UserId.ofRepoId(666))
+					.build()));
+		}
 	}
 }
