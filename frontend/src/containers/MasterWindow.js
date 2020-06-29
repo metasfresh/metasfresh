@@ -64,8 +64,6 @@ class MasterWindowContainer extends PureComponent {
         )
       : null;
 
-    console.log('MasterWindow.onWebsocketEvent event: ', event)
-
     // Document header got staled
     if (stale) {
       const { params, fireUpdateData } = this.props;
@@ -101,8 +99,6 @@ class MasterWindowContainer extends PureComponent {
       params: { windowType, docId },
     } = this.props;
 
-    console.log('MasterWindow.getTabRows')
-
     return getRowsData({
       entity: 'window',
       docType: windowType,
@@ -129,8 +125,6 @@ class MasterWindowContainer extends PureComponent {
     const changedTabs = {};
     let rowsById = null;
     let removedRows = null;
-
-    console.log('mergeDataIntoIncludedTab result: ', result, ', missingIds: ', missingIds, ', tabId: ',tabId)
 
     if (missingIds && missingIds.length) {
       removedRows = removedRows || {};
@@ -192,8 +186,6 @@ class MasterWindowContainer extends PureComponent {
       const ordering = orderBy[0];
       sortingOrder = (ordering.ascending ? '+' : '-') + ordering.fieldName;
     }
-
-    console.log('MasterWindow.refreshAgtiveTab')
 
     getTabRequest(activeTabId, windowType, docId, sortingOrder).then((rows) =>
       updateTabTableData(tableId, rows)
