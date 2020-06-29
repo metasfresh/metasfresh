@@ -42,11 +42,9 @@ public class CreateUOMConversionRequest
 	UomId fromUomId;
 	@NonNull
 	UomId toUomId;
-	
+
 	@NonNull
 	BigDecimal fromToMultiplier;
-	@NonNull
-	BigDecimal toFromMultiplier;
-	
+
 	boolean catchUOMForProduct;
 }

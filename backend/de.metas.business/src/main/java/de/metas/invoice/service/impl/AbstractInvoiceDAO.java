@@ -380,5 +380,4 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 				.create()
 				.list();
 	}
-
 }
