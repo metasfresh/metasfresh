@@ -155,7 +155,10 @@ public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 
 			currentCosts.addWeightedAverage(requestAmt, qty, utils.getQuantityUOMConverter());
 		}
-		
+		else if (qty.isZero() )
+		{
+			throw new PostingExecutionException("Request has qty 0: " + request);
+		}
 		else
 		{
 			final CostAmount amt = currentCostPrice.multiply(qty).roundToPrecisionIfNeeded(currentCosts.getPrecision());
