@@ -15,7 +15,6 @@ import de.metas.handlingunits.HuPackingInstructionsItemId;
 import de.metas.handlingunits.IMutableHUContext;
 import de.metas.handlingunits.allocation.IAllocationRequest;
 import de.metas.handlingunits.allocation.IAllocationResult;
-import de.metas.handlingunits.allocation.IAllocationStrategyFactory;
 import de.metas.handlingunits.hutransaction.IHUTransactionCandidate;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
@@ -76,8 +75,7 @@ public class UpperBoundsAllocationStrategyTests
 	private static UpperBoundAllocationStrategy createUpperBoundAllocationStrategy(@Nullable Capacity capacity)
 	{
 		final AllocationStrategySupportingServicesFacade services = AllocationStrategySupportingServicesFacade.newInstance();
-		final IAllocationStrategyFactory strategyFactory = null;
-		return new UpperBoundAllocationStrategy(capacity, services, strategyFactory);
+		return new UpperBoundAllocationStrategy(capacity, services);
 	}
 
 	/**

@@ -25,6 +25,8 @@ package de.metas.handlingunits.allocation.impl;
 import java.math.BigDecimal;
 import java.time.ZonedDateTime;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.util.lang.IMutable;
 import org.adempiere.util.lang.Mutable;
 import org.compiere.model.I_C_BPartner;
@@ -34,7 +36,6 @@ import org.junit.jupiter.api.Test;
 
 import de.metas.handlingunits.HUTestHelper;
 import de.metas.handlingunits.IHUContext;
-import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.allocation.IAllocationRequest;
 import de.metas.handlingunits.allocation.IAllocationRequestBuilder;
 import de.metas.handlingunits.allocation.IAllocationResult;
@@ -45,14 +46,14 @@ import de.metas.handlingunits.hutransaction.impl.HUTransactionCandidate;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
-import de.metas.handlingunits.model.I_M_HU_PI_Version;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.model.X_M_HU_PI_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.util.TraceUtils;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
-import de.metas.util.Services;
+import de.metas.quantity.QuantityTU;
+import lombok.Builder;
 
 /**
  * Tests for {@link FIFOAllocationStrategy} and {@link FIFODeallocationStrategy}.
@@ -72,20 +73,16 @@ public class FIFOAllocationDeallocationStrategyTest
 	private HUTestHelper huTestHelper;
 
 	//
-	// LU/TU Config
-	private I_M_HU_PI piLU;
-	@SuppressWarnings("unused")
-	private I_M_HU_PI_Item piLU_Item;
-	//
-	private I_M_HU_PI piTU;
-	@SuppressWarnings("unused")
-	private I_M_HU_PI_Version piTU_Version;
-	private I_M_HU_PI_Item piTU_Item;
-	@SuppressWarnings("unused")
-	private Object piTU_ItemProduct;
-	//
 	private ProductId productId;
 	private I_C_UOM productUOM;
+
+	@Builder
+	private static class LUTUConfig
+	{
+		// I_M_HU_PI piLU;
+		I_M_HU_PI piTU;
+		I_M_HU_PI_Item piTU_Item;
+	}
 
 	//
 	private AllocationStrategyFactory strategyFactory;
@@ -101,6 +98,63 @@ public class FIFOAllocationDeallocationStrategyTest
 		strategyFactory = new AllocationStrategyFactory();
 	}
 
+	private LUTUConfig setupLUTU(
+			@Nullable final QuantityTU qtyTUsPerLU,
+			@Nullable final BigDecimal qtyCUsPerTU)
+	{
+		final I_M_HU_PI piTU = huTestHelper.createHUDefinition("TU", X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit);
+
+		final I_M_HU_PI_Item piTU_Item;
+		if (qtyCUsPerTU != null)
+		{
+			piTU_Item = huTestHelper.createHU_PI_Item_Material(piTU);
+			huTestHelper.assignProduct(piTU_Item, productId, qtyCUsPerTU, productUOM);
+		}
+		else
+		{
+			piTU_Item = null;
+		}
+
+		final I_M_HU_PI piLU;
+		if (qtyTUsPerLU != null)
+		{
+			piLU = huTestHelper.createHUDefinition("LU", X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit);
+			{
+				final I_C_BPartner bpartner = null; // match any BP
+				huTestHelper.createHU_PI_Item_IncludedHU(piLU, piTU, qtyTUsPerLU.toBigDecimal(), bpartner);
+			}
+		}
+		else
+		{
+			piLU = null;
+		}
+
+		return LUTUConfig.builder()
+				// .piLU(piLU)
+				.piTU(piTU)
+				.piTU_Item(piTU_Item)
+				.build();
+	}
+
+	private IAllocationRequestBuilder prepareAllocationRequest(final String qtyStr, final I_C_UOM uom)
+	{
+		final IHUContext huContext = huTestHelper.createMutableHUContext();
+		return AllocationUtils.createAllocationRequestBuilder()
+				.setHUContext(huContext)
+				.setProduct(productId)
+				.setQuantity(Quantity.of(qtyStr, uom))
+				.setDate(ZonedDateTime.now()) // not important
+				.setFromReferencedModel(huTestHelper.createDummyReferenceModel()) // not important
+				.setForceQtyAllocation(false) // not important
+		;
+	}
+
+	private IAllocationRequest allocationRequest(final String qtyStr, final I_C_UOM uom)
+	{
+		return prepareAllocationRequest(qtyStr, uom)
+				.create();
+	}
+
 	@Test
 	public void test_allocate_NoLU_EmptyTU()
 	{
@@ -108,8 +162,8 @@ public class FIFOAllocationDeallocationStrategyTest
 
 		//
 		// Create an empty HU
-		setupLUTU(
-				null, // new BigDecimal("10"), // qtyTUsPerLU,
+		final LUTUConfig lutuConfig = setupLUTU(
+				(QuantityTU)null,
 				new BigDecimal("10") // qtyCUsPerTU
 		);
 
@@ -118,10 +172,10 @@ public class FIFOAllocationDeallocationStrategyTest
 		//@formatter:off
 		final HUExpectation<Object> newHUexpectation = new HUExpectation<>()
 				.huStatus(X_M_HU.HUSTATUS_Planning)
-				.huPI(piTU)
+				.huPI(lutuConfig.piTU)
 				.newHUItemExpectation()
 					.itemType(X_M_HU_PI_Item.ITEMTYPE_Material)
-					.huPIItem(piTU_Item)
+					.huPIItem(lutuConfig.piTU_Item)
 					.noIncludedHUs()
 					.noItemStorages()
 					.endExpectation();
@@ -130,7 +184,7 @@ public class FIFOAllocationDeallocationStrategyTest
 
 		//
 		// Create request
-		final IAllocationRequest request = createAllocationRequest("10", productUOM);
+		final IAllocationRequest request = allocationRequest("10", productUOM);
 
 		//
 		// Execute allocation strategy
@@ -142,10 +196,10 @@ public class FIFOAllocationDeallocationStrategyTest
 		//@formatter:off
 		final HUExpectation<Object> result_huExpectation = new HUExpectation<>()
 				.huStatus(X_M_HU.HUSTATUS_Planning)
-				.huPI(piTU)
+				.huPI(lutuConfig.piTU)
 				.newHUItemExpectation()
 					.itemType(X_M_HU_PI_Item.ITEMTYPE_Material)
-					.huPIItem(piTU_Item)
+					.huPIItem(lutuConfig.piTU_Item)
 					.newIncludedVirtualHU()
 						.capture(vhu1)
 						.endExpectation()
@@ -176,7 +230,7 @@ public class FIFOAllocationDeallocationStrategyTest
 		final IMutable<I_M_HU> vhu2 = new Mutable<>();
 		//@formatter:off
 		result_huExpectation
-				.huItemExpectation(piTU_Item)
+				.huItemExpectation(lutuConfig.piTU_Item)
 					.newIncludedVirtualHU() // VHU created on second allocation
 						.capture(vhu2)
 						.endExpectation()
@@ -197,8 +251,8 @@ public class FIFOAllocationDeallocationStrategyTest
 
 		//
 		// Create an empty HU
-		setupLUTU(
-				null, // new BigDecimal("10"), // qtyTUsPerLU,
+		final LUTUConfig lutuConfig = setupLUTU(
+				(QuantityTU)null,
 				new BigDecimal("10") // qtyCUsPerTU
 		);
 
@@ -210,10 +264,10 @@ public class FIFOAllocationDeallocationStrategyTest
 		//@formatter:off
 		final HUExpectation<Object> huExpectation = new HUExpectation<>()
 				.huStatus(X_M_HU.HUSTATUS_Planning)
-				.huPI(piTU)
+				.huPI(lutuConfig.piTU)
 				.newHUItemExpectation()
 					.itemType(X_M_HU_PI_Item.ITEMTYPE_Material)
-					.huPIItem(piTU_Item)
+					.huPIItem(lutuConfig.piTU_Item)
 					.newIncludedVirtualHU()
 						.capture(vhu1)
 						.newVirtualHUItemExpectation()
@@ -245,7 +299,7 @@ public class FIFOAllocationDeallocationStrategyTest
 
 		//
 		// Execute deallocation strategy for 23items (less than we have).
-		final IAllocationRequest request1 = createAllocationRequest("23", productUOM);
+		final IAllocationRequest request1 = allocationRequest("23", productUOM);
 
 		final IAllocationResult result1 = strategy.execute(hu, request1);
 
@@ -271,7 +325,7 @@ public class FIFOAllocationDeallocationStrategyTest
 
 		//
 		// Try to deallocate again, but now we are trying with more then it's available
-		final IAllocationRequest request2 = createAllocationRequestBuilder("40", productUOM)
+		final IAllocationRequest request2 = prepareAllocationRequest("40", productUOM)
 				.setForceQtyAllocation(false) // make sure we are not forcing
 				.create();
 		final IAllocationResult result2 = strategy.execute(hu, request2);
@@ -293,54 +347,4 @@ public class FIFOAllocationDeallocationStrategyTest
 			.assertExpected("result2", result2);
 		//@formatter:on
 	}
-
-	protected void setupLUTU(
-			final BigDecimal qtyTUsPerLU,
-			final BigDecimal qtyCUsPerTU)
-	{
-		// if (piTUToUse == null)
-		{
-			piTU = huTestHelper.createHUDefinition("TU", X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit);
-			piTU_Version = Services.get(IHandlingUnitsDAO.class).retrievePICurrentVersion(piTU);
-		}
-
-		if (qtyCUsPerTU != null)
-		{
-			piTU_Item = huTestHelper.createHU_PI_Item_Material(piTU);
-			piTU_ItemProduct = huTestHelper.assignProduct(piTU_Item, productId, qtyCUsPerTU, productUOM);
-		}
-
-		if (qtyTUsPerLU != null)
-		{
-			piLU = huTestHelper.createHUDefinition("LU", X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit);
-			{
-				final I_C_BPartner bpartner = null; // match any BP
-				piLU_Item = huTestHelper.createHU_PI_Item_IncludedHU(piLU, piTU, qtyTUsPerLU, bpartner);
-			}
-		}
-		else
-		{
-			piLU = null;
-		}
-	}
-
-	protected IAllocationRequestBuilder createAllocationRequestBuilder(final String qtyStr, final I_C_UOM uom)
-	{
-		final IHUContext huContext = huTestHelper.createMutableHUContext();
-		return AllocationUtils.createAllocationRequestBuilder()
-				.setHUContext(huContext)
-				.setProduct(productId)
-				.setQuantity(new Quantity(new BigDecimal(qtyStr), uom))
-				.setDate(ZonedDateTime.now()) // not important
-				.setFromReferencedModel(huTestHelper.createDummyReferenceModel()) // not important
-				.setForceQtyAllocation(false) // not important
-		;
-	}
-
-	protected IAllocationRequest createAllocationRequest(final String qtyStr, final I_C_UOM uom)
-	{
-		return createAllocationRequestBuilder(qtyStr, uom)
-				.create();
-	}
-
 }

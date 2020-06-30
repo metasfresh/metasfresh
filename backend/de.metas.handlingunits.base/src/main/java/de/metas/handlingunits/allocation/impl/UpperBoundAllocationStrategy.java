@@ -6,7 +6,6 @@ import org.adempiere.exceptions.AdempiereException;
 
 import de.metas.handlingunits.allocation.IAllocationRequest;
 import de.metas.handlingunits.allocation.IAllocationResult;
-import de.metas.handlingunits.allocation.IAllocationStrategyFactory;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.X_M_HU_PI_Item;
@@ -23,7 +22,7 @@ import lombok.ToString;
  *
  */
 @ToString
-public class UpperBoundAllocationStrategy extends AbstractFIFOStrategy
+public class UpperBoundAllocationStrategy extends AbstractAllocationStrategy
 {
 	@Nullable
 	private final Capacity capacityOverride;
@@ -33,12 +32,9 @@ public class UpperBoundAllocationStrategy extends AbstractFIFOStrategy
 	 */
 	public UpperBoundAllocationStrategy(
 			@Nullable final Capacity capacityOverride,
-			@NonNull final AllocationStrategySupportingServicesFacade services,
-			@Nullable final IAllocationStrategyFactory allocationStrategyFactory)
+			@NonNull final AllocationStrategySupportingServicesFacade services)
 	{
-		super(AllocationDirection.INBOUND_ALLOCATION,
-				services,
-				allocationStrategyFactory);
+		super(AllocationDirection.INBOUND_ALLOCATION, services);
 
 		this.capacityOverride = capacityOverride;
 	}

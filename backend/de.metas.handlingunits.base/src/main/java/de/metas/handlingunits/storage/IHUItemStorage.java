@@ -77,37 +77,22 @@ public interface IHUItemStorage extends IGenericHUStorage
 	 * Gets total capacity.
 	 *
 	 * If a custom capacity is set (see {@link #setCustomCapacity(Capacity)}), that one will be considered first.
-	 *
-	 * @param productId
-	 * @param uom
-	 * @param date
-	 * @return total capacity
 	 */
 	Capacity getCapacity(ProductId productId, I_C_UOM uom, ZonedDateTime date);
 
 	/**
 	 * Override current total capacity settings
 	 *
-	 * @param capacity
 	 * @see #getCapacity(ProductId, I_C_UOM, Date)
 	 */
 	void setCustomCapacity(Capacity capacity);
 
 	/**
-	 * Gets available capacity (i.e. how much is free)
-	 *
-	 * @param productId
-	 * @param uom
-	 * @param date
-	 * 
-	 * @return available capacity
+	 * @return available capacity (i.e. how much is free)
 	 */
 	Capacity getAvailableCapacity(ProductId productId, I_C_UOM uom, ZonedDateTime date);
 
 	/**
-	 * 
-	 * @param request
-	 * 
 	 * @return the given <code>request</code>, if <code>this</code> storage instance is big enough for it.
 	 *         IF the requested quantity exceeds this storage's capacity, then return a new "smaller" request.
 	 * 
@@ -116,10 +101,9 @@ public interface IHUItemStorage extends IGenericHUStorage
 	IAllocationRequest requestQtyToAllocate(IAllocationRequest request);
 
 	/**
-	 * Similar to {@link #requestQtyToAllocate(IAllocationRequest)}, but the returned request's quantity does not depend on the capacity of a destination storage, but one the actual contend of a source storage.
-	 * 
-	 * @param request
-	 * @return
+	 * Similar to {@link #requestQtyToAllocate(IAllocationRequest)},
+	 * but the returned request's quantity does not depend on the capacity of a destination storage,
+	 * but one the actual contend of a source storage.
 	 * 
 	 * @see #getQty(ProductId, I_C_UOM)
 	 */
@@ -144,7 +128,6 @@ public interface IHUItemStorage extends IGenericHUStorage
 	List<IProductStorage> getProductStorages(ZonedDateTime date);
 
 	/**
-	 *
 	 * @return true if this storage allows negative storages
 	 */
 	boolean isAllowNegativeStorage();

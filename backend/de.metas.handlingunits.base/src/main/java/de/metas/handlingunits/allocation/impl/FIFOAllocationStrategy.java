@@ -4,7 +4,6 @@ import javax.annotation.Nullable;
 
 import de.metas.handlingunits.allocation.IAllocationRequest;
 import de.metas.handlingunits.allocation.IAllocationResult;
-import de.metas.handlingunits.allocation.IAllocationStrategyFactory;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_PI;
@@ -13,19 +12,33 @@ import de.metas.handlingunits.storage.IHUItemStorage;
 import de.metas.util.Check;
 import lombok.NonNull;
 
-public class FIFOAllocationStrategy extends AbstractFIFOStrategy
+public class FIFOAllocationStrategy extends AbstractAllocationStrategy
 {
 	public FIFOAllocationStrategy(
-			@NonNull final AllocationStrategySupportingServicesFacade services,
-			@Nullable final IAllocationStrategyFactory allocationStrategyFactory)
+			@NonNull final AllocationDirection direction,
+			@NonNull final AllocationStrategySupportingServicesFacade services)
 	{
-		super(AllocationDirection.INBOUND_ALLOCATION,
-				services,
-				allocationStrategyFactory);
+		super(direction, services);
 	}
 
 	@Override
 	protected IAllocationResult allocateRemainingOnIncludedHUItem(
+			@NonNull final I_M_HU_Item item,
+			@NonNull final IAllocationRequest request)
+	{
+		if (getDirection().isInboundAllocation())
+		{
+			return allocateRemainingOnNewHUs(item, request);
+		}
+		else
+		{
+			// Do nothing because when this is called, we already did a "regular" deallocate from the given {@code item},
+			// so there is no "remaining" left.
+			return AllocationUtils.nullResult();
+		}
+	}
+
+	private IAllocationResult allocateRemainingOnNewHUs(
 			@NonNull final I_M_HU_Item item,
 			@NonNull final IAllocationRequest request)
 	{
@@ -69,7 +82,7 @@ public class FIFOAllocationStrategy extends AbstractFIFOStrategy
 			@NonNull final I_M_HU_Item item,
 			@NonNull final IAllocationRequest request)
 	{
-		final IHUItemStorage storage = getHUStorageFactory(request).getStorage(item);
+		final IHUItemStorage storage = getHUItemStorage(item, request);
 		if (!storage.requestNewHU())
 		{
 			return null;

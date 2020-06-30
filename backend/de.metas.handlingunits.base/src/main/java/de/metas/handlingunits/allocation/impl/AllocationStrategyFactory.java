@@ -19,14 +19,12 @@ public class AllocationStrategyFactory implements IAllocationStrategyFactory
 	@Override
 	public IAllocationStrategy createAllocationStrategy(@NonNull final AllocationDirection direction)
 	{
-		return direction.isOutboundDeallocation()
-				? new FIFODeallocationStrategy(services, this)
-				: new FIFOAllocationStrategy(services, this);
+		return new FIFOAllocationStrategy(direction, services);
 	}
 
 	@Override
 	public IAllocationStrategy createUpperBoundAllocationStrategy(@Nullable final Capacity capacityOverride)
 	{
-		return new UpperBoundAllocationStrategy(capacityOverride, services, this);
+		return new UpperBoundAllocationStrategy(capacityOverride, services);
 	}
 }
