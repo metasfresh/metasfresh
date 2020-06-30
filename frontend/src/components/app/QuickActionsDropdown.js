@@ -41,12 +41,10 @@ class QuickActionsDropdown extends Component {
    * @todo Write the documentation
    */
   handleKeyDown = (e, action) => {
-    e.preventDefault();
-
     const { handleClick } = this.props;
+    e.preventDefault();
     const next = document.activeElement.nextSibling;
     const prev = document.activeElement.previousSibling;
-
     switch (e.key) {
       case 'ArrowDown':
         if (!document.activeElement.classList.contains('quick-actions-item')) {
@@ -79,10 +77,6 @@ class QuickActionsDropdown extends Component {
     document.getElementsByClassName('quick-actions-item')[item].focus();
   };
 
-  handleRefs = (ref) => {
-    this.item = ref;
-  };
-
   /**
    * @method render
    * @summary ToDo: Describe the method
@@ -99,7 +93,7 @@ class QuickActionsDropdown extends Component {
               action.internalName ? action.internalName : action.processId
             }`}
             tabIndex={0}
-            ref={this.handleRefs}
+            ref={(c) => (this.item = c)}
             className={
               'quick-actions-item ' +
               (action.disabled ? 'quick-actions-item-disabled ' : '')

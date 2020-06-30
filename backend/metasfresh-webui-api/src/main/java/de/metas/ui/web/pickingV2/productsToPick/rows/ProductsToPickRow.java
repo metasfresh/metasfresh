@@ -1,19 +1,30 @@
+/*
+ * #%L
+ * metasfresh-webui-api
+ * %%
+ * Copyright (C) 2020 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.ui.web.pickingV2.productsToPick.rows;
-
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.time.LocalDate;
-import java.util.List;
-import java.util.Objects;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.exceptions.AdempiereException;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.picking.PickingCandidate;
 import de.metas.handlingunits.picking.PickingCandidateApprovalStatus;
@@ -43,32 +54,20 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
+import org.adempiere.exceptions.AdempiereException;
 
-/*
- * #%L
- * metasfresh-webui-api
- * %%
- * Copyright (C) 2018 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Objects;
 
 @ToString(exclude = "values")
 public class ProductsToPickRow implements IViewRow
 {
+	public static final String SYSCONFIG_PREFIX = "de.metas.ui.web.pickingV2.productsToPick.rows.ProductsToPickRow.field";
+
 	public static ProductsToPickRow cast(final IViewRow row)
 	{
 		return (ProductsToPickRow)row;
@@ -92,6 +91,10 @@ public class ProductsToPickRow implements IViewRow
 	public static final String FIELD_ProductPackageSizeUOM = "productPackageSizeUOM";
 	@ViewColumn(fieldName = FIELD_ProductPackageSizeUOM, widgetType = DocumentFieldWidgetType.Text, captionKey = "Package_UOM_ID", widgetSize = WidgetSize.Small)
 	private final String productPackageSizeUOM;
+
+	public static final String FIELD_ProductStockUOM = "productStockUOM";
+	@ViewColumn(fieldName = FIELD_ProductStockUOM, widgetType = DocumentFieldWidgetType.Text, captionKey = "C_UOM_ID", widgetSize = WidgetSize.Small)
+	private final String productStockUOM;
 
 	public static final String FIELD_Locator = "locator";
 	@ViewColumn(fieldName = FIELD_Locator, widgetType = DocumentFieldWidgetType.Lookup, captionKey = "M_Locator_ID", widgetSize = WidgetSize.Small)
@@ -192,6 +195,7 @@ public class ProductsToPickRow implements IViewRow
 		productName = productInfo.getName();
 		productPackageSize = productInfo.getPackageSize();
 		productPackageSizeUOM = productInfo.getPackageSizeUOM();
+		productStockUOM = productInfo.getStockUOM();
 
 		this.huReservedForThisRow = huReservedForThisRow;
 

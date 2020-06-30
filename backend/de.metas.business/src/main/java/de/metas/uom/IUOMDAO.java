@@ -1,14 +1,8 @@
-package de.metas.uom;
-
-import java.time.temporal.TemporalUnit;
-import java.util.Collection;
-import java.util.List;
-
 /*
  * #%L
- * de.metas.adempiere.adempiere.base
+ * de.metas.business
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -26,8 +20,15 @@ import java.util.List;
  * #L%
  */
 
+package de.metas.uom;
+
+import java.time.temporal.TemporalUnit;
+import java.util.Collection;
+import java.util.List;
+
 import java.util.Properties;
 
+import de.metas.i18n.ITranslatableString;
 import org.compiere.model.I_C_UOM;
 
 import de.metas.util.ISingletonService;
@@ -47,6 +48,8 @@ public interface IUOMDAO extends ISingletonService
 	I_C_UOM getByIdOrNull(int uomId);
 
 	I_C_UOM getById(UomId uomId);
+
+	ITranslatableString getName(@NonNull UomId uomId);
 
 	List<I_C_UOM> getByIds(Collection<UomId> uomIds);
 

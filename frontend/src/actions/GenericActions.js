@@ -18,7 +18,20 @@ export function createInstance(entity, docType, docId, tabId, subentity) {
   );
 }
 
-// TODO: This should be moved to the api
+// TODO: I think this is not used anymore. Kuba
+// export function getDataByIds(entity, docType, viewId, docIds) {
+//   return axios.get(
+//     config.API_URL +
+//       '/' +
+//       entity +
+//       (docType ? '/' + docType : '') +
+//       (viewId ? '/' + viewId : '') +
+//       '/byIds' +
+//       '?ids=' +
+//       docIds
+//   );
+// }
+
 export function completeRequest(
   entity,
   docType,
@@ -37,7 +50,6 @@ export function completeRequest(
   );
 }
 
-// TODO: This should be moved to the api
 export function autocompleteRequest({
   attribute,
   docId,
@@ -61,7 +73,6 @@ export function autocompleteRequest({
   `);
 }
 
-// TODO: This should be moved to the api
 export function autocompleteModalRequest({
   docId,
   docType,
@@ -80,7 +91,6 @@ export function autocompleteModalRequest({
   `);
 }
 
-// TODO: This should be moved to the api
 export function dropdownRequest({
   attribute,
   docId,
@@ -103,7 +113,6 @@ export function dropdownRequest({
   }${propertyName}/dropdown`);
 }
 
-// TODO: This should be moved to the api
 export function dropdownModalRequest({
   windowId,
   entity,
@@ -115,6 +124,28 @@ export function dropdownModalRequest({
     ${
       config.API_URL
     }/${entity}/${windowId}/${viewId}/${rowId}/edit/${fieldName}/dropdown`);
+}
+
+export function deleteRequest(
+  entity,
+  docType,
+  docId,
+  tabId,
+  ids,
+  subentity,
+  subentityId
+) {
+  return axios.delete(
+    config.API_URL +
+      '/' +
+      entity +
+      (docType ? '/' + docType : '') +
+      (docId ? '/' + docId : '') +
+      (tabId ? '/' + tabId : '') +
+      (subentity ? '/' + subentity : '') +
+      (subentityId ? '/' + subentityId : '') +
+      (ids ? '?ids=' + ids : '')
+  );
 }
 
 export function duplicateRequest(entity, docType, docId) {

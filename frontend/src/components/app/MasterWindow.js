@@ -1,6 +1,6 @@
 import { Hints, Steps } from 'intro.js-react';
 import PropTypes from 'prop-types';
-import React, { PureComponent } from 'react';
+import React, { Component } from 'react';
 
 import { discardNewRow, discardNewDocument, getTabRequest } from '../../api';
 
@@ -13,9 +13,9 @@ import { introHints, introSteps } from '../intro/intro';
 /**
  * @file Class based component.
  * @module MasterWindow
- * @extends PureComponent
+ * @extends Component
  */
-export default class MasterWindow extends PureComponent {
+export default class MasterWindow extends Component {
   state = {
     newRow: false,
     modalTitle: null,
@@ -295,8 +295,6 @@ export default class MasterWindow extends PureComponent {
       introHints,
     } = this.state;
     const { docActionElement, documentSummaryElement } = master.layout;
-
-    // TODO: Do we need to have docId and dataId ?
     const dataId = master.docId;
     const docNoData = master.data.DocumentNo;
     let activeTab;
@@ -305,7 +303,6 @@ export default class MasterWindow extends PureComponent {
       activeTab = master.layout.activeTab;
     }
 
-    // TODO: it'd be better to have flags instead of using fields for status
     const docStatusData = {
       status: master.data.DocStatus || -1,
       action: master.data.DocAction || -1,
@@ -350,7 +347,7 @@ export default class MasterWindow extends PureComponent {
         windowId={params.windowType}
         docId={params.docId}
         showSidelist
-        modalHidden={!modal.visible}
+        showIndicator={!modal.visible}
         handleDeletedStatus={this.handleDeletedStatus}
       >
         <Overlay data={overlay.data} showOverlay={overlay.visible} />
@@ -362,6 +359,7 @@ export default class MasterWindow extends PureComponent {
             key="window"
             data={master.data}
             layout={master.layout}
+            rowData={master.rowData}
             tabsInfo={master.includedTabsInfo}
             sort={this.sort}
             dataId={dataId}

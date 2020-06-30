@@ -5,14 +5,13 @@ import { Map as iMap, Set as iSet } from 'immutable';
 import currentDevice from 'current-device';
 import { get } from 'lodash';
 
-import { LOCATION_SEARCH_NAME } from '../constants/Constants';
+import { LOCATION_SEARCH_NAME } from '../../../constants/Constants';
 import {
   locationSearchRequest,
   deleteStaticFilter,
   getViewRowsByIds,
-} from '../api';
-import { getTableId } from '../reducers/tables';
-
+} from '../../../api';
+import { getTableId } from '../../../reducers/tables';
 import {
   addViewLocationData,
   createView,
@@ -22,38 +21,41 @@ import {
   filterView,
   resetView,
   deleteView,
-  showIncludedView,
-  toggleIncludedView,
-} from '../actions/ViewActions';
-import {
-  deleteTable,
-  updateTableSelection,
-  updateGridTableData,
-  deselectTableItems,
-  createGridTable,
-} from '../actions/TableActions';
-import { clearAllFilters } from '../actions/FiltersActions';
+  updateViewData,
+} from '../../../actions/ViewActions';
+import { deleteTable } from '../../../actions/TableActions';
+import { clearAllFilters } from '../../../actions/FiltersActions';
 import {
   closeListIncludedView,
   setListId,
+  setListIncludedView,
   setPagination as setListPagination,
   setSorting as setListSorting,
-} from '../actions/ListActions';
-import { updateRawModal, indicatorState } from '../actions/WindowActions';
-import { connectWS, disconnectWS } from '../utils/websockets';
-
+} from '../../../actions/ListActions';
+import {
+  updateRawModal,
+  indicatorState,
+  selectTableItems,
+  deselectTableItems,
+  removeSelectedTableItems,
+} from '../../../actions/WindowActions';
+import { connectWS, disconnectWS } from '../../../utils/websockets';
+import { getSelectionDirect } from '../../../reducers/windowHandler';
 import {
   DLpropTypes,
   DLmapStateToProps,
+  NO_SELECTION,
   GEO_PANEL_STATES,
   getSortingQuery,
+  doesSelectionExist,
   filtersToMap,
   mergeColumnInfosIntoViewRows,
   mergeRows,
   parseToDisplay,
-} from '../utils/documentListHelper';
+  getRowsData,
+} from '../../../utils/documentListHelper';
 
-import DocumentList from '../components/app/DocumentList';
+import DocumentList from './DocumentList';
 
 class DocumentListContainer extends Component {
   constructor(props) {
@@ -70,15 +72,18 @@ class DocumentListContainer extends Component {
       panelsState: GEO_PANEL_STATES[0],
       filtersActive: iMap(),
       initialValuesNulled: iMap(),
+      isShowIncluded: false,
+      hasShowIncluded: false,
+      supportAttribute: false,
     };
 
     this.fetchLayoutAndData();
   }
 
   UNSAFE_componentWillMount() {
-    const { isModal, windowId, viewId } = this.props;
+    const { isModal, windowType, viewId } = this.props;
 
-    this.props.fetchLocationConfig(isModal ? viewId : windowId);
+    this.props.fetchLocationConfig(isModal ? viewId : windowType);
   }
 
   componentDidMount = () => {
@@ -86,13 +91,13 @@ class DocumentListContainer extends Component {
   };
 
   componentWillUnmount() {
-    const { isModal, windowId, viewId, deleteView, deleteTable } = this.props;
+    const { isModal, windowType, viewId, deleteView, deleteTable } = this.props;
 
     this.mounted = false;
     disconnectWS.call(this);
 
-    deleteTable(getTableId({ windowId, viewId }));
-    deleteView(isModal ? viewId : windowId);
+    deleteView(isModal ? viewId : windowType);
+    deleteTable(getTableId({ windowType, viewId }));
   }
 
   UNSAFE_componentWillReceiveProps(nextProps) {
@@ -102,21 +107,19 @@ class DocumentListContainer extends Component {
       isIncluded: nextIsIncluded,
       refDocumentId: nextRefDocumentId,
       referenceId: nextReferenceId,
-      windowId: nextWindowId,
+      windowType: nextWindowType,
     } = nextProps;
     const {
       includedView,
       isIncluded,
-      windowId,
       refDocumentId,
       referenceId,
+      windowType,
       closeListIncludedView,
       viewId,
       resetView,
       clearAllFilters,
       deleteTable,
-      toggleIncludedView,
-      isModal,
     } = this.props;
     const { staticFilterCleared } = this.state;
 
@@ -128,6 +131,8 @@ class DocumentListContainer extends Component {
       nextIncludedView.viewId;
     const location = document.location;
 
+    this.loadSupportAttributeFlag(nextProps);
+
     if (nextProps.filters.clearAll) {
       this.setState({ filtersActive: iMap() }, () => {
         clearAllFilters(false);
@@ -136,26 +141,23 @@ class DocumentListContainer extends Component {
     /*
      * If we browse list of docs, changing type of Document
      * does not re-construct component, so we need to
-     * make it manually while the windowId changes.
+     * make it manually while the windowType changes.
      * OR
      * We want to refresh the window (generate new viewId)
      * OR
      * The reference ID is changed
-     *
-     * TODO: This could probably be handled by a combination of
-     * middleware reacting to route changes and reducers
      */
     if (
       staticFilterCleared ||
-      nextWindowId !== windowId ||
-      (nextWindowId === windowId &&
+      nextWindowType !== windowType ||
+      (nextWindowType === windowType &&
         ((nextViewId !== viewId && isIncluded && nextIsIncluded) ||
           location.hash === '#notification')) ||
       nextRefDocumentId !== refDocumentId ||
       nextReferenceId !== referenceId
     ) {
-      resetView(windowId);
-      deleteTable(getTableId({ windowId, viewId }));
+      resetView(windowType);
+      deleteTable(getTableId({ windowType, viewId }));
 
       this.setState(
         {
@@ -165,8 +167,6 @@ class DocumentListContainer extends Component {
           panelsState: GEO_PANEL_STATES[0],
         },
         () => {
-          // TODO: Check if we can just call `showIncludedView` to hide
-          // it in the resetView Action Creator
           if (included) {
             closeListIncludedView(includedView);
           }
@@ -179,8 +179,8 @@ class DocumentListContainer extends Component {
     const stateChanges = {};
 
     if (included && !nextIncluded) {
-      const identifier = isModal ? viewId : windowId;
-      toggleIncludedView(identifier, false);
+      stateChanges.isShowIncluded = false;
+      stateChanges.hasShowIncluded = false;
     }
 
     if (Object.keys(stateChanges).length) {
@@ -192,25 +192,23 @@ class DocumentListContainer extends Component {
 
   /**
    * @method connectWebSocket
-   * @summary Subscribe to websocket stream for this view
+   * @summary ToDo: Describe the method.
    */
   connectWebSocket = (customViewId) => {
-    const { windowId, deselectTableItems, updateGridTableData } = this.props;
+    const { windowType, deselectTableItems, updateViewData } = this.props;
     const viewId = customViewId ? customViewId : this.props.viewId;
 
     connectWS.call(this, `/view/${viewId}`, (msg) => {
       const { fullyChanged, changedIds } = msg;
-      const table = this.props.table;
 
       if (changedIds) {
-        getViewRowsByIds(windowId, viewId, changedIds.join()).then(
+        getViewRowsByIds(windowType, viewId, changedIds.join()).then(
           (response) => {
-            const tableId = getTableId({ windowId, viewId });
-            const toRows = table.rows;
+            const { reduxData } = this.props;
             const { pageColumnInfosByFieldName, filtersActive } = this.state;
+            const toRows = reduxData.rowData.get('1').toArray();
 
             // merge changed rows with data in the store
-            // TODO: I think we can move this to reducer
             const { rows, removedRows } = mergeRows({
               toRows,
               fromRows: [...response.data],
@@ -219,7 +217,7 @@ class DocumentListContainer extends Component {
             });
 
             if (removedRows.length) {
-              deselectTableItems(tableId, removedRows);
+              deselectTableItems(removedRows, windowType, viewId);
             } else {
               if (filtersActive.size) {
                 this.filterCurrentView();
@@ -229,15 +227,22 @@ class DocumentListContainer extends Component {
               this.updateQuickActions();
             }
 
-            updateGridTableData(tableId, rows);
+            updateViewData(windowType, rows);
           }
         );
       }
 
       if (fullyChanged === true) {
-        const tableId = getTableId({ windowId, viewId });
+        const { selectTableItems, windowType, selections, viewId } = this.props;
+        const selection = getSelectionDirect(selections, windowType, viewId);
 
-        deselectTableItems(tableId, []);
+        // Reload Attributes after QuickAction is done
+        selection.length &&
+          selectTableItems({
+            windowType,
+            viewId,
+            ids: [selection[0]],
+          });
 
         this.browseView();
         this.updateQuickActions();
@@ -256,16 +261,43 @@ class DocumentListContainer extends Component {
   };
 
   /**
+   * @method loadSupportAttributeFlag
+   * @summary Load supportAttribute of the selected row from the table.
+   */
+  loadSupportAttributeFlag = ({ selected }) => {
+    const {
+      reduxData: { rowData },
+    } = this.props;
+
+    if (!rowData) {
+      return;
+    }
+    const rows = getRowsData(rowData.get('1'));
+
+    if (selected.length === 1) {
+      const selectedRow = rows.find((row) => row.id === selected[0]);
+
+      this.setState({
+        supportAttribute: selectedRow && selectedRow.supportAttributes,
+      });
+    } else {
+      this.setState({
+        supportAttribute: false,
+      });
+    }
+  };
+
+  // TODO: I think this should be stored in redux too
+  /**
    * @method clearStaticFilters
    * @summary ToDo: Describe the method.
    */
   clearStaticFilters = (filterId) => {
-    const { push, windowId, viewId } = this.props;
+    const { push, windowType, viewId } = this.props;
 
-    deleteStaticFilter(windowId, viewId, filterId).then((response) => {
-      // TODO: I think this should be stored in redux too
+    deleteStaticFilter(windowType, viewId, filterId).then((response) => {
       this.setState({ staticFilterCleared: true }, () =>
-        push(`/window/${windowId}?viewId=${response.data.viewId}`)
+        push(`/window/${windowType}?viewId=${response.data.viewId}`)
       );
     });
   };
@@ -277,7 +309,7 @@ class DocumentListContainer extends Component {
    */
   fetchLayoutAndData = (isNewFilter, locationAreaSearch) => {
     const {
-      windowId,
+      windowType,
       type,
       viewProfileId,
       setModalTitle,
@@ -286,23 +318,15 @@ class DocumentListContainer extends Component {
       updateRawModal,
       setModalDescription,
       isModal,
-      createGridTable,
     } = this.props;
 
-    fetchLayout(windowId, type, viewProfileId, isModal ? viewId : null)
+    fetchLayout(windowType, type, viewProfileId, isModal ? viewId : null)
       .then((response) => {
         if (this.mounted) {
           const { allowedCloseActions } = response;
 
-          if (isModal) {
-            const tableId = getTableId({ windowId, viewId });
-            const tableData = { windowId, viewId, layout: response };
-
-            createGridTable(tableId, tableData);
-
-            if (allowedCloseActions) {
-              updateRawModal(windowId, { allowedCloseActions });
-            }
+          if (allowedCloseActions && isModal) {
+            updateRawModal(windowType, { allowedCloseActions });
           }
 
           if (viewId) {
@@ -357,7 +381,7 @@ class DocumentListContainer extends Component {
    */
   createNewView = () => {
     const {
-      windowId,
+      windowType,
       type,
       referenceId,
       refType,
@@ -374,7 +398,7 @@ class DocumentListContainer extends Component {
     const { filtersActive } = this.state;
 
     createView({
-      windowType: windowId,
+      windowType,
       viewType: type,
       filters: filtersActive.toIndexedSeq().toArray(),
       referenceId: referenceId,
@@ -405,7 +429,7 @@ class DocumentListContainer extends Component {
    */
   filterCurrentView = (locationAreaSearch) => {
     const {
-      windowId,
+      windowType,
       isIncluded,
       page,
       sort,
@@ -418,7 +442,7 @@ class DocumentListContainer extends Component {
     const { filtersActive } = this.state;
 
     filterView(
-      windowId,
+      windowType,
       viewId,
       filtersActive.toIndexedSeq().toArray(),
       isModal
@@ -433,7 +457,7 @@ class DocumentListContainer extends Component {
         }
 
         if (isIncluded) {
-          setListIncludedView({ windowType: windowId, viewId: newViewId });
+          setListIncludedView({ windowType, viewId: newViewId });
         }
 
         this.mounted && this.getData(newViewId, page, sort, locationAreaSearch);
@@ -449,10 +473,14 @@ class DocumentListContainer extends Component {
    */
   getData = (id, page, sortingQuery, locationAreaSearch) => {
     const {
-      windowId,
+      windowType,
+      selections,
       updateUri,
+      type,
+      isIncluded,
       fetchDocument,
       indicatorState,
+      selectTableItems,
       updateRawModal,
       viewId,
       isModal,
@@ -475,7 +503,7 @@ class DocumentListContainer extends Component {
     }
 
     return fetchDocument({
-      windowType: windowId,
+      windowType,
       viewId: id,
       page,
       pageLength: this.pageLength,
@@ -486,6 +514,16 @@ class DocumentListContainer extends Component {
       .then((response) => {
         const result = response.result;
         const resultById = {};
+        const selection = getSelectionDirect(selections, windowType, viewId);
+        const forceSelection =
+          (type === 'includedView' || isIncluded) &&
+          response &&
+          result.length > 0 &&
+          (selection.length === 0 ||
+            !doesSelectionExist({
+              data: result,
+              selected: selection,
+            }));
 
         result.map((row) => {
           const parsed = parseToDisplay(row.fieldsByName);
@@ -518,13 +556,23 @@ class DocumentListContainer extends Component {
             this.getLocationData(resultById);
           }
 
-          this.setState({ ...newState });
+          this.setState({ ...newState }, () => {
+            if (forceSelection && response && result && result.length > 0) {
+              const selection = [result[0].id];
+
+              selectTableItems({
+                windowType,
+                viewId,
+                ids: selection,
+              });
+            }
+          });
 
           if (rawModalVisible) {
             // process modal specific
             const { parentViewId, parentWindowId, headerProperties } = response;
 
-            updateRawModal(windowId, {
+            updateRawModal(windowType, {
               parentViewId,
               parentWindowId,
               headerProperties,
@@ -541,12 +589,12 @@ class DocumentListContainer extends Component {
 
   getLocationData = (resultById) => {
     const {
-      windowId,
+      windowType,
       viewId,
       reduxData: { mapConfig },
     } = this.props;
 
-    locationSearchRequest({ windowId, viewId }).then(({ data }) => {
+    locationSearchRequest({ windowId: windowType, viewId }).then(({ data }) => {
       const locationData = data.locations.map((location) => {
         const name = get(
           resultById,
@@ -561,7 +609,7 @@ class DocumentListContainer extends Component {
       });
 
       if (locationData.length) {
-        addViewLocationData(windowId, locationData);
+        addViewLocationData(windowType, locationData);
       }
 
       if (mapConfig && mapConfig.provider && locationData.length) {
@@ -572,17 +620,21 @@ class DocumentListContainer extends Component {
     });
   };
 
+  // MANAGING SORT, PAGINATION, FILTERS --------------------------------------
+
   /**
    * @method handleChangePage
    * @summary ToDo: Describe the method.
    */
   handleChangePage = (index) => {
-    const { table, reduxData, sort } = this.props;
+    const { reduxData } = this.props;
     let currentPage = reduxData.page;
 
     switch (index) {
       case 'up':
-        currentPage * reduxData.pageLength < table.size ? currentPage++ : null;
+        currentPage * reduxData.pageLength < reduxData.size
+          ? currentPage++
+          : null;
         break;
       case 'down':
         currentPage !== 1 ? currentPage-- : null;
@@ -591,7 +643,7 @@ class DocumentListContainer extends Component {
         currentPage = index;
     }
 
-    this.getData(reduxData.viewId, currentPage, sort);
+    this.getData(reduxData.viewId, currentPage, reduxData.sort);
   };
 
   /**
@@ -660,7 +712,7 @@ class DocumentListContainer extends Component {
   redirectToDocument = (id) => {
     const {
       isModal,
-      windowId,
+      windowType,
       isSideListShow,
       reduxData,
       push,
@@ -675,13 +727,13 @@ class DocumentListContainer extends Component {
       return;
     }
 
-    push(`/window/${windowId}/${id}`);
+    push(`/window/${windowType}/${id}`);
 
     if (!isSideListShow) {
       // Caching last settings
-      setListPagination(page, windowId);
-      setListSorting(sort, windowId);
-      setListId(reduxData.viewId, windowId);
+      setListPagination(page, windowType);
+      setListSorting(sort, windowType);
+      setListId(reduxData.viewId, windowType);
     }
   };
 
@@ -690,41 +742,69 @@ class DocumentListContainer extends Component {
    * @summary Redirect to a new document
    */
   redirectToNewDocument = () => {
-    const { push, windowId } = this.props;
+    const { push, windowType } = this.props;
 
-    push(`/window/${windowId}/new`);
+    push(`/window/${windowType}/new`);
   };
 
   /**
    * @method showIncludedView
    * @summary ToDo: Describe the method.
    */
-  showSelectedIncludedView = (selected) => {
-    const {
-      table: { rows },
-      layout,
-      isModal,
-      viewId,
-      windowId,
-    } = this.props;
-    const openIncludedViewOnSelect =
-      layout.includedView && layout.includedView.openOnSelect;
-    const identifier = isModal ? viewId : windowId;
-
-    if (openIncludedViewOnSelect && selected.length === 1) {
-      rows.forEach((item) => {
-        if (item.id === selected[0]) {
-          showIncludedView({
-            id: identifier,
-            showIncludedView: item.supportIncludedViews,
-            windowId: item.supportIncludedViews
-              ? item.includedView.windowType || item.includedView.windowId
-              : null,
-            viewId: item.supportIncludedViews ? item.includedView.viewId : '',
-          });
+  showIncludedViewOnSelect = ({
+    showIncludedView,
+    windowType,
+    viewId,
+    forceClose,
+  } = {}) => {
+    const { setListIncludedView, closeListIncludedView } = this.props;
+    this.setState(
+      {
+        isShowIncluded: !!showIncludedView,
+        hasShowIncluded: !!showIncludedView,
+      },
+      () => {
+        if (showIncludedView) {
+          setListIncludedView({ windowType, viewId });
         }
-      });
+      }
+    );
+
+    // can't use setState callback because component might be unmounted and
+    // callback is never called
+    if (!showIncludedView) {
+      closeListIncludedView({ windowType, viewId, forceClose });
     }
+  };
+
+  /**
+   * @method getSelected
+   * @summary ToDo: Describe the method.
+   */
+  getSelected = () => {
+    const {
+      selections,
+      windowType,
+      includedView,
+      parentWindowType,
+      parentDefaultViewId,
+      reduxData: { viewId },
+    } = this.props;
+
+    return {
+      selected: getSelectionDirect(selections, windowType, viewId),
+      childSelected:
+        includedView && includedView.windowType
+          ? getSelectionDirect(
+              selections,
+              includedView.windowType,
+              includedView.viewId
+            )
+          : NO_SELECTION,
+      parentSelected: parentWindowType
+        ? getSelectionDirect(selections, parentWindowType, parentDefaultViewId)
+        : NO_SELECTION,
+    };
   };
 
   render() {
@@ -732,8 +812,9 @@ class DocumentListContainer extends Component {
       includedView,
       layout,
       layoutPending,
-      reduxData: { pending },
+      reduxData: { rowData, pending },
     } = this.props;
+    let { selected } = this.getSelected();
 
     const hasIncluded =
       layout &&
@@ -742,16 +823,26 @@ class DocumentListContainer extends Component {
       includedView.windowType &&
       includedView.viewId;
 
+    let selectionValid = false;
+    if (rowData.has('1')) {
+      selectionValid = doesSelectionExist({
+        data: rowData.get('1').toJS(),
+        selected,
+        hasIncluded,
+      });
+    }
+
     return (
       <DocumentList
         {...this.props}
         {...this.state}
         triggerSpinner={layoutPending || pending}
         hasIncluded={hasIncluded}
+        selectionValid={selectionValid}
         onToggleState={this.toggleState}
         pageLength={this.pageLength}
         onGetSelected={this.getSelected}
-        onShowSelectedIncludedView={this.showSelectedIncludedView}
+        onShowIncludedViewOnSelect={this.showIncludedViewOnSelect}
         onSortData={this.sortData}
         onFetchLayoutAndData={this.fetchLayoutAndData}
         onChangePage={this.handleChangePage}
@@ -781,21 +872,20 @@ export default connect(
     createView,
     filterView,
     deleteTable,
+    setListIncludedView,
     indicatorState,
     closeListIncludedView,
     setListPagination,
     setListSorting,
     setListId,
-    showIncludedView,
-    toggleIncludedView,
     push,
     updateRawModal,
-    updateTableSelection,
+    selectTableItems,
     deselectTableItems,
+    removeSelectedTableItems,
+    updateViewData,
     fetchLocationConfig,
     clearAllFilters,
-    updateGridTableData,
-    createGridTable,
   },
   null,
   { forwardRef: true }

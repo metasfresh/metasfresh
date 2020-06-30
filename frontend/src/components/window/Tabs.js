@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types';
-import React, { PureComponent } from 'react';
+import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import classnames from 'classnames';
 import { Set } from 'immutable';
@@ -12,7 +12,7 @@ const TabSingleEntry = (props) => (
   <div className="tab-sections">{props.children}</div>
 );
 
-class Tabs extends PureComponent {
+class Tabs extends Component {
   constructor(props) {
     super(props);
 
@@ -149,10 +149,18 @@ class Tabs extends PureComponent {
   };
 
   renderTabs = (tabs) => {
-    const { windowId, onChange } = this.props;
+    const { toggleTableFullScreen, windowId, onChange } = this.props;
     const { selected } = this.state;
 
     return tabs.map((item) => {
+      const itemWithProps = {
+        ...item,
+        props: {
+          ...item.props,
+          toggleFullScreen: toggleTableFullScreen,
+        },
+      };
+
       if (selected.last() === item.key) {
         const {
           tabId,
@@ -175,7 +183,7 @@ class Tabs extends PureComponent {
                 onChange,
               }}
             >
-              {item}
+              {itemWithProps}
             </Tab>
           </div>
         );
@@ -183,10 +191,6 @@ class Tabs extends PureComponent {
         return false;
       }
     });
-  };
-
-  setRef = (ref) => {
-    this.tabContent = ref;
   };
 
   render() {
@@ -199,7 +203,7 @@ class Tabs extends PureComponent {
         })}
       >
         {this.renderPills(tabs)}
-        <div className="tab-content" ref={this.setRef}>
+        <div className="tab-content" ref={(c) => (this.tabContent = c)}>
           {this.renderTabs(children)}
         </div>
       </div>
@@ -217,6 +221,7 @@ Tabs.propTypes = {
   tabsByIds: PropTypes.any,
   onChange: PropTypes.func,
   tabIndex: PropTypes.number,
+  toggleTableFullScreen: PropTypes.any,
   fullScreen: PropTypes.any,
 };
 

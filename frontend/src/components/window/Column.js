@@ -22,7 +22,8 @@ class Column extends PureComponent {
   }
 
   render() {
-    const { columnLayout, colWidth, isDataEntry } = this.props;
+    const { columnLayout, colWidth } = this.props;
+    const { isDataEntry } = this.props;
     const elementGroups = columnLayout.elementGroups;
 
     if (isDataEntry) {
@@ -43,16 +44,10 @@ class Column extends PureComponent {
   }
 
   renderElementGroups = (groups) => {
+    const { windowId, tabId, rowId, dataId } = this.props;
+    const { data } = this.props;
+    const { isFirst, isModal, isAdvanced, isFullScreen } = this.props;
     const {
-      windowId,
-      tabId,
-      rowId,
-      dataId,
-      data,
-      isFirst,
-      isModal,
-      isAdvanced,
-      isFullScreen,
       onBlurWidget,
       addRefToWidgets,
       requestElementGroupFocus,
@@ -93,7 +88,7 @@ class Column extends PureComponent {
   };
 
   renderEntryTable = (groups) => {
-    const columns = groups.reduce((columnsArray, group) => {
+    const rows = groups.reduce((rowsArray, group) => {
       const cols = [];
       group.elementsLine.forEach((line) => {
         if (line && line.elements && line.elements.length) {
@@ -101,24 +96,17 @@ class Column extends PureComponent {
         }
       });
 
-      columnsArray.push({
+      rowsArray.push({
         cols,
         colsCount: group.columnCount,
       });
 
-      return columnsArray;
+      return rowsArray;
     }, []);
 
-    const {
-      windowId,
-      dataId,
-      tabId,
-      data,
-      extendedData,
-      isFullScreen,
-      addRefToWidgets,
-      onBlurWidget,
-    } = this.props;
+    const { windowId, dataId } = this.props;
+    const { data, extendedData, rowData, isFullScreen } = this.props;
+    const { addRefToWidgets, onBlurWidget } = this.props;
 
     return (
       <div
@@ -129,13 +117,17 @@ class Column extends PureComponent {
         )}
       >
         <EntryTable
-          columns={columns}
+          rows={rows}
+          //
           windowId={windowId}
-          documentId={dataId}
-          tabId={tabId}
+          dataId={dataId}
+          //
           data={data}
+          rowData={rowData}
           extendedData={extendedData}
+          //
           isFullScreen={isFullScreen}
+          //
           addRefToWidgets={addRefToWidgets}
           onBlurWidget={onBlurWidget}
         />
@@ -156,6 +148,7 @@ Column.propTypes = {
   data: PropTypes.oneOfType([PropTypes.shape(), PropTypes.array]), // TODO: type here should point to a hidden issue?
   isDataEntry: PropTypes.bool,
   extendedData: PropTypes.object,
+  rowData: PropTypes.object,
   //
   isFirst: PropTypes.bool,
   isModal: PropTypes.bool,

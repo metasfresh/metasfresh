@@ -1,25 +1,26 @@
+import { Map as iMap, List as iList } from 'immutable';
 import { get } from 'lodash';
 import { createSelector } from 'reselect';
 
 import {
   ADD_VIEW_LOCATION_DATA,
+  FETCH_DOCUMENT_PENDING,
+  FETCH_DOCUMENT_SUCCESS,
+  FETCH_DOCUMENT_ERROR,
+  FETCH_LAYOUT_PENDING,
+  FETCH_LAYOUT_SUCCESS,
+  FETCH_LAYOUT_ERROR,
   CREATE_VIEW,
   CREATE_VIEW_SUCCESS,
   CREATE_VIEW_ERROR,
-  DELETE_VIEW,
-  FETCH_DOCUMENT_ERROR,
-  FETCH_DOCUMENT_PENDING,
-  FETCH_DOCUMENT_SUCCESS,
-  FETCH_LAYOUT_ERROR,
-  FETCH_LAYOUT_PENDING,
-  FETCH_LAYOUT_SUCCESS,
-  FETCH_LOCATION_CONFIG_ERROR,
-  FETCH_LOCATION_CONFIG_SUCCESS,
   FILTER_VIEW_PENDING,
   FILTER_VIEW_SUCCESS,
   FILTER_VIEW_ERROR,
+  UPDATE_VIEW_DATA,
+  FETCH_LOCATION_CONFIG_SUCCESS,
+  FETCH_LOCATION_CONFIG_ERROR,
   RESET_VIEW,
-  TOGGLE_INCLUDED_VIEW,
+  DELETE_VIEW,
 } from '../constants/ActionTypes';
 
 export const viewState = {
@@ -29,6 +30,10 @@ export const viewState = {
   layoutPending: false,
   layoutError: null,
   layoutNotFound: false,
+
+  // rowData is an immutable Map with tabId's as keys, and Lists as values.
+  // List's elements are plain objects for now
+  rowData: iMap(),
   locationData: null,
   docId: null,
   type: null,
@@ -39,20 +44,17 @@ export const viewState = {
   headerProperties: null,
   pageLength: 0,
   page: 1,
+  size: 0,
   description: null,
   sort: null,
   staticFilters: null,
   orderBy: null,
-  queryLimit: null,
   queryLimitHit: null,
   mapConfig: null,
   notFound: false,
   pending: false,
   error: null,
   isActive: false,
-
-  isShowIncluded: false,
-  hasShowIncluded: false,
 };
 
 export const initialState = { views: {} };
@@ -154,12 +156,14 @@ export default function viewHandler(state = initialState, action) {
       };
     }
     case FETCH_DOCUMENT_SUCCESS: {
+      // TODO: Maybe just use `_.omit` to remove `result` ?
       const {
         id,
         data: {
           firstRow,
           headerProperties,
           pageLength,
+          result,
           size,
           type,
           viewId,
@@ -180,6 +184,7 @@ export default function viewHandler(state = initialState, action) {
         firstRow,
         headerProperties,
         pageLength,
+        size,
         type,
         viewId,
         windowId,
@@ -188,6 +193,7 @@ export default function viewHandler(state = initialState, action) {
         staticFilters,
         queryLimit,
         queryLimitHit,
+        rowData: iMap({ [`${action.payload.tabId || 1}`]: iList(result) }),
         pending: false,
       };
 
@@ -325,6 +331,23 @@ export default function viewHandler(state = initialState, action) {
         },
       };
     }
+    case UPDATE_VIEW_DATA: {
+      const { id, rows } = action.payload;
+      const tabId = action.payload.tabId || '1';
+      const view = getLocalView(state, id);
+      const updatedRowsData = view.rowData.set(tabId, iList(rows));
+
+      return {
+        ...state,
+        views: {
+          ...state.views,
+          [`${id}`]: {
+            ...view,
+            rowData: updatedRowsData,
+          },
+        },
+      };
+    }
     case ADD_VIEW_LOCATION_DATA: {
       const { id, locationData } = action.payload;
       const view = getLocalView(state, id);
@@ -371,23 +394,6 @@ export default function viewHandler(state = initialState, action) {
           [`${id}`]: {
             ...view,
             error,
-          },
-        },
-      };
-    }
-
-    case TOGGLE_INCLUDED_VIEW: {
-      const { id, showIncludedView } = action.payload;
-      const view = getLocalView(state, id);
-
-      return {
-        ...state,
-        views: {
-          ...state.views,
-          [`${id}`]: {
-            ...view,
-            isShowIncluded: !!showIncludedView,
-            hasShowIncluded: !!showIncludedView,
           },
         },
       };

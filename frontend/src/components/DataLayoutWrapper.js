@@ -1,14 +1,9 @@
-import React, { cloneElement, PureComponent } from 'react';
+import React, { cloneElement, Component } from 'react';
 import PropTypes from 'prop-types';
 import { patchViewAttributes } from '../actions/ViewAttributesActions';
 import { parseToDisplay } from '../utils/documentListHelper';
 
-/**
- * @file Class based component.
- * @module DocumentList
- * @extends PureComponent
- */
-export default class DataLayoutWrapper extends PureComponent {
+class DataLayoutWrapper extends Component {
   constructor(props) {
     super(props);
 
@@ -105,7 +100,7 @@ export default class DataLayoutWrapper extends PureComponent {
 
     return (
       <div className={className}>
-        {// The naming of props has a significant prefix
+        {// The nameing of props has a significant prefix
         // to suggest dev that these props are from wrapper
         cloneElement(children, {
           ...this.props,
@@ -130,3 +125,5 @@ DataLayoutWrapper.propTypes = {
   children: PropTypes.node,
   className: PropTypes.string,
 };
+
+export default DataLayoutWrapper;

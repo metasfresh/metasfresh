@@ -1,11 +1,11 @@
-import React, { PureComponent } from 'react';
+import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 
 import { updateKeymap, updateHotkeys } from '../../actions/AppActions';
 import { Shortcut } from '../keyshortcuts';
 
-class TableFilterContextShortcuts extends PureComponent {
+class TableFilterContextShortcuts extends Component {
   constructor() {
     super();
 
@@ -55,4 +55,6 @@ TableFilterContextShortcuts.propTypes = {
   dispatch: PropTypes.func,
 };
 
-export default connect()(TableFilterContextShortcuts);
+const mapStateToProps = () => ({});
+
+export default connect(mapStateToProps)(TableFilterContextShortcuts);
