@@ -6,6 +6,8 @@ import {
   locationConfigRequest,
 } from '../api';
 import { getTableId } from '../reducers/tables';
+import { getView } from '../reducers/viewHandler';
+
 import {
   ADD_VIEW_LOCATION_DATA,
   FETCH_DOCUMENT_PENDING,
@@ -20,13 +22,15 @@ import {
   FILTER_VIEW_PENDING,
   FILTER_VIEW_SUCCESS,
   FILTER_VIEW_ERROR,
-  UPDATE_VIEW_DATA,
   FETCH_LOCATION_CONFIG_SUCCESS,
   FETCH_LOCATION_CONFIG_ERROR,
   RESET_VIEW,
   DELETE_VIEW,
+  TOGGLE_INCLUDED_VIEW,
 } from '../constants/ActionTypes';
-import { createGridTable, updateGridTable } from './TableActions';
+
+import { createGridTable, updateGridTable, deleteTable } from './TableActions';
+import { setListIncludedView, closeListIncludedView } from './ListActions';
 
 /**
  * @method resetView
@@ -183,21 +187,6 @@ function filterViewError(id, error) {
 }
 
 /**
- * @method updateViewData
- * @summary
- */
-export function updateViewData(id, rows, tabId) {
-  return {
-    type: UPDATE_VIEW_DATA,
-    payload: {
-      id,
-      rows,
-      tabId,
-    },
-  };
-}
-
-/**
  * @method fetchLocationConfigSuccess
  * @summary
  */
@@ -210,7 +199,7 @@ function fetchLocationConfigSuccess(id, data) {
 
 /**
  * @method fetchLocationConfigError
- * @summary
+ * @summary error when fetching geolocation config
  */
 function fetchLocationConfigError(id, error) {
   return {
@@ -221,12 +210,23 @@ function fetchLocationConfigError(id, error) {
 
 /**
  * @method addLocationData
- * @summary
+ * @summary save geolocation data in the store
  */
 export function addLocationData(id, locationData) {
   return {
     type: ADD_VIEW_LOCATION_DATA,
     payload: { id, locationData },
+  };
+}
+
+/**
+ * @method toggleIncludedView
+ * @summary sets internal hasIncluded/isIncluded values
+ */
+export function toggleIncludedView(id, showIncludedView) {
+  return {
+    type: TOGGLE_INCLUDED_VIEW,
+    payload: { id, showIncludedView },
   };
 }
 
@@ -256,7 +256,7 @@ export function fetchDocument({
   //for filtering in modals
   modalId = null,
 }) {
-  return (dispatch) => {
+  return (dispatch, getState) => {
     let identifier = useViewId ? viewId : windowType;
 
     if (useViewId && modalId) {
@@ -275,10 +275,35 @@ export function fetchDocument({
       .then((response) => {
         dispatch(fetchDocumentSuccess(identifier, response.data));
 
-        const tableId = getTableId({ windowType, viewId });
+        const tableId = getTableId({ windowId: windowType, viewId });
         const tableData = { windowType, viewId, ...response.data };
 
         dispatch(updateGridTable(tableId, tableData));
+
+        const view = getView(getState(), identifier);
+        const openIncludedViewOnSelect =
+          view.layout &&
+          view.layout.includedView &&
+          view.layout.includedView.openOnSelect;
+
+        if (
+          openIncludedViewOnSelect &&
+          response.data.result &&
+          response.data.result.length
+        ) {
+          const row = response.data.result[0];
+
+          dispatch(
+            showIncludedView({
+              id: identifier,
+              showIncludedView: row.supportIncludedViews,
+              windowId: row.supportIncludedViews
+                ? row.includedView.windowType || row.includedView.windowId
+                : null,
+              viewId: row.supportIncludedViews ? row.includedView.viewId : '',
+            })
+          );
+        }
 
         return Promise.resolve(response.data);
       })
@@ -325,7 +350,7 @@ export function createView({
         dispatch(createViewSuccess(identifier, response.data));
 
         const { viewId } = response.data;
-        const tableId = getTableId({ windowType, viewId });
+        const tableId = getTableId({ windowId: windowType, viewId });
         const tableData = { windowType, viewId };
 
         dispatch(createGridTable(tableId, tableData));
@@ -370,7 +395,6 @@ export function fetchLayout(
   };
 }
 
-// TODO: Update table on filtering
 /**
  * @method filterView
  * @summary filter grid view
@@ -384,6 +408,9 @@ export function filterView(windowId, viewId, filters, useViewId = false) {
     return filterViewRequest(windowId, viewId, filters)
       .then((response) => {
         dispatch(filterViewSuccess(identifier, response.data));
+
+        const tableId = getTableId({ windowId, viewId });
+        dispatch(deleteTable(tableId));
 
         return Promise.resolve(response.data);
       })
@@ -412,5 +439,33 @@ export function fetchLocationConfig(windowId, viewId = null) {
 
         return Promise.resolve(error);
       });
+  };
+}
+
+/**
+ * @method showIncludedView
+ * @summary ToDo: Describe the method.
+ */
+export function showIncludedView({
+  id,
+  showIncludedView,
+  windowId,
+  viewId,
+  forceClose,
+} = {}) {
+  return (dispatch) => {
+    if (id) {
+      dispatch(toggleIncludedView(id, showIncludedView));
+    }
+
+    if (showIncludedView) {
+      dispatch(setListIncludedView({ windowType: windowId, viewId }));
+    }
+
+    if (!showIncludedView) {
+      dispatch(
+        closeListIncludedView({ windowType: windowId, viewId, forceClose })
+      );
+    }
   };
 }

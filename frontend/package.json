@@ -133,6 +133,7 @@
     "counterpart": "0.18.6",
     "current-device": "0.10.0",
     "d3": "4.10.0",
+    "deep-unfreeze": "^0.1.1",
     "detect-browser": "4.8.0",
     "file-loader": "2.0.0",
     "google-map-react": "1.1.5",
