@@ -329,6 +329,8 @@ import lombok.NonNull;
 				.setMandatoryLogic(mandatoryLogic)
 				//
 				.addCharacteristic(Characteristic.PublicField)
+				//
+				.deviceDescriptorsProvider(webuiProcesClassInfo.getDeviceDescriptorsProvider(parameterName))
 		//
 		;
 

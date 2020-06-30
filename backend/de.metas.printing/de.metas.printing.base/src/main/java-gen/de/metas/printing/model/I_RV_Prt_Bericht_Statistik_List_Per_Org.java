@@ -2,7 +2,7 @@ package de.metas.printing.model;
 
 
 /** Generated Interface for RV_Prt_Bericht_Statistik_List_Per_Org
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
 @SuppressWarnings("javadoc")
 public interface I_RV_Prt_Bericht_Statistik_List_Per_Org 
@@ -14,17 +14,10 @@ public interface I_RV_Prt_Bericht_Statistik_List_Per_Org
     /** AD_Table_ID=540479 */
 //    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
-//    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
-
-    /** AccessLevel = 3 - Client - Org
-     */
-//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(3);
-
-    /** Load Meta Data */
 
 	/**
-	 * Get Mandant.
-	 * Mandant für diese Installation.
+	 * Get Client.
+	 * Client/Tenant for this installation.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -61,8 +54,8 @@ public interface I_RV_Prt_Bericht_Statistik_List_Per_Org
     public static final String COLUMNNAME_Address1 = "Address1";
 
 	/**
-	 * Set Sektion.
-	 * Organisatorische Einheit des Mandanten
+	 * Set Organisation.
+	 * Organisational entity within client
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -71,8 +64,8 @@ public interface I_RV_Prt_Bericht_Statistik_List_Per_Org
 	public void setAD_Org_ID (int AD_Org_ID);
 
 	/**
-	 * Get Sektion.
-	 * Organisatorische Einheit des Mandanten
+	 * Get Organisation.
+	 * Organisational entity within client
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -84,7 +77,7 @@ public interface I_RV_Prt_Bericht_Statistik_List_Per_Org
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set Anschrift-Text.
+	 * Set Address.
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
@@ -93,7 +86,7 @@ public interface I_RV_Prt_Bericht_Statistik_List_Per_Org
 	public void setBPartnerAddress (java.lang.String BPartnerAddress);
 
 	/**
-	 * Get Anschrift-Text.
+	 * Get Address.
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
@@ -107,7 +100,7 @@ public interface I_RV_Prt_Bericht_Statistik_List_Per_Org
     public static final String COLUMNNAME_BPartnerAddress = "BPartnerAddress";
 
 	/**
-	 * Set Rechnung.
+	 * Set Invoice.
 	 * Invoice Identifier
 	 *
 	 * <br>Type: TableDir
@@ -117,7 +110,7 @@ public interface I_RV_Prt_Bericht_Statistik_List_Per_Org
 	public void setC_Invoice_ID (int C_Invoice_ID);
 
 	/**
-	 * Get Rechnung.
+	 * Get Invoice.
 	 * Invoice Identifier
 	 *
 	 * <br>Type: TableDir
@@ -136,7 +129,7 @@ public interface I_RV_Prt_Bericht_Statistik_List_Per_Org
     public static final String COLUMNNAME_C_Invoice_ID = "C_Invoice_ID";
 
 	/**
-	 * Set Firmenname.
+	 * Set Company Name.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -145,7 +138,7 @@ public interface I_RV_Prt_Bericht_Statistik_List_Per_Org
 	public void setCompanyname (java.lang.String Companyname);
 
 	/**
-	 * Get Firmenname.
+	 * Get Company Name.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -263,8 +256,8 @@ public interface I_RV_Prt_Bericht_Statistik_List_Per_Org
     public static final String COLUMNNAME_C_Print_Package_ID = "C_Print_Package_ID";
 
 	/**
-	 * Get Erstellt.
-	 * Datum, an dem dieser Eintrag erstellt wurde
+	 * Get Created.
+	 * Date this record was created
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: false
@@ -278,8 +271,8 @@ public interface I_RV_Prt_Bericht_Statistik_List_Per_Org
     public static final String COLUMNNAME_Created = "Created";
 
 	/**
-	 * Get Erstellt durch.
-	 * Nutzer, der diesen Eintrag erstellt hat
+	 * Get Created By.
+	 * User who created this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
@@ -291,8 +284,8 @@ public interface I_RV_Prt_Bericht_Statistik_List_Per_Org
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
-	 * Set Rechnungsdatum.
-	 * Datum auf der Rechnung
+	 * Set Date.
+	 * Date printed on Invoice
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: false
@@ -301,8 +294,8 @@ public interface I_RV_Prt_Bericht_Statistik_List_Per_Org
 	public void setDateInvoiced (java.sql.Timestamp DateInvoiced);
 
 	/**
-	 * Get Rechnungsdatum.
-	 * Datum auf der Rechnung
+	 * Get Date.
+	 * Date printed on Invoice
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: false
@@ -339,7 +332,7 @@ public interface I_RV_Prt_Bericht_Statistik_List_Per_Org
     public static final String COLUMNNAME_document = "document";
 
 	/**
-	 * Set Nr..
+	 * Set Document No.
 	 * Document sequence number of the document
 	 *
 	 * <br>Type: String
@@ -349,7 +342,7 @@ public interface I_RV_Prt_Bericht_Statistik_List_Per_Org
 	public void setDocumentNo (java.lang.String DocumentNo);
 
 	/**
-	 * Get Nr..
+	 * Get Document No.
 	 * Document sequence number of the document
 	 *
 	 * <br>Type: String
@@ -364,8 +357,8 @@ public interface I_RV_Prt_Bericht_Statistik_List_Per_Org
     public static final String COLUMNNAME_DocumentNo = "DocumentNo";
 
 	/**
-	 * Set Vorname.
-	 * Vorname
+	 * Set Firstname.
+	 * Firstname
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -374,8 +367,8 @@ public interface I_RV_Prt_Bericht_Statistik_List_Per_Org
 	public void setFirstname (java.lang.String Firstname);
 
 	/**
-	 * Get Vorname.
-	 * Vorname
+	 * Get Firstname.
+	 * Firstname
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -414,8 +407,8 @@ public interface I_RV_Prt_Bericht_Statistik_List_Per_Org
     public static final String COLUMNNAME_GrandTotal = "GrandTotal";
 
 	/**
-	 * Set Aktiv.
-	 * Der Eintrag ist im System aktiv
+	 * Set Active.
+	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
@@ -424,8 +417,8 @@ public interface I_RV_Prt_Bericht_Statistik_List_Per_Org
 	public void setIsActive (boolean IsActive);
 
 	/**
-	 * Get Aktiv.
-	 * Der Eintrag ist im System aktiv
+	 * Get Active.
+	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
@@ -439,7 +432,8 @@ public interface I_RV_Prt_Bericht_Statistik_List_Per_Org
     public static final String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Nachname.
+	 * Set Lastname.
+	 * Lastname
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -448,7 +442,8 @@ public interface I_RV_Prt_Bericht_Statistik_List_Per_Org
 	public void setLastname (java.lang.String Lastname);
 
 	/**
-	 * Get Nachname.
+	 * Get Lastname.
+	 * Lastname
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -485,8 +480,8 @@ public interface I_RV_Prt_Bericht_Statistik_List_Per_Org
     public static final String COLUMNNAME_printjob = "printjob";
 
 	/**
-	 * Get Aktualisiert.
-	 * Datum, an dem dieser Eintrag aktualisiert wurde
+	 * Get Updated.
+	 * Date this record was updated
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: false
@@ -500,8 +495,8 @@ public interface I_RV_Prt_Bericht_Statistik_List_Per_Org
     public static final String COLUMNNAME_Updated = "Updated";
 
 	/**
-	 * Get Aktualisiert durch.
-	 * Nutzer, der diesen Eintrag aktualisiert hat
+	 * Get Updated By.
+	 * User who updated this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false

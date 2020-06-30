@@ -370,4 +370,14 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 				.create()
 				.anyMatch();
 	}
+
+	@Override
+	public List<I_C_InvoiceLine> retrieveReferringLines(@NonNull final InvoiceLineId invoiceLineId)
+	{
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+		return queryBL.createQueryBuilder(I_C_InvoiceLine.class)
+				.addEqualsFilter(I_C_InvoiceLine.COLUMNNAME_Ref_InvoiceLine_ID, invoiceLineId)
+				.create()
+				.list();
+	}
 }

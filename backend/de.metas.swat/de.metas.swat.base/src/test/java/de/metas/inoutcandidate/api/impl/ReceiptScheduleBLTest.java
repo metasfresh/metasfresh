@@ -1,6 +1,6 @@
 package de.metas.inoutcandidate.api.impl;
 
-import static java.math.BigDecimal.ONE;
+import java.math.BigDecimal;
 
 /*
  * #%L
@@ -42,6 +42,7 @@ import de.metas.inoutcandidate.api.IInOutCandidateBL;
 import de.metas.inoutcandidate.api.InOutGenerateResult;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.product.ProductId;
+import de.metas.uom.CreateUOMConversionRequest;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
@@ -180,12 +181,12 @@ public class ReceiptScheduleBLTest extends ReceiptScheduleTestBase
 		final List<I_M_ReceiptSchedule> schedulesList = Arrays.asList(createReceiptSchedule(bpartner1, warehouse1, date, product1_wh1, 10));
 
 		final I_C_UOM uomRecord = BusinessTestHelper.createUOM("ReceiptScheduleUOM");
-		BusinessTestHelper.createUOMConversion(
-				ProductId.ofRepoId(product1_wh1.getM_Product_ID()),
-				UomId.ofRepoId(product1_wh1.getC_UOM_ID()),
-				UomId.ofRepoId(uomRecord.getC_UOM_ID()),
-				ONE,
-				ONE);
+		BusinessTestHelper.createUOMConversion(CreateUOMConversionRequest.builder()
+				.productId(ProductId.ofRepoId(product1_wh1.getM_Product_ID()))
+				.fromUomId(UomId.ofRepoId(product1_wh1.getC_UOM_ID()))
+				.toUomId(UomId.ofRepoId(uomRecord.getC_UOM_ID()))
+				.fromToMultiplier(BigDecimal.ONE)
+				.build());
 
 		schedulesList.get(0).setC_OrderLine_ID(111);
 		schedulesList.get(0).setC_UOM_ID(uomRecord.getC_UOM_ID());

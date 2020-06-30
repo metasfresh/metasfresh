@@ -13,6 +13,7 @@ import java.util.function.Predicate;
 import javax.annotation.Nullable;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeListValue;
 import org.adempiere.mm.attributes.AttributeSetId;
@@ -169,10 +170,10 @@ public class AttributeSetInstanceBL implements IAttributeSetInstanceBL
 	@Override
 	public void setAttributeInstanceValue(
 			@NonNull final AttributeSetInstanceId asiId,
-			@NonNull final String attributeValue,
+			@NonNull final AttributeCode attributeCode,
 			@Nullable final Object value)
 	{
-		final I_M_Attribute attributeRecord = attributeDAO.retrieveAttributeByValue(attributeValue);
+		final I_M_Attribute attributeRecord = attributeDAO.retrieveAttributeByValue(attributeCode);
 		final I_M_AttributeInstance attributeInstance = getCreateAttributeInstance(asiId, AttributeId.ofRepoId(attributeRecord.getM_Attribute_ID()));
 
 		setAttributeInstanceValue(attributeRecord, attributeInstance, value);
@@ -353,7 +354,7 @@ public class AttributeSetInstanceBL implements IAttributeSetInstanceBL
 	}
 
 	@Override
-	public void updateASIAttributeFromModel(@NonNull final String attributeCode, @NonNull final Object fromModel)
+	public void updateASIAttributeFromModel(@NonNull final AttributeCode attributeCode, @NonNull final Object fromModel)
 	{
 		UpdateASIAttributeFromModelCommand.builder()
 				.attributeSetInstanceBL(this)
@@ -397,7 +398,10 @@ public class AttributeSetInstanceBL implements IAttributeSetInstanceBL
 
 		for (final I_M_Attribute attributeRecord : attributeSet.getAttributes())
 		{
-			setAttributeInstanceValue(asiId, attributeRecord.getValue(), attributeSet.getValue(attributeRecord));
+			setAttributeInstanceValue(
+					asiId, 
+					AttributeCode.ofString(attributeRecord.getValue()),
+					attributeSet.getValue(attributeRecord));
 		}
 		asiAware.setM_AttributeSetInstance_ID(asiId.getRepoId());
 	}

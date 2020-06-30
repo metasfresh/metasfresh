@@ -31,6 +31,7 @@ import java.util.Properties;
 import org.compiere.model.I_C_UOM;
 
 import de.metas.util.ISingletonService;
+import lombok.NonNull;
 
 public interface IUOMDAO extends ISingletonService
 {
@@ -79,4 +80,7 @@ public interface IUOMDAO extends ISingletonService
 	 * we need to look at the respective PIIP or {@code QtyItemCapacity} and not at any UOM-conversion-rate.
 	 */
 	boolean isUOMForTUs(UomId uomId);
+
+	@NonNull
+	UOMType getUOMTypeById(UomId uomId);
 }

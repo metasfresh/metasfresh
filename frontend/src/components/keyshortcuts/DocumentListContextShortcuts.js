@@ -1,103 +1,127 @@
-import React, { Component } from 'react';
+import React, { Fragment, PureComponent } from 'react';
 import PropTypes from 'prop-types';
 import { Shortcut } from '../keyshortcuts';
-import { arePropTypesIdentical } from '../../utils';
 
-export default class DocumentListContextShortcuts extends Component {
+export default class DocumentListContextShortcuts extends PureComponent {
   handlers = {
     OPEN_SELECTED: (event) => {
+      const { onOpenNewTab } = this.props;
+
       event.preventDefault();
 
-      if (this.props.handleOpenNewTab) {
-        this.props.handleOpenNewTab();
+      if (onOpenNewTab) {
+        this.handleOpenNewTab();
       }
     },
     REMOVE_SELECTED: (event) => {
+      const { onDelete } = this.props;
+
       event.preventDefault();
 
-      if (this.props.handleDelete) {
-        this.props.handleDelete();
+      if (onDelete) {
+        onDelete();
       }
     },
     ADVANCED_EDIT: (event) => {
+      const { onAdvancedEdit } = this.props;
+
       event.preventDefault();
 
-      if (this.props.handleAdvancedEdit) {
-        this.props.handleAdvancedEdit();
+      if (onAdvancedEdit) {
+        onAdvancedEdit();
 
         return true;
       }
 
       return false;
     },
-    SELECT_ALL_LEAFS: (event) => {
+    SELECT_ALL_LEAVES: (event) => {
+      const { onGetAllLeaves } = this.props;
+
       event.preventDefault();
 
-      if (this.props.getAllLeafs) {
-        this.props.getAllLeafs();
+      if (onGetAllLeaves) {
+        onGetAllLeaves();
       }
     },
     EXPAND_INDENT: (event) => {
+      const { onIndent } = this.props;
+
       event.preventDefault();
 
-      if (this.props.handleIndent) {
-        this.props.handleIndent(true);
+      if (onIndent) {
+        onIndent(true);
       }
     },
     COLLAPSE_INDENT: (event) => {
-      if (this.props.commentsOpened) return false;
+      const { onIndent, commentsOpened } = this.props;
+
+      if (commentsOpened) return false;
       event.preventDefault();
 
-      if (this.props.handleIndent) {
-        this.props.handleIndent(false);
+      if (onIndent) {
+        onIndent(false);
       }
     },
   };
 
-  shouldComponentUpdate = (nextProps) =>
-    !arePropTypesIdentical(nextProps, this.props);
+  handleOpenNewTab = () => {
+    const { selected, windowId, onOpenNewTab } = this.props;
+    onOpenNewTab(selected, windowId);
+  };
+
+  handleAdvancedEdit = () => {
+    const { windowId, tabId, selected, onAdvancedEdit } = this.props;
+
+    onAdvancedEdit(windowId, tabId, selected);
+  };
 
   render() {
-    return [
-      <Shortcut
-        key="OPEN_SELECTED"
-        name="OPEN_SELECTED"
-        handler={this.handlers.OPEN_SELECTED}
-      />,
-      <Shortcut
-        key="REMOVE_SELECTED"
-        name="REMOVE_SELECTED"
-        handler={this.handlers.REMOVE_SELECTED}
-      />,
-      <Shortcut
-        key="ADVANCED_EDIT"
-        name="ADVANCED_EDIT"
-        handler={this.handlers.ADVANCED_EDIT}
-      />,
-      <Shortcut
-        key="SELECT_ALL_LEAFS"
-        name="SELECT_ALL_LEAFS"
-        handler={this.handlers.SELECT_ALL_LEAFS}
-      />,
-      <Shortcut
-        key="EXPAND_INDENT"
-        name="EXPAND_INDENT"
-        handler={this.handlers.EXPAND_INDENT}
-      />,
-      <Shortcut
-        key="COLLAPSE_INDENT"
-        name="COLLAPSE_INDENT"
-        handler={this.handlers.COLLAPSE_INDENT}
-      />,
-    ];
+    return (
+      <Fragment>
+        <Shortcut
+          key="OPEN_SELECTED"
+          name="OPEN_SELECTED"
+          handler={this.handlers.OPEN_SELECTED}
+        />
+        <Shortcut
+          key="REMOVE_SELECTED"
+          name="REMOVE_SELECTED"
+          handler={this.handlers.REMOVE_SELECTED}
+        />
+        <Shortcut
+          key="ADVANCED_EDIT"
+          name="ADVANCED_EDIT"
+          handler={this.handlers.ADVANCED_EDIT}
+        />
+        <Shortcut
+          key="SELECT_ALL_LEAVES"
+          name="SELECT_ALL_LEAVES"
+          handler={this.handlers.SELECT_ALL_LEAVES}
+        />
+        <Shortcut
+          key="EXPAND_INDENT"
+          name="EXPAND_INDENT"
+          handler={this.handlers.EXPAND_INDENT}
+        />
+        <Shortcut
+          key="COLLAPSE_INDENT"
+          name="COLLAPSE_INDENT"
+          handler={this.handlers.COLLAPSE_INDENT}
+        />
+      </Fragment>
+    );
   }
 }
 
 DocumentListContextShortcuts.propTypes = {
-  handleOpenNewTab: PropTypes.func,
-  handleDelete: PropTypes.func,
-  handleAdvancedEdit: PropTypes.func,
-  getAllLeafs: PropTypes.any,
-  handleIndent: PropTypes.func,
+  onOpenNewTab: PropTypes.func,
+  onDelete: PropTypes.func,
+  onAdvancedEdit: PropTypes.func,
+  onGetAllLeaves: PropTypes.any,
+  onIndent: PropTypes.func,
   commentsOpened: PropTypes.bool,
+  windowId: PropTypes.string,
+  tabId: PropTypes.string,
+  selected: PropTypes.array,
 };

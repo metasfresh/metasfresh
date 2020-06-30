@@ -1,15 +1,10 @@
 package de.metas;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.function.Predicate;
-import java.util.stream.Stream;
-
-import javax.annotation.Nullable;
-
+import com.google.common.base.Stopwatch;
+import de.metas.util.ISingletonService;
+import de.metas.util.Services;
+import lombok.NonNull;
+import lombok.Value;
 import org.adempiere.test.AdempiereTestHelper;
 import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.BeforeEach;
@@ -23,12 +18,14 @@ import org.reflections.scanners.SubTypesScanner;
 import org.reflections.util.ClasspathHelper;
 import org.reflections.util.ConfigurationBuilder;
 
-import com.google.common.base.Stopwatch;
+import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.function.Predicate;
+import java.util.stream.Stream;
 
-import de.metas.util.ISingletonService;
-import de.metas.util.Services;
-import lombok.NonNull;
-import lombok.Value;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -70,7 +67,6 @@ public class AllAvailableSingletonServicesTest
 			.skipServiceInterface(org.eevolution.mrp.api.ILiberoMRPContextFactory.class, "spring component")
 			.skipServiceInterface(de.metas.material.planning.IMRPContextFactory.class, "spring component")
 			.skipServiceInterface(de.metas.document.sequence.IDocumentNoBuilderFactory.class, "spring component")
-			.skipServiceInterface(de.metas.payment.esr.api.IESRImportBL.class, "spring component")
 			.skipServiceInterface(de.metas.notification.INotificationRepository.class, "spring component")
 			.skipServiceInterface(de.metas.inoutcandidate.api.IShipmentScheduleUpdater.class, "spring component")
 			.skipServiceInterface(de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateBL.class, "spring component")
@@ -80,6 +76,8 @@ public class AllAvailableSingletonServicesTest
 			.skipServiceInterface(de.metas.handlingunits.attributes.sscc18.ISSCC18CodeBL.class, "spring component")
 			.skipServiceInterface(de.metas.banking.payment.IBankStatementPaymentBL.class, "spring component")
 			.skipServiceInterface(de.metas.payment.esr.api.IESRBPBankAccountBL.class, "spring component")
+			.skipServiceInterface(de.metas.payment.esr.api.IESRImportBL.class, "spring component")
+			.skipServiceInterface(de.metas.printing.api.IPrintPackageBL.class,"spring component")
 			.skipServiceInterface(de.metas.banking.service.IBankStatementBL.class, "spring component")
 	//
 	;
@@ -133,7 +131,7 @@ public class AllAvailableSingletonServicesTest
 				@Nullable final String reason)
 		{
 			skipRules.add(SkipRule.of(
-					classname -> serviceInterfaceClassnameToSkip.equals(classname),
+					serviceInterfaceClassnameToSkip::equals,
 					reason));
 			return this;
 		}
@@ -160,14 +158,14 @@ public class AllAvailableSingletonServicesTest
 	public static class SingletonServiceInterfacesArgumentsProvider implements ArgumentsProvider
 	{
 		@Override
-		public Stream<? extends Arguments> provideArguments(ExtensionContext context)
+		public Stream<? extends Arguments> provideArguments(final ExtensionContext context)
 		{
 			return provideClasses().map(Arguments::of);
 		}
 
 		public Stream<Class<? extends ISingletonService>> provideClasses()
 		{
-			Stopwatch stopwatch = Stopwatch.createStarted();
+			final Stopwatch stopwatch = Stopwatch.createStarted();
 			final Reflections reflections = new Reflections(new ConfigurationBuilder()
 					.addUrls(ClasspathHelper.forClassLoader())
 					.setScanners(new SubTypesScanner()));
@@ -179,5 +177,4 @@ public class AllAvailableSingletonServicesTest
 					.sorted(Comparator.comparing(Class::getName));
 		}
 	}
-
 }

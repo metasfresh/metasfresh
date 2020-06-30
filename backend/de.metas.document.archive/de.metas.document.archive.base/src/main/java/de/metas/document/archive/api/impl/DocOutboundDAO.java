@@ -35,6 +35,8 @@ import org.adempiere.ad.dao.IQueryOrderBy;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
+import org.adempiere.archive.ArchiveId;
+import org.adempiere.archive.api.IArchiveDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IContextAware;
@@ -56,6 +58,9 @@ import lombok.NonNull;
 
 public class DocOutboundDAO implements IDocOutboundDAO
 {
+
+	private final IArchiveDAO archiveDAO = Services.get(IArchiveDAO.class);
+
 	// note that this method doesn't directly access the DB. Therefore, a unit test DAO implementation can extend this
 	// class without problems.
 	@Override
@@ -183,20 +188,10 @@ public class DocOutboundDAO implements IDocOutboundDAO
 	}
 
 	@Override
-	public final List<I_C_Doc_Outbound_Log> retrieveSelectedDocOutboundLogs(final Properties ctx, final PInstanceId pinstanceId, final String trxName)
+	public final I_C_Doc_Outbound_Log retrieveLog(@NonNull final ArchiveId archiveId)
 	{
-		final IQueryBuilder<I_C_Doc_Outbound_Log> queryBuilder = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_C_Doc_Outbound_Log.class, ctx, trxName)
-				.setOnlySelection(pinstanceId);
-		final List<I_C_Doc_Outbound_Log> logs = queryBuilder.create()
-				.list(I_C_Doc_Outbound_Log.class);
-		return logs;
-	}
-
-	@Override
-	public final I_C_Doc_Outbound_Log retrieveLog(@NonNull final I_AD_Archive archive)
-	{
-		final TableRecordReference tableRecordReference = TableRecordReference.ofReferenced(archive);
+		final I_AD_Archive archiveRecord = archiveDAO.retrieveArchive(archiveId);
+		final TableRecordReference tableRecordReference = TableRecordReference.ofReferenced(archiveRecord);
 		return retrieveLog(tableRecordReference);
 	}
 

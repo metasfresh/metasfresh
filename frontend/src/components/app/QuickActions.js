@@ -6,6 +6,7 @@ import Queue from 'simple-promise-queue';
 import cx from 'classnames';
 import _ from 'lodash';
 import { quickActionsRequest } from '../../api';
+import { getQuickactions } from '../../reducers/windowHandler';
 import {
   openModal,
   fetchedQuickActions,
@@ -166,6 +167,19 @@ export class QuickActions extends Component {
   };
 
   /**
+   * @method onClick
+   * @summary Wrapper around the local `handleClick` to be in sync with how it's
+   * called via `QuickActionsDropdown`.
+   */
+  onClick = (e) => {
+    e.preventDefault;
+
+    const { actions } = this.props;
+
+    this.handleClick(actions[0]);
+  };
+
+  /**
    * @method handleClick
    * @summary ToDo: Describe the method
    * @param {*} action
@@ -269,7 +283,7 @@ export class QuickActions extends Component {
               {
                 loading: false,
               },
-              () => resolve()
+              resolve
             );
           }
         })
@@ -282,7 +296,7 @@ export class QuickActions extends Component {
               {
                 loading: false,
               },
-              () => reject()
+              reject
             );
           }
         });
@@ -292,7 +306,7 @@ export class QuickActions extends Component {
           {
             loading: false,
           },
-          () => resolve()
+          resolve
         );
       }
     }
@@ -300,26 +314,59 @@ export class QuickActions extends Component {
 
   /**
    * @method toggleDropdown
-   * @summary ToDo: Describe the method
-   * @param {*} option
-   * @todo Write the documentation
+   * @summary Toggles the dropdown element
    */
-  toggleDropdown = (option) => {
+  toggleDropdown = () => {
     this.setState({
-      isDropdownOpen: option,
+      isDropdownOpen: !this.state.isDropdownOpen,
     });
   };
 
   /**
-   * @method toggleTooltip
-   * @summary ToDo: Describe the method
-   * @param {*} type
-   * @param {*} visible
-   * @todo Write the documentation
+   * @method showListTooltip
+   * @summary Forces hide of the dropdown element
    */
-  toggleTooltip = (type, visible) => {
+  hideDropdown = () => {
+    this.setState({ isDropdownOpen: false });
+  };
+
+  /**
+   * @method showListTooltip
+   * @summary Shows list tooltip
+   */
+  showListTooltip = () => {
     this.setState({
-      [type]: visible,
+      listTooltip: true,
+    });
+  };
+
+  /**
+   * @method hideListTooltip
+   * @summary hides list tooltip
+   */
+  hideListTooltip = () => {
+    this.setState({
+      listTooltip: false,
+    });
+  };
+
+  /**
+   * @method showBtnTooltip
+   * @summary Shows button tooltip
+   */
+  showBtnTooltip = () => {
+    this.setState({
+      btnTooltip: true,
+    });
+  };
+
+  /**
+   * @method hideBtnTooltip
+   * @summary Hides button tooltip
+   */
+  hideBtnTooltip = () => {
+    this.setState({
+      btnTooltip: false,
     });
   };
 
@@ -358,13 +405,9 @@ export class QuickActions extends Component {
                   ? 'tag-default '
                   : 'pointer ')
               }
-              onMouseEnter={() => this.toggleTooltip('listTooltip', true)}
-              onMouseLeave={() => this.toggleTooltip('listTooltip', false)}
-              onClick={(e) => {
-                e.preventDefault();
-
-                this.handleClick(actions[0]);
-              }}
+              onMouseEnter={this.showListTooltip}
+              onMouseLeave={this.hideListTooltip}
+              onClick={this.onClick}
             >
               {listTooltip && (
                 <Tooltips
@@ -376,18 +419,16 @@ export class QuickActions extends Component {
               {actions[0].caption}
             </div>
             <div
-              className={
-                'btn-meta-outline-secondary btn-icon-sm ' +
-                'btn-inline btn-icon pointer tooltip-parent ' +
-                (isDropdownOpen || disabledDuringProcessing
-                  ? 'btn-disabled '
-                  : '')
-              }
-              onMouseEnter={() => this.toggleTooltip('btnTooltip', true)}
-              onMouseLeave={() => this.toggleTooltip('btnTooltip', false)}
-              onClick={() => {
-                this.toggleDropdown(!isDropdownOpen);
-              }}
+              className={cx(
+                'btn-meta-outline-secondary btn-icon-sm',
+                'btn-inline btn-icon pointer tooltip-parent',
+                {
+                  'btn-disabled': isDropdownOpen || disabledDuringProcessing,
+                }
+              )}
+              onMouseEnter={this.showBtnTooltip}
+              onMouseLeave={this.hideBtnTooltip}
+              onClick={this.toggleDropdown}
             >
               <i className="meta-icon-down-1" />
               {btnTooltip && (
@@ -402,17 +443,15 @@ export class QuickActions extends Component {
               <QuickActionsDropdown
                 actions={actions}
                 handleClick={this.handleClick}
-                handleClickOutside={() => this.toggleDropdown(false)}
+                handleClickOutside={this.hideDropdown}
                 disableOnClickOutside={!isDropdownOpen}
               />
             )}
           </div>
           <QuickActionsContextShortcuts
-            handleClick={() =>
-              shouldNotUpdate ? null : this.handleClick(actions[0])
-            }
+            handleClick={shouldNotUpdate ? null : this.handleClick}
             stopPropagation={this.props.stopShortcutPropagation}
-            onClick={() => this.toggleDropdown(!isDropdownOpen)}
+            onClick={this.toggleDropdown}
           />
         </div>
       );
@@ -464,14 +503,9 @@ QuickActions.propTypes = {
   onInvalidViewId: PropTypes.func,
 };
 
-const mapStateToProps = (state, ownProps) => {
-  const { viewId, windowType } = ownProps;
-  const key = `${windowType}${viewId ? `-${viewId}` : ''}`;
-
-  return {
-    actions: state.windowHandler.quickActions[key] || [],
-  };
-};
+const mapStateToProps = (state, { viewId, windowType }) => ({
+  actions: getQuickactions(state, { viewId, windowType }),
+});
 
 export default connect(
   mapStateToProps,

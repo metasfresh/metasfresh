@@ -22,11 +22,24 @@ package de.metas.printing.api.impl;
  * #L%
  */
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Properties;
-
+import de.metas.lock.api.ILockManager;
+import de.metas.printing.api.IPrintClientsBL;
+import de.metas.printing.api.IPrintingQueueQuery;
+import de.metas.printing.model.I_AD_Printer;
+import de.metas.printing.model.I_AD_PrinterHW;
+import de.metas.printing.model.I_AD_PrinterHW_Calibration;
+import de.metas.printing.model.I_AD_PrinterHW_MediaSize;
+import de.metas.printing.model.I_AD_PrinterHW_MediaTray;
+import de.metas.printing.model.I_AD_PrinterTray_Matching;
+import de.metas.printing.model.I_AD_Printer_Matching;
+import de.metas.printing.model.I_C_Print_Job;
+import de.metas.printing.model.I_C_Print_Job_Instructions;
+import de.metas.printing.model.I_C_Print_Job_Line;
+import de.metas.printing.model.I_C_Printing_Queue;
+import de.metas.printing.model.X_C_Print_Job_Instructions;
+import de.metas.security.permissions.Access;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import org.adempiere.ad.dao.ISqlQueryFilter;
 import org.adempiere.ad.dao.impl.TypedSqlQuery;
 import org.adempiere.ad.trx.api.ITrx;
@@ -36,32 +49,18 @@ import org.compiere.model.IQuery.Aggregate;
 import org.compiere.model.I_AD_Archive;
 import org.compiere.model.POInfo;
 import org.compiere.model.Query;
-import org.compiere.util.DB;
 import org.compiere.util.Env;
-import org.compiere.util.Util;
 
-import de.metas.lock.api.ILockManager;
-import de.metas.printing.api.IPrintPackageBL;
-import de.metas.printing.api.IPrintingQueueQuery;
-import de.metas.printing.model.I_AD_Printer;
-import de.metas.printing.model.I_AD_PrinterHW;
-import de.metas.printing.model.I_AD_PrinterHW_Calibration;
-import de.metas.printing.model.I_AD_PrinterHW_MediaSize;
-import de.metas.printing.model.I_AD_PrinterHW_MediaTray;
-import de.metas.printing.model.I_AD_PrinterTray_Matching;
-import de.metas.printing.model.I_AD_Printer_Matching;
-import de.metas.printing.model.I_AD_Printer_Tray;
-import de.metas.printing.model.I_C_Print_Job;
-import de.metas.printing.model.I_C_Print_Job_Instructions;
-import de.metas.printing.model.I_C_Print_Job_Line;
-import de.metas.printing.model.I_C_Printing_Queue;
-import de.metas.printing.model.X_C_Print_Job_Instructions;
-import de.metas.security.permissions.Access;
-import de.metas.util.Check;
-import de.metas.util.Services;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Properties;
 
 public class PrintingDAO extends AbstractPrintingDAO
 {
+
+	private final IPrintClientsBL printClientsBL = Services.get(IPrintClientsBL.class);
+
 	// NOTE: before changing the SeqNo ORDER BY clause, please check were it is used
 	@Override
 	protected Iterator<I_C_Print_Job_Line> retrievePrintJobLines0(final I_C_Print_Job job, final int fromSeqNo, final int toSeqNo)
@@ -128,21 +127,6 @@ public class PrintingDAO extends AbstractPrintingDAO
 	}
 
 	@Override
-	public I_AD_PrinterTray_Matching retrievePrinterTrayMatchingOrNull(final I_AD_Printer_Matching matching, final int AD_Printer_Tray_ID)
-	{
-		final Properties ctx = InterfaceWrapperHelper.getCtx(matching);
-		final String trxName = InterfaceWrapperHelper.getTrxName(matching);
-
-		final String whereClause = I_AD_PrinterTray_Matching.COLUMNNAME_AD_Printer_Matching_ID + " = ?"
-				+ " AND " + I_AD_PrinterTray_Matching.COLUMNNAME_AD_Printer_Tray_ID + " = ?";
-
-		return new Query(ctx, I_AD_PrinterTray_Matching.Table_Name, whereClause, trxName)
-				.setOnlyActiveRecords(true)
-				.setParameters(matching.getAD_Printer_Matching_ID(), AD_Printer_Tray_ID)
-				.firstOnly(I_AD_PrinterTray_Matching.class);
-	}
-
-	@Override
 	public List<I_AD_PrinterTray_Matching> retrievePrinterTrayMatchings(final I_AD_Printer_Matching matching)
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(matching);
@@ -171,7 +155,7 @@ public class PrintingDAO extends AbstractPrintingDAO
 
 		//
 		// Only for current HostKey, if one is specified
-		final String hostKey = Services.get(IPrintPackageBL.class).getHostKeyOrNull(ctx);
+		final String hostKey = printClientsBL.getHostKeyOrNull(ctx);
 		if (!Check.isEmpty(hostKey, true))
 		{
 			whereClause.append(" AND (").append(I_C_Print_Job_Instructions.COLUMNNAME_HostKey).append("=?")
@@ -391,23 +375,6 @@ public class PrintingDAO extends AbstractPrintingDAO
 	}
 
 	@Override
-	public List<I_AD_PrinterHW_MediaTray> retrieveMediaTrays(final I_AD_PrinterHW printerHW)
-	{
-		final Properties ctx = InterfaceWrapperHelper.getCtx(printerHW);
-		final String trxName = InterfaceWrapperHelper.getTrxName(printerHW);
-
-		final String whereClause = I_AD_PrinterHW_MediaTray.COLUMNNAME_AD_PrinterHW_ID + " =?";
-
-		final List<I_AD_PrinterHW_MediaTray> result = new Query(ctx, I_AD_PrinterHW_MediaTray.Table_Name, whereClause, trxName)
-				.setOnlyActiveRecords(true)
-				.setParameters(printerHW.getAD_PrinterHW_ID())
-				.list(I_AD_PrinterHW_MediaTray.class);
-
-		return result;
-	}
-
-
-	@Override
 	public List<I_AD_Printer> retrievePrinters(final Properties ctx, final int adOrgId)
 	{
 		final int adClientId = Env.getAD_Client_ID(ctx);
@@ -422,19 +389,5 @@ public class PrintingDAO extends AbstractPrintingDAO
 								+ ", " + I_AD_Printer.COLUMNNAME_AD_Org_ID + " DESC"
 								+ ", " + I_AD_Printer.COLUMNNAME_PrinterName)
 				.list(I_AD_Printer.class);
-	}
-
-	@Override
-	public List<I_AD_Printer_Tray> retrieveTrays(final I_AD_Printer printer)
-	{
-		final Properties ctx = InterfaceWrapperHelper.getCtx(printer);
-		final String trxName = InterfaceWrapperHelper.getTrxName(printer);
-
-		final String whereClause = I_AD_Printer_Tray.COLUMNNAME_AD_Printer_ID + "=?";
-		return new Query(ctx, I_AD_Printer_Tray.Table_Name, whereClause, trxName)
-				.setParameters(printer.getAD_Printer_ID())
-				.setOnlyActiveRecords(true)
-				.setClient_ID()
-				.list(I_AD_Printer_Tray.class);
 	}
 }

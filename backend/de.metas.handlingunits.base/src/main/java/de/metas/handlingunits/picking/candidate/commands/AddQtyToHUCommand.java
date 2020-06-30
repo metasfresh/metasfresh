@@ -1,10 +1,6 @@
 package de.metas.handlingunits.picking.candidate.commands;
 
-import java.util.List;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.slf4j.Logger;
-
+import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IHUStatusBL;
@@ -18,7 +14,6 @@ import de.metas.handlingunits.allocation.impl.HULoader;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.picking.IHUPickingSlotBL;
-import de.metas.handlingunits.picking.IHUPickingSlotBL.PickingHUsQuery;
 import de.metas.handlingunits.picking.PickFrom;
 import de.metas.handlingunits.picking.PickingCandidate;
 import de.metas.handlingunits.picking.PickingCandidateRepository;
@@ -35,9 +30,14 @@ import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UOMConversionContext;
+import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.slf4j.Logger;
+
+import java.util.List;
 
 /*
  * #%L
@@ -75,6 +75,7 @@ public class AddQtyToHUCommand
 
 	private final PickingCandidateRepository pickingCandidateRepository;
 
+	private final ImmutableList<HuId> sourceHUIds;
 	private final Quantity qtyToPack;
 	private final HuId packToHuId;
 	private final PickingSlotId pickingSlotId;
@@ -90,6 +91,7 @@ public class AddQtyToHUCommand
 			@NonNull final PickingCandidateRepository pickingCandidateRepository,
 			@NonNull final AddQtyToHURequest request)
 	{
+		this.sourceHUIds = request.getSourceHUIds();
 		final IShipmentSchedulePA shipmentSchedulesRepo = Services.get(IShipmentSchedulePA.class);
 		final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
 
@@ -110,6 +112,7 @@ public class AddQtyToHUCommand
 	/**
 	 * @return the quantity that was effectively added. We can only add the quantity that's still left in our source HUs.
 	 */
+	@NonNull
 	public Quantity performAndGetQtyPicked()
 	{
 		if (!allowOverDelivery)
@@ -142,6 +145,7 @@ public class AddQtyToHUCommand
 
 		// Update the candidate
 		final Quantity qtyPicked = Quantity.of(loadResult.getQtyAllocated(), request.getC_UOM());
+
 		addQtyToCandidate(candidate, productId, qtyPicked);
 
 		return qtyPicked;
@@ -171,18 +175,11 @@ public class AddQtyToHUCommand
 	/**
 	 * Source - take the preselected sourceHUs
 	 *
-	 * @param shipmentSchedule
 	 * @return
 	 */
 	private HUListAllocationSourceDestination createFromSourceHUsAllocationSource()
 	{
-		final PickingHUsQuery query = PickingHUsQuery.builder()
-				.onlyIfAttributesMatchWithShipmentSchedules(true)
-				.shipmentSchedule(shipmentSchedule)
-				.onlyTopLevelHUs(true)
-				.build();
-
-		final List<I_M_HU> sourceHUs = huPickingSlotBL.retrieveAvailableSourceHUs(query);
+		final List<I_M_HU> sourceHUs = handlingUnitsDAO.getByIds(sourceHUIds);
 		final HUListAllocationSourceDestination source = HUListAllocationSourceDestination.of(sourceHUs);
 		source.setDestroyEmptyHUs(false); // don't automatically destroy them. we will do that ourselves if the sourceHUs are empty at the time we process our picking candidates
 
@@ -217,7 +214,7 @@ public class AddQtyToHUCommand
 		{
 			final UOMConversionContext conversionCtx = UOMConversionContext.of(productId);
 			final Quantity qty = candidate.getQtyPicked();
-			final Quantity qtyToAddConv = uomConversionBL.convertQuantityTo(qty, conversionCtx, qty.getUOM());
+			final Quantity qtyToAddConv = uomConversionBL.convertQuantityTo(qtyToAdd, conversionCtx, UomId.ofRepoId(qty.getUOM().getC_UOM_ID()));
 			qtyNew = qty.add(qtyToAddConv);
 		}
 
@@ -238,6 +235,7 @@ public class AddQtyToHUCommand
 		if (qtyToPack.compareTo(qtyToDeliver) > 0)
 		{
 			throw new AdempiereException("@" + PickingConfigRepository.MSG_WEBUI_Picking_OverdeliveryNotAllowed + "@")
+					.appendParametersToMessage()
 					.setParameter("qtyToDeliverTarget", qtyToDeliverTarget)
 					.setParameter("qtyPickedPlanned", qtyPickedPlanned)
 					.setParameter("qtyToPack", qtyToPack);

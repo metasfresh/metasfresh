@@ -5,7 +5,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.test.AdempiereTestHelper;
@@ -82,14 +81,12 @@ public class QtyCalculationsBOMLineTest
 	private void createUOMConversion(final I_C_UOM from, String multipliedBy, I_C_UOM to)
 	{
 		final BigDecimal multiplyRate = new BigDecimal(multipliedBy);
-		final BigDecimal divideRate = BigDecimal.ONE.divide(multiplyRate, 12, RoundingMode.HALF_UP);
 
 		final IUOMConversionDAO uomConversionsRepo = Services.get(IUOMConversionDAO.class);
 		uomConversionsRepo.createUOMConversion(CreateUOMConversionRequest.builder()
 				.fromUomId(UomId.ofRepoId(from.getC_UOM_ID()))
 				.toUomId(UomId.ofRepoId(to.getC_UOM_ID()))
 				.fromToMultiplier(multiplyRate)
-				.toFromMultiplier(divideRate)
 				.build());
 	}
 

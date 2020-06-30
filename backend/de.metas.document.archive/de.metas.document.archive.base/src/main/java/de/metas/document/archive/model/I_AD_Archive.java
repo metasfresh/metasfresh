@@ -27,9 +27,9 @@ public interface I_AD_Archive extends org.compiere.model.I_AD_Archive
 {
 	//@formatter:off
 	// task 09417
-	public static final String COLUMNNAME_C_Doc_Outbound_Config_ID = "C_Doc_Outbound_Config_ID";
-	public void setC_Doc_Outbound_Config(I_C_Doc_Outbound_Config config);
-	public I_C_Doc_Outbound_Config getC_Doc_Outbound_Config();
-	public int getC_Doc_Outbound_Config_ID();
+	String COLUMNNAME_C_Doc_Outbound_Config_ID = "C_Doc_Outbound_Config_ID";
+	void setC_Doc_Outbound_Config(I_C_Doc_Outbound_Config config);
+	I_C_Doc_Outbound_Config getC_Doc_Outbound_Config();
+	int getC_Doc_Outbound_Config_ID();
 	//@formatter:on
 }

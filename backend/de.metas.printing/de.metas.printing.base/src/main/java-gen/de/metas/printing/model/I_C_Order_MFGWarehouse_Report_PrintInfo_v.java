@@ -2,7 +2,7 @@ package de.metas.printing.model;
 
 
 /** Generated Interface for C_Order_MFGWarehouse_Report_PrintInfo_v
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
 @SuppressWarnings("javadoc")
 public interface I_C_Order_MFGWarehouse_Report_PrintInfo_v 
@@ -14,13 +14,6 @@ public interface I_C_Order_MFGWarehouse_Report_PrintInfo_v
     /** AD_Table_ID=541001 */
 //    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
-//    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
-
-    /** AccessLevel = 3 - Client - Org
-     */
-//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(3);
-
-    /** Load Meta Data */
 
 	/**
 	 * Set Archiv.
@@ -52,8 +45,8 @@ public interface I_C_Order_MFGWarehouse_Report_PrintInfo_v
     public static final String COLUMNNAME_AD_Archive_ID = "AD_Archive_ID";
 
 	/**
-	 * Get Mandant.
-	 * Mandant für diese Installation.
+	 * Get Client.
+	 * Client/Tenant for this installation.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -65,8 +58,8 @@ public interface I_C_Order_MFGWarehouse_Report_PrintInfo_v
     public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
-	 * Set Sektion.
-	 * Organisatorische Einheit des Mandanten
+	 * Set Organisation.
+	 * Organisational entity within client
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -75,8 +68,8 @@ public interface I_C_Order_MFGWarehouse_Report_PrintInfo_v
 	public void setAD_Org_ID (int AD_Org_ID);
 
 	/**
-	 * Get Sektion.
-	 * Organisatorische Einheit des Mandanten
+	 * Get Organisation.
+	 * Organisational entity within client
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -142,7 +135,7 @@ public interface I_C_Order_MFGWarehouse_Report_PrintInfo_v
     public static final String COLUMNNAME_AD_PrinterHW_MediaTray_ID = "AD_PrinterHW_MediaTray_ID";
 
 	/**
-	 * Set Session Printpackage ID.
+	 * Set ad_session_printpackage_id.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -151,7 +144,7 @@ public interface I_C_Order_MFGWarehouse_Report_PrintInfo_v
 	public void setAD_Session_Printpackage_ID (int AD_Session_Printpackage_ID);
 
 	/**
-	 * Get Session Printpackage ID.
+	 * Get ad_session_printpackage_id.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -190,8 +183,8 @@ public interface I_C_Order_MFGWarehouse_Report_PrintInfo_v
     public static final String COLUMNNAME_AD_User_Responsible_ID = "AD_User_Responsible_ID";
 
 	/**
-	 * Set Auftrag.
-	 * Auftrag
+	 * Set Sales order.
+	 * Order
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -200,8 +193,8 @@ public interface I_C_Order_MFGWarehouse_Report_PrintInfo_v
 	public void setC_Order_ID (int C_Order_ID);
 
 	/**
-	 * Get Auftrag.
-	 * Auftrag
+	 * Get Sales order.
+	 * Order
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -398,8 +391,8 @@ public interface I_C_Order_MFGWarehouse_Report_PrintInfo_v
     public static final String COLUMNNAME_C_Queue_WorkPackage_ID = "C_Queue_WorkPackage_ID";
 
 	/**
-	 * Get Erstellt.
-	 * Datum, an dem dieser Eintrag erstellt wurde
+	 * Get Created.
+	 * Date this record was created
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: false
@@ -413,8 +406,8 @@ public interface I_C_Order_MFGWarehouse_Report_PrintInfo_v
     public static final String COLUMNNAME_Created = "Created";
 
 	/**
-	 * Get Erstellt durch.
-	 * Nutzer, der diesen Eintrag erstellt hat
+	 * Get Created By.
+	 * User who created this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
@@ -426,8 +419,8 @@ public interface I_C_Order_MFGWarehouse_Report_PrintInfo_v
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
-	 * Set Lager.
-	 * Lager oder Ort für Dienstleistung
+	 * Set Warehouse.
+	 * Storage Warehouse and Service Point
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -436,8 +429,8 @@ public interface I_C_Order_MFGWarehouse_Report_PrintInfo_v
 	public void setM_Warehouse_ID (int M_Warehouse_ID);
 
 	/**
-	 * Get Lager.
-	 * Lager oder Ort für Dienstleistung
+	 * Get Warehouse.
+	 * Storage Warehouse and Service Point
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -472,7 +465,7 @@ public interface I_C_Order_MFGWarehouse_Report_PrintInfo_v
     public static final String COLUMNNAME_PrintServiceName = "PrintServiceName";
 
 	/**
-	 * Set Print Service Tray.
+	 * Set printservicetray.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -481,7 +474,7 @@ public interface I_C_Order_MFGWarehouse_Report_PrintInfo_v
 	public void setPrintServiceTray (java.lang.String PrintServiceTray);
 
 	/**
-	 * Get Print Service Tray.
+	 * Get printservicetray.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -524,7 +517,7 @@ public interface I_C_Order_MFGWarehouse_Report_PrintInfo_v
     public static final String COLUMNNAME_S_Resource_ID = "S_Resource_ID";
 
 	/**
-	 * Set Status Print Job Instructions.
+	 * Set status_print_job_instructions.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
@@ -533,7 +526,7 @@ public interface I_C_Order_MFGWarehouse_Report_PrintInfo_v
 	public void setStatus_Print_Job_Instructions (boolean Status_Print_Job_Instructions);
 
 	/**
-	 * Get Status Print Job Instructions.
+	 * Get status_print_job_instructions.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
@@ -570,8 +563,8 @@ public interface I_C_Order_MFGWarehouse_Report_PrintInfo_v
     public static final String COLUMNNAME_TrayNumber = "TrayNumber";
 
 	/**
-	 * Get Aktualisiert.
-	 * Datum, an dem dieser Eintrag aktualisiert wurde
+	 * Get Updated.
+	 * Date this record was updated
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: false
@@ -585,8 +578,8 @@ public interface I_C_Order_MFGWarehouse_Report_PrintInfo_v
     public static final String COLUMNNAME_Updated = "Updated";
 
 	/**
-	 * Get Aktualisiert durch.
-	 * Nutzer, der diesen Eintrag aktualisiert hat
+	 * Get Updated By.
+	 * User who updated this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
@@ -598,7 +591,7 @@ public interface I_C_Order_MFGWarehouse_Report_PrintInfo_v
     public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
 
 	/**
-	 * Set WP IsError.
+	 * Set wp_iserror.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
@@ -607,7 +600,7 @@ public interface I_C_Order_MFGWarehouse_Report_PrintInfo_v
 	public void setWP_IsError (boolean WP_IsError);
 
 	/**
-	 * Get WP IsError.
+	 * Get wp_iserror.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
@@ -621,7 +614,7 @@ public interface I_C_Order_MFGWarehouse_Report_PrintInfo_v
     public static final String COLUMNNAME_WP_IsError = "WP_IsError";
 
 	/**
-	 * Set WP IsProcessed.
+	 * Set wp_isprocessed.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
@@ -630,7 +623,7 @@ public interface I_C_Order_MFGWarehouse_Report_PrintInfo_v
 	public void setWP_IsProcessed (boolean WP_IsProcessed);
 
 	/**
-	 * Get WP IsProcessed.
+	 * Get wp_isprocessed.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false

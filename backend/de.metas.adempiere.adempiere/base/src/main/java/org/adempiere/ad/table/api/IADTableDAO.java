@@ -41,8 +41,6 @@ import java.util.Set;
 public interface IADTableDAO extends ISingletonService
 {
 	/**
-	 * @param tableName
-	 * @param columnName
 	 * @return {@link I_AD_Column} if column was found
 	 * @throws AdempiereException if table was not found
 	 * @throws AdempiereException if column was not found
@@ -52,35 +50,28 @@ public interface IADTableDAO extends ISingletonService
 	I_AD_Column retrieveColumn(AdTableId tableId, String columnName);
 
 	/**
-	 * @param columnName
 	 * @return the element with the given <code>columnName</code> or <code>null</code>. Note that {@link I_AD_Element#COLUMNNAME_ColumnName} is unique.
 	 */
 	I_AD_Element retrieveElement(String columnName);
 
 	/**
-	 * @param tableName
-	 * @param columnName
 	 * @return {@link I_AD_Column} if column was found, or <code>null</code> otherwise
 	 * @throws AdempiereException if table was not found
 	 */
 	I_AD_Column retrieveColumnOrNull(String tableName, String columnName);
 
 	/**
-	 * @param tableName
-	 * @param columnName
 	 * @return true if table contains selected column, false otherwise
 	 * @throws AdempiereException if table was not found
 	 */
 	boolean hasColumnName(String tableName, String columnName);
 
 	/**
-	 * @param adColumnId
 	 * @return ColumnName or null
 	 */
 	String retrieveColumnName(int adColumnId);
 
 	/**
-	 * @param adTableId
 	 * @return the name for the given <code>AD_Table_ID</code> or <code>null</code> if the given ID is less or equal zero
 	 */
 	String retrieveTableName(AdTableId adTableId);
@@ -104,7 +95,6 @@ public interface IADTableDAO extends ISingletonService
 	List<I_AD_Table> retrieveAllTables(Properties ctx, String trxName);
 
 	/**
-	 * @param column
 	 * @return true if the column is an SQL-Column (ColumnSQL is not empty)
 	 */
 	boolean isVirtualColumn(I_AD_Column column);
@@ -112,8 +102,6 @@ public interface IADTableDAO extends ISingletonService
 	/**
 	 * Check if given AD_Table_ID and TableName are matching.
 	 *
-	 * @param tableName
-	 * @param adTableId
 	 * @return true if they are matching
 	 */
 	boolean isTableId(String tableName, int adTableId);
@@ -132,8 +120,6 @@ public interface IADTableDAO extends ISingletonService
 
 	/**
 	 * If the old and new <code>tableName</code> of the given <code>table</code> differ, then rename the table sequence too.
-	 *
-	 * @param table
 	 */
 	void onTableNameRename(final I_AD_Table table);
 
@@ -166,9 +152,6 @@ public interface IADTableDAO extends ISingletonService
 
 	/**
 	 * Retrieve all the columns of the given table
-	 *
-	 * @param table
-	 * @return
 	 */
 	List<I_AD_Column> retrieveColumnsForTable(I_AD_Table table);
 
@@ -177,8 +160,7 @@ public interface IADTableDAO extends ISingletonService
 	 * This table contains all the dolumns that are supposed to belong in a table that is a document.
 	 * The table name of this template is defined in the {@link de.metas.document.DocumentConstants}
 	 *
-	 * @param targetTable
-	 * @return the Table DOcument Template
+	 * @return the Table Document Template
 	 */
 	I_AD_Table retrieveDocumentTableTemplate(I_AD_Table targetTable);
 

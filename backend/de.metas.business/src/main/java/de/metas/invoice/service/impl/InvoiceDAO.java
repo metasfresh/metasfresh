@@ -25,9 +25,7 @@ package de.metas.invoice.service.impl;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
-import java.util.Properties;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.LegacyAdapters;
@@ -37,7 +35,6 @@ import org.compiere.model.MInvoice;
 import org.compiere.model.MInvoiceLine;
 import org.compiere.model.MInvoiceTax;
 import org.compiere.model.MLandedCost;
-import org.compiere.model.Query;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
@@ -79,7 +76,9 @@ public class InvoiceDAO extends AbstractInvoiceDAO
 
 		String sql = "SELECT * FROM C_LandedCost WHERE C_InvoiceLine_ID=? ";
 		if (whereClause != null)
+		{
 			sql += whereClause;
+		}
 		final PreparedStatement pstmt = DB.prepareStatement(sql, trxName);
 		ResultSet rs = null;
 
@@ -111,20 +110,6 @@ public class InvoiceDAO extends AbstractInvoiceDAO
 	public I_C_LandedCost createLandedCost(String trxName)
 	{
 		return new MLandedCost(Env.getCtx(), 0, trxName);
-	}
-
-	@Override
-	public Collection<MInvoiceLine> retrieveReferringLines(
-			final Properties ctx, final int invoiceLineId, final String trxName)
-	{
-
-		final String tableName = I_C_InvoiceLine.Table_Name;
-
-		final String whereClause = I_C_InvoiceLine.COLUMNNAME_Ref_InvoiceLine_ID
-				+ "=?";
-
-		return new Query(ctx, tableName, whereClause, trxName).setParameters(
-				invoiceLineId).setOnlyActiveRecords(true).setClient_ID().list(MInvoiceLine.class);
 	}
 
 	@Override

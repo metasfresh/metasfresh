@@ -80,6 +80,10 @@ public class C_Flatrate_Term_Create_For_BPartners extends C_Flatrate_Term_Create
 	@Param(parameterName = PARAM_SHOW_SIMULATION_FLAG)
 	private boolean showSimulationFlag;
 
+	private static final String PARAM_IS_COMPLETE_DOCUMENT = "IsComplete";
+	@Param(parameterName = PARAM_IS_COMPLETE_DOCUMENT, mandatory = true)
+	private boolean p_completeDocument;
+
 	@Override
 	protected void prepare()
 	{
@@ -88,6 +92,9 @@ public class C_Flatrate_Term_Create_For_BPartners extends C_Flatrate_Term_Create
 		p_flatrateconditionsID = para.getParameterAsInt(I_C_Flatrate_Term.COLUMNNAME_C_Flatrate_Conditions_ID, -1);
 		p_adUserInChargeId = para.getParameterAsInt(I_C_Flatrate_Term.COLUMNNAME_AD_User_InCharge_ID, -1);
 		p_startDate = para.getParameterAsTimestamp(I_C_Flatrate_Term.COLUMNNAME_StartDate);
+		p_completeDocument = para.getParameterAsBool(PARAM_IS_COMPLETE_DOCUMENT);
+
+		setIsCompleteDocument(p_completeDocument);
 
 		final I_C_Flatrate_Conditions conditions = flatrateDAO.getConditionsById(p_flatrateconditionsID);
 		setConditions(conditions);

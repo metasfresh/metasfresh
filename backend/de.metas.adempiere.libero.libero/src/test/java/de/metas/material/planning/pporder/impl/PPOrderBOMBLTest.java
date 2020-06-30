@@ -41,6 +41,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.material.planning.pporder.IPPOrderBOMDAO;
+import de.metas.product.ProductId;
+import de.metas.uom.CreateUOMConversionRequest;
+import de.metas.uom.UomId;
 import de.metas.util.Services;
 
 /**
@@ -89,12 +92,12 @@ public class PPOrderBOMBLTest
 		final I_M_Product pSalad = helper.createProduct("Salad", uomStuck); // AB Alicesalat 250g - the big product bom
 
 		// Conversion Salad
-		helper.createUOMConversion(
-				pSalad.getM_Product_ID(),
-				uomStuck,
-				uomKillogram,
-				new BigDecimal(0.25),
-				new BigDecimal(4));
+		helper.createUOMConversion(CreateUOMConversionRequest.builder()
+				.productId(ProductId.ofRepoId(pSalad.getM_Product_ID()))
+				.fromUomId(UomId.ofRepoId(uomStuck.getC_UOM_ID()))
+				.toUomId(UomId.ofRepoId(uomKillogram.getC_UOM_ID()))
+				.fromToMultiplier(new BigDecimal(0.25))
+				.build());
 
 		// Components
 		final I_M_Product pCarrot = helper.createProduct("Carrot", uomKillogram); // Karotten Julienne 3.2 mm Halbfabrikat
@@ -108,12 +111,12 @@ public class PPOrderBOMBLTest
 
 		//
 		// Conversion for Folie
-		helper.createUOMConversion(
-				pFolie.getM_Product_ID(),
-				uomRolle,
-				uomMillimeter,
-				new BigDecimal(1500000),
-				new BigDecimal(0.000000666667));
+		helper.createUOMConversion(CreateUOMConversionRequest.builder()
+				.productId(ProductId.ofRepoId(pFolie.getM_Product_ID()))
+				.fromUomId(UomId.ofRepoId(uomRolle.getC_UOM_ID()))
+				.toUomId(UomId.ofRepoId(uomMillimeter.getC_UOM_ID()))
+				.fromToMultiplier(new BigDecimal(1500000))
+				.build());
 
 		//
 		// Define BOM

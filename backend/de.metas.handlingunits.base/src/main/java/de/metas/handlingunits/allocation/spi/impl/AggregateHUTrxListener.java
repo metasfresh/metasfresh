@@ -1,3 +1,5 @@
+package de.metas.handlingunits.allocation.spi.impl;
+
 /*
  * #%L
  * de.metas.handlingunits.base
@@ -20,7 +22,15 @@
  * #L%
  */
 
-package de.metas.handlingunits.allocation.spi.impl;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.adempiere.mm.attributes.AttributeCode;
+import org.adempiere.mm.attributes.spi.impl.WeightTareAttributeValueCallout;
+import org.adempiere.model.InterfaceWrapperHelper;
 
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHandlingUnitsBL;
@@ -31,9 +41,9 @@ import de.metas.handlingunits.allocation.impl.AllocationUtils;
 import de.metas.handlingunits.allocation.impl.HUListAllocationSourceDestination;
 import de.metas.handlingunits.allocation.impl.HULoader;
 import de.metas.handlingunits.allocation.impl.HUProducerDestination;
-import de.metas.handlingunits.attribute.IWeightable;
-import de.metas.handlingunits.attribute.IWeightableFactory;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
+import de.metas.handlingunits.attribute.weightable.IWeightable;
+import de.metas.handlingunits.attribute.weightable.Weightables;
 import de.metas.handlingunits.hutransaction.IHUTransactionCandidate;
 import de.metas.handlingunits.hutransaction.IHUTrxListener;
 import de.metas.handlingunits.model.I_M_HU;
@@ -46,15 +56,6 @@ import de.metas.uom.UOMPrecision;
 import de.metas.util.NumberUtils;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.mm.attributes.spi.impl.WeightTareAttributeValueCallout;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_M_Attribute;
-
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 /**
  * This listener plays an important role for aggregate HUs.
@@ -64,7 +65,7 @@ import java.util.Map;
  * <li>Preserve the original CU-per-TU qty by splitting off partial quantities from the aggregate HU into a "real" HU.
  *
  * @author metas-dev <dev@metasfresh.com>
- * task: https://github.com/metasfresh/metasfresh/issues/460
+ *         task: https://github.com/metasfresh/metasfresh/issues/460
  */
 public class AggregateHUTrxListener implements IHUTrxListener
 {
@@ -206,9 +207,9 @@ public class AggregateHUTrxListener implements IHUTrxListener
 				destination.setParent_HU_Item(splitHUParentItem);
 				final HULoader loader = HULoader.of(source, destination)
 						.setForceLoad(true)
-						// note for dev: forceLoad is needed here, because if qty is greater than PI qty, we will split the expected 1 TU into 2, and that is wrong logically.
-						// see details in https://github.com/metasfresh/metasfresh/issues/6808#issuecomment-642414037
-						;
+				// note for dev: forceLoad is needed here, because if qty is greater than PI qty, we will split the expected 1 TU into 2, and that is wrong logically.
+				// see details in https://github.com/metasfresh/metasfresh/issues/6808#issuecomment-642414037
+				;
 
 				// Create allocation request
 				final IAllocationRequest request = AllocationUtils.createQtyRequest(
@@ -226,8 +227,8 @@ public class AggregateHUTrxListener implements IHUTrxListener
 			final I_M_HU aggregateVHU = handlingUnitsDAO.retrieveIncludedHUs(item).get(0);
 			final IAttributeStorage aggregateVHUAttributeStorage = huContext.getHUAttributeStorageFactory().getAttributeStorage(aggregateVHU);
 
-			final IWeightable aggregateVHUWeightable = Services.get(IWeightableFactory.class).createWeightableOrNull(aggregateVHUAttributeStorage);
-			final I_M_Attribute aggregateVHUWeightTareAttribute = aggregateVHUWeightable.getWeightTareAttribute();
+			final IWeightable aggregateVHUWeightable = Weightables.wrap(aggregateVHUAttributeStorage);
+			final AttributeCode aggregateVHUWeightTareAttribute = aggregateVHUWeightable.getWeightTareAttribute();
 			if (aggregateVHUAttributeStorage.hasAttribute(aggregateVHUWeightTareAttribute))
 			{
 				final BigDecimal tareOfAggregateVHU = WeightTareAttributeValueCallout.calculateWeightTare(aggregateVHU);

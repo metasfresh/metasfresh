@@ -48,7 +48,7 @@ import com.google.common.collect.ImmutableSet;
 
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
-import de.metas.util.FileUtils;
+import de.metas.util.FileUtil;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
@@ -168,7 +168,7 @@ public class JasperCompileClassLoader extends ClassLoader
 
 	private URL findMiscResource(final String name)
 	{
-		final String resourcePath = toLocalPath(name, FileUtils.getFileExtension(name));
+		final String resourcePath = toLocalPath(name, FileUtil.getFileExtension(name));
 
 		URL url = findResourceInAdditionalPathsOrNull(resourcePath);
 		if (url != null)
@@ -235,7 +235,7 @@ public class JasperCompileClassLoader extends ClassLoader
 			resourcePath = "/" + resourcePath;
 		}
 
-		final String jasperReportJrxmlPath = FileUtils.changeFileExtension(resourcePath, fileExtension);
+		final String jasperReportJrxmlPath = FileUtil.changeFileExtension(resourcePath, fileExtension);
 
 		return jasperReportJrxmlPath;
 	}

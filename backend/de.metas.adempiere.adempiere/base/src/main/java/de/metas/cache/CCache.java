@@ -630,9 +630,6 @@ public class CCache<K, V> implements CacheInterface
 	/**
 	 * Same as {@link #get(Object, Callable)}. Introduced here to be able to use it with lambdas, without having ambiguous method calls.
 	 *
-	 * @param key
-	 * @param valueLoader
-	 * @return
 	 * @see #get(Object, Callable).
 	 * @see #get(Object, Supplier)
 	 */

@@ -28,8 +28,8 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.function.Predicate;
 
-import com.google.common.collect.ImmutableSet;
-import de.metas.organization.ClientAndOrgId;
+import javax.annotation.Nullable;
+
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IContextAware;
@@ -43,6 +43,7 @@ import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Transaction;
 
 import com.google.common.base.Predicates;
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
@@ -60,12 +61,12 @@ import de.metas.handlingunits.model.X_M_HU_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.storage.IHUStorageFactory;
+import de.metas.material.event.commons.AttributesKey;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.util.ISingletonService;
 import de.metas.util.Services;
 import lombok.Builder.Default;
 import lombok.NonNull;
-
-import javax.annotation.Nullable;
 
 public interface IHandlingUnitsBL extends ISingletonService
 {
@@ -533,4 +534,6 @@ public interface IHandlingUnitsBL extends ISingletonService
 				? Services.get(IHUPIItemProductDAO.class).getById(piItemProductId)
 				: null;
 	}
+
+	AttributesKey getStorageRelevantAttributesKey(@NonNull I_M_HU hu);
 }

@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package de.metas.printing;
 
@@ -8,6 +8,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 
@@ -23,18 +24,13 @@ import de.metas.printing.model.I_C_Print_PackageInfo;
 import de.metas.printing.model.X_C_Print_Job_Instructions;
 import de.metas.util.Services;
 
-/**
- * @author cg
- *
- */
 public class PrintPackagePDFBuilder
 {
-	// Services
 	private final IPrintingDAO printingDAO = Services.get(IPrintingDAO.class);
 
 	private I_C_Print_Package printPackage;
 
-	public PrintPackagePDFBuilder setPrintPackage(I_C_Print_Package printPackage)
+	public PrintPackagePDFBuilder setPrintPackage(@NonNull final I_C_Print_Package printPackage)
 	{
 		this.printPackage = printPackage;
 		return this;
@@ -59,7 +55,7 @@ public class PrintPackagePDFBuilder
 		return out.toByteArray();
 	}
 
-	public void print(final OutputStream bos) throws Exception
+	public void print(@NonNull final OutputStream bos) throws Exception
 	{
 		final I_C_Print_Job_Instructions print_Job_Instructions = printPackage.getC_Print_Job_Instructions();
 		final Document document = new Document();
@@ -73,17 +69,15 @@ public class PrintPackagePDFBuilder
 		{
 			return;
 		}
-		try 
+		try
 		{
-	
 			for (final I_C_Print_PackageInfo printPackageInfo : printingDAO.retrievePrintPackageInfos(printPackage))
 			{
-				
 				final byte[] pdf = print(printPackageInfo, printable);
-	
+
 				final PdfReader reader = new PdfReader(pdf);
-	
-				for (int page = 0; page < reader.getNumberOfPages();)
+
+				for (int page = 0; page < reader.getNumberOfPages(); )
 				{
 					copy.addPage(copy.getImportedPage(reader, ++page));
 				}
@@ -91,12 +85,12 @@ public class PrintPackagePDFBuilder
 				reader.close();
 			}
 			document.close();
-			
+
 			print_Job_Instructions.setErrorMsg(null);
 			print_Job_Instructions.setStatus(X_C_Print_Job_Instructions.STATUS_Done);
 			InterfaceWrapperHelper.save(print_Job_Instructions);
 		}
-		catch (Exception e)
+		catch (final Exception e)
 		{
 			print_Job_Instructions.setErrorMsg(e.getLocalizedMessage());
 			print_Job_Instructions.setStatus(X_C_Print_Job_Instructions.STATUS_Error);
@@ -106,7 +100,7 @@ public class PrintPackagePDFBuilder
 		}
 	}
 
-	private byte[] print(final I_C_Print_PackageInfo printPackageInfo, final PrintablePDF printable)
+	private byte[] print(@NonNull final I_C_Print_PackageInfo printPackageInfo, @NonNull final PrintablePDF printable)
 	{
 		printable.setCalX(printPackageInfo.getCalX());
 		printable.setCalY(printPackageInfo.getCalY());

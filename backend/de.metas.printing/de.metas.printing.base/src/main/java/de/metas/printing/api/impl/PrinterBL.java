@@ -35,6 +35,9 @@ import java.util.Properties;
 
 import javax.print.attribute.standard.MediaSize;
 
+import de.metas.printing.HardwarePrinterId;
+import de.metas.printing.LogicalPrinterId;
+import de.metas.user.UserId;
 import org.adempiere.model.PlainContextAware;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -89,9 +92,9 @@ public class PrinterBL implements IPrinterBL
 	private I_AD_Printer_Config createPrinterConfigIfNoneExists(final I_AD_PrinterHW printerHW)
 	{
 		final IPrintingDAO printingDAO = Services.get(IPrintingDAO.class);
-		final I_AD_Printer_Config existientPrinterConfig = printingDAO.retrievePrinterConfig(PlainContextAware.newOutOfTrx(getCtx(printerHW)),
+		final I_AD_Printer_Config existientPrinterConfig = printingDAO.retrievePrinterConfig(
 				printerHW.getHostKey(),
-				printerHW.getUpdatedBy());
+				UserId.ofRepoIdOrNull(printerHW.getUpdatedBy()));
 		if (existientPrinterConfig != null)
 		{
 			return existientPrinterConfig;
@@ -113,11 +116,14 @@ public class PrinterBL implements IPrinterBL
 			final I_AD_Printer printer,
 			final I_AD_PrinterHW printerHW)
 	{
-		// first search ; if exists return null
+		// first search ; if one exists *for any hostkey*, then return null
 		final IPrintingDAO printingDAO = Services.get(IPrintingDAO.class);
 
-		final I_AD_Printer_Matching exitentMatching = printingDAO.retrievePrinterMatchingOrNull(printerHW.getHostKey(), printer);
-		if (exitentMatching != null)
+		final I_AD_Printer_Matching existentMatching = printingDAO.retrievePrinterMatchingOrNull(
+				null,
+				UserId.ofRepoIdOrNull(printerHW.getUpdatedBy()),
+				printer);
+		if (existentMatching != null)
 		{
 			return null;
 		}
@@ -147,8 +153,8 @@ public class PrinterBL implements IPrinterBL
 		boolean anythingCreated = false;
 		for (final I_AD_Printer_Matching printerMatching : printerMatchings)
 		{
-			final I_AD_Printer printer = load(printerMatching.getAD_Printer_ID(), I_AD_Printer.class);
-			final List<I_AD_Printer_Tray> trays = Services.get(IPrintingDAO.class).retrieveTrays(printer);
+			final LogicalPrinterId printerId = LogicalPrinterId.ofRepoId(printerMatching.getAD_Printer_ID());
+			final List<I_AD_Printer_Tray> trays = Services.get(IPrintingDAO.class).retrieveTrays(printerId);
 
 			for (final I_AD_Printer_Tray tray : trays)
 			{
@@ -218,11 +224,12 @@ public class PrinterBL implements IPrinterBL
 	}
 
 	@Override
-	public void updatePrinterTrayMatching(final I_AD_Printer_Matching printerMatching)
+	public void updatePrinterTrayMatching(@NonNull final I_AD_Printer_Matching printerMatching)
 	{
 		final IPrintingDAO dao = Services.get(IPrintingDAO.class);
 
-		final List<I_AD_PrinterHW_MediaTray> hwTrays = dao.retrieveMediaTrays(printerMatching.getAD_PrinterHW());
+		final HardwarePrinterId printerID = HardwarePrinterId.ofRepoId(printerMatching.getAD_PrinterHW_ID());
+		final List<I_AD_PrinterHW_MediaTray> hwTrays = dao.retrieveMediaTrays(printerID);
 
 		final List<I_AD_PrinterTray_Matching> existingPrinterTrayMatchings = dao.retrievePrinterTrayMatchings(printerMatching);
 
@@ -241,8 +248,8 @@ public class PrinterBL implements IPrinterBL
 		{
 			// the old HW printer didn't have a tray, but the new one does
 			// create a new matching for every logical tray
-			final I_AD_Printer printer = load(printerMatching.getAD_Printer_ID(), I_AD_Printer.class);
-			for (final I_AD_Printer_Tray logicalTray : dao.retrieveTrays(printer))
+			final LogicalPrinterId printerId = LogicalPrinterId.ofRepoId(printerMatching.getAD_Printer_ID());
+			for (final I_AD_Printer_Tray logicalTray : dao.retrieveTrays(printerId))
 			{
 				final I_AD_PrinterTray_Matching trayMatching = newInstance(I_AD_PrinterTray_Matching.class, printerMatching);
 				trayMatching.setAD_Printer_Matching(printerMatching);
@@ -267,8 +274,8 @@ public class PrinterBL implements IPrinterBL
 	}
 
 	@Override
-	public boolean isPDFPrinter(@NonNull final I_AD_PrinterHW printerHW)
+	public boolean isAttachToPrintPackagePrinter(@NonNull final I_AD_PrinterHW printerHW)
 	{
-		return X_AD_PrinterHW.OUTPUTTYPE_PDF.equals(printerHW.getOutputType());
+		return X_AD_PrinterHW.OUTPUTTYPE_Attach.equals(printerHW.getOutputType());
 	}
 }

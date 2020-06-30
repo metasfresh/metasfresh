@@ -33,8 +33,6 @@ public interface IPrintPackageBL extends ISingletonService
 {
 	IPrintPackageCtx createInitialCtx(Properties ctx);
 
-	String getHostKeyOrNull(Properties ctx);
-
 	/**
 	 * @param jobInstructions contains the information which print job with which line(s) shall be added to the package
 	 * @return true if print package was created /updated

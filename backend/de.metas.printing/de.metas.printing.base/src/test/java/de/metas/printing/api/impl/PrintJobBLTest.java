@@ -30,6 +30,7 @@ import java.util.List;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.apache.commons.collections4.IteratorUtils;
+import org.assertj.core.api.Assertions;
 import org.compiere.model.I_AD_SysConfig;
 import org.junit.Before;
 import org.junit.Test;
@@ -66,19 +67,19 @@ public class PrintJobBLTest extends AbstractPrintingTest
 
 		//
 		// Setup routings
-		final I_AD_PrinterRouting routing11 = helper.createPrinterRouting("printer01", "tray01",
+		final I_AD_PrinterRouting routing11 = helper.createPrinterRouting("printer01", "tray01",10,
 				c_DocType_ID, // routing has the same C_DocType_ID as the queue-item => should match
 				-1, -1);
 		routing11.setAD_Org_ID(1);
 		InterfaceWrapperHelper.save(routing11);
 
-		final I_AD_PrinterRouting routing12 = helper.createPrinterRouting("printer01", "tray02",
+		final I_AD_PrinterRouting routing12 = helper.createPrinterRouting("printer01", "tray02",20,
 				-1, // routing has no C_DocType_ID => should also match
 				-1, -1);
 		routing11.setAD_Org_ID(1);
 		InterfaceWrapperHelper.save(routing12);
 
-		final I_AD_PrinterRouting otherRouting = helper.createPrinterRouting("printer23", "tray02",
+		final I_AD_PrinterRouting otherRouting = helper.createPrinterRouting("printer23", "tray02",20,
 				(c_DocType_ID + 10), // routing has not-matching C_DocType_ID => should be ignored
 				-1, -1);
 		otherRouting.setAD_Org_ID(1);
@@ -86,8 +87,8 @@ public class PrintJobBLTest extends AbstractPrintingTest
 
 		helper.addToPrintQueue("01", 1, c_DocType_ID); // AD_Org_ID=1, C_DocType_ID=12
 
-		final int printJobsCountActual = helper.createAllPrintJobs();
-		assertThat(printJobsCountActual, is(1));
+		helper.createAllPrintJobs();
+		assertThat(helper.getDB().getRecords(I_C_Print_Job.class).size(), is(1));
 
 		final I_C_Print_Job printJob = helper.getDB().getRecords(I_C_Print_Job.class).get(0);
 
@@ -123,7 +124,7 @@ public class PrintJobBLTest extends AbstractPrintingTest
 
 		//
 		// Setup routings
-		final I_AD_PrinterRouting routing11 = helper.createPrinterRouting("printer01", "tray01",
+		final I_AD_PrinterRouting routing11 = helper.createPrinterRouting("printer01", "tray01",10,
 				c_DocType_ID, // routing has the same C_DocType_ID as the queue-item => should match
 				-1, -1);
 		routing11.setAD_Org_ID(1);
@@ -135,8 +136,13 @@ public class PrintJobBLTest extends AbstractPrintingTest
 		helper.addToPrintQueue("04", 1, c_DocType_ID); // AD_Org_ID=1, C_DocType_ID=12
 		helper.addToPrintQueue("05", 1, c_DocType_ID); // AD_Org_ID=1, C_DocType_ID=12
 
-		final int printJobsCountActual = helper.createAllPrintJobs();
-		assertThat(printJobsCountActual, is(3));
+		// when
+		helper.createAllPrintJobs();
+
+		// then
+		// remembers that we have SYSCONFIG_MAX_LINES_PER_JOB = 2
+		final List<I_C_Print_Job> printJobs = helper.getDB().getRecords(I_C_Print_Job.class);
+		Assertions.assertThat(printJobs).as("Invalid Print Jobs count").hasSize(3);
 	}
 
 }
