@@ -90,10 +90,6 @@ export class RawWidget extends Component {
     }
   }
 
-  setRef = (ref) => {
-    this.rawWidget = ref;
-  };
-
   /**
    * @method focus
    * @summary Function used specifically for list widgets. It blocks outside clicks, which are
@@ -444,7 +440,7 @@ export class RawWidget extends Component {
     // TODO:  ^^^^^^^^^^^^^
 
     const widgetProperties = {
-      ref: this.setRef,
+      ref: (c) => (this.rawWidget = c),
       //autocomplete=new-password did not work in chrome for non password fields anymore,
       //switched to autocomplete=off instead
       autoComplete: 'off',
@@ -849,7 +845,11 @@ export class RawWidget extends Component {
                 }
               )}
             >
-              <input {...widgetProperties} type="password" ref={this.setRef} />
+              <input
+                {...widgetProperties}
+                type="password"
+                ref={(c) => (this.rawWidget = c)}
+              />
               {icon && <i className="meta-icon-edit input-icon-right" />}
             </div>
             {allowShowPassword && (
@@ -923,7 +923,7 @@ export class RawWidget extends Component {
               'input-table': rowId && !isModal,
             })}
             tabIndex={tabIndex}
-            ref={this.setRef}
+            ref={(c) => (this.rawWidget = c)}
             onKeyDown={(e) => {
               e.key === ' ' &&
                 this.handlePatch(widgetField, !widgetData[0].value, id);
@@ -948,7 +948,7 @@ export class RawWidget extends Component {
               [`text-${gridAlign}`]: gridAlign,
             })}
             tabIndex={tabIndex}
-            ref={this.setRef}
+            ref={(c) => (this.rawWidget = c)}
           >
             {widgetData[0].value}
           </div>
@@ -963,7 +963,7 @@ export class RawWidget extends Component {
             }
             onClick={() => this.handlePatch(widgetField)}
             tabIndex={tabIndex}
-            ref={this.setRef}
+            ref={(c) => (this.rawWidget = c)}
           >
             {widgetData[0].value &&
               widgetData[0].value[Object.keys(widgetData[0].value)[0]]}
@@ -979,7 +979,7 @@ export class RawWidget extends Component {
             }
             onClick={this.handleProcess}
             tabIndex={tabIndex}
-            ref={this.setRef}
+            ref={(c) => (this.rawWidget = c)}
           >
             {caption}
           </button>
@@ -996,7 +996,7 @@ export class RawWidget extends Component {
             onChange={(option) => this.handlePatch(fields[1].field, option)}
             tabIndex={tabIndex}
             dropdownOpenCallback={dropdownOpenCallback}
-            ref={this.setRef}
+            ref={(c) => (this.rawWidget = c)}
           />
         );
       case 'ProductAttributes':
@@ -1060,7 +1060,7 @@ export class RawWidget extends Component {
             }
             onClick={() => handleZoomInto(fields[0].field)}
             tabIndex={tabIndex}
-            ref={this.setRef}
+            ref={(c) => (this.rawWidget = c)}
           >
             {caption}
           </button>

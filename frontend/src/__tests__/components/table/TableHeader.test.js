@@ -1,24 +1,50 @@
 import React from 'react';
 import { shallow, mount } from 'enzyme';
+// import { ShortcutProvider } from '../../../components/keyshortcuts/ShortcutProvider';
+import { initialState as appHandlerState } from '../../../reducers/appHandler';
+import { initialState as windowHandlerState } from '../../../reducers/windowHandler';
+import { Provider } from 'react-redux';
+import configureStore from 'redux-mock-store';
 import merge from 'merge';
-
 import tableHeaderProps from '../../../../test_setup/fixtures/table/table_header.json';
-
 import TableHeader from '../../../components/table/TableHeader';
+import { getSizeClass } from '../../../utils/tableHelpers'; // imported as it is passed as a prop..
 
-const props = {
-  ...tableHeaderProps,
-  selected: [],
+const mockStore = configureStore([]);
+tableHeaderProps.getSizeClass = getSizeClass;
+const createStore = function(state = {}) {
+  const res = merge.recursive(
+    true,
+    {
+      appHandler: {
+        ...appHandlerState,
+        me: { timeZone: 'America/Los_Angeles' },
+      },
+      windowHandler: { ...windowHandlerState },
+    },
+    state
+  );
+
+  return res;
 };
+const initialState = createStore({
+  windowHandler: {
+    allowShortcut: true,
+    modal: {
+      visible: false,
+    },
+  },
+});
+const store = mockStore(initialState);
+
+tableHeaderProps.selected = [];
 
 describe('TableHeader', () => {
   it('renders without errors with the given props', () => {
-    const wrapperTableCMenu = shallow(
-      <table>
-        <thead>
-          <TableHeader {...props} />
-        </thead>
-      </table>
+    const wrapperTableCMenu = mount(
+      <Provider store={store}>
+        <TableHeader {...tableHeaderProps} />
+      </Provider>
     );
     const html = wrapperTableCMenu.html();
 
@@ -32,17 +58,11 @@ describe('TableHeader', () => {
   });
 
   it('should have indent present', () => {
-    const localProps = {
-      ...props,
-      indentSupported: true,
-    };
-
-    const wrapperTableCMenu = shallow(
-      <table>
-        <thead>
-          <TableHeader {...localProps} />
-        </thead>
-      </table>
+    tableHeaderProps.indentSupported = true;
+    const wrapperTableCMenu = mount(
+      <Provider store={store}>
+        <TableHeader {...tableHeaderProps} />
+      </Provider>
     );
     const html = wrapperTableCMenu.html();
 

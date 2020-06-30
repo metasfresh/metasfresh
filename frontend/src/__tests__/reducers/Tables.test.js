@@ -18,10 +18,12 @@ const createState = function(state = {}) {
 };
 
 const basicData = {
-  windowId: '143',
+  windowType: '143',
   docId: '1000037',
   tabId: 'AD_Tab-187',
-  keyProperty: 'id',
+  allowCreateNew: true,
+  allowDelete: true,
+  stale: true,
 };
 
 describe('Tables reducer', () => {
@@ -42,26 +44,7 @@ describe('Tables reducer', () => {
       })
     ).toEqual(
       expect.objectContaining({
-        [id]: expect.objectContaining({ ...basicData }),
-        length: 1,
-      })
-    );
-  });
-
-  it('Should handle CREATE_TABLE with no rows', () => {
-    const id = '143_1000037_AD_Tab-187';
-
-    expect(
-      reducer(undefined, {
-        type: ACTION_TYPES.CREATE_TABLE,
-        payload: {
-          id,
-          data: { ...basicData, rows: [] },
-        },
-      })
-    ).toEqual(
-      expect.objectContaining({
-        [id]: expect.objectContaining({ ...basicData }),
+        [id]: expect.objectContaining({ ...basicData, queryLimit: 0 }),
         length: 1,
       })
     );
@@ -100,6 +83,8 @@ describe('Tables reducer', () => {
     expect(state).toEqual(
       expect.objectContaining({
         [id]: expect.objectContaining({
+          allowCreateNew: true,
+          allowDelete: true,
           docId: '1000037',
           elements: [
             {
@@ -107,8 +92,10 @@ describe('Tables reducer', () => {
               fields: [{ field: 'InsufficientQtyAvailableForSalesColor_ID' }],
             },
           ],
+          internalName: 'C_OrderLine',
+          stale: true,
           tabId: 'AD_Tab-187',
-          windowId: '143',
+          windowType: '143',
         }),
         length: 1,
       })
@@ -136,7 +123,7 @@ describe('Tables reducer', () => {
     });
 
     const updateAction = {
-      type: ACTION_TYPES.SET_ACTIVE_SORT,
+      type: ACTION_TYPES.SET_ACTIVE_SORT_NEW,
       payload: {
         id,
         active: true,
@@ -158,37 +145,47 @@ describe('Tables reducer', () => {
 
   it('Should update selection UPDATE_TABLE_SELECTION', () => {
     const id = '143_1000037_AD_Tab-187';
-    const row = { rowId: '100000' };
     const initialStateData = createState({
-      [id]: { ...initialTableState, ...basicData, rows: [row], selected: ['100000'], keyProperty: 'rowId' },
+      [id]: { ...initialTableState, ...basicData },
       length: 1,
     });
-    const actions = [updateTableSelection(id, ['100000'], 'rowId')];
+
+    const actions = [updateTableSelection({ tableId: id, ids: [100000] })];
     const state = actions.reduce(reducer, initialStateData);
 
     expect(state).toEqual(
       expect.objectContaining({
         [id]: expect.objectContaining({
           activeSort: false,
+          allowCreateNew: true,
+          allowCreateNewReason: null,
+          allowDelete: true,
           columns: [],
-          collapsedArrayMap: [],
-          collapsedParentRows: [],
-          collapsedRows: [],
+          dataError: false,
+          dataPending: false,
+          defaultOrderBys: [],
           docId: '1000037',
           emptyHint: null,
           emptyText: null,
+          firstRow: 0,
           headerElements: {},
           headerProperties: {},
-          rows: expect.arrayContaining([row]),
-          selected: ['100000'],
+          internalName: null,
+          orderBy: [],
+          page: 0,
+          pageLength: 0,
+          queryLimit: 0,
+          queryLimitHit: false,
+          queryOnActivate: true,
+          rows: [],
+          selected: [100000],
           size: 0,
+          stale: true,
+          supportQuickInput: true,
           tabId: 'AD_Tab-187',
+          tabIndex: 0,
           viewId: null,
-          windowId: '143',
-          keyProperty: 'rowId',
-          expandedDepth: 0,
-          collapsible: false,
-          indentSupported: false,
+          windowType: '143',
         }),
         length: 1,
       })

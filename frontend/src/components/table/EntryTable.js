@@ -1,9 +1,6 @@
-import React, { PureComponent } from 'react';
+import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import classnames from 'classnames';
-import { connect } from 'react-redux';
-
-import { getTableId, getTable } from '../../reducers/tables';
 
 import WidgetTooltip from '../widget/WidgetTooltip';
 import MasterWidget from '../widget/MasterWidget';
@@ -13,7 +10,7 @@ import MasterWidget from '../widget/MasterWidget';
  * @module EntryTable
  * @extends Component
  */
-class EntryTable extends PureComponent {
+export default class EntryTable extends Component {
   constructor(props) {
     super(props);
 
@@ -52,12 +49,12 @@ class EntryTable extends PureComponent {
   renderElements = (elements, columnsCount) => {
     const {
       data,
-      rows,
+      rowData,
       extendedData,
       addRefToWidgets,
       onBlurWidget,
       windowId,
-      documentId,
+      dataId,
       tabIndex,
       isFullScreen,
     } = this.props;
@@ -65,19 +62,19 @@ class EntryTable extends PureComponent {
     const renderedArray = [];
     const colWidth = Math.floor(12 / columnsCount);
 
-    if (rows.length) {
+    if (rowData && rowData.size) {
       for (let i = 0; i < columnsCount; i += 1) {
         const elem = elements.cols[i];
 
         if (elem && elem.fields && elem.fields.length) {
           const fieldName = elem.fields ? elem.fields[0].field : '';
-          const widgetData = [rows[0].fieldsByName[fieldName]];
+          const widgetData = [rowData.get(0).fieldsByName[fieldName]];
           const relativeDocId = data.ID && data.ID.value;
           let tooltipData = null;
           let tooltipWidget = elem.fields
             ? elem.fields.find((field) => {
                 if (field.type === 'Tooltip') {
-                  tooltipData = rows[0].fieldsByName[field.field];
+                  tooltipData = rowData.get(0).fieldsByName[field.field];
 
                   if (tooltipData && tooltipData.value) {
                     return field;
@@ -104,13 +101,13 @@ class EntryTable extends PureComponent {
                 ref={addRefToWidgets}
                 entity="window"
                 windowType={windowId}
-                dataId={documentId}
+                dataId={dataId}
                 dataEntry={true}
                 fieldName={fieldName}
                 widgetData={widgetData}
                 isModal={false}
                 tabId={extendedData.tabId}
-                rowId={documentId}
+                rowId={dataId}
                 relativeDocId={relativeDocId}
                 isAdvanced={false}
                 tabIndex={tabIndex}
@@ -140,12 +137,12 @@ class EntryTable extends PureComponent {
   };
 
   render() {
-    const { columns } = this.props;
+    const { rows } = this.props;
 
     return (
       <table className="table js-table layout-fix">
         <tbody>
-          {columns.map((cols, idx) => {
+          {rows.map((cols, idx) => {
             return (
               <tr className="table-row" key={`entry-row-${idx}`}>
                 {this.renderElements(cols, cols.colsCount)}
@@ -159,14 +156,13 @@ class EntryTable extends PureComponent {
 }
 
 EntryTable.propTypes = {
-  columns: PropTypes.array.isRequired,
   rows: PropTypes.array.isRequired,
   //
   windowId: PropTypes.string.isRequired,
-  documentId: PropTypes.string,
-  tabId: PropTypes.string,
+  dataId: PropTypes.string,
   //
   data: PropTypes.oneOfType([PropTypes.shape(), PropTypes.array]), // TODO: type here should point to a hidden issue?
+  rowData: PropTypes.any,
   extendedData: PropTypes.any,
   //
   tabIndex: PropTypes.any,
@@ -175,13 +171,3 @@ EntryTable.propTypes = {
   addRefToWidgets: PropTypes.func.isRequired,
   onBlurWidget: PropTypes.func.isRequired,
 };
-
-const mapStateToProps = (state, props) => {
-  const { windowId, documentId, tabId } = props;
-  const tableId = getTableId({ windowId, tabId, docId: documentId });
-  const table = getTable(state, tableId);
-
-  return { rows: table.rows };
-};
-
-export default connect(mapStateToProps)(EntryTable);

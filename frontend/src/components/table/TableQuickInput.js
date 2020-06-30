@@ -263,17 +263,15 @@ class TableQuickInput extends Component {
           id
         );
       })
-      .then(this.initQuickInput);
+      .then(() => {
+        this.initQuickInput();
+      });
   };
 
   validateForm = (data) => {
     return !Object.keys(data).filter(
       (key) => data[key].mandatory && !data[key].value
     ).length;
-  };
-
-  setRef = (ref) => {
-    this.form = ref;
   };
 
   render() {
@@ -284,7 +282,7 @@ class TableQuickInput extends Component {
       <form
         onSubmit={this.onSubmit}
         className="row quick-input-container"
-        ref={this.setRef}
+        ref={(c) => (this.form = c)}
       >
         {this.renderFields(layout, data, docId, 'window', id)}
         <div className="col-sm-12 col-md-3 col-lg-2 hint">
