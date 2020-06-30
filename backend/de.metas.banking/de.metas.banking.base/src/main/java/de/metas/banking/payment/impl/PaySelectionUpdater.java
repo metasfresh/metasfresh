@@ -58,7 +58,7 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 	private static final transient Logger logger = LogManager.getLogger(PaySelectionUpdater.class);
 	private final transient ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final transient IPaySelectionDAO paySelectionsRepo = Services.get(IPaySelectionDAO.class);
-	final IModelCacheInvalidationService modelCacheInvalidationService = Services.get(IModelCacheInvalidationService.class);
+	private final transient IModelCacheInvalidationService modelCacheInvalidationService = Services.get(IModelCacheInvalidationService.class);
 
 	private boolean _configurable = true;
 
@@ -608,10 +608,7 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
-	/**
-	 * Invalidates Cache for current PaySelection.
-	 */
-	public void cacheInvalidationForCurrentPaySelection()
+	private void cacheInvalidationForCurrentPaySelection()
 	{
 		modelCacheInvalidationService.invalidate(
 				CacheInvalidateMultiRequest.fromTableNameAndRecordId(I_C_PaySelection.Table_Name, getPaySelectionId().getRepoId()),
