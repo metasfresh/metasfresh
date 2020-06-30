@@ -93,6 +93,10 @@ public class ProductsToPickRow implements IViewRow
 	@ViewColumn(fieldName = FIELD_ProductPackageSizeUOM, widgetType = DocumentFieldWidgetType.Text, captionKey = "Package_UOM_ID", widgetSize = WidgetSize.Small)
 	private final String productPackageSizeUOM;
 
+	public static final String FIELD_ProductStockUOM = "productStockUOM";
+	@ViewColumn(fieldName = FIELD_ProductStockUOM, widgetType = DocumentFieldWidgetType.Text, captionKey = "C_UOM_ID", widgetSize = WidgetSize.Small)
+	private final String productStockUOM;
+
 	public static final String FIELD_Locator = "locator";
 	@ViewColumn(fieldName = FIELD_Locator, widgetType = DocumentFieldWidgetType.Lookup, captionKey = "M_Locator_ID", widgetSize = WidgetSize.Small)
 	private final LookupValue locator;
@@ -192,6 +196,7 @@ public class ProductsToPickRow implements IViewRow
 		productName = productInfo.getName();
 		productPackageSize = productInfo.getPackageSize();
 		productPackageSizeUOM = productInfo.getPackageSizeUOM();
+		productStockUOM = productInfo.getStockUOM();
 
 		this.huReservedForThisRow = huReservedForThisRow;
 
