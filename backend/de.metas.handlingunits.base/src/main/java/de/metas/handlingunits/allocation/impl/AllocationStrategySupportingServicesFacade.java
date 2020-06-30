@@ -86,9 +86,9 @@ public class AllocationStrategySupportingServicesFacade
 		return handlingUnitsDAO.retrieveIncludedHUs(item);
 	}
 
-	public I_M_HU_PI getIncluded_HU_PI(final I_M_HU_Item item)
+	public I_M_HU_PI getIncluded_HU_PI(@NonNull final I_M_HU_Item item)
 	{
-		return handlingUnitsBL.getPIItem(item).getIncluded_HU_PI();
+		return handlingUnitsBL.getIncludedPI(item);
 	}
 
 	public void deleteHU(final I_M_HU hu)

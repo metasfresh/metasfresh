@@ -760,12 +760,26 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 
 	@Nullable
 	@Override
-	public I_M_HU_PI_Item getPIItem(final I_M_HU_Item huItem)
+	public I_M_HU_PI_Item getPIItem(@NonNull final I_M_HU_Item huItem)
 	{
 		final HuPackingInstructionsItemId piItemId = HuPackingInstructionsItemId.ofRepoIdOrNull(huItem.getM_HU_PI_Item_ID());
 		return piItemId != null
 				? Services.get(IHandlingUnitsDAO.class).getPackingInstructionItemById(piItemId)
 				: null;
+	}
+
+	@NonNull
+	@Override
+	public I_M_HU_PI getIncludedPI(@NonNull final I_M_HU_Item huItem)
+	{
+		final I_M_HU_PI_Item piItem = getPIItem(huItem);
+		if (piItem == null)
+		{
+			throw new AdempiereException("No PI Item defined for " + huItem);
+		}
+
+		final HuPackingInstructionsId includedPIId = HuPackingInstructionsId.ofRepoId(piItem.getIncluded_HU_PI_ID());
+		return Services.get(IHandlingUnitsDAO.class).getPackingInstructionById(includedPIId);
 	}
 
 	@Override
