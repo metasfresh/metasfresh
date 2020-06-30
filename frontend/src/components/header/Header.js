@@ -1,12 +1,15 @@
 import counterpart from 'counterpart';
 import PropTypes from 'prop-types';
-import React, { PureComponent } from 'react';
+import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { push } from 'react-router-redux';
 import classnames from 'classnames';
 
-import { deleteRequest } from '../../api';
-import { duplicateRequest, openFile } from '../../actions/GenericActions';
+import {
+  deleteRequest,
+  duplicateRequest,
+  openFile,
+} from '../../actions/GenericActions';
 import { openModal } from '../../actions/WindowActions';
 import logo from '../../assets/images/metasfresh_logo_green_thumb.png';
 import keymap from '../../shortcuts/keymap';
@@ -28,9 +31,9 @@ import UserDropdown from './UserDropdown';
  * the top bar with different menus and icons in metasfresh WebUI. It hosts the action menu,
  * breadcrumb, logo, notification menu, avatar and sidelist menu.
  * @module Header
- * @extends PureComponent
+ * @extends Component
  */
-class Header extends PureComponent {
+class Header extends Component {
   state = {
     isSubheaderShow: false,
     isSideListShow: false,
@@ -558,7 +561,6 @@ class Header extends PureComponent {
       handleEditModeToggle,
       activeTab,
       plugins,
-      indicator,
     } = this.props;
 
     const {
@@ -769,7 +771,7 @@ class Header extends PureComponent {
           </div>
 
           {showIndicator && (
-            <Indicator {...{ isDocumentNotSaved, indicator }} />
+            <Indicator isDocumentNotSaved={isDocumentNotSaved} />
           )}
         </nav>
 
@@ -791,7 +793,6 @@ class Header extends PureComponent {
             notfound={notFound}
             entity={entity}
             dataId={dataId}
-            documentId={docId}
             windowId={windowId}
             viewId={viewId}
             siteName={siteName}
@@ -803,14 +804,13 @@ class Header extends PureComponent {
 
         {showSidelist && isSideListShow && (
           <SideList
-            windowId={windowId ? windowId : ''}
+            windowType={windowId ? windowId : ''}
             closeOverlays={this.closeOverlays}
             closeSideList={this.handleSidelistToggle}
             isSideListShow={isSideListShow}
             disableOnClickOutside={!showSidelist}
             docId={dataId}
             defaultTab={sideListTab}
-            viewId={viewId}
             open
           />
         )}
@@ -904,9 +904,9 @@ class Header extends PureComponent {
 Header.propTypes = {
   activeTab: PropTypes.any,
   breadcrumb: PropTypes.any,
-  dataId: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
+  dataId: PropTypes.string,
   dispatch: PropTypes.func.isRequired,
-  docId: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
+  docId: PropTypes.string,
   docSummaryData: PropTypes.any,
   docNoData: PropTypes.any,
   docStatus: PropTypes.any,
@@ -923,10 +923,9 @@ Header.propTypes = {
   plugins: PropTypes.any,
   viewId: PropTypes.string,
   showSidelist: PropTypes.any,
-  showIndicator: PropTypes.bool,
+  showIndicator: PropTypes.any,
   siteName: PropTypes.any,
-  windowId: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
-  indicator: PropTypes.string,
+  windowId: PropTypes.string,
 };
 
 /**
@@ -939,7 +938,6 @@ const mapStateToProps = (state) => ({
   me: state.appHandler.me,
   pathname: state.routing.locationBeforeTransitions.pathname,
   plugins: state.pluginsHandler.files,
-  indicator: state.windowHandler.indicator,
 });
 
 export default connect(mapStateToProps)(Header);

@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types';
-import React, { PureComponent } from 'react';
+import React, { Component } from 'react';
 import { connect } from 'react-redux';
 
 import { fetchTopActions } from '../../actions/WindowActions';
@@ -12,7 +12,7 @@ import Prompt from '../../components/app/Prompt';
  * @module ActionButton
  * @extends Component
  */
-class ActionButton extends PureComponent {
+class ActionButton extends Component {
   constructor(props) {
     super(props);
 
@@ -251,44 +251,6 @@ class ActionButton extends PureComponent {
     }
   };
 
-  handleCancel = () => {
-    const { prompt } = this.state;
-
-    this.setState({ prompt: { ...prompt, isOpen: false } }, () => {
-      this.statusDropdown.blur();
-    });
-  };
-
-  handleSubmit = () => {
-    const { list } = this.state;
-
-    let activePrompt = null;
-    list.forEach((listItem) => {
-      if (prompt.isOpen[listItem.key]) {
-        activePrompt = listItem.key;
-      }
-    });
-
-    this.processStatus(
-      list.find(
-        (elem) =>
-          elem.hasOwnProperty('validationInformation') &&
-          elem.key === activePrompt
-      ),
-      true
-    );
-  };
-
-  documentCompleteStatus = () => {
-    const { list } = this.state;
-
-    this.handleChangeStatus(list.find((elem) => elem.key === 'CO'));
-  };
-
-  setRef = (ref) => {
-    this.statusDropdown = ref;
-  };
-
   /**
    * @method render
    * @summary Main render function for the ActionButton
@@ -304,9 +266,11 @@ class ActionButton extends PureComponent {
       value = data.status.value.caption;
     }
     let showPrompt = false;
+    let activePrompt = null;
     list.forEach((listItem) => {
       if (prompt.isOpen[listItem.key]) {
         showPrompt = true;
+        activePrompt = listItem.key;
       }
     });
 
@@ -315,7 +279,7 @@ class ActionButton extends PureComponent {
         onKeyDown={this.handleKeyDown}
         className="meta-dropdown-toggle dropdown-status-toggler js-dropdown-toggler"
         tabIndex={modalVisible ? -1 : 0}
-        ref={this.setRef}
+        ref={(c) => (this.statusDropdown = c)}
         onBlur={this.handleDropdownBlur}
         onFocus={this.handleDropdownFocus}
       >
@@ -324,8 +288,21 @@ class ActionButton extends PureComponent {
             title={prompt.title}
             text={prompt.text}
             buttons={{ submit: prompt.yes, cancel: prompt.no }}
-            onCancelClick={this.handleCancel}
-            onSubmitClick={this.handleSubmit}
+            onCancelClick={() =>
+              this.setState({ prompt: { ...prompt, isOpen: false } }, () => {
+                this.statusDropdown.blur();
+              })
+            }
+            onSubmitClick={() =>
+              this.processStatus(
+                list.find(
+                  (elem) =>
+                    elem.hasOwnProperty('validationInformation') &&
+                    elem.key === activePrompt
+                ),
+                true
+              )
+            }
           />
         )}
 
@@ -340,7 +317,9 @@ class ActionButton extends PureComponent {
         <i className={`meta-icon-chevron-1 meta-icon-${status}`} />
         <ul className="dropdown-status-list">{this.renderStatusList(list)}</ul>
         <DocumentStatusContextShortcuts
-          handleDocumentCompleteStatus={this.documentCompleteStatus}
+          handleDocumentCompleteStatus={() => {
+            this.handleChangeStatus(list.find((elem) => elem.key === 'CO'));
+          }}
         />
       </div>
     );
@@ -364,7 +343,7 @@ ActionButton.propTypes = {
   modalVisible: PropTypes.bool.isRequired,
   fetchTopActions: PropTypes.func.isRequired,
   data: PropTypes.any,
-  onChange: PropTypes.func,
+  onChange: PropTypes.instanceOf(Function),
   dropdownOpenCallback: PropTypes.any,
   windowType: PropTypes.any,
   fields: PropTypes.any,

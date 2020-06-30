@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types';
-import React, { PureComponent } from 'react';
+import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { push } from 'react-router-redux';
 import { forEach, get } from 'lodash';
@@ -7,16 +7,14 @@ import { forEach, get } from 'lodash';
 import { getTableId } from '../reducers/tables';
 import { addNotification } from '../actions/AppActions';
 import {
+  addRowData,
   attachFileAction,
   clearMasterData,
   fireUpdateData,
   sortTab,
-} from '../actions/WindowActions';
-import {
-  deleteTable,
-  updateTabTableData,
   updateTabRowsData,
-} from '../actions/TableActions';
+} from '../actions/WindowActions';
+import { deleteTable } from '../actions/TableActions';
 import { connectWS, disconnectWS } from '../utils/websockets';
 import { getTabRequest, getRowsData } from '../api';
 
@@ -25,11 +23,15 @@ import MasterWindow from '../components/app/MasterWindow';
 /**
  * @file Class based component.
  * @module MasterWindow
- * @extends PureComponent
+ * @extends Component
  */
-class MasterWindowContainer extends PureComponent {
+class MasterWindowContainer extends Component {
+  static contextTypes = {
+    router: PropTypes.object.isRequired,
+  };
+
   componentDidUpdate(prevProps) {
-    const { master } = this.props;
+    const { master, modal, params, addRowData } = this.props;
 
     if (prevProps.master.websocket !== master.websocket && master.websocket) {
       // websockets are responsible for pushing info about any updates to the data
@@ -44,14 +46,22 @@ class MasterWindowContainer extends PureComponent {
         this.onWebsocketEvent(msg);
       });
     }
-  }
 
-  componentWillUnmount() {
-    const { clearMasterData } = this.props;
+    // When closing modal, we need to update the stale tab
+    // TODO: Check if we still need to do this since all the changes in tabs should be handled
+    // via websockets now.
+    if (
+      !modal.visible &&
+      modal.visible !== prevProps.modal.visible &&
+      master.includedTabsInfo &&
+      master.layout
+    ) {
+      const tabId = master.layout.activeTab;
 
-    clearMasterData();
-    this.deleteTabsTables();
-    disconnectWS.call(this);
+      getTabRequest(tabId, params.windowType, master.docId).then((tab) => {
+        addRowData({ [tabId]: tab }, 'master');
+      });
+    }
   }
 
   async onWebsocketEvent(event) {
@@ -59,7 +69,6 @@ class MasterWindowContainer extends PureComponent {
 
     const activeTab = includedTabsInfo
       ? Object.values(includedTabsInfo).find((tabInfo) =>
-          // TODO: Why sometimes we use `tabid` and other times `tabId` ??!!
           this.isActiveTab(tabInfo.tabId)
         )
       : null;
@@ -83,18 +92,16 @@ class MasterWindowContainer extends PureComponent {
       }
       // Some included rows got staled
       else {
-        // if `staleRowIds` is empty, we'll just query for all rows and update what changed
-        // This can happen when adding a new product via the `Add new` modal.
         const { staleRowIds } = activeTab;
 
-        await this.getTabRows(activeTab.tabId, staleRowIds).then((res) => {
+        await this.getTabRow(activeTab.tabId, staleRowIds).then((res) => {
           this.mergeDataIntoIncludedTab(res);
         });
       }
     }
   }
 
-  getTabRows(tabId, rows) {
+  getTabRow(tabId, rows) {
     const {
       params: { windowType, docId },
     } = this.props;
@@ -105,25 +112,16 @@ class MasterWindowContainer extends PureComponent {
       docId,
       tabId: tabId,
       rows,
-    }).catch(() => {
-      // since we're querying multiple rows, but can only catch one
-      // error, we'll focus on the case when row was deleted and the
-      // endpoint returns 404
-      return { rowId: rows[0], tabId };
-    });
+    }).catch(() => ({ rows, tabId }));
   }
 
   isActiveTab(tabId) {
     const { master } = this.props;
-
     return tabId === master.layout.activeTab;
   }
 
   mergeDataIntoIncludedTab(response) {
-    const {
-      updateTabRowsData,
-      params: { windowType, docId },
-    } = this.props;
+    const { updateTabRowsData } = this.props;
     const { data } = response;
     const changedTabs = {};
     let rowsById = null;
@@ -134,11 +132,11 @@ class MasterWindowContainer extends PureComponent {
     if (!data) {
       removedRows = removedRows || {};
       removedRows[response.rowId] = true;
-      tabId = response.tabId;
+      tabId = !tabId && response.tabId;
     } else {
       rowsById = rowsById || {};
       const rowZero = data[0];
-      tabId = rowZero.tabId;
+      tabId = !tabId && rowZero.tabId;
 
       data.forEach((row) => {
         rowsById[row.rowId] = { ...row };
@@ -161,27 +159,17 @@ class MasterWindowContainer extends PureComponent {
     }
 
     forEach(changedTabs, (rowsChanged, tabId) => {
-      const tableId = getTableId({ windowId: windowType, docId, tabId });
-      updateTabRowsData(tableId, rowsChanged);
+      updateTabRowsData('master', tabId, rowsChanged);
     });
   }
 
-  refreshActiveTab = () => {
-    const {
-      master,
-      params: { windowType, docId },
-      updateTabTableData,
-    } = this.props;
+  refreshActiveTab() {
+    const { master, params, addRowData } = this.props;
 
     const activeTabId = master.layout.activeTab;
     if (!activeTabId) {
       return;
     }
-    const tableId = getTableId({
-      windowId: windowType,
-      docId,
-      tabId: activeTabId,
-    });
 
     const tabLayout =
       master.layout.tabs &&
@@ -194,10 +182,13 @@ class MasterWindowContainer extends PureComponent {
       sortingOrder = (ordering.ascending ? '+' : '-') + ordering.fieldName;
     }
 
-    getTabRequest(activeTabId, windowType, docId, sortingOrder).then((rows) =>
-      updateTabTableData(tableId, rows)
-    );
-  };
+    getTabRequest(
+      activeTabId,
+      params.windowType,
+      master.docId,
+      sortingOrder
+    ).then((tab) => addRowData({ [activeTabId]: tab }, 'master'));
+  }
 
   deleteTabsTables = () => {
     const {
@@ -212,17 +203,23 @@ class MasterWindowContainer extends PureComponent {
 
       if (tabs) {
         tabs.forEach((tabId) => {
-          const tableId = getTableId({ windowId: windowType, docId, tabId });
+          const tableId = getTableId({ windowType, docId, tabId });
           deleteTable(tableId);
         });
       }
     }
   };
 
+  componentWillUnmount() {
+    const { clearMasterData } = this.props;
+
+    clearMasterData();
+    this.deleteTabsTables();
+    disconnectWS.call(this);
+  }
+
   render() {
-    return (
-      <MasterWindow onRefreshTab={this.refreshActiveTab} {...this.props} />
-    );
+    return <MasterWindow {...this.props} />;
   }
 }
 
@@ -244,6 +241,7 @@ class MasterWindowContainer extends PureComponent {
  * @prop {*} [enableTutorial]
  * @prop {*} [location]
  * @prop {func} addNotification
+ * @prop {func} addRowData
  * @prop {func} attachFileAction
  * @prop {func} sortTab
  * @prop {func} push
@@ -268,15 +266,20 @@ MasterWindowContainer.propTypes = {
   location: PropTypes.any,
   clearMasterData: PropTypes.func.isRequired,
   addNotification: PropTypes.func.isRequired,
+  addRowData: PropTypes.func.isRequired,
   attachFileAction: PropTypes.func.isRequired,
   fireUpdateData: PropTypes.func.isRequired,
   sortTab: PropTypes.func.isRequired,
   updateTabRowsData: PropTypes.func.isRequired,
   push: PropTypes.func.isRequired,
   deleteTable: PropTypes.func.isRequired,
-  updateTabTableData: PropTypes.func.isRequired,
 };
 
+/**
+ * @method mapStateToProps
+ * @summary ToDo: Describe the method.
+ * @param {object} state
+ */
 const mapStateToProps = (state) => ({
   master: state.windowHandler.master,
   modal: state.windowHandler.modal,
@@ -296,12 +299,12 @@ export default connect(
   mapStateToProps,
   {
     addNotification,
+    addRowData,
     attachFileAction,
     clearMasterData,
     fireUpdateData,
     sortTab,
     updateTabRowsData,
-    updateTabTableData,
     push,
     deleteTable,
   }
