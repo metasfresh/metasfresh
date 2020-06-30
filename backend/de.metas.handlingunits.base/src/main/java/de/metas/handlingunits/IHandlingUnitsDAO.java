@@ -331,4 +331,7 @@ public interface IHandlingUnitsDAO extends ISingletonService
 	List<I_M_HU> retrieveByIds(Collection<HuId> huIds);
 
 	void setReservedByHUIds(final Collection<HuId> huIds, boolean reserved);
+
+	@NonNull
+	I_M_HU_PI getIncludedPI(@NonNull I_M_HU_PI_Item piItem);
 }

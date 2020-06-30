@@ -778,8 +778,14 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 			throw new AdempiereException("No PI Item defined for " + huItem);
 		}
 
-		final HuPackingInstructionsId includedPIId = HuPackingInstructionsId.ofRepoId(piItem.getIncluded_HU_PI_ID());
-		return Services.get(IHandlingUnitsDAO.class).getPackingInstructionById(includedPIId);
+		return getIncludedPI(piItem);
+	}
+
+	@Override
+	public I_M_HU_PI getIncludedPI(@NonNull final I_M_HU_PI_Item piItem)
+	{
+		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+		return handlingUnitsDAO.getIncludedPI(piItem);
 	}
 
 	@Override
@@ -833,7 +839,7 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 			return null; // this is the case while the aggregate HU is still "under construction" by the HUBuilder and LUTU producer.
 		}
 
-		return parentPIItem.getIncluded_HU_PI();
+		return getIncludedPI(parentPIItem);
 	}
 
 	@Override

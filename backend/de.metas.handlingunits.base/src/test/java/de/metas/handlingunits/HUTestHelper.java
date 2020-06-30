@@ -1117,7 +1117,7 @@ public class HUTestHelper
 
 		final I_M_HU_PI_Item itemDefinition = InterfaceWrapperHelper.newInstance(I_M_HU_PI_Item.class, version);
 		itemDefinition.setItemType(X_M_HU_PI_Item.ITEMTYPE_HandlingUnit);
-		itemDefinition.setIncluded_HU_PI(includedHuDefinition);
+		itemDefinition.setIncluded_HU_PI_ID(includedHuDefinition != null ? includedHuDefinition.getM_HU_PI_ID() : -17);
 		itemDefinition.setM_HU_PI_Version(version);
 		itemDefinition.setC_BPartner_ID(BPartnerId.toRepoId(bpartnerId));
 		if (!Objects.equals(qty, QTY_NA))
@@ -1631,7 +1631,7 @@ public class HUTestHelper
 		assertThat("This method only works if the given 'huPI' has exactly one child-HU item", piItemsForChildHU.size(), is(1));
 
 		lutuProducer.setLUItemPI(piItemsForChildHU.get(0));
-		lutuProducer.setTUPI(piItemsForChildHU.get(0).getIncluded_HU_PI());
+		lutuProducer.setTUPI(handlingUnitsDAO.getIncludedPI(piItemsForChildHU.get(0)));
 
 		final HULoader loader = HULoader.of(source, lutuProducer);
 

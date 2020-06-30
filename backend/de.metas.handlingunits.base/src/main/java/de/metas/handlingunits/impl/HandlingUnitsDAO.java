@@ -775,6 +775,14 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 		return piItemForChild;
 	}
 
+	@NonNull
+	@Override
+	public I_M_HU_PI getIncludedPI(@NonNull final I_M_HU_PI_Item piItem)
+	{
+		final HuPackingInstructionsId includedPIId = HuPackingInstructionsId.ofRepoId(piItem.getIncluded_HU_PI_ID());
+		return getPackingInstructionById(includedPIId);
+	}
+
 	@Override
 	public I_M_HU_PackingMaterial retrievePackingMaterial(final I_M_HU_PI pi, final BPartnerId bpartnerId)
 	{
