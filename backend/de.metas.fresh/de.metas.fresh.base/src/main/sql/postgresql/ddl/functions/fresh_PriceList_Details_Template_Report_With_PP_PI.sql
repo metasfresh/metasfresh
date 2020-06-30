@@ -37,13 +37,13 @@ SELECT plc.value                                                                
        replace(plc.itemproductname, hupiv.name, pi.Name)                                                                  as itemproductname,
        NULL::numeric                                                                                                      as qty,
        plc.uomsymbol                                                                                                      as uomsymbol,
-       to_char(plc.pricestd, getPricePattern(prl.priceprecision::integer))                                                as pricestd,
+       to_char(plc.pricestd, getPricePattern(prl.priceprecision::integer))                                      as pricestd,
        plc.M_ProductPrice_ID                                                                                              as m_productprice_id,
        p_c_bpartner_id                                                                                                    as c_bpartner_id,
        plc.M_HU_PI_Item_Product_ID                                                                                        as m_hu_pi_item_product_id,
-       case when plc.m_hu_pi_item_product_id is not null then 'COLI' else plc.uom_x12de355 end                            as uom_x12de355,
+       plc.uom_x12de355                                                                                                   as uom_x12de355,
        p_c_bpartner_location_id                                                                                           as c_bpartner_location_id,
-       plc.qtycuspertu                                                                                                    as qtycuspertu,
+       plc.qtycuspertu /* internally used as a multiplier for the CU-qty if M_HU_PI_Item_Product_ID is given */           as qtycuspertu,
        plc.m_product_id                                                                                                   as m_product_id,
        plc.BP_Value                                                                                                       as bp_value,
        plc.BP_Name                                                                                                        as bp_name,
@@ -58,7 +58,6 @@ FROM report.fresh_PriceList_Details_Report_With_PP_PI(p_c_bpartner_id, p_m_price
 
          LEFT OUTER JOIN M_Pricelist_Version prlv on prlv.m_pricelist_version_id = p_m_pricelist_version_id
          LEFT OUTER JOIN M_Pricelist prl on prlv.m_pricelist_id = prl.m_pricelist_id
-
 
 $BODY$
     LANGUAGE sql STABLE;

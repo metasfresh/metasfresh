@@ -43,7 +43,7 @@ import lombok.NonNull;
  * Builds {@link Excel_OLCand_Row}.
  *
  * @author tsa
- * @task 08839
+ * task 08839
  */
 public class Excel_OLCand_Row_Builder
 {
@@ -111,7 +111,7 @@ public class Excel_OLCand_Row_Builder
 	public Excel_OLCand_Row_Builder setFromMap(@NonNull final Map<String, Object> map)
 	{
 		// NOTE: we need to create a new map, because we want to use case insensitive keys.
-		final TreeMap<String, Object> map2 = new TreeMap<String, Object>(String.CASE_INSENSITIVE_ORDER);
+		final TreeMap<String, Object> map2 = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 		map2.putAll(map);
 
 		try
@@ -139,18 +139,18 @@ public class Excel_OLCand_Row_Builder
 			this.C_BPartner_Location_ID = coalesce(extractInteger(map2, MAPKEY_C_BPartner_Location_ID), -1);
 			return this;
 		}
-		catch (Exception e)
+		catch (final Exception e)
 		{
 			throw new RuntimeException("Failed building " + Excel_OLCand_Row.class + " from " + map2, e);
 		}
 	}
 
-	private static final Object getValue(final Map<String, Object> map, final String key)
+	private static Object getValue(final Map<String, Object> map, final String key)
 	{
 		return map.get(key);
 	}
 
-	private static final String extractString(Map<String, Object> map, final String key)
+	private static String extractString(final Map<String, Object> map, final String key)
 	{
 		final Object value = getValue(map, key);
 
@@ -169,7 +169,7 @@ public class Excel_OLCand_Row_Builder
 		}
 	}
 
-	private static final Integer extractInteger(Map<String, Object> map, final String key)
+	private static Integer extractInteger(final Map<String, Object> map, final String key)
 	{
 		final Object value = getValue(map, key);
 		if (value == null)
@@ -192,13 +192,13 @@ public class Excel_OLCand_Row_Builder
 			final int valueInt = Integer.parseInt(valueStr);
 			return valueInt;
 		}
-		catch (NumberFormatException e)
+		catch (final NumberFormatException e)
 		{
 			throw new RuntimeException("Failed parsing attribute: " + key, e);
 		}
 	}
 
-	private static final BigDecimal extractBigDecimal(final Map<String, Object> map, final String key)
+	private static BigDecimal extractBigDecimal(final Map<String, Object> map, final String key)
 	{
 		final Object value = getValue(map, key);
 		if (value == null)
@@ -223,7 +223,7 @@ public class Excel_OLCand_Row_Builder
 				final Number parsed = numberFormat.parse(valueStr);
 				return new BigDecimal(parsed.toString());
 			}
-			catch (ParseException e)
+			catch (final ParseException e)
 			{
 				// ignore it
 			}
@@ -258,7 +258,7 @@ public class Excel_OLCand_Row_Builder
 			{
 				return dateFormat.parse(valueStr);
 			}
-			catch (ParseException e)
+			catch (final ParseException e)
 			{
 				// ignore it
 			}
@@ -267,7 +267,7 @@ public class Excel_OLCand_Row_Builder
 		return null;
 	}
 
-	private static final <T> T coalesce(T value, T defaultValue)
+	private static <T> T coalesce(final T value, final T defaultValue)
 	{
 		return value == null ? defaultValue : value;
 	}
