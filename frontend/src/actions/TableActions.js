@@ -232,6 +232,7 @@ export function updateGridTable(tableId, tableResponse) {
       const tableExists = state.tables[tableId];
 
       if (tableExists) {
+        const { indentSupported } = tableExists;
         const tableData = createTableData({
           ...tableResponse,
           headerElements: tableResponse.columnsByFieldName,
@@ -241,13 +242,13 @@ export function updateGridTable(tableId, tableResponse) {
         const { keyProperty } = tableData;
 
         // Parse `rows` to add `indent` property
-        if (tableData.rows.length && tableData.rows.length && collapsible) {
+        if (tableData.rows.length && indentSupported) {
           tableData.rows = flattenRows(tableData.rows);
         }
 
         dispatch(updateTable(tableId, tableData));
 
-        if (collapsible) {
+        if (indentSupported) {
           dispatch(
             createCollapsedRows({
               tableId,
