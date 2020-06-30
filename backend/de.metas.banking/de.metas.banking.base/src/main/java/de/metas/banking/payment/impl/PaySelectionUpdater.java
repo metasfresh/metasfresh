@@ -611,7 +611,7 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 	/**
 	 * Invalidates Cache for current PaySelection.
 	 */
-	private void cacheInvalidationForCurrentPaySelection()
+	public void cacheInvalidationForCurrentPaySelection()
 	{
 		modelCacheInvalidationService.invalidate(
 				CacheInvalidateMultiRequest.fromTableNameAndRecordId(I_C_PaySelection.Table_Name, getPaySelectionId().getRepoId()),

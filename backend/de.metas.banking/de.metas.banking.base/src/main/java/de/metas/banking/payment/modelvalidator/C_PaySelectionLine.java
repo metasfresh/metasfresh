@@ -1,5 +1,17 @@
 package de.metas.banking.payment.modelvalidator;
 
+import de.metas.banking.PaySelectionId;
+import de.metas.banking.payment.IPaySelectionBL;
+import de.metas.banking.payment.IPaySelectionDAO;
+import de.metas.banking.payment.IPaySelectionUpdater;
+import de.metas.banking.payment.IPaymentRequestBL;
+import de.metas.banking.payment.impl.PaySelectionUpdater;
+import de.metas.currency.CurrencyCode;
+import de.metas.currency.ICurrencyDAO;
+import de.metas.i18n.AdMessageKey;
+import de.metas.money.CurrencyId;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
@@ -10,21 +22,13 @@ import org.compiere.model.I_C_PaySelection;
 import org.compiere.model.I_C_PaySelectionLine;
 import org.compiere.model.ModelValidator;
 
-import de.metas.banking.PaySelectionId;
-import de.metas.banking.payment.IPaySelectionBL;
-import de.metas.banking.payment.IPaySelectionDAO;
-import de.metas.banking.payment.IPaymentRequestBL;
-import de.metas.currency.CurrencyCode;
-import de.metas.currency.ICurrencyDAO;
-import de.metas.i18n.AdMessageKey;
-import de.metas.money.CurrencyId;
-import de.metas.util.Services;
-import lombok.NonNull;
-
 @Interceptor(I_C_PaySelectionLine.class)
 public class C_PaySelectionLine
 {
 	public static final transient C_PaySelectionLine instance = new C_PaySelectionLine();
+
+	private final IPaySelectionDAO paySelectionDAO = Services.get(IPaySelectionDAO.class);
+	private final IPaySelectionBL paySelectionBL = Services.get(IPaySelectionBL.class);
 
 	private static final AdMessageKey MSG_PaySelectionLine_Invoice_InvalidCurrency = AdMessageKey.of("PaySelectionLine.Invoice.InvalidCurrency");
 
@@ -54,7 +58,6 @@ public class C_PaySelectionLine
 	private void updateFromPaymentRequestOrInvoice(final I_C_PaySelectionLine paySelectionLine)
 	{
 		final IPaymentRequestBL paymentRequestBL = Services.get(IPaymentRequestBL.class);
-		final IPaySelectionBL paySelectionBL = Services.get(IPaySelectionBL.class);
 
 		if (paymentRequestBL.isUpdatedFromPaymentRequest(paySelectionLine))
 		{
@@ -97,8 +100,6 @@ public class C_PaySelectionLine
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE })
 	public void afterNewOrChange(final I_C_PaySelectionLine paySelectionLine)
 	{
-		final IPaySelectionDAO paySelectionDAO = Services.get(IPaySelectionDAO.class);
-
 		final PaySelectionId paySelectionId = PaySelectionId.ofRepoId(paySelectionLine.getC_PaySelection_ID());
 		paySelectionDAO.updatePaySelectionTotalAmt(paySelectionId);
 	}
@@ -106,10 +107,13 @@ public class C_PaySelectionLine
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_DELETE })
 	public void afterDelete(final I_C_PaySelectionLine paySelectionLine)
 	{
-		final IPaySelectionDAO paySelectionDAO = Services.get(IPaySelectionDAO.class);
+		final IPaySelectionUpdater paySelectionUpdater = paySelectionBL.newPaySelectionUpdater();
 
 		final PaySelectionId paySelectionId = PaySelectionId.ofRepoId(paySelectionLine.getC_PaySelection_ID());
 		paySelectionDAO.updatePaySelectionTotalAmt(paySelectionId);
+		final I_C_PaySelection paySelection = paySelectionDAO.getById(paySelectionId).get();
+		paySelectionUpdater.setC_PaySelection(paySelection);
+		((PaySelectionUpdater)paySelectionUpdater).cacheInvalidationForCurrentPaySelection();
 	}
 
 }
