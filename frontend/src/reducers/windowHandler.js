@@ -1,7 +1,6 @@
 import update from 'immutability-helper';
 import { Set as iSet } from 'immutable';
 import { createSelector } from 'reselect';
-import merge from 'merge';
 
 import {
   ACTIVATE_TAB,
@@ -372,26 +371,29 @@ export default function windowHandler(state = initialState, action) {
         },
       });
     case UPDATE_DATA_PROPERTY: {
-      const { scope, property, value } = action;
-      let newValue = null;
+      let value;
 
-      if (typeof value === 'string') {
-        newValue = value;
-      } else if (property === 'standardActions') {
+      if (typeof action.value === 'string') {
+        value = action.value;
+      } else if (action.property === 'standardActions') {
         // TODO: Use normal array
-        newValue = iSet(value);
-      } else if (['saveStatus', 'validStatus'].includes(property)) {
-        newValue = value;
+        value = iSet(action.value);
+        // TODO: we can probably overwrite all of them instead of merging but this has
+        // to be checked.
+      } else if (['saveStatus', 'validStatus'].includes(action.property)) {
+        value = action.value;
       } else {
-        const currentVal = state[scope] ? state[scope][property] : {};
-
-        newValue = merge.recursive(true, currentVal, value);
+        value = Object.assign(
+          {},
+          state[action.scope] ? state[action.scope][action.property] : {},
+          action.value
+        );
       }
 
       return update(state, {
-        [scope]: {
-          [property]: {
-            $set: newValue,
+        [action.scope]: {
+          [action.property]: {
+            $set: value,
           },
         },
       });

@@ -887,8 +887,15 @@ function updateData(doc, scope) {
   return (dispatch) => {
     Object.keys(doc).map((key) => {
       if (key === 'fieldsByName') {
-        // update all data fields at once
-        dispatch(updateDataProperty('data', doc[key], scope));
+        Object.keys(doc.fieldsByName).map((fieldName) => {
+          dispatch(
+            updateDataFieldProperty(
+              fieldName,
+              doc.fieldsByName[fieldName],
+              scope
+            )
+          );
+        });
       } else if (key === 'includedTabsInfo') {
         dispatch(updateDataIncludedTabsInfo('master', doc[key]));
       } else {
@@ -910,10 +917,7 @@ function mapDataToState(data, isModal, rowId) {
           }
         : item;
 
-      if (
-        !(index === 0 && rowId === 'NEW') &&
-        (!item.rowId || (isModal && item.rowId))
-      ) {
+      if (!(index === 0 && rowId === 'NEW') && !item.rowId) {
         dispatch(updateData(parsedItem, getScope(isModal && index === 0)));
       }
     });

@@ -171,20 +171,11 @@ class TableContainer extends PureComponent {
       docId ? docId : null,
       docId ? tabId : null,
       selected
-    )
-      .then(() => {
-        // TODO: In the future we probably shouldn't refresh the whole list
-        // when something is removed.
-        if (!docId) {
-          updateDocList();
-        }
-      })
-      // for instance removing a newly added tab row without filling any fields
-      .catch(() => {
-        if (docId) {
-          updateDocList();
-        }
-      });
+    ).then(() => {
+      if (!docId) {
+        updateDocList();
+      }
+    });
   };
 
   /**
