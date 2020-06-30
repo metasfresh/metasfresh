@@ -741,12 +741,15 @@ class DocumentListContainer extends Component {
       includedView &&
       includedView.windowType &&
       includedView.viewId;
+    const triggerSpinner = layout.supportAttributes
+      ? layoutPending
+      : layoutPending || pending;
 
     return (
       <DocumentList
         {...this.props}
         {...this.state}
-        triggerSpinner={layoutPending || pending}
+        triggerSpinner={triggerSpinner}
         hasIncluded={hasIncluded}
         onToggleState={this.toggleState}
         pageLength={this.pageLength}
