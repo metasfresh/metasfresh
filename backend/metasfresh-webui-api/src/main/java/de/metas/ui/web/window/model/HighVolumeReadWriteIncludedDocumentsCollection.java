@@ -262,8 +262,6 @@ public class HighVolumeReadWriteIncludedDocumentsCollection implements IIncluded
 				.retriveDocumentOrNull();
 		if (documentRetrieved == null)
 		{
-			// final DocumentPath documentPath = parentDocumentPath.createChildPath(detailId, documentId);
-			// throw new DocumentNotFoundException(documentPath);
 			return Optional.empty();
 		}
 
