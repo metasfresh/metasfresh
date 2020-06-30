@@ -241,7 +241,7 @@ export function updateGridTable(tableId, tableResponse) {
         const { keyProperty } = tableData;
 
         // Parse `rows` to add `indent` property
-        if (tableData.rows.length && tableData.rows.length) {
+        if (tableData.rows.length) {
           tableData.rows = flattenRows(tableData.rows);
         }
 
