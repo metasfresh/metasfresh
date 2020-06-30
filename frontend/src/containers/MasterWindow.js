@@ -46,6 +46,14 @@ class MasterWindowContainer extends PureComponent {
     }
   }
 
+  componentWillUnmount() {
+    const { clearMasterData } = this.props;
+
+    clearMasterData();
+    this.deleteTabsTables();
+    disconnectWS.call(this);
+  }
+
   async onWebsocketEvent(event) {
     const { includedTabsInfo, stale } = event;
 
@@ -158,7 +166,7 @@ class MasterWindowContainer extends PureComponent {
     });
   }
 
-  refreshActiveTab() {
+  refreshActiveTab = () => {
     const {
       master,
       params: { windowType, docId },
@@ -189,7 +197,7 @@ class MasterWindowContainer extends PureComponent {
     getTabRequest(activeTabId, windowType, docId, sortingOrder).then((rows) =>
       updateTabTableData(tableId, rows)
     );
-  }
+  };
 
   deleteTabsTables = () => {
     const {
@@ -211,16 +219,10 @@ class MasterWindowContainer extends PureComponent {
     }
   };
 
-  componentWillUnmount() {
-    const { clearMasterData } = this.props;
-
-    clearMasterData();
-    this.deleteTabsTables();
-    disconnectWS.call(this);
-  }
-
   render() {
-    return <MasterWindow {...this.props} />;
+    return (
+      <MasterWindow onRefreshTab={this.refreshActiveTab} {...this.props} />
+    );
   }
 }
 
