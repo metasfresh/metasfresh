@@ -110,8 +110,9 @@ public class C_PaySelectionLine
 		final IPaySelectionUpdater paySelectionUpdater = paySelectionBL.newPaySelectionUpdater();
 
 		final PaySelectionId paySelectionId = PaySelectionId.ofRepoId(paySelectionLine.getC_PaySelection_ID());
-		paySelectionDAO.updatePaySelectionTotalAmt(paySelectionId);
 		final I_C_PaySelection paySelection = paySelectionDAO.getById(paySelectionId).get();
+
+		paySelectionDAO.updatePaySelectionTotalAmt(paySelectionId);
 		paySelectionUpdater.setC_PaySelection(paySelection);
 		((PaySelectionUpdater)paySelectionUpdater).cacheInvalidationForCurrentPaySelection();
 	}
