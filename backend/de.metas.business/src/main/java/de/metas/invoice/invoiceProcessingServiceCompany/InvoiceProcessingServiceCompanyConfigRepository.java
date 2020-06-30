@@ -47,7 +47,7 @@ import java.util.function.Function;
 @Repository
 public class InvoiceProcessingServiceCompanyConfigRepository
 {
-	private final CCache<Integer, InvoiceProcessingServiceCompanyConfigMap> configsMapCache =
+	private final CCache<Integer, InvoiceProcessingServiceCompanyConfigMap> configMapCache =
 			CCache.<Integer, InvoiceProcessingServiceCompanyConfigMap>builder()
 					.tableName(I_InvoiceProcessingServiceCompany.Table_Name)
 					.additionalTableNameToResetFor(I_InvoiceProcessingServiceCompany_BPartnerAssignment.Table_Name)
@@ -55,8 +55,8 @@ public class InvoiceProcessingServiceCompanyConfigRepository
 
 	public Optional<InvoiceProcessingServiceCompanyConfig> getByCustomerId(@NonNull final BPartnerId customerId, @NonNull final ZonedDateTime evaluationDate)
 	{
-		final InvoiceProcessingServiceCompanyConfigMap config = configsMapCache.getOrLoad(0, InvoiceProcessingServiceCompanyConfigRepository::retrieveAllCompanyConfigs);
-		return config.getByCustomerIdAndDate(customerId, evaluationDate);
+		final InvoiceProcessingServiceCompanyConfigMap configMap = configMapCache.getOrLoad(0, InvoiceProcessingServiceCompanyConfigRepository::retrieveAllCompanyConfigs);
+		return configMap.getByCustomerIdAndDate(customerId, evaluationDate);
 	}
 
 	@NonNull
