@@ -235,10 +235,6 @@ class DocumentListContainer extends Component {
       }
 
       if (fullyChanged === true) {
-        const tableId = getTableId({ windowId, viewId });
-
-        deselectTableItems(tableId, []);
-
         this.browseView();
         this.updateQuickActions();
       }
