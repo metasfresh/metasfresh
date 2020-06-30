@@ -248,7 +248,7 @@ export function updateGridTable(tableId, tableResponse) {
 
         dispatch(updateTable(tableId, tableData));
 
-        if (collapsible) {
+        if (indentSupported) {
           dispatch(
             createCollapsedRows({
               tableId,
