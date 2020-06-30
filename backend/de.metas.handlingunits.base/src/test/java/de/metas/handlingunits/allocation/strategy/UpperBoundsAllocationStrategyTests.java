@@ -1,4 +1,4 @@
-package de.metas.handlingunits.allocation.impl;
+package de.metas.handlingunits.allocation.strategy;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -15,6 +15,7 @@ import de.metas.handlingunits.HuPackingInstructionsItemId;
 import de.metas.handlingunits.IMutableHUContext;
 import de.metas.handlingunits.allocation.IAllocationRequest;
 import de.metas.handlingunits.allocation.IAllocationResult;
+import de.metas.handlingunits.allocation.impl.AllocationUtils;
 import de.metas.handlingunits.hutransaction.IHUTransactionCandidate;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;

@@ -1,4 +1,4 @@
-package de.metas.handlingunits.allocation.impl;
+package de.metas.handlingunits.allocation.strategy;
 
 /*
  * #%L
@@ -40,6 +40,8 @@ import de.metas.handlingunits.allocation.IAllocationRequest;
 import de.metas.handlingunits.allocation.IAllocationRequestBuilder;
 import de.metas.handlingunits.allocation.IAllocationResult;
 import de.metas.handlingunits.allocation.IAllocationStrategy;
+import de.metas.handlingunits.allocation.impl.AllocationDirection;
+import de.metas.handlingunits.allocation.impl.AllocationUtils;
 import de.metas.handlingunits.expectations.AllocationResultExpectation;
 import de.metas.handlingunits.expectations.HUExpectation;
 import de.metas.handlingunits.hutransaction.impl.HUTransactionCandidate;
@@ -56,7 +58,7 @@ import de.metas.quantity.QuantityTU;
 import lombok.Builder;
 
 /**
- * Tests for {@link FIFOAllocationStrategy} and {@link FIFODeallocationStrategy}.
+ * Tests for {@link FIFOAllocationStrategy}.
  *
  *
  * NOTEs for all tests:
@@ -68,7 +70,7 @@ import lombok.Builder;
  * @author tsa
  *
  */
-public class FIFOAllocationDeallocationStrategyTest
+public class FIFOAllocationStrategyTest
 {
 	private HUTestHelper huTestHelper;
 

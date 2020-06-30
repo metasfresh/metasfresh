@@ -41,9 +41,8 @@ import de.metas.handlingunits.allocation.IAllocationRequest;
 import de.metas.handlingunits.allocation.IAllocationResult;
 import de.metas.handlingunits.allocation.IAllocationStrategy;
 import de.metas.handlingunits.allocation.impl.AbstractProducerDestination;
-import de.metas.handlingunits.allocation.impl.AllocationStrategyFactory;
 import de.metas.handlingunits.allocation.impl.AllocationUtils;
-import de.metas.handlingunits.allocation.impl.UpperBoundAllocationStrategy;
+import de.metas.handlingunits.allocation.strategy.AllocationStrategyFactory;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_PI;
@@ -63,7 +62,6 @@ import lombok.ToString;
  *
  * But, instead of using standard capacity definition of given TU PI,
  * we will use a constrained capacity which is provided via {@link #addCapacityConstraint(Capacity)}.
- * Its allocation strategy is the {@link UpperBoundAllocationStrategy}.
  *
  * @author tsa
  *

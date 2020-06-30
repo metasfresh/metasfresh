@@ -1,9 +1,12 @@
-package de.metas.handlingunits.allocation.impl;
+package de.metas.handlingunits.allocation.strategy;
 
 import javax.annotation.Nullable;
 
 import de.metas.handlingunits.allocation.IAllocationRequest;
 import de.metas.handlingunits.allocation.IAllocationResult;
+import de.metas.handlingunits.allocation.impl.AllocationDirection;
+import de.metas.handlingunits.allocation.impl.AllocationUtils;
+import de.metas.handlingunits.allocation.impl.IMutableAllocationResult;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_PI;
@@ -12,7 +15,7 @@ import de.metas.handlingunits.storage.IHUItemStorage;
 import de.metas.util.Check;
 import lombok.NonNull;
 
-public class FIFOAllocationStrategy extends AbstractAllocationStrategy
+class FIFOAllocationStrategy extends AbstractAllocationStrategy
 {
 	public FIFOAllocationStrategy(
 			@NonNull final AllocationDirection direction,

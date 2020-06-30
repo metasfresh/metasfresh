@@ -1,4 +1,4 @@
-package de.metas.handlingunits.allocation.impl;
+package de.metas.handlingunits.allocation.strategy;
 
 import javax.annotation.Nullable;
 
@@ -6,6 +6,8 @@ import org.adempiere.exceptions.AdempiereException;
 
 import de.metas.handlingunits.allocation.IAllocationRequest;
 import de.metas.handlingunits.allocation.IAllocationResult;
+import de.metas.handlingunits.allocation.impl.AllocationDirection;
+import de.metas.handlingunits.allocation.impl.AllocationUtils;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.X_M_HU_PI_Item;
@@ -22,7 +24,7 @@ import lombok.ToString;
  *
  */
 @ToString
-public class UpperBoundAllocationStrategy extends AbstractAllocationStrategy
+class UpperBoundAllocationStrategy extends AbstractAllocationStrategy
 {
 	@Nullable
 	private final Capacity capacityOverride;

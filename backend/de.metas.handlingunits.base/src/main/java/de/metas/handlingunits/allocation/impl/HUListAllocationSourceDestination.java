@@ -49,6 +49,7 @@ import de.metas.handlingunits.allocation.IAllocationResult;
 import de.metas.handlingunits.allocation.IAllocationSource;
 import de.metas.handlingunits.allocation.IAllocationStrategy;
 import de.metas.handlingunits.allocation.spi.impl.AggregateHUTrxListener;
+import de.metas.handlingunits.allocation.strategy.AllocationStrategyFactory;
 import de.metas.handlingunits.impl.HUIterator;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;

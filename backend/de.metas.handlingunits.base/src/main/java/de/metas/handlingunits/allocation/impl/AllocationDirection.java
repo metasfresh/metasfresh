@@ -26,12 +26,12 @@ public enum AllocationDirection
 {
 	INBOUND_ALLOCATION, OUTBOUND_DEALLOCATION;
 
-	boolean isInboundAllocation()
+	public boolean isInboundAllocation()
 	{
 		return INBOUND_ALLOCATION.equals(this);
 	}
 
-	boolean isOutboundDeallocation()
+	public boolean isOutboundDeallocation()
 	{
 		return OUTBOUND_DEALLOCATION.equals(this);
 	}

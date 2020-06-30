@@ -1,10 +1,12 @@
-package de.metas.handlingunits.allocation.impl;
+package de.metas.handlingunits.allocation.strategy;
 
 import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.ad.service.IDeveloperModeBL;
 import org.springframework.stereotype.Service;
+
+import com.google.common.annotations.VisibleForTesting;
 
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
@@ -37,6 +39,7 @@ import lombok.NonNull;
  */
 
 @Service
+@VisibleForTesting
 public class AllocationStrategySupportingServicesFacade
 {
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
