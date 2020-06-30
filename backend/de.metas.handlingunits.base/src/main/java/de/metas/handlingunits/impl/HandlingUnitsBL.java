@@ -38,7 +38,6 @@ import org.adempiere.mm.attributes.api.AttributesKeys;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IContextAware;
-import org.adempiere.util.lang.IMutable;
 import org.adempiere.util.lang.Mutable;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Attribute;
@@ -186,7 +185,7 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 
 		//
 		// Try to destroy given HU (or some of it's children)
-		final IMutable<Boolean> destroyed = new Mutable<>(false);
+		final Mutable<Boolean> destroyed = new Mutable<>(false);
 		Services.get(IHUTrxBL.class).createHUContextProcessorExecutor(huContextInitial)
 				.run(huContext -> {
 					if (destroyIfEmptyStorage(huContext, huToDestroy))
