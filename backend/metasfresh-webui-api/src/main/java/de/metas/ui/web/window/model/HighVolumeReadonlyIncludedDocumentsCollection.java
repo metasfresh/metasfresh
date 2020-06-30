@@ -129,10 +129,6 @@ public final class HighVolumeReadonlyIncludedDocumentsCollection implements IInc
 				.retriveDocumentOrNull();
 		if (document == null)
 		{
-			// final DocumentPath documentPath = parentDocument
-			// .getDocumentPath()
-			// .createChildPath(entityDescriptor.getDetailId(), documentId);
-			// throw new DocumentNotFoundException(documentPath);
 			return Optional.empty();
 		}
 
