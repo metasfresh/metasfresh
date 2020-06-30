@@ -101,6 +101,8 @@ public interface IHandlingUnitsDAO extends ISingletonService
 
 	I_M_HU_PI getPackingInstructionById(HuPackingInstructionsId id);
 
+	I_M_HU_PI_Item getPackingInstructionItemById(@NonNull HuPackingInstructionsItemId piItemId);
+
 	/**
 	 * Gets Virtual PI
 	 *

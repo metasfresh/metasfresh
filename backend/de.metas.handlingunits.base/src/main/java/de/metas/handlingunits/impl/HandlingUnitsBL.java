@@ -22,8 +22,6 @@
 
 package de.metas.handlingunits.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -483,7 +481,7 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 		}
 
 		final String parentItemType = getItemType(parentItem);
-		//noinspection RedundantIfStatement
+		// noinspection RedundantIfStatement
 		if (!X_M_HU_PI_Item.ITEMTYPE_Material.equals(parentItemType))
 		{
 			return false;
@@ -765,8 +763,10 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	@Override
 	public I_M_HU_PI_Item getPIItem(final I_M_HU_Item huItem)
 	{
-		final int piItemId = huItem.getM_HU_PI_Item_ID();
-		return piItemId > 0 ? loadOutOfTrx(piItemId, I_M_HU_PI_Item.class) : null;
+		final HuPackingInstructionsItemId piItemId = HuPackingInstructionsItemId.ofRepoIdOrNull(huItem.getM_HU_PI_Item_ID());
+		return piItemId != null
+				? Services.get(IHandlingUnitsDAO.class).getPackingInstructionItemById(piItemId)
+				: null;
 	}
 
 	@Override
@@ -893,7 +893,7 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	public AttributesKey getStorageRelevantAttributesKey(@NonNull final I_M_HU hu)
 	{
 		final IAttributeStorageFactoryService attributeStorageFactoryService = Services.get(IAttributeStorageFactoryService.class);
-		
+
 		final IAttributeStorageFactory attributeStorageFactory = attributeStorageFactoryService.createHUAttributeStorageFactory();
 		final IAttributeStorage attributeStorage = attributeStorageFactory.getAttributeStorage(hu);
 

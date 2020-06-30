@@ -203,6 +203,12 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	}
 
 	@Override
+	public I_M_HU_PI_Item getPackingInstructionItemById(@NonNull final HuPackingInstructionsItemId piItemId)
+	{
+		return loadOutOfTrx(piItemId, I_M_HU_PI_Item.class);
+	}
+
+	@Override
 	public IHUBuilder createHUBuilder(final IHUContext huContext)
 	{
 		final IHUBuilder huBuilder = new HUBuilder(huContext);
