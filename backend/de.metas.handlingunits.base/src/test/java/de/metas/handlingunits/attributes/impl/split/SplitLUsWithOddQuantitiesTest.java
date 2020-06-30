@@ -22,10 +22,33 @@
 
 package de.metas.handlingunits.attributes.impl.split;
 
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.xmlunit.assertj.XmlAssert.assertThat;
+
+import java.math.BigDecimal;
+import java.util.List;
+import java.util.Objects;
+
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.ad.wrapper.POJOLookupMap;
+import org.assertj.core.api.Assertions;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_OrderLine;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_Warehouse;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.w3c.dom.Node;
+
 import de.metas.business.BusinessTestHelper;
 import de.metas.handlingunits.HUXmlConverter;
 import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.allocation.impl.AllocationStrategyFactory;
+import de.metas.handlingunits.allocation.impl.AllocationStrategySupportingServicesFacade;
 import de.metas.handlingunits.allocation.transfer.HUTransformService;
+import de.metas.handlingunits.allocation.transfer.HUTransformService.HUsToNewTUsRequest;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attributes.impl.AbstractWeightAttributeTest;
 import de.metas.handlingunits.model.I_M_HU;
@@ -35,25 +58,6 @@ import de.metas.handlingunits.receiptschedule.impl.HUReceiptScheduleWeightNetAdj
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.ad.wrapper.POJOLookupMap;
-import org.assertj.core.api.Assertions;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_OrderLine;
-import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Warehouse;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.w3c.dom.Node;
-
-import java.math.BigDecimal;
-import java.util.List;
-import java.util.Objects;
-
-import static de.metas.handlingunits.allocation.transfer.HUTransformService.HUsToNewTUsRequest;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.xmlunit.assertj.XmlAssert.assertThat;
 
 /**
  * Misc:
@@ -64,6 +68,15 @@ import static org.xmlunit.assertj.XmlAssert.assertThat;
 public class SplitLUsWithOddQuantitiesTest extends AbstractWeightAttributeTest
 {
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+
+	@Override
+	protected void afterInitialize()
+	{
+		super.afterInitialize();
+
+		final AllocationStrategySupportingServicesFacade services = new AllocationStrategySupportingServicesFacade();
+		SpringContextHolder.registerJUnitBean(new AllocationStrategyFactory(services));
+	}
 
 	@Override
 	protected I_C_UOM getCUUOM()
@@ -103,7 +116,7 @@ public class SplitLUsWithOddQuantitiesTest extends AbstractWeightAttributeTest
 					materialItemProductTomato_10,
 					BigDecimal.valueOf(200));
 
-			/*set weight attributes; does not yet affect storage, but is required for the weight-adjuster to work later*/
+			/* set weight attributes; does not yet affect storage, but is required for the weight-adjuster to work later */
 			final IAttributeStorage attributeStorageLoadingUnit = attributeStorageFactory.getAttributeStorage(lu);
 			attributeStorageLoadingUnit.setValue(attr_WeightNet, initialNetWeight);
 			assertLoadingUnitStorageWeights(lu, huItemIFCO_10, 20,
@@ -184,7 +197,7 @@ public class SplitLUsWithOddQuantitiesTest extends AbstractWeightAttributeTest
 					materialItemProductTomato_10,
 					BigDecimal.valueOf(200));
 
-			/*set weight attributes; does not yet affect storage, but is required for the weight-adjuster to work later*/
+			/* set weight attributes; does not yet affect storage, but is required for the weight-adjuster to work later */
 			final IAttributeStorage attributeStorageLoadingUnit = attributeStorageFactory.getAttributeStorage(lu);
 			attributeStorageLoadingUnit.setValue(attr_WeightNet, initialNetWeight);
 			assertLoadingUnitStorageWeights(lu, huItemIFCO_10, 20,
@@ -266,7 +279,7 @@ public class SplitLUsWithOddQuantitiesTest extends AbstractWeightAttributeTest
 					materialItemProductTomato_10,
 					BigDecimal.valueOf(400));
 
-			/*set weight attributes; does not yet affect storage, but is required for the weight-adjuster to work later*/
+			/* set weight attributes; does not yet affect storage, but is required for the weight-adjuster to work later */
 			final IAttributeStorage attributeStorageLoadingUnit = attributeStorageFactory.getAttributeStorage(lu);
 			attributeStorageLoadingUnit.setValue(attr_WeightNet, initialNetWeight);
 			assertLoadingUnitStorageWeights(lu, huItemIFCO_10, 40,
@@ -347,7 +360,7 @@ public class SplitLUsWithOddQuantitiesTest extends AbstractWeightAttributeTest
 					materialItemProductTomato_10,
 					BigDecimal.valueOf(200));
 
-			/*set weight attributes; does not yet affect storage, but is required for the weight-adjuster to work later*/
+			/* set weight attributes; does not yet affect storage, but is required for the weight-adjuster to work later */
 			final IAttributeStorage attributeStorageLoadingUnit = attributeStorageFactory.getAttributeStorage(lu);
 			attributeStorageLoadingUnit.setValue(attr_WeightNet, initialNetWeight);
 			assertLoadingUnitStorageWeights(lu, huItemIFCO_10, 20,

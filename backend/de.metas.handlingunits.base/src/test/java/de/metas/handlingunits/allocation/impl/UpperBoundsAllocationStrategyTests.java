@@ -74,7 +74,7 @@ public class UpperBoundsAllocationStrategyTests
 
 	private static UpperBoundAllocationStrategy createUpperBoundAllocationStrategy(@Nullable Capacity capacity)
 	{
-		final AllocationStrategySupportingServicesFacade services = AllocationStrategySupportingServicesFacade.newInstance();
+		final AllocationStrategySupportingServicesFacade services = new AllocationStrategySupportingServicesFacade();
 		return new UpperBoundAllocationStrategy(capacity, services);
 	}
 

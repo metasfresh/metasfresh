@@ -29,6 +29,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.compiere.SpringContextHolder;
+
 import com.jgoodies.common.base.Objects;
 
 import de.metas.handlingunits.HuPackingInstructionsId;
@@ -38,8 +40,8 @@ import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.allocation.IAllocationRequest;
 import de.metas.handlingunits.allocation.IAllocationResult;
 import de.metas.handlingunits.allocation.IAllocationStrategy;
-import de.metas.handlingunits.allocation.IAllocationStrategyFactory;
 import de.metas.handlingunits.allocation.impl.AbstractProducerDestination;
+import de.metas.handlingunits.allocation.impl.AllocationStrategyFactory;
 import de.metas.handlingunits.allocation.impl.AllocationUtils;
 import de.metas.handlingunits.allocation.impl.UpperBoundAllocationStrategy;
 import de.metas.handlingunits.model.I_M_HU;
@@ -69,7 +71,7 @@ import lombok.ToString;
 @ToString
 /* package */final class TUProducerDestination extends AbstractProducerDestination
 {
-	private final IAllocationStrategyFactory allocationStrategyFactory = Services.get(IAllocationStrategyFactory.class);
+	private final AllocationStrategyFactory allocationStrategyFactory = SpringContextHolder.instance.getBean(AllocationStrategyFactory.class);
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final IHUPIItemProductDAO hupiItemProductDAO = Services.get(IHUPIItemProductDAO.class);
 	private final IHUCapacityBL capacityBL = Services.get(IHUCapacityBL.class);

@@ -1,5 +1,6 @@
 package de.metas.handlingunits.allocation.impl;
 
+import org.compiere.SpringContextHolder;
 import org.compiere.util.Util.ArrayKey;
 
 import de.metas.handlingunits.HuPackingInstructionsId;
@@ -7,7 +8,6 @@ import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.allocation.IAllocationRequest;
 import de.metas.handlingunits.allocation.IAllocationResult;
 import de.metas.handlingunits.allocation.IAllocationStrategy;
-import de.metas.handlingunits.allocation.IAllocationStrategyFactory;
 import de.metas.handlingunits.allocation.transfer.impl.LUTUProducerDestination;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
@@ -49,7 +49,7 @@ public class HUProducerDestination extends AbstractProducerDestination
 
 	private static final ArrayKey SHARED_CurrentHUKey = ArrayKey.of(0);
 
-	private final IAllocationStrategyFactory allocationStrategyFactory = Services.get(IAllocationStrategyFactory.class);
+	private final AllocationStrategyFactory allocationStrategyFactory = SpringContextHolder.instance.getBean(AllocationStrategyFactory.class);
 
 	private final I_M_HU_PI huPI;
 

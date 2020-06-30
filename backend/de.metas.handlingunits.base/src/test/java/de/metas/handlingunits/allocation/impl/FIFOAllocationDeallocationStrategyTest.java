@@ -95,7 +95,7 @@ public class FIFOAllocationDeallocationStrategyTest
 		productId = huTestHelper.pTomatoProductId;
 		productUOM = huTestHelper.uomKg;
 
-		strategyFactory = new AllocationStrategyFactory();
+		strategyFactory = new AllocationStrategyFactory(new AllocationStrategySupportingServicesFacade());
 	}
 
 	private LUTUConfig setupLUTU(

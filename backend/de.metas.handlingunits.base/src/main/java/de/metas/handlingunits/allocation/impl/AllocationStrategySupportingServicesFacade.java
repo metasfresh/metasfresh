@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.ad.service.IDeveloperModeBL;
+import org.springframework.stereotype.Service;
 
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
@@ -35,16 +36,18 @@ import lombok.NonNull;
  * #L%
  */
 
+@Service
 public class AllocationStrategySupportingServicesFacade
 {
-	public static AllocationStrategySupportingServicesFacade newInstance()
-	{
-		return new AllocationStrategySupportingServicesFacade();
-	}
-
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+	// private IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	private final IDeveloperModeBL developerModeBL = Services.get(IDeveloperModeBL.class);
+
+	private IHandlingUnitsDAO getHandlingUnitsDAO()
+	{
+		// FIXME: find out why if we are using the "handlingUnitsDAO" field, tests are failing
+		return Services.get(IHandlingUnitsDAO.class);
+	}
 
 	public boolean isDeveloperMode()
 	{
@@ -53,7 +56,7 @@ public class AllocationStrategySupportingServicesFacade
 
 	public I_M_HU_PI getVirtualPI(final Properties ctx)
 	{
-		return handlingUnitsDAO.retrieveVirtualPI(ctx);
+		return getHandlingUnitsDAO().retrieveVirtualPI(ctx);
 	}
 
 	public boolean isPureVirtual(final I_M_HU_Item huItem)
@@ -68,12 +71,12 @@ public class AllocationStrategySupportingServicesFacade
 
 	public List<I_M_HU_Item> retrieveItems(@NonNull final I_M_HU hu)
 	{
-		return handlingUnitsDAO.retrieveItems(hu);
+		return getHandlingUnitsDAO().retrieveItems(hu);
 	}
 
 	public I_M_HU_Item retrieveParentItem(final I_M_HU hu)
 	{
-		return handlingUnitsDAO.retrieveParentItem(hu);
+		return Services.get(IHandlingUnitsDAO.class).retrieveParentItem(hu);
 	}
 
 	public String getItemType(final I_M_HU_Item item)
@@ -83,7 +86,7 @@ public class AllocationStrategySupportingServicesFacade
 
 	public List<I_M_HU> retrieveIncludedHUs(final I_M_HU_Item item)
 	{
-		return handlingUnitsDAO.retrieveIncludedHUs(item);
+		return getHandlingUnitsDAO().retrieveIncludedHUs(item);
 	}
 
 	public I_M_HU_PI getIncluded_HU_PI(@NonNull final I_M_HU_Item item)
@@ -93,6 +96,6 @@ public class AllocationStrategySupportingServicesFacade
 
 	public void deleteHU(final I_M_HU hu)
 	{
-		handlingUnitsDAO.delete(hu);
+		getHandlingUnitsDAO().delete(hu);
 	}
 }
