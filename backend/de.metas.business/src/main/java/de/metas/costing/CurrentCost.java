@@ -157,7 +157,6 @@ public final class CurrentCost
 		Check.assume(qty.signum() != 0, "qty not zero");
 
 		final CostAmount currentAmt = costPrice.getOwnCostPrice().multiply(currentQty);
-
 		final CostAmount newAmt = currentAmt.add(amt);
 
 		final Quantity qtyConv = uomConverter.convertQuantityTo(qty, costSegment.getProductId(), uomId);
