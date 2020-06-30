@@ -3,6 +3,7 @@ package de.metas.costing;
 import java.math.BigDecimal;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.acct.PostingExecutionException;
 import org.compiere.model.I_C_UOM;
 
 import de.metas.currency.CurrencyPrecision;
@@ -162,6 +163,11 @@ public final class CurrentCost
 
 		final Quantity qtyConv = uomConverter.convertQuantityTo(qty, costSegment.getProductId(), uomId);
 		final Quantity newQty = currentQty.add(qtyConv);
+
+		if (newQty.signum() < 0)
+		{
+			throw new PostingExecutionException("Stock cannot go below 0. Please, increase stock");
+		}
 		if (newQty.signum() != 0)
 		{
 			final CostAmount ownCostPrice = newAmt.divide(newQty, getPrecision());
@@ -193,6 +199,11 @@ public final class CurrentCost
 	private void addToCurrentQty(@NonNull final Quantity qtyToAdd)
 	{
 		currentQty = currentQty.add(qtyToAdd);
+		
+		if (currentQty.signum() < 0)
+		{
+			throw new PostingExecutionException("Stock cannot go below 0. Please, increase stock");
+		}
 	}
 
 	public void setCostPrice(@NonNull final CostPrice costPrice)
