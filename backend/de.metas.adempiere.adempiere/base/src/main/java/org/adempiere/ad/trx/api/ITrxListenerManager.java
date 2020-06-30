@@ -53,7 +53,7 @@ public interface ITrxListenerManager
 		}
 
 		/**
-		 * <li>Every timing can registered within "none", i.e. outside of any listener method.</li>
+		 * <li>Every timing can be registered within "none", i.e. outside of any listener method.</li>
 		 * <li>otherwise, a listener can be registered within another listener's method if its timing is after that other listener method's timing.<br>
 		 * e.g. within a beforeComlete() (=> otherTiming) method you can register a listener for "afterRollBack" (=> this timing)</li>
 		 * <li>Also, we allow {@link #AFTER_COMMIT} to be registered within another after-commit because it's generally OK to have any number of commits within one transaction</li>
