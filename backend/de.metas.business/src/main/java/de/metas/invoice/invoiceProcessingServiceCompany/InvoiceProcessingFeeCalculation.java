@@ -50,9 +50,6 @@ public class InvoiceProcessingFeeCalculation
 	@NonNull
 	InvoiceId invoiceId;
 
-	// @NonNull
-	// Amount invoiceGrandTotal;
-
 	@NonNull
 	BPartnerId serviceCompanyBPartnerId;
 
