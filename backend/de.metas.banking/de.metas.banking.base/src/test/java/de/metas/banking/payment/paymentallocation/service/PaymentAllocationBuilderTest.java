@@ -1,22 +1,8 @@
-package de.metas.banking.payment.paymentallocation.service;
-
-import static de.metas.banking.payment.paymentallocation.service.AllocationLineCandidate.AllocationLineCandidateType.InboundPaymentToOutboundPayment;
-import static de.metas.banking.payment.paymentallocation.service.AllocationLineCandidate.AllocationLineCandidateType.InvoiceDiscountOrWriteOff;
-import static de.metas.banking.payment.paymentallocation.service.AllocationLineCandidate.AllocationLineCandidateType.InvoiceToCreditMemo;
-import static de.metas.banking.payment.paymentallocation.service.AllocationLineCandidate.AllocationLineCandidateType.InvoiceToPayment;
-import static de.metas.banking.payment.paymentallocation.service.AllocationLineCandidate.AllocationLineCandidateType.SalesInvoiceToPurchaseInvoice;
-import static de.metas.invoice.InvoiceDocBaseType.CustomerCreditMemo;
-import static de.metas.invoice.InvoiceDocBaseType.CustomerInvoice;
-import static de.metas.invoice.InvoiceDocBaseType.VendorCreditMemo;
-import static de.metas.invoice.InvoiceDocBaseType.VendorInvoice;
-import static de.metas.payment.PaymentDirection.INBOUND;
-import static de.metas.payment.PaymentDirection.OUTBOUND;
-
 /*
  * #%L
- * de.metas.banking.swingui
+ * de.metas.banking.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -33,6 +19,20 @@ import static de.metas.payment.PaymentDirection.OUTBOUND;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+package de.metas.banking.payment.paymentallocation.service;
+
+import static de.metas.banking.payment.paymentallocation.service.AllocationLineCandidate.AllocationLineCandidateType.InboundPaymentToOutboundPayment;
+import static de.metas.banking.payment.paymentallocation.service.AllocationLineCandidate.AllocationLineCandidateType.InvoiceDiscountOrWriteOff;
+import static de.metas.banking.payment.paymentallocation.service.AllocationLineCandidate.AllocationLineCandidateType.InvoiceToCreditMemo;
+import static de.metas.banking.payment.paymentallocation.service.AllocationLineCandidate.AllocationLineCandidateType.InvoiceToPayment;
+import static de.metas.banking.payment.paymentallocation.service.AllocationLineCandidate.AllocationLineCandidateType.SalesInvoiceToPurchaseInvoice;
+import static de.metas.invoice.InvoiceDocBaseType.CustomerCreditMemo;
+import static de.metas.invoice.InvoiceDocBaseType.CustomerInvoice;
+import static de.metas.invoice.InvoiceDocBaseType.VendorCreditMemo;
+import static de.metas.invoice.InvoiceDocBaseType.VendorInvoice;
+import static de.metas.payment.PaymentDirection.INBOUND;
+import static de.metas.payment.PaymentDirection.OUTBOUND;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -960,7 +960,7 @@ public class PaymentAllocationBuilderTest
 				.evaluationDate(date.atStartOfDay(ZoneId.of("UTC-8")))
 				.customerId(bpartnerId)
 				.invoiceId(InvoiceId.ofRepoId(1111))
-				.invoiceGrandTotal(Amount.of(100, CurrencyCode.EUR))
+				// .invoiceGrandTotal(Amount.of(100, CurrencyCode.EUR))
 				.serviceCompanyBPartnerId(BPartnerId.ofRepoId(2222))
 				.serviceInvoiceDocTypeId(DocTypeId.ofRepoId(3333))
 				.serviceFeeProductId(ProductId.ofRepoId(4444))

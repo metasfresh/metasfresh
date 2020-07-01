@@ -37,6 +37,8 @@ import java.util.Optional;
 {
 	private final ImmutableListMultimap<BPartnerId, InvoiceProcessingServiceCompanyConfig> bpartnersToConfigsSorted;
 
+	private final ImmutableListMultimap<BPartnerId, InvoiceProcessingServiceCompanyConfig> companyBPartnersToConfigsSorted;
+
 	public InvoiceProcessingServiceCompanyConfigMap(@NonNull final List<InvoiceProcessingServiceCompanyConfig> configs)
 	{
 		final ImmutableListMultimap.Builder<BPartnerId, InvoiceProcessingServiceCompanyConfig> map = ImmutableListMultimap.builder();
@@ -50,7 +52,20 @@ import java.util.Optional;
 		// for ease of access and calculation: sort by ValidFrom
 		map.orderValuesBy(Comparator.comparing(InvoiceProcessingServiceCompanyConfig::getValidFrom));
 
-		bpartnersToConfigsSorted = map.build();
+			bpartnersToConfigsSorted = map.build();
+		}
+
+		{
+			final ImmutableListMultimap.Builder<BPartnerId, InvoiceProcessingServiceCompanyConfig> map = ImmutableListMultimap.builder();
+			for (final InvoiceProcessingServiceCompanyConfig config : configs)
+			{
+				map.put(config.getServiceCompanyBPartnerId(), config);
+			}
+			// for ease of access and calculation: sort by ValidFrom
+			map.orderValuesBy(Comparator.comparing(InvoiceProcessingServiceCompanyConfig::getValidFrom));
+
+			companyBPartnersToConfigsSorted = map.build();
+		}
 	}
 
 	public Optional<InvoiceProcessingServiceCompanyConfig> getByCustomerIdAndDate(@NonNull final BPartnerId customerId, @NonNull final ZonedDateTime validFrom)
@@ -66,6 +81,36 @@ import java.util.Optional;
 		}
 
 		return Optional.empty();
+	}
+
+	/**
+	 * If ValidFrom is before any of the CompanyConfigs.ValidFrom, we will return the CompanyConfig with ValidFrom closest to the received parameter.
+	 * <p>
+	 * example:
+	 * - ValidFrom: 2020-01-01
+	 * - CompanyConfig1.ValidFrom: 2020-02-01
+	 * - CompanyConfig2.ValidFrom: 2020-03-01
+	 * => return CompanyConfig1.
+	 */
+	public Optional<InvoiceProcessingServiceCompanyConfig> getByServiceCompanyBPartnerIdAndDateIncludingInvalidDates(final BPartnerId serviceCompanyBPartnerId, final ZonedDateTime validFrom)
+	{
+		final ImmutableList<InvoiceProcessingServiceCompanyConfig> configs = companyBPartnersToConfigsSorted.get(serviceCompanyBPartnerId);
+
+		if (configs.isEmpty())
+		{
+			return Optional.empty();
+		}
+
+		for (int i = configs.size() - 1; i >= 0; i--)
+		{
+			final InvoiceProcessingServiceCompanyConfig config = configs.get(i);
+			if (config.getValidFrom().isBefore(validFrom) || config.getValidFrom().isEqual(validFrom))
+			{
+				return Optional.of(config);
+			}
+		}
+
+		return Optional.of(configs.get(0));
 	}
 }
 

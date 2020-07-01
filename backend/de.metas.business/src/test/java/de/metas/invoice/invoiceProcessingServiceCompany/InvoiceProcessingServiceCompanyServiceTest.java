@@ -148,7 +148,7 @@ public class InvoiceProcessingServiceCompanyServiceTest
 							.evaluationDate(LocalDate.parse("2020-04-30").atStartOfDay(ZoneId.of("UTC+5")))
 							.customerId(BPartnerId.ofRepoId(2))
 							.invoiceId(InvoiceId.ofRepoId(3))
-							.invoiceGrandTotal(Amount.of(100, CurrencyCode.EUR))
+							// .invoiceGrandTotal(Amount.of(100, CurrencyCode.EUR))
 							//
 							.serviceCompanyBPartnerId(serviceCompanyBPartnerId)
 							.serviceInvoiceDocTypeId(serviceInvoiceDocTypeId)
@@ -233,18 +233,11 @@ public class InvoiceProcessingServiceCompanyServiceTest
 		{
 			final BPartnerId bpartner1 = BPartnerId.ofRepoId(2);
 			final BPartnerId bpartner2 = BPartnerId.ofRepoId(7);
-			config()
-					.feePercentageOfGrandTotal("1")
-					.customerId(bpartner1)
-					.customerId(bpartner2)
-					.validFrom(LocalDate.parse("2020-01-01").atStartOfDay(ZoneId.of("UTC+5")))
-					.build();
 
 			config()
-					.feePercentageOfGrandTotal("2")
+					.feePercentageOfGrandTotal("4")
 					.customerId(bpartner1)
-					.customerId(bpartner2)
-					.validFrom(LocalDate.parse("2020-02-01").atStartOfDay(ZoneId.of("UTC+5")))
+					.validFrom(LocalDate.parse("2020-04-01").atStartOfDay(ZoneId.of("UTC+5")))
 					.build();
 
 			config()
@@ -255,26 +248,79 @@ public class InvoiceProcessingServiceCompanyServiceTest
 					.build();
 
 			config()
-					.feePercentageOfGrandTotal("4")
+					.feePercentageOfGrandTotal("2")
 					.customerId(bpartner1)
-					.validFrom(LocalDate.parse("2020-04-01").atStartOfDay(ZoneId.of("UTC+5")))
+					.customerId(bpartner2)
+					.validFrom(LocalDate.parse("2020-02-01").atStartOfDay(ZoneId.of("UTC+5")))
+					.build();
+
+			config()
+					.feePercentageOfGrandTotal("1")
+					.customerId(bpartner1)
+					.customerId(bpartner2)
+					.validFrom(LocalDate.parse("2020-01-01").atStartOfDay(ZoneId.of("UTC+5")))
 					.build();
 
 			assertThat(configRepository.getByCustomerId(bpartner1, LocalDate.parse("2019-12-31").atStartOfDay(ZoneId.of("UTC+5")))).isEmpty();
 
 			assertCorrectConfigReturned(bpartner1, "3030-01-01", 4);
-			assertCorrectConfigReturned(bpartner1, "2020-04-01", 4);
 			assertCorrectConfigReturned(bpartner1, "2020-04-02", 4);
+			assertCorrectConfigReturned(bpartner1, "2020-04-01", 4);
 			assertCorrectConfigReturned(bpartner1, "2020-03-28", 3);
 			assertCorrectConfigReturned(bpartner1, "2020-01-01", 1);
 
 			assertThat(configRepository.getByCustomerId(bpartner2, LocalDate.parse("2019-12-31").atStartOfDay(ZoneId.of("UTC+5")))).isEmpty();
 
 			assertCorrectConfigReturned(bpartner2, "3030-01-01", 3);
-			assertCorrectConfigReturned(bpartner2, "2020-04-01", 3);
 			assertCorrectConfigReturned(bpartner2, "2020-04-02", 3);
+			assertCorrectConfigReturned(bpartner2, "2020-04-01", 3);
 			assertCorrectConfigReturned(bpartner2, "2020-03-28", 3);
 			assertCorrectConfigReturned(bpartner2, "2020-01-01", 1);
+		}
+
+		@Test
+		void selectConfigByCompanyBPartnerAndValidFrom()
+		{
+			final BPartnerId bpartner1 = BPartnerId.ofRepoId(2);
+			final BPartnerId bpartner2 = BPartnerId.ofRepoId(7);
+			final BPartnerId bpartnerNoConfig = BPartnerId.ofRepoId(9);
+
+			config()
+					.feePercentageOfGrandTotal("4")
+					.customerId(bpartner1)
+					.validFrom(LocalDate.parse("2020-04-01").atStartOfDay(ZoneId.of("UTC+5")))
+					.build();
+
+			config()
+					.feePercentageOfGrandTotal("3")
+					.customerId(bpartner2)
+					.customerId(bpartner1)
+					.validFrom(LocalDate.parse("2020-03-01").atStartOfDay(ZoneId.of("UTC+5")))
+					.build();
+
+			config()
+					.feePercentageOfGrandTotal("2")
+					.customerId(bpartner1)
+					.customerId(bpartner2)
+					.validFrom(LocalDate.parse("2020-02-01").atStartOfDay(ZoneId.of("UTC+5")))
+					.build();
+
+			config()
+					.feePercentageOfGrandTotal("1")
+					.customerId(bpartner1)
+					.customerId(bpartner2)
+					.validFrom(LocalDate.parse("2020-01-01").atStartOfDay(ZoneId.of("UTC+5")))
+					.build();
+
+			assertCorrectConfigByValidFrom(serviceCompanyBPartnerId, "3030-01-01", "2020-04-01");
+			assertCorrectConfigByValidFrom(serviceCompanyBPartnerId, "2020-04-02", "2020-04-01");
+			assertCorrectConfigByValidFrom(serviceCompanyBPartnerId, "2020-04-01", "2020-04-01");
+			assertCorrectConfigByValidFrom(serviceCompanyBPartnerId, "2020-03-28", "2020-03-01");
+			assertCorrectConfigByValidFrom(serviceCompanyBPartnerId, "2020-01-01", "2020-01-01");
+			assertCorrectConfigByValidFrom(serviceCompanyBPartnerId, "2019-01-01", "2020-01-01");
+
+			assertThat(configRepository.getByPaymentBPartnerAndValidFromDate(bpartnerNoConfig, LocalDate.parse("2019-12-31").atStartOfDay(ZoneId.of("UTC+5")))).isEmpty();
+			assertThat(configRepository.getByPaymentBPartnerAndValidFromDate(bpartnerNoConfig, LocalDate.parse("2020-04-02").atStartOfDay(ZoneId.of("UTC+5")))).isEmpty();
 		}
 
 		@Test
@@ -283,12 +329,22 @@ public class InvoiceProcessingServiceCompanyServiceTest
 			final BPartnerId bpartnerId = BPartnerId.ofRepoId(2);
 
 			assertThat(configRepository.getByCustomerId(bpartnerId, LocalDate.parse("2020-04-01").atStartOfDay(ZoneId.of("UTC+5")))).isEmpty();
+
+			assertThat(configRepository.getByPaymentBPartnerAndValidFromDate(bpartnerId, LocalDate.parse("2019-12-31").atStartOfDay(ZoneId.of("UTC+5")))).isEmpty();
+			assertThat(configRepository.getByPaymentBPartnerAndValidFromDate(bpartnerId, LocalDate.parse("2020-04-02").atStartOfDay(ZoneId.of("UTC+5")))).isEmpty();
 		}
 
 		private void assertCorrectConfigReturned(final BPartnerId bpartnerId, final String localDate, final int percentValue)
 		{
 			assertThat(configRepository.getByCustomerId(bpartnerId, LocalDate.parse(localDate).atStartOfDay(ZoneId.of("UTC+5"))))
 					.hasValueSatisfying(config -> assertThat(config.getFeePercentageOfGrandTotalByBpartner(bpartnerId)).hasValue(Percent.of(percentValue)));
+		}
+
+		private void assertCorrectConfigByValidFrom(final BPartnerId bpartnerId, final String localDate, final String expectedValidFrom)
+		{
+			assertThat(configRepository.getByPaymentBPartnerAndValidFromDate(bpartnerId, LocalDate.parse(localDate).atStartOfDay(ZoneId.of("UTC+5"))))
+					.hasValueSatisfying(config -> assertThat(config.getValidFrom())
+							.isEqualTo(LocalDate.parse(expectedValidFrom).atStartOfDay(ZoneId.of("UTC+5"))));
 		}
 	}
 
@@ -463,7 +519,7 @@ public class InvoiceProcessingServiceCompanyServiceTest
 					.evaluationDate(LocalDate.parse("2020-04-30").atStartOfDay(ZoneId.of("UTC-8")))
 					.customerId(BPartnerId.ofRepoId(2))
 					.invoiceId(InvoiceId.ofRepoId(3))
-					.invoiceGrandTotal(Amount.of(100, CurrencyCode.EUR))
+					// .invoiceGrandTotal(Amount.of(100, CurrencyCode.EUR))
 					//
 					.serviceCompanyBPartnerId(serviceCompanyBPartnerAndLocationId.getBpartnerId())
 					.serviceInvoiceDocTypeId(serviceInvoiceDocTypeId)

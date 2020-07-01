@@ -75,6 +75,40 @@ public class InvoiceProcessingServiceCompanyService
 		this.moneyService = moneyService;
 	}
 
+	public Optional<InvoiceProcessingFeeCalculation> createFeeCalculationForPayment(@NonNull final InvoiceProcessingFeeFromPaymentRequest request)
+	{
+		final BPartnerId serviceCompanyBPartnerId = request.getServiceCompanyBPartnerId();
+		final InvoiceId invoiceId = request.getInvoiceId();
+		final Amount feeAmountIncludingTax = request.getFeeAmountIncludingTax();
+
+		if (invoiceDAO.hasCompletedInvoicesReferencing(invoiceId))
+		{
+			return Optional.empty();
+		}
+
+		final InvoiceProcessingServiceCompanyConfig config = configRepository.getByPaymentBPartnerAndValidFromDate(serviceCompanyBPartnerId, request.getPaymentDate()).orElse(null);
+		if (config == null)
+		{
+			return Optional.empty();
+		}
+
+
+		return Optional.of(InvoiceProcessingFeeCalculation.builder()
+				.orgId(request.getOrgId())
+				.evaluationDate(request.getPaymentDate())
+				//
+				.customerId(request.getCustomerId())
+				.invoiceId(invoiceId)
+				// .invoiceGrandTotal(invoiceGrandTotal)
+				//
+				.serviceCompanyBPartnerId(config.getServiceCompanyBPartnerId())
+				.serviceInvoiceDocTypeId(config.getServiceInvoiceDocTypeId())
+				.serviceFeeProductId(config.getServiceFeeProductId())
+				.feeAmountIncludingTax(feeAmountIncludingTax)
+				//
+				.build());
+	}
+
 	public Optional<InvoiceProcessingFeeCalculation> computeFee(@NonNull final InvoiceProcessingFeeComputeRequest request)
 	{
 		final BPartnerId customerId = request.getCustomerId();
@@ -107,7 +141,7 @@ public class InvoiceProcessingServiceCompanyService
 				//
 				.customerId(customerId)
 				.invoiceId(invoiceId)
-				.invoiceGrandTotal(invoiceGrandTotal)
+				// .invoiceGrandTotal(invoiceGrandTotal)
 				//
 				.serviceCompanyBPartnerId(config.getServiceCompanyBPartnerId())
 				.serviceInvoiceDocTypeId(config.getServiceInvoiceDocTypeId())

@@ -59,6 +59,12 @@ public class InvoiceProcessingServiceCompanyConfigRepository
 		return configMap.getByCustomerIdAndDate(customerId, evaluationDate);
 	}
 
+	public Optional<InvoiceProcessingServiceCompanyConfig> getByPaymentBPartnerAndValidFromDate(@NonNull final BPartnerId serviceCompanyBPartnerId, @NonNull final ZonedDateTime evaluationDate)
+	{
+		final InvoiceProcessingServiceCompanyConfigMap configMap = configMapCache.getOrLoad(0, InvoiceProcessingServiceCompanyConfigRepository::retrieveAllCompanyConfigs);
+		return configMap.getByServiceCompanyBPartnerIdAndDateIncludingInvalidDates(serviceCompanyBPartnerId, evaluationDate);
+	}
+
 	@NonNull
 	static private InvoiceProcessingServiceCompanyConfigMap retrieveAllCompanyConfigs()
 	{

@@ -1,25 +1,26 @@
+/*
+ * #%L
+ * metasfresh-webui-api
+ * %%
+ * Copyright (C) 2020 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.ui.web.payment_allocation.process;
-
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.Month;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.service.ClientId;
-import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.test.AdempiereTestWatcher;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.model.I_C_Invoice;
-import org.compiere.model.I_C_Payment;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 
 import de.metas.allocation.api.IAllocationDAO;
 import de.metas.banking.payment.paymentallocation.service.AllocationAmounts;
@@ -55,28 +56,22 @@ import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
+import org.adempiere.service.ClientId;
+import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.test.AdempiereTestWatcher;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.I_C_Invoice;
+import org.compiere.model.I_C_Payment;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
-/*
- * #%L
- * metasfresh-webui-api
- * %%
- * Copyright (C) 2020 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.Month;
+import java.util.Collections;
 
 @ExtendWith(AdempiereTestWatcher.class)
 public class PaymentsViewAllocateCommandTest
@@ -133,7 +128,7 @@ public class PaymentsViewAllocateCommandTest
 		return TableRecordReference.of(I_C_Invoice.Table_Name, invoiceRow.getInvoiceId());
 	}
 
-	private final void assertInvoiceAllocatedAmt(final InvoiceId invoiceId, final String expectedAllocatedAmt)
+	private void assertInvoiceAllocatedAmt(final InvoiceId invoiceId, final String expectedAllocatedAmt)
 	{
 		final I_C_Invoice invoice = invoicesDAO.getByIdInTrx(invoiceId);
 
@@ -175,8 +170,8 @@ public class PaymentsViewAllocateCommandTest
 		{
 			final Money invoiceGrandTotal = moneyService.toMoney(openAmt)
 					.negateIf(docBaseType.isCreditMemo())
-			// .negateIf(!docBaseType.isSales()) // NOP, it's already adjusted
-			;
+					// .negateIf(!docBaseType.isSales()) // NOP, it's already adjusted
+					;
 
 			final I_C_Invoice invoiceRecord = newInstance(I_C_Invoice.class);
 			invoiceRecord.setC_Currency_ID(invoiceGrandTotal.getCurrencyId().getRepoId());
@@ -212,7 +207,7 @@ public class PaymentsViewAllocateCommandTest
 					.discountAmt("20")
 					.build();
 
-			final PayableDocument payableDocument = PaymentsViewAllocateCommand.toPayableDocument(row, moneyService);
+			final PayableDocument payableDocument = PaymentsViewAllocateCommand.toPayableDocument(row, Collections.emptyList(), moneyService, invoiceProcessingServiceCompanyService);
 			assertThat(payableDocument.getSoTrx()).isEqualTo(SOTrx.SALES);
 			assertThat(payableDocument.isCreditMemo()).isEqualTo(false);
 			assertThat(payableDocument.getOpenAmtInitial()).isEqualTo(Money.of(100, euroCurrencyId));
@@ -228,7 +223,7 @@ public class PaymentsViewAllocateCommandTest
 		{
 			final InvoiceRow row = invoiceRow().docBaseType(InvoiceDocBaseType.CustomerCreditMemo).openAmt(euro(-100)).build();
 
-			final PayableDocument payableDocument = PaymentsViewAllocateCommand.toPayableDocument(row, moneyService);
+			final PayableDocument payableDocument = PaymentsViewAllocateCommand.toPayableDocument(row, Collections.emptyList(), moneyService, invoiceProcessingServiceCompanyService);
 			assertThat(payableDocument.getSoTrx()).isEqualTo(SOTrx.SALES);
 			assertThat(payableDocument.isCreditMemo()).isEqualTo(true);
 			assertThat(payableDocument.getOpenAmtInitial()).isEqualTo(Money.of(-100, euroCurrencyId));
@@ -244,7 +239,7 @@ public class PaymentsViewAllocateCommandTest
 					.discountAmt("20")
 					.build();
 
-			final PayableDocument payableDocument = PaymentsViewAllocateCommand.toPayableDocument(row, moneyService);
+			final PayableDocument payableDocument = PaymentsViewAllocateCommand.toPayableDocument(row, Collections.emptyList(), moneyService, invoiceProcessingServiceCompanyService);
 			assertThat(payableDocument.getSoTrx()).isEqualTo(SOTrx.PURCHASE);
 			assertThat(payableDocument.isCreditMemo()).isEqualTo(false);
 			assertThat(payableDocument.getOpenAmtInitial()).isEqualTo(Money.of(-100, euroCurrencyId));
@@ -260,7 +255,7 @@ public class PaymentsViewAllocateCommandTest
 		{
 			final InvoiceRow row = invoiceRow().docBaseType(InvoiceDocBaseType.VendorCreditMemo).openAmt(euro(-100)).build();
 
-			final PayableDocument payableDocument = PaymentsViewAllocateCommand.toPayableDocument(row, moneyService);
+			final PayableDocument payableDocument = PaymentsViewAllocateCommand.toPayableDocument(row, Collections.emptyList(), moneyService, invoiceProcessingServiceCompanyService);
 			assertThat(payableDocument.getSoTrx()).isEqualTo(SOTrx.PURCHASE);
 			assertThat(payableDocument.isCreditMemo()).isEqualTo(true);
 			assertThat(payableDocument.getOpenAmtInitial()).isEqualTo(Money.of(100, euroCurrencyId));
