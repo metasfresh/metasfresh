@@ -432,6 +432,7 @@ RawModal.propTypes = {
   viewId: PropTypes.string,
   masterDocumentList: PropTypes.any,
   children: PropTypes.node,
+  closeCallback: PropTypes.func,
 };
 
 /**
