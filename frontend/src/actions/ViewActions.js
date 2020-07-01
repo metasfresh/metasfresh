@@ -29,7 +29,11 @@ import {
   TOGGLE_INCLUDED_VIEW,
 } from '../constants/ActionTypes';
 
-import { createGridTable, updateGridTable, deleteTable } from './TableActions';
+import {
+  createGridTable,
+  updateGridTable,
+  clearTableData,
+} from './TableActions';
 import { setListIncludedView, closeListIncludedView } from './ListActions';
 
 /**
@@ -409,8 +413,9 @@ export function filterView(windowId, viewId, filters, useViewId = false) {
       .then((response) => {
         dispatch(filterViewSuccess(identifier, response.data));
 
+        // clear data, so that we won't add filtered rows to previous data
         const tableId = getTableId({ windowId, viewId });
-        dispatch(deleteTable(tableId));
+        dispatch(clearTableData(tableId));
 
         return Promise.resolve(response.data);
       })
