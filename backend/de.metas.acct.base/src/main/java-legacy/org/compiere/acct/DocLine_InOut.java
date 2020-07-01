@@ -160,7 +160,7 @@ class DocLine_InOut extends DocLine<Doc_InOut>
 					.date(getDateAcct())
 					.build())
 					.getTotalAmountToPost(as)
-					// Negate the amount coming form the costs because it must be negative in the accounting.
+					// Negate the amount coming from the costs because it must be negative in the accounting.
 					.negate();
 		}
 		else
