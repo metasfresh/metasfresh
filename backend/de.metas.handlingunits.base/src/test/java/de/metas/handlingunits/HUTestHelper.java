@@ -69,6 +69,7 @@ import org.adempiere.model.PlainContextAware;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.lang.IContextAware;
 import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_AD_Role;
 import org.compiere.model.I_C_BPartner;
@@ -103,6 +104,8 @@ import de.metas.handlingunits.allocation.impl.HUListAllocationSourceDestination;
 import de.metas.handlingunits.allocation.impl.HULoader;
 import de.metas.handlingunits.allocation.impl.HUProducerDestination;
 import de.metas.handlingunits.allocation.impl.MTransactionAllocationSourceDestination;
+import de.metas.handlingunits.allocation.strategy.AllocationStrategyFactory;
+import de.metas.handlingunits.allocation.strategy.AllocationStrategySupportingServicesFacade;
 import de.metas.handlingunits.allocation.transfer.IHUJoinBL;
 import de.metas.handlingunits.allocation.transfer.IHUSplitBuilder;
 import de.metas.handlingunits.allocation.transfer.ITUMergeBuilder;
@@ -407,6 +410,8 @@ public class HUTestHelper
 		{
 			AdempiereTestHelper.get().init();
 		}
+		
+		SpringContextHolder.registerJUnitBean(new AllocationStrategyFactory(new AllocationStrategySupportingServicesFacade()));
 
 		ctx = Env.getCtx();
 		final ITrxManager trxManager = Services.get(ITrxManager.class);

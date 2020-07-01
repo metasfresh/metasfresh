@@ -33,7 +33,6 @@ import java.util.Objects;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.assertj.core.api.Assertions;
-import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_UOM;
@@ -45,8 +44,6 @@ import org.w3c.dom.Node;
 import de.metas.business.BusinessTestHelper;
 import de.metas.handlingunits.HUXmlConverter;
 import de.metas.handlingunits.IHandlingUnitsBL;
-import de.metas.handlingunits.allocation.strategy.AllocationStrategyFactory;
-import de.metas.handlingunits.allocation.strategy.AllocationStrategySupportingServicesFacade;
 import de.metas.handlingunits.allocation.transfer.HUTransformService;
 import de.metas.handlingunits.allocation.transfer.HUTransformService.HUsToNewTUsRequest;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
@@ -73,9 +70,6 @@ public class SplitLUsWithOddQuantitiesTest extends AbstractWeightAttributeTest
 	protected void afterInitialize()
 	{
 		super.afterInitialize();
-
-		final AllocationStrategySupportingServicesFacade services = new AllocationStrategySupportingServicesFacade();
-		SpringContextHolder.registerJUnitBean(new AllocationStrategyFactory(services));
 	}
 
 	@Override
