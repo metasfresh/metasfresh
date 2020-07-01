@@ -75,7 +75,7 @@ public class InvoiceProcessingServiceCompanyService
 		this.moneyService = moneyService;
 	}
 
-	public Optional<InvoiceProcessingFeeCalculation> createFeeCalculationForPayment(@NonNull final InvoiceProcessingFeeFromPaymentRequest request)
+	public Optional<InvoiceProcessingFeeCalculation> createFeeCalculationForPayment(@NonNull final InvoiceProcessingFeeWithPrecalculatedAmountRequest request)
 	{
 		final BPartnerId serviceCompanyBPartnerId = request.getServiceCompanyBPartnerId();
 		final InvoiceId invoiceId = request.getInvoiceId();

@@ -32,7 +32,6 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
-// TODO tbp: add unit test to see that getting stuff (and entering duplicates work)
 /* package */ class InvoiceProcessingServiceCompanyConfigMap
 {
 	private final ImmutableListMultimap<BPartnerId, InvoiceProcessingServiceCompanyConfig> bpartnersToConfigsSorted;

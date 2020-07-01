@@ -518,7 +518,6 @@ public class InvoiceProcessingServiceCompanyServiceTest
 					.evaluationDate(LocalDate.parse("2020-04-30").atStartOfDay(ZoneId.of("UTC-8")))
 					.customerId(BPartnerId.ofRepoId(2))
 					.invoiceId(InvoiceId.ofRepoId(3))
-					// .invoiceGrandTotal(Amount.of(100, CurrencyCode.EUR))
 					//
 					.serviceCompanyBPartnerId(serviceCompanyBPartnerAndLocationId.getBpartnerId())
 					.serviceInvoiceDocTypeId(serviceInvoiceDocTypeId)

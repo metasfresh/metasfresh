@@ -160,7 +160,7 @@ public class PaymentsViewAllocateCommandTest
 	private PaymentRow createPaymentRow(
 			@NonNull final PaymentDirection direction,
 			@NonNull final Amount payAmt,
-			@Nullable final BPartnerId bpId,
+			@Nullable final BPartnerId bpartnerIdOverride,
 			@Nullable final LocalDate paymentDateTrxOverride)
 	{
 		final I_C_Payment paymentRecord = newInstance(I_C_Payment.class);
@@ -172,7 +172,7 @@ public class PaymentsViewAllocateCommandTest
 				.clientAndOrgId(ClientAndOrgId.ofClientAndOrg(ClientId.METASFRESH, orgId))
 				.documentNo("paymentNo_" + paymentId.getRepoId())
 				.dateTrx(CoalesceUtil.coalesce(paymentDateTrxOverride, paymentDateTrx))
-				.bpartner(IntegerLookupValue.of(CoalesceUtil.coalesce(bpId, bpartnerId).getRepoId(), "BPartner"))
+				.bpartner(IntegerLookupValue.of(CoalesceUtil.coalesce(bpartnerIdOverride, bpartnerId).getRepoId(), "BPartner"))
 				.payAmt(payAmt)
 				.openAmt(payAmt)
 				.paymentDirection(direction)
@@ -322,7 +322,7 @@ public class PaymentsViewAllocateCommandTest
 			final LocalDate paymentDate = LocalDate.of(2020, Month.FEBRUARY, 11);
 
 			final InvoiceRow invoiceRow = invoiceRow().docBaseType(InvoiceDocBaseType.CustomerInvoice).openAmt(euro(100)).serviceFeeAmt("10").build();
-			final PaymentRow paymentRow = paymentRow().direction(PaymentDirection.INBOUND).payAmt(euro(100)).bpId(feeCompanyBPid2).paymentDateTrxOverride(paymentDate).build();
+			final PaymentRow paymentRow = paymentRow().direction(PaymentDirection.INBOUND).payAmt(euro(100)).bpartnerIdOverride(feeCompanyBPid2).paymentDateTrxOverride(paymentDate).build();
 
 			final List<PaymentDocument> paymentDocuments = Collections.singletonList(PaymentsViewAllocateCommand.toPaymentDocument(paymentRow, moneyService));
 
@@ -344,7 +344,7 @@ public class PaymentsViewAllocateCommandTest
 			final LocalDate paymentDate = LocalDate.of(1999, Month.JANUARY, 1);
 
 			final InvoiceRow invoiceRow = invoiceRow().docBaseType(InvoiceDocBaseType.CustomerInvoice).openAmt(euro(100)).serviceFeeAmt("10").build();
-			final PaymentRow paymentRow = paymentRow().direction(PaymentDirection.INBOUND).payAmt(euro(100)).bpId(feeCompanyBPid1).paymentDateTrxOverride(paymentDate).build();
+			final PaymentRow paymentRow = paymentRow().direction(PaymentDirection.INBOUND).payAmt(euro(100)).bpartnerIdOverride(feeCompanyBPid1).paymentDateTrxOverride(paymentDate).build();
 
 			final List<PaymentDocument> paymentDocuments = Collections.singletonList(PaymentsViewAllocateCommand.toPaymentDocument(paymentRow, moneyService));
 

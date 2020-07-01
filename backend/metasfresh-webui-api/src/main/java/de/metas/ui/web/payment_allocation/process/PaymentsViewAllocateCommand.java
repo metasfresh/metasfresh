@@ -34,7 +34,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.currency.Amount;
 import de.metas.currency.CurrencyCode;
 import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingFeeCalculation;
-import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingFeeFromPaymentRequest;
+import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingFeeWithPrecalculatedAmountRequest;
 import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingServiceCompanyService;
 import de.metas.lang.SOTrx;
 import de.metas.money.CurrencyId;
@@ -171,7 +171,7 @@ public class PaymentsViewAllocateCommand
 			final ZonedDateTime paymentDate = TimeUtil.asZonedDateTime(singlePaymentDocument.getDateTrx());
 
 			final Optional<InvoiceProcessingFeeCalculation> calculatedFeeOptional = invoiceProcessingServiceCompanyService.createFeeCalculationForPayment(
-					InvoiceProcessingFeeFromPaymentRequest.builder()
+					InvoiceProcessingFeeWithPrecalculatedAmountRequest.builder()
 							.orgId(row.getOrgId())
 							.paymentDate(paymentDate)
 							.customerId(row.getBPartnerId())

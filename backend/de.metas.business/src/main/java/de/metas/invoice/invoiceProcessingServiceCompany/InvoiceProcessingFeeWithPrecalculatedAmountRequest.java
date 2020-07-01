@@ -34,7 +34,7 @@ import java.time.ZonedDateTime;
 
 @Value
 @Builder
-public class InvoiceProcessingFeeFromPaymentRequest
+public class InvoiceProcessingFeeWithPrecalculatedAmountRequest
 {
 	@NonNull
 	OrgId orgId;
