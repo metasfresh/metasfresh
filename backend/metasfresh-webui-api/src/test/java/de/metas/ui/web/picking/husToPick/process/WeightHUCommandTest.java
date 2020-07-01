@@ -6,7 +6,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
 
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.adempiere.warehouse.LocatorId;
@@ -85,14 +84,7 @@ public class WeightHUCommandTest
 	@BeforeEach
 	public void beforeEach()
 	{
-		helper = new HUTestHelper()
-		{
-			@Override
-			protected String createAndStartTransaction()
-			{
-				return ITrx.TRXNAME_None;
-			}
-		};
+		helper = HUTestHelper.newInstanceOutOfTrx();
 
 		final InventoryRepository inventoryRepo = new InventoryRepository();
 		this.inventoryService = new InventoryService(inventoryRepo);
