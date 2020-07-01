@@ -314,7 +314,7 @@ public final class AllocationUtils
 	 * @param request
 	 * @return
 	 */
-	public static IAllocationRequestBuilder derive(final IAllocationRequest request)
+	public static IAllocationRequestBuilder derive(@NonNull final IAllocationRequest request)
 	{
 		Check.assumeNotNull(request, "request not null");
 		return createAllocationRequestBuilder()
