@@ -39,7 +39,6 @@ import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.allocation.IAllocationRequest;
 import de.metas.handlingunits.allocation.IAllocationRequestBuilder;
 import de.metas.handlingunits.allocation.IAllocationResult;
-import de.metas.handlingunits.allocation.IAllocationStrategy;
 import de.metas.handlingunits.allocation.impl.AllocationDirection;
 import de.metas.handlingunits.allocation.impl.AllocationUtils;
 import de.metas.handlingunits.expectations.AllocationResultExpectation;
@@ -160,7 +159,7 @@ public class FIFOAllocationStrategyTest
 	@Test
 	public void test_allocate_NoLU_EmptyTU()
 	{
-		final IAllocationStrategy strategy = strategyFactory.createAllocationStrategy(AllocationDirection.INBOUND_ALLOCATION);
+		final FIFOAllocationStrategy strategy = (FIFOAllocationStrategy)strategyFactory.createAllocationStrategy(AllocationDirection.INBOUND_ALLOCATION);
 
 		//
 		// Create an empty HU
@@ -249,7 +248,7 @@ public class FIFOAllocationStrategyTest
 	@Test
 	public void test_deallocate_NoLU_TU_3VHUs()
 	{
-		final IAllocationStrategy strategy = strategyFactory.createAllocationStrategy(AllocationDirection.OUTBOUND_DEALLOCATION);
+		final FIFOAllocationStrategy strategy = (FIFOAllocationStrategy)strategyFactory.createAllocationStrategy(AllocationDirection.OUTBOUND_DEALLOCATION);
 
 		//
 		// Create an empty HU
