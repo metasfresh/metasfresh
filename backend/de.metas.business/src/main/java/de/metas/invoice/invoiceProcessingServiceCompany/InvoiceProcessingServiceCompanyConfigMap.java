@@ -41,16 +41,17 @@ import java.util.Optional;
 
 	public InvoiceProcessingServiceCompanyConfigMap(@NonNull final List<InvoiceProcessingServiceCompanyConfig> configs)
 	{
-		final ImmutableListMultimap.Builder<BPartnerId, InvoiceProcessingServiceCompanyConfig> map = ImmutableListMultimap.builder();
-		for (final InvoiceProcessingServiceCompanyConfig config : configs)
 		{
-			for (final BPartnerId partnerId : config.getBPartnerIds())
+			final ImmutableListMultimap.Builder<BPartnerId, InvoiceProcessingServiceCompanyConfig> map = ImmutableListMultimap.builder();
+			for (final InvoiceProcessingServiceCompanyConfig config : configs)
 			{
-				map.put(partnerId, config);
+				for (final BPartnerId partnerId : config.getBPartnerIds())
+				{
+					map.put(partnerId, config);
+				}
 			}
-		}
-		// for ease of access and calculation: sort by ValidFrom
-		map.orderValuesBy(Comparator.comparing(InvoiceProcessingServiceCompanyConfig::getValidFrom));
+			// for ease of access and calculation: sort by ValidFrom
+			map.orderValuesBy(Comparator.comparing(InvoiceProcessingServiceCompanyConfig::getValidFrom));
 
 			bpartnersToConfigsSorted = map.build();
 		}

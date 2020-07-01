@@ -40,17 +40,14 @@ import de.metas.lang.SOTrx;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.money.MoneyService;
-import de.metas.payment.api.IPaymentDAO;
 import de.metas.ui.web.payment_allocation.InvoiceRow;
 import de.metas.ui.web.payment_allocation.PaymentRow;
-import de.metas.util.Services;
 import de.metas.util.lang.CoalesceUtil;
 import de.metas.util.time.SystemTime;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.I_C_Payment;
 import org.compiere.util.TimeUtil;
 
 import javax.annotation.Nullable;
@@ -166,13 +163,12 @@ public class PaymentsViewAllocateCommand
 		{
 			if (paymentDocuments.size() != 1)
 			{
-				throw new AdempiereException("Invoice with Service Fees: Please select only 1 Payment at a time for Allocation.");
+				throw new AdempiereException("Invoice with Service Fees: Please select exactly 1 Payment at a time for Allocation.");
 			}
 
-			final IPaymentDAO paymentDAO = Services.get(IPaymentDAO.class);
-			final I_C_Payment cPayment = paymentDAO.getById(paymentDocuments.get(0).getPaymentId());
-			final BPartnerId serviceCompanyBPartnerId = BPartnerId.ofRepoId(cPayment.getC_BPartner_ID());
-			final ZonedDateTime paymentDate = TimeUtil.asZonedDateTime(cPayment.getDateAcct());
+			final PaymentDocument singlePaymentDocument = paymentDocuments.get(0);
+			final BPartnerId serviceCompanyBPartnerId = singlePaymentDocument.getBpartnerId();
+			final ZonedDateTime paymentDate = TimeUtil.asZonedDateTime(singlePaymentDocument.getDateTrx());
 
 			final Optional<InvoiceProcessingFeeCalculation> calculatedFeeOptional = invoiceProcessingServiceCompanyService.createFeeCalculationForPayment(
 					InvoiceProcessingFeeFromPaymentRequest.builder()
@@ -237,6 +233,7 @@ public class PaymentsViewAllocateCommand
 				.paymentDirection(row.getPaymentDirection())
 				.openAmt(openAmt)
 				.amountToAllocate(openAmt)
+				.dateTrx(row.getDateTrx())
 				.build();
 	}
 

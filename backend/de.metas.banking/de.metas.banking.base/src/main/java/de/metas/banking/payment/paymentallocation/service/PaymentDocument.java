@@ -1,11 +1,5 @@
 package de.metas.banking.payment.paymentallocation.service;
 
-import javax.annotation.Nullable;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.model.I_C_Payment;
-
 import de.metas.bpartner.BPartnerId;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
@@ -18,14 +12,19 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.I_C_Payment;
+
+import javax.annotation.Nullable;
+import java.time.LocalDate;
 
 /**
  * Mutable payment allocation candidate.
- *
+ * <p>
  * Used by {@link PaymentAllocationBuilder} internally.
  *
  * @author tsa
- *
  */
 @EqualsAndHashCode
 @ToString
@@ -52,6 +51,9 @@ public class PaymentDocument implements IPaymentDocument
 	private Money amountToAllocate;
 	private Money allocatedAmt;
 
+	@Getter
+	private final LocalDate dateTrx;
+
 	@Builder
 	private PaymentDocument(
 			@NonNull final OrgId orgId,
@@ -61,7 +63,9 @@ public class PaymentDocument implements IPaymentDocument
 			@NonNull final PaymentDirection paymentDirection,
 			//
 			@NonNull final Money openAmt,
-			@NonNull final Money amountToAllocate)
+			@NonNull final Money amountToAllocate,
+			@NonNull final LocalDate dateTrx
+	)
 	{
 		if (!orgId.isRegular())
 		{
@@ -80,6 +84,7 @@ public class PaymentDocument implements IPaymentDocument
 		this.amountToAllocateInitial = amountToAllocate;
 		this.amountToAllocate = amountToAllocate;
 		this.allocatedAmt = amountToAllocate.toZero();
+		this.dateTrx = dateTrx;
 	}
 
 	@Override

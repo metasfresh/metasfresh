@@ -39,6 +39,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.Month;
 import java.time.ZoneId;
 import java.util.Arrays;
 import java.util.Collection;
@@ -127,7 +128,7 @@ public class PaymentAllocationBuilderTest
 		return Money.of(amountBD, euroCurrencyId);
 	}
 
-	private final void assertExpected(final List<AllocationLineCandidate> candidatesExpected, final PaymentAllocationBuilder builder)
+	private void assertExpected(final List<AllocationLineCandidate> candidatesExpected, final PaymentAllocationBuilder builder)
 	{
 		final PaymentAllocationResult result = builder.build();
 
@@ -156,7 +157,7 @@ public class PaymentAllocationBuilderTest
 		assertAllocationHdrCount(candidatesExpected.size());
 	}
 
-	private final void assertExpected(
+	private void assertExpected(
 			final List<AllocationLineCandidate> candidatesExpected,
 			final List<AllocationLineCandidate> candidatesActual)
 	{
@@ -253,7 +254,7 @@ public class PaymentAllocationBuilderTest
 		return invoiceDocTypes.computeIfAbsent(InvoiceDocBaseType, this::createInvoiceDocType);
 	}
 
-	private final I_C_DocType createInvoiceDocType(final InvoiceDocBaseType invoiceDocBaseType)
+	private I_C_DocType createInvoiceDocType(final InvoiceDocBaseType invoiceDocBaseType)
 	{
 		final I_C_DocType docType = InterfaceWrapperHelper.newInstance(I_C_DocType.class);
 		docType.setDocBaseType(invoiceDocBaseType.getCode());
@@ -291,11 +292,12 @@ public class PaymentAllocationBuilderTest
 				.amountToAllocate(euro(amtToAllocate)
 				// .negateIf(direction.isOutboundPayment())
 				)
+				.dateTrx(LocalDate.of(2020, Month.JANUARY, 1))
 				.build();
 	}
 
 	@Builder(builderMethodName = "allocation", builderClassName = "$AllocationBuilder")
-	private final AllocationLineCandidate createAllocationCandidate(
+	private AllocationLineCandidate createAllocationCandidate(
 			@NonNull final AllocationLineCandidateType type,
 			@Nullable final TableRecordReference payableRef,
 			@Nullable final TableRecordReference paymentRef,
@@ -331,7 +333,7 @@ public class PaymentAllocationBuilderTest
 				.build();
 	}
 
-	private final void dumpCandidates(final String title, final Iterable<AllocationLineCandidate> candidates)
+	private void dumpCandidates(final String title, final Iterable<AllocationLineCandidate> candidates)
 	{
 		System.out.println(" " + title + ": -----------------------------");
 		int index = 0;
@@ -342,7 +344,7 @@ public class PaymentAllocationBuilderTest
 		}
 	}
 
-	private final void assertInvoiceAllocatedAmt(final InvoiceId invoiceId, final BigDecimal expectedAllocatedAmt)
+	private void assertInvoiceAllocatedAmt(final InvoiceId invoiceId, final BigDecimal expectedAllocatedAmt)
 	{
 		final I_C_Invoice invoice = invoicesDAO.getByIdInTrx(invoiceId);
 
@@ -353,12 +355,12 @@ public class PaymentAllocationBuilderTest
 				.isEqualByComparingTo(expectedAllocatedAmt);
 	}
 
-	private final void assertInvoiceAllocatedAmt(final InvoiceId invoiceId, final int expectedAllocatedAmtInt)
+	private void assertInvoiceAllocatedAmt(final InvoiceId invoiceId, final int expectedAllocatedAmtInt)
 	{
 		assertInvoiceAllocatedAmt(invoiceId, BigDecimal.valueOf(expectedAllocatedAmtInt));
 	}
 
-	private final void assertInvoiceAllocated(final InvoiceId invoiceId, final boolean expectedAllocated)
+	private void assertInvoiceAllocated(final InvoiceId invoiceId, final boolean expectedAllocated)
 	{
 		final I_C_Invoice invoice = invoicesDAO.getByIdInTrx(invoiceId);
 		final boolean ignoreProcessed = false;
@@ -369,7 +371,7 @@ public class PaymentAllocationBuilderTest
 				.isEqualTo(expectedAllocated);
 	}
 
-	private final void assertPaymentAllocatedAmt(final PaymentId paymentId, final BigDecimal expectedAllocatedAmt)
+	private void assertPaymentAllocatedAmt(final PaymentId paymentId, final BigDecimal expectedAllocatedAmt)
 	{
 		final I_C_Payment payment = paymentDAO.getById(paymentId);
 		final BigDecimal actualAllocatedAmt = paymentDAO.getAllocatedAmt(payment);
@@ -379,12 +381,12 @@ public class PaymentAllocationBuilderTest
 				.isEqualByComparingTo(expectedAllocatedAmt);
 	}
 
-	private final void assertPaymentAllocatedAmt(final PaymentId paymentId, final int expectedAllocatedAmtInt)
+	private void assertPaymentAllocatedAmt(final PaymentId paymentId, final int expectedAllocatedAmtInt)
 	{
 		assertPaymentAllocatedAmt(paymentId, BigDecimal.valueOf(expectedAllocatedAmtInt));
 	}
 
-	private final void assertAllocationHdrCount(final int expectedCount)
+	private void assertAllocationHdrCount(final int expectedCount)
 	{
 		final int actualCount = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_AllocationHdr.class)
