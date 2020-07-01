@@ -289,7 +289,7 @@ public class AccountImportProcess extends SimpleImportProcessTemplate<I_I_Elemen
 	{
 		AccountImportTableSqlUpdater.dbUpdateParentElementValue(getImportRecordsSelection());
 		retrieveImportedAdTrees().forEach(AccountImportTableSqlUpdater::dbUpdateParentElementValueId);
-		retrieveImporteElements().forEach(AccountImportTableSqlUpdater::dbUpdateElementValueParentAndSeqNo);
+		retrieveImportedElements().forEach(AccountImportTableSqlUpdater::dbUpdateElementValueParentAndSeqNo);
 	}
 
 	private Set<Integer> retrieveImportedAdTrees()
@@ -320,16 +320,15 @@ public class AccountImportProcess extends SimpleImportProcessTemplate<I_I_Elemen
 		return treeId;
 	}
 	
-	private Set<Integer> retrieveImporteElements()
+	private Set<Integer> retrieveImportedElements()
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		return queryBL.createQueryBuilder(I_I_ElementValue.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_I_ElementValue.COLUMNNAME_Processed, true)
 				.addOnlyActiveRecordsFilter()
-				.andCollect(I_I_ElementValue.COLUMN_C_Element_ID)
 				.create()
-				.listDistinct(I_C_Element.COLUMNNAME_C_Element_ID)
+				.listDistinct(I_I_ElementValue.COLUMNNAME_C_Element_ID)
 				.stream()
 				.map(map -> extractElementIdOrNull(map))
 				.filter(Objects::nonNull)
