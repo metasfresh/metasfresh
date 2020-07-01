@@ -12,7 +12,6 @@ import org.junit.jupiter.api.Test;
 
 import de.metas.handlingunits.HUTestHelper;
 import de.metas.handlingunits.HuPackingInstructionsItemId;
-import de.metas.handlingunits.IMutableHUContext;
 import de.metas.handlingunits.allocation.IAllocationRequest;
 import de.metas.handlingunits.allocation.IAllocationResult;
 import de.metas.handlingunits.allocation.impl.AllocationUtils;
@@ -45,10 +44,8 @@ import de.metas.util.time.SystemTime;
  * #L%
  */
 
-public class UpperBoundsAllocationStrategyTests
+public class UpperBoundsAllocationStrategyTest
 {
-	private static final BigDecimal sixThousand = new BigDecimal("6000");
-
 	private HUTestHelper helper;
 
 	/**
@@ -73,6 +70,16 @@ public class UpperBoundsAllocationStrategyTests
 		InterfaceWrapperHelper.save(vhuItem);
 	}
 
+	private IAllocationRequest request(final String qtyTomatoes)
+	{
+		return AllocationUtils.createQtyRequest(
+				helper.createMutableHUContextOutOfTransaction(),
+				helper.pTomato, // product
+				new BigDecimal(qtyTomatoes), // qty
+				helper.uomKg, // uom
+				SystemTime.asZonedDateTime());
+	}
+
 	private static UpperBoundAllocationStrategy createUpperBoundAllocationStrategy(@Nullable Capacity capacity)
 	{
 		final AllocationStrategySupportingServicesFacade services = new AllocationStrategySupportingServicesFacade();
@@ -86,20 +93,19 @@ public class UpperBoundsAllocationStrategyTests
 	public void testAllocateAllToVirtualItemWithoutUpperBound()
 	{
 		// allocate this, despite it not really fitting (because that's not the testee's business).
-		final BigDecimal requestQty = sixThousand.add(new BigDecimal("0.321"));
-		final IAllocationRequest request = mkRequest(requestQty);
+		final IAllocationRequest request = request("6000.321");
 
 		final UpperBoundAllocationStrategy testee = createUpperBoundAllocationStrategy(null);
 		final IAllocationResult result = testee.execute(vhu, request);
 
 		assertThat(result.isCompleted()).isTrue();
-		assertThat(result.getQtyAllocated()).isEqualByComparingTo(requestQty);
+		assertThat(result.getQtyAllocated()).isEqualByComparingTo("6000.321");
 		assertThat(result.getQtyToAllocate()).isZero();
 		assertThat(result.getTransactions()).hasSize(1);
 
 		final IHUTransactionCandidate huTransaction = result.getTransactions().get(0);
 		assertThat(huTransaction.getProductId()).isEqualTo(helper.pTomatoProductId);
-		assertThat(huTransaction.getQuantity().toBigDecimal()).isEqualTo(requestQty);
+		assertThat(huTransaction.getQuantity().toBigDecimal()).isEqualTo("6000.321");
 		assertThat(huTransaction.getQuantity().getUOM()).isEqualTo(helper.uomKg);
 		assertThat(huTransaction.getM_HU()).isEqualTo(vhu);
 	}
@@ -111,36 +117,27 @@ public class UpperBoundsAllocationStrategyTests
 	public void testAllocateAllToVirtualItemWithUpperBound()
 	{
 		// request this, note that the 0.321 are above the upper build that we will specify.
-		final BigDecimal requestQty = sixThousand.add(new BigDecimal("0.321"));
+		final IAllocationRequest request = request("6000.321");
 
-		final IAllocationRequest request = mkRequest(requestQty);
-
-		final Capacity capacity = Capacity.createCapacity(sixThousand, helper.pTomatoProductId, helper.uomKg, false);
+		final Capacity capacity = Capacity.createCapacity(
+				new BigDecimal("6000"),
+				helper.pTomatoProductId,
+				helper.uomKg,
+				false // allowNegativeCapacity
+		);
 
 		final UpperBoundAllocationStrategy testee = createUpperBoundAllocationStrategy(capacity);
 		final IAllocationResult result = testee.execute(vhu, request);
 
 		assertThat(result.isCompleted()).isFalse();
-		assertThat(result.getQtyAllocated()).isEqualByComparingTo(sixThousand);
+		assertThat(result.getQtyAllocated()).isEqualByComparingTo("6000");
 		assertThat(result.getQtyToAllocate()).isEqualTo("0.321");
 		assertThat(result.getTransactions()).hasSize(1);
 
 		final IHUTransactionCandidate huTransaction = result.getTransactions().get(0);
 		assertThat(huTransaction.getProductId()).isEqualTo(helper.pTomatoProductId);
-		assertThat(huTransaction.getQuantity().toBigDecimal()).isEqualTo(sixThousand);
+		assertThat(huTransaction.getQuantity().toBigDecimal()).isEqualTo("6000");
 		assertThat(huTransaction.getQuantity().getUOM()).isEqualTo(helper.uomKg);
 		assertThat(huTransaction.getM_HU()).isEqualTo(vhu);
-	}
-
-	private IAllocationRequest mkRequest(final BigDecimal qtyTomatoes)
-	{
-		final IMutableHUContext huContext0 = helper.createMutableHUContextOutOfTransaction();
-
-		return AllocationUtils.createQtyRequest(
-				huContext0,
-				helper.pTomato, // product
-				qtyTomatoes, // qty
-				helper.uomKg, // uom
-				SystemTime.asZonedDateTime());
 	}
 }
