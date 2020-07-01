@@ -962,7 +962,6 @@ public class PaymentAllocationBuilderTest
 				.evaluationDate(date.atStartOfDay(ZoneId.of("UTC-8")))
 				.customerId(bpartnerId)
 				.invoiceId(InvoiceId.ofRepoId(1111))
-				// .invoiceGrandTotal(Amount.of(100, CurrencyCode.EUR))
 				.serviceCompanyBPartnerId(BPartnerId.ofRepoId(2222))
 				.serviceInvoiceDocTypeId(DocTypeId.ofRepoId(3333))
 				.serviceFeeProductId(ProductId.ofRepoId(4444))

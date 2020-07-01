@@ -99,7 +99,6 @@ public class InvoiceProcessingServiceCompanyService
 				//
 				.customerId(request.getCustomerId())
 				.invoiceId(invoiceId)
-				// .invoiceGrandTotal(invoiceGrandTotal)
 				//
 				.serviceCompanyBPartnerId(config.getServiceCompanyBPartnerId())
 				.serviceInvoiceDocTypeId(config.getServiceInvoiceDocTypeId())
@@ -141,7 +140,6 @@ public class InvoiceProcessingServiceCompanyService
 				//
 				.customerId(customerId)
 				.invoiceId(invoiceId)
-				// .invoiceGrandTotal(invoiceGrandTotal)
 				//
 				.serviceCompanyBPartnerId(config.getServiceCompanyBPartnerId())
 				.serviceInvoiceDocTypeId(config.getServiceInvoiceDocTypeId())
