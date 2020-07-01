@@ -180,7 +180,7 @@ public class AdempiereTestHelper
 			// Each test shall init it's services if it wants
 			Services.clear();
 
-			SpringContextHolder.instance.clearApplicationContext();
+			SpringContextHolder.instance.clearJUnitRegisteredBeans();
 
 			//
 			// Register our cache interceptor
